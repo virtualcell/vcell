@@ -512,8 +512,8 @@ public boolean isAllUnitSizeParameterSetForSpatial()
 	boolean bIsAllUnitSizeParamSet = true;
 	for (int i=0;i<structureMappings.length;i++)
 	{
-		if(structureMappings[i].getUnitSizeParameter().getExpression() == null)	{
-			bIsAllUnitSizeParamSet = bIsAllUnitSizeParamSet && false;
+		if(structureMappings[i].getUnitSizeParameter() == null || structureMappings[i].getUnitSizeParameter().getExpression() == null)	{
+			bIsAllUnitSizeParamSet = false;
 		}
 	}
 	return bIsAllUnitSizeParamSet;

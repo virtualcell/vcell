@@ -10,6 +10,7 @@
 
 package cbit.vcell.solver;
 
+import cbit.vcell.mapping.MathSymbolMapping;
 import cbit.vcell.math.*;
 import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.parser.*;
@@ -852,27 +853,20 @@ void updateFromMathDescription() {
 			if (mathOverridesResolver != null) {
 				MathOverridesResolver.SymbolReplacement replacement = mathOverridesResolver.getSymbolReplacement(name);
 				if (replacement != null) {
-					allFactorSymbols.addAll(replacement.getFactorSymbols());
-					Element element = overridesHash.remove(name);
-					if (element != null) {
-						java.util.function.Function<Expression, Expression> scaleExpressionsByUnitFactor = exp -> {
-							Expression substitutedExp = Expression.mult(exp, replacement.factor);
-							try {
-								substitutedExp = substitutedExp.simplifyJSCL();
-							} catch (ExpressionException e) {
-								logger.warn("failed to simplify '"+substitutedExp.infix()+"': "+e.getMessage(),e);
-							}
-							return substitutedExp;
-						};
-						element.applyFunctionToExpressions(scaleExpressionsByUnitFactor);
-						element.changeName(replacement.newName);
-						overridesHash.put(replacement.newName, element);
-						if (!name.equals(replacement.newName)){
-							removeConstant(name);
-						}
+					replace(allFactorSymbols, renamedMap, name, replacement);
+				} else {
+					// try again with function name for clamped variables previous math naming style
+					MathSymbolMapping mathSymbolMapping = (MathSymbolMapping) mathDescription.getSourceSymbolMapping();
+					if (mathSymbolMapping != null) {
+						Variable var = mathSymbolMapping.findVariableByName(name);
+						if (var != null && var.isConstant()) {
+							name = var.getName();
+							MathOverridesResolver.SymbolReplacement replacement2 = mathOverridesResolver
+									.getSymbolReplacement(name + "_init");
+							if (replacement2 != null)
+								replace(allFactorSymbols, renamedMap, name, replacement2);
+						} 
 					}
-					renamedMap.put(name, replacement);
-				}else{
 					if (!mathDescriptionHash.contains(name)) {
 						logger.error("didn't find a replacement for math override symbol " + name);
 					}
@@ -930,6 +924,34 @@ void updateFromMathDescription() {
 	}
 
 	refreshDependencies();
+}
+
+
+private void replace(LinkedHashSet<String> allFactorSymbols,
+		HashMap<String, MathOverridesResolver.SymbolReplacement> renamedMap, String name,
+		MathOverridesResolver.SymbolReplacement replacement) {
+	{
+		allFactorSymbols.addAll(replacement.getFactorSymbols());
+		Element element = overridesHash.remove(name);
+		if (element != null) {
+			java.util.function.Function<Expression, Expression> scaleExpressionsByUnitFactor = exp -> {
+				Expression substitutedExp = Expression.mult(exp, replacement.factor);
+				try {
+					substitutedExp = substitutedExp.simplifyJSCL();
+				} catch (ExpressionException e) {
+					logger.warn("failed to simplify '"+substitutedExp.infix()+"': "+e.getMessage(),e);
+				}
+				return substitutedExp;
+			};
+			element.applyFunctionToExpressions(scaleExpressionsByUnitFactor);
+			element.changeName(replacement.newName);
+			overridesHash.put(replacement.newName, element);
+			if (!name.equals(replacement.newName)){
+				removeConstant(name);
+			}
+		}
+		renamedMap.put(name, replacement);
+	}
 }
 
 

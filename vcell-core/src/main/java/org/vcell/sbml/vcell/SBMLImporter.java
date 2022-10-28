@@ -36,6 +36,7 @@ import cbit.vcell.mapping.BioEvent.EventAssignment;
 import cbit.vcell.mapping.BioEvent.TriggerType;
 import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
+import cbit.vcell.mapping.StructureMapping.StructureMappingParameter;
 import cbit.vcell.math.BoundaryConditionType;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.model.*;
@@ -843,7 +844,23 @@ public class SBMLImporter {
 					sbmlSymbolMapping.putRuntime(sbmlGlobalParam, KMOLE);
 					continue;
 				}
-
+				
+				// treat membrane voltage specially
+				// this is a temporary hack
+				
+				if (sbmlParamId.startsWith("Voltage")) {
+					StructureMapping structureMappings[] = vcBioModel.getSimulationContext(0).getGeometryContext().getStructureMappings();
+					for (int j = 0; j < structureMappings.length; j++){
+						if (structureMappings[j] instanceof MembraneMapping){
+							StructureMappingParameter voltage = ((MembraneMapping)structureMappings[j]).getInitialVoltageParameter();
+							if (TokenMangler.mangleToSName(((Membrane)voltage.getStructure()).getMembraneVoltage().getName()).equals(sbmlParamId)) {
+								voltage.setExpression(new Expression(sbmlGlobalParam.getValue()));
+								sbmlSymbolMapping.putInitial(sbmlGlobalParam, ((Membrane)voltage.getStructure()).getMembraneVoltage());
+							}
+						}
+					}
+					continue;
+				}
 				//
 				// not KMOLE, map to a new VCell parameter
 				//

@@ -6321,13 +6321,13 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 	}
 	
 	
-	for (GeometryClass gc : newsimcontext.getGeometry().getGeometryClasses()) {
-		try {
-			StructureSizeSolver.updateUnitStructureSizes(newsimcontext, gc);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
+//	for (GeometryClass gc : newsimcontext.getGeometry().getGeometryClasses()) {
+//		try {
+//			StructureSizeSolver.updateUnitStructureSizes(newsimcontext, gc);
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
+//	}
 	
 	newsimcontext.getGeometryContext().enforceHierarchicalBoundaryConditions(newsimcontext.getModel().getStructureTopology());
 	

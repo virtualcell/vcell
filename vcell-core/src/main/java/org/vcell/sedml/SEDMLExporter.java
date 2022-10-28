@@ -1288,15 +1288,12 @@ public class SEDMLExporter {
 				// became a global in SBML, we need to refer to that global
 				targetXpath = new XPathTarget(sbmlSupport.getXPathForGlobalParameter(value, ParameterAttribute.value));
 			}
+		} else if (ste instanceof Membrane.MembraneVoltage) {
+			// they are exported as globals
+			targetXpath = new XPathTarget(sbmlSupport.getXPathForGlobalParameter(TokenMangler.mangleToSName(ste.getName()), ParameterAttribute.value));
 		} else {
-			if(ste instanceof Membrane.MembraneVoltage) {
-				String msg = "Export failed: This VCell model has membrane voltage; cannot be exported to SBML at this time";
-				logger.error("redundant error log: "+msg);
-				throw new RuntimeException(msg);
-			} else {
-				logger.error("redundant error log: "+"Entity should be SpeciesContext, Structure, ModelParameter : " + ste.getClass());
-				throw new RuntimeException("Unsupported entity in SBML model export: "+ste.getClass());
-			}
+			logger.error("redundant error log: "+"Entity should be SpeciesContext, Structure, ModelParameter : " + ste.getClass());
+			throw new RuntimeException("Unsupported entity in SBML model export: "+ste.getClass());
 		}
 		return targetXpath;
 	}
