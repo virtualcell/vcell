@@ -853,5 +853,8 @@ public class RestDatabaseService {
 	public void sendLostPassword(String userid) throws DataAccessException {
 		localAdminDbServer.sendLostPassword(userid);
 	}
+	public void contactUs(String userid, String message) throws DataAccessException {
+		localAdminDbServer.contactUs(userid, message);
+	}
 
 }
