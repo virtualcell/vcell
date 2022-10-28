@@ -66,8 +66,8 @@ public class VCellApiMain {
 				throw new RuntimeException("javascriptDir '"+args[0]+"' is not a directory");
 			}
 
-			PropertyLoader.loadProperties( ); //don't validate
-			
+			PropertyLoader.loadProperties(REQUIRED_SERVICE_PROPERTIES);
+
 			lg.debug("properties loaded");
 			
 			String portString = args[1];
@@ -230,4 +230,25 @@ public class VCellApiMain {
 			lg.error(e.getMessage(), e);
 		}
 	}
+
+	private static final String REQUIRED_SERVICE_PROPERTIES[] = {
+			PropertyLoader.vcellServerIDProperty,
+			PropertyLoader.installationRoot,
+			PropertyLoader.dbConnectURL,
+			PropertyLoader.dbDriverName,
+			PropertyLoader.dbUserid,
+			PropertyLoader.dbPasswordFile,
+			PropertyLoader.mongodbHostInternal,
+			PropertyLoader.mongodbPortInternal,
+			PropertyLoader.mongodbDatabase,
+			PropertyLoader.jmsIntHostInternal,
+			PropertyLoader.jmsIntPortInternal,
+//			PropertyLoader.jmsUser,
+//			PropertyLoader.jmsPasswordFile,
+			PropertyLoader.jmsBlobMessageUseMongo,
+			PropertyLoader.vcellSMTPHostName,
+			PropertyLoader.vcellSMTPPort,
+			PropertyLoader.vcellSMTPEmailAddress,
+};
+
 }

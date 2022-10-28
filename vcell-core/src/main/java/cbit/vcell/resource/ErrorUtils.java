@@ -1,11 +1,36 @@
 package cbit.vcell.resource;
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.AddressException;
 
+import cbit.vcell.client.server.ClientServerInfo;
+import cbit.vcell.client.server.ClientServerManager;
+import com.google.gson.Gson;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.http.HttpHost;
+import org.apache.http.HttpRequest;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.ClientConnectionManager;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.params.HttpParams;
+import org.apache.http.protocol.HttpContext;
+import org.apache.http.ssl.SSLContextBuilder;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.VCellSoftwareVersion;
@@ -14,9 +39,11 @@ import cbit.vcell.util.AmplistorUtils;
 
 public class ErrorUtils {
 	
-	
+	private final static Logger logger = LogManager.getLogger(ErrorUtils.class);
+
 	private static boolean bDebugMode = false;
 	private static UserLoginInfo loginInfo = null;
+	private static ClientServerInfo clientServerInfo = null;
 	public static void setDebug(boolean isDebug) {
 		bDebugMode = isDebug;
 	}
@@ -24,61 +51,84 @@ public class ErrorUtils {
 	public static void setLoginInfo(UserLoginInfo loginInfo) {
 		ErrorUtils.loginInfo = loginInfo;
 	}
-
+	public static void setClientServerInfo(ClientServerInfo clientServerInfo) {
+		ErrorUtils.clientServerInfo = clientServerInfo;
+	}
 
 	public static void sendErrorReport(Throwable exception) throws RuntimeException {
 		sendErrorReport(exception,null);
 	}
 
-	/**
-	 * send error report
-	 * @param exception
-	 * @param supplement extra information to add, may be null
-	 * @throws RuntimeException
-	 */
-	public static void sendErrorReport(Throwable exception, String supplement) throws RuntimeException {
-		if (exception == null) {
-			throw new RuntimeException("Send Error Report, exception is null");
-		}
-		String smtpHost = PropertyLoader.getProperty(PropertyLoader.vcellSMTPHostName, null);
-		if (smtpHost == null) {
-			return;
-		}
-		String smtpPort = PropertyLoader.getProperty(PropertyLoader.vcellSMTPPort, null);
-		if (smtpPort == null) {
-			return;
-		}
-		String from = "VCell";
-		String to = PropertyLoader.getProperty(PropertyLoader.vcellSMTPEmailAddress, null);
-		if (to == null) {
-			return;
-		}
-		String subject = "VCell Error Report from " + PropertyLoader.getRequiredProperty(PropertyLoader.vcellSoftwareVersion);
-		String content = BeanUtils.getStackTrace(exception)+"\n";
-		String platform = "Running under Java major version: ONE point "+ ResourceUtil.getJavaVersion().toString()+".  Specifically: Java "+(System.getProperty("java.version"))+
-			", published by "+(System.getProperty("java.vendor"))+", on the "+ (System.getProperty("os.arch"))+" architecture running version "+(System.getProperty("os.version"))+
-			" of the "+(System.getProperty("os.name"))+" operating system";
-		content = content + platform;
-		if (supplement != null) {
-			content += BeanUtils.PLAINTEXT_EMAIL_NEWLINE + supplement;
-		}
-	
-		try {
-			BeanUtils.sendSMTP(smtpHost, Integer.parseInt(smtpPort), from, to, subject, content);
-		} catch (AddressException e) {
-			e.printStackTrace();
-			throw new RuntimeException(e.getMessage());
-		} catch (MessagingException e) {
-			e.printStackTrace();
-			throw new RuntimeException(e.getMessage());
+	public static void sendErrorReport(String message) throws RuntimeException {
+		sendErrorReport(null, message);
+	}
+
+	public static class ErrorReport {
+		public String username;
+		public String message;
+		public String exceptionMessage;
+		public String stackTrace;
+		public String softwareVersion;
+		public String platform;
+
+		public ErrorReport(){}
+		public ErrorReport(String username, String message, String exceptionMessage, String stackTrace, String softwareVersion,
+						   String platform){
+			this.username = username;
+			this.message = message;
+			this.exceptionMessage = exceptionMessage;
+			this.stackTrace = stackTrace;
+			this.softwareVersion = softwareVersion;
+			this.platform = platform;
 		}
 	}
 
-	/**
-	 * send message to Virtual Cell server, if not in debug mode
-	 * @param userLoginInfo; if null, user previously set info if available
-	 * @param message
-	 */
+	public static void sendErrorReport(Throwable exception, String message) throws RuntimeException {
+		String softwareVersion = PropertyLoader.getRequiredProperty(PropertyLoader.vcellSoftwareVersion);
+		String exceptionMessage = exception!=null ? exception.getMessage() : "null";
+		String stackTrace = exception!=null ? BeanUtils.getStackTrace(exception) : "null";
+		String platform = "Running under Java "+(System.getProperty("java.version"))+
+			", published by "+(System.getProperty("java.vendor"))+", on the "+ (System.getProperty("os.arch"))+" architecture running version "+(System.getProperty("os.version"))+
+			" of the "+(System.getProperty("os.name"))+" operating system";
+		String username = null;
+		String serverHost = PropertyLoader.getProperty(PropertyLoader.vcellServerHost, null);
+		if (clientServerInfo!=null && clientServerInfo.getApihost()!=null){
+			serverHost = clientServerInfo.getApihost();
+			if (clientServerInfo.getUsername()!=null) {
+				username = clientServerInfo.getUsername();
+			}
+		}
+		if (serverHost==null){
+			throw new RuntimeException("cannot send error report to server, unknown host");
+		}
+		SSLConnectionSocketFactory sslsf=null;
+		try {
+			SSLContextBuilder builder = new SSLContextBuilder();
+			builder.loadTrustMaterial(null, new TrustSelfSignedStrategy());
+			sslsf = new SSLConnectionSocketFactory(builder.build());
+		}catch (Exception e){
+			logger.error(e);
+			throw new RuntimeException(e.getMessage(),e);
+		}
+		try (CloseableHttpClient httpClient = HttpClients.custom().setSSLSocketFactory(sslsf).build()) {
+			HttpPost httpPost = new HttpPost("https://"+serverHost+"/contactus");
+			Gson gson = new Gson();
+			ErrorReport errorReport = new ErrorReport(username, message, exceptionMessage, stackTrace, softwareVersion, platform);
+			String json = gson.toJson(errorReport);
+			StringEntity entity = new StringEntity(json);
+			httpPost.setEntity(entity);
+			httpPost.setHeader("Content-type", "application/json");
+			CloseableHttpResponse response = httpClient.execute(httpPost);
+			if (response.getStatusLine().getStatusCode() == 200){
+				logger.info("sent error message to /contactus");
+			}else{
+				logger.error("failed to send error message to /contactus");
+			}
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
 	public static void sendRemoteLogMessage(UserLoginInfo argUserLoginInfo,final String message){
 		final UserLoginInfo userLoginInfo = argUserLoginInfo != null ? argUserLoginInfo : ErrorUtils.loginInfo;
 		if (!ErrorUtils.bDebugMode && userLoginInfo != null) {
@@ -102,5 +152,11 @@ public class ErrorUtils {
 			System.err.println("Remote log message: " + message);
 		}
 	}
+
+//	public static void main(String[] args){
+//		System.setProperty(PropertyLoader.vcellServerHost,"Jims-MBP-2.fios-router.home:8082");
+//		System.setProperty(PropertyLoader.vcellSoftwareVersion,"my software version");
+//		ErrorUtils.sendErrorReport("this works");
+//	}
 
 }
