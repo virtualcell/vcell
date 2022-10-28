@@ -123,14 +123,14 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: vcmls.tar
-          path: ~/work/vcell/vcell/published/biomodel/omex/sbml/output # Action only has basic ~ based expansion, env variables dont appear to work
+          path: ~/work/vcell/vcell/published/biomodel/omex/sbml/output/vcmls.tar # Action only has basic ~ based expansion, env variables dont appear to work
         
         # Upload Results
       - name: Upload results of round-trip
         uses: actions/upload-artifact@v3
         with:
           name: conversion_results.txt
-          path: ~/
+          path: ~/conversion_results.txt
         
       # Tmate just in case
       - name: Setup tmate session 3
@@ -184,7 +184,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: round-trip_results.txt
-          path: ~/input_files
+          path: ~/input_files/round-trip_results.txt
           
       # Tmate just in case
       - name: Setup tmate session 3
