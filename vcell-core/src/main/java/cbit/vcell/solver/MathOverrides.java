@@ -853,7 +853,7 @@ void updateFromMathDescription() {
 			if (mathOverridesResolver != null) {
 				MathOverridesResolver.SymbolReplacement replacement = mathOverridesResolver.getSymbolReplacement(name);
 				if (replacement != null) {
-					replace(allFactorSymbols, renamedMap, name, replacement);
+					replace(allFactorSymbols, renamedMap, name, replacement, false);
 				} else {
 					// try again with function name for clamped variables previous math naming style
 					MathSymbolMapping mathSymbolMapping = (MathSymbolMapping) mathDescription.getSourceSymbolMapping();
@@ -863,8 +863,10 @@ void updateFromMathDescription() {
 							name = var.getName();
 							MathOverridesResolver.SymbolReplacement replacement2 = mathOverridesResolver
 									.getSymbolReplacement(name + "_init");
-							if (replacement2 != null)
-								replace(allFactorSymbols, renamedMap, name, replacement2);
+							if (replacement2 != null) {
+								// we need to force this one since it is the one that was actually used in the old maths
+								replace(allFactorSymbols, renamedMap, name, replacement2, true);
+							}
 						} 
 					}
 					if (!mathDescriptionHash.contains(name)) {
@@ -929,7 +931,7 @@ void updateFromMathDescription() {
 
 private void replace(LinkedHashSet<String> allFactorSymbols,
 		HashMap<String, MathOverridesResolver.SymbolReplacement> renamedMap, String name,
-		MathOverridesResolver.SymbolReplacement replacement) {
+		MathOverridesResolver.SymbolReplacement replacement, boolean bForceDuplicate) {
 	{
 		allFactorSymbols.addAll(replacement.getFactorSymbols());
 		Element element = overridesHash.remove(name);
@@ -945,7 +947,9 @@ private void replace(LinkedHashSet<String> allFactorSymbols,
 			};
 			element.applyFunctionToExpressions(scaleExpressionsByUnitFactor);
 			element.changeName(replacement.newName);
-			overridesHash.put(replacement.newName, element);
+			if (!overridesHash.containsKey(replacement.newName) || bForceDuplicate) {
+				overridesHash.put(replacement.newName, element);
+			}
 			if (!name.equals(replacement.newName)){
 				removeConstant(name);
 			}
