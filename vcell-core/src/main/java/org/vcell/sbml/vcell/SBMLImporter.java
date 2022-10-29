@@ -35,6 +35,7 @@ import cbit.vcell.mapping.BioEvent.BioEventParameterType;
 import cbit.vcell.mapping.BioEvent.EventAssignment;
 import cbit.vcell.mapping.BioEvent.TriggerType;
 import cbit.vcell.mapping.SimulationContext.Application;
+import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecNameScope;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.mapping.StructureMapping.StructureMappingParameter;
 import cbit.vcell.math.BoundaryConditionType;
@@ -924,8 +925,11 @@ public class SBMLImporter {
 				adjustedExpr.substituteInPlace(new Expression(TIME_SYMBOL_OVERRIDE), new Expression("t"));
 			}else {
 				SBase sbase = findSBase(sbmlModel, sbmlSymbol);
-				final SymbolTableEntry vcellSymbolTableEntry = sbmlSymbolMapping.getSte(sbase, symbolContext);
+				SymbolTableEntry vcellSymbolTableEntry = sbmlSymbolMapping.getSte(sbase, symbolContext);
 				if (vcellSymbolTableEntry != null) {
+					if (namescope instanceof SpeciesContextSpecNameScope && vcellSymbolTableEntry instanceof SpeciesContextSpecParameter) {
+						vcellSymbolTableEntry = ((SpeciesContextSpecParameter)vcellSymbolTableEntry).getSpeciesContext();
+					}
 					adjustedExpr.substituteInPlace(new Expression(sbmlSymbol), new Expression(vcellSymbolTableEntry, namescope));
 				}
 			}
@@ -2752,14 +2756,14 @@ public class SBMLImporter {
 		} catch (Exception e) {
 			throw new SBMLImportException(e.getMessage(), e);
 		}
-		
-		//Add Output Functions
-		addOutputFunctions(sbmlModel, vcBioModel, sbmlSymbolMapping, vcLogger);
 
 		// post processing
 		createAssignmentRules(sbmlModel, vcBioModel, sbmlSymbolMapping, localIssueList, issueContext, vcLogger);
 		createRateRules(sbmlModel, vcBioModel, sbmlSymbolMapping);
 		postProcessing(vcBioModel);
+		
+		//Add Output Functions
+		addOutputFunctions(sbmlModel, vcBioModel, sbmlSymbolMapping, vcLogger);
 	}
 
 	private static void addOutputFunctions(org.sbml.jsbml.Model sbmlModel, BioModel vcBioModel, SBMLSymbolMapping sbmlSymbolMapping,
@@ -2779,7 +2783,9 @@ public class SBMLImporter {
 					SymbolTableEntry ste = sbmlSymbolMapping.getSte(sbase, SymbolContext.RUNTIME);
 					try {
 						if (!bGeneratedMath){
+							vcBioModel.refreshDependencies();
 							vcBioModel.getSimulationContext(0).updateAll(false);
+							bGeneratedMath = true;
 						}
 						vcBioModel.getSimulationContext(0).getOutputFunctionContext().addOutputFunction((AnnotatedFunction) ste);
 					} catch (MappingException | PropertyVetoException e) {
