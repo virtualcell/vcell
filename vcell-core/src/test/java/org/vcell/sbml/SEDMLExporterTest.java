@@ -131,22 +131,6 @@ public class SEDMLExporterTest {
 		faults.put("biomodel_123269393.vcml", FAULT.MATHOVERRIDES_INVALID); // Kf_r7 - biomodel needs fixing
 		faults.put("biomodel_124562627.vcml", FAULT.NULL_POINTER_EXCEPTION); // CSG/analytic geometry issue
 		faults.put("biomodel_156134818.vcml", FAULT.UNKNOWN_IDENTIFIER);  // species named I conflicts with membrane parameter I
-//		faults.put("biomodel_158495696.vcml", FAULT.EXPRESSIONS_DIFFERENT); // not lumped:
-//		faults.put("biomodel_18894555.vcml",  FAULT.MATHOVERRIDES_INVALID); // EGF_EC
-//		faults.put("biomodel_201022999.vcml", FAULT.DIVIDE_BY_ZERO);
-//		faults.put("biomodel_22681429.vcml", FAULT.MATHOVERRIDES_INVALID); // binding_site_plasma_membrane
-//		faults.put("biomodel_26581203.vcml", FAULT.MATHOVERRIDES_INVALID); // r_neck
-//		faults.put("biomodel_27192717.vcml", FAULT.MATHOVERRIDES_INVALID); // PIP2Sink_PM (also, out of memory and large)
-		faults.put("biomodel_31523791.vcml", FAULT.MATHOVERRIDES_A_FUNCTION); // fails during unit conversion step
-//		faults.put("biomodel_59361239.vcml", FAULT.MATHOVERRIDES_INVALID); // fibronectin_Unnamed_compartment
-//		faults.put("biomodel_81992349.vcml", FAULT.MATHOVERRIDES_INVALID); // isoprenaline_ec
-//		faults.put("biomodel_83932776.vcml", FAULT.EXPRESSIONS_DIFFERENT); // not lumped:
-//		faults.put("biomodel_83932806.vcml", FAULT.EXPRESSIONS_DIFFERENT); // not lumped:
-//		faults.put("biomodel_89712092.vcml", FAULT.MATHOVERRIDES_INVALID); // PIP2_PM, stim_PM
-//		faults.put("biomodel_89712092_nonspatial.vcml", FAULT.MATHOVERRIDES_INVALID); // stim_PM
-//		faults.put("biomodel_91986407.vcml", FAULT.EXPRESSIONS_DIFFERENT); // not lumped: '0.0' vs ' - (-8000.0 + (7989.784637994342 * (((25.0 * ((100000.0 * x) ^ 2.0)) + (4.0 * ((100000.0 * y) ^ 2.0)) + (25.0 * ((100000.0 * z) ^ 2.0))) <= 1.0)))'
-//		faults.put("biomodel_94538871.vcml", FAULT.EXPRESSIONS_DIFFERENT); // not lumped: '(166.71320638161768 * ((3.8914002976064215E-7 * Mt_c) - (4.6388961764957475E-6 * Mt_b)))' vs '(0.5 * ((333.42641276323536 * ((3.8914002976064215E-7 * Mt_c) - (4.6388961764957475E-6 * Mt_b))) + (14.828840737985518 * ((1.5491943619711282E-4 * Mt_c) - (4.7101704829063105E-4 * Mt_b)))))'
-//		faults.put("biomodel_94891280.vcml", FAULT.MATHOVERRIDES_INVALID); // EGF
 		return faults;
 	}
 
