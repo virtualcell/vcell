@@ -50,6 +50,7 @@ import org.vcell.rest.server.SimDataValuesServerResource;
 import org.vcell.rest.server.SimulationStatusServerResource;
 import org.vcell.rest.server.SimulationTaskServerResource;
 import org.vcell.rest.server.SimulationTasksServerResource;
+import org.vcell.rest.users.ContactUsRestlet;
 import org.vcell.rest.users.EmailTokenVerifyRestlet;
 import org.vcell.rest.users.LoginFormRestlet;
 import org.vcell.rest.users.LoginRestlet;
@@ -98,6 +99,7 @@ public class VCellApiApplication extends WadlApplication {
 	public static final String NEWUSER = "newuser";
 	public static final String NEWUSER_VERIFY = "newuserverify";
 	public static final String LOSTPASSWORD = "lostpassword";
+	public static final String CONTACTUS = "contactus";
 	public static final String SWVERSION = "swversion";
 
 	public static final String BROWSER_CLIENTID = "dskeofihdslksoihe";
@@ -340,6 +342,8 @@ public class VCellApiApplication extends WadlApplication {
 		rootRouter.attach("/"+NEWUSER_VERIFY, new EmailTokenVerifyRestlet(getContext()));
 		
 		rootRouter.attach("/"+LOSTPASSWORD, new LostPasswordRestlet(getContext()));
+		
+		rootRouter.attach("/"+CONTACTUS, new ContactUsRestlet(getContext()));
 		
 	    rootRouter.attach("/"+SWVERSION, new SWVersionRestlet(getContext()));
 

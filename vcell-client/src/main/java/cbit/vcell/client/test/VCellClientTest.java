@@ -296,6 +296,7 @@ public static void main(java.lang.String[] args) {
 
 		//call in main thread, since it's quick and not necessarily thread safe
 		vcellClient = VCellClient.startClient(initialDocument, csInfo);
+		ErrorUtils.setClientServerInfo(csInfo);
 
 //		VCellClientDataService vcellClientDataService = new VCellClientDataServiceImpl(vcellClient);
 //		VCellProxyServer.startVCellVisitDataServerThread(vcellClientDataService);
