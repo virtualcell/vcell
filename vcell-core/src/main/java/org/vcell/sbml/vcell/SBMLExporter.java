@@ -110,7 +110,7 @@ public class SBMLExporter {
 	private final Map<String, UnitDefinition> vcUnitSymbolToSBMLUnit = new LinkedHashMap<>(); // to avoid repeated creation of
 
 	private final Map<Pair <String, String>, String> l2gMap = new HashMap<>();	// local to global translation map, used for reaction parameters
-	private final Map<String, String> compartmentNameToIdMap = new LinkedHashMap<> ();
+	private final Map<String, String> compartmentNameToIdMap = new LinkedHashMap<> ();	// key = vcell struct name, value = sbml struct id
 
 	// used for exporting vcell-related annotations.
 	public static final Namespace sbml_vcml_ns = Namespace.getNamespace(XMLTags.VCELL_NS_PREFIX, SBMLUtils.SBML_VCELL_NS);
@@ -266,17 +266,23 @@ private void addCompartments() throws XMLStreamException, SbmlException {
 			StructureMapping structMapping = getSelectedSimContext().getGeometryContext().getStructureMapping(structure);
 			StructureSizeSolver.updateAbsoluteStructureSizes(getSelectedSimContext(), structure, structureSize, structMapping.getSizeParameter().getUnitDefinition());
 		}
-	}catch (Exception e){
+	}catch (Exception e) {
 		throw new RuntimeException("Failed to solve for absolute compartment sizes for nonspatial application: "+e.getMessage(), e);
 	}
 	cbit.vcell.model.Structure[] vcStructures = vcModel.getStructures();
-	for (int i = 0; i < vcStructures.length; i++){
+	for (int i = 0; i < vcStructures.length; i++) {		// first we populate compartment vcell name to sbml id map
 		Compartment sbmlCompartment = sbmlModel.createCompartment();
 		String cName = vcStructures[i].getName();
 		String sid = TokenMangler.mangleToSName(cName);
 		sbmlCompartment.setId(sid);
 		sbmlCompartment.setName(cName);
 		compartmentNameToIdMap.put(cName, sid);
+	}
+	
+	for (int i = 0; i < vcStructures.length; i++) {
+		String cName = vcStructures[i].getName();
+		String sid = compartmentNameToIdMap.get(cName);
+		Compartment sbmlCompartment = sbmlModel.getCompartment(sid);
 		VCUnitDefinition sbmlSizeUnit = null;
 		StructureTopology structTopology = getSelectedSimContext().getModel().getStructureTopology();
 		Structure parentStructure = structTopology.getParentStructure(vcStructures[i]);
@@ -284,10 +290,11 @@ private void addCompartments() throws XMLStreamException, SbmlException {
 			sbmlCompartment.setSpatialDimensions(3);
 			String outside = null;
 			if (parentStructure!= null) {
-				outside = TokenMangler.mangleToSName(parentStructure.getName());
+				outside = compartmentNameToIdMap.get(parentStructure.getName());
 			}
 			if (outside != null) {
 				if (outside.length() > 0) {
+					// TODO: outside is deprecated since Level 3 Version 1
 					sbmlCompartment.setOutside(outside);
 				}
 			}
@@ -302,11 +309,11 @@ private void addCompartments() throws XMLStreamException, SbmlException {
 			if (outsideFeature != null && insideFeature != null) {
 				// add custom vcell annotation for the SBML compartment element
 				Element compartmentTopologyElement = new Element(XMLTags.SBML_VCELL_CompartmentTopologyTag, sbml_vcml_ns);
-				compartmentTopologyElement.setAttribute(XMLTags.SBML_VCELL_CompartmentTopologyTag_insideCompartmentAttr, TokenMangler.mangleToSName(insideFeature.getName()), sbml_vcml_ns);
-				compartmentTopologyElement.setAttribute(XMLTags.SBML_VCELL_CompartmentTopologyTag_outsideCompartmentAttr, TokenMangler.mangleToSName(outsideFeature.getName()), sbml_vcml_ns);
+				compartmentTopologyElement.setAttribute(XMLTags.SBML_VCELL_CompartmentTopologyTag_insideCompartmentAttr, compartmentNameToIdMap.get(insideFeature.getName()), sbml_vcml_ns);
+				compartmentTopologyElement.setAttribute(XMLTags.SBML_VCELL_CompartmentTopologyTag_outsideCompartmentAttr, compartmentNameToIdMap.get(outsideFeature.getName()), sbml_vcml_ns);
 				sbmlCompartment.getAnnotation().appendNonRDFAnnotation(XmlUtil.xmlToString(compartmentTopologyElement));
 
-				sbmlCompartment.setOutside(TokenMangler.mangleToSName(outsideFeature.getName())); // leave this in for level 2 support?
+				sbmlCompartment.setOutside(compartmentNameToIdMap.get(outsideFeature.getName())); // leave this in for level 2 support?
 				sbmlSizeUnit = sbmlExportSpec.getAreaUnits();
 				UnitDefinition unitDefn = getOrCreateSBMLUnit(sbmlSizeUnit);
 				sbmlCompartment.setUnits(unitDefn);
@@ -591,6 +598,7 @@ private void addReactions() throws SbmlException, XMLStreamException {
 	if (!l2gMap.isEmpty()){
 		throw new RuntimeException("expecting l2gMap to be initially empty");
 	}
+	int idSuffixCounter = 0;
 	ReactionSpec[] vcReactionSpecs = getSelectedSimContext().getReactionContext().getReactionSpecs();
 	for (int i = 0; i < vcReactionSpecs.length; i++){
 		if (vcReactionSpecs[i].isExcluded()) {
@@ -600,7 +608,21 @@ private void addReactions() throws SbmlException, XMLStreamException {
 		//Create sbml reaction
 		String rxnName = vcReactionStep.getName();
 		org.sbml.jsbml.Reaction sbmlReaction = sbmlModel.createReaction();
-		sbmlReaction.setId(org.vcell.util.TokenMangler.mangleToSName(rxnName));
+		String sbmlId;
+		String sbmlIdBase = org.vcell.util.TokenMangler.mangleToSName(rxnName);
+		SBase used = sbmlModel.getSBaseById(sbmlIdBase);
+		if(used == null) {
+			sbmlId = sbmlIdBase;
+		} else {			// the mangled vcell name may be already used as id by some other sbml entity
+			while(true) {	// make sure it's unique, otherwise setId will fail
+				sbmlId = sbmlIdBase + idSuffixCounter;
+				if(sbmlModel.getSBaseById(sbmlId) == null) {
+					break;
+				}
+				idSuffixCounter++;
+			}
+		}
+		sbmlReaction.setId(sbmlId);
 		
 		sbmlReaction.setName(rxnName);
 		String rxnSbmlName = vcReactionStep.getSbmlName();
@@ -799,7 +821,6 @@ private void addReactions() throws SbmlException, XMLStreamException {
 					exprFormulaNode = getFormulaFromExpression(localRateExpr);
 				}else{
 					String structure = vcReactionStep.getStructure().getName();
-//					structure = TokenMangler.mangleToSName(structure);
 					structure = compartmentNameToIdMap.get(structure);
 					exprFormulaNode = getFormulaFromExpression(Expression.mult(localRateExpr, new Expression(structure)));
 				}
@@ -882,10 +903,10 @@ private void addReactions() throws SbmlException, XMLStreamException {
 			logger.warn("WARNING: Reaction "+vcReactionSpecs[i].getDisplayName()+" is set in VCell as FAST but this attribute is no longer supported by SBML, non-VCell solvers will not simulate it in pseudo-equilibrium");
 			Element compartmentTopologyElement = new Element(XMLTags.SBML_VCELL_ReactionAttributesTag, sbml_vcml_ns);
 			if (vcReactionSpecs[i].isFast()) {
-				compartmentTopologyElement.setAttribute(XMLTags.SBML_VCELL_ReactionAttributesTag_fastAttr, TokenMangler.mangleToSName(Boolean.toString(vcReactionSpecs[i].isFast())), sbml_vcml_ns);
+				compartmentTopologyElement.setAttribute(XMLTags.SBML_VCELL_ReactionAttributesTag_fastAttr, Boolean.toString(vcReactionSpecs[i].isFast()), sbml_vcml_ns);
 			}
 			if (vcReactionStep instanceof FluxReaction){
-				compartmentTopologyElement.setAttribute(XMLTags.SBML_VCELL_ReactionAttributesTag_fluxReactionAttr, TokenMangler.mangleToSName(Boolean.toString(true)), sbml_vcml_ns);
+				compartmentTopologyElement.setAttribute(XMLTags.SBML_VCELL_ReactionAttributesTag_fluxReactionAttr, Boolean.toString(true), sbml_vcml_ns);
 			}
 			sbmlReaction.getAnnotation().appendNonRDFAnnotation(XmlUtil.xmlToString(compartmentTopologyElement));
 		}
@@ -898,7 +919,6 @@ private void addReactions() throws SbmlException, XMLStreamException {
 		if (bSpatial) {
 			// set compartment for reaction if spatial
 			String structure = vcReactionStep.getStructure().getName();
-//			structure = TokenMangler.mangleToSName(structure);
 			structure = compartmentNameToIdMap.get(structure);
 			sbmlReaction.setCompartment(structure);
 			//CORE  HAS ALT MATH true
@@ -950,7 +970,8 @@ private void addSpecies() throws XMLStreamException, SbmlException {
 			sbmlSpecies.setName(vcSpeciesContexts[i].getSbmlName());
 		}
 		// Assuming that at this point, the compartment(s) for the model are already filled in.
-		Compartment compartment = sbmlModel.getCompartment(TokenMangler.mangleToSName(vcSpeciesContexts[i].getStructure().getName()));
+		String sid = compartmentNameToIdMap.get(vcSpeciesContexts[i].getStructure().getName());
+		Compartment compartment = sbmlModel.getCompartment(sid);
 		if (compartment != null) {
 			sbmlSpecies.setCompartment(compartment.getId());
 		}
@@ -1739,7 +1760,7 @@ private VCellSBMLDoc convertToSBML() throws SbmlException, SBMLException, XMLStr
 	if (getSelectedSimulation() != null) {
 		modelName += "_" + getSelectedSimulation().getName();
 	}
-	sbmlModel = sbmlDocument.createModel(TokenMangler.mangleToSName(modelName));
+	sbmlModel = sbmlDocument.createModel(TokenMangler.mangleToSName(modelName));	// it's enough to mangle, there can be no conflict at this point
 	sbmlModel.setName(modelName);
 
 	// needed?
@@ -1951,7 +1972,7 @@ private void addGeometry() throws SbmlException {
 	for (int i = 0; i < vcStrucMappings.length; i++) {
 		StructureMapping vcStructMapping = vcStrucMappings[i];
 		String structName = vcStructMapping.getStructure().getName();
-		Compartment comp = sbmlModel.getCompartment(TokenMangler.mangleToSName(structName));
+		Compartment comp = sbmlModel.getCompartment(compartmentNameToIdMap.get(structName));
 		SpatialCompartmentPlugin cplugin = (SpatialCompartmentPlugin) comp.getPlugin(SBMLUtils.SBML_SPATIAL_NS_PREFIX);
 		GeometryClass gc = vcStructMapping.getGeometryClass();
 		if (!goodPointer(gc,GeometryClass.class,structName))  {
