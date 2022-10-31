@@ -293,7 +293,7 @@ public static UnitDefinition getSBMLUnitDefinition(VCUnitDefinition vcUnitDefn, 
 //		}
 //		System.err.println("vcUnit is "+symbols[i]+",  ucarUnit is "+ucarUnit.getSymbol());
 	}
-	sbmlUnitDefn.setId(TokenMangler.mangleToSName(vcSymbol));
+	sbmlUnitDefn.setId("Unit_"+TokenMangler.mangleToSName(vcSymbol));
 	return sbmlUnitDefn;
 //
 //	// If VC unit is DIMENSIONLESS ...
