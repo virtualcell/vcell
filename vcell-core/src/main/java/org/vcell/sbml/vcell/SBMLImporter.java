@@ -930,6 +930,9 @@ public class SBMLImporter {
 					if (namescope instanceof SpeciesContextSpecNameScope && vcellSymbolTableEntry instanceof SpeciesContextSpecParameter) {
 						vcellSymbolTableEntry = ((SpeciesContextSpecParameter)vcellSymbolTableEntry).getSpeciesContext();
 					}
+					if (namescope instanceof SpeciesContextSpecNameScope && vcellSymbolTableEntry instanceof StructureMappingParameter) {
+						vcellSymbolTableEntry = ((StructureMappingParameter)vcellSymbolTableEntry).getStructure().getStructureSize();
+					}
 					adjustedExpr.substituteInPlace(new Expression(sbmlSymbol), new Expression(vcellSymbolTableEntry, namescope));
 				}
 			}
