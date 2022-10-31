@@ -204,7 +204,9 @@ public class VcmlTestSuiteFiles {
         "biomodel_98147638.vcml",
         "biomodel_98150237.vcml",
         "biomodel_98174143.vcml",
-        "biomodel_98296160.vcml"
+        "biomodel_98296160.vcml",
+
+        "biomodel_165181964.vcml"
     };
 
     public static String[] getVcmlTestCases() {
