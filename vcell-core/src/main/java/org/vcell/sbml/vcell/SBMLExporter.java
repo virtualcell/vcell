@@ -106,7 +106,9 @@ public class SBMLExporter {
 
 	private SimulationContext vcSelectedSimContext = null;
 	private SimulationJob vcSelectedSimJob = null;
-	
+
+	private final Map<String, UnitDefinition> vcUnitSymbolToSBMLUnit = new LinkedHashMap<>(); // to avoid repeated creation of
+
 	private final Map<Pair <String, String>, String> l2gMap = new HashMap<>();	// local to global translation map, used for reaction parameters
 	private final Map<String, String> compartmentNameToIdMap = new LinkedHashMap<> ();
 
@@ -909,12 +911,13 @@ private void addReactions() throws SbmlException, XMLStreamException {
 }
 
 private UnitDefinition getOrCreateSBMLUnit(VCUnitDefinition vcUnit) throws SbmlException {
-	String mangledSymbol = "Unit_"+TokenMangler.mangleToSName(vcUnit.getSymbol());
-	UnitDefinition unitDefn = sbmlModel.getUnitDefinition(mangledSymbol);
-	if (unitDefn == null){
-		unitDefn = SBMLUnitTranslator.getSBMLUnitDefinition(vcUnit, sbmlLevel, sbmlVersion, vcBioModel.getModel().getUnitSystem());
-		unitDefn.setId(mangledSymbol);
+	if (vcUnitSymbolToSBMLUnit.containsKey(vcUnit.getSymbol())){
+		return vcUnitSymbolToSBMLUnit.get(vcUnit.getSymbol());
+	}
+	UnitDefinition unitDefn = SBMLUnitTranslator.getSBMLUnitDefinition(vcUnit, sbmlLevel, sbmlVersion, vcBioModel.getModel().getUnitSystem());
+	if (sbmlModel.getUnitDefinition(unitDefn.getId()) == null) {
 		sbmlModel.addUnitDefinition(unitDefn);
+		vcUnitSymbolToSBMLUnit.put(vcUnit.getSymbol(), unitDefn);
 	}
 	return unitDefn;
 }
