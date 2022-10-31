@@ -451,7 +451,7 @@ private void addParameters() throws ExpressionException, SbmlException, XMLStrea
 	if (vcGlobalParams != null) {
 	for (ModelParameter vcParam : vcGlobalParams) {
 		org.sbml.jsbml.Parameter sbmlParam = sbmlModel.createParameter();
-		sbmlParam.setId(vcParam.getName());
+		sbmlParam.setId(TokenMangler.mangleToSName(vcParam.getName()));
 		String sbmlName = vcParam.getSbmlName();
 		if(sbmlName != null && !sbmlName.isEmpty()) {
 			sbmlParam.setName(sbmlName);
@@ -502,7 +502,7 @@ private void addParameters() throws ExpressionException, SbmlException, XMLStrea
 	
 	for (AnnotatedFunction of : outputFunctions) {
 		org.sbml.jsbml.Parameter sbmlParam = sbmlModel.createParameter();
-		sbmlParam.setId(of.getName());
+		sbmlParam.setId(TokenMangler.mangleToSName(of.getName()));
 		sbmlParam.setName(of.getName());
 		sbmlParam.setConstant(false);
 		Expression paramExpr = new Expression(of.getExpression());
@@ -550,7 +550,7 @@ private void addParameters() throws ExpressionException, SbmlException, XMLStrea
 		}
 		
 		org.sbml.jsbml.Parameter sbmlParam = sbmlModel.createParameter();
-		sbmlParam.setId(vcParam.getName());
+		sbmlParam.setId(TokenMangler.mangleToSName(vcParam.getName()));
 		sbmlParam.setConstant(vcParam.isConstant());
 		
 		Expression reservedSymbolExpression = vcParam.getExpression();
@@ -608,21 +608,21 @@ private void addReactions() throws SbmlException, XMLStreamException {
 		//Create sbml reaction
 		String rxnName = vcReactionStep.getName();
 		org.sbml.jsbml.Reaction sbmlReaction = sbmlModel.createReaction();
-		String sbmlId;
+		String sbmlReactionId;
 		String sbmlIdBase = org.vcell.util.TokenMangler.mangleToSName(rxnName);
 		SBase used = sbmlModel.getSBaseById(sbmlIdBase);
 		if(used == null) {
-			sbmlId = sbmlIdBase;
+			sbmlReactionId = sbmlIdBase;
 		} else {			// the mangled vcell name may be already used as id by some other sbml entity
 			while(true) {	// make sure it's unique, otherwise setId will fail
-				sbmlId = sbmlIdBase + idSuffixCounter;
-				if(sbmlModel.getSBaseById(sbmlId) == null) {
+				sbmlReactionId = sbmlIdBase + idSuffixCounter;
+				if(sbmlModel.getSBaseById(sbmlReactionId) == null) {
 					break;
 				}
 				idSuffixCounter++;
 			}
 		}
-		sbmlReaction.setId(sbmlId);
+		sbmlReaction.setId(sbmlReactionId);
 		
 		sbmlReaction.setName(rxnName);
 		String rxnSbmlName = vcReactionStep.getSbmlName();
@@ -680,7 +680,7 @@ private void addReactions() throws SbmlException, XMLStreamException {
 					if (!vcKineticsParams[j].getExpression().isNumeric()) {		// NON_NUMERIC KINETIC PARAM
 						// Create new name for kinetic parameter and store it in kinParamNames, store corresponding exprs in kinParamExprs
 						// Will be used later to add this param as global.
-						String newParamName = TokenMangler.mangleToSName(vcKineticsParams[j].getName() + "_" + vcReactionStep.getName());
+						String newParamName = TokenMangler.mangleToSName(vcKineticsParams[j].getName() + "_" + sbmlReactionId);
 						kinParamNames[j] = newParamName;
 						kinParamExprs[j] = new Expression(vcKineticsParams[j].getExpression());
 					} 
@@ -701,7 +701,7 @@ private void addReactions() throws SbmlException, XMLStreamException {
 						// check if it is used in other parameters that have expressions,
 						boolean bAddedParam = false;
 						String origParamName = vcKParam.getName();
-						String newParamName = TokenMangler.mangleToSName(origParamName + "_" + vcReactionStep.getName());
+						String newParamName = TokenMangler.mangleToSName(origParamName + "_" + sbmlReactionId);
 						VCUnitDefinition vcUnit = vcKParam.getUnitDefinition();
 						for (int k = 0; k < vcKineticsParams.length; k++){
 							if (kinParamExprs[k] != null) {
@@ -722,7 +722,7 @@ private void addReactions() throws SbmlException, XMLStreamException {
 											sbmlKinParam.setUnits(unitDefn);
 										}
 										Pair<String, String> origParam = new Pair<String, String> (rxnName, origParamName);
-										l2gMap.put(origParam, newParamName);
+										l2gMap.put(origParam, newParamName);	// key = vcell param name, value = sbml unique param id
 										bAddedParam = true;
 									} else {
 										// need to get another name for param and need to change all its refereces in the other kinParam euqations.
@@ -735,7 +735,7 @@ private void addReactions() throws SbmlException, XMLStreamException {
 						// If the param hasn't been added yet, it is definitely a local param. add it to kineticLaw now.
 						if (!bAddedParam) {
 							org.sbml.jsbml.LocalParameter sbmlKinParam = sbmlKLaw.createLocalParameter();
-							sbmlKinParam.setId(origParamName);
+							sbmlKinParam.setId(TokenMangler.mangleToSName(origParamName));
 							sbmlKinParam.setValue(vcKParam.getConstantValue());
 							logger.trace("tis constant " + sbmlKinParam.isExplicitlySetConstant());
 							//sbmlKinParam.setConstant(true) ) ;
@@ -883,7 +883,7 @@ private void addReactions() throws SbmlException, XMLStreamException {
 			}
 			if (sr != null) {
 				sr.setStoichiometry(stoichiometries[rpIndex]); // use stoichiometry computed above
-				String modelUniqueName = vcReactionStep.getName() + '_'  + rxnParticpant.getName() + rolePostfix;
+				String modelUniqueName = sbmlReactionId + '_'  + rxnParticpant.getName() + rolePostfix;
 				String mangledUniqueName = TokenMangler.mangleToSName(modelUniqueName);
 				sr.setId(mangledUniqueName);
 				sr.setConstant(true); //SBML-REVIEW
@@ -965,7 +965,7 @@ private void addSpecies() throws XMLStreamException, SbmlException {
 	SpeciesContext[] vcSpeciesContexts = vcModel.getSpeciesContexts();
 	for (int i = 0; i < vcSpeciesContexts.length; i++){
 		org.sbml.jsbml.Species sbmlSpecies = sbmlModel.createSpecies();
-		sbmlSpecies.setId(vcSpeciesContexts[i].getName());
+		sbmlSpecies.setId(TokenMangler.mangleToSName(vcSpeciesContexts[i].getName()));
 		if(vcSpeciesContexts[i].getSbmlName() != null) {
 			sbmlSpecies.setName(vcSpeciesContexts[i].getSbmlName());
 		}
@@ -1387,7 +1387,7 @@ private void addEvents() {
 	if (vcBioevents != null) {
 		for (BioEvent vcEvent : vcBioevents) {
 			Event sbmlEvent = sbmlModel.createEvent();
-			sbmlEvent.setId(vcEvent.getName());
+			sbmlEvent.setId(TokenMangler.mangleToSName(vcEvent.getName()));
 			sbmlEvent.setUseValuesFromTriggerTime(vcEvent.getUseValuesFromTriggerTime());
 
 			// create trigger
@@ -1444,7 +1444,7 @@ private void addRateRules()  {
 		for (RateRule vcRateRule : vcRateRules) {
 			// set name
 			org.sbml.jsbml.RateRule sbmlRateRule = sbmlModel.createRateRule();
-			sbmlRateRule.setId(vcRateRule.getName());
+			sbmlRateRule.setId(TokenMangler.mangleToSName(vcRateRule.getName()));
 			
 			// set rate rule variable
 			sbmlRateRule.setVariable(vcRateRule.getRateRuleVar().getName());
