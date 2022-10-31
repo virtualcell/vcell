@@ -37,6 +37,7 @@ import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.mapping.StructureMapping.StructureMappingParameter;
 import cbit.vcell.mapping.spatial.SpatialObject.QuantityComponent;
 import cbit.vcell.mapping.spatial.SpatialObject.SpatialQuantity;
+import cbit.vcell.mapping.spatial.processes.SpatialProcess;
 import cbit.vcell.math.*;
 import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.model.*;
@@ -1146,7 +1147,7 @@ private void addSpecies() throws XMLStreamException, SbmlException {
 								sbmlDiffCoeff.setType(DiffusionKind.isotropic);
 								sbmlDiffCoeff.setSpeciesRef(vcSpeciesContexts[i].getName());
 								spplugin.setParamType(sbmlDiffCoeff);
-							} 
+							}
 							if ((role == SpeciesContextSpec.ROLE_BoundaryValueXm) && (ccX != null)) {
 								// set BoundaryCondn Xm element in SpatialParameterPlugin for param
 								BoundaryCondition sbmlBCXm = new BoundaryCondition();
@@ -1195,21 +1196,21 @@ private void addSpecies() throws XMLStreamException, SbmlException {
 								sbmlBCZp.setCoordinateBoundary(ccZ.getBoundaryMaximum().getId());
 								spplugin.setParamType(sbmlBCZp);
 							}
-							if (role == SpeciesContextSpec.ROLE_VelocityX) {
+							if ((role == SpeciesContextSpec.ROLE_VelocityX) && (ccX != null)) {
 								// set advectionCoeff X element in SpatialParameterPlugin for param
 								AdvectionCoefficient sbmlAdvCoeffX = new AdvectionCoefficient();
 								sbmlAdvCoeffX.setVariable(vcSpeciesContexts[i].getName());
 								sbmlAdvCoeffX.setCoordinate(CoordinateKind.cartesianX);
 								spplugin.setParamType(sbmlAdvCoeffX);
 							}
-							if (role == SpeciesContextSpec.ROLE_VelocityY) {
+							if ((role == SpeciesContextSpec.ROLE_VelocityY) && (ccY != null)){
 								// set advectionCoeff Y element in SpatialParameterPlugin for param
 								AdvectionCoefficient sbmlAdvCoeffY = new AdvectionCoefficient();
 								sbmlAdvCoeffY.setVariable(vcSpeciesContexts[i].getName());
 								sbmlAdvCoeffY.setCoordinate(CoordinateKind.cartesianY);
 								spplugin.setParamType(sbmlAdvCoeffY);
 							}
-							if (role == SpeciesContextSpec.ROLE_VelocityZ) {
+							if ((role == SpeciesContextSpec.ROLE_VelocityZ) && (ccZ != null)) {
 								// set advectionCoeff Z element in SpatialParameterPlugin for param
 								AdvectionCoefficient sbmlAdvCoeffZ = new AdvectionCoefficient();
 								sbmlAdvCoeffZ.setVariable(vcSpeciesContexts[i].getName());
@@ -2565,6 +2566,13 @@ public static void validateSimulationContextSupport(SimulationContext simulation
 	Optional<ReactionStep> lumpedReaction = Arrays.stream(simulationContext.getModel().getReactionSteps()).filter(rs -> rs.getKinetics() instanceof LumpedKinetics).findFirst();
 	if (simulationContext.getGeometry().getDimension()>0 && simulationContext.getApplicationType()==Application.NETWORK_DETERMINISTIC && lumpedReaction.isPresent()){
 		throw new UnsupportedSbmlExportException("Lumped reaction '"+lumpedReaction.get().getName()+"' in spatial application, SBML Export is not supported");
+	}
+
+	// Check if this is a spatial application with kinematics defined (i.e. moving boundary problems)
+	// The round trip validation will always fail.
+	SpatialProcess[] spatialProcesses = simulationContext.getSpatialProcesses();
+	if (simulationContext.getGeometry().getDimension()>0 && spatialProcesses!=null && spatialProcesses.length>0){
+		throw new UnsupportedSbmlExportException("Spatial processes '"+spatialProcesses[0].getName()+"' (for cell kinematics) defined in spatial application, SBML Export is not supported");
 	}
 }
 

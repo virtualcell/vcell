@@ -15,6 +15,7 @@ public class VcmlTestSuiteFiles {
         "lumped_reaction_no_size_in_rate.vcml",
         "lumped_reaction_proper_size_in_rate.vcml",
         "lumped_reaction_local_size_in_rate.vcml",
+        "__export_adv_test.vcml",
         "biomodel_100596964.vcml",
         "biomodel_100961371.vcml",
         "biomodel_101962320.vcml",
@@ -203,7 +204,9 @@ public class VcmlTestSuiteFiles {
         "biomodel_98147638.vcml",
         "biomodel_98150237.vcml",
         "biomodel_98174143.vcml",
-        "biomodel_98296160.vcml"
+        "biomodel_98296160.vcml",
+
+        "biomodel_165181964.vcml"
     };
 
     public static String[] getVcmlTestCases() {
