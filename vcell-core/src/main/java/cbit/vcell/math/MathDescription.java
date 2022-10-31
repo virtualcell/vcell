@@ -563,10 +563,23 @@ private MathCompareResults compareEquivalentCanonicalMath(MathDescription newMat
 								return new MathCompareResults(Decision.MathDifferent_DIFFERENT_VARIABLE_IN_EQUATION, msg);
 							}
 						}
+						boolean bPdeDimensionFilteringDifferent = false;
+						if (oldEqu instanceof PdeEquation && newEqu instanceof PdeEquation){
+							PdeEquation oldPde = (PdeEquation) oldEqu;
+							PdeEquation newPde = (PdeEquation) newEqu;
+							bPdeDimensionFilteringDifferent |= oldPde.getBoundaryYm()==null ^ newPde.getBoundaryYm()==null;
+							bPdeDimensionFilteringDifferent |= oldPde.getBoundaryYp()==null ^ newPde.getBoundaryYp()==null;
+							bPdeDimensionFilteringDifferent |= oldPde.getBoundaryZm()==null ^ newPde.getBoundaryZm()==null;
+							bPdeDimensionFilteringDifferent |= oldPde.getBoundaryZp()==null ^ newPde.getBoundaryZp()==null;
+							bPdeDimensionFilteringDifferent |= oldPde.getGradientY()==null ^ newPde.getGradientY()==null;
+							bPdeDimensionFilteringDifferent |= oldPde.getGradientZ()==null ^ newPde.getGradientZ()==null;
+							bPdeDimensionFilteringDifferent |= oldPde.getVelocityY()==null ^ newPde.getVelocityY()==null;
+							bPdeDimensionFilteringDifferent |= oldPde.getVelocityZ()==null ^ newPde.getVelocityZ()==null;
+						}
 						//
 						// equation was not strictly "equal" but passed all tests, replace with old equation and move on
 						//
-						if (bFoundDifference || bOdePdeMismatch){
+						if (bFoundDifference || bOdePdeMismatch || bPdeDimensionFilteringDifferent){
 							subDomainsNew[i].replaceEquation(oldEqu);
 						}else{
 							//

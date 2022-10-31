@@ -349,25 +349,26 @@ public void removeBoundaryConditionValues() {
  */
 public Vector<Expression> getExpressions(MathDescription mathDesc) {
 	Vector<Expression> list = new Vector<Expression>();
+	int dim = mathDesc.getGeometry().getDimension();
 	
-	if (getBoundaryXm()!=null)		list.addElement(getBoundaryXm());
-	if (getBoundaryXp()!=null)		list.addElement(getBoundaryXp());
-	if (getBoundaryYm()!=null)		list.addElement(getBoundaryYm());
-	if (getBoundaryYp()!=null)		list.addElement(getBoundaryYp());
-	if (getBoundaryZm()!=null)		list.addElement(getBoundaryZm());
-	if (getBoundaryZp()!=null)		list.addElement(getBoundaryZp());
+	if (getBoundaryXm()!=null)				list.addElement(getBoundaryXm());
+	if (getBoundaryXp()!=null)				list.addElement(getBoundaryXp());
+	if (dim >= 2 && getBoundaryYm()!=null)	list.addElement(getBoundaryYm());
+	if (dim >= 2 && getBoundaryYp()!=null)	list.addElement(getBoundaryYp());
+	if (dim == 3 && getBoundaryZm()!=null)	list.addElement(getBoundaryZm());
+	if (dim == 3 && getBoundaryZp()!=null)	list.addElement(getBoundaryZp());
 
-	if (getVelocityX()!=null)		list.addElement(getVelocityX());
-	if (getVelocityY()!=null)		list.addElement(getVelocityY());
-	if (getVelocityZ()!=null)		list.addElement(getVelocityZ());
+	if (getVelocityX()!=null)				list.addElement(getVelocityX());
+	if (dim >= 2 && getVelocityY()!=null)	list.addElement(getVelocityY());
+	if (dim == 3 && getVelocityZ()!=null)	list.addElement(getVelocityZ());
 	
-	if (getGradientX()!=null)		list.addElement(getGradientX());
-	if (getGradientY()!=null)		list.addElement(getGradientY());
-	if (getGradientZ()!=null)		list.addElement(getGradientZ());
+	if (getGradientX()!=null)				list.addElement(getGradientX());
+	if (dim >= 2 && getGradientY()!=null)	list.addElement(getGradientY());
+	if (dim >= 3 && getGradientZ()!=null)	list.addElement(getGradientZ());
 	
-	if (getRateExpression()!=null)		list.addElement(getRateExpression());
-	if (getInitialExpression()!=null)	list.addElement(getInitialExpression());
-	if (getExactSolution()!=null)		list.addElement(getExactSolution());
+	if (getRateExpression()!=null)			list.addElement(getRateExpression());
+	if (getInitialExpression()!=null)		list.addElement(getInitialExpression());
+	if (getExactSolution()!=null)			list.addElement(getExactSolution());
 
 	list.addElement(diffusionExp);
 
