@@ -248,7 +248,7 @@ public String getFormalDefinition(){
 
 private SimpleNode getSubstitutedFunction() throws ExpressionException {
 	if (symbolTableFunctionEntry==null){
-		throw new ExpressionException("function "+getFormalDefinition()+" is unbound");
+		throw new ExpressionBindingException("function "+getFormalDefinition()+" is unbound");
 	}
 	if (symbolTableFunctionEntry.getExpression()==null){
 		return null;
