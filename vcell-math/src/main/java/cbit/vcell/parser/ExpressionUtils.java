@@ -10,16 +10,15 @@
 
 package cbit.vcell.parser;
 
-import java.util.Arrays;
+import cbit.vcell.parser.ASTFuncNode.FunctionType;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.vcell.util.Matchable;
+import org.vcell.util.TokenMangler;
+
 import java.util.Random;
 import java.util.Vector;
 import java.util.function.BiPredicate;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import cbit.vcell.parser.ASTFuncNode.FunctionType;
-import org.vcell.util.Matchable;
 
 /**
  * Insert the type's description here.
@@ -435,6 +434,16 @@ public static boolean functionallyEquivalent(Expression exp1, Expression exp2, b
  */
 public static boolean functionallyEquivalent(Expression exp1, Expression exp2, boolean verifySameSymbols, double relativeTolerance, double absoluteTolerance) {
 	try {
+		for (FunctionInvocation fi : exp1.getFunctionInvocations((String fname, FunctionType fType) -> fType==FunctionType.USERDEFINED)){
+			Expression funcExp = fi.getFunctionExpression();
+			String newSymbol = TokenMangler.fixTokenStrict(funcExp.infix());
+			exp1.substituteInPlace(funcExp, new Expression(newSymbol));
+		}
+		for (FunctionInvocation fi : exp2.getFunctionInvocations((String fname, FunctionType fType) -> fType==FunctionType.USERDEFINED)){
+			Expression funcExp = fi.getFunctionExpression();
+			String newSymbol = TokenMangler.fixTokenStrict(funcExp.infix());
+			exp2.substituteInPlace(funcExp, new Expression(newSymbol));
+		}
 		String symbols1[] = exp1.getSymbols();
 		String symbols2[] = exp2.getSymbols();
 		if (symbols1==null && symbols2==null){
