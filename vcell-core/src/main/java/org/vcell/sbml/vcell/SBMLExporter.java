@@ -1146,7 +1146,7 @@ private void addSpecies() throws XMLStreamException, SbmlException {
 								sbmlDiffCoeff.setType(DiffusionKind.isotropic);
 								sbmlDiffCoeff.setSpeciesRef(vcSpeciesContexts[i].getName());
 								spplugin.setParamType(sbmlDiffCoeff);
-							} 
+							}
 							if ((role == SpeciesContextSpec.ROLE_BoundaryValueXm) && (ccX != null)) {
 								// set BoundaryCondn Xm element in SpatialParameterPlugin for param
 								BoundaryCondition sbmlBCXm = new BoundaryCondition();
@@ -1195,21 +1195,21 @@ private void addSpecies() throws XMLStreamException, SbmlException {
 								sbmlBCZp.setCoordinateBoundary(ccZ.getBoundaryMaximum().getId());
 								spplugin.setParamType(sbmlBCZp);
 							}
-							if (role == SpeciesContextSpec.ROLE_VelocityX) {
+							if ((role == SpeciesContextSpec.ROLE_VelocityX) && (ccX != null)) {
 								// set advectionCoeff X element in SpatialParameterPlugin for param
 								AdvectionCoefficient sbmlAdvCoeffX = new AdvectionCoefficient();
 								sbmlAdvCoeffX.setVariable(vcSpeciesContexts[i].getName());
 								sbmlAdvCoeffX.setCoordinate(CoordinateKind.cartesianX);
 								spplugin.setParamType(sbmlAdvCoeffX);
 							}
-							if (role == SpeciesContextSpec.ROLE_VelocityY) {
+							if ((role == SpeciesContextSpec.ROLE_VelocityY) && (ccY != null)){
 								// set advectionCoeff Y element in SpatialParameterPlugin for param
 								AdvectionCoefficient sbmlAdvCoeffY = new AdvectionCoefficient();
 								sbmlAdvCoeffY.setVariable(vcSpeciesContexts[i].getName());
 								sbmlAdvCoeffY.setCoordinate(CoordinateKind.cartesianY);
 								spplugin.setParamType(sbmlAdvCoeffY);
 							}
-							if (role == SpeciesContextSpec.ROLE_VelocityZ) {
+							if ((role == SpeciesContextSpec.ROLE_VelocityZ) && (ccZ != null)) {
 								// set advectionCoeff Z element in SpatialParameterPlugin for param
 								AdvectionCoefficient sbmlAdvCoeffZ = new AdvectionCoefficient();
 								sbmlAdvCoeffZ.setVariable(vcSpeciesContexts[i].getName());

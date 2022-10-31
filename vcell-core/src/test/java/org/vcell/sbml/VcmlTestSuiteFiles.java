@@ -15,6 +15,7 @@ public class VcmlTestSuiteFiles {
         "lumped_reaction_no_size_in_rate.vcml",
         "lumped_reaction_proper_size_in_rate.vcml",
         "lumped_reaction_local_size_in_rate.vcml",
+        "__export_adv_test.vcml",
         "biomodel_100596964.vcml",
         "biomodel_100961371.vcml",
         "biomodel_101962320.vcml",
