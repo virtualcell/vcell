@@ -1453,9 +1453,23 @@ private void addEvents() {
 	BioEvent[] vcBioevents = getSelectedSimContext().getBioEvents();
 	
 	if (vcBioevents != null) {
+		int idSuffixCounter = 0;
 		for (BioEvent vcEvent : vcBioevents) {
 			Event sbmlEvent = sbmlModel.createEvent();
-			sbmlEvent.setId(TokenMangler.mangleToSName(vcEvent.getName()));
+			String sbmlEventId;
+			String sbmlIdBase = TokenMangler.mangleToSName(vcEvent.getName());
+			if(sbmlModel.getSBaseById(sbmlIdBase) == null) {
+				sbmlEventId = sbmlIdBase;
+			} else {			// the mangled vcell name may be already used as id by some other sbml entity
+				while(true) {	// make sure it's unique, otherwise setId will fail
+					sbmlEventId = sbmlIdBase + idSuffixCounter;
+					if(sbmlModel.getSBaseById(sbmlEventId) == null) {
+						break;
+					}
+					idSuffixCounter++;
+				}
+			}
+			sbmlEvent.setId(sbmlEventId);
 			sbmlEvent.setUseValuesFromTriggerTime(vcEvent.getUseValuesFromTriggerTime());
 
 			// create trigger
