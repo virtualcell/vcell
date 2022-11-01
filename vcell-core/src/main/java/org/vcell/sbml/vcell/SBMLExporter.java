@@ -449,12 +449,29 @@ private void addParameters() throws ExpressionException, SbmlException, XMLStrea
 	Model vcModel = getSelectedSimContext().getModel();
 	ModelParameter[] vcGlobalParams = vcModel.getModelParameters();
 	if (vcGlobalParams != null) {
+	int idSuffixCounter = 0;
 	for (ModelParameter vcParam : vcGlobalParams) {
 		org.sbml.jsbml.Parameter sbmlParam = sbmlModel.createParameter();
-		sbmlParam.setId(TokenMangler.mangleToSName(vcParam.getName()));
+		String sbmlParameterId;
+		String sbmlIdBase = TokenMangler.mangleToSName(vcParam.getName());
+		SBase used = sbmlModel.getSBaseById(sbmlIdBase);
+		if(used == null) {
+			sbmlParameterId = sbmlIdBase;
+		} else {			// the mangled vcell name may be already used as id by some other sbml entity
+			while(true) {	// make sure it's unique, otherwise setId will fail
+				sbmlParameterId = sbmlIdBase + idSuffixCounter;
+				if(sbmlModel.getSBaseById(sbmlParameterId) == null) {
+					break;
+				}
+				idSuffixCounter++;
+			}
+		}
+		sbmlParam.setId(sbmlParameterId);
 		String sbmlName = vcParam.getSbmlName();
 		if(sbmlName != null && !sbmlName.isEmpty()) {
 			sbmlParam.setName(sbmlName);
+		} else {	// we give it vcParam name if sbml name is missing
+			sbmlParam.setName(vcParam.getName());
 		}
 		sbmlParam.setConstant(vcParam.isConstant());
 		
@@ -499,10 +516,24 @@ private void addParameters() throws ExpressionException, SbmlException, XMLStrea
 	// add output functions, if any
 	
 	List<AnnotatedFunction> outputFunctions = vcSelectedSimContext.getOutputFunctionContext().getOutputFunctionsList();
-	
+	int idSuffixCounter = 0;
 	for (AnnotatedFunction of : outputFunctions) {
 		org.sbml.jsbml.Parameter sbmlParam = sbmlModel.createParameter();
-		sbmlParam.setId(TokenMangler.mangleToSName(of.getName()));
+		String sbmlParameterId;
+		String sbmlIdBase = TokenMangler.mangleToSName(of.getName());
+		SBase used = sbmlModel.getSBaseById(sbmlIdBase);
+		if(used == null) {
+			sbmlParameterId = sbmlIdBase;
+		} else {
+			while(true) {
+				sbmlParameterId = sbmlIdBase + idSuffixCounter;
+				if(sbmlModel.getSBaseById(sbmlParameterId) == null) {
+					break;
+				}
+				idSuffixCounter++;
+			}
+		}
+		sbmlParam.setId(sbmlParameterId);
 		sbmlParam.setName(of.getName());
 		sbmlParam.setConstant(false);
 		Expression paramExpr = new Expression(of.getExpression());
@@ -528,6 +559,7 @@ private void addParameters() throws ExpressionException, SbmlException, XMLStrea
 			StructureMappingParameter voltage = ((MembraneMapping)structureMappings[i]).getInitialVoltageParameter();
 			if (voltage.getExpression().isNumeric()) {
 				org.sbml.jsbml.Parameter sbmlParam = sbmlModel.createParameter();
+				// we take no extra precaution for membrane voltage parameter
 				sbmlParam.setId(TokenMangler.mangleToSName(((Membrane)voltage.getStructure()).getMembraneVoltage().getName()));
 				sbmlParam.setConstant(true);
 				sbmlParam.setValue(voltage.getConstantValue());
@@ -550,6 +582,7 @@ private void addParameters() throws ExpressionException, SbmlException, XMLStrea
 		}
 		
 		org.sbml.jsbml.Parameter sbmlParam = sbmlModel.createParameter();
+		// no extra precautions needed for reserved parameters, not even mangling is needed
 		sbmlParam.setId(TokenMangler.mangleToSName(vcParam.getName()));
 		sbmlParam.setConstant(vcParam.isConstant());
 		
@@ -623,7 +656,6 @@ private void addReactions() throws SbmlException, XMLStreamException {
 			}
 		}
 		sbmlReaction.setId(sbmlReactionId);
-		
 		sbmlReaction.setName(rxnName);
 		String rxnSbmlName = vcReactionStep.getSbmlName();
 		if(rxnSbmlName != null && !rxnSbmlName.isEmpty()) {
