@@ -702,17 +702,21 @@ private void addReactions() throws SbmlException, XMLStreamException {
 			String[] kinParamNames = new String[vcKineticsParams.length];
 			Expression[] kinParamExprs = new Expression[vcKineticsParams.length];
 			for (int j = 0; j < vcKineticsParams.length; j++){
+				final KineticsParameter vcKParam = vcKineticsParams[j];
 				if ( true) {
 					// if expression of kinetic param does not evaluate to a double, the param value is defined by a rule.
 					// Since local reaction parameters cannot be defined by a rule, such parameters (with rules) are exported as global parameters.
-					if ( (vcKineticsParams[j].getRole() == Kinetics.ROLE_CurrentDensity && (!vcKineticsParams[j].getExpression().isZero())) || 
-							(vcKineticsParams[j].getRole() == Kinetics.ROLE_LumpedCurrent && (!vcKineticsParams[j].getExpression().isZero())) ) {
+					if ( (vcKParam.getRole() == Kinetics.ROLE_CurrentDensity && (!vcKParam.getExpression().isZero())) || 
+							(vcKParam.getRole() == Kinetics.ROLE_LumpedCurrent && (!vcKParam.getExpression().isZero())) ) {
 						throw new RuntimeException("Electric current not handled by SBML export; failed to export reaction \"" + vcReactionStep.getName() + "\" at this time");
 					}
-					if (!vcKineticsParams[j].getExpression().isNumeric()) {		// NON_NUMERIC KINETIC PARAM
+					if (!vcKParam.getExpression().isNumeric()) {		// NON_NUMERIC KINETIC PARAM
 						// Create new name for kinetic parameter and store it in kinParamNames, store corresponding exprs in kinParamExprs
 						// Will be used later to add this param as global.
-						String newParamName = TokenMangler.mangleToSName(vcKineticsParams[j].getName() + "_" + sbmlReactionId);
+						// since we already made sure that sbmlReactionId doesn't conflict with any other sid, we assume for now that 
+						// the combination with origParamName is also unique and don't check again
+						String origParamName = vcKParam.getName();
+						String newParamName = TokenMangler.mangleToSName(origParamName + "_" + sbmlReactionId);
 						kinParamNames[j] = newParamName;
 						kinParamExprs[j] = new Expression(vcKineticsParams[j].getExpression());
 					} 
@@ -721,6 +725,7 @@ private void addReactions() throws SbmlException, XMLStreamException {
 
 			// Second pass - Check if any of the numeric parameters is present in any of the non-numeric param expressions
 			// If so, these need to be added as global param (else the SBML doc will not be valid)
+			int idSuffixCounterP = 0;
 			for (int j = 0; j < vcKineticsParams.length; j++){
 				final KineticsParameter vcKParam = vcKineticsParams[j];
 				if ( (vcKParam.getRole() != Kinetics.ROLE_ReactionRate) && (vcKParam.getRole() != Kinetics.ROLE_LumpedReactionRate) ) {
@@ -733,7 +738,7 @@ private void addReactions() throws SbmlException, XMLStreamException {
 						// check if it is used in other parameters that have expressions,
 						boolean bAddedParam = false;
 						String origParamName = vcKParam.getName();
-						String newParamName = TokenMangler.mangleToSName(origParamName + "_" + sbmlReactionId);
+						String newParamName = TokenMangler.mangleToSName(origParamName + "_" + sbmlReactionId);		// same as in the for loop above
 						VCUnitDefinition vcUnit = vcKParam.getUnitDefinition();
 						for (int k = 0; k < vcKineticsParams.length; k++){
 							if (kinParamExprs[k] != null) {
@@ -767,7 +772,20 @@ private void addReactions() throws SbmlException, XMLStreamException {
 						// If the param hasn't been added yet, it is definitely a local param. add it to kineticLaw now.
 						if (!bAddedParam) {
 							org.sbml.jsbml.LocalParameter sbmlKinParam = sbmlKLaw.createLocalParameter();
-							sbmlKinParam.setId(TokenMangler.mangleToSName(origParamName));
+							String sbmlParameterId;
+							String sbmlIdBaseP = TokenMangler.mangleToSName(origParamName);
+							if(sbmlModel.getSBaseById(sbmlIdBaseP) == null) {
+								sbmlParameterId = sbmlIdBaseP;
+							} else {
+								while(true) {
+									sbmlParameterId = sbmlIdBaseP + idSuffixCounterP;
+									if(sbmlModel.getSBaseById(sbmlParameterId) == null) {
+										break;
+									}
+									idSuffixCounterP++;
+								}
+							}
+							sbmlKinParam.setId(sbmlParameterId);
 							sbmlKinParam.setValue(vcKParam.getConstantValue());
 							logger.trace("tis constant " + sbmlKinParam.isExplicitlySetConstant());
 							//sbmlKinParam.setConstant(true) ) ;
@@ -916,7 +934,7 @@ private void addReactions() throws SbmlException, XMLStreamException {
 			if (sr != null) {
 				sr.setStoichiometry(stoichiometries[rpIndex]); // use stoichiometry computed above
 				String modelUniqueName = sbmlReactionId + '_'  + rxnParticpant.getName() + rolePostfix;
-				String mangledUniqueName = TokenMangler.mangleToSName(modelUniqueName);
+				String mangledUniqueName = TokenMangler.mangleToSName(modelUniqueName);		// probably unique because of sbmlReactionId
 				sr.setId(mangledUniqueName);
 				sr.setConstant(true); //SBML-REVIEW
 				//int rcode = sr.appendNotes("<
