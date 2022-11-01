@@ -110,7 +110,8 @@ public class SBMLExporter {
 	private final Map<String, UnitDefinition> vcUnitSymbolToSBMLUnit = new LinkedHashMap<>(); // to avoid repeated creation of
 
 	private final Map<Pair <String, String>, String> l2gMap = new HashMap<>();	// local to global translation map, used for reaction parameters
-	private final Map<String, String> compartmentNameToIdMap = new LinkedHashMap<> ();	// key = vcell struct name, value = sbml struct id
+	private final Map<String, String> compartmentNameToIdMap = new LinkedHashMap<> ();		// key = vcell struct name, value = sbml struct id
+	private final Map<String, String> speciesContextNameToIdMap = new LinkedHashMap<> ();	// key = vcell sc name, value = sbml species id
 
 	// used for exporting vcell-related annotations.
 	public static final Namespace sbml_vcml_ns = Namespace.getNamespace(XMLTags.VCELL_NS_PREFIX, SBMLUtils.SBML_VCELL_NS);
@@ -1013,11 +1014,28 @@ private BoundaryConditionKind getBoundaryConditionKind(BoundaryConditionType vce
 private void addSpecies() throws XMLStreamException, SbmlException {
 	Model vcModel = vcBioModel.getModel();
 	SpeciesContext[] vcSpeciesContexts = vcModel.getSpeciesContexts();
+	int idSuffixCounter = 0;
 	for (int i = 0; i < vcSpeciesContexts.length; i++){
 		org.sbml.jsbml.Species sbmlSpecies = sbmlModel.createSpecies();
-		sbmlSpecies.setId(TokenMangler.mangleToSName(vcSpeciesContexts[i].getName()));
+		String sbmlSpeciesId;
+		String sbmlIdBase = org.vcell.util.TokenMangler.mangleToSName(vcSpeciesContexts[i].getName());
+		if(sbmlModel.getSBaseById(sbmlIdBase) == null) {
+			sbmlSpeciesId = sbmlIdBase;
+		} else {			// the mangled vcell name may be already used as id by some other sbml entity
+			while(true) {	// make sure it's unique, otherwise setId will fail
+				sbmlSpeciesId = sbmlIdBase + idSuffixCounter;
+				if(sbmlModel.getSBaseById(sbmlSpeciesId) == null) {
+					break;
+				}
+				idSuffixCounter++;
+			}
+		}
+		sbmlSpecies.setId(sbmlSpeciesId);
+		speciesContextNameToIdMap.put(vcSpeciesContexts[i].getName(), sbmlSpeciesId);
 		if(vcSpeciesContexts[i].getSbmlName() != null) {
 			sbmlSpecies.setName(vcSpeciesContexts[i].getSbmlName());
+		} else {
+			sbmlSpecies.setName(vcSpeciesContexts[i].getName());
 		}
 		// Assuming that at this point, the compartment(s) for the model are already filled in.
 		String sid = compartmentNameToIdMap.get(vcSpeciesContexts[i].getStructure().getName());
@@ -1382,7 +1400,7 @@ private org.sbml.jsbml.Parameter createSBMLParamFromSpeciesParam(SpeciesContext 
 		
 		// create SBML parameter
 		org.sbml.jsbml.Parameter param = sbmlModel.createParameter();
-		param.setId(TokenMangler.mangleToSName(spContext.getName() + "_" + scsParam.getName()));
+		param.setId(TokenMangler.mangleToSName(speciesContextNameToIdMap.get(spContext.getName()) + "_" + scsParam.getName()));
 		UnitDefinition unitDefn = getOrCreateSBMLUnit(scsParam.getUnitDefinition());
 		param.setUnits(unitDefn);
 		param.setConstant(scsParam.isConstant());
