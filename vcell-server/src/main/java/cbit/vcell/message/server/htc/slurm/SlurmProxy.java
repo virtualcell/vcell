@@ -668,8 +668,9 @@ public class SlurmProxy extends HtcProxy {
 		// lsb.write("		 fi");
 		// lsb.write("		 echo retrying $c of 10...");
 		// lsb.write("    done");
-		// lsb.write(")");
-		lsb.write("      $("+"${cmd_prefix}" + cmd+")");
+		lsb.write("      $("+"${cmd_prefix}" + cmd+")"); // swap above with this line
+		lsb.write(")");	// This line needs to stay
+		
 		lsb.write("stat=$?");
 
 		lsb.append("echo ");
