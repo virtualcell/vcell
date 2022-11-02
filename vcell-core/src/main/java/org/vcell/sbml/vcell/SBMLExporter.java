@@ -110,7 +110,6 @@ public class SBMLExporter {
 	private final Map<String, UnitDefinition> vcUnitSymbolToSBMLUnit = new LinkedHashMap<>(); // to avoid repeated creation of
 
 	private final Map<Pair <String, String>, String> l2gMap = new HashMap<>();	// local to global translation map, used for reaction parameters
-	private final Map<String, String> compartmentNameToIdMap = new LinkedHashMap<> ();		  // key = vcell struct name, value = sbml struct id
 	private final Map<String, String> symbolTableEntryNameToSidMap = new LinkedHashMap<> ();  // key = vcell ste name, value = sbml entity id
 
 	// used for exporting vcell-related annotations.
@@ -277,12 +276,12 @@ private void addCompartments() throws XMLStreamException, SbmlException {
 		String sid = TokenMangler.mangleToSName(cName);
 		sbmlCompartment.setId(sid);
 		sbmlCompartment.setName(cName);
-		compartmentNameToIdMap.put(cName, sid);
+		symbolTableEntryNameToSidMap.put(cName, sid);
 	}
 	
 	for (int i = 0; i < vcStructures.length; i++) {
 		String cName = vcStructures[i].getName();
-		String sid = compartmentNameToIdMap.get(cName);
+		String sid = symbolTableEntryNameToSidMap.get(cName);
 		Compartment sbmlCompartment = sbmlModel.getCompartment(sid);
 		VCUnitDefinition sbmlSizeUnit = null;
 		StructureTopology structTopology = getSelectedSimContext().getModel().getStructureTopology();
@@ -291,7 +290,7 @@ private void addCompartments() throws XMLStreamException, SbmlException {
 			sbmlCompartment.setSpatialDimensions(3);
 			String outside = null;
 			if (parentStructure!= null) {
-				outside = compartmentNameToIdMap.get(parentStructure.getName());
+				outside = symbolTableEntryNameToSidMap.get(parentStructure.getName());
 			}
 			if (outside != null) {
 				if (outside.length() > 0) {
@@ -310,11 +309,11 @@ private void addCompartments() throws XMLStreamException, SbmlException {
 			if (outsideFeature != null && insideFeature != null) {
 				// add custom vcell annotation for the SBML compartment element
 				Element compartmentTopologyElement = new Element(XMLTags.SBML_VCELL_CompartmentTopologyTag, sbml_vcml_ns);
-				compartmentTopologyElement.setAttribute(XMLTags.SBML_VCELL_CompartmentTopologyTag_insideCompartmentAttr, compartmentNameToIdMap.get(insideFeature.getName()), sbml_vcml_ns);
-				compartmentTopologyElement.setAttribute(XMLTags.SBML_VCELL_CompartmentTopologyTag_outsideCompartmentAttr, compartmentNameToIdMap.get(outsideFeature.getName()), sbml_vcml_ns);
+				compartmentTopologyElement.setAttribute(XMLTags.SBML_VCELL_CompartmentTopologyTag_insideCompartmentAttr, symbolTableEntryNameToSidMap.get(insideFeature.getName()), sbml_vcml_ns);
+				compartmentTopologyElement.setAttribute(XMLTags.SBML_VCELL_CompartmentTopologyTag_outsideCompartmentAttr, symbolTableEntryNameToSidMap.get(outsideFeature.getName()), sbml_vcml_ns);
 				sbmlCompartment.getAnnotation().appendNonRDFAnnotation(XmlUtil.xmlToString(compartmentTopologyElement));
 
-				sbmlCompartment.setOutside(compartmentNameToIdMap.get(outsideFeature.getName())); // leave this in for level 2 support?
+				sbmlCompartment.setOutside(symbolTableEntryNameToSidMap.get(outsideFeature.getName())); // leave this in for level 2 support?
 				sbmlSizeUnit = sbmlExportSpec.getAreaUnits();
 				UnitDefinition unitDefn = getOrCreateSBMLUnit(sbmlSizeUnit);
 				sbmlCompartment.setUnits(unitDefn);
@@ -873,7 +872,7 @@ private void addReactions() throws SbmlException, XMLStreamException {
 					exprFormulaNode = getFormulaFromExpression(localRateExpr);
 				}else{
 					String structure = vcReactionStep.getStructure().getName();
-					structure = compartmentNameToIdMap.get(structure);
+					structure = symbolTableEntryNameToSidMap.get(structure);
 					exprFormulaNode = getFormulaFromExpression(Expression.mult(localRateExpr, new Expression(structure)));
 				}
 			}
@@ -971,7 +970,7 @@ private void addReactions() throws SbmlException, XMLStreamException {
 		if (bSpatial) {
 			// set compartment for reaction if spatial
 			String structure = vcReactionStep.getStructure().getName();
-			structure = compartmentNameToIdMap.get(structure);
+			structure = symbolTableEntryNameToSidMap.get(structure);
 			sbmlReaction.setCompartment(structure);
 			//CORE  HAS ALT MATH true
 	
@@ -1039,7 +1038,7 @@ private void addSpecies() throws XMLStreamException, SbmlException {
 			sbmlSpecies.setName(vcSpeciesContexts[i].getName());
 		}
 		// Assuming that at this point, the compartment(s) for the model are already filled in.
-		String sid = compartmentNameToIdMap.get(vcSpeciesContexts[i].getStructure().getName());
+		String sid = symbolTableEntryNameToSidMap.get(vcSpeciesContexts[i].getStructure().getName());
 		Compartment compartment = sbmlModel.getCompartment(sid);
 		if (compartment != null) {
 			sbmlSpecies.setCompartment(compartment.getId());
@@ -1079,7 +1078,6 @@ private void addSpecies() throws XMLStreamException, SbmlException {
 				throw new RuntimeException(e.getMessage());
 			}
 		}
-
 		Expression initConcExp = initConc.getExpression();
 
 		try {
@@ -1549,18 +1547,10 @@ private void addAssignmentRules()  {
 	cbit.vcell.mapping.AssignmentRule[] vcAssignmentRules = getSelectedSimContext().getAssignmentRules();
 	if (vcAssignmentRules != null) {
 		for(cbit.vcell.mapping.AssignmentRule vcRule : vcAssignmentRules) {
-			SymbolTableEntry ste = vcRule.getAssignmentRuleVar();
-			if(ste instanceof ModelParameter) {
-				// for assignment rule variables that are model parameters 
-				// we already created the sbml assignment rule in addParameters()
-				// 11//01/2022 dan: the comment above no longer correct, we create it here!
-				// continue;
-			}
-			org.sbml.jsbml.AssignmentRule sbmlRule = sbmlModel.createAssignmentRule();
-//			sbmlRule.setId(vcRule.getName());
-//			sbmlRule.setName(vcRule.getName());
-			sbmlRule.setVariable(vcRule.getAssignmentRuleVar().getName());
 			Expression vcRuleExpression = vcRule.getAssignmentRuleExpression();
+			org.sbml.jsbml.AssignmentRule sbmlRule = sbmlModel.createAssignmentRule();
+			String sid = symbolTableEntryNameToSidMap.get(vcRule.getAssignmentRuleVar().getName());
+			sbmlRule.setVariable(sid);
 			ASTNode math = getFormulaFromExpression(vcRuleExpression);
 			sbmlRule.setMath(math);
 		}
@@ -1594,9 +1584,9 @@ private void addOverrideInitialAssignments() throws ExpressionException, Mapping
 		if(ste != null && ste instanceof SpeciesContextSpecParameter) {
 			SpeciesContextSpecParameter scsp = (SpeciesContextSpecParameter)ste;
 			SpeciesContext sc = scsp.getSpeciesContext();
-			name = sc.getName();
+			name = symbolTableEntryNameToSidMap.get(sc.getName());
 		} else if(ste != null && ste instanceof ModelParameter) {
-			name = ste.getName();
+			name = symbolTableEntryNameToSidMap.get(ste.getName());
 		} else if(ste != null && ste instanceof KineticsParameter) {
 			// note: if we call this before adding the reactions, we can't verify that the name we use 
 			// here will match the name we assign when we actually add the reaction
@@ -1605,7 +1595,7 @@ private void addOverrideInitialAssignments() throws ExpressionException, Mapping
 			ReactionStep rs = ks.getReactionStep();
 			name = TokenMangler.mangleToSName(kp.getName() + "_" + rs.getName());
 		} else {
-			name = ocn;
+			name = symbolTableEntryNameToSidMap.get(ocn);
 			System.out.println("Unexpected override or parameter scan entity: " + ocn);
 		}
 //		System.out.println("  symbol: " + name + ", overriden constant: " + ocn + ", expression: " + exp.infix());
@@ -2060,7 +2050,7 @@ private void addGeometry() throws SbmlException {
 	for (int i = 0; i < vcStrucMappings.length; i++) {
 		StructureMapping vcStructMapping = vcStrucMappings[i];
 		String structName = vcStructMapping.getStructure().getName();
-		Compartment comp = sbmlModel.getCompartment(compartmentNameToIdMap.get(structName));
+		Compartment comp = sbmlModel.getCompartment(symbolTableEntryNameToSidMap.get(structName));
 		SpatialCompartmentPlugin cplugin = (SpatialCompartmentPlugin) comp.getPlugin(SBMLUtils.SBML_SPATIAL_NS_PREFIX);
 		GeometryClass gc = vcStructMapping.getGeometryClass();
 		if (!goodPointer(gc,GeometryClass.class,structName))  {
@@ -2686,7 +2676,7 @@ private void translateBioModel() throws SbmlException, UnsupportedSbmlExportExce
 
 	validateSimulationContextSupport(vcSelectedSimContext);
 
-	compartmentNameToIdMap.clear();
+	symbolTableEntryNameToSidMap.clear();
 	// 'Parse' the Virtual cell model into an SBML model
 	org.sbml.jsbml.Model temp = sbmlModel;
 	addUnitDefinitions();
