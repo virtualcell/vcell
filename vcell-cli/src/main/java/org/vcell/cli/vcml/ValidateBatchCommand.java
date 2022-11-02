@@ -17,7 +17,7 @@ public class ValidateBatchCommand implements Callable<Integer> {
 
     private final static Logger logger = LogManager.getLogger(ValidateBatchCommand.class);
 
-    @Option(names = { "-i", "--inputFilePath" }, description = "directory of .omex files", required = true)
+    @Option(names = { "-i", "--inputFilePath" }, description = "directory of .vcml files", required = true)
     private File inputFilePath;
 
     @Option(names = { "-o", "--outputFilePath" }, description = "full path to output directory", required = true)
