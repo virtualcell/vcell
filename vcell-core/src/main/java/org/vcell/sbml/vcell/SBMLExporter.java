@@ -110,8 +110,8 @@ public class SBMLExporter {
 	private final Map<String, UnitDefinition> vcUnitSymbolToSBMLUnit = new LinkedHashMap<>(); // to avoid repeated creation of
 
 	private final Map<Pair <String, String>, String> l2gMap = new HashMap<>();	// local to global translation map, used for reaction parameters
-	private final Map<String, String> compartmentNameToIdMap = new LinkedHashMap<> ();		// key = vcell struct name, value = sbml struct id
-	private final Map<String, String> speciesContextNameToIdMap = new LinkedHashMap<> ();	// key = vcell sc name, value = sbml species id
+	private final Map<String, String> compartmentNameToIdMap = new LinkedHashMap<> ();		  // key = vcell struct name, value = sbml struct id
+	private final Map<String, String> symbolTableEntryNameToSidMap = new LinkedHashMap<> ();  // key = vcell ste name, value = sbml entity id
 
 	// used for exporting vcell-related annotations.
 	public static final Namespace sbml_vcml_ns = Namespace.getNamespace(XMLTags.VCELL_NS_PREFIX, SBMLUtils.SBML_VCELL_NS);
@@ -468,6 +468,7 @@ private void addParameters() throws ExpressionException, SbmlException, XMLStrea
 			}
 		}
 		sbmlParam.setId(sbmlParameterId);
+		symbolTableEntryNameToSidMap.put(vcParam.getName(), sbmlParameterId);
 		String sbmlName = vcParam.getSbmlName();
 		if(sbmlName != null && !sbmlName.isEmpty()) {
 			sbmlParam.setName(sbmlName);
@@ -1031,7 +1032,7 @@ private void addSpecies() throws XMLStreamException, SbmlException {
 			}
 		}
 		sbmlSpecies.setId(sbmlSpeciesId);
-		speciesContextNameToIdMap.put(vcSpeciesContexts[i].getName(), sbmlSpeciesId);
+		symbolTableEntryNameToSidMap.put(vcSpeciesContexts[i].getName(), sbmlSpeciesId);
 		if(vcSpeciesContexts[i].getSbmlName() != null) {
 			sbmlSpecies.setName(vcSpeciesContexts[i].getSbmlName());
 		} else {
@@ -1400,7 +1401,7 @@ private org.sbml.jsbml.Parameter createSBMLParamFromSpeciesParam(SpeciesContext 
 		
 		// create SBML parameter
 		org.sbml.jsbml.Parameter param = sbmlModel.createParameter();
-		param.setId(TokenMangler.mangleToSName(speciesContextNameToIdMap.get(spContext.getName()) + "_" + scsParam.getName()));
+		param.setId(TokenMangler.mangleToSName(symbolTableEntryNameToSidMap.get(spContext.getName()) + "_" + scsParam.getName()));
 		UnitDefinition unitDefn = getOrCreateSBMLUnit(scsParam.getUnitDefinition());
 		param.setUnits(unitDefn);
 		param.setConstant(scsParam.isConstant());
@@ -1529,7 +1530,11 @@ private void addRateRules()  {
 			sbmlRateRule.setId(TokenMangler.mangleToSName(vcRateRule.getName()));
 			
 			// set rate rule variable
-			sbmlRateRule.setVariable(vcRateRule.getRateRuleVar().getName());
+			String sid = symbolTableEntryNameToSidMap.get(vcRateRule.getRateRuleVar().getName());
+			if(sbmlModel.getSBaseById(sid) == null) {
+				throw new RuntimeException("Missing rate rule variable");
+			}
+			sbmlRateRule.setVariable(sid);
 			
 			// set rate rule math/expression
 			Expression rateRuleExpr = vcRateRule.getRateRuleExpression();
@@ -1548,7 +1553,8 @@ private void addAssignmentRules()  {
 			if(ste instanceof ModelParameter) {
 				// for assignment rule variables that are model parameters 
 				// we already created the sbml assignment rule in addParameters()
-				continue;
+				// 11//01/2022 dan: the comment above no longer correct, we create it here!
+				// continue;
 			}
 			org.sbml.jsbml.AssignmentRule sbmlRule = sbmlModel.createAssignmentRule();
 //			sbmlRule.setId(vcRule.getName());
