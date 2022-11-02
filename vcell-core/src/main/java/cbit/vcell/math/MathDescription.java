@@ -136,7 +136,7 @@ public MathDescription(MathDescription mathDescription) {
 		read_database(new CommentStringTokenizer(mathDescription.getVCML_database()));
 	}catch (MathException e){
 		e.printStackTrace(System.out);
-		throw new RuntimeException(e.getMessage());
+		throw new RuntimeException(e.getMessage(), e);
 	}
 }
 
@@ -3221,9 +3221,9 @@ if(name.equals("ATP/ADP"))
 			}
 			throw new MathFormatException("unexpected identifier "+tokenStr);
 		}		
-	}catch (Throwable e){
+	}catch (Exception e){
 		e.printStackTrace(System.out);
-		throw new MathException("line #" + tokens.lineIndex() + " Exception: "+e.getMessage());
+		throw new MathException("line #" + tokens.lineIndex() + " Exception: "+e.getMessage(), e);
 	}
 	refreshDependencies();
 	fireStateChanged();
