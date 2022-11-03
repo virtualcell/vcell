@@ -645,7 +645,7 @@ public class SlurmProxy extends HtcProxy {
 		lsb.append("echo command = ");
 		lsb.write("${cmd_prefix}" + cmd);
 
-		lsb.write("(");
+//		lsb.write("(");
 		if (ec.getLdLibraryPath()!=null){
 			lsb.write("    export LD_LIBRARY_PATH="+ec.getLdLibraryPath().path+":$LD_LIBRARY_PATH");
 		}
@@ -668,8 +668,9 @@ public class SlurmProxy extends HtcProxy {
 		// lsb.write("		 fi");
 		// lsb.write("		 echo retrying $c of 10...");
 		// lsb.write("    done");
-		lsb.write("      $("+"${cmd_prefix}" + cmd+")"); // swap above with this line
-		lsb.write(")");	// This line needs to stay
+		lsb.write("      command=${cmd_prefix}" + cmd); // swap above with this line
+		lsb.write("      $(command)"); // swap above with this line
+//		lsb.write(")");	// This line needs to stay
 		
 		lsb.write("stat=$?");
 
