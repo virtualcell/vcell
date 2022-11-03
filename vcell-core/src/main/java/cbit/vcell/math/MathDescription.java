@@ -3499,6 +3499,17 @@ public static MathCompareResults testEquivalency(MathSymbolTableFactory mathSymb
 	}
 }
 
+public void getAllExpressions(List<Expression> expressionList) {
+	for (Variable var : variableList){
+		if (var.getExpression()!=null){
+			expressionList.add(var.getExpression());
+		}
+	}
+	for (SubDomain subDomain : subDomainList){
+		subDomain.getAllExpressions(expressionList, this);
+	}
+}
+
 public boolean hasDiscontinuities() throws ExpressionException {
 	Enumeration<SubDomain> enum1 = getSubDomains();
 	while (enum1.hasMoreElements()) {		

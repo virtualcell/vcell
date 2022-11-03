@@ -10,6 +10,7 @@
 
 package cbit.vcell.math;
 import java.util.Enumeration;
+import java.util.List;
 
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
@@ -51,6 +52,9 @@ CompartmentSubDomain (Token token, MathDescription mathdesc, CommentStringTokeni
 	parseBlock(mathdesc, tokens);
 }
 
+	public void getAllExpressions(List<Expression> expressionList, MathDescription mathDescription){
+		super.getAllExpressions0(expressionList, mathDescription);
+	}
 
 @Override
 protected String startToken() {
