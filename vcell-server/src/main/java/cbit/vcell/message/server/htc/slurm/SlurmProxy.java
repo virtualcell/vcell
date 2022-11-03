@@ -694,6 +694,8 @@ public class SlurmProxy extends HtcProxy {
 			String slurm_central_singularity_dir, String slurm_local_singularity_dir, String simDataDirArchiveHost,
 			File slurm_singularity_central_filepath, String[] environmentVars) {
 		lsb.write("#BEGIN---------SlurmProxy.generateScript():slurmInitSingularity----------");
+		lsb.write("set -x");
+		lsb.newline();
 		lsb.write("TMPDIR="+slurm_tmpdir);
 		lsb.write("echo \"using TMPDIR=$TMPDIR\"");
 		lsb.write("if [ ! -e $TMPDIR ]; then mkdir -p $TMPDIR ; fi");
