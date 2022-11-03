@@ -72,7 +72,7 @@ public class VcmlValidator {
                 MathDescription originalMath = simContext.getMathDescription();
                 simContext.updateAll(false);
                 MathDescription newMath = simContext.getMathDescription();
-                MathCompareResults results = MathDescription.testEquivalency(SimulationSymbolTable.createMathSymbolTableFactory(), originalMath, newMath);
+                MathCompareResults results = MathDescription.testEquivalencyWithRename(SimulationSymbolTable.createMathSymbolTableFactory(), originalMath, newMath);
                 if (results.isEquivalent()) {
                     writeFileEntry(outputDirectory.getAbsolutePath(), inputFile.getName() + "," + simContext.getName() + ",SUCCEEDED," + i, jobLogFile, bForceLogFiles);
                 } else {

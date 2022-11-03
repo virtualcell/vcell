@@ -10,6 +10,8 @@
 
 package cbit.vcell.math;
 
+import java.util.List;
+
 public class MathCompareResults {
 
 	public enum Decision {
@@ -63,14 +65,22 @@ public class MathCompareResults {
 	
 	public final Decision decision;
 	public final String details;
-	
+	public final List<String> varsNotFoundMath1;
+	public final List<String> varsNotFoundMath2;
+
 	public MathCompareResults(Decision decision){
-		this(decision,null);
+		this(decision,null,null,null);
 	}
-	
+
 	public MathCompareResults(Decision decision, String details){
+		this(decision,details,null,null);
+	}
+
+	public MathCompareResults(Decision decision, String details, List<String> varsNotFoundMath1, List<String> varsNotFoundMath2){
 		this.decision = decision;
 		this.details = details;
+		this.varsNotFoundMath1 = varsNotFoundMath1;
+		this.varsNotFoundMath2 = varsNotFoundMath2;
 	}
 	
 	public boolean isEquivalent(){
