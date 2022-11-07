@@ -37,8 +37,7 @@ import cbit.sql.Field.SQLDataType;
 import cbit.sql.QueryHashtable;
 import cbit.sql.Table;
 import cbit.vcell.math.MathDescription;
-import cbit.vcell.modeldb.DatabasePolicySQL.JoinOp;
-import cbit.vcell.modeldb.DatabasePolicySQL.OuterJoin;
+import cbit.vcell.modeldb.DatabasePolicySQL.LeftOuterJoin;
 import cbit.vcell.solver.DataProcessingInstructions;
 import cbit.vcell.solver.MathOverrides;
 import cbit.vcell.solver.MathOverrides.Element;
@@ -74,12 +73,7 @@ private SimulationTable() {
 	super(TABLE_NAME,SimulationTable.REF_TYPE,true);
 	addFields(fields);
 }
-/**
- * This method was created in VisualAge.
- * @return cbit.vcell.geometry.GeometryInfo
- * @param rset java.sql.ResultSet
- * @param log cbit.vcell.server.SessionLog
- */
+
 public VersionInfo getInfo(ResultSet rset,Connection con) throws SQLException,DataAccessException {
 	
 	KeyValue mathRef = new KeyValue(rset.getBigDecimal(SimulationTable.table.mathRef.toString()));
@@ -108,24 +102,14 @@ public String getInfoSQL(User user,String extraConditions,String special,Databas
 	Table[] t = {vTable,userTable,swvTable};
 
 	switch (dbSyntax){
-	case ORACLE:{
-		String condition = userTable.id.getQualifiedColName() + " = " + vTable.ownerRef.getQualifiedColName() +  // links in the userTable
-		           " AND " + vTable.id.getQualifiedColName() + " = " + swvTable.versionableRef.getQualifiedColName()+"(+) ";
-		if (extraConditions != null && extraConditions.trim().length()>0){
-			condition += " AND "+extraConditions;
-		}
-	
-		sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,(OuterJoin)null,condition,special,dbSyntax);
-		return sql;
-	}
+	case ORACLE:
 	case POSTGRES:{
 		String condition = userTable.id.getQualifiedColName() + " = " + vTable.ownerRef.getQualifiedColName() + " "; // links in the userTable
-		          // " AND " + vTable.id.getQualifiedColName() + " = " + swvTable.versionableRef.getQualifiedColName()+"(+) ";
 		if (extraConditions != null && extraConditions.trim().length()>0){
 			condition += " AND "+extraConditions;
 		}
-		OuterJoin outerJoin = new OuterJoin( vTable, swvTable, JoinOp.LEFT_OUTER_JOIN, vTable.id, swvTable.versionableRef);
-		sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,outerJoin,condition,special,dbSyntax);
+		LeftOuterJoin outerJoin = new LeftOuterJoin( vTable, swvTable, vTable.id, swvTable.versionableRef);
+		sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,outerJoin,condition,special);
 		return sql;
 	}
 	default:{
@@ -225,12 +209,7 @@ public static CommentStringTokenizer getMathOverridesTokenizer(ResultSet rset, D
 	CommentStringTokenizer mathOverrideTokens = new CommentStringTokenizer(mathOverridesString);
 	return mathOverrideTokens;
 }
-/**
- * This method was created in VisualAge.
- * @return java.lang.String
- * @param key KeyValue
- * @param modelName java.lang.String
- */
+
 public String getSQLValueList(Simulation simulation,KeyValue mathKey,Version version, DatabaseSyntax dbSyntax) {
 
 	SolverTaskDescription 	solverTD 		= simulation.getSolverTaskDescription();

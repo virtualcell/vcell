@@ -26,8 +26,7 @@ import cbit.sql.Field;
 import cbit.sql.Field.SQLDataType;
 import cbit.sql.Table;
 import cbit.vcell.math.MathDescription;
-import cbit.vcell.modeldb.DatabasePolicySQL.JoinOp;
-import cbit.vcell.modeldb.DatabasePolicySQL.OuterJoin;
+import cbit.vcell.modeldb.DatabasePolicySQL.LeftOuterJoin;
 /**
  * This type was created in VisualAge.
  */
@@ -51,12 +50,6 @@ private MathDescTable() {
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return cbit.vcell.geometry.GeometryInfo
- * @param rset java.sql.ResultSet
- * @param log cbit.vcell.server.SessionLog
- */
 public VersionInfo getInfo(ResultSet rset,Connection con) throws SQLException,org.vcell.util.DataAccessException {
 	
 	KeyValue geomRef = new KeyValue(rset.getBigDecimal(MathDescTable.table.geometryRef.toString()));
@@ -86,23 +79,14 @@ public String getInfoSQL(User user,String extraConditions,String special,Databas
 	Table[] t = {vTable,userTable,swvTable};
 	
 	switch (dbSyntax){
-	case ORACLE:{
-		String condition = userTable.id.getQualifiedColName() + " = " + vTable.ownerRef.getQualifiedColName() +  // links in the userTable
-		           " AND " + vTable.id.getQualifiedColName() + " = " + swvTable.versionableRef.getQualifiedColName()+"(+) ";
-		if (extraConditions != null && extraConditions.trim().length()>0){
-			condition += " AND "+extraConditions;
-		}
-		sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,(OuterJoin)null,condition,special,dbSyntax);
-		return sql;
-	}
+	case ORACLE:
 	case POSTGRES:{
 		String condition = userTable.id.getQualifiedColName() + " = " + vTable.ownerRef.getQualifiedColName() +  " ";// links in the userTable
-		          // " AND " + vTable.id.getQualifiedColName() + " = " + swvTable.versionableRef.getQualifiedColName()+"(+) ";
 		if (extraConditions != null && extraConditions.trim().length()>0){
 			condition += " AND "+extraConditions;
 		}
-		OuterJoin outerJoin = new OuterJoin(vTable, swvTable, JoinOp.LEFT_OUTER_JOIN, vTable.id, swvTable.versionableRef);
-		sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,outerJoin,condition,special,dbSyntax);
+		LeftOuterJoin outerJoin = new LeftOuterJoin(vTable, swvTable, vTable.id, swvTable.versionableRef);
+		sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,outerJoin,condition,special);
 		return sql;
 	}
 	default:{
@@ -112,13 +96,7 @@ public String getInfoSQL(User user,String extraConditions,String special,Databas
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return cbit.vcell.math.MathDescription
- * @param user cbit.vcell.server.User
- * @param rset java.sql.ResultSet
- */
-public MathDescription getMathDescription(ResultSet rset, Connection con, DatabaseSyntax dbSyntax) 
+public MathDescription getMathDescription(ResultSet rset, Connection con, DatabaseSyntax dbSyntax)
 										throws SQLException,DataAccessException {
 
 	//
@@ -175,12 +153,6 @@ public MathDescription getMathDescription(ResultSet rset, Connection con, Databa
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return java.lang.String
- * @param key KeyValue
- * @param modelName java.lang.String
- */
 public String getSQLValueList(MathDescription mathDescription,KeyValue geomKey,Version version, DatabaseSyntax dbSyntax) {
 	switch (dbSyntax){
 	case ORACLE:{

@@ -37,7 +37,7 @@ import cbit.vcell.field.FieldUtilities;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
-import cbit.vcell.modeldb.DatabasePolicySQL.OuterJoin;
+import cbit.vcell.modeldb.DatabasePolicySQL.LeftOuterJoin;
 /**
  * This type was created in VisualAge.
  */
@@ -104,7 +104,7 @@ private MathDescription getMathDescriptionSQL(QueryHashtable dbc, Connection con
 	Table[] t = {mathDescTable,userTable};
 	String condition = mathDescTable.id.getQualifiedColName() + " = " + mathDescKey +
 			" AND " + userTable.id.getQualifiedColName() + " = " + mathDescTable.ownerRef.getQualifiedColName();
-	sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,(OuterJoin)null,condition,null,dbSyntax);
+	sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,(LeftOuterJoin)null,condition,null);
 //System.out.println(sql);
 	MathDescription mathDescription = null;
 	Statement stmt = con.createStatement();

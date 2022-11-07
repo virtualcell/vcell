@@ -247,6 +247,7 @@ public static Table[] getVCellTables() {
 		cbit.vcell.dictionary.db.EnzymeAliasTable.table,
 		cbit.vcell.dictionary.db.EnzymeReactionTable.table,
 		cbit.vcell.dictionary.db.DBSpeciesTable.table,
+		cbit.vcell.modeldb.SpecialUsersTable.table,
 		cbit.vcell.modeldb.SpeciesTable.table,
 		cbit.vcell.modeldb.SpeciesContextModelTable.table,
 		cbit.vcell.modeldb.ModelStructLinkTable.table,

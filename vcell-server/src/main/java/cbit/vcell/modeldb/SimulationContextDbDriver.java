@@ -59,7 +59,7 @@ import cbit.vcell.math.MathException;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Structure;
-import cbit.vcell.modeldb.DatabasePolicySQL.OuterJoin;
+import cbit.vcell.modeldb.DatabasePolicySQL.LeftOuterJoin;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
@@ -741,7 +741,7 @@ private SimulationContext getSimulationContextSQL(QueryHashtable dbc, Connection
 	String condition =	simContextTable.id.getQualifiedColName() + " = " + simContextKey + 
 					" AND " + 
 						simContextTable.ownerRef.getQualifiedColName() + " = " + userTable.id.getQualifiedColName();
-	sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,(OuterJoin)null,condition,null,dbSyntax);
+	sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,(LeftOuterJoin)null,condition,null);
 //System.out.println(sql);
 
 	Statement stmt = con.createStatement();

@@ -30,8 +30,7 @@ import cbit.sql.Field;
 import cbit.sql.Field.SQLDataType;
 import cbit.sql.Table;
 import cbit.vcell.biomodel.BioModelMetaData;
-import cbit.vcell.modeldb.DatabasePolicySQL.JoinOp;
-import cbit.vcell.modeldb.DatabasePolicySQL.OuterJoin;
+import cbit.vcell.modeldb.DatabasePolicySQL.LeftOuterJoin;
 import cbit.vcell.modeldb.DatabaseServerImpl.OrderBy;
 
 /**
@@ -55,13 +54,8 @@ private BioModelTable() {
 	super(TABLE_NAME,BioModelTable.REF_TYPE);
 	addFields(fields);
 }
-/**
- * This method was created in VisualAge.
- * @return cbit.vcell.math.MathDescription
- * @param user cbit.vcell.server.User
- * @param rset java.sql.ResultSet
- */
-public BioModelMetaData getBioModelMetaData(ResultSet rset, BioModelDbDriver bioModelDbDriver, Connection con,DatabaseSyntax dbSyntax) 
+
+public BioModelMetaData getBioModelMetaData(ResultSet rset, BioModelDbDriver bioModelDbDriver, Connection con,DatabaseSyntax dbSyntax)
 										throws SQLException,DataAccessException {
 
 	//
@@ -96,13 +90,8 @@ public BioModelMetaData getBioModelMetaData(ResultSet rset, BioModelDbDriver bio
 
 	return bioModelMetaData;
 }
-/**
- * This method was created in VisualAge.
- * @return cbit.vcell.math.MathDescription
- * @param user cbit.vcell.server.User
- * @param rset java.sql.ResultSet
- */
-public BioModelMetaData getBioModelMetaData(ResultSet rset, Connection con, KeyValue simContextKeys[], KeyValue simulationKeys[],DatabaseSyntax dbSyntax) 
+
+public BioModelMetaData getBioModelMetaData(ResultSet rset, Connection con, KeyValue simContextKeys[], KeyValue simulationKeys[],DatabaseSyntax dbSyntax)
 										throws SQLException,DataAccessException {
 
 	//
@@ -122,12 +111,7 @@ public BioModelMetaData getBioModelMetaData(ResultSet rset, Connection con, KeyV
 
 	return bioModelMetaData;
 }
-/**
- * This method was created in VisualAge.
- * @return cbit.vcell.geometry.GeometryInfo
- * @param rset java.sql.ResultSet
- * @param log cbit.vcell.server.SessionLog
- */
+
 public VersionInfo getInfo(ResultSet rset,Connection con,DatabaseSyntax dbSyntax) throws SQLException,org.vcell.util.DataAccessException {
 
 	KeyValue modelRef = new KeyValue(rset.getBigDecimal(table.modelRef.toString()));
@@ -139,10 +123,7 @@ public VersionInfo getInfo(ResultSet rset,Connection con,DatabaseSyntax dbSyntax
 	
 	return new org.vcell.util.document.BioModelInfo(version, modelRef, serialDbChildSummary, vcSoftwareVersion);
 }
-/**
- * This method was created in VisualAge.
- * @return java.lang.String
- */
+
 public String getInfoSQL(User user,String extraConditions,String special, DatabaseSyntax dbSyntax) {
 	
 	UserTable userTable = UserTable.table;
@@ -153,25 +134,15 @@ public String getInfoSQL(User user,String extraConditions,String special, Databa
 	Table[] t = {vTable,userTable,swvTable};
 	
 	switch (dbSyntax){
-	case ORACLE:{
-		// outer join using (+) syntax in WHERE clause.
-		String condition = userTable.id.getQualifiedColName() + " = " + vTable.ownerRef.getQualifiedColName() +  // links in the userTable
-				           " AND " + vTable.id.getQualifiedColName() + " = " + swvTable.versionableRef.getQualifiedColName()+"(+) ";
-		if (extraConditions != null && extraConditions.trim().length()>0){
-			condition += " AND "+extraConditions;
-		}
-		sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,null,condition,special,dbSyntax,true);
-		return sql;
-	}
+	case ORACLE:
 	case POSTGRES:{
 		// outer join in FROM clause explicitly, encoded in "OuterJoin" class and removed from WHERE clause.
 		String condition = userTable.id.getQualifiedColName() + " = " + vTable.ownerRef.getQualifiedColName() + " "; // links in the userTable
-				        //   " AND " + vTable.id.getQualifiedColName() + " = " + swvTable.versionableRef.getQualifiedColName()+"(+) ";
 		if (extraConditions != null && extraConditions.trim().length()>0){
 			condition += " AND "+extraConditions;
 		}
-		OuterJoin outerJoin = new OuterJoin(vTable, swvTable, JoinOp.LEFT_OUTER_JOIN, vTable.id, swvTable.versionableRef);
-		sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,outerJoin,condition,special,dbSyntax,true);
+		LeftOuterJoin outerJoin = new LeftOuterJoin(vTable, swvTable, vTable.id, swvTable.versionableRef);
+		sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,outerJoin,condition,special,true);
 		return sql;
 	}
 	default:{
@@ -179,12 +150,7 @@ public String getInfoSQL(User user,String extraConditions,String special, Databa
 	}
 	}
 }
-/**
- * This method was created in VisualAge.
- * @return java.lang.String
- * @param key KeyValue
- * @param modelName java.lang.String
- */
+
 public String getSQLValueList(BioModelMetaData bioModelMetaData, String serialBMChildSummary,Version version) {
 	StringBuffer buffer = new StringBuffer();
 	buffer.append("(");

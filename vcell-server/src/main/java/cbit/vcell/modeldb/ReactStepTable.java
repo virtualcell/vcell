@@ -36,7 +36,7 @@ import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.Structure;
 import cbit.vcell.model.VCMODL;
-import cbit.vcell.modeldb.DatabasePolicySQL.OuterJoin;
+import cbit.vcell.modeldb.DatabasePolicySQL.LeftOuterJoin;
 /**
  * This type was created in VisualAge.
  */
@@ -249,12 +249,6 @@ private String getReactTypeDbString(ReactionStep reactionStep) throws DataAccess
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (7/12/2003 2:59:27 PM)
- * @return java.lang.String
- * @param likeString java.lang.String
- */
 public String getSQLReactionStepInfosQuery(KeyValue[] rxIDs,User user, DatabaseSyntax dbSyntax) {
 	//Get Descriptive name for rxID
 	//watch for multiple copies of reactionsteps being return because of
@@ -311,7 +305,7 @@ public String getSQLReactionStepInfosQuery(KeyValue[] rxIDs,User user, DatabaseS
 		" AND "+
 		ReactStepTable.table.structRef.getQualifiedColName() + " = " + StructTable.table.id.getQualifiedColName();
 	String special = " ORDER BY " + ReactStepTable.table.id.getQualifiedColName();
-	sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,(OuterJoin)null,condition,special,dbSyntax,true);
+	sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,(LeftOuterJoin)null,condition,special,true);
 	StringBuffer sb = new StringBuffer(sql);
 	//LOBs cannot be accessed if the query uses the DISTINCT or UNIQUE keyword
 	sb.insert(7," DISTINCT ");
@@ -540,7 +534,7 @@ public String getSQLUserReactionListQuery(ReactionQuerySpec rqs, User user, Data
 		ReactStepTable.table.modelRef.getQualifiedColName() + " = " + BioModelTable.table.modelRef.getQualifiedColName();
 
 	String special = " ORDER BY " + ReactStepTable.table.id.getQualifiedColName()+" , "+BMID_NAME;
-	sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,(OuterJoin)null,condition,special,dbSyntax,true);
+	sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,(LeftOuterJoin)null,condition,special,true);
 	StringBuffer sb = new StringBuffer(sql);
 	//LOBs cannot be accessed if the query uses the DISTINCT or UNIQUE keyword
 	sb.insert(7,Table.SQL_GLOBAL_HINT+" DISTINCT ");
@@ -548,110 +542,58 @@ public String getSQLUserReactionListQuery(ReactionQuerySpec rqs, User user, Data
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return java.lang.String
- * @param key KeyValue
- * @param modelName java.lang.String
- */
 public String getSQLValueList(ReactionStep reactionStep, KeyValue modelKey, KeyValue structKey,KeyValue key, DatabaseSyntax dbSyntax) throws DataAccessException {
 
-	switch (dbSyntax){
-	case ORACLE:{
-		String	kinetics = reactionStep.getKinetics().getVCML();
-		StringBuffer buffer = new StringBuffer();
-		buffer.append("(");
-		buffer.append(key+",");
-		buffer.append("'"+getReactTypeDbString(reactionStep)+"',");
-		buffer.append(modelKey+",");
-		buffer.append(structKey+",");
-		buffer.append("EMPTY_CLOB()"+","); // keep for compatibility with release site
-		if (reactionStep.getName()==null){
-			buffer.append("null"+",");
-		}else{
-			buffer.append("'"+TokenMangler.getSQLEscapedString(reactionStep.getName())+"',");
-		}
-		try {
-			KineticsParameter chargeValenceParameter = reactionStep.getKinetics().getChargeValenceParameter();
-			int valence = 1;
-			if (chargeValenceParameter!=null){
-				valence = (int)chargeValenceParameter.getExpression().evaluateConstantSafe();
-			}
-			buffer.append(valence+",");
-		}catch (cbit.vcell.parser.ExpressionException e){
-			throw new DataAccessException("failure extracting charge carrier valence from Reaction '"+reactionStep.getName()+"': "+e.getMessage(), e);
-		}
-		buffer.append(reactionStep.getPhysicsOptions()+",");
-	
-		// New kinetics format
-		if(DbDriver.varchar2_CLOB_is_Varchar2_OK(kinetics)){
-			buffer.append("null"+","+DbDriver.INSERT_VARCHAR2_HERE+",");
-		}else{
-			buffer.append(DbDriver.INSERT_CLOB_HERE+","+"null"+",");
-		}
-	
-		buffer.append("NULL,");
-		if(reactionStep.getSbmlName() != null && reactionStep.getSbmlName().length()>0){
-			buffer.append("'"+TokenMangler.getSQLEscapedString(reactionStep.getSbmlName())+"'");
-		}else {
-			buffer.append("NULL");
-		}
-		buffer.append(")");
-		
-		return buffer.toString();
-	}
-	case POSTGRES:{
-		String	kinetics = reactionStep.getKinetics().getVCML();
-		StringBuffer buffer = new StringBuffer();
-		buffer.append("(");
-		buffer.append(key+",");
-		buffer.append("'"+getReactTypeDbString(reactionStep)+"',");
-		buffer.append(modelKey+",");
-		buffer.append(structKey+",");
-		buffer.append("null"+","); // keep for compatibility with release site
-		if (reactionStep.getName()==null){
-			buffer.append("null"+",");
-		}else{
-			buffer.append("'"+TokenMangler.getSQLEscapedString(reactionStep.getName())+"',");
-		}
-		try {
-			KineticsParameter chargeValenceParameter = reactionStep.getKinetics().getChargeValenceParameter();
-			int valence = 1;
-			if (chargeValenceParameter!=null){
-				valence = (int)chargeValenceParameter.getExpression().evaluateConstantSafe();
-			}
-			buffer.append(valence+",");
-		}catch (cbit.vcell.parser.ExpressionException e){
-			throw new DataAccessException("failure extracting charge carrier valence from Reaction '"+reactionStep.getName()+"': "+e.getMessage(), e);
-		}
-		buffer.append(reactionStep.getPhysicsOptions()+",");
-	
-		// New kinetics format
-		if(DbDriver.varchar2_CLOB_is_Varchar2_OK(kinetics)){
-			buffer.append("null"+","+DbDriver.INSERT_VARCHAR2_HERE+",");
-		}else{
-			buffer.append(DbDriver.INSERT_CLOB_HERE+","+"null"+",");
-		}
-	
-		buffer.append("NULL");
-		buffer.append(")");
-		
-		return buffer.toString();
-	}
-	default:{
+	String	kinetics = reactionStep.getKinetics().getVCML();
+	StringBuffer buffer = new StringBuffer();
+	buffer.append("(");
+	buffer.append(key+",");
+	buffer.append("'"+getReactTypeDbString(reactionStep)+"',");
+	buffer.append(modelKey+",");
+	buffer.append(structKey+",");
+	if (dbSyntax == DatabaseSyntax.ORACLE) {
+		buffer.append("EMPTY_CLOB()" + ","); // keep for compatibility with release site (re commit 1/17/2007 Schaff 6b553d0f37734a3f0b1ca7bc9c8c511813326b65)
+	}else if (dbSyntax == DatabaseSyntax.POSTGRES){
+		buffer.append("null"+",");
+	}else{
 		throw new RuntimeException("unexpected DatabaseSyntax "+dbSyntax);
 	}
+	if (reactionStep.getName()==null){
+		buffer.append("null"+",");
+	}else{
+		buffer.append("'"+TokenMangler.getSQLEscapedString(reactionStep.getName())+"',");
 	}
-	
+	try {
+		KineticsParameter chargeValenceParameter = reactionStep.getKinetics().getChargeValenceParameter();
+		int valence = 1;
+		if (chargeValenceParameter!=null){
+			valence = (int)chargeValenceParameter.getExpression().evaluateConstantSafe();
+		}
+		buffer.append(valence+",");
+	}catch (cbit.vcell.parser.ExpressionException e){
+		throw new DataAccessException("failure extracting charge carrier valence from Reaction '"+reactionStep.getName()+"': "+e.getMessage(), e);
+	}
+	buffer.append(reactionStep.getPhysicsOptions()+",");
+
+	// New kinetics format
+	if(DbDriver.varchar2_CLOB_is_Varchar2_OK(kinetics)){
+		buffer.append("null"+","+DbDriver.INSERT_VARCHAR2_HERE+",");
+	}else{
+		buffer.append(DbDriver.INSERT_CLOB_HERE+","+"null"+",");
+	}
+
+	buffer.append("NULL,");
+	if(reactionStep.getSbmlName() != null && reactionStep.getSbmlName().length()>0){
+		buffer.append("'"+TokenMangler.getSQLEscapedString(reactionStep.getSbmlName())+"'");
+	}else {
+		buffer.append("NULL");
+	}
+	buffer.append(")");
+
+	return buffer.toString();
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (7/12/2003 2:59:27 PM)
- * @return java.lang.String
- * @param likeString java.lang.String
- */
 public ReactionDescription[] getUserReactionList(java.sql.ResultSet rset)throws java.sql.SQLException {
 
 	java.util.Vector resultV = new java.util.Vector();

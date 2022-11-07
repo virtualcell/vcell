@@ -30,8 +30,7 @@ import cbit.image.VCImageInfo;
 import cbit.sql.Field;
 import cbit.sql.Field.SQLDataType;
 import cbit.sql.Table;
-import cbit.vcell.modeldb.DatabasePolicySQL.JoinOp;
-import cbit.vcell.modeldb.DatabasePolicySQL.OuterJoin;
+import cbit.vcell.modeldb.DatabasePolicySQL.LeftOuterJoin;
 /**
  * This type was created in VisualAge.
  */
@@ -57,12 +56,6 @@ private ImageTable() {
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return VCImage
- * @param rset ResultSet
- * @param log SessionLog
- */
 public VCImageCompressed getImage(ResultSet rset,Connection con,ImageDataTable imageDataTable,DatabaseSyntax dbSyntax) throws SQLException, DataAccessException{
 	
 	byte data[] = imageDataTable.getData(rset, dbSyntax);
@@ -88,12 +81,6 @@ public VCImageCompressed getImage(ResultSet rset,Connection con,ImageDataTable i
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return VCImage
- * @param rset ResultSet
- * @param log SessionLog
- */
 public VersionInfo getInfo(ResultSet rset, Connection con,DatabaseSyntax dbSyntax) throws SQLException,DataAccessException {
 
 	GIFImage gifImage = null;
@@ -141,27 +128,16 @@ public String getInfoSQL(User user,String extraConditions,String special,boolean
 	Table[] t = {iTable,userTable,eTable,bTable,swvTable};
 	
 	switch (dbSyntax){
-	case ORACLE:{
-		String condition = iTable.extentRef.getQualifiedColName() + " = " + eTable.id.getQualifiedColName() +
-				" AND " + bTable.imageRef.getQualifiedColName() + " = " + iTable.id.getQualifiedColName() +
-				" AND " + userTable.id.getQualifiedColName() + " = " + iTable.ownerRef.getQualifiedColName() +  // links in the userTable
-				" AND " + iTable.id.getQualifiedColName() + " = " + swvTable.versionableRef.getQualifiedColName()+"(+) ";
-		if (extraConditions != null && extraConditions.trim().length()>0){
-			condition += " AND "+extraConditions;
-		}
-		sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,(OuterJoin)null,condition,special,dbSyntax,bCheckPermission);
-		return sql;
-	}
+	case ORACLE:
 	case POSTGRES:{
 		String condition = iTable.extentRef.getQualifiedColName() + " = " + eTable.id.getQualifiedColName() +
 				" AND " + bTable.imageRef.getQualifiedColName() + " = " + iTable.id.getQualifiedColName() +
 				" AND " + userTable.id.getQualifiedColName() + " = " + iTable.ownerRef.getQualifiedColName() + " "; // links in the userTable
-			//	" AND " + iTable.id.getQualifiedColName() + " = " + swvTable.versionableRef.getQualifiedColName()+"(+) ";
 		if (extraConditions != null && extraConditions.trim().length()>0){
 			condition += " AND "+extraConditions;
 		}
-		OuterJoin outerJoin = new OuterJoin(iTable, swvTable, JoinOp.LEFT_OUTER_JOIN, iTable.id, swvTable.versionableRef);
-		sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,outerJoin,condition,special,dbSyntax,bCheckPermission);
+		LeftOuterJoin outerJoin = new LeftOuterJoin(iTable, swvTable, iTable.id, swvTable.versionableRef);
+		sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,outerJoin,condition,special,bCheckPermission);
 		return sql;
 	}
 	default:{
@@ -171,12 +147,6 @@ public String getInfoSQL(User user,String extraConditions,String special,boolean
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return java.lang.String
- * @param key KeyValue
- * @param modelName java.lang.String
- */
 public String getSQLValueList(VCImage image,KeyValue keySizeRef,Version version) {
 							
 	StringBuffer buffer = new StringBuffer();
