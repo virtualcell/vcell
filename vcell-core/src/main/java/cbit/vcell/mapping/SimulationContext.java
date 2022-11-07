@@ -266,7 +266,7 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 		}
 
 		@Override
-		public SymbolReplacement getSymbolReplacement(String name) {
+		public SymbolReplacement getSymbolReplacement(String name, boolean bTransformUnits) {
 			SourceSymbolMapping currentMathSymbolMapping = getMathDescription().getSourceSymbolMapping();
 			SourceSymbolMapping previousMathSymbolMapping = (prevMathDesc!=null) ? prevMathDesc.getSourceSymbolMapping() : null;
 			//
@@ -291,6 +291,9 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 											newUnit.divideBy(previousUnit),
 											bioModel.getModel().getUnitSystem().getInstance_DIMENSIONLESS(),
 											bioModel.getModel().getKMOLE());
+									if (!bTransformUnits){
+										factor = new Expression(1.0);
+									}
 									Variable replacementVariable = currentMathSymbolMapping.getVariable(newBioSte);
 									if (replacementVariable instanceof Constant) {
 										return new SymbolReplacement(replacementVariable.getName(), factor);
