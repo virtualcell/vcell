@@ -748,7 +748,7 @@ public void setMathDescription(MathDescription mathDescription) throws java.bean
 	// refresh MathOverrides
 	//
 	if (mathDescription!=null && getMathOverrides()!=null && oldValue != fieldMathDescription){
-		getMathOverrides().updateFromMathDescription();
+		getMathOverrides().updateFromMathDescription(true);
 	}
 
 	//
@@ -767,7 +767,7 @@ public void setMathOverrides(MathOverrides mathOverrides) {
 	fieldMathOverrides = mathOverrides;
 	// update overrides
 	mathOverrides.setSimulation(this);
-	mathOverrides.updateFromMathDescription();
+	mathOverrides.updateFromMathDescription(false);
 	firePropertyChange("mathOverrides", oldValue, mathOverrides);
 }
 

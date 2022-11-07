@@ -27,7 +27,7 @@ public interface MathOverridesResolver {
         }
     }
 
-    SymbolReplacement getSymbolReplacement(String name);
+    SymbolReplacement getSymbolReplacement(String name, boolean bTransformUnits);
 
     /**
      * @return set of constant names belonging to physical constants and unit conversions

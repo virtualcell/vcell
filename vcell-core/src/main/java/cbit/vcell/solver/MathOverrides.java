@@ -221,7 +221,7 @@ public MathOverrides(Simulation simulation, MathOverrides mathOverrides) {
 			getOverridesHash().put(constantName, new MathOverrides.Element(element.name,element.spec));
 		}
 	}
-	updateFromMathDescription();
+	updateFromMathDescription(false);
 }
 
 
@@ -804,7 +804,7 @@ private static java.util.Vector<Element> toVector (java.util.Enumeration<Element
 	return (vector);
 }
 
-void updateFromMathDescription() {
+void updateFromMathDescription(boolean bTransformUnits) {
 	MathDescription mathDescription = getSimulation().getMathDescription();
 	//
 	// get list of names of constants in this math
@@ -851,7 +851,7 @@ void updateFromMathDescription() {
 		if(so != null) {
 			MathOverridesResolver mathOverridesResolver = so.getMathOverridesResolver();
 			if (mathOverridesResolver != null) {
-				MathOverridesResolver.SymbolReplacement replacement = mathOverridesResolver.getSymbolReplacement(name);
+				MathOverridesResolver.SymbolReplacement replacement = mathOverridesResolver.getSymbolReplacement(name, bTransformUnits);
 				if (replacement != null) {
 					replace(allFactorSymbols, renamedMap, name, replacement, false);
 				} else {
@@ -862,7 +862,7 @@ void updateFromMathDescription() {
 						if (var != null && var.isConstant()) {
 							name = var.getName();
 							MathOverridesResolver.SymbolReplacement replacement2 = mathOverridesResolver
-									.getSymbolReplacement(name + "_init");
+									.getSymbolReplacement(name + "_init", bTransformUnits);
 							if (replacement2 != null) {
 								// we need to force this one since it is the one that was actually used in the old maths
 								replace(allFactorSymbols, renamedMap, name, replacement2, true);

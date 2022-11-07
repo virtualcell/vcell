@@ -1,20 +1,18 @@
 package cbit.vcell.biomodel;
 
 import cbit.vcell.mapping.MappingException;
+import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.MathCompareResults;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.matrix.MatrixException;
-import cbit.vcell.model.Model;
-import cbit.vcell.model.ModelException;
-import cbit.vcell.model.ModelUnitSystem;
+import cbit.vcell.model.*;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.MathOverrides;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationSymbolTable;
-import cbit.vcell.units.UnitSystemProvider;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitSystem;
 import cbit.vcell.xml.XMLSource;
@@ -25,12 +23,12 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.vcell.util.Pair;
 
+import java.beans.PropertyVetoException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -57,6 +55,86 @@ public class ModelUnitConverterTest {
             Expression factor = ModelUnitConverter.getDimensionlessScaleFactor(nearly_dimensionless_unit, dimensionless, KMOLE);
             Assert.assertEquals(expectedFactor.flattenSafe().infix(), factor.flattenSafe().infix());
         }
+    }
+
+    @Test
+    public void test_MathOverrides_unit_factors_are_idempotent() throws IOException, XmlParseException, ExpressionException, MatrixException, ModelException, MathException, MappingException, PropertyVetoException {
+        final double Kf_value_orig = 2.0;
+        final double Kr_value_orig = 3.0;
+        final double Kf_value_override_orig = 22.0;
+        final double Kr_value_override_orig = 33.0;
+
+        BioModel orig_biomodel = new BioModel(null);
+        Model orig_model = orig_biomodel.getModel();
+        Membrane membrane = orig_model.addMembrane("membrane");
+        Feature cytosol = orig_model.addFeature("cytosol");
+        Species species_m = orig_model.addSpecies(new Species("m",""));
+        Species species_c = orig_model.addSpecies(new Species("c",""));
+        SpeciesContext m0 = orig_model.addSpeciesContext(new SpeciesContext(species_m,membrane));
+        SpeciesContext c0 = orig_model.addSpeciesContext(new SpeciesContext(species_c,cytosol));
+        SimpleReaction membraneReaction = new SimpleReaction(orig_model, membrane, "r0", true, "notes");
+        orig_model.addReactionStep(membraneReaction);
+
+        membraneReaction.addReactant(m0,1);
+        membraneReaction.addProduct(c0,1);
+        Kinetics.KineticsParameter kf_param_orig = membraneReaction.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_KForward);
+        Kinetics.KineticsParameter kr_param_orig = membraneReaction.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_KReverse);
+        kf_param_orig.setExpression(new Expression(Kf_value_orig));
+        kr_param_orig.setExpression(new Expression(Kr_value_orig));
+        Assert.assertEquals("s-1", kf_param_orig.getUnitDefinition().getSymbol());
+        Assert.assertEquals("molecules.um-2.s-1.uM-1", kr_param_orig.getUnitDefinition().getSymbol());
+
+        SimulationContext orig_simContext = orig_biomodel.addNewSimulationContext("app1", SimulationContext.Application.NETWORK_DETERMINISTIC);
+        orig_biomodel.updateAll(false);
+        MathDescription orig_math = orig_simContext.getMathDescription();
+        Simulation orig_sim = new Simulation(orig_math, orig_simContext);
+        orig_simContext.addSimulation(orig_sim);
+        Constant Kf_const = (Constant) orig_math.getVariable("Kf");
+        Constant Kr_const = (Constant) orig_math.getVariable("Kr");
+        Assert.assertNotNull(Kf_const);
+        Assert.assertNotNull(Kr_const);
+        orig_sim.getMathOverrides().putConstant(new Constant(Kf_const.getName(), new Expression(Kf_value_override_orig)));
+        orig_sim.getMathOverrides().putConstant(new Constant(Kr_const.getName(), new Expression(Kr_value_override_orig)));
+
+        // change unit system
+        ModelUnitSystem modelUnitSystem = getModelUnitSystem_SBML_uM_um3();
+        BioModel bioModel_sbmlUnits = ModelUnitConverter.createBioModelWithNewUnitSystem(orig_biomodel, modelUnitSystem);
+        Model model_sbmlUnits = bioModel_sbmlUnits.getModel();
+
+        final double Kf_value_sbmlUnits = 2.0;
+        final double Kr_value_sbmlUnits = 3.0;
+        final double Kf_value_override_sbmlUnits = 22.0;
+        final double Kr_value_override_sbmlUnits = 33.0;
+
+        // test unit transform on model parameters (Kf, Kr)
+        Kinetics.KineticsParameter Kf_param_sbmlUnits = model_sbmlUnits.getReactionSteps(0).getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_KForward);
+        Kinetics.KineticsParameter Kr_param_sbmlUnits = model_sbmlUnits.getReactionSteps(0).getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_KReverse);
+        Assert.assertEquals("s-1", Kf_param_sbmlUnits.getUnitDefinition().getSymbol());
+        Assert.assertEquals("um.s-1", Kr_param_sbmlUnits.getUnitDefinition().getSymbol());
+        Assert.assertEquals("Kf_sbmlUnits value doesn't match", ""+Kf_value_sbmlUnits, Kf_param_sbmlUnits.getExpression().infix());
+        Assert.assertEquals("Kr_sbmlUnits value doesn't match", "("+Kr_value_sbmlUnits+" * KMOLE)", Kr_param_sbmlUnits.getExpression().infix());
+
+        // test unit transform on math constants
+        Simulation sim_sbmlUnits = bioModel_sbmlUnits.getSimulation(0);
+        Constant Kf_const_sbmlUnits = (Constant) sim_sbmlUnits.getMathDescription().getVariable("Kf");
+        Constant Kr_const_sbmlUnits = (Constant) sim_sbmlUnits.getMathDescription().getVariable("Kr");
+        Assert.assertEquals("Kf_const_sbmlUnits value doesn't match", ""+Kf_value_sbmlUnits, Kf_const_sbmlUnits.getExpression().infix());
+        Assert.assertEquals("Kr_const_sbmlUnits value doesn't match", "("+Kr_value_sbmlUnits+" * KMOLE)", Kr_const_sbmlUnits.getExpression().infix());
+
+        // test unit transform on math overrides
+        Expression Kf_override_sbmlUnits = sim_sbmlUnits.getMathOverrides().getActualExpression("Kf", 0);
+        Expression Kr_override_sbmlUnits = sim_sbmlUnits.getMathOverrides().getActualExpression("Kr", 0);
+        Assert.assertEquals("Kf_override_sbmlUnits value doesn't match", ""+Kf_value_override_sbmlUnits, Kf_override_sbmlUnits.infix());
+        Assert.assertEquals("Kr_override_sbmlUnits value doesn't match", "("+Kr_value_override_sbmlUnits+" * KMOLE)", Kr_override_sbmlUnits.infix());
+
+        //
+        // test that math overrides for copied model are unchanged
+        //
+        Simulation copied_sim = bioModel_sbmlUnits.getSimulationContext(0).copySimulation(sim_sbmlUnits);
+        Expression Kf_override_sbmlUnits_copy = copied_sim.getMathOverrides().getActualExpression("Kf", 0);
+        Expression Kr_override_sbmlUnits_copy = copied_sim.getMathOverrides().getActualExpression("Kr", 0);
+        Assert.assertEquals("Kf_override_sbmlUnits value doesn't match", ""+Kf_value_override_sbmlUnits, Kf_override_sbmlUnits_copy.infix());
+        Assert.assertEquals("Kr_override_sbmlUnits value doesn't match", "("+Kr_value_override_sbmlUnits+" * KMOLE)", Kr_override_sbmlUnits_copy.infix());
     }
 
     @Test
