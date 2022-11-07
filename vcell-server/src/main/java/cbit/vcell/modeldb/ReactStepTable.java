@@ -567,7 +567,7 @@ public String getSQLValueList(ReactionStep reactionStep, KeyValue modelKey, KeyV
 		KineticsParameter chargeValenceParameter = reactionStep.getKinetics().getChargeValenceParameter();
 		int valence = 1;
 		if (chargeValenceParameter!=null){
-			valence = (int)chargeValenceParameter.getExpression().evaluateConstant();
+			valence = (int)chargeValenceParameter.getExpression().evaluateConstantSafe();
 		}
 		buffer.append(valence+",");
 	}catch (cbit.vcell.parser.ExpressionException e){
