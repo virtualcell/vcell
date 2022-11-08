@@ -157,7 +157,7 @@ public class TransformMassActions {
 		}
 	}
 
-	public TransformedReaction transformOne(ReactionStep origRS)throws PropertyVetoException, IOException, ClassNotFoundException {
+	public TransformedReaction transformOne(ReactionStep origRS)throws PropertyVetoException, IOException {
 		TransformedReaction transformedRS = new TransformedReaction();
 		
 		if (origRS instanceof SimpleReaction) {
