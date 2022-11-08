@@ -166,6 +166,8 @@ public class VcmlTestSuiteFiles {
         "biomodel_84985561.vcml",
         "biomodel_89712092.vcml",
         "biomodel_89712092_nonspatial.vcml",
+        
+        "biomodel_52337206_nonspatial.vcml", // MassActionSolver
 
         "biomodel_91133993.vcml",
         "biomodel_91134220.vcml",
