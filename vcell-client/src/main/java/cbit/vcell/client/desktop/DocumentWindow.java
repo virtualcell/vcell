@@ -37,6 +37,7 @@ import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.EventObject;
 import java.util.Hashtable;
 import java.util.prefs.Preferences;
 
@@ -66,6 +67,7 @@ import org.vcell.client.logicalwindow.LWTopFrame;
 import org.vcell.documentation.VcellHelpViewer;
 import org.vcell.imagej.ImageJHelper;
 import org.vcell.util.BeanUtils;
+import org.vcell.util.ProgressDialogListener;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.UtilCancelException;
 import org.vcell.util.document.User;
@@ -76,6 +78,7 @@ import org.vcell.util.document.VCellSoftwareVersion;
 import org.vcell.util.document.VersionFlag;
 import org.vcell.util.gui.AsynchProgressPopup;
 import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.ProgressDialog;
 import org.vcell.util.gui.SimpleUserMessage;
 import org.vcell.util.gui.VCFileChooser;
 import org.vcell.util.gui.VCellIcons;
@@ -103,6 +106,8 @@ import cbit.vcell.desktop.LoginDelegate;
 import cbit.vcell.desktop.LoginManager;
 import cbit.vcell.mapping.MathMappingCallbackTaskAdapter;
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
+import cbit.vcell.model.ReactionStep;
+import cbit.vcell.model.TransformMassActions;
 import cbit.vcell.model.gui.TransformMassActionPanel;
 import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.resource.PropertyLoader;
@@ -3022,31 +3027,36 @@ public void showTransMADialog()
 	hashTable.put("biomodel", biomodel);
 	hashTable.put("window", this);
 	
+	final String CancelKeyString = "CancelKeyString";
 	AsynchClientTask task1 = new AsynchClientTask("transform", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			BioModel biomodel = (BioModel)hashTable.get("biomodel");
 			if(biomodel == null) {
 				throw new RuntimeException("Biomodel cannot be null");
 			}
-			AsynchProgressPopup progressWaitPopup = new AsynchProgressPopup(transMAPanel,
-					"Wait...", "Long computation", new Thread(), true, false,
-					true,null);
-			progressWaitPopup.startKeepOnTop();
+//			TransformMassActions transformMassActions = new TransformMassActions();
+//			for (ReactionStep reactionStep : biomodel.getModel().getReactionSteps()) {
+//				// check if I should kill myself
+//				transformMassActions.transformOne(reactionStep);
+//			}
+			try {
 			transMAPanel.setModel(biomodel.getModel());
-			progressWaitPopup.stop();
+			// transMAPanel.setTransformation(transformMassActions);
+			} catch(Throwable e) {
+				System.out.println(e.getMessage());
+			}
+			System.out.println("done");
 		}
 	};
+	
 	AsynchClientTask task2 = new AsynchClientTask("starting exporting", AsynchClientTask.TASKTYPE_SWING_NONBLOCKING) {
-
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			
+			// if we hit Cancel on the ProgressDialog, this task won't get executed
 			Component requester = (Component)hashTable.get("window");
 			int choice = DialogUtils.showComponentOKCancelDialog(requester, transMAPanel, "Transform to Stochastic Capable Model");
-			if(choice == JOptionPane.OK_OPTION)
-			{
+			if(choice == JOptionPane.OK_OPTION) {
 				try {
 					transMAPanel.saveTransformedReactions();
 				} catch(Exception e) {
@@ -3055,8 +3065,25 @@ public void showTransMADialog()
 			}
 		}
 	};
-
-	ClientTaskDispatcher.dispatch(this, hashTable, new AsynchClientTask[] { task1, task2 });
+	
+	AsynchClientTask[] tasks = new AsynchClientTask[] { task1, task2 };
+	ProgressDialog customDialog = null;
+	boolean bShowProgressPopup = true;
+	boolean bKnowProgress = false;
+	boolean cancelable = true;
+	ProgressDialogListener progressDialogListener = new ProgressDialogListener() {
+		public void cancelButton_actionPerformed(EventObject newEvent) {
+			try {
+				// here we should kill/interrupt the thread 
+				System.out.println("Cancel button pressed");
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	};
+	boolean bInputBlocking = true;		// default: false
+	ClientTaskDispatcher.dispatch(this, hashTable, tasks, customDialog,
+			bShowProgressPopup, bKnowProgress, cancelable, progressDialogListener, bInputBlocking);
 }
 
 public void showViewJobsDialog() {
