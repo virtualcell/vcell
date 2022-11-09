@@ -163,6 +163,16 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 				return false;		// disable Kr if rule is not reversible
 			}
 		}
+		if(kp.getRole() == Kinetics.ROLE_KReverse) {
+			if(reactionStep.getNumProducts() == 0) {
+				return false;
+			}
+		}
+		if(kp.getRole() == Kinetics.ROLE_KForward) {
+			if(reactionStep.getNumReactants() == 0) {
+				return false;
+			}
+		}
 	}
 	switch (columnIndex) {
 	case COLUMN_NAME:
