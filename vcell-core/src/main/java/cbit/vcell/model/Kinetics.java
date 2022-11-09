@@ -53,7 +53,7 @@ java.io.Serializable, IssueSource, Relatable
 
 	public static final String PROPERTY_NAME_KINETICS_PARAMETERS = "kineticsParameters";
 	private String name;
-	private final ReactionStep reactionStep;
+	private ReactionStep reactionStep;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
 	private Kinetics.KineticsParameter[] fieldKineticsParameters = new KineticsParameter[0];
@@ -2449,6 +2449,11 @@ private void onProxyParameterNameChange(String oldName, String newName) throws P
 	if (newParameters != null) {
 		setKineticsParameters(newParameters);
 	}
+}
+
+
+public void setReactionStep(ReactionStep reactionStep) {
+	this.reactionStep = reactionStep;
 }
 
 }
