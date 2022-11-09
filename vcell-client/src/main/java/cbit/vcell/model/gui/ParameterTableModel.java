@@ -164,11 +164,11 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 			}
 		}
 		if(kp.getRole() == Kinetics.ROLE_KReverse) {
-			if(reactionStep.getNumProducts() == 0) {
+			if(reactionStep.getNumProducts() == 0) {	// disable Kr for mass action creation of the reactant (no products)
 				return false;
 			}
 		}
-		if(kp.getRole() == Kinetics.ROLE_KForward) {
+		if(kp.getRole() == Kinetics.ROLE_KForward) {	// disable Kf for mass action degradation of the product (no reactants)
 			if(reactionStep.getNumReactants() == 0) {
 				return false;
 			}
