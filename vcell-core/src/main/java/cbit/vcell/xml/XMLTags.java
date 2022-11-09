@@ -380,6 +380,10 @@ public class XMLTags {
     public final static String SBML_VCELL_OutputFunctionTag = "OutputFunction";
     public final static String SBML_VCELL_OutputFunctionTag_varTypeAttr = "VariableType";
     public final static String SBML_VCELL_OutputFunctionTag_domainAttr = "Domain";
+    // to properly roundtrip renamed/rescaled authoritative rate parameters
+    public final static String SBML_VCELL_RateParamTag = "RateParameter";
+    public final static String SBML_VCELL_RateParamTag_parRoleAttr = "ParameterRole";
+    public final static String SBML_VCELL_RateParamTag_rxIDAttr = "ReactionID";
     // I erased the tag of Unsteadytag
     public final static String SteadyTag = "Steady";
     //I erased the tag of Steadytag
