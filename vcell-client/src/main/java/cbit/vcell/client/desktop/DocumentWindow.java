@@ -86,6 +86,8 @@ import org.vcell.util.gui.VCellIcons;
 import org.vcell.util.gui.exporter.FileFilters;
 import org.vcell.util.importer.PathwayImportPanel.PathwayImportOption;
 
+import com.install4j.api.context.UserCanceledException;
+
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.VCMetaData;
@@ -3053,7 +3055,7 @@ public void showTransMADialog()
 					TransformedReaction[] transReactionSteps = transformMassActions.getTransformedReactionSteps();
 					boolean[] isTransformable = transformMassActions.getIsTransformable();
 
-					transReactionSteps[i] = transformMassActions.transformOne(origReactions[i]);	// here all the work is done
+					transReactionSteps[i] = transformMassActions.transformOne(origReactions[origReactions.length-1-i]);	// here all the work is done
 					if (transReactionSteps[i].getTransformType() == TransformedReaction.TRANSFORMABLE) {
 						isTransformable[i] = true;
 					} else {
@@ -3104,10 +3106,10 @@ public void showTransMADialog()
 			}
 		}
 	};
-	boolean bInputBlocking = true;		// default: false
-	progressDialog.addProgressDialogListener(progressDialogListener);
+	boolean bInputBlocking = false;		// default: false
+//	progressDialog.addProgressDialogListener(progressDialogListener);
 	ClientTaskDispatcher.dispatch(this, hashTable, tasks, progressDialog,
-			bShowProgressPopup, bKnowProgress, cancelable, null, bInputBlocking);
+			bShowProgressPopup, bKnowProgress, cancelable, progressDialogListener, bInputBlocking);
 }
 
 public void showViewJobsDialog() {
