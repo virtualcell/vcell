@@ -25,6 +25,7 @@ import javax.swing.table.TableColumn;
 import org.vcell.util.gui.ScrollTable;
 
 import cbit.vcell.model.Model;
+import cbit.vcell.model.TransformMassActions;
 
 /**
  * The panel is used to accommodate the TransformMassActionTable, which 
@@ -142,6 +143,10 @@ public class TransformMassActionPanel extends JPanel implements ActionListener {
 		{
 			throw new Exception(e.getMessage());
 		}
+	}
+	
+	public void setTransformation(TransformMassActions transformMassActions) {
+		getTableModel().setTransformation(transformMassActions);
 	}
 	
 }

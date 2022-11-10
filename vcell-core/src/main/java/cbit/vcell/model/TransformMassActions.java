@@ -10,6 +10,7 @@
 
 package cbit.vcell.model;
 
+import java.awt.Component;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.util.Vector;
@@ -156,6 +157,11 @@ public class TransformMassActions {
 			}
 		}
 	}
+	
+	public void initializeTransformation(ReactionStep[] origReactions) {
+		transReactionSteps = new TransformedReaction[origReactions.length];
+		isTransformable = new boolean[origReactions.length];
+	}
 
 	public TransformedReaction transformOne(ReactionStep origRS)throws PropertyVetoException, IOException {
 		TransformedReaction transformedRS = new TransformedReaction();
@@ -260,5 +266,5 @@ public class TransformMassActions {
 	public boolean[] getIsTransformable() {
 		return isTransformable;
 	}
-
+	
 }
