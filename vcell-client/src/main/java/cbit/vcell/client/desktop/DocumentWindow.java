@@ -127,7 +127,6 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
 	private final static String HelpViewerContextObject = "HelpViewerWindow";  // this object instance is the context for the help ChildWindow
 
 	private final ChildWindowManager childWindowManager;
-	transient boolean isStopped;
 
 	private JMenuItem ivjAbout_BoxMenuItem = null;
 	private JMenuItem ivjChange_UserMenuItem = null;
@@ -3017,11 +3016,9 @@ public void showTransMADialog()
 	JTextArea ta = new JTextArea(disclaimer);
 	ta.setEditable(false);
 	int userChoice = PopupGenerator.showComponentOKCancelDialog(this, ta, "Model Transformation Warning");
-	if(userChoice != JOptionPane.OK_OPTION)
-	{
+	if(userChoice != JOptionPane.OK_OPTION) {
 		return;
 	}
-
 	BioModel biomodel = null;
 	if (getWindowManager().getVCDocument() instanceof BioModel) {
 		biomodel = (BioModel)getWindowManager().getVCDocument();
@@ -3034,7 +3031,6 @@ public void showTransMADialog()
 	hashTable.put("window", this);
 	
 	ProgressDialog progressDialog = new LinearDefiniteProgressDialog(this);
-	isStopped = false;
 
 	AsynchClientTask task1 = new AsynchClientTask("transform", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 		@Override
@@ -3048,9 +3044,6 @@ public void showTransMADialog()
 				ReactionStep[] origReactions = biomodel.getModel().getReactionSteps();
 				transformMassActions.initializeTransformation(origReactions);
 				for (int i = 0; i < origReactions.length; i++) {
-					if(isStopped) {
-						throw new RuntimeException("Transformation stopped by user");
-					}
 					progressDialog.setProgress(i * 100 / origReactions.length);
 					TransformedReaction[] transReactionSteps = transformMassActions.getTransformedReactionSteps();
 					boolean[] isTransformable = transformMassActions.getIsTransformable();
@@ -3062,8 +3055,6 @@ public void showTransMADialog()
 						isTransformable[i] = false;
 					}
 				}
-
-//				transformMassActions.transformReactions(progressDialog, biomodel.getModel().getReactionSteps());
 				progressDialog.setProgress(100);
 				transMAPanel.setTransformation(transformMassActions);
 			} catch(Throwable e) {
@@ -3077,9 +3068,6 @@ public void showTransMADialog()
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			// if we hit Cancel on the ProgressDialog, this task won't get executed
-			if(isStopped) {
-				return;
-			}
 			Component requester = (Component)hashTable.get("window");
 			int choice = DialogUtils.showComponentOKCancelDialog(requester, transMAPanel, "Transform to Stochastic Capable Model");
 			if(choice == JOptionPane.OK_OPTION) {
@@ -3096,20 +3084,9 @@ public void showTransMADialog()
 	boolean bShowProgressPopup = true;
 	boolean bKnowProgress = true;
 	boolean cancelable = true;
-	ProgressDialogListener progressDialogListener = new ProgressDialogListener() {
-		public void cancelButton_actionPerformed(EventObject newEvent) {
-			try {
-				isStopped = true;
-				System.out.println("Cancel button pressed");
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
-	};
 	boolean bInputBlocking = false;		// default: false
-//	progressDialog.addProgressDialogListener(progressDialogListener);
 	ClientTaskDispatcher.dispatch(this, hashTable, tasks, progressDialog,
-			bShowProgressPopup, bKnowProgress, cancelable, progressDialogListener, bInputBlocking);
+			bShowProgressPopup, bKnowProgress, cancelable, null, bInputBlocking);
 }
 
 public void showViewJobsDialog() {
