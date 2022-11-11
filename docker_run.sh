@@ -1,15 +1,32 @@
 #!/bin/bash
 
-echo -n "docker: Command recieved::<"
-echo -n $@
-echo ">"
+#set -u
+#set -xv
+
+debug=false
+case "$@" in
+  *-d*)
+    debug=true
+    ;;
+  *--debug*)
+    debug=true
+    ;;
+esac
+
+if [ "$debug" == true ] ; then
+  echo -n "docker: Command recieved::<"
+  echo -n "$@"
+  echo ">"
+fi
 
 rawCommand="$(echo -n "$1" | sed -E 's/(^(\s*))|((\s*)$)//g')" # Strip ends of its whitespace
 command="biosimulations" # default
 
-echo -n "<"
-echo -n $rawCommand
-echo ">"
+if [ "$debug" == true ] ; then
+  echo -n "<"
+  echo -n $rawCommand
+  echo ">"
+fi
 
 case "$rawCommand" in
   "convert")
@@ -67,16 +84,23 @@ case "$rawCommand" in
     shift
     ;;
   *)               # Default case: No more options, so break out of the loop.
-    echo "Default case selected"
+    if [ "$debug" == true ] ; then
+       echo "Default command selected"
+    fi
     ;;
 esac
 
 # Input validate arugments
 
 arguments="$(echo -n "$@" | sed -E 's/(\s)+/ /g' | sed -E 's/(^(\s*))|((\s*)$)//g')" # convert any whitespace to spaces and strip ends
+if [ -z "$arguments" ]
+then
+  arguments="--help"
+fi
 
-
-echo "VCell shall execute <$command" "$arguments>"
+if [ "$debug" == true ] ; then
+   echo "VCell shall execute <$command" "$arguments>"
+fi
 
 java \
   -classpath '/usr/local/app/vcell/lib/*' \
