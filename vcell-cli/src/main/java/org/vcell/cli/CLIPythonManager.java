@@ -53,8 +53,10 @@ public class CLIPythonManager {
             this.sendNewCommand(command);
             returnString = this.getResultsOfLastCommand();
         } catch (IOException | InterruptedException | TimeoutException e){
+            logger.error("Python process encountered an exception: "+e.getMessage(), e);
             throw new PythonStreamException("Python process encounted an exception:\n" + e);
         }
+        logger.debug("returned from python command: "+returnString);
         return returnString;
     }
 
@@ -146,7 +148,7 @@ public class CLIPythonManager {
             this.executeThroughPython("from vcell_cli_utils import wrapper");
             logger.info("Python initalization success!\n");
         } catch (IOException | TimeoutException | InterruptedException e){
-            logger.warn("Python instantiation Exception Thrown:\n" + e);
+            logger.error("Python instantiation Exception Thrown:\n" + e);
             throw new PythonStreamException("Could not initialize Python. Problem is probably python-side.", e);
         }
     }
@@ -181,7 +183,7 @@ public class CLIPythonManager {
         // we can easily send the command, but we need to format it first.
 
         String command = String.format("%s\n", CLIPythonManager.stripStringForPython(cmd));
-        logger.trace("Sent cmd to Python: " + command);
+        logger.debug("Sent cmd to Python: " + command);
         pythonOSW.write(command);
         pythonOSW.flush();
     }

@@ -228,7 +228,7 @@ public class RunUtils {
         for (Output oo : ooo) {
             // We only want Reports
             if (!(oo instanceof Report)) {
-                logger.info("Ignoring unsupported output `" + oo.getId() + "` while CSV generation.");
+                logger.info("Ignoring unsupported output `" + oo.getId() + "` of type '"+oo.getClass().getSimpleName()+"' while CSV generation.");
                 continue;
             }
 
@@ -428,7 +428,7 @@ public class RunUtils {
                     logger.info("created csv file for report " + oo.getId() + ": " + f.getAbsolutePath());
                     reportsHash.put(oo.getId(), f);
                 } else {
-                    logger.info("no csv file for report " + oo.getId());
+                    logger.warn("no csv file for report " + oo.getId());
                 }
             } catch (Exception e) {
                 logger.error("Encountered exception: " + e.getMessage(), e);
@@ -469,7 +469,7 @@ public class RunUtils {
         List<Output> outputs = sedml.getOutputs();
         for (Output out : outputs) {
             if (!(out instanceof Report)) {
-                logger.info("Ignoring unsupported output `" + out.getId() + "` while CSV generation.");
+                logger.info("Ignoring unsupported output `" + out.getId() + "` of type '"+out.getClass().getSimpleName()+"' while CSV generation.");
                 continue;
             }
             Report report = (Report)out;
@@ -696,7 +696,7 @@ public class RunUtils {
         List<Output> outputs = sedml.getOutputs();
         for (Output out : outputs) {
             if (!(out instanceof Report)) {
-                logger.info("Ignoring unsupported output `" + out.getId() + "` during HDF5 generation.");
+                logger.info("Ignoring unsupported output `" + out.getId() + "` of type '"+out.getClass().getSimpleName()+"' during HDF5 generation.");
                 continue;
             }
             Report report = (Report)out;
@@ -1000,9 +1000,10 @@ public class RunUtils {
         File[] files = path.listFiles();
         for (File f : files) {
             if (f.getName().endsWith(".csv")) {
-                // Do nothing
+                logger.debug("keeping .csv file "+f.getAbsolutePath());
                 continue;
             } else {
+                logger.debug(".removing simulation file "+f.getAbsolutePath());
                 f.delete();
             }
         }
