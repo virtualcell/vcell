@@ -27,8 +27,6 @@ public class CLIPythonManager {
 
     public static final Path currentWorkingDir = Paths.get("").toAbsolutePath();
 
-    private static final String pythonExeName = OperatingSystemInfo.getInstance().isWindows() ? "python" : "python3";
-
     private static CLIPythonManager instance = null;
 
     private Process pythonProcess; 			// hold python interpreter instance used in updateXxx...() methods
@@ -63,9 +61,9 @@ public class CLIPythonManager {
     @Deprecated
     public static void callNonsharedPython(String cliCommand, String sedmlPath, String resultOutDir) throws InterruptedException, IOException {
         logger.warn("Using old style python invocation!");
-        Path cliWorkingDir = Paths.get(PropertyLoader.getRequiredProperty(PropertyLoader.cliWorkingDir));
-        Path cliPath = Paths.get(cliWorkingDir.toString(), "vcell_cli_utils", "cli.py");
-        ProcessBuilder pb = new ProcessBuilder(new String[]{pythonExeName, cliPath.toString(), cliCommand, sedmlPath, resultOutDir});
+        File cliWorkingDir = PropertyLoader.getRequiredDirectory(PropertyLoader.cliWorkingDir).getCanonicalFile();
+        ProcessBuilder pb = new ProcessBuilder(new String[]{"poetry", "run", "python", "-m", "vcell_cli_utils.cli", cliCommand, sedmlPath, resultOutDir});
+        pb.directory(cliWorkingDir);
         runAndPrintProcessStreams(pb, "","");
     }
 
@@ -83,7 +81,7 @@ public class CLIPythonManager {
         StringBuilder stringBuilder = new StringBuilder();
 
         try {
-            processBuilder = execShellCommand(new String[]{pythonExeName, version});
+            processBuilder = execShellCommand(new String[]{"poetry", "run", "python", version});
             process = processBuilder.start();
             exitCode = process.waitFor();
             if (exitCode == 0) {
