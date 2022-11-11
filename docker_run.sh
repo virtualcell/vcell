@@ -47,6 +47,11 @@ case "$rawCommand" in
     command="execute"
     shift
     ;;
+  "validate")
+    echo 'validate mode requested'
+    command="validate"
+    shift
+    ;;
   "version")
   echo 'version mode requested'
     command="version"
