@@ -89,4 +89,25 @@
 #CMD []
 
 FROM ghcr.io/virtualcell/biosimulators_vcell:7.4.0.83
+
+COPY ./vcell-client/target/vcell-client-0.0.1-SNAPSHOT.jar \
+     ./vcell-client/target/maven-jars/*.jar \
+ 	 ./vcell-core/target/vcell-core-0.0.1-SNAPSHOT.jar \
+     ./vcell-core/target/maven-jars/*.jar \
+ 	 ./vcell-server/target/vcell-server-0.0.1-SNAPSHOT.jar \
+     ./vcell-server/target/maven-jars/*.jar \
+ 	 ./vcell-vmicro/target/vcell-vmicro-0.0.1-SNAPSHOT.jar \
+     ./vcell-vmicro/target/maven-jars/*.jar \
+ 	 ./vcell-oracle/target/vcell-oracle-0.0.1-SNAPSHOT.jar \
+     ./vcell-oracle/target/maven-jars/*.jar \
+     ./vcell-admin/target/vcell-admin-0.0.1-SNAPSHOT.jar \
+     ./vcell-admin/target/vcell-admin-0.0.1-SNAPSHOT-tests.jar \
+     ./vcell-admin/target/maven-jars/*.jar \
+     ./vcell-cli/target/vcell-cli-0.0.1-SNAPSHOT.jar \
+     ./vcell-cli/target/maven-jars/*.jar \
+     ./non-maven-java-libs/com/oracle/ojdbc6/11.2.0.4/ojdbc6-11.2.0.4.jar \
+     ./non-maven-java-libs/com/oracle/ucp/11.2.0.4/ucp-11.2.0.4.jar \
+     ./non-maven-java-libs/org/sbml/libcombine/libCombineLinux64/0.2.7/libCombineLinux64-0.2.7.jar \
+     /usr/local/app/vcell/lib/
+
 COPY ./docker_run.sh /usr/local/app/vcell/installDir/
