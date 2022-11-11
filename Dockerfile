@@ -1,7 +1,7 @@
 
-FROM ubuntu:20.04
+FROM ghcr.io/virtualcell/vcell-solvers:v0.0.41
 
-ARG SIMULATOR_VERSION="7.4.0.51"
+ARG SIMULATOR_VERSION="7.4.0.83"
 ENV ENV_SIMULATOR_VERSION=$SIMULATOR_VERSION
 
 # metadata
@@ -28,25 +28,11 @@ LABEL \
     about.tags="rule-based modeling,kinetic modeling,dynamical simulation,systems biology,BNGL,SED-ML,COMBINE,OMEX" \
     maintainer="BioSimulators Team <info@biosimulators.org>"
 
-RUN apt-get -y update
-RUN apt-get install -y --no-install-recommends curl openjdk-8-jre dnsutils
-RUN apt-get install -y python3.9 python3-pip python3.9-venv
-
-RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.8 20 && update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.9 40
-
 RUN mkdir -p /usr/local/app/vcell/lib && \
     mkdir -p /usr/local/app/vcell/simulation && \
     mkdir -p /usr/local/app/vcell/installDir && \
     mkdir -p /usr/local/app/vcell/installDir/python/vcell_cli_utils && \
     mkdir -p /usr/local/app/vcell/installDir/bionetgen
-
-# Install Poetry dependency
-#RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python3 - && \
-#    echo export PATH="$HOME/.poetry/bin:$PATH" >> /etc/bash.bashrc
-RUN python3 -m pip install wheel fire biosimulators-utils seaborn deprecated python-libsbml-experimental pandas
-RUN python3 -m pip install poetry &&  poetry config cache-dir "/poetry/.cache"
-
-ENV PATH="/root/.poetry/bin:/root/.local/bin:$PATH"
 
 # Copy JAR files
 COPY ./vcell-client/target/vcell-client-0.0.1-SNAPSHOT.jar \
@@ -69,23 +55,33 @@ COPY ./vcell-client/target/vcell-client-0.0.1-SNAPSHOT.jar \
      ./non-maven-java-libs/org/sbml/libcombine/libCombineLinux64/0.2.7/libCombineLinux64-0.2.7.jar \
      /usr/local/app/vcell/lib/
 
-# Install required python-packages
-COPY ./vcell-cli-utils/ /usr/local/app/vcell/installDir/python/vcell_cli_utils/
-RUN cd /usr/local/app/vcell/installDir/python/vcell_cli_utils/ && \
-     poetry config cache-dir "/poetry/.cache" --local && chmod 755 poetry.toml && poetry install
+RUN mkdir -p /usr/local/app/vcell/installDir/localsolvers && \
+    ln -s /vcellbin /usr/local/app/vcell/installDir/localsolvers && \
+    mv /usr/local/app/vcell/installDir/localsolvers/vcellbin /usr/local/app/vcell/installDir/localsolvers/linux64 && \
+    mkdir -p /usr/local/app/vcell/installDir/nativelibs
 
-# Add linux local solvers only
-ADD ./localsolvers /usr/local/app/vcell/installDir/localsolvers
-ADD ./nativelibs /usr/local/app/vcell/installDir/nativelibs
+COPY ./nativelibs/linux64 /usr/local/app/vcell/installDir/nativelibs/linux64
 COPY ./docker_run.sh /usr/local/app/vcell/installDir/
 COPY ./bionetgen/BNG2.pl ./bionetgen/*.txt ./bionetgen/VERSION /usr/local/app/vcell/installDir/bionetgen/
 COPY ./bionetgen/Perl2 /usr/local/app/vcell/installDir/bionetgen/Perl2
 COPY ./biosimulations_log4j2.xml /usr/local/app/vcell/installDir/
+COPY ./vcell-cli-utils/ /usr/local/app/vcell/installDir/python/vcell_cli_utils
+
+# Install Poetry dependency
+RUN python3 -m pip install wheel poetry && \
+    poetry config cache-dir "/poetry/.cache"
+
+ENV PATH="/root/.poetry/bin:/root/.local/bin:$PATH"
+
+WORKDIR /usr/local/app/vcell
+
+# Install vcell_cli_utils
+RUN cd /usr/local/app/vcell/installDir/python/vcell_cli_utils/ && \
+    poetry config cache-dir "/poetry/.cache" --local && chmod 755 poetry.toml && poetry install
 
 # Declare supported environment variables
 ENV ALGORITHM_SUBSTITUTION_POLICY=SIMILAR_VARIABLES
 EXPOSE 1433
-
 
 # Entrypoint
 ENTRYPOINT ["/usr/local/app/vcell/installDir/docker_run.sh"]
