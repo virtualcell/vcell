@@ -122,6 +122,16 @@ public class SBMLSymbolMapping {
         }
     }
 
+    void replaceRuntime(SBase _sbase, EditableSymbolTableEntry ste) {
+        SBaseWrapper<SBase> sbaseWrapper = new SBaseWrapper<>(_sbase);
+        EditableSymbolTableEntry s = sbase_to_runtime_ste_map.get(sbaseWrapper);
+        if (s == null) {
+            throw new RuntimeException("calling replaceRuntime for sbmlSid " + _sbase.getId() + " not mapped prior, trying to replace with " + ste.getClass().getSimpleName()+"("+s.getName()+"), trying to rebind to " + ste.getClass().getSimpleName()+"("+ste.getName()+")");
+        } else {
+            sbase_to_runtime_ste_map.put(sbaseWrapper, ste);
+        }
+    }
+
     Set<SBaseWrapper<SBase>> getAllSbaseWrappers() {
         LinkedHashSet<SBaseWrapper<SBase>> allInitialSBase = new LinkedHashSet<>(sbase_to_initial_ste_map.keySet());
         LinkedHashSet<SBaseWrapper<SBase>> allRuntimeSBase = new LinkedHashSet<>(sbase_to_runtime_ste_map.keySet());
