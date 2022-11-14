@@ -410,7 +410,7 @@ public class SEDMLExporter {
 				// 3 ------->
 				// create Tasks
 				Set<String> dataGeneratorTasksSet = new LinkedHashSet<>();	// tasks not referenced as subtasks by any other (repeated) task; only these will have data generators
-				MathOverrides mathOverrides = new MathOverrides(vcSimulation, vcSimulation.getMathOverrides()); // need to clone so we can manipulate expressions
+				MathOverrides mathOverrides = vcSimulation.getMathOverrides(); // need to clone so we can manipulate expressions
 				createSEDMLtasks(simContextCnt, l2gMap, simContextName, simContextId, mathSymbolMapping,
 						vcSimulation, utcSim, dataGeneratorTasksSet, mathOverrides);
 				
