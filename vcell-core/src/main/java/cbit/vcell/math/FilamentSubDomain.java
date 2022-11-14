@@ -11,7 +11,9 @@
 package cbit.vcell.math;
 
 import java.util.Enumeration;
+import java.util.List;
 
+import cbit.vcell.parser.Expression;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
@@ -46,6 +48,11 @@ public FilamentSubDomain (String name, CompartmentSubDomain outside) {
 	super(name);
 	this.outsideCompartment = outside;
 }
+
+	public void getAllExpressions(List<Expression> expressionList, MathDescription mathDescription){
+		super.getAllExpressions0(expressionList, mathDescription);
+	}
+
 /**
  * This method was created in VisualAge.
  * @return boolean
