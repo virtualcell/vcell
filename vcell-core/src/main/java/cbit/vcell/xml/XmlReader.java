@@ -4038,6 +4038,35 @@ private MembraneMapping getMembraneMapping(Element param, SimulationContext simu
 			}
 		}
 	}
+
+	//Set Boundary conditions
+	Element tempElement = param.getChild(XMLTags.BoundariesTypesTag, vcNamespace);
+	if(tempElement != null) {
+		//Xm
+		String temp = tempElement.getAttributeValue(XMLTags.BoundaryAttrValueXm);
+		BoundaryConditionType bct = new BoundaryConditionType(temp);
+		memmap.setBoundaryConditionTypeXm(bct);
+		//Xp
+		temp = tempElement.getAttributeValue(XMLTags.BoundaryAttrValueXp);
+		bct = new BoundaryConditionType(temp);
+		memmap.setBoundaryConditionTypeXp(bct);
+		//Ym
+		temp = tempElement.getAttributeValue(XMLTags.BoundaryAttrValueYm);
+		bct = new BoundaryConditionType(temp);
+		memmap.setBoundaryConditionTypeYm(bct);
+		//Yp
+		temp = tempElement.getAttributeValue(XMLTags.BoundaryAttrValueYp);
+		bct = new BoundaryConditionType(temp);
+		memmap.setBoundaryConditionTypeYp(bct);
+		//Zm
+		temp = tempElement.getAttributeValue(XMLTags.BoundaryAttrValueZm);
+		bct = new BoundaryConditionType(temp);
+		memmap.setBoundaryConditionTypeZm(bct);
+		//Zp
+		temp = tempElement.getAttributeValue(XMLTags.BoundaryAttrValueZp);
+		bct = new BoundaryConditionType(temp);
+		memmap.setBoundaryConditionTypeZp(bct);
+	}
 	
 	return memmap;
 }
