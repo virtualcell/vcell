@@ -133,12 +133,12 @@ public String getSQLValueList(InsertHashtable hash, KeyValue Key, KeyValue simCo
 		{
 			buffer.append("null" + ",");
 		}
-		buffer.append("null" + ",");
-		buffer.append("null" + ",");
-		buffer.append("null" + ",");
-		buffer.append("null" + ",");
-		buffer.append("null" + ",");
-		buffer.append("null" + ",");
+		buffer.append("'"+mm.getBoundaryConditionTypeXm().boundaryTypeStringValue() + "',");
+		buffer.append("'"+mm.getBoundaryConditionTypeXp().boundaryTypeStringValue() + "',");
+		buffer.append("'"+mm.getBoundaryConditionTypeYm().boundaryTypeStringValue() + "',");
+		buffer.append("'"+mm.getBoundaryConditionTypeYp().boundaryTypeStringValue() + "',");
+		buffer.append("'"+mm.getBoundaryConditionTypeZm().boundaryTypeStringValue() + "',");
+		buffer.append("'"+mm.getBoundaryConditionTypeZp().boundaryTypeStringValue() + "',");
 		buffer.append((mm.getCalculateVoltage() ? 1 : 0)+",");
 		try {
 			buffer.append(mm.getSpecificCapacitanceParameter().getExpression().evaluateConstantSafe()+",");

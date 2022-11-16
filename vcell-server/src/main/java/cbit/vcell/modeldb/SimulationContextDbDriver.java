@@ -573,6 +573,30 @@ private void assignStructureMappingsSQL(QueryHashtable dbc, Connection con,KeyVa
 				}
 			} else if (sm instanceof MembraneMapping) {
 				MembraneMapping mm = (MembraneMapping) sm;
+				String boundaryTypeXmString = rset.getString(structureMappingTable.boundaryTypeXm.toString());
+				if (!rset.wasNull()){
+					mm.setBoundaryConditionTypeXm(new BoundaryConditionType(boundaryTypeXmString));
+				}
+				String boundaryTypeXpString = rset.getString(structureMappingTable.boundaryTypeXp.toString());
+				if (!rset.wasNull()){
+					mm.setBoundaryConditionTypeXp(new BoundaryConditionType(boundaryTypeXpString));
+				}
+				String boundaryTypeYmString = rset.getString(structureMappingTable.boundaryTypeYm.toString());
+				if (!rset.wasNull()){
+					mm.setBoundaryConditionTypeYm(new BoundaryConditionType(boundaryTypeYmString));
+				}
+				String boundaryTypeYpString = rset.getString(structureMappingTable.boundaryTypeYp.toString());
+				if (!rset.wasNull()){
+					mm.setBoundaryConditionTypeYp(new BoundaryConditionType(boundaryTypeYpString));
+				}
+				String boundaryTypeZmString = rset.getString(structureMappingTable.boundaryTypeZm.toString());
+				if (!rset.wasNull()){
+					mm.setBoundaryConditionTypeZm(new BoundaryConditionType(boundaryTypeZmString));
+				}
+				String boundaryTypeZpString = rset.getString(structureMappingTable.boundaryTypeZp.toString());
+				if (!rset.wasNull()){
+					mm.setBoundaryConditionTypeZp(new BoundaryConditionType(boundaryTypeZpString));
+				}
 				String surfToVolString = rset.getString(structureMappingTable.surfToVolExp.toString());
 				if (!rset.wasNull()) {
 					try {
