@@ -23,6 +23,12 @@ public class ValidateBatchCommand implements Callable<Integer> {
     @Option(names = { "-o", "--outputFilePath" }, description = "full path to output directory", required = true)
     private File outputFilePath;
 
+    @Option(names = { "--transform-KMOLE" }, defaultValue = "true", description = "transform KMOLE and other reserved symbols as needed", required = false)
+    private boolean bTransformKMOLE = true;
+
+    @Option(names = { "--transform-variables" }, defaultValue = "false", description = "rename variables to attempt KMOLE and other reserved symbols as needed", required = false)
+    private boolean bTransformVariables = false;
+
     @Option(names = {"-d", "--debug"}, description = "full application debug mode")
     private boolean bDebug = false;
 
@@ -50,10 +56,10 @@ public class ValidateBatchCommand implements Callable<Integer> {
             }
             if (inputFilePath.isDirectory()) {
                 logger.debug("Beginning batch validation");
-                VcmlValidator.validateVcmlFiles(inputFilePath, outputFilePath, cliLogger, true);
+                VcmlValidator.validateVcmlFiles(inputFilePath, outputFilePath, cliLogger, bTransformKMOLE, bTransformVariables);
             }else{
                 logger.debug("Beginning validation");
-                VcmlValidator.validateOneVcmlFile(inputFilePath, outputFilePath, true);
+                VcmlValidator.validateOneVcmlFile(inputFilePath, outputFilePath, bTransformKMOLE, bTransformVariables);
             }
             return 0;
         } catch (Exception e) {
