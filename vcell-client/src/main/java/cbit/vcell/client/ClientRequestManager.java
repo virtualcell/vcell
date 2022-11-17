@@ -3795,7 +3795,7 @@ public class ClientRequestManager
 				if (documentInfo instanceof ExternalDocInfo) {
 					ExternalDocInfo externalDocInfo = (ExternalDocInfo) documentInfo;
 					boolean isSEDML = (boolean) hashTable.get("isSEDML");
-					if (externalDocInfo.isBioModelsNet() || externalDocInfo.isFromXmlFile() || !isSEDML) {
+					if (externalDocInfo.isBioModelsNet() || externalDocInfo.isFromXmlFile() || (!isSEDML && !externalDocInfo.isFromVcmlFile())) {
 						DocumentWindowManager windowManager = (DocumentWindowManager) hashTable.get(WIN_MGR_KEY);
 						if (windowManager instanceof BioModelWindowManager) {
 							((BioModelWindowManager) windowManager).specialLayout();
