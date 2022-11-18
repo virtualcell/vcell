@@ -579,7 +579,7 @@ public static VCDocumentInfo curate(CurateSpec curateSpec,Connection con,User us
 	}
 
 	VersionTable vTable = VersionTable.getVersionTable(vType);
-	String set = vTable.versionFlag.getQualifiedColName() + " = " + updatedVersionFlag.getIntValue();
+	String set = vTable.versionFlag.getUnqualifiedColName() + " = " + updatedVersionFlag.getIntValue();
 	String cond = vTable.id.getQualifiedColName() + " = " + vKey;
 	String sql = DatabasePolicySQL.enforceOwnershipUpdate(user,vTable,set,cond);
 	int numRowsProcessed = updateCleanSQL(con, sql);
@@ -597,14 +597,6 @@ public static VCDocumentInfo curate(CurateSpec curateSpec,Connection con,User us
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (9/18/2006 1:20:15 PM)
- * @return cbit.vcell.simdata.FieldDataInfo[]
- * @param conn java.sql.Connection
- * @param user cbit.vcell.server.User
- * @param fieldNames java.lang.String[]
- */
 public static FieldDataDBOperationResults fieldDataDBOperation(Connection con, KeyFactory keyFactory, User user,
 		FieldDataDBOperationSpec fieldDataDBOperationSpec) throws SQLException, DataAccessException {
 	
@@ -910,15 +902,7 @@ public static VersionableFamily getAllReferences(java.sql.Connection con, Versio
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return boolean
- * @param con Connection
- * @param user User
- * @param vType int
- * @param versionKey cbit.sql.KeyValue
- */
-protected static KeyValue[] getChildrenFromLinkTable(java.sql.Connection con, Table linkTable, Field parentField, Field childField, KeyValue parentKey) 
+protected static KeyValue[] getChildrenFromLinkTable(java.sql.Connection con, Table linkTable, Field parentField, Field childField, KeyValue parentKey)
 							throws ObjectNotFoundException, java.sql.SQLException {
 								
 	String sql = null;
@@ -944,15 +928,7 @@ protected static KeyValue[] getChildrenFromLinkTable(java.sql.Connection con, Ta
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return boolean
- * @param con Connection
- * @param user User
- * @param vType int
- * @param versionKey cbit.sql.KeyValue
- */
-private static KeyValue[] getExternalRefs(java.sql.Connection con,cbit.sql.Field field, Table table, KeyValue versionKey) 
+private static KeyValue[] getExternalRefs(java.sql.Connection con,cbit.sql.Field field, Table table, KeyValue versionKey)
 							throws java.sql.SQLException {
 								
 	String sql = null;
@@ -980,15 +956,7 @@ private static KeyValue[] getExternalRefs(java.sql.Connection con,cbit.sql.Field
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return boolean
- * @param con Connection
- * @param user User
- * @param vType int
- * @param versionKey cbit.sql.KeyValue
- */
-protected static KeyValue getForeignRefByOwner(java.sql.Connection con,cbit.sql.Field field, VersionTable table, KeyValue idKey, VersionTable refTable, User owner) 
+protected static KeyValue getForeignRefByOwner(java.sql.Connection con,cbit.sql.Field field, VersionTable table, KeyValue idKey, VersionTable refTable, User owner)
 							throws ObjectNotFoundException, java.sql.SQLException {
 								
 	String sql = null;
@@ -1101,14 +1069,6 @@ public static GroupAccess getGroupAccessFromGroupID(java.sql.Connection con,BigD
 	return groupAccess; 
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (4/5/2001 3:50:56 PM)
- * @return java.lang.Object
- * @param rset oracle.jdbc.OracleResultSet
- * @param columnName java.lang.String
- */
 protected final static Object getLOB(ResultSet rset,Field column,DatabaseSyntax dbSyntax) throws DataAccessException, SQLException {
 	
 	switch (dbSyntax){
@@ -1205,13 +1165,6 @@ private static java.math.BigDecimal getNewGroupID(Connection con, KeyFactory key
 	return keyFactory.getUniqueBigDecimal(con);
 }
 
-
-/**
- * This method was created in VisualAge.
- * @return int
- * @param user java.lang.String
- * @param imageName java.lang.String
- */
 public static Preference[] getPreferences(Connection con, User user) throws SQLException {
 	
 	String sql =
@@ -1274,12 +1227,6 @@ public static KeyValue[] getMathDescKeysForExternalData(Connection con,User owne
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return int
- * @param user java.lang.String
- * @param imageName java.lang.String
- */
 private static User getUserFromUserid(Connection con, String userid) throws SQLException {
 	Statement stmt;
 	String sql;
@@ -1866,14 +1813,7 @@ public static Vector<VersionInfo> getVersionableInfos(Connection con,User user, 
 	return vInfoList;
 }
 
-
-/**
- * This method was created in VisualAge.
- * @return cbit.sql.Versionable
- * @param user cbit.vcell.server.User
- * @param versionable cbit.sql.Versionable
- */
-public String getVersionableXML(Connection con,VersionableType vType, KeyValue vKey) 
+public String getVersionableXML(Connection con,VersionableType vType, KeyValue vKey)
 			throws ObjectNotFoundException, SQLException, DataAccessException {
 
 	String xmlTableName = null;
@@ -1964,12 +1904,6 @@ private static Version getVersionFromKeyValue(Connection con,VersionableType vTy
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return cbit.sql.Versionable
- * @param user cbit.vcell.server.User
- * @param versionable cbit.sql.Versionable
- */
 public static void groupAddUser(Connection con, KeyFactory keyFactory, User owner,
 										VersionableType vType, KeyValue vKey,
 										String userAddToGroupString,boolean isHiddenFromOwner,DatabaseSyntax dbSyntax) 
@@ -2093,7 +2027,7 @@ public static void groupAddUser(Connection con, KeyFactory keyFactory, User owne
 		}
 	}
 	//Update the vTable to point to the new Group
-	String set = vTable.privacy.getQualifiedColName() + " = " + updatedGroupID;
+	String set = vTable.privacy.getUnqualifiedColName() + " = " + updatedGroupID;
 	String cond = vTable.id.getQualifiedColName() + " = " + vKey;
 				//" AND " + vTable.ownerRef.getQualifiedColName() + " = " + owner.getID();
 	sql = DatabasePolicySQL.enforceOwnershipUpdate(owner,vTable,set,cond);
@@ -2114,13 +2048,6 @@ public static void groupAddUser(Connection con, KeyFactory keyFactory, User owne
 	
 }
 
-
-/**
- * This method was created in VisualAge.
- * @return cbit.sql.Versionable
- * @param user cbit.vcell.server.User
- * @param versionable cbit.sql.Versionable
- */
 public static void groupRemoveUser(Connection con,KeyFactory keyFactory, User owner,
 										VersionableType vType, KeyValue vKey,
 										String userRemoveFromGroupString,boolean isHiddenFromOwner,DatabaseSyntax dbSyntax) 
@@ -2228,7 +2155,7 @@ public static void groupRemoveUser(Connection con,KeyFactory keyFactory, User ow
 		}
 	}
 	//
-	String set = vTable.privacy.getQualifiedColName() + " = " + updatedGroupID;
+	String set = vTable.privacy.getUnqualifiedColName() + " = " + updatedGroupID;
 	String cond = vTable.id.getQualifiedColName() + " = " + vKey;
 				//" AND " + vTable.ownerRef.getQualifiedColName() + " = " + owner.getID();
 	sql = DatabasePolicySQL.enforceOwnershipUpdate(owner,vTable,set,cond);
@@ -2250,13 +2177,7 @@ public static void groupRemoveUser(Connection con,KeyFactory keyFactory, User ow
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return cbit.sql.Versionable
- * @param owner cbit.vcell.server.User
- * @param versionable cbit.sql.Versionable
- */
-public static void groupSetPrivate(Connection con,User owner, 
+public static void groupSetPrivate(Connection con,User owner,
 										VersionableType vType, KeyValue vKey,DatabaseSyntax dbSyntax) 
 							throws SQLException,ObjectNotFoundException, DataAccessException/*, DependencyException*/ {
 
@@ -2271,7 +2192,7 @@ public static void groupSetPrivate(Connection con,User owner,
 
 	BigDecimal updatedGroupID = GroupAccess.GROUPACCESS_NONE;
 	VersionTable vTable = VersionTable.getVersionTable(vType);
-	String set = vTable.privacy.getQualifiedColName() + " = " + updatedGroupID;
+	String set = vTable.privacy.getUnqualifiedColName() + " = " + updatedGroupID;
 	String cond = vTable.id.getQualifiedColName() + " = " + vKey;
 	String sql = DatabasePolicySQL.enforceOwnershipUpdate(owner,vTable,set,cond);
 //System.out.println(sql);
@@ -2291,13 +2212,7 @@ public static void groupSetPrivate(Connection con,User owner,
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return cbit.sql.Versionable
- * @param owner cbit.vcell.server.User
- * @param versionable cbit.sql.Versionable
- */
-public static void groupSetPublic(Connection con,User owner, 
+public static void groupSetPublic(Connection con,User owner,
 										VersionableType vType, KeyValue vKey, DatabaseSyntax dbSyntax) 
 							throws SQLException,ObjectNotFoundException, DataAccessException {
 
@@ -2312,7 +2227,7 @@ public static void groupSetPublic(Connection con,User owner,
 
 	BigDecimal updatedGroupID = GroupAccess.GROUPACCESS_ALL;
 	VersionTable vTable = VersionTable.getVersionTable(vType);
-	String set = vTable.privacy.getQualifiedColName() + " = " + updatedGroupID;
+	String set = vTable.privacy.getUnqualifiedColName() + " = " + updatedGroupID;
 	String cond = vTable.id.getQualifiedColName() + " = " + vKey;
 				//" AND " + vTable.ownerRef.getQualifiedColName() + " = " + owner.getID();
 	String sql = DatabasePolicySQL.enforceOwnershipUpdate(owner,vTable,set,cond);
@@ -2331,11 +2246,7 @@ public static void groupSetPublic(Connection con,User owner,
 	}
 }
 
-/**
- * Insert the method's description here.
- * Creation date: (5/4/2005 1:46:01 PM)
- * @param versionableKey cbit.sql.KeyValue
- */
+
 private void insertSoftwareVersion(Connection con, KeyValue versionKey) throws SQLException {
 	//
 	//Insert Software Version
@@ -2348,13 +2259,6 @@ private void insertSoftwareVersion(Connection con, KeyValue versionKey) throws S
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return cbit.sql.KeyValue
- * @param versionable cbit.sql.Versionable
- * @param pRef cbit.sql.KeyValue
- * @param bCommit boolean
- */
 public static void insertVersionableChildSummary(Connection con,String serialDBChildSummary,VersionableType vType,KeyValue vKey, DatabaseSyntax dbSyntax)
 						throws SQLException,DataAccessException {
 						
@@ -2392,14 +2296,7 @@ public static void insertVersionableChildSummary(Connection con,String serialDBC
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return cbit.sql.KeyValue
- * @param versionable cbit.sql.Versionable
- * @param pRef cbit.sql.KeyValue
- * @param bCommit boolean
- */
-protected Version insertVersionableInit(InsertHashtable hash, Connection con, User user, Versionable versionable, String name,String annot,boolean bVersion) 
+protected Version insertVersionableInit(InsertHashtable hash, Connection con, User user, Versionable versionable, String name,String annot,boolean bVersion)
 throws SQLException,DataAccessException{
 
 	if (hash.getDatabaseKey(versionable)!=null){
@@ -2445,14 +2342,7 @@ throws SQLException,DataAccessException{
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return cbit.sql.KeyValue
- * @param versionable cbit.sql.Versionable
- * @param pRef cbit.sql.KeyValue
- * @param bCommit boolean
- */
-public static void insertVersionableXML(Connection con,String xml,VersionableType vType,KeyValue vKey, KeyFactory keyFactory, DatabaseSyntax dbSyntax) 
+public static void insertVersionableXML(Connection con,String xml,VersionableType vType,KeyValue vKey, KeyFactory keyFactory, DatabaseSyntax dbSyntax)
 					throws DataAccessException, SQLException, RecordChangedException {
 	String xmlTableName = null;
 	String versionableRefColName = null;
@@ -2491,15 +2381,7 @@ public static void insertVersionableXML(Connection con,String xml,VersionableTyp
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return boolean
- * @param con Connection
- * @param user User
- * @param vType int
- * @param versionKey cbit.sql.KeyValue
- */
-private static boolean isBranchPointOrBaseSimulation(java.sql.Connection con,VersionableType vType, KeyValue versionKey) 
+private static boolean isBranchPointOrBaseSimulation(java.sql.Connection con,VersionableType vType, KeyValue versionKey)
 							throws ObjectNotFoundException, java.sql.SQLException {
 								
 	VersionTable vTable = VersionTable.getVersionTable(vType);
@@ -2526,15 +2408,6 @@ private static boolean isBranchPointOrBaseSimulation(java.sql.Connection con,Ver
 }
 
 
-/**
- *
- * Test if there are any records of type 'vType' that use the name 'vName' owned by 'owner'
- *
- * @return boolean
- * @param vType cbit.sql.VersionableType
- * @param owner cbit.vcell.server.User
- * @param vName java.lang.String
- */
 protected static boolean isNameUsed(Connection con, VersionableType vType, User owner, String vName) throws SQLException {
 
 	VersionTable vTable = VersionTable.getVersionTable(vType);
@@ -2561,10 +2434,6 @@ protected static boolean isNameUsed(Connection con, VersionableType vType, User 
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (5/23/2006 11:48:25 AM)
- */
 private static Version permissionInit(Connection con,VersionableType vType,KeyValue vKey,User user) throws DataAccessException,SQLException{
 	
 	if (!vType.getIsTopLevel()) {
@@ -2622,11 +2491,6 @@ public static void replacePreferences(Connection con, KeyFactory keyFactory, Use
 }
 
 
-/**
- * This method was created in VisualAge.
- * @param vTable cbit.sql.VersionTable
- * @param versionKey cbit.sql.KeyValue
- */
 protected void setVersioned(Connection con, User user,Versionable versionable) throws ObjectNotFoundException,SQLException,DataAccessException {
 	String sql;
 	if (versionable instanceof SimulationContext){
@@ -2664,10 +2528,6 @@ protected void setVersioned(Connection con, User user,Versionable versionable) t
 }
 
 
-/**
- * This method was created in VisualAge.
- * @param rset java.sql.ResultSet
- */
 public static void showMetaData(ResultSet rset) throws SQLException {
 	ResultSetMetaData metaData = rset.getMetaData();
 	for (int i = 1; i <= metaData.getColumnCount(); i++) {
@@ -2676,11 +2536,6 @@ public static void showMetaData(ResultSet rset) throws SQLException {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (10/16/2004 2:39:49 PM)
- * @return cbit.vcell.numericstest.TestSuiteInfoNew[]
- */
 public static TestSuiteNew testSuiteGet(BigDecimal getThisTS,Connection con,User user,DatabaseSyntax dbSyntax)
 			throws SQLException, DataAccessException {
 	
@@ -4146,8 +4001,8 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 			stmt.executeUpdate(
 				"UPDATE "+TFTestCriteriaTable.table.getTableName()+
 				" SET "+
-					TFTestCriteriaTable.table.reportStatus.getQualifiedColName()+"="+(newRS != null?"'"+newRS+"'":"null")+","+
-					TFTestCriteriaTable.table.reportMessage.getQualifiedColName()+"="+(reportStatusMessage!= null?"'"+reportStatusMessage+"'":"null")+
+					TFTestCriteriaTable.table.reportStatus.getUnqualifiedColName()+"="+(newRS != null?"'"+newRS+"'":"null")+","+
+					TFTestCriteriaTable.table.reportMessage.getUnqualifiedColName()+"="+(reportStatusMessage!= null?"'"+reportStatusMessage+"'":"null")+
 				" WHERE "+TFTestCriteriaTable.table.id.getQualifiedColName()+"="+tcritKey.toString()
 				);
 			if(newRS.equals(TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT)){
@@ -4202,8 +4057,8 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 				" SET "+
 					TFTestCriteriaTable.table.maxAbsError.getUnqualifiedColName()+"="+(maxAbsError != null?"CAST('"+maxAbsError.toString()+"' as NUMERIC)":"null")+","+
 					TFTestCriteriaTable.table.maxRelError.getUnqualifiedColName()+"="+(maxRelError != null?"CAST('"+maxRelError.toString()+"' as NUMERIC)":"null")+","+
-					TFTestCriteriaTable.table.regressionMMSimRef.getQualifiedColName()+"="+(regrMathModelSimLink != null?regrMathModelSimLink.toString():"null")+
-				" WHERE "+TFTestCriteriaTable.table.id.getQualifiedColName()+"="+tcritKey.toString()
+					TFTestCriteriaTable.table.regressionMMSimRef.getUnqualifiedColName()+"="+(regrMathModelSimLink != null?regrMathModelSimLink.toString():"null")+
+				" WHERE "+TFTestCriteriaTable.table.id.getUnqualifiedColName()+"="+tcritKey.toString()
 				);
 			testSuiteOP(new EditTestCriteriaOPReportStatus(tcritKey,TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT,null), con, user,keyFactory);
 
@@ -4271,8 +4126,8 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 				" SET "+
 					TFTestCriteriaTable.table.maxAbsError.getUnqualifiedColName()+"="+(maxAbsError != null?"CAST('"+maxAbsError.toString()+"' as NUMERIC)":"null")+","+
 					TFTestCriteriaTable.table.maxRelError.getUnqualifiedColName()+"="+(maxRelError != null?"CAST('"+maxRelError.toString()+"' as NUMERIC)":"null")+","+
-					TFTestCriteriaTable.table.regressionBMAPPRef.getQualifiedColName()+"="+(bmscAppKey != null?bmscAppKey.toString():"NULL")+","+
-					TFTestCriteriaTable.table.regressionBMSimRef.getQualifiedColName()+"="+(bmsltSimKey != null?bmsltSimKey.toString():"NULL")+
+					TFTestCriteriaTable.table.regressionBMAPPRef.getUnqualifiedColName()+"="+(bmscAppKey != null?bmscAppKey.toString():"NULL")+","+
+					TFTestCriteriaTable.table.regressionBMSimRef.getUnqualifiedColName()+"="+(bmsltSimKey != null?bmsltSimKey.toString():"NULL")+
 				" WHERE "+TFTestCriteriaTable.table.id.getQualifiedColName()+"="+tcritKey.toString()
 				);
 			testSuiteOP(new EditTestCriteriaOPReportStatus(tcritKey,TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT,null), con, user,keyFactory);
@@ -4302,9 +4157,9 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 				stmt.executeUpdate(
 					"UPDATE "+TFTestCriteriaTable.table.getTableName()+
 					" SET "+
-					(maxAbsErrorArr != null?TFTestCriteriaTable.table.maxAbsError.getQualifiedColName()+"="+maxAbsErrorArr[i]:"")+
+					(maxAbsErrorArr != null?TFTestCriteriaTable.table.maxAbsError.getUnqualifiedColName()+"="+maxAbsErrorArr[i]:"")+
 					(maxAbsErrorArr != null && maxRelErrorArr != null?",":"")+
-					(maxRelErrorArr != null?TFTestCriteriaTable.table.maxRelError.getQualifiedColName()+"="+maxRelErrorArr[i]:"")+
+					(maxRelErrorArr != null?TFTestCriteriaTable.table.maxRelError.getUnqualifiedColName()+"="+maxRelErrorArr[i]:"")+
 					" WHERE "+TFTestCriteriaTable.table.id.getQualifiedColName()+"="+tcritKeyArr[i].toString()
 					);
 				testSuiteOP(new EditTestCriteriaOPReportStatus(tcritKeyArr[i],TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT,null), con, user, keyFactory);
@@ -4343,7 +4198,7 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 					stmt.executeUpdate(
 						"UPDATE "+TFTestCaseTable.table.getTableName()+
 						" SET "+
-							TFTestCaseTable.table.tcAnnotation.getQualifiedColName()+"="+(annotation == null?"NULL":"'"+annotation+"'")+
+							TFTestCaseTable.table.tcAnnotation.getUnqualifiedColName()+"="+(annotation == null?"NULL":"'"+annotation+"'")+
 						" WHERE "+TFTestCaseTable.table.id.getQualifiedColName()+"="+tcaseKeys[i].toString()
 						);
 				}
@@ -4379,7 +4234,7 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 					stmt.executeUpdate(
 						"UPDATE "+TFTestCaseTable.table.getTableName()+
 						" SET "+
-							TFTestCaseTable.table.tcSolutionType.getQualifiedColName()+"="+
+							TFTestCaseTable.table.tcSolutionType.getUnqualifiedColName()+"="+
 							(newSteadyState?"'"+TestCaseNew.EXACT_STEADY+"'":"'"+TestCaseNew.EXACT+"'")+
 						" WHERE "+TFTestCaseTable.table.id.getQualifiedColName()+"="+tcaseKeys[i].toString()
 						);
@@ -4417,7 +4272,7 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 					stmt.executeUpdate(
 							"UPDATE "+TFTestSuiteTable.table.getTableName()+
 							" SET "+
-								TFTestSuiteTable.table.isLocked.getQualifiedColName()+"= 1"+
+								TFTestSuiteTable.table.isLocked.getUnqualifiedColName()+"= 1"+
 							" WHERE "+TFTestSuiteTable.table.id.getQualifiedColName()+"="+tsKeys[i].toString()
 							);
 					
@@ -4434,7 +4289,7 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 						stmt.executeUpdate(
 							"UPDATE "+TFTestSuiteTable.table.getTableName()+
 							" SET "+
-								TFTestSuiteTable.table.tsAnnotation.getQualifiedColName()+"="+(annotation == null?"NULL":"'"+annotation+"'")+
+								TFTestSuiteTable.table.tsAnnotation.getUnqualifiedColName()+"="+(annotation == null?"NULL":"'"+annotation+"'")+
 							" WHERE "+TFTestSuiteTable.table.id.getQualifiedColName()+"="+tsKeys[i].toString()
 							);
 					}
@@ -4730,10 +4585,6 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 	return new TestSuiteOPResults(null);
 }
 
-/**
- * This method was created in VisualAge.
- * @param sql java.lang.String
- */
 protected final static void updateCleanLOB(Connection con,String conditionalColumnName,KeyValue conditionalValue,String table,Field column,Object lob_data, DatabaseSyntax dbSyntax) throws SQLException,DataAccessException {
 	if (table == null || con == null || column == null || lob_data == null) {
 		throw new IllegalArgumentException("Improper parameters for updateCleanLOB");
@@ -4844,14 +4695,7 @@ public static int updatePreparedCleanSQL(Connection con, String sql, byte[] data
 	}
 }
 
-
-/**
- * This method was created in VisualAge.
- * @return cbit.image.VCImage
- * @param user cbit.vcell.server.User
- * @param image cbit.image.VCImage
- */
-protected Version updateVersionableInit(InsertHashtable hash, Connection con, User user, Versionable versionable, boolean bVersion) 
+protected Version updateVersionableInit(InsertHashtable hash, Connection con, User user, Versionable versionable, boolean bVersion)
 			throws DataAccessException, SQLException, RecordChangedException{
 
 	if (hash.getDatabaseKey(versionable)!=null){
@@ -4935,13 +4779,6 @@ protected Version updateVersionableInit(InsertHashtable hash, Connection con, Us
 	return new Version(versionKey,versionName,owner,accessInfo,branchPointRefKey,branchID,date,versionFlag,annot);
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (8/23/2004 2:29:38 PM)
- * @return java.lang.String
- * @param size int
- */
 public static String varchar2_CLOB_get(ResultSet rset,Field varchar2Field,Field clob_or_text_Field, DatabaseSyntax dbSyntax) throws SQLException,DataAccessException{
 
 	if (clob_or_text_Field.getSqlDataType()!=SQLDataType.clob_text){
@@ -4989,23 +4826,10 @@ public static String varchar2_CLOB_get(ResultSet rset,Field varchar2Field,Field 
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (8/23/2004 2:29:38 PM)
- * @return java.lang.String
- * @param size int
- */
 public static boolean varchar2_CLOB_is_Varchar2_OK(String data) {
 	return (TokenMangler.getSQLEscapedString(data).length() <= VARCHAR_SIZE_LIMIT);
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (8/23/2004 2:29:38 PM)
- * @return java.lang.String
- * @param size int
- */
 public final static void varchar2_CLOB_update(
     Connection con,
     String sql,//marked sql
