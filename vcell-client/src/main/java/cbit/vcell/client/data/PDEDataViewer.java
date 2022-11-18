@@ -2207,7 +2207,12 @@ public void setPdeDataContext(ClientPDEDataContext pdeDataContext) {
 		try{
 			getPDEPlotControlPanel1().removePropertyChangeListener(ivjEventHandler);
 			try{
-				getPDEPlotControlPanel1().setup(((ClientPDEDataContext)getPdeDataContext()).getDataManager().getOutputContext().getOutputFunctions(), getPdeDataContext().getDataIdentifiers(), getPdeDataContext().getTimePoints(),setVarName,setTimePoint);
+				OutputContext outputContext = ((ClientPDEDataContext) getPdeDataContext()).getDataManager().getOutputContext();
+				AnnotatedFunction[] outputFunctions = new AnnotatedFunction[0];
+				if (outputContext != null){
+					outputFunctions = outputContext.getOutputFunctions();
+				}
+				getPDEPlotControlPanel1().setup(outputFunctions, getPdeDataContext().getDataIdentifiers(), getPdeDataContext().getTimePoints(),setVarName,setTimePoint);
 			}catch(Exception e){
 				e.printStackTrace();
 				DialogUtils.showErrorDialog(this, "Couldn't setup PDEPlotControlPanel, "+e.getMessage());
