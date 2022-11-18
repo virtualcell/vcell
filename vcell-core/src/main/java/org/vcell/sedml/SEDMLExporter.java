@@ -1191,7 +1191,7 @@ public class SEDMLExporter {
 			Pair<String, String> key = new Pair(reactionID, parameterID);
 			String value = l2gMap.get(key);
 			if(value == null) {
-				targetXpath = new XPathTarget(sbmlSupport.getXPathForKineticLawParameter(reactionID, parameterID));
+				targetXpath = new XPathTarget(sbmlSupport.getXPathForKineticLawParameterV3(reactionID, parameterID));
 			} else {
 				targetXpath = new XPathTarget(sbmlSupport.getXPathForGlobalParameter(value, ParameterAttribute.value));
 			}

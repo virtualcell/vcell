@@ -253,6 +253,11 @@ public class SBMLSupport implements IXPathToVariableIDResolver {
                 + "/sbml:kineticLaw/sbml:listOfParameters";
     }
 
+    String getXPathForListOfKineticLawParametersV3(String reactionID) {
+        return getXPathForReaction(reactionID)
+                + "/sbml:kineticLaw/sbml:listOfLocalParameters";
+    }
+
     /**
      * Gets XPath expression to identify a global SBML reaction.
      * 
@@ -299,6 +304,23 @@ public class SBMLSupport implements IXPathToVariableIDResolver {
                 + "/sbml:parameter[@id='" + parameterID + "']";
     }
 
+    /**
+     * Gets XPath expression to identify a local reaction kineticLaw parameter.
+     * 
+     * @param reactionID
+     *            The reaction Id.
+     * @param parameterID
+     *            The localParameter Id.
+     * @return An XPath string which can be set into the 'target' field of an
+     *         XPath-containing element in SED-ML.
+     */
+    public String getXPathForKineticLawParameterV3(String reactionID,
+            String parameterID) {
+        return getXPathForListOfKineticLawParameters(reactionID)
+                + "/sbml:localParameter[@id='" + parameterID + "']";
+    }
+    
+    
     /**
      * Gets XPath expression to identify an attribute of a local reaction
      * kineticLaw parameter.
