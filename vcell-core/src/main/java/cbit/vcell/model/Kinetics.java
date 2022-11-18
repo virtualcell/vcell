@@ -1977,7 +1977,7 @@ public void renameParameter(String oldName, String newName) throws ExpressionExc
 	}
 
 	if (oldName.equals(newName)){
-		throw new RuntimeException("renameParameter from '"+oldName+"' to '"+newName+"', same name not allowed");
+		logger.info("rename parameter called with same name: "+oldName);
 	}
 	KineticsParameter parameter = getKineticsParameter(oldName);
 	if (parameter!=null){
