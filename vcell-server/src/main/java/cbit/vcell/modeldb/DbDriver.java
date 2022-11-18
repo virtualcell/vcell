@@ -179,7 +179,7 @@ public static void publishDirectly(Connection con,KeyValue[] publishTheseBiomode
 	}
 }
 
-public static KeyValue savePublicationRep(Connection con,PublicationRep publicationRep,User user,DatabaseSyntax databaseSyntax) throws SQLException, DataAccessException{
+public static KeyValue savePublicationRep(Connection con,PublicationRep publicationRep,User user,KeyFactory keyFactory,DatabaseSyntax databaseSyntax) throws SQLException, DataAccessException{
 	
 	String pubID = null;
 	TreeMap<SPECIALS, TreeMap<User, String>> specialUsers = getSpecialUsers(user,con,databaseSyntax);
@@ -194,7 +194,7 @@ public static KeyValue savePublicationRep(Connection con,PublicationRep publicat
 	try {
 		if(publicationRep.getPubKey() == null) {
 			stmt = con.createStatement();
-			ResultSet rset = stmt.executeQuery("select newseq.nextval from dual");
+			ResultSet rset = stmt.executeQuery("select "+keyFactory.nextSEQ()+" from dual");
 			rset.next();
 			pubID = rset.getString(1);
 			rset.close();
@@ -234,7 +234,7 @@ public static KeyValue savePublicationRep(Connection con,PublicationRep publicat
 			if(publicationRep.getBiomodelReferenceReps() != null && publicationRep.getBiomodelReferenceReps().length > 0) {
 			for(BioModelReferenceRep bioModelReferenceRep:publicationRep.getBiomodelReferenceReps()) {
 				try {
-					updateCleanSQL(con, "INSERT INTO "+PublicationModelLinkTable.table.getTableName()+" VALUES (newseq.nextval,"+pubID.toString()+","+bioModelReferenceRep.getBmKey().toString()+",NULL)");
+					updateCleanSQL(con, "INSERT INTO "+PublicationModelLinkTable.table.getTableName()+" VALUES ("+keyFactory.nextSEQ()+","+pubID.toString()+","+bioModelReferenceRep.getBmKey().toString()+",NULL)");
 				} catch (Exception e) {
 					e.printStackTrace();
 					throw new SQLException("Error inserting biomodelKey="+bioModelReferenceRep.getBmKey().toString()+" link to publicationID="+pubID.toString()+"\n"+e.getMessage(),e);
@@ -244,7 +244,7 @@ public static KeyValue savePublicationRep(Connection con,PublicationRep publicat
 		if(publicationRep.getMathmodelReferenceReps() != null && publicationRep.getMathmodelReferenceReps().length > 0) {
 			for(MathModelReferenceRep mathModelReferenceRep:publicationRep.getMathmodelReferenceReps()) {
 				try {
-					updateCleanSQL(con, "INSERT INTO "+PublicationModelLinkTable.table.getTableName()+" VALUES (newseq.nextval,"+pubID.toString()+",NULL,"+mathModelReferenceRep.getMmKey().toString()+")");
+					updateCleanSQL(con, "INSERT INTO "+PublicationModelLinkTable.table.getTableName()+" VALUES ("+keyFactory.nextSEQ()+","+pubID.toString()+",NULL,"+mathModelReferenceRep.getMmKey().toString()+")");
 				} catch (Exception e) {
 					e.printStackTrace();
 					throw new SQLException("Error inserting mathmodelKey="+mathModelReferenceRep.getMmKey().toString()+" link to publicationID="+pubID.toString()+"\n"+e.getMessage(),e);
@@ -2589,13 +2589,7 @@ private static Version permissionInit(Connection con,VersionableType vType,KeyVa
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return int
- * @param user java.lang.String
- * @param imageName java.lang.String
- */
-public static void replacePreferences(Connection con, User user, Preference[] preferences) throws SQLException {
+public static void replacePreferences(Connection con, KeyFactory keyFactory, User user, Preference[] preferences) throws SQLException {
 
 	String sql =
 		"DELETE FROM " +
@@ -2609,7 +2603,7 @@ public static void replacePreferences(Connection con, User user, Preference[] pr
 	try{
 		sql =
 			"INSERT INTO "+UserPreferenceTable.table.getTableName() +
-			" VALUES (newseq.NEXTVAL,"+user.getID()+",?,?)";
+			" VALUES ("+keyFactory.nextSEQ()+","+user.getID()+",?,?)";
 			
 		pstmt = con.prepareStatement(sql);
 
@@ -4083,7 +4077,7 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 			rset.close();
 			for(int i=0;i<vcs.length;i+= 1){
 				sql = "INSERT INTO "+TFTestResultTable.table.getTableName()+" VALUES("+
-					"NEWSEQ.NEXTVAL"+","+addtr_tsop.getTestCriteriaKey().toString()+","+
+					keyFactory.nextSEQ()+","+addtr_tsop.getTestCriteriaKey().toString()+","+
 					"'"+vcs[i].getName()+"'"+","+
 					"TO_NUMBER('"+vcs[i].getAbsoluteError()+"')"+","+"TO_NUMBER('"+vcs[i].getRelativeError()+"')"+","+
 					"TO_NUMBER('"+vcs[i].getMaxRef()+"')"+","+"TO_NUMBER('"+vcs[i].getMinRef()+"')"+","+"TO_NUMBER('"+vcs[i].getMeanSqError()+"')"+","+

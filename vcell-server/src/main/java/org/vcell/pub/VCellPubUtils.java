@@ -11,6 +11,8 @@ import java.util.List;
 
 import org.jdom.Document;
 import org.jdom.Element;
+import org.vcell.db.KeyFactory;
+import org.vcell.db.postgres.PostgresKeyFactory;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
@@ -34,7 +36,7 @@ public class VCellPubUtils {
 		String pubCitation;
 	}
 
-	private static void read() throws IOException {
+	private static void read(KeyFactory keyFactory) throws IOException {
 		System.out.println("starting to read");
 		Gson gson = new Gson();
 		FileReader reader = new FileReader("src/org/vcell/pub/pubMedData.json");
@@ -116,7 +118,7 @@ public class VCellPubUtils {
 			String url = "NULL";
 			String wittid = Integer.toString(sortedWittPubs.indexOf(pub)); 
 			String sql = "insert into vc_publication (id, title, authors, citation, pubmedid, doi, endnoteid, url, wittid) "
-						+ "values (NewSeq.NEXTVAL,"+title+","+authors+","+citation+","+pubmedid+","+doi+","+endnoteid+","+url+","+wittid+")";
+						+ "values ("+keyFactory.nextSEQ()+","+title+","+authors+","+citation+","+pubmedid+","+doi+","+endnoteid+","+url+","+wittid+")";
 			System.out.println(sql+";");
 		}
 		Document doc = XmlUtil.readXML(new File("src/org/vcell/pub/NRCAMpublishedmodelsConvertedCopy.xml"));
@@ -170,7 +172,7 @@ public class VCellPubUtils {
 				}
 			}
 			String sql = "insert into vc_publication (id, title, authors, year, citation, pubmedid, doi, endnoteid, url, wittid) "
-						+ "values (NewSeq.NEXTVAL,"+title+","+authors+","+year+","+citation+","+pubmedid+","+doi+","+endnoteid+","+url+","+wittid+")";
+						+ "values ("+keyFactory.nextSEQ()+","+title+","+authors+","+year+","+citation+","+pubmedid+","+doi+","+endnoteid+","+url+","+wittid+")";
 //			System.out.println(sql+";");
 		}
 		System.out.println("number of anns records found = "+foundCount);
@@ -181,7 +183,7 @@ public class VCellPubUtils {
 			PublishedModels pm = publishedModels.get(pub);
 			for (KeyValue pmKey : pm.bioModelKeys){
 				String sql = "insert into vc_publicationmodellink (id, pubRef, bioModelRef, mathModelRef) "
-						+ "values (NewSeq.NEXTVAL,(select id from vc_publication where wittid = "+wittCount+" and year is not null),"+pmKey+",NULL);";
+						+ "values ("+keyFactory.nextSEQ()+",(select id from vc_publication where wittid = "+wittCount+" and year is not null),"+pmKey+",NULL);";
 				System.out.println(sql);
 				linkRecordCount++;
 			}
@@ -193,7 +195,7 @@ public class VCellPubUtils {
 	}
 
 
-	private static void readNewRecords(File xmlFile) throws IOException {
+	private static void readNewRecords(File xmlFile, KeyFactory keyFactory) throws IOException {
 		System.out.println("starting to read");
 		/**
 		 * 	public final Field id					= new Field("title",			"VARCHAR2(4000)",	"")
@@ -241,7 +243,7 @@ public class VCellPubUtils {
 			}catch (Exception e){}
 			int wittid = -1;
 			String sql = "insert into vc_publication (id, title, authors, year, citation, pubmedid, doi, endnoteid, url, wittid) "
-						+ "values (NewSeq.NEXTVAL,"+title+","+authors+","+year+","+citation+","+pubmedid+","+doi+","+endnoteid+","+url+","+wittid+")";
+						+ "values ("+keyFactory.nextSEQ()+","+title+","+authors+","+year+","+citation+","+pubmedid+","+doi+","+endnoteid+","+url+","+wittid+")";
 			System.out.println(sql+";");
 			
 			Element biomodelRefsElement = record.getChild("custom3");
@@ -252,7 +254,7 @@ public class VCellPubUtils {
 					for (String bmRef : bmRefs){
 						KeyValue pmKey = new KeyValue(bmRef);
 							String sql_link = "insert into vc_publicationmodellink (id, pubRef, bioModelRef, mathModelRef) "
-									+ "values (NewSeq.NEXTVAL,(select id from vc_publication where title = "+title+" and year is not null),"+pmKey+",NULL);";
+									+ "values ("+keyFactory.nextSEQ()+",(select id from vc_publication where title = "+title+" and year is not null),"+pmKey+",NULL);";
 							System.out.println(sql_link);
 						
 					}
@@ -267,7 +269,7 @@ public class VCellPubUtils {
 	public static void main(String[] args) {
 		try {
 			// read();
-			readNewRecords(new File("src/org/vcell/pub/NewPublishedModels_2016_11_29.xml"));
+			readNewRecords(new File("src/org/vcell/pub/NewPublishedModels_2016_11_29.xml"), new PostgresKeyFactory());
 		}catch (Exception e){
 			e.printStackTrace();
 		}
