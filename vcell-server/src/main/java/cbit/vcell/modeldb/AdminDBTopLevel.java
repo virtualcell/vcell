@@ -288,7 +288,7 @@ public synchronized String getBasicStatistics() throws SQLException,DataAccessEx
 		final int[] pastTime = new int[] {7,30,90,180,365};
 		final String[] pastTimeDescr = new String[] {"last week","last month","last 3 month","last 6 month","last year"};
 		for (int i = 0; i < pastTimeDescr.length; i++) {
-			htmlWithBreak("Users registered ("+pastTimeDescr[i]+")=", sb, stmt, "select count(*) "+QUERY_VALUE+" from vc_userinfo where insertdate >= (sysdate - "+pastTime[i]+")");
+			htmlWithBreak("Users registered ("+pastTimeDescr[i]+")=", sb, stmt, "select count(*) "+QUERY_VALUE+" from vc_userinfo where insertdate >= (current_date - "+pastTime[i]+")");
 		}
 		
 		String totalUsersQuery = "select count(*) "+QUERY_VALUE+" from vc_userinfo";
@@ -354,7 +354,7 @@ public synchronized String getBasicStatistics() throws SQLException,DataAccessEx
 					"SELECT userid,  COUNT(vc_simulationjob.id) simcount FROM vc_userinfo,  vc_simulation,  vc_simulationjob"
 							+ " WHERE vc_userinfo.id = vc_simulation.ownerref AND "
 							+ "vc_simulationjob.simref = vc_simulation.id AND "
-							+ "vc_simulationjob.submitdate >= (sysdate -"+pastTime[i]+")" + " GROUP BY userid ORDER BY simcount desc");
+							+ "vc_simulationjob.submitdate >= (CURRENT_DATE -"+pastTime[i]+")" + " GROUP BY userid ORDER BY simcount desc");
 			ArrayList<String> rows = new ArrayList<>();
 			pastMapRows.put(pastTimeDescr[i], rows);
 			while (rset.next()) {

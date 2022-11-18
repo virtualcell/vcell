@@ -32,6 +32,8 @@ import cbit.sql.Table;
  * This type was created in VisualAge.
  */
 public class SQLCreateAllTables {
+
+	public static final String POSTGRES_DUAL_VIEW = "public.dual";
 /**
  * Insert the method's description here.
  * Creation date: (10/2/2003 12:40:00 PM)
@@ -103,6 +105,23 @@ private static void createTables(Connection con, Table tables[], DatabaseSyntax 
 		pps.close();
 	}
 }
+
+	private static void createViews(Connection con, DatabaseSyntax dbSyntax) throws SQLException {
+		if (dbSyntax != DatabaseSyntax.POSTGRES){
+			return;
+		}
+		//
+		// add fake DUAL table for ORACLE compatibility
+		//
+		String sql = "CREATE VIEW "+POSTGRES_DUAL_VIEW+" AS SELECT CAST('X' as varchar) AS dummy";
+		System.out.println(sql);
+		PreparedStatement pps = con.prepareStatement(sql);
+		boolean status = pps.execute();
+		pps.close();
+	}
+
+
+
 /**
  * This method was created in VisualAge.
  */
@@ -129,11 +148,13 @@ private static void destroyAndRecreateTables(ConnectionFactory conFactory, KeyFa
 				System.out.println("connected....");
 				Table tables[] = getVCellTables();
 				if (c1.isSelected()) {
+					dropViews(con, dbSyntax);
 					dropTables(con, tables, dbSyntax);
 					dropSequence(con, keyFactory);
 				}
 				if (c2.isSelected()) {
 					createTables(con, tables, dbSyntax);
+					createViews(con, dbSyntax);
 					createSequence(con, keyFactory);
 					//
 					// Add special table entries
@@ -202,6 +223,30 @@ private static void dropSequence(Connection con, KeyFactory keyFactory) throws S
 	}
 
 }
+
+	private static void dropViews(Connection con, DatabaseSyntax dbSyntax) throws SQLException {
+		if (dbSyntax != DatabaseSyntax.POSTGRES){
+			return;
+		}
+		final String POSTGRES_DUAL_VIEW = "public.dual";
+		PreparedStatement pps = null;
+		try {
+			String sql = "DROP VIEW IF EXISTS "+POSTGRES_DUAL_VIEW;
+			System.out.println(sql);
+			pps = con.prepareStatement(sql);
+			boolean status = pps.execute();
+		} catch (Exception e) {
+			//e.printStackTrace(System.out);
+			System.out.println(" View " + POSTGRES_DUAL_VIEW +" Not dropped. "+e.getMessage());
+		}finally{
+			if (pps != null){
+				pps.close();
+			}
+		}
+	}
+
+
+
 /**
  * This method was created in VisualAge.
  */
