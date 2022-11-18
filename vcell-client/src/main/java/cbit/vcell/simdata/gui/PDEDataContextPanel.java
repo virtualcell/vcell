@@ -14,6 +14,7 @@ import java.util.Hashtable;
 import java.util.Map.Entry;
 import java.util.Vector;
 
+import cbit.vcell.solver.SimulationModelInfo;
 import org.vcell.util.Compare;
 import org.vcell.util.Coordinate;
 import org.vcell.util.CoordinateIndex;
@@ -410,18 +411,19 @@ public static boolean isInDomain(CartesianMesh cartesianMesh,Domain varDomain,Da
 	if(!cartesianMesh.hasSubvolumeInfo()){
 		return true;
 	}
+	SimulationModelInfo simulationModelInfo = dataInfoProvider.getSimulationModelInfo();
 	if (vt.equals(VariableType.VOLUME) && !(cartesianMesh.isChomboMesh())) {
 		int subvol = cartesianMesh.getSubVolumeFromVolumeIndex(i);
-		if (varDomain != null &&
-			dataInfoProvider.getSimulationModelInfo().getVolumeNameGeometry(subvol) != null &&
-			!dataInfoProvider.getSimulationModelInfo().getVolumeNameGeometry(subvol).equals(varDomain.getName())) {
+		if (varDomain != null && simulationModelInfo != null &&
+			simulationModelInfo.getVolumeNameGeometry(subvol) != null &&
+			!simulationModelInfo.getVolumeNameGeometry(subvol).equals(varDomain.getName())) {
 			return false;
 		}
 	} else if (vt.equals(VariableType.VOLUME_REGION)) {
 		int subvol = cartesianMesh.getVolumeRegionMapSubvolume().get(i);
-		if (varDomain != null &&
-			dataInfoProvider.getSimulationModelInfo().getVolumeNameGeometry(subvol) != null &&
-			!dataInfoProvider.getSimulationModelInfo().getVolumeNameGeometry(subvol).equals(varDomain.getName())) {
+		if (varDomain != null && simulationModelInfo != null &&
+			simulationModelInfo.getVolumeNameGeometry(subvol) != null &&
+			!simulationModelInfo.getVolumeNameGeometry(subvol).equals(varDomain.getName())) {
 			return false;
 		}
 	} else if (vt.equals(VariableType.MEMBRANE) && !(cartesianMesh.isChomboMesh())) {
@@ -429,16 +431,16 @@ public static boolean isInDomain(CartesianMesh cartesianMesh,Domain varDomain,Da
 		int subvol1 =  cartesianMesh.getSubVolumeFromVolumeIndex(insideVolumeIndex);
 		int outsideVolumeIndex = cartesianMesh.getMembraneElements()[i].getOutsideVolumeIndex();
 		int subvol2 =  cartesianMesh.getSubVolumeFromVolumeIndex(outsideVolumeIndex);
-		if (varDomain != null &&
-			dataInfoProvider.getSimulationModelInfo().getMembraneName(subvol1, subvol2, true) != null &&
-			!dataInfoProvider.getSimulationModelInfo().getMembraneName(subvol1, subvol2, true).equals(varDomain.getName())) {
+		if (varDomain != null && simulationModelInfo != null &&
+			simulationModelInfo.getMembraneName(subvol1, subvol2, true) != null &&
+			!simulationModelInfo.getMembraneName(subvol1, subvol2, true).equals(varDomain.getName())) {
 			return false;
 		}
 	} else if (vt.equals(VariableType.MEMBRANE_REGION)) {
 		int[] subvols = cartesianMesh.getMembraneRegionMapSubvolumesInOut().get(i);
-		if (varDomain != null &&
-			dataInfoProvider.getSimulationModelInfo().getMembraneName(subvols[0], subvols[1], true) != null &&
-			!dataInfoProvider.getSimulationModelInfo().getMembraneName(subvols[0], subvols[1], true).equals(varDomain.getName())) {
+		if (varDomain != null && simulationModelInfo != null &&
+			simulationModelInfo.getMembraneName(subvols[0], subvols[1], true) != null &&
+			!simulationModelInfo.getMembraneName(subvols[0], subvols[1], true).equals(varDomain.getName())) {
 			return false;
 		}
 	}

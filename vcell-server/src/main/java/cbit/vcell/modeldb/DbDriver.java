@@ -3111,7 +3111,7 @@ private static Object getLoadTestDetails(Connection con,Integer slowLoadThreshol
 	String sql = "SELECT " +
 		LoadModelsStatTable.table.softwareVers.getUnqualifiedColName()+","+
 		LoadModelsStatTable.table.timeStamp.getUnqualifiedColName()+","+
-		"CASE("+VersionTable.privacy_ColumnName+" WHEN 0 THEN 'PUBLIC' WHEN 1 THEN 'PRIVATE' ELSE 'GROUP') "+PERMISSION_COLUMN+","+
+		"(CASE WHEN PRIVACY_ALIAS=0 THEN 'PUBLIC' WHEN PRIVACY_ALIAS=1 THEN 'PRIVATE' ELSE 'GROUP' END) as "+PERMISSION_COLUMN+","+
 		UserTable.table.userid.getUnqualifiedColName()+","+
 		MODEL_TYPE_COLUMN+","+
 		VersionTable.name_ColumnName+","+
@@ -3131,12 +3131,12 @@ private static Object getLoadTestDetails(Connection con,Integer slowLoadThreshol
 		"SELECT " +
 			LoadModelsStatTable.table.softwareVers.getUnqualifiedColName()+","+
 			LoadModelsStatTable.table.timeStamp.getUnqualifiedColName()+","+
-			VersionTable.privacy_ColumnName+","+
+			VersionTable.privacy_ColumnName+" as PRIVACY_ALIAS,"+
 			VersionTable.versionDate_ColumnName+","+
 			VersionTable.name_ColumnName+","+
 			UserTable.table.userid.getUnqualifiedColName()+","+
-			"'"+LoadTestInfoOpResults.MODELTYPE_BIO+"' "+MODEL_TYPE_COLUMN+","+
-			BioModelTable.table.id.getQualifiedColName() + " " + MODEL_ID_COLUMN+","+
+			"'"+LoadTestInfoOpResults.MODELTYPE_BIO+"' as "+MODEL_TYPE_COLUMN+","+
+			BioModelTable.table.id.getQualifiedColName() + " as " + MODEL_ID_COLUMN+","+
 			LoadModelsStatTable.table.resultFlag.getUnqualifiedColName()+","+
 			LoadModelsStatTable.table.loadTime.getUnqualifiedColName()+","+
 			LoadModelsStatTable.table.errorMessage.getUnqualifiedColName()+","+
@@ -3160,12 +3160,12 @@ private static Object getLoadTestDetails(Connection con,Integer slowLoadThreshol
 		"SELECT " +
 			LoadModelsStatTable.table.softwareVers.getUnqualifiedColName()+","+
 			LoadModelsStatTable.table.timeStamp.getUnqualifiedColName()+","+
-			VersionTable.privacy_ColumnName+","+
+			VersionTable.privacy_ColumnName+" as PRIVACY_ALIAS,"+
 			VersionTable.versionDate_ColumnName+","+
 			VersionTable.name_ColumnName+","+
 			UserTable.table.userid.getUnqualifiedColName()+","+
-			"'"+LoadTestInfoOpResults.MODELTYPE_MATH+"' "+MODEL_TYPE_COLUMN+","+
-			MathModelTable.table.id.getQualifiedColName() + " " + MODEL_ID_COLUMN+","+
+			"'"+LoadTestInfoOpResults.MODELTYPE_MATH+"' as "+MODEL_TYPE_COLUMN+","+
+			MathModelTable.table.id.getQualifiedColName() + " as " + MODEL_ID_COLUMN+","+
 			LoadModelsStatTable.table.resultFlag.getUnqualifiedColName()+","+
 			LoadModelsStatTable.table.loadTime.getUnqualifiedColName()+","+
 			LoadModelsStatTable.table.errorMessage.getUnqualifiedColName()+","+
@@ -3185,7 +3185,7 @@ private static Object getLoadTestDetails(Connection con,Integer slowLoadThreshol
 			MathModelTable.table.id.getQualifiedColName()+ " = "+LoadModelsStatTable.table.mathModelRef.getUnqualifiedColName()+
 			" AND "+
 			UserTable.table.id.getQualifiedColName()+" = " +MathModelTable.table.ownerRef.getQualifiedColName()+
-	" )"+
+	" ) SUBQUERY"+
 	" WHERE "+
 		specialCondition;
 		
