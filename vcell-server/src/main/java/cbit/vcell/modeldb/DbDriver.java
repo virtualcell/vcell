@@ -3005,11 +3005,11 @@ public static TestSuiteNew testSuiteGet(BigDecimal getThisTS,Connection con,User
 		final String SORTHELP2 = "SORTHELP2";
 		sql =
 			"SELECT "+
-				"UPPER("+MathModelTable.table.name.getQualifiedColName()+") "+SORTHELP1+","+"TO_CHAR(NULL) "+SORTHELP2+","+
+				"UPPER("+MathModelTable.table.name.getQualifiedColName()+") "+SORTHELP1+","+"CAST(NULL as CHAR) "+SORTHELP2+","+
 				TFTestCaseTable.table.getTableName()+".*" +","+
-				"TO_NUMBER(NULL) "+BMSCBMRNAME+","+
-				"TO_NUMBER(NULL) "+BMSCSCRNAME+","+
-				"TO_CHAR(NULL) "+SCNAME+","+
+				"CAST(NULL as NUMERIC) "+BMSCBMRNAME+","+
+				"CAST(NULL as NUMERIC) "+BMSCSCRNAME+","+
+				"CAST(NULL as CHAR) "+SCNAME+","+
 				"'MM' "+OBTCTYPECOLUMN+","+MathModelTable.table.name.getQualifiedColName()+" "+OBNAMECOLUMN+
 			" FROM " +
 				TFTestCaseTable.table.getTableName()+","+
@@ -3256,7 +3256,7 @@ private static Object getLoadTestDetails(Connection con,Integer slowLoadThreshol
 	String sql = "SELECT " +
 		LoadModelsStatTable.table.softwareVers.getUnqualifiedColName()+","+
 		LoadModelsStatTable.table.timeStamp.getUnqualifiedColName()+","+
-		"DECODE("+VersionTable.privacy_ColumnName+",0,'PUBLIC',1,'PRIVATE','GROUP') "+PERMISSION_COLUMN+","+
+		"CASE("+VersionTable.privacy_ColumnName+" WHEN 0 THEN 'PUBLIC' WHEN 1 THEN 'PRIVATE' ELSE 'GROUP') "+PERMISSION_COLUMN+","+
 		UserTable.table.userid.getUnqualifiedColName()+","+
 		MODEL_TYPE_COLUMN+","+
 		VersionTable.name_ColumnName+","+
@@ -3885,8 +3885,8 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 				" VALUES("+
 					tcritKey.toString()+","+tcKey.toString()+","+simKey.toString()+","+(simDataRef != null?simDataRef.toString():null)+","+
 				"NULL"+","+
-				(addtcrit_tsop.getMaxRelativeError() != null?"TO_NUMBER('"+addtcrit_tsop.getMaxRelativeError().toString()+"')":"null")+","+
-				(addtcrit_tsop.getMaxAbsoluteError() != null?"TO_NUMBER('"+addtcrit_tsop.getMaxAbsoluteError().toString()+"')":"null")+","+
+				(addtcrit_tsop.getMaxRelativeError() != null?"CAST('"+addtcrit_tsop.getMaxRelativeError().toString()+"' as NUMERIC)":"null")+","+
+				(addtcrit_tsop.getMaxAbsoluteError() != null?"CAST('"+addtcrit_tsop.getMaxAbsoluteError().toString()+"' as NUMERIC)":"null")+","+
 				"NULL,NULL,"+
 				"'"+TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT+"'"+",null"+
 				")";
@@ -3984,8 +3984,8 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 				" VALUES("+
 					tcritKey.toString()+","+tcKey.toString()+","+simKey.toString()+","+(simDataRef != null?simDataRef.toString():null)+","+
 				"null"+","+
-				(addtcrit_tsop.getMaxRelativeError() != null?"TO_NUMBER('"+addtcrit_tsop.getMaxRelativeError().toString()+"')":"null")+","+
-				(addtcrit_tsop.getMaxAbsoluteError() != null?"TO_NUMBER('"+addtcrit_tsop.getMaxAbsoluteError().toString()+"')":"null")+","+
+				(addtcrit_tsop.getMaxRelativeError() != null?"CAST('"+addtcrit_tsop.getMaxRelativeError().toString()+"' as NUMERIC)":"null")+","+
+				(addtcrit_tsop.getMaxAbsoluteError() != null?"CAST('"+addtcrit_tsop.getMaxAbsoluteError().toString()+"' as NUMERIC)":"null")+","+
 				"NULL,NULL,"+"'"+TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT+"'"+",null"+
 				")";
 			stmt.executeUpdate(sql);
@@ -4079,10 +4079,10 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 				sql = "INSERT INTO "+TFTestResultTable.table.getTableName()+" VALUES("+
 					keyFactory.nextSEQ()+","+addtr_tsop.getTestCriteriaKey().toString()+","+
 					"'"+vcs[i].getName()+"'"+","+
-					"TO_NUMBER('"+vcs[i].getAbsoluteError()+"')"+","+"TO_NUMBER('"+vcs[i].getRelativeError()+"')"+","+
-					"TO_NUMBER('"+vcs[i].getMaxRef()+"')"+","+"TO_NUMBER('"+vcs[i].getMinRef()+"')"+","+"TO_NUMBER('"+vcs[i].getMeanSqError()+"')"+","+
-					"TO_NUMBER('"+vcs[i].getTimeAbsoluteError()+"')"+","+"TO_NUMBER('"+vcs[i].getIndexAbsoluteError()+"')"+","+
-					"TO_NUMBER('"+vcs[i].getTimeRelativeError()+"')"+","+"TO_NUMBER('"+vcs[i].getIndexRelativeError()+"')"+
+					"CAST('"+vcs[i].getAbsoluteError()+"' as NUMERIC)"+","+"CAST('"+vcs[i].getRelativeError()+"' as NUMERIC)"+","+
+					"CAST('"+vcs[i].getMaxRef()+"' as NUMERIC)"+","+"CAST('"+vcs[i].getMinRef()+"' as NUMERIC)"+","+"CAST('"+vcs[i].getMeanSqError()+"' as NUMERIC)"+","+
+					"CAST('"+vcs[i].getTimeAbsoluteError()+"' as NUMERIC)"+","+"CAST('"+vcs[i].getIndexAbsoluteError()+"' as INTEGER)"+","+
+					"CAST('"+vcs[i].getTimeRelativeError()+"' as NUMERIC)"+","+"CAST('"+vcs[i].getIndexRelativeError()+"' as INTEGER)"+
 					")";
 				stmt.executeUpdate(sql);
 			}
@@ -4200,8 +4200,8 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 			stmt.executeUpdate(
 				"UPDATE "+TFTestCriteriaTable.table.getTableName()+
 				" SET "+
-					TFTestCriteriaTable.table.maxAbsError.getQualifiedColName()+"="+(maxAbsError != null?"TO_NUMBER("+maxAbsError.toString()+")":"null")+","+
-					TFTestCriteriaTable.table.maxRelError.getQualifiedColName()+"="+(maxRelError != null?"TO_NUMBER("+maxRelError.toString()+")":"null")+","+
+					TFTestCriteriaTable.table.maxAbsError.getUnqualifiedColName()+"="+(maxAbsError != null?"CAST('"+maxAbsError.toString()+"' as NUMERIC)":"null")+","+
+					TFTestCriteriaTable.table.maxRelError.getUnqualifiedColName()+"="+(maxRelError != null?"CAST('"+maxRelError.toString()+"' as NUMERIC)":"null")+","+
 					TFTestCriteriaTable.table.regressionMMSimRef.getQualifiedColName()+"="+(regrMathModelSimLink != null?regrMathModelSimLink.toString():"null")+
 				" WHERE "+TFTestCriteriaTable.table.id.getQualifiedColName()+"="+tcritKey.toString()
 				);
@@ -4269,8 +4269,8 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 			stmt.executeUpdate(
 				"UPDATE "+TFTestCriteriaTable.table.getTableName()+
 				" SET "+
-					TFTestCriteriaTable.table.maxAbsError.getQualifiedColName()+"="+(maxAbsError != null?"TO_NUMBER("+maxAbsError.toString()+")":"null")+","+
-					TFTestCriteriaTable.table.maxRelError.getQualifiedColName()+"="+(maxRelError != null?"TO_NUMBER("+maxRelError.toString()+")":"null")+","+
+					TFTestCriteriaTable.table.maxAbsError.getUnqualifiedColName()+"="+(maxAbsError != null?"CAST('"+maxAbsError.toString()+"' as NUMERIC)":"null")+","+
+					TFTestCriteriaTable.table.maxRelError.getUnqualifiedColName()+"="+(maxRelError != null?"CAST('"+maxRelError.toString()+"' as NUMERIC)":"null")+","+
 					TFTestCriteriaTable.table.regressionBMAPPRef.getQualifiedColName()+"="+(bmscAppKey != null?bmscAppKey.toString():"NULL")+","+
 					TFTestCriteriaTable.table.regressionBMSimRef.getQualifiedColName()+"="+(bmsltSimKey != null?bmsltSimKey.toString():"NULL")+
 				" WHERE "+TFTestCriteriaTable.table.id.getQualifiedColName()+"="+tcritKey.toString()
