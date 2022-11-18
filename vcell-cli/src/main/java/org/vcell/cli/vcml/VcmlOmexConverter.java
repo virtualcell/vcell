@@ -4,30 +4,12 @@ import cbit.util.xml.VCLogger;
 import cbit.util.xml.VCLoggerException;
 import cbit.util.xml.XmlRdfUtil;
 import cbit.util.xml.XmlUtil;
-import cbit.util.xml.VCLogger.ErrorType;
-import cbit.util.xml.VCLogger.Priority;
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.biomodel.ModelUnitConverter;
-import cbit.vcell.field.FieldFunctionArguments;
-import cbit.vcell.field.FieldUtilities;
 import cbit.vcell.mapping.MappingException;
-import cbit.vcell.mapping.MathMappingCallbackTaskAdapter;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
-import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
-import cbit.vcell.math.Constant;
-import cbit.vcell.math.MathCompareResults;
-import cbit.vcell.math.MathDescription;
-import cbit.vcell.math.SubDomain;
-import cbit.vcell.math.Variable;
-import cbit.vcell.parser.Expression;
 import cbit.vcell.resource.NativeLib;
-import cbit.vcell.resource.OperatingSystemInfo;
-import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.server.SimulationJobStatusPersistent;
-import cbit.vcell.solver.MathOverrides;
 import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.SolverDescription;
 //import cbit.vcell.util.NativeLoader;
 import cbit.vcell.xml.XMLSource;
@@ -36,7 +18,6 @@ import cbit.vcell.xml.XmlParseException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.jlibsedml.SEDMLDocument;
-import org.jlibsedml.SedML;
 import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
@@ -47,13 +28,11 @@ import org.openrdf.rio.RDFHandlerException;
 import org.sbml.libcombine.CombineArchive;
 import org.sbml.libcombine.KnownFormats;
 import org.sbpax.impl.HashGraph;
-import org.sbpax.schemas.BioPAX3;
 import org.sbpax.schemas.util.DefaultNameSpaces;
 import org.sbpax.schemas.util.OntUtil;
 import org.sbpax.util.SesameRioUtil;
+import org.vcell.admin.cli.CLIDatabaseService;
 import org.vcell.cli.*;
-import org.vcell.sbml.vcell.SBMLImportException;
-import org.vcell.sbml.vcell.SBMLImporter;
 import org.vcell.sedml.ModelFormat;
 import org.vcell.sedml.PubMet;
 import org.vcell.sedml.SEDMLExporter;
@@ -63,9 +42,7 @@ import org.vcell.util.document.*;
 import java.beans.PropertyVetoException;
 import java.io.*;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.sql.SQLException;
@@ -112,7 +89,7 @@ public class VcmlOmexConverter {
 									File input,
 									File outputDir,
 									ModelFormat modelFormat,
-									CLIRecorder cliLogger, 
+									CLIRecorder cliLogger,
 									boolean bHasDataOnly,
 									boolean bMakeLogsOnly,
 									boolean bNonSpatialOnly,
