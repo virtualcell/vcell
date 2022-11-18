@@ -341,7 +341,7 @@ private static void initLoadModelsStatTable(String softwareVersion,User[] users,
 		
 		//Scan only users condition
 		String onlyUsersClause = null;
-		if(users != null){
+		if(users != null && users.length>0){
 			StringBuffer usersSB = new StringBuffer();
 			for (int i = 0; i < users.length; i++) {
 				usersSB.append((i>0?",":"")+users[i].getID());
@@ -351,7 +351,7 @@ private static void initLoadModelsStatTable(String softwareVersion,User[] users,
 		}
 		//Scan only model user conditions
 		String onlyModelsClause = null;
-		if(bioAndMathModelKeys != null){
+		if(bioAndMathModelKeys != null && bioAndMathModelKeys.length>0){
 			StringBuffer modelsSB = new StringBuffer();
 			for (int i = 0; i < bioAndMathModelKeys.length; i++) {
 				modelsSB.append((i>0?",":"")+bioAndMathModelKeys[i].toString());
