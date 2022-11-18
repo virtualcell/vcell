@@ -893,9 +893,14 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 		reactionCartoonMolecule.setModel(model);
 		reactionCartoonRule.setModel(model);
 		refreshButtons();
-		if(getModel() != null) {	// TODO: when rules are present, select button "grouped by molecule"
-			getGroupMoleculeButton().setSelected(true);	// select by default the grouped by molecule button
-			setViewMode("groupmolecule");				// show by default the groupmolecule view
+		if(getModel() != null) {
+			if(!getModel().getRbmModelContainer().getReactionRuleList().isEmpty()) {
+				getGroupMoleculeButton().setSelected(true);	// select by default the grouped by molecule button
+				setViewMode("groupmolecule");				// show by default the groupmolecule view
+			} else {
+				getUngroupButton().setSelected(true);		// select by default the ungrouped by molecule button
+				setViewMode("ungroup");						// show by default the ungrouped view
+			}
 		}
 	}
 	public void selectedObjectsChanged() {
