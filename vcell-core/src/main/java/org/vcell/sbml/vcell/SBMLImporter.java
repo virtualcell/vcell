@@ -912,7 +912,7 @@ public class SBMLImporter {
 	 * Translate Expressions from SBML symbols to VCell Symbols in the correct namespace and context
 	 *
 	 */
-	private static Expression adjustExpression(org.sbml.jsbml.Model sbmlModel, Expression sbmlExpr, NameScope namescope,
+	private static Expression adjustExpression(AbstractNamedSBase sbmlContainer, Expression sbmlExpr, NameScope namescope,
 											   SBMLSymbolMapping sbmlSymbolMapping, SymbolContext symbolContext) throws ExpressionException {
 		String[] symbols = sbmlExpr.getSymbols();
 		if (symbols == null || symbols.length == 0){
@@ -924,7 +924,12 @@ public class SBMLImporter {
 				logger.info("adjustExpression(): replacing '"+TIME_SYMBOL_OVERRIDE+"' with 't' in "+adjustedExpr.infix());
 				adjustedExpr.substituteInPlace(new Expression(TIME_SYMBOL_OVERRIDE), new Expression("t"));
 			}else {
-				SBase sbase = findSBase(sbmlModel, sbmlSymbol);
+				SBase sbase = null;
+				if (sbmlContainer instanceof org.sbml.jsbml.Model){
+					sbase = findSBase((org.sbml.jsbml.Model)sbmlContainer, sbmlSymbol);
+				}else if (sbmlContainer instanceof Reaction){
+					sbase = findSBase((Reaction)sbmlContainer,sbmlSymbol);
+				}
 				SymbolTableEntry vcellSymbolTableEntry = sbmlSymbolMapping.getSte(sbase, symbolContext);
 				if (vcellSymbolTableEntry != null) {
 					if (namescope instanceof SpeciesContextSpecNameScope && vcellSymbolTableEntry instanceof SpeciesContextSpecParameter) {
@@ -955,15 +960,33 @@ public class SBMLImporter {
 			throw new RuntimeException("sbmlSid cannot be null");
 		}
 		SBase sbase_from_model = sbmlModel.getSBaseById(sbmlSid);
-		Optional<? extends TreeNode> sbase_treeNode = sbmlModel.filter(new IdFilter(sbmlSid)).stream().findFirst(); // getSBaseById(sbmlSymbol);
-		SBase sbase_from_tree = null;
-		if (sbase_treeNode.isPresent() && (sbase_treeNode.get() instanceof SBase)){
-			sbase_from_tree = (SBase)sbase_treeNode.get();
-		}
-		if (sbase_from_model != null && sbase_from_tree == null){
+		List<SBase> sbase_nodes = sbmlModel.filter(new IdFilter(sbmlSid))
+				.stream().filter(n -> n instanceof SBase).map(n -> (SBase)n).collect(Collectors.toList());
+		if (sbase_from_model != null && sbase_nodes.size() == 0){
 			throw new RuntimeException("unexpected, found sid in model, but not in tree");
 		}
-		return sbase_from_tree;
+		if (sbase_nodes.size()==1){
+			return sbase_nodes.get(0);
+		}else{
+			return sbase_from_model;
+		}
+	}
+
+
+	private static SBase findSBase(Reaction sbmlReaction, String sbmlSid) {
+		if (sbmlSid == null){
+			throw new RuntimeException("sbmlSid cannot be null");
+		}
+		SBase sbase_from_model = sbmlReaction.getModel().getSBaseById(sbmlSid);
+		List<SBase> sbase_nodes = sbmlReaction.filter(new IdFilter(sbmlSid))
+				.stream().filter(n -> n instanceof SBase).map(n -> (SBase)n).collect(Collectors.toList());
+		if (sbase_nodes.size() == 1){
+			return sbase_nodes.get(0);
+		}
+		if (sbase_nodes.size()>1){
+			throw new RuntimeException("found "+sbase_nodes.size()+" SBase objects with sid '"+sbmlSid+"'");
+		}
+		return sbase_from_model;
 	}
 
 //	private static void processParameters(BioModel vcBioModel) throws ExpressionException, PropertyVetoException {
@@ -3044,7 +3067,7 @@ public class SBMLImporter {
 				Kinetics kinetics;
 				if (kLaw != null) {
 					Expression sbmlKLawRateExpr = getExpressionFromFormula(kLaw.getMath(), lambdaFunctions, vcLogger);
-					Expression vcellKLawExpr = adjustExpression(sbmlModel, sbmlKLawRateExpr, vcReaction.getNameScope(), sbmlSymbolMapping, SymbolContext.RUNTIME);
+					Expression vcellKLawExpr = adjustExpression(kLaw.getParent(), sbmlKLawRateExpr, vcReaction.getNameScope(), sbmlSymbolMapping, SymbolContext.RUNTIME);
 					Expression vcRateExpression = new Expression(vcellKLawExpr);
 
 					// Check the kinetic rate equation for occurances of any species in the model that is not a reaction participant.
@@ -3099,8 +3122,8 @@ public class SBMLImporter {
 						String paramName = p.getId();
 						KineticsParameter kineticsParameter = kinetics.getKineticsParameter(paramName);
 						if (kineticsParameter == null) {
-							//add unresolved for now to prevent errors in kinetics.setParameterValue(kp,vcRateExpression) below 
-							kinetics.addUnresolvedParameter(paramName); 
+							//add unresolved for now to prevent errors in kinetics.setParameterValue(kp,vcRateExpression) below
+							kinetics.addUnresolvedParameter(paramName);
 						}
 					}
 					
@@ -3158,6 +3181,7 @@ public class SBMLImporter {
 							UnresolvedParameter ur = kinetics.getUnresolvedParameter(paramName);
 							if (ur != null) {
 								kinetics.addUserDefinedKineticsParameter(paramName,exp,paramUnit);
+								sbmlSymbolMapping.putRuntime(param, kinetics.getKineticsParameter(paramName));
 								lpSet = true;
 							}
 						}
