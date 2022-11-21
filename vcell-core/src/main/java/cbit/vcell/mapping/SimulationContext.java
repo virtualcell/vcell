@@ -3790,7 +3790,7 @@ public void updateAll(boolean bForceUpgrade) throws MappingException {
 				// choose the first structure in model and set its size to '1'.
 				Structure struct = getModel().getStructure(0);
 				double structSize = 1.0;
-				StructureSizeSolver.updateAbsoluteStructureSizes(this, struct, structSize, struct.getStructureSize().getUnitDefinition());
+				StructureSizeSolver.updateAbsoluteStructureSizes_symbolic(this, struct, structSize, struct.getStructureSize().getUnitDefinition());
 			}
 		}
 
