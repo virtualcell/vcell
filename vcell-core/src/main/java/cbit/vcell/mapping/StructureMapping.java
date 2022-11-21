@@ -234,7 +234,7 @@ public abstract class StructureMapping implements Matchable, ScopedSymbolTable, 
 		public void setExpression(Expression expression) throws ExpressionBindingException {
 			if (expression!=null){
 				expression = new Expression(expression);
-				expression.bindExpression(StructureMapping.this);
+				expression.bindExpression(getSimulationContext());
 			}
 			Expression oldValue = fieldParameterExpression;
 			fieldParameterExpression = expression;

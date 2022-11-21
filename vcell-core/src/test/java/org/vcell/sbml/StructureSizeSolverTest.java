@@ -4,6 +4,7 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.mapping.*;
 import cbit.vcell.math.Constant;
+import cbit.vcell.math.Function;
 import cbit.vcell.math.MathCompareResults;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.model.Model;
@@ -256,6 +257,195 @@ public class StructureSizeSolverTest {
             Assert.assertTrue("VolFract_Cytosol value doesn't match solution", equiv(val_VolFract_Cytosol, (val_Size_Cytosol + val_Size_Nucleus) / (val_Size_Extracellular + val_Size_Cytosol + val_Size_Nucleus)));
             Assert.assertTrue("SurfToVol_NM value doesn't match solution", equiv(val_SurfToVol_NM, val_Size_NM / val_Size_Nucleus));
             Assert.assertTrue("SurfToVol_PM value doesn't match solution", equiv(val_SurfToVol_PM, val_Size_PM / (val_Size_Cytosol + val_Size_Nucleus)));
+        }
+    }
+
+
+    @Test
+    public void test_legacyTransformer_nonspatial_other() throws XmlParseException, ExpressionException, MappingException {
+        InputStream legacyBioModelInputStream = VcmlTestSuiteFiles.getVcmlTestCase("biomodel_17028306.vcml");
+        String legacyModelVcml = new BufferedReader(new InputStreamReader(legacyBioModelInputStream))
+                .lines().collect(Collectors.joining("\n"));
+
+        //
+        // BEFORE TRANSFORMATION, verify state of model
+        //
+        {
+            //
+            // check that original Application has relative sizes set as expected, and that all absolute sizes are null
+            //
+            BioModel legacyBioModel = XmlHelper.XMLToBioModel(new XMLSource(legacyModelVcml));
+            GeometryContext geometryContext = legacyBioModel.getSimulationContext(0).getGeometryContext();
+            Model model = legacyBioModel.getModel();
+
+            Structure PM = model.getStructure("PM");
+            StructureMapping.StructureMappingParameter SurfToVol_PM = geometryContext.getStructureMapping(PM).getParameterFromRole(StructureMapping.ROLE_SurfaceToVolumeRatio);
+            StructureMapping.StructureMappingParameter VolFract_Cell = geometryContext.getStructureMapping(PM).getParameterFromRole(StructureMapping.ROLE_VolumeFraction);
+            StructureMapping.StructureMappingParameter Size_PM = geometryContext.getStructureMapping(PM).getParameterFromRole(StructureMapping.ROLE_Size);
+
+            Structure MitoticCell = model.getStructure("MitoticCell");
+            StructureMapping.StructureMappingParameter Size_MitoticCell = geometryContext.getStructureMapping(MitoticCell).getParameterFromRole(StructureMapping.ROLE_Size);
+
+            Structure Cell = model.getStructure("Cell");
+            StructureMapping.StructureMappingParameter Size_Cell = geometryContext.getStructureMapping(Cell).getParameterFromRole(StructureMapping.ROLE_Size);
+
+            Assert.assertEquals("unexpected SurfToVol_PM", "1.0", SurfToVol_PM.getExpression().infix());
+            Assert.assertEquals("unexpected VolFract_Cell", "0.2", VolFract_Cell.getExpression().infix());
+
+            Assert.assertEquals("expected Size_PM exp to be initially null", null, Size_PM.getExpression());
+            Assert.assertEquals("expected Size_Cell exp to initially be null", null, Size_Cell.getExpression());
+            Assert.assertEquals("expected Size_MitoticCell exp to initially be null", null, Size_MitoticCell.getExpression());
+        }
+
+        //
+        // AFTER TRANSFORMATION, verify state of model
+        //
+        SimulationContext transformedSimContext;
+        double expected_Size_MitoticCell;
+        {
+            //
+            // check that transformed Application has absolute sizes set as expected
+            //
+            BioModel legacyBioModelCloned = XmlHelper.XMLToBioModel(new XMLSource(legacyModelVcml));
+            Model model = legacyBioModelCloned.getModel();
+
+            // transform the model using Legacy Transformer
+            SimulationContext.MathMappingCallback mmc = new MathMappingCallbackTaskAdapter(null);
+            LegacySimContextTransformer legacySimContextTransformer = new LegacySimContextTransformer();
+            SimContextTransformer.SimContextTransformation simContextTransformation = legacySimContextTransformer.transform(legacyBioModelCloned.getSimulationContext(0), mmc, null);
+            transformedSimContext = simContextTransformation.transformedSimContext;
+            GeometryContext geometryContextTransformed = transformedSimContext.getGeometryContext();
+
+
+            Structure PM = model.getStructure("PM");
+            StructureMapping.StructureMappingParameter SurfToVol_PM = geometryContextTransformed.getStructureMapping(PM).getParameterFromRole(StructureMapping.ROLE_SurfaceToVolumeRatio);
+            StructureMapping.StructureMappingParameter VolFract_Cell = geometryContextTransformed.getStructureMapping(PM).getParameterFromRole(StructureMapping.ROLE_VolumeFraction);
+            StructureMapping.StructureMappingParameter Size_PM_transformed = geometryContextTransformed.getStructureMapping(PM).getParameterFromRole(StructureMapping.ROLE_Size);
+
+            Structure Cell = model.getStructure("Cell");
+            StructureMapping.StructureMappingParameter Size_Cell_transformed = geometryContextTransformed.getStructureMapping(Cell).getParameterFromRole(StructureMapping.ROLE_Size);
+
+            Structure MitoticCell = model.getStructure("MitoticCell");
+            StructureMapping.StructureMappingParameter Size_MitoticCell_transformed = geometryContextTransformed.getStructureMapping(MitoticCell).getParameterFromRole(StructureMapping.ROLE_Size);
+
+            Assert.assertEquals("unexpected SurfToVol_PM", "1.0", SurfToVol_PM.getExpression().infix());
+            Assert.assertEquals("unexpected VolFract_Cell", "0.2", VolFract_Cell.getExpression().infix());
+
+            String[] symbols = new String[]{
+                    "MitoticCell_mapping.Size",
+                    "PM_mapping.VolFraction",
+                    "PM_mapping.SurfToVolRatio"
+            };
+            SimpleSymbolTable symbolTable = new SimpleSymbolTable(symbols);
+
+            // chosen as 1.0 for Cytosol size as it is the first StructureMapping (see LegacySimContextTransformer.transform)
+            double specified_MitoticCell_size = 1.0;
+            double original_SurfToVol_PM = 1.0;
+            double original_VolFract_PM = 0.2;
+
+            double[] values = new double[]{
+                    specified_MitoticCell_size,
+                    original_VolFract_PM,
+                    original_SurfToVol_PM
+            };
+
+            double val_Size_Cell = new Expression(Size_Cell_transformed.getExpression()).bindExpressionAndReturn(symbolTable).evaluateVector(values);
+            double val_Size_MitoticCell = new Expression(Size_MitoticCell_transformed.getExpression()).bindExpressionAndReturn(symbolTable).evaluateVector(values);
+            double val_Size_PM = new Expression(Size_PM_transformed.getExpression()).bindExpressionAndReturn(symbolTable).evaluateVector(values);
+
+            //
+            // assuming the following definitions (of relative sizes in terms of absolute sizes) ... need to solve for the inverse of course.
+            //
+            //       (1) SurfToVol_PM = PM_Size / Cell_Size
+            //       (2) VolFract_PM = Cell_Size / (MitoticCell_Size + Cell_Size)
+            //
+            //  given
+            //       MitoticCell_Size = 1.0
+            //       SurfToVol_PM = 1.0
+            //       VolFract_PM = 0.2
+            //
+            //  2 equations, 2 unknowns - need to solve for Cell_Size and PM_Size
+            //
+            //     solve (1) for Cell_size in terms of PM_Size and SurfToVol_PM (note that PM_Size is still an unknown)
+            //
+            //       (a) Cell_Size = PM_Size/SurfToVol_PM
+            //
+            //     substitute (PM_Size/SurfToVol_PM) into (2) and solve for PM_Size (all steps shown - no mistakes)
+            //
+            //       (b) VolFract_PM = (PM_Size/SurfToVol_PM) / (MitoticCell_Size + (PM_Size/SurfToVol_PM))    ... substitute Cell_Size
+            //       (c) VolFract_PM * (MitoticCell_Size + (PM_Size/SurfToVol_PM)) = (PM_Size/SurfToVol_PM)    ... cross multiply
+            //       (d) VolFract_PM * (MitoticCell_Size * SurfToVol_PM + PM_Size) = PM_Size                   ... multiply through by SurfToVol_PM
+            //       (e) VolFract_PM * MitoticCell_Size * SurfToVol_PM + VolFract_PM * PM_Size = PM_Size       ... distribute VolFract_PM
+            //       (f) VolFract_PM * MitoticCell_Size * SurfToVol_PM  = PM_Size * (1 - VolFract_PM)          ... collect terms
+            //       (g) PM_Size = VolFract_PM * MitoticCell_Size * SurfToVol_PM / (1 - VolFract_PM)           ... <<< solve for PM_Size >>>
+            //
+            //     subsitute PM_Size from (g) into (a)
+            //
+            //       (h) Cell_Size = VolFract_PM * MitoticCell_Size / (1 - VolFract_PM)                        ... <<< solve for Cell_Size >>>
+            //
+            //
+            expected_Size_MitoticCell = specified_MitoticCell_size;
+            double expected_Size_Cell = original_VolFract_PM * specified_MitoticCell_size / (1 - original_VolFract_PM);
+            double expected_Size_PM = original_VolFract_PM * specified_MitoticCell_size * original_SurfToVol_PM / (1 - original_VolFract_PM);
+
+            // verify that hand-derived solution matches computed solution
+            Assert.assertTrue("unexpected Size_PM, " + expected_Size_PM + " !~ " + val_Size_PM, equiv(expected_Size_PM, val_Size_PM));
+            Assert.assertTrue("unexpected Size_Cell, " + expected_Size_Cell + " !~ " + val_Size_Cell, equiv(expected_Size_Cell, val_Size_Cell));
+            Assert.assertTrue("unexpected Size_MitoticCell, " + expected_Size_MitoticCell + " !~ " + val_Size_MitoticCell, equiv(expected_Size_MitoticCell, val_Size_MitoticCell));
+
+            //
+            // verify expected relationships between relative and absolute sizes for this model
+            //
+            double val_VolFract_Cell = VolFract_Cell.getExpression().evaluateConstant();
+            double val_SurfToVol_PM = SurfToVol_PM.getExpression().evaluateConstant();
+
+            //
+            // verify relative sizes in terms of solved absolute sizes
+            //
+            Assert.assertTrue("VolFract_Cell value doesn't match solution", equiv(val_VolFract_Cell, (val_Size_Cell) / (val_Size_MitoticCell + val_Size_Cell)));
+            Assert.assertTrue("SurfToVol_PM value doesn't match solution", equiv(val_SurfToVol_PM, val_Size_PM / (val_Size_Cell)));
+
+            // now look for algebraic loops in solution
+            boolean bVerifySameSymbols = true;
+            boolean size_cell_equiv = ExpressionUtils.functionallyEquivalent(
+                    new Expression("PM_mapping.VolFraction * MitoticCell_mapping.Size / (1 - PM_mapping.VolFraction)"),
+                    Size_Cell_transformed.getExpression(),
+                    bVerifySameSymbols);
+            boolean size_pm_equiv = ExpressionUtils.functionallyEquivalent(
+                    new Expression("PM_mapping.VolFraction * MitoticCell_mapping.Size * PM_mapping.SurfToVolRatio / (1 - PM_mapping.VolFraction)"),
+                    Size_PM_transformed.getExpression(),
+                    bVerifySameSymbols);
+            Assert.assertTrue("unexpected expression for Size_Cell: " + Size_Cell_transformed.getExpression().infix(), size_cell_equiv);
+            Assert.assertTrue("unexpected expression for Size_PM: " + Size_PM_transformed.getExpression().infix(), size_pm_equiv);
+
+            //
+            // now look at the generated math and verify that the corresponding Constants/Functions are correct
+            //
+            legacyBioModelCloned.updateAll(true);
+            MathDescription transformedMath = legacyBioModelCloned.getSimulationContext(0).getMathDescription();
+            Constant mathvar_Size_MitoticCell = (Constant) transformedMath.getVariable("Size_MitoticCell");
+            Constant mathvar_VolFract_PM = (Constant) transformedMath.getVariable("VolFract_PM");
+            Constant mathvar_SurfToVol_PM = (Constant) transformedMath.getVariable("SurfToVol_PM");
+            Function mathvar_Size_Cell = (Function) transformedMath.getVariable("Size_Cell");
+            Function mathvar_Size_PM = (Function) transformedMath.getVariable("Size_PM");
+
+            boolean mathvar_Size_MitoticCell_equiv = ExpressionUtils.functionallyEquivalent(
+                    new Expression(expected_Size_MitoticCell), mathvar_Size_MitoticCell.getExpression(), bVerifySameSymbols);
+            boolean mathvar_VolFract_PM_equiv = ExpressionUtils.functionallyEquivalent(
+                    new Expression(original_VolFract_PM), mathvar_VolFract_PM.getExpression(), bVerifySameSymbols);
+            boolean mathvar_SurfToVol_PM_equiv = ExpressionUtils.functionallyEquivalent(
+                    new Expression(original_SurfToVol_PM), mathvar_SurfToVol_PM.getExpression(), bVerifySameSymbols);
+            boolean mathvar_Size_Cell_equiv = ExpressionUtils.functionallyEquivalent(
+                    new Expression("VolFract_PM * Size_MitoticCell / (1 - VolFract_PM)"),
+                    mathvar_Size_Cell.getExpression(), bVerifySameSymbols);
+            boolean mathvar_Size_PM_equiv = ExpressionUtils.functionallyEquivalent(
+                    new Expression("VolFract_PM * Size_MitoticCell * SurfToVol_PM / (1 - VolFract_PM)"),
+                    mathvar_Size_PM.getExpression(), bVerifySameSymbols);
+            Assert.assertTrue("mathVar_Size_MitoticCell didn't match", mathvar_Size_MitoticCell_equiv);
+            Assert.assertTrue("mathVar_VolFract_PM didn't match", mathvar_VolFract_PM_equiv);
+            Assert.assertTrue("mathvar_SurfToVol_PM value didn't match", mathvar_SurfToVol_PM_equiv);
+            Assert.assertTrue("mathvar_Size_Cell didn't match", mathvar_Size_Cell_equiv);
+            Assert.assertTrue("mathvar_Size_PM didn't match", mathvar_Size_PM_equiv);
         }
     }
 

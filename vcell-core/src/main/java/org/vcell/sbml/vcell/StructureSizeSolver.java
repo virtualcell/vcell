@@ -14,7 +14,6 @@ import java.util.Enumeration;
 import java.util.List;
 
 import cbit.vcell.matrix.MatrixException;
-import cbit.vcell.parser.ExpressionBindingException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.util.TokenMangler;
@@ -82,15 +81,6 @@ public class StructureSizeSolver {
 			return null;
 		}
 
-		public SolverParameter get(StructureMappingParameter param){
-			for (SolverParameter solverParameter : solverParameters){
-				if (solverParameter.parameter == param){
-					return solverParameter;
-				}
-			}
-			return null;
-		}
-		
 		public String getName(StructureMappingParameter param){
 			for (SolverParameter solverParameter : solverParameters){
 				if (solverParameter.parameter == param){
