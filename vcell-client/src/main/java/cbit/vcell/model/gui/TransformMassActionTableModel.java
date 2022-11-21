@@ -369,33 +369,54 @@ public class TransformMassActionTableModel extends AbstractTableModel implements
 	public void propertyChange(PropertyChangeEvent evt) {
 		if (evt.getSource() == this && evt.getPropertyName().equals("model"))
 		{
-			transMAs = new TransformMassActions();
-			try
+//			transMAs = new TransformMassActions();
+//			try
+//			{
+//				transMAs.transformReactions(getModel().getReactionSteps());
+//			}catch(Exception e)
+//			{
+//				System.out.println(e.getMessage());
+//			}
+//			//initial values for checkbox
+//			isSelected = new boolean[getModel().getReactionSteps().length];
+//			for(int i=0; i<getModel().getReactionSteps().length; i++)
+//			{
+//				if(getModel().getReactionSteps()[i] instanceof SimpleReaction)
+//				{
+//					if(!getModel().getReactionSteps()[i].getKinetics().getKineticsDescription().equals(KineticsDescription.MassAction) && transMAs.getIsTransformable()[i])
+//					{
+//						isSelected[i] = true;
+//					}
+//					else
+//					{
+//						isSelected[i] = false;
+//					}
+//				}
+//			}
+//			//setData(getUnsortedParameters());
+//			fireTableDataChanged();
+		}
+	}
+	
+	public void setTransformation(TransformMassActions transformMassActions) {
+		transMAs = transformMassActions;
+		//initial values for checkbox
+		isSelected = new boolean[getModel().getReactionSteps().length];
+		for(int i=0; i<getModel().getReactionSteps().length; i++)
+		{
+			if(getModel().getReactionSteps()[i] instanceof SimpleReaction)
 			{
-				transMAs.transformReactions(getModel().getReactionSteps());
-			}catch(Exception e)
-			{
-				System.out.println(e.getMessage());
-			}
-			//initial values for checkbox
-			isSelected = new boolean[getModel().getReactionSteps().length];
-			for(int i=0; i<getModel().getReactionSteps().length; i++)
-			{
-				if(getModel().getReactionSteps()[i] instanceof SimpleReaction)
+				if(!getModel().getReactionSteps()[i].getKinetics().getKineticsDescription().equals(KineticsDescription.MassAction) && transMAs.getIsTransformable()[i])
 				{
-					if(!getModel().getReactionSteps()[i].getKinetics().getKineticsDescription().equals(KineticsDescription.MassAction) && transMAs.getIsTransformable()[i])
-					{
-						isSelected[i] = true;
-					}
-					else
-					{
-						isSelected[i] = false;
-					}
+					isSelected[i] = true;
+				}
+				else
+				{
+					isSelected[i] = false;
 				}
 			}
-			//setData(getUnsortedParameters());
-			fireTableDataChanged();
 		}
+		fireTableDataChanged();
 	}
 
 	

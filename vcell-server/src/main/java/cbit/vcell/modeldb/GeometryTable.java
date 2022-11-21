@@ -29,8 +29,7 @@ import cbit.sql.Field.SQLDataType;
 import cbit.sql.Table;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryInfo;
-import cbit.vcell.modeldb.DatabasePolicySQL.JoinOp;
-import cbit.vcell.modeldb.DatabasePolicySQL.OuterJoin;
+import cbit.vcell.modeldb.DatabasePolicySQL.LeftOuterJoin;
 /**
  * This type was created in VisualAge.
  */
@@ -55,12 +54,7 @@ private GeometryTable() {
 	super(TABLE_NAME,GeometryTable.REF_TYPE);
 	addFields(fields);
 }
-/**
- * This method was created in VisualAge.
- * @return Model
- * @param rset ResultSet
- * @param log SessionLog
- */
+
 public Geometry getGeometry(ResultSet rset, Connection con) throws SQLException,DataAccessException,PropertyVetoException{
 
 	int dim = rset.getInt(dimension.toString());
@@ -82,12 +76,7 @@ public Geometry getGeometry(ResultSet rset, Connection con) throws SQLException,
 	
 	return geometry;
 }
-/**
- * This method was created in VisualAge.
- * @return cbit.vcell.geometry.GeometryInfo
- * @param rset java.sql.ResultSet
- * @param log cbit.vcell.server.SessionLog
- */
+
 public VersionInfo getInfo(ResultSet rset,Connection con) throws SQLException,DataAccessException {
 
 	java.math.BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
@@ -146,25 +135,15 @@ public String getInfoSQL(User user,String extraConditions,String special,boolean
 	Table[] t = {gTable,userTable,eTable,swvTable};
 	
 	switch (dbSyntax){
-	case ORACLE:{
-		String condition = eTable.id.getQualifiedColName() + " = " + gTable.extentRef.getQualifiedColName() +             // links in the extent table
-						   " AND " + userTable.id.getQualifiedColName() + " = " + gTable.ownerRef.getQualifiedColName() +  // links in the userTable
-				           " AND " + gTable.id.getQualifiedColName() + " = " + swvTable.versionableRef.getQualifiedColName()+"(+) ";
-		if (extraConditions != null && extraConditions.trim().length()>0){
-			condition += " AND "+extraConditions;
-		}
-		sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,(OuterJoin)null,condition,special,dbSyntax,bCheckPermission);
-		return sql;
-	}
+	case ORACLE:
 	case POSTGRES:{
 		String condition = eTable.id.getQualifiedColName() + " = " + gTable.extentRef.getQualifiedColName() +             // links in the extent table
 						   " AND " + userTable.id.getQualifiedColName() + " = " + gTable.ownerRef.getQualifiedColName() +  " "; // links in the userTable
-				        //   " AND " + gTable.id.getQualifiedColName() + " = " + swvTable.versionableRef.getQualifiedColName()+"(+) ";
 		if (extraConditions != null && extraConditions.trim().length()>0){
 			condition += " AND "+extraConditions;
 		}
-		OuterJoin outerJoin = new OuterJoin(gTable, swvTable, JoinOp.LEFT_OUTER_JOIN, gTable.id, swvTable.versionableRef);
-		sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,outerJoin,condition,special,dbSyntax,bCheckPermission);
+		LeftOuterJoin outerJoin = new LeftOuterJoin(gTable, swvTable, gTable.id, swvTable.versionableRef);
+		sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,outerJoin,condition,special,bCheckPermission);
 		return sql;
 	}
 	default:{
@@ -172,12 +151,7 @@ public String getInfoSQL(User user,String extraConditions,String special,boolean
 	}
 	}
 }
-/**
- * This method was created in VisualAge.
- * @return java.lang.String
- * @param key KeyValue
- * @param modelName java.lang.String
- */
+
 public String getSQLValueList(KeyValue imageKey, Geometry geom,KeyValue sizeKey,Version version) {
 							
 	StringBuffer buffer = new StringBuffer();

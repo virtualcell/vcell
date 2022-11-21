@@ -1638,7 +1638,7 @@ public void replacePreferences(User user,Preference[] preferences,boolean bEnabl
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
-		DbDriver.replacePreferences(con,user,preferences);
+		DbDriver.replacePreferences(con,conFactory.getKeyFactory(),user,preferences);
 		con.commit();
 		return;
 	} catch (Throwable e) {
@@ -2024,7 +2024,7 @@ public KeyValue savePublicationRep(PublicationRep publicationRep, User user, boo
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
-		KeyValue publicationKey = DbDriver.savePublicationRep(con,publicationRep,user,conFactory.getDatabaseSyntax());
+		KeyValue publicationKey = DbDriver.savePublicationRep(con,publicationRep,user,conFactory.getKeyFactory(), conFactory.getDatabaseSyntax());
 		con.commit();
 		return publicationKey;
 	}catch (Throwable e) {

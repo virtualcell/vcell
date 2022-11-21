@@ -3,16 +3,13 @@ package org.vcell.cli;
 import org.vcell.cli.biosimulation.BiosimulationsCommand;
 import org.vcell.cli.run.ExecuteCommand;
 import org.vcell.cli.sbml.ModelCommand;
-import org.vcell.cli.vcml.ExportOmexBatchCommand;
+import org.vcell.cli.vcml.*;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import cbit.vcell.mongodb.VCMongoMessage;
-import org.vcell.cli.vcml.ExportOmexCommand;
 import org.vcell.util.VCellUtilityHub;
-import org.vcell.cli.vcml.ImportOmexBatchCommand;
-import org.vcell.cli.vcml.ImportOmexCommand;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 
@@ -26,6 +23,7 @@ import picocli.CommandLine.Command;
         ExecuteCommand.class,
         VersionCommand.class,
         ModelCommand.class,
+        ValidateBatchCommand.class,
         CommandLine.HelpCommand.class
 })
 public class CLIStandalone {

@@ -363,9 +363,15 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 	if(fieldKinetics instanceof MassActionKinetics) {
 		if(getNumReactants() == 0) {
 			String msg = "With Mass Action kinetics, reaction '" + getDisplayName() + "' will be interpreted as a degradation of the product.";
-			String tool = "Use General Kinetics if you want the product to be generated. As is now this reaction is interpreted as a degradation.";
+			String tool = "Use General Kinetics if you want the product to be generated. As is now this reaction is interpreted as a degradation of the product.";
 			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tool, Issue.Severity.WARNING));
 		}
+		if(getNumProducts() == 0) {
+			String msg = "With Mass Action kinetics, reaction '" + getDisplayName() + "' will be interpreted as a creation of the reactant.";
+			String tool = "Use General Kinetics if you want the reactant to be degraded. As is now this reaction is interpreted as a creation of the reactant.";
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tool, Issue.Severity.WARNING));
+		}
+
 	}
 	if(sbmlId == null) {
 		;

@@ -34,6 +34,7 @@ public class ExternalDocInfo implements org.vcell.util.document.VCDocumentInfo{
 	private transient Boolean bXML = null;
 	private boolean isBioModelsNet = false;
 	private boolean isFromXmlFile = false;	// used after import to apply a generic layouter on freshly imported xml or sbml files
+	private boolean isFromVcmlFile = false;
 	private String defaultName;
 /**
  * XMLInfo constructor comment.
@@ -51,6 +52,8 @@ public ExternalDocInfo(File file, boolean isFromFile) {
 	String name = file.getName();
 	if(name.endsWith("xml") || name.endsWith("sbml")) {
 		this.isFromXmlFile = isFromFile;
+	} else if(name.endsWith("vcml")) {
+		this.isFromVcmlFile = isFromFile;
 	}
 }
 
@@ -75,6 +78,10 @@ public boolean isBioModelsNet(){
 public boolean isFromXmlFile(){
 	return isFromXmlFile;
 }
+public boolean isFromVcmlFile() {
+	return isFromVcmlFile;
+}
+
 /**
  * This method was created in VisualAge.
  * @return cbit.sql.Version

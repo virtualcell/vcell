@@ -39,8 +39,7 @@ import cbit.sql.RecordChangedException;
 import cbit.sql.StarField;
 import cbit.sql.Table;
 import cbit.vcell.biomodel.BioModelMetaData;
-import cbit.vcell.modeldb.DatabasePolicySQL.JoinOp;
-import cbit.vcell.modeldb.DatabasePolicySQL.OuterJoin;
+import cbit.vcell.modeldb.DatabasePolicySQL.LeftOuterJoin;
 import cbit.vcell.modeldb.DatabaseServerImpl.OrderBy;
 /**
  * This type was created in VisualAge.
@@ -130,12 +129,6 @@ private void deleteBioModelMetaDataSQL(Connection con, User user, KeyValue bioMo
 }
 
 
-/**
- * This method was created in VisualAge.
- * @param user cbit.vcell.server.User
- * @param vType int
- * @param versionKey cbit.sql.KeyValue
- */
 @Override
 public void deleteVersionable(Connection con, User user, VersionableType vType, KeyValue vKey) 
 				throws DependencyException, ObjectNotFoundException,
@@ -185,22 +178,13 @@ private BioModelMetaData getBioModelMetaData(Connection con,User user, KeyValue 
 	Table[] t = {bioModelTable,userTable,vcMetadataTable};
 	
 	switch (dbSyntax){
-	case ORACLE:{
-		String condition =	bioModelTable.id.getQualifiedColName() + " = " + bioModelKey + 
-						" AND " + 
-							userTable.id.getQualifiedColName() + " = " + bioModelTable.ownerRef.getQualifiedColName()+
-						" AND "+
-							vcMetadataTable.bioModelRef.getQualifiedColName() + "(+) = " + bioModelTable.id.getQualifiedColName();
-		sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,null,condition,null,dbSyntax,true);
-		break;
-	}
+	case ORACLE:
 	case POSTGRES:{
-		String condition =	bioModelTable.id.getQualifiedColName() + " = " + bioModelKey + 
+		String condition =	bioModelTable.id.getQualifiedColName() + " = " + bioModelKey +
 						" AND " + 
 							userTable.id.getQualifiedColName() + " = " + bioModelTable.ownerRef.getQualifiedColName()+" ";
-//						" AND "+ VCMetaDataTable.table.bioModelRef.getQualifiedColName() + "(+) = " + bioModelTable.id.getQualifiedColName();
-		OuterJoin outerJoin = new OuterJoin(vcMetadataTable,bioModelTable,JoinOp.RIGHT_OUTER_JOIN,vcMetadataTable.bioModelRef,bioModelTable.id);
-		sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,outerJoin,condition,null,dbSyntax,true);
+		LeftOuterJoin outerJoin = new LeftOuterJoin(bioModelTable,vcMetadataTable,bioModelTable.id,vcMetadataTable.bioModelRef);
+		sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,outerJoin,condition,null,true);
 		break;
 	}
 	default:{
@@ -253,7 +237,7 @@ BioModelMetaData[] getBioModelMetaDatas(Connection con,User user, boolean bAll,D
 	if (!bAll) {
 		condition += " AND " + userTable.id.getQualifiedColName() + " = " + user.getID();
 	}
-	sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,(OuterJoin)null,condition,null,dbSyntax);
+	sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,(LeftOuterJoin)null,condition,null);
 	//
 	StringBuffer newSQL = new StringBuffer(sql);
 	newSQL.insert(7,Table.SQL_GLOBAL_HINT);
@@ -434,13 +418,7 @@ KeyValue[] getSimulationEntriesFromBioModel(Connection con,KeyValue bioModelKey)
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return cbit.sql.Versionable
- * @param user cbit.vcell.server.User
- * @param versionable cbit.sql.Versionable
- */
-public Versionable getVersionable(QueryHashtable dbc, Connection con, User user, VersionableType vType, KeyValue vKey) 
+public Versionable getVersionable(QueryHashtable dbc, Connection con, User user, VersionableType vType, KeyValue vKey)
 			throws ObjectNotFoundException, SQLException, DataAccessException {
 				
 	Versionable versionable = (Versionable) dbc.get(vKey);
@@ -459,11 +437,7 @@ public Versionable getVersionable(QueryHashtable dbc, Connection con, User user,
 }
 
 
-/**
- * This method was created in VisualAge.
- * @param model cbit.vcell.model.Model
- */
-private void insertBioModelMetaData(Connection con,User user ,BioModelMetaData bioModel,BioModelChildSummary bmcs,Version newVersion) 
+private void insertBioModelMetaData(Connection con,User user ,BioModelMetaData bioModel,BioModelChildSummary bmcs,Version newVersion)
 						throws SQLException, DataAccessException, RecordChangedException {
 	
 	//
@@ -497,13 +471,7 @@ private void insertBioModelMetaData(Connection con,User user ,BioModelMetaData b
 }
 
 
-/**
- * This method was created in VisualAge.
- * @param vcimage cbit.image.VCImage
- * @param userid java.lang.String
- * @exception java.rmi.RemoteException The exception description.
- */
-private void insertBioModelMetaDataSQL(Connection con,User user, BioModelMetaData bioModel,BioModelChildSummary bmcs,Version newVersion) 
+private void insertBioModelMetaDataSQL(Connection con,User user, BioModelMetaData bioModel,BioModelChildSummary bmcs,Version newVersion)
 					throws SQLException, DataAccessException {
 
 	String sql;
@@ -532,12 +500,6 @@ private void insertBioModelMetaDataSQL(Connection con,User user, BioModelMetaDat
 }
 
 
-/**
- * This method was created in VisualAge.
- * @param vcimage cbit.image.VCImage
- * @param userid java.lang.String
- * @exception java.rmi.RemoteException The exception description.
- */
 private void insertSimContextEntryLinkSQL(Connection con, KeyValue key, KeyValue bioModelKey, KeyValue scKey) throws SQLException, DataAccessException {
 	String sql;
 	sql = 	"INSERT INTO " + bioModelSimContextLinkTable.getTableName() + " " + 
@@ -549,12 +511,6 @@ private void insertSimContextEntryLinkSQL(Connection con, KeyValue key, KeyValue
 }
 
 
-/**
- * This method was created in VisualAge.
- * @param vcimage cbit.image.VCImage
- * @param userid java.lang.String
- * @exception java.rmi.RemoteException The exception description.
- */
 private void insertSimulationEntryLinkSQL(Connection con, KeyValue key, KeyValue bioModelKey, KeyValue simKey) throws SQLException, DataAccessException {
 	String sql;
 	sql = 	"INSERT INTO " + bioModelSimLinkTable.getTableName() + " " + 
@@ -566,14 +522,7 @@ private void insertSimulationEntryLinkSQL(Connection con, KeyValue key, KeyValue
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return cbit.sql.KeyValue
- * @param versionable cbit.sql.Versionable
- * @param pRef cbit.sql.KeyValue
- * @param bCommit boolean
- */
-public KeyValue insertVersionable(InsertHashtable hash, Connection con, User user, BioModelMetaData bioModelMetaData, BioModelChildSummary bmcs,String name, boolean bVersion) 
+public KeyValue insertVersionable(InsertHashtable hash, Connection con, User user, BioModelMetaData bioModelMetaData, BioModelChildSummary bmcs,String name, boolean bVersion)
 					throws DataAccessException, SQLException, RecordChangedException {
 						
 	Version newVersion = insertVersionableInit(hash, con, user, bioModelMetaData, name, bioModelMetaData.getDescription(), bVersion);
@@ -582,13 +531,7 @@ public KeyValue insertVersionable(InsertHashtable hash, Connection con, User use
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return cbit.image.VCImage
- * @param user cbit.vcell.server.User
- * @param image cbit.image.VCImage
- */
-public KeyValue updateVersionable(InsertHashtable hash, Connection con, User user, BioModelMetaData bioModelMetaData, BioModelChildSummary bmcs,boolean bVersion) 
+public KeyValue updateVersionable(InsertHashtable hash, Connection con, User user, BioModelMetaData bioModelMetaData, BioModelChildSummary bmcs,boolean bVersion)
 			throws DataAccessException, SQLException, RecordChangedException {
 				
 	Version newVersion = updateVersionableInit(hash, con, user, bioModelMetaData, bVersion);

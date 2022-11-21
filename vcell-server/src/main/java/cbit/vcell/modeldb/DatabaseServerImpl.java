@@ -733,7 +733,7 @@ public List<SimpleJobStatusPersistent> getSimpleJobStatus(SimpleJobStatusQuerySp
 		return adminDbTop.getSimpleJobStatus(simStatusQuerySpec,true);
 	} catch (Throwable e) {
 		lg.error(e.getMessage(),e);
-		throw new DataAccessException(e.getMessage());
+		throw new DataAccessException(e.getMessage(), e);
 	}
 }
 
@@ -887,10 +887,10 @@ public VCInfoContainer getVCInfoContainer(User user) throws DataAccessException 
 		return vcInfoContainer;
 	} catch (SQLException e) {
 		lg.error(e.getMessage(),e);
-		throw new DataAccessException(e.getMessage());
+		throw new DataAccessException(e.getMessage(),e);
 	} catch (Throwable e) {
 		lg.error(e.getMessage(),e);
-		throw new DataAccessException(e.getMessage());
+		throw new DataAccessException(e.getMessage(),e);
 	}
 
 }

@@ -25,7 +25,7 @@ import cbit.sql.Table;
  */
 public class PostgresKeyFactory implements KeyFactory {
 
-PostgresKeyFactory() {
+public PostgresKeyFactory() {
 }
 
 public String getCreateSQL() {

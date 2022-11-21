@@ -37,8 +37,12 @@ public abstract class Variable extends CommentedObject implements SymbolTableEnt
 	private transient int symbolTableIndex = -1;
 	private Domain domain = null;  // global if null
 	public static final String COMBINED_IDENTIFIER_SEPARATOR = "::";
-	
-	public static class Domain implements Matchable, Serializable {
+
+    void rename(String newName) {
+		this.name = newName;
+    }
+
+    public static class Domain implements Matchable, Serializable {
 		private String name = null;
 		
 		public Domain(String argName){

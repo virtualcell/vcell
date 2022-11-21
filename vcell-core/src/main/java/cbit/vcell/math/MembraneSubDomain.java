@@ -9,10 +9,7 @@
  */
 
 package cbit.vcell.math;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Vector;
+import java.util.*;
 
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
@@ -75,6 +72,13 @@ public MembraneSubDomain(CompartmentSubDomain inside, CompartmentSubDomain outsi
 	this.insideCompartment = inside;
 	this.outsideCompartment = outside;
 }
+
+	public void getAllExpressions(List<Expression> expressionList, MathDescription mathDescription){
+		super.getAllExpressions0(expressionList, mathDescription);
+		if (this.velocityX!=null) expressionList.add(this.velocityX);
+		if (this.velocityY!=null) expressionList.add(this.velocityY);
+	}
+
 
 /**
  * helper class for creating {@link MembraneSubDomain} from VCML tokens

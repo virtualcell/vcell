@@ -37,7 +37,8 @@ RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.8 20
 RUN mkdir -p /usr/local/app/vcell/lib && \
     mkdir -p /usr/local/app/vcell/simulation && \
     mkdir -p /usr/local/app/vcell/installDir && \
-    mkdir -p /usr/local/app/vcell/installDir/python/vcell_cli_utils
+    mkdir -p /usr/local/app/vcell/installDir/python/vcell_cli_utils && \
+    mkdir -p /usr/local/app/vcell/installDir/bionetgen
 
 # Install Poetry dependency
 #RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python3 - && \
@@ -77,6 +78,8 @@ RUN cd /usr/local/app/vcell/installDir/python/vcell_cli_utils/ && \
 ADD ./localsolvers /usr/local/app/vcell/installDir/localsolvers
 ADD ./nativelibs /usr/local/app/vcell/installDir/nativelibs
 COPY ./docker_run.sh /usr/local/app/vcell/installDir/
+COPY ./bionetgen/BNG2.pl ./bionetgen/*.txt ./bionetgen/VERSION /usr/local/app/vcell/installDir/bionetgen/
+COPY ./bionetgen/Perl2 /usr/local/app/vcell/installDir/bionetgen/Perl2
 COPY ./biosimulations_log4j2.xml /usr/local/app/vcell/installDir/
 
 # Declare supported environment variables

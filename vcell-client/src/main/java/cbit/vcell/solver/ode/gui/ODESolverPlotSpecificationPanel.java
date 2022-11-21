@@ -1275,7 +1275,10 @@ private synchronized void updateChoices(ODEDataInterface odedi) throws Expressio
         //If the column is "_initConnt" generated when using concentration as initial condition, we dont' put the function in list. amended again in August, 2008.
         if (cd.getParameterName() == null) {
         	String name = cd.getName();
-        	DataSymbolMetadata damd = damdr.getDataSymbolMetadata(name);
+			DataSymbolMetadata damd = null;
+			if (damdr != null) {
+				damd = damdr.getDataSymbolMetadata(name);
+			}
         	
         	// filter entities measured as count vs concentration, based on the checkbox settings
 			ModelCategoryType filterCategory = null;

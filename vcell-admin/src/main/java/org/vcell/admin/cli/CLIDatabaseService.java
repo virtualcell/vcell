@@ -1,12 +1,18 @@
-package org.vcell.cli.vcml;
+package org.vcell.admin.cli;
 
+import cbit.sql.QueryHashtable;
 import cbit.vcell.modeldb.AdminDBTopLevel;
+import cbit.vcell.modeldb.DatabaseServerImpl;
+import cbit.vcell.modeldb.LocalAdminDbServer;
+import cbit.vcell.modeldb.MathVerifier;
 import cbit.vcell.server.SimulationJobStatusPersistent;
+import cbit.vcell.xml.XmlParseException;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
 import org.vcell.util.document.VCInfoContainer;
 
 import java.sql.SQLException;
@@ -30,10 +36,26 @@ public class CLIDatabaseService implements AutoCloseable {
         return publicBioModelInfos;
     }
 
+    public String getBioModelVCML(BioModelInfo bioModelInfo, boolean bWithXMLCache) throws SQLException, DataAccessException, XmlParseException {
+        DatabaseServerImpl databaseServerImpl = new DatabaseServerImpl(conFactory, conFactory.getKeyFactory());
+        KeyValue versionKey = bioModelInfo.getVersion().getVersionKey();
+        if (bWithXMLCache) {
+            return databaseServerImpl.getBioModelXML(User.tempUser, versionKey).toString();
+        }else{
+            return databaseServerImpl.getServerDocumentManager().getBioModelUnresolved(
+                    new QueryHashtable(), User.tempUser, versionKey);
+        }
+     }
+
     public SimulationJobStatusPersistent[] querySimulationJobStatus(KeyValue simKey) throws SQLException, DataAccessException {
         AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(conFactory);
         SimulationJobStatusPersistent[] statuses = adminDbTopLevel.getSimulationJobStatusArray(simKey, false);
         return statuses;
+    }
+
+    public MathVerifier getMathVerifier() throws DataAccessException, SQLException {
+        LocalAdminDbServer adminDbServer = new LocalAdminDbServer(conFactory, conFactory.getKeyFactory());
+        return new MathVerifier(conFactory, conFactory.getKeyFactory(), adminDbServer);
     }
 
     public void close() throws SQLException {

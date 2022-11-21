@@ -645,9 +645,13 @@ public class SlurmProxy extends HtcProxy {
 		lsb.append("echo command = ");
 		lsb.write("${cmd_prefix}" + cmd);
 
-		lsb.write("(");
+//		lsb.write("(");
 		if (ec.getLdLibraryPath()!=null){
-			lsb.write("    export LD_LIBRARY_PATH="+ec.getLdLibraryPath().path+":$LD_LIBRARY_PATH");
+			lsb.write("if [ -z ${LD_LIBRARY_PATH+x} ]; then");
+			lsb.write("    export LD_LIBRARY_PATH=" + ec.getLdLibraryPath().path);
+			lsb.write("else");
+			lsb.write("    export LD_LIBRARY_PATH=" + ec.getLdLibraryPath().path + ":$LD_LIBRARY_PATH");
+			lsb.write("fi");
 		}
 		// lsb.write("singdevlooperr=\"Failed to mount squashfs image in (read only)\"");
 		// lsb.write("let c=0");
@@ -668,8 +672,10 @@ public class SlurmProxy extends HtcProxy {
 		// lsb.write("		 fi");
 		// lsb.write("		 echo retrying $c of 10...");
 		// lsb.write("    done");
-		// lsb.write(")");
-		lsb.write("      $("+"${cmd_prefix}" + cmd+")");
+		lsb.write("      command=\"${cmd_prefix}" + cmd + "\""); 
+		lsb.write("      $command"); 
+//		lsb.write(")");	// This line needs to stay
+		
 		lsb.write("stat=$?");
 
 		lsb.append("echo ");
@@ -692,6 +698,8 @@ public class SlurmProxy extends HtcProxy {
 			String slurm_central_singularity_dir, String slurm_local_singularity_dir, String simDataDirArchiveHost,
 			File slurm_singularity_central_filepath, String[] environmentVars) {
 		lsb.write("#BEGIN---------SlurmProxy.generateScript():slurmInitSingularity----------");
+		lsb.write("set -x");
+		lsb.newline();
 		lsb.write("TMPDIR="+slurm_tmpdir);
 		lsb.write("echo \"using TMPDIR=$TMPDIR\"");
 		lsb.write("if [ ! -e $TMPDIR ]; then mkdir -p $TMPDIR ; fi");

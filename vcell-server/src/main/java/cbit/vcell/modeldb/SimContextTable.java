@@ -45,8 +45,7 @@ import cbit.vcell.mapping.spatial.SpatialObject;
 import cbit.vcell.mapping.spatial.processes.SpatialProcess;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.model.Model;
-import cbit.vcell.modeldb.DatabasePolicySQL.JoinOp;
-import cbit.vcell.modeldb.DatabasePolicySQL.OuterJoin;
+import cbit.vcell.modeldb.DatabasePolicySQL.LeftOuterJoin;
 import cbit.vcell.xml.XMLTags;
 import cbit.vcell.xml.XmlParseException;
 import cbit.vcell.xml.XmlReader;
@@ -79,12 +78,6 @@ private SimContextTable() {
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return cbit.vcell.geometry.GeometryInfo
- * @param rset java.sql.ResultSet
- * @param log cbit.vcell.server.SessionLog
- */
 public VersionInfo getInfo(ResultSet rset,Connection con) throws SQLException,DataAccessException {
 
 	KeyValue mathRef = null;
@@ -118,24 +111,14 @@ public String getInfoSQL(User user,String extraConditions,String special,Databas
 	Table[] t = {vTable,userTable,swvTable};
 
 	switch (dbSyntax){
-	case ORACLE:{
-		String condition = userTable.id.getQualifiedColName() + " = " + vTable.ownerRef.getQualifiedColName() +  // links in the userTable
-		           " AND " + vTable.id.getQualifiedColName() + " = " + swvTable.versionableRef.getQualifiedColName()+"(+) ";
-		if (extraConditions != null && extraConditions.trim().length()>0){
-			condition += " AND "+extraConditions;
-		}
-	
-		sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,(OuterJoin)null,condition,special,dbSyntax);
-		return sql;
-	}
+	case ORACLE:
 	case POSTGRES:{
 		String condition = userTable.id.getQualifiedColName() + " = " + vTable.ownerRef.getQualifiedColName() +  " ";// links in the userTable
-		         //  " AND " + vTable.id.getQualifiedColName() + " = " + swvTable.versionableRef.getQualifiedColName()+"(+) ";
 		if (extraConditions != null && extraConditions.trim().length()>0){
 			condition += " AND "+extraConditions;
 		}
-		OuterJoin outerJoin = new OuterJoin( vTable, swvTable, JoinOp.LEFT_OUTER_JOIN, vTable.id, swvTable.versionableRef);
-		sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,outerJoin,condition,special,dbSyntax);
+		LeftOuterJoin outerJoin = new LeftOuterJoin( vTable, swvTable, vTable.id, swvTable.versionableRef);
+		sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,outerJoin,condition,special);
 		return sql;
 	}
 	default:{
@@ -145,13 +128,6 @@ public String getInfoSQL(User user,String extraConditions,String special,Databas
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return cbit.vcell.mapping.SimulationContext
- * @param rset java.sql.ResultSet
- * @param log cbit.vcell.server.SessionLog
- * @deprecated shouldn't do recursive query
- */
 public SimulationContext getSimContext(QueryHashtable dbc, Connection con,User user,ResultSet rset,
 										GeomDbDriver geomDB,ModelDbDriver modelDB,MathDescriptionDbDriver mathDB) 
 							throws SQLException,DataAccessException, java.beans.PropertyVetoException {
@@ -191,12 +167,6 @@ public SimulationContext getSimContext(QueryHashtable dbc, Connection con,User u
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return java.lang.String
- * @param key KeyValue
- * @param modelName java.lang.String
- */
 public String getSQLValueList(SimulationContext simContext,KeyValue mathDescKey,KeyValue modelKey,KeyValue geomKey, String serialAppComp, Version version) {
 			
 	StringBuffer buffer = new StringBuffer();

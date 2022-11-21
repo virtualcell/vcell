@@ -15,10 +15,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Vector;
+import java.util.*;
 
 import javax.swing.JFrame;
 
@@ -71,7 +68,7 @@ import cbit.vcell.xml.XmlParseException;
  * @author: Jim Schaff
  */
 public class MathVerifier {
-	public static final Logger lg = LogManager.getLogger(DbDriver.class);
+	private static final Logger lg = LogManager.getLogger(DbDriver.class);
 
 	//
 	// list of files to discard ???
@@ -87,8 +84,6 @@ public class MathVerifier {
 	private DatabaseServerImpl dbServerImpl = null;
 	private KeyFactory keyFactory = null;
 	private cbit.vcell.modeldb.MathDescriptionDbDriver mathDescDbDriver = null;
-	private java.util.HashSet skipHash = new java.util.HashSet(); // holds KeyValues of BioModels to skip
-	private String testFlag;
 	private Timestamp timeStamp;
 
 /**
@@ -167,9 +162,9 @@ public static class LoadModelsStatTable extends Table{
 	
 }
 
-public static final String MV_DEFAULT = "MV_DEFAULT";
-public static final String MV_LOAD_XML = "MV_LOAD_XML";
-
+enum ScanMode {
+	DEFAULT, LOAD_XML
+}
 public static MathVerifier createMathVerifier(
 		String dbHostName,String dbName,String dbSchemaUser,String dbPassword) throws Exception{
 	
@@ -250,15 +245,17 @@ public static void main(String[] args) {
         
 	try {
     	MathVerifier mathVerifier = MathVerifier.createMathVerifier(host, db, dbSchemaUser, dbPassword);
-        if(testFlag.equals(MV_LOAD_XML)){
+        if(testFlag.equals(ScanMode.LOAD_XML.name())){
         	Compare.CompareLogger compareLogger = null;
         	if(bCompareLoggerException){
         		compareLogger = Compare.DEFAULT_COMPARE_LOGGER;
         	}
-        	mathVerifier.runLoadTest((user == null?null:new String[] {user}), bioMathKeyArr,softwareVersion,bUpdateDatabase,compareLogger);
-        }else if(testFlag.equals(MV_DEFAULT)){
+        	mathVerifier.runLoadTest((user == null?null:new String[] {user}), bioMathKeyArr, bioMathKeyArr,softwareVersion,bUpdateDatabase,compareLogger);
+        }else if(testFlag.equals(ScanMode.DEFAULT.name())){
         	mathVerifier.runMathTest((user == null?null:new String[] {user}),bioMathKeyArr,bUpdateDatabase);
-        }
+        }else{
+			throw new RuntimeException("unsupported test flag: "+testFlag);
+		}
 	} catch (Throwable e) {
 	    e.printStackTrace(System.out);
 	}
@@ -288,30 +285,34 @@ private void closeAllConnections(){
 
 }
 
-public void runLoadTest(String[] scanUserids,KeyValue[] bioAndMathModelKeys,String softwareVersion,boolean bUpdateDatabase,Compare.CompareLogger compareLogger) throws Exception{
+public void runLoadTest(String[] scanUserids,KeyValue[] bioModelKeys,KeyValue[] mathModelKeys,String softwareVersion,boolean bUpdateDatabase,Compare.CompareLogger compareLogger) throws Exception{
 	Compare.logger = compareLogger;
-	this.testFlag = MathVerifier.MV_LOAD_XML;
 	this.timeStamp = new Timestamp(System.currentTimeMillis());
 	User[] scanUsers = createUsersFromUserids(scanUserids);
     try{
     	if(bUpdateDatabase){
-    		MathVerifier.initLoadModelsStatTable(softwareVersion,(scanUserids==null?null:scanUsers),bioAndMathModelKeys,this.timeStamp,this.conFactory,this.keyFactory);
+			List<KeyValue> keyValues = new ArrayList<>();
+			if (bioModelKeys!=null) keyValues.addAll(Arrays.asList(bioModelKeys));
+			if (mathModelKeys!=null) keyValues.addAll(Arrays.asList(mathModelKeys));
+    		MathVerifier.initLoadModelsStatTable(softwareVersion,(scanUserids==null?null:scanUsers),keyValues.toArray(new KeyValue[0]),this.timeStamp,this.conFactory,this.keyFactory);
     	}
-    	this.scan(scanUsers, bUpdateDatabase, bioAndMathModelKeys);
+		this.scanBioModels(scanUsers, bUpdateDatabase, bioModelKeys, ScanMode.LOAD_XML);
+		this.scanMathModels(scanUsers, bUpdateDatabase, mathModelKeys);
     }finally{
     	closeAllConnections();
     }
 
 }
-public void runMathTest(String[] scanUserids,KeyValue[] bioAndMathModelKeys,boolean bUpdateDatabase) throws Exception{
-	this.testFlag = MathVerifier.MV_DEFAULT;
+
+public void runMathTest(String[] scanUserids,KeyValue[] mathModelKeys,boolean bUpdateDatabase) throws Exception{
 	User[] scanUsers = createUsersFromUserids(scanUserids);
     try{
-    	this.scan(scanUsers, bUpdateDatabase, bioAndMathModelKeys);
+    	this.scanMathModels(scanUsers, bUpdateDatabase, mathModelKeys);
     }finally{
     	closeAllConnections();
     }
 }
+
 private static void initLoadModelsStatTable(String softwareVersion,User[] users,KeyValue[] bioAndMathModelKeys,Timestamp timestamp,
 		ConnectionFactory conFactory,KeyFactory keyFactory) throws Exception{
 	java.sql.Connection con = null;
@@ -340,7 +341,7 @@ private static void initLoadModelsStatTable(String softwareVersion,User[] users,
 		
 		//Scan only users condition
 		String onlyUsersClause = null;
-		if(users != null){
+		if(users != null && users.length>0){
 			StringBuffer usersSB = new StringBuffer();
 			for (int i = 0; i < users.length; i++) {
 				usersSB.append((i>0?",":"")+users[i].getID());
@@ -350,7 +351,7 @@ private static void initLoadModelsStatTable(String softwareVersion,User[] users,
 		}
 		//Scan only model user conditions
 		String onlyModelsClause = null;
-		if(bioAndMathModelKeys != null){
+		if(bioAndMathModelKeys != null && bioAndMathModelKeys.length>0){
 			StringBuffer modelsSB = new StringBuffer();
 			for (int i = 0; i < bioAndMathModelKeys.length; i++) {
 				modelsSB.append((i>0?",":"")+bioAndMathModelKeys[i].toString());
@@ -415,7 +416,7 @@ private static void initLoadModelsStatTable(String softwareVersion,User[] users,
 					"'"+timestamp.toString()+"'"+
 					",NULL,"+
 					"'"+TokenMangler.getSQLEscapedString(softwareVersion, LoadModelsStatTable.SOFTWARE_VERS_SIZE)+"'"+
-					",NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL)");
+					",NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL)");
 			DbDriver.updateCleanSQL(con, sql.toString());
 
 		}
@@ -880,11 +881,7 @@ public MathGenerationResults testMathGeneration(KeyValue simContextKey) throws S
 	}
 }
 
-/**
- * Insert the method's description here.
- * Creation date: (2/2/01 3:40:29 PM)
- */
-public void scan(User users[], boolean bUpdateDatabase, KeyValue[] bioAndMathModelKeys) throws MathException, MappingException, SQLException, DataAccessException, ModelException, ExpressionException {
+	public void scanBioModels(User users[], boolean bUpdateDatabase, KeyValue[] bioModelKeys, ScanMode testFlag) throws MathException, MappingException, SQLException, DataAccessException, ModelException, ExpressionException {
 //	java.util.Calendar calendar = java.util.GregorianCalendar.getInstance();
 ////	calendar.set(2002,java.util.Calendar.MAY,7+1);
 //	calendar.set(2002,java.util.Calendar.JULY,1);
@@ -892,114 +889,137 @@ public void scan(User users[], boolean bUpdateDatabase, KeyValue[] bioAndMathMod
 ////	calendar.set(2001,java.util.Calendar.JUNE,13+1);
 //	calendar.set(2002,java.util.Calendar.JANUARY,1);
 //	final java.util.Date totalVolumeCorrectionFixDate = calendar.getTime();
-	
-	KeyValue[] sortedBioAndMathModelKeys = null;
-	if(bioAndMathModelKeys != null){
-		sortedBioAndMathModelKeys = bioAndMathModelKeys.clone();
-		Arrays.sort(sortedBioAndMathModelKeys,keyValueCpmparator);
-	}
-	for (int i=0;i<users.length;i++){
-		User user = users[i];
-		BioModelInfo[] bioModelInfos0 = dbServerImpl.getBioModelInfos(user,false);
-		MathModelInfo[] mathModelInfos0 = dbServerImpl.getMathModelInfos(user,false);
-		if (lg.isTraceEnabled()) lg.trace("Testing user '"+user+"'");
 
-		Vector<VCDocumentInfo> userBioAndMathModelInfoV =
-			new Vector<VCDocumentInfo>();
-		userBioAndMathModelInfoV.addAll(Arrays.asList(bioModelInfos0));
-		userBioAndMathModelInfoV.addAll(Arrays.asList(mathModelInfos0));
-			
-		//
-		// for each bioModel, load BioModelMetaData (to get list of keys for simulations and simContexts
-		//
-		for (int j = 0; j < userBioAndMathModelInfoV.size(); j++){
+		KeyValue[] sortedBioModelKeys = null;
+		if(bioModelKeys != null){
+			sortedBioModelKeys = bioModelKeys.clone();
+			Arrays.sort(sortedBioModelKeys,keyValueCpmparator);
+		}
+		for (User user : users){
+			BioModelInfo[] bioModelInfos = dbServerImpl.getBioModelInfos(user,false);
+			if (lg.isTraceEnabled()) lg.trace("Testing user '"+user+"'");
+
 			//
-			// if certain Bio or Math models are requested, then filter all else out
+			// for each bioModel, load BioModelMetaData (to get list of keys for simulations and simContexts
 			//
-			VCDocumentInfo documentInfo = userBioAndMathModelInfoV.elementAt(j);
-			KeyValue versionKey = documentInfo.getVersion().getVersionKey();
-			if (sortedBioAndMathModelKeys != null){
-				int srch = Arrays.binarySearch(sortedBioAndMathModelKeys, versionKey,keyValueCpmparator);
-				if (srch < 0){
+			for (BioModelInfo bioModelInfo : bioModelInfos){
+				//
+				// if certain Bio or Math models are requested, then filter all else out
+				//
+				KeyValue versionKey = bioModelInfo.getVersion().getVersionKey();
+				if (sortedBioModelKeys != null){
+					int srch = Arrays.binarySearch(sortedBioModelKeys, versionKey,keyValueCpmparator);
+					if (srch < 0){
+						continue;
+					}
+				}
+
+				try {
+					//
+					// read in the BioModel and MathModel from the database
+					//
+					BioModel bioModelFromDBCache = null;
+					BigString bioModelXMLFromDBCache = null;
+					try{
+						long startTime = System.currentTimeMillis();
+						bioModelXMLFromDBCache =
+									new BigString(dbServerImpl.getServerDocumentManager().getBioModelXML(
+											new QueryHashtable(), user, versionKey, false));
+						bioModelFromDBCache = XmlHelper.XMLToBioModel(new XMLSource(bioModelXMLFromDBCache.toString()));
+						if(bUpdateDatabase && testFlag == ScanMode.LOAD_XML){
+							updateLoadModelsStatTable_LoadTest(System.currentTimeMillis()-startTime,
+									versionKey, null);
+						}
+					}catch(Exception e){
+						lg.error(e.getMessage(),e);
+						if (bUpdateDatabase && testFlag == ScanMode.LOAD_XML){
+							updateLoadModelsStatTable_LoadTest(0, versionKey, e);
+						}
+					}
+
+					if (testFlag == ScanMode.LOAD_XML){
+						//
+						// OPERATION = LOADTEST
+						//
+						if (bioModelXMLFromDBCache != null){
+							testDocumentLoad(bUpdateDatabase, user, bioModelInfo, bioModelFromDBCache);
+						}
+
+					}else if (testFlag == ScanMode.DEFAULT){
+						//
+						// OPERATION = DEFAULT (check math generation)
+						//
+						checkMathForBioModel(bioModelXMLFromDBCache, bioModelFromDBCache, user, bUpdateDatabase);
+					}
+
+				}catch (Throwable e){
+					lg.error(e.getMessage(),e); // exception in whole BioModel
+					// can't update anything in database, since we don't know what simcontexts are involved
+				}
+			}
+		}
+	}
+
+	public void scanMathModels(User users[], boolean bUpdateDatabase, KeyValue[] mathModelKeys) throws MathException, MappingException, SQLException, DataAccessException, ModelException, ExpressionException {
+
+		KeyValue[] sortedMathModelKeys = null;
+		if(mathModelKeys != null){
+			sortedMathModelKeys = mathModelKeys.clone();
+			Arrays.sort(sortedMathModelKeys,keyValueCpmparator);
+		}
+		for (User user : users){
+			MathModelInfo[] mathModelInfos = dbServerImpl.getMathModelInfos(user,false);
+			if (lg.isTraceEnabled()) lg.trace("Testing user '"+user+"'");
+
+			//
+			// for each bioModel, load BioModelMetaData (to get list of keys for simulations and simContexts
+			//
+			for (MathModelInfo mathModelInfo : mathModelInfos){
+				//
+				// if certain Bio or Math models are requested, then filter all else out
+				//
+				KeyValue versionKey = mathModelInfo.getVersion().getVersionKey();
+				if (sortedMathModelKeys != null && Arrays.binarySearch(sortedMathModelKeys, versionKey,keyValueCpmparator) < 0) {
 					continue;
 				}
-			}
 
-			if (!(documentInfo instanceof BioModelInfo)){
-				continue;
-			}
-//			BioModelInfo bioModelInfo = (BioModelInfo)documentInfo;
-//			VCellSoftwareVersion softwareVersion = bioModelInfo.getSoftwareVersion();
-//			if (softwareVersion.getVersionString().equals("4.8") && (softwareVersion.getSite().equals(VCellSite.BETA) || softwareVersion.getSite().equals(VCellSite.RELEASE))){
-//				// process this one.
-//			}else{
-//				continue;
-//			}
-			//
-			// filter out any bioModelKeys present in the "SkipList"
-			//
-			if (skipHash.contains(versionKey)){
-				System.out.println("skipping "+
-					(documentInfo instanceof BioModelInfo?"BioModel":"MathModel")+
-					" with key '"+versionKey+"'");
-				continue;
-			}
+				try {
+					//
+					// read in the BioModel and MathModel from the database
+					//
+					MathModel mathModelFromDBCache = null;
+					BigString mathModelXMLFromDBCache = null;
+					try{
+						long startTime = System.currentTimeMillis();
+						mathModelXMLFromDBCache =
+								new BigString(dbServerImpl.getServerDocumentManager().getMathModelXML(
+										new QueryHashtable(), user, versionKey, false));
+						mathModelFromDBCache = XmlHelper.XMLToMathModel(new XMLSource(mathModelXMLFromDBCache.toString()));
+						if(bUpdateDatabase){
+							updateLoadModelsStatTable_LoadTest(System.currentTimeMillis()-startTime,
+									versionKey, null);
+						}
+					}catch(Exception e){
+						lg.error(e.getMessage(),e);
+						if (bUpdateDatabase){
+							updateLoadModelsStatTable_LoadTest(0, versionKey, e);
+						}
+					}
 
-			try {
-				//
-				// read in the BioModel and MathModel from the database
-				//
-				VCDocument vcDocumentFromDBCache = null;
-				BigString vcDocumentXMLFromDBCache = null;
-				try{
-					long startTime = System.currentTimeMillis();
-					if(documentInfo instanceof BioModelInfo){
-						vcDocumentXMLFromDBCache =
-							new BigString(dbServerImpl.getServerDocumentManager().getBioModelXML(
-								new QueryHashtable(), user, versionKey, false));
-						vcDocumentFromDBCache = XmlHelper.XMLToBioModel(new XMLSource(vcDocumentXMLFromDBCache.toString()));
-					}else{
-						vcDocumentXMLFromDBCache =
-							new BigString(dbServerImpl.getServerDocumentManager().getMathModelXML(
-								new QueryHashtable(), user, versionKey, false));						
-						vcDocumentFromDBCache = XmlHelper.XMLToMathModel(new XMLSource(vcDocumentXMLFromDBCache.toString()));
+					//
+					// OPERATION = LOADTEST (there is no math generation for math models)
+					//
+					if (mathModelXMLFromDBCache != null){
+						testDocumentLoad(bUpdateDatabase, user, mathModelInfo, mathModelFromDBCache);
 					}
-					if(bUpdateDatabase && testFlag.equals(MathVerifier.MV_LOAD_XML)){
-						updateLoadModelsStatTable_LoadTest(System.currentTimeMillis()-startTime,
-							versionKey, null);
-					}
-				}catch(Exception e){
-					lg.error(e.getMessage(),e);
-					if (bUpdateDatabase && testFlag.equals(MathVerifier.MV_LOAD_XML)){
-						updateLoadModelsStatTable_LoadTest(0, versionKey, e);
-					}
+
+				}catch (Throwable e){
+					lg.error(e.getMessage(),e); // exception in whole BioModel
+					// can't update anything in database, since we don't know what simcontexts are involved
 				}
-				
-				if (testFlag.equals(MathVerifier.MV_LOAD_XML)){
-					//
-					// OPERATION = LOADTEST
-					//
-					if (vcDocumentXMLFromDBCache != null){
-						testDocumentLoad(bUpdateDatabase, user, documentInfo, vcDocumentFromDBCache);
-					}
-					
-				}else if (testFlag.equals(MathVerifier.MV_DEFAULT)){
-					//
-					// OPERATION = DEFAULT (check math generation)
-					//
-					if (vcDocumentFromDBCache instanceof BioModel){
-						BioModel bioModel = (BioModel)vcDocumentFromDBCache;
-						checkMathForBioModel(vcDocumentXMLFromDBCache, bioModel, user, bUpdateDatabase);
-					}
-				}
-				
-			}catch (Throwable e){
-	            lg.error(e.getMessage(),e); // exception in whole BioModel
-	            // can't update anything in database, since we don't know what simcontexts are involved
 			}
-		}	
+		}
 	}
-}
 
 private void testDocumentLoad(boolean bUpdateDatabase, User user, VCDocumentInfo documentInfo, VCDocument vcDocumentFromDBCache) {
 	KeyValue versionKey = documentInfo.getVersion().getVersionKey();
@@ -1661,18 +1681,5 @@ public void scanSimContexts(boolean bUpdateDatabase, KeyValue[] simContextKeys) 
         }
     }
 }
-
-
-/**
- * Insert the method's description here.
- * Creation date: (6/7/2004 12:01:12 PM)
- * @param simContexts KeyValue[]
- */
-public void setSkipList(KeyValue[] simContextKeys) {
-	for (int i = 0; i < simContextKeys.length; i++){
-		skipHash.add(simContextKeys[i]);
-	}
-}
-
 
 }
