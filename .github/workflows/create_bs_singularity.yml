@@ -50,7 +50,7 @@ jobs:
         run: |
           mvn -version
           java -version
-          mvn --batch-mode clean install dependency:copy-dependencies
+          mvn --batch-mode clean install dependency:copy-dependencies -DskipTests=true
       - name: set global environment variables
         run: |
           echo "VCELL_SHA=`git rev-parse --short HEAD`" >> $GITHUB_ENV
