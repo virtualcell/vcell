@@ -2812,13 +2812,16 @@ public class SBMLImporter {
 				String id = rateSymbols[0];
 				SBase sbase = sbmlSymbolMapping.getMappedSBase(id);
 				Annotation paramAnnotation = sbase.getAnnotation();
-				XMLNode paramElement = paramAnnotation.getNonRDFannotation().getChildElement(XMLTags.SBML_VCELL_RateParamTag, "*");
-				if (paramElement != null) {
-					ModelParameter globalParam = (ModelParameter)sbmlSymbolMapping.getRuntimeSte(sbase);
-					rateParam.setExpression(globalParam.getExpression());
-					vcBioModel.getModel().removeModelParameter(globalParam);
-					rateParam.setName(sbase.getName());
-					sbmlSymbolMapping.replaceRuntime(sbase, rateParam);
+				if (paramAnnotation.getNonRDFannotation() != null) {
+					XMLNode paramElement = paramAnnotation.getNonRDFannotation()
+							.getChildElement(XMLTags.SBML_VCELL_RateParamTag, "*");
+					if (paramElement != null) {
+						ModelParameter globalParam = (ModelParameter) sbmlSymbolMapping.getRuntimeSte(sbase);
+						rateParam.setExpression(globalParam.getExpression());
+						vcBioModel.getModel().removeModelParameter(globalParam);
+						rateParam.setName(sbase.getName());
+						sbmlSymbolMapping.replaceRuntime(sbase, rateParam);
+					} 
 				}
 			} 
 		}
