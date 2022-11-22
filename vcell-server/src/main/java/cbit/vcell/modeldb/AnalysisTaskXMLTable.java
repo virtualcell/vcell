@@ -16,7 +16,7 @@ import cbit.sql.Table;
  * This type was created in VisualAge.
  */
 public class AnalysisTaskXMLTable extends cbit.sql.Table {
-	private static final String TABLE_NAME = "vc_analysisTask";
+	private static final String TABLE_NAME = "vc_analysistask";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
 	public final Field simContextRef =		new Field("simContextRef",		SQLDataType.integer,	"NOT NULL "+SimContextTable.REF_TYPE+" ON DELETE CASCADE");

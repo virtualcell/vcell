@@ -1,5 +1,6 @@
 package org.vcell.admin.cli;
 
+import cbit.sql.CompareDatabaseSchema;
 import cbit.sql.QueryHashtable;
 import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DatabaseServerImpl;
@@ -55,10 +56,14 @@ public class CLIDatabaseService implements AutoCloseable {
 
     public MathVerifier getMathVerifier() throws DataAccessException, SQLException {
         LocalAdminDbServer adminDbServer = new LocalAdminDbServer(conFactory, conFactory.getKeyFactory());
-        return new MathVerifier(conFactory, conFactory.getKeyFactory(), adminDbServer);
+        return new MathVerifier(conFactory, adminDbServer);
     }
 
     public void close() throws SQLException {
         conFactory.close();
+    }
+
+    public CompareDatabaseSchema getCompareDatabaseSchemas() {
+        return new CompareDatabaseSchema(conFactory);
     }
 }
