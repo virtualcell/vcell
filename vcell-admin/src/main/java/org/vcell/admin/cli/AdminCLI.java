@@ -1,16 +1,23 @@
 package org.vcell.admin.cli;
 
+import cbit.vcell.modeldb.MathVerifier;
 import cbit.vcell.mongodb.VCMongoMessage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.vcell.admin.cli.mathverifier.LoadModelsCommand;
+import org.vcell.admin.cli.db.DatabaseCompareSchemaCommand;
+import org.vcell.admin.cli.db.DatabaseDestroyAndRecreateCommand;
+import org.vcell.admin.cli.mathverifier.ModeldbMathGenTestCommand;
+import org.vcell.admin.cli.mathverifier.ModeldbLoadTestCommand;
 import org.vcell.util.document.KeyValue;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 
 
 @Command(name = "AdminCLI", subcommands = {
-        LoadModelsCommand.class,
+        ModeldbLoadTestCommand.class,
+        ModeldbMathGenTestCommand.class,
+        DatabaseCompareSchemaCommand.class,
+        DatabaseDestroyAndRecreateCommand.class,
         CommandLine.HelpCommand.class
 })
 public class AdminCLI {
@@ -24,6 +31,7 @@ public class AdminCLI {
             VCMongoMessage.enabled = false;
             CommandLine commandLine = new CommandLine(new AdminCLI());
             commandLine.registerConverter(KeyValue.class, new KeyValueTypeConverter());
+            commandLine.registerConverter(MathVerifier.DatabaseMode.class, new DatabaseModeTypeConverter());
             exitCode = commandLine.execute(args);
         } catch (Throwable t){
             t.printStackTrace();
@@ -35,8 +43,15 @@ public class AdminCLI {
 
     static class KeyValueTypeConverter implements CommandLine.ITypeConverter<KeyValue> {
         @Override
-        public KeyValue convert(String value) throws Exception {
+        public KeyValue convert(String value) {
             return new KeyValue(value);
+        }
+    }
+
+    static class DatabaseModeTypeConverter implements CommandLine.ITypeConverter<MathVerifier.DatabaseMode> {
+        @Override
+        public MathVerifier.DatabaseMode convert(String value) {
+            return MathVerifier.DatabaseMode.valueOf(value);
         }
     }
 

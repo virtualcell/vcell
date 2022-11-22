@@ -354,7 +354,7 @@ public static Table[] getVCellTables() {
 		cbit.vcell.modeldb.ApplicationMathTable.table, // new
 		cbit.vcell.modeldb.DataSymbolTable.table, // new
 		cbit.vcell.modeldb.GlobalModelParameterTable.table, // new
-		cbit.vcell.modeldb.MathVerifier.LoadModelsStatTable.table, // new
+		LoadModelsStatTable.table, // new
 		cbit.vcell.modeldb.UserLoginInfoTable.table, // new
 		cbit.vcell.modeldb.VCMetaDataTable.table, // new
 		};

@@ -16,7 +16,7 @@ import cbit.sql.Table;
  * This type was created in VisualAge.
  */
 public class TFTestCriteriaTable extends cbit.sql.Table {
-	private static final String TABLE_NAME = "vc_tfTestCriteria";
+	private static final String TABLE_NAME = "vc_tftestcriteria";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
 	public static final int MAX_MESSAGE_SIZE = 512;
