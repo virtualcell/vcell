@@ -57,7 +57,7 @@ jobs:
       - name: Install Singularity # to make singularity image to use on cluster
         uses: eWaterCycle/setup-singularity@v6
         with:
-          singularity-version: 3.9.2
+          singularity-version: 3.8.3
       - name: Build Docker image and push with latest tag
         run: |
           set -ux
