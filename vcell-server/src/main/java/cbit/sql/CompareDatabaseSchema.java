@@ -21,14 +21,19 @@ import org.vcell.db.DatabaseSyntax;
 import org.vcell.db.KeyFactory;
 
 import cbit.vcell.modeldb.SQLCreateAllTables;
-/**
- * This type was created in VisualAge.
- */
+
 public class CompareDatabaseSchema {
-/**
- * This method was created in VisualAge.
- */
-private static void compareSchemas(ConnectionFactory conFactory, KeyFactory keyFactory, Table tables[], DatabaseSyntax dbSyntax) throws SQLException {
+
+
+	private final ConnectionFactory connectionFactory;
+
+	public CompareDatabaseSchema(ConnectionFactory connectionFactory) {
+		this.connectionFactory = connectionFactory;
+	}
+
+
+
+	private void compareSchemas(ConnectionFactory conFactory, Table tables[], DatabaseSyntax dbSyntax) throws SQLException {
 	Connection con = null;
 	Object lock = new Object();
 	try {
@@ -47,7 +52,7 @@ private static void compareSchemas(ConnectionFactory conFactory, KeyFactory keyF
 				table_name = table_name.toUpperCase();
 			}
 			ResultSet rs = metaData.getColumns(null,null,table_name,null);
-			System.out.println("\n\nTABLE: "+table.getTableName());
+			System.out.println("\nTABLE: "+table.getTableName());
 			//ResultSetMetaData rsMetaData = rs.getMetaData();
 			//for (int j = 1; j <= rsMetaData.getColumnCount(); j++) {
 				//System.out.println("column(" + j + ") = " + rsMetaData.getColumnName(j));
@@ -149,15 +154,26 @@ private static void compareSchemas(ConnectionFactory conFactory, KeyFactory keyF
 					System.out.println("database didn't contain column: name=\""+field.getUnqualifiedColName()+"\", type=\""+field.getSqlType(dbSyntax)+"\", constraints=\""+field.getSqlConstraints()+"\"");
 				}
 				System.out.println("suggested SQL to fix it:");
-				System.out.print("ALTER TABLE "+table.getTableName().toUpperCase()+" ADD(");
-				for (int j = 0; j < fieldsNotYetFoundList.size(); j++){
-					Field field = (Field)fieldsNotYetFoundList.elementAt(j);
-					if (j>0){
-						System.out.print(",");
+				if (dbSyntax == DatabaseSyntax.ORACLE) {
+					System.out.print("ALTER TABLE " + table.getTableName().toUpperCase() + " ADD(");
+					for (int j = 0; j < fieldsNotYetFoundList.size(); j++) {
+						Field field = (Field) fieldsNotYetFoundList.elementAt(j);
+						if (j > 0) {
+							System.out.print(",");
+						}
+						System.out.print(field.getUnqualifiedColName().toUpperCase() + " " + field.getSqlType(dbSyntax).toUpperCase() + " " + field.getSqlConstraints().toUpperCase());
 					}
-					System.out.print(field.getUnqualifiedColName().toUpperCase()+" "+field.getSqlType(dbSyntax).toUpperCase()+" "+field.getSqlConstraints().toUpperCase());
+					System.out.println(")");
+				}else if (dbSyntax == DatabaseSyntax.POSTGRES){
+					for (int j = 0; j < fieldsNotYetFoundList.size(); j++) {
+						Field field = (Field) fieldsNotYetFoundList.elementAt(j);
+						System.out.println("ALTER TABLE " + table.getTableName().toUpperCase()
+								+ " ADD " + field.getUnqualifiedColName().toUpperCase() + " " + field.getSqlType(dbSyntax).toUpperCase()
+								+ " " + field.getSqlConstraints().toUpperCase());
+					}
+				}else{
+					throw new RuntimeException("unexpected dbSyntax: "+dbSyntax);
 				}
-				System.out.println(")");
 			}
 		}
 	} catch (SQLException exc) {
@@ -167,10 +183,7 @@ private static void compareSchemas(ConnectionFactory conFactory, KeyFactory keyF
 		conFactory.release(con, lock);
 	}
 }
-/**
- * Starts the application.
- * @param args an array of command-line arguments
- */
+
 public static void main(java.lang.String[] args) {
     //
     try {
@@ -222,11 +235,16 @@ public static void main(java.lang.String[] args) {
         //
         // compare with VCell Software 'tables'
         //
-		Table tables[] = SQLCreateAllTables.getVCellTables();
-        compareSchemas(conFactory, keyFactory, tables, dbSyntax);
+		CompareDatabaseSchema compareDatabaseSchema = new CompareDatabaseSchema(conFactory);
+        compareDatabaseSchema.runCompareSchemas();
     } catch (Throwable e) {
         e.printStackTrace(System.out);
     }
     System.exit(0);
 }
+
+	public void runCompareSchemas() throws SQLException {
+		Table tables[] = SQLCreateAllTables.getVCellTables();
+		compareSchemas(this.connectionFactory, tables, this.connectionFactory.getDatabaseSyntax());
+	}
 }

@@ -84,7 +84,6 @@ import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.mathmodel.MathModelMetaData;
-import cbit.vcell.modeldb.MathVerifier.LoadModelsStatTable;
 import cbit.vcell.numericstest.AddTestCasesOP;
 import cbit.vcell.numericstest.AddTestCasesOPBioModel;
 import cbit.vcell.numericstest.AddTestCasesOPMathModel;

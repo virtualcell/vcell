@@ -15,25 +15,23 @@ import picocli.CommandLine.Option;
 import java.util.ArrayList;
 import java.util.concurrent.Callable;
 
-@Command(name = "test-load-models", description = "test the loading biomodels/mathmodels from db tables and cached XML")
-public class LoadModelsCommand implements Callable<Integer> {
+@Command(name = "modeldb-mathgen-test", description = "test the generation of math for biomodel applications from db tables and cached XML")
+public class ModeldbMathGenTestCommand implements Callable<Integer> {
 
-    private final static Logger logger = LogManager.getLogger(LoadModelsCommand.class);
+    private final static Logger logger = LogManager.getLogger(ModeldbMathGenTestCommand.class);
+    private final static String defaultDbModeString = MathVerifier.DatabaseMode.update.name();
 
     @Option(names = { "-u", "--userids" }, required = false, description = "vcell user ids (separated by commas) - defaults to all")
     private String[] userids = null;
 
-    @Option(names = {  "--biomodel-keys" }, split=",", required = false, description = "biomodel key(s) to scan")
+    @Option(names = {  "--biomodel-keys" }, split=",", required = false, description = "biomodel key(s) to update")
     private ArrayList<KeyValue> biomodelkeys = new ArrayList<>();
-
-    @Option(names = { "--mathmodel-keys" }, split=",", required = false, description = "mathmodel key(s) to scan")
-    private ArrayList<KeyValue> mathmodelkeys = new ArrayList<>();
 
     @Option(names = { "-v", "--software-version" }, required = true, description = "vcell software version")
     private String softwareVersion = null;
 
-    @Option(names = { "--update-database" }, defaultValue = "false", required = false, description = "update database - use with caution")
-    private boolean bUpdateDatabase = false;
+    @Option(names = { "--database-mode" }, type = MathVerifier.DatabaseMode.class, defaultValue = "skip_database", required = false, description = "'update' to update database")
+    private MathVerifier.DatabaseMode databaseMode = MathVerifier.DatabaseMode.skip;
 
     @Option(names = {"-d", "--debug"}, description = "full application debug mode")
     private boolean bDebug = false;
@@ -57,7 +55,7 @@ public class LoadModelsCommand implements Callable<Integer> {
                     }
                 };
 
-                mathVerifier.runLoadTest(userids, biomodelkeys.toArray(new KeyValue[0]), mathmodelkeys.toArray(new KeyValue[0]), softwareVersion, bUpdateDatabase, compareLogger);
+                mathVerifier.runMathTest(userids, biomodelkeys.toArray(new KeyValue[0]), softwareVersion, databaseMode, compareLogger);
             } catch (RuntimeException e) {
                 e.printStackTrace(System.err);
             }

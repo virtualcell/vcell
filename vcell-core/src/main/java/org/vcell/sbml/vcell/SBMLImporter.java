@@ -11,14 +11,11 @@
 package org.vcell.sbml.vcell;
 
 import cbit.image.VCImage;
-import cbit.image.VCImageCompressed;
 import cbit.image.VCImageUncompressed;
 import cbit.image.VCPixelClass;
 import cbit.util.xml.VCLogger;
 import cbit.util.xml.VCLoggerException;
-import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.biomodel.ModelUnitConverter;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.geometry.CSGObject;
 import cbit.vcell.geometry.*;
@@ -54,8 +51,8 @@ import cbit.vcell.solver.AnnotatedFunction.FunctionCategory;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitSystem;
 import cbit.vcell.xml.XMLTags;
-import jscl.math.function.Exp;
 import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jdom.Element;
@@ -76,14 +73,12 @@ import org.sbml.jsbml.util.filters.IdFilter;
 import org.sbml.jsbml.xml.XMLNode;
 import org.vcell.sbml.SBMLHelper;
 import org.vcell.sbml.SBMLUtils;
-import org.vcell.sbml.SbmlException;
 import org.vcell.sbml.vcell.SBMLImportException.Category;
 import org.vcell.util.*;
 import org.vcell.util.BeanUtils.CastInfo;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.document.BioModelChildSummary;
 
-import javax.swing.tree.TreeNode;
 import javax.xml.stream.XMLStreamException;
 import java.beans.PropertyVetoException;
 import java.io.*;
@@ -92,7 +87,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
-import java.util.zip.DataFormatException;
 
 public class SBMLImporter {
 
@@ -1832,7 +1826,12 @@ public class SBMLImporter {
 			int issueCount = 0;
 			for (Issue warning : warnings) {
 				if (warning.getSeverity() == Issue.Severity.ERROR || warning.getSeverity() == Issue.Severity.WARNING || warning.getSeverity() == Issue.Severity.INFO) {
-					org.apache.logging.log4j.Level logLevel = org.apache.logging.log4j.Level.getLevel(warning.getSeverity().name());
+					org.apache.logging.log4j.Level logLevel = Level.INFO;
+					if (warning.getSeverity()== Issue.Severity.ERROR) {
+						logLevel = Level.ERROR;
+					} if (warning.getSeverity() == Issue.Severity.WARNING){
+						logLevel = Level.WARN;
+					}
 					logger.log(logLevel, warning.getMessage() + " (" + warning.getCategory() + ")\n");
 					messageBuffer.append("- ").append(warning.getMessage()).append("\n");
 					issueCount++;
