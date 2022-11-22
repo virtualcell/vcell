@@ -688,7 +688,7 @@ public void refreshDependencies(){
 	for (int i = 0; i < fieldParameters.length; i++){
 		try {
 			if (fieldParameters[i].getExpression()!=null){
-				fieldParameters[i].getExpression().bindExpression(this);
+				fieldParameters[i].getExpression().bindExpression(this.simulationContext);
 			}
 		}catch (ExpressionException e){
 			logger.error("error binding expression '"+fieldParameters[i].getExpression().infix()+"', "+e.getMessage());
