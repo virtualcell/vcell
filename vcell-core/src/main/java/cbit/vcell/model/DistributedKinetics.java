@@ -236,12 +236,16 @@ public abstract class DistributedKinetics extends Kinetics {
 		StructureSize structureSize = origLumpedKinetics.getReactionStep().getStructure().getStructureSize();
 		KineticsParameter lumpedAuthoritativeParm = origLumpedKinetics.getAuthoritativeParameter();
 		Expression sizeExp = new Expression(structureSize.getName());
-		Expression substitutedRate = MathUtilities.substituteModelParameters(lumpedAuthoritativeParm.getExpression(), reactionStep, false, false);
-		Expression lumpedExpressionWithoutSizeScale = ExpressionUtils.getLinearFactor(substitutedRate, structureSize.getName());
+		Expression lumpedExpressionWithoutSizeScale = ExpressionUtils.getLinearFactor(lumpedAuthoritativeParm.getExpression(), structureSize.getName());
 		if (lumpedExpressionWithoutSizeScale == null){
 			// try again with model namescope (if it was a global param, prb from SBML import)
-			lumpedExpressionWithoutSizeScale = ExpressionUtils.getLinearFactor(substitutedRate, new Expression(structureSize, structureSize.getStructure().getModel().getNameScope()).infix());
+			lumpedExpressionWithoutSizeScale = ExpressionUtils.getLinearFactor(lumpedAuthoritativeParm.getExpression(), new Expression(structureSize, structureSize.getStructure().getModel().getNameScope()).infix());
 		}
+		if (lumpedExpressionWithoutSizeScale == null){
+			// try again with symbol substitution
+			Expression substitutedRate = MathUtilities.substituteModelParameters(lumpedAuthoritativeParm.getExpression(), reactionStep, false, false);
+			lumpedExpressionWithoutSizeScale = ExpressionUtils.getLinearFactor(substitutedRate, new Expression(structureSize, structureSize.getStructure().getModel().getNameScope()).infix());
+		}		
 		if (lumpedExpressionWithoutSizeScale == null){
 			if (bForceScale) {
 				lumpedExpressionWithoutSizeScale = Expression.div(lumpedAuthoritativeParm.getExpression(), sizeExp);
