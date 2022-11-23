@@ -69,13 +69,12 @@ jobs:
             --no-cache \
             --file Dockerfile \
             --build-arg SIMULATOR_VERSION=${VCELL_SHA} \
-            --tag ghcr.io/virtualcell/biosimulators_vcell:latest \
+            --tag ghcr.io/virtualcell/biosimulators_vcell:${VCELL_SHA} \
             --label org.opencontainers.image.revision=${REVISION} \
             --label org.opencontainers.image.created=${CREATED} \
             --label org.opencontainers.image.version=${VCELL_SHA} \
             --label org.opencontainers.image.license=MIT \
             .
-          docker tag ghcr.io/virtualcell/biosimulators_vcell:${VCELL_SHA}
           docker push --all-tags ghcr.io/virtualcell/biosimulators_vcell
           singularity build biosimulators_vcell_${VCELL_SHA}.img docker:ghcr.io/virtualcell/biosimulators_vcell:${VCELL_SHA}
           singularity remote login -u ${{ secrets.ACTION_USER }} -p ${{ secrets.ACTION_TOKEN }} oras://ghcr.io
