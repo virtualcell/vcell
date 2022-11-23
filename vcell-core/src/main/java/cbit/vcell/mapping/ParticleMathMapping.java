@@ -1107,6 +1107,7 @@ protected void refresh(MathMappingCallback callback) throws MappingException, Ex
 	}
 	refreshVariables();
 	refreshLocalNameCount();
+	resolveMathSymbolConflicts();
 	refreshMathDescription();
 	combineHybrid();
 	reconcileWithOriginalModel();

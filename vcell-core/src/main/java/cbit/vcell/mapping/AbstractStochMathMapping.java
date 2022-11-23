@@ -49,6 +49,7 @@ public abstract class AbstractStochMathMapping extends AbstractMathMapping {
 		refreshVariables();
 		
 		refreshLocalNameCount();
+		resolveMathSymbolConflicts();
 		refreshMathDescription();
 		reconcileWithOriginalModel();
 	}
