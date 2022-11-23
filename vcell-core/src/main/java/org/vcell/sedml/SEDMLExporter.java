@@ -962,7 +962,7 @@ public class SEDMLExporter {
 			MathSymbolMapping mathSymbolMapping, Set<String> dataGeneratorTasksSet,
 			MathOverrides mathOverrides, String ownerTaskId, String scannedConstName, String repeatedTaskId, String modelReferenceId)
 			throws ExpressionException, DivideByZeroException, MappingException {
-		RepeatedTask rt = new RepeatedTask(repeatedTaskId, repeatedTaskId, true, rangeId);
+		RepeatedTask rt = new RepeatedTask(repeatedTaskId, mathOverrides.getSimulation().getName(), true, rangeId);
 		dataGeneratorTasksSet.add(rt.getId());
 		SubTask subTask = new SubTask("0", ownerTaskId);
 		dataGeneratorTasksSet.remove(ownerTaskId);
