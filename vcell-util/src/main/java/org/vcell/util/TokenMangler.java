@@ -357,6 +357,13 @@ public static String getSQLRestoredString(String inputString) {
  * this is for SBML level 1
  *
  *
+ * 11/23/2022 dan: switching to SBML level 2 and up specifications
+ *
+ *  letter ::= 'a'..'z','A'..'Z'
+ *  digit  ::= '0'..'9'
+ *  idChar ::= letter | digit | '_'
+ *  SId ::= ( letter | '_' ) idChar*
+ *
  * This method was created in VisualAge.
  * @return java.lang.String
  */
@@ -380,25 +387,28 @@ public static String mangleToSName(String name) {
 		return (newString.toString());
 	}
 	//feed map
-	String[] map = {"_zero_","_one_", "_two_", "_three_", "_four_", "_five_", "_six_", "_seven_","_eight_", "_nine_", "_underscore_"};
-	
-	//At this point the string should start with a series of '_' or a number
-	int index =0;
-	while (index<newString.length() && newString.charAt(index)=='_') {
-		index++;		
-	}
-	//Mangle strings made only of '_'
-	if (index>=newString.length()) {
-		//replace the last underscore
-		newString.replace(index-1,index, map[10]);
-		//return this string
-		return newString.toString();
-	}
-	//make sure the index points to a number
-	if (Character.isDigit(newString.charAt(index))) {
-		//mangle the first number to its text version
-		newString.replace(index,index+1, map[Character.getNumericValue(newString.charAt(index))]);
-	}
+//	String[] map = {"_zero_","_one_", "_two_", "_three_", "_four_", "_five_", "_six_", "_seven_","_eight_", "_nine_", "_underscore_"};
+//	
+//	//At this point the string should start with a series of '_' or a number
+//	int index =0;
+//	while (index<newString.length() && newString.charAt(index)=='_') {
+//		index++;		
+//	}
+	// not a requirement anymore
+	// TODO: we should throw an exception if some user tries to be difficult and use only a sequence of '_'
+//	//Mangle strings made only of '_'
+//	if (index>=newString.length()) {
+//		//replace the last underscore
+//		newString.replace(index-1,index, map[10]);
+//		//return this string
+//		return newString.toString();
+//	}
+	// not a requirement anymore	
+//	//make sure the index points to a number
+//	if (Character.isDigit(newString.charAt(index))) {
+//		//mangle the first number to its text version
+//		newString.replace(index,index+1, map[Character.getNumericValue(newString.charAt(index))]);
+//	}
 
 	return newString.toString();
 }
