@@ -48,6 +48,7 @@ public class ConfigurationOptionsTreeModel extends DefaultTreeModel
 		
 		GENERAL_NODE("General Properties"),
 		PYTHON_NODE("Python Properties"),
+		VISIT_NODE("VisIt Properties"),
 		COMSOL_NODE("Comsol Properties"),
 		BIONETGEN_NODE("BioNetGen Preferences");
 		
@@ -63,10 +64,12 @@ public class ConfigurationOptionsTreeModel extends DefaultTreeModel
 	public ConfigurationOptionsTreeFolderNode configurationChildFolderNodes[] = {
 			new ConfigurationOptionsTreeFolderNode(ConfigurationOptionsTreeFolderClass.GENERAL_NODE, true),
 			new ConfigurationOptionsTreeFolderNode(ConfigurationOptionsTreeFolderClass.PYTHON_NODE, true),
+			new ConfigurationOptionsTreeFolderNode(ConfigurationOptionsTreeFolderClass.VISIT_NODE, true),
 			new ConfigurationOptionsTreeFolderNode(ConfigurationOptionsTreeFolderClass.COMSOL_NODE, true),
 			new ConfigurationOptionsTreeFolderNode(ConfigurationOptionsTreeFolderClass.BIONETGEN_NODE, true),
 		};
 	private ConfigurationModelNode generalNode = new ConfigurationModelNode(configurationChildFolderNodes[0], true);
+	private ConfigurationModelNode visitNode = new ConfigurationModelNode(configurationChildFolderNodes[1], false);
 	private ConfigurationModelNode comsolNode = new ConfigurationModelNode(configurationChildFolderNodes[2], false);
 	private ConfigurationModelNode bioNetGenNode = new ConfigurationModelNode(configurationChildFolderNodes[3], false);	// no leaves
 	
@@ -85,8 +88,7 @@ public class ConfigurationOptionsTreeModel extends DefaultTreeModel
 		rootNode.removeAllChildren();
 
 		rootNode.add(generalNode);
-//		rootNode.add(comsolNode);
-//		generalNode.add(bioNetGenNode);
+		rootNode.add(visitNode);
 		
 		nodeStructureChanged(rootNode);
 		GuiUtils.treeExpandAllRows(ownerTree);

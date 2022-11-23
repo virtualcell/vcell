@@ -99,6 +99,9 @@ public class PropertyLoader {
 	public static final String comsolRootDir				= record("vcell.comsol.rootdir",ValueType.DIR);
 	public static final String comsolJarDir					= record("vcell.comsol.jardir",ValueType.DIR);
 
+	//VisIt properties
+	public static final String visitExe						= record("vcell.visit.executable",ValueType.EXE);
+
 	public static final String vcellServerHost				= record("vcell.serverHost",ValueType.GEN);
 	public static final String sslIgnoreHostMismatch		= record("vcell.ssl.ignoreHostMismatch",ValueType.BOOL);
 	public static final String sslIgnoreCertProblems		= record("vcell.ssl.ignoreCertProblems",ValueType.BOOL);
