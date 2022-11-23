@@ -2,6 +2,7 @@ package cbit.vcell.mapping;
 
 import java.beans.PropertyVetoException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import cbit.vcell.biomodel.ModelUnitConverter;
 import cbit.vcell.math.*;
@@ -81,6 +82,7 @@ public abstract class AbstractMathMapping implements ScopedSymbolTable, UnitFact
 	protected MathDescription mathDesc = null;
 	protected MathSymbolMapping mathSymbolMapping = new MathSymbolMapping();
 	private HashMap<String, Integer> localNameCountHash = new HashMap<String, Integer>();
+	private HashMap<SymbolTableEntry, String> steToCorrectedMathSymbols = new HashMap<>();
 	protected Vector<SpeciesContextMapping> speciesContextMappingList = new Vector<SpeciesContextMapping>();
 
 	public AbstractMathMapping(SimulationContext simContext, MathMappingCallback callback, NetworkGenerationRequirements networkGenerationRequirements) {
@@ -938,7 +940,7 @@ protected void refreshLocalNameCount() {
 	localNameCountHash.clear();
 	ReactionStep reactionSteps[] = simContext.getModel().getReactionSteps();
 	for (int j = 0; j < reactionSteps.length; j++){
-		KineticsParameter[] params = reactionSteps[j].getKinetics().getKineticsParameters(); 
+		KineticsParameter[] params = reactionSteps[j].getKinetics().getKineticsParameters();
 		for (KineticsParameter kp : params){
 			String name = kp.getName();
 			if (localNameCountHash.containsKey(name)) {
@@ -979,6 +981,83 @@ protected void refreshLocalNameCount() {
 		}
 	}
 }
+
+/**
+ * VCell has a global biological namespace for species and parameters
+ * and local namespaces for locally defined reaction parameters.
+ *
+ * normally, we mangle the local parameters by adding a suffix related to the reaction name (e.g. "_r0")
+ * to the local name (e.g. "J") which yields "J_r0" which is typically unique.
+ *
+ * On rare occasion, the mangled name conflicts with another Math Symbol Name.
+ * given that we have no unambiguous naming scheme which protects against generated math symbol conflicts
+ * (e.g. like using fully qualified names from biological symbols), we review the putative Math Symbol names
+ * assigned to each biological entity and look for naming conflicts.
+ *
+ * Upon conflict, we rename the locally defined entities (e.g. local reaction parameters) using the prefix "localN_"
+ * where N counts from 0 to M if M local entities share the same name.
+ */
+protected void resolveMathSymbolConflicts() throws MappingException {
+	steToCorrectedMathSymbols.clear();
+	HashMap<SymbolTableEntry, String> localNameNominalMathSymbols = new HashMap<>();
+	ReactionStep reactionSteps[] = simContext.getModel().getReactionSteps();
+	for (int j = 0; j < reactionSteps.length; j++){
+		KineticsParameter[] params = reactionSteps[j].getKinetics().getKineticsParameters(); 
+		for (KineticsParameter kp : params){
+			localNameNominalMathSymbols.put(kp, getMathSymbol0(kp, null));
+		}
+	}
+	List<ReactionRule> reactionRules = simContext.getModel().getRbmModelContainer().getReactionRuleList();
+	for (ReactionRule reactionRule : reactionRules){
+		LocalParameter[] params = reactionRule.getKineticLaw().getLocalParameters();
+		for (LocalParameter lp : params){
+			localNameNominalMathSymbols.put(lp, getMathSymbol0(lp,null));
+		}
+	}
+	SpeciesContext scs[] = simContext.getModel().getSpeciesContexts();
+	for (SpeciesContext sc : scs) {
+		StructureMapping structureMapping = simContext.getGeometryContext().getStructureMapping(sc.getStructure());
+		GeometryClass geometryClass = (structureMapping!=null) ? structureMapping.getGeometryClass() : null;
+		localNameNominalMathSymbols.put(sc, getMathSymbol0(sc,geometryClass));
+	}
+	ModelParameter mps[] = simContext.getModel().getModelParameters();
+	for (ModelParameter mp : mps) {
+		localNameNominalMathSymbols.put(mp, getMathSymbol0(mp,null));
+	}
+
+	// invert the map (mathSymbols -> list of Biological SymbolTableEntries)
+	Map<String, List<SymbolTableEntry>> nameToStesMap = invertMapUsingGroupingBy(localNameNominalMathSymbols);
+
+	//
+	// rename local parameters upon conflict and mark as "local_".
+	//
+	for (Map.Entry<String, List<SymbolTableEntry>> entry : nameToStesMap.entrySet()){
+		String mathSymbolName = entry.getKey();
+		List<SymbolTableEntry> stes = entry.getValue();
+		if (stes.size()>1) {
+			int count = 0;
+			for (SymbolTableEntry ste : stes){
+				if (ste instanceof ModelParameter || ste instanceof SpeciesContext) {
+					continue;
+				}
+				String newMathSymbolName = "local_" + mathSymbolName;
+				if (count++ > 0) {
+					 newMathSymbolName = "local" + count + "_" + mathSymbolName;
+				}
+
+				steToCorrectedMathSymbols.put(ste, newMathSymbolName);
+			}
+		}
+	}
+}
+
+	private static <V, K> Map<V, List<K>> invertMapUsingGroupingBy(Map<K, V> map) {
+		Map<V, List<K>> inversedMap = map.entrySet()
+				.stream()
+				.collect(Collectors.groupingBy(Map.Entry::getValue, Collectors.mapping(Map.Entry::getKey, Collectors.toList())));
+		return inversedMap;
+	}
+
 
 /**
  * This method was created in VisualAge.
@@ -1094,10 +1173,14 @@ protected Expression getIdentifierSubstitutions(Expression origExp, VCUnitDefini
 public String getMathSymbol(SymbolTableEntry ste, GeometryClass geometryClass) throws MappingException {
 
 	String mathSymbol = getMathSymbol0(ste,geometryClass);
-	
+
+	if (steToCorrectedMathSymbols.containsKey(ste)){
+		mathSymbol = steToCorrectedMathSymbols.get(ste);
+	}
+
 	// check for ptential conflict with existing global parameter (which carries over the name from bio side to math side)
 	ModelParameter[] modelParams = simContext.getModel().getModelParameters();
-	
+
 	if (!(ste instanceof ModelParameter) && !(ste instanceof ProxyParameter && ((ProxyParameter)ste).getTarget() instanceof ModelParameter)) {
 		for (int i = 0; i < modelParams.length; i++) {
 			if (modelParams[i].getName().equals(mathSymbol)) {
@@ -1112,7 +1195,7 @@ public String getMathSymbol(SymbolTableEntry ste, GeometryClass geometryClass) t
 	return mathSymbol;
 }
 
-protected final String getMathSymbol0(SymbolTableEntry ste, GeometryClass geometryClass)
+private final String getMathSymbol0(SymbolTableEntry ste, GeometryClass geometryClass)
 		throws MappingException {
 			String steName = ste.getName();
 			if (ste instanceof Kinetics.KineticsParameter){
@@ -1192,7 +1275,7 @@ protected final String getMathSymbol0(SymbolTableEntry ste, GeometryClass geomet
 			}
 			if (ste instanceof ProxyParameter){
 				ProxyParameter pp = (ProxyParameter)ste;
-				return getMathSymbol0(pp.getTarget(),geometryClass);
+				return getMathSymbol(pp.getTarget(),geometryClass);
 			}
 			// 
 			if (ste instanceof ModelParameter) {
