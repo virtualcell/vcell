@@ -314,12 +314,6 @@ public class SEDMLImporter {
 				BioModel vcbm = null;
 				// we should not fail if any of these steps don't succeed
 				try {
-					ModelUnitSystem vcUnits = ModelUnitSystem.createDefaultVCModelUnitSystem();
-					vcbm = ModelUnitConverter.createBioModelWithNewUnitSystem(bm, vcUnits);
-				} catch (Exception e1) {
-					logger.info("Failed to convert unit system to VCell units: " + e1);
-				}
-				try {
 				// cannot do this for now, as it can be very expensive (hours!!)
 				// also has serious memory issues (runs out of memory even with bumping up to Xmx12G
 
