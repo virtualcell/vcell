@@ -78,17 +78,6 @@ jobs:
           singularity build biosimulators_vcell_${VCELL_SHA}.img docker:ghcr.io/virtualcell/biosimulators_vcell:${VCELL_SHA}
           singularity remote login -u ${{ secrets.ACTION_USER }} -p ${{ secrets.ACTION_TOKEN }} oras://ghcr.io
           singularity push -U biosimulators_vcell_${VCELL_SHA}.img oras://ghcr.io/virtualcell/biosimulators_vcell_singularity:${VCELL_SHA}
-      - name: Get release upload URL
-        id: get_url
-        uses: pdamianik/release-tag-to-upload-url-action@v1.0.1
-        with:
-          tag: ${VCELL_SHA}
-          token: ${{ github.token }}
-      - name: Upload edited specifications file
-        uses: shogo82148/actions-upload-release-asset@v1
-        with:
-          upload_url: ${{ steps.get_url.outputs.uploadUrl }}
-          asset_path: biosimulators.json
 
       - name: Setup tmate session
         uses: mxschmitt/action-tmate@v3
