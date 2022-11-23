@@ -224,6 +224,7 @@ protected void refresh(MathMappingCallback callback) throws MappingException, Ex
 	}
 	refreshVariables();
 	refreshLocalNameCount();
+	resolveMathSymbolConflicts();
 	refreshMathDescription();		// we create math based on the transformed sim context
 	reconcileWithOriginalModel();	// we relate the symbols in the math to the symbols in the original sim context
 //	System.out.println("MathMapping.refresh End");
