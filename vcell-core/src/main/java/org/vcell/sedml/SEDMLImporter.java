@@ -460,7 +460,7 @@ public class SEDMLImporter {
 				Expression exp = null;
 				if (change.isChangeAttribute()) {
 					exp = new Expression(((ChangeAttribute)change).getNewValue());
-				} else if (change.isComputeChange()) {
+				} else if (change.isComputeChange() || change.isSetValue()) {
 					ComputeChange cc = (ComputeChange)change;
 					ASTNode math = cc.getMath();
 					exp = new ExpressionMathMLParser(null).fromMathML(math, "t");
@@ -681,11 +681,41 @@ public class SEDMLImporter {
 	private Map<String, BioModel> createBioModels(List<org.jlibsedml.Model> mmm) throws RuntimeException {
 		// first go through models without changes which are unique and must be imported as new BioModel/SimContext
 		Map<String, BioModel> bmMap = new HashMap<>();
+		List<Model> modelsWithoutChanges = new ArrayList<Model>();
 		for(Model mm : mmm) {
 			if (mm.getListOfChanges().isEmpty()) {
-				String id = mm.getId();
-				bmMap.put(id, importModel(mm));
+				modelsWithoutChanges.add(mm);
 			}
+		}
+		if (!modelsWithoutChanges.isEmpty()) {
+			boolean needMoreImport = false;
+			do {
+				for (Model mm : modelsWithoutChanges) {
+					// check first whether it is simply a reference to another model within this sedml, so we don't duplicate
+					String refID = null;
+					if (mm.getSource().startsWith("#")) {
+						refID = mm.getSource().substring(1);
+						// direct reference within sedml
+					} else {
+						// need to check if it is an indirect reference (another model using same source URI)
+						for (Model model : sedml.getModels()) {
+							if (model != mm && model.getSource().equals(mm.getSource())) {
+								refID = model.getId();
+							}
+						}
+					}
+					if (refID == null) {
+						bmMap.put(mm.getId(), importModel(mm));
+					} else {
+						BioModel refBM = bmMap.get(refID);
+						if (refBM != null) {
+							bmMap.put(mm.getId(), refBM);
+						} else {
+							needMoreImport = true;
+						}
+					}
+				} 
+			} while (needMoreImport);
 		}
 		// now go through models with changes and see if they refer to another model within this sedml
 		for(Model mm : mmm) {
