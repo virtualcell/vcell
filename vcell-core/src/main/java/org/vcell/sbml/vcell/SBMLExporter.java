@@ -80,6 +80,7 @@ import org.vcell.util.*;
 
 import javax.xml.stream.XMLStreamException;
 import java.beans.PropertyVetoException;
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -93,6 +94,8 @@ import java.util.stream.Collectors;
  * @author: Anuradha Lakshminarayana
  */
 public class SBMLExporter {
+
+	public static boolean bWriteDebugFiles = false;
 
 	private final static Logger logger = LogManager.getLogger(SBMLExporter.class);
 	//public static final String DOMAIN_TYPE_PREFIX = "domainType_";
@@ -1818,25 +1821,23 @@ private void roundTripValidation() throws SBMLValidationException {
 				logger.info("Round trip math validation passed: "+mathCompareResults.toDatabaseStatus());
 			}
 		}
+
+		if (bWriteDebugFiles) {
+			try {
+				String dirName = "vcell_files_"+ Integer.toString(this.vcSelectedSimContext.getBioModel().getName().hashCode());
+				File outputDir = Files.createTempDirectory(dirName).toFile();
+				writeIntermediateFiles(bioModel, reread_BioModel_sbml_units, reread_BioModel_vcell_units, outputDir);
+				System.err.println("wrote temp files ./sbml.xml, ./orig_vcml.xml, ./reread_vcml_sbml_units.xml and ./reread_vcml.xml to "+outputDir.getAbsolutePath());
+			} catch (Exception ex) {
+				logger.info("error printing debug files: " + ex.getMessage());
+			}
+		}
+
 	}catch (Exception e){
-		String dirName = "vcell_files_"+ Integer.toString(this.vcSelectedSimContext.getBioModel().getName().hashCode());
 		try {
-			String outputDir = Files.createTempDirectory(dirName).toFile().getAbsolutePath();
-			logger.error("writing temp files ./sbml.xml, ./orig_vcml.xml, ./reread_vcml_sbml_units.xml and ./reread_vcml.xml to "+outputDir);
-			if (sbmlModel != null) {
-				SBMLWriter sbmlWriter = new SBMLWriter();
-				sbmlWriter.writeSBML(sbmlModel.getSBMLDocument(), Paths.get(outputDir, "sbml.xml").toFile());
-			}
-			if (bioModel != null) {
-				Files.write(Paths.get(outputDir, "orig_vcml.xml"), XmlHelper.bioModelToXML(bioModel, false).getBytes(StandardCharsets.UTF_8));
-			}
-			if (reread_BioModel_sbml_units != null) {
-				reread_BioModel_sbml_units.updateAll(false);
-				Files.write(Paths.get(outputDir, "reread_vcml_sbml_units.xml"), XmlHelper.bioModelToXML(reread_BioModel_sbml_units, false).getBytes(StandardCharsets.UTF_8));
-			}
-			if (reread_BioModel_vcell_units != null) {
-				Files.write(Paths.get(outputDir, "reread_vcml.xml"), XmlHelper.bioModelToXML(reread_BioModel_vcell_units, false).getBytes(StandardCharsets.UTF_8));
-			}
+			String dirName = "vcell_files_"+ Integer.toString(this.vcSelectedSimContext.getBioModel().getName().hashCode());
+			File outputDir = Files.createTempDirectory(dirName).toFile();
+			writeIntermediateFiles(bioModel, reread_BioModel_sbml_units, reread_BioModel_vcell_units, outputDir);
 		} catch (Exception ex) {
 			logger.error("error printing debug files: "+ex.getMessage(), e);
 		}
@@ -1845,7 +1846,25 @@ private void roundTripValidation() throws SBMLValidationException {
 	}
 }
 
-private VCellSBMLDoc convertToSBML() throws SbmlException, SBMLException, XMLStreamException {
+	private void writeIntermediateFiles(BioModel bioModel, BioModel reread_BioModel_sbml_units, BioModel reread_BioModel_vcell_units, File outputDir) throws IOException, XMLStreamException, XmlParseException, MappingException {
+		logger.error("writing temp files ./sbml.xml, ./orig_vcml.xml, ./reread_vcml_sbml_units.xml and ./reread_vcml.xml to "+outputDir);
+		if (sbmlModel != null) {
+			SBMLWriter sbmlWriter = new SBMLWriter();
+			sbmlWriter.writeSBML(sbmlModel.getSBMLDocument(), Paths.get(outputDir.getAbsolutePath(), "sbml.xml").toFile());
+		}
+		if (bioModel != null) {
+			Files.write(Paths.get(outputDir.getAbsolutePath(), "orig_vcml.xml"), XmlHelper.bioModelToXML(bioModel, false).getBytes(StandardCharsets.UTF_8));
+		}
+		if (reread_BioModel_sbml_units != null) {
+			reread_BioModel_sbml_units.updateAll(false);
+			Files.write(Paths.get(outputDir.getAbsolutePath(), "reread_vcml_sbml_units.xml"), XmlHelper.bioModelToXML(reread_BioModel_sbml_units, false).getBytes(StandardCharsets.UTF_8));
+		}
+		if (reread_BioModel_vcell_units != null) {
+			Files.write(Paths.get(outputDir.getAbsolutePath(), "reread_vcml.xml"), XmlHelper.bioModelToXML(reread_BioModel_vcell_units, false).getBytes(StandardCharsets.UTF_8));
+		}
+	}
+
+	private VCellSBMLDoc convertToSBML() throws SbmlException, SBMLException, XMLStreamException {
 
 	SBMLDocument sbmlDocument = new SBMLDocument(sbmlLevel,sbmlVersion);
 	// mark it as originating from VCell
