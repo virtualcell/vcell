@@ -38,65 +38,34 @@ import cbit.vcell.mapping.SimulationContext;
 @SuppressWarnings("serial")
 public class OmexExtensionFilter extends SedmlExtensionFilter {
 	private static final String FNAMES = ".omex";
-	
+
 	public OmexExtensionFilter() {
-		super(FNAMES,"COMBINE archive (.omex)",SelectorExtensionFilter.Selector.FULL_MODEL);
+		super(FNAMES, "COMBINE archive (.omex)", SelectorExtensionFilter.Selector.FULL_MODEL);
 	}
 
 	@Override
-	public void writeBioModel(DocumentManager documentManager, BioModel bioModel, File exportFile, SimulationContext ignored) throws Exception {
-		String resultString;
-		// export the entire biomodel to a SEDML file (all supported applications)
-		int sedmlLevel = 1;
-		int sedmlVersion = 2;
-		String sPath = FileUtils.getFullPathNoEndSeparator(exportFile.getAbsolutePath());
-		String sFile = FileUtils.getBaseName(exportFile.getAbsolutePath());
-		String sExt = FileUtils.getExtension(exportFile.getAbsolutePath());
-		
-		SEDMLExporter sedmlExporter = null;
+	public void writeBioModel(DocumentManager _documentManager, BioModel bioModel, File exportFile, SimulationContext _ignored) throws Exception {
 		if (bioModel != null) {
-			
+
 			ModelFormat modelFormat = ModelFormat.SBML;
-			Object[] options = {"VCML","SBML"};
-			int choice = JOptionPane.showOptionDialog(null,	// parent component
-					"VCML or SBML?",			// message,
-					"Choose an option",			// title
-					JOptionPane.YES_NO_OPTION,	// optionType
-					JOptionPane.QUESTION_MESSAGE,	// messageType
-					null,						// Icon
+			Object[] options = {"VCML", "SBML"};
+			int choice = JOptionPane.showOptionDialog(null,    // parent component
+					"VCML or SBML?",            // message,
+					"Choose an option",            // title
+					JOptionPane.YES_NO_OPTION,    // optionType
+					JOptionPane.QUESTION_MESSAGE,    // messageType
+					null,                        // Icon
 					options,
-					"SBML");					// initialValue 
+					"SBML");                    // initialValue
 			if (choice == 0) modelFormat = ModelFormat.VCML;
-			
-			sedmlExporter = new SEDMLExporter(sFile, bioModel, sedmlLevel, sedmlVersion, null);
+
+			String sExt = FileUtils.getExtension(exportFile.getAbsolutePath());
+			boolean bCreateOmexArchive = false;
+			if (sExt.equals("omex")) {
+				bCreateOmexArchive = true;
+			}
 			boolean bRoundTripSBMLValidation = true;
-			resultString = sedmlExporter.getSEDMLDocument(sPath, sFile, modelFormat, false, bRoundTripSBMLValidation).writeDocumentToString();
-
-			// convert biomodel to vcml and save to file.
-			String vcmlString = XmlHelper.bioModelToXML(bioModel);
-			String vcmlFileName = Paths.get(sPath, sFile + ".vcml").toString();
-			File vcmlFile = new File(vcmlFileName);
-			XmlUtil.writeXMLStringToFile(vcmlString, vcmlFile.getAbsolutePath(), true);
-		} else {
-			throw new RuntimeException("unsupported Document Type " + Objects.requireNonNull(bioModel).getClass().getName() + " for SedML export");
+			SEDMLExporter.writeBioModel(bioModel, exportFile, modelFormat, bRoundTripSBMLValidation, bCreateOmexArchive);
 		}
-		if (sExt.equals("omex")) {
-			doSpecificWork(sedmlExporter, resultString, sPath, sFile);
-			return;
-		}
-		else {
-			XmlUtil.writeXMLStringToFile(resultString, exportFile.getAbsolutePath(), true);
-		}
-	}
-	
-	@Override
-	public void doSpecificWork(SEDMLExporter sedmlExporter, String resultString, String sPath, String sFile) throws Exception {
-		super.doSpecificWork(sedmlExporter, resultString, sPath, sFile);
-		
-        String rdfString = XmlRdfUtil.getMetadata(sFile);
-        XmlUtil.writeXMLStringToFile(rdfString, String.valueOf(Paths.get(sPath, "metadata.rdf")), true);
-
-		
-		sedmlExporter.createOmexArchive(sPath, sFile);
 	}
 }

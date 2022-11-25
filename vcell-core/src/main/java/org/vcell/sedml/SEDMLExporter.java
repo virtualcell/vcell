@@ -1,5 +1,6 @@
 package org.vcell.sedml;
 
+import cbit.util.xml.XmlRdfUtil;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.ModelUnitConverter;
@@ -20,7 +21,6 @@ import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.*;
 import cbit.vcell.xml.XMLTags;
 import cbit.vcell.xml.XmlHelper;
-import cbit.vcell.xml.XmlParseException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jdom.Namespace;
@@ -43,26 +43,16 @@ import org.sbml.libcombine.KnownFormats;
 import org.vcell.sbml.SbmlException;
 import org.vcell.sbml.SimSpec;
 import org.vcell.sbml.vcell.SBMLExporter;
+import org.vcell.util.FileUtils;
 import org.vcell.util.ISize;
 import org.vcell.util.Pair;
 import org.vcell.util.TokenMangler;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.XMLStreamException;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 
 
@@ -161,6 +151,7 @@ public class SEDMLExporter {
 		this.sedmlRecorder.exportToJSON();
 		return sedmlDocument;
 	}
+
 	private void translateBioModelToSedML(String savePath, String sBaseFileName, ModelFormat modelFormat,
 				boolean bFromCLI, boolean bRoundTripSBMLValidation) {		// true if invoked for omex export, false if for sedml
 		sbmlFilePathStrAbsoluteList.clear();
@@ -1087,22 +1078,6 @@ public class SEDMLExporter {
 		fr.setMath(math);
 	}
 
-	private void writeModelVCML(String savePath, String sBaseFileName, boolean bFromCLI) throws XmlParseException, IOException {
-		String filePathStrAbsolute;
-		String filePathStrRelative;
-		//						filePathStrAbsolute = Paths.get(savePath, bioModelName + ".vcml").toString();
-		filePathStrAbsolute = Paths.get(savePath, sBaseFileName + ".vcml").toString();
-		//						filePathStrRelative = bioModelName + ".vcml";
-		filePathStrRelative = sBaseFileName + ".vcml";
-		if(!bFromCLI) {	// the vcml file is managed elsewhere when called for omex
-			String vcmlString = XmlHelper.bioModelToXML(vcBioModel);
-			XmlUtil.writeXMLStringToFile(vcmlString, filePathStrAbsolute, true);
-			sbmlFilePathStrAbsoluteList.add(filePathStrRelative);
-		}
-		String bioModelName = vcBioModel.getName();
-		sedmlModel.addModel(new Model(TokenMangler.mangleToSName(bioModelName), bioModelName, vcmlLanguageURN, filePathStrRelative));
-	}
-
 	private void writeModelSBML(String savePath, String sBaseFileName, String sbmlString, SimulationContext simContext) throws IOException {
 		String simContextName = simContext.getName();
 		String simContextId = TokenMangler.mangleToSName(simContextName);
@@ -1317,108 +1292,7 @@ public class SEDMLExporter {
 		return targetXpath;
 	}
 	
-//	private String getKiSAOIdFromSimulation(SolverDescription solverDesc) {
-//        String kiSAOId = null;
-//		try {
-//			// Create KiSAOQueryMaker instance, which uses last version of kisao.owl ontology
-//			// (URL: http://biomodels.net/kisao/KISAO).
-//			net.biomodels.kisao.IKiSAOQueryMaker kisaoQuery = new net.biomodels.kisao.impl.KiSAOQueryMaker();
-//			String solverName = solverDesc.getShortDisplayLabel();
-//			String cvodeSolverName = SolverDescription.CVODE.getShortDisplayLabel();
-//			if (!solverName.equalsIgnoreCase(cvodeSolverName)) {
-//				Set<IRI> iriSet = kisaoQuery.searchByName(solverName);
-//				while (kiSAOId == null && iriSet != null && iriSet.iterator().hasNext()) {
-//		        	IRI iri = iriSet.iterator().next();
-//					kiSAOId = kisaoQuery.getId(iri);
-//		        	String kiSAOName = kisaoQuery.getName(iri);
-//		        	// System.out.printf("solver name : " + kiSAOName + " (" + kiSAOId + ")\n");
-//				}
-//			}
-//			// At this point, either the solver is CVODE or kiSAO id could not be found for non-CVODE solver
-//			// for now : if a match for solver name is not found in KiSAO, set it to CVODE
-//			if (kiSAOId == null) {
-//		        IRI iri = kisaoQuery.searchByName(cvodeSolverName).iterator().next();
-//				kiSAOId = kisaoQuery.getId(iri);
-//	        	String kiSAOName = kisaoQuery.getName(iri);
-//				// System.out.printf("solver name : " + kiSAOName + " (" + kiSAOId + ")\n");
-//			}
-//		} catch (OWLOntologyCreationException e) {
-//			e.printStackTrace(System.err);
-//		}
-//		return kiSAOId;
-//	}
 
-	public void createManifest(String savePath, String fileName) {
-		
-		final String xmlnsAttribute = "http://identifiers.org/combine.specifications/omex-manifest";	 
-		final String manifestFormat = "http://identifiers.org/combine.specifications/omex-manifest";
-		final String sbmlFormat = "http://identifiers.org/combine.specifications/sbml";	 
-		final String sedmlFormat = "http://identifiers.org/combine.specifications/sed-ml";	 
-			
-		try {
-			DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
-			DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
-	 
-			// root elements
-			Document doc = docBuilder.newDocument();
-			Element rootElement = doc.createElement("omexManifest");
-			doc.appendChild(rootElement);
-			rootElement.setAttribute("xmlns", xmlnsAttribute);
-			
-			// Content elements
-			Element content = doc.createElement("content");
-			rootElement.appendChild(content);
-			content.setAttribute("location", "manifest.xml");
-			content.setAttribute("format", manifestFormat);
-			
-			for (String s : sbmlFilePathStrAbsoluteList) {
-				content = doc.createElement("content");
-				rootElement.appendChild(content);
-				content.setAttribute("location", s);
-				content.setAttribute("format", sbmlFormat);
-			}
-			
-			content = doc.createElement("content");
-			rootElement.appendChild(content);
-			content.setAttribute("location", fileName + ".sedml");
-			content.setAttribute("format", sedmlFormat);
-			content.setAttribute("master", "true");
-
-
-//			Element staff = doc.createElement("staff");
-//			rootElement.appendChild(staff);
-//			// set attribute to staff element
-//			Attr attr = doc.createAttribute("id");
-//			attr.setValue("1");
-//			staff.setAttributeNode(attr);
-//
-//			// firstname elements
-//			Element firstname = doc.createElement("firstname");
-//			firstname.appendChild(doc.createTextNode("yong"));
-//			staff.appendChild(firstname);
-//
-//			// salary elements
-//			Element salary = doc.createElement("salary");
-//			salary.appendChild(doc.createTextNode("100000"));
-//			staff.appendChild(salary);
-
-			// write the content into xml file
-			TransformerFactory transformerFactory = TransformerFactory.newInstance();
-			Transformer transformer = transformerFactory.newTransformer();
-			DOMSource source = new DOMSource(doc);
-
-			String manifestAbsolutePathName = Paths.get(savePath, "manifest.xml").toString();
-			StreamResult result = new StreamResult(new File(manifestAbsolutePathName));
-
-			// Output to console for testing
-			// StreamResult result = new StreamResult(System.out);
-			transformer.transform(source, result);
-		  } catch (ParserConfigurationException pce) {
-			logger.error(pce);
-		  } catch (TransformerException tfe) {
-			logger.error(tfe);
-		  }
-	}
 	public void addSedmlFileToList(String sedmlFileName) {
 		if(sedmlFileName != null && !sedmlFileName.isEmpty()) {
 			sedmlFilePathStrAbsoluteList.add(sedmlFileName);
@@ -1493,6 +1367,41 @@ public class SEDMLExporter {
     return true;
 }
 
+	public static void writeBioModel(BioModel bioModel, File exportFileOrDirectory, ModelFormat modelFormat, boolean bRoundTripSBMLValidation, boolean bCreateOmexArchive) throws Exception {
+		String resultString;
+		// export the entire biomodel to a SEDML file (all supported applications)
+		int sedmlLevel = 1;
+		int sedmlVersion = 2;
+		String sPath = FileUtils.getFullPathNoEndSeparator(exportFileOrDirectory.getAbsolutePath());
+		String sFile = FileUtils.getBaseName(exportFileOrDirectory.getAbsolutePath());
+
+		SEDMLExporter sedmlExporter;
+		if (bioModel != null) {
+			sedmlExporter = new SEDMLExporter(sFile, bioModel, sedmlLevel, sedmlVersion, null);
+			resultString = sedmlExporter.getSEDMLDocument(sPath, sFile, modelFormat, false, bRoundTripSBMLValidation).writeDocumentToString();
+
+			// convert biomodel to vcml and save to file.
+			String vcmlString = XmlHelper.bioModelToXML(bioModel);
+			String vcmlFileName = Paths.get(sPath, sFile + ".vcml").toString();
+			File vcmlFile = new File(vcmlFileName);
+			XmlUtil.writeXMLStringToFile(vcmlString, vcmlFile.getAbsolutePath(), true);
+		} else {
+			throw new RuntimeException("unsupported Document Type " + Objects.requireNonNull(bioModel).getClass().getName() + " for SedML export");
+		}
+		if (bCreateOmexArchive) {
+			String sedmlFileName = Paths.get(sPath, sFile + ".sedml").toString();
+			XmlUtil.writeXMLStringToFile(resultString, sedmlFileName, true);
+			sedmlExporter.addSedmlFileToList(sFile + ".sedml");
+
+			String rdfString = XmlRdfUtil.getMetadata(sFile);
+			XmlUtil.writeXMLStringToFile(rdfString, String.valueOf(Paths.get(sPath, "metadata.rdf")), true);
+
+			sedmlExporter.createOmexArchive(sPath, sFile);
+		} else {
+			XmlUtil.writeXMLStringToFile(resultString, exportFileOrDirectory.getAbsolutePath(), true);
+		}
+	}
+
 	// we know exactly which files we need to archive: those in sbmlFilePathStrAbsoluteList
 	// each file is deleted after being added to archive
 	private final int BUFFER = 2048;
@@ -1502,80 +1411,6 @@ public class SEDMLExporter {
 	private int overrideCount;
 
 	private SBMLSupport sbmlSupport = new SBMLSupport();
-	public boolean createZipArchive(String srcFolder, String sFileName) {
-		try {
-			BufferedInputStream origin = null;
-
-			FileOutputStream    dest = new FileOutputStream(Paths.get(srcFolder, sFileName + ".sedx").toFile());
-			ZipOutputStream out = new ZipOutputStream(new BufferedOutputStream(dest));
-			byte data[] = new byte[BUFFER];
-
-			for (String sd : sbmlFilePathStrAbsoluteList) {
-//				if(sd.startsWith(FileUtils.UNIX_CURRENT_FOLDER_SEPARATOR)) {
-//					int pos = sd.indexOf(FileUtils.UNIX_CURRENT_FOLDER_SEPARATOR) + FileUtils.UNIX_CURRENT_FOLDER_SEPARATOR.length();
-//					sd = sd.substring(pos);
-//				}
-
-				File f = Paths.get(srcFolder, sd).toFile();
-				FileInputStream fi = new FileInputStream(f);
-				origin = new BufferedInputStream(fi, BUFFER);
-				ZipEntry entry = new ZipEntry(sd);
-				out.putNextEntry(entry);
-				int count;
-				while ((count = origin.read(data, 0, BUFFER)) != -1) {
-					out.write(data, 0, count);
-					out.flush();
-				}
-				fi.close();
-				f.delete();
-			}
-			origin.close();
-			out.flush();
-			out.close();
-		} catch (Exception e) {
-			throw new RuntimeException("createZipArchive threw exception: " + e.getMessage());
-		}
-		return true;
-	}
-
-	private void dummy() {
-//		// ------ Functional Range
-//		r = new FunctionalRange(rangeId, "-1");
-//		ASTNode fRangeMath = SEDMLExporter.getFormulaFromExpression(expression);
-//		if(fRangeMath != null) {
-//			Function func = new Function(fRangeMath);
-//			((FunctionalRange) r).setMath(func);
-//			
-//			String[] symbols = expression.getSymbols();
-//			for(String symbolName : symbols) {
-//				//String symbolName = TokenMangler.mangleToSName(symbol);
-//				
-//				mathVar = mathSymbolMapping.findVariableByName(symbolName);
-//				stEntries = mathSymbolMapping.getBiologicalSymbol(mathVar);
-//				if(stEntries.length > 1) {
-//					System.err.println("SymbolTableEntry size: " + stEntries.length + ", " + stEntries.toString());
-//				} else if(stEntries.length == 0) {
-//					System.err.println("SymbolTableEntry size: " + stEntries.length + " for " + symbolName);
-//				}
-//				SymbolTableEntry ste1 = stEntries[0];
-//				//SymbolTableEntry ste1 = vcModel.getEntry(symbol);
-//				if (ste1 instanceof SpeciesContext || ste1 instanceof Structure || ste1 instanceof ReservedSymbol) {
-//					Variable sedmlVar = new Variable(symbolName, symbolName, taskRef, sbmlSupport.getXPathForSpecies(symbolName));
-//					((FunctionalRange) r).addVariable(sedmlVar);
-//				} else if (ste1 instanceof ModelParameter) {
-//					Parameter sedmlParameter = new Parameter(symbolName, symbolName, ((ModelParameter)ste1).getConstantValue());
-//					((FunctionalRange) r).addVariable(sedmlParameter);
-//				} else if (ste1 instanceof KineticsParameter) {
-//					Parameter sedmlParameter = new Parameter(symbolName, symbolName, ((KineticsParameter)ste1).getConstantValue());
-//					((FunctionalRange) r).addVariable(sedmlParameter);
-//				} else {
-//					System.err.println("Entity should be SpeciesContext, ReservedSymbol, Structure, ModelParameter or KineticParameter: " + ste1.getClass());
-//				}
-//			}
-//		}
-//		t.addRange(r);
-
-	}
 
 	public SEDMLRecorder getSedmlLogger() {
 		return sedmlRecorder;
