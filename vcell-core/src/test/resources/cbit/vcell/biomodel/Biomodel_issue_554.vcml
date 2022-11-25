@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--This biomodel was generated in VCML Version JimDev_Version_7.0_build_00-->
+<vcml xmlns="http://sourceforge.net/projects/vcell/vcml" Version="JimDev_Version_7.0_build_00">
+    <BioModel Name="BioModel1_Application0">
+        <Model Name="unnamed">
+            <Compound Name="s0">
+                <Annotation>s0</Annotation>
+            </Compound>
+            <Compound Name="s1">
+                <Annotation>s1</Annotation>
+            </Compound>
+            <Compound Name="s2">
+                <Annotation>s2</Annotation>
+            </Compound>
+            <Compound Name="s3">
+                <Annotation>s3</Annotation>
+            </Compound>
+            <Compound Name="s4">
+                <Annotation>s4</Annotation>
+            </Compound>
+            <Compound Name="s5">
+                <Annotation>s5</Annotation>
+            </Compound>
+            <Compound Name="s6">
+                <Annotation>s6</Annotation>
+            </Compound>
+            <Compound Name="s7">
+                <Annotation>s7</Annotation>
+            </Compound>
+            <Feature Name="c0" />
+            <LocalizedCompound Name="s0" SbmlName="s0" CompoundRef="s0" Structure="c0" OverrideName="true" />
+            <LocalizedCompound Name="s1" SbmlName="s1" CompoundRef="s1" Structure="c0" OverrideName="true" />
+            <LocalizedCompound Name="s2" SbmlName="s2" CompoundRef="s2" Structure="c0" OverrideName="true" />
+            <LocalizedCompound Name="s3" SbmlName="s3" CompoundRef="s3" Structure="c0" OverrideName="true" />
+            <LocalizedCompound Name="s4" SbmlName="s4" CompoundRef="s4" Structure="c0" OverrideName="true" />
+            <LocalizedCompound Name="s5" SbmlName="s5" CompoundRef="s5" Structure="c0" OverrideName="true" />
+            <LocalizedCompound Name="s6" SbmlName="s6" CompoundRef="s6" Structure="c0" OverrideName="true" />
+            <LocalizedCompound Name="s7" SbmlName="s7" CompoundRef="s7" Structure="c0" OverrideName="true" />
+            <SimpleReaction Structure="c0" Name="r0" Reversible="true" FluxOption="MolecularOnly" SbmlName="r0">
+                <Reactant LocalizedCompoundRef="s0" Stoichiometry="1" />
+                <Product LocalizedCompoundRef="s1" Stoichiometry="1" />
+                <Kinetics KineticsType="GeneralKinetics">
+                    <Parameter Name="J" Role="reaction rate" Unit="uM.s-1">2.0</Parameter>
+                </Kinetics>
+            </SimpleReaction>
+            <SimpleReaction Structure="c0" Name="r1" Reversible="true" FluxOption="MolecularOnly" SbmlName="r1">
+                <Reactant LocalizedCompoundRef="s2" Stoichiometry="1" />
+                <Product LocalizedCompoundRef="s3" Stoichiometry="1" />
+                <Kinetics KineticsType="GeneralKinetics">
+                    <Parameter Name="J" Role="reaction rate" Unit="uM.s-1">bbb</Parameter>
+                    <Parameter Name="bbb" Role="user defined" Unit="uM.s-1">5.0</Parameter>
+                </Kinetics>
+            </SimpleReaction>
+            <SimpleReaction Structure="c0" Name="r2" Reversible="true" FluxOption="MolecularOnly" SbmlName="r2">
+                <Reactant LocalizedCompoundRef="s4" Stoichiometry="1" />
+                <Product LocalizedCompoundRef="s5" Stoichiometry="1" />
+                <Kinetics KineticsType="GeneralLumpedKinetics">
+                    <Parameter Name="LumpedJ" Role="lumped reaction rate" Unit="molecules.s-1">7.0</Parameter>
+                </Kinetics>
+            </SimpleReaction>
+            <SimpleReaction Structure="c0" Name="r3" Reversible="true" FluxOption="MolecularOnly" SbmlName="r3">
+                <Reactant LocalizedCompoundRef="s6" Stoichiometry="1" />
+                <Product LocalizedCompoundRef="s7" Stoichiometry="1" />
+                <Kinetics KineticsType="GeneralLumpedKinetics">
+                    <Parameter Name="LumpedJ" Role="lumped reaction rate" Unit="molecules.s-1">aaa</Parameter>
+                    <Parameter Name="aaa" Role="user defined" Unit="molecules.s-1">8.0</Parameter>
+                </Kinetics>
+            </SimpleReaction>
+            <Diagram Name="c0" Structure="c0">
+                <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="s1" LocationX="187" LocationY="96" />
+                <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="s2" LocationX="412" LocationY="97" />
+                <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="s3" LocationX="470" LocationY="58" />
+                <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="r0" LocationX="169" LocationY="66" />
+                <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="s4" LocationX="14" LocationY="200" />
+                <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="s7" LocationX="338" LocationY="34" />
+                <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="r1" LocationX="434" LocationY="66" />
+                <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="r2" LocationX="47" LocationY="224" />
+                <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="s0" LocationX="130" LocationY="58" />
+                <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="s5" LocationX="83" LocationY="214" />
+                <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="r3" LocationX="302" LocationY="34" />
+                <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="s6" LocationX="262" LocationY="34" />
+            </Diagram>
+            <ModelUnitSystem VolumeSubstanceUnit="uM.um3" MembraneSubstanceUnit="molecules" LumpedReactionSubstanceUnit="molecules" VolumeUnit="um3" AreaUnit="um2" LengthUnit="um" TimeUnit="s" />
+        </Model>
+        <SimulationSpec Name="unnamed" Stochastic="false" UseConcentration="true" RuleBased="false" MassConservationModelReduction="false" InsufficientIterations="false" InsufficientMaxMolecules="false">
+            <NetworkConstraints RbmMaxIteration="1" RbmMaxMoleculesPerSpecies="10" RbmSpeciesLimit="800" RbmReactionsLimit="2500" />
+            <Annotation></Annotation>
+            <Geometry Name="Compartmental" Dimension="0">
+                <Extent X="10.0" Y="10.0" Z="10.0" />
+                <Origin X="0.0" Y="0.0" Z="0.0" />
+                <SubVolume Name="Compartment" Handle="0" Type="Compartmental" />
+            </Geometry>
+            <GeometryContext>
+                <FeatureMapping Feature="c0" GeometryClass="Compartment" SubVolume="Compartment" Size="50000.0">
+                    <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
+                </FeatureMapping>
+            </GeometryContext>
+            <ReactionContext>
+                <LocalizedCompoundSpec LocalizedCompoundRef="s0" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+                    <InitialConcentration>8.0</InitialConcentration>
+                    <Diffusion>0.0</Diffusion>
+                </LocalizedCompoundSpec>
+                <LocalizedCompoundSpec LocalizedCompoundRef="s1" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+                    <InitialConcentration>7.0</InitialConcentration>
+                    <Diffusion>0.0</Diffusion>
+                </LocalizedCompoundSpec>
+                <LocalizedCompoundSpec LocalizedCompoundRef="s2" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+                    <InitialConcentration>6.0</InitialConcentration>
+                    <Diffusion>0.0</Diffusion>
+                </LocalizedCompoundSpec>
+                <LocalizedCompoundSpec LocalizedCompoundRef="s3" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+                    <InitialConcentration>5.0</InitialConcentration>
+                    <Diffusion>0.0</Diffusion>
+                </LocalizedCompoundSpec>
+                <LocalizedCompoundSpec LocalizedCompoundRef="s4" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+                    <InitialConcentration>4.0</InitialConcentration>
+                    <Diffusion>0.0</Diffusion>
+                </LocalizedCompoundSpec>
+                <LocalizedCompoundSpec LocalizedCompoundRef="s5" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+                    <InitialConcentration>3.0</InitialConcentration>
+                    <Diffusion>0.0</Diffusion>
+                </LocalizedCompoundSpec>
+                <LocalizedCompoundSpec LocalizedCompoundRef="s6" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+                    <InitialConcentration>2.0</InitialConcentration>
+                    <Diffusion>0.0</Diffusion>
+                </LocalizedCompoundSpec>
+                <LocalizedCompoundSpec LocalizedCompoundRef="s7" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+                    <InitialConcentration>1.0</InitialConcentration>
+                    <Diffusion>0.0</Diffusion>
+                </LocalizedCompoundSpec>
+                <ReactionSpec ReactionStepRef="r0" ReactionMapping="included" />
+                <ReactionSpec ReactionStepRef="r1" ReactionMapping="included" />
+                <ReactionSpec ReactionStepRef="r2" ReactionMapping="included" />
+                <ReactionSpec ReactionStepRef="r3" ReactionMapping="included" />
+            </ReactionContext>
+            <MathDescription Name="unnamed_generated">
+                <Constant Name="_F_">96485.3321</Constant>
+                <Constant Name="_F_nmol_">9.64853321E-5</Constant>
+                <Constant Name="_K_GHK_">1.0E-9</Constant>
+                <Constant Name="_N_pmol_">6.02214179E11</Constant>
+                <Constant Name="_PI_">3.141592653589793</Constant>
+                <Constant Name="_R_">8314.46261815</Constant>
+                <Constant Name="_T_">300.0</Constant>
+                <Constant Name="aaa">8.0</Constant>
+                <Constant Name="bbb">5.0</Constant>
+                <Constant Name="J_r0">2.0</Constant>
+                <Constant Name="K_millivolts_per_volt">1000.0</Constant>
+                <Constant Name="KMOLE">0.001660538783162726</Constant>
+                <Constant Name="LumpedJ_r2">7.0</Constant>
+                <Constant Name="s0_init_uM">8.0</Constant>
+                <Constant Name="s1_init_uM">7.0</Constant>
+                <Constant Name="s2_init_uM">6.0</Constant>
+                <Constant Name="s3_init_uM">5.0</Constant>
+                <Constant Name="s4_init_uM">4.0</Constant>
+                <Constant Name="s5_init_uM">3.0</Constant>
+                <Constant Name="s6_init_uM">2.0</Constant>
+                <Constant Name="s7_init_uM">1.0</Constant>
+                <Constant Name="Size_c0">50000.0</Constant>
+                <Constant Name="UnitFactor_uM_um3_molecules_neg_1">(1.0 * pow(KMOLE,1.0))</Constant>
+                <VolumeVariable Name="s0" Domain="Compartment" />
+                <VolumeVariable Name="s1" Domain="Compartment" />
+                <VolumeVariable Name="s2" Domain="Compartment" />
+                <VolumeVariable Name="s3" Domain="Compartment" />
+                <VolumeVariable Name="s4" Domain="Compartment" />
+                <VolumeVariable Name="s5" Domain="Compartment" />
+                <VolumeVariable Name="s6" Domain="Compartment" />
+                <VolumeVariable Name="s7" Domain="Compartment" />
+                <Function Name="J_r1" Domain="Compartment">bbb</Function>
+                <Function Name="LumpedJ_r3" Domain="Compartment">aaa</Function>
+                <CompartmentSubDomain Name="Compartment">
+                    <BoundaryType Boundary="Xm" Type="Value" />
+                    <BoundaryType Boundary="Xp" Type="Value" />
+                    <BoundaryType Boundary="Ym" Type="Value" />
+                    <BoundaryType Boundary="Yp" Type="Value" />
+                    <BoundaryType Boundary="Zm" Type="Value" />
+                    <BoundaryType Boundary="Zp" Type="Value" />
+                    <OdeEquation Name="s0" SolutionType="Unknown">
+                        <Rate> - J_r0</Rate>
+                        <Initial>s0_init_uM</Initial>
+                    </OdeEquation>
+                    <OdeEquation Name="s1" SolutionType="Unknown">
+                        <Rate>J_r0</Rate>
+                        <Initial>s1_init_uM</Initial>
+                    </OdeEquation>
+                    <OdeEquation Name="s2" SolutionType="Unknown">
+                        <Rate> - J_r1</Rate>
+                        <Initial>s2_init_uM</Initial>
+                    </OdeEquation>
+                    <OdeEquation Name="s3" SolutionType="Unknown">
+                        <Rate>J_r1</Rate>
+                        <Initial>s3_init_uM</Initial>
+                    </OdeEquation>
+                    <OdeEquation Name="s4" SolutionType="Unknown">
+                        <Rate> - (UnitFactor_uM_um3_molecules_neg_1 * LumpedJ_r2 / Size_c0)</Rate>
+                        <Initial>s4_init_uM</Initial>
+                    </OdeEquation>
+                    <OdeEquation Name="s5" SolutionType="Unknown">
+                        <Rate>(UnitFactor_uM_um3_molecules_neg_1 * LumpedJ_r2 / Size_c0)</Rate>
+                        <Initial>s5_init_uM</Initial>
+                    </OdeEquation>
+                    <OdeEquation Name="s6" SolutionType="Unknown">
+                        <Rate> - (UnitFactor_uM_um3_molecules_neg_1 * LumpedJ_r3 / Size_c0)</Rate>
+                        <Initial>s6_init_uM</Initial>
+                    </OdeEquation>
+                    <OdeEquation Name="s7" SolutionType="Unknown">
+                        <Rate>(UnitFactor_uM_um3_molecules_neg_1 * LumpedJ_r3 / Size_c0)</Rate>
+                        <Initial>s7_init_uM</Initial>
+                    </OdeEquation>
+                </CompartmentSubDomain>
+            </MathDescription>
+            <Simulation Name="Simulation0">
+                <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Combined Stiff Solver (IDA/CVODE)">
+                    <TimeBound StartTime="0.0" EndTime="1.0" />
+                    <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+                    <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+                    <OutputOptions KeepEvery="1" KeepAtMost="1000" />
+                    <NumberProcessors>1</NumberProcessors>
+                </SolverTaskDescription>
+                <MathOverrides>
+                    <Constant Name="bbb">50.0</Constant>
+                    <Constant Name="LumpedJ_r2">70.0</Constant>
+                    <Constant Name="aaa">80.0</Constant>
+                    <Constant Name="J_r0">20.0</Constant>
+                </MathOverrides>
+                <Version Name="temp simulation" KeyValue="814333013" BranchId="1" Archived="1" Date="23-Nov-2022 14:37:21" FromVersionable="false">
+                    <Owner Name="temp" Identifier="123" />
+                    <GroupAccess Type="1" />
+                </Version>
+            </Simulation>
+            <MicroscopeMeasurement Name="fluor">
+                <ConvolutionKernel Type="ProjectionZKernel" />
+            </MicroscopeMeasurement>
+        </SimulationSpec>
+        <pathwayModel>
+            <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bp="http://www.biopax.org/release/biopax-level3.owl#" version="3.0" />
+        </pathwayModel>
+        <relationshipModel>
+            <RMNS version="3.0" />
+        </relationshipModel>
+        <vcmetadata>
+            <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" />
+            <nonrdfAnnotationList />
+            <uriBindingList />
+        </vcmetadata>
+    </BioModel>
+</vcml>
