@@ -776,6 +776,7 @@ public class SEDMLExporter {
 				for (String unscannedParamName : unscannedParamHash.values()) {
 					SymbolTableEntry ste = getSymbolTableEntryForModelEntity(mathSymbolMapping, unscannedParamName);
 					Expression unscannedParamExpr = mathOverrides.getActualExpression(unscannedParamName, 0);
+					unscannedParamExpr = adjustIfRateParam(vcSimulation, ste, unscannedParamExpr);
 					if(unscannedParamExpr.isNumeric()) {
 						// if expression is numeric, add ChangeAttribute to model created above
 						XPathTarget targetXpath = getTargetAttributeXPath(ste, l2gMap);
@@ -878,6 +879,7 @@ public class SEDMLExporter {
 				for (String unscannedParamName : unscannedParamHash.values()) {
 					SymbolTableEntry ste = getSymbolTableEntryForModelEntity(mathSymbolMapping, unscannedParamName);
 					Expression unscannedParamExpr = mathOverrides.getActualExpression(unscannedParamName, 0);
+					unscannedParamExpr = adjustIfRateParam(vcSimulation, ste, unscannedParamExpr);
 					if(unscannedParamExpr.isNumeric()) {
 						// if expression is numeric, add ChangeAttribute to model created above
 						XPathTarget targetXpath = getTargetAttributeXPath(ste, l2gMap);
@@ -956,6 +958,23 @@ public class SEDMLExporter {
 			sedmlModel.addTask(sedmlTask);
 //						taskRef = taskId;		// to be used later to add dataGenerators : one set of DGs per model (simContext).
 		}
+	}
+
+	private Expression adjustIfRateParam(Simulation vcSimulation, SymbolTableEntry ste, Expression unscannedParamExpr)
+			throws ExpressionException {
+		if (ste instanceof KineticsParameter) {
+			KineticsParameter kp = (KineticsParameter)ste;
+			if (kp.getKinetics().getAuthoritativeParameter() == kp) {
+				boolean bSpatial = vcSimulation.getSimulationOwner().getGeometry().getDimension() > 0;
+				boolean bLumped = kp.getKinetics() instanceof LumpedKinetics;
+				if (!bLumped && !bSpatial) {
+					MathSymbolMapping msm = (MathSymbolMapping)vcSimulation.getSimulationOwner().getMathDescription().getSourceSymbolMapping();
+					cbit.vcell.math.Variable structSize = msm.getVariable(kp.getKinetics().getReactionStep().getStructure().getStructureSize());
+					unscannedParamExpr = Expression.mult(unscannedParamExpr, new Expression(structSize.getName()));
+				}
+			}
+		}
+		return unscannedParamExpr;
 	}
 
 	private RepeatedTask createSEDMLreptask(String rangeId, Map<Pair<String, String>, String> l2gMap,
