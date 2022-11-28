@@ -1204,7 +1204,7 @@ private final String getMathSymbol0(SymbolTableEntry ste, GeometryClass geometry
 					throw new MappingException("KineticsParameter " + steName + " not found in local name count");
 				}
 				// for now keep old style
-				if (count>1 || steName.equals("J")){
+				if (count>1 || steName.equals("J") || steName.equals("LumpedJ")){
 					return steName+"_"+ste.getNameScope().getName();
 					//return getNameScope().getSymbolName(ste);
 				}else{
