@@ -134,9 +134,6 @@ public abstract class LumpedKinetics extends Kinetics {
 			Vector<KineticsParameter> parmsToAdd = new Vector<KineticsParameter>();
 			
 			LumpedKinetics lumpedKinetics = null;
-			StructureSize structureSize = distributedKinetics.getReactionStep().getStructure().getStructureSize();
-			Expression sizeExp = new Expression(structureSize.getName());
-			VCUnitDefinition sizeUnit = structureSize.getUnitDefinition();
 			if (distributedKinetics.getKineticsDescription().isElectrical()){
 				if (reactionStep instanceof FluxReaction){
 					lumpedKinetics = new GeneralCurrentLumpedKinetics((FluxReaction)reactionStep);
@@ -154,10 +151,29 @@ public abstract class LumpedKinetics extends Kinetics {
 					throw new RuntimeException("LumpedKinetics.toLumpedKinetics("+reactionStep.getClass().getSimpleName()+") not supported");
 				}
 			}
+
+			KineticsParameter lumpedAuthoritativeParam = lumpedKinetics.getAuthoritativeParameter();
+
+			// preserve user-defined rate parameter name
+			String origRateParamName = distributedKinetics.getAuthoritativeParameter().getName();
+			// need to protect from name conflict between local parameter and names of predefined role parameters in new kinetics
+			reactionStep.setKinetics(distributedKinetics);
+			for (int i = 0; i < distKineticsParms.length; i++) {
+				if (distKineticsParms[i].getRole()!=Kinetics.ROLE_ReactionRate &&
+						distKineticsParms[i].getRole()!=Kinetics.ROLE_CurrentDensity &&
+						distKineticsParms[i].getName().equals(lumpedAuthoritativeParam.getName())){
+					    distKineticsParms[i].setName("_"+distKineticsParms[i].getName()+"_");
+				}
+			}
+			reactionStep.setKinetics(lumpedKinetics);
+			distKineticsParms = distributedKinetics.getKineticsParameters(); //if a name change was done above the params were cloned in the process...
+			
+			StructureSize structureSize = distributedKinetics.getReactionStep().getStructure().getStructureSize();
+			Expression sizeExp = new Expression(structureSize.getName());
+			VCUnitDefinition sizeUnit = structureSize.getUnitDefinition();
 			Expression unitFactor = new Expression(lumpedKinetics.getAuthoritativeParameter().getUnitDefinition().divideBy(sizeUnit).divideBy(distributedKinetics.getAuthoritativeParameter().getUnitDefinition()).getDimensionlessScale());
 			Expression lumpingFactor = Expression.mult(sizeExp, unitFactor);
 			KineticsParameter distAuthoritativeParam = distributedKinetics.getAuthoritativeParameter();
-			KineticsParameter lumpedAuthoritativeParam = lumpedKinetics.getAuthoritativeParameter();
 			Expression newLumpedAuthoritativeExp = Expression.mult(lumpingFactor,distAuthoritativeParam.getExpression()).flatten();
 			Expression substitutedExp = newLumpedAuthoritativeExp.getSubstitutedExpression(sizeExp, new Expression(1.0));
 			if (ExpressionUtils.functionallyEquivalent(newLumpedAuthoritativeExp,substitutedExp,false)){
@@ -172,6 +188,12 @@ public abstract class LumpedKinetics extends Kinetics {
 				}
 			}
 			lumpedKinetics.addKineticsParameters(parmsToAdd.toArray(new KineticsParameter[parmsToAdd.size()]));
+			lumpedAuthoritativeParam = lumpedKinetics.getAuthoritativeParameter();
+			// apply preserved user-defined rate parameter name
+			if (!origRateParamName.equals(distributedKinetics.getDefaultParameterName(Kinetics.ROLE_ReactionRate))) {
+				lumpedAuthoritativeParam.setName(distributedKinetics.getAuthoritativeParameter().getName());
+			}
+
 			return lumpedKinetics;
 		} catch (PropertyVetoException e) {
 			e.printStackTrace();

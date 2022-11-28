@@ -433,6 +433,9 @@ public SymbolTableEntry getEntry(String identifier) {
 	if (externalSTE instanceof SymbolTableFunctionEntry){
 		return externalSTE;
 	}
+	if (externalSTE instanceof StructureSize) {
+		return externalSTE;
+	}
 	//
 	// external ste is null and found unresolved parameter, then return unresolved parameter.  
 	// (external entry overrides unresolved parameter).

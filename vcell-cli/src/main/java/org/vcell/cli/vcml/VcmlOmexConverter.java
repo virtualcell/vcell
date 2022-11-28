@@ -286,9 +286,11 @@ public class VcmlOmexConverter {
         BioModel bioModel = null;
 		try {
 			bioModel = XmlHelper.XMLToBioModel(new XMLSource(vcmlFilePath));       
-			bioModel.updateAll(false);
+//			bioModel.updateAll(false);
+			bioModel.refreshDependencies();
 			writeFileEntry(outputBaseDir, vcmlName + ",VCML,SUCCEEDED\n", jobLogFile, bForceLogFiles);
-		} catch (XmlParseException | MappingException e1) {
+//		} catch (XmlParseException | MappingException e1) {
+		} catch (XmlParseException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 			writeFileEntry(outputBaseDir, vcmlName + ",VCML,FAILED"+e1.getMessage() + "\n", jobLogFile, bForceLogFiles);

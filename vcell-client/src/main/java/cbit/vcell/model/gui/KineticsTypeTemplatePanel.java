@@ -422,7 +422,7 @@ private JButton getJToggleButton() {
 					}
  				}else if (getKinetics() instanceof LumpedKinetics){
 					try {
-						reactionStep.setKinetics(DistributedKinetics.toDistributedKinetics((LumpedKinetics)getKinetics()));
+						reactionStep.setKinetics(DistributedKinetics.toDistributedKinetics((LumpedKinetics)getKinetics(), true));
 					} catch (Exception e2){
 						e2.printStackTrace(System.out);
 						if (getKinetics().getKineticsDescription().isElectrical()){

@@ -1797,10 +1797,19 @@ public class SBMLImporter {
 		try {
 			for (ReactionStep reactionStep : vcBioModel.getModel().getReactionSteps()) {
 				if (reactionStep.getKinetics().getKineticsDescription().isLumped()) {
+					Kinetics origKinetics = reactionStep.getKinetics();
+					// clone it for backup purposes
+					origKinetics.setReactionStep(null);
+					Kinetics clonedKinetics = (Kinetics)BeanUtils.cloneSerializable(origKinetics);
+					origKinetics.setReactionStep(reactionStep);
 					try {
-						DistributedKinetics.toDistributedKinetics((LumpedKinetics) reactionStep.getKinetics());
+						DistributedKinetics.toDistributedKinetics((LumpedKinetics) origKinetics, false);
 					}catch (Exception e){
 						logger.warn("failed to transform lumped reaction "+reactionStep.getName()+" to distributed: "+e.getMessage(),e);
+						// original kinetics may have been altered when the conversion failed, replace with clone
+						reactionStep.setKinetics(clonedKinetics);
+						clonedKinetics.setReactionStep(reactionStep);
+						reactionStep.refreshDependencies();
 					}
 				}
 			}
@@ -2754,6 +2763,8 @@ public class SBMLImporter {
 		// TODO: use BMDB model Whitcomb to test comp size initialized with expression
 		finalizeCompartments(sbmlModel, vcBioModel, sbmlSymbolMapping, localIssueList, issueContext);
 
+		finalizeReactions(sbmlModel, vcBioModel, sbmlSymbolMapping);
+
 		try {
 			if (!bSpatial) {
 				StructureSizeSolver.updateRelativeStructureSizes(vcBioModel.getSimulationContext(0));
@@ -2791,6 +2802,31 @@ public class SBMLImporter {
 		addOutputFunctions(sbmlModel, vcBioModel, sbmlSymbolMapping, vcLogger);
 	}
 
+	private static void finalizeReactions(org.sbml.jsbml.Model sbmlModel, BioModel vcBioModel,
+			SBMLSymbolMapping sbmlSymbolMapping) throws PropertyVetoException {
+
+		for (int i = 0; i < vcBioModel.getModel().getReactionSteps().length; i++) {
+			KineticsParameter rateParam = vcBioModel.getModel().getReactionSteps(i).getKinetics().getAuthoritativeParameter();
+			String[] rateSymbols = rateParam.getExpression().getSymbols();
+			if (rateSymbols != null && rateSymbols.length == 1) {
+				String id = rateSymbols[0];
+				SBase sbase = sbmlSymbolMapping.getMappedSBase(id);
+				Annotation paramAnnotation = sbase.getAnnotation();
+				if (paramAnnotation.getNonRDFannotation() != null) {
+					XMLNode paramElement = paramAnnotation.getNonRDFannotation()
+							.getChildElement(XMLTags.SBML_VCELL_RateParamTag, "*");
+					if (paramElement != null) {
+						ModelParameter globalParam = (ModelParameter) sbmlSymbolMapping.getRuntimeSte(sbase);
+						rateParam.setExpression(globalParam.getExpression());
+						vcBioModel.getModel().removeModelParameter(globalParam);
+						rateParam.setName(sbase.getName());
+						sbmlSymbolMapping.replaceRuntime(sbase, rateParam);
+					} 
+				}
+			} 
+		}
+		
+	}
 	private static void addOutputFunctions(org.sbml.jsbml.Model sbmlModel, BioModel vcBioModel, SBMLSymbolMapping sbmlSymbolMapping,
 			VCLogger vcLogger) throws VCLoggerException {
 

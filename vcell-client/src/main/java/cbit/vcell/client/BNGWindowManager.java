@@ -177,7 +177,7 @@ public void importSbml(String bngSbmlStr) {
 		for (ReactionStep rs : modifiedBiomodel.getModel().getReactionSteps()) {
 			Kinetics kinetics = rs.getKinetics();
 			if (kinetics instanceof LumpedKinetics) {
-				rs.setKinetics(DistributedKinetics.toDistributedKinetics((LumpedKinetics)kinetics));
+				rs.setKinetics(DistributedKinetics.toDistributedKinetics((LumpedKinetics)kinetics, false));
 			}
 		}
 

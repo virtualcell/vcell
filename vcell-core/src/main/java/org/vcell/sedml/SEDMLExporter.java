@@ -410,7 +410,7 @@ public class SEDMLExporter {
 				// 3 ------->
 				// create Tasks
 				Set<String> dataGeneratorTasksSet = new LinkedHashSet<>();	// tasks not referenced as subtasks by any other (repeated) task; only these will have data generators
-				MathOverrides mathOverrides = new MathOverrides(vcSimulation, vcSimulation.getMathOverrides()); // need to clone so we can manipulate expressions
+				MathOverrides mathOverrides = vcSimulation.getMathOverrides(); // need to clone so we can manipulate expressions
 				createSEDMLtasks(simContextCnt, l2gMap, simContextName, simContextId, mathSymbolMapping,
 						vcSimulation, utcSim, dataGeneratorTasksSet, mathOverrides);
 				
@@ -776,6 +776,7 @@ public class SEDMLExporter {
 				for (String unscannedParamName : unscannedParamHash.values()) {
 					SymbolTableEntry ste = getSymbolTableEntryForModelEntity(mathSymbolMapping, unscannedParamName);
 					Expression unscannedParamExpr = mathOverrides.getActualExpression(unscannedParamName, 0);
+					unscannedParamExpr = adjustIfRateParam(vcSimulation, ste, unscannedParamExpr);
 					if(unscannedParamExpr.isNumeric()) {
 						// if expression is numeric, add ChangeAttribute to model created above
 						XPathTarget targetXpath = getTargetAttributeXPath(ste, l2gMap);
@@ -878,6 +879,7 @@ public class SEDMLExporter {
 				for (String unscannedParamName : unscannedParamHash.values()) {
 					SymbolTableEntry ste = getSymbolTableEntryForModelEntity(mathSymbolMapping, unscannedParamName);
 					Expression unscannedParamExpr = mathOverrides.getActualExpression(unscannedParamName, 0);
+					unscannedParamExpr = adjustIfRateParam(vcSimulation, ste, unscannedParamExpr);
 					if(unscannedParamExpr.isNumeric()) {
 						// if expression is numeric, add ChangeAttribute to model created above
 						XPathTarget targetXpath = getTargetAttributeXPath(ste, l2gMap);
@@ -958,11 +960,28 @@ public class SEDMLExporter {
 		}
 	}
 
+	private Expression adjustIfRateParam(Simulation vcSimulation, SymbolTableEntry ste, Expression unscannedParamExpr)
+			throws ExpressionException {
+		if (ste instanceof KineticsParameter) {
+			KineticsParameter kp = (KineticsParameter)ste;
+			if (kp.getKinetics().getAuthoritativeParameter() == kp) {
+				boolean bSpatial = vcSimulation.getSimulationOwner().getGeometry().getDimension() > 0;
+				boolean bLumped = kp.getKinetics() instanceof LumpedKinetics;
+				if (!bLumped && !bSpatial) {
+					MathSymbolMapping msm = (MathSymbolMapping)vcSimulation.getSimulationOwner().getMathDescription().getSourceSymbolMapping();
+					cbit.vcell.math.Variable structSize = msm.getVariable(kp.getKinetics().getReactionStep().getStructure().getStructureSize());
+					unscannedParamExpr = Expression.mult(unscannedParamExpr, new Expression(structSize.getName()));
+				}
+			}
+		}
+		return unscannedParamExpr;
+	}
+
 	private RepeatedTask createSEDMLreptask(String rangeId, Map<Pair<String, String>, String> l2gMap,
 			MathSymbolMapping mathSymbolMapping, Set<String> dataGeneratorTasksSet,
 			MathOverrides mathOverrides, String ownerTaskId, String scannedConstName, String repeatedTaskId, String modelReferenceId)
 			throws ExpressionException, DivideByZeroException, MappingException {
-		RepeatedTask rt = new RepeatedTask(repeatedTaskId, repeatedTaskId, true, rangeId);
+		RepeatedTask rt = new RepeatedTask(repeatedTaskId, mathOverrides.getSimulation().getName(), true, rangeId);
 		dataGeneratorTasksSet.add(rt.getId());
 		SubTask subTask = new SubTask("0", ownerTaskId);
 		dataGeneratorTasksSet.remove(ownerTaskId);
@@ -1191,7 +1210,7 @@ public class SEDMLExporter {
 			Pair<String, String> key = new Pair(reactionID, parameterID);
 			String value = l2gMap.get(key);
 			if(value == null) {
-				targetXpath = new XPathTarget(sbmlSupport.getXPathForKineticLawParameter(reactionID, parameterID));
+				targetXpath = new XPathTarget(sbmlSupport.getXPathForKineticLawParameterV3(reactionID, parameterID));
 			} else {
 				targetXpath = new XPathTarget(sbmlSupport.getXPathForGlobalParameter(value, ParameterAttribute.value));
 			}
