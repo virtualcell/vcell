@@ -1,7 +1,5 @@
 package cbit.vcell.biomodel;
 
-import cbit.util.xml.VCLogger;
-import cbit.util.xml.VCLoggerException;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.resource.NativeLib;
 import cbit.vcell.xml.XMLSource;
@@ -13,6 +11,8 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 import org.vcell.sbml.vcell.SBMLExporter;
 import org.vcell.sedml.ModelFormat;
 import org.vcell.sedml.SEDMLExporter;
@@ -22,20 +22,43 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.List;
 
+@RunWith(Parameterized.class)
 public class MathOverrideRoundTipTest {
 
-    private String previousInstalldirPropertyValue;
-    private boolean bSavedWriteDebugFiles;
+    private final String filename;
     private final boolean bDebug = true;
+
+    //
+    // save state for zero side-effect
+    //
+    private String previousInstalldirPropertyValue;
+    private boolean previousWriteDebugFiles;
+
+    public MathOverrideRoundTipTest(String filename) {
+        this.filename = filename;
+    }
+
+    @Parameterized.Parameters
+    public static List<String> filenames() {
+        return Arrays.asList(
+                "BioModel_issue_554_r0.vcml",
+                "BioModel_issue_554_r1.vcml",
+                "BioModel_issue_554_r2.vcml",
+                "BioModel_issue_554_r3.vcml",
+                "BioModel_issue_554_r2_r3.vcml",
+                "BioModel_issue_554.vcml"
+        );
+    }
 
     @Before
     public void setup() {
         previousInstalldirPropertyValue = System.getProperty("vcell.installDir");
         System.setProperty("vcell.installDir", "..");
         NativeLib.combinej.load();
-        this.bSavedWriteDebugFiles = SBMLExporter.bWriteDebugFiles;
+        this.previousWriteDebugFiles = SBMLExporter.bWriteDebugFiles;
         SBMLExporter.bWriteDebugFiles = bDebug;
     }
 
@@ -44,13 +67,12 @@ public class MathOverrideRoundTipTest {
         if (previousInstalldirPropertyValue!=null) {
             System.setProperty("vcell.installDir", previousInstalldirPropertyValue);
         }
-        SBMLExporter.bWriteDebugFiles = bSavedWriteDebugFiles;
+        SBMLExporter.bWriteDebugFiles = previousWriteDebugFiles;
     }
 
     @Test
     public void test_General_Kinetics_Override_Roundtrip() throws Exception {
-
-        String filename = "BioModel_issue_554.vcml";
+        System.err.println("file "+filename);
         BioModel bioModel = getBioModelFromResource(filename);
         bioModel.updateAll(false);
 
