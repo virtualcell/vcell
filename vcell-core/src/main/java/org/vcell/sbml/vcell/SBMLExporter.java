@@ -869,35 +869,40 @@ private void addReactions() throws SbmlException, XMLStreamException {
 			} // end for (j) - fifth pass
 
 			// After making all necessary adjustments to the rate expression, now set the sbmlKLaw.
-			final ASTNode exprFormulaNode;
+			// if the rate expression is constant, add it as a SBML model parameter anyway to support overrides.
 			Expression rateExpr = lumpedRateExpr != null ? lumpedRateExpr : localRateExpr;
-			if (lumpedRateExpr == null && !bSpatial) rateExpr = Expression.mult(rateExpr, new Expression(symbolTableEntryNameToSidMap.get(vcReactionStep.getStructure().getName())));
+			if (lumpedRateExpr == null && !bSpatial) {
+				rateExpr = Expression.mult(rateExpr, new Expression(symbolTableEntryNameToSidMap.get(vcReactionStep.getStructure().getName())));
+			}
 			KineticsParameter rateParam = vcRxnKinetics.getAuthoritativeParameter();
 			MathSymbolMapping msm = (MathSymbolMapping)vcSelectedSimContext.getMathDescription().getSourceSymbolMapping();
 			Variable var = msm.getVariable(rateParam);
 			if (var != null && var.isConstant()) {
-				// make global parameter aith expression of rate parameter
-				// create assignment rule for it
-				// mark the global parameter as proxy for the rate parameter 
+				// make a global parameter with expression of rate parameter (set via an assignment rule)
 				String newParamName = TokenMangler.mangleToSName(rateParam.getName() + "_" + vcReactionStep.getName());
-				Pair<String, String> origParam = new Pair<String, String> (rxnName, rateParam.getName());
+				Pair<String, String> origParam = new Pair<>(rxnName, rateParam.getName());
 				l2gMap.put(origParam, newParamName);	
-				ASTNode paramFormulaNode = getFormulaFromExpression(rateExpr);
-				AssignmentRule sbmlParamAssignmentRule = sbmlModel.createAssignmentRule();
-				sbmlParamAssignmentRule.setVariable(newParamName);
-				sbmlParamAssignmentRule.setMath(paramFormulaNode);
 				org.sbml.jsbml.Parameter sbmlKinParam = sbmlModel.createParameter();
 				sbmlKinParam.setId(newParamName);
 				sbmlKinParam.setName(rateParam.getName());
 				sbmlKinParam.setUnits(getOrCreateSBMLUnit(rateParam.getUnitDefinition()));
 				sbmlKinParam.setConstant(false);
+
+				// mark the global parameter as a proxy for the VCell reaction rate parameter (e.g. J or LumpedJ)
 				Element rateParamElement = new Element(XMLTags.SBML_VCELL_RateParamTag, sbml_vcml_ns);
 				rateParamElement.setAttribute(XMLTags.SBML_VCELL_RateParamTag_parRoleAttr, Integer.toString(rateParam.getRole()), sbml_vcml_ns);
 				rateParamElement.setAttribute(XMLTags.SBML_VCELL_RateParamTag_rxIDAttr, sbmlReactionId, sbml_vcml_ns);
 				sbmlKinParam.getAnnotation().appendNonRDFAnnotation(XmlUtil.xmlToString(rateParamElement));
+
+				// create the assignment rule to set the value of the new model parameter
+				ASTNode paramFormulaNode = getFormulaFromExpression(rateExpr);
+				AssignmentRule sbmlParamAssignmentRule = sbmlModel.createAssignmentRule();
+				sbmlParamAssignmentRule.setVariable(newParamName);
+				sbmlParamAssignmentRule.setMath(paramFormulaNode);
+
 				rateExpr = new Expression(newParamName);
 			}
-			exprFormulaNode = getFormulaFromExpression(rateExpr);
+			ASTNode exprFormulaNode = getFormulaFromExpression(rateExpr);
 			sbmlKLaw.setMath(exprFormulaNode);
 		} catch (cbit.vcell.parser.ExpressionException e) {
 			e.printStackTrace(System.out);

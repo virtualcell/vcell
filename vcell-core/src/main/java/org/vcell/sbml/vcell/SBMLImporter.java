@@ -2803,7 +2803,7 @@ public class SBMLImporter {
 	}
 
 	private static void finalizeReactions(org.sbml.jsbml.Model sbmlModel, BioModel vcBioModel,
-			SBMLSymbolMapping sbmlSymbolMapping) throws PropertyVetoException {
+										  SBMLSymbolMapping sbmlSymbolMapping) throws PropertyVetoException {
 
 		for (int i = 0; i < vcBioModel.getModel().getReactionSteps().length; i++) {
 			KineticsParameter rateParam = vcBioModel.getModel().getReactionSteps(i).getKinetics().getAuthoritativeParameter();
@@ -2821,12 +2821,13 @@ public class SBMLImporter {
 						vcBioModel.getModel().removeModelParameter(globalParam);
 						rateParam.setName(sbase.getName());
 						sbmlSymbolMapping.replaceRuntime(sbase, rateParam);
-					} 
+					}
 				}
-			} 
+			}
 		}
-		
+
 	}
+
 	private static void addOutputFunctions(org.sbml.jsbml.Model sbmlModel, BioModel vcBioModel, SBMLSymbolMapping sbmlSymbolMapping,
 			VCLogger vcLogger) throws VCLoggerException {
 
