@@ -113,11 +113,11 @@ public class SBMLExporter {
 	private final Map<Pair <String, String>, String> l2gMap = new HashMap<>();	// local to global translation map, used for reaction parameters
 	private final Map<String, String> symbolTableEntryNameToSidMap = new LinkedHashMap<> ();  // key = vcell ste name, value = sbml entity id
 
-	private final Map<String, AssignmentRule> variableToAssignmentRuleMap = new LinkedHashMap<> ();	// key = sbml variable name, value = associated AssignmentRule
-	private final Map<AssignmentRule, Expression> assignmentRuleToVcmlExpression = new LinkedHashMap<> ();	  // key = assignment rule, value = expression needing replacement of vcml ste with sbml sid 
+	private final Map<String, AssignmentRule> variableToAssignmentRuleMap = new LinkedHashMap<> ();				// key = sbml variable name, value = associated AssignmentRule
+	private final Map<AssignmentRule, Expression> assignmentRuleToVcmlExpressionMap = new LinkedHashMap<> ();	// key = assignment rule, value = expression needing replacement of vcml ste with sbml sid 
 
-	private final Map<String, org.sbml.jsbml.EventAssignment> variableToEventAssignmentMap = new LinkedHashMap<> ();	// key = sbml variable name, value = associated EventAssignment
-	private final Map<org.sbml.jsbml.EventAssignment, Expression> eventAssignmentToVcmlExpression = new LinkedHashMap<> ();	  // key = EventAssignment, value = expression needing replacement of vcml ste with sbml sid 
+	private final Map<org.sbml.jsbml.EventAssignment, Event> eventAssignmentToEventMap = new LinkedHashMap<> ();				// key = EventAssignment, value = the Event to which to ea belongs
+	private final Map<org.sbml.jsbml.EventAssignment, Expression> eventAssignmentToVcmlExpressionMap = new LinkedHashMap<> ();	// key = EventAssignment, value = expression needing replacement of vcml ste with sbml sid 
 	
 	// used for exporting vcell-related annotations.
 	public static final Namespace sbml_vcml_ns = Namespace.getNamespace(XMLTags.VCELL_NS_PREFIX, SBMLUtils.SBML_VCELL_NS);
@@ -1518,11 +1518,13 @@ private void addEvents() {
 				String sid = symbolTableEntryNameToSidMap.get(target.getName());
 				sbmlEA.setVariable(sid);
 				Expression eventAssgnExpr = new Expression(vcEventAssgns.get(j).getAssignmentExpression());
-				variableToEventAssignmentMap.put(sid, sbmlEA);
-				eventAssignmentToVcmlExpression.put(sbmlEA, eventAssgnExpr);
+				eventAssignmentToEventMap.put(sbmlEA, sbmlEvent);
+				eventAssignmentToVcmlExpressionMap.put(sbmlEA, eventAssgnExpr);
 //				ASTNode eaMath = getFormulaFromExpression(eventAssgnExpr);
 //				sbmlEA.setMath(eaMath);
+				System.out.println("EA done");
 			}
+			System.out.println("Event done");
 		}
 	}
 }
@@ -1562,7 +1564,7 @@ private void addAssignmentRules()  {
 			String sid = symbolTableEntryNameToSidMap.get(vcRule.getAssignmentRuleVar().getName());
 			sbmlRule.setVariable(sid);
 			variableToAssignmentRuleMap.put(sid, sbmlRule);
-			assignmentRuleToVcmlExpression.put(sbmlRule, vcRuleExpression);
+			assignmentRuleToVcmlExpressionMap.put(sbmlRule, vcRuleExpression);
 //			ASTNode math = getFormulaFromExpression(vcRuleExpression);
 //			sbmlRule.setMath(math);
 		}
@@ -2746,7 +2748,7 @@ private void postProcessExpressions() {
 	// AssignmentRule
 	for (Map.Entry<String, AssignmentRule> entry : variableToAssignmentRuleMap.entrySet()) {
 		AssignmentRule ar = entry.getValue();	// sbmlModel.getAssignmentRuleByVariable(sid);
-		Expression vcmlExpression = assignmentRuleToVcmlExpression.get(ar);
+		Expression vcmlExpression = assignmentRuleToVcmlExpressionMap.get(ar);
 		Expression sbmlExpression = substituteSteWithSid(vcmlExpression);
 		ASTNode math = getFormulaFromExpression(sbmlExpression);
 		ar.setMath(math);
@@ -2755,14 +2757,14 @@ private void postProcessExpressions() {
 	// rateRule
 	
 	// Events
-	for (Map.Entry<String, org.sbml.jsbml.EventAssignment> entry : variableToEventAssignmentMap.entrySet()) {
-		org.sbml.jsbml.EventAssignment ea = entry.getValue();
-		Expression vcmlExpression = eventAssignmentToVcmlExpression.get(ea);
+	for (Map.Entry<org.sbml.jsbml.EventAssignment, Event> entry : eventAssignmentToEventMap.entrySet()) {
+		org.sbml.jsbml.EventAssignment ea = entry.getKey();
+		Expression vcmlExpression = eventAssignmentToVcmlExpressionMap.get(ea);
 		Expression sbmlExpression = substituteSteWithSid(vcmlExpression);
 		ASTNode eaMath = getFormulaFromExpression(sbmlExpression);
 		ea.setMath(eaMath);
 	}
-	
+	System.out.println("Finished postProcessExpressions");
 }
 
 private Expression substituteSteWithSid(Expression vcExpression) {
