@@ -956,11 +956,12 @@ public class SEDMLExporter {
 		if (ste instanceof KineticsParameter) {
 			KineticsParameter kp = (KineticsParameter)ste;
 			if (kp.getKinetics().getAuthoritativeParameter() == kp) {
-				boolean bSpatial = vcSimulation.getSimulationOwner().getGeometry().getDimension() > 0;
+				SimulationContext simulationContext = (SimulationContext) vcSimulation.getSimulationOwner();
+				boolean bSpatial = simulationContext.getGeometry().getDimension() > 0;
 				boolean bLumped = kp.getKinetics() instanceof LumpedKinetics;
 				if (!bLumped && !bSpatial) {
-					MathSymbolMapping msm = (MathSymbolMapping)vcSimulation.getSimulationOwner().getMathDescription().getSourceSymbolMapping();
-					cbit.vcell.math.Variable structSize = msm.getVariable(kp.getKinetics().getReactionStep().getStructure().getStructureSize());
+					MathSymbolMapping msm = (MathSymbolMapping) simulationContext.getMathDescription().getSourceSymbolMapping();
+					cbit.vcell.math.Variable structSize = msm.getVariable(simulationContext.getGeometryContext().getStructureMapping(kp.getKinetics().getReactionStep().getStructure()).getSizeParameter());
 					unscannedParamExpr = Expression.mult(unscannedParamExpr, new Expression(structSize.getName()));
 				}
 			}
