@@ -790,7 +790,9 @@ public class SEDMLImporter {
 				InputStream sbmlSource = IOUtils.toInputStream(modelXML, Charset.defaultCharset());
 				boolean bValidateSBML = false;
 				SBMLImporter sbmlImporter = new SBMLImporter(sbmlSource,transLogger,bValidateSBML);
-				bioModel = (BioModel)sbmlImporter.getBioModel();
+				boolean bCoerceToDistributed = false;
+				boolean bTransformUnits = false;
+				bioModel = (BioModel)sbmlImporter.getBioModel(bCoerceToDistributed, bTransformUnits);
 				bioModel.setName(bioModelName);
 				bioModel.getSimulationContext(0).setName(mm.getName() != null? mm.getName() : mm.getId());
 				bioModel.updateAll(false);
