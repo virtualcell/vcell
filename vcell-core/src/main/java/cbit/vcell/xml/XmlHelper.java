@@ -440,7 +440,7 @@ public class XmlHelper {
 	/**
 	 Allows the translation process to interact with the user via TranslationMessager
 	 */
-	public static VCDocument importSBML(VCLogger vcLogger, XMLSource xmlSource, boolean bSpatial) throws XmlParseException, VCLoggerException, IOException {
+	public static BioModel importSBML(VCLogger vcLogger, XMLSource xmlSource, boolean bSpatial) throws XmlParseException, VCLoggerException, IOException {
 
 		//checks that the source is not empty
 		if (xmlSource == null){
@@ -460,14 +460,13 @@ public class XmlHelper {
 				throw new RuntimeException("Error importing from SBML : no SBML source.");
 			}
 		}
-		VCDocument vcDoc = null;
 		boolean bValidateSBML = false;
 		SBMLImporter sbmlImporter = new SBMLImporter(sbmlFile.getAbsolutePath(), vcLogger, bValidateSBML);
-		vcDoc = sbmlImporter.getBioModel();
+		BioModel bm  = sbmlImporter.getBioModel();
 
-		vcDoc.refreshDependencies();
+		bm.refreshDependencies();
 		logger.info("Succesful model import: SBML file "+sbmlFile);
-		return vcDoc;
+		return bm;
 	}
 
 	public static VCDocument importBioCellML(VCLogger vcLogger, XMLSource xmlSource) throws Exception {
