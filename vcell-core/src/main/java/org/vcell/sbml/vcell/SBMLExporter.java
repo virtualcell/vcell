@@ -114,11 +114,7 @@ public class SBMLExporter {
 	private final Map<Pair <String, String>, String> l2gMap = new HashMap<>();	// local to global translation map, used for reaction parameters
 	private final Map<String, String> symbolTableEntryNameToSidMap = new LinkedHashMap<> ();  // key = vcell ste name, value = sbml entity id
 
-	private final Map<String, AssignmentRule> variableToAssignmentRuleMap = new LinkedHashMap<> ();				// key = sbml variable name, value = associated AssignmentRule
 	private final Map<AssignmentRule, Expression> assignmentRuleToVcmlExpressionMap = new LinkedHashMap<> ();	// key = assignment rule, value = expression needing replacement of vcml ste with sbml sid 
-
-//	private final Map<org.sbml.jsbml.EventAssignment, Event> eventAssignmentToEventMap = new LinkedHashMap<> ();							 // key = EventAssignment, value = the Event to which to ea belongs
-//	private final Map<org.sbml.jsbml.EventAssignment, Expression> eventAssignmentToVcmlExpressionMap1 = new LinkedHashMap<> ();				 // key = EventAssignment, value = expression needing replacement of vcml ste with sbml sid 
 	private final Map<SBaseWrapper<org.sbml.jsbml.EventAssignment>, Expression> eventAssignmentToVcmlExpressionMap = new LinkedHashMap<> (); // key = EventAssignment wrapper, value = expression needing replacement of vcml ste with sbml sid 
 	
 	// used for exporting vcell-related annotations.
@@ -453,6 +449,19 @@ private void addParameters() throws ExpressionException, SbmlException, XMLStrea
 			}
 		}
 	}
+	
+	// make list of assignment rule variables
+	Set<SymbolTableEntry> assignmentRuleVariables = new HashSet<> ();
+	cbit.vcell.mapping.AssignmentRule[] vcAssignmentRules = getSelectedSimContext().getAssignmentRules();
+	if (vcAssignmentRules != null) {
+		for(cbit.vcell.mapping.AssignmentRule vcRule : vcAssignmentRules) {
+			SymbolTableEntry ste = vcRule.getAssignmentRuleVar();
+			if(ste instanceof ModelParameter) {
+				ModelParameter mp = (ModelParameter)ste;
+				assignmentRuleVariables.add(mp);
+			}
+		}
+	}
 
 	// add VCell global parameters to the SBML listofParameters
 	Model vcModel = getSelectedSimContext().getModel();
@@ -497,15 +506,16 @@ private void addParameters() throws ExpressionException, SbmlException, XMLStrea
 				bParamIsNumeric = false;
 			}
 		} else {
-			if(!eventAssignmentTargets.contains(vcParam)) {
+			if(!eventAssignmentTargets.contains(vcParam) && !assignmentRuleVariables.contains(vcParam)) {
 				// non-numeric VCell global parameter will be defined by a (assignment) rule, hence mark Constant = false.
 				bParamIsNumeric = false;
+				
 				// add assignment rule for param
-				// 11/22/2022 dan: assignment rule are now being created together
-//				ASTNode paramFormulaNode = getFormulaFromExpression(paramExpr);
-//				AssignmentRule sbmlParamAssignmentRule = sbmlModel.createAssignmentRule();
-//				sbmlParamAssignmentRule.setVariable(vcParam.getName());
-//				sbmlParamAssignmentRule.setMath(paramFormulaNode);
+				// we check if it's not already used as an AssignmentRule Variable
+				// because if it is, we'll duplicate it
+				AssignmentRule sbmlParamAssignmentRule = sbmlModel.createAssignmentRule();
+				sbmlParamAssignmentRule.setVariable(sbmlParameterId);	// freshly created above, guaranteed to be valid
+				assignmentRuleToVcmlExpressionMap.put(sbmlParamAssignmentRule, paramExpr);	// expression will be post-processed
 			} else {
 				// the parameter is an event assignment target, so it cannot also be 
 				// an assignment rule variable; we make it an initial assignment instead
@@ -1567,8 +1577,7 @@ private void addAssignmentRules()  {
 			org.sbml.jsbml.AssignmentRule sbmlRule = sbmlModel.createAssignmentRule();
 			String sid = symbolTableEntryNameToSidMap.get(vcRule.getAssignmentRuleVar().getName());
 			sbmlRule.setVariable(sid);
-			variableToAssignmentRuleMap.put(sid, sbmlRule);
-			assignmentRuleToVcmlExpressionMap.put(sbmlRule, vcRuleExpression);
+			assignmentRuleToVcmlExpressionMap.put(sbmlRule, vcRuleExpression);	// expression will be post-processed
 //			ASTNode math = getFormulaFromExpression(vcRuleExpression);
 //			sbmlRule.setMath(math);
 		}
@@ -2749,10 +2758,11 @@ private void setSelectedSimContext(SimulationContext vcSelectedSimContext) {
 // now that we have a complete symbolTableEntryNameToSidMap, we can substitute in all expressions the
 // vCell symbols with the sbml entities id
 private void postProcessExpressions() {
+	
 	// AssignmentRule
-	for (Map.Entry<String, AssignmentRule> entry : variableToAssignmentRuleMap.entrySet()) {
-		AssignmentRule ar = entry.getValue();	// sbmlModel.getAssignmentRuleByVariable(sid);
-		Expression vcmlExpression = assignmentRuleToVcmlExpressionMap.get(ar);
+	for (Map.Entry<AssignmentRule, Expression> entry : assignmentRuleToVcmlExpressionMap.entrySet()) {
+		AssignmentRule ar = entry.getKey();
+		Expression vcmlExpression = entry.getValue();
 		Expression sbmlExpression = substituteSteWithSid(vcmlExpression);
 		ASTNode math = getFormulaFromExpression(sbmlExpression);
 		ar.setMath(math);
