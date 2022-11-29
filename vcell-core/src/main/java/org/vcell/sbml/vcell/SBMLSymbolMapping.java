@@ -16,9 +16,9 @@ public class SBMLSymbolMapping {
     public interface DummySymbolTableEntry extends EditableSymbolTableEntry {
     }
 
-    private static class SBaseWrapper<T extends SBase> {
+    public static class SBaseWrapper<T extends SBase> {
         private T internalSBase = null;
-        private SBaseWrapper(T object) {
+        public SBaseWrapper(T object) {
             if (object == null){
                 throw new IllegalArgumentException("null object");
             }

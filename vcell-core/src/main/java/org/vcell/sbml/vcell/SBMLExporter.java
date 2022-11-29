@@ -74,6 +74,7 @@ import org.vcell.sbml.SBMLHelper;
 import org.vcell.sbml.SBMLUtils;
 import org.vcell.sbml.SbmlException;
 import org.vcell.sbml.UnsupportedSbmlExportException;
+import org.vcell.sbml.vcell.SBMLSymbolMapping.SBaseWrapper;
 import org.vcell.sedml.SEDMLExporter;
 import org.vcell.util.*;
 
@@ -116,8 +117,9 @@ public class SBMLExporter {
 	private final Map<String, AssignmentRule> variableToAssignmentRuleMap = new LinkedHashMap<> ();				// key = sbml variable name, value = associated AssignmentRule
 	private final Map<AssignmentRule, Expression> assignmentRuleToVcmlExpressionMap = new LinkedHashMap<> ();	// key = assignment rule, value = expression needing replacement of vcml ste with sbml sid 
 
-	private final Map<org.sbml.jsbml.EventAssignment, Event> eventAssignmentToEventMap = new LinkedHashMap<> ();				// key = EventAssignment, value = the Event to which to ea belongs
-	private final Map<org.sbml.jsbml.EventAssignment, Expression> eventAssignmentToVcmlExpressionMap = new LinkedHashMap<> ();	// key = EventAssignment, value = expression needing replacement of vcml ste with sbml sid 
+//	private final Map<org.sbml.jsbml.EventAssignment, Event> eventAssignmentToEventMap = new LinkedHashMap<> ();							 // key = EventAssignment, value = the Event to which to ea belongs
+//	private final Map<org.sbml.jsbml.EventAssignment, Expression> eventAssignmentToVcmlExpressionMap1 = new LinkedHashMap<> ();				 // key = EventAssignment, value = expression needing replacement of vcml ste with sbml sid 
+	private final Map<SBaseWrapper<org.sbml.jsbml.EventAssignment>, Expression> eventAssignmentToVcmlExpressionMap = new LinkedHashMap<> (); // key = EventAssignment wrapper, value = expression needing replacement of vcml ste with sbml sid 
 	
 	// used for exporting vcell-related annotations.
 	public static final Namespace sbml_vcml_ns = Namespace.getNamespace(XMLTags.VCELL_NS_PREFIX, SBMLUtils.SBML_VCELL_NS);
@@ -1518,8 +1520,10 @@ private void addEvents() {
 				String sid = symbolTableEntryNameToSidMap.get(target.getName());
 				sbmlEA.setVariable(sid);
 				Expression eventAssgnExpr = new Expression(vcEventAssgns.get(j).getAssignmentExpression());
-				eventAssignmentToEventMap.put(sbmlEA, sbmlEvent);
-				eventAssignmentToVcmlExpressionMap.put(sbmlEA, eventAssgnExpr);
+				
+				// creates a SBaseWrapper around the sbml EventAssignment to make it work as a map key
+				// the sbml EventAssignment.equals() is poorly implemented, we need to compare instances
+				putEventAssignment(sbmlEA, eventAssgnExpr);
 //				ASTNode eaMath = getFormulaFromExpression(eventAssgnExpr);
 //				sbmlEA.setMath(eaMath);
 				System.out.println("EA done");
@@ -2757,11 +2761,12 @@ private void postProcessExpressions() {
 	// rateRule
 	
 	// Events
-	for (Map.Entry<org.sbml.jsbml.EventAssignment, Event> entry : eventAssignmentToEventMap.entrySet()) {
-		org.sbml.jsbml.EventAssignment ea = entry.getKey();
-		Expression vcmlExpression = eventAssignmentToVcmlExpressionMap.get(ea);
+	for (Map.Entry<SBaseWrapper<org.sbml.jsbml.EventAssignment>, Expression> entry : eventAssignmentToVcmlExpressionMap.entrySet()) {
+		SBaseWrapper<org.sbml.jsbml.EventAssignment> eaWrapper = entry.getKey();
+		Expression vcmlExpression = entry.getValue();
 		Expression sbmlExpression = substituteSteWithSid(vcmlExpression);
 		ASTNode eaMath = getFormulaFromExpression(sbmlExpression);
+		org.sbml.jsbml.EventAssignment ea = eaWrapper.getSBase();
 		ea.setMath(eaMath);
 	}
 	System.out.println("Finished postProcessExpressions");
@@ -2785,5 +2790,16 @@ private Expression substituteSteWithSid(Expression vcExpression) {
 	}
 	return sidExpression;
 }
+
+void putEventAssignment(org.sbml.jsbml.EventAssignment _ea, Expression vcellExpression) {
+    SBaseWrapper<org.sbml.jsbml.EventAssignment> eaWrapper = new SBaseWrapper<org.sbml.jsbml.EventAssignment>(_ea);
+    Expression exp = eventAssignmentToVcmlExpressionMap.get(eaWrapper);
+    if (exp != null && exp != vcellExpression) {
+        throw new RuntimeException("sbml event assignment is already bound to an expression " + exp.infix() + ", trying to bind to expression " + vcellExpression.infix());
+    } else {
+    	eventAssignmentToVcmlExpressionMap.put(eaWrapper, vcellExpression);
+    }
+}
+
 
 }
