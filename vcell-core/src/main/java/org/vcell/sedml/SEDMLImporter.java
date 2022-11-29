@@ -756,7 +756,9 @@ public class SEDMLImporter {
 		// check whether all targets have addressable Constants on the Math side
 		for (Change change : changes) {
 			String sbmlID = sbmlSupport.getIdFromXPathIdentifer(change.getTargetXPath().toString());
-			if (resolveConstant(refBM.getSimulationContext(0), null, sbmlID) == null) {
+			SimulationContext simulationContext = refBM.getSimulationContext(0);
+			String constantName = resolveConstant(simulationContext, null, sbmlID);
+			if (constantName == null) {
 				logger.warn("could not map changeAttribute for ID "+sbmlID+" to a VCell Constant");
 				return false;
 			}

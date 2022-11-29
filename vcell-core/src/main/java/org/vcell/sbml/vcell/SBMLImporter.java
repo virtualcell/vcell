@@ -2744,10 +2744,6 @@ public class SBMLImporter {
 
 		// Add constraints (not handled in VCell)
 		addConstraints(sbmlModel, vcLogger);
-		
-		// Add Reactions
-		addReactions(sbmlModel, vcBioModel, bSpatial, lambdaFunctions, level, sbmlUnitIdentifierHash,
-				sbmlSymbolMapping, sbmlAnnotationUtil, vcMetaData, vcLogger, localIssueList, issueContext);
 
 		// Add Rules Rules : adding these later (after assignment rules, since
 		// compartment/species/parameter need to be defined before rate rules
@@ -2758,7 +2754,11 @@ public class SBMLImporter {
 		} catch (ExpressionException | SBMLException | XMLStreamException e) {
 			throw new SBMLImportException(e.getMessage(), e);
 		}
-		
+
+		// Add Reactions
+		addReactions(sbmlModel, vcBioModel, bSpatial, lambdaFunctions, level, sbmlUnitIdentifierHash,
+				sbmlSymbolMapping, sbmlAnnotationUtil, vcMetaData, vcLogger, localIssueList, issueContext);
+
 		// now that we have the parameters loaded, we can bind
 		// TODO: use BMDB model Whitcomb to test comp size initialized with expression
 		finalizeCompartments(sbmlModel, vcBioModel, sbmlSymbolMapping, localIssueList, issueContext);
