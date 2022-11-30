@@ -507,7 +507,15 @@ public class SEDMLImporter {
 		}
 		SymbolTableEntry ste =sbmlMap.getSte(targetSBase, SymbolContext.INITIAL);
 		Variable var = msm.getVariable(ste);
-		if (var instanceof Constant) {
+		boolean varIsConstant = (var instanceof Constant);
+		if (var instanceof cbit.vcell.math.Function){
+			try {
+				double value = ((cbit.vcell.math.Function)var).getExpression().evaluateConstantWithSubstitution();
+				varIsConstant = true;
+			} catch (Exception e){
+			}
+		}
+		if (varIsConstant) {
 			String constantName = var.getName();
 			// if simcontext was converted to stochastic then species init constants use different names
 			if (convertedSimContext != null && ste instanceof SpeciesContextSpecParameter) {
