@@ -44,13 +44,13 @@ public class MathOverrideRoundTipTest {
     @Parameterized.Parameters
     public static List<String> filenames() {
         return Arrays.asList(
-                "BioModel_issue_554_r0.vcml",
-                "BioModel_issue_554_r1.vcml",
-                "BioModel_issue_554_r0_r1.vcml",
-                "BioModel_issue_554_r2.vcml",
-                "BioModel_issue_554_r3.vcml",
-                "BioModel_issue_554_r2_r3.vcml",
-                "BioModel_issue_554.vcml"
+                "Biomodel_issue_554_r0.vcml",
+                "Biomodel_issue_554_r1.vcml",
+                "Biomodel_issue_554_r0_r1.vcml",
+                "Biomodel_issue_554_r2.vcml",
+                "Biomodel_issue_554_r3.vcml",
+                "Biomodel_issue_554_r2_r3.vcml",
+                "Biomodel_issue_554.vcml"
         );
     }
 
