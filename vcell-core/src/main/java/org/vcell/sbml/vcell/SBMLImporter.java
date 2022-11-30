@@ -119,7 +119,6 @@ public class SBMLImporter {
 	private org.sbml.jsbml.Model sbmlModel = null;
 	private final VCLogger vcLogger;
 	private final boolean bValidateSBML;
-	private boolean isFromVCell;
 
 	// issue list for medium-level warnings while importing
 	private final Vector<Issue> localIssueList = new Vector<>();
@@ -1698,10 +1697,16 @@ public class SBMLImporter {
 		}
 	}
 
+	public BioModel getBioModel() throws VCLoggerException {
+		boolean bCoerceToDistributed = true;
+		boolean bTransformUnits = true;
+		return getBioModel(bCoerceToDistributed, bTransformUnits);
+	}
+
 	/**
 	 * parse SBML file into biomodel logs errors to log4j if present in source document
 	 */
-	public BioModel getBioModel() throws IllegalStateException, SBMLImportException, VCLoggerException {
+	public BioModel getBioModel(boolean bCoerceToDistributed, boolean bTransformUnits) throws IllegalStateException, SBMLImportException, VCLoggerException {
 		
 		if (sbmlFileName == null && sbmlModel == null && sbmlInputStream == null) {
 			throw new IllegalStateException("Expected non-null SBML model");
@@ -1794,27 +1799,8 @@ public class SBMLImporter {
 		//
 		// for imported lumped reactions kinetics, attempt to switch to the corresponding distributed kinetics
 		//
-		try {
-			for (ReactionStep reactionStep : vcBioModel.getModel().getReactionSteps()) {
-				if (reactionStep.getKinetics().getKineticsDescription().isLumped()) {
-					Kinetics origKinetics = reactionStep.getKinetics();
-					// clone it for backup purposes
-					origKinetics.setReactionStep(null);
-					Kinetics clonedKinetics = (Kinetics)BeanUtils.cloneSerializable(origKinetics);
-					origKinetics.setReactionStep(reactionStep);
-					try {
-						DistributedKinetics.toDistributedKinetics((LumpedKinetics) origKinetics, false);
-					}catch (Exception e){
-						logger.warn("failed to transform lumped reaction "+reactionStep.getName()+" to distributed: "+e.getMessage(),e);
-						// original kinetics may have been altered when the conversion failed, replace with clone
-						reactionStep.setKinetics(clonedKinetics);
-						clonedKinetics.setReactionStep(reactionStep);
-						reactionStep.refreshDependencies();
-					}
-				}
-			}
-		} catch(Exception e) {
-			throw new SBMLImportException("failed to convert lumped reaction kinetics to distributed: "+e.getMessage(), e);
+		if (bCoerceToDistributed) {
+			vcBioModel.transformLumpedToDistributed();
 		}
 
 		//
@@ -1844,23 +1830,6 @@ public class SBMLImporter {
 					logger.error("failed to report issues to VCLogger", e);
 				}
 			}
-		}
-
-		//
-		// finally convert back to VCell unit system if it originated from VCell
-		// TODO: need to expand options here:
-		//   do not convert if called from CLI or other automated conversion routines
-		//   if called from GUI application convert if VCell origin, otherwise ask user
-		//
-		if (isFromVCell) {
-			logger.error("SKIPPING translation back to vcell unit system ... testing only");
-//			ModelUnitSystem vcUnitSystem = ModelUnitSystem.createDefaultVCModelUnitSystem();
-//			try {
-//				return ModelUnitConverter.createBioModelWithNewUnitSystem(vcBioModel, vcUnitSystem);
-//			} catch (Exception e) {
-//				logger.error("failed to convert imported SBML model into default VCell Unit System - continuing anyway!!",e);
-//				// TODO: maybe alert user? for now fail silently...
-//			}
 		}
 		return vcBioModel;
 	}
@@ -1892,9 +1861,6 @@ public class SBMLImporter {
 			document = reader.readSBMLFromString(sbmlString);
 			// check for VCell origin
 			String topNotes = document.getNotesString();
-			if (topNotes != null && topNotes.contains("VCell")) {
-				isFromVCell  = true;
-			}
 
 		} catch(Exception e) {
 			throw new SBMLImportException(defaultErrorPrefix + ": \n" + sbmlFile, e);
@@ -1909,9 +1875,6 @@ public class SBMLImporter {
 			SBMLDocument document = reader.readSBMLFromStream(new BufferedInputStream(sbmlInputStream));
 			// check for VCell origin
 			String topNotes = document.getNotesString();
-			if (topNotes != null && topNotes.contains("VCell")) {
-				isFromVCell  = true;
-			}
 			return document;
 
 		} catch(XMLStreamException e) {
@@ -2744,10 +2707,6 @@ public class SBMLImporter {
 
 		// Add constraints (not handled in VCell)
 		addConstraints(sbmlModel, vcLogger);
-		
-		// Add Reactions
-		addReactions(sbmlModel, vcBioModel, bSpatial, lambdaFunctions, level, sbmlUnitIdentifierHash,
-				sbmlSymbolMapping, sbmlAnnotationUtil, vcMetaData, vcLogger, localIssueList, issueContext);
 
 		// Add Rules Rules : adding these later (after assignment rules, since
 		// compartment/species/parameter need to be defined before rate rules
@@ -2758,7 +2717,11 @@ public class SBMLImporter {
 		} catch (ExpressionException | SBMLException | XMLStreamException e) {
 			throw new SBMLImportException(e.getMessage(), e);
 		}
-		
+
+		// Add Reactions
+		addReactions(sbmlModel, vcBioModel, bSpatial, lambdaFunctions, level, sbmlUnitIdentifierHash,
+				sbmlSymbolMapping, sbmlAnnotationUtil, vcMetaData, vcLogger, localIssueList, issueContext);
+
 		// now that we have the parameters loaded, we can bind
 		// TODO: use BMDB model Whitcomb to test comp size initialized with expression
 		finalizeCompartments(sbmlModel, vcBioModel, sbmlSymbolMapping, localIssueList, issueContext);
@@ -2803,7 +2766,7 @@ public class SBMLImporter {
 	}
 
 	private static void finalizeReactions(org.sbml.jsbml.Model sbmlModel, BioModel vcBioModel,
-			SBMLSymbolMapping sbmlSymbolMapping) throws PropertyVetoException {
+										  SBMLSymbolMapping sbmlSymbolMapping) throws PropertyVetoException {
 
 		for (int i = 0; i < vcBioModel.getModel().getReactionSteps().length; i++) {
 			KineticsParameter rateParam = vcBioModel.getModel().getReactionSteps(i).getKinetics().getAuthoritativeParameter();
@@ -2819,14 +2782,14 @@ public class SBMLImporter {
 						ModelParameter globalParam = (ModelParameter) sbmlSymbolMapping.getRuntimeSte(sbase);
 						rateParam.setExpression(globalParam.getExpression());
 						vcBioModel.getModel().removeModelParameter(globalParam);
-						rateParam.setName(sbase.getName());
 						sbmlSymbolMapping.replaceRuntime(sbase, rateParam);
-					} 
+					}
 				}
-			} 
+			}
 		}
-		
+
 	}
+
 	private static void addOutputFunctions(org.sbml.jsbml.Model sbmlModel, BioModel vcBioModel, SBMLSymbolMapping sbmlSymbolMapping,
 			VCLogger vcLogger) throws VCLoggerException {
 

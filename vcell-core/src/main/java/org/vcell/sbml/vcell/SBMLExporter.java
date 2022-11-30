@@ -80,6 +80,7 @@ import org.vcell.util.*;
 
 import javax.xml.stream.XMLStreamException;
 import java.beans.PropertyVetoException;
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -93,6 +94,8 @@ import java.util.stream.Collectors;
  * @author: Anuradha Lakshminarayana
  */
 public class SBMLExporter {
+
+	public static boolean bWriteDebugFiles = false;
 
 	private final static Logger logger = LogManager.getLogger(SBMLExporter.class);
 	//public static final String DOMAIN_TYPE_PREFIX = "domainType_";
@@ -866,35 +869,40 @@ private void addReactions() throws SbmlException, XMLStreamException {
 			} // end for (j) - fifth pass
 
 			// After making all necessary adjustments to the rate expression, now set the sbmlKLaw.
-			final ASTNode exprFormulaNode;
+			// if the rate expression is constant, add it as a SBML model parameter anyway to support overrides.
 			Expression rateExpr = lumpedRateExpr != null ? lumpedRateExpr : localRateExpr;
-			if (lumpedRateExpr == null && !bSpatial) rateExpr = Expression.mult(rateExpr, new Expression(symbolTableEntryNameToSidMap.get(vcReactionStep.getStructure().getName())));
+			if (lumpedRateExpr == null && !bSpatial) {
+				rateExpr = Expression.mult(rateExpr, new Expression(symbolTableEntryNameToSidMap.get(vcReactionStep.getStructure().getName())));
+			}
 			KineticsParameter rateParam = vcRxnKinetics.getAuthoritativeParameter();
 			MathSymbolMapping msm = (MathSymbolMapping)vcSelectedSimContext.getMathDescription().getSourceSymbolMapping();
 			Variable var = msm.getVariable(rateParam);
 			if (var != null && var.isConstant()) {
-				// make global parameter aith expression of rate parameter
-				// create assignment rule for it
-				// mark the global parameter as proxy for the rate parameter 
+				// make a global parameter with expression of rate parameter (set via an assignment rule)
 				String newParamName = TokenMangler.mangleToSName(rateParam.getName() + "_" + vcReactionStep.getName());
-				Pair<String, String> origParam = new Pair<String, String> (rxnName, rateParam.getName());
+				Pair<String, String> origParam = new Pair<>(rxnName, rateParam.getName());
 				l2gMap.put(origParam, newParamName);	
-				ASTNode paramFormulaNode = getFormulaFromExpression(rateExpr);
-				AssignmentRule sbmlParamAssignmentRule = sbmlModel.createAssignmentRule();
-				sbmlParamAssignmentRule.setVariable(newParamName);
-				sbmlParamAssignmentRule.setMath(paramFormulaNode);
 				org.sbml.jsbml.Parameter sbmlKinParam = sbmlModel.createParameter();
 				sbmlKinParam.setId(newParamName);
 				sbmlKinParam.setName(rateParam.getName());
 				sbmlKinParam.setUnits(getOrCreateSBMLUnit(rateParam.getUnitDefinition()));
 				sbmlKinParam.setConstant(false);
+
+				// mark the global parameter as a proxy for the VCell reaction rate parameter (e.g. J or LumpedJ)
 				Element rateParamElement = new Element(XMLTags.SBML_VCELL_RateParamTag, sbml_vcml_ns);
 				rateParamElement.setAttribute(XMLTags.SBML_VCELL_RateParamTag_parRoleAttr, Integer.toString(rateParam.getRole()), sbml_vcml_ns);
 				rateParamElement.setAttribute(XMLTags.SBML_VCELL_RateParamTag_rxIDAttr, sbmlReactionId, sbml_vcml_ns);
 				sbmlKinParam.getAnnotation().appendNonRDFAnnotation(XmlUtil.xmlToString(rateParamElement));
+
+				// create the assignment rule to set the value of the new model parameter
+				ASTNode paramFormulaNode = getFormulaFromExpression(rateExpr);
+				AssignmentRule sbmlParamAssignmentRule = sbmlModel.createAssignmentRule();
+				sbmlParamAssignmentRule.setVariable(newParamName);
+				sbmlParamAssignmentRule.setMath(paramFormulaNode);
+
 				rateExpr = new Expression(newParamName);
 			}
-			exprFormulaNode = getFormulaFromExpression(rateExpr);
+			ASTNode exprFormulaNode = getFormulaFromExpression(rateExpr);
 			sbmlKLaw.setMath(exprFormulaNode);
 		} catch (cbit.vcell.parser.ExpressionException e) {
 			e.printStackTrace(System.out);
@@ -1818,25 +1826,23 @@ private void roundTripValidation() throws SBMLValidationException {
 				logger.info("Round trip math validation passed: "+mathCompareResults.toDatabaseStatus());
 			}
 		}
+
+		if (bWriteDebugFiles) {
+			try {
+				String dirName = "vcell_files_"+ Integer.toString(this.vcSelectedSimContext.getBioModel().getName().hashCode());
+				File outputDir = Files.createTempDirectory(dirName).toFile();
+				writeIntermediateFiles(bioModel, reread_BioModel_sbml_units, reread_BioModel_vcell_units, outputDir);
+				System.err.println("wrote temp files ./sbml.xml, ./orig_vcml.xml, ./reread_vcml_sbml_units.xml and ./reread_vcml.xml to "+outputDir.getAbsolutePath());
+			} catch (Exception ex) {
+				logger.info("error printing debug files: " + ex.getMessage());
+			}
+		}
+
 	}catch (Exception e){
-		String dirName = "vcell_files_"+ Integer.toString(this.vcSelectedSimContext.getBioModel().getName().hashCode());
 		try {
-			String outputDir = Files.createTempDirectory(dirName).toFile().getAbsolutePath();
-			logger.error("writing temp files ./sbml.xml, ./orig_vcml.xml, ./reread_vcml_sbml_units.xml and ./reread_vcml.xml to "+outputDir);
-			if (sbmlModel != null) {
-				SBMLWriter sbmlWriter = new SBMLWriter();
-				sbmlWriter.writeSBML(sbmlModel.getSBMLDocument(), Paths.get(outputDir, "sbml.xml").toFile());
-			}
-			if (bioModel != null) {
-				Files.write(Paths.get(outputDir, "orig_vcml.xml"), XmlHelper.bioModelToXML(bioModel, false).getBytes(StandardCharsets.UTF_8));
-			}
-			if (reread_BioModel_sbml_units != null) {
-				reread_BioModel_sbml_units.updateAll(false);
-				Files.write(Paths.get(outputDir, "reread_vcml_sbml_units.xml"), XmlHelper.bioModelToXML(reread_BioModel_sbml_units, false).getBytes(StandardCharsets.UTF_8));
-			}
-			if (reread_BioModel_vcell_units != null) {
-				Files.write(Paths.get(outputDir, "reread_vcml.xml"), XmlHelper.bioModelToXML(reread_BioModel_vcell_units, false).getBytes(StandardCharsets.UTF_8));
-			}
+			String dirName = "vcell_files_"+ Integer.toString(this.vcSelectedSimContext.getBioModel().getName().hashCode());
+			File outputDir = Files.createTempDirectory(dirName).toFile();
+			writeIntermediateFiles(bioModel, reread_BioModel_sbml_units, reread_BioModel_vcell_units, outputDir);
 		} catch (Exception ex) {
 			logger.error("error printing debug files: "+ex.getMessage(), e);
 		}
@@ -1845,7 +1851,25 @@ private void roundTripValidation() throws SBMLValidationException {
 	}
 }
 
-private VCellSBMLDoc convertToSBML() throws SbmlException, SBMLException, XMLStreamException {
+	private void writeIntermediateFiles(BioModel bioModel, BioModel reread_BioModel_sbml_units, BioModel reread_BioModel_vcell_units, File outputDir) throws IOException, XMLStreamException, XmlParseException, MappingException {
+		logger.error("writing temp files ./sbml.xml, ./orig_vcml.xml, ./reread_vcml_sbml_units.xml and ./reread_vcml.xml to "+outputDir);
+		if (sbmlModel != null) {
+			SBMLWriter sbmlWriter = new SBMLWriter();
+			sbmlWriter.writeSBML(sbmlModel.getSBMLDocument(), Paths.get(outputDir.getAbsolutePath(), "sbml.xml").toFile());
+		}
+		if (bioModel != null) {
+			Files.write(Paths.get(outputDir.getAbsolutePath(), "orig_vcml.xml"), XmlHelper.bioModelToXML(bioModel, false).getBytes(StandardCharsets.UTF_8));
+		}
+		if (reread_BioModel_sbml_units != null) {
+			reread_BioModel_sbml_units.updateAll(false);
+			Files.write(Paths.get(outputDir.getAbsolutePath(), "reread_vcml_sbml_units.xml"), XmlHelper.bioModelToXML(reread_BioModel_sbml_units, false).getBytes(StandardCharsets.UTF_8));
+		}
+		if (reread_BioModel_vcell_units != null) {
+			Files.write(Paths.get(outputDir.getAbsolutePath(), "reread_vcml.xml"), XmlHelper.bioModelToXML(reread_BioModel_vcell_units, false).getBytes(StandardCharsets.UTF_8));
+		}
+	}
+
+	private VCellSBMLDoc convertToSBML() throws SbmlException, SBMLException, XMLStreamException {
 
 	SBMLDocument sbmlDocument = new SBMLDocument(sbmlLevel,sbmlVersion);
 	// mark it as originating from VCell

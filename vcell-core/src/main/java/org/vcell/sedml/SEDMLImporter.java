@@ -507,7 +507,15 @@ public class SEDMLImporter {
 		}
 		SymbolTableEntry ste =sbmlMap.getSte(targetSBase, SymbolContext.INITIAL);
 		Variable var = msm.getVariable(ste);
-		if (var instanceof Constant) {
+		boolean varIsConstant = (var instanceof Constant);
+		if (var instanceof cbit.vcell.math.Function){
+			try {
+				double value = ((cbit.vcell.math.Function)var).getExpression().evaluateConstantWithSubstitution();
+				varIsConstant = true;
+			} catch (Exception e){
+			}
+		}
+		if (varIsConstant) {
 			String constantName = var.getName();
 			// if simcontext was converted to stochastic then species init constants use different names
 			if (convertedSimContext != null && ste instanceof SpeciesContextSpecParameter) {
@@ -756,7 +764,9 @@ public class SEDMLImporter {
 		// check whether all targets have addressable Constants on the Math side
 		for (Change change : changes) {
 			String sbmlID = sbmlSupport.getIdFromXPathIdentifer(change.getTargetXPath().toString());
-			if (resolveConstant(refBM.getSimulationContext(0), null, sbmlID) == null) {
+			SimulationContext simulationContext = refBM.getSimulationContext(0);
+			String constantName = resolveConstant(simulationContext, null, sbmlID);
+			if (constantName == null) {
 				logger.warn("could not map changeAttribute for ID "+sbmlID+" to a VCell Constant");
 				return false;
 			}
@@ -788,7 +798,9 @@ public class SEDMLImporter {
 				InputStream sbmlSource = IOUtils.toInputStream(modelXML, Charset.defaultCharset());
 				boolean bValidateSBML = false;
 				SBMLImporter sbmlImporter = new SBMLImporter(sbmlSource,transLogger,bValidateSBML);
-				bioModel = (BioModel)sbmlImporter.getBioModel();
+				boolean bCoerceToDistributed = false;
+				boolean bTransformUnits = false;
+				bioModel = (BioModel)sbmlImporter.getBioModel(bCoerceToDistributed, bTransformUnits);
 				bioModel.setName(bioModelName);
 				bioModel.getSimulationContext(0).setName(mm.getName() != null? mm.getName() : mm.getId());
 				bioModel.updateAll(false);

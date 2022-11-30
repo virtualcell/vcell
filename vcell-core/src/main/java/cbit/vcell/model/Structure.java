@@ -93,6 +93,16 @@ public abstract class Structure implements Serializable, ScopedSymbolTable, Matc
 				return null;
 			}
 		}
+
+		@Override
+		public String getRelativeScopePrefix(NameScope referenceNameScope) {
+			// avoid adding C0.C0 for size symbol when bound from the model (is globally unique at model namescope).
+			if (referenceNameScope == getParent()){
+				return "";
+			}
+			return super.getRelativeScopePrefix(referenceNameScope);
+		}
+
 		public ScopedSymbolTable getScopedSymbolTable() {
 			return Structure.this;
 		}

@@ -18,10 +18,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import cbit.vcell.mapping.*;
-import cbit.vcell.math.MathException;
-import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.model.*;
-import cbit.vcell.parser.ExpressionException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.model.rbm.MolecularType;
@@ -29,6 +26,7 @@ import org.vcell.pathway.BioPaxObject;
 import org.vcell.pathway.PathwayModel;
 import org.vcell.relationship.RelationshipModel;
 import org.vcell.relationship.RelationshipObject;
+import org.vcell.sbml.vcell.SBMLImportException;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Displayable;
@@ -106,7 +104,32 @@ Identifiable, IdentifiableProvider, IssueSource, Displayable, VCellSbmlName
 		this(version, ModelUnitSystem.createDefaultVCModelUnitSystem());
 	}
 
-public SimulationContext addNewSimulationContext(String newSimulationContextName, SimulationContext.Application app) throws java.beans.PropertyVetoException {
+	public void transformLumpedToDistributed() {
+		try {
+			for (ReactionStep reactionStep : getModel().getReactionSteps()) {
+				if (reactionStep.getKinetics().getKineticsDescription().isLumped()) {
+					Kinetics origKinetics = reactionStep.getKinetics();
+					// clone it for backup purposes
+					origKinetics.setReactionStep(null);
+					Kinetics clonedKinetics = (Kinetics) BeanUtils.cloneSerializable(origKinetics);
+					origKinetics.setReactionStep(reactionStep);
+					try {
+						DistributedKinetics.toDistributedKinetics((LumpedKinetics) origKinetics, false);
+					} catch (Exception e) {
+						lg.warn("failed to transform lumped reaction " + reactionStep.getName() + " to distributed: " + e.getMessage(), e);
+						// original kinetics may have been altered when the conversion failed, replace with clone
+						reactionStep.setKinetics(clonedKinetics);
+						clonedKinetics.setReactionStep(reactionStep);
+						reactionStep.refreshDependencies();
+					}
+				}
+			}
+		} catch (Exception e) {
+			throw new SBMLImportException("failed to convert lumped reaction kinetics to distributed: " + e.getMessage(), e);
+		}
+	}
+
+	public SimulationContext addNewSimulationContext(String newSimulationContextName, SimulationContext.Application app) throws java.beans.PropertyVetoException {
 	SimulationContext simContext = new SimulationContext(getModel(),new Geometry("non-spatial",0), null,null,app);
 	simContext.setName(newSimulationContextName);
 	addSimulationContext(simContext);
