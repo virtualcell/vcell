@@ -2782,7 +2782,6 @@ public class SBMLImporter {
 						ModelParameter globalParam = (ModelParameter) sbmlSymbolMapping.getRuntimeSte(sbase);
 						rateParam.setExpression(globalParam.getExpression());
 						vcBioModel.getModel().removeModelParameter(globalParam);
-						rateParam.setName(sbase.getName());
 						sbmlSymbolMapping.replaceRuntime(sbase, rateParam);
 					}
 				}
