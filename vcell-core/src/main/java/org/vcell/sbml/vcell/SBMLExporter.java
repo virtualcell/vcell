@@ -1770,7 +1770,7 @@ private void roundTripValidation() throws SBMLValidationException {
 		//
 		MemoryVCLogger memoryVCLogger = new MemoryVCLogger();
 		SBMLImporter sbmlImporter = new SBMLImporter(sbmlModel, memoryVCLogger, true);
-		reread_BioModel_sbml_units = sbmlImporter.getBioModel(false, true);
+		reread_BioModel_sbml_units = sbmlImporter.getBioModel();
 		if (memoryVCLogger.highPriority.size() > 0) {
 			throw new SBMLValidationException(memoryVCLogger.highPriority.toString());
 		}
