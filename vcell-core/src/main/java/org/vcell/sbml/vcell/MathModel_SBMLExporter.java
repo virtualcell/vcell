@@ -271,7 +271,9 @@ public static String getSBMLString(cbit.vcell.mathmodel.MathModel mathModel, lon
 
 	// Error check - use libSBML's document.printError to print to outputstream
 	System.out.println("\n\nSBML Export Error Report");
-	sbmlDocument.printErrors(System.out);
+	if (sbmlDocument.getErrorCount()>0) {
+		sbmlDocument.printErrors(System.out);
+	}
 
 	return sbmlStr;
 }
