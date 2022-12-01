@@ -2797,6 +2797,9 @@ private void postProcessExpressions() {
 private Expression substituteSteWithSid(Expression vcExpression) {
 	String[] symbols = vcExpression.getSymbols();
 	Expression sidExpression = new Expression(vcExpression);
+	if(symbols == null || symbols.length == 0) {
+		return sidExpression;
+	}
 	try {
 	for(String symbol : symbols) {
 		if(SBMLImporter.isRestrictedXYZT(symbol, vcBioModel, bSpatial) || reservedSymbolSet.contains(symbol)) {
@@ -2811,7 +2814,7 @@ private Expression substituteSteWithSid(Expression vcExpression) {
 		sidExpression.substituteInPlace(new Expression(symbol), new Expression(sid));
 	}
 	} catch(Exception e) {
-		throw new RuntimeException("addAssignmentRules failed, " + e.getMessage());
+		throw new RuntimeException("Substituting Ste with Sid failed, " + e.getMessage());
 	}
 	return sidExpression;
 }
