@@ -91,7 +91,7 @@ import java.util.stream.Collectors;
 public class SBMLImporter {
 
 	private final SBMLSymbolMapping sbmlSymbolMapping = new SBMLSymbolMapping();
-
+	
 	private final static Logger logger = LogManager.getLogger(SBMLImporter.class);
 
 	public static class SBMLIssueSource implements Issue.IssueSource {
@@ -1790,17 +1790,9 @@ public class SBMLImporter {
 		// translate read SBML model and import contents into VCell BioModel
 		//
 		try {
-			translateSBMLModel(sbmlModel, vcBioModel, sbmlAnnotationUtil, sbmlUnitIdentifierHash, sbmlSymbolMapping, vcLogger);
-			vcBioModel.refreshDependencies();
+			translateSBMLModel(sbmlModel, vcBioModel, sbmlAnnotationUtil, sbmlUnitIdentifierHash, sbmlSymbolMapping, vcLogger, bCoerceToDistributed);
 		} catch(Exception e) {
 			throw new SBMLImportException("Failed to translate SBML model into BioModel: "+e.getMessage(), e);
-		}
-
-		//
-		// for imported lumped reactions kinetics, attempt to switch to the corresponding distributed kinetics
-		//
-		if (bCoerceToDistributed) {
-			vcBioModel.transformLumpedToDistributed();
 		}
 
 		//
@@ -2605,7 +2597,8 @@ public class SBMLImporter {
 	private static void translateSBMLModel(org.sbml.jsbml.Model sbmlModel, BioModel vcBioModel,
 										   SBMLAnnotationUtil sbmlAnnotationUtil,
 										   Map<String, VCUnitDefinition> sbmlUnitIdentifierHash,
-										   SBMLSymbolMapping sbmlSymbolMapping, VCLogger vcLogger) throws Exception {
+										   SBMLSymbolMapping sbmlSymbolMapping, VCLogger vcLogger,
+										   boolean bCoerceToDistributed) throws Exception {
 
 		final Vector<Issue> localIssueList = new Vector<>();
 		final IssueContext issueContext = new IssueContext();
@@ -2726,7 +2719,9 @@ public class SBMLImporter {
 		// TODO: use BMDB model Whitcomb to test comp size initialized with expression
 		finalizeCompartments(sbmlModel, vcBioModel, sbmlSymbolMapping, localIssueList, issueContext);
 
-		finalizeReactions(sbmlModel, vcBioModel, sbmlSymbolMapping);
+		HashMap<Kinetics, SBase> constantKinetics = new HashMap<Kinetics, SBase>();
+
+		finalizeReactions(sbmlModel, vcBioModel, sbmlSymbolMapping, constantKinetics);
 
 		try {
 			if (!bSpatial) {
@@ -2763,10 +2758,44 @@ public class SBMLImporter {
 		
 		//Add Output Functions
 		addOutputFunctions(sbmlModel, vcBioModel, sbmlSymbolMapping, vcLogger);
+
+		vcBioModel.refreshDependencies();
+
+		//
+		// for imported lumped reactions kinetics, attempt to switch to the corresponding distributed kinetics
+		//
+		if (bCoerceToDistributed) {
+//			vcBioModel.transformLumpedToDistributed();
+			try {
+				for (ReactionStep reactionStep : vcBioModel.getModel().getReactionSteps()) {
+					if (reactionStep.getKinetics().getKineticsDescription().isLumped()) {
+						Kinetics origKinetics = reactionStep.getKinetics();
+						// clone it for backup purposes
+						origKinetics.setReactionStep(null);
+						Kinetics clonedKinetics = (Kinetics) BeanUtils.cloneSerializable(origKinetics);
+						origKinetics.setReactionStep(reactionStep);
+						try {
+							DistributedKinetics.toDistributedKinetics((LumpedKinetics) origKinetics, false);
+							if (constantKinetics.containsKey(origKinetics)) {
+								sbmlSymbolMapping.replaceRuntime(constantKinetics.get(origKinetics), reactionStep.getKinetics().getAuthoritativeParameter());
+							}
+						} catch (Exception e) {
+							logger.warn("failed to transform lumped reaction " + reactionStep.getName() + " to distributed: " + e.getMessage(), e);
+							// original kinetics may have been altered when the conversion failed, replace with clone
+							reactionStep.setKinetics(clonedKinetics);
+							clonedKinetics.setReactionStep(reactionStep);
+							reactionStep.refreshDependencies();
+						}
+					}
+				}
+			} catch (Exception e) {
+				throw new SBMLImportException("failed to convert lumped reaction kinetics to distributed: " + e.getMessage(), e);
+			}
+		}
 	}
 
 	private static void finalizeReactions(org.sbml.jsbml.Model sbmlModel, BioModel vcBioModel,
-										  SBMLSymbolMapping sbmlSymbolMapping) throws PropertyVetoException {
+										  SBMLSymbolMapping sbmlSymbolMapping, 	HashMap<Kinetics, SBase> constantKinetics) throws PropertyVetoException {
 
 		for (int i = 0; i < vcBioModel.getModel().getReactionSteps().length; i++) {
 			KineticsParameter rateParam = vcBioModel.getModel().getReactionSteps(i).getKinetics().getAuthoritativeParameter();
@@ -2783,6 +2812,7 @@ public class SBMLImporter {
 						rateParam.setExpression(globalParam.getExpression());
 						vcBioModel.getModel().removeModelParameter(globalParam);
 						sbmlSymbolMapping.replaceRuntime(sbase, rateParam);
+						constantKinetics.put(vcBioModel.getModel().getReactionSteps(i).getKinetics(), sbase);
 					}
 				}
 			}
