@@ -1367,7 +1367,7 @@ public class SEDMLExporter {
     return true;
 }
 
-	public static void writeBioModel(BioModel bioModel, File exportFileOrDirectory, ModelFormat modelFormat, boolean bRoundTripSBMLValidation, boolean bCreateOmexArchive) throws Exception {
+	public static List<SEDMLTaskRecord> writeBioModel(BioModel bioModel, File exportFileOrDirectory, ModelFormat modelFormat, boolean bFromCLI, boolean bRoundTripSBMLValidation, boolean bCreateOmexArchive) throws Exception {
 		String resultString;
 		// export the entire biomodel to a SEDML file (all supported applications)
 		int sedmlLevel = 1;
@@ -1378,7 +1378,7 @@ public class SEDMLExporter {
 		SEDMLExporter sedmlExporter;
 		if (bioModel != null) {
 			sedmlExporter = new SEDMLExporter(sFile, bioModel, sedmlLevel, sedmlVersion, null);
-			resultString = sedmlExporter.getSEDMLDocument(sPath, sFile, modelFormat, false, bRoundTripSBMLValidation).writeDocumentToString();
+			resultString = sedmlExporter.getSEDMLDocument(sPath, sFile, modelFormat, bFromCLI, bRoundTripSBMLValidation).writeDocumentToString();
 
 			// convert biomodel to vcml and save to file.
 			String vcmlString = XmlHelper.bioModelToXML(bioModel);
@@ -1400,6 +1400,7 @@ public class SEDMLExporter {
 		} else {
 			XmlUtil.writeXMLStringToFile(resultString, exportFileOrDirectory.getAbsolutePath(), true);
 		}
+		return sedmlExporter.getSedmlLogger().getLogs();
 	}
 
 	// we know exactly which files we need to archive: those in sbmlFilePathStrAbsoluteList

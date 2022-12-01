@@ -80,10 +80,11 @@ public class MathOverrideRoundTipTest {
         File outputDir = Files.createTempDir();
         File omexFile = new File(outputDir, filename + ".omex");
 
+        boolean bFromCLI = true;
         boolean bRoundTripSBMLValidation = true;
         boolean bWriteOmexArchive = true;
 
-        SEDMLExporter.writeBioModel(bioModel, omexFile, ModelFormat.SBML, bRoundTripSBMLValidation, bWriteOmexArchive);
+        SEDMLExporter.writeBioModel(bioModel, omexFile, ModelFormat.SBML, bFromCLI, bRoundTripSBMLValidation, bWriteOmexArchive);
 
         SBMLExporter.MemoryVCLogger memoryVCLogger = new SBMLExporter.MemoryVCLogger();
         List<BioModel> bioModels = XmlHelper.readOmex(omexFile, memoryVCLogger);
