@@ -112,7 +112,8 @@ public class SBMLExporter {
 	private final Map<String, UnitDefinition> vcUnitSymbolToSBMLUnit = new LinkedHashMap<>(); // to avoid repeated creation of
 
 	private final Map<Pair <String, String>, String> l2gMap = new HashMap<>();	// local to global translation map, used for reaction parameters
-	private final Map<String, String> symbolTableEntryNameToSidMap = new LinkedHashMap<> ();  // key = vcell ste name, value = sbml entity id
+	private final Map<String, String> symbolTableEntryNameToSidMap = new LinkedHashMap<> ();  // key = vcell ste name, value = sbml entity id	ReservedSymbol rs = vcBioModel.getModel().getReservedSymbolByName(name);
+	private final Set<String> reservedSymbolSet = new LinkedHashSet<> ();			// the vcell reserved symbols
 
 	private final Map<org.sbml.jsbml.InitialAssignment, Expression> initialAssignmentToVcmlExpressionMap = new LinkedHashMap<> ();	// key = initial assignment, value = expression needing replacement of vcml ste with sbml sid 
 	private final Map<org.sbml.jsbml.AssignmentRule, Expression> assignmentRuleToVcmlExpressionMap = new LinkedHashMap<> ();	// key = assignment rule, value = expression needing replacement of vcml ste with sbml sid 
@@ -606,7 +607,7 @@ private void addParameters() throws ExpressionException, SbmlException, XMLStrea
 		
 		org.sbml.jsbml.Parameter sbmlParam = sbmlModel.createParameter();
 		// no extra precautions needed for reserved parameters, not even mangling is needed
-		sbmlParam.setId(TokenMangler.mangleToSName(vcParam.getName()));
+		sbmlParam.setId(vcParam.getName());
 		sbmlParam.setConstant(vcParam.isConstant());
 		
 		Expression reservedSymbolExpression = vcParam.getExpression();
@@ -2708,7 +2709,16 @@ private void translateBioModel() throws SbmlException, UnsupportedSbmlExportExce
 
 	validateSimulationContextSupport(vcSelectedSimContext);
 
+	reservedSymbolSet.clear();
 	symbolTableEntryNameToSidMap.clear();
+	initialAssignmentToVcmlExpressionMap.clear();
+	assignmentRuleToVcmlExpressionMap.clear();
+	rateRuleToVcmlExpressionMap.clear();
+	eventAssignmentToVcmlExpressionMap.clear();
+	for (ReservedSymbol rs : vcSelectedSimContext.getModel().getReservedSymbols()) {
+		reservedSymbolSet.add(rs.getName());
+	}
+
 	// 'Parse' the Virtual cell model into an SBML model
 
 	addUnitDefinitions();
@@ -2789,6 +2799,9 @@ private Expression substituteSteWithSid(Expression vcExpression) {
 	Expression sidExpression = new Expression(vcExpression);
 	try {
 	for(String symbol : symbols) {
+		if(SBMLImporter.isRestrictedXYZT(symbol, vcBioModel, bSpatial) || reservedSymbolSet.contains(symbol)) {
+			continue;
+		}
 		String sid = symbolTableEntryNameToSidMap.get(symbol);
 		if(!symbolTableEntryNameToSidMap.containsKey(symbol)) {
 			String msg = "no sbml Sid found for vcell symbol: " + symbol;

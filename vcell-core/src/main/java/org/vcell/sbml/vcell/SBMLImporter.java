@@ -1215,7 +1215,7 @@ public class SBMLImporter {
 	}
 	
 	// returns true if reserved x,y,z symbols are used inappropriately - like in a non-spatial model
-	private static boolean isRestrictedXYZT(String name, BioModel vcBioModel, boolean bSpatial) {
+	public static boolean isRestrictedXYZT(String name, BioModel vcBioModel, boolean bSpatial) {
 		if(bSpatial) {
 			return false;
 		}
