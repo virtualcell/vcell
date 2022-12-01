@@ -114,7 +114,9 @@ public class SBMLExporter {
 	private final Map<Pair <String, String>, String> l2gMap = new HashMap<>();	// local to global translation map, used for reaction parameters
 	private final Map<String, String> symbolTableEntryNameToSidMap = new LinkedHashMap<> ();  // key = vcell ste name, value = sbml entity id
 
-	private final Map<AssignmentRule, Expression> assignmentRuleToVcmlExpressionMap = new LinkedHashMap<> ();	// key = assignment rule, value = expression needing replacement of vcml ste with sbml sid 
+	private final Map<org.sbml.jsbml.InitialAssignment, Expression> initialAssignmentToVcmlExpressionMap = new LinkedHashMap<> ();	// key = initial assignment, value = expression needing replacement of vcml ste with sbml sid 
+	private final Map<org.sbml.jsbml.AssignmentRule, Expression> assignmentRuleToVcmlExpressionMap = new LinkedHashMap<> ();	// key = assignment rule, value = expression needing replacement of vcml ste with sbml sid 
+	private final Map<org.sbml.jsbml.RateRule, Expression> rateRuleToVcmlExpressionMap = new LinkedHashMap<> ();				// key = rate rule, value = expression needing replacement of vcml ste with sbml sid 
 	private final Map<SBaseWrapper<org.sbml.jsbml.EventAssignment>, Expression> eventAssignmentToVcmlExpressionMap = new LinkedHashMap<> (); // key = EventAssignment wrapper, value = expression needing replacement of vcml ste with sbml sid 
 	
 	// used for exporting vcell-related annotations.
@@ -1548,24 +1550,23 @@ private void addRateRules()  {
 	RateRule[] vcRateRules = getSelectedSimContext().getRateRules();
 	
 	if (vcRateRules != null) {
-		for (RateRule vcRateRule : vcRateRules) {
+		for (RateRule vcRule : vcRateRules) {
 			// set name
-			org.sbml.jsbml.RateRule sbmlRateRule = sbmlModel.createRateRule();
-			sbmlRateRule.setId(TokenMangler.mangleToSName(vcRateRule.getName()));
+			org.sbml.jsbml.RateRule sbmlRule = sbmlModel.createRateRule();
+			sbmlRule.setId(TokenMangler.mangleToSName(vcRule.getName()));
 			
 			// set rate rule variable
-			String sid = symbolTableEntryNameToSidMap.get(vcRateRule.getRateRuleVar().getName());
+			String sid = symbolTableEntryNameToSidMap.get(vcRule.getRateRuleVar().getName());
 			if(sbmlModel.getSBaseById(sid) == null) {
 				throw new RuntimeException("Missing rate rule variable");
 			}
-			sbmlRateRule.setVariable(sid);
+			sbmlRule.setVariable(sid);
 			
 			// set rate rule math/expression
-			Expression rateRuleExpr = vcRateRule.getRateRuleExpression();
-			ASTNode math = getFormulaFromExpression(rateRuleExpr);
-			sbmlRateRule.setMath(math);
-			
-			// set unit?? Same as rate rule var (symbolTableEntry) unit? 
+			Expression vcRuleExpression = vcRule.getRateRuleExpression();
+			rateRuleToVcmlExpressionMap.put(sbmlRule, vcRuleExpression);	// expression will be post-processed
+//			ASTNode math = getFormulaFromExpression(vcRuleExpression);
+//			sbmlRule.setMath(math);
 		}
 	}
 }
@@ -1605,7 +1606,6 @@ private void addOverrideInitialAssignments() throws ExpressionException, Mapping
 
 	for(String ocn : ocns) {
 		SymbolTableEntry ste = SEDMLExporter.getSymbolTableEntryForModelEntity(msm, ocn);
-		ModelParameter mp = vcSelectedSimContext.getModel().getModelParameter(ocn);
 		Expression exp = mo.getActualExpression(ocn, index);
 		String name = "";
 		if(ste != null && ste instanceof SpeciesContextSpecParameter) {
@@ -1627,12 +1627,10 @@ private void addOverrideInitialAssignments() throws ExpressionException, Mapping
 		}
 //		System.out.println("  symbol: " + name + ", overriden constant: " + ocn + ", expression: " + exp.infix());
 		org.sbml.jsbml.InitialAssignment ia = sbmlModel.createInitialAssignment();
-//		String id = TokenMangler.mangleToSName("initialAssignment_" + name "_" + index);	// no point in defining id or name for initial assignment
-//		ia.setId(id);
-//		ia.setName(id);
 		ia.setVariable(name);
-		ASTNode math = getFormulaFromExpression(exp);
-		ia.setMath(math);
+		initialAssignmentToVcmlExpressionMap.put(ia, exp);
+//		ASTNode math = getFormulaFromExpression(exp);
+//		ia.setMath(math);
 	}
 }
 
@@ -2712,37 +2710,29 @@ private void translateBioModel() throws SbmlException, UnsupportedSbmlExportExce
 
 	symbolTableEntryNameToSidMap.clear();
 	// 'Parse' the Virtual cell model into an SBML model
-	org.sbml.jsbml.Model temp = sbmlModel;
+
 	addUnitDefinitions();
-	// Add features/compartments
-	addCompartments();
-	// add geometry, if present
+	addCompartments();			// Add Features/Compartments
 	if (bSpatial) {
-		addGeometry();
+		addGeometry();			// add Geometry, if present
 	}
-	// Add species/speciesContexts
-	addSpecies(); 
-	// Add Parameters
+	addSpecies(); 				// Add Species/SpeciesContexts
 	try {
-		addParameters();
+		addParameters();		// Add Parameters
 	} catch (ExpressionException e) {
 		e.printStackTrace(System.out);
 		throw new RuntimeException(e.getMessage());
 	}
-
 	try {
 		addOverrideInitialAssignments();
 	} catch (Exception e) {
 		e.printStackTrace(System.out);
 		throw new RuntimeException(e.getMessage());
 	}
-	addRateRules();
+	addRateRules();				// Add Rules
 	addAssignmentRules();
-	
-	// Add Reactions
-	addReactions();
-	// Add Events
-	addEvents();
+	addReactions();				// Add Reactions
+	addEvents();				// Add Events
 	
 	postProcessExpressions();
 }
@@ -2758,18 +2748,30 @@ private void setSelectedSimContext(SimulationContext vcSelectedSimContext) {
 // now that we have a complete symbolTableEntryNameToSidMap, we can substitute in all expressions the
 // vCell symbols with the sbml entities id
 private void postProcessExpressions() {
-	
+	// InitialAssignment
+	for (Map.Entry<org.sbml.jsbml.InitialAssignment, Expression> entry : initialAssignmentToVcmlExpressionMap.entrySet()) {
+		org.sbml.jsbml.InitialAssignment ia = entry.getKey();
+		Expression vcmlExpression = entry.getValue();
+		Expression sbmlExpression = substituteSteWithSid(vcmlExpression);
+		ASTNode math = getFormulaFromExpression(sbmlExpression);
+		ia.setMath(math);
+	}
 	// AssignmentRule
-	for (Map.Entry<AssignmentRule, Expression> entry : assignmentRuleToVcmlExpressionMap.entrySet()) {
-		AssignmentRule ar = entry.getKey();
+	for (Map.Entry<org.sbml.jsbml.AssignmentRule, Expression> entry : assignmentRuleToVcmlExpressionMap.entrySet()) {
+		org.sbml.jsbml.AssignmentRule ar = entry.getKey();
 		Expression vcmlExpression = entry.getValue();
 		Expression sbmlExpression = substituteSteWithSid(vcmlExpression);
 		ASTNode math = getFormulaFromExpression(sbmlExpression);
 		ar.setMath(math);
 	}
-	
-	// rateRule
-	
+	// RateRule
+	for (Map.Entry<org.sbml.jsbml.RateRule, Expression> entry : rateRuleToVcmlExpressionMap.entrySet()) {
+		org.sbml.jsbml.RateRule rr = entry.getKey();
+		Expression vcmlExpression = entry.getValue();
+		Expression sbmlExpression = substituteSteWithSid(vcmlExpression);
+		ASTNode math = getFormulaFromExpression(sbmlExpression);
+		rr.setMath(math);
+	}
 	// Events
 	for (Map.Entry<SBaseWrapper<org.sbml.jsbml.EventAssignment>, Expression> entry : eventAssignmentToVcmlExpressionMap.entrySet()) {
 		SBaseWrapper<org.sbml.jsbml.EventAssignment> eaWrapper = entry.getKey();
