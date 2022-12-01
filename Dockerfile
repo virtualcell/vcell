@@ -81,7 +81,7 @@
 #ENTRYPOINT ["/usr/local/app/vcell/installDir/docker_run.sh"]
 #CMD []
 
-FROM ubuntu
+FROM ubuntu:20.04
 
 ARG SIMULATOR_VERSION="7.4.0.23"
 
