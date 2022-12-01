@@ -211,8 +211,7 @@ public class SEDMLExporter {
 							sbmlString = pair.one;
 							l2gMap = pair.two;
 							writeModelSBML(savePath, sBaseFileName, sbmlString, simContext);
-							MathMapping mathMapping = simContext.createNewMathMapping();
-							mathSymbolMapping = mathMapping.getMathSymbolMapping();
+							mathSymbolMapping = (MathSymbolMapping)simContext.getMathDescription().getSourceSymbolMapping();
 							sedmlRecorder.addTaskLog(simContext.getName(), TaskType.SIMCONTEXT, TaskResult.SUCCEEDED, null);
 						} catch (Exception e) {
 							String msg = "SBML export failed for simContext '"+simContext.getName()+"': " + e.getMessage();
