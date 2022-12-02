@@ -166,7 +166,6 @@ public class SEDMLExporterTest {
 
 	public static Map<String, SEDML_FAULT> knownSEDMLFaults() {
 		HashMap<String, SEDML_FAULT> faults = new HashMap();
-		faults.put("__export_adv_test.vcml", SEDML_FAULT.DIFF_NUMBER_OF_BIOMODELS);
 		faults.put("biomodel_100596964.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_100961371.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_113655498.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
@@ -182,11 +181,9 @@ public class SEDMLExporterTest {
 		faults.put("biomodel_16804037.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_169993006.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_17098642.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
-		faults.put("biomodel_17257105.vcml", SEDML_FAULT.DIFF_NUMBER_OF_BIOMODELS);
 		faults.put("biomodel_189512756.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_189513183.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_20253928.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
-		faults.put("biomodel_209284198.vcml", SEDML_FAULT.DIFF_NUMBER_OF_BIOMODELS);
 		faults.put("biomodel_211839191.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_22403233.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_22403238.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
@@ -196,31 +193,16 @@ public class SEDMLExporterTest {
 		faults.put("biomodel_22403576.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_32568171.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_32568356.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
-		faults.put("biomodel_34855932.vcml", SEDML_FAULT.DIFF_NUMBER_OF_BIOMODELS);
 		faults.put("biomodel_55396830.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_60227051.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
-		faults.put("biomodel_61340695.vcml", SEDML_FAULT.DIFF_NUMBER_OF_BIOMODELS);
-		faults.put("biomodel_62849940.vcml", SEDML_FAULT.DIFF_NUMBER_OF_BIOMODELS);
 		faults.put("biomodel_63307133.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_66265579.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_77305266.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_7803961.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_7803976.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_81284732.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
-		faults.put("biomodel_82065439.vcml", SEDML_FAULT.DIFF_NUMBER_OF_BIOMODELS);
 		faults.put("biomodel_82250339.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
-		faults.put("biomodel_83446023.vcml", SEDML_FAULT.DIFF_NUMBER_OF_BIOMODELS);
-		faults.put("biomodel_84985561.vcml", SEDML_FAULT.DIFF_NUMBER_OF_BIOMODELS);
-		faults.put("biomodel_89712092.vcml", SEDML_FAULT.DIFF_NUMBER_OF_BIOMODELS);
 		faults.put("biomodel_9254662.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
-		faults.put("biomodel_95674618.vcml", SEDML_FAULT.DIFF_NUMBER_OF_BIOMODELS);
-		faults.put("biomodel_95675197.vcml", SEDML_FAULT.DIFF_NUMBER_OF_BIOMODELS);
-		faults.put("biomodel_95675441.vcml", SEDML_FAULT.DIFF_NUMBER_OF_BIOMODELS);
-		faults.put("biomodel_95676312.vcml", SEDML_FAULT.DIFF_NUMBER_OF_BIOMODELS);
-		faults.put("biomodel_95682290.vcml", SEDML_FAULT.DIFF_NUMBER_OF_BIOMODELS);
-		faults.put("biomodel_95686613.vcml", SEDML_FAULT.DIFF_NUMBER_OF_BIOMODELS);
-		faults.put("biomodel_95706942.vcml", SEDML_FAULT.DIFF_NUMBER_OF_BIOMODELS);
-		faults.put("biomodel_95707047.vcml", SEDML_FAULT.DIFF_NUMBER_OF_BIOMODELS);
 		faults.put("biomodel_98147638.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_98174143.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_98296160.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
@@ -331,11 +313,6 @@ public class SEDMLExporterTest {
 			}
 
 			Assert.assertEquals("expecting 1 biomodel in round trip", 1, bioModels.size());
-			if (knownSEDMLFaults().get(filename) != SEDML_FAULT.DIFF_NUMBER_OF_BIOMODELS) {
-
-			}else{
-				Assert.assertNotEquals("expecting 1 biomodel in round trip", 1, bioModels.size());
-			}
 
 			Assert.assertNull("file "+filename+" passed SEDML Round trip, but knownSEDMLFault was set", knownSEDMLFaults().get(filename));
 		}catch (Exception | AssertionError e){
