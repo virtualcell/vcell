@@ -1081,7 +1081,7 @@ private int writeInitialConcentration(ParticleInitialConditionConcentration init
 				continue;
 			}
 			totalCount += count;
-			if (lg.isDebugEnabled() && subDomain!=null) {
+			if (lg.isDebugEnabled()) {
 				lg.debug("Membrane subdomain " + subDomain.getName( ) + ' ' + variableName + " count " + count);
 			}
 			localsb.append(SmoldynVCellMapper.SmoldynKeyword.surface_mol + " " + count + " " + variableName + " " + subDomain.getName() + " "
@@ -1102,7 +1102,7 @@ private int writeInitialConcentration(ParticleInitialConditionConcentration init
 
 	}
 
-	if (lg.isDebugEnabled() && subDomain!=null) {
+	if (lg.isDebugEnabled( )) {
 		lg.debug("Subdomain " + subDomain.getName( ) + ' ' + variableName + " total count " + totalCount);
 	}
 	return totalCount;
@@ -1133,7 +1133,7 @@ private int writeInitialCount(ParticleInitialConditionCount initialCount, SubDom
 		} else {
 			if (isCompartment) {
 				sb.append(SmoldynVCellMapper.SmoldynKeyword.mol + " " + count + " " + variableName);
-				if (lg.isDebugEnabled() && subDomain!=null) {
+				if (lg.isDebugEnabled()) {
 					lg.debug("initial count for compartment " + subDomain.getName() + ' ' + variableName  + " is " + count);
 				}
 				try {
@@ -1191,7 +1191,7 @@ private int writeInitialCount(ParticleInitialConditionCount initialCount, SubDom
 							sb.append(ct.node.getZ());
 						}
 						sb.append('\n');
-						if (lg.isDebugEnabled() && subDomain!=null) {
+						if (lg.isDebugEnabled()) {
 							lg.debug("initial count for " + subDomain.getName() + ' ' + variableName  + " is " + count);
 						}
 						return count;
@@ -1222,7 +1222,7 @@ private void writeMolecules() throws ExpressionException, MathException {
 					max_mol += writeInitialConcentration((ParticleInitialConditionConcentration)pic, subDomain, particleProperties.getVariable(), variableName, sb);
 				}
 			}
-			if (lg.isDebugEnabled() && subDomain!=null) {
+			if (lg.isDebugEnabled( )) {
 				lg.debug("subdomain " + subDomain.getName() + ' ' + variableName + " processed, maximum mol estimate now " + max_mol);
 			}
 		}

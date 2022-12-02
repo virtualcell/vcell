@@ -159,7 +159,7 @@ class SimulationWarning {
 			for (DiffusionValue dv : entry.getValue()) {
 				double ad = averageTriangleSize / dv.value;
 				boolean warn = (timeStep >= ad);
-				if (lg.isDebugEnabled() && dv!=null) {
+				if (lg.isDebugEnabled()) {
 					lg.debug("average area " + averageTriangleSize + " diffusion " + dv.value + " time step limit " + ad + "timeStep " + timeStep + " -> warn " + warn);
 				}
 				if (warn) {

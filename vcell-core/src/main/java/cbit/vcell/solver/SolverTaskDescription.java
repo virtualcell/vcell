@@ -1280,7 +1280,7 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 	 * @param newFieldStochOpt cbit.vcell.solver.StochSimOptions
 	 */
 	public void setStochOpt(NonspatialStochSimOptions newStochOpt) {
-		if (lg.isDebugEnabled() && newStochOpt!=null) {
+		if (lg.isDebugEnabled()) {
 			lg.debug("setStochOption " + Objects.hashCode(newStochOpt) +  ' ' + Objects.toString(newStochOpt));
 		}
 		
@@ -1297,7 +1297,7 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 	 * @param newFieldStochOpt cbit.vcell.solver.StochSimOptions
 	 */
 	public void setStochHybridOpt(NonspatialStochHybridOptions newStochHybridOpt) {
-		if (lg.isDebugEnabled() && newStochHybridOpt!=null) {
+		if (lg.isDebugEnabled()) {
 			lg.debug("setStochOption " + Objects.hashCode(newStochHybridOpt) +  ' ' + Objects.toString(newStochHybridOpt));
 		}
 		
