@@ -183,7 +183,6 @@ public class SEDMLExporterTest {
 		faults.put("biomodel_169993006.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_17098642.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_17257105.vcml", SEDML_FAULT.DIFF_NUMBER_OF_BIOMODELS);
-		faults.put("biomodel_185577495.vcml", SEDML_FAULT.ERROR_CONSTRUCTING_SIMCONTEXT);
 		faults.put("biomodel_189512756.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_189513183.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_20253928.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
@@ -203,7 +202,6 @@ public class SEDMLExporterTest {
 		faults.put("biomodel_61340695.vcml", SEDML_FAULT.DIFF_NUMBER_OF_BIOMODELS);
 		faults.put("biomodel_62849940.vcml", SEDML_FAULT.DIFF_NUMBER_OF_BIOMODELS);
 		faults.put("biomodel_63307133.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
-		faults.put("biomodel_65311813.vcml", SEDML_FAULT.ERROR_CONSTRUCTING_SIMCONTEXT);
 		faults.put("biomodel_66265579.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_77305266.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_7803961.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
