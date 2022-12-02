@@ -17,6 +17,52 @@ import java.util.function.Predicate;
 public class VcmlTestSuiteFiles {
 
     private final static String[] allTestFiles = new String[]{
+        // vcml_testmodels/
+        "lumped_reaction_no_size_in_rate.vcml",
+        "lumped_reaction_proper_size_in_rate.vcml",
+        "lumped_reaction_local_size_in_rate.vcml",
+        "__export_adv_test.vcml",
+
+        // vcml_public/
+        "biomodel_6766041.vcml",
+        "biomodel_72815317.vcml",
+        "biomodel_9171563.vcml",
+            "biomodel_107874947.vcml",
+            "biomodel_100370227.vcml",
+            "biomodel_108026026.vcml",
+            "biomodel_124562627.vcml",
+            "biomodel_108657991.vcml",
+            "biomodel_101963252.vcml",
+            "biomodel_85831268.vcml",
+            "biomodel_97428682.vcml",
+            "biomodel_119943459.vcml",
+
+
+        // vcml_published/
+        "biomodel_100596964.vcml",
+        "biomodel_100961371.vcml",
+        "biomodel_101962320.vcml",
+        "biomodel_101963252.vcml",
+        "biomodel_101981216.vcml",
+        "biomodel_102061382.vcml",
+        "biomodel_102802266.vcml",
+        "biomodel_105608907.vcml",
+        "biomodel_10829774.vcml",
+        "biomodel_113655498.vcml",
+        "biomodel_116704767.vcml",
+        "biomodel_116898182.vcml",
+        "biomodel_116898345.vcml",
+        "biomodel_116929912.vcml",  // membrane potential in model
+        "biomodel_116929971.vcml",  // membrane potential in model
+        "biomodel_116930032.vcml",  // membrane potential in model
+        "biomodel_12119723.vcml",
+        "biomodel_123269393.vcml",
+        "biomodel_123269480.vcml",
+        "biomodel_123465498.vcml",
+        "biomodel_123465505.vcml",
+        "biomodel_124562627.vcml",
+        "biomodel_12522025.vcml",
+        "biomodel_12522025_spatial.vcml",
             "lumped_reaction_no_size_in_rate.vcml",
             "lumped_reaction_proper_size_in_rate.vcml",
             "lumped_reaction_local_size_in_rate.vcml",
@@ -1013,7 +1059,15 @@ public class VcmlTestSuiteFiles {
         try {
             return getFileFromResourceAsStream(pathPrefixes, testFile);
         }catch (FileNotFoundException e){
-            throw new RuntimeException("failed to find test case file '"+testFile+"' in paths "+pathPrefixes+": " + e.getMessage(), e);
+            try {
+                return getFileFromResourceAsStream("vcml_testmodels/"+testFile);
+            }catch (FileNotFoundException e2){
+                try {
+                    return getFileFromResourceAsStream("vcml_public/"+testFile);
+                }catch (FileNotFoundException e3){
+                    throw new RuntimeException("failed to find test case file '"+testFile+"' in vcml_published/, vcml_testmodels/ and vcml_public/: "+e3.getMessage(), e3);
+                }
+            }
         }
     }
 

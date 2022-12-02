@@ -905,7 +905,7 @@ private final void cleanupParameters() throws ModelException, ExpressionExceptio
 				try {
 					exp.bindExpression(reactionStep);
 				}catch (ExpressionBindingException e){
-					logger.error("error binding expression '"+exp.infix()+"': "+e.getMessage(), e);
+					logger.warn("error binding expression '"+exp.infix()+"': "+e.getMessage());
 				}
 			}
 		}
