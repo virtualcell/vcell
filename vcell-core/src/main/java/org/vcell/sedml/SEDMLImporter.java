@@ -18,6 +18,7 @@ import cbit.vcell.model.*;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ExpressionMathMLParser;
+import cbit.vcell.parser.ExpressionUtils;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.*;
@@ -478,6 +479,7 @@ public class SEDMLImporter {
 					logger.error("unsupported change "+change+" encountered, overrides not applied");
 					continue;
 				}
+				exp = scaleIfChanged(exp, targetID, importedSC, convertedSC);
 				Constant constant = new Constant(vcConstantName,exp);
 				newSimulation.getMathOverrides().putConstant(constant);
 			} catch (ExpressionException e) {
@@ -487,6 +489,29 @@ public class SEDMLImporter {
 		}
 	}
 
+	private Expression scaleIfChanged (Expression exp, String targetID, SimulationContext importedSC, SimulationContext convertedSC) throws ExpressionException {
+		SBMLImporter sbmlImporter = importMap.get(importedSC.getBioModel());
+		SBMLSymbolMapping sbmlMap = sbmlImporter.getSymbolMapping();
+		SBase targetSBase = sbmlMap.getMappedSBase(targetID);
+		Expression origExp = sbmlMap.getRuleSBMLExpression(targetSBase, SymbolContext.INITIAL);
+		Expression currentExp = sbmlMap.getSte(targetSBase, SymbolContext.INITIAL).getExpression();
+		if (origExp != null && currentExp != null && !currentExp.isZero()) {
+			Expression factor = new Expression(Expression.div(origExp, currentExp)).flattenSafe();
+			String[] symbols = factor.getSymbols();
+			if (symbols != null) {
+				for (String sbString : symbols) {
+					String vcString = resolveConstant(importedSC, convertedSC, sbString);
+					factor.substituteInPlace(new Expression(sbString), new Expression(vcString));
+				}
+			}
+			if (!factor.isOne()) {
+				exp = Expression.div(exp, factor);
+			}
+		}
+
+		return exp;
+	}
+	
 	private String resolveConstant(SimulationContext importedSimContext, SimulationContext convertedSimContext, String SBMLtargetID) {
 		// finds name of math-side Constant corresponding to SBML entity, if there is one
 		// returns null if there isn't
@@ -623,6 +648,8 @@ public class SEDMLImporter {
 									frExpMin.substituteInPlace(new Expression(varId), new Expression(vcmlName));
 									frExpMax.substituteInPlace(new Expression(varId), new Expression(vcmlName));
 								}
+								frExpMin = scaleIfChanged(frExpMin, targetID, importedSC, convertedSC);
+								frExpMax = scaleIfChanged(frExpMax, targetID, importedSC, convertedSC);
 								frExpMin = frExpMin.simplifyJSCL();
 								frExpMax = frExpMax.simplifyJSCL();
 								String minValueExpStr = frExpMin.infix();
@@ -652,6 +679,7 @@ public class SEDMLImporter {
 									Expression expFinal = new Expression(expFact);
 									// Substitute Range values
 									expFinal.substituteInPlace(new Expression(vr.getId()), new Expression(vr.getElementAt(i)));
+									expFinal = scaleIfChanged(expFinal, targetID, importedSC, convertedSC);
 									expFinal = expFinal.simplifyJSCL();
 									values[i] = expFinal.infix();
 								}
@@ -798,7 +826,7 @@ public class SEDMLImporter {
 				InputStream sbmlSource = IOUtils.toInputStream(modelXML, Charset.defaultCharset());
 				boolean bValidateSBML = false;
 				SBMLImporter sbmlImporter = new SBMLImporter(sbmlSource,transLogger,bValidateSBML);
-				boolean bCoerceToDistributed = false;
+				boolean bCoerceToDistributed = true;
 				boolean bTransformUnits = false;
 				bioModel = (BioModel)sbmlImporter.getBioModel(bCoerceToDistributed, bTransformUnits);
 				bioModel.setName(bioModelName);

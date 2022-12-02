@@ -308,7 +308,7 @@ public class SBMLSymbolMapping {
         }
     }
 
-    Expression getRuleSBMLExpression(SBase _sbase, SymbolContext symbolContext) {
+    public Expression getRuleSBMLExpression(SBase _sbase, SymbolContext symbolContext) {
         SBaseWrapper<SBase> sbaseWrapper = new SBaseWrapper<>(_sbase);
         switch (symbolContext) {
             case INITIAL: {

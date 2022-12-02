@@ -115,12 +115,13 @@ Identifiable, IdentifiableProvider, IssueSource, Displayable, VCellSbmlName
 					origKinetics.setReactionStep(reactionStep);
 					try {
 						DistributedKinetics.toDistributedKinetics((LumpedKinetics) origKinetics, false);
+						lg.info("transformed lumped reaction " + reactionStep.getName() + " to distributed");
 					} catch (Exception e) {
-						lg.warn("failed to transform lumped reaction " + reactionStep.getName() + " to distributed: " + e.getMessage(), e);
+						lg.warn("failed to transform lumped reaction " + reactionStep.getName() + " to distributed: " + e.getMessage());
 						// original kinetics may have been altered when the conversion failed, replace with clone
 						reactionStep.setKinetics(clonedKinetics);
 						clonedKinetics.setReactionStep(reactionStep);
-						reactionStep.refreshDependencies();
+						refreshDependencies();
 					}
 				}
 			}
