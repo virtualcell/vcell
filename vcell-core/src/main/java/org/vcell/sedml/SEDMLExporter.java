@@ -979,7 +979,7 @@ public class SEDMLExporter {
 		rt.addSubtask(subTask);
 		ConstantArraySpec constantArraySpec = mathOverrides.getConstantArraySpec(scannedConstName);
 		// list of Ranges, if sim is parameter scan.
-		Range r = createSEDMLrange(rangeId, rt, constantArraySpec, mathSymbolMapping, l2gMap, modelReferenceId, mathOverrides.getSimulation());
+		Range r = createSEDMLrange(rangeId, rt, constantArraySpec, mathSymbolMapping, l2gMap, modelReferenceId);
 		// list of Changes
 		SymbolTableEntry ste = getSymbolTableEntryForModelEntity(mathSymbolMapping, scannedConstName);
 		XPathTarget target = getTargetAttributeXPath(ste, l2gMap);
@@ -991,7 +991,7 @@ public class SEDMLExporter {
 		return rt;
 	}
 
-	private Range createSEDMLrange(String rangeId, RepeatedTask rt, ConstantArraySpec constantArraySpec, MathSymbolMapping msm, Map<Pair<String, String>, String> l2gMap, String modelReferenceId, Simulation vcSim)
+	private Range createSEDMLrange(String rangeId, RepeatedTask rt, ConstantArraySpec constantArraySpec, MathSymbolMapping msm, Map<Pair<String, String>, String> l2gMap, String modelReferenceId)
 			throws ExpressionException, DivideByZeroException, MappingException {
 		Range r = null;
 		//										System.out.println("     " + constantArraySpec.toString());
@@ -1009,9 +1009,7 @@ public class SEDMLExporter {
 				// now make a FunctionalRange with expressions
 				FunctionalRange fr = new FunctionalRange("fr_"+rangeId, rangeId);
 				Expression expMin = constantArraySpec.getMinValue();
-				expMin = adjustIfRateParam(vcSim, getSymbolTableEntryForModelEntity(msm, constantArraySpec.getName()), expMin);
 				Expression expMax = constantArraySpec.getMaxValue();
-				expMax = adjustIfRateParam(vcSim, getSymbolTableEntryForModelEntity(msm, constantArraySpec.getName()), expMax);
 				Expression trans = Expression.add(new Expression(rangeId), new Expression("-1"));
 				Expression func = Expression.add(expMax, Expression.negate(expMin));
 				func = Expression.mult(func, trans);
