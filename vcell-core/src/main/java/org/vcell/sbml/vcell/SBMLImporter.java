@@ -824,7 +824,40 @@ public class SBMLImporter {
 				String vcParamName = sbmlParamId;
 				// special treatment for x,y,z
 				if(isRestrictedXYZT(sbmlParamId, vcBioModel, bSpatial) || reservedSymbolHash.contains(sbmlParamId)) {
-					vcParamName = ReservedParamPrefix + sbmlParamId;
+					ReservedSymbol rs = vcBioModel.getModel().getReservedSymbolByName(sbmlParamId);
+					Expression reservedSymbolExpression = rs.getExpression();
+					boolean isSetRsValue = false;
+					boolean isSetSbmlValue = false;
+					double rsValue = 0;
+					double sbmlValue = 0;
+					// TODO: also compare other things? units...
+					if(reservedSymbolExpression == null) {
+						if(rs.isTemperature()) {
+							SimulationContext sc = vcBioModel.getSimulationContext(0);
+							rsValue = sc.getTemperatureKelvin();
+							isSetRsValue = true;
+						}
+					} else {
+						if (reservedSymbolExpression.isNumeric()) {
+							rsValue = reservedSymbolExpression.evaluateConstant();
+							isSetRsValue = true;
+						}
+					}
+					if (sbmlGlobalParam.isSetValue()) {
+						sbmlValue = sbmlGlobalParam.getValue();
+						isSetSbmlValue = true;
+					}
+					if(isSetRsValue && isSetSbmlValue) {
+						// TODO: use ExpressionUtils.functionallyEquivalent(exp1, exp2)
+						if(rsValue == sbmlValue) {
+							continue;	// it's a reserved symbol, we have it already
+						}
+					} else if(!isSetRsValue && !isSetSbmlValue) {
+						continue;	// is this even possible?
+					} else {
+						// they are different!
+						vcParamName = ReservedParamPrefix + sbmlParamId;
+					}
 				}
 				//
 				// treat KMOLE special

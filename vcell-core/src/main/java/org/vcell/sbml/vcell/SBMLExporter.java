@@ -594,13 +594,14 @@ private void addParameters() throws ExpressionException, SbmlException, XMLStrea
 			}
 		}
 	}
-	
+
 	ReservedSymbol[] vcReservedSymbols = vcModel.getReservedSymbols();  
-	if (vcReservedSymbols != null) {
 	for (ReservedSymbol vcParam : vcReservedSymbols) {
-		if(vcParam.isTime() || vcParam.isX() || vcParam.isY() || vcParam.isZ()) {
-			continue;
+		if(SBMLImporter.isRestrictedXYZT(vcParam.getName(), vcBioModel, bSpatial)) {
+			// TODO: should we not raise an exception and log an error?
+			continue;	// don't export x,y,z,t if used inappropriately (like, in a non-spatial model)
 		}
+		
 		if(vcParam.getRole().equals(ReservedSymbolRole.KMILLIVOLTS)) {
 //			System.out.println("KMILLIVOLTS");
 //			continue;
@@ -643,7 +644,6 @@ private void addParameters() throws ExpressionException, SbmlException, XMLStrea
 		if (!vcParamUnit.isTBD()) {
 			sbmlParam.setUnits(getOrCreateSBMLUnit(vcParamUnit));
 		}
-	}
 	}
 }
 
