@@ -1026,7 +1026,7 @@ public class SEDMLExporter {
 			}
 		} else {
 			// ----- Vector Range
-			// we try to preserve symbolic values...
+			// we try to preserve symbolic values coming from unit transforms...
 			cbit.vcell.math.Constant[] cs = constantArraySpec.getConstants();
 			ArrayList<Double> values = new ArrayList<Double>();
 			Expression expFact = null;
@@ -1036,35 +1036,20 @@ public class SEDMLExporter {
 					break;
 				}
 			}
-			boolean bFactorized = true;
+			// compute list of numeric multipliers
 			for (int i = 0; i < cs.length; i++){
 				Expression exp = cs[i].getExpression();
 				exp = Expression.div(exp, expFact).simplifyJSCL();
-				if (!exp.isNumeric()) {
-					bFactorized = false;
-					break;
-				}
-				values.add(new Double(exp.infix()));
+				values.add(new Double(exp.evaluateConstant()));
 			}
-			if (!bFactorized) {
-				// write it out flattened
-				values.removeAll(values);
-				for (int j = 0; j < cs.length; j++) {
-					values.add(new Double(cs[j].getExpression().evaluateConstant()));					
-				}
-				r = new VectorRange(rangeId, values);
-				rt.addRange(r);
-				return r;
-			} else {
-				r = new VectorRange(rangeId, values);
-				rt.addRange(r);
-				// now make a FunctionalRange with expressions
-				FunctionalRange fr = new FunctionalRange("fr_"+rangeId, rangeId);
-				expFact = Expression.mult(new Expression(rangeId), expFact);
-				createFunctionalRangeElements(fr, expFact, msm, l2gMap, modelReferenceId);
-				rt.addRange(fr);
-				return fr;
-			}
+			r = new VectorRange(rangeId, values);
+			rt.addRange(r);
+			// now make a FunctionalRange with expressions
+			FunctionalRange fr = new FunctionalRange("fr_"+rangeId, rangeId);
+			expFact = Expression.mult(new Expression(rangeId), expFact);
+			createFunctionalRangeElements(fr, expFact, msm, l2gMap, modelReferenceId);
+			rt.addRange(fr);
+			return fr;
 		}
 	}
 
