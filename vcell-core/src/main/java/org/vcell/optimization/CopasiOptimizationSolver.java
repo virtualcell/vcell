@@ -126,9 +126,9 @@ public class CopasiOptimizationSolver {
 				clientTaskStatusSupport.setMessage("Generating opt problem...");
 			}
 			OptProblem optProblem = CopasiServicePython.makeOptProblem(parameterEstimationTask);
-			
-			boolean bIgnoreCertProblems = true;
-			boolean bIgnoreHostMismatch = true;
+
+			boolean bIgnoreCertProblems = PropertyLoader.getBooleanProperty(PropertyLoader.sslIgnoreCertProblems,false);
+			boolean bIgnoreHostMismatch = PropertyLoader.getBooleanProperty(PropertyLoader.sslIgnoreHostMismatch,false);;
 			
 			// e.g. vcell.serverhost=vcellapi.cam.uchc.edu:443
 			String serverHost = PropertyLoader.getRequiredProperty(PropertyLoader.vcellServerHost);

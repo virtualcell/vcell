@@ -27,9 +27,7 @@ public class VCellApiClientTest {
 			String username = args[2];
 			String password = args[3];
 			
-			boolean bIgnoreCertProblems = true;
-			boolean bIgnoreHostMismatch = true;
-			vcellApiClient = new VCellApiClient(host,port,bIgnoreCertProblems,bIgnoreHostMismatch);
+			vcellApiClient = new VCellApiClient(host,port);
 
 			vcellApiClient.authenticate(username,password,false);
 			

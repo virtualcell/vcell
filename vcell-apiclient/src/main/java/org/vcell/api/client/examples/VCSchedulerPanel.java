@@ -332,9 +332,7 @@ public class VCSchedulerPanel extends JPanel {
 			VCSchedulerPanel panel = new VCSchedulerPanel();
 			panel.setUsername(username);
 			panel.setPassword(password);
-			boolean bIgnoreCertProblems = true;
-			boolean bIgnoreHostMismatch = true;
-			panel.vcellApiClient = new VCellApiClient(host,port,bIgnoreCertProblems, bIgnoreHostMismatch);
+			panel.vcellApiClient = new VCellApiClient(host,port);
 
 			jframe.getContentPane().add(panel);
 			jframe.setSize(800,500);
