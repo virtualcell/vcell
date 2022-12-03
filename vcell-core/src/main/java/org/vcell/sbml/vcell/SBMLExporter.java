@@ -597,11 +597,10 @@ private void addParameters() throws ExpressionException, SbmlException, XMLStrea
 
 	ReservedSymbol[] vcReservedSymbols = vcModel.getReservedSymbols();  
 	for (ReservedSymbol vcParam : vcReservedSymbols) {
-		if(SBMLImporter.isRestrictedXYZT(vcParam.getName(), vcBioModel, bSpatial)) {
-			// TODO: should we not raise an exception and log an error?
-			continue;	// don't export x,y,z,t if used inappropriately (like, in a non-spatial model)
+		// x,y,z were exported in the addGeometry()
+		if(vcParam.isTime() || vcParam.isX() || vcParam.isY() || vcParam.isZ()) {
+			continue;
 		}
-		
 		if(vcParam.getRole().equals(ReservedSymbolRole.KMILLIVOLTS)) {
 //			System.out.println("KMILLIVOLTS");
 //			continue;
