@@ -19,6 +19,7 @@ import cbit.vcell.model.Structure.StructureSize;
 import cbit.vcell.parser.*;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.*;
+import cbit.vcell.solver.MathOverridesResolver.SymbolReplacement;
 import cbit.vcell.xml.XMLTags;
 import cbit.vcell.xml.XmlHelper;
 import org.apache.logging.log4j.LogManager;
@@ -1008,10 +1009,13 @@ public class SEDMLExporter {
 				rt.addRange(r);
 				// now make a FunctionalRange with expressions
 				FunctionalRange fr = new FunctionalRange("fr_"+rangeId, rangeId);
+				SimulationContext sc = (SimulationContext)vcSim.getSimulationOwner();
+				SymbolReplacement sr = sc.getMathOverridesResolver().getSymbolReplacement(constantArraySpec.getName(), true);
+				SymbolTableEntry ste = msm.getBiologicalSymbol(vcSim.getMathOverrides().getConstant(sr.newName))[0];
 				Expression expMin = constantArraySpec.getMinValue();
-				expMin = adjustIfRateParam(vcSim, getSymbolTableEntryForModelEntity(msm, constantArraySpec.getName()), expMin);
+				expMin = adjustIfRateParam(vcSim, ste, expMin);
 				Expression expMax = constantArraySpec.getMaxValue();
-				expMax = adjustIfRateParam(vcSim, getSymbolTableEntryForModelEntity(msm, constantArraySpec.getName()), expMax);
+				expMax = adjustIfRateParam(vcSim, ste, expMax);
 				Expression trans = Expression.add(new Expression(rangeId), new Expression("-1"));
 				Expression func = Expression.add(expMax, Expression.negate(expMin));
 				func = Expression.mult(func, trans);
