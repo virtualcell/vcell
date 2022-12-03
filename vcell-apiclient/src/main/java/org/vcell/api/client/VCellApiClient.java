@@ -132,6 +132,10 @@ public class VCellApiClient {
 		}
 	}
 
+	public VCellApiClient(String host, int port) throws KeyManagementException, NoSuchAlgorithmException, KeyStoreException {
+		this(host, port, false, false);
+	}
+
 	public VCellApiClient(String host, int port, boolean bIgnoreCertProblems, boolean bIgnoreHostMismatch) throws KeyManagementException, NoSuchAlgorithmException, KeyStoreException{
 		this.httpHost = new HttpHost(host,port,"https");
 		this.clientID = DEFAULT_CLIENTID;

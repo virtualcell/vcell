@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
+import cbit.vcell.resource.PropertyLoader;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -174,8 +175,8 @@ public RemoteProxyVCellConnectionFactory(String apihost, Integer apiport, UserLo
 	this.apihost = apihost;
 	this.apiport = apiport;
 	this.userLoginInfo = userLoginInfo;
-	boolean bIgnoreCertProblems = true;
-	boolean bIgnoreHostMismatch = true;
+	boolean bIgnoreCertProblems = PropertyLoader.getBooleanProperty(PropertyLoader.sslIgnoreCertProblems,false);
+	boolean bIgnoreHostMismatch = PropertyLoader.getBooleanProperty(PropertyLoader.sslIgnoreHostMismatch,false);;
 	try {
 		this.vcellApiClient = new VCellApiClient(this.apihost, this.apiport, bIgnoreCertProblems, bIgnoreHostMismatch);
 	} catch (KeyManagementException | NoSuchAlgorithmException | KeyStoreException e) {
@@ -196,8 +197,8 @@ public VCellConnection createVCellConnection() throws AuthenticationException, C
 }
 
 public static String getVCellSoftwareVersion(String apihost, Integer apiport) {
-	boolean bIgnoreCertProblems = true;
-	boolean bIgnoreHostMismatch = true;
+	boolean bIgnoreCertProblems = PropertyLoader.getBooleanProperty(PropertyLoader.sslIgnoreCertProblems,false);
+	boolean bIgnoreHostMismatch = PropertyLoader.getBooleanProperty(PropertyLoader.sslIgnoreHostMismatch,false);;
 	try {
 		VCellApiClient tempApiClient = new VCellApiClient(apihost, apiport, bIgnoreCertProblems, bIgnoreHostMismatch);
 		String serverSoftwareVersion = tempApiClient.getServerSoftwareVersion();
