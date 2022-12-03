@@ -995,7 +995,9 @@ public class SEDMLExporter {
 	private Range createSEDMLrange(String rangeId, RepeatedTask rt, ConstantArraySpec constantArraySpec, MathSymbolMapping msm, Map<Pair<String, String>, String> l2gMap, String modelReferenceId, Simulation vcSim)
 			throws ExpressionException, DivideByZeroException, MappingException {
 		Range r = null;
-		//										System.out.println("     " + constantArraySpec.toString());
+		SimulationContext sc = (SimulationContext)vcSim.getSimulationOwner();
+		SymbolReplacement sr = sc.getMathOverridesResolver().getSymbolReplacement(constantArraySpec.getName(), true);
+		SymbolTableEntry ste = msm.getBiologicalSymbol(vcSim.getMathOverrides().getConstant(sr.newName))[0];
 		if(constantArraySpec.getType() == ConstantArraySpec.TYPE_INTERVAL) {
 			// ------ Uniform Range
 			UniformType type = constantArraySpec.isLogInterval() ? UniformType.LOG : UniformType.LINEAR;
@@ -1009,9 +1011,6 @@ public class SEDMLExporter {
 				rt.addRange(r);
 				// now make a FunctionalRange with expressions
 				FunctionalRange fr = new FunctionalRange("fr_"+rangeId, rangeId);
-				SimulationContext sc = (SimulationContext)vcSim.getSimulationOwner();
-				SymbolReplacement sr = sc.getMathOverridesResolver().getSymbolReplacement(constantArraySpec.getName(), true);
-				SymbolTableEntry ste = msm.getBiologicalSymbol(vcSim.getMathOverrides().getConstant(sr.newName))[0];
 				Expression expMin = constantArraySpec.getMinValue();
 				expMin = adjustIfRateParam(vcSim, ste, expMin);
 				Expression expMax = constantArraySpec.getMaxValue();
@@ -1047,6 +1046,7 @@ public class SEDMLExporter {
 			// now make a FunctionalRange with expressions
 			FunctionalRange fr = new FunctionalRange("fr_"+rangeId, rangeId);
 			expFact = Expression.mult(new Expression(rangeId), expFact);
+			expFact = adjustIfRateParam(vcSim, ste, expFact);
 			createFunctionalRangeElements(fr, expFact, msm, l2gMap, modelReferenceId);
 			rt.addRange(fr);
 			return fr;
