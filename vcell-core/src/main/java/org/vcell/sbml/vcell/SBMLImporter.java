@@ -2932,6 +2932,9 @@ public class SBMLImporter {
 		for (SBase assignmentRuleTargetSbase : sbmlSymbolMapping.getAssignmentRuleTargets()){
 			Expression sbmlExpr = sbmlSymbolMapping.getRuleSBMLExpression(assignmentRuleTargetSbase, SymbolContext.RUNTIME);
 			EditableSymbolTableEntry assignmentRuleTargetSte = sbmlSymbolMapping.getSte(assignmentRuleTargetSbase, SymbolContext.RUNTIME);
+			if(assignmentRuleTargetSte == null) {
+				logger.error("assignmentRuleTargetSte is null for SBML object "+assignmentRuleTargetSbase);
+			}
 			try {
 				if (assignmentRuleTargetSte.isExpressionEditable()) {
 					Expression vcellExpr = adjustExpression(sbmlModel, sbmlExpr, assignmentRuleTargetSte.getNameScope(), sbmlSymbolMapping, SymbolContext.RUNTIME);
