@@ -480,6 +480,7 @@ public class SEDMLImporter {
 					continue;
 				}
 				exp = scaleIfChanged(exp, targetID, importedSC, convertedSC);
+				exp = exp.simplifyJSCL();
 				Constant constant = new Constant(vcConstantName,exp);
 				newSimulation.getMathOverrides().putConstant(constant);
 			} catch (ExpressionException e) {
@@ -505,7 +506,7 @@ public class SEDMLImporter {
 				}
 			}
 			if (!factor.isOne()) {
-				exp = Expression.div(exp, factor);
+				exp = Expression.div(exp, factor).simplifyJSCL();
 			}
 		}
 
