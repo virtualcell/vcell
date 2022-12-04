@@ -2811,6 +2811,7 @@ public class SBMLImporter {
 					if (paramElement != null) {
 						ModelParameter globalParam = (ModelParameter) sbmlSymbolMapping.getRuntimeSte(sbase);
 						rateParam.setExpression(globalParam.getExpression());
+						rateParam.setName(globalParam.getName());;
 						vcBioModel.getModel().removeModelParameter(globalParam);
 						sbmlSymbolMapping.replaceRuntime(sbase, rateParam);
 						constantKinetics.put(vcBioModel.getModel().getReactionSteps(i).getKinetics(), sbase);
