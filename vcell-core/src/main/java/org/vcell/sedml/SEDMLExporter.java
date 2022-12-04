@@ -1031,7 +1031,7 @@ public class SEDMLExporter {
 			ArrayList<Double> values = new ArrayList<Double>();
 			Expression expFact = null;
 			for (int i = 0; i < cs.length; i++){
-				if (!(cs[i].getExpression().isNumeric() && cs[i].getExpression().evaluateConstant() == 0)) {
+				if (!(cs[i].getExpression().evaluateConstant() == 0)) {
 					expFact = cs[i].getExpression();
 					break;
 				}
