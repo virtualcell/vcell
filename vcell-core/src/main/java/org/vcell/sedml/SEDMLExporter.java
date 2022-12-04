@@ -1196,12 +1196,12 @@ public class SEDMLExporter {
 		SBMLSupport sbmlSupport = new SBMLSupport();		// to get Xpath string for variables.
 		XPathTarget targetXpath = null;
 		if (ste instanceof SpeciesContext || ste instanceof SpeciesContextSpecParameter) {
-			String speciesId = ste.getName();
+			String speciesId = TokenMangler.mangleToSName(ste.getName());
 			// can change species initial concentration or amount 
 			String speciesAttr = "";
 			if (ste instanceof SpeciesContextSpecParameter) {
 				SpeciesContextSpecParameter scsp = (SpeciesContextSpecParameter)ste;
-				speciesId = (scsp).getSpeciesContext().getName();
+				speciesId = TokenMangler.mangleToSName((scsp).getSpeciesContext().getName());
 				int role = scsp.getRole();
 				if (role == SpeciesContextSpec.ROLE_InitialConcentration) {
 					speciesAttr = scsp.getName(); 
@@ -1231,17 +1231,17 @@ public class SEDMLExporter {
 			targetXpath = new XPathTarget(sbmlSupport.getXPathForGlobalParameter(ste.getName(), ParameterAttribute.value));
 			// use Ion's sample 3, with spatial app
 		}  else if (ste instanceof Structure || ste instanceof Structure.StructureSize || ste instanceof StructureMappingParameter) {
-			String compartmentId = ste.getName();
+			String compartmentId = TokenMangler.mangleToSName(ste.getName());
 			// can change compartment size or spatial dimension, but in vcell, we cannot change compartment dimension. 
 			String compartmentAttr = "";
 			String mappingId = "";
 			if (ste instanceof Structure.StructureSize) { 
-				compartmentId = ((StructureSize)ste).getStructure().getName();
+				compartmentId = TokenMangler.mangleToSName(((StructureSize)ste).getStructure().getName());
 				compartmentAttr = ((StructureSize)ste).getName();
 			}
 			if (ste instanceof StructureMappingParameter) {
 				StructureMappingParameter smp = (StructureMappingParameter)ste;
-				compartmentId = smp.getStructure().getName();
+				compartmentId = TokenMangler.mangleToSName(smp.getStructure().getName());
 				int role = ((StructureMappingParameter)ste).getRole();
 				if (role == StructureMapping.ROLE_Size) {
 					compartmentAttr = smp.getName();
