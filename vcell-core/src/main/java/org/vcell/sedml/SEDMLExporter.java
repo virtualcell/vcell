@@ -19,6 +19,7 @@ import cbit.vcell.model.Structure.StructureSize;
 import cbit.vcell.parser.*;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.*;
+import cbit.vcell.solver.MathOverridesResolver.SymbolReplacement;
 import cbit.vcell.xml.XMLTags;
 import cbit.vcell.xml.XmlHelper;
 import org.apache.logging.log4j.LogManager;
@@ -979,7 +980,7 @@ public class SEDMLExporter {
 		rt.addSubtask(subTask);
 		ConstantArraySpec constantArraySpec = mathOverrides.getConstantArraySpec(scannedConstName);
 		// list of Ranges, if sim is parameter scan.
-		Range r = createSEDMLrange(rangeId, rt, constantArraySpec, mathSymbolMapping, l2gMap, modelReferenceId);
+		Range r = createSEDMLrange(rangeId, rt, constantArraySpec, mathSymbolMapping, l2gMap, modelReferenceId, mathOverrides.getSimulation());
 		// list of Changes
 		SymbolTableEntry ste = getSymbolTableEntryForModelEntity(mathSymbolMapping, scannedConstName);
 		XPathTarget target = getTargetAttributeXPath(ste, l2gMap);
@@ -991,10 +992,13 @@ public class SEDMLExporter {
 		return rt;
 	}
 
-	private Range createSEDMLrange(String rangeId, RepeatedTask rt, ConstantArraySpec constantArraySpec, MathSymbolMapping msm, Map<Pair<String, String>, String> l2gMap, String modelReferenceId)
+	private Range createSEDMLrange(String rangeId, RepeatedTask rt, ConstantArraySpec constantArraySpec, MathSymbolMapping msm, Map<Pair<String, String>, String> l2gMap, String modelReferenceId, Simulation vcSim)
 			throws ExpressionException, DivideByZeroException, MappingException {
 		Range r = null;
-		//										System.out.println("     " + constantArraySpec.toString());
+		SimulationContext sc = (SimulationContext)vcSim.getSimulationOwner();
+		SymbolReplacement sr = sc.getMathOverridesResolver().getSymbolReplacement(constantArraySpec.getName(), true);
+		String cName = sr != null ? sr.newName : constantArraySpec.getName();
+		SymbolTableEntry ste = msm.getBiologicalSymbol(vcSim.getMathOverrides().getConstant(cName))[0];
 		if(constantArraySpec.getType() == ConstantArraySpec.TYPE_INTERVAL) {
 			// ------ Uniform Range
 			UniformType type = constantArraySpec.isLogInterval() ? UniformType.LOG : UniformType.LINEAR;
@@ -1009,7 +1013,9 @@ public class SEDMLExporter {
 				// now make a FunctionalRange with expressions
 				FunctionalRange fr = new FunctionalRange("fr_"+rangeId, rangeId);
 				Expression expMin = constantArraySpec.getMinValue();
+				expMin = adjustIfRateParam(vcSim, ste, expMin);
 				Expression expMax = constantArraySpec.getMaxValue();
+				expMax = adjustIfRateParam(vcSim, ste, expMax);
 				Expression trans = Expression.add(new Expression(rangeId), new Expression("-1"));
 				Expression func = Expression.add(expMax, Expression.negate(expMin));
 				func = Expression.mult(func, trans);
@@ -1020,45 +1026,31 @@ public class SEDMLExporter {
 			}
 		} else {
 			// ----- Vector Range
-			// we try to preserve symbolic values...
+			// we try to preserve symbolic values coming from unit transforms...
 			cbit.vcell.math.Constant[] cs = constantArraySpec.getConstants();
 			ArrayList<Double> values = new ArrayList<Double>();
 			Expression expFact = null;
 			for (int i = 0; i < cs.length; i++){
-				if (!(cs[i].getExpression().isNumeric() && cs[i].getExpression().evaluateConstant() == 0)) {
+				if (!(cs[i].getExpression().evaluateConstant() == 0)) {
 					expFact = cs[i].getExpression();
 					break;
 				}
 			}
-			boolean bFactorized = true;
+			// compute list of numeric multipliers
 			for (int i = 0; i < cs.length; i++){
 				Expression exp = cs[i].getExpression();
 				exp = Expression.div(exp, expFact).simplifyJSCL();
-				if (!exp.isNumeric()) {
-					bFactorized = false;
-					break;
-				}
-				values.add(new Double(exp.infix()));
+				values.add(new Double(exp.evaluateConstant()));
 			}
-			if (!bFactorized) {
-				// write it out flattened
-				values.removeAll(values);
-				for (int j = 0; j < cs.length; j++) {
-					values.add(new Double(cs[j].getExpression().evaluateConstant()));					
-				}
-				r = new VectorRange(rangeId, values);
-				rt.addRange(r);
-				return r;
-			} else {
-				r = new VectorRange(rangeId, values);
-				rt.addRange(r);
-				// now make a FunctionalRange with expressions
-				FunctionalRange fr = new FunctionalRange("fr_"+rangeId, rangeId);
-				expFact = Expression.mult(new Expression(rangeId), expFact);
-				createFunctionalRangeElements(fr, expFact, msm, l2gMap, modelReferenceId);
-				rt.addRange(fr);
-				return fr;
-			}
+			r = new VectorRange(rangeId, values);
+			rt.addRange(r);
+			// now make a FunctionalRange with expressions
+			FunctionalRange fr = new FunctionalRange("fr_"+rangeId, rangeId);
+			expFact = Expression.mult(new Expression(rangeId), expFact);
+			expFact = adjustIfRateParam(vcSim, ste, expFact);
+			createFunctionalRangeElements(fr, expFact, msm, l2gMap, modelReferenceId);
+			rt.addRange(fr);
+			return fr;
 		}
 	}
 
