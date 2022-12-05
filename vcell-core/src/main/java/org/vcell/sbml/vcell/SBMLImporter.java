@@ -2777,9 +2777,6 @@ public class SBMLImporter {
 						try {
 							DistributedKinetics.toDistributedKinetics((LumpedKinetics) origKinetics, false);
 							logger.info("transformed lumped reaction " + reactionStep.getName() + " to distributed");
-							if (constantKinetics.containsKey(origKinetics)) {
-								sbmlSymbolMapping.replaceRuntime(constantKinetics.get(origKinetics), reactionStep.getKinetics().getAuthoritativeParameter());
-							}
 						} catch (Exception e) {
 							logger.warn("failed to transform lumped reaction " + reactionStep.getName() + " to distributed: " + e.getMessage());
 							// original kinetics may have been altered when the conversion failed, replace with clone
@@ -2787,12 +2784,17 @@ public class SBMLImporter {
 							clonedKinetics.setReactionStep(reactionStep);
 							vcBioModel.refreshDependencies();
 						}
+						// deal with renaming of constant rate parameters for both transformed and not transformed cases
+						if (constantKinetics.containsKey(origKinetics)) {
+							sbmlSymbolMapping.replaceRuntime(constantKinetics.get(origKinetics), reactionStep.getKinetics().getAuthoritativeParameter());
+						}
 					}
 				}
 			} catch (Exception e) {
 				throw new SBMLImportException("failed to convert lumped reaction kinetics to distributed: " + e.getMessage(), e);
 			}
 		}
+
 	}
 
 	private static void finalizeReactions(org.sbml.jsbml.Model sbmlModel, BioModel vcBioModel,
