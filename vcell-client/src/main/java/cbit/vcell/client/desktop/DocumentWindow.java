@@ -3048,7 +3048,7 @@ public void showTransMADialog()
 					TransformedReaction[] transReactionSteps = transformMassActions.getTransformedReactionSteps();
 					boolean[] isTransformable = transformMassActions.getIsTransformable();
 
-					transReactionSteps[i] = transformMassActions.transformOne(origReactions[origReactions.length-1-i]);	// here all the work is done
+					transReactionSteps[i] = transformMassActions.transformOne(origReactions[i]);	// here all the work is done
 					if (transReactionSteps[i].getTransformType() == TransformedReaction.TRANSFORMABLE) {
 						isTransformable[i] = true;
 					} else {
