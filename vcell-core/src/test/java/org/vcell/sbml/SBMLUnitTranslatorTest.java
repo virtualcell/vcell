@@ -20,6 +20,7 @@ import org.vcell.sbml.vcell.SBMLUnitTranslator;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitSystem;
+import ucar.units_vcell.RationalNumber;
 
 public class SBMLUnitTranslatorTest {
 
@@ -122,6 +123,21 @@ public class SBMLUnitTranslatorTest {
 		VCUnitDefinition vcUnit = SBMLUnitTranslator.getVCUnitDefinition(sbmlUnit, vcUnitSystem);
 
 		Assert.assertTrue("expected=["+expectedUnit.getSymbol()+"], parsed=["+vcUnit.getSymbol()+"] are not equivalent", expectedUnit.isEquivalent(vcUnit));
+	}
+
+	@Test
+	public void testDimensionlessUnitExport() throws SbmlException {
+		final VCUnitSystem vcUnitSystem = new BioModel(null).getModel().getUnitSystem();
+		int sbmlLevel = 3;
+		int sbmlVersion = 2;
+
+		VCUnitDefinition vcUnit = vcUnitSystem.getInstance("1");
+		UnitDefinition unitDefn = SBMLUnitTranslator.getSBMLUnitDefinition(vcUnit, sbmlLevel, sbmlVersion, vcUnitSystem);
+		Assert.assertEquals("Unit__1", unitDefn.getId());
+
+		vcUnit = vcUnitSystem.getInstance("100").raiseTo(new RationalNumber(2));
+		unitDefn = SBMLUnitTranslator.getSBMLUnitDefinition(vcUnit, sbmlLevel, sbmlVersion, vcUnitSystem);
+		Assert.assertEquals("Unit__10000", unitDefn.getId());
 	}
 
 	@Test

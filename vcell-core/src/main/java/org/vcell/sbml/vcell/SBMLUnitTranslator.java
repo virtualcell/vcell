@@ -148,6 +148,7 @@ public static UnitDefinition getSBMLUnitDefinition(VCUnitDefinition vcUnitDefn, 
 			multiplier = Double.parseDouble(symbol);
 		}
 		sbmlUnitDefn.addUnit(new Unit(multiplier,0,Kind.DIMENSIONLESS,1.0,level,version));
+		sbmlUnitDefn.setId("Unit_"+TokenMangler.mangleToSName(symbol));
 		return sbmlUnitDefn;
 	}
 	String vcSymbol = vcUnitDefn.getSymbol();
