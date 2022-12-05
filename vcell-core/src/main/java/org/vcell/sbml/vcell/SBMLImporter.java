@@ -36,6 +36,7 @@ import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecNameScope;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.mapping.StructureMapping.StructureMappingParameter;
 import cbit.vcell.math.BoundaryConditionType;
+import cbit.vcell.math.Variable;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.model.*;
 import cbit.vcell.model.Kinetics.KineticsParameter;
@@ -2756,9 +2757,6 @@ public class SBMLImporter {
 		createRateRules(sbmlModel, vcBioModel, sbmlSymbolMapping);
 		postProcessing(vcBioModel);
 		
-		//Add Output Functions
-		addOutputFunctions(sbmlModel, vcBioModel, sbmlSymbolMapping, vcLogger);
-
 		vcBioModel.refreshDependencies();
 
 		//
@@ -2794,6 +2792,10 @@ public class SBMLImporter {
 				throw new SBMLImportException("failed to convert lumped reaction kinetics to distributed: " + e.getMessage(), e);
 			}
 		}
+		
+		// Add Output Functions
+		// This *must* be the last step
+		addOutputFunctions(sbmlModel, vcBioModel, sbmlSymbolMapping, vcLogger);
 
 	}
 
@@ -2838,18 +2840,30 @@ public class SBMLImporter {
 				if (paramElement != null) {
 					String sbmlParamId = sbmlGlobalParam.getId();
 					SBase sbase = sbmlSymbolMapping.getMappedSBase(sbmlParamId);
-					SymbolTableEntry ste = sbmlSymbolMapping.getSte(sbase, SymbolContext.RUNTIME);
+					AnnotatedFunction func = (AnnotatedFunction)sbmlSymbolMapping.getSte(sbase, SymbolContext.RUNTIME);
 					try {
 						if (!bGeneratedMath){
 							vcBioModel.refreshDependencies();
 							vcBioModel.getSimulationContext(0).updateAll(false);
 							bGeneratedMath = true;
 						}
-						vcBioModel.getSimulationContext(0).getOutputFunctionContext().addOutputFunction((AnnotatedFunction) ste);
-					} catch (MappingException | PropertyVetoException e) {
-						vcLogger.sendMessage(VCLogger.Priority.MediumPriority, VCLogger.ErrorType.OverallWarning, "Could not add Output Function "+ste.getName()+" to BioModel");
+						Expression funcExpr = func.getExpression();
+						String[] symbols = funcExpr.getSymbols();
+						for (String symbol : symbols) {
+							// if reaction name replace with name of variable corresponding to parameter name
+							ReactionStep rxn = vcBioModel.getModel().getReactionStep(symbol);
+							if (rxn != null) {
+								KineticsParameter rateParam = rxn.getKinetics().getAuthoritativeParameter();
+								String varName = vcBioModel.getSimulationContext(0).getMathDescription().getSourceSymbolMapping().getVariable(rateParam).getName();
+								funcExpr.substituteInPlace(new Expression(symbol), new Expression(varName));
+							}
+						}
+
+						vcBioModel.getSimulationContext(0).getOutputFunctionContext().addOutputFunction(func);
+					} catch (MappingException | PropertyVetoException | ExpressionException e) {
+						vcLogger.sendMessage(VCLogger.Priority.MediumPriority, VCLogger.ErrorType.OverallWarning, "Could not add Output Function "+func.getName()+" to BioModel");
 						vcLogger.sendMessage(VCLogger.Priority.MediumPriority, VCLogger.ErrorType.OverallWarning, e.getMessage());
-						logger.warn("Could not add Output Function "+ste.getName()+" to BioModel");
+						logger.warn("Could not add Output Function "+func.getName()+" to BioModel");
 						logger.warn(e.getMessage());
 					}
 				}
