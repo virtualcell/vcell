@@ -594,10 +594,10 @@ private void addParameters() throws ExpressionException, SbmlException, XMLStrea
 			}
 		}
 	}
-	
+
 	ReservedSymbol[] vcReservedSymbols = vcModel.getReservedSymbols();  
-	if (vcReservedSymbols != null) {
 	for (ReservedSymbol vcParam : vcReservedSymbols) {
+		// x,y,z were exported in the addGeometry()
 		if(vcParam.isTime() || vcParam.isX() || vcParam.isY() || vcParam.isZ()) {
 			continue;
 		}
@@ -643,7 +643,6 @@ private void addParameters() throws ExpressionException, SbmlException, XMLStrea
 		if (!vcParamUnit.isTBD()) {
 			sbmlParam.setUnits(getOrCreateSBMLUnit(vcParamUnit));
 		}
-	}
 	}
 }
 
