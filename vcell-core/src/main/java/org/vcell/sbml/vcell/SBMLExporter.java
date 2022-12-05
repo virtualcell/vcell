@@ -565,6 +565,18 @@ private void addParameters() throws ExpressionException, SbmlException, XMLStrea
 		sbmlParam.setName(of.getName());
 		sbmlParam.setConstant(false);
 		Expression paramExpr = new Expression(of.getExpression());
+		String[] symbols = paramExpr.getSymbols();
+		for (String symbol : symbols) {
+			Variable var = vcSelectedSimContext.getMathDescription().getSourceSymbolMapping().findVariableByName(symbol);
+			SymbolTableEntry ste = vcSelectedSimContext.getMathDescription().getSourceSymbolMapping().getBiologicalSymbol(var)[0];
+			if (ste instanceof KineticsParameter) {
+				Kinetics kinetics = ((KineticsParameter)ste).getKinetics();
+				if (ste == kinetics.getAuthoritativeParameter()) {
+					// need to use the reaction sbmlId when refereing to reaction rate
+					paramExpr.substituteInPlace(new Expression(symbol), new Expression(TokenMangler.mangleToSName(kinetics.getReactionStep().getName())));
+				}
+			}
+		}
 		ASTNode paramFormulaNode = getFormulaFromExpression(paramExpr);
 		AssignmentRule sbmlParamAssignmentRule = sbmlModel.createAssignmentRule();
 		sbmlParamAssignmentRule.setVariable(of.getName());
@@ -1013,7 +1025,7 @@ private void addReactions() throws SbmlException, XMLStreamException {
 				
 		// this attribute is mandatory for L3, optional for L2. So explicitly setting value.
 		sbmlReaction.setReversible(true);
-		Compartment reactionCompartment = sbmlModel.getCompartment(vcReactionStep.getStructure().getName());
+		Compartment reactionCompartment = sbmlModel.getCompartment(TokenMangler.mangleToSName(vcReactionStep.getStructure().getName()));
 		sbmlReaction.setCompartment(reactionCompartment);
 		
 		if (bSpatial) {
