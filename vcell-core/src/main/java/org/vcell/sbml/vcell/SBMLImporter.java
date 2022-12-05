@@ -823,40 +823,46 @@ public class SBMLImporter {
 
 				String vcParamName = sbmlParamId;
 				// special treatment for x,y,z
-				if(isRestrictedXYZT(sbmlParamId, vcBioModel, bSpatial) || reservedSymbolHash.contains(sbmlParamId)) {
-					ReservedSymbol rs = vcBioModel.getModel().getReservedSymbolByName(sbmlParamId);
-					Expression reservedSymbolExpression = rs.getExpression();
-					boolean isSetRsValue = false;
-					boolean isSetSbmlValue = false;
-					double rsValue = 0;
-					double sbmlValue = 0;
-					// TODO: also compare other things? units...
-					if(reservedSymbolExpression == null) {
-						if(rs.isTemperature()) {
-							SimulationContext sc = vcBioModel.getSimulationContext(0);
-							rsValue = sc.getTemperatureKelvin();
-							isSetRsValue = true;
-						}
-					} else {
-						if (reservedSymbolExpression.isNumeric()) {
-							rsValue = reservedSymbolExpression.evaluateConstant();
-							isSetRsValue = true;
-						}
-					}
-					if (sbmlGlobalParam.isSetValue()) {
-						sbmlValue = sbmlGlobalParam.getValue();
-						isSetSbmlValue = true;
-					}
-					if(isSetRsValue && isSetSbmlValue) {
-						// TODO: use ExpressionUtils.functionallyEquivalent(exp1, exp2)
-						if(rsValue == sbmlValue) {
-							continue;	// it's a reserved symbol, we have it already
-						}
-					} else if(!isSetRsValue && !isSetSbmlValue) {
-						continue;	// is this even possible?
-					} else {
-						// they are different!
+				if(reservedSymbolHash.contains(sbmlParamId)) {
+					if(isRestrictedXYZT(sbmlParamId, vcBioModel, bSpatial)) {
+						// it's x,y,z,t in a non-spatial model, so it's not reserved
+						// we add the ReservedParamPrefix to make that clear
 						vcParamName = ReservedParamPrefix + sbmlParamId;
+					} else {
+						// if the value is different from the value of the reserved symbol, we consider it to be
+						// something else and we add ReservedParamPrefix
+						ReservedSymbol rs = vcBioModel.getModel().getReservedSymbolByName(sbmlParamId);
+						Expression reservedSymbolExpression = rs.getExpression();
+						boolean isSetRsValue = false;
+						boolean isSetSbmlValue = false;
+						double rsValue = 0;
+						double sbmlValue = 0;
+						if(reservedSymbolExpression == null) {
+							if(rs.isTemperature()) {
+								SimulationContext sc = vcBioModel.getSimulationContext(0);
+								rsValue = sc.getTemperatureKelvin();
+								isSetRsValue = true;
+							}
+						} else {
+							if (reservedSymbolExpression.isNumeric()) {
+								rsValue = reservedSymbolExpression.evaluateConstant();
+								isSetRsValue = true;
+							}
+						}
+						if (sbmlGlobalParam.isSetValue()) {
+							sbmlValue = sbmlGlobalParam.getValue();
+							isSetSbmlValue = true;
+						}
+						if(isSetRsValue && isSetSbmlValue) {
+							if(ExpressionUtils.functionallyEquivalent(new Expression(rsValue), new Expression(sbmlValue))) {
+								continue;	// it's a reserved symbol, we have it already
+							}
+						} else if(!isSetRsValue && !isSetSbmlValue) {
+							continue;
+						} else {
+							// they are different!
+							vcParamName = ReservedParamPrefix + sbmlParamId;
+						}
 					}
 				}
 				//
@@ -2919,6 +2925,10 @@ public class SBMLImporter {
 		}
 		for (SBase initialAssignmentTargetSbase : sbmlSymbolMapping.getInitialAssignmentTargets()){
 			Expression sbmlExpr = sbmlSymbolMapping.getRuleSBMLExpression(initialAssignmentTargetSbase, SymbolContext.INITIAL);
+	    	if(initialAssignmentTargetSbase instanceof SpeciesReference) {
+	    		String species = ((SpeciesReference)initialAssignmentTargetSbase).getSpecies();
+	    		initialAssignmentTargetSbase = sbmlModel.getElementBySId(species);
+	    	}
 			EditableSymbolTableEntry initialAssignmentTargetSte = sbmlSymbolMapping.getSte(initialAssignmentTargetSbase, SymbolContext.INITIAL);
 			try {
 				if (initialAssignmentTargetSte.isExpressionEditable()) {
@@ -2931,6 +2941,10 @@ public class SBMLImporter {
 		}
 		for (SBase assignmentRuleTargetSbase : sbmlSymbolMapping.getAssignmentRuleTargets()){
 			Expression sbmlExpr = sbmlSymbolMapping.getRuleSBMLExpression(assignmentRuleTargetSbase, SymbolContext.RUNTIME);
+	    	if(assignmentRuleTargetSbase instanceof SpeciesReference) {
+	    		String species = ((SpeciesReference)assignmentRuleTargetSbase).getSpecies();
+	    		assignmentRuleTargetSbase = sbmlModel.getElementBySId(species);
+	    	}
 			EditableSymbolTableEntry assignmentRuleTargetSte = sbmlSymbolMapping.getSte(assignmentRuleTargetSbase, SymbolContext.RUNTIME);
 			if(assignmentRuleTargetSte == null) {
 				logger.error("assignmentRuleTargetSte is null for SBML object "+assignmentRuleTargetSbase);
