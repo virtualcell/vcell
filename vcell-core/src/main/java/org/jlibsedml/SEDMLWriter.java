@@ -388,28 +388,32 @@ class SEDMLWriter {
             if (s != null)
                 node.setAttribute(SEDMLTags.FUNCTIONAL_RANGE_INDEX, s);
             // list of variables
-            Element varList = new Element(SEDMLTags.FUNCTIONAL_RANGE_VAR_LIST);
-            node.addContent(varList);
-            Map<String, AbstractIdentifiableElement> vars = fr.getVariables();
-            for (AbstractIdentifiableElement var : vars.values()) {
-                if (var instanceof Variable) {
-                    varList.addContent(getXML((Variable) var,
-                            VariableType.COMPUTE_CHANGE));
-                } else {
-                    throw new RuntimeException("Entity must be a Variable "
-                            + var);
-                }
+            if(!fr.getVariables().isEmpty()) {
+	            Element varList = new Element(SEDMLTags.FUNCTIONAL_RANGE_VAR_LIST);
+	            node.addContent(varList);
+	            Map<String, AbstractIdentifiableElement> vars = fr.getVariables();
+	            for (AbstractIdentifiableElement var : vars.values()) {
+	                if (var instanceof Variable) {
+	                    varList.addContent(getXML((Variable) var,
+	                            VariableType.COMPUTE_CHANGE));
+	                } else {
+	                    throw new RuntimeException("Entity must be a Variable "
+	                            + var);
+	                }
+	            }
             }
-            Element parList = new Element(SEDMLTags.FUNCTIONAL_RANGE_PAR_LIST);
-            node.addContent(parList);
-            Map<String, AbstractIdentifiableElement> pars = fr.getParameters();
-            for (AbstractIdentifiableElement par : pars.values()) {
-                if (par instanceof Parameter) {
-                    parList.addContent(getXML((Parameter) par));
-                } else {
-                    throw new RuntimeException("Entity must be a Parameter "
-                            + par);
-                }
+            if(!fr.getParameters().isEmpty()) {
+	            Element parList = new Element(SEDMLTags.FUNCTIONAL_RANGE_PAR_LIST);
+	            node.addContent(parList);
+	            Map<String, AbstractIdentifiableElement> pars = fr.getParameters();
+	            for (AbstractIdentifiableElement par : pars.values()) {
+	                if (par instanceof Parameter) {
+	                    parList.addContent(getXML((Parameter) par));
+	                } else {
+	                    throw new RuntimeException("Entity must be a Parameter "
+	                            + par);
+	                }
+	            }
             }
             if (fr.getMath() != null) {
                 try {
