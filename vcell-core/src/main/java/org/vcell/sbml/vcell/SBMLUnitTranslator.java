@@ -220,7 +220,7 @@ public static UnitDefinition getSBMLUnitDefinition(VCUnitDefinition vcUnitDefn, 
 					}
 					Unit sbmlUnit = new Unit(multiplier, scale, kind, exponent, level, version);
 					sbmlUnitDefn.addUnit(sbmlUnit);
-					logger.warn("kind = "+kind.name()+" is equivalent to vcUnit = "+vcUnit.getSymbol()+",  SBML unit is "+sbmlUnit);
+					logger.info("kind = "+kind.name()+" is equivalent to vcUnit = "+vcUnit.getSymbol()+",  SBML unit is "+sbmlUnit);
 				}
 				bFoundMatch = true;
 				break;
@@ -244,7 +244,7 @@ public static UnitDefinition getSBMLUnitDefinition(VCUnitDefinition vcUnitDefn, 
 					}
 					sbmlUnitDefn.addUnit(new Unit(multiplier, scale, Kind.MOLE, exponent, level, version));
 					sbmlUnitDefn.addUnit(new Unit(1, 0, Kind.LITRE, -exponent, level, version));
-					logger.warn("matched to liter ... had to create a replacement for molar, vcUnit = "+vcUnit.getSymbol()+",  SBML unit is "+sbmlUnitDefn);
+					logger.info("matched to liter ... had to create a replacement for molar, vcUnit = "+vcUnit.getSymbol()+",  SBML unit is "+sbmlUnitDefn);
 				}
 				bFoundMatch = true;
 			}

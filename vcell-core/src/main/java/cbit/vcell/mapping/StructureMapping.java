@@ -552,12 +552,12 @@ public cbit.vcell.math.BoundaryConditionType getBoundaryCondition0(BoundaryLocat
 public final BoundaryConditionType getBoundaryCondition(BoundaryLocation boundaryLocation) {
 	BoundaryConditionType savedType = getBoundaryCondition0(boundaryLocation);
 	if (simulationContext==null){
-		logger.error("simulation context is null, returning saved BoundaryConditionType of "+savedType+" for location "+boundaryLocation);
+		logger.debug("simulation context is null, returning saved BoundaryConditionType of "+savedType+" for location "+boundaryLocation);
 	}else if (getGeometryClass() instanceof SurfaceClass){
 		Pair<SubVolume, SubVolume> adjacentSubvolumes = DiffEquMathMapping.computeBoundaryConditionSource(simulationContext.getModel(), simulationContext, (SurfaceClass)getGeometryClass());
 		StructureMapping[] volumeStructureMappings = simulationContext.getGeometryContext().getStructureMappings(adjacentSubvolumes.one);
 		if (volumeStructureMappings==null || volumeStructureMappings.length==0){
-			logger.error("no structures mapped to 'inside' subvolume "+adjacentSubvolumes.one.getName()+" so can't determine Boundary Condition type, returning saved BoundaryConditionType of "+savedType+" for location "+boundaryLocation);
+			logger.debug("no structures mapped to 'inside' subvolume "+adjacentSubvolumes.one.getName()+" so can't determine Boundary Condition type, returning saved BoundaryConditionType of "+savedType+" for location "+boundaryLocation);
 		}else{
 			return volumeStructureMappings[0].getBoundaryCondition(boundaryLocation);
 		}

@@ -4009,7 +4009,7 @@ public class SBMLImporter {
 					}
 				}
 				if (currDomainType.getSpatialDimensions() == vcGeometry.getDimension() - 1){
-					logger.warn("ignoring missing interior point for domain "+domain.getId()+" with domainType "+currDomainType.getSpatialId());
+					logger.info("ignoring missing interior point for domain "+domain.getId()+" with domainType "+currDomainType.getSpatialId());
 					continue;
 				}
 			}
