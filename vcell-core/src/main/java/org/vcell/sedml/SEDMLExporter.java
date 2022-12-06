@@ -148,8 +148,12 @@ public class SEDMLExporter {
 				sedmlRecorder.addTaskLog(vcBioModel.getName(), TaskType.BIOMODEL, TaskResult.SUCCEEDED, timer);
 			}
 		}
-		
-		this.sedmlRecorder.exportToJSON();
+		// should never bomb out just because we fail to export to json...
+		try {
+			this.sedmlRecorder.exportToJSON();
+		} catch (Exception e) {
+			logger.error("Failed to export to JSON", e);
+		}
 		return sedmlDocument;
 	}
 
