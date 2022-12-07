@@ -24,6 +24,7 @@ import cbit.vcell.xml.XMLTags;
 import cbit.vcell.xml.XmlHelper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jdom.Element;
 import org.jdom.Namespace;
 import org.jlibsedml.Model;
 import org.jlibsedml.*;
@@ -576,6 +577,8 @@ public class SEDMLExporter {
 		SolverDescription vcSolverDesc = simTaskDesc.getSolverDescription();
 		String kiSAOIdStr = vcSolverDesc.getKisao();
 		Algorithm sedmlAlgorithm = new Algorithm(kiSAOIdStr);
+		Notes an = createNotesElement("AlgorithmParameters");
+		sedmlAlgorithm.setNote(an);
 		TimeBounds vcSimTimeBounds = simTaskDesc.getTimeBounds();
 		double startingTime = vcSimTimeBounds.getStartingTime();
 		String simName = simTaskDesc.getSimulation().getName();
@@ -599,6 +602,12 @@ public class SEDMLExporter {
 			String kisaoStr = ErrorTolerance.ErrorToleranceDescription.Absolute.getKisao();
 			AlgorithmParameter sedmlAlgorithmParameter = new AlgorithmParameter(kisaoStr, et.getAbsoluteErrorTolerance()+"");
 			sedmlAlgorithm.addAlgorithmParameter(sedmlAlgorithmParameter);
+			String kisaoDesc = ErrorTolerance.ErrorToleranceDescription.Absolute.getDescription();
+//			an.getNotesElement().setText("alabala");
+//			an.getNotesElement().addContent("portocala");
+//			an.getNotesElement().setAttribute(TokenMangler.mangleToSName(kisaoStr), kisaoDesc);
+			Element sub = new Element(kisaoDesc);
+			an.getNotesElement().addContent(sub);
 		}
 		if(enableRelativeErrorTolerance) {
 			ErrorTolerance et = simTaskDesc.getErrorTolerance();
