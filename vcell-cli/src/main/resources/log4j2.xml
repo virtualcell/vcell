@@ -17,7 +17,7 @@
     </Appenders>
 
     <Loggers>
-        <Logger name="org.vcell" level="info" additivity="false">
+        <Logger name="org.vcell" level="warn" additivity="false">
             <AppenderRef ref="console"/>
             <AppenderRef ref="file"/>
         </Logger>

@@ -272,7 +272,7 @@ public class StructureSizeSolver {
 		for (StructureMapping sm : structMappings){
 			logger.debug("trace "+ sm.getStructure().getDisplayName() + " size " + sm.getStructure().getStructureSize().getExpression());
 			if (sm.getStructure().getStructureSize().getExpression() == null){
-				logger.error("Structure "+ sm.getStructure().getDisplayName() + " size is null");
+				logger.info("Structure "+ sm.getStructure().getDisplayName() + " size is null");
 			}
 			if (sm.getStructure() instanceof Membrane){
 				MembraneMapping mm = (MembraneMapping)sm;

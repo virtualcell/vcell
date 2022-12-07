@@ -1453,7 +1453,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 		for (int i = 0; i < mappedSMs.length; i++) {
 			if (mappedSMs[i] instanceof FeatureMapping){
 				if (mappedFM!=null){
-					lg.warn("WARNING:::: MathMapping.refreshMathDescription() ... assigning boundary condition types not unique");
+					lg.info("WARNING:::: MathMapping.refreshMathDescription() ... assigning boundary condition types not unique");
 				}
 				mappedFM = (FeatureMapping)mappedSMs[i];
 			}
