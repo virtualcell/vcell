@@ -2889,16 +2889,18 @@ public class SBMLImporter {
 						}
 						Expression funcExpr = func.getExpression();
 						String[] symbols = funcExpr.getSymbols();
-						for (String symbol : symbols) {
-							// if reaction name replace with name of variable corresponding to parameter name
-							ReactionStep rxn = vcBioModel.getModel().getReactionStep(symbol);
-							if (rxn != null) {
-								KineticsParameter rateParam = rxn.getKinetics().getAuthoritativeParameter();
-								String varName = vcBioModel.getSimulationContext(0).getMathDescription().getSourceSymbolMapping().getVariable(rateParam).getName();
-								funcExpr.substituteInPlace(new Expression(symbol), new Expression(varName));
-							}
+						if (symbols != null) {
+							for (String symbol : symbols) {
+								// if reaction name replace with name of variable corresponding to parameter name
+								ReactionStep rxn = vcBioModel.getModel().getReactionStep(symbol);
+								if (rxn != null) {
+									KineticsParameter rateParam = rxn.getKinetics().getAuthoritativeParameter();
+									String varName = vcBioModel.getSimulationContext(0).getMathDescription()
+											.getSourceSymbolMapping().getVariable(rateParam).getName();
+									funcExpr.substituteInPlace(new Expression(symbol), new Expression(varName));
+								}
+							} 
 						}
-
 						vcBioModel.getSimulationContext(0).getOutputFunctionContext().addOutputFunction(func);
 					} catch (MappingException | PropertyVetoException | ExpressionException e) {
 						vcLogger.sendMessage(VCLogger.Priority.MediumPriority, VCLogger.ErrorType.OverallWarning, "Could not add Output Function "+func.getName()+" to BioModel");

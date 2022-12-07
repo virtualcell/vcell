@@ -566,20 +566,23 @@ private void addParameters() throws ExpressionException, SbmlException, XMLStrea
 		sbmlParam.setConstant(false);
 		Expression paramExpr = new Expression(of.getExpression());
 		String[] symbols = paramExpr.getSymbols();
-		for (String symbol : symbols) {
-			Variable var = vcSelectedSimContext.getMathDescription().getSourceSymbolMapping().findVariableByName(symbol);
-			if (var != null) { // output functions can also reference other output functions, thus variable could be null
-				SymbolTableEntry ste = vcSelectedSimContext.getMathDescription().getSourceSymbolMapping()
-						.getBiologicalSymbol(var)[0];
-				if (ste instanceof KineticsParameter) {
-					Kinetics kinetics = ((KineticsParameter) ste).getKinetics();
-					if (ste == kinetics.getAuthoritativeParameter()) {
-						// need to use the reaction sbmlId when refereing to reaction rate
-						paramExpr.substituteInPlace(new Expression(symbol),
-								new Expression(TokenMangler.mangleToSName(kinetics.getReactionStep().getName())));
+		if (symbols != null) {
+			for (String symbol : symbols) {
+				Variable var = vcSelectedSimContext.getMathDescription().getSourceSymbolMapping()
+						.findVariableByName(symbol);
+				if (var != null) { // output functions can also reference other output functions, thus variable could be null
+					SymbolTableEntry ste = vcSelectedSimContext.getMathDescription().getSourceSymbolMapping()
+							.getBiologicalSymbol(var)[0];
+					if (ste instanceof KineticsParameter) {
+						Kinetics kinetics = ((KineticsParameter) ste).getKinetics();
+						if (ste == kinetics.getAuthoritativeParameter()) {
+							// need to use the reaction sbmlId when refereing to reaction rate
+							paramExpr.substituteInPlace(new Expression(symbol),
+									new Expression(TokenMangler.mangleToSName(kinetics.getReactionStep().getName())));
+						}
 					}
-				} 
-			}
+				}
+			} 
 		}
 		ASTNode paramFormulaNode = getFormulaFromExpression(paramExpr);
 		AssignmentRule sbmlParamAssignmentRule = sbmlModel.createAssignmentRule();
