@@ -66,6 +66,7 @@ public class OmexExtensionFilter extends SedmlExtensionFilter {
 			}
 			boolean bRoundTripSBMLValidation = true;
 			boolean bFromCLI = false;
+			bioModel.updateAll(true);
 			SEDMLExporter.writeBioModel(bioModel, exportFile, modelFormat, bFromCLI, bRoundTripSBMLValidation, bCreateOmexArchive);
 		}
 	}
