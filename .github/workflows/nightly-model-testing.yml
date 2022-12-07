@@ -11,7 +11,7 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
         with: 
@@ -66,7 +66,7 @@ jobs:
         uses: mxschmitt/action-tmate@v3
         if: ${{ failure() }}
   conversion:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     needs: build
     steps:
       - name: Create Docker Image Dir
@@ -123,7 +123,7 @@ jobs:
         uses: mxschmitt/action-tmate@v3
         if: ${{ failure() }}
   round-trip:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     needs: conversion
     steps:
       - name: Create working directory
@@ -192,9 +192,31 @@ jobs:
         if: ${{ failure() }}
         
   execute:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     needs: round-trip
     steps:
       - name: to be implemented
         run: echo 'This is not yet implemented' 
+        
+  summarize:
+    runs-on: ubuntu-20.04
+    needs: execute
+    steps: 
+      - name: Make Results Directory
+        run: mkdir -p ~/results && cd ~/results
+        
+      - name: Download Import Results
+        uses: actions/download-artifact@v3
+        with:
+          name: conversion_results.txt
+          path: ~/results/import_results.txt
+      
+      - name: Download Export Results
+        uses: actions/download-artifact@v3
+        with:
+          name: round-trip_results.txt
+          path: ~/results/export_results.txt
+          
+      - name: Setup tmate session 3
+        uses: mxschmitt/action-tmate@v3
           
