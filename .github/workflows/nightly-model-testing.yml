@@ -209,14 +209,29 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: conversion_results.txt
-          path: ~/results/import_results.txt
+          path: ~/results
       
       - name: Download Export Results
         uses: actions/download-artifact@v3
         with:
           name: round-trip_results.txt
-          path: ~/results/export_results.txt
+          path: ~/results
+          
+      - name: Compile Results
+        run: |
+          echo '-------- Import Results --------' >> ~/results/summary.txt
+          cat ~/results/conversion_results.txt >> ~/results/summary.txt
+          echo `\n-------- Export Results --------' >> ~/results/summary.txt
+          cat ~/results/round-trip_results.txt >> ~/results/summary.txt
           
       - name: Setup tmate session 3
         uses: mxschmitt/action-tmate@v3
+    
+  error-report:
+    runs-on: ubuntu-20.04
+    if: ${{ failure() }}
+    steps:
+      - name: Report the Uh-oh
+        run: curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="Uh-Oh! The Nightly Testing Action on GitHub Failed! This may need attention..." https://slack.com/api/chat.postMessage
+      
           
