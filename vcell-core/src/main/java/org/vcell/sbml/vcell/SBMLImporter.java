@@ -857,6 +857,8 @@ public class SBMLImporter {
 						if(isSetRsValue && isSetSbmlValue) {
 							if(ExpressionUtils.functionallyEquivalent(new Expression(rsValue), new Expression(sbmlValue))) {
 								continue;	// it's a reserved symbol, we have it already
+							} else {
+								vcParamName = ReservedParamPrefix + sbmlParamId;
 							}
 						} else if(!isSetRsValue && !isSetSbmlValue) {
 							continue;
