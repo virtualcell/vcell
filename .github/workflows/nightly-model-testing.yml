@@ -221,7 +221,7 @@ jobs:
         run: |
           echo '-------- Import Results --------' >> ~/results/summary.txt
           cat ~/results/conversion_results.txt >> ~/results/summary.txt
-          echo `\n-------- Export Results --------' >> ~/results/summary.txt
+          echo '\n-------- Export Results --------' >> ~/results/summary.txt
           cat ~/results/round-trip_results.txt >> ~/results/summary.txt
           
       - name: Setup tmate session 3
