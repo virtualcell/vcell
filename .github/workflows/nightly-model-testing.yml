@@ -194,7 +194,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: round-trip_results.txt
-          path: ~/input_files/round-trip_results.tx
+          path: ~/input_files/round-trip_results.txt
       
       # Report a Problem to Slack
       - name: Report Problem to Slack
@@ -237,7 +237,7 @@ jobs:
           echo '-------- Import Results --------' >> ~/results/summary.txt
           cat ~/results/conversion_results.txt >> ~/results/summary.txt
           echo '\n-------- Export Results --------' >> ~/results/summary.txt
-          cat ~/results/round_trip_results.txt >> ~/results/summary.txt
+          cat ~/results/round-trip_results.txt >> ~/results/summary.txt
           
       - name: Setup tmate session 3
         uses: mxschmitt/action-tmate@v3
