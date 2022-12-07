@@ -234,15 +234,18 @@ jobs:
           
       - name: Compile Results
         run: |
+          if [ $() -gt 50000] && [ $() -lt 120000 ]; then echo -n 'Good Morning! ' >> ~/results/summary.txt; fi 
+          echo 'Here are the results of the Nightly Testing. Have a great day!' >> ~/results/summary.txt
+          echo '' >> ~/results/summary.txt
           echo '-------- Import Results --------' >> ~/results/summary.txt
           cat ~/results/conversion_results.txt >> ~/results/summary.txt
-          echo ''
+          echo '' >> ~/results/summary.txt
           echo '-------- Export Results --------' >> ~/results/summary.txt
           cat ~/results/round-trip_results.txt >> ~/results/summary.txt
       
       # Report a Success
-      - name: Report Problem to Slack
-        run: curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="Good Morning! Here's the results of the Nightly Testing. Have a great day!\n\n$(cat ~/results/summary.txt)" https://slack.com/api/chat.postMessage    
+      - name: Report Results to Slack
+        run: curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="$(cat ~/results/summary.txt)" https://slack.com/api/chat.postMessage    
     
       # Report a Problem to Slack
       - name: Report Problem to Slack
