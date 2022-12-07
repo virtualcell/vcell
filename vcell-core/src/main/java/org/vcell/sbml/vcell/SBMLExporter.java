@@ -271,8 +271,8 @@ public class SBMLExporter {
 private void addCompartments() throws XMLStreamException, SbmlException {
 	Model vcModel = vcBioModel.getModel();
 	try {
-		// old vcell spatial application, with only relative compartment sizes (SBML wants absolute sizes for nonspatial ... easier to understand anyway)
-		if (!getSelectedSimContext().getGeometryContext().isAllSizeSpecifiedPositive() && getSelectedSimContext().getGeometry().getDimension() == 0) {
+		// old vcell nonspatial application, with only relative compartment sizes (SBML wants absolute sizes for nonspatial ... easier to understand anyway)
+		if (getSelectedSimContext().getGeometry().getDimension() == 0 && !getSelectedSimContext().getGeometryContext().isAllSizeSpecifiedPositive()) {
 			Structure structure = getSelectedSimContext().getModel().getStructure(0);
 			double structureSize = 1.0;
 			StructureMapping structMapping = getSelectedSimContext().getGeometryContext().getStructureMapping(structure);
@@ -280,6 +280,16 @@ private void addCompartments() throws XMLStreamException, SbmlException {
 		}
 	}catch (Exception e) {
 		throw new RuntimeException("Failed to solve for absolute compartment sizes for nonspatial application: "+e.getMessage(), e);
+	}
+	try {
+		// old vcell spatial application, with only relative compartment sizes (SBML wants absolute sizes for nonspatial ... easier to understand anyway)
+		if (getSelectedSimContext().getGeometry().getDimension() > 0 && !getSelectedSimContext().getGeometryContext().isAllUnitSizeParameterSetForSpatial()) {
+			for (GeometryClass geometryClass : getSelectedSimContext().getGeometry().getGeometryClasses()) {
+				StructureSizeSolver.updateUnitStructureSizes(getSelectedSimContext(), geometryClass);
+			}
+		}
+	}catch (Exception e) {
+		throw new RuntimeException("Failed to solve for unit sizes for spatial application: "+e.getMessage(), e);
 	}
 	cbit.vcell.model.Structure[] vcStructures = vcModel.getStructures();
 	for (int i = 0; i < vcStructures.length; i++) {		// first we populate compartment vcell name to sbml id map
