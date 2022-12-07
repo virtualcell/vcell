@@ -449,8 +449,8 @@ public class SEDMLExporter {
 			Plot2D sedmlPlot2d = new Plot2D(plot2dId, plotName);
 			Report sedmlReport = new Report(reportId, plotName);
 
-			sedmlPlot2d.addNote(createNotesElement("Plot of all variables and output functions from application '" + simContext.getName() + "' ; simulation '" + vcSimulation.getName() + "' in VCell model"));
-			sedmlReport.addNote(createNotesElement("Report of all variables and output functions from application '" + simContext.getName() + "' ; simulation '" + vcSimulation.getName() + "' in VCell model"));
+			sedmlPlot2d.setNote(createNotesElement("Plot of all variables and output functions from application '" + simContext.getName() + "' ; simulation '" + vcSimulation.getName() + "' in VCell model"));
+			sedmlReport.setNote(createNotesElement("Report of all variables and output functions from application '" + simContext.getName() + "' ; simulation '" + vcSimulation.getName() + "' in VCell model"));
 			DataGenerator dgtime = sedmlModel.getDataGeneratorWithId(DATAGENERATOR_TIME_NAME + "_" + taskRef);
 			String xDataRef = dgtime.getId();
 			String xDatasetXId = "__data_set__" + plot2dId + dgtime.getId();
@@ -488,8 +488,8 @@ public class SEDMLExporter {
 				Plot3D sedmlPlot3d = new Plot3D(plot3dId, plotName);
 				Report sedmlReport = new Report(reportId, plotName);
 
-				sedmlPlot3d.addNote(createNotesElement("Plot of all variables and output functions from application '" + simContext.getName() + "' ; simulation '" + vcSimulation.getName() + "' in VCell model"));
-				sedmlReport.addNote(createNotesElement("Report of all variables and output functions from application '" + simContext.getName() + "' ; simulation '" + vcSimulation.getName() + "' in VCell model"));
+				sedmlPlot3d.setNote(createNotesElement("Plot of all variables and output functions from application '" + simContext.getName() + "' ; simulation '" + vcSimulation.getName() + "' in VCell model"));
+				sedmlReport.setNote(createNotesElement("Report of all variables and output functions from application '" + simContext.getName() + "' ; simulation '" + vcSimulation.getName() + "' in VCell model"));
 				DataGenerator dgtime = sedmlModel.getDataGeneratorWithId(DATAGENERATOR_TIME_NAME + "_" + taskRef);
 				String xDataRef = dgtime.getId();
 				String xDatasetXId = "__data_set__" + plot3dId + dgtime.getId();
@@ -694,12 +694,12 @@ public class SEDMLExporter {
 		}
 
 		// TODO: consider adding notes for the algorithm parameters, to provide human-readable description of kisao terms
-		//						sedmlAlgorithm.addNote(createNotesElement(algorithmNotesStr));
+		//						sedmlAlgorithm.setNote(createNotesElement(algorithmNotesStr));
 		// TODO: even better, AlgorithmParameter in sed-ml should also have a human readable "name" field
 
 		// add a note to utcSim to indicate actual solver name
 		String simNotesStr = "Actual Solver Name : '" + vcSolverDesc.getDisplayLabel() + "'.";  
-		utcSim.addNote(createNotesElement(simNotesStr));
+		utcSim.setNote(createNotesElement(simNotesStr));
 		sedmlModel.addSimulation(utcSim);
 		return utcSim;
 	}
