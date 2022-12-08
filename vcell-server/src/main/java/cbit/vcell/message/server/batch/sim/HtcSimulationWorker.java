@@ -11,8 +11,6 @@
 package cbit.vcell.message.server.batch.sim;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileFilter;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -21,8 +19,6 @@ import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
@@ -39,9 +35,9 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.vcell.optimization.CopasiServicePython;
-import org.vcell.optimization.thrift.OptProblem;
-import org.vcell.optimization.thrift.OptRunStatus;
+import org.vcell.optimization.CopasiUtils;
+import org.vcell.optimization.jtd.OptProblem;
+import org.vcell.optimization.jtd.VcelloptStatus;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
@@ -69,15 +65,11 @@ import cbit.vcell.message.server.ServerMessagingDelegate;
 import cbit.vcell.message.server.ServiceInstanceStatus;
 import cbit.vcell.message.server.ServiceProvider;
 import cbit.vcell.message.server.bootstrap.ServiceType;
-import cbit.vcell.message.server.cmd.CommandService;
 import cbit.vcell.message.server.cmd.CommandService.CommandOutput;
-import cbit.vcell.message.server.cmd.CommandServiceLocal;
-import cbit.vcell.message.server.cmd.CommandServiceSshNative;
 import cbit.vcell.message.server.combined.VCellServices;
 import cbit.vcell.message.server.htc.HtcJobStatus;
 import cbit.vcell.message.server.htc.HtcProxy;
 import cbit.vcell.message.server.htc.HtcProxy.HtcJobInfo;
-import cbit.vcell.message.server.htc.slurm.SlurmJobStatus;
 import cbit.vcell.message.server.htc.slurm.SlurmProxy;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.mongodb.VCMongoMessage;
@@ -86,26 +78,19 @@ import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.server.HtcJobID;
-import cbit.vcell.server.HtcJobID.BatchSystemType;
 import cbit.vcell.simdata.PortableCommand;
-import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.simdata.SimulationData;
 import cbit.vcell.simdata.VtkMeshGenerator;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.VCSimulationIdentifier;
-import cbit.vcell.solver.ode.ODESolverResultSet;
-import cbit.vcell.solver.ode.SundialsSolver;
 import cbit.vcell.solver.server.SimulationMessage;
 import cbit.vcell.solver.server.Solver;
 import cbit.vcell.solver.server.SolverFactory;
-import cbit.vcell.solver.stoch.GibsonSolver;
-import cbit.vcell.solver.stoch.StochFileWriter;
 import cbit.vcell.solvers.AbstractCompiledSolver;
 import cbit.vcell.solvers.AbstractSolver;
 import cbit.vcell.solvers.ExecutableCommand;
-import cbit.vcell.util.ColumnDescription;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 /**
@@ -123,12 +108,7 @@ public class HtcSimulationWorker extends ServiceProvider  {
 	private VCPooledQueueConsumer pooledQueueConsumer_int = null;
 	public static Logger lg = LogManager.getLogger(HtcSimulationWorker.class);
 
-	/**
-	 * SimulationWorker constructor comment.
-	 * @param argName java.lang.String
-	 * @param argParentNode cbit.vcell.appserver.ComputationalNode
-	 * @param argInitialContext javax.naming.Context
-	 */
+
 public HtcSimulationWorker(HtcProxy htcProxy, VCMessagingService vcMessagingService_int, VCMessagingService vcMessagingService_sim, ServiceInstanceStatus serviceInstanceStatus, boolean bSlaveMode) throws DataAccessException, FileNotFoundException, UnknownHostException {
 	super(vcMessagingService_int, vcMessagingService_sim, serviceInstanceStatus, bSlaveMode);
 	this.htcProxy = htcProxy;
@@ -204,7 +184,7 @@ private void initOptimizationSocket() {
 														return;
 													}
 												}else {//running
-													oos.writeObject(OptRunStatus.Running.name()+":");
+													oos.writeObject(VcelloptStatus.RUNNING.name()+":");
 												}
 											}
 										}else if(obj instanceof OptProblem) {//Start opt job
@@ -234,21 +214,21 @@ private void initOptimizationSocket() {
 													if(optRunstatus.toLowerCase().trim().startsWith("except")) {
 														throw new Exception("python script error "+optRunstatus);
 													}
-													optRunstatus = OptRunStatus.Running.name()+":"+optRunstatus;
+													optRunstatus = VcelloptStatus.RUNNING.name()+":"+optRunstatus;
 													oos.writeObject(optRunstatus);
 												}else {
-													oos.writeObject(OptRunStatus.Queued.name()+":0:0:0");
+													oos.writeObject(VcelloptStatus.QUEUED.name()+":0:0:0");
 												}
 												
 											}else {
-												oos.writeObject(OptRunStatus.Queued.name()+":0:0:0");
+												oos.writeObject(VcelloptStatus.QUEUED.name()+":0:0:0");
 											}
 
 										}else {
 											throw new Exception("Unexpected paramOpt command "+obj.getClass().getName());
 										}
 									} catch (Exception e) {
-										oos.writeObject(OptRunStatus.Failed.name()+":"+e.getMessage());
+										oos.writeObject(VcelloptStatus.FAILED.name()+":"+e.getMessage());
 										throw e;
 									}
 								}
@@ -320,7 +300,7 @@ private OptServerJobInfo submitOptProblem(OptProblem optProblem) throws IOExcept
 		File sub_file_internal = new File(htcLogDirInternal, optSubFileName);
 		File optProblemFile = generateOptProblemFilePath(optID+"");
 		File optOutputFile = generateOptOutputFilePath(optID+"");
-		CopasiServicePython.writeOptProblem(optProblemFile, optProblem);//save param optimization problem to user dir
+		CopasiUtils.writeOptProblem(optProblemFile, optProblem);//save param optimization problem to user dir
 		//make sure all can read and write
 		File optDir = generateOptimizeDirName(optID+"");
 		optDir.setReadable(true,false);
@@ -405,19 +385,10 @@ private static class PostProcessingChores {
 	private boolean isVtk;
 //	private boolean bStochMultiTrial;
 
-	/**
-	 * directories are same
-	 * @param runDirectory
-	 */
 	PostProcessingChores(String runDirectoryInternal, String runDirectoryExternal) {
 		this(runDirectoryInternal,runDirectoryExternal,runDirectoryInternal,runDirectoryExternal);
 	}
 
-	/**
-	 * directories are different
-	 * @param runDirectory
-	 * @param finalDataDirectory
-	 */
 	PostProcessingChores(String runDirectoryInternal, String runDirectoryExternal, String finalDataDirectoryInternal, String finalDataDirectoryExternal) {
 		this.runDirectoryInternal = runDirectoryInternal;
 		this.runDirectoryExternal = runDirectoryExternal;

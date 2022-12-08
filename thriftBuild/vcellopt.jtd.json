@@ -1,0 +1,61 @@
+{
+	"definitions": {
+		"ParameterDescription": {
+			"properties": {
+				"name": { "type": "string" },
+				"scale": { "type":  "float64" },
+				"minValue": { "type": "float64" },
+				"maxValue": { "type": "float64" },
+				"initialValue": { "type": "float64" }
+			}
+		},
+		"ReferenceVariable": {
+			"properties": {
+				"varName": { "type": "string" },
+				"referenceVariableType": { "enum": ["independent", "dependent"] }
+			}
+		},
+		"CopasiOptimizationParameter": {
+			"properties": {
+				"paramType": { "enum": [
+					"numberOfGenerations","numberOfIterations","populationSize","randomNumberGenerator","seed",
+					"iterationLimit","tolerance","rho","scale","swarmSize","stdDeviation","startTemperature",
+					"coolingFactor","pf"] },
+				"value": { "type": "float64"},
+				"dataType": { "enum": ["int","double"]}
+			}
+		},
+		"CopasiOptimizationMethod": {
+			"properties": {
+				"optimizationMethodType": { "enum": [
+					"evolutionaryProgram", "SRES", "geneticAlgorithm", "geneticAlgorithmSR", "hookeJeeves",
+					"levenbergMarquardt", "nelderMead", "particleSwarm", "randomSearch", "simulatedAnnealing",
+					"steepestDescent", "praxis", "truncatedNewton"] },
+				"optimizationParameter": { "elements": { "ref": "CopasiOptimizationParameter" }}
+			}
+		},
+		"OptProblem": {
+			"properties": {
+				"mathModelSbmlContents": { "type": "string" },
+				"numberOfOptimizationRuns": { "type": "int32" },
+				"parameterDescriptionList": { "elements": { "ref": "ParameterDescription"}},
+				"referenceVariable": { "elements": { "ref": "ReferenceVariable"}},
+				"dataSet": { "elements": { "elements": { "type": "float64" }}},
+				"copasiOptimizationMethod": { "ref": "CopasiOptimizationMethod"}
+			}
+		},
+		"OptResultSet": {
+			"properties": {
+				"objectiveFunction": { "type": "float64" },
+				"numFunctionEvaluations": { "type": "int32" },
+				"optParameterValues": { "values": { "type": "float64"}}
+			}
+		}
+	},
+	"properties": {
+		"optProblem": { "ref": "OptProblem" },
+		"optResultSet": { "ref": "OptResultSet" },
+		"statusMessage": { "type": "string" },
+		"status": { "enum": ["queued","running","complete","failed"]}
+	}
+}

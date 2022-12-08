@@ -11,10 +11,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map.Entry;
 
-import javax.lang.model.type.NullType;
-
-import org.apache.thrift.TDeserializer;
-import org.apache.thrift.protocol.TJSONProtocol;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.json.JSONObject;
 import org.restlet.data.MediaType;
 import org.restlet.data.Status;
@@ -30,8 +27,8 @@ import org.restlet.representation.Variant;
 import org.restlet.resource.Post;
 import org.restlet.resource.ResourceException;
 import org.restlet.resource.ServerResource;
-import org.vcell.optimization.thrift.OptProblem;
-import org.vcell.optimization.thrift.OptRunStatus;
+import org.vcell.optimization.jtd.OptProblem;
+import org.vcell.optimization.jtd.VcelloptStatus;
 import org.vcell.rest.VCellApiApplication;
 import org.vcell.rest.common.OptimizationRunResource;
 
@@ -168,7 +165,7 @@ public class OptimizationRunServerResource extends AbstractServerResource implem
 							paramOptResults.put(optSocketStreams.optID, new JsonRepresentation(new StringRepresentation(base64String)));
 							break;
 						}else if(obj instanceof String) {
-							if(obj.toString().startsWith(OptRunStatus.Failed.name())) {
+							if(obj.toString().startsWith(VcelloptStatus.FAILED.name())) {
 								throw new Exception(obj.toString());
 							}
 						}
@@ -187,10 +184,9 @@ public class OptimizationRunServerResource extends AbstractServerResource implem
 				try {
 					JsonRepresentation jsonRep = new JsonRepresentation(optProblemJson);
 					JSONObject json = jsonRep.getJsonObject();
-					TDeserializer deserializer = new TDeserializer(new TJSONProtocol.Factory());
-					OptProblem optProblem = new OptProblem();
-					deserializer.deserialize(optProblem, json.toString().getBytes());
-					
+					ObjectMapper objectMapper = new ObjectMapper();
+					OptProblem optProblem = objectMapper.readValue(json.toString(),OptProblem.class);
+
 //			Server:		127.0.0.11
 //			justamq_api.1.16o695tgthpt@dockerbuild    | Address:	127.0.0.11#53
 //			justamq_api.1.16o695tgthpt@dockerbuild    | 

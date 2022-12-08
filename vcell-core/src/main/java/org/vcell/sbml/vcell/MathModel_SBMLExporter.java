@@ -18,6 +18,8 @@ import java.util.Iterator;
 
 import javax.xml.stream.XMLStreamException;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.sbml.jsbml.ASTNode;
 import org.sbml.jsbml.AssignmentRule;
 import org.sbml.jsbml.Compartment;
@@ -70,14 +72,8 @@ import cbit.vcell.xml.XMLSource;
  */
 public class MathModel_SBMLExporter {
 
-/**
- * Insert the method's description here.
- * Creation date: (4/11/2006 11:38:26 AM)
- * @return org.sbml.libsbml.Model
- * @param mathModel cbit.vcell.mathmodel.MathModel
- * @throws XMLStreamException 
- * @throws SBMLException 
- */
+private final static Logger lg = LogManager.getLogger(MathModel_SBMLExporter.class);
+
 public static String getSBMLString(cbit.vcell.mathmodel.MathModel mathModel, long level, long version) throws cbit.vcell.parser.ExpressionException, java.io.IOException, SBMLException, XMLStreamException{
 
 	if (mathModel.getMathDescription().isSpatial()){
@@ -107,18 +103,6 @@ public static String getSBMLString(cbit.vcell.mathmodel.MathModel mathModel, lon
 	Compartment compartment = sbmlModel.createCompartment();
 	compartment.setId(compartmentId);
 	
-//  ------ For spatial SBML when implemented ----- 
-//	if (vcMathModel.getMathDescription().isSpatial()){
-//		// for spatial model, compartment(s) created in addGeometry(), based on number of subVolumes/surfaceClasses.
-//		addGeometry();
-//	} else {
-//		// for non-spatial mathmodel, only 1 compartment; create it here.
-//		String compartmentId = "compartment";
-//		org.sbml.libsbml.Compartment compartment = sbmlModel.createCompartment();
-//		compartment.setId(compartmentId);
-//	}
-	
-
 	MathDescription mathDesc = mathModel.getMathDescription();
 	Enumeration<Variable> enumVars = mathDesc.getVariables();
 	
@@ -193,7 +177,7 @@ public static String getSBMLString(cbit.vcell.mathmodel.MathModel mathModel, lon
 		Event vcellEvent = vcellEvents.next();
 		addSbmlEvent(sbmlModel, vcellEvent);
 	}
-	System.out.println(new SBMLWriter().writeSBMLToString(sbmlDocument));
+	//System.out.println(new SBMLWriter().writeSBMLToString(sbmlDocument));
 	//validate the sbml document
 	sbmlDocument.setConsistencyChecks(CHECK_CATEGORY.GENERAL_CONSISTENCY, true);
 	sbmlDocument.setConsistencyChecks(CHECK_CATEGORY.IDENTIFIER_CONSISTENCY, true);
