@@ -136,7 +136,7 @@ public class OmexHandler {
         return sedmlListAbsolute;
     }
 
-    public String getOutputPathFromSedml(String absoluteSedmlPath) throws Exception {
+    public String getOutputPathFromSedml(String absoluteSedmlPath) {
         String outputPath = "";
         //String sedmlName = absoluteSedmlPath.substring(absoluteSedmlPath.lastIndexOf(File.separator) + 1);
         ArrayList<String> sedmlListRelative = this.getSedmlLocationsRelative();
