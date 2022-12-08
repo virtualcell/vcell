@@ -259,6 +259,26 @@ public class CopasiUtils {
     }
 
 
+    public static OptimizationResultSet toOptResults(Vcellopt optRun, ParameterEstimationTask parameterEstimationTask, ParameterEstimationTaskSimulatorIDA parestSimulator) throws Exception {
+        OptResultSet optResultSet = optRun.getOptResultSet();
+        int numFittedParameters = optResultSet.getOptParameterValues().size();
+        String[] paramNames = new String[numFittedParameters];
+        double[] paramValues = new double[numFittedParameters];
+        int pIndex=0;
+        for (Map.Entry<String, Double> entry : optResultSet.getOptParameterValues().entrySet()){
+            paramNames[pIndex] = entry.getKey();
+            paramValues[pIndex] = entry.getValue();
+            pIndex++;
+        }
+
+        OptimizationStatus status = new OptimizationStatus(OptimizationStatus.NORMAL_TERMINATION, optRun.getStatusMessage());
+        OptSolverResultSet.OptRunResultSet optRunResultSet = new OptSolverResultSet.OptRunResultSet(paramValues,optResultSet.getObjectiveFunction(),optResultSet.getNumFunctionEvaluations(),status);
+        OptSolverResultSet copasiOptSolverResultSet = new OptSolverResultSet(paramNames, optRunResultSet);
+        RowColumnResultSet copasiRcResultSet = parestSimulator.getRowColumnRestultSetByBestEstimations(parameterEstimationTask, paramNames, paramValues);
+        OptimizationResultSet copasiOptimizationResultSet = new OptimizationResultSet(copasiOptSolverResultSet, copasiRcResultSet);
+        return copasiOptimizationResultSet;
+    }
+
     public static Vcellopt runCopasiParameterEstimation(OptProblem optProblem) throws IOException, InterruptedException {
         ObjectMapper objectMapper = new ObjectMapper();
 //        File tempDir = Files.createTempDir();

@@ -10,43 +10,25 @@
 
 package org.vcell.optimization;
 
+import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
+import cbit.vcell.math.*;
+import cbit.vcell.modelopt.ParameterEstimationTask;
+import cbit.vcell.opt.OptimizationException;
+import cbit.vcell.opt.OptimizationResultSet;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.solver.SimulationSymbolTable;
+import cbit.vcell.solver.ode.ODESolverResultSet;
+import org.apache.commons.io.FileUtils;
+import org.vcell.optimization.jtd.OptProblem;
+import org.vcell.optimization.jtd.Vcellopt;
+import org.vcell.util.ClientTaskStatusSupport;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.attribute.FileAttribute;
-import java.util.Map;
 import java.util.Random;
-import java.util.StringTokenizer;
-
-import javax.swing.SwingUtilities;
-
-import com.google.gson.Gson;
-import org.apache.commons.io.FileUtils;
-import org.vcell.api.client.VCellApiClient;
-import org.vcell.optimization.jtd.OptProblem;
-import org.vcell.optimization.jtd.OptResultSet;
-import org.vcell.optimization.jtd.Vcellopt;
-import org.vcell.optimization.jtd.VcelloptStatus;
-import org.vcell.util.ClientTaskStatusSupport;
-import org.vcell.util.UserCancelException;
-
-import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
-import cbit.vcell.math.Function;
-import cbit.vcell.math.FunctionColumnDescription;
-import cbit.vcell.math.MathException;
-import cbit.vcell.math.ODESolverResultSetColumnDescription;
-import cbit.vcell.math.RowColumnResultSet;
-import cbit.vcell.modelopt.ParameterEstimationTask;
-import cbit.vcell.opt.OptSolverResultSet;
-import cbit.vcell.opt.OptSolverResultSet.OptRunResultSet;
-import cbit.vcell.opt.OptimizationException;
-import cbit.vcell.opt.OptimizationResultSet;
-import cbit.vcell.opt.OptimizationStatus;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.resource.PropertyLoader;
-import cbit.vcell.solver.SimulationSymbolTable;
-import cbit.vcell.solver.ode.ODESolverResultSet;
 
 
 public class CopasiOptimizationSolver {	
@@ -64,22 +46,8 @@ public class CopasiOptimizationSolver {
 
 			Vcellopt optRun = CopasiUtils.runCopasiParameterEstimation(optProblem);
 
-			OptResultSet optResultSet = optRun.getOptResultSet();
-			int numFittedParameters = optResultSet.getOptParameterValues().size();
-			String[] paramNames = new String[numFittedParameters];
-			double[] paramValues = new double[numFittedParameters];
-			int pIndex=0;
-			for (Map.Entry<String, Double> entry : optResultSet.getOptParameterValues().entrySet()){
-				paramNames[pIndex] = entry.getKey();
-				paramValues[pIndex] = entry.getValue();
-				pIndex++;
-			}
-
-			OptimizationStatus status = new OptimizationStatus(OptimizationStatus.NORMAL_TERMINATION, optRun.getStatusMessage());
-			OptRunResultSet optRunResultSet = new OptRunResultSet(paramValues,optResultSet.getObjectiveFunction(),optResultSet.getNumFunctionEvaluations(),status);
-			OptSolverResultSet copasiOptSolverResultSet = new OptSolverResultSet(paramNames, optRunResultSet);
-			RowColumnResultSet copasiRcResultSet = parestSimulator.getRowColumnRestultSetByBestEstimations(parameterEstimationTask, paramNames, paramValues);
-			OptimizationResultSet copasiOptimizationResultSet = new OptimizationResultSet(copasiOptSolverResultSet, copasiRcResultSet);
+			OptimizationResultSet copasiOptimizationResultSet = CopasiUtils.toOptResults(
+					optRun,parameterEstimationTask, new ParameterEstimationTaskSimulatorIDA());
 
 			return copasiOptimizationResultSet;
 		} catch (Throwable e){

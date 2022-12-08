@@ -20,9 +20,10 @@ def run_command(opt_file: Path = typer.Argument(..., file_okay=True, dir_okay=Fa
         return typer.Exit(-1)
 
     with open(opt_file, "rb") as f_optfile:
-        opt_problem: OptProblem = OptProblem.from_json_data(json.load(f_optfile))
+        opt_file_json = json.load(f_optfile)
+        opt_problem: OptProblem = OptProblem.from_json_data(opt_file_json)
 
-    basico.load_model(opt_problem.math_model_sbml_contents)
+    basico.load_model_from_string(opt_problem.math_model_sbml_contents)
 
     exp_data = get_reference_data(opt_problem)
     basico.add_experiment('exp1', data=exp_data)
