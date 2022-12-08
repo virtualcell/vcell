@@ -262,7 +262,7 @@ public class CopasiUtils {
     public static Vcellopt runCopasiParameterEstimation(OptProblem optProblem) throws IOException, InterruptedException {
         ObjectMapper objectMapper = new ObjectMapper();
 //        File tempDir = Files.createTempDir();
-        File tempDir = new File("/Users/schaff/Documents/workspace/vcell");
+        File tempDir = Files.createTempDir();
 
         // write optProblem
         File optProblemFile = new File(tempDir, "optProblem.json");
