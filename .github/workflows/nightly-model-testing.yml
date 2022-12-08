@@ -95,7 +95,7 @@ jobs:
         # Do the conversion
       - name: Begin Conversion
         #$(docker image ls | grep "<none>" | awk '{print $3;}')  to get image id
-        run: docker run -v $GITHUB_WORKSPACE/published/biomodel/omex/sbml:/root $(docker image ls | grep "<none>" | awk '{print $3;}') import-omex-batch -d -i "/root" -o "/root/output" # grabs image and runs
+        run: docker run -v $GITHUB_WORKSPACE/public/biomodel/vcml:/root $(docker image ls | grep "<none>" | awk '{print $3;}') export-omex-batch -i "/root" -o "/root/output" -m SBML --offline # grabs image and runs
       
       # Parse the results
       - name: Parse Results
@@ -165,7 +165,7 @@ jobs:
       # Do the round trip
       - name: Begin Round-Trip
         #$(docker image ls | grep "<none>" | awk '{print $3;}')  to get image id
-        run: docker run -v ~/input_files:/root $(docker image ls | grep "<none>" | awk '{print $3;}') export-omex-batch -i "/root" -o "/root/output" -m SBML --offline
+        run: docker run -v ~/input_files:/root $(docker image ls | grep "<none>" | awk '{print $3;}') import-omex-batch -d -i "/root" -o "/root/output"
         
         # Parse the results
       - name: Parse Results
