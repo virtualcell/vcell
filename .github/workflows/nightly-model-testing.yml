@@ -148,7 +148,7 @@ jobs:
         if: ${{ failure() }}
   import:
     runs-on: ubuntu-20.04
-    needs: conversion
+    needs: export
     steps:
       - name: Create working directory
         run: mkdir ~/wrk
@@ -208,7 +208,7 @@ jobs:
         
   execute:
     runs-on: ubuntu-20.04
-    needs: round-trip
+    needs: import
     steps:
       - name: to be implemented
         run: echo 'This is not yet implemented' 
