@@ -34,6 +34,11 @@ jobs:
         run: |
           cd docker/swarm/vcell-admin
           poetry install
+          
+      - name: build vcell-opt package
+        run: |
+          cd pythonProject/vcell-opt
+          poetry install
       
       - name: Setup Java for Build
         uses: actions/setup-java@v2
