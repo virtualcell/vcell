@@ -24,6 +24,7 @@ import cbit.vcell.xml.XMLTags;
 import cbit.vcell.xml.XmlHelper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jdom.Element;
 import org.jdom.Namespace;
 import org.jlibsedml.Model;
 import org.jlibsedml.*;
@@ -449,8 +450,8 @@ public class SEDMLExporter {
 			Plot2D sedmlPlot2d = new Plot2D(plot2dId, plotName);
 			Report sedmlReport = new Report(reportId, plotName);
 
-			sedmlPlot2d.addNote(createNotesElement("Plot of all variables and output functions from application '" + simContext.getName() + "' ; simulation '" + vcSimulation.getName() + "' in VCell model"));
-			sedmlReport.addNote(createNotesElement("Report of all variables and output functions from application '" + simContext.getName() + "' ; simulation '" + vcSimulation.getName() + "' in VCell model"));
+			sedmlPlot2d.setNote(createNotesElement("Plot of all variables and output functions from application '" + simContext.getName() + "' ; simulation '" + vcSimulation.getName() + "' in VCell model"));
+			sedmlReport.setNote(createNotesElement("Report of all variables and output functions from application '" + simContext.getName() + "' ; simulation '" + vcSimulation.getName() + "' in VCell model"));
 			DataGenerator dgtime = sedmlModel.getDataGeneratorWithId(DATAGENERATOR_TIME_NAME + "_" + taskRef);
 			String xDataRef = dgtime.getId();
 			String xDatasetXId = "__data_set__" + plot2dId + dgtime.getId();
@@ -488,8 +489,8 @@ public class SEDMLExporter {
 				Plot3D sedmlPlot3d = new Plot3D(plot3dId, plotName);
 				Report sedmlReport = new Report(reportId, plotName);
 
-				sedmlPlot3d.addNote(createNotesElement("Plot of all variables and output functions from application '" + simContext.getName() + "' ; simulation '" + vcSimulation.getName() + "' in VCell model"));
-				sedmlReport.addNote(createNotesElement("Report of all variables and output functions from application '" + simContext.getName() + "' ; simulation '" + vcSimulation.getName() + "' in VCell model"));
+				sedmlPlot3d.setNote(createNotesElement("Plot of all variables and output functions from application '" + simContext.getName() + "' ; simulation '" + vcSimulation.getName() + "' in VCell model"));
+				sedmlReport.setNote(createNotesElement("Report of all variables and output functions from application '" + simContext.getName() + "' ; simulation '" + vcSimulation.getName() + "' in VCell model"));
 				DataGenerator dgtime = sedmlModel.getDataGeneratorWithId(DATAGENERATOR_TIME_NAME + "_" + taskRef);
 				String xDataRef = dgtime.getId();
 				String xDatasetXId = "__data_set__" + plot3dId + dgtime.getId();
@@ -573,9 +574,13 @@ public class SEDMLExporter {
 	}
 
 	private UniformTimeCourse createSEDMLsim(SolverTaskDescription simTaskDesc) {
+		// list of kisao terms in vcell-core/src/main/resources/kisao_algs.obo
 		SolverDescription vcSolverDesc = simTaskDesc.getSolverDescription();
 		String kiSAOIdStr = vcSolverDesc.getKisao();
 		Algorithm sedmlAlgorithm = new Algorithm(kiSAOIdStr);
+		Notes an = createNotesElement("");	// we show the description of kisao terms for AlgorithmParameters as notes
+											// for L1V4 and up, AlgorithmParameters has a "name" field we can use instead
+		sedmlAlgorithm.setNote(an);
 		TimeBounds vcSimTimeBounds = simTaskDesc.getTimeBounds();
 		double startingTime = vcSimTimeBounds.getStartingTime();
 		String simName = simTaskDesc.getSimulation().getName();
@@ -597,14 +602,18 @@ public class SEDMLExporter {
 		if(enableAbsoluteErrorTolerance) {
 			ErrorTolerance et = simTaskDesc.getErrorTolerance();
 			String kisaoStr = ErrorTolerance.ErrorToleranceDescription.Absolute.getKisao();
+			String kisaoDesc = ErrorTolerance.ErrorToleranceDescription.Absolute.getDescription();
 			AlgorithmParameter sedmlAlgorithmParameter = new AlgorithmParameter(kisaoStr, et.getAbsoluteErrorTolerance()+"");
 			sedmlAlgorithm.addAlgorithmParameter(sedmlAlgorithmParameter);
+			addNotesChild(an, TokenMangler.mangleToSName(kisaoStr), kisaoDesc);
 		}
 		if(enableRelativeErrorTolerance) {
 			ErrorTolerance et = simTaskDesc.getErrorTolerance();
 			String kisaoStr = ErrorTolerance.ErrorToleranceDescription.Relative.getKisao();
+			String kisaoDesc = ErrorTolerance.ErrorToleranceDescription.Relative.getDescription();
 			AlgorithmParameter sedmlAlgorithmParameter = new AlgorithmParameter(kisaoStr, et.getRelativeErrorTolerance()+"");
 			sedmlAlgorithm.addAlgorithmParameter(sedmlAlgorithmParameter);
+			addNotesChild(an, TokenMangler.mangleToSName(kisaoStr), kisaoDesc);
 		}
 
 		boolean enableDefaultTimeStep;		// ---------- deal with time step (code adapted from TimeSpecPanel.refresh()
@@ -636,33 +645,43 @@ public class SEDMLExporter {
 		}
 		if (vcSolverDesc == SolverDescription.SundialsPDE) {
 			String kisaoStr = SolverDescription.AlgorithmParameterDescription.PDEMeshSize.getKisao();
+			String kisaoDesc = SolverDescription.AlgorithmParameterDescription.PDEMeshSize.getDescription();
 			ISize meshSize = simTaskDesc.getSimulation().getMeshSpecification().getSamplingSize();
 			AlgorithmParameter sedmlAlgorithmParameter = new AlgorithmParameter(kisaoStr, meshSize.toTemporaryKISAOvalue());
 			sedmlAlgorithm.addAlgorithmParameter(sedmlAlgorithmParameter);
+			addNotesChild(an, TokenMangler.mangleToSName(kisaoStr), kisaoDesc);
 		}
 		TimeStep ts = simTaskDesc.getTimeStep();
 		if(enableDefaultTimeStep) {
 			String kisaoStr = TimeStep.TimeStepDescription.Default.getKisao();
+			String kisaoDesc = TimeStep.TimeStepDescription.Default.getDescription();
 			AlgorithmParameter sedmlAlgorithmParameter = new AlgorithmParameter(kisaoStr, ts.getDefaultTimeStep()+"");
 			sedmlAlgorithm.addAlgorithmParameter(sedmlAlgorithmParameter);
+			addNotesChild(an, TokenMangler.mangleToSName(kisaoStr), kisaoDesc);
 		}
 		if(enableMinTimeStep) {
 			String kisaoStr = TimeStep.TimeStepDescription.Minimum.getKisao();
+			String kisaoDesc = TimeStep.TimeStepDescription.Minimum.getDescription();
 			AlgorithmParameter sedmlAlgorithmParameter = new AlgorithmParameter(kisaoStr, ts.getMinimumTimeStep()+"");
 			sedmlAlgorithm.addAlgorithmParameter(sedmlAlgorithmParameter);
+			addNotesChild(an, TokenMangler.mangleToSName(kisaoStr), kisaoDesc);
 		}
 		if(enableMaxTimeStep) {
 			String kisaoStr = TimeStep.TimeStepDescription.Maximum.getKisao();
+			String kisaoDesc = TimeStep.TimeStepDescription.Maximum.getDescription();
 			AlgorithmParameter sedmlAlgorithmParameter = new AlgorithmParameter(kisaoStr, ts.getMaximumTimeStep()+"");
 			sedmlAlgorithm.addAlgorithmParameter(sedmlAlgorithmParameter);
+			addNotesChild(an, TokenMangler.mangleToSName(kisaoStr), kisaoDesc);
 		}
 
 		if(simTaskDesc.getSimulation().getMathDescription().isNonSpatialStoch()) {	// ------- deal with seed
 			NonspatialStochSimOptions nssso = simTaskDesc.getStochOpt();
 			if(nssso.isUseCustomSeed()) {
 				String kisaoStr = SolverDescription.AlgorithmParameterDescription.Seed.getKisao();	// 488
+				String kisaoDesc = SolverDescription.AlgorithmParameterDescription.Seed.getDescription();
 				AlgorithmParameter sedmlAlgorithmParameter = new AlgorithmParameter(kisaoStr, nssso.getCustomSeed()+"");
 				sedmlAlgorithm.addAlgorithmParameter(sedmlAlgorithmParameter);
+				addNotesChild(an, TokenMangler.mangleToSName(kisaoStr), kisaoDesc);
 			}
 		} else {
 			;	// (... isRuleBased(), isSpatial(), isMovingMembrane(), isSpatialHybrid() ...
@@ -674,32 +693,36 @@ public class SEDMLExporter {
 			NonspatialStochHybridOptions nssho = simTaskDesc.getStochHybridOpt();
 
 			String kisaoStr = SolverDescription.AlgorithmParameterDescription.Epsilon.getKisao();
+			String kisaoDesc = SolverDescription.AlgorithmParameterDescription.Epsilon.getDescription();
 			AlgorithmParameter sedmlAlgorithmParameter = new AlgorithmParameter(kisaoStr, nssho.getEpsilon()+"");
 			sedmlAlgorithm.addAlgorithmParameter(sedmlAlgorithmParameter);
+			addNotesChild(an, TokenMangler.mangleToSName(kisaoStr), kisaoDesc);
 
 			kisaoStr = SolverDescription.AlgorithmParameterDescription.Lambda.getKisao();
+			kisaoDesc = SolverDescription.AlgorithmParameterDescription.Lambda.getDescription();
 			sedmlAlgorithmParameter = new AlgorithmParameter(kisaoStr, nssho.getLambda()+"");
 			sedmlAlgorithm.addAlgorithmParameter(sedmlAlgorithmParameter);
+			addNotesChild(an, TokenMangler.mangleToSName(kisaoStr), kisaoDesc);
 
 			kisaoStr = SolverDescription.AlgorithmParameterDescription.MSRTolerance.getKisao();
+			kisaoDesc = SolverDescription.AlgorithmParameterDescription.MSRTolerance.getDescription();
 			sedmlAlgorithmParameter = new AlgorithmParameter(kisaoStr, nssho.getMSRTolerance()+"");
 			sedmlAlgorithm.addAlgorithmParameter(sedmlAlgorithmParameter);
+			addNotesChild(an, TokenMangler.mangleToSName(kisaoStr), kisaoDesc);
 		}
 		if(vcSolverDesc == SolverDescription.HybridMilAdaptive) {					// --------- one more param for hybrid-adaptive
 			NonspatialStochHybridOptions nssho = simTaskDesc.getStochHybridOpt();
 
 			String kisaoStr = SolverDescription.AlgorithmParameterDescription.SDETolerance.getKisao();
+			String kisaoDesc = SolverDescription.AlgorithmParameterDescription.SDETolerance.getDescription();
 			AlgorithmParameter sedmlAlgorithmParameter = new AlgorithmParameter(kisaoStr, nssho.getSDETolerance()+"");
 			sedmlAlgorithm.addAlgorithmParameter(sedmlAlgorithmParameter);
+			addNotesChild(an, TokenMangler.mangleToSName(kisaoStr), kisaoDesc);
 		}
-
-		// TODO: consider adding notes for the algorithm parameters, to provide human-readable description of kisao terms
-		//						sedmlAlgorithm.addNote(createNotesElement(algorithmNotesStr));
-		// TODO: even better, AlgorithmParameter in sed-ml should also have a human readable "name" field
 
 		// add a note to utcSim to indicate actual solver name
 		String simNotesStr = "Actual Solver Name : '" + vcSolverDesc.getDisplayLabel() + "'.";  
-		utcSim.addNote(createNotesElement(simNotesStr));
+		utcSim.setNote(createNotesElement(simNotesStr));
 		sedmlModel.addSimulation(utcSim);
 		return utcSim;
 	}
@@ -1093,6 +1116,11 @@ public class SEDMLExporter {
 		// create a notes element
 		Notes note = new Notes(para);
 		return note;
+	}
+	private void addNotesChild(Notes note, String kisao, String desc) {
+		Element sub = new Element("AlgoritmParameter", "http://www.biomodels.net/kisao/KISAO_FULL#");
+		sub.setAttribute(TokenMangler.mangleToSName(kisao), desc);
+		note.getNotesElement().addContent(sub);
 	}
 
 	public static SymbolTableEntry getSymbolTableEntryForModelEntity(MathSymbolMapping mathSymbolMapping, String paramName) throws MappingException {

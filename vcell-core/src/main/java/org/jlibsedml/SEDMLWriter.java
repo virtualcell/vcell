@@ -553,11 +553,13 @@ class SEDMLWriter {
     private void addNotesAndAnnotation(SEDBase sedbase, Element node) {
 
         // add 'notes' elements from sedml
-        for (Notes note : sedbase.getNotes()) {
-            Element notes = new Element(SEDMLTags.NOTES);
-            notes.addContent(note.getNotesElement().detach());
-            node.addContent(notes);
-        }
+    	Notes note = sedbase.getNote();
+    	if(note != null) {
+    		Element notes = new Element(SEDMLTags.NOTES);
+    		notes.addContent(note.getNotesElement().detach());
+    		node.addContent(notes);
+    	}
+
         // add 'annotation' elements from sedml
         for (Annotation ann : sedbase.getAnnotation()) {
             Element annEl = new Element(SEDMLTags.ANNOTATION);
