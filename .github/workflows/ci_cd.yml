@@ -39,6 +39,11 @@ jobs:
           cd docker/swarm/vcell-admin
           poetry install
 
+      - name: build vcell-opt package
+        run: |
+          cd pythonProject/vcell-opt
+          poetry install
+
       - name: setup java 8 with maven cache
         uses: actions/setup-java@v3
         with:

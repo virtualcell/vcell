@@ -172,6 +172,14 @@ public class CopasiOptimizationMethod implements java.io.Serializable {
 	public final CopasiOptimizationParameter[] getParameters() {
 		return realParameters;
 	}
+	public final CopasiOptimizationParameter getParameter(CopasiOptimizationParameterType parameterType) {
+		for (CopasiOptimizationParameter param : realParameters){
+			if (param.getType()==parameterType){
+				return param;
+			}
+		}
+		return null;
+	}
 	public final Double getEndValue() {
 		for (CopasiOptimizationParameter cop : realParameters) {
 			if (cop.getType() == CopasiOptimizationParameterType.Number_of_Generations
