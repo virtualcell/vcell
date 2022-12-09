@@ -13,9 +13,6 @@ jobs:
   build:
     runs-on: ubuntu-20.04
     steps:
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
-        
       - name: Checkout Our Code
         uses: actions/checkout@v3
         with: 
@@ -63,6 +60,8 @@ jobs:
           context: .
           file: ./Dockerfile
           outputs: type=docker,dest=/tmp/image.tar
+          build-args: | # Max ram for Ubuntu GitHub workflow is 7GB (as of 12/9/22), using MB for precision
+            MAX_MEM=7168
           
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
