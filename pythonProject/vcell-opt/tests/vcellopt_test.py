@@ -45,6 +45,10 @@ def test_run() -> None:
     expected_fit_Kr = 0.687506
     expected_fit_s0_init_uM = 0.000031
 
-    assert abs(fit_Kr - expected_fit_Kr) < 1e-5
-    assert abs(fit_Kf - expected_fit_Kf) < 1e-5
-    assert abs(fit_s0_init_uM - expected_fit_s0_init_uM) < 1e-5
+    #
+    # using loose tolerances here because this test uses a stochastic method (even with fixed seed)
+    # TODO: the test model should use a local gradient-based method whose solution is determinstic.
+    #
+    assert abs(fit_Kr - expected_fit_Kr) < 1e-4
+    assert abs(fit_Kf - expected_fit_Kf) < 1e-4
+    assert abs(fit_s0_init_uM - expected_fit_s0_init_uM) < 1e-4
