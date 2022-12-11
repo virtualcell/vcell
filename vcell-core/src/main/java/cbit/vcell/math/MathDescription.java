@@ -3503,10 +3503,21 @@ public static MathCompareResults testEquivalency(MathSymbolTableFactory mathSymb
 			if (invariantResults.decision.equals(Decision.MathDifferent_VARIABLE_NOT_FOUND_AS_FUNCTION)) {
 				tryLegacyVarNameDomain(mathDescription1, mathDescription2);
 				invariantResults = mathDescription2.compareInvariantAttributes(mathDescription1,false);
-				//
-				// can't be equivalent or equal
-				//
-				return invariantResults;
+				if (!invariantResults.isEquivalent()) {
+					//
+					// can't be equivalent or equal
+					//
+					return invariantResults;
+				}
+			} else if (invariantResults.decision.equals(Decision.MathDifferent_DIFFERENT_NUMBER_OF_VARIABLES)) {
+//				tryLegacyVarNameDomainExtensive(mathDescription1, mathDescription2);
+//				invariantResults = mathDescription2.compareInvariantAttributes(mathDescription1,false);
+//				if (!invariantResults.isEquivalent()) {
+//					//
+//					// can't be equivalent or equal
+//					//
+					return invariantResults;
+//				}				
 			} else {
 				//
 				// can't be equivalent or equal
@@ -3542,10 +3553,10 @@ public static MathCompareResults testEquivalency(MathSymbolTableFactory mathSymb
 			// now compare
 			return canonicalMath2.compareEquivalentCanonicalMath(canonicalMath1);
 		}
-	}catch (MathException | ExpressionException e){
+	}catch (Exception e){
 		String msg = "failure while testing for math equivalency: "+e.getMessage();
 		logger.error(msg, e);
-		throw new RuntimeException(msg, e);
+		return new MathCompareResults(Decision.MathDifferent_FAILURE_UNKNOWN, e.getMessage());
 	}
 }
 
@@ -3752,6 +3763,33 @@ public boolean isMovingMembrane( ) {
 		return m != null && m.isMoving();
 	};
 	return subDomainList.stream().filter(movingMembrane).findAny().isPresent();
+}
+
+private static void tryLegacyVarNameDomainExtensive(MathDescription mathDescription1, MathDescription mathDescription2)
+		throws ExpressionException {
+	TreeSet<String> stateVarNames1 = new TreeSet<String>(mathDescription1.getStateVariableNames());
+	TreeSet<String> stateVarNames2 = new TreeSet<String>(mathDescription2.getStateVariableNames());
+	ArrayList<String> sv1 = new ArrayList<String>(stateVarNames1);
+	ArrayList<String> sv2 = new ArrayList<String>(stateVarNames2);
+	List<Expression> exps = new ArrayList<Expression>();
+	mathDescription1.getAllExpressions(exps);
+
+	for (int i = 0; i < sv1.size(); i++) {
+		Variable var = mathDescription1.getVariable(sv1.get(i));
+		var.rename(sv2.get(i));
+		for (Expression exp : exps) {
+			exp.substituteInPlace(new Expression(sv1.get(i)), new Expression(sv2.get(i)));
+		}
+		if (var.getDomain() == null) {
+			SubDomain sd = mathDescription1.getSubDomain(mathDescription2.getVariable(var.getName()).getDomain().getName());
+			var.setDomain(new Domain(sd));
+			for (SubDomain sd1 : mathDescription1.getSubDomainCollection().toArray(new SubDomain[mathDescription1.getSubDomainCollection().size()])) {
+				if (sd1 != sd) {
+					sd1.removeEquation(var);
+				}
+			}
+		}
+	}
 }
 
 }
