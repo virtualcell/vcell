@@ -109,7 +109,7 @@ jobs:
       # Parse the results
       - name: Parse Results
         run: |
-          cd $GITHUB_WORKSPACE/published/biomodel/omex/sbml/output
+          cd $GITHUB_WORKSPACE/public/biomodel/vcml/output
           /bin/echo "biomodels processed $(cat jobLog.txt | grep START | wc -l)" >> ../export_results.txt
           /bin/echo "biomodels succeeded $(cat jobLog.txt | grep MODEL,SUCC | wc -l)" >> ../export_results.txt
           /bin/echo "simcontexts total $(cat jobLog.txt | grep TEXT | wc -l)" >> ../export_results.txt
