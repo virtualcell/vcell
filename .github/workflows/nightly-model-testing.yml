@@ -130,21 +130,21 @@ jobs:
         
         # Create tar of converted files
       - name: Compress Converted Files
-        run: cd $GITHUB_WORKSPACE/public/biomodel/vcml/output && sudo tar cf vcmls.tar --wildcards *.omex    
+        run: cd $GITHUB_WORKSPACE/public/biomodel/vcml/output && sudo tar cf omexes.tar --wildcards *.omex    
         
         # Upload Converted Files
       - name: Upload Converted Files
         uses: actions/upload-artifact@v3
         with:
-          name: vcmls.tar
-          path: ~/work/vcell/vcell/public/biomodel/vcml/vcmls.tar # Action only has basic ~ based expansion, env variables dont appear to work
+          name: omexes.tar
+          path: ~/work/vcell/vcell/public/biomodel/vcml/output/omexes.tar # Action only has basic ~ based expansion, env variables dont appear to work
         
         # Upload Results
       - name: Upload results of round-trip
         uses: actions/upload-artifact@v3
         with:
           name: export_results.txt
-          path: ~/export_results.txt
+          path: ~/work/vcell/vcell/public/biomodel/vcml/export_results.txt
           
       # Report a Problem to Slack
       - name: Report Problem to Slack
@@ -180,7 +180,7 @@ jobs:
       - name: Download Converted COMBINE Archives
         uses: actions/download-artifact@v3
         with:
-          name: vcmls.tar
+          name: omexes.tar
           path: ~/input_files
       
       - name: Unpack Input Files
