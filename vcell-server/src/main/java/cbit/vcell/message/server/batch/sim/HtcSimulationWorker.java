@@ -607,11 +607,13 @@ public void startJobMonitor() {
 //					System.out.println("-----"+sb.toString());
 //					System.out.println("-----");
 					
-					StringTokenizer st = new StringTokenizer(slurmJobInfoSB.toString()," \n\r\t");
+					StringTokenizer st = new StringTokenizer(slurmJobInfoSB.toString(),"\n\r");
 					while(st.hasMoreTokens()) {
-						String slurmJobID = st.nextToken();
-						String jobName = st.nextToken();
-						String jobState = st.nextToken();
+						String line = st.nextToken();
+						StringTokenizer lineTokenizer = new StringTokenizer(line," \t");
+						String slurmJobID = lineTokenizer.nextToken();
+						String jobName = lineTokenizer.nextToken();
+						String jobState = lineTokenizer.nextToken();
 						if(jobState.equalsIgnoreCase("FAILED") ||
 							jobState.startsWith("CANCELLED") ||
 							jobState.equalsIgnoreCase("BOOT_FAIL") ||
