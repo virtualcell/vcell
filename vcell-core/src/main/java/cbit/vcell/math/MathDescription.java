@@ -3495,36 +3495,36 @@ public static MathCompareResults testEquivalencyWithRename(MathSymbolTableFactor
 }
 
 public static MathCompareResults testEquivalency(MathSymbolTableFactory mathSymbolTableFactory, MathDescription mathDescription1, MathDescription mathDescription2) {
-// test commit
+
 	try {
 	
 		MathCompareResults invariantResults = mathDescription2.compareInvariantAttributes(mathDescription1,false);
 		if (!invariantResults.isEquivalent()){
-			if (invariantResults.decision.equals(Decision.MathDifferent_VARIABLE_NOT_FOUND_AS_FUNCTION)) {
-				tryLegacyVarNameDomain(mathDescription1, mathDescription2);
-				invariantResults = mathDescription2.compareInvariantAttributes(mathDescription1,false);
-				if (!invariantResults.isEquivalent()) {
-					//
+			if (invariantResults.decision.equals(Decision.MathDifferent_VARIABLE_NOT_FOUND_AS_FUNCTION)
+					|| invariantResults.decision.equals(Decision.MathDifferent_DIFFERENT_NUMBER_OF_VARIABLES)) {
+				// this may be due to legacy math format:
+				// variable naming identical across structures
+				// no subdomains associated with variables
+				// equations are present for state variables in multiple subdomains
+				boolean bRenameSuccess = tryLegacyVarNameDomainExtensive(mathDescription1, mathDescription2);
+				if (bRenameSuccess) {
+					//try again to see whether invariants are equivalent after rename
+					invariantResults = mathDescription2.compareInvariantAttributes(mathDescription1, false);
+					if (!invariantResults.isEquivalent()) {
+						// can't be equivalent or equal
+						return invariantResults;
+					} 
+				} else {
 					// can't be equivalent or equal
-					//
-					return invariantResults;
+					return invariantResults;					
 				}
-			} else if (invariantResults.decision.equals(Decision.MathDifferent_DIFFERENT_NUMBER_OF_VARIABLES)) {
-//				tryLegacyVarNameDomainExtensive(mathDescription1, mathDescription2);
-//				invariantResults = mathDescription2.compareInvariantAttributes(mathDescription1,false);
-//				if (!invariantResults.isEquivalent()) {
-//					//
-//					// can't be equivalent or equal
-//					//
-					return invariantResults;
-//				}				
 			} else {
-				//
 				// can't be equivalent or equal
-				//
 				return invariantResults;				
 			}
 		}
+
+		// invariants are equivalent, now do a full compare
 		if (mathDescription2.compareEqual(mathDescription1)){
 			return new MathCompareResults(Decision.MathEquivalent_NATIVE);
 		}else{
@@ -3557,33 +3557,6 @@ public static MathCompareResults testEquivalency(MathSymbolTableFactory mathSymb
 		String msg = "failure while testing for math equivalency: "+e.getMessage();
 		logger.error(msg, e);
 		return new MathCompareResults(Decision.MathDifferent_FAILURE_UNKNOWN, e.getMessage());
-	}
-}
-
-private static void tryLegacyVarNameDomain(MathDescription mathDescription1, MathDescription mathDescription2)
-		throws ExpressionException {
-	TreeSet<String> stateVarNames1 = new TreeSet<String>(mathDescription1.getStateVariableNames());
-	TreeSet<String> stateVarNames2 = new TreeSet<String>(mathDescription2.getStateVariableNames());
-	ArrayList<String> sv1 = new ArrayList<String>(stateVarNames1);
-	ArrayList<String> sv2 = new ArrayList<String>(stateVarNames2);
-	List<Expression> exps = new ArrayList<Expression>();
-	mathDescription1.getAllExpressions(exps);
-
-	for (int i = 0; i < sv1.size(); i++) {
-		Variable var = mathDescription1.getVariable(sv1.get(i));
-		var.rename(sv2.get(i));
-		for (Expression exp : exps) {
-			exp.substituteInPlace(new Expression(sv1.get(i)), new Expression(sv2.get(i)));
-		}
-		if (var.getDomain() == null) {
-			SubDomain sd = mathDescription1.getSubDomain(mathDescription2.getVariable(var.getName()).getDomain().getName());
-			var.setDomain(new Domain(sd));
-			for (SubDomain sd1 : mathDescription1.getSubDomainCollection().toArray(new SubDomain[mathDescription1.getSubDomainCollection().size()])) {
-				if (sd1 != sd) {
-					sd1.removeEquation(var);
-				}
-			}
-		}
 	}
 }
 
@@ -3765,31 +3738,73 @@ public boolean isMovingMembrane( ) {
 	return subDomainList.stream().filter(movingMembrane).findAny().isPresent();
 }
 
-private static void tryLegacyVarNameDomainExtensive(MathDescription mathDescription1, MathDescription mathDescription2)
+private static boolean tryLegacyVarNameDomainExtensive(MathDescription mathDescription1, MathDescription mathDescription2)
 		throws ExpressionException {
-	TreeSet<String> stateVarNames1 = new TreeSet<String>(mathDescription1.getStateVariableNames());
-	TreeSet<String> stateVarNames2 = new TreeSet<String>(mathDescription2.getStateVariableNames());
+	// will return true if rename compatible
+	HashSet<String> stateVarNames1 = mathDescription1.getStateVariableNames();
+	HashSet<String> stateVarNames2 = mathDescription2.getStateVariableNames();
 	ArrayList<String> sv1 = new ArrayList<String>(stateVarNames1);
 	ArrayList<String> sv2 = new ArrayList<String>(stateVarNames2);
 	List<Expression> exps = new ArrayList<Expression>();
 	mathDescription1.getAllExpressions(exps);
+	boolean bVarsInMultipleSubDomains = false;
 
 	for (int i = 0; i < sv1.size(); i++) {
-		Variable var = mathDescription1.getVariable(sv1.get(i));
-		var.rename(sv2.get(i));
-		for (Expression exp : exps) {
-			exp.substituteInPlace(new Expression(sv1.get(i)), new Expression(sv2.get(i)));
-		}
-		if (var.getDomain() == null) {
-			SubDomain sd = mathDescription1.getSubDomain(mathDescription2.getVariable(var.getName()).getDomain().getName());
-			var.setDomain(new Domain(sd));
-			for (SubDomain sd1 : mathDescription1.getSubDomainCollection().toArray(new SubDomain[mathDescription1.getSubDomainCollection().size()])) {
-				if (sd1 != sd) {
-					sd1.removeEquation(var);
-				}
+		String oldName = sv1.get(i);
+		String newName = null;
+		Variable var = mathDescription1.getVariable(oldName);
+		int nameMatches = 0;
+		for (int j = 0; j < sv2.size(); j++) {
+			if (sv2.get(j).equals(var.getName()) || sv2.get(j).startsWith(var.getName()+"_")) {
+				newName = sv2.get(j);
+				nameMatches++;
 			}
 		}
+		if (nameMatches == 0) {
+			logger.error("did not find any match for variable "+var.getName());
+			return false;
+		}
+		if (nameMatches > 1) {
+			bVarsInMultipleSubDomains = true;
+			continue;
+		}
+		// variable is present in single domain, just substitute and match domain stuff
+		try {
+			var.rename(newName);
+			if (var instanceof VolVariable) {
+				mathDescription1.getVariable(oldName+InsideVariable.INSIDE_VARIABLE_SUFFIX).rename(newName+InsideVariable.INSIDE_VARIABLE_SUFFIX);
+				mathDescription1.getVariable(oldName+OutsideVariable.OUTSIDE_VARIABLE_SUFFIX).rename(newName+OutsideVariable.OUTSIDE_VARIABLE_SUFFIX);
+			}
+			for (Expression exp : exps) {
+				if (!exp.isNumeric()) {
+					exp.substituteInPlace(new Expression(oldName), new Expression(newName));
+					exp.substituteInPlace(new Expression(oldName + InsideVariable.INSIDE_VARIABLE_SUFFIX), new Expression(newName));
+					exp.substituteInPlace(new Expression(oldName + OutsideVariable.OUTSIDE_VARIABLE_SUFFIX), new Expression(newName));
+				}
+			}
+			if (var.getDomain() == null) {
+				SubDomain sd = mathDescription1.getSubDomain(mathDescription2.getVariable(var.getName()).getDomain().getName());
+				var.setDomain(new Domain(sd));
+				for (SubDomain sd1 : mathDescription1.getSubDomainCollection().toArray(new SubDomain[mathDescription1.getSubDomainCollection().size()])) {
+					if (sd1 != sd) {
+						sd1.removeEquation(var);
+					}
+				}
+			}
+		} catch (Exception e) {
+			logger.error("failed to rename legacy variable "+var.getName(), e);
+			return false;
+		}
 	}
+	
+	if (bVarsInMultipleSubDomains) {
+		
+		// TODO we need more work here
+		logger.error("one or more legacy variables are present in more than one subdomains");
+		return false;
+	}
+
+	return true;
 }
 
 }
