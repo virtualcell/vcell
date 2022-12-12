@@ -162,7 +162,7 @@ public Set<KeyValue> getUnreferencedSimulations(boolean bEnableRetry) throws jav
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
-		Set<KeyValue> unreferencedSimulations = DBBackupAndClean.getUnreferencedSimulations(con);
+		Set<KeyValue> unreferencedSimulations = DBBackupAndClean.getUnreferencedSimulations(con, conFactory.getDatabaseSyntax());
 		return unreferencedSimulations;
 	} catch (Throwable e) {
 		lg.error("failure in getUnreferencedSimulations()",e);

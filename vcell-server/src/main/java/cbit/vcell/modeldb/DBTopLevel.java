@@ -149,7 +149,7 @@ void cleanupDatabase(boolean bEnableRetry) throws DataAccessException,java.sql.S
 	Connection con = conFactory.getConnection(lock);
 	try {
 		StringBuffer stringBuffer = new StringBuffer();
-		DBBackupAndClean.cleanupDatabase(con, stringBuffer);
+		DBBackupAndClean.cleanupDatabase(con, stringBuffer, conFactory.getDatabaseSyntax());
 		if (lg.isDebugEnabled()) lg.debug(stringBuffer.toString());
 	
 		con.commit();

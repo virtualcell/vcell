@@ -180,7 +180,7 @@ public static void publishDirectly(Connection con,KeyValue[] publishTheseBiomode
 
 public static KeyValue savePublicationRep(Connection con,PublicationRep publicationRep,User user,KeyFactory keyFactory,DatabaseSyntax databaseSyntax) throws SQLException, DataAccessException{
 	
-	String pubID = null;
+	KeyValue pubID = null;
 	TreeMap<SPECIALS, TreeMap<User, String>> specialUsers = getSpecialUsers(user,con,databaseSyntax);
 	TreeMap<User, String> usersAllowedToModifyPublications = specialUsers.get(User.SPECIALS.publication);
 	if(usersAllowedToModifyPublications == null || !usersAllowedToModifyPublications.containsKey(user)) {
@@ -192,12 +192,7 @@ public static KeyValue savePublicationRep(Connection con,PublicationRep publicat
 	Statement stmt = null;
 	try {
 		if(publicationRep.getPubKey() == null) {
-			stmt = con.createStatement();
-			ResultSet rset = stmt.executeQuery("select "+keyFactory.nextSEQ()+" from dual");
-			rset.next();
-			pubID = rset.getString(1);
-			rset.close();
-			stmt.close();
+			pubID = keyFactory.getNewKey(con);
 			sql = "INSERT INTO "+PublicationTable.table.getTableName()+" VALUES (" +
 			pubID.toString()+","+
 			(publicationRep.getTitle()==null?"NULL":"'"+publicationRep.getTitle()+"'")+","+
@@ -212,7 +207,7 @@ public static KeyValue savePublicationRep(Connection con,PublicationRep publicat
 			(publicationRep.getDate()==null?"NULL":" TO_DATE('" + simpleDateFormat.format(publicationRep.getDate()) + "','"+YMD_FORMAT_STRING+"') ")+
 			")";		
 		}else {
-			pubID = publicationRep.getPubKey().toString();
+			pubID = publicationRep.getPubKey();
 			sql = "UPDATE "+PublicationTable.table.getTableName()+" SET "+
 			PublicationTable.table.title.getUnqualifiedColName()+"="+(publicationRep.getTitle()==null?"NULL":"'"+publicationRep.getTitle()+"'")+","+
 			PublicationTable.table.authors.getUnqualifiedColName()+"="+(publicationRep.getAuthors()==null || publicationRep.getAuthors().length==0?"NULL":"'"+StringUtils.join(publicationRep.getAuthors(), ';')+"'")+","+
@@ -250,9 +245,9 @@ public static KeyValue savePublicationRep(Connection con,PublicationRep publicat
 				}
 			}
 		}
-		return new KeyValue(pubID.toString());
+		return pubID;
 	}finally {
-		if(stmt != null) {try{stmt.close();}catch(Exception e) {e.printStackTrace();}}
+		if(stmt != null) {try{stmt.close();}catch(Exception e) {lg.error(e);}}
 	}
 }
 

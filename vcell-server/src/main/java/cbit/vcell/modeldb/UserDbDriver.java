@@ -427,20 +427,40 @@ public void updateUserStat(Connection con,KeyFactory keyFactory, UserLoginInfo u
 	}
 }
 
-public ApiAccessToken generateApiAccessToken(Connection con, KeyFactory keyFactory, KeyValue apiClientKey, User user, Date expirationDate) throws SQLException {
+public ApiAccessToken generateApiAccessToken(Connection con, KeyFactory keyFactory, KeyValue apiClientKey, User user, Date expirationDate) throws SQLException, JoseException {
 	String sql;
 	KeyValue key = keyFactory.getNewKey(con);
-	UUID idOne = UUID.randomUUID();
-	Date creationDate = new Date();
-	String token = idOne.toString();
-	AccessTokenStatus accessTokenStatus = AccessTokenStatus.created;
-	
-	sql =	"INSERT INTO " + ApiAccessTokenTable.table.getTableName() + " " +
-			ApiAccessTokenTable.table.getSQLColumnList() + " VALUES " +
-			ApiAccessTokenTable.table.getSQLValueList(key,token,apiClientKey,user,creationDate,expirationDate,accessTokenStatus);
-	DbDriver.updateCleanSQL(con,  sql);
-	
-	return new ApiAccessToken(key,token,apiClientKey,user,creationDate,expirationDate,accessTokenStatus);
+
+	NumericDate expirationTime = NumericDate.fromMilliseconds(expirationDate.getTime());
+	String jwt = JWTUtils.createToken(user, expirationTime);
+
+	try {
+		boolean valid = JWTUtils.verifyJWS(jwt);
+		if (!valid){
+			throw new RuntimeException("generated JWT token is invalid");
+		}
+		JwtContext jwtContext = new JwtConsumerBuilder()
+				.setSkipAllValidators()
+				.setDisableRequireSignature()
+				.setSkipSignatureVerification()
+				.build().process(jwt);
+
+		NumericDate issuedAt = jwtContext.getJwtClaims().getIssuedAt();
+		Date creationDate = new Date(issuedAt.getValueInMillis());
+
+		AccessTokenStatus accessTokenStatus = AccessTokenStatus.created;
+
+		sql =	"INSERT INTO " + ApiAccessTokenTable.table.getTableName() + " " +
+				ApiAccessTokenTable.table.getSQLColumnList() + " VALUES " +
+				ApiAccessTokenTable.table.getSQLValueList(key,jwt,apiClientKey,user,creationDate,expirationDate,accessTokenStatus);
+
+		DbDriver.updateCleanSQL(con,  sql);
+		return new ApiAccessToken(key,jwt,apiClientKey,user,creationDate,expirationDate,accessTokenStatus);
+
+	} catch (MalformedClaimException | InvalidJwtException e) {
+		throw new RuntimeException(e);
+	}
+
 }
 
 public void setApiAccessTokenStatus(Connection con, KeyValue apiAccessTokenKey, AccessTokenStatus accessTokenStatus) throws SQLException, DataAccessException {

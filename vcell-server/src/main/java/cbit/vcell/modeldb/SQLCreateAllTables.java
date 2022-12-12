@@ -15,6 +15,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.UUID;
 
 import javax.swing.JCheckBox;
 import javax.swing.JFrame;
@@ -164,12 +165,20 @@ private static void destroyAndRecreateTables(ConnectionFactory conFactory, KeyFa
 						try {
 							// Add void user
 							s.executeUpdate(cbit.vcell.modeldb.UserTable.getCreateVoidUserSQL());
+							// Add test user
+							s.executeUpdate(cbit.vcell.modeldb.UserTable.getCreateTestUserSQL(keyFactory));
 							// Add PRIVATE group
 							s.executeUpdate(cbit.vcell.modeldb.GroupTable.getCreateGroupPrivateSQL(keyFactory.getNewKey(con)));
 							// Add PUBLIC group
 							s.executeUpdate(cbit.vcell.modeldb.GroupTable.getCreateGroupPublicSQL(keyFactory.getNewKey(con)));
 							// Add Initial Available Status
 							s.executeUpdate(cbit.vcell.modeldb.AvailableTable.getCreateInitAvailStatusSQL(keyFactory.getNewKey(con)));
+							// Add Default API Client
+							final String DEFAULT_APICLIENT_NAME = "defaultApiClient";
+							final String DEFAULT_APICLIENT_ID = "85133f8d-26f7-4247-8356-d175399fc2e6";
+							final String DEFAULT_APICLIENTID_PSWD = UUID.randomUUID().toString();
+							ApiClient defaultApiClient = new ApiClient(null,DEFAULT_APICLIENT_NAME, DEFAULT_APICLIENT_ID, DEFAULT_APICLIENTID_PSWD);
+							s.executeUpdate(ApiClientTable.getCreateApiClientSQL(keyFactory.getNewKey(con), defaultApiClient));
 						}finally {
 							s.close();
 						}
@@ -228,7 +237,6 @@ private static void dropSequence(Connection con, KeyFactory keyFactory) throws S
 		if (dbSyntax != DatabaseSyntax.POSTGRES){
 			return;
 		}
-		final String POSTGRES_DUAL_VIEW = "public.dual";
 		PreparedStatement pps = null;
 		try {
 			String sql = "DROP VIEW IF EXISTS "+POSTGRES_DUAL_VIEW;
@@ -357,6 +365,7 @@ public static Table[] getVCellTables() {
 		LoadModelsStatTable.table, // new
 		cbit.vcell.modeldb.UserLoginInfoTable.table, // new
 		cbit.vcell.modeldb.VCMetaDataTable.table, // new
+		cbit.vcell.modeldb.SimDelFromDiskTable.table, // new
 		};
 	return tables;
 }

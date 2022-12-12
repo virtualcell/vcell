@@ -45,6 +45,7 @@ public class Field {
 		varchar2_64("varchar2(64)","varchar(64)",BasicDataType.VARCHAR),
 		varchar2_40("varchar2(40)","varchar(40)",BasicDataType.VARCHAR),
 		varchar2_32("varchar2(32)","varchar(32)",BasicDataType.VARCHAR),
+		varchar2_20("varchar2(20)","varchar(20)",BasicDataType.VARCHAR),
 		varchar2_10("varchar2(10)","varchar(10)",BasicDataType.VARCHAR),
 		varchar2_5("varchar2(5)","varchar(5)",BasicDataType.VARCHAR),
 		varchar2_1("varchar2(1)","varchar(1)",BasicDataType.VARCHAR),
