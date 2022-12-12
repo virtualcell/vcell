@@ -29,7 +29,7 @@ public class ApiAccessTokenTable extends cbit.sql.Table {
 	private static final String TABLE_NAME = "vc_apiaccesstoken";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
-	public final Field accesstoken		= new Field("accesstoken",	SQLDataType.varchar_255,	"NOT NULL");
+	public final Field accesstoken		= new Field("accesstoken",	SQLDataType.varchar2_4000,	"NOT NULL");
 	public final Field clientRef 		= new Field("clientRef",	SQLDataType.integer,		"NOT NULL "+ApiClientTable.REF_TYPE);
 	public final Field userref			= new Field("userRef",		SQLDataType.integer,		"NOT NULL "+UserTable.REF_TYPE);
 	public final Field creationDate		= new Field("creationDate",	SQLDataType.date,			"NOT NULL");

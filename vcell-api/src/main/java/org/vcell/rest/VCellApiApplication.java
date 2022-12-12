@@ -7,10 +7,7 @@ import java.util.logging.Level;
 import org.restlet.Request;
 import org.restlet.Response;
 import org.restlet.Restlet;
-import org.restlet.data.ChallengeResponse;
-import org.restlet.data.MediaType;
-import org.restlet.data.Method;
-import org.restlet.data.Status;
+import org.restlet.data.*;
 import org.restlet.ext.wadl.ApplicationInfo;
 import org.restlet.ext.wadl.WadlApplication;
 import org.restlet.representation.Representation;
@@ -19,11 +16,13 @@ import org.restlet.representation.Variant;
 import org.restlet.resource.Directory;
 import org.restlet.resource.ResourceException;
 import org.restlet.routing.Router;
+import org.restlet.security.ChallengeAuthenticator;
 import org.vcell.rest.UserVerifier.AuthenticationStatus;
 import org.vcell.rest.admin.AdminJobsRestlet;
 import org.vcell.rest.admin.AdminService;
 import org.vcell.rest.auth.AuthenticationTokenRestlet;
 import org.vcell.rest.auth.CustomAuthHelper;
+import org.vcell.rest.auth.TokenBasedVerifier;
 import org.vcell.rest.events.EventsRestlet;
 import org.vcell.rest.events.RestEventService;
 import org.vcell.rest.health.HealthRestlet;
@@ -286,21 +285,13 @@ public class VCellApiApplication extends WadlApplication {
 		// Attach a guard to secure access to user parts of the api 
 
 		boolean bCookieOptional = true;
-        
-        
-		final VCellCookieAuthenticator cookieAuthenticator = new VCellCookieAuthenticator(this, bCookieOptional, "My cookie realm", "MyExtraSecretKey".getBytes());
 
-        
-        cookieAuthenticator.setLoginPath("/"+LOGIN);
-        cookieAuthenticator.setLogoutPath("/"+LOGOUT);
-        cookieAuthenticator.setCookieName("org.vcell.auth");
-        cookieAuthenticator.setLoginFormPath("/"+LOGINFORM);
-        cookieAuthenticator.setIdentifierFormName(IDENTIFIER_FORMNAME);
-        cookieAuthenticator.setSecretFormName(SECRET_FORMNAME);
-        cookieAuthenticator.setRedirectQueryName(REDIRECTURL_FORMNAME);
-        cookieAuthenticator.setVerifier(userVerifier);
-        cookieAuthenticator.setMaxCookieAge(15*60); // 15 minutes (in units of seconds).
 
+		ChallengeAuthenticator guard = new ChallengeAuthenticator(
+				getContext(), ChallengeScheme.HTTP_OAUTH_BEARER, "testRealm");
+		TokenBasedVerifier verifier = new TokenBasedVerifier();
+		guard.setVerifier(verifier);
+        
         String ROOT_URI = javascriptDir.toURI().toString();
         String WEBAPP_URI = new File(javascriptDir.getParentFile(),"webapp").toURI().toString();
         System.out.println("using uri="+ROOT_URI+" for scripts directory");
@@ -372,9 +363,9 @@ public class VCellApiApplication extends WadlApplication {
 			
 		});
 		
-        cookieAuthenticator.setNext(rootRouter);
+        guard.setNext(rootRouter);
      	    	 
-    	return cookieAuthenticator;  
+    	return guard;
     }  
 	
    public RestDatabaseService getRestDatabaseService() {
@@ -443,17 +434,11 @@ public class VCellApiApplication extends WadlApplication {
 		if (response==null){
 			getLogger().log(Level.INFO,"VCellApiApplication.getApiAccessToken(response) - response was null");
 			return null;
-		}else if (response.getIdentifier()==null){
-			getLogger().log(Level.INFO,"VCellApiApplication.getApiAccessToken(response) - response.getIdentifier() was null");
-			return null;
-		}else if (!response.getIdentifier().equals(CustomAuthHelper.ACCESS_TOKEN)){
-			getLogger().log(Level.INFO,"VCellApiApplication.getApiAccessToken(response) - response.getIdentifier() was '"+response.getIdentifier()+"', expecting '"+CustomAuthHelper.ACCESS_TOKEN+"'");
-			return null;
-		}else if (response.getSecret()==null){
-			getLogger().log(Level.INFO,"VCellApiApplication.getApiAccessToken(response) - response.getSecret() was null");
+		}else if (response.getRawValue()==null){
+			getLogger().log(Level.INFO,"VCellApiApplication.getApiAccessToken(response) - response.getRawValue() was null");
 			return null;
 		}
-		ApiAccessToken accessToken = userVerifier.getApiAccessToken(new String(response.getSecret()));
+		ApiAccessToken accessToken = userVerifier.getApiAccessToken(new String(response.getRawValue()));
 		return accessToken;
 	}
 

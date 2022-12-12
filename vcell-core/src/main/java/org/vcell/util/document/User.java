@@ -63,6 +63,15 @@ public class User implements java.io.Serializable, Matchable, Immutable {
 		}
 	};
 
+	public static User fromSubject(String subject) {
+		String[] parts = subject.split(":");
+		return new User(parts[0],new KeyValue(parts[1]));
+	}
+
+	public String toSubject() {
+		return userName+":"+key;
+	}
+
 	public static class SpecialUser extends User implements Serializable, Matchable, Immutable{
 		private SPECIAL_CLAIM[] mySpecials;
 		public SpecialUser(String userid, KeyValue key,SPECIAL_CLAIM[] mySpecials) {
