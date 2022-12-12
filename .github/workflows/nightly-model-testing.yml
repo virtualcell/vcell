@@ -187,7 +187,7 @@ jobs:
         run: cd ~/input_files && sudo tar xvf $(ls *.tar) && rm $(ls *.tar)
       
       # Do the round trip
-      - name: Begin Round-Trip
+      - name: Begin Round-Trip Import
         #$(docker image ls | grep "<none>" | awk '{print $3;}')  to get image id
         run: docker run -v ~/input_files:/root $(docker image ls | grep "<none>" | awk '{print $3;}') import-omex-batch -d -i "/root" -o "/root/output"
         
@@ -204,7 +204,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: import_results.txt
-          path: ~/input_files/import_results.txt
+          path: ~/import_results.txt
       
       # Report a Problem to Slack
       - name: Report Problem to Slack
