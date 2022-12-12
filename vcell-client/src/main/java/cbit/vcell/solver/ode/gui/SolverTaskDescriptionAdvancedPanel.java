@@ -10,41 +10,6 @@
 
 
 package cbit.vcell.solver.ode.gui;
-import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.event.ItemEvent;
-import java.util.Comparator;
-import java.util.Enumeration;
-import java.util.Hashtable;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
-
-import javax.swing.BorderFactory;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.SwingConstants;
-import javax.swing.UIManager;
-import javax.swing.border.Border;
-
-import org.vcell.chombo.ChomboMeshValidator;
-import org.vcell.chombo.ChomboMeshValidator.ChomboMeshRecommendation;
-import org.vcell.chombo.ChomboSolverSpec;
-import org.vcell.chombo.gui.ChomboDeveloperToolsPanel;
-import org.vcell.chombo.gui.ChomboTimeBoundsPanel;
-import org.vcell.solver.nfsim.gui.NFSimSimulationOptionsPanel;
-import org.vcell.solver.smoldyn.gui.SmoldynSimulationOptionsPanel;
-import org.vcell.util.DataAccessException;
-import org.vcell.util.document.User;
-import org.vcell.util.document.User.SPECIALS;
-import org.vcell.util.gui.CollapsiblePanel;
-import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.client.ClientTaskManager;
 import cbit.vcell.client.task.AsynchClientTask;
@@ -61,7 +26,22 @@ import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverDescription.SolverFeature;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solvers.mb.gui.MovingBoundarySolverOptionsPanel;
-import java.awt.Insets;
+import org.vcell.chombo.ChomboMeshValidator;
+import org.vcell.chombo.ChomboMeshValidator.ChomboMeshRecommendation;
+import org.vcell.chombo.ChomboSolverSpec;
+import org.vcell.chombo.gui.ChomboDeveloperToolsPanel;
+import org.vcell.chombo.gui.ChomboTimeBoundsPanel;
+import org.vcell.solver.nfsim.gui.NFSimSimulationOptionsPanel;
+import org.vcell.solver.smoldyn.gui.SmoldynSimulationOptionsPanel;
+import org.vcell.util.document.User;
+import org.vcell.util.gui.CollapsiblePanel;
+import org.vcell.util.gui.DialogUtils;
+
+import javax.swing.*;
+import javax.swing.border.Border;
+import java.awt.*;
+import java.awt.event.ItemEvent;
+import java.util.*;
 
 /**
  * Insert the class' description here.

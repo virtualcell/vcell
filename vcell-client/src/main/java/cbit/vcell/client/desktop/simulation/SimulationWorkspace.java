@@ -81,12 +81,8 @@ public class SimulationWorkspace implements java.beans.PropertyChangeListener {
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private Simulation[] fieldSimulations = null;
 
-/**
- * Insert the method's description here.
- * Creation date: (5/11/2004 2:26:44 PM)
- * @param workspace cbit.vcell.desktop.controls.Workspace
- */
-public SimulationWorkspace(DocumentWindowManager documentWindowManager, SimulationOwner simulationOwner) {
+
+	public SimulationWorkspace(DocumentWindowManager documentWindowManager, SimulationOwner simulationOwner) {
 	setSimulationOwner(simulationOwner);
 	this.clientSimManager = new ClientSimManager(documentWindowManager, this);
 }
@@ -675,12 +671,6 @@ private static long getEstimatedNumTimePointsForStoch(SimulationSymbolTable simS
 }
 	
 
-/**
- * Insert the method's description here.
- * Creation date: (6/12/2001 10:09:25 AM)
- * @return boolean
- * @param simulation cbit.vcell.solver.Simulation
- */
 private static long getExpectedSizeBytes(SimulationSymbolTable simSymbolTable) {
 	Simulation simulation = simSymbolTable.getSimulation();
 	
@@ -741,12 +731,6 @@ protected java.beans.PropertyChangeSupport getPropertyChange() {
 }
 
 
-/**
- * Gets the simulations index property (cbit.vcell.solver.Simulation) value.
- * @return The simulations property value.
- * @param index The index value into the property array.
- * @see #setSimulations
- */
 public int getSimulationIndex(Simulation sim) {
 	for (int i = 0; i < getSimulations().length; i++){
 		if (getSimulations()[i] == sim) {
@@ -757,32 +741,16 @@ public int getSimulationIndex(Simulation sim) {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (6/4/2004 2:15:23 AM)
- * @return cbit.vcell.document.SimulationOwner
- */
 public SimulationOwner getSimulationOwner() {
 	return simulationOwner;
 }
 
 
-/**
- * Gets the simulations property (cbit.vcell.solver.Simulation[]) value.
- * @return The simulations property value.
- * @see #setSimulations
- */
 public Simulation[] getSimulations() {
 	return fieldSimulations;
 }
 
 
-/**
- * Gets the simulations index property (cbit.vcell.solver.Simulation) value.
- * @return The simulations property value.
- * @param index The index value into the property array.
- * @see #setSimulations
- */
 public Simulation getSimulations(int index) {
 	return getSimulations()[index];
 }

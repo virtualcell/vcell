@@ -44,6 +44,8 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
 
+import cbit.vcell.client.TopLevelWindowManager;
+import cbit.vcell.client.server.ClientServerInfo;
 import org.vcell.client.logicalwindow.LWContainerHandle;
 import org.vcell.client.logicalwindow.LWNamespace;
 import org.vcell.optimization.CopasiOptSolverCallbacks;
@@ -1114,7 +1116,8 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				MathMappingCallback mathMappingCallback = new MathMappingCallbackTaskAdapter(getClientTaskStatusSupport());
 				//OptimizationResultSet optResultSet = CopasiOptimizationSolver.solveLocalPython(new ParameterEstimationTaskSimulatorIDA(),parameterEstimationTask,optSolverCallbacks,mathMappingCallback);
-				OptimizationResultSet optResultSet = CopasiOptimizationSolver.solveRemoteApi(new ParameterEstimationTaskSimulatorIDA(),parameterEstimationTask,optSolverCallbacks,mathMappingCallback,getClientTaskStatusSupport());
+				ClientServerInfo clientServerInfo = TopLevelWindowManager.activeManager().getRequestManager().getClientServerInfo();
+				OptimizationResultSet optResultSet = CopasiOptimizationSolver.solveRemoteApi(new ParameterEstimationTaskSimulatorIDA(), parameterEstimationTask,optSolverCallbacks,mathMappingCallback,getClientTaskStatusSupport());
 				hashTable.put(ORS_KEY, optResultSet);
 			}
 
