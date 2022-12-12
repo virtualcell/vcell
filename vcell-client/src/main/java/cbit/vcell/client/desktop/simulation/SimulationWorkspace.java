@@ -28,7 +28,7 @@ import org.vcell.chombo.ChomboMeshValidator.ChomboMeshRecommendation;
 import org.vcell.util.PropertyChangeListenerProxyVCell;
 import org.vcell.util.document.PropertyConstants;
 import org.vcell.util.document.User;
-import org.vcell.util.document.User.SPECIALS;
+import org.vcell.util.document.User.SPECIAL_CLAIM;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.biomodel.BioModel;
@@ -854,8 +854,8 @@ void runSimulations(Simulation[] sims, Component parent) {
 			boolean bCheckLimits = true;
 			try {
 				User loginUser = VCellClientTest.getVCellClient().getClientServerManager().getUser();
-				TreeMap<SPECIALS, TreeMap<User, String>> specialUsers = VCellClientTest.getVCellClient().getClientServerManager().getUserMetaDbServer().getSpecialUsers();
-				TreeMap<User, String> powerUsers = specialUsers.get(User.SPECIALS.special0);
+				TreeMap<SPECIAL_CLAIM, TreeMap<User, String>> specialUsers = VCellClientTest.getVCellClient().getClientServerManager().getUserMetaDbServer().getSpecialUsers();
+				TreeMap<User, String> powerUsers = specialUsers.get(SPECIAL_CLAIM.powerUsers);
 				if(powerUsers != null && powerUsers.containsKey(loginUser)) {
 					bCheckLimits = false;
 				}

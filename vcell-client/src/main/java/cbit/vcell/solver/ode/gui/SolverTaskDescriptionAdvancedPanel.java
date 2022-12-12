@@ -1118,8 +1118,8 @@ private void refresh() {
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			try {
 				User loginUser = VCellClientTest.getVCellClient().getClientServerManager().getUser();
-				TreeMap<SPECIALS, TreeMap<User, String>> specialUsers = VCellClientTest.getVCellClient().getClientServerManager().getUserMetaDbServer().getSpecialUsers();
-				TreeMap<User, String> powerUsers = specialUsers.get(User.SPECIALS.special1);
+				TreeMap<User.SPECIAL_CLAIM, TreeMap<User, String>> specialUsers = VCellClientTest.getVCellClient().getClientServerManager().getUserMetaDbServer().getSpecialUsers();
+				TreeMap<User, String> powerUsers = specialUsers.get(User.SPECIAL_CLAIM.powerUsers);
 				if(powerUsers != null && powerUsers.containsKey(loginUser)) {
 					hashTable.put(TIMEOUT_DISABLE, new Boolean(true));
 				}

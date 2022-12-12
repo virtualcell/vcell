@@ -21,7 +21,32 @@ import org.vcell.util.Matchable;
  */
 @SuppressWarnings("serial")
 public class User implements java.io.Serializable, Matchable, Immutable {
-	public static enum SPECIALS { special0/*AdminUsers*/,special1/*PowerUsers*/,special2,special3,publication};//Must match a name 'special' column of 'specialusers' table
+	private final static String PREVIOUS_DATABASE_VALUE_ADMIN = "special0";
+	private final static String PREVIOUS_DATABASE_VALUE_POWERUSER = "special1";
+	private final static String PREVIOUS_DATABASE_VALUE_PUBLICATION = "publication";
+
+	public enum SPECIAL_CLAIM {
+		admins/*special0*/,
+		powerUsers/*special1*/,
+		publicationEditors /*publication*/;  // users allowed to modify publications
+
+		public static SPECIAL_CLAIM fromDatabase(String databaseString){
+			if (databaseString.equals(PREVIOUS_DATABASE_VALUE_ADMIN)){
+				return admins;
+			}
+			if (databaseString.equals(PREVIOUS_DATABASE_VALUE_POWERUSER)){
+				return powerUsers;
+			}
+			if (databaseString.equals(PREVIOUS_DATABASE_VALUE_PUBLICATION)){
+				return publicationEditors;
+			}
+			return SPECIAL_CLAIM.valueOf(databaseString);
+		}
+
+		public String toDatabaseString(){
+			return name();
+		}
+	};//Must match a name 'special' column of 'vc_specialusers' table
 	private String userName = null;
 	private KeyValue key = null;
 	private static final String VCellTestAccountName = "vcelltestaccount";
@@ -39,12 +64,12 @@ public class User implements java.io.Serializable, Matchable, Immutable {
 	};
 
 	public static class SpecialUser extends User implements Serializable, Matchable, Immutable{
-		private SPECIALS[] mySpecials;
-		public SpecialUser(String userid, KeyValue key,SPECIALS[] mySpecials) {
+		private SPECIAL_CLAIM[] mySpecials;
+		public SpecialUser(String userid, KeyValue key,SPECIAL_CLAIM[] mySpecials) {
 			super(userid, key);
 			this.mySpecials = mySpecials;
 		}
-		public SPECIALS[] getMySpecials() {
+		public SPECIAL_CLAIM[] getMySpecials() {
 			return mySpecials;
 		}
 //		@Override

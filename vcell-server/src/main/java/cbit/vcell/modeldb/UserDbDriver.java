@@ -15,20 +15,23 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jose4j.jwt.MalformedClaimException;
+import org.jose4j.jwt.NumericDate;
+import org.jose4j.jwt.consumer.InvalidJwtException;
+import org.jose4j.jwt.consumer.JwtConsumerBuilder;
+import org.jose4j.jwt.consumer.JwtContext;
+import org.jose4j.lang.JoseException;
+import org.vcell.auth.JWTUtils;
 import org.vcell.db.KeyFactory;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
-import org.vcell.util.document.User.SPECIALS;
 import org.vcell.util.document.UserInfo;
 import org.vcell.util.document.UserLoginInfo;
 
@@ -48,12 +51,8 @@ public class UserDbDriver /*extends DbDriver*/ {
 public UserDbDriver() {
 	super();
 }
-/**
- * This method was created in VisualAge.
- * @return int
- * @param user java.lang.String
- * @param imageName java.lang.String
- */
+
+
 public User.SpecialUser getUserFromUserid(Connection con, String userid) throws SQLException {
 	Statement stmt;
 	String sql;
@@ -72,7 +71,7 @@ public User.SpecialUser getUserFromUserid(Connection con, String userid) throws 
 	}
 	stmt = con.createStatement();
 	BigDecimal userKey = null;
-	ArrayList<User.SPECIALS> specials = new ArrayList<>();
+	ArrayList<User.SPECIAL_CLAIM> specials = new ArrayList<>();
 	try {
 		rset = stmt.executeQuery(sql);
 		if (rset.next()) {
@@ -85,7 +84,7 @@ public User.SpecialUser getUserFromUserid(Connection con, String userid) throws 
 			String special = rset.getString("special");
 			if(!rset.wasNull()) {
 				try {
-					specials.add(SPECIALS.valueOf(special));
+					specials.add(User.SPECIAL_CLAIM.fromDatabase(special));
 				}catch(Exception e) {
 					//keep going
 					e.printStackTrace();
@@ -98,7 +97,7 @@ public User.SpecialUser getUserFromUserid(Connection con, String userid) throws 
 	if(userKey == null) {
 		return null;
 	}
-	return new User.SpecialUser(userid, new KeyValue(userKey),specials.toArray(new User.SPECIALS[0]));
+	return new User.SpecialUser(userid, new KeyValue(userKey),specials.toArray(new User.SPECIAL_CLAIM[0]));
 }
 /**
  * @param con database connection
@@ -302,12 +301,7 @@ public KeyValue insertUserInfo(Connection con, KeyFactory keyFactory, UserInfo u
 	insertUserInfoSQL(con,keyFactory,key,userInfo);
 	return key;
 }
-/**
- * This method was created in VisualAge.
- * @param vcimage cbit.image.VCImage
- * @param userid java.lang.String
- * @exception java.rmi.RemoteException The exception description.
- */
+
 private void insertUserInfoSQL(Connection con, KeyFactory keyFactory, KeyValue key, UserInfo userInfo) throws SQLException {
 	if (userInfo == null || con == null){
 		throw new IllegalArgumentException("Improper parameters for insertUserSQL");
@@ -367,12 +361,7 @@ public void updateUserInfo(Connection con, UserInfo userInfo) throws SQLExceptio
 	//Connection con = conFact.getConnection();
 	updateUserInfoSQL(con,userInfo);
 }
-/**
- * This method was created in VisualAge.
- * @param vcimage cbit.image.VCImage
- * @param userid java.lang.String
- * @exception java.rmi.RemoteException The exception description.
- */
+
 private void updateUserInfoSQL(Connection con, UserInfo userInfo) throws SQLException {
 	if (userInfo == null || con == null){
 		throw new IllegalArgumentException("Improper parameters for updateUserInfoSQL");
