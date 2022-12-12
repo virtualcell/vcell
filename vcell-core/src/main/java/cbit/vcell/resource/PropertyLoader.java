@@ -210,7 +210,9 @@ public class PropertyLoader {
 	public static final String vcellSMTPEmailAddress = record("vcell.smtp.emailAddress",ValueType.GEN);
 
 	public static final String vcellbatch_docker_name = record("vcell.batch.docker.name",ValueType.GEN);
+	public static final String vcellsubmit_service_host = record("vcell.submit.service.host",ValueType.GEN);
 	public static final String vcellbatch_singularity_image = record("vcell.batch.singularity.image",ValueType.GEN);
+	public static final String vcellbatch_singularity_opt_image = record("vcell.batch.singularity.opt.image",ValueType.GEN);
 	public static final String javaSimulationExecutable = record("vcell.javaSimulation.executable",ValueType.GEN);
 	public static final String simulationPreprocessor = record("vcell.simulation.preprocessor",ValueType.GEN);
 	public static final String simulationPostprocessor = record("vcell.simulation.postprocessor",ValueType.GEN);

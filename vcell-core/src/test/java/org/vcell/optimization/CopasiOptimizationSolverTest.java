@@ -1,21 +1,18 @@
 package org.vcell.optimization;
 
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.mapping.MappingException;
-import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathException;
 import cbit.vcell.modelopt.ParameterEstimationTask;
 import cbit.vcell.opt.OptimizationResultSet;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.resource.PropertyLoader;
-import cbit.vcell.resource.VCellConfiguration;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 import com.google.common.io.Files;
 import org.apache.commons.io.IOUtils;
-import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -34,8 +31,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 public class CopasiOptimizationSolverTest {
-
-    private static final String pythonExeName = OperatingSystemInfo.getInstance().isWindows() ? "python" : "python3";
 
     @BeforeClass
     public static void before(){
@@ -84,19 +79,8 @@ public class CopasiOptimizationSolverTest {
         BioModel bioModel = getBioModelFromResource(filename);
         ParameterEstimationTask parameterEstimationTask = (ParameterEstimationTask) bioModel.getSimulationContext(0).getAnalysisTasks(0);
 
-        ParameterEstimationTaskSimulatorIDA bestFitSimulator = new ParameterEstimationTaskSimulatorIDA();
         CopasiOptimizationSolver copasiOptimizationSolver = new CopasiOptimizationSolver();
-        CopasiOptSolverCallbacks copasiOptCallbacks = new CopasiOptSolverCallbacks();
-        SimulationContext.MathMappingCallback mathMappingCallback = new SimulationContext.MathMappingCallback() {
-            @Override public void setProgressFraction(float fractionDone) {}
-            @Override public void setMessage(String message) {}
-            @Override public boolean isInterrupted() {
-                return false;
-            }
-        };
-
-        OptimizationResultSet optimizationResultSet = copasiOptimizationSolver.solveLocalPython(
-                bestFitSimulator, parameterEstimationTask, copasiOptCallbacks, mathMappingCallback);
+        OptimizationResultSet optimizationResultSet = copasiOptimizationSolver.solveLocalPython(parameterEstimationTask);
 
         Assert.assertNotNull(optimizationResultSet);
     }
@@ -108,55 +92,29 @@ public class CopasiOptimizationSolverTest {
 //        ParameterEstimationTask parameterEstimationTask = (ParameterEstimationTask) bioModel.getSimulationContext(0).getAnalysisTasks(0);
 //
 //        CopasiOptimizationSolver copasiOptimizationSolver = new CopasiOptimizationSolver();
-//        ParameterEstimationTaskSimulatorIDA taskSimulatorIDA = new ParameterEstimationTaskSimulatorIDA();
 //        CopasiOptSolverCallbacks optSolverCallbacks = new CopasiOptSolverCallbacks();
-//        SimulationContext.MathMappingCallback mathMappingCallback = new TestMathMappingCallback();
-//        ClientTaskStatusSupport clientTaskStatusSupport = new TestClientTaskStatusSupport();
+//         ClientTaskStatusSupport clientTaskStatusSupport = new TestClientTaskStatusSupport();
+//        ClientServerInfo clientServerInfo = null;
 //        OptimizationResultSet optimizationResultSet = copasiOptimizationSolver.solveRemoteApi(
-//                taskSimulatorIDA, parameterEstimationTask, optSolverCallbacks, mathMappingCallback, clientTaskStatusSupport);
+//                parameterEstimationTask, optSolverCallbacks, clientTaskStatusSupport, clientServerInfo);
+//
+//        Assert.assertNotNull(optimizationResultSet);
 //    }
 
-    private static class TestMathMappingCallback implements SimulationContext.MathMappingCallback {
-        @Override
-        public void setMessage(String message) {
-            System.out.println(message);
-        }
-
-        @Override
-        public void setProgressFraction(float fractionDone) {
-            System.out.println("fraction done "+fractionDone);
-        }
-
-        @Override
-        public boolean isInterrupted() {
-            return false;
-        }
-    }
-
     private static class TestClientTaskStatusSupport implements ClientTaskStatusSupport {
-        @Override
-        public void setMessage(String message) {
+        @Override public void setMessage(String message) {
             System.out.println(message);
         }
-
-        @Override
-        public void setProgress(int progress) {
+        @Override public void setProgress(int progress) {
             System.out.println("Progress : "+progress);
         }
-
-        @Override
-        public int getProgress() {
+        @Override public int getProgress() {
             return 0;
         }
-
-        @Override
-        public boolean isInterrupted() {
+        @Override public boolean isInterrupted() {
             return false;
         }
-
-        @Override
-        public void addProgressDialogListener(ProgressDialogListener progressDialogListener) {
-        }
+        @Override public void addProgressDialogListener(ProgressDialogListener progressDialogListener) {}
     }
 
     private static BioModel getBioModelFromResource(String fileName) throws IOException, XmlParseException {

@@ -1,5 +1,23 @@
 package cbit.vcell.message.server.htc.slurm;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.StringReader;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.PosixFilePermissions;
+import java.util.*;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.vcell.util.FileUtils;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.exe.ExecutableException;
+
+import com.google.common.io.Files;
+
 import cbit.vcell.message.server.cmd.CommandService;
 import cbit.vcell.message.server.cmd.CommandService.CommandOutput;
 import cbit.vcell.message.server.cmd.CommandServiceLocal;
@@ -342,9 +360,11 @@ public class SlurmProxy extends HtcProxy {
 		//
 		// HtcJobIDs can be reused by Slurm, so make sure it has the correct JobName also.
 		//
-		for (HtcJobInfo parsedHtcJobInfo : statusMap.keySet()) {
+		Iterator<HtcJobInfo> keyIterator = statusMap.keySet().iterator();
+		while (keyIterator.hasNext()) {
+			HtcJobInfo parsedHtcJobInfo = keyIterator.next();
 			if (!requestedHtcJobInfos.contains(parsedHtcJobInfo)) {
-				statusMap.remove(parsedHtcJobInfo);
+				keyIterator.remove();
 			}
 		}
 		return statusMap;
@@ -1059,12 +1079,17 @@ public class SlurmProxy extends HtcProxy {
 				LG.debug("generating local SLURM submit script for jobName="+jobName);
 			}
 //			String text = generateScript(jobName, commandSet, ncpus, memSizeMB, postProcessingCommands, simTask);
+			LG.info("sub_file_internal: "+sub_file_internal.getAbsolutePath());
+			LG.info("sub_file_external: "+sub_file_external.getAbsolutePath());
+			LG.info("optProblemInput: "+optProblemInput.getAbsolutePath());
+			LG.info("optProblemOutput: "+optProblemOutput.getAbsolutePath());
 
+			String primaryDataDirInternal = PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirInternalProperty);
 			String primaryDataDirExternal = PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirExternalProperty);
 		    String htclogdir_external = PropertyLoader.getRequiredProperty(PropertyLoader.htcLogDirExternal);
 			String serverid=PropertyLoader.getRequiredProperty(PropertyLoader.vcellServerIDProperty);
 			String softwareVersion=PropertyLoader.getRequiredProperty(PropertyLoader.vcellSoftwareVersion);
-			String remote_singularity_image = PropertyLoader.getRequiredProperty(PropertyLoader.vcellbatch_singularity_image);
+			String remote_singularity_image = PropertyLoader.getRequiredProperty(PropertyLoader.vcellbatch_singularity_opt_image);
 			String slurm_singularity_local_image_filepath = remote_singularity_image;
 //			String docker_image = PropertyLoader.getRequiredProperty(PropertyLoader.vcellbatch_docker_name);
 			String slurm_tmpdir = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_tmpdir);
@@ -1075,16 +1100,18 @@ public class SlurmProxy extends HtcProxy {
 
 			HtcProxy.MemLimitResults memoryMBAllowed = new HtcProxy.MemLimitResults(256, "Optimization Default");
 			String[] environmentVars = new String[] {
-					"java_mem_Xmx="+memoryMBAllowed.getMemLimit()+"M",
 					"datadir_external="+primaryDataDirExternal,
-					"htclogdir_external="+htclogdir_external,
-					"softwareVersion="+softwareVersion,
-					"serverid="+serverid
 			};
 
 			LineStringBuilder lsb = new LineStringBuilder();
 			slurmScriptInit(jobName, false, memoryMBAllowed, lsb);
-			slurmInitSingularity(lsb, primaryDataDirExternal, htclogdir_external, softwareVersion,
+			File optDataDir = optProblemInput.getParentFile();
+			File optDataDirExternal = new File(optDataDir.getAbsolutePath().replace(primaryDataDirInternal, primaryDataDirExternal));
+			if (!optDataDirExternal.exists() && !optDataDirExternal.mkdir()){
+				LG.error("failed to make optimization data directory "+optDataDir.getAbsolutePath());
+			}
+//			if (optDataDirExternal.setWritable(true,false))
+			slurmInitSingularity(lsb, optDataDirExternal.getAbsolutePath(), htclogdir_external, softwareVersion,
 					slurm_singularity_local_image_filepath, slurm_tmpdir, slurm_central_singularity_dir,
 					slurm_local_singularity_dir, simDataDirArchiveHost, slurm_singularity_central_filepath,
 					environmentVars);
@@ -1093,8 +1120,10 @@ public class SlurmProxy extends HtcProxy {
 			lsb.write("echo \"cmd_prefix is '${cmd_prefix}'\"");
 			lsb.append("echo command = ");
 			lsb.write("${cmd_prefix}" + "");
-			
-			lsb.write("${cmd_prefix}" + " ParamOptemize_python"+" "+optProblemInput.getAbsolutePath()+" "+optProblemOutput.getAbsolutePath());
+
+			String optProblemInput_container_filename = optProblemInput.getAbsolutePath().replace(optProblemInput.getParent(),"/simdata");
+			String optProblemOutput_container_filename = optProblemOutput.getAbsolutePath().replace(optProblemOutput.getParent(),"/simdata");
+			lsb.write("${cmd_prefix} " + optProblemInput_container_filename+" " + optProblemOutput_container_filename);
 
 			File tempFile = File.createTempFile("tempSubFile", ".sub");
 

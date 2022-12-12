@@ -254,6 +254,7 @@ public class VCellApiMain {
 			PropertyLoader.vcellSMTPPort,
 			PropertyLoader.vcellSMTPEmailAddress,
 			PropertyLoader.vcellapiKeystoreFile,
+			PropertyLoader.vcellsubmit_service_host
 };
 
 }

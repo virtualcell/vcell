@@ -32,6 +32,10 @@ import cbit.vcell.solvers.ExecutableCommand;
 
 public abstract class HtcProxy {
 	public static final Logger LG = LogManager.getLogger(HtcProxy.class);
+
+	public interface HtcProxyFactory {
+		HtcProxy getHtcProxy();
+	}
 	
 	public static class PartitionStatistics {
 		public final int numCpusAllocated;
