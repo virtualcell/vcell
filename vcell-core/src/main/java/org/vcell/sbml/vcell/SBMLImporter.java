@@ -858,6 +858,8 @@ public class SBMLImporter {
 							if(ExpressionUtils.functionallyEquivalent(new Expression(rsValue), new Expression(sbmlValue))) {
 								sbmlSymbolMapping.putRuntime(sbmlGlobalParam, rs);
 								continue;	// it's a reserved symbol, we have it already
+							} else {
+								vcParamName = ReservedParamPrefix + sbmlParamId;
 							}
 						} else if(!isSetRsValue && !isSetSbmlValue) {
 							continue;
@@ -1257,7 +1259,7 @@ public class SBMLImporter {
 	// returns true if reserved x,y,z symbols are used inappropriately - like in a non-spatial model
 	public static boolean isRestrictedXYZT(String name, BioModel vcBioModel, boolean bSpatial) {
 		if(bSpatial) {
-			return false;
+			return false;	// if spatial, xyzt are not restricted / reserved
 		}
 		ReservedSymbol rs = vcBioModel.getModel().getReservedSymbolByName(name);
 		if(rs == null) {
