@@ -72,7 +72,7 @@ jobs:
       # Report a Problem to Slack
       - name: Report Problem to Slack
         if: ${{ failure() }}
-        run: curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="Uh-Oh! The *Build Step* of Nightly Testing Action on GitHub Failed ( ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} )! This may need attention..." https://slack.com/api/chat.postMessage
+        #run: curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="Uh-Oh! The *Build Step* of Nightly Testing Action on GitHub Failed ( ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} )! This may need attention..." https://slack.com/api/chat.postMessage
       
       # Tmate just in case
       - name: Setup tmate session 3
@@ -103,7 +103,7 @@ jobs:
         # Do the conversion
       - name: Begin Conversion
         #$(docker image ls | grep "<none>" | awk '{print $3;}')  to get image id
-        run: docker run -v $GITHUB_WORKSPACE/public/biomodel/vcml:/root $(docker image ls | grep "<none>" | awk '{print $3;}') export-omex-batch -i "/root" -o "/root/output" -m SBML --offline # grabs image and runs
+        #run: docker run -v $GITHUB_WORKSPACE/public/biomodel/vcml:/root $(docker image ls | grep "<none>" | awk '{print $3;}') export-omex-batch -i "/root" -o "/root/output" -m SBML --offline # grabs image and runs
       
       # Parse the results
       - name: Parse Results
@@ -148,7 +148,7 @@ jobs:
       # Report a Problem to Slack
       - name: Report Problem to Slack
         if: ${{ failure() }}
-        run: curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="Uh-Oh! The *Export Step* of Nightly Testing Action on GitHub Failed ( ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} )! This may need attention..." https://slack.com/api/chat.postMessage  
+        #run: curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="Uh-Oh! The *Export Step* of Nightly Testing Action on GitHub Failed ( ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} )! This may need attention..." https://slack.com/api/chat.postMessage  
      
      # Tmate just in case
       - name: Setup tmate session 3
@@ -207,7 +207,7 @@ jobs:
       # Report a Problem to Slack
       - name: Report Problem to Slack
         if: ${{ failure() }}
-        run: curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="Uh-Oh! The *Import Step* of Nightly Testing Action on GitHub Failed ( ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} )! This may need attention..." https://slack.com/api/chat.postMessage
+        #run: curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="Uh-Oh! The *Import Step* of Nightly Testing Action on GitHub Failed ( ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} )! This may need attention..." https://slack.com/api/chat.postMessage
       
       # Tmate just in case
       - name: Setup tmate session 3
@@ -253,12 +253,12 @@ jobs:
       
       # Report a Success
       - name: Report Results to Slack
-        run: curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="$(cat ~/results/summary.txt)" https://slack.com/api/chat.postMessage    
+        #run: curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="$(cat ~/results/summary.txt)" https://slack.com/api/chat.postMessage    
     
       # Report a Problem to Slack
       - name: Report Problem to Slack
         if: ${{ failure() }}
-        run: curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="Oops! The *Summary Step* of Nightly Testing Action on GitHub Failed ( ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} ). Go see what happened!" https://slack.com/api/chat.postMessage
+        #run: curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="Oops! The *Summary Step* of Nightly Testing Action on GitHub Failed ( ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} ). Go see what happened!" https://slack.com/api/chat.postMessage
       
       - name: Setup tmate session 3
         uses: mxschmitt/action-tmate@v3
