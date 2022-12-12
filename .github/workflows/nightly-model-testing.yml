@@ -104,8 +104,7 @@ jobs:
         # Do the conversion
       - name: Begin Conversion
         #$(docker image ls | grep "<none>" | awk '{print $3;}')  to get image id
-        #run: docker run -v $GITHUB_WORKSPACE/public/biomodel/vcml:/root $(docker image ls | grep "<none>" | awk '{print $3;}') export-omex-batch -i "/root" -o "/root/output" -m SBML --offline # grabs image and runs
-        run: echo "temp"
+        run: docker run -v $GITHUB_WORKSPACE/public/biomodel/vcml:/root $(docker image ls | grep "<none>" | awk '{print $3;}') export-omex-batch -i "/root" -o "/root/output" -m SBML --offline # grabs image and runs
 
       # Parse the results
       - name: Parse Results
