@@ -1,28 +1,5 @@
 package cbit.vcell.message.server.htc.slurm;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.StringReader;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.attribute.PosixFilePermission;
-import java.nio.file.attribute.PosixFilePermissions;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.StringTokenizer;
-
-import org.vcell.util.FileUtils;
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.exe.ExecutableException;
-
-import com.google.common.io.Files;
-
 import cbit.vcell.message.server.cmd.CommandService;
 import cbit.vcell.message.server.cmd.CommandService.CommandOutput;
 import cbit.vcell.message.server.cmd.CommandServiceLocal;
@@ -41,6 +18,15 @@ import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solvers.AbstractSolver;
 import cbit.vcell.solvers.ExecutableCommand;
 import edu.uchc.connjur.wb.LineStringBuilder;
+import org.vcell.util.FileUtils;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.exe.ExecutableException;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.StringReader;
+import java.util.*;
 
 public class SlurmProxy extends HtcProxy {
 	
@@ -178,8 +164,8 @@ public class SlurmProxy extends HtcProxy {
 	
 	/**
 	 * adding MPICH command if necessary
-	 * @param ncpus if != 1, {@link #MPI_HOME} command prepended
-	 * @param cmds command set
+	 * @param ncpus if != 1, {MPI_HOME} command prepended
+	 * @param command command set
 	 * @return new String
 	 */
 	private final String buildExeCommand(int ncpus,String command) {
@@ -436,16 +422,7 @@ public class SlurmProxy extends HtcProxy {
 		}
 		
 	}
-	/**
-	 * write bash script for submission
-	 * @param jobName
-	 * @param sub_file
-	 * @param commandSet
-	 * @param ncpus
-	 * @param memSize
-	 * @param postProcessingCommands
-	 * @return String containing script
-	 */
+
 	SbatchSolverComponents generateScript(String jobName, ExecutableCommand.Container commandSet, int ncpus, double memSizeMB, Collection<PortableCommand> postProcessingCommands, SimulationTask simTask) {
 		final boolean isParallel = ncpus > 1;
 
@@ -831,15 +808,19 @@ public class SlurmProxy extends HtcProxy {
 			}
 			SlurmProxy.SbatchSolverComponents sbatchSolverComponents = generateScript(jobName, commandSet, ncpus, memSizeMB, postProcessingCommands, simTask);
 			final String SUB = ".sub";
-			String slurmRootName = sub_file_external.getName().substring(0, sub_file_external.getName().length()-SUB.length());
-			String child = slurmRootName+".sh";
-			File intSolverScriptFile = new File(sub_file_internal.getParentFile(),child);
-			File extSolverScriptFile = new File(sub_file_external.getParentFile(),child);
-			
+			//String slurmRootName = sub_file_external.getName().substring(0, sub_file_external.getName().length()-SUB.length());
+			//String child = slurmRootName+".sh";
+			//File intSolverScriptFile = new File(sub_file_internal.getParentFile(),child);
+			//File extSolverScriptFile = new File(sub_file_external.getParentFile(),child);
+			StringBuilder scriptContent = new StringBuilder();
+
 			//Write the .slurm.sh File that the .slurm.sub file references and make it executable
-			Files.write(sbatchSolverComponents.getSingularityCommands(),intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-			Files.append(sbatchSolverComponents.getSendFailureMsgCommands(),intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-			Files.append(sbatchSolverComponents.getCallExitCommands(),intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+			//Files.write(sbatchSolverComponents.getSingularityCommands(),intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+			scriptContent.append(sbatchSolverComponents.getSingularityCommands());
+			//Files.append(sbatchSolverComponents.getSendFailureMsgCommands(),intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+			scriptContent.append(sbatchSolverComponents.getSendFailureMsgCommands());
+			//Files.append(sbatchSolverComponents.getCallExitCommands(),intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+			scriptContent.append(sbatchSolverComponents.getCallExitCommands());
 //			Files.append(sbatchSolverComponents.getPreProcessCommands(),intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
 			
 //			String STARTFLAG_SNIP = "_arrstartflag_";
@@ -1008,13 +989,16 @@ public class SlurmProxy extends HtcProxy {
 //					Files.append("done"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
 //				Files.append("fi"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
 //			}else {
-				Files.append(sbatchSolverComponents.getPreProcessCommands(),intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-				Files.append(sbatchSolverComponents.solverCommands,intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-				Files.append(sbatchSolverComponents.getExitCommands(),intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+				//Files.append(sbatchSolverComponents.getPreProcessCommands(),intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+				scriptContent.append(sbatchSolverComponents.getPreProcessCommands());
+				//Files.append(sbatchSolverComponents.solverCommands,intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+				scriptContent.append(sbatchSolverComponents.solverCommands);
+				//Files.append(sbatchSolverComponents.getExitCommands(),intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+				scriptContent.append(sbatchSolverComponents.getExitCommands());
 //			}
-			Set<PosixFilePermission> ownerRWX = PosixFilePermissions.fromString("rwxr-xr-x");
+			//Set<PosixFilePermission> ownerRWX = PosixFilePermissions.fromString("rwxr-xr-x");
 //			FileAttribute<?> permissions = PosixFilePermissions.asFileAttribute(ownerWritable);
-			java.nio.file.Files.setPosixFilePermissions(intSolverScriptFile.toPath(), ownerRWX);
+			//java.nio.file.Files.setPosixFilePermissions(intSolverScriptFile.toPath(), ownerRWX);
 			
 			//----------Add solver script path to sbatch file, write the .slurm.sub file
 			String substitutedSbatchCommands = sbatchSolverComponents.getSbatchCommands();
@@ -1024,8 +1008,11 @@ public class SlurmProxy extends HtcProxy {
 //				substitutedSbatchCommands+= "#SBATCH --array=1-"+slurmArrayCount;
 //			}
 			File tempFile = File.createTempFile("tempSubFile", SUB);
-			writeUnixStyleTextFile(tempFile, substitutedSbatchCommands+"\n\n"+extSolverScriptFile.getAbsolutePath()+"\n\n"+
+//			writeUnixStyleTextFile(tempFile, substitutedSbatchCommands+"\n\n"+extSolverScriptFile.getAbsolutePath()+"\n\n"+
+//			"#Following commands (if any) are read by JavaPostProcessor64\n"+sbatchSolverComponents.postProcessCommands+"\n");
+			writeUnixStyleTextFile(tempFile, substitutedSbatchCommands+"\n\n"+scriptContent.toString()+"\n\n"+
 			"#Following commands (if any) are read by JavaPostProcessor64\n"+sbatchSolverComponents.postProcessCommands+"\n");
+
 
 			// move submission file to final location (either locally or remotely).
 			if (LG.isDebugEnabled()) {
