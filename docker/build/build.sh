@@ -413,7 +413,7 @@ case $target in
 		exit $?
 		;;
 	opt)
-		build_opt && build_batch_singularity
+		build_opt && build_opt_singularity
 		exit $?
 		;;
 	api)
@@ -454,7 +454,7 @@ case $target in
 		;;
 	all)
 		# build_batch && build_api && build_master && build_db && build_sched && build_submit && build_data && build_web && build_clientgen && build_mongo && build_batch_singularity
-		build_batch && build_api && build_db && build_sched && build_submit && build_data && build_web && build_opt && build_clientgen && build_mongo && build_batch_singularity
+		build_batch && build_api && build_db && build_sched && build_submit && build_data && build_web && build_opt && build_clientgen && build_mongo && build_batch_singularity && build_opt_singularity
 		exit $?
 		;;
 	*)
