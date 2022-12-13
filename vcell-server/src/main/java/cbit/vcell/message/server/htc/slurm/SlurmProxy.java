@@ -1089,7 +1089,7 @@ public class SlurmProxy extends HtcProxy {
 		    String htclogdir_external = PropertyLoader.getRequiredProperty(PropertyLoader.htcLogDirExternal);
 			String serverid=PropertyLoader.getRequiredProperty(PropertyLoader.vcellServerIDProperty);
 			String softwareVersion=PropertyLoader.getRequiredProperty(PropertyLoader.vcellSoftwareVersion);
-			String remote_singularity_image = PropertyLoader.getRequiredProperty(PropertyLoader.vcellbatch_singularity_opt_image);
+			String remote_singularity_image = PropertyLoader.getRequiredProperty(PropertyLoader.vcellopt_singularity_image);
 			String slurm_singularity_local_image_filepath = remote_singularity_image;
 //			String docker_image = PropertyLoader.getRequiredProperty(PropertyLoader.vcellbatch_docker_name);
 			String slurm_tmpdir = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_tmpdir);

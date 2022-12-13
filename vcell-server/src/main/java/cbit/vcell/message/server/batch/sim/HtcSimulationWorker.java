@@ -731,7 +731,7 @@ private static final String REQUIRED_SERVICE_PROPERTIES[] = {
 		PropertyLoader.simulationPreprocessor,
 		PropertyLoader.slurm_partition,
 		PropertyLoader.vcellbatch_singularity_image,
-		PropertyLoader.vcellbatch_singularity_opt_image,
+		PropertyLoader.vcellopt_singularity_image,
 		PropertyLoader.vcellbatch_docker_name,
 		PropertyLoader.slurm_local_singularity_dir,
 		PropertyLoader.slurm_central_singularity_dir,
