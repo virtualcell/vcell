@@ -422,19 +422,22 @@ private MathCompareResults compareEquivalentCanonicalMath(MathDescription newMat
 			//
 			// go through the list of SubDomains, and compare equations one by one and "correct" new one if possible
 			//
-			SubDomain subDomainsOld[] = (SubDomain[])BeanUtils.getArray(oldMathDesc.getSubDomains(),SubDomain.class);
-			SubDomain subDomainsNew[] = (SubDomain[])BeanUtils.getArray(newMathDesc.getSubDomains(),SubDomain.class);
-			if (subDomainsOld.length != subDomainsNew.length){
-				String msg = subDomainsOld.length+" vs "+subDomainsNew.length;
+			ArrayList<SubDomain> subDomainsOld = new ArrayList<SubDomain>(Arrays.asList((SubDomain[])BeanUtils.getArray(oldMathDesc.getSubDomains(),SubDomain.class)));
+			ArrayList<SubDomain> subDomainsNew = new ArrayList<SubDomain>(Arrays.asList((SubDomain[])BeanUtils.getArray(newMathDesc.getSubDomains(),SubDomain.class)));
+			Collections.sort(subDomainsOld);
+			Collections.sort(subDomainsNew);
+			
+			if (subDomainsOld.size() != subDomainsNew.size()){
+				String msg = subDomainsOld.size()+" vs "+subDomainsNew.size();
 				logMathTexts(this, newMathDesc, Decision.MathDifferent_DIFFERENT_NUMBER_OF_SUBDOMAINS, msg);
 				return new MathCompareResults(Decision.MathDifferent_DIFFERENT_NUMBER_OF_SUBDOMAINS, msg);
 			}
-			for (int i = 0; i < subDomainsOld.length; i++){
+			for (int i = 0; i < subDomainsOld.size(); i++){
 				// compare boundary type
 				if (getGeometry().getDimension() > 0) {
-					if (subDomainsOld[i] instanceof CompartmentSubDomain && subDomainsNew[i] instanceof CompartmentSubDomain) {
-						CompartmentSubDomain csdOld = (CompartmentSubDomain)subDomainsOld[i];
-						CompartmentSubDomain csdNew = (CompartmentSubDomain)subDomainsNew[i];
+					if (subDomainsOld.get(i) instanceof CompartmentSubDomain && subDomainsNew.get(i) instanceof CompartmentSubDomain) {
+						CompartmentSubDomain csdOld = (CompartmentSubDomain)subDomainsOld.get(i);
+						CompartmentSubDomain csdNew = (CompartmentSubDomain)subDomainsNew.get(i);
 						if (!Compare.isEqualOrNull(csdOld.getBoundaryConditionXm(), csdNew.getBoundaryConditionXm())
 								|| !Compare.isEqualOrNull(csdOld.getBoundaryConditionXp(), csdNew.getBoundaryConditionXp())
 								|| !Compare.isEqualOrNull(csdOld.getBoundaryConditionYm(), csdNew.getBoundaryConditionYm())
@@ -445,9 +448,9 @@ private MathCompareResults compareEquivalentCanonicalMath(MathDescription newMat
 							logMathTexts(this, newMathDesc, Decision.MathDifferent_DIFFERENT_BC_TYPE, "");
 							return new MathCompareResults(Decision.MathDifferent_DIFFERENT_BC_TYPE);
 						}					
-					} else if (subDomainsOld[i] instanceof MembraneSubDomain && subDomainsNew[i] instanceof MembraneSubDomain) {
-						MembraneSubDomain msdOld = (MembraneSubDomain)subDomainsOld[i];
-						MembraneSubDomain msdNew = (MembraneSubDomain)subDomainsNew[i];
+					} else if (subDomainsOld.get(i) instanceof MembraneSubDomain && subDomainsNew.get(i) instanceof MembraneSubDomain) {
+						MembraneSubDomain msdOld = (MembraneSubDomain)subDomainsOld.get(i);
+						MembraneSubDomain msdNew = (MembraneSubDomain)subDomainsNew.get(i);
 						if (!Compare.isEqualOrNull(msdOld.getBoundaryConditionXm(), msdNew.getBoundaryConditionXm())
 								|| !Compare.isEqualOrNull(msdOld.getBoundaryConditionXp(), msdNew.getBoundaryConditionXp())
 								|| !Compare.isEqualOrNull(msdOld.getBoundaryConditionYm(), msdNew.getBoundaryConditionYm())
@@ -470,12 +473,12 @@ private MathCompareResults compareEquivalentCanonicalMath(MathDescription newMat
 					// apply standard, implicit VCell defaults for boundary conditions ...
 					//    1) for Neumann, 'null' boundary condition expression is same as zero flux (set expression to 0.0)
 					//    2) for Dirichlet, 'null' boundary condition expression is same as setting value to initial condition (set expression to 'init expression')
-					if (subDomainsOld[i] instanceof SubDomain.DomainWithBoundaryConditions) {
-						SubDomain.DomainWithBoundaryConditions oldSubdomainWithBC = (SubDomain.DomainWithBoundaryConditions) subDomainsOld[i];
+					if (subDomainsOld.get(i) instanceof SubDomain.DomainWithBoundaryConditions) {
+						SubDomain.DomainWithBoundaryConditions oldSubdomainWithBC = (SubDomain.DomainWithBoundaryConditions) subDomainsOld.get(i);
 						setMissingEquationBoundaryConditionsToDefault(oldSubdomainWithBC, geometry.getDimension());
 					}
-					if (subDomainsNew[i] instanceof SubDomain.DomainWithBoundaryConditions) {
-						SubDomain.DomainWithBoundaryConditions newSubdomainWithBCs = (SubDomain.DomainWithBoundaryConditions) subDomainsNew[i];
+					if (subDomainsNew.get(i) instanceof SubDomain.DomainWithBoundaryConditions) {
+						SubDomain.DomainWithBoundaryConditions newSubdomainWithBCs = (SubDomain.DomainWithBoundaryConditions) subDomainsNew.get(i);
 						setMissingEquationBoundaryConditionsToDefault(newSubdomainWithBCs, geometry.getDimension());
 					}
 				}
@@ -485,8 +488,8 @@ private MathCompareResults compareEquivalentCanonicalMath(MathDescription newMat
 					// test equation for this subdomain and variable
 					//
 					{
-					Equation oldEqu = subDomainsOld[i].getEquation(oldVars[j]);
-					Equation newEqu = subDomainsNew[i].getEquation(oldVars[j]);
+					Equation oldEqu = subDomainsOld.get(i).getEquation(oldVars[j]);
+					Equation newEqu = subDomainsNew.get(i).getEquation(oldVars[j]);
 					if (!Compare.isEqualOrNull(oldEqu,newEqu)){
 						boolean bFoundDifference = false;
 						//
@@ -496,7 +499,7 @@ private MathCompareResults compareEquivalentCanonicalMath(MathDescription newMat
 							//
 							// only one MathDescription had Equation for this Variable.
 							//
-							String msg = "only one mathDescription had equation for '"+oldVars[j].getQualifiedName()+"' in SubDomain '"+subDomainsOld[i].getName()+"'";
+							String msg = "only one mathDescription had equation for '"+oldVars[j].getQualifiedName()+"' in SubDomain '"+subDomainsOld.get(i).getName()+"'";
 							logMathTexts(this, newMathDesc, Decision.MathDifferent_EQUATION_ADDED, msg);
 							return new MathCompareResults(Decision.MathDifferent_EQUATION_ADDED, msg);
 						}
@@ -504,7 +507,7 @@ private MathCompareResults compareEquivalentCanonicalMath(MathDescription newMat
 							//
 							// only one MathDescription had Equation for this Variable.
 							//
-							String msg = "only one mathDescription had equation for '"+oldVars[j].getQualifiedName()+"' in SubDomain '"+subDomainsOld[i].getName()+"'";
+							String msg = "only one mathDescription had equation for '"+oldVars[j].getQualifiedName()+"' in SubDomain '"+subDomainsOld.get(i).getName()+"'";
 							logMathTexts(this, newMathDesc, Decision.MathDifferent_EQUATION_REMOVED, msg);
 							return new MathCompareResults(Decision.MathDifferent_EQUATION_REMOVED, msg);
 
@@ -575,12 +578,12 @@ private MathCompareResults compareEquivalentCanonicalMath(MathDescription newMat
 						// equation was not strictly "equal" but passed all tests, replace with old equation and move on
 						//
 						if (bFoundDifference || bOdePdeMismatch || bPdeDimensionFilteringDifferent){
-							subDomainsNew[i].replaceEquation(oldEqu);
+							subDomainsNew.get(i).replaceEquation(oldEqu);
 						}else{
 							//
 							// couldn't find the smoking gun, just plain bad
 							//
-							String msg = "couldn't find problem with equation for "+oldVars[j].getName()+" in compartment "+subDomainsOld[i].getName();
+							String msg = "couldn't find problem with equation for "+oldVars[j].getName()+" in compartment "+subDomainsOld.get(i).getName();
 							logMathTexts(this, newMathDesc, Decision.MathDifferent_UNKNOWN_DIFFERENCE_IN_EQUATION, msg);
 							return new MathCompareResults(Decision.MathDifferent_UNKNOWN_DIFFERENCE_IN_EQUATION, msg);
 						}
@@ -588,8 +591,8 @@ private MathCompareResults compareEquivalentCanonicalMath(MathDescription newMat
 					}
 					
 					{
-						ParticleProperties oldPP = subDomainsOld[i].getParticleProperties(oldVars[j]);
-						ParticleProperties newPP = subDomainsNew[i].getParticleProperties(oldVars[j]);
+						ParticleProperties oldPP = subDomainsOld.get(i).getParticleProperties(oldVars[j]);
+						ParticleProperties newPP = subDomainsNew.get(i).getParticleProperties(oldVars[j]);
 						if (!Compare.isEqualOrNull(oldPP, newPP)){
 							logMathTexts(this, newMathDesc, Decision.MathDifferent_DIFFERENT_PARTICLE_PROPERTIES, "");
 							return new MathCompareResults(Decision.MathDifferent_DIFFERENT_PARTICLE_PROPERTIES);
@@ -598,9 +601,9 @@ private MathCompareResults compareEquivalentCanonicalMath(MathDescription newMat
 					//
 					// if a membrane, test jumpCondition for this subdomain and variable
 					//
-					if (subDomainsOld[i] instanceof MembraneSubDomain && oldVars[j] instanceof VolVariable){
-						JumpCondition oldJumpCondition = ((MembraneSubDomain)subDomainsOld[i]).getJumpCondition((VolVariable)oldVars[j]);
-						JumpCondition newJumpCondition = ((MembraneSubDomain)subDomainsNew[i]).getJumpCondition((VolVariable)oldVars[j]);
+					if (subDomainsOld.get(i) instanceof MembraneSubDomain && oldVars[j] instanceof VolVariable){
+						JumpCondition oldJumpCondition = ((MembraneSubDomain)subDomainsOld.get(i)).getJumpCondition((VolVariable)oldVars[j]);
+						JumpCondition newJumpCondition = ((MembraneSubDomain)subDomainsNew.get(i)).getJumpCondition((VolVariable)oldVars[j]);
 						if (!Compare.isEqualOrNull(oldJumpCondition,newJumpCondition)){
 							boolean bFoundDifference = false;
 							//
@@ -649,12 +652,12 @@ private MathCompareResults compareEquivalentCanonicalMath(MathDescription newMat
 							// equation was not strictly "equal" but passed all tests, replace with old equation and move on
 							//
 							if (bFoundDifference){
-								((MembraneSubDomain)subDomainsNew[i]).replaceJumpCondition(oldJumpCondition);
+								((MembraneSubDomain)subDomainsNew.get(i)).replaceJumpCondition(oldJumpCondition);
 							}else{
 								//
 								// couldn't find the smoking gun, just plain bad
 								//
-								String msg = "couldn't find problem with jumpCondition for "+oldVars[j].getName()+" in compartment "+subDomainsOld[i].getName();
+								String msg = "couldn't find problem with jumpCondition for "+oldVars[j].getName()+" in compartment "+subDomainsOld.get(i).getName();
 								logMathTexts(this, newMathDesc, Decision.MathDifferent_UNKNOWN_DIFFERENCE_IN_EQUATION, msg);
 								return new MathCompareResults(Decision.MathDifferent_UNKNOWN_DIFFERENCE_IN_EQUATION, msg);
 							}
@@ -664,8 +667,8 @@ private MathCompareResults compareEquivalentCanonicalMath(MathDescription newMat
 				//
 				// test fast system for subdomain
 				//
-				FastSystem oldFastSystem = subDomainsOld[i].getFastSystem();
-				FastSystem newFastSystem = subDomainsNew[i].getFastSystem();
+				FastSystem oldFastSystem = subDomainsOld.get(i).getFastSystem();
+				FastSystem newFastSystem = subDomainsNew.get(i).getFastSystem();
 				if (!Compare.isEqualOrNull(oldFastSystem,newFastSystem)){
 					boolean bFoundDifference = false;
 					//
@@ -769,19 +772,19 @@ private MathCompareResults compareEquivalentCanonicalMath(MathDescription newMat
 					// equation was not strictly "equal" but passed all tests, replace with old equation and move on
 					//
 					if (bFoundDifference){
-						subDomainsNew[i].setFastSystem(oldFastSystem);
+						subDomainsNew.get(i).setFastSystem(oldFastSystem);
 					}else{
 						//
 						// couldn't find the smoking gun, just plain bad
 						//
-						String msg = "couldn't find problem with FastSystem for compartment "+subDomainsOld[i].getName();
+						String msg = "couldn't find problem with FastSystem for compartment "+subDomainsOld.get(i).getName();
 						logMathTexts(this, newMathDesc, Decision.MathDifferent_UNKNOWN_DIFFERENCE_IN_EQUATION, msg);
 						return new MathCompareResults(Decision.MathDifferent_UNKNOWN_DIFFERENCE_IN_EQUATION, msg);
 					}
 				}
 				
-				List<ParticleJumpProcess> oldPjpList = subDomainsOld[i].getParticleJumpProcesses();
-				List<ParticleJumpProcess> newPjpList = subDomainsNew[i].getParticleJumpProcesses();
+				List<ParticleJumpProcess> oldPjpList = subDomainsOld.get(i).getParticleJumpProcesses();
+				List<ParticleJumpProcess> newPjpList = subDomainsNew.get(i).getParticleJumpProcesses();
 				if (oldPjpList.size() != newPjpList.size()) {
 					logMathTexts(this, newMathDesc, Decision.MathDifferent_DIFFERENT_NUMBER_OF_PARTICLE_JUMP_PROCESS, "");
 					return new MathCompareResults(Decision.MathDifferent_DIFFERENT_NUMBER_OF_PARTICLE_JUMP_PROCESS);
@@ -1503,6 +1506,7 @@ public MembraneSubDomain[] getMembraneSubDomains(CompartmentSubDomain compartmen
 			}
 		}	
 	}
+	Collections.sort(membraneSubDomainList);
 	return membraneSubDomainList.toArray(new MembraneSubDomain[membraneSubDomainList.size( )]);
 }
 
@@ -3759,7 +3763,16 @@ private static boolean tryLegacyVarNameDomainExtensive(MathDescription mathDescr
 		int nameMatches = 0;
 		ArrayList<String> newNames = new ArrayList<String>();
 		for (int j = 0; j < sv2.size(); j++) {
-			if (sv2.get(j).equals(var.getName()) || sv2.get(j).substring(0, sv2.get(j).lastIndexOf("_")).equals(var.getName())) {
+		}		
+		for (int j = 0; j < sv2.size(); j++) {
+			boolean bMatch = false;
+			if (sv2.get(j).equals(oldName)) bMatch = true;
+			int underscorePos = sv2.get(j).lastIndexOf("_");
+			if (underscorePos >= 1) {
+				if (sv2.get(j).substring(0,underscorePos).equals(oldName)) bMatch = true;
+				if (sv2.get(j).substring(0,underscorePos+1).equals(oldName)) bMatch = true; //oldName may end in underscore
+			}
+			if (bMatch) {
 				newName = sv2.get(j);
 				nameMatches++;
 				newNames.add(newName);
@@ -3776,6 +3789,15 @@ private static boolean tryLegacyVarNameDomainExtensive(MathDescription mathDescr
 		}
 		// variable is present in single domain, just substitute and match domain stuff
 		try {
+			if (var.getDomain() == null) {
+				SubDomain sd = mathDescription1.getSubDomain(mathDescription2.getVariable(newName).getDomain().getName());
+				var.setDomain(new Domain(sd));
+				for (SubDomain sd1 : mathDescription1.getSubDomainCollection().toArray(new SubDomain[mathDescription1.getSubDomainCollection().size()])) {
+					if (sd1 != sd) {
+						sd1.removeEquation(oldName);
+					}
+				}
+			}
 			var.rename(newName);
 			if (var instanceof VolVariable) {
 				mathDescription1.getVariable(oldName+InsideVariable.INSIDE_VARIABLE_SUFFIX).rename(newName+InsideVariable.INSIDE_VARIABLE_SUFFIX);
@@ -3786,15 +3808,6 @@ private static boolean tryLegacyVarNameDomainExtensive(MathDescription mathDescr
 					exp.substituteInPlace(new Expression(oldName), new Expression(newName));
 					exp.substituteInPlace(new Expression(oldName + InsideVariable.INSIDE_VARIABLE_SUFFIX), new Expression(newName));
 					exp.substituteInPlace(new Expression(oldName + OutsideVariable.OUTSIDE_VARIABLE_SUFFIX), new Expression(newName));
-				}
-			}
-			if (var.getDomain() == null) {
-				SubDomain sd = mathDescription1.getSubDomain(mathDescription2.getVariable(var.getName()).getDomain().getName());
-				var.setDomain(new Domain(sd));
-				for (SubDomain sd1 : mathDescription1.getSubDomainCollection().toArray(new SubDomain[mathDescription1.getSubDomainCollection().size()])) {
-					if (sd1 != sd) {
-						sd1.removeEquation(var);
-					}
 				}
 			}
 		} catch (Exception e) {
@@ -3816,7 +3829,7 @@ private static boolean tryLegacyVarNameDomainExtensive(MathDescription mathDescr
 			// first remove equations from where they shouldn't be
 			for (SubDomain sd1 : mathDescription1.getSubDomainCollection().toArray(new SubDomain[mathDescription1.getSubDomainCollection().size()])) {
 				if (!subDomainMap.containsKey(sd1)) {
-					sd1.removeEquation(oldVar);
+					sd1.removeEquation(oldName);
 				}
 			}
 			// create new Variables of same type
@@ -3884,23 +3897,23 @@ private static boolean tryLegacyVarNameDomainExtensive(MathDescription mathDescr
 						try {
 							CompartmentSubDomain isd = msd.getInsideCompartment();
 							CompartmentSubDomain osd = msd.getOutsideCompartment();
-							if (isd != null) {
+							if (isd != null && subDomainMap.get(isd) != null) {
 								JumpCondition ijc = (JumpCondition) BeanUtils.cloneSerializable(jc);
 								ijc.setVar(mathDescription1.getVariable(subDomainMap.get(isd)));
 								ijc.setOutFlux(new Expression(0.0));
 								msd.addJumpCondition(ijc);
 							}
-							if (isd != null) {
+							if (osd != null && subDomainMap.get(osd) != null) {
 								JumpCondition ojc = (JumpCondition) BeanUtils.cloneSerializable(jc);
 								ojc.setVar(mathDescription1.getVariable(subDomainMap.get(osd)));
 								ojc.setInFlux(new Expression(0.0));
 								msd.addJumpCondition(ojc);
 							}
+							msd.removeJumpCondition(oldVar);
 						} catch (ClassNotFoundException | IOException | MathException e) {
 							logger.error("could not split jump condition for "+oldName);
 							return false;
 						}
-						msd.removeJumpCondition(oldVar);;
 					}
 				}
 			}
