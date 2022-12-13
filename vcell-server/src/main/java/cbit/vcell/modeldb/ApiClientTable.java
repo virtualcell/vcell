@@ -40,7 +40,15 @@ private ApiClientTable() {
 	super(TABLE_NAME);
 	addFields(fields);
 }
-/**
+
+	public static String getCreateApiClientSQL(KeyValue keyValue, ApiClient apiClient) {
+		ApiClientTable apiClientTable = new ApiClientTable();
+		String sql = "INSERT INTO "+ApiClientTable.table.getTableName()+
+				" VALUES "+apiClientTable.getSQLValueList(keyValue, apiClient);
+		return sql;
+	}
+
+	/**
  * This method was created in VisualAge.
  * @return Model
  * @param rset ResultSet

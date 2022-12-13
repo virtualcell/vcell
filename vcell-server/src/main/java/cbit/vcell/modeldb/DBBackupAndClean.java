@@ -48,12 +48,11 @@ import java.util.zip.ZipOutputStream;
 
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
+import org.vcell.db.DatabaseSyntax;
 import org.vcell.util.NumberUtils;
 import org.vcell.util.document.KeyValue;
 
-import cbit.util.xml.XmlUtil;
 import cbit.vcell.resource.PropertyLoader;
-import cbit.vcell.simdata.SimulationData;
 import cbit.vcell.util.AmplistorUtils;
 
 
@@ -769,19 +768,35 @@ public class DBBackupAndClean {
 		}
 	}
 	
-	private static final String selectUnreferencedSimKeySQL = 
-		" SELECT "+SimulationTable.table.id.getUnqualifiedColName()+" FROM " + SimulationTable.table.getTableName() +
-		" MINUS "+
-		" SELECT "+BioModelSimulationLinkTable.table.simRef.getQualifiedColName()+" FROM "+BioModelSimulationLinkTable.table.getTableName()+
-		" MINUS "+
-		" SELECT "+MathModelSimulationLinkTable.table.simRef.getQualifiedColName()+" FROM "+MathModelSimulationLinkTable.table.getTableName()+
-		" MINUS "+
-		" SELECT DISTINCT "+SimulationTable.table.versionParentSimRef.getQualifiedColName()+" FROM "+SimulationTable.table.getTableName()+
-			" WHERE "+SimulationTable.table.versionParentSimRef.getQualifiedColName()+" IS NOT NULL";
+	private static String getSelectUnreferencedSimKeySQL(DatabaseSyntax databaseSyntax) {
+		final String EXCEPT_OR_MINUS;
+		switch (databaseSyntax){
+			case ORACLE:{
+				EXCEPT_OR_MINUS = "MINUS";
+				break;
+			}
+			case POSTGRES:{
+				EXCEPT_OR_MINUS = "EXCEPT";
+				break;
+			}
+			default:
+				throw new RuntimeException("unexpected database syntax "+databaseSyntax);
+		}
+		String selectUnreferencedSimKeySQL =
+				" SELECT "+SimulationTable.table.id.getUnqualifiedColName()+" FROM " + SimulationTable.table.getTableName() +
+						" "+EXCEPT_OR_MINUS+" "+
+						" SELECT "+BioModelSimulationLinkTable.table.simRef.getQualifiedColName()+" FROM "+BioModelSimulationLinkTable.table.getTableName()+
+						" "+EXCEPT_OR_MINUS+" "+
+						" SELECT "+MathModelSimulationLinkTable.table.simRef.getQualifiedColName()+" FROM "+MathModelSimulationLinkTable.table.getTableName()+
+						" "+EXCEPT_OR_MINUS+" "+
+						" SELECT DISTINCT "+SimulationTable.table.versionParentSimRef.getQualifiedColName()+" FROM "+SimulationTable.table.getTableName()+
+						" WHERE "+SimulationTable.table.versionParentSimRef.getQualifiedColName()+" IS NOT NULL";
+		return selectUnreferencedSimKeySQL;
+	}
 
 
-	public static Set<KeyValue> getUnreferencedSimulations(Connection con) throws SQLException {
-		String sql = selectUnreferencedSimKeySQL;
+	public static Set<KeyValue> getUnreferencedSimulations(Connection con, DatabaseSyntax databaseSyntax) throws SQLException {
+		String sql = getSelectUnreferencedSimKeySQL(databaseSyntax);
 				
 		HashSet<KeyValue> unreferencedSimKeys = new HashSet<KeyValue>();
 		Statement stmt = con.createStatement();
@@ -798,7 +813,7 @@ public class DBBackupAndClean {
 	}
 
 	
-	private static void cleanRemoveUnreferencedSimulations(Connection con, StringBuffer logStringBuffer) throws Exception{
+	private static void cleanRemoveUnreferencedSimulations(Connection con, StringBuffer logStringBuffer, DatabaseSyntax databaseSyntax) throws Exception{
 		//
 		//Remove Simulations not pointed to by MathModels or BioModels
 		//
@@ -806,11 +821,11 @@ public class DBBackupAndClean {
 		final String SIMID = "SIMID";
 		final String SIMDATE = "SIMDATE";
 		String UNREFERENCED_SIMS_CLAUSE = 
-			SimulationTable.table.id.getQualifiedColName() + " IN (" + selectUnreferencedSimKeySQL + ")";
+			SimulationTable.table.id.getQualifiedColName() + " IN (" + getSelectUnreferencedSimKeySQL(databaseSyntax) + ")";
 
 		String sql =
 			"SELECT "+
-				"TO_CHAR(current_timestamp,'dd-Mon-yyyy hh24:mi:ss') deldate "+","+
+				"TO_CHAR(current_timestamp,'dd-Mon-yyyy hh24:mi:ss') deldate ,"+
 				UserTable.table.userid.getQualifiedColName()+" userid ,"+
 				UserTable.table.id.getQualifiedColName()+" userkey ,"+
 				SimulationTable.table.id.getQualifiedColName()+" "+SIMID+","+
@@ -831,7 +846,7 @@ public class DBBackupAndClean {
 		executeQuery(con, sql,logStringBuffer,false);
 		
 		String saveForDeleteSQL = 
-			"insert into vc_simdelfromdisk (deldate,userid,userkey,simid,simpref,simdate,simname,status,numfiles) "+sql;
+			"insert into " + SimDelFromDiskTable.table.getTableName() + " (deldate,userid,userkey,simid,simpref,simdate,simname,status,numfiles) "+sql;
 		executeUpdate(con, saveForDeleteSQL, logStringBuffer);
 		
 		sql =
@@ -854,10 +869,23 @@ public class DBBackupAndClean {
 		executeUpdate(con, sql,logStringBuffer);
 	}
 
-	private static void cleanRemoveUnreferencedMathDescriptions(Connection con, StringBuffer logStringBuffer) throws Exception{
+	private static void cleanRemoveUnreferencedMathDescriptions(Connection con, StringBuffer logStringBuffer, DatabaseSyntax databaseSyntax) throws Exception{
 		//
 		//Remove MathDescriptions not pointed to by SimContexts or MathModels
 		//
+		final String EXCEPT_OR_MINUS;
+		switch (databaseSyntax){
+			case ORACLE:{
+				EXCEPT_OR_MINUS = "MINUS";
+				break;
+			}
+			case POSTGRES:{
+				EXCEPT_OR_MINUS = "EXCEPT";
+				break;
+			}
+			default:
+				throw new RuntimeException("unexpected database syntax "+databaseSyntax);
+		}
 		logStringBuffer.append("-----Remove MathDescriptions not pointed to by SimContexts or MathModels\n");
 		final String MATHID = "MATHID";
 		final String MATHDATE = "MATHDATE";
@@ -866,14 +894,14 @@ public class DBBackupAndClean {
 			"("+
 			" SELECT "+MathDescTable.table.id.getQualifiedColName()+
 				" FROM "+MathDescTable.table.getTableName()+
-			" MINUS "+
+			" "+EXCEPT_OR_MINUS+" "+
 			" SELECT "+SimContextTable.table.mathRef.getQualifiedColName()+
 				" FROM "+SimContextTable.table.getTableName()+
 				" WHERE "+SimContextTable.table.mathRef.getQualifiedColName()+" IS NOT NULL"+
-			" MINUS "+
+			" "+EXCEPT_OR_MINUS+" "+
 			" SELECT "+ MathModelTable.table.mathRef.getQualifiedColName()+
 				" FROM "+MathModelTable.table.getTableName()+
-			" MINUS "+
+			" "+EXCEPT_OR_MINUS+" "+
 			" SELECT "+SimulationTable.table.mathRef.getQualifiedColName()+
 				" FROM "+SimulationTable.table.getTableName()+
 				" WHERE "+SimulationTable.table.mathRef.getQualifiedColName()+" IS NOT NULL"+
@@ -1008,7 +1036,7 @@ public class DBBackupAndClean {
 				UNREF_MODELS_CLAUSE+
 			" AND "+
 				ModelTable.table.ownerRef.getQualifiedColName()+" = "+UserTable.table.id.getQualifiedColName()+
-			" ORDER BY LOWER("+UserTable.table.userid.getQualifiedColName()+")";
+			" ORDER BY "+UserTable.table.userid.getQualifiedColName();
 
 		executeQuery(con, sql,logStringBuffer,false);
 		
@@ -1525,7 +1553,7 @@ System.out.println("Del sim simcount="+deleteTheseSims.size());
 			con = connectionFactory.getConnection(new Object());
 			con.setAutoCommit(false);
 						
-			cleanupDatabase(con, logStringBuffer);
+			cleanupDatabase(con, logStringBuffer, connectionFactory.getDatabaseSyntax());
 
 			writeFile(dbBackupHelper.workingDir, baseFileName, logStringBuffer.toString(), false, dbBackupHelper.exportDir);
 			
@@ -1548,12 +1576,12 @@ System.out.println("Del sim simcount="+deleteTheseSims.size());
 		
 	}
 
-	public static void cleanupDatabase(Connection con, StringBuffer logStringBuffer) throws Exception {
+	public static void cleanupDatabase(Connection con, StringBuffer logStringBuffer, DatabaseSyntax databaseSyntax) throws Exception {
 		cleanClearVersionBranchPointRef(con,SimulationTable.table, logStringBuffer);
-		cleanRemoveUnreferencedSimulations(con, logStringBuffer);
+		cleanRemoveUnreferencedSimulations(con, logStringBuffer, databaseSyntax);
 
 		cleanClearVersionBranchPointRef(con,MathDescTable.table, logStringBuffer);
-		cleanRemoveUnreferencedMathDescriptions(con, logStringBuffer);
+		cleanRemoveUnreferencedMathDescriptions(con, logStringBuffer, databaseSyntax);
 
 		cleanRemoveUnReferencedNonSpatialGeometries(con, logStringBuffer);
 

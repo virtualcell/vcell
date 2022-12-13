@@ -35,7 +35,7 @@ public class PropertyLoader {
 	private static final HashMap<String, MetaProp> propMap = new HashMap<>( );
 	public static final String ADMINISTRATOR_ACCOUNT = "Administrator";
 	public static final String ADMINISTRATOR_ID = "2";
-
+	public static final String TESTACCOUNT_USERID = "vcellNagios";
 	public static final String propertyFileProperty			= "vcell.propertyfile";
 
 	public static final String vcellServerIDProperty        = record("vcell.server.id",ValueType.GEN);

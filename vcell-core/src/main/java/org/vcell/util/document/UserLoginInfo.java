@@ -15,11 +15,13 @@ import java.io.FileReader;
 import java.io.Serializable;
 
 import cbit.vcell.resource.PropertyLoader;
+import org.vcell.api.common.AccessTokenRepresentation;
 
 @SuppressWarnings("serial")
 public class UserLoginInfo implements Serializable {
 	private String userName;
 	private DigestedPassword digestedPassword;// obfuscate password
+	private AccessTokenRepresentation access_token;
 	private String os_name;// os.name Operating system name
 	private String os_arch;// os.arch Operating system architecture
 	private String os_version;// os.version Operating system version

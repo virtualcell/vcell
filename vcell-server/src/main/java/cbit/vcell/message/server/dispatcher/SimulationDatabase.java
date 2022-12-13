@@ -54,7 +54,7 @@ public interface SimulationDatabase {
 
 	public User getUser(String username) throws DataAccessException, SQLException;
 
-	public TreeMap<User.SPECIALS,TreeMap<User,String>> getSpecialUsers() throws DataAccessException, SQLException;
+	public TreeMap<User.SPECIAL_CLAIM,TreeMap<User,String>> getSpecialUsers() throws DataAccessException, SQLException;
 
 	public SimulationInfo getSimulationInfo(User user, KeyValue simKey) throws ObjectNotFoundException, DataAccessException;
 
