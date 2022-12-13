@@ -76,6 +76,12 @@ protected void addField(Field argField) {
 }
 
 
+protected void addFields(Field[] argFields, boolean bRemoveIdField){
+	if (bRemoveIdField) {
+		fields.removeElement(id);
+	}
+	addFields(argFields);
+}
 /**
  * This method was created in VisualAge.
  * @param argField cbit.sql.Field

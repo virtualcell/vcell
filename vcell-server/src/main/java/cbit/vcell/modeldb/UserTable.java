@@ -13,6 +13,7 @@ package cbit.vcell.modeldb;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.vcell.db.KeyFactory;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.UserInfo;
 import org.vcell.util.document.UserLoginInfo;
@@ -96,7 +97,20 @@ public final static String getCreateAdministratorUserSQL() {
 	return sql;
 }
 
-/**
+public final static String getCreateTestUserSQL(KeyFactory keyFactory) {
+	long password = System.currentTimeMillis();
+	String sql = "INSERT INTO "+UserTable.table.getTableName()+
+			" VALUES ( "+keyFactory.nextSEQ()+","+
+			"'"+PropertyLoader.TESTACCOUNT_USERID+"'"+","+
+			"'"+password+"'"+","+
+			"'empty',"+"'empty',"+"'empty',"+"'empty',"+"'empty',"+
+			"'empty',"+"'empty',"+"'empty',"+"'empty',"+"'empty',"+"'empty',"+"'empty',"+
+			"CURRENT_TIMESTAMP,"+"'"+(new UserLoginInfo.DigestedPassword(""+password)).getString()+"'"+
+			" )";
+	return sql;
+}
+
+	/**
  * This method was created in VisualAge.
  * @return java.lang.String
  * @param key KeyValue

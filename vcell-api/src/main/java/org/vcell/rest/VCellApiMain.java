@@ -11,6 +11,7 @@ import javax.xml.bind.DatatypeConverter;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jose4j.jwk.RsaJsonWebKey;
 import org.restlet.Client;
 import org.restlet.Server;
 import org.restlet.data.Parameter;
@@ -19,6 +20,7 @@ import org.restlet.engine.Engine;
 import org.restlet.ext.wadl.WadlApplication;
 import org.restlet.ext.wadl.WadlComponent;
 import org.restlet.util.Series;
+import org.vcell.auth.JWTUtils;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
 import org.vcell.db.KeyFactory;
@@ -51,7 +53,7 @@ import freemarker.template.DefaultObjectWrapper;
 public class VCellApiMain {
 	
 	private final static Logger lg = LogManager.getLogger(VCellApiMain.class);
-	private final static String TEST_USER = "vcellNagios";
+	private final static String TEST_USER = PropertyLoader.TESTACCOUNT_USERID;
 	/**
 	 * @param args
 	 */
@@ -203,14 +205,16 @@ public class VCellApiMain {
 //			PythonSupport.verifyInstallation(new PythonPackage[] { PythonPackage.COPASI, PythonPackage.LIBSBML, PythonPackage.THRIFT });
 //
 //			lg.trace("start Optimization Service");
-			
-			
+
+			RsaJsonWebKey jsonWebKey = JWTUtils.createNewJsonWebKey("k1");
+			JWTUtils.setRsaJsonWebKey(jsonWebKey);
+
 			lg.trace("create app");
-			boolean bIgnoreHostProblems = true;
-			boolean bIgnoreCertProblems = true;
+			boolean bIgnoreHostMismatch = PropertyLoader.getBooleanProperty(PropertyLoader.sslIgnoreHostMismatch, false);
+			boolean bIgnoreCertProblems = PropertyLoader.getBooleanProperty(PropertyLoader.sslIgnoreCertProblems, false);
 			User testUser = localAdminDbServer.getUser(TEST_USER);
 			UserInfo testUserInfo = localAdminDbServer.getUserInfo(testUser.getID()); // lookup hashed auth credentials in database.
-			HealthService healthService = new HealthService(restEventService, "localhost", port, bIgnoreCertProblems, bIgnoreHostProblems, testUserInfo.userid, testUserInfo.digestedPassword0);
+			HealthService healthService = new HealthService(restEventService, "localhost", port, bIgnoreCertProblems, bIgnoreHostMismatch, testUserInfo.userid, testUserInfo.digestedPassword0);
 			AdminService adminService = new AdminService(adminDbTopLevel, databaseServerImpl);
 			RpcService rpcService = new RpcService(vcMessagingService_int);
 			WadlApplication app = new VCellApiApplication(restDatabaseService, userVerifier, rpcService, restEventService, adminService, templateConfiguration, healthService, javascriptDir);
@@ -249,6 +253,8 @@ public class VCellApiMain {
 			PropertyLoader.vcellSMTPHostName,
 			PropertyLoader.vcellSMTPPort,
 			PropertyLoader.vcellSMTPEmailAddress,
+			PropertyLoader.vcellapiKeystoreFile,
+			PropertyLoader.vcellsubmit_service_host
 };
 
 }

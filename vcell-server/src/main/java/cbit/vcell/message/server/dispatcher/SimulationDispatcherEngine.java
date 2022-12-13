@@ -84,21 +84,14 @@ public class SimulationDispatcherEngine {
 		
 		simStateMachine.onDispatch(simulation, simJobStatus, simulationDatabase, dispatcherQueueSession);
 	}
-	/**
-	 * @param vcMessage
-	 * @param session
-	 * @throws VCMessagingException 
-	 * @throws SQLException 
-	 * @throws DataAccessException 
-	 */
+
 	public void onStartRequest(VCSimulationIdentifier vcSimID, User user, int simulationScanCount, SimulationDatabase simulationDatabase, VCMessageSession session, VCMessageSession dispatcherQueueSession) throws VCMessagingException, DataAccessException, SQLException {
 		KeyValue simKey = vcSimID.getSimulationKey();
 
 		boolean isAdmin = false;
 		User myUser = simulationDatabase.getUser(user.getName());
 		if(myUser instanceof User.SpecialUser) {
-			//'special0' assigned to users who are VCell project admins
-			isAdmin = Arrays.asList(((User.SpecialUser)myUser).getMySpecials()).contains(User.SPECIALS.special1);
+			isAdmin = Arrays.asList(((User.SpecialUser)myUser).getMySpecials()).contains(User.SPECIAL_CLAIM.admins);
 		}
 
 		SimulationInfo simulationInfo = null;
@@ -159,11 +152,6 @@ public class SimulationDispatcherEngine {
 	}
 
 	
-
-	/**
-	 * @param vcMessage
-	 * @param session
-	 */
 	public void onWorkerEvent(WorkerEvent workerEvent, SimulationDatabase simulationDatabase, VCMessageSession session) {
 		try {
 			KeyValue simKey = workerEvent.getVCSimulationDataIdentifier().getSimulationKey();
