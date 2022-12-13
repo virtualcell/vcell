@@ -1,4 +1,6 @@
 import json
+import os
+import tempfile
 from pathlib import Path
 
 import basico
@@ -18,6 +20,8 @@ def test_run() -> None:
     opt_file = Path(__file__).parent.parent / "test_data" / "optproblem.json"
     with open(opt_file, "r") as f_optfile:
         vcell_opt_problem: OptProblem = OptProblem.from_json_data(json.load(f_optfile))
+
+    os.chdir(tempfile.gettempdir())
 
     copasi_model = basico.load_model(vcell_opt_problem.math_model_sbml_contents)
 
