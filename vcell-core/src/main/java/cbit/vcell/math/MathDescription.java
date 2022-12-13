@@ -9,8 +9,10 @@
  */
 
 package cbit.vcell.math;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -3748,16 +3750,19 @@ private static boolean tryLegacyVarNameDomainExtensive(MathDescription mathDescr
 	List<Expression> exps = new ArrayList<Expression>();
 	mathDescription1.getAllExpressions(exps);
 	boolean bVarsInMultipleSubDomains = false;
+	HashMap<String, List<String>> multiDomainVarMap = new HashMap<String, List<String>>(); // old name to new name(s)
 
 	for (int i = 0; i < sv1.size(); i++) {
 		String oldName = sv1.get(i);
 		String newName = null;
 		Variable var = mathDescription1.getVariable(oldName);
 		int nameMatches = 0;
+		ArrayList<String> newNames = new ArrayList<String>();
 		for (int j = 0; j < sv2.size(); j++) {
-			if (sv2.get(j).equals(var.getName()) || sv2.get(j).startsWith(var.getName()+"_")) {
+			if (sv2.get(j).equals(var.getName()) || sv2.get(j).substring(0, sv2.get(j).lastIndexOf("_")).equals(var.getName())) {
 				newName = sv2.get(j);
 				nameMatches++;
+				newNames.add(newName);
 			}
 		}
 		if (nameMatches == 0) {
@@ -3766,6 +3771,7 @@ private static boolean tryLegacyVarNameDomainExtensive(MathDescription mathDescr
 		}
 		if (nameMatches > 1) {
 			bVarsInMultipleSubDomains = true;
+			multiDomainVarMap.put(oldName, newNames);
 			continue;
 		}
 		// variable is present in single domain, just substitute and match domain stuff
@@ -3792,16 +3798,123 @@ private static boolean tryLegacyVarNameDomainExtensive(MathDescription mathDescr
 				}
 			}
 		} catch (Exception e) {
-			logger.error("failed to rename legacy variable "+var.getName(), e);
+			logger.error("failed to rename legacy variable "+oldName, e);
 			return false;
 		}
 	}
 	
 	if (bVarsInMultipleSubDomains) {
+		for (String oldName : multiDomainVarMap.keySet()) {
+			String oldNameIN = oldName+InsideVariable.INSIDE_VARIABLE_SUFFIX;
+			String oldNameOUT = oldName+OutsideVariable.OUTSIDE_VARIABLE_SUFFIX;
+			List<String> newNames = multiDomainVarMap.get(oldName);
+			Variable oldVar = mathDescription1.getVariable(oldName);
+			HashMap<SubDomain, String> subDomainMap = new HashMap<SubDomain, String>();
+			for (String newName : newNames) {
+				subDomainMap.put(mathDescription1.getSubDomain(mathDescription2.getVariable(newName).getDomain().getName()), newName);
+			}
+			// first remove equations from where they shouldn't be
+			for (SubDomain sd1 : mathDescription1.getSubDomainCollection().toArray(new SubDomain[mathDescription1.getSubDomainCollection().size()])) {
+				if (!subDomainMap.containsKey(sd1)) {
+					sd1.removeEquation(oldVar);
+				}
+			}
+			// create new Variables of same type
+			for (String newName : newNames) {
+				try {
+					Variable clonedVar = (Variable)BeanUtils.cloneSerializable(oldVar);
+					clonedVar.rename(newName);
+					SubDomain sd = mathDescription1.getSubDomain(mathDescription2.getVariable(newName).getDomain().getName());
+					clonedVar.setDomain(new Domain(sd));
+					mathDescription1.addVariable0(clonedVar);
+				} catch (ClassNotFoundException | ExpressionBindingException | IOException | MathException e) {
+					logger.error("could not add new variable "+newName);
+					return false;
+				}
+			}
+			// replace variable for equations which should stay
+			for (String newName : newNames) {
+				Variable newVar = mathDescription1.getVariable(newName);
+				SubDomain sd = mathDescription1.getSubDomain(newVar.getDomain().getName());
+				sd.getEquation(oldVar).setVar(newVar);
+			}
+			// remove old variable
+			mathDescription1.variableHashTable.remove(oldName);
+			mathDescription1.variableList.remove(oldVar);
+			if (oldVar instanceof VolVariable) {
+				mathDescription1.variableHashTable.remove(oldNameIN);
+				mathDescription1.variableHashTable.remove(oldNameOUT);
+				mathDescription1.variableList.remove(mathDescription1.getVariable(oldNameIN));
+				mathDescription1.variableList.remove(mathDescription1.getVariable(oldNameOUT));
+			}
+			// replace symbols in all functions with corresponding new domain variable
+			for (Variable func : mathDescription1.variableList) {
+				if (func instanceof Function ) {
+					Expression exp = func.getExpression();
+					if (exp.isNumeric()) continue;
+					for (String symbol : exp.getSymbols()) {
+						if (symbol.equals(oldName) || symbol.equals(oldNameIN) || symbol.equals(oldNameOUT)) {
+							// figure out domain and which new name to use
+							SubDomain sd = mathDescription1.getSubDomain(mathDescription2.getVariable(func.getName()).getDomain().getName());
+							func.setDomain(new Domain(sd));
+							String newName = subDomainMap.get(sd);
+							if (newName != null) exp.substituteInPlace(new Expression(oldName), new Expression(newName));
+							if (sd instanceof MembraneSubDomain) {
+								CompartmentSubDomain isd = ((MembraneSubDomain)sd).getInsideCompartment();
+								CompartmentSubDomain osd = ((MembraneSubDomain)sd).getOutsideCompartment();
+								if (isd != null) {
+									newName = subDomainMap.get(isd);
+									if (newName != null) exp.substituteInPlace(new Expression(oldNameIN), new Expression(newName));
+								}
+								if (osd != null) {
+									newName = subDomainMap.get(osd);
+									if (newName != null) exp.substituteInPlace(new Expression(oldNameOUT), new Expression(newName));
+								}
+							}
+						}
+					}
+				}
+			}
+			// split jump conditions
+			for (SubDomain sd : mathDescription1.getSubDomainCollection()) {
+				if (sd instanceof MembraneSubDomain) {
+					MembraneSubDomain msd = (MembraneSubDomain)sd;
+					JumpCondition jc = msd.getJumpCondition(oldVar);
+					if (jc != null) {
+						try {
+							CompartmentSubDomain isd = msd.getInsideCompartment();
+							CompartmentSubDomain osd = msd.getOutsideCompartment();
+							if (isd != null) {
+								JumpCondition ijc = (JumpCondition) BeanUtils.cloneSerializable(jc);
+								ijc.setVar(mathDescription1.getVariable(subDomainMap.get(isd)));
+								ijc.setOutFlux(new Expression(0.0));
+								msd.addJumpCondition(ijc);
+							}
+							if (isd != null) {
+								JumpCondition ojc = (JumpCondition) BeanUtils.cloneSerializable(jc);
+								ojc.setVar(mathDescription1.getVariable(subDomainMap.get(osd)));
+								ojc.setInFlux(new Expression(0.0));
+								msd.addJumpCondition(ojc);
+							}
+						} catch (ClassNotFoundException | IOException | MathException e) {
+							logger.error("could not split jump condition for "+oldName);
+							return false;
+						}
+						msd.removeJumpCondition(oldVar);;
+					}
+				}
+			}
+			// substitute in fast systems
+			for (SubDomain sd : mathDescription1.getSubDomainCollection()) {
+				FastSystem fastSystem = sd.getFastSystem();
+				if (fastSystem != null){
+					for (Expression exp : fastSystem.getExpressions()) {
+						exp.substituteInPlace(new Expression(oldName), new Expression(subDomainMap.get(sd)));
+					}
+				}
+			}			
+		}
 		
-		// TODO we need more work here
-		logger.error("one or more legacy variables are present in more than one subdomains");
-		return false;
 	}
 
 	return true;
