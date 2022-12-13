@@ -10,6 +10,7 @@ import org.restlet.Context;
 import org.restlet.Request;
 import org.restlet.Response;
 import org.restlet.data.ChallengeResponse;
+import org.restlet.data.ChallengeScheme;
 import org.restlet.security.Verifier;
 import org.vcell.rest.auth.CustomAuthHelper;
 import org.vcell.rest.users.UnverifiedUser;
@@ -156,9 +157,9 @@ public class UserVerifier implements Verifier {
 	}
 
 	public AuthenticationStatus verify(ChallengeResponse challengeResponse) {
-		if (challengeResponse != null && challengeResponse.getIdentifier().equals(CustomAuthHelper.ACCESS_TOKEN) && challengeResponse.getSecret()!=null){
+		if (challengeResponse != null && challengeResponse.getScheme().equals(ChallengeScheme.HTTP_OAUTH_BEARER) && challengeResponse.getRawValue()!=null){
 			try {
-				ApiAccessToken accessToken = getApiAccessToken(new String(challengeResponse.getSecret()));
+				ApiAccessToken accessToken = getApiAccessToken(challengeResponse.getRawValue());
 				if (accessToken==null){
 					return AuthenticationStatus.invalid;
 				}else if (accessToken.isExpired()){

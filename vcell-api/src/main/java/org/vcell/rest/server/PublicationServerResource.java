@@ -1,26 +1,15 @@
 package org.vcell.rest.server;
 
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
-
+import cbit.vcell.modeldb.BioModelReferenceRep;
+import cbit.vcell.modeldb.MathModelReferenceRep;
+import cbit.vcell.modeldb.PublicationRep;
+import cbit.vcell.resource.PropertyLoader;
+import com.google.gson.Gson;
+import freemarker.template.Configuration;
 import org.apache.commons.lang3.StringUtils;
-import org.restlet.data.Form;
-import org.restlet.data.LocalReference;
-import org.restlet.data.MediaType;
-import org.restlet.data.Parameter;
-import org.restlet.data.Reference;
-import org.restlet.data.Status;
+import org.restlet.data.*;
 import org.restlet.ext.freemarker.TemplateRepresentation;
-import org.restlet.ext.wadl.MethodInfo;
-import org.restlet.ext.wadl.ParameterInfo;
-import org.restlet.ext.wadl.ParameterStyle;
-import org.restlet.ext.wadl.RepresentationInfo;
-import org.restlet.ext.wadl.RequestInfo;
+import org.restlet.ext.wadl.*;
 import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.representation.Variant;
@@ -29,23 +18,18 @@ import org.restlet.resource.Post;
 import org.restlet.resource.ResourceException;
 import org.vcell.rest.VCellApiApplication;
 import org.vcell.rest.VCellApiApplication.AuthenticationPolicy;
-import org.vcell.rest.common.BiomodelReferenceRepresentation;
-import org.vcell.rest.common.MathmodelReferenceRepresentation;
 import org.vcell.rest.common.PublicationRepresentation;
 import org.vcell.rest.common.PublicationResource;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.PermissionException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
-import org.vcell.util.document.User.SPECIALS;
 
-import com.google.gson.Gson;
-
-import cbit.vcell.modeldb.BioModelReferenceRep;
-import cbit.vcell.modeldb.MathModelReferenceRep;
-import cbit.vcell.modeldb.PublicationRep;
-import cbit.vcell.resource.PropertyLoader;
-import freemarker.template.Configuration;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class PublicationServerResource extends AbstractServerResource implements PublicationResource {
 

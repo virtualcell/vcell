@@ -646,20 +646,32 @@ public class VcmlOmexConverter {
     
     public static void main(String[] args) {
     	
-    	final String outputBaseDir = "U:/vcdbresults/vcdb/public/";
-    	List<String> modelKeyList = new ArrayList<>();
+//    	final String outputBaseDir = "U:/vcdbresults/vcdb/public/biomodel/vcml/";		// dest path foe public biomodels
+    	final String outputBaseDir = "U:/vcdbresults/vcdb/published/biomodel/vcml/";	// dest path for published biomodels
+    	Set<String> modelKeySet = new LinkedHashSet<> ();
     	CLIDatabaseService cliDatabaseService;
+    	int curatedCount = 0;
+    	int publishedCount = 0;
 		try {
 			cliDatabaseService = new CLIDatabaseService();
 			List<BioModelInfo> publicBioModelInfos = cliDatabaseService.queryPublicBioModels();
 			for (BioModelInfo bmi : publicBioModelInfos){
-				// KeyValue modelKey = bmi.getModelKey();
-				KeyValue modelKey = bmi.getVersion().getVersionKey();
-		        System.out.println(modelKey.toString());
-				modelKeyList.add(modelKey.toString());
+				PublicationInfo[] pis = bmi.getPublicationInfos();
+				if(pis != null && pis.length > 0) {				// uncomment the "if" clause to only make the list of published models
+					if(bmi.getVersion().getFlag().compareEqual(org.vcell.util.document.VersionFlag.Published)) {
+						KeyValue modelKey = bmi.getVersion().getVersionKey();
+				        System.out.println(modelKey.toString());
+						modelKeySet.add(modelKey.toString());
+						publishedCount++;
+					} else {
+						curatedCount++;	// Curated, but not published!!!
+					}
+				}
 			}
-			for(String modelKey : modelKeyList) {
-				String dest = outputBaseDir + File.separator + "modelKeyList.txt";
+			System.out.println("Published: " + publishedCount);
+			System.out.println("Curated:   " + curatedCount);
+			for(String modelKey : modelKeySet) {
+				String dest = outputBaseDir + /*File.separator +*/ "modelKeyList.txt";
 				Files.write(Paths.get(dest), (modelKey + "\n").getBytes(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
 			}
 		} catch (SQLException | DataAccessException | IOException e) {
@@ -667,7 +679,7 @@ public class VcmlOmexConverter {
 		}
 
 		// ex: https://vcellapi-beta.cam.uchc.edu:8080/biomodel/225440511/biomodel.vcml
-		for(String modelKey : modelKeyList) {
+		for(String modelKey : modelKeySet) {
 			try {
 				String surl = "https://vcellapi-beta.cam.uchc.edu:8080/biomodel/";
 				surl += modelKey;

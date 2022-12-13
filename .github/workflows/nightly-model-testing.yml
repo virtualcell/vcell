@@ -11,7 +11,7 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
         with: 
@@ -60,13 +60,18 @@ jobs:
         with:
           name: docker-image
           path: /tmp/image.tar
-          
+      
+      # Report a Problem to Slack
+      - name: Report Problem to Slack
+        if: ${{ failure() }}
+        run: curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="Uh-Oh! The *Build Step* of Nightly Testing Action on GitHub Failed ( ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} )! This may need attention..." https://slack.com/api/chat.postMessage
+      
       # Tmate just in case
       - name: Setup tmate session 3
         uses: mxschmitt/action-tmate@v3
         if: ${{ failure() }}
   conversion:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     needs: build
     steps:
       - name: Create Docker Image Dir
@@ -117,13 +122,18 @@ jobs:
         with:
           name: conversion_results.txt
           path: ~/conversion_results.txt
-        
-      # Tmate just in case
+          
+      # Report a Problem to Slack
+      - name: Report Problem to Slack
+        if: ${{ failure() }}
+        run: curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="Uh-Oh! The *Conversion Step (Import)* of Nightly Testing Action on GitHub Failed ( ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} )! This may need attention..." https://slack.com/api/chat.postMessage  
+     
+     # Tmate just in case
       - name: Setup tmate session 3
         uses: mxschmitt/action-tmate@v3
         if: ${{ failure() }}
   round-trip:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     needs: conversion
     steps:
       - name: Create working directory
@@ -185,16 +195,64 @@ jobs:
         with:
           name: round-trip_results.txt
           path: ~/input_files/round-trip_results.txt
-          
+      
+      # Report a Problem to Slack
+      - name: Report Problem to Slack
+        if: ${{ failure() }}
+        run: curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="Uh-Oh! The *Round-Trip Step (Export)* of Nightly Testing Action on GitHub Failed ( ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} )! This may need attention..." https://slack.com/api/chat.postMessage
+      
       # Tmate just in case
       - name: Setup tmate session 3
         uses: mxschmitt/action-tmate@v3
         if: ${{ failure() }}
         
   execute:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     needs: round-trip
     steps:
       - name: to be implemented
         run: echo 'This is not yet implemented' 
+        
+  summarize:
+    runs-on: ubuntu-20.04
+    needs: execute
+    steps: 
+      - name: Make Results Directory
+        run: mkdir -p ~/results && cd ~/results
+        
+      - name: Download Import Results
+        uses: actions/download-artifact@v3
+        with:
+          name: conversion_results.txt
+          path: ~/results
+      
+      - name: Download Export Results
+        uses: actions/download-artifact@v3
+        with:
+          name: round-trip_results.txt
+          path: ~/results
+          
+      - name: Compile Results
+        run: |
+          if [ $() -gt 50000] && [ $() -lt 120000 ]; then echo -n 'Good Morning! ' >> ~/results/summary.txt; fi 
+          echo 'Here are the results of the Nightly Testing. Have a great day!' >> ~/results/summary.txt
+          echo '' >> ~/results/summary.txt
+          echo '-------- Import Results --------' >> ~/results/summary.txt
+          cat ~/results/conversion_results.txt >> ~/results/summary.txt
+          echo '' >> ~/results/summary.txt
+          echo '-------- Export Results --------' >> ~/results/summary.txt
+          cat ~/results/round-trip_results.txt >> ~/results/summary.txt
+      
+      # Report a Success
+      - name: Report Results to Slack
+        run: curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="$(cat ~/results/summary.txt)" https://slack.com/api/chat.postMessage    
+    
+      # Report a Problem to Slack
+      - name: Report Problem to Slack
+        if: ${{ failure() }}
+        run: curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="Oops! The *Summary Step* of Nightly Testing Action on GitHub Failed ( ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} ). Go see what happened!" https://slack.com/api/chat.postMessage
+      
+      - name: Setup tmate session 3
+        uses: mxschmitt/action-tmate@v3
+        if: ${{ failure() }}
           

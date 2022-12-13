@@ -474,7 +474,7 @@ public class SimulationStateMachine {
 			User myUser = simulationDatabase.getUser(simulation.getVersion().getOwner().getName());
 			if(myUser instanceof User.SpecialUser) {
 				//'special1' assigned to users by request to allow long running sims
-				isPowerUser = isPowerUser && Arrays.asList(((User.SpecialUser)myUser).getMySpecials()).contains(User.SPECIALS.special1);
+				isPowerUser = isPowerUser && Arrays.asList(((User.SpecialUser)myUser).getMySpecials()).contains(User.SPECIAL_CLAIM.powerUsers);
 			}else {
 				isPowerUser = false;
 			}

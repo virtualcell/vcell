@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--This biomodel was generated in VCML Version Rel_Version_7.4.0_build_34-1p-->
+<vcml xmlns="http://sourceforge.net/projects/vcell/vcml" Version="Rel_Version_7.4.0_build_34-1p">
+    <BioModel Name="BioModel2">
+        <Model Name="model">
+            <Compound Name="s0" />
+            <Compound Name="s1" />
+            <Feature Name="c0" />
+            <LocalizedCompound Name="s0" CompoundRef="s0" Structure="c0" OverrideName="true" />
+            <LocalizedCompound Name="s1" CompoundRef="s1" Structure="c0" OverrideName="true" />
+            <SimpleReaction Structure="c0" Name="r0" Reversible="true" FluxOption="MolecularOnly">
+                <Reactant LocalizedCompoundRef="s0" Stoichiometry="1" />
+                <Product LocalizedCompoundRef="s1" Stoichiometry="1" />
+                <Kinetics KineticsType="MassAction">
+                    <Parameter Name="J" Role="reaction rate" Unit="uM.s-1">((Kf * s0) - (Kr * s1))</Parameter>
+                    <Parameter Name="Kf" Role="forward rate constant" Unit="s-1">1.0</Parameter>
+                    <Parameter Name="Kr" Role="reverse rate constant" Unit="s-1">2.0</Parameter>
+                </Kinetics>
+            </SimpleReaction>
+            <Diagram Name="c0" Structure="c0">
+                <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="r0" LocationX="244" LocationY="128" />
+                <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="s0" LocationX="470" LocationY="220" />
+                <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="s1" LocationX="14" LocationY="34" />
+                <SimpleReactionShape NodeReferenceModeAttrTag="molecule" SimpleReactionRef="r0" LocationX="252" LocationY="102" />
+                <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="s0" LocationX="144" LocationY="86" />
+                <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="s1" LocationX="361" LocationY="118" />
+            </Diagram>
+            <ModelUnitSystem VolumeSubstanceUnit="uM.um3" MembraneSubstanceUnit="molecules" LumpedReactionSubstanceUnit="molecules" VolumeUnit="um3" AreaUnit="um2" LengthUnit="um" TimeUnit="s" />
+        </Model>
+        <SimulationSpec Name="Application0" Stochastic="false" UseConcentration="true" RuleBased="false" MassConservationModelReduction="false" InsufficientIterations="false" InsufficientMaxMolecules="false">
+            <NetworkConstraints RbmMaxIteration="1" RbmMaxMoleculesPerSpecies="10" RbmSpeciesLimit="800" RbmReactionsLimit="2500" />
+            <Annotation></Annotation>
+            <Geometry Name="non-spatial" Dimension="0">
+                <Extent X="10.0" Y="10.0" Z="10.0" />
+                <Origin X="0.0" Y="0.0" Z="0.0" />
+                <SubVolume Name="Compartment" Handle="0" Type="Compartmental" />
+            </Geometry>
+            <GeometryContext>
+                <FeatureMapping Feature="c0" GeometryClass="Compartment" SubVolume="Compartment" Size="50000.0">
+                    <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
+                </FeatureMapping>
+            </GeometryContext>
+            <ReactionContext>
+                <LocalizedCompoundSpec LocalizedCompoundRef="s0" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+                    <InitialConcentration>5.0</InitialConcentration>
+                    <Diffusion>0.0</Diffusion>
+                </LocalizedCompoundSpec>
+                <LocalizedCompoundSpec LocalizedCompoundRef="s1" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+                    <InitialConcentration>4.0</InitialConcentration>
+                    <Diffusion>0.0</Diffusion>
+                </LocalizedCompoundSpec>
+                <ReactionSpec ReactionStepRef="r0" ReactionMapping="included" />
+            </ReactionContext>
+            <MathDescription Name="Application0_generated">
+                <Constant Name="_F_">96485.3321</Constant>
+                <Constant Name="_F_nmol_">9.64853321E-5</Constant>
+                <Constant Name="_K_GHK_">1.0E-9</Constant>
+                <Constant Name="_N_pmol_">6.02214179E11</Constant>
+                <Constant Name="_PI_">3.141592653589793</Constant>
+                <Constant Name="_R_">8314.46261815</Constant>
+                <Constant Name="_T_">300.0</Constant>
+                <Constant Name="K_millivolts_per_volt">1000.0</Constant>
+                <Constant Name="Kf">1.0</Constant>
+                <Constant Name="KMOLE">0.001660538783162726</Constant>
+                <Constant Name="Kr">2.0</Constant>
+                <Constant Name="s0_init_uM">5.0</Constant>
+                <Constant Name="s1_init_uM">4.0</Constant>
+                <Constant Name="Size_c0">50000.0</Constant>
+                <VolumeVariable Name="s0" Domain="Compartment" />
+                <VolumeVariable Name="s1" Domain="Compartment" />
+                <Function Name="J_r0" Domain="Compartment">((Kf * s0) - (Kr * s1))</Function>
+                <CompartmentSubDomain Name="Compartment">
+                    <BoundaryType Boundary="Xm" Type="Value" />
+                    <BoundaryType Boundary="Xp" Type="Value" />
+                    <BoundaryType Boundary="Ym" Type="Value" />
+                    <BoundaryType Boundary="Yp" Type="Value" />
+                    <BoundaryType Boundary="Zm" Type="Value" />
+                    <BoundaryType Boundary="Zp" Type="Value" />
+                    <OdeEquation Name="s0" SolutionType="Unknown">
+                        <Rate> - J_r0</Rate>
+                        <Initial>s0_init_uM</Initial>
+                    </OdeEquation>
+                    <OdeEquation Name="s1" SolutionType="Unknown">
+                        <Rate>J_r0</Rate>
+                        <Initial>s1_init_uM</Initial>
+                    </OdeEquation>
+                </CompartmentSubDomain>
+            </MathDescription>
+            <Simulation Name="SimulationNominal">
+                <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Combined Stiff Solver (IDA/CVODE)">
+                    <TimeBound StartTime="0.0" EndTime="2.0" />
+                    <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+                    <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+                    <OutputOptions KeepEvery="1" KeepAtMost="1000" />
+                    <NumberProcessors>1</NumberProcessors>
+                </SolverTaskDescription>
+                <MathOverrides />
+                <Version Name="temp simulation" KeyValue="487586140" BranchId="1" Archived="1" Date="30-Nov-2022 12:21:03" FromVersionable="false">
+                    <Owner Name="temp" Identifier="123" />
+                    <GroupAccess Type="1" />
+                </Version>
+            </Simulation>
+            <Simulation Name="SimulationDataGen">
+                <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Combined Stiff Solver (IDA/CVODE)">
+                    <TimeBound StartTime="0.0" EndTime="2.0" />
+                    <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+                    <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+                    <OutputOptions KeepEvery="1" KeepAtMost="1000" />
+                    <NumberProcessors>1</NumberProcessors>
+                </SolverTaskDescription>
+                <MathOverrides>
+                    <Constant Name="Kr">1.0</Constant>
+                    <Constant Name="Kf">0.5</Constant>
+                    <Constant Name="s0_init_uM">2.5</Constant>
+                </MathOverrides>
+            </Simulation>
+            <AnalysisTaskList>
+                <ParameterEstimationTask Name="DefaultTask">
+                    <parameterMappingSpecList>
+                        <parameterMappingSpec parameterReferenceAttribute="model.r0.Kf" lowLimit="0.1" highLimit="10.0" currentValue="0.2" selected="true" />
+                        <parameterMappingSpec parameterReferenceAttribute="model.r0.Kr" lowLimit="0.2" highLimit="20.0" currentValue="0.3" selected="true" />
+                        <parameterMappingSpec parameterReferenceAttribute="Application0.s0_scs.initConc" lowLimit="0.0" highLimit="20.0" currentValue="2.0" selected="true" />
+                        <parameterMappingSpec parameterReferenceAttribute="Application0.s1_scs.initConc" lowLimit="0.0" highLimit="0.0" currentValue="0.0" selected="false" />
+                        <parameterMappingSpec parameterReferenceAttribute="Application0.c0_mapping.Size" lowLimit="5000.0" highLimit="500000.0" currentValue="50000.0" selected="false" />
+                    </parameterMappingSpecList>
+                    <referenceData numRows="25" numColumns="2">
+                        <dataColumnList>
+                            <dataColumn Name="t" weight="1.0" />
+                            <dataColumn Name="s1" weight="1.0" />
+                        </dataColumnList>
+                        <dataRowList>
+                            <dataRow>0.0 4.0</dataRow>
+                            <dataRow>1.6535399245133132E-4 3.9995453382905546</dataRow>
+                            <dataRow>6.276635144329321E-4 3.998274743619277</dataRow>
+                            <dataRow>0.0034306276215528586 3.990590010029197</dataRow>
+                            <dataRow>0.00930981017033542 3.9745759499569466</dataRow>
+                            <dataRow>0.021379458033809823 3.942139223285978</dataRow>
+                            <dataRow>0.041873558753016286 3.8883895570062883</dataRow>
+                            <dataRow>0.07015716884832657 3.816872546080026</dataRow>
+                            <dataRow>0.12746580885899947 3.680942136818943</dataRow>
+                            <dataRow>0.18695226617648983 3.5516767175235633</dataRow>
+                            <dataRow>0.26645702476153477 3.3959732254044463</dataRow>
+                            <dataRow>0.35022514860447995 3.2508185754735517</dataRow>
+                            <dataRow>0.44678336822112563 3.104634800348445</dataRow>
+                            <dataRow>0.5798008594989622 2.9349739439153484</dataRow>
+                            <dataRow>0.7130335067221049 2.7957984782266956</dataRow>
+                            <dataRow>0.8462661539452475 2.681834033949502</dataRow>
+                            <dataRow>0.9794988011683902 2.588513744615282</dataRow>
+                            <dataRow>1.1127314483915325 2.5120980127515082</dataRow>
+                            <dataRow>1.2459640956146747 2.449524652625187</dataRow>
+                            <dataRow>1.379196742837817 2.398286179857271</dataRow>
+                            <dataRow>1.5124293900609591 2.356329329749134</dataRow>
+                            <dataRow>1.6456620372841013 2.3219727774172454</dataRow>
+                            <dataRow>1.7788946845072435 2.293839762543596</dataRow>
+                            <dataRow>1.9121273317303857 2.270802918851185</dataRow>
+                            <dataRow>2.0 2.257942965982347</dataRow>
+                        </dataRowList>
+                    </referenceData>
+                    <referenceDataMappingSpecList>
+                        <referenceDataMappingSpec referenceDataColumnName="t" referenceDataModelSymbol="t" />
+                        <referenceDataMappingSpec referenceDataColumnName="s1" referenceDataModelSymbol="s1" />
+                    </referenceDataMappingSpecList>
+                    <optimizationSolverSpec optimizationSolverType="Evolutionary Programming" NumOfRuns="1">
+                        <ListOfParameters>
+                            <Parameter Name="Number of Generations" Value="200.0" />
+                            <Parameter Name="Population Size" Value="20.0" />
+                            <Parameter Name="Random Number Generator" Value="1.0" />
+                            <Parameter Name="Seed" Value="3.0" />
+                        </ListOfParameters>
+                    </optimizationSolverSpec>
+                </ParameterEstimationTask>
+            </AnalysisTaskList>
+            <MicroscopeMeasurement Name="fluor">
+                <ConvolutionKernel Type="ProjectionZKernel" />
+            </MicroscopeMeasurement>
+        </SimulationSpec>
+        <pathwayModel>
+            <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bp="http://www.biopax.org/release/biopax-level3.owl#" version="3.0" />
+        </pathwayModel>
+        <relationshipModel>
+            <RMNS version="3.0" />
+        </relationshipModel>
+        <vcmetadata>
+            <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" />
+            <nonrdfAnnotationList />
+            <uriBindingList />
+        </vcmetadata>
+    </BioModel>
+</vcml>

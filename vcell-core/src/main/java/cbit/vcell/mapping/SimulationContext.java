@@ -3792,6 +3792,11 @@ public void updateAll(boolean bForceUpgrade) throws MappingException {
 				double structSize = 1.0;
 				StructureSizeSolver.updateAbsoluteStructureSizes_symbolic(this, struct, structSize, struct.getStructureSize().getUnitDefinition());
 			}
+			if (getGeometry().getDimension() > 0 && !gc.isAllUnitSizeParameterSetForSpatial()) {
+				for (GeometryClass geometryClass : getGeometry().getGeometryClasses()) {
+					StructureSizeSolver.updateUnitStructureSizes(this, geometryClass);
+				}
+			}
 		}
 
 		//

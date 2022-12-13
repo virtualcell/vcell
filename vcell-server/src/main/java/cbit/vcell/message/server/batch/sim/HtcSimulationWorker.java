@@ -9,57 +9,10 @@
  */
 
 package cbit.vcell.message.server.batch.sim;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.UnknownHostException;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.StandardOpenOption;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Random;
-import java.util.StringTokenizer;
-import java.util.concurrent.TimeUnit;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.vcell.optimization.CopasiServicePython;
-import org.vcell.optimization.thrift.OptProblem;
-import org.vcell.optimization.thrift.OptRunStatus;
-import org.vcell.util.DataAccessException;
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.User;
-import org.vcell.util.document.VCellServerID;
-import org.vcell.util.exe.ExecutableException;
 
 import cbit.util.xml.XmlUtil;
-import cbit.vcell.message.RollbackException;
-import cbit.vcell.message.VCMessage;
-import cbit.vcell.message.VCMessageSelector;
-import cbit.vcell.message.VCMessageSession;
-import cbit.vcell.message.VCMessagingConstants;
-import cbit.vcell.message.VCMessagingException;
-import cbit.vcell.message.VCMessagingService;
-import cbit.vcell.message.VCPooledQueueConsumer;
-import cbit.vcell.message.VCQueueConsumer;
+import cbit.vcell.message.*;
 import cbit.vcell.message.VCQueueConsumer.QueueListener;
-import cbit.vcell.message.VCellQueue;
 import cbit.vcell.message.jms.activeMQ.VCMessagingServiceActiveMQ;
 import cbit.vcell.message.messages.MessageConstants;
 import cbit.vcell.message.messages.SimulationTaskMessage;
@@ -68,16 +21,11 @@ import cbit.vcell.message.server.ManageUtils;
 import cbit.vcell.message.server.ServerMessagingDelegate;
 import cbit.vcell.message.server.ServiceInstanceStatus;
 import cbit.vcell.message.server.ServiceProvider;
+import cbit.vcell.message.server.batch.opt.OptimizationBatchServer;
 import cbit.vcell.message.server.bootstrap.ServiceType;
-import cbit.vcell.message.server.cmd.CommandService;
 import cbit.vcell.message.server.cmd.CommandService.CommandOutput;
-import cbit.vcell.message.server.cmd.CommandServiceLocal;
-import cbit.vcell.message.server.cmd.CommandServiceSshNative;
 import cbit.vcell.message.server.combined.VCellServices;
-import cbit.vcell.message.server.htc.HtcJobStatus;
 import cbit.vcell.message.server.htc.HtcProxy;
-import cbit.vcell.message.server.htc.HtcProxy.HtcJobInfo;
-import cbit.vcell.message.server.htc.slurm.SlurmJobStatus;
 import cbit.vcell.message.server.htc.slurm.SlurmProxy;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.mongodb.VCMongoMessage;
@@ -86,36 +34,47 @@ import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.server.HtcJobID;
-import cbit.vcell.server.HtcJobID.BatchSystemType;
 import cbit.vcell.simdata.PortableCommand;
-import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.simdata.SimulationData;
 import cbit.vcell.simdata.VtkMeshGenerator;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.VCSimulationIdentifier;
-import cbit.vcell.solver.ode.ODESolverResultSet;
-import cbit.vcell.solver.ode.SundialsSolver;
 import cbit.vcell.solver.server.SimulationMessage;
 import cbit.vcell.solver.server.Solver;
 import cbit.vcell.solver.server.SolverFactory;
-import cbit.vcell.solver.stoch.GibsonSolver;
-import cbit.vcell.solver.stoch.StochFileWriter;
 import cbit.vcell.solvers.AbstractCompiledSolver;
 import cbit.vcell.solvers.AbstractSolver;
 import cbit.vcell.solvers.ExecutableCommand;
-import cbit.vcell.util.ColumnDescription;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
+import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+import org.vcell.util.document.VCellServerID;
+import org.vcell.util.exe.ExecutableException;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.UnknownHostException;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
+import java.util.*;
 /**
  * Insert the type's description here.
  * Creation date: (10/25/2001 4:14:09 PM)
  * @author: Jim Schaff
  */
-public class HtcSimulationWorker extends ServiceProvider  {
+public class HtcSimulationWorker extends ServiceProvider implements HtcProxy.HtcProxyFactory  {
 
 	private HtcProxy htcProxy = null;
+
+	private OptimizationBatchServer optimizationBatchServer = null;
 
 	private VCQueueConsumer queueConsumer = null;
 	private VCMessageSession messageProducer_sim = null;
@@ -123,18 +82,19 @@ public class HtcSimulationWorker extends ServiceProvider  {
 	private VCPooledQueueConsumer pooledQueueConsumer_int = null;
 	public static Logger lg = LogManager.getLogger(HtcSimulationWorker.class);
 
-	/**
-	 * SimulationWorker constructor comment.
-	 * @param argName java.lang.String
-	 * @param argParentNode cbit.vcell.appserver.ComputationalNode
-	 * @param argInitialContext javax.naming.Context
-	 */
+
 public HtcSimulationWorker(HtcProxy htcProxy, VCMessagingService vcMessagingService_int, VCMessagingService vcMessagingService_sim, ServiceInstanceStatus serviceInstanceStatus, boolean bSlaveMode) throws DataAccessException, FileNotFoundException, UnknownHostException {
 	super(vcMessagingService_int, vcMessagingService_sim, serviceInstanceStatus, bSlaveMode);
 	this.htcProxy = htcProxy;
+	this.optimizationBatchServer = new OptimizationBatchServer(this);
 }
 
-public final String getJobSelector() {
+	@Override
+	public HtcProxy getHtcProxy() {
+		return htcProxy;
+	}
+
+	public final String getJobSelector() {
 	String jobSelector = "(" + VCMessagingConstants.MESSAGE_TYPE_PROPERTY + "='" + MessageConstants.MESSAGE_TYPE_SIMULATION_JOB_VALUE + "')";
 
 	return jobSelector;
@@ -142,244 +102,9 @@ public final String getJobSelector() {
 
 public void init() {
 	initQueueConsumer();
-	initOptimizationSocket();
+	optimizationBatchServer.initOptimizationSocket();
 }
 
-private ServerSocket optimizationServersocket;
-private static class OptServerJobInfo {
-	private String optID;
-	private HtcJobInfo htcJobInfo;
-	public OptServerJobInfo(String optID, HtcJobInfo htcJobInfo) {
-		super();
-		this.optID = optID;
-		this.htcJobInfo = htcJobInfo;
-	}
-	public String getOptID() {
-		return optID;
-	}
-	public HtcJobInfo getHtcJobInfo() {
-		return htcJobInfo;
-	}
-}
-private void initOptimizationSocket() {
-	Thread optThread = new Thread(new Runnable() {
-		@Override
-		public void run() {
-			try {
-				optimizationServersocket = new ServerSocket(8877);
-				while(true) {
-					Socket optSocket = optimizationServersocket.accept();
-					
-					Thread thread = new Thread(new Runnable() {
-						@Override
-						public void run() {
-							OptServerJobInfo optServerJobInfo = null;
-							try (ObjectInputStream is = new ObjectInputStream(optSocket.getInputStream());
-									ObjectOutputStream oos = new ObjectOutputStream(optSocket.getOutputStream());
-									Socket myOptSocket = optSocket) {
-								long jobStart = 0;
-								while(true) {
-									try {
-										Object obj = is.readObject();
-										Boolean bStop = (Boolean)is.readObject();
-										if(bStop) {
-											optServerStopJob(optServerJobInfo);
-											oos.writeObject(new Boolean(true));
-											return;
-										}
-										if(obj instanceof String && obj.toString().equals("checkIfDone")) {//check and remove connection and job status
-											if(sendOptResults(optServerJobInfo.getOptID(),oos)) {
-												return;
-											}
-											HtcJobStatus htcJobStatus = optServerGetJobStatus(optServerJobInfo.getHtcJobInfo());
-											if(htcJobStatus == null) {//pending
-												oos.writeObject(new Boolean(true));
-											}else {
-												if(htcJobStatus.isFailed()) {
-													throw new Exception("slurm job "+optServerJobInfo.getHtcJobInfo().getHtcJobID()+" failed");
-												}else if(htcJobStatus.isComplete()) {
-													if(!sendOptResults(optServerJobInfo.optID,oos)) {
-														throw new Exception("job done but results missing");
-													}else {
-														return;
-													}
-												}else {//running
-													oos.writeObject(OptRunStatus.Running.name()+":");
-												}
-											}
-										}else if(obj instanceof OptProblem) {//Start opt job
-											OptProblem optProblem = (OptProblem) obj;
-											optServerJobInfo = submitOptProblem(optProblem);
-											oos.writeObject(optServerJobInfo.getOptID());
-											jobStart = System.currentTimeMillis();
-										}else if(obj instanceof String) {//Get opt job status
-											String optID = obj.toString();
-											if(sendOptResults(optID,oos)) {
-												return;
-											}
-											File f = generateOptInterresultsFilePath(optID);
-											boolean bExist = hackFileExists(f);//make container read results status
-											long lastModified = f.lastModified();
-											if(lastModified == 0 && (System.currentTimeMillis()-jobStart) > 60000) {
-												throw new Exception("results progress timed out");
-											}else if(lastModified != 0 && (lastModified-jobStart) > 60000) {
-												throw new Exception("results progress timed out");
-											}else if(lastModified != 0) {
-												jobStart = lastModified;
-											}
-											if(bExist/*f.exists()*/) {
-												List<String> progressLines = Files.readAllLines(f.toPath());
-												if(progressLines != null && progressLines.size()>0) {
-													String optRunstatus = progressLines.get(progressLines.size()-1);
-													if(optRunstatus.toLowerCase().trim().startsWith("except")) {
-														throw new Exception("python script error "+optRunstatus);
-													}
-													optRunstatus = OptRunStatus.Running.name()+":"+optRunstatus;
-													oos.writeObject(optRunstatus);
-												}else {
-													oos.writeObject(OptRunStatus.Queued.name()+":0:0:0");
-												}
-												
-											}else {
-												oos.writeObject(OptRunStatus.Queued.name()+":0:0:0");
-											}
-
-										}else {
-											throw new Exception("Unexpected paramOpt command "+obj.getClass().getName());
-										}
-									} catch (Exception e) {
-										oos.writeObject(OptRunStatus.Failed.name()+":"+e.getMessage());
-										throw e;
-									}
-								}
-							} catch (Exception e) {
-								e.printStackTrace();
-							}finally {
-								//cleanup
-								if(optServerJobInfo != null && optServerJobInfo.getOptID() != null) {
-									File optDir = generateOptimizeDirName(optServerJobInfo.getOptID());
-									if(optDir.exists()) {
-										generateOptProblemFilePath(optServerJobInfo.getOptID()).delete();
-										generateOptOutputFilePath(optServerJobInfo.getOptID()).delete();
-										generateOptInterresultsFilePath(optServerJobInfo.getOptID()).delete();
-										optDir.delete();
-									}
-								}
-							}
-						}
-					},"paramOptProblem");
-					thread.setDaemon(true);
-					thread.start();
-				}
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-	});
-	optThread.setDaemon(true);
-	optThread.start();
-}
-private boolean sendOptResults(String optID,ObjectOutputStream oos) throws IOException {
-	File f = generateOptOutputFilePath(optID);
-	if(f.exists()) {// opt job done
-		byte[] bytes = FileUtils.readFileToByteArray(f);
-		oos.writeObject(bytes);
-		return true;
-	}
-	return false;
-}
-private File generateOptimizeDirName(String optID) {
-	File primaryUserDirInternal = new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirInternalProperty));
-	File optProblemDir = new File(primaryUserDirInternal,generateOptFilePrefix(optID));
-	return optProblemDir;
-}
-private File generateOptOutputFilePath(String optID) {
-	String optOutputFileName = generateOptFilePrefix(optID)+"_optRun.bin";
-	return new File(generateOptimizeDirName(optID), optOutputFileName);
-}
-private File generateOptProblemFilePath(String optID) {
-	String optOutputFileName = generateOptFilePrefix(optID)+"_optProblem.bin";
-	return new File(generateOptimizeDirName(optID), optOutputFileName);
-}
-private File generateOptInterresultsFilePath(String optID) {
-	return new File(generateOptimizeDirName(optID), "interresults.txt");
-}
-private String generateOptFilePrefix(String optID) {
-	return "ParamOptemize_"+optID;
-
-}
-private Random random = new Random(System.currentTimeMillis());
-private OptServerJobInfo submitOptProblem(OptProblem optProblem) throws IOException, ExecutableException {
-		HtcProxy htcProxyClone = htcProxy.cloneThreadsafe();
-		File htcLogDirExternal = new File(PropertyLoader.getRequiredProperty(PropertyLoader.htcLogDirExternal));
-		File htcLogDirInternal = new File(PropertyLoader.getRequiredProperty(PropertyLoader.htcLogDirInternal));
-		int optID = random.nextInt(1000000);
-		String optSubFileName = generateOptFilePrefix(optID+"")+".sub";
-		File sub_file_external = new File(htcLogDirExternal, optSubFileName);
-		File sub_file_internal = new File(htcLogDirInternal, optSubFileName);
-		File optProblemFile = generateOptProblemFilePath(optID+"");
-		File optOutputFile = generateOptOutputFilePath(optID+"");
-		CopasiServicePython.writeOptProblem(optProblemFile, optProblem);//save param optimization problem to user dir
-		//make sure all can read and write
-		File optDir = generateOptimizeDirName(optID+"");
-		optDir.setReadable(true,false);
-		optDir.setWritable(true,false);
-		
-		String slurmOptJobName = generateOptFilePrefix(optID+"");
-		HtcJobID htcJobID = htcProxyClone.submitOptimizationJob(slurmOptJobName, sub_file_internal, sub_file_external,optProblemFile,optOutputFile);
-		return new OptServerJobInfo(optID+"", new HtcJobInfo(htcJobID, slurmOptJobName));
-}
-private void optServerStopJob(OptServerJobInfo optServerJobInfo) {
-	try {
-		HtcProxy htcProxyClone = htcProxy.cloneThreadsafe();
-		htcProxyClone.killJobSafe(optServerJobInfo.getHtcJobInfo());
-//		CommandOutput commandOutput = htcProxyClone.getCommandService().command(new String[] {"scancel",optServerJobInfo.htcJobID.getJobNumber()+""});
-//		return commandOutput.getExitStatus()==0;
-	} catch (Exception e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
-	}
-}
-private HtcJobStatus optServerGetJobStatus(HtcJobInfo htcJobInfo) {
-	HtcProxy htcProxyClone = htcProxy.cloneThreadsafe();
-	try {
-		return htcProxyClone.getJobStatus(Arrays.asList(new HtcJobInfo[] {htcJobInfo})).get(htcJobInfo);
-	} catch (Exception e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
-		return null;
-	}
-}
-private static boolean hackFileExists(File watchThisFile) {
-	try {
-		//Force container bind mount to update file status
-		ProcessBuilder pb = new ProcessBuilder("sh","-c","ls "+watchThisFile.getAbsolutePath()+"*");
-		pb.redirectErrorStream(true);
-		Process p = pb.start();
-		BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
-//		StringBuffer sb = new StringBuffer();
-		String line = null;
-		while((line = br.readLine()) != null) {
-			//sb.append(line+"\n");
-			System.out.println("'"+line+"'");
-			if(line.trim().startsWith("ls: ")) {
-//				System.out.println("false");
-				break;
-			}else if(line.trim().equals(watchThisFile.getAbsolutePath())) {
-//				System.out.println("true");
-				return true;
-			}
-		}
-		p.waitFor(10,TimeUnit.SECONDS);
-		br.close();
-//		System.out.println("false");
-	} catch (Exception e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
-	}
-	return false;
-}
 private static class PostProcessingChores {
 	/**
 	 * where solver runs
@@ -405,19 +130,12 @@ private static class PostProcessingChores {
 	private boolean isVtk;
 //	private boolean bStochMultiTrial;
 
-	/**
-	 * directories are same
-	 * @param runDirectory
-	 */
+
 	PostProcessingChores(String runDirectoryInternal, String runDirectoryExternal) {
 		this(runDirectoryInternal,runDirectoryExternal,runDirectoryInternal,runDirectoryExternal);
 	}
 
-	/**
-	 * directories are different
-	 * @param runDirectory
-	 * @param finalDataDirectory
-	 */
+
 	PostProcessingChores(String runDirectoryInternal, String runDirectoryExternal, String finalDataDirectoryInternal, String finalDataDirectoryExternal) {
 		this.runDirectoryInternal = runDirectoryInternal;
 		this.runDirectoryExternal = runDirectoryExternal;
@@ -636,11 +354,13 @@ public void startJobMonitor() {
 //					System.out.println("-----"+sb.toString());
 //					System.out.println("-----");
 					
-					StringTokenizer st = new StringTokenizer(slurmJobInfoSB.toString()," \n\r\t");
+					StringTokenizer st = new StringTokenizer(slurmJobInfoSB.toString(),"\n\r");
 					while(st.hasMoreTokens()) {
-						String slurmJobID = st.nextToken();
-						String jobName = st.nextToken();
-						String jobState = st.nextToken();
+						String line = st.nextToken();
+						StringTokenizer lineTokenizer = new StringTokenizer(line," \t");
+						String slurmJobID = lineTokenizer.nextToken();
+						String jobName = lineTokenizer.nextToken();
+						String jobState = lineTokenizer.nextToken();
 						if(jobState.equalsIgnoreCase("FAILED") ||
 							jobState.startsWith("CANCELLED") ||
 							jobState.equalsIgnoreCase("BOOT_FAIL") ||
@@ -878,7 +598,7 @@ private HtcJobID submit2PBS(SimulationTask simTask, HtcProxy clonedHtcProxy, Pos
 		);
 		commandContainer.add(ec);
 	}
-
+	commandContainer.translatePaths(primaryUserDirInternal,primaryUserDirExternal);
 	jobid = clonedHtcProxy.submitJob(jobname, subFileInternal, subFileExternal, commandContainer, ncpus, simTask.getEstimatedMemorySizeMB(), postProcessingCommands, simTask,primaryUserDirExternal);
 	if (jobid == null) {
 		throw new RuntimeException("Failed. (error message: submitting to job scheduler failed).");
@@ -1011,9 +731,15 @@ private static final String REQUIRED_SERVICE_PROPERTIES[] = {
 		PropertyLoader.simulationPreprocessor,
 		PropertyLoader.slurm_partition,
 		PropertyLoader.vcellbatch_singularity_image,
+		PropertyLoader.vcellopt_singularity_image,
 		PropertyLoader.vcellbatch_docker_name,
 		PropertyLoader.slurm_local_singularity_dir,
-		PropertyLoader.slurm_central_singularity_dir
+		PropertyLoader.slurm_central_singularity_dir,
+		PropertyLoader.slurm_reservation,
+		PropertyLoader.slurm_qos,
+		PropertyLoader.slurm_partition_pu,
+		PropertyLoader.slurm_reservation_pu,
+		PropertyLoader.slurm_qos_pu
 	};
 
 

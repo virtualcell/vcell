@@ -15,13 +15,9 @@ import java.util.Hashtable;
 import javax.swing.filechooser.FileFilter;
 
 import org.vcell.util.DataAccessException;
-import org.vcell.util.document.BioModelInfo;
-import org.vcell.util.document.MathModelInfo;
+import org.vcell.util.document.*;
 import org.vcell.util.document.UserLoginInfo.DigestedPassword;
-import org.vcell.util.document.VCDataIdentifier;
-import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocument.VCDocumentType;
-import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.importer.PathwayImportPanel.PathwayImportOption;
 
 import cbit.vcell.client.TopLevelWindowManager.OpenModelInfoHolder;
@@ -342,4 +338,5 @@ void accessPermissions(Component requester, VCDocument vcDocument);
 
 boolean isDifferentFromBlank(VCDocumentType documentType, VCDocument vcDocument);
 
+ClientServerInfo getClientServerInfo();
 }

@@ -53,7 +53,7 @@ public LocalUserMetaDbServerMessaging(UserLoginInfo userLoginInfo, RpcSender rpc
 	this.dbServerProxy = new RpcDbServerProxy(userLoginInfo, rpcSender);
 }
 
-public TreeMap<User.SPECIALS,TreeMap<User,String>> getSpecialUsers() throws DataAccessException{
+public TreeMap<User.SPECIAL_CLAIM,TreeMap<User,String>> getSpecialUsers() throws DataAccessException{
 	try {
 	return dbServerProxy.getSpecialUsers();
 	} catch (DataAccessException e) {
@@ -64,13 +64,7 @@ public TreeMap<User.SPECIALS,TreeMap<User,String>> getSpecialUsers() throws Data
 		throw new DataAccessException(e.getMessage(),e);
 	}
 }
-/**
- * This method was created in VisualAge.
- * @return GeometryInfo
- * @param key KeyValue
- * @exception DataAccessException The exception description.
- * @exception java.rmi.RemoteException The exception description.
- */
+
 public org.vcell.util.document.VCDocumentInfo curate(CurateSpec curateSpec) throws DataAccessException, ObjectNotFoundException {
 
 	try {
@@ -219,13 +213,6 @@ public void deleteVCImage(org.vcell.util.document.KeyValue key) throws DataAcces
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return GeometryInfo
- * @param key KeyValue
- * @exception DataAccessException The exception description.
- * @exception java.rmi.RemoteException The exception description.
- */
 public cbit.vcell.numericstest.TestSuiteOPResults doTestSuiteOP(cbit.vcell.numericstest.TestSuiteOP tsop) throws DataAccessException {
 
 	try {
@@ -241,13 +228,6 @@ public cbit.vcell.numericstest.TestSuiteOPResults doTestSuiteOP(cbit.vcell.numer
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return GeometryInfo
- * @param key KeyValue
- * @exception DataAccessException The exception description.
- * @exception java.rmi.RemoteException The exception description.
- */
 public org.vcell.util.document.ReferenceQueryResult findReferences(org.vcell.util.document.ReferenceQuerySpec rqs) throws DataAccessException, ObjectNotFoundException {
 
 	try {
@@ -283,13 +263,6 @@ public org.vcell.util.document.VersionableFamily getAllReferences(org.vcell.util
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return GeometryInfo
- * @param key KeyValue
- * @exception DataAccessException The exception description.
- * @exception java.rmi.RemoteException The exception description.
- */
 public org.vcell.util.document.BioModelInfo getBioModelInfo(org.vcell.util.document.KeyValue bioModelKey) throws DataAccessException, ObjectNotFoundException {
 
 	try {
@@ -305,13 +278,6 @@ public org.vcell.util.document.BioModelInfo getBioModelInfo(org.vcell.util.docum
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return GeometryInfo
- * @param key KeyValue
- * @exception DataAccessException The exception description.
- * @exception java.rmi.RemoteException The exception description.
- */
 public org.vcell.util.document.BioModelInfo[] getBioModelInfos(boolean bAll) throws DataAccessException {
 
 	try {
@@ -448,13 +414,6 @@ public cbit.vcell.model.ReactionDescription[] getDictionaryReactions(ReactionQue
 	}
 }
 
-/**
- * This method was created in VisualAge.
- * @return GeometryInfo
- * @param key KeyValue
- * @exception DataAccessException The exception description.
- * @exception java.rmi.RemoteException The exception description.
- */
 public cbit.vcell.geometry.GeometryInfo getGeometryInfo(org.vcell.util.document.KeyValue geoKey) throws DataAccessException, ObjectNotFoundException {
 
 	try {
@@ -470,13 +429,6 @@ public cbit.vcell.geometry.GeometryInfo getGeometryInfo(org.vcell.util.document.
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return GeometryInfo
- * @param key KeyValue
- * @exception DataAccessException The exception description.
- * @exception java.rmi.RemoteException The exception description.
- */
 public cbit.vcell.geometry.GeometryInfo[] getGeometryInfos(boolean bAll) throws DataAccessException {
 
 	try {
@@ -513,13 +465,6 @@ public BigString getGeometryXML(KeyValue geometryKey) throws DataAccessException
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return GeometryInfo
- * @param key KeyValue
- * @exception DataAccessException The exception description.
- * @exception java.rmi.RemoteException The exception description.
- */
 public org.vcell.util.document.MathModelInfo getMathModelInfo(org.vcell.util.document.KeyValue mathModelKey) throws DataAccessException, ObjectNotFoundException {
 
 	try {
@@ -535,13 +480,6 @@ public org.vcell.util.document.MathModelInfo getMathModelInfo(org.vcell.util.doc
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return GeometryInfo
- * @param key KeyValue
- * @exception DataAccessException The exception description.
- * @exception java.rmi.RemoteException The exception description.
- */
 public org.vcell.util.document.MathModelInfo[] getMathModelInfos(boolean bAll) throws DataAccessException {
 
 	try {
@@ -681,13 +619,6 @@ public cbit.vcell.model.ReactionStepInfo[] getReactionStepInfos(org.vcell.util.d
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (9/1/2004 11:27:01 AM)
- * @return cbit.vcell.solver.SolverResultSetInfo
- * @param simKey cbit.sql.KeyValue
- * @throws RemoteException 
- */
 public SimulationStatusPersistent[] getSimulationStatus(org.vcell.util.document.KeyValue simulationKeys[]) throws DataAccessException, ObjectNotFoundException {
 
 	try {
@@ -705,13 +636,6 @@ public SimulationStatusPersistent[] getSimulationStatus(org.vcell.util.document.
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (9/1/2004 11:27:01 AM)
- * @return cbit.vcell.solver.SolverResultSetInfo
- * @param simKey cbit.sql.KeyValue
- * @throws RemoteException 
- */
 public SimulationStatusPersistent getSimulationStatus(org.vcell.util.document.KeyValue simulationKey) throws DataAccessException, ObjectNotFoundException {
 
 	try {
@@ -750,13 +674,6 @@ public BigString getSimulationXML(KeyValue simKey) throws DataAccessException, O
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return GeometryInfo
- * @param key KeyValue
- * @exception DataAccessException The exception description.
- * @exception java.rmi.RemoteException The exception description.
- */
 public cbit.vcell.numericstest.TestSuiteNew getTestSuite(java.math.BigDecimal getThisTS) throws DataAccessException {
 
 	try {
@@ -772,13 +689,6 @@ public cbit.vcell.numericstest.TestSuiteNew getTestSuite(java.math.BigDecimal ge
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return GeometryInfo
- * @param key KeyValue
- * @exception DataAccessException The exception description.
- * @exception java.rmi.RemoteException The exception description.
- */
 public cbit.vcell.numericstest.TestSuiteInfoNew[] getTestSuiteInfos() throws DataAccessException {
 
 	try {
@@ -816,13 +726,6 @@ public cbit.vcell.model.ReactionDescription[] getUserReactionDescriptions(Reacti
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return GeometryInfo
- * @param key KeyValue
- * @exception DataAccessException The exception description.
- * @exception java.rmi.RemoteException The exception description.
- */
 public cbit.image.VCImageInfo getVCImageInfo(org.vcell.util.document.KeyValue imgKey) throws DataAccessException, ObjectNotFoundException {
 
 	try {
@@ -838,13 +741,6 @@ public cbit.image.VCImageInfo getVCImageInfo(org.vcell.util.document.KeyValue im
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return GeometryInfo
- * @param key KeyValue
- * @exception DataAccessException The exception description.
- * @exception java.rmi.RemoteException The exception description.
- */
 public cbit.image.VCImageInfo[] getVCImageInfos(boolean bAll) throws DataAccessException {
 
 	try {
@@ -1143,14 +1039,6 @@ public BigString saveMathModelAs(BigString mathModelXML, String newName, String 
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return Versionable
- * @param versionable Versionable
- * @param bVersion boolean
- * @exception DataAccessException The exception description.
- * @exception java.rmi.RemoteException The exception description.
- */
 public org.vcell.util.BigString saveSimulation(org.vcell.util.BigString simulationXML, boolean bForceIndependent) throws DataAccessException {
 
 	try {

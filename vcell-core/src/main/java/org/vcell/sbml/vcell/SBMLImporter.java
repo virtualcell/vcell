@@ -858,6 +858,8 @@ public class SBMLImporter {
 							if(ExpressionUtils.functionallyEquivalent(new Expression(rsValue), new Expression(sbmlValue))) {
 								sbmlSymbolMapping.putRuntime(sbmlGlobalParam, rs);
 								continue;	// it's a reserved symbol, we have it already
+							} else {
+								vcParamName = ReservedParamPrefix + sbmlParamId;
 							}
 						} else if(!isSetRsValue && !isSetSbmlValue) {
 							continue;
@@ -1257,7 +1259,7 @@ public class SBMLImporter {
 	// returns true if reserved x,y,z symbols are used inappropriately - like in a non-spatial model
 	public static boolean isRestrictedXYZT(String name, BioModel vcBioModel, boolean bSpatial) {
 		if(bSpatial) {
-			return false;
+			return false;	// if spatial, xyzt are not restricted / reserved
 		}
 		ReservedSymbol rs = vcBioModel.getModel().getReservedSymbolByName(name);
 		if(rs == null) {
@@ -4152,26 +4154,37 @@ public class SBMLImporter {
 						Structure struct = ci.get(); 
 						String domainType = compMapping.getDomainType();
 						GeometryClass geometryClass = vcGeometry.getGeometryClass(domainType);
-						double unitSize = compMapping.getUnitSize();
 						Feature feat = BeanUtils.downcast(Feature.class,struct);
 						if (feat != null) {
 							FeatureMapping featureMapping = new FeatureMapping(feat, vcBioModel.getSimulationContext(0), vcModelUnitSystem);
 							featureMapping.setGeometryClass(geometryClass);
 							if (geometryClass instanceof SubVolume) {
-								featureMapping.getVolumePerUnitVolumeParameter().setExpression(new Expression(unitSize));
+								if (compMapping.isSetUnitSize()) {
+									double unitSize = compMapping.getUnitSize();
+									featureMapping.getVolumePerUnitVolumeParameter().setExpression(new Expression(unitSize));
+								}
 								sbmlSymbolMapping.putInitial(compMapping, featureMapping.getVolumePerUnitVolumeParameter());
 							} else if (geometryClass instanceof SurfaceClass) {
-								featureMapping.getVolumePerUnitAreaParameter().setExpression(new Expression(unitSize));
+								if (compMapping.isSetUnitSize()) {
+									double unitSize = compMapping.getUnitSize();
+									featureMapping.getVolumePerUnitAreaParameter().setExpression(new Expression(unitSize));
+								}
 								sbmlSymbolMapping.putInitial(compMapping, featureMapping.getVolumePerUnitAreaParameter());
 							}
 							structMappingsVector.add(featureMapping);
 						} else if (struct instanceof Membrane) {
 							MembraneMapping membraneMapping = new MembraneMapping( (Membrane) struct, vcBioModel.getSimulationContext(0), vcModelUnitSystem); membraneMapping.setGeometryClass(geometryClass);
 							if (geometryClass instanceof SubVolume) {
-								membraneMapping.getAreaPerUnitVolumeParameter().setExpression(new Expression(unitSize));
+								if (compMapping.isSetUnitSize()) {
+									double unitSize = compMapping.getUnitSize();
+									membraneMapping.getAreaPerUnitVolumeParameter().setExpression(new Expression(unitSize));
+								}
 								sbmlSymbolMapping.putInitial(compMapping, membraneMapping.getAreaPerUnitVolumeParameter());
 							} else if (geometryClass instanceof SurfaceClass) {
-								membraneMapping.getAreaPerUnitAreaParameter().setExpression(new Expression(unitSize));
+								if (compMapping.isSetUnitSize()) {
+									double unitSize = compMapping.getUnitSize();
+									membraneMapping.getAreaPerUnitAreaParameter().setExpression(new Expression(unitSize));
+								}
 								sbmlSymbolMapping.putInitial(compMapping, membraneMapping.getAreaPerUnitAreaParameter());
 							}
 							structMappingsVector.add(membraneMapping);
