@@ -1,60 +1,39 @@
 package org.vcell.cli.run;
 
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.resource.OperatingSystemInfo;
-import cbit.vcell.solver.ode.ODESolverResultSet;
-import cbit.vcell.xml.ExternalDocInfo;
-
-import org.jlibsedml.*;
-
-import org.apache.commons.io.FilenameUtils;
 import org.vcell.cli.CLIRecorder;
 import org.vcell.cli.PythonStreamException;
-import org.vcell.cli.run.hdf5.Hdf5DatasetWrapper;
-import org.vcell.cli.run.hdf5.Hdf5FileWrapper;
-import org.vcell.cli.run.hdf5.Hdf5Writer;
-import org.vcell.cli.vcml.VCMLHandler;
 import org.vcell.util.FileUtils;
-import org.vcell.util.GenericExtensionFilter;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 
 public class ExecutionJob {
 
     private final static Logger logger = LogManager.getLogger(ExecutionJob.class);
 
-    private int nModels, nSimulations, nTasks, nOutputs, nReportsCount = 0, nPlots2DCount = 0, nPlots3DCount = 0;
     private long startTime, endTime; 
-
-    private boolean hasOverrides = false, hasScans = false, bExactMatchOnly, bSmallMeshOverride, bKeepTempFiles;
-    private String logOmexMessage, inputFilePath, bioModelBaseName, outputBaseDir, outputDir;
+    private boolean bExactMatchOnly, bSmallMeshOverride, bKeepTempFiles;
+    private StringBuilder logOmexMessage;
+    private String inputFilePath, bioModelBaseName, outputBaseDir, outputDir;
     private boolean anySedmlDocumentHasSucceeded = false;    // set to true if at least one sedml document run is successful
     private boolean anySedmlDocumentHasFailed = false;       // set to true if at least one sedml document run fails
     
     private OmexHandler omexHandler = null;
     private List<String> sedmlLocations;
-    private List<Output> outputs;
-    private SedML sedml;
     private Path sedmlPath2d3d;
-    private File inputFile, sedmlPathwith2dand3d;
+    private File inputFile;
 
     private CLIRecorder cliRecorder;
 
     public ExecutionJob(File inputFile, File rootOutputDir, CLIRecorder cliRecorder,
             boolean bKeepTempFiles, boolean bExactMatchOnly, boolean bEncapsulateOutput, boolean bSmallMeshOverride){
+        this();
         this.inputFile = inputFile;
         this.cliRecorder = cliRecorder;
         
@@ -67,8 +46,8 @@ public class ExecutionJob {
         this.bSmallMeshOverride = bSmallMeshOverride;
     }
 
-    public ExecutionJob(){
-        this.logOmexMessage = "";
+    private ExecutionJob(){
+        this.logOmexMessage = new StringBuilder("");
     }
 
     public void preprocessArchive() throws PythonStreamException, IOException {
@@ -109,8 +88,19 @@ public class ExecutionJob {
             this.queueAllSedml();
 
             for (String sedmlLocation : this.sedmlLocations){
-                SedmlJob job = new SedmlJob(sedmlLocation, inputFile, new File(outputBaseDir), outputDir, sedmlPath2d3d.toString(), 
-                    cliRecorder, this.bKeepTempFiles, this.bExactMatchOnly, this.bSmallMeshOverride);
+                SedmlJob job = new SedmlJob(sedmlLocation, this.omexHandler, this.inputFile, new File(this.outputBaseDir), this.outputDir, this.sedmlPath2d3d.toString(), 
+                    this.cliRecorder, this.bKeepTempFiles, this.bExactMatchOnly, this.bSmallMeshOverride, this.logOmexMessage);
+                if (!job.preProcessDoc()){
+                    SedmlStatistics stats = job.getDocStatistics(); // Must process document first
+                    logger.error("Statistics of failed SedML:\n" + stats.toString());
+                    this.anySedmlDocumentHasFailed = true;
+                }
+                SedmlStatistics stats = job.getDocStatistics();
+                boolean hasSucceeded = job.simulateSedml();
+                this.anySedmlDocumentHasSucceeded |= hasSucceeded;
+                this.anySedmlDocumentHasFailed &= hasSucceeded;
+                if (hasSucceeded) logger.info("Processing of SedML succeeded.\n" + stats.toString());
+                else logger.error("Processing of SedML has failed.\n" + stats.toString());
             }
         } catch(PythonStreamException e){
             logger.error("Python-processing encountered fatal error. Execution is unable to properly continue.", e);
@@ -138,22 +128,16 @@ public class ExecutionJob {
             }
             PythonCalls.updateOmexStatusYml(Status.FAILED, outputDir, duration + "");
             logger.error(error);
-            logOmexMessage += error;
-            //CLIUtils.writeErrorList(outputBaseDir, bioModelBaseName, bForceLogFiles);
+            logOmexMessage.append(error);
             cliRecorder.writeErrorList(bioModelBaseName);
         } else {
             PythonCalls.updateOmexStatusYml(Status.SUCCEEDED, outputDir, duration + "");
-            //CLIUtils.writeFullSuccessList(outputBaseDir, bioModelBaseName, bForceLogFiles);
             cliRecorder.writeFullSuccessList(bioModelBaseName);
-            logOmexMessage += " Done";
+            logOmexMessage.append(" Done");
             
         }
-        PythonCalls.setOutputMessage("null", "null", outputDir, "omex", logOmexMessage);
+        PythonCalls.setOutputMessage("null", "null", outputDir, "omex", logOmexMessage.toString());
         logger.debug("Finished Execution of Archive: " + bioModelBaseName);
-    }
-
-    public List<String> getAllSedmlLocations(){
-        return this.sedmlLocations;
     }
 
     private void queueAllSedml() throws PythonStreamException, InterruptedException, IOException {
