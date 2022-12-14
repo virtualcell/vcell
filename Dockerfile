@@ -2,7 +2,10 @@
 FROM ubuntu:20.04
 
 ARG SIMULATOR_VERSION="7.4.0.51"
+ARG MAX_JAVA_MEM=0
+# Make sure you don't sap all of docker's memory when you set this.
 ENV ENV_SIMULATOR_VERSION=$SIMULATOR_VERSION
+ENV MAX_JAVA_MEM_MB=$MAX_JAVA_MEM
 
 # metadata
 LABEL \
