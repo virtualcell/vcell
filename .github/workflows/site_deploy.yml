@@ -39,17 +39,16 @@ jobs:
         echo "VCELL_TAG=`git rev-parse --short HEAD`" >> $GITHUB_ENV
         echo "VCELL_REPO_NAMESPACE=ghcr.io/virtualcell" >> $GITHUB_ENV
         echo "VCELL_DEPLOY_REMOTE_DIR=/share/apps/vcell3/deployed_github" >> $GITHUB_ENV
-        if [ "${{ github.event.inputs.vcell_site }}" == "rel" ]; then
-        	echo "VCELL_MANAGER_NODE=vcellapi.cam.uchc.edu" >> $GITHUB_ENV;
-        	echo "VCELL_INSTALLER_REMOTE_DIR="/share/apps/vcell3/apache_webroot/htdocs/webstart/Rel"" >> $GITHUB_ENV;
-        else if [ "${{ github.event.inputs.vcell_site }}" == "alpha" ]; then
-         	echo "VCELL_MANAGER_NODE=vcellapi-beta.cam.uchc.edu" >> $GITHUB_ENV;
-        	echo "VCELL_INSTALLER_REMOTE_DIR="/share/apps/vcell3/apache_webroot/htdocs/webstart/Alpha"" >> $GITHUB_ENV;
-        else if [ "${{ github.event.inputs.vcell_site }}" == "test" ]; then
-         	echo "VCELL_MANAGER_NODE=vcellapi-beta.cam.uchc.edu" >> $GITHUB_ENV;
-        	echo "VCELL_INSTALLER_REMOTE_DIR="/share/apps/vcell3/apache_webroot/htdocs/webstart/Beta"" >> $GITHUB_ENV;
-        else echo "Unknown site name ${{ github.event.inputs.vcell_site }}"; exit 1; 
-        fi
+        if [ "${{ github.event.inputs.vcell_site }}" == "rel" ]; then\
+        	echo "VCELL_MANAGER_NODE=vcellapi.cam.uchc.edu" >> $GITHUB_ENV;\
+        	echo "VCELL_INSTALLER_REMOTE_DIR="/share/apps/vcell3/apache_webroot/htdocs/webstart/Rel"" >> $GITHUB_ENV;\
+        else if [ "${{ github.event.inputs.vcell_site }}" == "alpha" ]; then\
+         	echo "VCELL_MANAGER_NODE=vcellapi-beta.cam.uchc.edu" >> $GITHUB_ENV;\
+        	echo "VCELL_INSTALLER_REMOTE_DIR="/share/apps/vcell3/apache_webroot/htdocs/webstart/Alpha"" >> $GITHUB_ENV;\
+        else if [ "${{ github.event.inputs.vcell_site }}" == "test" ]; then\
+         	echo "VCELL_MANAGER_NODE=vcellapi-beta.cam.uchc.edu" >> $GITHUB_ENV;\
+        	echo "VCELL_INSTALLER_REMOTE_DIR="/share/apps/vcell3/apache_webroot/htdocs/webstart/Beta"" >> $GITHUB_ENV;\
+        else echo "Unknown site name ${{ github.event.inputs.vcell_site }}"; exit 1; fi; fi; fi
     - name: setup ssh-agent
       uses: webfactory/ssh-agent@v0.5.3
       with:
@@ -184,12 +183,10 @@ jobs:
       run: |
         set -ux
         cd docker/swarm
-        export BATCH_SINGULARITY_FILENAME=`cat $VCELL_CONFIG_FILE_NAME | grep VCELL_BATCH_SINGULARITY_FILENAME | cut -d"=" -f2`
-        export OPT_SINGULARITY_FILENAME=`cat $VCELL_CONFIG_FILE_NAME | grep VCELL_OPT_SINGULARITY_FILENAME | cut -d"=" -f2`
+        export SINGULARITY_FILENAME=`cat $VCELL_CONFIG_FILE_NAME | grep VCELL_SINGULARITY_FILENAME | cut -d"=" -f2`
         cd ../build/singularity-vm
         singularity remote login -u ${{ secrets.ACTION_USER }} -p ${{ secrets.ACTION_TOKEN }} oras://ghcr.io
-        singularity pull $BATCH_SINGULARITY_FILENAME oras://${VCELL_REPO_NAMESPACE}/vcell-batch-singularity:${{ github.event.inputs.vcell_version }}.${{ github.event.inputs.vcell_build }}
-        singularity pull $OPT_SINGULARITY_FILENAME oras://${VCELL_REPO_NAMESPACE}/vcell-opt-singularity:${{ github.event.inputs.vcell_version }}.${{ github.event.inputs.vcell_build }}
+        singularity pull $SINGULARITY_FILENAME oras://${VCELL_REPO_NAMESPACE}/vcell-batch-singularity:${{ github.event.inputs.vcell_version }}.${{ github.event.inputs.vcell_build }}
     - name: deploy to site
       run: |
         set -ux
