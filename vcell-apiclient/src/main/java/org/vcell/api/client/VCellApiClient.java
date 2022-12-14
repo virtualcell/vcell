@@ -86,6 +86,7 @@ public class VCellApiClient {
 	private HttpClientContext httpClientContext;
 	boolean bIgnoreCertProblems = true;
 	boolean bIgnoreHostMismatch = true;
+	boolean bSkipSSL = true;
 	private final static String DEFAULT_CLIENTID = "85133f8d-26f7-4247-8356-d175399fc2e6";
 
 
@@ -137,13 +138,18 @@ public class VCellApiClient {
 	}
 
 	public VCellApiClient(String host, int port, boolean bIgnoreCertProblems, boolean bIgnoreHostMismatch) throws KeyManagementException, NoSuchAlgorithmException, KeyStoreException{
-		this.httpHost = new HttpHost(host,port,"https");
+		this(host, port, false, bIgnoreCertProblems, bIgnoreHostMismatch);
+	}
+
+	public VCellApiClient(String host, int port, boolean bSkipSSL, boolean bIgnoreCertProblems, boolean bIgnoreHostMismatch) throws KeyManagementException, NoSuchAlgorithmException, KeyStoreException{
+		this.httpHost = new HttpHost(host,port,"http");
 		this.clientID = DEFAULT_CLIENTID;
 		this.bIgnoreCertProblems = bIgnoreCertProblems;
 		this.bIgnoreHostMismatch = bIgnoreHostMismatch;
+		this.bSkipSSL = bSkipSSL;
 		initClient();
 	}
-	
+
 	private void initClient() throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
 
 		SSLContextBuilder builder = new SSLContextBuilder();
@@ -179,7 +185,10 @@ public class VCellApiClient {
 			//continue, try connections anyway 
 		}
 
-		httpclient = httpClientBuilder.setSSLSocketFactory(sslsf).setRedirectStrategy(new DefaultRedirectStrategy()).build();
+		if (!bSkipSSL){
+			httpClientBuilder.setSSLSocketFactory(sslsf);
+		}
+		httpclient = httpClientBuilder.setRedirectStrategy(new DefaultRedirectStrategy()).build();
 		httpClientContext = HttpClientContext.create();
 	}
 	
@@ -193,6 +202,7 @@ public class VCellApiClient {
 	public SimulationTaskRepresentation[] getSimTasks(SimTasksQuerySpec simTasksQuerySpec) throws IOException {
 
 		HttpGet httpget = new HttpGet("https://"+httpHost.getHostName()+":"+httpHost.getPort()+"/simtask?"+simTasksQuerySpec.getQueryString());
+		httpget.addHeader("Authorization","Bearer "+httpClientContext.getUserToken(String.class));
 
 		if (lg.isInfoEnabled()) {
 			lg.info("Executing request to retrieve simulation tasks " + httpget.getRequestLine());
@@ -212,6 +222,7 @@ public class VCellApiClient {
 	public BiomodelRepresentation[] getBioModels(BioModelsQuerySpec bioModelsQuerySpec) throws IOException {
 		  
 		HttpGet httpget = new HttpGet("https://"+httpHost.getHostName()+":"+httpHost.getPort()+"/biomodel?"+bioModelsQuerySpec.getQueryString());
+		httpget.addHeader("Authorization","Bearer "+httpClientContext.getUserToken(String.class));
 
 		if (lg.isInfoEnabled()) {
 			lg.info("Executing request to retrieve biomodels " + httpget.getRequestLine());
@@ -231,6 +242,7 @@ public class VCellApiClient {
 	public EventWrapper[] getEvents(long beginTimestamp) throws IOException {
 		  
 		HttpGet httpget = new HttpGet("https://"+httpHost.getHostName()+":"+httpHost.getPort()+"/events?beginTimestamp="+beginTimestamp);
+		httpget.addHeader("Authorization","Bearer "+httpClientContext.getUserToken(String.class));
 
 		if (lg.isInfoEnabled()) {
 			lg.info("Executing request to retrieve user events " + httpget.getRequestLine());
@@ -250,7 +262,8 @@ public class VCellApiClient {
 	public BiomodelRepresentation getBioModel(String bmId) throws IOException {
 		  
 		HttpGet httpget = new HttpGet("https://"+httpHost.getHostName()+":"+httpHost.getPort()+"/biomodel/"+bmId);
-		
+		httpget.addHeader("Authorization","Bearer "+httpClientContext.getUserToken(String.class));
+
 		if (lg.isInfoEnabled()) {
 			lg.info("Executing request to retrieve biomodel " + httpget.getRequestLine());
 		}
@@ -269,7 +282,8 @@ public class VCellApiClient {
 	public String getBioModelVCML(String bmId) throws IOException {
 		  
 		HttpGet httpget = new HttpGet("https://"+httpHost.getHostName()+":"+httpHost.getPort()+"/biomodel/"+bmId+"/biomodel.vcml");
-		
+		httpget.addHeader("Authorization","Bearer "+httpClientContext.getUserToken(String.class));
+
 		if (lg.isInfoEnabled()) {
 			lg.info("Executing request to retrieve biomodel " + httpget.getRequestLine());
 		}
@@ -283,7 +297,8 @@ public class VCellApiClient {
 	public SimulationRepresentation getSimulation(String bmId, String simKey) throws IOException {
 		  
 		HttpGet httpget = new HttpGet("https://"+httpHost.getHostName()+":"+httpHost.getPort()+"/biomodel/"+bmId+"/simulation/"+simKey);
-		
+		httpget.addHeader("Authorization","Bearer "+httpClientContext.getUserToken(String.class));
+
 		if (lg.isInfoEnabled()) {
 			lg.info("Executing request to retrieve simulation " + httpget.getRequestLine());
 		}
@@ -302,7 +317,8 @@ public class VCellApiClient {
 	public String getOptRunJson(String optimizationId,boolean bStop) throws IOException {
 		
 		HttpGet httpget = new HttpGet("https://"+httpHost.getHostName()+":"+httpHost.getPort()+"/optimization/"+optimizationId+"?bStop="+bStop);
-		
+		httpget.addHeader("Authorization","Bearer "+httpClientContext.getUserToken(String.class));
+
 		if (lg.isInfoEnabled()) {
 			lg.info("Executing request to retrieve optimization run " + httpget.getRequestLine());
 		}
@@ -317,6 +333,8 @@ public class VCellApiClient {
 	public String submitOptimization(String optProblemJson) throws IOException, URISyntaxException {
 		  
 		HttpPost httppost = new HttpPost("https://"+httpHost.getHostName()+":"+httpHost.getPort()+"/optimization");
+		httppost.addHeader("Authorization", "Bearer "+httpClientContext.getUserToken(String.class));
+
 		StringEntity input = new StringEntity(optProblemJson);
 		input.setContentType("application/json");
 		httppost.setEntity(input);
@@ -402,7 +420,8 @@ public class VCellApiClient {
     public SimulationTaskRepresentation[] startSimulation(String bmId, String simKey) throws IOException {
 		  
 		HttpPost httppost = new HttpPost("https://"+httpHost.getHostName()+":"+httpHost.getPort()+"/biomodel/"+bmId+"/simulation/"+simKey+"/startSimulation");
-		
+		httppost.addHeader("Authorization", "Bearer "+httpClientContext.getUserToken(String.class));
+
 		if (lg.isInfoEnabled()) {
 			lg.info("Executing request to retrieve simulation " + httppost.getRequestLine());
 		}
@@ -425,7 +444,8 @@ public class VCellApiClient {
 	public SimulationTaskRepresentation[] stopSimulation(String bmId, String simKey) throws IOException {
 		  
 		HttpPost httppost = new HttpPost("https://"+httpHost.getHostName()+":"+httpHost.getPort()+"/biomodel/"+bmId+"/simulation/"+simKey+"/stopSimulation");
-		
+		httppost.addHeader("Authorization", "Bearer "+httpClientContext.getUserToken(String.class));
+
 		if (lg.isInfoEnabled()) {
 			lg.info("Executing request to retrieve simulation " + httppost.getRequestLine());
 		}
@@ -460,8 +480,8 @@ public class VCellApiClient {
 		Gson gson = new Gson();
 		AccessTokenRepresentation accessTokenRep = gson.fromJson(accessTokenJson,AccessTokenRepresentation.class);
 		
-		CredentialsProvider credsProvider = new BasicCredentialsProvider();
-		credsProvider.setCredentials(
+		BasicCredentialsProvider basicCredsProvider = new BasicCredentialsProvider();
+		basicCredsProvider.setCredentials(
 		        new AuthScope(httpHost.getHostName(),httpHost.getPort()),
 		        new UsernamePasswordCredentials("access_token", accessTokenRep.getToken()));
 
@@ -473,8 +493,9 @@ public class VCellApiClient {
 
 		// Add AuthCache to the execution context
 		httpClientContext = HttpClientContext.create();
-		httpClientContext.setCredentialsProvider(credsProvider);
-		httpClientContext.setAuthCache(authCache);
+//		httpClientContext.setCredentialsProvider(basicCredsProvider);
+//		httpClientContext.setAuthCache(authCache);
+		httpClientContext.setUserToken(accessTokenRep.token);
 		
 		return accessTokenRep;
 	}
@@ -646,6 +667,7 @@ public class VCellApiClient {
 		httppost.addHeader("timeoutMS", Integer.toString(timeoutMS));
 		httppost.addHeader("compressed", "zip");
 		httppost.addHeader("class",VCellApiRpcBody.class.getCanonicalName());
+		httppost.addHeader("Authorization", "Bearer "+httpClientContext.getUserToken(String.class));
 		if (specialProperties!=null) {
 			httppost.addHeader("specialProperties", Arrays.asList(specialProperties).toString());
 		}

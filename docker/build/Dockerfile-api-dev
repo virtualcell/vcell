@@ -37,7 +37,8 @@ ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
 	smtp_port="smtp-port-not-set" \
 	smtp_emailaddress="smtp-emailaddress-not-set" \
     webDataPort="webDataPort-not-set" \
-	publicationHost="publicationHost_not_set"
+	publicationHost="publicationHost_not_set" \
+	vcellSubmitService="vcellSubmitService_not_set"
 
 ENV dbpswdfile=/run/secrets/dbpswd \
     jmspswdfile=/run/secrets/jmspswd \

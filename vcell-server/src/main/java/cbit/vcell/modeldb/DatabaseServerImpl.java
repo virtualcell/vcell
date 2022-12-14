@@ -116,7 +116,7 @@ public DatabaseServerImpl(ConnectionFactory conFactory, KeyFactory keyFactory)
 	}		
 }
 
-public TreeMap<User.SPECIALS,TreeMap<User,String>> getSpecialUsers(User user) throws DataAccessException{
+public TreeMap<User.SPECIAL_CLAIM,TreeMap<User,String>> getSpecialUsers(User user) throws DataAccessException{
 	try {
 		return dbTop.getSpecialUsers(user,true);
 	} catch (Exception e) {

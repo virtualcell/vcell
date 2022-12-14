@@ -43,6 +43,7 @@ jobs:
         run: |
           cd pythonProject/vcell-opt
           poetry install
+          poetry run python -m pytest
 
       - name: setup java 8 with maven cache
         uses: actions/setup-java@v3
@@ -94,6 +95,12 @@ jobs:
         run: |
           cd docker/swarm/vcell-admin
           poetry install
+
+      - name: build vcell-opt package
+        run: |
+          cd pythonProject/vcell-opt
+          poetry install
+          poetry run python -m pytest
 
       - name: setup java 8 with maven cache
         uses: actions/setup-java@v3

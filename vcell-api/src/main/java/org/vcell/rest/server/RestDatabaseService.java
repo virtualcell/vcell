@@ -115,7 +115,7 @@ public class RestDatabaseService {
 	public String getBasicStatistics() throws SQLException, DataAccessException{
 		return databaseServerImpl.getAdminDBTopLevel().getBasicStatistics();
 	}
-	public TreeMap<User.SPECIALS,TreeMap<User,String>> getSpecialUsers(User user) throws DataAccessException{
+	public TreeMap<User.SPECIAL_CLAIM,TreeMap<User,String>> getSpecialUsers(User user) throws DataAccessException{
 		return databaseServerImpl.getSpecialUsers(user);
 	}
 	public SimulationSaveResponse saveSimulation(BiomodelSimulationSaveServerResource resource, User vcellUser, List<OverrideRepresentation> overrideRepresentations) throws PermissionException, ObjectNotFoundException, DataAccessException, SQLException, XmlParseException, PropertyVetoException, MappingException, ExpressionException{

@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.apache.commons.io.FileUtils;
 
 /**
  * command string. Encapsulates information about the command
@@ -198,6 +197,21 @@ public class ExecutableCommand {
 		public Container( ) {
 			execCommands = new ArrayList<>(4);
 			exitCodeCommand = null;
+		}
+
+		public void translatePaths(File absPathSource, File absPathTarget){
+			for (ExecutableCommand executableCommand : execCommands) {
+				for (int i = 0; i < executableCommand.getCommands().size(); i++) {
+					String cmd = executableCommand.getCommands().get(i);
+					executableCommand.getCommands().set(i, cmd.replace(absPathSource.getAbsolutePath(), absPathTarget.getAbsolutePath()));
+				}
+			}
+			if (exitCodeCommand!=null){
+				for (int i=0; i < exitCodeCommand.getCommands().size(); i++) {
+					String cmd = exitCodeCommand.getCommands().get(i);
+					exitCodeCommand.getCommands().set(i, cmd.replace(absPathSource.getAbsolutePath(), absPathTarget.getAbsolutePath()));
+				}
+			}
 		}
 		
 		

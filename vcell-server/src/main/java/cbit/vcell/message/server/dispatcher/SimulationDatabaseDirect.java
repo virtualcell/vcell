@@ -343,7 +343,7 @@ public class SimulationDatabaseDirect implements SimulationDatabase {
 		return user;
 	}
 
-	public TreeMap<User.SPECIALS,TreeMap<User,String>>  getSpecialUsers() throws DataAccessException, SQLException{
+	public TreeMap<User.SPECIAL_CLAIM,TreeMap<User,String>>  getSpecialUsers() throws DataAccessException, SQLException{
 		return databaseServerImpl.getSpecialUsers(null);
 	}
 	

@@ -149,7 +149,7 @@ void cleanupDatabase(boolean bEnableRetry) throws DataAccessException,java.sql.S
 	Connection con = conFactory.getConnection(lock);
 	try {
 		StringBuffer stringBuffer = new StringBuffer();
-		DBBackupAndClean.cleanupDatabase(con, stringBuffer);
+		DBBackupAndClean.cleanupDatabase(con, stringBuffer, conFactory.getDatabaseSyntax());
 		if (lg.isDebugEnabled()) lg.debug(stringBuffer.toString());
 	
 		con.commit();
@@ -922,7 +922,7 @@ VCImage getVCImage(QueryHashtable dbc, User user, KeyValue key, boolean bCheckPe
  * @return cbit.vcell.modeldb.VCInfoContainer
  * @param user cbit.vcell.server.User
  */
-TreeMap<User.SPECIALS,TreeMap<User,String>>  getSpecialUsers(User user,boolean bEnableRetry) throws DataAccessException, java.sql.SQLException{
+TreeMap<User.SPECIAL_CLAIM,TreeMap<User,String>>  getSpecialUsers(User user,boolean bEnableRetry) throws DataAccessException, java.sql.SQLException{
 	
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);

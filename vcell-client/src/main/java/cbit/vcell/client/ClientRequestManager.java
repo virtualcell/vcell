@@ -68,6 +68,8 @@ import javax.swing.ListSelectionModel;
 import javax.swing.Timer;
 import javax.swing.filechooser.FileFilter;
 
+import cbit.vcell.modelopt.ParameterEstimationTask;
+import cbit.vcell.opt.OptimizationResultSet;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpStatus;
@@ -88,36 +90,13 @@ import org.vcell.model.bngl.gui.BNGLDebuggerPanel;
 import org.vcell.model.bngl.gui.BNGLUnitsPanel;
 import org.vcell.model.rbm.RbmUtils;
 import org.vcell.model.rbm.RbmUtils.BnglObjectConstructionVisitor;
-import org.vcell.util.BeanUtils;
-import org.vcell.util.CommentStringTokenizer;
-import org.vcell.util.Compare;
-import org.vcell.util.DataAccessException;
-import org.vcell.util.Extent;
-import org.vcell.util.ISize;
-import org.vcell.util.Issue;
-import org.vcell.util.Origin;
-import org.vcell.util.ProgrammingException;
-import org.vcell.util.TokenMangler;
-import org.vcell.util.UserCancelException;
-import org.vcell.util.UtilCancelException;
-import org.vcell.util.VCAssert;
-import org.vcell.util.VCellThreadChecker;
-import org.vcell.util.document.BioModelChildSummary;
-import org.vcell.util.document.BioModelInfo;
-import org.vcell.util.document.CurateSpec;
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.MathModelChildSummary;
-import org.vcell.util.document.MathModelInfo;
-import org.vcell.util.document.User;
+import org.vcell.optimization.CopasiOptSolverCallbacks;
+import org.vcell.optimization.ParameterEstimationTaskSimulatorIDA;
+import org.vcell.util.*;
+import org.vcell.util.document.*;
 import org.vcell.util.document.UserLoginInfo.DigestedPassword;
-import org.vcell.util.document.VCDataIdentifier;
-import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocument.DocumentCreationInfo;
 import org.vcell.util.document.VCDocument.VCDocumentType;
-import org.vcell.util.document.VCDocumentInfo;
-import org.vcell.util.document.VersionInfo;
-import org.vcell.util.document.VersionableType;
-import org.vcell.util.document.VersionableTypeVersion;
 import org.vcell.util.gui.AsynchGuiUpdater;
 import org.vcell.util.gui.AsynchProgressPopup;
 import org.vcell.util.gui.DialogUtils;
@@ -551,6 +530,11 @@ public class ClientRequestManager
 			}
 			return true;
 		}
+	}
+
+	@Override
+	public ClientServerInfo getClientServerInfo() {
+		return getVcellClient().getClientServerManager().getClientServerInfo();
 	}
 
 	/**

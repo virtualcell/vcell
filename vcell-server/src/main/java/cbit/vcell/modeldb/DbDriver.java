@@ -66,7 +66,6 @@ import org.vcell.util.document.VersionableFamily;
 import org.vcell.util.document.VersionableRelationship;
 import org.vcell.util.document.VersionableType;
 import org.vcell.util.document.VersionableTypeVersion;
-import org.vcell.util.document.User.SPECIALS;
 
 import cbit.image.VCImageInfo;
 import cbit.sql.Field;
@@ -153,8 +152,8 @@ public DbDriver(DatabaseSyntax dbSyntax, KeyFactory keyFactory) {
 }
 
 public static void publishDirectly(Connection con,KeyValue[] publishTheseBiomodels,KeyValue[] publishTheseMathmodels,User user,DatabaseSyntax databaseSyntax) throws SQLException,DataAccessException{
-	TreeMap<SPECIALS, TreeMap<User, String>> specialUsers = getSpecialUsers(user,con,databaseSyntax);
-	TreeMap<User, String> usersAllowedToModifyPublications = specialUsers.get(User.SPECIALS.publication);
+	TreeMap<User.SPECIAL_CLAIM, TreeMap<User, String>> specialUsers = getSpecialUsers(user,con,databaseSyntax);
+	TreeMap<User, String> usersAllowedToModifyPublications = specialUsers.get(User.SPECIAL_CLAIM.publicationEditors);
 	if(usersAllowedToModifyPublications == null || !usersAllowedToModifyPublications.containsKey(user)) {
 		throw new DataAccessException("User "+user.getName()+" does not have permission to publish directly");
 	}
@@ -180,9 +179,9 @@ public static void publishDirectly(Connection con,KeyValue[] publishTheseBiomode
 
 public static KeyValue savePublicationRep(Connection con,PublicationRep publicationRep,User user,KeyFactory keyFactory,DatabaseSyntax databaseSyntax) throws SQLException, DataAccessException{
 	
-	String pubID = null;
-	TreeMap<SPECIALS, TreeMap<User, String>> specialUsers = getSpecialUsers(user,con,databaseSyntax);
-	TreeMap<User, String> usersAllowedToModifyPublications = specialUsers.get(User.SPECIALS.publication);
+	KeyValue pubID = null;
+	TreeMap<User.SPECIAL_CLAIM, TreeMap<User, String>> specialUsers = getSpecialUsers(user,con,databaseSyntax);
+	TreeMap<User, String> usersAllowedToModifyPublications = specialUsers.get(User.SPECIAL_CLAIM.publicationEditors);
 	if(usersAllowedToModifyPublications == null || !usersAllowedToModifyPublications.containsKey(user)) {
 		throw new DataAccessException("User "+user.getName()+" does not have permission to edit publications");
 	}
@@ -192,12 +191,7 @@ public static KeyValue savePublicationRep(Connection con,PublicationRep publicat
 	Statement stmt = null;
 	try {
 		if(publicationRep.getPubKey() == null) {
-			stmt = con.createStatement();
-			ResultSet rset = stmt.executeQuery("select "+keyFactory.nextSEQ()+" from dual");
-			rset.next();
-			pubID = rset.getString(1);
-			rset.close();
-			stmt.close();
+			pubID = keyFactory.getNewKey(con);
 			sql = "INSERT INTO "+PublicationTable.table.getTableName()+" VALUES (" +
 			pubID.toString()+","+
 			(publicationRep.getTitle()==null?"NULL":"'"+publicationRep.getTitle()+"'")+","+
@@ -212,7 +206,7 @@ public static KeyValue savePublicationRep(Connection con,PublicationRep publicat
 			(publicationRep.getDate()==null?"NULL":" TO_DATE('" + simpleDateFormat.format(publicationRep.getDate()) + "','"+YMD_FORMAT_STRING+"') ")+
 			")";		
 		}else {
-			pubID = publicationRep.getPubKey().toString();
+			pubID = publicationRep.getPubKey();
 			sql = "UPDATE "+PublicationTable.table.getTableName()+" SET "+
 			PublicationTable.table.title.getUnqualifiedColName()+"="+(publicationRep.getTitle()==null?"NULL":"'"+publicationRep.getTitle()+"'")+","+
 			PublicationTable.table.authors.getUnqualifiedColName()+"="+(publicationRep.getAuthors()==null || publicationRep.getAuthors().length==0?"NULL":"'"+StringUtils.join(publicationRep.getAuthors(), ';')+"'")+","+
@@ -250,9 +244,9 @@ public static KeyValue savePublicationRep(Connection con,PublicationRep publicat
 				}
 			}
 		}
-		return new KeyValue(pubID.toString());
+		return pubID;
 	}finally {
-		if(stmt != null) {try{stmt.close();}catch(Exception e) {e.printStackTrace();}}
+		if(stmt != null) {try{stmt.close();}catch(Exception e) {lg.error(e);}}
 	}
 }
 
@@ -1248,8 +1242,8 @@ private static User getUserFromUserid(Connection con, String userid) throws SQLE
 	return user;
 }
 
-public static TreeMap<User.SPECIALS,TreeMap<User,String>>  getSpecialUsers(User user,Connection con, DatabaseSyntax dbSyntax) throws DataAccessException, java.sql.SQLException{
-	TreeMap<User.SPECIALS,TreeMap<User,String>> result = new TreeMap<>();
+public static TreeMap<User.SPECIAL_CLAIM,TreeMap<User,String>>  getSpecialUsers(User user,Connection con, DatabaseSyntax dbSyntax) throws DataAccessException, java.sql.SQLException{
+	TreeMap<User.SPECIAL_CLAIM,TreeMap<User,String>> result = new TreeMap<>();
 	String sql = "SELECT "+
 			SpecialUsersTable.table.userRef.getQualifiedColName()+" userref,"+
 			SpecialUsersTable.table.special.getQualifiedColName()+" special,"+
@@ -1261,7 +1255,7 @@ public static TreeMap<User.SPECIALS,TreeMap<User,String>>  getSpecialUsers(User 
 		try(ResultSet rset = stmt.executeQuery(sql);){
 			while(rset.next()) {
 				String specialStr = rset.getString("special");
-				User.SPECIALS special = User.SPECIALS.valueOf(specialStr);
+				User.SPECIAL_CLAIM special = User.SPECIAL_CLAIM.fromDatabase(specialStr);
 				String userdetail = rset.getString("userdetail");
 				String userRef = rset.getString("userref");
 				String userId = rset.getString("userid");

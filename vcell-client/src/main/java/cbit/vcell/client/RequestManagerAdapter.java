@@ -138,5 +138,8 @@ public class RequestManagerAdapter implements RequestManager {
 	@Override
 	public boolean isDifferentFromBlank(VCDocument.VCDocumentType documentType,VCDocument vcDocument) {return false;}
 	@Override
+	public ClientServerInfo getClientServerInfo() {return null;}
+
+	@Override
 	public VtkManager getVtkManager(OutputContext outputContext, VCDataIdentifier vcDataID) throws DataAccessException { return null;}
 };
