@@ -228,6 +228,8 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 		if (scm.getVariable() instanceof ParticleVariable){
 			if (!(varHash.getVariable(scm.getVariable().getName()) instanceof ParticleVariable)){
 				varHash.addVariable(scm.getVariable());
+				StructureMapping sm = simContext.getGeometryContext().getStructureMapping(scm.getSpeciesContext().getStructure());
+				scm.getVariable().setDomain(new Domain(sm.getGeometryClass()));
 			}
 		}
 	}
