@@ -253,8 +253,7 @@ public class VCellApiMain {
 			PropertyLoader.vcellSMTPHostName,
 			PropertyLoader.vcellSMTPPort,
 			PropertyLoader.vcellSMTPEmailAddress,
-			PropertyLoader.vcellapiKeystoreFile,
-			PropertyLoader.vcellsubmit_service_host
+			PropertyLoader.vcellapiKeystoreFile
 };
 
 }
