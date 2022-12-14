@@ -43,7 +43,7 @@ show_help() {
 	echo "    --link-installers     optionally create symbolic links for newly created client installers"
 	echo "                          for permanent 'latest' web links fr each platform"
 	echo ""
-	echo "    --install-singularity  optionally install singularity image on each compute node in 'vcell' SLURM partition"
+	echo "    --install-singularity  optionally install batch and opt singularity images on each compute node in 'vcell' SLURM partition"
 	echo ""
 	echo ""
 	echo "example:"
