@@ -192,4 +192,8 @@ public String toString() {
 	return buffer.toString();
 }
 
+void setVar(Variable var) {
+	this.var = var;
+}
+
 }

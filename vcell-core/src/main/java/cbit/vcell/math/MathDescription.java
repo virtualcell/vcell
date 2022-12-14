@@ -45,6 +45,8 @@ import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
 import cbit.vcell.geometry.surface.VolumeGeometricRegion;
+import cbit.vcell.mapping.AbstractMathMapping;
+import cbit.vcell.mapping.StochMathMapping;
 import cbit.vcell.math.MathCompareResults.Decision;
 import cbit.vcell.math.ParticleObservable.ObservableType;
 import cbit.vcell.math.PdeEquation.BoundaryConditionValue;
@@ -3515,13 +3517,17 @@ public static MathCompareResults testEquivalency(MathSymbolTableFactory mathSymb
 				boolean bRenameSuccess = tryLegacyVarNameDomainExtensive(mathDescription1, mathDescription2);
 				if (bRenameSuccess) {
 					//try again to see whether invariants are equivalent after rename
-					invariantResults = mathDescription2.compareInvariantAttributes(mathDescription1, false);
-					if (!invariantResults.isEquivalent()) {
+					MathCompareResults invariantResults2 = mathDescription2.compareInvariantAttributes(mathDescription1, false);
+					if (!invariantResults2.isEquivalent()) {
 						// can't be equivalent or equal
-						return invariantResults;
+						logger.error("Could not fix invariants by renaming");
+						logger.error("Initial invariantResults: "+invariantResults);
+						logger.error("After rename: "+invariantResults2);
+						return invariantResults2;
 					} 
 				} else {
 					// can't be equivalent or equal
+					logger.error("Attempt to rename legacy variables failed");
 					return invariantResults;					
 				}
 			} else {
@@ -3748,9 +3754,12 @@ private static boolean tryLegacyVarNameDomainExtensive(MathDescription mathDescr
 		throws ExpressionException {
 	// will return true if rename compatible
 	HashSet<String> stateVarNames1 = mathDescription1.getStateVariableNames();
-	HashSet<String> stateVarNames2 = mathDescription2.getStateVariableNames();
+	HashSet<String> varNames2 = new HashSet<String>();
+	for (Variable var : Collections.list(mathDescription2.getVariables())) {
+		varNames2.add(var.getName());
+	}
 	ArrayList<String> sv1 = new ArrayList<String>(stateVarNames1);
-	ArrayList<String> sv2 = new ArrayList<String>(stateVarNames2);
+	ArrayList<String> v2 = new ArrayList<String>(varNames2);
 	List<Expression> exps = new ArrayList<Expression>();
 	mathDescription1.getAllExpressions(exps);
 	boolean bVarsInMultipleSubDomains = false;
@@ -3762,18 +3771,22 @@ private static boolean tryLegacyVarNameDomainExtensive(MathDescription mathDescr
 		Variable var = mathDescription1.getVariable(oldName);
 		int nameMatches = 0;
 		ArrayList<String> newNames = new ArrayList<String>();
-		for (int j = 0; j < sv2.size(); j++) {
+		for (int j = 0; j < v2.size(); j++) {
 		}		
-		for (int j = 0; j < sv2.size(); j++) {
+		for (int j = 0; j < v2.size(); j++) {
 			boolean bMatch = false;
-			if (sv2.get(j).equals(oldName)) bMatch = true;
-			int underscorePos = sv2.get(j).lastIndexOf("_");
+			if (v2.get(j).contains("_init")
+					|| v2.get(j).endsWith(InsideVariable.INSIDE_VARIABLE_SUFFIX)
+					|| v2.get(j).endsWith(OutsideVariable.OUTSIDE_VARIABLE_SUFFIX)) 
+				continue;
+			if (v2.get(j).equals(oldName)) bMatch = true;
+			int underscorePos = v2.get(j).lastIndexOf("_");
 			if (underscorePos >= 1) {
-				if (sv2.get(j).substring(0,underscorePos).equals(oldName)) bMatch = true;
-				if (sv2.get(j).substring(0,underscorePos+1).equals(oldName)) bMatch = true; //oldName may end in underscore
+				if (v2.get(j).substring(0,underscorePos).equals(oldName)) bMatch = true;
+				if (v2.get(j).substring(0,underscorePos+1).equals(oldName)) bMatch = true; //oldName may end in underscore
 			}
 			if (bMatch) {
-				newName = sv2.get(j);
+				newName = v2.get(j);
 				nameMatches++;
 				newNames.add(newName);
 			}
@@ -3789,10 +3802,39 @@ private static boolean tryLegacyVarNameDomainExtensive(MathDescription mathDescr
 		}
 		// variable is present in single domain, just substitute and match domain stuff
 		try {
+			// check if var in new math is constant
+			if (mathDescription2.getVariable(newName) instanceof Constant) {
+				for (SubDomain sd : mathDescription1.getSubDomainCollection()) {
+					Equation eq = sd.getEquation(var);
+					if (eq != null) {
+						if (!eq.getRateExpression().isZero()) {
+							logger.error("variable "+var.getName()+" mapped to constant but has non-zero rate equation: "+eq.getRateExpression());
+							return false;
+						}
+						if (eq instanceof PdeEquation && !((PdeEquation)eq).getDiffusionExpression().isZero()) {
+							logger.error("variable "+var.getName()+" mapped to constant but has non-zero diffusion: "+((PdeEquation)eq).getDiffusionExpression());
+							return false;
+						}
+						sd.removeEquation(var);
+					}
+				}
+				mathDescription1.variableHashTable.remove(oldName);
+				mathDescription1.variableList.remove(var);
+				if (var instanceof VolVariable) {
+					String oldNameIN = oldName+InsideVariable.INSIDE_VARIABLE_SUFFIX;
+					String oldNameOUT = oldName+OutsideVariable.OUTSIDE_VARIABLE_SUFFIX;
+					mathDescription1.variableList.remove(mathDescription1.getVariable(oldNameIN));
+					mathDescription1.variableList.remove(mathDescription1.getVariable(oldNameOUT));
+					mathDescription1.variableHashTable.remove(oldNameIN);
+					mathDescription1.variableHashTable.remove(oldNameOUT);
+				}
+				continue;
+			}
+			// now fix with new name, domain, etc and substitute
 			if (var.getDomain() == null) {
 				SubDomain sd = mathDescription1.getSubDomain(mathDescription2.getVariable(newName).getDomain().getName());
 				var.setDomain(new Domain(sd));
-				for (SubDomain sd1 : mathDescription1.getSubDomainCollection().toArray(new SubDomain[mathDescription1.getSubDomainCollection().size()])) {
+				for (SubDomain sd1 : mathDescription1.getSubDomainCollection()) {
 					if (sd1 != sd) {
 						sd1.removeEquation(oldName);
 					}
@@ -3823,14 +3865,65 @@ private static boolean tryLegacyVarNameDomainExtensive(MathDescription mathDescr
 			List<String> newNames = multiDomainVarMap.get(oldName);
 			Variable oldVar = mathDescription1.getVariable(oldName);
 			HashMap<SubDomain, String> subDomainMap = new HashMap<SubDomain, String>();
+			// check if vars in new math are constants
+			int nConst = 0; int nNames = newNames.size();
 			for (String newName : newNames) {
-				subDomainMap.put(mathDescription1.getSubDomain(mathDescription2.getVariable(newName).getDomain().getName()), newName);
+				if (mathDescription2.getVariable(newName) instanceof Constant) nConst++;
+			}
+			if (nConst != nNames) {
+				// remap only to variables
+				List<String> varNames = new ArrayList<String>();
+				for (String newName : newNames) {
+					if (!(mathDescription2.getVariable(newName) instanceof Constant)
+						&& !(mathDescription2.getVariable(newName) instanceof Function)) varNames.add(newName);					
+				}
+				newNames = varNames;
+			} else {
+				// all constants in new math, check that old math is equivalent constant and remove equations
+				for (SubDomain sd : mathDescription1.getSubDomainCollection()) {
+					Equation eq = sd.getEquation(oldVar);
+					if (eq != null) {
+						if (!eq.getRateExpression().isZero()) {
+							logger.error("variable "+oldVar.getName()+" mapped to constant but has non-zero rate equation: "+eq.getRateExpression());
+							return false;
+						}
+						if (eq instanceof PdeEquation && !((PdeEquation)eq).getDiffusionExpression().isZero()) {
+							logger.error("variable "+oldVar.getName()+" mapped to constant but has non-zero diffusion: "+((PdeEquation)eq).getDiffusionExpression());
+							return false;
+						}
+						sd.removeEquation(oldVar);
+					}
+				}
+				mathDescription1.variableHashTable.remove(oldName);
+				mathDescription1.variableList.remove(oldVar);
+				if (oldVar instanceof VolVariable) {
+					mathDescription1.variableList.remove(mathDescription1.getVariable(oldNameIN));
+					mathDescription1.variableList.remove(mathDescription1.getVariable(oldNameOUT));
+					mathDescription1.variableHashTable.remove(oldNameIN);
+					mathDescription1.variableHashTable.remove(oldNameOUT);
+				}
+				continue;				
+			}
+			// collect subdomains
+			for (String newName : newNames) {
+				Variable v = mathDescription2.getVariable(newName);
+				Domain d = v.getDomain(); 
+				subDomainMap.put(mathDescription1.getSubDomain(d.getName()), newName);
 			}
 			// first remove equations from where they shouldn't be
-			for (SubDomain sd1 : mathDescription1.getSubDomainCollection().toArray(new SubDomain[mathDescription1.getSubDomainCollection().size()])) {
+			for (SubDomain sd1 : mathDescription1.getSubDomainCollection()) {
 				if (!subDomainMap.containsKey(sd1)) {
 					sd1.removeEquation(oldName);
 				}
+			}
+			// remove old variable
+			mathDescription1.variableHashTable.remove(oldName);
+			mathDescription1.variableList.remove(oldVar);
+			if (oldVar instanceof VolVariable) {
+				mathDescription1.variableList.remove(mathDescription1.getVariable(oldNameIN));
+				mathDescription1.variableList.remove(mathDescription1.getVariable(oldNameOUT));
+				mathDescription1.variableHashTable.remove(oldNameIN);
+				mathDescription1.variableHashTable.remove(oldNameOUT);
 			}
 			// create new Variables of same type
 			for (String newName : newNames) {
@@ -3846,44 +3939,38 @@ private static boolean tryLegacyVarNameDomainExtensive(MathDescription mathDescr
 				}
 			}
 			// replace variable for equations which should stay
+			boolean bStochastic = false;
 			for (String newName : newNames) {
 				Variable newVar = mathDescription1.getVariable(newName);
 				SubDomain sd = mathDescription1.getSubDomain(newVar.getDomain().getName());
-				sd.getEquation(oldVar).setVar(newVar);
-			}
-			// remove old variable
-			mathDescription1.variableHashTable.remove(oldName);
-			mathDescription1.variableList.remove(oldVar);
-			if (oldVar instanceof VolVariable) {
-				mathDescription1.variableHashTable.remove(oldNameIN);
-				mathDescription1.variableHashTable.remove(oldNameOUT);
-				mathDescription1.variableList.remove(mathDescription1.getVariable(oldNameIN));
-				mathDescription1.variableList.remove(mathDescription1.getVariable(oldNameOUT));
-			}
-			// replace symbols in all functions with corresponding new domain variable
-			for (Variable func : mathDescription1.variableList) {
-				if (func instanceof Function ) {
-					Expression exp = func.getExpression();
-					if (exp.isNumeric()) continue;
-					for (String symbol : exp.getSymbols()) {
-						if (symbol.equals(oldName) || symbol.equals(oldNameIN) || symbol.equals(oldNameOUT)) {
-							// figure out domain and which new name to use
-							SubDomain sd = mathDescription1.getSubDomain(mathDescription2.getVariable(func.getName()).getDomain().getName());
-							func.setDomain(new Domain(sd));
-							String newName = subDomainMap.get(sd);
-							if (newName != null) exp.substituteInPlace(new Expression(oldName), new Expression(newName));
-							if (sd instanceof MembraneSubDomain) {
-								CompartmentSubDomain isd = ((MembraneSubDomain)sd).getInsideCompartment();
-								CompartmentSubDomain osd = ((MembraneSubDomain)sd).getOutsideCompartment();
-								if (isd != null) {
-									newName = subDomainMap.get(isd);
-									if (newName != null) exp.substituteInPlace(new Expression(oldNameIN), new Expression(newName));
-								}
-								if (osd != null) {
-									newName = subDomainMap.get(osd);
-									if (newName != null) exp.substituteInPlace(new Expression(oldNameOUT), new Expression(newName));
-								}
+				if (!sd.getEquationCollection().isEmpty()) {
+					sd.getEquation(oldVar).setVar(newVar);
+				}
+				if (!sd.getJumpProcesses().isEmpty()) {
+					bStochastic = true;
+					for (JumpProcess jp : sd.getJumpProcesses()) {
+						for (Action a : jp.getActions()) {
+							if (a.getVar() == oldVar) a.setVar(newVar);
+						}
+					}
+				}
+				if (bStochastic) {
+					// need to substitute inits
+					for (Variable ct : mathDescription1.variableList) {
+						if (ct instanceof Constant) {
+							if (ct.getName().equals(oldName+AbstractMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_COUNT)) {
+								ct.rename(newName+AbstractMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_COUNT);
 							}
+						}
+					}
+					// need to substitute init conditions
+					for (VarIniCondition vic : sd.getVarIniConditions()) {
+						if (vic.getVar().getName().equals(oldName)) {
+							vic.getVar().rename(newName);
+							vic.getIniVal().substituteInPlace(
+									new Expression(oldName + AbstractMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_COUNT),
+									new Expression(
+											newName + AbstractMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_COUNT));
 						}
 					}
 				}
@@ -3917,6 +4004,46 @@ private static boolean tryLegacyVarNameDomainExtensive(MathDescription mathDescr
 					}
 				}
 			}
+			 if (subDomainMap.size() == 1 && subDomainMap.containsValue(oldName)) {
+			 // don't need to substitute
+				 continue;
+			}
+			 // replace symbols in all functions with corresponding new domain variable
+			for (Variable func : mathDescription1.variableList) {
+				if (func instanceof Function ) {
+					Expression exp = func.getExpression();
+					if (exp.getSymbols() == null) continue;
+					for (String symbol : exp.getSymbols()) {
+						if (symbol.equals(oldName) || symbol.equals(oldNameIN) || symbol.equals(oldNameOUT)) {
+							String newName = null;
+							SubDomain sd = null;
+							if (newNames.size() > 1) {
+								// try to figure out domain and which new name to use, hope for matching function name...
+								sd = mathDescription1.getSubDomain(mathDescription2.getVariable(func.getName()).getDomain().getName());
+								func.setDomain(new Domain(sd));
+								newName = subDomainMap.get(sd);
+							} else {
+								newName = newNames.get(0);
+								sd = mathDescription1.getSubDomain(mathDescription2.getVariable(newName).getDomain().getName());
+								func.setDomain(new Domain(sd));
+							}
+							if (newName != null) {
+								exp.substituteInPlace(new Expression(oldName), new Expression(newName));
+								exp.substituteInPlace(new Expression(oldNameIN), new Expression(newName));
+								exp.substituteInPlace(new Expression(oldNameOUT), new Expression(newName));
+							} else {
+								if (sd instanceof MembraneSubDomain) {
+									MembraneSubDomain msd = (MembraneSubDomain)sd;
+									String newNameIN = subDomainMap.get(msd.getInsideCompartment());
+									String newNameOUT = subDomainMap.get(msd.getOutsideCompartment());
+									if ((newNameIN) != null) exp.substituteInPlace(new Expression(oldNameIN), new Expression(newNameIN));
+									if ((newNameOUT) != null) exp.substituteInPlace(new Expression(oldNameOUT), new Expression(newNameOUT));
+								}
+							}
+						}
+					}
+				}
+			}
 			// substitute in fast systems
 			for (SubDomain sd : mathDescription1.getSubDomainCollection()) {
 				FastSystem fastSystem = sd.getFastSystem();
@@ -3925,7 +4052,7 @@ private static boolean tryLegacyVarNameDomainExtensive(MathDescription mathDescr
 						exp.substituteInPlace(new Expression(oldName), new Expression(subDomainMap.get(sd)));
 					}
 				}
-			}			
+			}
 		}
 		
 	}
