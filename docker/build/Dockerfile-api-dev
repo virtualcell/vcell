@@ -77,6 +77,5 @@ ENTRYPOINT java \
 	-Dvcell.smtp.port="${smtp_port}" \
 	-Dvcelldata.web.server.port=${webDataPort} \
 	-Dvcell.smtp.emailAddress="${smtp_emailaddress}" \
-	-Dvcell.submit.service.host="${vcellSubmitServiceHost}"
 	-cp "./lib/*" org.vcell.rest.VCellApiMain \
 	/usr/local/app/docroot 8080
