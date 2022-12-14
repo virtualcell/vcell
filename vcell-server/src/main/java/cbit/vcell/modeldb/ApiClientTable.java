@@ -13,12 +13,16 @@ package cbit.vcell.modeldb;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import cbit.vcell.resource.PropertyLoader;
+import org.vcell.db.KeyFactory;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.KeyValue;
 
 import cbit.sql.Field;
 import cbit.sql.Field.SQLDataType;
 import cbit.sql.Table;
+import org.vcell.util.document.UserLoginInfo;
+
 /**
  * This type was created in VisualAge.
  */
@@ -40,7 +44,15 @@ private ApiClientTable() {
 	super(TABLE_NAME);
 	addFields(fields);
 }
-/**
+
+	public static String getCreateApiClientSQL(KeyValue keyValue, ApiClient apiClient) {
+		ApiClientTable apiClientTable = new ApiClientTable();
+		String sql = "INSERT INTO "+ApiClientTable.table.getTableName()+
+				" VALUES "+apiClientTable.getSQLValueList(keyValue, apiClient);
+		return sql;
+	}
+
+	/**
  * This method was created in VisualAge.
  * @return Model
  * @param rset ResultSet

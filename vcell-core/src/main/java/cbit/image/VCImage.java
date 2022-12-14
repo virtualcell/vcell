@@ -9,17 +9,25 @@
  */
 
 package cbit.image;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.Serializable;
+import java.security.MessageDigest;
 import java.util.Vector;
 import java.util.function.BiPredicate;
-import java.util.function.Consumer;
+import java.util.zip.*;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.vcell.util.Hex;
 import org.vcell.util.Matchable;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.Version;
 
 
 public abstract class VCImage implements Serializable, org.vcell.util.document.Versionable, java.beans.VetoableChangeListener {
+	private final static Logger lg = LogManager.getLogger(VCImage.class);
 	//	private KeyValue key = null; //Deprecated
 	//	private User owner = null; //Deprecated
 	private int numX = 0;
@@ -430,8 +438,91 @@ public abstract byte[] getPixels() throws ImageException;
 
 public abstract byte[] getPixelsCompressed() throws ImageException;
 
+public static byte[] deflate(byte[] uncompressed) throws IOException {
+	ByteArrayOutputStream bos = new ByteArrayOutputStream();
+	DeflaterOutputStream dos = new DeflaterOutputStream(bos);
+	//DeflaterOutputStream dos = new DeflaterOutputStream(bos,new Deflater(5,false));
+	dos.write(uncompressed,0,uncompressed.length);
+	dos.close();
+	byte[] compressed = bos.toByteArray();
+	if (lg.isTraceEnabled()) {
+		try {
+			MessageDigest digest = MessageDigest.getInstance("SHA-256");
+			String hashUncompressed = Hex.toString(digest.digest(uncompressed));
+			String hashCompressed = Hex.toString(digest.digest(compressed));
+			lg.trace("Deflating using DeflaterOutputStream: compressed pixels(" + compressed.length + "): hash=" + hashCompressed.substring(0, 6) +
+					", uncompressed pixels(" + uncompressed.length + "): hash=" + hashUncompressed.substring(0, 6));
+		} catch (Exception e) {}
+	}
+	return compressed;
+}
 
-protected java.beans.PropertyChangeSupport getPropertyChange() {
+@Deprecated
+private static byte[] deflate0(byte[] uncompressed) throws IOException {
+	byte[] output = new byte[uncompressed.length];
+	Deflater deflater = new Deflater();
+	deflater.setInput(uncompressed);
+	deflater.finish();
+	int compressedDataLength = deflater.deflate(output,0 , output.length, Deflater.SYNC_FLUSH);
+	byte[] compressed = new byte[compressedDataLength];
+	System.arraycopy(output,0,compressed,0,compressedDataLength);
+	if (lg.isTraceEnabled()) {
+		try {
+			MessageDigest digest = MessageDigest.getInstance("SHA-256");
+			String hashUncompressed = Hex.toString(digest.digest(uncompressed));
+			String hashCompressed = Hex.toString(digest.digest(compressed));
+			lg.trace("Deflating using Deflater: compressed pixels(" + compressed.length + "): hash=" + hashCompressed.substring(0, 6) +
+					", uncompressed pixels(" + uncompressed.length + "): hash=" + hashUncompressed.substring(0, 6));
+		} catch (Exception e) {}
+	}
+	return compressed;
+}
+
+public static byte[] inflate(byte[] compressed) throws IOException {
+	ByteArrayInputStream bis = new ByteArrayInputStream(compressed);
+	InflaterInputStream iis = new InflaterInputStream(bis);
+	int temp;
+	byte buf[] = new byte[65536];
+	ByteArrayOutputStream bos = new ByteArrayOutputStream();
+	while((temp = iis.read(buf,0,buf.length)) != -1){
+		bos.write(buf,0,temp);
+	}
+	byte[] uncompressed = bos.toByteArray();
+	if (lg.isTraceEnabled()) {
+		try {
+			MessageDigest digest = MessageDigest.getInstance("SHA-256");
+			String hashUncompressed = Hex.toString(digest.digest(uncompressed));
+			String hashCompressed = Hex.toString(digest.digest(compressed));
+			lg.trace("Inflating using InflaterInputStream: compressed pixels(" + compressed.length + "): hash=" + hashCompressed.substring(0, 6) +
+					", uncompressed pixels(" + uncompressed.length + "): hash=" + hashUncompressed.substring(0, 6));
+		} catch (Exception e) {}
+	}
+	return uncompressed;
+}
+
+public static byte[] inflate(byte[] compressed, int uncompressedSize) throws IOException, DataFormatException {
+	Inflater inflater = new Inflater();
+	inflater.setInput(compressed);
+
+	byte[] uncompressed = new byte[uncompressedSize];
+	int inflated_size = inflater.inflate(uncompressed);
+	if (inflated_size != uncompressedSize){
+		throw new RuntimeException("unexpected uncompressed size");
+	}
+	if (lg.isTraceEnabled()) {
+		try {
+			MessageDigest digest = MessageDigest.getInstance("SHA-256");
+			String hashUncompressed = Hex.toString(digest.digest(uncompressed));
+			String hashCompressed = Hex.toString(digest.digest(compressed));
+			lg.trace("Inflating using Inflater: compressed pixels(" + compressed.length + "): hash=" + hashCompressed.substring(0, 6) +
+					", uncompressed pixels(" + uncompressed.length + "): hash=" + hashUncompressed.substring(0, 6));
+		} catch (Exception e) {}
+	}
+	return uncompressed;
+}
+
+
+	protected java.beans.PropertyChangeSupport getPropertyChange() {
 	if (propertyChange == null) {
 		propertyChange = new java.beans.PropertyChangeSupport(this);
 	};

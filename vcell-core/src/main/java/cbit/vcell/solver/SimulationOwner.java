@@ -9,9 +9,11 @@
  */
 
 package cbit.vcell.solver;
+import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.util.Map;
 
+import cbit.vcell.geometry.Geometry;
 import org.vcell.util.Issue;
 import org.vcell.util.IssueContext;
 
@@ -23,6 +25,69 @@ import cbit.vcell.math.MathDescription;
  * @author: Ion Moraru
  */
 public interface SimulationOwner extends GeometryOwner {
+
+	public static class StandaloneSimulationOwner implements SimulationOwner {
+
+		@Override
+		public Geometry getGeometry() {
+			return null;
+		}
+
+		@Override
+		public void addPropertyChangeListener(PropertyChangeListener listener) {
+
+		}
+
+		@Override
+		public void removePropertyChangeListener(PropertyChangeListener listener) {
+
+		}
+
+		@Override
+		public Simulation copySimulation(Simulation simulation) throws PropertyVetoException {
+			return null;
+		}
+
+		@Override
+		public Simulation[] getSimulations() {
+			return new Simulation[0];
+		}
+
+		@Override
+		public void removeSimulation(Simulation simulation) throws PropertyVetoException {
+
+		}
+
+		@Override
+		public OutputFunctionContext getOutputFunctionContext() {
+			return null;
+		}
+
+		@Override
+		public MathOverridesResolver getMathOverridesResolver() {
+			return null;
+		}
+
+		@Override
+		public MathDescription getMathDescription() {
+			return null;
+		}
+
+		@Override
+		public String getName() {
+			return null;
+		}
+
+		@Override
+		public Issue gatherIssueForMathOverride(IssueContext issueContext, Simulation simulation, String overriddenConstantName) {
+			return null;
+		}
+
+		@Override
+		public UnitInfo getUnitInfo() throws UnsupportedOperationException {
+			return null;
+		}
+	}
 	public static String DEFAULT_SIM_NAME_PREFIX = "Simulation";
 	public interface FieldDataSimOwner extends SimulationOwner{}	// Typed simulationOwner for FieldData
 	

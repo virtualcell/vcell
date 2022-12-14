@@ -62,17 +62,17 @@ def status_yml(omex_file: str, out_dir: str) -> None:
         for plot in list(plots_dict.keys()):
             curves_list = []
             for curve in plots_dict[plot]:
-                curves_list.append({"id":curve, "status":"SUCCEEDED"})
-            outputs_dict["outputs"].append({"id":plot,"status": "SUCCEEDED","exception": None,"skipReason": None,"output": None,"duration": None,"curves": curves_list})
+                curves_list.append({"id":curve, "status":"QUEUED"})
+            outputs_dict["outputs"].append({"id":plot,"status": "QUEUED","exception": None,"skipReason": None,"output": None,"duration": None,"curves": curves_list})
            
 
         for report in list(reports_dict.keys()):
             dataset_list = []
             #dataset_dict = {}
             for dataset in reports_dict[report]:
-                dataset_list.append({"id":dataset , "status" :"FAILED"})
+                dataset_list.append({"id":dataset , "status" :"QUEUED"})
             exc_dict = {'type': "", 'message': ""}
-            outputs_dict["outputs"].append({"id":report,"status": "FAILED","exception": None,"skipReason": None,"output": None,"duration": None, "dataSets": dataset_list})
+            outputs_dict["outputs"].append({"id":report,"status": "QUEUED","exception": None,"skipReason": None,"output": None,"duration": None, "dataSets": dataset_list})
             #outputs_dict["outputs"][report].update({"status": "QUEUED"})
 
         for task in task_list:

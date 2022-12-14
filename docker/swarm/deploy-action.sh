@@ -43,7 +43,7 @@ show_help() {
 	echo "    --link-installers     optionally create symbolic links for newly created client installers"
 	echo "                          for permanent 'latest' web links fr each platform"
 	echo ""
-	echo "    --install-singularity  optionally install singularity image on each compute node in 'vcell' SLURM partition"
+	echo "    --install-singularity  optionally install batch and opt singularity images on each compute node in 'vcell' SLURM partition"
 	echo ""
 	echo ""
 	echo "example:"
@@ -119,8 +119,10 @@ stack_name=$6
 vcell_siteCamel=`cat $local_config_file | grep VCELL_SITE_CAMEL | cut -d"=" -f2`
 vcell_version=`cat $local_config_file | grep VCELL_VERSION_NUMBER | cut -d"=" -f2`
 vcell_build=`cat $local_config_file | grep VCELL_BUILD_NUMBER | cut -d"=" -f2`
-singularity_filename=`cat $local_config_file | grep VCELL_SINGULARITY_FILENAME | cut -d"=" -f2`
-singularity_image_external=`cat $local_config_file | grep VCELL_SINGULARITY_IMAGE_EXTERNAL | cut -d"=" -f2`
+batch_singularity_filename=`cat $local_config_file | grep VCELL_BATCH_SINGULARITY_FILENAME | cut -d"=" -f2`
+batch_singularity_image_external=`cat $local_config_file | grep VCELL_BATCH_SINGULARITY_IMAGE_EXTERNAL | cut -d"=" -f2`
+opt_singularity_filename=`cat $local_config_file | grep VCELL_OPT_SINGULARITY_FILENAME | cut -d"=" -f2`
+opt_singularity_image_external=`cat $local_config_file | grep VCELL_OPT_SINGULARITY_IMAGE_EXTERNAL | cut -d"=" -f2`
 #partitionName=`cat $local_config_file | grep VCELL_SLURM_PARTITION | cut -d"=" -f2`
 batchHost=`cat $local_config_file | grep VCELL_BATCH_HOST | cut -d"=" -f2`
 slurm_singularity_central_dir=`cat $local_config_file | grep VCELL_SLURM_CENTRAL_SINGULARITY_DIR | cut -d"=" -f2`
@@ -138,7 +140,7 @@ cmd="scp $ssh_key $local_compose_file $ssh_user@$manager_node:$remote_compose_fi
 
 
 #
-# install the singularity image on the cluster nodes
+# install the singularity images on the cluster nodes
 #
 if [ "$install_singularity" == "true" ]; then
 
@@ -152,12 +154,19 @@ if [ "$install_singularity" == "true" ]; then
 	#
 	echo ""
 
-	if [ ! -e "./${singularity_filename}" ]; then
-		echo "failed to find local singularity image file $singularity_filename in ./singularity-vm directory"
+	if [ ! -e "./${batch_singularity_filename}" ]; then
+		echo "failed to find local batch singularity image file $batch_singularity_filename in ./singularity-vm directory"
 		exit 1
 	fi
 
-	scp ./${singularity_filename} $ssh_user@$manager_node:${slurm_singularity_central_dir}
+	scp "./${batch_singularity_filename} $ssh_user@$manager_node:${slurm_singularity_central_dir}"
+
+	if [ ! -e "./${opt_singularity_filename}" ]; then
+		echo "failed to find local opt singularity image file $opt_singularity_filename in ./singularity-vm directory"
+		exit 1
+	fi
+
+	scp "./${opt_singularity_filename} $ssh_user@$manager_node:${slurm_singularity_central_dir}"
 
 	echo "popd"
 	popd

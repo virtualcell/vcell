@@ -55,7 +55,7 @@ import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
 import cbit.vcell.geometry.surface.VolumeGeometricRegion;
-import cbit.vcell.modeldb.DatabasePolicySQL.OuterJoin;
+import cbit.vcell.modeldb.DatabasePolicySQL.LeftOuterJoin;
 import cbit.vcell.parser.ExpressionException;
 /**
  * This type was created in VisualAge.
@@ -279,7 +279,7 @@ private Geometry getGeometry(QueryHashtable dbc, Connection con, User user, KeyV
 	String condition = geomTable.id.getQualifiedColName() + " = " + geomKey +
 					" AND " + userTable.id.getQualifiedColName() + " = " + geomTable.ownerRef.getQualifiedColName() +
 					" AND " + extentTable.id.getQualifiedColName() + " = " + geomTable.extentRef.getQualifiedColName();
-	sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,(OuterJoin)null,condition,null,dbSyntax,bCheckPermission);
+	sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,(LeftOuterJoin)null,condition,null,bCheckPermission);
 //System.out.println(sql);
 	
   	Geometry geom = null;
@@ -301,7 +301,7 @@ private Geometry getGeometry(QueryHashtable dbc, Connection con, User user, KeyV
 					// At least 1 parent of the geometry exists that's shared to this user so give them the geometry
 					rset.close();
 					//Get the geometry without checking the geometry permission
-					sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,(OuterJoin)null,condition,null,dbSyntax,false);
+					sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,(LeftOuterJoin)null,condition,null,false);
 					rset = stmt.executeQuery(sql);
 					if(rset.next()){
 						geom = getGeometry(dbc, con, user,rset);
@@ -800,7 +800,7 @@ private VCImage getVCImage(QueryHashtable dbc, Connection con, User user, KeyVal
 					" AND " + imageTable.ownerRef.getQualifiedColName() + " = " + userTable.id.getQualifiedColName() +
 					" AND " + imageTable.id.getQualifiedColName() + " = " + imageDataTable.imageRef.getQualifiedColName()+
 					" AND " + imageTable.extentRef.getQualifiedColName() + " = " + extentTable.id.getQualifiedColName();
-	sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,(OuterJoin)null,condition,null,dbSyntax,bCheckPermission);
+	sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,(LeftOuterJoin)null,condition,null,bCheckPermission);
 //System.out.println(sql);
 	
 	//Connection con = conFact.getConnection();

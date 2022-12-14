@@ -3,6 +3,7 @@ package cbit.vcell.mapping;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import cbit.vcell.geometry.GeometryClass;
 import org.vcell.sbml.vcell.StructureSizeSolver;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.ProgrammingException;
@@ -24,7 +25,13 @@ public class LegacySimContextTransformer implements SimContextTransformer {
 		}
 		try {
 			StructureMapping structureMapping = transformedSimContext.getGeometryContext().getStructureMappings()[0];
-			StructureSizeSolver.updateAbsoluteStructureSizes(transformedSimContext, structureMapping.getStructure(), 1.0, structureMapping.getSizeParameter().getUnitDefinition());
+			if (transformedSimContext.getGeometry().getDimension()==0) {
+				StructureSizeSolver.updateAbsoluteStructureSizes_symbolic(transformedSimContext, structureMapping.getStructure(), 1.0, structureMapping.getSizeParameter().getUnitDefinition());
+			}else{
+				for (GeometryClass geometryClass : transformedSimContext.getGeometry().getGeometryClasses()) {
+					StructureSizeSolver.updateUnitStructureSizes_symbolic(transformedSimContext, geometryClass);
+				}
+			}
 		} catch (Exception e) {
 			throw new ProgrammingException("exception updating sizes",e);
 		}

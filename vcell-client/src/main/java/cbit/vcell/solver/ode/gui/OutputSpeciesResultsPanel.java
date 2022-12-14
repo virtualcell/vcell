@@ -285,6 +285,9 @@ public class OutputSpeciesResultsPanel extends DocumentEditorSubPanel  {
 			ODESolverResultSet srs = owner.getOdeSolverResultSet();
 			VCDataIdentifier vcdi = owner.getVcDataIdentifier();
 			Simulation sim = owner.getSimulation();
+			if (sim == null){
+				return;
+			}
 			SolverTaskDescription std = sim.getSolverTaskDescription();
 			boolean isNFSim = std.getSolverDescription().isNFSimSolver();
 			if(isNFSim && srs instanceof ODESimData) {

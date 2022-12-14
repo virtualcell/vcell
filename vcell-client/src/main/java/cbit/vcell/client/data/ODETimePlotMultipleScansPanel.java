@@ -147,7 +147,7 @@ private void initialize()  {
 		for (int j = 0; j < scanParams.length; j ++){
 		Expression scanConstantExp = simulation.getMathOverrides().getActualExpression(scanParams[j], i);
 			try {
-				values[i][j] = scanConstantExp.evaluateConstant();
+				values[i][j] = scanConstantExp.evaluateConstantWithSubstitution();
 			} catch (DivideByZeroException e1) {
 				e1.printStackTrace();
 			} catch (ExpressionException e1) {

@@ -8,9 +8,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jlibsedml.Model;
 import org.jlibsedml.SEDMLDocument;
 import org.jlibsedml.SedML;
+
 
 /**
  * Utility class to obtain models from SEDML Model source attributes
@@ -19,6 +22,8 @@ import org.jlibsedml.SedML;
  *
  */
 public class ModelResolver {
+    private final static Logger logger = LogManager.getLogger(ModelResolver.class);
+
     public ModelResolver(SedML sedml) {
         super();
         this.sedml = sedml;
@@ -151,8 +156,9 @@ public class ModelResolver {
                 baseModelAsStr = new SEDMLDocument(sedml).getChangedModel(
                         modelRefs.get(i), baseModelAsStr);
             } catch (Exception e) {
-                message = "Could not apply XPath changes for model id["
-                        + modelRefs.get(i) + "]";
+                message = "Could not apply XPath changes for model id[" + modelRefs.get(i) + "]";
+                logger.error(message, e);
+                throw new RuntimeException(message, e);   
             }
         }
         return baseModelAsStr;

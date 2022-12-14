@@ -148,6 +148,7 @@ public static UnitDefinition getSBMLUnitDefinition(VCUnitDefinition vcUnitDefn, 
 			multiplier = Double.parseDouble(symbol);
 		}
 		sbmlUnitDefn.addUnit(new Unit(multiplier,0,Kind.DIMENSIONLESS,1.0,level,version));
+		sbmlUnitDefn.setId("Unit_"+TokenMangler.mangleToSName(symbol));
 		return sbmlUnitDefn;
 	}
 	String vcSymbol = vcUnitDefn.getSymbol();
@@ -219,7 +220,7 @@ public static UnitDefinition getSBMLUnitDefinition(VCUnitDefinition vcUnitDefn, 
 					}
 					Unit sbmlUnit = new Unit(multiplier, scale, kind, exponent, level, version);
 					sbmlUnitDefn.addUnit(sbmlUnit);
-					logger.warn("kind = "+kind.name()+" is equivalent to vcUnit = "+vcUnit.getSymbol()+",  SBML unit is "+sbmlUnit);
+					logger.info("kind = "+kind.name()+" is equivalent to vcUnit = "+vcUnit.getSymbol()+",  SBML unit is "+sbmlUnit);
 				}
 				bFoundMatch = true;
 				break;
@@ -243,7 +244,7 @@ public static UnitDefinition getSBMLUnitDefinition(VCUnitDefinition vcUnitDefn, 
 					}
 					sbmlUnitDefn.addUnit(new Unit(multiplier, scale, Kind.MOLE, exponent, level, version));
 					sbmlUnitDefn.addUnit(new Unit(1, 0, Kind.LITRE, -exponent, level, version));
-					logger.warn("matched to liter ... had to create a replacement for molar, vcUnit = "+vcUnit.getSymbol()+",  SBML unit is "+sbmlUnitDefn);
+					logger.info("matched to liter ... had to create a replacement for molar, vcUnit = "+vcUnit.getSymbol()+",  SBML unit is "+sbmlUnitDefn);
 				}
 				bFoundMatch = true;
 			}
@@ -293,7 +294,7 @@ public static UnitDefinition getSBMLUnitDefinition(VCUnitDefinition vcUnitDefn, 
 //		}
 //		System.err.println("vcUnit is "+symbols[i]+",  ucarUnit is "+ucarUnit.getSymbol());
 	}
-	sbmlUnitDefn.setId(TokenMangler.mangleToSName(vcSymbol));
+	sbmlUnitDefn.setId("Unit_"+TokenMangler.mangleToSName(vcSymbol));
 	return sbmlUnitDefn;
 //
 //	// If VC unit is DIMENSIONLESS ...
@@ -373,6 +374,16 @@ public static UnitDefinition getSBMLUnitDefinition(VCUnitDefinition vcUnitDefn, 
 		} else {
 			String prefix = "";
 			switch (unitScale){
+			case -1:{
+				prefix = "d";
+				unitScale = 0;
+				break;
+			}
+			case -2:{
+				prefix = "c";
+				unitScale = 0;
+				break;
+			}
 			case -3:{
 				prefix = "m";
 				unitScale = 0;

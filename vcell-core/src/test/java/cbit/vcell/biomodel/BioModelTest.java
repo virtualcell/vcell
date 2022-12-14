@@ -14,6 +14,7 @@ import cbit.vcell.geometry.SurfaceClass;
 import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.ModelTest;
 import cbit.vcell.model.Structure;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.solver.Simulation;
@@ -42,16 +43,15 @@ public static BioModel getExample() throws Exception {
 	bioModel.getModel().setName("physiology_"+Integer.toHexString(((new Random()).nextInt())));
 	SimulationContext sc2 = new SimulationContext(bioModel.getModel(),new Geometry("0-D Geometry_"+Integer.toHexString(((new Random()).nextInt())),0));
 	sc2.setName("simContext2_"+Integer.toHexString(((new Random()).nextInt())));
-	sc1.setMathDescription(sc1.createNewMathMapping().getMathDescription());
-	sc2.setMathDescription(sc2.createNewMathMapping().getMathDescription());
 	bioModel.setSimulationContexts(new SimulationContext[] { sc1, sc2 });
+	bioModel.updateAll(false);
 
 	//
 	// add simulations (must be after 
 	//
-	Simulation sim1 = new Simulation(sc1.getMathDescription());
+	Simulation sim1 = new Simulation(sc1.getMathDescription(), sc1);
 	sim1.setName("sim1_"+Integer.toHexString(((new Random()).nextInt())));
-	Simulation sim2 = new Simulation(sc1.getMathDescription());
+	Simulation sim2 = new Simulation(sc1.getMathDescription(), sc1);
 	sim2.setName("sim2_"+Integer.toHexString(((new Random()).nextInt())));
 	bioModel.setSimulations(new Simulation[] { sim1, sim2 });
 	return bioModel;
@@ -108,16 +108,80 @@ public static BioModel getExampleWithImage() throws Exception {
 	bioModel.setSimulationContexts(new SimulationContext[] { /*sc1,*/ sc2 });
 	sc2.setName("simContext2_"+Integer.toHexString(((new Random()).nextInt())));
 //	sc1.setMathDescription(sc1.createNewMathMapping().getMathDescription());
-	sc2.setMathDescription(sc2.createNewMathMapping().getMathDescription());
+	bioModel.updateAll(false);
 
 	//
 	// add simulations (must be after 
 	//
-	Simulation sim1 = new Simulation(sc2.getMathDescription());
+	Simulation sim1 = new Simulation(sc2.getMathDescription(), sc2);
 	sim1.setName("sim1_"+Integer.toHexString(((new Random()).nextInt())));
-	Simulation sim2 = new Simulation(sc2.getMathDescription());
+	Simulation sim2 = new Simulation(sc2.getMathDescription(), sc2);
 	sim2.setName("sim2_"+Integer.toHexString(((new Random()).nextInt())));
 	bioModel.setSimulations(new Simulation[] { sim1, sim2 });
 	return bioModel;
 }
+
+	public static BioModel getSimpleExampleWithImage(boolean bIncludeER) throws Exception {
+
+		BioModel bioModel = new BioModel(null);
+		bioModel.setModel(ModelTest.getExample_Wagner_simple(bIncludeER));
+		Model model = bioModel.getModel();
+		Structure structure_ec = model.getStructure("extracellular");
+		Structure structure_cyt = model.getStructure("cytosol");
+		Structure structure_pm = model.getStructure("plasmaMembrane");
+
+		// create a spatial geometry (image-based)
+		Geometry geo = GeometryTest.getImageExample2D();
+		SubVolume subVolume_cytosol = geo.getGeometrySpec().getSubVolume("cytosol");
+		SubVolume subVolume_ec = geo.getGeometrySpec().getSubVolume("ec");
+		geo.precomputeAll(new GeometryThumbnailImageFactoryAWT(),true,false);
+		SurfaceClass surfaceClass_pm = geo.getGeometrySurfaceDescription().getSurfaceClass(subVolume_cytosol, subVolume_ec);
+
+		//
+		// add a spatial application
+		//
+		SimulationContext simContext = new SimulationContext(model, geo, null,null, SimulationContext.Application.NETWORK_DETERMINISTIC);
+		simContext.setName("image_application");
+		bioModel.setSimulationContexts(new SimulationContext[] { simContext });
+		GeometryContext geoContext = simContext.getGeometryContext();
+
+		//
+		// map model structures to geometry
+		//
+		geoContext.assignStructure(structure_ec,subVolume_cytosol);
+		geoContext.getStructureMapping(structure_ec).getUnitSizeParameter().setExpression(new Expression(1.0));
+
+		geoContext.assignStructure(structure_cyt,subVolume_cytosol);
+		geoContext.getStructureMapping(structure_cyt).getUnitSizeParameter().setExpression(new Expression(0.5));
+
+
+		geoContext.assignStructure(structure_pm, surfaceClass_pm);
+		geoContext.getStructureMapping(structure_pm).getUnitSizeParameter().setExpression(new Expression(1.0));
+
+		if (bIncludeER) {
+			Structure structure_er = model.getStructure("er");
+			Structure structure_erMem = model.getStructure("erMembrane");
+
+			geoContext.assignStructure(structure_er,subVolume_cytosol);
+			geoContext.getStructureMapping(structure_er).getUnitSizeParameter().setExpression(new Expression(0.5));
+
+			geoContext.assignStructure(structure_erMem, subVolume_cytosol);
+			geoContext.getStructureMapping(structure_erMem).getUnitSizeParameter().setExpression(new Expression(2.4));
+		}
+
+		//
+		// update everything - including math generation
+		//  must do this before adding a simulation
+		//
+		bioModel.updateAll(false);
+
+		//
+		// add a simulation
+		//
+		Simulation sim1 = new Simulation(simContext.getMathDescription(), simContext);
+		sim1.setName("sim1");
+		bioModel.setSimulations(new Simulation[] { sim1 });
+		return bioModel;
+	}
+
 }

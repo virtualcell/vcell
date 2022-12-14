@@ -117,24 +117,7 @@ public class XmlHelper {
 		String xmlString = null;
 
 		try {
-			if (bioModel == null){
-				throw new IllegalArgumentException("Invalid input for BioModel: " + bioModel);
-			}
-			// NEW WAY, with XML declaration, vcml element, namespace, version #, etc.
-			// create root vcml element
-			Element vcmlElement = new Element(XMLTags.VcmlRootNodeTag);
-			vcmlElement.setAttribute(XMLTags.VersionTag, getEscapedSoftwareVersion());
-			// get biomodel element from xmlProducer and add it to vcml root element
-			Xmlproducer xmlProducer = new Xmlproducer(printkeys);
-			Element biomodelElement = xmlProducer.getXML(bioModel);
-			vcmlElement.addContent(biomodelElement);
-			//set namespace for vcmlElement
-			vcmlElement = XmlUtil.setDefaultNamespace(vcmlElement, Namespace.getNamespace(XMLTags.VCML_NS));
-			// create xml doc with vcml root element and convert to string
-			Document bioDoc = new Document();
-			Comment docComment = new Comment("This biomodel was generated in VCML Version "+getEscapedSoftwareVersion());
-			bioDoc.addContent(docComment);
-			bioDoc.setRootElement(vcmlElement);
+			Document bioDoc = bioModelToXMLDocument(bioModel, printkeys);
 			xmlString = XmlUtil.xmlToString(bioDoc, false);
 
 //			// OLD WAY
@@ -148,6 +131,31 @@ public class XmlHelper {
 			logger.trace(xmlString);
 		}
 		return xmlString;
+	}
+
+
+	public static Document bioModelToXMLDocument(BioModel bioModel, boolean printkeys)
+			throws XmlParseException, ExpressionException {
+		if (bioModel == null){
+			throw new IllegalArgumentException("Invalid input for BioModel: " + bioModel);
+		}
+		// NEW WAY, with XML declaration, vcml element, namespace, version #, etc.
+		// create root vcml element
+		Element vcmlElement = new Element(XMLTags.VcmlRootNodeTag);
+		String versionString = getEscapedSoftwareVersion();
+		vcmlElement.setAttribute(XMLTags.VersionTag, versionString);
+		// get biomodel element from xmlProducer and add it to vcml root element
+		Xmlproducer xmlProducer = new Xmlproducer(printkeys);
+		Element biomodelElement = xmlProducer.getXML(bioModel);
+		vcmlElement.addContent(biomodelElement);
+		//set namespace for vcmlElement
+		vcmlElement = XmlUtil.setDefaultNamespace(vcmlElement, Namespace.getNamespace(XMLTags.VCML_NS));
+		// create xml doc with vcml root element and convert to string
+		Document bioDoc = new Document();
+		Comment docComment = new Comment("This biomodel was generated in VCML Version "+getEscapedSoftwareVersion());
+		bioDoc.addContent(docComment);
+		bioDoc.setRootElement(vcmlElement);
+		return bioDoc;
 	}
 
 
@@ -219,16 +227,19 @@ public class XmlHelper {
 				// TODO: make unit change optional
 				// TODO: (maybe) support more than one version?
 				BioModel bm = simContext.getBioModel();
-				BioModel sbmlPreferredUnitsBM = ModelUnitConverter.createBioModelWithSBMLUnitSystem(bm);
-				if(sbmlPreferredUnitsBM == null) {
-					throw new RuntimeException("Unable to clone BioModel: " + bm.getName());
+				BioModel sbmlPreferredUnitsBM = null;
+				if (!bm.getModel().getUnitSystem().compareEqual(ModelUnitConverter.createSbmlModelUnitSystem())) {
+					sbmlPreferredUnitsBM = ModelUnitConverter.createBioModelWithSBMLUnitSystem(bm);
+					if(sbmlPreferredUnitsBM == null) {
+						throw new RuntimeException("Unable to clone BioModel: " + bm.getName());
+					}
+				} else {
+					sbmlPreferredUnitsBM = bm;
 				}
-
-				// clone BioModel
-				BioModel clonedBioModel = cloneBioModel(sbmlPreferredUnitsBM);
+				// we assume BioModel was cloned !!
 				// extract the simContext from new Biomodel. Apply overrides to *this* modified simContext
-				SimulationContext simContextFromClonedBioModel = clonedBioModel.getSimulationContext(simContext.getName());
-				SimulationContext clonedSimContext = applyOverridesForSBML(clonedBioModel, simContextFromClonedBioModel, simJob);
+				SimulationContext simContextFromClonedBioModel = sbmlPreferredUnitsBM.getSimulationContext(simContext.getName());
+				SimulationContext clonedSimContext = applyOverridesForSBML(sbmlPreferredUnitsBM, simContextFromClonedBioModel, simJob);
 				// extract sim (in simJob) from modified Biomodel, if not null
 				SimulationJob modifiedSimJob = null;
 				if (simJob != null) {
@@ -429,7 +440,7 @@ public class XmlHelper {
 	/**
 	 Allows the translation process to interact with the user via TranslationMessager
 	 */
-	public static VCDocument importSBML(VCLogger vcLogger, XMLSource xmlSource, boolean bSpatial) throws XmlParseException, VCLoggerException, IOException {
+	public static BioModel importSBML(VCLogger vcLogger, XMLSource xmlSource, boolean bSpatial) throws XmlParseException, VCLoggerException, IOException {
 
 		//checks that the source is not empty
 		if (xmlSource == null){
@@ -449,14 +460,13 @@ public class XmlHelper {
 				throw new RuntimeException("Error importing from SBML : no SBML source.");
 			}
 		}
-		VCDocument vcDoc = null;
 		boolean bValidateSBML = false;
 		SBMLImporter sbmlImporter = new SBMLImporter(sbmlFile.getAbsolutePath(), vcLogger, bValidateSBML);
-		vcDoc = sbmlImporter.getBioModel();
+		BioModel bm  = sbmlImporter.getBioModel();
 
-		vcDoc.refreshDependencies();
+		bm.refreshDependencies();
 		logger.info("Succesful model import: SBML file "+sbmlFile);
-		return vcDoc;
+		return bm;
 	}
 
 	public static VCDocument importBioCellML(VCLogger vcLogger, XMLSource xmlSource) throws Exception {
@@ -557,7 +567,7 @@ public class XmlHelper {
 				throw new RuntimeException("Failed importing " + omexFile.getName());
 			}
 			if (sedml.getModels().isEmpty()) {
-				throw new RuntimeException("Unable to find any model in " + omexFile.getName());
+				throw new RuntimeException("There are no models in " + omexFile.getName());
 			}
 			sedmls.add(sedml);
 		}
@@ -614,9 +624,12 @@ public class XmlHelper {
 		// The code below attempts to take care of this situation.
 		Element root = xmlDoc.getRootElement();
 		Namespace ns = null;
+		VCellSoftwareVersion vCellSoftwareVersion = null;
 		if (root.getName().equals(XMLTags.VcmlRootNodeTag)) {
 			// NEW WAY - with xml string containing xml declaration, vcml element, namespace, etc ...
 			ns = root.getNamespace();
+			String version = root.getAttributeValue(XMLTags.SoftwareVersionAttrTag);
+			vCellSoftwareVersion = VCellSoftwareVersion.fromString(version);
 			Element bioRoot = root.getChild(XMLTags.BioModelTag, ns);
 			if (bioRoot == null) {
 				bioRoot = root.getChild(XMLTags.BioModelTag);
@@ -630,12 +643,10 @@ public class XmlHelper {
 		// common for both new way (with xml declaration, vcml element, etc) and existing way (biomodel is root)
 		// If namespace is null, xml is the old-style xml with biomodel as root, so invoke XMLReader without namespace argument.
 		XmlReader reader = null;
-		VCellSoftwareVersion vCellSoftwareVersion = null;
 		if (ns == null) {
 			reader = new XmlReader(printkeys);
 		} else {
 			reader = new XmlReader(printkeys, ns);
-			vCellSoftwareVersion = VCellSoftwareVersion.fromString(root.getAttributeValue(XMLTags.SoftwareVersionAttrTag,ns));
 		}
 		if (forcedModelUnitSystem != null) {
 			reader.setForcedModelUnitSystem(forcedModelUnitSystem);
@@ -1058,7 +1069,7 @@ public class XmlHelper {
 
 			xml = stringWriter.toString();
 		} catch (Exception e) {
-			logger.error(e);
+			logger.error("unexpected exception updating attribute "+xpathExpression+" to "+newValue+": "+e.getMessage(), e);
 		}
 		return xml;
 	}
@@ -1122,7 +1133,7 @@ public class XmlHelper {
 
 			xml = stringWriter.toString();
 		} catch (Exception e) 	{
-			logger.error(e);
+			logger.error("error while updating XML attribute: "+e.getMessage(), e);
 		}
 		return xml;
 	}
@@ -1134,6 +1145,11 @@ public class XmlHelper {
 		input = input.replace("%", "&#37;");
 //		input = input.replace("'", "&apos;");
 		return input;
+	}
+
+
+	public static String getXPathForBioModel() {
+		return "/vcml:vcml/vcml:BioModel";
 	}
 
 //public static String exportSedML(VCDocument vcDoc, int level, int version, String file) throws XmlParseException {

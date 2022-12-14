@@ -6,47 +6,45 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Random;
-import java.util.Set;
-import java.util.StringTokenizer;
+import java.util.*;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.FileUtils;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.exe.ExecutableException;
 
 import com.google.common.io.Files;
 
-import cbit.rmi.event.WorkerEvent;
 import cbit.vcell.message.server.cmd.CommandService;
+import cbit.vcell.message.server.cmd.CommandService.CommandOutput;
 import cbit.vcell.message.server.cmd.CommandServiceLocal;
 import cbit.vcell.message.server.cmd.CommandServiceSshNative;
-import cbit.vcell.message.server.cmd.CommandService.CommandOutput;
 import cbit.vcell.message.server.htc.HtcException;
 import cbit.vcell.message.server.htc.HtcJobNotFoundException;
 import cbit.vcell.message.server.htc.HtcJobStatus;
 import cbit.vcell.message.server.htc.HtcProxy;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.resource.PropertyLoader;
-import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.server.HtcJobID;
 import cbit.vcell.server.HtcJobID.BatchSystemType;
 import cbit.vcell.simdata.PortableCommand;
 import cbit.vcell.simdata.PortableCommandWrapper;
-import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solvers.AbstractSolver;
 import cbit.vcell.solvers.ExecutableCommand;
 import edu.uchc.connjur.wb.LineStringBuilder;
+import org.vcell.util.FileUtils;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.exe.ExecutableException;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.StringReader;
+import java.util.*;
 
 public class SlurmProxy extends HtcProxy {
 	
@@ -184,8 +182,8 @@ public class SlurmProxy extends HtcProxy {
 	
 	/**
 	 * adding MPICH command if necessary
-	 * @param ncpus if != 1, {@link #MPI_HOME} command prepended
-	 * @param cmds command set
+	 * @param ncpus if != 1, {MPI_HOME} command prepended
+	 * @param command command set
 	 * @return new String
 	 */
 	private final String buildExeCommand(int ncpus,String command) {
@@ -362,9 +360,11 @@ public class SlurmProxy extends HtcProxy {
 		//
 		// HtcJobIDs can be reused by Slurm, so make sure it has the correct JobName also.
 		//
-		for (HtcJobInfo parsedHtcJobInfo : statusMap.keySet()) {
+		Iterator<HtcJobInfo> keyIterator = statusMap.keySet().iterator();
+		while (keyIterator.hasNext()) {
+			HtcJobInfo parsedHtcJobInfo = keyIterator.next();
 			if (!requestedHtcJobInfos.contains(parsedHtcJobInfo)) {
-				statusMap.remove(parsedHtcJobInfo);
+				keyIterator.remove();
 			}
 		}
 		return statusMap;
@@ -442,16 +442,7 @@ public class SlurmProxy extends HtcProxy {
 		}
 		
 	}
-	/**
-	 * write bash script for submission
-	 * @param jobName
-	 * @param sub_file
-	 * @param commandSet
-	 * @param ncpus
-	 * @param memSize
-	 * @param postProcessingCommands
-	 * @return String containing script
-	 */
+
 	SbatchSolverComponents generateScript(String jobName, ExecutableCommand.Container commandSet, int ncpus, double memSizeMB, Collection<PortableCommand> postProcessingCommands, SimulationTask simTask) {
 		final boolean isParallel = ncpus > 1;
 
@@ -459,7 +450,7 @@ public class SlurmProxy extends HtcProxy {
 		String vcellUserid = simTask.getUser().getName();
 		KeyValue simID = simTask.getSimulationInfo().getSimulationVersion().getVersionKey();
 		SolverDescription solverDescription = simTask.getSimulation().getSolverTaskDescription().getSolverDescription();
-		MemLimitResults memoryMBAllowed = HtcProxy.getMemoryLimit(vcellUserid,simID,solverDescription,memSizeMB);
+		MemLimitResults memoryMBAllowed = HtcProxy.getMemoryLimit(vcellUserid, simID, solverDescription, memSizeMB, simTask.isPowerUser());
 
 		LineStringBuilder slurmCommands = new LineStringBuilder();
 		slurmScriptInit(jobName, simTask.isPowerUser(), memoryMBAllowed, slurmCommands);
@@ -651,30 +642,37 @@ public class SlurmProxy extends HtcProxy {
 		lsb.append("echo command = ");
 		lsb.write("${cmd_prefix}" + cmd);
 
-		lsb.write("(");
+//		lsb.write("(");
 		if (ec.getLdLibraryPath()!=null){
-			lsb.write("    export LD_LIBRARY_PATH="+ec.getLdLibraryPath().path+":$LD_LIBRARY_PATH");
+			lsb.write("if [ -z ${LD_LIBRARY_PATH+x} ]; then");
+			lsb.write("    export LD_LIBRARY_PATH=" + ec.getLdLibraryPath().path);
+			lsb.write("else");
+			lsb.write("    export LD_LIBRARY_PATH=" + ec.getLdLibraryPath().path + ":$LD_LIBRARY_PATH");
+			lsb.write("fi");
 		}
-		lsb.write("singdevlooperr=\"Failed to mount squashfs image in (read only)\"");
-		lsb.write("let c=0");
-		lsb.write("while [ true ]");
-		lsb.write("    do");
-		lsb.write("      cmdstdout=$("+"${cmd_prefix}" + cmd+" 2>&1)");
-		lsb.write("      innerstate=$?");
-		lsb.write("      if [[ $cmdstdout != *$singdevlooperr* ]]");
-		lsb.write("      then");
-		lsb.write("        exit $innerstate");
-		lsb.write("      fi");
-		lsb.write("      sleep 6");
-		lsb.write("		 let c=c+1");
-		lsb.write("		 if [ $c -eq 10 ]");
-		lsb.write("		 then");
-		lsb.write("		  	echo \"Exceeded retry for singularity mount squashfs error\"");
-		lsb.write("		  	exit $innerstate");
-		lsb.write("		 fi");
-		lsb.write("		 echo retrying $c of 10...");
-		lsb.write("    done");
-		lsb.write(")");
+		// lsb.write("singdevlooperr=\"Failed to mount squashfs image in (read only)\"");
+		// lsb.write("let c=0");
+		// lsb.write("while [ true ]");
+		// lsb.write("    do");
+		// lsb.write("      cmdstdout=$("+"${cmd_prefix}" + cmd+" 2>&1)");
+		// lsb.write("      innerstate=$?");
+		// lsb.write("      if [[ $cmdstdout != *$singdevlooperr* ]]");
+		// lsb.write("      then");
+		// lsb.write("        exit $innerstate");
+		// lsb.write("      fi");
+		// lsb.write("      sleep 6");
+		// lsb.write("		 let c=c+1");
+		// lsb.write("		 if [ $c -eq 10 ]");
+		// lsb.write("		 then");
+		// lsb.write("		  	echo \"Exceeded retry for singularity mount squashfs error\"");
+		// lsb.write("		  	exit $innerstate");
+		// lsb.write("		 fi");
+		// lsb.write("		 echo retrying $c of 10...");
+		// lsb.write("    done");
+		lsb.write("      command=\"${cmd_prefix}" + cmd + "\""); 
+		lsb.write("      $command"); 
+//		lsb.write(")");	// This line needs to stay
+		
 		lsb.write("stat=$?");
 
 		lsb.append("echo ");
@@ -697,6 +695,8 @@ public class SlurmProxy extends HtcProxy {
 			String slurm_central_singularity_dir, String slurm_local_singularity_dir, String simDataDirArchiveHost,
 			File slurm_singularity_central_filepath, String[] environmentVars) {
 		lsb.write("#BEGIN---------SlurmProxy.generateScript():slurmInitSingularity----------");
+		lsb.write("set -x");
+		lsb.newline();
 		lsb.write("TMPDIR="+slurm_tmpdir);
 		lsb.write("echo \"using TMPDIR=$TMPDIR\"");
 		lsb.write("if [ ! -e $TMPDIR ]; then mkdir -p $TMPDIR ; fi");
@@ -828,15 +828,19 @@ public class SlurmProxy extends HtcProxy {
 			}
 			SlurmProxy.SbatchSolverComponents sbatchSolverComponents = generateScript(jobName, commandSet, ncpus, memSizeMB, postProcessingCommands, simTask);
 			final String SUB = ".sub";
-			String slurmRootName = sub_file_external.getName().substring(0, sub_file_external.getName().length()-SUB.length());
-			String child = slurmRootName+".sh";
-			File intSolverScriptFile = new File(sub_file_internal.getParentFile(),child);
-			File extSolverScriptFile = new File(sub_file_external.getParentFile(),child);
-			
+			//String slurmRootName = sub_file_external.getName().substring(0, sub_file_external.getName().length()-SUB.length());
+			//String child = slurmRootName+".sh";
+			//File intSolverScriptFile = new File(sub_file_internal.getParentFile(),child);
+			//File extSolverScriptFile = new File(sub_file_external.getParentFile(),child);
+			StringBuilder scriptContent = new StringBuilder();
+
 			//Write the .slurm.sh File that the .slurm.sub file references and make it executable
-			Files.write(sbatchSolverComponents.getSingularityCommands(),intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-			Files.append(sbatchSolverComponents.getSendFailureMsgCommands(),intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-			Files.append(sbatchSolverComponents.getCallExitCommands(),intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+			//Files.write(sbatchSolverComponents.getSingularityCommands(),intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+			scriptContent.append(sbatchSolverComponents.getSingularityCommands());
+			//Files.append(sbatchSolverComponents.getSendFailureMsgCommands(),intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+			scriptContent.append(sbatchSolverComponents.getSendFailureMsgCommands());
+			//Files.append(sbatchSolverComponents.getCallExitCommands(),intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+			scriptContent.append(sbatchSolverComponents.getCallExitCommands());
 //			Files.append(sbatchSolverComponents.getPreProcessCommands(),intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
 			
 //			String STARTFLAG_SNIP = "_arrstartflag_";
@@ -1005,13 +1009,16 @@ public class SlurmProxy extends HtcProxy {
 //					Files.append("done"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
 //				Files.append("fi"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
 //			}else {
-				Files.append(sbatchSolverComponents.getPreProcessCommands(),intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-				Files.append(sbatchSolverComponents.solverCommands,intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-				Files.append(sbatchSolverComponents.getExitCommands(),intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+				//Files.append(sbatchSolverComponents.getPreProcessCommands(),intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+				scriptContent.append(sbatchSolverComponents.getPreProcessCommands());
+				//Files.append(sbatchSolverComponents.solverCommands,intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+				scriptContent.append(sbatchSolverComponents.solverCommands);
+				//Files.append(sbatchSolverComponents.getExitCommands(),intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+				scriptContent.append(sbatchSolverComponents.getExitCommands());
 //			}
-			Set<PosixFilePermission> ownerRWX = PosixFilePermissions.fromString("rwxr-xr-x");
+			//Set<PosixFilePermission> ownerRWX = PosixFilePermissions.fromString("rwxr-xr-x");
 //			FileAttribute<?> permissions = PosixFilePermissions.asFileAttribute(ownerWritable);
-			java.nio.file.Files.setPosixFilePermissions(intSolverScriptFile.toPath(), ownerRWX);
+			//java.nio.file.Files.setPosixFilePermissions(intSolverScriptFile.toPath(), ownerRWX);
 			
 			//----------Add solver script path to sbatch file, write the .slurm.sub file
 			String substitutedSbatchCommands = sbatchSolverComponents.getSbatchCommands();
@@ -1021,8 +1028,11 @@ public class SlurmProxy extends HtcProxy {
 //				substitutedSbatchCommands+= "#SBATCH --array=1-"+slurmArrayCount;
 //			}
 			File tempFile = File.createTempFile("tempSubFile", SUB);
-			writeUnixStyleTextFile(tempFile, substitutedSbatchCommands+"\n\n"+extSolverScriptFile.getAbsolutePath()+"\n\n"+
+//			writeUnixStyleTextFile(tempFile, substitutedSbatchCommands+"\n\n"+extSolverScriptFile.getAbsolutePath()+"\n\n"+
+//			"#Following commands (if any) are read by JavaPostProcessor64\n"+sbatchSolverComponents.postProcessCommands+"\n");
+			writeUnixStyleTextFile(tempFile, substitutedSbatchCommands+"\n\n"+scriptContent.toString()+"\n\n"+
 			"#Following commands (if any) are read by JavaPostProcessor64\n"+sbatchSolverComponents.postProcessCommands+"\n");
+
 
 			// move submission file to final location (either locally or remotely).
 			if (LG.isDebugEnabled()) {
@@ -1069,12 +1079,17 @@ public class SlurmProxy extends HtcProxy {
 				LG.debug("generating local SLURM submit script for jobName="+jobName);
 			}
 //			String text = generateScript(jobName, commandSet, ncpus, memSizeMB, postProcessingCommands, simTask);
+			LG.info("sub_file_internal: "+sub_file_internal.getAbsolutePath());
+			LG.info("sub_file_external: "+sub_file_external.getAbsolutePath());
+			LG.info("optProblemInput: "+optProblemInput.getAbsolutePath());
+			LG.info("optProblemOutput: "+optProblemOutput.getAbsolutePath());
 
+			String primaryDataDirInternal = PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirInternalProperty);
 			String primaryDataDirExternal = PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirExternalProperty);
 		    String htclogdir_external = PropertyLoader.getRequiredProperty(PropertyLoader.htcLogDirExternal);
 			String serverid=PropertyLoader.getRequiredProperty(PropertyLoader.vcellServerIDProperty);
 			String softwareVersion=PropertyLoader.getRequiredProperty(PropertyLoader.vcellSoftwareVersion);
-			String remote_singularity_image = PropertyLoader.getRequiredProperty(PropertyLoader.vcellbatch_singularity_image);
+			String remote_singularity_image = PropertyLoader.getRequiredProperty(PropertyLoader.vcellopt_singularity_image);
 			String slurm_singularity_local_image_filepath = remote_singularity_image;
 //			String docker_image = PropertyLoader.getRequiredProperty(PropertyLoader.vcellbatch_docker_name);
 			String slurm_tmpdir = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_tmpdir);
@@ -1085,16 +1100,18 @@ public class SlurmProxy extends HtcProxy {
 
 			HtcProxy.MemLimitResults memoryMBAllowed = new HtcProxy.MemLimitResults(256, "Optimization Default");
 			String[] environmentVars = new String[] {
-					"java_mem_Xmx="+memoryMBAllowed.getMemLimit()+"M",
 					"datadir_external="+primaryDataDirExternal,
-					"htclogdir_external="+htclogdir_external,
-					"softwareVersion="+softwareVersion,
-					"serverid="+serverid
 			};
 
 			LineStringBuilder lsb = new LineStringBuilder();
 			slurmScriptInit(jobName, false, memoryMBAllowed, lsb);
-			slurmInitSingularity(lsb, primaryDataDirExternal, htclogdir_external, softwareVersion,
+			File optDataDir = optProblemInput.getParentFile();
+			File optDataDirExternal = new File(optDataDir.getAbsolutePath().replace(primaryDataDirInternal, primaryDataDirExternal));
+			if (!optDataDirExternal.exists() && !optDataDirExternal.mkdir()){
+				LG.error("failed to make optimization data directory "+optDataDir.getAbsolutePath());
+			}
+//			if (optDataDirExternal.setWritable(true,false))
+			slurmInitSingularity(lsb, optDataDirExternal.getAbsolutePath(), htclogdir_external, softwareVersion,
 					slurm_singularity_local_image_filepath, slurm_tmpdir, slurm_central_singularity_dir,
 					slurm_local_singularity_dir, simDataDirArchiveHost, slurm_singularity_central_filepath,
 					environmentVars);
@@ -1103,8 +1120,10 @@ public class SlurmProxy extends HtcProxy {
 			lsb.write("echo \"cmd_prefix is '${cmd_prefix}'\"");
 			lsb.append("echo command = ");
 			lsb.write("${cmd_prefix}" + "");
-			
-			lsb.write("${cmd_prefix}" + " ParamOptemize_python"+" "+optProblemInput.getAbsolutePath()+" "+optProblemOutput.getAbsolutePath());
+
+			String optProblemInput_container_filename = optProblemInput.getAbsolutePath().replace(optProblemInput.getParent(),"/simdata");
+			String optProblemOutput_container_filename = optProblemOutput.getAbsolutePath().replace(optProblemOutput.getParent(),"/simdata");
+			lsb.write("${cmd_prefix} " + optProblemInput_container_filename+" " + optProblemOutput_container_filename);
 
 			File tempFile = File.createTempFile("tempSubFile", ".sub");
 

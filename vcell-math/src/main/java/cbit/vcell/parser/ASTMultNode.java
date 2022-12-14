@@ -131,7 +131,8 @@ public Node differentiate(String independentVariable) throws ExpressionException
 	}	
 	return addNode;	 
 }
-public double evaluateConstant() throws ExpressionException {
+@Override
+public double evaluateConstant(boolean substituteConstants) throws ExpressionException {
 	// evaluate boolean children first for conditional expressions. 
 	// if any one of them is false, just return 0;
 	// this protects against evaluating the terms outside of
@@ -140,7 +141,7 @@ public double evaluateConstant() throws ExpressionException {
 	for (int i=0;i<jjtGetNumChildren();i++){
 		if (jjtGetChild(i).isBoolean()) {
 			try {
-				if (jjtGetChild(i).evaluateConstant() == 0) {
+				if (jjtGetChild(i).evaluateConstant(substituteConstants) == 0) {
 					return 0.0;
 				}
 			}catch (ExpressionException e){
@@ -155,7 +156,7 @@ public double evaluateConstant() throws ExpressionException {
 		// see if there are any constant 0.0's, if there are simplify to 0.0
 		//
 		try {
-			double constantValue = jjtGetChild(i).evaluateConstant();
+			double constantValue = jjtGetChild(i).evaluateConstant(substituteConstants);
 			product *= constantValue;
 		}catch (ExpressionException e){
 			childException = e;
@@ -202,14 +203,11 @@ public double evaluateVector(double values[]) throws ExpressionException {
 		return product;
 	}
 }    
-/**
- * This method was created by a SmartGuide.
- * @exception java.lang.Exception The exception description.
- */
-public Node flatten() throws ExpressionException {
+@Override
+public Node flatten(boolean substituteConstants) throws ExpressionException {
 
 	try {
-		double value = evaluateConstant();
+		double value = evaluateConstant(substituteConstants);
 		return new ASTFloatNode(value);
 	}catch (Exception e){}		
 
@@ -217,7 +215,7 @@ public Node flatten() throws ExpressionException {
 	java.util.Vector tempChildren = new java.util.Vector();
 
 	for (int i=0;i<jjtGetNumChildren();i++){
-		tempChildren.addElement(jjtGetChild(i).flatten());
+		tempChildren.addElement(jjtGetChild(i).flatten(substituteConstants));
 	}
 
 //System.out.println("flattening.....");
@@ -234,7 +232,7 @@ public Node flatten() throws ExpressionException {
 			if (child instanceof ASTMultNode){
 				for (int j=0;j<child.jjtGetNumChildren();j++){
 					//tempChildren.add(i+j,child.jjtGetChild(j).flatten());
-					tempChildren.insertElementAt(child.jjtGetChild(j).flatten(),i+j);
+					tempChildren.insertElementAt(child.jjtGetChild(j).flatten(substituteConstants),i+j);
 				}
 				tempChildren.remove(child);
 //				return flatten();
@@ -293,7 +291,7 @@ public Node flatten() throws ExpressionException {
 			}
 			if (child instanceof ASTMinusTermNode){
 				tempChildren.removeElement(child);
-				Node childsChild = child.jjtGetChild(0).flatten();
+				Node childsChild = child.jjtGetChild(0).flatten(substituteConstants);
 				tempChildren.addElement(childsChild);
 				if (childsChild instanceof ASTMinusTermNode){
 					minusCount++;

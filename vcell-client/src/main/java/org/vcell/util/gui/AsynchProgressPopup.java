@@ -154,10 +154,12 @@ public AsynchProgressPopup(Component requester, ProgressDialog customDialog, Thr
 			if (bCancelable) {
 				getDialog().dispose();
 				interrupt();
-				nonswingThread.interrupt();
+//				nonswingThread.interrupt();
+				nonswingThread.stop();
 			}
 		}
 	};
+	dialog.addProgressDialogListener(progressDialogListener);
 }
 
 /**

@@ -22,7 +22,6 @@ public class H5Client {
 
 	public H5Client() {
     	System.setProperty(PropertyLoader.installationRoot, ".");
-    	ResourceUtil.setNativeLibraryDirectory();
     	NativeLib.HDF5.load();
 	}
 

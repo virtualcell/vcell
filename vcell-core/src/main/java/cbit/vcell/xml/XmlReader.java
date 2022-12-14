@@ -11,24 +11,11 @@
 package cbit.vcell.xml;
 import java.beans.PropertyVetoException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.TreeMap;
-import java.util.TreeSet;
-import java.util.Vector;
+import java.util.*;
 import java.util.function.Consumer;
 
 import cbit.vcell.model.*;
+import cbit.vcell.solver.*;
 import org.jdom.Attribute;
 import org.jdom.DataConversionException;
 import org.jdom.Element;
@@ -264,28 +251,7 @@ import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.render.Vect3d;
-import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.AnnotatedFunction.FunctionCategory;
-import cbit.vcell.solver.ConstantArraySpec;
-import cbit.vcell.solver.DataProcessingInstructions;
-import cbit.vcell.solver.DefaultOutputTimeSpec;
-import cbit.vcell.solver.ErrorTolerance;
-import cbit.vcell.solver.ExplicitOutputTimeSpec;
-import cbit.vcell.solver.MathOverrides;
-import cbit.vcell.solver.MeshSpecification;
-import cbit.vcell.solver.NFsimSimulationOptions;
-import cbit.vcell.solver.NonspatialStochHybridOptions;
-import cbit.vcell.solver.NonspatialStochSimOptions;
-import cbit.vcell.solver.OutputFunctionContext;
-import cbit.vcell.solver.OutputTimeSpec;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SmoldynSimulationOptions;
-import cbit.vcell.solver.SolverDescription;
-import cbit.vcell.solver.SolverTaskDescription;
-import cbit.vcell.solver.SundialsPdeSolverOptions;
-import cbit.vcell.solver.TimeBounds;
-import cbit.vcell.solver.TimeStep;
-import cbit.vcell.solver.UniformOutputTimeSpec;
 import cbit.vcell.solvers.mb.MovingBoundarySolverOptions;
 import cbit.vcell.solvers.mb.MovingBoundarySolverOptions.ExtrapolationMethod;
 import cbit.vcell.solvers.mb.MovingBoundarySolverOptions.RedistributionMode;
@@ -477,7 +443,7 @@ public BioModel getBioModel(Element param,VCellSoftwareVersion docVcellSoftwareV
 //System.out.println("simcontext-------- "+((double)(l5-l4))/1000);
 		while (simIterator.hasNext()) {
 			try {
-				biomodel.addSimulation(getSimulation((Element)simIterator.next(), simContext.getMathDescription()));
+				biomodel.addSimulation(getSimulation((Element)simIterator.next(), simContext.getMathDescription(), simContext));
 			} catch(java.beans.PropertyVetoException e) {
 				e.printStackTrace();
 				throw new XmlParseException("A PropertyVetoException occurred when adding a Simulation entity to the BioModel " + name, e);
@@ -3126,6 +3092,9 @@ MathDescription getMathDescription(Element param, Geometry geometry) throws XmlP
 		tempelement = (Element)iterator.next();
 		getPostProcessingBlock(mathdes, tempelement);
 	}
+
+	mathdes.refreshDependencies();
+
 	return mathdes;
 }
 
@@ -3803,7 +3772,7 @@ public MathModel getMathModel(Element param) throws XmlParseException{
 	Simulation[] simList = new Simulation[childList.size()];
 	int simCounter = 0;
 	for (Element simElement : childList){
-		simList[simCounter] = getSimulation(simElement, mathDesc);
+		simList[simCounter] = getSimulation(simElement, mathDesc, mathmodel);
 		simCounter ++;
 	}
 	try {
@@ -4068,6 +4037,35 @@ private MembraneMapping getMembraneMapping(Element param, SimulationContext simu
 				}
 			}
 		}
+	}
+
+	//Set Boundary conditions
+	Element tempElement = param.getChild(XMLTags.BoundariesTypesTag, vcNamespace);
+	if(tempElement != null) {
+		//Xm
+		String temp = tempElement.getAttributeValue(XMLTags.BoundaryAttrValueXm);
+		BoundaryConditionType bct = new BoundaryConditionType(temp);
+		memmap.setBoundaryConditionTypeXm(bct);
+		//Xp
+		temp = tempElement.getAttributeValue(XMLTags.BoundaryAttrValueXp);
+		bct = new BoundaryConditionType(temp);
+		memmap.setBoundaryConditionTypeXp(bct);
+		//Ym
+		temp = tempElement.getAttributeValue(XMLTags.BoundaryAttrValueYm);
+		bct = new BoundaryConditionType(temp);
+		memmap.setBoundaryConditionTypeYm(bct);
+		//Yp
+		temp = tempElement.getAttributeValue(XMLTags.BoundaryAttrValueYp);
+		bct = new BoundaryConditionType(temp);
+		memmap.setBoundaryConditionTypeYp(bct);
+		//Zm
+		temp = tempElement.getAttributeValue(XMLTags.BoundaryAttrValueZm);
+		bct = new BoundaryConditionType(temp);
+		memmap.setBoundaryConditionTypeZm(bct);
+		//Zp
+		temp = tempElement.getAttributeValue(XMLTags.BoundaryAttrValueZp);
+		bct = new BoundaryConditionType(temp);
+		memmap.setBoundaryConditionTypeZp(bct);
 	}
 	
 	return memmap;
@@ -5833,15 +5831,12 @@ private SimpleReaction getSimpleReaction(Element param, Model model) throws XmlP
     return simplereaction;
 }
 
-
-/**
- * This method returns a Simulation object from a XML element.
- * Creation date: (4/26/2001 12:14:30 PM)
- * @return cbit.vcell.solver.Simulation
- * @param param org.jdom.Element
- * @exception cbit.vcell.xml.XmlParseException The exception description.
- */
 Simulation getSimulation(Element param, MathDescription mathDesc) throws XmlParseException {
+	return getSimulation(param, mathDesc,null);
+}
+
+
+Simulation getSimulation(Element param, MathDescription mathDesc, SimulationOwner simulationOwner) throws XmlParseException {
 	//retrive metadata (if any)
 	SimulationVersion simulationVersion = getSimulationVersion(param.getChild(XMLTags.VersionTag, vcNamespace));
 	
@@ -5849,9 +5844,9 @@ Simulation getSimulation(Element param, MathDescription mathDesc) throws XmlPars
 	Simulation simulation = null;
 		
 	if (simulationVersion!=null) {
-		simulation = new Simulation(simulationVersion, mathDesc);
+		simulation = new Simulation(simulationVersion, mathDesc, simulationOwner);
 	} else {
-		simulation = new Simulation(mathDesc);
+		simulation = new Simulation(mathDesc, simulationOwner);
 	}
 	
 	//set attributes
@@ -5859,8 +5854,12 @@ Simulation getSimulation(Element param, MathDescription mathDesc) throws XmlPars
 	
 	try {
 		simulation.setName(name);
+		String importedTaskId = param.getAttributeValue(XMLTags.ImportedTaskIdTag);
+		if(importedTaskId != null) {
+			simulation.setImportedTaskID(importedTaskId);
+		}
+		
 		//String annotation = param.getAttributeValue(XMLTags.AnnotationAttrTag);
-
 		//if (annotation!=null) {
 			//simulation.setDescription(unMangle(annotation));
 		//}
@@ -6091,7 +6090,7 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 			newsimcontext.setDescription(unMangle(annotation));
 		}
 		//set if using concentration
-		newsimcontext.setUsingConcentration(bUseConcentration);
+		newsimcontext.setUsingConcentration(bUseConcentration, false);
 		// set mass conservation model reduction flag
 		newsimcontext.setUsingMassConservationModelReduction(bMassConservationModelReduction);
 		// set if randomizing init condition or not (for stochastic applications
@@ -6108,7 +6107,7 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 			newsimcontext.setNetworkConstraints(nc);
 		}
 		 
-	} catch(java.beans.PropertyVetoException e) {
+	} catch(Exception e) {
 		e.printStackTrace(System.out);
 		throw new XmlParseException("Exception", e);
 	} 
@@ -6351,13 +6350,13 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 	}
 	
 	
-	for (GeometryClass gc : newsimcontext.getGeometry().getGeometryClasses()) {
-		try {
-			StructureSizeSolver.updateUnitStructureSizes(newsimcontext, gc);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
+//	for (GeometryClass gc : newsimcontext.getGeometry().getGeometryClasses()) {
+//		try {
+//			StructureSizeSolver.updateUnitStructureSizes(newsimcontext, gc);
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
+//	}
 	
 	newsimcontext.getGeometryContext().enforceHierarchicalBoundaryConditions(newsimcontext.getModel().getStructureTopology());
 	

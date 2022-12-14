@@ -20,24 +20,16 @@ import java.util.*;
 import cbit.vcell.biomodel.ModelUnitConverter;
 import cbit.vcell.biomodel.meta.IdentifiableProvider;
 import cbit.vcell.biomodel.meta.VCID;
+import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.math.*;
 import cbit.vcell.solver.*;
 import org.vcell.model.rbm.NetworkConstraints;
-import org.vcell.util.BeanUtils;
-import org.vcell.util.Compare;
-import org.vcell.util.Displayable;
-import org.vcell.util.Extent;
-import org.vcell.util.Issue;
+import org.vcell.sbml.vcell.StructureSizeSolver;
+import org.vcell.util.*;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.Issue.Severity;
-import org.vcell.util.IssueContext;
 import org.vcell.util.IssueContext.ContextType;
-import org.vcell.util.Matchable;
-import org.vcell.util.Preference;
-import org.vcell.util.PropertyChangeListenerProxyVCell;
-import org.vcell.util.TokenMangler;
-import org.vcell.util.VCAssert;
 import org.vcell.util.document.BioModelChildSummary.MathType;
 import org.vcell.util.document.DocumentValidUtil;
 import org.vcell.util.document.ExternalDataIdentifier;
@@ -229,20 +221,31 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 
 	public class SimulationContextOverridesResolver implements MathOverridesResolver {
 		private final List<SymbolReplacementTemplate> builtin_replacements = new ArrayList<>();
-		private final IdentifiableProvider bioIdentifiableProvider = new BioModel(null);
 
-		void SimulationContextOverridesResolver() {
+		SimulationContextOverridesResolver() {
 			// test for renamed initial condition constant (changed from _init to _init_uM)
 			builtin_replacements.add(new SymbolReplacementTemplate(DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old,
 					DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_uM));
+
+			// test for renamed initial condition constant (changed from _init to _init_umol_l_1)
+			builtin_replacements.add(new SymbolReplacementTemplate(DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old,
+					DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_umol_l_1));
 
 			// test for renamed initial condition constant (changed from _init to _init_molecules_um_2)
 			builtin_replacements.add(new SymbolReplacementTemplate(DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old,
 					DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_molecules_um_2));
 
+			// test for renamed initial condition constant (changed from _init to _init_umol_dm_2)
+			builtin_replacements.add(new SymbolReplacementTemplate(DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_molecules_um_2,
+					DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_umol_dm_2));
+
 			// test for renamed initial condition constant (changed from _init_molecules_per_um2 to _init_molecules_um_2)
 			builtin_replacements.add(new SymbolReplacementTemplate(DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old_molecules_per_um2,
 					DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_molecules_um_2));
+
+			// test for renamed initial condition constant (changed from _init_molecules_per_um_2 to _init_umol_dm_2)
+			builtin_replacements.add(new SymbolReplacementTemplate(DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_molecules_um_2,
+					DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_umol_dm_2));
 
 			// test for equivalent unit systems _init_uM or _init <==> _init_umol_l_1
 			builtin_replacements.add(new SymbolReplacementTemplate(DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_uM,
@@ -251,13 +254,19 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 					DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_umol_l_1));
 			builtin_replacements.add(new SymbolReplacementTemplate(DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_umol_l_1,
 					DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_uM));
+
+			// test for renamed initial condition constant (changed from _initCount to _Count_initCount)
+			builtin_replacements.add(new SymbolReplacementTemplate(DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_COUNT,
+					DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_COUNT_template_replace));
+
+			// test for renamed initial condition constant for a event assignment or rate rule init (changed from _init to _protocol_init)
+			builtin_replacements.add(new SymbolReplacementTemplate(DiffEquMathMapping.MATH_FUNC_SUFFIX_EVENTASSIGN_OR_RATERULE_INIT_old,
+					DiffEquMathMapping.MATH_FUNC_SUFFIX_EVENTASSIGN_OR_RATERULE_INIT));
+
 		}
 
 		@Override
-		public SymbolReplacement getSymbolReplacement(String name) {
-			if (mathDesc!=null && mathDesc.getSourceSymbolMapping().findVariableByName(name) instanceof Constant) {
-				throw new RuntimeException("unexpected: override var name " + name + " found as a Constant in latest math");
-			}
+		public SymbolReplacement getSymbolReplacement(String name, boolean bTransformUnits) {
 			SourceSymbolMapping currentMathSymbolMapping = getMathDescription().getSourceSymbolMapping();
 			SourceSymbolMapping previousMathSymbolMapping = (prevMathDesc!=null) ? prevMathDesc.getSourceSymbolMapping() : null;
 			//
@@ -273,7 +282,7 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 							VCUnitDefinition previousUnit = ste.getUnitDefinition();
 							if (ste instanceof Identifiable) {
 								Identifiable prevIdentifiableObject = (Identifiable) ste;
-								VCID previousVCID = bioIdentifiableProvider.getVCID(prevIdentifiableObject);
+								VCID previousVCID = bioModel.getVCID(prevIdentifiableObject);
 								Identifiable newIdentifiableObject = bioModel.getIdentifiableObject(previousVCID);
 								if (newIdentifiableObject instanceof SymbolTableEntry) {
 									SymbolTableEntry newBioSte = (SymbolTableEntry) newIdentifiableObject;
@@ -282,6 +291,9 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 											newUnit.divideBy(previousUnit),
 											bioModel.getModel().getUnitSystem().getInstance_DIMENSIONLESS(),
 											bioModel.getModel().getKMOLE());
+									if (!bTransformUnits){
+										factor = new Expression(1.0);
+									}
 									Variable replacementVariable = currentMathSymbolMapping.getVariable(newBioSte);
 									if (replacementVariable instanceof Constant) {
 										return new SymbolReplacement(replacementVariable.getName(), factor);
@@ -335,11 +347,11 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 			//
 			// if not found in the previous math symbol mapping, try to repair using suffix patterns.
 			//
-			if (currentMathSymbolMapping != null) {
-				for (SymbolReplacementTemplate replacementTemplate : builtin_replacements) {
+			for (SymbolReplacementTemplate replacementTemplate : builtin_replacements) {
+				if (name.endsWith(replacementTemplate.oldNameSuffix)) {
 					String repaired_name = name.replace(replacementTemplate.oldNameSuffix, replacementTemplate.newNameSuffix);
-					Variable mathVar = currentMathSymbolMapping.findVariableByName(repaired_name);
-					if (mathVar != null) {
+					Variable mathVar = mathDesc.getVariable(repaired_name);
+					if (mathVar instanceof Constant) {
 						logger.info("replaced math override name " + name + " with " + repaired_name + " with factor " + replacementTemplate.factor + " using template pattern");
 						return new SymbolReplacement(repaired_name, new Expression(replacementTemplate.factor));
 					}
@@ -348,9 +360,41 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 			return null;
 		}
 
+		/**
+		 * @return set of constant names belonging to physical constants and unit conversions
+		 *         or 'null' if it cannot fulfill request (e.g. MathSymbolMapping is missing)
+		 */
+		@Override
+		public Set<String> getNonOverridableConstantNames() {
+			MathSymbolMapping mathSymbolMapping = (MathSymbolMapping) mathDesc.getSourceSymbolMapping();
+			if (mathSymbolMapping == null){
+				return null;
+			}
+			List<Constant> constants = Collections.list(mathDesc.getConstants());
+			Set<String> nonOverridableConstantNames = new LinkedHashSet<>();
+			for (Constant c : constants){
+				SymbolTableEntry[] stes = mathSymbolMapping.getBiologicalSymbol(c);
+				if (stes != null && stes.length > 0){
+					SymbolTableEntry bioSTE = stes[0];
+					if (bioSTE instanceof ReservedSymbol){
+						ReservedSymbol reservedSymbol = (ReservedSymbol)bioSTE;
+						if (reservedSymbol.getRole() != ReservedSymbolRole.TEMPERATURE) {
+							nonOverridableConstantNames.add(c.getName());
+						}
+					} else if (bioSTE instanceof AbstractMathMapping.MathMappingParameter){
+						AbstractMathMapping.MathMappingParameter mmParam = (AbstractMathMapping.MathMappingParameter) bioSTE;
+						if (mmParam.getRole() == AbstractMathMapping.PARAMETER_ROLE_UNITFACTOR){
+							nonOverridableConstantNames.add(c.getName());
+						}
+					}
+				}
+			}
+			return nonOverridableConstantNames;
+		}
+
 	}
 
-		public class SimulationContextParameter extends Parameter implements ExpressionContainer {
+		public class SimulationContextParameter extends Parameter implements ExpressionContainer, Identifiable {
 		
 		private String fieldParameterName = null;
 		private Expression fieldParameterExpression = null;
@@ -375,23 +419,39 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 		}
 
 
-		public boolean compareEqual(Matchable obj) {
-			if (!(obj instanceof SimulationContextParameter)){
-				return false;
+			@Override public boolean compareEqual(Matchable obj) {
+				if (!(obj instanceof SimulationContextParameter)){
+					return false;
+				}
+				SimulationContextParameter mp = (SimulationContextParameter)obj;
+				if (!super.compareEqual0(mp)){
+					return false;
+				}
+				if (fieldParameterRole != mp.fieldParameterRole){
+					return false;
+				}
+
+				return true;
 			}
-			SimulationContextParameter mp = (SimulationContextParameter)obj;
-			if (!super.compareEqual0(mp)){
-				return false;
-			}
-			if (fieldParameterRole != mp.fieldParameterRole){
-				return false;
-			}
-			
-			return true;
-		}
 
 
-		public boolean isExpressionEditable(){
+			@Override public boolean relate(Relatable obj, RelationVisitor rv) {
+				if (!(obj instanceof SimulationContextParameter)){
+					return false;
+				}
+				SimulationContextParameter mp = (SimulationContextParameter)obj;
+				if (!super.relate0(mp, rv)){
+					return false;
+				}
+				if (fieldParameterRole != mp.fieldParameterRole){
+					return false;
+				}
+
+				return true;
+			}
+
+
+			public boolean isExpressionEditable(){
 			return true;
 		}
 
@@ -462,6 +522,7 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 	public static final int NUM_ROLES		= 1;
 	public static final String RoleDesc = "user defined";
 
+	private transient SimulationContextOverridesResolver simulationContextOverridesResolver;
 	private Version version = null;
 	private GeometryContext geoContext = null;
 	private ReactionContext reactionContext = null;
@@ -854,7 +915,7 @@ public Simulation addNewSimulation(String simNamePrefix, MathMappingCallback cal
 	//
 	// create new Simulation and add to BioModel.
 	//
-	Simulation newSimulation = new Simulation(getMathDescription());
+	Simulation newSimulation = new Simulation(getMathDescription(),this);
 	newSimulation.setName(newSimName);	
 	
 	bioModel.addSimulation(newSimulation);
@@ -894,8 +955,9 @@ public void refreshMathDescription(MathMappingCallback callback, NetworkGenerati
 		try {
 			setMathDescription(createNewMathMapping(callback, networkGenerationRequirements).getMathDescription());
 		} catch (Exception e) {
-			logger.error(e);
-			throw new RuntimeException("Application '"+getName()+"' has no generated Math, Failed to generate new Math: "+ e.getMessage());
+			String msg = "Application '"+getName()+"' has no generated Math, Failed to generate new Math: "+ e.getMessage();
+			logger.error(msg, e);
+			throw new RuntimeException(msg);
 		}
 	}
 }
@@ -1597,7 +1659,10 @@ public OutputFunctionContext getOutputFunctionContext() {
 
 	@Override
 	public MathOverridesResolver getMathOverridesResolver() {
-		return new SimulationContextOverridesResolver();
+		if (this.simulationContextOverridesResolver == null){
+			this.simulationContextOverridesResolver = new SimulationContextOverridesResolver();
+		}
+		return this.simulationContextOverridesResolver;
 	}
 
 	/**
@@ -2587,7 +2652,7 @@ public void refreshSpatialObjects() {
 				}
 			}
 		} catch (PropertyVetoException e) {
-			logger.error(e);
+			logger.error("failed to remove spatial objects: "+e.getMessage(), e);
 		}
 	}
 }
@@ -2845,12 +2910,21 @@ public void setUsingMassConservationModelReduction(boolean bMassConservationMode
 	this.bMassConservationModelReduction = bMassConservationModelReduction;
 }
 
-public void setUsingConcentration(boolean bUseConcentration) /*throws MappingException, PropertyVetoException*/ {
+public void setUsingConcentration(boolean bUseConcentration, boolean bTransformIfNeeded) throws PropertyVetoException, MappingException, MatrixException, ModelException, MathException, ExpressionException /*throws MappingException, PropertyVetoException*/ {
 	if(applicationType == Application.NETWORK_STOCHASTIC || applicationType == Application.RULE_BASED_STOCHASTIC)
 	{
 		boolean oldValue = bConcentration;
 		bConcentration = bUseConcentration;
+		if (bUseConcentration != oldValue && bTransformIfNeeded){
+			MathMapping mathMapping = createNewMathMapping();
+			setMathDescription(mathMapping.getMathDescription());
+		}
 		firePropertyChange(PROPERTY_NAME_USE_CONCENTRATION, oldValue, bConcentration);
+		if (bUseConcentration != oldValue && bTransformIfNeeded){
+			convertSpeciesIniCondition(bUseConcentration);
+			MathMapping mathMapping = createNewMathMapping();
+			setMathDescription(mathMapping.getMathDescription());
+		}
 	}
 }
 
@@ -2867,27 +2941,6 @@ public void setRandomizeInitConditions(boolean bRandomize) {
 	}
 }
 
-
-//specially created for loading from database, used in ServerDocumentManager.saveBioModel()
-public void updateSpeciesIniCondition(SimulationContext simContext) throws MappingException, PropertyVetoException
-{
-	boolean bUseConcentration = simContext.isUsingConcentration();
-	this.setUsingConcentration(bUseConcentration);
-	SpeciesContextSpec[] refScSpec = simContext.getReactionContext().getSpeciesContextSpecs();
-//	SpeciesContextSpec[] scSpec = this.getReactionContext().getSpeciesContextSpecs();
-	for(int i = 0; i<refScSpec.length; i++ )
-	{
-		SpeciesContext refSc = refScSpec[i].getSpeciesContext();
-		SpeciesContextSpec scSpec = this.getReactionContext().getSpeciesContextSpec(refSc);
-		try {
-			scSpec.getInitialConcentrationParameter().setExpression(refScSpec[i].getInitialConcentrationParameter().getExpression());
-			scSpec.getInitialCountParameter().setExpression(refScSpec[i].getInitialCountParameter().getExpression());
-		} catch (ExpressionBindingException e) {
-			e.printStackTrace();
-			throw new MappingException(e.getMessage());
-		} 
-	}
-}
 
 public void convertSpeciesIniCondition(boolean bUseConcentration) throws MappingException, PropertyVetoException
 {
@@ -3085,7 +3138,7 @@ public SimContextTransformer createNewTransformer(){
 		if((rateRules != null && rateRules.length > 0) || (assignmentRules != null && assignmentRules.length > 0)) {
 			return new RateRuleTransformer();
 		}
-		
+
 		if (getGeometry().getDimension() == 0) {
 			if (!getGeometryContext().isAllSizeSpecifiedPositive()) {
 				// old models may not have absolute sizes for structures, we clone the original simulation context
@@ -3093,6 +3146,14 @@ public SimContextTransformer createNewTransformer(){
 				return new LegacySimContextTransformer();
 			}
 		}
+		if (getGeometry().getDimension() > 0) {
+			if (!getGeometryContext().isAllUnitSizeParameterSetForSpatial()) {
+				// old models may not have unit sizes for structures, we clone the original simulation context
+				// to one with corrected numbers and work on it while leaving the original unmodified
+				return new LegacySimContextTransformer();
+			}
+		}
+
 	}
 	return null; 
 }
@@ -3132,14 +3193,12 @@ public MathMapping createNewMathMapping() {
 	MathMappingCallback callback = new MathMappingCallback() {
 		@Override
 		public void setProgressFraction(float fractionDone) {
-			Thread.dumpStack();
-			System.out.println("---> stdout mathMapping: progress = "+(fractionDone*100.0)+"% done");
+			logger.info("mathMapping: progress = "+(fractionDone*100.0)+"% done");
 		}
 		
 		@Override
 		public void setMessage(String message) {
-			Thread.dumpStack();
-			System.out.println("---> stdout mathMapping: message = "+message);
+			logger.info("mathMapping: message = "+message);
 		}
 		
 		@Override
@@ -3715,6 +3774,54 @@ public String getDisplayName() {
 @Override
 public String getDisplayType() {
 	return typeName;
+}
+
+public void updateAll(boolean bForceUpgrade) throws MappingException {
+	try {
+		checkValidity();
+
+		if (bForceUpgrade) {
+			// for older models that do not have absolute compartment sizes set, but have relative sizes (SVR/VF); or if there is only one compartment with size not set,
+			// compute absolute compartment sizes using relative sizes and assuming a default value of '1' for one of the compartments.
+			// Otherwise, the math generation will fail, since for the relaxed topology (VCell 5.3 and later) absolute compartment sizes are required.
+			GeometryContext gc = getGeometryContext();
+			if (getGeometry().getDimension() == 0 &&
+					((gc.isAllSizeSpecifiedNull() && !gc.isAllVolFracAndSurfVolSpecifiedNull()) || (gc.getModel().getStructures().length == 1 && gc.isAllSizeSpecifiedNull()))) {
+				// choose the first structure in model and set its size to '1'.
+				Structure struct = getModel().getStructure(0);
+				double structSize = 1.0;
+				StructureSizeSolver.updateAbsoluteStructureSizes_symbolic(this, struct, structSize, struct.getStructureSize().getUnitDefinition());
+			}
+			if (getGeometry().getDimension() > 0 && !gc.isAllUnitSizeParameterSetForSpatial()) {
+				for (GeometryClass geometryClass : getGeometry().getGeometryClasses()) {
+					StructureSizeSolver.updateUnitStructureSizes(this, geometryClass);
+				}
+			}
+		}
+
+		//
+		// compute Geometric Regions if necessary
+		//
+		cbit.vcell.geometry.surface.GeometrySurfaceDescription geoSurfaceDescription = getGeometry().getGeometrySurfaceDescription();
+		if (geoSurfaceDescription != null && geoSurfaceDescription.getGeometricRegions() == null) {
+			cbit.vcell.geometry.surface.GeometrySurfaceUtils.updateGeometricRegions(geoSurfaceDescription);
+		}
+	}catch (Exception e) {
+		throw new MappingException("failed to update computed Geometry metrics: " + e.getMessage(), e);
+	}
+	try {
+		//
+		// create new MathDescription
+		//
+		MathDescription math = createNewMathMapping().getMathDescription();
+		//
+		// load MathDescription into SimulationContext
+		// (BioModel is responsible for propagating this to all applicable Simulations).
+		//
+		setMathDescription(math);
+	} catch (Exception e) {
+		throw new MappingException("failed to gerate math: "+e.getMessage(), e);
+	}
 }
 
 }

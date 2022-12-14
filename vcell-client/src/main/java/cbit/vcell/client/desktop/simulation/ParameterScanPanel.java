@@ -42,7 +42,7 @@ public class ParameterScanPanel extends JPanel {
 	private JTextField ivjJTextFieldMin = null;
 	private JTextField ivjJTextFieldNumber = null;
 	private JTextField ivjJTextFieldValues = null;
-	private ConstantArraySpec fieldConstantArraySpec = ConstantArraySpec.createIntervalSpec("", 0, 0, 0, false);
+	private ConstantArraySpec fieldConstantArraySpec = ConstantArraySpec.createIntervalSpec("", "0", "0", 0, false);
 
 class IvjEventHandler implements java.beans.PropertyChangeListener {
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
@@ -75,8 +75,8 @@ public void applyValues() throws ExpressionException{
 	} else if (getJRadioButtonRange().isSelected()) {
 		setConstantArraySpec(ConstantArraySpec.createIntervalSpec(
 			getConstantArraySpec().getName(),
-			Double.parseDouble(getJTextFieldMin().getText()),
-			Double.parseDouble(getJTextFieldMax().getText()),
+			getJTextFieldMin().getText(),
+			getJTextFieldMax().getText(),
 			Integer.parseInt(getJTextFieldNumber().getText()),
 			getJCheckBoxLog().isSelected()
 			));
@@ -502,8 +502,8 @@ private void initFields(ConstantArraySpec spec) {
 		}
 		case ConstantArraySpec.TYPE_INTERVAL: {
 			getJRadioButtonRange().setSelected(true);
-			getJTextFieldMin().setText(""+spec.getMinValue());
-			getJTextFieldMax().setText(""+spec.getMaxValue());
+			getJTextFieldMin().setText(""+spec.getMinValue().infix());
+			getJTextFieldMax().setText(""+spec.getMaxValue().infix());
 			getJTextFieldNumber().setText(""+spec.getNumValues());
 			getJCheckBoxLog().setSelected(spec.isLogInterval());
 			break;

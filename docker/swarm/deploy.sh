@@ -119,8 +119,10 @@ stack_name=$6
 vcell_siteCamel=`cat $local_config_file | grep VCELL_SITE_CAMEL | cut -d"=" -f2`
 vcell_version=`cat $local_config_file | grep VCELL_VERSION_NUMBER | cut -d"=" -f2`
 vcell_build=`cat $local_config_file | grep VCELL_BUILD_NUMBER | cut -d"=" -f2`
-singularity_filename=`cat $local_config_file | grep VCELL_SINGULARITY_FILENAME | cut -d"=" -f2`
-singularity_image_external=`cat $local_config_file | grep VCELL_SINGULARITY_IMAGE_EXTERNAL | cut -d"=" -f2`
+batch_singularity_filename=`cat $local_config_file | grep VCELL_BATCH_SINGULARITY_FILENAME | cut -d"=" -f2`
+batch_singularity_image_external=`cat $local_config_file | grep VCELL_BATCH_SINGULARITY_IMAGE_EXTERNAL | cut -d"=" -f2`
+opt_singularity_filename=`cat $local_config_file | grep VCELL_OPT_SINGULARITY_FILENAME | cut -d"=" -f2`
+opt_singularity_image_external=`cat $local_config_file | grep VCELL_OPT_SINGULARITY_IMAGE_EXTERNAL | cut -d"=" -f2`
 #partitionName=`cat $local_config_file | grep VCELL_SLURM_PARTITION | cut -d"=" -f2`
 batchHost=`cat $local_config_file | grep VCELL_BATCH_HOST | cut -d"=" -f2`
 slurm_singularity_central_dir=`cat $local_config_file | grep VCELL_SLURM_CENTRAL_SINGULARITY_DIR | cut -d"=" -f2`
@@ -155,15 +157,21 @@ if [ "$install_singularity" == "true" ]; then
 	#
 	echo ""
 
-	if [ ! -e "./${singularity_filename}" ]; then
-		echo "failed to find local singularity image file $singularity_filename in ./singularity-vm directory"
+	if [ ! -e "./${batch_singularity_filename}" ]; then
+		echo "failed to find batch local singularity image file $batch_singularity_filename in ./singularity-vm directory"
+		exit 1
+	fi
+	if [ ! -e "./${opt_singularity_filename}" ]; then
+		echo "failed to find opt local singularity image file $opt_singularity_filename in ./singularity-vm directory"
 		exit 1
 	fi
 
 	echo "mkdir -p ${slurm_singularity_central_dir}"
 	mkdir -p ${slurm_singularity_central_dir}
-	echo "cp ./${singularity_filename} ${slurm_singularity_central_dir}"
-	cp ./${singularity_filename} ${slurm_singularity_central_dir}
+	echo "cp ./${batch_singularity_filename} ${slurm_singularity_central_dir}"
+	cp "./${batch_singularity_filename}" "${slurm_singularity_central_dir}"
+	echo "cp ./${opt_singularity_filename} ${slurm_singularity_central_dir}"
+	cp "./${opt_singularity_filename}" "${slurm_singularity_central_dir}"
 
 	echo "popd"
 	popd

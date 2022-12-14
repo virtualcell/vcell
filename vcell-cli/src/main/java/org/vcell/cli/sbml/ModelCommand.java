@@ -5,9 +5,11 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
-import org.vcell.cli.vcml.ModelFormat;
+
 import org.vcell.sbml.vcell.SBMLExporter;
 import org.vcell.sbml.vcell.SBMLImporter;
+import org.vcell.sedml.ModelFormat;
+
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 

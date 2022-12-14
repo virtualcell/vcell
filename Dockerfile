@@ -2,7 +2,10 @@
 FROM ubuntu:20.04
 
 ARG SIMULATOR_VERSION="7.4.0.51"
+ARG MAX_JAVA_MEM=0
+# Make sure you don't sap all of docker's memory when you set this.
 ENV ENV_SIMULATOR_VERSION=$SIMULATOR_VERSION
+ENV MAX_JAVA_MEM_MB=$MAX_JAVA_MEM
 
 # metadata
 LABEL \
@@ -37,7 +40,8 @@ RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.8 20
 RUN mkdir -p /usr/local/app/vcell/lib && \
     mkdir -p /usr/local/app/vcell/simulation && \
     mkdir -p /usr/local/app/vcell/installDir && \
-    mkdir -p /usr/local/app/vcell/installDir/python/vcell_cli_utils
+    mkdir -p /usr/local/app/vcell/installDir/python/vcell_cli_utils && \
+    mkdir -p /usr/local/app/vcell/installDir/bionetgen
 
 # Install Poetry dependency
 #RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python3 - && \
@@ -77,10 +81,14 @@ RUN cd /usr/local/app/vcell/installDir/python/vcell_cli_utils/ && \
 ADD ./localsolvers /usr/local/app/vcell/installDir/localsolvers
 ADD ./nativelibs /usr/local/app/vcell/installDir/nativelibs
 COPY ./docker_run.sh /usr/local/app/vcell/installDir/
+COPY ./bionetgen/BNG2.pl ./bionetgen/*.txt ./bionetgen/VERSION /usr/local/app/vcell/installDir/bionetgen/
+COPY ./bionetgen/Perl2 /usr/local/app/vcell/installDir/bionetgen/Perl2
 COPY ./biosimulations_log4j2.xml /usr/local/app/vcell/installDir/
 
 # Declare supported environment variables
 ENV ALGORITHM_SUBSTITUTION_POLICY=SIMILAR_VARIABLES
+EXPOSE 1433
+
 
 # Entrypoint
 ENTRYPOINT ["/usr/local/app/vcell/installDir/docker_run.sh"]

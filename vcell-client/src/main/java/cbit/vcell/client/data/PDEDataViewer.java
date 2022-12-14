@@ -2207,7 +2207,12 @@ public void setPdeDataContext(ClientPDEDataContext pdeDataContext) {
 		try{
 			getPDEPlotControlPanel1().removePropertyChangeListener(ivjEventHandler);
 			try{
-				getPDEPlotControlPanel1().setup(((ClientPDEDataContext)getPdeDataContext()).getDataManager().getOutputContext().getOutputFunctions(), getPdeDataContext().getDataIdentifiers(), getPdeDataContext().getTimePoints(),setVarName,setTimePoint);
+				OutputContext outputContext = ((ClientPDEDataContext) getPdeDataContext()).getDataManager().getOutputContext();
+				AnnotatedFunction[] outputFunctions = new AnnotatedFunction[0];
+				if (outputContext != null){
+					outputFunctions = outputContext.getOutputFunctions();
+				}
+				getPDEPlotControlPanel1().setup(outputFunctions, getPdeDataContext().getDataIdentifiers(), getPdeDataContext().getTimePoints(),setVarName,setTimePoint);
 			}catch(Exception e){
 				e.printStackTrace();
 				DialogUtils.showErrorDialog(this, "Couldn't setup PDEPlotControlPanel, "+e.getMessage());
@@ -3191,7 +3196,7 @@ private void calcAutoAllTimes() throws Exception {
 	if(theVariable != null && getPDEDataContextPanel1().getdisplayAdapterService1().getAllTimes()){// min-max over all timepoints (allTimes)
 		if(theVariable.isConstant()){
 			getPDEDataContextPanel1().getdisplayAdapterServicePanel1().changeAllTimesButtonText(DisplayAdapterServicePanel.ALL_TIMES__STATE_TEXT);
-			double constVal = theVariable.getExpression().evaluateConstant();
+			double constVal = theVariable.getExpression().evaluateConstantWithSubstitution();
 			getPDEDataContextPanel1().setFunctionStatisticsRange(new Range(constVal,constVal));
 		}else if(bStateVar){
 			getPDEDataContextPanel1().getdisplayAdapterServicePanel1().changeAllTimesButtonText(DisplayAdapterServicePanel.ALL_TIMES__STATE_TEXT);

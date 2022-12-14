@@ -17,6 +17,8 @@ import net.sourceforge.interval.ia_math.IAMath;
 import net.sourceforge.interval.ia_math.IANarrow;
 import net.sourceforge.interval.ia_math.RealInterval;
 
+import java.util.ArrayList;
+
 public class ASTPowerNode extends SimpleNode {
 
 ASTPowerNode() {
@@ -93,7 +95,8 @@ public Node differentiate(String independentVariable) throws ExpressionException
 	
 	return fullAddNode;
 }
-public double evaluateConstant() throws ExpressionException {
+@Override
+public double evaluateConstant(boolean substituteConstants) throws ExpressionException {
 	if (jjtGetNumChildren()!=2){
 		throw new ExpressionException("expecting two arguments for Power");
 	}
@@ -104,13 +107,13 @@ public double evaluateConstant() throws ExpressionException {
 	
 	Double exponentValue = null;
 	try {
-		exponentValue = new Double(jjtGetChild(1).evaluateConstant());
+		exponentValue = new Double(jjtGetChild(1).evaluateConstant(substituteConstants));
 	}catch (ExpressionException e){
 		savedException = e;
 	}
 	Double  baseValue = null;
 	try {
-		baseValue = new Double(jjtGetChild(0).evaluateConstant());
+		baseValue = new Double(jjtGetChild(0).evaluateConstant(substituteConstants));
 	}catch (ExpressionException e){
 		savedException = e;
 	}
@@ -168,20 +171,17 @@ public double evaluateVector(double values[]) throws ExpressionException {
 		return result;
 	}
 }    
-/**
- * This method was created by a SmartGuide.
- * @exception java.lang.Exception The exception description.
- */
-public Node flatten() throws ExpressionException {
+
+@Override
+public Node flatten(boolean substituteConstants) throws ExpressionException {
 	try {
-		double value = evaluateConstant();
+		double value = evaluateConstant(substituteConstants);
 		return new ASTFloatNode(value);
 	}catch (Exception e){}		
 
-	ASTPowerNode powerNode = new ASTPowerNode();
-	java.util.Vector tempChildren = new java.util.Vector();
+	ArrayList<Node> tempChildren = new ArrayList<>();
 	for (int i=0;i<jjtGetNumChildren();i++){
-		tempChildren.addElement(jjtGetChild(i).flatten());
+		tempChildren.add(jjtGetChild(i).flatten(substituteConstants));
 	}
 	
 	if (tempChildren.size()!=2) throw new ExpressionException("'^' expects 2 arguments");
@@ -189,10 +189,10 @@ public Node flatten() throws ExpressionException {
 	//  b
 	// a   test for b = 1
 	//
-	Node exponentChild = (Node)tempChildren.elementAt(1);
-	Node mantissaChild = (Node)tempChildren.elementAt(0);
+	Node exponentChild = tempChildren.get(1);
+	Node mantissaChild = tempChildren.get(0);
 	if (exponentChild instanceof ASTFloatNode){
-		double exponent = ((ASTFloatNode)exponentChild).value.doubleValue();
+		double exponent = ((ASTFloatNode) exponentChild).value;
 		if (exponent == 1.0){
 			return mantissaChild;
 		}
@@ -202,7 +202,7 @@ public Node flatten() throws ExpressionException {
 	// a   test for b = 0
 	//
 	if (exponentChild instanceof ASTFloatNode){
-		double exponent = ((ASTFloatNode)exponentChild).value.doubleValue();
+		double exponent = ((ASTFloatNode) exponentChild).value;
 		if (exponent == 0.0){
 			return new ASTFloatNode(1.0);
 		}
@@ -212,25 +212,25 @@ public Node flatten() throws ExpressionException {
 	//  v          v*w
 	// u    --->  u
 	//
-	if ((mantissaChild instanceof ASTFuncNode && ((ASTFuncNode)mantissaChild).getFunction() == FunctionType.POW) || mantissaChild instanceof ASTPowerNode){
+	if ((mantissaChild instanceof ASTFuncNode && ((ASTFuncNode)mantissaChild).getFunction() == FunctionType.POW)
+			|| (mantissaChild instanceof ASTPowerNode)){
 		ASTMultNode newMultNode = new ASTMultNode();
 		newMultNode.jjtAddChild(mantissaChild.jjtGetChild(1));
 		newMultNode.jjtAddChild(exponentChild);
 		ASTPowerNode newExponentNode = new ASTPowerNode();
 		newExponentNode.jjtAddChild(mantissaChild.jjtGetChild(0));
 		newExponentNode.jjtAddChild(newMultNode);
-		return newExponentNode.flatten();
+		return newExponentNode.flatten(substituteConstants);
 	}
 
 	//
 	//
 	//
 	ASTPowerNode powNode = new ASTPowerNode();
-	powNode.jjtAddChild((SimpleNode)tempChildren.elementAt(0));
-	powNode.jjtAddChild((SimpleNode)tempChildren.elementAt(1));
+	powNode.jjtAddChild(tempChildren.get(0));
+	powNode.jjtAddChild(tempChildren.get(1));
 
 	return powNode;
-		
 }
 
 public String infixString(int lang){
@@ -247,13 +247,25 @@ public String infixString(int lang){
 		buffer.append(",");
 		buffer.append("((double)(" + jjtGetChild(1).infixString(lang) + "))");
 		buffer.append(")");
+	}else if (lang == LANGUAGE_JSCL){
+		buffer.append("(");
+		if (jjtGetChild(0) instanceof ASTMinusTermNode) {
+			buffer.append("(");
+			buffer.append(jjtGetChild(0).infixString(lang));
+			buffer.append(")");
+		}else{
+			buffer.append(jjtGetChild(0).infixString(lang));
+		}
+		buffer.append(" ^ ");
+		buffer.append(jjtGetChild(1).infixString(lang));
+		buffer.append(")");
 	}else{
 		buffer.append("(");
 		buffer.append(jjtGetChild(0).infixString(lang));
 		buffer.append(" ^ ");
 		buffer.append(jjtGetChild(1).infixString(lang));
 		buffer.append(")");
-	} 
+	}
 
 	return buffer.toString();
 }

@@ -10,6 +10,7 @@
 
 package cbit.vcell.math;
 import java.util.Enumeration;
+import java.util.List;
 
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
@@ -43,14 +44,16 @@ public class PointSubDomain extends SubDomain {
 	private Expression positionZ = null;
 	
 	
-/**
- * This method was created by a SmartGuide.
- * @param inside cbit.vcell.math.CompartmentSubDomain
- * @param outside cbit.vcell.math.CompartmentSubDomain
- */
 public PointSubDomain(String name){
 	super(name);
 }
+
+	public void getAllExpressions(List<Expression> expressionList, MathDescription mathDescription){
+		super.getAllExpressions0(expressionList, mathDescription);
+		if (this.positionX!=null) expressionList.add(this.positionX);
+		if (this.positionY!=null) expressionList.add(this.positionY);
+		if (this.positionZ!=null) expressionList.add(this.positionZ);
+	}
 
 @Override
 protected void parse(MathDescription mathDesc, String tokenString, CommentStringTokenizer tokens) throws MathException, ExpressionException {

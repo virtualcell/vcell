@@ -9,13 +9,41 @@ on:
   release:
     types: [published, edited]
 
+env:
+  python-version: "3.9"
+
 jobs:
   CI:
     name: CI
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'push' }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.python-version }}
+          cache: "pip"
+      
+      - name: Install Dependencies
+        run: pip install -r requirements.txt
+
+      - name: build vcell-cli-utils package
+        run: |
+          cd vcell-cli-utils
+          poetry install
+
+      - name: build vcell-admin package
+        run: |
+          cd docker/swarm/vcell-admin
+          poetry install
+
+      - name: build vcell-opt package
+        run: |
+          cd pythonProject/vcell-opt
+          poetry install
+          poetry run python -m pytest
 
       - name: setup java 8 with maven cache
         uses: actions/setup-java@v3
@@ -48,6 +76,31 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.python-version }}
+          cache: "pip"
+      
+      - name: Install Dependencies
+        run: pip install -r requirements.txt
+
+      - name: build vcell-cli-utils package
+        run: |
+          cd vcell-cli-utils
+          poetry install
+
+      - name: build vcell-admin package
+        run: |
+          cd docker/swarm/vcell-admin
+          poetry install
+
+      - name: build vcell-opt package
+        run: |
+          cd pythonProject/vcell-opt
+          poetry install
+          poetry run python -m pytest
 
       - name: setup java 8 with maven cache
         uses: actions/setup-java@v3

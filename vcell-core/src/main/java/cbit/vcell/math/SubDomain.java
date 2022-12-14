@@ -10,12 +10,7 @@
 
 package cbit.vcell.math;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Vector;
+import java.util.*;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -35,6 +30,24 @@ import cbit.vcell.parser.ExpressionException;
 public abstract class SubDomain extends CommentedBlockObject implements Serializable, Matchable, IssueOrigin {
 	protected static final Logger LG = LogManager.getLogger(SubDomain.class);
 
+
+	public abstract void getAllExpressions(List<Expression> expressionList, MathDescription mathDescription);
+
+	public void getAllExpressions0(List<Expression> expressionList, MathDescription mathDescription){
+		if (getFastSystem()!=null) expressionList.addAll(Arrays.asList(getFastSystem().getExpressions()));
+		for (Equation equation : getEquationCollection()){
+			expressionList.addAll(equation.getExpressions(mathDescription));
+		}
+		for (JumpProcess jumpProcess : getJumpProcesses()){
+			expressionList.addAll(Arrays.asList(jumpProcess.getExpressions()));
+		}
+		for (ParticleJumpProcess particleJumpProcess : getParticleJumpProcesses()){
+			expressionList.addAll(Arrays.asList(particleJumpProcess.getExpressions()));
+		}
+		for (VarIniCondition varIniCondition : getVarIniConditions()){
+			expressionList.add(varIniCondition.getIniVal());
+		}
+	}
 
 	/**
 	 * parse tokens into expression, bind to math description 

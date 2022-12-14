@@ -18,14 +18,9 @@ import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.vcell.util.BeanUtils;
-import org.vcell.util.Compare;
-import org.vcell.util.Displayable;
-import org.vcell.util.Issue;
+import org.vcell.util.*;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
-import org.vcell.util.IssueContext;
-import org.vcell.util.Matchable;
 
 import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.ExpressionContainer;
@@ -105,7 +100,24 @@ public class ParameterContext implements Matchable, ScopedSymbolTable, Serializa
 			if (fieldParameterRole != smp.fieldParameterRole){
 				return false;
 			}
-			
+
+			return true;
+		}
+
+
+		@Override
+		public boolean relate(Relatable obj, RelationVisitor rv) {
+			if (!(obj instanceof LocalParameter)){
+				return false;
+			}
+			LocalParameter smp = (LocalParameter)obj;
+			if (!relate0(smp, rv)){
+				return false;
+			}
+			if (fieldParameterRole != smp.fieldParameterRole){
+				return false;
+			}
+
 			return true;
 		}
 
@@ -208,6 +220,7 @@ public class ParameterContext implements Matchable, ScopedSymbolTable, Serializa
 			setDescription("unresolved");
 		}
 
+		@Override
 		public boolean compareEqual(Matchable obj) {
 			if (!(obj instanceof UnresolvedParameter)){
 				return false;
@@ -215,7 +228,20 @@ public class ParameterContext implements Matchable, ScopedSymbolTable, Serializa
 			UnresolvedParameter up = (UnresolvedParameter)obj;
 			if (!super.compareEqual0(up)){
 				return false;
-			}			
+			}
+			return true;
+		}
+
+
+		@Override
+		public boolean relate(Relatable obj, RelationVisitor rv) {
+			if (!(obj instanceof UnresolvedParameter)){
+				return false;
+			}
+			UnresolvedParameter up = (UnresolvedParameter)obj;
+			if (!super.relate0(up, rv)){
+				return false;
+			}
 			return true;
 		}
 
@@ -285,13 +311,28 @@ public class ParameterContext implements Matchable, ScopedSymbolTable, Serializa
 			return ParameterContext.this.getNameScope();
 		}
 
+		@Override
 		public boolean compareEqual(Matchable obj) {
 			if (!(obj instanceof LocalProxyParameter)){
 				return false;
 			}
 			LocalProxyParameter other = (LocalProxyParameter)obj;
 			if (getTarget() instanceof Matchable && other.getTarget() instanceof Matchable &&
-				Compare.isEqual((Matchable)getTarget(), (Matchable)other.getTarget())){
+					Compare.isEqual((Matchable)getTarget(), (Matchable)other.getTarget())){
+				return true;
+			}else{
+				return false;
+			}
+		}
+
+		@Override
+		public boolean relate(Relatable obj, RelationVisitor rv) {
+			if (!(obj instanceof LocalProxyParameter)){
+				return false;
+			}
+			LocalProxyParameter other = (LocalProxyParameter)obj;
+			if (getTarget() instanceof Relatable && other.getTarget() instanceof Relatable &&
+					((Relatable)getTarget()).relate((Relatable)other.getTarget(), rv)){
 				return true;
 			}else{
 				return false;

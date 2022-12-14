@@ -16,15 +16,9 @@ import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.vcell.util.Compare;
-import org.vcell.util.Issue;
+import org.vcell.util.*;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
-import org.vcell.util.IssueContext;
-import org.vcell.util.Matchable;
-import org.vcell.util.Pair;
-import org.vcell.util.PropertyChangeListenerProxyVCell;
-import org.vcell.util.TokenMangler;
 
 import cbit.vcell.Historical;
 import cbit.vcell.geometry.CompartmentSubVolume;
@@ -122,6 +116,7 @@ public abstract class StructureMapping implements Matchable, ScopedSymbolTable, 
 			this(structureMappingParameter.getName(),structureMappingParameter.getExpression() == null ? null : new Expression(structureMappingParameter.getExpression()),structureMappingParameter.getRole(),structureMappingParameter.getUnitDefinition());			
 		}
 
+		@Override
 		public boolean compareEqual(Matchable obj) {
 			if (!(obj instanceof StructureMappingParameter)){
 				return false;
@@ -133,7 +128,23 @@ public abstract class StructureMapping implements Matchable, ScopedSymbolTable, 
 			if (fieldParameterRole != smp.fieldParameterRole){
 				return false;
 			}
-			
+
+			return true;
+		}
+
+		@Override
+		public boolean relate(Relatable obj, RelationVisitor rv) {
+			if (!(obj instanceof StructureMappingParameter)){
+				return false;
+			}
+			StructureMappingParameter smp = (StructureMappingParameter)obj;
+			if (!super.relate0(smp, rv)){
+				return false;
+			}
+			if (fieldParameterRole != smp.fieldParameterRole){
+				return false;
+			}
+
 			return true;
 		}
 
@@ -223,7 +234,7 @@ public abstract class StructureMapping implements Matchable, ScopedSymbolTable, 
 		public void setExpression(Expression expression) throws ExpressionBindingException {
 			if (expression!=null){
 				expression = new Expression(expression);
-				expression.bindExpression(StructureMapping.this);
+				expression.bindExpression(getSimulationContext());
 			}
 			Expression oldValue = fieldParameterExpression;
 			fieldParameterExpression = expression;
@@ -366,32 +377,17 @@ protected StructureMapping(Structure structure, SimulationContext argSimulationC
 }      
 
 
-/**
- * The addPropertyChangeListener method was generated to support the propertyChange field.
- */
 public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
 	PropertyChangeListenerProxyVCell.addProxyListener(getPropertyChange(), listener);
 }
 
-/**
- * The addVetoableChangeListener method was generated to support the vetoPropertyChange field.
- */
 public synchronized void addVetoableChangeListener(java.beans.VetoableChangeListener listener) {
 	getVetoPropertyChange().addVetoableChangeListener(listener);
 }
 
-/**
- * This method was created in VisualAge.
- * @return boolean
- */
 public abstract boolean compareEqual(Matchable object);
 
 
-/**
- * This method was created in VisualAge.
- * @return boolean
- * @param obj java.lang.Object
- */
 protected boolean compareEqual0(StructureMapping sm) {
 
 	if (!Compare.isEqual(structure,sm.structure)){
@@ -413,25 +409,14 @@ protected boolean compareEqual0(StructureMapping sm) {
 	return true;
 }
 
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
 public void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
 	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
 }
 
-/**
- * The fireVetoableChange method was generated to support the vetoPropertyChange field.
- */
 public void fireVetoableChange(String propertyName, Object oldValue, Object newValue) throws java.beans.PropertyVetoException {
 	getVetoPropertyChange().fireVetoableChange(propertyName, oldValue, newValue);
 }
 
-/**
- * Insert the method's description here.
- * Creation date: (11/1/2005 9:57:23 AM)
- * @param issueVector java.util.Vector
- */
 public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
 	// size parameter must be set to non zero value for new ode, and all stoch simulations.
 	if (simulationContext != null) {
@@ -446,17 +431,18 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
 				if (!simulationContext.getGeometryContext().isAllVolFracAndSurfVolSpecified()) {			
 					issueVector.add(new Issue(this, issueContext, IssueCategory.StructureMappingSizeParameterNotSet, "Size parameter is not set.",Issue.SEVERITY_ERROR));
 				}					
-			} else {
-				try{
-					double val = sizeParam.getExpression().evaluateConstant();
-					if (val < 0) {
-						issueVector.add(new Issue(this, issueContext, IssueCategory.StructureMappingSizeParameterNotPositive, "Size parameter is not positive.",Issue.SEVERITY_ERROR));
-					}
-				} catch (ExpressionException e) {
-					e.printStackTrace();
-					issueVector.add(new Issue(this, issueContext, IssueCategory.StructureMappingSizeParameterNotConstant, "Size parameter is not a constant.",Issue.SEVERITY_ERROR));
-				}			
 			}
+//			else {
+//				try{
+//					double val = sizeParam.getExpression().evaluateConstant();
+//					if (val < 0) {
+//						issueVector.add(new Issue(this, issueContext, IssueCategory.StructureMappingSizeParameterNotPositive, "Size parameter is not positive.",Issue.SEVERITY_ERROR));
+//					}
+//				} catch (ExpressionException e) {
+//					e.printStackTrace();
+//					issueVector.add(new Issue(this, issueContext, IssueCategory.StructureMappingSizeParameterNotConstant, "Size parameter is not a constant.",Issue.SEVERITY_ERROR));
+//				}
+//			}
 		}
 	}
 	//
@@ -547,10 +533,6 @@ private static String findMappingBoundaryConflict(StructureMapping ours, Structu
 //	return null;
 }
 
-/**
- * This method was created by a SmartGuide.
- * @return java.lang.String
- */
 public cbit.vcell.math.BoundaryConditionType getBoundaryCondition0(BoundaryLocation boundaryLocation) {
 	return boundaryConditionTypes[boundaryLocation.getNum()];
 }
@@ -570,12 +552,12 @@ public cbit.vcell.math.BoundaryConditionType getBoundaryCondition0(BoundaryLocat
 public final BoundaryConditionType getBoundaryCondition(BoundaryLocation boundaryLocation) {
 	BoundaryConditionType savedType = getBoundaryCondition0(boundaryLocation);
 	if (simulationContext==null){
-		logger.error("simulation context is null, returning saved BoundaryConditionType of "+savedType+" for location "+boundaryLocation);
+		logger.debug("simulation context is null, returning saved BoundaryConditionType of "+savedType+" for location "+boundaryLocation);
 	}else if (getGeometryClass() instanceof SurfaceClass){
 		Pair<SubVolume, SubVolume> adjacentSubvolumes = DiffEquMathMapping.computeBoundaryConditionSource(simulationContext.getModel(), simulationContext, (SurfaceClass)getGeometryClass());
 		StructureMapping[] volumeStructureMappings = simulationContext.getGeometryContext().getStructureMappings(adjacentSubvolumes.one);
 		if (volumeStructureMappings==null || volumeStructureMappings.length==0){
-			logger.error("no structures mapped to 'inside' subvolume "+adjacentSubvolumes.one.getName()+" so can't determine Boundary Condition type, returning saved BoundaryConditionType of "+savedType+" for location "+boundaryLocation);
+			logger.debug("no structures mapped to 'inside' subvolume "+adjacentSubvolumes.one.getName()+" so can't determine Boundary Condition type, returning saved BoundaryConditionType of "+savedType+" for location "+boundaryLocation);
 		}else{
 			return volumeStructureMappings[0].getBoundaryCondition(boundaryLocation);
 		}
@@ -583,62 +565,31 @@ public final BoundaryConditionType getBoundaryCondition(BoundaryLocation boundar
 	return savedType;
 }
 
-/**
- * This method was created by a SmartGuide.
- * @return java.lang.String
- */
 public cbit.vcell.math.BoundaryConditionType getBoundaryConditionTypeXm() {
 	return getBoundaryCondition(BoundaryLocation.getXM());
 }
 
 
-/**
- * This method was created by a SmartGuide.
- * @return java.lang.String
- */
 public cbit.vcell.math.BoundaryConditionType getBoundaryConditionTypeXp() {
 	return getBoundaryCondition(BoundaryLocation.getXP());
 }
 
-
-/**
- * This method was created by a SmartGuide.
- * @return java.lang.String
- */
 public cbit.vcell.math.BoundaryConditionType getBoundaryConditionTypeYm() {
 	return getBoundaryCondition(BoundaryLocation.getYM());
 }
 
-
-/**
- * This method was created by a SmartGuide.
- * @return java.lang.String
- */
 public cbit.vcell.math.BoundaryConditionType getBoundaryConditionTypeYp() {
 	return getBoundaryCondition(BoundaryLocation.getYP());
 }
 
-
-/**
- * This method was created by a SmartGuide.
- * @return java.lang.String
- */
 public cbit.vcell.math.BoundaryConditionType getBoundaryConditionTypeZm() {
 	return getBoundaryCondition(BoundaryLocation.getZM());
 }
 
-
-/**
- * This method was created by a SmartGuide.
- * @return java.lang.String
- */
 public cbit.vcell.math.BoundaryConditionType getBoundaryConditionTypeZp() {
 	return getBoundaryCondition(BoundaryLocation.getZP());
 }
 
-/**
- * getEntry method comment.
- */
 public SymbolTableEntry getEntry(java.lang.String identifierString) {
 	
 	SymbolTableEntry ste = getLocalEntry(identifierString);
@@ -649,13 +600,6 @@ public SymbolTableEntry getEntry(java.lang.String identifierString) {
 	return getNameScope().getExternalEntry(identifierString,this);
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (12/8/2003 12:47:06 PM)
- * @return SymbolTableEntry
- * @param identifier java.lang.String
- */
 public SymbolTableEntry getLocalEntry(java.lang.String identifier) {
 	
 	Parameter parameter = getParameter(identifier);
@@ -663,23 +607,10 @@ public SymbolTableEntry getLocalEntry(java.lang.String identifier) {
 	return parameter;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (12/8/2003 12:47:06 PM)
- * @return cbit.vcell.parser.NameScope
- */
 public NameScope getNameScope() {
 	return nameScope;
 }
 
-
-/**
- * Gets the mappingParameters index property (cbit.vcell.mapping.MappingParameter) value.
- * @return The mappingParameters property value.
- * @param index The index value into the property array.
- * @see #setMappingParameters
- */
 public StructureMapping.StructureMappingParameter getParameter(String argName) {
 	for (int i = 0; i < fieldParameters.length; i++){
 		if (fieldParameters[i].getName().equals(argName)){
@@ -689,13 +620,6 @@ public StructureMapping.StructureMappingParameter getParameter(String argName) {
 	return null;
 }
 
-
-/**
- * Gets the structureMappingParameters index property (cbit.vcell.mapping.StructureMappingParameter) value.
- * @return The structureMappingParameters property value.
- * @param index The index value into the property array.
- * @see #setStructureMappingParameters
- */
 public StructureMappingParameter getParameterFromRole(int role) {
 	for (int i = 0; i < fieldParameters.length; i++){
 		if (fieldParameters[i] instanceof StructureMappingParameter){
@@ -710,30 +634,16 @@ public StructureMappingParameter getParameterFromRole(int role) {
 
 public abstract StructureMappingParameter getUnitSizeParameter();
 
-/**
- * Gets the parameters property (cbit.vcell.model.Parameter[]) value.
- * @return The parameters property value.
- * @see #setParameters
- */
 public StructureMapping.StructureMappingParameter[] getParameters() {
 	return fieldParameters;
 }
 
 
-/**
- * Gets the parameters index property (cbit.vcell.model.Parameter) value.
- * @return The parameters property value.
- * @param index The index value into the property array.
- * @see #setParameters
- */
 public StructureMapping.StructureMappingParameter getParameters(int index) {
 	return getParameters()[index];
 }
 
 
-/**
- * Accessor for the propertyChange field.
- */
 protected java.beans.PropertyChangeSupport getPropertyChange() {
 	if (propertyChange == null) {
 		propertyChange = new java.beans.PropertyChangeSupport(this);
@@ -742,10 +652,6 @@ protected java.beans.PropertyChangeSupport getPropertyChange() {
 }
 
 
-/**
- * This method was created by a SmartGuide.
- * @return double
- */
 public StructureMappingParameter getSizeParameter() {
 	return getParameterFromRole(ROLE_Size);
 }
@@ -755,32 +661,14 @@ public Expression getNullSizeParameterValue() {
 	return new Expression(1.0);
 }
 
-/**
- * This method was created by a SmartGuide.
- * @return cbit.vcell.model.Feature
- */
 public Structure getStructure() {
 	return structure;
 }
 
-
-/**
- * This method was created in VisualAge.
- * @return cbit.vcell.parser.Expression
- */
 public abstract Expression getNormalizedConcentrationCorrection(SimulationContext simulationContext, UnitFactorProvider unitFactorProvider) throws ExpressionException, MappingException;
 
-
-/**
- * This method was created in VisualAge.
- * @return cbit.vcell.parser.Expression
- */
 public abstract Expression getStructureSizeCorrection(SimulationContext simulationContext, UnitFactorProvider unitFactorProvider) throws ExpressionException, MappingException;
 
-
-/**
- * Accessor for the vetoPropertyChange field.
- */
 protected java.beans.VetoableChangeSupport getVetoPropertyChange() {
 	if (vetoPropertyChange == null) {
 		vetoPropertyChange = new java.beans.VetoableChangeSupport(this);
@@ -788,33 +676,19 @@ protected java.beans.VetoableChangeSupport getVetoPropertyChange() {
 	return vetoPropertyChange;
 }
 
-
-/**
- * The hasListeners method was generated to support the propertyChange field.
- */
 public synchronized boolean hasListeners(String propertyName) {
 	return getPropertyChange().hasListeners(propertyName);
 }
 
-/**
- * This method was created by a SmartGuide.
- * @return boolean
- */
 public boolean isBoundaryConditionValid(BoundaryLocation boundaryLocation) {
 	return boundaryConditionValid[boundaryLocation.getNum()];
 }
 
-
-
-/**
- * Insert the method's description here.
- * Creation date: (2/19/2002 1:07:58 PM)
- */
 public void refreshDependencies(){
 	for (int i = 0; i < fieldParameters.length; i++){
 		try {
 			if (fieldParameters[i].getExpression()!=null){
-				fieldParameters[i].getExpression().bindExpression(this);
+				fieldParameters[i].getExpression().bindExpression(this.simulationContext);
 			}
 		}catch (ExpressionException e){
 			logger.error("error binding expression '"+fieldParameters[i].getExpression().infix()+"', "+e.getMessage());
@@ -822,46 +696,23 @@ public void refreshDependencies(){
 	}
 }
 
-
-/**
- * The removePropertyChangeListener method was generated to support the propertyChange field.
- */
 public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener listener) {
 	PropertyChangeListenerProxyVCell.removeProxyListener(getPropertyChange(), listener);
 	getPropertyChange().removePropertyChangeListener(listener);
 }
 
-
-/**
- * The removeVetoableChangeListener method was generated to support the vetoPropertyChange field.
- */
 public synchronized void removeVetoableChangeListener(java.beans.VetoableChangeListener listener) {
 	getVetoPropertyChange().removeVetoableChangeListener(listener);
 }
 
-
-/**
- * The removeVetoableChangeListener method was generated to support the vetoPropertyChange field.
- */
 public synchronized void removeVetoableChangeListener(String propertyName, java.beans.VetoableChangeListener listener) {
 	getVetoPropertyChange().removeVetoableChangeListener(propertyName, listener);
 }
 
-/**
- * This method was created by a SmartGuide.
- * @param bct java.lang.String
- * @exception java.lang.Exception The exception description.
- */
 public void setBoundaryCondition(BoundaryLocation boundaryLocation, BoundaryConditionType bc) {
 	boundaryConditionTypes[boundaryLocation.getNum()] = bc;
 }
 
-
-/**
- * This method was created by a SmartGuide.
- * @param bct java.lang.String
- * @exception java.lang.Exception The exception description.
- */
 public void setBoundaryConditionTypeXm(BoundaryConditionType bc) {
 	BoundaryConditionType oldBCType = getBoundaryConditionTypeXm();
 	setBoundaryCondition(BoundaryLocation.getXM(), bc);
@@ -869,12 +720,6 @@ public void setBoundaryConditionTypeXm(BoundaryConditionType bc) {
 	firePropertyChange("boundaryConditionTypeXm",oldBCType,newBCType);
 }
 
-
-/**
- * This method was created by a SmartGuide.
- * @param bct java.lang.String
- * @exception java.lang.Exception The exception description.
- */
 public void setBoundaryConditionTypeXp(BoundaryConditionType bc) {
 	BoundaryConditionType oldBCType = getBoundaryConditionTypeXp();
 	setBoundaryCondition(BoundaryLocation.getXP(), bc);
@@ -882,12 +727,6 @@ public void setBoundaryConditionTypeXp(BoundaryConditionType bc) {
 	firePropertyChange("boundaryConditionTypeXp",oldBCType,newBCType);
 }
 
-
-/**
- * This method was created by a SmartGuide.
- * @param bct java.lang.String
- * @exception java.lang.Exception The exception description.
- */
 public void setBoundaryConditionTypeYm(BoundaryConditionType bc) {
 	BoundaryConditionType oldBCType = getBoundaryConditionTypeYm();
 	setBoundaryCondition(BoundaryLocation.getYM(), bc);
@@ -895,12 +734,6 @@ public void setBoundaryConditionTypeYm(BoundaryConditionType bc) {
 	firePropertyChange("boundaryConditionTypeYm",oldBCType,newBCType);
 }
 
-
-/**
- * This method was created by a SmartGuide.
- * @param bct java.lang.String
- * @exception java.lang.Exception The exception description.
- */
 public void setBoundaryConditionTypeYp(BoundaryConditionType bc) {
 	BoundaryConditionType oldBCType = getBoundaryConditionTypeYp();
 	setBoundaryCondition(BoundaryLocation.getYP(), bc);
@@ -908,12 +741,6 @@ public void setBoundaryConditionTypeYp(BoundaryConditionType bc) {
 	firePropertyChange("boundaryConditionTypeYp",oldBCType,newBCType);
 }
 
-
-/**
- * This method was created by a SmartGuide.
- * @param bct java.lang.String
- * @exception java.lang.Exception The exception description.
- */
 public void setBoundaryConditionTypeZm(BoundaryConditionType bc) {
 	BoundaryConditionType oldBCType = getBoundaryConditionTypeZm();
 	setBoundaryCondition(BoundaryLocation.getZM(), bc);
@@ -921,12 +748,6 @@ public void setBoundaryConditionTypeZm(BoundaryConditionType bc) {
 	firePropertyChange("boundaryConditionTypeZm",oldBCType,newBCType);
 }
 
-
-/**
- * This method was created by a SmartGuide.
- * @param bct java.lang.String
- * @exception java.lang.Exception The exception description.
- */
 public void setBoundaryConditionTypeZp(BoundaryConditionType bc) {
 	BoundaryConditionType oldBCType = getBoundaryConditionTypeZp();
 	setBoundaryCondition(BoundaryLocation.getZP(), bc);
@@ -935,13 +756,6 @@ public void setBoundaryConditionTypeZp(BoundaryConditionType bc) {
 
 }
 
-
-/**
- * Sets the parameters property (cbit.vcell.model.Parameter[]) value.
- * @param parameters The new value for the property.
- * @exception java.beans.PropertyVetoException The exception description.
- * @see #getParameters
- */
 public void setParameters(StructureMapping.StructureMappingParameter[] parameters) throws java.beans.PropertyVetoException {
 	StructureMapping.StructureMappingParameter[] oldValue = fieldParameters;
 	fireVetoableChange("parameters", oldValue, parameters);
@@ -949,12 +763,6 @@ public void setParameters(StructureMapping.StructureMappingParameter[] parameter
 	firePropertyChange("parameters", oldValue, parameters);
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (2/15/2004 9:13:35 AM)
- * @param argSimulationContext cbit.vcell.mapping.SimulationContext
- */
 public void setSimulationContext(SimulationContext argSimulationContext) {
 	this.simulationContext = argSimulationContext;
 	if (this.simulationContext != null && this.simulationContext.getModel() != null) {
@@ -962,12 +770,6 @@ public void setSimulationContext(SimulationContext argSimulationContext) {
 	}
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (3/27/01 12:50:12 PM)
- * @param structure cbit.vcell.model.Structure
- */
 void setStructure(Structure argStructure) {
 	this.structure = argStructure;
 }

@@ -21,6 +21,7 @@ import java.util.Date;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import cbit.vcell.solver.*;
 import org.vcell.optimization.ProfileData;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.Compare;
@@ -80,14 +81,6 @@ import cbit.vcell.simdata.PDEDataManager;
 import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.simdata.SimulationData;
-import cbit.vcell.solver.ErrorTolerance;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationJob;
-import cbit.vcell.solver.SolverDescription;
-import cbit.vcell.solver.SolverUtilities;
-import cbit.vcell.solver.TimeBounds;
-import cbit.vcell.solver.TimeStep;
-import cbit.vcell.solver.UniformOutputTimeSpec;
 import cbit.vcell.solver.server.SolverStatus;
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.solvers.FVSolverStandalone;
@@ -347,7 +340,7 @@ public class FRAPStudy implements Matchable{
 		simContext.setMathDescription(mathDesc);
 				
 		SimulationVersion simVersion = new SimulationVersion(simKey,"sim1",owner,new GroupAccessNone(),new KeyValue("0"),new BigDecimal(0),new Date(),VersionFlag.Current,"",null);
-		Simulation newSimulation = new Simulation(simVersion,simContext.getMathDescription());
+		Simulation newSimulation = new Simulation(simVersion,simContext.getMathDescription(), new SimulationOwner.StandaloneSimulationOwner());
 		newSimulation.getSolverTaskDescription().setSolverDescription(SolverDescription.FiniteVolumeStandalone);
 		simContext.addSimulation(newSimulation);
 		newSimulation.getSolverTaskDescription().setTimeBounds(timeBounds);
@@ -568,7 +561,7 @@ public class FRAPStudy implements Matchable{
 		simContext.setMathDescription(mathDesc);
 
 		SimulationVersion simVersion = new SimulationVersion(simKey,"sim1",owner,new GroupAccessNone(),new KeyValue("0"),new BigDecimal(0),new Date(),VersionFlag.Current,"",null);
-		Simulation newSimulation = new Simulation(simVersion,mathDesc);
+		Simulation newSimulation = new Simulation(simVersion,mathDesc, new SimulationOwner.StandaloneSimulationOwner());
 		simContext.addSimulation(newSimulation);
 		newSimulation.getSolverTaskDescription().setTimeBounds(timeBounds);
 		newSimulation.getMeshSpecification().setSamplingSize(cellROI_2D.getISize());

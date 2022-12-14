@@ -7,6 +7,8 @@ import cbit.vcell.units.VCUnitSystem;
  * All rights reserved.
 �*/
 import net.sourceforge.interval.ia_math.RealInterval;
+import org.junit.Assert;
+import org.junit.Test;
 
 public class ExpressionTest {
 	public static void main(java.lang.String[] args) {
@@ -747,6 +749,83 @@ public static void testFlatten(int numTrials, int depth, long seed) {
 	}
 	System.out.println("test for .flatten(), "+numCorrect+" correct, "+numWrong+" wrong, "+numNotIdempotent+" not idempotent, "+numFailed+" failed, out of "+numTrials+" trials");
 }
+
+	@Test
+	public void testLinearity() throws ExpressionException {
+		Expression[][] tests = new Expression[][] {
+				{ new Expression("k*abc"), new Expression("k"), new Expression("abc") },
+				{ new Expression("((1.0E-12 * KMOLE * s1) * c0 * (1.0 / 1000.0))"), new Expression("c0"), new Expression("((1.0E-12 * KMOLE * s1) / 1000.0)") },
+				{ new Expression("((1.0E-12 * KMOLE * s1) * c0 * (1.0 / 1000.0))"), new Expression("c2"), null },
+		};
+
+		for (Expression[] test : tests) {
+			Expression exp = test[0];
+			String multiplierSymbol = test[1].infix();
+			Expression expectedFactor = test[2];
+			Expression computedFactor = ExpressionUtils.getLinearFactor(new Expression(test[0]), multiplierSymbol);
+			if (expectedFactor == null){
+				Assert.assertTrue("expectedFactor is null, computedFactor was not null", computedFactor == null);
+			}else {
+				Assert.assertTrue("expectedFactor was '"+expectedFactor.infix()+"', computedFactor was null", computedFactor != null);
+				boolean equiv = ExpressionUtils.functionallyEquivalent(expectedFactor, computedFactor);
+				Assert.assertTrue(expectedFactor.infix() + " != " + computedFactor.infix(), equiv);
+			}
+		}
+
+		Assert.assertTrue(ExpressionUtils.functionallyEquivalent(
+				new Expression("((1.0E-12 * KMOLE * s1) * (1.0 / 1000.0))"),
+				ExpressionUtils.getLinearFactor(new Expression("((1.0E-12 * KMOLE * s1) * c0 * (1.0 / 1000.0))"),"c0")));
+		Assert.assertTrue(ExpressionUtils.functionallyEquivalent(
+				new Expression("((0.001 * Vmax2_bleaching2 * rfB * Laser) * ((t > 1.0) && (t < 1.5)))"),
+				ExpressionUtils.getLinearFactor(new Expression("((0.001 * Vmax2_bleaching2 * rfB * Laser) * ((t > 1.0) && (t < 1.5)))*Nuc"),"Nuc")));
+	}
+
+	public static class FunctionalEquivTestData {
+		Expression exp1;
+		Expression exp2;
+		boolean shouldPass;
+
+		public FunctionalEquivTestData(Expression exp1, Expression exp2, boolean shouldPass) {
+			this.exp1 = exp1;
+			this.exp2 = exp2;
+			this.shouldPass = shouldPass;
+		}
+	}
+
+	@Test
+	public void test_functional_equivalence_with_functionSTEs() throws ExpressionException {
+		final String infix1 = "((CLEC2_Raft * ((0.42857142857142855 * Syk_A) + (1.806642537E8 * CLEC2_Syk_A / " +
+				"(4.1538E18 * vcRegionVolume('subdomain1') / (1.0E10 * vcRegionArea('subdomain0_subdomain1_membrane'))))" +
+				" + (0.35 * SFK_NF) + (1.2044283579999998E8 * CLEC2_SFK_A / (1.806E18 * vcRegionVolume('subdomain1')" +
+				" / (1.0E10 * vcRegionArea('subdomain0_subdomain1_membrane')))))) - (0.07941176470588236 * CLEC2_P * DUSP3_A)" +
+				" + (0.2 * CLEC2_Syk) - (CLEC2_P * Syk) + CLEC2_SFK_A - (CLEC2_P * SFK_NF))";
+		final String infix2 = "((((0.42857142857142855 * Syk_A) + (1.806642537E8 * CLEC2_Syk_A / " +
+				"(4.1538E18 * vcRegionVolume('subdomain1') / (1.0E10 * vcRegionArea('subdomain0_subdomain1_membrane')))) " +
+				"+ (0.35 * SFK_NF) + (1.2044283579999998E8 * CLEC2_SFK_A / (1.806E18 * vcRegionVolume('subdomain1') " +
+				"/ (1.0E10 * vcRegionArea('subdomain0_subdomain1_membrane'))))) * CLEC2_Raft) - (0.07941176470588236 * DUSP3_A * CLEC2_P) " +
+				"- ((CLEC2_P * Syk) - (0.2 * CLEC2_Syk)) - ((CLEC2_P * SFK_NF) - CLEC2_SFK_A))";
+		FunctionalEquivTestData[] tests = new FunctionalEquivTestData[]{
+				new FunctionalEquivTestData(new Expression(infix1), new Expression(infix1), true),
+				new FunctionalEquivTestData(new Expression(infix1), new Expression(infix2), true),
+				new FunctionalEquivTestData(
+						new Expression("vcRegionVolume('subdomain1')"),
+						new Expression("vcRegionVolume('subdomain1')"),
+						true),
+				new FunctionalEquivTestData(
+						new Expression("vcRegionVolume('subdomain1')"),
+						new Expression("vcRegionVolume('subdomain2')"),
+						false),
+		};
+
+		for (FunctionalEquivTestData test : tests) {
+			boolean passed = ExpressionUtils.functionallyEquivalent(test.exp1, test.exp2);
+			if (test.shouldPass) {
+				Assert.assertTrue("exps should have been equivalent: exp1='" + test.exp1.infix() + "', exp2='" + test.exp2.infix() + "'", passed);
+			}else{
+				Assert.assertFalse("exps should not have been equivalent: exp1='" + test.exp1.infix() + "', exp2='" + test.exp2.infix() + "'", passed);
+			}
+		}
+	}
 
 
 /**

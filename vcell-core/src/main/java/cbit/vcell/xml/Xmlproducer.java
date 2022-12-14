@@ -1449,6 +1449,24 @@ private Element getXML(MembraneMapping param) {
 		membrane.setAttribute(XMLTags.GeometryClassAttrTag, mangle(geometryClass.getName()));
 	}
 	
+	// write BoundariesyConditions
+	Element boundariestypes = new Element(XMLTags.BoundariesTypesTag);
+	
+	//Xm
+	boundariestypes.setAttribute(XMLTags.BoundaryAttrValueXm, param.getBoundaryConditionTypeXm().boundaryTypeStringValue());
+	//Xp
+	boundariestypes.setAttribute(XMLTags.BoundaryAttrValueXp, param.getBoundaryConditionTypeXp().boundaryTypeStringValue());
+	//Ym
+	boundariestypes.setAttribute(XMLTags.BoundaryAttrValueYm, param.getBoundaryConditionTypeYm().boundaryTypeStringValue());
+	//Yp
+	boundariestypes.setAttribute(XMLTags.BoundaryAttrValueYp, param.getBoundaryConditionTypeYp().boundaryTypeStringValue());
+	//Zm
+	boundariestypes.setAttribute(XMLTags.BoundaryAttrValueZm, param.getBoundaryConditionTypeZm().boundaryTypeStringValue());
+	//Zp
+	boundariestypes.setAttribute(XMLTags.BoundaryAttrValueZp, param.getBoundaryConditionTypeZp().boundaryTypeStringValue());
+	
+	membrane.addContent( boundariestypes ); //add boundaries to the feature
+
 	return membrane;
 }
 
@@ -4694,6 +4712,9 @@ Element getXML(Simulation param) {
 	//Add Attributes
 	String name = mangle(param.getName());
 	simulationElement.setAttribute(XMLTags.NameAttrTag, name);
+	if(param.getImportedTaskID() != null && param.getImportedTaskID().length() > 0) {
+		simulationElement.setAttribute(XMLTags.ImportedTaskIdTag, param.getImportedTaskID());
+	}
 	//simulation.setAttribute(XMLTags.AnnotationAttrTag, this.mangle(param.getDescription()));
 	//Add annotation
 	if (param.getDescription()!=null && param.getDescription().trim().length()>0) {

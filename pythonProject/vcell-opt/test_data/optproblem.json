@@ -1,0 +1,164 @@
+{
+  "copasiOptimizationMethod": {
+    "optimizationMethodType": "evolutionaryProgram",
+    "optimizationParameter": [
+      {
+        "dataType": "int",
+        "paramType": "numberOfGenerations",
+        "value": 200.0
+      },
+      {
+        "dataType": "int",
+        "paramType": "populationSize",
+        "value": 20.0
+      },
+      {
+        "dataType": "int",
+        "paramType": "randomNumberGenerator",
+        "value": 1.0
+      },
+      {
+        "dataType": "int",
+        "paramType": "seed",
+        "value": 3.0
+      }
+    ]
+  },
+  "dataSet": [
+    [
+      0.0,
+      4.0
+    ],
+    [
+      1.6535399245133132E-4,
+      3.9995453382905546
+    ],
+    [
+      6.276635144329321E-4,
+      3.998274743619277
+    ],
+    [
+      0.0034306276215528586,
+      3.990590010029197
+    ],
+    [
+      0.00930981017033542,
+      3.9745759499569466
+    ],
+    [
+      0.021379458033809823,
+      3.942139223285978
+    ],
+    [
+      0.041873558753016286,
+      3.8883895570062883
+    ],
+    [
+      0.07015716884832657,
+      3.816872546080026
+    ],
+    [
+      0.12746580885899947,
+      3.680942136818943
+    ],
+    [
+      0.18695226617648983,
+      3.5516767175235633
+    ],
+    [
+      0.26645702476153477,
+      3.3959732254044463
+    ],
+    [
+      0.35022514860447995,
+      3.2508185754735517
+    ],
+    [
+      0.44678336822112563,
+      3.104634800348445
+    ],
+    [
+      0.5798008594989622,
+      2.9349739439153484
+    ],
+    [
+      0.7130335067221049,
+      2.7957984782266956
+    ],
+    [
+      0.8462661539452475,
+      2.681834033949502
+    ],
+    [
+      0.9794988011683902,
+      2.588513744615282
+    ],
+    [
+      1.1127314483915325,
+      2.5120980127515082
+    ],
+    [
+      1.2459640956146747,
+      2.449524652625187
+    ],
+    [
+      1.379196742837817,
+      2.398286179857271
+    ],
+    [
+      1.5124293900609591,
+      2.356329329749134
+    ],
+    [
+      1.6456620372841013,
+      2.3219727774172454
+    ],
+    [
+      1.7788946845072435,
+      2.293839762543596
+    ],
+    [
+      1.9121273317303857,
+      2.270802918851185
+    ],
+    [
+      2.0,
+      2.257942965982347
+    ]
+  ],
+  "mathModelSbmlContents": "<?xml version='1.0' encoding='UTF-8' standalone='no'?>\n<sbml xmlns=\"http://www.sbml.org/sbml/level2/version4\" level=\"2\" version=\"4\">\n  <model id=\"MathModel_NoName\">\n    <listOfCompartments>\n      <compartment id=\"compartment\"/>\n    </listOfCompartments>\n    <listOfParameters>\n      <parameter constant=\"true\" id=\"_F_\" value=\"9.64853321E4\"/>\n      <parameter constant=\"true\" id=\"_F_nmol_\" value=\"9.64853321E-5\"/>\n      <parameter constant=\"true\" id=\"_K_GHK_\" value=\"1E-9\"/>\n      <parameter constant=\"true\" id=\"_N_pmol_\" value=\"6.02214179E11\"/>\n      <parameter constant=\"true\" id=\"_PI_\" value=\"3.141592653589793\"/>\n      <parameter constant=\"true\" id=\"_R_\" value=\"8314.46261815\"/>\n      <parameter constant=\"true\" id=\"_T_\" value=\"300\"/>\n      <parameter constant=\"true\" id=\"K_millivolts_per_volt\" value=\"1000\"/>\n      <parameter constant=\"true\" id=\"Kf\" value=\"1\"/>\n      <parameter constant=\"true\" id=\"KMOLE\" value=\"0.001660538783162726\"/>\n      <parameter constant=\"true\" id=\"Kr\" value=\"2\"/>\n      <parameter constant=\"true\" id=\"s0_init_uM\" value=\"5\"/>\n      <parameter constant=\"true\" id=\"s1_init_uM\" value=\"4\"/>\n      <parameter constant=\"true\" id=\"Size_c0\" value=\"50000\"/>\n      <parameter constant=\"false\" id=\"J_r0\"/>\n      <parameter constant=\"false\" id=\"s0\"/>\n      <parameter constant=\"false\" id=\"s1\"/>\n    </listOfParameters>\n    <listOfInitialAssignments>\n      <initialAssignment id=\"ID_2\" symbol=\"s0\">\n        <math xmlns=\"http://www.w3.org/1998/Math/MathML\">        \n          <ci> s0_init_uM </ci>\n        </math>\n            </initialAssignment>\n      <initialAssignment id=\"ID_3\" symbol=\"s1\">\n        <math xmlns=\"http://www.w3.org/1998/Math/MathML\">        \n          <ci> s1_init_uM </ci>\n        </math>\n            </initialAssignment>\n    </listOfInitialAssignments>\n    <listOfRules>\n      <assignmentRule id=\"ID_1\" variable=\"J_r0\">\n        <math xmlns=\"http://www.w3.org/1998/Math/MathML\">        \n          <apply>\n            <plus/>\n            <apply>\n              <times/>\n              <ci> Kf </ci>\n              <ci> s0 </ci>\n            </apply>\n            <apply>\n              <minus/>\n              <apply>\n                <times/>\n                <ci> Kr </ci>\n                <ci> s1 </ci>\n              </apply>\n            </apply>\n          </apply>\n        </math>\n            </assignmentRule>\n      <rateRule variable=\"s0\">\n        <math xmlns=\"http://www.w3.org/1998/Math/MathML\">        \n          <apply>\n            <minus/>\n            <ci> J_r0 </ci>\n          </apply>\n        </math>\n            </rateRule>\n      <rateRule variable=\"s1\">\n        <math xmlns=\"http://www.w3.org/1998/Math/MathML\">        \n          <ci> J_r0 </ci>\n        </math>\n            </rateRule>\n    </listOfRules>\n  </model>\n</sbml>",
+  "numberOfOptimizationRuns": 1,
+  "parameterDescriptionList": [
+    {
+      "initialValue": 0.2,
+      "maxValue": 10.0,
+      "minValue": 0.1,
+      "name": "Kf",
+      "scale": 0.2
+    },
+    {
+      "initialValue": 0.3,
+      "maxValue": 20.0,
+      "minValue": 0.2,
+      "name": "Kr",
+      "scale": 0.3
+    },
+    {
+      "initialValue": 2.0,
+      "maxValue": 20.0,
+      "minValue": 1.0E-8,
+      "name": "s0_init_uM",
+      "scale": 2.0
+    }
+  ],
+  "referenceVariable": [
+    {
+      "referenceVariableType": "independent",
+      "varName": "t"
+    },
+    {
+      "referenceVariableType": "dependent",
+      "varName": "s1"
+    }
+  ]
+}

@@ -1,9 +1,13 @@
 name: CI-application-containers
 
 on:
+  workflow_dispatch:
   release:
     types: [published]
-
+  
+env:
+  python-version: "3.9"
+  
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -32,6 +36,31 @@ jobs:
         cd ..
         sudo tar -xvf deploy/deploy_dir.tar
         sudo chmod 777 -R deploy
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.python-version }}
+        cache: "pip"
+      
+    - name: Install Dependencies
+      run: pip install -r requirements.txt
+
+    - name: build vcell-cli-utils package
+      run: |
+        cd vcell-cli-utils
+        poetry install
+
+    - name: build vcell-admin package
+      run: |
+        cd docker/swarm/vcell-admin
+        poetry install    
+
+    - name: build vcell-opt package
+      run: |
+        cd pythonProject/vcell-opt
+        poetry install
+        poetry run python -m pytest
+
     - name: setup java 8 with maven cache
       uses: actions/setup-java@v2
       with:
@@ -51,19 +80,22 @@ jobs:
         ./build.sh all ${{ env.VCELL_REPO_NAMESPACE }} ${{ env.VCELL_TAG }}
         cd singularity-vm
         singularity remote login -u ${{ secrets.ACTION_USER }} -p ${{ secrets.ACTION_TOKEN }} oras://ghcr.io
-    - name: tag as latest and push to registry
+    - name: tag as latest and push to registry  # (jcs) are explicit singularity push commands redundant? (see ./build.sh)
       shell: bash
       run: |
-        for CONTAINER in vcell-api vcell-batch vcell-clientgen vcell-data vcell-db vcell-mongo vcell-sched vcell-submit vcell-web;\
+        for CONTAINER in vcell-api vcell-batch vcell-opt vcell-clientgen vcell-data vcell-db vcell-mongo vcell-sched vcell-submit vcell-web;\
         do docker tag ${VCELL_REPO_NAMESPACE}/$CONTAINER:${VCELL_TAG} ${VCELL_REPO_NAMESPACE}/$CONTAINER:latest;\
         docker tag ${VCELL_REPO_NAMESPACE}/$CONTAINER:${VCELL_TAG} ${VCELL_REPO_NAMESPACE}/$CONTAINER:${{ steps.version.outputs.tag }};\
         docker push --all-tags ${VCELL_REPO_NAMESPACE}/$CONTAINER;\
         done
         cd docker/build/singularity-vm
-        singularity push -U $(ls *img) oras://${VCELL_REPO_NAMESPACE}/vcell-batch-singularity:${VCELL_TAG}
-        singularity push -U $(ls *img) oras://${VCELL_REPO_NAMESPACE}/vcell-batch-singularity:${{ steps.version.outputs.tag }}
-        singularity push -U $(ls *img) oras://${VCELL_REPO_NAMESPACE}/vcell-batch-singularity:latest
-        
+        singularity push -U $(ls *batch*img) oras://${VCELL_REPO_NAMESPACE}/vcell-batch-singularity:${VCELL_TAG}
+        singularity push -U $(ls *batch*img) oras://${VCELL_REPO_NAMESPACE}/vcell-batch-singularity:${{ steps.version.outputs.tag }}
+        singularity push -U $(ls *batch*img) oras://${VCELL_REPO_NAMESPACE}/vcell-batch-singularity:latest
+        singularity push -U $(ls *opt*img) oras://${VCELL_REPO_NAMESPACE}/vcell-opt-singularity:${VCELL_TAG}
+        singularity push -U $(ls *opt*img) oras://${VCELL_REPO_NAMESPACE}/vcell-opt-singularity:${{ steps.version.outputs.tag }}
+        singularity push -U $(ls *opt*img) oras://${VCELL_REPO_NAMESPACE}/vcell-opt-singularity:latest
+
     - name: Setup tmate session
       uses: mxschmitt/action-tmate@v3
       if: ${{ failure() }}

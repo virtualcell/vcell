@@ -131,7 +131,8 @@ services:
     environment:
       - softwareVersion=${VCELL_VERSION}
       - serverid=${VCELL_SITE}
-      - singularity_imagefile=${VCELL_SINGULARITY_IMAGE_EXTERNAL}
+      - batch_singularity_imagefile=${VCELL_BATCH_SINGULARITY_IMAGE_EXTERNAL}
+      - opt_singularity_imagefile=${VCELL_OPT_SINGULARITY_IMAGE_EXTERNAL}
       - docker_name=${VCELL_BATCH_DOCKER_IMAGE}
 
       - jmshost_sim_external=${VCELL_JMS_SIM_HOST_EXTERNAL}

@@ -149,7 +149,7 @@ void cleanupDatabase(boolean bEnableRetry) throws DataAccessException,java.sql.S
 	Connection con = conFactory.getConnection(lock);
 	try {
 		StringBuffer stringBuffer = new StringBuffer();
-		DBBackupAndClean.cleanupDatabase(con, stringBuffer);
+		DBBackupAndClean.cleanupDatabase(con, stringBuffer, conFactory.getDatabaseSyntax());
 		if (lg.isDebugEnabled()) lg.debug(stringBuffer.toString());
 	
 		con.commit();
@@ -922,7 +922,7 @@ VCImage getVCImage(QueryHashtable dbc, User user, KeyValue key, boolean bCheckPe
  * @return cbit.vcell.modeldb.VCInfoContainer
  * @param user cbit.vcell.server.User
  */
-TreeMap<User.SPECIALS,TreeMap<User,String>>  getSpecialUsers(User user,boolean bEnableRetry) throws DataAccessException, java.sql.SQLException{
+TreeMap<User.SPECIAL_CLAIM,TreeMap<User,String>>  getSpecialUsers(User user,boolean bEnableRetry) throws DataAccessException, java.sql.SQLException{
 	
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
@@ -1638,7 +1638,7 @@ public void replacePreferences(User user,Preference[] preferences,boolean bEnabl
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
-		DbDriver.replacePreferences(con,user,preferences);
+		DbDriver.replacePreferences(con,conFactory.getKeyFactory(),user,preferences);
 		con.commit();
 		return;
 	} catch (Throwable e) {
@@ -2024,7 +2024,7 @@ public KeyValue savePublicationRep(PublicationRep publicationRep, User user, boo
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
-		KeyValue publicationKey = DbDriver.savePublicationRep(con,publicationRep,user,conFactory.getDatabaseSyntax());
+		KeyValue publicationKey = DbDriver.savePublicationRep(con,publicationRep,user,conFactory.getKeyFactory(), conFactory.getDatabaseSyntax());
 		con.commit();
 		return publicationKey;
 	}catch (Throwable e) {

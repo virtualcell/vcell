@@ -49,7 +49,8 @@ public Node copyTreeBinary() {
 public Node differentiate(String variable) throws ExpressionException {
 	throw new ExpressionException("ASTLaplacianNode.differentiate(), not implemented");
 }
-public double evaluateConstant() throws ExpressionException {
+@Override
+public double evaluateConstant(boolean substituteConstants) throws ExpressionException {
 	throw new ExpressionException("LaplaicianNode cannot be evaluated as a constant");
 }    
 public RealInterval evaluateInterval(RealInterval intervals[]) throws ExpressionException {
@@ -58,14 +59,11 @@ public RealInterval evaluateInterval(RealInterval intervals[]) throws Expression
 public double evaluateVector(double values[]) throws ExpressionException {
 	throw new ExpressionException("ASTLaplacianNode.evaluateVector(), not implemented");
 }    
-/**
- * This method was created by a SmartGuide.
- * @exception java.lang.Exception The exception description.
- */
-public Node flatten() throws ExpressionException {
+@Override
+public Node flatten(boolean substituteConstants) throws ExpressionException {
 	
 	try {
-		double value = evaluateConstant();
+		double value = evaluateConstant(substituteConstants);
 		return new ASTFloatNode(value);
 	}catch (Exception e){}		
 
@@ -74,7 +72,7 @@ public Node flatten() throws ExpressionException {
 	}
 		
 	ASTLaplacianNode laplacianNode = new ASTLaplacianNode();
-	laplacianNode.jjtAddChild(jjtGetChild(0).flatten());	
+	laplacianNode.jjtAddChild(jjtGetChild(0).flatten(substituteConstants));
 	return laplacianNode;
 }
 

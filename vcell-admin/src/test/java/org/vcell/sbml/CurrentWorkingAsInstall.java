@@ -23,8 +23,6 @@ public class CurrentWorkingAsInstall {
 	public static void init( ) {
 		if (System.getProperty(IPROP) == null) {
 			System.setProperty(IPROP, "cwd");
-		}
-		ResourceUtil.setNativeLibraryDirectory();
-		
+		}	
 	}
 }

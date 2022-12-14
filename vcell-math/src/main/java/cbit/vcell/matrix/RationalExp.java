@@ -321,7 +321,7 @@ private void collectTerms(Vector<Term> vector) {
  */
 public RationalExp div(RationalExp rational) {
 	if (rational.isZero()){
-		throw new RuntimeException("divide by zero");
+		throw new RuntimeException("divide by zero: dividing "+this.infixString()+" by "+rational.infixString());
 	}else if (isZero()){
 		return RationalExp.ZERO;
 	}else{

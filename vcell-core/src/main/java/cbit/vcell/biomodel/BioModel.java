@@ -17,7 +17,8 @@ import java.beans.VetoableChangeSupport;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import cbit.vcell.mapping.StructureMapping;
+import cbit.vcell.mapping.*;
+import cbit.vcell.model.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.model.rbm.MolecularType;
@@ -25,6 +26,7 @@ import org.vcell.pathway.BioPaxObject;
 import org.vcell.pathway.PathwayModel;
 import org.vcell.relationship.RelationshipModel;
 import org.vcell.relationship.RelationshipObject;
+import org.vcell.sbml.vcell.SBMLImportException;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Displayable;
@@ -47,21 +49,8 @@ import cbit.vcell.biomodel.meta.IdentifiableProvider;
 import cbit.vcell.biomodel.meta.VCID;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.geometry.Geometry;
-import cbit.vcell.mapping.ReactionSpec;
-import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.math.MathDescription;
-import cbit.vcell.model.BioModelEntityObject;
-import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.RbmModelContainer;
-import cbit.vcell.model.ModelUnitSystem;
-import cbit.vcell.model.RbmObservable;
-import cbit.vcell.model.ReactionRule;
-import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.Species;
-import cbit.vcell.model.SpeciesContext;
-import cbit.vcell.model.Structure;
-import cbit.vcell.model.VCellSbmlName;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.solver.Simulation;
@@ -115,13 +104,33 @@ Identifiable, IdentifiableProvider, IssueSource, Displayable, VCellSbmlName
 		this(version, ModelUnitSystem.createDefaultVCModelUnitSystem());
 	}
 
-	/**
- * Insert the method's description here.
- * Creation date: (1/19/01 3:31:00 PM)
- * @param simulationContext cbit.vcell.mapping.SimulationContext
- * @exception java.beans.PropertyVetoException The exception description.
- */
-public SimulationContext addNewSimulationContext(String newSimulationContextName, SimulationContext.Application app) throws java.beans.PropertyVetoException {
+	public void transformLumpedToDistributed() {
+		try {
+			for (ReactionStep reactionStep : getModel().getReactionSteps()) {
+				if (reactionStep.getKinetics().getKineticsDescription().isLumped()) {
+					Kinetics origKinetics = reactionStep.getKinetics();
+					// clone it for backup purposes
+					origKinetics.setReactionStep(null);
+					Kinetics clonedKinetics = (Kinetics) BeanUtils.cloneSerializable(origKinetics);
+					origKinetics.setReactionStep(reactionStep);
+					try {
+						DistributedKinetics.toDistributedKinetics((LumpedKinetics) origKinetics, false);
+						lg.info("transformed lumped reaction " + reactionStep.getName() + " to distributed");
+					} catch (Exception e) {
+						lg.warn("failed to transform lumped reaction " + reactionStep.getName() + " to distributed: " + e.getMessage());
+						// original kinetics may have been altered when the conversion failed, replace with clone
+						reactionStep.setKinetics(clonedKinetics);
+						clonedKinetics.setReactionStep(reactionStep);
+						refreshDependencies();
+					}
+				}
+			}
+		} catch (Exception e) {
+			throw new SBMLImportException("failed to convert lumped reaction kinetics to distributed: " + e.getMessage(), e);
+		}
+	}
+
+	public SimulationContext addNewSimulationContext(String newSimulationContextName, SimulationContext.Application app) throws java.beans.PropertyVetoException {
 	SimulationContext simContext = new SimulationContext(getModel(),new Geometry("non-spatial",0), null,null,app);
 	simContext.setName(newSimulationContextName);
 	addSimulationContext(simContext);
@@ -137,12 +146,6 @@ public synchronized void addPropertyChangeListener(java.beans.PropertyChangeList
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (1/19/01 3:31:00 PM)
- * @param simulationContext cbit.vcell.mapping.SimulationContext
- * @exception java.beans.PropertyVetoException The exception description.
- */
 public void addSimulation(Simulation simulation) throws java.beans.PropertyVetoException {
 	if (contains(simulation)){
 		throw new IllegalArgumentException("BioModel.addSimulation() simulation already present in BioModel");
@@ -261,12 +264,6 @@ public boolean contains(SimulationContext simulationContext) {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (1/17/01 12:51:23 PM)
- * @return boolean
- * @param simulationContext cbit.vcell.mapping.SimulationContext
- */
 public boolean contains(Simulation simulation) {
 	if (simulation == null){
 		throw new IllegalArgumentException("simulation was null");
@@ -466,12 +463,6 @@ protected java.beans.PropertyChangeSupport getPropertyChange() {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (1/17/01 12:59:40 PM)
- * @return cbit.vcell.solver.Simulation[]
- * @param simulationContext cbit.vcell.mapping.SimulationContext
- */
 public SimulationContext getSimulationContext(Simulation simulation) throws ObjectNotFoundException {
 	if (simulation == null){
 		throw new IllegalArgumentException("simulation was null");
@@ -775,12 +766,6 @@ public synchronized void removePropertyChangeListener(java.beans.PropertyChangeL
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (1/19/01 3:31:00 PM)
- * @param simulationContext cbit.vcell.mapping.SimulationContext
- * @exception java.beans.PropertyVetoException The exception description.
- */
 public void removeSimulation(Simulation simulation) throws java.beans.PropertyVetoException {
 	if (!contains(simulation)){
 		throw new IllegalArgumentException("BioModel.removeSimulation() simulation not present in BioModel");
@@ -1181,6 +1166,26 @@ public Identifiable getIdentifiableObject(VCID vcid) {
 			}
 		}
 	}
+	if (vcid.getClassName().equals(VCID.CLASS_SIMULATION_CONTEXT_PARAMETER)){
+		String localName = vcid.getLocalName();
+		String[] tokens = localName.split("\\.");
+		// localName = scParam.getSimulationContext().getName()+"."+scParam.getName();
+		SimulationContext simContext = getSimulationContext(tokens[0]);
+		if (simContext != null){
+			SimulationContext.SimulationContextParameter scParam = simContext.getSimulationContextParameter(tokens[1]);
+			return scParam;
+		}
+	}
+	if (vcid.getClassName().equals(VCID.CLASS_KINETICS_PARAMETER)) {
+		String localName = vcid.getLocalName();
+		String[] tokens = localName.split("\\.");
+		// localName = kParam.getKinetics().getReactionStep().getName()+"."+kParam.getName();
+		ReactionStep reactionStep = getModel().getReactionStep(tokens[0]);
+		if (reactionStep != null){
+			Kinetics.KineticsParameter kp = reactionStep.getKinetics().getKineticsParameter(tokens[1]);
+			return kp;
+		}
+	}
 	if (vcid.getClassName().equals(VCID.CLASS_BIOMODEL)) {
 		return this;
 	}
@@ -1234,12 +1239,24 @@ public VCID getVCID(Identifiable identifiable) {
 		className = VCID.CLASS_SPECIES_CONTEXT_SPEC;
 	} else if (identifiable instanceof SpeciesContextSpec.SpeciesContextSpecParameter) {
 		SpeciesContextSpec.SpeciesContextSpecParameter scsParam = (SpeciesContextSpec.SpeciesContextSpecParameter) identifiable;
-		localName = scsParam.getSimulationContext().getName()+"."+scsParam.getSpeciesContext().getName()+"."+scsParam.getName();
+		SimulationContext simContext = scsParam.getSimulationContext();
+		if(simContext == null) {
+			throw new RuntimeException("Entity no longer exist");
+		}
+		localName = simContext.getName()+"."+scsParam.getSpeciesContext().getName()+"."+scsParam.getName();
 		className = VCID.CLASS_SPECIES_CONTEXT_SPEC_PARAMETER;
 	} else if (identifiable instanceof StructureMapping.StructureMappingParameter) {
 		StructureMapping.StructureMappingParameter smParam = (StructureMapping.StructureMappingParameter) identifiable;
 		localName = smParam.getSimulationContext().getName()+"."+smParam.getStructure().getName()+"."+smParam.getName();
 		className = VCID.CLASS_STRUCTURE_MAPPING_PARAMETER;
+	} else if (identifiable instanceof SimulationContext.SimulationContextParameter) {
+		SimulationContext.SimulationContextParameter scParam = (SimulationContext.SimulationContextParameter) identifiable;
+		localName = scParam.getSimulationContext().getName()+"."+scParam.getName();
+		className = VCID.CLASS_SIMULATION_CONTEXT_PARAMETER;
+	} else if (identifiable instanceof Kinetics.KineticsParameter) {
+		Kinetics.KineticsParameter kParam = (Kinetics.KineticsParameter) identifiable;
+		localName = kParam.getKinetics().getReactionStep().getName()+"."+kParam.getName();
+		className = VCID.CLASS_KINETICS_PARAMETER;
 	} else if (identifiable instanceof ReactionSpec) {
 		localName = ((ReactionSpec)identifiable).getDisplayName();
 		className = VCID.CLASS_REACTION_SPEC;
@@ -1391,4 +1408,10 @@ public String getDisplayType() {
 	return typeName;
 }
 
+public void updateAll(boolean bForceUpgrade) throws MappingException {
+	refreshDependencies();
+	for (SimulationContext simulationContext : getSimulationContexts()){
+		simulationContext.updateAll(bForceUpgrade);
+	}
+}
 }

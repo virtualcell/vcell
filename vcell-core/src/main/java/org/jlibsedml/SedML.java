@@ -126,10 +126,10 @@ public final class SedML extends SEDBase {
             throw new IllegalArgumentException(MessageFormat.format(
                     "Invalid level {0}, valid level is {1}", aLevel, "1"));
         }
-        if (aVersion < 1 || aVersion > 3) {
+        if (aVersion < 1 || aVersion > 4) {
             throw new IllegalArgumentException(MessageFormat.format(
                     "Invalid version {0}, valid versions are {1}", aVersion,
-                    "1,2,3"));
+                    "1,2,3,4"));
         }
         this.level = aLevel;
         this.version = aVersion;

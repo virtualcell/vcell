@@ -11,11 +11,15 @@
 package org.vcell.sbml.vcell;
     
 import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Enumeration;
 import java.util.Iterator;
 
 import javax.xml.stream.XMLStreamException;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.sbml.jsbml.ASTNode;
 import org.sbml.jsbml.AssignmentRule;
 import org.sbml.jsbml.Compartment;
@@ -29,27 +33,7 @@ import org.sbml.jsbml.SBMLError;
 import org.sbml.jsbml.SBMLException;
 import org.sbml.jsbml.SBMLWriter;
 import org.sbml.jsbml.Trigger;
-import org.sbml.jsbml.ext.spatial.AdjacentDomains;
-import org.sbml.jsbml.ext.spatial.AnalyticGeometry;
-import org.sbml.jsbml.ext.spatial.AnalyticVolume;
-import org.sbml.jsbml.ext.spatial.Boundary;
-import org.sbml.jsbml.ext.spatial.CompartmentMapping;
-import org.sbml.jsbml.ext.spatial.CoordinateComponent;
-import org.sbml.jsbml.ext.spatial.CoordinateKind;
-import org.sbml.jsbml.ext.spatial.DataKind;
-import org.sbml.jsbml.ext.spatial.Domain;
-import org.sbml.jsbml.ext.spatial.DomainType;
-import org.sbml.jsbml.ext.spatial.FunctionKind;
-import org.sbml.jsbml.ext.spatial.GeometryKind;
-import org.sbml.jsbml.ext.spatial.InteriorPoint;
-import org.sbml.jsbml.ext.spatial.InterpolationKind;
-import org.sbml.jsbml.ext.spatial.SampledField;
-import org.sbml.jsbml.ext.spatial.SampledFieldGeometry;
-import org.sbml.jsbml.ext.spatial.SampledVolume;
-import org.sbml.jsbml.ext.spatial.SpatialCompartmentPlugin;
-import org.sbml.jsbml.ext.spatial.SpatialModelPlugin;
-import org.sbml.jsbml.ext.spatial.SpatialParameterPlugin;
-import org.sbml.jsbml.ext.spatial.SpatialSymbolReference;
+import org.sbml.jsbml.ext.spatial.*;
 import org.sbml.jsbml.validator.SBMLValidator.CHECK_CATEGORY;
 import org.vcell.sbml.SBMLUtils;
 import org.vcell.util.Extent;
@@ -88,14 +72,8 @@ import cbit.vcell.xml.XMLSource;
  */
 public class MathModel_SBMLExporter {
 
-/**
- * Insert the method's description here.
- * Creation date: (4/11/2006 11:38:26 AM)
- * @return org.sbml.libsbml.Model
- * @param mathModel cbit.vcell.mathmodel.MathModel
- * @throws XMLStreamException 
- * @throws SBMLException 
- */
+private final static Logger lg = LogManager.getLogger(MathModel_SBMLExporter.class);
+
 public static String getSBMLString(cbit.vcell.mathmodel.MathModel mathModel, long level, long version) throws cbit.vcell.parser.ExpressionException, java.io.IOException, SBMLException, XMLStreamException{
 
 	if (mathModel.getMathDescription().isSpatial()){
@@ -125,18 +103,6 @@ public static String getSBMLString(cbit.vcell.mathmodel.MathModel mathModel, lon
 	Compartment compartment = sbmlModel.createCompartment();
 	compartment.setId(compartmentId);
 	
-//  ------ For spatial SBML when implemented ----- 
-//	if (vcMathModel.getMathDescription().isSpatial()){
-//		// for spatial model, compartment(s) created in addGeometry(), based on number of subVolumes/surfaceClasses.
-//		addGeometry();
-//	} else {
-//		// for non-spatial mathmodel, only 1 compartment; create it here.
-//		String compartmentId = "compartment";
-//		org.sbml.libsbml.Compartment compartment = sbmlModel.createCompartment();
-//		compartment.setId(compartmentId);
-//	}
-	
-
 	MathDescription mathDesc = mathModel.getMathDescription();
 	Enumeration<Variable> enumVars = mathDesc.getVariables();
 	
@@ -211,7 +177,7 @@ public static String getSBMLString(cbit.vcell.mathmodel.MathModel mathModel, lon
 		Event vcellEvent = vcellEvents.next();
 		addSbmlEvent(sbmlModel, vcellEvent);
 	}
-	System.out.println(new SBMLWriter().writeSBMLToString(sbmlDocument));
+	//System.out.println(new SBMLWriter().writeSBMLToString(sbmlDocument));
 	//validate the sbml document
 	sbmlDocument.setConsistencyChecks(CHECK_CATEGORY.GENERAL_CONSISTENCY, true);
 	sbmlDocument.setConsistencyChecks(CHECK_CATEGORY.IDENTIFIER_CONSISTENCY, true);
@@ -271,7 +237,9 @@ public static String getSBMLString(cbit.vcell.mathmodel.MathModel mathModel, lon
 
 	// Error check - use libSBML's document.printError to print to outputstream
 	System.out.println("\n\nSBML Export Error Report");
-	sbmlDocument.printErrors(System.out);
+	if (sbmlDocument.getErrorCount()>0) {
+		sbmlDocument.printErrors(System.out);
+	}
 
 	return sbmlStr;
 }
@@ -339,7 +307,7 @@ public static ASTNode getFormulaFromExpression(Expression expression, MathType m
 				}
 			}
 		}
-		expMathMLStr = cbit.vcell.parser.ExpressionMathMLPrinter.getMathML(mangledExpression, false, mathType);
+		expMathMLStr = cbit.vcell.parser.ExpressionMathMLPrinter.getMathML(mangledExpression, false, mathType, ExpressionMathMLPrinter.Dialect.SBML_SUBSET);
 	} catch (java.io.IOException e) {
 		e.printStackTrace(System.out);
 		throw new RuntimeException("Error converting expression to MathML string :" + e.getMessage());
@@ -621,17 +589,27 @@ private static void addGeometry(Model sbmlModel, MathModel vcMathModel) {
 		}
 		sampledField.setInterpolationType(InterpolationKind.nearestNeighbor);
 		sampledField.setDataType(DataKind.UINT8);
+		sampledField.setCompression(CompressionKind.deflated);
 		// add image from vcGeometrySpec to sampledField.
 		try {
-			StringBuffer sb = new StringBuffer();
-			byte[] imagePixelsBytes = vcImage.getPixelsCompressed();
+			StringBuffer uncompressedBuffer = new StringBuffer();
+			byte[] imagePixelsBytes = vcImage.getPixels();
 			for (int i = 0; i < imagePixelsBytes.length; i++) {
 				int uint8_sample = ((int)imagePixelsBytes[i]) & 0xff;
-				sb.append(uint8_sample+" ");
+				uncompressedBuffer.append(uint8_sample+" ");
 			}
 			sampledField.setSamplesLength(vcImage.getNumXYZ());
-			sampledField.setSamples(sb.toString().trim());
-		} catch (ImageException e) {
+			String uncompressedStringData = uncompressedBuffer.toString().trim();
+
+			byte[] compressedData = VCImage.deflate(uncompressedStringData.getBytes(StandardCharsets.UTF_8));
+			StringBuffer compressedBuffer = new StringBuffer();
+			for (int i = 0; i < compressedData.length; i++) {
+				int uint8_sample = ((int)compressedData[i]) & 0xff;
+				compressedBuffer.append(uint8_sample+" ");
+			}
+
+			sampledField.setSamples(compressedBuffer.toString().trim());
+		} catch (ImageException | IOException e) {
 			e.printStackTrace(System.out);
 			throw new RuntimeException("Unable to export image from VCell to SBML : " + e.getMessage());
 		}

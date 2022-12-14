@@ -69,8 +69,9 @@ public Node differentiate(String independentVariable) throws ExpressionException
 	
 	return notNode;
 }
-public double evaluateConstant() throws ExpressionException, DivideByZeroException {
-	double childValue = jjtGetChild(0).evaluateConstant();
+@Override
+public double evaluateConstant(boolean substituteConstants) throws ExpressionException, DivideByZeroException {
+	double childValue = jjtGetChild(0).evaluateConstant(substituteConstants);
 	if (childValue==0.0){
 		return 1.0;
 	}else{
@@ -91,13 +92,10 @@ public double evaluateVector(double values[]) throws ExpressionException, Divide
 		return 0.0;
 	}
 }    
-/**
- * This method was created by a SmartGuide.
- * @exception java.lang.Exception The exception description.
- */
-public Node flatten() throws ExpressionException {
+@Override
+public Node flatten(boolean substituteConstants) throws ExpressionException {
 	try {
-		double value = evaluateConstant();
+		double value = evaluateConstant(substituteConstants);
 		if (value==0.0){
 			return new ASTFloatNode(0.0);
 		}else{
@@ -121,7 +119,7 @@ public Node flatten() throws ExpressionException {
 	//}
 	
 	ASTNotNode notNode = new ASTNotNode();
-	notNode.jjtAddChild(jjtGetChild(0).flatten());	
+	notNode.jjtAddChild(jjtGetChild(0).flatten(substituteConstants));
 	return notNode;
 }
 /**

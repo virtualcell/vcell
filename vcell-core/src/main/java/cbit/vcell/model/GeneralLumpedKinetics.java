@@ -15,17 +15,11 @@ import org.vcell.util.Matchable;
 
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
-/**
- * Insert the type's description here.
- * Creation date: (8/9/2006 5:45:48 PM)
- * @author: Anuradha Lakshminarayana
- */
+import org.vcell.util.Relatable;
+import org.vcell.util.RelationVisitor;
+
 public class GeneralLumpedKinetics extends LumpedKinetics {
-/**
- * GeneralTotalKinetics constructor comment.
- * @param name java.lang.String
- * @param reactionStep cbit.vcell.model.ReactionStep
- */
+
 public GeneralLumpedKinetics(ReactionStep reactionStep) throws ExpressionException {
 	super(KineticsDescription.GeneralLumped.getName(), reactionStep);
 	try {
@@ -52,30 +46,45 @@ public GeneralLumpedKinetics(ReactionStep reactionStep) throws ExpressionExcepti
 }
 
 
-/**
- * Checks for internal representation of objects, not keys from database
- * @return boolean
- * @param obj java.lang.Object
- */
-public boolean compareEqual(Matchable obj) {
-	if (obj == this){
+	@Override
+	public boolean compareEqual(Matchable obj) {
+		if (obj == this){
+			return true;
+		}
+		if (!(obj instanceof GeneralLumpedKinetics)){
+			return false;
+		}
+
+		GeneralLumpedKinetics gck = (GeneralLumpedKinetics)obj;
+
+		if (!compareEqual0(gck)){
+			return false;
+		}
+
 		return true;
 	}
-	if (!(obj instanceof GeneralLumpedKinetics)){
-		return false;
+
+
+	@Override
+	public boolean relate(Relatable obj, RelationVisitor rv) {
+		if (obj == this){
+			return true;
+		}
+		if (!(obj instanceof GeneralLumpedKinetics)){
+			return false;
+		}
+
+		GeneralLumpedKinetics gck = (GeneralLumpedKinetics)obj;
+
+		if (!relate0(gck, rv)){
+			return false;
+		}
+
+		return true;
 	}
-	
-	GeneralLumpedKinetics gck = (GeneralLumpedKinetics)obj;
-
-	if (!compareEqual0(gck)){
-		return false;
-	}
-	
-	return true;
-}
 
 
-/**
+	/**
  * Insert the method's description here.
  * Creation date: (8/9/2006 5:45:48 PM)
  * @return cbit.vcell.model.KineticsDescription

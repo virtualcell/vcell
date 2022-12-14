@@ -316,7 +316,8 @@ public static org.jdom.Element setDefaultNamespace(org.jdom.Element rootNode, or
 	public static String xmlToString(Element root,boolean bTrimAllWhiteSpace) {
 		XMLOutputter xmlOut = new XMLOutputter();
 	    // default newline in jdom 1.1.3 is '\r\n' :  xmlOut.setNewlines(true);
-	    if (bTrimAllWhiteSpace) {
+		xmlOut.setFormat(Format.getPrettyFormat());
+		if (bTrimAllWhiteSpace) {
 	    	xmlOut.getFormat().setTextMode(Format.TextMode.TRIM_FULL_WHITE);
 	    } 
 		return xmlOut.outputString(root);		        
@@ -325,6 +326,7 @@ public static org.jdom.Element setDefaultNamespace(org.jdom.Element rootNode, or
 	public static String xmlToString(Document xmlDoc, boolean bTrimAllWhiteSpace) {
 		XMLOutputter xmlOut = new XMLOutputter();
 		// default newline in jdom 1.1.3 is '\r\n' : xmlOut.setNewlines(true);
+		xmlOut.setFormat(Format.getPrettyFormat());
 	    if (bTrimAllWhiteSpace) {
 	    	xmlOut.getFormat().setTextMode(Format.TextMode.TRIM_FULL_WHITE);
 	    } 

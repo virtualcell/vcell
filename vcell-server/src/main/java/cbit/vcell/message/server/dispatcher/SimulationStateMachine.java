@@ -474,7 +474,7 @@ public class SimulationStateMachine {
 			User myUser = simulationDatabase.getUser(simulation.getVersion().getOwner().getName());
 			if(myUser instanceof User.SpecialUser) {
 				//'special1' assigned to users by request to allow long running sims
-				isPowerUser = isPowerUser && Arrays.asList(((User.SpecialUser)myUser).getMySpecials()).contains(User.SPECIALS.special1);
+				isPowerUser = isPowerUser && Arrays.asList(((User.SpecialUser)myUser).getMySpecials()).contains(User.SPECIAL_CLAIM.powerUsers);
 			}else {
 				isPowerUser = false;
 			}
@@ -487,7 +487,7 @@ public class SimulationStateMachine {
 		KeyValue simID = simulationTask.getSimulationInfo().getSimulationVersion().getVersionKey();
 		SolverDescription solverDescription = simulationTask.getSimulation().getSolverTaskDescription().getSolverDescription();
 
-		MemLimitResults allowableMemMB = HtcProxy.getMemoryLimit(vcellUserid,simID,solverDescription, requiredMemMB);
+		MemLimitResults allowableMemMB = HtcProxy.getMemoryLimit(vcellUserid,simID,solverDescription, requiredMemMB, isPowerUser);
 		
 		final SimulationJobStatus newSimJobStatus;
 		if (requiredMemMB > allowableMemMB.getMemLimit()) {						

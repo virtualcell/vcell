@@ -519,6 +519,7 @@ private static void dispatchFollowUp(Hashtable<String, Object> hash) {
  * @param exc java.lang.Exception
  */
 public static void recordException(Throwable exc, Hashtable<String, Object> hash) {
+	lg.error(exc.getMessage(), exc);
 	if (exc instanceof UserCancelException) {
 		hash.put(TASK_ABORTED_BY_USER, exc);
 	} else {

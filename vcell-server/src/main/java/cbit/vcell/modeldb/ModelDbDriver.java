@@ -43,7 +43,7 @@ import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
-import cbit.vcell.modeldb.DatabasePolicySQL.OuterJoin;
+import cbit.vcell.modeldb.DatabasePolicySQL.LeftOuterJoin;
 import cbit.vcell.modeldb.ReactStepDbDriver.StructureKeys;
 import cbit.vcell.xml.XmlReader;
 /**
@@ -97,12 +97,6 @@ private void deleteModelSQL(Connection con, User user, KeyValue modelKey)
 }
 
 
-/**
- * This method was created in VisualAge.
- * @param user cbit.vcell.server.User
- * @param vType int
- * @param versionKey cbit.sql.KeyValue
- */
 @Override
 public void deleteVersionable(Connection con, User user, VersionableType vType, KeyValue vKey) 
 				throws org.vcell.util.DependencyException, ObjectNotFoundException,
@@ -139,20 +133,13 @@ private cbit.vcell.model.Diagram[] getDiagramsFromModel(QueryHashtable dbc, Conn
 	//log.print("ModelDbDriver.getDiagramsFromModel(modelKey=" + modelKey + ")");
 	String sql;
 	switch (dbSyntax){
-	case ORACLE:{
-		sql = 	" SELECT *" + 
-				" FROM " + diagramTable.getTableName() + "," + SoftwareVersionTable.table.getTableName() +
-				" WHERE " + diagramTable.modelRef + " = " + modelKey +
-				" AND " + diagramTable.modelRef + " = " + SoftwareVersionTable.table.versionableRef.getUnqualifiedColName() +"(+)" +
-				" ORDER BY "+diagramTable.id.getQualifiedColName();
-		break;
-	}
+	case ORACLE:
 	case POSTGRES:{
 		sql = 	" SELECT *" + 
-				" FROM " + diagramTable.getTableName() + " LEFT OUTER JOIN " + SoftwareVersionTable.table.getTableName() + 
+				" FROM " + diagramTable.getTableName() +
+				" LEFT OUTER JOIN " + SoftwareVersionTable.table.getTableName() +
 				" ON " + diagramTable.modelRef + " = " + SoftwareVersionTable.table.versionableRef.getUnqualifiedColName() +
 				" WHERE " + diagramTable.modelRef + " = " + modelKey +
-				//" AND " + diagramTable.modelRef + " = " + SoftwareVersionTable.table.versionableRef.getUnqualifiedColName() +"(+)" +
 				" ORDER BY "+diagramTable.id.getQualifiedColName();
 		break;
 	}
@@ -241,7 +228,7 @@ private cbit.vcell.model.Model getModel(QueryHashtable dbc, Connection con,User 
 	String condition =	modelTable.id.getQualifiedColName() + " = " + modelKey + 
 					" AND " + 
 						userTable.id.getQualifiedColName() + " = " + modelTable.ownerRef.getQualifiedColName();
-	sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,(OuterJoin)null,condition,null,dbSyntax);
+	sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,(LeftOuterJoin)null,condition,null);
 
 	Statement stmt = con.createStatement();
 	Model model = null;
@@ -471,11 +458,6 @@ private SpeciesContext getSpeciesContext(QueryHashtable dbc, Connection con, Res
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return cbit.vcell.model.SpeciesContext
- * @param speciesContextID cbit.sql.KeyValue
- */
 private SpeciesContext[] getSpeciesContextFromModel(QueryHashtable dbc, Connection con,User user, KeyValue modelKey, StructureTopology structureTopology) throws SQLException, DataAccessException {
 	if (user == null || modelKey == null) {
 		throw new IllegalArgumentException("Improper parameters for getSpeciesContextFromModel");
@@ -515,13 +497,7 @@ private SpeciesContext[] getSpeciesContextFromModel(QueryHashtable dbc, Connecti
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return cbit.sql.Versionable
- * @param user cbit.vcell.server.User
- * @param versionable cbit.sql.Versionable
- */
-public Versionable getVersionable(QueryHashtable dbc, Connection con, User user, VersionableType vType, KeyValue vKey) 
+public Versionable getVersionable(QueryHashtable dbc, Connection con, User user, VersionableType vType, KeyValue vKey)
 			throws ObjectNotFoundException, SQLException, DataAccessException {
 				
 	Versionable versionable = (Versionable) dbc.get(vKey);
@@ -539,12 +515,6 @@ public Versionable getVersionable(QueryHashtable dbc, Connection con, User user,
 }
 
 
-/**
- * This method was created in VisualAge.
- * @param vcimage cbit.image.VCImage
- * @param userid java.lang.String
- * @exception java.rmi.RemoteException The exception description.
- */
 private void insertDiagramSQL(Connection con, KeyValue key, Diagram diagram, KeyValue modelKey, KeyValue structKey) throws SQLException,DataAccessException {
 
 	String sql =
@@ -694,13 +664,7 @@ private void insertModel(InsertHashtable hash, Connection con,User user ,Model m
 }
 
 
-/**
- * This method was created in VisualAge.
- * @param vcimage cbit.image.VCImage
- * @param userid java.lang.String
- * @exception java.rmi.RemoteException The exception description.
- */
-private void insertModelSQL(Connection con,User user, Model model,Version newVersion) 
+private void insertModelSQL(Connection con,User user, Model model,Version newVersion)
 					throws SQLException,DataAccessException {
 
 	String sql;
@@ -727,12 +691,6 @@ private void insertModelSQL(Connection con,User user, Model model,Version newVer
 }
 
 
-/**
- * This method was created in VisualAge.
- * @param vcimage cbit.image.VCImage
- * @param userid java.lang.String
- * @exception java.rmi.RemoteException The exception description.
- */
 private void insertModelStructLinkSQL(Connection con, KeyValue key, KeyValue modelKey, KeyValue structKey) throws SQLException, DataAccessException {
 	String sql;
 	sql = 	"INSERT INTO " + modelStructLinkTable.getTableName() + " " + 
@@ -744,12 +702,6 @@ private void insertModelStructLinkSQL(Connection con, KeyValue key, KeyValue mod
 }
 
 
-/**
- * This method was created in VisualAge.
- * @param vcimage cbit.image.VCImage
- * @param userid java.lang.String
- * @exception java.rmi.RemoteException The exception description.
- */
 private void insertSpeciesContextSQL(InsertHashtable hash, Connection con, KeyValue key, SpeciesContext speciesContext, KeyValue modelKey) throws SQLException, DataAccessException {
 
 	String sql;
@@ -763,14 +715,7 @@ private void insertSpeciesContextSQL(InsertHashtable hash, Connection con, KeyVa
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return cbit.sql.KeyValue
- * @param versionable cbit.sql.Versionable
- * @param pRef cbit.sql.KeyValue
- * @param bCommit boolean
- */
-public KeyValue insertVersionable(InsertHashtable hash, Connection con, User user, Model model, String name, boolean bVersion) 
+public KeyValue insertVersionable(InsertHashtable hash, Connection con, User user, Model model, String name, boolean bVersion)
 					throws DataAccessException, SQLException, RecordChangedException {
 						
 	Version newVersion = insertVersionableInit(hash, con, user, model, name, model.getDescription(), bVersion);
@@ -779,13 +724,7 @@ public KeyValue insertVersionable(InsertHashtable hash, Connection con, User use
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return cbit.image.VCImage
- * @param user cbit.vcell.server.User
- * @param image cbit.image.VCImage
- */
-public KeyValue updateVersionable(InsertHashtable hash, Connection con, User user, Model model, boolean bVersion) 
+public KeyValue updateVersionable(InsertHashtable hash, Connection con, User user, Model model, boolean bVersion)
 			throws DataAccessException, SQLException, RecordChangedException {
 				
 	Version newVersion = updateVersionableInit(hash, con, user, model, bVersion);

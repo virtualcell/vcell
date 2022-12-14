@@ -16,9 +16,9 @@ public class SBMLSymbolMapping {
     public interface DummySymbolTableEntry extends EditableSymbolTableEntry {
     }
 
-    private static class SBaseWrapper<T extends SBase> {
+    public static class SBaseWrapper<T extends SBase> {
         private T internalSBase = null;
-        private SBaseWrapper(T object) {
+        public SBaseWrapper(T object) {
             if (object == null){
                 throw new IllegalArgumentException("null object");
             }
@@ -117,6 +117,16 @@ public class SBMLSymbolMapping {
         EditableSymbolTableEntry s = sbase_to_runtime_ste_map.get(sbaseWrapper);
         if (s != null && s != ste) {
             throw new RuntimeException("sbmlSid is already bound to runtime ste " + s.getClass().getSimpleName()+"("+s.getName()+"), trying to bind to " + ste.getClass().getSimpleName()+"("+ste.getName()+")");
+        } else {
+            sbase_to_runtime_ste_map.put(sbaseWrapper, ste);
+        }
+    }
+
+    void replaceRuntime(SBase _sbase, EditableSymbolTableEntry ste) {
+        SBaseWrapper<SBase> sbaseWrapper = new SBaseWrapper<>(_sbase);
+        EditableSymbolTableEntry s = sbase_to_runtime_ste_map.get(sbaseWrapper);
+        if (s == null) {
+            throw new RuntimeException("calling replaceRuntime for sbmlSid " + _sbase.getId() + " not mapped prior, trying to replace with " + ste.getClass().getSimpleName()+"("+s.getName()+"), trying to rebind to " + ste.getClass().getSimpleName()+"("+ste.getName()+")");
         } else {
             sbase_to_runtime_ste_map.put(sbaseWrapper, ste);
         }
@@ -298,7 +308,7 @@ public class SBMLSymbolMapping {
         }
     }
 
-    Expression getRuleSBMLExpression(SBase _sbase, SymbolContext symbolContext) {
+    public Expression getRuleSBMLExpression(SBase _sbase, SymbolContext symbolContext) {
         SBaseWrapper<SBase> sbaseWrapper = new SBaseWrapper<>(_sbase);
         switch (symbolContext) {
             case INITIAL: {

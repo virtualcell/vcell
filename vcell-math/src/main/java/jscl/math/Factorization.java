@@ -50,6 +50,7 @@ public class Factorization {
 
     void computeValue(Generic generic) {
         Debug.println("factorization");
+        long timeoutValue_ms = Expression.timeoutMS.get();
         Polynomial n[]=factory.valueof(generic).gcdAndNormalize();
         Monomial m=n[1].monomialGcd();
         Polynomial s=n[1].divide(m);
@@ -59,6 +60,10 @@ public class Factorization {
         Monomial q[]=new Monomial[2];
         d[1]=new Divisor(s.head().monomial());
         loop: while(d[1].hasNext()) {
+            long currentTime = System.currentTimeMillis();
+            if (timeoutValue_ms > 0 && currentTime > timeoutValue_ms) {
+                throw new Expression.ExpressionTimeoutException("timeout JSCL Factorization.computeValue()");
+            }
             p[1]=(Monomial)d[1].next();
             q[1]=d[1].complementary();
             d[0]=new Divisor(s.tail().monomial());

@@ -1,5 +1,7 @@
 package cbit.vcell.simdata;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -66,12 +68,14 @@ public class Hdf5Utils {
 		insertAttributes(hdf5GroupID, dataspaceName, new ArrayList<String>(Arrays.asList(new String[] {data})));
 	}
 	public static void insertAttributes(int hdf5GroupID,String dataspaceName,List<String> data) throws NullPointerException, HDF5Exception {
-		String[] attr = ((List<String>)data).toArray(new String[0]);
+		String[] attr = data.toArray(new String[0]);
 		long[] dims = new long[] {attr.length};
 		StringBuffer sb = new StringBuffer();
 		int MAXSTRSIZE=  -1;
 		for(int i=0;i<attr.length;i++) {
-			MAXSTRSIZE = Math.max(MAXSTRSIZE, attr[i].length());
+			int len = attr[i] == null ? -1 : attr[i].length(); // passing a 0 causes null exception
+			if (attr[i] == null) attr[i] = "";
+			MAXSTRSIZE = Math.max(MAXSTRSIZE, len);
 		}
 		for(int i=0;i<attr.length;i++) {
 			sb.append(attr[i]);
@@ -89,6 +93,27 @@ public class Hdf5Utils {
 		H5.H5Sclose(dataspace_id);
 		H5.H5Aclose(attribute_id);
 		H5.H5Tclose(h5attrcs1);
+	}
+	private static ByteBuffer getByteBuffer(byte[] bytes, int index, int times) {
+		return ByteBuffer.wrap(bytes, index * times, times).order(ByteOrder.LITTLE_ENDIAN);
+	}
+	private static byte[] byteArray(double[] doubleArray) {
+		int times = Double.SIZE / Byte.SIZE;
+		byte[] bytes = new byte[doubleArray.length * times];
+		for (int i = 0; i < doubleArray.length; i++) {
+			getByteBuffer(bytes, i, times).putDouble(doubleArray[i]);
+		}
+		return bytes;
+	}
+	public static void insertAttributes(int hdf5GroupID,String dataspaceName,double[] data) throws NullPointerException, HDF5Exception {
+		long[] dims = new long[] {data.length};
+		StringBuffer sb = new StringBuffer();
+		//https://support.hdfgroup.org/ftp/HDF5/examples/misc-examples/vlstra.c
+		int dataspace_id = H5.H5Screate_simple(dims.length, dims,null);
+		int attribute_id = H5.H5Acreate(hdf5GroupID, dataspaceName, HDF5Constants.H5T_NATIVE_DOUBLE, dataspace_id, HDF5Constants.H5P_DEFAULT,HDF5Constants.H5P_DEFAULT);
+		H5.H5Awrite (attribute_id, HDF5Constants.H5T_NATIVE_DOUBLE, byteArray(data));
+		H5.H5Sclose(dataspace_id);
+		H5.H5Aclose(attribute_id);
 	}
 //	public static void insertString(int hdf5GroupID,String dataspaceName,long[] dims,String data) throws NullPointerException, HDF5Exception {
 //		insertStrings(hdf5GroupID, dataspaceName, dims,new ArrayList<String>(Arrays.asList(new String[] {data})));

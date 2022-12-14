@@ -13,7 +13,7 @@ import org.vcell.util.BeanUtils;
 public class LibraryLoaderThread extends Thread {
 	private final boolean isGui;
 	
-	private static Logger lg = LogManager.getLogger(LibraryLoaderThread.class);
+	private static Logger logger = LogManager.getLogger(LibraryLoaderThread.class);
 	
 	/**
 	 * execute thread
@@ -31,14 +31,12 @@ public class LibraryLoaderThread extends Thread {
 		StringBuilder sb = null;
 		for (NativeLib librarySet :NativeLib.values( )) {
 			try {
-				if (lg.isDebugEnabled()) {
-					lg.debug("loading " + librarySet + " " + librarySet.autoload);
-				}
-				if (librarySet.autoload) {
-					librarySet.load( ); //blocks until done
-					if (lg.isDebugEnabled()) {
-						lg.debug("completed " + librarySet);
-					}
+				
+				if (librarySet.autoLoad) {
+					logger.debug("loading " + librarySet + " " + librarySet.autoLoad);
+					librarySet.load(); //blocks until done
+					logger.debug("completed " + librarySet);
+					
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -58,20 +56,20 @@ public class LibraryLoaderThread extends Thread {
 		}
 		if (sb != null) {
 			if (isGui) {
-			if (lg.isWarnEnabled()) {
-				lg.warn("scheduling display of " + sb.toString());
+			if (logger.isWarnEnabled()) {
+				logger.warn("scheduling display of " + sb.toString());
 			}
 			// Suppress modal dialog warning for now
 			// SwingUtilities.invokeLater(new Reporter(sb.toString()));
 			}
 			else {
-				if (lg.isDebugEnabled()) {
-					lg.debug("printing error " + sb.toString());
+				if (logger.isDebugEnabled()) {
+					logger.debug("printing error " + sb.toString());
 				}
 				System.err.println(sb.toString( ));
 			}
 		}
-		lg.debug("library loading complete");
+		logger.debug("library loading complete");
 	}
 	
 	/**

@@ -14,12 +14,9 @@ import java.beans.VetoableChangeListener;
 import java.util.List;
 import java.util.Map;
 
-import org.vcell.util.Displayable;
-import org.vcell.util.Issue;
+import org.vcell.util.*;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
-import org.vcell.util.IssueContext;
-import org.vcell.util.Matchable;
 import org.vcell.util.document.Identifiable;
 
 import cbit.vcell.mapping.SimulationContext.Kind;
@@ -137,6 +134,7 @@ public class ReactionSpec implements ModelProcessSpec, ScopedSymbolTable, Vetoab
 			setDescription(argDescription);
 		}
 
+		@Override
 		public boolean compareEqual(Matchable obj) {
 			if (!(obj instanceof ReactionSpecParameter)){
 				return false;
@@ -148,7 +146,24 @@ public class ReactionSpec implements ModelProcessSpec, ScopedSymbolTable, Vetoab
 			if (fieldParameterRole != smp.fieldParameterRole){
 				return false;
 			}
-			
+
+			return true;
+		}
+
+
+		@Override
+		public boolean relate(Relatable obj, RelationVisitor rv) {
+			if (!(obj instanceof ReactionSpecParameter)){
+				return false;
+			}
+			ReactionSpecParameter smp = (ReactionSpecParameter)obj;
+			if (!super.relate0(smp, rv)){
+				return false;
+			}
+			if (fieldParameterRole != smp.fieldParameterRole){
+				return false;
+			}
+
 			return true;
 		}
 

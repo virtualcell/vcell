@@ -294,6 +294,7 @@ public class XMLTags {
     public final static String FunctionTag = "Function";
     public final static String VolumeFunctionTag = "VolumeFunction";
     public final static String MembraneFunctionTag = "MembraneFunction";
+    public final static String ImportedTaskIdTag = "ImportedTaskId";
     
     public final static String AnnotatedFunctionTag = "AnnotatedFunction";
     public final static String ErrorStringTag = "ErrorString";
@@ -375,7 +376,15 @@ public class XMLTags {
     public final static String TaskDescriptionTag = "TaskDescription";
     public final static String OutputTag = "OutputTag";
     public final static String UnsteadyTag = "Unsteady";
-    // I erased the tag of Unsteadytag 
+    // to roundtrip output functions
+    public final static String SBML_VCELL_OutputFunctionTag = "OutputFunction";
+    public final static String SBML_VCELL_OutputFunctionTag_varTypeAttr = "VariableType";
+    public final static String SBML_VCELL_OutputFunctionTag_domainAttr = "Domain";
+    // to properly roundtrip renamed/rescaled authoritative rate parameters
+    public final static String SBML_VCELL_RateParamTag = "RateParameter";
+    public final static String SBML_VCELL_RateParamTag_parRoleAttr = "ParameterRole";
+    public final static String SBML_VCELL_RateParamTag_rxIDAttr = "ReactionID";
+    // I erased the tag of Unsteadytag
     public final static String SteadyTag = "Steady";
     //I erased the tag of Steadytag
     public final static String TimeStepAttrTag = "TimeStep";

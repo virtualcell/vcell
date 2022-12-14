@@ -33,8 +33,8 @@ public class RemoteRegistrationService extends AbstractService implements Regist
 		String[] parts = serverHost.split(":");
 		String host = parts[0];
 		int port = Integer.parseInt(parts[1]);
-		boolean bIgnoreCertProblems = false;
-		boolean bIgnoreHostMismatch = false;
+		boolean bIgnoreCertProblems = PropertyLoader.getBooleanProperty(PropertyLoader.sslIgnoreCertProblems,false);
+		boolean bIgnoreHostMismatch = PropertyLoader.getBooleanProperty(PropertyLoader.sslIgnoreHostMismatch,false);;
 		VCellApiClient apiClient;
 		try {
 			apiClient = new VCellApiClient(host, port, bIgnoreCertProblems, bIgnoreHostMismatch);
@@ -64,8 +64,8 @@ public class RemoteRegistrationService extends AbstractService implements Regist
 		String[] parts = serverHost.split(":");
 		String host = parts[0];
 		int port = Integer.parseInt(parts[1]);
-		boolean bIgnoreCertProblems = false;
-		boolean bIgnoreHostMismatch = false;
+		boolean bIgnoreCertProblems = PropertyLoader.getBooleanProperty(PropertyLoader.sslIgnoreCertProblems,false);
+		boolean bIgnoreHostMismatch = PropertyLoader.getBooleanProperty(PropertyLoader.sslIgnoreHostMismatch,false);;
 		VCellApiClient apiClient;
 		try {
 			apiClient = new VCellApiClient(host, port, bIgnoreCertProblems, bIgnoreHostMismatch);

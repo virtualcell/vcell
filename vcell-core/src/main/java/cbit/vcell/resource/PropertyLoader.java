@@ -35,7 +35,7 @@ public class PropertyLoader {
 	private static final HashMap<String, MetaProp> propMap = new HashMap<>( );
 	public static final String ADMINISTRATOR_ACCOUNT = "Administrator";
 	public static final String ADMINISTRATOR_ID = "2";
-
+	public static final String TESTACCOUNT_USERID = "vcellNagios";
 	public static final String propertyFileProperty			= "vcell.propertyfile";
 
 	public static final String vcellServerIDProperty        = record("vcell.server.id",ValueType.GEN);
@@ -96,6 +96,8 @@ public class PropertyLoader {
 	public static final String comsolJarDir					= record("vcell.comsol.jardir",ValueType.DIR);
 
 	public static final String vcellServerHost				= record("vcell.serverHost",ValueType.GEN);
+	public static final String sslIgnoreHostMismatch		= record("vcell.ssl.ignoreHostMismatch",ValueType.BOOL);
+	public static final String sslIgnoreCertProblems		= record("vcell.ssl.ignoreCertProblems",ValueType.BOOL);
 
 	//Python properties
 	public static final String pythonExe					= record("vcell.python.executable",ValueType.EXE);
@@ -208,7 +210,9 @@ public class PropertyLoader {
 	public static final String vcellSMTPEmailAddress = record("vcell.smtp.emailAddress",ValueType.GEN);
 
 	public static final String vcellbatch_docker_name = record("vcell.batch.docker.name",ValueType.GEN);
+	public static final String vcellsubmit_service_host = record("vcell.submit.service.host",ValueType.GEN);
 	public static final String vcellbatch_singularity_image = record("vcell.batch.singularity.image",ValueType.GEN);
+	public static final String vcellopt_singularity_image = record("vcell.opt.singularity.image",ValueType.GEN);
 	public static final String javaSimulationExecutable = record("vcell.javaSimulation.executable",ValueType.GEN);
 	public static final String simulationPreprocessor = record("vcell.simulation.preprocessor",ValueType.GEN);
 	public static final String simulationPostprocessor = record("vcell.simulation.postprocessor",ValueType.GEN);

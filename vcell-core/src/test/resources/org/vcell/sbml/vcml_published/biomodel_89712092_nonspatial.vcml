@@ -1,0 +1,603 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--This biomodel was generated in VCML Version Alpha_Version_7.4.0_build_19-->
+<vcml xmlns="http://sourceforge.net/projects/vcell/vcml" Version="Alpha_Version_7.4.0_build_19">
+    <BioModel Name="PIP2 Hydrolysis JCB Submission">
+        <Annotation>This model is intended for anlaysis of PH-GFP experiments and includes binding of the probe to both PIP2 on the plasma membrane and IP3 in the cytosol. The system is based on bradykinin induced calcium release mediated by IP3 in N1E-115 neuroblastoma cells.</Annotation>
+        <Model Name="unnamed">
+            <Compound Name="PIP2_PHGFP">
+                <Annotation>PIP2_PHGFP</Annotation>
+            </Compound>
+            <Compound Name="PH_GFP">
+                <Annotation>Pleckstrin homology domain_GFP</Annotation>
+            </Compound>
+            <Compound Name="PI">
+                <Annotation>Phosphatidylinositol</Annotation>
+            </Compound>
+            <Compound Name="stim">
+                <Annotation>stimulus</Annotation>
+            </Compound>
+            <Compound Name="IP3_PHGFP">
+                <Annotation>IP3_PHGFP</Annotation>
+            </Compound>
+            <Compound Name="PIP2">
+                <Annotation>Phosphatidylinositolbisphosphate</Annotation>
+            </Compound>
+            <Compound Name="PIP">
+                <Annotation>Phosphatidylinositol 4-phosphate</Annotation>
+            </Compound>
+            <Compound Name="DAG">
+                <Annotation>Diacylglycerol</Annotation>
+            </Compound>
+            <Compound Name="hv">
+                <Annotation>photon</Annotation>
+            </Compound>
+            <Compound Name="IP3X">
+                <Annotation>Caged_IP3</Annotation>
+            </Compound>
+            <Compound Name="PLC">
+                <Annotation>Phospholipase C</Annotation>
+            </Compound>
+            <Compound Name="PLC_act">
+                <Annotation>1-Phosphatidylinositol-4,5-bisphosphate phosphodiesterase</Annotation>
+                <SpeciesBinding KeyValue="4082649" Type="Enzyme">
+                    <DBFormalSpecies KeyValue="2965499" Type="Enzyme">
+                        <SpeciesInfo FormalID="3.1.4.11" ExpressionAttr="1-phosphatidyl-1D-myo-inositol 4,5-bisphosphate + H2O =" SysName="1-phosphatidyl-1D-myo-inositol-4,5-bisphosphateinositoltrisphosphohydrolase" CasID="37213-51-7" Type="Enzyme">
+                            <Name>phosphoinositide phospholipase C</Name>
+                            <Name>triphosphoinositide phosphodiesterase</Name>
+                            <Name>phosphoinositidase C</Name>
+                            <Name>1-phosphatidyl-D-myo-inositol-4,5-bisphosphateinositoltrisphosphohydrolase</Name>
+                            <Name>monophosphatidylinositol phosphodiesterase</Name>
+                            <Name>phosphatidylinositol phospholipase C, PI-PLC</Name>
+                            <Name>1-phosphatidylinositol-4,5-bisphosphate phosphodiesterase</Name>
+                        </SpeciesInfo>
+                    </DBFormalSpecies>
+                </SpeciesBinding>
+            </Compound>
+            <Compound Name="IP3">
+                <Annotation>Inositol-1,4,5-trisphosphate</Annotation>
+            </Compound>
+            <Feature Name="Cytosol" KeyValue="89626813" />
+            <Feature Name="Nucleus" KeyValue="89626816" />
+            <Feature Name="Extraclellular" KeyValue="89626811" />
+            <Membrane InsideFeature="Nucleus" OutsideFeature="Cytosol" PositiveFeature="Nucleus" NegativeFeature="Cytosol" MembraneVoltage="Voltage_NM" Name="NM" KeyValue="89626815" />
+            <Membrane InsideFeature="Cytosol" OutsideFeature="Extraclellular" PositiveFeature="Cytosol" NegativeFeature="Extraclellular" MembraneVoltage="Voltage_PM" Name="PM" KeyValue="89626812" />
+            <LocalizedCompound Name="PIP2_PHGFP_PM" CompoundRef="PIP2_PHGFP" Structure="PM" OverrideName="true" KeyValue="89626821" />
+            <LocalizedCompound Name="PH_GFP_Cyt" CompoundRef="PH_GFP" Structure="Cytosol" OverrideName="true" KeyValue="89626822" />
+            <LocalizedCompound Name="PI_PM" CompoundRef="PI" Structure="PM" OverrideName="true" KeyValue="89626823" />
+            <LocalizedCompound Name="stim_PM" CompoundRef="stim" Structure="PM" OverrideName="true" KeyValue="89626824" />
+            <LocalizedCompound Name="IP3_PHGFP_Cyt" CompoundRef="IP3_PHGFP" Structure="Cytosol" OverrideName="true" KeyValue="89626825" />
+            <LocalizedCompound Name="PIP2_PM" CompoundRef="PIP2" Structure="PM" OverrideName="true" KeyValue="89626826" />
+            <LocalizedCompound Name="PIP_PM" CompoundRef="PIP" Structure="PM" OverrideName="true" KeyValue="89626827" />
+            <LocalizedCompound Name="DAG_PM" CompoundRef="DAG" Structure="PM" OverrideName="true" KeyValue="89626828" />
+            <LocalizedCompound Name="hv_Cytosol" CompoundRef="hv" Structure="Cytosol" OverrideName="true" KeyValue="89626829" />
+            <LocalizedCompound Name="IP3X_Cytosol" CompoundRef="IP3X" Structure="Cytosol" OverrideName="true" KeyValue="89626830" />
+            <LocalizedCompound Name="PLC_PM" CompoundRef="PLC" Structure="PM" OverrideName="true" KeyValue="89626831" />
+            <LocalizedCompound Name="PLC_act_PM" CompoundRef="PLC_act" Structure="PM" OverrideName="true" KeyValue="89626832" />
+            <LocalizedCompound Name="IP3_Cyt" CompoundRef="IP3" Structure="Cytosol" OverrideName="true" KeyValue="89626833" />
+            <SimpleReaction Structure="Cytosol" Name="IP3_uncaging" Reversible="true" FluxOption="MolecularOnly" KeyValue="89626842">
+                <Reactant LocalizedCompoundRef="IP3X_Cytosol" Stoichiometry="1" KeyValue="89626843" />
+                <Product LocalizedCompoundRef="IP3_Cyt" Stoichiometry="1" KeyValue="89626844" />
+                <Modifier LocalizedCompoundRef="hv_Cytosol" />
+                <Kinetics KineticsType="GeneralKinetics">
+                    <Parameter Name="J_IP3_uncaging" Role="reaction rate" Unit="uM.s-1">(intensity * IP3X_Cytosol * hv_Cytosol)</Parameter>
+                    <Parameter Name="intensity" Role="user defined" Unit="uM-1.s-1">100000.0</Parameter>
+                </Kinetics>
+            </SimpleReaction>
+            <SimpleReaction Structure="PM" Name="PLCact" Reversible="true" FluxOption="MolecularOnly" KeyValue="89626846">
+                <Reactant LocalizedCompoundRef="PLC_PM" Stoichiometry="1" KeyValue="89626847" />
+                <Product LocalizedCompoundRef="PLC_act_PM" Stoichiometry="1" KeyValue="89626848" />
+                <Modifier LocalizedCompoundRef="stim_PM" />
+                <Kinetics KineticsType="GeneralKinetics">
+                    <Parameter Name="RatePLCact" Role="reaction rate" Unit="molecules.um-2.s-1">((KfPLCact * PLC_PM * stim_PM * signal) - (krPLCact * PLC_act_PM))</Parameter>
+                    <Parameter Name="I" Role="inward current density" Unit="pA.um-2">0.0</Parameter>
+                    <Parameter Name="netValence" Role="net charge valence" Unit="1">0.0</Parameter>
+                    <Parameter Name="KfPLCact" Role="user defined" Unit="tbd">1000.0</Parameter>
+                    <Parameter Name="krPLCact" Role="user defined" Unit="tbd">10.0</Parameter>
+                    <Parameter Name="signal" Role="user defined" Unit="tbd">((t &gt; tau0) * exp( - ((t - tau0) / stimdecay)))</Parameter>
+                    <Parameter Name="stimdecay" Role="user defined" Unit="tbd">6.0</Parameter>
+                    <Parameter Name="tau0" Role="user defined" Unit="tbd">0.05</Parameter>
+                </Kinetics>
+            </SimpleReaction>
+            <SimpleReaction Structure="PM" Name="PIP2_PH_hyd" Reversible="true" FluxOption="MolecularOnly" KeyValue="89626850">
+                <Reactant LocalizedCompoundRef="PIP2_PHGFP_PM" Stoichiometry="1" KeyValue="89626851" />
+                <Product LocalizedCompoundRef="PH_GFP_Cyt" Stoichiometry="1" KeyValue="89626852" />
+                <Product LocalizedCompoundRef="IP3_Cyt" Stoichiometry="1" KeyValue="89626853" />
+                <Product LocalizedCompoundRef="DAG_PM" Stoichiometry="1" KeyValue="89626854" />
+                <Modifier LocalizedCompoundRef="PLC_act_PM" />
+                <Kinetics KineticsType="GeneralKinetics">
+                    <Parameter Name="RatePIP2_PH_hyd" Role="reaction rate" Unit="molecules.um-2.s-1">(k_PIP2PHhyd * PLC_act_PM * PIP2_PHGFP_PM)</Parameter>
+                    <Parameter Name="I" Role="inward current density" Unit="pA.um-2">0.0</Parameter>
+                    <Parameter Name="netValence" Role="net charge valence" Unit="1">0.0</Parameter>
+                    <Parameter Name="k_PIP2PHhyd" Role="user defined" Unit="um2.molecules-1.s-1">50.0</Parameter>
+                </Kinetics>
+            </SimpleReaction>
+            <SimpleReaction Structure="PM" Name="PIP2_PH" Reversible="true" FluxOption="MolecularOnly" KeyValue="89626856">
+                <Reactant LocalizedCompoundRef="PH_GFP_Cyt" Stoichiometry="1" KeyValue="89626857" />
+                <Reactant LocalizedCompoundRef="PIP2_PM" Stoichiometry="1" KeyValue="89626858" />
+                <Product LocalizedCompoundRef="PIP2_PHGFP_PM" Stoichiometry="1" KeyValue="89626859" />
+                <Kinetics KineticsType="MassAction">
+                    <Parameter Name="J" Role="reaction rate" Unit="molecules.um-2.s-1">(((kf_PIP2PH * PH_GFP_Cyt) * PIP2_PM) - (kr_PIP2PH * PIP2_PHGFP_PM))</Parameter>
+                    <Parameter Name="I" Role="inward current density" Unit="pA.um-2">0.0</Parameter>
+                    <Parameter Name="netValence" Role="net charge valence" Unit="1">0.0</Parameter>
+                    <Parameter Name="kf_PIP2PH" Role="forward rate constant" Unit="s-1.uM-1">200.0</Parameter>
+                    <Parameter Name="kr_PIP2PH" Role="reverse rate constant" Unit="s-1">(kf_PIP2PH * KdPIP2PH)</Parameter>
+                    <Parameter Name="KdPIP2PH" Role="user defined" Unit="uM">2.0</Parameter>
+                </Kinetics>
+            </SimpleReaction>
+            <SimpleReaction Structure="Cytosol" Name="IP3deg" Reversible="true" FluxOption="MolecularOnly" KeyValue="89626860">
+                <Reactant LocalizedCompoundRef="IP3_Cyt" Stoichiometry="1" KeyValue="89626861" />
+                <Kinetics KineticsType="GeneralKinetics">
+                    <Parameter Name="Rate_IP3deg" Role="reaction rate" Unit="uM.s-1">(kIP3deg * (IP3_Cyt - IP3_basal))</Parameter>
+                    <Parameter Name="IP3_basal" Role="user defined" Unit="uM">0.16</Parameter>
+                    <Parameter Name="kIP3deg" Role="user defined" Unit="s-1">0.16</Parameter>
+                </Kinetics>
+            </SimpleReaction>
+            <SimpleReaction Structure="PM" Name="PIP2Syn" Reversible="true" FluxOption="MolecularOnly" KeyValue="89626862">
+                <Reactant LocalizedCompoundRef="PIP_PM" Stoichiometry="1" KeyValue="89626863" />
+                <Product LocalizedCompoundRef="PIP2_PM" Stoichiometry="1" KeyValue="89626864" />
+                <Kinetics KineticsType="GeneralKinetics">
+                    <Parameter Name="Rate_PIP2Syn" Role="reaction rate" Unit="molecules.um-2.s-1">((Rate_PIP2Synbasal + Rate_PIP2SynStim) * PIP_PM)</Parameter>
+                    <Parameter Name="I" Role="inward current density" Unit="pA.um-2">0.0</Parameter>
+                    <Parameter Name="netValence" Role="net charge valence" Unit="1">0.0</Parameter>
+                    <Parameter Name="Rate_PIP2Synbasal" Role="user defined" Unit="s-1">(0.581 * (PIP2_PM &lt; PIP2_basal) * kBasalSynPIP2 * ( - 1.0 + exp(((PIP2_basal - PIP2_PM) / PIP2_basal))))</Parameter>
+                    <Parameter Name="Rate_PIP2SynStim" Role="user defined" Unit="s-1">(kStimSynPIP2 * exp( - ((t - tauPIP2syn) / PIP2syndecay)) * (t &gt; tauPIP2syn))</Parameter>
+                    <Parameter Name="kStimSynPIP2" Role="user defined" Unit="s-1">0.01</Parameter>
+                    <Parameter Name="tauPIP2syn" Role="user defined" Unit="s">0.05</Parameter>
+                    <Parameter Name="PIP2syndecay" Role="user defined" Unit="s">10.0</Parameter>
+                    <Parameter Name="PIP2_basal" Role="user defined" Unit="molecules.um-2">1072.0</Parameter>
+                    <Parameter Name="kBasalSynPIP2" Role="user defined" Unit="s-1">0.045</Parameter>
+                </Kinetics>
+            </SimpleReaction>
+            <SimpleReaction Structure="Cytosol" Name="IP3-PHGFP" Reversible="true" FluxOption="MolecularOnly" KeyValue="89626865">
+                <Reactant LocalizedCompoundRef="IP3_Cyt" Stoichiometry="1" KeyValue="89626866" />
+                <Reactant LocalizedCompoundRef="PH_GFP_Cyt" Stoichiometry="1" KeyValue="89626867" />
+                <Product LocalizedCompoundRef="IP3_PHGFP_Cyt" Stoichiometry="1" KeyValue="89626868" />
+                <Kinetics KineticsType="MassAction">
+                    <Parameter Name="J" Role="reaction rate" Unit="uM.s-1">(((kf_IP3PH * IP3_Cyt) * PH_GFP_Cyt) - (kr_IP3PH * IP3_PHGFP_Cyt))</Parameter>
+                    <Parameter Name="kf_IP3PH" Role="forward rate constant" Unit="s-1.uM-1">100.0</Parameter>
+                    <Parameter Name="kr_IP3PH" Role="reverse rate constant" Unit="s-1">(kf_IP3PH * KdIP3PH)</Parameter>
+                    <Parameter Name="KdIP3PH" Role="user defined" Unit="uM">2.0</Parameter>
+                </Kinetics>
+            </SimpleReaction>
+            <SimpleReaction Structure="PM" Name="PIPSyn" Reversible="true" FluxOption="MolecularOnly" KeyValue="89626834">
+                <Reactant LocalizedCompoundRef="PI_PM" Stoichiometry="1" KeyValue="89626835" />
+                <Product LocalizedCompoundRef="PIP_PM" Stoichiometry="1" KeyValue="89626836" />
+                <Kinetics KineticsType="GeneralKinetics">
+                    <Parameter Name="Rate_PIPSyn" Role="reaction rate" Unit="molecules.um-2.s-1">((Ratebasal_PIPsyn + Ratestim_PIPsyn) * PI_PM)</Parameter>
+                    <Parameter Name="I" Role="inward current density" Unit="pA.um-2">0.0</Parameter>
+                    <Parameter Name="netValence" Role="net charge valence" Unit="1">0.0</Parameter>
+                    <Parameter Name="Ratestim_PIPsyn" Role="user defined" Unit="s-1">(kStimSynPIP * exp( - ((t - tauPIPsyn) / PIPsyndecay)) * (t &gt; tauPIPsyn))</Parameter>
+                    <Parameter Name="Ratebasal_PIPsyn" Role="user defined" Unit="s-1">(0.581 * (PIP_PM &lt; PIP_basal) * kBasalSynPIP * ( - 1.0 + exp(((PIP_basal - PIP_PM) / PIP_basal))))</Parameter>
+                    <Parameter Name="kBasalSynPIP" Role="user defined" Unit="s-1">0.0015</Parameter>
+                    <Parameter Name="PIP_basal" Role="user defined" Unit="molecules.um-2">2857.0</Parameter>
+                    <Parameter Name="tauPIPsyn" Role="user defined" Unit="s">0.05</Parameter>
+                    <Parameter Name="PIPsyndecay" Role="user defined" Unit="s">10.0</Parameter>
+                    <Parameter Name="kStimSynPIP" Role="user defined" Unit="s-1">0.01</Parameter>
+                </Kinetics>
+            </SimpleReaction>
+            <SimpleReaction Structure="PM" Name="PIP2_hyd" Reversible="true" FluxOption="MolecularOnly" KeyValue="89626837">
+                <Reactant LocalizedCompoundRef="PIP2_PM" Stoichiometry="1" KeyValue="89626838" />
+                <Product LocalizedCompoundRef="DAG_PM" Stoichiometry="1" KeyValue="89626839" />
+                <Product LocalizedCompoundRef="IP3_Cyt" Stoichiometry="1" KeyValue="89626840" />
+                <Modifier LocalizedCompoundRef="PLC_act_PM" />
+                <Kinetics KineticsType="GeneralKinetics">
+                    <Parameter Name="Rate_PIP2_hyd" Role="reaction rate" Unit="molecules.um-2.s-1">(k_PIP2hyd * PIP2_PM * PLC_act_PM)</Parameter>
+                    <Parameter Name="I" Role="inward current density" Unit="pA.um-2">0.0</Parameter>
+                    <Parameter Name="netValence" Role="net charge valence" Unit="1">0.0</Parameter>
+                    <Parameter Name="k_PIP2hyd" Role="user defined" Unit="um2.molecules-1.s-1">1.188</Parameter>
+                </Kinetics>
+            </SimpleReaction>
+            <Diagram Name="unnamed" Structure="Extraclellular" />
+            <Diagram Name="Membrane0" Structure="PM">
+                <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="PIP2_PHGFP_PM" LocationX="177" LocationY="305" />
+                <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="PI_PM" LocationX="49" LocationY="54" />
+                <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="stim_PM" LocationX="123" LocationY="342" />
+                <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="PIP2_PM" LocationX="25" LocationY="350" />
+                <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="PIP_PM" LocationX="66" LocationY="182" />
+                <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="DAG_PM" LocationX="331" LocationY="429" />
+                <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="PLC_PM" LocationX="143" LocationY="410" />
+                <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="PLC_act_PM" LocationX="247" LocationY="407" />
+                <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="PH_GFP_Cyt" LocationX="41" LocationY="160" />
+                <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="IP3_PHGFP_Cyt" LocationX="30" LocationY="102" />
+                <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="hv_Cytosol" LocationX="60" LocationY="50" />
+                <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="IP3X_Cytosol" LocationX="18" LocationY="49" />
+                <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="IP3_Cyt" LocationX="43" LocationY="448" />
+                <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="PIP2_PH" LocationX="274" LocationY="231" />
+                <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="PIP2Syn" LocationX="76" LocationY="247" />
+                <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="PIPSyn" LocationX="54" LocationY="122" />
+                <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="PIP2_hyd" LocationX="177" LocationY="473" />
+                <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="PLCact" LocationX="183" LocationY="395" />
+                <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="PIP2_PH_hyd" LocationX="273" LocationY="329" />
+                <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="PIP2_PHGFP_PM" LocationX="177" LocationY="305" />
+                <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="PI_PM" LocationX="49" LocationY="54" />
+                <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="stim_PM" LocationX="123" LocationY="342" />
+                <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="PIP2_PM" LocationX="25" LocationY="350" />
+                <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="PIP_PM" LocationX="66" LocationY="182" />
+                <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="DAG_PM" LocationX="331" LocationY="429" />
+                <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="PLC_PM" LocationX="143" LocationY="410" />
+                <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="PLC_act_PM" LocationX="247" LocationY="407" />
+                <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="PH_GFP_Cyt" LocationX="41" LocationY="160" />
+                <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="IP3_PHGFP_Cyt" LocationX="30" LocationY="102" />
+                <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="hv_Cytosol" LocationX="60" LocationY="50" />
+                <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="IP3X_Cytosol" LocationX="18" LocationY="49" />
+                <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="IP3_Cyt" LocationX="43" LocationY="448" />
+                <SimpleReactionShape NodeReferenceModeAttrTag="molecule" SimpleReactionRef="PIP2_PH" LocationX="274" LocationY="231" />
+                <SimpleReactionShape NodeReferenceModeAttrTag="molecule" SimpleReactionRef="PIP2Syn" LocationX="76" LocationY="247" />
+                <SimpleReactionShape NodeReferenceModeAttrTag="molecule" SimpleReactionRef="PIPSyn" LocationX="54" LocationY="122" />
+                <SimpleReactionShape NodeReferenceModeAttrTag="molecule" SimpleReactionRef="PIP2_hyd" LocationX="177" LocationY="473" />
+                <SimpleReactionShape NodeReferenceModeAttrTag="molecule" SimpleReactionRef="PLCact" LocationX="183" LocationY="395" />
+                <SimpleReactionShape NodeReferenceModeAttrTag="molecule" SimpleReactionRef="PIP2_PH_hyd" LocationX="273" LocationY="329" />
+                <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="PIP2_PHGFP_PM" LocationX="177" LocationY="305" />
+                <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="PI_PM" LocationX="49" LocationY="54" />
+                <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="stim_PM" LocationX="123" LocationY="342" />
+                <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="PIP2_PM" LocationX="25" LocationY="350" />
+                <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="PIP_PM" LocationX="66" LocationY="182" />
+                <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="DAG_PM" LocationX="331" LocationY="429" />
+                <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="PLC_PM" LocationX="143" LocationY="410" />
+                <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="PLC_act_PM" LocationX="247" LocationY="407" />
+                <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="PH_GFP_Cyt" LocationX="41" LocationY="160" />
+                <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="IP3_PHGFP_Cyt" LocationX="30" LocationY="102" />
+                <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="hv_Cytosol" LocationX="60" LocationY="50" />
+                <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="IP3X_Cytosol" LocationX="18" LocationY="49" />
+                <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="IP3_Cyt" LocationX="43" LocationY="448" />
+                <SimpleReactionShape NodeReferenceModeAttrTag="rule" SimpleReactionRef="PIP2_PH" LocationX="274" LocationY="231" />
+                <SimpleReactionShape NodeReferenceModeAttrTag="rule" SimpleReactionRef="PIP2Syn" LocationX="76" LocationY="247" />
+                <SimpleReactionShape NodeReferenceModeAttrTag="rule" SimpleReactionRef="PIPSyn" LocationX="54" LocationY="122" />
+                <SimpleReactionShape NodeReferenceModeAttrTag="rule" SimpleReactionRef="PIP2_hyd" LocationX="177" LocationY="473" />
+                <SimpleReactionShape NodeReferenceModeAttrTag="rule" SimpleReactionRef="PLCact" LocationX="183" LocationY="395" />
+                <SimpleReactionShape NodeReferenceModeAttrTag="rule" SimpleReactionRef="PIP2_PH_hyd" LocationX="273" LocationY="329" />
+            </Diagram>
+            <Diagram Name="Feature0" Structure="Cytosol">
+                <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="IP3_Cyt" LocationX="153" LocationY="155" />
+                <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="PLC_Cyt" LocationX="27" LocationY="21" />
+                <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="PH_GFP_Cyt" LocationX="107" LocationY="286" />
+                <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="IP3_PHGFP_Cyt" LocationX="321" LocationY="233" />
+                <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="hv_Cytosol" LocationX="110" LocationY="39" />
+                <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="IP3X_Cytosol" LocationX="36" LocationY="79" />
+                <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="IP3deg" LocationX="249" LocationY="97" />
+                <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="IP3-PHGFP" LocationX="206" LocationY="229" />
+                <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="reaction0" LocationX="80" LocationY="102" />
+                <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="IP3_Cyt" LocationX="153" LocationY="155" />
+                <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="PLC_Cyt" LocationX="27" LocationY="21" />
+                <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="PH_GFP_Cyt" LocationX="107" LocationY="286" />
+                <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="IP3_PHGFP_Cyt" LocationX="321" LocationY="233" />
+                <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="hv_Cytosol" LocationX="110" LocationY="39" />
+                <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="IP3X_Cytosol" LocationX="36" LocationY="79" />
+                <SimpleReactionShape NodeReferenceModeAttrTag="molecule" SimpleReactionRef="IP3deg" LocationX="249" LocationY="97" />
+                <SimpleReactionShape NodeReferenceModeAttrTag="molecule" SimpleReactionRef="IP3-PHGFP" LocationX="206" LocationY="229" />
+                <SimpleReactionShape NodeReferenceModeAttrTag="molecule" SimpleReactionRef="reaction0" LocationX="80" LocationY="102" />
+                <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="IP3_Cyt" LocationX="153" LocationY="155" />
+                <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="PLC_Cyt" LocationX="27" LocationY="21" />
+                <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="PH_GFP_Cyt" LocationX="107" LocationY="286" />
+                <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="IP3_PHGFP_Cyt" LocationX="321" LocationY="233" />
+                <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="hv_Cytosol" LocationX="110" LocationY="39" />
+                <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="IP3X_Cytosol" LocationX="36" LocationY="79" />
+                <SimpleReactionShape NodeReferenceModeAttrTag="rule" SimpleReactionRef="IP3deg" LocationX="249" LocationY="97" />
+                <SimpleReactionShape NodeReferenceModeAttrTag="rule" SimpleReactionRef="IP3-PHGFP" LocationX="206" LocationY="229" />
+                <SimpleReactionShape NodeReferenceModeAttrTag="rule" SimpleReactionRef="reaction0" LocationX="80" LocationY="102" />
+            </Diagram>
+            <Diagram Name="Membrane0" Structure="NM" />
+            <Diagram Name="Feature0" Structure="Nucleus" />
+            <Version Name="unnamed" KeyValue="89626796" BranchId="5062251" Archived="0" Date="14-Jul-2014 12:46:52" FromVersionable="false">
+                <Owner Name="les" Identifier="6" />
+                <GroupAccess Type="1" />
+            </Version>
+            <ModelUnitSystem VolumeSubstanceUnit="uM.um3" MembraneSubstanceUnit="molecules" LumpedReactionSubstanceUnit="molecules" VolumeUnit="um3" AreaUnit="um2" LengthUnit="um" TimeUnit="s" />
+        </Model>
+        <SimulationSpec Name="uncaging" Stochastic="false" UseConcentration="true" RuleBased="false" MassConservationModelReduction="true" InsufficientIterations="false" InsufficientMaxMolecules="false">
+            <NetworkConstraints RbmMaxIteration="1" RbmMaxMoleculesPerSpecies="10" RbmSpeciesLimit="800" RbmReactionsLimit="2500" />
+            <Annotation>(copied from Average Exp Params - Comp) (copied from SS for Exp params) (copied from steady state compartment) </Annotation>
+            <Geometry Name="steady state compartment" Dimension="0">
+                <Extent X="10.0" Y="10.0" Z="10.0" />
+                <Origin X="0.0" Y="0.0" Z="0.0" />
+                <SubVolume Name="Compartment" Handle="0" Type="Compartmental" KeyValue="2718802" />
+                <Version Name="steady state compartment" KeyValue="2718799" BranchId="5059679" Archived="0" Date="11-Jul-2002 10:20:45" FromVersionable="false">
+                    <Owner Name="les" Identifier="6" />
+                    <GroupAccess Type="1" />
+                </Version>
+            </Geometry>
+            <GeometryContext>
+                <FeatureMapping Feature="Cytosol" GeometryClass="Compartment" SubVolume="Compartment">
+                    <BoundariesTypes Xm="Value" Xp="Value" Ym="Value" Yp="Value" Zm="Value" Zp="Value" />
+                </FeatureMapping>
+                <FeatureMapping Feature="Nucleus" GeometryClass="Compartment" SubVolume="Compartment">
+                    <BoundariesTypes Xm="Value" Xp="Value" Ym="Value" Yp="Value" Zm="Value" Zp="Value" />
+                </FeatureMapping>
+                <FeatureMapping Feature="Extraclellular" GeometryClass="Compartment" SubVolume="Compartment">
+                    <BoundariesTypes Xm="Value" Xp="Value" Ym="Value" Yp="Value" Zm="Value" Zp="Value" />
+                </FeatureMapping>
+                <MembraneMapping Membrane="NM" SurfaceToVolumeRatio="1.0" VolumeFraction="0.1" CalculateVoltage="false" SpecificCapacitance="0.01" InitialVoltage="0.0" GeometryClass="Compartment" />
+                <MembraneMapping Membrane="PM" SurfaceToVolumeRatio="0.263" VolumeFraction="0.8" CalculateVoltage="false" SpecificCapacitance="0.01" InitialVoltage="0.0" GeometryClass="Compartment" />
+            </GeometryContext>
+            <ReactionContext>
+                <LocalizedCompoundSpec LocalizedCompoundRef="PH_GFP_Cyt" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+                    <InitialConcentration>2.30769</InitialConcentration>
+                    <Diffusion>0.0</Diffusion>
+                </LocalizedCompoundSpec>
+                <LocalizedCompoundSpec LocalizedCompoundRef="IP3_PHGFP_Cyt" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+                    <InitialConcentration>3.6923</InitialConcentration>
+                    <Diffusion>0.0</Diffusion>
+                </LocalizedCompoundSpec>
+                <LocalizedCompoundSpec LocalizedCompoundRef="hv_Cytosol" ForceConstant="true" WellMixed="false" ForceContinuous="false">
+                    <InitialConcentration>1.0</InitialConcentration>
+                    <Diffusion>0.0</Diffusion>
+                </LocalizedCompoundSpec>
+                <LocalizedCompoundSpec LocalizedCompoundRef="IP3X_Cytosol" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+                    <InitialConcentration>1.01446</InitialConcentration>
+                    <Diffusion>0.0</Diffusion>
+                </LocalizedCompoundSpec>
+                <LocalizedCompoundSpec LocalizedCompoundRef="IP3_Cyt" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+                    <InitialConcentration>0.16</InitialConcentration>
+                    <Diffusion>0.0</Diffusion>
+                </LocalizedCompoundSpec>
+                <LocalizedCompoundSpec LocalizedCompoundRef="PIP2_PHGFP_PM" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+                    <InitialConcentration>4617.4</InitialConcentration>
+                    <Diffusion>0.0</Diffusion>
+                </LocalizedCompoundSpec>
+                <LocalizedCompoundSpec LocalizedCompoundRef="PI_PM" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+                    <InitialConcentration>142857.0</InitialConcentration>
+                    <Diffusion>0.0</Diffusion>
+                </LocalizedCompoundSpec>
+                <LocalizedCompoundSpec LocalizedCompoundRef="stim_PM" ForceConstant="true" WellMixed="false" ForceContinuous="false">
+                    <InitialConcentration>1.0</InitialConcentration>
+                    <Diffusion>0.0</Diffusion>
+                </LocalizedCompoundSpec>
+                <LocalizedCompoundSpec LocalizedCompoundRef="PIP2_PM" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+                    <InitialConcentration>4000.0</InitialConcentration>
+                    <Diffusion>0.0</Diffusion>
+                </LocalizedCompoundSpec>
+                <LocalizedCompoundSpec LocalizedCompoundRef="PIP_PM" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+                    <InitialConcentration>2857.0</InitialConcentration>
+                    <Diffusion>0.0</Diffusion>
+                </LocalizedCompoundSpec>
+                <LocalizedCompoundSpec LocalizedCompoundRef="DAG_PM" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+                    <InitialConcentration>2000.0</InitialConcentration>
+                    <Diffusion>0.0</Diffusion>
+                </LocalizedCompoundSpec>
+                <LocalizedCompoundSpec LocalizedCompoundRef="PLC_PM" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+                    <InitialConcentration>100.0</InitialConcentration>
+                    <Diffusion>0.0</Diffusion>
+                </LocalizedCompoundSpec>
+                <LocalizedCompoundSpec LocalizedCompoundRef="PLC_act_PM" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+                    <InitialConcentration>0.0</InitialConcentration>
+                    <Diffusion>0.0</Diffusion>
+                </LocalizedCompoundSpec>
+                <ReactionSpec ReactionStepRef="IP3_uncaging" ReactionMapping="included" />
+                <ReactionSpec ReactionStepRef="PLCact" ReactionMapping="included" />
+                <ReactionSpec ReactionStepRef="PIP2_PH_hyd" ReactionMapping="included" />
+                <ReactionSpec ReactionStepRef="PIP2_PH" ReactionMapping="included" />
+                <ReactionSpec ReactionStepRef="IP3deg" ReactionMapping="included" />
+                <ReactionSpec ReactionStepRef="PIP2Syn" ReactionMapping="excluded" />
+                <ReactionSpec ReactionStepRef="IP3-PHGFP" ReactionMapping="included" />
+                <ReactionSpec ReactionStepRef="PIPSyn" ReactionMapping="excluded" />
+                <ReactionSpec ReactionStepRef="PIP2_hyd" ReactionMapping="excluded" />
+            </ReactionContext>
+            <MathDescription Name="Average Exp Params - fast off">
+                <Constant Name="_F_">96480.0</Constant>
+                <Constant Name="_F_nmol_">9.648E-5</Constant>
+                <Constant Name="_K_GHK_">1.0E-9</Constant>
+                <Constant Name="_N_pmol_">6.02E11</Constant>
+                <Constant Name="_PI_">3.141592653589793</Constant>
+                <Constant Name="_R_">8314.0</Constant>
+                <Constant Name="_T_">300.0</Constant>
+                <Constant Name="DAG_PM_init_molecules_um_2">2000.0</Constant>
+                <Constant Name="hv_Cytosol">1.0</Constant>
+                <Constant Name="hv_Cytosol_init_uM">1.0</Constant>
+                <Constant Name="intensity">100000.0</Constant>
+                <Constant Name="IP3_basal">0.16</Constant>
+                <Constant Name="IP3_Cyt_init_uM">0.16</Constant>
+                <Constant Name="IP3_PHGFP_Cyt_init_uM">3.6923</Constant>
+                <Constant Name="IP3X_Cytosol_init_uM">1.01446</Constant>
+                <Constant Name="K_millivolts_per_volt">1000.0</Constant>
+                <Constant Name="k_PIP2PHhyd">50.0</Constant>
+                <Constant Name="KdIP3PH">2.0</Constant>
+                <Constant Name="KdPIP2PH">2.0</Constant>
+                <Constant Name="kf_IP3PH">100.0</Constant>
+                <Constant Name="kf_PIP2PH">200.0</Constant>
+                <Constant Name="KfPLCact">1000.0</Constant>
+                <Constant Name="kIP3deg">0.16</Constant>
+                <Constant Name="KMOLE">0.0016611295681063123</Constant>
+                <Constant Name="krPLCact">10.0</Constant>
+                <Constant Name="PH_GFP_Cyt_init_uM">2.30769</Constant>
+                <Constant Name="PI_PM_init_molecules_um_2">142857.0</Constant>
+                <Constant Name="PIP2_PHGFP_PM_init_molecules_um_2">4617.4</Constant>
+                <Constant Name="PIP2_PM_init_molecules_um_2">4000.0</Constant>
+                <Constant Name="PIP_PM_init_molecules_um_2">2857.0</Constant>
+                <Constant Name="PLC_act_PM_init_molecules_um_2">0.0</Constant>
+                <Constant Name="PLC_PM_init_molecules_um_2">100.0</Constant>
+                <Constant Name="stim_PM">1.0</Constant>
+                <Constant Name="stim_PM_init_molecules_um_2">1.0</Constant>
+                <Constant Name="stimdecay">6.0</Constant>
+                <Constant Name="SurfToVol_NM">1.0</Constant>
+                <Constant Name="SurfToVol_PM">0.263</Constant>
+                <Constant Name="tau0">0.05</Constant>
+                <Constant Name="VolFract_Cytosol">0.8</Constant>
+                <Constant Name="VolFract_Nucleus">0.1</Constant>
+                <Constant Name="Voltage_NM">0.0</Constant>
+                <Constant Name="Voltage_PM">0.0</Constant>
+                <VolumeVariable Name="DAG_PM" Domain="Compartment" />
+                <VolumeVariable Name="IP3_Cyt" Domain="Compartment" />
+                <VolumeVariable Name="IP3_PHGFP_Cyt" Domain="Compartment" />
+                <VolumeVariable Name="IP3X_Cytosol" Domain="Compartment" />
+                <VolumeVariable Name="PIP2_PM" Domain="Compartment" />
+                <VolumeVariable Name="PLC_act_PM" Domain="Compartment" />
+                <Function Name="J_IP3_PHGFP" Domain="Compartment">((PH_GFP_Cyt * kf_IP3PH * IP3_Cyt) - (kr_IP3PH * IP3_PHGFP_Cyt))</Function>
+                <Function Name="J_IP3_uncaging" Domain="Compartment">(intensity * IP3X_Cytosol * hv_Cytosol)</Function>
+                <Function Name="J_PIP2_PH" Domain="Compartment">((PIP2_PM * kf_PIP2PH * PH_GFP_Cyt) - (kr_PIP2PH * PIP2_PHGFP_PM))</Function>
+                <Function Name="K_PH_GFP_Cyt_total" Domain="Compartment">( - (DAG_PM_init_molecules_um_2 * SurfToVol_PM * VolFract_Cytosol * KMOLE) - (PIP2_PM_init_molecules_um_2 * SurfToVol_PM * VolFract_Cytosol * KMOLE) + (PH_GFP_Cyt_init_uM * (1.0 - VolFract_Nucleus) * VolFract_Cytosol) + (IP3_PHGFP_Cyt_init_uM * (1.0 - VolFract_Nucleus) * VolFract_Cytosol))</Function>
+                <Function Name="K_PI_PM_total" Domain="Compartment">(PI_PM_init_molecules_um_2 * SurfToVol_PM * VolFract_Cytosol * KMOLE)</Function>
+                <Function Name="K_PIP2_PHGFP_PM_total" Domain="Compartment">((DAG_PM_init_molecules_um_2 * SurfToVol_PM * VolFract_Cytosol * KMOLE) + (PIP2_PHGFP_PM_init_molecules_um_2 * SurfToVol_PM * VolFract_Cytosol * KMOLE) + (PIP2_PM_init_molecules_um_2 * SurfToVol_PM * VolFract_Cytosol * KMOLE))</Function>
+                <Function Name="K_PIP_PM_total" Domain="Compartment">(PIP_PM_init_molecules_um_2 * SurfToVol_PM * VolFract_Cytosol * KMOLE)</Function>
+                <Function Name="K_PLC_PM_total" Domain="Compartment">((PLC_PM_init_molecules_um_2 * SurfToVol_PM * VolFract_Cytosol * KMOLE) + (PLC_act_PM_init_molecules_um_2 * SurfToVol_PM * VolFract_Cytosol * KMOLE))</Function>
+                <Function Name="KFlux_NM_Cytosol" Domain="Compartment">(SurfToVol_NM * VolFract_Nucleus / (1.0 - VolFract_Nucleus))</Function>
+                <Function Name="KFlux_NM_Nucleus" Domain="Compartment">SurfToVol_NM</Function>
+                <Function Name="KFlux_PM_Cytosol" Domain="Compartment">(SurfToVol_PM / (1.0 - VolFract_Nucleus))</Function>
+                <Function Name="KFlux_PM_Extraclellular" Domain="Compartment">(SurfToVol_PM * VolFract_Cytosol / (1.0 - VolFract_Cytosol))</Function>
+                <Function Name="kr_IP3PH" Domain="Compartment">(kf_IP3PH * KdIP3PH)</Function>
+                <Function Name="kr_PIP2PH" Domain="Compartment">(kf_PIP2PH * KdPIP2PH)</Function>
+                <Function Name="PH_GFP_Cyt" Domain="Compartment">(((DAG_PM * SurfToVol_PM * VolFract_Cytosol * KMOLE) + (PIP2_PM * SurfToVol_PM * VolFract_Cytosol * KMOLE) + K_PH_GFP_Cyt_total - (IP3_PHGFP_Cyt * (1.0 - VolFract_Nucleus) * VolFract_Cytosol)) / ((1.0 - VolFract_Nucleus) * VolFract_Cytosol))</Function>
+                <Function Name="PI_PM" Domain="Compartment">(K_PI_PM_total / (SurfToVol_PM * VolFract_Cytosol * KMOLE))</Function>
+                <Function Name="PIP2_PHGFP_PM" Domain="Compartment">(( - (DAG_PM * SurfToVol_PM * VolFract_Cytosol * KMOLE) + K_PIP2_PHGFP_PM_total - (PIP2_PM * SurfToVol_PM * VolFract_Cytosol * KMOLE)) / (SurfToVol_PM * VolFract_Cytosol * KMOLE))</Function>
+                <Function Name="PIP_PM" Domain="Compartment">(K_PIP_PM_total / (SurfToVol_PM * VolFract_Cytosol * KMOLE))</Function>
+                <Function Name="PLC_PM" Domain="Compartment">((K_PLC_PM_total - (PLC_act_PM * SurfToVol_PM * VolFract_Cytosol * KMOLE)) / (SurfToVol_PM * VolFract_Cytosol * KMOLE))</Function>
+                <Function Name="Rate_IP3deg" Domain="Compartment">(kIP3deg * (IP3_Cyt - IP3_basal))</Function>
+                <Function Name="RatePIP2_PH_hyd" Domain="Compartment">(k_PIP2PHhyd * PLC_act_PM * PIP2_PHGFP_PM)</Function>
+                <Function Name="RatePLCact" Domain="Compartment">((KfPLCact * PLC_PM * stim_PM * signal) - (krPLCact * PLC_act_PM))</Function>
+                <Function Name="signal" Domain="Compartment">((t &gt; tau0) * exp( - ((t - tau0) / stimdecay)))</Function>
+                <CompartmentSubDomain Name="Compartment">
+                    <BoundaryType Boundary="Xm" Type="Value" />
+                    <BoundaryType Boundary="Xp" Type="Value" />
+                    <BoundaryType Boundary="Ym" Type="Value" />
+                    <BoundaryType Boundary="Yp" Type="Value" />
+                    <BoundaryType Boundary="Zm" Type="Value" />
+                    <BoundaryType Boundary="Zp" Type="Value" />
+                    <OdeEquation Name="IP3_PHGFP_Cyt" SolutionType="Unknown">
+                        <Rate>J_IP3_PHGFP</Rate>
+                        <Initial>IP3_PHGFP_Cyt_init_uM</Initial>
+                    </OdeEquation>
+                    <OdeEquation Name="IP3X_Cytosol" SolutionType="Unknown">
+                        <Rate> - J_IP3_uncaging</Rate>
+                        <Initial>IP3X_Cytosol_init_uM</Initial>
+                    </OdeEquation>
+                    <OdeEquation Name="IP3_Cyt" SolutionType="Unknown">
+                        <Rate>( - J_IP3_PHGFP - Rate_IP3deg + J_IP3_uncaging + (KFlux_PM_Cytosol * KMOLE * RatePIP2_PH_hyd))</Rate>
+                        <Initial>IP3_Cyt_init_uM</Initial>
+                    </OdeEquation>
+                    <OdeEquation Name="PIP2_PM" SolutionType="Unknown">
+                        <Rate> - J_PIP2_PH</Rate>
+                        <Initial>PIP2_PM_init_molecules_um_2</Initial>
+                    </OdeEquation>
+                    <OdeEquation Name="DAG_PM" SolutionType="Unknown">
+                        <Rate>RatePIP2_PH_hyd</Rate>
+                        <Initial>DAG_PM_init_molecules_um_2</Initial>
+                    </OdeEquation>
+                    <OdeEquation Name="PLC_act_PM" SolutionType="Unknown">
+                        <Rate>RatePLCact</Rate>
+                        <Initial>PLC_act_PM_init_molecules_um_2</Initial>
+                    </OdeEquation>
+                </CompartmentSubDomain>
+                <Version Name="Average Exp Params - fast off" KeyValue="89626788" BranchId="5061135" Archived="0" Date="14-Jul-2014 12:46:52" FromVersionable="false">
+                    <Owner Name="les" Identifier="6" />
+                    <GroupAccess Type="1" />
+                </Version>
+            </MathDescription>
+            <Simulation Name="First Try">
+                <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="CVODE (Variable Order, Variable Time Step)">
+                    <TimeBound StartTime="0.0" EndTime="220.0" />
+                    <TimeStep DefaultTime="0.001" MinTime="1.0E-13" MaxTime="1.0" />
+                    <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+                    <OutputOptions KeepEvery="10" KeepAtMost="1000" />
+                    <NumberProcessors>1</NumberProcessors>
+                </SolverTaskDescription>
+                <MathOverrides>
+                    <Constant Name="tau0">0.0</Constant>
+                    <Constant Name="SurfToVol_PM">0.5</Constant>
+                    <Constant Name="kf_IP3PH">10.0</Constant>
+                    <Constant Name="KdIP3PH">0.1</Constant>
+                    <Constant Name="kIP3deg">0.08</Constant>
+                    <Constant Name="stim_PM_init_molecules_um_2">0.0</Constant>
+                    <Constant Name="k_PIP2PHhyd">0.0</Constant>
+                    <Constant Name="kf_PIP2PH">0.12</Constant>
+                    <Constant Name="stim_PM">0.0</Constant>
+                    <Constant Name="KfPLCact">0.0</Constant>
+                </MathOverrides>
+                <Version Name="First Try" KeyValue="89627062" BranchId="5065738" Archived="0" Date="14-Jul-2014 12:46:55" FromVersionable="false">
+                    <Owner Name="les" Identifier="6" />
+                    <GroupAccess Type="1" />
+                    <ParentSimRef KeyValue="4235988" />
+                </Version>
+            </Simulation>
+            <Version Name="uncaging" KeyValue="89626932" BranchId="5063273" Archived="0" Date="14-Jul-2014 12:46:54" FromVersionable="false">
+                <Owner Name="les" Identifier="6" />
+                <GroupAccess Type="1" />
+                <Annotation>(copied from Average Exp Params - Comp) (copied from SS for Exp params) (copied from steady state compartment) </Annotation>
+            </Version>
+            <MicroscopeMeasurement Name="fluor">
+                <ConvolutionKernel Type="ProjectionZKernel" />
+            </MicroscopeMeasurement>
+        </SimulationSpec>
+        <Version Name="PIP2 Hydrolysis JCB Submission" KeyValue="89712092" BranchId="4234506" Archived="0" Date="18-Jul-2014 08:08:01" FromVersionable="false">
+            <Owner Name="les" Identifier="6" />
+            <GroupAccess Type="0" />
+            <Annotation>This model is intended for anlaysis of PH-GFP experiments and includes binding of the probe to both PIP2 on the plasma membrane and IP3 in the cytosol. The system is based on bradykinin induced calcium release mediated by IP3 in N1E-115 neuroblastoma cells.</Annotation>
+        </Version>
+        <pathwayModel>
+            <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bp="http://www.biopax.org/release/biopax-level3.owl#" version="3.0">
+                <DiagramObjectsID xmlns="">http://vcell.org/biopax/#BIOMODEL_PLC_act</DiagramObjectsID>
+                <bp:PhysicalEntity rdf:nodeID="BIOMODEL_PLC_act">
+                    <bp:name rdf:datatype="http://www.w3.org/2001/XMLSchema#string">PLC_act</bp:name>
+                    <bp:xref rdf:nodeID="ec-code_3.1.4.11" />
+                </bp:PhysicalEntity>
+                <bp:UnificationXref rdf:nodeID="ec-code_3.1.4.11">
+                    <bp:db rdf:datatype="http://www.w3.org/2001/XMLSchema#string">EC-CODE</bp:db>
+                    <bp:id rdf:datatype="http://www.w3.org/2001/XMLSchema#string">3.1.4.11</bp:id>
+                </bp:UnificationXref>
+            </rdf:RDF>
+        </pathwayModel>
+        <relationshipModel>
+            <RMNS version="3.0">
+                <RelationshipObject bioPaxObjectID="BioPaxObject(BIOMODEL_PLC_act)" bioModelObjectID="SpeciesContext(PLC_act_PM)" />
+            </RMNS>
+        </relationshipModel>
+        <vcmetadata>
+            <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                <rdf:Description rdf:about="http://sourceforge.net/projects/vcell/vcml/cbit.vcell.model.Species/1858689904">
+                    <bqbiol:isVersionOf xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+                        <rdf:Bag rdf:nodeID="node0">
+                            <rdf:_1>
+                                <rdf:Description rdf:about="urn:miriam:ec-code:3.1.4.11" />
+                            </rdf:_1>
+                        </rdf:Bag>
+                    </bqbiol:isVersionOf>
+                </rdf:Description>
+            </rdf:RDF>
+            <nonrdfAnnotationList>
+                <nonrdfAnnotation vcid="Species(IP3X)">
+                    <freetext>Caged_IP3</freetext>
+                </nonrdfAnnotation>
+                <nonrdfAnnotation vcid="Species(PI)">
+                    <freetext>Phosphatidylinositol</freetext>
+                </nonrdfAnnotation>
+                <nonrdfAnnotation vcid="Species(IP3_PHGFP)">
+                    <freetext>IP3_PHGFP</freetext>
+                </nonrdfAnnotation>
+                <nonrdfAnnotation vcid="Species(IP3)">
+                    <freetext>Inositol-1,4,5-trisphosphate</freetext>
+                </nonrdfAnnotation>
+                <nonrdfAnnotation vcid="Species(PIP2)">
+                    <freetext>Phosphatidylinositolbisphosphate</freetext>
+                </nonrdfAnnotation>
+                <nonrdfAnnotation vcid="Species(hv)">
+                    <freetext>photon</freetext>
+                </nonrdfAnnotation>
+                <nonrdfAnnotation vcid="Species(DAG)">
+                    <freetext>Diacylglycerol</freetext>
+                </nonrdfAnnotation>
+                <nonrdfAnnotation vcid="Species(PIP)">
+                    <freetext>Phosphatidylinositol 4-phosphate</freetext>
+                </nonrdfAnnotation>
+                <nonrdfAnnotation vcid="Species(PLC)">
+                    <freetext>Phospholipase C</freetext>
+                </nonrdfAnnotation>
+                <nonrdfAnnotation vcid="Species(PH_GFP)">
+                    <freetext>Pleckstrin homology domain_GFP</freetext>
+                </nonrdfAnnotation>
+                <nonrdfAnnotation vcid="Species(PLC_act)">
+                    <freetext>1-Phosphatidylinositol-4,5-bisphosphate phosphodiesterase</freetext>
+                </nonrdfAnnotation>
+                <nonrdfAnnotation vcid="BioModel(PIP2 Hydrolysis JCB Submission)">
+                    <freetext>This model is intended for anlaysis of PH-GFP experiments and includes binding of the probe to both PIP2 on the plasma membrane and IP3 in the cytosol. The system is based on bradykinin induced calcium release mediated by IP3 in N1E-115 neuroblastoma cells.</freetext>
+                </nonrdfAnnotation>
+                <nonrdfAnnotation vcid="Species(stim)">
+                    <freetext>stimulus</freetext>
+                </nonrdfAnnotation>
+                <nonrdfAnnotation vcid="Species(PIP2_PHGFP)">
+                    <freetext>PIP2_PHGFP</freetext>
+                </nonrdfAnnotation>
+            </nonrdfAnnotationList>
+            <uriBindingList>
+                <uriBinding uri="http://sourceforge.net/projects/vcell/vcml/cbit.vcell.model.Species/1858689904" vcid="Species(PLC_act)" />
+            </uriBindingList>
+        </vcmetadata>
+    </BioModel>
+</vcml>

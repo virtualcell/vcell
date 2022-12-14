@@ -10,6 +10,8 @@
 
 package cbit.vcell.model;
 import org.vcell.util.Matchable;
+import org.vcell.util.Relatable;
+import org.vcell.util.RelationVisitor;
 import org.vcell.util.document.KeyValue;
 
 
@@ -26,22 +28,28 @@ Reactant(KeyValue key, ReactionStep reactionStep) {
 
 public Reactant(KeyValue key, ReactionStep parent,SpeciesContext speciesContext,int stoichiometry){
 	super(key, parent,speciesContext,stoichiometry);
-}   
-
-
-/**
- * This method was created in VisualAge.
- * @return boolean
- * @param obj java.lang.Object
- */
-public boolean compareEqual(Matchable obj) {
-	if (obj instanceof Reactant){
-		Reactant r = (Reactant)obj;
-		return compareEqual0(r);
-	}else{
-		return false;
-	}
 }
+
+
+	@Override
+	public boolean compareEqual(Matchable obj) {
+		if (obj instanceof Reactant){
+			Reactant r = (Reactant)obj;
+			return compareEqual0(r);
+		}else{
+			return false;
+		}
+	}
+
+	@Override
+	public boolean relate(Relatable obj, RelationVisitor rv) {
+		if (obj instanceof Reactant){
+			Reactant r = (Reactant)obj;
+			return relate0(r, rv);
+		}else{
+			return false;
+		}
+	}
 
 
 /**

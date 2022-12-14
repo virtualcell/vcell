@@ -109,7 +109,9 @@ public class SBMLAnnotationUtil {
 				if(metaID != null && !metaID.isEmpty() && Character.isDigit(metaID.charAt(0))) {
 					// we attempt a correction here for the existing old metaid (if it starts with a number)
 					// and hope for the best, no guarantees that it will work in all cases
-					metaID = "metaid_" + metaID;
+					metaID = sBase.getId() + metaID;
+				} else if (metaID != null && metaID.startsWith("metaid_")) {
+					metaID = sBase.getId()+metaID.substring(7);
 				}
 				sBase.setMetaId(metaID);
 			}
@@ -166,7 +168,7 @@ public class SBMLAnnotationUtil {
 				strRdfAnnotations = XmlUtil.xmlToString(element);
 				// COPASI doesn't understand our metaid namespace, so we just replace it with a #
 				String olds = "http://sourceforge.net/projects/vcell/vcml/cbit.vcell.model.Species/metaid_";
-				String news = "#metaid_";
+				String news = "#"+sBase.getId();
 				strRdfAnnotations = strRdfAnnotations.replace(olds, news);
 				// TODO: for some reason, converting strRdfAnnotations directly to rootRDF node through XMLNode.convertStringToXMLNode isn't working
 				// we need to use the trick below to create a temp root annotation and extract the rootRdf node from it

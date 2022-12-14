@@ -211,18 +211,10 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		AsynchClientTask task0 = new AsynchClientTask("Renaming Functions", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING, false, false) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				MathMappingCallback callback = new MathMappingCallback() {
-					@Override
-					public void setProgressFraction(float fractionDone) { }
-					@Override
-					public void setMessage(String message) { }
-					@Override
-					public boolean isInterrupted() { return false; }
-				};
-				MathMapping mathMapping = simulationContext.createNewMathMapping(callback, NetworkGenerationRequirements.ComputeFullNoTimeout);
+				MathMapping mathMapping = simulationContext.createNewMathMapping();
 				MathDescription mathDesc = null;
 				try {
-					mathDesc = mathMapping.getMathDescription(callback);
+					mathDesc = mathMapping.getMathDescription();
 				} catch (MappingException | MathException | MatrixException | ExpressionException | ModelException e1) {
 					e1.printStackTrace();
 				}

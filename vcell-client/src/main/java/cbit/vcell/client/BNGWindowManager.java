@@ -48,6 +48,7 @@ import cbit.vcell.model.ReactionStep;
 import cbit.vcell.server.bionetgen.BNGExecutorService;
 import cbit.vcell.server.bionetgen.BNGInput;
 import cbit.vcell.xml.ExternalDocInfo;
+import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 
 /**
@@ -167,8 +168,7 @@ public void importSbml(String bngSbmlStr) {
 		XmlUtil.writeXMLStringToFile(modifiedSbmlStr, sbmlFile.getAbsolutePath(), true);
 
 		boolean bValidateSBML = true;
-		org.vcell.sbml.vcell.SBMLImporter sbmlImporter = new SBMLImporter(sbmlFile.getAbsolutePath(), logger, bValidateSBML);
-		BioModel bioModel = sbmlImporter.getBioModel();
+		BioModel bioModel = XmlHelper.importSBML(logger, new XMLSource(sbmlFile), bValidateSBML);
 		
 		// enforce 'cleaner looking' units on vc biomodel (the process of adding unit defintion to sbml model messes up the units, though they are correct units (eg., 1e-6m for um).
 		BioModel modifiedBiomodel = ModelUnitConverter.createBioModelWithNewUnitSystem(bioModel, forcedModelUnitSystem);
@@ -177,7 +177,7 @@ public void importSbml(String bngSbmlStr) {
 		for (ReactionStep rs : modifiedBiomodel.getModel().getReactionSteps()) {
 			Kinetics kinetics = rs.getKinetics();
 			if (kinetics instanceof LumpedKinetics) {
-				rs.setKinetics(DistributedKinetics.toDistributedKinetics((LumpedKinetics)kinetics));
+				rs.setKinetics(DistributedKinetics.toDistributedKinetics((LumpedKinetics)kinetics, false));
 			}
 		}
 

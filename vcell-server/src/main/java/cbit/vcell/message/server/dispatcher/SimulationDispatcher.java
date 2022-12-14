@@ -37,7 +37,6 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.PermissionException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
-import org.vcell.util.document.User.SPECIALS;
 import org.vcell.util.document.VCellServerID;
 import org.vcell.util.exe.ExecutableException;
 
@@ -258,11 +257,11 @@ public class SimulationDispatcher extends ServiceProvider {
 	private void reloadSpecialUsers() {
 		try {
 			ArrayList<User> adminUserList = new ArrayList<User>();
-			TreeMap<User.SPECIALS,TreeMap<User,String>> specialUsers = simulationDatabase.getSpecialUsers();
-			final Iterator<SPECIALS> iterator = specialUsers.keySet().iterator();
+			TreeMap<User.SPECIAL_CLAIM,TreeMap<User,String>> specialUsers = simulationDatabase.getSpecialUsers();
+			final Iterator<User.SPECIAL_CLAIM> iterator = specialUsers.keySet().iterator();
 			while(iterator.hasNext()) {
-				final SPECIALS next = iterator.next();
-				if(next == User.SPECIALS.special0) {//Admin Users
+				final User.SPECIAL_CLAIM next = iterator.next();
+				if(next == User.SPECIAL_CLAIM.admins) {//Admin Users
 					final Iterator<User> iter = specialUsers.get(next).keySet().iterator();
 					while(iter.hasNext()) {
 						adminUserList.add(iter.next());

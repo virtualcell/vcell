@@ -87,8 +87,6 @@
 		<module>vcell-util</module>
 		<module>vcell-vmicro</module>
 		<module>vcell-cli</module>
-		<module>vcell-sbmlsim</module>
-		<module>vcell-sbmlsim-api</module>
 		<module>vcell-imagej-helper</module>
 		<module>vcell-web</module>
 	</modules>

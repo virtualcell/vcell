@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.StreamTokenizer;
 import java.util.*;
 
+import jscl.math.Generic;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.util.Issue.IssueSource;
@@ -48,7 +49,7 @@ private Expression() {
 public Expression(SymbolTableEntry ste, NameScope nameScope) {
 	ASTIdNode idNode = new ASTIdNode(); 
 	idNode.name = (nameScope == null)? ste.getName():nameScope.getSymbolName(ste);
-	idNode.symbolTableEntry = ste;
+	idNode.setSymbolTableEntry(ste);
 	this.rootNode = idNode;
 	this.normalizedInfixString = idNode.name;
 }
@@ -143,8 +144,17 @@ public static Expression assign(Expression lvalueExp, Expression rvalueExp) thro
    {
 bindCount++;/////////////////
 	  rootNode.bind(symbolTable);
-   }                     
-/**
+   }
+
+   public Expression bindExpressionAndReturn(SymbolTable symbolTable) throws ExpressionBindingException
+   {
+	   bindExpression(symbolTable);
+	   return this;
+   }
+
+
+
+	/**
  * This method was created in VisualAge.
  * @return boolean
  * @param obj java.lang.Object
@@ -154,7 +164,9 @@ public boolean compareEqual(Matchable obj) {
 		return false;
 	}
 	Expression exp = (Expression)obj;
-	return getNormalizedInfixString().equals(exp.getNormalizedInfixString());
+//	boolean b = ExpressionUtils.functionallyEquivalent(this, exp);
+	boolean b = getNormalizedInfixString().equals(exp.getNormalizedInfixString());
+	return b;
 }
 /**
  * This method was created by a SmartGuide.
@@ -182,7 +194,8 @@ derivativeCount++;
  */
 public Expression differentiate(String variable) throws ExpressionException {
 diffCount++;
-	SimpleNode node = (SimpleNode)rootNode.differentiate(variable);
+	Expression exp = new Expression(this);
+	SimpleNode node = (SimpleNode)exp.rootNode.differentiate(variable);
 	if (node == null){
 		throw new ExpressionException("derivative wrt "+variable+" returned null");
 	}
@@ -210,7 +223,13 @@ public boolean equals(Object obj) {
  * @exception java.lang.Exception The exception description.
  */
 public double evaluateConstant() throws ExpressionException, DivideByZeroException {
-	return rootNode.evaluateConstant();
+	return rootNode.evaluateConstant(true);
+}
+public double evaluateConstantSafe() throws ExpressionException, DivideByZeroException {
+	return rootNode.evaluateConstant(false);
+}
+public double evaluateConstantWithSubstitution() throws ExpressionException, DivideByZeroException {
+	return rootNode.evaluateConstant(true);
 }
 public RealInterval evaluateInterval(RealInterval intervals[]) throws ExpressionException, DivideByZeroException {
 	return rootNode.evaluateInterval(intervals);
@@ -265,24 +284,62 @@ public ExpressionTerm extractTopLevelTerm() {
 	return new ExpressionTerm(operator,children);
 }
 /**
- * This method was created by a SmartGuide.
+ * flatten performs very basic simplification, and also replaces constant SymbolTableEntry.isConstant() with numerical values
+ * if this numeric substitution is not wanted either clear binding before calling, or call flattenSafe() method.
  */
 public Expression flatten() throws ExpressionException {
 flattenCount++;////////////////////////
-	return new Expression((SimpleNode)rootNode.flatten());
+	return new Expression((SimpleNode)rootNode.flatten(true));
 }
 
+/**
+ * flatten will substitute numbers for constants (e.g. SymbolTableEntry.isConstant() like math Constant class)
+ * flattenSafe temporarily removes binding, flattens, and restores binding
+ * @return flattened expression without substituting numbers for Constants
+ * @throws ExpressionException
+ */
+public Expression flattenSafe() throws ExpressionException {
+	flattenCount++;////////////////////////
+	return new Expression((SimpleNode)rootNode.flatten(false));
+}
+
+	public Expression simplifyJSCL() throws ExpressionException {
+		return simplifyJSCL(100, false);
+	}
+
+	public Expression simplifyJSCL(int maxExecutionTime_ms, boolean bFailOnTimeout) throws ExpressionException, jscl.math.Expression.ExpressionTimeoutException {
+		String[] symbols = getSymbols();
+		if (symbols==null || symbols.length==0){
+			return flatten();
+		}
+		try {
+			Expression simplified = new Expression(this);
+			SymbolTable tempExpressionSymbolTable = this.createSymbolTableFromBinding();
+			simplified = simplifyUsingJSCL(simplified, maxExecutionTime_ms);
+			simplified.bindExpression(tempExpressionSymbolTable);
+			return simplified;
+		}catch (ExpressionException e){
+			logger.debug("failed to simplify using JSCL, reverting to flatten(): "+e.getMessage());
+			return flattenSafe();
+		}catch (jscl.math.Expression.ExpressionTimeoutException e){
+			if (bFailOnTimeout){
+				throw new jscl.math.Expression.ExpressionTimeoutException("simplifyJSCL() timeout for: "+infix(), e);
+			}else {
+				logger.debug("timeout simplify using JSCL, reverting to flatten(): " + e.getMessage());
+				return flattenSafe();
+			}
+		}
+	}
+
+
 	/**
-	 * cancel out terms of the type .... * KMOLE / KMOLE * ....
-	 * substitute in place will only work with (KMOLE / KMOLE) where the entire subtree is replaced
-	 * @param factorSymbol
-	 * @return
-	 * @throws ExpressionException
+	 * for internal use only - for restoring the expression binding for safe flatten().
+	 * @return SymbolTable temporary symbol table associated with this expression
 	 */
-	public Expression flattenFactors(String factorSymbol) throws ExpressionException {
+	public SymbolTable createSymbolTableFromBinding(){
 		String[] symbols = this.getSymbols();
 		if (symbols==null || symbols.length==0){
-			return this.flatten();
+			return null;
 		}
 		HashMap<String, SymbolTableEntry> bindings = new HashMap<>();
 		for (String symbol : symbols){
@@ -296,60 +353,61 @@ flattenCount++;////////////////////////
 			public SymbolTableEntry getEntry(String identifierString) { return bindings.get(identifierString); }
 			@Override
 			public void getEntries(Map<String, SymbolTableEntry> entryMap) { throw new RuntimeException("not implemented");}
+			@Override
+			public boolean allowPartialBinding() {return true;}
 		};
-		if (Arrays.asList(symbols).contains(factorSymbol)) {
-			// in case factorSymbol STE is 'constant' (will be removed during flattening)
-			// in some cases KMOLE from biomodel is not constant, KMOLE from MathDescription is constant
-			// and only one gets flattened away (in this case it will store the first binding it sees - better than nothing)
-			// this binding will be replaced later.
-
-			Expression flattenedExpression = new Expression(this);
-			flattenedExpression.bindExpression(null);  // clear bindings so that flatten will not remove symbols
-			flattenedExpression = flattenedExpression.flatten();
-
-			String mangledFactorSymbol = "____"+factorSymbol+"____";
-			flattenedExpression.substituteInPlace(new Expression(factorSymbol), new Expression(mangledFactorSymbol));
-			String flattenedInfix = flattenedExpression.infix();
-			final String[][] patterns = {
-					{ "pow("+mangledFactorSymbol+",-1.0) * "+mangledFactorSymbol,	 				"1.0" },
-					{ mangledFactorSymbol+" * pow("+mangledFactorSymbol+",-1.0)", 					"1.0" },
-					{ "pow("+mangledFactorSymbol+",2.0) * pow("+mangledFactorSymbol+",-2.0)",		"1.0" },
-					{ "pow("+mangledFactorSymbol+",3.0) * pow("+mangledFactorSymbol+",-3.0)",		"1.0" },
-					{ mangledFactorSymbol+" / "+mangledFactorSymbol,								"1.0" },
-					{ "/ "+mangledFactorSymbol+" * "+mangledFactorSymbol, 							"* 1.0" }
-			};
-			boolean bReplaced = false;
-			for (String[] pattern : patterns) {
-				if (flattenedInfix.contains(pattern[0])) {
-					flattenedInfix = flattenedInfix.replace(pattern[0], pattern[1]);
-					bReplaced = true;
-				}
-			}
-			if (bReplaced) {
-				Expression substitutedExpression = new Expression(flattenedInfix);
-				final Expression factorSymbol_exp = new Expression(factorSymbol);
-				substitutedExpression.substituteInPlace(new Expression(mangledFactorSymbol), factorSymbol_exp);
-				substitutedExpression = substitutedExpression.flatten();
-				if (bindings.size()>0) {
-					try {
-						substitutedExpression.bindExpression(symbolTable);
-					} catch (ExpressionBindingException e) {
-						logger.info("failed to rebind expression "+substitutedExpression.infix()+" after flattenFactor(): "+e.getMessage());
-					}
-				}
-				return substitutedExpression;
-			}
-		}
-		Expression safeExp = new Expression(this);
-		safeExp.bindExpression(null);
-		safeExp = safeExp.flatten();
-		if (bindings.size()>0) {
-			safeExp.bindExpression(symbolTable);
-		}
-		return safeExp;
+		return symbolTable;
 	}
 
-/**
+	private static Expression simplifyUsingJSCL(Expression exp, int maxExecutionTime_ms) throws ExpressionException, jscl.math.Expression.ExpressionTimeoutException {
+		try {
+			//
+			// initialize computation timeout (threadlocal var)
+			//
+			long startTime = System.currentTimeMillis();
+			jscl.math.Expression.timeoutMS.set(startTime + maxExecutionTime_ms);
+
+			jscl.math.Expression jsclExpression = null;
+			String jsclExpressionString = exp.infix_JSCL();
+			if (jsclExpressionString.contains("<") || jsclExpressionString.contains(">")) {
+				throw new ExpressionException("JSCL cannot parse inequalities, cannot parse \"" + jsclExpressionString + "\"");
+			}
+			try {
+				jsclExpression = jscl.math.Expression.valueOf(jsclExpressionString);
+			} catch (jscl.text.ParseException e) {
+				throw new ExpressionException("JSCL couldn't parse \"" + jsclExpressionString + "\"");
+			}
+			Generic expand = jsclExpression.expand();
+			Generic simplify = expand.simplify();
+			jscl.math.Generic jsclSolution = simplify.factorize();
+
+			Expression solution = new cbit.vcell.parser.Expression(jsclSolution.toString());
+
+			String[] jsclSymbols = solution.getSymbols();
+			for (int i = 0; jsclSymbols != null && i < jsclSymbols.length; i++) {
+				String restoredSymbol = cbit.vcell.parser.SymbolUtils.getRestoredStringJSCL(jsclSymbols[i]);
+				if (!restoredSymbol.equals(jsclSymbols[i])) {
+					solution.substituteInPlace(new cbit.vcell.parser.Expression(jsclSymbols[i]), new Expression(restoredSymbol));
+				}
+			}
+			if (logger.isTraceEnabled()) {
+				long endTime = System.currentTimeMillis();
+				if (endTime - startTime > 100) {
+					logger.trace("JSCL expression simplification took " + (endTime - startTime) + " ms (limit was " + maxExecutionTime_ms + " ms) for '" + exp.infix() + "'");
+				}
+			}
+			return solution;
+
+		}finally{
+			//
+			// clear computation timeout (threadlocal var)
+			//
+			jscl.math.Expression.timeoutMS.remove();
+		}
+	}
+
+
+	/**
  * This method was created by a SmartGuide.
  */
 public Expression getBinaryExpression() {
@@ -416,10 +474,9 @@ private String getNormalizedInfixString() {
 	if (normalizedInfixString==null){
 		try {
 			Expression clonedExp = new Expression(this);
-			clonedExp.bindExpression(null);
-			normalizedInfixString = clonedExp.flatten().infix();
+			normalizedInfixString = clonedExp.flattenSafe().infix();
 		}catch(ExpressionException e){
-			e.printStackTrace(System.out);
+			logger.warn("failed to flatten '"+infix()+"' for normalizedInfixString: "+e.getMessage(), e);
 			normalizedInfixString = infix();
 		}
 	}
@@ -634,7 +691,7 @@ public int hashCode() {
  * @param expression Expression
  * @exception java.lang.Exception The exception description.
  */
-public static Expression invert(Expression expression) throws ExpressionException {
+public static Expression invert(Expression expression)  {
 	Expression exp = new Expression();
 	ASTInvertTermNode invertNode = new ASTInvertTermNode();
 	
@@ -794,7 +851,6 @@ parseCount++;
 		if (!exp.endsWith(";")){
 			exp = exp + ";";
 		}
-		//System.out.println("expression: " + exp);
 		ExpressionParser parser;
 		parser = new ExpressionParser(new java.io.ByteArrayInputStream(exp.getBytes()));
 		rootNode = parser.Expression();
@@ -808,12 +864,10 @@ parseCount++;
 				rootNode.jjtSetParent(null);
 			}
 		}
-	} catch (ParseException e) {
-		e.printStackTrace();
-		throw new ParserException("Parse Error while parsing expression '" + expString + "'.\n " + e.getMessage());
-	} catch (TokenMgrError e) {
-		e.printStackTrace();
-		throw new ParserException("Parse Error while parsing expression '" + expString + "'.\n " + e.getMessage());
+	} catch (ParseException | TokenMgrError e) {
+		String msg = "Parse Error while parsing expression '" + expString + "': " + e.getMessage();
+		logger.error(msg, e);
+		throw new ParserException("Parse Error while parsing expression '" + expString + "': " + e.getMessage());
 	}
 }
 /**
@@ -827,7 +881,7 @@ public static Expression power(Expression expression1, Expression expression2) t
 	return function(FunctionType.POW, expression1, expression2);
 }
 
-public static Expression power(Expression expression1, double exponent) throws ExpressionException {
+public static Expression power(Expression expression1, double exponent) {
 	return function(FunctionType.POW, expression1, new Expression(exponent));
 }
 
@@ -1003,7 +1057,7 @@ System.out.println("bind("+bindCount+")");
  * @param newExp cbit.vcell.parser.Expression
  * @exception java.lang.Exception The exception description.
  */
-public void substituteInPlace(Expression origExp, Expression newExp) throws ExpressionException {
+public void substituteInPlace(Expression origExp, Expression newExp) {
 substituteCount++;////////////////////////////////
 	SimpleNode origNode = origExp.rootNode;
 	SimpleNode newNode = (SimpleNode)newExp.rootNode.copyTree();
@@ -1039,18 +1093,6 @@ substituteCount++;////////////////////////////////
    {
 	   Expression exp = new Expression((SimpleNode)rootNode.convertToRvachevFunction());
 	   return exp;
-   }
-   
-   /**
-    * return constant value as double, if possible
-    * @return double value if evaluates as constant, null otherwise
-    */
-   public Double toDouble( ) {
-	   try {
-		   return evaluateConstant();
-	   } catch (ExpressionException e) {
-		   return null;
-	   }
    }
 
 /**

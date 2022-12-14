@@ -1,0 +1,682 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--This biomodel was generated in VCML Version Alpha_Version_7.4.0_build_79-->
+<vcml xmlns="http://sourceforge.net/projects/vcell/vcml" Version="Alpha_Version_7.4.0_build_79">
+    <BioModel Name="biomodel_111113048_smaller">
+        <Annotation>cloned from 'CLEC2 v4: Cytosolic, no Btk, Our' owned by user AlleMart
+</Annotation>
+        <Model Name="model">
+            <Annotation>cloned from 'model' owned by user AlleMart
+</Annotation>
+            <Compound Name="s0" />
+            <Compound Name="s1" />
+            <Compound Name="s2" />
+            <Compound Name="s3" />
+            <Compound Name="s4" />
+            <Compound Name="s5" />
+            <Compound Name="s6" />
+            <Compound Name="s7" />
+            <Compound Name="s8" />
+            <Compound Name="s9" />
+            <Compound Name="s10" />
+            <Compound Name="s11" />
+            <Compound Name="s12" />
+            <Compound Name="s13" />
+            <Compound Name="s14" />
+            <Compound Name="s15" />
+            <Compound Name="s16" />
+            <Compound Name="s17" />
+            <Compound Name="s18" />
+            <Feature Name="Cyt" KeyValue="246404001" />
+            <Feature Name="EC" KeyValue="246404003" />
+            <Membrane MembraneVoltage="Voltage_PM" Name="PM" KeyValue="246404005" />
+            <LocalizedCompound Name="DUSP3" CompoundRef="s0" Structure="Cyt" OverrideName="true" KeyValue="246404007" />
+            <LocalizedCompound Name="DUSP3_A" CompoundRef="s1" Structure="Cyt" OverrideName="true" KeyValue="246404008" />
+            <LocalizedCompound Name="SFK" CompoundRef="s2" Structure="Cyt" OverrideName="true" KeyValue="246404009" />
+            <LocalizedCompound Name="SFK_NF" CompoundRef="s3" Structure="Cyt" OverrideName="true" KeyValue="246404010" />
+            <LocalizedCompound Name="Syk_A" CompoundRef="s4" Structure="Cyt" OverrideName="true" KeyValue="246404011" />
+            <LocalizedCompound Name="Syk" CompoundRef="s5" Structure="Cyt" OverrideName="true" KeyValue="246404012" />
+            <LocalizedCompound Name="CLEC2_Raft" CompoundRef="s6" Structure="PM" OverrideName="true" KeyValue="246404013" />
+            <LocalizedCompound Name="CLEC2_P" CompoundRef="s7" Structure="PM" OverrideName="true" KeyValue="246404014" />
+            <LocalizedCompound Name="CLEC2_Syk" CompoundRef="s8" Structure="PM" OverrideName="true" KeyValue="246404015" />
+            <LocalizedCompound Name="CLEC2_Syk_A" CompoundRef="s9" Structure="PM" OverrideName="true" KeyValue="246404016" />
+            <LocalizedCompound Name="CLEC2_SFK_A" CompoundRef="s10" Structure="PM" OverrideName="true" KeyValue="246404017" />
+            <LocalizedCompound Name="LAT" CompoundRef="s11" Structure="PM" OverrideName="true" KeyValue="246404018" />
+            <LocalizedCompound Name="LAT_P" CompoundRef="s12" Structure="PM" OverrideName="true" KeyValue="246404019" />
+            <LocalizedCompound Name="LAT_P_PLCg2" CompoundRef="s13" Structure="PM" OverrideName="true" KeyValue="246404020" />
+            <LocalizedCompound Name="LAT_P_PLCg2_A" CompoundRef="s14" Structure="PM" OverrideName="true" KeyValue="246404021" />
+            <LocalizedCompound Name="PIP2" CompoundRef="s15" Structure="PM" OverrideName="true" KeyValue="246404022" />
+            <LocalizedCompound Name="IP3" CompoundRef="s16" Structure="Cyt" OverrideName="true" KeyValue="246404023" />
+            <LocalizedCompound Name="DAG" CompoundRef="s17" Structure="Cyt" OverrideName="true" KeyValue="246404024" />
+            <LocalizedCompound Name="PLCg2" CompoundRef="s18" Structure="Cyt" OverrideName="true" KeyValue="246404025" />
+            <SimpleReaction Structure="Cyt" Name="Dephosphorylation of SFK by DUSP3" Reversible="true" FluxOption="MolecularOnly" KeyValue="246404026">
+                <Reactant LocalizedCompoundRef="SFK" Stoichiometry="1" KeyValue="246404027" />
+                <Product LocalizedCompoundRef="SFK_NF" Stoichiometry="1" KeyValue="246404028" />
+                <Modifier LocalizedCompoundRef="DUSP3_A" />
+                <Kinetics KineticsType="MassAction">
+                    <Parameter Name="J" Role="reaction rate" Unit="uM.s-1">((Kf * SFK) - (Kr * SFK_NF))</Parameter>
+                    <Parameter Name="Kf" Role="forward rate constant" Unit="s-1">(DUSP3_A * (2.7 / 34.0))</Parameter>
+                    <Parameter Name="Kr" Role="reverse rate constant" Unit="s-1">0.0275</Parameter>
+                </Kinetics>
+            </SimpleReaction>
+            <SimpleReaction Structure="Cyt" Name="Syk Y346 Phosphorylation by Not Fully Active SFK" Reversible="true" FluxOption="MolecularOnly" KeyValue="246404030">
+                <Reactant LocalizedCompoundRef="Syk" Stoichiometry="1" KeyValue="246404031" />
+                <Product LocalizedCompoundRef="Syk_A" Stoichiometry="1" KeyValue="246404032" />
+                <Modifier LocalizedCompoundRef="SFK_NF" />
+                <Kinetics KineticsType="MassAction">
+                    <Parameter Name="J" Role="reaction rate" Unit="uM.s-1">((Kf * Syk) - (Kr * Syk_A))</Parameter>
+                    <Parameter Name="Kf" Role="forward rate constant" Unit="s-1">((SFK_NF * (1.05 / 3.0)) + (Syk_A * (3.0 / 7.0)))</Parameter>
+                    <Parameter Name="Kr" Role="reverse rate constant" Unit="s-1">7.5</Parameter>
+                </Kinetics>
+            </SimpleReaction>
+            <SimpleReaction Structure="PM" Name="Phosphorylation of CLEC-2" Reversible="true" FluxOption="MolecularOnly" KeyValue="246404034">
+                <Reactant LocalizedCompoundRef="CLEC2_Raft" Stoichiometry="1" KeyValue="246404035" />
+                <Product LocalizedCompoundRef="CLEC2_P" Stoichiometry="1" KeyValue="246404036" />
+                <Modifier LocalizedCompoundRef="Syk_A" />
+                <Modifier LocalizedCompoundRef="CLEC2_Syk_A" />
+                <Modifier LocalizedCompoundRef="SFK_NF" />
+                <Modifier LocalizedCompoundRef="CLEC2_SFK_A" />
+                <Modifier LocalizedCompoundRef="DUSP3_A" />
+                <Kinetics KineticsType="MassAction">
+                    <Parameter Name="J" Role="reaction rate" Unit="molecules.um-2.s-1">((Kf * CLEC2_Raft) - (Kr * CLEC2_P))</Parameter>
+                    <Parameter Name="I" Role="inward current density" Unit="pA.um-2">0.0</Parameter>
+                    <Parameter Name="netValence" Role="net charge valence" Unit="1">1.0</Parameter>
+                    <Parameter Name="Kf" Role="forward rate constant" Unit="s-1">((Syk_A * (3.0 / 7.0)) + (CLEC2_Syk_A * (3.0 / (6.9 * Cyt * 602.0 / PM))) + (SFK_NF * (1.05 / 3.0)) + (CLEC2_SFK_A * (2.0 / (3.0 * Cyt * 602.0 / PM))))</Parameter>
+                    <Parameter Name="Kr" Role="reverse rate constant" Unit="s-1">(DUSP3_A * (2.7 / 34.0))</Parameter>
+                </Kinetics>
+            </SimpleReaction>
+            <SimpleReaction Structure="PM" Name="Binding of Syk to a Phosphorylated CLEC-2" Reversible="true" FluxOption="MolecularOnly" KeyValue="246404042">
+                <Reactant LocalizedCompoundRef="CLEC2_P" Stoichiometry="1" KeyValue="246404043" />
+                <Reactant LocalizedCompoundRef="Syk" Stoichiometry="1" KeyValue="246404044" />
+                <Product LocalizedCompoundRef="CLEC2_Syk" Stoichiometry="1" KeyValue="246404045" />
+                <Kinetics KineticsType="MassAction">
+                    <Parameter Name="J" Role="reaction rate" Unit="molecules.um-2.s-1">(((Kf * CLEC2_P) * Syk) - (Kr * CLEC2_Syk))</Parameter>
+                    <Parameter Name="I" Role="inward current density" Unit="pA.um-2">0.0</Parameter>
+                    <Parameter Name="netValence" Role="net charge valence" Unit="1">1.0</Parameter>
+                    <Parameter Name="Kf" Role="forward rate constant" Unit="s-1.uM-1">1.0</Parameter>
+                    <Parameter Name="Kr" Role="reverse rate constant" Unit="s-1">0.2</Parameter>
+                </Kinetics>
+            </SimpleReaction>
+            <SimpleReaction Structure="PM" Name="Binding of SFK NF to a Phosphorylated CLEC-2" Reversible="true" FluxOption="MolecularOnly" KeyValue="246404046">
+                <Reactant LocalizedCompoundRef="CLEC2_P" Stoichiometry="1" KeyValue="246404047" />
+                <Reactant LocalizedCompoundRef="SFK_NF" Stoichiometry="1" KeyValue="246404048" />
+                <Product LocalizedCompoundRef="CLEC2_SFK_A" Stoichiometry="1" KeyValue="246404049" />
+                <Kinetics KineticsType="MassAction">
+                    <Parameter Name="J" Role="reaction rate" Unit="molecules.um-2.s-1">(((Kf * CLEC2_P) * SFK_NF) - (Kr * CLEC2_SFK_A))</Parameter>
+                    <Parameter Name="I" Role="inward current density" Unit="pA.um-2">0.0</Parameter>
+                    <Parameter Name="netValence" Role="net charge valence" Unit="1">1.0</Parameter>
+                    <Parameter Name="Kf" Role="forward rate constant" Unit="s-1.uM-1">1.0</Parameter>
+                    <Parameter Name="Kr" Role="reverse rate constant" Unit="s-1">1.0</Parameter>
+                </Kinetics>
+            </SimpleReaction>
+            <SimpleReaction Structure="PM" Name="Syk bound to CLEC-2 activation" Reversible="true" FluxOption="MolecularOnly" KeyValue="246404050">
+                <Reactant LocalizedCompoundRef="CLEC2_Syk" Stoichiometry="1" KeyValue="246404051" />
+                <Product LocalizedCompoundRef="CLEC2_Syk_A" Stoichiometry="1" KeyValue="246404052" />
+                <Modifier LocalizedCompoundRef="CLEC2_SFK_A" />
+                <Modifier LocalizedCompoundRef="SFK_NF" />
+                <Modifier LocalizedCompoundRef="Syk_A" />
+                <Kinetics KineticsType="MassAction">
+                    <Parameter Name="J" Role="reaction rate" Unit="molecules.um-2.s-1">((Kf * CLEC2_Syk) - (Kr * CLEC2_Syk_A))</Parameter>
+                    <Parameter Name="I" Role="inward current density" Unit="pA.um-2">0.0</Parameter>
+                    <Parameter Name="netValence" Role="net charge valence" Unit="1">1.0</Parameter>
+                    <Parameter Name="Kf" Role="forward rate constant" Unit="s-1">((CLEC2_SFK_A * (2.0 / (3.0 * Cyt * 602.0 / PM))) + (CLEC2_Syk_A * (3.0 / (6.9 * Cyt * 602.0 / PM))) + (SFK_NF * (1.0 / 3.0)) + (Syk_A * 3.0 / 7.0))</Parameter>
+                    <Parameter Name="Kr" Role="reverse rate constant" Unit="s-1">1.0</Parameter>
+                </Kinetics>
+            </SimpleReaction>
+            <SimpleReaction Structure="PM" Name="DUSP3 Activation by Syk" Reversible="true" FluxOption="MolecularOnly" KeyValue="246404056">
+                <Reactant LocalizedCompoundRef="DUSP3" Stoichiometry="1" KeyValue="246404057" />
+                <Product LocalizedCompoundRef="DUSP3_A" Stoichiometry="1" KeyValue="246404058" />
+                <Modifier LocalizedCompoundRef="Syk_A" />
+                <Kinetics KineticsType="MassAction">
+                    <Parameter Name="J" Role="reaction rate" Unit="molecules.um-2.s-1">((Kf * DUSP3) - (Kr * DUSP3_A))</Parameter>
+                    <Parameter Name="I" Role="inward current density" Unit="pA.um-2">0.0</Parameter>
+                    <Parameter Name="netValence" Role="net charge valence" Unit="1">1.0</Parameter>
+                    <Parameter Name="Kf" Role="forward rate constant" Unit="molecules.um-2.s-1.uM-1">(Syk_A * (3.0 / 7.0))</Parameter>
+                    <Parameter Name="Kr" Role="reverse rate constant" Unit="molecules.um-2.s-1.uM-1">0.4</Parameter>
+                </Kinetics>
+            </SimpleReaction>
+            <SimpleReaction Structure="PM" Name="Phosphorylation of LAT by an Active Syk kinase" Reversible="true" FluxOption="MolecularOnly" KeyValue="246404060">
+                <Reactant LocalizedCompoundRef="LAT" Stoichiometry="1" KeyValue="246404061" />
+                <Product LocalizedCompoundRef="LAT_P" Stoichiometry="1" KeyValue="246404062" />
+                <Modifier LocalizedCompoundRef="CLEC2_Syk_A" />
+                <Modifier LocalizedCompoundRef="Syk_A" />
+                <Kinetics KineticsType="MassAction">
+                    <Parameter Name="J" Role="reaction rate" Unit="molecules.um-2.s-1">((Kf * LAT) - (Kr * LAT_P))</Parameter>
+                    <Parameter Name="I" Role="inward current density" Unit="pA.um-2">0.0</Parameter>
+                    <Parameter Name="netValence" Role="net charge valence" Unit="1">1.0</Parameter>
+                    <Parameter Name="Kf" Role="forward rate constant" Unit="s-1">((CLEC2_Syk_A * (3.0 / (6.9 * Cyt * 602.0 / PM))) + (Syk_A * (3.0 / 6.9)))</Parameter>
+                    <Parameter Name="Kr" Role="reverse rate constant" Unit="s-1">0.25</Parameter>
+                </Kinetics>
+            </SimpleReaction>
+            <SimpleReaction Structure="PM" Name="Binding of PLCg2 SH2 Domain to a phosphorylated LAT" Reversible="true" FluxOption="MolecularOnly" KeyValue="246404065">
+                <Reactant LocalizedCompoundRef="LAT_P" Stoichiometry="1" KeyValue="246404066" />
+                <Reactant LocalizedCompoundRef="PLCg2" Stoichiometry="1" KeyValue="246404067" />
+                <Product LocalizedCompoundRef="LAT_P_PLCg2" Stoichiometry="1" KeyValue="246404068" />
+                <Kinetics KineticsType="MassAction">
+                    <Parameter Name="J" Role="reaction rate" Unit="molecules.um-2.s-1">(((Kf * LAT_P) * PLCg2) - (Kr * LAT_P_PLCg2))</Parameter>
+                    <Parameter Name="I" Role="inward current density" Unit="pA.um-2">0.0</Parameter>
+                    <Parameter Name="netValence" Role="net charge valence" Unit="1">1.0</Parameter>
+                    <Parameter Name="Kf" Role="forward rate constant" Unit="s-1.uM-1">1.0</Parameter>
+                    <Parameter Name="Kr" Role="reverse rate constant" Unit="s-1">0.4</Parameter>
+                </Kinetics>
+            </SimpleReaction>
+            <SimpleReaction Structure="PM" Name="Activation of PLCg2" Reversible="true" FluxOption="MolecularOnly" KeyValue="246404069">
+                <Reactant LocalizedCompoundRef="LAT_P_PLCg2" Stoichiometry="1" KeyValue="246404070" />
+                <Product LocalizedCompoundRef="LAT_P_PLCg2_A" Stoichiometry="1" KeyValue="246404071" />
+                <Kinetics KineticsType="MassAction">
+                    <Parameter Name="J" Role="reaction rate" Unit="molecules.um-2.s-1">((Kf * LAT_P_PLCg2) - (Kr * LAT_P_PLCg2_A))</Parameter>
+                    <Parameter Name="I" Role="inward current density" Unit="pA.um-2">0.0</Parameter>
+                    <Parameter Name="netValence" Role="net charge valence" Unit="1">1.0</Parameter>
+                    <Parameter Name="Kf" Role="forward rate constant" Unit="s-1">(350.0 * (0.14 / (37.0 * (Cyt * 602.0 / PM))))</Parameter>
+                    <Parameter Name="Kr" Role="reverse rate constant" Unit="s-1">0.1</Parameter>
+                </Kinetics>
+            </SimpleReaction>
+            <SimpleReaction Structure="PM" Name="Production of IP3 and DAG" Reversible="true" FluxOption="MolecularOnly" KeyValue="246404072">
+                <Reactant LocalizedCompoundRef="PIP2" Stoichiometry="1" KeyValue="246404073" />
+                <Product LocalizedCompoundRef="DAG" Stoichiometry="1" KeyValue="246404075" />
+                <Product LocalizedCompoundRef="IP3" Stoichiometry="1" KeyValue="246404074" />
+                <Modifier LocalizedCompoundRef="LAT_P_PLCg2_A" />
+                <Kinetics KineticsType="MassAction">
+                    <Parameter Name="J" Role="reaction rate" Unit="molecules.um-2.s-1">((Kf * PIP2) - ((Kr * DAG) * IP3))</Parameter>
+                    <Parameter Name="I" Role="inward current density" Unit="pA.um-2">0.0</Parameter>
+                    <Parameter Name="netValence" Role="net charge valence" Unit="1">1.0</Parameter>
+                    <Parameter Name="Kf" Role="forward rate constant" Unit="s-1">(LAT_P_PLCg2_A * (10.0 / (440.0 * Cyt * 602.0 / PM)))</Parameter>
+                    <Parameter Name="Kr" Role="reverse rate constant" Unit="molecules.um-2.s-1.uM-2">100.0</Parameter>
+                </Kinetics>
+            </SimpleReaction>
+            <Version Name="model" KeyValue="246403979" BranchId="246403980" Archived="0" Date="31-Oct-2022 16:47:07" FromVersionable="false">
+                <Owner Name="schaff" Identifier="17" />
+                <GroupAccess Type="1" />
+                <Annotation>cloned from 'model' owned by user AlleMart
+</Annotation>
+            </Version>
+            <ModelUnitSystem VolumeSubstanceUnit="uM.um3" MembraneSubstanceUnit="molecules" LumpedReactionSubstanceUnit="molecules" VolumeUnit="um3" AreaUnit="um2" LengthUnit="um" TimeUnit="s" />
+        </Model>
+        <SimulationSpec Name="1 molecule" Stochastic="false" UseConcentration="true" RuleBased="false" MassConservationModelReduction="true" InsufficientIterations="false" InsufficientMaxMolecules="false" CharacteristicSize="0.0060057604774573945">
+            <NetworkConstraints RbmMaxIteration="3" RbmMaxMoleculesPerSpecies="10" RbmSpeciesLimit="800" RbmReactionsLimit="2500" />
+            <Annotation>cloned from '1 molecule' owned by user AlleMart
+</Annotation>
+            <Geometry Name="Geometry1868786073" Dimension="3">
+                <Annotation>cloned from 'Geometry1868786073' owned by user AlleMart
+</Annotation>
+                <Extent X="1.0" Y="1.0" Z="0.2" />
+                <Origin X="-0.5" Y="-0.5" Z="-0.1" />
+                <SubVolume Name="subdomain1" Handle="1" Type="Analytical" KeyValue="246403969">
+                    <AnalyticExpression>((x &gt;=  - 0.5) &amp;&amp; (x &lt;= 0.5) &amp;&amp; (y &gt;=  - 0.5) &amp;&amp; (y &lt;= 0.5) &amp;&amp; (z &gt;=  - 0.1) &amp;&amp; (z &lt;=  - 0.0))</AnalyticExpression>
+                </SubVolume>
+                <SubVolume Name="subdomain0" Handle="0" Type="Analytical" KeyValue="246403970">
+                    <AnalyticExpression>1.0</AnalyticExpression>
+                </SubVolume>
+                <SurfaceClass Name="subdomain0_subdomain1_membrane" SubVolume1Ref="subdomain0" SubVolume2Ref="subdomain1" KeyValue="246403971" />
+                <SurfaceDescription NumSamplesX="101" NumSamplesY="101" NumSamplesZ="101" CutoffFrequency="0.3">
+                    <VolumeRegion Name="subdomain10" RegionID="0" SubVolume="subdomain1" Size="0.101" Unit="um3" />
+                    <VolumeRegion Name="subdomain01" RegionID="1" SubVolume="subdomain0" Size="0.099" Unit="um3" />
+                    <MembraneRegion Name="membrane_subdomain10_subdomain01" VolumeRegion1="subdomain01" VolumeRegion2="subdomain10" Size="0.9999999999999111" Unit="um2" />
+                </SurfaceDescription>
+                <Version Name="Geometry1868786073" KeyValue="246403965" BranchId="246403966" Archived="0" Date="31-Oct-2022 16:47:06" FromVersionable="false">
+                    <Owner Name="schaff" Identifier="17" />
+                    <GroupAccess Type="1" />
+                    <Annotation>cloned from 'Geometry1868786073' owned by user AlleMart
+</Annotation>
+                </Version>
+            </Geometry>
+            <GeometryContext>
+                <FeatureMapping Feature="Cyt" GeometryClass="subdomain1" SubVolume="subdomain1" Size="50000.0" VolumePerUnitVolume="1.0">
+                    <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
+                </FeatureMapping>
+                <FeatureMapping Feature="EC" GeometryClass="subdomain0" SubVolume="subdomain0" Size="50000.0" VolumePerUnitVolume="1.0">
+                    <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
+                </FeatureMapping>
+                <MembraneMapping Membrane="PM" Size="6563.0" AreaPerUnitArea="1.0" CalculateVoltage="false" SpecificCapacitance="1.0" InitialVoltage="0.0" GeometryClass="subdomain0_subdomain1_membrane" />
+            </GeometryContext>
+            <ReactionContext>
+                <LocalizedCompoundSpec LocalizedCompoundRef="DUSP3" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+                    <InitialConcentration>3.11</InitialConcentration>
+                    <Diffusion>10.0</Diffusion>
+                </LocalizedCompoundSpec>
+                <LocalizedCompoundSpec LocalizedCompoundRef="DUSP3_A" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+                    <InitialConcentration>0.146</InitialConcentration>
+                    <Diffusion>10.0</Diffusion>
+                </LocalizedCompoundSpec>
+                <LocalizedCompoundSpec LocalizedCompoundRef="SFK" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+                    <InitialConcentration>1.85</InitialConcentration>
+                    <Diffusion>3.0</Diffusion>
+                </LocalizedCompoundSpec>
+                <LocalizedCompoundSpec LocalizedCompoundRef="SFK_NF" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+                    <InitialConcentration>0.409</InitialConcentration>
+                    <Diffusion>3.0</Diffusion>
+                </LocalizedCompoundSpec>
+                <LocalizedCompoundSpec LocalizedCompoundRef="Syk_A" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+                    <InitialConcentration>0.0219</InitialConcentration>
+                    <Diffusion>2.0</Diffusion>
+                </LocalizedCompoundSpec>
+                <LocalizedCompoundSpec LocalizedCompoundRef="Syk" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+                    <InitialConcentration>1.077</InitialConcentration>
+                    <Diffusion>2.0</Diffusion>
+                </LocalizedCompoundSpec>
+                <LocalizedCompoundSpec LocalizedCompoundRef="IP3" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+                    <InitialConcentration>0.13596530574175356</InitialConcentration>
+                    <Diffusion>283.0</Diffusion>
+                </LocalizedCompoundSpec>
+                <LocalizedCompoundSpec LocalizedCompoundRef="DAG" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+                    <InitialConcentration>0.13596530574175356</InitialConcentration>
+                    <Diffusion>283.0</Diffusion>
+                </LocalizedCompoundSpec>
+                <LocalizedCompoundSpec LocalizedCompoundRef="PLCg2" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+                    <InitialConcentration>0.409297145448324</InitialConcentration>
+                    <Diffusion>1.0</Diffusion>
+                </LocalizedCompoundSpec>
+                <LocalizedCompoundSpec LocalizedCompoundRef="CLEC2_Raft" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+                    <InitialConcentration>1.0</InitialConcentration>
+                    <Diffusion>0.004</Diffusion>
+                </LocalizedCompoundSpec>
+                <LocalizedCompoundSpec LocalizedCompoundRef="CLEC2_P" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+                    <InitialConcentration>0.0</InitialConcentration>
+                    <Diffusion>0.004</Diffusion>
+                </LocalizedCompoundSpec>
+                <LocalizedCompoundSpec LocalizedCompoundRef="CLEC2_Syk" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+                    <InitialConcentration>0.0</InitialConcentration>
+                    <Diffusion>0.004</Diffusion>
+                </LocalizedCompoundSpec>
+                <LocalizedCompoundSpec LocalizedCompoundRef="CLEC2_Syk_A" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+                    <InitialConcentration>0.0</InitialConcentration>
+                    <Diffusion>0.004</Diffusion>
+                </LocalizedCompoundSpec>
+                <LocalizedCompoundSpec LocalizedCompoundRef="CLEC2_SFK_A" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+                    <InitialConcentration>0.0</InitialConcentration>
+                    <Diffusion>0.004</Diffusion>
+                </LocalizedCompoundSpec>
+                <LocalizedCompoundSpec LocalizedCompoundRef="LAT" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+                    <InitialConcentration>63.109</InitialConcentration>
+                    <Diffusion>0.004</Diffusion>
+                </LocalizedCompoundSpec>
+                <LocalizedCompoundSpec LocalizedCompoundRef="LAT_P" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+                    <InitialConcentration>2.1951146509135455</InitialConcentration>
+                    <Diffusion>0.004</Diffusion>
+                </LocalizedCompoundSpec>
+                <LocalizedCompoundSpec LocalizedCompoundRef="LAT_P_PLCg2" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+                    <InitialConcentration>2.2461353779562843</InitialConcentration>
+                    <Diffusion>0.004</Diffusion>
+                </LocalizedCompoundSpec>
+                <LocalizedCompoundSpec LocalizedCompoundRef="LAT_P_PLCg2_A" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+                    <InitialConcentration>0.4492022597907049</InitialConcentration>
+                    <Diffusion>0.004</Diffusion>
+                </LocalizedCompoundSpec>
+                <LocalizedCompoundSpec LocalizedCompoundRef="PIP2" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+                    <InitialConcentration>11990.996395102886</InitialConcentration>
+                    <Diffusion>1.0</Diffusion>
+                </LocalizedCompoundSpec>
+                <ReactionSpec ReactionStepRef="Dephosphorylation of SFK by DUSP3" ReactionMapping="included" />
+                <ReactionSpec ReactionStepRef="Syk Y346 Phosphorylation by Not Fully Active SFK" ReactionMapping="included" />
+                <ReactionSpec ReactionStepRef="Phosphorylation of CLEC-2" ReactionMapping="included" />
+                <ReactionSpec ReactionStepRef="Binding of Syk to a Phosphorylated CLEC-2" ReactionMapping="included" />
+                <ReactionSpec ReactionStepRef="Binding of SFK NF to a Phosphorylated CLEC-2" ReactionMapping="included" />
+                <ReactionSpec ReactionStepRef="Syk bound to CLEC-2 activation" ReactionMapping="included" />
+                <ReactionSpec ReactionStepRef="DUSP3 Activation by Syk" ReactionMapping="included" />
+                <ReactionSpec ReactionStepRef="Phosphorylation of LAT by an Active Syk kinase" ReactionMapping="included" />
+                <ReactionSpec ReactionStepRef="Binding of PLCg2 SH2 Domain to a phosphorylated LAT" ReactionMapping="included" />
+                <ReactionSpec ReactionStepRef="Activation of PLCg2" ReactionMapping="included" />
+                <ReactionSpec ReactionStepRef="Production of IP3 and DAG" ReactionMapping="included" />
+            </ReactionContext>
+            <MathDescription Name="1 molecule_generated">
+                <Annotation>cloned from '1 molecule_generated' owned by user AlleMart
+</Annotation>
+                <Constant Name="_F_">96485.3321</Constant>
+                <Constant Name="_F_nmol_">9.64853321E-5</Constant>
+                <Constant Name="_K_GHK_">1.0E-9</Constant>
+                <Constant Name="_N_pmol_">6.02214179E11</Constant>
+                <Constant Name="_PI_">3.141592653589793</Constant>
+                <Constant Name="_R_">8314.46261815</Constant>
+                <Constant Name="_T_">300.0</Constant>
+                <Constant Name="AreaPerUnitArea_PM">1.0</Constant>
+                <Constant Name="CLEC2_P_diffusionRate">0.004</Constant>
+                <Constant Name="CLEC2_P_init_molecules_um_2">0.0</Constant>
+                <Constant Name="CLEC2_Raft_diffusionRate">0.004</Constant>
+                <Constant Name="CLEC2_Raft_init_molecules_um_2">1.0</Constant>
+                <Constant Name="CLEC2_SFK_A_diffusionRate">0.004</Constant>
+                <Constant Name="CLEC2_SFK_A_init_molecules_um_2">0.0</Constant>
+                <Constant Name="CLEC2_Syk_A_diffusionRate">0.004</Constant>
+                <Constant Name="CLEC2_Syk_A_init_molecules_um_2">0.0</Constant>
+                <Constant Name="CLEC2_Syk_diffusionRate">0.004</Constant>
+                <Constant Name="CLEC2_Syk_init_molecules_um_2">0.0</Constant>
+                <Constant Name="DAG_diffusionRate">283.0</Constant>
+                <Constant Name="DAG_init_uM">0.13596530574175356</Constant>
+                <Constant Name="DUSP3_A_diffusionRate">10.0</Constant>
+                <Constant Name="DUSP3_A_init_uM">0.146</Constant>
+                <Constant Name="DUSP3_diffusionRate">10.0</Constant>
+                <Constant Name="DUSP3_init_uM">3.11</Constant>
+                <Constant Name="IP3_diffusionRate">283.0</Constant>
+                <Constant Name="IP3_init_uM">0.13596530574175356</Constant>
+                <Constant Name="K_millivolts_per_volt">1000.0</Constant>
+                <Constant Name="Kf_Binding_of_PLCg2_SH2_Domain_to_a_phosphorylated_LAT">1.0</Constant>
+                <Constant Name="Kf_Binding_of_SFK_NF_to_a_Phosphorylated_CLEC_2">1.0</Constant>
+                <Constant Name="Kf_Binding_of_Syk_to_a_Phosphorylated_CLEC_2">1.0</Constant>
+                <Constant Name="KMOLE">0.001660538783162726</Constant>
+                <Constant Name="Kr_Activation_of_PLCg2">0.1</Constant>
+                <Constant Name="Kr_Binding_of_PLCg2_SH2_Domain_to_a_phosphorylated_LAT">0.4</Constant>
+                <Constant Name="Kr_Binding_of_SFK_NF_to_a_Phosphorylated_CLEC_2">1.0</Constant>
+                <Constant Name="Kr_Binding_of_Syk_to_a_Phosphorylated_CLEC_2">0.2</Constant>
+                <Constant Name="Kr_Dephosphorylation_of_SFK_by_DUSP3">0.0275</Constant>
+                <Constant Name="Kr_DUSP3_Activation_by_Syk">0.4</Constant>
+                <Constant Name="Kr_Phosphorylation_of_LAT_by_an_Active_Syk_kinase">0.25</Constant>
+                <Constant Name="Kr_Production_of_IP3_and_DAG">100.0</Constant>
+                <Constant Name="Kr_Syk_bound_to_CLEC_2_activation">1.0</Constant>
+                <Constant Name="Kr_Syk_Y346_Phosphorylation_by_Not_Fully_Active_SFK">7.5</Constant>
+                <Constant Name="LAT_diffusionRate">0.004</Constant>
+                <Constant Name="LAT_init_molecules_um_2">63.109</Constant>
+                <Constant Name="LAT_P_diffusionRate">0.004</Constant>
+                <Constant Name="LAT_P_init_molecules_um_2">2.1951146509135455</Constant>
+                <Constant Name="LAT_P_PLCg2_A_diffusionRate">0.004</Constant>
+                <Constant Name="LAT_P_PLCg2_A_init_molecules_um_2">0.4492022597907049</Constant>
+                <Constant Name="LAT_P_PLCg2_diffusionRate">0.004</Constant>
+                <Constant Name="LAT_P_PLCg2_init_molecules_um_2">2.2461353779562843</Constant>
+                <Constant Name="netValence_Activation_of_PLCg2">1.0</Constant>
+                <Constant Name="netValence_Binding_of_PLCg2_SH2_Domain_to_a_phosphorylated_LAT">1.0</Constant>
+                <Constant Name="netValence_Binding_of_SFK_NF_to_a_Phosphorylated_CLEC_2">1.0</Constant>
+                <Constant Name="netValence_Binding_of_Syk_to_a_Phosphorylated_CLEC_2">1.0</Constant>
+                <Constant Name="netValence_DUSP3_Activation_by_Syk">1.0</Constant>
+                <Constant Name="netValence_Phosphorylation_of_CLEC_2">1.0</Constant>
+                <Constant Name="netValence_Phosphorylation_of_LAT_by_an_Active_Syk_kinase">1.0</Constant>
+                <Constant Name="netValence_Production_of_IP3_and_DAG">1.0</Constant>
+                <Constant Name="netValence_Syk_bound_to_CLEC_2_activation">1.0</Constant>
+                <Constant Name="PIP2_diffusionRate">1.0</Constant>
+                <Constant Name="PIP2_init_molecules_um_2">11990.996395102886</Constant>
+                <Constant Name="PLCg2_diffusionRate">1.0</Constant>
+                <Constant Name="PLCg2_init_uM">0.409297145448324</Constant>
+                <Constant Name="SFK_diffusionRate">3.0</Constant>
+                <Constant Name="SFK_init_uM">1.85</Constant>
+                <Constant Name="SFK_NF_diffusionRate">3.0</Constant>
+                <Constant Name="SFK_NF_init_uM">0.409</Constant>
+                <Constant Name="Syk_A_diffusionRate">2.0</Constant>
+                <Constant Name="Syk_A_init_uM">0.0219</Constant>
+                <Constant Name="Syk_diffusionRate">2.0</Constant>
+                <Constant Name="Syk_init_uM">1.077</Constant>
+                <Constant Name="UnitFactor_uM_um3_molecules_neg_1">(1.0 * pow(KMOLE,1.0))</Constant>
+                <Constant Name="Voltage_PM">0.0</Constant>
+                <Constant Name="VolumePerUnitVolume_Cyt">1.0</Constant>
+                <Constant Name="VolumePerUnitVolume_EC">1.0</Constant>
+                <MembraneVariable Name="CLEC2_P" Domain="subdomain0_subdomain1_membrane" />
+                <MembraneVariable Name="CLEC2_Raft" Domain="subdomain0_subdomain1_membrane" />
+                <MembraneVariable Name="CLEC2_SFK_A" Domain="subdomain0_subdomain1_membrane" />
+                <MembraneVariable Name="CLEC2_Syk" Domain="subdomain0_subdomain1_membrane" />
+                <MembraneVariable Name="CLEC2_Syk_A" Domain="subdomain0_subdomain1_membrane" />
+                <VolumeVariable Name="DAG" Domain="subdomain1" />
+                <VolumeVariable Name="DUSP3" Domain="subdomain1" />
+                <VolumeVariable Name="DUSP3_A" Domain="subdomain1" />
+                <VolumeVariable Name="IP3" Domain="subdomain1" />
+                <MembraneVariable Name="LAT" Domain="subdomain0_subdomain1_membrane" />
+                <MembraneVariable Name="LAT_P" Domain="subdomain0_subdomain1_membrane" />
+                <MembraneVariable Name="LAT_P_PLCg2" Domain="subdomain0_subdomain1_membrane" />
+                <MembraneVariable Name="LAT_P_PLCg2_A" Domain="subdomain0_subdomain1_membrane" />
+                <MembraneVariable Name="PIP2" Domain="subdomain0_subdomain1_membrane" />
+                <VolumeVariable Name="PLCg2" Domain="subdomain1" />
+                <VolumeVariable Name="SFK" Domain="subdomain1" />
+                <VolumeVariable Name="SFK_NF" Domain="subdomain1" />
+                <VolumeVariable Name="Syk" Domain="subdomain1" />
+                <VolumeVariable Name="Syk_A" Domain="subdomain1" />
+                <Function Name="J_Activation_of_PLCg2" Domain="subdomain0_subdomain1_membrane">((Kf_Activation_of_PLCg2 * LAT_P_PLCg2) - (Kr_Activation_of_PLCg2 * LAT_P_PLCg2_A))</Function>
+                <Function Name="J_Binding_of_PLCg2_SH2_Domain_to_a_phosphorylated_LAT" Domain="subdomain0_subdomain1_membrane">(((Kf_Binding_of_PLCg2_SH2_Domain_to_a_phosphorylated_LAT * LAT_P) * PLCg2) - (Kr_Binding_of_PLCg2_SH2_Domain_to_a_phosphorylated_LAT * LAT_P_PLCg2))</Function>
+                <Function Name="J_Binding_of_SFK_NF_to_a_Phosphorylated_CLEC_2" Domain="subdomain0_subdomain1_membrane">(((Kf_Binding_of_SFK_NF_to_a_Phosphorylated_CLEC_2 * CLEC2_P) * SFK_NF) - (Kr_Binding_of_SFK_NF_to_a_Phosphorylated_CLEC_2 * CLEC2_SFK_A))</Function>
+                <Function Name="J_Binding_of_Syk_to_a_Phosphorylated_CLEC_2" Domain="subdomain0_subdomain1_membrane">(((Kf_Binding_of_Syk_to_a_Phosphorylated_CLEC_2 * CLEC2_P) * Syk) - (Kr_Binding_of_Syk_to_a_Phosphorylated_CLEC_2 * CLEC2_Syk))</Function>
+                <Function Name="J_Dephosphorylation_of_SFK_by_DUSP3" Domain="subdomain1">((Kf_Dephosphorylation_of_SFK_by_DUSP3 * SFK) - (Kr_Dephosphorylation_of_SFK_by_DUSP3 * SFK_NF))</Function>
+                <Function Name="J_DUSP3_Activation_by_Syk" Domain="subdomain0_subdomain1_membrane">((Kf_DUSP3_Activation_by_Syk * DUSP3) - (Kr_DUSP3_Activation_by_Syk * DUSP3_A))</Function>
+                <Function Name="J_Phosphorylation_of_CLEC_2" Domain="subdomain0_subdomain1_membrane">((Kf_Phosphorylation_of_CLEC_2 * CLEC2_Raft) - (Kr_Phosphorylation_of_CLEC_2 * CLEC2_P))</Function>
+                <Function Name="J_Phosphorylation_of_LAT_by_an_Active_Syk_kinase" Domain="subdomain0_subdomain1_membrane">((Kf_Phosphorylation_of_LAT_by_an_Active_Syk_kinase * LAT) - (Kr_Phosphorylation_of_LAT_by_an_Active_Syk_kinase * LAT_P))</Function>
+                <Function Name="J_Production_of_IP3_and_DAG" Domain="subdomain0_subdomain1_membrane">((Kf_Production_of_IP3_and_DAG * PIP2) - ((Kr_Production_of_IP3_and_DAG * IP3) * DAG))</Function>
+                <Function Name="J_Syk_bound_to_CLEC_2_activation" Domain="subdomain0_subdomain1_membrane">((Kf_Syk_bound_to_CLEC_2_activation * CLEC2_Syk) - (Kr_Syk_bound_to_CLEC_2_activation * CLEC2_Syk_A))</Function>
+                <Function Name="J_Syk_Y346_Phosphorylation_by_Not_Fully_Active_SFK" Domain="subdomain1">((Kf_Syk_Y346_Phosphorylation_by_Not_Fully_Active_SFK * Syk) - (Kr_Syk_Y346_Phosphorylation_by_Not_Fully_Active_SFK * Syk_A))</Function>
+                <Function Name="Kf_Activation_of_PLCg2" Domain="subdomain0_subdomain1_membrane">(350.0 * (0.14 / (37.0 * (Size_Cyt * 602.0 / Size_PM))))</Function>
+                <Function Name="Kf_Dephosphorylation_of_SFK_by_DUSP3" Domain="subdomain1">(DUSP3_A * (2.7 / 34.0))</Function>
+                <Function Name="Kf_DUSP3_Activation_by_Syk" Domain="subdomain0_subdomain1_membrane">(Syk_A * (3.0 / 7.0))</Function>
+                <Function Name="Kf_Phosphorylation_of_CLEC_2" Domain="subdomain0_subdomain1_membrane">((Syk_A * (3.0 / 7.0)) + (CLEC2_Syk_A * (3.0 / (6.9 * Size_Cyt * 602.0 / Size_PM))) + (SFK_NF * (1.05 / 3.0)) + (CLEC2_SFK_A * (2.0 / (3.0 * Size_Cyt * 602.0 / Size_PM))))</Function>
+                <Function Name="Kf_Phosphorylation_of_LAT_by_an_Active_Syk_kinase" Domain="subdomain0_subdomain1_membrane">((CLEC2_Syk_A * (3.0 / (6.9 * Size_Cyt * 602.0 / Size_PM))) + (Syk_A * (3.0 / 6.9)))</Function>
+                <Function Name="Kf_Production_of_IP3_and_DAG" Domain="subdomain0_subdomain1_membrane">(LAT_P_PLCg2_A * (10.0 / (440.0 * Size_Cyt * 602.0 / Size_PM)))</Function>
+                <Function Name="Kf_Syk_bound_to_CLEC_2_activation" Domain="subdomain0_subdomain1_membrane">((CLEC2_SFK_A * (2.0 / (3.0 * Size_Cyt * 602.0 / Size_PM))) + (CLEC2_Syk_A * (3.0 / (6.9 * Size_Cyt * 602.0 / Size_PM))) + (SFK_NF * (1.0 / 3.0)) + (Syk_A * 3.0 / 7.0))</Function>
+                <Function Name="Kf_Syk_Y346_Phosphorylation_by_Not_Fully_Active_SFK" Domain="subdomain1">((SFK_NF * (1.05 / 3.0)) + (Syk_A * (3.0 / 7.0)))</Function>
+                <Function Name="KFlux_PM_Cyt" Domain="subdomain0_subdomain1_membrane">(AreaPerUnitArea_PM / VolumePerUnitVolume_Cyt)</Function>
+                <Function Name="Kr_Phosphorylation_of_CLEC_2" Domain="subdomain0_subdomain1_membrane">(DUSP3_A * (2.7 / 34.0))</Function>
+                <Function Name="Size_Cyt" Domain="subdomain1">(VolumePerUnitVolume_Cyt * vcRegionVolume('subdomain1'))</Function>
+                <Function Name="Size_EC" Domain="subdomain0">(VolumePerUnitVolume_EC * vcRegionVolume('subdomain0'))</Function>
+                <Function Name="Size_PM" Domain="subdomain0_subdomain1_membrane">(AreaPerUnitArea_PM * vcRegionArea('subdomain0_subdomain1_membrane'))</Function>
+                <Function Name="sobj_subdomain01_subdomain10_size" Domain="subdomain0_subdomain1_membrane">vcRegionArea('subdomain0_subdomain1_membrane')</Function>
+                <Function Name="vobj_subdomain01_size" Domain="subdomain0">vcRegionVolume('subdomain0')</Function>
+                <Function Name="vobj_subdomain10_size" Domain="subdomain1">vcRegionVolume('subdomain1')</Function>
+                <CompartmentSubDomain Name="subdomain1">
+                    <BoundaryType Boundary="Xm" Type="Flux" />
+                    <BoundaryType Boundary="Xp" Type="Flux" />
+                    <BoundaryType Boundary="Ym" Type="Flux" />
+                    <BoundaryType Boundary="Yp" Type="Flux" />
+                    <BoundaryType Boundary="Zm" Type="Flux" />
+                    <BoundaryType Boundary="Zp" Type="Flux" />
+                    <PdeEquation Name="DUSP3" SolutionType="Unknown">
+                        <Rate>0.0</Rate>
+                        <Diffusion>DUSP3_diffusionRate</Diffusion>
+                        <Initial>DUSP3_init_uM</Initial>
+                    </PdeEquation>
+                    <PdeEquation Name="DUSP3_A" SolutionType="Unknown">
+                        <Rate>0.0</Rate>
+                        <Diffusion>DUSP3_A_diffusionRate</Diffusion>
+                        <Initial>DUSP3_A_init_uM</Initial>
+                    </PdeEquation>
+                    <PdeEquation Name="SFK" SolutionType="Unknown">
+                        <Rate> - J_Dephosphorylation_of_SFK_by_DUSP3</Rate>
+                        <Diffusion>SFK_diffusionRate</Diffusion>
+                        <Initial>SFK_init_uM</Initial>
+                    </PdeEquation>
+                    <PdeEquation Name="SFK_NF" SolutionType="Unknown">
+                        <Rate>J_Dephosphorylation_of_SFK_by_DUSP3</Rate>
+                        <Diffusion>SFK_NF_diffusionRate</Diffusion>
+                        <Initial>SFK_NF_init_uM</Initial>
+                    </PdeEquation>
+                    <PdeEquation Name="Syk_A" SolutionType="Unknown">
+                        <Rate>J_Syk_Y346_Phosphorylation_by_Not_Fully_Active_SFK</Rate>
+                        <Diffusion>Syk_A_diffusionRate</Diffusion>
+                        <Initial>Syk_A_init_uM</Initial>
+                    </PdeEquation>
+                    <PdeEquation Name="Syk" SolutionType="Unknown">
+                        <Rate> - J_Syk_Y346_Phosphorylation_by_Not_Fully_Active_SFK</Rate>
+                        <Diffusion>Syk_diffusionRate</Diffusion>
+                        <Initial>Syk_init_uM</Initial>
+                    </PdeEquation>
+                    <PdeEquation Name="IP3" SolutionType="Unknown">
+                        <Rate>0.0</Rate>
+                        <Diffusion>IP3_diffusionRate</Diffusion>
+                        <Initial>IP3_init_uM</Initial>
+                    </PdeEquation>
+                    <PdeEquation Name="DAG" SolutionType="Unknown">
+                        <Rate>0.0</Rate>
+                        <Diffusion>DAG_diffusionRate</Diffusion>
+                        <Initial>DAG_init_uM</Initial>
+                    </PdeEquation>
+                    <PdeEquation Name="PLCg2" SolutionType="Unknown">
+                        <Rate>0.0</Rate>
+                        <Diffusion>PLCg2_diffusionRate</Diffusion>
+                        <Initial>PLCg2_init_uM</Initial>
+                    </PdeEquation>
+                </CompartmentSubDomain>
+                <CompartmentSubDomain Name="subdomain0">
+                    <BoundaryType Boundary="Xm" Type="Flux" />
+                    <BoundaryType Boundary="Xp" Type="Flux" />
+                    <BoundaryType Boundary="Ym" Type="Flux" />
+                    <BoundaryType Boundary="Yp" Type="Flux" />
+                    <BoundaryType Boundary="Zm" Type="Flux" />
+                    <BoundaryType Boundary="Zp" Type="Flux" />
+                </CompartmentSubDomain>
+                <MembraneSubDomain Name="subdomain0_subdomain1_membrane" InsideCompartment="subdomain0" OutsideCompartment="subdomain1">
+                    <BoundaryType Boundary="Xm" Type="Value" />
+                    <BoundaryType Boundary="Xp" Type="Value" />
+                    <BoundaryType Boundary="Ym" Type="Value" />
+                    <BoundaryType Boundary="Yp" Type="Value" />
+                    <BoundaryType Boundary="Zm" Type="Value" />
+                    <BoundaryType Boundary="Zp" Type="Value" />
+                    <PdeEquation Name="CLEC2_Raft" SolutionType="Unknown">
+                        <Rate> - J_Phosphorylation_of_CLEC_2</Rate>
+                        <Diffusion>CLEC2_Raft_diffusionRate</Diffusion>
+                        <Initial>CLEC2_Raft_init_molecules_um_2</Initial>
+                    </PdeEquation>
+                    <PdeEquation Name="CLEC2_P" SolutionType="Unknown">
+                        <Rate>(J_Phosphorylation_of_CLEC_2 - J_Binding_of_Syk_to_a_Phosphorylated_CLEC_2 - J_Binding_of_SFK_NF_to_a_Phosphorylated_CLEC_2)</Rate>
+                        <Diffusion>CLEC2_P_diffusionRate</Diffusion>
+                        <Initial>CLEC2_P_init_molecules_um_2</Initial>
+                    </PdeEquation>
+                    <PdeEquation Name="CLEC2_Syk" SolutionType="Unknown">
+                        <Rate>(J_Binding_of_Syk_to_a_Phosphorylated_CLEC_2 - J_Syk_bound_to_CLEC_2_activation)</Rate>
+                        <Diffusion>CLEC2_Syk_diffusionRate</Diffusion>
+                        <Initial>CLEC2_Syk_init_molecules_um_2</Initial>
+                    </PdeEquation>
+                    <PdeEquation Name="CLEC2_Syk_A" SolutionType="Unknown">
+                        <Rate>J_Syk_bound_to_CLEC_2_activation</Rate>
+                        <Diffusion>CLEC2_Syk_A_diffusionRate</Diffusion>
+                        <Initial>CLEC2_Syk_A_init_molecules_um_2</Initial>
+                    </PdeEquation>
+                    <PdeEquation Name="CLEC2_SFK_A" SolutionType="Unknown">
+                        <Rate>J_Binding_of_SFK_NF_to_a_Phosphorylated_CLEC_2</Rate>
+                        <Diffusion>CLEC2_SFK_A_diffusionRate</Diffusion>
+                        <Initial>CLEC2_SFK_A_init_molecules_um_2</Initial>
+                    </PdeEquation>
+                    <PdeEquation Name="LAT" SolutionType="Unknown">
+                        <Rate> - J_Phosphorylation_of_LAT_by_an_Active_Syk_kinase</Rate>
+                        <Diffusion>LAT_diffusionRate</Diffusion>
+                        <Initial>LAT_init_molecules_um_2</Initial>
+                    </PdeEquation>
+                    <PdeEquation Name="LAT_P" SolutionType="Unknown">
+                        <Rate>(J_Phosphorylation_of_LAT_by_an_Active_Syk_kinase - J_Binding_of_PLCg2_SH2_Domain_to_a_phosphorylated_LAT)</Rate>
+                        <Diffusion>LAT_P_diffusionRate</Diffusion>
+                        <Initial>LAT_P_init_molecules_um_2</Initial>
+                    </PdeEquation>
+                    <PdeEquation Name="LAT_P_PLCg2" SolutionType="Unknown">
+                        <Rate>(J_Binding_of_PLCg2_SH2_Domain_to_a_phosphorylated_LAT - J_Activation_of_PLCg2)</Rate>
+                        <Diffusion>LAT_P_PLCg2_diffusionRate</Diffusion>
+                        <Initial>LAT_P_PLCg2_init_molecules_um_2</Initial>
+                    </PdeEquation>
+                    <PdeEquation Name="LAT_P_PLCg2_A" SolutionType="Unknown">
+                        <Rate>J_Activation_of_PLCg2</Rate>
+                        <Diffusion>LAT_P_PLCg2_A_diffusionRate</Diffusion>
+                        <Initial>LAT_P_PLCg2_A_init_molecules_um_2</Initial>
+                    </PdeEquation>
+                    <PdeEquation Name="PIP2" SolutionType="Unknown">
+                        <Rate> - J_Production_of_IP3_and_DAG</Rate>
+                        <Diffusion>PIP2_diffusionRate</Diffusion>
+                        <Initial>PIP2_init_molecules_um_2</Initial>
+                    </PdeEquation>
+                    <JumpCondition Name="DUSP3">
+                        <InFlux>0.0</InFlux>
+                        <OutFlux>( - 1.0 * J_DUSP3_Activation_by_Syk * KFlux_PM_Cyt * UnitFactor_uM_um3_molecules_neg_1)</OutFlux>
+                    </JumpCondition>
+                    <JumpCondition Name="DUSP3_A">
+                        <InFlux>0.0</InFlux>
+                        <OutFlux>(J_DUSP3_Activation_by_Syk * KFlux_PM_Cyt * UnitFactor_uM_um3_molecules_neg_1)</OutFlux>
+                    </JumpCondition>
+                    <JumpCondition Name="SFK">
+                        <InFlux>0.0</InFlux>
+                        <OutFlux>0.0</OutFlux>
+                    </JumpCondition>
+                    <JumpCondition Name="SFK_NF">
+                        <InFlux>0.0</InFlux>
+                        <OutFlux>( - 1.0 * J_Binding_of_SFK_NF_to_a_Phosphorylated_CLEC_2 * KFlux_PM_Cyt * UnitFactor_uM_um3_molecules_neg_1)</OutFlux>
+                    </JumpCondition>
+                    <JumpCondition Name="Syk_A">
+                        <InFlux>0.0</InFlux>
+                        <OutFlux>0.0</OutFlux>
+                    </JumpCondition>
+                    <JumpCondition Name="Syk">
+                        <InFlux>0.0</InFlux>
+                        <OutFlux>( - 1.0 * J_Binding_of_Syk_to_a_Phosphorylated_CLEC_2 * KFlux_PM_Cyt * UnitFactor_uM_um3_molecules_neg_1)</OutFlux>
+                    </JumpCondition>
+                    <JumpCondition Name="IP3">
+                        <InFlux>0.0</InFlux>
+                        <OutFlux>(KFlux_PM_Cyt * J_Production_of_IP3_and_DAG * UnitFactor_uM_um3_molecules_neg_1)</OutFlux>
+                    </JumpCondition>
+                    <JumpCondition Name="DAG">
+                        <InFlux>0.0</InFlux>
+                        <OutFlux>(KFlux_PM_Cyt * J_Production_of_IP3_and_DAG * UnitFactor_uM_um3_molecules_neg_1)</OutFlux>
+                    </JumpCondition>
+                    <JumpCondition Name="PLCg2">
+                        <InFlux>0.0</InFlux>
+                        <OutFlux>( - 1.0 * J_Binding_of_PLCg2_SH2_Domain_to_a_phosphorylated_LAT * KFlux_PM_Cyt * UnitFactor_uM_um3_molecules_neg_1)</OutFlux>
+                    </JumpCondition>
+                </MembraneSubDomain>
+                <Version Name="1 molecule_generated" KeyValue="246403976" BranchId="246403977" Archived="0" Date="31-Oct-2022 16:47:07" FromVersionable="false">
+                    <Owner Name="schaff" Identifier="17" />
+                    <GroupAccess Type="1" />
+                    <Annotation>cloned from '1 molecule_generated' owned by user AlleMart
+</Annotation>
+                </Version>
+            </MathDescription>
+            <Simulation Name="Simulation1">
+                <Annotation>cloned from 'Simulation1' owned by user AlleMart
+</Annotation>
+                <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Sundials Stiff PDE Solver (Variable Time Step)">
+                    <TimeBound StartTime="0.0" EndTime="250.0" />
+                    <TimeStep DefaultTime="0.05" MinTime="0.0" MaxTime="0.1" />
+                    <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-7" />
+                    <OutputOptions OutputTimeStep="0.5" />
+                    <SundialsSolverOptions>
+                        <maxOrderAdvection>2</maxOrderAdvection>
+                    </SundialsSolverOptions>
+                    <NumberProcessors>1</NumberProcessors>
+                </SolverTaskDescription>
+                <MathOverrides />
+                <MeshSpecification>
+                    <Size X="51" Y="51" Z="11" />
+                </MeshSpecification>
+                <Version Name="Simulation1" KeyValue="246404116" BranchId="246404117" Archived="0" Date="31-Oct-2022 16:47:08" FromVersionable="false">
+                    <Owner Name="schaff" Identifier="17" />
+                    <GroupAccess Type="1" />
+                    <Annotation>cloned from 'Simulation1' owned by user AlleMart
+</Annotation>
+                </Version>
+            </Simulation>
+            <SpatialObjects>
+                <SpatialObject Name="vobj_subdomain10" Type="Volume" subVolume="subdomain1" regionId="0">
+                    <QuantityCategoryList>
+                        <QuantityCategory Name="VolumeCentroid" Enabled="false" />
+                        <QuantityCategory Name="InteriorVelocity" Enabled="false" />
+                        <QuantityCategory Name="VolumeRegionSize" Enabled="true" />
+                    </QuantityCategoryList>
+                </SpatialObject>
+                <SpatialObject Name="vobj_subdomain01" Type="Volume" subVolume="subdomain0" regionId="1">
+                    <QuantityCategoryList>
+                        <QuantityCategory Name="VolumeCentroid" Enabled="false" />
+                        <QuantityCategory Name="InteriorVelocity" Enabled="false" />
+                        <QuantityCategory Name="VolumeRegionSize" Enabled="true" />
+                    </QuantityCategoryList>
+                </SpatialObject>
+                <SpatialObject Name="sobj_subdomain01_subdomain10" Type="Surface" subVolumeInside="subdomain0" regionIdInside="1" subVolumeOutside="subdomain1" regionIdOutside="0">
+                    <QuantityCategoryList>
+                        <QuantityCategory Name="SurfaceNormal" Enabled="false" />
+                        <QuantityCategory Name="SurfaceVelocity" Enabled="false" />
+                        <QuantityCategory Name="DistanceToSurface" Enabled="false" />
+                        <QuantityCategory Name="DirectionToSurface" Enabled="false" />
+                        <QuantityCategory Name="SurfaceSize" Enabled="true" />
+                    </QuantityCategoryList>
+                </SpatialObject>
+            </SpatialObjects>
+            <Version Name="1 molecule" KeyValue="246404080" BranchId="246404081" Archived="0" Date="31-Oct-2022 16:47:08" FromVersionable="false">
+                <Owner Name="schaff" Identifier="17" />
+                <GroupAccess Type="1" />
+                <Annotation>cloned from '1 molecule' owned by user AlleMart
+</Annotation>
+            </Version>
+            <MicroscopeMeasurement Name="fluor">
+                <ConvolutionKernel Type="ProjectionZKernel" />
+            </MicroscopeMeasurement>
+        </SimulationSpec>
+        <Version Name="biomodel_111113048_smaller" KeyValue="246404119" BranchId="246404120" Archived="0" Date="31-Oct-2022 16:47:08" FromVersionable="false">
+            <Owner Name="schaff" Identifier="17" />
+            <GroupAccess Type="1" />
+            <Annotation>cloned from 'CLEC2 v4: Cytosolic, no Btk, Our' owned by user AlleMart
+</Annotation>
+        </Version>
+        <pathwayModel>
+            <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bp="http://www.biopax.org/release/biopax-level3.owl#" version="3.0" />
+        </pathwayModel>
+        <relationshipModel>
+            <RMNS version="3.0" />
+        </relationshipModel>
+        <vcmetadata>
+            <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" />
+            <nonrdfAnnotationList />
+            <uriBindingList />
+        </vcmetadata>
+    </BioModel>
+</vcml>

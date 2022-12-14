@@ -73,7 +73,8 @@ spec:
         - name: serverid
         - name: simdatadir_external
         - name: simdatadir_parallel_external
-        - name: singularity_imagefile
+        - name: batch_singularity_imagefile
+        - name: opt_singularity_imagefile
         - name: slurm_cmd_sacct
           value: sacct
         - name: slurm_cmd_sbatch

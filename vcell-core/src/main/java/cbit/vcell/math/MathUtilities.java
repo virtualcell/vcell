@@ -199,9 +199,14 @@ public static Expression substituteFunctions(Expression exp, SymbolTable symbolT
  * @exception java.lang.Exception The exception description.
  */
 public static Expression substituteModelParameters(Expression exp, SymbolTable symbolTable) throws ExpressionException {
+	return substituteModelParameters(exp, symbolTable, true, true);
+}
+
+
+public static Expression substituteModelParameters(Expression exp, SymbolTable symbolTable, boolean bToNumbers, boolean bBind) throws ExpressionException {
 	Expression exp2 = new Expression(exp);
 	//
-	// do until no more functions to substitute
+	// do until no more functions to substitute; optionally stop last step before numeric
 	//
 	int count = 0;
 	boolean bSubstituted = true;
@@ -217,14 +222,16 @@ public static Expression substituteModelParameters(Expression exp, SymbolTable s
 				if (ste != null && !(ste instanceof SymbolTableFunctionEntry)) {
 					Expression steExp = ste.getExpression();
 					if (steExp != null) {
-						exp2.substituteInPlace(new Expression(ste.getName()),steExp);
-						bSubstituted = true;
+						if (!((steExp.getSymbols() == null || steExp.getSymbols().length == 0) && !bToNumbers)) {
+							exp2.substituteInPlace(new Expression(ste.getName()),steExp);
+							bSubstituted = true;
+						}
 					}
 				}
 			}
 		}
 	}
-	exp2.bindExpression(symbolTable);
+	if (bBind) exp2.bindExpression(symbolTable);
 	return exp2;
 }
 

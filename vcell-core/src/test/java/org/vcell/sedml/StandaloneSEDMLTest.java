@@ -225,7 +225,7 @@ public class StandaloneSEDMLTest {
 	        newSimulationContext.refreshDependencies();
 	        MathMappingCallback callback = new MathMappingCallbackTaskAdapter(progressListener);
 	        newSimulationContext.refreshMathDescription(callback, NetworkGenerationRequirements.ComputeFullStandardTimeout);
-	    	Simulation newSimulation = new Simulation(newSimulationContext.getMathDescription());
+	    	Simulation newSimulation = new Simulation(newSimulationContext.getMathDescription(), newSimulationContext);
 	    	newSimulation.setName(sedmlSimulation.getName());	
 	    	bioModel.addSimulation(newSimulation);
 			
@@ -331,11 +331,7 @@ public class StandaloneSEDMLTest {
 	
 	public static void main(String[] args) {
 		try {
-			
-			ResourceUtil.setNativeLibraryDirectory();
-
-			doit(new File("C:\\temp\\fff\\BBasicModel.sedx"));
-			
+			doit(new File("C:\\temp\\fff\\BBasicModel.sedx"));	
 		}catch (Exception e){
 			e.printStackTrace(System.out);
 		}finally{

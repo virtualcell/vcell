@@ -332,25 +332,33 @@ public enum SolverDescription {
 	public final String kisao;
 	public final boolean deprecated;
 
-	private SolverDescription(TimeStep ts, ErrorTol et,TimeSpecCreated tst,
+	private SolverDescription(
+			TimeStep ts, 
+			ErrorTol et,
+			TimeSpecCreated tst,
 			String shortDisplayLabel,
-			String displayLabel, String databaseName,
-			String fullDescription, int timeOrder, SupportedTimeSpec sts,
+			String displayLabel, 
+			String databaseName,
+			String fullDescription, 
+			int timeOrder, 
+			SupportedTimeSpec sts,
 			SolverFeature[] fset,
-			SolverExecutable se, String kisao, boolean deprecated) {
+			SolverExecutable se, 
+			String kisao, 
+			boolean deprecated) {
 
-		variableTimeStep = (ts == TimeStep.VARIABLE);
-		errorTolerance = ( et == ErrorTol.YES);
-		timeSpecType = tst;
+		this.variableTimeStep = (ts == TimeStep.VARIABLE);
+		this.errorTolerance = ( et == ErrorTol.YES);
+		this.timeSpecType = tst;
 		this.shortDisplayLabel = shortDisplayLabel;
 		this.displayLabel = displayLabel;
 		this.databaseName = databaseName;
 		this.fullDescription = subFullDescription(fullDescription,displayLabel);
 		this.fullDescriptionUrl = null;
 		this.timeOrder = timeOrder;
-		supportedTimeSpec = sts;
+		this.supportedTimeSpec = sts;
 		this.supportedFeatures = new HashSet<SolverFeature>(Arrays.asList(fset));
-		solverExecutable = se;
+		this.solverExecutable = se;
 		this.kisao = kisao;
 		this.deprecated = deprecated;
 	}
@@ -704,6 +712,10 @@ public enum SolverDescription {
 		Lambda("KISAO:0000603", "Minimum Reaction Rate for continuous approximation"),
 		MSRTolerance("KISAO:0000604", "Multiple Slow Reactions Tolerance"),
 		SDETolerance("KISAO:0000605", "Stochastic Differential Equation Tolerance"),
+
+		// for encoding of PDEMeshSize, see ISize.toTemporaryKISAOvalue() and ISize.fromTemporaryKISAOvalue()
+		// TODO: replace KISAO term with proper term, currently using KISAO_0000326 in a nonstandard way
+		PDEMeshSize("KISAO:0000326", "Cartesian Mesh Size temporarily stored as 'nx,ny,nz'"),
 		;
 		
 		private final String kisao;

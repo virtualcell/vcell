@@ -612,7 +612,7 @@ private void updateKineticChoice() {
 	try {
 		Kinetics newKinetics = null;
 		if (bLumpedToGeneral) {
-			newKinetics = DistributedKinetics.toDistributedKinetics((LumpedKinetics)reactionStep.getKinetics());
+			newKinetics = DistributedKinetics.toDistributedKinetics((LumpedKinetics)reactionStep.getKinetics(), true);
 		} else if (bGeneralToLumped) {
 			newKinetics = LumpedKinetics.toLumpedKinetics((DistributedKinetics)reactionStep.getKinetics());
 		} else {
@@ -718,7 +718,7 @@ private JButton getJToggleButton() {
 					}
  				}else if (kinetics instanceof LumpedKinetics){
 					try {
-						reactionStep.setKinetics(DistributedKinetics.toDistributedKinetics((LumpedKinetics)kinetics));
+						reactionStep.setKinetics(DistributedKinetics.toDistributedKinetics((LumpedKinetics)kinetics, true));
 					} catch (Exception e2){
 						e2.printStackTrace(System.out);
 						if (kinetics.getKineticsDescription().isElectrical()){

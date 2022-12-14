@@ -16,7 +16,7 @@ import cbit.sql.Table;
  * This type was created in VisualAge.
  */
 public class TFTestSuiteTable extends cbit.sql.Table {
-	private static final String TABLE_NAME = "vc_tfTestSuite";
+	private static final String TABLE_NAME = "vc_tftestsuite";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
     private static final String[] tsBuildAndNumericsUniqueConstraintOracle =

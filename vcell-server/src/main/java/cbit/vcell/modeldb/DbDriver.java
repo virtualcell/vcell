@@ -66,7 +66,6 @@ import org.vcell.util.document.VersionableFamily;
 import org.vcell.util.document.VersionableRelationship;
 import org.vcell.util.document.VersionableType;
 import org.vcell.util.document.VersionableTypeVersion;
-import org.vcell.util.document.User.SPECIALS;
 
 import cbit.image.VCImageInfo;
 import cbit.sql.Field;
@@ -84,7 +83,6 @@ import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.mathmodel.MathModelMetaData;
-import cbit.vcell.modeldb.MathVerifier.LoadModelsStatTable;
 import cbit.vcell.numericstest.AddTestCasesOP;
 import cbit.vcell.numericstest.AddTestCasesOPBioModel;
 import cbit.vcell.numericstest.AddTestCasesOPMathModel;
@@ -154,8 +152,8 @@ public DbDriver(DatabaseSyntax dbSyntax, KeyFactory keyFactory) {
 }
 
 public static void publishDirectly(Connection con,KeyValue[] publishTheseBiomodels,KeyValue[] publishTheseMathmodels,User user,DatabaseSyntax databaseSyntax) throws SQLException,DataAccessException{
-	TreeMap<SPECIALS, TreeMap<User, String>> specialUsers = getSpecialUsers(user,con,databaseSyntax);
-	TreeMap<User, String> usersAllowedToModifyPublications = specialUsers.get(User.SPECIALS.publication);
+	TreeMap<User.SPECIAL_CLAIM, TreeMap<User, String>> specialUsers = getSpecialUsers(user,con,databaseSyntax);
+	TreeMap<User, String> usersAllowedToModifyPublications = specialUsers.get(User.SPECIAL_CLAIM.publicationEditors);
 	if(usersAllowedToModifyPublications == null || !usersAllowedToModifyPublications.containsKey(user)) {
 		throw new DataAccessException("User "+user.getName()+" does not have permission to publish directly");
 	}
@@ -179,11 +177,11 @@ public static void publishDirectly(Connection con,KeyValue[] publishTheseBiomode
 	}
 }
 
-public static KeyValue savePublicationRep(Connection con,PublicationRep publicationRep,User user,DatabaseSyntax databaseSyntax) throws SQLException, DataAccessException{
+public static KeyValue savePublicationRep(Connection con,PublicationRep publicationRep,User user,KeyFactory keyFactory,DatabaseSyntax databaseSyntax) throws SQLException, DataAccessException{
 	
-	String pubID = null;
-	TreeMap<SPECIALS, TreeMap<User, String>> specialUsers = getSpecialUsers(user,con,databaseSyntax);
-	TreeMap<User, String> usersAllowedToModifyPublications = specialUsers.get(User.SPECIALS.publication);
+	KeyValue pubID = null;
+	TreeMap<User.SPECIAL_CLAIM, TreeMap<User, String>> specialUsers = getSpecialUsers(user,con,databaseSyntax);
+	TreeMap<User, String> usersAllowedToModifyPublications = specialUsers.get(User.SPECIAL_CLAIM.publicationEditors);
 	if(usersAllowedToModifyPublications == null || !usersAllowedToModifyPublications.containsKey(user)) {
 		throw new DataAccessException("User "+user.getName()+" does not have permission to edit publications");
 	}
@@ -193,12 +191,7 @@ public static KeyValue savePublicationRep(Connection con,PublicationRep publicat
 	Statement stmt = null;
 	try {
 		if(publicationRep.getPubKey() == null) {
-			stmt = con.createStatement();
-			ResultSet rset = stmt.executeQuery("select newseq.nextval from dual");
-			rset.next();
-			pubID = rset.getString(1);
-			rset.close();
-			stmt.close();
+			pubID = keyFactory.getNewKey(con);
 			sql = "INSERT INTO "+PublicationTable.table.getTableName()+" VALUES (" +
 			pubID.toString()+","+
 			(publicationRep.getTitle()==null?"NULL":"'"+publicationRep.getTitle()+"'")+","+
@@ -213,7 +206,7 @@ public static KeyValue savePublicationRep(Connection con,PublicationRep publicat
 			(publicationRep.getDate()==null?"NULL":" TO_DATE('" + simpleDateFormat.format(publicationRep.getDate()) + "','"+YMD_FORMAT_STRING+"') ")+
 			")";		
 		}else {
-			pubID = publicationRep.getPubKey().toString();
+			pubID = publicationRep.getPubKey();
 			sql = "UPDATE "+PublicationTable.table.getTableName()+" SET "+
 			PublicationTable.table.title.getUnqualifiedColName()+"="+(publicationRep.getTitle()==null?"NULL":"'"+publicationRep.getTitle()+"'")+","+
 			PublicationTable.table.authors.getUnqualifiedColName()+"="+(publicationRep.getAuthors()==null || publicationRep.getAuthors().length==0?"NULL":"'"+StringUtils.join(publicationRep.getAuthors(), ';')+"'")+","+
@@ -234,7 +227,7 @@ public static KeyValue savePublicationRep(Connection con,PublicationRep publicat
 			if(publicationRep.getBiomodelReferenceReps() != null && publicationRep.getBiomodelReferenceReps().length > 0) {
 			for(BioModelReferenceRep bioModelReferenceRep:publicationRep.getBiomodelReferenceReps()) {
 				try {
-					updateCleanSQL(con, "INSERT INTO "+PublicationModelLinkTable.table.getTableName()+" VALUES (newseq.nextval,"+pubID.toString()+","+bioModelReferenceRep.getBmKey().toString()+",NULL)");
+					updateCleanSQL(con, "INSERT INTO "+PublicationModelLinkTable.table.getTableName()+" VALUES ("+keyFactory.nextSEQ()+","+pubID.toString()+","+bioModelReferenceRep.getBmKey().toString()+",NULL)");
 				} catch (Exception e) {
 					e.printStackTrace();
 					throw new SQLException("Error inserting biomodelKey="+bioModelReferenceRep.getBmKey().toString()+" link to publicationID="+pubID.toString()+"\n"+e.getMessage(),e);
@@ -244,16 +237,16 @@ public static KeyValue savePublicationRep(Connection con,PublicationRep publicat
 		if(publicationRep.getMathmodelReferenceReps() != null && publicationRep.getMathmodelReferenceReps().length > 0) {
 			for(MathModelReferenceRep mathModelReferenceRep:publicationRep.getMathmodelReferenceReps()) {
 				try {
-					updateCleanSQL(con, "INSERT INTO "+PublicationModelLinkTable.table.getTableName()+" VALUES (newseq.nextval,"+pubID.toString()+",NULL,"+mathModelReferenceRep.getMmKey().toString()+")");
+					updateCleanSQL(con, "INSERT INTO "+PublicationModelLinkTable.table.getTableName()+" VALUES ("+keyFactory.nextSEQ()+","+pubID.toString()+",NULL,"+mathModelReferenceRep.getMmKey().toString()+")");
 				} catch (Exception e) {
 					e.printStackTrace();
 					throw new SQLException("Error inserting mathmodelKey="+mathModelReferenceRep.getMmKey().toString()+" link to publicationID="+pubID.toString()+"\n"+e.getMessage(),e);
 				}
 			}
 		}
-		return new KeyValue(pubID.toString());
+		return pubID;
 	}finally {
-		if(stmt != null) {try{stmt.close();}catch(Exception e) {e.printStackTrace();}}
+		if(stmt != null) {try{stmt.close();}catch(Exception e) {lg.error(e);}}
 	}
 }
 
@@ -579,7 +572,7 @@ public static VCDocumentInfo curate(CurateSpec curateSpec,Connection con,User us
 	}
 
 	VersionTable vTable = VersionTable.getVersionTable(vType);
-	String set = vTable.versionFlag.getQualifiedColName() + " = " + updatedVersionFlag.getIntValue();
+	String set = vTable.versionFlag.getUnqualifiedColName() + " = " + updatedVersionFlag.getIntValue();
 	String cond = vTable.id.getQualifiedColName() + " = " + vKey;
 	String sql = DatabasePolicySQL.enforceOwnershipUpdate(user,vTable,set,cond);
 	int numRowsProcessed = updateCleanSQL(con, sql);
@@ -597,14 +590,6 @@ public static VCDocumentInfo curate(CurateSpec curateSpec,Connection con,User us
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (9/18/2006 1:20:15 PM)
- * @return cbit.vcell.simdata.FieldDataInfo[]
- * @param conn java.sql.Connection
- * @param user cbit.vcell.server.User
- * @param fieldNames java.lang.String[]
- */
 public static FieldDataDBOperationResults fieldDataDBOperation(Connection con, KeyFactory keyFactory, User user,
 		FieldDataDBOperationSpec fieldDataDBOperationSpec) throws SQLException, DataAccessException {
 	
@@ -910,15 +895,7 @@ public static VersionableFamily getAllReferences(java.sql.Connection con, Versio
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return boolean
- * @param con Connection
- * @param user User
- * @param vType int
- * @param versionKey cbit.sql.KeyValue
- */
-protected static KeyValue[] getChildrenFromLinkTable(java.sql.Connection con, Table linkTable, Field parentField, Field childField, KeyValue parentKey) 
+protected static KeyValue[] getChildrenFromLinkTable(java.sql.Connection con, Table linkTable, Field parentField, Field childField, KeyValue parentKey)
 							throws ObjectNotFoundException, java.sql.SQLException {
 								
 	String sql = null;
@@ -944,15 +921,7 @@ protected static KeyValue[] getChildrenFromLinkTable(java.sql.Connection con, Ta
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return boolean
- * @param con Connection
- * @param user User
- * @param vType int
- * @param versionKey cbit.sql.KeyValue
- */
-private static KeyValue[] getExternalRefs(java.sql.Connection con,cbit.sql.Field field, Table table, KeyValue versionKey) 
+private static KeyValue[] getExternalRefs(java.sql.Connection con,cbit.sql.Field field, Table table, KeyValue versionKey)
 							throws java.sql.SQLException {
 								
 	String sql = null;
@@ -980,15 +949,7 @@ private static KeyValue[] getExternalRefs(java.sql.Connection con,cbit.sql.Field
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return boolean
- * @param con Connection
- * @param user User
- * @param vType int
- * @param versionKey cbit.sql.KeyValue
- */
-protected static KeyValue getForeignRefByOwner(java.sql.Connection con,cbit.sql.Field field, VersionTable table, KeyValue idKey, VersionTable refTable, User owner) 
+protected static KeyValue getForeignRefByOwner(java.sql.Connection con,cbit.sql.Field field, VersionTable table, KeyValue idKey, VersionTable refTable, User owner)
 							throws ObjectNotFoundException, java.sql.SQLException {
 								
 	String sql = null;
@@ -1101,14 +1062,6 @@ public static GroupAccess getGroupAccessFromGroupID(java.sql.Connection con,BigD
 	return groupAccess; 
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (4/5/2001 3:50:56 PM)
- * @return java.lang.Object
- * @param rset oracle.jdbc.OracleResultSet
- * @param columnName java.lang.String
- */
 protected final static Object getLOB(ResultSet rset,Field column,DatabaseSyntax dbSyntax) throws DataAccessException, SQLException {
 	
 	switch (dbSyntax){
@@ -1205,13 +1158,6 @@ private static java.math.BigDecimal getNewGroupID(Connection con, KeyFactory key
 	return keyFactory.getUniqueBigDecimal(con);
 }
 
-
-/**
- * This method was created in VisualAge.
- * @return int
- * @param user java.lang.String
- * @param imageName java.lang.String
- */
 public static Preference[] getPreferences(Connection con, User user) throws SQLException {
 	
 	String sql =
@@ -1274,12 +1220,6 @@ public static KeyValue[] getMathDescKeysForExternalData(Connection con,User owne
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return int
- * @param user java.lang.String
- * @param imageName java.lang.String
- */
 private static User getUserFromUserid(Connection con, String userid) throws SQLException {
 	Statement stmt;
 	String sql;
@@ -1302,8 +1242,8 @@ private static User getUserFromUserid(Connection con, String userid) throws SQLE
 	return user;
 }
 
-public static TreeMap<User.SPECIALS,TreeMap<User,String>>  getSpecialUsers(User user,Connection con, DatabaseSyntax dbSyntax) throws DataAccessException, java.sql.SQLException{
-	TreeMap<User.SPECIALS,TreeMap<User,String>> result = new TreeMap<>();
+public static TreeMap<User.SPECIAL_CLAIM,TreeMap<User,String>>  getSpecialUsers(User user,Connection con, DatabaseSyntax dbSyntax) throws DataAccessException, java.sql.SQLException{
+	TreeMap<User.SPECIAL_CLAIM,TreeMap<User,String>> result = new TreeMap<>();
 	String sql = "SELECT "+
 			SpecialUsersTable.table.userRef.getQualifiedColName()+" userref,"+
 			SpecialUsersTable.table.special.getQualifiedColName()+" special,"+
@@ -1315,7 +1255,7 @@ public static TreeMap<User.SPECIALS,TreeMap<User,String>>  getSpecialUsers(User 
 		try(ResultSet rset = stmt.executeQuery(sql);){
 			while(rset.next()) {
 				String specialStr = rset.getString("special");
-				User.SPECIALS special = User.SPECIALS.valueOf(specialStr);
+				User.SPECIAL_CLAIM special = User.SPECIAL_CLAIM.fromDatabase(specialStr);
 				String userdetail = rset.getString("userdetail");
 				String userRef = rset.getString("userref");
 				String userId = rset.getString("userid");
@@ -1395,43 +1335,38 @@ public static VCInfoContainer getVCInfoContainer(User user,Connection con, Datab
 				try {
 					//String aliasUserKey = "aliasUserKey";
 					sql = new StringBuffer(
-							"SELECT "+SimContextTable.table.id.getQualifiedColName()+","+
-								SimContextTable.table.name.getQualifiedColName()+" "+aliasSCName+","+
-								BioModelSimContextLinkTable.table.bioModelRef.getQualifiedColName() +","+
-								SimulationTable.table.name.getQualifiedColName()+" "+aliasSimName+","+
-								SimulationTable.table.id.getQualifiedColName()+" "+aliasSimID+
-								(whichExtraInfo == 0xFF?","+
-									ApplicationMathTable.table.outputFuncLarge.getQualifiedColName()+","+
-									ApplicationMathTable.table.outputFuncSmall.getQualifiedColName() + "," +
-									SimulationTable.table.mathOverridesSmall+","+
-									SimulationTable.table.mathOverridesLarge+","+
-									SubVolumeTable.table.handle.getQualifiedColName()+","+
-									SubVolumeTable.table.name.getQualifiedColName()+" "+aliasSVName
-		//							SubVolumeTable.table.ordinal.getQualifiedColName()+
-								:"")+
-							" FROM "+
-								SimContextTable.table.getTableName()+","+
-								BioModelSimContextLinkTable.table.getTableName()+","+
-								BioModelSimulationLinkTable.table.getTableName()+","+
-								SimulationTable.table.getTableName()+
-								(whichExtraInfo == 0xFF?","+
-									ApplicationMathTable.table.getTableName()+","+
-		//							GeometricRegionTable.table.getTableName()+","+
-									SubVolumeTable.table.getTableName()
-								:"")+
-							" WHERE "+
-								BioModelSimContextLinkTable.table.simContextRef.getQualifiedColName()+ " = " +SimContextTable.table.id.getQualifiedColName()+
-								" AND "+SimulationTable.table.id.getQualifiedColName()+" = "+BioModelSimulationLinkTable.table.simRef.getQualifiedColName()+
-								" AND "+BioModelSimulationLinkTable.table.bioModelRef.getQualifiedColName()+" = "+BioModelSimContextLinkTable.table.bioModelRef.getQualifiedColName()+
-								" AND "+SimContextTable.table.mathRef.getQualifiedColName()+" = "+SimulationTable.table.mathRef.getQualifiedColName()+
-								(whichExtraInfo == 0xFF?
-									" AND "+SimContextTable.table.id.getQualifiedColName()+" = "+ApplicationMathTable.table.simContextRef.getQualifiedColName() +" (+)"+
-		//							" AND "+GeometricRegionTable.table.geometryRef.getQualifiedColName()+" = "+SimContextTable.table.geometryRef.getQualifiedColName()+
-		//							" AND "+SubVolumeTable.table.geometryRef.getQualifiedColName()+" = "+GeometricRegionTable.table.geometryRef.getQualifiedColName()
-									" AND "+SimContextTable.table.geometryRef.getQualifiedColName()+" = "+SubVolumeTable.table.geometryRef.getQualifiedColName()+" (+)"
-								:"")
+							"SELECT " + SimContextTable.table.id.getQualifiedColName() + "," +
+									SimContextTable.table.name.getQualifiedColName() + " " + aliasSCName + "," +
+									BioModelSimContextLinkTable.table.bioModelRef.getQualifiedColName() + "," +
+									SimulationTable.table.name.getQualifiedColName() + " " + aliasSimName + "," +
+									SimulationTable.table.id.getQualifiedColName() + " " + aliasSimID +
+									(whichExtraInfo == 0xFF ? ( "," +
+											ApplicationMathTable.table.outputFuncLarge.getQualifiedColName() + "," +
+											ApplicationMathTable.table.outputFuncSmall.getQualifiedColName() + "," +
+											SimulationTable.table.mathOverridesSmall + "," +
+											SimulationTable.table.mathOverridesLarge + "," +
+											SubVolumeTable.table.handle.getQualifiedColName() + "," +
+											SubVolumeTable.table.name.getQualifiedColName() + " " + aliasSVName
+											//							SubVolumeTable.table.ordinal.getQualifiedColName()+
+									) : "") +
+									" FROM " +
+									SimContextTable.table.getTableName() +
+									(whichExtraInfo == 0xFF ? (
+										" LEFT JOIN " + ApplicationMathTable.table.getTableName() +
+											" ON " + SimContextTable.table.id.getQualifiedColName() + " = " + ApplicationMathTable.table.simContextRef.getQualifiedColName() +
+										" LEFT JOIN " + SubVolumeTable.table.getTableName() +
+											" ON " + SimContextTable.table.geometryRef.getQualifiedColName() + " = " + SubVolumeTable.table.geometryRef.getQualifiedColName() + ","
+									) : ",") +
+									BioModelSimContextLinkTable.table.getTableName() + "," +
+									BioModelSimulationLinkTable.table.getTableName() + "," +
+									SimulationTable.table.getTableName() +
+									" WHERE " +
+									BioModelSimContextLinkTable.table.simContextRef.getQualifiedColName() + " = " + SimContextTable.table.id.getQualifiedColName() +
+									" AND " + SimulationTable.table.id.getQualifiedColName() + " = " + BioModelSimulationLinkTable.table.simRef.getQualifiedColName() +
+									" AND " + BioModelSimulationLinkTable.table.bioModelRef.getQualifiedColName() + " = " + BioModelSimContextLinkTable.table.bioModelRef.getQualifiedColName() +
+									" AND " + SimContextTable.table.mathRef.getQualifiedColName() + " = " + SimulationTable.table.mathRef.getQualifiedColName()
 						);
-					
+
 					final BigDecimal[] array = mapBmToBioModelInfo.keySet().toArray(new BigDecimal[0]);
 					final int MAX_LIST = 500;
 					for(int i=0;i<array.length;i+=MAX_LIST) {
@@ -1556,17 +1491,17 @@ public static VCInfoContainer getVCInfoContainer(User user,Connection con, Datab
 								SubVolumeTable.table.name.getQualifiedColName()+" "+aliasSVName+
 							" FROM "+
 								MathModelTable.table.getTableName()+","+
-								MathDescTable.table.getTableName()+","+
-								MathModelSimulationLinkTable.table.getTableName()+","+
-								ApplicationMathTable.table.getTableName()+","+
-								SimulationTable.table.getTableName()+","+
-								SubVolumeTable.table.getTableName()+
+								MathDescTable.table.getTableName()+
+									" LEFT JOIN "+SubVolumeTable.table.getTableName()+
+									" ON "+MathDescTable.table.geometryRef.getQualifiedColName()+" = "+SubVolumeTable.table.geometryRef.getQualifiedColName()+","+
+								MathModelSimulationLinkTable.table.getTableName()+
+									" LEFT JOIN "+ApplicationMathTable.table.getTableName()+
+									" ON "+MathModelSimulationLinkTable.table.mathModelRef.getQualifiedColName()+" = "+ApplicationMathTable.table.mathModelRef.getQualifiedColName()+","+
+								SimulationTable.table.getTableName()+
 							" WHERE "+
-								MathModelSimulationLinkTable.table.mathModelRef.getQualifiedColName()+" = "+ApplicationMathTable.table.mathModelRef.getQualifiedColName() +" (+)"+
-								" AND "+MathModelTable.table.id.getQualifiedColName()+" = "+MathModelSimulationLinkTable.table.mathModelRef.getQualifiedColName()+
+								MathModelTable.table.id.getQualifiedColName()+" = "+MathModelSimulationLinkTable.table.mathModelRef.getQualifiedColName()+
 								" AND "+SimulationTable.table.id.getQualifiedColName()+" = "+MathModelSimulationLinkTable.table.simRef.getQualifiedColName()+
-								" AND "+MathDescTable.table.id.getQualifiedColName()+" = "+MathModelTable.table.mathRef.getQualifiedColName()+
-								" AND "+MathDescTable.table.geometryRef.getQualifiedColName()+" = "+SubVolumeTable.table.geometryRef.getQualifiedColName()+" (+)"
+								" AND "+MathDescTable.table.id.getQualifiedColName()+" = "+MathModelTable.table.mathRef.getQualifiedColName()
 						);
 					
 					final BigDecimal[] array = mapMmToMathModelInfo.keySet().toArray(new BigDecimal[0]);
@@ -1871,14 +1806,7 @@ public static Vector<VersionInfo> getVersionableInfos(Connection con,User user, 
 	return vInfoList;
 }
 
-
-/**
- * This method was created in VisualAge.
- * @return cbit.sql.Versionable
- * @param user cbit.vcell.server.User
- * @param versionable cbit.sql.Versionable
- */
-public String getVersionableXML(Connection con,VersionableType vType, KeyValue vKey) 
+public String getVersionableXML(Connection con,VersionableType vType, KeyValue vKey)
 			throws ObjectNotFoundException, SQLException, DataAccessException {
 
 	String xmlTableName = null;
@@ -1969,12 +1897,6 @@ private static Version getVersionFromKeyValue(Connection con,VersionableType vTy
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return cbit.sql.Versionable
- * @param user cbit.vcell.server.User
- * @param versionable cbit.sql.Versionable
- */
 public static void groupAddUser(Connection con, KeyFactory keyFactory, User owner,
 										VersionableType vType, KeyValue vKey,
 										String userAddToGroupString,boolean isHiddenFromOwner,DatabaseSyntax dbSyntax) 
@@ -2098,7 +2020,7 @@ public static void groupAddUser(Connection con, KeyFactory keyFactory, User owne
 		}
 	}
 	//Update the vTable to point to the new Group
-	String set = vTable.privacy.getQualifiedColName() + " = " + updatedGroupID;
+	String set = vTable.privacy.getUnqualifiedColName() + " = " + updatedGroupID;
 	String cond = vTable.id.getQualifiedColName() + " = " + vKey;
 				//" AND " + vTable.ownerRef.getQualifiedColName() + " = " + owner.getID();
 	sql = DatabasePolicySQL.enforceOwnershipUpdate(owner,vTable,set,cond);
@@ -2119,13 +2041,6 @@ public static void groupAddUser(Connection con, KeyFactory keyFactory, User owne
 	
 }
 
-
-/**
- * This method was created in VisualAge.
- * @return cbit.sql.Versionable
- * @param user cbit.vcell.server.User
- * @param versionable cbit.sql.Versionable
- */
 public static void groupRemoveUser(Connection con,KeyFactory keyFactory, User owner,
 										VersionableType vType, KeyValue vKey,
 										String userRemoveFromGroupString,boolean isHiddenFromOwner,DatabaseSyntax dbSyntax) 
@@ -2233,7 +2148,7 @@ public static void groupRemoveUser(Connection con,KeyFactory keyFactory, User ow
 		}
 	}
 	//
-	String set = vTable.privacy.getQualifiedColName() + " = " + updatedGroupID;
+	String set = vTable.privacy.getUnqualifiedColName() + " = " + updatedGroupID;
 	String cond = vTable.id.getQualifiedColName() + " = " + vKey;
 				//" AND " + vTable.ownerRef.getQualifiedColName() + " = " + owner.getID();
 	sql = DatabasePolicySQL.enforceOwnershipUpdate(owner,vTable,set,cond);
@@ -2255,13 +2170,7 @@ public static void groupRemoveUser(Connection con,KeyFactory keyFactory, User ow
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return cbit.sql.Versionable
- * @param owner cbit.vcell.server.User
- * @param versionable cbit.sql.Versionable
- */
-public static void groupSetPrivate(Connection con,User owner, 
+public static void groupSetPrivate(Connection con,User owner,
 										VersionableType vType, KeyValue vKey,DatabaseSyntax dbSyntax) 
 							throws SQLException,ObjectNotFoundException, DataAccessException/*, DependencyException*/ {
 
@@ -2276,7 +2185,7 @@ public static void groupSetPrivate(Connection con,User owner,
 
 	BigDecimal updatedGroupID = GroupAccess.GROUPACCESS_NONE;
 	VersionTable vTable = VersionTable.getVersionTable(vType);
-	String set = vTable.privacy.getQualifiedColName() + " = " + updatedGroupID;
+	String set = vTable.privacy.getUnqualifiedColName() + " = " + updatedGroupID;
 	String cond = vTable.id.getQualifiedColName() + " = " + vKey;
 	String sql = DatabasePolicySQL.enforceOwnershipUpdate(owner,vTable,set,cond);
 //System.out.println(sql);
@@ -2296,13 +2205,7 @@ public static void groupSetPrivate(Connection con,User owner,
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return cbit.sql.Versionable
- * @param owner cbit.vcell.server.User
- * @param versionable cbit.sql.Versionable
- */
-public static void groupSetPublic(Connection con,User owner, 
+public static void groupSetPublic(Connection con,User owner,
 										VersionableType vType, KeyValue vKey, DatabaseSyntax dbSyntax) 
 							throws SQLException,ObjectNotFoundException, DataAccessException {
 
@@ -2317,7 +2220,7 @@ public static void groupSetPublic(Connection con,User owner,
 
 	BigDecimal updatedGroupID = GroupAccess.GROUPACCESS_ALL;
 	VersionTable vTable = VersionTable.getVersionTable(vType);
-	String set = vTable.privacy.getQualifiedColName() + " = " + updatedGroupID;
+	String set = vTable.privacy.getUnqualifiedColName() + " = " + updatedGroupID;
 	String cond = vTable.id.getQualifiedColName() + " = " + vKey;
 				//" AND " + vTable.ownerRef.getQualifiedColName() + " = " + owner.getID();
 	String sql = DatabasePolicySQL.enforceOwnershipUpdate(owner,vTable,set,cond);
@@ -2336,11 +2239,7 @@ public static void groupSetPublic(Connection con,User owner,
 	}
 }
 
-/**
- * Insert the method's description here.
- * Creation date: (5/4/2005 1:46:01 PM)
- * @param versionableKey cbit.sql.KeyValue
- */
+
 private void insertSoftwareVersion(Connection con, KeyValue versionKey) throws SQLException {
 	//
 	//Insert Software Version
@@ -2353,13 +2252,6 @@ private void insertSoftwareVersion(Connection con, KeyValue versionKey) throws S
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return cbit.sql.KeyValue
- * @param versionable cbit.sql.Versionable
- * @param pRef cbit.sql.KeyValue
- * @param bCommit boolean
- */
 public static void insertVersionableChildSummary(Connection con,String serialDBChildSummary,VersionableType vType,KeyValue vKey, DatabaseSyntax dbSyntax)
 						throws SQLException,DataAccessException {
 						
@@ -2397,14 +2289,7 @@ public static void insertVersionableChildSummary(Connection con,String serialDBC
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return cbit.sql.KeyValue
- * @param versionable cbit.sql.Versionable
- * @param pRef cbit.sql.KeyValue
- * @param bCommit boolean
- */
-protected Version insertVersionableInit(InsertHashtable hash, Connection con, User user, Versionable versionable, String name,String annot,boolean bVersion) 
+protected Version insertVersionableInit(InsertHashtable hash, Connection con, User user, Versionable versionable, String name,String annot,boolean bVersion)
 throws SQLException,DataAccessException{
 
 	if (hash.getDatabaseKey(versionable)!=null){
@@ -2450,14 +2335,7 @@ throws SQLException,DataAccessException{
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return cbit.sql.KeyValue
- * @param versionable cbit.sql.Versionable
- * @param pRef cbit.sql.KeyValue
- * @param bCommit boolean
- */
-public static void insertVersionableXML(Connection con,String xml,VersionableType vType,KeyValue vKey, KeyFactory keyFactory, DatabaseSyntax dbSyntax) 
+public static void insertVersionableXML(Connection con,String xml,VersionableType vType,KeyValue vKey, KeyFactory keyFactory, DatabaseSyntax dbSyntax)
 					throws DataAccessException, SQLException, RecordChangedException {
 	String xmlTableName = null;
 	String versionableRefColName = null;
@@ -2496,15 +2374,7 @@ public static void insertVersionableXML(Connection con,String xml,VersionableTyp
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return boolean
- * @param con Connection
- * @param user User
- * @param vType int
- * @param versionKey cbit.sql.KeyValue
- */
-private static boolean isBranchPointOrBaseSimulation(java.sql.Connection con,VersionableType vType, KeyValue versionKey) 
+private static boolean isBranchPointOrBaseSimulation(java.sql.Connection con,VersionableType vType, KeyValue versionKey)
 							throws ObjectNotFoundException, java.sql.SQLException {
 								
 	VersionTable vTable = VersionTable.getVersionTable(vType);
@@ -2531,15 +2401,6 @@ private static boolean isBranchPointOrBaseSimulation(java.sql.Connection con,Ver
 }
 
 
-/**
- *
- * Test if there are any records of type 'vType' that use the name 'vName' owned by 'owner'
- *
- * @return boolean
- * @param vType cbit.sql.VersionableType
- * @param owner cbit.vcell.server.User
- * @param vName java.lang.String
- */
 protected static boolean isNameUsed(Connection con, VersionableType vType, User owner, String vName) throws SQLException {
 
 	VersionTable vTable = VersionTable.getVersionTable(vType);
@@ -2566,10 +2427,6 @@ protected static boolean isNameUsed(Connection con, VersionableType vType, User 
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (5/23/2006 11:48:25 AM)
- */
 private static Version permissionInit(Connection con,VersionableType vType,KeyValue vKey,User user) throws DataAccessException,SQLException{
 	
 	if (!vType.getIsTopLevel()) {
@@ -2594,13 +2451,7 @@ private static Version permissionInit(Connection con,VersionableType vType,KeyVa
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return int
- * @param user java.lang.String
- * @param imageName java.lang.String
- */
-public static void replacePreferences(Connection con, User user, Preference[] preferences) throws SQLException {
+public static void replacePreferences(Connection con, KeyFactory keyFactory, User user, Preference[] preferences) throws SQLException {
 
 	String sql =
 		"DELETE FROM " +
@@ -2614,7 +2465,7 @@ public static void replacePreferences(Connection con, User user, Preference[] pr
 	try{
 		sql =
 			"INSERT INTO "+UserPreferenceTable.table.getTableName() +
-			" VALUES (newseq.NEXTVAL,"+user.getID()+",?,?)";
+			" VALUES ("+keyFactory.nextSEQ()+","+user.getID()+",?,?)";
 			
 		pstmt = con.prepareStatement(sql);
 
@@ -2633,11 +2484,6 @@ public static void replacePreferences(Connection con, User user, Preference[] pr
 }
 
 
-/**
- * This method was created in VisualAge.
- * @param vTable cbit.sql.VersionTable
- * @param versionKey cbit.sql.KeyValue
- */
 protected void setVersioned(Connection con, User user,Versionable versionable) throws ObjectNotFoundException,SQLException,DataAccessException {
 	String sql;
 	if (versionable instanceof SimulationContext){
@@ -2675,10 +2521,6 @@ protected void setVersioned(Connection con, User user,Versionable versionable) t
 }
 
 
-/**
- * This method was created in VisualAge.
- * @param rset java.sql.ResultSet
- */
 public static void showMetaData(ResultSet rset) throws SQLException {
 	ResultSetMetaData metaData = rset.getMetaData();
 	for (int i = 1; i <= metaData.getColumnCount(); i++) {
@@ -2687,11 +2529,6 @@ public static void showMetaData(ResultSet rset) throws SQLException {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (10/16/2004 2:39:49 PM)
- * @return cbit.vcell.numericstest.TestSuiteInfoNew[]
- */
 public static TestSuiteNew testSuiteGet(BigDecimal getThisTS,Connection con,User user,DatabaseSyntax dbSyntax)
 			throws SQLException, DataAccessException {
 	
@@ -2768,10 +2605,11 @@ public static TestSuiteNew testSuiteGet(BigDecimal getThisTS,Connection con,User
 				TFTestCriteriaTable.table.getTableName()+".*"+","+
 				MathModelSimulationLinkTable.table.getTableName()+".*"+
 			" FROM " +
-			TFTestCriteriaTable.table.getTableName()+","+
+			TFTestCriteriaTable.table.getTableName()+
+					" LEFT JOIN "+MathModelSimulationLinkTable.table.getTableName()+
+					" ON "+TFTestCriteriaTable.table.regressionMMSimRef.getQualifiedColName()+"="+MathModelSimulationLinkTable.table.id.getQualifiedColName()+","+
 			TFTestCaseTable.table.getTableName()+","+
 			TFTestSuiteTable.table.getTableName()+","+
-			MathModelSimulationLinkTable.table.getTableName()+","+
 			SimulationTable.table.getTableName()+
 			" WHERE "+
 			TFTestSuiteTable.table.id.getQualifiedColName()+"="+getThisTS+
@@ -2783,8 +2621,6 @@ public static TestSuiteNew testSuiteGet(BigDecimal getThisTS,Connection con,User
 			TFTestCaseTable.table.mathModelRef.getQualifiedColName()+" IS NOT NULL "+
 			" AND " +
 			TFTestCriteriaTable.table.simulationRef.getQualifiedColName()+"="+SimulationTable.table.id.getQualifiedColName()+
-			" AND " +
-			TFTestCriteriaTable.table.regressionMMSimRef.getQualifiedColName()+"="+MathModelSimulationLinkTable.table.id.getQualifiedColName()+"(+)"+
 			" ORDER BY UPPER("+SimulationTable.table.name.getQualifiedColName()+")";
 			
 //System.out.println(sql);
@@ -2877,36 +2713,32 @@ public static TestSuiteNew testSuiteGet(BigDecimal getThisTS,Connection con,User
 		{
 		final String REGRSIMREF = "REGRSIMREF";
 		final String SCNAME = "SCNAME";
-		sql =
-			"SELECT "+
-				TFTestCriteriaTable.table.getTableName()+".*"+","+
-				BioModelSimContextLinkTable.table.bioModelRef.getQualifiedColName()+","+
-				BioModelSimulationLinkTable.table.simRef.getQualifiedColName()+" "+REGRSIMREF+","+
-				SimContextTable.table.name.getQualifiedColName()+" "+SCNAME+
-			" FROM " +
-			TFTestCriteriaTable.table.getTableName()+","+
-			TFTestCaseTable.table.getTableName()+","+
-			TFTestSuiteTable.table.getTableName()+","+
-			BioModelSimContextLinkTable.table.getTableName()+","+
-			SimContextTable.table.getTableName()+","+
-			BioModelSimulationLinkTable.table.getTableName()+
-			//SimulationTable.table.getTableName()+
-			" WHERE "+
-			TFTestSuiteTable.table.id.getQualifiedColName()+"="+getThisTS+
-			" AND " +
-			TFTestSuiteTable.table.id.getQualifiedColName()+"="+TFTestCaseTable.table.testSuiteRef.getQualifiedColName()+
-			" AND " +
-			TFTestCaseTable.table.id.getQualifiedColName()+"="+TFTestCriteriaTable.table.testCaseRef.getQualifiedColName()+
-			" AND " +
-			TFTestCaseTable.table.bmAppRef.getQualifiedColName()+" IS NOT NULL "+
-			" AND " +
-			TFTestCriteriaTable.table.regressionBMAPPRef.getQualifiedColName()+"="+BioModelSimContextLinkTable.table.id.getQualifiedColName()+"(+)"+
-			" AND " +
-			BioModelSimContextLinkTable.table.simContextRef+" = "+SimContextTable.table.id.getQualifiedColName()+"(+)"+
-			//" AND " +
-			//SimContextTable.table.mathRef.getQualifiedColName()+" = "+SimulationTable.table.mathRef.getQualifiedColName()+"(+)" +
-			" AND " +
-			TFTestCriteriaTable.table.regressionBMSimRef.getQualifiedColName()+" = "+BioModelSimulationLinkTable.table.id.getQualifiedColName()+"(+)";
+			sql =
+					"SELECT "+
+							TFTestCriteriaTable.table.getTableName()+".*"+","+
+							BioModelSimContextLinkTable.table.bioModelRef.getQualifiedColName()+","+
+							BioModelSimulationLinkTable.table.simRef.getQualifiedColName()+" "+REGRSIMREF+","+
+							SimContextTable.table.name.getQualifiedColName()+" "+SCNAME+
+							" FROM " +
+							TFTestCriteriaTable.table.getTableName()+
+							" LEFT JOIN "+BioModelSimulationLinkTable.table.getTableName()+
+							" ON "+TFTestCriteriaTable.table.regressionBMSimRef.getQualifiedColName()+" = "+BioModelSimulationLinkTable.table.id.getQualifiedColName()+
+							" LEFT JOIN "+BioModelSimContextLinkTable.table.getTableName()+
+							" ON "+TFTestCriteriaTable.table.regressionBMAPPRef.getQualifiedColName()+" = "+BioModelSimContextLinkTable.table.id.getQualifiedColName()+
+							" LEFT JOIN "+SimContextTable.table.getTableName()+
+							" ON "+BioModelSimContextLinkTable.table.simContextRef.getQualifiedColName()+" = "+SimContextTable.table.id.getQualifiedColName()+","+
+							TFTestCaseTable.table.getTableName()+","+
+							TFTestSuiteTable.table.getTableName()+
+//			" LEFT JOIN "+SimulationTable.table.getTableName()+
+//					" ON "+SimContextTable.table.mathRef.getQualifiedColName()+" = "+SimulationTable.table.mathRef.getQualifiedColName()
+							" WHERE "+
+							TFTestSuiteTable.table.id.getQualifiedColName()+"="+getThisTS+
+							" AND " +
+							TFTestSuiteTable.table.id.getQualifiedColName()+"="+TFTestCaseTable.table.testSuiteRef.getQualifiedColName()+
+							" AND " +
+							TFTestCaseTable.table.id.getQualifiedColName()+"="+TFTestCriteriaTable.table.testCaseRef.getQualifiedColName()+
+							" AND " +
+							TFTestCaseTable.table.bmAppRef.getQualifiedColName()+" IS NOT NULL ";
 			
 //System.out.println(sql);
 		rset = stmt.executeQuery(sql);
@@ -3021,11 +2853,11 @@ public static TestSuiteNew testSuiteGet(BigDecimal getThisTS,Connection con,User
 		final String SORTHELP2 = "SORTHELP2";
 		sql =
 			"SELECT "+
-				"UPPER("+MathModelTable.table.name.getQualifiedColName()+") "+SORTHELP1+","+"TO_CHAR(NULL) "+SORTHELP2+","+
+				"UPPER("+MathModelTable.table.name.getQualifiedColName()+") "+SORTHELP1+","+"CAST(NULL as CHAR) "+SORTHELP2+","+
 				TFTestCaseTable.table.getTableName()+".*" +","+
-				"TO_NUMBER(NULL) "+BMSCBMRNAME+","+
-				"TO_NUMBER(NULL) "+BMSCSCRNAME+","+
-				"TO_CHAR(NULL) "+SCNAME+","+
+				"CAST(NULL as NUMERIC) "+BMSCBMRNAME+","+
+				"CAST(NULL as NUMERIC) "+BMSCSCRNAME+","+
+				"CAST(NULL as CHAR) "+SCNAME+","+
 				"'MM' "+OBTCTYPECOLUMN+","+MathModelTable.table.name.getQualifiedColName()+" "+OBNAMECOLUMN+
 			" FROM " +
 				TFTestCaseTable.table.getTableName()+","+
@@ -3272,7 +3104,7 @@ private static Object getLoadTestDetails(Connection con,Integer slowLoadThreshol
 	String sql = "SELECT " +
 		LoadModelsStatTable.table.softwareVers.getUnqualifiedColName()+","+
 		LoadModelsStatTable.table.timeStamp.getUnqualifiedColName()+","+
-		"DECODE("+VersionTable.privacy_ColumnName+",0,'PUBLIC',1,'PRIVATE','GROUP') "+PERMISSION_COLUMN+","+
+		"(CASE WHEN PRIVACY_ALIAS=0 THEN 'PUBLIC' WHEN PRIVACY_ALIAS=1 THEN 'PRIVATE' ELSE 'GROUP' END) as "+PERMISSION_COLUMN+","+
 		UserTable.table.userid.getUnqualifiedColName()+","+
 		MODEL_TYPE_COLUMN+","+
 		VersionTable.name_ColumnName+","+
@@ -3292,12 +3124,12 @@ private static Object getLoadTestDetails(Connection con,Integer slowLoadThreshol
 		"SELECT " +
 			LoadModelsStatTable.table.softwareVers.getUnqualifiedColName()+","+
 			LoadModelsStatTable.table.timeStamp.getUnqualifiedColName()+","+
-			VersionTable.privacy_ColumnName+","+
+			VersionTable.privacy_ColumnName+" as PRIVACY_ALIAS,"+
 			VersionTable.versionDate_ColumnName+","+
 			VersionTable.name_ColumnName+","+
 			UserTable.table.userid.getUnqualifiedColName()+","+
-			"'"+LoadTestInfoOpResults.MODELTYPE_BIO+"' "+MODEL_TYPE_COLUMN+","+
-			BioModelTable.table.id.getQualifiedColName() + " " + MODEL_ID_COLUMN+","+
+			"'"+LoadTestInfoOpResults.MODELTYPE_BIO+"' as "+MODEL_TYPE_COLUMN+","+
+			BioModelTable.table.id.getQualifiedColName() + " as " + MODEL_ID_COLUMN+","+
 			LoadModelsStatTable.table.resultFlag.getUnqualifiedColName()+","+
 			LoadModelsStatTable.table.loadTime.getUnqualifiedColName()+","+
 			LoadModelsStatTable.table.errorMessage.getUnqualifiedColName()+","+
@@ -3321,12 +3153,12 @@ private static Object getLoadTestDetails(Connection con,Integer slowLoadThreshol
 		"SELECT " +
 			LoadModelsStatTable.table.softwareVers.getUnqualifiedColName()+","+
 			LoadModelsStatTable.table.timeStamp.getUnqualifiedColName()+","+
-			VersionTable.privacy_ColumnName+","+
+			VersionTable.privacy_ColumnName+" as PRIVACY_ALIAS,"+
 			VersionTable.versionDate_ColumnName+","+
 			VersionTable.name_ColumnName+","+
 			UserTable.table.userid.getUnqualifiedColName()+","+
-			"'"+LoadTestInfoOpResults.MODELTYPE_MATH+"' "+MODEL_TYPE_COLUMN+","+
-			MathModelTable.table.id.getQualifiedColName() + " " + MODEL_ID_COLUMN+","+
+			"'"+LoadTestInfoOpResults.MODELTYPE_MATH+"' as "+MODEL_TYPE_COLUMN+","+
+			MathModelTable.table.id.getQualifiedColName() + " as " + MODEL_ID_COLUMN+","+
 			LoadModelsStatTable.table.resultFlag.getUnqualifiedColName()+","+
 			LoadModelsStatTable.table.loadTime.getUnqualifiedColName()+","+
 			LoadModelsStatTable.table.errorMessage.getUnqualifiedColName()+","+
@@ -3346,7 +3178,7 @@ private static Object getLoadTestDetails(Connection con,Integer slowLoadThreshol
 			MathModelTable.table.id.getQualifiedColName()+ " = "+LoadModelsStatTable.table.mathModelRef.getUnqualifiedColName()+
 			" AND "+
 			UserTable.table.id.getQualifiedColName()+" = " +MathModelTable.table.ownerRef.getQualifiedColName()+
-	" )"+
+	" ) SUBQUERY"+
 	" WHERE "+
 		specialCondition;
 		
@@ -3901,8 +3733,8 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 				" VALUES("+
 					tcritKey.toString()+","+tcKey.toString()+","+simKey.toString()+","+(simDataRef != null?simDataRef.toString():null)+","+
 				"NULL"+","+
-				(addtcrit_tsop.getMaxRelativeError() != null?"TO_NUMBER('"+addtcrit_tsop.getMaxRelativeError().toString()+"')":"null")+","+
-				(addtcrit_tsop.getMaxAbsoluteError() != null?"TO_NUMBER('"+addtcrit_tsop.getMaxAbsoluteError().toString()+"')":"null")+","+
+				(addtcrit_tsop.getMaxRelativeError() != null?"CAST('"+addtcrit_tsop.getMaxRelativeError().toString()+"' as NUMERIC)":"null")+","+
+				(addtcrit_tsop.getMaxAbsoluteError() != null?"CAST('"+addtcrit_tsop.getMaxAbsoluteError().toString()+"' as NUMERIC)":"null")+","+
 				"NULL,NULL,"+
 				"'"+TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT+"'"+",null"+
 				")";
@@ -4000,8 +3832,8 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 				" VALUES("+
 					tcritKey.toString()+","+tcKey.toString()+","+simKey.toString()+","+(simDataRef != null?simDataRef.toString():null)+","+
 				"null"+","+
-				(addtcrit_tsop.getMaxRelativeError() != null?"TO_NUMBER('"+addtcrit_tsop.getMaxRelativeError().toString()+"')":"null")+","+
-				(addtcrit_tsop.getMaxAbsoluteError() != null?"TO_NUMBER('"+addtcrit_tsop.getMaxAbsoluteError().toString()+"')":"null")+","+
+				(addtcrit_tsop.getMaxRelativeError() != null?"CAST('"+addtcrit_tsop.getMaxRelativeError().toString()+"' as NUMERIC)":"null")+","+
+				(addtcrit_tsop.getMaxAbsoluteError() != null?"CAST('"+addtcrit_tsop.getMaxAbsoluteError().toString()+"' as NUMERIC)":"null")+","+
 				"NULL,NULL,"+"'"+TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT+"'"+",null"+
 				")";
 			stmt.executeUpdate(sql);
@@ -4093,12 +3925,12 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 			rset.close();
 			for(int i=0;i<vcs.length;i+= 1){
 				sql = "INSERT INTO "+TFTestResultTable.table.getTableName()+" VALUES("+
-					"NEWSEQ.NEXTVAL"+","+addtr_tsop.getTestCriteriaKey().toString()+","+
+					keyFactory.nextSEQ()+","+addtr_tsop.getTestCriteriaKey().toString()+","+
 					"'"+vcs[i].getName()+"'"+","+
-					"TO_NUMBER('"+vcs[i].getAbsoluteError()+"')"+","+"TO_NUMBER('"+vcs[i].getRelativeError()+"')"+","+
-					"TO_NUMBER('"+vcs[i].getMaxRef()+"')"+","+"TO_NUMBER('"+vcs[i].getMinRef()+"')"+","+"TO_NUMBER('"+vcs[i].getMeanSqError()+"')"+","+
-					"TO_NUMBER('"+vcs[i].getTimeAbsoluteError()+"')"+","+"TO_NUMBER('"+vcs[i].getIndexAbsoluteError()+"')"+","+
-					"TO_NUMBER('"+vcs[i].getTimeRelativeError()+"')"+","+"TO_NUMBER('"+vcs[i].getIndexRelativeError()+"')"+
+					"CAST('"+vcs[i].getAbsoluteError()+"' as NUMERIC)"+","+"CAST('"+vcs[i].getRelativeError()+"' as NUMERIC)"+","+
+					"CAST('"+vcs[i].getMaxRef()+"' as NUMERIC)"+","+"CAST('"+vcs[i].getMinRef()+"' as NUMERIC)"+","+"CAST('"+vcs[i].getMeanSqError()+"' as NUMERIC)"+","+
+					"CAST('"+vcs[i].getTimeAbsoluteError()+"' as NUMERIC)"+","+"CAST('"+vcs[i].getIndexAbsoluteError()+"' as INTEGER)"+","+
+					"CAST('"+vcs[i].getTimeRelativeError()+"' as NUMERIC)"+","+"CAST('"+vcs[i].getIndexRelativeError()+"' as INTEGER)"+
 					")";
 				stmt.executeUpdate(sql);
 			}
@@ -4162,8 +3994,8 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 			stmt.executeUpdate(
 				"UPDATE "+TFTestCriteriaTable.table.getTableName()+
 				" SET "+
-					TFTestCriteriaTable.table.reportStatus.getQualifiedColName()+"="+(newRS != null?"'"+newRS+"'":"null")+","+
-					TFTestCriteriaTable.table.reportMessage.getQualifiedColName()+"="+(reportStatusMessage!= null?"'"+reportStatusMessage+"'":"null")+
+					TFTestCriteriaTable.table.reportStatus.getUnqualifiedColName()+"="+(newRS != null?"'"+newRS+"'":"null")+","+
+					TFTestCriteriaTable.table.reportMessage.getUnqualifiedColName()+"="+(reportStatusMessage!= null?"'"+reportStatusMessage+"'":"null")+
 				" WHERE "+TFTestCriteriaTable.table.id.getQualifiedColName()+"="+tcritKey.toString()
 				);
 			if(newRS.equals(TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT)){
@@ -4216,10 +4048,10 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 			stmt.executeUpdate(
 				"UPDATE "+TFTestCriteriaTable.table.getTableName()+
 				" SET "+
-					TFTestCriteriaTable.table.maxAbsError.getQualifiedColName()+"="+(maxAbsError != null?"TO_NUMBER("+maxAbsError.toString()+")":"null")+","+
-					TFTestCriteriaTable.table.maxRelError.getQualifiedColName()+"="+(maxRelError != null?"TO_NUMBER("+maxRelError.toString()+")":"null")+","+
-					TFTestCriteriaTable.table.regressionMMSimRef.getQualifiedColName()+"="+(regrMathModelSimLink != null?regrMathModelSimLink.toString():"null")+
-				" WHERE "+TFTestCriteriaTable.table.id.getQualifiedColName()+"="+tcritKey.toString()
+					TFTestCriteriaTable.table.maxAbsError.getUnqualifiedColName()+"="+(maxAbsError != null?"CAST('"+maxAbsError.toString()+"' as NUMERIC)":"null")+","+
+					TFTestCriteriaTable.table.maxRelError.getUnqualifiedColName()+"="+(maxRelError != null?"CAST('"+maxRelError.toString()+"' as NUMERIC)":"null")+","+
+					TFTestCriteriaTable.table.regressionMMSimRef.getUnqualifiedColName()+"="+(regrMathModelSimLink != null?regrMathModelSimLink.toString():"null")+
+				" WHERE "+TFTestCriteriaTable.table.id.getUnqualifiedColName()+"="+tcritKey.toString()
 				);
 			testSuiteOP(new EditTestCriteriaOPReportStatus(tcritKey,TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT,null), con, user,keyFactory);
 
@@ -4285,10 +4117,10 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 			stmt.executeUpdate(
 				"UPDATE "+TFTestCriteriaTable.table.getTableName()+
 				" SET "+
-					TFTestCriteriaTable.table.maxAbsError.getQualifiedColName()+"="+(maxAbsError != null?"TO_NUMBER("+maxAbsError.toString()+")":"null")+","+
-					TFTestCriteriaTable.table.maxRelError.getQualifiedColName()+"="+(maxRelError != null?"TO_NUMBER("+maxRelError.toString()+")":"null")+","+
-					TFTestCriteriaTable.table.regressionBMAPPRef.getQualifiedColName()+"="+(bmscAppKey != null?bmscAppKey.toString():"NULL")+","+
-					TFTestCriteriaTable.table.regressionBMSimRef.getQualifiedColName()+"="+(bmsltSimKey != null?bmsltSimKey.toString():"NULL")+
+					TFTestCriteriaTable.table.maxAbsError.getUnqualifiedColName()+"="+(maxAbsError != null?"CAST('"+maxAbsError.toString()+"' as NUMERIC)":"null")+","+
+					TFTestCriteriaTable.table.maxRelError.getUnqualifiedColName()+"="+(maxRelError != null?"CAST('"+maxRelError.toString()+"' as NUMERIC)":"null")+","+
+					TFTestCriteriaTable.table.regressionBMAPPRef.getUnqualifiedColName()+"="+(bmscAppKey != null?bmscAppKey.toString():"NULL")+","+
+					TFTestCriteriaTable.table.regressionBMSimRef.getUnqualifiedColName()+"="+(bmsltSimKey != null?bmsltSimKey.toString():"NULL")+
 				" WHERE "+TFTestCriteriaTable.table.id.getQualifiedColName()+"="+tcritKey.toString()
 				);
 			testSuiteOP(new EditTestCriteriaOPReportStatus(tcritKey,TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT,null), con, user,keyFactory);
@@ -4318,9 +4150,9 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 				stmt.executeUpdate(
 					"UPDATE "+TFTestCriteriaTable.table.getTableName()+
 					" SET "+
-					(maxAbsErrorArr != null?TFTestCriteriaTable.table.maxAbsError.getQualifiedColName()+"="+maxAbsErrorArr[i]:"")+
+					(maxAbsErrorArr != null?TFTestCriteriaTable.table.maxAbsError.getUnqualifiedColName()+"="+maxAbsErrorArr[i]:"")+
 					(maxAbsErrorArr != null && maxRelErrorArr != null?",":"")+
-					(maxRelErrorArr != null?TFTestCriteriaTable.table.maxRelError.getQualifiedColName()+"="+maxRelErrorArr[i]:"")+
+					(maxRelErrorArr != null?TFTestCriteriaTable.table.maxRelError.getUnqualifiedColName()+"="+maxRelErrorArr[i]:"")+
 					" WHERE "+TFTestCriteriaTable.table.id.getQualifiedColName()+"="+tcritKeyArr[i].toString()
 					);
 				testSuiteOP(new EditTestCriteriaOPReportStatus(tcritKeyArr[i],TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT,null), con, user, keyFactory);
@@ -4359,7 +4191,7 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 					stmt.executeUpdate(
 						"UPDATE "+TFTestCaseTable.table.getTableName()+
 						" SET "+
-							TFTestCaseTable.table.tcAnnotation.getQualifiedColName()+"="+(annotation == null?"NULL":"'"+annotation+"'")+
+							TFTestCaseTable.table.tcAnnotation.getUnqualifiedColName()+"="+(annotation == null?"NULL":"'"+annotation+"'")+
 						" WHERE "+TFTestCaseTable.table.id.getQualifiedColName()+"="+tcaseKeys[i].toString()
 						);
 				}
@@ -4395,7 +4227,7 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 					stmt.executeUpdate(
 						"UPDATE "+TFTestCaseTable.table.getTableName()+
 						" SET "+
-							TFTestCaseTable.table.tcSolutionType.getQualifiedColName()+"="+
+							TFTestCaseTable.table.tcSolutionType.getUnqualifiedColName()+"="+
 							(newSteadyState?"'"+TestCaseNew.EXACT_STEADY+"'":"'"+TestCaseNew.EXACT+"'")+
 						" WHERE "+TFTestCaseTable.table.id.getQualifiedColName()+"="+tcaseKeys[i].toString()
 						);
@@ -4433,7 +4265,7 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 					stmt.executeUpdate(
 							"UPDATE "+TFTestSuiteTable.table.getTableName()+
 							" SET "+
-								TFTestSuiteTable.table.isLocked.getQualifiedColName()+"= 1"+
+								TFTestSuiteTable.table.isLocked.getUnqualifiedColName()+"= 1"+
 							" WHERE "+TFTestSuiteTable.table.id.getQualifiedColName()+"="+tsKeys[i].toString()
 							);
 					
@@ -4450,7 +4282,7 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 						stmt.executeUpdate(
 							"UPDATE "+TFTestSuiteTable.table.getTableName()+
 							" SET "+
-								TFTestSuiteTable.table.tsAnnotation.getQualifiedColName()+"="+(annotation == null?"NULL":"'"+annotation+"'")+
+								TFTestSuiteTable.table.tsAnnotation.getUnqualifiedColName()+"="+(annotation == null?"NULL":"'"+annotation+"'")+
 							" WHERE "+TFTestSuiteTable.table.id.getQualifiedColName()+"="+tsKeys[i].toString()
 							);
 					}
@@ -4519,26 +4351,30 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 				" FROM " +
 				TFTestSuiteTable.table.getTableName()+","+
 				TFTestCaseTable.table.getTableName()+","+
-				TFTestCriteriaTable.table.getTableName()+","+
-				TFTestResultTable.table.getTableName()+","+
+				TFTestCriteriaTable.table.getTableName()+
+						" JOIN "+TFTestCriteriaTable.table.getTableName()+" "+TCRALT+
+						" ON "+TCRALT+"."+TFTestCriteriaTable.table.id.getUnqualifiedColName() +"="+ TFTestCriteriaTable.table.id.getQualifiedColName()+
+						" LEFT JOIN "+TFTestResultTable.table.getTableName()+
+						" ON "+TFTestResultTable.table.testCriteriaRef.getQualifiedColName()+"="+ TFTestCriteriaTable.table.id.getQualifiedColName()+
+						" LEFT JOIN "+TFTestCaseTable.table.getTableName()+" "+TCALT+
+						" ON "+TCALT+"."+TFTestCaseTable.table.bmAppRef.getUnqualifiedColName()+"="+ TCRALT+"."+TFTestCriteriaTable.table.regressionBMAPPRef.getUnqualifiedColName()+
+						" LEFT JOIN "+TFTestSuiteTable.table.getTableName()+" "+TSALT+
+						" ON "+TSALT+"."+TFTestSuiteTable.table.id.getUnqualifiedColName()+"="+ TCALT+"."+TFTestCaseTable.table.testSuiteRef.getUnqualifiedColName()+
+						" LEFT JOIN "+BioModelSimContextLinkTable.table.getTableName()+" "+BSCALT+
+						" ON "+BSCALT+"."+BioModelSimContextLinkTable.table.id.getUnqualifiedColName()+"="+ TCRALT+"."+TFTestCriteriaTable.table.regressionBMAPPRef.getUnqualifiedColName()+","+
 				BioModelSimContextLinkTable.table.getTableName()+","+
 				BioModelTable.table.getTableName()+","+
 				SimContextTable.table.getTableName()+","+
 				SimulationTable.table.getTableName() +","+
-				BioModelSimulationLinkTable.table.getTableName()+","+
-				TFTestSuiteTable.table.getTableName()+" "+TSALT+","+
-				TFTestCaseTable.table.getTableName()+" "+TCALT+","+
-				TFTestCriteriaTable.table.getTableName()+" "+TCRALT+
-				","+BioModelSimContextLinkTable.table.getTableName()+" "+BSCALT+
+				BioModelSimulationLinkTable.table.getTableName()+
 //				","+SimulationTable.table.getTableName()+" "+SIM2+
-//				","+TFTestCriteriaTable.table.getTableName()+" "+TCRALT2+
+//				" LEFT JOIN "+TFTestCriteriaTable.table.getTableName()+" "+TCRALT2+
+//						" ON "+TCRALT2+"."+TFTestCriteriaTable.table.testCaseRef.getUnqualifiedColName() +"="+ TCALT+"."+TFTestCaseTable.table.id.getUnqualifiedColName()+
 				" WHERE " +
 				TFTestSuiteTable.table.id.getQualifiedColName() +"="+ TFTestCaseTable.table.testSuiteRef.getQualifiedColName()+
 				" AND " +
 				TFTestCriteriaTable.table.testCaseRef.getQualifiedColName() +"="+ TFTestCaseTable.table.id.getQualifiedColName()+
-				" AND " +
-				TFTestResultTable.table.testCriteriaRef.getQualifiedColName()+"(+)" +"="+ TFTestCriteriaTable.table.id.getQualifiedColName()+
-				(qtcritxr_tsop.getVarName() != null?" AND "+TFTestResultTable.table.varName.getQualifiedColName()+"(+)"+"="+"'"+qtcritxr_tsop.getVarName()+"'":"")+
+				(qtcritxr_tsop.getVarName() != null?" AND "+TFTestResultTable.table.varName.getQualifiedColName()+"="+"'"+qtcritxr_tsop.getVarName()+"'":"")+
 				" AND " +
 				TFTestCaseTable.table.bmAppRef.getQualifiedColName() +"="+ BioModelSimContextLinkTable.table.id.getQualifiedColName()+
 				" AND " +
@@ -4601,16 +4437,6 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 						TFTestCriteriaTable.table.simulationRef.getQualifiedColName() +"="+ SimulationTable.table.id.getQualifiedColName()+
 					")"+
 				//reference info
-				" AND " +
-				TSALT+"."+TFTestSuiteTable.table.id.getUnqualifiedColName()+"(+)" +"="+ TCALT+"."+TFTestCaseTable.table.testSuiteRef.getUnqualifiedColName()+
-				" AND "+
-				BSCALT+"."+BioModelSimContextLinkTable.table.id.getUnqualifiedColName()+"(+)" +"="+ TCRALT+"."+TFTestCriteriaTable.table.regressionBMAPPRef.getUnqualifiedColName()+
-				" AND "+
-				TCALT+"."+TFTestCaseTable.table.bmAppRef.getUnqualifiedColName()+"(+)" +"="+ TCRALT+"."+TFTestCriteriaTable.table.regressionBMAPPRef.getUnqualifiedColName()+
-				" AND "+
-				TCRALT+"."+TFTestCriteriaTable.table.id.getUnqualifiedColName() +"="+ TFTestCriteriaTable.table.id.getQualifiedColName()+
-//				" AND "+
-//				TCRALT2+"."+TFTestCriteriaTable.table.testCaseRef.getUnqualifiedColName()+"(+)" +"="+ TCALT+"."+TFTestCaseTable.table.id.getUnqualifiedColName()+
 //				" AND "+
 //				TCRALT2+"."+TFTestCriteriaTable.table.simulationRef.getUnqualifiedColName()+"="+ SIM2+"."+SimulationTable.table.id.getUnqualifiedColName()+
 //				" AND "+
@@ -4660,24 +4486,27 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 				" FROM " +
 				TFTestSuiteTable.table.getTableName()+","+
 				TFTestCaseTable.table.getTableName()+","+
-				TFTestCriteriaTable.table.getTableName()+","+
-				TFTestResultTable.table.getTableName()+","+
+				TFTestCriteriaTable.table.getTableName()+
+						" LEFT JOIN "+TFTestResultTable.table.getTableName()+
+						" ON "+TFTestResultTable.table.testCriteriaRef.getQualifiedColName()+"="+ TFTestCriteriaTable.table.id.getQualifiedColName()+
+						      (qtcritxr_tsop.getVarName() != null?" AND "+TFTestResultTable.table.varName.getQualifiedColName()+"="+"'"+qtcritxr_tsop.getVarName()+"'":"")+","+
 				MathModelTable.table.getTableName()+","+
 				SimulationTable.table.getTableName() +","+
 				MathModelSimulationLinkTable.table.getTableName()+","+
-				TFTestSuiteTable.table.getTableName()+" "+TSALT+","+
-				TFTestCaseTable.table.getTableName()+" "+TCALT+","+
-				TFTestCriteriaTable.table.getTableName()+" "+TCRALT+","+
-				MathModelSimulationLinkTable.table.getTableName()+" "+MMSIMALT+
+				TFTestCriteriaTable.table.getTableName()+" "+TCRALT+
+				" LEFT JOIN "+MathModelSimulationLinkTable.table.getTableName()+" "+MMSIMALT+
+				" ON "+TCRALT+"."+TFTestCriteriaTable.table.regressionMMSimRef.getUnqualifiedColName()+"="+ MMSIMALT+"."+MathModelSimulationLinkTable.table.id.getUnqualifiedColName()+
+				" LEFT JOIN "+TFTestCaseTable.table.getTableName()+" "+TCALT+
+				" ON "+TCALT+"."+TFTestCaseTable.table.mathModelRef.getUnqualifiedColName()+"="+ MMSIMALT+"."+MathModelSimulationLinkTable.table.mathModelRef.getUnqualifiedColName()+
+				" LEFT JOIN "+TFTestSuiteTable.table.getTableName()+" "+TSALT+
+				" ON "+TSALT+"."+TFTestSuiteTable.table.id.getUnqualifiedColName()+"="+ TCALT+"."+TFTestCaseTable.table.testSuiteRef.getUnqualifiedColName()+
+//				" LEFT JOIN "+TFTestCriteriaTable.table.getTableName()+" "+TCRALT2+
+//						" ON "+TCRALT2+"."+TFTestCriteriaTable.table.testCaseRef.getUnqualifiedColName()+"="+ TCALT+"."+TFTestCaseTable.table.id.getUnqualifiedColName()+
 //				","+SimulationTable.table.getTableName()+" "+SIM2+
-//				","+TFTestCriteriaTable.table.getTableName()+" "+TCRALT2+
 				" WHERE " +
 				TFTestSuiteTable.table.id.getQualifiedColName()+"="+ TFTestCaseTable.table.testSuiteRef.getQualifiedColName()+
 				" AND " +
 				TFTestCriteriaTable.table.testCaseRef.getQualifiedColName() +"="+ TFTestCaseTable.table.id.getQualifiedColName()+
-				" AND " +
-				TFTestResultTable.table.testCriteriaRef.getQualifiedColName()+"(+)" +"="+ TFTestCriteriaTable.table.id.getQualifiedColName()+
-				(qtcritxr_tsop.getVarName() != null?" AND "+TFTestResultTable.table.varName.getQualifiedColName()+"(+)"+"="+"'"+qtcritxr_tsop.getVarName()+"'":"")+
 				" AND " +
 				TFTestCaseTable.table.mathModelRef.getQualifiedColName() +"="+ MathModelTable.table.id.getQualifiedColName()+
 				" AND " +
@@ -4716,16 +4545,8 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 				TFTestCriteriaTable.table.simulationRef.getQualifiedColName() +"="+ SimulationTable.table.id.getQualifiedColName()+
 				")"+
 				//reference info
-				" AND " +
-				TSALT+"."+TFTestSuiteTable.table.id.getUnqualifiedColName()+"(+)"  +"="+ TCALT+"."+TFTestCaseTable.table.testSuiteRef.getUnqualifiedColName()+
-				" AND "+
-				TCALT+"."+TFTestCaseTable.table.mathModelRef.getUnqualifiedColName()+"(+)"  +"="+ MMSIMALT+"."+MathModelSimulationLinkTable.table.mathModelRef.getUnqualifiedColName()+
-				" AND "+
-				TCRALT+"."+TFTestCriteriaTable.table.regressionMMSimRef.getUnqualifiedColName()+"="+ MMSIMALT+"."+MathModelSimulationLinkTable.table.id.getUnqualifiedColName()+"(+)" +
 				" AND "+
 				TCRALT+"."+TFTestCriteriaTable.table.id.getUnqualifiedColName() +"="+ TFTestCriteriaTable.table.id.getQualifiedColName()+
-//				" AND "+
-//				TCRALT2+"."+TFTestCriteriaTable.table.testCaseRef.getUnqualifiedColName()+"(+)" +"="+ TCALT+"."+TFTestCaseTable.table.id.getUnqualifiedColName()+
 //				" AND "+
 //				TCRALT2+"."+TFTestCriteriaTable.table.simulationRef.getUnqualifiedColName()+"="+ SIM2+"."+SimulationTable.table.id.getUnqualifiedColName()+
 //				" AND "+
@@ -4757,10 +4578,6 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 	return new TestSuiteOPResults(null);
 }
 
-/**
- * This method was created in VisualAge.
- * @param sql java.lang.String
- */
 protected final static void updateCleanLOB(Connection con,String conditionalColumnName,KeyValue conditionalValue,String table,Field column,Object lob_data, DatabaseSyntax dbSyntax) throws SQLException,DataAccessException {
 	if (table == null || con == null || column == null || lob_data == null) {
 		throw new IllegalArgumentException("Improper parameters for updateCleanLOB");
@@ -4871,14 +4688,7 @@ public static int updatePreparedCleanSQL(Connection con, String sql, byte[] data
 	}
 }
 
-
-/**
- * This method was created in VisualAge.
- * @return cbit.image.VCImage
- * @param user cbit.vcell.server.User
- * @param image cbit.image.VCImage
- */
-protected Version updateVersionableInit(InsertHashtable hash, Connection con, User user, Versionable versionable, boolean bVersion) 
+protected Version updateVersionableInit(InsertHashtable hash, Connection con, User user, Versionable versionable, boolean bVersion)
 			throws DataAccessException, SQLException, RecordChangedException{
 
 	if (hash.getDatabaseKey(versionable)!=null){
@@ -4962,13 +4772,6 @@ protected Version updateVersionableInit(InsertHashtable hash, Connection con, Us
 	return new Version(versionKey,versionName,owner,accessInfo,branchPointRefKey,branchID,date,versionFlag,annot);
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (8/23/2004 2:29:38 PM)
- * @return java.lang.String
- * @param size int
- */
 public static String varchar2_CLOB_get(ResultSet rset,Field varchar2Field,Field clob_or_text_Field, DatabaseSyntax dbSyntax) throws SQLException,DataAccessException{
 
 	if (clob_or_text_Field.getSqlDataType()!=SQLDataType.clob_text){
@@ -5016,23 +4819,10 @@ public static String varchar2_CLOB_get(ResultSet rset,Field varchar2Field,Field 
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (8/23/2004 2:29:38 PM)
- * @return java.lang.String
- * @param size int
- */
 public static boolean varchar2_CLOB_is_Varchar2_OK(String data) {
 	return (TokenMangler.getSQLEscapedString(data).length() <= VARCHAR_SIZE_LIMIT);
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (8/23/2004 2:29:38 PM)
- * @return java.lang.String
- * @param size int
- */
 public final static void varchar2_CLOB_update(
     Connection con,
     String sql,//marked sql

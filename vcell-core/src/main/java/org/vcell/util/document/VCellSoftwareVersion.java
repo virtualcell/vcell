@@ -68,7 +68,7 @@ public class VCellSoftwareVersion implements Serializable {
 				if (!stk.nextToken().equalsIgnoreCase("build")) throw new RuntimeException("Expecting 'build'");
 				buildNumber = stk.nextToken();
 				buildInt = safeParse(buildNumber);
-				String[] parts = versionNumber.split(".");
+				String[] parts = versionNumber.split("\\.");
 				if (parts.length > 1) {
 					String major = parts[0];
 					String minor = parts[1];

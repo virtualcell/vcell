@@ -110,12 +110,12 @@ jobs:
         set +e
         cd installers
         export MAC_INSTALLER=`ls *dmg`
-        xcrun altool --notarize-app --primary-bundle-id "org.vcell.i4jmacos" --username "${{ secrets.MACID }}" --password "${{ secrets.MACPW }}" --file $MAC_INSTALLER > altool_output
+        xcrun altool --notarize-app --primary-bundle-id "edu.uchc.vcell.alpha" -u "${{ secrets.MACID }}" -p "${{ secrets.MACPW }}" --file $MAC_INSTALLER > altool_output
         cat altool_output | grep UUID | cut -d " " -f3 > UUID
         for minutes in {1..5}
         do
           sleep 60
-          xcrun altool --notarization-info `cat UUID` --username "${{ secrets.MACID }}" --password "${{ secrets.MACPW }}" > status
+          xcrun altool --notarization-info `cat UUID` -u "${{ secrets.MACID }}" -p "${{ secrets.MACPW }}" > status
           grep -q success status
           if [[ $? == 0 ]]; then
             echo "notarized succesfully"
@@ -180,10 +180,12 @@ jobs:
       run: |
         set -ux
         cd docker/swarm
-        export SINGULARITY_FILENAME=`cat $VCELL_CONFIG_FILE_NAME | grep VCELL_SINGULARITY_FILENAME | cut -d"=" -f2`
+        export BATCH_SINGULARITY_FILENAME=`cat $VCELL_CONFIG_FILE_NAME | grep VCELL_BATCH_SINGULARITY_FILENAME | cut -d"=" -f2`
+        export OPT_SINGULARITY_FILENAME=`cat $VCELL_CONFIG_FILE_NAME | grep VCELL_OPT_SINGULARITY_FILENAME | cut -d"=" -f2`
         cd ../build/singularity-vm
         singularity remote login -u ${{ secrets.ACTION_USER }} -p ${{ secrets.ACTION_TOKEN }} oras://ghcr.io
-        singularity pull $SINGULARITY_FILENAME oras://${VCELL_REPO_NAMESPACE}/vcell-batch-singularity:${{ github.event.inputs.vcell_version }}.${{ github.event.inputs.vcell_build }}
+        singularity pull $BATCH_SINGULARITY_FILENAME oras://${VCELL_REPO_NAMESPACE}/vcell-batch-singularity:${{ github.event.inputs.vcell_version }}.${{ github.event.inputs.vcell_build }}
+        singularity pull $OPT_SINGULARITY_FILENAME oras://${VCELL_REPO_NAMESPACE}/vcell-opt-singularity:${{ github.event.inputs.vcell_version }}.${{ github.event.inputs.vcell_build }}
     - name: deploy to site
       run: |
         set -ux

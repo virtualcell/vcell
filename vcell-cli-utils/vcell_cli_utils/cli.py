@@ -92,108 +92,6 @@ def gen_sedml_2d_3d(omex_file_path, base_out_path):
     return temp_path
 
 
-def exec_plot_output_sed_doc(omex_file_path, idNamePlotsMap, base_out_path):
-    config = Config(VALIDATE_OMEX_MANIFESTS=False)
-    archive = CombineArchiveReader().run(in_file=omex_file_path, out_dir=tmp_dir, config=config)
-
-    # read the plot id to name map
-    idNamePlotDict = {}
-    with open(idNamePlotsMap) as file:
-        for line in file:
-            line = line.rstrip('\n')	# #print(line)
-            id, name = line.split('|')
-            idNamePlotDict[id] = name	# equivalent to java  idNamePlotHashMap.put(id, name);
-    print(idNamePlotDict)
-    
-    # determine files to execute
-    sedml_contents = get_sedml_contents(archive)
-
-    report_results = ReportResults()
-    for i_content, content in enumerate(sedml_contents):
-        content_filename = os.path.join(tmp_dir, content.location)
-
-        for report_filename in glob.glob(os.path.join(base_out_path, content.location, '*.csv')):
-            if report_filename.find('__plot__') != -1:
-                report_id = os.path.splitext(os.path.basename(report_filename))[0]
-
-                # read report from CSV file produced by tellurium
-                # data_set_df = pd.read_csv(report_filename).transpose()
-
-                data_set_df = pd.read_csv(report_filename, header=None).T
- 
-                datasets = []
-                for col in data_set_df.columns:
-                    datasets.append(DataSet(id=data_set_df.loc[0,col], label=data_set_df.loc[1,col], name=data_set_df.loc[2,col]))
-                print(report_id)
-                report = Report(id=report_id, name=idNamePlotDict[report_id], data_sets=datasets)
- 
-                data_set_df.columns = data_set_df.iloc[0]
-                data_set_df.drop(0, inplace=True)
-                data_set_df.drop(1, inplace=True)
-                data_set_df.drop(2, inplace=True)
-                data_set_df.reset_index(inplace=True)
-                data_set_df.drop('index', axis=1, inplace=True)
-
-                # create pseudo-report for ReportWriter
-
-                data_set_results = DataSetResults()
-                
-                for col in list(data_set_df.columns):
-                    data_set_results[col] = data_set_df[col].to_numpy(dtype='float64')
-
-                # append to data structure of report results
-
-                # save file in desired BioSimulators format(s)
-                export_id = report_id.replace('__plot__', '')
-                report.id = export_id
-                rel_path = os.path.join(
-                    content.location, report.id)
-                if len(rel_path.split("./")) > 1:
-                    rel_path = rel_path.split("./")[1]
-                # print("base: ", base_out_path, file=sys.stdout)              
-                # print("rel: ", rel_path, file=sys.stdout)              
-                ReportWriter().run(report,
-                                   data_set_results,
-                                   base_out_path,
-                                   rel_path,
-                                   format='h5',
-                                   type=Plot2D)
-                os.rename(report_filename,
-                          report_filename.replace('__plot__', ''))
-
-            else:
-                print("report   : ", report_filename, file=sys.stdout)
-                report_id = os.path.splitext(os.path.basename(report_filename))[0]
-                data_set_df = pd.read_csv(report_filename, header=None).T
-
-                datasets = []
-                for col in data_set_df.columns:
-                    datasets.append(DataSet(id=data_set_df.loc[0,col], label=data_set_df.loc[1,col], name=""))
-                print(report_id)
-                report = Report(id=report_id, name=idNamePlotDict[report_id], data_sets=datasets)
-
-                data_set_df.columns = data_set_df.iloc[0]		# use ids
-                data_set_df.drop(0, inplace=True)
-                data_set_df.drop(1, inplace=True)
-                data_set_df.drop(2, inplace=True)
-                data_set_df.reset_index(inplace=True)
-                data_set_df.drop('index', axis=1, inplace=True)
-
-                data_set_results = DataSetResults()
-                for col in list(data_set_df.columns):
-                    data_set_results[col] = data_set_df[col].to_numpy(dtype='float64')
-                
-                rel_path = os.path.join(content.location, report.id)
-                if len(rel_path.split("./")) > 1:
-                    rel_path = rel_path.split("./")[1]
-                ReportWriter().run(report,
-                                   data_set_results,
-                                   base_out_path,
-                                   rel_path,
-                                   format='h5',
-                                   type=Report)
-                
-                
 @deprecated("This method is no longer used")
 def exec_sed_doc(omex_file_path, base_out_path):
     # defining archive
@@ -411,28 +309,46 @@ def gen_plots_for_sed2d_only(sedml_path, result_out_dir):
             all_plot_curves[output.getId()] = all_curves
 
     all_plots = dict(all_plot_curves)
-    for plot, curve_dat in all_plots.items():
+    for plot_id, curve_dat_dict in all_plots.items(): # curve_dat_dict <--> all_curves
         dims = (12, 8)
         fig, ax = plt.subplots(figsize=dims)
-        for curve, data in curve_dat.items():
-            df = pd.read_csv(os.path.join(
-                result_out_dir, plot + '.csv'), header=None).T
-            df.columns = df.iloc[1]		# use labels
-            df.drop(0, inplace=True)
-            df.drop(1, inplace=True)
-            df.drop(2, inplace=True)
-            df.reset_index(inplace=True)
-            df.drop('index', axis=1, inplace=True)
 
-            sns.lineplot(x=df[data['x']].astype(float), y=df[data['y']].astype(float), ax=ax, label=curve)
-            ax.set_ylabel('')
-            #             plt.show()
-            plt.savefig(os.path.join(result_out_dir, plot + '.pdf'), dpi=300)
+        labelMap = {}
+        df = pd.read_csv(os.path.join(result_out_dir, plot_id + '.csv'), header=None).T
+        
+        # create mapping from task to all repeated tasks (or just itself)
+        for elem in df.iloc[1]:
+            if elem not in labelMap:
+                labelMap[elem] = []
+            labelMap[elem].append(str(elem) + "_" + str(len(labelMap[elem])))
+
+        # Prepare new labels
+        labels = []
+        for key in labelMap:
+            if len(labelMap[key]) == 1:
+                labelMap[key][0] = key      # If there wasn't repreated tasks, restore the old name
+            for elem in labelMap[key]:
+                labels.append(elem)
+
+        # format data frame
+        df.columns = labels 
+        df.drop(0, inplace=True)
+        df.drop(1, inplace=True)
+        df.drop(2, inplace=True)
+        df.reset_index(inplace=True)
+        df.drop('index', axis=1, inplace=True)
+
+        for curve_id, data in curve_dat_dict.items(): # data <--> (dict)all_curves.values()
+            shouldLabel = True
+            for series_name in labelMap[data['y']]:
+                sns.lineplot(data=df, x=data['x'], y=series_name, ax=ax, label=(curve_id if shouldLabel else None))
+                ax.set_ylabel('')
+                shouldLabel = False
+            plt.savefig(os.path.join(result_out_dir, plot_id + '.pdf'), dpi=300)
 
 if __name__ == "__main__":
     fire.Fire({
         'genSedml2d3d': gen_sedml_2d_3d,
-        'execPlotOutputSedDoc': exec_plot_output_sed_doc,
         'genPlotsPseudoSedml': gen_plots_for_sed2d_only,
         'execSedDoc': exec_sed_doc,
         'transposeVcmlCsv': transpose_vcml_csv,

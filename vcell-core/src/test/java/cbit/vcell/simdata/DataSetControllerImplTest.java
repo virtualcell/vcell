@@ -32,7 +32,6 @@ public class DataSetControllerImplTest extends TestCase {
 	public void setUp() throws Exception {
 		System.setProperty(PropertyLoader.installationRoot,new File("../").getAbsolutePath());
 		String message = "installation directory is "+PropertyLoader.getRequiredProperty(PropertyLoader.installationRoot);
-		ResourceUtil.setNativeLibraryDirectory();
 		NativeLib.HDF5.load();
 
 		Cachetable cachetable = new Cachetable(2000,1000000L);
@@ -78,6 +77,7 @@ public class DataSetControllerImplTest extends TestCase {
 	
 	@Test
 	public void testGetDataIdentifiers() throws FileNotFoundException, DataAccessException, IOException {
+		NativeLib.HDF5.load();
 		DataIdentifier[] dataIdentifiers = dsc.getDataIdentifiers(outputContext, vcDataIdentifier);
 		String[] varNames = Arrays.asList(dataIdentifiers)
 				.stream()

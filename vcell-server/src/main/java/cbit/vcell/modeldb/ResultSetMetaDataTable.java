@@ -20,7 +20,7 @@ class ResultSetMetaDataTable extends cbit.sql.Table {
 	//=======================================================================================================
 	//  T H I S    T A B L E    I S    N O T    U S E D    I N     V I R T U A L   C E L L    A N Y M O R E
 	//=======================================================================================================
-	private static final String TABLE_NAME = "vc_rsetMetaData";
+	private static final String TABLE_NAME = "vc_rsetmetadata";
 	private static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
 	private final Field simRef 			= new Field("simRef",		SQLDataType.integer,		"UNIQUE NOT NULL "+SimulationTable.REF_TYPE+" ON DELETE CASCADE");

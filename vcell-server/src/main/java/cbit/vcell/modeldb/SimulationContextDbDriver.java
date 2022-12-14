@@ -18,6 +18,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 
+import cbit.vcell.matrix.MatrixException;
+import cbit.vcell.model.ModelException;
 import org.vcell.db.DatabaseSyntax;
 import org.vcell.sbml.vcell.StructureSizeSolver;
 import org.vcell.util.DataAccessException;
@@ -57,7 +59,7 @@ import cbit.vcell.math.MathException;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Structure;
-import cbit.vcell.modeldb.DatabasePolicySQL.OuterJoin;
+import cbit.vcell.modeldb.DatabasePolicySQL.LeftOuterJoin;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
@@ -347,7 +349,11 @@ private void assignSpeciesContextSpecsSQL(Connection con,KeyValue simContextKey,
 		stmt.close();
 	}
 	if(bUseConcentration != null){
-		simContext.setUsingConcentration(bUseConcentration);
+		try {
+			simContext.setUsingConcentration(bUseConcentration, false);
+		} catch (Exception e) {
+			throw new RuntimeException("not expected to ever fail: "+e.getMessage(), e);
+		}
 	}
 }
 
@@ -567,6 +573,30 @@ private void assignStructureMappingsSQL(QueryHashtable dbc, Connection con,KeyVa
 				}
 			} else if (sm instanceof MembraneMapping) {
 				MembraneMapping mm = (MembraneMapping) sm;
+				String boundaryTypeXmString = rset.getString(structureMappingTable.boundaryTypeXm.toString());
+				if (!rset.wasNull()){
+					mm.setBoundaryConditionTypeXm(new BoundaryConditionType(boundaryTypeXmString));
+				}
+				String boundaryTypeXpString = rset.getString(structureMappingTable.boundaryTypeXp.toString());
+				if (!rset.wasNull()){
+					mm.setBoundaryConditionTypeXp(new BoundaryConditionType(boundaryTypeXpString));
+				}
+				String boundaryTypeYmString = rset.getString(structureMappingTable.boundaryTypeYm.toString());
+				if (!rset.wasNull()){
+					mm.setBoundaryConditionTypeYm(new BoundaryConditionType(boundaryTypeYmString));
+				}
+				String boundaryTypeYpString = rset.getString(structureMappingTable.boundaryTypeYp.toString());
+				if (!rset.wasNull()){
+					mm.setBoundaryConditionTypeYp(new BoundaryConditionType(boundaryTypeYpString));
+				}
+				String boundaryTypeZmString = rset.getString(structureMappingTable.boundaryTypeZm.toString());
+				if (!rset.wasNull()){
+					mm.setBoundaryConditionTypeZm(new BoundaryConditionType(boundaryTypeZmString));
+				}
+				String boundaryTypeZpString = rset.getString(structureMappingTable.boundaryTypeZp.toString());
+				if (!rset.wasNull()){
+					mm.setBoundaryConditionTypeZp(new BoundaryConditionType(boundaryTypeZpString));
+				}
 				String surfToVolString = rset.getString(structureMappingTable.surfToVolExp.toString());
 				if (!rset.wasNull()) {
 					try {
@@ -735,7 +765,7 @@ private SimulationContext getSimulationContextSQL(QueryHashtable dbc, Connection
 	String condition =	simContextTable.id.getQualifiedColName() + " = " + simContextKey + 
 					" AND " + 
 						simContextTable.ownerRef.getQualifiedColName() + " = " + userTable.id.getQualifiedColName();
-	sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,(OuterJoin)null,condition,null,dbSyntax);
+	sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,(LeftOuterJoin)null,condition,null);
 //System.out.println(sql);
 
 	Statement stmt = con.createStatement();
@@ -765,13 +795,13 @@ private SimulationContext getSimulationContextSQL(QueryHashtable dbc, Connection
 	assignSpeciesContextSpecsSQL(con,simContextKey, simContext);
 	assignReactionSpecsSQL(con,simContextKey, simContext);
 	
-	for (GeometryClass gc : simContext.getGeometry().getGeometryClasses()) {
-		try {
-			StructureSizeSolver.updateUnitStructureSizes(simContext, gc);
-		}catch (Exception e){
-			lg.error("failed to updateUnitStructureSizes",e);
-		}
-	}
+//	for (GeometryClass gc : simContext.getGeometry().getGeometryClasses()) {
+//		try {
+//			StructureSizeSolver.updateUnitStructureSizes(simContext, gc);
+//		}catch (Exception e){
+//			lg.error("failed to updateUnitStructureSizes",e);
+//		}
+//	}
 	simContext.getGeometryContext().enforceHierarchicalBoundaryConditions(simContext.getModel().getStructureTopology());
 
 	simContext.getModel().refreshDependencies();

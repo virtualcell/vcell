@@ -56,13 +56,10 @@ public Node copyTreeBinary() {
 public Node differentiate(String variable) throws ExpressionException {
 	return jjtGetChild(0).differentiate(variable);
 }
-/**
- * This method was created by a SmartGuide.
- * @return double
- * @exception java.lang.Exception The exception description.
- */
-public double evaluateConstant() throws ExpressionException {
-	return jjtGetChild(0).evaluateConstant();
+
+@Override
+public double evaluateConstant(boolean substituteConstants) throws ExpressionException {
+	return jjtGetChild(0).evaluateConstant(substituteConstants);
 }
 /**
  * This method was created by a SmartGuide.
@@ -81,20 +78,18 @@ public RealInterval evaluateInterval(RealInterval intervals[]) throws Expression
 public double evaluateVector(double values[]) throws ExpressionException {
 	return jjtGetChild(0).evaluateVector(values);
 }
-/**
- * This method was created by a SmartGuide.
- * @exception java.lang.Exception The exception description.
- */
-public Node flatten() throws ExpressionException {
+
+@Override
+public Node flatten(boolean substituteConstants) throws ExpressionException {
 	try {
-		double value = evaluateConstant();
+		double value = evaluateConstant(substituteConstants);
 		return new ASTFloatNode(value);
 	}catch (Exception e){}		
 
 	if (jjtGetNumChildren()!=1){ 
 		throw new Error("ASTExpression should have 1 child"); 
 	}
-	return jjtGetChild(0).flatten();
+	return jjtGetChild(0).flatten(substituteConstants);
 }
 /**
  * Insert the method's description here.

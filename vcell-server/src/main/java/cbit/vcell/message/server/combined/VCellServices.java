@@ -34,9 +34,6 @@ import cbit.vcell.message.server.ServiceInstanceStatus;
 import cbit.vcell.message.server.ServiceProvider;
 import cbit.vcell.message.server.batch.sim.HtcSimulationWorker;
 import cbit.vcell.message.server.bootstrap.ServiceType;
-import cbit.vcell.message.server.cmd.CommandService;
-import cbit.vcell.message.server.cmd.CommandServiceLocal;
-import cbit.vcell.message.server.cmd.CommandServiceSshNative;
 import cbit.vcell.message.server.data.SimDataServer;
 import cbit.vcell.message.server.data.SimDataServer.SimDataServiceType;
 import cbit.vcell.message.server.db.DatabaseServer;
@@ -54,12 +51,9 @@ import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.PythonSupport;
 import cbit.vcell.resource.PythonSupport.PythonPackage;
-import cbit.vcell.resource.ResourceUtil;
-import cbit.vcell.server.HtcJobID.BatchSystemType;
 import cbit.vcell.simdata.Cachetable;
 import cbit.vcell.simdata.DataServerImpl;
 import cbit.vcell.simdata.DataSetControllerImpl;
-import cbit.vcell.solvers.AbstractSolver;
 
 /**
  * Insert the type's description here.
@@ -149,7 +143,6 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 
 		try {
 			PropertyLoader.loadProperties(REQUIRED_SERVICE_PROPERTIES);
-			ResourceUtil.setNativeLibraryDirectory();
 			new LibraryLoaderThread(false).start( );
 			PythonSupport.verifyInstallation(new PythonPackage[] { PythonPackage.VTK, PythonPackage.THRIFT});
 			

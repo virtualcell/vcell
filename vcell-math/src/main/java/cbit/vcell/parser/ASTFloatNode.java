@@ -90,7 +90,8 @@ public boolean equals(Node node) {
 
 	return true;
 }
-public double evaluateConstant() {
+@Override
+public double evaluateConstant(boolean substituteConstants) {
 	return value.doubleValue();
 }      
 public RealInterval evaluateInterval(RealInterval intervals[]) throws ExpressionBindingException{
@@ -100,11 +101,9 @@ public RealInterval evaluateInterval(RealInterval intervals[]) throws Expression
 public double evaluateVector(double values[]) {
 	return value.doubleValue();
 }      
-/**
- * This method was created by a SmartGuide.
- * @exception java.lang.Exception The exception description.
- */
-public Node flatten() throws ExpressionException {
+
+@Override
+public Node flatten(boolean substituteConstants) throws ExpressionException {
 	return copyTree();
 }
 
@@ -112,13 +111,13 @@ public Node flatten() throws ExpressionException {
   {
 	  if (value==null){
 		  return "null";
-	  }else if (value.doubleValue()==0.0){
+	  }else if (value ==0.0){
 		  return "0.0";
 	  }else{
 		  if (lang == LANGUAGE_ECLiPSe){
-			if (value.doubleValue() == Double.POSITIVE_INFINITY){
+			if (value == Double.POSITIVE_INFINITY){
 				return "1.0Inf";
-			}else if (value.doubleValue() == Double.NEGATIVE_INFINITY){
+			}else if (value == Double.NEGATIVE_INFINITY){
 				return "-1.0Inf";
 			}else{
 				return value.toString();
@@ -128,6 +127,20 @@ public Node flatten() throws ExpressionException {
 				  return Integer.toString(value.intValue());
 			  } else {
 				  return value.toString();
+			  }
+		  } else if (lang == LANGUAGE_JSCL) {
+			  if (value == value.intValue() && Math.abs(value) <= 2) {
+				  if (value >= 0) {
+					  return Integer.toString(value.intValue());
+				  }else{
+					  return "("+ value.intValue() +")";
+				  }
+			  } else {
+				  if (value >= 0) {
+					  return value.toString();
+				  }else{
+					  return "("+ value +")";
+				  }
 			  }
 		  } else {
 		      return value.toString();

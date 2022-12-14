@@ -12,13 +12,12 @@ package cbit.vcell.model;
 import java.beans.PropertyVetoException;
 import java.util.List;
 
-import org.vcell.util.Issue;
+import org.vcell.util.*;
 import org.vcell.util.Issue.IssueCategory;
-import org.vcell.util.IssueContext;
-import org.vcell.util.Matchable;
 
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+
 /**
  * Insert the type's description here.
  * Creation date: (8/9/2006 5:45:48 PM)
@@ -74,8 +73,25 @@ public boolean compareEqual(Matchable obj) {
 	return true;
 }
 
+	@Override
+	public boolean relate(Relatable obj, RelationVisitor rv) {
+		if (obj == this){
+			return true;
+		}
+		if (!(obj instanceof GeneralCurrentLumpedKinetics)){
+			return false;
+		}
 
-/**
+		GeneralCurrentLumpedKinetics gck = (GeneralCurrentLumpedKinetics)obj;
+
+		if (!relate0(gck, rv)){
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
  * Insert the method's description here.
  * Creation date: (5/12/2004 3:08:25 PM)
  * @return cbit.util.Issue[]
