@@ -4,15 +4,18 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.BioModelTransforms;
 import cbit.vcell.math.MathCompareResults;
 import cbit.vcell.math.MathDescription;
+import cbit.vcell.resource.NativeLib;
 import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.vcell.sbml.VcmlTestSuiteFiles;
+import org.vcell.sbml.vcell.SBMLExporter;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -26,8 +29,24 @@ public class MathGenCompareTest {
 
 	private String filename;
 
+	private static String previousInstalldirPropertyValue;
+
 	public MathGenCompareTest(String filename){
 		this.filename = filename;
+	}
+
+	@BeforeClass
+	public static void setup(){
+		previousInstalldirPropertyValue = System.getProperty("vcell.installDir");
+		System.setProperty("vcell.installDir", "..");
+		NativeLib.combinej.load();
+	}
+
+	@AfterClass
+	public static void teardown() {
+		if (previousInstalldirPropertyValue!=null) {
+			System.setProperty("vcell.installDir", previousInstalldirPropertyValue);
+		}
 	}
 
 	@BeforeClass
