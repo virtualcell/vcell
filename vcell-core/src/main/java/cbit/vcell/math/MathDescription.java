@@ -967,7 +967,7 @@ private MathCompareResults compareInvariantAttributes(MathDescription newMathDes
 		while (iterThis.hasNext()){
 			String varName = iterThis.next();
 			Variable var = this.getVariable(varName);
-			if (var==null || !(var instanceof Function)){
+			if (var==null || (var instanceof Constant)){
 				varsNotFoundMath1.add(varName);
 			}
 		}
@@ -976,7 +976,7 @@ private MathCompareResults compareInvariantAttributes(MathDescription newMathDes
 		while (iterOther.hasNext()){
 			String varName = iterOther.next();
 			Variable var = newMathDesc.getVariable(varName);
-			if (var==null || !(var instanceof Function)){
+			if (var==null || (var instanceof Constant)){
 				varsNotFoundMath2.add(varName);
 			}
 		}
@@ -3414,9 +3414,11 @@ void substituteInPlace(MathSymbolTableFactory mathSymbolTableFactory, Function f
 	// make a "identity" simulation (no overrides), this will help to substitute/flatten expressions.
 	//
 	for (int i = 0; i < functionsToSubstitute.length; i++){
-		//variableList.insertElementAt(functionsToSubstitute[i], 0);
-		variableList.add(0, functionsToSubstitute[i]); 
-		variableHashTable.put(functionsToSubstitute[i].getName(), functionsToSubstitute[i]);
+		if (functionsToSubstitute[i] != null) {
+			//variableList.insertElementAt(functionsToSubstitute[i], 0);
+			variableList.add(0, functionsToSubstitute[i]);
+			variableHashTable.put(functionsToSubstitute[i].getName(), functionsToSubstitute[i]);
+		}
 	}
 	MathSymbolTable simSymbolTable = mathSymbolTableFactory.createMathSymbolTable(this);
 	MathDescription newMath = this;
@@ -3555,9 +3557,10 @@ public static MathCompareResults testEquivalency(MathSymbolTableFactory mathSymb
 			depVarsToSubstitute.removeAll(indepVars1);
 			if (depVarsToSubstitute.size()>0){
 				String depVarNames[] = (String[])depVarsToSubstitute.toArray(new String[depVarsToSubstitute.size()]);
-				Function functionsToSubstitute[] = MathDescription.getFlattenedFunctions(mathSymbolTableFactory,mathDescription1,depVarNames);
-				canonicalMath1.substituteInPlace(mathSymbolTableFactory,functionsToSubstitute);
-				canonicalMath2.substituteInPlace(mathSymbolTableFactory,functionsToSubstitute);
+				Function functionsToSubstitute1[] = MathDescription.getFlattenedFunctions(mathSymbolTableFactory,mathDescription1,depVarNames);
+				Function functionsToSubstitute2[] = MathDescription.getFlattenedFunctions(mathSymbolTableFactory,mathDescription2,depVarNames);
+				canonicalMath1.substituteInPlace(mathSymbolTableFactory,functionsToSubstitute1);
+				canonicalMath2.substituteInPlace(mathSymbolTableFactory,functionsToSubstitute2);
 			}
 			// flatten again
 			canonicalMath1.makeCanonical(mathSymbolTableFactory);
@@ -4054,9 +4057,9 @@ private static boolean tryLegacyVarNameDomainExtensive(MathDescription mathDescr
 				}
 			}
 		}
-		
 	}
-
+	// finally, rename functions in old math if they map to a state variable in the new math
+	
 	return true;
 }
 
