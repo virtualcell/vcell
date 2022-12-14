@@ -173,7 +173,15 @@ public class OptimizationRunServerResource extends AbstractServerResource implem
 		//Container gets vcell.server.id from vcell:docker:swarm:deploy.sh and *.config variable VCELL_SITE
 		//see vcell/docker/swarm/deploy.sh -> echo "env \$(cat $remote_config_file | xargs) docker stack deploy -c $remote_compose_file $stack_name"
 		//lookup swarm ip number for task
-		String swarmSubmitTaskName = PropertyLoader.getRequiredProperty(PropertyLoader.vcellsubmit_service_host);
+
+		//
+		// use optional vcell.submit.service.host property to connect to vcell-submit service (e.g. localhost during dev)
+		//
+		String swarmSubmitTaskName = PropertyLoader.getProperty(PropertyLoader.vcellsubmit_service_host, null);
+		if (swarmSubmitTaskName == null){
+			// if not provided, then calculate the DNS name of the docker swarm service for vcell-submit
+			swarmSubmitTaskName = "tasks."+"vcell"+System.getProperty("vcell.server.id").toLowerCase()+"_submit";
+		}
 		ProcessBuilder pb =new ProcessBuilder("nslookup",swarmSubmitTaskName);
 		pb.redirectErrorStream(true);
 		Process process = pb.start();
