@@ -1,5 +1,17 @@
 package org.vcell.cli.run;
 
+/**
+ * Class containing all the important info of a sedml execution:
+ * - nModels :: the number of models
+ * - nSimulations :: the number of simulations
+ * - nTasks :: the number of tasks
+ * - nOutputs :: the number of outputs
+ * - nReportsCount :: the number of reports
+ * - nPlots2DCount :: the number of 2D plots
+ * - nPlots3DCount :: the number of 3D plots
+ * - hasOverrides :: if there are math overrides
+ * - hasScans :: if the sedml has parameter scans
+ */
 public class SedmlStatistics {
     public int nModels, nSimulations, nTasks, nOutputs, nReportsCount, nPlots2DCount, nPlots3DCount;
     public boolean hasOverrides, hasScans;
@@ -16,6 +28,10 @@ public class SedmlStatistics {
         this.hasScans = false;
     }
 
+    /**
+     * A comma separated list of the contents for logging purposes
+     * @returns the relevant info as a comma separated list or an error message
+     */
     @Override
     public String toString(){
         if (this.nModels < 0 && this.nModels < 0 && this.nModels < 0 && this.nModels < 0 && 

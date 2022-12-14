@@ -44,6 +44,21 @@ public class SedmlJob {
 
     private final static Logger logger = LogManager.getLogger(SedmlJob.class);
 
+    /**
+     * Constructor to provide all needed info for a SedML processing job.
+     * 
+     * @param sedmlLocation location of the sedml document with the model to process
+     * @param omexHandler object to deal with omex archive related utilities
+     * @param masterOmexArchive the archive containing the sedml file
+     * @param rootOutputDir the top-level directory for all the output of omex execution
+     * @param resultsDirPath path to where the results should be placed
+     * @param sedmlPath2d3dString path to where 2D and 3D plots are stored
+     * @param cliRecorder recorder objecte used for CLI applications
+     * @param bKeepTempFiles whether temp files shouldn't be deleted, or should.
+     * @param bExactMatchOnly enforces a KISAO match, with no substitution
+     * @param bSmallMeshOverride whether to use small meshes or standard meshes.
+     * @param logOmexMessage a string-builder to contain progress updates of omex execution
+     */
     public SedmlJob(String sedmlLocation, OmexHandler omexHandler, File masterOmexArchive, File rootOutputDir, String resultsDirPath, String sedmlPath2d3dString,
             CLIRecorder cliRecorder, boolean bKeepTempFiles, boolean bExactMatchOnly, boolean bSmallMeshOverride, StringBuilder logOmexMessage){
         this.somethingFailed = false;
@@ -65,10 +80,23 @@ public class SedmlJob {
         
     }
 
+    /**
+     * Returns a object with variables containing useful information about the sedml document
+     * @return the statistics of the document
+     */
     public SedmlStatistics getDocStatistics(){
         return this.docStatistics;
     }
 
+    /**
+     * Prepare the SedML model for execution
+     * 
+     * Called before: `simulateSedml()`
+     * 
+     * @throws InterruptedException if there is an issue with accessing data
+     * @throws PythonStreamException if calls to the python-shell instance are not working correctly
+     * @throws IOException if there are system I/O issues
+     */
     public boolean preProcessDoc() throws PythonStreamException, InterruptedException, IOException {
         logger.info("Initializing SED-ML document...");
 
@@ -157,6 +185,16 @@ public class SedmlJob {
         return true;
     }
 
+    /**
+     * Prepare the SedML model for execution
+     * 
+     * Called after: `preProcessDoc()`
+     * 
+     * @throws InterruptedException if there is an issue with accessing data
+     * @throws PythonStreamException if calls to the python-shell instance are not working correctly
+     * @throws IOException if there are system I/O issues
+     * @throws ExecutionException if an execution specfic error occurs
+     */
     public boolean simulateSedml() throws InterruptedException, ExecutionException, PythonStreamException, IOException {
         /*  temp code to test plot name correctness
         String idNamePlotsMap = utils.generateIdNamePlotsMap(sedml, outDirForCurrentSedml);
