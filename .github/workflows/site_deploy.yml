@@ -39,15 +39,15 @@ jobs:
         echo "VCELL_TAG=`git rev-parse --short HEAD`" >> $GITHUB_ENV
         echo "VCELL_REPO_NAMESPACE=ghcr.io/virtualcell" >> $GITHUB_ENV
         echo "VCELL_DEPLOY_REMOTE_DIR=/share/apps/vcell3/deployed_github" >> $GITHUB_ENV
-        if [ "${{ github.event.inputs.vcell_site }}" == "rel" ]; then\
-        	echo "VCELL_MANAGER_NODE=vcellapi.cam.uchc.edu" >> $GITHUB_ENV;\
-        	echo "VCELL_INSTALLER_REMOTE_DIR="/share/apps/vcell3/apache_webroot/htdocs/webstart/Rel"" >> $GITHUB_ENV;\
-        else if [ "${{ github.event.inputs.vcell_site }}" == "alpha" ]; then\
-         	echo "VCELL_MANAGER_NODE=vcellapi-beta.cam.uchc.edu" >> $GITHUB_ENV;\
-        	echo "VCELL_INSTALLER_REMOTE_DIR="/share/apps/vcell3/apache_webroot/htdocs/webstart/Alpha"" >> $GITHUB_ENV;\
-        else if [ "${{ github.event.inputs.vcell_site }}" == "test" ]; then\
-         	echo "VCELL_MANAGER_NODE=vcellapi-beta.cam.uchc.edu" >> $GITHUB_ENV;\
-        	echo "VCELL_INSTALLER_REMOTE_DIR="/share/apps/vcell3/apache_webroot/htdocs/webstart/Beta"" >> $GITHUB_ENV;\
+        if [ "${{ github.event.inputs.vcell_site }}" == "rel" ]; then
+        	echo "VCELL_MANAGER_NODE=vcellapi.cam.uchc.edu" >> $GITHUB_ENV;
+        	echo "VCELL_INSTALLER_REMOTE_DIR="/share/apps/vcell3/apache_webroot/htdocs/webstart/Rel"" >> $GITHUB_ENV;
+        else if [ "${{ github.event.inputs.vcell_site }}" == "alpha" ]; then
+         	echo "VCELL_MANAGER_NODE=vcellapi-beta.cam.uchc.edu" >> $GITHUB_ENV;
+        	echo "VCELL_INSTALLER_REMOTE_DIR="/share/apps/vcell3/apache_webroot/htdocs/webstart/Alpha"" >> $GITHUB_ENV;
+        else if [ "${{ github.event.inputs.vcell_site }}" == "test" ]; then
+         	echo "VCELL_MANAGER_NODE=vcellapi-beta.cam.uchc.edu" >> $GITHUB_ENV;
+        	echo "VCELL_INSTALLER_REMOTE_DIR="/share/apps/vcell3/apache_webroot/htdocs/webstart/Beta"" >> $GITHUB_ENV;
         else echo "Unknown site name ${{ github.event.inputs.vcell_site }}"; exit 1; fi; fi
     - name: setup ssh-agent
       uses: webfactory/ssh-agent@v0.5.3
