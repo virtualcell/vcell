@@ -3517,7 +3517,7 @@ public static MathCompareResults testEquivalency(MathSymbolTableFactory mathSymb
 				// no subdomains associated with variables
 				// equations are present for state variables in multiple subdomains
 				MathDescription copyMath1 = new MathDescription(mathDescription1); //clone before surgery
-				boolean bRenameSuccess = tryLegacyVarNameDomainExtensive(mathDescription1, mathDescription2);
+				boolean bRenameSuccess = tryLegacyVarNameDomainExtensive(copyMath1, mathDescription2);
 				if (bRenameSuccess) {
 					//try again to see whether invariants are equivalent after rename
 					MathCompareResults invariantResults2 = mathDescription2.compareInvariantAttributes(mathDescription1, false);
