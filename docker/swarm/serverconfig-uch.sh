@@ -16,6 +16,8 @@ _version_number=$4
 _build_number=$5
 _outputfile=$6
 
+echo "args: | $1 | $2 | $3 | $4 | $5 | $6 |"
+
 _site_lower=`echo $_site | tr '[:upper:]' '[:lower:]'`
 _site_upper=`echo $_site | tr '[:lower:]' '[:upper:]'`
 _site_camel="${_site_upper:0:1}${_site_lower:1:100}"
