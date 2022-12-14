@@ -3516,6 +3516,7 @@ public static MathCompareResults testEquivalency(MathSymbolTableFactory mathSymb
 				// variable naming identical across structures
 				// no subdomains associated with variables
 				// equations are present for state variables in multiple subdomains
+				MathDescription copyMath1 = new MathDescription(mathDescription1); //clone before surgery
 				boolean bRenameSuccess = tryLegacyVarNameDomainExtensive(mathDescription1, mathDescription2);
 				if (bRenameSuccess) {
 					//try again to see whether invariants are equivalent after rename
@@ -3526,7 +3527,9 @@ public static MathCompareResults testEquivalency(MathSymbolTableFactory mathSymb
 						logger.error("Initial invariantResults: "+invariantResults);
 						logger.error("After rename: "+invariantResults2);
 						return invariantResults2;
-					} 
+					}
+					// it worked for the quick test, now proceed with the patched copy
+					mathDescription1 = copyMath1;
 				} else {
 					// can't be equivalent or equal
 					logger.error("Attempt to rename legacy variables failed");
