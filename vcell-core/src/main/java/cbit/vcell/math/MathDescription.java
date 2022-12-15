@@ -3520,7 +3520,7 @@ public static MathCompareResults testEquivalency(MathSymbolTableFactory mathSymb
 				boolean bRenameSuccess = tryLegacyVarNameDomainExtensive(copyMath1, mathDescription2);
 				if (bRenameSuccess) {
 					//try again to see whether invariants are equivalent after rename
-					MathCompareResults invariantResults2 = mathDescription2.compareInvariantAttributes(mathDescription1, false);
+					MathCompareResults invariantResults2 = mathDescription2.compareInvariantAttributes(copyMath1, false);
 					if (!invariantResults2.isEquivalent()) {
 						// can't be equivalent or equal
 						logger.error("Could not fix invariants by renaming");
