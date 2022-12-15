@@ -1708,6 +1708,10 @@ private boolean isReferenced(Parameter parm, int level) throws ModelException, E
 	if (parm instanceof KineticsParameter && ((KineticsParameter)parm).getRole() != ROLE_UserDefined){
 		return true;
 	}
+	if (parm instanceof KineticsParameter) {
+		KineticsParameter kp = (KineticsParameter)parm;
+		System.out.println("K - role: " + kp.getRole());
+	}
 
 	//
 	// else, if parameter is referenced in another parameter's expression, continue with that expression

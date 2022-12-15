@@ -327,7 +327,14 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		}
 		refreshData();
 	}
+	
+	if (evt.getSource() instanceof ProxyParameter && evt.getPropertyName().equals("expression")) {
+		System.out.println("PTM - source: instanceof ProxyParameter" + ", prop name: expression");
+		this.reactionStep.refreshDependencies();
+	}
+	
 	if (evt.getSource() instanceof Parameter) {
+		System.out.println("PTM - source: instanceof Paraneter");
 		fireTableRowsUpdated(0, getRowCount() - 1);
 	}
 }

@@ -30,6 +30,7 @@ import org.vcell.util.document.KeyValue;
 import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Membrane.MembraneVoltage;
 import cbit.vcell.model.Model.ElectricalTopology;
+import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.Model.StructureTopology;
 import cbit.vcell.model.Structure.StructureSize;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
@@ -883,6 +884,25 @@ private void updateCatalysts() {
 					addCatalyst(sc);
 				} catch (PropertyVetoException | ModelException e) {
 					e.printStackTrace();	// we do nothing
+				}
+			}
+		} else if(((ProxyParameter)added).getTarget() instanceof ModelParameter) {
+			ModelParameter mp = (ModelParameter)((ProxyParameter)added).getTarget();
+			Expression exp = mp.getExpression();
+			if (exp != null && !exp.isNumeric()) {
+				try {
+					Expression flat = exp.flatten();
+					String[] symbols = flat.getSymbols();
+					for(String symbol : symbols) {
+						if(model.getSpeciesContext(symbol) != null) {
+							SpeciesContext sc = model.getSpeciesContext(symbol);
+							if(getReactant(symbol) == null && getProduct(symbol) == null && getCatalyst(symbol) == null) {
+								addCatalyst(sc);
+							}
+						}
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
 				}
 			}
 		}
