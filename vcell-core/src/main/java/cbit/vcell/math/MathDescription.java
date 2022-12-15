@@ -491,7 +491,7 @@ private MathCompareResults compareEquivalentCanonicalMath(MathDescription newMat
 					//
 					{
 					Equation oldEqu = subDomainsOld.get(i).getEquation(oldVars[j]);
-					Equation newEqu = subDomainsNew.get(i).getEquation(oldVars[j]);
+					Equation newEqu = subDomainsNew.get(i).getEquation(newVars[j]);
 					if (!Compare.isEqualOrNull(oldEqu,newEqu)){
 						boolean bFoundDifference = false;
 						//
@@ -594,7 +594,7 @@ private MathCompareResults compareEquivalentCanonicalMath(MathDescription newMat
 					
 					{
 						ParticleProperties oldPP = subDomainsOld.get(i).getParticleProperties(oldVars[j]);
-						ParticleProperties newPP = subDomainsNew.get(i).getParticleProperties(oldVars[j]);
+						ParticleProperties newPP = subDomainsNew.get(i).getParticleProperties(newVars[j]);
 						if (!Compare.isEqualOrNull(oldPP, newPP)){
 							logMathTexts(this, newMathDesc, Decision.MathDifferent_DIFFERENT_PARTICLE_PROPERTIES, "");
 							return new MathCompareResults(Decision.MathDifferent_DIFFERENT_PARTICLE_PROPERTIES);
@@ -605,7 +605,7 @@ private MathCompareResults compareEquivalentCanonicalMath(MathDescription newMat
 					//
 					if (subDomainsOld.get(i) instanceof MembraneSubDomain && oldVars[j] instanceof VolVariable){
 						JumpCondition oldJumpCondition = ((MembraneSubDomain)subDomainsOld.get(i)).getJumpCondition((VolVariable)oldVars[j]);
-						JumpCondition newJumpCondition = ((MembraneSubDomain)subDomainsNew.get(i)).getJumpCondition((VolVariable)oldVars[j]);
+						JumpCondition newJumpCondition = ((MembraneSubDomain)subDomainsNew.get(i)).getJumpCondition((VolVariable)newVars[j]);
 						if (!Compare.isEqualOrNull(oldJumpCondition,newJumpCondition)){
 							boolean bFoundDifference = false;
 							//
@@ -3553,9 +3553,13 @@ public static MathCompareResults testEquivalency(MathSymbolTableFactory mathSymb
 			HashSet<String> union = new HashSet<String>(indepVars1);
 			union.addAll(indepVars2);
 			
-			MathDescription canonicalMath1 = MathDescription.createCanonicalMathDescription(mathSymbolTableFactory,createMathWithExpandedEquations(mathDescription1,union));
-			MathDescription canonicalMath2 = MathDescription.createCanonicalMathDescription(mathSymbolTableFactory,createMathWithExpandedEquations(mathDescription2,union));
+//			MathDescription canonicalMath1 = MathDescription.createCanonicalMathDescription(mathSymbolTableFactory,createMathWithExpandedEquations(mathDescription1,union));
+//			MathDescription canonicalMath2 = MathDescription.createCanonicalMathDescription(mathSymbolTableFactory,createMathWithExpandedEquations(mathDescription2,union));
 
+			MathDescription canonicalMath1 = MathDescription.createMathWithExpandedEquations(mathDescription1,union);
+			MathDescription canonicalMath2 = MathDescription.createMathWithExpandedEquations(mathDescription2,union);
+			
+			
 			HashSet<String> canonIndepVars1 = canonicalMath1.getStateVariableNames();
 			HashSet<String> canonIndepVars2 = canonicalMath2.getStateVariableNames();
 			
@@ -3574,31 +3578,18 @@ public static MathCompareResults testEquivalency(MathSymbolTableFactory mathSymb
 				}
 			}
 
-//			HashSet<String> depVarsToSubstitute1 = new HashSet<String>();
-//			for (Variable var : Collections.list(canonicalMath1.getVariables())) {
-//				depVarsToSubstitute1.add(var.getName());
-//			}
-//			HashSet<String> depVarsToSubstitute2 = new HashSet<String>();
-//			for (Variable var : Collections.list(canonicalMath1.getVariables())) {
-//				depVarsToSubstitute2.add(var.getName());
-//			}
-//			depVarsToSubstitute1.removeAll(union);
-//			depVarsToSubstitute2.removeAll(union);
-//			if (depVarsToSubstitute1.size()>0){
-//				System.out.println(depVarsToSubstitute1);
-//				String depVarNames[] = (String[])depVarsToSubstitute1.toArray(new String[depVarsToSubstitute1.size()]);
-//				Function functionsToSubstitute[] = MathDescription.getFlattenedFunctions(mathSymbolTableFactory,mathDescription1,depVarNames);
-//				System.out.println(functionsToSubstitute);
-//				canonicalMath1.substituteInPlace(mathSymbolTableFactory,functionsToSubstitute);
-//			}
-//			if (depVarsToSubstitute2.size()>0){
-//				String depVarNames[] = (String[])depVarsToSubstitute2.toArray(new String[depVarsToSubstitute2.size()]);
-//				Function functionsToSubstitute[] = MathDescription.getFlattenedFunctions(mathSymbolTableFactory,mathDescription2,depVarNames);
-//				canonicalMath1.substituteInPlace(mathSymbolTableFactory,functionsToSubstitute);
-//			}
-//			// flatten again
-//			canonicalMath1.makeCanonical(mathSymbolTableFactory);
-//			canonicalMath2.makeCanonical(mathSymbolTableFactory);
+			HashSet<String> depVarsToSubstitute = new HashSet<String>(union);
+			depVarsToSubstitute.removeAll(indepVars1);
+			if (depVarsToSubstitute.size()>0){
+				String depVarNames[] = (String[])depVarsToSubstitute.toArray(new String[depVarsToSubstitute.size()]);
+				Function functionsToSubstitute1[] = MathDescription.getFlattenedFunctions(mathSymbolTableFactory,mathDescription1,depVarNames);
+				Function functionsToSubstitute2[] = MathDescription.getFlattenedFunctions(mathSymbolTableFactory,mathDescription2,depVarNames);
+				canonicalMath1.substituteInPlace(mathSymbolTableFactory,functionsToSubstitute1);
+				canonicalMath2.substituteInPlace(mathSymbolTableFactory,functionsToSubstitute2);
+			}
+			// flatten again
+			canonicalMath1.makeCanonical(mathSymbolTableFactory);
+			canonicalMath2.makeCanonical(mathSymbolTableFactory);
 			// now compare
 			return canonicalMath2.compareEquivalentCanonicalMath(canonicalMath1);
 		}
