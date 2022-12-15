@@ -10,6 +10,7 @@ import org.vcell.db.DatabaseService;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.*;
 
+import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -33,9 +34,23 @@ public class CLIDatabaseService implements AutoCloseable {
 
     public List<BioModelInfo> queryPublishedBioModels() throws SQLException, DataAccessException {
         List<BioModelInfo> publicBioModelInfos = queryPublicBioModels();
-        return publicBioModelInfos.stream()
+        List<BioModelInfo> publishedBioModelInfos = publicBioModelInfos.stream()
                 .filter(bmi -> bmi.getPublicationInfos()!=null && bmi.getPublicationInfos().length>0)
                 .collect(Collectors.toList());
+
+        //
+        // the publishedBioModelInfos may include multiple versions of the same BioModel, let's return only the
+        // most recent version of each published BioModel (Same BranchID, take BioModel with biggest key .. latest date)
+        //
+        Map<BigDecimal, BioModelInfo> latestBioModelForBranch = new HashMap<>();
+        for (BioModelInfo bioModelInfo : publishedBioModelInfos){
+            BigDecimal branchID = bioModelInfo.getVersion().getBranchID();
+            BioModelInfo bmi = latestBioModelForBranch.get(branchID);
+            if (bmi == null || bmi.getVersion().getVersionKey().compareTo(bioModelInfo.getVersion().getVersionKey()) < 0){
+                latestBioModelForBranch.put(branchID, bioModelInfo);
+            }
+        }
+        return new ArrayList<>(latestBioModelForBranch.values());
     }
 
     public String getPublicBiomodelXML(KeyValue bioModelKey, boolean bRegenerateXML) throws SQLException, DataAccessException {
