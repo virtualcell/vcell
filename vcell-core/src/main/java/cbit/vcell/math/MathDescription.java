@@ -3556,18 +3556,49 @@ public static MathCompareResults testEquivalency(MathSymbolTableFactory mathSymb
 			MathDescription canonicalMath1 = MathDescription.createCanonicalMathDescription(mathSymbolTableFactory,createMathWithExpandedEquations(mathDescription1,union));
 			MathDescription canonicalMath2 = MathDescription.createCanonicalMathDescription(mathSymbolTableFactory,createMathWithExpandedEquations(mathDescription2,union));
 
-			HashSet<String> depVarsToSubstitute = new HashSet<String>(union);
-			depVarsToSubstitute.removeAll(indepVars1);
-			if (depVarsToSubstitute.size()>0){
-				String depVarNames[] = (String[])depVarsToSubstitute.toArray(new String[depVarsToSubstitute.size()]);
-				Function functionsToSubstitute1[] = MathDescription.getFlattenedFunctions(mathSymbolTableFactory,mathDescription1,depVarNames);
-				Function functionsToSubstitute2[] = MathDescription.getFlattenedFunctions(mathSymbolTableFactory,mathDescription2,depVarNames);
-				canonicalMath1.substituteInPlace(mathSymbolTableFactory,functionsToSubstitute1);
-				canonicalMath2.substituteInPlace(mathSymbolTableFactory,functionsToSubstitute2);
+			HashSet<String> canonIndepVars1 = canonicalMath1.getStateVariableNames();
+			HashSet<String> canonIndepVars2 = canonicalMath2.getStateVariableNames();
+			
+			for (String varName : union) {
+				if (!canonIndepVars1.contains(varName)) {
+					logger.error("========= indepVars1 size: "+indepVars1.size());
+					logger.error("========= union size: "+union.size());
+					logger.error("========= Canonical Math 1 is missing variable: "+varName);
+				}
 			}
-			// flatten again
-			canonicalMath1.makeCanonical(mathSymbolTableFactory);
-			canonicalMath2.makeCanonical(mathSymbolTableFactory);
+			for (String varName : union) {
+				if (!canonIndepVars2.contains(varName)) {
+					logger.error("========= indepVars2 size: "+indepVars2.size());
+					logger.error("========= union size: "+union.size());
+					logger.error("========= Canonical Math 2 is missing variable: "+varName);
+				}
+			}
+
+//			HashSet<String> depVarsToSubstitute1 = new HashSet<String>();
+//			for (Variable var : Collections.list(canonicalMath1.getVariables())) {
+//				depVarsToSubstitute1.add(var.getName());
+//			}
+//			HashSet<String> depVarsToSubstitute2 = new HashSet<String>();
+//			for (Variable var : Collections.list(canonicalMath1.getVariables())) {
+//				depVarsToSubstitute2.add(var.getName());
+//			}
+//			depVarsToSubstitute1.removeAll(union);
+//			depVarsToSubstitute2.removeAll(union);
+//			if (depVarsToSubstitute1.size()>0){
+//				System.out.println(depVarsToSubstitute1);
+//				String depVarNames[] = (String[])depVarsToSubstitute1.toArray(new String[depVarsToSubstitute1.size()]);
+//				Function functionsToSubstitute[] = MathDescription.getFlattenedFunctions(mathSymbolTableFactory,mathDescription1,depVarNames);
+//				System.out.println(functionsToSubstitute);
+//				canonicalMath1.substituteInPlace(mathSymbolTableFactory,functionsToSubstitute);
+//			}
+//			if (depVarsToSubstitute2.size()>0){
+//				String depVarNames[] = (String[])depVarsToSubstitute2.toArray(new String[depVarsToSubstitute2.size()]);
+//				Function functionsToSubstitute[] = MathDescription.getFlattenedFunctions(mathSymbolTableFactory,mathDescription2,depVarNames);
+//				canonicalMath1.substituteInPlace(mathSymbolTableFactory,functionsToSubstitute);
+//			}
+//			// flatten again
+//			canonicalMath1.makeCanonical(mathSymbolTableFactory);
+//			canonicalMath2.makeCanonical(mathSymbolTableFactory);
 			// now compare
 			return canonicalMath2.compareEquivalentCanonicalMath(canonicalMath1);
 		}
