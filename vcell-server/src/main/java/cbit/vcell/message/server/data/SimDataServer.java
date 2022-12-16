@@ -128,9 +128,9 @@ public SimDataServer(ServiceInstanceStatus serviceInstanceStatus, DataServerImpl
 	this.dataServerImpl = dataServerImpl;
 	this.simDataServiceType = simDataServiceType;
 	
-	try (InputStream inputStream = new FileInputStream(new File(System.getProperty(PropertyLoader.vcellapiKeystoreFile)))) {
+	try (InputStream inputStream = new FileInputStream(new File(PropertyLoader.getRequiredProperty(PropertyLoader.vcellapiKeystoreFile)))) {
 		final KeyStore serverKeyStore = KeyStore.getInstance("jks");
-		String pwd = Files.readAllLines(new File(System.getProperty(PropertyLoader.vcellapiKeystorePswdFile)).toPath()).get(0);
+		String pwd = Files.readAllLines(new File(PropertyLoader.getRequiredProperty(PropertyLoader.vcellapiKeystorePswdFile)).toPath()).get(0);
 		serverKeyStore.load(inputStream, pwd.toCharArray());
 		KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
 		keyManagerFactory.init(serverKeyStore, pwd.toCharArray());
@@ -140,7 +140,7 @@ public SimDataServer(ServiceInstanceStatus serviceInstanceStatus, DataServerImpl
 		TrustManager[] serverTrustManagers = trustManagerFactory.getTrustManagers();
 		final SSLContext sslContext = SSLContexts.createDefault();
 		sslContext.init(serverKeyManagers, serverTrustManagers, new SecureRandom());
-		int listenPort = Integer.parseInt(System.getProperty(PropertyLoader.webDataServerPort));
+		int listenPort = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.webDataServerPort));
 		server = ServerBootstrap.bootstrap().registerHandler("/simhdf5/*", new HttpRequestHandler() {
 			@Override
 			public void handle(HttpRequest request, HttpResponse response, HttpContext context) throws HttpException, IOException {
@@ -486,7 +486,10 @@ private static final String REQUIRED_SERVICE_PROPERTIES[] = {
 		PropertyLoader.jmsBlobMessageUseMongo,
 		PropertyLoader.exportBaseURLProperty,
 		PropertyLoader.exportBaseDirInternalProperty,
-		PropertyLoader.simdataCacheSizeProperty
+		PropertyLoader.simdataCacheSizeProperty,
+		PropertyLoader.vcellapiKeystoreFile,
+		PropertyLoader.vcellapiKeystorePswdFile,
+		PropertyLoader.webDataServerPort
 	};
 
 }
