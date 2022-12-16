@@ -6,7 +6,7 @@ shopt -s -o nounset
 
 if [ "$#" -ne 6 ]; then
     echo "usage: config.sh SITE (REPO/NAMESPACE | NAMESPACE) TAG VCELL_VERSION_NUMBER VCELL_BUILD_NUMBER OUTPUTFILE"
-    exit -1
+    exit 1
 fi
 
 _site=$1
