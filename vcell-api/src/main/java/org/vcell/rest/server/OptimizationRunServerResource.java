@@ -229,7 +229,7 @@ public class OptimizationRunServerResource extends AbstractServerResource implem
 						OptMessage.OptResponseMessage response = optSocketStreams.sendCommand(new OptMessage.OptJobQueryCommandMessage(optID));
 						if (response instanceof OptMessage.OptErrorResponseMessage){
 							OptMessage.OptErrorResponseMessage errorResponse = (OptMessage.OptErrorResponseMessage) response;
-							throw new ResourceException(Status.SERVER_ERROR_INTERNAL, "Failed to query optimization ID="+optID+": "+errorResponse.errorMessage);
+							throw new RuntimeException("status request failed for optID="+optID+": "+errorResponse.errorMessage);
 						}else if (response instanceof OptMessage.OptJobStatusResponseMessage){
 							OptMessage.OptJobStatusResponseMessage statusResponse = (OptMessage.OptJobStatusResponseMessage) response;
 							return new JsonRepresentation(statusResponse.status.name()+":");
@@ -243,7 +243,7 @@ public class OptimizationRunServerResource extends AbstractServerResource implem
 				} catch (Exception e) {
 					lg.error(e);
 					optSocketStreams.closeAll(optID);
-					throw new ResourceException(Status.SERVER_ERROR_INTERNAL, e.getMessage()+" optimization ID="+optID, e);
+					throw new ResourceException(Status.SERVER_ERROR_INTERNAL, e.getMessage() + " optimization ID=" + optID, e);
 				}
 			}else {
 				throw new ResourceException(Status.SERVER_ERROR_INTERNAL, "Can't find connection for optimization ID="+optID);
