@@ -5,6 +5,9 @@ services:
     environment:
       - softwareVersion=${VCELL_VERSION}
       - serverid=${VCELL_SITE}
+
+      - ssl_ignoreHostMismatch=${VCELL_SSL_IGNORE_HOST_MISMATCH}
+      - ssl_ignoreCertProblems=${VCELL_SSL_IGNORE_CERT_PROBLEMS}
       
       - dburl=${VCELL_DB_URL}
       - dbdriver=${VCELL_DB_DRIVER}

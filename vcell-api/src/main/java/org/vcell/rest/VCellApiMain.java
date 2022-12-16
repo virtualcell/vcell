@@ -210,11 +210,13 @@ public class VCellApiMain {
 			JWTUtils.setRsaJsonWebKey(jsonWebKey);
 
 			lg.trace("create app");
-			boolean bIgnoreHostMismatch = PropertyLoader.getBooleanProperty(PropertyLoader.sslIgnoreHostMismatch, false);
-			boolean bIgnoreCertProblems = PropertyLoader.getBooleanProperty(PropertyLoader.sslIgnoreCertProblems, false);
+			boolean bIgnoreHostMismatchForHealthService = true; // HealthService connects via localhost, this will never match host in production cert
+			boolean bIgnoreCertProblemsForHealthService = PropertyLoader.getBooleanProperty(PropertyLoader.sslIgnoreCertProblems, false);
 			User testUser = localAdminDbServer.getUser(TEST_USER);
 			UserInfo testUserInfo = localAdminDbServer.getUserInfo(testUser.getID()); // lookup hashed auth credentials in database.
-			HealthService healthService = new HealthService(restEventService, "localhost", port, bIgnoreCertProblems, bIgnoreHostMismatch, testUserInfo.userid, testUserInfo.digestedPassword0);
+			HealthService healthService = new HealthService(restEventService, "localhost", port,
+					bIgnoreCertProblemsForHealthService, bIgnoreHostMismatchForHealthService,
+					testUserInfo.userid, testUserInfo.digestedPassword0);
 			AdminService adminService = new AdminService(adminDbTopLevel, databaseServerImpl);
 			RpcService rpcService = new RpcService(vcMessagingService_int);
 			WadlApplication app = new VCellApiApplication(restDatabaseService, userVerifier, rpcService, restEventService, adminService, templateConfiguration, healthService, javascriptDir);
