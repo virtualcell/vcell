@@ -1,5 +1,6 @@
 package org.vcell.util.gui.exporter;
 
+import java.awt.Component;
 import java.io.File;
 import java.nio.file.Paths;
 import java.util.Objects;
@@ -9,6 +10,8 @@ import javax.swing.JOptionPane;
 import org.vcell.sedml.ModelFormat;
 import org.vcell.sedml.SEDMLExporter;
 import org.vcell.util.FileUtils;
+import org.vcell.util.UserCancelException;
+import org.vcell.util.gui.exporter.ExtensionFilter.ChooseContext;
 
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
@@ -18,6 +21,9 @@ import cbit.vcell.mapping.SimulationContext;
 @SuppressWarnings("serial")
 public class SedmlExtensionFilter extends SelectorExtensionFilter {
 	private static final String FNAMES = ".sedml";
+	private Component parentComponent = null;
+	protected ModelFormat modelFormat = ModelFormat.SBML;
+
 	
 	public SedmlExtensionFilter() {
 		this(FNAMES, "SedML format<Level1,Version2> (.sedml)", SelectorExtensionFilter.Selector.FULL_MODEL);
@@ -26,6 +32,22 @@ public class SedmlExtensionFilter extends SelectorExtensionFilter {
 		super(fNames, name, selector);
 	}
 
+	@Override
+	public void askUser(ChooseContext ctx) throws UserCancelException {
+		Object[] options = {"VCML","SBML"};
+		int choice = JOptionPane.showOptionDialog(
+				ctx.topLevelWindowManager.getComponent(),
+				"VCML or SBML?",			// message,
+				"Choose an option",			// title
+				JOptionPane.YES_NO_OPTION,	// optionType
+				JOptionPane.QUESTION_MESSAGE,	// messageType
+				null,						// Icon
+				options,
+				"SBML");					// initialValue 
+		if (choice == 0) modelFormat = ModelFormat.VCML;
+		System.out.println(modelFormat);
+	}
+	
 	@Override
 	public void writeBioModel(DocumentManager documentManager, BioModel bioModel, File exportFile, SimulationContext ignored) throws Exception {
 		String resultString;
@@ -38,18 +60,6 @@ public class SedmlExtensionFilter extends SelectorExtensionFilter {
 		
 		SEDMLExporter sedmlExporter = null;
 		if (bioModel != null) {
-			ModelFormat modelFormat = ModelFormat.SBML;
-			Object[] options = {"VCML","SBML"};
-			int choice = JOptionPane.showOptionDialog(null,	// parent component
-					"VCML or SBML?",			// message,
-					"Choose an option",			// title
-					JOptionPane.YES_NO_OPTION,	// optionType
-					JOptionPane.QUESTION_MESSAGE,	// messageType
-					null,						// Icon
-					options,
-					"SBML");					// initialValue 
-			if (choice == 0) modelFormat = ModelFormat.VCML;
-
 			sedmlExporter = new SEDMLExporter(sFile, bioModel, sedmlLevel, sedmlVersion, null);
 			boolean bRoundTripSBMLValidation = true;
 			resultString = sedmlExporter.getSEDMLDocument(sPath, sFile, modelFormat, false, bRoundTripSBMLValidation).writeDocumentToString();
@@ -71,5 +81,9 @@ public class SedmlExtensionFilter extends SelectorExtensionFilter {
 		sedmlExporter.addSedmlFileToList(sFile + ".sedml");
 	}
 	
+	@Override
+	public boolean requiresMoreChoices() {	  //tells ChooseFile to call askUser() above
+		return true;
+	}
 
 }
