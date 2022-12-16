@@ -105,7 +105,7 @@ services:
       retries: 2
     volumes:
       - "${VCELL_SIMDATADIR_HOST}:/simdata"
-      - "${VCELL_SIMDATADIR_ARCHIVE_HOST}:${VCELL_SIMDATADIR_ARCHIVE_HOST}"
+      - "${VCELL_SIMDATADIR_ARCHIVE_INTERNAL}:${VCELL_SIMDATADIR_ARCHIVE_INTERNAL}"
       - "${VCELL_HTCLOGS_HOST}:/htclogs"
     secrets:
       - dbpswd
@@ -167,7 +167,8 @@ services:
       - slurm_tmpdir=${VCELL_SLURM_TMPDIR}
       - slurm_local_singularity_dir=${VCELL_SLURM_LOCAL_SINGULARITY_DIR}
       - slurm_central_singularity_dir=${VCELL_SLURM_CENTRAL_SINGULARITY_DIR}
-      - simdatadir_archive_host=${VCELL_SIMDATADIR_ARCHIVE_HOST}
+      - simdatadir_archive_internal=${VCELL_SIMDATADIR_ARCHIVE_INTERNAL}
+      - simdatadir_archive_external=${VCELL_SIMDATADIR_ARCHIVE_EXTERNAL}
 
       - vcell_ssh_cmd_cmdtimeout=${VCELL_SSH_CMD_TIMEOUT:-10000}
       - vcell_ssh_cmd_restoretimeout=${VCELL_SSH_CMD_RESTORE_TIMEOUT:-5}
@@ -185,7 +186,7 @@ services:
       - "8877"
     volumes:
       - "${VCELL_SIMDATADIR_HOST}:/simdata"
-      - "${VCELL_SIMDATADIR_ARCHIVE_HOST}:${VCELL_SIMDATADIR_ARCHIVE_HOST}"
+      - "${VCELL_SIMDATADIR_ARCHIVE_INTERNAL}:${VCELL_SIMDATADIR_ARCHIVE_INTERNAL}"
       - "${VCELL_HTCLOGS_HOST}:/htclogs"
     secrets:
       - jmspswd
@@ -271,7 +272,7 @@ services:
       - "8000" # java remote debugging
     volumes:
       - "${VCELL_SIMDATADIR_HOST}:/simdata"
-      - "${VCELL_SIMDATADIR_ARCHIVE_HOST}:${VCELL_SIMDATADIR_ARCHIVE_HOST}"
+      - "${VCELL_SIMDATADIR_ARCHIVE_INTERNAL}:${VCELL_SIMDATADIR_ARCHIVE_INTERNAL}"
       - "${VCELL_EXPORTDIR_HOST}:/exportdir"
     secrets:
       - dbpswd
@@ -381,7 +382,7 @@ services:
       - "${VCELL_WEB_DATA_PORT}:${VCELL_WEB_DATA_PORT}"
     volumes:
       - "${VCELL_SIMDATADIR_HOST}:/simdata"
-      - "${VCELL_SIMDATADIR_ARCHIVE_HOST}:/altsimdata"
+      - "${VCELL_SIMDATADIR_ARCHIVE_INTERNAL}:/altsimdata"
       - "${VCELL_EXPORTDIR_HOST}:/exportdir"
     secrets:
       - dbpswd
