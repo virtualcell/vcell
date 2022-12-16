@@ -6,7 +6,7 @@ shopt -s -o nounset
 
 if [ "$#" -ne 6 ]; then
     echo "usage: config.sh SITE (REPO/NAMESPACE | NAMESPACE) TAG VCELL_VERSION_NUMBER VCELL_BUILD_NUMBER OUTPUTFILE"
-    exit -1
+    exit 1
 fi
 
 _site=$1
@@ -15,6 +15,8 @@ _tag=$3
 _version_number=$4
 _build_number=$5
 _outputfile=$6
+
+echo "args: | $1 | $2 | $3 | $4 | $5 | $6 |"
 
 _site_lower=`echo $_site | tr '[:upper:]' '[:lower:]'`
 _site_upper=`echo $_site | tr '[:lower:]' '[:upper:]'`
@@ -26,7 +28,17 @@ VCELL_REPO_NAMESPACE=$_repo
 VCELL_TAG=$_tag
 VCELL_VERSION_NUMBER=$_version_number
 VCELL_BUILD_NUMBER=$_build_number
+#SLURM parameter values
 vcell_slurm_partition=vcell
+vcell_slurm_reservation=
+vcell_slurm_qos=vcell
+vcell_slurm_partition_pu=vcellpu
+vcell_slurm_reservation_pu=vcellpu
+vcell_slurm_qos_pu=vcellpu
+
+VCELL_API_HOST_EXTERNAL=`hostname`
+VCELL_API_PUBLICATION_HOST=`hostname`
+DATABASE_HOST=`hostname`
 
 case $VCELL_SITE in
 	REL)
@@ -74,8 +86,8 @@ if [ ! -e "$VCELL_DEPLOY_ROOT_DIR/htclogs" ]; then mkdir $VCELL_DEPLOY_ROOT_DIR/
 if [ ! -e "$VCELL_DEPLOY_ROOT_DIR/config" ]; then mkdir $VCELL_DEPLOY_ROOT_DIR/config; fi
 if [ ! -e "$VCELL_DEPLOY_ROOT_DIR/singularity" ]; then mkdir $VCELL_DEPLOY_ROOT_DIR/singularity; fi
 
-VCELL_DB_URL="jdbc:oracle:thin:@VCELL-DB.cam.uchc.edu:1521/vcelldborcl.cam.uchc.edu"
-VCELL_DB_DRIVER="oracle.jdbc.driver.OracleDriver"
+VCELL_DB_URL="jdbc:postgresql://${DATABASE_HOST}:5432/postgres"
+VCELL_DB_DRIVER="org.postgresql.Driver"
 VCELL_DB_USER="vcell"
 VCELL_API_HOST_EXTERNAL=`hostname`
 VCELL_JMS_SIM_HOST_EXTERNAL=`hostname`
@@ -107,8 +119,17 @@ VCELL_SMTP_PORT=25
 VCELL_SMTP_EMAILADDRESS=VCell_Support@uchc.edu
 VCELL_EXPORT_BASEURL=http://vcell.org/export/
 VCELL_EXPORTDIR_HOST=/Volumes/vcell/export/
+VCELL_MAX_JOBS_PER_SCAN=100
+VCELL_MAX_ODE_JOBS_PER_USER=100
+VCELL_MAX_PDE_JOBS_PER_USER=40
+VCELL_WEB_DATA_PORT=55556
+VCELL_SSH_CMD_TIMEOUT=10000
+VCELL_SSH_CMD_RESTORE_TIMEOUT=5
 
 cat <<EOF >$_outputfile
+VCELL_SSH_CMD_TIMEOUT=$VCELL_SSH_CMD_TIMEOUT
+VCELL_SSH_CMD_RESTORE_TIMEOUT=$VCELL_SSH_CMD_RESTORE_TIMEOUT
+VCELL_WEB_DATA_PORT=$VCELL_WEB_DATA_PORT
 VCELL_SITE=$VCELL_SITE
 VCELL_REPO_NAMESPACE=$VCELL_REPO_NAMESPACE
 VCELL_TAG=$VCELL_TAG
@@ -117,6 +138,7 @@ VCELL_BUILD_NUMBER=$VCELL_BUILD_NUMBER
 VCELL_VERSION=${_site_camel}_Version_${VCELL_VERSION_NUMBER}_build_${VCELL_BUILD_NUMBER}
 VCELL_API_HOST_EXTERNAL=$VCELL_API_HOST_EXTERNAL
 VCELL_API_PORT_EXTERNAL=$VCELL_API_PORT_EXTERNAL
+VCELL_API_PUBLICATION_HOST=$VCELL_API_PUBLICATION_HOST
 VCELL_DB_URL=$VCELL_DB_URL
 VCELL_DB_DRIVER=$VCELL_DB_DRIVER
 VCELL_DB_USER=$VCELL_DB_USER
@@ -163,5 +185,8 @@ VCELL_INSTALLER_JRE_WIN32=windows-x86-1.8.0_141
 VCELL_INSTALLER_JRE_LINUX64=linux-amd64-1.8.0_66
 VCELL_INSTALLER_JRE_LINUX32=linux-x86-1.8.0_66
 VCELL_INSTALLER_JREDIR=${HOME}/.install4j6/jres
+VCELL_SSL_IGNORE_CERT_PROBLEMS=false
+VCELL_SSL_IGNORE_HOST_MISMATCH=true
+VCELL_SUBMIT_SERVICE_HOST=submit
 EOF
 

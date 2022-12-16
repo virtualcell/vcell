@@ -107,7 +107,7 @@ public class ErrorUtils {
 			builder.loadTrustMaterial(null, new TrustSelfSignedStrategy());
 			sslsf = new SSLConnectionSocketFactory(builder.build());
 		}catch (Exception e){
-			logger.error(e);
+			logger.error(e.getMessage(), e);
 			throw new RuntimeException(e.getMessage(),e);
 		}
 		try (CloseableHttpClient httpClient = HttpClients.custom().setSSLSocketFactory(sslsf).build()) {

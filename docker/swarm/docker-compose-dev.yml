@@ -5,7 +5,12 @@ services:
     environment:
       - softwareVersion=${VCELL_VERSION}
       - serverid=${VCELL_SITE}
-      
+
+      - ssl_ignoreHostMismatch=${VCELL_SSL_IGNORE_HOST_MISMATCH}
+      - ssl_ignoreCertProblems=${VCELL_SSL_IGNORE_CERT_PROBLEMS}
+
+      - publicationHost=${VCELL_API_PUBLICATION_HOST}
+
       - dburl=${VCELL_DB_URL}
       - dbdriver=${VCELL_DB_DRIVER}
       - dbuser=${VCELL_DB_USER}
@@ -17,15 +22,24 @@ services:
       - mongodb_port_internal=27017
       - mongodb_database=test
 
+      - webDataPort=${VCELL_WEB_DATA_PORT}
+
       - smtp_hostname=${VCELL_SMTP_HOSTNAME}
       - smtp_port=${VCELL_SMTP_PORT}
       - smtp_emailaddress=${VCELL_SMTP_EMAILADDRESS}
 
+      - submit_service_host=${VCELL_SUBMIT_SERVICE_HOST}
+
     ports:
       - "${VCELL_API_PORT_EXTERNAL}:8080"
       - "8000" # java remote debugging
+    healthcheck:
+      test: ["CMD", "curl", "-f", "--insecure", "https://localhost:8080/health?check=login"]
+      interval: 600s
+      timeout: 30s
+      retries: 2
     secrets:
-      - keystorefile
+      - keystorefile_20220105
       - keystorepswd
       - dbpswd
       - jmspswd
@@ -37,6 +51,11 @@ services:
     deploy:
       mode: replicated
       replicas: 1
+      resources:
+        limits:
+          memory: 2000M
+        reservations:
+          memory: 1000M
   sched:
     image: "${VCELL_REPO_NAMESPACE}/vcell-sched:${VCELL_TAG}"
     environment:
@@ -68,6 +87,9 @@ services:
       - maxPdeJobsPerUser=${VCELL_MAX_PDE_JOBS_PER_USER:-50}
       - simdataCacheSize=${VCELL_SIMDATA_CACHE_SIZE:-10000000}
 
+      - vcell_ssh_cmd_cmdtimeout=${VCELL_SSH_CMD_TIMEOUT:-10000}
+      - vcell_ssh_cmd_restoretimeout=${VCELL_SSH_CMD_RESTORE_TIMEOUT:-5}
+
       - jmsuser=clientUser
       - jmshost_int_internal=activemqint
       - jmsport_int_internal=61616
@@ -78,10 +100,20 @@ services:
       - mongodb_database=test
     ports:
       - "8000" # java remote debugging
+    healthcheck:
+      test: ["CMD", "curl", "-f", "--insecure", "https://api:8080/health?check=sim"]
+      interval: 600s
+      timeout: 30s
+      retries: 2
+    volumes:
+      - "${VCELL_SIMDATADIR_HOST}:/simdata"
+      - "${VCELL_SIMDATADIR_ARCHIVE_INTERNAL}:${VCELL_SIMDATADIR_ARCHIVE_INTERNAL}"
+      - "${VCELL_HTCLOGS_HOST}:/htclogs"
     secrets:
       - dbpswd
       - jmspswd
-      - batchuserkeyfile
+      - source: batchuserkeyfile
+        mode: 0400
     networks:
       - vcellnet
     depends_on:
@@ -91,13 +123,21 @@ services:
     deploy:
       mode: replicated
       replicas: 1
+      resources:
+        limits:
+          memory: 1000M
+        reservations:
+          memory: 500M
+      placement:
+        constraints:
+          - node.labels.zone == INTERNAL
   submit:
     image: "${VCELL_REPO_NAMESPACE}/vcell-submit:${VCELL_TAG}"
     environment:
       - softwareVersion=${VCELL_VERSION}
       - serverid=${VCELL_SITE}
       - batch_singularity_imagefile=${VCELL_BATCH_SINGULARITY_IMAGE_EXTERNAL}
-      - opt_singularity_imagefile=${VCELL_OPT_SINGULARITY_OPT_IMAGE_EXTERNAL}
+      - opt_singularity_imagefile=${VCELL_OPT_SINGULARITY_IMAGE_EXTERNAL}
       - docker_name=${VCELL_BATCH_DOCKER_IMAGE}
 
       - jmshost_sim_external=${VCELL_JMS_SIM_HOST_EXTERNAL}
@@ -121,12 +161,19 @@ services:
       - slurm_cmd_squeue=${VCELL_SLURM_CMD_SQUEUE:-squeue}
       - slurm_cmd_scancel=${VCELL_SLURM_CMD_SCANCEL:-scancel}
       - slurm_partition=${VCELL_SLURM_PARTITION:-vcell}
-      - slurm_reservation=${VCELL_SLURM_RESERVATION:-vcell}
+      - slurm_reservation=${VCELL_SLURM_RESERVATION}
+      - slurm_qos=${VCELL_SLURM_QOS:-vcell}
       - slurm_partition_pu=${VCELL_SLURM_PARTITION_PU:-vcellpu}
       - slurm_reservation_pu=${VCELL_SLURM_RESERVATION_PU:-vcellpu}
+      - slurm_qos_pu=${VCELL_SLURM_QOS_PU:-vcellpu}
       - slurm_tmpdir=${VCELL_SLURM_TMPDIR}
       - slurm_local_singularity_dir=${VCELL_SLURM_LOCAL_SINGULARITY_DIR}
       - slurm_central_singularity_dir=${VCELL_SLURM_CENTRAL_SINGULARITY_DIR}
+      - simdatadir_archive_internal=${VCELL_SIMDATADIR_ARCHIVE_INTERNAL}
+      - simdatadir_archive_external=${VCELL_SIMDATADIR_ARCHIVE_EXTERNAL}
+
+      - vcell_ssh_cmd_cmdtimeout=${VCELL_SSH_CMD_TIMEOUT:-10000}
+      - vcell_ssh_cmd_restoretimeout=${VCELL_SSH_CMD_RESTORE_TIMEOUT:-5}
 
       - jmsuser=clientUser
       - jmshost_int_internal=activemqint
@@ -138,12 +185,16 @@ services:
       - mongodb_database=test
     ports:
       - "8000" # java remote debugging
+      - "8877"
     volumes:
       - "${VCELL_SIMDATADIR_HOST}:/simdata"
+      - "${VCELL_SIMDATADIR_ARCHIVE_INTERNAL}:${VCELL_SIMDATADIR_ARCHIVE_INTERNAL}"
       - "${VCELL_HTCLOGS_HOST}:/htclogs"
     secrets:
       - jmspswd
-      - batchuserkeyfile
+      - jmsrestpswd # "echo -ne  {activemq console user:passwd} | base64", this is hard-coded in some solvers
+      - source: batchuserkeyfile
+        mode: 0400
     networks:
       - vcellnet
     depends_on:
@@ -153,6 +204,14 @@ services:
     deploy:
       mode: replicated
       replicas: 1
+      resources:
+        limits:
+          memory: 500M
+        reservations:
+          memory: 500M
+      placement:
+        constraints:
+          - node.labels.zone == INTERNAL
   db:
     image: "${VCELL_REPO_NAMESPACE}/vcell-db:${VCELL_TAG}"
     environment:
@@ -183,6 +242,11 @@ services:
     deploy:
       mode: replicated
       replicas: 1
+      resources:
+        limits:
+          memory: 1000M
+        reservations:
+          memory: 500M
   data:
     image: "${VCELL_REPO_NAMESPACE}/vcell-data:${VCELL_TAG}"
     environment:
@@ -192,6 +256,10 @@ services:
 
       - simdataCacheSize=${VCELL_SIMDATA_CACHE_SIZE:-10000000}
 
+      - dburl=${VCELL_DB_URL}
+      - dbdriver=${VCELL_DB_DRIVER}
+      - dbuser=${VCELL_DB_USER}
+
       - jmsuser=clientUser
       - jmshost_int_internal=activemqint
       - jmsport_int_internal=61616
@@ -199,14 +267,20 @@ services:
       - mongodb_port_internal=27017
       - mongodb_database=test
 
+      - webDataPort=${VCELL_WEB_DATA_PORT}
+
       - servertype=CombinedData
     ports:
       - "8000" # java remote debugging
     volumes:
       - "${VCELL_SIMDATADIR_HOST}:/simdata"
+      - "${VCELL_SIMDATADIR_ARCHIVE_INTERNAL}:${VCELL_SIMDATADIR_ARCHIVE_INTERNAL}"
       - "${VCELL_EXPORTDIR_HOST}:/exportdir"
     secrets:
+      - dbpswd
       - jmspswd
+      - keystorefile_20220105
+      - keystorepswd
     networks:
       - vcellnet
     depends_on:
@@ -215,6 +289,14 @@ services:
     deploy:
       mode: replicated
       replicas: 1
+      resources:
+        limits:
+          memory: 3000M
+        reservations:
+          memory: 3000M
+      placement:
+        constraints:
+          - node.labels.zone == INTERNAL
   activemqint:
     image: webcenter/activemq:5.14.3
     ports:
@@ -235,6 +317,14 @@ services:
     deploy:
       mode: replicated
       replicas: 1
+      resources:
+        limits:
+          memory: 2000M
+        reservations:
+          memory: 1000M
+      placement:
+        constraints:
+          - node.labels.zone == INTERNAL
   activemqsim:
     image: webcenter/activemq:5.14.3
     ports:
@@ -255,26 +345,79 @@ services:
     deploy:
       mode: replicated
       replicas: 1
+      resources:
+        limits:
+          memory: 2000M
+        reservations:
+          memory: 1000M
+      placement:
+        constraints:
+          - node.labels.zone == INTERNAL
   mongodb:
     image: "${VCELL_REPO_NAMESPACE}/vcell-mongo:${VCELL_TAG}"
     ports:
       - "${VCELL_MONGO_PORT_EXTERNAL}:27017"
     networks:
       - vcellnet
+    volumes:
+      - mongodata:/data/db
     deploy:
       mode: replicated
       replicas: 1
+      resources:
+        limits:
+          memory: 1500M
+        reservations:
+          memory: 1000M
+
+  web:
+    image: "${VCELL_REPO_NAMESPACE}/vcell-web:${VCELL_TAG}"
+    environment:
+      - export_baseurl=${VCELL_EXPORT_BASEURL}
+      - simdataCacheSize=${VCELL_SIMDATA_CACHE_SIZE:-10000000}
+      - webDataPort=${VCELL_WEB_DATA_PORT}
+      - dburl=${VCELL_DB_URL}
+      - dbdriver=${VCELL_DB_DRIVER}
+      - dbuser=${VCELL_DB_USER}
+    ports:
+      - "8000" # java remote debugging
+      - "${VCELL_WEB_DATA_PORT}:${VCELL_WEB_DATA_PORT}"
+    volumes:
+      - "${VCELL_SIMDATADIR_HOST}:/simdata"
+      - "${VCELL_SIMDATADIR_ARCHIVE_INTERNAL}:/altsimdata"
+      - "${VCELL_EXPORTDIR_HOST}:/exportdir"
+    secrets:
+      - dbpswd
+      - keystorefile_20220105
+      - keystorepswd
+    networks:
+      - vcellnet
+    deploy:
+      mode: replicated
+      replicas: 1
+      resources:
+        limits:
+          memory: 2000M
+        reservations:
+          memory: 1000M
+      placement:
+        constraints:
+          - node.labels.zone == INTERNAL
 
 networks:
   vcellnet:
+volumes:
+  mongodata:
 secrets:
   dbpswd:
     file: ${VCELL_SECRETS_DIR}/dbpswd.txt
   jmspswd:
     file: ${VCELL_SECRETS_DIR}/jmspswd.txt
+  jmsrestpswd:
+    file: ${VCELL_SECRETS_DIR}/jmsrestpswd.txt
   keystorepswd:
     file: ${VCELL_SECRETS_DIR}/vcellapi-beta-keystorepswd.txt
-  keystorefile:
-    file: ${VCELL_SECRETS_DIR}/vcellapi-beta.jks
+  keystorefile_20220105:
+    file: ${VCELL_SECRETS_DIR}/vcellapi-beta_20220105.jks
   batchuserkeyfile:
     file: ${VCELL_SECRETS_DIR}/schaff_rsa

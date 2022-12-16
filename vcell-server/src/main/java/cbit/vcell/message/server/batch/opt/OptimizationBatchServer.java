@@ -104,8 +104,8 @@ public class OptimizationBatchServer {
                                     throw new Exception(errorMsg);
                                 } else if (htcJobStatus.isComplete()) { // but file not found yet
                                     String optID = optCommandMessage.optID;
-                                    String errMsg = "job optID=" + optID + " status is COMPLETE but result file "+generateOptOutputFilePath(optID)+" not found";
-                                    oos.writeObject(new OptMessage.OptErrorResponseMessage(optCommandMessage, errMsg));
+                                    String errMsg = "job optID=" + optID + " status is COMPLETE but result file "+generateOptOutputFilePath(optID)+" not found yet";
+                                    oos.writeObject(new OptMessage.OptJobStatusResponseMessage(jobQuery, OptMessage.OptJobMessageStatus.RUNNING, errMsg));
                                     oos.flush();
                                     lg.error(errMsg);
                                 } else {//running
@@ -181,7 +181,7 @@ public class OptimizationBatchServer {
                     }
                 }
             } catch (Exception e) {
-                lg.error(e);
+                lg.error(e.getMessage(), e);
             } finally {
                 //cleanup
                 try {
@@ -222,7 +222,7 @@ public class OptimizationBatchServer {
                         optCommunicationThread.start();
                     }
                 } catch (Exception e) {
-                    lg.error(e);
+                    lg.error(e.getMessage(), e);
                 }
             }
         });
@@ -266,7 +266,7 @@ public class OptimizationBatchServer {
 //		CommandOutput commandOutput = htcProxyClone.getCommandService().command(new String[] {"scancel",optServerJobInfo.htcJobID.getJobNumber()+""});
 //		return commandOutput.getExitStatus()==0;
         } catch (Exception e) {
-            lg.error(e);
+            lg.error(e.getMessage(), e);
         }
     }
     private HtcJobStatus optServerGetJobStatus(HtcProxy.HtcJobInfo htcJobInfo) {
@@ -274,7 +274,7 @@ public class OptimizationBatchServer {
         try {
             return htcProxyClone.getJobStatus(Arrays.asList(new HtcProxy.HtcJobInfo[] {htcJobInfo})).get(htcJobInfo);
         } catch (Exception e) {
-            lg.error(e);
+            lg.error(e.getMessage(), e);
             return null;
         }
     }
@@ -303,7 +303,7 @@ public class OptimizationBatchServer {
 //            br.close();
 ////		System.out.println("false");
 //        } catch (Exception e) {
-//            lg.error(e);
+//            lg.error(e.getMessage(), e);
 //        }
 //        return false;
 //    }
