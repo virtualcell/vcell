@@ -794,7 +794,7 @@ private MathCompareResults compareEquivalentCanonicalMath(MathDescription newMat
 				for (ParticleJumpProcess oldPjp : oldPjpList) {
 					boolean bEqual = false;
 					for (ParticleJumpProcess newPjp : newPjpList) {
-						if (oldPjp.getName().equals(newPjp.getName())) {
+						if (Compare.isEqualOrNull(oldPjp, newPjp)) {
 							if (oldPjp.compareEqual(newPjp)) {
 								bEqual = true;
 							}
@@ -966,36 +966,31 @@ private MathCompareResults compareInvariantAttributes(MathDescription newMathDes
 		ArrayList<String> varsNotFoundMath1 = new ArrayList<>();
 		while (iterThis.hasNext()){
 			String varName = iterThis.next();
-			Variable var = this.getVariable(varName);
+			Variable var = newMathDesc.getVariable(varName);
 			if (var==null || (var instanceof Constant)){
 				varsNotFoundMath1.add(varName);
 			}
 		}
+		if (varsNotFoundMath1.size()>0){
+			logMathTexts(this, newMathDesc, Decision.MathDifferent_VARIABLE_NOT_FOUND_AS_FUNCTION, "vars = "+varsNotFoundMath1.toString());
+		}
+		//
+		// check other MathDescription's (extra) state variables are present in this MathDescription (as Function).
+		//
 		Iterator<String> iterOther = otherStateVarHash.iterator();
 		ArrayList<String> varsNotFoundMath2 = new ArrayList<>();
 		while (iterOther.hasNext()){
 			String varName = iterOther.next();
-			Variable var = newMathDesc.getVariable(varName);
+			Variable var = getVariable(varName);
 			if (var==null || (var instanceof Constant)){
 				varsNotFoundMath2.add(varName);
 			}
 		}
 		if (varsNotFoundMath2.size()>0){
 			logMathTexts(this, newMathDesc, Decision.MathDifferent_VARIABLE_NOT_FOUND_AS_FUNCTION, "vars = "+varsNotFoundMath2.toString());
-			return new MathCompareResults(Decision.MathDifferent_VARIABLE_NOT_FOUND_AS_FUNCTION, "vars = "+varsNotFoundMath2.toString(), varsNotFoundMath1, varsNotFoundMath2);
 		}
-		//
-		// check other MathDescription's (extra) state variables are present in this MathDescription (as Function).
-		//
-		Iterator<String> iter = otherStateVarHash.iterator();
-		while (iter.hasNext()){
-			String varName = iter.next();
-			Variable var = getVariable(varName);
-			if (var==null || !(var instanceof Function)){
-				logMathTexts(this, newMathDesc, Decision.MathDifferent_VARIABLE_NOT_FOUND_AS_FUNCTION, "var = "+varName);
-				return new MathCompareResults(Decision.MathDifferent_VARIABLE_NOT_FOUND_AS_FUNCTION, "var = "+varName, varsNotFoundMath1, varsNotFoundMath2);
-			}
-		}
+		if (varsNotFoundMath1.size()>0 || varsNotFoundMath2.size()>0)
+		return new MathCompareResults(Decision.MathDifferent_VARIABLE_NOT_FOUND_AS_FUNCTION, "number of bvariables not found "+varsNotFoundMath1.size()+","+varsNotFoundMath2.size(), varsNotFoundMath1, varsNotFoundMath2);
 	}
 
 	//
@@ -3578,16 +3573,29 @@ public static MathCompareResults testEquivalency(MathSymbolTableFactory mathSymb
 				}
 			}
 
-			HashSet<String> depVarsToSubstitute = new HashSet<String>(union);
-			depVarsToSubstitute.removeAll(indepVars1);
-			if (depVarsToSubstitute.size()>0){
-				String depVarNames[] = (String[])depVarsToSubstitute.toArray(new String[depVarsToSubstitute.size()]);
-				Function functionsToSubstitute1[] = MathDescription.getFlattenedFunctions(mathSymbolTableFactory,mathDescription1,depVarNames);
-				Function functionsToSubstitute2[] = MathDescription.getFlattenedFunctions(mathSymbolTableFactory,mathDescription2,depVarNames);
-				canonicalMath1.substituteInPlace(mathSymbolTableFactory,functionsToSubstitute1);
-				canonicalMath2.substituteInPlace(mathSymbolTableFactory,functionsToSubstitute2);
-			}
-			// flatten again
+//			HashSet<String> depVarsToSubstitute1 = new HashSet<String>();
+//			for (Variable var : Collections.list(canonicalMath1.getVariables())) {
+//				depVarsToSubstitute1.add(var.getName());
+//			}
+//			HashSet<String> depVarsToSubstitute2 = new HashSet<String>();
+//			for (Variable var : Collections.list(canonicalMath1.getVariables())) {
+//				depVarsToSubstitute2.add(var.getName());
+//			}
+//			depVarsToSubstitute1.removeAll(union);
+//			depVarsToSubstitute2.removeAll(union);
+//			if (depVarsToSubstitute1.size()>0){
+//				System.out.println(depVarsToSubstitute1);
+//				String depVarNames[] = (String[])depVarsToSubstitute1.toArray(new String[depVarsToSubstitute1.size()]);
+//				Function functionsToSubstitute[] = MathDescription.getFlattenedFunctions(mathSymbolTableFactory,mathDescription1,depVarNames);
+//				System.out.println(functionsToSubstitute);
+//				canonicalMath1.substituteInPlace(mathSymbolTableFactory,functionsToSubstitute);
+//			}
+//			if (depVarsToSubstitute2.size()>0){
+//				String depVarNames[] = (String[])depVarsToSubstitute2.toArray(new String[depVarsToSubstitute2.size()]);
+//				Function functionsToSubstitute[] = MathDescription.getFlattenedFunctions(mathSymbolTableFactory,mathDescription2,depVarNames);
+//				canonicalMath1.substituteInPlace(mathSymbolTableFactory,functionsToSubstitute);
+//			}
+//			// flatten again
 			canonicalMath1.makeCanonical(mathSymbolTableFactory);
 			canonicalMath2.makeCanonical(mathSymbolTableFactory);
 			// now compare
