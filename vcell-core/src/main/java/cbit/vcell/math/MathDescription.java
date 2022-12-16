@@ -74,7 +74,7 @@ public class MathDescription implements Versionable, Matchable, SymbolTable, Ser
 	private final static Logger logger = LogManager.getLogger(MathDescription.class);
 
 	public static final TreeMap<Long,TreeSet<String>> originalHasLowPrecisionConstants = new TreeMap<>();
-	public final static String MATH_FUNC_INIT_SUFFIX_PREFIX = "_init_";
+	public final static String MATH_FUNC_INIT_SUFFIX_PREFIX = "_init";
 	
 	protected transient java.util.ArrayList<ChangeListener> aChangeListener = null;
 	private Version version = null;
@@ -1047,10 +1047,15 @@ public static MathDescription createMathWithExpandedEquations(MathDescription or
 	// if it doesn't fit this form, then math's are not equivalent.
 	//
 	HashSet<String> stateVarSet = newMath.getStateVariableNames();
-	for (int i = 0; i < newMath.variableList.size(); i++){
-		Variable tmp_var = newMath.variableList.get(i);
-		if (varNamesToKeep.contains(tmp_var.getName()) && tmp_var instanceof Function){
-			Function function = (Function)tmp_var;
+	// Build the list of variables to be added
+	ArrayList<Function> varsToAdd = new ArrayList<Function>();
+	for (Variable var : newMath.variableList){
+		if (varNamesToKeep.contains(var.getName()) && var instanceof Function){
+			varsToAdd.add((Function)var);
+		}
+	}
+System.out.println(varsToAdd);
+	for (Function function : varsToAdd){
 			//
 			// get list of symbols that are state variables
 			//
@@ -1134,7 +1139,7 @@ public static MathDescription createMathWithExpandedEquations(MathDescription or
 						Variable initVariable = null;
 						for (int k=0;k<newMath.variableList.size();k++){
 							if (newMath.variableList.get(k).getName().startsWith(function.getName()+MATH_FUNC_INIT_SUFFIX_PREFIX)){
-								initVariable = newMath.variableList.get(i);
+								initVariable = newMath.variableList.get(k);
 								initExp = new Expression(initVariable,null);
 								break;
 							}
@@ -1172,7 +1177,7 @@ public static MathDescription createMathWithExpandedEquations(MathDescription or
 						Variable initVariable = null;
 						for (int k=0;k<newMath.variableList.size();k++){
 							if (newMath.variableList.get(k).getName().startsWith(function.getName()+MATH_FUNC_INIT_SUFFIX_PREFIX)){
-								initVariable = newMath.variableList.get(i);
+								initVariable = newMath.variableList.get(k);
 								initExp = new Expression(initVariable,null);
 								break;
 							}
@@ -1199,7 +1204,6 @@ public static MathDescription createMathWithExpandedEquations(MathDescription or
 			}else{
 				throw new RuntimeException("create canonicalMath cannot handle mixture of dependent vars types");
 			}
-		}	
 	}
 	
 	return newMath;
