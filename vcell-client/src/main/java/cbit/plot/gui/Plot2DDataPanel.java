@@ -822,7 +822,7 @@ private synchronized void copyCells0(CopyAction copyAction,boolean isHDF5) {
 					SymbolTableEntry ste =  getPlot2D().getPlotDataSymbolTableEntry(columns[i]);
 					symbolTableEntries[i-(bHasTimeColumn?1:0)] = ste;
 					buffer.append(
-						( ste != null?"(Var="+(ste.getNameScope() != null?ste.getNameScope().getName()+"_":"")+ste.getName()+") ":"")+
+//						( ste != null?"(Var="+(ste.getNameScope() != null?ste.getNameScope().getName()+"_":"")+ste.getName()+") ":"")+
 						getScrollPaneTable().getColumnName(columns[i]) + (i==c-1?"":"\t"));
 				}
 			}else{
