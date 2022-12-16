@@ -10,11 +10,14 @@
 
 package cbit.vcell.math;
 
+import java.util.Arrays;
+
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.ExpressionUtils;
 
 public class MacroscopicRateConstant extends JumpProcessRateDefinition {
 	private Expression expression = null;
@@ -40,7 +43,7 @@ public class MacroscopicRateConstant extends JumpProcessRateDefinition {
 	public boolean compareEqual(Matchable obj) {
 		if (obj instanceof MacroscopicRateConstant){
 			MacroscopicRateConstant mrc = (MacroscopicRateConstant)obj;
-			if (!Compare.isEqual(getExpression(), mrc.getExpression())){
+			if (!Compare.isEqualOrNull(Arrays.asList(this.getExpression()), Arrays.asList(mrc.getExpression()), new ExpressionUtils.ExpressionEquivalencePredicate()) ){
 				return false;
 			}
 			return true;

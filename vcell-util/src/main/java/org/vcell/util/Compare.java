@@ -386,8 +386,17 @@ public static boolean isEqualOrNull(List<? extends Matchable> v1, List<? extends
 	return isEqual(v1,v2);
 }
 
+public static boolean isEqualOrNull(List<? extends Matchable> v1, List<? extends Matchable> v2, BiPredicate<Matchable,Matchable> predicate) {
+	   if (v1 == null && v2 == null){
+	      return true;
+	   }
+	   if (v1 == null || v2 == null){
+	      return logFailure();
+	   }
+	   return isEqual(v1,v2,predicate);
+	}
 
-	public static boolean isEqual(List<? extends Matchable> v1, List<? extends Matchable> v2) {
+public static boolean isEqual(List<? extends Matchable> v1, List<? extends Matchable> v2) {
 		BiPredicate<Matchable,Matchable> predicate = (vv1, vv2) -> vv1.compareEqual(vv2);
 		return isEqual(v1, v2, predicate);
 	}
