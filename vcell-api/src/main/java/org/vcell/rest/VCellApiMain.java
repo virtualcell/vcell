@@ -3,6 +3,7 @@ package org.vcell.rest;
 import java.io.File;
 
 import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
@@ -175,9 +176,8 @@ public class VCellApiMain {
 		        Cipher pbeCipher = Cipher.getInstance("PBEWithMD5AndDES"); 
 		        pbeCipher.init(Cipher.DECRYPT_MODE, key, new PBEParameterSpec(new byte[] {32,11,55,121,01,42,89,11}, 20)); 
 		        keystorePassword = new String(pbeCipher.doFinal(DatatypeConverter.parseBase64Binary(keystorePassword))); 
-			}catch (Exception e){
-				System.out.println("password unhashing didn't work - trying clear text password");
-				e.printStackTrace();
+			}catch (IllegalBlockSizeException e){
+				lg.warn("password unhashing didn't work - trying clear text password: "+e.getMessage());
 			}
 			Server httpsServer = component.getServers().add(Protocol.HTTPS,port);
 			Series<Parameter> parameters = httpsServer.getContext().getParameters();

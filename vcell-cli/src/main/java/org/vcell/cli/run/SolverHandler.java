@@ -520,7 +520,7 @@ public class SolverHandler {
                 		spatialResults.put(new TaskJob(task.getId(), simJob.getJobIndex()), hdf5Results);
                 		keepTempFiles = true;
                 	} catch(Exception e) {
-						logger.error(e);
+						logger.error(e.getMessage(), e);
                 		spatialResults.put(new TaskJob(task.getId(), simJob.getJobIndex()), null);
                 	}
             	} else {

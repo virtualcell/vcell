@@ -83,7 +83,7 @@ public SpeciesContext getSpeciesContext(java.sql.ResultSet rset, KeyValue keyVal
 			//speciesContext.setDiffusionRate(diffValueExp.evaluateConstant());
 			return speciesContext;
 		}catch (java.beans.PropertyVetoException e){
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 			throw new DataAccessException("PropertyVetoException unexpected: "+e.getMessage());
 		}
 	//}catch (cbit.vcell.parser.ExpressionException e){

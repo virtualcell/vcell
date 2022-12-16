@@ -356,6 +356,8 @@ services:
       - "${VCELL_MONGO_PORT_EXTERNAL}:27017"
     networks:
       - vcellnet
+    volumes:
+      - mongodata:/data/db
     deploy:
       mode: replicated
       replicas: 1
@@ -401,6 +403,8 @@ services:
 
 networks:
   vcellnet:
+volumes:
+  mongodata:
 secrets:
   dbpswd:
     file: ${VCELL_SECRETS_DIR}/dbpswd.txt
