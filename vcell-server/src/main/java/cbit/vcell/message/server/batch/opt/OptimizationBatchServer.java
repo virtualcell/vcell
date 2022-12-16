@@ -104,8 +104,8 @@ public class OptimizationBatchServer {
                                     throw new Exception(errorMsg);
                                 } else if (htcJobStatus.isComplete()) { // but file not found yet
                                     String optID = optCommandMessage.optID;
-                                    String errMsg = "job optID=" + optID + " status is COMPLETE but result file "+generateOptOutputFilePath(optID)+" not found";
-                                    oos.writeObject(new OptMessage.OptErrorResponseMessage(optCommandMessage, errMsg));
+                                    String errMsg = "job optID=" + optID + " status is COMPLETE but result file "+generateOptOutputFilePath(optID)+" not found yet";
+                                    oos.writeObject(new OptMessage.OptJobStatusResponseMessage(jobQuery, OptMessage.OptJobMessageStatus.RUNNING, errMsg));
                                     oos.flush();
                                     lg.error(errMsg);
                                 } else {//running
