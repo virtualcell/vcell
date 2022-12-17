@@ -75,6 +75,7 @@ public class MathDescription implements Versionable, Matchable, SymbolTable, Ser
 
 	public static final TreeMap<Long,TreeSet<String>> originalHasLowPrecisionConstants = new TreeMap<>();
 	public final static String MATH_FUNC_INIT_SUFFIX_PREFIX = "_init";
+	public final static String MATH_FUNC_STOCH_INIT_SUFFIX_PREFIX = "_initCount";
 	
 	protected transient java.util.ArrayList<ChangeListener> aChangeListener = null;
 	private Version version = null;
@@ -3902,6 +3903,7 @@ private static boolean tryLegacyVarNameDomainExtensive(MathDescription mathDescr
 		for (String oldName : multiDomainVarMap.keySet()) {
 			String oldNameIN = oldName+InsideVariable.INSIDE_VARIABLE_SUFFIX;
 			String oldNameOUT = oldName+OutsideVariable.OUTSIDE_VARIABLE_SUFFIX;
+			String oldNameSTOCHINIT = oldName+AbstractMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_COUNT;
 			List<String> newNames = multiDomainVarMap.get(oldName);
 			Variable oldVar = mathDescription1.getVariable(oldName);
 			HashMap<SubDomain, String> subDomainMap = new HashMap<SubDomain, String>();
@@ -3978,9 +3980,11 @@ private static boolean tryLegacyVarNameDomainExtensive(MathDescription mathDescr
 					return false;
 				}
 			}
+			mathDescription1.getAllExpressions(exps);
 			// replace variable for equations which should stay
 			boolean bStochastic = false;
 			for (String newName : newNames) {
+				String newNameSTOCHINIT = newName+AbstractMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_COUNT;
 				Variable newVar = mathDescription1.getVariable(newName);
 				SubDomain sd = mathDescription1.getSubDomain(newVar.getDomain().getName());
 				if (!sd.getEquationCollection().isEmpty()) {
@@ -3995,23 +3999,28 @@ private static boolean tryLegacyVarNameDomainExtensive(MathDescription mathDescr
 					}
 				}
 				if (bStochastic) {
-					// need to substitute inits
-					for (Variable ct : mathDescription1.variableList) {
-						if (ct instanceof Constant) {
-							if (ct.getName().equals(oldName+AbstractMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_COUNT)) {
-								ct.rename(newName+AbstractMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_COUNT);
+					// need to rename init vars and substitute
+					for (Variable var : mathDescription1.variableList) {
+						if (var.getName().equals(oldNameSTOCHINIT)) {
+							var.rename(newNameSTOCHINIT);
+							for (Expression exp : exps) {
+								if (!exp.isNumeric()) {
+									exp.substituteInPlace(new Expression(oldNameSTOCHINIT), new Expression(newNameSTOCHINIT));
+								}
 							}
 						}
 					}
-					// need to substitute init conditions
+					
+					// need to rename init conditions
 					for (VarIniCondition vic : sd.getVarIniConditions()) {
 						if (vic.getVar().getName().equals(oldName)) {
 							vic.getVar().rename(newName);
-							vic.getIniVal().substituteInPlace(
-									new Expression(oldName + AbstractMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_COUNT),
-									new Expression(
-											newName + AbstractMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_COUNT));
 						}
+//							vic.getIniVal().substituteInPlace(
+//									new Expression(oldName + AbstractMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_COUNT),
+//									new Expression(
+//											newName + AbstractMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_COUNT));
+//						}
 					}
 				}
 			}

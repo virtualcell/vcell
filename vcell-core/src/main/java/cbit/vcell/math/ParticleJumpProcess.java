@@ -172,8 +172,12 @@ public boolean compareEqual(org.vcell.util.Matchable object)
 	}
 	
 	ParticleJumpProcess jumpProc = (ParticleJumpProcess) object;
-	if(!Compare.isEqual(processName,jumpProc.processName)) return false;//processName
-	if(!Compare.isEqual(rateDefinition,jumpProc.rateDefinition)) return false; //probabilityRate
+	if(!Compare.isEqual(processName,jumpProc.processName)) {
+		return false;//processName
+	}
+	if(!Compare.isEqual(rateDefinition,jumpProc.rateDefinition)) {
+		return false; //probabilityRate
+	}
 	//actions
 	if((actions != null) && (jumpProc.actions != null))
 	{

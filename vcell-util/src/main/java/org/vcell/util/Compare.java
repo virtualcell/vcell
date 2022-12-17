@@ -351,6 +351,16 @@ public static boolean isEqual(Matchable obj1, Matchable obj2) {
 	return true;
 }
 
+public static boolean isEqual(Matchable obj1, Matchable obj2, BiPredicate<Matchable,Matchable> predicate) {
+	if (obj1==null && obj2==null){
+		return true;
+	}
+	if (obj1==null || obj2==null){
+		return logFailure();
+	}
+	return predicate.test(obj1, obj2);
+}
+
 public static boolean isEqual(java.lang.Number obj1, java.lang.Number obj2) {
 	return isEqual0(obj1, obj2);
 }
