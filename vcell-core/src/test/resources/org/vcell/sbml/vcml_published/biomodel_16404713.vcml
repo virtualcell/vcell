@@ -1,0 +1,822 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--This biomodel was generated in VCML Version 0.4-->
+<vcml xmlns="http://sourceforge.net/projects/vcell/vcml" Version="0.4">
+   <BioModel Name="PDGF gradient sensing">
+      <Annotation>This is an expanded version of the model described in: Schneider, I. C. and J. M. Haugh. 2005. Quantitative elucidation of a distinct spatial gradient-sensing mechanism in fibroblasts. J Cell Biol 171:883-892.
+</Annotation>
+      <Model Name="unnamed">
+         <Annotation>cloned from 'unnamed' owned by user jmhaugh
+</Annotation>
+         <Compound Name="PI3K" />
+         <Compound Name="GFP_AktPH" />
+         <Compound Name="C2_PI3K" />
+         <Compound Name="C2_PI3K2" />
+         <Compound Name="PIP3" />
+         <Compound Name="PIP3_AktPH" />
+         <Compound Name="enzyme_factor" />
+         <Compound Name="PDGF_gradient" />
+         <Compound Name="R_factor" />
+         <Compound Name="C1" />
+         <Compound Name="C2" />
+         <Compound Name="PDGF_uniform" />
+         <Compound Name="R" />
+         <Feature Name="cytosol" KeyValue="16396456" />
+         <Feature Name="nucleus" KeyValue="16396459" />
+         <Feature Name="extracellular" KeyValue="16396454" />
+         <Membrane InsideFeature="cytosol" OutsideFeature="extracellular" MembraneVoltage="Voltage_pm" Name="plasma_membrane" KeyValue="16396455" />
+         <Membrane InsideFeature="nucleus" OutsideFeature="cytosol" MembraneVoltage="Voltage_nm" Name="nuclear_membrane" KeyValue="16396458" />
+         <LocalizedCompound Name="PI3K_cytosol" CompoundRef="PI3K" Structure="cytosol" OverrideName="false" KeyValue="16396464" />
+         <LocalizedCompound Name="GFP_AktPH_cytosol" CompoundRef="GFP_AktPH" Structure="cytosol" OverrideName="false" KeyValue="16396465" />
+         <LocalizedCompound Name="C2_PI3K_plasma_membrane" CompoundRef="C2_PI3K" Structure="plasma_membrane" OverrideName="false" KeyValue="16396466" />
+         <LocalizedCompound Name="C2_PI3K2_plasma_membrane" CompoundRef="C2_PI3K2" Structure="plasma_membrane" OverrideName="false" KeyValue="16396467" />
+         <LocalizedCompound Name="PIP3_plasma_membrane" CompoundRef="PIP3" Structure="plasma_membrane" OverrideName="false" KeyValue="16396468" />
+         <LocalizedCompound Name="PIP3_AktPH_plasma_membrane" CompoundRef="PIP3_AktPH" Structure="plasma_membrane" OverrideName="false" KeyValue="16396469" />
+         <LocalizedCompound Name="GFP_AktPH_nucleus" CompoundRef="GFP_AktPH" Structure="nucleus" OverrideName="false" KeyValue="16396470" />
+         <LocalizedCompound Name="enzyme_factor_plasma_membrane" CompoundRef="enzyme_factor" Structure="plasma_membrane" OverrideName="false" KeyValue="16396471" />
+         <LocalizedCompound Name="PDGF_gradient_extracellular" CompoundRef="PDGF_gradient" Structure="extracellular" OverrideName="false" KeyValue="16396472" />
+         <LocalizedCompound Name="R_factor_plasma_membrane" CompoundRef="R_factor" Structure="plasma_membrane" OverrideName="false" KeyValue="16396473" />
+         <LocalizedCompound Name="C1_plasma_membrane" CompoundRef="C1" Structure="plasma_membrane" OverrideName="false" KeyValue="16396474" />
+         <LocalizedCompound Name="PI3K_nucleus" CompoundRef="PI3K" Structure="nucleus" OverrideName="false" KeyValue="16396475" />
+         <LocalizedCompound Name="C2_plasma_membrane" CompoundRef="C2" Structure="plasma_membrane" OverrideName="false" KeyValue="16396476" />
+         <LocalizedCompound Name="PDGF_uniform_extracellular" CompoundRef="PDGF_uniform" Structure="extracellular" OverrideName="false" KeyValue="16396477" />
+         <LocalizedCompound Name="R_plasma_membrane" CompoundRef="R" Structure="plasma_membrane" OverrideName="false" KeyValue="16396478" />
+         <SimpleReaction Structure="plasma_membrane" Name="basal PIP3 synthesis" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="16396479">
+            <Product LocalizedCompoundRef="PIP3_plasma_membrane" Stoichiometry="1" KeyValue="16396480" />
+            <Modifier LocalizedCompoundRef="PI3K_cytosol" KeyValue="16396481" />
+            <Kinetics KineticsType="GeneralKinetics">
+               <Parameter Name="J" Role="reaction rate" Unit="molecules.um-2.s-1">(Kbasal_pi3k * PI3K_cytosol)</Parameter>
+               <Parameter Name="I" Role="inward current density" Unit="pA.um-2">0.0</Parameter>
+               <Parameter Name="Kbasal_pi3k" Role="user defined" Unit="molecules.um-2.uM-1.s-1">120.0</Parameter>
+            </Kinetics>
+            <Annotation />
+         </SimpleReaction>
+         <SimpleReaction Structure="plasma_membrane" Name="C1 dimerization" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="16396482">
+            <Reactant LocalizedCompoundRef="C1_plasma_membrane" Stoichiometry="2" KeyValue="16396483" />
+            <Product LocalizedCompoundRef="C2_plasma_membrane" Stoichiometry="1" KeyValue="16396484" />
+            <Kinetics KineticsType="GeneralKinetics">
+               <Parameter Name="J" Role="reaction rate" Unit="molecules.um-2.s-1">(KxR0 * (C1_plasma_membrane ^ 2.0) / R0)</Parameter>
+               <Parameter Name="I" Role="inward current density" Unit="pA.um-2">0.0</Parameter>
+               <Parameter Name="KxR0" Role="user defined" Unit="s-1">0.0050</Parameter>
+               <Parameter Name="R0" Role="user defined" Unit="molecules.um-2">130.0</Parameter>
+            </Kinetics>
+            <Annotation />
+         </SimpleReaction>
+         <SimpleReaction Structure="plasma_membrane" Name="R turnover" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="16396485">
+            <Reactant LocalizedCompoundRef="R_plasma_membrane" Stoichiometry="1" KeyValue="16396486" />
+            <Kinetics KineticsType="GeneralKinetics">
+               <Parameter Name="J" Role="reaction rate" Unit="molecules.um-2.s-1">(Kt * R_plasma_membrane)</Parameter>
+               <Parameter Name="I" Role="inward current density" Unit="pA.um-2">0.0</Parameter>
+               <Parameter Name="Kt" Role="user defined" Unit="s-1">3.33E-4</Parameter>
+            </Kinetics>
+            <Annotation />
+         </SimpleReaction>
+         <SimpleReaction Structure="plasma_membrane" Name="C1 turnover" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="16396487">
+            <Reactant LocalizedCompoundRef="C1_plasma_membrane" Stoichiometry="1" KeyValue="16396488" />
+            <Kinetics KineticsType="GeneralKinetics">
+               <Parameter Name="J" Role="reaction rate" Unit="molecules.um-2.s-1">(Kt * C1_plasma_membrane)</Parameter>
+               <Parameter Name="I" Role="inward current density" Unit="pA.um-2">0.0</Parameter>
+               <Parameter Name="Kt" Role="user defined" Unit="s-1">3.33E-4</Parameter>
+            </Kinetics>
+            <Annotation />
+         </SimpleReaction>
+         <SimpleReaction Structure="plasma_membrane" Name="C2_PI3K2 uncoupling" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="16396489">
+            <Reactant LocalizedCompoundRef="C2_PI3K2_plasma_membrane" Stoichiometry="1" KeyValue="16396490" />
+            <Product LocalizedCompoundRef="R_plasma_membrane" Stoichiometry="1" KeyValue="16396491" />
+            <Product LocalizedCompoundRef="C1_plasma_membrane" Stoichiometry="1" KeyValue="16396492" />
+            <Product LocalizedCompoundRef="PI3K_cytosol" Stoichiometry="2" KeyValue="16396493" />
+            <Kinetics KineticsType="GeneralKinetics">
+               <Parameter Name="J" Role="reaction rate" Unit="molecules.um-2.s-1">(Kminusx * C2_PI3K2_plasma_membrane)</Parameter>
+               <Parameter Name="I" Role="inward current density" Unit="pA.um-2">0.0</Parameter>
+               <Parameter Name="Kminusx" Role="user defined" Unit="s-1">0.0011666666666666668</Parameter>
+            </Kinetics>
+            <Annotation />
+         </SimpleReaction>
+         <SimpleReaction Structure="plasma_membrane" Name="C2_PI3K uncoupling" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="16396494">
+            <Reactant LocalizedCompoundRef="C2_PI3K_plasma_membrane" Stoichiometry="1" KeyValue="16396495" />
+            <Product LocalizedCompoundRef="R_plasma_membrane" Stoichiometry="1" KeyValue="16396496" />
+            <Product LocalizedCompoundRef="C1_plasma_membrane" Stoichiometry="1" KeyValue="16396497" />
+            <Product LocalizedCompoundRef="PI3K_cytosol" Stoichiometry="1" KeyValue="16396498" />
+            <Kinetics KineticsType="GeneralKinetics">
+               <Parameter Name="J" Role="reaction rate" Unit="molecules.um-2.s-1">(Kminusx * C2_PI3K_plasma_membrane)</Parameter>
+               <Parameter Name="I" Role="inward current density" Unit="pA.um-2">0.0</Parameter>
+               <Parameter Name="Kminusx" Role="user defined" Unit="s-1">0.0011666666666666668</Parameter>
+            </Kinetics>
+            <Annotation />
+         </SimpleReaction>
+         <SimpleReaction Structure="plasma_membrane" Name="PIP3 degradation" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="16396499">
+            <Reactant LocalizedCompoundRef="PIP3_plasma_membrane" Stoichiometry="1" KeyValue="16396500" />
+            <Kinetics KineticsType="GeneralKinetics">
+               <Parameter Name="J" Role="reaction rate" Unit="molecules.um-2.s-1">(K3pi * PIP3_plasma_membrane)</Parameter>
+               <Parameter Name="I" Role="inward current density" Unit="pA.um-2">0.0</Parameter>
+               <Parameter Name="K3pi" Role="user defined" Unit="s-1">0.0167</Parameter>
+            </Kinetics>
+            <Annotation />
+         </SimpleReaction>
+         <SimpleReaction Structure="plasma_membrane" Name="GFP_AktPH binding" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="16396501">
+            <Reactant LocalizedCompoundRef="GFP_AktPH_cytosol" Stoichiometry="1" KeyValue="16396502" />
+            <Reactant LocalizedCompoundRef="PIP3_plasma_membrane" Stoichiometry="1" KeyValue="16396503" />
+            <Product LocalizedCompoundRef="PIP3_AktPH_plasma_membrane" Stoichiometry="1" KeyValue="16396504" />
+            <Kinetics KineticsType="MassAction">
+               <Parameter Name="J" Role="reaction rate" Unit="molecules.um-2.s-1">((PIP3_plasma_membrane * Kf * GFP_AktPH_cytosol) - (Kr * PIP3_AktPH_plasma_membrane))</Parameter>
+               <Parameter Name="I" Role="inward current density" Unit="pA.um-2">0.0</Parameter>
+               <Parameter Name="Kf" Role="forward rate constant" Unit="uM-1.s-1">1.0</Parameter>
+               <Parameter Name="Kr" Role="reverse rate constant" Unit="s-1">1.0</Parameter>
+            </Kinetics>
+            <Annotation />
+         </SimpleReaction>
+         <SimpleReaction Structure="plasma_membrane" Name="C2_PI3K2 internalization" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="16396505">
+            <Reactant LocalizedCompoundRef="C2_PI3K2_plasma_membrane" Stoichiometry="1" KeyValue="16396506" />
+            <Product LocalizedCompoundRef="PI3K_cytosol" Stoichiometry="2" KeyValue="16396507" />
+            <Kinetics KineticsType="GeneralKinetics">
+               <Parameter Name="J" Role="reaction rate" Unit="molecules.um-2.s-1">(Ke * C2_PI3K2_plasma_membrane)</Parameter>
+               <Parameter Name="I" Role="inward current density" Unit="pA.um-2">0.0</Parameter>
+               <Parameter Name="Ke" Role="user defined" Unit="s-1">0.0025</Parameter>
+            </Kinetics>
+            <Annotation />
+         </SimpleReaction>
+         <SimpleReaction Structure="plasma_membrane" Name="R synthesis" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="16396508">
+            <Product LocalizedCompoundRef="R_plasma_membrane" Stoichiometry="1" KeyValue="16396509" />
+            <Modifier LocalizedCompoundRef="R_factor_plasma_membrane" KeyValue="16396510" />
+            <Kinetics KineticsType="GeneralKinetics">
+               <Parameter Name="J" Role="reaction rate" Unit="molecules.um-2.s-1">(Kt * R0 * R_factor_plasma_membrane)</Parameter>
+               <Parameter Name="I" Role="inward current density" Unit="pA.um-2">0.0</Parameter>
+               <Parameter Name="Kt" Role="user defined" Unit="s-1">3.33E-4</Parameter>
+               <Parameter Name="R0" Role="user defined" Unit="1">130.0</Parameter>
+            </Kinetics>
+            <Annotation />
+         </SimpleReaction>
+         <SimpleReaction Structure="plasma_membrane" Name="PDGF binding" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="16396511">
+            <Reactant LocalizedCompoundRef="R_plasma_membrane" Stoichiometry="1" KeyValue="16396512" />
+            <Product LocalizedCompoundRef="C1_plasma_membrane" Stoichiometry="1" KeyValue="16396513" />
+            <Modifier LocalizedCompoundRef="PDGF_gradient_extracellular" KeyValue="16396514" />
+            <Modifier LocalizedCompoundRef="PDGF_uniform_extracellular" KeyValue="16396515" />
+            <Kinetics KineticsType="GeneralKinetics">
+               <Parameter Name="J" Role="reaction rate" Unit="molecules.um-2.s-1">(Kr * ((((L_mid * PDGF_gradient_extracellular) + (L_uni * PDGF_uniform_extracellular)) * R_plasma_membrane / KD) - C1_plasma_membrane))</Parameter>
+               <Parameter Name="I" Role="inward current density" Unit="pA.um-2">0.0</Parameter>
+               <Parameter Name="Kr" Role="user defined" Unit="s-1">0.1</Parameter>
+               <Parameter Name="L_mid" Role="user defined" Unit="1">0.01</Parameter>
+               <Parameter Name="L_uni" Role="user defined" Unit="1">0.01</Parameter>
+               <Parameter Name="KD" Role="user defined" Unit="uM">0.0015</Parameter>
+            </Kinetics>
+            <Annotation />
+         </SimpleReaction>
+         <SimpleReaction Structure="plasma_membrane" Name="PI3K2 binding" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="16396516">
+            <Reactant LocalizedCompoundRef="C2_PI3K_plasma_membrane" Stoichiometry="1" KeyValue="16396517" />
+            <Reactant LocalizedCompoundRef="PI3K_cytosol" Stoichiometry="1" KeyValue="16396518" />
+            <Product LocalizedCompoundRef="C2_PI3K2_plasma_membrane" Stoichiometry="1" KeyValue="16396519" />
+            <Kinetics KineticsType="GeneralKinetics">
+               <Parameter Name="J" Role="reaction rate" Unit="molecules.um-2.s-1">((Kon * C2_PI3K_plasma_membrane * PI3K_cytosol) - (2.0 * Koff * C2_PI3K2_plasma_membrane))</Parameter>
+               <Parameter Name="I" Role="inward current density" Unit="pA.um-2">0.0</Parameter>
+               <Parameter Name="Kon" Role="user defined" Unit="uM-1.s-1">5.0</Parameter>
+               <Parameter Name="Koff" Role="user defined" Unit="s-1">0.02</Parameter>
+            </Kinetics>
+            <Annotation />
+         </SimpleReaction>
+         <SimpleReaction Structure="plasma_membrane" Name="C2 internalization" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="16396520">
+            <Reactant LocalizedCompoundRef="C2_plasma_membrane" Stoichiometry="1" KeyValue="16396521" />
+            <Kinetics KineticsType="GeneralKinetics">
+               <Parameter Name="J" Role="reaction rate" Unit="molecules.um-2.s-1">(Ke * C2_plasma_membrane)</Parameter>
+               <Parameter Name="I" Role="inward current density" Unit="pA.um-2">0.0</Parameter>
+               <Parameter Name="Ke" Role="user defined" Unit="s-1">0.0025</Parameter>
+            </Kinetics>
+            <Annotation />
+         </SimpleReaction>
+         <SimpleReaction Structure="plasma_membrane" Name="C2_PI3K internalization" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="16396522">
+            <Reactant LocalizedCompoundRef="C2_PI3K_plasma_membrane" Stoichiometry="1" KeyValue="16396523" />
+            <Product LocalizedCompoundRef="PI3K_cytosol" Stoichiometry="1" KeyValue="16396524" />
+            <Kinetics KineticsType="GeneralKinetics">
+               <Parameter Name="J" Role="reaction rate" Unit="molecules.um-2.s-1">(Ke * C2_PI3K_plasma_membrane)</Parameter>
+               <Parameter Name="I" Role="inward current density" Unit="pA.um-2">0.0</Parameter>
+               <Parameter Name="Ke" Role="user defined" Unit="s-1">0.0025</Parameter>
+            </Kinetics>
+            <Annotation />
+         </SimpleReaction>
+         <SimpleReaction Structure="plasma_membrane" Name="PI3K binding" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="16396525">
+            <Reactant LocalizedCompoundRef="C2_plasma_membrane" Stoichiometry="1" KeyValue="16396526" />
+            <Reactant LocalizedCompoundRef="PI3K_cytosol" Stoichiometry="1" KeyValue="16396527" />
+            <Product LocalizedCompoundRef="C2_PI3K_plasma_membrane" Stoichiometry="1" KeyValue="16396528" />
+            <Kinetics KineticsType="GeneralKinetics">
+               <Parameter Name="J" Role="reaction rate" Unit="molecules.um-2.s-1">((2.0 * Kon * C2_plasma_membrane * PI3K_cytosol) - (Koff * C2_PI3K_plasma_membrane))</Parameter>
+               <Parameter Name="I" Role="inward current density" Unit="pA.um-2">0.0</Parameter>
+               <Parameter Name="Kon" Role="user defined" Unit="uM-1.s-1">5.0</Parameter>
+               <Parameter Name="Koff" Role="user defined" Unit="s-1">0.02</Parameter>
+            </Kinetics>
+            <Annotation />
+         </SimpleReaction>
+         <SimpleReaction Structure="plasma_membrane" Name="C2 uncoupling" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="16396529">
+            <Reactant LocalizedCompoundRef="C2_plasma_membrane" Stoichiometry="1" KeyValue="16396530" />
+            <Product LocalizedCompoundRef="R_plasma_membrane" Stoichiometry="1" KeyValue="16396531" />
+            <Product LocalizedCompoundRef="C1_plasma_membrane" Stoichiometry="1" KeyValue="16396532" />
+            <Kinetics KineticsType="GeneralKinetics">
+               <Parameter Name="J" Role="reaction rate" Unit="molecules.um-2.s-1">(Kminusx * C2_plasma_membrane)</Parameter>
+               <Parameter Name="I" Role="inward current density" Unit="pA.um-2">0.0</Parameter>
+               <Parameter Name="Kminusx" Role="user defined" Unit="s-1">0.0011666666666666668</Parameter>
+            </Kinetics>
+            <Annotation />
+         </SimpleReaction>
+         <SimpleReaction Structure="plasma_membrane" Name="activated PIP3 synthesis" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="16396533">
+            <Product LocalizedCompoundRef="PIP3_plasma_membrane" Stoichiometry="1" KeyValue="16396534" />
+            <Modifier LocalizedCompoundRef="enzyme_factor_plasma_membrane" KeyValue="16396535" />
+            <Modifier LocalizedCompoundRef="C2_PI3K_plasma_membrane" KeyValue="16396536" />
+            <Modifier LocalizedCompoundRef="C2_PI3K2_plasma_membrane" KeyValue="16396537" />
+            <Kinetics KineticsType="GeneralKinetics">
+               <Parameter Name="J" Role="reaction rate" Unit="molecules.um-2.s-1">(Kcat_pi3k * (C2_PI3K_plasma_membrane + (2.0 * C2_PI3K2_plasma_membrane)) * enzyme_factor_plasma_membrane)</Parameter>
+               <Parameter Name="I" Role="inward current density" Unit="pA.um-2">0.0</Parameter>
+               <Parameter Name="Kcat_pi3k" Role="user defined" Unit="um2.molecules-1.s-1">10.0</Parameter>
+            </Kinetics>
+            <Annotation />
+         </SimpleReaction>
+         <FluxStep Name="PI3K nuclear flux" Structure="nuclear_membrane" FluxCarrier="PI3K" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="16396538">
+            <Kinetics KineticsType="GeneralKinetics">
+               <Parameter Name="J" Role="reaction rate" Unit="uM.um.s-1">(KcPI3K * (PI3K_cytosol - PI3K_nucleus))</Parameter>
+               <Parameter Name="I" Role="inward current density" Unit="pA.um-2">0.0</Parameter>
+               <Parameter Name="KcPI3K" Role="user defined" Unit="um.s-1">0.0</Parameter>
+            </Kinetics>
+            <Annotation />
+         </FluxStep>
+         <FluxStep Name="GFP_AktPH nuclear flux" Structure="nuclear_membrane" FluxCarrier="GFP_AktPH" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="16396541">
+            <Kinetics KineticsType="GeneralKinetics">
+               <Parameter Name="J" Role="reaction rate" Unit="uM.um.s-1">(Kc * (GFP_AktPH_cytosol - GFP_AktPH_nucleus))</Parameter>
+               <Parameter Name="I" Role="inward current density" Unit="pA.um-2">0.0</Parameter>
+               <Parameter Name="Kc" Role="user defined" Unit="um.s-1">0.03</Parameter>
+            </Kinetics>
+            <Annotation />
+         </FluxStep>
+         <Diagram Name="nm" Structure="nuclear_membrane">
+            <LocalizedCompoundShape LocalizedCompoundRef="GFP_AktPH_nucleus" LocationX="54" LocationY="133" />
+            <LocalizedCompoundShape LocalizedCompoundRef="PI3K_nucleus" LocationX="41" LocationY="39" />
+            <LocalizedCompoundShape LocalizedCompoundRef="PI3K_cytosol" LocationX="33" LocationY="45" />
+            <LocalizedCompoundShape LocalizedCompoundRef="GFP_AktPH_cytosol" LocationX="49" LocationY="135" />
+            <FluxReactionShape FluxReactionRef="PI3K nuclear flux" LocationX="129" LocationY="56" />
+            <FluxReactionShape FluxReactionRef="GFP_AktPH nuclear flux" LocationX="127" LocationY="175" />
+         </Diagram>
+         <Diagram Name="cm" Structure="plasma_membrane">
+            <LocalizedCompoundShape LocalizedCompoundRef="R_plasma_membrane" LocationX="286" LocationY="223" />
+            <LocalizedCompoundShape LocalizedCompoundRef="C2_PI3K_plasma_membrane" LocationX="466" LocationY="359" />
+            <LocalizedCompoundShape LocalizedCompoundRef="C2_PI3K2_plasma_membrane" LocationX="470" LocationY="485" />
+            <LocalizedCompoundShape LocalizedCompoundRef="PIP3_plasma_membrane" LocationX="474" LocationY="584" />
+            <LocalizedCompoundShape LocalizedCompoundRef="PIP3_AktPH_plasma_membrane" LocationX="471" LocationY="741" />
+            <LocalizedCompoundShape LocalizedCompoundRef="enzyme_factor_plasma_membrane" LocationX="259" LocationY="622" />
+            <LocalizedCompoundShape LocalizedCompoundRef="R_factor_plasma_membrane" LocationX="87" LocationY="323" />
+            <LocalizedCompoundShape LocalizedCompoundRef="C1_plasma_membrane" LocationX="290" LocationY="137" />
+            <LocalizedCompoundShape LocalizedCompoundRef="C2_plasma_membrane" LocationX="541" LocationY="175" />
+            <LocalizedCompoundShape LocalizedCompoundRef="PI3K_cytosol" LocationX="164" LocationY="384" />
+            <LocalizedCompoundShape LocalizedCompoundRef="GFP_AktPH_cytosol" LocationX="166" LocationY="654" />
+            <LocalizedCompoundShape LocalizedCompoundRef="PDGF_gradient_extracellular" LocationX="35" LocationY="109" />
+            <SimpleReactionShape SimpleReactionRef="basal PIP3 synthesis" LocationX="576" LocationY="573" />
+            <SimpleReactionShape SimpleReactionRef="C1 dimerization" LocationX="407" LocationY="65" />
+            <SimpleReactionShape SimpleReactionRef="R turnover" LocationX="228" LocationY="300" />
+            <SimpleReactionShape SimpleReactionRef="C1 turnover" LocationX="231" LocationY="71" />
+            <SimpleReactionShape SimpleReactionRef="C2_PI3K2 uncoupling" LocationX="392" LocationY="307" />
+            <SimpleReactionShape SimpleReactionRef="C2_PI3K uncoupling" LocationX="447" LocationY="267" />
+            <SimpleReactionShape SimpleReactionRef="PIP3 degradation" LocationX="401" LocationY="663" />
+            <SimpleReactionShape SimpleReactionRef="GFP_AktPH binding" LocationX="520" LocationY="663" />
+            <SimpleReactionShape SimpleReactionRef="C2_PI3K2 internalization" LocationX="572" LocationY="480" />
+            <SimpleReactionShape SimpleReactionRef="R synthesis" LocationX="157" LocationY="259" />
+            <SimpleReactionShape SimpleReactionRef="PDGF binding" LocationX="157" LocationY="167" />
+            <SimpleReactionShape SimpleReactionRef="PI3K2 binding" LocationX="516" LocationY="409" />
+            <SimpleReactionShape SimpleReactionRef="C2 internalization" LocationX="607" LocationY="105" />
+            <SimpleReactionShape SimpleReactionRef="C2_PI3K internalization" LocationX="557" LocationY="358" />
+            <SimpleReactionShape SimpleReactionRef="PI3K binding" LocationX="554" LocationY="234" />
+            <SimpleReactionShape SimpleReactionRef="C2 uncoupling" LocationX="431" LocationY="152" />
+            <SimpleReactionShape SimpleReactionRef="activated PIP3 synthesis" LocationX="263" LocationY="533" />
+            <LocalizedCompoundShape LocalizedCompoundRef="PDGF_uniform_extracellular" LocationX="38" LocationY="213" />
+         </Diagram>
+         <Diagram Name="cytosol" Structure="cytosol" />
+         <Diagram Name="nucleus" Structure="nucleus" />
+         <Diagram Name="Unnamed compartment" Structure="extracellular" />
+         <Version Name="unnamed" KeyValue="16396438" BranchId="16396439" Archived="0" Date="06-Feb-2006 20:49:31" FromVersionable="false">
+            <Owner Name="CMC" Identifier="2794180" />
+            <GroupAccess Type="1" />
+            <Annotation>cloned from 'unnamed' owned by user jmhaugh
+</Annotation>
+         </Version>
+      </Model>
+      <SimulationSpec Name="PDGFgradient_TIRF" Stochastic="false" CharacteristicSize="0.16347238809983472">
+         <Annotation>cloned from 'PDGFgradient_TIRF' owned by user jmhaugh
+This is an expanded version of the model described in
+
+Schneider, I.C. and Haugh, J.M.  Quantitative elucidation of a distinct spatial gradient-sensing mechanism in fibroblasts.  J. Cell Biol., 171: 883-892 (2005).
+
+It encapsulates both the kinetic model of platelet-derived growth factor (PDGF) receptor and phosphoinositide (PI) 3-kinase activation and the reaction-diffusion model for 3' PI production, diffusion, and turnover; as in the paper, it explicitly accounts for the 3' PI/GFP-AktPH probe interaction, allowing normalized fluorescence intensities to be computed and compared with total internal reflection fluorescence (TIRF) microscopy images.  Simplifying assumptions regarding the distributions of proteins in the cytosol (and nucleus, where applicable), and the kinetics of PI 3-kinase and GFP-AktPH recruitment to the membrane, are relaxed in this VCell model.</Annotation>
+         <Geometry Name="fried_egg_2" Dimension="3">
+            <Annotation>cloned from 'fried_egg_2' owned by user jmhaugh
+</Annotation>
+            <Extent X="30.4" Y="15.2" Z="10.4" />
+            <Origin X="-15.2" Y="0.0" Z="-10.2" />
+            <SubVolume Name="subVolume2" Handle="2" Type="Analytical" KeyValue="16396426">
+               <AnalyticExpression>(((x ^ 2.0) + (y ^ 2.0) + ((5.0 + z) ^ 2.0)) &lt; 16.0)</AnalyticExpression>
+            </SubVolume>
+            <SubVolume Name="subVolume1" Handle="0" Type="Analytical" KeyValue="16396427">
+               <AnalyticExpression>(((((1.0 - (( - z ^ 4.0) / (50.0 + ( - z ^ 4.0)))) * ((x ^ 2.0) + (y ^ 2.0) + (z ^ 2.0))) + (9.0 * ((x ^ 2.0) + (y ^ 2.0) + ((5.0 + z) ^ 2.0)) * ( - z ^ 4.0) / (50.0 + ( - z ^ 4.0)))) &lt; 225.0) * (z &lt; 0.0))</AnalyticExpression>
+            </SubVolume>
+            <SubVolume Name="subVolume0" Handle="1" Type="Analytical" KeyValue="16396428">
+               <AnalyticExpression>1.0</AnalyticExpression>
+            </SubVolume>
+            <SurfaceDescription NumSamplesX="100" NumSamplesY="100" NumSamplesZ="100" CutoffFrequency="0.3">
+               <VolumeRegion Name="subVolume11" RegionID="1" SubVolume="subVolume1" Size="715.8432824521101" Unit="um3" />
+               <VolumeRegion Name="subVolume22" RegionID="2" SubVolume="subVolume2" Size="134.19925679816222" Unit="um3" />
+               <VolumeRegion Name="subVolume00" RegionID="0" SubVolume="subVolume0" Size="3955.5894607497276" Unit="um3" />
+               <MembraneRegion Name="membrane_subVolume00_subVolume11" VolumeRegion1="subVolume11" VolumeRegion2="subVolume00" Size="788.1599125566406" Unit="um2" />
+               <MembraneRegion Name="membrane_subVolume11_subVolume22" VolumeRegion1="subVolume22" VolumeRegion2="subVolume11" Size="100.35105038402034" Unit="um2" />
+            </SurfaceDescription>
+            <Version Name="fried_egg_2" KeyValue="16396422" BranchId="16396423" Archived="0" Date="06-Feb-2006 20:49:31" FromVersionable="false">
+               <Owner Name="CMC" Identifier="2794180" />
+               <GroupAccess Type="1" />
+               <Annotation>cloned from 'fried_egg_2' owned by user jmhaugh
+</Annotation>
+            </Version>
+         </Geometry>
+         <GeometryContext>
+            <FeatureMapping Feature="cytosol" SubVolume="subVolume1" Resolved="true">
+               <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
+            </FeatureMapping>
+            <FeatureMapping Feature="nucleus" SubVolume="subVolume2" Resolved="true">
+               <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
+            </FeatureMapping>
+            <FeatureMapping Feature="extracellular" SubVolume="subVolume0" Resolved="true">
+               <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
+            </FeatureMapping>
+            <MembraneMapping Membrane="plasma_membrane" SurfaceToVolumeRatio="1.0" VolumeFraction="0.2" CalculateVoltage="false" SpecificCapacitance="1.0" InitialVoltage="0.0" />
+            <MembraneMapping Membrane="nuclear_membrane" SurfaceToVolumeRatio="1.0" VolumeFraction="0.2" CalculateVoltage="false" SpecificCapacitance="1.0" InitialVoltage="0.0" />
+         </GeometryContext>
+         <ReactionContext>
+            <LocalizedCompoundSpec LocalizedCompoundRef="PI3K_cytosol" ForceConstant="false" EnableDiffusion="true">
+               <Initial>0.0050</Initial>
+               <Diffusion>20.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="GFP_AktPH_cytosol" ForceConstant="false" EnableDiffusion="true">
+               <Initial>0.4738</Initial>
+               <Diffusion>35.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="GFP_AktPH_nucleus" ForceConstant="false" EnableDiffusion="true">
+               <Initial>0.4738</Initial>
+               <Diffusion>35.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="PI3K_nucleus" ForceConstant="false" EnableDiffusion="true">
+               <Initial>0.0</Initial>
+               <Diffusion>20.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="PDGF_gradient_extracellular" ForceConstant="true" EnableDiffusion="true">
+               <Initial>((1.0 + (0.016666666666666666 * x)) * (t &lt; 1200.0))</Initial>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="PDGF_uniform_extracellular" ForceConstant="true" EnableDiffusion="true">
+               <Initial>(t &gt; 1200.0)</Initial>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="C2_PI3K_plasma_membrane" ForceConstant="false" EnableDiffusion="true">
+               <Initial>0.0</Initial>
+               <Diffusion>0.0010</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="C2_PI3K2_plasma_membrane" ForceConstant="false" EnableDiffusion="true">
+               <Initial>0.0</Initial>
+               <Diffusion>0.0010</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="PIP3_plasma_membrane" ForceConstant="false" EnableDiffusion="true">
+               <Initial>35.93</Initial>
+               <Diffusion>0.5</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="PIP3_AktPH_plasma_membrane" ForceConstant="false" EnableDiffusion="true">
+               <Initial>17.02</Initial>
+               <Diffusion>0.5</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="enzyme_factor_plasma_membrane" ForceConstant="true" EnableDiffusion="true">
+               <Initial>((z &lt; -0.1) * (t &lt; 1800.0))</Initial>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="R_factor_plasma_membrane" ForceConstant="true" EnableDiffusion="true">
+               <Initial>1.0</Initial>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="C1_plasma_membrane" ForceConstant="false" EnableDiffusion="true">
+               <Initial>0.0</Initial>
+               <Diffusion>0.01</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="C2_plasma_membrane" ForceConstant="false" EnableDiffusion="true">
+               <Initial>0.0</Initial>
+               <Diffusion>0.0010</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="R_plasma_membrane" ForceConstant="false" EnableDiffusion="true">
+               <Initial>130.0</Initial>
+               <Diffusion>0.01</Diffusion>
+            </LocalizedCompoundSpec>
+            <ReactionSpec ReactionStepRef="basal PIP3 synthesis" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="C1 dimerization" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="R turnover" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="C1 turnover" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="C2_PI3K2 uncoupling" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="C2_PI3K uncoupling" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="PIP3 degradation" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="GFP_AktPH binding" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="C2_PI3K2 internalization" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="R synthesis" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="PDGF binding" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="PI3K2 binding" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="C2 internalization" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="C2_PI3K internalization" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="PI3K binding" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="C2 uncoupling" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="activated PIP3 synthesis" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="PI3K nuclear flux" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="GFP_AktPH nuclear flux" ReactionMapping="included" />
+         </ReactionContext>
+         <MathDescription Name="PDGFgradient_TIRF_generated">
+            <Annotation>cloned from 'PDGFgradient_TIRF_generated' owned by user jmhaugh
+</Annotation>
+            <Constant Name="Kbasal_pi3k">120.0</Constant>
+            <Constant Name="C1_plasma_membrane_init">0.0</Constant>
+            <Constant Name="PIP3_plasma_membrane_init">35.93</Constant>
+            <Constant Name="Kcat_pi3k">10.0</Constant>
+            <Constant Name="L_uni">0.01</Constant>
+            <Constant Name="C2_PI3K2_plasma_membrane_init">0.0</Constant>
+            <Constant Name="KcPI3K">0.0</Constant>
+            <Constant Name="_F_">96480.0</Constant>
+            <Constant Name="Kr_PDGF_binding">0.1</Constant>
+            <Constant Name="Kminusx_C2_PI3K_uncoupling">0.0011666666666666668</Constant>
+            <Constant Name="L_mid">0.01</Constant>
+            <Constant Name="PIP3_plasma_membrane_diffusionRate">0.5</Constant>
+            <Constant Name="C2_PI3K_plasma_membrane_diffusionRate">0.0010</Constant>
+            <Constant Name="_R_">8314.0</Constant>
+            <Constant Name="C2_PI3K2_plasma_membrane_diffusionRate">0.0010</Constant>
+            <Constant Name="_F_nmol_">9.648E-5</Constant>
+            <Constant Name="Ke_C2_PI3K_internalization">0.0025</Constant>
+            <Constant Name="PI3K_cytosol_diffusionRate">20.0</Constant>
+            <Constant Name="Kf">1.0</Constant>
+            <Constant Name="Kc">0.03</Constant>
+            <Constant Name="C2_PI3K_plasma_membrane_init">0.0</Constant>
+            <Constant Name="GFP_AktPH_cytosol_diffusionRate">35.0</Constant>
+            <Constant Name="R0_R_synthesis">130.0</Constant>
+            <Constant Name="K_millivolts_per_volt">1000.0</Constant>
+            <Constant Name="Kr_GFP_AktPH_binding">1.0</Constant>
+            <Constant Name="Kon_PI3K2_binding">5.0</Constant>
+            <Constant Name="GFP_AktPH_cytosol_init">0.4738</Constant>
+            <Constant Name="KD">0.0015</Constant>
+            <Constant Name="Ke_C2_PI3K2_internalization">0.0025</Constant>
+            <Constant Name="_N_pmol_">6.02E11</Constant>
+            <Constant Name="Kon_PI3K_binding">5.0</Constant>
+            <Constant Name="Ke_C2_internalization">0.0025</Constant>
+            <Constant Name="Koff_PI3K2_binding">0.02</Constant>
+            <Constant Name="GFP_AktPH_nucleus_init">0.4738</Constant>
+            <Constant Name="KxR0">0.0050</Constant>
+            <Constant Name="K3pi">0.0167</Constant>
+            <Constant Name="Kt_R_synthesis">3.33E-4</Constant>
+            <Constant Name="Koff_PI3K_binding">0.02</Constant>
+            <Constant Name="Kminusx_C2_PI3K2_uncoupling">0.0011666666666666668</Constant>
+            <Constant Name="C1_plasma_membrane_diffusionRate">0.01</Constant>
+            <Constant Name="PI3K_cytosol_init">0.0050</Constant>
+            <Constant Name="KMOLE">0.0016611295681063123</Constant>
+            <Constant Name="PIP3_AktPH_plasma_membrane_init">17.02</Constant>
+            <Constant Name="Kt_R_turnover">3.33E-4</Constant>
+            <Constant Name="R_plasma_membrane_diffusionRate">0.01</Constant>
+            <Constant Name="R_plasma_membrane_init">130.0</Constant>
+            <Constant Name="_K_GHK_">1.0E-9</Constant>
+            <Constant Name="GFP_AktPH_nucleus_diffusionRate">35.0</Constant>
+            <Constant Name="C2_plasma_membrane_diffusionRate">0.0010</Constant>
+            <Constant Name="PIP3_AktPH_plasma_membrane_diffusionRate">0.5</Constant>
+            <Constant Name="R0_C1_dimerization">130.0</Constant>
+            <Constant Name="Kt_C1_turnover">3.33E-4</Constant>
+            <Constant Name="PI3K_nucleus_diffusionRate">20.0</Constant>
+            <Constant Name="R_factor_plasma_membrane">1.0</Constant>
+            <Constant Name="PI3K_nucleus_init">0.0</Constant>
+            <Constant Name="_T_">300.0</Constant>
+            <Constant Name="C2_plasma_membrane_init">0.0</Constant>
+            <Constant Name="Kminusx_C2_uncoupling">0.0011666666666666668</Constant>
+            <Constant Name="R_factor_plasma_membrane_init">1.0</Constant>
+            <VolumeVariable Name="GFP_AktPH" />
+            <VolumeVariable Name="PI3K" />
+            <MembraneVariable Name="C2_plasma_membrane" />
+            <MembraneVariable Name="C2_PI3K2_plasma_membrane" />
+            <MembraneVariable Name="C1_plasma_membrane" />
+            <MembraneVariable Name="PIP3_plasma_membrane" />
+            <MembraneVariable Name="C2_PI3K_plasma_membrane" />
+            <MembraneVariable Name="R_plasma_membrane" />
+            <MembraneVariable Name="PIP3_AktPH_plasma_membrane" />
+            <Function Name="J_C2_PI3K_uncoupling">(Kminusx_C2_PI3K_uncoupling * C2_PI3K_plasma_membrane)</Function>
+            <Function Name="J_C2_PI3K_internalization">(Ke_C2_PI3K_internalization * C2_PI3K_plasma_membrane)</Function>
+            <Function Name="enzyme_factor_plasma_membrane">((z &lt; -0.1) * (t &lt; 1800.0))</Function>
+            <Function Name="J_activated_PIP3_synthesis">(Kcat_pi3k * (C2_PI3K_plasma_membrane + (2.0 * C2_PI3K2_plasma_membrane)) * enzyme_factor_plasma_membrane)</Function>
+            <Function Name="PDGF_uniform_extracellular_init">(t &gt; 1200.0)</Function>
+            <Function Name="J_C1_dimerization">(KxR0 * (C1_plasma_membrane ^ 2.0) / R0_C1_dimerization)</Function>
+            <Function Name="J_PI3K2_binding">((Kon_PI3K2_binding * C2_PI3K_plasma_membrane * PI3K_INSIDE) - (2.0 * Koff_PI3K2_binding * C2_PI3K2_plasma_membrane))</Function>
+            <Function Name="Voltage_nm">0.0</Function>
+            <Function Name="PDGF_gradient_extracellular_init">((1.0 + (0.016666666666666666 * x)) * (t &lt; 1200.0))</Function>
+            <Function Name="J_C2_uncoupling">(Kminusx_C2_uncoupling * C2_plasma_membrane)</Function>
+            <Function Name="enzyme_factor_plasma_membrane_init">((z &lt; -0.1) * (t &lt; 1800.0))</Function>
+            <Function Name="J_C2_PI3K2_uncoupling">(Kminusx_C2_PI3K2_uncoupling * C2_PI3K2_plasma_membrane)</Function>
+            <Function Name="J_C2_PI3K2_internalization">(Ke_C2_PI3K2_internalization * C2_PI3K2_plasma_membrane)</Function>
+            <Function Name="J_GFP_AktPH_binding">((PIP3_plasma_membrane * Kf * GFP_AktPH_INSIDE) - (Kr_GFP_AktPH_binding * PIP3_AktPH_plasma_membrane))</Function>
+            <Function Name="J_PIP3_degradation">(K3pi * PIP3_plasma_membrane)</Function>
+            <Function Name="J_R_synthesis">(Kt_R_synthesis * R0_R_synthesis * R_factor_plasma_membrane)</Function>
+            <Function Name="PDGF_gradient_extracellular">((1.0 + (0.016666666666666666 * x)) * (t &lt; 1200.0))</Function>
+            <Function Name="J_basal_PIP3_synthesis">(Kbasal_pi3k * PI3K_INSIDE)</Function>
+            <Function Name="J_R_turnover">(Kt_R_turnover * R_plasma_membrane)</Function>
+            <Function Name="J_PI3K_nuclear_flux">(KcPI3K * (PI3K_OUTSIDE - PI3K_INSIDE))</Function>
+            <Function Name="J_C1_turnover">(Kt_C1_turnover * C1_plasma_membrane)</Function>
+            <Function Name="J_PI3K_binding">((2.0 * Kon_PI3K_binding * C2_plasma_membrane * PI3K_INSIDE) - (Koff_PI3K_binding * C2_PI3K_plasma_membrane))</Function>
+            <Function Name="J_GFP_AktPH_nuclear_flux">(Kc * (GFP_AktPH_OUTSIDE - GFP_AktPH_INSIDE))</Function>
+            <Function Name="J_C2_internalization">(Ke_C2_internalization * C2_plasma_membrane)</Function>
+            <Function Name="Voltage_pm">0.0</Function>
+            <Function Name="PDGF_uniform_extracellular">(t &gt; 1200.0)</Function>
+            <Function Name="J_PDGF_binding">(Kr_PDGF_binding * ((((L_mid * PDGF_gradient_extracellular) + (L_uni * PDGF_uniform_extracellular)) * R_plasma_membrane / KD) - C1_plasma_membrane))</Function>
+            <CompartmentSubDomain Name="subVolume2" Priority="300">
+               <BoundaryType Boundary="Xm" Type="Flux" />
+               <BoundaryType Boundary="Xp" Type="Flux" />
+               <BoundaryType Boundary="Ym" Type="Flux" />
+               <BoundaryType Boundary="Yp" Type="Flux" />
+               <BoundaryType Boundary="Zm" Type="Flux" />
+               <BoundaryType Boundary="Zp" Type="Flux" />
+               <PdeEquation Name="GFP_AktPH" SolutionType="Unknown">
+                  <Rate>0.0</Rate>
+                  <Diffusion>GFP_AktPH_nucleus_diffusionRate</Diffusion>
+                  <Initial>GFP_AktPH_nucleus_init</Initial>
+               </PdeEquation>
+               <PdeEquation Name="PI3K" SolutionType="Unknown">
+                  <Rate>0.0</Rate>
+                  <Diffusion>PI3K_nucleus_diffusionRate</Diffusion>
+                  <Initial>PI3K_nucleus_init</Initial>
+               </PdeEquation>
+            </CompartmentSubDomain>
+            <CompartmentSubDomain Name="subVolume1" Priority="201">
+               <BoundaryType Boundary="Xm" Type="Flux" />
+               <BoundaryType Boundary="Xp" Type="Flux" />
+               <BoundaryType Boundary="Ym" Type="Flux" />
+               <BoundaryType Boundary="Yp" Type="Flux" />
+               <BoundaryType Boundary="Zm" Type="Flux" />
+               <BoundaryType Boundary="Zp" Type="Flux" />
+               <PdeEquation Name="PI3K" SolutionType="Unknown">
+                  <Rate>0.0</Rate>
+                  <Diffusion>PI3K_cytosol_diffusionRate</Diffusion>
+                  <Initial>PI3K_cytosol_init</Initial>
+               </PdeEquation>
+               <PdeEquation Name="GFP_AktPH" SolutionType="Unknown">
+                  <Rate>0.0</Rate>
+                  <Diffusion>GFP_AktPH_cytosol_diffusionRate</Diffusion>
+                  <Initial>GFP_AktPH_cytosol_init</Initial>
+               </PdeEquation>
+            </CompartmentSubDomain>
+            <CompartmentSubDomain Name="subVolume0" Priority="102">
+               <BoundaryType Boundary="Xm" Type="Flux" />
+               <BoundaryType Boundary="Xp" Type="Flux" />
+               <BoundaryType Boundary="Ym" Type="Flux" />
+               <BoundaryType Boundary="Yp" Type="Flux" />
+               <BoundaryType Boundary="Zm" Type="Flux" />
+               <BoundaryType Boundary="Zp" Type="Flux" />
+               <PdeEquation Name="PI3K" SolutionType="Unknown">
+                  <Rate>0.0</Rate>
+                  <Diffusion>PI3K_cytosol_diffusionRate</Diffusion>
+                  <Initial>0.0</Initial>
+               </PdeEquation>
+               <PdeEquation Name="GFP_AktPH" SolutionType="Unknown">
+                  <Rate>0.0</Rate>
+                  <Diffusion>GFP_AktPH_cytosol_diffusionRate</Diffusion>
+                  <Initial>0.0</Initial>
+               </PdeEquation>
+            </CompartmentSubDomain>
+            <MembraneSubDomain InsideCompartment="subVolume2" OutsideCompartment="subVolume1">
+               <BoundaryType Boundary="Xm" Type="Value" />
+               <BoundaryType Boundary="Xp" Type="Value" />
+               <BoundaryType Boundary="Ym" Type="Value" />
+               <BoundaryType Boundary="Yp" Type="Value" />
+               <BoundaryType Boundary="Zm" Type="Value" />
+               <BoundaryType Boundary="Zp" Type="Value" />
+               <PdeEquation Name="C2_PI3K_plasma_membrane" SolutionType="Unknown">
+                  <Rate>0.0</Rate>
+                  <Diffusion>C2_PI3K_plasma_membrane_diffusionRate</Diffusion>
+                  <Initial>0.0</Initial>
+               </PdeEquation>
+               <PdeEquation Name="C2_PI3K2_plasma_membrane" SolutionType="Unknown">
+                  <Rate>0.0</Rate>
+                  <Diffusion>C2_PI3K2_plasma_membrane_diffusionRate</Diffusion>
+                  <Initial>0.0</Initial>
+               </PdeEquation>
+               <PdeEquation Name="PIP3_plasma_membrane" SolutionType="Unknown">
+                  <Rate>0.0</Rate>
+                  <Diffusion>PIP3_plasma_membrane_diffusionRate</Diffusion>
+                  <Initial>0.0</Initial>
+               </PdeEquation>
+               <PdeEquation Name="PIP3_AktPH_plasma_membrane" SolutionType="Unknown">
+                  <Rate>0.0</Rate>
+                  <Diffusion>PIP3_AktPH_plasma_membrane_diffusionRate</Diffusion>
+                  <Initial>0.0</Initial>
+               </PdeEquation>
+               <PdeEquation Name="C1_plasma_membrane" SolutionType="Unknown">
+                  <Rate>0.0</Rate>
+                  <Diffusion>C1_plasma_membrane_diffusionRate</Diffusion>
+                  <Initial>0.0</Initial>
+               </PdeEquation>
+               <PdeEquation Name="C2_plasma_membrane" SolutionType="Unknown">
+                  <Rate>0.0</Rate>
+                  <Diffusion>C2_plasma_membrane_diffusionRate</Diffusion>
+                  <Initial>0.0</Initial>
+               </PdeEquation>
+               <PdeEquation Name="R_plasma_membrane" SolutionType="Unknown">
+                  <Rate>0.0</Rate>
+                  <Diffusion>R_plasma_membrane_diffusionRate</Diffusion>
+                  <Initial>0.0</Initial>
+               </PdeEquation>
+               <JumpCondition Name="PI3K">
+                  <InFlux>J_PI3K_nuclear_flux</InFlux>
+                  <OutFlux> - J_PI3K_nuclear_flux</OutFlux>
+               </JumpCondition>
+               <JumpCondition Name="GFP_AktPH">
+                  <InFlux>J_GFP_AktPH_nuclear_flux</InFlux>
+                  <OutFlux> - J_GFP_AktPH_nuclear_flux</OutFlux>
+               </JumpCondition>
+            </MembraneSubDomain>
+            <MembraneSubDomain InsideCompartment="subVolume1" OutsideCompartment="subVolume0">
+               <BoundaryType Boundary="Xm" Type="Value" />
+               <BoundaryType Boundary="Xp" Type="Value" />
+               <BoundaryType Boundary="Ym" Type="Value" />
+               <BoundaryType Boundary="Yp" Type="Value" />
+               <BoundaryType Boundary="Zm" Type="Value" />
+               <BoundaryType Boundary="Zp" Type="Value" />
+               <PdeEquation Name="C2_PI3K_plasma_membrane" SolutionType="Unknown">
+                  <Rate>(J_PI3K_binding - J_C2_PI3K_internalization - J_C2_PI3K_uncoupling - J_PI3K2_binding)</Rate>
+                  <Diffusion>C2_PI3K_plasma_membrane_diffusionRate</Diffusion>
+                  <Initial>C2_PI3K_plasma_membrane_init</Initial>
+               </PdeEquation>
+               <PdeEquation Name="C2_PI3K2_plasma_membrane" SolutionType="Unknown">
+                  <Rate>(J_PI3K2_binding - J_C2_PI3K2_uncoupling - J_C2_PI3K2_internalization)</Rate>
+                  <Diffusion>C2_PI3K2_plasma_membrane_diffusionRate</Diffusion>
+                  <Initial>C2_PI3K2_plasma_membrane_init</Initial>
+               </PdeEquation>
+               <PdeEquation Name="PIP3_plasma_membrane" SolutionType="Unknown">
+                  <Rate>(J_activated_PIP3_synthesis - J_GFP_AktPH_binding + J_basal_PIP3_synthesis - J_PIP3_degradation)</Rate>
+                  <Diffusion>PIP3_plasma_membrane_diffusionRate</Diffusion>
+                  <Initial>PIP3_plasma_membrane_init</Initial>
+               </PdeEquation>
+               <PdeEquation Name="PIP3_AktPH_plasma_membrane" SolutionType="Unknown">
+                  <Rate>J_GFP_AktPH_binding</Rate>
+                  <Diffusion>PIP3_AktPH_plasma_membrane_diffusionRate</Diffusion>
+                  <Initial>PIP3_AktPH_plasma_membrane_init</Initial>
+               </PdeEquation>
+               <PdeEquation Name="C1_plasma_membrane" SolutionType="Unknown">
+                  <Rate>(J_C2_uncoupling + J_PDGF_binding + J_C2_PI3K_uncoupling + J_C2_PI3K2_uncoupling - (2.0 * J_C1_dimerization) - J_C1_turnover)</Rate>
+                  <Diffusion>C1_plasma_membrane_diffusionRate</Diffusion>
+                  <Initial>C1_plasma_membrane_init</Initial>
+               </PdeEquation>
+               <PdeEquation Name="C2_plasma_membrane" SolutionType="Unknown">
+                  <Rate>( - J_C2_uncoupling - J_PI3K_binding + J_C1_dimerization - J_C2_internalization)</Rate>
+                  <Diffusion>C2_plasma_membrane_diffusionRate</Diffusion>
+                  <Initial>C2_plasma_membrane_init</Initial>
+               </PdeEquation>
+               <PdeEquation Name="R_plasma_membrane" SolutionType="Unknown">
+                  <Rate>(J_C2_uncoupling - J_PDGF_binding + J_R_synthesis + J_C2_PI3K_uncoupling - J_R_turnover + J_C2_PI3K2_uncoupling)</Rate>
+                  <Diffusion>R_plasma_membrane_diffusionRate</Diffusion>
+                  <Initial>R_plasma_membrane_init</Initial>
+               </PdeEquation>
+               <JumpCondition Name="PI3K">
+                  <InFlux>( - (KMOLE * J_PI3K_binding) + (KMOLE * J_C2_PI3K_internalization) - (KMOLE * J_PI3K2_binding) + (2.0 * KMOLE * J_C2_PI3K2_internalization) + (2.0 * KMOLE * J_C2_PI3K2_uncoupling) + (KMOLE * J_C2_PI3K_uncoupling))</InFlux>
+                  <OutFlux>0.0</OutFlux>
+               </JumpCondition>
+               <JumpCondition Name="GFP_AktPH">
+                  <InFlux> - (KMOLE * J_GFP_AktPH_binding)</InFlux>
+                  <OutFlux>0.0</OutFlux>
+               </JumpCondition>
+            </MembraneSubDomain>
+            <Version Name="PDGFgradient_TIRF_generated" KeyValue="16396435" BranchId="16396436" Archived="0" Date="06-Feb-2006 20:49:31" FromVersionable="false">
+               <Owner Name="CMC" Identifier="2794180" />
+               <GroupAccess Type="1" />
+               <Annotation>cloned from 'PDGFgradient_TIRF_generated' owned by user jmhaugh
+</Annotation>
+            </Version>
+         </MathDescription>
+         <Simulation Name="[L] = 0.3 nM, delta = 0.5">
+            <Annotation>cloned from '[L] = 0.3 nM, delta = 0.5' owned by user jmhaugh
+</Annotation>
+            <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Finite Volume, Regular Grid">
+               <TimeBound StartTime="0.0" EndTime="2400.0" />
+               <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+               <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+               <OutputOptions KeepEvery="200" KeepAtMost="1000" />
+            </SolverTaskDescription>
+            <MathOverrides>
+               <Constant Name="L_mid">3.0E-4</Constant>
+            </MathOverrides>
+            <MeshSpecification>
+               <Size X="152" Y="76" Z="52" />
+            </MeshSpecification>
+            <Version Name="[L] = 0.3 nM, delta = 0.5" KeyValue="16396591" BranchId="16396592" Archived="0" Date="06-Feb-2006 20:49:32" FromVersionable="false">
+               <Owner Name="CMC" Identifier="2794180" />
+               <GroupAccess Type="1" />
+               <Annotation>cloned from '[L] = 0.3 nM, delta = 0.5' owned by user jmhaugh
+</Annotation>
+            </Version>
+         </Simulation>
+         <Simulation Name="2X Kon_PI3K">
+            <Annotation>cloned from '2X Kon_PI3K' owned by user jmhaugh
+</Annotation>
+            <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Finite Volume, Regular Grid">
+               <TimeBound StartTime="0.0" EndTime="2400.0" />
+               <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+               <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+               <OutputOptions KeepEvery="200" KeepAtMost="1000" />
+            </SolverTaskDescription>
+            <MathOverrides>
+               <Constant Name="Kon_PI3K2_binding">10.0</Constant>
+               <Constant Name="L_mid">3.0E-4</Constant>
+               <Constant Name="Kon_PI3K_binding">10.0</Constant>
+            </MathOverrides>
+            <MeshSpecification>
+               <Size X="152" Y="76" Z="52" />
+            </MeshSpecification>
+            <Version Name="2X Kon_PI3K" KeyValue="16396594" BranchId="16396595" Archived="0" Date="06-Feb-2006 20:49:32" FromVersionable="false">
+               <Owner Name="CMC" Identifier="2794180" />
+               <GroupAccess Type="1" />
+               <Annotation>cloned from '2X Kon_PI3K' owned by user jmhaugh
+</Annotation>
+            </Version>
+         </Simulation>
+         <Simulation Name="2X Kon_PI3K, 2X Koff_PI3K">
+            <Annotation>cloned from '2X Kon_PI3K, 2X Koff_PI3K' owned by user jmhaugh
+</Annotation>
+            <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Finite Volume, Regular Grid">
+               <TimeBound StartTime="0.0" EndTime="2400.0" />
+               <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+               <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+               <OutputOptions KeepEvery="200" KeepAtMost="1000" />
+            </SolverTaskDescription>
+            <MathOverrides>
+               <Constant Name="Kon_PI3K2_binding">10.0</Constant>
+               <Constant Name="Koff_PI3K2_binding">0.04</Constant>
+               <Constant Name="Koff_PI3K_binding">0.04</Constant>
+               <Constant Name="L_mid">3.0E-4</Constant>
+               <Constant Name="Kon_PI3K_binding">10.0</Constant>
+            </MathOverrides>
+            <MeshSpecification>
+               <Size X="152" Y="76" Z="52" />
+            </MeshSpecification>
+            <Version Name="2X Kon_PI3K, 2X Koff_PI3K" KeyValue="16396597" BranchId="16396598" Archived="0" Date="06-Feb-2006 20:49:32" FromVersionable="false">
+               <Owner Name="CMC" Identifier="2794180" />
+               <GroupAccess Type="1" />
+               <Annotation>cloned from '2X Kon_PI3K, 2X Koff_PI3K' owned by user jmhaugh
+</Annotation>
+            </Version>
+         </Simulation>
+         <Simulation Name="2X Koff_PI3K">
+            <Annotation>cloned from '2X Koff_PI3K' owned by user jmhaugh
+</Annotation>
+            <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Finite Volume, Regular Grid">
+               <TimeBound StartTime="0.0" EndTime="2400.0" />
+               <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+               <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+               <OutputOptions KeepEvery="200" KeepAtMost="1000" />
+            </SolverTaskDescription>
+            <MathOverrides>
+               <Constant Name="Koff_PI3K2_binding">0.04</Constant>
+               <Constant Name="Koff_PI3K_binding">0.04</Constant>
+               <Constant Name="L_mid">3.0E-4</Constant>
+            </MathOverrides>
+            <MeshSpecification>
+               <Size X="152" Y="76" Z="52" />
+            </MeshSpecification>
+            <Version Name="2X Koff_PI3K" KeyValue="16396600" BranchId="16396601" Archived="0" Date="06-Feb-2006 20:49:32" FromVersionable="false">
+               <Owner Name="CMC" Identifier="2794180" />
+               <GroupAccess Type="1" />
+               <Annotation>cloned from '2X Koff_PI3K' owned by user jmhaugh
+</Annotation>
+            </Version>
+         </Simulation>
+         <Simulation Name="basal then uniform">
+            <Annotation>cloned from 'basal then uniform' owned by user jmhaugh
+</Annotation>
+            <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Finite Volume, Regular Grid">
+               <TimeBound StartTime="0.0" EndTime="2400.0" />
+               <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+               <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+               <OutputOptions KeepEvery="200" KeepAtMost="1000" />
+            </SolverTaskDescription>
+            <MathOverrides>
+               <Constant Name="L_mid">0.0</Constant>
+            </MathOverrides>
+            <MeshSpecification>
+               <Size X="152" Y="76" Z="52" />
+            </MeshSpecification>
+            <Version Name="basal then uniform" KeyValue="16396603" BranchId="16396604" Archived="0" Date="06-Feb-2006 20:49:32" FromVersionable="false">
+               <Owner Name="CMC" Identifier="2794180" />
+               <GroupAccess Type="1" />
+               <Annotation>cloned from 'basal then uniform' owned by user jmhaugh
+</Annotation>
+            </Version>
+         </Simulation>
+         <Version Name="PDGFgradient_TIRF" KeyValue="16396549" BranchId="16396550" Archived="0" Date="06-Feb-2006 20:49:32" FromVersionable="false">
+            <Owner Name="CMC" Identifier="2794180" />
+            <GroupAccess Type="1" />
+            <Annotation>cloned from 'PDGFgradient_TIRF' owned by user jmhaugh
+This is an expanded version of the model described in
+
+Schneider, I.C. and Haugh, J.M.  Quantitative elucidation of a distinct spatial gradient-sensing mechanism in fibroblasts.  J. Cell Biol., 171: 883-892 (2005).
+
+It encapsulates both the kinetic model of platelet-derived growth factor (PDGF) receptor and phosphoinositide (PI) 3-kinase activation and the reaction-diffusion model for 3' PI production, diffusion, and turnover; as in the paper, it explicitly accounts for the 3' PI/GFP-AktPH probe interaction, allowing normalized fluorescence intensities to be computed and compared with total internal reflection fluorescence (TIRF) microscopy images.  Simplifying assumptions regarding the distributions of proteins in the cytosol (and nucleus, where applicable), and the kinetics of PI 3-kinase and GFP-AktPH recruitment to the membrane, are relaxed in this VCell model.</Annotation>
+         </Version>
+      </SimulationSpec>
+      <Version Name="PDGF gradient sensing" KeyValue="16404713" BranchId="16396607" Archived="0" Date="07-Feb-2006 12:56:10" FromVersionable="false">
+         <Owner Name="CMC" Identifier="2794180" />
+         <GroupAccess Type="0" />
+         <Annotation>This is an expanded version of the model described in: Schneider, I. C. and J. M. Haugh. 2005. Quantitative elucidation of a distinct spatial gradient-sensing mechanism in fibroblasts. J Cell Biol 171:883-892.
+</Annotation>
+      </Version>
+   </BioModel>
+</vcml>
+

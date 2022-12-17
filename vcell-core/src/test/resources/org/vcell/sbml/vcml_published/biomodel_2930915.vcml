@@ -1,0 +1,760 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--This biomodel was generated in VCML Version 0.4-->
+<vcml xmlns="http://sourceforge.net/projects/vcell/vcml" Version="0.4">
+   <BioModel Name="Morris-Lecar Mutual Excitation">
+      <Annotation>Demonstrates how fast excitatory synapses lead to synchrony and slow excitatory synapses lead to asynchrony in two identical electrically coupled cells.  The only parameter modified is beta (=1000/s in Figure 6.6A and =100/s in Figure 6.6C).  Described in 6.3.</Annotation>
+      <Model Name="unnamed">
+         <Compound Name="Ca">
+            <Annotation>Calcium</Annotation>
+         </Compound>
+         <Compound Name="K">
+            <Annotation>Potassium</Annotation>
+         </Compound>
+         <Compound Name="w1_o">
+            <Annotation>Cell 1 K Channel W Gate (Open)</Annotation>
+         </Compound>
+         <Compound Name="w1_c">
+            <Annotation>Cell 1 K Channel W Gate (Closed)</Annotation>
+         </Compound>
+         <Compound Name="w2_o">
+            <Annotation>Cell 2 K Channel W Gate (Open)</Annotation>
+         </Compound>
+         <Compound Name="w2_c">
+            <Annotation>Cell 2 K Channel W Gate (Closed)</Annotation>
+         </Compound>
+         <Compound Name="s1">
+            <Annotation>Cell 1 Synaptic Conductance</Annotation>
+         </Compound>
+         <Compound Name="s2">
+            <Annotation>Cell 2 Synaptic Conductance</Annotation>
+         </Compound>
+         <Feature Name="Cytosol2" KeyValue="2930053" />
+         <Feature Name="Cytosol1" KeyValue="2930057" />
+         <Feature Name="Extracellular" KeyValue="2930051" />
+         <Membrane InsideFeature="Cytosol2" OutsideFeature="Extracellular" MembraneVoltage="V2" Name="PlasmaMembrane2" KeyValue="2930052" />
+         <Membrane InsideFeature="Cytosol1" OutsideFeature="Extracellular" MembraneVoltage="V1" Name="PlasmaMembrane1" KeyValue="2930056" />
+         <LocalizedCompound Name="Ca_Cyt1" CompoundRef="Ca" Structure="Cytosol1" OverrideName="true" KeyValue="2930061" />
+         <LocalizedCompound Name="K_Ext" CompoundRef="K" Structure="Extracellular" OverrideName="true" KeyValue="2930062" />
+         <LocalizedCompound Name="K_Cyt1" CompoundRef="K" Structure="Cytosol1" OverrideName="true" KeyValue="2930063" />
+         <LocalizedCompound Name="K_Cyt2" CompoundRef="K" Structure="Cytosol2" OverrideName="true" KeyValue="2930064" />
+         <LocalizedCompound Name="w1_o" CompoundRef="w1_o" Structure="PlasmaMembrane1" OverrideName="true" KeyValue="2930065" />
+         <LocalizedCompound Name="w1_c" CompoundRef="w1_c" Structure="PlasmaMembrane1" OverrideName="true" KeyValue="2930066" />
+         <LocalizedCompound Name="w2_o" CompoundRef="w2_o" Structure="PlasmaMembrane2" OverrideName="true" KeyValue="2930067" />
+         <LocalizedCompound Name="w2_c" CompoundRef="w2_c" Structure="PlasmaMembrane2" OverrideName="true" KeyValue="2930068" />
+         <LocalizedCompound Name="s1" CompoundRef="s1" Structure="Extracellular" OverrideName="true" KeyValue="2930069" />
+         <LocalizedCompound Name="s2" CompoundRef="s2" Structure="Extracellular" OverrideName="true" KeyValue="2930070" />
+         <LocalizedCompound Name="Ca_Ext" CompoundRef="Ca" Structure="Extracellular" OverrideName="true" KeyValue="2930071" />
+         <LocalizedCompound Name="Ca_Cyt2" CompoundRef="Ca" Structure="Cytosol2" OverrideName="true" KeyValue="2930072" />
+         <FluxStep Name="Syn1 Current" Structure="PlasmaMembrane1" FluxCarrierValence="0" FluxOption="ElectricalOnly" KeyValue="2930098">
+            <Modifier LocalizedCompoundRef="s2" KeyValue="2930099" />
+            <Kinetics KineticsType="GeneralCurrentKinetics">
+               <Parameter Name="I" Role="inward current density" Unit="pA.um-2">((t &gt; ton1) * gsyn1 * s2 * (Vsyn1 - V1))</Parameter>
+               <Parameter Name="J" Role="reaction rate" Unit="uM.um.s-1">0.0</Parameter>
+               <Parameter Name="gsyn1" Role="user defined" Unit="1000000.0 A2.kg-1.m-1.mol-1.s3">0.01</Parameter>
+               <Parameter Name="Vsyn1" Role="user defined" Unit="mV">0.0</Parameter>
+               <Parameter Name="ton1" Role="user defined" Unit="s">0.2</Parameter>
+            </Kinetics>
+            <Annotation />
+         </FluxStep>
+         <FluxStep Name="Leak Current 2" Structure="PlasmaMembrane2" FluxCarrierValence="0" FluxOption="ElectricalOnly" KeyValue="2930073">
+            <Kinetics KineticsType="GeneralCurrentKinetics">
+               <Parameter Name="I" Role="inward current density" Unit="pA.um-2"> - ((V2 - VL2) * gL2)</Parameter>
+               <Parameter Name="J" Role="reaction rate" Unit="uM.um.s-1">0.0</Parameter>
+               <Parameter Name="gL2" Role="user defined" Unit="nS.um-2">0.01</Parameter>
+               <Parameter Name="VL2" Role="user defined" Unit="mV">-60.0</Parameter>
+            </Kinetics>
+            <Annotation />
+         </FluxStep>
+         <FluxStep Name="Applied Current 1" Structure="PlasmaMembrane1" FluxCarrierValence="0" FluxOption="ElectricalOnly" KeyValue="2930103">
+            <Kinetics KineticsType="GeneralCurrentKinetics">
+               <Parameter Name="I" Role="inward current density" Unit="pA.um-2">0.15</Parameter>
+               <Parameter Name="J" Role="reaction rate" Unit="uM.um.s-1">0.0</Parameter>
+            </Kinetics>
+            <Annotation />
+         </FluxStep>
+         <FluxStep Name="Applied Current 2" Structure="PlasmaMembrane2" FluxCarrierValence="0" FluxOption="ElectricalOnly" KeyValue="2930104">
+            <Kinetics KineticsType="GeneralCurrentKinetics">
+               <Parameter Name="I" Role="inward current density" Unit="pA.um-2">0.15</Parameter>
+               <Parameter Name="J" Role="reaction rate" Unit="uM.um.s-1">0.0</Parameter>
+            </Kinetics>
+            <Annotation />
+         </FluxStep>
+         <FluxStep Name="Syn2 Current" Structure="PlasmaMembrane2" FluxCarrierValence="0" FluxOption="ElectricalOnly" KeyValue="2930076">
+            <Modifier LocalizedCompoundRef="s1" KeyValue="2930077" />
+            <Kinetics KineticsType="GeneralCurrentKinetics">
+               <Parameter Name="I" Role="inward current density" Unit="pA.um-2">((t &gt; ton2) * gsyn2 * s1 * (Vsyn2 - V2))</Parameter>
+               <Parameter Name="J" Role="reaction rate" Unit="uM.um.s-1">0.0</Parameter>
+               <Parameter Name="gsyn2" Role="user defined" Unit="1000000.0 A2.kg-1.m-1.mol-1.s3">0.01</Parameter>
+               <Parameter Name="Vsyn2" Role="user defined" Unit="mV">0.0</Parameter>
+               <Parameter Name="ton2" Role="user defined" Unit="s">0.2</Parameter>
+            </Kinetics>
+            <Annotation />
+         </FluxStep>
+         <FluxStep Name="Ca Current 2" Structure="PlasmaMembrane2" FluxCarrier="Ca" FluxCarrierValence="2" FluxOption="MolecularAndElectrical" KeyValue="2930078">
+            <Kinetics KineticsType="GeneralCurrentKinetics">
+               <Parameter Name="I" Role="inward current density" Unit="pA.um-2"> - (minf2 * (V2 - VCa2) * gCa2)</Parameter>
+               <Parameter Name="J" Role="reaction rate" Unit="uM.um.s-1">(I / (2.0 * _F_nmol_))</Parameter>
+               <Parameter Name="gCa2" Role="user defined" Unit="tbd">0.08</Parameter>
+               <Parameter Name="minf2" Role="user defined" Unit="tbd">(0.5 * (1.0 + ((exp(((V2 - v1b) / v2b)) - exp( - ((V2 - v1b) / v2b))) / (exp(((V2 - v1b) / v2b)) + exp( - ((V2 - v1b) / v2b))))))</Parameter>
+               <Parameter Name="VCa2" Role="user defined" Unit="mV">120.0</Parameter>
+               <Parameter Name="v1b" Role="user defined" Unit="mV">-1.2</Parameter>
+               <Parameter Name="v2b" Role="user defined" Unit="mV">18.0</Parameter>
+            </Kinetics>
+            <Annotation />
+         </FluxStep>
+         <FluxStep Name="K Current 1" Structure="PlasmaMembrane1" FluxCarrier="K" FluxCarrierValence="1" FluxOption="MolecularAndElectrical" KeyValue="2930087">
+            <Modifier LocalizedCompoundRef="w1_o" KeyValue="2930088" />
+            <Kinetics KineticsType="GeneralCurrentKinetics">
+               <Parameter Name="I" Role="inward current density" Unit="pA.um-2"> - (w1_o * (V1 - VK1) * gK1)</Parameter>
+               <Parameter Name="J" Role="reaction rate" Unit="uM.um.s-1">(I / _F_nmol_)</Parameter>
+               <Parameter Name="gK1" Role="user defined" Unit="1.0E-9 A2.item-1.kg-1.m-2.s3">0.08</Parameter>
+               <Parameter Name="VK1" Role="user defined" Unit="mV">-84.0</Parameter>
+            </Kinetics>
+            <Annotation />
+         </FluxStep>
+         <FluxStep Name="K Current 2" Structure="PlasmaMembrane2" FluxCarrier="K" FluxCarrierValence="1" FluxOption="MolecularAndElectrical" KeyValue="2930091">
+            <Modifier LocalizedCompoundRef="w2_o" KeyValue="2930094" />
+            <Kinetics KineticsType="GeneralCurrentKinetics">
+               <Parameter Name="I" Role="inward current density" Unit="pA.um-2"> - (w2_o * (V2 - VK2) * gK2)</Parameter>
+               <Parameter Name="J" Role="reaction rate" Unit="uM.um.s-1">(I / _F_nmol_)</Parameter>
+               <Parameter Name="gK2" Role="user defined" Unit="1.0E-9 A2.item-1.kg-1.m-2.s3">0.08</Parameter>
+               <Parameter Name="VK2" Role="user defined" Unit="mV">-84.0</Parameter>
+            </Kinetics>
+            <Annotation />
+         </FluxStep>
+         <FluxStep Name="Ca Current 1" Structure="PlasmaMembrane1" FluxCarrier="Ca" FluxCarrierValence="2" FluxOption="MolecularAndElectrical" KeyValue="2930084">
+            <Kinetics KineticsType="GeneralCurrentKinetics">
+               <Parameter Name="I" Role="inward current density" Unit="pA.um-2"> - (minf1 * (V1 - VCa1) * gCa1)</Parameter>
+               <Parameter Name="J" Role="reaction rate" Unit="uM.um.s-1">(I / (2.0 * _F_nmol_))</Parameter>
+               <Parameter Name="gCa1" Role="user defined" Unit="tbd">0.08</Parameter>
+               <Parameter Name="minf1" Role="user defined" Unit="tbd">(0.5 * (1.0 + ((exp(((V1 - v1a) / v2a)) - exp( - ((V1 - v1a) / v2a))) / (exp(((V1 - v1a) / v2a)) + exp( - ((V1 - v1a) / v2a))))))</Parameter>
+               <Parameter Name="VCa1" Role="user defined" Unit="mV">120.0</Parameter>
+               <Parameter Name="v1a" Role="user defined" Unit="mV">-1.2</Parameter>
+               <Parameter Name="v2a" Role="user defined" Unit="mV">18.0</Parameter>
+            </Kinetics>
+            <Annotation />
+         </FluxStep>
+         <FluxStep Name="Leak Current 1" Structure="PlasmaMembrane1" FluxCarrierValence="0" FluxOption="ElectricalOnly" KeyValue="2930095">
+            <Kinetics KineticsType="GeneralCurrentKinetics">
+               <Parameter Name="I" Role="inward current density" Unit="pA.um-2"> - ((V1 - VL1) * gL1)</Parameter>
+               <Parameter Name="J" Role="reaction rate" Unit="uM.um.s-1">0.0</Parameter>
+               <Parameter Name="gL1" Role="user defined" Unit="nS.um-2">0.01</Parameter>
+               <Parameter Name="VL1" Role="user defined" Unit="mV">-60.0</Parameter>
+            </Kinetics>
+            <Annotation />
+         </FluxStep>
+         <SimpleReaction Structure="PlasmaMembrane1" Name="s1 kinetics" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="2930096">
+            <Product LocalizedCompoundRef="s1" Stoichiometry="1" KeyValue="2930097" />
+            <Kinetics KineticsType="GeneralKinetics">
+               <Parameter Name="J" Role="reaction rate" Unit="molecules.um-2.s-1">((alpha1 * sinf1 * (1.0 - s1)) - (beta1 * s1))</Parameter>
+               <Parameter Name="I" Role="inward current density" Unit="pA.um-2">0.0</Parameter>
+               <Parameter Name="alpha1" Role="user defined" Unit="tbd">3000.0</Parameter>
+               <Parameter Name="sinf1" Role="user defined" Unit="tbd">(1.0 / (1.0 + exp( - ((V1 - thetasyn1) / ksyn1))))</Parameter>
+               <Parameter Name="beta1" Role="user defined" Unit="molecules.um-2.uM-1.s-1">1000.0</Parameter>
+               <Parameter Name="thetasyn1" Role="user defined" Unit="mV">20.0</Parameter>
+               <Parameter Name="ksyn1" Role="user defined" Unit="mV">2.0</Parameter>
+            </Kinetics>
+            <Annotation />
+         </SimpleReaction>
+         <SimpleReaction Structure="PlasmaMembrane2" Name="s2 kinetics" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="2930074">
+            <Product LocalizedCompoundRef="s2" Stoichiometry="1" KeyValue="2930075" />
+            <Kinetics KineticsType="GeneralKinetics">
+               <Parameter Name="J" Role="reaction rate" Unit="molecules.um-2.s-1">((alpha2 * sinf2 * (1.0 - s2)) - (beta2 * s2))</Parameter>
+               <Parameter Name="I" Role="inward current density" Unit="pA.um-2">0.0</Parameter>
+               <Parameter Name="alpha2" Role="user defined" Unit="tbd">3000.0</Parameter>
+               <Parameter Name="sinf2" Role="user defined" Unit="tbd">(1.0 / (1.0 + exp( - ((V2 - thetasyn2) / ksyn2))))</Parameter>
+               <Parameter Name="beta2" Role="user defined" Unit="molecules.um-2.uM-1.s-1">1000.0</Parameter>
+               <Parameter Name="thetasyn2" Role="user defined" Unit="mV">20.0</Parameter>
+               <Parameter Name="ksyn2" Role="user defined" Unit="mV">2.0</Parameter>
+            </Kinetics>
+            <Annotation />
+         </SimpleReaction>
+         <SimpleReaction Structure="PlasmaMembrane1" Name="w1 gate reaction" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="2930081">
+            <Reactant LocalizedCompoundRef="w1_c" Stoichiometry="1" KeyValue="2930083" />
+            <Product LocalizedCompoundRef="w1_o" Stoichiometry="1" KeyValue="2930082" />
+            <Kinetics KineticsType="GeneralKinetics">
+               <Parameter Name="J" Role="reaction rate" Unit="molecules.um-2.s-1">(phi1 * (winf1 - w1_o) / tauw1)</Parameter>
+               <Parameter Name="I" Role="inward current density" Unit="pA.um-2">0.0</Parameter>
+               <Parameter Name="phi1" Role="user defined" Unit="tbd">100.0</Parameter>
+               <Parameter Name="winf1" Role="user defined" Unit="molecules.um-2">(0.5 * (1.0 + ((exp(((V1 - v3a) / v4a)) - exp( - ((V1 - v3a) / v4a))) / (exp(((V1 - v3a) / v4a)) + exp( - ((V1 - v3a) / v4a))))))</Parameter>
+               <Parameter Name="tauw1" Role="user defined" Unit="tbd">(2.0 / (exp(((V1 - v3a) / (2.0 * v4a))) + exp( - ((V1 - v3a) / (2.0 * v4a)))))</Parameter>
+               <Parameter Name="v3a" Role="user defined" Unit="mV">-5.0</Parameter>
+               <Parameter Name="v4a" Role="user defined" Unit="mV">10.0</Parameter>
+            </Kinetics>
+            <Annotation />
+         </SimpleReaction>
+         <SimpleReaction Structure="PlasmaMembrane2" Name="w2 gate reaction" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="2930100">
+            <Reactant LocalizedCompoundRef="w2_c" Stoichiometry="1" KeyValue="2930102" />
+            <Product LocalizedCompoundRef="w2_o" Stoichiometry="1" KeyValue="2930101" />
+            <Kinetics KineticsType="GeneralKinetics">
+               <Parameter Name="J" Role="reaction rate" Unit="molecules.um-2.s-1">(phi2 * (winf2 - w2_o) / tauw2)</Parameter>
+               <Parameter Name="I" Role="inward current density" Unit="pA.um-2">0.0</Parameter>
+               <Parameter Name="phi2" Role="user defined" Unit="tbd">100.0</Parameter>
+               <Parameter Name="winf2" Role="user defined" Unit="molecules.um-2">(0.5 * (1.0 + ((exp(((V2 - v3b) / v4b)) - exp( - ((V2 - v3b) / v4b))) / (exp(((V2 - v3b) / v4b)) + exp( - ((V2 - v3b) / v4b))))))</Parameter>
+               <Parameter Name="tauw2" Role="user defined" Unit="tbd">(2.0 / (exp(((V2 - v3b) / (2.0 * v4b))) + exp( - ((V2 - v3b) / (2.0 * v4b)))))</Parameter>
+               <Parameter Name="v3b" Role="user defined" Unit="mV">-5.0</Parameter>
+               <Parameter Name="v4b" Role="user defined" Unit="mV">10.0</Parameter>
+            </Kinetics>
+            <Annotation />
+         </SimpleReaction>
+         <Diagram Name="Feature0" Structure="Cytosol2" />
+         <Diagram Name="Feature0" Structure="Cytosol1" />
+         <Diagram Name="unnamed" Structure="Extracellular" />
+         <Diagram Name="Membrane0" Structure="PlasmaMembrane1">
+            <LocalizedCompoundShape LocalizedCompoundRef="w1_o" LocationX="306" LocationY="89" />
+            <LocalizedCompoundShape LocalizedCompoundRef="w1_c" LocationX="21" LocationY="93" />
+            <LocalizedCompoundShape LocalizedCompoundRef="Ca_Cyt1" LocationX="45" LocationY="47" />
+            <LocalizedCompoundShape LocalizedCompoundRef="K_Cyt1" LocationX="54" LocationY="133" />
+            <LocalizedCompoundShape LocalizedCompoundRef="K_Ext" LocationX="40" LocationY="129" />
+            <LocalizedCompoundShape LocalizedCompoundRef="s1" LocationX="59" LocationY="269" />
+            <LocalizedCompoundShape LocalizedCompoundRef="s2" LocationX="52" LocationY="211" />
+            <LocalizedCompoundShape LocalizedCompoundRef="Ca_Ext" LocationX="57" LocationY="42" />
+            <SimpleReactionShape SimpleReactionRef="w1 gate reaction" LocationX="103" LocationY="84" />
+            <FluxReactionShape FluxReactionRef="Ca Current 1" LocationX="160" LocationY="44" />
+            <FluxReactionShape FluxReactionRef="K Current 1" LocationX="159" LocationY="132" />
+            <FluxReactionShape FluxReactionRef="Leak Current 1" LocationX="166" LocationY="172" />
+            <SimpleReactionShape SimpleReactionRef="s1 kinetics" LocationX="86" LocationY="279" />
+            <FluxReactionShape FluxReactionRef="Syn1 Current" LocationX="165" LocationY="214" />
+            <FluxReactionShape FluxReactionRef="Applied Current 1" LocationX="159" LocationY="340" />
+         </Diagram>
+         <Diagram Name="Membrane0" Structure="PlasmaMembrane2">
+            <LocalizedCompoundShape LocalizedCompoundRef="w2_o" LocationX="243" LocationY="97" />
+            <LocalizedCompoundShape LocalizedCompoundRef="w2_c" LocationX="94" LocationY="97" />
+            <LocalizedCompoundShape LocalizedCompoundRef="K_Cyt2" LocationX="24" LocationY="140" />
+            <LocalizedCompoundShape LocalizedCompoundRef="Ca_Cyt2" LocationX="28" LocationY="42" />
+            <LocalizedCompoundShape LocalizedCompoundRef="K_Ext" LocationX="53" LocationY="151" />
+            <LocalizedCompoundShape LocalizedCompoundRef="s1" LocationX="42" LocationY="267" />
+            <LocalizedCompoundShape LocalizedCompoundRef="s2" LocationX="46" LocationY="348" />
+            <LocalizedCompoundShape LocalizedCompoundRef="Ca_Ext" LocationX="46" LocationY="39" />
+            <FluxReactionShape FluxReactionRef="Leak Current 2" LocationX="147" LocationY="198" />
+            <SimpleReactionShape SimpleReactionRef="s2 kinetics" LocationX="152" LocationY="312" />
+            <FluxReactionShape FluxReactionRef="Syn2 Current" LocationX="134" LocationY="262" />
+            <FluxReactionShape FluxReactionRef="Ca Current 2" LocationX="138" LocationY="37" />
+            <FluxReactionShape FluxReactionRef="K Current 2" LocationX="60" LocationY="140" />
+            <SimpleReactionShape SimpleReactionRef="w2 gate reaction" LocationX="138" LocationY="92" />
+            <FluxReactionShape FluxReactionRef="Applied Current 2" LocationX="144" LocationY="363" />
+         </Diagram>
+         <Version Name="unnamed" KeyValue="2930050" BranchId="2661903" Archived="0" Date="29-Aug-2002 11:32:15" FromVersionable="false">
+            <Owner Name="CompCell" Identifier="2646115" />
+            <GroupAccess Type="1" />
+         </Version>
+      </Model>
+      <SimulationSpec Name="Figure 6.6A" Stochastic="false">
+         <Annotation>Demonstrates how fast excitatory synapses lead to synchrony. SurfToVol_PlasmaMembrane1 and SurfToVol_PlasmaMembrane2 were changed to 1806 to cancel out KMOLE in the equations for s1 and s2 kinetics.</Annotation>
+         <Geometry Name="Application 6" Dimension="0">
+            <Extent X="10.0" Y="10.0" Z="10.0" />
+            <Origin X="0.0" Y="0.0" Z="0.0" />
+            <SubVolume Name="Compartment" Handle="0" Type="Compartmental" KeyValue="2767192" />
+            <Version Name="Application 6" KeyValue="2767189" BranchId="2767190" Archived="0" Date="19-Jul-2002 11:32:17" FromVersionable="false">
+               <Owner Name="CompCell" Identifier="2646115" />
+               <GroupAccess Type="1" />
+            </Version>
+         </Geometry>
+         <GeometryContext>
+            <FeatureMapping Feature="Cytosol2" SubVolume="Compartment" Resolved="false">
+               <BoundariesTypes Xm="Value" Xp="Value" Ym="Value" Yp="Value" Zm="Value" Zp="Value" />
+            </FeatureMapping>
+            <FeatureMapping Feature="Cytosol1" SubVolume="Compartment" Resolved="false">
+               <BoundariesTypes Xm="Value" Xp="Value" Ym="Value" Yp="Value" Zm="Value" Zp="Value" />
+            </FeatureMapping>
+            <FeatureMapping Feature="Extracellular" SubVolume="Compartment" Resolved="false">
+               <BoundariesTypes Xm="Value" Xp="Value" Ym="Value" Yp="Value" Zm="Value" Zp="Value" />
+            </FeatureMapping>
+            <MembraneMapping Membrane="PlasmaMembrane2" SurfaceToVolumeRatio="1806.0" VolumeFraction="0.2" CalculateVoltage="true" SpecificCapacitance="0.2" InitialVoltage="0.0" />
+            <MembraneMapping Membrane="PlasmaMembrane1" SurfaceToVolumeRatio="1806.0" VolumeFraction="0.2" CalculateVoltage="true" SpecificCapacitance="0.2" InitialVoltage="-44.0" />
+         </GeometryContext>
+         <ReactionContext>
+            <LocalizedCompoundSpec LocalizedCompoundRef="K_Cyt2" ForceConstant="true" EnableDiffusion="true">
+               <Initial>143000.0</Initial>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="Ca_Cyt2" ForceConstant="true" EnableDiffusion="true">
+               <Initial>0.1</Initial>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="w2_o" ForceConstant="false" EnableDiffusion="false">
+               <Initial>0.3</Initial>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="w2_c" ForceConstant="false" EnableDiffusion="false">
+               <Initial>0.7</Initial>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="Ca_Cyt1" ForceConstant="true" EnableDiffusion="true">
+               <Initial>0.1</Initial>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="K_Cyt1" ForceConstant="true" EnableDiffusion="true">
+               <Initial>143000.0</Initial>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="K_Ext" ForceConstant="true" EnableDiffusion="true">
+               <Initial>3000.0</Initial>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="s1" ForceConstant="false" EnableDiffusion="true">
+               <Initial>0.0</Initial>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="s2" ForceConstant="false" EnableDiffusion="true">
+               <Initial>0.3</Initial>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="Ca_Ext" ForceConstant="true" EnableDiffusion="true">
+               <Initial>2000.0</Initial>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="w1_o" ForceConstant="false" EnableDiffusion="false">
+               <Initial>0.0</Initial>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="w1_c" ForceConstant="false" EnableDiffusion="false">
+               <Initial>1.0</Initial>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <ReactionSpec ReactionStepRef="Syn1 Current" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="Leak Current 2" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="Applied Current 1" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="Applied Current 2" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="Syn2 Current" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="Ca Current 2" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="K Current 1" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="K Current 2" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="Ca Current 1" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="Leak Current 1" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="s1 kinetics" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="s2 kinetics" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="w1 gate reaction" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="w2 gate reaction" ReactionMapping="included" />
+         </ReactionContext>
+         <MathDescription Name="Application 3">
+            <Constant Name="s2_init">0.3</Constant>
+            <Constant Name="Ca_Cyt2">0.1</Constant>
+            <Constant Name="Ca_Cyt1">0.1</Constant>
+            <Constant Name="K_Ext">3000.0</Constant>
+            <Constant Name="K_milliVolts_per_Volt">1000.0</Constant>
+            <Constant Name="VCa2">120.0</Constant>
+            <Constant Name="VCa1">120.0</Constant>
+            <Constant Name="Ca_Cyt1_init">0.1</Constant>
+            <Constant Name="_F_">96480.0</Constant>
+            <Constant Name="gL2">0.01</Constant>
+            <Constant Name="gL1">0.01</Constant>
+            <Constant Name="w2_o_init">0.3</Constant>
+            <Constant Name="I_Applied_Current_2">0.15</Constant>
+            <Constant Name="_R_">8314.0</Constant>
+            <Constant Name="I_Applied_Current_1">0.15</Constant>
+            <Constant Name="w2_c_init">0.7</Constant>
+            <Constant Name="Ca_Cyt2_init">0.1</Constant>
+            <Constant Name="gK2">0.08</Constant>
+            <Constant Name="gK1">0.08</Constant>
+            <Constant Name="v4b">10.0</Constant>
+            <Constant Name="v4a">10.0</Constant>
+            <Constant Name="phi2">100.0</Constant>
+            <Constant Name="phi1">100.0</Constant>
+            <Constant Name="alpha2">3000.0</Constant>
+            <Constant Name="C_PlasmaMembrane2">0.2</Constant>
+            <Constant Name="alpha1">3000.0</Constant>
+            <Constant Name="C_PlasmaMembrane1">0.2</Constant>
+            <Constant Name="ton2">0.2</Constant>
+            <Constant Name="ton1">0.2</Constant>
+            <Constant Name="Ca_Ext">2000.0</Constant>
+            <Constant Name="K_Cyt1_init">143000.0</Constant>
+            <Constant Name="v3b">-5.0</Constant>
+            <Constant Name="v3a">-5.0</Constant>
+            <Constant Name="beta2">1000.0</Constant>
+            <Constant Name="beta1">1000.0</Constant>
+            <Constant Name="K_Cyt2_init">143000.0</Constant>
+            <Constant Name="gCa2">0.08</Constant>
+            <Constant Name="gCa1">0.08</Constant>
+            <Constant Name="K_Cyt2">143000.0</Constant>
+            <Constant Name="K_Cyt1">143000.0</Constant>
+            <Constant Name="v2b">18.0</Constant>
+            <Constant Name="v2a">18.0</Constant>
+            <Constant Name="gsyn2">0.01</Constant>
+            <Constant Name="gsyn1">0.01</Constant>
+            <Constant Name="VL2">-60.0</Constant>
+            <Constant Name="KMOLE">0.0016611295681063123</Constant>
+            <Constant Name="VL1">-60.0</Constant>
+            <Constant Name="SurfToVol_PlasmaMembrane2">1806.0</Constant>
+            <Constant Name="SurfToVol_PlasmaMembrane1">1806.0</Constant>
+            <Constant Name="w1_o_init">0.0</Constant>
+            <Constant Name="thetasyn2">20.0</Constant>
+            <Constant Name="thetasyn1">20.0</Constant>
+            <Constant Name="K_Ext_init">3000.0</Constant>
+            <Constant Name="VolFract_Cytosol2">0.2</Constant>
+            <Constant Name="VolFract_Cytosol1">0.2</Constant>
+            <Constant Name="v1b">-1.2</Constant>
+            <Constant Name="v1a">-1.2</Constant>
+            <Constant Name="w1_c_init">1.0</Constant>
+            <Constant Name="s1_init">0.0</Constant>
+            <Constant Name="VK2">-84.0</Constant>
+            <Constant Name="Ca_Ext_init">2000.0</Constant>
+            <Constant Name="VK1">-84.0</Constant>
+            <Constant Name="_T_">300.0</Constant>
+            <Constant Name="Vsyn2">0.0</Constant>
+            <Constant Name="Vsyn1">0.0</Constant>
+            <Constant Name="ksyn2">2.0</Constant>
+            <Constant Name="ksyn1">2.0</Constant>
+            <VolumeVariable Name="s2" />
+            <VolumeVariable Name="s1" />
+            <VolumeVariable Name="w2_c" />
+            <VolumeVariable Name="w1_c" />
+            <VolumeVariable Name="V2" />
+            <VolumeVariable Name="V1" />
+            <Function Name="V1_init">-44.0</Function>
+            <Function Name="winf2">(0.5 * (1.0 + ((exp(((V2 - v3b) / v4b)) - exp( - ((V2 - v3b) / v4b))) / (exp(((V2 - v3b) / v4b)) + exp( - ((V2 - v3b) / v4b))))))</Function>
+            <Function Name="winf1">(0.5 * (1.0 + ((exp(((V1 - v3a) / v4a)) - exp( - ((V1 - v3a) / v4a))) / (exp(((V1 - v3a) / v4a)) + exp( - ((V1 - v3a) / v4a))))))</Function>
+            <Function Name="Kflux_PlasmaMembrane2_Cytosol2">SurfToVol_PlasmaMembrane2</Function>
+            <Function Name="sinf2">(1.0 / (1.0 + exp( - ((V2 - thetasyn2) / ksyn2))))</Function>
+            <Function Name="J_s2_kinetics">((alpha2 * sinf2 * (1.0 - s2)) - (beta2 * s2))</Function>
+            <Function Name="I_Syn2_Current">((t &gt; ton2) * gsyn2 * s1 * (Vsyn2 - V2))</Function>
+            <Function Name="V2_init">0.0</Function>
+            <Function Name="K_w1_o_total">((w1_o_init * SurfToVol_PlasmaMembrane1 * VolFract_Cytosol1 * KMOLE) + (w1_c_init * SurfToVol_PlasmaMembrane1 * VolFract_Cytosol1 * KMOLE))</Function>
+            <Function Name="w1_o">((K_w1_o_total - (w1_c * SurfToVol_PlasmaMembrane1 * VolFract_Cytosol1 * KMOLE)) / (SurfToVol_PlasmaMembrane1 * VolFract_Cytosol1 * KMOLE))</Function>
+            <Function Name="tauw1">(2.0 / (exp(((V1 - v3a) / (2.0 * v4a))) + exp( - ((V1 - v3a) / (2.0 * v4a)))))</Function>
+            <Function Name="J_w1_gate_reaction">(phi1 * (winf1 - w1_o) / tauw1)</Function>
+            <Function Name="K_w2_o_total">((w2_o_init * SurfToVol_PlasmaMembrane2 * VolFract_Cytosol2 * KMOLE) + (w2_c_init * SurfToVol_PlasmaMembrane2 * VolFract_Cytosol2 * KMOLE))</Function>
+            <Function Name="I_Leak_Current_2"> - ((V2 - VL2) * gL2)</Function>
+            <Function Name="I_Leak_Current_1"> - ((V1 - VL1) * gL1)</Function>
+            <Function Name="tauw2">(2.0 / (exp(((V2 - v3b) / (2.0 * v4b))) + exp( - ((V2 - v3b) / (2.0 * v4b)))))</Function>
+            <Function Name="Kflux_PlasmaMembrane1_Extracellular">(SurfToVol_PlasmaMembrane1 * VolFract_Cytosol1 / (1.0 - VolFract_Cytosol1 - VolFract_Cytosol2))</Function>
+            <Function Name="I_PlasmaMembrane2">0.0</Function>
+            <Function Name="I_PlasmaMembrane1">0.0</Function>
+            <Function Name="w2_o">((K_w2_o_total - (w2_c * SurfToVol_PlasmaMembrane2 * VolFract_Cytosol2 * KMOLE)) / (SurfToVol_PlasmaMembrane2 * VolFract_Cytosol2 * KMOLE))</Function>
+            <Function Name="Kflux_PlasmaMembrane1_Cytosol1">SurfToVol_PlasmaMembrane1</Function>
+            <Function Name="sinf1">(1.0 / (1.0 + exp( - ((V1 - thetasyn1) / ksyn1))))</Function>
+            <Function Name="J_s1_kinetics">((alpha1 * sinf1 * (1.0 - s1)) - (beta1 * s1))</Function>
+            <Function Name="I_Syn1_Current">((t &gt; ton1) * gsyn1 * s2 * (Vsyn1 - V1))</Function>
+            <Function Name="J_w2_gate_reaction">(phi2 * (winf2 - w2_o) / tauw2)</Function>
+            <Function Name="I_K_Current_2"> - (w2_o * (V2 - VK2) * gK2)</Function>
+            <Function Name="I_K_Current_1"> - (w1_o * (V1 - VK1) * gK1)</Function>
+            <Function Name="minf2">(0.5 * (1.0 + ((exp(((V2 - v1b) / v2b)) - exp( - ((V2 - v1b) / v2b))) / (exp(((V2 - v1b) / v2b)) + exp( - ((V2 - v1b) / v2b))))))</Function>
+            <Function Name="I_Ca_Current_2"> - (minf2 * (V2 - VCa2) * gCa2)</Function>
+            <Function Name="minf1">(0.5 * (1.0 + ((exp(((V1 - v1a) / v2a)) - exp( - ((V1 - v1a) / v2a))) / (exp(((V1 - v1a) / v2a)) + exp( - ((V1 - v1a) / v2a))))))</Function>
+            <Function Name="I_Ca_Current_1"> - (minf1 * (V1 - VCa1) * gCa1)</Function>
+            <Function Name="Kflux_PlasmaMembrane2_Extracellular">(SurfToVol_PlasmaMembrane2 * VolFract_Cytosol2 / (1.0 - VolFract_Cytosol1 - VolFract_Cytosol2))</Function>
+            <Function Name="F_PlasmaMembrane2">( - I_Applied_Current_2 - I_Leak_Current_2 - I_K_Current_2 - I_Syn2_Current - I_Ca_Current_2)</Function>
+            <Function Name="F_PlasmaMembrane1">( - I_Applied_Current_1 - I_Syn1_Current - I_Leak_Current_1 - I_Ca_Current_1 - I_K_Current_1)</Function>
+            <CompartmentSubDomain Name="Compartment">
+               <BoundaryType Boundary="Xm" Type="Value" />
+               <BoundaryType Boundary="Xp" Type="Value" />
+               <BoundaryType Boundary="Ym" Type="Value" />
+               <BoundaryType Boundary="Yp" Type="Value" />
+               <BoundaryType Boundary="Zm" Type="Value" />
+               <BoundaryType Boundary="Zp" Type="Value" />
+               <OdeEquation Name="w2_c" SolutionType="Unknown">
+                  <Rate> - J_w2_gate_reaction</Rate>
+                  <Initial>w2_c_init</Initial>
+               </OdeEquation>
+               <OdeEquation Name="s1" SolutionType="Unknown">
+                  <Rate>(J_s1_kinetics * Kflux_PlasmaMembrane1_Extracellular * KMOLE)</Rate>
+                  <Initial>s1_init</Initial>
+               </OdeEquation>
+               <OdeEquation Name="s2" SolutionType="Unknown">
+                  <Rate>(J_s2_kinetics * Kflux_PlasmaMembrane2_Extracellular * KMOLE)</Rate>
+                  <Initial>s2_init</Initial>
+               </OdeEquation>
+               <OdeEquation Name="w1_c" SolutionType="Unknown">
+                  <Rate> - J_w1_gate_reaction</Rate>
+                  <Initial>w1_c_init</Initial>
+               </OdeEquation>
+               <OdeEquation Name="V2" SolutionType="Unknown">
+                  <Rate>(1000.0 * (I_PlasmaMembrane2 - ( - I_Applied_Current_2 - I_Leak_Current_2 - I_K_Current_2 - I_Syn2_Current - I_Ca_Current_2)) / C_PlasmaMembrane2)</Rate>
+                  <Initial>V2_init</Initial>
+               </OdeEquation>
+               <OdeEquation Name="V1" SolutionType="Unknown">
+                  <Rate>(1000.0 * (I_PlasmaMembrane1 - ( - I_Applied_Current_1 - I_Syn1_Current - I_Leak_Current_1 - I_Ca_Current_1 - I_K_Current_1)) / C_PlasmaMembrane1)</Rate>
+                  <Initial>V1_init</Initial>
+               </OdeEquation>
+            </CompartmentSubDomain>
+            <Version Name="Application 3" KeyValue="2930215" BranchId="2767188" Archived="0" Date="29-Aug-2002 11:33:02" FromVersionable="false">
+               <Owner Name="CompCell" Identifier="2646115" />
+               <GroupAccess Type="1" />
+            </Version>
+         </MathDescription>
+         <Simulation Name="Simulation 1">
+            <Annotation>Illustrated in Figure 6.6A</Annotation>
+            <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Runge-Kutta (Fourth Order, Fixed Time Step)">
+               <TimeBound StartTime="0.0" EndTime="1.0" />
+               <TimeStep DefaultTime="1.0E-4" MinTime="1.0E-8" MaxTime="1.0" />
+               <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+               <OutputOptions KeepEvery="2" KeepAtMost="5000" />
+            </SolverTaskDescription>
+            <MathOverrides />
+            <Version Name="Simulation 1" KeyValue="2930866" BranchId="2930809" Archived="0" Date="29-Aug-2002 11:58:48" FromVersionable="false">
+               <Owner Name="CompCell" Identifier="2646115" />
+               <GroupAccess Type="1" />
+               <Annotation>Illustrated in Figure 6.6A</Annotation>
+            </Version>
+         </Simulation>
+         <Version Name="Figure 6.6A" KeyValue="2930736" BranchId="2917228" Archived="0" Date="29-Aug-2002 11:53:16" FromVersionable="false">
+            <Owner Name="CompCell" Identifier="2646115" />
+            <GroupAccess Type="1" />
+            <Annotation>Demonstrates how fast excitatory synapses lead to synchrony. SurfToVol_PlasmaMembrane1 and SurfToVol_PlasmaMembrane2 were changed to 1806 to cancel out KMOLE in the equations for s1 and s2 kinetics.</Annotation>
+         </Version>
+      </SimulationSpec>
+      <SimulationSpec Name="Figure 6.6C" Stochastic="false">
+         <Annotation>Demonstrates how slow excitatory synapses lead to asynchrony.  Same parameters and initial conditions as in 6.6A except beta = 100/s (instead of beta = 1000/s).  SurfToVol_PlasmaMembrane1 and SurfToVol_PlasmaMembrane2 were changed to 1806 to cancel out KMOLE in the equations for s1 and s2 kinetics.</Annotation>
+         <Geometry Name="Application 6" Dimension="0">
+            <Extent X="10.0" Y="10.0" Z="10.0" />
+            <Origin X="0.0" Y="0.0" Z="0.0" />
+            <SubVolume Name="Compartment" Handle="0" Type="Compartmental" KeyValue="2767192" />
+            <Version Name="Application 6" KeyValue="2767189" BranchId="2767190" Archived="0" Date="19-Jul-2002 11:32:17" FromVersionable="false">
+               <Owner Name="CompCell" Identifier="2646115" />
+               <GroupAccess Type="1" />
+            </Version>
+         </Geometry>
+         <GeometryContext>
+            <FeatureMapping Feature="Cytosol2" SubVolume="Compartment" Resolved="false">
+               <BoundariesTypes Xm="Value" Xp="Value" Ym="Value" Yp="Value" Zm="Value" Zp="Value" />
+            </FeatureMapping>
+            <FeatureMapping Feature="Cytosol1" SubVolume="Compartment" Resolved="false">
+               <BoundariesTypes Xm="Value" Xp="Value" Ym="Value" Yp="Value" Zm="Value" Zp="Value" />
+            </FeatureMapping>
+            <FeatureMapping Feature="Extracellular" SubVolume="Compartment" Resolved="false">
+               <BoundariesTypes Xm="Value" Xp="Value" Ym="Value" Yp="Value" Zm="Value" Zp="Value" />
+            </FeatureMapping>
+            <MembraneMapping Membrane="PlasmaMembrane2" SurfaceToVolumeRatio="1806.0" VolumeFraction="0.2" CalculateVoltage="true" SpecificCapacitance="0.2" InitialVoltage="0.0" />
+            <MembraneMapping Membrane="PlasmaMembrane1" SurfaceToVolumeRatio="1806.0" VolumeFraction="0.2" CalculateVoltage="true" SpecificCapacitance="0.2" InitialVoltage="-44.0" />
+         </GeometryContext>
+         <ReactionContext>
+            <LocalizedCompoundSpec LocalizedCompoundRef="K_Cyt2" ForceConstant="true" EnableDiffusion="true">
+               <Initial>143000.0</Initial>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="Ca_Cyt2" ForceConstant="true" EnableDiffusion="true">
+               <Initial>0.1</Initial>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="w2_o" ForceConstant="false" EnableDiffusion="false">
+               <Initial>0.3</Initial>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="w2_c" ForceConstant="false" EnableDiffusion="false">
+               <Initial>0.7</Initial>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="Ca_Cyt1" ForceConstant="true" EnableDiffusion="true">
+               <Initial>0.1</Initial>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="K_Cyt1" ForceConstant="true" EnableDiffusion="true">
+               <Initial>143000.0</Initial>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="K_Ext" ForceConstant="true" EnableDiffusion="true">
+               <Initial>3000.0</Initial>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="s1" ForceConstant="false" EnableDiffusion="true">
+               <Initial>0.0</Initial>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="s2" ForceConstant="false" EnableDiffusion="true">
+               <Initial>0.3</Initial>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="Ca_Ext" ForceConstant="true" EnableDiffusion="true">
+               <Initial>2000.0</Initial>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="w1_o" ForceConstant="false" EnableDiffusion="false">
+               <Initial>0.0</Initial>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="w1_c" ForceConstant="false" EnableDiffusion="false">
+               <Initial>1.0</Initial>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <ReactionSpec ReactionStepRef="Syn1 Current" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="Leak Current 2" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="Applied Current 1" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="Applied Current 2" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="Syn2 Current" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="Ca Current 2" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="K Current 1" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="K Current 2" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="Ca Current 1" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="Leak Current 1" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="s1 kinetics" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="s2 kinetics" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="w1 gate reaction" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="w2 gate reaction" ReactionMapping="included" />
+         </ReactionContext>
+         <MathDescription Name="Figure 6.6c">
+            <Constant Name="s2_init">0.3</Constant>
+            <Constant Name="Ca_Cyt2">0.1</Constant>
+            <Constant Name="Ca_Cyt1">0.1</Constant>
+            <Constant Name="K_Ext">3000.0</Constant>
+            <Constant Name="K_milliVolts_per_Volt">1000.0</Constant>
+            <Constant Name="VCa2">120.0</Constant>
+            <Constant Name="VCa1">120.0</Constant>
+            <Constant Name="Ca_Cyt1_init">0.1</Constant>
+            <Constant Name="_F_">96480.0</Constant>
+            <Constant Name="gL2">0.01</Constant>
+            <Constant Name="gL1">0.01</Constant>
+            <Constant Name="w2_o_init">0.3</Constant>
+            <Constant Name="I_Applied_Current_2">0.15</Constant>
+            <Constant Name="_R_">8314.0</Constant>
+            <Constant Name="I_Applied_Current_1">0.15</Constant>
+            <Constant Name="w2_c_init">0.7</Constant>
+            <Constant Name="Ca_Cyt2_init">0.1</Constant>
+            <Constant Name="gK2">0.08</Constant>
+            <Constant Name="gK1">0.08</Constant>
+            <Constant Name="v4b">10.0</Constant>
+            <Constant Name="v4a">10.0</Constant>
+            <Constant Name="phi2">100.0</Constant>
+            <Constant Name="phi1">100.0</Constant>
+            <Constant Name="alpha2">3000.0</Constant>
+            <Constant Name="C_PlasmaMembrane2">0.2</Constant>
+            <Constant Name="alpha1">3000.0</Constant>
+            <Constant Name="C_PlasmaMembrane1">0.2</Constant>
+            <Constant Name="ton2">0.2</Constant>
+            <Constant Name="ton1">0.2</Constant>
+            <Constant Name="Ca_Ext">2000.0</Constant>
+            <Constant Name="K_Cyt1_init">143000.0</Constant>
+            <Constant Name="v3b">-5.0</Constant>
+            <Constant Name="v3a">-5.0</Constant>
+            <Constant Name="beta2">1000.0</Constant>
+            <Constant Name="beta1">1000.0</Constant>
+            <Constant Name="K_Cyt2_init">143000.0</Constant>
+            <Constant Name="gCa2">0.08</Constant>
+            <Constant Name="gCa1">0.08</Constant>
+            <Constant Name="K_Cyt2">143000.0</Constant>
+            <Constant Name="K_Cyt1">143000.0</Constant>
+            <Constant Name="v2b">18.0</Constant>
+            <Constant Name="v2a">18.0</Constant>
+            <Constant Name="gsyn2">0.01</Constant>
+            <Constant Name="gsyn1">0.01</Constant>
+            <Constant Name="VL2">-60.0</Constant>
+            <Constant Name="KMOLE">0.0016611295681063123</Constant>
+            <Constant Name="VL1">-60.0</Constant>
+            <Constant Name="SurfToVol_PlasmaMembrane2">1806.0</Constant>
+            <Constant Name="SurfToVol_PlasmaMembrane1">1806.0</Constant>
+            <Constant Name="w1_o_init">0.0</Constant>
+            <Constant Name="thetasyn2">20.0</Constant>
+            <Constant Name="thetasyn1">20.0</Constant>
+            <Constant Name="K_Ext_init">3000.0</Constant>
+            <Constant Name="VolFract_Cytosol2">0.2</Constant>
+            <Constant Name="VolFract_Cytosol1">0.2</Constant>
+            <Constant Name="v1b">-1.2</Constant>
+            <Constant Name="v1a">-1.2</Constant>
+            <Constant Name="w1_c_init">1.0</Constant>
+            <Constant Name="s1_init">0.0</Constant>
+            <Constant Name="VK2">-84.0</Constant>
+            <Constant Name="Ca_Ext_init">2000.0</Constant>
+            <Constant Name="VK1">-84.0</Constant>
+            <Constant Name="_T_">300.0</Constant>
+            <Constant Name="Vsyn2">0.0</Constant>
+            <Constant Name="Vsyn1">0.0</Constant>
+            <Constant Name="ksyn2">2.0</Constant>
+            <Constant Name="ksyn1">2.0</Constant>
+            <VolumeVariable Name="s2" />
+            <VolumeVariable Name="s1" />
+            <VolumeVariable Name="w2_c" />
+            <VolumeVariable Name="w1_c" />
+            <VolumeVariable Name="V2" />
+            <VolumeVariable Name="V1" />
+            <Function Name="V1_init">-44.0</Function>
+            <Function Name="winf2">(0.5 * (1.0 + ((exp(((V2 - v3b) / v4b)) - exp( - ((V2 - v3b) / v4b))) / (exp(((V2 - v3b) / v4b)) + exp( - ((V2 - v3b) / v4b))))))</Function>
+            <Function Name="winf1">(0.5 * (1.0 + ((exp(((V1 - v3a) / v4a)) - exp( - ((V1 - v3a) / v4a))) / (exp(((V1 - v3a) / v4a)) + exp( - ((V1 - v3a) / v4a))))))</Function>
+            <Function Name="Kflux_PlasmaMembrane2_Cytosol2">SurfToVol_PlasmaMembrane2</Function>
+            <Function Name="sinf2">(1.0 / (1.0 + exp( - ((V2 - thetasyn2) / ksyn2))))</Function>
+            <Function Name="J_s2_kinetics">((alpha2 * sinf2 * (1.0 - s2)) - (beta2 * s2))</Function>
+            <Function Name="I_Syn2_Current">((t &gt; ton2) * gsyn2 * s1 * (Vsyn2 - V2))</Function>
+            <Function Name="V2_init">0.0</Function>
+            <Function Name="K_w1_o_total">((w1_o_init * SurfToVol_PlasmaMembrane1 * VolFract_Cytosol1 * KMOLE) + (w1_c_init * SurfToVol_PlasmaMembrane1 * VolFract_Cytosol1 * KMOLE))</Function>
+            <Function Name="w1_o">((K_w1_o_total - (w1_c * SurfToVol_PlasmaMembrane1 * VolFract_Cytosol1 * KMOLE)) / (SurfToVol_PlasmaMembrane1 * VolFract_Cytosol1 * KMOLE))</Function>
+            <Function Name="tauw1">(2.0 / (exp(((V1 - v3a) / (2.0 * v4a))) + exp( - ((V1 - v3a) / (2.0 * v4a)))))</Function>
+            <Function Name="J_w1_gate_reaction">(phi1 * (winf1 - w1_o) / tauw1)</Function>
+            <Function Name="K_w2_o_total">((w2_o_init * SurfToVol_PlasmaMembrane2 * VolFract_Cytosol2 * KMOLE) + (w2_c_init * SurfToVol_PlasmaMembrane2 * VolFract_Cytosol2 * KMOLE))</Function>
+            <Function Name="I_Leak_Current_2"> - ((V2 - VL2) * gL2)</Function>
+            <Function Name="I_Leak_Current_1"> - ((V1 - VL1) * gL1)</Function>
+            <Function Name="tauw2">(2.0 / (exp(((V2 - v3b) / (2.0 * v4b))) + exp( - ((V2 - v3b) / (2.0 * v4b)))))</Function>
+            <Function Name="Kflux_PlasmaMembrane1_Extracellular">(SurfToVol_PlasmaMembrane1 * VolFract_Cytosol1 / (1.0 - VolFract_Cytosol1 - VolFract_Cytosol2))</Function>
+            <Function Name="I_PlasmaMembrane2">0.0</Function>
+            <Function Name="I_PlasmaMembrane1">0.0</Function>
+            <Function Name="w2_o">((K_w2_o_total - (w2_c * SurfToVol_PlasmaMembrane2 * VolFract_Cytosol2 * KMOLE)) / (SurfToVol_PlasmaMembrane2 * VolFract_Cytosol2 * KMOLE))</Function>
+            <Function Name="Kflux_PlasmaMembrane1_Cytosol1">SurfToVol_PlasmaMembrane1</Function>
+            <Function Name="sinf1">(1.0 / (1.0 + exp( - ((V1 - thetasyn1) / ksyn1))))</Function>
+            <Function Name="J_s1_kinetics">((alpha1 * sinf1 * (1.0 - s1)) - (beta1 * s1))</Function>
+            <Function Name="I_Syn1_Current">((t &gt; ton1) * gsyn1 * s2 * (Vsyn1 - V1))</Function>
+            <Function Name="J_w2_gate_reaction">(phi2 * (winf2 - w2_o) / tauw2)</Function>
+            <Function Name="I_K_Current_2"> - (w2_o * (V2 - VK2) * gK2)</Function>
+            <Function Name="I_K_Current_1"> - (w1_o * (V1 - VK1) * gK1)</Function>
+            <Function Name="minf2">(0.5 * (1.0 + ((exp(((V2 - v1b) / v2b)) - exp( - ((V2 - v1b) / v2b))) / (exp(((V2 - v1b) / v2b)) + exp( - ((V2 - v1b) / v2b))))))</Function>
+            <Function Name="I_Ca_Current_2"> - (minf2 * (V2 - VCa2) * gCa2)</Function>
+            <Function Name="minf1">(0.5 * (1.0 + ((exp(((V1 - v1a) / v2a)) - exp( - ((V1 - v1a) / v2a))) / (exp(((V1 - v1a) / v2a)) + exp( - ((V1 - v1a) / v2a))))))</Function>
+            <Function Name="I_Ca_Current_1"> - (minf1 * (V1 - VCa1) * gCa1)</Function>
+            <Function Name="Kflux_PlasmaMembrane2_Extracellular">(SurfToVol_PlasmaMembrane2 * VolFract_Cytosol2 / (1.0 - VolFract_Cytosol1 - VolFract_Cytosol2))</Function>
+            <Function Name="F_PlasmaMembrane2">( - I_Applied_Current_2 - I_Leak_Current_2 - I_K_Current_2 - I_Syn2_Current - I_Ca_Current_2)</Function>
+            <Function Name="F_PlasmaMembrane1">( - I_Applied_Current_1 - I_Syn1_Current - I_Leak_Current_1 - I_Ca_Current_1 - I_K_Current_1)</Function>
+            <CompartmentSubDomain Name="Compartment">
+               <BoundaryType Boundary="Xm" Type="Value" />
+               <BoundaryType Boundary="Xp" Type="Value" />
+               <BoundaryType Boundary="Ym" Type="Value" />
+               <BoundaryType Boundary="Yp" Type="Value" />
+               <BoundaryType Boundary="Zm" Type="Value" />
+               <BoundaryType Boundary="Zp" Type="Value" />
+               <OdeEquation Name="w2_c" SolutionType="Unknown">
+                  <Rate> - J_w2_gate_reaction</Rate>
+                  <Initial>w2_c_init</Initial>
+               </OdeEquation>
+               <OdeEquation Name="s1" SolutionType="Unknown">
+                  <Rate>(J_s1_kinetics * Kflux_PlasmaMembrane1_Extracellular * KMOLE)</Rate>
+                  <Initial>s1_init</Initial>
+               </OdeEquation>
+               <OdeEquation Name="s2" SolutionType="Unknown">
+                  <Rate>(J_s2_kinetics * Kflux_PlasmaMembrane2_Extracellular * KMOLE)</Rate>
+                  <Initial>s2_init</Initial>
+               </OdeEquation>
+               <OdeEquation Name="w1_c" SolutionType="Unknown">
+                  <Rate> - J_w1_gate_reaction</Rate>
+                  <Initial>w1_c_init</Initial>
+               </OdeEquation>
+               <OdeEquation Name="V2" SolutionType="Unknown">
+                  <Rate>(1000.0 * (I_PlasmaMembrane2 - ( - I_Applied_Current_2 - I_Leak_Current_2 - I_K_Current_2 - I_Syn2_Current - I_Ca_Current_2)) / C_PlasmaMembrane2)</Rate>
+                  <Initial>V2_init</Initial>
+               </OdeEquation>
+               <OdeEquation Name="V1" SolutionType="Unknown">
+                  <Rate>(1000.0 * (I_PlasmaMembrane1 - ( - I_Applied_Current_1 - I_Syn1_Current - I_Leak_Current_1 - I_Ca_Current_1 - I_K_Current_1)) / C_PlasmaMembrane1)</Rate>
+                  <Initial>V1_init</Initial>
+               </OdeEquation>
+            </CompartmentSubDomain>
+            <Version Name="Figure 6.6c" KeyValue="2930254" BranchId="2770464" Archived="0" Date="29-Aug-2002 11:33:05" FromVersionable="false">
+               <Owner Name="CompCell" Identifier="2646115" />
+               <GroupAccess Type="1" />
+            </Version>
+         </MathDescription>
+         <Simulation Name="Simulation 2">
+            <Annotation>Illustrated in Figure 6.6C</Annotation>
+            <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Runge-Kutta (Fourth Order, Fixed Time Step)">
+               <TimeBound StartTime="0.0" EndTime="1.0" />
+               <TimeStep DefaultTime="1.0E-4" MinTime="1.0E-8" MaxTime="1.0" />
+               <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+               <OutputOptions KeepEvery="2" KeepAtMost="5000" />
+            </SolverTaskDescription>
+            <MathOverrides>
+               <Constant Name="beta1">100.0</Constant>
+               <Constant Name="beta2">100.0</Constant>
+            </MathOverrides>
+            <Version Name="Simulation 2" KeyValue="2930910" BranchId="2930846" Archived="0" Date="29-Aug-2002 12:00:58" FromVersionable="false">
+               <Owner Name="CompCell" Identifier="2646115" />
+               <GroupAccess Type="1" />
+               <Annotation>Illustrated in Figure 6.6C</Annotation>
+            </Version>
+         </Simulation>
+         <Version Name="Figure 6.6C" KeyValue="2930772" BranchId="2917265" Archived="0" Date="29-Aug-2002 11:53:17" FromVersionable="false">
+            <Owner Name="CompCell" Identifier="2646115" />
+            <GroupAccess Type="1" />
+            <Annotation>Demonstrates how slow excitatory synapses lead to asynchrony.  Same parameters and initial conditions as in 6.6A except beta = 100/s (instead of beta = 1000/s).  SurfToVol_PlasmaMembrane1 and SurfToVol_PlasmaMembrane2 were changed to 1806 to cancel out KMOLE in the equations for s1 and s2 kinetics.</Annotation>
+         </Version>
+      </SimulationSpec>
+      <Version Name="Morris-Lecar Mutual Excitation" KeyValue="2930915" BranchId="2661971" Archived="0" Date="29-Aug-2002 12:00:59" FromVersionable="false">
+         <Owner Name="CompCell" Identifier="2646115" />
+         <GroupAccess Type="0" />
+         <Annotation>Demonstrates how fast excitatory synapses lead to synchrony and slow excitatory synapses lead to asynchrony in two identical electrically coupled cells.  The only parameter modified is beta (=1000/s in Figure 6.6A and =100/s in Figure 6.6C).  Described in 6.3.</Annotation>
+      </Version>
+   </BioModel>
+</vcml>
+
