@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-VCELL_ROOTDIR="$(cd "$(dirname "$0")"; cd ..; pwd)"
-
 shopt -s -o nounset
 
 if [ "$#" -ne 6 ]; then
@@ -101,7 +99,6 @@ VCELL_DB_DRIVER="oracle.jdbc.driver.OracleDriver"
 VCELL_DB_USER="vcell"
 VCELL_JMS_SIM_HOST_EXTERNAL=$VCELL_API_HOST_EXTERNAL
 VCELL_MONGO_HOST_EXTERNAL=$VCELL_API_HOST_EXTERNAL
-VCELL_INSTALLER_SCP_DESTINATION=vcell@apache.cam.uchc.edu:/apache_webroot/htdocs/webstart/${_site_camel}
 VCELL_BATCH_HOST="hpc-ext-1.cam.uchc.edu,hpc-ext-2.cam.uchc.edu,hpc-ext-3.cam.uchc.edu,hpc-ext-4.cam.uchc.edu"
 #VCELL_BATCH_HOST=vcell-service.cam.uchc.edu
 VCELL_SLURM_CMD_SBATCH=sbatch
@@ -180,7 +177,6 @@ VCELL_INSTALLER_JRE_MAC=macosx-amd64-1.8.0_141
 VCELL_INSTALLER_JRE_WIN32=windows-x86-1.8.0_141
 VCELL_INSTALLER_JRE_WIN64=windows-amd64-1.8.0_141
 VCELL_INSTALLER_JREDIR=/usr/local/deploy/.install4j6/jres
-VCELL_INSTALLER_SCP_DESTINATION=$VCELL_INSTALLER_SCP_DESTINATION
 VCELL_JMS_SIM_HOST_EXTERNAL=$VCELL_JMS_SIM_HOST_EXTERNAL
 VCELL_JMS_SIM_PORT_EXTERNAL=$VCELL_JMS_SIM_PORT_EXTERNAL
 VCELL_JMS_SIM_RESTPORT_EXTERNAL=$VCELL_JMS_SIM_RESTPORT_EXTERNAL

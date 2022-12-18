@@ -30,11 +30,6 @@ VCELL_VERSION_NUMBER=$_version_number
 VCELL_BUILD_NUMBER=$_build_number
 #SLURM parameter values
 vcell_slurm_partition=vcell
-vcell_slurm_reservation=
-vcell_slurm_qos=vcell
-vcell_slurm_partition_pu=vcellpu
-vcell_slurm_reservation_pu=vcellpu
-vcell_slurm_qos_pu=vcellpu
 
 VCELL_API_HOST_EXTERNAL=$(hostname)
 VCELL_API_PUBLICATION_HOST=$(hostname)
@@ -92,7 +87,6 @@ VCELL_DB_USER="vcell"
 VCELL_API_HOST_EXTERNAL=$(hostname)
 VCELL_JMS_SIM_HOST_EXTERNAL=$(hostname)
 VCELL_MONGO_HOST_EXTERNAL=$(hostname)
-VCELL_INSTALLER_SCP_DESTINATION=localhost:${VCELL_DEPLOY_ROOT_DIR}/installers
 VCELL_BATCH_HOST=$(hostname)
 VCELL_SLURM_CMD_SBATCH=${VCELL_ROOTDIR}/docker/mockslurm/sbatch_docker
 VCELL_SLURM_CMD_SACCT=${VCELL_ROOTDIR}/docker/mockslurm/sacct
@@ -159,7 +153,6 @@ VCELL_INSTALLER_JRE_MAC=macosx-amd64-1.8.0_141
 VCELL_INSTALLER_JRE_WIN32=windows-x86-1.8.0_141
 VCELL_INSTALLER_JRE_WIN64=windows-amd64-1.8.0_141
 VCELL_INSTALLER_JREDIR=${HOME}/.install4j6/jres
-VCELL_INSTALLER_SCP_DESTINATION=$VCELL_INSTALLER_SCP_DESTINATION
 VCELL_JMS_SIM_HOST_EXTERNAL=$VCELL_JMS_SIM_HOST_EXTERNAL
 VCELL_JMS_SIM_PORT_EXTERNAL=$VCELL_JMS_SIM_PORT_EXTERNAL
 VCELL_JMS_SIM_RESTPORT_EXTERNAL=$VCELL_JMS_SIM_RESTPORT_EXTERNAL
