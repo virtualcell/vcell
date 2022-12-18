@@ -40,9 +40,9 @@ show_help() {
 	echo "                          directory for installers accessible to users"
 	echo "                          typically a web-accessible location to download the client installers for each platform"
 	echo ""
-	echo "    --link-installers     optionally create symbolic links for newly created client installers"
-	echo "                          for permanent 'latest' web links fr each platform"
-	echo ""
+#	echo "    --link-installers     optionally create symbolic links for newly created client installers"
+#	echo "                          for permanent 'latest' web links fr each platform"
+#	echo ""
 	echo "    --install-singularity  optionally install batch and opt singularity images on each compute node in 'vcell' SLURM partition"
 	echo ""
 	echo ""
@@ -64,7 +64,7 @@ ssh_user=$(whoami)
 ssh_key=
 installer_deploy_dir=
 build_installers=false
-link_installers=false
+#link_installers=false
 install_singularity=false
 while :; do
 	case $1 in
@@ -90,9 +90,9 @@ while :; do
 		--build-installers)
 			build_installers=true
 			;;
-		--link-installers)
-			link_installers=true
-			;;
+#		--link-installers)
+#			link_installers=true
+#			;;
 		-?*)
 			printf 'ERROR: Unknown option: %s\n' "$1" >&2
 			echo ""
@@ -190,7 +190,7 @@ fi
 #
 # if --build-installers, then generate client installers, placing then in ./generated_installers
 #    if --installer-deploy-dir, then also copy installers to $installer_deploy_dir
-#        if --link-installers, then also link installers to version independent installer names for each platform
+#  *** unimplemented *** (if --link-installers, then also link installers to version independent installer names for each platform)
 #
 if [ "$build_installers" == "true" ]; then
 	#
