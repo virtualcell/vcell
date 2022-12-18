@@ -113,7 +113,7 @@ while :; do
 	esac
 	shift
 done
-echo $@
+echo "$@"
 if [ "$#" -lt 1 ]; then
     show_help
 fi

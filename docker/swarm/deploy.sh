@@ -116,16 +116,16 @@ remote_compose_file=$5
 stack_name=$6
 
 # get settings from config file
-vcell_siteCamel=`cat $local_config_file | grep VCELL_SITE_CAMEL | cut -d"=" -f2`
-vcell_version=`cat $local_config_file | grep VCELL_VERSION_NUMBER | cut -d"=" -f2`
-vcell_build=`cat $local_config_file | grep VCELL_BUILD_NUMBER | cut -d"=" -f2`
-batch_singularity_filename=`cat $local_config_file | grep VCELL_BATCH_SINGULARITY_FILENAME | cut -d"=" -f2`
-batch_singularity_image_external=`cat $local_config_file | grep VCELL_BATCH_SINGULARITY_IMAGE_EXTERNAL | cut -d"=" -f2`
-opt_singularity_filename=`cat $local_config_file | grep VCELL_OPT_SINGULARITY_FILENAME | cut -d"=" -f2`
-opt_singularity_image_external=`cat $local_config_file | grep VCELL_OPT_SINGULARITY_IMAGE_EXTERNAL | cut -d"=" -f2`
-#partitionName=`cat $local_config_file | grep VCELL_SLURM_PARTITION | cut -d"=" -f2`
-batchHost=`cat $local_config_file | grep VCELL_BATCH_HOST | cut -d"=" -f2`
-slurm_singularity_central_dir=`cat $local_config_file | grep VCELL_SLURM_CENTRAL_SINGULARITY_DIR | cut -d"=" -f2`
+vcell_siteCamel=$(grep VCELL_SITE_CAMEL "$local_config_file" | cut -d"=" -f2)
+vcell_version=$(grep VCELL_VERSION_NUMBER "$local_config_file" | cut -d"=" -f2)
+vcell_build=$(grep VCELL_BUILD_NUMBER "$local_config_file" | cut -d"=" -f2)
+batch_singularity_filename=$(grep VCELL_BATCH_SINGULARITY_FILENAME "$local_config_file" | cut -d"=" -f2)
+batch_singularity_image_external=$(grep VCELL_BATCH_SINGULARITY_IMAGE_EXTERNAL "$local_config_file" | cut -d"=" -f2)
+opt_singularity_filename=$(grep VCELL_OPT_SINGULARITY_FILENAME "$local_config_file" | cut -d"=" -f2)
+opt_singularity_image_external=$(grep VCELL_OPT_SINGULARITY_IMAGE_EXTERNAL "$local_config_file" | cut -d"=" -f2)
+#partitionName=$(grep VCELL_SLURM_PARTITION "$local_config_file" | cut -d"=" -f2)
+batchHost=$(grep VCELL_BATCH_HOST $local_config_file | cut -d"=" -f2)
+slurm_singularity_central_dir=$(grep VCELL_SLURM_CENTRAL_SINGULARITY_DIR "$local_config_file" | cut -d"=" -f2)
 
 
 echo ""
@@ -137,7 +137,7 @@ echo $cmd
 echo ""
 echo "coping $local_compose_file to $manager_node:$remote_compose_file as user $ssh_user"
 cmd="scp $ssh_key $local_compose_file $ssh_user@$manager_node:$remote_compose_file"
-echo $cmd
+echo "$cmd"
 ($cmd) || (echo "failed to upload docker-compose file" && exit 1)
 
 
@@ -148,7 +148,7 @@ if [ "$install_singularity" == "true" ]; then
 
 	echo ""
 	cmd="pushd ../build/singularity-vm"
-	pushd ../build/singularity-vm
+	pushd ../build/singularity-vm || echo "failed to pushd to ../build/singularity-vm"; exit 1
 	echo ""
 	echo "CURRENT DIRECTORY IS $PWD"
 
@@ -167,14 +167,14 @@ if [ "$install_singularity" == "true" ]; then
 	fi
 
 	echo "mkdir -p ${slurm_singularity_central_dir}"
-	mkdir -p ${slurm_singularity_central_dir}
+	mkdir -p "${slurm_singularity_central_dir}"
 	echo "cp ./${batch_singularity_filename} ${slurm_singularity_central_dir}"
 	cp "./${batch_singularity_filename}" "${slurm_singularity_central_dir}"
 	echo "cp ./${opt_singularity_filename} ${slurm_singularity_central_dir}"
 	cp "./${opt_singularity_filename}" "${slurm_singularity_central_dir}"
 
 	echo "popd"
-	popd
+	popd || echo "popd failed"; exit 1
 fi
 
 
@@ -183,14 +183,14 @@ fi
 #
 echo ""
 echo "deploying stack $stack_name to $manager_node using config in $manager_node:$remote_config_file"
-localmachine=`hostname`
+localmachine=$(hostname)
 if [ "$localmachine" == "$manager_node" ]; then
 	echo "env \$(cat $remote_config_file | xargs) docker stack deploy -c $remote_compose_file $stack_name"
-	env $(cat $remote_config_file | xargs) docker stack deploy -c $remote_compose_file $stack_name
-	if [[ $? -ne 0 ]]; then echo "failed to deploy stack" && exit 1; fi
+	if ! env $(xargs < "$remote_config_file") docker stack deploy -c "$remote_compose_file" "$stack_name";
+	then echo "failed to deploy stack" && exit 1; fi
 else
 	cmd="ssh $ssh_key -t $ssh_user@$manager_node sudo env \$(cat $remote_config_file | xargs) docker stack deploy -c $remote_compose_file $stack_name"
-	echo $cmd
+	echo "$cmd"
 	($cmd) || (echo "failed to deploy stack" && exit 1)
 fi
 
@@ -203,23 +203,23 @@ if [ "$build_installers" == "true" ]; then
 	#
 	# if --installer-deploy-dir, then copy the installers from ./generated_installers directory to the installer deploy directory
 	#
-	if [ ! -z $installer_deploy_dir ]; then
+	if [ ! -z "$installer_deploy_dir" ]; then
 		# vcell_siteCamel=Alpha
 		# vcell_version=7.0.0
 		# vcell_build=19
 		# version=7_0_0_19
 		version=$(echo "${vcell_version}_${vcell_build}" | tr '.' _)
-		cp ./generated_installers/VCell_${vcell_siteCamel}_windows-x64_${version}_64bit.exe \
-			./generated_installers/VCell_${vcell_siteCamel}_windows-x64_${version}_64bit.dat/* \
-			./generated_installers/VCell_${vcell_siteCamel}_unix_${version}_32bit.sh \
-			./generated_installers/VCell_${vcell_siteCamel}_macos_${version}_64bit.dmg \
-			./generated_installers/VCell_${vcell_siteCamel}_windows_${version}_32bit.exe \
-			./generated_installers/VCell_${vcell_siteCamel}_unix_${version}_64bit.sh \
-			./generated_installers/updates.xml \
-			./generated_installers/output.txt \
-			./generated_installers/md5sums \
-				${installer_deploy_dir}
-		if [[ $? -ne 0 ]]; then 
+		if ! cp "./generated_installers/VCell_${vcell_siteCamel}_windows-x64_${version}_64bit.exe" \
+			"./generated_installers/VCell_${vcell_siteCamel}_windows-x64_${version}_64bit.dat"/* \
+			"./generated_installers/VCell_${vcell_siteCamel}_unix_${version}_32bit.sh" \
+			"./generated_installers/VCell_${vcell_siteCamel}_macos_${version}_64bit.dmg" \
+			"./generated_installers/VCell_${vcell_siteCamel}_windows_${version}_32bit.exe" \
+			"./generated_installers/VCell_${vcell_siteCamel}_unix_${version}_64bit.sh" \
+			"./generated_installers/updates.xml" \
+			"./generated_installers/output.txt" \
+			"./generated_installers/md5sums" \
+				"${installer_deploy_dir}";
+		then
 			echo "failed to copy installers"; 
 			exit 1;
 		fi
@@ -229,34 +229,34 @@ if [ "$build_installers" == "true" ]; then
 		#
 		if [ "$link_installers" == "true" ]; then
 
-			pushd ${installer_deploy_dir}
+			pushd "${installer_deploy_dir}" || echo "pushd to ${installer_deploy_dir} failed"; exit 1
 
-			rm VCell_${vcell_siteCamel}_windows-x64_latest_64bit.exe && \
-			ln -s VCell_${vcell_siteCamel}_windows-x64_${version}_64bit.exe \
-				  VCell_${vcell_siteCamel}_windows-x64_latest_64bit.exe
-			if [[ $? -ne 0 ]]; then echo "failed to create symbolic link for Win64 installer"; exit 1; fi
+			rm "VCell_${vcell_siteCamel}_windows-x64_latest_64bit.exe" && \
+			if ! ln -s "VCell_${vcell_siteCamel}_windows-x64_${version}_64bit.exe" \
+				  "VCell_${vcell_siteCamel}_windows-x64_latest_64bit.exe";
+			then echo "failed to create symbolic link for Win64 installer"; exit 1; fi
 
-			rm VCell_${vcell_siteCamel}_unix_latest_32bit.sh && \
-			ln -s VCell_${vcell_siteCamel}_unix_${version}_32bit.sh \
-				  VCell_${vcell_siteCamel}_unix_latest_32bit.sh
-			if [[ $? -ne 0 ]]; then echo "failed to create symbolic link for Linux32 installer"; exit 1; fi
+			rm "VCell_${vcell_siteCamel}_unix_latest_32bit.sh" && \
+			if ! ln -s "VCell_${vcell_siteCamel}_unix_${version}_32bit.sh" \
+				  "VCell_${vcell_siteCamel}_unix_latest_32bit.sh";
+			then echo "failed to create symbolic link for Linux32 installer"; exit 1; fi
 
-			rm VCell_${vcell_siteCamel}_macos_latest_64bit.dmg && \
-			ln -s VCell_${vcell_siteCamel}_macos_${version}_64bit.dmg \
-				  VCell_${vcell_siteCamel}_macos_latest_64bit.dmg
-			if [[ $? -ne 0 ]]; then echo "failed to create symbolic link for Macos installer"; exit 1; fi
+			rm "VCell_${vcell_siteCamel}_macos_latest_64bit.dmg" && \
+			if ! ln -s "VCell_${vcell_siteCamel}_macos_${version}_64bit.dmg" \
+				  "VCell_${vcell_siteCamel}_macos_latest_64bit.dmg";
+			then echo "failed to create symbolic link for Macos installer"; exit 1; fi
 
-			rm VCell_${vcell_siteCamel}_windows_latest_32bit.exe && \
-			ln -s VCell_${vcell_siteCamel}_windows_${version}_32bit.exe \
-				  VCell_${vcell_siteCamel}_windows_latest_32bit.exe
-			if [[ $? -ne 0 ]]; then echo "failed to create symbolic link for Win32 installer"; exit 1; fi
+			rm "VCell_${vcell_siteCamel}_windows_latest_32bit.exe" && \
+			if ! ln -s "VCell_${vcell_siteCamel}_windows_${version}_32bit.exe" \
+				  "VCell_${vcell_siteCamel}_windows_latest_32bit.exe";
+			then echo "failed to create symbolic link for Win32 installer"; exit 1; fi
 
-			rm VCell_${vcell_siteCamel}_unix_latest_64bit.sh && \
-			ln -s VCell_${vcell_siteCamel}_unix_${version}_64bit.sh \
-				  VCell_${vcell_siteCamel}_unix_latest_64bit.sh
-			if [[ $? -ne 0 ]]; then echo "failed to create symbolic link for Linux64 installer"; exit 1; fi
+			rm "VCell_${vcell_siteCamel}_unix_latest_64bit.sh" && \
+			if ! ln -s "VCell_${vcell_siteCamel}_unix_${version}_64bit.sh" \
+				  "VCell_${vcell_siteCamel}_unix_latest_64bit.sh";
+			then echo "failed to create symbolic link for Linux64 installer"; exit 1; fi
 
-			popd
+			popd || echo "popd failed"; exit 1
 		fi
 	fi
 fi
