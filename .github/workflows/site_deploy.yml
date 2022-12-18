@@ -180,14 +180,16 @@ jobs:
       uses: eWaterCycle/setup-singularity@v6
       with:
         singularity-version: 3.7.1
-    - name: retrieve singularity image
+    - name: retrieve batch and opt singularity images
       run: |
         set -ux
         cd docker/swarm
-        export SINGULARITY_FILENAME=`cat $VCELL_CONFIG_FILE_NAME | grep VCELL_SINGULARITY_FILENAME | cut -d"=" -f2`
+        export BATCH_SINGULARITY_FILENAME=`cat $VCELL_CONFIG_FILE_NAME | grep VCELL_BATCH_SINGULARITY_FILENAME | cut -d"=" -f2`
+        export OPT_SINGULARITY_FILENAME=`cat $VCELL_CONFIG_FILE_NAME | grep VCELL_OPT_SINGULARITY_FILENAME | cut -d"=" -f2`
         cd ../build/singularity-vm
         singularity remote login -u ${{ secrets.ACTION_USER }} -p ${{ secrets.ACTION_TOKEN }} oras://ghcr.io
-        singularity pull $SINGULARITY_FILENAME oras://${VCELL_REPO_NAMESPACE}/vcell-batch-singularity:${{ github.event.inputs.vcell_version }}.${{ github.event.inputs.vcell_build }}
+        singularity pull $BATCH_SINGULARITY_FILENAME oras://${VCELL_REPO_NAMESPACE}/vcell-batch-singularity:${{ github.event.inputs.vcell_version }}.${{ github.event.inputs.vcell_build }}
+        singularity pull $OPT_SINGULARITY_FILENAME   oras://${VCELL_REPO_NAMESPACE}/vcell-opt-singularity:${{ github.event.inputs.vcell_version }}.${{ github.event.inputs.vcell_build }}
     - name: deploy to site
       run: |
         set -ux
