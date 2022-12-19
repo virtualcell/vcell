@@ -455,5 +455,8 @@ protected void checkValid_PointSubDomain(MathDescription mathDesc, List<Expressi
 
 public void refreshDependencies(MathDescription mathDesc) {
 }
+void setVar(Variable var) {
+	this.var = var;
+}
 
 }

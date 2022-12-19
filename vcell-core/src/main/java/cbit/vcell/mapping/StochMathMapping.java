@@ -337,6 +337,8 @@ private Expression getProbabilityRate(ReactionStep reactionStep, Expression rate
 			SpeciesContextMapping scm = enum1.nextElement();
 			if (scm.getVariable() instanceof StochVolVariable){
 				varHash.addVariable(scm.getVariable());
+				StructureMapping sm = simContext.getGeometryContext().getStructureMapping(scm.getSpeciesContext().getStructure());
+				scm.getVariable().setDomain(new Domain(sm.getGeometryClass()));
 			}
 		}
 

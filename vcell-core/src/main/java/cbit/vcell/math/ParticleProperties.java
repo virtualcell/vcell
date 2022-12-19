@@ -20,6 +20,8 @@ import org.vcell.util.Matchable;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.ExpressionUtils;
+import cbit.vcell.parser.ExpressionUtils.ExpressionEquivalencePredicate;
 import cbit.vcell.parser.SymbolTable;
 
 @SuppressWarnings("serial")
@@ -46,7 +48,7 @@ public class ParticleProperties implements Serializable, Matchable {
 			}
 			
 			ParticleInitialConditionConcentration pic = (ParticleInitialConditionConcentration) obj;		
-			return Compare.isEqual(distribution, pic.distribution);
+			return Compare.isEqual(distribution, pic.distribution, new ExpressionUtils.ExpressionEquivalencePredicate());
 		}
 		public String getVCML(int dimension) {
 			StringBuilder buffer = new StringBuilder();
@@ -183,7 +185,7 @@ public class ParticleProperties implements Serializable, Matchable {
 			}
 			
 			ParticleInitialConditionCount pic = (ParticleInitialConditionCount) object;		
-			return Compare.isEqual(count, pic.count) 
+			return Compare.isEqual(count, pic.count, new ExpressionUtils.ExpressionEquivalencePredicate()) 
 					&&	Compare.isEqualOrNull(locationX, pic.locationX) 
 					&&	Compare.isEqualOrNull(locationY, pic.locationY) 
 					&&	Compare.isEqualOrNull(locationZ, pic.locationZ);
