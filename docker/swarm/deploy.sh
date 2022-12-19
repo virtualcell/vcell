@@ -231,28 +231,23 @@ if [ "$build_installers" == "true" ]; then
 
 			pushd "${installer_deploy_dir}" || (echo "pushd to ${installer_deploy_dir} failed"; exit 1)
 
-			rm "VCell_${vcell_siteCamel}_windows-x64_latest_64bit.exe" && \
-			if ! ln -s "VCell_${vcell_siteCamel}_windows-x64_${version}_64bit.exe" \
+			if ! ln -sf "VCell_${vcell_siteCamel}_windows-x64_${version}_64bit.exe" \
 				  "VCell_${vcell_siteCamel}_windows-x64_latest_64bit.exe";
 			then echo "failed to create symbolic link for Win64 installer"; exit 1; fi
 
-			rm "VCell_${vcell_siteCamel}_unix_latest_32bit.sh" && \
-			if ! ln -s "VCell_${vcell_siteCamel}_unix_${version}_32bit.sh" \
+			if ! ln -sf "VCell_${vcell_siteCamel}_unix_${version}_32bit.sh" \
 				  "VCell_${vcell_siteCamel}_unix_latest_32bit.sh";
 			then echo "failed to create symbolic link for Linux32 installer"; exit 1; fi
 
-			rm "VCell_${vcell_siteCamel}_macos_latest_64bit.dmg" && \
-			if ! ln -s "VCell_${vcell_siteCamel}_macos_${version}_64bit.dmg" \
+			if ! ln -sf "VCell_${vcell_siteCamel}_macos_${version}_64bit.dmg" \
 				  "VCell_${vcell_siteCamel}_macos_latest_64bit.dmg";
 			then echo "failed to create symbolic link for Macos installer"; exit 1; fi
 
-			rm "VCell_${vcell_siteCamel}_windows_latest_32bit.exe" && \
-			if ! ln -s "VCell_${vcell_siteCamel}_windows_${version}_32bit.exe" \
+			if ! ln -sf "VCell_${vcell_siteCamel}_windows_${version}_32bit.exe" \
 				  "VCell_${vcell_siteCamel}_windows_latest_32bit.exe";
 			then echo "failed to create symbolic link for Win32 installer"; exit 1; fi
 
-			rm "VCell_${vcell_siteCamel}_unix_latest_64bit.sh" && \
-			if ! ln -s "VCell_${vcell_siteCamel}_unix_${version}_64bit.sh" \
+			if ! ln -sf "VCell_${vcell_siteCamel}_unix_${version}_64bit.sh" \
 				  "VCell_${vcell_siteCamel}_unix_latest_64bit.sh";
 			then echo "failed to create symbolic link for Linux64 installer"; exit 1; fi
 
