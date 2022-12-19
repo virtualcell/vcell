@@ -265,6 +265,10 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 	hashTable.put(FILE_FILTER, fileFilter);
 	if (fileFilter.supports(SelectorExtensionFilter.Selector.FULL_MODEL)) {
 		// nothing more to do in this case
+		if (fileFilter.requiresMoreChoices()) {
+			ExtensionFilter.ChooseContext ctx = new ExtensionFilter.ChooseContext(hashTable,topLevelWindowManager,currentWindow,null,selectedFile,selectedFileName);
+			fileFilter.askUser(ctx);
+		}
 		resetPreferredFilePath(selectedFile, userPreferences);
 		return selectedFile;
 	}

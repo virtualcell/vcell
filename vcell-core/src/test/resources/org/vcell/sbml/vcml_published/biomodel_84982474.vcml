@@ -1,0 +1,937 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--This biomodel was generated in VCML Version 0.4-->
+<vcml xmlns="http://sourceforge.net/projects/vcell/vcml" Version="0.4">
+   <BioModel Name="CSH_09_G2_M_simple">
+      <Annotation>cloned from 'CSH_09_G2_M_simple' owned by user boris
+</Annotation>
+      <Model Name="unnamed">
+         <Annotation>cloned from 'unnamed' owned by user boris
+</Annotation>
+         <Compound Name="c_i" />
+         <Compound Name="c_a" />
+         <Compound Name="w_i" />
+         <Compound Name="w_a" />
+         <Compound Name="R" />
+         <Compound Name="a" />
+         <Compound Name="m_i" />
+         <Compound Name="m_a" />
+         <Feature Name="extracellular" KeyValue="35771416" />
+         <Feature Name="cell" KeyValue="35771418" />
+         <Membrane InsideFeature="cell" OutsideFeature="extracellular" MembraneVoltage="Voltage_pm" Name="pm" KeyValue="35771417" />
+         <LocalizedCompound Name="c_i" CompoundRef="c_i" Structure="cell" OverrideName="true" KeyValue="35771423" />
+         <LocalizedCompound Name="c_a" CompoundRef="c_a" Structure="cell" OverrideName="true" KeyValue="35771424" />
+         <LocalizedCompound Name="w_i" CompoundRef="w_i" Structure="cell" OverrideName="true" KeyValue="35771425" />
+         <LocalizedCompound Name="w_a" CompoundRef="w_a" Structure="cell" OverrideName="true" KeyValue="35771426" />
+         <LocalizedCompound Name="R" CompoundRef="R" Structure="pm" OverrideName="true" KeyValue="35771427" />
+         <LocalizedCompound Name="a" CompoundRef="a" Structure="cell" OverrideName="true" KeyValue="35771428" />
+         <LocalizedCompound Name="m_i" CompoundRef="m_i" Structure="cell" OverrideName="true" KeyValue="35771429" />
+         <LocalizedCompound Name="m_a" CompoundRef="m_a" Structure="cell" OverrideName="true" KeyValue="35771422" />
+         <SimpleReaction Structure="cell" Name="c_inactivation" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="35771430">
+            <Reactant LocalizedCompoundRef="c_a" Stoichiometry="1" KeyValue="35771431" />
+            <Product LocalizedCompoundRef="c_i" Stoichiometry="1" KeyValue="35771432" />
+            <Kinetics KineticsType="MassAction">
+               <Parameter Name="J" Role="reaction rate" Unit="uM.s-1">((k4 * c_a) - (Kr * c_i))</Parameter>
+               <Parameter Name="k4" Role="forward rate constant" Unit="s-1">3.0</Parameter>
+               <Parameter Name="Kr" Role="reverse rate constant" Unit="s-1">0.0</Parameter>
+            </Kinetics>
+         </SimpleReaction>
+         <SimpleReaction Structure="cell" Name="c_activation" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="35771433">
+            <Reactant LocalizedCompoundRef="c_i" Stoichiometry="1" KeyValue="35771434" />
+            <Reactant LocalizedCompoundRef="m_a" Stoichiometry="1" KeyValue="35771435" />
+            <Product LocalizedCompoundRef="c_a" Stoichiometry="1" KeyValue="35771436" />
+            <Product LocalizedCompoundRef="m_a" Stoichiometry="1" KeyValue="35771437" />
+            <Kinetics KineticsType="MassAction">
+               <Parameter Name="J" Role="reaction rate" Unit="uM.s-1">((m_a * k3 * c_i) - (m_a * Kr * c_a))</Parameter>
+               <Parameter Name="k3" Role="forward rate constant" Unit="s-1.uM-1">1204.0</Parameter>
+               <Parameter Name="Kr" Role="reverse rate constant" Unit="s-1.uM-1">0.0</Parameter>
+            </Kinetics>
+         </SimpleReaction>
+         <SimpleReaction Structure="cell" Name="m_inactivation" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="35771438">
+            <Reactant LocalizedCompoundRef="m_a" Stoichiometry="1" KeyValue="35771439" />
+            <Reactant LocalizedCompoundRef="w_a" Stoichiometry="1" KeyValue="35771440" />
+            <Product LocalizedCompoundRef="m_i" Stoichiometry="1" KeyValue="35771441" />
+            <Product LocalizedCompoundRef="w_a" Stoichiometry="1" KeyValue="35771442" />
+            <Kinetics KineticsType="MassAction">
+               <Parameter Name="J" Role="reaction rate" Unit="uM.s-1">((w_a * k2 * m_a) - (w_a * Kr * m_i))</Parameter>
+               <Parameter Name="k2" Role="forward rate constant" Unit="s-1.uM-1">1204.0</Parameter>
+               <Parameter Name="Kr" Role="reverse rate constant" Unit="s-1.uM-1">0.0</Parameter>
+            </Kinetics>
+         </SimpleReaction>
+         <SimpleReaction Structure="cell" Name="m_activation2" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="35771443">
+            <Reactant LocalizedCompoundRef="m_i" Stoichiometry="1" KeyValue="35771444" />
+            <Reactant LocalizedCompoundRef="c_i" Stoichiometry="1" KeyValue="35771445" />
+            <Product LocalizedCompoundRef="m_a" Stoichiometry="1" KeyValue="35771446" />
+            <Product LocalizedCompoundRef="c_i" Stoichiometry="1" KeyValue="35771447" />
+            <Kinetics KineticsType="MassAction">
+               <Parameter Name="J" Role="reaction rate" Unit="uM.s-1">((c_i * k1_prm * m_i) - (c_i * Kr * m_a))</Parameter>
+               <Parameter Name="k1_prm" Role="forward rate constant" Unit="s-1.uM-1">6.02</Parameter>
+               <Parameter Name="Kr" Role="reverse rate constant" Unit="s-1.uM-1">0.0</Parameter>
+            </Kinetics>
+         </SimpleReaction>
+         <SimpleReaction Structure="cell" Name="m_activation1" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="35771448">
+            <Reactant LocalizedCompoundRef="m_i" Stoichiometry="1" KeyValue="35771449" />
+            <Reactant LocalizedCompoundRef="c_a" Stoichiometry="1" KeyValue="35771450" />
+            <Product LocalizedCompoundRef="m_a" Stoichiometry="1" KeyValue="35771451" />
+            <Product LocalizedCompoundRef="c_a" Stoichiometry="1" KeyValue="35771452" />
+            <Kinetics KineticsType="MassAction">
+               <Parameter Name="J" Role="reaction rate" Unit="uM.s-1">((c_a * k1 * m_i) - (c_a * Kr * m_a))</Parameter>
+               <Parameter Name="k1" Role="forward rate constant" Unit="s-1.uM-1">1204.0</Parameter>
+               <Parameter Name="Kr" Role="reverse rate constant" Unit="s-1.uM-1">0.0</Parameter>
+            </Kinetics>
+         </SimpleReaction>
+         <SimpleReaction Structure="cell" Name="w_inactivation1" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="35771453">
+            <Reactant LocalizedCompoundRef="w_a" Stoichiometry="1" KeyValue="35771454" />
+            <Reactant LocalizedCompoundRef="m_a" Stoichiometry="1" KeyValue="35771455" />
+            <Product LocalizedCompoundRef="w_i" Stoichiometry="1" KeyValue="35771456" />
+            <Product LocalizedCompoundRef="m_a" Stoichiometry="1" KeyValue="35771457" />
+            <Kinetics KineticsType="MassAction">
+               <Parameter Name="J" Role="reaction rate" Unit="uM.s-1">((m_a * k6 * w_a) - (m_a * Kr * w_i))</Parameter>
+               <Parameter Name="k6" Role="forward rate constant" Unit="s-1.uM-1">1204.0</Parameter>
+               <Parameter Name="Kr" Role="reverse rate constant" Unit="s-1.uM-1">0.0</Parameter>
+            </Kinetics>
+         </SimpleReaction>
+         <SimpleReaction Structure="cell" Name="w_activation" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="35771458">
+            <Reactant LocalizedCompoundRef="w_i" Stoichiometry="1" KeyValue="35771459" />
+            <Product LocalizedCompoundRef="w_a" Stoichiometry="1" KeyValue="35771460" />
+            <Kinetics KineticsType="MassAction">
+               <Parameter Name="J" Role="reaction rate" Unit="uM.s-1">((k5 * w_i) - (Kr * w_a))</Parameter>
+               <Parameter Name="k5" Role="forward rate constant" Unit="s-1">0.2</Parameter>
+               <Parameter Name="Kr" Role="reverse rate constant" Unit="s-1">0.0</Parameter>
+            </Kinetics>
+         </SimpleReaction>
+         <SimpleReaction Structure="cell" Name="a_degradation" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="35771466">
+            <Reactant LocalizedCompoundRef="a" Stoichiometry="1" KeyValue="35771467" />
+            <Kinetics KineticsType="MassAction">
+               <Parameter Name="J" Role="reaction rate" Unit="uM.s-1">(k_degr * a)</Parameter>
+               <Parameter Name="k_degr" Role="forward rate constant" Unit="s-1">10.0</Parameter>
+               <Parameter Name="Kr" Role="reverse rate constant" Unit="uM.s-1">0.0</Parameter>
+            </Kinetics>
+         </SimpleReaction>
+         <SimpleReaction Structure="pm" Name="a_influx" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="35771468">
+            <Reactant LocalizedCompoundRef="R" Stoichiometry="1" KeyValue="35771469" />
+            <Product LocalizedCompoundRef="R" Stoichiometry="1" KeyValue="35771470" />
+            <Product LocalizedCompoundRef="a" Stoichiometry="1" KeyValue="35771471" />
+            <Kinetics KineticsType="MassAction">
+               <Parameter Name="J" Role="reaction rate" Unit="molecules.um-2.s-1">((k_pr * R) - (a * Kr * R))</Parameter>
+               <Parameter Name="I" Role="inward current density" Unit="pA.um-2">0.0</Parameter>
+               <Parameter Name="k_pr" Role="forward rate constant" Unit="s-1">1.0</Parameter>
+               <Parameter Name="Kr" Role="reverse rate constant" Unit="s-1.uM-1">0.0</Parameter>
+            </Kinetics>
+         </SimpleReaction>
+         <SimpleReaction Structure="cell" Name="w_inactivation2" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="35771461">
+            <Reactant LocalizedCompoundRef="w_a" Stoichiometry="1" KeyValue="35771462" />
+            <Reactant LocalizedCompoundRef="a" Stoichiometry="1" KeyValue="35771463" />
+            <Product LocalizedCompoundRef="w_i" Stoichiometry="1" KeyValue="35771464" />
+            <Product LocalizedCompoundRef="a" Stoichiometry="1" KeyValue="35771465" />
+            <Kinetics KineticsType="MassAction">
+               <Parameter Name="J" Role="reaction rate" Unit="uM.s-1">((a * k0 * w_a) - (a * Kr * w_i))</Parameter>
+               <Parameter Name="k0" Role="forward rate constant" Unit="s-1.uM-1">1000.0</Parameter>
+               <Parameter Name="Kr" Role="reverse rate constant" Unit="s-1.uM-1">0.0</Parameter>
+            </Kinetics>
+         </SimpleReaction>
+         <Diagram Name="cell" Structure="cell">
+            <LocalizedCompoundShape LocalizedCompoundRef="a" LocationX="187" LocationY="482" />
+            <LocalizedCompoundShape LocalizedCompoundRef="m_i" LocationX="158" LocationY="209" />
+            <LocalizedCompoundShape LocalizedCompoundRef="m_a" LocationX="364" LocationY="217" />
+            <LocalizedCompoundShape LocalizedCompoundRef="c_i" LocationX="141" LocationY="72" />
+            <LocalizedCompoundShape LocalizedCompoundRef="c_a" LocationX="327" LocationY="72" />
+            <LocalizedCompoundShape LocalizedCompoundRef="w_i" LocationX="183" LocationY="367" />
+            <LocalizedCompoundShape LocalizedCompoundRef="w_a" LocationX="393" LocationY="368" />
+            <SimpleReactionShape SimpleReactionRef="c_inactivation" LocationX="231" LocationY="37" />
+            <SimpleReactionShape SimpleReactionRef="c_activation" LocationX="231" LocationY="88" />
+            <SimpleReactionShape SimpleReactionRef="m_inactivation" LocationX="255" LocationY="265" />
+            <SimpleReactionShape SimpleReactionRef="m_activation2" LocationX="224" LocationY="176" />
+            <SimpleReactionShape SimpleReactionRef="m_activation1" LocationX="262" LocationY="211" />
+            <SimpleReactionShape SimpleReactionRef="w_inactivation1" LocationX="277" LocationY="337" />
+            <SimpleReactionShape SimpleReactionRef="w_activation" LocationX="282" LocationY="372" />
+            <SimpleReactionShape SimpleReactionRef="w_inactivation2" LocationX="275" LocationY="408" />
+            <SimpleReactionShape SimpleReactionRef="a_degradation" LocationX="274" LocationY="482" />
+         </Diagram>
+         <Diagram Name="pm" Structure="pm">
+            <LocalizedCompoundShape LocalizedCompoundRef="R" LocationX="104" LocationY="102" />
+            <LocalizedCompoundShape LocalizedCompoundRef="a" LocationX="47" LocationY="224" />
+            <LocalizedCompoundShape LocalizedCompoundRef="m_i" LocationX="47" LocationY="163" />
+            <LocalizedCompoundShape LocalizedCompoundRef="m_a" LocationX="47" LocationY="358" />
+            <LocalizedCompoundShape LocalizedCompoundRef="c_i" LocationX="39" LocationY="297" />
+            <LocalizedCompoundShape LocalizedCompoundRef="c_a" LocationX="50" LocationY="368" />
+            <LocalizedCompoundShape LocalizedCompoundRef="w_i" LocationX="49" LocationY="336" />
+            <LocalizedCompoundShape LocalizedCompoundRef="w_a" LocationX="31" LocationY="398" />
+            <SimpleReactionShape SimpleReactionRef="a_influx" LocationX="109" LocationY="224" />
+         </Diagram>
+         <Diagram Name="Unnamed compartment" Structure="extracellular" />
+         <Version Name="unnamed" KeyValue="35771405" BranchId="35771406" Archived="0" Date="19-Sep-2009 20:42:40" FromVersionable="false">
+            <Owner Name="Education" Identifier="30625624" />
+            <GroupAccess Type="1" />
+            <Annotation>cloned from 'unnamed' owned by user boris
+</Annotation>
+         </Version>
+      </Model>
+      <SimulationSpec Name="steady_state" Stochastic="false" UseConcentration="true">
+         <Annotation>cloned from 'steady_state' owned by user boris
+</Annotation>
+         <Geometry Name="non-spatial1766353182" Dimension="0">
+            <Annotation>cloned from 'non-spatial1766353182' owned by user boris
+</Annotation>
+            <Extent X="10.0" Y="10.0" Z="10.0" />
+            <Origin X="0.0" Y="0.0" Z="0.0" />
+            <SubVolume Name="Compartment" Handle="0" Type="Compartmental" KeyValue="35771385" />
+            <Version Name="non-spatial1766353182" KeyValue="35771381" BranchId="35771382" Archived="0" Date="19-Sep-2009 20:42:40" FromVersionable="false">
+               <Owner Name="Education" Identifier="30625624" />
+               <GroupAccess Type="1" />
+               <Annotation>cloned from 'non-spatial1766353182' owned by user boris
+</Annotation>
+            </Version>
+         </Geometry>
+         <GeometryContext>
+            <FeatureMapping Feature="extracellular" GeometryClass="Compartment" SubVolume="Compartment" Size="10000.0">
+               <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
+            </FeatureMapping>
+            <FeatureMapping Feature="cell" GeometryClass="Compartment" SubVolume="Compartment" Size="100.0">
+               <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
+            </FeatureMapping>
+            <MembraneMapping Membrane="pm" SurfaceToVolumeRatio="1.2" VolumeFraction="0.009900990099009901" Size="120.0" CalculateVoltage="false" SpecificCapacitance="1.0" InitialVoltage="0.0" GeometryClass="Compartment" />
+         </GeometryContext>
+         <ReactionContext>
+            <LocalizedCompoundSpec LocalizedCompoundRef="c_i" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+               <InitialConcentration>0.0015</InitialConcentration>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="c_a" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+               <InitialConcentration>0.0</InitialConcentration>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="w_i" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+               <InitialConcentration>0.0</InitialConcentration>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="w_a" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+               <InitialConcentration>0.00167</InitialConcentration>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="a" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+               <InitialConcentration>0.0</InitialConcentration>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="m_i" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+               <InitialConcentration>0.0015</InitialConcentration>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="m_a" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+               <InitialConcentration>0.0</InitialConcentration>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="R" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+               <InitialConcentration>0.0</InitialConcentration>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <ReactionSpec ReactionStepRef="c_inactivation" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="c_activation" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="a_degradation" ReactionMapping="excluded" />
+            <ReactionSpec ReactionStepRef="a_influx" ReactionMapping="excluded" />
+            <ReactionSpec ReactionStepRef="w_inactivation2" ReactionMapping="excluded" />
+            <ReactionSpec ReactionStepRef="m_inactivation" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="m_activation2" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="m_activation1" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="w_inactivation1" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="w_activation" ReactionMapping="included" />
+         </ReactionContext>
+         <MathDescription Name="compartmental_generated">
+            <Annotation>cloned from 'compartmental_generated' owned by user boris
+</Annotation>
+            <Constant Name="_F_">96480.0</Constant>
+            <Constant Name="_F_nmol_">9.648E-5</Constant>
+            <Constant Name="_K_GHK_">1.0E-9</Constant>
+            <Constant Name="_N_pmol_">6.02E11</Constant>
+            <Constant Name="_PI_">3.141592653589793</Constant>
+            <Constant Name="_R_">8314.0</Constant>
+            <Constant Name="_T_">300.0</Constant>
+            <Constant Name="a_init_uM">0.0</Constant>
+            <Constant Name="c_a_init_uM">0.0</Constant>
+            <Constant Name="c_i_init_uM">0.0015</Constant>
+            <Constant Name="k1">1204.0</Constant>
+            <Constant Name="k1_prm">6.02</Constant>
+            <Constant Name="k2">1204.0</Constant>
+            <Constant Name="k3">1204.0</Constant>
+            <Constant Name="k4">3.0</Constant>
+            <Constant Name="k5">0.2</Constant>
+            <Constant Name="k6">1204.0</Constant>
+            <Constant Name="K_millivolts_per_volt">1000.0</Constant>
+            <Constant Name="KMOLE">0.0016611295681063123</Constant>
+            <Constant Name="Kr_c_activation">0.0</Constant>
+            <Constant Name="Kr_c_inactivation">0.0</Constant>
+            <Constant Name="Kr_m_activation1">0.0</Constant>
+            <Constant Name="Kr_m_activation2">0.0</Constant>
+            <Constant Name="Kr_m_inactivation">0.0</Constant>
+            <Constant Name="Kr_w_activation">0.0</Constant>
+            <Constant Name="Kr_w_inactivation1">0.0</Constant>
+            <Constant Name="m_a_init_uM">0.0</Constant>
+            <Constant Name="m_i_init_uM">0.0015</Constant>
+            <Constant Name="R_init_molecules_um_2">0.0</Constant>
+            <Constant Name="Size_cell">100.0</Constant>
+            <Constant Name="Size_extracellular">10000.0</Constant>
+            <Constant Name="Size_pm">120.0</Constant>
+            <Constant Name="Voltage_pm">0.0</Constant>
+            <Constant Name="w_a_init_uM">0.00167</Constant>
+            <Constant Name="w_i_init_uM">0.0</Constant>
+            <VolumeVariable Name="c_a" Domain="Compartment" />
+            <VolumeVariable Name="m_a" Domain="Compartment" />
+            <VolumeVariable Name="w_a" Domain="Compartment" />
+            <Function Name="a" Domain="Compartment">(K_a_total / Size_cell)</Function>
+            <Function Name="c_i" Domain="Compartment">((K_c_i_total - (Size_cell * c_a)) / Size_cell)</Function>
+            <Function Name="J_c_activation" Domain="Compartment">((m_a * k3 * c_i) - (m_a * Kr_c_activation * c_a))</Function>
+            <Function Name="J_c_inactivation" Domain="Compartment">((k4 * c_a) - (Kr_c_inactivation * c_i))</Function>
+            <Function Name="J_m_activation1" Domain="Compartment">((c_a * k1 * m_i) - (c_a * Kr_m_activation1 * m_a))</Function>
+            <Function Name="J_m_activation2" Domain="Compartment">((c_i * k1_prm * m_i) - (c_i * Kr_m_activation2 * m_a))</Function>
+            <Function Name="J_m_inactivation" Domain="Compartment">((w_a * k2 * m_a) - (w_a * Kr_m_inactivation * m_i))</Function>
+            <Function Name="J_w_activation" Domain="Compartment">((k5 * w_i) - (Kr_w_activation * w_a))</Function>
+            <Function Name="J_w_inactivation1" Domain="Compartment">((m_a * k6 * w_a) - (m_a * Kr_w_inactivation1 * w_i))</Function>
+            <Function Name="K_a_total" Domain="Compartment">(Size_cell * a_init_uM)</Function>
+            <Function Name="K_c_i_total" Domain="Compartment">((Size_cell * c_i_init_uM) + (Size_cell * c_a_init_uM))</Function>
+            <Function Name="K_m_i_total" Domain="Compartment">((Size_cell * m_i_init_uM) + (Size_cell * m_a_init_uM))</Function>
+            <Function Name="K_R_total" Domain="Compartment">(R_init_molecules_um_2 * Size_pm * KMOLE)</Function>
+            <Function Name="K_w_i_total" Domain="Compartment">((Size_cell * w_i_init_uM) + (Size_cell * w_a_init_uM))</Function>
+            <Function Name="KFlux_pm_cell" Domain="Compartment">(Size_pm / Size_cell)</Function>
+            <Function Name="KFlux_pm_extracellular" Domain="Compartment">(Size_pm / Size_extracellular)</Function>
+            <Function Name="m_i" Domain="Compartment">((K_m_i_total - (Size_cell * m_a)) / Size_cell)</Function>
+            <Function Name="R" Domain="Compartment">(K_R_total / (Size_pm * KMOLE))</Function>
+            <Function Name="w_i" Domain="Compartment">((K_w_i_total - (Size_cell * w_a)) / Size_cell)</Function>
+            <CompartmentSubDomain Name="Compartment">
+               <BoundaryType Boundary="Xm" Type="Value" />
+               <BoundaryType Boundary="Xp" Type="Value" />
+               <BoundaryType Boundary="Ym" Type="Value" />
+               <BoundaryType Boundary="Yp" Type="Value" />
+               <BoundaryType Boundary="Zm" Type="Value" />
+               <BoundaryType Boundary="Zp" Type="Value" />
+               <OdeEquation Name="c_a" SolutionType="Unknown">
+                  <Rate>( - J_c_inactivation + J_c_activation)</Rate>
+                  <Initial>c_a_init_uM</Initial>
+               </OdeEquation>
+               <OdeEquation Name="w_a" SolutionType="Unknown">
+                  <Rate>( - J_w_inactivation1 + J_w_activation)</Rate>
+                  <Initial>w_a_init_uM</Initial>
+               </OdeEquation>
+               <OdeEquation Name="m_a" SolutionType="Unknown">
+                  <Rate>(J_m_activation1 - J_m_inactivation + J_m_activation2)</Rate>
+                  <Initial>m_a_init_uM</Initial>
+               </OdeEquation>
+            </CompartmentSubDomain>
+            <Version Name="compartmental_generated" KeyValue="84982308" BranchId="35771397" Archived="0" Date="02-Nov-2013 13:04:39" FromVersionable="false">
+               <Owner Name="Education" Identifier="30625624" />
+               <GroupAccess Type="1" />
+               <Annotation>cloned from 'compartmental_generated' owned by user boris
+</Annotation>
+            </Version>
+         </MathDescription>
+         <Simulation Name="Simulation0">
+            <Annotation>cloned from 'Simulation0' owned by user boris
+</Annotation>
+            <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="CVODE (Variable Order, Variable Time Step)">
+               <TimeBound StartTime="0.0" EndTime="100.0" />
+               <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+               <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+               <OutputOptions KeepEvery="1" KeepAtMost="1000" />
+            </SolverTaskDescription>
+            <MathOverrides />
+            <Version Name="Simulation0" KeyValue="84982383" BranchId="35771548" Archived="0" Date="02-Nov-2013 13:04:40" FromVersionable="false">
+               <Owner Name="Education" Identifier="30625624" />
+               <GroupAccess Type="1" />
+               <Annotation>cloned from 'Simulation0' owned by user boris
+</Annotation>
+               <ParentSimRef KeyValue="84982134" />
+            </Version>
+         </Simulation>
+         <Version Name="steady_state" KeyValue="84982314" BranchId="35771476" Archived="0" Date="02-Nov-2013 13:04:39" FromVersionable="false">
+            <Owner Name="Education" Identifier="30625624" />
+            <GroupAccess Type="1" />
+            <Annotation>cloned from 'steady_state' owned by user boris
+</Annotation>
+         </Version>
+         <MicroscopeMeasurement Name="fluor">
+            <ConvolutionKernel Type="ProjectionZKernel" />
+         </MicroscopeMeasurement>
+      </SimulationSpec>
+      <SimulationSpec Name="toggle_switch" Stochastic="false" UseConcentration="true">
+         <Annotation>cloned from 'toggle_switch' owned by user boris
+</Annotation>
+         <Geometry Name="non-spatial700907646" Dimension="0">
+            <Annotation>cloned from 'non-spatial700907646' owned by user boris
+</Annotation>
+            <Extent X="10.0" Y="10.0" Z="10.0" />
+            <Origin X="0.0" Y="0.0" Z="0.0" />
+            <SubVolume Name="Compartment" Handle="0" Type="Compartmental" KeyValue="35771390" />
+            <Version Name="non-spatial700907646" KeyValue="35771386" BranchId="35771387" Archived="0" Date="19-Sep-2009 20:42:40" FromVersionable="false">
+               <Owner Name="Education" Identifier="30625624" />
+               <GroupAccess Type="1" />
+               <Annotation>cloned from 'non-spatial700907646' owned by user boris
+</Annotation>
+            </Version>
+         </Geometry>
+         <GeometryContext>
+            <FeatureMapping Feature="extracellular" GeometryClass="Compartment" SubVolume="Compartment" Size="10000.0">
+               <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
+            </FeatureMapping>
+            <FeatureMapping Feature="cell" GeometryClass="Compartment" SubVolume="Compartment" Size="100.0">
+               <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
+            </FeatureMapping>
+            <MembraneMapping Membrane="pm" SurfaceToVolumeRatio="1.2" VolumeFraction="0.009900990099009901" Size="120.0" CalculateVoltage="false" SpecificCapacitance="1.0" InitialVoltage="0.0" GeometryClass="Compartment" />
+         </GeometryContext>
+         <ReactionContext>
+            <LocalizedCompoundSpec LocalizedCompoundRef="c_i" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+               <InitialConcentration>0.0014894088951242375</InitialConcentration>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="c_a" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+               <InitialConcentration>1.0591104875762606E-5</InitialConcentration>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="w_i" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+               <InitialConcentration>1.6096043375748133E-4</InitialConcentration>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="w_a" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+               <InitialConcentration>0.0015090395662425188</InitialConcentration>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="a" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+               <InitialConcentration>0.0</InitialConcentration>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="m_i" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+               <InitialConcentration>0.0014822816981944562</InitialConcentration>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="m_a" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+               <InitialConcentration>1.7718301805543843E-5</InitialConcentration>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="R" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+               <InitialConcentration>((t &gt; 10.0) * (t &lt; 20.0))</InitialConcentration>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <ReactionSpec ReactionStepRef="c_inactivation" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="c_activation" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="a_degradation" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="a_influx" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="w_inactivation2" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="m_inactivation" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="m_activation2" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="m_activation1" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="w_inactivation1" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="w_activation" ReactionMapping="included" />
+         </ReactionContext>
+         <MathDescription Name="toggle_switch_generated">
+            <Annotation>cloned from 'toggle_switch_generated' owned by user boris
+</Annotation>
+            <Constant Name="_F_">96480.0</Constant>
+            <Constant Name="_F_nmol_">9.648E-5</Constant>
+            <Constant Name="_K_GHK_">1.0E-9</Constant>
+            <Constant Name="_N_pmol_">6.02E11</Constant>
+            <Constant Name="_PI_">3.141592653589793</Constant>
+            <Constant Name="_R_">8314.0</Constant>
+            <Constant Name="_T_">300.0</Constant>
+            <Constant Name="a_init_uM">0.0</Constant>
+            <Constant Name="c_a_init_uM">1.0591104875762606E-5</Constant>
+            <Constant Name="c_i_init_uM">0.0014894088951242375</Constant>
+            <Constant Name="k0">1000.0</Constant>
+            <Constant Name="k1">1204.0</Constant>
+            <Constant Name="k1_prm">6.02</Constant>
+            <Constant Name="k2">1204.0</Constant>
+            <Constant Name="k3">1204.0</Constant>
+            <Constant Name="k4">3.0</Constant>
+            <Constant Name="k5">0.2</Constant>
+            <Constant Name="k6">1204.0</Constant>
+            <Constant Name="k_degr">10.0</Constant>
+            <Constant Name="K_millivolts_per_volt">1000.0</Constant>
+            <Constant Name="k_pr">1.0</Constant>
+            <Constant Name="KMOLE">0.0016611295681063123</Constant>
+            <Constant Name="Kr_a_degradation">0.0</Constant>
+            <Constant Name="Kr_a_influx">0.0</Constant>
+            <Constant Name="Kr_c_activation">0.0</Constant>
+            <Constant Name="Kr_c_inactivation">0.0</Constant>
+            <Constant Name="Kr_m_activation1">0.0</Constant>
+            <Constant Name="Kr_m_activation2">0.0</Constant>
+            <Constant Name="Kr_m_inactivation">0.0</Constant>
+            <Constant Name="Kr_w_activation">0.0</Constant>
+            <Constant Name="Kr_w_inactivation1">0.0</Constant>
+            <Constant Name="Kr_w_inactivation2">0.0</Constant>
+            <Constant Name="m_a_init_uM">1.7718301805543843E-5</Constant>
+            <Constant Name="m_i_init_uM">0.0014822816981944562</Constant>
+            <Constant Name="Size_cell">100.0</Constant>
+            <Constant Name="Size_extracellular">10000.0</Constant>
+            <Constant Name="Size_pm">120.0</Constant>
+            <Constant Name="Voltage_pm">0.0</Constant>
+            <Constant Name="w_a_init_uM">0.0015090395662425188</Constant>
+            <Constant Name="w_i_init_uM">1.6096043375748133E-4</Constant>
+            <VolumeVariable Name="a" Domain="Compartment" />
+            <VolumeVariable Name="c_a" Domain="Compartment" />
+            <VolumeVariable Name="m_a" Domain="Compartment" />
+            <VolumeVariable Name="w_a" Domain="Compartment" />
+            <Function Name="c_i" Domain="Compartment">((K_c_i_total - (Size_cell * c_a)) / Size_cell)</Function>
+            <Function Name="J_a_degradation" Domain="Compartment">(k_degr * a)</Function>
+            <Function Name="J_a_influx" Domain="Compartment">((k_pr * R) - (a * Kr_a_influx * R))</Function>
+            <Function Name="J_c_activation" Domain="Compartment">((m_a * k3 * c_i) - (m_a * Kr_c_activation * c_a))</Function>
+            <Function Name="J_c_inactivation" Domain="Compartment">((k4 * c_a) - (Kr_c_inactivation * c_i))</Function>
+            <Function Name="J_m_activation1" Domain="Compartment">((c_a * k1 * m_i) - (c_a * Kr_m_activation1 * m_a))</Function>
+            <Function Name="J_m_activation2" Domain="Compartment">((c_i * k1_prm * m_i) - (c_i * Kr_m_activation2 * m_a))</Function>
+            <Function Name="J_m_inactivation" Domain="Compartment">((w_a * k2 * m_a) - (w_a * Kr_m_inactivation * m_i))</Function>
+            <Function Name="J_w_activation" Domain="Compartment">((k5 * w_i) - (Kr_w_activation * w_a))</Function>
+            <Function Name="J_w_inactivation1" Domain="Compartment">((m_a * k6 * w_a) - (m_a * Kr_w_inactivation1 * w_i))</Function>
+            <Function Name="J_w_inactivation2" Domain="Compartment">((a * k0 * w_a) - (a * Kr_w_inactivation2 * w_i))</Function>
+            <Function Name="K_c_i_total" Domain="Compartment">((Size_cell * c_i_init_uM) + (Size_cell * c_a_init_uM))</Function>
+            <Function Name="K_m_i_total" Domain="Compartment">((Size_cell * m_i_init_uM) + (Size_cell * m_a_init_uM))</Function>
+            <Function Name="K_R_total" Domain="Compartment">(R_init_molecules_um_2 * Size_pm * KMOLE)</Function>
+            <Function Name="K_w_i_total" Domain="Compartment">((Size_cell * w_i_init_uM) + (Size_cell * w_a_init_uM))</Function>
+            <Function Name="KFlux_pm_cell" Domain="Compartment">(Size_pm / Size_cell)</Function>
+            <Function Name="KFlux_pm_extracellular" Domain="Compartment">(Size_pm / Size_extracellular)</Function>
+            <Function Name="m_i" Domain="Compartment">((K_m_i_total - (Size_cell * m_a)) / Size_cell)</Function>
+            <Function Name="R" Domain="Compartment">(K_R_total / (Size_pm * KMOLE))</Function>
+            <Function Name="R_init_molecules_um_2" Domain="Compartment">((t &gt; 10.0) * (t &lt; 20.0))</Function>
+            <Function Name="w_i" Domain="Compartment">((K_w_i_total - (Size_cell * w_a)) / Size_cell)</Function>
+            <CompartmentSubDomain Name="Compartment">
+               <BoundaryType Boundary="Xm" Type="Value" />
+               <BoundaryType Boundary="Xp" Type="Value" />
+               <BoundaryType Boundary="Ym" Type="Value" />
+               <BoundaryType Boundary="Yp" Type="Value" />
+               <BoundaryType Boundary="Zm" Type="Value" />
+               <BoundaryType Boundary="Zp" Type="Value" />
+               <OdeEquation Name="c_a" SolutionType="Unknown">
+                  <Rate>( - J_c_inactivation + J_c_activation)</Rate>
+                  <Initial>c_a_init_uM</Initial>
+               </OdeEquation>
+               <OdeEquation Name="w_a" SolutionType="Unknown">
+                  <Rate>(J_w_activation - J_w_inactivation2 - J_w_inactivation1)</Rate>
+                  <Initial>w_a_init_uM</Initial>
+               </OdeEquation>
+               <OdeEquation Name="a" SolutionType="Unknown">
+                  <Rate>( - J_a_degradation + (KFlux_pm_cell * KMOLE * J_a_influx))</Rate>
+                  <Initial>a_init_uM</Initial>
+               </OdeEquation>
+               <OdeEquation Name="m_a" SolutionType="Unknown">
+                  <Rate>(J_m_activation1 - J_m_inactivation + J_m_activation2)</Rate>
+                  <Initial>m_a_init_uM</Initial>
+               </OdeEquation>
+            </CompartmentSubDomain>
+            <Version Name="toggle_switch_generated" KeyValue="84982310" BranchId="35771400" Archived="0" Date="02-Nov-2013 13:04:39" FromVersionable="false">
+               <Owner Name="Education" Identifier="30625624" />
+               <GroupAccess Type="1" />
+               <Annotation>cloned from 'toggle_switch_generated' owned by user boris
+</Annotation>
+            </Version>
+         </MathDescription>
+         <Simulation Name="Simulation1">
+            <Annotation>cloned from 'Simulation1' owned by user boris
+</Annotation>
+            <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Combined Stiff Solver (IDA/CVODE)">
+               <TimeBound StartTime="0.0" EndTime="100.0" />
+               <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+               <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+               <OutputOptions KeepEvery="1" KeepAtMost="1000" />
+            </SolverTaskDescription>
+            <MathOverrides />
+            <Version Name="Simulation1" KeyValue="84982385" BranchId="35771551" Archived="0" Date="02-Nov-2013 13:04:40" FromVersionable="false">
+               <Owner Name="Education" Identifier="30625624" />
+               <GroupAccess Type="1" />
+               <Annotation>cloned from 'Simulation1' owned by user boris
+</Annotation>
+            </Version>
+         </Simulation>
+         <Simulation Name="Copy of Simulation1">
+            <Annotation>cloned from 'Copy of Simulation1' owned by user boris
+</Annotation>
+            <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Combined Stiff Solver (IDA/CVODE)">
+               <TimeBound StartTime="0.0" EndTime="100.0" />
+               <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+               <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+               <OutputOptions KeepEvery="1" KeepAtMost="1000" />
+            </SolverTaskDescription>
+            <MathOverrides>
+               <Constant Name="k0">10000.0</Constant>
+            </MathOverrides>
+            <Version Name="Copy of Simulation1" KeyValue="84982387" BranchId="35771554" Archived="0" Date="02-Nov-2013 13:04:40" FromVersionable="false">
+               <Owner Name="Education" Identifier="30625624" />
+               <GroupAccess Type="1" />
+               <Annotation>cloned from 'Copy of Simulation1' owned by user boris
+</Annotation>
+            </Version>
+         </Simulation>
+         <Version Name="toggle_switch" KeyValue="84982337" BranchId="35771500" Archived="0" Date="02-Nov-2013 13:04:40" FromVersionable="false">
+            <Owner Name="Education" Identifier="30625624" />
+            <GroupAccess Type="1" />
+            <Annotation>cloned from 'toggle_switch' owned by user boris
+</Annotation>
+         </Version>
+         <MicroscopeMeasurement Name="fluor">
+            <ConvolutionKernel Type="ProjectionZKernel" />
+         </MicroscopeMeasurement>
+      </SimulationSpec>
+      <SimulationSpec Name="spontaneous_activation" Stochastic="true" UseConcentration="true" RandomizeInitCondition="false">
+         <Annotation>cloned from 'spontaneous_activation' owned by user boris
+(copied from toggle_switch) </Annotation>
+         <Geometry Name="non-spatial554185154" Dimension="0">
+            <Annotation>cloned from 'non-spatial700907646' owned by user boris
+</Annotation>
+            <Extent X="10.0" Y="10.0" Z="10.0" />
+            <Origin X="0.0" Y="0.0" Z="0.0" />
+            <SubVolume Name="Compartment" Handle="0" Type="Compartmental" KeyValue="35771395" />
+            <Version Name="non-spatial554185154" KeyValue="35771391" BranchId="35771392" Archived="0" Date="19-Sep-2009 20:42:40" FromVersionable="false">
+               <Owner Name="Education" Identifier="30625624" />
+               <GroupAccess Type="1" />
+               <Annotation>cloned from 'non-spatial700907646' owned by user boris
+</Annotation>
+            </Version>
+         </Geometry>
+         <GeometryContext>
+            <FeatureMapping Feature="extracellular" GeometryClass="Compartment" SubVolume="Compartment" Size="10000.0">
+               <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
+            </FeatureMapping>
+            <FeatureMapping Feature="cell" GeometryClass="Compartment" SubVolume="Compartment" Size="100.0">
+               <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
+            </FeatureMapping>
+            <MembraneMapping Membrane="pm" SurfaceToVolumeRatio="1.2" VolumeFraction="0.009900990099009901" Size="120.0" CalculateVoltage="false" SpecificCapacitance="1.0" InitialVoltage="0.0" GeometryClass="Compartment" />
+         </GeometryContext>
+         <ReactionContext>
+            <LocalizedCompoundSpec LocalizedCompoundRef="c_i" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+               <InitialConcentration>0.0014894088951242375</InitialConcentration>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="c_a" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+               <InitialConcentration>1.0591104875762606E-5</InitialConcentration>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="w_i" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+               <InitialConcentration>1.6096043375748133E-4</InitialConcentration>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="w_a" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+               <InitialConcentration>0.0015090395662425188</InitialConcentration>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="a" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+               <InitialConcentration>0.0</InitialConcentration>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="m_i" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+               <InitialConcentration>0.0014822816981944562</InitialConcentration>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="m_a" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+               <InitialConcentration>1.7718301805543843E-5</InitialConcentration>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="R" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+               <InitialConcentration>0.0</InitialConcentration>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <ReactionSpec ReactionStepRef="c_inactivation" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="c_activation" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="a_degradation" ReactionMapping="excluded" />
+            <ReactionSpec ReactionStepRef="a_influx" ReactionMapping="excluded" />
+            <ReactionSpec ReactionStepRef="w_inactivation2" ReactionMapping="excluded" />
+            <ReactionSpec ReactionStepRef="m_inactivation" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="m_activation2" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="m_activation1" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="w_inactivation1" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="w_activation" ReactionMapping="included" />
+         </ReactionContext>
+         <MathDescription Name="spontaneous_activation_generated">
+            <Annotation>cloned from 'spontaneous_activation_generated' owned by user boris
+</Annotation>
+            <Constant Name="_F_">96480.0</Constant>
+            <Constant Name="_F_nmol_">9.648E-5</Constant>
+            <Constant Name="_N_pmol_">6.02E11</Constant>
+            <Constant Name="_PI_">3.141592653589793</Constant>
+            <Constant Name="_R_">8314.0</Constant>
+            <Constant Name="_T_">300.0</Constant>
+            <Constant Name="a_init_uM">0.0</Constant>
+            <Constant Name="c_a_init_uM">1.0591104875762606E-5</Constant>
+            <Constant Name="c_i_init_uM">0.0014894088951242375</Constant>
+            <Constant Name="k1">1204.0</Constant>
+            <Constant Name="k1_prm">6.02</Constant>
+            <Constant Name="k2">1204.0</Constant>
+            <Constant Name="k3">1204.0</Constant>
+            <Constant Name="k4">3.0</Constant>
+            <Constant Name="k5">0.2</Constant>
+            <Constant Name="k6">1204.0</Constant>
+            <Constant Name="KMOLE">0.0016611295681063123</Constant>
+            <Constant Name="Kr_c_activation">0.0</Constant>
+            <Constant Name="Kr_c_inactivation">0.0</Constant>
+            <Constant Name="Kr_m_activation1">0.0</Constant>
+            <Constant Name="Kr_m_activation2">0.0</Constant>
+            <Constant Name="Kr_m_inactivation">0.0</Constant>
+            <Constant Name="Kr_w_activation">0.0</Constant>
+            <Constant Name="Kr_w_inactivation1">0.0</Constant>
+            <Constant Name="m_a_init_uM">1.7718301805543843E-5</Constant>
+            <Constant Name="m_i_init_uM">0.0014822816981944562</Constant>
+            <Constant Name="R_init_molecules_um_2">0.0</Constant>
+            <Constant Name="Size_cell">100.0</Constant>
+            <Constant Name="Size_extracellular">10000.0</Constant>
+            <Constant Name="Size_pm">120.0</Constant>
+            <Constant Name="Voltage_pm">0.0</Constant>
+            <Constant Name="w_a_init_uM">0.0015090395662425188</Constant>
+            <Constant Name="w_i_init_uM">1.6096043375748133E-4</Constant>
+            <StochasticVolumeVariable Name="a" />
+            <StochasticVolumeVariable Name="c_a" />
+            <StochasticVolumeVariable Name="c_i" />
+            <StochasticVolumeVariable Name="m_a" />
+            <StochasticVolumeVariable Name="m_i" />
+            <StochasticVolumeVariable Name="R" />
+            <StochasticVolumeVariable Name="w_a" />
+            <StochasticVolumeVariable Name="w_i" />
+            <Function Name="a_Conc" Domain="Compartment">(a * KMOLE / Size_cell)</Function>
+            <Function Name="a_initCount" Domain="Compartment">(a_init_uM * Size_cell / KMOLE)</Function>
+            <Function Name="c_a_Conc" Domain="Compartment">(c_a * KMOLE / Size_cell)</Function>
+            <Function Name="c_a_initCount" Domain="Compartment">(c_a_init_uM * Size_cell / KMOLE)</Function>
+            <Function Name="c_i_Conc" Domain="Compartment">(c_i * KMOLE / Size_cell)</Function>
+            <Function Name="c_i_initCount" Domain="Compartment">(c_i_init_uM * Size_cell / KMOLE)</Function>
+            <Function Name="m_a_Conc" Domain="Compartment">(m_a * KMOLE / Size_cell)</Function>
+            <Function Name="m_a_initCount" Domain="Compartment">(m_a_init_uM * Size_cell / KMOLE)</Function>
+            <Function Name="m_i_Conc" Domain="Compartment">(m_i * KMOLE / Size_cell)</Function>
+            <Function Name="m_i_initCount" Domain="Compartment">(m_i_init_uM * Size_cell / KMOLE)</Function>
+            <Function Name="P_c_activation" Domain="Compartment">(k3 * c_i * m_a * KMOLE / Size_cell)</Function>
+            <Function Name="P_c_activation_reverse" Domain="Compartment">(Kr_c_activation * c_a * m_a * KMOLE / Size_cell)</Function>
+            <Function Name="P_c_inactivation" Domain="Compartment">(k4 * c_a)</Function>
+            <Function Name="P_c_inactivation_reverse" Domain="Compartment">(Kr_c_inactivation * c_i)</Function>
+            <Function Name="P_m_activation1" Domain="Compartment">(k1 * m_i * c_a * KMOLE / Size_cell)</Function>
+            <Function Name="P_m_activation1_reverse" Domain="Compartment">(Kr_m_activation1 * m_a * c_a * KMOLE / Size_cell)</Function>
+            <Function Name="P_m_activation2" Domain="Compartment">(k1_prm * m_i * c_i * KMOLE / Size_cell)</Function>
+            <Function Name="P_m_activation2_reverse" Domain="Compartment">(Kr_m_activation2 * m_a * c_i * KMOLE / Size_cell)</Function>
+            <Function Name="P_m_inactivation" Domain="Compartment">(k2 * m_a * w_a * KMOLE / Size_cell)</Function>
+            <Function Name="P_m_inactivation_reverse" Domain="Compartment">(Kr_m_inactivation * m_i * w_a * KMOLE / Size_cell)</Function>
+            <Function Name="P_w_activation" Domain="Compartment">(k5 * w_i)</Function>
+            <Function Name="P_w_activation_reverse" Domain="Compartment">(Kr_w_activation * w_a)</Function>
+            <Function Name="P_w_inactivation1" Domain="Compartment">(k6 * w_a * m_a * KMOLE / Size_cell)</Function>
+            <Function Name="P_w_inactivation1_reverse" Domain="Compartment">(Kr_w_inactivation1 * w_i * m_a * KMOLE / Size_cell)</Function>
+            <Function Name="R_Conc" Domain="Compartment">(R / Size_pm)</Function>
+            <Function Name="R_initCount" Domain="Compartment">(R_init_molecules_um_2 * Size_pm)</Function>
+            <Function Name="w_a_Conc" Domain="Compartment">(w_a * KMOLE / Size_cell)</Function>
+            <Function Name="w_a_initCount" Domain="Compartment">(w_a_init_uM * Size_cell / KMOLE)</Function>
+            <Function Name="w_i_Conc" Domain="Compartment">(w_i * KMOLE / Size_cell)</Function>
+            <Function Name="w_i_initCount" Domain="Compartment">(w_i_init_uM * Size_cell / KMOLE)</Function>
+            <CompartmentSubDomain Name="Compartment">
+               <BoundaryType Boundary="Xm" Type="Value" />
+               <BoundaryType Boundary="Xp" Type="Value" />
+               <BoundaryType Boundary="Ym" Type="Value" />
+               <BoundaryType Boundary="Yp" Type="Value" />
+               <BoundaryType Boundary="Zm" Type="Value" />
+               <BoundaryType Boundary="Zp" Type="Value" />
+               <VariableInitialCount Name="c_i">c_i_initCount</VariableInitialCount>
+               <VariableInitialCount Name="c_a">c_a_initCount</VariableInitialCount>
+               <VariableInitialCount Name="w_i">w_i_initCount</VariableInitialCount>
+               <VariableInitialCount Name="w_a">w_a_initCount</VariableInitialCount>
+               <VariableInitialCount Name="a">a_initCount</VariableInitialCount>
+               <VariableInitialCount Name="m_i">m_i_initCount</VariableInitialCount>
+               <VariableInitialCount Name="m_a">m_a_initCount</VariableInitialCount>
+               <VariableInitialCount Name="R">R_initCount</VariableInitialCount>
+               <JumpProcess Name="c_inactivation">
+                  <ProbabilityRate>P_c_inactivation</ProbabilityRate>
+                  <Effect VarName="c_a" Operation="inc">-1.0</Effect>
+                  <Effect VarName="c_i" Operation="inc">1.0</Effect>
+               </JumpProcess>
+               <JumpProcess Name="c_inactivation_reverse">
+                  <ProbabilityRate>P_c_inactivation_reverse</ProbabilityRate>
+                  <Effect VarName="c_a" Operation="inc">1.0</Effect>
+                  <Effect VarName="c_i" Operation="inc">-1.0</Effect>
+               </JumpProcess>
+               <JumpProcess Name="c_activation">
+                  <ProbabilityRate>P_c_activation</ProbabilityRate>
+                  <Effect VarName="c_i" Operation="inc">-1.0</Effect>
+                  <Effect VarName="c_a" Operation="inc">1.0</Effect>
+                  <Effect VarName="m_a" Operation="inc">0.0</Effect>
+               </JumpProcess>
+               <JumpProcess Name="c_activation_reverse">
+                  <ProbabilityRate>P_c_activation_reverse</ProbabilityRate>
+                  <Effect VarName="c_i" Operation="inc">1.0</Effect>
+                  <Effect VarName="c_a" Operation="inc">-1.0</Effect>
+                  <Effect VarName="m_a" Operation="inc">0.0</Effect>
+               </JumpProcess>
+               <JumpProcess Name="m_inactivation">
+                  <ProbabilityRate>P_m_inactivation</ProbabilityRate>
+                  <Effect VarName="m_a" Operation="inc">-1.0</Effect>
+                  <Effect VarName="m_i" Operation="inc">1.0</Effect>
+                  <Effect VarName="w_a" Operation="inc">0.0</Effect>
+               </JumpProcess>
+               <JumpProcess Name="m_inactivation_reverse">
+                  <ProbabilityRate>P_m_inactivation_reverse</ProbabilityRate>
+                  <Effect VarName="m_a" Operation="inc">1.0</Effect>
+                  <Effect VarName="m_i" Operation="inc">-1.0</Effect>
+                  <Effect VarName="w_a" Operation="inc">0.0</Effect>
+               </JumpProcess>
+               <JumpProcess Name="m_activation2">
+                  <ProbabilityRate>P_m_activation2</ProbabilityRate>
+                  <Effect VarName="m_i" Operation="inc">-1.0</Effect>
+                  <Effect VarName="m_a" Operation="inc">1.0</Effect>
+                  <Effect VarName="c_i" Operation="inc">0.0</Effect>
+               </JumpProcess>
+               <JumpProcess Name="m_activation2_reverse">
+                  <ProbabilityRate>P_m_activation2_reverse</ProbabilityRate>
+                  <Effect VarName="m_i" Operation="inc">1.0</Effect>
+                  <Effect VarName="m_a" Operation="inc">-1.0</Effect>
+                  <Effect VarName="c_i" Operation="inc">0.0</Effect>
+               </JumpProcess>
+               <JumpProcess Name="m_activation1">
+                  <ProbabilityRate>P_m_activation1</ProbabilityRate>
+                  <Effect VarName="m_i" Operation="inc">-1.0</Effect>
+                  <Effect VarName="m_a" Operation="inc">1.0</Effect>
+                  <Effect VarName="c_a" Operation="inc">0.0</Effect>
+               </JumpProcess>
+               <JumpProcess Name="m_activation1_reverse">
+                  <ProbabilityRate>P_m_activation1_reverse</ProbabilityRate>
+                  <Effect VarName="m_i" Operation="inc">1.0</Effect>
+                  <Effect VarName="m_a" Operation="inc">-1.0</Effect>
+                  <Effect VarName="c_a" Operation="inc">0.0</Effect>
+               </JumpProcess>
+               <JumpProcess Name="w_inactivation1">
+                  <ProbabilityRate>P_w_inactivation1</ProbabilityRate>
+                  <Effect VarName="w_a" Operation="inc">-1.0</Effect>
+                  <Effect VarName="w_i" Operation="inc">1.0</Effect>
+                  <Effect VarName="m_a" Operation="inc">0.0</Effect>
+               </JumpProcess>
+               <JumpProcess Name="w_inactivation1_reverse">
+                  <ProbabilityRate>P_w_inactivation1_reverse</ProbabilityRate>
+                  <Effect VarName="w_a" Operation="inc">1.0</Effect>
+                  <Effect VarName="w_i" Operation="inc">-1.0</Effect>
+                  <Effect VarName="m_a" Operation="inc">0.0</Effect>
+               </JumpProcess>
+               <JumpProcess Name="w_activation">
+                  <ProbabilityRate>P_w_activation</ProbabilityRate>
+                  <Effect VarName="w_i" Operation="inc">-1.0</Effect>
+                  <Effect VarName="w_a" Operation="inc">1.0</Effect>
+               </JumpProcess>
+               <JumpProcess Name="w_activation_reverse">
+                  <ProbabilityRate>P_w_activation_reverse</ProbabilityRate>
+                  <Effect VarName="w_i" Operation="inc">1.0</Effect>
+                  <Effect VarName="w_a" Operation="inc">-1.0</Effect>
+               </JumpProcess>
+            </CompartmentSubDomain>
+            <Version Name="spontaneous_activation_generated" KeyValue="84982312" BranchId="35771403" Archived="0" Date="02-Nov-2013 13:04:39" FromVersionable="false">
+               <Owner Name="Education" Identifier="30625624" />
+               <GroupAccess Type="1" />
+               <Annotation>cloned from 'spontaneous_activation_generated' owned by user boris
+</Annotation>
+            </Version>
+         </MathDescription>
+         <Simulation Name="Simulation2">
+            <Annotation>cloned from 'Simulation2' owned by user boris
+</Annotation>
+            <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Gibson (Next Reaction Stochastic Method)">
+               <TimeBound StartTime="0.0" EndTime="600.0" />
+               <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+               <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+               <StochSimOptions UseCustomSeed="false" NumberOfTrial="1" />
+               <OutputOptions KeepEvery="1" KeepAtMost="1000" />
+            </SolverTaskDescription>
+            <MathOverrides />
+            <Version Name="Simulation2" KeyValue="84982472" BranchId="84982197" Archived="0" Date="02-Nov-2013 13:09:28" FromVersionable="false">
+               <Owner Name="Education" Identifier="30625624" />
+               <GroupAccess Type="1" />
+               <Annotation>cloned from 'Simulation2' owned by user boris
+</Annotation>
+            </Version>
+         </Simulation>
+         <Simulation Name="Simulation3">
+            <Annotation>cloned from 'Simulation3' owned by user boris
+</Annotation>
+            <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Gibson (Next Reaction Stochastic Method)">
+               <TimeBound StartTime="0.0" EndTime="600.0" />
+               <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+               <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+               <StochSimOptions UseCustomSeed="false" NumberOfTrial="10000" />
+               <OutputOptions KeepEvery="1" KeepAtMost="1000" />
+            </SolverTaskDescription>
+            <MathOverrides />
+            <Version Name="Simulation3" KeyValue="84982391" BranchId="35771560" Archived="0" Date="02-Nov-2013 13:04:40" FromVersionable="false">
+               <Owner Name="Education" Identifier="30625624" />
+               <GroupAccess Type="1" />
+               <Annotation>cloned from 'Simulation3' owned by user boris
+</Annotation>
+            </Version>
+         </Simulation>
+         <Simulation Name="Copy of Simulation3">
+            <Annotation>cloned from 'Copy of Simulation3' owned by user boris
+</Annotation>
+            <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Gibson (Next Reaction Stochastic Method)">
+               <TimeBound StartTime="0.0" EndTime="60.0" />
+               <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+               <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+               <StochSimOptions UseCustomSeed="false" NumberOfTrial="10000" />
+               <OutputOptions KeepEvery="1" KeepAtMost="1000" />
+            </SolverTaskDescription>
+            <MathOverrides />
+            <Version Name="Copy of Simulation3" KeyValue="84982393" BranchId="35771563" Archived="0" Date="02-Nov-2013 13:04:40" FromVersionable="false">
+               <Owner Name="Education" Identifier="30625624" />
+               <GroupAccess Type="1" />
+               <Annotation>cloned from 'Copy of Simulation3' owned by user boris
+</Annotation>
+            </Version>
+         </Simulation>
+         <Simulation Name="Copy of Simulation3 1">
+            <Annotation>cloned from 'Copy of Simulation3 1' owned by user boris
+</Annotation>
+            <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Gibson (Next Reaction Stochastic Method)">
+               <TimeBound StartTime="0.0" EndTime="6.0" />
+               <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+               <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+               <StochSimOptions UseCustomSeed="false" NumberOfTrial="10000" />
+               <OutputOptions KeepEvery="1" KeepAtMost="1000" />
+            </SolverTaskDescription>
+            <MathOverrides />
+            <Version Name="Copy of Simulation3 1" KeyValue="84982395" BranchId="35771566" Archived="0" Date="02-Nov-2013 13:04:40" FromVersionable="false">
+               <Owner Name="Education" Identifier="30625624" />
+               <GroupAccess Type="1" />
+               <Annotation>cloned from 'Copy of Simulation3 1' owned by user boris
+</Annotation>
+            </Version>
+         </Simulation>
+         <Simulation Name="Copy of Simulation3 2">
+            <Annotation>cloned from 'Copy of Simulation3 2' owned by user boris
+</Annotation>
+            <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Gibson (Next Reaction Stochastic Method)">
+               <TimeBound StartTime="0.0" EndTime="600.0" />
+               <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+               <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+               <StochSimOptions UseCustomSeed="false" NumberOfTrial="10000" />
+               <OutputOptions KeepEvery="1" KeepAtMost="1000" />
+            </SolverTaskDescription>
+            <MathOverrides />
+            <Version Name="Copy of Simulation3 2" KeyValue="84982397" BranchId="35771569" Archived="0" Date="02-Nov-2013 13:04:40" FromVersionable="false">
+               <Owner Name="Education" Identifier="30625624" />
+               <GroupAccess Type="1" />
+               <Annotation>cloned from 'Copy of Simulation3 2' owned by user boris
+</Annotation>
+            </Version>
+         </Simulation>
+         <Version Name="spontaneous_activation" KeyValue="84982360" BranchId="35771524" Archived="0" Date="02-Nov-2013 13:04:40" FromVersionable="false">
+            <Owner Name="Education" Identifier="30625624" />
+            <GroupAccess Type="1" />
+            <Annotation>cloned from 'spontaneous_activation' owned by user boris
+(copied from toggle_switch) </Annotation>
+         </Version>
+         <MicroscopeMeasurement Name="fluor">
+            <ConvolutionKernel Type="ProjectionZKernel" />
+         </MicroscopeMeasurement>
+      </SimulationSpec>
+      <Version Name="CSH_09_G2_M_simple" KeyValue="84982474" BranchId="35771572" Archived="0" Date="02-Nov-2013 13:09:28" FromVersionable="false">
+         <Owner Name="Education" Identifier="30625624" />
+         <GroupAccess Type="0" />
+         <Annotation>cloned from 'CSH_09_G2_M_simple' owned by user boris
+</Annotation>
+      </Version>
+      <pathwayModel>
+         <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bp="http://www.biopax.org/release/biopax-level3.owl#" version="3.0" />
+      </pathwayModel>
+      <relationshipModel>
+         <RMNS version="3.0" />
+      </relationshipModel>
+      <vcmetadata>
+         <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" />
+         <nonrdfAnnotationList>
+            <nonrdfAnnotation vcid="BioModel(CSH_09_G2_M_simple)">
+               <freetext>cloned from 'CSH_09_G2_M_simple' owned by user boris
+</freetext>
+            </nonrdfAnnotation>
+         </nonrdfAnnotationList>
+         <uriBindingList />
+      </vcmetadata>
+   </BioModel>
+</vcml>
+

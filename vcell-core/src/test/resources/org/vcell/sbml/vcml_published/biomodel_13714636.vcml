@@ -1,0 +1,653 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--This biomodel was generated in VCML Version 0.4-->
+<vcml xmlns="http://sourceforge.net/projects/vcell/vcml" Version="0.4">
+   <BioModel Name="Thymosin Photorelease - JCB 2001">
+      <Annotation>cloned from 'Thymosin Photorelease - JCB 2001' owned by user partharoy
+Published companion to this model:
+Roy, P., Z. Rajfur, D. Jones, G. Marriott, L. Loew, and K. Jacobson. 2001. Local Photorelease of Caged Thymosin beta4 in Locomoting Keratocytes Causes Cell Turning. Journal of Cell Biology. 153:1035-1048.</Annotation>
+      <Model Name="7_12_00_model1">
+         <Annotation>cloned from '7_12_00_model1' owned by user partharoy
+</Annotation>
+         <Compound Name="ta">
+            <Annotation>thymosin_actin</Annotation>
+         </Compound>
+         <Compound Name="af">
+            <Annotation>actinFilament</Annotation>
+         </Compound>
+         <Compound Name="a">
+            <Annotation>actin</Annotation>
+         </Compound>
+         <Compound Name="t_">
+            <Annotation>thymosinb4</Annotation>
+         </Compound>
+         <Feature Name="extracellular" KeyValue="13714571" />
+         <Feature Name="cytoplasm" KeyValue="13714574" />
+         <Membrane InsideFeature="cytoplasm" OutsideFeature="extracellular" MembraneVoltage="Voltage_plasmamembrane" Name="plasmamembrane" KeyValue="13714573" />
+         <LocalizedCompound Name="ta_cytoplasm" CompoundRef="ta" Structure="cytoplasm" OverrideName="false" KeyValue="13714578" />
+         <LocalizedCompound Name="af" CompoundRef="af" Structure="cytoplasm" OverrideName="true" KeyValue="13714579" />
+         <LocalizedCompound Name="a_cytoplasm" CompoundRef="a" Structure="cytoplasm" OverrideName="false" KeyValue="13714580" />
+         <LocalizedCompound Name="t_cytoplasm" CompoundRef="t_" Structure="cytoplasm" OverrideName="true" KeyValue="13714577" />
+         <SimpleReaction Structure="cytoplasm" Name="polymerization" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="13714581">
+            <Reactant LocalizedCompoundRef="a_cytoplasm" Stoichiometry="1" KeyValue="13714582" />
+            <Product LocalizedCompoundRef="af" Stoichiometry="1" KeyValue="13714583" />
+            <Kinetics KineticsType="MassAction">
+               <Parameter Name="J" Role="reaction rate" Unit="uM.s-1">((Kf * a_cytoplasm) - (Kr * af))</Parameter>
+               <Parameter Name="Kf" Role="forward rate constant" Unit="s-1">1.0</Parameter>
+               <Parameter Name="Kr" Role="reverse rate constant" Unit="s-1">1.0</Parameter>
+            </Kinetics>
+            <Annotation />
+         </SimpleReaction>
+         <SimpleReaction Structure="cytoplasm" Name="actin_td4_reaction" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="13714584">
+            <Reactant LocalizedCompoundRef="a_cytoplasm" Stoichiometry="1" KeyValue="13714585" />
+            <Reactant LocalizedCompoundRef="t_cytoplasm" Stoichiometry="1" KeyValue="13714586" />
+            <Product LocalizedCompoundRef="ta_cytoplasm" Stoichiometry="1" KeyValue="13714587" />
+            <Kinetics KineticsType="MassAction">
+               <Parameter Name="J" Role="reaction rate" Unit="uM.s-1">((t_cytoplasm * Kf * a_cytoplasm) - (Kr * ta_cytoplasm))</Parameter>
+               <Parameter Name="Kf" Role="forward rate constant" Unit="uM-1.s-1">1.0</Parameter>
+               <Parameter Name="Kr" Role="reverse rate constant" Unit="s-1">1.0</Parameter>
+            </Kinetics>
+            <Annotation />
+         </SimpleReaction>
+         <Diagram Name="unnamedCompartment_diagram" Structure="extracellular" />
+         <Diagram Name="Membrane0_diagram" Structure="plasmamembrane" />
+         <Diagram Name="Feature0_diagram" Structure="cytoplasm">
+            <LocalizedCompoundShape LocalizedCompoundRef="t_cytoplasm" LocationX="21" LocationY="23" />
+            <LocalizedCompoundShape LocalizedCompoundRef="a_cytoplasm" LocationX="98" LocationY="202" />
+            <LocalizedCompoundShape LocalizedCompoundRef="ta_cytoplasm" LocationX="363" LocationY="158" />
+            <LocalizedCompoundShape LocalizedCompoundRef="af" LocationX="309" LocationY="260" />
+            <SimpleReactionShape SimpleReactionRef="polymerization" LocationX="166" LocationY="315" />
+            <SimpleReactionShape SimpleReactionRef="actin_td4_reaction" LocationX="145" LocationY="107" />
+         </Diagram>
+         <Version Name="7_12_00_model1" KeyValue="13714564" BranchId="13714565" Archived="0" Date="19-Jul-2005 14:57:43" FromVersionable="false">
+            <Owner Name="CMC" Identifier="2794180" />
+            <GroupAccess Type="1" />
+            <Annotation>cloned from '7_12_00_model1' owned by user partharoy
+</Annotation>
+         </Version>
+      </Model>
+      <SimulationSpec Name="7_12_00_model1" Stochastic="false" CharacteristicSize="0.07306472307303918">
+         <Annotation>cloned from '7_12_00_model1' owned by user partharoy
+</Annotation>
+         <Geometry Name="new2DimGeometry1" Dimension="2">
+            <Annotation>cloned from 'new2DimGeometry1' owned by user partharoy
+</Annotation>
+            <Extent X="34.0" Y="19.0" Z="10.0" />
+            <Origin X="0.0" Y="0.0" Z="0.0" />
+            <SubVolume Name="keratocyte" Handle="1" Type="Analytical" KeyValue="13714529">
+               <AnalyticExpression>((pow((-17.0 + x),2.0) + pow((-2.0 + y),2.0)) &lt; (225.0 * (y &gt; 2.0)))</AnalyticExpression>
+            </SubVolume>
+            <SubVolume Name="subVolume0" Handle="0" Type="Analytical" KeyValue="13714530">
+               <AnalyticExpression>1.0</AnalyticExpression>
+            </SubVolume>
+            <SurfaceDescription NumSamplesX="101" NumSamplesY="101" NumSamplesZ="1" CutoffFrequency="0.3">
+               <VolumeRegion Name="subVolume00" RegionID="0" SubVolume="subVolume0" Size="292.83180000000004" Unit="um2" />
+               <VolumeRegion Name="keratocyte1" RegionID="1" SubVolume="keratocyte" Size="353.1682" Unit="um2" />
+               <MembraneRegion Name="membrane_subVolume00_keratocyte1" VolumeRegion1="keratocyte1" VolumeRegion2="subVolume00" Size="764.1959644557455" Unit="um" />
+            </SurfaceDescription>
+            <Version Name="new2DimGeometry1" KeyValue="13714525" BranchId="13714526" Archived="0" Date="19-Jul-2005 14:57:43" FromVersionable="false">
+               <Owner Name="CMC" Identifier="2794180" />
+               <GroupAccess Type="1" />
+               <Annotation>cloned from 'new2DimGeometry1' owned by user partharoy
+</Annotation>
+            </Version>
+         </Geometry>
+         <GeometryContext>
+            <FeatureMapping Feature="extracellular" SubVolume="subVolume0" Resolved="true">
+               <BoundariesTypes Xm="Value" Xp="Value" Ym="Value" Yp="Value" Zm="Value" Zp="Value" />
+            </FeatureMapping>
+            <FeatureMapping Feature="cytoplasm" SubVolume="keratocyte" Resolved="true">
+               <BoundariesTypes Xm="Value" Xp="Value" Ym="Value" Yp="Value" Zm="Value" Zp="Value" />
+            </FeatureMapping>
+            <MembraneMapping Membrane="plasmamembrane" SurfaceToVolumeRatio="1.0" VolumeFraction="0.2" CalculateVoltage="false" SpecificCapacitance="0.01" InitialVoltage="0.0" />
+         </GeometryContext>
+         <ReactionContext>
+            <LocalizedCompoundSpec LocalizedCompoundRef="ta_cytoplasm" ForceConstant="false" EnableDiffusion="true">
+               <Initial>98.0</Initial>
+               <Diffusion>1.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="af" ForceConstant="false" EnableDiffusion="true">
+               <Initial>50.0</Initial>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="a_cytoplasm" ForceConstant="false" EnableDiffusion="true">
+               <Initial>50.0</Initial>
+               <Diffusion>1.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="t_cytoplasm" ForceConstant="false" EnableDiffusion="true">
+               <Initial>(2.0 + (2000.0 * ((pow((-30.0 + x),2.0) + pow((-4.0 + y),2.0)) &lt; 2.25)))</Initial>
+               <Diffusion>2.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <ReactionSpec ReactionStepRef="polymerization" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="actin_td4_reaction" ReactionMapping="included" />
+         </ReactionContext>
+         <MathDescription Name="7_12_00_model1_44473">
+            <Annotation>cloned from '7_12_00_model1_44473' owned by user partharoy
+</Annotation>
+            <Constant Name="a_cytoplasm_init">50.0</Constant>
+            <Constant Name="t_cytoplasm_diffusionRate">2.0</Constant>
+            <Constant Name="_T_">300.0</Constant>
+            <Constant Name="ta_cytoplasm_init">98.0</Constant>
+            <Constant Name="Kf_polymerization">1.0</Constant>
+            <Constant Name="_F_nmol_">9.648E-5</Constant>
+            <Constant Name="a_cytoplasm_diffusionRate">1.0</Constant>
+            <Constant Name="_F_">96480.0</Constant>
+            <Constant Name="_R_">8314.0</Constant>
+            <Constant Name="Kr_polymerization">1.0</Constant>
+            <Constant Name="_N_pmol_">6.02E11</Constant>
+            <Constant Name="ta_cytoplasm_diffusionRate">1.0</Constant>
+            <Constant Name="af_init">50.0</Constant>
+            <Constant Name="Kf_actin_td4_reaction">1.0</Constant>
+            <Constant Name="KMOLE">0.0016611295681063123</Constant>
+            <Constant Name="_K_GHK_">1.0E-9</Constant>
+            <Constant Name="Kr_actin_td4_reaction">1.0</Constant>
+            <Constant Name="K_millivolts_per_volt">1000.0</Constant>
+            <VolumeVariable Name="ta" />
+            <VolumeVariable Name="t_" />
+            <VolumeVariable Name="af" />
+            <VolumeVariable Name="a" />
+            <Function Name="J_polymerization">((Kf_polymerization * a) - (Kr_polymerization * af))</Function>
+            <Function Name="t_cytoplasm_init">(2.0 + (2000.0 * ((pow((-30.0 + x),2.0) + pow((-4.0 + y),2.0)) &lt; 2.25)))</Function>
+            <Function Name="Voltage_plasmamembrane">0.0</Function>
+            <Function Name="J_actin_td4_reaction">((t_ * Kf_actin_td4_reaction * a) - (Kr_actin_td4_reaction * ta))</Function>
+            <CompartmentSubDomain Name="keratocyte" Priority="200">
+               <BoundaryType Boundary="Xm" Type="Value" />
+               <BoundaryType Boundary="Xp" Type="Value" />
+               <BoundaryType Boundary="Ym" Type="Value" />
+               <BoundaryType Boundary="Yp" Type="Value" />
+               <BoundaryType Boundary="Zm" Type="Value" />
+               <BoundaryType Boundary="Zp" Type="Value" />
+               <OdeEquation Name="af" SolutionType="Unknown">
+                  <Rate>J_polymerization</Rate>
+                  <Initial>af_init</Initial>
+               </OdeEquation>
+               <PdeEquation Name="t_" SolutionType="Unknown">
+                  <Rate> - J_actin_td4_reaction</Rate>
+                  <Diffusion>t_cytoplasm_diffusionRate</Diffusion>
+                  <Initial>t_cytoplasm_init</Initial>
+               </PdeEquation>
+               <PdeEquation Name="ta" SolutionType="Unknown">
+                  <Rate>J_actin_td4_reaction</Rate>
+                  <Diffusion>ta_cytoplasm_diffusionRate</Diffusion>
+                  <Initial>ta_cytoplasm_init</Initial>
+               </PdeEquation>
+               <PdeEquation Name="a" SolutionType="Unknown">
+                  <Rate>( - J_polymerization - J_actin_td4_reaction)</Rate>
+                  <Diffusion>a_cytoplasm_diffusionRate</Diffusion>
+                  <Initial>a_cytoplasm_init</Initial>
+               </PdeEquation>
+            </CompartmentSubDomain>
+            <CompartmentSubDomain Name="subVolume0" Priority="101">
+               <BoundaryType Boundary="Xm" Type="Value" />
+               <BoundaryType Boundary="Xp" Type="Value" />
+               <BoundaryType Boundary="Ym" Type="Value" />
+               <BoundaryType Boundary="Yp" Type="Value" />
+               <BoundaryType Boundary="Zm" Type="Value" />
+               <BoundaryType Boundary="Zp" Type="Value" />
+               <OdeEquation Name="af" SolutionType="Unknown">
+                  <Rate>0.0</Rate>
+                  <Initial>0.0</Initial>
+               </OdeEquation>
+               <PdeEquation Name="t_" SolutionType="Unknown">
+                  <Rate>0.0</Rate>
+                  <Diffusion>t_cytoplasm_diffusionRate</Diffusion>
+                  <Initial>0.0</Initial>
+               </PdeEquation>
+               <PdeEquation Name="ta" SolutionType="Unknown">
+                  <Rate>0.0</Rate>
+                  <Diffusion>ta_cytoplasm_diffusionRate</Diffusion>
+                  <Initial>0.0</Initial>
+               </PdeEquation>
+               <PdeEquation Name="a" SolutionType="Unknown">
+                  <Rate>0.0</Rate>
+                  <Diffusion>a_cytoplasm_diffusionRate</Diffusion>
+                  <Initial>0.0</Initial>
+               </PdeEquation>
+            </CompartmentSubDomain>
+            <MembraneSubDomain InsideCompartment="keratocyte" OutsideCompartment="subVolume0">
+               <BoundaryType Boundary="Xm" Type="Value" />
+               <BoundaryType Boundary="Xp" Type="Value" />
+               <BoundaryType Boundary="Ym" Type="Value" />
+               <BoundaryType Boundary="Yp" Type="Value" />
+               <BoundaryType Boundary="Zm" Type="Value" />
+               <BoundaryType Boundary="Zp" Type="Value" />
+               <JumpCondition Name="t_">
+                  <InFlux>0.0</InFlux>
+                  <OutFlux>0.0</OutFlux>
+               </JumpCondition>
+               <JumpCondition Name="ta">
+                  <InFlux>0.0</InFlux>
+                  <OutFlux>0.0</OutFlux>
+               </JumpCondition>
+               <JumpCondition Name="a">
+                  <InFlux>0.0</InFlux>
+                  <OutFlux>0.0</OutFlux>
+               </JumpCondition>
+            </MembraneSubDomain>
+            <Version Name="7_12_00_model1_44473" KeyValue="13714555" BranchId="13714556" Archived="0" Date="19-Jul-2005 14:57:43" FromVersionable="false">
+               <Owner Name="CMC" Identifier="2794180" />
+               <GroupAccess Type="1" />
+               <Annotation>cloned from '7_12_00_model1_44473' owned by user partharoy
+</Annotation>
+            </Version>
+         </MathDescription>
+         <Simulation Name="7_12_00_model1_44473_SIM">
+            <Annotation>cloned from '7_12_00_model1_44473_SIM' owned by user partharoy
+</Annotation>
+            <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Finite Volume, Regular Grid">
+               <TimeBound StartTime="0.0" EndTime="15.0" />
+               <TimeStep DefaultTime="0.0010" MinTime="1.0E-8" MaxTime="1.0" />
+               <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+               <OutputOptions KeepEvery="500" KeepAtMost="1000" />
+            </SolverTaskDescription>
+            <MathOverrides />
+            <MeshSpecification>
+               <Size X="465" Y="260" Z="1" />
+            </MeshSpecification>
+            <Version Name="7_12_00_model1_44473_SIM" KeyValue="13714627" BranchId="13714628" Archived="0" Date="19-Jul-2005 14:57:44" FromVersionable="false">
+               <Owner Name="CMC" Identifier="2794180" />
+               <GroupAccess Type="1" />
+               <Annotation>cloned from '7_12_00_model1_44473_SIM' owned by user partharoy
+</Annotation>
+            </Version>
+         </Simulation>
+         <Version Name="7_12_00_model1" KeyValue="13714591" BranchId="13714592" Archived="0" Date="19-Jul-2005 14:57:43" FromVersionable="false">
+            <Owner Name="CMC" Identifier="2794180" />
+            <GroupAccess Type="1" />
+            <Annotation>cloned from '7_12_00_model1' owned by user partharoy
+</Annotation>
+         </Version>
+      </SimulationSpec>
+      <SimulationSpec Name="7_12_00_model2" Stochastic="false" CharacteristicSize="0.07306472307303918">
+         <Annotation>cloned from '7_12_00_model2' owned by user partharoy
+</Annotation>
+         <Geometry Name="new2DimGeometry74184850" Dimension="2">
+            <Annotation>cloned from 'new2DimGeometry1' owned by user partharoy
+</Annotation>
+            <Extent X="34.0" Y="19.0" Z="10.0" />
+            <Origin X="0.0" Y="0.0" Z="0.0" />
+            <SubVolume Name="keratocyte" Handle="1" Type="Analytical" KeyValue="13714539">
+               <AnalyticExpression>((pow((-17.0 + x),2.0) + pow((-2.0 + y),2.0)) &lt; (225.0 * (y &gt; 2.0)))</AnalyticExpression>
+            </SubVolume>
+            <SubVolume Name="subVolume0" Handle="0" Type="Analytical" KeyValue="13714540">
+               <AnalyticExpression>1.0</AnalyticExpression>
+            </SubVolume>
+            <SurfaceDescription NumSamplesX="101" NumSamplesY="101" NumSamplesZ="1" CutoffFrequency="0.3">
+               <VolumeRegion Name="keratocyte1" RegionID="1" SubVolume="keratocyte" Size="353.1682" Unit="um2" />
+               <VolumeRegion Name="subVolume00" RegionID="0" SubVolume="subVolume0" Size="292.83180000000004" Unit="um2" />
+               <MembraneRegion Name="membrane_subVolume00_keratocyte1" VolumeRegion1="keratocyte1" VolumeRegion2="subVolume00" Size="764.1959644557455" Unit="um" />
+            </SurfaceDescription>
+            <Version Name="new2DimGeometry74184850" KeyValue="13714535" BranchId="13714536" Archived="0" Date="19-Jul-2005 14:57:43" FromVersionable="false">
+               <Owner Name="CMC" Identifier="2794180" />
+               <GroupAccess Type="1" />
+               <Annotation>cloned from 'new2DimGeometry1' owned by user partharoy
+</Annotation>
+            </Version>
+         </Geometry>
+         <GeometryContext>
+            <FeatureMapping Feature="extracellular" SubVolume="subVolume0" Resolved="true">
+               <BoundariesTypes Xm="Value" Xp="Value" Ym="Value" Yp="Value" Zm="Value" Zp="Value" />
+            </FeatureMapping>
+            <FeatureMapping Feature="cytoplasm" SubVolume="keratocyte" Resolved="true">
+               <BoundariesTypes Xm="Value" Xp="Value" Ym="Value" Yp="Value" Zm="Value" Zp="Value" />
+            </FeatureMapping>
+            <MembraneMapping Membrane="plasmamembrane" SurfaceToVolumeRatio="1.0" VolumeFraction="0.2" CalculateVoltage="false" SpecificCapacitance="0.01" InitialVoltage="0.0" />
+         </GeometryContext>
+         <ReactionContext>
+            <LocalizedCompoundSpec LocalizedCompoundRef="ta_cytoplasm" ForceConstant="false" EnableDiffusion="true">
+               <Initial>98.0</Initial>
+               <Diffusion>1.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="af" ForceConstant="false" EnableDiffusion="true">
+               <Initial>50.0</Initial>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="a_cytoplasm" ForceConstant="false" EnableDiffusion="true">
+               <Initial>50.0</Initial>
+               <Diffusion>1.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="t_cytoplasm" ForceConstant="false" EnableDiffusion="true">
+               <Initial>(2.0 + (1000.0 * ((pow((-30.0 + x),2.0) + pow((-4.0 + y),2.0)) &lt; 2.25)))</Initial>
+               <Diffusion>2.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <ReactionSpec ReactionStepRef="polymerization" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="actin_td4_reaction" ReactionMapping="included" />
+         </ReactionContext>
+         <MathDescription Name="7_12_00_model1_100016">
+            <Annotation>cloned from '7_12_00_model1_100016' owned by user partharoy
+</Annotation>
+            <Constant Name="a_cytoplasm_init">50.0</Constant>
+            <Constant Name="t_cytoplasm_diffusionRate">2.0</Constant>
+            <Constant Name="_T_">300.0</Constant>
+            <Constant Name="ta_cytoplasm_init">98.0</Constant>
+            <Constant Name="Kf_polymerization">1.0</Constant>
+            <Constant Name="_F_nmol_">9.648E-5</Constant>
+            <Constant Name="a_cytoplasm_diffusionRate">1.0</Constant>
+            <Constant Name="_F_">96480.0</Constant>
+            <Constant Name="_R_">8314.0</Constant>
+            <Constant Name="Kr_polymerization">1.0</Constant>
+            <Constant Name="_N_pmol_">6.02E11</Constant>
+            <Constant Name="ta_cytoplasm_diffusionRate">1.0</Constant>
+            <Constant Name="af_init">50.0</Constant>
+            <Constant Name="Kf_actin_td4_reaction">1.0</Constant>
+            <Constant Name="KMOLE">0.0016611295681063123</Constant>
+            <Constant Name="_K_GHK_">1.0E-9</Constant>
+            <Constant Name="Kr_actin_td4_reaction">1.0</Constant>
+            <Constant Name="K_millivolts_per_volt">1000.0</Constant>
+            <VolumeVariable Name="ta" />
+            <VolumeVariable Name="t_" />
+            <VolumeVariable Name="af" />
+            <VolumeVariable Name="a" />
+            <Function Name="J_polymerization">((Kf_polymerization * a) - (Kr_polymerization * af))</Function>
+            <Function Name="t_cytoplasm_init">(2.0 + (1000.0 * ((pow((-30.0 + x),2.0) + pow((-4.0 + y),2.0)) &lt; 2.25)))</Function>
+            <Function Name="Voltage_plasmamembrane">0.0</Function>
+            <Function Name="J_actin_td4_reaction">((t_ * Kf_actin_td4_reaction * a) - (Kr_actin_td4_reaction * ta))</Function>
+            <CompartmentSubDomain Name="keratocyte" Priority="200">
+               <BoundaryType Boundary="Xm" Type="Value" />
+               <BoundaryType Boundary="Xp" Type="Value" />
+               <BoundaryType Boundary="Ym" Type="Value" />
+               <BoundaryType Boundary="Yp" Type="Value" />
+               <BoundaryType Boundary="Zm" Type="Value" />
+               <BoundaryType Boundary="Zp" Type="Value" />
+               <OdeEquation Name="af" SolutionType="Unknown">
+                  <Rate>J_polymerization</Rate>
+                  <Initial>af_init</Initial>
+               </OdeEquation>
+               <PdeEquation Name="t_" SolutionType="Unknown">
+                  <Rate> - J_actin_td4_reaction</Rate>
+                  <Diffusion>t_cytoplasm_diffusionRate</Diffusion>
+                  <Initial>t_cytoplasm_init</Initial>
+               </PdeEquation>
+               <PdeEquation Name="ta" SolutionType="Unknown">
+                  <Rate>J_actin_td4_reaction</Rate>
+                  <Diffusion>ta_cytoplasm_diffusionRate</Diffusion>
+                  <Initial>ta_cytoplasm_init</Initial>
+               </PdeEquation>
+               <PdeEquation Name="a" SolutionType="Unknown">
+                  <Rate>( - J_polymerization - J_actin_td4_reaction)</Rate>
+                  <Diffusion>a_cytoplasm_diffusionRate</Diffusion>
+                  <Initial>a_cytoplasm_init</Initial>
+               </PdeEquation>
+            </CompartmentSubDomain>
+            <CompartmentSubDomain Name="subVolume0" Priority="101">
+               <BoundaryType Boundary="Xm" Type="Value" />
+               <BoundaryType Boundary="Xp" Type="Value" />
+               <BoundaryType Boundary="Ym" Type="Value" />
+               <BoundaryType Boundary="Yp" Type="Value" />
+               <BoundaryType Boundary="Zm" Type="Value" />
+               <BoundaryType Boundary="Zp" Type="Value" />
+               <OdeEquation Name="af" SolutionType="Unknown">
+                  <Rate>0.0</Rate>
+                  <Initial>0.0</Initial>
+               </OdeEquation>
+               <PdeEquation Name="t_" SolutionType="Unknown">
+                  <Rate>0.0</Rate>
+                  <Diffusion>t_cytoplasm_diffusionRate</Diffusion>
+                  <Initial>0.0</Initial>
+               </PdeEquation>
+               <PdeEquation Name="ta" SolutionType="Unknown">
+                  <Rate>0.0</Rate>
+                  <Diffusion>ta_cytoplasm_diffusionRate</Diffusion>
+                  <Initial>0.0</Initial>
+               </PdeEquation>
+               <PdeEquation Name="a" SolutionType="Unknown">
+                  <Rate>0.0</Rate>
+                  <Diffusion>a_cytoplasm_diffusionRate</Diffusion>
+                  <Initial>0.0</Initial>
+               </PdeEquation>
+            </CompartmentSubDomain>
+            <MembraneSubDomain InsideCompartment="keratocyte" OutsideCompartment="subVolume0">
+               <BoundaryType Boundary="Xm" Type="Value" />
+               <BoundaryType Boundary="Xp" Type="Value" />
+               <BoundaryType Boundary="Ym" Type="Value" />
+               <BoundaryType Boundary="Yp" Type="Value" />
+               <BoundaryType Boundary="Zm" Type="Value" />
+               <BoundaryType Boundary="Zp" Type="Value" />
+               <JumpCondition Name="t_">
+                  <InFlux>0.0</InFlux>
+                  <OutFlux>0.0</OutFlux>
+               </JumpCondition>
+               <JumpCondition Name="ta">
+                  <InFlux>0.0</InFlux>
+                  <OutFlux>0.0</OutFlux>
+               </JumpCondition>
+               <JumpCondition Name="a">
+                  <InFlux>0.0</InFlux>
+                  <OutFlux>0.0</OutFlux>
+               </JumpCondition>
+            </MembraneSubDomain>
+            <Version Name="7_12_00_model1_100016" KeyValue="13714558" BranchId="13714559" Archived="0" Date="19-Jul-2005 14:57:43" FromVersionable="false">
+               <Owner Name="CMC" Identifier="2794180" />
+               <GroupAccess Type="1" />
+               <Annotation>cloned from '7_12_00_model1_100016' owned by user partharoy
+</Annotation>
+            </Version>
+         </MathDescription>
+         <Simulation Name="7_12_00_model2_100016_SIM">
+            <Annotation>cloned from '7_12_00_model2_100016_SIM' owned by user partharoy
+</Annotation>
+            <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Finite Volume, Regular Grid">
+               <TimeBound StartTime="0.0" EndTime="15.0" />
+               <TimeStep DefaultTime="0.0010" MinTime="1.0E-8" MaxTime="1.0" />
+               <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+               <OutputOptions KeepEvery="500" KeepAtMost="1000" />
+            </SolverTaskDescription>
+            <MathOverrides />
+            <MeshSpecification>
+               <Size X="465" Y="260" Z="1" />
+            </MeshSpecification>
+            <Version Name="7_12_00_model2_100016_SIM" KeyValue="13714630" BranchId="13714631" Archived="0" Date="19-Jul-2005 14:57:44" FromVersionable="false">
+               <Owner Name="CMC" Identifier="2794180" />
+               <GroupAccess Type="1" />
+               <Annotation>cloned from '7_12_00_model2_100016_SIM' owned by user partharoy
+</Annotation>
+            </Version>
+         </Simulation>
+         <Version Name="7_12_00_model2" KeyValue="13714603" BranchId="13714604" Archived="0" Date="19-Jul-2005 14:57:43" FromVersionable="false">
+            <Owner Name="CMC" Identifier="2794180" />
+            <GroupAccess Type="1" />
+            <Annotation>cloned from '7_12_00_model2' owned by user partharoy
+</Annotation>
+         </Version>
+      </SimulationSpec>
+      <SimulationSpec Name="7_12_00_model3" Stochastic="false" CharacteristicSize="0.07306472307303918">
+         <Annotation>cloned from '7_12_00_model3' owned by user partharoy
+</Annotation>
+         <Geometry Name="new2DimGeometry2047252477" Dimension="2">
+            <Annotation>cloned from 'new2DimGeometry1' owned by user partharoy
+</Annotation>
+            <Extent X="34.0" Y="19.0" Z="10.0" />
+            <Origin X="0.0" Y="0.0" Z="0.0" />
+            <SubVolume Name="keratocyte" Handle="1" Type="Analytical" KeyValue="13714549">
+               <AnalyticExpression>((pow((-17.0 + x),2.0) + pow((-2.0 + y),2.0)) &lt; (225.0 * (y &gt; 2.0)))</AnalyticExpression>
+            </SubVolume>
+            <SubVolume Name="subVolume0" Handle="0" Type="Analytical" KeyValue="13714550">
+               <AnalyticExpression>1.0</AnalyticExpression>
+            </SubVolume>
+            <SurfaceDescription NumSamplesX="101" NumSamplesY="101" NumSamplesZ="1" CutoffFrequency="0.3">
+               <VolumeRegion Name="subVolume00" RegionID="0" SubVolume="subVolume0" Size="292.83180000000004" Unit="um2" />
+               <VolumeRegion Name="keratocyte1" RegionID="1" SubVolume="keratocyte" Size="353.1682" Unit="um2" />
+               <MembraneRegion Name="membrane_subVolume00_keratocyte1" VolumeRegion1="keratocyte1" VolumeRegion2="subVolume00" Size="764.1959644557455" Unit="um" />
+            </SurfaceDescription>
+            <Version Name="new2DimGeometry2047252477" KeyValue="13714545" BranchId="13714546" Archived="0" Date="19-Jul-2005 14:57:43" FromVersionable="false">
+               <Owner Name="CMC" Identifier="2794180" />
+               <GroupAccess Type="1" />
+               <Annotation>cloned from 'new2DimGeometry1' owned by user partharoy
+</Annotation>
+            </Version>
+         </Geometry>
+         <GeometryContext>
+            <FeatureMapping Feature="extracellular" SubVolume="subVolume0" Resolved="true">
+               <BoundariesTypes Xm="Value" Xp="Value" Ym="Value" Yp="Value" Zm="Value" Zp="Value" />
+            </FeatureMapping>
+            <FeatureMapping Feature="cytoplasm" SubVolume="keratocyte" Resolved="true">
+               <BoundariesTypes Xm="Value" Xp="Value" Ym="Value" Yp="Value" Zm="Value" Zp="Value" />
+            </FeatureMapping>
+            <MembraneMapping Membrane="plasmamembrane" SurfaceToVolumeRatio="1.0" VolumeFraction="0.2" CalculateVoltage="false" SpecificCapacitance="0.01" InitialVoltage="0.0" />
+         </GeometryContext>
+         <ReactionContext>
+            <LocalizedCompoundSpec LocalizedCompoundRef="ta_cytoplasm" ForceConstant="false" EnableDiffusion="true">
+               <Initial>98.0</Initial>
+               <Diffusion>1.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="af" ForceConstant="false" EnableDiffusion="true">
+               <Initial>50.0</Initial>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="a_cytoplasm" ForceConstant="false" EnableDiffusion="true">
+               <Initial>50.0</Initial>
+               <Diffusion>1.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="t_cytoplasm" ForceConstant="false" EnableDiffusion="true">
+               <Initial>(2.0 + (200.0 * ((pow((-30.0 + x),2.0) + pow((-4.0 + y),2.0)) &lt; 2.25)))</Initial>
+               <Diffusion>2.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <ReactionSpec ReactionStepRef="polymerization" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="actin_td4_reaction" ReactionMapping="included" />
+         </ReactionContext>
+         <MathDescription Name="7_12_00_model1_100105">
+            <Annotation>cloned from '7_12_00_model1_100105' owned by user partharoy
+</Annotation>
+            <Constant Name="a_cytoplasm_init">50.0</Constant>
+            <Constant Name="t_cytoplasm_diffusionRate">2.0</Constant>
+            <Constant Name="_T_">300.0</Constant>
+            <Constant Name="ta_cytoplasm_init">98.0</Constant>
+            <Constant Name="Kf_polymerization">1.0</Constant>
+            <Constant Name="_F_nmol_">9.648E-5</Constant>
+            <Constant Name="a_cytoplasm_diffusionRate">1.0</Constant>
+            <Constant Name="_F_">96480.0</Constant>
+            <Constant Name="_R_">8314.0</Constant>
+            <Constant Name="Kr_polymerization">1.0</Constant>
+            <Constant Name="_N_pmol_">6.02E11</Constant>
+            <Constant Name="ta_cytoplasm_diffusionRate">1.0</Constant>
+            <Constant Name="af_init">50.0</Constant>
+            <Constant Name="Kf_actin_td4_reaction">1.0</Constant>
+            <Constant Name="KMOLE">0.0016611295681063123</Constant>
+            <Constant Name="_K_GHK_">1.0E-9</Constant>
+            <Constant Name="Kr_actin_td4_reaction">1.0</Constant>
+            <Constant Name="K_millivolts_per_volt">1000.0</Constant>
+            <VolumeVariable Name="ta" />
+            <VolumeVariable Name="t_" />
+            <VolumeVariable Name="af" />
+            <VolumeVariable Name="a" />
+            <Function Name="J_polymerization">((Kf_polymerization * a) - (Kr_polymerization * af))</Function>
+            <Function Name="t_cytoplasm_init">(2.0 + (200.0 * ((pow((-30.0 + x),2.0) + pow((-4.0 + y),2.0)) &lt; 2.25)))</Function>
+            <Function Name="Voltage_plasmamembrane">0.0</Function>
+            <Function Name="J_actin_td4_reaction">((t_ * Kf_actin_td4_reaction * a) - (Kr_actin_td4_reaction * ta))</Function>
+            <CompartmentSubDomain Name="keratocyte" Priority="200">
+               <BoundaryType Boundary="Xm" Type="Value" />
+               <BoundaryType Boundary="Xp" Type="Value" />
+               <BoundaryType Boundary="Ym" Type="Value" />
+               <BoundaryType Boundary="Yp" Type="Value" />
+               <BoundaryType Boundary="Zm" Type="Value" />
+               <BoundaryType Boundary="Zp" Type="Value" />
+               <OdeEquation Name="af" SolutionType="Unknown">
+                  <Rate>J_polymerization</Rate>
+                  <Initial>af_init</Initial>
+               </OdeEquation>
+               <PdeEquation Name="t_" SolutionType="Unknown">
+                  <Rate> - J_actin_td4_reaction</Rate>
+                  <Diffusion>t_cytoplasm_diffusionRate</Diffusion>
+                  <Initial>t_cytoplasm_init</Initial>
+               </PdeEquation>
+               <PdeEquation Name="ta" SolutionType="Unknown">
+                  <Rate>J_actin_td4_reaction</Rate>
+                  <Diffusion>ta_cytoplasm_diffusionRate</Diffusion>
+                  <Initial>ta_cytoplasm_init</Initial>
+               </PdeEquation>
+               <PdeEquation Name="a" SolutionType="Unknown">
+                  <Rate>( - J_polymerization - J_actin_td4_reaction)</Rate>
+                  <Diffusion>a_cytoplasm_diffusionRate</Diffusion>
+                  <Initial>a_cytoplasm_init</Initial>
+               </PdeEquation>
+            </CompartmentSubDomain>
+            <CompartmentSubDomain Name="subVolume0" Priority="101">
+               <BoundaryType Boundary="Xm" Type="Value" />
+               <BoundaryType Boundary="Xp" Type="Value" />
+               <BoundaryType Boundary="Ym" Type="Value" />
+               <BoundaryType Boundary="Yp" Type="Value" />
+               <BoundaryType Boundary="Zm" Type="Value" />
+               <BoundaryType Boundary="Zp" Type="Value" />
+               <OdeEquation Name="af" SolutionType="Unknown">
+                  <Rate>0.0</Rate>
+                  <Initial>0.0</Initial>
+               </OdeEquation>
+               <PdeEquation Name="t_" SolutionType="Unknown">
+                  <Rate>0.0</Rate>
+                  <Diffusion>t_cytoplasm_diffusionRate</Diffusion>
+                  <Initial>0.0</Initial>
+               </PdeEquation>
+               <PdeEquation Name="ta" SolutionType="Unknown">
+                  <Rate>0.0</Rate>
+                  <Diffusion>ta_cytoplasm_diffusionRate</Diffusion>
+                  <Initial>0.0</Initial>
+               </PdeEquation>
+               <PdeEquation Name="a" SolutionType="Unknown">
+                  <Rate>0.0</Rate>
+                  <Diffusion>a_cytoplasm_diffusionRate</Diffusion>
+                  <Initial>0.0</Initial>
+               </PdeEquation>
+            </CompartmentSubDomain>
+            <MembraneSubDomain InsideCompartment="keratocyte" OutsideCompartment="subVolume0">
+               <BoundaryType Boundary="Xm" Type="Value" />
+               <BoundaryType Boundary="Xp" Type="Value" />
+               <BoundaryType Boundary="Ym" Type="Value" />
+               <BoundaryType Boundary="Yp" Type="Value" />
+               <BoundaryType Boundary="Zm" Type="Value" />
+               <BoundaryType Boundary="Zp" Type="Value" />
+               <JumpCondition Name="t_">
+                  <InFlux>0.0</InFlux>
+                  <OutFlux>0.0</OutFlux>
+               </JumpCondition>
+               <JumpCondition Name="ta">
+                  <InFlux>0.0</InFlux>
+                  <OutFlux>0.0</OutFlux>
+               </JumpCondition>
+               <JumpCondition Name="a">
+                  <InFlux>0.0</InFlux>
+                  <OutFlux>0.0</OutFlux>
+               </JumpCondition>
+            </MembraneSubDomain>
+            <Version Name="7_12_00_model1_100105" KeyValue="13714561" BranchId="13714562" Archived="0" Date="19-Jul-2005 14:57:43" FromVersionable="false">
+               <Owner Name="CMC" Identifier="2794180" />
+               <GroupAccess Type="1" />
+               <Annotation>cloned from '7_12_00_model1_100105' owned by user partharoy
+</Annotation>
+            </Version>
+         </MathDescription>
+         <Simulation Name="7_12_00_model3_100105_SIM">
+            <Annotation>cloned from '7_12_00_model3_100105_SIM' owned by user partharoy
+</Annotation>
+            <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Finite Volume, Regular Grid">
+               <TimeBound StartTime="0.0" EndTime="15.0" />
+               <TimeStep DefaultTime="0.0010" MinTime="1.0E-8" MaxTime="1.0" />
+               <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+               <OutputOptions KeepEvery="500" KeepAtMost="1000" />
+            </SolverTaskDescription>
+            <MathOverrides />
+            <MeshSpecification>
+               <Size X="465" Y="260" Z="1" />
+            </MeshSpecification>
+            <Version Name="7_12_00_model3_100105_SIM" KeyValue="13714633" BranchId="13714634" Archived="0" Date="19-Jul-2005 14:57:44" FromVersionable="false">
+               <Owner Name="CMC" Identifier="2794180" />
+               <GroupAccess Type="1" />
+               <Annotation>cloned from '7_12_00_model3_100105_SIM' owned by user partharoy
+</Annotation>
+            </Version>
+         </Simulation>
+         <Version Name="7_12_00_model3" KeyValue="13714615" BranchId="13714616" Archived="0" Date="19-Jul-2005 14:57:44" FromVersionable="false">
+            <Owner Name="CMC" Identifier="2794180" />
+            <GroupAccess Type="1" />
+            <Annotation>cloned from '7_12_00_model3' owned by user partharoy
+</Annotation>
+         </Version>
+      </SimulationSpec>
+      <Version Name="Thymosin Photorelease - JCB 2001" KeyValue="13714636" BranchId="13714637" Archived="0" Date="19-Jul-2005 14:57:44" FromVersionable="false">
+         <Owner Name="CMC" Identifier="2794180" />
+         <GroupAccess Type="0" />
+         <Annotation>cloned from 'Thymosin Photorelease - JCB 2001' owned by user partharoy
+Published companion to this model:
+Roy, P., Z. Rajfur, D. Jones, G. Marriott, L. Loew, and K. Jacobson. 2001. Local Photorelease of Caged Thymosin beta4 in Locomoting Keratocytes Causes Cell Turning. Journal of Cell Biology. 153:1035-1048.</Annotation>
+      </Version>
+   </BioModel>
+</vcml>
+

@@ -1,0 +1,496 @@
+<BioModel Name="Generic_Ras_cascade_1998">
+   <Annotation>Derived from the CellML model Repository and based on the paper: Increasing Complexity of the Ras Signaling Pathway, Anne B. Vojtek and Channing J. Ders, 1998, The Journal of Biological Chemistry, 273, 19925-19928
+</Annotation>
+   <Model Name="Ras_cascade_1998">
+      <Annotation>cloned from 'Ras_cascade_1998' owned by user CellMLRep
+</Annotation>
+      <Compound Name="inactive_Raf" />
+      <Compound Name="Phosphorylated_receptor_complex" />
+      <Compound Name="active_ERK_n" />
+      <Compound Name="active_MEK" />
+      <Compound Name="Phosphate" />
+      <Compound Name="Ras_GDP" />
+      <Compound Name="mRNA" />
+      <Compound Name="DNA" />
+      <Compound Name="SOS" />
+      <Compound Name="active_Elk_1" />
+      <Compound Name="GRB2" />
+      <Compound Name="EGF" />
+      <Compound Name="inactive_ERK" />
+      <Compound Name="EGF_TRK_complex" />
+      <Compound Name="active_receptor_complex" />
+      <Compound Name="inactive_Mnk" />
+      <Compound Name="GAP" />
+      <Compound Name="inactive_MEK" />
+      <Compound Name="Ras_GTP" />
+      <Compound Name="inactive_Elk_1" />
+      <Compound Name="TRK" />
+      <Compound Name="active_ERK_i" />
+      <Compound Name="active_Mnk" />
+      <Compound Name="active_Raf" />
+      <Feature Name="Ras_cascade_1998" KeyValue="7681350" />
+      <LocalizedCompound Name="inactive_Raf" CompoundRef="inactive_Raf" Structure="Ras_cascade_1998" OverrideName="false" KeyValue="7681353" />
+      <LocalizedCompound Name="Phosphorylated_receptor_complex" CompoundRef="Phosphorylated_receptor_complex" Structure="Ras_cascade_1998" OverrideName="false" KeyValue="7681354" />
+      <LocalizedCompound Name="active_ERK_n" CompoundRef="active_ERK_n" Structure="Ras_cascade_1998" OverrideName="false" KeyValue="7681355" />
+      <LocalizedCompound Name="active_MEK" CompoundRef="active_MEK" Structure="Ras_cascade_1998" OverrideName="false" KeyValue="7681356" />
+      <LocalizedCompound Name="Phosphate" CompoundRef="Phosphate" Structure="Ras_cascade_1998" OverrideName="false" KeyValue="7681357" />
+      <LocalizedCompound Name="Ras_GDP" CompoundRef="Ras_GDP" Structure="Ras_cascade_1998" OverrideName="false" KeyValue="7681358" />
+      <LocalizedCompound Name="mRNA" CompoundRef="mRNA" Structure="Ras_cascade_1998" OverrideName="false" KeyValue="7681359" />
+      <LocalizedCompound Name="DNA" CompoundRef="DNA" Structure="Ras_cascade_1998" OverrideName="false" KeyValue="7681360" />
+      <LocalizedCompound Name="SOS" CompoundRef="SOS" Structure="Ras_cascade_1998" OverrideName="false" KeyValue="7681361" />
+      <LocalizedCompound Name="active_Elk_1" CompoundRef="active_Elk_1" Structure="Ras_cascade_1998" OverrideName="false" KeyValue="7681352" />
+      <LocalizedCompound Name="GRB2" CompoundRef="GRB2" Structure="Ras_cascade_1998" OverrideName="false" KeyValue="7681362" />
+      <LocalizedCompound Name="EGF" CompoundRef="EGF" Structure="Ras_cascade_1998" OverrideName="false" KeyValue="7681363" />
+      <LocalizedCompound Name="inactive_ERK" CompoundRef="inactive_ERK" Structure="Ras_cascade_1998" OverrideName="false" KeyValue="7681364" />
+      <LocalizedCompound Name="EGF_TRK_complex" CompoundRef="EGF_TRK_complex" Structure="Ras_cascade_1998" OverrideName="false" KeyValue="7681365" />
+      <LocalizedCompound Name="active_receptor_complex" CompoundRef="active_receptor_complex" Structure="Ras_cascade_1998" OverrideName="false" KeyValue="7681366" />
+      <LocalizedCompound Name="inactive_Mnk" CompoundRef="inactive_Mnk" Structure="Ras_cascade_1998" OverrideName="false" KeyValue="7681367" />
+      <LocalizedCompound Name="GAP" CompoundRef="GAP" Structure="Ras_cascade_1998" OverrideName="false" KeyValue="7681368" />
+      <LocalizedCompound Name="inactive_MEK" CompoundRef="inactive_MEK" Structure="Ras_cascade_1998" OverrideName="false" KeyValue="7681369" />
+      <LocalizedCompound Name="Ras_GTP" CompoundRef="Ras_GTP" Structure="Ras_cascade_1998" OverrideName="false" KeyValue="7681370" />
+      <LocalizedCompound Name="inactive_Elk_1" CompoundRef="inactive_Elk_1" Structure="Ras_cascade_1998" OverrideName="false" KeyValue="7681371" />
+      <LocalizedCompound Name="TRK" CompoundRef="TRK" Structure="Ras_cascade_1998" OverrideName="false" KeyValue="7681372" />
+      <LocalizedCompound Name="active_ERK_i" CompoundRef="active_ERK_i" Structure="Ras_cascade_1998" OverrideName="false" KeyValue="7681373" />
+      <LocalizedCompound Name="active_Mnk" CompoundRef="active_Mnk" Structure="Ras_cascade_1998" OverrideName="false" KeyValue="7681374" />
+      <LocalizedCompound Name="active_Raf" CompoundRef="active_Raf" Structure="Ras_cascade_1998" OverrideName="false" KeyValue="7681375" />
+      <SimpleReaction Structure="Ras_cascade_1998" Name="reaction6" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="7681401">
+         <Reactant LocalizedCompoundRef="inactive_MEK" Stoichiometry="1" KeyValue="7681402" />
+         <Reactant LocalizedCompoundRef="Phosphate" Stoichiometry="1" KeyValue="7681403" />
+         <Product LocalizedCompoundRef="active_MEK" Stoichiometry="1" KeyValue="7681404" />
+         <Modifier LocalizedCompoundRef="active_Raf" KeyValue="7681405" />
+         <Kinetics KineticsType="GeneralKinetics">
+            <Parameter Name="J_reaction6" Role="reaction rate" Unit="uM.s-1"> - (inactive_MEK * Phosphate * vmax6 / (km6 + inactive_MEK + Phosphate))</Parameter>
+            <Parameter Name="km6" Role="user defined" Unit="uM">1.0</Parameter>
+            <Parameter Name="vmax6" Role="user defined" Unit="s-1">1.0</Parameter>
+         </Kinetics>
+      </SimpleReaction>
+      <SimpleReaction Structure="Ras_cascade_1998" Name="reaction0" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="7681376">
+         <Reactant LocalizedCompoundRef="TRK" Stoichiometry="1" KeyValue="7681377" />
+         <Reactant LocalizedCompoundRef="EGF" Stoichiometry="1" KeyValue="7681378" />
+         <Product LocalizedCompoundRef="EGF_TRK_complex" Stoichiometry="1" KeyValue="7681379" />
+         <Kinetics KineticsType="GeneralKinetics">
+            <Parameter Name="J_reaction0" Role="reaction rate" Unit="uM.s-1"> - (k0 * TRK * EGF)</Parameter>
+            <Parameter Name="k0" Role="user defined" Unit="uM-1.s-1">1.0</Parameter>
+         </Kinetics>
+      </SimpleReaction>
+      <SimpleReaction Structure="Ras_cascade_1998" Name="reaction9" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="7681416">
+         <Reactant LocalizedCompoundRef="inactive_Elk_1" Stoichiometry="1" KeyValue="7681417" />
+         <Reactant LocalizedCompoundRef="Phosphate" Stoichiometry="1" KeyValue="7681418" />
+         <Product LocalizedCompoundRef="active_Elk_1" Stoichiometry="1" KeyValue="7681419" />
+         <Modifier LocalizedCompoundRef="active_ERK_n" KeyValue="7681420" />
+         <Kinetics KineticsType="GeneralKinetics">
+            <Parameter Name="J_reaction9" Role="reaction rate" Unit="uM.s-1"> - (inactive_Elk_1 * Phosphate * vmax9 / (km9 + inactive_Elk_1 + Phosphate))</Parameter>
+            <Parameter Name="km9" Role="user defined" Unit="uM">1.0</Parameter>
+            <Parameter Name="vmax9" Role="user defined" Unit="s-1">1.0</Parameter>
+         </Kinetics>
+      </SimpleReaction>
+      <SimpleReaction Structure="Ras_cascade_1998" Name="reaction1" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="7681380">
+         <Reactant LocalizedCompoundRef="EGF_TRK_complex" Stoichiometry="1" KeyValue="7681381" />
+         <Reactant LocalizedCompoundRef="Phosphate" Stoichiometry="1" KeyValue="7681382" />
+         <Product LocalizedCompoundRef="Phosphorylated_receptor_complex" Stoichiometry="1" KeyValue="7681383" />
+         <Kinetics KineticsType="GeneralKinetics">
+            <Parameter Name="J_reaction1" Role="reaction rate" Unit="uM.s-1"> - (k1 * EGF_TRK_complex * Phosphate)</Parameter>
+            <Parameter Name="k1" Role="user defined" Unit="uM-1.s-1">1.0</Parameter>
+         </Kinetics>
+      </SimpleReaction>
+      <SimpleReaction Structure="Ras_cascade_1998" Name="reaction2" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="7681384">
+         <Reactant LocalizedCompoundRef="Phosphorylated_receptor_complex" Stoichiometry="1" KeyValue="7681385" />
+         <Reactant LocalizedCompoundRef="GRB2" Stoichiometry="1" KeyValue="7681386" />
+         <Reactant LocalizedCompoundRef="SOS" Stoichiometry="1" KeyValue="7681387" />
+         <Product LocalizedCompoundRef="active_receptor_complex" Stoichiometry="1" KeyValue="7681388" />
+         <Kinetics KineticsType="GeneralKinetics">
+            <Parameter Name="J_reaction2" Role="reaction rate" Unit="uM.s-1"> - (k2 * Phosphorylated_receptor_complex * GRB2 * SOS)</Parameter>
+            <Parameter Name="k2" Role="user defined" Unit="1000000.0 m6.mol-2.s-1">1.0</Parameter>
+         </Kinetics>
+      </SimpleReaction>
+      <SimpleReaction Structure="Ras_cascade_1998" Name="reaction3" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="7681389">
+         <Reactant LocalizedCompoundRef="Ras_GTP" Stoichiometry="1" KeyValue="7681390" />
+         <Product LocalizedCompoundRef="Ras_GDP" Stoichiometry="1" KeyValue="7681391" />
+         <Modifier LocalizedCompoundRef="GAP" KeyValue="7681392" />
+         <Kinetics KineticsType="GeneralKinetics">
+            <Parameter Name="J_reaction3" Role="reaction rate" Unit="uM.s-1"> - (Ras_GTP * vmax3 / (km3 + Ras_GTP))</Parameter>
+            <Parameter Name="km3" Role="user defined" Unit="uM">1.0</Parameter>
+            <Parameter Name="vmax3" Role="user defined" Unit="uM.s-1">1.0</Parameter>
+         </Kinetics>
+      </SimpleReaction>
+      <SimpleReaction Structure="Ras_cascade_1998" Name="reaction5" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="7681397">
+         <Reactant LocalizedCompoundRef="inactive_Raf" Stoichiometry="1" KeyValue="7681398" />
+         <Product LocalizedCompoundRef="active_Raf" Stoichiometry="1" KeyValue="7681399" />
+         <Modifier LocalizedCompoundRef="Ras_GTP" KeyValue="7681400" />
+         <Kinetics KineticsType="GeneralKinetics">
+            <Parameter Name="J_reaction5" Role="reaction rate" Unit="uM.s-1"> - (k5 * inactive_Raf * (1.0 + ((-1.0 + vmax5) * (1.0 - exp( - (Ras_GTP / km5))))))</Parameter>
+            <Parameter Name="k5" Role="user defined" Unit="tbd">1.0</Parameter>
+            <Parameter Name="km5" Role="user defined" Unit="uM">1.0</Parameter>
+            <Parameter Name="vmax5" Role="user defined" Unit="tbd">1.0</Parameter>
+         </Kinetics>
+      </SimpleReaction>
+      <SimpleReaction Structure="Ras_cascade_1998" Name="reaction11" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="7681424">
+         <Reactant LocalizedCompoundRef="DNA" Stoichiometry="1" KeyValue="7681425" />
+         <Product LocalizedCompoundRef="mRNA" Stoichiometry="1" KeyValue="7681426" />
+         <Modifier LocalizedCompoundRef="active_Elk_1" KeyValue="7681427" />
+         <Kinetics KineticsType="GeneralKinetics">
+            <Parameter Name="J_reaction11" Role="reaction rate" Unit="uM.s-1"> - (k11 * DNA * (1.0 + ((-1.0 + vmax11) * (1.0 - exp( - (active_Elk_1 / km11))))))</Parameter>
+            <Parameter Name="k11" Role="user defined" Unit="tbd">1.0</Parameter>
+            <Parameter Name="km11" Role="user defined" Unit="uM">1.0</Parameter>
+            <Parameter Name="vmax11" Role="user defined" Unit="tbd">1.0</Parameter>
+         </Kinetics>
+      </SimpleReaction>
+      <SimpleReaction Structure="Ras_cascade_1998" Name="reaction8" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="7681411">
+         <Reactant LocalizedCompoundRef="inactive_Mnk" Stoichiometry="1" KeyValue="7681412" />
+         <Reactant LocalizedCompoundRef="Phosphate" Stoichiometry="1" KeyValue="7681413" />
+         <Product LocalizedCompoundRef="active_Mnk" Stoichiometry="1" KeyValue="7681414" />
+         <Modifier LocalizedCompoundRef="active_ERK_i" KeyValue="7681415" />
+         <Kinetics KineticsType="GeneralKinetics">
+            <Parameter Name="J_reaction8" Role="reaction rate" Unit="uM.s-1"> - (inactive_Mnk * Phosphate * vmax8 / (km8 + inactive_Mnk + Phosphate))</Parameter>
+            <Parameter Name="km8" Role="user defined" Unit="uM">1.0</Parameter>
+            <Parameter Name="vmax8" Role="user defined" Unit="s-1">1.0</Parameter>
+         </Kinetics>
+      </SimpleReaction>
+      <SimpleReaction Structure="Ras_cascade_1998" Name="reaction10" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="7681421">
+         <Reactant LocalizedCompoundRef="active_ERK_i" Stoichiometry="1" KeyValue="7681422" />
+         <Product LocalizedCompoundRef="active_ERK_n" Stoichiometry="1" KeyValue="7681423" />
+         <Kinetics KineticsType="GeneralKinetics">
+            <Parameter Name="J_reaction10" Role="reaction rate" Unit="uM.s-1"> - ((k10 * active_ERK_i) - (k10_ * active_ERK_n))</Parameter>
+            <Parameter Name="k10" Role="user defined" Unit="s-1">1.0</Parameter>
+            <Parameter Name="k10_" Role="user defined" Unit="s-1">1.0</Parameter>
+         </Kinetics>
+      </SimpleReaction>
+      <SimpleReaction Structure="Ras_cascade_1998" Name="reaction4" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="7681393">
+         <Reactant LocalizedCompoundRef="Ras_GDP" Stoichiometry="1" KeyValue="7681394" />
+         <Product LocalizedCompoundRef="Ras_GTP" Stoichiometry="1" KeyValue="7681395" />
+         <Modifier LocalizedCompoundRef="active_receptor_complex" KeyValue="7681396" />
+         <Kinetics KineticsType="GeneralKinetics">
+            <Parameter Name="J_reaction4" Role="reaction rate" Unit="uM.s-1"> - (k4 * Ras_GDP * (1.0 + ((-1.0 + vmax4) * (1.0 - exp( - (active_receptor_complex / km4))))))</Parameter>
+            <Parameter Name="k4" Role="user defined" Unit="tbd">1.0</Parameter>
+            <Parameter Name="km4" Role="user defined" Unit="uM">1.0</Parameter>
+            <Parameter Name="vmax4" Role="user defined" Unit="tbd">1.0</Parameter>
+         </Kinetics>
+      </SimpleReaction>
+      <SimpleReaction Structure="Ras_cascade_1998" Name="reaction7" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="7681406">
+         <Reactant LocalizedCompoundRef="inactive_ERK" Stoichiometry="1" KeyValue="7681407" />
+         <Reactant LocalizedCompoundRef="Phosphate" Stoichiometry="1" KeyValue="7681408" />
+         <Product LocalizedCompoundRef="active_ERK_i" Stoichiometry="1" KeyValue="7681409" />
+         <Modifier LocalizedCompoundRef="active_MEK" KeyValue="7681410" />
+         <Kinetics KineticsType="GeneralKinetics">
+            <Parameter Name="J_reaction7" Role="reaction rate" Unit="uM.s-1"> - (inactive_ERK * Phosphate * vmax7 / (km7 + inactive_ERK + Phosphate))</Parameter>
+            <Parameter Name="km7" Role="user defined" Unit="uM">1.0</Parameter>
+            <Parameter Name="vmax7" Role="user defined" Unit="s-1">1.0</Parameter>
+         </Kinetics>
+      </SimpleReaction>
+      <Diagram Name="Ras_cascade_1998" Structure="Ras_cascade_1998" />
+      <Version Name="Ras_cascade_1998" KeyValue="7681324" BranchId="7681325" Archived="0" Date="04-May-2004 08:27:45" FromVersionable="false">
+         <Owner Name="CMC" Identifier="2794180" />
+         <GroupAccess Type="1" />
+         <Annotation>cloned from 'Ras_cascade_1998' owned by user CellMLRep
+</Annotation>
+      </Version>
+   </Model>
+   <SimulationSpec Name="DefaultApplication">
+      <Annotation>cloned from 'DefaultApplication' owned by user CellMLRep
+</Annotation>
+      <Geometry Name="Default638" Dimension="0">
+         <Annotation>cloned from 'Default638' owned by user CellMLRep
+</Annotation>
+         <Extent X="10.0" Y="10.0" Z="10.0" />
+         <Origin X="0.0" Y="0.0" Z="0.0" />
+         <SubVolume Name="Compartment" Handle="0" Type="Compartmental" KeyValue="7681437" />
+         <Version Name="Default638" KeyValue="7681434" BranchId="7681435" Archived="0" Date="04-May-2004 08:27:51" FromVersionable="false">
+            <Owner Name="CMC" Identifier="2794180" />
+            <GroupAccess Type="1" />
+            <Annotation>cloned from 'Default638' owned by user CellMLRep
+</Annotation>
+         </Version>
+      </Geometry>
+      <GeometryContext>
+         <FeatureMapping Feature="Ras_cascade_1998" SubVolume="Compartment" Resolved="false">
+            <BoundariesTypes Xm="Value" Xp="Value" Ym="Value" Yp="Value" Zm="Value" Zp="Value" />
+         </FeatureMapping>
+      </GeometryContext>
+      <ReactionContext>
+         <LocalizedCompoundSpec LocalizedCompoundRef="inactive_Raf" ForceConstant="false" EnableDiffusion="true">
+            <Initial>1.0</Initial>
+            <Diffusion>0.0</Diffusion>
+         </LocalizedCompoundSpec>
+         <LocalizedCompoundSpec LocalizedCompoundRef="Phosphorylated_receptor_complex" ForceConstant="false" EnableDiffusion="true">
+            <Initial>1.0</Initial>
+            <Diffusion>0.0</Diffusion>
+         </LocalizedCompoundSpec>
+         <LocalizedCompoundSpec LocalizedCompoundRef="active_ERK_n" ForceConstant="false" EnableDiffusion="true">
+            <Initial>1.0</Initial>
+            <Diffusion>0.0</Diffusion>
+         </LocalizedCompoundSpec>
+         <LocalizedCompoundSpec LocalizedCompoundRef="active_MEK" ForceConstant="false" EnableDiffusion="true">
+            <Initial>1.0</Initial>
+            <Diffusion>0.0</Diffusion>
+         </LocalizedCompoundSpec>
+         <LocalizedCompoundSpec LocalizedCompoundRef="Phosphate" ForceConstant="false" EnableDiffusion="true">
+            <Initial>1.0</Initial>
+            <Diffusion>0.0</Diffusion>
+         </LocalizedCompoundSpec>
+         <LocalizedCompoundSpec LocalizedCompoundRef="Ras_GDP" ForceConstant="false" EnableDiffusion="true">
+            <Initial>1.0</Initial>
+            <Diffusion>0.0</Diffusion>
+         </LocalizedCompoundSpec>
+         <LocalizedCompoundSpec LocalizedCompoundRef="mRNA" ForceConstant="false" EnableDiffusion="true">
+            <Initial>1.0</Initial>
+            <Diffusion>0.0</Diffusion>
+         </LocalizedCompoundSpec>
+         <LocalizedCompoundSpec LocalizedCompoundRef="DNA" ForceConstant="false" EnableDiffusion="true">
+            <Initial>1.0</Initial>
+            <Diffusion>0.0</Diffusion>
+         </LocalizedCompoundSpec>
+         <LocalizedCompoundSpec LocalizedCompoundRef="SOS" ForceConstant="false" EnableDiffusion="true">
+            <Initial>1.0</Initial>
+            <Diffusion>0.0</Diffusion>
+         </LocalizedCompoundSpec>
+         <LocalizedCompoundSpec LocalizedCompoundRef="active_Elk_1" ForceConstant="false" EnableDiffusion="true">
+            <Initial>1.0</Initial>
+            <Diffusion>0.0</Diffusion>
+         </LocalizedCompoundSpec>
+         <LocalizedCompoundSpec LocalizedCompoundRef="GRB2" ForceConstant="false" EnableDiffusion="true">
+            <Initial>1.0</Initial>
+            <Diffusion>0.0</Diffusion>
+         </LocalizedCompoundSpec>
+         <LocalizedCompoundSpec LocalizedCompoundRef="EGF" ForceConstant="false" EnableDiffusion="true">
+            <Initial>1.0</Initial>
+            <Diffusion>0.0</Diffusion>
+         </LocalizedCompoundSpec>
+         <LocalizedCompoundSpec LocalizedCompoundRef="inactive_ERK" ForceConstant="false" EnableDiffusion="true">
+            <Initial>1.0</Initial>
+            <Diffusion>0.0</Diffusion>
+         </LocalizedCompoundSpec>
+         <LocalizedCompoundSpec LocalizedCompoundRef="EGF_TRK_complex" ForceConstant="false" EnableDiffusion="true">
+            <Initial>1.0</Initial>
+            <Diffusion>0.0</Diffusion>
+         </LocalizedCompoundSpec>
+         <LocalizedCompoundSpec LocalizedCompoundRef="active_receptor_complex" ForceConstant="false" EnableDiffusion="true">
+            <Initial>1.0</Initial>
+            <Diffusion>0.0</Diffusion>
+         </LocalizedCompoundSpec>
+         <LocalizedCompoundSpec LocalizedCompoundRef="inactive_Mnk" ForceConstant="false" EnableDiffusion="true">
+            <Initial>1.0</Initial>
+            <Diffusion>0.0</Diffusion>
+         </LocalizedCompoundSpec>
+         <LocalizedCompoundSpec LocalizedCompoundRef="GAP" ForceConstant="false" EnableDiffusion="true">
+            <Initial>1.0</Initial>
+            <Diffusion>0.0</Diffusion>
+         </LocalizedCompoundSpec>
+         <LocalizedCompoundSpec LocalizedCompoundRef="inactive_MEK" ForceConstant="false" EnableDiffusion="true">
+            <Initial>1.0</Initial>
+            <Diffusion>0.0</Diffusion>
+         </LocalizedCompoundSpec>
+         <LocalizedCompoundSpec LocalizedCompoundRef="Ras_GTP" ForceConstant="false" EnableDiffusion="true">
+            <Initial>1.0</Initial>
+            <Diffusion>0.0</Diffusion>
+         </LocalizedCompoundSpec>
+         <LocalizedCompoundSpec LocalizedCompoundRef="inactive_Elk_1" ForceConstant="false" EnableDiffusion="true">
+            <Initial>1.0</Initial>
+            <Diffusion>0.0</Diffusion>
+         </LocalizedCompoundSpec>
+         <LocalizedCompoundSpec LocalizedCompoundRef="TRK" ForceConstant="false" EnableDiffusion="true">
+            <Initial>1.0</Initial>
+            <Diffusion>0.0</Diffusion>
+         </LocalizedCompoundSpec>
+         <LocalizedCompoundSpec LocalizedCompoundRef="active_ERK_i" ForceConstant="false" EnableDiffusion="true">
+            <Initial>1.0</Initial>
+            <Diffusion>0.0</Diffusion>
+         </LocalizedCompoundSpec>
+         <LocalizedCompoundSpec LocalizedCompoundRef="active_Mnk" ForceConstant="false" EnableDiffusion="true">
+            <Initial>1.0</Initial>
+            <Diffusion>0.0</Diffusion>
+         </LocalizedCompoundSpec>
+         <LocalizedCompoundSpec LocalizedCompoundRef="active_Raf" ForceConstant="false" EnableDiffusion="true">
+            <Initial>1.0</Initial>
+            <Diffusion>0.0</Diffusion>
+         </LocalizedCompoundSpec>
+         <ReactionSpec ReactionStepRef="reaction6" ReactionMapping="included" />
+         <ReactionSpec ReactionStepRef="reaction0" ReactionMapping="included" />
+         <ReactionSpec ReactionStepRef="reaction9" ReactionMapping="included" />
+         <ReactionSpec ReactionStepRef="reaction1" ReactionMapping="included" />
+         <ReactionSpec ReactionStepRef="reaction2" ReactionMapping="included" />
+         <ReactionSpec ReactionStepRef="reaction3" ReactionMapping="included" />
+         <ReactionSpec ReactionStepRef="reaction5" ReactionMapping="included" />
+         <ReactionSpec ReactionStepRef="reaction11" ReactionMapping="included" />
+         <ReactionSpec ReactionStepRef="reaction8" ReactionMapping="included" />
+         <ReactionSpec ReactionStepRef="reaction10" ReactionMapping="included" />
+         <ReactionSpec ReactionStepRef="reaction4" ReactionMapping="included" />
+         <ReactionSpec ReactionStepRef="reaction7" ReactionMapping="included" />
+      </ReactionContext>
+      <MathDescription Name="DefaultApplication_generated24">
+         <Annotation>cloned from 'DefaultApplication_generated24' owned by user CellMLRep
+</Annotation>
+         <Constant Name="K_milliVolts_per_Volt">1000.0</Constant>
+         <Constant Name="active_receptor_complex_init">1.0</Constant>
+         <Constant Name="_F_">96480.0</Constant>
+         <Constant Name="km11">1.0</Constant>
+         <Constant Name="EGF_init">1.0</Constant>
+         <Constant Name="EGF_TRK_complex_init">1.0</Constant>
+         <Constant Name="_R_">8314.0</Constant>
+         <Constant Name="active_Raf_init">1.0</Constant>
+         <Constant Name="SOS_init">1.0</Constant>
+         <Constant Name="active_ERK_n_init">1.0</Constant>
+         <Constant Name="k5">1.0</Constant>
+         <Constant Name="k4">1.0</Constant>
+         <Constant Name="GRB2_init">1.0</Constant>
+         <Constant Name="k2">1.0</Constant>
+         <Constant Name="k1">1.0</Constant>
+         <Constant Name="k0">1.0</Constant>
+         <Constant Name="mRNA_init">1.0</Constant>
+         <Constant Name="active_Mnk_init">1.0</Constant>
+         <Constant Name="k11">1.0</Constant>
+         <Constant Name="vmax11">1.0</Constant>
+         <Constant Name="k10">1.0</Constant>
+         <Constant Name="Ras_GDP_init">1.0</Constant>
+         <Constant Name="inactive_Raf_init">1.0</Constant>
+         <Constant Name="active_ERK_i_init">1.0</Constant>
+         <Constant Name="km9">1.0</Constant>
+         <Constant Name="Ras_GTP_init">1.0</Constant>
+         <Constant Name="km8">1.0</Constant>
+         <Constant Name="km7">1.0</Constant>
+         <Constant Name="km6">1.0</Constant>
+         <Constant Name="km5">1.0</Constant>
+         <Constant Name="km4">1.0</Constant>
+         <Constant Name="km3">1.0</Constant>
+         <Constant Name="inactive_Mnk_init">1.0</Constant>
+         <Constant Name="DNA_init">1.0</Constant>
+         <Constant Name="active_MEK_init">1.0</Constant>
+         <Constant Name="KMOLE">0.0016611295681063123</Constant>
+         <Constant Name="inactive_Elk_1_init">1.0</Constant>
+         <Constant Name="GAP_init">1.0</Constant>
+         <Constant Name="vmax9">1.0</Constant>
+         <Constant Name="vmax8">1.0</Constant>
+         <Constant Name="vmax7">1.0</Constant>
+         <Constant Name="vmax6">1.0</Constant>
+         <Constant Name="vmax5">1.0</Constant>
+         <Constant Name="vmax4">1.0</Constant>
+         <Constant Name="vmax3">1.0</Constant>
+         <Constant Name="Phosphate_init">1.0</Constant>
+         <Constant Name="Phosphorylated_receptor_complex_init">1.0</Constant>
+         <Constant Name="_T_">300.0</Constant>
+         <Constant Name="inactive_ERK_init">1.0</Constant>
+         <Constant Name="k10_">1.0</Constant>
+         <Constant Name="active_Elk_1_init">1.0</Constant>
+         <Constant Name="TRK_init">1.0</Constant>
+         <Constant Name="inactive_MEK_init">1.0</Constant>
+         <VolumeVariable Name="active_Raf" />
+         <VolumeVariable Name="active_Mnk" />
+         <VolumeVariable Name="inactive_Elk_1" />
+         <VolumeVariable Name="inactive_MEK" />
+         <VolumeVariable Name="active_ERK_i" />
+         <VolumeVariable Name="inactive_ERK" />
+         <VolumeVariable Name="TRK" />
+         <VolumeVariable Name="active_receptor_complex" />
+         <VolumeVariable Name="DNA" />
+         <VolumeVariable Name="EGF_TRK_complex" />
+         <VolumeVariable Name="Ras_GTP" />
+         <Function Name="K_active_Elk_1_total">(active_Elk_1_init + inactive_Elk_1_init)</Function>
+         <Function Name="active_Elk_1">(K_active_Elk_1_total - inactive_Elk_1)</Function>
+         <Function Name="J_reaction11"> - (k11 * DNA * (1.0 + ((-1.0 + vmax11) * (1.0 - exp( - (active_Elk_1 / km11))))))</Function>
+         <Function Name="K_active_ERK_n_total">(active_ERK_i_init + active_ERK_n_init + inactive_ERK_init)</Function>
+         <Function Name="active_ERK_n">( - active_ERK_i + K_active_ERK_n_total - inactive_ERK)</Function>
+         <Function Name="J_reaction10"> - ((k10 * active_ERK_i) - (k10_ * active_ERK_n))</Function>
+         <Function Name="K_Phosphate_total">(active_Mnk_init - TRK_init - inactive_Elk_1_init - inactive_MEK_init - EGF_TRK_complex_init + Phosphate_init - inactive_ERK_init)</Function>
+         <Function Name="K_active_MEK_total">(active_MEK_init + inactive_MEK_init)</Function>
+         <Function Name="K_SOS_total">(SOS_init + active_receptor_complex_init)</Function>
+         <Function Name="SOS">(K_SOS_total - active_receptor_complex)</Function>
+         <Function Name="K_GAP_total">GAP_init</Function>
+         <Function Name="K_GRB2_total">(GRB2_init + active_receptor_complex_init)</Function>
+         <Function Name="K_mRNA_total">(mRNA_init + DNA_init)</Function>
+         <Function Name="mRNA">(K_mRNA_total - DNA)</Function>
+         <Function Name="GRB2">(K_GRB2_total - active_receptor_complex)</Function>
+         <Function Name="Phosphate">( - active_Mnk + TRK + inactive_Elk_1 + inactive_MEK + EGF_TRK_complex + K_Phosphate_total + inactive_ERK)</Function>
+         <Function Name="J_reaction9"> - (inactive_Elk_1 * Phosphate * vmax9 / (km9 + inactive_Elk_1 + Phosphate))</Function>
+         <Function Name="K_inactive_Mnk_total">(inactive_Mnk_init + active_Mnk_init)</Function>
+         <Function Name="inactive_Mnk">(K_inactive_Mnk_total - active_Mnk)</Function>
+         <Function Name="J_reaction8"> - (inactive_Mnk * Phosphate * vmax8 / (km8 + inactive_Mnk + Phosphate))</Function>
+         <Function Name="J_reaction7"> - (inactive_ERK * Phosphate * vmax7 / (km7 + inactive_ERK + Phosphate))</Function>
+         <Function Name="J_reaction6"> - (inactive_MEK * Phosphate * vmax6 / (km6 + inactive_MEK + Phosphate))</Function>
+         <Function Name="K_inactive_Raf_total">(inactive_Raf_init + active_Raf_init)</Function>
+         <Function Name="inactive_Raf">(K_inactive_Raf_total - active_Raf)</Function>
+         <Function Name="J_reaction5"> - (k5 * inactive_Raf * (1.0 + ((-1.0 + vmax5) * (1.0 - exp( - (Ras_GTP / km5))))))</Function>
+         <Function Name="K_Ras_GDP_total">(Ras_GDP_init + Ras_GTP_init)</Function>
+         <Function Name="Ras_GDP">(K_Ras_GDP_total - Ras_GTP)</Function>
+         <Function Name="J_reaction4"> - (k4 * Ras_GDP * (1.0 + ((-1.0 + vmax4) * (1.0 - exp( - (active_receptor_complex / km4))))))</Function>
+         <Function Name="J_reaction3"> - (Ras_GTP * vmax3 / (km3 + Ras_GTP))</Function>
+         <Function Name="K_Phosphorylated_receptor_complex_total">(TRK_init + active_receptor_complex_init + Phosphorylated_receptor_complex_init + EGF_TRK_complex_init)</Function>
+         <Function Name="Phosphorylated_receptor_complex">( - TRK - active_receptor_complex + K_Phosphorylated_receptor_complex_total - EGF_TRK_complex)</Function>
+         <Function Name="J_reaction2"> - (k2 * Phosphorylated_receptor_complex * GRB2 * SOS)</Function>
+         <Function Name="J_reaction1"> - (k1 * EGF_TRK_complex * Phosphate)</Function>
+         <Function Name="K_EGF_total">(EGF_init - TRK_init)</Function>
+         <Function Name="EGF">(K_EGF_total + TRK)</Function>
+         <Function Name="J_reaction0"> - (k0 * TRK * EGF)</Function>
+         <Function Name="GAP">K_GAP_total</Function>
+         <Function Name="active_MEK">(K_active_MEK_total - inactive_MEK)</Function>
+         <CompartmentSubDomain Name="Compartment">
+            <BoundaryType Boundary="Xm" Type="Value" />
+            <BoundaryType Boundary="Xp" Type="Value" />
+            <BoundaryType Boundary="Ym" Type="Value" />
+            <BoundaryType Boundary="Yp" Type="Value" />
+            <BoundaryType Boundary="Zm" Type="Value" />
+            <BoundaryType Boundary="Zp" Type="Value" />
+            <OdeEquation Name="DNA" SolutionType="Unknown">
+               <Rate> - J_reaction11</Rate>
+               <Initial>DNA_init</Initial>
+            </OdeEquation>
+            <OdeEquation Name="inactive_ERK" SolutionType="Unknown">
+               <Rate> - J_reaction7</Rate>
+               <Initial>inactive_ERK_init</Initial>
+            </OdeEquation>
+            <OdeEquation Name="EGF_TRK_complex" SolutionType="Unknown">
+               <Rate>(J_reaction0 - J_reaction1)</Rate>
+               <Initial>EGF_TRK_complex_init</Initial>
+            </OdeEquation>
+            <OdeEquation Name="active_receptor_complex" SolutionType="Unknown">
+               <Rate>J_reaction2</Rate>
+               <Initial>active_receptor_complex_init</Initial>
+            </OdeEquation>
+            <OdeEquation Name="inactive_MEK" SolutionType="Unknown">
+               <Rate> - J_reaction6</Rate>
+               <Initial>inactive_MEK_init</Initial>
+            </OdeEquation>
+            <OdeEquation Name="Ras_GTP" SolutionType="Unknown">
+               <Rate>( - J_reaction3 + J_reaction4)</Rate>
+               <Initial>Ras_GTP_init</Initial>
+            </OdeEquation>
+            <OdeEquation Name="inactive_Elk_1" SolutionType="Unknown">
+               <Rate> - J_reaction9</Rate>
+               <Initial>inactive_Elk_1_init</Initial>
+            </OdeEquation>
+            <OdeEquation Name="TRK" SolutionType="Unknown">
+               <Rate> - J_reaction0</Rate>
+               <Initial>TRK_init</Initial>
+            </OdeEquation>
+            <OdeEquation Name="active_ERK_i" SolutionType="Unknown">
+               <Rate>(J_reaction7 - J_reaction10)</Rate>
+               <Initial>active_ERK_i_init</Initial>
+            </OdeEquation>
+            <OdeEquation Name="active_Mnk" SolutionType="Unknown">
+               <Rate>J_reaction8</Rate>
+               <Initial>active_Mnk_init</Initial>
+            </OdeEquation>
+            <OdeEquation Name="active_Raf" SolutionType="Unknown">
+               <Rate>J_reaction5</Rate>
+               <Initial>active_Raf_init</Initial>
+            </OdeEquation>
+         </CompartmentSubDomain>
+         <Version Name="DefaultApplication_generated24" KeyValue="7681432" BranchId="7681433" Archived="0" Date="04-May-2004 08:27:51" FromVersionable="false">
+            <Owner Name="CMC" Identifier="2794180" />
+            <GroupAccess Type="1" />
+            <Annotation>cloned from 'DefaultApplication_generated24' owned by user CellMLRep
+</Annotation>
+         </Version>
+      </MathDescription>
+      <Version Name="DefaultApplication" KeyValue="7681430" BranchId="7681431" Archived="0" Date="04-May-2004 08:27:50" FromVersionable="false">
+         <Owner Name="CMC" Identifier="2794180" />
+         <GroupAccess Type="1" />
+         <Annotation>cloned from 'DefaultApplication' owned by user CellMLRep
+</Annotation>
+      </Version>
+   </SimulationSpec>
+   <Version Name="Generic_Ras_cascade_1998" KeyValue="7681482" BranchId="7681483" Archived="0" Date="04-May-2004 08:27:52" FromVersionable="false">
+      <Owner Name="CMC" Identifier="2794180" />
+      <GroupAccess Type="0" />
+      <Annotation>Derived from the CellML model Repository and based on the paper: Increasing Complexity of the Ras Signaling Pathway, Anne B. Vojtek and Channing J. Ders, 1998, The Journal of Biological Chemistry, 273, 19925-19928
+</Annotation>
+   </Version>
+</BioModel>

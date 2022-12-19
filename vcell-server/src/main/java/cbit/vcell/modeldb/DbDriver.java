@@ -246,7 +246,7 @@ public static KeyValue savePublicationRep(Connection con,PublicationRep publicat
 		}
 		return pubID;
 	}finally {
-		if(stmt != null) {try{stmt.close();}catch(Exception e) {lg.error(e);}}
+		if(stmt != null) {try{stmt.close();}catch(Exception e) {lg.error(e.getMessage(), e);}}
 	}
 }
 

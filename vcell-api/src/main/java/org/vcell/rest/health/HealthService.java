@@ -316,13 +316,13 @@ public class HealthService {
 						vcellConnection.getUserMetaDbServer().deleteBioModel(savedBioModelKey);
 					}
 				}catch (Exception e) {
-					e.printStackTrace(System.out);
+					lg.error(e.getMessage(), e);
 				}
 			}
 			try {
 				Thread.sleep(SIMULATION_LOOP_SLEEP);
 			} catch (InterruptedException e) {
-				e.printStackTrace();
+				lg.error(e.getMessage(), e);
 			}
 		}
 	}

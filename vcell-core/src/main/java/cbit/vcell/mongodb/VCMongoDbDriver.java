@@ -10,6 +10,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bson.Document;
@@ -81,7 +82,7 @@ public class VCMongoDbDriver {
 		        		lg.debug("VCMongoMessage sent : "+ dbObjectsToSend.size() + " messages");
 		        	}
 	        	} catch (MongoException e){
-		        	lg.debug("failed to write to mongodb", e);
+		        	lg.debug("failed to write to mongodb: "+e.getMessage(), e);
 		        	if (lg.isWarnEnabled()) {
 	        			lg.warn("VCMongoMessage failedToSend : "+ e.getMessage());
 		        	}
@@ -143,15 +144,15 @@ public class VCMongoDbDriver {
         return processing;
     }
     
-    public void addMessage(VCMongoMessage message)
+    public void addMessage(Level level, VCMongoMessage message)
     {
-    	if (lg.isTraceEnabled()) lg.trace(message.getDbObject().toJson());
+    	if (lg.isEnabled(level)) lg.log(level, message.getDbObject().toJson());
     	
 //    	getSessionLog().print("VCMongoMessage queued : "+message);
-    	messageOutbox.add(message);
-    	if (!IsProcessing()){
-    		startProcessing();
-    	}
+//    	messageOutbox.add(message);
+//    	if (!IsProcessing()){
+//    		startProcessing();
+//    	}
     }
     
 	public void flush() {
@@ -293,7 +294,7 @@ public class VCMongoDbDriver {
 			Document doc = new Document();
 			doc.put(VCMongoMessage.MongoMessage_msgtype,  VCMongoMessage.MongoMessage_type_testing);
 			doc.put(VCMongoMessage.MongoMessage_msgTime, System.currentTimeMillis());
-			mongoDbDriver.addMessage(new VCMongoMessage(doc));
+			mongoDbDriver.addMessage(Level.INFO, new VCMongoMessage(doc));
 
 			mongoDbDriver.startProcessing();
 			Thread.sleep(1000*2);

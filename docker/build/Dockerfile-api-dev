@@ -38,7 +38,9 @@ ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
 	smtp_emailaddress="smtp-emailaddress-not-set" \
     webDataPort="webDataPort-not-set" \
 	publicationHost="publicationHost_not_set" \
-	vcellSubmitService="vcellSubmitService_not_set"
+	ssl_ignoreHostMismatch=true \
+	ssl_ignoreCertProblems=false \
+	submit_service_host="submit"
 
 ENV dbpswdfile=/run/secrets/dbpswd \
     jmspswdfile=/run/secrets/jmspswd \
@@ -77,5 +79,8 @@ ENTRYPOINT java \
 	-Dvcell.smtp.port="${smtp_port}" \
 	-Dvcelldata.web.server.port=${webDataPort} \
 	-Dvcell.smtp.emailAddress="${smtp_emailaddress}" \
+	-Dvcell.ssl.ignoreHostMismatch="${ssl_ignoreHostMismatch}" \
+    -Dvcell.ssl.ignoreCertProblems="${ssl_ignoreCertProblems}" \
+    -Dvcell.submit.service.host="${submit_service_host}" \
 	-cp "./lib/*" org.vcell.rest.VCellApiMain \
 	/usr/local/app/docroot 8080

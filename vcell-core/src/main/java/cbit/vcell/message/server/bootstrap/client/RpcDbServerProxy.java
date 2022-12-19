@@ -238,10 +238,10 @@ private Object rpc(String methodName, Object[] args) throws ObjectNotFoundExcept
 		lg.error(ex.getMessage(),ex);
 		throw ex;
 	} catch (RuntimeException e){
-		lg.error(e);
+		lg.error(e.getMessage(), e);
 		throw e;
 	} catch (Exception e){
-		lg.error(e);
+		lg.error(e.getMessage(), e);
 		if(e.getCause() instanceof ServerRejectedSaveException) {
 			throw (ServerRejectedSaveException)e.getCause();
 		}
