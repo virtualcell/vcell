@@ -50,6 +50,7 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.simdata.Hdf5Utils;
 import cbit.vcell.simdata.Hdf5Utils.HDF5WriteHelper;
+import cbit.vcell.solver.Simulation;
 import ncsa.hdf.hdf5lib.H5;
 import ncsa.hdf.hdf5lib.HDF5Constants;
 import javax.swing.JLabel;
@@ -99,6 +100,7 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.M
 	private Plot2D ivjplot2D1 = null;
 	private ScrollTable ivjScrollPaneTable = null;
 	private NonEditableDefaultTableModel ivjNonEditableDefaultTableModel1 = null;
+	private Simulation simulation = null;
 	private JMenuItem ivjJMenuItemCopy = null;
 	private JPopupMenu ivjJPopupMenu1 = null;
 	private JMenuItem ivjJMenuItemCopyAll = null;
@@ -295,6 +297,9 @@ private void controlKeys() {
 	}, KeyStroke.getKeyStroke("ctrl K"), WHEN_IN_FOCUSED_WINDOW);
 }
 
+public void setSimulation(Simulation simulation) {
+	this.simulation = simulation;
+}
 
 private synchronized void copyCells(CopyAction copyAction) {
 	copyCells0(copyAction,false);
@@ -821,9 +826,13 @@ private synchronized void copyCells0(CopyAction copyAction,boolean isHDF5) {
 				if(getPlot2D().getSymbolTableEntries() != null){
 					SymbolTableEntry ste =  getPlot2D().getPlotDataSymbolTableEntry(columns[i]);
 					symbolTableEntries[i-(bHasTimeColumn?1:0)] = ste;
-					buffer.append(
-//						( ste != null?"(Var="+(ste.getNameScope() != null?ste.getNameScope().getName()+"_":"")+ste.getName()+") ":"")+
-						getScrollPaneTable().getColumnName(columns[i]) + (i==c-1?"":"\t"));
+					if(simulation.getMathDescription().isNonSpatialStoch()) {
+						buffer.append(getScrollPaneTable().getColumnName(columns[i]) + (i==c-1?"":"\t"));
+					} else {
+						buffer.append(
+							(ste != null?"(Var="+(ste.getNameScope() != null?ste.getNameScope().getName()+"_":"")+ste.getName()+") ":"")+
+							getScrollPaneTable().getColumnName(columns[i]) + (i==c-1?"":"\t"));
+					}
 				}
 			}else{
 				buffer.append(getScrollPaneTable().getColumnName(columns[i]) + (i==c-1?"":"\t"));
@@ -1163,6 +1172,11 @@ private void showPopupMenu(MouseEvent mouseEvent, javax.swing.JPopupMenu menu) {
 		getJMenuItemCopyRow().setEnabled(getScrollPaneTable().getSelectedColumnCount() > 0);
 		getJMenuItemExportHDF5().setEnabled(getScrollPaneTable().getSelectedColumnCount() > 0);
 		menu.show(getScrollPaneTable(), mouseEvent.getPoint().x, mouseEvent.getPoint().y);
+		if(simulation.getMathDescription().isNonSpatialStoch()) {
+			getJMenuItemCopy().setEnabled(false);
+			getJMenuItemCopyRow().setEnabled(false);
+			getJMenuItemExportHDF5().setEnabled(false);
+		}
 	}
 }
 
