@@ -118,18 +118,37 @@ public class MathGenCompareTest {
 	 */
 	public static Map<String, MathCompareResults.Decision> knownFaults() {
 		HashMap<String, MathCompareResults.Decision> faults = new HashMap();
-		faults.put("lumped_reaction_proper_size_in_rate.vcml:Application0", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION);
-		faults.put("biomodel_116929912.vcml:Channel_test", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION);
-		faults.put("biomodel_116929971.vcml:Application0", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION);
-		faults.put("biomodel_116930032.vcml:Application0", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION);
-		faults.put("biomodel_12119723.vcml:7_12_00_model1", MathCompareResults.Decision.MathDifferent_VARIABLE_NOT_FOUND_AS_FUNCTION);
-		faults.put("biomodel_12119723.vcml:7_12_00_model2", MathCompareResults.Decision.MathDifferent_VARIABLE_NOT_FOUND_AS_FUNCTION);
-		faults.put("biomodel_12119723.vcml:7_12_00_model3", MathCompareResults.Decision.MathDifferent_VARIABLE_NOT_FOUND_AS_FUNCTION);
 		faults.put("biomodel_12522025.vcml:purkinje9", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_VARIABLES);
 		faults.put("biomodel_12522025.vcml:purkinje9-ss", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_VARIABLES);
 		faults.put("biomodel_12522025_spatial.vcml:purkinje9", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_VARIABLES);
+		faults.put("biomodel_13714636.vcml:7_12_00_model1", MathCompareResults.Decision.MathDifferent_VARIABLE_NOT_FOUND_AS_FUNCTION);
+		faults.put("biomodel_13714636.vcml:7_12_00_model2", MathCompareResults.Decision.MathDifferent_VARIABLE_NOT_FOUND_AS_FUNCTION);
+		faults.put("biomodel_13714636.vcml:7_12_00_model3", MathCompareResults.Decision.MathDifferent_VARIABLE_NOT_FOUND_AS_FUNCTION);
+		faults.put("biomodel_13717231.vcml:wild type", MathCompareResults.Decision.MathDifferent_VARIABLE_NOT_FOUND_AS_FUNCTION);
+		faults.put("biomodel_13717231.vcml:pten-", MathCompareResults.Decision.MathDifferent_VARIABLE_NOT_FOUND_AS_FUNCTION);
+		faults.put("biomodel_13717231.vcml:double +", MathCompareResults.Decision.MathDifferent_VARIABLE_NOT_FOUND_AS_FUNCTION);
+		faults.put("biomodel_13717231.vcml:double -", MathCompareResults.Decision.MathDifferent_VARIABLE_NOT_FOUND_AS_FUNCTION);
+		faults.put("biomodel_13717231.vcml:50%", MathCompareResults.Decision.MathDifferent_VARIABLE_NOT_FOUND_AS_FUNCTION);
+		faults.put("biomodel_13717231.vcml:87.5%", MathCompareResults.Decision.MathDifferent_VARIABLE_NOT_FOUND_AS_FUNCTION);
+		faults.put("biomodel_13717231.vcml:75%", MathCompareResults.Decision.MathDifferent_VARIABLE_NOT_FOUND_AS_FUNCTION);
+		faults.put("biomodel_13717231.vcml:pten-10%", MathCompareResults.Decision.MathDifferent_VARIABLE_NOT_FOUND_AS_FUNCTION);
+		faults.put("biomodel_13717231.vcml:double-10%", MathCompareResults.Decision.MathDifferent_VARIABLE_NOT_FOUND_AS_FUNCTION);
+		faults.put("biomodel_13717231.vcml:pi3k-", MathCompareResults.Decision.MathDifferent_VARIABLE_NOT_FOUND_AS_FUNCTION);
+		faults.put("biomodel_13717282.vcml:1 needle", MathCompareResults.Decision.MathDifferent_VARIABLE_NOT_FOUND_AS_FUNCTION);
+		faults.put("biomodel_13717282.vcml:2 needle equal", MathCompareResults.Decision.MathDifferent_VARIABLE_NOT_FOUND_AS_FUNCTION);
+		faults.put("biomodel_13717282.vcml:2 needle asym", MathCompareResults.Decision.MathDifferent_VARIABLE_NOT_FOUND_AS_FUNCTION);
+		faults.put("biomodel_13717282.vcml:2 needle 90", MathCompareResults.Decision.MathDifferent_VARIABLE_NOT_FOUND_AS_FUNCTION);
+		faults.put("biomodel_13717282.vcml:2 needle pten- 10%", MathCompareResults.Decision.MathDifferent_VARIABLE_NOT_FOUND_AS_FUNCTION);
+		faults.put("biomodel_13717282.vcml:1 needle far high", MathCompareResults.Decision.MathDifferent_VARIABLE_NOT_FOUND_AS_FUNCTION);
+		faults.put("biomodel_13717282.vcml:1 needle far low", MathCompareResults.Decision.MathDifferent_VARIABLE_NOT_FOUND_AS_FUNCTION);
+		faults.put("biomodel_13717282.vcml:2 needle pten- 2.5%", MathCompareResults.Decision.MathDifferent_VARIABLE_NOT_FOUND_AS_FUNCTION);
+		faults.put("biomodel_13717282.vcml:1 needle close high", MathCompareResults.Decision.MathDifferent_VARIABLE_NOT_FOUND_AS_FUNCTION);
+		faults.put("biomodel_13717282.vcml:timed", MathCompareResults.Decision.MathDifferent_VARIABLE_NOT_FOUND_AS_FUNCTION);
+		faults.put("biomodel_13717282.vcml:1 needle close low", MathCompareResults.Decision.MathDifferent_VARIABLE_NOT_FOUND_AS_FUNCTION);
+		faults.put("biomodel_16404713.vcml:PDGFgradient_TIRF", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_VARIABLES);
 		faults.put("biomodel_17257105.vcml:spatial", MathCompareResults.Decision.MathDifferent_VARIABLE_NOT_FOUND_AS_FUNCTION);
 		faults.put("biomodel_17326658.vcml:Mg Green - 500 uM", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_EXPRESSIONS);
+		faults.put("biomodel_188880263.vcml:Network Free", MathCompareResults.Decision.MathDifferent_DIFFERENT_PARTICLE_PROPERTIES);
 		faults.put("biomodel_18894555.vcml:compartmental", MathCompareResults.Decision.MathDifferent_VARIABLE_NOT_FOUND_AS_FUNCTION);
 		faults.put("biomodel_20754836.vcml:n1", MathCompareResults.Decision.MathDifferent_VARIABLE_NOT_FOUND_AS_FUNCTION);
 		faults.put("biomodel_22403233.vcml:Spatial", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_VARIABLES);
@@ -157,6 +176,7 @@ public class MathGenCompareTest {
 		faults.put("biomodel_27192647.vcml:3D PIP2_constructed geometry", MathCompareResults.Decision.MathDifferent_VARIABLE_NOT_FOUND_AS_FUNCTION);
 		faults.put("biomodel_27192647.vcml:3D PIP2_experimentally derived geometry", MathCompareResults.Decision.MathDifferent_VARIABLE_NOT_FOUND_AS_FUNCTION);
 		faults.put("biomodel_27192647.vcml:3D PIP2_D=1_constructed geometry", MathCompareResults.Decision.MathDifferent_VARIABLE_NOT_FOUND_AS_FUNCTION);
+		faults.put("biomodel_28136576.vcml:Biophysical Letters", MathCompareResults.Decision.MathDifferent_VARIABLE_NOT_FOUND_AS_FUNCTION);
 		faults.put("biomodel_28625786.vcml:simple_3", MathCompareResults.Decision.MathDifferent_VARIABLE_NOT_FOUND_AS_FUNCTION);
 		faults.put("biomodel_28625786.vcml:Fig4_neuro2", MathCompareResults.Decision.MathDifferent_VARIABLE_NOT_FOUND_AS_FUNCTION);
 		faults.put("biomodel_28625786.vcml:Fig1-2 neuro1", MathCompareResults.Decision.MathDifferent_VARIABLE_NOT_FOUND_AS_FUNCTION);
@@ -175,6 +195,7 @@ public class MathGenCompareTest {
 		faults.put("biomodel_28625786.vcml:HPC_070907", MathCompareResults.Decision.MathDifferent_VARIABLE_NOT_FOUND_AS_FUNCTION);
 		faults.put("biomodel_28730491.vcml:Needle", MathCompareResults.Decision.MathDifferent_VARIABLE_NOT_FOUND_AS_FUNCTION);
 		faults.put("biomodel_28730491.vcml:Uniform", MathCompareResults.Decision.MathDifferent_VARIABLE_NOT_FOUND_AS_FUNCTION);
+		faults.put("biomodel_2917999.vcml:Figure 5.8", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_EXPRESSIONS);
 		faults.put("biomodel_31523791.vcml:10 spines", MathCompareResults.Decision.MathDifferent_VARIABLE_NOT_FOUND_AS_FUNCTION);
 		faults.put("biomodel_31523791.vcml:1X RIIb 1s dendritic cAMP", MathCompareResults.Decision.MathDifferent_VARIABLE_NOT_FOUND_AS_FUNCTION);
 		faults.put("biomodel_31523791.vcml:1X RIIb 1s spine cAMP", MathCompareResults.Decision.MathDifferent_VARIABLE_NOT_FOUND_AS_FUNCTION);
@@ -282,6 +303,7 @@ public class MathGenCompareTest {
 		faults.put("biomodel_59361239.vcml:integrin knockout", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION);
 		faults.put("biomodel_6436213.vcml:FrapIt", MathCompareResults.Decision.MathDifferent_VARIABLE_NOT_FOUND_AS_FUNCTION);
 		faults.put("biomodel_65311813.vcml:Stochastic", MathCompareResults.Decision.MathDifferent_VARIABLE_NOT_FOUND_AS_FUNCTION);
+		faults.put("biomodel_84982474.vcml:spontaneous_activation", MathCompareResults.Decision.MathDifferent_VARIABLE_NOT_FOUND_AS_FUNCTION);
 		faults.put("biomodel_9254662.vcml:FastBuffExpReceptor", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_EXPRESSIONS);
 		faults.put("biomodel_9590643.vcml:2-D", MathCompareResults.Decision.MathDifferent_VARIABLE_NOT_FOUND_AS_FUNCTION);
 		faults.put("biomodel_9590643.vcml:3-D", MathCompareResults.Decision.MathDifferent_VARIABLE_NOT_FOUND_AS_FUNCTION);
