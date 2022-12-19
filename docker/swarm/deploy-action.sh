@@ -145,7 +145,7 @@ cmd="scp $ssh_key $local_compose_file $ssh_user@$manager_node:$remote_compose_fi
 if [ "$install_singularity" == "true" ]; then
 
 	echo ""
-	pushd ../build/singularity-vm || echo "pushd ../build/singularity-vm failed"; exit 1
+	pushd ../build/singularity-vm || (echo "pushd ../build/singularity-vm failed"; exit 1)
 	echo ""
 	echo "CURRENT DIRECTORY IS $PWD"
 
@@ -169,7 +169,7 @@ if [ "$install_singularity" == "true" ]; then
 	scp "./${opt_singularity_filename} $ssh_user@$manager_node:${slurm_singularity_central_dir}"
 
 	echo "popd"
-	popd || echo "popd failed"; exit 1
+	popd || (echo "popd failed"; exit 1)
 fi
 
 

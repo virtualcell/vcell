@@ -9,7 +9,7 @@ set -ux
 	
 	version=$(echo "${vcell_version}_${vcell_build}" | tr '.' _)
 
-			pushd "${installer_deploy_dir}" || echo "pushd ${installer_deploy_dir} failed"; exit 1
+			pushd "${installer_deploy_dir}" || (echo "pushd ${installer_deploy_dir} failed"; exit 1)
 
 			if ! rm "VCell_${vcell_siteCamel}_windows-x64_latest_64bit.exe" && \
 			      ln -s "VCell_${vcell_siteCamel}_windows-x64_${version}_64bit.exe" \
@@ -36,7 +36,7 @@ set -ux
 				    "VCell_${vcell_siteCamel}_unix_latest_64bit.sh";
 			then echo "failed to create symbolic link for Linux64 installer"; exit 1; fi
 
-			popd || echo "pop failed"; exit 1
+			popd || (echo "pop failed"; exit 1)
 
 echo "exited normally"
 

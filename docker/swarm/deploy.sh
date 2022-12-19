@@ -148,7 +148,7 @@ if [ "$install_singularity" == "true" ]; then
 
 	echo ""
 	cmd="pushd ../build/singularity-vm"
-	pushd ../build/singularity-vm || echo "failed to pushd to ../build/singularity-vm"; exit 1
+	pushd ../build/singularity-vm || (echo "failed to pushd to ../build/singularity-vm"; exit 1)
 	echo ""
 	echo "CURRENT DIRECTORY IS $PWD"
 
@@ -174,7 +174,7 @@ if [ "$install_singularity" == "true" ]; then
 	cp "./${opt_singularity_filename}" "${slurm_singularity_central_dir}"
 
 	echo "popd"
-	popd || echo "popd failed"; exit 1
+	popd || (echo "popd failed"; exit 1)
 fi
 
 
@@ -229,7 +229,7 @@ if [ "$build_installers" == "true" ]; then
 		#
 		if [ "$link_installers" == "true" ]; then
 
-			pushd "${installer_deploy_dir}" || echo "pushd to ${installer_deploy_dir} failed"; exit 1
+			pushd "${installer_deploy_dir}" || (echo "pushd to ${installer_deploy_dir} failed"; exit 1)
 
 			rm "VCell_${vcell_siteCamel}_windows-x64_latest_64bit.exe" && \
 			if ! ln -s "VCell_${vcell_siteCamel}_windows-x64_${version}_64bit.exe" \
@@ -256,7 +256,7 @@ if [ "$build_installers" == "true" ]; then
 				  "VCell_${vcell_siteCamel}_unix_latest_64bit.sh";
 			then echo "failed to create symbolic link for Linux64 installer"; exit 1; fi
 
-			popd || echo "popd failed"; exit 1
+			popd || (echo "popd failed"; exit 1)
 		fi
 	fi
 fi
