@@ -12,7 +12,6 @@ import org.restlet.Response;
 import org.restlet.data.ChallengeResponse;
 import org.restlet.data.ChallengeScheme;
 import org.restlet.security.Verifier;
-import org.vcell.rest.auth.CustomAuthHelper;
 import org.vcell.rest.users.UnverifiedUser;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;

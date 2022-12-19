@@ -1,9 +1,8 @@
 package org.vcell.rest;
 
-import java.io.File;
-import java.sql.SQLException;
-import java.util.logging.Level;
-
+import cbit.vcell.modeldb.ApiAccessToken;
+import cbit.vcell.modeldb.ApiAccessToken.AccessTokenStatus;
+import freemarker.template.Configuration;
 import org.restlet.Request;
 import org.restlet.Response;
 import org.restlet.Restlet;
@@ -21,7 +20,6 @@ import org.vcell.rest.UserVerifier.AuthenticationStatus;
 import org.vcell.rest.admin.AdminJobsRestlet;
 import org.vcell.rest.admin.AdminService;
 import org.vcell.rest.auth.AuthenticationTokenRestlet;
-import org.vcell.rest.auth.CustomAuthHelper;
 import org.vcell.rest.auth.TokenBasedVerifier;
 import org.vcell.rest.events.EventsRestlet;
 import org.vcell.rest.events.RestEventService;
@@ -29,41 +27,15 @@ import org.vcell.rest.health.HealthRestlet;
 import org.vcell.rest.health.HealthService;
 import org.vcell.rest.rpc.RpcRestlet;
 import org.vcell.rest.rpc.RpcService;
-import org.vcell.rest.server.BiomodelDiagramServerResource;
-import org.vcell.rest.server.BiomodelSBMLServerResource;
-import org.vcell.rest.server.BiomodelBNGLServerResource;
-import org.vcell.rest.server.BiomodelServerResource;
-import org.vcell.rest.server.BiomodelSimulationSaveServerResource;
-import org.vcell.rest.server.BiomodelSimulationServerResource;
-import org.vcell.rest.server.BiomodelSimulationStartServerResource;
-import org.vcell.rest.server.BiomodelSimulationStopServerResource;
-import org.vcell.rest.server.BiomodelVCMLModelInfoResource;
-import org.vcell.rest.server.BiomodelVCMLServerResource;
-import org.vcell.rest.server.BiomodelsServerResource;
-import org.vcell.rest.server.OptimizationRunServerResource;
-import org.vcell.rest.server.PublicationServerResource;
-import org.vcell.rest.server.PublicationsServerResource;
-import org.vcell.rest.server.RestDatabaseService;
-import org.vcell.rest.server.SimDataServerResource;
-import org.vcell.rest.server.SimDataValuesServerResource;
-import org.vcell.rest.server.SimulationStatusServerResource;
-import org.vcell.rest.server.SimulationTaskServerResource;
-import org.vcell.rest.server.SimulationTasksServerResource;
-import org.vcell.rest.users.ContactUsRestlet;
-import org.vcell.rest.users.EmailTokenVerifyRestlet;
-import org.vcell.rest.users.LoginFormRestlet;
-import org.vcell.rest.users.LoginRestlet;
-import org.vcell.rest.users.LostPasswordRestlet;
-import org.vcell.rest.users.NewUserRestlet;
-import org.vcell.rest.users.RegistrationFormRestlet;
-import org.vcell.rest.users.SWVersionRestlet;
+import org.vcell.rest.server.*;
+import org.vcell.rest.users.*;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
-import cbit.vcell.modeldb.ApiAccessToken;
-import cbit.vcell.modeldb.ApiAccessToken.AccessTokenStatus;
-import freemarker.template.Configuration;
+import java.io.File;
+import java.sql.SQLException;
+import java.util.logging.Level;
 
 public class VCellApiApplication extends WadlApplication {
 	
@@ -284,11 +256,9 @@ public class VCellApiApplication extends WadlApplication {
 	
 		// Attach a guard to secure access to user parts of the api 
 
-		boolean bCookieOptional = true;
-
-
+		boolean bAuthOptional = true;
 		ChallengeAuthenticator guard = new ChallengeAuthenticator(
-				getContext(), ChallengeScheme.HTTP_OAUTH_BEARER, "testRealm");
+				getContext(), bAuthOptional, ChallengeScheme.HTTP_OAUTH_BEARER, "testRealm");
 		TokenBasedVerifier verifier = new TokenBasedVerifier();
 		guard.setVerifier(verifier);
         
