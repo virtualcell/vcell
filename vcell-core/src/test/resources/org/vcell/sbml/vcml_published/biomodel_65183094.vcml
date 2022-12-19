@@ -1,0 +1,773 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--This biomodel was generated in VCML Version Alpha_Version_7.4.0_build_87-->
+<vcml xmlns="http://sourceforge.net/projects/vcell/vcml" Version="Alpha_Version_7.4.0_build_87">
+  <BioModel Name="Greenwald MIMB 2012 - Fit 1">
+    <Model Name="unnamed">
+      <ModelParameters>
+        <Parameter Name="ICUE_ratio" Role="user defined" Unit="1">(ICUE_cAMP / (ICUE + ICUE_cAMP))</Parameter>
+        <Parameter Name="AKAR_ratio" Role="user defined" Unit="1">(AKARp / (AKAR + AKARp))</Parameter>
+      </ModelParameters>
+      <Compound Name="s1" />
+      <Compound Name="s7" />
+      <Compound Name="s0" />
+      <Compound Name="s2" />
+      <Compound Name="s5" />
+      <Compound Name="s12" />
+      <Compound Name="s3" />
+      <Compound Name="s10" />
+      <Compound Name="s4" />
+      <Compound Name="s8" />
+      <Compound Name="s9" />
+      <Compound Name="s6" />
+      <Feature Name="Extra Cellular" KeyValue="64990224" />
+      <Feature Name="cytosol" KeyValue="64990227" />
+      <Membrane InsideFeature="cytosol" OutsideFeature="Extra Cellular" PositiveFeature="cytosol" NegativeFeature="Extra Cellular" MembraneVoltage="Voltage_Membrane" Name="Membrane" KeyValue="64990226" />
+      <LocalizedCompound Name="cAMP" CompoundRef="s1" Structure="cytosol" OverrideName="true" KeyValue="64990230" />
+      <LocalizedCompound Name="AKAR" CompoundRef="s7" Structure="cytosol" OverrideName="true" KeyValue="64990231" />
+      <LocalizedCompound Name="AC" CompoundRef="s0" Structure="cytosol" OverrideName="true" KeyValue="64990232" />
+      <LocalizedCompound Name="RC" CompoundRef="s2" Structure="cytosol" OverrideName="true" KeyValue="64990233" />
+      <LocalizedCompound Name="A2R" CompoundRef="s5" Structure="cytosol" OverrideName="true" KeyValue="64990234" />
+      <LocalizedCompound Name="PDE" CompoundRef="s12" Structure="cytosol" OverrideName="true" KeyValue="64990235" />
+      <LocalizedCompound Name="ARC" CompoundRef="s3" Structure="cytosol" OverrideName="true" KeyValue="64990236" />
+      <LocalizedCompound Name="ICUE_cAMP" CompoundRef="s10" Structure="cytosol" OverrideName="true" KeyValue="64990237" />
+      <LocalizedCompound Name="A2RC" CompoundRef="s4" Structure="cytosol" OverrideName="true" KeyValue="64990238" />
+      <LocalizedCompound Name="AKARp" CompoundRef="s8" Structure="cytosol" OverrideName="true" KeyValue="64990239" />
+      <LocalizedCompound Name="ICUE" CompoundRef="s9" Structure="cytosol" OverrideName="true" KeyValue="64990240" />
+      <LocalizedCompound Name="PKAC" CompoundRef="s6" Structure="cytosol" OverrideName="true" KeyValue="64990241" />
+      <SimpleReaction Structure="cytosol" Name="cAMP_synth" Reversible="true" FluxOption="MolecularOnly" KeyValue="64990242">
+        <Product LocalizedCompoundRef="cAMP" Stoichiometry="1" KeyValue="64990243" />
+        <Modifier LocalizedCompoundRef="AC" />
+        <Kinetics KineticsType="GeneralKinetics">
+          <Parameter Name="J" Role="reaction rate" Unit="uM.s-1">((Vmax * ATP / (Km + ATP)) + (Vmax_Iso * ATP / (Km_Iso + ATP)))</Parameter>
+          <Parameter Name="Km" Role="user defined" Unit="uM">860.0</Parameter>
+          <Parameter Name="Vmax" Role="user defined" Unit="uM.s-1">(kfsk * AC_fsk)</Parameter>
+          <Parameter Name="ATP" Role="user defined" Unit="uM">5000.0</Parameter>
+          <Parameter Name="Vmax_Iso" Role="user defined" Unit="uM.s-1">(kcat_iso * AC_iso)</Parameter>
+          <Parameter Name="Km_Iso" Role="user defined" Unit="uM">315.0</Parameter>
+          <Parameter Name="kcat_iso" Role="user defined" Unit="s-1">0.200273</Parameter>
+          <Parameter Name="AC_iso" Role="user defined" Unit="uM">(AC * Iso / (Kd_iso + Iso))</Parameter>
+          <Parameter Name="Iso" Role="user defined" Unit="uM">(Iso_stim * (t &gt; t_iso))</Parameter>
+          <Parameter Name="Kd_iso" Role="user defined" Unit="uM">0.1</Parameter>
+          <Parameter Name="kfsk" Role="user defined" Unit="s-1">25.0451</Parameter>
+          <Parameter Name="AC_fsk" Role="user defined" Unit="uM">(AC * Fsk / (Kd_fsk + Fsk))</Parameter>
+          <Parameter Name="Iso_stim" Role="user defined" Unit="uM">1.0</Parameter>
+          <Parameter Name="t_iso" Role="user defined" Unit="s">200.0</Parameter>
+          <Parameter Name="Kd_fsk" Role="user defined" Unit="uM">860.0</Parameter>
+          <Parameter Name="Fsk" Role="user defined" Unit="uM">(FSK_stim * (t &gt; t_FSK))</Parameter>
+          <Parameter Name="FSK_stim" Role="user defined" Unit="uM">50.0</Parameter>
+          <Parameter Name="t_FSK" Role="user defined" Unit="s">600.0</Parameter>
+        </Kinetics>
+      </SimpleReaction>
+      <SimpleReaction Structure="cytosol" Name="PKA_act" Reversible="true" FluxOption="MolecularOnly" KeyValue="64990245">
+        <Reactant LocalizedCompoundRef="A2RC" Stoichiometry="1" KeyValue="64990246" />
+        <Product LocalizedCompoundRef="A2R" Stoichiometry="1" KeyValue="64990247" />
+        <Product LocalizedCompoundRef="PKAC" Stoichiometry="1" KeyValue="64990248" />
+        <Kinetics KineticsType="MassAction">
+          <Parameter Name="J" Role="reaction rate" Unit="uM.s-1">((Kf * A2RC) - ((Kr * A2R) * PKAC))</Parameter>
+          <Parameter Name="Kf" Role="forward rate constant" Unit="s-1">4375.0</Parameter>
+          <Parameter Name="Kr" Role="reverse rate constant" Unit="s-1.uM-1">1000.0</Parameter>
+        </Kinetics>
+      </SimpleReaction>
+      <SimpleReaction Structure="cytosol" Name="cAMP_deg" Reversible="true" FluxOption="MolecularOnly" KeyValue="64990249">
+        <Reactant LocalizedCompoundRef="cAMP" Stoichiometry="1" KeyValue="64990250" />
+        <Modifier LocalizedCompoundRef="PDE" />
+        <Kinetics KineticsType="HMMIrreversible">
+          <Parameter Name="J" Role="reaction rate" Unit="uM.s-1">((Vmax * cAMP) / (Km + cAMP))</Parameter>
+          <Parameter Name="Km" Role="Km (1/2 max)" Unit="uM">1.305</Parameter>
+          <Parameter Name="Vmax" Role="max reaction rate" Unit="uM.s-1">(kcat * PDE_avail)</Parameter>
+          <Parameter Name="kcat" Role="user defined" Unit="s-1">5.0</Parameter>
+          <Parameter Name="PDE_avail" Role="user defined" Unit="uM">(PDE * Ki / (Ki + IBMX))</Parameter>
+          <Parameter Name="IBMX" Role="user defined" Unit="uM">(IBMX_stim * (t &gt; t_IBMX))</Parameter>
+          <Parameter Name="Ki" Role="user defined" Unit="uM">30.0</Parameter>
+          <Parameter Name="t_IBMX" Role="user defined" Unit="s">600.0</Parameter>
+          <Parameter Name="IBMX_stim" Role="user defined" Unit="uM">100.0</Parameter>
+        </Kinetics>
+      </SimpleReaction>
+      <SimpleReaction Structure="cytosol" Name="PKA_bind1" Reversible="true" FluxOption="MolecularOnly" KeyValue="64990252">
+        <Reactant LocalizedCompoundRef="RC" Stoichiometry="1" KeyValue="64990253" />
+        <Reactant LocalizedCompoundRef="cAMP" Stoichiometry="1" KeyValue="64990254" />
+        <Product LocalizedCompoundRef="ARC" Stoichiometry="1" KeyValue="64990255" />
+        <Kinetics KineticsType="MassAction">
+          <Parameter Name="J" Role="reaction rate" Unit="uM.s-1">(((Kf * RC) * cAMP) - (Kr * ARC))</Parameter>
+          <Parameter Name="Kf" Role="forward rate constant" Unit="s-1.uM-1">1000.0</Parameter>
+          <Parameter Name="Kr" Role="reverse rate constant" Unit="s-1">9140.0</Parameter>
+        </Kinetics>
+      </SimpleReaction>
+      <SimpleReaction Structure="cytosol" Name="AKAR_dephos" Reversible="true" FluxOption="MolecularOnly" KeyValue="64990256">
+        <Reactant LocalizedCompoundRef="AKARp" Stoichiometry="1" KeyValue="64990257" />
+        <Product LocalizedCompoundRef="AKAR" Stoichiometry="1" KeyValue="64990258" />
+        <Kinetics KineticsType="GeneralKinetics">
+          <Parameter Name="J" Role="reaction rate" Unit="uM.s-1">(kcat * PPase * AKARp)</Parameter>
+          <Parameter Name="kcat" Role="user defined" Unit="uM-1.s-1">8.5</Parameter>
+          <Parameter Name="PPase" Role="user defined" Unit="uM">2.14</Parameter>
+        </Kinetics>
+      </SimpleReaction>
+      <SimpleReaction Structure="cytosol" Name="PKA_bind2" Reversible="true" FluxOption="MolecularOnly" KeyValue="64990259">
+        <Reactant LocalizedCompoundRef="ARC" Stoichiometry="1" KeyValue="64990260" />
+        <Reactant LocalizedCompoundRef="cAMP" Stoichiometry="1" KeyValue="64990261" />
+        <Product LocalizedCompoundRef="A2RC" Stoichiometry="1" KeyValue="64990262" />
+        <Kinetics KineticsType="MassAction">
+          <Parameter Name="J" Role="reaction rate" Unit="uM.s-1">(((Kf * ARC) * cAMP) - (Kr * A2RC))</Parameter>
+          <Parameter Name="Kf" Role="forward rate constant" Unit="s-1.uM-1">1000.0</Parameter>
+          <Parameter Name="Kr" Role="reverse rate constant" Unit="s-1">1640.0</Parameter>
+        </Kinetics>
+      </SimpleReaction>
+      <SimpleReaction Structure="cytosol" Name="ICUE_bind" Reversible="true" FluxOption="MolecularOnly" KeyValue="64990263">
+        <Reactant LocalizedCompoundRef="ICUE" Stoichiometry="1" KeyValue="64990264" />
+        <Reactant LocalizedCompoundRef="cAMP" Stoichiometry="1" KeyValue="64990265" />
+        <Product LocalizedCompoundRef="ICUE_cAMP" Stoichiometry="1" KeyValue="64990266" />
+        <Kinetics KineticsType="MassAction">
+          <Parameter Name="J" Role="reaction rate" Unit="uM.s-1">(((Kf * ICUE) * cAMP) - (Kr * ICUE_cAMP))</Parameter>
+          <Parameter Name="Kf" Role="forward rate constant" Unit="s-1.uM-1">34.2093</Parameter>
+          <Parameter Name="Kr" Role="reverse rate constant" Unit="s-1">10.0</Parameter>
+        </Kinetics>
+      </SimpleReaction>
+      <SimpleReaction Structure="cytosol" Name="AKAR_phos" Reversible="true" FluxOption="MolecularOnly" KeyValue="64990267">
+        <Reactant LocalizedCompoundRef="AKAR" Stoichiometry="1" KeyValue="64990268" />
+        <Product LocalizedCompoundRef="AKARp" Stoichiometry="1" KeyValue="64990269" />
+        <Modifier LocalizedCompoundRef="PKAC" />
+        <Kinetics KineticsType="HMMIrreversible">
+          <Parameter Name="J" Role="reaction rate" Unit="uM.s-1">((Vmax * AKAR) / (Km + AKAR))</Parameter>
+          <Parameter Name="Km" Role="Km (1/2 max)" Unit="uM">21.0</Parameter>
+          <Parameter Name="Vmax" Role="max reaction rate" Unit="uM.s-1">(kcat * PKAC)</Parameter>
+          <Parameter Name="kcat" Role="user defined" Unit="s-1">54.0</Parameter>
+        </Kinetics>
+      </SimpleReaction>
+      <Diagram Name="c0" Structure="Extra Cellular">
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="PDE" LocationX="173" LocationY="84" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="ICUE_bind" LocationX="141" LocationY="166" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="RC" LocationX="17" LocationY="88" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="PKAC" LocationX="94" LocationY="263" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="A2RC" LocationX="16" LocationY="205" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="ARC" LocationX="18" LocationY="143" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="AKAR_phos" LocationX="138" LocationY="267" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="ICUE_cAMP" LocationX="179" LocationY="182" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="AKAR_dephos" LocationX="213" LocationY="269" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="PKA_bind1" LocationX="58" LocationY="119" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="PKA_act" LocationX="51" LocationY="245" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="A2R" LocationX="14" LocationY="275" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="AC" LocationX="41" LocationY="34" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="cAMP_deg" LocationX="159" LocationY="62" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="AKARp" LocationX="172" LocationY="289" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="PKA_bind2" LocationX="64" LocationY="182" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="ICUE" LocationX="178" LocationY="140" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="cAMP" LocationX="119" LocationY="61" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="AKAR" LocationX="173" LocationY="238" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="cAMP_synth" LocationX="85" LocationY="52" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="PDE" LocationX="173" LocationY="84" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="molecule" SimpleReactionRef="ICUE_bind" LocationX="141" LocationY="166" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="RC" LocationX="17" LocationY="88" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="PKAC" LocationX="94" LocationY="263" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="A2RC" LocationX="16" LocationY="205" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="ARC" LocationX="18" LocationY="143" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="molecule" SimpleReactionRef="AKAR_phos" LocationX="138" LocationY="267" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="ICUE_cAMP" LocationX="179" LocationY="182" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="molecule" SimpleReactionRef="AKAR_dephos" LocationX="213" LocationY="269" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="molecule" SimpleReactionRef="PKA_bind1" LocationX="58" LocationY="119" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="molecule" SimpleReactionRef="PKA_act" LocationX="51" LocationY="245" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="A2R" LocationX="14" LocationY="275" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="AC" LocationX="41" LocationY="34" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="molecule" SimpleReactionRef="cAMP_deg" LocationX="159" LocationY="62" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="AKARp" LocationX="172" LocationY="289" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="molecule" SimpleReactionRef="PKA_bind2" LocationX="64" LocationY="182" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="ICUE" LocationX="178" LocationY="140" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="cAMP" LocationX="119" LocationY="61" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="AKAR" LocationX="173" LocationY="238" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="molecule" SimpleReactionRef="cAMP_synth" LocationX="85" LocationY="52" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="PDE" LocationX="173" LocationY="84" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="rule" SimpleReactionRef="ICUE_bind" LocationX="141" LocationY="166" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="RC" LocationX="17" LocationY="88" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="PKAC" LocationX="94" LocationY="263" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="A2RC" LocationX="16" LocationY="205" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="ARC" LocationX="18" LocationY="143" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="rule" SimpleReactionRef="AKAR_phos" LocationX="138" LocationY="267" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="ICUE_cAMP" LocationX="179" LocationY="182" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="rule" SimpleReactionRef="AKAR_dephos" LocationX="213" LocationY="269" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="rule" SimpleReactionRef="PKA_bind1" LocationX="58" LocationY="119" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="rule" SimpleReactionRef="PKA_act" LocationX="51" LocationY="245" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="A2R" LocationX="14" LocationY="275" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="AC" LocationX="41" LocationY="34" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="rule" SimpleReactionRef="cAMP_deg" LocationX="159" LocationY="62" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="AKARp" LocationX="172" LocationY="289" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="rule" SimpleReactionRef="PKA_bind2" LocationX="64" LocationY="182" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="ICUE" LocationX="178" LocationY="140" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="cAMP" LocationX="119" LocationY="61" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="AKAR" LocationX="173" LocationY="238" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="rule" SimpleReactionRef="cAMP_synth" LocationX="85" LocationY="52" />
+      </Diagram>
+      <Diagram Name="Membrane0" Structure="Membrane">
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="PDE" LocationX="173" LocationY="84" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="ICUE_bind" LocationX="141" LocationY="166" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="RC" LocationX="17" LocationY="88" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="PKAC" LocationX="94" LocationY="263" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="A2RC" LocationX="16" LocationY="205" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="ARC" LocationX="18" LocationY="143" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="AKAR_phos" LocationX="138" LocationY="267" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="ICUE_cAMP" LocationX="179" LocationY="182" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="AKAR_dephos" LocationX="213" LocationY="269" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="PKA_bind1" LocationX="58" LocationY="119" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="PKA_act" LocationX="51" LocationY="245" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="A2R" LocationX="14" LocationY="275" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="AC" LocationX="41" LocationY="34" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="cAMP_deg" LocationX="159" LocationY="62" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="AKARp" LocationX="172" LocationY="289" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="PKA_bind2" LocationX="64" LocationY="182" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="ICUE" LocationX="178" LocationY="140" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="cAMP" LocationX="119" LocationY="61" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="AKAR" LocationX="173" LocationY="238" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="cAMP_synth" LocationX="85" LocationY="52" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="PDE" LocationX="173" LocationY="84" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="molecule" SimpleReactionRef="ICUE_bind" LocationX="141" LocationY="166" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="RC" LocationX="17" LocationY="88" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="PKAC" LocationX="94" LocationY="263" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="A2RC" LocationX="16" LocationY="205" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="ARC" LocationX="18" LocationY="143" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="molecule" SimpleReactionRef="AKAR_phos" LocationX="138" LocationY="267" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="ICUE_cAMP" LocationX="179" LocationY="182" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="molecule" SimpleReactionRef="AKAR_dephos" LocationX="213" LocationY="269" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="molecule" SimpleReactionRef="PKA_bind1" LocationX="58" LocationY="119" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="molecule" SimpleReactionRef="PKA_act" LocationX="51" LocationY="245" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="A2R" LocationX="14" LocationY="275" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="AC" LocationX="41" LocationY="34" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="molecule" SimpleReactionRef="cAMP_deg" LocationX="159" LocationY="62" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="AKARp" LocationX="172" LocationY="289" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="molecule" SimpleReactionRef="PKA_bind2" LocationX="64" LocationY="182" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="ICUE" LocationX="178" LocationY="140" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="cAMP" LocationX="119" LocationY="61" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="AKAR" LocationX="173" LocationY="238" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="molecule" SimpleReactionRef="cAMP_synth" LocationX="85" LocationY="52" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="PDE" LocationX="173" LocationY="84" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="rule" SimpleReactionRef="ICUE_bind" LocationX="141" LocationY="166" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="RC" LocationX="17" LocationY="88" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="PKAC" LocationX="94" LocationY="263" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="A2RC" LocationX="16" LocationY="205" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="ARC" LocationX="18" LocationY="143" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="rule" SimpleReactionRef="AKAR_phos" LocationX="138" LocationY="267" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="ICUE_cAMP" LocationX="179" LocationY="182" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="rule" SimpleReactionRef="AKAR_dephos" LocationX="213" LocationY="269" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="rule" SimpleReactionRef="PKA_bind1" LocationX="58" LocationY="119" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="rule" SimpleReactionRef="PKA_act" LocationX="51" LocationY="245" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="A2R" LocationX="14" LocationY="275" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="AC" LocationX="41" LocationY="34" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="rule" SimpleReactionRef="cAMP_deg" LocationX="159" LocationY="62" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="AKARp" LocationX="172" LocationY="289" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="rule" SimpleReactionRef="PKA_bind2" LocationX="64" LocationY="182" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="ICUE" LocationX="178" LocationY="140" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="cAMP" LocationX="119" LocationY="61" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="AKAR" LocationX="173" LocationY="238" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="rule" SimpleReactionRef="cAMP_synth" LocationX="85" LocationY="52" />
+      </Diagram>
+      <Diagram Name="c1" Structure="cytosol">
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="PDE" LocationX="173" LocationY="84" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="ICUE_bind" LocationX="141" LocationY="166" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="RC" LocationX="17" LocationY="88" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="PKAC" LocationX="94" LocationY="263" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="A2RC" LocationX="16" LocationY="205" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="ARC" LocationX="18" LocationY="143" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="AKAR_phos" LocationX="138" LocationY="267" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="ICUE_cAMP" LocationX="179" LocationY="182" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="AKAR_dephos" LocationX="213" LocationY="269" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="PKA_bind1" LocationX="58" LocationY="119" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="PKA_act" LocationX="51" LocationY="245" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="A2R" LocationX="14" LocationY="275" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="AC" LocationX="41" LocationY="34" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="cAMP_deg" LocationX="159" LocationY="62" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="AKARp" LocationX="172" LocationY="289" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="PKA_bind2" LocationX="64" LocationY="182" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="ICUE" LocationX="178" LocationY="140" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="cAMP" LocationX="119" LocationY="61" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="AKAR" LocationX="173" LocationY="238" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="cAMP_synth" LocationX="85" LocationY="52" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="PDE" LocationX="173" LocationY="84" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="molecule" SimpleReactionRef="ICUE_bind" LocationX="141" LocationY="166" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="RC" LocationX="17" LocationY="88" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="PKAC" LocationX="94" LocationY="263" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="A2RC" LocationX="16" LocationY="205" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="ARC" LocationX="18" LocationY="143" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="molecule" SimpleReactionRef="AKAR_phos" LocationX="138" LocationY="267" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="ICUE_cAMP" LocationX="179" LocationY="182" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="molecule" SimpleReactionRef="AKAR_dephos" LocationX="213" LocationY="269" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="molecule" SimpleReactionRef="PKA_bind1" LocationX="58" LocationY="119" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="molecule" SimpleReactionRef="PKA_act" LocationX="51" LocationY="245" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="A2R" LocationX="14" LocationY="275" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="AC" LocationX="41" LocationY="34" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="molecule" SimpleReactionRef="cAMP_deg" LocationX="159" LocationY="62" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="AKARp" LocationX="172" LocationY="289" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="molecule" SimpleReactionRef="PKA_bind2" LocationX="64" LocationY="182" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="ICUE" LocationX="178" LocationY="140" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="cAMP" LocationX="119" LocationY="61" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="AKAR" LocationX="173" LocationY="238" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="molecule" SimpleReactionRef="cAMP_synth" LocationX="85" LocationY="52" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="PDE" LocationX="173" LocationY="84" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="rule" SimpleReactionRef="ICUE_bind" LocationX="141" LocationY="166" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="RC" LocationX="17" LocationY="88" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="PKAC" LocationX="94" LocationY="263" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="A2RC" LocationX="16" LocationY="205" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="ARC" LocationX="18" LocationY="143" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="rule" SimpleReactionRef="AKAR_phos" LocationX="138" LocationY="267" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="ICUE_cAMP" LocationX="179" LocationY="182" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="rule" SimpleReactionRef="AKAR_dephos" LocationX="213" LocationY="269" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="rule" SimpleReactionRef="PKA_bind1" LocationX="58" LocationY="119" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="rule" SimpleReactionRef="PKA_act" LocationX="51" LocationY="245" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="A2R" LocationX="14" LocationY="275" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="AC" LocationX="41" LocationY="34" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="rule" SimpleReactionRef="cAMP_deg" LocationX="159" LocationY="62" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="AKARp" LocationX="172" LocationY="289" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="rule" SimpleReactionRef="PKA_bind2" LocationX="64" LocationY="182" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="ICUE" LocationX="178" LocationY="140" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="cAMP" LocationX="119" LocationY="61" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="AKAR" LocationX="173" LocationY="238" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="rule" SimpleReactionRef="cAMP_synth" LocationX="85" LocationY="52" />
+      </Diagram>
+      <Version Name="unnamed" KeyValue="64990210" BranchId="63261956" Archived="0" Date="23-Apr-2012 12:01:44" FromVersionable="false">
+        <Owner Name="ecg5pc" Identifier="59285961" />
+        <GroupAccess Type="1" />
+      </Version>
+      <ModelUnitSystem VolumeSubstanceUnit="uM.um3" MembraneSubstanceUnit="molecules" LumpedReactionSubstanceUnit="molecules" VolumeUnit="um3" AreaUnit="um2" LengthUnit="um" TimeUnit="s" />
+    </Model>
+    <SimulationSpec Name="Application0" Stochastic="false" UseConcentration="true" RuleBased="false" MassConservationModelReduction="true" InsufficientIterations="false" InsufficientMaxMolecules="false">
+      <NetworkConstraints RbmMaxIteration="1" RbmMaxMoleculesPerSpecies="10" RbmSpeciesLimit="800" RbmReactionsLimit="2500" />
+      <Annotation />
+      <Geometry Name="non-spatial1306078419" Dimension="0">
+        <Extent X="10.0" Y="10.0" Z="10.0" />
+        <Origin X="0.0" Y="0.0" Z="0.0" />
+        <SubVolume Name="Compartment" Handle="0" Type="Compartmental" KeyValue="64862024" />
+        <Version Name="non-spatial1306078419" KeyValue="64862020" BranchId="64862021" Archived="0" Date="19-Apr-2012 14:08:01" FromVersionable="false">
+          <Owner Name="ecg5pc" Identifier="59285961" />
+          <GroupAccess Type="1" />
+        </Version>
+      </Geometry>
+      <GeometryContext>
+        <FeatureMapping Feature="Extra Cellular" GeometryClass="Compartment" SubVolume="Compartment" Size="50000.0">
+          <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
+        </FeatureMapping>
+        <FeatureMapping Feature="cytosol" GeometryClass="Compartment" SubVolume="Compartment" Size="5000.0">
+          <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
+        </FeatureMapping>
+        <MembraneMapping Membrane="Membrane" SurfaceToVolumeRatio="0.2828" VolumeFraction="0.09090909090909091" Size="1414.0" CalculateVoltage="false" SpecificCapacitance="1.0" InitialVoltage="0.0" GeometryClass="Compartment">
+          <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
+        </MembraneMapping>
+      </GeometryContext>
+      <ReactionContext>
+        <LocalizedCompoundSpec LocalizedCompoundRef="cAMP" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>0.0</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="AKAR" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>1.25</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="AC" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>0.05</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="RC" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>1.0</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="A2R" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>0.0</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="PDE" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>0.014</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="ARC" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>0.0</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="ICUE_cAMP" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>0.0</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="A2RC" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>0.0</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="AKARp" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>0.0</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="ICUE" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>0.15</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="PKAC" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>0.0</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <ReactionSpec ReactionStepRef="cAMP_synth" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="PKA_act" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="cAMP_deg" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="PKA_bind1" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="AKAR_dephos" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="PKA_bind2" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="ICUE_bind" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="AKAR_phos" ReactionMapping="included" />
+      </ReactionContext>
+      <MathDescription Name="Application0_generated">
+        <Constant Name="_F_">96480.0</Constant>
+        <Constant Name="_F_nmol_">9.648E-5</Constant>
+        <Constant Name="_K_GHK_">1.0E-9</Constant>
+        <Constant Name="_N_pmol_">6.02E11</Constant>
+        <Constant Name="_PI_">3.141592653589793</Constant>
+        <Constant Name="_R_">8314.0</Constant>
+        <Constant Name="_T_">300.0</Constant>
+        <Constant Name="A2R_init_uM">0.0</Constant>
+        <Constant Name="A2RC_init_uM">0.0</Constant>
+        <Constant Name="AC_init_uM">0.05</Constant>
+        <Constant Name="AKAR_init_uM">1.25</Constant>
+        <Constant Name="AKARp_init_uM">0.0</Constant>
+        <Constant Name="ARC_init_uM">0.0</Constant>
+        <Constant Name="ATP">5000.0</Constant>
+        <Constant Name="cAMP_init_uM">0.0</Constant>
+        <Constant Name="FSK_stim">50.0</Constant>
+        <Constant Name="IBMX_stim">100.0</Constant>
+        <Constant Name="ICUE_cAMP_init_uM">0.0</Constant>
+        <Constant Name="ICUE_init_uM">0.15</Constant>
+        <Constant Name="Iso_stim">1.0</Constant>
+        <Constant Name="K_millivolts_per_volt">1000.0</Constant>
+        <Constant Name="kcat_AKAR_dephos">8.5</Constant>
+        <Constant Name="kcat_AKAR_phos">54.0</Constant>
+        <Constant Name="kcat_cAMP_deg">5.0</Constant>
+        <Constant Name="kcat_iso">0.200273</Constant>
+        <Constant Name="Kd_fsk">860.0</Constant>
+        <Constant Name="Kd_iso">0.1</Constant>
+        <Constant Name="Kf_ICUE_bind">34.2093</Constant>
+        <Constant Name="Kf_PKA_act">4375.0</Constant>
+        <Constant Name="Kf_PKA_bind1">1000.0</Constant>
+        <Constant Name="Kf_PKA_bind2">1000.0</Constant>
+        <Constant Name="kfsk">25.0451</Constant>
+        <Constant Name="Ki">30.0</Constant>
+        <Constant Name="Km_AKAR_phos">21.0</Constant>
+        <Constant Name="Km_cAMP_deg">1.305</Constant>
+        <Constant Name="Km_cAMP_synth">860.0</Constant>
+        <Constant Name="Km_Iso">315.0</Constant>
+        <Constant Name="KMOLE">0.0016611295681063123</Constant>
+        <Constant Name="Kr_ICUE_bind">10.0</Constant>
+        <Constant Name="Kr_PKA_act">1000.0</Constant>
+        <Constant Name="Kr_PKA_bind1">9140.0</Constant>
+        <Constant Name="Kr_PKA_bind2">1640.0</Constant>
+        <Constant Name="PDE_init_uM">0.014</Constant>
+        <Constant Name="PKAC_init_uM">0.0</Constant>
+        <Constant Name="PPase">2.14</Constant>
+        <Constant Name="RC_init_uM">1.0</Constant>
+        <Constant Name="Size_cytosol">5000.0</Constant>
+        <Constant Name="Size_Extra_Cellular">50000.0</Constant>
+        <Constant Name="Size_Membrane">1414.0</Constant>
+        <Constant Name="t_FSK">600.0</Constant>
+        <Constant Name="t_IBMX">600.0</Constant>
+        <Constant Name="t_iso">200.0</Constant>
+        <Constant Name="Voltage_Membrane">0.0</Constant>
+        <VolumeVariable Name="A2RC" Domain="Compartment" />
+        <VolumeVariable Name="AKARp" Domain="Compartment" />
+        <VolumeVariable Name="ARC" Domain="Compartment" />
+        <VolumeVariable Name="cAMP" Domain="Compartment" />
+        <VolumeVariable Name="ICUE" Domain="Compartment" />
+        <VolumeVariable Name="PKAC" Domain="Compartment" />
+        <Function Name="A2R" Domain="Compartment">((K_A2R_total + (Size_cytosol * PKAC)) / Size_cytosol)</Function>
+        <Function Name="AC" Domain="Compartment">(K_AC_total / Size_cytosol)</Function>
+        <Function Name="AC_fsk" Domain="Compartment">(AC * Fsk / (Kd_fsk + Fsk))</Function>
+        <Function Name="AC_iso" Domain="Compartment">(AC * Iso / (Kd_iso + Iso))</Function>
+        <Function Name="AKAR" Domain="Compartment">((K_AKAR_total - (Size_cytosol * AKARp)) / Size_cytosol)</Function>
+        <Function Name="AKAR_ratio">(AKARp / (AKAR + AKARp))</Function>
+        <Function Name="Fsk" Domain="Compartment">(FSK_stim * (t &gt; t_FSK))</Function>
+        <Function Name="IBMX" Domain="Compartment">(IBMX_stim * (t &gt; t_IBMX))</Function>
+        <Function Name="ICUE_cAMP" Domain="Compartment">((K_ICUE_cAMP_total - (Size_cytosol * ICUE)) / Size_cytosol)</Function>
+        <Function Name="ICUE_ratio">(ICUE_cAMP / (ICUE + ICUE_cAMP))</Function>
+        <Function Name="Iso" Domain="Compartment">(Iso_stim * (t &gt; t_iso))</Function>
+        <Function Name="J_AKAR_dephos" Domain="Compartment">(kcat_AKAR_dephos * PPase * AKARp)</Function>
+        <Function Name="J_AKAR_phos" Domain="Compartment">(Vmax_AKAR_phos * AKAR / (Km_AKAR_phos + AKAR))</Function>
+        <Function Name="J_cAMP_deg" Domain="Compartment">(Vmax_cAMP_deg * cAMP / (Km_cAMP_deg + cAMP))</Function>
+        <Function Name="J_cAMP_synth" Domain="Compartment">((Vmax_cAMP_synth * ATP / (Km_cAMP_synth + ATP)) + (Vmax_Iso * ATP / (Km_Iso + ATP)))</Function>
+        <Function Name="J_ICUE_bind" Domain="Compartment">((cAMP * Kf_ICUE_bind * ICUE) - (Kr_ICUE_bind * ICUE_cAMP))</Function>
+        <Function Name="J_PKA_act" Domain="Compartment">((Kf_PKA_act * A2RC) - (PKAC * Kr_PKA_act * A2R))</Function>
+        <Function Name="J_PKA_bind1" Domain="Compartment">((cAMP * Kf_PKA_bind1 * RC) - (Kr_PKA_bind1 * ARC))</Function>
+        <Function Name="J_PKA_bind2" Domain="Compartment">((cAMP * Kf_PKA_bind2 * ARC) - (Kr_PKA_bind2 * A2RC))</Function>
+        <Function Name="K_A2R_total" Domain="Compartment">((Size_cytosol * A2R_init_uM) - (Size_cytosol * PKAC_init_uM))</Function>
+        <Function Name="K_AC_total" Domain="Compartment">(Size_cytosol * AC_init_uM)</Function>
+        <Function Name="K_AKAR_total" Domain="Compartment">((Size_cytosol * AKAR_init_uM) + (Size_cytosol * AKARp_init_uM))</Function>
+        <Function Name="K_ICUE_cAMP_total" Domain="Compartment">((Size_cytosol * ICUE_cAMP_init_uM) + (Size_cytosol * ICUE_init_uM))</Function>
+        <Function Name="K_PDE_total" Domain="Compartment">(Size_cytosol * PDE_init_uM)</Function>
+        <Function Name="K_RC_total" Domain="Compartment">((Size_cytosol * PKAC_init_uM) + (Size_cytosol * A2RC_init_uM) + (Size_cytosol * RC_init_uM) + (Size_cytosol * ARC_init_uM))</Function>
+        <Function Name="KFlux_Membrane_cytosol" Domain="Compartment">(Size_Membrane / Size_cytosol)</Function>
+        <Function Name="KFlux_Membrane_Extra_Cellular" Domain="Compartment">(Size_Membrane / Size_Extra_Cellular)</Function>
+        <Function Name="PDE" Domain="Compartment">(K_PDE_total / Size_cytosol)</Function>
+        <Function Name="PDE_avail" Domain="Compartment">(PDE * Ki / (Ki + IBMX))</Function>
+        <Function Name="RC" Domain="Compartment">(( - (Size_cytosol * PKAC) - (Size_cytosol * A2RC) + K_RC_total - (Size_cytosol * ARC)) / Size_cytosol)</Function>
+        <Function Name="Vmax_AKAR_phos" Domain="Compartment">(kcat_AKAR_phos * PKAC)</Function>
+        <Function Name="Vmax_cAMP_deg" Domain="Compartment">(kcat_cAMP_deg * PDE_avail)</Function>
+        <Function Name="Vmax_cAMP_synth" Domain="Compartment">(kfsk * AC_fsk)</Function>
+        <Function Name="Vmax_Iso" Domain="Compartment">(kcat_iso * AC_iso)</Function>
+        <CompartmentSubDomain Name="Compartment">
+          <BoundaryType Boundary="Xm" Type="Value" />
+          <BoundaryType Boundary="Xp" Type="Value" />
+          <BoundaryType Boundary="Ym" Type="Value" />
+          <BoundaryType Boundary="Yp" Type="Value" />
+          <BoundaryType Boundary="Zm" Type="Value" />
+          <BoundaryType Boundary="Zp" Type="Value" />
+          <OdeEquation Name="cAMP" SolutionType="Unknown">
+            <Rate>( - J_ICUE_bind - J_PKA_bind2 - J_PKA_bind1 + J_cAMP_synth - J_cAMP_deg)</Rate>
+            <Initial>cAMP_init_uM</Initial>
+          </OdeEquation>
+          <OdeEquation Name="ARC" SolutionType="Unknown">
+            <Rate>(J_PKA_bind1 - J_PKA_bind2)</Rate>
+            <Initial>ARC_init_uM</Initial>
+          </OdeEquation>
+          <OdeEquation Name="A2RC" SolutionType="Unknown">
+            <Rate>( - J_PKA_act + J_PKA_bind2)</Rate>
+            <Initial>A2RC_init_uM</Initial>
+          </OdeEquation>
+          <OdeEquation Name="AKARp" SolutionType="Unknown">
+            <Rate>( - J_AKAR_dephos + J_AKAR_phos)</Rate>
+            <Initial>AKARp_init_uM</Initial>
+          </OdeEquation>
+          <OdeEquation Name="ICUE" SolutionType="Unknown">
+            <Rate>- J_ICUE_bind</Rate>
+            <Initial>ICUE_init_uM</Initial>
+          </OdeEquation>
+          <OdeEquation Name="PKAC" SolutionType="Unknown">
+            <Rate>J_PKA_act</Rate>
+            <Initial>PKAC_init_uM</Initial>
+          </OdeEquation>
+        </CompartmentSubDomain>
+        <Version Name="Application0_generated" KeyValue="65183066" BranchId="64862026" Archived="0" Date="27-Apr-2012 15:23:15" FromVersionable="false">
+          <Owner Name="ecg5pc" Identifier="59285961" />
+          <GroupAccess Type="1" />
+        </Version>
+      </MathDescription>
+      <AnalysisTaskList>
+        <ParameterEstimationTask Name="DefaultTask">
+          <parameterMappingSpecList>
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.cAMP_synth.Km" lowLimit="86.0" highLimit="8600.0" currentValue="860.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.cAMP_synth.ATP" lowLimit="500.0" highLimit="50000.0" currentValue="5000.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.cAMP_synth.Km_Iso" lowLimit="31.5" highLimit="3150.0" currentValue="315.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.cAMP_synth.kcat_iso" lowLimit="0.07500000000000001" highLimit="7.5" currentValue="0.75" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.cAMP_synth.Kd_iso" lowLimit="0.010000000000000002" highLimit="1.0" currentValue="0.1" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.cAMP_synth.kfsk" lowLimit="0.73" highLimit="73.0" currentValue="7.3" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.cAMP_synth.Iso_stim" lowLimit="1.0" highLimit="1.0" currentValue="1.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.cAMP_synth.t_iso" lowLimit="200.0" highLimit="200.0" currentValue="200.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.cAMP_synth.Kd_fsk" lowLimit="86.0" highLimit="8600.0" currentValue="860.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.cAMP_synth.FSK_stim" lowLimit="50.0" highLimit="50.0" currentValue="50.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.cAMP_synth.t_FSK" lowLimit="600.0" highLimit="600.0" currentValue="600.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.PKA_act.Kf" lowLimit="437.5" highLimit="43750.0" currentValue="4375.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.PKA_act.Kr" lowLimit="100.0" highLimit="10000.0" currentValue="1000.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.cAMP_deg.Km" lowLimit="0.1305" highLimit="13.049999999999999" currentValue="1.305" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.cAMP_deg.kcat" lowLimit="0.5" highLimit="50.0" currentValue="5.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.cAMP_deg.Ki" lowLimit="3.0" highLimit="300.0" currentValue="30.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.cAMP_deg.t_IBMX" lowLimit="600.0" highLimit="600.0" currentValue="600.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.cAMP_deg.IBMX_stim" lowLimit="100.0" highLimit="100.0" currentValue="100.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.PKA_bind1.Kf" lowLimit="10.0" highLimit="10000.0" currentValue="1000.0" selected="true" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.PKA_bind1.Kr" lowLimit="914.0" highLimit="91400.0" currentValue="9140.0" selected="true" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.AKAR_dephos.kcat" lowLimit="0.085" highLimit="85.0" currentValue="8.5" selected="true" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.AKAR_dephos.PPase" lowLimit="0.021400000000000002" highLimit="21.400000000000002" currentValue="2.14" selected="true" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.PKA_bind2.Kf" lowLimit="100.0" highLimit="10000.0" currentValue="1000.0" selected="true" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.PKA_bind2.Kr" lowLimit="164.0" highLimit="16400.0" currentValue="1640.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.ICUE_bind.Kf" lowLimit="0.5" highLimit="50.0" currentValue="5.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.ICUE_bind.Kr" lowLimit="1.0" highLimit="100.0" currentValue="10.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.AKAR_phos.Km" lowLimit="0.1" highLimit="210.0" currentValue="21.0" selected="true" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.AKAR_phos.kcat" lowLimit="5.4" highLimit="540.0" currentValue="54.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="Application0.cAMP_scs.initConc" lowLimit="0.0" highLimit="0.0" currentValue="0.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="Application0.AKAR_scs.initConc" lowLimit="0.125" highLimit="12.5" currentValue="1.25" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="Application0.AC_scs.initConc" lowLimit="0.005000000000000001" highLimit="0.5" currentValue="0.05" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="Application0.RC_scs.initConc" lowLimit="0.1" highLimit="10.0" currentValue="1.0" selected="true" />
+            <parameterMappingSpec parameterReferenceAttribute="Application0.A2R_scs.initConc" lowLimit="0.0" highLimit="0.0" currentValue="0.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="Application0.PDE_scs.initConc" lowLimit="0.0014000000000000002" highLimit="0.14" currentValue="0.014" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="Application0.ARC_scs.initConc" lowLimit="0.0" highLimit="0.0" currentValue="0.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="Application0.ICUE_cAMP_scs.initConc" lowLimit="0.0" highLimit="0.0" currentValue="0.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="Application0.A2RC_scs.initConc" lowLimit="0.0" highLimit="0.0" currentValue="0.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="Application0.AKARp_scs.initConc" lowLimit="0.0" highLimit="0.0" currentValue="0.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="Application0.ICUE_scs.initConc" lowLimit="0.015" highLimit="1.5" currentValue="0.15" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="Application0.PKAC_scs.initConc" lowLimit="0.0" highLimit="0.0" currentValue="0.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="Application0.Extra_Cellular_mapping.Size" lowLimit="5000.0" highLimit="500000.0" currentValue="50000.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="Application0.cytosol_mapping.Size" lowLimit="500.0" highLimit="50000.0" currentValue="5000.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="Application0.Membrane_mapping.Voltage_Membrane_init" lowLimit="0.0" highLimit="0.0" currentValue="0.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="Application0.Membrane_mapping.SurfToVolRatio" lowLimit="0.02828" highLimit="2.828" currentValue="0.2828" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="Application0.Membrane_mapping.VolFraction" lowLimit="0.009090909090909092" highLimit="0.9090909090909092" currentValue="0.09090909090909091" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="Application0.Membrane_mapping.Size" lowLimit="141.4" highLimit="14140.0" currentValue="1414.0" selected="false" />
+          </parameterMappingSpecList>
+          <referenceData numRows="121" numColumns="3">
+            <dataColumnList>
+              <dataColumn Name="t" weight="1.0" />
+              <dataColumn Name="AKAR_fret" weight="1.0" />
+              <dataColumn Name="ICUE_fret" weight="1.0" />
+            </dataColumnList>
+            <dataRowList>
+              <dataRow>0.0 -0.010283401 7.91667E-4</dataRow>
+              <dataRow>10.0 -0.03854251 -0.019158333</dataRow>
+              <dataRow>20.0 0.03145749 -0.034241667</dataRow>
+              <dataRow>30.0 0.02340081 -0.014533333</dataRow>
+              <dataRow>40.0 0.014331984 -0.021091667</dataRow>
+              <dataRow>50.0 0.027611336 -0.036475</dataRow>
+              <dataRow>60.0 -0.018097166 -0.016966667</dataRow>
+              <dataRow>70.0 0.009068826 -0.017808333</dataRow>
+              <dataRow>80.0 -5.26316E-4 -0.020833333</dataRow>
+              <dataRow>90.0 0.034048583 -0.007558333</dataRow>
+              <dataRow>100.0 -0.004898785 -0.025408333</dataRow>
+              <dataRow>110.0 -0.003117409 -0.028966667</dataRow>
+              <dataRow>120.0 0.039068826 -0.019791667</dataRow>
+              <dataRow>130.0 0.001295547 -0.0366</dataRow>
+              <dataRow>140.0 -0.001093117 -0.012775</dataRow>
+              <dataRow>150.0 0.045546559 -0.004583333</dataRow>
+              <dataRow>160.0 0.043562753 -0.015333333</dataRow>
+              <dataRow>170.0 -0.004979757 -0.004991667</dataRow>
+              <dataRow>180.0 0.007611336 -0.011858333</dataRow>
+              <dataRow>190.0 0.04097166 -0.016375</dataRow>
+              <dataRow>200.0 -0.032995951 -0.002933333</dataRow>
+              <dataRow>210.0 0.178906883 0.17145</dataRow>
+              <dataRow>220.0 0.630566802 0.351908333</dataRow>
+              <dataRow>230.0 0.79562753 0.441591667</dataRow>
+              <dataRow>240.0 0.787206478 0.448825</dataRow>
+              <dataRow>250.0 0.809149798 0.485058333</dataRow>
+              <dataRow>260.0 0.836194332 0.456608333</dataRow>
+              <dataRow>270.0 0.881052632 0.456408333</dataRow>
+              <dataRow>280.0 0.815748988 0.430875</dataRow>
+              <dataRow>290.0 0.872307692 0.454491667</dataRow>
+              <dataRow>300.0 0.855020243 0.4331</dataRow>
+              <dataRow>310.0 0.87534413 0.425533333</dataRow>
+              <dataRow>320.0 0.834736842 0.427541667</dataRow>
+              <dataRow>330.0 0.849878543 0.450116667</dataRow>
+              <dataRow>340.0 0.861902834 0.434383333</dataRow>
+              <dataRow>350.0 0.847732794 0.424458333</dataRow>
+              <dataRow>360.0 0.880526316 0.420983333</dataRow>
+              <dataRow>370.0 0.934979757 0.408975</dataRow>
+              <dataRow>380.0 0.858340081 0.412325</dataRow>
+              <dataRow>390.0 0.87708502 0.400875</dataRow>
+              <dataRow>400.0 0.810526316 0.386125</dataRow>
+              <dataRow>410.0 0.853562753 0.391825</dataRow>
+              <dataRow>420.0 0.897489879 0.360033333</dataRow>
+              <dataRow>430.0 0.898987854 0.368058333</dataRow>
+              <dataRow>440.0 0.857854251 0.358033333</dataRow>
+              <dataRow>450.0 0.828178138 0.354991667</dataRow>
+              <dataRow>460.0 0.802995951 0.32785</dataRow>
+              <dataRow>470.0 0.826437247 0.325391667</dataRow>
+              <dataRow>480.0 0.820728745 0.310758333</dataRow>
+              <dataRow>490.0 0.831376518 0.311741667</dataRow>
+              <dataRow>500.0 0.818663968 0.301066667</dataRow>
+              <dataRow>510.0 0.804493927 0.310933333</dataRow>
+              <dataRow>520.0 0.845668016 0.283058333</dataRow>
+              <dataRow>530.0 0.823117409 0.263266667</dataRow>
+              <dataRow>540.0 0.799190283 0.265366667</dataRow>
+              <dataRow>550.0 0.818906883 0.25885</dataRow>
+              <dataRow>560.0 0.806356275 0.272925</dataRow>
+              <dataRow>570.0 0.810040486 0.245991667</dataRow>
+              <dataRow>580.0 0.796882591 0.246308333</dataRow>
+              <dataRow>590.0 0.838259109 0.236341667</dataRow>
+              <dataRow>600.0 0.814493927 0.243558333</dataRow>
+              <dataRow>610.0 0.833765182 0.483141667</dataRow>
+              <dataRow>620.0 1.008785425 0.749541667</dataRow>
+              <dataRow>630.0 0.97194332 0.856083333</dataRow>
+              <dataRow>640.0 0.986275304 0.883883333</dataRow>
+              <dataRow>650.0 0.989230769 0.885408333</dataRow>
+              <dataRow>660.0 0.974574899 0.902783333</dataRow>
+              <dataRow>670.0 1.01805668 0.911491667</dataRow>
+              <dataRow>680.0 0.983684211 0.915925</dataRow>
+              <dataRow>690.0 1.01757085 0.934366667</dataRow>
+              <dataRow>700.0 0.987530364 0.937433333</dataRow>
+              <dataRow>710.0 0.976842105 0.9298</dataRow>
+              <dataRow>720.0 1.019392713 0.955158333</dataRow>
+              <dataRow>730.0 0.973360324 0.953233333</dataRow>
+              <dataRow>740.0 0.996315789 0.959841667</dataRow>
+              <dataRow>750.0 1.004453441 0.951591667</dataRow>
+              <dataRow>760.0 1.007165992 0.953708333</dataRow>
+              <dataRow>770.0 1.007813765 0.957783333</dataRow>
+              <dataRow>780.0 0.980526316 0.956008333</dataRow>
+              <dataRow>790.0 1.005991903 0.968116667</dataRow>
+              <dataRow>800.0 0.993846154 0.973425</dataRow>
+              <dataRow>810.0 1.001214575 0.9627</dataRow>
+              <dataRow>820.0 0.994048583 0.967291667</dataRow>
+              <dataRow>830.0 0.995506073 0.964883333</dataRow>
+              <dataRow>840.0 1.02659919 0.981025</dataRow>
+              <dataRow>850.0 0.973360324 0.969491667</dataRow>
+              <dataRow>860.0 0.966842105 0.977433333</dataRow>
+              <dataRow>870.0 0.992307692 0.97875</dataRow>
+              <dataRow>880.0 0.989392713 0.977683333</dataRow>
+              <dataRow>890.0 1.00582996 0.975358333</dataRow>
+              <dataRow>900.0 1.013117409 0.972108333</dataRow>
+              <dataRow>910.0 0.993117409 0.974583333</dataRow>
+              <dataRow>920.0 1.035384615 0.9868</dataRow>
+              <dataRow>930.0 0.983198381 0.97895</dataRow>
+              <dataRow>940.0 0.972388664 0.975833333</dataRow>
+              <dataRow>950.0 0.972591093 1.001716667</dataRow>
+              <dataRow>960.0 0.983117409 0.9768</dataRow>
+              <dataRow>970.0 1.002267206 0.981591667</dataRow>
+              <dataRow>980.0 1.004210526 0.987775</dataRow>
+              <dataRow>990.0 0.986558704 1.000891667</dataRow>
+              <dataRow>1000.0 0.997975709 0.989383333</dataRow>
+              <dataRow>1010.0 0.999757085 0.993241667</dataRow>
+              <dataRow>1020.0 0.970607287 1.00105</dataRow>
+              <dataRow>1030.0 0.967004049 0.994375</dataRow>
+              <dataRow>1040.0 0.967935223 1.003216667</dataRow>
+              <dataRow>1050.0 0.995748988 1.0026</dataRow>
+              <dataRow>1060.0 0.976153846 1.010008333</dataRow>
+              <dataRow>1070.0 0.957975709 0.988583333</dataRow>
+              <dataRow>1080.0 0.979919028 0.991825</dataRow>
+              <dataRow>1090.0 0.990242915 1.010516667</dataRow>
+              <dataRow>1100.0 1.006680162 1.011216667</dataRow>
+              <dataRow>1110.0 0.96902834 0.998983333</dataRow>
+              <dataRow>1120.0 1.026153846 1.005366667</dataRow>
+              <dataRow>1130.0 0.991700405 1.003908333</dataRow>
+              <dataRow>1140.0 0.980283401 1.009725</dataRow>
+              <dataRow>1150.0 1.034493927 1.007458333</dataRow>
+              <dataRow>1160.0 1.035870445 1.007625</dataRow>
+              <dataRow>1170.0 1.000323887 1.0091</dataRow>
+              <dataRow>1180.0 1.004777328 1.009391667</dataRow>
+              <dataRow>1190.0 1.007489879 1.008916667</dataRow>
+              <dataRow>1200.0 1.005303644 1.00805</dataRow>
+            </dataRowList>
+          </referenceData>
+          <referenceDataMappingSpecList>
+            <referenceDataMappingSpec referenceDataColumnName="t" referenceDataModelSymbol="t" />
+            <referenceDataMappingSpec referenceDataColumnName="AKAR_fret" referenceDataModelSymbol="AKAR_ratio" />
+            <referenceDataMappingSpec referenceDataColumnName="ICUE_fret" referenceDataModelSymbol="ICUE_ratio" />
+          </referenceDataMappingSpecList>
+          <optimizationSolverSpec optimizationSolverType="Levenberg - Marquardt" NumOfRuns="1">
+            <ListOfParameters>
+              <Parameter Name="Iteration Limit" Value="200.0" />
+              <Parameter Name="Tolerance" Value="1.0E-5" />
+            </ListOfParameters>
+          </optimizationSolverSpec>
+          <OptimizationResultSet>
+            <bestOptRunResultSet>
+              <ListOfParameters>
+                <Parameter Name="Kf_PKA_bind1" Value="107.99" />
+                <Parameter Name="Kr_PKA_bind1" Value="28939.0" />
+                <Parameter Name="kcat_AKAR_dephos" Value="0.647806" />
+                <Parameter Name="PPase" Value="0.15563" />
+                <Parameter Name="Kf_PKA_bind2" Value="720.64" />
+                <Parameter Name="Km_AKAR_phos" Value="0.908288" />
+                <Parameter Name="RC_init_uM" Value="0.581355" />
+              </ListOfParameters>
+              <objectiveFunction Value="0.470162" />
+              <ObjectiveFunctionEvaluations Value="380" />
+            </bestOptRunResultSet>
+          </OptimizationResultSet>
+        </ParameterEstimationTask>
+      </AnalysisTaskList>
+      <Version Name="Application0" KeyValue="65183068" BranchId="64862029" Archived="0" Date="27-Apr-2012 15:23:16" FromVersionable="false">
+        <Owner Name="ecg5pc" Identifier="59285961" />
+        <GroupAccess Type="1" />
+      </Version>
+      <MicroscopeMeasurement Name="fluor">
+        <ConvolutionKernel Type="ProjectionZKernel" />
+      </MicroscopeMeasurement>
+    </SimulationSpec>
+    <Version Name="Greenwald MIMB 2012 - Fit 1" KeyValue="65183094" BranchId="64987521" Archived="1" Date="27-Apr-2012 15:23:16" FromVersionable="false">
+      <Owner Name="ecg5pc" Identifier="59285961" />
+      <GroupAccess Type="0" />
+    </Version>
+    <pathwayModel>
+      <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bp="http://www.biopax.org/release/biopax-level3.owl#" version="3.0" />
+    </pathwayModel>
+    <relationshipModel>
+      <RMNS version="3.0" />
+    </relationshipModel>
+    <vcmetadata>
+      <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" />
+      <nonrdfAnnotationList />
+      <uriBindingList />
+    </vcmetadata>
+  </BioModel>
+</vcml>
+
