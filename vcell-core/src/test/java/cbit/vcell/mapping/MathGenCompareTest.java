@@ -118,6 +118,7 @@ public class MathGenCompareTest {
 	 */
 	public static Map<String, MathCompareResults.Decision> knownFaults() {
 		HashMap<String, MathCompareResults.Decision> faults = new HashMap();
+		faults.put("lumped_reaction_proper_size_in_rate.vcml:Application0", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION);
 		faults.put("biomodel_12522025.vcml:purkinje9", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_EXPRESSIONS);
 		faults.put("biomodel_12522025.vcml:purkinje9-ss", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_EXPRESSIONS);
 		faults.put("biomodel_12522025_spatial.vcml:purkinje9", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_EXPRESSIONS);
@@ -160,7 +161,6 @@ public class MathGenCompareTest {
 		faults.put("biomodel_47429473.vcml:NWASP Activation Cap=2 Prof=20 Cof = 10", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION);
 		faults.put("biomodel_47429473.vcml:NWASP Activation Cap=1 Prof=20 No Arp Binding", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION);
 		faults.put("biomodel_55178308.vcml:Spatial 1 - 3D -  electrophysiology", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_VARIABLES);
-		faults.put("biomodel_55396830.vcml:phloem_test", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION);
 		faults.put("biomodel_59361239.vcml:full model", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION);
 		faults.put("biomodel_59361239.vcml:individual knockouts", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION);
 		faults.put("biomodel_59361239.vcml:time delay 60 s", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION);
@@ -169,7 +169,6 @@ public class MathGenCompareTest {
 		faults.put("biomodel_59361239.vcml:individual knockouts with delay", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION);
 		faults.put("biomodel_59361239.vcml:integrin knockout", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION);
 		faults.put("biomodel_9254662.vcml:FastBuffExpReceptor", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_EXPRESSIONS);
-		faults.put("biomodel_98150237.vcml:current injection at soma", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION);
 		return faults;
 	}
 
