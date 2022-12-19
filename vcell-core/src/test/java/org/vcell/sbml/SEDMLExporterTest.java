@@ -53,6 +53,7 @@ public class SEDMLExporterTest {
 		UNKNOWN_IDENTIFIER,
 		SBML_IMPORT_FAILURE,
 		DIVIDE_BY_ZERO,
+		UNSUPPORTED_NONSPATIAL_STOCH_HISTOGRAM
 	};
 
 	public enum SEDML_FAULT {
@@ -163,6 +164,7 @@ public class SEDMLExporterTest {
 		faults.put("biomodel_124562627.vcml", FAULT.NULL_POINTER_EXCEPTION); // CSG/analytic geometry issue
 		faults.put("biomodel_156134818.vcml", FAULT.UNKNOWN_IDENTIFIER);  // species named I conflicts with membrane parameter I
 		faults.put("biomodel_220138948.vcml", FAULT.MATHOVERRIDES_INVALID); // Kf_Uptake invalid override.
+		faults.put("biomodel_84982474.vcml", FAULT.UNSUPPORTED_NONSPATIAL_STOCH_HISTOGRAM); // not supported nonspatial histogram
 		return faults;
 	}
 
@@ -220,7 +222,7 @@ public class SEDMLExporterTest {
 		faults.put("biomodel_7803976.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_81284732.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_82250339.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
-		faults.put("biomodel_84982474.vcml", SEDML_FAULT.NONSPATIAL_STOCH_HISTOGRAM); // not supported nonspatial histogram
+		faults.put("biomodel_84982474.vcml", SEDML_FAULT.DIFF_NUMBER_OF_BIOMODELS); // not supported nonspatial histogram
 		faults.put("biomodel_9254662.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_98147638.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_98174143.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
@@ -357,6 +359,14 @@ public class SEDMLExporterTest {
 					return;
 				} else {
 					System.err.println("add SEDML_FAULT.ERROR_CONSTRUCTING_SIMCONTEXT to file " + filename);
+				}
+			}
+			if (e.getMessage().contains("non-spatial stochastic simulation with histogram option to SEDML not supported")) {
+				if (knownSEDMLFaults().get(filename) == SEDML_FAULT.NONSPATIAL_STOCH_HISTOGRAM) {
+					System.err.println("Expected error: "+e.getMessage());
+					return;
+				} else {
+					System.err.println("add SEDML_FAULT.NONSPATIAL_STOCH_HISTOGRAM to file " + filename);
 				}
 			}
 			throw e;
