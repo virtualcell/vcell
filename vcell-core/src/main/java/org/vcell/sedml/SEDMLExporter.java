@@ -111,28 +111,30 @@ public class SEDMLExporter {
 		// Create an SEDMLDocument and create the SEDMLModel from the document, so that other details can be added to it in translateBioModel()
 		SEDMLDocument sedmlDocument = new SEDMLDocument(this.sedmlLevel, this.sedmlVersion);
 
-		final String SBML_NS = "http://www.sbml.org/sbml/level3/version2/core";
-		final String SBML_NS_PREFIX = "sbml";
 		final String VCML_NS = "http://sourceforge.net/projects/vcell/vcml";
 		final String VCML_NS_PREFIX = "vcml";
-		final String SPATIAL_NS = "https://sbml.org/documents/specifications/level-3/version-1/spatial";
-		final String SPATIAL_NS_PREFIX = "spatial";
 		
 		List<Namespace> nsList = new ArrayList<>();
 		Namespace ns = Namespace.getNamespace(SEDMLTags.MATHML_NS_PREFIX, SEDMLTags.MATHML_NS);
 		nsList.add(ns);
-		ns = Namespace.getNamespace(SBML_NS_PREFIX, SBML_NS);
-		nsList.add(ns);
 		ns = Namespace.getNamespace(VCML_NS_PREFIX, VCML_NS);
 		nsList.add(ns);
-		
-		SimulationContext[] simContexts = vcBioModel.getSimulationContexts();
-		for(SimulationContext sc : simContexts) {
-			if(sc.getGeometry() != null && sc.getGeometry().getDimension() > 0) {
-				ns = Namespace.getNamespace(SPATIAL_NS_PREFIX, SPATIAL_NS);
-				nsList.add(ns);
-				break;
-			}
+
+		if (modelFormat.equals(ModelFormat.SBML) || modelFormat.equals(ModelFormat.SBML_VCML)) {
+			final String SBML_NS = "http://www.sbml.org/sbml/level3/version2/core";
+			final String SBML_NS_PREFIX = "sbml";
+			final String SPATIAL_NS = "https://sbml.org/documents/specifications/level-3/version-1/spatial";
+			final String SPATIAL_NS_PREFIX = "spatial";
+			ns = Namespace.getNamespace(SBML_NS_PREFIX, SBML_NS);
+			nsList.add(ns);
+			SimulationContext[] simContexts = vcBioModel.getSimulationContexts();
+			for (SimulationContext sc : simContexts) {
+				if (sc.getGeometry() != null && sc.getGeometry().getDimension() > 0) {
+					ns = Namespace.getNamespace(SPATIAL_NS_PREFIX, SPATIAL_NS);
+					nsList.add(ns);
+					break;
+				}
+			} 
 		}
 		sedmlModel = sedmlDocument.getSedMLModel();
 		sedmlModel.setAdditionalNamespaces(nsList);
