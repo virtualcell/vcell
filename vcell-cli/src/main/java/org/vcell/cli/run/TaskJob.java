@@ -1,8 +1,6 @@
 package org.vcell.cli.run;
 
 
-import org.apache.commons.lang.StringUtils;
-
 public class TaskJob {
     final int jobID;
     final String taskID; // base task for a simulation (instance of Task)
