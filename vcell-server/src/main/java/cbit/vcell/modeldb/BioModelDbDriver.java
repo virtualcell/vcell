@@ -547,11 +547,11 @@ public BioModelRep[] getBioModelReps(Connection con, User user, String condition
 	}
 	if (lg.isTraceEnabled()) lg.trace("BioModelDbDriver.getBioModelReps(user=" + user + ", conditions=" + conditions + ")");
 	
-	String sql = bioModelTable.getPreparedStatement_BioModelReps(conditions, orderBy, startRow, numRows);
+	String sql = bioModelTable.getPreparedStatement_BioModelReps(conditions, orderBy, startRow, numRows, dbSyntax);
 	
 	PreparedStatement stmt = con.prepareStatement(sql);
 //	System.out.println(sql);
-	bioModelTable.setPreparedStatement_BioModelReps(stmt, user, startRow, numRows);
+	bioModelTable.setPreparedStatement_BioModelReps(stmt, user, startRow, numRows, dbSyntax);
 
 	ArrayList<BioModelRep> bioModelReps = new ArrayList<BioModelRep>();
 	try {
@@ -576,7 +576,7 @@ public PublicationRep[] getPublicationReps(Connection con, User user, String con
 	}
 	if (lg.isTraceEnabled()) lg.trace("BioModelDbDriver.getPublicationReps(user=" + user + ", conditions=" + conditions + ")");
 	
-	String sql = publicationTable.getPreparedStatement_PublicationReps(conditions, orderBy);
+	String sql = publicationTable.getPreparedStatement_PublicationReps(conditions, orderBy, dbSyntax);
 	
 	PreparedStatement stmt = con.prepareStatement(sql);
 //	System.out.println(sql);
