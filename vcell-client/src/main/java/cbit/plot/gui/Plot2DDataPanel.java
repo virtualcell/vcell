@@ -806,36 +806,32 @@ private synchronized void copyCells0(CopyAction copyAction,boolean isHDF5) {
 				if(hdf5FileID != -1) {try{H5.H5Fclose(hdf5FileID);}catch(Exception e){e.printStackTrace();}}
 				if(hdf5TempFile != null && hdf5TempFile.exists()) {try{hdf5TempFile.delete();}catch(Exception e){e.printStackTrace();}}
 			}
-		}else {
+		}else {		// not HDF5
 			String selectedFirstColName = getScrollPaneTable().getColumnName(columns[0]);
 			if(selectedFirstColName.equals((xVarColumnName==null?ReservedVariable.TIME.getName():xVarColumnName))){
 				bHasTimeColumn = true;
 			}
 		}
-		SymbolTableEntry[] symbolTableEntries = new SymbolTableEntry[c - (bHasTimeColumn?1:0)];
-		Expression[] resolvedValues = new Expression[symbolTableEntries.length];
+		SymbolTableEntry[] tableSymbolTableEntries = new SymbolTableEntry[c - (bHasTimeColumn?1:0)];
+		Expression[] resolvedValues = new Expression[tableSymbolTableEntries.length];
 		//String[] dataNames = new String[symbolTableEntries.length];//don't include "t" for SimulationResultsSelection
 		// if copying more than one cell, make a string that will paste like a table in spreadsheets
 		// also include column headers in this case
-		for (int i = 0; i < c; i++){
+		for (int i = 0; i < c; i++) {
+			String suffix = (i==c-1?"":"\t");
+			String columnName = getScrollPaneTable().getColumnName(columns[i]);
 			//this if condition is dangerous, because it assumes that "t" appears only on column idx 0, other column numbers should be
 			//greater than 0. However, histogram doesn't have "t" and there is sth. else in column 0 of the table.
-			if(!bHistogram && (!bHasTimeColumn || i>0)){ 
+			if(!bHistogram && (!bHasTimeColumn || i>0)) {
 				//dataNames[i-(bHasTimeColumn?1:0)] = getScrollPaneTable().getColumnName(columns[i]);
-				symbolTableEntries[i-(bHasTimeColumn?1:0)] = null;
-				if(getPlot2D().getSymbolTableEntries() != null){
-					SymbolTableEntry ste =  getPlot2D().getPlotDataSymbolTableEntry(columns[i]);
-					symbolTableEntries[i-(bHasTimeColumn?1:0)] = ste;
-					if(simulation.getMathDescription().isNonSpatialStoch()) {
-						buffer.append(getScrollPaneTable().getColumnName(columns[i]) + (i==c-1?"":"\t"));
-					} else {
-						buffer.append(
-							(ste != null?"(Var="+(ste.getNameScope() != null?ste.getNameScope().getName()+"_":"")+ste.getName()+") ":"")+
-							getScrollPaneTable().getColumnName(columns[i]) + (i==c-1?"":"\t"));
-					}
-				}
-			}else{
-				buffer.append(getScrollPaneTable().getColumnName(columns[i]) + (i==c-1?"":"\t"));
+				tableSymbolTableEntries[i-(bHasTimeColumn?1:0)] = null;
+				SymbolTableEntry ste = getPlot2D().getPlotDataSymbolTableEntry(columns[i]);
+				tableSymbolTableEntries[i-(bHasTimeColumn?1:0)] = ste;
+				buffer.append(
+					(ste != null?"(Var="+(ste.getNameScope() != null?ste.getNameScope().getName()+"_":"")+ste.getName()+") ":"")+
+					columnName + suffix);
+			} else {
+				buffer.append(columnName + suffix);
 			}
 		}
 		for (int i = 0; i < r; i++){
@@ -856,7 +852,7 @@ private synchronized void copyCells0(CopyAction copyAction,boolean isHDF5) {
 
 
 		VCellTransferable.ResolvedValuesSelection rvs =
-			new VCellTransferable.ResolvedValuesSelection(symbolTableEntries,null,resolvedValues,buffer.toString());
+			new VCellTransferable.ResolvedValuesSelection(tableSymbolTableEntries,null,resolvedValues,buffer.toString());
 		VCellTransferable.sendToClipboard(rvs);
 	}catch(Throwable e){
 		e.printStackTrace();
