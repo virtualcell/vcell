@@ -14,6 +14,7 @@ module load singularity
 #singularity remote login -u <github_user> -p <github_token> docker://ghcr.io
 singularity build --force ${singularity_file} docker://${docker_image}
 cp ${singularity_file} /state/partition1/singularityImages/
+cp ${singularity_file} /share/apps/vcell3/singularityImages/
 
 ```
 
@@ -30,5 +31,6 @@ also, make sure vcell-batch container is current.
     #singularity remote login -u <github_user> -p <github_token> docker://ghcr.io
     singularity build --force ${singularity_file} docker://${docker_image}
     cp ${singularity_file} /state/partition1/singularityImages/
+    cp ${singularity_file} /share/apps/vcell3/singularityImages/
    
     ```
