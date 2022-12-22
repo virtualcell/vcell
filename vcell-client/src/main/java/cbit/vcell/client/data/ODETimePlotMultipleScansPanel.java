@@ -91,6 +91,7 @@ private void initialize()  {
 	
 	plotPane = new PlotPane();
 	plotPane.getPlot2DDataPanel1().setXVarName(xVarColumnName);
+	plotPane.getPlot2DDataPanel1().setSimulation(simulation);
 	add(plotPane, BorderLayout.CENTER);
 	
 	JPanel parameterPanel = new JPanel();

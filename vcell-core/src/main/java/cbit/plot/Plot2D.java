@@ -503,6 +503,6 @@ public SymbolTableEntry getPlotDataSymbolTableEntry(int tableColumn) {
 		return ReservedVariable.TIME;
 	}
 	
-	return getSymbolTableEntries()[index];
+	return symbolTableEntries[tableColumn/2];
 }
 }
