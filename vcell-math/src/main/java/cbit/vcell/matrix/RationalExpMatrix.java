@@ -551,10 +551,7 @@ public void show() {
 	}
 }
 /**
- * solves the system M x = b, where argument A = [M;b], returns x
- * @return double[]
- * @param A cbit.vcell.mapping.Matrix
- * @exception javlang.Exception The exception description.
+ * solves the full rank system M x = b, where argument A = [M;b], returns x
  */
 public RationalNumber[] solveLinear() throws MatrixException {
 	if (rows<1 || cols!=rows+1){
@@ -577,10 +574,7 @@ public RationalNumber[] solveLinear() throws MatrixException {
 	return x;
 }
 /**
- * solves the system M x = b, where argument A = [M;b], returns x
- * @return double[]
- * @param A cbit.vcell.mapping.Matrix
- * @exception javlang.Exception The exception description.
+ * solves the full rank system M x = b, where argument A = [M;b], returns x
  */
 public RationalExp[] solveLinearExpressions() throws MatrixException {
 	if (rows<1 || cols!=rows+1){
@@ -594,7 +588,7 @@ public RationalExp[] solveLinearExpressions() throws MatrixException {
 		throw new MatrixException("singular matrix");
 	}
 
-	RationalExp x[] = new RationalExp[numVars];
+	RationalExp[] x = new RationalExp[numVars];
 	
 	for (int i=0;i<numVars;i++){
 		x[i] = get(i,numVars);
@@ -613,4 +607,96 @@ public void zero() {
 		}
 	}			
 }
+
+public static class NoSolutionExistsException extends Exception {
+	public NoSolutionExistsException(String message){
+		super(message);
+	}
+}
+
+/**
+ * solves the linear system M x = b, where this matrix is the augmented matrix A = [M;b],
+ *
+ * returns x
+ * 		for system with full rank, x expressions are all non-null, and are functions of augmented matrix coefficients
+ * 		for inconsistent system, throws a NoSolutionExistsException
+ * 		for underconstrained system, returns x where some elements are null, and other are a function of coefficients and variables
+ */
+public RationalExp[] solveLinearSystem(String[] vars) throws MatrixException, NoSolutionExistsException {
+	// solver linear system Ax=b
+	// this RationalExpMatrix is assumed to be the Augmented matrix |A : b|
+	//
+	// check that rank of |A| is same as rank of the augmented matrix |A : b| else the system has no solutions (is inconsistent)
+	//
+	if (getNumRows() != vars.length || getNumCols() != vars.length + 1){
+		throw new RuntimeException("there are '"+vars.length+" variables, " +
+				"this matrix should have "+vars.length+" rows (equations) and "+(vars.length+1)+" columns");
+	}
+	int numEquations = vars.length;
+	int numUnknowns = vars.length;
+
+	RationalExpMatrix A_Matrix = new RationalExpMatrix(vars.length, vars.length);
+	for (int i=0; i<vars.length; i++){
+		for (int j=0; j<vars.length; j++){
+			A_Matrix.set_elem(i,j,this.get(i,j));
+		}
+	}
+	RationalExpMatrix K = new RationalExpMatrix(getNumRows(),getNumRows());
+	K.identity();
+	int A_MatrixRank = A_Matrix.gaussianElimination(K);
+
+	RationalExpMatrix reducedAugmentedMatrix = new RationalExpMatrix(this);  // clone this matrix as Gaussian elimination will alter it.
+	K.identity();
+	int augmentedMatrixRank = reducedAugmentedMatrix.gaussianElimination(K);
+
+	System.out.println("rank of A matrix = "+A_MatrixRank);
+	System.out.println("rank of augmented matrix = "+augmentedMatrixRank);
+
+	if (augmentedMatrixRank != A_MatrixRank) {
+		throw new NoSolutionExistsException("rank of A matrix != rank of augmented matrix (" + A_MatrixRank + " != " + augmentedMatrixRank + "), equations are inconsistent");
+	}
+	reducedAugmentedMatrix.show();
+	A_Matrix.show();
+
+	RationalExp[] solutions = new RationalExp[vars.length];
+	for (int i = 0; i < reducedAugmentedMatrix.getNumRows(); i++){
+		//
+		// find first '1.0' element, this column is the next 'dependent' variable
+		//
+		int column = -1;
+		for (int j = i; j < reducedAugmentedMatrix.getNumCols()-1; j++){
+			RationalExp elem = reducedAugmentedMatrix.get(i,j);
+			if (elem.isConstant() && elem.getConstant().doubleValue()==1.0){
+				column = j;
+				break;
+			}
+		}
+		RationalExp rowExp = new RationalExp(BigInteger.ZERO);
+		if (column != -1){
+			//
+			// get electrical device of dependent voltage
+			//
+			String var = vars[column];
+			//
+			// form dependency expression
+			//
+			StringBuffer buffer = new StringBuffer();
+			for (int j = column+1; j < vars.length; j++){
+				if (!reducedAugmentedMatrix.get(i,j).isZero()){
+					String colVar = vars[j];
+					rowExp = rowExp.add(new RationalExp(colVar).mult(reducedAugmentedMatrix.get(i,j).minus()));
+				}
+			}
+			rowExp = rowExp.add(reducedAugmentedMatrix.get(i,vars.length).minus());
+			solutions[column] = rowExp;
+		}
+	}
+	for (int i = 0; i < solutions.length; i++){
+		if (solutions[i] != null) {
+			System.out.println("solution for var '" + vars[i] + "' = " + solutions[i].infixString());
+		}
+	}
+	return solutions;
+}
+
 }

@@ -10,6 +10,9 @@
 
 package cbit.vcell.parser;
 
+import cbit.vcell.matrix.MatrixException;
+import cbit.vcell.matrix.RationalExp;
+import cbit.vcell.matrix.RationalExpMatrix;
 import cbit.vcell.parser.ASTFuncNode.FunctionType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -1068,4 +1071,31 @@ private static int getNumberOfChildren(SimpleNode node) {
 		throw new RuntimeException("unknown node type");
 	}
 }
+
+public static Expression[] solveLinear(Expression[] implicitEquations, String[] vars) throws ExpressionException, MatrixException, RationalExpMatrix.NoSolutionExistsException {
+	RationalExpMatrix rationalExpMatrix = new RationalExpMatrix(vars.length,vars.length+1);
+	for (int equIndex=0; equIndex < implicitEquations.length; equIndex++){
+		Expression implicitEquation = implicitEquations[equIndex];
+		Expression implicitEquationConstantTerm = new Expression(implicitEquation);
+		for (int varIndex=0; varIndex < vars.length; varIndex++) {
+			Expression derivative_wrt_var = implicitEquation.differentiate(vars[varIndex]).flatten();
+			if (derivative_wrt_var != null && !derivative_wrt_var.isZero()){
+				rationalExpMatrix.set_elem(equIndex,varIndex,RationalExpUtils.getRationalExp(derivative_wrt_var));
+			}
+			implicitEquationConstantTerm.substituteInPlace(new Expression(vars[varIndex]),new Expression(0));
+		}
+		rationalExpMatrix.set_elem(equIndex,vars.length,RationalExpUtils.getRationalExp(implicitEquationConstantTerm.flatten()));
+	}
+//	rationalExpMatrix.show();
+
+	RationalExp[] solutions = rationalExpMatrix.solveLinearSystem(vars);
+	Expression[] solutionExpressions = new Expression[solutions.length];
+	for (int i = 0; i < solutions.length; i++){
+		if (solutions[i] != null) {
+			solutionExpressions[i] = new Expression(solutions[i].infixString());
+		}
+	}
+	return solutionExpressions;
+}
+
 }

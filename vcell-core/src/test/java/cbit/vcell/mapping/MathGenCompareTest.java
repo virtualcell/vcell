@@ -16,7 +16,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.vcell.sbml.VcmlTestSuiteFiles;
-import org.vcell.sbml.vcell.SBMLExporter;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -67,49 +66,27 @@ public class MathGenCompareTest {
 	}
 
 	/**
-	 * each file in largeFileSet is > 500K on disk and is not included in the test suite.
-	 * @return
+	 * each file in largeFileSet too large on disk and is not included in the test suite.
 	 */
 	public static Set<String> largeFileSet() {
 		Set<String> largeFiles = new HashSet<>();
-//		largeFiles.add("biomodel_101963252.vcml");
-//		largeFiles.add("biomodel_189321805.vcml");
-//		largeFiles.add("biomodel_200301029.vcml");
-//		largeFiles.add("biomodel_26455186.vcml");
-//		largeFiles.add("biomodel_27192717.vcml");
-//		largeFiles.add("biomodel_28625786.vcml");
-//		largeFiles.add("biomodel_34826524.vcml");
-//		largeFiles.add("biomodel_38086434.vcml");
-//		largeFiles.add("biomodel_47429473.vcml");
-//		largeFiles.add("biomodel_55178308.vcml");
-//		largeFiles.add("biomodel_59361239.vcml");
-//		largeFiles.add("biomodel_60799209.vcml");
-//		largeFiles.add("biomodel_61699798.vcml");
-//		largeFiles.add("biomodel_81992349.vcml");
-//		largeFiles.add("biomodel_83091496.vcml");
-//		largeFiles.add("biomodel_84275910.vcml");
-//		largeFiles.add("biomodel_93313420.vcml");
-//		largeFiles.add("biomodel_98150237.vcml");
 		return largeFiles;
 	}
 
 	/**
-	 * 	each file in the slowTestSet takes > 10s on disk and is not included in the unit test (move to integration testing)
+	 * 	each file in the slowTestSet is not included in the unit test (move to integration testing)
 	 */
 	public static Set<String> slowFileSet() {
 		Set<String> slowModels = new HashSet<>();
-//		slowModels.add("biomodel_62467093.vcml"); // 44s
-//		slowModels.add("biomodel_62477836.vcml"); // 59s
-//		slowModels.add("biomodel_62585003.vcml"); // 33s
 		return slowModels;
 	}
 
+	/**
+	 * each file in outOfMemoryFileSet cannot be run without large memory (not included in test suite).
+	 */
 	public static Set<String> outOfMemoryFileSet() {
 		Set<String> outOfMemoryModels = new HashSet<>();
 		outOfMemoryModels.add("biomodel_101963252.vcml"); // FAULT.JAVA_HEAP_SPACE
-//		outOfMemoryModels.add("biomodel_26455186.vcml");  // FAULT.OUT_OF_MEMORY - GC Overhead Limit Exceeded
-//		outOfMemoryModels.add("biomodel_27192647.vcml");  // FAULT.OUT_OF_MEMORY - GC Overhead Limit Exceeded
-//		outOfMemoryModels.add("biomodel_27192717.vcml");  // FAULT.OUT_OF_MEMORY) - Java heap space: failed reallocation of scalar replaced objects
 		return outOfMemoryModels;
 	}
 
@@ -119,31 +96,7 @@ public class MathGenCompareTest {
 	public static Map<String, MathCompareResults.Decision> knownFaults() {
 		HashMap<String, MathCompareResults.Decision> faults = new HashMap();
 		faults.put("lumped_reaction_proper_size_in_rate.vcml:Application0", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION);
-		faults.put("biomodel_12522025.vcml:purkinje9", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_EXPRESSIONS);
-		faults.put("biomodel_12522025.vcml:purkinje9-ss", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_EXPRESSIONS);
-		faults.put("biomodel_12522025_spatial.vcml:purkinje9", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_EXPRESSIONS);
-		faults.put("biomodel_17257105.vcml:spatial", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_EXPRESSIONS);
-		faults.put("biomodel_17326658.vcml:Mg Green - 500 uM", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_EXPRESSIONS);
 		faults.put("biomodel_18894555.vcml:compartmental", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION);
-		faults.put("biomodel_22403244.vcml:spatial", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_EXPRESSIONS);
-		faults.put("biomodel_22403576.vcml:Spatial", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_EXPRESSIONS);
-		faults.put("biomodel_28625786.vcml:simple_3", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_EXPRESSIONS);
-		faults.put("biomodel_28625786.vcml:Fig4_neuro2", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_EXPRESSIONS);
-		faults.put("biomodel_28625786.vcml:Fig1-2 neuro1", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_EXPRESSIONS);
-		faults.put("biomodel_28625786.vcml:FigS5-fret1", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_EXPRESSIONS);
-		faults.put("biomodel_28625786.vcml:simple_1", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_EXPRESSIONS);
-		faults.put("biomodel_28625786.vcml:NO PKA-PTP", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_EXPRESSIONS);
-		faults.put("biomodel_28625786.vcml:no PKA-PTP_localized", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_EXPRESSIONS);
-		faults.put("biomodel_28625786.vcml:no PKA-PTP 1.5", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_EXPRESSIONS);
-		faults.put("biomodel_28625786.vcml:dia6_pka_diff", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_EXPRESSIONS);
-		faults.put("biomodel_28625786.vcml:no PKA-PTP 6", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_EXPRESSIONS);
-		faults.put("biomodel_28625786.vcml:simple_2", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_EXPRESSIONS);
-		faults.put("biomodel_28625786.vcml:dia1new_pka diff", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_EXPRESSIONS);
-		faults.put("biomodel_28625786.vcml:simple_1.5", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_EXPRESSIONS);
-		faults.put("biomodel_28625786.vcml:3d", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_EXPRESSIONS);
-		faults.put("biomodel_28625786.vcml:HPC_070614", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_EXPRESSIONS);
-		faults.put("biomodel_28625786.vcml:HPC_070907", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_EXPRESSIONS);
-		faults.put("biomodel_2917999.vcml:Figure 5.8", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_EXPRESSIONS);
 		faults.put("biomodel_43726934.vcml:compartmental", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_VARIABLES);
 		faults.put("biomodel_47429473.vcml:Steady State Turnover", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION);
 		faults.put("biomodel_47429473.vcml:NWASP at Lam Tip in 3D Geometry", MathCompareResults.Decision.MathDifferent_DIFFERENT_FASTINV_EXPRESSION);
@@ -168,7 +121,6 @@ public class MathGenCompareTest {
 		faults.put("biomodel_59361239.vcml:sensitivity analysis", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION);
 		faults.put("biomodel_59361239.vcml:individual knockouts with delay", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION);
 		faults.put("biomodel_59361239.vcml:integrin knockout", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION);
-		faults.put("biomodel_9254662.vcml:FastBuffExpReceptor", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_EXPRESSIONS);
 		return faults;
 	}
 
@@ -177,8 +129,7 @@ public class MathGenCompareTest {
 	 */
 	@Parameterized.Parameters
 	public static Collection<String> testCases() throws XmlParseException, IOException {
-		Predicate<String> diff_num_expr_filter = (t) -> knownFaults().containsKey(t) && knownFaults().get(t) == MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION;
-		Predicate<String> skipFilter = (t) -> !outOfMemoryFileSet().contains(t) && !largeFileSet().contains(t);
+		Predicate<String> skipFilter = (t) -> !outOfMemoryFileSet().contains(t) && !largeFileSet().contains(t) && !slowFileSet().contains(t);
 		List<String> filenames = Arrays.stream(VcmlTestSuiteFiles.getVcmlTestCases()).filter(skipFilter).collect(Collectors.toList());
 
 		ArrayList<String> appTestCases = new ArrayList<>();
