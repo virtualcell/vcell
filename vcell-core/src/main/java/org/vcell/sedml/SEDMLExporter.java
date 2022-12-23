@@ -404,8 +404,8 @@ public class SEDMLExporter {
 					if (dg.getId().equals(xDataRef)) {
 						continue;
 					}
-					String curveId = "curve_" + plot3dId + "_" + dg.getName();
-					String datasetYId = "__data_set__" + plot3dId + dg.getName();
+					String curveId = "curve_" + plot3dId + "_" + dg.getId();
+					String datasetYId = "__data_set__" + plot3dId + dg.getId();
 
 					DataSet yDataSet = new DataSet(datasetYId, dg.getName(), dg.getId(), dg.getId());
 					sedmlReport.addDataSet(yDataSet);
