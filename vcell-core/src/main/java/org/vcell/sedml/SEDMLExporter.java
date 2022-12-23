@@ -182,6 +182,7 @@ public class SEDMLExporter {
 				modelFilePathStrAbsoluteList.add(modelFileNameRel);
 				for (int i = 0; i < vcBioModel.getSimulationContexts().length; i++) {
 					writeModelVCML(modelFileNameRel, vcBioModel.getSimulationContext(i));
+					sedmlRecorder.addTaskLog(vcBioModel.getSimulationContext(i).getName(), TaskType.SIMCONTEXT, TaskResult.SUCCEEDED, null);
 					exportSimulations(i, vcBioModel.getSimulationContext(i), null, null, bFromCLI);;
 				}
 			}
