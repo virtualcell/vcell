@@ -230,6 +230,7 @@ public class VcmlTestSuiteFiles {
             "biomodel_91164078.vcml",
             "biomodel_91164682.vcml",
             "biomodel_91986407.vcml",
+            "biomodel_92354366.vcml", // public, not published
             "biomodel_9254662.vcml",
             "biomodel_92705462.vcml",
             "biomodel_93313420.vcml",
