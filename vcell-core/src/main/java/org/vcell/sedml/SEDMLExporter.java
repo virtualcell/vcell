@@ -942,7 +942,7 @@ public class SEDMLExporter {
 		ConstantArraySpec constantArraySpec = mathOverrides.getConstantArraySpec(scannedConstName);
 		MathSymbolMapping mathSymbolMapping = (MathSymbolMapping)simContext.getMathDescription().getSourceSymbolMapping();
 		// list of Ranges, if sim is parameter scan.
-		Range r = createSEDMLrange(rangeId, rt, constantArraySpec, simContext, l2gMap, modelReferenceId, mathOverrides.getSimulation());
+		Range r = createSEDMLrange(rangeId, rt, constantArraySpec, scannedConstName, simContext, l2gMap, modelReferenceId, mathOverrides.getSimulation());
 		// list of Changes
 		SymbolTableEntry ste = getSymbolTableEntryForModelEntity(mathSymbolMapping, scannedConstName);
 		XPathTarget target = getTargetAttributeXPath(ste, l2gMap, simContext);
@@ -954,12 +954,12 @@ public class SEDMLExporter {
 		return rt;
 	}
 
-	private Range createSEDMLrange(String rangeId, RepeatedTask rt, ConstantArraySpec constantArraySpec, SimulationContext simContext, Map<Pair<String, String>, String> l2gMap, String modelReferenceId, Simulation vcSim)
+	private Range createSEDMLrange(String rangeId, RepeatedTask rt, ConstantArraySpec constantArraySpec, String scannedConstantName, SimulationContext simContext, Map<Pair<String, String>, String> l2gMap, String modelReferenceId, Simulation vcSim)
 			throws ExpressionException, DivideByZeroException, MappingException {
 		Range r = null;
 		SimulationContext sc = (SimulationContext)vcSim.getSimulationOwner();
-		SymbolReplacement sr = sc.getMathOverridesResolver().getSymbolReplacement(constantArraySpec.getName(), true);
-		String cName = sr != null ? sr.newName : constantArraySpec.getName();
+		SymbolReplacement sr = sc.getMathOverridesResolver().getSymbolReplacement(scannedConstantName, true);
+		String cName = sr != null ? sr.newName : scannedConstantName;
 		MathSymbolMapping msm = (MathSymbolMapping)simContext.getMathDescription().getSourceSymbolMapping();
 		SymbolTableEntry ste = msm.getBiologicalSymbol(vcSim.getMathOverrides().getConstant(cName))[0];
 		if(constantArraySpec.getType() == ConstantArraySpec.TYPE_INTERVAL) {
