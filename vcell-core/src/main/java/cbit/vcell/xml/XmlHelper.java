@@ -988,92 +988,6 @@ public class XmlHelper {
 		}
 	}
 
-	public static String getXPathForModel() {
-		return "/vcml:vcml/vcml:BioModel/vcml:Model";
-	}
-	public static String getXPathForSimulationSpecs() {
-		return "/vcml:vcml/vcml:BioModel/vcml:SimulationSpec";
-	}
-
-	public static String getXPathForSimulationSpec(String simulationSpecID) {
-		return getXPathForSimulationSpecs() + "[@Name='" + simulationSpecID + "']";
-	}
-
-	public static String getXPathForOutputFunctions(String simulationSpecID) {
-		return getXPathForSimulationSpec(simulationSpecID) + "/vcml:OutputFunctions";
-	}
-
-	public static String getXPathForSpecies(String speciesID) {
-		return getXPathForModel() + "/vcml:LocalizedCompound[@Name='" + speciesID + "']";
-	}
-	public static String getXPathForOutputFunction(String simulationSpecID, String outputFunctionID) {
-		return getXPathForOutputFunctions(simulationSpecID) + "/vcml:AnnotatedFunction[@Name='" + outputFunctionID + "']";
-	}
-
-	@Deprecated
-	public static String updateXML(String xml, List<Change> listOfChanges) {
-
-		for(Change change : listOfChanges) {
-			if(change instanceof ChangeAttribute) {
-				XPathTarget xPathTarget = change.getTargetXPath();
-				String xpath = xPathTarget.getTargetAsString();			// /sbml:sbml/sbml:model/sbml:listOfSpecies/sbml:species[@id='A']
-				String newValue = ((ChangeAttribute) change).getNewValue();
-				logger.trace(newValue + ", " + xpath);
-				if(xpath == null || !isValidXPath(xpath)) {		// the validator only accepts species for now
-					continue;
-				}
-				xml = updateXML(xml, xpath, newValue);
-			}
-		}
-		return xml;
-	}
-
-	@Deprecated
-	// perform a changeAttribute from within our code (not needed, the resolver does it for us)
-	public static String updateXML(String xml, String xpathExpression, String newValue) {
-		try {
-			String filter = "sbml:species[@id='";
-			String target = xpathExpression.substring(xpathExpression.lastIndexOf(filter) + filter.length());
-			target = target.substring(0,target.indexOf("'"));
-
-			//Creating document builder
-			DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
-			javax.xml.parsers.DocumentBuilder builder = builderFactory.newDocumentBuilder();
-			StringReader sr = new StringReader(xml);
-			InputSource is = new org.xml.sax.InputSource(sr);
-			org.w3c.dom.Document document = builder.parse(is);
-
-			boolean replaced = false;
-			NodeList listOfSpecies = document.getElementsByTagName("species");
-			logger.trace("there are "+listOfSpecies.getLength()+" species");
-			for (int i = 0; i < listOfSpecies.getLength(); i++) {
-				Node species = listOfSpecies.item(i);
-				if (species.getNodeType() == Node.ELEMENT_NODE) {
-					String id = species.getAttributes().getNamedItem("id").getTextContent();
-					logger.trace("species id: "+id);
-					if(id.equals(target)) {
-						species.getAttributes().getNamedItem("initialAmount").setTextContent(newValue);
-						logger.trace("Changed entity " + xpathExpression);
-						replaced = true;
-						break;		// we updated the only species with this id, no point to continue
-					}
-				}
-			}
-			if(replaced == false ) {
-				logger.error("Unable to Change entity " + xpathExpression);
-			}
-
-			StringWriter stringWriter = new StringWriter();
-			Transformer xformer = TransformerFactory.newInstance().newTransformer();
-			xformer.transform(new DOMSource(document), new StreamResult(stringWriter));
-
-			xml = stringWriter.toString();
-		} catch (Exception e) {
-			logger.error("unexpected exception updating attribute "+xpathExpression+" to "+newValue+": "+e.getMessage(), e);
-		}
-		return xml;
-	}
-
 	@Deprecated
 	private static boolean isValidXPath(String xpath) {
 		if(xpath.contains("listOfSpecies")) {
@@ -1084,60 +998,6 @@ public class XmlHelper {
 		}
 	}
 
-	@Deprecated
-	// variant of updateXML(), never worked
-	public static String updateXML2(String xml, String xpathExpression, String newValue) {
-		try {
-//		String xpathExpression = "/sbml:sbml/sbml:model/sbml:listOfSpecies/sbml:species[@id=\"A\"]";
-
-			/**
-			 * the following statement with xpath gives 'unexpected token' error in intellij/IDEA - not used anyway
-			 * commenting it out for now.
-			 *
-			 * "/*:sbml/*:model/*:listOfSpecies/*:species[@id=\"A\"]"
-			 * complains about the first ':' character as an unexpected token ... bug in IDE it seems.
-			 */
-//		xpathExpression = "/*:sbml/*:model/*:listOfSpecies/*:species[@id=\"A\"]";
-
-			//Creating document builder
-			DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
-			javax.xml.parsers.DocumentBuilder builder = builderFactory.newDocumentBuilder();
-			StringReader sr = new StringReader(xml);
-			InputSource is = new org.xml.sax.InputSource(sr);
-			org.w3c.dom.Document document = builder.parse(is);
-
-			//Evaluating xpath expression using Element
-			XPath xpath = XPathFactory.newInstance().newXPath();
-
-			// here follow 4 different ways to apply the change, none works
-//		DTMNodeList dtmNodeList = (DTMNodeList)xpath.evaluate(xpathExpression, document, XPathConstants.NODESET);
-//		Node node = dtmNodeList.item(0);
-//		node.setNodeValue(newValue);
-
-//		org.w3c.dom.Element element = (org.w3c.dom.Element)xpath.evaluate(xpathExpression, document, XPathConstants.NODE);
-//		element.setTextContent(newValue);
-
-//		Node node = (Node) xpath.compile(xpathExpression).evaluate(document, XPathConstants.NODE);
-
-			Node node = (Node) xpath.evaluate(xpathExpression, document, XPathConstants.NODE);
-			node.setNodeValue(newValue);
-
-//		NodeList myNodeList = (NodeList) xpath.compile(xpathExpression).evaluate(document, XPathConstants.NODESET);
-//		Node node = myNodeList.item(0);
-//		node.setNodeValue(newValue);
-
-			//Transformation of document to xml
-			StringWriter stringWriter = new StringWriter();
-			Transformer xformer = TransformerFactory.newInstance().newTransformer();
-			xformer.transform(new DOMSource(document), new StreamResult(stringWriter));
-
-			xml = stringWriter.toString();
-		} catch (Exception e) 	{
-			logger.error("error while updating XML attribute: "+e.getMessage(), e);
-		}
-		return xml;
-	}
-
 	public static String convertXMLReservedCharacters(String input) {
 		input = input.replace(">", "&gt;");
 		input = input.replace("<", "&lt;");
@@ -1145,11 +1005,6 @@ public class XmlHelper {
 		input = input.replace("%", "&#37;");
 //		input = input.replace("'", "&apos;");
 		return input;
-	}
-
-
-	public static String getXPathForBioModel() {
-		return "/vcml:vcml/vcml:BioModel";
 	}
 
 //public static String exportSedML(VCDocument vcDoc, int level, int version, String file) throws XmlParseException {
