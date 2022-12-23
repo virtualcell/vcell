@@ -66,7 +66,7 @@ public class SEDMLExporter {
 	private  SedML sedmlModel = null;
 	private cbit.vcell.biomodel.BioModel vcBioModel = null;
 	private String jobId = null;
-	private ArrayList<String> sbmlFilePathStrAbsoluteList = new ArrayList<String>();
+	private ArrayList<String> modelFilePathStrAbsoluteList = new ArrayList<String>();
 	private ArrayList<String> sedmlFilePathStrAbsoluteList = new ArrayList<String>();
 	private List<String> simsToExport = new ArrayList<String>();
 
@@ -162,7 +162,7 @@ public class SEDMLExporter {
 
 	private void translateBioModelToSedML(String savePath, String sBaseFileName, ModelFormat modelFormat,
 				boolean bFromCLI, boolean bRoundTripSBMLValidation) {		// true if invoked for omex export, false if for sedml
-		sbmlFilePathStrAbsoluteList.clear();
+		modelFilePathStrAbsoluteList.clear();
 		try {
 
 			if (modelFormat == ModelFormat.SBML_VCML) {
@@ -170,11 +170,19 @@ public class SEDMLExporter {
 				throw new RuntimeException("Hybrid SBML_VCML export not yet implemented");
 			}
 			if (modelFormat == ModelFormat.VCML) {
-				// TODO
-				throw new RuntimeException("VCML export not yet implemented");
-				// methods below are stubs
-//				writeModelVCML(savePath, sBaseFileName, bFromCLI);
-//				exportSimulationsVCML(simContextCnt, simContext);
+				BioModel prunedBM = XmlHelper.cloneBioModel(vcBioModel);
+				for (Simulation sim : prunedBM.getSimulations()) {
+					prunedBM.removeSimulation(sim);
+				}
+				String vcmlString = XmlHelper.bioModelToXML(prunedBM);
+				String modelFileNameRel = sBaseFileName+"_sedml.vcml";
+				String modelFileNameAbs = Paths.get(savePath,modelFileNameRel).toString();
+				XmlUtil.writeXMLStringToFile(vcmlString, modelFileNameAbs, false);
+				modelFilePathStrAbsoluteList.add(modelFileNameAbs);
+				for (SimulationContext simContext : vcBioModel.getSimulationContexts()) {
+					writeModelVCML(modelFileNameRel, simContext);
+					exportSimulationsVCML(simContext);
+				}
 			}
 			if (modelFormat == ModelFormat.SBML) {
 				try {
@@ -258,7 +266,13 @@ public class SEDMLExporter {
 		}
 	}
 
-	private String exportSimulationsVCML(int simContextCnt, SimulationContext simContext) {
+	private void writeModelVCML(String filePathStrRelative, SimulationContext simContext) {
+		String simContextName = simContext.getName();
+		String simContextId = TokenMangler.mangleToSName(simContextName);
+		sedmlModel.addModel(new Model(simContextId, simContextName, vcmlLanguageURN, filePathStrRelative+"#"+XmlHelper.getXPathForSimulationSpec(simContextName)));
+	}
+
+	private void exportSimulationsVCML(SimulationContext simContext) {
 		// TODO
 		// extracted below snippets related to VCML format from old code before refactoring
 		
@@ -370,8 +384,8 @@ public class SEDMLExporter {
 //							dataGen.addParameter(sedmlParameter);
 //						}
 //					}
-		if (true) throw new RuntimeException("VCML export not finished");
-		return "";
+//		if (true) throw new RuntimeException("VCML export not finished");
+		return;
 	}
 	
 	private void exportSimulationsSBML(int simContextCnt, SimulationContext simContext,
@@ -1107,7 +1121,7 @@ public class SEDMLExporter {
 		//						filePathStrRelative = bioModelName + "_" +  TokenMangler.mangleToSName(simContextName) + ".xml";
 		String filePathStrRelative = sBaseFileName + "_" +  simContextId + ".xml";
 		XmlUtil.writeXMLStringToFile(sbmlString, filePathStrAbsolute, true);
-		sbmlFilePathStrAbsoluteList.add(filePathStrRelative);
+		modelFilePathStrAbsoluteList.add(filePathStrRelative);
 		sedmlModel.addModel(new Model(simContextId, simContextName, sbmlLanguageURN, filePathStrRelative));
 	}
 
@@ -1341,7 +1355,7 @@ public class SEDMLExporter {
 					true // mark file as master
 			);
     	}
-		for (String sd : sbmlFilePathStrAbsoluteList) {
+		for (String sd : modelFilePathStrAbsoluteList) {
 			archive.addFile(
 					Paths.get(srcFolder, sd).toString(),
 					"./" + sd, // target file name
@@ -1374,7 +1388,7 @@ public class SEDMLExporter {
 		archive.writeToFile(Paths.get(srcFolder, sFileName + ".omex").toString());
 
 		// Removing files after archiving
-		for (String sd : sbmlFilePathStrAbsoluteList) {
+		for (String sd : modelFilePathStrAbsoluteList) {
 			Paths.get(srcFolder, sd).toFile().delete();
 		}
 		for (String sd : sedmlFilePathStrAbsoluteList) {
