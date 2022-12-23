@@ -22,11 +22,23 @@ import java.io.*;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @RunWith(Parameterized.class)
 public class SEDMLExporterTest {
 
-	private String filename;
+	private static class TestCase {
+		public final String filename;
+		public final ModelFormat modelFormat;
+		public TestCase(String filename, ModelFormat modelFormat){
+			this.filename = filename;
+			this.modelFormat = modelFormat;
+		}
+	}
+
+
+	private TestCase testCase;
+
 	private static boolean bDebug = false;
 
 	//
@@ -35,8 +47,8 @@ public class SEDMLExporterTest {
 	private static String previousInstalldirPropertyValue;
 	private static boolean previousWriteDebugFiles;
 
-	public SEDMLExporterTest(String filename){
-		this.filename = filename;
+	public SEDMLExporterTest(TestCase testCase){
+		this.testCase = testCase;
 	}
 
 	public enum FAULT {
@@ -82,14 +94,20 @@ public class SEDMLExporterTest {
 
 	@BeforeClass
 	public static void printSkippedModels() {
-		for (String filename : outOfMemorySet()){
-			System.err.println("skipping - out of memory: "+filename);
+		for (String filename : outOfMemorySet(ModelFormat.SBML)){
+			System.err.println("skipping - SBML test case: out of memory: "+filename);
+		}
+		for (String filename : outOfMemorySet(ModelFormat.SBML)){
+			System.err.println("skipping - VCML test case: out of memory: "+filename);
 		}
 		for (String filename : largeFileSet()){
 			System.err.println("skipping - too large (model not in repo): "+filename);
 		}
-		for (String filename : slowTestSet()){
-			System.err.println("skipping - SEDML processing too slow - will parse and generate math only: "+filename);
+		for (String filename : slowTestSet(ModelFormat.SBML)){
+			System.err.println("skipping - SEDML processing with SBML format: too slow - will parse and generate math only: "+filename);
+		}
+		for (String filename : slowTestSet(ModelFormat.VCML)){
+			System.err.println("skipping - SEDML processing with VCML format: too slow - will parse and generate math only: "+filename);
 		}
 	}
 
@@ -120,10 +138,24 @@ public class SEDMLExporterTest {
 		return largeFiles;
 	}
 
+	public static Set<String> slowTestSet(ModelFormat modelFormat){
+		switch (modelFormat) {
+			case SBML: {
+				return slowTestSet_SBML();
+			}
+			case VCML: {
+				return slowTestSet_VCML();
+			}
+			default: {
+				throw new RuntimeException("unexpected model format " + modelFormat);
+			}
+		}
+	}
+
 	/**
 	 * 	each file in the slowTestSet takes > 10s on disk and is not included in the unit test (move to integration testing)
 	 */
-	public static Set<String> slowTestSet() {
+	public static Set<String> slowTestSet_SBML() {
 		Set<String> slowModels = new HashSet<>();
 		slowModels.add("biomodel_101981216.vcml"); // 10s
 		slowModels.add("biomodel_147699816.vcml"); // 14s
@@ -145,8 +177,35 @@ public class SEDMLExporterTest {
 		slowModels.add("biomodel_9590643.vcml"); // 19s
 		return slowModels;
 	}
+	public static Set<String> slowTestSet_VCML() {
+		Set<String> slowModels = new HashSet<>();
+		return slowModels;
+	}
 
-	public static Set<String> outOfMemorySet() {
+	public static Set<String> outOfMemorySet(ModelFormat modelFormat) {
+		switch (modelFormat) {
+			case SBML: {
+				return outOfMemorySet_SBML();
+			}
+			case VCML: {
+				return outOfMemorySet_VCML();
+			}
+			default: {
+				throw new RuntimeException("unexpected model format " + modelFormat);
+			}
+		}
+	}
+
+	public static Set<String> outOfMemorySet_SBML() {
+		Set<String> outOfMemoryModels = new HashSet<>();
+		outOfMemoryModels.add("biomodel_101963252.vcml"); // FAULT.JAVA_HEAP_SPACE
+		outOfMemoryModels.add("biomodel_26455186.vcml");  // FAULT.OUT_OF_MEMORY - GC Overhead Limit Exceeded
+		outOfMemoryModels.add("biomodel_27192647.vcml");  // FAULT.OUT_OF_MEMORY - GC Overhead Limit Exceeded
+		outOfMemoryModels.add("biomodel_27192717.vcml");  // FAULT.OUT_OF_MEMORY) - Java heap space: failed reallocation of scalar replaced objects
+		return outOfMemoryModels;
+	}
+
+	public static Set<String> outOfMemorySet_VCML() {
 		Set<String> outOfMemoryModels = new HashSet<>();
 		outOfMemoryModels.add("biomodel_101963252.vcml"); // FAULT.JAVA_HEAP_SPACE
 		outOfMemoryModels.add("biomodel_26455186.vcml");  // FAULT.OUT_OF_MEMORY - GC Overhead Limit Exceeded
@@ -158,7 +217,21 @@ public class SEDMLExporterTest {
 	/**
 	 * each file in the knownFaultsMap hold known problems in the current software
 	 */
-	public static Map<String, FAULT> knownFaults() {
+	public static Map<String, FAULT> knownFaults(ModelFormat modelFormat) {
+		switch (modelFormat) {
+			case SBML: {
+				return knownFaults_SBML();
+			}
+			case VCML: {
+				return knownFaults_VCML();
+			}
+			default: {
+				throw new RuntimeException("unexpected model format " + modelFormat);
+			}
+		}
+	}
+
+	public static Map<String, FAULT> knownFaults_SBML() {
 		HashMap<String, FAULT> faults = new HashMap();
 		faults.put("biomodel_123269393.vcml", FAULT.MATHOVERRIDES_INVALID); // Kf_r7 - biomodel needs fixing
 		faults.put("biomodel_124562627.vcml", FAULT.NULL_POINTER_EXCEPTION); // CSG/analytic geometry issue
@@ -168,7 +241,36 @@ public class SEDMLExporterTest {
 		return faults;
 	}
 
-	public static Map<String, SEDML_FAULT> knownSEDMLFaults() {
+	public static Map<String, FAULT> knownFaults_VCML() {
+		HashMap<String, FAULT> faults = new HashMap();
+		faults.put("biomodel_123269393.vcml", FAULT.MATHOVERRIDES_INVALID); // Kf_r7 - biomodel needs fixing
+		faults.put("biomodel_124562627.vcml", FAULT.NULL_POINTER_EXCEPTION); // CSG/analytic geometry issue
+		faults.put("biomodel_156134818.vcml", FAULT.UNKNOWN_IDENTIFIER);  // species named I conflicts with membrane parameter I
+		faults.put("biomodel_220138948.vcml", FAULT.MATHOVERRIDES_INVALID); // Kf_Uptake invalid override.
+		faults.put("biomodel_84982474.vcml", FAULT.UNSUPPORTED_NONSPATIAL_STOCH_HISTOGRAM); // not supported nonspatial histogram
+		return faults;
+	}
+
+	public static Map<String, SEDML_FAULT> knownSEDMLFaults(ModelFormat modelFormat) {
+		switch (modelFormat) {
+			case SBML: {
+				return knownSEDMLFaultsForSBML();
+			}
+			case VCML: {
+				return knownSEDMLFaultsForVCML();
+			}
+			default: {
+				throw new RuntimeException("unexpected model format " + modelFormat);
+			}
+		}
+	}
+
+	public static Map<String, SEDML_FAULT> knownSEDMLFaultsForVCML() {
+		HashMap<String, SEDML_FAULT> faults = new HashMap();
+		return faults;
+	}
+
+	public static Map<String, SEDML_FAULT> knownSEDMLFaultsForSBML() {
 		HashMap<String, SEDML_FAULT> faults = new HashMap();
 		faults.put("biomodel_100596964.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_100961371.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
@@ -235,20 +337,26 @@ public class SEDMLExporterTest {
 	 * process all tests that are available - the slow set is parsed only and not processed.
 	 */
 	@Parameterized.Parameters
-	public static Collection<String> testCases() {
-		Predicate<String> surfToVolume_Overrides_Filter = (t) -> knownFaults().containsKey(t) && knownFaults().get(t) == FAULT.MATHOVERRIDES_SurfToVol;
+	public static Collection<TestCase> testCases() {
+//		Predicate<String> surfToVolume_Overrides_Filter = (t) -> knownFaults().containsKey(t) && knownFaults().get(t) == FAULT.MATHOVERRIDES_SurfToVol;
 //		Predicate<String> slowFilter = (t) -> !slowTestSet().contains(t);
 //		Predicate<String> outOfMemoryFilter = (t) -> !outOfMemorySet().contains(t);
 //		Predicate<String> allTestsFilter = (t) -> true;
 //		Predicate<String> allFailures = (t) -> knownFaults().containsKey(t) && skipFilter.test(t);
 		Predicate<String> oneModelFilter = (t) -> t.equals("lumped_reaction_no_size_in_rate.vcml");
-		Predicate<String> skipFilter = (t) -> !outOfMemorySet().contains(t) && !largeFileSet().contains(t);
-		return Arrays.stream(VcmlTestSuiteFiles.getVcmlTestCases()).filter(skipFilter).collect(Collectors.toList());
+		Predicate<String> skipFilter_SBML = (t) -> !outOfMemorySet(ModelFormat.SBML).contains(t) && !largeFileSet().contains(t);
+		Predicate<String> skipFilter_VCML = (t) -> !outOfMemorySet(ModelFormat.VCML).contains(t) && !largeFileSet().contains(t);
+		List<TestCase> testCases = Stream.concat(
+				Arrays.stream(VcmlTestSuiteFiles.getVcmlTestCases()).filter(skipFilter_SBML).map(fname -> new TestCase(fname, ModelFormat.SBML)),
+				Arrays.stream(VcmlTestSuiteFiles.getVcmlTestCases()).filter(skipFilter_VCML).map(fname -> new TestCase(fname, ModelFormat.VCML)))
+				.collect(Collectors.toList());
+		return testCases;
 	}
 
 	@Test
 	public void test_parse_vcml() throws Exception {
-		InputStream testFileInputStream = VcmlTestSuiteFiles.getVcmlTestCase(filename);
+		String test_case_name = testCase.modelFormat+"."+testCase.filename;
+		InputStream testFileInputStream = VcmlTestSuiteFiles.getVcmlTestCase(testCase.filename);
 		String vcmlStr = new BufferedReader(new InputStreamReader(testFileInputStream))
 				.lines().collect(Collectors.joining("\n"));
 
@@ -256,7 +364,7 @@ public class SEDMLExporterTest {
 
 		bioModel.updateAll(false);
 
-		if (slowTestSet().contains(filename)) {
+		if (slowTestSet(testCase.modelFormat).contains(testCase.filename)) {
 			// skip SEDML export processing if this is a slow model or uses too much memory
 			return;
 		}
@@ -273,14 +381,14 @@ public class SEDMLExporterTest {
 			}
 		}
 		File outputDir = Files.createTempDir();
-		String jsonFullyQualifiedName = new File(outputDir, filename + ".json").getAbsolutePath();
+		String jsonFullyQualifiedName = new File(outputDir, test_case_name + ".json").getAbsolutePath();
 		System.out.println(jsonFullyQualifiedName);
 
 		boolean bFromCLI = true;
 		boolean bRoundTripSBMLValidation = true;
 		boolean bWriteOmexArchive = true;
-		File omexFile = new File(outputDir, filename + ".omex");
-		List<SEDMLTaskRecord> sedmlTaskRecords = SEDMLExporter.writeBioModel(bioModel, omexFile, ModelFormat.SBML, bFromCLI, bRoundTripSBMLValidation, bWriteOmexArchive);
+		File omexFile = new File(outputDir, test_case_name + ".omex");
+		List<SEDMLTaskRecord> sedmlTaskRecords = SEDMLExporter.writeBioModel(bioModel, omexFile, testCase.modelFormat, bFromCLI, bRoundTripSBMLValidation, bWriteOmexArchive);
 
 		boolean bAnyFailures = false;
 		for (SEDMLTaskRecord sedmlTaskRecord : sedmlTaskRecords) {
@@ -301,18 +409,18 @@ public class SEDMLExporterTest {
 				}
 			}
 			bAnyFailures |= bFailed;
-			if (!knownFaults().containsKey(filename)) {
+			if (!knownFaults(testCase.modelFormat).containsKey(testCase.filename)) {
 				// skip assert if the model is known to have a problem
 				Assert.assertFalse(sedmlTaskRecord.getCSV(), bFailed);
 			}
 		}
-		FAULT knownFault = knownFaults().get(filename);
+		FAULT knownFault = knownFaults(testCase.modelFormat).get(testCase.filename);
 		if (knownFault != null){
 			// if in the knownFaults list, the model should fail
 			// this is how we can keep track of our list of known problems
 			// if we fix a model without removing it from the knownFaults map, then this test will fail
 			Assert.assertTrue(
-					"expecting fault "+knownFault.name()+" in "+filename+" but it passed, Please remove from SEDMLExporterTest.knownFaults()",
+					"expecting fault "+knownFault.name()+" in "+test_case_name+" but it passed, Please remove from SEDMLExporterTest.knownFaults()",
 					bAnyFailures);
 		}
 		SBMLExporter.MemoryVCLogger memoryVCLogger = new SBMLExporter.MemoryVCLogger();
@@ -326,6 +434,7 @@ public class SEDMLExporterTest {
 			XmlUtil.writeXMLStringToFile(XmlHelper.bioModelToXML(bioModel), origVcmlPath, true);
 
 			if (bDebug) {
+				SBMLExporter.bWriteDebugFiles=true;
 				for (int i = 0; i < bioModels.size(); i++) {
 					String rereadVcmlPath = new File(tempDir, "reread_" + i + ".vcml").getAbsolutePath();
 					XmlUtil.writeXMLStringToFile(XmlHelper.bioModelToXML(bioModels.get(i)), rereadVcmlPath, true);
@@ -335,38 +444,38 @@ public class SEDMLExporterTest {
 
 			Assert.assertEquals("expecting 1 biomodel in round trip", 1, bioModels.size());
 
-			Assert.assertNull("file "+filename+" passed SEDML Round trip, but knownSEDMLFault was set", knownSEDMLFaults().get(filename));
+			Assert.assertNull("file "+test_case_name+" passed SEDML Round trip, but knownSEDMLFault was set", knownSEDMLFaults(testCase.modelFormat).get(testCase.filename));
 		}catch (Exception | AssertionError e){
 			if (e.getMessage().contains("There are no models in ")){
-				if (knownSEDMLFaults().get(filename) == SEDML_FAULT.NO_MODELS_IN_OMEX) {
+				if (knownSEDMLFaults(testCase.modelFormat).get(testCase.filename) == SEDML_FAULT.NO_MODELS_IN_OMEX) {
 					System.err.println("Expected error: "+e.getMessage());
 					return;
 				}else{
-					System.err.println("add SEDML_FAULT.NO_MODELS_IN_OMEX to file "+filename);
+					System.err.println("add SEDML_FAULT.NO_MODELS_IN_OMEX to "+test_case_name);
 				}
 			}
 			if (e.getMessage().contains("expecting 1 biomodel in round trip")){
-				if (knownSEDMLFaults().get(filename) == SEDML_FAULT.DIFF_NUMBER_OF_BIOMODELS) {
+				if (knownSEDMLFaults(testCase.modelFormat).get(testCase.filename) == SEDML_FAULT.DIFF_NUMBER_OF_BIOMODELS) {
 					System.err.println("Expected error: "+e.getMessage());
 					return;
 				}else{
-					System.err.println("add SEDML_FAULT.DIFF_NUMBER_OF_BIOMODELS to file "+filename);
+					System.err.println("add SEDML_FAULT.DIFF_NUMBER_OF_BIOMODELS to "+test_case_name);
 				}
 			}
 			if (e.getMessage().contains("Error constructing a new simulation context")) {
-				if (knownSEDMLFaults().get(filename) == SEDML_FAULT.ERROR_CONSTRUCTING_SIMCONTEXT) {
+				if (knownSEDMLFaults(testCase.modelFormat).get(testCase.filename) == SEDML_FAULT.ERROR_CONSTRUCTING_SIMCONTEXT) {
 					System.err.println("Expected error: "+e.getMessage());
 					return;
 				} else {
-					System.err.println("add SEDML_FAULT.ERROR_CONSTRUCTING_SIMCONTEXT to file " + filename);
+					System.err.println("add SEDML_FAULT.ERROR_CONSTRUCTING_SIMCONTEXT to " + test_case_name);
 				}
 			}
 			if (e.getMessage().contains("non-spatial stochastic simulation with histogram option to SEDML not supported")) {
-				if (knownSEDMLFaults().get(filename) == SEDML_FAULT.NONSPATIAL_STOCH_HISTOGRAM) {
+				if (knownSEDMLFaults(testCase.modelFormat).get(testCase.filename) == SEDML_FAULT.NONSPATIAL_STOCH_HISTOGRAM) {
 					System.err.println("Expected error: "+e.getMessage());
 					return;
 				} else {
-					System.err.println("add SEDML_FAULT.NONSPATIAL_STOCH_HISTOGRAM to file " + filename);
+					System.err.println("add SEDML_FAULT.NONSPATIAL_STOCH_HISTOGRAM to " + test_case_name);
 				}
 			}
 			throw e;
