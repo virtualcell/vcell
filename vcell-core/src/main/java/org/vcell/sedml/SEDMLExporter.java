@@ -365,8 +365,8 @@ public class SEDMLExporter {
 				if (dg.getId().equals(xDataRef)) {
 					continue;
 				}
-				String curveId = "curve_" + plot2dId + "_" + dg.getName();
-				String datasetYId = "__data_set__" + plot2dId + dg.getName();
+				String curveId = "curve_" + plot2dId + "_" + dg.getId();
+				String datasetYId = "__data_set__" + plot2dId + dg.getId();
 				Curve curve = new Curve(curveId, dg.getName(), false, false, xDataRef, dg.getId());
 				sedmlPlot2d.addCurve(curve);
 				//									// id, name, label, dataRef
