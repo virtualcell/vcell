@@ -38,8 +38,8 @@ import cbit.vcell.mapping.StructureMapping.StructureMappingParameter;
 import cbit.vcell.mapping.spatial.SpatialObject.QuantityComponent;
 import cbit.vcell.mapping.spatial.SpatialObject.SpatialQuantity;
 import cbit.vcell.mapping.spatial.processes.SpatialProcess;
-import cbit.vcell.math.*;
 import cbit.vcell.math.Variable;
+import cbit.vcell.math.*;
 import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.model.*;
 import cbit.vcell.model.Model;
@@ -54,11 +54,7 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ExpressionMathMLPrinter;
 import cbit.vcell.parser.ExpressionMathMLPrinter.MathType;
 import cbit.vcell.parser.SymbolTableEntry;
-import cbit.vcell.solver.AnnotatedFunction;
-import cbit.vcell.solver.MathOverrides;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationJob;
-import cbit.vcell.solver.SimulationSymbolTable;
+import cbit.vcell.solver.*;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.xml.XMLTags;
 import cbit.vcell.xml.XmlHelper;
@@ -68,8 +64,8 @@ import org.apache.logging.log4j.Logger;
 import org.jdom.Element;
 import org.jdom.Namespace;
 import org.sbml.jsbml.AssignmentRule;
-import org.sbml.jsbml.*;
 import org.sbml.jsbml.Event;
+import org.sbml.jsbml.*;
 import org.sbml.jsbml.ext.spatial.*;
 import org.vcell.sbml.SBMLHelper;
 import org.vcell.sbml.SBMLUtils;
@@ -116,14 +112,9 @@ public class SBMLExporter {
 	private final Map<String, UnitDefinition> vcUnitSymbolToSBMLUnit = new LinkedHashMap<>(); // to avoid repeated creation of
 
 	private final Map<Pair <String, String>, String> l2gMap = new HashMap<>();	// local to global translation map, used for reaction parameters
-	private final Map<String, String> symbolTableEntryNameToSidMap = new LinkedHashMap<> ();  // key = vcell ste name, value = sbml entity id	ReservedSymbol rs = vcBioModel.getModel().getReservedSymbolByName(name);
-	private final Set<String> reservedSymbolSet = new LinkedHashSet<> ();			// the vcell reserved symbols
 
-	private final Map<org.sbml.jsbml.InitialAssignment, Expression> initialAssignmentToVcmlExpressionMap = new LinkedHashMap<> ();	// key = initial assignment, value = expression needing replacement of vcml ste with sbml sid 
-	private final Map<org.sbml.jsbml.AssignmentRule, Expression> assignmentRuleToVcmlExpressionMap = new LinkedHashMap<> ();	// key = assignment rule, value = expression needing replacement of vcml ste with sbml sid 
-	private final Map<org.sbml.jsbml.RateRule, Expression> rateRuleToVcmlExpressionMap = new LinkedHashMap<> ();				// key = rate rule, value = expression needing replacement of vcml ste with sbml sid 
-	private final Map<SBaseWrapper<org.sbml.jsbml.EventAssignment>, Expression> eventAssignmentToVcmlExpressionMap = new LinkedHashMap<> (); // key = EventAssignment wrapper, value = expression needing replacement of vcml ste with sbml sid 
-	
+	private final SBMLExportSymbolMapping sbmlExportSymbolMapping = new SBMLExportSymbolMapping();
+
 	// used for exporting vcell-related annotations.
 	public static final Namespace sbml_vcml_ns = Namespace.getNamespace(XMLTags.VCELL_NS_PREFIX, SBMLUtils.SBML_VCELL_NS);
 
@@ -298,12 +289,12 @@ private void addCompartments() throws XMLStreamException, SbmlException {
 		String sid = TokenMangler.mangleToSName(cName);
 		sbmlCompartment.setId(sid);
 		sbmlCompartment.setName(cName);
-		symbolTableEntryNameToSidMap.put(cName, sid);
+		sbmlExportSymbolMapping.structureToSidMap.put(vcStructures[i], sid);
+		sbmlExportSymbolMapping.putSteToSidMapping(vcStructures[i].getStructureSize(), sid);
 	}
 	
 	for (int i = 0; i < vcStructures.length; i++) {
-		String cName = vcStructures[i].getName();
-		String sid = symbolTableEntryNameToSidMap.get(cName);
+		String sid = sbmlExportSymbolMapping.structureToSidMap.get(vcStructures[i]);
 		Compartment sbmlCompartment = sbmlModel.getCompartment(sid);
 		VCUnitDefinition sbmlSizeUnit = null;
 		StructureTopology structTopology = getSelectedSimContext().getModel().getStructureTopology();
@@ -312,7 +303,7 @@ private void addCompartments() throws XMLStreamException, SbmlException {
 			sbmlCompartment.setSpatialDimensions(3);
 			String outside = null;
 			if (parentStructure!= null) {
-				outside = symbolTableEntryNameToSidMap.get(parentStructure.getName());
+				outside = sbmlExportSymbolMapping.structureToSidMap.get(parentStructure);
 			}
 			if (outside != null) {
 				if (outside.length() > 0) {
@@ -331,11 +322,11 @@ private void addCompartments() throws XMLStreamException, SbmlException {
 			if (outsideFeature != null && insideFeature != null) {
 				// add custom vcell annotation for the SBML compartment element
 				Element compartmentTopologyElement = new Element(XMLTags.SBML_VCELL_CompartmentTopologyTag, sbml_vcml_ns);
-				compartmentTopologyElement.setAttribute(XMLTags.SBML_VCELL_CompartmentTopologyTag_insideCompartmentAttr, symbolTableEntryNameToSidMap.get(insideFeature.getName()), sbml_vcml_ns);
-				compartmentTopologyElement.setAttribute(XMLTags.SBML_VCELL_CompartmentTopologyTag_outsideCompartmentAttr, symbolTableEntryNameToSidMap.get(outsideFeature.getName()), sbml_vcml_ns);
+				compartmentTopologyElement.setAttribute(XMLTags.SBML_VCELL_CompartmentTopologyTag_insideCompartmentAttr, sbmlExportSymbolMapping.structureToSidMap.get(insideFeature), sbml_vcml_ns);
+				compartmentTopologyElement.setAttribute(XMLTags.SBML_VCELL_CompartmentTopologyTag_outsideCompartmentAttr, sbmlExportSymbolMapping.structureToSidMap.get(outsideFeature), sbml_vcml_ns);
 				sbmlCompartment.getAnnotation().appendNonRDFAnnotation(XmlUtil.xmlToString(compartmentTopologyElement));
 
-				sbmlCompartment.setOutside(symbolTableEntryNameToSidMap.get(outsideFeature.getName())); // leave this in for level 2 support?
+				sbmlCompartment.setOutside(sbmlExportSymbolMapping.structureToSidMap.get(outsideFeature)); // leave this in for level 2 support?
 				sbmlSizeUnit = sbmlExportSpec.getAreaUnits();
 				UnitDefinition unitDefn = getOrCreateSBMLUnit(sbmlSizeUnit);
 				sbmlCompartment.setUnits(unitDefn);
@@ -502,7 +493,7 @@ private void addParameters() throws ExpressionException, SbmlException, XMLStrea
 			}
 		}
 		sbmlParam.setId(sbmlParameterId);
-		symbolTableEntryNameToSidMap.put(vcParam.getName(), sbmlParameterId);
+		sbmlExportSymbolMapping.putSteToSidMapping(vcParam, sbmlParameterId);
 		String sbmlName = vcParam.getSbmlName();
 		if(sbmlName != null && !sbmlName.isEmpty()) {
 			sbmlParam.setName(sbmlName);
@@ -532,7 +523,7 @@ private void addParameters() throws ExpressionException, SbmlException, XMLStrea
 				// because if it is, we'll duplicate it
 				AssignmentRule sbmlParamAssignmentRule = sbmlModel.createAssignmentRule();
 				sbmlParamAssignmentRule.setVariable(sbmlParameterId);	// freshly created above, guaranteed to be valid
-				assignmentRuleToVcmlExpressionMap.put(sbmlParamAssignmentRule, paramExpr);	// expression will be post-processed
+				sbmlExportSymbolMapping.assignmentRuleToVcmlExpressionMap.put(sbmlParamAssignmentRule, paramExpr);	// expression will be post-processed
 			} else {
 				// the parameter is an event assignment target, so it cannot also be 
 				// an assignment rule variable; we make it an initial assignment instead
@@ -922,7 +913,7 @@ private void addReactions() throws SbmlException, XMLStreamException {
 			// if the rate expression is constant, add it as a SBML model parameter anyway to support overrides.
 			Expression rateExpr = lumpedRateExpr != null ? lumpedRateExpr : localRateExpr;
 			if (lumpedRateExpr == null && !bSpatial) {
-				rateExpr = Expression.mult(rateExpr, new Expression(symbolTableEntryNameToSidMap.get(vcReactionStep.getStructure().getName())));
+				rateExpr = Expression.mult(rateExpr, new Expression(vcReactionStep.getStructure().getStructureSize(), vcReactionStep.getNameScope()));
 			}
 			KineticsParameter rateParam = vcRxnKinetics.getAuthoritativeParameter();
 			MathSymbolMapping msm = (MathSymbolMapping)vcSelectedSimContext.getMathDescription().getSourceSymbolMapping();
@@ -1046,9 +1037,8 @@ private void addReactions() throws SbmlException, XMLStreamException {
 		
 		if (bSpatial) {
 			// set compartment for reaction if spatial
-			String structure = vcReactionStep.getStructure().getName();
-			structure = symbolTableEntryNameToSidMap.get(structure);
-			sbmlReaction.setCompartment(structure);
+			String structureSid = sbmlExportSymbolMapping.structureToSidMap.get(vcReactionStep.getStructure());
+			sbmlReaction.setCompartment(structureSid);
 			//CORE  HAS ALT MATH true
 	
 			// set the "isLocal" attribute = true (in 'spatial' namespace) for each species
@@ -1108,15 +1098,15 @@ private void addSpecies() throws XMLStreamException, SbmlException {
 			}
 		}
 		sbmlSpecies.setId(sbmlSpeciesId);
-		symbolTableEntryNameToSidMap.put(vcSpeciesContexts[i].getName(), sbmlSpeciesId);
+		sbmlExportSymbolMapping.putSteToSidMapping(vcSpeciesContexts[i], sbmlSpeciesId);
 		if(vcSpeciesContexts[i].getSbmlName() != null) {
 			sbmlSpecies.setName(vcSpeciesContexts[i].getSbmlName());
 		} else {
 			sbmlSpecies.setName(vcSpeciesContexts[i].getName());
 		}
 		// Assuming that at this point, the compartment(s) for the model are already filled in.
-		String sid = symbolTableEntryNameToSidMap.get(vcSpeciesContexts[i].getStructure().getName());
-		Compartment compartment = sbmlModel.getCompartment(sid);
+		String compartmentSid = sbmlExportSymbolMapping.structureToSidMap.get(vcSpeciesContexts[i].getStructure());
+		Compartment compartment = sbmlModel.getCompartment(compartmentSid);
 		if (compartment != null) {
 			sbmlSpecies.setCompartment(compartment.getId());
 		}
@@ -1476,7 +1466,12 @@ private org.sbml.jsbml.Parameter createSBMLParamFromSpeciesParam(SpeciesContext 
 		
 		// create SBML parameter
 		org.sbml.jsbml.Parameter param = sbmlModel.createParameter();
-		param.setId(TokenMangler.mangleToSName(symbolTableEntryNameToSidMap.get(spContext.getName()) + "_" + scsParam.getName()));
+
+		// may want to add scsParam earlier
+		sbmlExportSymbolMapping.putSteToSidMapping(scsParam,
+				TokenMangler.mangleToSName(scsParam.getSpeciesContext().getName()+"_"+scsParam.getName()));
+
+		param.setId(sbmlExportSymbolMapping.getSid(scsParam));
 		UnitDefinition unitDefn = getOrCreateSBMLUnit(scsParam.getUnitDefinition());
 		param.setUnits(unitDefn);
 		param.setConstant(scsParam.isConstant());
@@ -1584,7 +1579,7 @@ private void addEvents() {
 			for (int j = 0; j < vcEventAssgns.size(); j++) {
 				org.sbml.jsbml.EventAssignment sbmlEA = sbmlEvent.createEventAssignment();
 				SymbolTableEntry target = vcEventAssgns.get(j).getTarget();
-				String sid = symbolTableEntryNameToSidMap.get(target.getName());
+				String sid = sbmlExportSymbolMapping.getSid(target);
 				sbmlEA.setVariable(sid);
 				Expression eventAssgnExpr = new Expression(vcEventAssgns.get(j).getAssignmentExpression());
 				
@@ -1611,7 +1606,7 @@ private void addRateRules()  {
 			sbmlRule.setId(TokenMangler.mangleToSName(vcRule.getName()));
 			
 			// set rate rule variable
-			String sid = symbolTableEntryNameToSidMap.get(vcRule.getRateRuleVar().getName());
+			String sid = sbmlExportSymbolMapping.getSid(vcRule.getRateRuleVar());
 			if(sbmlModel.getSBaseById(sid) == null) {
 				throw new RuntimeException("Missing rate rule variable");
 			}
@@ -1619,7 +1614,7 @@ private void addRateRules()  {
 			
 			// set rate rule math/expression
 			Expression vcRuleExpression = vcRule.getRateRuleExpression();
-			rateRuleToVcmlExpressionMap.put(sbmlRule, vcRuleExpression);	// expression will be post-processed
+			sbmlExportSymbolMapping.rateRuleToVcmlExpressionMap.put(sbmlRule, vcRuleExpression);	// expression will be post-processed
 //			ASTNode math = getFormulaFromExpression(vcRuleExpression);
 //			sbmlRule.setMath(math);
 		}
@@ -1631,9 +1626,9 @@ private void addAssignmentRules()  {
 		for(cbit.vcell.mapping.AssignmentRule vcRule : vcAssignmentRules) {
 			Expression vcRuleExpression = vcRule.getAssignmentRuleExpression();
 			org.sbml.jsbml.AssignmentRule sbmlRule = sbmlModel.createAssignmentRule();
-			String sid = symbolTableEntryNameToSidMap.get(vcRule.getAssignmentRuleVar().getName());
+			String sid = sbmlExportSymbolMapping.getSid(vcRule.getAssignmentRuleVar());
 			sbmlRule.setVariable(sid);
-			assignmentRuleToVcmlExpressionMap.put(sbmlRule, vcRuleExpression);	// expression will be post-processed
+			sbmlExportSymbolMapping.assignmentRuleToVcmlExpressionMap.put(sbmlRule, vcRuleExpression);	// expression will be post-processed
 //			ASTNode math = getFormulaFromExpression(vcRuleExpression);
 //			sbmlRule.setMath(math);
 		}
@@ -1648,8 +1643,8 @@ private void addOverrideInitialAssignments() throws ExpressionException, Mapping
 	int index = vcSelectedSimJob.getJobIndex();
 	System.out.println("Simulation Job index = " + index);
 	
-	MathOverrides mo = vcSelectedSimJob.getSimulation().getMathOverrides();
-	if(mo == null || !mo.hasOverrides()) {
+	MathOverrides mathOverride = vcSelectedSimJob.getSimulation().getMathOverrides();
+	if(mathOverride == null || !mathOverride.hasOverrides()) {
 		return;
 	}
 	//
@@ -1657,33 +1652,24 @@ private void addOverrideInitialAssignments() throws ExpressionException, Mapping
 	//
 	MathMapping mm = vcSelectedSimContext.createNewMathMapping();
 	MathSymbolMapping msm = mm.getMathSymbolMapping();
-	String[] ocns = mo.getOverridenConstantNames();
+	String[] overridenConstantNames = mathOverride.getOverridenConstantNames();
 
-	for(String ocn : ocns) {
-		SymbolTableEntry ste = SEDMLExporter.getSymbolTableEntryForModelEntity(msm, ocn);
-		Expression exp = mo.getActualExpression(ocn, index);
+	for(String overriddenConstantName : overridenConstantNames) {
+		SymbolTableEntry ste = SEDMLExporter.getSymbolTableEntryForModelEntity(msm, overriddenConstantName);
+		Expression exp = mathOverride.getActualExpression(overriddenConstantName, index);
 		String name = "";
-		if(ste != null && ste instanceof SpeciesContextSpecParameter) {
-			SpeciesContextSpecParameter scsp = (SpeciesContextSpecParameter)ste;
-			SpeciesContext sc = scsp.getSpeciesContext();
-			name = symbolTableEntryNameToSidMap.get(sc.getName());
-		} else if(ste != null && ste instanceof ModelParameter) {
-			name = symbolTableEntryNameToSidMap.get(ste.getName());
-		} else if(ste != null && ste instanceof KineticsParameter) {
-			// note: if we call this before adding the reactions, we can't verify that the name we use 
-			// here will match the name we assign when we actually add the reaction
-			KineticsParameter kp = (KineticsParameter)ste;
-			Kinetics ks = kp.getKinetics();
-			ReactionStep rs = ks.getReactionStep();
-			name = TokenMangler.mangleToSName(kp.getName() + "_" + rs.getName());
+		if(ste != null) {
+			name = sbmlExportSymbolMapping.getSid(ste);
+			if (name == null){
+				throw new MappingException("symbolTableEntry "+ste+" not mapped to an SBML Sid");
+			}
 		} else {
-			name = symbolTableEntryNameToSidMap.get(ocn);
-			System.out.println("Unexpected override or parameter scan entity: " + ocn);
+			throw new MappingException("Math Override name " + overriddenConstantName + " not found in mathSymbolMapping");
 		}
-//		System.out.println("  symbol: " + name + ", overriden constant: " + ocn + ", expression: " + exp.infix());
-		org.sbml.jsbml.InitialAssignment ia = sbmlModel.createInitialAssignment();
-		ia.setVariable(name);
-		initialAssignmentToVcmlExpressionMap.put(ia, exp);
+		logger.info("symbol: " + name + ", overriden constant: " + overriddenConstantName + ", expression: " + exp.infix());
+		org.sbml.jsbml.InitialAssignment initialAssignment = sbmlModel.createInitialAssignment();
+		initialAssignment.setVariable(name);
+		sbmlExportSymbolMapping.initialAssignmentToVcmlExpressionMap.put(initialAssignment, exp);
 //		ASTNode math = getFormulaFromExpression(exp);
 //		ia.setMath(math);
 	}
@@ -2146,7 +2132,7 @@ private void addGeometry() throws SbmlException {
 	for (int i = 0; i < vcStrucMappings.length; i++) {
 		StructureMapping vcStructMapping = vcStrucMappings[i];
 		String structName = vcStructMapping.getStructure().getName();
-		Compartment comp = sbmlModel.getCompartment(symbolTableEntryNameToSidMap.get(structName));
+		Compartment comp = sbmlModel.getCompartment(sbmlExportSymbolMapping.structureToSidMap.get(vcStructMapping.getStructure()));
 		SpatialCompartmentPlugin cplugin = (SpatialCompartmentPlugin) comp.getPlugin(SBMLUtils.SBML_SPATIAL_NS_PREFIX);
 		GeometryClass gc = vcStructMapping.getGeometryClass();
 		if (!goodPointer(gc,GeometryClass.class,structName))  {
@@ -2779,14 +2765,14 @@ private void translateBioModel() throws SbmlException, UnsupportedSbmlExportExce
 
 	validateSimulationContextSupport(vcSelectedSimContext);
 
-	reservedSymbolSet.clear();
-	symbolTableEntryNameToSidMap.clear();
-	initialAssignmentToVcmlExpressionMap.clear();
-	assignmentRuleToVcmlExpressionMap.clear();
-	rateRuleToVcmlExpressionMap.clear();
-	eventAssignmentToVcmlExpressionMap.clear();
+	sbmlExportSymbolMapping.reservedSymbolSet.clear();
+	sbmlExportSymbolMapping.clear();
+	sbmlExportSymbolMapping.initialAssignmentToVcmlExpressionMap.clear();
+	sbmlExportSymbolMapping.assignmentRuleToVcmlExpressionMap.clear();
+	sbmlExportSymbolMapping.rateRuleToVcmlExpressionMap.clear();
+	sbmlExportSymbolMapping.eventAssignmentToVcmlExpressionMap.clear();
 	for (ReservedSymbol rs : vcSelectedSimContext.getModel().getReservedSymbols()) {
-		reservedSymbolSet.add(rs.getName());
+		sbmlExportSymbolMapping.reservedSymbolSet.add(rs.getName());
 	}
 
 	// 'Parse' the Virtual cell model into an SBML model
@@ -2829,7 +2815,7 @@ private void setSelectedSimContext(SimulationContext vcSelectedSimContext) {
 // vCell symbols with the sbml entities id
 private void postProcessExpressions() {
 	// InitialAssignment
-	for (Map.Entry<org.sbml.jsbml.InitialAssignment, Expression> entry : initialAssignmentToVcmlExpressionMap.entrySet()) {
+	for (Map.Entry<org.sbml.jsbml.InitialAssignment, Expression> entry : sbmlExportSymbolMapping.initialAssignmentToVcmlExpressionMap.entrySet()) {
 		org.sbml.jsbml.InitialAssignment ia = entry.getKey();
 		Expression vcmlExpression = entry.getValue();
 		Expression sbmlExpression = substituteSteWithSid(vcmlExpression);
@@ -2837,7 +2823,7 @@ private void postProcessExpressions() {
 		ia.setMath(math);
 	}
 	// AssignmentRule
-	for (Map.Entry<org.sbml.jsbml.AssignmentRule, Expression> entry : assignmentRuleToVcmlExpressionMap.entrySet()) {
+	for (Map.Entry<org.sbml.jsbml.AssignmentRule, Expression> entry : sbmlExportSymbolMapping.assignmentRuleToVcmlExpressionMap.entrySet()) {
 		org.sbml.jsbml.AssignmentRule ar = entry.getKey();
 		Expression vcmlExpression = entry.getValue();
 		Expression sbmlExpression = substituteSteWithSid(vcmlExpression);
@@ -2845,7 +2831,7 @@ private void postProcessExpressions() {
 		ar.setMath(math);
 	}
 	// RateRule
-	for (Map.Entry<org.sbml.jsbml.RateRule, Expression> entry : rateRuleToVcmlExpressionMap.entrySet()) {
+	for (Map.Entry<org.sbml.jsbml.RateRule, Expression> entry : sbmlExportSymbolMapping.rateRuleToVcmlExpressionMap.entrySet()) {
 		org.sbml.jsbml.RateRule rr = entry.getKey();
 		Expression vcmlExpression = entry.getValue();
 		Expression sbmlExpression = substituteSteWithSid(vcmlExpression);
@@ -2853,7 +2839,7 @@ private void postProcessExpressions() {
 		rr.setMath(math);
 	}
 	// Events
-	for (Map.Entry<SBaseWrapper<org.sbml.jsbml.EventAssignment>, Expression> entry : eventAssignmentToVcmlExpressionMap.entrySet()) {
+	for (Map.Entry<SBaseWrapper<org.sbml.jsbml.EventAssignment>, Expression> entry : sbmlExportSymbolMapping.eventAssignmentToVcmlExpressionMap.entrySet()) {
 		SBaseWrapper<org.sbml.jsbml.EventAssignment> eaWrapper = entry.getKey();
 		Expression vcmlExpression = entry.getValue();
 		Expression sbmlExpression = substituteSteWithSid(vcmlExpression);
@@ -2872,11 +2858,12 @@ private Expression substituteSteWithSid(Expression vcExpression) {
 	}
 	try {
 	for(String symbol : symbols) {
-		if(SBMLImporter.isRestrictedXYZT(symbol, vcBioModel, bSpatial) || reservedSymbolSet.contains(symbol)) {
+		SymbolTableEntry ste = vcExpression.getSymbolBinding(symbol);
+		if(SBMLImporter.isRestrictedXYZT(symbol, vcBioModel, bSpatial) || sbmlExportSymbolMapping.reservedSymbolSet.contains(symbol)) {
 			continue;
 		}
-		String sid = symbolTableEntryNameToSidMap.get(symbol);
-		if(!symbolTableEntryNameToSidMap.containsKey(symbol)) {
+		String sid = sbmlExportSymbolMapping.getSid(ste);
+		if(sid == null) {
 			String msg = "no sbml Sid found for vcell symbol: " + symbol;
 			logger.error(msg);
 			throw new RuntimeException(msg);
@@ -2884,18 +2871,20 @@ private Expression substituteSteWithSid(Expression vcExpression) {
 		sidExpression.substituteInPlace(new Expression(symbol), new Expression(sid));
 	}
 	} catch(Exception e) {
-		throw new RuntimeException("Substituting Ste with Sid failed, " + e.getMessage());
+		String msg = "Substituting Ste with Sid failed, " + e.getMessage();
+		logger.error(msg, e);
+		throw new RuntimeException(msg, e);
 	}
 	return sidExpression;
 }
 
 void putEventAssignment(org.sbml.jsbml.EventAssignment _ea, Expression vcellExpression) {
     SBaseWrapper<org.sbml.jsbml.EventAssignment> eaWrapper = new SBaseWrapper<org.sbml.jsbml.EventAssignment>(_ea);
-    Expression exp = eventAssignmentToVcmlExpressionMap.get(eaWrapper);
+    Expression exp = sbmlExportSymbolMapping.eventAssignmentToVcmlExpressionMap.get(eaWrapper);
     if (exp != null && exp != vcellExpression) {
         throw new RuntimeException("sbml event assignment is already bound to an expression " + exp.infix() + ", trying to bind to expression " + vcellExpression.infix());
     } else {
-    	eventAssignmentToVcmlExpressionMap.put(eaWrapper, vcellExpression);
+    	sbmlExportSymbolMapping.eventAssignmentToVcmlExpressionMap.put(eaWrapper, vcellExpression);
     }
 }
 
