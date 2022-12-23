@@ -258,7 +258,26 @@ public class VcmlTestSuiteFiles {
             "biomodel_98296160.vcml",
 
             "biomodel_165181964.vcml",
-            "biomodel_111113048_smaller.vcml"
+            "biomodel_111113048_smaller.vcml",
+
+            // more public models
+            "biomodel_92383390.vcml",
+            "biomodel_92830796.vcml",
+            "biomodel_92839940.vcml",
+            "biomodel_92845118.vcml",
+            "biomodel_92847452.vcml",
+            "biomodel_92908902.vcml",
+            "biomodel_92932169.vcml",
+            "biomodel_92942045.vcml",
+            "biomodel_92944917.vcml",
+            "biomodel_92946371.vcml",
+            "biomodel_92951324.vcml",
+            "biomodel_92952350.vcml",
+            "biomodel_92955722.vcml",
+            "biomodel_92967115.vcml",
+            "biomodel_92968671.vcml",
+            "biomodel_92981603.vcml",
+
     };
 
     public static String[] getVcmlTestCases() {

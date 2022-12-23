@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--This biomodel was generated in VCML Version Rel_Version_5.2_build_1-->
+<vcml xmlns="http://sourceforge.net/projects/vcell/vcml" Version="Rel_Version_5.2_build_1">
+   <BioModel Name="BE306Group10_Proj6_Prob1">
+      <Annotation>cloned from 'BE306Group10_Proj6_Prob2' owned by user Alokendra
+</Annotation>
+      <Model Name="unnamed">
+         <Annotation>cloned from 'unnamed' owned by user Alokendra
+</Annotation>
+         <ModelParameters>
+            <Parameter Name="c0" Role="user defined" Unit="uM">5.0</Parameter>
+            <Parameter Name="k1on" Role="user defined" Unit="s-1">0.05</Parameter>
+            <Parameter Name="G" Role="user defined" Unit="1">2.0</Parameter>
+            <Parameter Name="cs" Role="user defined" Unit="uM">1.0</Parameter>
+            <Parameter Name="k1off" Role="user defined" Unit="uM.s-1">(k1on * cs)</Parameter>
+            <Parameter Name="k2on" Role="user defined" Unit="s-1">0.5</Parameter>
+            <Parameter Name="k2off" Role="user defined" Unit="uM.s-1">(k2on * cs)</Parameter>
+            <Parameter Name="n1" Role="user defined" Unit="molecules">(P1 * Reaction_Volume.Reaction_Volume / (M * KMOLE))</Parameter>
+            <Parameter Name="M" Role="user defined" Unit="1">5.0</Parameter>
+            <Parameter Name="n2" Role="user defined" Unit="molecules">(P2 * Reaction_Volume.Reaction_Volume / (M * KMOLE))</Parameter>
+            <Parameter Name="R" Role="user defined" Unit="uM">(c0 - P1 - P2)</Parameter>
+            <Parameter Name="dn2_dt" Role="user defined" Unit="tbd">(((k2on * R) - k2off) * Reaction_Volume.Reaction_Volume / KMOLE)</Parameter>
+            <Parameter Name="dn1_dt" Role="user defined" Unit="tbd">(((k1on * R) - k1off) * Reaction_Volume / KMOLE)</Parameter>
+         </ModelParameters>
+         <Compound Name="s1" />
+         <Compound Name="s0" />
+         <Feature Name="Reaction_Volume" KeyValue="92832222" />
+         <LocalizedCompound Name="P2" CompoundRef="s1" Structure="Reaction_Volume" OverrideName="true" KeyValue="92832224" />
+         <LocalizedCompound Name="P1" CompoundRef="s0" Structure="Reaction_Volume" OverrideName="true" KeyValue="92832225" />
+         <SimpleReaction Structure="Reaction_Volume" Name="Pointed" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="92832226">
+            <Product LocalizedCompoundRef="P1" Stoichiometry="1" KeyValue="92832227" />
+            <Kinetics KineticsType="GeneralLumpedKinetics">
+               <Parameter Name="LumpedJ" Role="lumped reaction rate" Unit="molecules.s-1">(Reaction_Volume * ((k1on * (c0 - P1 - P2)) - k1off) / KMOLE)</Parameter>
+            </Kinetics>
+         </SimpleReaction>
+         <SimpleReaction Structure="Reaction_Volume" Name="Barbed" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="92832228">
+            <Product LocalizedCompoundRef="P2" Stoichiometry="1" KeyValue="92832229" />
+            <Kinetics KineticsType="GeneralLumpedKinetics">
+               <Parameter Name="LumpedJ" Role="lumped reaction rate" Unit="molecules.s-1">(Reaction_Volume * ((k2on * (c0 - P1 - P2)) - k2off) / KMOLE)</Parameter>
+            </Kinetics>
+         </SimpleReaction>
+         <Diagram Name="c0" Structure="Reaction_Volume">
+            <SimpleReactionShape SimpleReactionRef="Pointed" LocationX="86" LocationY="66" />
+            <LocalizedCompoundShape LocalizedCompoundRef="P2" LocationX="125" LocationY="125" />
+            <SimpleReactionShape SimpleReactionRef="Barbed" LocationX="91" LocationY="127" />
+            <LocalizedCompoundShape LocalizedCompoundRef="P1" LocationX="126" LocationY="64" />
+         </Diagram>
+         <Version Name="unnamed" KeyValue="92832218" BranchId="92829851" Archived="0" Date="07-Dec-2014 04:38:24" FromVersionable="false">
+            <Owner Name="adverma" Identifier="92695038" />
+            <GroupAccess Type="1" />
+            <Annotation>cloned from 'unnamed' owned by user Alokendra
+</Annotation>
+         </Version>
+      </Model>
+      <SimulationSpec Name="Application0" Stochastic="false" UseConcentration="true">
+         <Annotation>cloned from 'Application0' owned by user Alokendra
+</Annotation>
+         <Geometry Name="non-spatial1343484323" Dimension="0">
+            <Annotation>cloned from 'non-spatial1343484323' owned by user Alokendra
+</Annotation>
+            <Extent X="10.0" Y="10.0" Z="10.0" />
+            <Origin X="0.0" Y="0.0" Z="0.0" />
+            <SubVolume Name="Compartment" Handle="0" Type="Compartmental" KeyValue="92829846" />
+            <Version Name="non-spatial1343484323" KeyValue="92829842" BranchId="92829843" Archived="0" Date="06-Dec-2014 22:33:28" FromVersionable="false">
+               <Owner Name="adverma" Identifier="92695038" />
+               <GroupAccess Type="1" />
+               <Annotation>cloned from 'non-spatial1343484323' owned by user Alokendra
+</Annotation>
+            </Version>
+         </Geometry>
+         <GeometryContext>
+            <FeatureMapping Feature="Reaction_Volume" GeometryClass="Compartment" SubVolume="Compartment" Size="50000.0">
+               <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
+            </FeatureMapping>
+         </GeometryContext>
+         <ReactionContext>
+            <LocalizedCompoundSpec LocalizedCompoundRef="P2" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+               <InitialConcentration>0.0</InitialConcentration>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="P1" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+               <InitialConcentration>0.0</InitialConcentration>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <ReactionSpec ReactionStepRef="Pointed" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="Barbed" ReactionMapping="included" />
+         </ReactionContext>
+         <MathDescription Name="Application0_generated">
+            <Annotation>cloned from 'Application0_generated' owned by user Alokendra
+</Annotation>
+            <Constant Name="_F_">96480.0</Constant>
+            <Constant Name="_F_nmol_">9.648E-5</Constant>
+            <Constant Name="_K_GHK_">1.0E-9</Constant>
+            <Constant Name="_N_pmol_">6.02E11</Constant>
+            <Constant Name="_PI_">3.141592653589793</Constant>
+            <Constant Name="_R_">8314.0</Constant>
+            <Constant Name="_T_">300.0</Constant>
+            <Constant Name="c0">5.0</Constant>
+            <Constant Name="cs">1.0</Constant>
+            <Constant Name="G">2.0</Constant>
+            <Constant Name="k1on">0.05</Constant>
+            <Constant Name="k2on">0.5</Constant>
+            <Constant Name="K_millivolts_per_volt">1000.0</Constant>
+            <Constant Name="KMOLE">0.0016611295681063123</Constant>
+            <Constant Name="M">5.0</Constant>
+            <Constant Name="P1_init_uM">0.0</Constant>
+            <Constant Name="P2_init_uM">0.0</Constant>
+            <Constant Name="Size_Reaction_Volume">50000.0</Constant>
+            <VolumeVariable Name="P1" Domain="Compartment" />
+            <VolumeVariable Name="P2" Domain="Compartment" />
+            <Function Name="dn1_dt">(((k1on * R) - k1off) * Size_Reaction_Volume / KMOLE)</Function>
+            <Function Name="dn2_dt">(((k2on * R) - k2off) * Size_Reaction_Volume / KMOLE)</Function>
+            <Function Name="k1off">(k1on * cs)</Function>
+            <Function Name="k2off">(k2on * cs)</Function>
+            <Function Name="LumpedJ_Barbed" Domain="Compartment">(Size_Reaction_Volume * ((k2on * (c0 - P1 - P2)) - k2off) / KMOLE)</Function>
+            <Function Name="LumpedJ_Pointed" Domain="Compartment">(Size_Reaction_Volume * ((k1on * (c0 - P1 - P2)) - k1off) / KMOLE)</Function>
+            <Function Name="n1">(P1 * Size_Reaction_Volume / (M * KMOLE))</Function>
+            <Function Name="n2">(P2 * Size_Reaction_Volume / (M * KMOLE))</Function>
+            <Function Name="R">(c0 - P1 - P2)</Function>
+            <CompartmentSubDomain Name="Compartment">
+               <BoundaryType Boundary="Xm" Type="Value" />
+               <BoundaryType Boundary="Xp" Type="Value" />
+               <BoundaryType Boundary="Ym" Type="Value" />
+               <BoundaryType Boundary="Yp" Type="Value" />
+               <BoundaryType Boundary="Zm" Type="Value" />
+               <BoundaryType Boundary="Zp" Type="Value" />
+               <OdeEquation Name="P2" SolutionType="Unknown">
+                  <Rate>(LumpedJ_Barbed * KMOLE / Size_Reaction_Volume)</Rate>
+                  <Initial>P2_init_uM</Initial>
+               </OdeEquation>
+               <OdeEquation Name="P1" SolutionType="Unknown">
+                  <Rate>(LumpedJ_Pointed * KMOLE / Size_Reaction_Volume)</Rate>
+                  <Initial>P1_init_uM</Initial>
+               </OdeEquation>
+            </CompartmentSubDomain>
+            <Version Name="Application0_generated" KeyValue="92832216" BranchId="92829848" Archived="0" Date="07-Dec-2014 04:38:24" FromVersionable="false">
+               <Owner Name="adverma" Identifier="92695038" />
+               <GroupAccess Type="1" />
+               <Annotation>cloned from 'Application0_generated' owned by user Alokendra
+</Annotation>
+            </Version>
+         </MathDescription>
+         <Simulation Name="Basic_Run">
+            <Annotation>cloned from 'Basic_Run' owned by user Alokendra
+</Annotation>
+            <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Combined Stiff Solver (IDA/CVODE)">
+               <TimeBound StartTime="0.0" EndTime="150.0" />
+               <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+               <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+               <OutputOptions KeepEvery="1" KeepAtMost="1000" />
+            </SolverTaskDescription>
+            <MathOverrides />
+            <Version Name="Basic_Run" KeyValue="92832239" BranchId="92829874" Archived="0" Date="07-Dec-2014 04:38:24" FromVersionable="false">
+               <Owner Name="adverma" Identifier="92695038" />
+               <GroupAccess Type="1" />
+               <Annotation>cloned from 'Basic_Run' owned by user Alokendra
+</Annotation>
+            </Version>
+         </Simulation>
+         <Simulation Name="GScan_Run">
+            <Annotation>cloned from 'GScan_Run' owned by user Alokendra
+</Annotation>
+            <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Combined Stiff Solver (IDA/CVODE)">
+               <TimeBound StartTime="0.0" EndTime="150.0" />
+               <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+               <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+               <OutputOptions KeepEvery="1" KeepAtMost="1000" />
+            </SolverTaskDescription>
+            <MathOverrides>
+               <Constant Name="G" ConstantArraySpec="1001">-2.0 to 10.0, 7 values</Constant>
+            </MathOverrides>
+            <Version Name="GScan_Run" KeyValue="92832241" BranchId="92829877" Archived="0" Date="07-Dec-2014 04:38:24" FromVersionable="false">
+               <Owner Name="adverma" Identifier="92695038" />
+               <GroupAccess Type="1" />
+               <Annotation>cloned from 'GScan_Run' owned by user Alokendra
+</Annotation>
+            </Version>
+         </Simulation>
+         <Simulation Name="On_Rate_Scan">
+            <Annotation>cloned from 'On_Rate_Scan' owned by user Alokendra
+</Annotation>
+            <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Combined Stiff Solver (IDA/CVODE)">
+               <TimeBound StartTime="0.0" EndTime="150.0" />
+               <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+               <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+               <OutputOptions KeepEvery="1" KeepAtMost="1000" />
+            </SolverTaskDescription>
+            <MathOverrides>
+               <Constant Name="k1on" ConstantArraySpec="1001">0.005 to 5.0, log, 4 values</Constant>
+               <Constant Name="k2on" ConstantArraySpec="1001">0.005 to 5.0, log, 24 values</Constant>
+            </MathOverrides>
+            <Version Name="On_Rate_Scan" KeyValue="92832255" BranchId="92829880" Archived="0" Date="07-Dec-2014 04:42:34" FromVersionable="false">
+               <Owner Name="adverma" Identifier="92695038" />
+               <GroupAccess Type="1" />
+               <Annotation>cloned from 'On_Rate_Scan' owned by user Alokendra
+</Annotation>
+            </Version>
+         </Simulation>
+         <Version Name="Application0" KeyValue="92832232" BranchId="92829866" Archived="0" Date="07-Dec-2014 04:38:24" FromVersionable="false">
+            <Owner Name="adverma" Identifier="92695038" />
+            <GroupAccess Type="1" />
+            <Annotation>cloned from 'Application0' owned by user Alokendra
+</Annotation>
+         </Version>
+         <MicroscopeMeasurement Name="fluor">
+            <ConvolutionKernel Type="ProjectionZKernel" />
+         </MicroscopeMeasurement>
+      </SimulationSpec>
+      <Version Name="BE306Group10_Proj6_Prob1" KeyValue="92839940" BranchId="92839941" Archived="0" Date="07-Dec-2014 14:32:34" FromVersionable="false">
+         <Owner Name="adverma" Identifier="92695038" />
+         <GroupAccess Type="1" />
+         <Annotation>cloned from 'BE306Group10_Proj6_Prob2' owned by user Alokendra
+</Annotation>
+      </Version>
+      <pathwayModel>
+         <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bp="http://www.biopax.org/release/biopax-level3.owl#" version="3.0" />
+      </pathwayModel>
+      <relationshipModel>
+         <RMNS version="3.0" />
+      </relationshipModel>
+      <vcmetadata>
+         <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" />
+         <nonrdfAnnotationList />
+         <uriBindingList />
+      </vcmetadata>
+   </BioModel>
+</vcml>
+
