@@ -179,7 +179,7 @@ public class SEDMLExporter {
 				String modelFileNameRel = sBaseFileName+"_sedml.vcml";
 				String modelFileNameAbs = Paths.get(savePath,modelFileNameRel).toString();
 				XmlUtil.writeXMLStringToFile(vcmlString, modelFileNameAbs, false);
-				modelFilePathStrAbsoluteList.add(modelFileNameAbs);
+				modelFilePathStrAbsoluteList.add(modelFileNameRel);
 				for (int i = 0; i < vcBioModel.getSimulationContexts().length; i++) {
 					writeModelVCML(modelFileNameRel, vcBioModel.getSimulationContext(i));
 					exportSimulations(i, vcBioModel.getSimulationContext(i), null, null, bFromCLI);;
