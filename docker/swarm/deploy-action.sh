@@ -159,14 +159,20 @@ if [ "$install_singularity" == "true" ]; then
 		exit 1
 	fi
 
-	scp "./${batch_singularity_filename} $ssh_user@$manager_node:${slurm_singularity_central_dir}"
+	if ! scp "./${batch_singularity_filename}" "$ssh_user@$manager_node:${slurm_singularity_central_dir}"; then
+    echo "failed to copy batch singularity image to server"
+    exit 1
+  fi
 
 	if [ ! -e "./${opt_singularity_filename}" ]; then
 		echo "failed to find local opt singularity image file $opt_singularity_filename in ./singularity-vm directory"
 		exit 1
 	fi
 
-	scp "./${opt_singularity_filename} $ssh_user@$manager_node:${slurm_singularity_central_dir}"
+	if ! scp "./${opt_singularity_filename}" "$ssh_user@$manager_node:${slurm_singularity_central_dir}"; then
+	  echo "failed to copy opt singularity image to server"
+	  exit 1
+	fi
 
 	echo "popd"
 	popd || (echo "popd failed"; exit 1)
