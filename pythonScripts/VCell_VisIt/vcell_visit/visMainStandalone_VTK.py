@@ -1,10 +1,7 @@
-
-import sys, os
-sys.path.append(os.path.dirname(__file__))
-
 import vcell_visit.visgui.visQt as visQt
+
 visQt.initPyQt4()
-#visQt.initPyside()
+visQt.initPyside()
 QtCore = visQt.QtCore
 QtGui = visQt.QtGui
 

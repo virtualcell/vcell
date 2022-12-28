@@ -1,5 +1,6 @@
-import sys, os
-
+from PySide6 import QtCore, QtGui, QtUiTools, QtWidgets
+from PySide6.QtCore import QObject, QPoint, QSize
+from PySide6.QtCore import QMetaMethod, SIGNAL, SLOT, QIODeviceBase, QFile
 from vcell_visit import visQt, vcellProxy
 
 QtCore = visQt.QtCore
@@ -11,15 +12,14 @@ import visGuiQueryControls
 import visDataSetChooserDialog
 from vcell_visit.visContext import visContextAbstract
 import visDataContext
-from Queue import Queue
 from threading import Lock
 
 
 # adapted from visitusers.org PySide_Recipes page.
-class MouseEventFilter(QtCore.QObject):      
-    pressed  = QtCore.Signal(QtCore.QPoint,QtCore.QSize)
-    moved    = QtCore.Signal(QtCore.QPoint,QtCore.QSize)
-    released = QtCore.Signal(QtCore.QPoint,QtCore.QSize)
+class MouseEventFilter(QObject):
+    pressed  = QtCore.Signal(QPoint,QSize)
+    moved    = QtCore.Signal(QPoint,QSize)
+    released = QtCore.Signal(QPoint,QSize)
  
     def __init__(self, visContext):
         super(MouseEventFilter,self).__init__()

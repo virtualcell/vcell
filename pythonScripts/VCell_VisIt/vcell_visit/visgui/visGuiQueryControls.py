@@ -1,17 +1,21 @@
-from vcell_visit import visQt
+from PySide6 import QtCore, QtGui
+from PySide6.QtWidgets import QWidget, QCheckBox
 
-QtCore = visQt.QtCore
-QtGui = visQt.QtGui
 
-class queryControl(QtGui.QWidget):
+class QueryControl(QWidget):
     
-    def __init__(self, parent):
-        super(queryControl,self).__init__(parent)
-        assert isinstance(parent,QtGui.QWidget)
-        self.initUI()
+    def __init__(self, parent: QWidget):
+        super(QueryControl, self).__init__(parent)
+        self._clearPicksButton = None
+        self._setMouseoverPickModeCheckBox = None
+        self._setPickModeCheckBox = None
+        self._doLineoutButton = None
+        self._doTimeSeriesButton = None
+        assert isinstance(parent, QWidget)
+        self.init_ui()
   
-    def initUI(self):
-        self.setObjectName("queryControlWidget")
+    def init_ui(self):
+        self.setObjectName("QueryControlWidget")
         selfSizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Minimum)
         selfSizePolicy.setHorizontalStretch(0)
         selfSizePolicy.setVerticalStretch(0)
@@ -56,7 +60,6 @@ class queryControl(QtGui.QWidget):
         self._clearPicksButton.setObjectName("clearPicks")
         self._clearPicksButton.setText("Clear picks.")
         self._clearPicksButton.setVisible(False)
-        
 
         gridLayout.addWidget(self._clearPicksButton, 2, 0, 1, 1)
 
