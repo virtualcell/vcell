@@ -2,23 +2,28 @@ package org.vcell.sbml;
 
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.mapping.MappingException;
 import cbit.vcell.resource.NativeLib;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
-import cbit.vcell.xml.XmlParseException;
 import com.google.common.io.Files;
-import org.jlibsedml.SEDMLDocument;
-import org.junit.*;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.vcell.sbml.vcell.SBMLExporter;
-import org.vcell.sedml.*;
+import org.vcell.sedml.ModelFormat;
+import org.vcell.sedml.SEDMLExporter;
+import org.vcell.sedml.SEDMLTaskRecord;
+import org.vcell.sedml.TaskResult;
 
-import java.beans.PropertyVetoException;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -65,7 +70,8 @@ public class SEDMLExporterTest {
 		UNKNOWN_IDENTIFIER,
 		SBML_IMPORT_FAILURE,
 		DIVIDE_BY_ZERO,
-		UNSUPPORTED_NONSPATIAL_STOCH_HISTOGRAM
+		UNSUPPORTED_NONSPATIAL_STOCH_HISTOGRAM,
+		SEDML_UNSUPPORTED_ENTITY
 	};
 
 	public enum SEDML_FAULT {
@@ -244,8 +250,7 @@ public class SEDMLExporterTest {
 	public static Map<String, FAULT> knownFaults_VCML() {
 		HashMap<String, FAULT> faults = new HashMap();
 		faults.put("biomodel_123269393.vcml", FAULT.MATHOVERRIDES_INVALID); // Kf_r7 - biomodel needs fixing
-		faults.put("biomodel_124562627.vcml", FAULT.NULL_POINTER_EXCEPTION); // CSG/analytic geometry issue
-		faults.put("biomodel_156134818.vcml", FAULT.UNKNOWN_IDENTIFIER);  // species named I conflicts with membrane parameter I
+		faults.put("biomodel_188880263.vcml", FAULT.SEDML_UNSUPPORTED_ENTITY); // Unsupported entity in VCML model export: class cbit.vcell.mapping.ParameterContext$LocalParameter"
 		faults.put("biomodel_220138948.vcml", FAULT.MATHOVERRIDES_INVALID); // Kf_Uptake invalid override.
 		faults.put("biomodel_84982474.vcml", FAULT.UNSUPPORTED_NONSPATIAL_STOCH_HISTOGRAM); // not supported nonspatial histogram
 		return faults;
@@ -343,14 +348,14 @@ public class SEDMLExporterTest {
 //		Predicate<String> outOfMemoryFilter = (t) -> !outOfMemorySet().contains(t);
 //		Predicate<String> allTestsFilter = (t) -> true;
 //		Predicate<String> allFailures = (t) -> knownFaults().containsKey(t) && skipFilter.test(t);
-		Predicate<String> oneModelFilter = (t) -> t.equals("lumped_reaction_no_size_in_rate.vcml");
+		Predicate<String> oneModelFilter = (t) -> t.equals("biomodel_101981216.vcml");
 		Predicate<String> skipFilter_SBML = (t) -> !outOfMemorySet(ModelFormat.SBML).contains(t) && !largeFileSet().contains(t);
 		Predicate<String> skipFilter_VCML = (t) -> !outOfMemorySet(ModelFormat.VCML).contains(t) && !largeFileSet().contains(t);
-		List<TestCase> testCases = Stream.concat(
-				Arrays.stream(VcmlTestSuiteFiles.getVcmlTestCases()).filter(skipFilter_SBML).map(fname -> new TestCase(fname, ModelFormat.SBML)),
-				Arrays.stream(VcmlTestSuiteFiles.getVcmlTestCases()).filter(skipFilter_VCML).map(fname -> new TestCase(fname, ModelFormat.VCML)))
-				.collect(Collectors.toList());
+		Stream<TestCase> sbml_test_cases = Arrays.stream(VcmlTestSuiteFiles.getVcmlTestCases()).filter(skipFilter_SBML).map(fname -> new TestCase(fname, ModelFormat.SBML));
+		Stream<TestCase> vcml_test_cases = Arrays.stream(VcmlTestSuiteFiles.getVcmlTestCases()).filter(skipFilter_VCML).map(fname -> new TestCase(fname, ModelFormat.VCML));
+		List<TestCase> testCases = Stream.concat(vcml_test_cases, sbml_test_cases).collect(Collectors.toList());
 		return testCases;
+		//return Arrays.asList(new TestCase("biomodel_101981216.vcml", ModelFormat.VCML));
 	}
 
 	@Test
@@ -364,10 +369,10 @@ public class SEDMLExporterTest {
 
 		bioModel.updateAll(false);
 
-		if (slowTestSet(testCase.modelFormat).contains(testCase.filename)) {
+//		if (slowTestSet(testCase.modelFormat).contains(testCase.filename)) {
 			// skip SEDML export processing if this is a slow model or uses too much memory
-			return;
-		}
+//			return;
+//		}
 
 		int sedmlLevel = 1;
 		int sedmlVersion = 2;
@@ -426,6 +431,10 @@ public class SEDMLExporterTest {
 		SBMLExporter.MemoryVCLogger memoryVCLogger = new SBMLExporter.MemoryVCLogger();
 
 		try {
+			if (testCase.modelFormat == ModelFormat.VCML){
+				System.err.println("skipping re-importing SEDML for this test case, not yet supported for VCML");
+				return;
+			}
 			List<BioModel> bioModels = XmlHelper.readOmex(omexFile, memoryVCLogger);
 			Assert.assertTrue(memoryVCLogger.highPriority.size() == 0);
 

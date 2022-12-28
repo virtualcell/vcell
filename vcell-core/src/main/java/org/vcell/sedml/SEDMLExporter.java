@@ -52,11 +52,13 @@ import org.vcell.util.Pair;
 import org.vcell.util.TokenMangler;
 
 import javax.xml.stream.XMLStreamException;
+import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.*;
-
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 
 public class SEDMLExporter {
@@ -183,7 +185,7 @@ public class SEDMLExporter {
 				for (int i = 0; i < vcBioModel.getSimulationContexts().length; i++) {
 					writeModelVCML(modelFileNameRel, vcBioModel.getSimulationContext(i));
 					sedmlRecorder.addTaskLog(vcBioModel.getSimulationContext(i).getName(), TaskType.SIMCONTEXT, TaskResult.SUCCEEDED, null);
-					exportSimulations(i, vcBioModel.getSimulationContext(i), null, null, bFromCLI);;
+					exportSimulations(i, vcBioModel.getSimulationContext(i), null, null, bFromCLI, vcmlLanguageURN);
 				}
 			}
 			if (modelFormat == ModelFormat.SBML) {
@@ -239,7 +241,7 @@ public class SEDMLExporter {
 	
 						if (!sbmlExportFailed) {
 							// simContext was exported succesfully, now we try to export its simulations
-							exportSimulations(simContextCnt, simContext, sbmlString, l2gMap, bFromCLI);
+							exportSimulations(simContextCnt, simContext, sbmlString, l2gMap, bFromCLI, sbmlLanguageURN);
 						} else {
 							if (bFromCLI) {
 								continue;
@@ -273,7 +275,7 @@ public class SEDMLExporter {
 	}
 
 	private void exportSimulations(int simContextCnt, SimulationContext simContext,
-			String sbmlString, Map<Pair<String, String>, String> l2gMap, boolean bFromCLI) throws Exception {
+			String sbmlString, Map<Pair<String, String>, String> l2gMap, boolean bFromCLI, String languageURN) throws Exception {
 		// -------
 		// create sedml objects (simulation, task, datagenerators, report, plot) for each simulation in simcontext 
 		// -------	
@@ -308,7 +310,7 @@ public class SEDMLExporter {
 				Set<String> dataGeneratorTasksSet = new LinkedHashSet<>();	// tasks not referenced as subtasks by any other (repeated) task; only these will have data generators
 				MathOverrides mathOverrides = vcSimulation.getMathOverrides(); // need to clone so we can manipulate expressions
 				createSEDMLtasks(simContextCnt, l2gMap, simContextName, simContextId,
-						vcSimulation, utcSim, dataGeneratorTasksSet, mathOverrides);
+						vcSimulation, utcSim, dataGeneratorTasksSet, mathOverrides, languageURN);
 				
 				// 4 ------->
 				// Create DataGenerators
@@ -662,7 +664,7 @@ public class SEDMLExporter {
 	
 	private void createSEDMLtasks(int simContextCnt, Map<Pair<String, String>, String> l2gMap, String simContextName,
 			String simContextId, Simulation vcSimulation, UniformTimeCourse utcSim,
-			Set<String> dataGeneratorTasksSet, MathOverrides mathOverrides)
+			Set<String> dataGeneratorTasksSet, MathOverrides mathOverrides, String languageURN)
 			throws ExpressionBindingException, ExpressionException, DivideByZeroException, MappingException {
 		if(mathOverrides != null && mathOverrides.hasOverrides()) {
 			String[] overridenConstantNames = mathOverrides.getOverridenConstantNames();
@@ -722,7 +724,7 @@ public class SEDMLExporter {
 				// create new model with change for each parameter that has override; add simple task
 				String overriddenSimContextId = simContextId + "_" + overrideCount;
 				String overriddenSimContextName = simContextName + " modified";
-				Model sedModel = new Model(overriddenSimContextId, overriddenSimContextName, sbmlLanguageURN, "#"+simContextId);
+				Model sedModel = new Model(overriddenSimContextId, overriddenSimContextName, languageURN, "#"+simContextId);
 				overrideCount++;
 
 				int variableCount = 0;
@@ -798,7 +800,7 @@ public class SEDMLExporter {
 				// create new model with change for each unscanned parameter that has override
 				String overriddenSimContextId = simContextId + "_" + overrideCount;
 				String overriddenSimContextName = simContextName + " modified";
-				Model sedModel = new Model(overriddenSimContextId, overriddenSimContextName, sbmlLanguageURN, "#"+simContextId);
+				Model sedModel = new Model(overriddenSimContextId, overriddenSimContextName, languageURN, "#"+simContextId);
 				overrideCount++;
 
 				String taskId = "tsk_" + simContextCnt + "_" + simCount;
@@ -1255,7 +1257,7 @@ public class SEDMLExporter {
 					((Membrane.MembraneVoltage)ste).getMembrane().getName(), "InitialVoltage"));
 		} else {
 			logger.error("redundant error log: "+"Entity should be SpeciesContext, Structure, ModelParameter, KineticsParameter, or MembraneVoltage : " + ste.getClass());
-			throw new RuntimeException("Unsupported entity in SBML model export: "+ste.getClass());
+			throw new RuntimeException("Unsupported entity in VCML model export: "+ste.getClass());
 		}
 		return targetXpath;
 	}
@@ -1342,9 +1344,23 @@ public class SEDMLExporter {
 		String sPath = FileUtils.getFullPathNoEndSeparator(exportFileOrDirectory.getAbsolutePath());
 		String sFile = FileUtils.getBaseName(exportFileOrDirectory.getAbsolutePath());
 
+		Predicate<Simulation> simulationExportFilter = s -> true;
+		List<Simulation> simsToExport = Arrays.stream(bioModel.getSimulations()).filter(simulationExportFilter).collect(Collectors.toList());
+
+		// we replace the obsolete solver with the fully supported equivalent
+		for (Simulation simulation : simsToExport) {
+			if (simulation.getSolverTaskDescription().getSolverDescription().equals(SolverDescription.FiniteVolume)) {
+				try {
+					simulation.getSolverTaskDescription().setSolverDescription(SolverDescription.SundialsPDE);
+				} catch (PropertyVetoException e) {
+					logger.error("Failed to replace obsolete solver", e);
+				}
+			}
+		}
+
 		SEDMLExporter sedmlExporter;
 		if (bioModel != null) {
-			sedmlExporter = new SEDMLExporter(sFile, bioModel, sedmlLevel, sedmlVersion, null);
+			sedmlExporter = new SEDMLExporter(sFile, bioModel, sedmlLevel, sedmlVersion, simsToExport);
 			resultString = sedmlExporter.getSEDMLDocument(sPath, sFile, modelFormat, bFromCLI, bRoundTripSBMLValidation).writeDocumentToString();
 
 			// convert biomodel to vcml and save to file.
