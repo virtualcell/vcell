@@ -13,9 +13,11 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.vcell.sbml.VcmlTestSuiteFiles;
+import org.vcell.test.MathGen_IT;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -23,6 +25,7 @@ import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+@Category(MathGen_IT.class)
 @RunWith(Parameterized.class)
 public class MathGenCompareTest {
 
