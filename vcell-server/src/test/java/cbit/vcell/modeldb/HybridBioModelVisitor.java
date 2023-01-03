@@ -7,6 +7,8 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.vcell.test.Fast;
 import org.vcell.util.document.User;
 
 import cbit.vcell.biomodel.BioModel;
@@ -14,6 +16,7 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.solver.Simulation;
 
+@Category(Fast.class)
 public class HybridBioModelVisitor extends VisitorAdapter implements VCMultiBioVisitor { 
 	/**
 	 * user key to use for tests

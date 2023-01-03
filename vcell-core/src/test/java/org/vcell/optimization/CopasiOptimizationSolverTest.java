@@ -16,9 +16,11 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.vcell.optimization.jtd.OptProblem;
 import org.vcell.optimization.jtd.Vcellopt;
 import org.vcell.optimization.jtd.VcelloptStatus;
+import org.vcell.test.Fast;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.ProgressDialogListener;
 
@@ -30,6 +32,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
+@Category(Fast.class)
 public class CopasiOptimizationSolverTest {
 
     @BeforeClass

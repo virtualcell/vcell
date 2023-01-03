@@ -8,11 +8,14 @@ import org.junit.Test;
 
 import cbit.vcell.simdata.PortableCommand;
 import cbit.vcell.simdata.PortableCommandWrapper;
+import org.junit.experimental.categories.Category;
+import org.vcell.test.Fast;
 
 /**
  * test {@link PortableCommandWrapper}
  * @author gweatherby
  */
+@Category(Fast.class)
 public class PortableCommandWrapperTest {
 	
 	private static final String FILE = "z:/t.sub";

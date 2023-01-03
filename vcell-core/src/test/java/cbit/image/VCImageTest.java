@@ -17,9 +17,11 @@ import cbit.vcell.xml.XmlParseException;
 import com.google.common.io.Files;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.vcell.sbml.SbmlException;
 import org.vcell.sbml.vcell.SBMLExporter;
 import org.vcell.sbml.vcell.SBMLImporter;
+import org.vcell.test.Fast;
 import org.vcell.util.Extent;
 
 import javax.xml.stream.XMLStreamException;
@@ -29,6 +31,7 @@ import java.io.StringBufferInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Random;
 
+@Category(Fast.class)
 public class VCImageTest {
 
     @Test

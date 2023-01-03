@@ -3,9 +3,12 @@ package org.vcell.movingboundary;
 import static junit.framework.Assert.assertTrue;
 
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.vcell.test.Fast;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.DataAccessException;
 
+@Category(Fast.class)
 public class TestMovingBoundarySolverSpec {
 
 	@Test

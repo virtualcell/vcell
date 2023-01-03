@@ -4,9 +4,11 @@ import cbit.util.xml.VCLogger;
 import cbit.vcell.biomodel.BioModel;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.vcell.sbml.vcell.SBMLImporter;
+import org.vcell.test.SBML_IT;
 
 import javax.xml.stream.XMLStreamException;
 import java.io.IOException;
@@ -16,6 +18,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.stream.Collectors;
 
+@Category(SBML_IT.class)
 @RunWith(Parameterized.class)
 public class SBMLTestSuiteImportTest {
 	private Integer testCase;

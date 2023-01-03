@@ -2,6 +2,8 @@ package org.vcell.sbml;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.vcell.test.Fast;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;
@@ -9,6 +11,7 @@ import java.util.Arrays;
 import java.util.function.Predicate;
 
 
+@Category(Fast.class)
 public class VcmlTestSuiteFiles {
 
     private final static String[] allTestFiles = new String[]{

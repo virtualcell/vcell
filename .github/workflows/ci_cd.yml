@@ -13,8 +13,8 @@ env:
   python-version: "3.9"
 
 jobs:
-  CI:
-    name: CI
+  CI-Build:
+    name: CI-build
     runs-on: ubuntu-20.04
     if: ${{ github.event_name == 'push' }}
     steps:
@@ -57,7 +57,7 @@ jobs:
         run: |
           mvn -version
           java -version
-          mvn --batch-mode clean install dependency:copy-dependencies
+          mvn --batch-mode clean install dependency:copy-dependencies -DskipTests=true
 
       - name: Test building of docker image
         run: |
@@ -68,6 +68,59 @@ jobs:
       - name: Setup tmate session
         uses: mxschmitt/action-tmate@v3
         if: ${{ failure() }}
+
+  CI-Test:
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        test-group: [Fast, MathGen_IT, SBML_IT, SEDML_SBML_IT, SEDML_VCML_IT]
+    if: ${{ github.event_name == 'push' }}
+    name: CI-Test-group-${{ matrix.test-group }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.python-version }}
+          cache: "pip"
+
+      - name: Install Dependencies
+        run: pip install -r requirements.txt
+
+      - name: build vcell-cli-utils package
+        run: |
+          cd vcell-cli-utils
+          poetry install
+
+      - name: build vcell-admin package
+        run: |
+          cd docker/swarm/vcell-admin
+          poetry install
+
+      - name: build vcell-opt package
+        run: |
+          cd pythonProject/vcell-opt
+          poetry install
+          poetry run python -m pytest
+
+      - name: setup java 8 with maven cache
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '8'
+          cache: 'maven'
+
+      - name: Add Linux dependencies
+        shell: bash
+        run: |
+          mvn -version
+          java -version
+          mvn --batch-mode clean install dependency:copy-dependencies -Dgroups="org.vcell.test.${{ matrix.test-group }}"
+
+#      - name: Setup tmate session
+#        uses: mxschmitt/action-tmate@v3
+#        if: ${{ failure() }}
 
   CD:
     name: CD

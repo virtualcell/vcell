@@ -2,6 +2,8 @@ package cbit.vcell.message.server.htc;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.vcell.test.Fast;
 import org.vcell.util.document.KeyValue;
 
 import cbit.vcell.message.server.htc.HtcProxy.HtcJobInfo;
@@ -10,6 +12,7 @@ import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.server.HtcJobID;
 import cbit.vcell.server.HtcJobID.BatchSystemType;
 
+@Category(Fast.class)
 public class HtcProxyTest {
 
 	@Test
