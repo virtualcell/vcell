@@ -9,11 +9,14 @@ import javax.xml.stream.XMLStreamException;
 
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.vcell.sbml.vcell.SBMLImporter;
 
 import cbit.util.xml.VCLogger;
 import cbit.vcell.biomodel.BioModel;
+import org.vcell.test.SBML_IT;
 
+@Category(SBML_IT.class)
 public class SBMLImporterTest {
 
 	public enum FAULT {
