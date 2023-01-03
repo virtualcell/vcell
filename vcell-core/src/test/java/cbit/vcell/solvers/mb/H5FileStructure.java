@@ -15,6 +15,8 @@
 package cbit.vcell.solvers.mb;
 
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.vcell.test.Fast;
 import org.vcell.util.BeanUtils;
 
 import ncsa.hdf.object.Dataset;
@@ -48,6 +50,7 @@ import ncsa.hdf.object.h5.H5File;
  * @author Peter X. Cao
  * @version 2.4
  */
+@Category(Fast.class)
 public class H5FileStructure extends H5Client {
     private static String fname  = FILE;
     private static long[] dims2D = { 20, 10 };

@@ -11,11 +11,14 @@ import org.junit.Test;
 import cbit.vcell.messaging.db.SimulationJobTable;
 import cbit.vcell.server.HtcJobID;
 import cbit.vcell.server.HtcJobID.BatchSystemType;
+import org.junit.experimental.categories.Category;
+import org.vcell.test.Fast;
 
 /**
  * Test {@link HtcJobID#compareEqual(org.vcell.util.Matchable)},
  * {@link HtcJobID#equals(Object)} and {@link HtcJobID#hashCode()}
  */
+@Category(Fast.class)
 public class JobIdTest {
 
 	Random r = new Random( );

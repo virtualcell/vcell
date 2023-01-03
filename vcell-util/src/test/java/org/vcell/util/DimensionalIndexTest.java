@@ -5,7 +5,10 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.vcell.test.Fast;
 
+@Category(Fast.class)
 public class DimensionalIndexTest {
 	
 	private static final int mX = 3;

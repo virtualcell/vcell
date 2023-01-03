@@ -10,8 +10,11 @@ import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.vcell.test.Fast;
 import org.vcell.util.collections.VCCollections.Delta;
 
+@Category(Fast.class)
 public class VCCollectionsTest {
 	private List<Integer> a = new ArrayList<>();
 	private List<Integer> b = new ArrayList<>();

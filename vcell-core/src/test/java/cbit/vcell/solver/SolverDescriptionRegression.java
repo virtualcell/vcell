@@ -22,6 +22,10 @@ import org.junit.Test;
 
 import cbit.vcell.math.ProblemRequirements;
 import cbit.vcell.solver.SolverDescription.SolverFeature;
+import org.junit.experimental.categories.Category;
+import org.vcell.test.Fast;
+
+@Category(Fast.class)
 public class SolverDescriptionRegression {
 	public static final String SOLVER_SEP = "BEGIN Solver";
 	private static String[] SolverNames = { 

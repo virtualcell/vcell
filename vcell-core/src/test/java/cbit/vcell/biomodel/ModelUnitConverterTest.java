@@ -21,6 +21,8 @@ import cbit.vcell.xml.XmlParseException;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.vcell.test.Fast;
 import org.vcell.util.Pair;
 
 import java.beans.PropertyVetoException;
@@ -32,6 +34,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+@Category(Fast.class)
 public class ModelUnitConverterTest {
 
     @Test

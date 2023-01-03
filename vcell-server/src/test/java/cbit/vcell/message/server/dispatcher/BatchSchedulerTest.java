@@ -6,6 +6,8 @@ import java.util.Arrays;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.vcell.test.Fast;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCellServerID;
@@ -15,6 +17,7 @@ import cbit.vcell.message.server.dispatcher.BatchScheduler.SchedulerDecisions;
 import cbit.vcell.message.server.htc.HtcProxy.PartitionStatistics;
 import cbit.vcell.server.SimulationJobStatus.SchedulerStatus;
 
+@Category(Fast.class)
 public class BatchSchedulerTest {
 
 	VCellServerID relSite = VCellServerID.getServerID("REL");

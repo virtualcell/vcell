@@ -3,7 +3,10 @@ package cbit.vcell.solver;
 import org.junit.Test;
 
 import cbit.vcell.math.ProblemRequirements;
+import org.junit.experimental.categories.Category;
+import org.vcell.test.Fast;
 
+@Category(Fast.class)
 public class TestMathDescription implements ProblemRequirements {
 
 	/* (non-Javadoc)

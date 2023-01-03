@@ -16,11 +16,14 @@ import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.vcell.sbml.vcell.StructureSizeSolver;
+import org.vcell.test.Fast;
 
 import java.io.*;
 import java.util.stream.Collectors;
 
+@Category(Fast.class)
 public class StructureSizeSolverTest {
 
     @Test

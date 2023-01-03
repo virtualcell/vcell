@@ -9,12 +9,15 @@ import javax.swing.SwingUtilities;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.vcell.test.Fast;
 
 /**
  * check VCellThreadChecker methods
  * @author gweatherby
  *
  */
+@Category(Fast.class)
 public class VCellThreadCheckerTest {
 	PrintStream oldOut = null;
 	PrintStream oldErr = null;

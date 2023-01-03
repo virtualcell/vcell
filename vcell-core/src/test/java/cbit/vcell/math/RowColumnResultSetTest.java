@@ -14,11 +14,10 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import cbit.vcell.parser.Expression;
-/**
- * Insert the type's description here.
- * Creation date: (6/25/2001 3:05:25 PM)
- * @author: John Wagner
- */
+import org.junit.experimental.categories.Category;
+import org.vcell.test.Fast;
+
+@Category(Fast.class)
 public class RowColumnResultSetTest {
 
 	@Test

@@ -4,8 +4,10 @@ import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.resource.NativeLib;
 import cbit.vcell.resource.PropertyLoader;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.vcell.cli.CLIPythonManager;
 import org.vcell.cli.CLIRecorder;
+import org.vcell.test.Fast;
 import picocli.CommandLine;
 
 import java.io.File;
@@ -14,6 +16,7 @@ import java.nio.file.Files;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
+@Category(Fast.class)
 public class ExecuteImplTest {
 
     @Test
