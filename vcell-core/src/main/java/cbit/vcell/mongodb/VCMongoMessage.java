@@ -40,6 +40,7 @@ import cbit.vcell.solver.server.SimulationMessagePersistent;
 import cbit.vcell.solver.server.SolverEvent;
 import cbit.vcell.solvers.AbstractSolver;
 
+@Deprecated
 public final class VCMongoMessage {
 	public static boolean enabled = true;
 	public static boolean bTrace = false;
@@ -197,7 +198,7 @@ public final class VCMongoMessage {
 				dbObject.put(MongoMessage_serviceArgs, Arrays.asList(args).toString());
 			}
 	
-			VCMongoDbDriver.getInstance().addMessage(Level.INFO, new VCMongoMessage(dbObject));
+			VCMongoDbDriver.getInstance().addMessage(Level.INFO, new VCMongoMessage(dbObject),"service startup");
 		} catch (Exception e){
 			lg.error(e.getMessage(),e);
 		}
@@ -241,7 +242,7 @@ public final class VCMongoMessage {
 			
 			dbObject.put(MongoMessage_info, infoString);
 							
-			VCMongoDbDriver.getInstance().addMessage(Level.INFO, new VCMongoMessage(dbObject));
+			VCMongoDbDriver.getInstance().addMessage(Level.INFO, new VCMongoMessage(dbObject), infoString);
 		} catch (Exception e){
 			lg.error(e.getMessage(),e); 
 		}
@@ -261,7 +262,7 @@ public final class VCMongoMessage {
 			
 			dbObject.put(MongoMessage_info, infoString);
 							
-			VCMongoDbDriver.getInstance().addMessage(Level.TRACE, new VCMongoMessage(dbObject));
+			VCMongoDbDriver.getInstance().addMessage(Level.TRACE, new VCMongoMessage(dbObject), infoString);
 		} catch (Exception e){
 			lg.error(e.getMessage(),e); 
 		}
@@ -278,7 +279,7 @@ public final class VCMongoMessage {
 			
 			addObject(dbObject, userLoginInfo);
 							
-			VCMongoDbDriver.getInstance().addMessage(Level.INFO, new VCMongoMessage(dbObject));
+			VCMongoDbDriver.getInstance().addMessage(Level.INFO, new VCMongoMessage(dbObject), "clientConnectionNew");
 		} catch (Exception e){
 			lg.error(e.getMessage(),e); 
 		}
@@ -295,7 +296,7 @@ public final class VCMongoMessage {
 			
 			addObject(dbObject, userLoginInfo);
 							
-			VCMongoDbDriver.getInstance().addMessage(Level.INFO, new VCMongoMessage(dbObject));
+			VCMongoDbDriver.getInstance().addMessage(Level.INFO, new VCMongoMessage(dbObject), "clientConnectionClosing");
 		} catch (Exception e){
 			lg.error(e.getMessage(),e); 
 		}
@@ -321,7 +322,7 @@ public final class VCMongoMessage {
 			
 			addObject(dbObject, userLoginInfo);
 
-			VCMongoDbDriver.getInstance().addMessage(Level.ERROR, new VCMongoMessage(dbObject));
+			VCMongoDbDriver.getInstance().addMessage(Level.ERROR, new VCMongoMessage(dbObject), "clientException: "+exception.getMessage());
 		} catch (Exception e){
 			lg.error(e.getMessage(),e);
 		}
@@ -346,7 +347,7 @@ public final class VCMongoMessage {
 			dbObject.put(MongoMessage_exceptionMessage,exception.getMessage());
 			dbObject.put(MongoMessage_exceptionStack,stack);
 			
-			VCMongoDbDriver.getInstance().addMessage(Level.ERROR, new VCMongoMessage(dbObject));
+			VCMongoDbDriver.getInstance().addMessage(Level.ERROR, new VCMongoMessage(dbObject), "exception: "+exception.getMessage());
 		} catch (Exception e){
 			lg.error(e.getMessage(),e); 
 		}
@@ -369,7 +370,7 @@ public final class VCMongoMessage {
 			dbObject.put(MongoMessage_exceptionMessage,message);
 			dbObject.put(MongoMessage_exceptionStack,stack);
 	
-			VCMongoDbDriver.getInstance().addMessage(Level.ERROR, new VCMongoMessage(dbObject));
+			VCMongoDbDriver.getInstance().addMessage(Level.ERROR, new VCMongoMessage(dbObject), "exception: "+message);
 		} catch (Exception e){
 			e.printStackTrace(System.out);
 			// cannot put exception to SessionLog ... infinite recursion.
@@ -399,7 +400,7 @@ public final class VCMongoMessage {
 			addObject(newSimJobStatusObject, newSimulationJobStatus);
 			dbObject.put(MongoMessage_newSimJobStatus, newSimJobStatusObject);
 	
-			VCMongoDbDriver.getInstance().addMessage(Level.WARN, new VCMongoMessage(dbObject));
+			VCMongoDbDriver.getInstance().addMessage(Level.WARN, new VCMongoMessage(dbObject), "simJobStatusInsertedAlready: "+newSimulationJobStatus);
 		} catch (Exception e){
 			lg.error(e.getMessage(),e);
 		}
@@ -426,7 +427,7 @@ public final class VCMongoMessage {
 				addObject(dbObject,jobStatus);
 			}
 			
-			VCMongoDbDriver.getInstance().addMessage(Level.WARN, new VCMongoMessage(dbObject));
+			VCMongoDbDriver.getInstance().addMessage(Level.WARN, new VCMongoMessage(dbObject), "zombieJob: "+jobStatus+": "+failureMessage+": "+htcJobID);
 		} catch (Exception e){
 			lg.error(e.getMessage(),e);
 		}
@@ -446,7 +447,7 @@ public final class VCMongoMessage {
 			
 			addObject(dbObject,jobStatus);
 			
-			VCMongoDbDriver.getInstance().addMessage(Level.WARN, new VCMongoMessage(dbObject));
+			VCMongoDbDriver.getInstance().addMessage(Level.WARN, new VCMongoMessage(dbObject), "obsoleteJob: "+jobStatus+": "+failureMessage);
 		} catch (Exception e){
 			lg.error(e.getMessage(),e);
 		}
@@ -463,7 +464,7 @@ public final class VCMongoMessage {
 
 			addObject(dbObject,newSimulationJobStatus);
 			
-			VCMongoDbDriver.getInstance().addMessage(Level.INFO, new VCMongoMessage(dbObject));
+			VCMongoDbDriver.getInstance().addMessage(Level.INFO, new VCMongoMessage(dbObject), "simJobStatusInsert: "+newSimulationJobStatus);
 		} catch (Exception e){
 			lg.error(e.getMessage(),e);
 		}
@@ -480,7 +481,7 @@ public final class VCMongoMessage {
 
 			addObject(dbObject,newSimulationJobStatus);
 			
-			VCMongoDbDriver.getInstance().addMessage(Level.INFO, new VCMongoMessage(dbObject));
+			VCMongoDbDriver.getInstance().addMessage(Level.INFO, new VCMongoMessage(dbObject), "simJobStatusInsert: "+newSimulationJobStatus);
 		} catch (Exception e){
 			lg.error(e.getMessage(),e);
 		}
@@ -497,7 +498,7 @@ public final class VCMongoMessage {
 
 			addObject(dbObject,newSimulationJobStatus);
 				
-			VCMongoDbDriver.getInstance().addMessage(Level.INFO, new VCMongoMessage(dbObject));
+			VCMongoDbDriver.getInstance().addMessage(Level.INFO, new VCMongoMessage(dbObject), "SimJobStatusUpdate: "+newSimulationJobStatus);
 		} catch (Exception e){
 			lg.error(e.getMessage(),e);
 		}
@@ -514,7 +515,7 @@ public final class VCMongoMessage {
 
 			addObject(dbObject,newSimulationJobStatus);
 				
-			VCMongoDbDriver.getInstance().addMessage(Level.INFO, new VCMongoMessage(dbObject));
+			VCMongoDbDriver.getInstance().addMessage(Level.INFO, new VCMongoMessage(dbObject), "SimJobStatusUpdate: "+newSimulationJobStatus);
 		} catch (Exception e){
 			lg.error(e.getMessage(),e);
 		}
@@ -532,7 +533,7 @@ public final class VCMongoMessage {
 
 			addObject(dbObject,solverEvent);
 				
-			VCMongoDbDriver.getInstance().addMessage(Level.INFO, new VCMongoMessage(dbObject));
+			VCMongoDbDriver.getInstance().addMessage(Level.INFO, new VCMongoMessage(dbObject), "SolverEvent");
 		} catch (Exception e){
 			lg.error(e.getMessage(),e);
 		}
@@ -549,7 +550,7 @@ public final class VCMongoMessage {
 
 			addObject(dbObject,workerEventMessage.getWorkerEvent());
 				
-			VCMongoDbDriver.getInstance().addMessage(Level.INFO, new VCMongoMessage(dbObject));
+			VCMongoDbDriver.getInstance().addMessage(Level.INFO, new VCMongoMessage(dbObject), "workerEvent: "+workerEventMessage);
 		} catch (Exception e){
 			lg.error(e.getMessage(),e);
 		}
@@ -571,7 +572,7 @@ public final class VCMongoMessage {
 	
 			addObject(dbObject,simulationTask);
 			
-			VCMongoDbDriver.getInstance().addMessage(Level.INFO, new VCMongoMessage(dbObject));
+			VCMongoDbDriver.getInstance().addMessage(Level.INFO, new VCMongoMessage(dbObject), "PBSWorkerMessage: "+simulationTask+", htcJobID="+htcJobID+": "+htcWorkerMsg);
 		} catch (Exception e){
 			lg.error(e.getMessage(),e);
 		}
@@ -592,7 +593,7 @@ public final class VCMongoMessage {
 			
 			dbObject.put(MongoMessage_elapsedTimeMS, new Long(System.currentTimeMillis()-vcMessage.getTimestampMS()));
 			
-			VCMongoDbDriver.getInstance().addMessage(Level.INFO, new VCMongoMessage(dbObject));
+			VCMongoDbDriver.getInstance().addMessage(Level.INFO, new VCMongoMessage(dbObject), "JmsMessageReceived: "+vcDestination+" "+vcMessage);
 		} catch (Exception e){
 			lg.error(e.getMessage(),e);
 		}
@@ -611,7 +612,7 @@ public final class VCMongoMessage {
 
 			addObject(dbObject, vcMessage);
 			
-			VCMongoDbDriver.getInstance().addMessage(Level.INFO, new VCMongoMessage(dbObject));
+			VCMongoDbDriver.getInstance().addMessage(Level.INFO, new VCMongoMessage(dbObject), "jmsMessageSent: "+vcDestination+" "+vcMessage);
 		} catch (Exception e){
 			lg.error(e.getMessage(),e);
 		}
@@ -628,7 +629,7 @@ public final class VCMongoMessage {
 
 			addObject(dbObject, commandOutput);
 			
-			VCMongoDbDriver.getInstance().addMessage(Level.INFO, new VCMongoMessage(dbObject));
+			VCMongoDbDriver.getInstance().addMessage(Level.INFO, new VCMongoMessage(dbObject), "commandOutput: "+commandOutput);
 		} catch (Exception e){
 			lg.error(e.getMessage(),e);
 		}
@@ -647,7 +648,7 @@ public final class VCMongoMessage {
 
 			addObject(dbObject,rpcRequest);
 			
-			VCMongoDbDriver.getInstance().addMessage(Level.INFO, new VCMongoMessage(dbObject));
+			VCMongoDbDriver.getInstance().addMessage(Level.INFO, new VCMongoMessage(dbObject), "RpcRequestProcessed: "+rpcRequest+" "+vcMessage);
 		} catch (Exception e){
 			lg.error(e.getMessage(),e);
 		}
@@ -671,7 +672,7 @@ public final class VCMongoMessage {
 				addObject(dbObject,userLoginInfo);
 			}
 			
-			VCMongoDbDriver.getInstance().addMessage(Level.INFO, new VCMongoMessage(dbObject));
+			VCMongoDbDriver.getInstance().addMessage(Level.INFO, new VCMongoMessage(dbObject), "RpcRequestSent: "+rpcRequest);
 		} catch (Exception e){
 			lg.error(e.getMessage(),e);
 		}
@@ -688,7 +689,7 @@ public final class VCMongoMessage {
 
 			addObject(dbObject,(SimulationJobStatusEvent)messageEvent);
 			
-			VCMongoDbDriver.getInstance().addMessage(Level.INFO, new VCMongoMessage(dbObject));
+			VCMongoDbDriver.getInstance().addMessage(Level.INFO, new VCMongoMessage(dbObject), "clientMessageEventQueued: "+messageEvent);
 		} catch (Exception e){
 			lg.error(e.getMessage(),e);
 		}
@@ -709,7 +710,7 @@ public final class VCMongoMessage {
 					
 					addObject(dbObject, userLoginInfo);
 					
-					VCMongoDbDriver.getInstance().addMessage(Level.INFO, new VCMongoMessage(dbObject));
+					VCMongoDbDriver.getInstance().addMessage(Level.INFO, new VCMongoMessage(dbObject), "clientMessageEventDelivered: "+messageEvent);
 				} catch (Exception e){
 					lg.error(e.getMessage(),e);
 				}
