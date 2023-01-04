@@ -365,6 +365,9 @@ private MathCompareResults compareEquivalentCanonicalMath(MathDescription newMat
 			}
 			Variable oldVars[] = (Variable[])BeanUtils.getArray(oldMathDesc.getVariables(),Variable.class);
 			Variable newVars[] = (Variable[])BeanUtils.getArray(newMathDesc.getVariables(),Variable.class);
+			Arrays.sort(oldVars,(v1,v2) -> v1.getName().compareTo(v2.getName()));
+			Arrays.sort(newVars,(v1,v2) -> v1.getName().compareTo(v2.getName()));
+			
 			if (oldVars.length != newVars.length){
 				//
 				// number of state variables are not equal (canonical maths only have state variables)
@@ -534,12 +537,38 @@ private MathCompareResults compareEquivalentCanonicalMath(MathDescription newMat
 							if (!oldExps.get(k).compareEqual(newExps.get(k))){
 								bFoundDifference = true;
 								if (!ExpressionUtils.functionallyEquivalent(oldExps.get(k),newExps.get(k))){
-									//
-									// difference couldn't be reconciled
-									//
-									String msg = "expressions are different: '"+oldExps.get(k).infix()+"' vs '"+newExps.get(k).infix()+"'";
-									logMathTexts(this, newMathDesc, Decision.MathDifferent_DIFFERENT_EXPRESSION, msg);
-									return new MathCompareResults(Decision.MathDifferent_DIFFERENT_EXPRESSION, msg);
+									Vector<Discontinuity> v1 = oldExps.get(k).getDiscontinuities();
+									Vector<Discontinuity> v2 = newExps.get(k).getDiscontinuities();
+									Expression oe = new Expression(oldExps.get(k));
+									Expression ne = new Expression(newExps.get(k));
+									if (!(v1.isEmpty() && v2.isEmpty())) {
+										HashSet<String> allDisc = new HashSet<String>();
+										for (int l = 0; l<v1.size(); l++) {
+											allDisc.add(v1.get(l).getDiscontinuityExp().infix());
+										}
+										for (int l = 0; l<v2.size(); l++) {
+											allDisc.add(v2.get(l).getDiscontinuityExp().infix());
+										}
+										int l = 0;
+										for (String discExp : allDisc) {
+											oe.substituteInPlace(new Expression(discExp),
+													new Expression("BOOLEAN" + l));
+											ne.substituteInPlace(new Expression(discExp),
+													new Expression("BOOLEAN" + l));
+											l++;
+										}
+									}
+									if (!ExpressionUtils.functionallyEquivalent(oe,ne,false)) {
+										//
+										// difference couldn't be reconciled
+										//
+										String msg = "expressions are different: '" + oldExps.get(k).infix() + "' vs '"
+												+ newExps.get(k).infix() + "'";
+										logMathTexts(this, newMathDesc, Decision.MathDifferent_DIFFERENT_EXPRESSION,
+												msg);
+										return new MathCompareResults(Decision.MathDifferent_DIFFERENT_EXPRESSION,
+												msg);
+									}
 								}else{
 									//if (!bSilent) System.out.println("expressions are equivalent Old: '"+oldExps[k]+"'\n"+
 													   //"expressions are equivalent New: '"+newExps[k]+"'");
@@ -1058,7 +1087,6 @@ public static MathDescription createMathWithExpandedEquations(MathDescription or
 			varsToAdd.add((Function)var);
 		}
 	}
-System.out.println(varsToAdd);
 	for (Function function : varsToAdd){
 			//
 			// get list of symbols that are state variables
@@ -3562,13 +3590,17 @@ public static MathCompareResults testEquivalency(MathSymbolTableFactory mathSymb
 					//try again to see whether invariants are equivalent after rename
 					MathCompareResults invariantResults2 = mathDescription2.compareInvariantAttributes(copyMath1, false);
 					if (!invariantResults2.isEquivalent()) {
-						// can't be equivalent or equal
 						logger.error("Could not fix invariants by renaming");
 						logger.error("Initial invariantResults: "+invariantResults);
 						logger.error("After rename: "+invariantResults2);
-						return invariantResults2;
+						if (!invariantResults2.decision.equals(Decision.MathDifferent_DIFFERENT_NUMBER_OF_VARIABLES)) {
+							// can't be equivalent or equal
+							return invariantResults2;
+						}
 					}
-					// it worked for the quick test, now proceed with the patched copy
+					// either now it works for the quick test or fails again with different number of vars
+					// number of vars can be also due to mass conservation choice differences which is not fixed by renaming, but tested later with expansion  
+					// now proceed with the patched copy
 					mathDescription1 = copyMath1;
 				} else {
 					// can't be equivalent or equal
