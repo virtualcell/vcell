@@ -2,6 +2,7 @@ package org.vcell.sbml;
 
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.biomodel.ModelUnitConverter;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.resource.NativeLib;
 import cbit.vcell.solver.Simulation;
@@ -202,12 +203,18 @@ public abstract class SEDMLExporterCommon {
 			}
 
 			Assert.assertEquals("expecting 1 biomodel in round trip", 1, bioModels.size());
+			BioModel importedBioModel = bioModels.get(0);
+
+			boolean hasAnyOverrides = Arrays.stream(bioModel.getSimulations()).anyMatch(s -> s.getMathOverrides().getSize() > 0);
+			if (testCase.modelFormat == ModelFormat.SBML && hasAnyOverrides){
+				importedBioModel = ModelUnitConverter.createBioModelWithNewUnitSystem(importedBioModel, bioModel.getModel().getUnitSystem());
+			}
 
 			for (Simulation simToExport : simsToExport){
 				SimulationContext simContextToExport = bioModel.getSimulationContext(simToExport);
 				String simContextName = simContextToExport.getName();
 				String simName = simToExport.getName();
-				SimulationContext simContextRoundTripped = bioModels.get(0).getSimulationContext(simContextName);
+				SimulationContext simContextRoundTripped = importedBioModel.getSimulationContext(simContextName);
 				Assert.assertNotNull("roundtripped simulationContext not found with name '"+simContextName+"'", simContextRoundTripped);
 				Simulation simRoundTripped = simContextRoundTripped.getSimulation(simName);
 				Assert.assertNotNull("roundtripped simulation not found with name '"+simName+"'", simRoundTripped);
