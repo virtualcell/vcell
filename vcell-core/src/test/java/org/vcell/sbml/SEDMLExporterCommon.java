@@ -2,9 +2,13 @@ package org.vcell.sbml;
 
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.biomodel.ModelUnitConverter;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.math.MathCompareResults;
+import cbit.vcell.math.MathDescription;
 import cbit.vcell.resource.NativeLib;
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
@@ -76,6 +80,7 @@ public abstract class SEDMLExporterCommon {
 		ERROR_CONSTRUCTING_SIMCONTEXT,
 		NONSPATIAL_STOCH_HISTOGRAM,
 		MATH_OVERRIDE_NOT_EQUIVALENT,
+		MATH_OVERRIDE_NAMES_DIFFERENT,
 		SIMCONTEXT_NOT_FOUND_BY_NAME,
 		SIMULATION_NOT_FOUND_BY_NAME
 	};
@@ -202,16 +207,45 @@ public abstract class SEDMLExporterCommon {
 			}
 
 			Assert.assertEquals("expecting 1 biomodel in round trip", 1, bioModels.size());
+			BioModel importedBioModel = bioModels.get(0);
 
+			boolean hasAnyOverrides = Arrays.stream(bioModel.getSimulations()).anyMatch(s -> s.getMathOverrides().getSize() > 0);
+			if (testCase.modelFormat == ModelFormat.SBML && hasAnyOverrides){
+				importedBioModel = ModelUnitConverter.createBioModelWithNewUnitSystem(importedBioModel, bioModel.getModel().getUnitSystem());
+			}
+
+			//
+			// compare Math Overrides for each simulation
+			//
 			for (Simulation simToExport : simsToExport){
 				SimulationContext simContextToExport = bioModel.getSimulationContext(simToExport);
 				String simContextName = simContextToExport.getName();
 				String simName = simToExport.getName();
-				SimulationContext simContextRoundTripped = bioModels.get(0).getSimulationContext(simContextName);
+				SimulationContext simContextRoundTripped = importedBioModel.getSimulationContext(simContextName);
 				Assert.assertNotNull("roundtripped simulationContext not found with name '"+simContextName+"'", simContextRoundTripped);
 				Simulation simRoundTripped = simContextRoundTripped.getSimulation(simName);
 				Assert.assertNotNull("roundtripped simulation not found with name '"+simName+"'", simRoundTripped);
 				boolean mathOverrideEquiv = simToExport.getMathOverrides().compareEquivalent(simRoundTripped.getMathOverrides());
+				if (!mathOverrideEquiv){
+					//
+					// math overrides didn't compare as equivalent, if overridden names are different, try substituting into math and comparing math
+					//
+					List<String> oldOverrideNames = Arrays.stream(simToExport.getMathOverrides().getOverridenConstantNames()).sorted().collect(Collectors.toList());
+					List<String> newOverrideNames = Arrays.stream(simRoundTripped.getMathOverrides().getOverridenConstantNames()).sorted().collect(Collectors.toList());
+					if (!oldOverrideNames.equals(newOverrideNames) && (simToExport.getScanCount() == simRoundTripped.getScanCount())){
+						// simulation scan counts are the same, but overridden constants have different names, try substituting them into the math and compare the maths.
+						System.out.println("old names: "+oldOverrideNames+", new names: "+newOverrideNames);
+						for (int simJobIndex=0; simJobIndex < simToExport.getScanCount(); simJobIndex++){
+							MathDescription oldMathDescription = new SimulationSymbolTable(simToExport, simJobIndex).getMathDescription();
+							MathDescription newMathDescription = new SimulationSymbolTable(simRoundTripped, simJobIndex).getMathDescription();
+							MathCompareResults subCompareResults = MathDescription.testEquivalency(
+									SimulationSymbolTable.createMathSymbolTableFactory(), oldMathDescription, newMathDescription);
+							Assert.assertTrue("math overrides names not equivalent for simulation '"+simName+"' " +
+									"in simContext '"+simContextName+"'", subCompareResults.isEquivalent());
+							mathOverrideEquiv = true;
+						}
+					}
+				}
 				Assert.assertTrue("math overrides not equivalent for simulation '"+simName+"' in simContext '"+simContextName+"'", mathOverrideEquiv);
 			}
 
@@ -256,6 +290,14 @@ public abstract class SEDMLExporterCommon {
 					return;
 				} else {
 					System.err.println("add SEDML_FAULT.MATH_OVERRIDE_NOT_EQUIVALENT to " + test_case_name);
+				}
+			}
+			if (e.getMessage()!=null && e.getMessage().contains("math overrides names not equivalent for simulation")) {
+				if (knownSEDMLFaults().get(testCase.filename) == SEDML_FAULT.MATH_OVERRIDE_NAMES_DIFFERENT) {
+					System.err.println("Expected error: "+e.getMessage());
+					return;
+				} else {
+					System.err.println("add SEDML_FAULT.MATH_OVERRIDE_NAMES_DIFFERENT to " + test_case_name);
 				}
 			}
 			if (e.getMessage()!=null && e.getMessage().contains("roundtripped simulationContext not found with name")) {

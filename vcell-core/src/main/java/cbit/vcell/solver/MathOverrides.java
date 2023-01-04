@@ -101,7 +101,10 @@ public class MathOverrides implements Matchable, java.io.Serializable {
 				if (!Compare.isEqual(spec.getName(), element.spec.getName()) || spec.getType() != element.spec.getType()){
 					return false;
 				}
-				if (!Compare.isEqual(spec.getConstants(),element.spec.getConstants(), new ExpressionUtils.ExpressionEquivalencePredicate())) {
+				if (!Compare.isEqual(
+						Arrays.stream(spec.getConstants()).map(c -> c.getExpression()).collect(Collectors.toList()),
+						Arrays.stream(element.spec.getConstants()).map(c -> c.getExpression()).collect(Collectors.toList()),
+						new ExpressionUtils.ExpressionEquivalencePredicate())) {
 					return false;
 				}
 			}else if (spec!=null || element.spec!=null){
