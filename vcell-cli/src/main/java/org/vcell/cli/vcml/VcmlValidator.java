@@ -66,7 +66,10 @@ public class VcmlValidator {
                 MathDescription originalMath = orig_simContext.getMathDescription();
                 MathDescription origMathClone = new MathDescription(originalMath); // test round trip to/from MathDescription.readFromDatabase()
                 SimulationContext new_simContext = transformed_biomodel.getSimulationContexts(orig_simContext.getName());
-                new_simContext.updateAll(false);
+                if (new_simContext.getGeometryContext().getGeometry().getDimension() == 0) {
+					new_simContext.setUsingMassConservationModelReduction(false);
+				}
+				new_simContext.updateAll(false);
                 MathDescription newMath = new_simContext.getMathDescription();
                 MathDescription newMathClone = new MathDescription(newMath); // test round trip to/from MathDescription.readFromDatabase()
                 MathCompareResults results = null;
