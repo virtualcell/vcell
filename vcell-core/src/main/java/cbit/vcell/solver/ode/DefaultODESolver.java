@@ -278,8 +278,8 @@ private Vector<StateVariable> createStateVariables() throws MathException, Expre
 									fieldSensVariables, 
 									simSymbolTable));
 	}
-	if (stateVariables.size() == 0) {
-		throw new MathException("there are no equations defined");
+	if (stateVariables.size() == 0 && this instanceof RungeKuttaFehlbergSolver) {
+		throw new MathException("only fixed time step solvers support functions-only - no-equations");
 	}
 	return(stateVariables);
 }
