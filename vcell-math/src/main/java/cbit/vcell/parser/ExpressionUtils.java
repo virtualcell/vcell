@@ -620,7 +620,7 @@ public static boolean functionallyEquivalent(Expression exp1, Expression exp2, b
 //		}
 //		else
 //		{
-			if (discont1.size() != 0)
+		if ((discont1.size() != 0) || (discont2.size() !=0))
 			{
 				Expression productOfdiscont1 = new Expression(1);
 				Expression productOfdiscont2 = new Expression(1);
