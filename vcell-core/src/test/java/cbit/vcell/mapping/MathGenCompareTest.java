@@ -97,8 +97,23 @@ public class MathGenCompareTest {
 	public static Map<String, MathCompareResults.Decision> knownLegacyFaults() {
 		HashMap<String, MathCompareResults.Decision> faults = new HashMap();
 		faults.put("lumped_reaction_proper_size_in_rate.vcml:Application0", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION);
+		faults.put("biomodel_12522025.vcml:purkinje9", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_VARIABLES);
+		faults.put("biomodel_12522025.vcml:purkinje9-ss", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_VARIABLES);
+		faults.put("biomodel_12522025_spatial.vcml:purkinje9", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_VARIABLES);
+		faults.put("biomodel_16404713.vcml:PDGFgradient_TIRF", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_VARIABLES);
+		faults.put("biomodel_22403233.vcml:Spatial", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_VARIABLES);
+		faults.put("biomodel_22403238.vcml:Spatial", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_VARIABLES);
+		faults.put("biomodel_22403244.vcml:spatial", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_VARIABLES);
+		faults.put("biomodel_22403250.vcml:Spatial", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_VARIABLES);
+		faults.put("biomodel_22403358.vcml:Spatial", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_VARIABLES);
+		faults.put("biomodel_22403576.vcml:Spatial", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_VARIABLES);
+		faults.put("biomodel_34855932.vcml:cell4", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_VARIABLES);
+		faults.put("biomodel_34855932.vcml:cell5", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_VARIABLES);
+		faults.put("biomodel_34855932.vcml:cell6", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_VARIABLES);
+		faults.put("biomodel_34855932.vcml:cell7", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_VARIABLES);
+		faults.put("biomodel_36275161.vcml:PDGFgradient_TIRF", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_VARIABLES);
+		faults.put("biomodel_55178308.vcml:Spatial 1 - PIP2 seq at PSD - HALF", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_VARIABLES);
 		faults.put("biomodel_18894555.vcml:compartmental", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION);
-		faults.put("biomodel_43726934.vcml:compartmental", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_VARIABLES);
 		faults.put("biomodel_47429473.vcml:Steady State Turnover", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION);
 		faults.put("biomodel_47429473.vcml:NWASP at Lam Tip in 3D Geometry", MathCompareResults.Decision.MathDifferent_DIFFERENT_FASTINV_EXPRESSION);
 		faults.put("biomodel_47429473.vcml:NWasp Activation Cap=1", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION);
@@ -185,7 +200,6 @@ public class MathGenCompareTest {
 
 
 	@Test
-//	@Ignore
 	public void test_legacy_math_compare() throws Exception {
 		String[] tokens = filename_colon_appname.split(":");
 		String filename = tokens[0];
@@ -283,7 +297,6 @@ public class MathGenCompareTest {
 	}
 
 	@Test
-	@Ignore
 	public void test_model_reduction_math_compare() throws Exception {
 		String[] tokens = filename_colon_appname.split(":");
 		String filename = tokens[0];
