@@ -1189,13 +1189,13 @@ public static MathDescription createMathWithExpandedEquations(MathDescription or
 					compartmentSubDomains.add((CompartmentSubDomain) functionSubdomain);
 				}else if (countMembraneVars > 0){
 					for (Variable indepVar : indepVarList){
-						if (indepVar instanceof MemVariable && indepVar.getDomain() != null){
+						if (indepVar instanceof VolVariable && indepVar.getDomain() != null){
 							compartmentSubDomains.add((CompartmentSubDomain) newMath.getSubDomain(indepVar.getDomain().getName()));
 						}
 					}
 				}else{
 					for (SubDomain subDomain : newMath.getSubDomainCollection()){
-						if (subDomain instanceof MembraneSubDomain){
+						if (subDomain instanceof CompartmentSubDomain){
 							compartmentSubDomains.add((CompartmentSubDomain) subDomain);
 						}
 					}
