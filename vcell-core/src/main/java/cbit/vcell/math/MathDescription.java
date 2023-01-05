@@ -3566,9 +3566,14 @@ public static MathCompareResults testEquivalency(MathSymbolTableFactory mathSymb
 					// now proceed with the patched copy
 					mathDescription1 = copyMath1;
 				} else {
-					// can't be equivalent or equal
+					// could not rename variables, may not have legacy naming issues
 					logger.error("Attempt to rename legacy variables failed");
-					return invariantResults;					
+					if (!invariantResults.decision.equals(Decision.MathDifferent_DIFFERENT_NUMBER_OF_VARIABLES)) {
+						// can't be equivalent or equal
+						return invariantResults;
+					}
+					// number of vars can be also due to mass conservation choice differences which is not fixed by renaming, but tested later with expansion  
+					// we proceed with the original math
 				}
 			} else {
 				// can't be equivalent or equal
