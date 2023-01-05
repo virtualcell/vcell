@@ -25,8 +25,11 @@ import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.Matchable;
 
 import cbit.vcell.data.DataSymbol;
+import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.units.VCUnitDefinition;
+import cbit.vcell.xml.XMLTags;
 
 @SuppressWarnings("serial")
 public class MicroscopeMeasurement implements Serializable, Matchable, IssueSource  {
@@ -48,6 +51,15 @@ public class MicroscopeMeasurement implements Serializable, Matchable, IssueSour
 		private Expression sigmaZ_um = new Expression(1.5); 
  
 		public GaussianConvolutionKernel() {
+			super();
+		}
+		public GaussianConvolutionKernel(Expression sigmaXY_um, Expression sigmaZ_um) {
+			super();
+			this.sigmaXY_um = sigmaXY_um;
+			this.sigmaZ_um = sigmaZ_um;
+		}
+		public GaussianConvolutionKernel(GaussianConvolutionKernel that) {
+			this(new Expression(that.getSigmaXY_um()), new Expression(that.getSigmaZ_um()));
 		}
 		public boolean compareEqual(Matchable obj) {
 			if (!(obj instanceof GaussianConvolutionKernel)) {
@@ -62,17 +74,9 @@ public class MicroscopeMeasurement implements Serializable, Matchable, IssueSour
 			}
 			return false;
 		}
-
-		public GaussianConvolutionKernel(Expression sigmaXY_um, Expression sigmaZ_um) {
-			super();
-			this.sigmaXY_um = sigmaXY_um;
-			this.sigmaZ_um = sigmaZ_um;
-		}
-
 		public final Expression getSigmaXY_um() {
 			return sigmaXY_um;
 		}
-
 		public final Expression getSigmaZ_um() {
 			return sigmaZ_um;
 		}
@@ -80,8 +84,12 @@ public class MicroscopeMeasurement implements Serializable, Matchable, IssueSour
 	
 	public static class ExperimentalPSF extends ConvolutionKernel {
 		private DataSymbol psfDataSymbol = null;
-		public ExperimentalPSF(DataSymbol arg_psfDataSymbol){
+		public ExperimentalPSF(DataSymbol arg_psfDataSymbol) {
+			super();
 			this.psfDataSymbol = arg_psfDataSymbol;
+		}
+		public ExperimentalPSF(ExperimentalPSF that) {
+			this(that.getPSFDataSymbol());
 		}
 		public void setPSFDataSymbol(DataSymbol argDataSymbol) {
 			this.psfDataSymbol = argDataSymbol;
@@ -90,14 +98,18 @@ public class MicroscopeMeasurement implements Serializable, Matchable, IssueSour
 			return this.psfDataSymbol;
 		}
 		public boolean compareEqual(Matchable obj) {
-			// TODO Auto-generated method stub
 			return false;
 		}
 	}
+	
 	public static class ProjectionZKernel extends ConvolutionKernel {
-
+		public ProjectionZKernel() {
+			super();
+		}
+		public ProjectionZKernel(ProjectionZKernel that) {
+			super();
+		}
 		public boolean compareEqual(Matchable obj) {
-			// TODO Auto-generated method stub
 			return true;
 		}
 	}
