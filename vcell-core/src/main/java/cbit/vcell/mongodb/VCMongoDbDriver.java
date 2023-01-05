@@ -167,8 +167,10 @@ public class VCMongoDbDriver {
 			LinkedHashMap<String, String> contextMap = new LinkedHashMap<>();
 			Document dbObject = mongoMessage.getDbObject();
 			for (String field : dbObject.keySet()){
-				String value = dbObject.get(field).toString();
-				contextMap.put(field, value);
+				Object value = dbObject.get(field);
+				if (value != null) {
+					contextMap.put(field, value.toString());
+				}
 			}
 			try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.putAll(contextMap)) {
 				lg.log(level, message);

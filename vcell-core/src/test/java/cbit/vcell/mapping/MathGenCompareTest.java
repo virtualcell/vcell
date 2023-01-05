@@ -9,10 +9,7 @@ import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -37,6 +34,7 @@ public class MathGenCompareTest {
 	public MathGenCompareTest(String filename_colon_appname){
 		this.filename_colon_appname = filename_colon_appname;
 	}
+
 
 	@BeforeClass
 	public static void setup() throws IOException {
@@ -96,7 +94,7 @@ public class MathGenCompareTest {
 	/**
 	 * each file in the knownFaultsMap hold known problems in the current software
 	 */
-	public static Map<String, MathCompareResults.Decision> knownFaults() {
+	public static Map<String, MathCompareResults.Decision> knownLegacyFaults() {
 		HashMap<String, MathCompareResults.Decision> faults = new HashMap();
 		faults.put("lumped_reaction_proper_size_in_rate.vcml:Application0", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION);
 		faults.put("biomodel_18894555.vcml:compartmental", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION);
@@ -127,6 +125,39 @@ public class MathGenCompareTest {
 		return faults;
 	}
 
+	public static Map<String, MathCompareResults.Decision> knownReductionFaults() {
+		HashMap<String, MathCompareResults.Decision> faults = new HashMap();
+		faults.put("lumped_reaction_proper_size_in_rate.vcml:Application0", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION);
+		faults.put("biomodel_171423851.vcml:Conformational change", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION);
+		faults.put("biomodel_171423920.vcml:default for prob 5; multi sims for probs 5, 6 & 7", MathCompareResults.Decision.MathDifferent_EQUATION_REMOVED);
+		faults.put("biomodel_171423957.vcml:Conformational change", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION);
+		faults.put("biomodel_189321805.vcml:Application0", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION);
+		faults.put("biomodel_200301029.vcml:Compartmental model", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION);
+		faults.put("biomodel_200301683.vcml:Compartmental model", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION);
+		faults.put("biomodel_205406319.vcml:0.3", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION);
+		faults.put("biomodel_205406319.vcml:0.1", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION);
+		faults.put("biomodel_205406319.vcml:1", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION);
+		faults.put("biomodel_205406319.vcml:5", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION);
+		faults.put("biomodel_205406319.vcml:10", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION);
+		faults.put("biomodel_205406319.vcml:0.3 - PKAk0.05 ERKd0.035", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION);
+		faults.put("biomodel_205406319.vcml:0.3 - PKAk0.27 ERKd0.035", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION);
+		faults.put("biomodel_205406319.vcml:0.3 - PKAk0.05 ERKd0.085", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION);
+		faults.put("biomodel_205406319.vcml: 0.3 - PKAk0.27 ERKd0.085", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION);
+		faults.put("biomodel_205406319.vcml:0.3 - PKAk0.05 ERKd0.0145", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION);
+		faults.put("biomodel_205406319.vcml:0.3 - PKAk0.27 ERKd0.0145", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION);
+		faults.put("biomodel_205406319.vcml:3", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION);
+		faults.put("biomodel_205406319.vcml: 0.3 - PKAk0.05 ERKd0", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION);
+		faults.put("biomodel_205406319.vcml:0.3 - PKAk0 ERKd0.066", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION);
+		faults.put("biomodel_205406319.vcml: 0.3 - PKAk0.05 ERKd0.066", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION);
+		faults.put("biomodel_206022012.vcml:0.3", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION);
+		faults.put("biomodel_206022012.vcml:0.1", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION);
+		faults.put("biomodel_206022012.vcml:1", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION);
+		faults.put("biomodel_206022012.vcml:5", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION);
+		faults.put("biomodel_206022012.vcml:10", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION);
+		faults.put("biomodel_217669650.vcml:Simulations of Sept and McCammon and this paper", MathCompareResults.Decision.MathDifferent_DIFFERENT_VARIABLE_IN_EQUATION);
+		return faults;
+	}
+
 	/**
 	 * process all tests that are available - the slow set is parsed only and not processed.
 	 */
@@ -144,15 +175,18 @@ public class MathGenCompareTest {
 			}
 			BioModel biomodel = XmlHelper.XMLToBioModel(new XMLSource(vcmlStr));
 			for (SimulationContext simContext : biomodel.getSimulationContexts()){
-				appTestCases.add(filename+":"+simContext.getName());
+				String test_case_name = filename + ":" + simContext.getName();
+//if (!knownReductionFaults().containsKey(test_case_name)) continue;
+				appTestCases.add(test_case_name);
 			}
 		}
 		return appTestCases;
 	}
-	
-	
+
+
 	@Test
-	public void test_math_compare() throws Exception {
+//	@Ignore
+	public void test_legacy_math_compare() throws Exception {
 		String[] tokens = filename_colon_appname.split(":");
 		String filename = tokens[0];
 		String simContextName = filename_colon_appname.substring(filename.length()+1);
@@ -189,13 +223,13 @@ public class MathGenCompareTest {
 		}else {
 			results = MathDescription.testEquivalency(SimulationSymbolTable.createMathSymbolTableFactory(), originalMath, newMath);
 		}
-		MathCompareResults.Decision knownFault = knownFaults().get(filename_colon_appname);
+		MathCompareResults.Decision knownFault = knownLegacyFaults().get(filename_colon_appname);
 		if (results.isEquivalent() && knownFault != null){
 			Assert.fail("math equivalent for '"+filename_colon_appname+"', but expecting '"+knownFault+"', remove known fault");
 		}
 		if (!results.isEquivalent()){
 			try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(knownProblemFile, true));){
-				bufferedWriter.write("faults.put(\""+filename_colon_appname+"\", MathCompareResults.Decision."+results.decision+");\n");
+				bufferedWriter.write("faults.put(\""+filename_colon_appname+"\", MathCompareResults.Decision."+results.decision+"); // legacy compare\n");
 			}
 			if (knownFault == null) {
 				Assert.fail("'"+filename_colon_appname+"' expecting equivalent, " +
@@ -209,5 +243,108 @@ public class MathGenCompareTest {
 			}
 		}
 	}
+
+	@Test
+	@Ignore
+	public void test_identity_math_compare() throws Exception {
+		String[] tokens = filename_colon_appname.split(":");
+		String filename = tokens[0];
+		String simContextName = filename_colon_appname.substring(filename.length() + 1);
+		String vcmlStr;
+		try (InputStream testFileInputStream = VcmlTestSuiteFiles.getVcmlTestCase(filename);) {
+			vcmlStr = new BufferedReader(new InputStreamReader(testFileInputStream))
+					.lines().collect(Collectors.joining("\n"));
+		}
+
+		System.out.println("testing test case " + filename_colon_appname);
+
+		//
+		// read in 'reduced' model: generate math for application <<with>> model reduction from mass conservation
+		//
+		BioModel reducedBiomodel1 = XmlHelper.XMLToBioModel(new XMLSource(vcmlStr));
+		reducedBiomodel1.refreshDependencies();
+		SimulationContext reducedSimContext1 = reducedBiomodel1.getSimulationContext(simContextName);
+		reducedSimContext1.setUsingMassConservationModelReduction(true);
+		reducedSimContext1.updateAll(false);
+		MathDescription reducedMath1 = reducedSimContext1.getMathDescription();
+
+		BioModel reducedBiomodel2 = XmlHelper.XMLToBioModel(new XMLSource(vcmlStr));
+		reducedBiomodel2.refreshDependencies();
+		SimulationContext reducedSimContext2 = reducedBiomodel2.getSimulationContext(simContextName);
+		reducedSimContext2.setUsingMassConservationModelReduction(true);
+		reducedSimContext2.updateAll(false);
+		MathDescription reducedMath2 = reducedSimContext2.getMathDescription();
+
+		//
+		// compare identity (math against clone of itself - using the reduced model)
+		//
+		MathCompareResults identityCompareResults = MathDescription.testEquivalency(SimulationSymbolTable.createMathSymbolTableFactory(), reducedMath1, reducedMath2);
+		Assert.assertTrue("math not equivalent for '" + filename_colon_appname + "': " + identityCompareResults.toDatabaseStatus(), identityCompareResults.isEquivalent());
+	}
+
+	@Test
+	@Ignore
+	public void test_model_reduction_math_compare() throws Exception {
+		String[] tokens = filename_colon_appname.split(":");
+		String filename = tokens[0];
+		String simContextName = filename_colon_appname.substring(filename.length()+1);
+		String vcmlStr;
+		try (InputStream testFileInputStream = VcmlTestSuiteFiles.getVcmlTestCase(filename);) {
+			vcmlStr = new BufferedReader(new InputStreamReader(testFileInputStream))
+					.lines().collect(Collectors.joining("\n"));
+		}
+
+		System.out.println("testing test case "+filename_colon_appname);
+
+		//
+		// read in 'reduced' model: generate math for application <<with>> model reduction from mass conservation
+		//  - but skip entire test if not ODE or PDE (we don't do model reduction for stochastic models)
+		//
+		BioModel reducedBiomodel = XmlHelper.XMLToBioModel(new XMLSource(vcmlStr));
+		SimulationContext reducedSimContext = reducedBiomodel.getSimulationContext(simContextName);
+		if (reducedSimContext.getApplicationType() != SimulationContext.Application.NETWORK_DETERMINISTIC){
+			return; // not ODEs or PDEs, so no model reduction - nothing to test.
+		}
+		reducedBiomodel.refreshDependencies();
+		reducedSimContext.setUsingMassConservationModelReduction(true);
+		reducedSimContext.updateAll(false);
+		MathDescription reducedMath = reducedSimContext.getMathDescription();
+
+
+		//
+		// for ODE applications, ensure that disabling mass conservation compares as equivalent to generating with mass conservation
+		//
+		// read in 'full' model: generate math for application <<without>> model reduction from mass conservation
+		//
+		BioModel fullBiomodel = XmlHelper.XMLToBioModel(new XMLSource(vcmlStr));
+		fullBiomodel.refreshDependencies();
+		SimulationContext fullSimContext = fullBiomodel.getSimulationContexts(simContextName);
+		reducedSimContext.setUsingMassConservationModelReduction(false);
+		fullSimContext.updateAll(false);
+		MathDescription fullMath = fullSimContext.getMathDescription();
+
+		MathCompareResults reductionCompareResults = MathDescription.testEquivalency(SimulationSymbolTable.createMathSymbolTableFactory(), reducedMath, fullMath);
+
+		MathCompareResults.Decision knownReductionFault = knownReductionFaults().get(filename_colon_appname);
+		if (reductionCompareResults.isEquivalent() && knownReductionFault != null){
+			Assert.fail("math equivalent for '"+filename_colon_appname+"', but expecting '"+knownReductionFault+"', remove known fault");
+		}
+		if (!reductionCompareResults.isEquivalent()){
+			try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(knownProblemFile, true));){
+				bufferedWriter.write("faults.put(\""+filename_colon_appname+"\", MathCompareResults.Decision."+reductionCompareResults.decision+"); // reduction compare\n");
+			}
+			if (knownReductionFault == null) {
+				Assert.fail("'"+filename_colon_appname+"' expecting equivalent, " +
+						"computed '"+reductionCompareResults.decision+"', " +
+						"details: " + reductionCompareResults.toDatabaseStatus());
+			}else{
+				Assert.assertTrue("'"+filename_colon_appname+"' expecting '"+knownReductionFault+"', " +
+								"computed '"+reductionCompareResults.decision+"', " +
+								"details: " + reductionCompareResults.toDatabaseStatus(),
+						knownReductionFault == reductionCompareResults.decision);
+			}
+		}
+	}
+
 
 }
