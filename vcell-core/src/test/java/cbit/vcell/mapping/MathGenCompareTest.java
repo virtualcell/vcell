@@ -107,13 +107,13 @@ public class MathGenCompareTest {
 		faults.put("biomodel_22403250.vcml:Spatial", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_VARIABLES);
 		faults.put("biomodel_22403358.vcml:Spatial", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_VARIABLES);
 		faults.put("biomodel_22403576.vcml:Spatial", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_VARIABLES);
-		faults.put("biomodel_34855932.vcml:cell4", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_VARIABLES);
-		faults.put("biomodel_34855932.vcml:cell5", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_VARIABLES);
-		faults.put("biomodel_34855932.vcml:cell6", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_VARIABLES);
-		faults.put("biomodel_34855932.vcml:cell7", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_VARIABLES);
+		faults.put("biomodel_34855932.vcml:cell4", MathCompareResults.Decision.MathDifferent_FAILURE_UNKNOWN); // create canonicalMath cannot handle function of variables of type 'FilamentVariable'
+		faults.put("biomodel_34855932.vcml:cell5", MathCompareResults.Decision.MathDifferent_FAILURE_UNKNOWN); // create canonicalMath cannot handle function of variables of type 'FilamentVariable'
+		faults.put("biomodel_34855932.vcml:cell6", MathCompareResults.Decision.MathDifferent_FAILURE_UNKNOWN); // create canonicalMath cannot handle function of variables of type 'FilamentVariable'
+		faults.put("biomodel_34855932.vcml:cell7", MathCompareResults.Decision.MathDifferent_FAILURE_UNKNOWN); // create canonicalMath cannot handle function of variables of type 'FilamentVariable'
 		faults.put("biomodel_36275161.vcml:PDGFgradient_TIRF", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_VARIABLES);
 		faults.put("biomodel_55178308.vcml:Spatial 1 - PIP2 seq at PSD - HALF", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_VARIABLES);
-		faults.put("biomodel_18894555.vcml:compartmental", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION);
+		faults.put("biomodel_18894555.vcml:compartmental", MathCompareResults.Decision.MathDifferent_FAILURE_UNKNOWN); // create canonicalMath cannot handle function of variables of type 'FilamentVariable'
 		faults.put("biomodel_47429473.vcml:Steady State Turnover", MathCompareResults.Decision.MathDifferent_EQUATION_REMOVED);
 		faults.put("biomodel_47429473.vcml:NWASP at Lam Tip in 3D Geometry", MathCompareResults.Decision.MathDifferent_DIFFERENT_FASTINV_EXPRESSION);
 		faults.put("biomodel_47429473.vcml:NWasp Activation Cap=1", MathCompareResults.Decision.MathDifferent_EQUATION_REMOVED);
@@ -129,14 +129,14 @@ public class MathGenCompareTest {
 		faults.put("biomodel_47429473.vcml:NWasp Activation Cap=2 Prof=20", MathCompareResults.Decision.MathDifferent_EQUATION_REMOVED);
 		faults.put("biomodel_47429473.vcml:NWASP Activation Cap=2 Prof=20 Cof = 10", MathCompareResults.Decision.MathDifferent_EQUATION_REMOVED);
 		faults.put("biomodel_47429473.vcml:NWASP Activation Cap=1 Prof=20 No Arp Binding", MathCompareResults.Decision.MathDifferent_EQUATION_REMOVED);
-		faults.put("biomodel_55178308.vcml:Spatial 1 - 3D -  electrophysiology", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_VARIABLES);
-		faults.put("biomodel_59361239.vcml:full model", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION);
-		faults.put("biomodel_59361239.vcml:individual knockouts", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION);
-		faults.put("biomodel_59361239.vcml:time delay 60 s", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION);
-		faults.put("biomodel_59361239.vcml:receptor density", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION);
-		faults.put("biomodel_59361239.vcml:sensitivity analysis", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION);
-		faults.put("biomodel_59361239.vcml:individual knockouts with delay", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION);
-		faults.put("biomodel_59361239.vcml:integrin knockout", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION);
+		faults.put("biomodel_55178308.vcml:Spatial 1 - 3D -  electrophysiology", MathCompareResults.Decision.MathDifferent_FAILURE_UNKNOWN); // create canonicalMath cannot handle function of variables of type 'FilamentVariable'
+		faults.put("biomodel_59361239.vcml:full model", MathCompareResults.Decision.MathDifferent_FAILURE_UNKNOWN); // create canonicalMath cannot handle function of variables of type 'FilamentVariable'
+		faults.put("biomodel_59361239.vcml:individual knockouts", MathCompareResults.Decision.MathDifferent_FAILURE_UNKNOWN); // create canonicalMath cannot handle function of variables of type 'FilamentVariable'
+		faults.put("biomodel_59361239.vcml:time delay 60 s", MathCompareResults.Decision.MathDifferent_FAILURE_UNKNOWN); // create canonicalMath cannot handle function of variables of type 'FilamentVariable'
+		faults.put("biomodel_59361239.vcml:receptor density", MathCompareResults.Decision.MathDifferent_FAILURE_UNKNOWN); // create canonicalMath cannot handle function of variables of type 'FilamentVariable'
+		faults.put("biomodel_59361239.vcml:sensitivity analysis", MathCompareResults.Decision.MathDifferent_FAILURE_UNKNOWN); // create canonicalMath cannot handle function of variables of type 'FilamentVariable'
+		faults.put("biomodel_59361239.vcml:individual knockouts with delay", MathCompareResults.Decision.MathDifferent_FAILURE_UNKNOWN); // create canonicalMath cannot handle function of variables of type 'FilamentVariable'
+		faults.put("biomodel_59361239.vcml:integrin knockout", MathCompareResults.Decision.MathDifferent_FAILURE_UNKNOWN); // create canonicalMath cannot handle function of variables of type 'FilamentVariable'
 		return faults;
 	}
 
@@ -200,6 +200,7 @@ public class MathGenCompareTest {
 		MathDescription originalMath = orig_simContext.getMathDescription();
 		MathDescription origMathClone = new MathDescription(originalMath); // test round trip to/from MathDescription.readFromDatabase()
 		SimulationContext new_simContext = transformed_biomodel.getSimulationContexts(orig_simContext.getName());
+		new_simContext.setUsingMassConservationModelReduction(false);
 		new_simContext.updateAll(false);
 		MathDescription newMath = new_simContext.getMathDescription();
 		MathDescription newMathClone = new MathDescription(newMath); // test round trip to/from MathDescription.readFromDatabase()
