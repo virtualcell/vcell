@@ -7,6 +7,8 @@ import java.util.Hashtable;
 import java.util.Iterator;
 
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.vcell.test.Fast;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.MathModelInfo;
@@ -17,6 +19,7 @@ import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.resource.PropertyLoader;
 
+@Category(Fast.class)
 public class BioModelMultiVisitor implements VCDatabaseVisitor {
 	/**
 	 * user key to use for tests

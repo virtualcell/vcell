@@ -5,7 +5,10 @@ import java.util.Map.Entry;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.vcell.test.Fast;
 
+@Category(Fast.class)
 public class VCellIconsTest {
 
 	@Test

@@ -10,6 +10,8 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.vcell.test.Fast;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
@@ -23,6 +25,7 @@ import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import junit.framework.TestCase;
 
+@Category(Fast.class)
 public class DataSetControllerImplTest extends TestCase {
 	DataSetControllerImpl dsc = null;
 	VCSimulationDataIdentifier vcDataIdentifier = null;

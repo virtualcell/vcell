@@ -3,11 +3,14 @@ package cbit.vcell.resource;
 import com.google.gson.Gson;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.vcell.test.Fast;
 
 import java.util.ArrayList;
 
+@Category(Fast.class)
 @RunWith(Parameterized.class)
 public class ErrorUtilsTest {
 

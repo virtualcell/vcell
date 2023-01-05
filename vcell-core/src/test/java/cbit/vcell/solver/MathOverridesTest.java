@@ -4,11 +4,14 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.vcell.test.Fast;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.DataAccessException;
 
 import java.util.List;
 
+@Category(Fast.class)
 public class MathOverridesTest {
 
     @Test

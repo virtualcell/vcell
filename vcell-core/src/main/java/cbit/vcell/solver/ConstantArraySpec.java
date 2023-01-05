@@ -77,6 +77,7 @@ public void applyFunctionToExpressions(Function<Expression, Expression> expressi
 }
 
 public void changeName(String newName) {
+	this.name = newName;
 	if (type == ConstantArraySpec.TYPE_LIST){
 		for (int i = 0; i < constants.length; i++){
 			constants[i] = new Constant(newName, constants[i].getExpression());

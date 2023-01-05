@@ -7,7 +7,10 @@ import cbit.vcell.model.ModelTest;
 import cbit.vcell.parser.Expression;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.vcell.test.Fast;
 
+@Category(Fast.class)
 public class RelationVisitorTest {
 
     @Test

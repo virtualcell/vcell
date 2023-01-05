@@ -1165,96 +1165,236 @@ public static MathDescription createMathWithExpandedEquations(MathDescription or
 					throw new RuntimeException("create canonicalMath cannot handle dependent vars of type '"+indepVarList.get(j).getClass().getName()+"'");
 				}
 			}
+			SubDomain functionSubdomain = (function.getDomain()!=null) ? newMath.getSubDomain(function.getDomain().getName()) : null;
+
 			//
 			// case: Volume Variable
 			// create VolVariable
 			// for each CompartmentSubDomain, create OdeEquation
 			// remove Function
 			//
-			if (countVolumeVars == indepVarList.size()){
+			if ((countVolumeVars > 0 && countVolumeVars == indepVarList.size()) || functionSubdomain instanceof CompartmentSubDomain){
 				VolVariable volVariable = new VolVariable(function.getName(),function.getDomain());
 				newMath.variableList.remove(function);
 				newMath.variableList.add(volVariable);
 				newMath.variableHashTable.remove(function.getName());
 				newMath.variableHashTable.put(volVariable.getName(), volVariable);
-				for (int j = 0; j < newMath.subDomainList.size(); j++){
-					SubDomain subDomain = newMath.subDomainList.get(j);
-					if (subDomain instanceof CompartmentSubDomain){
-						//
-						// add an ODE where 
-						//    initial value = K0 + Sum(coefficient_i*Var_i.init)
-						//    rate value = Sum(coefficient_i*Var_i.rate)
-						//
-						Expression initExp = new Expression(K0);
-						Expression rateExp = new Expression(0.0);
-						for (int k = 0; k < indepVarList.size(); k++){
-							Variable indepVar = indepVarList.get(k);
-							Equation indepVarEqu = subDomain.getEquation(indepVar);
-							Expression coefficient = coefficientList.get(k);
-							initExp = Expression.add(initExp,Expression.mult(new Expression(coefficient),new Expression(indepVarEqu.getInitialExpression())));
-							rateExp = Expression.add(rateExp,Expression.mult(new Expression(coefficient),new Expression(indepVarEqu.getRateExpression())));
+				//
+				// determine which volume subdomains (CompartmentSubDomains) to add equations to
+				//    if domain information is available, then restrict the creation of equations to that subdomain,
+				//    else add equation to all subdomains of the same type (here: any CompartmentSubDomain)
+				//
+				Set<CompartmentSubDomain> compartmentSubDomains = new LinkedHashSet<>();
+				if (functionSubdomain != null){
+					compartmentSubDomains.add((CompartmentSubDomain) functionSubdomain);
+				}else if (countMembraneVars > 0){
+					for (Variable indepVar : indepVarList){
+						if (indepVar instanceof VolVariable && indepVar.getDomain() != null){
+							compartmentSubDomains.add((CompartmentSubDomain) newMath.getSubDomain(indepVar.getDomain().getName()));
 						}
-						Variable initVariable = null;
-						for (int k=0;k<newMath.variableList.size();k++){
-							if (newMath.variableList.get(k).getName().startsWith(function.getName()+MATH_FUNC_INIT_SUFFIX_PREFIX)){
-								initVariable = newMath.variableList.get(k);
-								initExp = new Expression(initVariable,null);
-								break;
-							}
-						}
-						OdeEquation odeEquation = new OdeEquation(volVariable, initExp.flatten(), rateExp.flatten());
-						subDomain.addEquation(odeEquation);
 					}
+				}else{
+					for (SubDomain subDomain : newMath.getSubDomainCollection()){
+						if (subDomain instanceof CompartmentSubDomain){
+							compartmentSubDomains.add((CompartmentSubDomain) subDomain);
+						}
+					}
+				}
+				for (CompartmentSubDomain compartmentSubDomain : compartmentSubDomains){
+					//
+					// add an ODE where
+					//    initial value = K0 + Sum(coefficient_i*Var_i.init)
+					//    rate value = Sum(coefficient_i*Var_i.rate)
+					//
+					Expression initExp = new Expression(K0);
+					Expression rateExp = new Expression(0.0);
+					for (int k = 0; k < indepVarList.size(); k++){
+						Variable indepVar = indepVarList.get(k);
+						Equation indepVarEqu = compartmentSubDomain.getEquation(indepVar);
+						Expression coefficient = coefficientList.get(k);
+						initExp = Expression.add(initExp,Expression.mult(new Expression(coefficient),new Expression(indepVarEqu.getInitialExpression())));
+						rateExp = Expression.add(rateExp,Expression.mult(new Expression(coefficient),new Expression(indepVarEqu.getRateExpression())));
+					}
+					Variable initVariable = null;
+					for (int k=0;k<newMath.variableList.size();k++){
+						if (newMath.variableList.get(k).getName().startsWith(function.getName()+MATH_FUNC_INIT_SUFFIX_PREFIX)){
+							initVariable = newMath.variableList.get(k);
+							initExp = new Expression(initVariable,null);
+							break;
+						}
+					}
+					OdeEquation odeEquation = new OdeEquation(volVariable, initExp.flatten(), rateExp.flatten());
+					compartmentSubDomain.addEquation(odeEquation);
 				}
 			//
 			// case: Membrane Variable
 			//
-			}else if (countMembraneVars == indepVarList.size()){
+			}else if ((countMembraneVars > 0 && countMembraneVars == indepVarList.size()) || functionSubdomain instanceof MembraneSubDomain){
 				MemVariable memVariable = new MemVariable(function.getName(),function.getDomain());
 				newMath.variableList.remove(function);
 				newMath.variableList.add(memVariable);
 				newMath.variableHashTable.remove(function.getName());
-				newMath.variableHashTable.put(memVariable.getName(), memVariable);				
-				for (int j = 0; j < newMath.subDomainList.size(); j++){
-					SubDomain subDomain = newMath.subDomainList.get(j);
-					if (subDomain instanceof MembraneSubDomain){
-						//
-						// add an ODE where 
-						//    initial value = K0 + Sum(coefficient_i*Var_i.init)
-						//    rate value = Sum(coefficient_i*Var_i.rate)
-						//
-						Expression initExp = new Expression(K0);
-						Expression rateExp = new Expression(0.0);
-						for (int k = 0; k < indepVarList.size(); k++){
-							Variable indepVar = indepVarList.get(k);
-							Equation indepVarEqu = subDomain.getEquation(indepVar);
-							Expression coefficient = coefficientList.get(k);
-							initExp = Expression.add(initExp,Expression.mult(new Expression(coefficient),new Expression(indepVarEqu.getInitialExpression())));
-							rateExp = Expression.add(rateExp,Expression.mult(new Expression(coefficient),new Expression(indepVarEqu.getRateExpression())));
+				newMath.variableHashTable.put(memVariable.getName(), memVariable);
+				//
+				// determine which membrane subdomains to add equations to
+				//    if domain information is available, then restrict the creation of equations to that subdomain,
+				//    else add equation to all subdomains of the same type (here: any MembraneSubDomain)
+				//
+				Set<MembraneSubDomain> membraneSubDomains = new LinkedHashSet<>();
+				if (functionSubdomain != null){
+					membraneSubDomains.add((MembraneSubDomain) functionSubdomain);
+				}else if (countMembraneVars > 0){
+					for (Variable indepVar : indepVarList){
+						if (indepVar instanceof MemVariable && indepVar.getDomain() != null){
+							membraneSubDomains.add((MembraneSubDomain) newMath.getSubDomain(indepVar.getDomain().getName()));
 						}
-						Variable initVariable = null;
-						for (int k=0;k<newMath.variableList.size();k++){
-							if (newMath.variableList.get(k).getName().startsWith(function.getName()+MATH_FUNC_INIT_SUFFIX_PREFIX)){
-								initVariable = newMath.variableList.get(k);
-								initExp = new Expression(initVariable,null);
-								break;
-							}
-						}
-						OdeEquation odeEquation = new OdeEquation(memVariable, initExp.flatten(), rateExp.flatten());
-						subDomain.addEquation(odeEquation);
 					}
+				}else{
+					for (SubDomain subDomain : newMath.getSubDomainCollection()){
+						if (subDomain instanceof MembraneSubDomain){
+							membraneSubDomains.add((MembraneSubDomain) subDomain);
+						}
+					}
+				}
+				for (MembraneSubDomain membraneSubDomain : membraneSubDomains){
+					//
+					// add an ODE where
+					//    initial value = K0 + Sum(coefficient_i*Var_i.init)
+					//    rate value = Sum(coefficient_i*Var_i.rate)
+					//
+					Expression initExp = new Expression(K0);
+					Expression rateExp = new Expression(0.0);
+					for (int k = 0; k < indepVarList.size(); k++){
+						Variable indepVar = indepVarList.get(k);
+						Equation indepVarEqu = membraneSubDomain.getEquation(indepVar);
+						Expression coefficient = coefficientList.get(k);
+						initExp = Expression.add(initExp,Expression.mult(new Expression(coefficient),new Expression(indepVarEqu.getInitialExpression())));
+						rateExp = Expression.add(rateExp,Expression.mult(new Expression(coefficient),new Expression(indepVarEqu.getRateExpression())));
+					}
+					Variable initVariable = null;
+					for (int k=0;k<newMath.variableList.size();k++){
+						if (newMath.variableList.get(k).getName().startsWith(function.getName()+MATH_FUNC_INIT_SUFFIX_PREFIX)){
+							initVariable = newMath.variableList.get(k);
+							initExp = new Expression(initVariable,null);
+							break;
+						}
+					}
+					OdeEquation odeEquation = new OdeEquation(memVariable, initExp.flatten(), rateExp.flatten());
+					membraneSubDomain.addEquation(odeEquation);
 				}
 			//
 			// case: Filament Variable
 			//
-			}else if (countFilamentVars == indepVarList.size()){
-				throw new RuntimeException("create canonicalMath cannot handle function of variables of type 'FilamentVariable'");
+			}else if ((countFilamentVars > 0 && countFilamentVars == indepVarList.size()) || functionSubdomain instanceof FilamentSubDomain){
+				FilamentVariable filamentVariable = new FilamentVariable(function.getName(),function.getDomain());
+				newMath.variableList.remove(function);
+				newMath.variableList.add(filamentVariable);
+				newMath.variableHashTable.remove(function.getName());
+				newMath.variableHashTable.put(filamentVariable.getName(), filamentVariable);
+				//
+				// determine which filament subdomains to add equations to
+				//    if domain information is available, then restrict the creation of equations to that subdomain,
+				//    else add equation to all subdomains of the same type (here: any FilamentSubDomain)
+				//
+				Set<FilamentSubDomain> filamentSubDomains = new LinkedHashSet<>();
+				if (functionSubdomain != null){
+					filamentSubDomains.add((FilamentSubDomain) functionSubdomain);
+				}else if (countFilamentVars > 0){
+					for (Variable indepVar : indepVarList){
+						if (indepVar instanceof FilamentVariable && indepVar.getDomain() != null){
+							filamentSubDomains.add((FilamentSubDomain) newMath.getSubDomain(indepVar.getDomain().getName()));
+						}
+					}
+				}else{
+					for (SubDomain subDomain : newMath.getSubDomainCollection()){
+						if (subDomain instanceof FilamentSubDomain){
+							filamentSubDomains.add((FilamentSubDomain) subDomain);
+						}
+					}
+				}
+				for (FilamentSubDomain filamentSubDomain : filamentSubDomains){
+					//
+					// add an ODE where
+					//    initial value = K0 + Sum(coefficient_i*Var_i.init)
+					//    rate value = Sum(coefficient_i*Var_i.rate)
+					//
+					Expression initExp = new Expression(K0);
+					Expression rateExp = new Expression(0.0);
+					for (int k = 0; k < indepVarList.size(); k++){
+						Variable indepVar = indepVarList.get(k);
+						Equation indepVarEqu = filamentSubDomain.getEquation(indepVar);
+						Expression coefficient = coefficientList.get(k);
+						initExp = Expression.add(initExp,Expression.mult(new Expression(coefficient),new Expression(indepVarEqu.getInitialExpression())));
+						rateExp = Expression.add(rateExp,Expression.mult(new Expression(coefficient),new Expression(indepVarEqu.getRateExpression())));
+					}
+					Variable initVariable = null;
+					for (int k=0;k<newMath.variableList.size();k++){
+						if (newMath.variableList.get(k).getName().startsWith(function.getName()+MATH_FUNC_INIT_SUFFIX_PREFIX)){
+							initVariable = newMath.variableList.get(k);
+							initExp = new Expression(initVariable,null);
+							break;
+						}
+					}
+					OdeEquation odeEquation = new OdeEquation(filamentVariable, initExp.flatten(), rateExp.flatten());
+					filamentSubDomain.addEquation(odeEquation);
+				}
 				
 			//
 			// case: Point Variable
 			//
-			}else if (countPointVars == indepVarList.size()){
-				throw new RuntimeException("create canonicalMath cannot handle function of variables of type 'PointVariable'");
+			}else if ((countPointVars > 0 && countPointVars == indepVarList.size()) || functionSubdomain instanceof PointSubDomain){
+				PointVariable pointVariable = new PointVariable(function.getName(),function.getDomain());
+				newMath.variableList.remove(function);
+				newMath.variableList.add(pointVariable);
+				newMath.variableHashTable.remove(function.getName());
+				newMath.variableHashTable.put(pointVariable.getName(), pointVariable);
+				//
+				// determine which point subdomains to add equations to
+				//    if domain information is available, then restrict the creation of equations to that subdomain,
+				//    else add equation to all subdomains of the same type (here: any PointSubDomain)
+				//
+				Set<PointSubDomain> pointSubDomains = new LinkedHashSet<>();
+				if (functionSubdomain != null){
+					pointSubDomains.add((PointSubDomain) functionSubdomain);
+				}else if (countPointVars > 0){
+					for (Variable indepVar : indepVarList){
+						if (indepVar instanceof PointVariable && indepVar.getDomain() != null){
+							pointSubDomains.add((PointSubDomain) newMath.getSubDomain(indepVar.getDomain().getName()));
+						}
+					}
+				}else{
+					for (SubDomain subDomain : newMath.getSubDomainCollection()){
+						if (subDomain instanceof PointSubDomain){
+							pointSubDomains.add((PointSubDomain) subDomain);
+						}
+					}
+				}
+				for (PointSubDomain pointSubDomain : pointSubDomains){
+					//
+					// add an ODE where
+					//    initial value = K0 + Sum(coefficient_i*Var_i.init)
+					//    rate value = Sum(coefficient_i*Var_i.rate)
+					//
+					Expression initExp = new Expression(K0);
+					Expression rateExp = new Expression(0.0);
+					for (int k = 0; k < indepVarList.size(); k++){
+						Variable indepVar = indepVarList.get(k);
+						Equation indepVarEqu = pointSubDomain.getEquation(indepVar);
+						Expression coefficient = coefficientList.get(k);
+						initExp = Expression.add(initExp,Expression.mult(new Expression(coefficient),new Expression(indepVarEqu.getInitialExpression())));
+						rateExp = Expression.add(rateExp,Expression.mult(new Expression(coefficient),new Expression(indepVarEqu.getRateExpression())));
+					}
+					Variable initVariable = null;
+					for (int k=0;k<newMath.variableList.size();k++){
+						if (newMath.variableList.get(k).getName().startsWith(function.getName()+MATH_FUNC_INIT_SUFFIX_PREFIX)){
+							initVariable = newMath.variableList.get(k);
+							initExp = new Expression(initVariable,null);
+							break;
+						}
+					}
+					OdeEquation odeEquation = new OdeEquation(pointVariable, initExp.flatten(), rateExp.flatten());
+					pointSubDomain.addEquation(odeEquation);
+				}
 
 			//
 			//
@@ -3567,8 +3707,7 @@ public static MathCompareResults testEquivalency(MathSymbolTableFactory mathSymb
 	
 		MathCompareResults invariantResults = mathDescription2.compareInvariantAttributes(mathDescription1,false);
 		if (!invariantResults.isEquivalent()){
-			if (invariantResults.decision.equals(Decision.MathDifferent_VARIABLE_NOT_FOUND_AS_FUNCTION)
-					|| invariantResults.decision.equals(Decision.MathDifferent_DIFFERENT_NUMBER_OF_VARIABLES)) {
+			if (invariantResults.decision.equals(Decision.MathDifferent_VARIABLE_NOT_FOUND_AS_FUNCTION)) {
 				// this may be due to legacy math format:
 				// variable naming identical across structures
 				// no subdomains associated with variables
@@ -3601,7 +3740,7 @@ public static MathCompareResults testEquivalency(MathSymbolTableFactory mathSymb
 					// number of vars can be also due to mass conservation choice differences which is not fixed by renaming, but tested later with expansion  
 					// we proceed with the original math
 				}
-			} else {
+			} else if (!invariantResults.decision.equals(Decision.MathDifferent_DIFFERENT_NUMBER_OF_VARIABLES)){
 				// can't be equivalent or equal
 				return invariantResults;				
 			}

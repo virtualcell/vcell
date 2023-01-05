@@ -6,7 +6,10 @@ import java.io.File;
 import java.io.IOException;
 
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.vcell.test.Fast;
 
+@Category(Fast.class)
 public class PropertyLoaderTest {
 
 

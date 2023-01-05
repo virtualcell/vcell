@@ -11,15 +11,13 @@
 package cbit.vcell.simdata;
 
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.vcell.test.Fast;
 import org.vcell.util.document.KeyValue;
 
 import cbit.vcell.util.AmplistorUtils;
 
-/**
- * Insert the type's description here.
- * Creation date: (6/23/2004 1:39:55 PM)
- * @author: Jim Schaff
- */
+@Category(Fast.class)
 public class SimulationDataTest {
 	@SuppressWarnings("unused")
 	private static int jIndexes[] = {0,2,4,7,16,32,64};

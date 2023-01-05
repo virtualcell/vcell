@@ -5,12 +5,15 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ExpressionUtils;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.vcell.test.Fast;
 
 import java.util.Arrays;
 import java.util.List;
 
+@Category(Fast.class)
 @RunWith(Parameterized.class)
 public class RationalExpMatrixTest {
     static class TestCase {
