@@ -659,12 +659,38 @@ private MathCompareResults compareEquivalentCanonicalMath(MathDescription newMat
 								if (!oldExps[k].compareEqual(newExps[k])){
 									bFoundDifference = true;
 									if (!ExpressionUtils.functionallyEquivalent(oldExps[k],newExps[k])){
-										//
-										// difference couldn't be reconciled
-										//
-										String msg = "expressions are different: '"+oldExps[k].infix()+"' vs '"+newExps[k].infix()+"'";
-										logMathTexts(this, newMathDesc, Decision.MathDifferent_DIFFERENT_EXPRESSION, msg);
-										return new MathCompareResults(Decision.MathDifferent_DIFFERENT_EXPRESSION, msg);
+										Vector<Discontinuity> v1 = oldExps[k].getDiscontinuities();
+										Vector<Discontinuity> v2 = newExps[k].getDiscontinuities();
+										Expression oe = new Expression(oldExps[k]);
+										Expression ne = new Expression(newExps[k]);
+										if (!(v1.isEmpty() && v2.isEmpty())) {
+											HashSet<String> allDisc = new HashSet<String>();
+											for (int l = 0; l<v1.size(); l++) {
+												allDisc.add(v1.get(l).getDiscontinuityExp().infix());
+											}
+											for (int l = 0; l<v2.size(); l++) {
+												allDisc.add(v2.get(l).getDiscontinuityExp().infix());
+											}
+											int l = 0;
+											for (String discExp : allDisc) {
+												oe.substituteInPlace(new Expression(discExp),
+														new Expression("BOOLEAN" + l));
+												ne.substituteInPlace(new Expression(discExp),
+														new Expression("BOOLEAN" + l));
+												l++;
+											}
+										}
+										if (!ExpressionUtils.functionallyEquivalent(oe,ne,false)) {
+											//
+											// difference couldn't be reconciled
+											//
+											String msg = "expressions are different: '" + oldExps[k].infix() + "' vs '"
+													+ newExps[k].infix() + "'";
+											logMathTexts(this, newMathDesc, Decision.MathDifferent_DIFFERENT_EXPRESSION,
+													msg);
+											return new MathCompareResults(Decision.MathDifferent_DIFFERENT_EXPRESSION,
+													msg);
+										}
 									}else{
 										//if (!bSilent) System.out.println("expressions are equivalent Old: '"+oldExps[k]+"'\n"+
 														   //"expressions are equivalent New: '"+newExps[k]+"'");
