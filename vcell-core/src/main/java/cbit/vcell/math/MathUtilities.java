@@ -17,6 +17,7 @@ import cbit.vcell.parser.*;
 import cbit.vcell.solver.SimulationSymbolTable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.vcell.test.Fast;
 
 /**
  * Insert the type's description here.
@@ -321,11 +322,64 @@ public static MathDescription[] getCanonicalMathDescriptions(MathDescription ref
 		}
 	}
 
-	/**
-	 * Insert the method's description here.
-	 * Creation date: (10/9/2002 10:54:06 PM)
-	 * @return cbit.vcell.math.MathDescription
-	 */
+	public static boolean compareEquivalent(FastInvariant fastInvariant1, FastInvariant fastInvariant2) throws ExpressionException {
+		//
+		// It is ok if the two expressions are different by a scale factor (e.g. if X+Y is conserved, so is 2*X+2*Y, or 2*(X+Y))
+		//    1. estimate proportionality factor (average of 5 evaluations - with discontinuities removed)
+		//    2. scale one of the expressions by the proportionality factor to correct for the scaling.
+		//    3. compare the two expressions for equivalence
+		//
+		Expression oldFastInvExp = new Expression(fastInvariant1.getFunction());
+		Expression newFastInvExp = new Expression(fastInvariant2.getFunction());
+		MathUtilities.substituteCommonDiscontinuitiesInPlace(oldFastInvExp, newFastInvExp, "BOOLEAN_");
+
+		Set<String> symbolSet = new LinkedHashSet<>(Arrays.asList(oldFastInvExp.getSymbols()));
+		symbolSet.addAll(Arrays.asList(newFastInvExp.getSymbols()));
+		String[] symbols = symbolSet.toArray(new String[symbolSet.size()]);
+		SimpleSymbolTable symbolTable = new SimpleSymbolTable(symbols);
+		oldFastInvExp.bindExpression(symbolTable);
+		newFastInvExp.bindExpression(symbolTable);
+
+		Random random = new Random(0);
+		List<Double> ratios = new ArrayList<>();
+		final int NUM_SUCCESSFUL_TRIALS = 5;
+		final int MAX_TRIALS = 500;
+		Double estimatedRatio;
+		double[] values = new double[symbols.length];
+		for (int m = 0; m < MAX_TRIALS || ratios.size() < NUM_SUCCESSFUL_TRIALS; m++) {
+			for (int j = 0; j < values.length; j++) {
+				values[j] = random.nextDouble() + 1.0;
+			}
+			try {
+				double oldFastInvValue = oldFastInvExp.evaluateVector(values);
+				double newFastInvValue = newFastInvExp.evaluateVector(values);
+				if (oldFastInvValue != 0.0 && newFastInvValue != 0.0) {
+					ratios.add(oldFastInvValue / newFastInvValue);
+				}
+			} catch (ExpressionException e) {
+			}
+		}
+		if (ratios.size() >= NUM_SUCCESSFUL_TRIALS){
+			DoubleSummaryStatistics stats = ratios.stream().mapToDouble(r -> r).summaryStatistics();
+			estimatedRatio = stats.getAverage();
+		}else{
+			String msg = "fast invariant expressions could not be evaluated, exp1='"+fastInvariant1.getFunction().infix()+"', "+
+					"exp2='"+fastInvariant2.getFunction().infix()+"'";
+			lg.debug(msg);
+			return false;
+		}
+		Expression scaled_fastInvariant2 = Expression.mult(new Expression(estimatedRatio),fastInvariant2.getFunction());
+		System.out.println("MathDescription.compareEquivalent(): comparing "+fastInvariant1.getFunction().infix()+" with "+scaled_fastInvariant2.infix());
+		if (!ExpressionUtils.functionallyEquivalent(fastInvariant1.getFunction(), scaled_fastInvariant2)){
+			String msg = "fast invariant expressions are different, exp1='"+fastInvariant1.getFunction().infix()+"', "+
+					"exp2='"+fastInvariant2.getFunction().infix()+"'";
+			lg.debug(msg);
+			return false;
+		}
+		return true;
+	}
+
+
 	public static MathDescription createMathWithExpandedEquations(MathDescription originalMathDescription, Set<String> varNamesToKeep, Map<String, Variable.Domain> varDomainMap) throws MathException, ExpressionException {
 		//
 		// clone current mathdescription

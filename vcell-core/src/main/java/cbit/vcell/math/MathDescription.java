@@ -722,76 +722,38 @@ private MathCompareResults compareEquivalentCanonicalMath(MathDescription newMat
 						logMathTexts(this, newMathDesc, Decision.MathDifferent_DIFFERENT_NUMBER_OF_EXPRESSIONS,msg);
 						return new MathCompareResults(Decision.MathDifferent_DIFFERENT_NUMBER_OF_EXPRESSIONS,msg);
 					}
-					for (int k = 0; k < oldFastInvariantExps.length; k++){
-						if (!oldFastInvariantExps[k].compareEqual(newFastInvariantExps[k])){
+					for (int kk = 0; kk < oldFastInvariantExps.length; kk++){
+						// check same index first using simple compare
+						if (oldFastInvariantExps[kk].compareEqual(newFastInvariantExps[kk])) {
+							continue;
+						}else {
 							bFoundDifference = true;
-							if (!ExpressionUtils.functionallyEquivalent(oldFastInvariantExps[k],newFastInvariantExps[k])) {
-								//
-								// difference couldn't be reconciled
-								// ... for fast invariants, it is ok if the two equations are different by a scale factor (e.g. if X+Y is conserved, so is 2*X+2*Y, or 2*(X+Y))
-								//
-								// estimate proportionality factor (average of 5 evaluations)
-								// 
-								// ratio = old/new
-								//
-								// then compare old with ratio*new.
-								//
-								Expression oldFastInvExp = new Expression(oldFastInvariantExps[k]);
-								Expression newFastInvExp = new Expression(newFastInvariantExps[k]);
-								MathUtilities.substituteCommonDiscontinuitiesInPlace(oldFastInvExp, newFastInvExp, "BOOLEAN_");
-
-								Set<String> symbolSet = new LinkedHashSet<>(Arrays.asList(oldFastInvExp.getSymbols()));
-								symbolSet.addAll(Arrays.asList(newFastInvExp.getSymbols()));
-								String[] symbols = symbolSet.toArray(new String[symbolSet.size()]);
-								SimpleSymbolTable symbolTable = new SimpleSymbolTable(symbols);
-								double[] values = new double[symbols.length];
-
-								oldFastInvExp.bindExpression(symbolTable);
-								newFastInvExp.bindExpression(symbolTable);
-
-								Random random = new Random(0);
-								List<Double> ratios = new ArrayList<>();
-								final int NUM_SUCCESSFUL_TRIALS = 5;
-								final int MAX_TRIALS = 500;
-								double estimatedRatio = 1.0;
-								ExpressionException lastExpressionException = null;
-								for (int m = 0; m < MAX_TRIALS || ratios.size() < NUM_SUCCESSFUL_TRIALS; m++) {
-									for (int j = 0; j < values.length; j++) {
-										values[j] = random.nextDouble() + 1.0;
-									}
-									try {
-										double oldFastInvValue = oldFastInvExp.evaluateVector(values);
-										double newFastInvValue = newFastInvExp.evaluateVector(values);
-										if (oldFastInvValue != 0.0 && newFastInvValue != 0.0) {
-											ratios.add(oldFastInvValue / newFastInvValue);
-										}
-									} catch (ExpressionException e) {
-										lastExpressionException = e;
-									}
-								}
-								if (ratios.size() >= NUM_SUCCESSFUL_TRIALS){
-									DoubleSummaryStatistics stats = ratios.stream().mapToDouble(r -> r).summaryStatistics();
-									estimatedRatio = stats.getAverage();
-								}else{
-									String msg = "fast invariant expressions could not be evaluated, old='"+oldFastInvariantExps[k]+"', "+
-											"new='"+newFastInvariantExps[k]+"'";
-									logMathTexts(this, newMathDesc, Decision.MathDifferent_DIFFERENT_FASTINV_EXPRESSION, msg);
-									return new MathCompareResults(Decision.MathDifferent_DIFFERENT_FASTINV_EXPRESSION,msg);
-								}
-								Expression scaled_newFastInvariantExp = Expression.mult(new Expression(estimatedRatio),newFastInvariantExps[k]);
-								System.out.println("MathDescription.compareEquivalent(): comparing "+oldFastInvariantExps[k].infix()+" with "+scaled_newFastInvariantExp.infix());
-								if (!ExpressionUtils.functionallyEquivalent(oldFastInvariantExps[k], scaled_newFastInvariantExp)){
-									String msg = "fast invariant expressions are different, old='"+oldFastInvariantExps[k]+"', "+
-											"new='"+newFastInvariantExps[k]+"'";
-									logMathTexts(this, newMathDesc, Decision.MathDifferent_DIFFERENT_FASTINV_EXPRESSION, msg);
-									return new MathCompareResults(Decision.MathDifferent_DIFFERENT_FASTINV_EXPRESSION,msg);
-								}
-								//if (!bSilent) System.out.println("fast invariant expressions are proportional Old: '"+oldFastInvariantExps[k]+"'\n"+
-								//   "fast invariant expressions are proportional New: '"+newFastInvariantExps[k]+"'");
+						}
+						//
+						// check all fast invariant expressions because they may be out of order
+						//
+						boolean bFoundMatch = false;
+						for (int jj = 0; jj < newFastInvariantExps.length; jj++) {
+							if (oldFastInvariantExps[kk].compareEqual(newFastInvariantExps[jj])) {
+								bFoundMatch = true;
+								break;
 							}else{
-								//if (!bSilent) System.out.println("expressions are equivalent Old: '"+oldExps[k]+"'\n"+
-												   //"expressions are equivalent New: '"+newExps[k]+"'");
+								bFoundDifference = true;
+								if (ExpressionUtils.functionallyEquivalent(oldFastInvariantExps[kk], newFastInvariantExps[jj])) {
+									bFoundMatch = true;
+									break;
+								}else{
+									if (MathUtilities.compareEquivalent(new FastInvariant(oldFastInvariantExps[kk]),new FastInvariant(newFastInvariantExps[jj]))){
+										bFoundMatch = true;
+										break;
+									}
+								}
 							}
+						}
+						if (!bFoundMatch){
+							String msg = "could not find a match for fast invariant expression'"+oldFastInvariantExps[kk]+"'";
+							logMathTexts(this, newMathDesc, Decision.MathDifferent_DIFFERENT_FASTINV_EXPRESSION, msg);
+							return new MathCompareResults(Decision.MathDifferent_DIFFERENT_FASTINV_EXPRESSION,msg);
 						}
 					}
 					Enumeration<Expression> oldFastRateExpEnum = oldFastSystem.getFastRateExpressions();
