@@ -537,27 +537,9 @@ private MathCompareResults compareEquivalentCanonicalMath(MathDescription newMat
 							if (!oldExps.get(k).compareEqual(newExps.get(k))){
 								bFoundDifference = true;
 								if (!ExpressionUtils.functionallyEquivalent(oldExps.get(k),newExps.get(k))){
-									Vector<Discontinuity> v1 = oldExps.get(k).getDiscontinuities();
-									Vector<Discontinuity> v2 = newExps.get(k).getDiscontinuities();
 									Expression oe = new Expression(oldExps.get(k));
 									Expression ne = new Expression(newExps.get(k));
-									if (!(v1.isEmpty() && v2.isEmpty())) {
-										HashSet<String> allDisc = new HashSet<String>();
-										for (int l = 0; l<v1.size(); l++) {
-											allDisc.add(v1.get(l).getDiscontinuityExp().infix());
-										}
-										for (int l = 0; l<v2.size(); l++) {
-											allDisc.add(v2.get(l).getDiscontinuityExp().infix());
-										}
-										int l = 0;
-										for (String discExp : allDisc) {
-											oe.substituteInPlace(new Expression(discExp),
-													new Expression("BOOLEAN" + l));
-											ne.substituteInPlace(new Expression(discExp),
-													new Expression("BOOLEAN" + l));
-											l++;
-										}
-									}
+									MathUtilities.substituteCommonDiscontinuitiesInPlace(oe, ne, "BOOLEAN_");
 									if (!ExpressionUtils.functionallyEquivalent(oe,ne,false)) {
 										//
 										// difference couldn't be reconciled
@@ -659,27 +641,9 @@ private MathCompareResults compareEquivalentCanonicalMath(MathDescription newMat
 								if (!oldExps[k].compareEqual(newExps[k])){
 									bFoundDifference = true;
 									if (!ExpressionUtils.functionallyEquivalent(oldExps[k],newExps[k])){
-										Vector<Discontinuity> v1 = oldExps[k].getDiscontinuities();
-										Vector<Discontinuity> v2 = newExps[k].getDiscontinuities();
 										Expression oe = new Expression(oldExps[k]);
 										Expression ne = new Expression(newExps[k]);
-										if (!(v1.isEmpty() && v2.isEmpty())) {
-											HashSet<String> allDisc = new HashSet<String>();
-											for (int l = 0; l<v1.size(); l++) {
-												allDisc.add(v1.get(l).getDiscontinuityExp().infix());
-											}
-											for (int l = 0; l<v2.size(); l++) {
-												allDisc.add(v2.get(l).getDiscontinuityExp().infix());
-											}
-											int l = 0;
-											for (String discExp : allDisc) {
-												oe.substituteInPlace(new Expression(discExp),
-														new Expression("BOOLEAN" + l));
-												ne.substituteInPlace(new Expression(discExp),
-														new Expression("BOOLEAN" + l));
-												l++;
-											}
-										}
+										MathUtilities.substituteCommonDiscontinuitiesInPlace(oe, ne, "BOOLEAN_");
 										if (!ExpressionUtils.functionallyEquivalent(oe,ne,false)) {
 											//
 											// difference couldn't be reconciled

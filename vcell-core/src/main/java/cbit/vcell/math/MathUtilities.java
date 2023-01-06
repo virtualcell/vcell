@@ -13,17 +13,11 @@ package cbit.vcell.math;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import cbit.vcell.parser.*;
 import cbit.vcell.solver.SimulationSymbolTable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import cbit.vcell.math.MathCompareResults.Decision;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionBindingException;
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.SymbolTable;
-import cbit.vcell.parser.SymbolTableEntry;
-import cbit.vcell.parser.SymbolTableFunctionEntry;
 /**
  * Insert the type's description here.
  * Creation date: (1/29/2002 3:22:16 PM)
@@ -293,6 +287,38 @@ public static MathDescription[] getCanonicalMathDescriptions(MathDescription ref
 		newMath.makeCanonical(mathSymbolTableFactory);
 
 		return newMath;
+	}
+
+	public static void substituteCommonDiscontinuitiesInPlace(Expression exp1, Expression exp2, String varPrefix) throws ExpressionException {
+		Vector<Discontinuity> v1 = exp1.getDiscontinuities();
+		Vector<Discontinuity> v2 = exp2.getDiscontinuities();
+		if (!(v1.isEmpty() && v2.isEmpty())) {
+			HashSet<String> allDisc = new HashSet<String>();
+			for (int l = 0; l<v1.size(); l++) {
+				allDisc.add(v1.get(l).getDiscontinuityExp().infix());
+			}
+			for (int l = 0; l<v2.size(); l++) {
+				allDisc.add(v2.get(l).getDiscontinuityExp().infix());
+			}
+			int l = 0;
+			for (String discExp : allDisc) {
+				Optional<Discontinuity> discontinuity;
+				discontinuity = exp1.getDiscontinuities().stream()
+						.filter(disc -> disc.getDiscontinuityExp().infix().equals(discExp)).findFirst();
+				if (discontinuity.isPresent()) {
+					exp1.substituteInPlace(discontinuity.get().getDiscontinuityExp(), new Expression(varPrefix + l));
+				}
+
+				discontinuity = exp2.getDiscontinuities().stream()
+						.filter(disc -> disc.getDiscontinuityExp().infix().equals(discExp)).findFirst();
+				if (discontinuity.isPresent()) {
+					exp2.substituteInPlace(discontinuity.get().getDiscontinuityExp(), new Expression(varPrefix + l));
+				}
+				exp2.substituteInPlace(new Expression(discExp),
+						new Expression(varPrefix + l));
+				l++;
+			}
+		}
 	}
 
 	/**
