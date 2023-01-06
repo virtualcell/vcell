@@ -790,8 +790,8 @@ private MathCompareResults compareEquivalentCanonicalMath(MathDescription newMat
 								Expression scaled_newFastInvariantExp = Expression.mult(new Expression(estimatedRatio),newFastInvariantExps[k]);
 								System.out.println("MathDescription.compareEquivalent(): comparing "+oldFastInvariantExps[k].infix()+" with "+scaled_newFastInvariantExp.infix());
 								if (!ExpressionUtils.functionallyEquivalent(oldFastInvariantExps[k], scaled_newFastInvariantExp)){
-									String msg = "fast invariant expressions are different Old: '"+oldFastInvariantExps[k]+"'\n"+
-											"fast invariant expressions are different New: '"+newFastInvariantExps[k]+"'";
+									String msg = "fast invariant expressions are different Old: '"+oldFastInvariantExps[k]+"' vs"+
+											" New: '"+newFastInvariantExps[k]+"'";
 									logMathTexts(this, newMathDesc, Decision.MathDifferent_DIFFERENT_FASTINV_EXPRESSION, msg);
 									return new MathCompareResults(Decision.MathDifferent_DIFFERENT_FASTINV_EXPRESSION,msg);
 								}
