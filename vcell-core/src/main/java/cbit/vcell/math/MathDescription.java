@@ -3701,11 +3701,11 @@ public static MathCompareResults testEquivalencyWithRename(MathSymbolTableFactor
 	return testEquivalency(mathSymbolTableFactory, mathDescription1, mathDescription2);
 }
 
-public static MathCompareResults testEquivalency(MathSymbolTableFactory mathSymbolTableFactory, MathDescription mathDescription1, MathDescription mathDescription2) {
+public static MathCompareResults testEquivalency(MathSymbolTableFactory mathSymbolTableFactory, MathDescription oldMath, MathDescription newMath) {
 
 	try {
 	
-		MathCompareResults invariantResults = mathDescription2.compareInvariantAttributes(mathDescription1,false);
+		MathCompareResults invariantResults = newMath.compareInvariantAttributes(oldMath,false);
 		if (!invariantResults.isEquivalent()){
 			if (invariantResults.decision.equals(Decision.MathDifferent_VARIABLE_NOT_FOUND_AS_FUNCTION)
 					|| invariantResults.decision.equals(Decision.MathDifferent_DIFFERENT_NUMBER_OF_VARIABLES)) {
@@ -3713,11 +3713,11 @@ public static MathCompareResults testEquivalency(MathSymbolTableFactory mathSymb
 				// variable naming identical across structures
 				// no subdomains associated with variables
 				// equations are present for state variables in multiple subdomains
-				MathDescription copyMath1 = new MathDescription(mathDescription1); //clone before surgery
-				boolean bRenameSuccess = tryLegacyVarNameDomainExtensive(copyMath1, mathDescription2);
+				MathDescription copyMath1 = new MathDescription(oldMath); //clone before surgery
+				boolean bRenameSuccess = tryLegacyVarNameDomainExtensive(copyMath1, newMath);
 				if (bRenameSuccess) {
 					//try again to see whether invariants are equivalent after rename
-					MathCompareResults invariantResults2 = mathDescription2.compareInvariantAttributes(copyMath1, false);
+					MathCompareResults invariantResults2 = newMath.compareInvariantAttributes(copyMath1, false);
 					if (!invariantResults2.isEquivalent()) {
 						logger.error("Could not fix invariants by renaming");
 						logger.error("Initial invariantResults: "+invariantResults);
@@ -3730,7 +3730,7 @@ public static MathCompareResults testEquivalency(MathSymbolTableFactory mathSymb
 					// either now it works for the quick test or fails again with different number of vars
 					// number of vars can be also due to mass conservation choice differences which is not fixed by renaming, but tested later with expansion  
 					// now proceed with the patched copy
-					mathDescription1 = copyMath1;
+					oldMath = copyMath1;
 				} else {
 					// could not rename variables, may not have legacy naming issues
 					logger.error("Attempt to rename legacy variables failed");
@@ -3748,22 +3748,22 @@ public static MathCompareResults testEquivalency(MathSymbolTableFactory mathSymb
 		}
 
 		// invariants are equivalent, now do a full compare
-		if (mathDescription2.compareEqual(mathDescription1)){
+		if (newMath.compareEqual(oldMath)){
 			return new MathCompareResults(Decision.MathEquivalent_NATIVE);
 		}else{
 			//
 			// must test for equivalence
 			//
-			HashSet<String> indepVars1 = mathDescription1.getStateVariableNames();
-			HashSet<String> indepVars2 = mathDescription2.getStateVariableNames();
+			HashSet<String> indepVars1 = oldMath.getStateVariableNames();
+			HashSet<String> indepVars2 = newMath.getStateVariableNames();
 			HashSet<String> union = new HashSet<String>(indepVars1);
 			union.addAll(indepVars2);
 			
 //			MathDescription canonicalMath1 = MathDescription.createCanonicalMathDescription(mathSymbolTableFactory,createMathWithExpandedEquations(mathDescription1,union));
 //			MathDescription canonicalMath2 = MathDescription.createCanonicalMathDescription(mathSymbolTableFactory,createMathWithExpandedEquations(mathDescription2,union));
 
-			MathDescription canonicalMath1 = MathDescription.createMathWithExpandedEquations(mathDescription1,union);
-			MathDescription canonicalMath2 = MathDescription.createMathWithExpandedEquations(mathDescription2,union);
+			MathDescription canonicalMath1 = MathDescription.createMathWithExpandedEquations(oldMath,union);
+			MathDescription canonicalMath2 = MathDescription.createMathWithExpandedEquations(newMath,union);
 			
 			
 			HashSet<String> canonIndepVars1 = canonicalMath1.getStateVariableNames();
@@ -3810,7 +3810,7 @@ public static MathCompareResults testEquivalency(MathSymbolTableFactory mathSymb
 			canonicalMath1.makeCanonical(mathSymbolTableFactory);
 			canonicalMath2.makeCanonical(mathSymbolTableFactory);
 			// now compare
-			return canonicalMath2.compareEquivalentCanonicalMath(canonicalMath1);
+			return canonicalMath1.compareEquivalentCanonicalMath(canonicalMath2);
 		}
 	}catch (Exception e){
 		String msg = "failure while testing for math equivalency: "+e.getMessage();
@@ -4024,7 +4024,12 @@ private static boolean tryLegacyVarNameDomainExtensive(MathDescription mathDescr
 			boolean bMatch = false;
 			if (v2.get(j).contains("_init")
 					|| v2.get(j).endsWith(InsideVariable.INSIDE_VARIABLE_SUFFIX)
-					|| v2.get(j).endsWith(OutsideVariable.OUTSIDE_VARIABLE_SUFFIX)) 
+					|| v2.get(j).endsWith(OutsideVariable.OUTSIDE_VARIABLE_SUFFIX)
+					|| v2.get(j).endsWith(AbstractMathMapping.PARAMETER_DIFFUSION_RATE_SUFFIX)
+					|| v2.get(j).endsWith(AbstractMathMapping.PARAMETER_VELOCITY_X_SUFFIX)
+					|| v2.get(j).endsWith(AbstractMathMapping.PARAMETER_VELOCITY_Y_SUFFIX)
+					|| v2.get(j).endsWith(AbstractMathMapping.PARAMETER_VELOCITY_Z_SUFFIX)
+							) 
 				continue;
 			if (v2.get(j).equals(oldName)) bMatch = true;
 			int underscorePos = v2.get(j).lastIndexOf("_");
@@ -4174,7 +4179,14 @@ private static boolean tryLegacyVarNameDomainExtensive(MathDescription mathDescr
 				mathDescription1.variableHashTable.remove(oldNameOUT);
 			}
 			// create new Variables of same type
+			HashSet<String> existingVars = new HashSet<String>(); // can happen, need to avoid naming conflicts
 			for (String newName : newNames) {
+				if (mathDescription1.getVariable(newName) != null) {
+					existingVars.add(newName);
+					SubDomain sd = mathDescription1.getSubDomain(mathDescription2.getVariable(newName).getDomain().getName());
+					mathDescription1.getVariable(newName).setDomain(new Domain(sd));
+					continue;
+				}
 				try {
 					Variable clonedVar = (Variable)BeanUtils.cloneSerializable(oldVar);
 					clonedVar.rename(newName);
@@ -4193,7 +4205,7 @@ private static boolean tryLegacyVarNameDomainExtensive(MathDescription mathDescr
 				String newNameSTOCHINIT = newName+AbstractMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_COUNT;
 				Variable newVar = mathDescription1.getVariable(newName);
 				SubDomain sd = mathDescription1.getSubDomain(newVar.getDomain().getName());
-				if (!sd.getEquationCollection().isEmpty()) {
+				if (!sd.getEquationCollection().isEmpty() && !existingVars.contains(newName)) {
 					sd.getEquation(oldVar).setVar(newVar);
 				}
 				if (!sd.getJumpProcesses().isEmpty()) {
