@@ -3707,7 +3707,8 @@ public static MathCompareResults testEquivalency(MathSymbolTableFactory mathSymb
 	
 		MathCompareResults invariantResults = mathDescription2.compareInvariantAttributes(mathDescription1,false);
 		if (!invariantResults.isEquivalent()){
-			if (invariantResults.decision.equals(Decision.MathDifferent_VARIABLE_NOT_FOUND_AS_FUNCTION)) {
+			if (invariantResults.decision.equals(Decision.MathDifferent_VARIABLE_NOT_FOUND_AS_FUNCTION)
+					|| invariantResults.decision.equals(Decision.MathDifferent_DIFFERENT_NUMBER_OF_VARIABLES)) {
 				// this may be due to legacy math format:
 				// variable naming identical across structures
 				// no subdomains associated with variables
