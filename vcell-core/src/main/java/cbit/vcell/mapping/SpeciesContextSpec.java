@@ -763,6 +763,43 @@ public void fireVetoableChange(java.lang.String propertyName, boolean oldValue, 
  */
 public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
 	issueContext = issueContext.newChildContext(ContextType.SpeciesContextSpec, this);
+	if (getSimulationContext().getGeometry().getDimension() > 0 && !isWellMixed()) {
+		try {
+			Double cv = getDiffusionParameter().getConstantValue();
+			if(cv < 0) {
+				String msg = "A diffusion coefficient must be a positive number or zero.";
+				String tip = "A negative diffusion coefficient would be unphysical in molecular transport.";
+				issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
+			} else if(cv == 0) {
+				boolean isFoundInFlux = false;	// true if a species with diff coefficient 0 is a participant in a flux
+				ReactionContext rc = getSimulationContext().getReactionContext();
+				ReactionSpec[] rsArray = rc.getReactionSpecs();
+				for(ReactionSpec rs : rsArray) {
+					ReactionStep step = rs.getReactionStep();
+					if(rs.isExcluded() || !(step instanceof FluxReaction)) {
+						continue;			// we only care about flux reactions which are not excluded
+					}
+					for(ReactionParticipant p : step.getReactionParticipants()) {
+						if(p instanceof Product || p instanceof Reactant) {
+							SpeciesContextSpec candidate = rc.getSpeciesContextSpec(p.getSpeciesContext());
+							if(candidate == this) {
+								isFoundInFlux = true;
+								String msg = "A diffusion coefficient in a flux reaction must be a positive number.";
+								String tip = "Set the diffusion rate to a positive value or disable those flux reactions in Specifications-Reactions.";
+								issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
+								break;
+							}
+						}
+					}
+					if(isFoundInFlux) {
+						break;		// we already made an issue for "this" having a diff coefficient 0 in a flux, don't need more
+					}
+				}
+			}
+		} catch (ExpressionException e) {
+			;		// not an error
+		}
+	}
 	//
 	// add constraints (simpleBounds) for predefined parameters
 	//
