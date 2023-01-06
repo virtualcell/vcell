@@ -398,7 +398,7 @@ public class MathDebuggerPanel extends JPanel {
 		
 		setStatus("Canonical Math for both mathDescriptions: \n");
 
-		MathDescription[] canonicalMathDescs = MathUtilities.getCanonicalMathDescriptions(SimulationSymbolTable.createMathSymbolTableFactory(),getMathModel1().getMathDescription(), getMathModel2().getMathDescription());
+		MathDescription[] canonicalMathDescs = MathUtilities.getCanonicalMathDescriptions(getMathModel1().getMathDescription(), getMathModel2().getMathDescription());
 		
 		MathModel newMathModel = new MathModel(null);
 		newMathModel.setName("Math1");
@@ -533,14 +533,14 @@ public class MathDebuggerPanel extends JPanel {
 	
 	private void flatten(MathSymbolTableFactory mathSymbolTableFactory) throws PropertyVetoException, MathException, ExpressionException, MappingException, XmlParseException{
 		MathDescription math1 = getMathModel1().getMathDescription();
-		MathDescription newMath1 = MathDescription.createCanonicalMathDescription(mathSymbolTableFactory,math1);
+		MathDescription newMath1 = MathUtilities.createCanonicalMathDescription(mathSymbolTableFactory,math1);
 		MathModel newMathModel1 = new MathModel(null);
 		newMathModel1.setName("Math1");
 		newMathModel1.setMathDescription(newMath1);
 		setMathModel1(newMathModel1);
 		
 		MathDescription math2 = getMathModel2().getMathDescription();
-		MathDescription newMath2 = MathDescription.createCanonicalMathDescription(mathSymbolTableFactory,math2);
+		MathDescription newMath2 = MathUtilities.createCanonicalMathDescription(mathSymbolTableFactory,math2);
 		MathModel newMathModel2 = new MathModel(null);
 		newMathModel2.setName("Math2");
 		newMathModel2.setMathDescription(newMath2);
