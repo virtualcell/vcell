@@ -786,7 +786,7 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
 								isFoundInFlux = true;
 								String msg = "A diffusion coefficient in a flux reaction must be a positive number.";
 								String tip = "Set the diffusion rate to a positive value or disable those flux reactions in Specifications-Reactions.";
-								issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
+								issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
 								break;
 							}
 						}
