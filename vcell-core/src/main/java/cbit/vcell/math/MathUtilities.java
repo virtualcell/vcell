@@ -380,6 +380,16 @@ public static MathDescription[] getCanonicalMathDescriptions(MathDescription ref
 					}
 				}
 				//
+				// compute fast invariant expression, may be needed later
+				//
+				Expression fastInvariantExp = new Expression(0.0);
+				for (int k = 0; k < indepVarList.size(); k++){
+					Variable indepVar = indepVarList.get(k);
+					Expression coefficient = coefficientList.get(k);
+					fastInvariantExp = Expression.add(fastInvariantExp,Expression.mult(new Expression(coefficient),new Expression(indepVar.getName())));
+				}
+
+				//
 				// either all independent vars should be Volume, all should be Membrane, or all should be Filament
 				//
 				int countVolumeVars = 0;
@@ -459,6 +469,9 @@ public static MathDescription[] getCanonicalMathDescriptions(MathDescription ref
 						}
 						OdeEquation odeEquation = new OdeEquation(volVariable, initExp.flatten(), rateExp.flatten());
 						compartmentSubDomain.addEquation(odeEquation);
+						if (compartmentSubDomain.getFastSystem()!=null){
+							compartmentSubDomain.getFastSystem().addFastInvariant(new FastInvariant(fastInvariantExp));
+						}
 					}
 				//
 				// case: Membrane Variable
@@ -514,6 +527,9 @@ public static MathDescription[] getCanonicalMathDescriptions(MathDescription ref
 						}
 						OdeEquation odeEquation = new OdeEquation(memVariable, initExp.flatten(), rateExp.flatten());
 						membraneSubDomain.addEquation(odeEquation);
+						if (membraneSubDomain.getFastSystem()!=null){
+							membraneSubDomain.getFastSystem().addFastInvariant(new FastInvariant(fastInvariantExp));
+						}
 					}
 				//
 				// case: Filament Variable
