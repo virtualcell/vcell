@@ -64,14 +64,9 @@ public class VcmlValidator {
             int number_succeeded = 0;
             for (SimulationContext orig_simContext : orig_biomodel.getSimulationContexts()) {
                 MathDescription originalMath = orig_simContext.getMathDescription();
-                MathDescription origMathClone = new MathDescription(originalMath); // test round trip to/from MathDescription.readFromDatabase()
                 SimulationContext new_simContext = transformed_biomodel.getSimulationContexts(orig_simContext.getName());
-                if (new_simContext.getGeometryContext().getGeometry().getDimension() == 0) {
-					new_simContext.setUsingMassConservationModelReduction(false);
-				}
 				new_simContext.updateAll(false);
                 MathDescription newMath = new_simContext.getMathDescription();
-                MathDescription newMathClone = new MathDescription(newMath); // test round trip to/from MathDescription.readFromDatabase()
                 MathCompareResults results = null;
                 if (bTransformVariables) {
                     results = MathDescription.testEquivalencyWithRename(SimulationSymbolTable.createMathSymbolTableFactory(), originalMath, newMath);
@@ -82,7 +77,18 @@ public class VcmlValidator {
                     writeFileEntry(outputDirectory.getAbsolutePath(), inputFile.getName() + "," + orig_simContext.getName() + ",SUCCEEDED," + i, jobLogFile, bForceLogFiles);
                     number_succeeded++;
                 } else {
-                    writeFileEntry(outputDirectory.getAbsolutePath(), inputFile.getName() + "," + orig_simContext.getName() + ",FAILED," + 1 + "," + results.toDatabaseStatus(), jobLogFile, bForceLogFiles);
+                	// try again using non-reduced math
+   					new_simContext.setUsingMassConservationModelReduction(false);
+   					new_simContext.updateAll(false);
+   	                newMath = new_simContext.getMathDescription();
+   	                MathCompareResults results2 = MathDescription.testEquivalency(SimulationSymbolTable.createMathSymbolTableFactory(), originalMath, newMath);
+   	                if (results2.isEquivalent()) {
+   	                    writeFileEntry(outputDirectory.getAbsolutePath(), inputFile.getName() + "," + orig_simContext.getName() + ",SUCCEEDED," + i, jobLogFile, bForceLogFiles);
+   	                    number_succeeded++;
+   	                } else {
+   	                	writeFileEntry(outputDirectory.getAbsolutePath(), inputFile.getName() + "," + orig_simContext.getName() + ",FAILED," + 111 + "," + results.toDatabaseStatus(), jobLogFile, bForceLogFiles);
+   	                	writeFileEntry(outputDirectory.getAbsolutePath(), inputFile.getName() + "," + orig_simContext.getName() + ",FAILED," + 222 + "," + results2.toDatabaseStatus(), jobLogFile, bForceLogFiles);
+   	                }
                 }
                 i++;
             }
