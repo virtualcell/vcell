@@ -512,9 +512,6 @@ public SpeciesContextSpec(SpeciesContextSpec speciesContextSpec, SimulationConte
 		fieldParameters[i] = new SpeciesContextSpecParameter(otherParm.getName(),otherParmExp,otherParm.getRole(),otherParm.getUnitDefinition(),otherParm.getDescription());
 	}
 	refreshDependencies();
-	if (argSimulationContext.getGeometryContext().getGeometry().getDimension() > 0) {
-		initializeForSpatial();
-	}
 }            
 
 
