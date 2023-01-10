@@ -91,8 +91,7 @@ public class VCMetaDataMiriamManager implements MiriamManager, Serializable {
 				"BIOMD0000000048");
 		public final static DataType DataType_Chebi 		= new VCMetaDataDataType("CHEBI",
 				"http://www.ebi.ac.uk/chebi/",
-//				"http://www.ebi.ac.uk/chebi/searchFreeText.do?searchString=",								// old
-				"https://www.ebi.ac.uk/ols/ontologies/chebi/terms?obo_id=",									// ^CHEBI:\d+$
+				"https://www.ebi.ac.uk/ols/ontologies/chebi/terms?iri=http%3A%2F%2Fpurl.obolibrary.org%2Fobo%2FCHEBI_",									// ^CHEBI:\d+$
 				"urn:miriam:chebi",
 				"Chemical Entities of Biological Interest (ChEBI) is a freely available dictionary of molecular entities focused on 'small' chemical compounds.",
 				"CHEBI:36927");																				// CHEBI:36927
@@ -123,8 +122,7 @@ public class VCMetaDataMiriamManager implements MiriamManager, Serializable {
 				"ENSG00000139618");
 		public final static DataType DataType_GO 			= new VCMetaDataDataType("GO",
 				"http://www.geneontology.org/",
-				//"http://www.ebi.ac.uk/ego/GTerm?id=",														// old
-				"https://www.ebi.ac.uk/ols/ontologies/go/terms?obo_id=",									// ^GO:\d{7}$
+				"https://www.ebi.ac.uk/ols/ontologies/go/terms?iri=http%3A%2F%2Fpurl.obolibrary.org%2Fobo%2FGO_",									// ^GO:\d{7}$
 				"urn:miriam:obo.go",
 				"The Gene Ontology project provides a controlled vocabulary to describe gene and gene product attributes in any organism.",
 				"GO:0006915");																				// GO:0006915
@@ -260,7 +258,7 @@ public class VCMetaDataMiriamManager implements MiriamManager, Serializable {
 				"B00006");
 		public final static DataType DataType_CL			= new VCMetaDataDataType("CL",
 				"http://bioportal.bioontology.org/ontologies/CL/",
-				"http://purl.bioontology.org/ontology/CL/",
+				"https://www.ebi.ac.uk/ols/ontologies/cl/terms?iri=http%3A%2F%2Fpurl.obolibrary.org%2Fobo%2FCL_",
 				"urn:miriam:cl",
 				"The Cell Ontology is a structured controlled vocabulary for cell types.",
 				"CL:0000145");
@@ -271,14 +269,14 @@ public class VCMetaDataMiriamManager implements MiriamManager, Serializable {
 				"CAS (Chemical Abstracts Service) is a comprehensive database of chemical information.",
 				"50-78-2");
 		public final static DataType DataType_BTO			= new VCMetaDataDataType("BTO",
-				"http://bioportal.bioontology.org/ontologies/BTO/",
-				"http://purl.bioontology.org/ontology/BTO/",
+				"https://www.ebi.ac.uk/ols/ontologies/bto/terms?iri=http%3A%2F%2Fpurl.obolibrary.org%2Fobo%2FBTO_",
+				"https://www.ebi.ac.uk/ols/ontologies/bto/terms?iri=http%3A%2F%2Fpurl.obolibrary.org%2Fobo%2FBTO_",
 				"urn:miriam:bto",
 				"The Brenda Tissue Ontology is a structured controlled vocabulary used to identify the source of an enzyme cited in the Brenda enzyme database. It comprises terms of tissues, cell lines, cell types and cell cultures.",
 				"BTO:0000028");
 		public final static DataType DataType_Pato			= new VCMetaDataDataType("PATO",
 				"http://bioportal.bioontology.org/ontologies/PATO/",
-				"http://purl.bioontology.org/ontology/PATO/",
+				"https://www.ebi.ac.uk/ols/ontologies/pato/terms?iri=http%3A%2F%2Fpurl.obolibrary.org%2Fobo%2FPATO_",
 				"urn:miriam:pato",
 				"PATO is an ontology of phenotypic qualities.",
 				"PATO:0002220");
@@ -302,13 +300,13 @@ public class VCMetaDataMiriamManager implements MiriamManager, Serializable {
 				"FMA:74531");
 		public final static DataType DataType_Pr			= new VCMetaDataDataType("PR",
 				"https://proconsortium.org/",
-				"http://purl.bioontology.org/ontology/PR/",	// or https://proconsortium.org/app/entry/  or  https://www.ebi.ac.uk/ols/ontologies/pr/terms?obo_id=
+				"https://www.ebi.ac.uk/ols/ontologies/pr/terms?iri=http%3A%2F%2Fpurl.obolibrary.org%2Fobo%2FPR_",	// or https://proconsortium.org/app/entry/  or  https://www.ebi.ac.uk/ols/ontologies/pr/terms?obo_id=
 				"urn:miriam:pr",
 				"The PRotein Ontology (PRO) describes the relationships of proteins and protein evolutionary classes, to delineate the multiple protein forms of a gene locus.",
 				"PR:000007300");
 		public final static DataType DataType_Ncit			= new VCMetaDataDataType("NCIT",
 				"http://www.ontobee.org/ontology/NCIT/",
-				"http://purl.obolibrary.org/obo/NCIT_",
+				"https://www.ebi.ac.uk/ols/ontologies/ncit/terms?iri=http%3A%2F%2Fpurl.obolibrary.org%2Fobo%2FNCIT_",
 				"urn:miriam:ncit",
 				"NCIt is a reference terminology that includes broad coverage of the cancer domain, including cancer related diseases, findings and abnormalities.",
 				"C67381");
