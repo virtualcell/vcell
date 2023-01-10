@@ -268,6 +268,9 @@ public class VCellApiApplication extends WadlApplication {
         String SCRIPTS = "scripts";
         
 		Router rootRouter = new Router(getContext());
+		rootRouter.attach("/", new SWVersionRestlet(getContext()));
+		rootRouter.attach("/"+SWVERSION, new SWVersionRestlet(getContext()));
+
 		rootRouter.attach("/"+SCRIPTS, new Directory(getContext(), ROOT_URI));
 	    rootRouter.attach("/"+ACCESSTOKENRESOURCE, new AuthenticationTokenRestlet(getContext()));
 	    rootRouter.attach("/"+WEBAPP, new Directory(getContext(), WEBAPP_URI));
@@ -305,8 +308,6 @@ public class VCellApiApplication extends WadlApplication {
 		rootRouter.attach("/"+LOSTPASSWORD, new LostPasswordRestlet(getContext()));
 		
 		rootRouter.attach("/"+CONTACTUS, new ContactUsRestlet(getContext()));
-		
-	    rootRouter.attach("/"+SWVERSION, new SWVersionRestlet(getContext()));
 
 	    rootRouter.attach("/"+RPC, new RpcRestlet(getContext(),restDatabaseService));
 
