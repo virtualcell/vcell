@@ -27,7 +27,7 @@ import cbit.vcell.parser.ExpressionException;
  * 
  */
 @SuppressWarnings("serial")
-public abstract class SubDomain extends CommentedBlockObject implements Serializable, Matchable, IssueOrigin {
+public abstract class SubDomain extends CommentedBlockObject implements Serializable, Matchable, IssueOrigin, Comparable<SubDomain> {
 	protected static final Logger LG = LogManager.getLogger(SubDomain.class);
 
 
@@ -835,6 +835,19 @@ public void removeEquation(Variable var)
 	}
 }
 
+public void removeEquation(String varName)
+{
+	Equation equationToDelete = null;
+	for (Equation equ : equationList){
+		if(equ.getVariable().getName().equals(varName)){
+			equationToDelete = equ;
+		}
+	}
+	if (equationToDelete!=null){
+		equationList.remove(equationToDelete);
+	}
+}
+
 
 /**
  * empty the variable initial condition list
@@ -956,5 +969,8 @@ public void refreshDependencies(MathDescription mathDesc) {
 	}
 }
 
+public int compareTo(SubDomain sd) {
+	return getName().compareTo(sd.getName());
+}
 
 }

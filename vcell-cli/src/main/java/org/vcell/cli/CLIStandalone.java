@@ -24,7 +24,8 @@ import picocli.CommandLine.Command;
         VersionCommand.class,
         ModelCommand.class,
         ValidateBatchCommand.class,
-        CommandLine.HelpCommand.class
+        CommandLine.HelpCommand.class,
+        DatabaseCommand.class
 })
 public class CLIStandalone {
     private final static Logger logger = LogManager.getLogger(CLIStandalone.class);

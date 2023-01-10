@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--This biomodel was generated in VCML Version Rel_Version_5.2_build_1-->
+<vcml xmlns="http://sourceforge.net/projects/vcell/vcml" Version="Rel_Version_5.2_build_1">
+   <BioModel Name="BE306Group14_Proj6_Prob1">
+      <Model Name="unnamed">
+         <ModelParameters>
+            <Parameter Name="c0" Role="user defined" Unit="uM">5.0</Parameter>
+            <Parameter Name="k1on" Role="user defined" Unit="s-1">0.05</Parameter>
+            <Parameter Name="k1off" Role="user defined" Unit="uM.s-1">0.05</Parameter>
+            <Parameter Name="k2off" Role="user defined" Unit="uM.s-1">0.5</Parameter>
+            <Parameter Name="k2on" Role="user defined" Unit="s-1">0.5</Parameter>
+            <Parameter Name="M" Role="user defined" Unit="1">5.0</Parameter>
+            <Parameter Name="n1" Role="user defined" Unit="molecules">(P1 * Reaction_Volume.Reaction_Volume / (M * KMOLE))</Parameter>
+            <Parameter Name="n2" Role="user defined" Unit="molecules">(P2 * Reaction_Volume.Reaction_Volume / (M * KMOLE))</Parameter>
+            <Parameter Name="R" Role="user defined" Unit="uM">(c0 - P1 - P2)</Parameter>
+            <Parameter Name="R_Molecules" Role="user defined" Unit="molecules">(R * Reaction_Volume / KMOLE)</Parameter>
+         </ModelParameters>
+         <Compound Name="P1" />
+         <Compound Name="P2" />
+         <Feature Name="Reaction_Volume" KeyValue="92940522" />
+         <LocalizedCompound Name="P1" CompoundRef="P1" Structure="Reaction_Volume" OverrideName="true" KeyValue="92940524" />
+         <LocalizedCompound Name="P2" CompoundRef="P2" Structure="Reaction_Volume" OverrideName="true" KeyValue="92940525" />
+         <SimpleReaction Structure="Reaction_Volume" Name="Pointed" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="92940526">
+            <Product LocalizedCompoundRef="P1" Stoichiometry="1" KeyValue="92940527" />
+            <Kinetics KineticsType="GeneralLumpedKinetics">
+               <Parameter Name="LumpedJ" Role="lumped reaction rate" Unit="molecules.s-1">(Reaction_Volume * ((k1on * (c0 - P1 - P2)) - k1off) / KMOLE)</Parameter>
+            </Kinetics>
+         </SimpleReaction>
+         <SimpleReaction Structure="Reaction_Volume" Name="Barbed" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="92940528">
+            <Product LocalizedCompoundRef="P2" Stoichiometry="1" KeyValue="92940529" />
+            <Kinetics KineticsType="GeneralLumpedKinetics">
+               <Parameter Name="LumpedJ" Role="lumped reaction rate" Unit="molecules.s-1">(Reaction_Volume * ((k2on * (c0 - P1 - P2)) - k2off) / KMOLE)</Parameter>
+            </Kinetics>
+         </SimpleReaction>
+         <Diagram Name="c0" Structure="Reaction_Volume">
+            <LocalizedCompoundShape LocalizedCompoundRef="P1" LocationX="470" LocationY="127" />
+            <SimpleReactionShape SimpleReactionRef="Barbed" LocationX="243" LocationY="34" />
+            <SimpleReactionShape SimpleReactionRef="Pointed" LocationX="244" LocationY="224" />
+            <LocalizedCompoundShape LocalizedCompoundRef="P2" LocationX="14" LocationY="127" />
+         </Diagram>
+         <Version Name="unnamed" KeyValue="92940518" BranchId="92724692" Archived="0" Date="09-Dec-2014 18:07:25" FromVersionable="false">
+            <Owner Name="jayjung1018" Identifier="92309758" />
+            <GroupAccess Type="1" />
+         </Version>
+      </Model>
+      <SimulationSpec Name="Application0" Stochastic="false" UseConcentration="true">
+         <Geometry Name="non-spatial1081600015" Dimension="0">
+            <Extent X="10.0" Y="10.0" Z="10.0" />
+            <Origin X="0.0" Y="0.0" Z="0.0" />
+            <SubVolume Name="Compartment" Handle="0" Type="Compartmental" KeyValue="92724687" />
+            <Version Name="non-spatial1081600015" KeyValue="92724683" BranchId="92724684" Archived="0" Date="29-Nov-2014 14:56:48" FromVersionable="false">
+               <Owner Name="jayjung1018" Identifier="92309758" />
+               <GroupAccess Type="1" />
+            </Version>
+         </Geometry>
+         <GeometryContext>
+            <FeatureMapping Feature="Reaction_Volume" GeometryClass="Compartment" SubVolume="Compartment" Size="50000.0">
+               <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
+            </FeatureMapping>
+         </GeometryContext>
+         <ReactionContext>
+            <LocalizedCompoundSpec LocalizedCompoundRef="P1" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+               <InitialConcentration>0.0</InitialConcentration>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="P2" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+               <InitialConcentration>0.0</InitialConcentration>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <ReactionSpec ReactionStepRef="Pointed" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="Barbed" ReactionMapping="included" />
+         </ReactionContext>
+         <MathDescription Name="Application0_generated">
+            <Constant Name="_F_">96480.0</Constant>
+            <Constant Name="_F_nmol_">9.648E-5</Constant>
+            <Constant Name="_K_GHK_">1.0E-9</Constant>
+            <Constant Name="_N_pmol_">6.02E11</Constant>
+            <Constant Name="_PI_">3.141592653589793</Constant>
+            <Constant Name="_R_">8314.0</Constant>
+            <Constant Name="_T_">300.0</Constant>
+            <Constant Name="c0">5.0</Constant>
+            <Constant Name="k1off">0.05</Constant>
+            <Constant Name="k1on">0.05</Constant>
+            <Constant Name="k2off">0.5</Constant>
+            <Constant Name="k2on">0.5</Constant>
+            <Constant Name="K_millivolts_per_volt">1000.0</Constant>
+            <Constant Name="KMOLE">0.0016611295681063123</Constant>
+            <Constant Name="M">5.0</Constant>
+            <Constant Name="P1_init_uM">0.0</Constant>
+            <Constant Name="P2_init_uM">0.0</Constant>
+            <Constant Name="Size_Reaction_Volume">50000.0</Constant>
+            <VolumeVariable Name="P1" Domain="Compartment" />
+            <VolumeVariable Name="P2" Domain="Compartment" />
+            <Function Name="LumpedJ_Barbed" Domain="Compartment">(Size_Reaction_Volume * ((k2on * (c0 - P1 - P2)) - k2off) / KMOLE)</Function>
+            <Function Name="LumpedJ_Pointed" Domain="Compartment">(Size_Reaction_Volume * ((k1on * (c0 - P1 - P2)) - k1off) / KMOLE)</Function>
+            <Function Name="n1">(P1 * Size_Reaction_Volume / (M * KMOLE))</Function>
+            <Function Name="n2">(P2 * Size_Reaction_Volume / (M * KMOLE))</Function>
+            <Function Name="R">(c0 - P1 - P2)</Function>
+            <Function Name="R_Molecules">(R * Size_Reaction_Volume / KMOLE)</Function>
+            <CompartmentSubDomain Name="Compartment">
+               <BoundaryType Boundary="Xm" Type="Value" />
+               <BoundaryType Boundary="Xp" Type="Value" />
+               <BoundaryType Boundary="Ym" Type="Value" />
+               <BoundaryType Boundary="Yp" Type="Value" />
+               <BoundaryType Boundary="Zm" Type="Value" />
+               <BoundaryType Boundary="Zp" Type="Value" />
+               <OdeEquation Name="P1" SolutionType="Unknown">
+                  <Rate>(LumpedJ_Pointed * KMOLE / Size_Reaction_Volume)</Rate>
+                  <Initial>P1_init_uM</Initial>
+               </OdeEquation>
+               <OdeEquation Name="P2" SolutionType="Unknown">
+                  <Rate>(LumpedJ_Barbed * KMOLE / Size_Reaction_Volume)</Rate>
+                  <Initial>P2_init_uM</Initial>
+               </OdeEquation>
+            </CompartmentSubDomain>
+            <Version Name="Application0_generated" KeyValue="92940516" BranchId="92724689" Archived="0" Date="09-Dec-2014 18:07:25" FromVersionable="false">
+               <Owner Name="jayjung1018" Identifier="92309758" />
+               <GroupAccess Type="1" />
+            </Version>
+         </MathDescription>
+         <Simulation Name="Varying k1on">
+            <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Combined Stiff Solver (IDA/CVODE)">
+               <TimeBound StartTime="0.0" EndTime="15.0" />
+               <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+               <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+               <OutputOptions KeepEvery="1" KeepAtMost="1000" />
+            </SolverTaskDescription>
+            <MathOverrides>
+               <Constant Name="k1on" ConstantArraySpec="1000">0.005, 0.05, 0.5, 5.0</Constant>
+            </MathOverrides>
+            <Version Name="Varying k1on" KeyValue="92942115" BranchId="92942116" Archived="0" Date="09-Dec-2014 18:24:49" FromVersionable="false">
+               <Owner Name="jayjung1018" Identifier="92309758" />
+               <GroupAccess Type="1" />
+               <ParentSimRef KeyValue="92942003" />
+            </Version>
+         </Simulation>
+         <Simulation Name="Varying k2on">
+            <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Combined Stiff Solver (IDA/CVODE)">
+               <TimeBound StartTime="0.0" EndTime="15.0" />
+               <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+               <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+               <OutputOptions KeepEvery="1" KeepAtMost="1000" />
+            </SolverTaskDescription>
+            <MathOverrides>
+               <Constant Name="k2on" ConstantArraySpec="1000">0.005, 0.05, 0.5, 5.0</Constant>
+            </MathOverrides>
+            <Version Name="Varying k2on" KeyValue="92942118" BranchId="92942119" Archived="0" Date="09-Dec-2014 18:24:49" FromVersionable="false">
+               <Owner Name="jayjung1018" Identifier="92309758" />
+               <GroupAccess Type="1" />
+            </Version>
+         </Simulation>
+         <Version Name="Application0" KeyValue="92940532" BranchId="92724707" Archived="0" Date="09-Dec-2014 18:07:25" FromVersionable="false">
+            <Owner Name="jayjung1018" Identifier="92309758" />
+            <GroupAccess Type="1" />
+         </Version>
+         <MicroscopeMeasurement Name="fluor">
+            <ConvolutionKernel Type="ProjectionZKernel" />
+         </MicroscopeMeasurement>
+      </SimulationSpec>
+      <Version Name="BE306Group14_Proj6_Prob1" KeyValue="92946371" BranchId="92946372" Archived="0" Date="09-Dec-2014 19:18:57" FromVersionable="false">
+         <Owner Name="jayjung1018" Identifier="92309758" />
+         <GroupAccess Type="1" />
+      </Version>
+      <pathwayModel>
+         <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bp="http://www.biopax.org/release/biopax-level3.owl#" version="3.0" />
+      </pathwayModel>
+      <relationshipModel>
+         <RMNS version="3.0" />
+      </relationshipModel>
+      <vcmetadata>
+         <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" />
+         <nonrdfAnnotationList />
+         <uriBindingList />
+      </vcmetadata>
+   </BioModel>
+</vcml>
+

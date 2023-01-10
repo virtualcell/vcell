@@ -3,6 +3,7 @@ package org.vcell.rest;
 import java.io.File;
 
 import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
@@ -175,9 +176,8 @@ public class VCellApiMain {
 		        Cipher pbeCipher = Cipher.getInstance("PBEWithMD5AndDES"); 
 		        pbeCipher.init(Cipher.DECRYPT_MODE, key, new PBEParameterSpec(new byte[] {32,11,55,121,01,42,89,11}, 20)); 
 		        keystorePassword = new String(pbeCipher.doFinal(DatatypeConverter.parseBase64Binary(keystorePassword))); 
-			}catch (Exception e){
-				System.out.println("password unhashing didn't work - trying clear text password");
-				e.printStackTrace();
+			}catch (IllegalBlockSizeException e){
+				lg.warn("password unhashing didn't work - trying clear text password: "+e.getMessage());
 			}
 			Server httpsServer = component.getServers().add(Protocol.HTTPS,port);
 			Series<Parameter> parameters = httpsServer.getContext().getParameters();
@@ -210,11 +210,13 @@ public class VCellApiMain {
 			JWTUtils.setRsaJsonWebKey(jsonWebKey);
 
 			lg.trace("create app");
-			boolean bIgnoreHostMismatch = PropertyLoader.getBooleanProperty(PropertyLoader.sslIgnoreHostMismatch, false);
-			boolean bIgnoreCertProblems = PropertyLoader.getBooleanProperty(PropertyLoader.sslIgnoreCertProblems, false);
+			boolean bIgnoreHostMismatchForHealthService = true; // HealthService connects via localhost, this will never match host in production cert
+			boolean bIgnoreCertProblemsForHealthService = PropertyLoader.getBooleanProperty(PropertyLoader.sslIgnoreCertProblems, false);
 			User testUser = localAdminDbServer.getUser(TEST_USER);
 			UserInfo testUserInfo = localAdminDbServer.getUserInfo(testUser.getID()); // lookup hashed auth credentials in database.
-			HealthService healthService = new HealthService(restEventService, "localhost", port, bIgnoreCertProblems, bIgnoreHostMismatch, testUserInfo.userid, testUserInfo.digestedPassword0);
+			HealthService healthService = new HealthService(restEventService, "localhost", port,
+					bIgnoreCertProblemsForHealthService, bIgnoreHostMismatchForHealthService,
+					testUserInfo.userid, testUserInfo.digestedPassword0);
 			AdminService adminService = new AdminService(adminDbTopLevel, databaseServerImpl);
 			RpcService rpcService = new RpcService(vcMessagingService_int);
 			WadlApplication app = new VCellApiApplication(restDatabaseService, userVerifier, rpcService, restEventService, adminService, templateConfiguration, healthService, javascriptDir);

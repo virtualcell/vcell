@@ -28,6 +28,8 @@ import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.document.Identifiable;
 
 import cbit.vcell.geometry.GeometryClass;
+import cbit.vcell.geometry.SubVolume;
+import cbit.vcell.geometry.SurfaceClass;
 import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.mapping.SimulationContext.Kind;
 import cbit.vcell.mapping.spatial.SpatialObject;
@@ -510,9 +512,6 @@ public SpeciesContextSpec(SpeciesContextSpec speciesContextSpec, SimulationConte
 		fieldParameters[i] = new SpeciesContextSpecParameter(otherParm.getName(),otherParmExp,otherParm.getRole(),otherParm.getUnitDefinition(),otherParm.getDescription());
 	}
 	refreshDependencies();
-	if (argSimulationContext.getGeometryContext().getGeometry().getDimension() > 0) {
-		initializeForSpatial();
-	}
 }            
 
 
@@ -763,6 +762,51 @@ public void fireVetoableChange(java.lang.String propertyName, boolean oldValue, 
  */
 public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
 	issueContext = issueContext.newChildContext(ContextType.SpeciesContextSpec, this);
+	if (getSimulationContext().getGeometry().getDimension() > 0 && !isWellMixed()) {
+		try {
+			Double cv = getDiffusionParameter().getConstantValue();
+			if(cv < 0) {
+				String msg = "A diffusion coefficient must be a positive number or zero.";
+				String tip = "A negative diffusion coefficient would be unphysical in molecular transport.";
+				issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
+			} else if(cv == 0) {
+				boolean isFoundInFlux = false;	// true if a species with diff coefficient 0 is a participant in a flux
+				SpeciesContext sc = getSpeciesContext();
+				StructureMapping sm = getSimulationContext().getGeometryContext().getStructureMapping(sc.getStructure());		// of species context
+				GeometryClass speciesGeometryClass = sm.getGeometryClass();
+				ReactionContext rc = getSimulationContext().getReactionContext();
+				ReactionSpec[] rsArray = rc.getReactionSpecs();
+				for(ReactionSpec rSpec : rsArray) {
+					ReactionStep rs = rSpec.getReactionStep();
+					if(rSpec.isExcluded() || rs.getStructure() == null) {
+						continue;			// we only care about reactions which are not excluded
+					}
+					GeometryClass reactionGeometryClass = getSimulationContext().getGeometryContext().getStructureMapping(rs.getStructure()).getGeometryClass();	// of reaction
+
+					// if the speciesContext is "inside" or "outside" the membrane
+					if(reactionGeometryClass instanceof SurfaceClass && speciesGeometryClass instanceof SubVolume && ((SurfaceClass)reactionGeometryClass).isAdjacentTo((SubVolume)speciesGeometryClass)) {
+						for(ReactionParticipant p : rs.getReactionParticipants()) {
+							if(p instanceof Product || p instanceof Reactant) {
+								SpeciesContextSpec candidate = rc.getSpeciesContextSpec(p.getSpeciesContext());
+								if(candidate == this) {
+									isFoundInFlux = true;
+									String msg = "The diffusion coefficient of a species in a trans-membrane reaction must be a positive number.";
+									String tip = "Set the diffusion rate to a positive value or disable those trans-membrane reactions in Specifications-Reactions.";
+									issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+									break;
+								}
+							}
+						}
+					}
+					if(isFoundInFlux) {
+						break;		// we already made an issue for "this" having a diffusion coefficient 0 in a "flux", don't need more
+					}
+				}
+			}
+		} catch (ExpressionException e) {
+			;		// not an error
+		}
+	}
 	//
 	// add constraints (simpleBounds) for predefined parameters
 	//

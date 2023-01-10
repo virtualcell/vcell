@@ -169,13 +169,17 @@ public String getSQLValueList(BioModelMetaData bioModelMetaData, String serialBM
 	return buffer.toString();
 }
 
-public String getPreparedStatement_BioModelReps(String conditions, OrderBy orderBy, int startRow, int numRows){
+public String getPreparedStatement_BioModelReps(String conditions, OrderBy orderBy, int startRow, int numRows, DatabaseSyntax dbSyntax){
 
 	BioModelTable bmTable = BioModelTable.table;
 	BioModelSimulationLinkTable bmsimTable = BioModelSimulationLinkTable.table;
 	BioModelSimContextLinkTable bmscTable = BioModelSimContextLinkTable.table;
 	GroupTable groupTable = GroupTable.table;
 	UserTable userTable = UserTable.table;
+
+	String concat_function_name = (dbSyntax==DatabaseSyntax.ORACLE) ? "wm_concat" : "string_agg";
+	String concat_second_arg = (dbSyntax==DatabaseSyntax.ORACLE) ? "" : ", ','";
+	String string_cast = (dbSyntax==DatabaseSyntax.ORACLE) ? "" : "::varchar(255)";
 	
 	String subquery = 			
 		"select " +
@@ -189,15 +193,15 @@ public String getPreparedStatement_BioModelReps(String conditions, OrderBy order
 		    bmTable.ownerRef.getQualifiedColName()+", "+
 		    UserTable.table.userid.getQualifiedColName()+", "+
 		
-		   "(select '['||wm_concat("+"SQ1_"+bmsimTable.simRef.getQualifiedColName()+")||']' "+
+		   "(select '['||"+concat_function_name+"("+"SQ1_"+bmsimTable.simRef.getQualifiedColName()+string_cast+concat_second_arg+")||']' "+
 		   "   from "+bmsimTable.getTableName()+" SQ1_"+bmsimTable.getTableName()+" "+
 		   "   where SQ1_"+bmsimTable.bioModelRef.getQualifiedColName()+" = "+bmTable.id.getQualifiedColName()+") simKeys,  "+
 		
-		   "(select '['||wm_concat("+"SQ2_"+bmscTable.simContextRef.getQualifiedColName()+")||']' "+
+		   "(select '['||"+concat_function_name+"("+"SQ2_"+bmscTable.simContextRef.getQualifiedColName()+string_cast+concat_second_arg+")||']' "+
 		   "   from "+bmscTable.getTableName()+"  SQ2_"+bmscTable.getTableName()+" "+
 		   "   where SQ2_"+bmscTable.bioModelRef.getQualifiedColName()+ " = " + bmTable.id.getQualifiedColName()+") simContextKeys,  "+
 		
-		   "(select '['||wm_concat(SQ3_"+groupTable.userRef.getQualifiedColName()+"||':'||SQ3_"+userTable.userid.getQualifiedColName()+")||']'  "+
+		   "(select '['||"+concat_function_name+"(SQ3_"+groupTable.userRef.getQualifiedColName()+string_cast+"||':'||SQ3_"+userTable.userid.getQualifiedColName()+concat_second_arg+")||']'  "+
 	   	   "   from "+groupTable.getTableName()+" SQ3_"+groupTable.getTableName()+", "+
 		   "        "+userTable.getTableName()+"  SQ3_"+userTable.getTableName()+" "+
 		   "   where SQ3_"+groupTable.groupid.getQualifiedColName()+" = "+bmTable.privacy.getQualifiedColName()+" "+
@@ -241,23 +245,31 @@ public String getPreparedStatement_BioModelReps(String conditions, OrderBy order
 	
 	if (startRow <= 1){
 		// simpler query, only limit rows, not starting row
-		sql = "select * from "+
-				"(" + subquery + " " + additionalConditionsClause + " " + orderByClause + ") "+
-				"where rownum <= ?";
+		if (dbSyntax == DatabaseSyntax.ORACLE) {
+			sql = "select * from " +
+					"(" + subquery + " " + additionalConditionsClause + " " + orderByClause + ") " +
+					"where rownum <= ?";
+		}else if (dbSyntax == DatabaseSyntax.POSTGRES){
+			sql = subquery + " LIMIT ?";
+		}else throw new RuntimeException("unexpected database syntax "+dbSyntax);
 	}else{
 		// full query, limit start and limit
-		sql = "select * from "+
-					"(select a.*, ROWNUM rnum from "+
-						"(" + subquery + " " + additionalConditionsClause + " " + orderByClause + ") a "+
-					" where rownum <= ? ) "+
-			  "where rnum >= ?";
+		if (dbSyntax == DatabaseSyntax.ORACLE) {
+			sql = "select * from " +
+					"(select a.*, ROWNUM rnum from " +
+					"(" + subquery + " " + additionalConditionsClause + " " + orderByClause + ") a " +
+					" where rownum <= ? ) " +
+					"where rnum >= ?";
+		}else if (dbSyntax == DatabaseSyntax.POSTGRES){
+			sql = subquery + " LIMIT ? OFFSET ? ";
+		}else throw new RuntimeException("unexpected database syntax "+dbSyntax);
 	}
 
 	if (lg.isTraceEnabled()) lg.trace(sql);
 	return sql;
 }
 
-public void setPreparedStatement_BioModelReps(PreparedStatement stmt, User user, int startRow, int numRows) throws SQLException{
+public void setPreparedStatement_BioModelReps(PreparedStatement stmt, User user, int startRow, int numRows, DatabaseSyntax dbSyntax) throws SQLException{
 	if (user == null) {
 		throw new IllegalArgumentException("Improper parameters for getBioModelRepsSQL");
 	}
@@ -267,7 +279,11 @@ public void setPreparedStatement_BioModelReps(PreparedStatement stmt, User user,
 	if (startRow <= 1){
 		stmt.setInt(3, numRows);
 	}else{
-		stmt.setInt(3, startRow + numRows - 1);
+		if (dbSyntax == DatabaseSyntax.ORACLE) {
+			stmt.setInt(3, startRow + numRows - 1);
+		}else if (dbSyntax == DatabaseSyntax.POSTGRES) {
+			stmt.setInt(3, startRow + numRows - 1);
+		}else throw new RuntimeException("unexpected database syntax "+dbSyntax);
 		stmt.setInt(4, startRow);
 	}
 }
@@ -285,6 +301,9 @@ public BioModelRep getBioModelRep(User user, ResultSet rset) throws IllegalArgum
 	User owner = new User(ownerName,ownerRef);
 	
 	String simKeysString = rset.getString("simKeys");
+	if (simKeysString == null){
+		simKeysString = "[]";
+	}
 	ArrayList<KeyValue> simKeyList = new ArrayList<KeyValue>();
 	String[] simKeys = simKeysString.replace("[", "").replace("]", "").split(",");
 	for (String simKey : simKeys) {
@@ -295,6 +314,9 @@ public BioModelRep getBioModelRep(User user, ResultSet rset) throws IllegalArgum
 	KeyValue[] simKeyArray = simKeyList.toArray(new KeyValue[0]);
 
 	String simContextsString = rset.getString("simContextKeys");
+	if (simContextsString == null){
+		simContextsString = "[]";
+	}
 	ArrayList<KeyValue> simContextKeyList = new ArrayList<KeyValue>();
 	String[] simContextKeys = simContextsString.replace("[", "").replace("]", "").split(",");
 	for (String simContextKey : simContextKeys) {
@@ -305,6 +327,9 @@ public BioModelRep getBioModelRep(User user, ResultSet rset) throws IllegalArgum
 	KeyValue[] simContextKeyArray = simContextKeyList.toArray(new KeyValue[0]);
 
 	String groupMembers = rset.getString("groupMembers");
+	if (groupMembers == null){
+		groupMembers = "[]";
+	}
 	ArrayList<User> groupUsers = new ArrayList<User>();
 	String[] groupUserStrings = groupMembers.replace("[", "").replace("]", "").split(",");
 	for (String groupUserString : groupUserStrings) {

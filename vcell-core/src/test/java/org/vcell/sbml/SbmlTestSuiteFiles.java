@@ -2,6 +2,8 @@ package org.vcell.sbml;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.vcell.test.Fast;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -12,6 +14,7 @@ import java.util.function.IntPredicate;
 import java.util.stream.IntStream;
 
 
+@Category(Fast.class)
 public class SbmlTestSuiteFiles {
 
     private final static int[] allTestCases = IntStream.rangeClosed(1, 1821).toArray();

@@ -46,19 +46,6 @@ public class OmexExtensionFilter extends SedmlExtensionFilter {
 	@Override
 	public void writeBioModel(DocumentManager _documentManager, BioModel bioModel, File exportFile, SimulationContext _ignored) throws Exception {
 		if (bioModel != null) {
-
-			ModelFormat modelFormat = ModelFormat.SBML;
-			Object[] options = {"VCML", "SBML"};
-			int choice = JOptionPane.showOptionDialog(null,    // parent component
-					"VCML or SBML?",            // message,
-					"Choose an option",            // title
-					JOptionPane.YES_NO_OPTION,    // optionType
-					JOptionPane.QUESTION_MESSAGE,    // messageType
-					null,                        // Icon
-					options,
-					"SBML");                    // initialValue
-			if (choice == 0) modelFormat = ModelFormat.VCML;
-
 			String sExt = FileUtils.getExtension(exportFile.getAbsolutePath());
 			boolean bCreateOmexArchive = false;
 			if (sExt.equals("omex")) {

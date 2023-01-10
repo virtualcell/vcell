@@ -1,0 +1,478 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--This biomodel was generated in VCML Version 0.4-->
+<vcml xmlns="http://sourceforge.net/projects/vcell/vcml" Version="0.4">
+   <BioModel Name="Cell Shape Control">
+      <Annotation>cloned from 'Cell Shape Control' owned by user jmhaugh
+Membrane-binding/modification model of signaling protein activation and analysis of its control by cell morphology. 
+Haugh, J.M. 
+Biophys J 92, L93-95, 2007. 
+</Annotation>
+      <Model Name="unnamed">
+         <Annotation>cloned from 'unnamed' owned by user jmhaugh
+</Annotation>
+         <Compound Name="binding_site" />
+         <Compound Name="Sc" />
+         <Compound Name="pSc" />
+         <Compound Name="Sm" />
+         <Compound Name="pSm" />
+         <Feature Name="Unnamed compartment" KeyValue="28136507" />
+         <Feature Name="cytosol" KeyValue="28136510" />
+         <Feature Name="nucleus" KeyValue="28136513" />
+         <Membrane InsideFeature="cytosol" OutsideFeature="Unnamed compartment" MembraneVoltage="Voltage_plasma_membrane" Name="plasma_membrane" KeyValue="28136509" />
+         <Membrane InsideFeature="nucleus" OutsideFeature="cytosol" MembraneVoltage="Voltage_nuclear_membrane" Name="nuclear_membrane" KeyValue="28136512" />
+         <LocalizedCompound Name="binding_site_plasma_membrane" CompoundRef="binding_site" Structure="plasma_membrane" OverrideName="false" KeyValue="28136517" />
+         <LocalizedCompound Name="Sc_cytosol" CompoundRef="Sc" Structure="cytosol" OverrideName="false" KeyValue="28136518" />
+         <LocalizedCompound Name="pSc_cytosol" CompoundRef="pSc" Structure="cytosol" OverrideName="false" KeyValue="28136519" />
+         <LocalizedCompound Name="Sm_plasma_membrane" CompoundRef="Sm" Structure="plasma_membrane" OverrideName="false" KeyValue="28136520" />
+         <LocalizedCompound Name="pSm_plasma_membrane" CompoundRef="pSm" Structure="plasma_membrane" OverrideName="false" KeyValue="28136521" />
+         <SimpleReaction Structure="plasma_membrane" Name="reaction0" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="28136522">
+            <Reactant LocalizedCompoundRef="binding_site_plasma_membrane" Stoichiometry="1" KeyValue="28136523" />
+            <Reactant LocalizedCompoundRef="Sc_cytosol" Stoichiometry="1" KeyValue="28136524" />
+            <Product LocalizedCompoundRef="Sm_plasma_membrane" Stoichiometry="1" KeyValue="28136525" />
+            <Kinetics KineticsType="MassAction">
+               <Parameter Name="J" Role="reaction rate" Unit="molecules.um-2.s-1">((Sc_cytosol * Kf * binding_site_plasma_membrane) - (Kr * Sm_plasma_membrane))</Parameter>
+               <Parameter Name="I" Role="inward current density" Unit="pA.um-2">0.0</Parameter>
+               <Parameter Name="Kf" Role="forward rate constant" Unit="uM-1.s-1">10.0</Parameter>
+               <Parameter Name="Kr" Role="reverse rate constant" Unit="s-1">10.0</Parameter>
+            </Kinetics>
+            <Annotation />
+         </SimpleReaction>
+         <SimpleReaction Structure="plasma_membrane" Name="reaction1" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="28136526">
+            <Reactant LocalizedCompoundRef="pSc_cytosol" Stoichiometry="1" KeyValue="28136527" />
+            <Reactant LocalizedCompoundRef="binding_site_plasma_membrane" Stoichiometry="1" KeyValue="28136528" />
+            <Product LocalizedCompoundRef="pSm_plasma_membrane" Stoichiometry="1" KeyValue="28136529" />
+            <Kinetics KineticsType="MassAction">
+               <Parameter Name="J" Role="reaction rate" Unit="molecules.um-2.s-1">((binding_site_plasma_membrane * Kf * pSc_cytosol) - (Kr * pSm_plasma_membrane))</Parameter>
+               <Parameter Name="I" Role="inward current density" Unit="pA.um-2">0.0</Parameter>
+               <Parameter Name="Kf" Role="forward rate constant" Unit="uM-1.s-1">10.0</Parameter>
+               <Parameter Name="Kr" Role="reverse rate constant" Unit="s-1">10.0</Parameter>
+            </Kinetics>
+            <Annotation />
+         </SimpleReaction>
+         <SimpleReaction Structure="plasma_membrane" Name="reaction2" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="28136530">
+            <Reactant LocalizedCompoundRef="Sm_plasma_membrane" Stoichiometry="1" KeyValue="28136531" />
+            <Product LocalizedCompoundRef="pSm_plasma_membrane" Stoichiometry="1" KeyValue="28136532" />
+            <Kinetics KineticsType="MassAction">
+               <Parameter Name="J" Role="reaction rate" Unit="molecules.um-2.s-1">((Kf * Sm_plasma_membrane) - (Kr * pSm_plasma_membrane))</Parameter>
+               <Parameter Name="I" Role="inward current density" Unit="pA.um-2">0.0</Parameter>
+               <Parameter Name="Kf" Role="forward rate constant" Unit="s-1">2.0</Parameter>
+               <Parameter Name="Kr" Role="reverse rate constant" Unit="s-1">1.0</Parameter>
+            </Kinetics>
+            <Annotation />
+         </SimpleReaction>
+         <SimpleReaction Structure="cytosol" Name="reaction3" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="28136533">
+            <Reactant LocalizedCompoundRef="pSc_cytosol" Stoichiometry="1" KeyValue="28136534" />
+            <Product LocalizedCompoundRef="Sc_cytosol" Stoichiometry="1" KeyValue="28136535" />
+            <Kinetics KineticsType="MassAction">
+               <Parameter Name="J" Role="reaction rate" Unit="uM.s-1">((Kf * pSc_cytosol) - (Kr * Sc_cytosol))</Parameter>
+               <Parameter Name="Kf" Role="forward rate constant" Unit="s-1">1.0</Parameter>
+               <Parameter Name="Kr" Role="reverse rate constant" Unit="s-1">0.0</Parameter>
+            </Kinetics>
+            <Annotation />
+         </SimpleReaction>
+         <Diagram Name="cytosol" Structure="cytosol">
+            <LocalizedCompoundShape LocalizedCompoundRef="Sc_cytosol" LocationX="69" LocationY="44" />
+            <LocalizedCompoundShape LocalizedCompoundRef="pSc_cytosol" LocationX="71" LocationY="215" />
+            <SimpleReactionShape SimpleReactionRef="reaction3" LocationX="81" LocationY="133" />
+         </Diagram>
+         <Diagram Name="plasma_membrane" Structure="plasma_membrane">
+            <LocalizedCompoundShape LocalizedCompoundRef="binding_site_plasma_membrane" LocationX="465" LocationY="196" />
+            <LocalizedCompoundShape LocalizedCompoundRef="Sc_cytosol" LocationX="46" LocationY="94" />
+            <LocalizedCompoundShape LocalizedCompoundRef="pSc_cytosol" LocationX="60" LocationY="290" />
+            <LocalizedCompoundShape LocalizedCompoundRef="Sm_plasma_membrane" LocationX="328" LocationY="136" />
+            <LocalizedCompoundShape LocalizedCompoundRef="pSm_plasma_membrane" LocationX="329" LocationY="302" />
+            <SimpleReactionShape SimpleReactionRef="reaction0" LocationX="432" LocationY="136" />
+            <SimpleReactionShape SimpleReactionRef="reaction1" LocationX="442" LocationY="292" />
+            <SimpleReactionShape SimpleReactionRef="reaction2" LocationX="333" LocationY="213" />
+            <SimpleReactionShape SimpleReactionRef="reaction3" LocationX="518" LocationY="353" />
+         </Diagram>
+         <Diagram Name="nuclear_membrane" Structure="nuclear_membrane" />
+         <Diagram Name="nucleus" Structure="nucleus" />
+         <Diagram Name="Unnamed compartment" Structure="Unnamed compartment" />
+         <Version Name="unnamed" KeyValue="28136499" BranchId="28136500" Archived="0" Date="15-Jul-2008 14:31:38" FromVersionable="false">
+            <Owner Name="CMC" Identifier="2794180" />
+            <GroupAccess Type="1" />
+            <Annotation>cloned from 'unnamed' owned by user jmhaugh
+</Annotation>
+         </Version>
+      </Model>
+      <SimulationSpec Name="Biophysical Letters" Stochastic="false" CharacteristicSize="0.17330406077862193">
+         <Annotation>cloned from 'Biophysical Letters' owned by user jmhaugh
+</Annotation>
+         <Geometry Name="fried_egg_3" Dimension="3">
+            <Annotation>cloned from 'fried_egg_3' owned by user jmhaugh
+</Annotation>
+            <Extent X="20.2" Y="20.2" Z="10.4" />
+            <Origin X="0.0" Y="0.0" Z="-10.2" />
+            <SubVolume Name="subVolume2" Handle="2" Type="Analytical" KeyValue="28136487">
+               <AnalyticExpression>(((x ^ 2.0) + (y ^ 2.0) + ((5.0 + z) ^ 2.0)) &lt; 16.0)</AnalyticExpression>
+            </SubVolume>
+            <SubVolume Name="subVolume1" Handle="0" Type="Analytical" KeyValue="28136488">
+               <AnalyticExpression>((((((x ^ 2.0) + (y ^ 2.0) + (z ^ 2.0)) / (1.0 + ( - (0.37593984962406013 * z) ^ 3.0))) + (16.0 * ((x ^ 2.0) + (y ^ 2.0) + ((5.0 + z) ^ 2.0)) * ( - (0.37593984962406013 * z) ^ 3.0) / (1.0 + ( - (0.37593984962406013 * z) ^ 3.0)))) &lt; 400.0) * (z &lt; 0.0))</AnalyticExpression>
+            </SubVolume>
+            <SubVolume Name="subVolume0" Handle="1" Type="Analytical" KeyValue="28136489">
+               <AnalyticExpression>1.0</AnalyticExpression>
+            </SubVolume>
+            <SurfaceDescription NumSamplesX="100" NumSamplesY="100" NumSamplesZ="100" CutoffFrequency="0.3">
+               <VolumeRegion Name="subVolume00" RegionID="0" SubVolume="subVolume0" Size="3709.881131255416" Unit="um3" />
+               <VolumeRegion Name="subVolume11" RegionID="1" SubVolume="subVolume1" Size="466.5883124274063" Unit="um3" />
+               <VolumeRegion Name="subVolume22" RegionID="2" SubVolume="subVolume2" Size="67.14655631717645" Unit="um3" />
+               <MembraneRegion Name="membrane_subVolume00_subVolume11" VolumeRegion1="subVolume11" VolumeRegion2="subVolume00" Size="661.8535175871946" Unit="um2" />
+               <MembraneRegion Name="membrane_subVolume11_subVolume22" VolumeRegion1="subVolume22" VolumeRegion2="subVolume11" Size="51.7110088791782" Unit="um2" />
+            </SurfaceDescription>
+            <Version Name="fried_egg_3" KeyValue="28136483" BranchId="28136484" Archived="0" Date="15-Jul-2008 14:31:38" FromVersionable="false">
+               <Owner Name="CMC" Identifier="2794180" />
+               <GroupAccess Type="1" />
+               <Annotation>cloned from 'fried_egg_3' owned by user jmhaugh
+</Annotation>
+            </Version>
+         </Geometry>
+         <GeometryContext>
+            <FeatureMapping Feature="Unnamed compartment" SubVolume="subVolume0" Resolved="true">
+               <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
+            </FeatureMapping>
+            <FeatureMapping Feature="cytosol" SubVolume="subVolume1" Resolved="true">
+               <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
+            </FeatureMapping>
+            <FeatureMapping Feature="nucleus" SubVolume="subVolume2" Resolved="true">
+               <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
+            </FeatureMapping>
+            <MembraneMapping Membrane="plasma_membrane" SurfaceToVolumeRatio="1.0" VolumeFraction="0.2" CalculateVoltage="false" SpecificCapacitance="1.0" InitialVoltage="0.0" />
+            <MembraneMapping Membrane="nuclear_membrane" SurfaceToVolumeRatio="1.0" VolumeFraction="0.2" CalculateVoltage="false" SpecificCapacitance="1.0" InitialVoltage="0.0" />
+         </GeometryContext>
+         <ReactionContext>
+            <LocalizedCompoundSpec LocalizedCompoundRef="Sc_cytosol" ForceConstant="false" EnableDiffusion="true">
+               <Initial>1.0</Initial>
+               <Diffusion>10.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="pSc_cytosol" ForceConstant="false" EnableDiffusion="true">
+               <Initial>0.0</Initial>
+               <Diffusion>10.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="binding_site_plasma_membrane" ForceConstant="true" EnableDiffusion="true">
+               <Initial>10.0</Initial>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="Sm_plasma_membrane" ForceConstant="false" EnableDiffusion="true">
+               <Initial>0.0</Initial>
+               <Diffusion>0.01</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="pSm_plasma_membrane" ForceConstant="false" EnableDiffusion="true">
+               <Initial>0.0</Initial>
+               <Diffusion>0.01</Diffusion>
+            </LocalizedCompoundSpec>
+            <ReactionSpec ReactionStepRef="reaction0" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="reaction1" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="reaction2" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="reaction3" ReactionMapping="included" />
+         </ReactionContext>
+         <MathDescription Name="Biophysical Letters_generated">
+            <Annotation>cloned from 'Biophysical Letters_generated' owned by user jmhaugh
+</Annotation>
+            <Constant Name="_F_">96480.0</Constant>
+            <Constant Name="_F_nmol_">9.648E-5</Constant>
+            <Constant Name="_K_GHK_">1.0E-9</Constant>
+            <Constant Name="_N_pmol_">6.02E11</Constant>
+            <Constant Name="_R_">8314.0</Constant>
+            <Constant Name="_T_">300.0</Constant>
+            <Constant Name="binding_site_plasma_membrane">10.0</Constant>
+            <Constant Name="binding_site_plasma_membrane_init">10.0</Constant>
+            <Constant Name="K_millivolts_per_volt">1000.0</Constant>
+            <Constant Name="Kf_reaction0">10.0</Constant>
+            <Constant Name="Kf_reaction1">10.0</Constant>
+            <Constant Name="Kf_reaction2">2.0</Constant>
+            <Constant Name="Kf_reaction3">1.0</Constant>
+            <Constant Name="KMOLE">0.0016611295681063123</Constant>
+            <Constant Name="Kr_reaction0">10.0</Constant>
+            <Constant Name="Kr_reaction1">10.0</Constant>
+            <Constant Name="Kr_reaction2">1.0</Constant>
+            <Constant Name="Kr_reaction3">0.0</Constant>
+            <Constant Name="pSc_cytosol_diffusionRate">10.0</Constant>
+            <Constant Name="pSc_cytosol_init">0.0</Constant>
+            <Constant Name="pSm_plasma_membrane_diffusionRate">0.01</Constant>
+            <Constant Name="pSm_plasma_membrane_init">0.0</Constant>
+            <Constant Name="Sc_cytosol_diffusionRate">10.0</Constant>
+            <Constant Name="Sc_cytosol_init">1.0</Constant>
+            <Constant Name="Sm_plasma_membrane_diffusionRate">0.01</Constant>
+            <Constant Name="Sm_plasma_membrane_init">0.0</Constant>
+            <Constant Name="Voltage_nuclear_membrane">0.0</Constant>
+            <Constant Name="Voltage_plasma_membrane">0.0</Constant>
+            <VolumeVariable Name="pSc" />
+            <VolumeVariable Name="Sc" />
+            <MembraneVariable Name="pSm_plasma_membrane" />
+            <MembraneVariable Name="Sm_plasma_membrane" />
+            <Function Name="J_reaction0">((Sc_INSIDE * Kf_reaction0 * binding_site_plasma_membrane) - (Kr_reaction0 * Sm_plasma_membrane))</Function>
+            <Function Name="J_reaction1">((binding_site_plasma_membrane * Kf_reaction1 * pSc_INSIDE) - (Kr_reaction1 * pSm_plasma_membrane))</Function>
+            <Function Name="J_reaction2">((Kf_reaction2 * Sm_plasma_membrane) - (Kr_reaction2 * pSm_plasma_membrane))</Function>
+            <Function Name="J_reaction3">((Kf_reaction3 * pSc) - (Kr_reaction3 * Sc))</Function>
+            <CompartmentSubDomain Name="subVolume2" Priority="300">
+               <BoundaryType Boundary="Xm" Type="Flux" />
+               <BoundaryType Boundary="Xp" Type="Flux" />
+               <BoundaryType Boundary="Ym" Type="Flux" />
+               <BoundaryType Boundary="Yp" Type="Flux" />
+               <BoundaryType Boundary="Zm" Type="Flux" />
+               <BoundaryType Boundary="Zp" Type="Flux" />
+               <PdeEquation Name="Sc" SolutionType="Unknown">
+                  <Rate>0.0</Rate>
+                  <Diffusion>Sc_cytosol_diffusionRate</Diffusion>
+                  <Initial>0.0</Initial>
+               </PdeEquation>
+               <PdeEquation Name="pSc" SolutionType="Unknown">
+                  <Rate>0.0</Rate>
+                  <Diffusion>pSc_cytosol_diffusionRate</Diffusion>
+                  <Initial>0.0</Initial>
+               </PdeEquation>
+            </CompartmentSubDomain>
+            <CompartmentSubDomain Name="subVolume1" Priority="201">
+               <BoundaryType Boundary="Xm" Type="Flux" />
+               <BoundaryType Boundary="Xp" Type="Flux" />
+               <BoundaryType Boundary="Ym" Type="Flux" />
+               <BoundaryType Boundary="Yp" Type="Flux" />
+               <BoundaryType Boundary="Zm" Type="Flux" />
+               <BoundaryType Boundary="Zp" Type="Flux" />
+               <PdeEquation Name="Sc" SolutionType="Unknown">
+                  <Rate>J_reaction3</Rate>
+                  <Diffusion>Sc_cytosol_diffusionRate</Diffusion>
+                  <Initial>Sc_cytosol_init</Initial>
+               </PdeEquation>
+               <PdeEquation Name="pSc" SolutionType="Unknown">
+                  <Rate> - J_reaction3</Rate>
+                  <Diffusion>pSc_cytosol_diffusionRate</Diffusion>
+                  <Initial>pSc_cytosol_init</Initial>
+               </PdeEquation>
+            </CompartmentSubDomain>
+            <CompartmentSubDomain Name="subVolume0" Priority="102">
+               <BoundaryType Boundary="Xm" Type="Flux" />
+               <BoundaryType Boundary="Xp" Type="Flux" />
+               <BoundaryType Boundary="Ym" Type="Flux" />
+               <BoundaryType Boundary="Yp" Type="Flux" />
+               <BoundaryType Boundary="Zm" Type="Flux" />
+               <BoundaryType Boundary="Zp" Type="Flux" />
+               <PdeEquation Name="Sc" SolutionType="Unknown">
+                  <Rate>0.0</Rate>
+                  <Diffusion>Sc_cytosol_diffusionRate</Diffusion>
+                  <Initial>0.0</Initial>
+               </PdeEquation>
+               <PdeEquation Name="pSc" SolutionType="Unknown">
+                  <Rate>0.0</Rate>
+                  <Diffusion>pSc_cytosol_diffusionRate</Diffusion>
+                  <Initial>0.0</Initial>
+               </PdeEquation>
+            </CompartmentSubDomain>
+            <MembraneSubDomain InsideCompartment="subVolume2" OutsideCompartment="subVolume1">
+               <BoundaryType Boundary="Xm" Type="Value" />
+               <BoundaryType Boundary="Xp" Type="Value" />
+               <BoundaryType Boundary="Ym" Type="Value" />
+               <BoundaryType Boundary="Yp" Type="Value" />
+               <BoundaryType Boundary="Zm" Type="Value" />
+               <BoundaryType Boundary="Zp" Type="Value" />
+               <PdeEquation Name="Sm_plasma_membrane" SolutionType="Unknown">
+                  <Rate>0.0</Rate>
+                  <Diffusion>Sm_plasma_membrane_diffusionRate</Diffusion>
+                  <Initial>0.0</Initial>
+               </PdeEquation>
+               <PdeEquation Name="pSm_plasma_membrane" SolutionType="Unknown">
+                  <Rate>0.0</Rate>
+                  <Diffusion>pSm_plasma_membrane_diffusionRate</Diffusion>
+                  <Initial>0.0</Initial>
+               </PdeEquation>
+               <JumpCondition Name="Sc">
+                  <InFlux>0.0</InFlux>
+                  <OutFlux>0.0</OutFlux>
+               </JumpCondition>
+               <JumpCondition Name="pSc">
+                  <InFlux>0.0</InFlux>
+                  <OutFlux>0.0</OutFlux>
+               </JumpCondition>
+            </MembraneSubDomain>
+            <MembraneSubDomain InsideCompartment="subVolume1" OutsideCompartment="subVolume0">
+               <BoundaryType Boundary="Xm" Type="Value" />
+               <BoundaryType Boundary="Xp" Type="Value" />
+               <BoundaryType Boundary="Ym" Type="Value" />
+               <BoundaryType Boundary="Yp" Type="Value" />
+               <BoundaryType Boundary="Zm" Type="Value" />
+               <BoundaryType Boundary="Zp" Type="Value" />
+               <PdeEquation Name="Sm_plasma_membrane" SolutionType="Unknown">
+                  <Rate>(J_reaction0 - J_reaction2)</Rate>
+                  <Diffusion>Sm_plasma_membrane_diffusionRate</Diffusion>
+                  <Initial>Sm_plasma_membrane_init</Initial>
+               </PdeEquation>
+               <PdeEquation Name="pSm_plasma_membrane" SolutionType="Unknown">
+                  <Rate>(J_reaction1 + J_reaction2)</Rate>
+                  <Diffusion>pSm_plasma_membrane_diffusionRate</Diffusion>
+                  <Initial>pSm_plasma_membrane_init</Initial>
+               </PdeEquation>
+               <JumpCondition Name="Sc">
+                  <InFlux> - (KMOLE * J_reaction0)</InFlux>
+                  <OutFlux>0.0</OutFlux>
+               </JumpCondition>
+               <JumpCondition Name="pSc">
+                  <InFlux> - (KMOLE * J_reaction1)</InFlux>
+                  <OutFlux>0.0</OutFlux>
+               </JumpCondition>
+            </MembraneSubDomain>
+            <Version Name="Biophysical Letters_generated" KeyValue="28136496" BranchId="28136497" Archived="0" Date="15-Jul-2008 14:31:38" FromVersionable="false">
+               <Owner Name="CMC" Identifier="2794180" />
+               <GroupAccess Type="1" />
+               <Annotation>cloned from 'Biophysical Letters_generated' owned by user jmhaugh
+</Annotation>
+            </Version>
+         </MathDescription>
+         <Simulation Name="Regime I/II, D = 1 um^2/s, nm = 10/um^2">
+            <Annotation>cloned from 'Regime I/II, D = 1 um^2/s, nm = 10/um^2' owned by user jmhaugh
+</Annotation>
+            <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Finite Volume, Regular Grid">
+               <TimeBound StartTime="0.0" EndTime="100.0" />
+               <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+               <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+               <OutputOptions KeepEvery="100" KeepAtMost="1000" />
+            </SolverTaskDescription>
+            <MathOverrides>
+               <Constant Name="pSc_cytosol_diffusionRate">1.0</Constant>
+               <Constant Name="Sc_cytosol_diffusionRate">1.0</Constant>
+            </MathOverrides>
+            <MeshSpecification>
+               <Size X="101" Y="101" Z="104" />
+            </MeshSpecification>
+            <Version Name="Regime I/II, D = 1 um^2/s, nm = 10/um^2" KeyValue="28136558" BranchId="28136559" Archived="0" Date="15-Jul-2008 14:31:39" FromVersionable="false">
+               <Owner Name="CMC" Identifier="2794180" />
+               <GroupAccess Type="1" />
+               <Annotation>cloned from 'Regime I/II, D = 1 um^2/s, nm = 10/um^2' owned by user jmhaugh
+</Annotation>
+            </Version>
+         </Simulation>
+         <Simulation Name="Regime II, D = 10 um^2/s, nm = 10/um^2">
+            <Annotation>cloned from 'Regime II, D = 10 um^2/s, nm = 10/um^2' owned by user jmhaugh
+</Annotation>
+            <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Finite Volume, Regular Grid">
+               <TimeBound StartTime="0.0" EndTime="100.0" />
+               <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+               <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+               <OutputOptions KeepEvery="100" KeepAtMost="1000" />
+            </SolverTaskDescription>
+            <MathOverrides />
+            <MeshSpecification>
+               <Size X="101" Y="101" Z="104" />
+            </MeshSpecification>
+            <Version Name="Regime II, D = 10 um^2/s, nm = 10/um^2" KeyValue="28136561" BranchId="28136562" Archived="0" Date="15-Jul-2008 14:31:39" FromVersionable="false">
+               <Owner Name="CMC" Identifier="2794180" />
+               <GroupAccess Type="1" />
+               <Annotation>cloned from 'Regime II, D = 10 um^2/s, nm = 10/um^2' owned by user jmhaugh
+</Annotation>
+            </Version>
+         </Simulation>
+         <Simulation Name="Regime I/II, D = 1 um^2/s, nm = 100/um^2, small time step">
+            <Annotation>cloned from 'Regime I/II, D = 1 um^2/s, nm = 100/um^2, small time step' owned by user jmhaugh
+</Annotation>
+            <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Finite Volume, Regular Grid">
+               <TimeBound StartTime="0.0" EndTime="100.0" />
+               <TimeStep DefaultTime="0.01" MinTime="1.0E-8" MaxTime="1.0" />
+               <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+               <OutputOptions KeepEvery="1000" KeepAtMost="1000" />
+            </SolverTaskDescription>
+            <MathOverrides>
+               <Constant Name="binding_site_plasma_membrane">100.0</Constant>
+               <Constant Name="Sc_cytosol_diffusionRate">1.0</Constant>
+               <Constant Name="pSc_cytosol_diffusionRate">1.0</Constant>
+               <Constant Name="binding_site_plasma_membrane_init">100.0</Constant>
+            </MathOverrides>
+            <MeshSpecification>
+               <Size X="101" Y="101" Z="104" />
+            </MeshSpecification>
+            <Version Name="Regime I/II, D = 1 um^2/s, nm = 100/um^2, small time step" KeyValue="28136564" BranchId="28136565" Archived="0" Date="15-Jul-2008 14:31:39" FromVersionable="false">
+               <Owner Name="CMC" Identifier="2794180" />
+               <GroupAccess Type="1" />
+               <Annotation>cloned from 'Regime I/II, D = 1 um^2/s, nm = 100/um^2, small time step' owned by user jmhaugh
+</Annotation>
+            </Version>
+         </Simulation>
+         <Simulation Name="Regime II/IV, D = 10 um^2/s, nm = 100/um^2">
+            <Annotation>cloned from 'Regime II/IV, D = 10 um^2/s, nm = 100/um^2' owned by user jmhaugh
+</Annotation>
+            <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Finite Volume, Regular Grid">
+               <TimeBound StartTime="0.0" EndTime="100.0" />
+               <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+               <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+               <OutputOptions KeepEvery="100" KeepAtMost="1000" />
+            </SolverTaskDescription>
+            <MathOverrides>
+               <Constant Name="binding_site_plasma_membrane_init">100.0</Constant>
+               <Constant Name="binding_site_plasma_membrane">100.0</Constant>
+            </MathOverrides>
+            <MeshSpecification>
+               <Size X="101" Y="101" Z="104" />
+            </MeshSpecification>
+            <Version Name="Regime II/IV, D = 10 um^2/s, nm = 100/um^2" KeyValue="28136567" BranchId="28136568" Archived="0" Date="15-Jul-2008 14:31:39" FromVersionable="false">
+               <Owner Name="CMC" Identifier="2794180" />
+               <GroupAccess Type="1" />
+               <Annotation>cloned from 'Regime II/IV, D = 10 um^2/s, nm = 100/um^2' owned by user jmhaugh
+</Annotation>
+            </Version>
+         </Simulation>
+         <Simulation Name="Regime I/II, D = 1 um^2/s, nm = 30/um^2">
+            <Annotation>cloned from 'Regime I/II, D = 1 um^2/s, nm = 30/um^2' owned by user jmhaugh
+</Annotation>
+            <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Finite Volume, Regular Grid">
+               <TimeBound StartTime="0.0" EndTime="100.0" />
+               <TimeStep DefaultTime="0.01" MinTime="1.0E-8" MaxTime="1.0" />
+               <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+               <OutputOptions KeepEvery="1000" KeepAtMost="1000" />
+            </SolverTaskDescription>
+            <MathOverrides>
+               <Constant Name="binding_site_plasma_membrane">30.0</Constant>
+               <Constant Name="Sc_cytosol_diffusionRate">1.0</Constant>
+               <Constant Name="pSc_cytosol_diffusionRate">1.0</Constant>
+               <Constant Name="binding_site_plasma_membrane_init">30.0</Constant>
+            </MathOverrides>
+            <MeshSpecification>
+               <Size X="101" Y="101" Z="104" />
+            </MeshSpecification>
+            <Version Name="Regime I/II, D = 1 um^2/s, nm = 30/um^2" KeyValue="28136570" BranchId="28136571" Archived="0" Date="15-Jul-2008 14:31:39" FromVersionable="false">
+               <Owner Name="CMC" Identifier="2794180" />
+               <GroupAccess Type="1" />
+               <Annotation>cloned from 'Regime I/II, D = 1 um^2/s, nm = 30/um^2' owned by user jmhaugh
+</Annotation>
+            </Version>
+         </Simulation>
+         <Simulation Name="Regime II/IV, D = 10 um^2/s, nm = 30/um^2">
+            <Annotation>cloned from 'Regime II/IV, D = 10 um^2/s, nm = 30/um^2' owned by user jmhaugh
+</Annotation>
+            <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Finite Volume, Regular Grid">
+               <TimeBound StartTime="0.0" EndTime="100.0" />
+               <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+               <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+               <OutputOptions KeepEvery="100" KeepAtMost="1000" />
+            </SolverTaskDescription>
+            <MathOverrides>
+               <Constant Name="binding_site_plasma_membrane_init">30.0</Constant>
+               <Constant Name="binding_site_plasma_membrane">30.0</Constant>
+            </MathOverrides>
+            <MeshSpecification>
+               <Size X="101" Y="101" Z="104" />
+            </MeshSpecification>
+            <Version Name="Regime II/IV, D = 10 um^2/s, nm = 30/um^2" KeyValue="28136573" BranchId="28136574" Archived="0" Date="15-Jul-2008 14:31:39" FromVersionable="false">
+               <Owner Name="CMC" Identifier="2794180" />
+               <GroupAccess Type="1" />
+               <Annotation>cloned from 'Regime II/IV, D = 10 um^2/s, nm = 30/um^2' owned by user jmhaugh
+</Annotation>
+            </Version>
+         </Simulation>
+         <Version Name="Biophysical Letters" KeyValue="28136541" BranchId="28136542" Archived="0" Date="15-Jul-2008 14:31:39" FromVersionable="false">
+            <Owner Name="CMC" Identifier="2794180" />
+            <GroupAccess Type="1" />
+            <Annotation>cloned from 'Biophysical Letters' owned by user jmhaugh
+</Annotation>
+         </Version>
+      </SimulationSpec>
+      <Version Name="Cell Shape Control" KeyValue="28136576" BranchId="28136577" Archived="0" Date="15-Jul-2008 14:31:39" FromVersionable="false">
+         <Owner Name="CMC" Identifier="2794180" />
+         <GroupAccess Type="0" />
+         <Annotation>cloned from 'Cell Shape Control' owned by user jmhaugh
+Membrane-binding/modification model of signaling protein activation and analysis of its control by cell morphology. 
+Haugh, J.M. 
+Biophys J 92, L93-95, 2007. 
+</Annotation>
+      </Version>
+   </BioModel>
+</vcml>
+

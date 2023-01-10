@@ -118,7 +118,7 @@ public class ModelResolver {
         try {
             srcURI = sedml.getModelWithId(baseModelRef).getSourceURI();
         } catch (URISyntaxException e) {
-
+            logger.error(MODEL_SRC_NOT_VALID_URI+": "+e.getMessage(), e);
             message = MODEL_SRC_NOT_VALID_URI;
             return null;
         }

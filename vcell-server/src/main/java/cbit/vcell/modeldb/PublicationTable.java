@@ -19,6 +19,7 @@ import java.util.ArrayList;
 
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
+import org.vcell.db.DatabaseSyntax;
 import org.vcell.pub.Publication;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.KeyValue;
@@ -78,14 +79,18 @@ public Publication getInfo(ResultSet rset,Connection con) throws SQLException,Da
 	return new Publication(key, title, authors, citation, pubmedid, doi, url);
 }
 
-public String getPreparedStatement_PublicationReps(String conditions, OrderBy orderBy){
+public String getPreparedStatement_PublicationReps(String conditions, OrderBy orderBy, DatabaseSyntax dbSyntax){
 
 	UserTable userTable = UserTable.table;
 	BioModelTable biomodelTable = BioModelTable.table;
 	MathModelTable mathmodelTable = MathModelTable.table;
 	PublicationTable pubTable = PublicationTable.table;
 	PublicationModelLinkTable pubModelTable = PublicationModelLinkTable.table;
-	
+
+	String concat_function_name = (dbSyntax==DatabaseSyntax.ORACLE) ? "wm_concat" : "string_agg";
+	String concat_second_arg = (dbSyntax==DatabaseSyntax.ORACLE) ? "" : ", ','";
+	String string_cast = (dbSyntax==DatabaseSyntax.ORACLE) ? "" : "::varchar(255)";
+
 	String subquery = 			
 		"select " +
 		    "distinct "+pubTable.id.getQualifiedColName()+", "+
@@ -100,11 +105,11 @@ public String getPreparedStatement_PublicationReps(String conditions, OrderBy or
 		    pubTable.wittid.getQualifiedColName()+", "+
 		    pubTable.pubdate.getQualifiedColName()+", "+
 		
-		   "(select '['||wm_concat("+"SQ1_"+biomodelTable.id.getQualifiedColName()+"||';'"+
-		   						"|| UTL_RAW.CAST_TO_RAW("+"SQ1_"+biomodelTable.name.getQualifiedColName()+") ||';'"+
-		   						"||"+"SQ1_"+userTable.id.getQualifiedColName()+"||';'"+
-		   						"|| UTL_RAW.CAST_TO_RAW("+"SQ1_"+userTable.userid.getQualifiedColName()+") ||';'"+
-		   						"||"+"SQ1_"+biomodelTable.versionFlag.getQualifiedColName()+")||']' "+
+		   "(select '['||"+concat_function_name+"("+"SQ1_"+biomodelTable.id.getQualifiedColName()+string_cast+"||';'"+
+		   						"||"+"SQ1_"+biomodelTable.name.getQualifiedColName()+"||';'"+
+		   						"||"+"SQ1_"+userTable.id.getQualifiedColName()+string_cast+"||';'"+
+		   						"||"+"SQ1_"+userTable.userid.getQualifiedColName()+"||';'"+
+		   						"||"+"SQ1_"+biomodelTable.versionFlag.getQualifiedColName()+string_cast + concat_second_arg+")||']' "+
 		   "   from "+pubModelTable.getTableName()+" SQ1_"+pubModelTable.getTableName()+", "+
 		              biomodelTable.getTableName()+" SQ1_"+biomodelTable.getTableName()+", "+
 		              userTable.getTableName()+" SQ1_"+userTable.getTableName()+" "+
@@ -113,11 +118,11 @@ public String getPreparedStatement_PublicationReps(String conditions, OrderBy or
 	          "SQ1_"+pubModelTable.bioModelRef.getQualifiedColName()+" = SQ1_"+biomodelTable.id.getQualifiedColName()+" and "+
 	          "SQ1_"+userTable.id.getQualifiedColName()+" = SQ1_"+biomodelTable.ownerRef.getQualifiedColName()+") bmRefs,  "+
 	          
-		   "(select '['||wm_concat("+"SQ2_"+mathmodelTable.id.getQualifiedColName()+"||';'"+
-								"|| UTL_RAW.CAST_TO_RAW("+"SQ2_"+mathmodelTable.name.getQualifiedColName()+") ||';'"+
-								"||"+"SQ2_"+userTable.id.getQualifiedColName()+"||';'"+
-								"|| UTL_RAW.CAST_TO_RAW("+"SQ2_"+userTable.userid.getQualifiedColName()+") ||';'"+
-								"||"+"SQ2_"+mathmodelTable.versionFlag.getQualifiedColName()+")||']' "+
+		   "(select '['||"+concat_function_name+"("+"SQ2_"+mathmodelTable.id.getQualifiedColName()+string_cast+"||';'"+
+								"||"+"SQ2_"+mathmodelTable.name.getQualifiedColName()+"||';'"+
+								"||"+"SQ2_"+userTable.id.getQualifiedColName()+string_cast+"||';'"+
+								"||"+"SQ2_"+userTable.userid.getQualifiedColName()+"||';'"+
+								"||"+"SQ2_"+mathmodelTable.versionFlag.getQualifiedColName()+string_cast + concat_second_arg+")||']' "+
 		   "   from "+pubModelTable.getTableName()+" SQ2_"+pubModelTable.getTableName()+", "+
 		              mathmodelTable.getTableName()+" SQ2_"+mathmodelTable.getTableName()+", "+
 		              userTable.getTableName()+" SQ2_"+userTable.getTableName()+" "+
@@ -184,18 +189,12 @@ public PublicationRep getPublicationRep(User user, ResultSet rset) throws Illega
 		for (String bmRefString : bmRefStrings) {
 			String bmRefComponents[] = bmRefString.split(";");
 			if (bmRefComponents.length==5){
-				try {
-					KeyValue bmKey = new KeyValue(bmRefComponents[0]);
-					String bmName = new String(Hex.decodeHex(bmRefComponents[1].toCharArray()));
-					KeyValue ownerKey = new KeyValue(bmRefComponents[2]);
-					String ownerUserid = new String(Hex.decodeHex(bmRefComponents[3].toCharArray()));
-					Long versionFlag = Long.valueOf(bmRefComponents[4]);
-					bmRefList.add(new BioModelReferenceRep(bmKey, bmName, new User(ownerUserid,ownerKey),versionFlag));
-				} catch (DecoderException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-					throw new DataAccessException(e.getMessage(),e);
-				}
+				KeyValue bmKey = new KeyValue(bmRefComponents[0]);
+				String bmName = bmRefComponents[1];
+				KeyValue ownerKey = new KeyValue(bmRefComponents[2]);
+				String ownerUserid = bmRefComponents[3];
+				Long versionFlag = Long.valueOf(bmRefComponents[4]);
+				bmRefList.add(new BioModelReferenceRep(bmKey, bmName, new User(ownerUserid,ownerKey),versionFlag));
 			}
 		}
 	}

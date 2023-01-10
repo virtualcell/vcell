@@ -65,5 +65,12 @@ public class BioModelTransforms {
 
         Model.ReservedSymbol transformed_KMOLE = bioModel.getModel().getReservedSymbolByRole(Model.ReservedSymbolRole.KMOLE);
         transformed_KMOLE.getExpression().substituteInPlace(transformed_KMOLE.getExpression(),new Expression(KMOLE_value_old));
+
+        // need to call Kinetics.updateGeneratedExpressions() - invoked by refreshDependencies().
+        String conversionFactorSave = ExpressionUtils.value_molecules_per_uM_um3_NUMERATOR;
+        assert conversionFactorSave.equals("6.02214179E8");
+        ExpressionUtils.value_molecules_per_uM_um3_NUMERATOR = "6.02E8";
+        bioModel.refreshDependencies();
+        ExpressionUtils.value_molecules_per_uM_um3_NUMERATOR = conversionFactorSave;
     }
 }

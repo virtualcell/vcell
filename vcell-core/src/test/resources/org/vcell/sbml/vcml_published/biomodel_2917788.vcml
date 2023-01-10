@@ -1,0 +1,332 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--This biomodel was generated in VCML Version 0.4-->
+<vcml xmlns="http://sourceforge.net/projects/vcell/vcml" Version="0.4">
+   <BioModel Name="L-Type Calcium Channels">
+      <Annotation>Models L-type Ca2+ channel kinetics in the Aplysia neuron.  Used to demonstrate the rapid equilibrium approximation.  Described in 4.1 and illustrated in Figure 4.3.</Annotation>
+      <Model Name="unnamed">
+         <Compound Name="x_c">
+            <Annotation>Ca Channel (Closed)</Annotation>
+         </Compound>
+         <Compound Name="x_i">
+            <Annotation>Ca Channel (Inactivated)</Annotation>
+         </Compound>
+         <Compound Name="Ca">
+            <Annotation>Calcium</Annotation>
+         </Compound>
+         <Compound Name="x_o">
+            <Annotation>Ca Channel (Open)</Annotation>
+         </Compound>
+         <Feature Name="Extracellular" KeyValue="2713132" />
+         <Feature Name="Cytoplasm" KeyValue="2713136" />
+         <Membrane InsideFeature="Cytoplasm" OutsideFeature="Extracellular" MembraneVoltage="V" Name="PlasmaMembrane" KeyValue="2713133" />
+         <LocalizedCompound Name="x_c" CompoundRef="x_c" Structure="PlasmaMembrane" OverrideName="true" KeyValue="2713139" />
+         <LocalizedCompound Name="x_i" CompoundRef="x_i" Structure="PlasmaMembrane" OverrideName="true" KeyValue="2713140" />
+         <LocalizedCompound Name="Ca_Ext" CompoundRef="Ca" Structure="Extracellular" OverrideName="true" KeyValue="2713141" />
+         <LocalizedCompound Name="Ca_Cyt" CompoundRef="Ca" Structure="Cytoplasm" OverrideName="true" KeyValue="2713142" />
+         <LocalizedCompound Name="x_o" CompoundRef="x_o" Structure="PlasmaMembrane" OverrideName="true" KeyValue="2713138" />
+         <SimpleReaction Structure="PlasmaMembrane" Name="V1" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="2713150">
+            <Reactant LocalizedCompoundRef="x_c" Stoichiometry="1" KeyValue="2713152" />
+            <Product LocalizedCompoundRef="x_o" Stoichiometry="1" KeyValue="2713151" />
+            <Kinetics KineticsType="MassAction">
+               <Parameter Name="J" Role="reaction rate" Unit="molecules.um-2.s-1">((kap * x_c) - (kam * x_o))</Parameter>
+               <Parameter Name="I" Role="inward current density" Unit="pA.um-2">0.0</Parameter>
+               <Parameter Name="kap" Role="forward rate constant" Unit="s-1">500.0</Parameter>
+               <Parameter Name="kam" Role="reverse rate constant" Unit="s-1">100.0</Parameter>
+            </Kinetics>
+            <Annotation />
+         </SimpleReaction>
+         <FluxStep Name="Ca Current" Structure="PlasmaMembrane" FluxCarrier="Ca" FluxCarrierValence="2" FluxOption="MolecularAndElectrical" KeyValue="2713146">
+            <Modifier LocalizedCompoundRef="x_o" KeyValue="2713147" />
+            <Kinetics KineticsType="GeneralCurrentKinetics">
+               <Parameter Name="I" Role="inward current density" Unit="pA.um-2">(g * x_o * (V_PM - VCa))</Parameter>
+               <Parameter Name="J" Role="reaction rate" Unit="uM.um.s-1">(I / (2.0 * _F_nmol_))</Parameter>
+               <Parameter Name="g" Role="user defined" Unit="tbd">0.1</Parameter>
+               <Parameter Name="VCa" Role="user defined" Unit="tbd">60.0</Parameter>
+               <Parameter Name="V_PM" Role="user defined" Unit="tbd">20.0</Parameter>
+            </Kinetics>
+            <Annotation />
+         </FluxStep>
+         <SimpleReaction Structure="PlasmaMembrane" Name="V2" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="2713143">
+            <Reactant LocalizedCompoundRef="x_o" Stoichiometry="1" KeyValue="2713144" />
+            <Product LocalizedCompoundRef="x_i" Stoichiometry="1" KeyValue="2713145" />
+            <Kinetics KineticsType="MassAction">
+               <Parameter Name="J" Role="reaction rate" Unit="molecules.um-2.s-1">((Kf * x_o) - (kbm * x_i))</Parameter>
+               <Parameter Name="I" Role="inward current density" Unit="pA.um-2">0.0</Parameter>
+               <Parameter Name="Kf" Role="forward rate constant" Unit="s-1">(kbp * Ca_d)</Parameter>
+               <Parameter Name="kbm" Role="reverse rate constant" Unit="s-1">50.0</Parameter>
+               <Parameter Name="kbp" Role="user defined" Unit="tbd">0.1</Parameter>
+               <Parameter Name="Ca_d" Role="user defined" Unit="tbd">200.0</Parameter>
+            </Kinetics>
+            <Annotation />
+         </SimpleReaction>
+         <Diagram Name="unnamed" Structure="Extracellular" />
+         <Diagram Name="Feature0" Structure="Cytoplasm" />
+         <Diagram Name="Membrane0" Structure="PlasmaMembrane">
+            <LocalizedCompoundShape LocalizedCompoundRef="x_o" LocationX="177" LocationY="203" />
+            <LocalizedCompoundShape LocalizedCompoundRef="x_c" LocationX="103" LocationY="285" />
+            <LocalizedCompoundShape LocalizedCompoundRef="x_i" LocationX="217" LocationY="297" />
+            <LocalizedCompoundShape LocalizedCompoundRef="Ca_Cyt" LocationX="38" LocationY="58" />
+            <LocalizedCompoundShape LocalizedCompoundRef="Ca_Ext" LocationX="38" LocationY="58" />
+            <SimpleReactionShape SimpleReactionRef="V2" LocationX="231" LocationY="200" />
+            <FluxReactionShape FluxReactionRef="Ca Current" LocationX="150" LocationY="60" />
+            <SimpleReactionShape SimpleReactionRef="V1" LocationX="37" LocationY="199" />
+         </Diagram>
+         <Version Name="unnamed" KeyValue="2713131" BranchId="5062135" Archived="0" Date="10-Jul-2002 16:12:24" FromVersionable="false">
+            <Owner Name="CompCell" Identifier="2646115" />
+            <GroupAccess Type="1" />
+         </Version>
+      </Model>
+      <SimulationSpec Name="Figure 4.3: Full Model" Stochastic="false">
+         <Annotation>Full model (no time approximation) as illustrated in Figure 4.3</Annotation>
+         <Geometry Name="No Approximation" Dimension="0">
+            <Extent X="10.0" Y="10.0" Z="10.0" />
+            <Origin X="0.0" Y="0.0" Z="0.0" />
+            <SubVolume Name="Compartment" Handle="0" Type="Compartmental" KeyValue="2706697" />
+            <Version Name="No Approximation" KeyValue="2706694" BranchId="5059667" Archived="0" Date="10-Jul-2002 10:35:29" FromVersionable="false">
+               <Owner Name="CompCell" Identifier="2646115" />
+               <GroupAccess Type="1" />
+            </Version>
+         </Geometry>
+         <GeometryContext>
+            <FeatureMapping Feature="Extracellular" SubVolume="Compartment" Resolved="false">
+               <BoundariesTypes Xm="Value" Xp="Value" Ym="Value" Yp="Value" Zm="Value" Zp="Value" />
+            </FeatureMapping>
+            <FeatureMapping Feature="Cytoplasm" SubVolume="Compartment" Resolved="false">
+               <BoundariesTypes Xm="Value" Xp="Value" Ym="Value" Yp="Value" Zm="Value" Zp="Value" />
+            </FeatureMapping>
+            <MembraneMapping Membrane="PlasmaMembrane" SurfaceToVolumeRatio="1.0" VolumeFraction="0.2" CalculateVoltage="false" SpecificCapacitance="0.01" InitialVoltage="20.0" />
+         </GeometryContext>
+         <ReactionContext>
+            <LocalizedCompoundSpec LocalizedCompoundRef="x_c" ForceConstant="false" EnableDiffusion="false">
+               <Initial>1.0</Initial>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="x_i" ForceConstant="false" EnableDiffusion="false">
+               <Initial>0.0</Initial>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="x_o" ForceConstant="false" EnableDiffusion="false">
+               <Initial>0.0</Initial>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="Ca_Ext" ForceConstant="true" EnableDiffusion="true">
+               <Initial>2000.0</Initial>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="Ca_Cyt" ForceConstant="true" EnableDiffusion="true">
+               <Initial>0.1</Initial>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <ReactionSpec ReactionStepRef="V1" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="Ca Current" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="V2" ReactionMapping="included" />
+         </ReactionContext>
+         <MathDescription Name="No Approximation">
+            <Constant Name="SurfToVol_PlasmaMembrane">1.0</Constant>
+            <Constant Name="_F_">96480.0</Constant>
+            <Constant Name="VCa">60.0</Constant>
+            <Constant Name="Ca_Cyt_init">0.1</Constant>
+            <Constant Name="Ca_d">200.0</Constant>
+            <Constant Name="_R_">8314.0</Constant>
+            <Constant Name="K_milliVolts_per_Volt">1000.0</Constant>
+            <Constant Name="Ca_Ext_init">2000.0</Constant>
+            <Constant Name="V_PM">20.0</Constant>
+            <Constant Name="KMOLE">0.0016611295681063123</Constant>
+            <Constant Name="kbp">0.1</Constant>
+            <Constant Name="kbm">50.0</Constant>
+            <Constant Name="Ca_Cyt">0.1</Constant>
+            <Constant Name="_T_">300.0</Constant>
+            <Constant Name="x_c_init">1.0</Constant>
+            <Constant Name="Ca_Ext">2000.0</Constant>
+            <Constant Name="x_i_init">0.0</Constant>
+            <Constant Name="kap">500.0</Constant>
+            <Constant Name="kam">100.0</Constant>
+            <Constant Name="x_o_init">0.0</Constant>
+            <Constant Name="g">0.1</Constant>
+            <Constant Name="VolFract_Cytoplasm">0.2</Constant>
+            <VolumeVariable Name="x_o" />
+            <VolumeVariable Name="x_i" />
+            <Function Name="K_x_c_total">((x_o_init * SurfToVol_PlasmaMembrane * VolFract_Cytoplasm * KMOLE) + (x_c_init * SurfToVol_PlasmaMembrane * VolFract_Cytoplasm * KMOLE) + (x_i_init * SurfToVol_PlasmaMembrane * VolFract_Cytoplasm * KMOLE))</Function>
+            <Function Name="x_c">(( - (x_o * SurfToVol_PlasmaMembrane * VolFract_Cytoplasm * KMOLE) + K_x_c_total - (x_i * SurfToVol_PlasmaMembrane * VolFract_Cytoplasm * KMOLE)) / (SurfToVol_PlasmaMembrane * VolFract_Cytoplasm * KMOLE))</Function>
+            <Function Name="V">20.0</Function>
+            <Function Name="Kf_V2">(kbp * Ca_d)</Function>
+            <Function Name="J_V2">((Kf_V2 * x_o) - (kbm * x_i))</Function>
+            <Function Name="J_V1">((kap * x_c) - (kam * x_o))</Function>
+            <Function Name="I_Ca_Current">(g * x_o * (V_PM - VCa))</Function>
+            <Function Name="Kflux_PlasmaMembrane_Extracellular">(SurfToVol_PlasmaMembrane * VolFract_Cytoplasm / (1.0 - VolFract_Cytoplasm))</Function>
+            <Function Name="Kflux_PlasmaMembrane_Cytoplasm">SurfToVol_PlasmaMembrane</Function>
+            <CompartmentSubDomain Name="Compartment">
+               <BoundaryType Boundary="Xm" Type="Value" />
+               <BoundaryType Boundary="Xp" Type="Value" />
+               <BoundaryType Boundary="Ym" Type="Value" />
+               <BoundaryType Boundary="Yp" Type="Value" />
+               <BoundaryType Boundary="Zm" Type="Value" />
+               <BoundaryType Boundary="Zp" Type="Value" />
+               <OdeEquation Name="x_i" SolutionType="Unknown">
+                  <Rate>J_V2</Rate>
+                  <Initial>x_i_init</Initial>
+               </OdeEquation>
+               <OdeEquation Name="x_o" SolutionType="Unknown">
+                  <Rate>( - J_V2 + J_V1)</Rate>
+                  <Initial>x_o_init</Initial>
+               </OdeEquation>
+            </CompartmentSubDomain>
+            <Version Name="No Approximation" KeyValue="2713222" BranchId="5061367" Archived="0" Date="10-Jul-2002 16:14:01" FromVersionable="false">
+               <Owner Name="CompCell" Identifier="2646115" />
+               <GroupAccess Type="1" />
+            </Version>
+         </MathDescription>
+         <Simulation Name="Simulation 1">
+            <Annotation>Illustrated in Figure 4.3</Annotation>
+            <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Runge-Kutta-Fehlberg (Fifth Order, Variable Time Step)">
+               <TimeBound StartTime="0.0" EndTime="0.1" />
+               <TimeStep DefaultTime="1.0E-5" MinTime="1.0E-8" MaxTime="1.0" />
+               <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+               <OutputOptions KeepEvery="1" KeepAtMost="1000" />
+            </SolverTaskDescription>
+            <MathOverrides />
+            <Version Name="Simulation 1" KeyValue="2914667" BranchId="5065086" Archived="0" Date="22-Aug-2002 11:46:13" FromVersionable="false">
+               <Owner Name="CompCell" Identifier="2646115" />
+               <GroupAccess Type="1" />
+               <Annotation>Illustrated in Figure 4.3</Annotation>
+            </Version>
+         </Simulation>
+         <Version Name="Figure 4.3: Full Model" KeyValue="2914633" BranchId="5063030" Archived="0" Date="22-Aug-2002 11:46:12" FromVersionable="false">
+            <Owner Name="CompCell" Identifier="2646115" />
+            <GroupAccess Type="1" />
+            <Annotation>Full model (no time approximation) as illustrated in Figure 4.3</Annotation>
+         </Version>
+      </SimulationSpec>
+      <SimulationSpec Name="Figure 4.3: Fast Approximation" Stochastic="false">
+         <Annotation>Fast approximation model (reaction V1 is set to "fast" in Reaction Mapping) as illustrated in Figure 4.3</Annotation>
+         <Geometry Name="No Approximation" Dimension="0">
+            <Extent X="10.0" Y="10.0" Z="10.0" />
+            <Origin X="0.0" Y="0.0" Z="0.0" />
+            <SubVolume Name="Compartment" Handle="0" Type="Compartmental" KeyValue="2706697" />
+            <Version Name="No Approximation" KeyValue="2706694" BranchId="5059667" Archived="0" Date="10-Jul-2002 10:35:29" FromVersionable="false">
+               <Owner Name="CompCell" Identifier="2646115" />
+               <GroupAccess Type="1" />
+            </Version>
+         </Geometry>
+         <GeometryContext>
+            <FeatureMapping Feature="Extracellular" SubVolume="Compartment" Resolved="false">
+               <BoundariesTypes Xm="Value" Xp="Value" Ym="Value" Yp="Value" Zm="Value" Zp="Value" />
+            </FeatureMapping>
+            <FeatureMapping Feature="Cytoplasm" SubVolume="Compartment" Resolved="false">
+               <BoundariesTypes Xm="Value" Xp="Value" Ym="Value" Yp="Value" Zm="Value" Zp="Value" />
+            </FeatureMapping>
+            <MembraneMapping Membrane="PlasmaMembrane" SurfaceToVolumeRatio="1.0" VolumeFraction="0.2" CalculateVoltage="false" SpecificCapacitance="0.01" InitialVoltage="20.0" />
+         </GeometryContext>
+         <ReactionContext>
+            <LocalizedCompoundSpec LocalizedCompoundRef="x_c" ForceConstant="false" EnableDiffusion="false">
+               <Initial>0.2</Initial>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="x_i" ForceConstant="false" EnableDiffusion="false">
+               <Initial>0.0</Initial>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="x_o" ForceConstant="false" EnableDiffusion="false">
+               <Initial>0.8</Initial>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="Ca_Ext" ForceConstant="true" EnableDiffusion="true">
+               <Initial>2000.0</Initial>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="Ca_Cyt" ForceConstant="true" EnableDiffusion="true">
+               <Initial>0.1</Initial>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <ReactionSpec ReactionStepRef="V1" ReactionMapping="fast" />
+            <ReactionSpec ReactionStepRef="Ca Current" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="V2" ReactionMapping="included" />
+         </ReactionContext>
+         <MathDescription Name="Fast Approximation">
+            <Constant Name="SurfToVol_PlasmaMembrane">1.0</Constant>
+            <Constant Name="_F_">96480.0</Constant>
+            <Constant Name="VCa">60.0</Constant>
+            <Constant Name="Ca_Cyt_init">0.1</Constant>
+            <Constant Name="Ca_d">200.0</Constant>
+            <Constant Name="_R_">8314.0</Constant>
+            <Constant Name="K_milliVolts_per_Volt">1000.0</Constant>
+            <Constant Name="Ca_Ext_init">2000.0</Constant>
+            <Constant Name="V_PM">20.0</Constant>
+            <Constant Name="KMOLE">0.0016611295681063123</Constant>
+            <Constant Name="kbp">0.1</Constant>
+            <Constant Name="kbm">50.0</Constant>
+            <Constant Name="Ca_Cyt">0.1</Constant>
+            <Constant Name="_T_">300.0</Constant>
+            <Constant Name="x_c_init">0.2</Constant>
+            <Constant Name="Ca_Ext">2000.0</Constant>
+            <Constant Name="x_i_init">0.0</Constant>
+            <Constant Name="kap">500.0</Constant>
+            <Constant Name="kam">100.0</Constant>
+            <Constant Name="x_o_init">0.8</Constant>
+            <Constant Name="g">0.1</Constant>
+            <Constant Name="VolFract_Cytoplasm">0.2</Constant>
+            <VolumeVariable Name="x_o" />
+            <VolumeVariable Name="x_i" />
+            <Function Name="K_x_c_total">((x_i_init * SurfToVol_PlasmaMembrane * VolFract_Cytoplasm * KMOLE) + (x_c_init * SurfToVol_PlasmaMembrane * VolFract_Cytoplasm * KMOLE) + (x_o_init * SurfToVol_PlasmaMembrane * VolFract_Cytoplasm * KMOLE))</Function>
+            <Function Name="x_c">(( - (x_i * SurfToVol_PlasmaMembrane * VolFract_Cytoplasm * KMOLE) + K_x_c_total - (x_o * SurfToVol_PlasmaMembrane * VolFract_Cytoplasm * KMOLE)) / (SurfToVol_PlasmaMembrane * VolFract_Cytoplasm * KMOLE))</Function>
+            <Function Name="V">20.0</Function>
+            <Function Name="Kf_V2">(kbp * Ca_d)</Function>
+            <Function Name="J_V2">((Kf_V2 * x_o) - (kbm * x_i))</Function>
+            <Function Name="J_V1">((kap * x_c) - (kam * x_o))</Function>
+            <Function Name="I_Ca_Current">(g * x_o * (V_PM - VCa))</Function>
+            <Function Name="Kflux_PlasmaMembrane_Extracellular">(SurfToVol_PlasmaMembrane * VolFract_Cytoplasm / (1.0 - VolFract_Cytoplasm))</Function>
+            <Function Name="Kflux_PlasmaMembrane_Cytoplasm">SurfToVol_PlasmaMembrane</Function>
+            <CompartmentSubDomain Name="Compartment">
+               <BoundaryType Boundary="Xm" Type="Value" />
+               <BoundaryType Boundary="Xp" Type="Value" />
+               <BoundaryType Boundary="Ym" Type="Value" />
+               <BoundaryType Boundary="Yp" Type="Value" />
+               <BoundaryType Boundary="Zm" Type="Value" />
+               <BoundaryType Boundary="Zp" Type="Value" />
+               <OdeEquation Name="x_i" SolutionType="Unknown">
+                  <Rate>J_V2</Rate>
+                  <Initial>x_i_init</Initial>
+               </OdeEquation>
+               <OdeEquation Name="x_o" SolutionType="Unknown">
+                  <Rate> - J_V2</Rate>
+                  <Initial>x_o_init</Initial>
+               </OdeEquation>
+               <FastSystem>
+                  <FastInvariant>x_i</FastInvariant>
+                  <FastRate>J_V1</FastRate>
+               </FastSystem>
+            </CompartmentSubDomain>
+            <Version Name="Fast Approximation" KeyValue="2917765" BranchId="5061453" Archived="0" Date="23-Aug-2002 15:57:37" FromVersionable="false">
+               <Owner Name="CompCell" Identifier="2646115" />
+               <GroupAccess Type="1" />
+            </Version>
+         </MathDescription>
+         <Simulation Name="Simulation 2">
+            <Annotation>Illustrated in Figure 4.3</Annotation>
+            <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Runge-Kutta-Fehlberg (Fifth Order, Variable Time Step)">
+               <TimeBound StartTime="0.0" EndTime="0.1" />
+               <TimeStep DefaultTime="1.0E-5" MinTime="1.0E-8" MaxTime="1.0" />
+               <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+               <OutputOptions KeepEvery="1" KeepAtMost="1000" />
+            </SolverTaskDescription>
+            <MathOverrides />
+            <Version Name="Simulation 2" KeyValue="2917783" BranchId="5065087" Archived="0" Date="23-Aug-2002 15:57:38" FromVersionable="false">
+               <Owner Name="CompCell" Identifier="2646115" />
+               <GroupAccess Type="1" />
+               <Annotation>Illustrated in Figure 4.3</Annotation>
+            </Version>
+         </Simulation>
+         <Version Name="Figure 4.3: Fast Approximation" KeyValue="2917764" BranchId="5063032" Archived="0" Date="23-Aug-2002 15:57:37" FromVersionable="false">
+            <Owner Name="CompCell" Identifier="2646115" />
+            <GroupAccess Type="1" />
+            <Annotation>Fast approximation model (reaction V1 is set to "fast" in Reaction Mapping) as illustrated in Figure 4.3</Annotation>
+         </Version>
+      </SimulationSpec>
+      <Version Name="L-Type Calcium Channels" KeyValue="2917788" BranchId="2893445" Archived="0" Date="23-Aug-2002 15:57:39" FromVersionable="false">
+         <Owner Name="CompCell" Identifier="2646115" />
+         <GroupAccess Type="0" />
+         <Annotation>Models L-type Ca2+ channel kinetics in the Aplysia neuron.  Used to demonstrate the rapid equilibrium approximation.  Described in 4.1 and illustrated in Figure 4.3.</Annotation>
+      </Version>
+   </BioModel>
+</vcml>
+

@@ -90,7 +90,7 @@ public class CopasiOptimizationSolver {
 						lg.info("user cancelled optimization jobID="+optIdHolder[0]);
 					}
 				} catch (Exception e) {
-					lg.error(e);
+					lg.error(e.getMessage(), e);
 					exceptHolder[0] = e;
 				}
 			});
@@ -132,7 +132,7 @@ public class CopasiOptimizationSolver {
 						apiClient.getOptRunJson(optIdHolder[0], bStopRequested);
 						lg.info("requested job to be stopped jobID="+optIdHolder[0]);
 					}catch (Exception e){
-						lg.error(e);
+						lg.error(e.getMessage(), e);
 					}
 					throw UserCancelException.CANCEL_GENERIC;
 				}
@@ -231,7 +231,7 @@ public class CopasiOptimizationSolver {
 		}catch(UserCancelException e) {
 			throw e;
 		} catch (Exception e) {
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 			throw new OptimizationException(e.getCause() != null ? e.getCause().getMessage() : e.getMessage(), e);
 		}
 	}

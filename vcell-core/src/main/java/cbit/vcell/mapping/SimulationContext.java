@@ -59,8 +59,12 @@ import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
 import cbit.vcell.geometry.surface.VolumeGeometricRegion;
 import cbit.vcell.mapping.AbstractMathMapping.MathMappingNameScope;
 import cbit.vcell.mapping.BioEvent.EventAssignment;
+import cbit.vcell.mapping.MicroscopeMeasurement.ConvolutionKernel;
+import cbit.vcell.mapping.MicroscopeMeasurement.ExperimentalPSF;
+import cbit.vcell.mapping.MicroscopeMeasurement.GaussianConvolutionKernel;
 import cbit.vcell.mapping.MicroscopeMeasurement.ProjectionZKernel;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
+import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.mapping.spatial.CurveObject;
 import cbit.vcell.mapping.spatial.PointObject;
@@ -737,6 +741,24 @@ public SimulationContext(SimulationContext oldSimulationContext,Geometry newClon
 	}
 	if (oldSimulationContext.applicationType != Application.NETWORK_STOCHASTIC && applicationType == Application.NETWORK_STOCHASTIC && geoContext.getGeometry().getDimension()>0) {
 		initializeForSpatial();
+	}
+	
+	boolean isAllowedMicroscopeMeasurements = this.getGeometry().getDimension() > 0 && this.getApplicationType() == Application.NETWORK_DETERMINISTIC;
+	if(isAllowedMicroscopeMeasurements) {
+		MicroscopeMeasurement oldMM = oldSimulationContext.getMicroscopeMeasurement();
+		microscopeMeasurement.setName(oldMM.getName());
+		ArrayList<SpeciesContext> fsList = oldMM.getFluorescentSpecies();
+		for(SpeciesContext sc : fsList) {
+			microscopeMeasurement.addFluorescentSpecies(sc);
+		}
+		ConvolutionKernel oldCK = oldMM.getConvolutionKernel();
+		ConvolutionKernel newCK = new ProjectionZKernel();
+		if(oldCK instanceof GaussianConvolutionKernel) {
+			newCK = new GaussianConvolutionKernel((GaussianConvolutionKernel)oldCK);
+		} else if(oldCK instanceof ExperimentalPSF) {
+			newCK = new ExperimentalPSF((ExperimentalPSF)oldCK);
+		}
+		microscopeMeasurement.setConvolutionKernel(newCK);
 	}
 	
 	if(oldSimulationContext.fieldAnalysisTasks != null)

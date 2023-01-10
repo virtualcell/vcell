@@ -6,12 +6,16 @@ import ncsa.hdf.hdf5lib.exceptions.HDF5Exception;
 import org.jlibsedml.Variable;
 import cbit.vcell.resource.NativeLib;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.vcell.test.Fast;
+
 import static org.vcell.cli.run.hdf5.Hdf5DataSourceNonspatial.Hdf5JobData;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+@Category(Fast.class)
 public class Hdf5WriterTest {
 
     public static Hdf5FileWrapper createExampleData() {

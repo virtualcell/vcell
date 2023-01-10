@@ -351,6 +351,16 @@ public static boolean isEqual(Matchable obj1, Matchable obj2) {
 	return true;
 }
 
+public static boolean isEqual(Matchable obj1, Matchable obj2, BiPredicate<Matchable,Matchable> predicate) {
+	if (obj1==null && obj2==null){
+		return true;
+	}
+	if (obj1==null || obj2==null){
+		return logFailure();
+	}
+	return predicate.test(obj1, obj2);
+}
+
 public static boolean isEqual(java.lang.Number obj1, java.lang.Number obj2) {
 	return isEqual0(obj1, obj2);
 }
@@ -386,8 +396,17 @@ public static boolean isEqualOrNull(List<? extends Matchable> v1, List<? extends
 	return isEqual(v1,v2);
 }
 
+public static boolean isEqualOrNull(List<? extends Matchable> v1, List<? extends Matchable> v2, BiPredicate<Matchable,Matchable> predicate) {
+	   if (v1 == null && v2 == null){
+	      return true;
+	   }
+	   if (v1 == null || v2 == null){
+	      return logFailure();
+	   }
+	   return isEqual(v1,v2,predicate);
+	}
 
-	public static boolean isEqual(List<? extends Matchable> v1, List<? extends Matchable> v2) {
+public static boolean isEqual(List<? extends Matchable> v1, List<? extends Matchable> v2) {
 		BiPredicate<Matchable,Matchable> predicate = (vv1, vv2) -> vv1.compareEqual(vv2);
 		return isEqual(v1, v2, predicate);
 	}

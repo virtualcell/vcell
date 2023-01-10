@@ -393,8 +393,8 @@ private void initialize() throws DataAccessException {
 				
 				public void actionPerformed(ActionEvent e) {
 					if(getSimulation().getMathDescription().isNonSpatialStoch()) {
-						DialogUtils.showInfoDialog(SimResultsViewer.this,"Information", "Time Plot with Multiple Parameter Value Sets\nnot yet implemented for non-spatial stochastic");
-						return;
+//						DialogUtils.showInfoDialog(SimResultsViewer.this,"Information", "Time Plot with Multiple Parameter Value Sets\nnot yet implemented for non-spatial stochastic");
+//						return;
 					}
 					mainViewer.showTimePlotMultipleScans(dataManager);
 				}

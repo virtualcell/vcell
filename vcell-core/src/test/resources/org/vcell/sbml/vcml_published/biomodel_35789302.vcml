@@ -1,0 +1,961 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--This biomodel was generated in VCML Version 0.4-->
+<vcml xmlns="http://sourceforge.net/projects/vcell/vcml" Version="0.4">
+   <BioModel Name="Vilar2002_Oscillator">
+      <Annotation>cloned from 'Vilar2002_Oscillator' owned by user BioModelsNet
+</Annotation>
+      <Model Name="vilarOscillator">
+         <Annotation>cloned from 'vilarOscillator' owned by user BioModelsNet
+</Annotation>
+         <Compound Name="EmptySet">
+            <Annotation>EmptySet</Annotation>
+         </Compound>
+         <Compound Name="A">
+            <Annotation>A</Annotation>
+            <annotation>
+               <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                  <rdf:Description rdf:about="#metaid_0000005">
+                     <bqbiol:isVersionOf>
+                        <rdf:Bag>
+                           <rdf:li rdf:resource="urn:miriam:obo.chebi:CHEBI%3A36080" />
+                        </rdf:Bag>
+                     </bqbiol:isVersionOf>
+                  </rdf:Description>
+               </rdf:RDF>
+            </annotation>
+         </Compound>
+         <Compound Name="C">
+            <Annotation>C</Annotation>
+            <annotation>
+               <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                  <rdf:Description rdf:about="#metaid_0000006">
+                     <bqbiol:isVersionOf>
+                        <rdf:Bag>
+                           <rdf:li rdf:resource="urn:miriam:obo.chebi:CHEBI%3A36080" />
+                        </rdf:Bag>
+                     </bqbiol:isVersionOf>
+                  </rdf:Description>
+               </rdf:RDF>
+            </annotation>
+         </Compound>
+         <Compound Name="DA">
+            <Annotation>DA</Annotation>
+         </Compound>
+         <Compound Name="DAp">
+            <Annotation>DAp</Annotation>
+         </Compound>
+         <Compound Name="DR">
+            <Annotation>DR</Annotation>
+         </Compound>
+         <Compound Name="DRp">
+            <Annotation>DRp</Annotation>
+         </Compound>
+         <Compound Name="MA">
+            <Annotation>MA</Annotation>
+            <annotation>
+               <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                  <rdf:Description rdf:about="#metaid_0000011">
+                     <bqbiol:isVersionOf>
+                        <rdf:Bag>
+                           <rdf:li rdf:resource="urn:miriam:obo.chebi:CHEBI%3A33699" />
+                        </rdf:Bag>
+                     </bqbiol:isVersionOf>
+                  </rdf:Description>
+               </rdf:RDF>
+            </annotation>
+         </Compound>
+         <Compound Name="MR">
+            <Annotation>MR</Annotation>
+            <annotation>
+               <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                  <rdf:Description rdf:about="#metaid_0000012">
+                     <bqbiol:isVersionOf>
+                        <rdf:Bag>
+                           <rdf:li rdf:resource="urn:miriam:obo.chebi:CHEBI%3A33699" />
+                        </rdf:Bag>
+                     </bqbiol:isVersionOf>
+                  </rdf:Description>
+               </rdf:RDF>
+            </annotation>
+         </Compound>
+         <Compound Name="R">
+            <Annotation>R</Annotation>
+            <annotation>
+               <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                  <rdf:Description rdf:about="#metaid_0000013">
+                     <bqbiol:isVersionOf>
+                        <rdf:Bag>
+                           <rdf:li rdf:resource="urn:miriam:obo.chebi:CHEBI%3A36080" />
+                        </rdf:Bag>
+                     </bqbiol:isVersionOf>
+                  </rdf:Description>
+               </rdf:RDF>
+            </annotation>
+         </Compound>
+         <Feature Name="deterministicOscillator" KeyValue="35789184" />
+         <LocalizedCompound Name="EmptySet" CompoundRef="EmptySet" Structure="deterministicOscillator" OverrideName="true" KeyValue="35789186" />
+         <LocalizedCompound Name="A" CompoundRef="A" Structure="deterministicOscillator" OverrideName="true" KeyValue="35789187" />
+         <LocalizedCompound Name="C" CompoundRef="C" Structure="deterministicOscillator" OverrideName="true" KeyValue="35789188" />
+         <LocalizedCompound Name="DA" CompoundRef="DA" Structure="deterministicOscillator" OverrideName="true" KeyValue="35789189" />
+         <LocalizedCompound Name="DAp" CompoundRef="DAp" Structure="deterministicOscillator" OverrideName="true" KeyValue="35789190" />
+         <LocalizedCompound Name="DR" CompoundRef="DR" Structure="deterministicOscillator" OverrideName="true" KeyValue="35789191" />
+         <LocalizedCompound Name="DRp" CompoundRef="DRp" Structure="deterministicOscillator" OverrideName="true" KeyValue="35789192" />
+         <LocalizedCompound Name="MA" CompoundRef="MA" Structure="deterministicOscillator" OverrideName="true" KeyValue="35789193" />
+         <LocalizedCompound Name="MR" CompoundRef="MR" Structure="deterministicOscillator" OverrideName="true" KeyValue="35789194" />
+         <LocalizedCompound Name="R" CompoundRef="R" Structure="deterministicOscillator" OverrideName="true" KeyValue="35789195" />
+         <SimpleReaction Structure="deterministicOscillator" Name="Reaction1" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="35789196">
+            <Reactant LocalizedCompoundRef="R" Stoichiometry="1" KeyValue="35789198" />
+            <Reactant LocalizedCompoundRef="A" Stoichiometry="1" KeyValue="35789199" />
+            <Product LocalizedCompoundRef="C" Stoichiometry="1" KeyValue="35789200" />
+            <Kinetics KineticsType="GeneralLumpedKinetics">
+               <Parameter Name="LumpedJ" Role="lumped reaction rate" Unit="molecules.s-1">(sbmlRateFactor * gammaC * A * A_ConcFactor * R * R_ConcFactor / KMOLE)</Parameter>
+               <Parameter Name="sbmlRateFactor" Role="user defined" Unit="3.6E-18 ">2.7777777777778E17</Parameter>
+               <Parameter Name="gammaC" Role="user defined" Unit="2.7777777777778E-10 m6.mol-1.s-1">2.0</Parameter>
+               <Parameter Name="A_ConcFactor" Role="user defined" Unit="1000000.0 ">1.0E-6</Parameter>
+               <Parameter Name="R_ConcFactor" Role="user defined" Unit="1000000.0 ">1.0E-6</Parameter>
+            </Kinetics>
+            <Annotation />
+            <annotation>
+               <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                  <rdf:Description rdf:about="#metaid_0000014">
+                     <bqbiol:isVersionOf>
+                        <rdf:Bag>
+                           <rdf:li rdf:resource="urn:miriam:obo.go:GO%3A0006461" />
+                        </rdf:Bag>
+                     </bqbiol:isVersionOf>
+                  </rdf:Description>
+               </rdf:RDF>
+            </annotation>
+         </SimpleReaction>
+         <SimpleReaction Structure="deterministicOscillator" Name="Reaction2" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="35789201">
+            <Reactant LocalizedCompoundRef="A" Stoichiometry="1" KeyValue="35789203" />
+            <Product LocalizedCompoundRef="EmptySet" Stoichiometry="1" KeyValue="35789204" />
+            <Kinetics KineticsType="GeneralLumpedKinetics">
+               <Parameter Name="LumpedJ" Role="lumped reaction rate" Unit="molecules.s-1">(sbmlRateFactor * deltaA * A * A_ConcFactor / KMOLE)</Parameter>
+               <Parameter Name="sbmlRateFactor" Role="user defined" Unit="3.6E-18 ">2.7777777777778E17</Parameter>
+               <Parameter Name="deltaA" Role="user defined" Unit="2.7777777777778E-7 m3.s-1">1.0</Parameter>
+               <Parameter Name="A_ConcFactor" Role="user defined" Unit="1000000.0 ">1.0E-6</Parameter>
+            </Kinetics>
+            <Annotation />
+            <annotation>
+               <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                  <rdf:Description rdf:about="#metaid_0000015">
+                     <bqbiol:isVersionOf>
+                        <rdf:Bag>
+                           <rdf:li rdf:resource="urn:miriam:obo.go:GO%3A0030163" />
+                        </rdf:Bag>
+                     </bqbiol:isVersionOf>
+                  </rdf:Description>
+               </rdf:RDF>
+            </annotation>
+         </SimpleReaction>
+         <SimpleReaction Structure="deterministicOscillator" Name="Reaction3" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="35789205">
+            <Reactant LocalizedCompoundRef="C" Stoichiometry="1" KeyValue="35789207" />
+            <Product LocalizedCompoundRef="R" Stoichiometry="1" KeyValue="35789208" />
+            <Kinetics KineticsType="GeneralLumpedKinetics">
+               <Parameter Name="LumpedJ" Role="lumped reaction rate" Unit="molecules.s-1">(sbmlRateFactor * deltaA * C * C_ConcFactor / KMOLE)</Parameter>
+               <Parameter Name="sbmlRateFactor" Role="user defined" Unit="3.6E-18 ">2.7777777777778E17</Parameter>
+               <Parameter Name="deltaA" Role="user defined" Unit="2.7777777777778E-7 m3.s-1">1.0</Parameter>
+               <Parameter Name="C_ConcFactor" Role="user defined" Unit="1000000.0 ">1.0E-6</Parameter>
+            </Kinetics>
+            <Annotation />
+            <annotation>
+               <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                  <rdf:Description rdf:about="#metaid_0000016">
+                     <bqbiol:isVersionOf>
+                        <rdf:Bag>
+                           <rdf:li rdf:resource="urn:miriam:obo.go:GO%3A0030163" />
+                        </rdf:Bag>
+                     </bqbiol:isVersionOf>
+                  </rdf:Description>
+               </rdf:RDF>
+            </annotation>
+         </SimpleReaction>
+         <SimpleReaction Structure="deterministicOscillator" Name="Reaction4" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="35789209">
+            <Reactant LocalizedCompoundRef="R" Stoichiometry="1" KeyValue="35789211" />
+            <Product LocalizedCompoundRef="EmptySet" Stoichiometry="1" KeyValue="35789212" />
+            <Kinetics KineticsType="GeneralLumpedKinetics">
+               <Parameter Name="LumpedJ" Role="lumped reaction rate" Unit="molecules.s-1">(sbmlRateFactor * deltaR * R * R_ConcFactor / KMOLE)</Parameter>
+               <Parameter Name="sbmlRateFactor" Role="user defined" Unit="3.6E-18 ">2.7777777777778E17</Parameter>
+               <Parameter Name="deltaR" Role="user defined" Unit="2.7777777777778E-7 m3.s-1">0.2</Parameter>
+               <Parameter Name="R_ConcFactor" Role="user defined" Unit="1000000.0 ">1.0E-6</Parameter>
+            </Kinetics>
+            <Annotation />
+            <annotation>
+               <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                  <rdf:Description rdf:about="#metaid_0000017">
+                     <bqbiol:isVersionOf>
+                        <rdf:Bag>
+                           <rdf:li rdf:resource="urn:miriam:obo.go:GO%3A0030163" />
+                        </rdf:Bag>
+                     </bqbiol:isVersionOf>
+                  </rdf:Description>
+               </rdf:RDF>
+            </annotation>
+         </SimpleReaction>
+         <SimpleReaction Structure="deterministicOscillator" Name="Reaction5" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="35789213">
+            <Reactant LocalizedCompoundRef="A" Stoichiometry="1" KeyValue="35789215" />
+            <Reactant LocalizedCompoundRef="DA" Stoichiometry="1" KeyValue="35789216" />
+            <Product LocalizedCompoundRef="DAp" Stoichiometry="1" KeyValue="35789217" />
+            <Kinetics KineticsType="GeneralLumpedKinetics">
+               <Parameter Name="LumpedJ" Role="lumped reaction rate" Unit="molecules.s-1">(sbmlRateFactor * gammaA * A * A_ConcFactor * DA * DA_ConcFactor / KMOLE)</Parameter>
+               <Parameter Name="sbmlRateFactor" Role="user defined" Unit="3.6E-18 ">2.7777777777778E17</Parameter>
+               <Parameter Name="gammaA" Role="user defined" Unit="2.7777777777778E-10 m6.mol-1.s-1">1.0</Parameter>
+               <Parameter Name="A_ConcFactor" Role="user defined" Unit="1000000.0 ">1.0E-6</Parameter>
+               <Parameter Name="DA_ConcFactor" Role="user defined" Unit="1000000.0 ">1.0E-6</Parameter>
+            </Kinetics>
+            <Annotation />
+            <annotation>
+               <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                  <rdf:Description rdf:about="#metaid_0000018">
+                     <bqbiol:isVersionOf>
+                        <rdf:Bag>
+                           <rdf:li rdf:resource="urn:miriam:obo.go:GO%3A0016563" />
+                        </rdf:Bag>
+                     </bqbiol:isVersionOf>
+                  </rdf:Description>
+               </rdf:RDF>
+            </annotation>
+         </SimpleReaction>
+         <SimpleReaction Structure="deterministicOscillator" Name="Reaction6" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="35789218">
+            <Reactant LocalizedCompoundRef="DAp" Stoichiometry="1" KeyValue="35789220" />
+            <Product LocalizedCompoundRef="A" Stoichiometry="1" KeyValue="35789221" />
+            <Product LocalizedCompoundRef="DA" Stoichiometry="1" KeyValue="35789222" />
+            <Kinetics KineticsType="GeneralLumpedKinetics">
+               <Parameter Name="LumpedJ" Role="lumped reaction rate" Unit="molecules.s-1">(sbmlRateFactor * thetaA * DAp * DAp_ConcFactor / KMOLE)</Parameter>
+               <Parameter Name="sbmlRateFactor" Role="user defined" Unit="3.6E-18 ">2.7777777777778E17</Parameter>
+               <Parameter Name="thetaA" Role="user defined" Unit="2.7777777777778E-7 m3.s-1">50.0</Parameter>
+               <Parameter Name="DAp_ConcFactor" Role="user defined" Unit="1000000.0 ">1.0E-6</Parameter>
+            </Kinetics>
+            <Annotation />
+            <annotation>
+               <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                  <rdf:Description rdf:about="#metaid_0000019">
+                     <bqbiol:isVersionOf>
+                        <rdf:Bag>
+                           <rdf:li rdf:resource="urn:miriam:obo.go:GO%3A0032986" />
+                        </rdf:Bag>
+                     </bqbiol:isVersionOf>
+                  </rdf:Description>
+               </rdf:RDF>
+            </annotation>
+         </SimpleReaction>
+         <SimpleReaction Structure="deterministicOscillator" Name="Reaction7" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="35789223">
+            <Reactant LocalizedCompoundRef="DA" Stoichiometry="1" KeyValue="35789225" />
+            <Product LocalizedCompoundRef="DA" Stoichiometry="1" KeyValue="35789226" />
+            <Product LocalizedCompoundRef="MA" Stoichiometry="1" KeyValue="35789227" />
+            <Kinetics KineticsType="GeneralLumpedKinetics">
+               <Parameter Name="LumpedJ" Role="lumped reaction rate" Unit="molecules.s-1">(sbmlRateFactor * alphaA * DA * DA_ConcFactor / KMOLE)</Parameter>
+               <Parameter Name="sbmlRateFactor" Role="user defined" Unit="3.6E-18 ">2.7777777777778E17</Parameter>
+               <Parameter Name="alphaA" Role="user defined" Unit="2.7777777777778E-7 m3.s-1">50.0</Parameter>
+               <Parameter Name="DA_ConcFactor" Role="user defined" Unit="1000000.0 ">1.0E-6</Parameter>
+            </Kinetics>
+            <Annotation />
+            <annotation>
+               <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                  <rdf:Description rdf:about="#metaid_0000020">
+                     <bqbiol:isVersionOf>
+                        <rdf:Bag>
+                           <rdf:li rdf:resource="urn:miriam:obo.go:GO%3A0006350" />
+                        </rdf:Bag>
+                     </bqbiol:isVersionOf>
+                  </rdf:Description>
+               </rdf:RDF>
+            </annotation>
+         </SimpleReaction>
+         <SimpleReaction Structure="deterministicOscillator" Name="Reaction8" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="35789228">
+            <Reactant LocalizedCompoundRef="DAp" Stoichiometry="1" KeyValue="35789230" />
+            <Product LocalizedCompoundRef="DAp" Stoichiometry="1" KeyValue="35789231" />
+            <Product LocalizedCompoundRef="MA" Stoichiometry="1" KeyValue="35789232" />
+            <Kinetics KineticsType="GeneralLumpedKinetics">
+               <Parameter Name="LumpedJ" Role="lumped reaction rate" Unit="molecules.s-1">(sbmlRateFactor * alphaAp * DAp * DAp_ConcFactor / KMOLE)</Parameter>
+               <Parameter Name="sbmlRateFactor" Role="user defined" Unit="3.6E-18 ">2.7777777777778E17</Parameter>
+               <Parameter Name="alphaAp" Role="user defined" Unit="2.7777777777778E-7 m3.s-1">500.0</Parameter>
+               <Parameter Name="DAp_ConcFactor" Role="user defined" Unit="1000000.0 ">1.0E-6</Parameter>
+            </Kinetics>
+            <Annotation />
+            <annotation>
+               <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                  <rdf:Description rdf:about="#metaid_0000021">
+                     <bqbiol:isVersionOf>
+                        <rdf:Bag>
+                           <rdf:li rdf:resource="urn:miriam:obo.go:GO%3A0006350" />
+                        </rdf:Bag>
+                     </bqbiol:isVersionOf>
+                  </rdf:Description>
+               </rdf:RDF>
+            </annotation>
+         </SimpleReaction>
+         <SimpleReaction Structure="deterministicOscillator" Name="Reaction9" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="35789233">
+            <Reactant LocalizedCompoundRef="MA" Stoichiometry="1" KeyValue="35789235" />
+            <Product LocalizedCompoundRef="EmptySet" Stoichiometry="1" KeyValue="35789236" />
+            <Kinetics KineticsType="GeneralLumpedKinetics">
+               <Parameter Name="LumpedJ" Role="lumped reaction rate" Unit="molecules.s-1">(sbmlRateFactor * deltaMA * MA * MA_ConcFactor / KMOLE)</Parameter>
+               <Parameter Name="sbmlRateFactor" Role="user defined" Unit="3.6E-18 ">2.7777777777778E17</Parameter>
+               <Parameter Name="deltaMA" Role="user defined" Unit="2.7777777777778E-7 m3.s-1">10.0</Parameter>
+               <Parameter Name="MA_ConcFactor" Role="user defined" Unit="1000000.0 ">1.0E-6</Parameter>
+            </Kinetics>
+            <Annotation />
+            <annotation>
+               <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                  <rdf:Description rdf:about="#metaid_0000022">
+                     <bqbiol:isVersionOf>
+                        <rdf:Bag>
+                           <rdf:li rdf:resource="urn:miriam:obo.go:GO%3A0006402" />
+                        </rdf:Bag>
+                     </bqbiol:isVersionOf>
+                  </rdf:Description>
+               </rdf:RDF>
+            </annotation>
+         </SimpleReaction>
+         <SimpleReaction Structure="deterministicOscillator" Name="Reaction10" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="35789237">
+            <Reactant LocalizedCompoundRef="MA" Stoichiometry="1" KeyValue="35789239" />
+            <Product LocalizedCompoundRef="A" Stoichiometry="1" KeyValue="35789240" />
+            <Product LocalizedCompoundRef="MA" Stoichiometry="1" KeyValue="35789241" />
+            <Kinetics KineticsType="GeneralLumpedKinetics">
+               <Parameter Name="LumpedJ" Role="lumped reaction rate" Unit="molecules.s-1">(sbmlRateFactor * betaA * MA * MA_ConcFactor / KMOLE)</Parameter>
+               <Parameter Name="sbmlRateFactor" Role="user defined" Unit="3.6E-18 ">2.7777777777778E17</Parameter>
+               <Parameter Name="betaA" Role="user defined" Unit="2.7777777777778E-7 m3.s-1">50.0</Parameter>
+               <Parameter Name="MA_ConcFactor" Role="user defined" Unit="1000000.0 ">1.0E-6</Parameter>
+            </Kinetics>
+            <Annotation />
+            <annotation>
+               <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                  <rdf:Description rdf:about="#metaid_0000023">
+                     <bqbiol:isVersionOf>
+                        <rdf:Bag>
+                           <rdf:li rdf:resource="urn:miriam:obo.go:GO%3A0043037" />
+                        </rdf:Bag>
+                     </bqbiol:isVersionOf>
+                  </rdf:Description>
+               </rdf:RDF>
+            </annotation>
+         </SimpleReaction>
+         <SimpleReaction Structure="deterministicOscillator" Name="Reaction11" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="35789242">
+            <Reactant LocalizedCompoundRef="A" Stoichiometry="1" KeyValue="35789244" />
+            <Reactant LocalizedCompoundRef="DR" Stoichiometry="1" KeyValue="35789245" />
+            <Product LocalizedCompoundRef="DRp" Stoichiometry="1" KeyValue="35789246" />
+            <Kinetics KineticsType="GeneralLumpedKinetics">
+               <Parameter Name="LumpedJ" Role="lumped reaction rate" Unit="molecules.s-1">(sbmlRateFactor * gammaR * A * A_ConcFactor * DR * DR_ConcFactor / KMOLE)</Parameter>
+               <Parameter Name="sbmlRateFactor" Role="user defined" Unit="3.6E-18 ">2.7777777777778E17</Parameter>
+               <Parameter Name="gammaR" Role="user defined" Unit="2.7777777777778E-10 m6.mol-1.s-1">1.0</Parameter>
+               <Parameter Name="A_ConcFactor" Role="user defined" Unit="1000000.0 ">1.0E-6</Parameter>
+               <Parameter Name="DR_ConcFactor" Role="user defined" Unit="1000000.0 ">1.0E-6</Parameter>
+            </Kinetics>
+            <Annotation />
+            <annotation>
+               <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                  <rdf:Description rdf:about="#metaid_0000024">
+                     <bqbiol:isVersionOf>
+                        <rdf:Bag>
+                           <rdf:li rdf:resource="urn:miriam:obo.go:GO%3A0016563" />
+                           <rdf:li rdf:resource="urn:miriam:obo.go:GO%3A0010843" />
+                        </rdf:Bag>
+                     </bqbiol:isVersionOf>
+                  </rdf:Description>
+               </rdf:RDF>
+            </annotation>
+         </SimpleReaction>
+         <SimpleReaction Structure="deterministicOscillator" Name="Reaction12" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="35789247">
+            <Reactant LocalizedCompoundRef="DRp" Stoichiometry="1" KeyValue="35789249" />
+            <Product LocalizedCompoundRef="A" Stoichiometry="1" KeyValue="35789250" />
+            <Product LocalizedCompoundRef="DR" Stoichiometry="1" KeyValue="35789251" />
+            <Kinetics KineticsType="GeneralLumpedKinetics">
+               <Parameter Name="LumpedJ" Role="lumped reaction rate" Unit="molecules.s-1">(sbmlRateFactor * thetaR * DRp * DRp_ConcFactor / KMOLE)</Parameter>
+               <Parameter Name="sbmlRateFactor" Role="user defined" Unit="3.6E-18 ">2.7777777777778E17</Parameter>
+               <Parameter Name="thetaR" Role="user defined" Unit="2.7777777777778E-7 m3.s-1">100.0</Parameter>
+               <Parameter Name="DRp_ConcFactor" Role="user defined" Unit="1000000.0 ">1.0E-6</Parameter>
+            </Kinetics>
+            <Annotation />
+            <annotation>
+               <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                  <rdf:Description rdf:about="#metaid_0000025">
+                     <bqbiol:isVersionOf>
+                        <rdf:Bag>
+                           <rdf:li rdf:resource="urn:miriam:obo.go:GO%3A0032986" />
+                        </rdf:Bag>
+                     </bqbiol:isVersionOf>
+                  </rdf:Description>
+               </rdf:RDF>
+            </annotation>
+         </SimpleReaction>
+         <SimpleReaction Structure="deterministicOscillator" Name="Reaction13" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="35789252">
+            <Reactant LocalizedCompoundRef="DR" Stoichiometry="1" KeyValue="35789254" />
+            <Product LocalizedCompoundRef="DR" Stoichiometry="1" KeyValue="35789255" />
+            <Product LocalizedCompoundRef="MR" Stoichiometry="1" KeyValue="35789256" />
+            <Kinetics KineticsType="GeneralLumpedKinetics">
+               <Parameter Name="LumpedJ" Role="lumped reaction rate" Unit="molecules.s-1">(sbmlRateFactor * alphaR * DR * DR_ConcFactor / KMOLE)</Parameter>
+               <Parameter Name="sbmlRateFactor" Role="user defined" Unit="3.6E-18 ">2.7777777777778E17</Parameter>
+               <Parameter Name="alphaR" Role="user defined" Unit="2.7777777777778E-7 m3.s-1">0.01</Parameter>
+               <Parameter Name="DR_ConcFactor" Role="user defined" Unit="1000000.0 ">1.0E-6</Parameter>
+            </Kinetics>
+            <Annotation />
+            <annotation>
+               <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                  <rdf:Description rdf:about="#metaid_0000026">
+                     <bqbiol:isVersionOf>
+                        <rdf:Bag>
+                           <rdf:li rdf:resource="urn:miriam:obo.go:GO%3A0006350" />
+                        </rdf:Bag>
+                     </bqbiol:isVersionOf>
+                  </rdf:Description>
+               </rdf:RDF>
+            </annotation>
+         </SimpleReaction>
+         <SimpleReaction Structure="deterministicOscillator" Name="Reaction14" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="35789257">
+            <Reactant LocalizedCompoundRef="DRp" Stoichiometry="1" KeyValue="35789259" />
+            <Product LocalizedCompoundRef="DRp" Stoichiometry="1" KeyValue="35789260" />
+            <Product LocalizedCompoundRef="MR" Stoichiometry="1" KeyValue="35789261" />
+            <Kinetics KineticsType="GeneralLumpedKinetics">
+               <Parameter Name="LumpedJ" Role="lumped reaction rate" Unit="molecules.s-1">(sbmlRateFactor * alphaRp * DRp * DRp_ConcFactor / KMOLE)</Parameter>
+               <Parameter Name="sbmlRateFactor" Role="user defined" Unit="3.6E-18 ">2.7777777777778E17</Parameter>
+               <Parameter Name="alphaRp" Role="user defined" Unit="2.7777777777778E-7 m3.s-1">50.0</Parameter>
+               <Parameter Name="DRp_ConcFactor" Role="user defined" Unit="1000000.0 ">1.0E-6</Parameter>
+            </Kinetics>
+            <Annotation />
+            <annotation>
+               <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                  <rdf:Description rdf:about="#metaid_0000027">
+                     <bqbiol:isVersionOf>
+                        <rdf:Bag>
+                           <rdf:li rdf:resource="urn:miriam:obo.go:GO%3A0006350" />
+                        </rdf:Bag>
+                     </bqbiol:isVersionOf>
+                  </rdf:Description>
+               </rdf:RDF>
+            </annotation>
+         </SimpleReaction>
+         <SimpleReaction Structure="deterministicOscillator" Name="Reaction15" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="35789262">
+            <Reactant LocalizedCompoundRef="MR" Stoichiometry="1" KeyValue="35789264" />
+            <Product LocalizedCompoundRef="EmptySet" Stoichiometry="1" KeyValue="35789265" />
+            <Kinetics KineticsType="GeneralLumpedKinetics">
+               <Parameter Name="LumpedJ" Role="lumped reaction rate" Unit="molecules.s-1">(sbmlRateFactor * deltaMR * MR * MR_ConcFactor / KMOLE)</Parameter>
+               <Parameter Name="sbmlRateFactor" Role="user defined" Unit="3.6E-18 ">2.7777777777778E17</Parameter>
+               <Parameter Name="deltaMR" Role="user defined" Unit="2.7777777777778E-7 m3.s-1">0.5</Parameter>
+               <Parameter Name="MR_ConcFactor" Role="user defined" Unit="1000000.0 ">1.0E-6</Parameter>
+            </Kinetics>
+            <Annotation />
+            <annotation>
+               <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                  <rdf:Description rdf:about="#metaid_0000028">
+                     <bqbiol:isVersionOf>
+                        <rdf:Bag>
+                           <rdf:li rdf:resource="urn:miriam:obo.go:GO%3A0006402" />
+                        </rdf:Bag>
+                     </bqbiol:isVersionOf>
+                  </rdf:Description>
+               </rdf:RDF>
+            </annotation>
+         </SimpleReaction>
+         <SimpleReaction Structure="deterministicOscillator" Name="Reaction16" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="35789266">
+            <Reactant LocalizedCompoundRef="MR" Stoichiometry="1" KeyValue="35789268" />
+            <Product LocalizedCompoundRef="MR" Stoichiometry="1" KeyValue="35789269" />
+            <Product LocalizedCompoundRef="R" Stoichiometry="1" KeyValue="35789270" />
+            <Kinetics KineticsType="GeneralLumpedKinetics">
+               <Parameter Name="LumpedJ" Role="lumped reaction rate" Unit="molecules.s-1">(sbmlRateFactor * betaR * MR * MR_ConcFactor / KMOLE)</Parameter>
+               <Parameter Name="sbmlRateFactor" Role="user defined" Unit="3.6E-18 ">2.7777777777778E17</Parameter>
+               <Parameter Name="betaR" Role="user defined" Unit="2.7777777777778E-7 m3.s-1">5.0</Parameter>
+               <Parameter Name="MR_ConcFactor" Role="user defined" Unit="1000000.0 ">1.0E-6</Parameter>
+            </Kinetics>
+            <Annotation />
+            <annotation>
+               <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                  <rdf:Description rdf:about="#metaid_0000029">
+                     <bqbiol:isVersionOf>
+                        <rdf:Bag>
+                           <rdf:li rdf:resource="urn:miriam:obo.go:GO%3A0043037" />
+                        </rdf:Bag>
+                     </bqbiol:isVersionOf>
+                  </rdf:Description>
+               </rdf:RDF>
+            </annotation>
+         </SimpleReaction>
+         <Diagram Name="deterministicOscillator" Structure="deterministicOscillator" />
+         <Version Name="vilarOscillator" KeyValue="35789166" BranchId="35789167" Archived="0" Date="20-Sep-2009 01:15:26" FromVersionable="false">
+            <Owner Name="Education" Identifier="30625624" />
+            <GroupAccess Type="1" />
+            <Annotation>cloned from 'vilarOscillator' owned by user BioModelsNet
+</Annotation>
+         </Version>
+      </Model>
+      <SimulationSpec Name="vilarOscillator_Compartmental" Stochastic="false" UseConcentration="true">
+         <Annotation>cloned from 'vilarOscillator_Compartmental' owned by user BioModelsNet
+</Annotation>
+         <Geometry Name="Compartmental91355765" Dimension="0">
+            <Annotation>cloned from 'Compartmental91355765' owned by user BioModelsNet
+</Annotation>
+            <Extent X="10.0" Y="10.0" Z="10.0" />
+            <Origin X="0.0" Y="0.0" Z="0.0" />
+            <SubVolume Name="Compartment" Handle="0" Type="Compartmental" KeyValue="35789162" />
+            <Version Name="Compartmental91355765" KeyValue="35789158" BranchId="35789159" Archived="0" Date="20-Sep-2009 01:15:26" FromVersionable="false">
+               <Owner Name="Education" Identifier="30625624" />
+               <GroupAccess Type="1" />
+               <Annotation>cloned from 'Compartmental91355765' owned by user BioModelsNet
+</Annotation>
+            </Version>
+         </Geometry>
+         <GeometryContext>
+            <FeatureMapping Feature="deterministicOscillator" SubVolume="Compartment" Resolved="false" Size="1.0000000000000001E15">
+               <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
+            </FeatureMapping>
+         </GeometryContext>
+         <ReactionContext>
+            <LocalizedCompoundSpec LocalizedCompoundRef="EmptySet" ForceConstant="true" EnableDiffusion="true">
+               <InitialConcentration>0.0</InitialConcentration>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="A" ForceConstant="false" EnableDiffusion="true">
+               <InitialConcentration>0.0</InitialConcentration>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="C" ForceConstant="false" EnableDiffusion="true">
+               <InitialConcentration>0.0</InitialConcentration>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="DA" ForceConstant="false" EnableDiffusion="true">
+               <InitialConcentration>1000000.0</InitialConcentration>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="DAp" ForceConstant="false" EnableDiffusion="true">
+               <InitialConcentration>0.0</InitialConcentration>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="DR" ForceConstant="false" EnableDiffusion="true">
+               <InitialConcentration>1000000.0</InitialConcentration>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="DRp" ForceConstant="false" EnableDiffusion="true">
+               <InitialConcentration>0.0</InitialConcentration>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="MA" ForceConstant="false" EnableDiffusion="true">
+               <InitialConcentration>0.0</InitialConcentration>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="MR" ForceConstant="false" EnableDiffusion="true">
+               <InitialConcentration>0.0</InitialConcentration>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="R" ForceConstant="false" EnableDiffusion="true">
+               <InitialConcentration>0.0</InitialConcentration>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <ReactionSpec ReactionStepRef="Reaction1" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="Reaction2" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="Reaction3" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="Reaction4" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="Reaction5" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="Reaction6" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="Reaction7" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="Reaction8" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="Reaction9" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="Reaction10" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="Reaction11" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="Reaction12" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="Reaction13" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="Reaction14" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="Reaction15" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="Reaction16" ReactionMapping="included" />
+         </ReactionContext>
+         <MathDescription Name="vilarOscillator_Compartmental_generated">
+            <Annotation>cloned from 'vilarOscillator_Compartmental_generated' owned by user BioModelsNet
+</Annotation>
+            <Constant Name="_F_">96480.0</Constant>
+            <Constant Name="_F_nmol_">9.648E-5</Constant>
+            <Constant Name="_K_GHK_">1.0E-9</Constant>
+            <Constant Name="_N_pmol_">6.02E11</Constant>
+            <Constant Name="_R_">8314.0</Constant>
+            <Constant Name="_T_">300.0</Constant>
+            <Constant Name="A_ConcFactor_Reaction1">1.0E-6</Constant>
+            <Constant Name="A_ConcFactor_Reaction11">1.0E-6</Constant>
+            <Constant Name="A_ConcFactor_Reaction2">1.0E-6</Constant>
+            <Constant Name="A_ConcFactor_Reaction5">1.0E-6</Constant>
+            <Constant Name="A_init">0.0</Constant>
+            <Constant Name="alphaA">50.0</Constant>
+            <Constant Name="alphaAp">500.0</Constant>
+            <Constant Name="alphaR">0.01</Constant>
+            <Constant Name="alphaRp">50.0</Constant>
+            <Constant Name="betaA">50.0</Constant>
+            <Constant Name="betaR">5.0</Constant>
+            <Constant Name="C_ConcFactor">1.0E-6</Constant>
+            <Constant Name="C_init">0.0</Constant>
+            <Constant Name="DA_ConcFactor_Reaction5">1.0E-6</Constant>
+            <Constant Name="DA_ConcFactor_Reaction7">1.0E-6</Constant>
+            <Constant Name="DA_init">1000000.0</Constant>
+            <Constant Name="DAp_ConcFactor_Reaction6">1.0E-6</Constant>
+            <Constant Name="DAp_ConcFactor_Reaction8">1.0E-6</Constant>
+            <Constant Name="DAp_init">0.0</Constant>
+            <Constant Name="deltaA_Reaction2">1.0</Constant>
+            <Constant Name="deltaA_Reaction3">1.0</Constant>
+            <Constant Name="deltaMA">10.0</Constant>
+            <Constant Name="deltaMR">0.5</Constant>
+            <Constant Name="deltaR">0.2</Constant>
+            <Constant Name="DR_ConcFactor_Reaction11">1.0E-6</Constant>
+            <Constant Name="DR_ConcFactor_Reaction13">1.0E-6</Constant>
+            <Constant Name="DR_init">1000000.0</Constant>
+            <Constant Name="DRp_ConcFactor_Reaction12">1.0E-6</Constant>
+            <Constant Name="DRp_ConcFactor_Reaction14">1.0E-6</Constant>
+            <Constant Name="DRp_init">0.0</Constant>
+            <Constant Name="EmptySet">0.0</Constant>
+            <Constant Name="EmptySet_init">0.0</Constant>
+            <Constant Name="gammaA">1.0</Constant>
+            <Constant Name="gammaC">2.0</Constant>
+            <Constant Name="gammaR">1.0</Constant>
+            <Constant Name="K_millivolts_per_volt">1000.0</Constant>
+            <Constant Name="KMOLE">0.0016611295681063123</Constant>
+            <Constant Name="MA_ConcFactor_Reaction10">1.0E-6</Constant>
+            <Constant Name="MA_ConcFactor_Reaction9">1.0E-6</Constant>
+            <Constant Name="MA_init">0.0</Constant>
+            <Constant Name="MR_ConcFactor_Reaction15">1.0E-6</Constant>
+            <Constant Name="MR_ConcFactor_Reaction16">1.0E-6</Constant>
+            <Constant Name="MR_init">0.0</Constant>
+            <Constant Name="R_ConcFactor_Reaction1">1.0E-6</Constant>
+            <Constant Name="R_ConcFactor_Reaction4">1.0E-6</Constant>
+            <Constant Name="R_init">0.0</Constant>
+            <Constant Name="sbmlRateFactor_Reaction1">2.7777777777778E17</Constant>
+            <Constant Name="sbmlRateFactor_Reaction10">2.7777777777778E17</Constant>
+            <Constant Name="sbmlRateFactor_Reaction11">2.7777777777778E17</Constant>
+            <Constant Name="sbmlRateFactor_Reaction12">2.7777777777778E17</Constant>
+            <Constant Name="sbmlRateFactor_Reaction13">2.7777777777778E17</Constant>
+            <Constant Name="sbmlRateFactor_Reaction14">2.7777777777778E17</Constant>
+            <Constant Name="sbmlRateFactor_Reaction15">2.7777777777778E17</Constant>
+            <Constant Name="sbmlRateFactor_Reaction16">2.7777777777778E17</Constant>
+            <Constant Name="sbmlRateFactor_Reaction2">2.7777777777778E17</Constant>
+            <Constant Name="sbmlRateFactor_Reaction3">2.7777777777778E17</Constant>
+            <Constant Name="sbmlRateFactor_Reaction4">2.7777777777778E17</Constant>
+            <Constant Name="sbmlRateFactor_Reaction5">2.7777777777778E17</Constant>
+            <Constant Name="sbmlRateFactor_Reaction6">2.7777777777778E17</Constant>
+            <Constant Name="sbmlRateFactor_Reaction7">2.7777777777778E17</Constant>
+            <Constant Name="sbmlRateFactor_Reaction8">2.7777777777778E17</Constant>
+            <Constant Name="sbmlRateFactor_Reaction9">2.7777777777778E17</Constant>
+            <Constant Name="Size_deterministicOscillator">1.0000000000000001E15</Constant>
+            <Constant Name="thetaA">50.0</Constant>
+            <Constant Name="thetaR">100.0</Constant>
+            <VolumeVariable Name="A" />
+            <VolumeVariable Name="C" />
+            <VolumeVariable Name="DAp" />
+            <VolumeVariable Name="DRp" />
+            <VolumeVariable Name="MA" />
+            <VolumeVariable Name="MR" />
+            <VolumeVariable Name="R" />
+            <Function Name="DA">(K_DA_total - DAp)</Function>
+            <Function Name="DR">(K_DR_total - DRp)</Function>
+            <Function Name="K_DA_total">(DA_init + DAp_init)</Function>
+            <Function Name="K_DR_total">(DR_init + DRp_init)</Function>
+            <Function Name="LumpedJ_Reaction1">(sbmlRateFactor_Reaction1 * gammaC * A * A_ConcFactor_Reaction1 * R * R_ConcFactor_Reaction1 / KMOLE)</Function>
+            <Function Name="LumpedJ_Reaction10">(sbmlRateFactor_Reaction10 * betaA * MA * MA_ConcFactor_Reaction10 / KMOLE)</Function>
+            <Function Name="LumpedJ_Reaction11">(sbmlRateFactor_Reaction11 * gammaR * A * A_ConcFactor_Reaction11 * DR * DR_ConcFactor_Reaction11 / KMOLE)</Function>
+            <Function Name="LumpedJ_Reaction12">(sbmlRateFactor_Reaction12 * thetaR * DRp * DRp_ConcFactor_Reaction12 / KMOLE)</Function>
+            <Function Name="LumpedJ_Reaction13">(sbmlRateFactor_Reaction13 * alphaR * DR * DR_ConcFactor_Reaction13 / KMOLE)</Function>
+            <Function Name="LumpedJ_Reaction14">(sbmlRateFactor_Reaction14 * alphaRp * DRp * DRp_ConcFactor_Reaction14 / KMOLE)</Function>
+            <Function Name="LumpedJ_Reaction15">(sbmlRateFactor_Reaction15 * deltaMR * MR * MR_ConcFactor_Reaction15 / KMOLE)</Function>
+            <Function Name="LumpedJ_Reaction16">(sbmlRateFactor_Reaction16 * betaR * MR * MR_ConcFactor_Reaction16 / KMOLE)</Function>
+            <Function Name="LumpedJ_Reaction2">(sbmlRateFactor_Reaction2 * deltaA_Reaction2 * A * A_ConcFactor_Reaction2 / KMOLE)</Function>
+            <Function Name="LumpedJ_Reaction3">(sbmlRateFactor_Reaction3 * deltaA_Reaction3 * C * C_ConcFactor / KMOLE)</Function>
+            <Function Name="LumpedJ_Reaction4">(sbmlRateFactor_Reaction4 * deltaR * R * R_ConcFactor_Reaction4 / KMOLE)</Function>
+            <Function Name="LumpedJ_Reaction5">(sbmlRateFactor_Reaction5 * gammaA * A * A_ConcFactor_Reaction5 * DA * DA_ConcFactor_Reaction5 / KMOLE)</Function>
+            <Function Name="LumpedJ_Reaction6">(sbmlRateFactor_Reaction6 * thetaA * DAp * DAp_ConcFactor_Reaction6 / KMOLE)</Function>
+            <Function Name="LumpedJ_Reaction7">(sbmlRateFactor_Reaction7 * alphaA * DA * DA_ConcFactor_Reaction7 / KMOLE)</Function>
+            <Function Name="LumpedJ_Reaction8">(sbmlRateFactor_Reaction8 * alphaAp * DAp * DAp_ConcFactor_Reaction8 / KMOLE)</Function>
+            <Function Name="LumpedJ_Reaction9">(sbmlRateFactor_Reaction9 * deltaMA * MA * MA_ConcFactor_Reaction9 / KMOLE)</Function>
+            <CompartmentSubDomain Name="Compartment">
+               <BoundaryType Boundary="Xm" Type="Value" />
+               <BoundaryType Boundary="Xp" Type="Value" />
+               <BoundaryType Boundary="Ym" Type="Value" />
+               <BoundaryType Boundary="Yp" Type="Value" />
+               <BoundaryType Boundary="Zm" Type="Value" />
+               <BoundaryType Boundary="Zp" Type="Value" />
+               <OdeEquation Name="A" SolutionType="Unknown">
+                  <Rate>((LumpedJ_Reaction12 * KMOLE / Size_deterministicOscillator) - (LumpedJ_Reaction11 * KMOLE / Size_deterministicOscillator) + (LumpedJ_Reaction10 * KMOLE / Size_deterministicOscillator) + (LumpedJ_Reaction6 * KMOLE / Size_deterministicOscillator) - (LumpedJ_Reaction5 * KMOLE / Size_deterministicOscillator) - (LumpedJ_Reaction1 * KMOLE / Size_deterministicOscillator) - (LumpedJ_Reaction2 * KMOLE / Size_deterministicOscillator))</Rate>
+                  <Initial>A_init</Initial>
+               </OdeEquation>
+               <OdeEquation Name="C" SolutionType="Unknown">
+                  <Rate>((LumpedJ_Reaction1 * KMOLE / Size_deterministicOscillator) - (LumpedJ_Reaction3 * KMOLE / Size_deterministicOscillator))</Rate>
+                  <Initial>C_init</Initial>
+               </OdeEquation>
+               <OdeEquation Name="DAp" SolutionType="Unknown">
+                  <Rate>((LumpedJ_Reaction5 * KMOLE / Size_deterministicOscillator) - (LumpedJ_Reaction6 * KMOLE / Size_deterministicOscillator))</Rate>
+                  <Initial>DAp_init</Initial>
+               </OdeEquation>
+               <OdeEquation Name="DRp" SolutionType="Unknown">
+                  <Rate>((LumpedJ_Reaction11 * KMOLE / Size_deterministicOscillator) - (LumpedJ_Reaction12 * KMOLE / Size_deterministicOscillator))</Rate>
+                  <Initial>DRp_init</Initial>
+               </OdeEquation>
+               <OdeEquation Name="MA" SolutionType="Unknown">
+                  <Rate>( - (LumpedJ_Reaction9 * KMOLE / Size_deterministicOscillator) + (LumpedJ_Reaction7 * KMOLE / Size_deterministicOscillator) + (LumpedJ_Reaction8 * KMOLE / Size_deterministicOscillator))</Rate>
+                  <Initial>MA_init</Initial>
+               </OdeEquation>
+               <OdeEquation Name="MR" SolutionType="Unknown">
+                  <Rate>( - (LumpedJ_Reaction15 * KMOLE / Size_deterministicOscillator) + (LumpedJ_Reaction13 * KMOLE / Size_deterministicOscillator) + (LumpedJ_Reaction14 * KMOLE / Size_deterministicOscillator))</Rate>
+                  <Initial>MR_init</Initial>
+               </OdeEquation>
+               <OdeEquation Name="R" SolutionType="Unknown">
+                  <Rate>((LumpedJ_Reaction16 * KMOLE / Size_deterministicOscillator) - (LumpedJ_Reaction4 * KMOLE / Size_deterministicOscillator) - (LumpedJ_Reaction1 * KMOLE / Size_deterministicOscillator) + (LumpedJ_Reaction3 * KMOLE / Size_deterministicOscillator))</Rate>
+                  <Initial>R_init</Initial>
+               </OdeEquation>
+            </CompartmentSubDomain>
+            <Version Name="vilarOscillator_Compartmental_generated" KeyValue="35789163" BranchId="35789164" Archived="0" Date="20-Sep-2009 01:15:26" FromVersionable="false">
+               <Owner Name="Education" Identifier="30625624" />
+               <GroupAccess Type="1" />
+               <Annotation>cloned from 'vilarOscillator_Compartmental_generated' owned by user BioModelsNet
+</Annotation>
+            </Version>
+         </MathDescription>
+         <Version Name="vilarOscillator_Compartmental" KeyValue="35789272" BranchId="35789273" Archived="0" Date="20-Sep-2009 01:15:54" FromVersionable="false">
+            <Owner Name="Education" Identifier="30625624" />
+            <GroupAccess Type="1" />
+            <Annotation>cloned from 'vilarOscillator_Compartmental' owned by user BioModelsNet
+</Annotation>
+         </Version>
+      </SimulationSpec>
+      <Version Name="Vilar2002_Oscillator" KeyValue="35789302" BranchId="35789303" Archived="0" Date="20-Sep-2009 01:15:54" FromVersionable="false">
+         <Owner Name="Education" Identifier="30625624" />
+         <GroupAccess Type="1" />
+         <Annotation>cloned from 'Vilar2002_Oscillator' owned by user BioModelsNet
+</Annotation>
+      </Version>
+      <annotation>
+         <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+            <rdf:Description rdf:about="#metaid_0000002">
+               <dc:creator rdf:parseType="Resource">
+                  <rdf:Bag>
+                     <rdf:li rdf:parseType="Resource">
+                        <vCard:N rdf:parseType="Resource">
+                           <vCard:Family>Le Nov�re</vCard:Family>
+                           <vCard:Given>Nicolas</vCard:Given>
+                        </vCard:N>
+                        <vCard:EMAIL>lenov@ebi.ac.uk</vCard:EMAIL>
+                        <vCard:ORG>
+                           <vCard:Orgname>EMBL-EBI</vCard:Orgname>
+                        </vCard:ORG>
+                     </rdf:li>
+                     <rdf:li rdf:parseType="Resource">
+                        <vCard:N rdf:parseType="Resource">
+                           <vCard:Family>Shapiro</vCard:Family>
+                           <vCard:Given>Bruce</vCard:Given>
+                        </vCard:N>
+                        <vCard:EMAIL>bshapiro@caltech.edu</vCard:EMAIL>
+                        <vCard:ORG>
+                           <vCard:Orgname>Jet Propulsion Laboratory</vCard:Orgname>
+                        </vCard:ORG>
+                     </rdf:li>
+                  </rdf:Bag>
+               </dc:creator>
+               <dcterms:created rdf:parseType="Resource">
+                  <dcterms:W3CDTF>2005-06-30T10:20:37Z</dcterms:W3CDTF>
+               </dcterms:created>
+               <dcterms:modified rdf:parseType="Resource">
+                  <dcterms:W3CDTF>2009-08-27T15:28:56Z</dcterms:W3CDTF>
+               </dcterms:modified>
+               <bqmodel:is>
+                  <rdf:Bag>
+                     <rdf:li rdf:resource="urn:miriam:biomodels.db:BIOMD0000000035" />
+                  </rdf:Bag>
+               </bqmodel:is>
+               <bqmodel:isDescribedBy>
+                  <rdf:Bag>
+                     <rdf:li rdf:resource="urn:miriam:pubmed:11972055" />
+                  </rdf:Bag>
+               </bqmodel:isDescribedBy>
+               <bqbiol:isVersionOf>
+                  <rdf:Bag>
+                     <rdf:li rdf:resource="urn:miriam:obo.go:GO%3A0042752" />
+                  </rdf:Bag>
+               </bqbiol:isVersionOf>
+            </rdf:Description>
+         </rdf:RDF>
+      </annotation>
+      <notes>
+         <html xhtml="http://www.w3.org/1999/xhtml">
+            <head />
+            <body xmlns="http://www.w3.org/1999/xhtml">
+               <h1>
+                  <h1>Minimal Model for Circadian Oscillations</h1>
+               </h1>
+               <table cellspacing="0" cellpadding="2" border="0">
+                  <thead>
+                     <tr>
+                        <th valign="middle" bgcolor="#eeeeee" align="left">Citation</th>
+                     </tr>
+                  </thead>
+                  <tbody>
+                     <tr>
+                        <td>
+                           Vilar JMG, Kueh HY, Barkai N, Leibler S,
+							 (2002)
+							. Mechanisms of noise resistance in genetic oscillators,
+							  PNAS, 99(9):5988-5992.
+                           <a href="http://www.pnas.org/%20%20%20%20%20%20%20%20cgi/content/abstract/99/9/5988">http://www.pnas.org/cgi/content/abstract/
+							99/9/5988</a>
+                        </td>
+                     </tr>
+                  </tbody>
+               </table>
+               <table cellspacing="0" cellpadding="2" border="0">
+                  <thead>
+                     <tr>
+                        <th valign="middle" bgcolor="#eeeeee" align="left">Description</th>
+                     </tr>
+                  </thead>
+                  <tbody>
+                     <tr>
+                        <td>A minimal model of genomically based oscillation,
+							 based on two mutually interacting genes,
+							 an activator and a repressor. Postive feedback is provided by the activator protein,
+							 which binds to the promotors of both the activator and the repressor genes. Negative feedback is provided by the repressor protein which binds to the activator protein.</td>
+                     </tr>
+                  </tbody>
+               </table>
+               <table cellspacing="0" cellpadding="2" border="0">
+                  <thead>
+                     <tr>
+                        <th valign="middle" bgcolor="#eeeeee" align="left">Rate�constant������</th>
+                        <th valign="middle" bgcolor="#eeeeee" align="left">Reaction</th>
+                     </tr>
+                  </thead>
+                  <tbody>
+                     <tr>
+                        <td>alphaA�=�50</td>
+                        <td>DA�-&gt;�DA�+�MA</td>
+                     </tr>
+                     <tr>
+                        <td>alphaAp�=�500</td>
+                        <td>DAp�-&gt;�DAp�+�MA</td>
+                     </tr>
+                     <tr>
+                        <td>alphaR�=�0.01</td>
+                        <td>DR�-&gt;�DR�+�MR</td>
+                     </tr>
+                     <tr>
+                        <td>alphaRp�=�50</td>
+                        <td>DRp�-&gt;�DRp�+�MR</td>
+                     </tr>
+                     <tr>
+                        <td>betaA�=�50</td>
+                        <td>MA�-&gt;�A�+�MA</td>
+                     </tr>
+                     <tr>
+                        <td>betaR�=�5</td>
+                        <td>MR�-&gt;�MR�+�R</td>
+                     </tr>
+                     <tr>
+                        <td>gammaA�=�1</td>
+                        <td>A�+�DA�-&gt;�DAp</td>
+                     </tr>
+                     <tr>
+                        <td>gammaC�=�2</td>
+                        <td>A�+�R�-&gt;�C</td>
+                     </tr>
+                     <tr>
+                        <td>gammaR�=�1</td>
+                        <td>A�+�DR�-&gt;�DRp</td>
+                     </tr>
+                     <tr>
+                        <td>deltaA�=�1</td>
+                        <td>A�-&gt;�EmptySet</td>
+                     </tr>
+                     <tr>
+                        <td>deltaA�=�1</td>
+                        <td>C�-&gt;�R</td>
+                     </tr>
+                     <tr>
+                        <td>deltaMA�=�10</td>
+                        <td>MA�-&gt;�EmptySet</td>
+                     </tr>
+                     <tr>
+                        <td>deltaMR�=�0.5</td>
+                        <td>MR�-&gt;�EmptySet</td>
+                     </tr>
+                     <tr>
+                        <td>deltaR�=�0.2</td>
+                        <td>R�-&gt;�EmptySet</td>
+                     </tr>
+                     <tr>
+                        <td>thetaA�=�50</td>
+                        <td>DAp�-&gt;�A�+�DA</td>
+                     </tr>
+                     <tr>
+                        <td>thetaR�=�100</td>
+                        <td>DRp�-&gt;�A�+�DR</td>
+                     </tr>
+                  </tbody>
+               </table>
+               <table cellspacing="0" cellpadding="2" border="0">
+                  <thead>
+                     <tr>
+                        <th valign="middle" bgcolor="#eeeeee" align="left">Variable</th>
+                        <th valign="middle" bgcolor="#eeeeee" align="left">IC��</th>
+                        <th valign="middle" bgcolor="#eeeeee" align="left">ODE</th>
+                     </tr>
+                  </thead>
+                  <tbody>
+                     <tr>
+                        <td>A</td>
+                        <td>0</td>
+                        <td>A'[t]�==�-(deltaA*A[t])�-�gammaA*A[t]*DA[t]�+�thetaA*DAp[
+							t]�-�gammaR*A[t]*DR[t]�+�thetaR*DRp[t]�+�betaA*MA[t]�-
+							�gammaC*A[t]*R[t]</td>
+                     </tr>
+                     <tr>
+                        <td>C</td>
+                        <td>0</td>
+                        <td>C'[t]�==�-(deltaA*C[t])�+�gammaC*A[t]*R[t]</td>
+                     </tr>
+                     <tr>
+                        <td>DA</td>
+                        <td>1</td>
+                        <td>DA'[t]�==�-(gammaA*A[t]*DA[t])�+�thetaA*DAp[t]</td>
+                     </tr>
+                     <tr>
+                        <td>DAp</td>
+                        <td>0</td>
+                        <td>DAp'[t]�==�gammaA*A[t]*DA[t]�-�thetaA*DAp[t]</td>
+                     </tr>
+                     <tr>
+                        <td>DR</td>
+                        <td>1</td>
+                        <td>DR'[t]�==�-(gammaR*A[t]*DR[t])�+�thetaR*DRp[t]</td>
+                     </tr>
+                     <tr>
+                        <td>DRp</td>
+                        <td>0</td>
+                        <td>DRp'[t]�==�gammaR*A[t]*DR[t]�-�thetaR*DRp[t]</td>
+                     </tr>
+                     <tr>
+                        <td>MA</td>
+                        <td>0</td>
+                        <td>MA'[t]�==�alphaA*DA[t]�+�alphaAp*DAp[t]�-�deltaMA*MA[t]</td>
+                     </tr>
+                     <tr>
+                        <td>MR</td>
+                        <td>0</td>
+                        <td>MR'[t]�==�alphaR*DR[t]�+�alphaRp*DRp[t]�-�deltaMR*MR[t]</td>
+                     </tr>
+                     <tr>
+                        <td>R</td>
+                        <td>0</td>
+                        <td>R'[t]�==�deltaA*C[t]�+�betaR*MR[t]�-�deltaR*R[t]�-
+							�gammaC*A[t]*R[t]</td>
+                     </tr>
+                  </tbody>
+               </table>
+               <p>Generated by Cellerator Version 1.0 update 2.1127 using Mathematica 4.2 for 
+				Mac OS X (June 4, 2002), November 27, 2002 12:17:46, using (PowerMac,PowerPC,
+				Mac OS X,MacOSX,Darwin)</p>
+               <p>author=B.E.Shapiro</p>
+               <p>
+                  This model originates from BioModels Database: A Database of Annotated Published Models. It is copyright (c) 2005-2009 The BioModels Team.
+                  <br />
+                  For more information see the
+                  <a href="http://www.ebi.ac.uk/biomodels/legal.html" target="_blank">terms of use</a>
+                  .
+                  <br />
+                  To cite BioModels Database, please use
+                  <a href="http://www.pubmedcentral.nih.gov/articlerender.fcgi?tool=pubmed&amp;pubmedid=16381960" target="_blank">Le Nov�re N., Bornstein B., Broicher A., Courtot M., Donizelli M., Dharuri H., Li L., Sauro H., Schilstra M., Shapiro B., Snoep J.L., Hucka M. (2006) BioModels Database: A Free, Centralized Database of Curated, Published, Quantitative Kinetic Models of Biochemical and Cellular Systems Nucleic Acids Res., 34: D689-D691.</a>
+               </p>
+            </body>
+         </html>
+      </notes>
+   </BioModel>
+</vcml>
+

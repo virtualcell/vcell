@@ -12,7 +12,8 @@ mvn_repo=$HOME/.m2
 show_help() {
 	echo "usage: build.sh [OPTIONS] target repo tag"
 	echo "  ARGUMENTS"
-	echo "    target                ( batch | api | db | sched | submit | data | mongo | clientgen | web | opt | all)"
+	echo "    target                ( batch | api | db | sched | submit | data | mongo | clientgen | web | opt | appservices | all)"
+	echo "                              where appservices = (api, db, sched, submit, data, web)"
 	echo ""
 	echo "    repo                  ( schaff | localhost:5000 | vcell-docker.cam.uchc.edu:5000 )"
 	echo ""
@@ -403,7 +404,7 @@ shift
 
 if [ "$skip_maven" == "false" ]; then
 	pushd ../..
-	mvn -Dmaven.repo.local=$mvn_repo clean install dependency:copy-dependencies
+	mvn -Dmaven.repo.local=$mvn_repo clean install dependency:copy-dependencies -DskipTests=true
 	popd
 fi
 
@@ -453,8 +454,11 @@ case $target in
 		exit $?
 		;;
 	all)
-		# build_batch && build_api && build_master && build_db && build_sched && build_submit && build_data && build_web && build_clientgen && build_mongo && build_batch_singularity
 		build_batch && build_api && build_db && build_sched && build_submit && build_data && build_web && build_opt && build_clientgen && build_mongo && build_batch_singularity && build_opt_singularity
+		exit $?
+		;;
+	appservices)
+		build_api && build_db && build_sched && build_submit && build_data && build_web
 		exit $?
 		;;
 	*)

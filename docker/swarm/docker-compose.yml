@@ -5,7 +5,10 @@ services:
     environment:
       - softwareVersion=${VCELL_VERSION}
       - serverid=${VCELL_SITE}
-      
+
+      - ssl_ignoreHostMismatch=${VCELL_SSL_IGNORE_HOST_MISMATCH}
+      - ssl_ignoreCertProblems=${VCELL_SSL_IGNORE_CERT_PROBLEMS}
+
       - publicationHost=${VCELL_API_PUBLICATION_HOST}
       
       - dburl=${VCELL_DB_URL}
@@ -24,6 +27,8 @@ services:
       - smtp_hostname=${VCELL_SMTP_HOSTNAME}
       - smtp_port=${VCELL_SMTP_PORT}
       - smtp_emailaddress=${VCELL_SMTP_EMAILADDRESS}
+
+      - submit_service_host=${VCELL_SUBMIT_SERVICE_HOST}
 
     ports:
       - "${VCELL_API_PORT_EXTERNAL}:8080"
@@ -45,7 +50,7 @@ services:
       - mongodb
     deploy:
       mode: replicated
-      replicas: 2
+      replicas: 1
       resources:
         limits:
           memory: 2000M
@@ -102,7 +107,7 @@ services:
       retries: 2
     volumes:
       - "${VCELL_SIMDATADIR_HOST}:/simdata"
-      - "${VCELL_SIMDATADIR_ARCHIVE_HOST}:${VCELL_SIMDATADIR_ARCHIVE_HOST}"
+      - "${VCELL_SIMDATADIR_ARCHIVE_INTERNAL}:${VCELL_SIMDATADIR_ARCHIVE_INTERNAL}"
       - "${VCELL_HTCLOGS_HOST}:/htclogs"
     secrets:
       - dbpswd
@@ -164,7 +169,8 @@ services:
       - slurm_tmpdir=${VCELL_SLURM_TMPDIR}
       - slurm_local_singularity_dir=${VCELL_SLURM_LOCAL_SINGULARITY_DIR}
       - slurm_central_singularity_dir=${VCELL_SLURM_CENTRAL_SINGULARITY_DIR}
-      - simdatadir_archive_host=${VCELL_SIMDATADIR_ARCHIVE_HOST}
+      - simdatadir_archive_internal=${VCELL_SIMDATADIR_ARCHIVE_INTERNAL}
+      - simdatadir_archive_external=${VCELL_SIMDATADIR_ARCHIVE_EXTERNAL}
 
       - vcell_ssh_cmd_cmdtimeout=${VCELL_SSH_CMD_TIMEOUT:-10000}
       - vcell_ssh_cmd_restoretimeout=${VCELL_SSH_CMD_RESTORE_TIMEOUT:-5}
@@ -179,9 +185,10 @@ services:
       - mongodb_database=test
     ports:
       - "8000" # java remote debugging
+      - "8877"
     volumes:
       - "${VCELL_SIMDATADIR_HOST}:/simdata"
-      - "${VCELL_SIMDATADIR_ARCHIVE_HOST}:${VCELL_SIMDATADIR_ARCHIVE_HOST}"
+      - "${VCELL_SIMDATADIR_ARCHIVE_INTERNAL}:${VCELL_SIMDATADIR_ARCHIVE_INTERNAL}"
       - "${VCELL_HTCLOGS_HOST}:/htclogs"
     secrets:
       - jmspswd
@@ -267,7 +274,7 @@ services:
       - "8000" # java remote debugging
     volumes:
       - "${VCELL_SIMDATADIR_HOST}:/simdata"
-      - "${VCELL_SIMDATADIR_ARCHIVE_HOST}:${VCELL_SIMDATADIR_ARCHIVE_HOST}"
+      - "${VCELL_SIMDATADIR_ARCHIVE_INTERNAL}:${VCELL_SIMDATADIR_ARCHIVE_INTERNAL}"
       - "${VCELL_EXPORTDIR_HOST}:/exportdir"
     secrets:
       - dbpswd
@@ -352,6 +359,8 @@ services:
       - "${VCELL_MONGO_PORT_EXTERNAL}:27017"
     networks:
       - vcellnet
+    volumes:
+      - mongodata:/data/db
     deploy:
       mode: replicated
       replicas: 1
@@ -375,7 +384,7 @@ services:
       - "${VCELL_WEB_DATA_PORT}:${VCELL_WEB_DATA_PORT}"
     volumes:
       - "${VCELL_SIMDATADIR_HOST}:/simdata"
-      - "${VCELL_SIMDATADIR_ARCHIVE_HOST}:/altsimdata"
+      - "${VCELL_SIMDATADIR_ARCHIVE_INTERNAL}:/altsimdata"
       - "${VCELL_EXPORTDIR_HOST}:/exportdir"
     secrets:
       - dbpswd
@@ -397,6 +406,8 @@ services:
 
 networks:
   vcellnet:
+volumes:
+  mongodata:
 secrets:
   dbpswd:
     file: ${VCELL_SECRETS_DIR}/dbpswd.txt

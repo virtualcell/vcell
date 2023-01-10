@@ -6,8 +6,11 @@ import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.vcell.test.Fast;
 
 
+@Category(Fast.class)
 public class HashListMapTest {
 
 	private HashListMap<String,Integer> testList;

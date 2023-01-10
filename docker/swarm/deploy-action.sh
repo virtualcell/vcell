@@ -40,9 +40,9 @@ show_help() {
 	echo "                          directory for installers accessible to users"
 	echo "                          typically a web-accessible location to download the client installers for each platform"
 	echo ""
-	echo "    --link-installers     optionally create symbolic links for newly created client installers"
-	echo "                          for permanent 'latest' web links fr each platform"
-	echo ""
+#	echo "    --link-installers     optionally create symbolic links for newly created client installers"
+#	echo "                          for permanent 'latest' web links fr each platform"
+#	echo ""
 	echo "    --install-singularity  optionally install batch and opt singularity images on each compute node in 'vcell' SLURM partition"
 	echo ""
 	echo ""
@@ -64,7 +64,7 @@ ssh_user=$(whoami)
 ssh_key=
 installer_deploy_dir=
 build_installers=false
-link_installers=false
+#link_installers=false
 install_singularity=false
 while :; do
 	case $1 in
@@ -90,9 +90,9 @@ while :; do
 		--build-installers)
 			build_installers=true
 			;;
-		--link-installers)
-			link_installers=true
-			;;
+#		--link-installers)
+#			link_installers=true
+#			;;
 		-?*)
 			printf 'ERROR: Unknown option: %s\n' "$1" >&2
 			echo ""
@@ -116,16 +116,16 @@ remote_compose_file=$5
 stack_name=$6
 
 # get settings from config file
-vcell_siteCamel=`cat $local_config_file | grep VCELL_SITE_CAMEL | cut -d"=" -f2`
-vcell_version=`cat $local_config_file | grep VCELL_VERSION_NUMBER | cut -d"=" -f2`
-vcell_build=`cat $local_config_file | grep VCELL_BUILD_NUMBER | cut -d"=" -f2`
-batch_singularity_filename=`cat $local_config_file | grep VCELL_BATCH_SINGULARITY_FILENAME | cut -d"=" -f2`
-batch_singularity_image_external=`cat $local_config_file | grep VCELL_BATCH_SINGULARITY_IMAGE_EXTERNAL | cut -d"=" -f2`
-opt_singularity_filename=`cat $local_config_file | grep VCELL_OPT_SINGULARITY_FILENAME | cut -d"=" -f2`
-opt_singularity_image_external=`cat $local_config_file | grep VCELL_OPT_SINGULARITY_IMAGE_EXTERNAL | cut -d"=" -f2`
-#partitionName=`cat $local_config_file | grep VCELL_SLURM_PARTITION | cut -d"=" -f2`
-batchHost=`cat $local_config_file | grep VCELL_BATCH_HOST | cut -d"=" -f2`
-slurm_singularity_central_dir=`cat $local_config_file | grep VCELL_SLURM_CENTRAL_SINGULARITY_DIR | cut -d"=" -f2`
+vcell_siteCamel=$(grep VCELL_SITE_CAMEL "$local_config_file" | cut -d"=" -f2)
+vcell_version=$(grep VCELL_VERSION_NUMBER "$local_config_file" | cut -d"=" -f2)
+vcell_build=$(grep VCELL_BUILD_NUMBER "$local_config_file" | cut -d"=" -f2)
+batch_singularity_filename=$(grep VCELL_BATCH_SINGULARITY_FILENAME "$local_config_file" | cut -d"=" -f2)
+batch_singularity_image_external=$(grep VCELL_BATCH_SINGULARITY_IMAGE_EXTERNAL "$local_config_file" | cut -d"=" -f2)
+opt_singularity_filename=$(grep VCELL_OPT_SINGULARITY_FILENAME "$local_config_file" | cut -d"=" -f2)
+opt_singularity_image_external=$(grep VCELL_OPT_SINGULARITY_IMAGE_EXTERNAL "$local_config_file" | cut -d"=" -f2)
+#partitionName=$(grep VCELL_SLURM_PARTITION "$local_config_file" | cut -d"=" -f2)
+batchHost=$(grep VCELL_BATCH_HOST "$local_config_file" | cut -d"=" -f2)
+slurm_singularity_central_dir=$(grep VCELL_SLURM_CENTRAL_SINGULARITY_DIR "$local_config_file" | cut -d"=" -f2)
 
 
 echo ""
@@ -145,7 +145,7 @@ cmd="scp $ssh_key $local_compose_file $ssh_user@$manager_node:$remote_compose_fi
 if [ "$install_singularity" == "true" ]; then
 
 	echo ""
-	pushd ../build/singularity-vm
+	pushd ../build/singularity-vm || (echo "pushd ../build/singularity-vm failed"; exit 1)
 	echo ""
 	echo "CURRENT DIRECTORY IS $PWD"
 
@@ -159,17 +159,23 @@ if [ "$install_singularity" == "true" ]; then
 		exit 1
 	fi
 
-	scp "./${batch_singularity_filename} $ssh_user@$manager_node:${slurm_singularity_central_dir}"
+	if ! scp "./${batch_singularity_filename}" "$ssh_user@$manager_node:${slurm_singularity_central_dir}"; then
+    echo "failed to copy batch singularity image to server"
+    exit 1
+  fi
 
 	if [ ! -e "./${opt_singularity_filename}" ]; then
 		echo "failed to find local opt singularity image file $opt_singularity_filename in ./singularity-vm directory"
 		exit 1
 	fi
 
-	scp "./${opt_singularity_filename} $ssh_user@$manager_node:${slurm_singularity_central_dir}"
+	if ! scp "./${opt_singularity_filename}" "$ssh_user@$manager_node:${slurm_singularity_central_dir}"; then
+	  echo "failed to copy opt singularity image to server"
+	  exit 1
+	fi
 
 	echo "popd"
-	popd
+	popd || (echo "popd failed"; exit 1)
 fi
 
 
@@ -178,10 +184,10 @@ fi
 #
 echo ""
 echo "deploying stack $stack_name to $manager_node using config in $manager_node:$remote_config_file"
-localmachine=`hostname`
+localmachine=$(hostname)
 if [ "$localmachine" == "$manager_node" ]; then
-	env $(cat $remote_config_file | xargs) docker stack deploy -c $remote_compose_file $stack_name
-	if [[ $? -ne 0 ]]; then echo "failed to deploy stack" && exit 1; fi
+	if ! env $(xargs < "$remote_config_file") docker stack deploy -c "$remote_compose_file" "$stack_name";
+	then echo "failed to deploy stack" && exit 1; fi
 else
 	cmd="ssh $ssh_key -t $ssh_user@$manager_node sudo env \$(cat $remote_config_file | xargs) docker stack deploy -c $remote_compose_file $stack_name --with-registry-auth"
 	($cmd) || (echo "failed to deploy stack" && exit 1)
@@ -190,29 +196,29 @@ fi
 #
 # if --build-installers, then generate client installers, placing then in ./generated_installers
 #    if --installer-deploy-dir, then also copy installers to $installer_deploy_dir
-#        if --link-installers, then also link installers to version independent installer names for each platform
+#  *** unimplemented *** (if --link-installers, then also link installers to version independent installer names for each platform)
 #
 if [ "$build_installers" == "true" ]; then
 	#
 	# if --installer-deploy-dir, then copy the installers from ./generated_installers directory to the installer deploy directory
 	#
-	if [ ! -z $installer_deploy_dir ]; then
+	if [ ! -z "$installer_deploy_dir" ]; then
 		# vcell_siteCamel=Alpha
 		# vcell_version=7.0.0
 		# vcell_build=19
 		# version=7_0_0_19
 		version=$(echo "${vcell_version}_${vcell_build}" | tr '.' _)
-		scp ./generated_installers/VCell_${vcell_siteCamel}_windows-x64_${version}_64bit.exe \
-			./generated_installers/VCell_${vcell_siteCamel}_windows-x64_${version}_64bit.dat/* \
-			./generated_installers/VCell_${vcell_siteCamel}_unix_${version}_32bit.sh \
-			./generated_installers/VCell_${vcell_siteCamel}_macos_${version}_64bit.dmg \
-			./generated_installers/VCell_${vcell_siteCamel}_windows-x32_${version}_32bit.exe \
-			./generated_installers/VCell_${vcell_siteCamel}_unix_${version}_64bit.sh \
-			./generated_installers/updates.xml \
-			./generated_installers/output.txt \
-			./generated_installers/md5sums \
-				$ssh_user@$manager_node:${installer_deploy_dir}
-		if [[ $? -ne 0 ]]; then 
+		if ! scp "./generated_installers/VCell_${vcell_siteCamel}_windows-x64_${version}_64bit.exe" \
+			"./generated_installers/VCell_${vcell_siteCamel}_windows-x64_${version}_64bit.dat"/* \
+			"./generated_installers/VCell_${vcell_siteCamel}_unix_${version}_32bit.sh" \
+			"./generated_installers/VCell_${vcell_siteCamel}_macos_${version}_64bit.dmg" \
+			"./generated_installers/VCell_${vcell_siteCamel}_windows-x32_${version}_32bit.exe" \
+			"./generated_installers/VCell_${vcell_siteCamel}_unix_${version}_64bit.sh" \
+			"./generated_installers/updates.xml" \
+			"./generated_installers/output.txt" \
+			"./generated_installers/md5sums" \
+				"$ssh_user@$manager_node:${installer_deploy_dir}";
+		then
 			echo "failed to copy installers"; 
 			exit 1;
 		fi

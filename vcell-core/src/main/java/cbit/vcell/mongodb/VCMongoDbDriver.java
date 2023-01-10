@@ -1,21 +1,7 @@
 package cbit.vcell.mongodb;
 
-import java.io.ByteArrayInputStream;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
-
-import org.apache.commons.io.output.ByteArrayOutputStream;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.bson.Document;
-import org.bson.conversions.Bson;
-import org.bson.types.ObjectId;
-
+import cbit.vcell.resource.PropertyLoader;
+import cbit.vcell.resource.VCellExecutorService;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoException;
 import com.mongodb.client.FindIterable;
@@ -26,9 +12,24 @@ import com.mongodb.client.gridfs.GridFSBuckets;
 import com.mongodb.client.gridfs.model.GridFSUploadOptions;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.InsertManyOptions;
+import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.apache.logging.log4j.CloseableThreadContext;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.bson.Document;
+import org.bson.conversions.Bson;
+import org.bson.types.ObjectId;
 
-import cbit.vcell.resource.PropertyLoader;
-import cbit.vcell.resource.VCellExecutorService;
+import java.io.ByteArrayInputStream;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 public class VCMongoDbDriver {
 	private static VCMongoDbDriver mongoDriverSingleton = null;
@@ -81,7 +82,7 @@ public class VCMongoDbDriver {
 		        		lg.debug("VCMongoMessage sent : "+ dbObjectsToSend.size() + " messages");
 		        	}
 	        	} catch (MongoException e){
-		        	lg.debug("failed to write to mongodb", e);
+		        	lg.debug("failed to write to mongodb: "+e.getMessage(), e);
 		        	if (lg.isWarnEnabled()) {
 	        			lg.warn("VCMongoMessage failedToSend : "+ e.getMessage());
 		        	}
@@ -142,16 +143,44 @@ public class VCMongoDbDriver {
     {
         return processing;
     }
-    
-    public void addMessage(VCMongoMessage message)
+
+	@Deprecated
+    public void addMessage(Level level, VCMongoMessage mongoMessage, String message)
     {
-    	if (lg.isTraceEnabled()) lg.trace(message.getDbObject().toJson());
-    	
+    	if (lg.isEnabled(level)){
+			// Use Log4J ThreadContext (and JsonTemplateLayout in config) for pure JSON logs using
+			// ECS (Elastic Common Schema), so no parsing/transformation needed by elastic stack or other
+			// observability frameworks.
+			//
+			// The structured logging introduced by VCMongoMessage will be refactored (below is a trivial example)
+			// The next step may be to return a ClosableThreadContext
+			// The final goal is to integrate it with OpenTelemetry Trace/Spans and associated context variables.
+			//
+			//
+			// 1. logging metadata: timestamp, log level, thread name, logger, line number
+			// 2. application context (e.g. simulation ID, user):
+			//    a. <to-be-replaced> JSON formatted structured logging from VCMongoMessage (from here)
+			//    b. <future> inject same context using Log4J ThreadContext to decorate all logs in same transaction.
+			// 3. transaction/tracing context:
+			//    a. <future> injected trace info (e.g. OpenTelemetry trace/span ids) to correlate logs with transactions.
+			//
+			LinkedHashMap<String, String> contextMap = new LinkedHashMap<>();
+			Document dbObject = mongoMessage.getDbObject();
+			for (String field : dbObject.keySet()){
+				String value = dbObject.get(field).toString();
+				contextMap.put(field, value);
+			}
+			try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.putAll(contextMap)) {
+				lg.log(level, message);
+			}
+		}
+
+		// no longer write logs to MongoDB
 //    	getSessionLog().print("VCMongoMessage queued : "+message);
-    	messageOutbox.add(message);
-    	if (!IsProcessing()){
-    		startProcessing();
-    	}
+//    	messageOutbox.add(message);
+//    	if (!IsProcessing()){
+//    		startProcessing();
+//    	}
     }
     
 	public void flush() {
@@ -293,7 +322,7 @@ public class VCMongoDbDriver {
 			Document doc = new Document();
 			doc.put(VCMongoMessage.MongoMessage_msgtype,  VCMongoMessage.MongoMessage_type_testing);
 			doc.put(VCMongoMessage.MongoMessage_msgTime, System.currentTimeMillis());
-			mongoDbDriver.addMessage(new VCMongoMessage(doc));
+			mongoDbDriver.addMessage(Level.INFO, new VCMongoMessage(doc), "test message");
 
 			mongoDbDriver.startProcessing();
 			Thread.sleep(1000*2);

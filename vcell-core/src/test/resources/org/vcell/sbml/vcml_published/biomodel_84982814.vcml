@@ -1,0 +1,552 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--This biomodel was generated in VCML Version 0.4-->
+<vcml xmlns="http://sourceforge.net/projects/vcell/vcml" Version="0.4">
+   <BioModel Name="Goldbeter 1991 explicit">
+      <Annotation>cloned from 'Goldbeter 1991 explicit' owned by user raquell
+cloned from 'Goldbeter 1991 explicit' owned by user BioModelsNet.
+
+The reaction equations have been modified from the SBML export equations by the removal of a translation factor (SBML_Factor). The parameter values were adjusted to allow the removal of the SBML translation produced concentration factors. 
+
+The values and behaviors are identical to the original Goldbeter 1991 explicit model contained within the Shared Model Database.
+</Annotation>
+      <Model Name="GMO">
+         <Annotation>cloned from 'GMO' owned by user raquell
+cloned from 'GMO' owned by user BioModelsNet
+</Annotation>
+         <Compound Name="C">
+            <Annotation>C</Annotation>
+         </Compound>
+         <Compound Name="M">
+            <Annotation>M</Annotation>
+         </Compound>
+         <Compound Name="X">
+            <Annotation>X</Annotation>
+         </Compound>
+         <Compound Name="MI">
+            <Annotation>MI</Annotation>
+         </Compound>
+         <Compound Name="XI">
+            <Annotation>XI</Annotation>
+         </Compound>
+         <Feature Name="cell" KeyValue="30625761" />
+         <LocalizedCompound Name="C" CompoundRef="C" Structure="cell" OverrideName="true" KeyValue="30625764" />
+         <LocalizedCompound Name="M" CompoundRef="M" Structure="cell" OverrideName="true" KeyValue="30625765" />
+         <LocalizedCompound Name="X" CompoundRef="X" Structure="cell" OverrideName="true" KeyValue="30625766" />
+         <LocalizedCompound Name="MI" CompoundRef="MI" Structure="cell" OverrideName="true" KeyValue="30625767" />
+         <LocalizedCompound Name="XI" CompoundRef="XI" Structure="cell" OverrideName="true" KeyValue="30625768" />
+         <SimpleReaction Structure="cell" Name="Protease Mediated Degradation" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="30625769">
+            <Reactant LocalizedCompoundRef="C" Stoichiometry="1" KeyValue="30625771" />
+            <Modifier LocalizedCompoundRef="X" KeyValue="30625772" />
+            <Kinetics KineticsType="GeneralKinetics">
+               <Parameter Name="J" Role="reaction rate" Unit="uM.s-1">(vd * pow((C + Kd),-1.0) * C * X)</Parameter>
+               <Parameter Name="vd" Role="user defined" Unit="s-1">0.25</Parameter>
+               <Parameter Name="Kd" Role="user defined" Unit="M">0.02</Parameter>
+            </Kinetics>
+         </SimpleReaction>
+         <SimpleReaction Structure="cell" Name="Default Degradation" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="30625773">
+            <Reactant LocalizedCompoundRef="C" Stoichiometry="1" KeyValue="30625775" />
+            <Kinetics KineticsType="GeneralKinetics">
+               <Parameter Name="J" Role="reaction rate" Unit="uM.s-1">(kd * C)</Parameter>
+               <Parameter Name="kd" Role="user defined" Unit="s-1">0.01</Parameter>
+            </Kinetics>
+         </SimpleReaction>
+         <SimpleReaction Structure="cell" Name="Inactivation of M" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="30625781">
+            <Reactant LocalizedCompoundRef="M" Stoichiometry="1" KeyValue="30625783" />
+            <Product LocalizedCompoundRef="MI" Stoichiometry="1" KeyValue="30625784" />
+            <Kinetics KineticsType="GeneralKinetics">
+               <Parameter Name="J" Role="reaction rate" Unit="uM.s-1">(V2 * pow((K2 + M),-1.0) * M)</Parameter>
+               <Parameter Name="V2" Role="user defined" Unit="1000 mol.m-3.s-1">1.5</Parameter>
+               <Parameter Name="K2" Role="user defined" Unit="M">0.0050</Parameter>
+            </Kinetics>
+         </SimpleReaction>
+         <SimpleReaction Structure="cell" Name="Synthesis" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="30625785">
+            <Product LocalizedCompoundRef="C" Stoichiometry="1" KeyValue="30625787" />
+            <Kinetics KineticsType="GeneralKinetics">
+               <Parameter Name="J" Role="reaction rate" Unit="uM.s-1">vi</Parameter>
+               <Parameter Name="vi" Role="user defined" Unit="1000 mol.m-3.s-1">0.025</Parameter>
+            </Kinetics>
+         </SimpleReaction>
+         <SimpleReaction Structure="cell" Name="Activation of Protease X" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="30625788">
+            <Reactant LocalizedCompoundRef="XI" Stoichiometry="1" KeyValue="30625789" />
+            <Product LocalizedCompoundRef="X" Stoichiometry="1" KeyValue="30625790" />
+            <Modifier LocalizedCompoundRef="M" KeyValue="30625791" />
+            <Kinetics KineticsType="GeneralKinetics">
+               <Parameter Name="J" Role="reaction rate" Unit="uM.s-1">(V3 * pow((K3 + XI),-1.0) * XI)</Parameter>
+               <Parameter Name="V3" Role="user defined" Unit="1000 mol.m-3.s-1">(VM3 * M)</Parameter>
+               <Parameter Name="K3" Role="user defined" Unit="M">0.0050</Parameter>
+               <Parameter Name="VM3" Role="user defined" Unit="s-1">1.0</Parameter>
+            </Kinetics>
+         </SimpleReaction>
+         <SimpleReaction Structure="cell" Name="Inactivation of Protease X" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="30625792">
+            <Reactant LocalizedCompoundRef="X" Stoichiometry="1" KeyValue="30625793" />
+            <Product LocalizedCompoundRef="XI" Stoichiometry="1" KeyValue="30625794" />
+            <Kinetics KineticsType="GeneralKinetics">
+               <Parameter Name="J" Role="reaction rate" Unit="uM.s-1">(V4 * pow((K4 + X),-1.0) * X)</Parameter>
+               <Parameter Name="V4" Role="user defined" Unit="1000 mol.m-3.s-1">0.5</Parameter>
+               <Parameter Name="K4" Role="user defined" Unit="M">0.0050</Parameter>
+            </Kinetics>
+         </SimpleReaction>
+         <SimpleReaction Structure="cell" Name="Activation of M" FluxCarrierValence="0" FluxOption="MolecularOnly" KeyValue="30625776">
+            <Reactant LocalizedCompoundRef="MI" Stoichiometry="1" KeyValue="30625778" />
+            <Product LocalizedCompoundRef="M" Stoichiometry="1" KeyValue="30625779" />
+            <Modifier LocalizedCompoundRef="C" KeyValue="30625780" />
+            <Kinetics KineticsType="GeneralKinetics">
+               <Parameter Name="J" Role="reaction rate" Unit="uM.s-1">(V1 * pow((K1 + MI),-1.0) * MI)</Parameter>
+               <Parameter Name="K1" Role="user defined" Unit="M">0.0050</Parameter>
+               <Parameter Name="V1" Role="user defined" Unit="1000 mol.m-3.s-1">(VM1 * pow((C + Kc),-1.0) * C)</Parameter>
+               <Parameter Name="VM1" Role="user defined" Unit="1000 mol.m-3.s-1">3.0</Parameter>
+               <Parameter Name="Kc" Role="user defined" Unit="M">0.5</Parameter>
+            </Kinetics>
+         </SimpleReaction>
+         <Diagram Name="cell" Structure="cell">
+            <LocalizedCompoundShape LocalizedCompoundRef="C" LocationX="167" LocationY="51" />
+            <LocalizedCompoundShape LocalizedCompoundRef="M" LocationX="221" LocationY="135" />
+            <LocalizedCompoundShape LocalizedCompoundRef="X" LocationX="283" LocationY="234" />
+            <LocalizedCompoundShape LocalizedCompoundRef="MI" LocationX="125" LocationY="137" />
+            <LocalizedCompoundShape LocalizedCompoundRef="XI" LocationX="153" LocationY="238" />
+            <SimpleReactionShape SimpleReactionRef="Protease Mediated Degradation" LocationX="283" LocationY="94" />
+            <SimpleReactionShape SimpleReactionRef="Default Degradation" LocationX="329" LocationY="56" />
+            <SimpleReactionShape SimpleReactionRef="Activation of M" LocationX="164" LocationY="104" />
+            <SimpleReactionShape SimpleReactionRef="Inactivation of M" LocationX="169" LocationY="181" />
+            <SimpleReactionShape SimpleReactionRef="Synthesis" LocationX="63" LocationY="50" />
+            <SimpleReactionShape SimpleReactionRef="Activation of Protease X" LocationX="220" LocationY="203" />
+            <SimpleReactionShape SimpleReactionRef="Inactivation of Protease X" LocationX="214" LocationY="278" />
+         </Diagram>
+         <Version Name="GMO" KeyValue="30625751" BranchId="30625658" Archived="0" Date="07-Dec-2008 15:09:49" FromVersionable="false">
+            <Owner Name="Education" Identifier="30625624" />
+            <GroupAccess Type="1" />
+            <Annotation>cloned from 'GMO' owned by user raquell
+cloned from 'GMO' owned by user BioModelsNet
+</Annotation>
+         </Version>
+      </Model>
+      <SimulationSpec Name="GMO_Compartmental" Stochastic="false" UseConcentration="true">
+         <Annotation>cloned from 'GMO_Compartmental' owned by user raquell; cloned from 'GMO_Compartmental' owned by user BioModelsNet.
+
+The simulations in this application were run to different end times. The patterns differ signficantly. This is analagous to the need to characterize an experiment for a sufficient length of time to observe characteristic behaviors.
+</Annotation>
+         <Geometry Name="Compartmental1219967133" Dimension="0">
+            <Annotation>cloned from 'Compartmental1219967133' owned by user raquell
+cloned from 'Compartmental1219967133' owned by user BioModelsNet
+</Annotation>
+            <Extent X="10.0" Y="10.0" Z="10.0" />
+            <Origin X="0.0" Y="0.0" Z="0.0" />
+            <SubVolume Name="Compartment" Handle="0" Type="Compartmental" KeyValue="30625653" />
+            <Version Name="Compartmental1219967133" KeyValue="30625649" BranchId="30625650" Archived="0" Date="07-Dec-2008 14:51:14" FromVersionable="false">
+               <Owner Name="Education" Identifier="30625624" />
+               <GroupAccess Type="1" />
+               <Annotation>cloned from 'Compartmental1219967133' owned by user raquell
+cloned from 'Compartmental1219967133' owned by user BioModelsNet
+</Annotation>
+            </Version>
+         </Geometry>
+         <GeometryContext>
+            <FeatureMapping Feature="cell" GeometryClass="Compartment" SubVolume="Compartment" Size="1.0000000000000001E15">
+               <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
+            </FeatureMapping>
+         </GeometryContext>
+         <ReactionContext>
+            <LocalizedCompoundSpec LocalizedCompoundRef="C" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+               <InitialConcentration>0.01</InitialConcentration>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="M" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+               <InitialConcentration>0.01</InitialConcentration>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="X" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+               <InitialConcentration>0.01</InitialConcentration>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="MI" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+               <InitialConcentration>0.99</InitialConcentration>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="XI" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+               <InitialConcentration>0.99</InitialConcentration>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <ReactionSpec ReactionStepRef="Protease Mediated Degradation" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="Default Degradation" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="Inactivation of M" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="Synthesis" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="Activation of Protease X" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="Inactivation of Protease X" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="Activation of M" ReactionMapping="included" />
+         </ReactionContext>
+         <MathDescription Name="GMO_Compartmental_generated">
+            <Annotation>cloned from 'GMO_Compartmental_generated' owned by user raquell
+cloned from 'GMO_Compartmental_generated' owned by user BioModelsNet
+</Annotation>
+            <Constant Name="_F_">96480.0</Constant>
+            <Constant Name="_F_nmol_">9.648E-5</Constant>
+            <Constant Name="_K_GHK_">1.0E-9</Constant>
+            <Constant Name="_N_pmol_">6.02E11</Constant>
+            <Constant Name="_PI_">3.141592653589793</Constant>
+            <Constant Name="_R_">8314.0</Constant>
+            <Constant Name="_T_">300.0</Constant>
+            <Constant Name="C_init_uM">0.01</Constant>
+            <Constant Name="K1">0.0050</Constant>
+            <Constant Name="K2">0.0050</Constant>
+            <Constant Name="K3">0.0050</Constant>
+            <Constant Name="K4">0.0050</Constant>
+            <Constant Name="K_millivolts_per_volt">1000.0</Constant>
+            <Constant Name="Kc">0.5</Constant>
+            <Constant Name="Kd">0.02</Constant>
+            <Constant Name="kd">0.01</Constant>
+            <Constant Name="KMOLE">0.0016611295681063123</Constant>
+            <Constant Name="M_init_uM">0.01</Constant>
+            <Constant Name="MI_init_uM">0.99</Constant>
+            <Constant Name="Size_cell">1.0000000000000001E15</Constant>
+            <Constant Name="V2">1.5</Constant>
+            <Constant Name="V4">0.5</Constant>
+            <Constant Name="vd">0.25</Constant>
+            <Constant Name="vi">0.025</Constant>
+            <Constant Name="VM1">3.0</Constant>
+            <Constant Name="VM3">1.0</Constant>
+            <Constant Name="X_init_uM">0.01</Constant>
+            <Constant Name="XI_init_uM">0.99</Constant>
+            <VolumeVariable Name="C" Domain="Compartment" />
+            <VolumeVariable Name="MI" Domain="Compartment" />
+            <VolumeVariable Name="XI" Domain="Compartment" />
+            <Function Name="J_Activation_of_M" Domain="Compartment">(V1 * pow((K1 + MI),-1.0) * MI)</Function>
+            <Function Name="J_Activation_of_Protease_X" Domain="Compartment">(V3 * pow((K3 + XI),-1.0) * XI)</Function>
+            <Function Name="J_Default_Degradation" Domain="Compartment">(kd * C)</Function>
+            <Function Name="J_Inactivation_of_M" Domain="Compartment">(V2 * pow((K2 + M),-1.0) * M)</Function>
+            <Function Name="J_Inactivation_of_Protease_X" Domain="Compartment">(V4 * pow((K4 + X),-1.0) * X)</Function>
+            <Function Name="J_Protease_Mediated_Degradation" Domain="Compartment">(vd * pow((C + Kd),-1.0) * C * X)</Function>
+            <Function Name="J_Synthesis" Domain="Compartment">vi</Function>
+            <Function Name="K_M_total" Domain="Compartment">((Size_cell * M_init_uM) + (Size_cell * MI_init_uM))</Function>
+            <Function Name="K_X_total" Domain="Compartment">((Size_cell * X_init_uM) + (Size_cell * XI_init_uM))</Function>
+            <Function Name="M" Domain="Compartment">((K_M_total - (Size_cell * MI)) / Size_cell)</Function>
+            <Function Name="V1" Domain="Compartment">(VM1 * pow((C + Kc),-1.0) * C)</Function>
+            <Function Name="V3" Domain="Compartment">(VM3 * M)</Function>
+            <Function Name="X" Domain="Compartment">((K_X_total - (Size_cell * XI)) / Size_cell)</Function>
+            <CompartmentSubDomain Name="Compartment">
+               <BoundaryType Boundary="Xm" Type="Value" />
+               <BoundaryType Boundary="Xp" Type="Value" />
+               <BoundaryType Boundary="Ym" Type="Value" />
+               <BoundaryType Boundary="Yp" Type="Value" />
+               <BoundaryType Boundary="Zm" Type="Value" />
+               <BoundaryType Boundary="Zp" Type="Value" />
+               <OdeEquation Name="C" SolutionType="Unknown">
+                  <Rate>(J_Synthesis - J_Protease_Mediated_Degradation - J_Default_Degradation)</Rate>
+                  <Initial>C_init_uM</Initial>
+               </OdeEquation>
+               <OdeEquation Name="MI" SolutionType="Unknown">
+                  <Rate>(J_Inactivation_of_M - J_Activation_of_M)</Rate>
+                  <Initial>MI_init_uM</Initial>
+               </OdeEquation>
+               <OdeEquation Name="XI" SolutionType="Unknown">
+                  <Rate>( - J_Activation_of_Protease_X + J_Inactivation_of_Protease_X)</Rate>
+                  <Initial>XI_init_uM</Initial>
+               </OdeEquation>
+            </CompartmentSubDomain>
+            <Version Name="GMO_Compartmental_generated" KeyValue="84982768" BranchId="30625655" Archived="0" Date="02-Nov-2013 13:20:06" FromVersionable="false">
+               <Owner Name="Education" Identifier="30625624" />
+               <GroupAccess Type="1" />
+               <Annotation>cloned from 'GMO_Compartmental_generated' owned by user raquell
+cloned from 'GMO_Compartmental_generated' owned by user BioModelsNet
+</Annotation>
+            </Version>
+         </MathDescription>
+         <Simulation Name="Simulation0Default">
+            <Annotation>cloned from 'Simulation0Default' owned by user raquell
+</Annotation>
+            <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="IDA (Variable Order, Variable Time Step, ODE/DAE)">
+               <TimeBound StartTime="0.0" EndTime="1.0" />
+               <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+               <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+               <OutputOptions KeepEvery="1" KeepAtMost="1000" />
+            </SolverTaskDescription>
+            <MathOverrides />
+            <Version Name="Simulation0Default" KeyValue="84982802" BranchId="30625720" Archived="0" Date="02-Nov-2013 13:20:07" FromVersionable="false">
+               <Owner Name="Education" Identifier="30625624" />
+               <GroupAccess Type="1" />
+               <Annotation>cloned from 'Simulation0Default' owned by user raquell
+</Annotation>
+               <ParentSimRef KeyValue="30625719" />
+            </Version>
+         </Simulation>
+         <Simulation Name="Simulation1Ten Seconds">
+            <Annotation>cloned from 'Simulation1Ten Seconds' owned by user raquell
+</Annotation>
+            <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="IDA (Variable Order, Variable Time Step, ODE/DAE)">
+               <TimeBound StartTime="0.0" EndTime="10.0" />
+               <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+               <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+               <OutputOptions KeepEvery="1" KeepAtMost="1000" />
+            </SolverTaskDescription>
+            <MathOverrides />
+            <Version Name="Simulation1Ten Seconds" KeyValue="84982804" BranchId="57211724" Archived="0" Date="02-Nov-2013 13:20:07" FromVersionable="false">
+               <Owner Name="Education" Identifier="30625624" />
+               <GroupAccess Type="1" />
+               <Annotation>cloned from 'Simulation1Ten Seconds' owned by user raquell
+</Annotation>
+            </Version>
+         </Simulation>
+         <Simulation Name="Simulation3Forty Seconds">
+            <Annotation>cloned from 'Simulation3Forty Seconds' owned by user raquell
+</Annotation>
+            <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="IDA (Variable Order, Variable Time Step, ODE/DAE)">
+               <TimeBound StartTime="0.0" EndTime="40.0" />
+               <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+               <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+               <OutputOptions KeepEvery="1" KeepAtMost="1000" />
+            </SolverTaskDescription>
+            <MathOverrides />
+            <Version Name="Simulation3Forty Seconds" KeyValue="84982806" BranchId="30625981" Archived="0" Date="02-Nov-2013 13:20:07" FromVersionable="false">
+               <Owner Name="Education" Identifier="30625624" />
+               <GroupAccess Type="1" />
+               <Annotation>cloned from 'Simulation3Forty Seconds' owned by user raquell
+</Annotation>
+               <ParentSimRef KeyValue="30626893" />
+            </Version>
+         </Simulation>
+         <Simulation Name="Simulation3OneHundredFifty">
+            <Annotation>cloned from 'Simulation3OneHundredFifty' owned by user raquell
+</Annotation>
+            <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="IDA (Variable Order, Variable Time Step, ODE/DAE)">
+               <TimeBound StartTime="0.0" EndTime="150.0" />
+               <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+               <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+               <OutputOptions KeepEvery="1" KeepAtMost="1000" />
+            </SolverTaskDescription>
+            <MathOverrides />
+            <Version Name="Simulation3OneHundredFifty" KeyValue="84982808" BranchId="30625729" Archived="0" Date="02-Nov-2013 13:20:07" FromVersionable="false">
+               <Owner Name="Education" Identifier="30625624" />
+               <GroupAccess Type="1" />
+               <Annotation>cloned from 'Simulation3OneHundredFifty' owned by user raquell
+</Annotation>
+               <ParentSimRef KeyValue="30625728" />
+            </Version>
+         </Simulation>
+         <Version Name="GMO_Compartmental" KeyValue="84982772" BranchId="30625704" Archived="0" Date="02-Nov-2013 13:20:06" FromVersionable="false">
+            <Owner Name="Education" Identifier="30625624" />
+            <GroupAccess Type="1" />
+            <Annotation>cloned from 'GMO_Compartmental' owned by user raquell; cloned from 'GMO_Compartmental' owned by user BioModelsNet.
+
+The simulations in this application were run to different end times. The patterns differ signficantly. This is analagous to the need to characterize an experiment for a sufficient length of time to observe characteristic behaviors.
+</Annotation>
+         </Version>
+         <MicroscopeMeasurement Name="fluor">
+            <ConvolutionKernel Type="ProjectionZKernel" />
+         </MicroscopeMeasurement>
+      </SimulationSpec>
+      <SimulationSpec Name="Solomon" Stochastic="false" UseConcentration="true">
+         <Annotation>(copied from GMO_Compartmental) cloned from 'GMO_Compartmental' owned by user raquell
+cloned from 'GMO_Compartmental' owned by user BioModelsNet
+
+Testing multiple conditions to determine the behavior of the system. The first simulation changes the conditions to represent those created by Solomon et al with inhibited protein synthesis and non-degradable cyclin.
+
+Parameter scans let the student test a number of cyclin concentrations in a single simulation run.</Annotation>
+         <Geometry Name="Compartmental1219967133" Dimension="0">
+            <Annotation>cloned from 'Compartmental1219967133' owned by user raquell
+cloned from 'Compartmental1219967133' owned by user BioModelsNet
+</Annotation>
+            <Extent X="10.0" Y="10.0" Z="10.0" />
+            <Origin X="0.0" Y="0.0" Z="0.0" />
+            <SubVolume Name="Compartment" Handle="0" Type="Compartmental" KeyValue="30625653" />
+            <Version Name="Compartmental1219967133" KeyValue="30625649" BranchId="30625650" Archived="0" Date="07-Dec-2008 14:51:14" FromVersionable="false">
+               <Owner Name="Education" Identifier="30625624" />
+               <GroupAccess Type="1" />
+               <Annotation>cloned from 'Compartmental1219967133' owned by user raquell
+cloned from 'Compartmental1219967133' owned by user BioModelsNet
+</Annotation>
+            </Version>
+         </Geometry>
+         <GeometryContext>
+            <FeatureMapping Feature="cell" GeometryClass="Compartment" SubVolume="Compartment" Size="1.0000000000000001E15">
+               <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
+            </FeatureMapping>
+         </GeometryContext>
+         <ReactionContext>
+            <LocalizedCompoundSpec LocalizedCompoundRef="C" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+               <InitialConcentration>0.01</InitialConcentration>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="M" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+               <InitialConcentration>0.01</InitialConcentration>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="X" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+               <InitialConcentration>0.01</InitialConcentration>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="MI" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+               <InitialConcentration>0.99</InitialConcentration>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <LocalizedCompoundSpec LocalizedCompoundRef="XI" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+               <InitialConcentration>0.99</InitialConcentration>
+               <Diffusion>0.0</Diffusion>
+            </LocalizedCompoundSpec>
+            <ReactionSpec ReactionStepRef="Protease Mediated Degradation" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="Default Degradation" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="Inactivation of M" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="Synthesis" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="Activation of Protease X" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="Inactivation of Protease X" ReactionMapping="included" />
+            <ReactionSpec ReactionStepRef="Activation of M" ReactionMapping="included" />
+         </ReactionContext>
+         <MathDescription Name="Solomon_generated">
+            <Constant Name="_F_">96480.0</Constant>
+            <Constant Name="_F_nmol_">9.648E-5</Constant>
+            <Constant Name="_K_GHK_">1.0E-9</Constant>
+            <Constant Name="_N_pmol_">6.02E11</Constant>
+            <Constant Name="_PI_">3.141592653589793</Constant>
+            <Constant Name="_R_">8314.0</Constant>
+            <Constant Name="_T_">300.0</Constant>
+            <Constant Name="C_init_uM">0.01</Constant>
+            <Constant Name="K1">0.0050</Constant>
+            <Constant Name="K2">0.0050</Constant>
+            <Constant Name="K3">0.0050</Constant>
+            <Constant Name="K4">0.0050</Constant>
+            <Constant Name="K_millivolts_per_volt">1000.0</Constant>
+            <Constant Name="Kc">0.5</Constant>
+            <Constant Name="Kd">0.02</Constant>
+            <Constant Name="kd">0.01</Constant>
+            <Constant Name="KMOLE">0.0016611295681063123</Constant>
+            <Constant Name="M_init_uM">0.01</Constant>
+            <Constant Name="MI_init_uM">0.99</Constant>
+            <Constant Name="Size_cell">1.0000000000000001E15</Constant>
+            <Constant Name="V2">1.5</Constant>
+            <Constant Name="V4">0.5</Constant>
+            <Constant Name="vd">0.25</Constant>
+            <Constant Name="vi">0.025</Constant>
+            <Constant Name="VM1">3.0</Constant>
+            <Constant Name="VM3">1.0</Constant>
+            <Constant Name="X_init_uM">0.01</Constant>
+            <Constant Name="XI_init_uM">0.99</Constant>
+            <VolumeVariable Name="C" Domain="Compartment" />
+            <VolumeVariable Name="MI" Domain="Compartment" />
+            <VolumeVariable Name="XI" Domain="Compartment" />
+            <Function Name="J_Activation_of_M" Domain="Compartment">(V1 * pow((K1 + MI),-1.0) * MI)</Function>
+            <Function Name="J_Activation_of_Protease_X" Domain="Compartment">(V3 * pow((K3 + XI),-1.0) * XI)</Function>
+            <Function Name="J_Default_Degradation" Domain="Compartment">(kd * C)</Function>
+            <Function Name="J_Inactivation_of_M" Domain="Compartment">(V2 * pow((K2 + M),-1.0) * M)</Function>
+            <Function Name="J_Inactivation_of_Protease_X" Domain="Compartment">(V4 * pow((K4 + X),-1.0) * X)</Function>
+            <Function Name="J_Protease_Mediated_Degradation" Domain="Compartment">(vd * pow((C + Kd),-1.0) * C * X)</Function>
+            <Function Name="J_Synthesis" Domain="Compartment">vi</Function>
+            <Function Name="K_M_total" Domain="Compartment">((Size_cell * M_init_uM) + (Size_cell * MI_init_uM))</Function>
+            <Function Name="K_X_total" Domain="Compartment">((Size_cell * X_init_uM) + (Size_cell * XI_init_uM))</Function>
+            <Function Name="M" Domain="Compartment">((K_M_total - (Size_cell * MI)) / Size_cell)</Function>
+            <Function Name="V1" Domain="Compartment">(VM1 * pow((C + Kc),-1.0) * C)</Function>
+            <Function Name="V3" Domain="Compartment">(VM3 * M)</Function>
+            <Function Name="X" Domain="Compartment">((K_X_total - (Size_cell * XI)) / Size_cell)</Function>
+            <CompartmentSubDomain Name="Compartment">
+               <BoundaryType Boundary="Xm" Type="Value" />
+               <BoundaryType Boundary="Xp" Type="Value" />
+               <BoundaryType Boundary="Ym" Type="Value" />
+               <BoundaryType Boundary="Yp" Type="Value" />
+               <BoundaryType Boundary="Zm" Type="Value" />
+               <BoundaryType Boundary="Zp" Type="Value" />
+               <OdeEquation Name="C" SolutionType="Unknown">
+                  <Rate>(J_Synthesis - J_Protease_Mediated_Degradation - J_Default_Degradation)</Rate>
+                  <Initial>C_init_uM</Initial>
+               </OdeEquation>
+               <OdeEquation Name="MI" SolutionType="Unknown">
+                  <Rate>(J_Inactivation_of_M - J_Activation_of_M)</Rate>
+                  <Initial>MI_init_uM</Initial>
+               </OdeEquation>
+               <OdeEquation Name="XI" SolutionType="Unknown">
+                  <Rate>( - J_Activation_of_Protease_X + J_Inactivation_of_Protease_X)</Rate>
+                  <Initial>XI_init_uM</Initial>
+               </OdeEquation>
+            </CompartmentSubDomain>
+            <Version Name="Solomon_generated" KeyValue="84982770" BranchId="30625749" Archived="0" Date="02-Nov-2013 13:20:06" FromVersionable="false">
+               <Owner Name="Education" Identifier="30625624" />
+               <GroupAccess Type="1" />
+            </Version>
+         </MathDescription>
+         <Simulation Name="Simulation0">
+            <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="IDA (Variable Order, Variable Time Step, ODE/DAE)">
+               <TimeBound StartTime="0.0" EndTime="150.0" />
+               <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+               <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+               <OutputOptions KeepEvery="1" KeepAtMost="1000" />
+            </SolverTaskDescription>
+            <MathOverrides />
+            <Version Name="Simulation0" KeyValue="84982810" BranchId="30625828" Archived="0" Date="02-Nov-2013 13:20:07" FromVersionable="false">
+               <Owner Name="Education" Identifier="30625624" />
+               <GroupAccess Type="1" />
+               <ParentSimRef KeyValue="30671562" />
+            </Version>
+         </Simulation>
+         <Simulation Name="Simulation1">
+            <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="IDA (Variable Order, Variable Time Step, ODE/DAE)">
+               <TimeBound StartTime="0.0" EndTime="150.0" />
+               <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+               <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+               <OutputOptions KeepEvery="1" KeepAtMost="1000" />
+            </SolverTaskDescription>
+            <MathOverrides />
+            <Version Name="Simulation1" KeyValue="84982812" BranchId="30625918" Archived="0" Date="02-Nov-2013 13:20:07" FromVersionable="false">
+               <Owner Name="Education" Identifier="30625624" />
+               <GroupAccess Type="1" />
+            </Version>
+         </Simulation>
+         <Version Name="Solomon" KeyValue="84982787" BranchId="30625812" Archived="0" Date="02-Nov-2013 13:20:06" FromVersionable="false">
+            <Owner Name="Education" Identifier="30625624" />
+            <GroupAccess Type="1" />
+            <Annotation>(copied from GMO_Compartmental) cloned from 'GMO_Compartmental' owned by user raquell
+cloned from 'GMO_Compartmental' owned by user BioModelsNet
+
+Testing multiple conditions to determine the behavior of the system. The first simulation changes the conditions to represent those created by Solomon et al with inhibited protein synthesis and non-degradable cyclin.
+
+Parameter scans let the student test a number of cyclin concentrations in a single simulation run.</Annotation>
+         </Version>
+         <MicroscopeMeasurement Name="fluor">
+            <ConvolutionKernel Type="ProjectionZKernel" />
+         </MicroscopeMeasurement>
+      </SimulationSpec>
+      <Version Name="Goldbeter 1991 explicit" KeyValue="84982814" BranchId="30625732" Archived="0" Date="02-Nov-2013 13:20:07" FromVersionable="false">
+         <Owner Name="Education" Identifier="30625624" />
+         <GroupAccess Type="0" />
+         <Annotation>cloned from 'Goldbeter 1991 explicit' owned by user raquell
+cloned from 'Goldbeter 1991 explicit' owned by user BioModelsNet.
+
+The reaction equations have been modified from the SBML export equations by the removal of a translation factor (SBML_Factor). The parameter values were adjusted to allow the removal of the SBML translation produced concentration factors. 
+
+The values and behaviors are identical to the original Goldbeter 1991 explicit model contained within the Shared Model Database.
+</Annotation>
+      </Version>
+      <pathwayModel>
+         <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bp="http://www.biopax.org/release/biopax-level3.owl#" version="3.0" />
+      </pathwayModel>
+      <relationshipModel>
+         <RMNS version="3.0" />
+      </relationshipModel>
+      <vcmetadata>
+         <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" />
+         <nonrdfAnnotationList>
+            <nonrdfAnnotation vcid="Species(C)">
+               <freetext>C</freetext>
+            </nonrdfAnnotation>
+            <nonrdfAnnotation vcid="Species(X)">
+               <freetext>X</freetext>
+            </nonrdfAnnotation>
+            <nonrdfAnnotation vcid="Species(M)">
+               <freetext>M</freetext>
+            </nonrdfAnnotation>
+            <nonrdfAnnotation vcid="Species(MI)">
+               <freetext>MI</freetext>
+            </nonrdfAnnotation>
+            <nonrdfAnnotation vcid="Species(XI)">
+               <freetext>XI</freetext>
+            </nonrdfAnnotation>
+            <nonrdfAnnotation vcid="BioModel(Goldbeter 1991 explicit)">
+               <freetext>cloned from 'Goldbeter 1991 explicit' owned by user raquell
+cloned from 'Goldbeter 1991 explicit' owned by user BioModelsNet.
+
+The reaction equations have been modified from the SBML export equations by the removal of a translation factor (SBML_Factor). The parameter values were adjusted to allow the removal of the SBML translation produced concentration factors. 
+
+The values and behaviors are identical to the original Goldbeter 1991 explicit model contained within the Shared Model Database.
+</freetext>
+            </nonrdfAnnotation>
+         </nonrdfAnnotationList>
+         <uriBindingList />
+      </vcmetadata>
+   </BioModel>
+</vcml>
+

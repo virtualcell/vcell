@@ -144,6 +144,11 @@
 		  <version>2.17.1</version>
 		  <scope>runtime</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-layout-template-json</artifactId>
+			<version>2.17.1</version>
+		</dependency>
 <dependency>
   <groupId>javax.xml.bind</groupId>
   <artifactId>jaxb-api</artifactId>

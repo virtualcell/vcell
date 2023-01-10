@@ -7,11 +7,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.vcell.test.Fast;
 import org.vcell.vis.core.Vect3D;
 
 /**
  * test {@link PointIndexTreeAndList} implementation
  */
+@Category(Fast.class)
 public class IndexTest {
 	private static final double VALUES[] = {
 			0.3954988527,

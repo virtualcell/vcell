@@ -64,7 +64,7 @@ else
 	curlcmd="curl -s --insecure"
 fi
 
-simStatus=`$curlcmd https://$host:$port/health?check=$checkType`
+simStatus=$($curlcmd "https://$host:$port/health?check=$checkType")
 if [[ $? -ne 0 ]]; then
 	echo "failed to contact server"
 	exit 3
@@ -72,13 +72,13 @@ fi
 
 if [ "$debug" == "true" ]; then
 	echo "raw: $simStatus"
-	echo "pretty: $(jq '.' <<< $simStatus)"
+	echo "pretty: $(jq '.' <<< "$simStatus")"
 fi
 
-statusCode=$(echo $simStatus | jq '.nagiosStatusCode')
-statusName=$(echo $simStatus | jq '.nagiosStatusName' | tr -d '"' )
-elapsedTime=$(echo $simStatus | jq '.elapsedTime_MS')
-message=$(echo $simStatus | jq '.message' | tr -d '"' )
+statusCode=$(echo "$simStatus" | jq '.nagiosStatusCode')
+statusName=$(echo "$simStatus" | jq '.nagiosStatusName' | tr -d '"' )
+elapsedTime=$(echo "$simStatus" | jq '.elapsedTime_MS')
+message=$(echo "$simStatus" | jq '.message' | tr -d '"' )
 
 if [ "$debug" == "true" ]; then
 	echo "status code is $statusCode"
@@ -104,4 +104,4 @@ fi
 
 
 echo "status=${statusName}(${statusCode}), elapsed time='$elapsedTime', message='$message'"
-exit $statusCode
+exit "$statusCode"

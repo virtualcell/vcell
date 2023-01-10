@@ -7,12 +7,14 @@ import java.io.PrintWriter;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.Description;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.Request;
 import org.junit.runner.Result;
 import org.junit.runner.manipulation.Filter;
 import org.junit.runner.notification.Failure;
+import org.vcell.test.Fast;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.MathModelInfo;
@@ -28,6 +30,7 @@ import cbit.vcell.modeldb.BatchTester;
 import cbit.vcell.modeldb.VCDatabaseScanner;
 import cbit.vcell.resource.PropertyLoader;
 
+@Category(Fast.class)
 public class MathVisitor implements BadMathVisitor {
 	final PrintWriter loadErrorWriter;
 	final PrintWriter parseErrorWriter;
