@@ -454,7 +454,6 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 //		gbc.gridy = 0;
 //		jPanelIdentifierManager.add(getJButtonAddRef(), gbc);
 
-//		gridx++;
 //		gbc = new GridBagConstraints();
 //		gbc.insets = new Insets(3, 0, 3, 0);
 //		gbc.gridx = gridx;
@@ -462,7 +461,7 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 //		gbc.fill = GridBagConstraints.HORIZONTAL;
 //		gbc.weightx = 1.0;
 //		jPanelIdentifierManager.add(new JLabel(""), gbc);
-
+//
 //		getJButtonAddRef().addActionListener(eventHandler);
 		}
 		return jPanelIdentifierManager;
