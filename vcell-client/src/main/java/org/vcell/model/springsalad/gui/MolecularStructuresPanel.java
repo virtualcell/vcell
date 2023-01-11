@@ -12,7 +12,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
@@ -34,6 +38,7 @@ import org.apache.commons.lang3.StringEscapeUtils;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.EditorScrollTable;
+import org.vcell.util.gui.ScrollTable;
 import org.vcell.util.gui.VCellIcons;
 import org.vcell.util.gui.ScrollTable.ScrollTableBooleanCellRenderer;
 import org.vcell.util.gui.sorttable.JSortTable;
@@ -55,7 +60,9 @@ import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.TaskCallbackMessage;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.mapping.TaskCallbackMessage.TaskCallbackStatus;
+import cbit.vcell.mapping.gui.MolecularTypeSpecsTableModel;
 import cbit.vcell.mapping.gui.SpeciesContextSpecsTableModel;
+import cbit.vcell.mapping.gui.SpeciesContextSpecsTableModel.ColumnType;
 import cbit.vcell.mapping.gui.StructureMappingTableRenderer.TextIcon;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Species;
@@ -78,8 +85,8 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 	private SpeciesContextSpecsTableModel speciesContextSpecsTableModel = null;
 	private SmallShapeManager shapeManager = new SmallShapeManager(false, false, false, false);
 
-	private EditorScrollTable molecularComponentSpecsTable = null;
-	private SpeciesContextSpecsTableModel molecularComponentSpecsTableModel = null;
+	private EditorScrollTable molecularTypeSpecsTable = null;
+	private MolecularTypeSpecsTableModel molecularTypeSpecsTableModel = null;
 
 	
 	private class EventHandler implements FocusListener, ActionListener, PropertyChangeListener {
@@ -351,19 +358,19 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 	}
 	
 	private EditorScrollTable getMolecularComponentSpecsTable() {
-		if (molecularComponentSpecsTable == null) {
+		if (molecularTypeSpecsTable == null) {
 			try {
-				molecularComponentSpecsTable = new EditorScrollTable();
-				molecularComponentSpecsTable.setName("molecularComponentSpecsTable");
-				molecularComponentSpecsTableModel = new SpeciesContextSpecsTableModel(molecularComponentSpecsTable);
-				molecularComponentSpecsTable.setModel(molecularComponentSpecsTableModel);
+				molecularTypeSpecsTable = new EditorScrollTable();
+				molecularTypeSpecsTable.setName("molecularComponentSpecsTable");
+				molecularTypeSpecsTableModel = new MolecularTypeSpecsTableModel(molecularTypeSpecsTable);
+				molecularTypeSpecsTable.setModel(molecularTypeSpecsTableModel);
 //				molecularComponentSpecsTable.setScrollTableActionManager(new InternalScrollTableActionManager(table));
-				molecularComponentSpecsTable.setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
+				molecularTypeSpecsTable.setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
 			} catch (java.lang.Throwable ivjExc) {
 				handleException(ivjExc);
 			}
 		}
-		return molecularComponentSpecsTable;
+		return molecularTypeSpecsTable;
 	}
 	private EditorScrollTable getSpeciesContextSpecsTable() {
 		if (speciesContextSpecsTable == null) {
@@ -403,7 +410,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 			m.addPropertyChangeListener(eventHandler);
 		}
 		speciesContextSpecsTableModel.setSimulationContext(simulationContext);
-		molecularComponentSpecsTableModel.setSimulationContext(simulationContext);
+		molecularTypeSpecsTableModel.setSimulationContext(simulationContext);
 		refreshInterface();
 	}
 	public SimulationContext getSimulationContext() {
@@ -833,6 +840,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 //		right.add(setLinkLength, gbc);
 //
 //	}
+
 
 
 }
