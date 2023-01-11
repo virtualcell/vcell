@@ -10,22 +10,15 @@
 
 package cbit.vcell.math;
 
-import java.beans.PropertyVetoException;
-import java.util.Arrays;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Vector;
+import java.util.*;
+import java.util.stream.Collectors;
 
+import cbit.vcell.parser.*;
+import cbit.vcell.solver.SimulationSymbolTable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.vcell.test.Fast;
 
-import cbit.vcell.math.MathCompareResults.Decision;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionBindingException;
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.SymbolTable;
-import cbit.vcell.parser.SymbolTableEntry;
-import cbit.vcell.parser.SymbolTableFunctionEntry;
 /**
  * Insert the type's description here.
  * Creation date: (1/29/2002 3:22:16 PM)
@@ -235,24 +228,40 @@ public static Expression substituteModelParameters(Expression exp, SymbolTable s
 	return exp2;
 }
 
-public static MathDescription[] getCanonicalMathDescriptions(MathSymbolTableFactory mathSymbolTableFactory, MathDescription referenceMathDesc, MathDescription testMathDesc) throws PropertyVetoException, MathException, ExpressionException {
-	HashSet<String> indepVars1 = referenceMathDesc.getStateVariableNames();
-	HashSet<String> indepVars2 = testMathDesc.getStateVariableNames();
-	HashSet<String> union = new HashSet<String>(indepVars1);
-	union.addAll(indepVars2);
-
-//	setStatus("union of state variables: ");
-//	for (String varName : union){
-//		addStatus(varName+" ");
-//	}
-//	addStatus("\n");
+/**
+ * Using information from both math descriptions
+ * 1. identify the union state variables from both math descriptions to get a consensus set for expansion of both maths
+ * 2. expand one or both math descriptions to rehydrate the same set of differential equations in both maths
+ * 3. substitute all functions in both maths.
+ */
+public static MathDescription[] getCanonicalMathDescriptions(MathDescription referenceMathDesc, MathDescription testMathDesc) throws MathException, ExpressionException {
+	MathSymbolTableFactory mathSymbolTableFactory = SimulationSymbolTable.createMathSymbolTableFactory();
+	HashSet<String> indepVarNames1 = referenceMathDesc.getStateVariableNames();
+	HashSet<String> indepVarNames2 = testMathDesc.getStateVariableNames();
+	HashSet<String> unionOfVarNames = new HashSet<>(indepVarNames1);
+	unionOfVarNames.addAll(indepVarNames2);
+	Map<String, Variable.Domain> indepVars1 = referenceMathDesc.getStateVariables().stream().filter(v -> v.getDomain() != null).collect(Collectors.toMap(v -> v.getName(), v -> v.getDomain()));
+	Map<String, Variable.Domain> indepVars2 = testMathDesc.getStateVariables().stream().filter(v -> v.getDomain() != null).collect(Collectors.toMap(v -> v.getName(), v -> v.getDomain()));
+	Map<String, Variable.Domain> unionMap = new HashMap<>();
+	for (String varName : unionOfVarNames){
+		Variable.Domain domain = null;
+		if (indepVars1.get(varName) != null){
+			domain = indepVars1.get(varName);
+		}
+		if (indepVars2.get(varName) != null){
+			domain = indepVars2.get(varName);
+		}
+		if (domain != null){
+			unionMap.put(varName,domain);
+		}
+	}
 	
-	HashSet<String> depVarsToSubstitute = new HashSet<String>(union);
-	depVarsToSubstitute.removeAll(indepVars1);
+	HashSet<String> depVarsToSubstitute = new HashSet<String>(unionOfVarNames);
+	depVarsToSubstitute.removeAll(indepVarNames1);
 	
-	MathDescription canonicalMath1 = new MathDescription(MathDescription.createMathWithExpandedEquations(referenceMathDesc,union));
+	MathDescription canonicalMath1 = new MathDescription(createMathWithExpandedEquations(referenceMathDesc,unionOfVarNames,unionMap));
 	canonicalMath1.makeCanonical(mathSymbolTableFactory);
-	MathDescription canonicalMath2 = new MathDescription(MathDescription.createMathWithExpandedEquations(testMathDesc,union));
+	MathDescription canonicalMath2 = new MathDescription(createMathWithExpandedEquations(testMathDesc,unionOfVarNames,unionMap));
 	canonicalMath2.makeCanonical(mathSymbolTableFactory);
 
 	if (depVarsToSubstitute.size()>0){
@@ -261,257 +270,441 @@ public static MathDescription[] getCanonicalMathDescriptions(MathSymbolTableFact
 		canonicalMath1.substituteInPlace(mathSymbolTableFactory, functionsToSubstitute);
 		canonicalMath2.substituteInPlace(mathSymbolTableFactory, functionsToSubstitute);
 	}
-	// flatten again
+
+	// flatten the maths by substitution of all remaining functions and constants - leaving expressions with only state variables and numeric literals.
 	canonicalMath1.makeCanonical(mathSymbolTableFactory);
 	canonicalMath2.makeCanonical(mathSymbolTableFactory);
 	
 	MathDescription[] canonicalMathDescs = {canonicalMath1, canonicalMath2};
 	return canonicalMathDescs;
-
 }
 
-/**
- * Insert the method's description here.
- * Creation date: (10/10/2002 11:32:46 PM)
- * @param oldMath cbit.vcell.math.MathDescription
- * @param newMath cbit.vcell.math.MathDescription
- * @deprecated
- */
-public static MathCompareResults testIfSame(MathSymbolTableFactory mathSymbolTableFactory, MathDescription oldMathDesc, MathDescription newMathDesc) {
-	try {
-	    if (oldMathDesc.compareEqual(newMathDesc)){
-		    return new MathCompareResults(Decision.MathEquivalent_NATIVE);
-		}else{
-		    //System.out.println("------NATIVE MATHS ARE DIFFERENT----------------------");
-			//System.out.println("------old native MathDescription:\n"+oldMathDesc.getVCML_database());
-			//System.out.println("------new native MathDescription:\n"+newMathDesc.getVCML_database());
-			MathDescription strippedOldMath = MathDescription.createCanonicalMathDescription(mathSymbolTableFactory, oldMathDesc);
-			MathDescription strippedNewMath = MathDescription.createCanonicalMathDescription(mathSymbolTableFactory, newMathDesc);
-			if (strippedOldMath.compareEqual(strippedNewMath)){
-				return new MathCompareResults(Decision.MathEquivalent_FLATTENED);
-			}else{
-				Variable oldVars[] = (Variable[])org.vcell.util.BeanUtils.getArray(strippedOldMath.getVariables(),Variable.class);
-				Variable newVars[] = (Variable[])org.vcell.util.BeanUtils.getArray(strippedNewMath.getVariables(),Variable.class);
-				if (oldVars.length != newVars.length){
-					//
-					// number of state variables are not equal (canonical maths only have state variables)
-					//
-					return new MathCompareResults(Decision.MathDifferent_DIFFERENT_NUMBER_OF_VARIABLES);
-				}
-				if (!org.vcell.util.Compare.isEqual(oldVars,newVars)){
-					//
-					// variable names are not equivalent (nothing much we can do)
-					//
-					return new MathCompareResults(Decision.MathDifferent_VARIABLES_DONT_MATCH);
-				}
-				//
-				// go through the list of SubDomains, and compare equations one by one and "correct" new one if possible
-				//
-				SubDomain subDomainsOld[] = (SubDomain[])org.vcell.util.BeanUtils.getArray(strippedOldMath.getSubDomains(),SubDomain.class);
-				SubDomain subDomainsNew[] = (SubDomain[])org.vcell.util.BeanUtils.getArray(strippedNewMath.getSubDomains(),SubDomain.class);
-				if (subDomainsOld.length != subDomainsNew.length){
-					return new MathCompareResults(Decision.MathDifferent_DIFFERENT_NUMBER_OF_SUBDOMAINS);
-				}
-				for (int i = 0; i < subDomainsOld.length; i++){
-					for (int j = 0; j < oldVars.length; j++){
-						//
-						// test equation for this subdomain and variable
-						//
-						{
-						Equation oldEqu = subDomainsOld[i].getEquation(oldVars[j]);
-						Equation newEqu = subDomainsNew[i].getEquation(oldVars[j]);
-						if (!org.vcell.util.Compare.isEqualOrNull(oldEqu,newEqu)){
-							boolean bFoundDifference = false;
-							//
-							// equation didn't compare exactly, lets try to evaluate some instead
-							//
-							if (oldEqu==null){
-								//
-								// only one MathDescription had Equation for this Variable.
-								//
-								return new MathCompareResults(Decision.MathDifferent_EQUATION_ADDED);
+	public static MathDescription createCanonicalMathDescription(MathSymbolTableFactory mathSymbolTableFactory, MathDescription originalMathDescription) throws MathException, ExpressionException {
+		//
+		// clone current mathdescription
+		//
+		MathDescription newMath = new MathDescription(originalMathDescription);
 
-							}
-							if (newEqu==null){
-								//
-								// only one MathDescription had Equation for this Variable.
-								//
-								return new MathCompareResults(Decision.MathDifferent_EQUATION_REMOVED);
+		newMath.makeCanonical(mathSymbolTableFactory);
 
-							}
-							Expression oldExps[] = (Expression[])org.vcell.util.BeanUtils.getArray(oldEqu.getExpressions(strippedOldMath),Expression.class);
-							Expression newExps[] = (Expression[])org.vcell.util.BeanUtils.getArray(newEqu.getExpressions(strippedNewMath),Expression.class);
-							if (oldExps.length != newExps.length){
-								return new MathCompareResults(Decision.MathDifferent_DIFFERENT_NUMBER_OF_EXPRESSIONS);
-							}
-							for (int k = 0; k < oldExps.length; k++){
-								if (!oldExps[k].compareEqual(newExps[k])){
-									bFoundDifference = true;
-									if (!cbit.vcell.parser.ExpressionUtils.functionallyEquivalent(oldExps[k],newExps[k])){
-										//
-										// difference couldn't be reconciled
-										//
-										return new MathCompareResults(Decision.MathDifferent_DIFFERENT_EXPRESSION,
-												"expressions are different Old: '"+oldExps[k].infix()+"'\n"+
-												"expressions are different New: '"+newExps[k].infix()+"'");
-									}else{
-										//System.out.println("expressions are equivalent Old: '"+oldExps[k].infix()+"'\n"+
-														   //"expressions are equivalent New: '"+newExps[k].infix()+"'");
-									}
-								}
-							}
-							//
-							// equation was not strictly "equal" but passed all tests, replace with old equation and move on
-							//
-							if (bFoundDifference){
-								subDomainsNew[i].replaceEquation(oldEqu);
-							}else{
-								//
-								// couldn't find the smoking gun, just plain bad
-								//
-								return new MathCompareResults(Decision.MathDifferent_UNKNOWN_DIFFERENCE_IN_EQUATION,
-										"couldn't find problem with equation for "+oldVars[j].getName()+" in compartment "+subDomainsOld[i].getName());
-							}
-						}
-						}
-						//
-						// if a membrane, test jumpCondition for this subdomain and variable
-						//
-						if (subDomainsOld[i] instanceof MembraneSubDomain && oldVars[j] instanceof VolVariable){
-							JumpCondition oldJumpCondition = ((MembraneSubDomain)subDomainsOld[i]).getJumpCondition((VolVariable)oldVars[j]);
-							JumpCondition newJumpCondition = ((MembraneSubDomain)subDomainsNew[i]).getJumpCondition((VolVariable)oldVars[j]);
-							if (!org.vcell.util.Compare.isEqualOrNull(oldJumpCondition,newJumpCondition)){
-								boolean bFoundDifference = false;
-								//
-								// equation didn't compare exactly, lets try to evaluate some instead
-								//
-								if (oldJumpCondition==null){
-									//
-									// only one MathDescription had Equation for this Variable.
-									//
-									return new MathCompareResults(Decision.MathDifferent_EQUATION_ADDED);
-								}
-								if (newJumpCondition==null){
-									//
-									// only one MathDescription had Equation for this Variable.
-									//
-									return new MathCompareResults(Decision.MathDifferent_EQUATION_REMOVED);
-								}
-								Expression oldExps[] = (Expression[])org.vcell.util.BeanUtils.getArray(oldJumpCondition.getExpressions(strippedOldMath),Expression.class);
-								Expression newExps[] = (Expression[])org.vcell.util.BeanUtils.getArray(newJumpCondition.getExpressions(strippedNewMath),Expression.class);
-								if (oldExps.length != newExps.length){
-									return new MathCompareResults(Decision.MathDifferent_DIFFERENT_NUMBER_OF_EXPRESSIONS);
-								}
-								for (int k = 0; k < oldExps.length; k++){
-									if (!oldExps[k].compareEqual(newExps[k])){
-										bFoundDifference = true;
-										if (!cbit.vcell.parser.ExpressionUtils.functionallyEquivalent(oldExps[k],newExps[k])){
-											//
-											// difference couldn't be reconciled
-											//
-											return new MathCompareResults(Decision.MathDifferent_DIFFERENT_EXPRESSION,
-													"expressions are different Old: '"+oldExps[k]+"'\n"+
-													"expressions are different New: '"+newExps[k]+"'");
-										}else{
-											//System.out.println("expressions are equivalent Old: '"+oldExps[k]+"'\n"+
-															   //"expressions are equivalent New: '"+newExps[k]+"'");
-										}
-									}
-								}
-								//
-								// equation was not strictly "equal" but passed all tests, replace with old equation and move on
-								//
-								if (bFoundDifference){
-									((MembraneSubDomain)subDomainsNew[i]).replaceJumpCondition(oldJumpCondition);
-								}else{
-									//
-									// couldn't find the smoking gun, just plain bad
-									//
-									return new MathCompareResults(Decision.MathDifferent_UNKNOWN_DIFFERENCE_IN_EQUATION,
-											"couldn't find problem with jumpCondition for "+oldVars[j].getName()+" in compartment "+subDomainsOld[i].getName());
-								}
-							}
-						}
-					}
-					//
-					// test fast system for subdomain
-					//
-					FastSystem oldFastSystem = subDomainsOld[i].getFastSystem();
-					FastSystem newFastSystem = subDomainsNew[i].getFastSystem();
-					if (!org.vcell.util.Compare.isEqualOrNull(oldFastSystem,newFastSystem)){
-						boolean bFoundDifference = false;
-						//
-						// fastSystems didn't compare exactly, lets try to evaluate some expressions instead
-						//
-						if (oldFastSystem==null){
-							//
-							// only one MathDescription had Equation for this Variable.
-							//
-							return new MathCompareResults(Decision.MathDifferent_EQUATION_ADDED);
-						}
-						if (newFastSystem==null){
-							//
-							// only one MathDescription had Equation for this Variable.
-							//
-							return new MathCompareResults(Decision.MathDifferent_EQUATION_REMOVED);
-						}
-						Expression oldExps[] = oldFastSystem.getExpressions();
-						Expression newExps[] = newFastSystem.getExpressions();
-						if (oldExps.length != newExps.length){
-							return new MathCompareResults(Decision.MathDifferent_DIFFERENT_NUMBER_OF_EXPRESSIONS);
-						}
-						for (int k = 0; k < oldExps.length; k++){
-							if (!oldExps[k].compareEqual(newExps[k])){
-								bFoundDifference = true;
-								if (!cbit.vcell.parser.ExpressionUtils.functionallyEquivalent(oldExps[k],newExps[k])){
-									//
-									// difference couldn't be reconciled
-									//
-									return new MathCompareResults(Decision.MathDifferent_DIFFERENT_FASTRATE_EXPRESSION,
-											"FastSystem expressions are different Old: '"+oldExps[k]+"'\n"+
-											"FastSystem expressions are different New: '"+newExps[k]+"'");
-								}else{
-									//System.out.println("expressions are equivalent Old: '"+oldExps[k]+"'\n"+
-													   //"expressions are equivalent New: '"+newExps[k]+"'");
-								}
-							}
-						}
-						//
-						// equation was not strictly "equal" but passed all tests, replace with old equation and move on
-						//
-						if (bFoundDifference){
-							subDomainsNew[i].setFastSystem(oldFastSystem);
-						}else{
-							//
-							// couldn't find the smoking gun, just plain bad
-							//
-							return new MathCompareResults(Decision.MathDifferent_UNKNOWN_DIFFERENCE_IN_EQUATION,
-									"couldn't find problem with FastSystem for compartment "+subDomainsOld[i].getName());
-						}
-					}
+		return newMath;
+	}
+
+	public static void substituteCommonDiscontinuitiesInPlace(Expression exp1, Expression exp2, String varPrefix) throws ExpressionException {
+		Vector<Discontinuity> v1 = exp1.getDiscontinuities();
+		Vector<Discontinuity> v2 = exp2.getDiscontinuities();
+		if (!(v1.isEmpty() && v2.isEmpty())) {
+			HashSet<String> allDisc = new HashSet<String>();
+			for (int l = 0; l<v1.size(); l++) {
+				allDisc.add(v1.get(l).getDiscontinuityExp().infix());
+			}
+			for (int l = 0; l<v2.size(); l++) {
+				allDisc.add(v2.get(l).getDiscontinuityExp().infix());
+			}
+			int l = 0;
+			for (String discExp : allDisc) {
+				Optional<Discontinuity> discontinuity;
+				discontinuity = exp1.getDiscontinuities().stream()
+						.filter(disc -> disc.getDiscontinuityExp().infix().equals(discExp)).findFirst();
+				if (discontinuity.isPresent()) {
+					exp1.substituteInPlace(discontinuity.get().getDiscontinuityExp(), new Expression(varPrefix + l));
 				}
 
-				//
-				// after repairing aspects of MathDescription, now see if same
-				//
-				if (strippedOldMath.compareEqual(strippedNewMath)){
-					return new MathCompareResults(Decision.MathEquivalent_NUMERICALLY);
-				}else{
-				    //System.out.println("------UNKNOWN DIFFERENCE IN MATH----------------------");
-					//System.out.println("------old flattened MathDescription:\n"+strippedOldMath.getVCML_database());
-					//System.out.println("------new flattened MathDescription:\n"+strippedNewMath.getVCML_database());
-					return new MathCompareResults(Decision.MathDifferent_UNKNOWN_DIFFERENCE_IN_MATH);
+				discontinuity = exp2.getDiscontinuities().stream()
+						.filter(disc -> disc.getDiscontinuityExp().infix().equals(discExp)).findFirst();
+				if (discontinuity.isPresent()) {
+					exp2.substituteInPlace(discontinuity.get().getDiscontinuityExp(), new Expression(varPrefix + l));
 				}
+				exp2.substituteInPlace(new Expression(discExp),
+						new Expression(varPrefix + l));
+				l++;
 			}
 		}
-	}catch (cbit.vcell.parser.DivideByZeroException e){
-		System.out.println("-------DIVIDE BY ZERO EXCEPTION-------------------------");
-		return new MathCompareResults(Decision.MathDifferent_FAILURE_FLATTENING_DIV_BY_ZERO);
-	}catch (Throwable e){
-		e.printStackTrace(System.out);
-		return new MathCompareResults(Decision.MathDifferent_FAILURE_FLATTENING_UNKNOWN,
-				"Exception: '"+e.getMessage()+"'");
 	}
-}
 
+	public static boolean compareEquivalent(FastInvariant fastInvariant1, FastInvariant fastInvariant2) throws ExpressionException {
+		//
+		// It is ok if the two expressions are different by a scale factor (e.g. if X+Y is conserved, so is 2*X+2*Y, or 2*(X+Y))
+		//    1. estimate proportionality factor (average of 5 evaluations - with discontinuities removed)
+		//    2. scale one of the expressions by the proportionality factor to correct for the scaling.
+		//    3. compare the two expressions for equivalence
+		//
+		Expression oldFastInvExp = new Expression(fastInvariant1.getFunction());
+		Expression newFastInvExp = new Expression(fastInvariant2.getFunction());
+		MathUtilities.substituteCommonDiscontinuitiesInPlace(oldFastInvExp, newFastInvExp, "BOOLEAN_");
+
+		Set<String> symbolSet = new LinkedHashSet<>(Arrays.asList(oldFastInvExp.getSymbols()));
+		symbolSet.addAll(Arrays.asList(newFastInvExp.getSymbols()));
+		String[] symbols = symbolSet.toArray(new String[symbolSet.size()]);
+		SimpleSymbolTable symbolTable = new SimpleSymbolTable(symbols);
+		oldFastInvExp.bindExpression(symbolTable);
+		newFastInvExp.bindExpression(symbolTable);
+
+		Random random = new Random(0);
+		List<Double> ratios = new ArrayList<>();
+		final int NUM_SUCCESSFUL_TRIALS = 5;
+		final int MAX_TRIALS = 500;
+		Double estimatedRatio;
+		double[] values = new double[symbols.length];
+		for (int m = 0; m < MAX_TRIALS || ratios.size() < NUM_SUCCESSFUL_TRIALS; m++) {
+			for (int j = 0; j < values.length; j++) {
+				values[j] = random.nextDouble() + 1.0;
+			}
+			try {
+				double oldFastInvValue = oldFastInvExp.evaluateVector(values);
+				double newFastInvValue = newFastInvExp.evaluateVector(values);
+				if (oldFastInvValue != 0.0 && newFastInvValue != 0.0) {
+					ratios.add(oldFastInvValue / newFastInvValue);
+				}
+			} catch (ExpressionException e) {
+			}
+		}
+		if (ratios.size() >= NUM_SUCCESSFUL_TRIALS){
+			DoubleSummaryStatistics stats = ratios.stream().mapToDouble(r -> r).summaryStatistics();
+			estimatedRatio = stats.getAverage();
+		}else{
+			String msg = "fast invariant expressions could not be evaluated, exp1='"+fastInvariant1.getFunction().infix()+"', "+
+					"exp2='"+fastInvariant2.getFunction().infix()+"'";
+			lg.debug(msg);
+			return false;
+		}
+		Expression scaled_fastInvariant2 = Expression.mult(new Expression(estimatedRatio),fastInvariant2.getFunction());
+		System.out.println("MathDescription.compareEquivalent(): comparing "+fastInvariant1.getFunction().infix()+" with "+scaled_fastInvariant2.infix());
+		if (!ExpressionUtils.functionallyEquivalent(fastInvariant1.getFunction(), scaled_fastInvariant2)){
+			String msg = "fast invariant expressions are different, exp1='"+fastInvariant1.getFunction().infix()+"', "+
+					"exp2='"+fastInvariant2.getFunction().infix()+"'";
+			lg.debug(msg);
+			return false;
+		}
+		return true;
+	}
+
+
+	public static MathDescription createMathWithExpandedEquations(MathDescription originalMathDescription, Set<String> varNamesToKeep, Map<String, Variable.Domain> varDomainMap) throws MathException, ExpressionException {
+		//
+		// clone current mathdescription
+		//
+		MathDescription newMath = new MathDescription(originalMathDescription);
+
+		//
+		// for any dependent variables in the "varNamesToKeep" list, create appropriate Variable/Equation
+		//
+		// this assumes that the dependent 'Function' is a linear combination of existing state variables
+		//  e.g. Function depVar = K0 + K1*indepVar1 + K2*indepVar2 + ... + Kn*indepVarN
+		// if it doesn't fit this form, then math's are not equivalent.
+		//
+		HashSet<String> stateVarSet = newMath.getStateVariableNames();
+		// Build the list of variables to be added
+		ArrayList<Function> varsToAdd = new ArrayList<Function>();
+		for (Variable var : newMath.getVariableList()){
+			if (varNamesToKeep.contains(var.getName()) && var instanceof Function){
+				varsToAdd.add((Function)var);
+			}
+		}
+		for (Function function : varsToAdd){
+				//
+				// get list of symbols that are state variables
+				//
+				ArrayList<Variable> indepVarList = new ArrayList<Variable>();         // holds the "indepVar's"
+				ArrayList<Expression> coefficientList = new ArrayList<Expression>();      // holds the "K's"
+				Expression exp = function.getExpression();
+				exp.bindExpression(null);
+				Expression K0 = new Expression(exp);
+				K0.bindExpression(null);
+				String symbols[] = exp.getSymbols();
+				for (int j = 0; j < symbols.length; j++){
+					if (stateVarSet.contains(symbols[j])){
+						//
+						// store the independent variable (indepVar_i)
+						//
+						indepVarList.add(newMath.getVariable(symbols[j]));
+						Expression differential = exp.differentiate(symbols[j]);
+						differential = differential.flatten();
+						//
+						// store the coefficient (K_i)
+						//
+						coefficientList.add(differential);
+						//
+						// remove this term from the "constant" term (K0)
+						// (e.g. for expression "K0 + K1*V1 + ... + Ki*Vi + ... + Kn*Vn", Vi set to 0.0 and flattened)
+						// after each term is removed, only K0 is left
+						//
+						K0.substituteInPlace(new Expression(symbols[j]),new Expression(0.0));
+						K0 = K0.flatten();
+					}
+				}
+				//
+				// compute fast invariant expression, may be needed later
+				//
+				Expression fastInvariantExp = new Expression(0.0);
+				for (int k = 0; k < indepVarList.size(); k++){
+					Variable indepVar = indepVarList.get(k);
+					Expression coefficient = coefficientList.get(k);
+					fastInvariantExp = Expression.add(fastInvariantExp,Expression.mult(new Expression(coefficient),new Expression(indepVar.getName())));
+				}
+
+				//
+				// either all independent vars should be Volume, all should be Membrane, or all should be Filament
+				//
+				int countVolumeVars = 0;
+				int countMembraneVars = 0;
+				int countFilamentVars = 0;
+				int countPointVars = 0;
+				for (int j = 0; j < indepVarList.size(); j++){
+					if (indepVarList.get(j) instanceof VolVariable){
+						countVolumeVars++;
+					}else if (indepVarList.get(j) instanceof MemVariable){
+						countMembraneVars++;
+					}else if (indepVarList.get(j) instanceof FilamentVariable){
+						countFilamentVars++;
+					}else if (indepVarList.get(j) instanceof PointVariable){
+						countPointVars++;
+					}else{
+						throw new RuntimeException("create canonicalMath cannot handle dependent vars of type '"+indepVarList.get(j).getClass().getName()+"'");
+					}
+				}
+				Variable.Domain domain = varDomainMap.get(function.getName());
+				SubDomain functionSubdomain = (domain != null) ? newMath.getSubDomain(domain.getName()) : null;
+
+				//
+				// case: Volume Variable
+				// create VolVariable
+				// for each CompartmentSubDomain, create OdeEquation
+				// remove Function
+				//
+				if ((countVolumeVars > 0 && countVolumeVars == indepVarList.size()) || functionSubdomain instanceof CompartmentSubDomain){
+					VolVariable volVariable = new VolVariable(function.getName(),function.getDomain());
+					newMath.getVariableList().remove(function);
+					newMath.getVariableList().add(volVariable);
+					newMath.getVariableMap().remove(function.getName());
+					newMath.getVariableMap().put(volVariable.getName(), volVariable);
+					//
+					// determine which volume subdomains (CompartmentSubDomains) to add equations to
+					//    if domain information is available, then restrict the creation of equations to that subdomain,
+					//    else add equation to all subdomains of the same type (here: any CompartmentSubDomain)
+					//
+					Set<CompartmentSubDomain> compartmentSubDomains = new LinkedHashSet<>();
+					if (functionSubdomain != null){
+						compartmentSubDomains.add((CompartmentSubDomain) functionSubdomain);
+					}else if (countMembraneVars > 0){
+						for (Variable indepVar : indepVarList){
+							if (indepVar instanceof VolVariable && indepVar.getDomain() != null){
+								compartmentSubDomains.add((CompartmentSubDomain) newMath.getSubDomain(indepVar.getDomain().getName()));
+							}
+						}
+					}else{
+						for (SubDomain subDomain : newMath.getSubDomainCollection()){
+							if (subDomain instanceof CompartmentSubDomain){
+								compartmentSubDomains.add((CompartmentSubDomain) subDomain);
+							}
+						}
+					}
+					for (CompartmentSubDomain compartmentSubDomain : compartmentSubDomains){
+						//
+						// add an ODE where
+						//    initial value = K0 + Sum(coefficient_i*Var_i.init)
+						//    rate value = Sum(coefficient_i*Var_i.rate)
+						//
+						Expression initExp = new Expression(K0);
+						Expression rateExp = new Expression(0.0);
+						for (int k = 0; k < indepVarList.size(); k++){
+							Variable indepVar = indepVarList.get(k);
+							Equation indepVarEqu = compartmentSubDomain.getEquation(indepVar);
+							Expression coefficient = coefficientList.get(k);
+							initExp = Expression.add(initExp,Expression.mult(new Expression(coefficient),new Expression(indepVarEqu.getInitialExpression())));
+							rateExp = Expression.add(rateExp,Expression.mult(new Expression(coefficient),new Expression(indepVarEqu.getRateExpression())));
+						}
+						for (Variable var : newMath.getVariableList()){
+							if (var.getName().startsWith(function.getName()+ MathDescription.MATH_FUNC_INIT_SUFFIX_PREFIX)){
+								Variable initVariable = var;
+								initExp = new Expression(initVariable,null);
+								break;
+							}
+						}
+						OdeEquation odeEquation = new OdeEquation(volVariable, initExp.flatten(), rateExp.flatten());
+						compartmentSubDomain.addEquation(odeEquation);
+						if (compartmentSubDomain.getFastSystem()!=null){
+							compartmentSubDomain.getFastSystem().addFastInvariant(new FastInvariant(fastInvariantExp));
+						}
+					}
+				//
+				// case: Membrane Variable
+				//
+				}else if ((countMembraneVars > 0 && countMembraneVars == indepVarList.size()) || functionSubdomain instanceof MembraneSubDomain){
+					MemVariable memVariable = new MemVariable(function.getName(),function.getDomain());
+					newMath.getVariableList().remove(function);
+					newMath.getVariableList().add(memVariable);
+					newMath.getVariableMap().remove(function.getName());
+					newMath.getVariableMap().put(memVariable.getName(), memVariable);
+					//
+					// determine which membrane subdomains to add equations to
+					//    if domain information is available, then restrict the creation of equations to that subdomain,
+					//    else add equation to all subdomains of the same type (here: any MembraneSubDomain)
+					//
+					Set<MembraneSubDomain> membraneSubDomains = new LinkedHashSet<>();
+					if (functionSubdomain != null){
+						membraneSubDomains.add((MembraneSubDomain) functionSubdomain);
+					}else if (countMembraneVars > 0){
+						for (Variable indepVar : indepVarList){
+							if (indepVar instanceof MemVariable && indepVar.getDomain() != null){
+								membraneSubDomains.add((MembraneSubDomain) newMath.getSubDomain(indepVar.getDomain().getName()));
+							}
+						}
+					}else{
+						for (SubDomain subDomain : newMath.getSubDomainCollection()){
+							if (subDomain instanceof MembraneSubDomain){
+								membraneSubDomains.add((MembraneSubDomain) subDomain);
+							}
+						}
+					}
+					for (MembraneSubDomain membraneSubDomain : membraneSubDomains){
+						//
+						// add an ODE where
+						//    initial value = K0 + Sum(coefficient_i*Var_i.init)
+						//    rate value = Sum(coefficient_i*Var_i.rate)
+						//
+						Expression initExp = new Expression(K0);
+						Expression rateExp = new Expression(0.0);
+						for (int k = 0; k < indepVarList.size(); k++){
+							Variable indepVar = indepVarList.get(k);
+							Equation indepVarEqu = membraneSubDomain.getEquation(indepVar);
+							Expression coefficient = coefficientList.get(k);
+							initExp = Expression.add(initExp,Expression.mult(new Expression(coefficient),new Expression(indepVarEqu.getInitialExpression())));
+							rateExp = Expression.add(rateExp,Expression.mult(new Expression(coefficient),new Expression(indepVarEqu.getRateExpression())));
+						}
+						for (Variable var : newMath.getVariableList()){
+							if (var.getName().startsWith(function.getName()+ MathDescription.MATH_FUNC_INIT_SUFFIX_PREFIX)){
+								Variable initVariable = var;
+								initExp = new Expression(initVariable,null);
+								break;
+							}
+						}
+						OdeEquation odeEquation = new OdeEquation(memVariable, initExp.flatten(), rateExp.flatten());
+						membraneSubDomain.addEquation(odeEquation);
+						if (membraneSubDomain.getFastSystem()!=null){
+							membraneSubDomain.getFastSystem().addFastInvariant(new FastInvariant(fastInvariantExp));
+						}
+					}
+				//
+				// case: Filament Variable
+				//
+				}else if ((countFilamentVars > 0 && countFilamentVars == indepVarList.size()) || functionSubdomain instanceof FilamentSubDomain){
+					FilamentVariable filamentVariable = new FilamentVariable(function.getName(),function.getDomain());
+					newMath.getVariableList().remove(function);
+					newMath.getVariableList().add(filamentVariable);
+					newMath.getVariableMap().remove(function.getName());
+					newMath.getVariableMap().put(filamentVariable.getName(), filamentVariable);
+					//
+					// determine which filament subdomains to add equations to
+					//    if domain information is available, then restrict the creation of equations to that subdomain,
+					//    else add equation to all subdomains of the same type (here: any FilamentSubDomain)
+					//
+					Set<FilamentSubDomain> filamentSubDomains = new LinkedHashSet<>();
+					if (functionSubdomain != null){
+						filamentSubDomains.add((FilamentSubDomain) functionSubdomain);
+					}else if (countFilamentVars > 0){
+						for (Variable indepVar : indepVarList){
+							if (indepVar instanceof FilamentVariable && indepVar.getDomain() != null){
+								filamentSubDomains.add((FilamentSubDomain) newMath.getSubDomain(indepVar.getDomain().getName()));
+							}
+						}
+					}else{
+						for (SubDomain subDomain : newMath.getSubDomainCollection()){
+							if (subDomain instanceof FilamentSubDomain){
+								filamentSubDomains.add((FilamentSubDomain) subDomain);
+							}
+						}
+					}
+					for (FilamentSubDomain filamentSubDomain : filamentSubDomains){
+						//
+						// add an ODE where
+						//    initial value = K0 + Sum(coefficient_i*Var_i.init)
+						//    rate value = Sum(coefficient_i*Var_i.rate)
+						//
+						Expression initExp = new Expression(K0);
+						Expression rateExp = new Expression(0.0);
+						for (int k = 0; k < indepVarList.size(); k++){
+							Variable indepVar = indepVarList.get(k);
+							Equation indepVarEqu = filamentSubDomain.getEquation(indepVar);
+							Expression coefficient = coefficientList.get(k);
+							initExp = Expression.add(initExp,Expression.mult(new Expression(coefficient),new Expression(indepVarEqu.getInitialExpression())));
+							rateExp = Expression.add(rateExp,Expression.mult(new Expression(coefficient),new Expression(indepVarEqu.getRateExpression())));
+						}
+						for (Variable var : newMath.getVariableList()){
+							if (var.getName().startsWith(function.getName()+ MathDescription.MATH_FUNC_INIT_SUFFIX_PREFIX)){
+								Variable initVariable = var;
+								initExp = new Expression(initVariable,null);
+								break;
+							}
+						}
+						OdeEquation odeEquation = new OdeEquation(filamentVariable, initExp.flatten(), rateExp.flatten());
+						filamentSubDomain.addEquation(odeEquation);
+					}
+
+				//
+				// case: Point Variable
+				//
+				}else if ((countPointVars > 0 && countPointVars == indepVarList.size()) || functionSubdomain instanceof PointSubDomain){
+					PointVariable pointVariable = new PointVariable(function.getName(),function.getDomain());
+					newMath.getVariableList().remove(function);
+					newMath.getVariableList().add(pointVariable);
+					newMath.getVariableMap().remove(function.getName());
+					newMath.getVariableMap().put(pointVariable.getName(), pointVariable);
+					//
+					// determine which point subdomains to add equations to
+					//    if domain information is available, then restrict the creation of equations to that subdomain,
+					//    else add equation to all subdomains of the same type (here: any PointSubDomain)
+					//
+					Set<PointSubDomain> pointSubDomains = new LinkedHashSet<>();
+					if (functionSubdomain != null){
+						pointSubDomains.add((PointSubDomain) functionSubdomain);
+					}else if (countPointVars > 0){
+						for (Variable indepVar : indepVarList){
+							if (indepVar instanceof PointVariable && indepVar.getDomain() != null){
+								pointSubDomains.add((PointSubDomain) newMath.getSubDomain(indepVar.getDomain().getName()));
+							}
+						}
+					}else{
+						for (SubDomain subDomain : newMath.getSubDomainCollection()){
+							if (subDomain instanceof PointSubDomain){
+								pointSubDomains.add((PointSubDomain) subDomain);
+							}
+						}
+					}
+					for (PointSubDomain pointSubDomain : pointSubDomains){
+						//
+						// add an ODE where
+						//    initial value = K0 + Sum(coefficient_i*Var_i.init)
+						//    rate value = Sum(coefficient_i*Var_i.rate)
+						//
+						Expression initExp = new Expression(K0);
+						Expression rateExp = new Expression(0.0);
+						for (int k = 0; k < indepVarList.size(); k++){
+							Variable indepVar = indepVarList.get(k);
+							Equation indepVarEqu = pointSubDomain.getEquation(indepVar);
+							Expression coefficient = coefficientList.get(k);
+							initExp = Expression.add(initExp,Expression.mult(new Expression(coefficient),new Expression(indepVarEqu.getInitialExpression())));
+							rateExp = Expression.add(rateExp,Expression.mult(new Expression(coefficient),new Expression(indepVarEqu.getRateExpression())));
+						}
+						for (Variable var : newMath.getVariableList()){
+							if (var.getName().startsWith(function.getName()+ MathDescription.MATH_FUNC_INIT_SUFFIX_PREFIX)){
+								Variable initVariable = var;
+								initExp = new Expression(initVariable,null);
+								break;
+							}
+						}
+						OdeEquation odeEquation = new OdeEquation(pointVariable, initExp.flatten(), rateExp.flatten());
+						pointSubDomain.addEquation(odeEquation);
+					}
+
+				//
+				//
+				//
+				}else{
+					throw new RuntimeException("create canonicalMath cannot handle mixture of dependent vars types");
+				}
+		}
+
+		return newMath;
+	}
 }

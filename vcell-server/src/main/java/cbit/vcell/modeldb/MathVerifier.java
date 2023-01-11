@@ -456,7 +456,6 @@ public class MathVerifier {
                     issueString = buffer.toString();
                 }
 
-                MathCompareResults testIfSameResult = cbit.vcell.math.MathUtilities.testIfSame(SimulationSymbolTable.createMathSymbolTableFactory(), origMathDesc, newMathDesc);
                 mathCompareResults_latest = MathDescription.testEquivalency(SimulationSymbolTable.createMathSymbolTableFactory(), origMathDesc, newMathDesc);
                 System.out.println(">>>BioModel(" + bioModelFromDB.getVersion().getVersionKey() + ") '" + bioModelFromDB.getName() + "':" + bioModelFromDB.getVersion().getDate() + ", Application(" + simContextFromDB.getKey() + ") '" + simContextFromDB.getName() + "' <<EQUIV=" + mathCompareResults_latest.isEquivalent() + ">>: " + mathCompareResults_latest.toDatabaseStatus());
                 MathDescription mathDesc_4_8 = null;
@@ -1191,7 +1190,6 @@ public class MathVerifier {
                         }
                         simContextNewMath.setMathDescription(newMathDesc);
 
-                        MathCompareResults testIfSameResults = cbit.vcell.math.MathUtilities.testIfSame(SimulationSymbolTable.createMathSymbolTableFactory(), origMathDesc, newMathDesc);
                         mathCompareResults = MathDescription.testEquivalency(SimulationSymbolTable.createMathSymbolTableFactory(), origMathDesc, newMathDesc);
                         StringBuffer buffer = new StringBuffer();
                         buffer.append(">>>BioModel(" + bioModelFromDB.getVersion().getVersionKey() + ") '" + bioModelFromDB.getName() + "':" + bioModelFromDB.getVersion().getDate() + ", Application(" + simContextFromDB.getKey() + ") '" + simContextFromDB.getName() + "' <<EQUIV=" + mathCompareResults.isEquivalent() + ">>: " + mathCompareResults.toDatabaseStatus());
@@ -1468,7 +1466,6 @@ public class MathVerifier {
                         }
                         simContextNewMath.setMathDescription(newMathDesc);
 
-                        MathCompareResults testIfSameResults = cbit.vcell.math.MathUtilities.testIfSame(SimulationSymbolTable.createMathSymbolTableFactory(), origMathDesc, newMathDesc);
                         mathCompareResults = MathDescription.testEquivalency(SimulationSymbolTable.createMathSymbolTableFactory(), origMathDesc, newMathDesc);
                         StringBuffer buffer = new StringBuffer();
                         buffer.append(">>>BioModel(" + bioModelFromDB.getVersion().getVersionKey() + ") '" + bioModelFromDB.getName() + "':" + bioModelFromDB.getVersion().getDate() + ", Application(" + simContextFromDB.getKey() + ") '" + simContextFromDB.getName() + "' <<EQUIV=" + mathCompareResults.isEquivalent() + ">>: " + mathCompareResults.toDatabaseStatus());
