@@ -1,15 +1,14 @@
 package org.vcell.rest;
 
-import java.io.File;
-
-import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.SecretKey;
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.PBEKeySpec;
-import javax.crypto.spec.PBEParameterSpec;
-import javax.xml.bind.DatatypeConverter;
-
+import cbit.vcell.message.*;
+import cbit.vcell.modeldb.AdminDBTopLevel;
+import cbit.vcell.modeldb.DatabaseServerImpl;
+import cbit.vcell.modeldb.LocalAdminDbServer;
+import cbit.vcell.mongodb.VCMongoMessage;
+import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
+import cbit.vcell.resource.PropertyLoader;
+import freemarker.template.Configuration;
+import freemarker.template.DefaultObjectWrapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jose4j.jwk.RsaJsonWebKey;
@@ -35,21 +34,14 @@ import org.vcell.util.document.User;
 import org.vcell.util.document.UserInfo;
 import org.vcell.util.document.UserLoginInfo;
 
-import cbit.vcell.message.VCDestination;
-import cbit.vcell.message.VCMessage;
-import cbit.vcell.message.VCMessagingDelegate;
-import cbit.vcell.message.VCMessagingService;
-import cbit.vcell.message.VCRpcRequest;
-import cbit.vcell.modeldb.AdminDBTopLevel;
-import cbit.vcell.modeldb.DatabaseServerImpl;
-import cbit.vcell.modeldb.LocalAdminDbServer;
-import cbit.vcell.mongodb.VCMongoMessage;
-import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
-import cbit.vcell.resource.PropertyLoader;
-import cbit.vcell.resource.PythonSupport;
-import cbit.vcell.resource.PythonSupport.PythonPackage;
-import freemarker.template.Configuration;
-import freemarker.template.DefaultObjectWrapper;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
+import javax.crypto.spec.PBEParameterSpec;
+import javax.xml.bind.DatatypeConverter;
+import java.io.File;
 
 public class VCellApiMain {
 	
@@ -185,18 +177,39 @@ public class VCellApiMain {
 			parameters.add("keystorePassword", keystorePassword);
 			parameters.add("keystoreType", "JKS");
 			parameters.add("keyPassword", keystorePassword);
-			parameters.add("disabledCipherSuites",
-					"SSL_RSA_WITH_3DES_EDE_CBC_SHA "
-					+ "SSL_DHE_RSA_WITH_DES_CBC_SHA "
-					+ "SSL_DHE_DSS_WITH_DES_CBC_SHA");
-			parameters.add("enabledCipherSuites",
-					"TLS_DHE_DSS_WITH_AES_128_CBC_SHA "
-					+ "TLS_DHE_RSA_WITH_AES_128_CBC_SHA "
-					+ "TLS_RSA_WITH_AES_128_CBC_SHA "
-					+ "TLS_DHE_DSS_WITH_AES_256_CBC_SHA "
-					+ "TLS_DHE_RSA_WITH_AES_256_CBC_SHA "
-					+ "TLS_RSA_WITH_AES_256_CBC_SHA");
-			
+			/**
+			 * last nmap scan to determine supported cipher suites:
+			 *
+			 * $ nmap -sV --script ssl-enum-ciphers -p 8082 155.37.249.214
+			 * Starting Nmap 7.93 ( https://nmap.org ) at 2023-01-11 22:44 EST
+			 * | ssl-enum-ciphers:
+			 * |   TLSv1.2:
+			 * |     ciphers:
+			 * |       TLS_DHE_RSA_WITH_AES_128_CBC_SHA (dh 2048) - A
+			 * |       TLS_DHE_RSA_WITH_AES_128_CBC_SHA256 (dh 2048) - A
+			 * |       TLS_DHE_RSA_WITH_AES_128_GCM_SHA256 (dh 2048) - A
+			 * |       TLS_DHE_RSA_WITH_AES_256_CBC_SHA (dh 2048) - A
+			 * |       TLS_DHE_RSA_WITH_AES_256_CBC_SHA256 (dh 2048) - A
+			 * |       TLS_DHE_RSA_WITH_AES_256_GCM_SHA384 (dh 2048) - A
+			 * |       TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA (secp256r1) - A
+			 * |       TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256 (secp256r1) - A
+			 * |       TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 (secp256r1) - A
+			 * |       TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA (secp256r1) - A
+			 * |       TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384 (secp256r1) - A
+			 * |       TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 (secp256r1) - A
+			 * |       TLS_RSA_WITH_AES_128_CBC_SHA (rsa 2048) - A
+			 * |       TLS_RSA_WITH_AES_128_CBC_SHA256 (rsa 2048) - A
+			 * |       TLS_RSA_WITH_AES_128_GCM_SHA256 (rsa 2048) - A
+			 * |       TLS_RSA_WITH_AES_256_CBC_SHA (rsa 2048) - A
+			 * |       TLS_RSA_WITH_AES_256_CBC_SHA256 (rsa 2048) - A
+			 * |       TLS_RSA_WITH_AES_256_GCM_SHA384 (rsa 2048) - A
+			 * |     compressors:
+			 * |       NULL
+			 * |     cipher preference: client
+			 * |_  least strength: A
+			 * |_http-server-header: Restlet-Framework/2.4.3
+			 */
+
 			lg.trace("create config");
 			Configuration templateConfiguration = new Configuration();
 			templateConfiguration.setObjectWrapper(new DefaultObjectWrapper());
