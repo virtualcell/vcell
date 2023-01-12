@@ -41,9 +41,14 @@ public class BiosimulationsCommand implements Callable<Integer> {
     private boolean help;
 
     public Integer call() {
-        CLIRecorder cliLogger = null;
+        CLIRecorder cliRecorder = null;
+        int returnCode;
+        
+        if ((returnCode = this.noFurtherActionNeeded(bQuiet, bDebug, bVersion)) != -1)
+            return returnCode;
+        
         try {
-            cliLogger = new CLIRecorder(OUT_DIR); // CLILogger will throw an execption if our output dir isn't valid.
+            cliRecorder = new CLIRecorder(OUT_DIR); // CLILogger will throw an execption if our output dir isn't valid.
             Level logLevel = logger.getLevel();
             if (!bQuiet && bDebug) {
                 logLevel = Level.DEBUG;
@@ -67,19 +72,6 @@ public class BiosimulationsCommand implements Callable<Integer> {
 
             // Load properties before we need them below!
             PropertyLoader.loadProperties();
-
-            logger.debug("Validating CLI arguments");
-            if (bDebug && bQuiet) {
-                logger.error("cannot specify both debug and quiet, try --help for usage");
-                return 1;
-            }
-
-            if (bVersion) {
-                String version = PropertyLoader.getRequiredProperty(PropertyLoader.vcellSoftwareVersion);
-                logger.info("Outputing version:");
-                System.out.println(version);
-                return 0;
-            }
 
             logger.trace("Validating input");
             if (ARCHIVE == null) {
@@ -106,7 +98,7 @@ public class BiosimulationsCommand implements Callable<Integer> {
             logger.info("Beginning execution");
             try {
                 CLIPythonManager.getInstance().instantiatePythonProcess();
-                ExecuteImpl.singleMode(ARCHIVE, OUT_DIR, cliLogger);
+                ExecuteImpl.singleMode(ARCHIVE, OUT_DIR, cliRecorder);
                 return 0; // Does this prevent finally?
             } finally {
                 try {
@@ -120,5 +112,22 @@ public class BiosimulationsCommand implements Callable<Integer> {
             logger.error(e.getMessage(), e);
             return 1;
         }
+    }
+
+    public int noFurtherActionNeeded(boolean bQuiet, boolean bDebug, boolean bVersion){
+        logger.debug("Validating CLI arguments");
+        if (bVersion) {
+            String version = PropertyLoader.getRequiredProperty(PropertyLoader.vcellSoftwareVersion);
+            logger.info("Outputing version:");
+            System.out.println(version);
+            return 0;
+        }
+
+        if (bDebug && bQuiet) {
+            logger.error("cannot specify both debug and quiet, try --help for usage");
+            return 1;
+        }
+
+        return -1;
     }
 }
