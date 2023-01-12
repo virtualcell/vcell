@@ -7,7 +7,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.9"
-copasi-basico = "0.36"
+copasi-basico = "0.40"
 python-copasi = "4.37.264"
 jupyter = "^1.0.0"
 typer = {extras = ["all"], version = "^0.7.0"}

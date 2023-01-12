@@ -16,7 +16,9 @@ from vcell_opt.optUtils import get_reference_data, get_fit_parameters, get_copas
 def run_command(opt_file: Path = typer.Argument(..., file_okay=True, dir_okay=False, exists=True,
                                                 help="optimization input json file"),
                 result_file: Path = typer.Argument(..., file_okay=True, dir_okay=False,
-                                                   help="optimization result output json file")):
+                                                   help="optimization result output json file"),
+                report_file: Path = typer.Argument(..., file_okay=True, dir_okay=False,
+                                                   help="report file with intermediate results")):
     if opt_file is None or result_file is None:
         print("use --help for help")
         return typer.Exit(-1)
@@ -36,6 +38,20 @@ def run_command(opt_file: Path = typer.Argument(..., file_okay=True, dir_okay=Fa
     task_settings = basico.get_task_settings('Parameter Estimation')
     task_settings['method'] = get_copasi_opt_method_settings(opt_problem)
     basico.set_task_settings('Parameter Estimation', task_settings)
+
+    #
+    # define parameter estimation report format, note that header and footer are omitted to ease parsing
+    #
+    basico.add_report('parest report', task=basico.T.PARAMETER_ESTIMATION,
+                      body=[
+                          'CN=Root,Vector=TaskList[Parameter Estimation],Problem=Parameter Estimation,Reference=Function Evaluations',
+                          '\\\t',
+                          'CN=Root,Vector=TaskList[Parameter Estimation],Problem=Parameter Estimation,Reference=Best Value',
+                          '\\\t',
+                          'CN=Root,Vector=TaskList[Parameter Estimation],Problem=Parameter Estimation,Reference=Best Parameters'
+                          ],
+                      )
+    basico.assign_report("parest report", task=basico.T.PARAMETER_ESTIMATION, filename=str(report_file), append=True)
 
     fit_items = get_fit_parameters(opt_problem)
     basico.set_fit_parameters(fit_items)

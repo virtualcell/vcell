@@ -289,9 +289,10 @@ public class CopasiUtils {
         writeOptProblem(optProblemFile, optProblem);
 
         File resultsFile = new File(tempDir, "optResults.json");
+        File reportFile = new File(tempDir, "optReport.tsv");
 
         // call copasi via vcell_opt package to run parameter estimation
-        callCopasiPython(optProblemFile.toPath(), resultsFile.toPath());
+        callCopasiPython(optProblemFile.toPath(), resultsFile.toPath(), reportFile.toPath());
 
         // read VCellopt results
         Vcellopt results = objectMapper.readValue(resultsFile, Vcellopt.class);
@@ -319,12 +320,16 @@ public class CopasiUtils {
         return copasiOptimizationResultSet;
     }
 
-    public static void callCopasiPython(Path optProblemFile, Path resultsFile) throws InterruptedException, IOException {
+    public static void callCopasiPython(Path optProblemFile, Path resultsFile, Path reportFile) throws InterruptedException, IOException {
         //final String pythonExe = pythonExeName;
         File installDir = PropertyLoader.getRequiredDirectory(PropertyLoader.installationRoot);
         File optDir = Paths.get(installDir.getAbsolutePath(),"pythonProject", "vcell-opt").toAbsolutePath().toFile();
 //        final String pythonExe = "/Users/schaff/Library/Caches/pypoetry/virtualenvs/vcell-opt-XIpjcTyI-py3.9/bin/python";
-        ProcessBuilder pb = new ProcessBuilder(new String[]{"poetry","run","python", "-m", "vcell_opt.optService", String.valueOf(optProblemFile.toAbsolutePath()), String.valueOf(resultsFile.toAbsolutePath())});
+        ProcessBuilder pb = new ProcessBuilder(new String[]{
+                "poetry","run","python", "-m", "vcell_opt.optService",
+                String.valueOf(optProblemFile.toAbsolutePath()),
+                String.valueOf(resultsFile.toAbsolutePath()),
+                String.valueOf(reportFile.toAbsolutePath())});
         pb.directory(optDir);
         System.out.println(pb.command());
         runAndPrintProcessStreams(pb, "", "");
