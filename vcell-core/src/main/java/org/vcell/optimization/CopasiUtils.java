@@ -24,9 +24,7 @@ import org.vcell.optimization.jtd.ParameterDescription;
 import org.vcell.sbml.vcell.MathModel_SBMLExporter;
 
 import javax.xml.stream.XMLStreamException;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -363,5 +361,31 @@ public class CopasiUtils {
         }
     }
 
+    public static OptProgressReport readProgressReportFromCSV(File progressReportFile) throws IOException {
+        List<OptProgressItem> progressItems = new ArrayList<>();
+        try (BufferedReader reader = new BufferedReader(new FileReader(progressReportFile))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] tokens = line.replace("(", "")
+                        .replace(")", "")
+                        .replace("\t\t", "\t")
+                        .split("\t");
+                int iteration = Integer.parseInt(tokens[0]);
+                double objectiveFunctionValue = Double.parseDouble(tokens[1]);
+                List<Double> paramValues = new ArrayList<>();
+                for (int i = 2; i < tokens.length; i++) {
+                    paramValues.add(Double.parseDouble(tokens[i]));
+                }
+                OptProgressItem progressItem = new OptProgressItem();
+                progressItem.setIteration(iteration);
+                progressItem.setObjFuncValue(objectiveFunctionValue);
+                progressItem.setBestParamValues(paramValues);
+                progressItems.add(progressItem);
+            }
+        }
+        OptProgressReport progressReport = new OptProgressReport();
+        progressReport.setProgressItems(progressItems);
+        return progressReport;
+    }
 
 }
