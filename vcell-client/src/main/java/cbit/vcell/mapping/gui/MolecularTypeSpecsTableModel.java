@@ -93,7 +93,7 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 			return ComponentStatePattern.class;
 		case COLUMN_RADIUS:
 		case COLUMN_DIFFUSION:
-			return ScopedExpression.class;
+			return Expression.class;
 		default:
 			return Object.class;
 		}
