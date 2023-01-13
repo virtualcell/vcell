@@ -239,6 +239,15 @@ public class OptimizationBatchServer {
         return null;
     }
 
+    private OptProgressReport getProgressReport(String optID) throws IOException {
+        File f = generateOptReportFilePath(optID);
+        if (f.exists()) { // opt has report (may still be open for reading)
+            return CopasiUtils.readProgressReportFromCSV(f);
+        }else {
+            return null;
+        }
+    }
+
     private OptServerJobInfo submitOptProblem(OptProblem optProblem) throws IOException, ExecutableException {
         HtcProxy htcProxyClone = getHtcProxy().cloneThreadsafe();
         File htcLogDirExternal = new File(PropertyLoader.getRequiredProperty(PropertyLoader.htcLogDirExternal));
@@ -249,6 +258,7 @@ public class OptimizationBatchServer {
         File sub_file_internal = new File(htcLogDirInternal, optSubFileName);
         File optProblemFile = generateOptProblemFilePath(optID+"");
         File optOutputFile = generateOptOutputFilePath(optID+"");
+        File optReportFile = generateOptReportFilePath(optID+"");
         CopasiUtils.writeOptProblem(optProblemFile, optProblem);//save param optimization problem to user dir
         //make sure all can read and write
         File optDir = generateOptimizeDirName(optID+"");
@@ -256,7 +266,7 @@ public class OptimizationBatchServer {
         optDir.setWritable(true,false);
 
         String slurmOptJobName = generateOptFilePrefix(optID+"");
-        HtcJobID htcJobID = htcProxyClone.submitOptimizationJob(slurmOptJobName, sub_file_internal, sub_file_external,optProblemFile,optOutputFile);
+        HtcJobID htcJobID = htcProxyClone.submitOptimizationJob(slurmOptJobName, sub_file_internal, sub_file_external,optProblemFile,optOutputFile,optReportFile);
         return new OptServerJobInfo(optID+"", new HtcProxy.HtcJobInfo(htcJobID, slurmOptJobName));
     }
     private void optServerStopJob(OptServerJobInfo optServerJobInfo) {
@@ -316,6 +326,10 @@ public class OptimizationBatchServer {
     }
     private File generateOptOutputFilePath(String optID) {
         String optOutputFileName = generateOptFilePrefix(optID)+"_optRun.json";
+        return new File(generateOptimizeDirName(optID), optOutputFileName);
+    }
+    private File generateOptReportFilePath(String optID) {
+        String optOutputFileName = generateOptFilePrefix(optID)+"_optReport.txt";
         return new File(generateOptimizeDirName(optID), optOutputFileName);
     }
     private File generateOptProblemFilePath(String optID) {
