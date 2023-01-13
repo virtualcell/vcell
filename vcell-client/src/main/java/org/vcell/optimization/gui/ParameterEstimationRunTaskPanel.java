@@ -485,6 +485,8 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 			if (e.getSource() == getSolveButton()) {
 				ParameterEstimationRunTaskPanel.this.getRunStatusDialog().setProgress(0);
 				ParameterEstimationRunTaskPanel.this.getRunStatusDialog().setMessage("Starting...");
+				ParameterEstimationRunTaskPanel.this.getRunStatusDialog().setObjectFunctionValue(Double.POSITIVE_INFINITY);
+				ParameterEstimationRunTaskPanel.this.getRunStatusDialog().setNumEvaluations(0);
 				solve();
 			}else if (e.getSource() == getOptimizationMethodComboBox()) { 
 				optimizationMethodComboBox_ActionPerformed();	
@@ -503,9 +505,14 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 			if (evt.getSource() == optSolverCallbacks && (evt.getPropertyName().equals(CopasiOptSolverCallbacks.OPT_PROGRESS_REPORT))) {
 				if (optSolverCallbacks.getProgressReport()!=null) {
 					OptProgressReport optProgressReport = optSolverCallbacks.getProgressReport();
-					OptProgressItem lastProgressItem = optProgressReport.getProgressItems().get(optProgressReport.getProgressItems().size()-1);
-					getRunStatusDialog().setNumEvaluations(lastProgressItem.getIteration());
-					getRunStatusDialog().setObjectFunctionValue(lastProgressItem.getObjFuncValue());
+					if (optProgressReport.getProgressItems() == null || optProgressReport.getProgressItems().size()==0){
+						getRunStatusDialog().setNumEvaluations(0);
+						getRunStatusDialog().setObjectFunctionValue(Double.POSITIVE_INFINITY);
+					}else {
+						OptProgressItem lastProgressItem = optProgressReport.getProgressItems().get(optProgressReport.getProgressItems().size() - 1);
+						getRunStatusDialog().setNumEvaluations(lastProgressItem.getIteration());
+						getRunStatusDialog().setObjectFunctionValue(lastProgressItem.getObjFuncValue());
+					}
 				}
 //				getRunStatusDialog().setNumRunMessage(optSolverCallbacks.getRunNumber(), parameterEstimationTask.getOptimizationSolverSpec().getNumOfRuns());
 //				if (optimizationMethodParameterTableModel.copasiOptimizationMethod.getType().getProgressType() == CopasiOptSettings.CopasiOptProgressType.Progress) {
@@ -1079,6 +1086,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				// OptimizationResultSet optResultSet = CopasiOptimizationSolver.solveLocalPython(parameterEstimationTask);
 				ClientServerInfo clientServerInfo = TopLevelWindowManager.activeManager().getRequestManager().getClientServerInfo();
+				optSolverCallbacks.setProgressReport(new OptProgressReport());
 				OptimizationResultSet optResultSet = CopasiOptimizationSolver.solveRemoteApi(parameterEstimationTask,optSolverCallbacks,getClientTaskStatusSupport(), clientServerInfo);
 				hashTable.put(ORS_KEY, optResultSet);
 			}

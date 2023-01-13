@@ -139,20 +139,18 @@ public class CopasiOptimizationSolver {
 					throw UserCancelException.CANCEL_GENERIC;
 				}
 				if (optRunServerMessage.startsWith(VcelloptStatus.QUEUED.name() + ":")) {
-					SwingUtilities.invokeLater(() -> optSolverCallbacks.setProgressReport(null));
 					if (clientTaskStatusSupport != null) {
 						clientTaskStatusSupport.setMessage("Queued...");
 					}
 
 				} else if (optRunServerMessage.startsWith(VcelloptStatus.FAILED.name()+":") || optRunServerMessage.toLowerCase().startsWith("exception:")){
-					// SwingUtilities.invokeLater(() -> optSolverCallbacks.setProgressReport(null));
 					if (clientTaskStatusSupport != null) {
 						clientTaskStatusSupport.setMessage(optRunServerMessage);
 					}
 
 				} else if (optRunServerMessage.startsWith(VcelloptStatus.RUNNING.name() + ":")) {
 					if (clientTaskStatusSupport != null) {
-						clientTaskStatusSupport.setMessage("Running...");
+						clientTaskStatusSupport.setMessage("Running (waiting for progress) ...");
 					}
 
 				} else {
@@ -160,7 +158,7 @@ public class CopasiOptimizationSolver {
 					Object optObject = null;
 					try {
 						optObject = objectMapper.readValue(optRunServerMessage, Vcellopt.class);
-					}catch (RuntimeException e){
+					}catch (Exception e){
 						optObject = objectMapper.readValue(optRunServerMessage, OptProgressReport.class);
 					}
 
@@ -194,9 +192,17 @@ public class CopasiOptimizationSolver {
 						OptProgressReport progressReport = (OptProgressReport) optObject;
 						SwingUtilities.invokeLater(() -> {
 							try {
-								SwingUtilities.invokeLater(() -> optSolverCallbacks.setProgressReport(progressReport));
+								optSolverCallbacks.setProgressReport(progressReport);
 							} catch (Exception e) {
 								lg.error(optRunServerMessage, e);
+							}
+							if (clientTaskStatusSupport != null) {
+								int numIterations = 0;
+								if (progressReport.getProgressItems()!=null && progressReport.getProgressItems().size()>0){
+									OptProgressItem lastItem = progressReport.getProgressItems().get(progressReport.getProgressItems().size()-1);
+									numIterations = lastItem.getIteration();
+								}
+								clientTaskStatusSupport.setMessage("Running ...");
 							}
 						});
 					}
