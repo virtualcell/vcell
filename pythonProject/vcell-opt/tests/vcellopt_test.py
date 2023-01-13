@@ -8,7 +8,7 @@ import basico
 import pandas as pd
 
 from vcell_opt.data import OptProblem
-from vcell_opt.optUtils import get_reference_data, get_fit_parameters, get_copasi_opt_method_settings
+from vcell_opt.optUtils import get_reference_data, get_fit_parameters, get_copasi_opt_method_settings, get_progress_report
 
 
 def test_read_opt_problem() -> None:
@@ -76,6 +76,15 @@ def test_run() -> None:
     assert abs(float(report_tokens[3]) - fit_Kf) < 1e-5
     assert abs(float(report_tokens[4]) - fit_Kr) < 1e-5
     assert abs(float(report_tokens[5]) - fit_s0_init_uM) < 1e-5
+
+    #
+    # verify that last line of progress report object matches best fit
+    #
+    progress_report = get_progress_report(report_file=report_file)
+    last_progress_item = progress_report.progress_items[len(progress_report.progress_items)-1]
+    assert abs(last_progress_item.best_param_values[0] - fit_Kf) < 1e-5
+    assert abs(last_progress_item.best_param_values[1] - fit_Kr) < 1e-5
+    assert abs(last_progress_item.best_param_values[2] - fit_s0_init_uM) < 1e-5
 
     # remove report file
     if report_file.exists():

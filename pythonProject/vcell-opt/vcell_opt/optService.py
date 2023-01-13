@@ -10,7 +10,7 @@ import typer
 
 from vcell_opt.data import OptProblem, Vcellopt, VcelloptStatus, OptResultSet
 from vcell_opt.optUtils import get_reference_data, get_fit_parameters, get_copasi_opt_method_settings, \
-    result_set_from_fit
+    result_set_from_fit, get_progress_report
 
 
 def run_command(opt_file: Path = typer.Argument(..., file_okay=True, dir_okay=False, exists=True,
@@ -68,12 +68,13 @@ def run_command(opt_file: Path = typer.Argument(..., file_okay=True, dir_okay=Fa
     objective_function = fit_statistics['obj']
     num_function_evaluations = fit_statistics['f_evals']
 
+    opt_progress_report = get_progress_report(report_file)
+
     result_set = OptResultSet(num_function_evaluations=int(num_function_evaluations),
-                              objective_function=objective_function, opt_parameter_values=opt_parameter_values)
+                              objective_function=objective_function,
+                              opt_parameter_values=opt_parameter_values,
+                              opt_progress_report=opt_progress_report)
 
-    opt_result_set: Dict[str, float] = result_set_from_fit(fit_solution)
-
-    status = VcelloptStatus.COMPLETE
     status_message = str(basico.task_parameterestimation.get_fit_statistic(
         include_parameters=True, include_experiments=True, include_fitted=True))
 
