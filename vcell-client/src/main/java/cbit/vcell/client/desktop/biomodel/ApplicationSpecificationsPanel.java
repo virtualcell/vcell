@@ -175,7 +175,7 @@ public class ApplicationSpecificationsPanel extends ApplicationSubPanel {
 		if (System.getProperty("showMembrane") != null) {
 			activate(membraneConditionsPanel);
 		}
-//		activate(molecularStructuresPanel);
+		activate(molecularStructuresPanel);
 		
 		JPanel searchPanel = new JPanel();
 		GridBagLayout gbl_searchPanel = new GridBagLayout();
@@ -245,19 +245,11 @@ public class ApplicationSpecificationsPanel extends ApplicationSubPanel {
 			spc.setter.setSimulationContext(newValue);
 		}
 		if(simulationContext.getApplicationType().equals(SimulationContext.Application.RULE_BASED_STOCHASTIC)) {
-			deactivate(molecularStructuresPanel);
 			deactivate(networkConstraintsPanel);
 			activate(networkFreePanel);
 			final int indexOfNetworkFreeTab = tabbedPane.indexOfComponent(networkFreePanel);
 			 tabbedPane.setEnabledAt(indexOfNetworkFreeTab, true);
-		} else if(simulationContext.getApplicationType().equals(SimulationContext.Application.SPRINGSALAD)) {
-			deactivate(networkFreePanel);
-			deactivate(networkConstraintsPanel);
-			activate(molecularStructuresPanel);
-			final int indexOfMolecularStructuresTab = tabbedPane.indexOfComponent(molecularStructuresPanel);
-			 tabbedPane.setEnabledAt(indexOfMolecularStructuresTab, true);
 		} else {								// this panel only for flattened rule based applications
-			deactivate(molecularStructuresPanel);
 			deactivate(networkFreePanel);
 			activate(networkConstraintsPanel);
 			
@@ -269,6 +261,13 @@ public class ApplicationSpecificationsPanel extends ApplicationSubPanel {
 			 } else {
 				 tabbedPane.setEnabledAt(indexOfNetworkTab, true);
 			 }
+		}
+		if(simulationContext.getApplicationType().equals(SimulationContext.Application.SPRINGSALAD)) {
+			activate(molecularStructuresPanel);
+			final int indexOfMolecularStructuresTab = tabbedPane.indexOfComponent(molecularStructuresPanel);
+			 tabbedPane.setEnabledAt(indexOfMolecularStructuresTab, true);
+		} else {
+			deactivate(molecularStructuresPanel);
 		}
 	}
 

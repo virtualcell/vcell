@@ -54,7 +54,6 @@ public class SelectionManager {
 		network_setting,
 		network_free_setting,
 		membrane_setting,
-		molecular_structure_setting,
 		
 		events,
 		electrical,

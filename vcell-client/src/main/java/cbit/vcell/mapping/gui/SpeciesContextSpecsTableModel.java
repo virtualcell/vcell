@@ -82,8 +82,6 @@ public class SpeciesContextSpecsTableModel extends VCellSortTableModel<SpeciesCo
 	
 	private SimulationContext fieldSimulationContext = null;
 	private AutoCompleteSymbolFilter autoCompleteSymbolFilter = null;
-	
-	private boolean bEditable = true;	// this.isCellEditable() decides
 
 /**
  * ReactionSpecsTableModel constructor comment.
@@ -176,12 +174,6 @@ private void refreshColumns(){
 		// the NFSim simulator used for rule-based doesn't accept clamped or force continuous
 		columns.remove(ColumnType.COLUMN_CLAMPED);
 		columns.remove(ColumnType.COLUMN_FORCECONTINUOUS);
-	}
-	if (getSimulationContext() == null || getSimulationContext().getApplicationType().equals(SimulationContext.Application.SPRINGSALAD)) {
-		columns.remove(ColumnType.COLUMN_CLAMPED);
-		columns.remove(ColumnType.COLUMN_DIFFUSION);
-		columns.remove(ColumnType.COLUMN_FORCECONTINUOUS);
-		columns.remove(ColumnType.COLUMN_WELLMIXED);
 	}
 }
 /**
@@ -284,9 +276,6 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 			return false;
 		}
 		case COLUMN_CLAMPED:{
-			if(!bEditable) {
-				return false;	// the table wants this column un-editable
-			}
 			return true;
 		}
 		case COLUMN_RULES:{
@@ -302,9 +291,6 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 //			RateRule rr = fieldSimulationContext.getRateRule(speciesContextSpec.getSpeciesContext());
 			AssignmentRule ar = fieldSimulationContext.getAssignmentRule(speciesContextSpec.getSpeciesContext());
 			if(/*rr != null || */ar != null) {
-				return false;
-			}
-			if(!bEditable) {
 				return false;
 			}
 			return true;
@@ -700,13 +686,6 @@ public Comparator<SpeciesContextSpec> getComparator(final int col, final boolean
 			return 1;
 		}
 	};
-}
-
-public void setEditable(boolean bEditable) {
-	this.bEditable = bEditable;
-}
-public boolean isEfitable() {
-	return bEditable;
 }
 
 public static class TableUtil {

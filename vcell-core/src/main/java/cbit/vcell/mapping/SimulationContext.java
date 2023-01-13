@@ -3250,9 +3250,6 @@ public MathMapping createNewMathMapping(MathMappingCallback callback, NetworkGen
 	case NETWORK_DETERMINISTIC: 
 		mostRecentlyCreatedMathMapping = new DiffEquMathMapping(this, callback, networkGenReq);
 		break;
-	case SPRINGSALAD:
-		mostRecentlyCreatedMathMapping = new DiffEquMathMapping(this, callback, networkGenReq);
-		break;
 	}
 	VCAssert.assertFalse(mostRecentlyCreatedMathMapping == null, "math mapping not generated" );
 	
