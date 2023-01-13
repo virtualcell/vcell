@@ -10,65 +10,14 @@
 
 package org.vcell.optimization.gui;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.EventObject;
-import java.util.Hashtable;
-import java.util.List;
-
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.border.TitledBorder;
-
-import cbit.vcell.client.TopLevelWindowManager;
-import cbit.vcell.client.server.ClientServerInfo;
-import org.vcell.client.logicalwindow.LWContainerHandle;
-import org.vcell.client.logicalwindow.LWNamespace;
-import org.vcell.optimization.CopasiOptSolverCallbacks;
-import org.vcell.optimization.CopasiOptimizationSolver;
-import org.vcell.optimization.ParameterEstimationTaskSimulatorIDA;
-import org.vcell.util.BeanUtils;
-import org.vcell.util.Issue;
-import org.vcell.util.IssueContext;
-import org.vcell.util.ProgressDialogListener;
-import org.vcell.util.UtilCancelException;
-import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.GuiUtils;
-import org.vcell.util.gui.HyperLinkLabel;
-import org.vcell.util.gui.ProgressDialog;
-import org.vcell.util.gui.ScrollTable;
-
 import cbit.vcell.client.ClientRequestManager;
+import cbit.vcell.client.TopLevelWindowManager;
 import cbit.vcell.client.VCellLookAndFeel;
 import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
+import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.vcell.mapping.MathMappingCallbackTaskAdapter;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
@@ -81,19 +30,31 @@ import cbit.vcell.modelopt.ParameterEstimationTask;
 import cbit.vcell.modelopt.ReferenceDataMappingSpec;
 import cbit.vcell.modelopt.gui.MultisourcePlotListModel.SortDataReferenceHelper;
 import cbit.vcell.modelopt.gui.MultisourcePlotPane;
-import cbit.vcell.opt.CopasiOptSettings;
-import cbit.vcell.opt.CopasiOptimizationMethod;
+import cbit.vcell.opt.*;
 import cbit.vcell.opt.CopasiOptimizationMethod.CopasiOptimizationMethodType;
-import cbit.vcell.opt.CopasiOptimizationParameter;
-import cbit.vcell.opt.OptimizationException;
-import cbit.vcell.opt.OptimizationResultSet;
-import cbit.vcell.opt.OptimizationSolverSpec;
-import cbit.vcell.opt.OptimizationSpec;
-import cbit.vcell.opt.ReferenceData;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.ode.ODESolverResultSet;
+import org.vcell.client.logicalwindow.LWContainerHandle;
+import org.vcell.client.logicalwindow.LWNamespace;
+import org.vcell.optimization.CopasiOptSolverCallbacks;
+import org.vcell.optimization.CopasiOptimizationSolver;
+import org.vcell.optimization.ParameterEstimationTaskSimulatorIDA;
+import org.vcell.optimization.jtd.OptProgressItem;
+import org.vcell.optimization.jtd.OptProgressReport;
+import org.vcell.util.*;
+import org.vcell.util.gui.*;
+
+import javax.swing.*;
+import javax.swing.border.TitledBorder;
+import java.awt.*;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.beans.PropertyChangeListener;
+import java.util.List;
+import java.util.*;
 
 @SuppressWarnings("serial")
 public class ParameterEstimationRunTaskPanel extends JPanel {
@@ -539,12 +500,16 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (evt.getSource() == parameterEstimationTask && (evt.getPropertyName().equals("optimizationResultSet"))) 
 				optimizationResultSet_This();
-			if (evt.getSource() == optSolverCallbacks && (evt.getPropertyName().equals(CopasiOptSolverCallbacks.COPASI_EVALUATION_HOLDER))) { 
-				getRunStatusDialog().setNumEvaluations(optSolverCallbacks.getEvaluationCount());
-				getRunStatusDialog().setObjectFunctionValue(optSolverCallbacks.getObjectiveFunctionValue());
+			if (evt.getSource() == optSolverCallbacks && (evt.getPropertyName().equals(CopasiOptSolverCallbacks.OPT_PROGRESS_REPORT))) {
+				if (optSolverCallbacks.getProgressReport()!=null) {
+					OptProgressReport optProgressReport = optSolverCallbacks.getProgressReport();
+					OptProgressItem lastProgressItem = optProgressReport.getProgressItems().get(optProgressReport.getProgressItems().size()-1);
+					getRunStatusDialog().setNumEvaluations(lastProgressItem.getIteration());
+					getRunStatusDialog().setObjectFunctionValue(lastProgressItem.getObjFuncValue());
+				}
 //				getRunStatusDialog().setNumRunMessage(optSolverCallbacks.getRunNumber(), parameterEstimationTask.getOptimizationSolverSpec().getNumOfRuns());
 //				if (optimizationMethodParameterTableModel.copasiOptimizationMethod.getType().getProgressType() == CopasiOptSettings.CopasiOptProgressType.Progress) {
-					getRunStatusDialog().setProgress((int) (optSolverCallbacks.getRunNumber() * 100.0 /parameterEstimationTask.getOptimizationSolverSpec().getNumOfRuns()));
+//					getRunStatusDialog().setProgress((int) (optSolverCallbacks.getRunNumber() * 100.0 /parameterEstimationTask.getOptimizationSolverSpec().getNumOfRuns()));
 //				}
 //				if (optimizationMethodParameterTableModel.copasiOptimizationMethod.getType().getProgressType() == CopasiOptSettings.CopasiOptProgressType.Current_Value) {
 //					getRunStatusDialog().setCurrentValue(optSolverCallbacks.getCurrentValue());
@@ -1080,8 +1045,6 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 		parameterEstimationTask.setOptimizationSolverSpec(optSolverSpec);
 		parameterEstimationTask.getModelOptimizationSpec().setComputeProfileDistributions(computeProfileDistributionsCheckBox.isSelected());
 		optSolverCallbacks.reset();
-		Double endValue = com.getEndValue();
-		optSolverCallbacks.setEvaluation(0, Double.POSITIVE_INFINITY, 0, endValue, 0);
 		getRunStatusDialog().showProgressBar(com);//(endValue != null);
 
 		Collection<AsynchClientTask> taskList = ClientRequestManager.updateMath(this, parameterEstimationTask.getSimulationContext(), false, NetworkGenerationRequirements.ComputeFullStandardTimeout);
