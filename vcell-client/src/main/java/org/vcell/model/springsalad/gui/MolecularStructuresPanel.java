@@ -21,6 +21,8 @@ import java.util.Comparator;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -78,6 +80,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 
 	private EventHandler eventHandler = new EventHandler();
 	private SimulationContext fieldSimulationContext;
+	private SpeciesContextSpec fieldSpeciesContextSpec;
 	private IssueManager fieldIssueManager;
 	private SelectionManager fieldSelectionManager;
 	
@@ -87,16 +90,36 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 
 	private EditorScrollTable molecularTypeSpecsTable = null;
 	private MolecularTypeSpecsTableModel molecularTypeSpecsTableModel = null;
+	
+	private JComboBox<String> siteColorComboBox = null;
+	private JComboBox<String> siteLocationComboBox = null;
+	private JTextField siteXField = null;
+	private JTextField siteYField = null;
+	private JTextField siteZField = null;
+	
+	private JList<String> siteLinksList = null;
+	private JTextField linkLengthField = null;
 
 	
 	private class EventHandler implements FocusListener, ActionListener, PropertyChangeListener {
 
 		public void actionPerformed(ActionEvent e) {
-
+			Object source = e.getSource();
+			if (source == siteXField || source == siteYField || source == siteZField) {
+				changePosition();
+			} else if(source == linkLengthField) {
+				changeLinkLength();
+			}
 		}
 		public void focusGained(FocusEvent e) {
 		}
 		public void focusLost(FocusEvent e) {
+			Object source = e.getSource();
+			if (source == siteXField || source == siteYField || source == siteZField) {
+				changePosition();
+			} else if(source == linkLengthField) {
+				changeLinkLength();
+			}
 		}
 		public void propertyChange(java.beans.PropertyChangeEvent event) {
 			if(event.getSource() instanceof Model && event.getPropertyName().equals(RbmModelContainer.PROPERTY_NAME_MOLECULAR_TYPE_LIST)) {
@@ -123,11 +146,30 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		
 	}
 	
+	private void initConnections() throws java.lang.Exception {
+		siteXField.addFocusListener(eventHandler);
+		siteYField.addFocusListener(eventHandler);
+		siteZField.addFocusListener(eventHandler);
+		linkLengthField.addFocusListener(eventHandler);
+		siteXField.addActionListener(eventHandler);
+		siteYField.addActionListener(eventHandler);
+		siteZField.addActionListener(eventHandler);
+		linkLengthField.addActionListener(eventHandler);
+
+	}
+	
 	private void initialize() {
-		
-		// labels / button initialization
-		
-		// adding button listeners
+		try {
+		// labels / button / combos / lists initialization
+			siteXField = new JTextField("");
+			siteYField = new JTextField("");
+			siteZField = new JTextField("");
+			linkLengthField = new JTextField("");
+			siteXField.setEditable(false);
+			siteYField.setEditable(false);
+			siteZField.setEditable(false);
+			linkLengthField.setEditable(false);
+
 		
 		// ------------------------------------------- The 2 group boxes --------------------------
 		JPanel thePanel = new JPanel();
@@ -194,8 +236,8 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		top.add(pt, gbc);
 
 		DefaultTableCellRenderer renderer = new DefaultScrollTableCellRenderer() {
-			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column)
-			{
+			@Override
+			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
 				super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 				setIcon(null);
 				defaultToolTipText = null;
@@ -244,7 +286,6 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		};
 		DefaultTableCellRenderer rbmSpeciesShapeDepictionCellRenderer = new DefaultScrollTableCellRenderer() {
 			SpeciesPatternSmallShape spss = null;
-			
 			@Override
 			public Component getTableCellRendererComponent(JTable table, Object value, 
 					boolean isSelected, boolean hasFocus, int row, int column) {
@@ -280,7 +321,6 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		
 		DefaultScrollTableCellRenderer rulesTableCellRenderer = new DefaultScrollTableCellRenderer() {
 			final Color lightBlueBackground = new Color(214, 234, 248);
-			
 			@Override
 			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
 					int row, int column) {
@@ -355,6 +395,15 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		bottom.add(pb, gbc);
 		
 		getMolecularComponentSpecsTable().setDefaultRenderer(String.class, new DefaultScrollTableCellRenderer());
+		
+		
+		
+		
+		initConnections();		// adding listeners
+		
+		} catch(Throwable e) {
+			handleException(e);
+		}
 	}
 	
 	private EditorScrollTable getMolecularComponentSpecsTable() {
@@ -427,7 +476,48 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		fieldIssueManager = issueManager;
 	}
 	
-	
+	void setSpeciesContextSpec(SpeciesContextSpec newValue) {
+		if (fieldSpeciesContextSpec == newValue) {
+			return;
+		}
+		SpeciesContextSpec oldValue = fieldSpeciesContextSpec;
+		if (oldValue != null) {
+			oldValue.removePropertyChangeListener(eventHandler);
+		}
+		// commit the changes before switch to another species
+		changeSpeciesContextStep();
+		
+		fieldSpeciesContextSpec = newValue;
+		if (newValue != null) {
+			newValue.addPropertyChangeListener(eventHandler);
+		}
+		molecularTypeSpecsTableModel.setSpeciesContextSpec(fieldSpeciesContextSpec);
+		updateInterface();
+	}
+
+	private void updateInterface() {
+		boolean bNonNullSpeciesContextSpec = fieldSpeciesContextSpec != null && fieldSimulationContext != null;
+		if(bNonNullSpeciesContextSpec) {
+			siteXField.setEditable(true);
+			siteYField.setEditable(true);
+			siteZField.setEditable(true);
+			linkLengthField.setEditable(true);
+			siteXField.setText("5");
+			siteYField.setText("5");
+			siteZField.setText("5");
+			linkLengthField.setText("6");
+		} else {
+			siteXField.setEditable(false);
+			siteYField.setEditable(false);
+			siteZField.setEditable(false);
+			linkLengthField.setEditable(false);
+			siteXField.setText(null);
+			siteYField.setText(null);
+			siteZField.setText(null);
+			linkLengthField.setText(null);
+			
+		}
+	}
 	
 	private void appendToConsole(String string) {
 		TaskCallbackMessage newCallbackMessage = new TaskCallbackMessage(TaskCallbackStatus.Error, string);
@@ -841,7 +931,35 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 //
 //	}
 
+	/*
+	 * commit changes to current (old) SpeciesContextStep 
+	 * before the newly selected SpeciesContextStep becomes current
+	 */
+	private void changeSpeciesContextStep() {
 
+		
+	}
+
+	private void changePosition() {
+		System.out.println("Site coordinates changed");
+	
+		recalculateLinkLengths();
+	}
+	private void recalculateLinkLengths() {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	private void changeLinkLength() {
+		System.out.println("Link length changed");
+		
+		recalculatePositions();
+	}
+	
+	private void recalculatePositions() {
+		// TODO Auto-generated method stub
+		
+	}
 
 }
 

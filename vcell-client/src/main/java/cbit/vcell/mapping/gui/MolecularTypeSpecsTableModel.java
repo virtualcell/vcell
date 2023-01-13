@@ -61,7 +61,7 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 		COLUMN_SPECIESCONTEXT("Molecule"),
 		COLUMN_STRUCTURE("Structure"),
 		COLUMN_STATE("Initial State"),
-		COLUMN_INITIAL("Initial Condition"),
+		COLUMN_RADIUS("Radius"),
 		COLUMN_DIFFUSION("Diffusion Rate");
 			
 		public final String label;
@@ -91,7 +91,7 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 				return Structure.class;
 		case COLUMN_STATE:
 			return ComponentStatePattern.class;
-		case COLUMN_INITIAL:
+		case COLUMN_RADIUS:
 		case COLUMN_DIFFUSION:
 			return ScopedExpression.class;
 		default:
@@ -124,8 +124,8 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 					return sc.getStructure();
 			case COLUMN_STATE:
 				return mcp.getComponentStatePattern().getComponentStateDefinition().getName();
-			case COLUMN_INITIAL:
-				return new Expression("20");	// nm
+			case COLUMN_RADIUS:
+				return new Expression("1");		// nm
 			case COLUMN_DIFFUSION:
 				return new Expression("1");		// um^2/s
 			default:
@@ -147,7 +147,7 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 		case COLUMN_STRUCTURE:
 		case COLUMN_STATE:
 			return false;
-		case COLUMN_INITIAL:
+		case COLUMN_RADIUS:
 		case COLUMN_DIFFUSION:
 			return true;
 		default:
@@ -166,7 +166,7 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 	public void setSimulationContext(SimulationContext simulationContext) {
 		SimulationContext oldValue = fieldSimulationContext;
 		int oldColumnCount = getColumnCount();
-		if (oldValue != null){
+		if (oldValue != null) {
 			oldValue.removePropertyChangeListener(this);
 			oldValue.getGeometryContext().removePropertyChangeListener(this);
 			updateListenersReactionContext(oldValue.getReactionContext(),true);
@@ -177,7 +177,7 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 		if (oldColumnCount != newColumnCount) {
 			fireTableStructureChanged();
 		}
-		if (simulationContext!=null){
+		if (simulationContext != null) {
 			simulationContext.addPropertyChangeListener(this);
 			simulationContext.getGeometryContext().addPropertyChangeListener(this);
 			updateListenersReactionContext(simulationContext.getReactionContext(),false);
@@ -189,6 +189,28 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 	private SimulationContext getSimulationContext() {
 		return fieldSimulationContext;
 	}
+	
+	public void setSpeciesContextSpec(SpeciesContextSpec speciesContextSpec) {
+		SpeciesContextSpec oldValue = fieldSpeciesContextSpec;
+		int oldColumnCount = getColumnCount();
+		if (oldValue != null) {
+			oldValue.removePropertyChangeListener(this);
+		}
+		fieldSpeciesContextSpec = speciesContextSpec;
+		refreshColumns();
+		int newColumnCount = getColumnCount();
+		if (oldColumnCount != newColumnCount) {
+			fireTableStructureChanged();
+		}
+		if (speciesContextSpec != null) {
+			speciesContextSpec.addPropertyChangeListener(this);
+			refreshData();
+		}
+	}
+	private SpeciesContextSpec getSpeciesContextSpec() {
+		return fieldSpeciesContextSpec;
+	}
+
 
 	private void updateListenersReactionContext(ReactionContext reactionContext,boolean bRemove) {
 
