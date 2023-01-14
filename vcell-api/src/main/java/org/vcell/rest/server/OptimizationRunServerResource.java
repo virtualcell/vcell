@@ -232,7 +232,11 @@ public class OptimizationRunServerResource extends AbstractServerResource implem
 							throw new RuntimeException("status request failed for optID="+optID+": "+errorResponse.errorMessage);
 						}else if (response instanceof OptMessage.OptJobStatusResponseMessage){
 							OptMessage.OptJobStatusResponseMessage statusResponse = (OptMessage.OptJobStatusResponseMessage) response;
-							return new JsonRepresentation(statusResponse.status.name()+":");
+							if (statusResponse.progressReportJsonString==null) {
+								return new JsonRepresentation(statusResponse.status.name() + ":");
+							}else{
+								return new JsonRepresentation(statusResponse.progressReportJsonString);
+							}
 						}else if (response instanceof OptMessage.OptJobSolutionResponseMessage){
 							OptMessage.OptJobSolutionResponseMessage solutionResponse = (OptMessage.OptJobSolutionResponseMessage) response;
 							return new JsonRepresentation(solutionResponse.optRunJsonString);

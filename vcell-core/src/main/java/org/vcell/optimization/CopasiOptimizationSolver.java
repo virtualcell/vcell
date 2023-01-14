@@ -19,10 +19,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.api.client.VCellApiClient;
-import org.vcell.optimization.jtd.OptProblem;
-import org.vcell.optimization.jtd.OptResultSet;
-import org.vcell.optimization.jtd.Vcellopt;
-import org.vcell.optimization.jtd.VcelloptStatus;
+import org.vcell.optimization.jtd.*;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.UserLoginInfo;
@@ -142,61 +139,73 @@ public class CopasiOptimizationSolver {
 					throw UserCancelException.CANCEL_GENERIC;
 				}
 				if (optRunServerMessage.startsWith(VcelloptStatus.QUEUED.name() + ":")) {
-					SwingUtilities.invokeLater(() -> optSolverCallbacks.setEvaluation(0, 0, 0, optSolverCallbacks.getEndValue(), 0));
 					if (clientTaskStatusSupport != null) {
 						clientTaskStatusSupport.setMessage("Queued...");
 					}
 
 				} else if (optRunServerMessage.startsWith(VcelloptStatus.FAILED.name()+":") || optRunServerMessage.toLowerCase().startsWith("exception:")){
-					SwingUtilities.invokeLater(() -> optSolverCallbacks.setEvaluation(0, 0, 0, optSolverCallbacks.getEndValue(), 0));
 					if (clientTaskStatusSupport != null) {
 						clientTaskStatusSupport.setMessage(optRunServerMessage);
 					}
 
 				} else if (optRunServerMessage.startsWith(VcelloptStatus.RUNNING.name() + ":")) {
-					SwingUtilities.invokeLater(() -> {
-						try {
-							StringTokenizer st = new StringTokenizer(optRunServerMessage, " :\t\r\n");
-							if (st.countTokens() != 4) {
-								lg.info(optRunServerMessage);
-								return;
-							}
-							st.nextToken();//OptRunStatus mesg
-							int runNum = Integer.parseInt(st.nextToken());
-							double objFunctionValue = Double.parseDouble(st.nextToken());
-							int numObjFuncEvals = Integer.parseInt(st.nextToken());
-							SwingUtilities.invokeLater(() -> optSolverCallbacks.setEvaluation(numObjFuncEvals, objFunctionValue, 1.0, null, runNum));
-						} catch (Exception e) {
-							lg.error(optRunServerMessage, e);
-						}
-					});
 					if (clientTaskStatusSupport != null) {
-						clientTaskStatusSupport.setMessage("Running...");
+						clientTaskStatusSupport.setMessage("Running (waiting for progress) ...");
 					}
 
 				} else {
-					// consider that optRunServerMessage is an Vcellopt (optRun object)
-					optRun = objectMapper.readValue(optRunServerMessage, Vcellopt.class);
-					VcelloptStatus status = optRun.getStatus();
-					String statusMessage = optRun.getStatusMessage();
-					if (statusMessage != null && (statusMessage.toLowerCase().startsWith(VcelloptStatus.COMPLETE.name().toLowerCase()))) {
-						final Vcellopt or2 = optRun;
-						SwingUtilities.invokeLater(() -> optSolverCallbacks.setEvaluation((int)or2.getOptResultSet().getNumFunctionEvaluations(), or2.getOptResultSet().getObjectiveFunction(),
-								1.0, null, or2.getOptProblem().getNumberOfOptimizationRuns()));
+					// consider that optRunServerMessage is either a progress report (OptProgressReport) or a final solution (Vcellopt)
+					Object optObject = null;
+					try {
+						optObject = objectMapper.readValue(optRunServerMessage, Vcellopt.class);
+					}catch (Exception e){
+						optObject = objectMapper.readValue(optRunServerMessage, OptProgressReport.class);
 					}
-					if (status==VcelloptStatus.COMPLETE){
-						lg.info("job "+optIdHolder[0]+": status "+status+" "+optRun.getOptResultSet().toString());
-						if(clientTaskStatusSupport != null) {
-							clientTaskStatusSupport.setProgress(100);
+
+					if (optObject instanceof Vcellopt) {
+						//
+						// have final solution with progress report and analytics
+						//
+						optRun = (Vcellopt) optObject;
+						final OptProgressReport optProgressReport = optRun.getOptResultSet().getOptProgressReport();
+						VcelloptStatus status = optRun.getStatus();
+						if (optProgressReport != null){
+							SwingUtilities.invokeLater(() -> optSolverCallbacks.setProgressReport(optProgressReport));
 						}
-						break;
+						if (status == VcelloptStatus.COMPLETE) {
+							lg.info("job " + optIdHolder[0] + ": status " + status + " " + optRun.getOptResultSet().toString());
+							if (clientTaskStatusSupport != null) {
+								clientTaskStatusSupport.setProgress(100);
+							}
+							break;
+						}
+						if (status == VcelloptStatus.FAILED) {
+							String msg = "optimization failed, message=" + optRun.getStatusMessage();
+							lg.error(msg);
+							throw new RuntimeException(msg);
+						}
+						lg.info("job " + optIdHolder[0] + ": status " + status);
+					}else if (optObject instanceof OptProgressReport){
+						//
+						// have intermediate progress report
+						//
+						OptProgressReport progressReport = (OptProgressReport) optObject;
+						SwingUtilities.invokeLater(() -> {
+							try {
+								optSolverCallbacks.setProgressReport(progressReport);
+							} catch (Exception e) {
+								lg.error(optRunServerMessage, e);
+							}
+							if (clientTaskStatusSupport != null) {
+								int numIterations = 0;
+								if (progressReport.getProgressItems()!=null && progressReport.getProgressItems().size()>0){
+									OptProgressItem lastItem = progressReport.getProgressItems().get(progressReport.getProgressItems().size()-1);
+									numIterations = lastItem.getIteration();
+								}
+								clientTaskStatusSupport.setMessage("Running ...");
+							}
+						});
 					}
-					if (status==VcelloptStatus.FAILED){
-						String msg = "optimization failed, message="+optRun.getStatusMessage();
-						lg.error(msg);
-						throw new RuntimeException(msg);
-					}
-					lg.info("job "+optIdHolder[0]+": status "+status);
 				}
 				try {
 					Thread.sleep(2000);

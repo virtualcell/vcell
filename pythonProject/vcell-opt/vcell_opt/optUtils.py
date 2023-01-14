@@ -1,9 +1,11 @@
+from pathlib import Path
 from typing import Dict, List, Union
 
 import basico
 import pandas as pd
 
-from .data import CopasiOptimizationMethodOptimizationMethodType, OptProblem, CopasiOptimizationParameterParamType
+from .data import CopasiOptimizationMethodOptimizationMethodType, CopasiOptimizationParameterParamType, OptProblem, \
+    OptProgressItem, OptProgressReport
 
 
 def get_copasi_opt_method_settings(vcell_opt_problem: OptProblem) -> Dict[str, Union[str, float]]:
@@ -92,3 +94,22 @@ def get_reference_data(vcell_opt_problem: OptProblem) -> pd.DataFrame:
 def get_fit_parameters(vcell_opt_problem: OptProblem) -> List[Dict[str, Union[str, float]]]:
     fit_items: List[Dict[str, Union[str, float]]] = [dict(name=f"Values[{a.name}]", lower=a.min_value, upper=a.max_value) for a in vcell_opt_problem.parameter_description_list]
     return fit_items
+
+def get_progress_report(report_file: Path) -> OptProgressReport:
+    '''
+    each line in file is as follows (tab separated)
+    100  0.000233223 ( 3.332 5.433 6.543 )
+    '''
+    progress_items: List[OptProgressItem] = []
+    with open(report_file, "r") as f_reportfile:
+        for line in f_reportfile:
+            tokens = line.split("\t")
+            iteration = int(tokens[0])
+            objective_function = float(tokens[1])
+            param_values = [float(token) for token in tokens[3:len(tokens)-1]]
+            progress_item = OptProgressItem(
+                iteration=iteration,
+                obj_func_value=objective_function,
+                best_param_values=param_values)
+            progress_items.append(progress_item)
+    return OptProgressReport(progress_items=progress_items)

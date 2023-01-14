@@ -24,9 +24,7 @@ import org.vcell.optimization.jtd.ParameterDescription;
 import org.vcell.sbml.vcell.MathModel_SBMLExporter;
 
 import javax.xml.stream.XMLStreamException;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -289,9 +287,10 @@ public class CopasiUtils {
         writeOptProblem(optProblemFile, optProblem);
 
         File resultsFile = new File(tempDir, "optResults.json");
+        File reportFile = new File(tempDir, "optReport.tsv");
 
         // call copasi via vcell_opt package to run parameter estimation
-        callCopasiPython(optProblemFile.toPath(), resultsFile.toPath());
+        callCopasiPython(optProblemFile.toPath(), resultsFile.toPath(), reportFile.toPath());
 
         // read VCellopt results
         Vcellopt results = objectMapper.readValue(resultsFile, Vcellopt.class);
@@ -319,12 +318,16 @@ public class CopasiUtils {
         return copasiOptimizationResultSet;
     }
 
-    public static void callCopasiPython(Path optProblemFile, Path resultsFile) throws InterruptedException, IOException {
+    public static void callCopasiPython(Path optProblemFile, Path resultsFile, Path reportFile) throws InterruptedException, IOException {
         //final String pythonExe = pythonExeName;
         File installDir = PropertyLoader.getRequiredDirectory(PropertyLoader.installationRoot);
         File optDir = Paths.get(installDir.getAbsolutePath(),"pythonProject", "vcell-opt").toAbsolutePath().toFile();
 //        final String pythonExe = "/Users/schaff/Library/Caches/pypoetry/virtualenvs/vcell-opt-XIpjcTyI-py3.9/bin/python";
-        ProcessBuilder pb = new ProcessBuilder(new String[]{"poetry","run","python", "-m", "vcell_opt.optService", String.valueOf(optProblemFile.toAbsolutePath()), String.valueOf(resultsFile.toAbsolutePath())});
+        ProcessBuilder pb = new ProcessBuilder(new String[]{
+                "poetry","run","python", "-m", "vcell_opt.optService",
+                String.valueOf(optProblemFile.toAbsolutePath()),
+                String.valueOf(resultsFile.toAbsolutePath()),
+                String.valueOf(reportFile.toAbsolutePath())});
         pb.directory(optDir);
         System.out.println(pb.command());
         runAndPrintProcessStreams(pb, "", "");
@@ -358,5 +361,31 @@ public class CopasiUtils {
         }
     }
 
+    public static OptProgressReport readProgressReportFromCSV(File progressReportFile) throws IOException {
+        List<OptProgressItem> progressItems = new ArrayList<>();
+        try (BufferedReader reader = new BufferedReader(new FileReader(progressReportFile))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] tokens = line.replace("(", "")
+                        .replace(")", "")
+                        .replace("\t\t", "\t")
+                        .split("\t");
+                int iteration = Integer.parseInt(tokens[0]);
+                double objectiveFunctionValue = Double.parseDouble(tokens[1]);
+                List<Double> paramValues = new ArrayList<>();
+                for (int i = 2; i < tokens.length; i++) {
+                    paramValues.add(Double.parseDouble(tokens[i]));
+                }
+                OptProgressItem progressItem = new OptProgressItem();
+                progressItem.setIteration(iteration);
+                progressItem.setObjFuncValue(objectiveFunctionValue);
+                progressItem.setBestParamValues(paramValues);
+                progressItems.add(progressItem);
+            }
+        }
+        OptProgressReport progressReport = new OptProgressReport();
+        progressReport.setProgressItems(progressItems);
+        return progressReport;
+    }
 
 }
