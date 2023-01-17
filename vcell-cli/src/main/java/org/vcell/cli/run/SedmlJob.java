@@ -112,7 +112,7 @@ public class SedmlJob {
             logger.info("Processing SED-ML: " + this.sedmlName);
             PythonCalls.updateSedmlDocStatusYml(sedmlLocation, Status.RUNNING, this.resultsDirPath);
 
-            this.docStatistics.nModels = sedmlFromOmex.getModels().size();
+            this.docStatistics.setNumModels(sedmlFromOmex.getModels().size());
             for(Model m : sedmlFromOmex.getModels()) {
                 List<Change> changes = m.getListOfChanges();	// change attribute caused by a math override
                 if(changes != null && changes.size() > 0) {
@@ -128,22 +128,22 @@ public class SedmlJob {
                     }
                 }
             }
-            this.docStatistics.nTasks = sedmlFromOmex.getTasks().size();
+            this.docStatistics.setNumTasks(sedmlFromOmex.getTasks().size());
             this.outputs = sedmlFromOmex.getOutputs();
-            this.docStatistics.nOutputs = outputs.size();
+            this.docStatistics.setNumOutputs(outputs.size());;
             for (Output output : this.outputs) {
-                if (output instanceof Report) docStatistics.nReportsCount++;
-                if (output instanceof Plot2D) docStatistics.nPlots2DCount++;
-                if (output instanceof Plot3D) docStatistics.nPlots3DCount++;
+                if (output instanceof Report) docStatistics.setReportsCount(docStatistics.getReportsCount() + 1);
+                if (output instanceof Plot2D) docStatistics.setPlots2DCount(docStatistics.getPlots2DCount() + 1);
+                if (output instanceof Plot3D) docStatistics.setPlots3Dcount(docStatistics.getPlots3Dcount() + 1);
             }
-            this.docStatistics.nSimulations = sedmlFromOmex.getSimulations().size();
+            this.docStatistics.setNumSimultions(sedmlFromOmex.getSimulations().size());
             String summarySedmlContentString = "Found one SED-ML document with "
-                    + this.docStatistics.nModels + " model(s), "
-                    + this.docStatistics.nSimulations + " simulation(s), "
-                    + this.docStatistics.nTasks + " task(s), "
-                    + this.docStatistics.nReportsCount + "  report(s),  "
-                    + this.docStatistics.nPlots2DCount + " plot2D(s), and "
-                    + this.docStatistics.nPlots3DCount + " plot3D(s)\n";
+                    + this.docStatistics.getNumModels() + " model(s), "
+                    + this.docStatistics.getNumSimultions() + " simulation(s), "
+                    + this.docStatistics.getNumTasks() + " task(s), "
+                    + this.docStatistics.getReportsCount() + "  report(s),  "
+                    + this.docStatistics.getPlots2DCount() + " plot2D(s), and "
+                    + this.docStatistics.getPlots3Dcount() + " plot3D(s)\n";
             logger.info(summarySedmlContentString);
 
             logDocumentMessage += "done. ";
@@ -430,10 +430,10 @@ public class SedmlJob {
     }
 
     private void recordRunDetails(SolverHandler solverHandler) throws IOException {
-        String message = this.docStatistics.nModels + ",";
-        message += this.docStatistics.nSimulations + ",";
-        message += this.docStatistics.nTasks + ",";
-        message += this.docStatistics.nOutputs + ",";
+        String message = this.docStatistics.getNumModels() + ",";
+        message += this.docStatistics.getNumSimultions() + ",";
+        message += this.docStatistics.getNumTasks() + ",";
+        message += this.docStatistics.getNumOutputs() + ",";
         
         message += solverHandler.countBioModels + ",";
         message += hasOverrides + ",";
