@@ -362,29 +362,50 @@ public class CopasiUtils {
     }
 
     public static OptProgressReport readProgressReportFromCSV(File progressReportFile) throws IOException {
+        return readProgressReportFromCSV(progressReportFile,10);
+    }
+
+    public static OptProgressReport readProgressReportFromCSV(File progressReportFile, int maxRecords) throws IOException {
         List<OptProgressItem> progressItems = new ArrayList<>();
-        try (BufferedReader reader = new BufferedReader(new FileReader(progressReportFile))) {
-            String line;
+        long fileSize = java.nio.file.Files.size(progressReportFile.toPath());
+        long N = maxRecords-1;
+        long numLines = 0;
+        try (LineNumberReader reader = new LineNumberReader(new FileReader(progressReportFile))) {
+            while (reader.readLine() != null) {
+                numLines++;
+            }
+        }
+
+        int step = Math.max(1, (int)Math.ceil(numLines/(maxRecords-1)));
+        String line = null;
+        String[] tokens = null;
+        int lineNumber = 0;
+        try (LineNumberReader reader = new LineNumberReader(new FileReader(progressReportFile))) {
             while ((line = reader.readLine()) != null) {
-                String[] tokens = line.replace("(", "")
+                if (lineNumber%step != 0 && lineNumber < numLines-1){
+                    lineNumber++;
+                    continue;
+                }
+                tokens = line.replace("(", "")
                         .replace(")", "")
                         .replace("\t\t", "\t")
                         .split("\t");
-                int iteration = Integer.parseInt(tokens[0]);
+                int numFunctionEvaluations = Integer.parseInt(tokens[0]);
                 double objectiveFunctionValue = Double.parseDouble(tokens[1]);
-                List<Double> paramValues = new ArrayList<>();
-                for (int i = 2; i < tokens.length; i++) {
-                    paramValues.add(Double.parseDouble(tokens[i]));
-                }
                 OptProgressItem progressItem = new OptProgressItem();
-                progressItem.setIteration(iteration);
+                progressItem.setNumFunctionEvaluations(numFunctionEvaluations);
                 progressItem.setObjFuncValue(objectiveFunctionValue);
-                progressItem.setBestParamValues(paramValues);
                 progressItems.add(progressItem);
+                lineNumber++;
             }
+        }
+        List<Double> paramValues = new ArrayList<>();
+        for (int i = 2; i < tokens.length; i++) {
+            paramValues.add(Double.parseDouble(tokens[i]));
         }
         OptProgressReport progressReport = new OptProgressReport();
         progressReport.setProgressItems(progressItems);
+        progressReport.setBestParamValues(paramValues);
         return progressReport;
     }
 

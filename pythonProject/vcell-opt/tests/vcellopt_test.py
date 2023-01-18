@@ -63,7 +63,13 @@ def test_run() -> None:
     fit_Kr = fit_solution.loc['Values[Kr]']['sol']
     fit_s0_init_uM = fit_solution.loc['Values[s0_init_uM]']['sol']
 
-    # read last line in report and see that the parameter values match
+    # read last line in report and see that the parameter values match (expected first and last lines as follows)
+    #
+    # 20	0.559754	(	1.2751	0.73804	7.07081e-06	)
+    # ...
+    # 3480	4.97871e-14	(	0.812494	0.687506	3.10832e-05	)
+    #
+
     with open(report_file, "r") as f_reportfile:
         for line in f_reportfile:
             pass
@@ -73,6 +79,7 @@ def test_run() -> None:
     # verify that last line of report matches returned best fit
     #
     report_tokens = last_line.split("\t")
+    assert int(report_tokens[0]) == 3480
     assert abs(float(report_tokens[3]) - fit_Kf) < 1e-5
     assert abs(float(report_tokens[4]) - fit_Kr) < 1e-5
     assert abs(float(report_tokens[5]) - fit_s0_init_uM) < 1e-5
@@ -81,10 +88,15 @@ def test_run() -> None:
     # verify that last line of progress report object matches best fit
     #
     progress_report = get_progress_report(report_file=report_file)
+    first_progress_item = progress_report.progress_items[0]
     last_progress_item = progress_report.progress_items[len(progress_report.progress_items)-1]
-    assert abs(last_progress_item.best_param_values[0] - fit_Kf) < 1e-5
-    assert abs(last_progress_item.best_param_values[1] - fit_Kr) < 1e-5
-    assert abs(last_progress_item.best_param_values[2] - fit_s0_init_uM) < 1e-5
+    assert first_progress_item.num_function_evaluations == 20
+    assert first_progress_item.obj_func_value == 0.559754
+    assert last_progress_item.num_function_evaluations == 3480
+    assert last_progress_item.obj_func_value == 4.97871e-14
+    assert abs(progress_report.best_param_values[0] - fit_Kf) < 1e-5
+    assert abs(progress_report.best_param_values[1] - fit_Kr) < 1e-5
+    assert abs(progress_report.best_param_values[2] - fit_s0_init_uM) < 1e-5
 
     # remove report file
     if report_file.exists():

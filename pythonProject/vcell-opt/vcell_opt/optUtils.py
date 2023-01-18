@@ -1,3 +1,4 @@
+import os.path
 from pathlib import Path
 from typing import Dict, List, Union
 
@@ -95,21 +96,42 @@ def get_fit_parameters(vcell_opt_problem: OptProblem) -> List[Dict[str, Union[st
     fit_items: List[Dict[str, Union[str, float]]] = [dict(name=f"Values[{a.name}]", lower=a.min_value, upper=a.max_value) for a in vcell_opt_problem.parameter_description_list]
     return fit_items
 
-def get_progress_report(report_file: Path) -> OptProgressReport:
+
+def get_progress_report(report_file: Path, max_records: int = 49) -> OptProgressReport:
     '''
     each line in file is as follows (tab separated)
     100  0.000233223 ( 3.332 5.433 6.543 )
     '''
+
+    # read first line, get size of file
     progress_items: List[OptProgressItem] = []
+    param_values = []
     with open(report_file, "r") as f_reportfile:
-        for line in f_reportfile:
+        line_offsets: List[int] = list()  # Map from line index -> file position.
+        line_offsets.append(0)
+        while f_reportfile.readline():
+            line_offsets.append(f_reportfile.tell())
+        line_offsets.pop()
+
+        N = max_records-1 # -1 to allow for adding last row if not included
+        step = max(1, round(0.5 + (len(line_offsets) / float(N))))
+        offsets = line_offsets[::step]  # N evenly spaced record offsets
+        if offsets[len(offsets)-1] != line_offsets[len(line_offsets)-1]:
+            # add in last record if not already there
+            offsets.append(line_offsets[len(line_offsets)-1])
+
+        # seek and read lines
+        for offset in offsets:
+            f_reportfile.seek(offset)
+            line = f_reportfile.readline()
             tokens = line.split("\t")
-            iteration = int(tokens[0])
+            num_function_evaluations = int(tokens[0])
             objective_function = float(tokens[1])
-            param_values = [float(token) for token in tokens[3:len(tokens)-1]]
             progress_item = OptProgressItem(
-                iteration=iteration,
-                obj_func_value=objective_function,
-                best_param_values=param_values)
+                num_function_evaluations=num_function_evaluations,
+                obj_func_value=objective_function)
             progress_items.append(progress_item)
-    return OptProgressReport(progress_items=progress_items)
+        if tokens is not None:
+            param_values = [float(token) for token in tokens[3:len(tokens) - 1]]
+
+    return OptProgressReport(progress_items=progress_items, best_param_values=param_values)

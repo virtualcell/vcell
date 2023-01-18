@@ -189,7 +189,8 @@ public class CopasiOptimizationSolver {
 						//
 						// have intermediate progress report
 						//
-						OptProgressReport progressReport = (OptProgressReport) optObject;
+						latestProgressReport = (OptProgressReport) optObject;
+						final OptProgressReport progressReport = latestProgressReport;
 						SwingUtilities.invokeLater(() -> {
 							try {
 								optSolverCallbacks.setProgressReport(progressReport);
@@ -197,10 +198,10 @@ public class CopasiOptimizationSolver {
 								lg.error(optRunServerMessage, e);
 							}
 							if (clientTaskStatusSupport != null) {
-								int numIterations = 0;
+								int numFunctionEvaluations = 0;
 								if (progressReport.getProgressItems()!=null && progressReport.getProgressItems().size()>0){
 									OptProgressItem lastItem = progressReport.getProgressItems().get(progressReport.getProgressItems().size()-1);
-									numIterations = lastItem.getIteration();
+									numFunctionEvaluations = lastItem.getNumFunctionEvaluations();
 								}
 								clientTaskStatusSupport.setMessage("Running ...");
 							}

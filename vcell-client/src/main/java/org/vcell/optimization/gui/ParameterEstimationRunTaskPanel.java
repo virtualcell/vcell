@@ -510,7 +510,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 						getRunStatusDialog().setObjectFunctionValue(Double.POSITIVE_INFINITY);
 					}else {
 						OptProgressItem lastProgressItem = optProgressReport.getProgressItems().get(optProgressReport.getProgressItems().size() - 1);
-						getRunStatusDialog().setNumEvaluations(lastProgressItem.getIteration());
+						getRunStatusDialog().setNumEvaluations(lastProgressItem.getNumFunctionEvaluations());
 						getRunStatusDialog().setObjectFunctionValue(lastProgressItem.getObjFuncValue());
 					}
 				}
