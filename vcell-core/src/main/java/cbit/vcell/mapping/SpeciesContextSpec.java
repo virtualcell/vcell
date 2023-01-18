@@ -416,84 +416,6 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
 			} 
 		} 
 	}
-
-	public class SiteAttributes implements Identifiable, IssueSource {
-
-		// we can recover the MolecularTypePattern from the SpeciesContextSpec the hard way, via SpeciesContext, SpeciesPattern
-		// or we can transmit it to here via the constructor (inelegant but faster)
-		private MolecularComponentPattern fieldMolecularComponentPattern = null;
-		private Expression fieldRadius = null;
-		private Expression fieldDiffusionRate = null;
-		private Structure fieldLocation = null;		// feature or membrane
-		private Coordinate fieldCoordinate = null;	// immutable; double x,y,z; has distanceTo()
-		private Color fieldColor = Color.GRAY;
-		// the ComponentStatePattern must not be Any; can be recovered from the MolecularComponentPattern
-		// the BondType must be None, can be recovered from the MolecularComponentPattern
-		
-		public SiteAttributes(MolecularComponentPattern mcp, Expression radius, Expression diffusion, Structure location, Coordinate coordinate, Color color) {
-			fieldMolecularComponentPattern = mcp;
-			fieldRadius = radius;
-			fieldDiffusionRate = diffusion;
-			fieldLocation = location;
-			fieldCoordinate = coordinate;
-			fieldColor = color;
-		}
-		
-		// TODO: hopefully we won't need setters, we just invoke the constructor 
-		// from the MolecularStructuresPanel just in time, when component selection changes
-		public MolecularComponentPattern getMolecularComponentPattern() {
-			return fieldMolecularComponentPattern;
-		}
-		public Expression getRadius() {
-			return fieldRadius;
-		}
-		public Expression getDiffusionRate() {
-			return fieldDiffusionRate;
-		}
-		public Structure getLocation() {
-			return fieldLocation;
-		}
-		public Coordinate getCoordinate() {
-			return fieldCoordinate;
-		}
-		public Color getColor() {
-			return fieldColor;
-		}
-	}
-	
-	public class SitesInternalLink implements Identifiable, IssueSource {
-		private MolecularComponentPattern fieldMolecularComponentPatternOne = null;
-		private MolecularComponentPattern fieldMolecularComponentPatternTwo = null;
-	
-		public SitesInternalLink(MolecularComponentPattern linkOne, MolecularComponentPattern linkTwo) {
-			fieldMolecularComponentPatternOne = linkOne;
-			fieldMolecularComponentPatternTwo = linkTwo;
-			// order them based on position in the SpeciesPattern
-			SpeciesContext sc = SpeciesContextSpec.this.getSpeciesContext();
-			SpeciesPattern sp = sc.getSpeciesPattern();
-			// we may only have one molecule in the species pattern for the current version of springsalad impl, but who knows in the future
-			for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
-				for(MolecularComponentPattern mpc : mtp.getComponentPatternList()) {
-					if(mpc.compareEqual(linkOne)) {			// linkOne comes first
-						fieldMolecularComponentPatternOne = linkOne;
-						fieldMolecularComponentPatternTwo = linkTwo;
-						break;
-					} else if(mpc.compareEqual(linkTwo)) {	// linkTwo comes first
-						fieldMolecularComponentPatternOne = linkTwo;
-						fieldMolecularComponentPatternTwo = linkOne;
-						break;
-					}
-				}
-			}		// ordered!
-		}
-
-		public MolecularComponentPattern getMolecularComponentPatternOne() {
-			return fieldMolecularComponentPatternOne;
-		}
-		public MolecularComponentPattern getMolecularComponentPatternTwo() {
-			return fieldMolecularComponentPatternTwo;
-		}
-	}
 	
 	private SpeciesContext speciesContext = null;
 	private static final boolean DEFAULT_CONSTANT = false;
@@ -504,10 +426,6 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
 //	private boolean        bEnableDiffusing = DEFAULT_ENABLE_DIFFUSING;
 	private Boolean        bWellMixed = DEFAULT_WELL_MIXED;
 	private Boolean        bForceContinuous = DEFAULT_FORCECONTINUOUS;
-	
-	Map<MolecularComponentPattern, SiteAttributes> siteAttributesMap = new LinkedHashMap<> ();
-	Set<SitesInternalLink> sitesInternalLinkSet = new LinkedHashSet<> ();
-	
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
 	private SpeciesContextSpecParameter[] fieldParameters = null;
 	private SpeciesContextSpecProxyParameter[] fieldProxyParameters = new SpeciesContextSpecProxyParameter[0];
