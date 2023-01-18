@@ -400,8 +400,10 @@ public class CopasiUtils {
             }
         }
         List<Double> paramValues = new ArrayList<>();
-        for (int i = 2; i < tokens.length; i++) {
-            paramValues.add(Double.parseDouble(tokens[i]));
+        if (tokens != null) {
+            for (int i = 2; i < tokens.length; i++) {
+                paramValues.add(Double.parseDouble(tokens[i]));
+            }
         }
         OptProgressReport progressReport = new OptProgressReport();
         progressReport.setProgressItems(progressItems);
