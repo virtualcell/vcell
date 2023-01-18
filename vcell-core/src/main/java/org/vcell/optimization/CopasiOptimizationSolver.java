@@ -25,6 +25,8 @@ import org.vcell.util.UserCancelException;
 import org.vcell.util.document.UserLoginInfo;
 
 import javax.swing.*;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 
@@ -118,6 +120,7 @@ public class CopasiOptimizationSolver {
 				clientTaskStatusSupport.setMessage("Waiting for progress...");
 			}
 			Vcellopt optRun = null;
+			OptProgressReport latestProgressReport = null;
 			while ((System.currentTimeMillis() - startTime) < TIMEOUT_MS) {
 				//
 				// check for user stop request
@@ -130,6 +133,29 @@ public class CopasiOptimizationSolver {
 						lg.info("requested job to be stopped jobID="+optIdHolder[0]);
 					}catch (Exception e){
 						lg.error(e.getMessage(), e);
+					}finally{
+						if (latestProgressReport!=null){
+							OptProgressItem lastProgressItem = latestProgressReport.getProgressItems().get(latestProgressReport.getProgressItems().size()-1);
+
+							Map<String,Double> bestParamValues = new HashMap<>();
+							for (int i=0;i<optProblem.getParameterDescriptionList().size();i++){
+								bestParamValues.put(optProblem.getParameterDescriptionList().get(i).getName(),
+										latestProgressReport.getBestParamValues().get(i));
+							}
+
+							OptResultSet optResultSet = new OptResultSet();
+							optResultSet.setOptParameterValues(bestParamValues);
+							optResultSet.setOptProgressReport(latestProgressReport);
+							optResultSet.setNumFunctionEvaluations(lastProgressItem.getNumFunctionEvaluations());
+							optResultSet.setObjectiveFunction(lastProgressItem.getObjFuncValue());
+
+							Vcellopt latestVCellopt = new Vcellopt();
+							latestVCellopt.setOptProblem(optProblem);
+							latestVCellopt.setStatus(VcelloptStatus.COMPLETE);
+							latestVCellopt.setStatusMessage("Stopped");
+							OptimizationResultSet copasiOptimizationResultSet = CopasiUtils.optRunToOptimizationResultSet(parameterEstimationTask, latestVCellopt);
+							return copasiOptimizationResultSet;
+						}
 					}
 					throw UserCancelException.CANCEL_GENERIC;
 				}
