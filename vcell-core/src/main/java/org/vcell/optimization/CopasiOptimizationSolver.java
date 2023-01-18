@@ -153,6 +153,10 @@ public class CopasiOptimizationSolver {
 							latestVCellopt.setOptProblem(optProblem);
 							latestVCellopt.setStatus(VcelloptStatus.COMPLETE);
 							latestVCellopt.setStatusMessage("Stopped");
+							if (clientTaskStatusSupport != null) {
+								clientTaskStatusSupport.setProgress(100);
+							}
+
 							OptimizationResultSet copasiOptimizationResultSet = CopasiUtils.optRunToOptimizationResultSet(parameterEstimationTask, latestVCellopt);
 							return copasiOptimizationResultSet;
 						}
