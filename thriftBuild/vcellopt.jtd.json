@@ -46,14 +46,14 @@
 		},
 		"OptProgressItem": {
 			"properties": {
-				"iteration": { "type": "int32" },
-				"objFuncValue": { "type":  "float64" },
-				"bestParamValues": { "elements": { "type": "float64" }}
+				"numFunctionEvaluations": { "type": "int32" },
+				"objFuncValue": { "type":  "float64" }
 			}
 		},
 		"OptProgressReport": {
 			"properties": {
-				"progressItems": { "elements":  { "ref": "OptProgressItem" }}
+				"progressItems": { "elements":  { "ref": "OptProgressItem" }},
+				"bestParamValues": { "elements": { "type": "float64" }}
 			}
 		},
 		"OptResultSet": {

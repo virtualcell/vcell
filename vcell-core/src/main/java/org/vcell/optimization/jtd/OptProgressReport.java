@@ -8,10 +8,27 @@ import java.util.List;
 
 @JsonSerialize
 public class OptProgressReport {
+    @JsonProperty("bestParamValues")
+    private List<Double> bestParamValues;
+
     @JsonProperty("progressItems")
     private List<OptProgressItem> progressItems;
 
     public OptProgressReport() {
+    }
+
+    /**
+     * Getter for bestParamValues.<p>
+     */
+    public List<Double> getBestParamValues() {
+        return bestParamValues;
+    }
+
+    /**
+     * Setter for bestParamValues.<p>
+     */
+    public void setBestParamValues(List<Double> bestParamValues) {
+        this.bestParamValues = bestParamValues;
     }
 
     /**
