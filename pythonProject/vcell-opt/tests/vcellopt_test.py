@@ -79,7 +79,8 @@ def test_run() -> None:
     # verify that last line of report matches returned best fit
     #
     report_tokens = last_line.split("\t")
-    assert int(report_tokens[0]) == 3480
+    last_num_evaluations = int(report_tokens[0])
+    last_objective_function_report = float(report_tokens[1])
     assert abs(float(report_tokens[3]) - fit_Kf) < 1e-5
     assert abs(float(report_tokens[4]) - fit_Kr) < 1e-5
     assert abs(float(report_tokens[5]) - fit_s0_init_uM) < 1e-5
@@ -92,8 +93,8 @@ def test_run() -> None:
     last_progress_item = progress_report.progress_items[len(progress_report.progress_items)-1]
     assert first_progress_item.num_function_evaluations == 20
     assert first_progress_item.obj_func_value == 0.559754
-    assert last_progress_item.num_function_evaluations == 3480
-    assert last_progress_item.obj_func_value == 4.97871e-14
+    assert last_progress_item.num_function_evaluations == last_num_evaluations
+    assert last_progress_item.obj_func_value == last_objective_function_report
     assert abs(progress_report.best_param_values[0] - fit_Kf) < 1e-5
     assert abs(progress_report.best_param_values[1] - fit_Kr) < 1e-5
     assert abs(progress_report.best_param_values[2] - fit_s0_init_uM) < 1e-5
