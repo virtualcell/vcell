@@ -14,6 +14,7 @@ import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.modelopt.ParameterEstimationTask;
 import cbit.vcell.opt.OptimizationException;
 import cbit.vcell.opt.OptimizationResultSet;
+import cbit.vcell.opt.OptimizationStatus;
 import cbit.vcell.resource.PropertyLoader;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.logging.log4j.LogManager;
@@ -135,29 +136,10 @@ public class CopasiOptimizationSolver {
 						lg.error(e.getMessage(), e);
 					}finally{
 						if (latestProgressReport!=null){
-							OptProgressItem lastProgressItem = latestProgressReport.getProgressItems().get(latestProgressReport.getProgressItems().size()-1);
-
-							Map<String,Double> bestParamValues = new HashMap<>();
-							for (int i=0;i<optProblem.getParameterDescriptionList().size();i++){
-								bestParamValues.put(optProblem.getParameterDescriptionList().get(i).getName(),
-										latestProgressReport.getBestParamValues().get(i));
-							}
-
-							OptResultSet optResultSet = new OptResultSet();
-							optResultSet.setOptParameterValues(bestParamValues);
-							optResultSet.setOptProgressReport(latestProgressReport);
-							optResultSet.setNumFunctionEvaluations(lastProgressItem.getNumFunctionEvaluations());
-							optResultSet.setObjectiveFunction(lastProgressItem.getObjFuncValue());
-
-							Vcellopt latestVCellopt = new Vcellopt();
-							latestVCellopt.setOptProblem(optProblem);
-							latestVCellopt.setStatus(VcelloptStatus.COMPLETE);
-							latestVCellopt.setStatusMessage("Stopped");
 							if (clientTaskStatusSupport != null) {
 								clientTaskStatusSupport.setProgress(100);
 							}
-
-							OptimizationResultSet copasiOptimizationResultSet = CopasiUtils.optRunToOptimizationResultSet(parameterEstimationTask, latestVCellopt);
+							OptimizationResultSet copasiOptimizationResultSet = CopasiUtils.getOptimizationResultSet(parameterEstimationTask, latestProgressReport);
 							return copasiOptimizationResultSet;
 						}
 					}
@@ -261,7 +243,10 @@ public class CopasiOptimizationSolver {
 				clientTaskStatusSupport.setMessage("Done, getting results...");
 			}
 
-			OptimizationResultSet copasiOptimizationResultSet = CopasiUtils.optRunToOptimizationResultSet(parameterEstimationTask, optRun);
+			OptimizationResultSet copasiOptimizationResultSet = CopasiUtils.optRunToOptimizationResultSet(
+					parameterEstimationTask,
+					optRun.getOptResultSet(),
+					new OptimizationStatus(OptimizationStatus.NORMAL_TERMINATION, optRun.getStatusMessage()));
 			lg.info("done with optimization");
 			if (lg.isTraceEnabled()) {
 				lg.trace("-----------SOLUTION FROM VCellAPI---------------\n" + optResultSet.toString());

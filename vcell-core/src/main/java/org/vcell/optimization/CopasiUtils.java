@@ -296,8 +296,21 @@ public class CopasiUtils {
         return results;
     }
 
-    public static OptimizationResultSet optRunToOptimizationResultSet(ParameterEstimationTask parameterEstimationTask, Vcellopt optRun) throws Exception {
-        OptResultSet optResultSet = optRun.getOptResultSet();
+
+    public static OptimizationResultSet getOptimizationResultSet(ParameterEstimationTask parameterEstimationTask, OptProgressReport latestProgressReport) throws Exception {
+        OptResultSet optResultSet = new OptResultSet();
+        optResultSet.setOptParameterValues(latestProgressReport.getBestParamValues());
+        optResultSet.setOptProgressReport(latestProgressReport);
+        OptProgressItem lastProgressItem = latestProgressReport.getProgressItems().get(latestProgressReport.getProgressItems().size()-1);
+        optResultSet.setNumFunctionEvaluations(lastProgressItem.getNumFunctionEvaluations());
+        optResultSet.setObjectiveFunction(lastProgressItem.getObjFuncValue());
+
+        OptimizationStatus status = new OptimizationStatus(OptimizationStatus.NORMAL_TERMINATION, "Stopped by user");
+
+        return optRunToOptimizationResultSet(parameterEstimationTask, optResultSet, status);
+    }
+
+    public static OptimizationResultSet optRunToOptimizationResultSet(ParameterEstimationTask parameterEstimationTask, OptResultSet optResultSet, OptimizationStatus status) throws Exception {
         int numFittedParameters = optResultSet.getOptParameterValues().size();
         String[] paramNames = new String[numFittedParameters];
         double[] paramValues = new double[numFittedParameters];
@@ -309,7 +322,6 @@ public class CopasiUtils {
         }
 
         ParameterEstimationTaskSimulatorIDA parestSimulator = new ParameterEstimationTaskSimulatorIDA();
-        OptimizationStatus status = new OptimizationStatus(OptimizationStatus.NORMAL_TERMINATION, optRun.getStatusMessage());
         OptSolverResultSet.OptRunResultSet optRunResultSet = new OptSolverResultSet.OptRunResultSet(paramValues, optResultSet.getObjectiveFunction(), optResultSet.getNumFunctionEvaluations(), status);
         OptSolverResultSet copasiOptSolverResultSet = new OptSolverResultSet(paramNames, optRunResultSet);
         RowColumnResultSet copasiRcResultSet = parestSimulator.getRowColumnRestultSetByBestEstimations(parameterEstimationTask, paramNames, paramValues);
