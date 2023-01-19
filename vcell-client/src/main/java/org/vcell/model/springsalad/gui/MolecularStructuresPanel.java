@@ -99,6 +99,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 	
 	private JList<String> siteLinksList = null;
 	private JTextField linkLengthField = null;
+	private JButton addLinkButton = null;
 
 	
 	private class EventHandler implements FocusListener, ActionListener, PropertyChangeListener {
@@ -164,7 +165,10 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 			siteXField = new JTextField("");
 			siteYField = new JTextField("");
 			siteZField = new JTextField("");
+			siteColorComboBox = new JComboBox<>();	// TODO: arg here should be combobox model
+			siteLinksList = new JList<>();
 			linkLengthField = new JTextField("");
+			addLinkButton = new JButton("Add Link");
 			siteXField.setEditable(false);
 			siteYField.setEditable(false);
 			siteZField.setEditable(false);
@@ -181,10 +185,14 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		titleTop.setTitleJustification(TitledBorder.LEFT);
 		titleTop.setTitlePosition(TitledBorder.TOP);
 
-		TitledBorder titleBottom = BorderFactory.createTitledBorder(loweredEtchedBorder, " States ");
-		titleBottom.setTitleJustification(TitledBorder.LEFT);
-		titleBottom.setTitlePosition(TitledBorder.TOP);
-		
+		TitledBorder titleSites = BorderFactory.createTitledBorder(loweredEtchedBorder, " Sites ");
+		titleSites.setTitleJustification(TitledBorder.LEFT);
+		titleSites.setTitlePosition(TitledBorder.TOP);
+
+		TitledBorder titleLinks = BorderFactory.createTitledBorder(loweredEtchedBorder, " Links ");
+		titleLinks.setTitleJustification(TitledBorder.LEFT);
+		titleLinks.setTitlePosition(TitledBorder.TOP);
+
 		setLayout(new GridBagLayout());
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.gridx = 0;
@@ -198,18 +206,21 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		// ------------------------------------------- Populating the top group box ---------------
 		JPanel top = new JPanel();
 		JPanel bottom = new JPanel();
+		JPanel sitesPanel = new JPanel();
+		JPanel linksPanel = new JPanel();
 		
 		top.setBorder(titleTop);
-		bottom.setBorder(titleBottom);
+		sitesPanel.setBorder(titleSites);
+		linksPanel.setBorder(titleLinks);
 		
 		thePanel.setLayout(new GridBagLayout());
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = 0;
 		gbc.weightx = 1.0;
-		gbc.weighty = 1.0;
+		gbc.weighty = 0.7;
 		gbc.fill = GridBagConstraints.BOTH;
-		gbc.insets = new Insets(5, 2, 2, 3);	//  top, left, bottom, right 
+		gbc.insets = new Insets(3, 0, 0, 0);	//  top, left, bottom, right 
 		thePanel.add(top, gbc);
 		
 		gbc = new GridBagConstraints();
@@ -217,8 +228,9 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		gbc.gridy = 1;
 		gbc.weightx = 1.0;
 		gbc.weighty = 1.0;
+		gbc.gridheight = 2;
+		gbc.insets = new Insets(1, 0, 0, 0);
 		gbc.fill = GridBagConstraints.BOTH;
-		gbc.insets = new Insets(5, 2, 2, 3);
 		thePanel.add(bottom, gbc);
 
 		// we may want to use a scroll pane whose viewing area is the JTable to provide similar look with NetGen Console
@@ -232,7 +244,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		gbc.weighty = 1.0;
 		gbc.fill = GridBagConstraints.BOTH;
 		gbc.anchor = GridBagConstraints.NORTHWEST;
-		gbc.insets = new Insets(5, 4, 4, 10);
+		gbc.insets = new Insets(2, 3, 3, 4);
 		top.add(pt, gbc);
 
 		DefaultTableCellRenderer renderer = new DefaultScrollTableCellRenderer() {
@@ -381,20 +393,154 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		getSpeciesContextSpecsTable().setDefaultRenderer(SpeciesContextSpecsTableModel.RulesProvenance.class, rulesTableCellRenderer);	// rules icons
 
 		// ---------------------------------------------------------------------------------------------
-		JScrollPane pb = new JScrollPane(getMolecularComponentSpecsTable());
-		pb.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-		bottom.setLayout(new GridBagLayout());		// --- table of bottom panel
+		
+		bottom.setLayout(new GridBagLayout());
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = 0;
 		gbc.weightx = 1.0;
 		gbc.weighty = 1.0;
+		gbc.gridwidth = 3;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.insets = new Insets(3, 2, 2, 3);	//  top, left, bottom, right 
+		bottom.add(sitesPanel, gbc);
+		
+		gbc = new GridBagConstraints();
+		gbc.gridx = 3;
+		gbc.gridy = 0;
+		gbc.weightx = 0.5;
+		gbc.weighty = 1.0;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.insets = new Insets(3, 2, 2, 3);
+		bottom.add(linksPanel, gbc);
+		
+		JScrollPane pb = new JScrollPane(getMolecularTypeSpecsTable());
+		pb.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+		sitesPanel.setLayout(new GridBagLayout());		// --- table of bottom panel
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = 0;
+		gbc.weightx = 1.0;
+		gbc.weighty = 1.0;
+		gbc.gridwidth = 8;
+		gbc.gridheight = 5;
 		gbc.fill = GridBagConstraints.BOTH;
 		gbc.anchor = GridBagConstraints.NORTHWEST;
-		gbc.insets = new Insets(5, 4, 4, 10);
-		bottom.add(pb, gbc);
+		gbc.insets = new Insets(2, 3, 3, 4);
+		sitesPanel.add(pb, gbc);
 		
-		getMolecularComponentSpecsTable().setDefaultRenderer(String.class, new DefaultScrollTableCellRenderer());
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = 5;
+		gbc.anchor = GridBagConstraints.SOUTH;
+		gbc.insets = new Insets(2, 2, 2, 2);
+		sitesPanel.add(new JLabel(" X: "), gbc);
+
+		gbc = new GridBagConstraints();
+		gbc.gridx = 1;
+		gbc.gridy = 5;
+		gbc.weightx = 1.0;
+		gbc.weighty = 1.0;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.anchor = GridBagConstraints.SOUTH;
+		gbc.insets = new Insets(2, 2, 2, 2);
+		sitesPanel.add(siteXField, gbc);		// 
+
+		gbc = new GridBagConstraints();
+		gbc.gridx = 2;
+		gbc.gridy = 5;
+		gbc.anchor = GridBagConstraints.SOUTH;
+		gbc.insets = new Insets(2, 2, 2, 2);
+		sitesPanel.add(new JLabel(" Y: "), gbc);
+
+		gbc = new GridBagConstraints();
+		gbc.gridx = 3;
+		gbc.gridy = 5;
+		gbc.weightx = 1.0;
+		gbc.weighty = 1.0;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.anchor = GridBagConstraints.SOUTH;
+		gbc.insets = new Insets(2, 2, 2, 2);
+		sitesPanel.add(siteYField, gbc);
+
+		gbc = new GridBagConstraints();
+		gbc.gridx = 4;
+		gbc.gridy = 5;
+		gbc.anchor = GridBagConstraints.SOUTH;
+		gbc.insets = new Insets(2, 2, 2, 2);
+		sitesPanel.add(new JLabel(" Z: "), gbc);
+
+		gbc = new GridBagConstraints();
+		gbc.gridx = 5;
+		gbc.gridy = 5;
+		gbc.weightx = 1.0;
+		gbc.weighty = 1.0;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.anchor = GridBagConstraints.SOUTH;
+		gbc.insets = new Insets(2, 2, 2, 2);
+		sitesPanel.add(siteZField, gbc);
+
+		gbc = new GridBagConstraints();
+		gbc.gridx = 6;
+		gbc.gridy = 5;
+		gbc.anchor = GridBagConstraints.SOUTH;
+		gbc.insets = new Insets(2, 2, 2, 2);
+		sitesPanel.add(new JLabel(" Color "), gbc);
+
+		gbc = new GridBagConstraints();
+		gbc.gridx = 7;
+		gbc.gridy = 5;
+		gbc.weightx = 1.0;
+		gbc.weighty = 1.0;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.anchor = GridBagConstraints.SOUTH;
+		gbc.insets = new Insets(2, 2, 2, 2);
+		sitesPanel.add(siteColorComboBox, gbc);
+
+//		// --- links -----------------------------------------------
+//		private JTextField siteXField = null;
+//		private JTextField siteYField = null;
+//		private JTextField siteZField = null;
+//		
+//		private JList<String> siteLinksList = null;
+//		private JTextField linkLengthField = null;
+
+		
+		linksPanel.setLayout(new GridBagLayout());
+		siteLinksList.setBorder(loweredEtchedBorder);
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = 0;
+		gbc.gridwidth = 2;
+		gbc.weightx = 1.0;
+		gbc.weighty = 1.0;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.insets = new Insets(5, 2, 2, 3);
+		linksPanel.add(siteLinksList, gbc);
+
+		gbc = new GridBagConstraints();		// ----------------------
+		gbc.gridx = 0;
+		gbc.gridy = 1;
+		gbc.anchor = GridBagConstraints.EAST;
+		gbc.insets = new Insets(5, 2, 2, 3);
+		linksPanel.add(new JLabel("Length (nm): "), gbc);
+
+		gbc = new GridBagConstraints();
+		gbc.gridx = 1;
+		gbc.gridy = 1;
+		gbc.weightx = 1.0;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.insets = new Insets(5, 2, 2, 3);	//  top, left, bottom, right 
+		linksPanel.add(linkLengthField, gbc);
+
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = 2;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.insets = new Insets(5, 2, 2, 3);
+		linksPanel.add(addLinkButton, gbc);
+		
+		getMolecularTypeSpecsTable().setDefaultRenderer(String.class, new DefaultScrollTableCellRenderer());
 		
 		
 		
@@ -406,7 +552,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		}
 	}
 	
-	private EditorScrollTable getMolecularComponentSpecsTable() {
+	private EditorScrollTable getMolecularTypeSpecsTable() {
 		if (molecularTypeSpecsTable == null) {
 			try {
 				molecularTypeSpecsTable = new EditorScrollTable();

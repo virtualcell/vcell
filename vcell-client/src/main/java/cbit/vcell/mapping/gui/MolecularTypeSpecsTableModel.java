@@ -59,7 +59,7 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 	private enum ColumnType {
 		COLUMN_SITE("Site"),
 		COLUMN_SPECIESCONTEXT("Molecule"),
-		COLUMN_STRUCTURE("Structure"),
+		COLUMN_STRUCTURE("Location"),
 		COLUMN_STATE("Initial State"),
 		COLUMN_RADIUS("Radius"),
 		COLUMN_DIFFUSION("Diffusion Rate");
