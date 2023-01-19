@@ -47,6 +47,8 @@ def _get_copasi_method_param(param_type: CopasiOptimizationParameterParamType) -
         return "Start Temperature"
     if param_type == CopasiOptimizationParameterParamType.TOLERANCE:
         return "Tolerance"
+    if param_type == CopasiOptimizationParameterParamType.SWARM_SIZE:
+        return "Swarm Size"
     raise Exception(f"unexpected parameter type {param_type}")
 
 
