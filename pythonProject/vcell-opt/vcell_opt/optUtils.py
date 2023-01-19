@@ -50,6 +50,8 @@ def _get_copasi_method_param(param_type: CopasiOptimizationParameterParamType) -
         return "Tolerance"
     if param_type == CopasiOptimizationParameterParamType.SWARM_SIZE:
         return "Swarm Size"
+    if param_type == CopasiOptimizationParameterParamType.STD_DEVIATION:
+        return "Std. Deviation"
     raise Exception(f"unexpected parameter type {param_type}")
 
 

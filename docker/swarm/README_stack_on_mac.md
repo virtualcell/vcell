@@ -1,8 +1,12 @@
-1. Build Java
+1. Build Java and Python
 
 ```bash
 pushd ../../
 mvn clean install dependency:copy-dependencies -DskipTests=true
+popd
+
+pushd ../../pythonProject/vcell-opt
+poetry install
 popd
 ```
 
