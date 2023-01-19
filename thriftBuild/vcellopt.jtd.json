@@ -53,7 +53,7 @@
 		"OptProgressReport": {
 			"properties": {
 				"progressItems": { "elements":  { "ref": "OptProgressItem" }},
-				"bestParamValues": { "elements": { "type": "float64" }}
+				"bestParamValues": { "values": { "type": "float64"}}
 			}
 		},
 		"OptResultSet": {

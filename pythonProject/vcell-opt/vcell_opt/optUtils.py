@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Dict, List, Union
 
 import basico
+import json
 import pandas as pd
 
 from .data import CopasiOptimizationMethodOptimizationMethodType, CopasiOptimizationParameterParamType, OptProblem, \
@@ -101,19 +102,23 @@ def get_fit_parameters(vcell_opt_problem: OptProblem) -> List[Dict[str, Union[st
 
 def get_progress_report(report_file: Path, max_records: int = 49) -> OptProgressReport:
     '''
+    first line in file is names of parameters in order
     each line in file is as follows (tab separated)
     100  0.000233223 ( 3.332 5.433 6.543 )
     '''
 
-    # read first line, get size of file
     progress_items: List[OptProgressItem] = []
     param_values = []
     with open(report_file, "r") as f_reportfile:
         line_offsets: List[int] = list()  # Map from line index -> file position.
-        line_offsets.append(0)
+        # line_offsets.append(0)
         while f_reportfile.readline():
             line_offsets.append(f_reportfile.tell())
         line_offsets.pop()
+
+        f_reportfile.seek(0)
+        names_str = f_reportfile.readline()
+        names = json.loads(names_str)
 
         N = max_records-1 # -1 to allow for adding last row if not included
         step = max(1, round(0.5 + (len(line_offsets) / float(N))))
@@ -136,4 +141,5 @@ def get_progress_report(report_file: Path, max_records: int = 49) -> OptProgress
         if tokens is not None:
             param_values = [float(token) for token in tokens[3:len(tokens) - 1]]
 
-    return OptProgressReport(progress_items=progress_items, best_param_values=param_values)
+    best_param_values: Dict[str, float] = {names[i]: param_values[i] for i in range(len(names))}
+    return OptProgressReport(progress_items=progress_items, best_param_values=best_param_values)

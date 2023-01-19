@@ -2,7 +2,7 @@ import json
 import os
 import tempfile
 from pathlib import Path
-from typing import Dict
+from typing import List
 
 import basico
 import pandas as pd
@@ -48,6 +48,12 @@ def test_run() -> None:
                             'CN=Root,Vector=TaskList[Parameter Estimation],Problem=Parameter Estimation,Reference=Best Parameters'
                             ],
                       )
+
+    # write the header (easier to do it here than to ask COPASI to do it)
+    with open(report_file, 'w') as f_report_file:
+        param_names: List[str] = [param_desc.name for param_desc in vcell_opt_problem.parameter_description_list]
+        f_report_file.write(json.dumps(param_names)+"\n")
+
     basico.assign_report("parest report", task=basico.T.PARAMETER_ESTIMATION, filename=str(report_file), append=True)
 
     fit_items = get_fit_parameters(vcell_opt_problem)
@@ -95,13 +101,13 @@ def test_run() -> None:
     assert first_progress_item.obj_func_value == 0.559754
     assert last_progress_item.num_function_evaluations == last_num_evaluations
     assert last_progress_item.obj_func_value == last_objective_function_report
-    assert abs(progress_report.best_param_values[0] - fit_Kf) < 1e-5
-    assert abs(progress_report.best_param_values[1] - fit_Kr) < 1e-5
-    assert abs(progress_report.best_param_values[2] - fit_s0_init_uM) < 1e-5
+    assert abs(progress_report.best_param_values["Kf"] - fit_Kf) < 1e-5
+    assert abs(progress_report.best_param_values["Kr"] - fit_Kr) < 1e-5
+    assert abs(progress_report.best_param_values["s0_init_uM"] - fit_s0_init_uM) < 1e-5
 
     # remove report file
-    if report_file.exists():
-        os.remove(report_file)
+    # if report_file.exists():
+    #     os.remove(report_file)
 
     expected_fit_Kf = 0.812494
     expected_fit_Kr = 0.687506

@@ -14,6 +14,7 @@ import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.resource.PropertyLoader;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Files;
+import com.google.gson.Gson;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.sbml.jsbml.SBMLException;
@@ -28,9 +29,7 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class CopasiUtils {
     private final static Logger lg = LogManager.getLogger(CopasiUtils.class);
@@ -370,7 +369,14 @@ public class CopasiUtils {
         long fileSize = java.nio.file.Files.size(progressReportFile.toPath());
         long N = maxRecords-1;
         long numLines = 0;
+        List<String> paramNames = null;
         try (LineNumberReader reader = new LineNumberReader(new FileReader(progressReportFile))) {
+            String header = reader.readLine();
+            if (header != null){
+                Gson gson = new Gson();
+                paramNames = gson.fromJson(header, List.class);
+                System.out.println(paramNames);
+            }
             while (reader.readLine() != null) {
                 numLines++;
             }
@@ -381,6 +387,7 @@ public class CopasiUtils {
         String[] tokens = null;
         int lineNumber = 0;
         try (LineNumberReader reader = new LineNumberReader(new FileReader(progressReportFile))) {
+            reader.readLine(); // skip header
             while ((line = reader.readLine()) != null) {
                 if (lineNumber%step != 0 && lineNumber < numLines-1){
                     lineNumber++;
@@ -407,7 +414,11 @@ public class CopasiUtils {
         }
         OptProgressReport progressReport = new OptProgressReport();
         progressReport.setProgressItems(progressItems);
-        progressReport.setBestParamValues(paramValues);
+        Map<String, Double> bestParamValues = new HashMap<>();
+        for (int i=0; i<paramValues.size(); i++){
+            bestParamValues.put(paramNames.get(i), paramValues.get(i));
+        }
+        progressReport.setBestParamValues(bestParamValues);
         return progressReport;
     }
 

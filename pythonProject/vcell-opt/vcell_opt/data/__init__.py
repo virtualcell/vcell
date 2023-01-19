@@ -185,13 +185,13 @@ class OptProgressItem:
 
 @dataclass
 class OptProgressReport:
-    best_param_values: 'List[float]'
+    best_param_values: 'Dict[str, float]'
     progress_items: 'List[OptProgressItem]'
 
     @classmethod
     def from_json_data(cls, data: Any) -> 'OptProgressReport':
         return cls(
-            _from_json_data(List[float], data.get("bestParamValues")),
+            _from_json_data(Dict[str, float], data.get("bestParamValues")),
             _from_json_data(List[OptProgressItem], data.get("progressItems")),
         )
 

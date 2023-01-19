@@ -21,6 +21,7 @@ public class CopasiUtilsTest {
 
     @Test
     public void test_parse_report_csv() throws IOException, XmlParseException {
+        // header is ["Kf", "Kr", "s0_init_uM"]
         String csv_text = getTextContentFromResource("report.txt");
         File tempFile = File.createTempFile("report","csv");
         Files.write(csv_text,tempFile,StandardCharsets.UTF_8);
@@ -36,9 +37,9 @@ public class CopasiUtilsTest {
         OptProgressItem lastItem = progressReport.getProgressItems().get(progressReport.getProgressItems().size()-1);
         Assert.assertEquals(2880,lastItem.getNumFunctionEvaluations().intValue());
         Assert.assertEquals(2.86559e-14,lastItem.getObjFuncValue().doubleValue(), 0);
-        Assert.assertEquals(0.8125, progressReport.getBestParamValues().get(0).doubleValue(), 0);
-        Assert.assertEquals(0.6875, progressReport.getBestParamValues().get(1).doubleValue(), 0);
-        Assert.assertEquals(8.95578e-07, progressReport.getBestParamValues().get(2).doubleValue(), 0);
+        Assert.assertEquals(0.8125, progressReport.getBestParamValues().get("Kf").doubleValue(), 0);
+        Assert.assertEquals(0.6875, progressReport.getBestParamValues().get("Kr").doubleValue(), 0);
+        Assert.assertEquals(8.95578e-07, progressReport.getBestParamValues().get("s0_init_uM").doubleValue(), 0);
     }
 
     private static String getTextContentFromResource(String fileName) throws IOException, XmlParseException {
