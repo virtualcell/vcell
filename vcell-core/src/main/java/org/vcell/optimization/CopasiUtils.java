@@ -301,6 +301,10 @@ public class CopasiUtils {
         OptResultSet optResultSet = new OptResultSet();
         optResultSet.setOptParameterValues(latestProgressReport.getBestParamValues());
         optResultSet.setOptProgressReport(latestProgressReport);
+
+        if (latestProgressReport==null || latestProgressReport.getProgressItems()==null || latestProgressReport.getProgressItems().size()==0) {
+            return null;
+        }
         OptProgressItem lastProgressItem = latestProgressReport.getProgressItems().get(latestProgressReport.getProgressItems().size()-1);
         optResultSet.setNumFunctionEvaluations(lastProgressItem.getNumFunctionEvaluations());
         optResultSet.setObjectiveFunction(lastProgressItem.getObjFuncValue());
@@ -387,7 +391,6 @@ public class CopasiUtils {
             if (header != null){
                 Gson gson = new Gson();
                 paramNames = gson.fromJson(header, List.class);
-                System.out.println(paramNames);
             }
             while (reader.readLine() != null) {
                 numLines++;
@@ -431,7 +434,19 @@ public class CopasiUtils {
             bestParamValues.put(paramNames.get(i), paramValues.get(i));
         }
         progressReport.setBestParamValues(bestParamValues);
+
         return progressReport;
+    }
+
+    public static String progressReportString(OptProgressReport optProgressReport){
+        if (optProgressReport == null){
+            return "null";
+        }else if (optProgressReport.getProgressItems()==null || optProgressReport.getProgressItems().size()==0){
+            return "OptProgressReport[]";
+        }else{
+            OptProgressItem lastProgressItem = optProgressReport.getProgressItems().get(optProgressReport.getProgressItems().size()-1);
+            return "OptProgressReport["+lastProgressItem.getNumFunctionEvaluations()+", "+lastProgressItem.getObjFuncValue()+", "+optProgressReport.getBestParamValues()+"]";
+        }
     }
 
 }

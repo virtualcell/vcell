@@ -101,7 +101,9 @@ public class CopasiOptimizationSolver {
 			// wait here until either failure to submit or submitted and retrieved Job ID
 			//
 			while (optIdHolder[0] == null && exceptHolder[0] == null && !optSolverCallbacks.getStopRequested()) {
-				Thread.sleep(200);
+				try {
+					Thread.sleep(200);
+				}catch (InterruptedException e){}
 			}
 
 			//
