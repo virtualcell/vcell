@@ -571,7 +571,7 @@ public class SEDMLImporter {
 		for (AbstractTask selectedTask : ttt) {
 			if (selectedTask instanceof RepeatedTask) {
 				RepeatedTask rt = (RepeatedTask)selectedTask;
-				if (!rt.getResetModel() || rt.getSubTasks().size() != 1) {
+				if (!rt.getResetModel() || rt.getSubTasks().size() != 1) { // if removed, see RunUtils.prepareNonspatialHdf5()
 					logger.error("sequential RepeatedTask not yet supported, task "+SEDMLUtil.getName(selectedTask)+" is being skipped");
 					continue;
 				}

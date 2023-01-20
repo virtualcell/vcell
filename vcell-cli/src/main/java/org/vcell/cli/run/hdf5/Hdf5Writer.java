@@ -34,7 +34,7 @@ public class Hdf5Writer {
                 if (datasetWrapper.dataSource instanceof Hdf5DataSourceNonspatial) {
                     Hdf5DataSourceNonspatial dataSourceNonspatial = (Hdf5DataSourceNonspatial) datasetWrapper.dataSource;
                     Map<Variable, double[]> varDataMap = dataSourceNonspatial.jobData.get(0).varData;
-                    List<Variable> vars = new ArrayList(varDataMap.keySet());
+                    List<Variable> vars = new ArrayList<>(varDataMap.keySet());
                     long numVariablesPerJob = varDataMap.keySet().size();
                     long numTimePoints = varDataMap.get(vars.get(0)).length;
 
@@ -140,7 +140,8 @@ public class Hdf5Writer {
 //                Hdf5Utils.insertAttributes(hdf5DatasetID, "sedmlDataSetShapes", datasetWrapper.datasetMetadata.sedmlDataSetShapes);
                 Hdf5Utils.insertAttribute(hdf5DatasetID, "sedmlId", datasetWrapper.datasetMetadata.sedmlId);
                 Hdf5Utils.insertAttribute(hdf5DatasetID, "sedmlName", datasetWrapper.datasetMetadata.sedmlName);
-                Hdf5Utils.insertAttribute(hdf5DatasetID, "uri", datasetWrapper.datasetMetadata.uri);
+                //Hdf5Utils.insertAttribute(hdf5DatasetID, "uri", datasetWrapper.datasetMetadata.uri); 
+                Hdf5Utils.insertAttribute(hdf5DatasetID, "uri", "/"+hdf5FileWrapper.combineArchiveLocation+"/"+datasetWrapper.datasetMetadata.sedmlId);
 //                if (paramNames.size() != 0) {
 //                    // for scans????
 //                    Hdf5Utils.insertAttributes(help0.hdf5DatasetValuesID, "paramNames", paramNames);
