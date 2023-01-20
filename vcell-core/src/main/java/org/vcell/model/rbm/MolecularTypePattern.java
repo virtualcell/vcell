@@ -27,68 +27,11 @@ import cbit.vcell.model.Model.RbmModelContainer;
 
 public class MolecularTypePattern extends RbmElementAbstract implements Matchable, PropertyChangeListener, IssueSource, Displayable {
 		
-	public class InternalLink implements Identifiable {
-		private MolecularComponentPattern fieldMolecularComponentPatternOne = null;
-		private MolecularComponentPattern fieldMolecularComponentPatternTwo = null;
-		private double linkLength = 0;
-	
-		public InternalLink(MolecularComponentPattern linkOne, MolecularComponentPattern linkTwo) throws IllegalArgumentException {
-			// sanity check
-			if(linkOne == null || linkOne.getMolecularComponent() == null) {
-				throw new IllegalArgumentException("A link component doesn't exist");
-			}
-			if(linkTwo == null || linkTwo.getMolecularComponent() == null) {
-				throw new IllegalArgumentException("A link component doesn't exist");
-			}
-			boolean foundOne = false;
-			boolean foundTwo = false;
-			for(MolecularComponentPattern mpc : getComponentPatternList()) {
-				if(mpc == linkOne) {
-					foundOne = true;
-				}
-			}
-			for(MolecularComponentPattern mpc : getComponentPatternList()) {
-				if(mpc == linkTwo) {
-					foundTwo = true;
-				}
-			}
-			if(!foundOne || !foundTwo) {
-				throw new IllegalArgumentException("A link component doesn't match any molecule component");
-			}
-			// order them based on position in the Molecule
-			// we may only have one molecule in the species pattern for the current version of springsalad impl, but who knows in the future
-			for(MolecularComponentPattern mpc : getComponentPatternList()) {
-				if(mpc == linkOne) {					// linkOne comes first
-					fieldMolecularComponentPatternOne = linkOne;
-					fieldMolecularComponentPatternTwo = linkTwo;
-					break;
-				} else if(mpc == linkTwo) {				// linkTwo comes first
-					fieldMolecularComponentPatternOne = linkTwo;
-					fieldMolecularComponentPatternTwo = linkOne;
-					break;
-				}
-			}
-		}
-		public MolecularComponentPattern getMolecularComponentPatternOne() {
-			return fieldMolecularComponentPatternOne;
-		}
-		public MolecularComponentPattern getMolecularComponentPatternTwo() {
-			return fieldMolecularComponentPatternTwo;
-		}
-		public double getLinkLength() {
-			return linkLength;
-		}
-		public void setLinkLength(double linkLength) {
-			this.linkLength = linkLength;
-		}
-	}
-	
 	public static final String PROPERTY_NAME_COMPONENT_PATTERN_LIST = "componentPatternList";
 	public static final String TRIVIAL_MATCH = "*";
 	
 	private MolecularType molecularType;
 	private List<MolecularComponentPattern> componentPatternList = new ArrayList<MolecularComponentPattern>();
-	private Set<InternalLink> internalLinkSet = new LinkedHashSet<> ();
 	
 	private int index = 0; // purely for displaying purpose, since molecule can bind to itself
 	private String participantMatchLabel = TRIVIAL_MATCH;	// reactant-product match label, to avoid ambiguity
@@ -156,13 +99,6 @@ public class MolecularTypePattern extends RbmElementAbstract implements Matchabl
 		setComponentPatterns(newValue);
 	}
 	
-	public Set<InternalLink> getInternalLinkSet() {
-		return internalLinkSet;
-	}
-	public void setInternalLinkSet(Set<InternalLink> internalLinkSet) {
-		this.internalLinkSet = internalLinkSet;
-	}
-
 	@Deprecated
 	boolean isFullyDefined() {
 		for (MolecularComponentPattern pattern : componentPatternList) {

@@ -22,44 +22,6 @@ import org.vcell.util.Matchable;
 @SuppressWarnings("serial")
 public class MolecularComponentPattern extends RbmElementAbstract implements Matchable, IssueSource, Displayable
 {
-	
-	public class SiteAttributes implements Identifiable {
-		
-		private double fieldRadius = 1.0;
-		private double fieldDiffusionRate = 1.0;
-		private Structure fieldLocation = null;		// feature or membrane
-		private Coordinate fieldCoordinate = null;	// double x,y,z; has distanceTo()
-		private Color fieldColor = Color.GRAY;
-		// the ComponentStatePattern must not be Any; can be recovered from the MolecularComponentPattern
-		// the BondType must be None, can be recovered from the MolecularComponentPattern
-		
-		public SiteAttributes(double radius, double diffusion, Structure location, Coordinate coordinate, Color color) {
-			fieldRadius = radius;
-			fieldDiffusionRate = diffusion;
-			fieldLocation = location;
-			fieldCoordinate = coordinate;
-			fieldColor = color;
-		}
-		
-		// TODO: hopefully we won't need setters, we just invoke the constructor 
-		// from the MolecularStructuresPanel just in time, when component selection changes
-		public double getRadius() {
-			return fieldRadius;
-		}
-		public double getDiffusionRate() {
-			return fieldDiffusionRate;
-		}
-		public Structure getLocation() {
-			return fieldLocation;
-		}
-		public Coordinate getCoordinate() {
-			return fieldCoordinate;
-		}
-		public Color getColor() {
-			return fieldColor;
-		}
-	}
-	
 	public static final String PROPERTY_NAME_COMPONENT_STATE = "componentStatePattern";
 	public static final String PROPERTY_NAME_BOND_TYPE = "bondType";
 	public static final String PROPERTY_NAME_BOND_ID = "bondId";
@@ -67,7 +29,6 @@ public class MolecularComponentPattern extends RbmElementAbstract implements Mat
 	
 	private MolecularComponent molecularComponent;
 	private ComponentStatePattern componentStatePattern;
-	private SiteAttributes siteAtributtes = null;
 	private boolean bVisible = false;
 	private Bond bond = null;
 	private int bondId = -1;                // used in BNGL for mapping notation (e.g. 1, 2, 3)
@@ -275,11 +236,4 @@ public class MolecularComponentPattern extends RbmElementAbstract implements Mat
 	public String getDisplayType() {
 		return typeName;
 	}
-	public SiteAttributes getSiteAtributtes() {
-		return siteAtributtes;
-	}
-	public void setSiteAtributtes(SiteAttributes siteAtributtes) {
-		this.siteAtributtes = siteAtributtes;
-	}
-	
 }
