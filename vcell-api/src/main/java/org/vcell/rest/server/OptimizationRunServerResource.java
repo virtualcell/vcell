@@ -84,7 +84,7 @@ public class OptimizationRunServerResource extends AbstractServerResource implem
 
 	private String submitOptProblem(Representation optProblemJsonRep,ServerResource serverResource) throws ResourceException {
 		synchronized (paramOptActiveSockets) {
-			if (paramOptActiveSockets.size() >= 20) {
+			if (paramOptActiveSockets.size() >= 100) {
 				String[] keys = paramOptActiveSockets.keySet().toArray(new String[0]);
 				for (int i = 0; i < keys.length; i++) {
 					OptSocketStreams optSocketStreams = paramOptActiveSockets.get(keys[i]);
@@ -110,7 +110,7 @@ public class OptimizationRunServerResource extends AbstractServerResource implem
 						optSocketStreams.closeAll(optSocketStreams.optID);
 					}
 				}
-				if (paramOptActiveSockets.size() >= 20) {
+				if (paramOptActiveSockets.size() >= 100) {
 					throw new ResourceException(Status.SERVER_ERROR_INTERNAL, "Too many active optimization jobs, try again later");
 				}
 			}

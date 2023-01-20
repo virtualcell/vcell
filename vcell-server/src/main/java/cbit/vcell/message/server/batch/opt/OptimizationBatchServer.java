@@ -177,6 +177,7 @@ public class OptimizationBatchServer {
     private String getProgressReportJsonString(String optID) throws IOException {
         String progressReportJsonString = null;
         OptProgressReport progressReport = getProgressReport(optID);
+        lg.info(CopasiUtils.progressReportString(progressReport));
         if (progressReport != null){
             ObjectMapper objectMapper = new ObjectMapper();
             progressReportJsonString = objectMapper.writeValueAsString(progressReport);
