@@ -2,7 +2,7 @@ import json
 import os
 import tempfile
 from pathlib import Path
-from typing import Dict
+from typing import Dict, List
 
 import basico
 import pandas as pd
@@ -18,7 +18,7 @@ def run_command(opt_file: Path = typer.Argument(..., file_okay=True, dir_okay=Fa
                 result_file: Path = typer.Argument(..., file_okay=True, dir_okay=False,
                                                    help="optimization result output json file"),
                 report_file: Path = typer.Argument(..., file_okay=True, dir_okay=False,
-                                                   help="report file with intermediate results")):
+                                                   help="report file with intermediate results")) -> None:
     if opt_file is None or result_file is None:
         print("use --help for help")
         return typer.Exit(-1)
@@ -51,6 +51,12 @@ def run_command(opt_file: Path = typer.Argument(..., file_okay=True, dir_okay=Fa
                           'CN=Root,Vector=TaskList[Parameter Estimation],Problem=Parameter Estimation,Reference=Best Parameters'
                           ],
                       )
+
+    # write the header (easier to do it here than to ask COPASI to do it)
+    with open(report_file, 'w') as f_report_file:
+        param_names: List[str] = [param_desc.name for param_desc in opt_problem.parameter_description_list]
+        f_report_file.write(json.dumps(param_names)+"\n")
+
     basico.assign_report("parest report", task=basico.T.PARAMETER_ESTIMATION, filename=str(report_file), append=True)
 
     fit_items = get_fit_parameters(opt_problem)

@@ -14,6 +14,7 @@ import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.resource.PropertyLoader;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Files;
+import com.google.gson.Gson;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.sbml.jsbml.SBMLException;
@@ -28,9 +29,7 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class CopasiUtils {
     private final static Logger lg = LogManager.getLogger(CopasiUtils.class);
@@ -297,8 +296,21 @@ public class CopasiUtils {
         return results;
     }
 
-    public static OptimizationResultSet optRunToOptimizationResultSet(ParameterEstimationTask parameterEstimationTask, Vcellopt optRun) throws Exception {
-        OptResultSet optResultSet = optRun.getOptResultSet();
+
+    public static OptimizationResultSet getOptimizationResultSet(ParameterEstimationTask parameterEstimationTask, OptProgressReport latestProgressReport) throws Exception {
+        OptResultSet optResultSet = new OptResultSet();
+        optResultSet.setOptParameterValues(latestProgressReport.getBestParamValues());
+        optResultSet.setOptProgressReport(latestProgressReport);
+        OptProgressItem lastProgressItem = latestProgressReport.getProgressItems().get(latestProgressReport.getProgressItems().size()-1);
+        optResultSet.setNumFunctionEvaluations(lastProgressItem.getNumFunctionEvaluations());
+        optResultSet.setObjectiveFunction(lastProgressItem.getObjFuncValue());
+
+        OptimizationStatus status = new OptimizationStatus(OptimizationStatus.NORMAL_TERMINATION, "Stopped by user");
+
+        return optRunToOptimizationResultSet(parameterEstimationTask, optResultSet, status);
+    }
+
+    public static OptimizationResultSet optRunToOptimizationResultSet(ParameterEstimationTask parameterEstimationTask, OptResultSet optResultSet, OptimizationStatus status) throws Exception {
         int numFittedParameters = optResultSet.getOptParameterValues().size();
         String[] paramNames = new String[numFittedParameters];
         double[] paramValues = new double[numFittedParameters];
@@ -310,7 +322,6 @@ public class CopasiUtils {
         }
 
         ParameterEstimationTaskSimulatorIDA parestSimulator = new ParameterEstimationTaskSimulatorIDA();
-        OptimizationStatus status = new OptimizationStatus(OptimizationStatus.NORMAL_TERMINATION, optRun.getStatusMessage());
         OptSolverResultSet.OptRunResultSet optRunResultSet = new OptSolverResultSet.OptRunResultSet(paramValues, optResultSet.getObjectiveFunction(), optResultSet.getNumFunctionEvaluations(), status);
         OptSolverResultSet copasiOptSolverResultSet = new OptSolverResultSet(paramNames, optRunResultSet);
         RowColumnResultSet copasiRcResultSet = parestSimulator.getRowColumnRestultSetByBestEstimations(parameterEstimationTask, paramNames, paramValues);
@@ -362,29 +373,64 @@ public class CopasiUtils {
     }
 
     public static OptProgressReport readProgressReportFromCSV(File progressReportFile) throws IOException {
+        return readProgressReportFromCSV(progressReportFile,10);
+    }
+
+    public static OptProgressReport readProgressReportFromCSV(File progressReportFile, int maxRecords) throws IOException {
         List<OptProgressItem> progressItems = new ArrayList<>();
-        try (BufferedReader reader = new BufferedReader(new FileReader(progressReportFile))) {
-            String line;
+        long fileSize = java.nio.file.Files.size(progressReportFile.toPath());
+        long N = maxRecords-1;
+        long numLines = 0;
+        List<String> paramNames = null;
+        try (LineNumberReader reader = new LineNumberReader(new FileReader(progressReportFile))) {
+            String header = reader.readLine();
+            if (header != null){
+                Gson gson = new Gson();
+                paramNames = gson.fromJson(header, List.class);
+                System.out.println(paramNames);
+            }
+            while (reader.readLine() != null) {
+                numLines++;
+            }
+        }
+
+        int step = Math.max(1, (int)Math.ceil(numLines/(maxRecords-1)));
+        String line = null;
+        String[] tokens = null;
+        int lineNumber = 0;
+        try (LineNumberReader reader = new LineNumberReader(new FileReader(progressReportFile))) {
+            reader.readLine(); // skip header
             while ((line = reader.readLine()) != null) {
-                String[] tokens = line.replace("(", "")
+                if (lineNumber%step != 0 && lineNumber < numLines-1){
+                    lineNumber++;
+                    continue;
+                }
+                tokens = line.replace("(", "")
                         .replace(")", "")
                         .replace("\t\t", "\t")
                         .split("\t");
-                int iteration = Integer.parseInt(tokens[0]);
+                int numFunctionEvaluations = Integer.parseInt(tokens[0]);
                 double objectiveFunctionValue = Double.parseDouble(tokens[1]);
-                List<Double> paramValues = new ArrayList<>();
-                for (int i = 2; i < tokens.length; i++) {
-                    paramValues.add(Double.parseDouble(tokens[i]));
-                }
                 OptProgressItem progressItem = new OptProgressItem();
-                progressItem.setIteration(iteration);
+                progressItem.setNumFunctionEvaluations(numFunctionEvaluations);
                 progressItem.setObjFuncValue(objectiveFunctionValue);
-                progressItem.setBestParamValues(paramValues);
                 progressItems.add(progressItem);
+                lineNumber++;
+            }
+        }
+        List<Double> paramValues = new ArrayList<>();
+        if (tokens != null) {
+            for (int i = 2; i < tokens.length; i++) {
+                paramValues.add(Double.parseDouble(tokens[i]));
             }
         }
         OptProgressReport progressReport = new OptProgressReport();
         progressReport.setProgressItems(progressItems);
+        Map<String, Double> bestParamValues = new HashMap<>();
+        for (int i=0; i<paramValues.size(); i++){
+            bestParamValues.put(paramNames.get(i), paramValues.get(i));
+        }
+        progressReport.setBestParamValues(bestParamValues);
         return progressReport;
     }
 

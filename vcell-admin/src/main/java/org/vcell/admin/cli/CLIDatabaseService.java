@@ -83,6 +83,11 @@ public class CLIDatabaseService implements AutoCloseable {
         return statuses;
     }
 
+    public String getBasicStatistics() throws SQLException, DataAccessException {
+        AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(conFactory);
+        return adminDbTopLevel.getBasicStatistics();
+    }
+
     public MathVerifier getMathVerifier() throws DataAccessException, SQLException {
         LocalAdminDbServer adminDbServer = new LocalAdminDbServer(conFactory, conFactory.getKeyFactory());
         return new MathVerifier(conFactory, adminDbServer);

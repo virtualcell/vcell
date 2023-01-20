@@ -5,13 +5,31 @@ package org.vcell.optimization.jtd;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import java.util.List;
+import java.util.Map;
 
 @JsonSerialize
 public class OptProgressReport {
+    @JsonProperty("bestParamValues")
+    private Map<String, Double> bestParamValues;
+
     @JsonProperty("progressItems")
     private List<OptProgressItem> progressItems;
 
     public OptProgressReport() {
+    }
+
+    /**
+     * Getter for bestParamValues.<p>
+     */
+    public Map<String, Double> getBestParamValues() {
+        return bestParamValues;
+    }
+
+    /**
+     * Setter for bestParamValues.<p>
+     */
+    public void setBestParamValues(Map<String, Double> bestParamValues) {
+        this.bestParamValues = bestParamValues;
     }
 
     /**

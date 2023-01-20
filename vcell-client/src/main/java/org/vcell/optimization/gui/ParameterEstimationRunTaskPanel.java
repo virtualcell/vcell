@@ -40,6 +40,7 @@ import org.vcell.client.logicalwindow.LWContainerHandle;
 import org.vcell.client.logicalwindow.LWNamespace;
 import org.vcell.optimization.CopasiOptSolverCallbacks;
 import org.vcell.optimization.CopasiOptimizationSolver;
+import org.vcell.optimization.CopasiUtils;
 import org.vcell.optimization.ParameterEstimationTaskSimulatorIDA;
 import org.vcell.optimization.jtd.OptProgressItem;
 import org.vcell.optimization.jtd.OptProgressReport;
@@ -503,24 +504,27 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 			if (evt.getSource() == parameterEstimationTask && (evt.getPropertyName().equals("optimizationResultSet"))) 
 				optimizationResultSet_This();
 			if (evt.getSource() == optSolverCallbacks && (evt.getPropertyName().equals(CopasiOptSolverCallbacks.OPT_PROGRESS_REPORT))) {
-				if (optSolverCallbacks.getProgressReport()!=null) {
+				if (optSolverCallbacks.getProgressReport() != null) {
 					OptProgressReport optProgressReport = optSolverCallbacks.getProgressReport();
-					if (optProgressReport.getProgressItems() == null || optProgressReport.getProgressItems().size()==0){
+					if (optProgressReport.getProgressItems() == null || optProgressReport.getProgressItems().size() == 0) {
 						getRunStatusDialog().setNumEvaluations(0);
 						getRunStatusDialog().setObjectFunctionValue(Double.POSITIVE_INFINITY);
-					}else {
+					} else {
 						OptProgressItem lastProgressItem = optProgressReport.getProgressItems().get(optProgressReport.getProgressItems().size() - 1);
-						getRunStatusDialog().setNumEvaluations(lastProgressItem.getIteration());
+						getRunStatusDialog().setNumEvaluations(lastProgressItem.getNumFunctionEvaluations());
 						getRunStatusDialog().setObjectFunctionValue(lastProgressItem.getObjFuncValue());
 					}
 				}
-//				getRunStatusDialog().setNumRunMessage(optSolverCallbacks.getRunNumber(), parameterEstimationTask.getOptimizationSolverSpec().getNumOfRuns());
-//				if (optimizationMethodParameterTableModel.copasiOptimizationMethod.getType().getProgressType() == CopasiOptSettings.CopasiOptProgressType.Progress) {
-//					getRunStatusDialog().setProgress((int) (optSolverCallbacks.getRunNumber() * 100.0 /parameterEstimationTask.getOptimizationSolverSpec().getNumOfRuns()));
-//				}
-//				if (optimizationMethodParameterTableModel.copasiOptimizationMethod.getType().getProgressType() == CopasiOptSettings.CopasiOptProgressType.Current_Value) {
-//					getRunStatusDialog().setCurrentValue(optSolverCallbacks.getCurrentValue());
-//				}
+			}
+			if (evt.getSource() == optSolverCallbacks && (evt.getPropertyName().equals(CopasiOptSolverCallbacks.STOP_REQUESTED))) {
+				if (optSolverCallbacks.getProgressReport()!=null) {
+					try {
+						OptimizationResultSet optimizationResultSet = CopasiUtils.getOptimizationResultSet(parameterEstimationTask, optSolverCallbacks.getProgressReport());
+						parameterEstimationTask.setOptimizationResultSet(optimizationResultSet);
+					} catch (Exception e) {
+						handleException(e);
+					}
+				}
 			}
 		}
 	}

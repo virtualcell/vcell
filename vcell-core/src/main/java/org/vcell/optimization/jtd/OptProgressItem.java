@@ -4,15 +4,11 @@ package org.vcell.optimization.jtd;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import java.util.List;
 
 @JsonSerialize
 public class OptProgressItem {
-    @JsonProperty("bestParamValues")
-    private List<Double> bestParamValues;
-
-    @JsonProperty("iteration")
-    private Integer iteration;
+    @JsonProperty("numFunctionEvaluations")
+    private Integer numFunctionEvaluations;
 
     @JsonProperty("objFuncValue")
     private Double objFuncValue;
@@ -21,31 +17,17 @@ public class OptProgressItem {
     }
 
     /**
-     * Getter for bestParamValues.<p>
+     * Getter for numFunctionEvaluations.<p>
      */
-    public List<Double> getBestParamValues() {
-        return bestParamValues;
+    public Integer getNumFunctionEvaluations() {
+        return numFunctionEvaluations;
     }
 
     /**
-     * Setter for bestParamValues.<p>
+     * Setter for numFunctionEvaluations.<p>
      */
-    public void setBestParamValues(List<Double> bestParamValues) {
-        this.bestParamValues = bestParamValues;
-    }
-
-    /**
-     * Getter for iteration.<p>
-     */
-    public Integer getIteration() {
-        return iteration;
-    }
-
-    /**
-     * Setter for iteration.<p>
-     */
-    public void setIteration(Integer iteration) {
-        this.iteration = iteration;
+    public void setNumFunctionEvaluations(Integer numFunctionEvaluations) {
+        this.numFunctionEvaluations = numFunctionEvaluations;
     }
 
     /**
