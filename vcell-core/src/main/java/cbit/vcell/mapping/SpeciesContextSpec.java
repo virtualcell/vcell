@@ -1773,6 +1773,10 @@ public SpatialQuantity[] getVelocityQuantities(QuantityComponent component) {
 	return velocityQuantities.toArray(new SpatialQuantity[0]);
 }
 
+public static MolecularTypeSpec getMolecularTypeSpec(SimulationContext sc, SpeciesContextSpec scs) {
+	// TODO: implement this
+	return null;
+}
 
 @Override
 public Kind getSimulationContextKind() {
