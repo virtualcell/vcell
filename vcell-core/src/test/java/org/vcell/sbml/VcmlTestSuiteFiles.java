@@ -264,6 +264,13 @@ public class VcmlTestSuiteFiles {
             "biomodel_111113048_smaller.vcml",
 
             // more public models
+            "biomodel_83651737.vcml",
+            "biomodel_97075423.vcml",
+            "biomodel_97705317.vcml",
+            "biomodel_97786619.vcml",
+            "biomodel_97786886.vcml",
+            "biomodel_97787114.vcml",
+            "biomodel_98730962.vcml",
             "biomodel_92383390.vcml",
             "biomodel_92830796.vcml",
             "biomodel_92839940.vcml",

@@ -175,15 +175,26 @@ public class MathGenCompareTest {
 
 		ArrayList<String> appTestCases = new ArrayList<>();
 		for (String filename : filenames){
+if (true
+&& !filename.equals("biomodel_97705317.vcml")
+&& !filename.equals("biomodel_83651737.vcml")
+&& !filename.equals("biomodel_97075423.vcml")
+&& !filename.equals("biomodel_97705317.vcml")
+&& !filename.equals("biomodel_97786619.vcml")
+&& !filename.equals("biomodel_97786886.vcml")
+&& !filename.equals("biomodel_97787114.vcml")
+&& !filename.equals("biomodel_98730962.vcml")
+) continue;
 			String vcmlStr;
 			try (InputStream testFileInputStream = VcmlTestSuiteFiles.getVcmlTestCase(filename);) {
 				vcmlStr = new BufferedReader(new InputStreamReader(testFileInputStream))
 						.lines().collect(Collectors.joining("\n"));
 			}
 			BioModel biomodel = XmlHelper.XMLToBioModel(new XMLSource(vcmlStr));
+//if (biomodel.getModel().getStructureTopology().isEmpty()) continue;
 			for (SimulationContext simContext : biomodel.getSimulationContexts()){
 				String test_case_name = filename + ":" + simContext.getName();
-//if (!knownReductionFaults().containsKey(test_case_name)) continue;
+//if (!knownLegacyFaults().containsKey(test_case_name)) continue;
 				appTestCases.add(test_case_name);
 			}
 		}

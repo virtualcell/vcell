@@ -1,0 +1,1948 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--This biomodel was generated in VCML Version Alpha_Version_7.4.0_build_87-->
+<vcml xmlns="http://sourceforge.net/projects/vcell/vcml" Version="Alpha_Version_7.4.0_build_87">
+  <BioModel Name="egfr_beginning">
+    <Model Name="model">
+      <Compound Name="s0" />
+      <Compound Name="s1" />
+      <Compound Name="s2" />
+      <Compound Name="s3" />
+      <Compound Name="s4" />
+      <Feature Name="c0" KeyValue="97075372" />
+      <LocalizedCompound Name="R" CompoundRef="s0" Structure="c0" OverrideName="true" KeyValue="97075374">
+        <SpeciesPattern>
+          <MolecularTypePattern Index="1">
+            <MolecularType Name="EGFR" />
+            <ComponentPattern MolecularComponent="ecd" BondType="-" />
+            <ComponentPattern MolecularComponent="tmd" BondType="-" />
+            <ComponentPattern MolecularComponent="y1068" ComponentStatePattern="u" BondType="-" />
+            <ComponentPattern MolecularComponent="y1173" ComponentStatePattern="u" BondType="-" />
+          </MolecularTypePattern>
+        </SpeciesPattern>
+      </LocalizedCompound>
+      <LocalizedCompound Name="L" CompoundRef="s1" Structure="c0" OverrideName="true" KeyValue="97075375">
+        <SpeciesPattern>
+          <MolecularTypePattern Index="1">
+            <MolecularType Name="EGF" />
+            <ComponentPattern MolecularComponent="rb" BondType="-" />
+          </MolecularTypePattern>
+        </SpeciesPattern>
+      </LocalizedCompound>
+      <LocalizedCompound Name="Grb2" CompoundRef="s2" Structure="c0" OverrideName="true" KeyValue="97075376">
+        <SpeciesPattern>
+          <MolecularTypePattern Index="1">
+            <MolecularType Name="Grb2" />
+            <ComponentPattern MolecularComponent="sh2" BondType="-" />
+          </MolecularTypePattern>
+        </SpeciesPattern>
+      </LocalizedCompound>
+      <LocalizedCompound Name="Shc" CompoundRef="s3" Structure="c0" OverrideName="true" KeyValue="97075377">
+        <SpeciesPattern>
+          <MolecularTypePattern Index="1">
+            <MolecularType Name="Shc" />
+            <ComponentPattern MolecularComponent="sh3" BondType="-" />
+            <ComponentPattern MolecularComponent="Y773" BondType="-" />
+          </MolecularTypePattern>
+        </SpeciesPattern>
+      </LocalizedCompound>
+      <LocalizedCompound Name="Grb2_Sos" CompoundRef="s4" Structure="c0" OverrideName="true" KeyValue="97075378">
+        <SpeciesPattern>
+          <MolecularTypePattern Index="1">
+            <MolecularType Name="Grb2" />
+            <ComponentPattern MolecularComponent="sh2" BondType="1">
+              <Bond MolecularTypePattern="Sos" ComponentPattern="site" />
+            </ComponentPattern>
+          </MolecularTypePattern>
+          <MolecularTypePattern Index="2">
+            <MolecularType Name="Sos" />
+            <ComponentPattern MolecularComponent="site" BondType="1">
+              <Bond MolecularTypePattern="Grb2" ComponentPattern="sh2" />
+            </ComponentPattern>
+          </MolecularTypePattern>
+        </SpeciesPattern>
+      </LocalizedCompound>
+      <RbmModelContainer>
+        <MolecularTypeList>
+          <MolecularType Name="EGFR" AnchorAll="true">
+            <MolecularComponent Name="ecd" Index="1" />
+            <MolecularComponent Name="tmd" Index="2" />
+            <MolecularComponent Name="y1068" Index="3">
+              <AllowableState Name="u" />
+              <AllowableState Name="p" />
+            </MolecularComponent>
+            <MolecularComponent Name="y1173" Index="4">
+              <AllowableState Name="u" />
+              <AllowableState Name="p" />
+            </MolecularComponent>
+          </MolecularType>
+          <MolecularType Name="EGF" AnchorAll="true">
+            <MolecularComponent Name="rb" Index="1" />
+          </MolecularType>
+          <MolecularType Name="Grb2" AnchorAll="true">
+            <MolecularComponent Name="sh2" Index="1" />
+          </MolecularType>
+          <MolecularType Name="Shc" AnchorAll="true">
+            <MolecularComponent Name="sh3" Index="1" />
+            <MolecularComponent Name="Y773" Index="2" />
+          </MolecularType>
+          <MolecularType Name="Sos" AnchorAll="true">
+            <MolecularComponent Name="site" Index="1" />
+          </MolecularType>
+        </MolecularTypeList>
+        <RbmObservableList>
+          <Observable Name="EGFR_tot" ObservableType="Molecules" Sequence="Multimolecular" LengthEqual="2" LengthGreater="1" Structure="c0">
+            <SpeciesPattern>
+              <MolecularTypePattern Index="1">
+                <MolecularType Name="EGFR" />
+                <ComponentPattern MolecularComponent="ecd" BondType="?" />
+                <ComponentPattern MolecularComponent="tmd" BondType="?" />
+                <ComponentPattern MolecularComponent="y1068" Any="true" BondType="?" />
+                <ComponentPattern MolecularComponent="y1173" Any="true" BondType="?" />
+              </MolecularTypePattern>
+            </SpeciesPattern>
+          </Observable>
+          <Observable Name="EGF_tot" ObservableType="Molecules" Sequence="Multimolecular" LengthEqual="2" LengthGreater="1" Structure="c0">
+            <SpeciesPattern>
+              <MolecularTypePattern Index="1">
+                <MolecularType Name="EGF" />
+                <ComponentPattern MolecularComponent="rb" BondType="?" />
+              </MolecularTypePattern>
+            </SpeciesPattern>
+          </Observable>
+          <Observable Name="Shc_tot" ObservableType="Molecules" Sequence="Multimolecular" LengthEqual="2" LengthGreater="1" Structure="c0">
+            <SpeciesPattern>
+              <MolecularTypePattern Index="1">
+                <MolecularType Name="Shc" />
+                <ComponentPattern MolecularComponent="sh3" BondType="?" />
+                <ComponentPattern MolecularComponent="Y773" BondType="?" />
+              </MolecularTypePattern>
+            </SpeciesPattern>
+          </Observable>
+          <Observable Name="Grb2_tot" ObservableType="Molecules" Sequence="Multimolecular" LengthEqual="2" LengthGreater="1" Structure="c0">
+            <SpeciesPattern>
+              <MolecularTypePattern Index="1">
+                <MolecularType Name="Grb2" />
+                <ComponentPattern MolecularComponent="sh2" BondType="?" />
+              </MolecularTypePattern>
+            </SpeciesPattern>
+          </Observable>
+          <Observable Name="O0_Sos_tot" ObservableType="Molecules" Sequence="Multimolecular" LengthEqual="2" LengthGreater="1" Structure="c0">
+            <SpeciesPattern>
+              <MolecularTypePattern Index="1">
+                <MolecularType Name="Sos" />
+                <ComponentPattern MolecularComponent="site" BondType="?" />
+              </MolecularTypePattern>
+            </SpeciesPattern>
+          </Observable>
+          <Observable Name="Dimers" ObservableType="Molecules" Sequence="Multimolecular" LengthEqual="2" LengthGreater="1" Structure="c0">
+            <SpeciesPattern>
+              <MolecularTypePattern Index="1">
+                <MolecularType Name="EGFR" />
+                <ComponentPattern MolecularComponent="ecd" BondType="?" />
+                <ComponentPattern MolecularComponent="tmd" BondType="+" />
+                <ComponentPattern MolecularComponent="y1068" Any="true" BondType="?" />
+                <ComponentPattern MolecularComponent="y1173" Any="true" BondType="?" />
+              </MolecularTypePattern>
+            </SpeciesPattern>
+          </Observable>
+          <Observable Name="Dimer_s" ObservableType="Molecules" Sequence="Multimolecular" LengthEqual="2" LengthGreater="1" Structure="c0">
+            <SpeciesPattern>
+              <MolecularTypePattern Index="1">
+                <MolecularType Name="EGFR" />
+                <ComponentPattern MolecularComponent="ecd" BondType="?" />
+                <ComponentPattern MolecularComponent="tmd" BondType="1">
+                  <Bond MolecularTypePattern="EGFR" ComponentPattern="tmd" />
+                </ComponentPattern>
+                <ComponentPattern MolecularComponent="y1068" Any="true" BondType="?" />
+                <ComponentPattern MolecularComponent="y1173" Any="true" BondType="?" />
+              </MolecularTypePattern>
+              <MolecularTypePattern Index="2">
+                <MolecularType Name="EGFR" />
+                <ComponentPattern MolecularComponent="ecd" BondType="?" />
+                <ComponentPattern MolecularComponent="tmd" BondType="1">
+                  <Bond MolecularTypePattern="EGFR" ComponentPattern="tmd" />
+                </ComponentPattern>
+                <ComponentPattern MolecularComponent="y1068" Any="true" BondType="?" />
+                <ComponentPattern MolecularComponent="y1173" Any="true" BondType="?" />
+              </MolecularTypePattern>
+            </SpeciesPattern>
+          </Observable>
+          <Observable Name="Y1068_phosp" ObservableType="Molecules" Sequence="Multimolecular" LengthEqual="2" LengthGreater="1" Structure="c0">
+            <SpeciesPattern>
+              <MolecularTypePattern Index="1">
+                <MolecularType Name="EGFR" />
+                <ComponentPattern MolecularComponent="ecd" BondType="?" />
+                <ComponentPattern MolecularComponent="tmd" BondType="?" />
+                <ComponentPattern MolecularComponent="y1068" ComponentStatePattern="p" BondType="?" />
+                <ComponentPattern MolecularComponent="y1173" Any="true" BondType="?" />
+              </MolecularTypePattern>
+            </SpeciesPattern>
+          </Observable>
+          <Observable Name="Y1173_phosp" ObservableType="Molecules" Sequence="Multimolecular" LengthEqual="2" LengthGreater="1" Structure="c0">
+            <SpeciesPattern>
+              <MolecularTypePattern Index="1">
+                <MolecularType Name="EGFR" />
+                <ComponentPattern MolecularComponent="ecd" BondType="?" />
+                <ComponentPattern MolecularComponent="tmd" BondType="?" />
+                <ComponentPattern MolecularComponent="y1068" Any="true" BondType="?" />
+                <ComponentPattern MolecularComponent="y1173" ComponentStatePattern="p" BondType="?" />
+              </MolecularTypePattern>
+            </SpeciesPattern>
+          </Observable>
+          <Observable Name="Total_phosp" ObservableType="Molecules" Sequence="Multimolecular" LengthEqual="2" LengthGreater="1" Structure="c0">
+            <SpeciesPattern>
+              <MolecularTypePattern Index="1">
+                <MolecularType Name="EGFR" />
+                <ComponentPattern MolecularComponent="ecd" BondType="?" />
+                <ComponentPattern MolecularComponent="tmd" BondType="?" />
+                <ComponentPattern MolecularComponent="y1068" ComponentStatePattern="p" BondType="?" />
+                <ComponentPattern MolecularComponent="y1173" Any="true" BondType="?" />
+              </MolecularTypePattern>
+            </SpeciesPattern>
+            <SpeciesPattern>
+              <MolecularTypePattern Index="1">
+                <MolecularType Name="EGFR" />
+                <ComponentPattern MolecularComponent="ecd" BondType="?" />
+                <ComponentPattern MolecularComponent="tmd" BondType="?" />
+                <ComponentPattern MolecularComponent="y1068" Any="true" BondType="?" />
+                <ComponentPattern MolecularComponent="y1173" ComponentStatePattern="p" BondType="?" />
+              </MolecularTypePattern>
+            </SpeciesPattern>
+          </Observable>
+          <Observable Name="R_Grb2" ObservableType="Molecules" Sequence="Multimolecular" LengthEqual="2" LengthGreater="1" Structure="c0">
+            <SpeciesPattern>
+              <MolecularTypePattern Index="1">
+                <MolecularType Name="EGFR" />
+                <ComponentPattern MolecularComponent="ecd" BondType="?" />
+                <ComponentPattern MolecularComponent="tmd" BondType="?" />
+                <ComponentPattern MolecularComponent="y1068" Any="true" BondType="1">
+                  <Bond MolecularTypePattern="Grb2" ComponentPattern="sh2" />
+                </ComponentPattern>
+                <ComponentPattern MolecularComponent="y1173" Any="true" BondType="?" />
+              </MolecularTypePattern>
+              <MolecularTypePattern Index="2">
+                <MolecularType Name="Grb2" />
+                <ComponentPattern MolecularComponent="sh2" BondType="1">
+                  <Bond MolecularTypePattern="EGFR" ComponentPattern="y1068" />
+                </ComponentPattern>
+              </MolecularTypePattern>
+            </SpeciesPattern>
+          </Observable>
+        </RbmObservableList>
+        <ReactionRuleList>
+          <ReactionRule Name="r0" Structure="c0" ReactionRuleLabel="r0" ReactionRuleReversible="true">
+            <ReactantPatternsList>
+              <ReactantPattern Structure="c0">
+                <SpeciesPattern>
+                  <MolecularTypePattern Index="1">
+                    <MolecularType Name="EGFR" />
+                    <ComponentPattern MolecularComponent="ecd" BondType="-" />
+                    <ComponentPattern MolecularComponent="tmd" BondType="-" />
+                    <ComponentPattern MolecularComponent="y1068" Any="true" BondType="?" />
+                    <ComponentPattern MolecularComponent="y1173" Any="true" BondType="?" />
+                  </MolecularTypePattern>
+                </SpeciesPattern>
+              </ReactantPattern>
+              <ReactantPattern Structure="c0">
+                <SpeciesPattern>
+                  <MolecularTypePattern Index="1">
+                    <MolecularType Name="EGF" />
+                    <ComponentPattern MolecularComponent="rb" BondType="-" />
+                  </MolecularTypePattern>
+                </SpeciesPattern>
+              </ReactantPattern>
+            </ReactantPatternsList>
+            <ProductPatternsList>
+              <ProductPattern Structure="c0">
+                <SpeciesPattern>
+                  <MolecularTypePattern Index="1">
+                    <MolecularType Name="EGF" />
+                    <ComponentPattern MolecularComponent="rb" BondType="1">
+                      <Bond MolecularTypePattern="EGFR" ComponentPattern="ecd" />
+                    </ComponentPattern>
+                  </MolecularTypePattern>
+                  <MolecularTypePattern Index="2">
+                    <MolecularType Name="EGFR" />
+                    <ComponentPattern MolecularComponent="ecd" BondType="1">
+                      <Bond MolecularTypePattern="EGF" ComponentPattern="rb" />
+                    </ComponentPattern>
+                    <ComponentPattern MolecularComponent="tmd" BondType="-" />
+                    <ComponentPattern MolecularComponent="y1068" Any="true" BondType="?" />
+                    <ComponentPattern MolecularComponent="y1173" Any="true" BondType="?" />
+                  </MolecularTypePattern>
+                </SpeciesPattern>
+              </ProductPattern>
+            </ProductPatternsList>
+            <Kinetics KineticsType="MassAction">
+              <Parameter Name="ruleRate" Role="RuleRate" Unit="nM.s-1" />
+              <Parameter Name="Kf" Role="MassActionKf" Unit="s-1.nM-1">0.003</Parameter>
+              <Parameter Name="Kr" Role="MassActionKr" Unit="s-1">0.06</Parameter>
+            </Kinetics>
+          </ReactionRule>
+          <ReactionRule Name="r1" Structure="c0" ReactionRuleLabel="r1" ReactionRuleReversible="true">
+            <ReactantPatternsList>
+              <ReactantPattern Structure="c0">
+                <SpeciesPattern>
+                  <MolecularTypePattern ParticipantMatch="1" Index="1">
+                    <MolecularType Name="EGFR" />
+                    <ComponentPattern MolecularComponent="ecd" BondType="+" />
+                    <ComponentPattern MolecularComponent="tmd" BondType="-" />
+                    <ComponentPattern MolecularComponent="y1068" Any="true" BondType="?" />
+                    <ComponentPattern MolecularComponent="y1173" Any="true" BondType="?" />
+                  </MolecularTypePattern>
+                </SpeciesPattern>
+              </ReactantPattern>
+              <ReactantPattern Structure="c0">
+                <SpeciesPattern>
+                  <MolecularTypePattern ParticipantMatch="2" Index="1">
+                    <MolecularType Name="EGFR" />
+                    <ComponentPattern MolecularComponent="ecd" BondType="+" />
+                    <ComponentPattern MolecularComponent="tmd" BondType="-" />
+                    <ComponentPattern MolecularComponent="y1068" Any="true" BondType="?" />
+                    <ComponentPattern MolecularComponent="y1173" Any="true" BondType="?" />
+                  </MolecularTypePattern>
+                </SpeciesPattern>
+              </ReactantPattern>
+            </ReactantPatternsList>
+            <ProductPatternsList>
+              <ProductPattern Structure="c0">
+                <SpeciesPattern>
+                  <MolecularTypePattern ParticipantMatch="1" Index="1">
+                    <MolecularType Name="EGFR" />
+                    <ComponentPattern MolecularComponent="ecd" BondType="+" />
+                    <ComponentPattern MolecularComponent="tmd" BondType="1">
+                      <Bond MolecularTypePattern="EGFR" ComponentPattern="tmd" />
+                    </ComponentPattern>
+                    <ComponentPattern MolecularComponent="y1068" Any="true" BondType="?" />
+                    <ComponentPattern MolecularComponent="y1173" Any="true" BondType="?" />
+                  </MolecularTypePattern>
+                  <MolecularTypePattern ParticipantMatch="2" Index="2">
+                    <MolecularType Name="EGFR" />
+                    <ComponentPattern MolecularComponent="ecd" BondType="+" />
+                    <ComponentPattern MolecularComponent="tmd" BondType="1">
+                      <Bond MolecularTypePattern="EGFR" ComponentPattern="tmd" />
+                    </ComponentPattern>
+                    <ComponentPattern MolecularComponent="y1068" Any="true" BondType="?" />
+                    <ComponentPattern MolecularComponent="y1173" Any="true" BondType="?" />
+                  </MolecularTypePattern>
+                </SpeciesPattern>
+              </ProductPattern>
+            </ProductPatternsList>
+            <Kinetics KineticsType="MassAction">
+              <Parameter Name="ruleRate" Role="RuleRate" Unit="nM.s-1" />
+              <Parameter Name="Kf" Role="MassActionKf" Unit="s-1.nM-1">0.01</Parameter>
+              <Parameter Name="Kr" Role="MassActionKr" Unit="s-1">0.1</Parameter>
+            </Kinetics>
+          </ReactionRule>
+          <ReactionRule Name="r2" Structure="c0" ReactionRuleLabel="r2" ReactionRuleReversible="false">
+            <ReactantPatternsList>
+              <ReactantPattern Structure="c0">
+                <SpeciesPattern>
+                  <MolecularTypePattern Index="1">
+                    <MolecularType Name="EGFR" />
+                    <ComponentPattern MolecularComponent="ecd" BondType="?" />
+                    <ComponentPattern MolecularComponent="tmd" BondType="+" />
+                    <ComponentPattern MolecularComponent="y1068" Any="true" BondType="?" />
+                    <ComponentPattern MolecularComponent="y1173" ComponentStatePattern="u" BondType="-" />
+                  </MolecularTypePattern>
+                </SpeciesPattern>
+              </ReactantPattern>
+            </ReactantPatternsList>
+            <ProductPatternsList>
+              <ProductPattern Structure="c0">
+                <SpeciesPattern>
+                  <MolecularTypePattern Index="1">
+                    <MolecularType Name="EGFR" />
+                    <ComponentPattern MolecularComponent="ecd" BondType="?" />
+                    <ComponentPattern MolecularComponent="tmd" BondType="+" />
+                    <ComponentPattern MolecularComponent="y1068" Any="true" BondType="?" />
+                    <ComponentPattern MolecularComponent="y1173" ComponentStatePattern="p" BondType="-" />
+                  </MolecularTypePattern>
+                </SpeciesPattern>
+              </ProductPattern>
+            </ProductPatternsList>
+            <Kinetics KineticsType="MassAction">
+              <Parameter Name="ruleRate" Role="RuleRate" Unit="nM.s-1" />
+              <Parameter Name="Kf" Role="MassActionKf" Unit="s-1">0.5</Parameter>
+              <Parameter Name="Kr" Role="MassActionKr" Unit="s-1">0.0</Parameter>
+            </Kinetics>
+          </ReactionRule>
+          <ReactionRule Name="r3" Structure="c0" ReactionRuleLabel="r3" ReactionRuleReversible="false">
+            <ReactantPatternsList>
+              <ReactantPattern Structure="c0">
+                <SpeciesPattern>
+                  <MolecularTypePattern Index="1">
+                    <MolecularType Name="EGFR" />
+                    <ComponentPattern MolecularComponent="ecd" BondType="?" />
+                    <ComponentPattern MolecularComponent="tmd" BondType="?" />
+                    <ComponentPattern MolecularComponent="y1068" Any="true" BondType="?" />
+                    <ComponentPattern MolecularComponent="y1173" ComponentStatePattern="p" BondType="-" />
+                  </MolecularTypePattern>
+                </SpeciesPattern>
+              </ReactantPattern>
+            </ReactantPatternsList>
+            <ProductPatternsList>
+              <ProductPattern Structure="c0">
+                <SpeciesPattern>
+                  <MolecularTypePattern Index="1">
+                    <MolecularType Name="EGFR" />
+                    <ComponentPattern MolecularComponent="ecd" BondType="?" />
+                    <ComponentPattern MolecularComponent="tmd" BondType="?" />
+                    <ComponentPattern MolecularComponent="y1068" Any="true" BondType="?" />
+                    <ComponentPattern MolecularComponent="y1173" ComponentStatePattern="u" BondType="-" />
+                  </MolecularTypePattern>
+                </SpeciesPattern>
+              </ProductPattern>
+            </ProductPatternsList>
+            <Kinetics KineticsType="MassAction">
+              <Parameter Name="ruleRate" Role="RuleRate" Unit="nM.s-1" />
+              <Parameter Name="Kf" Role="MassActionKf" Unit="s-1">4.505</Parameter>
+              <Parameter Name="Kr" Role="MassActionKr" Unit="s-1">0.0</Parameter>
+            </Kinetics>
+          </ReactionRule>
+          <ReactionRule Name="r4" Structure="c0" ReactionRuleLabel="r4" ReactionRuleReversible="false">
+            <ReactantPatternsList>
+              <ReactantPattern Structure="c0">
+                <SpeciesPattern>
+                  <MolecularTypePattern Index="1">
+                    <MolecularType Name="EGFR" />
+                    <ComponentPattern MolecularComponent="ecd" BondType="?" />
+                    <ComponentPattern MolecularComponent="tmd" BondType="+" />
+                    <ComponentPattern MolecularComponent="y1068" ComponentStatePattern="u" BondType="-" />
+                    <ComponentPattern MolecularComponent="y1173" Any="true" BondType="?" />
+                  </MolecularTypePattern>
+                </SpeciesPattern>
+              </ReactantPattern>
+            </ReactantPatternsList>
+            <ProductPatternsList>
+              <ProductPattern Structure="c0">
+                <SpeciesPattern>
+                  <MolecularTypePattern Index="1">
+                    <MolecularType Name="EGFR" />
+                    <ComponentPattern MolecularComponent="ecd" BondType="?" />
+                    <ComponentPattern MolecularComponent="tmd" BondType="+" />
+                    <ComponentPattern MolecularComponent="y1068" ComponentStatePattern="p" BondType="-" />
+                    <ComponentPattern MolecularComponent="y1173" Any="true" BondType="?" />
+                  </MolecularTypePattern>
+                </SpeciesPattern>
+              </ProductPattern>
+            </ProductPatternsList>
+            <Kinetics KineticsType="MassAction">
+              <Parameter Name="ruleRate" Role="RuleRate" Unit="nM.s-1" />
+              <Parameter Name="Kf" Role="MassActionKf" Unit="s-1">0.5</Parameter>
+              <Parameter Name="Kr" Role="MassActionKr" Unit="s-1">0.0</Parameter>
+            </Kinetics>
+          </ReactionRule>
+          <ReactionRule Name="r5" Structure="c0" ReactionRuleLabel="r5" ReactionRuleReversible="false">
+            <ReactantPatternsList>
+              <ReactantPattern Structure="c0">
+                <SpeciesPattern>
+                  <MolecularTypePattern Index="1">
+                    <MolecularType Name="EGFR" />
+                    <ComponentPattern MolecularComponent="ecd" BondType="?" />
+                    <ComponentPattern MolecularComponent="tmd" BondType="?" />
+                    <ComponentPattern MolecularComponent="y1068" ComponentStatePattern="p" BondType="-" />
+                    <ComponentPattern MolecularComponent="y1173" Any="true" BondType="?" />
+                  </MolecularTypePattern>
+                </SpeciesPattern>
+              </ReactantPattern>
+            </ReactantPatternsList>
+            <ProductPatternsList>
+              <ProductPattern Structure="c0">
+                <SpeciesPattern>
+                  <MolecularTypePattern Index="1">
+                    <MolecularType Name="EGFR" />
+                    <ComponentPattern MolecularComponent="ecd" BondType="?" />
+                    <ComponentPattern MolecularComponent="tmd" BondType="?" />
+                    <ComponentPattern MolecularComponent="y1068" ComponentStatePattern="u" BondType="-" />
+                    <ComponentPattern MolecularComponent="y1173" Any="true" BondType="?" />
+                  </MolecularTypePattern>
+                </SpeciesPattern>
+              </ProductPattern>
+            </ProductPatternsList>
+            <Kinetics KineticsType="MassAction">
+              <Parameter Name="ruleRate" Role="RuleRate" Unit="nM.s-1" />
+              <Parameter Name="Kf" Role="MassActionKf" Unit="s-1">4.505</Parameter>
+              <Parameter Name="Kr" Role="MassActionKr" Unit="s-1">0.0</Parameter>
+            </Kinetics>
+          </ReactionRule>
+          <ReactionRule Name="r6" Structure="c0" ReactionRuleLabel="r6" ReactionRuleReversible="true">
+            <ReactantPatternsList>
+              <ReactantPattern Structure="c0">
+                <SpeciesPattern>
+                  <MolecularTypePattern Index="1">
+                    <MolecularType Name="EGFR" />
+                    <ComponentPattern MolecularComponent="ecd" BondType="?" />
+                    <ComponentPattern MolecularComponent="tmd" BondType="?" />
+                    <ComponentPattern MolecularComponent="y1068" ComponentStatePattern="p" BondType="-" />
+                    <ComponentPattern MolecularComponent="y1173" Any="true" BondType="?" />
+                  </MolecularTypePattern>
+                </SpeciesPattern>
+              </ReactantPattern>
+              <ReactantPattern Structure="c0">
+                <SpeciesPattern>
+                  <MolecularTypePattern Index="1">
+                    <MolecularType Name="Grb2" />
+                    <ComponentPattern MolecularComponent="sh2" BondType="-" />
+                  </MolecularTypePattern>
+                </SpeciesPattern>
+              </ReactantPattern>
+            </ReactantPatternsList>
+            <ProductPatternsList>
+              <ProductPattern Structure="c0">
+                <SpeciesPattern>
+                  <MolecularTypePattern Index="1">
+                    <MolecularType Name="EGFR" />
+                    <ComponentPattern MolecularComponent="ecd" BondType="?" />
+                    <ComponentPattern MolecularComponent="tmd" BondType="?" />
+                    <ComponentPattern MolecularComponent="y1068" ComponentStatePattern="p" BondType="1">
+                      <Bond MolecularTypePattern="Grb2" ComponentPattern="sh2" />
+                    </ComponentPattern>
+                    <ComponentPattern MolecularComponent="y1173" Any="true" BondType="?" />
+                  </MolecularTypePattern>
+                  <MolecularTypePattern Index="2">
+                    <MolecularType Name="Grb2" />
+                    <ComponentPattern MolecularComponent="sh2" BondType="1">
+                      <Bond MolecularTypePattern="EGFR" ComponentPattern="y1068" />
+                    </ComponentPattern>
+                  </MolecularTypePattern>
+                </SpeciesPattern>
+              </ProductPattern>
+            </ProductPatternsList>
+            <Kinetics KineticsType="MassAction">
+              <Parameter Name="ruleRate" Role="RuleRate" Unit="nM.s-1" />
+              <Parameter Name="Kf" Role="MassActionKf" Unit="s-1.nM-1">0.0015</Parameter>
+              <Parameter Name="Kr" Role="MassActionKr" Unit="s-1">0.05</Parameter>
+            </Kinetics>
+          </ReactionRule>
+        </ReactionRuleList>
+      </RbmModelContainer>
+      <Diagram Name="c0" Structure="c0" />
+      <Version Name="model" KeyValue="97075364" BranchId="97075365" Archived="0" Date="07-Oct-2015 17:05:15" FromVersionable="false">
+        <Owner Name="mblinov" Identifier="12487253" />
+        <GroupAccess Type="1" />
+      </Version>
+      <ModelUnitSystem VolumeSubstanceUnit="nM.um3" MembraneSubstanceUnit="molecules" LumpedReactionSubstanceUnit="molecules" VolumeUnit="um3" AreaUnit="um2" LengthUnit="um" TimeUnit="s" />
+    </Model>
+    <SimulationSpec Name="Application0" Stochastic="false" UseConcentration="true" RuleBased="false" MassConservationModelReduction="true" InsufficientIterations="false" InsufficientMaxMolecules="false">
+      <NetworkConstraints RbmMaxIteration="10" RbmMaxMoleculesPerSpecies="10" RbmSpeciesLimit="800" RbmReactionsLimit="2500">
+        <MaxStoichiometry MolecularType="EGFR" Integer="100" />
+        <MaxStoichiometry MolecularType="EGF" Integer="100" />
+        <MaxStoichiometry MolecularType="Grb2" Integer="100" />
+        <MaxStoichiometry MolecularType="Shc" Integer="100" />
+        <MaxStoichiometry MolecularType="Sos" Integer="100" />
+      </NetworkConstraints>
+      <Annotation />
+      <Geometry Name="non-spatial1785394668" Dimension="0">
+        <Extent X="10.0" Y="10.0" Z="10.0" />
+        <Origin X="0.0" Y="0.0" Z="0.0" />
+        <SubVolume Name="Compartment" Handle="0" Type="Compartmental" KeyValue="97075352" />
+        <Version Name="non-spatial1785394668" KeyValue="97075348" BranchId="97075349" Archived="0" Date="07-Oct-2015 17:05:15" FromVersionable="false">
+          <Owner Name="mblinov" Identifier="12487253" />
+          <GroupAccess Type="1" />
+        </Version>
+      </Geometry>
+      <GeometryContext>
+        <FeatureMapping Feature="c0" GeometryClass="Compartment" SubVolume="Compartment" Size="50000.0">
+          <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
+        </FeatureMapping>
+      </GeometryContext>
+      <ReactionContext>
+        <LocalizedCompoundSpec LocalizedCompoundRef="R" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>100.0</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="L" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>680.0</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="Grb2" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>58.0</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="Shc" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>150.0</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="Grb2_Sos" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>27.0</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <ReactionRuleSpecs>
+          <ReactionRuleSpec ReactionRuleRef="r0" ReactionRuleMapping="included" />
+          <ReactionRuleSpec ReactionRuleRef="r1" ReactionRuleMapping="included" />
+          <ReactionRuleSpec ReactionRuleRef="r2" ReactionRuleMapping="included" />
+          <ReactionRuleSpec ReactionRuleRef="r3" ReactionRuleMapping="included" />
+          <ReactionRuleSpec ReactionRuleRef="r4" ReactionRuleMapping="included" />
+          <ReactionRuleSpec ReactionRuleRef="r5" ReactionRuleMapping="included" />
+          <ReactionRuleSpec ReactionRuleRef="r6" ReactionRuleMapping="included" />
+        </ReactionRuleSpecs>
+      </ReactionContext>
+      <MathDescription Name="Application0_generated">
+        <Constant Name="_F_">96480.0</Constant>
+        <Constant Name="_F_nmol_">9.648E-5</Constant>
+        <Constant Name="_K_GHK_">1.0E-9</Constant>
+        <Constant Name="_N_pmol_">6.02E11</Constant>
+        <Constant Name="_PI_">3.141592653589793</Constant>
+        <Constant Name="_R_">8314.0</Constant>
+        <Constant Name="_T_">300.0</Constant>
+        <Constant Name="Grb2_init_nM">58.0</Constant>
+        <Constant Name="Grb2_Sos_init_nM">27.0</Constant>
+        <Constant Name="K_millivolts_per_volt">1000.0</Constant>
+        <Constant Name="Kf__reverse_r0_0">0.06</Constant>
+        <Constant Name="Kf__reverse_r0_1">0.06</Constant>
+        <Constant Name="Kf__reverse_r0_2">0.06</Constant>
+        <Constant Name="Kf__reverse_r0_3">0.06</Constant>
+        <Constant Name="Kf__reverse_r0_4">0.06</Constant>
+        <Constant Name="Kf__reverse_r0_5">0.06</Constant>
+        <Constant Name="Kf__reverse_r1_0">0.1</Constant>
+        <Constant Name="Kf__reverse_r1_1">0.1</Constant>
+        <Constant Name="Kf__reverse_r1_10">0.1</Constant>
+        <Constant Name="Kf__reverse_r1_11">0.1</Constant>
+        <Constant Name="Kf__reverse_r1_12">0.1</Constant>
+        <Constant Name="Kf__reverse_r1_13">0.1</Constant>
+        <Constant Name="Kf__reverse_r1_14">0.1</Constant>
+        <Constant Name="Kf__reverse_r1_15">0.1</Constant>
+        <Constant Name="Kf__reverse_r1_16">0.1</Constant>
+        <Constant Name="Kf__reverse_r1_17">0.1</Constant>
+        <Constant Name="Kf__reverse_r1_18">0.1</Constant>
+        <Constant Name="Kf__reverse_r1_19">0.1</Constant>
+        <Constant Name="Kf__reverse_r1_2">0.1</Constant>
+        <Constant Name="Kf__reverse_r1_20">0.1</Constant>
+        <Constant Name="Kf__reverse_r1_3">0.1</Constant>
+        <Constant Name="Kf__reverse_r1_4">0.1</Constant>
+        <Constant Name="Kf__reverse_r1_5">0.1</Constant>
+        <Constant Name="Kf__reverse_r1_6">0.1</Constant>
+        <Constant Name="Kf__reverse_r1_7">0.1</Constant>
+        <Constant Name="Kf__reverse_r1_8">0.1</Constant>
+        <Constant Name="Kf__reverse_r1_9">0.1</Constant>
+        <Constant Name="Kf__reverse_r6_0">0.05</Constant>
+        <Constant Name="Kf__reverse_r6_1">0.05</Constant>
+        <Constant Name="Kf__reverse_r6_10">0.05</Constant>
+        <Constant Name="Kf__reverse_r6_11">0.05</Constant>
+        <Constant Name="Kf__reverse_r6_12">0.05</Constant>
+        <Constant Name="Kf__reverse_r6_13">0.05</Constant>
+        <Constant Name="Kf__reverse_r6_14">0.05</Constant>
+        <Constant Name="Kf__reverse_r6_2">0.05</Constant>
+        <Constant Name="Kf__reverse_r6_3">0.05</Constant>
+        <Constant Name="Kf__reverse_r6_4">0.05</Constant>
+        <Constant Name="Kf__reverse_r6_5">0.05</Constant>
+        <Constant Name="Kf__reverse_r6_6">0.05</Constant>
+        <Constant Name="Kf__reverse_r6_8">0.05</Constant>
+        <Constant Name="Kf__reverse_r6_9">0.05</Constant>
+        <Constant Name="Kf_r0_0">0.003</Constant>
+        <Constant Name="Kf_r0_1">0.003</Constant>
+        <Constant Name="Kf_r0_2">0.003</Constant>
+        <Constant Name="Kf_r0_3">0.003</Constant>
+        <Constant Name="Kf_r0_4">0.003</Constant>
+        <Constant Name="Kf_r0_5">0.003</Constant>
+        <Constant Name="Kf_r1_1">0.01</Constant>
+        <Constant Name="Kf_r1_10">0.01</Constant>
+        <Constant Name="Kf_r1_11">0.01</Constant>
+        <Constant Name="Kf_r1_13">0.01</Constant>
+        <Constant Name="Kf_r1_15">0.01</Constant>
+        <Constant Name="Kf_r1_16">0.01</Constant>
+        <Constant Name="Kf_r1_17">0.01</Constant>
+        <Constant Name="Kf_r1_18">0.01</Constant>
+        <Constant Name="Kf_r1_19">0.01</Constant>
+        <Constant Name="Kf_r1_2">0.01</Constant>
+        <Constant Name="Kf_r1_4">0.01</Constant>
+        <Constant Name="Kf_r1_6">0.01</Constant>
+        <Constant Name="Kf_r1_7">0.01</Constant>
+        <Constant Name="Kf_r1_8">0.01</Constant>
+        <Constant Name="Kf_r1_9">0.01</Constant>
+        <Constant Name="Kf_r2_1">0.5</Constant>
+        <Constant Name="Kf_r2_10">0.5</Constant>
+        <Constant Name="Kf_r2_11">0.5</Constant>
+        <Constant Name="Kf_r2_12">0.5</Constant>
+        <Constant Name="Kf_r2_13">0.5</Constant>
+        <Constant Name="Kf_r2_14">0.5</Constant>
+        <Constant Name="Kf_r2_16">0.5</Constant>
+        <Constant Name="Kf_r2_17">0.5</Constant>
+        <Constant Name="Kf_r2_2">0.5</Constant>
+        <Constant Name="Kf_r2_3">0.5</Constant>
+        <Constant Name="Kf_r2_4">0.5</Constant>
+        <Constant Name="Kf_r2_5">0.5</Constant>
+        <Constant Name="Kf_r2_7">0.5</Constant>
+        <Constant Name="Kf_r2_8">0.5</Constant>
+        <Constant Name="Kf_r2_9">0.5</Constant>
+        <Constant Name="Kf_r3_0">4.505</Constant>
+        <Constant Name="Kf_r3_1">4.505</Constant>
+        <Constant Name="Kf_r3_10">4.505</Constant>
+        <Constant Name="Kf_r3_11">4.505</Constant>
+        <Constant Name="Kf_r3_12">4.505</Constant>
+        <Constant Name="Kf_r3_14">4.505</Constant>
+        <Constant Name="Kf_r3_15">4.505</Constant>
+        <Constant Name="Kf_r3_16">4.505</Constant>
+        <Constant Name="Kf_r3_17">4.505</Constant>
+        <Constant Name="Kf_r3_18">4.505</Constant>
+        <Constant Name="Kf_r3_19">4.505</Constant>
+        <Constant Name="Kf_r3_20">4.505</Constant>
+        <Constant Name="Kf_r3_21">4.505</Constant>
+        <Constant Name="Kf_r3_22">4.505</Constant>
+        <Constant Name="Kf_r3_3">4.505</Constant>
+        <Constant Name="Kf_r3_4">4.505</Constant>
+        <Constant Name="Kf_r3_5">4.505</Constant>
+        <Constant Name="Kf_r3_6">4.505</Constant>
+        <Constant Name="Kf_r3_7">4.505</Constant>
+        <Constant Name="Kf_r3_8">4.505</Constant>
+        <Constant Name="Kf_r3_9">4.505</Constant>
+        <Constant Name="Kf_r4_1">0.5</Constant>
+        <Constant Name="Kf_r4_10">0.5</Constant>
+        <Constant Name="Kf_r4_11">0.5</Constant>
+        <Constant Name="Kf_r4_2">0.5</Constant>
+        <Constant Name="Kf_r4_3">0.5</Constant>
+        <Constant Name="Kf_r4_5">0.5</Constant>
+        <Constant Name="Kf_r4_6">0.5</Constant>
+        <Constant Name="Kf_r4_7">0.5</Constant>
+        <Constant Name="Kf_r4_8">0.5</Constant>
+        <Constant Name="Kf_r4_9">0.5</Constant>
+        <Constant Name="Kf_r5_0">4.505</Constant>
+        <Constant Name="Kf_r5_1">4.505</Constant>
+        <Constant Name="Kf_r5_10">4.505</Constant>
+        <Constant Name="Kf_r5_11">4.505</Constant>
+        <Constant Name="Kf_r5_13">4.505</Constant>
+        <Constant Name="Kf_r5_14">4.505</Constant>
+        <Constant Name="Kf_r5_15">4.505</Constant>
+        <Constant Name="Kf_r5_2">4.505</Constant>
+        <Constant Name="Kf_r5_3">4.505</Constant>
+        <Constant Name="Kf_r5_5">4.505</Constant>
+        <Constant Name="Kf_r5_6">4.505</Constant>
+        <Constant Name="Kf_r5_7">4.505</Constant>
+        <Constant Name="Kf_r5_8">4.505</Constant>
+        <Constant Name="Kf_r5_9">4.505</Constant>
+        <Constant Name="Kf_r6_0">0.0015</Constant>
+        <Constant Name="Kf_r6_1">0.0015</Constant>
+        <Constant Name="Kf_r6_10">0.0015</Constant>
+        <Constant Name="Kf_r6_11">0.0015</Constant>
+        <Constant Name="Kf_r6_13">0.0015</Constant>
+        <Constant Name="Kf_r6_14">0.0015</Constant>
+        <Constant Name="Kf_r6_15">0.0015</Constant>
+        <Constant Name="Kf_r6_2">0.0015</Constant>
+        <Constant Name="Kf_r6_3">0.0015</Constant>
+        <Constant Name="Kf_r6_5">0.0015</Constant>
+        <Constant Name="Kf_r6_6">0.0015</Constant>
+        <Constant Name="Kf_r6_7">0.0015</Constant>
+        <Constant Name="Kf_r6_8">0.0015</Constant>
+        <Constant Name="Kf_r6_9">0.0015</Constant>
+        <Constant Name="KMOLE">(1.0 / 602.0)</Constant>
+        <Constant Name="Kr__reverse_r0_0">0.0</Constant>
+        <Constant Name="Kr__reverse_r0_1">0.0</Constant>
+        <Constant Name="Kr__reverse_r0_2">0.0</Constant>
+        <Constant Name="Kr__reverse_r0_3">0.0</Constant>
+        <Constant Name="Kr__reverse_r0_4">0.0</Constant>
+        <Constant Name="Kr__reverse_r0_5">0.0</Constant>
+        <Constant Name="Kr__reverse_r1_0">0.0</Constant>
+        <Constant Name="Kr__reverse_r1_1">0.0</Constant>
+        <Constant Name="Kr__reverse_r1_10">0.0</Constant>
+        <Constant Name="Kr__reverse_r1_11">0.0</Constant>
+        <Constant Name="Kr__reverse_r1_12">0.0</Constant>
+        <Constant Name="Kr__reverse_r1_13">0.0</Constant>
+        <Constant Name="Kr__reverse_r1_14">0.0</Constant>
+        <Constant Name="Kr__reverse_r1_15">0.0</Constant>
+        <Constant Name="Kr__reverse_r1_16">0.0</Constant>
+        <Constant Name="Kr__reverse_r1_17">0.0</Constant>
+        <Constant Name="Kr__reverse_r1_18">0.0</Constant>
+        <Constant Name="Kr__reverse_r1_19">0.0</Constant>
+        <Constant Name="Kr__reverse_r1_2">0.0</Constant>
+        <Constant Name="Kr__reverse_r1_20">0.0</Constant>
+        <Constant Name="Kr__reverse_r1_3">0.0</Constant>
+        <Constant Name="Kr__reverse_r1_4">0.0</Constant>
+        <Constant Name="Kr__reverse_r1_5">0.0</Constant>
+        <Constant Name="Kr__reverse_r1_6">0.0</Constant>
+        <Constant Name="Kr__reverse_r1_7">0.0</Constant>
+        <Constant Name="Kr__reverse_r1_8">0.0</Constant>
+        <Constant Name="Kr__reverse_r1_9">0.0</Constant>
+        <Constant Name="Kr__reverse_r6_0">0.0</Constant>
+        <Constant Name="Kr__reverse_r6_1">0.0</Constant>
+        <Constant Name="Kr__reverse_r6_10">0.0</Constant>
+        <Constant Name="Kr__reverse_r6_11">0.0</Constant>
+        <Constant Name="Kr__reverse_r6_12">0.0</Constant>
+        <Constant Name="Kr__reverse_r6_13">0.0</Constant>
+        <Constant Name="Kr__reverse_r6_14">0.0</Constant>
+        <Constant Name="Kr__reverse_r6_15">0.0</Constant>
+        <Constant Name="Kr__reverse_r6_2">0.0</Constant>
+        <Constant Name="Kr__reverse_r6_3">0.0</Constant>
+        <Constant Name="Kr__reverse_r6_4">0.0</Constant>
+        <Constant Name="Kr__reverse_r6_5">0.0</Constant>
+        <Constant Name="Kr__reverse_r6_6">0.0</Constant>
+        <Constant Name="Kr__reverse_r6_7">0.0</Constant>
+        <Constant Name="Kr__reverse_r6_8">0.0</Constant>
+        <Constant Name="Kr__reverse_r6_9">0.0</Constant>
+        <Constant Name="Kr_r0_0">0.0</Constant>
+        <Constant Name="Kr_r0_1">0.0</Constant>
+        <Constant Name="Kr_r0_2">0.0</Constant>
+        <Constant Name="Kr_r0_3">0.0</Constant>
+        <Constant Name="Kr_r0_4">0.0</Constant>
+        <Constant Name="Kr_r0_5">0.0</Constant>
+        <Constant Name="Kr_r1_0">0.0</Constant>
+        <Constant Name="Kr_r1_1">0.0</Constant>
+        <Constant Name="Kr_r1_10">0.0</Constant>
+        <Constant Name="Kr_r1_11">0.0</Constant>
+        <Constant Name="Kr_r1_12">0.0</Constant>
+        <Constant Name="Kr_r1_13">0.0</Constant>
+        <Constant Name="Kr_r1_14">0.0</Constant>
+        <Constant Name="Kr_r1_15">0.0</Constant>
+        <Constant Name="Kr_r1_16">0.0</Constant>
+        <Constant Name="Kr_r1_17">0.0</Constant>
+        <Constant Name="Kr_r1_18">0.0</Constant>
+        <Constant Name="Kr_r1_19">0.0</Constant>
+        <Constant Name="Kr_r1_2">0.0</Constant>
+        <Constant Name="Kr_r1_20">0.0</Constant>
+        <Constant Name="Kr_r1_3">0.0</Constant>
+        <Constant Name="Kr_r1_4">0.0</Constant>
+        <Constant Name="Kr_r1_5">0.0</Constant>
+        <Constant Name="Kr_r1_6">0.0</Constant>
+        <Constant Name="Kr_r1_7">0.0</Constant>
+        <Constant Name="Kr_r1_8">0.0</Constant>
+        <Constant Name="Kr_r1_9">0.0</Constant>
+        <Constant Name="Kr_r2_0">0.0</Constant>
+        <Constant Name="Kr_r2_1">0.0</Constant>
+        <Constant Name="Kr_r2_10">0.0</Constant>
+        <Constant Name="Kr_r2_11">0.0</Constant>
+        <Constant Name="Kr_r2_12">0.0</Constant>
+        <Constant Name="Kr_r2_13">0.0</Constant>
+        <Constant Name="Kr_r2_14">0.0</Constant>
+        <Constant Name="Kr_r2_15">0.0</Constant>
+        <Constant Name="Kr_r2_16">0.0</Constant>
+        <Constant Name="Kr_r2_17">0.0</Constant>
+        <Constant Name="Kr_r2_2">0.0</Constant>
+        <Constant Name="Kr_r2_3">0.0</Constant>
+        <Constant Name="Kr_r2_4">0.0</Constant>
+        <Constant Name="Kr_r2_5">0.0</Constant>
+        <Constant Name="Kr_r2_6">0.0</Constant>
+        <Constant Name="Kr_r2_7">0.0</Constant>
+        <Constant Name="Kr_r2_8">0.0</Constant>
+        <Constant Name="Kr_r2_9">0.0</Constant>
+        <Constant Name="Kr_r3_0">0.0</Constant>
+        <Constant Name="Kr_r3_1">0.0</Constant>
+        <Constant Name="Kr_r3_10">0.0</Constant>
+        <Constant Name="Kr_r3_11">0.0</Constant>
+        <Constant Name="Kr_r3_12">0.0</Constant>
+        <Constant Name="Kr_r3_13">0.0</Constant>
+        <Constant Name="Kr_r3_14">0.0</Constant>
+        <Constant Name="Kr_r3_15">0.0</Constant>
+        <Constant Name="Kr_r3_16">0.0</Constant>
+        <Constant Name="Kr_r3_17">0.0</Constant>
+        <Constant Name="Kr_r3_18">0.0</Constant>
+        <Constant Name="Kr_r3_19">0.0</Constant>
+        <Constant Name="Kr_r3_2">0.0</Constant>
+        <Constant Name="Kr_r3_20">0.0</Constant>
+        <Constant Name="Kr_r3_21">0.0</Constant>
+        <Constant Name="Kr_r3_22">0.0</Constant>
+        <Constant Name="Kr_r3_23">0.0</Constant>
+        <Constant Name="Kr_r3_3">0.0</Constant>
+        <Constant Name="Kr_r3_4">0.0</Constant>
+        <Constant Name="Kr_r3_5">0.0</Constant>
+        <Constant Name="Kr_r3_6">0.0</Constant>
+        <Constant Name="Kr_r3_7">0.0</Constant>
+        <Constant Name="Kr_r3_8">0.0</Constant>
+        <Constant Name="Kr_r3_9">0.0</Constant>
+        <Constant Name="Kr_r4_0">0.0</Constant>
+        <Constant Name="Kr_r4_1">0.0</Constant>
+        <Constant Name="Kr_r4_10">0.0</Constant>
+        <Constant Name="Kr_r4_11">0.0</Constant>
+        <Constant Name="Kr_r4_2">0.0</Constant>
+        <Constant Name="Kr_r4_3">0.0</Constant>
+        <Constant Name="Kr_r4_4">0.0</Constant>
+        <Constant Name="Kr_r4_5">0.0</Constant>
+        <Constant Name="Kr_r4_6">0.0</Constant>
+        <Constant Name="Kr_r4_7">0.0</Constant>
+        <Constant Name="Kr_r4_8">0.0</Constant>
+        <Constant Name="Kr_r4_9">0.0</Constant>
+        <Constant Name="Kr_r5_0">0.0</Constant>
+        <Constant Name="Kr_r5_1">0.0</Constant>
+        <Constant Name="Kr_r5_10">0.0</Constant>
+        <Constant Name="Kr_r5_11">0.0</Constant>
+        <Constant Name="Kr_r5_12">0.0</Constant>
+        <Constant Name="Kr_r5_13">0.0</Constant>
+        <Constant Name="Kr_r5_14">0.0</Constant>
+        <Constant Name="Kr_r5_15">0.0</Constant>
+        <Constant Name="Kr_r5_2">0.0</Constant>
+        <Constant Name="Kr_r5_3">0.0</Constant>
+        <Constant Name="Kr_r5_4">0.0</Constant>
+        <Constant Name="Kr_r5_5">0.0</Constant>
+        <Constant Name="Kr_r5_6">0.0</Constant>
+        <Constant Name="Kr_r5_7">0.0</Constant>
+        <Constant Name="Kr_r5_8">0.0</Constant>
+        <Constant Name="Kr_r5_9">0.0</Constant>
+        <Constant Name="Kr_r6_0">0.0</Constant>
+        <Constant Name="Kr_r6_1">0.0</Constant>
+        <Constant Name="Kr_r6_10">0.0</Constant>
+        <Constant Name="Kr_r6_11">0.0</Constant>
+        <Constant Name="Kr_r6_12">0.0</Constant>
+        <Constant Name="Kr_r6_13">0.0</Constant>
+        <Constant Name="Kr_r6_14">0.0</Constant>
+        <Constant Name="Kr_r6_15">0.0</Constant>
+        <Constant Name="Kr_r6_2">0.0</Constant>
+        <Constant Name="Kr_r6_3">0.0</Constant>
+        <Constant Name="Kr_r6_4">0.0</Constant>
+        <Constant Name="Kr_r6_5">0.0</Constant>
+        <Constant Name="Kr_r6_6">0.0</Constant>
+        <Constant Name="Kr_r6_7">0.0</Constant>
+        <Constant Name="Kr_r6_8">0.0</Constant>
+        <Constant Name="Kr_r6_9">0.0</Constant>
+        <Constant Name="L_init_nM">680.0</Constant>
+        <Constant Name="R_init_nM">100.0</Constant>
+        <Constant Name="s10_init_nM">0.0</Constant>
+        <Constant Name="s11_init_nM">0.0</Constant>
+        <Constant Name="s12_init_nM">0.0</Constant>
+        <Constant Name="s13_init_nM">0.0</Constant>
+        <Constant Name="s14_init_nM">0.0</Constant>
+        <Constant Name="s15_init_nM">0.0</Constant>
+        <Constant Name="s16_init_nM">0.0</Constant>
+        <Constant Name="s17_init_nM">0.0</Constant>
+        <Constant Name="s18_init_nM">0.0</Constant>
+        <Constant Name="s19_init_nM">0.0</Constant>
+        <Constant Name="s20_init_nM">0.0</Constant>
+        <Constant Name="s21_init_nM">0.0</Constant>
+        <Constant Name="s22_init_nM">0.0</Constant>
+        <Constant Name="s23_init_nM">0.0</Constant>
+        <Constant Name="s24_init_nM">0.0</Constant>
+        <Constant Name="s25_init_nM">0.0</Constant>
+        <Constant Name="s26_init_nM">0.0</Constant>
+        <Constant Name="s27_init_nM">0.0</Constant>
+        <Constant Name="s28_init_nM">0.0</Constant>
+        <Constant Name="s29_init_nM">0.0</Constant>
+        <Constant Name="s30_init_nM">0.0</Constant>
+        <Constant Name="s31_init_nM">0.0</Constant>
+        <Constant Name="s32_init_nM">0.0</Constant>
+        <Constant Name="s33_init_nM">0.0</Constant>
+        <Constant Name="s34_init_nM">0.0</Constant>
+        <Constant Name="s35_init_nM">0.0</Constant>
+        <Constant Name="s36_init_nM">0.0</Constant>
+        <Constant Name="s5_init_nM">0.0</Constant>
+        <Constant Name="s6_init_nM">0.0</Constant>
+        <Constant Name="s7_init_nM">0.0</Constant>
+        <Constant Name="s8_init_nM">0.0</Constant>
+        <Constant Name="s9_init_nM">0.0</Constant>
+        <Constant Name="Shc_init_nM">150.0</Constant>
+        <Constant Name="Size_c0">50000.0</Constant>
+        <VolumeVariable Name="s10" Domain="Compartment" />
+        <VolumeVariable Name="s11" Domain="Compartment" />
+        <VolumeVariable Name="s12" Domain="Compartment" />
+        <VolumeVariable Name="s13" Domain="Compartment" />
+        <VolumeVariable Name="s14" Domain="Compartment" />
+        <VolumeVariable Name="s15" Domain="Compartment" />
+        <VolumeVariable Name="s16" Domain="Compartment" />
+        <VolumeVariable Name="s17" Domain="Compartment" />
+        <VolumeVariable Name="s18" Domain="Compartment" />
+        <VolumeVariable Name="s19" Domain="Compartment" />
+        <VolumeVariable Name="s20" Domain="Compartment" />
+        <VolumeVariable Name="s21" Domain="Compartment" />
+        <VolumeVariable Name="s22" Domain="Compartment" />
+        <VolumeVariable Name="s23" Domain="Compartment" />
+        <VolumeVariable Name="s24" Domain="Compartment" />
+        <VolumeVariable Name="s25" Domain="Compartment" />
+        <VolumeVariable Name="s26" Domain="Compartment" />
+        <VolumeVariable Name="s27" Domain="Compartment" />
+        <VolumeVariable Name="s28" Domain="Compartment" />
+        <VolumeVariable Name="s29" Domain="Compartment" />
+        <VolumeVariable Name="s30" Domain="Compartment" />
+        <VolumeVariable Name="s31" Domain="Compartment" />
+        <VolumeVariable Name="s32" Domain="Compartment" />
+        <VolumeVariable Name="s33" Domain="Compartment" />
+        <VolumeVariable Name="s34" Domain="Compartment" />
+        <VolumeVariable Name="s35" Domain="Compartment" />
+        <VolumeVariable Name="s36" Domain="Compartment" />
+        <VolumeVariable Name="s5" Domain="Compartment" />
+        <VolumeVariable Name="s6" Domain="Compartment" />
+        <VolumeVariable Name="s7" Domain="Compartment" />
+        <VolumeVariable Name="s8" Domain="Compartment" />
+        <VolumeVariable Name="s9" Domain="Compartment" />
+        <Function Name="Dimer_s">(((((((((((((((((((((2.0 * s6) + (2.0 * s7)) + (2.0 * s8)) + (2.0 * s11)) + (2.0 * s12)) + (2.0 * s13)) + (2.0 * s14)) + (2.0 * s15)) + (2.0 * s20)) + (2.0 * s21)) + (2.0 * s22)) + (2.0 * s23)) + (2.0 * s24)) + (2.0 * s27)) + (2.0 * s28)) + (2.0 * s29)) + (2.0 * s31)) + (2.0 * s32)) + (2.0 * s34)) + (2.0 * s35)) + (2.0 * s36))</Function>
+        <Function Name="Dimers">(((((((((((((((((((((2.0 * s6) + (2.0 * s7)) + (2.0 * s8)) + (2.0 * s11)) + (2.0 * s12)) + (2.0 * s13)) + (2.0 * s14)) + (2.0 * s15)) + (2.0 * s20)) + (2.0 * s21)) + (2.0 * s22)) + (2.0 * s23)) + (2.0 * s24)) + (2.0 * s27)) + (2.0 * s28)) + (2.0 * s29)) + (2.0 * s31)) + (2.0 * s32)) + (2.0 * s34)) + (2.0 * s35)) + (2.0 * s36))</Function>
+        <Function Name="EGF_tot">((((((((((((((((((((((((((((1.0 * L) + (1.0 * s5)) + (2.0 * s6)) + (2.0 * s7)) + (2.0 * s8)) + (1.0 * s9)) + (1.0 * s10)) + (2.0 * s11)) + (2.0 * s12)) + (2.0 * s13)) + (2.0 * s14)) + (2.0 * s15)) + (1.0 * s18)) + (1.0 * s19)) + (2.0 * s20)) + (2.0 * s21)) + (2.0 * s22)) + (2.0 * s23)) + (2.0 * s24)) + (2.0 * s27)) + (2.0 * s28)) + (2.0 * s29)) + (1.0 * s30)) + (2.0 * s31)) + (2.0 * s32)) + (2.0 * s34)) + (2.0 * s35)) + (2.0 * s36))</Function>
+        <Function Name="EGFR_tot">(((((((((((((((((((((((((((((((((1.0 * R) + (1.0 * s5)) + (2.0 * s6)) + (2.0 * s7)) + (2.0 * s8)) + (1.0 * s9)) + (1.0 * s10)) + (2.0 * s11)) + (2.0 * s12)) + (2.0 * s13)) + (2.0 * s14)) + (2.0 * s15)) + (1.0 * s16)) + (1.0 * s17)) + (1.0 * s18)) + (1.0 * s19)) + (2.0 * s20)) + (2.0 * s21)) + (2.0 * s22)) + (2.0 * s23)) + (2.0 * s24)) + (1.0 * s25)) + (1.0 * s26)) + (2.0 * s27)) + (2.0 * s28)) + (2.0 * s29)) + (1.0 * s30)) + (2.0 * s31)) + (2.0 * s32)) + (1.0 * s33)) + (2.0 * s34)) + (2.0 * s35)) + (2.0 * s36))</Function>
+        <Function Name="Grb2" Domain="Compartment">((K_Grb2_total - (Size_c0 * s15) - (Size_c0 * s19) - (Size_c0 * s22) - (Size_c0 * s23) - (Size_c0 * s24) - (Size_c0 * s26) - (Size_c0 * s28) - (2.0 * Size_c0 * s29) - (Size_c0 * s30) - (Size_c0 * s31) - (Size_c0 * s32) - (Size_c0 * s33) - (Size_c0 * s34) - (2.0 * Size_c0 * s35) - (2.0 * Size_c0 * s36)) / Size_c0)</Function>
+        <Function Name="Grb2_Sos" Domain="Compartment">(K_Grb2_Sos_total / Size_c0)</Function>
+        <Function Name="Grb2_tot">(((((((((((((((((1.0 * Grb2) + (1.0 * Grb2_Sos)) + (1.0 * s15)) + (1.0 * s19)) + (1.0 * s22)) + (1.0 * s23)) + (1.0 * s24)) + (1.0 * s26)) + (1.0 * s28)) + (2.0 * s29)) + (1.0 * s30)) + (1.0 * s31)) + (1.0 * s32)) + (1.0 * s33)) + (1.0 * s34)) + (2.0 * s35)) + (2.0 * s36))</Function>
+        <Function Name="J__reverse_r0_0" Domain="Compartment">((Kf__reverse_r0_0 * s5) - ((Kr__reverse_r0_0 * R) * L))</Function>
+        <Function Name="J__reverse_r0_1" Domain="Compartment">((Kf__reverse_r0_1 * s9) - ((Kr__reverse_r0_1 * L) * s16))</Function>
+        <Function Name="J__reverse_r0_2" Domain="Compartment">((Kf__reverse_r0_2 * s10) - ((Kr__reverse_r0_2 * L) * s17))</Function>
+        <Function Name="J__reverse_r0_3" Domain="Compartment">((Kf__reverse_r0_3 * s18) - ((Kr__reverse_r0_3 * L) * s25))</Function>
+        <Function Name="J__reverse_r0_4" Domain="Compartment">((Kf__reverse_r0_4 * s19) - ((Kr__reverse_r0_4 * L) * s26))</Function>
+        <Function Name="J__reverse_r0_5" Domain="Compartment">((Kf__reverse_r0_5 * s30) - ((Kr__reverse_r0_5 * L) * s33))</Function>
+        <Function Name="J__reverse_r1_0" Domain="Compartment">((Kf__reverse_r1_0 * s6) - (Kr__reverse_r1_0 * pow(s5,2.0)))</Function>
+        <Function Name="J__reverse_r1_1" Domain="Compartment">((Kf__reverse_r1_1 * s7) - ((Kr__reverse_r1_1 * s5) * s9))</Function>
+        <Function Name="J__reverse_r1_10" Domain="Compartment">((Kf__reverse_r1_10 * s22) - ((Kr__reverse_r1_10 * s5) * s30))</Function>
+        <Function Name="J__reverse_r1_11" Domain="Compartment">((Kf__reverse_r1_11 * s23) - ((Kr__reverse_r1_11 * s9) * s19))</Function>
+        <Function Name="J__reverse_r1_12" Domain="Compartment">((Kf__reverse_r1_12 * s24) - ((Kr__reverse_r1_12 * s10) * s19))</Function>
+        <Function Name="J__reverse_r1_13" Domain="Compartment">((Kf__reverse_r1_13 * s27) - (Kr__reverse_r1_13 * pow(s18,2.0)))</Function>
+        <Function Name="J__reverse_r1_14" Domain="Compartment">((Kf__reverse_r1_14 * s28) - ((Kr__reverse_r1_14 * s18) * s19))</Function>
+        <Function Name="J__reverse_r1_15" Domain="Compartment">((Kf__reverse_r1_15 * s29) - (Kr__reverse_r1_15 * pow(s19,2.0)))</Function>
+        <Function Name="J__reverse_r1_16" Domain="Compartment">((Kf__reverse_r1_16 * s31) - ((Kr__reverse_r1_16 * s9) * s30))</Function>
+        <Function Name="J__reverse_r1_17" Domain="Compartment">((Kf__reverse_r1_17 * s32) - ((Kr__reverse_r1_17 * s10) * s30))</Function>
+        <Function Name="J__reverse_r1_18" Domain="Compartment">((Kf__reverse_r1_18 * s34) - ((Kr__reverse_r1_18 * s18) * s30))</Function>
+        <Function Name="J__reverse_r1_19" Domain="Compartment">((Kf__reverse_r1_19 * s35) - ((Kr__reverse_r1_19 * s19) * s30))</Function>
+        <Function Name="J__reverse_r1_2" Domain="Compartment">((Kf__reverse_r1_2 * s8) - ((Kr__reverse_r1_2 * s5) * s10))</Function>
+        <Function Name="J__reverse_r1_20" Domain="Compartment">((Kf__reverse_r1_20 * s36) - (Kr__reverse_r1_20 * pow(s30,2.0)))</Function>
+        <Function Name="J__reverse_r1_3" Domain="Compartment">((Kf__reverse_r1_3 * s11) - (Kr__reverse_r1_3 * pow(s9,2.0)))</Function>
+        <Function Name="J__reverse_r1_4" Domain="Compartment">((Kf__reverse_r1_4 * s12) - ((Kr__reverse_r1_4 * s5) * s18))</Function>
+        <Function Name="J__reverse_r1_5" Domain="Compartment">((Kf__reverse_r1_5 * s13) - ((Kr__reverse_r1_5 * s9) * s10))</Function>
+        <Function Name="J__reverse_r1_6" Domain="Compartment">((Kf__reverse_r1_6 * s14) - (Kr__reverse_r1_6 * pow(s10,2.0)))</Function>
+        <Function Name="J__reverse_r1_7" Domain="Compartment">((Kf__reverse_r1_7 * s15) - ((Kr__reverse_r1_7 * s5) * s19))</Function>
+        <Function Name="J__reverse_r1_8" Domain="Compartment">((Kf__reverse_r1_8 * s20) - ((Kr__reverse_r1_8 * s9) * s18))</Function>
+        <Function Name="J__reverse_r1_9" Domain="Compartment">((Kf__reverse_r1_9 * s21) - ((Kr__reverse_r1_9 * s10) * s18))</Function>
+        <Function Name="J__reverse_r6_0" Domain="Compartment">((Kf__reverse_r6_0 * s15) - ((Kr__reverse_r6_0 * Grb2) * s8))</Function>
+        <Function Name="J__reverse_r6_1" Domain="Compartment">((Kf__reverse_r6_1 * s19) - ((Kr__reverse_r6_1 * Grb2) * s10))</Function>
+        <Function Name="J__reverse_r6_10" Domain="Compartment">((Kf__reverse_r6_10 * s32) - ((Kr__reverse_r6_10 * Grb2) * s21))</Function>
+        <Function Name="J__reverse_r6_11" Domain="Compartment">((Kf__reverse_r6_11 * s33) - ((Kr__reverse_r6_11 * Grb2) * s25))</Function>
+        <Function Name="J__reverse_r6_12" Domain="Compartment">((Kf__reverse_r6_12 * s34) - ((Kr__reverse_r6_12 * Grb2) * s27))</Function>
+        <Function Name="J__reverse_r6_13" Domain="Compartment">((Kf__reverse_r6_13 * s35) - ((Kr__reverse_r6_13 * Grb2) * s28))</Function>
+        <Function Name="J__reverse_r6_14" Domain="Compartment">((Kf__reverse_r6_14 * s35) - ((Kr__reverse_r6_14 * Grb2) * s32))</Function>
+        <Function Name="J__reverse_r6_15" Domain="Compartment">((Kf__reverse_r6_15 * s36) - ((Kr__reverse_r6_15 * Grb2) * s34))</Function>
+        <Function Name="J__reverse_r6_2" Domain="Compartment">((Kf__reverse_r6_2 * s22) - ((Kr__reverse_r6_2 * Grb2) * s12))</Function>
+        <Function Name="J__reverse_r6_3" Domain="Compartment">((Kf__reverse_r6_3 * s23) - ((Kr__reverse_r6_3 * Grb2) * s13))</Function>
+        <Function Name="J__reverse_r6_4" Domain="Compartment">((Kf__reverse_r6_4 * s24) - ((Kr__reverse_r6_4 * Grb2) * s14))</Function>
+        <Function Name="J__reverse_r6_5" Domain="Compartment">((Kf__reverse_r6_5 * s26) - ((Kr__reverse_r6_5 * Grb2) * s17))</Function>
+        <Function Name="J__reverse_r6_6" Domain="Compartment">((Kf__reverse_r6_6 * s28) - ((Kr__reverse_r6_6 * Grb2) * s21))</Function>
+        <Function Name="J__reverse_r6_7" Domain="Compartment">((Kf__reverse_r6_7 * s29) - ((Kr__reverse_r6_7 * Grb2) * s24))</Function>
+        <Function Name="J__reverse_r6_8" Domain="Compartment">((Kf__reverse_r6_8 * s30) - ((Kr__reverse_r6_8 * Grb2) * s18))</Function>
+        <Function Name="J__reverse_r6_9" Domain="Compartment">((Kf__reverse_r6_9 * s31) - ((Kr__reverse_r6_9 * Grb2) * s20))</Function>
+        <Function Name="J_r0_0" Domain="Compartment">(((Kf_r0_0 * R) * L) - (Kr_r0_0 * s5))</Function>
+        <Function Name="J_r0_1" Domain="Compartment">(((Kf_r0_1 * L) * s16) - (Kr_r0_1 * s9))</Function>
+        <Function Name="J_r0_2" Domain="Compartment">(((Kf_r0_2 * L) * s17) - (Kr_r0_2 * s10))</Function>
+        <Function Name="J_r0_3" Domain="Compartment">(((Kf_r0_3 * L) * s25) - (Kr_r0_3 * s18))</Function>
+        <Function Name="J_r0_4" Domain="Compartment">(((Kf_r0_4 * L) * s26) - (Kr_r0_4 * s19))</Function>
+        <Function Name="J_r0_5" Domain="Compartment">(((Kf_r0_5 * L) * s33) - (Kr_r0_5 * s30))</Function>
+        <Function Name="J_r1_0" Domain="Compartment">((Kf_r1_0 * pow(s5,2.0)) - (Kr_r1_0 * s6))</Function>
+        <Function Name="J_r1_1" Domain="Compartment">(((Kf_r1_1 * s5) * s9) - (Kr_r1_1 * s7))</Function>
+        <Function Name="J_r1_10" Domain="Compartment">(((Kf_r1_10 * s10) * s18) - (Kr_r1_10 * s21))</Function>
+        <Function Name="J_r1_11" Domain="Compartment">(((Kf_r1_11 * s10) * s19) - (Kr_r1_11 * s24))</Function>
+        <Function Name="J_r1_12" Domain="Compartment">((Kf_r1_12 * pow(s18,2.0)) - (Kr_r1_12 * s27))</Function>
+        <Function Name="J_r1_13" Domain="Compartment">(((Kf_r1_13 * s18) * s19) - (Kr_r1_13 * s28))</Function>
+        <Function Name="J_r1_14" Domain="Compartment">((Kf_r1_14 * pow(s19,2.0)) - (Kr_r1_14 * s29))</Function>
+        <Function Name="J_r1_15" Domain="Compartment">(((Kf_r1_15 * s5) * s30) - (Kr_r1_15 * s22))</Function>
+        <Function Name="J_r1_16" Domain="Compartment">(((Kf_r1_16 * s9) * s30) - (Kr_r1_16 * s31))</Function>
+        <Function Name="J_r1_17" Domain="Compartment">(((Kf_r1_17 * s10) * s30) - (Kr_r1_17 * s32))</Function>
+        <Function Name="J_r1_18" Domain="Compartment">(((Kf_r1_18 * s18) * s30) - (Kr_r1_18 * s34))</Function>
+        <Function Name="J_r1_19" Domain="Compartment">(((Kf_r1_19 * s19) * s30) - (Kr_r1_19 * s35))</Function>
+        <Function Name="J_r1_2" Domain="Compartment">(((Kf_r1_2 * s5) * s10) - (Kr_r1_2 * s8))</Function>
+        <Function Name="J_r1_20" Domain="Compartment">((Kf_r1_20 * pow(s30,2.0)) - (Kr_r1_20 * s36))</Function>
+        <Function Name="J_r1_3" Domain="Compartment">((Kf_r1_3 * pow(s9,2.0)) - (Kr_r1_3 * s11))</Function>
+        <Function Name="J_r1_4" Domain="Compartment">(((Kf_r1_4 * s9) * s10) - (Kr_r1_4 * s13))</Function>
+        <Function Name="J_r1_5" Domain="Compartment">((Kf_r1_5 * pow(s10,2.0)) - (Kr_r1_5 * s14))</Function>
+        <Function Name="J_r1_6" Domain="Compartment">(((Kf_r1_6 * s5) * s18) - (Kr_r1_6 * s12))</Function>
+        <Function Name="J_r1_7" Domain="Compartment">(((Kf_r1_7 * s5) * s19) - (Kr_r1_7 * s15))</Function>
+        <Function Name="J_r1_8" Domain="Compartment">(((Kf_r1_8 * s9) * s18) - (Kr_r1_8 * s20))</Function>
+        <Function Name="J_r1_9" Domain="Compartment">(((Kf_r1_9 * s9) * s19) - (Kr_r1_9 * s23))</Function>
+        <Function Name="J_r2_0" Domain="Compartment">((Kf_r2_0 * s6) - (Kr_r2_0 * s7))</Function>
+        <Function Name="J_r2_1" Domain="Compartment">((Kf_r2_1 * s7) - (Kr_r2_1 * s11))</Function>
+        <Function Name="J_r2_10" Domain="Compartment">((Kf_r2_10 * s22) - (Kr_r2_10 * s31))</Function>
+        <Function Name="J_r2_11" Domain="Compartment">((Kf_r2_11 * s23) - (Kr_r2_11 * s31))</Function>
+        <Function Name="J_r2_12" Domain="Compartment">((Kf_r2_12 * s24) - (Kr_r2_12 * s32))</Function>
+        <Function Name="J_r2_13" Domain="Compartment">((Kf_r2_13 * s24) - (Kr_r2_13 * s28))</Function>
+        <Function Name="J_r2_14" Domain="Compartment">((Kf_r2_14 * s28) - (Kr_r2_14 * s34))</Function>
+        <Function Name="J_r2_15" Domain="Compartment">((Kf_r2_15 * s29) - (Kr_r2_15 * s35))</Function>
+        <Function Name="J_r2_16" Domain="Compartment">((Kf_r2_16 * s32) - (Kr_r2_16 * s34))</Function>
+        <Function Name="J_r2_17" Domain="Compartment">((Kf_r2_17 * s35) - (Kr_r2_17 * s36))</Function>
+        <Function Name="J_r2_2" Domain="Compartment">((Kf_r2_2 * s8) - (Kr_r2_2 * s12))</Function>
+        <Function Name="J_r2_3" Domain="Compartment">((Kf_r2_3 * s8) - (Kr_r2_3 * s13))</Function>
+        <Function Name="J_r2_4" Domain="Compartment">((Kf_r2_4 * s12) - (Kr_r2_4 * s20))</Function>
+        <Function Name="J_r2_5" Domain="Compartment">((Kf_r2_5 * s13) - (Kr_r2_5 * s20))</Function>
+        <Function Name="J_r2_6" Domain="Compartment">((Kf_r2_6 * s14) - (Kr_r2_6 * s21))</Function>
+        <Function Name="J_r2_7" Domain="Compartment">((Kf_r2_7 * s15) - (Kr_r2_7 * s22))</Function>
+        <Function Name="J_r2_8" Domain="Compartment">((Kf_r2_8 * s15) - (Kr_r2_8 * s23))</Function>
+        <Function Name="J_r2_9" Domain="Compartment">((Kf_r2_9 * s21) - (Kr_r2_9 * s27))</Function>
+        <Function Name="J_r3_0" Domain="Compartment">((Kf_r3_0 * s7) - (Kr_r3_0 * s6))</Function>
+        <Function Name="J_r3_1" Domain="Compartment">((Kf_r3_1 * s9) - (Kr_r3_1 * s5))</Function>
+        <Function Name="J_r3_10" Domain="Compartment">((Kf_r3_10 * s22) - (Kr_r3_10 * s15))</Function>
+        <Function Name="J_r3_11" Domain="Compartment">((Kf_r3_11 * s23) - (Kr_r3_11 * s15))</Function>
+        <Function Name="J_r3_12" Domain="Compartment">((Kf_r3_12 * s25) - (Kr_r3_12 * s17))</Function>
+        <Function Name="J_r3_13" Domain="Compartment">((Kf_r3_13 * s27) - (Kr_r3_13 * s21))</Function>
+        <Function Name="J_r3_14" Domain="Compartment">((Kf_r3_14 * s28) - (Kr_r3_14 * s24))</Function>
+        <Function Name="J_r3_15" Domain="Compartment">((Kf_r3_15 * s30) - (Kr_r3_15 * s19))</Function>
+        <Function Name="J_r3_16" Domain="Compartment">((Kf_r3_16 * s31) - (Kr_r3_16 * s23))</Function>
+        <Function Name="J_r3_17" Domain="Compartment">((Kf_r3_17 * s31) - (Kr_r3_17 * s22))</Function>
+        <Function Name="J_r3_18" Domain="Compartment">((Kf_r3_18 * s32) - (Kr_r3_18 * s24))</Function>
+        <Function Name="J_r3_19" Domain="Compartment">((Kf_r3_19 * s33) - (Kr_r3_19 * s26))</Function>
+        <Function Name="J_r3_2" Domain="Compartment">((Kf_r3_2 * s11) - (Kr_r3_2 * s7))</Function>
+        <Function Name="J_r3_20" Domain="Compartment">((Kf_r3_20 * s34) - (Kr_r3_20 * s28))</Function>
+        <Function Name="J_r3_21" Domain="Compartment">((Kf_r3_21 * s34) - (Kr_r3_21 * s32))</Function>
+        <Function Name="J_r3_22" Domain="Compartment">((Kf_r3_22 * s35) - (Kr_r3_22 * s29))</Function>
+        <Function Name="J_r3_23" Domain="Compartment">((Kf_r3_23 * s36) - (Kr_r3_23 * s35))</Function>
+        <Function Name="J_r3_3" Domain="Compartment">((Kf_r3_3 * s12) - (Kr_r3_3 * s8))</Function>
+        <Function Name="J_r3_4" Domain="Compartment">((Kf_r3_4 * s13) - (Kr_r3_4 * s8))</Function>
+        <Function Name="J_r3_5" Domain="Compartment">((Kf_r3_5 * s16) - (Kr_r3_5 * R))</Function>
+        <Function Name="J_r3_6" Domain="Compartment">((Kf_r3_6 * s18) - (Kr_r3_6 * s10))</Function>
+        <Function Name="J_r3_7" Domain="Compartment">((Kf_r3_7 * s20) - (Kr_r3_7 * s13))</Function>
+        <Function Name="J_r3_8" Domain="Compartment">((Kf_r3_8 * s20) - (Kr_r3_8 * s12))</Function>
+        <Function Name="J_r3_9" Domain="Compartment">((Kf_r3_9 * s21) - (Kr_r3_9 * s14))</Function>
+        <Function Name="J_r4_0" Domain="Compartment">((Kf_r4_0 * s6) - (Kr_r4_0 * s8))</Function>
+        <Function Name="J_r4_1" Domain="Compartment">((Kf_r4_1 * s7) - (Kr_r4_1 * s12))</Function>
+        <Function Name="J_r4_10" Domain="Compartment">((Kf_r4_10 * s23) - (Kr_r4_10 * s28))</Function>
+        <Function Name="J_r4_11" Domain="Compartment">((Kf_r4_11 * s31) - (Kr_r4_11 * s34))</Function>
+        <Function Name="J_r4_2" Domain="Compartment">((Kf_r4_2 * s7) - (Kr_r4_2 * s13))</Function>
+        <Function Name="J_r4_3" Domain="Compartment">((Kf_r4_3 * s8) - (Kr_r4_3 * s14))</Function>
+        <Function Name="J_r4_4" Domain="Compartment">((Kf_r4_4 * s11) - (Kr_r4_4 * s20))</Function>
+        <Function Name="J_r4_5" Domain="Compartment">((Kf_r4_5 * s12) - (Kr_r4_5 * s21))</Function>
+        <Function Name="J_r4_6" Domain="Compartment">((Kf_r4_6 * s13) - (Kr_r4_6 * s21))</Function>
+        <Function Name="J_r4_7" Domain="Compartment">((Kf_r4_7 * s15) - (Kr_r4_7 * s24))</Function>
+        <Function Name="J_r4_8" Domain="Compartment">((Kf_r4_8 * s20) - (Kr_r4_8 * s27))</Function>
+        <Function Name="J_r4_9" Domain="Compartment">((Kf_r4_9 * s22) - (Kr_r4_9 * s32))</Function>
+        <Function Name="J_r5_0" Domain="Compartment">((Kf_r5_0 * s8) - (Kr_r5_0 * s6))</Function>
+        <Function Name="J_r5_1" Domain="Compartment">((Kf_r5_1 * s10) - (Kr_r5_1 * s5))</Function>
+        <Function Name="J_r5_10" Domain="Compartment">((Kf_r5_10 * s24) - (Kr_r5_10 * s15))</Function>
+        <Function Name="J_r5_11" Domain="Compartment">((Kf_r5_11 * s25) - (Kr_r5_11 * s16))</Function>
+        <Function Name="J_r5_12" Domain="Compartment">((Kf_r5_12 * s27) - (Kr_r5_12 * s20))</Function>
+        <Function Name="J_r5_13" Domain="Compartment">((Kf_r5_13 * s28) - (Kr_r5_13 * s23))</Function>
+        <Function Name="J_r5_14" Domain="Compartment">((Kf_r5_14 * s32) - (Kr_r5_14 * s22))</Function>
+        <Function Name="J_r5_15" Domain="Compartment">((Kf_r5_15 * s34) - (Kr_r5_15 * s31))</Function>
+        <Function Name="J_r5_2" Domain="Compartment">((Kf_r5_2 * s12) - (Kr_r5_2 * s7))</Function>
+        <Function Name="J_r5_3" Domain="Compartment">((Kf_r5_3 * s13) - (Kr_r5_3 * s7))</Function>
+        <Function Name="J_r5_4" Domain="Compartment">((Kf_r5_4 * s14) - (Kr_r5_4 * s8))</Function>
+        <Function Name="J_r5_5" Domain="Compartment">((Kf_r5_5 * s17) - (Kr_r5_5 * R))</Function>
+        <Function Name="J_r5_6" Domain="Compartment">((Kf_r5_6 * s18) - (Kr_r5_6 * s9))</Function>
+        <Function Name="J_r5_7" Domain="Compartment">((Kf_r5_7 * s20) - (Kr_r5_7 * s11))</Function>
+        <Function Name="J_r5_8" Domain="Compartment">((Kf_r5_8 * s21) - (Kr_r5_8 * s13))</Function>
+        <Function Name="J_r5_9" Domain="Compartment">((Kf_r5_9 * s21) - (Kr_r5_9 * s12))</Function>
+        <Function Name="J_r6_0" Domain="Compartment">(((Kf_r6_0 * Grb2) * s8) - (Kr_r6_0 * s15))</Function>
+        <Function Name="J_r6_1" Domain="Compartment">(((Kf_r6_1 * Grb2) * s10) - (Kr_r6_1 * s19))</Function>
+        <Function Name="J_r6_10" Domain="Compartment">(((Kf_r6_10 * Grb2) * s24) - (Kr_r6_10 * s29))</Function>
+        <Function Name="J_r6_11" Domain="Compartment">(((Kf_r6_11 * Grb2) * s25) - (Kr_r6_11 * s33))</Function>
+        <Function Name="J_r6_12" Domain="Compartment">(((Kf_r6_12 * Grb2) * s27) - (Kr_r6_12 * s34))</Function>
+        <Function Name="J_r6_13" Domain="Compartment">(((Kf_r6_13 * Grb2) * s28) - (Kr_r6_13 * s35))</Function>
+        <Function Name="J_r6_14" Domain="Compartment">(((Kf_r6_14 * Grb2) * s32) - (Kr_r6_14 * s35))</Function>
+        <Function Name="J_r6_15" Domain="Compartment">(((Kf_r6_15 * Grb2) * s34) - (Kr_r6_15 * s36))</Function>
+        <Function Name="J_r6_2" Domain="Compartment">(((Kf_r6_2 * Grb2) * s12) - (Kr_r6_2 * s22))</Function>
+        <Function Name="J_r6_3" Domain="Compartment">(((Kf_r6_3 * Grb2) * s13) - (Kr_r6_3 * s23))</Function>
+        <Function Name="J_r6_4" Domain="Compartment">(((Kf_r6_4 * Grb2) * s14) - (Kr_r6_4 * s24))</Function>
+        <Function Name="J_r6_5" Domain="Compartment">(((Kf_r6_5 * Grb2) * s17) - (Kr_r6_5 * s26))</Function>
+        <Function Name="J_r6_6" Domain="Compartment">(((Kf_r6_6 * Grb2) * s18) - (Kr_r6_6 * s30))</Function>
+        <Function Name="J_r6_7" Domain="Compartment">(((Kf_r6_7 * Grb2) * s20) - (Kr_r6_7 * s31))</Function>
+        <Function Name="J_r6_8" Domain="Compartment">(((Kf_r6_8 * Grb2) * s21) - (Kr_r6_8 * s32))</Function>
+        <Function Name="J_r6_9" Domain="Compartment">(((Kf_r6_9 * Grb2) * s21) - (Kr_r6_9 * s28))</Function>
+        <Function Name="K_Grb2_Sos_total" Domain="Compartment">(Size_c0 * Grb2_Sos_init_nM)</Function>
+        <Function Name="K_Grb2_total" Domain="Compartment">((Size_c0 * Grb2_init_nM) + (Size_c0 * s15_init_nM) + (Size_c0 * s19_init_nM) + (Size_c0 * s22_init_nM) + (Size_c0 * s23_init_nM) + (Size_c0 * s24_init_nM) + (Size_c0 * s26_init_nM) + (Size_c0 * s28_init_nM) + (2.0 * Size_c0 * s29_init_nM) + (Size_c0 * s30_init_nM) + (Size_c0 * s31_init_nM) + (Size_c0 * s32_init_nM) + (Size_c0 * s33_init_nM) + (Size_c0 * s34_init_nM) + (2.0 * Size_c0 * s35_init_nM) + (2.0 * Size_c0 * s36_init_nM))</Function>
+        <Function Name="K_L_total" Domain="Compartment">((Size_c0 * L_init_nM) + (Size_c0 * s5_init_nM) + (2.0 * Size_c0 * s6_init_nM) + (2.0 * Size_c0 * s7_init_nM) + (2.0 * Size_c0 * s8_init_nM) + (Size_c0 * s9_init_nM) + (Size_c0 * s10_init_nM) + (2.0 * Size_c0 * s11_init_nM) + (2.0 * Size_c0 * s12_init_nM) + (2.0 * Size_c0 * s13_init_nM) + (2.0 * Size_c0 * s14_init_nM) + (2.0 * Size_c0 * s15_init_nM) + (Size_c0 * s18_init_nM) + (Size_c0 * s19_init_nM) + (2.0 * Size_c0 * s20_init_nM) + (2.0 * Size_c0 * s21_init_nM) + (2.0 * Size_c0 * s22_init_nM) + (2.0 * Size_c0 * s23_init_nM) + (2.0 * Size_c0 * s24_init_nM) + (2.0 * Size_c0 * s27_init_nM) + (2.0 * Size_c0 * s28_init_nM) + (2.0 * Size_c0 * s29_init_nM) + (Size_c0 * s30_init_nM) + (2.0 * Size_c0 * s31_init_nM) + (2.0 * Size_c0 * s32_init_nM) + (2.0 * Size_c0 * s34_init_nM) + (2.0 * Size_c0 * s35_init_nM) + (2.0 * Size_c0 * s36_init_nM))</Function>
+        <Function Name="K_R_total" Domain="Compartment">((Size_c0 * R_init_nM) + (Size_c0 * s5_init_nM) + (2.0 * Size_c0 * s6_init_nM) + (2.0 * Size_c0 * s7_init_nM) + (2.0 * Size_c0 * s8_init_nM) + (Size_c0 * s9_init_nM) + (Size_c0 * s10_init_nM) + (2.0 * Size_c0 * s11_init_nM) + (2.0 * Size_c0 * s12_init_nM) + (2.0 * Size_c0 * s13_init_nM) + (2.0 * Size_c0 * s14_init_nM) + (2.0 * Size_c0 * s15_init_nM) + (Size_c0 * s16_init_nM) + (Size_c0 * s17_init_nM) + (Size_c0 * s18_init_nM) + (Size_c0 * s19_init_nM) + (2.0 * Size_c0 * s20_init_nM) + (2.0 * Size_c0 * s21_init_nM) + (2.0 * Size_c0 * s22_init_nM) + (2.0 * Size_c0 * s23_init_nM) + (2.0 * Size_c0 * s24_init_nM) + (Size_c0 * s25_init_nM) + (Size_c0 * s26_init_nM) + (2.0 * Size_c0 * s27_init_nM) + (2.0 * Size_c0 * s28_init_nM) + (2.0 * Size_c0 * s29_init_nM) + (Size_c0 * s30_init_nM) + (2.0 * Size_c0 * s31_init_nM) + (2.0 * Size_c0 * s32_init_nM) + (Size_c0 * s33_init_nM) + (2.0 * Size_c0 * s34_init_nM) + (2.0 * Size_c0 * s35_init_nM) + (2.0 * Size_c0 * s36_init_nM))</Function>
+        <Function Name="K_Shc_total" Domain="Compartment">(Size_c0 * Shc_init_nM)</Function>
+        <Function Name="Kf__reverse_r6_15" Domain="Compartment">(2.0 * 0.05)</Function>
+        <Function Name="Kf__reverse_r6_7" Domain="Compartment">(2.0 * 0.05)</Function>
+        <Function Name="Kf_r1_0" Domain="Compartment">(0.5 * 0.01)</Function>
+        <Function Name="Kf_r1_12" Domain="Compartment">(0.5 * 0.01)</Function>
+        <Function Name="Kf_r1_14" Domain="Compartment">(0.5 * 0.01)</Function>
+        <Function Name="Kf_r1_20" Domain="Compartment">(0.5 * 0.01)</Function>
+        <Function Name="Kf_r1_3" Domain="Compartment">(0.5 * 0.01)</Function>
+        <Function Name="Kf_r1_5" Domain="Compartment">(0.5 * 0.01)</Function>
+        <Function Name="Kf_r2_0" Domain="Compartment">(2.0 * 0.5)</Function>
+        <Function Name="Kf_r2_15" Domain="Compartment">(2.0 * 0.5)</Function>
+        <Function Name="Kf_r2_6" Domain="Compartment">(2.0 * 0.5)</Function>
+        <Function Name="Kf_r3_13" Domain="Compartment">(2.0 * 4.505)</Function>
+        <Function Name="Kf_r3_2" Domain="Compartment">(2.0 * 4.505)</Function>
+        <Function Name="Kf_r3_23" Domain="Compartment">(2.0 * 4.505)</Function>
+        <Function Name="Kf_r4_0" Domain="Compartment">(2.0 * 0.5)</Function>
+        <Function Name="Kf_r4_4" Domain="Compartment">(2.0 * 0.5)</Function>
+        <Function Name="Kf_r5_12" Domain="Compartment">(2.0 * 4.505)</Function>
+        <Function Name="Kf_r5_4" Domain="Compartment">(2.0 * 4.505)</Function>
+        <Function Name="Kf_r6_12" Domain="Compartment">(2.0 * 0.0015)</Function>
+        <Function Name="Kf_r6_4" Domain="Compartment">(2.0 * 0.0015)</Function>
+        <Function Name="L" Domain="Compartment">((K_L_total - (Size_c0 * s5) - (2.0 * Size_c0 * s6) - (2.0 * Size_c0 * s7) - (2.0 * Size_c0 * s8) - (Size_c0 * s9) - (Size_c0 * s10) - (2.0 * Size_c0 * s11) - (2.0 * Size_c0 * s12) - (2.0 * Size_c0 * s13) - (2.0 * Size_c0 * s14) - (2.0 * Size_c0 * s15) - (Size_c0 * s18) - (Size_c0 * s19) - (2.0 * Size_c0 * s20) - (2.0 * Size_c0 * s21) - (2.0 * Size_c0 * s22) - (2.0 * Size_c0 * s23) - (2.0 * Size_c0 * s24) - (2.0 * Size_c0 * s27) - (2.0 * Size_c0 * s28) - (2.0 * Size_c0 * s29) - (Size_c0 * s30) - (2.0 * Size_c0 * s31) - (2.0 * Size_c0 * s32) - (2.0 * Size_c0 * s34) - (2.0 * Size_c0 * s35) - (2.0 * Size_c0 * s36)) / Size_c0)</Function>
+        <Function Name="O0_Sos_tot">(1.0 * Grb2_Sos)</Function>
+        <Function Name="R" Domain="Compartment">((K_R_total - (Size_c0 * s5) - (2.0 * Size_c0 * s6) - (2.0 * Size_c0 * s7) - (2.0 * Size_c0 * s8) - (Size_c0 * s9) - (Size_c0 * s10) - (2.0 * Size_c0 * s11) - (2.0 * Size_c0 * s12) - (2.0 * Size_c0 * s13) - (2.0 * Size_c0 * s14) - (2.0 * Size_c0 * s15) - (Size_c0 * s16) - (Size_c0 * s17) - (Size_c0 * s18) - (Size_c0 * s19) - (2.0 * Size_c0 * s20) - (2.0 * Size_c0 * s21) - (2.0 * Size_c0 * s22) - (2.0 * Size_c0 * s23) - (2.0 * Size_c0 * s24) - (Size_c0 * s25) - (Size_c0 * s26) - (2.0 * Size_c0 * s27) - (2.0 * Size_c0 * s28) - (2.0 * Size_c0 * s29) - (Size_c0 * s30) - (2.0 * Size_c0 * s31) - (2.0 * Size_c0 * s32) - (Size_c0 * s33) - (2.0 * Size_c0 * s34) - (2.0 * Size_c0 * s35) - (2.0 * Size_c0 * s36)) / Size_c0)</Function>
+        <Function Name="R_Grb2">(((((((((((((((1.0 * s15) + (1.0 * s19)) + (1.0 * s22)) + (1.0 * s23)) + (1.0 * s24)) + (1.0 * s26)) + (1.0 * s28)) + (2.0 * s29)) + (1.0 * s30)) + (1.0 * s31)) + (1.0 * s32)) + (1.0 * s33)) + (1.0 * s34)) + (2.0 * s35)) + (2.0 * s36))</Function>
+        <Function Name="Shc" Domain="Compartment">(K_Shc_total / Size_c0)</Function>
+        <Function Name="Shc_tot">(1.0 * Shc)</Function>
+        <Function Name="Total_phosp">((((((((((((((((((((((((((((((1.0 * s7) + (1.0 * s8)) + (1.0 * s9)) + (1.0 * s10)) + (2.0 * s11)) + (2.0 * s12)) + (2.0 * s13)) + (2.0 * s14)) + (1.0 * s15)) + (1.0 * s16)) + (1.0 * s17)) + (2.0 * s18)) + (1.0 * s19)) + (3.0 * s20)) + (3.0 * s21)) + (2.0 * s22)) + (2.0 * s23)) + (2.0 * s24)) + (2.0 * s25)) + (1.0 * s26)) + (4.0 * s27)) + (3.0 * s28)) + (2.0 * s29)) + (2.0 * s30)) + (3.0 * s31)) + (3.0 * s32)) + (2.0 * s33)) + (4.0 * s34)) + (3.0 * s35)) + (4.0 * s36))</Function>
+        <Function Name="Y1068_phosp">((((((((((((((((((((((((((1.0 * s8) + (1.0 * s10)) + (1.0 * s12)) + (1.0 * s13)) + (2.0 * s14)) + (1.0 * s15)) + (1.0 * s17)) + (1.0 * s18)) + (1.0 * s19)) + (1.0 * s20)) + (2.0 * s21)) + (1.0 * s22)) + (1.0 * s23)) + (2.0 * s24)) + (1.0 * s25)) + (1.0 * s26)) + (2.0 * s27)) + (2.0 * s28)) + (2.0 * s29)) + (1.0 * s30)) + (1.0 * s31)) + (2.0 * s32)) + (1.0 * s33)) + (2.0 * s34)) + (2.0 * s35)) + (2.0 * s36))</Function>
+        <Function Name="Y1173_phosp">(((((((((((((((((((((1.0 * s7) + (1.0 * s9)) + (2.0 * s11)) + (1.0 * s12)) + (1.0 * s13)) + (1.0 * s16)) + (1.0 * s18)) + (2.0 * s20)) + (1.0 * s21)) + (1.0 * s22)) + (1.0 * s23)) + (1.0 * s25)) + (2.0 * s27)) + (1.0 * s28)) + (1.0 * s30)) + (2.0 * s31)) + (1.0 * s32)) + (1.0 * s33)) + (2.0 * s34)) + (1.0 * s35)) + (2.0 * s36))</Function>
+        <CompartmentSubDomain Name="Compartment">
+          <BoundaryType Boundary="Xm" Type="Value" />
+          <BoundaryType Boundary="Xp" Type="Value" />
+          <BoundaryType Boundary="Ym" Type="Value" />
+          <BoundaryType Boundary="Yp" Type="Value" />
+          <BoundaryType Boundary="Zm" Type="Value" />
+          <BoundaryType Boundary="Zp" Type="Value" />
+          <OdeEquation Name="s5" SolutionType="Unknown">
+            <Rate>( - J__reverse_r0_0 + J_r0_0 - J_r1_15 + J__reverse_r1_2 + (2.0 * J__reverse_r1_0) + J__reverse_r1_1 + J_r3_1 + J__reverse_r1_7 + J__reverse_r1_4 + J_r5_1 - J_r1_6 - J_r1_7 - (2.0 * J_r1_0) - J_r1_1 - J_r1_2 + J__reverse_r1_10)</Rate>
+            <Initial>s5_init_nM</Initial>
+          </OdeEquation>
+          <OdeEquation Name="s6" SolutionType="Unknown">
+            <Rate>( - J_r4_0 - J__reverse_r1_0 + J_r3_0 - J_r2_0 + J_r5_0 + J_r1_0)</Rate>
+            <Initial>s6_init_nM</Initial>
+          </OdeEquation>
+          <OdeEquation Name="s7" SolutionType="Unknown">
+            <Rate>( - J_r4_1 - J_r4_2 + J_r3_2 - J_r3_0 - J__reverse_r1_1 + J_r2_0 - J_r2_1 + J_r5_2 + J_r5_3 + J_r1_1)</Rate>
+            <Initial>s7_init_nM</Initial>
+          </OdeEquation>
+          <OdeEquation Name="s8" SolutionType="Unknown">
+            <Rate>( - J_r4_3 + J_r4_0 + J_r3_3 + J_r3_4 - J__reverse_r1_2 - J_r2_3 - J_r6_0 - J_r2_2 + J__reverse_r6_0 - J_r5_0 + J_r1_2 + J_r5_4)</Rate>
+            <Initial>s8_init_nM</Initial>
+          </OdeEquation>
+          <OdeEquation Name="s9" SolutionType="Unknown">
+            <Rate>(J_r0_1 - J__reverse_r0_1 - J_r1_16 + (2.0 * J__reverse_r1_3) + J__reverse_r1_1 - J_r3_1 + J__reverse_r1_5 + J__reverse_r1_8 - J_r1_4 - J_r1_1 - (2.0 * J_r1_3) - J_r1_8 - J_r1_9 + J_r5_6 + J__reverse_r1_11 + J__reverse_r1_16)</Rate>
+            <Initial>s9_init_nM</Initial>
+          </OdeEquation>
+          <OdeEquation Name="s10" SolutionType="Unknown">
+            <Rate>( - J_r1_10 + J_r0_2 - J__reverse_r0_2 - J_r1_17 - J_r1_11 + J__reverse_r1_2 + J_r3_6 + (2.0 * J__reverse_r1_6) + J__reverse_r1_5 + J__reverse_r1_9 - J_r6_1 + J__reverse_r6_1 - J_r1_4 - (2.0 * J_r1_5) - J_r5_1 - J_r1_2 + J__reverse_r1_12 + J__reverse_r1_17)</Rate>
+            <Initial>s10_init_nM</Initial>
+          </OdeEquation>
+          <OdeEquation Name="s11" SolutionType="Unknown">
+            <Rate>( - J_r4_4 - J_r3_2 - J__reverse_r1_3 + J_r2_1 + J_r1_3 + J_r5_7)</Rate>
+            <Initial>s11_init_nM</Initial>
+          </OdeEquation>
+          <OdeEquation Name="s12" SolutionType="Unknown">
+            <Rate>(J_r4_1 - J_r4_5 - J_r3_3 + J_r3_8 - J__reverse_r1_4 - J_r2_4 - J_r6_2 + J_r2_2 + J__reverse_r6_2 - J_r5_2 + J_r1_6 + J_r5_9)</Rate>
+            <Initial>s12_init_nM</Initial>
+          </OdeEquation>
+          <OdeEquation Name="s13" SolutionType="Unknown">
+            <Rate>(J_r4_2 - J_r4_6 - J_r3_4 + J_r3_7 - J__reverse_r1_5 + J_r2_3 - J_r2_5 - J_r6_3 + J__reverse_r6_3 + J_r1_4 - J_r5_3 + J_r5_8)</Rate>
+            <Initial>s13_init_nM</Initial>
+          </OdeEquation>
+          <OdeEquation Name="s14" SolutionType="Unknown">
+            <Rate>(J_r4_3 + J_r3_9 - J__reverse_r1_6 - J_r2_6 - J_r6_4 + J__reverse_r6_4 + J_r1_5 - J_r5_4)</Rate>
+            <Initial>s14_init_nM</Initial>
+          </OdeEquation>
+          <OdeEquation Name="s15" SolutionType="Unknown">
+            <Rate>( - J_r4_7 + J_r3_11 + J_r3_10 - J__reverse_r1_7 + J_r6_0 + J_r5_10 - J_r2_7 - J_r2_8 - J__reverse_r6_0 + J_r1_7)</Rate>
+            <Initial>s15_init_nM</Initial>
+          </OdeEquation>
+          <OdeEquation Name="s16" SolutionType="Unknown">
+            <Rate>( - J_r0_1 + J__reverse_r0_1 - J_r3_5 + J_r5_11)</Rate>
+            <Initial>s16_init_nM</Initial>
+          </OdeEquation>
+          <OdeEquation Name="s17" SolutionType="Unknown">
+            <Rate>( - J_r0_2 + J__reverse_r0_2 + J_r3_12 - J_r6_5 + J__reverse_r6_5 - J_r5_5)</Rate>
+            <Initial>s17_init_nM</Initial>
+          </OdeEquation>
+          <OdeEquation Name="s18" SolutionType="Unknown">
+            <Rate>( - J_r1_10 - J__reverse_r0_3 + J_r0_3 - J_r1_18 - J_r1_13 - (2.0 * J_r1_12) - J_r3_6 + J__reverse_r1_4 + J__reverse_r1_8 + J__reverse_r1_9 - J_r6_6 + J__reverse_r6_8 - J_r1_6 - J_r1_8 - J_r5_6 + J__reverse_r1_14 + (2.0 * J__reverse_r1_13) + J__reverse_r1_18)</Rate>
+            <Initial>s18_init_nM</Initial>
+          </OdeEquation>
+          <OdeEquation Name="s19" SolutionType="Unknown">
+            <Rate>( - J__reverse_r0_4 + J_r0_4 - J_r1_19 - J_r1_13 - (2.0 * J_r1_14) - J_r1_11 + J__reverse_r1_7 + J_r3_15 + J_r6_1 - J__reverse_r6_1 - J_r1_7 - J_r1_9 + J__reverse_r1_12 + J__reverse_r1_11 + J__reverse_r1_14 + (2.0 * J__reverse_r1_15) + J__reverse_r1_19)</Rate>
+            <Initial>s19_init_nM</Initial>
+          </OdeEquation>
+          <OdeEquation Name="s20" SolutionType="Unknown">
+            <Rate>(J_r4_4 - J_r4_8 - J_r3_7 - J_r3_8 - J__reverse_r1_8 + J_r2_4 + J_r2_5 + J_r5_12 - J_r6_7 + J__reverse_r6_9 + J_r1_8 - J_r5_7)</Rate>
+            <Initial>s20_init_nM</Initial>
+          </OdeEquation>
+          <OdeEquation Name="s21" SolutionType="Unknown">
+            <Rate>(J_r1_10 + J_r4_5 + J_r4_6 - J_r3_9 - J__reverse_r1_9 + J_r3_13 + J_r2_6 - J_r6_8 - J_r6_9 + J__reverse_r6_10 - J_r2_9 + J__reverse_r6_6 - J_r5_8 - J_r5_9)</Rate>
+            <Initial>s21_init_nM</Initial>
+          </OdeEquation>
+          <OdeEquation Name="s22" SolutionType="Unknown">
+            <Rate>( - J_r4_9 + J_r1_15 - J_r3_10 + J_r3_17 + J_r5_14 + J_r6_2 + J_r2_7 - J__reverse_r6_2 - J__reverse_r1_10 - J_r2_10)</Rate>
+            <Initial>s22_init_nM</Initial>
+          </OdeEquation>
+          <OdeEquation Name="s23" SolutionType="Unknown">
+            <Rate>( - J_r4_10 - J_r3_11 + J_r3_16 + J_r5_13 + J_r6_3 + J_r2_8 - J__reverse_r6_3 + J_r1_9 - J__reverse_r1_11 - J_r2_11)</Rate>
+            <Initial>s23_init_nM</Initial>
+          </OdeEquation>
+          <OdeEquation Name="s24" SolutionType="Unknown">
+            <Rate>(J_r4_7 + J_r1_11 - J_r6_10 + J_r3_18 + J_r3_14 - J_r5_10 + J_r6_4 + J__reverse_r6_7 - J_r2_12 - J_r2_13 - J__reverse_r6_4 - J__reverse_r1_12)</Rate>
+            <Initial>s24_init_nM</Initial>
+          </OdeEquation>
+          <OdeEquation Name="s25" SolutionType="Unknown">
+            <Rate>(J__reverse_r0_3 - J_r0_3 - J_r3_12 - J_r6_11 - J_r5_11 + J__reverse_r6_11)</Rate>
+            <Initial>s25_init_nM</Initial>
+          </OdeEquation>
+          <OdeEquation Name="s26" SolutionType="Unknown">
+            <Rate>(J__reverse_r0_4 - J_r0_4 + J_r3_19 + J_r6_5 - J__reverse_r6_5)</Rate>
+            <Initial>s26_init_nM</Initial>
+          </OdeEquation>
+          <OdeEquation Name="s27" SolutionType="Unknown">
+            <Rate>(J_r4_8 + J_r1_12 - J_r6_12 - J_r3_13 - J_r5_12 + J_r2_9 + J__reverse_r6_12 - J__reverse_r1_13)</Rate>
+            <Initial>s27_init_nM</Initial>
+          </OdeEquation>
+          <OdeEquation Name="s28" SolutionType="Unknown">
+            <Rate>(J_r4_10 + J_r1_13 - J_r6_13 + J_r3_20 - J_r3_14 - J_r5_13 + J_r6_9 - J_r2_14 - J__reverse_r6_6 + J_r2_13 + J__reverse_r6_13 - J__reverse_r1_14)</Rate>
+            <Initial>s28_init_nM</Initial>
+          </OdeEquation>
+          <OdeEquation Name="s29" SolutionType="Unknown">
+            <Rate>(J_r1_14 + J_r6_10 + J_r3_22 - J__reverse_r6_7 - J_r2_15 - J__reverse_r1_15)</Rate>
+            <Initial>s29_init_nM</Initial>
+          </OdeEquation>
+          <OdeEquation Name="s30" SolutionType="Unknown">
+            <Rate>(J_r0_5 - J__reverse_r0_5 - (2.0 * J_r1_20) - J_r1_19 - J_r1_17 - J_r1_18 - J_r1_15 - J_r1_16 - J_r3_15 + J_r6_6 - J__reverse_r6_8 + J__reverse_r1_10 + J__reverse_r1_16 + J__reverse_r1_18 + J__reverse_r1_17 + J__reverse_r1_19 + (2.0 * J__reverse_r1_20))</Rate>
+            <Initial>s30_init_nM</Initial>
+          </OdeEquation>
+          <OdeEquation Name="s31" SolutionType="Unknown">
+            <Rate>( - J_r4_11 + J_r1_16 - J_r3_17 - J_r3_16 + J_r6_7 - J__reverse_r6_9 + J_r5_15 - J__reverse_r1_16 + J_r2_10 + J_r2_11)</Rate>
+            <Initial>s31_init_nM</Initial>
+          </OdeEquation>
+          <OdeEquation Name="s32" SolutionType="Unknown">
+            <Rate>(J_r4_9 + J_r1_17 - J_r6_14 + J_r3_21 - J_r3_18 - J_r5_14 + J_r6_8 - J__reverse_r6_10 - J_r2_16 + J_r2_12 + J__reverse_r6_14 - J__reverse_r1_17)</Rate>
+            <Initial>s32_init_nM</Initial>
+          </OdeEquation>
+          <OdeEquation Name="s33" SolutionType="Unknown">
+            <Rate>( - J_r0_5 + J__reverse_r0_5 + J_r6_11 - J_r3_19 - J__reverse_r6_11)</Rate>
+            <Initial>s33_init_nM</Initial>
+          </OdeEquation>
+          <OdeEquation Name="s34" SolutionType="Unknown">
+            <Rate>(J_r4_11 + J_r1_18 + J_r6_12 - J_r6_15 - J_r3_21 - J_r3_20 + J_r2_16 + J_r2_14 + J__reverse_r6_15 - J__reverse_r6_12 - J_r5_15 - J__reverse_r1_18)</Rate>
+            <Initial>s34_init_nM</Initial>
+          </OdeEquation>
+          <OdeEquation Name="s35" SolutionType="Unknown">
+            <Rate>(J_r1_19 + J_r6_13 + J_r6_14 + J_r3_23 - J_r3_22 - J_r2_17 + J_r2_15 - J__reverse_r6_14 - J__reverse_r6_13 - J__reverse_r1_19)</Rate>
+            <Initial>s35_init_nM</Initial>
+          </OdeEquation>
+          <OdeEquation Name="s36" SolutionType="Unknown">
+            <Rate>(J_r1_20 + J_r6_15 - J_r3_23 + J_r2_17 - J__reverse_r6_15 - J__reverse_r1_20)</Rate>
+            <Initial>s36_init_nM</Initial>
+          </OdeEquation>
+        </CompartmentSubDomain>
+        <Version Name="Application0_generated" KeyValue="97075358" BranchId="97075359" Archived="0" Date="07-Oct-2015 17:05:15" FromVersionable="false">
+          <Owner Name="mblinov" Identifier="12487253" />
+          <GroupAccess Type="1" />
+        </Version>
+      </MathDescription>
+      <Simulation Name="Simulation0">
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Combined Stiff Solver (IDA/CVODE)">
+          <TimeBound StartTime="0.0" EndTime="120.0" />
+          <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+          <OutputOptions KeepEvery="1" KeepAtMost="1000" />
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides />
+        <Version Name="Simulation0" KeyValue="97075398" BranchId="97075399" Archived="0" Date="07-Oct-2015 17:05:16" FromVersionable="false">
+          <Owner Name="mblinov" Identifier="12487253" />
+          <GroupAccess Type="1" />
+        </Version>
+      </Simulation>
+      <Version Name="Application0" KeyValue="97075380" BranchId="97075381" Archived="0" Date="07-Oct-2015 17:05:16" FromVersionable="false">
+        <Owner Name="mblinov" Identifier="12487253" />
+        <GroupAccess Type="1" />
+      </Version>
+      <MicroscopeMeasurement Name="fluor">
+        <ConvolutionKernel Type="ProjectionZKernel" />
+      </MicroscopeMeasurement>
+    </SimulationSpec>
+    <SimulationSpec Name="NFSim" Stochastic="false" UseConcentration="true" RuleBased="true" RandomizeInitCondition="false" MassConservationModelReduction="true" InsufficientIterations="false" InsufficientMaxMolecules="false">
+      <NetworkConstraints RbmMaxIteration="10" RbmMaxMoleculesPerSpecies="10" RbmSpeciesLimit="800" RbmReactionsLimit="2500">
+        <MaxStoichiometry MolecularType="EGFR" Integer="100" />
+        <MaxStoichiometry MolecularType="EGF" Integer="100" />
+        <MaxStoichiometry MolecularType="Grb2" Integer="100" />
+        <MaxStoichiometry MolecularType="Shc" Integer="100" />
+        <MaxStoichiometry MolecularType="Sos" Integer="100" />
+      </NetworkConstraints>
+      <Annotation>(copied from Application0)</Annotation>
+      <Geometry Name="non-spatial539782154" Dimension="0">
+        <Extent X="10.0" Y="10.0" Z="10.0" />
+        <Origin X="0.0" Y="0.0" Z="0.0" />
+        <SubVolume Name="Compartment" Handle="0" Type="Compartmental" KeyValue="97075357" />
+        <Version Name="non-spatial539782154" KeyValue="97075353" BranchId="97075354" Archived="0" Date="07-Oct-2015 17:05:15" FromVersionable="false">
+          <Owner Name="mblinov" Identifier="12487253" />
+          <GroupAccess Type="1" />
+        </Version>
+      </Geometry>
+      <GeometryContext>
+        <FeatureMapping Feature="c0" GeometryClass="Compartment" SubVolume="Compartment" Size="50.0">
+          <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
+        </FeatureMapping>
+      </GeometryContext>
+      <ReactionContext>
+        <LocalizedCompoundSpec LocalizedCompoundRef="R" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialCount>3010.0</InitialCount>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="L" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialCount>20468.0</InitialCount>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="Grb2" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialCount>1746.0</InitialCount>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="Shc" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialCount>4515.0</InitialCount>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="Grb2_Sos" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialCount>813.0</InitialCount>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <ReactionRuleSpecs>
+          <ReactionRuleSpec ReactionRuleRef="r0" ReactionRuleMapping="included" />
+          <ReactionRuleSpec ReactionRuleRef="r1" ReactionRuleMapping="included" />
+          <ReactionRuleSpec ReactionRuleRef="r2" ReactionRuleMapping="included" />
+          <ReactionRuleSpec ReactionRuleRef="r3" ReactionRuleMapping="included" />
+          <ReactionRuleSpec ReactionRuleRef="r4" ReactionRuleMapping="included" />
+          <ReactionRuleSpec ReactionRuleRef="r5" ReactionRuleMapping="included" />
+          <ReactionRuleSpec ReactionRuleRef="r6" ReactionRuleMapping="included" />
+        </ReactionRuleSpecs>
+      </ReactionContext>
+      <MathDescription Name="NFSim_generated">
+        <ParticleMolecularType Name="EGFR">
+          <Component Name="ecd" />
+          <Component Name="tmd" />
+          <Component Name="y1068">
+            <AllowableState Name="u" />
+            <AllowableState Name="p" />
+          </Component>
+          <Component Name="y1173">
+            <AllowableState Name="u" />
+            <AllowableState Name="p" />
+          </Component>
+        </ParticleMolecularType>
+        <ParticleMolecularType Name="EGF">
+          <Component Name="rb" />
+        </ParticleMolecularType>
+        <ParticleMolecularType Name="Grb2">
+          <Component Name="sh2" />
+        </ParticleMolecularType>
+        <ParticleMolecularType Name="Shc">
+          <Component Name="sh3" />
+          <Component Name="Y773" />
+        </ParticleMolecularType>
+        <ParticleMolecularType Name="Sos">
+          <Component Name="site" />
+        </ParticleMolecularType>
+        <Constant Name="_F_">96480.0</Constant>
+        <Constant Name="_F_nmol_">9.648E-5</Constant>
+        <Constant Name="_N_pmol_">6.02E11</Constant>
+        <Constant Name="_PI_">3.141592653589793</Constant>
+        <Constant Name="_R_">8314.0</Constant>
+        <Constant Name="_T_">300.0</Constant>
+        <Constant Name="Grb2_Count_initCount">1746.0</Constant>
+        <Constant Name="Grb2_Sos_Count_initCount">813.0</Constant>
+        <Constant Name="Kf_r0">0.003</Constant>
+        <Constant Name="Kf_r1">0.01</Constant>
+        <Constant Name="Kf_r2">0.5</Constant>
+        <Constant Name="Kf_r3">4.505</Constant>
+        <Constant Name="Kf_r4">0.5</Constant>
+        <Constant Name="Kf_r5">4.505</Constant>
+        <Constant Name="Kf_r6">0.0015</Constant>
+        <Constant Name="KMOLE">(1.0 / 602.0)</Constant>
+        <Constant Name="Kr_r0">0.06</Constant>
+        <Constant Name="Kr_r1">0.1</Constant>
+        <Constant Name="Kr_r6">0.05</Constant>
+        <Constant Name="L_Count_initCount">20468.0</Constant>
+        <Constant Name="R_Count_initCount">3010.0</Constant>
+        <Constant Name="Shc_Count_initCount">4515.0</Constant>
+        <Constant Name="Size_c0">50.0</Constant>
+        <VolumeParticleSpeciesPattern Name="speciesPattern0" Domain="Compartment">
+          <MolecularType Name="EGFR" MatchLabel="*">
+            <Component Name="ecd" State="*" Bond="?" />
+            <Component Name="tmd" State="*" Bond="?" />
+            <Component Name="y1068" State="*" Bond="?" />
+            <Component Name="y1173" State="*" Bond="?" />
+          </MolecularType>
+        </VolumeParticleSpeciesPattern>
+        <VolumeParticleSpeciesPattern Name="speciesPattern1" Domain="Compartment">
+          <MolecularType Name="EGF" MatchLabel="*">
+            <Component Name="rb" State="*" Bond="?" />
+          </MolecularType>
+        </VolumeParticleSpeciesPattern>
+        <VolumeParticleSpeciesPattern Name="speciesPattern10" Domain="Compartment">
+          <MolecularType Name="EGFR" MatchLabel="*">
+            <Component Name="ecd" State="*" Bond="-" />
+            <Component Name="tmd" State="*" Bond="-" />
+            <Component Name="y1068" State="*" Bond="?" />
+            <Component Name="y1173" State="*" Bond="?" />
+          </MolecularType>
+        </VolumeParticleSpeciesPattern>
+        <VolumeParticleSpeciesPattern Name="speciesPattern11" Domain="Compartment">
+          <MolecularType Name="EGF" MatchLabel="*">
+            <Component Name="rb" State="*" Bond="-" />
+          </MolecularType>
+        </VolumeParticleSpeciesPattern>
+        <VolumeParticleSpeciesPattern Name="speciesPattern12" Domain="Compartment">
+          <MolecularType Name="EGF" MatchLabel="*">
+            <Component Name="rb" State="*" Bond="1" />
+          </MolecularType>
+          <MolecularType Name="EGFR" MatchLabel="*">
+            <Component Name="ecd" State="*" Bond="1" />
+            <Component Name="tmd" State="*" Bond="-" />
+            <Component Name="y1068" State="*" Bond="?" />
+            <Component Name="y1173" State="*" Bond="?" />
+          </MolecularType>
+        </VolumeParticleSpeciesPattern>
+        <VolumeParticleSpeciesPattern Name="speciesPattern13" Domain="Compartment">
+          <MolecularType Name="EGFR" MatchLabel="1">
+            <Component Name="ecd" State="*" Bond="+" />
+            <Component Name="tmd" State="*" Bond="-" />
+            <Component Name="y1068" State="*" Bond="?" />
+            <Component Name="y1173" State="*" Bond="?" />
+          </MolecularType>
+        </VolumeParticleSpeciesPattern>
+        <VolumeParticleSpeciesPattern Name="speciesPattern14" Domain="Compartment">
+          <MolecularType Name="EGFR" MatchLabel="2">
+            <Component Name="ecd" State="*" Bond="+" />
+            <Component Name="tmd" State="*" Bond="-" />
+            <Component Name="y1068" State="*" Bond="?" />
+            <Component Name="y1173" State="*" Bond="?" />
+          </MolecularType>
+        </VolumeParticleSpeciesPattern>
+        <VolumeParticleSpeciesPattern Name="speciesPattern15" Domain="Compartment">
+          <MolecularType Name="EGFR" MatchLabel="1">
+            <Component Name="ecd" State="*" Bond="+" />
+            <Component Name="tmd" State="*" Bond="1" />
+            <Component Name="y1068" State="*" Bond="?" />
+            <Component Name="y1173" State="*" Bond="?" />
+          </MolecularType>
+          <MolecularType Name="EGFR" MatchLabel="2">
+            <Component Name="ecd" State="*" Bond="+" />
+            <Component Name="tmd" State="*" Bond="1" />
+            <Component Name="y1068" State="*" Bond="?" />
+            <Component Name="y1173" State="*" Bond="?" />
+          </MolecularType>
+        </VolumeParticleSpeciesPattern>
+        <VolumeParticleSpeciesPattern Name="speciesPattern16" Domain="Compartment">
+          <MolecularType Name="EGFR" MatchLabel="*">
+            <Component Name="ecd" State="*" Bond="?" />
+            <Component Name="tmd" State="*" Bond="+" />
+            <Component Name="y1068" State="*" Bond="?" />
+            <Component Name="y1173" State="u" Bond="-" />
+          </MolecularType>
+        </VolumeParticleSpeciesPattern>
+        <VolumeParticleSpeciesPattern Name="speciesPattern17" Domain="Compartment">
+          <MolecularType Name="EGFR" MatchLabel="*">
+            <Component Name="ecd" State="*" Bond="?" />
+            <Component Name="tmd" State="*" Bond="+" />
+            <Component Name="y1068" State="*" Bond="?" />
+            <Component Name="y1173" State="p" Bond="-" />
+          </MolecularType>
+        </VolumeParticleSpeciesPattern>
+        <VolumeParticleSpeciesPattern Name="speciesPattern18" Domain="Compartment">
+          <MolecularType Name="EGFR" MatchLabel="*">
+            <Component Name="ecd" State="*" Bond="?" />
+            <Component Name="tmd" State="*" Bond="?" />
+            <Component Name="y1068" State="*" Bond="?" />
+            <Component Name="y1173" State="p" Bond="-" />
+          </MolecularType>
+        </VolumeParticleSpeciesPattern>
+        <VolumeParticleSpeciesPattern Name="speciesPattern19" Domain="Compartment">
+          <MolecularType Name="EGFR" MatchLabel="*">
+            <Component Name="ecd" State="*" Bond="?" />
+            <Component Name="tmd" State="*" Bond="?" />
+            <Component Name="y1068" State="*" Bond="?" />
+            <Component Name="y1173" State="u" Bond="-" />
+          </MolecularType>
+        </VolumeParticleSpeciesPattern>
+        <VolumeParticleSpeciesPattern Name="speciesPattern2" Domain="Compartment">
+          <MolecularType Name="Shc" MatchLabel="*">
+            <Component Name="sh3" State="*" Bond="?" />
+            <Component Name="Y773" State="*" Bond="?" />
+          </MolecularType>
+        </VolumeParticleSpeciesPattern>
+        <VolumeParticleSpeciesPattern Name="speciesPattern20" Domain="Compartment">
+          <MolecularType Name="EGFR" MatchLabel="*">
+            <Component Name="ecd" State="*" Bond="?" />
+            <Component Name="tmd" State="*" Bond="+" />
+            <Component Name="y1068" State="u" Bond="-" />
+            <Component Name="y1173" State="*" Bond="?" />
+          </MolecularType>
+        </VolumeParticleSpeciesPattern>
+        <VolumeParticleSpeciesPattern Name="speciesPattern21" Domain="Compartment">
+          <MolecularType Name="EGFR" MatchLabel="*">
+            <Component Name="ecd" State="*" Bond="?" />
+            <Component Name="tmd" State="*" Bond="+" />
+            <Component Name="y1068" State="p" Bond="-" />
+            <Component Name="y1173" State="*" Bond="?" />
+          </MolecularType>
+        </VolumeParticleSpeciesPattern>
+        <VolumeParticleSpeciesPattern Name="speciesPattern22" Domain="Compartment">
+          <MolecularType Name="EGFR" MatchLabel="*">
+            <Component Name="ecd" State="*" Bond="?" />
+            <Component Name="tmd" State="*" Bond="?" />
+            <Component Name="y1068" State="p" Bond="-" />
+            <Component Name="y1173" State="*" Bond="?" />
+          </MolecularType>
+        </VolumeParticleSpeciesPattern>
+        <VolumeParticleSpeciesPattern Name="speciesPattern23" Domain="Compartment">
+          <MolecularType Name="EGFR" MatchLabel="*">
+            <Component Name="ecd" State="*" Bond="?" />
+            <Component Name="tmd" State="*" Bond="?" />
+            <Component Name="y1068" State="u" Bond="-" />
+            <Component Name="y1173" State="*" Bond="?" />
+          </MolecularType>
+        </VolumeParticleSpeciesPattern>
+        <VolumeParticleSpeciesPattern Name="speciesPattern24" Domain="Compartment">
+          <MolecularType Name="Grb2" MatchLabel="*">
+            <Component Name="sh2" State="*" Bond="-" />
+          </MolecularType>
+        </VolumeParticleSpeciesPattern>
+        <VolumeParticleSpeciesPattern Name="speciesPattern25" Domain="Compartment">
+          <MolecularType Name="EGFR" MatchLabel="*">
+            <Component Name="ecd" State="*" Bond="?" />
+            <Component Name="tmd" State="*" Bond="?" />
+            <Component Name="y1068" State="p" Bond="1" />
+            <Component Name="y1173" State="*" Bond="?" />
+          </MolecularType>
+          <MolecularType Name="Grb2" MatchLabel="*">
+            <Component Name="sh2" State="*" Bond="1" />
+          </MolecularType>
+        </VolumeParticleSpeciesPattern>
+        <VolumeParticleSpeciesPattern Name="speciesPattern26" Domain="Compartment">
+          <MolecularType Name="EGFR" MatchLabel="*">
+            <Component Name="ecd" State="*" Bond="-" />
+            <Component Name="tmd" State="*" Bond="-" />
+            <Component Name="y1068" State="u" Bond="-" />
+            <Component Name="y1173" State="u" Bond="-" />
+          </MolecularType>
+        </VolumeParticleSpeciesPattern>
+        <VolumeParticleSpeciesPattern Name="speciesPattern27" Domain="Compartment">
+          <MolecularType Name="Shc" MatchLabel="*">
+            <Component Name="sh3" State="*" Bond="-" />
+            <Component Name="Y773" State="*" Bond="-" />
+          </MolecularType>
+        </VolumeParticleSpeciesPattern>
+        <VolumeParticleSpeciesPattern Name="speciesPattern28" Domain="Compartment">
+          <MolecularType Name="Grb2" MatchLabel="*">
+            <Component Name="sh2" State="*" Bond="1" />
+          </MolecularType>
+          <MolecularType Name="Sos" MatchLabel="*">
+            <Component Name="site" State="*" Bond="1" />
+          </MolecularType>
+        </VolumeParticleSpeciesPattern>
+        <VolumeParticleSpeciesPattern Name="speciesPattern3" Domain="Compartment">
+          <MolecularType Name="Grb2" MatchLabel="*">
+            <Component Name="sh2" State="*" Bond="?" />
+          </MolecularType>
+        </VolumeParticleSpeciesPattern>
+        <VolumeParticleSpeciesPattern Name="speciesPattern4" Domain="Compartment">
+          <MolecularType Name="Sos" MatchLabel="*">
+            <Component Name="site" State="*" Bond="?" />
+          </MolecularType>
+        </VolumeParticleSpeciesPattern>
+        <VolumeParticleSpeciesPattern Name="speciesPattern5" Domain="Compartment">
+          <MolecularType Name="EGFR" MatchLabel="*">
+            <Component Name="ecd" State="*" Bond="?" />
+            <Component Name="tmd" State="*" Bond="+" />
+            <Component Name="y1068" State="*" Bond="?" />
+            <Component Name="y1173" State="*" Bond="?" />
+          </MolecularType>
+        </VolumeParticleSpeciesPattern>
+        <VolumeParticleSpeciesPattern Name="speciesPattern6" Domain="Compartment">
+          <MolecularType Name="EGFR" MatchLabel="*">
+            <Component Name="ecd" State="*" Bond="?" />
+            <Component Name="tmd" State="*" Bond="1" />
+            <Component Name="y1068" State="*" Bond="?" />
+            <Component Name="y1173" State="*" Bond="?" />
+          </MolecularType>
+          <MolecularType Name="EGFR" MatchLabel="*">
+            <Component Name="ecd" State="*" Bond="?" />
+            <Component Name="tmd" State="*" Bond="1" />
+            <Component Name="y1068" State="*" Bond="?" />
+            <Component Name="y1173" State="*" Bond="?" />
+          </MolecularType>
+        </VolumeParticleSpeciesPattern>
+        <VolumeParticleSpeciesPattern Name="speciesPattern7" Domain="Compartment">
+          <MolecularType Name="EGFR" MatchLabel="*">
+            <Component Name="ecd" State="*" Bond="?" />
+            <Component Name="tmd" State="*" Bond="?" />
+            <Component Name="y1068" State="p" Bond="?" />
+            <Component Name="y1173" State="*" Bond="?" />
+          </MolecularType>
+        </VolumeParticleSpeciesPattern>
+        <VolumeParticleSpeciesPattern Name="speciesPattern8" Domain="Compartment">
+          <MolecularType Name="EGFR" MatchLabel="*">
+            <Component Name="ecd" State="*" Bond="?" />
+            <Component Name="tmd" State="*" Bond="?" />
+            <Component Name="y1068" State="*" Bond="?" />
+            <Component Name="y1173" State="p" Bond="?" />
+          </MolecularType>
+        </VolumeParticleSpeciesPattern>
+        <VolumeParticleSpeciesPattern Name="speciesPattern9" Domain="Compartment">
+          <MolecularType Name="EGFR" MatchLabel="*">
+            <Component Name="ecd" State="*" Bond="?" />
+            <Component Name="tmd" State="*" Bond="?" />
+            <Component Name="y1068" State="*" Bond="1" />
+            <Component Name="y1173" State="*" Bond="?" />
+          </MolecularType>
+          <MolecularType Name="Grb2" MatchLabel="*">
+            <Component Name="sh2" State="*" Bond="1" />
+          </MolecularType>
+        </VolumeParticleSpeciesPattern>
+        <VolumeParticleObservable Name="Dimer_s_Count" Domain="Compartment" MolecularType="Molecules" SequenceType="Multimolecular">
+          <VolumeParticleSpeciesPatterns>
+            <VolumeParticleSpeciesPattern Name="speciesPattern6" />
+          </VolumeParticleSpeciesPatterns>
+        </VolumeParticleObservable>
+        <VolumeParticleObservable Name="Dimers_Count" Domain="Compartment" MolecularType="Molecules" SequenceType="Multimolecular">
+          <VolumeParticleSpeciesPatterns>
+            <VolumeParticleSpeciesPattern Name="speciesPattern5" />
+          </VolumeParticleSpeciesPatterns>
+        </VolumeParticleObservable>
+        <VolumeParticleObservable Name="EGF_tot_Count" Domain="Compartment" MolecularType="Molecules" SequenceType="Multimolecular">
+          <VolumeParticleSpeciesPatterns>
+            <VolumeParticleSpeciesPattern Name="speciesPattern1" />
+          </VolumeParticleSpeciesPatterns>
+        </VolumeParticleObservable>
+        <VolumeParticleObservable Name="EGFR_tot_Count" Domain="Compartment" MolecularType="Molecules" SequenceType="Multimolecular">
+          <VolumeParticleSpeciesPatterns>
+            <VolumeParticleSpeciesPattern Name="speciesPattern0" />
+          </VolumeParticleSpeciesPatterns>
+        </VolumeParticleObservable>
+        <VolumeParticleObservable Name="Grb2_Count" Domain="Compartment" MolecularType="Species" SequenceType="Multimolecular">
+          <VolumeParticleSpeciesPatterns>
+            <VolumeParticleSpeciesPattern Name="speciesPattern24" />
+          </VolumeParticleSpeciesPatterns>
+        </VolumeParticleObservable>
+        <VolumeParticleObservable Name="Grb2_Sos_Count" Domain="Compartment" MolecularType="Species" SequenceType="Multimolecular">
+          <VolumeParticleSpeciesPatterns>
+            <VolumeParticleSpeciesPattern Name="speciesPattern28" />
+          </VolumeParticleSpeciesPatterns>
+        </VolumeParticleObservable>
+        <VolumeParticleObservable Name="Grb2_tot_Count" Domain="Compartment" MolecularType="Molecules" SequenceType="Multimolecular">
+          <VolumeParticleSpeciesPatterns>
+            <VolumeParticleSpeciesPattern Name="speciesPattern3" />
+          </VolumeParticleSpeciesPatterns>
+        </VolumeParticleObservable>
+        <VolumeParticleObservable Name="L_Count" Domain="Compartment" MolecularType="Species" SequenceType="Multimolecular">
+          <VolumeParticleSpeciesPatterns>
+            <VolumeParticleSpeciesPattern Name="speciesPattern11" />
+          </VolumeParticleSpeciesPatterns>
+        </VolumeParticleObservable>
+        <VolumeParticleObservable Name="O0_Sos_tot_Count" Domain="Compartment" MolecularType="Molecules" SequenceType="Multimolecular">
+          <VolumeParticleSpeciesPatterns>
+            <VolumeParticleSpeciesPattern Name="speciesPattern4" />
+          </VolumeParticleSpeciesPatterns>
+        </VolumeParticleObservable>
+        <VolumeParticleObservable Name="R_Count" Domain="Compartment" MolecularType="Species" SequenceType="Multimolecular">
+          <VolumeParticleSpeciesPatterns>
+            <VolumeParticleSpeciesPattern Name="speciesPattern26" />
+          </VolumeParticleSpeciesPatterns>
+        </VolumeParticleObservable>
+        <VolumeParticleObservable Name="R_Grb2_Count" Domain="Compartment" MolecularType="Molecules" SequenceType="Multimolecular">
+          <VolumeParticleSpeciesPatterns>
+            <VolumeParticleSpeciesPattern Name="speciesPattern9" />
+          </VolumeParticleSpeciesPatterns>
+        </VolumeParticleObservable>
+        <VolumeParticleObservable Name="Shc_Count" Domain="Compartment" MolecularType="Species" SequenceType="Multimolecular">
+          <VolumeParticleSpeciesPatterns>
+            <VolumeParticleSpeciesPattern Name="speciesPattern27" />
+          </VolumeParticleSpeciesPatterns>
+        </VolumeParticleObservable>
+        <VolumeParticleObservable Name="Shc_tot_Count" Domain="Compartment" MolecularType="Molecules" SequenceType="Multimolecular">
+          <VolumeParticleSpeciesPatterns>
+            <VolumeParticleSpeciesPattern Name="speciesPattern2" />
+          </VolumeParticleSpeciesPatterns>
+        </VolumeParticleObservable>
+        <VolumeParticleObservable Name="Total_phosp_Count" Domain="Compartment" MolecularType="Molecules" SequenceType="Multimolecular">
+          <VolumeParticleSpeciesPatterns>
+            <VolumeParticleSpeciesPattern Name="speciesPattern7" />
+            <VolumeParticleSpeciesPattern Name="speciesPattern8" />
+          </VolumeParticleSpeciesPatterns>
+        </VolumeParticleObservable>
+        <VolumeParticleObservable Name="Y1068_phosp_Count" Domain="Compartment" MolecularType="Molecules" SequenceType="Multimolecular">
+          <VolumeParticleSpeciesPatterns>
+            <VolumeParticleSpeciesPattern Name="speciesPattern7" />
+          </VolumeParticleSpeciesPatterns>
+        </VolumeParticleObservable>
+        <VolumeParticleObservable Name="Y1173_phosp_Count" Domain="Compartment" MolecularType="Molecules" SequenceType="Multimolecular">
+          <VolumeParticleSpeciesPatterns>
+            <VolumeParticleSpeciesPattern Name="speciesPattern8" />
+          </VolumeParticleSpeciesPatterns>
+        </VolumeParticleObservable>
+        <Function Name="Dimer_s" Domain="Compartment">(Dimer_s_Count * (UnitFactor_nM_um3_molecules_neg_1 / Size_c0))</Function>
+        <Function Name="Dimers" Domain="Compartment">(Dimers_Count * (UnitFactor_nM_um3_molecules_neg_1 / Size_c0))</Function>
+        <Function Name="EGF_tot" Domain="Compartment">(EGF_tot_Count * (UnitFactor_nM_um3_molecules_neg_1 / Size_c0))</Function>
+        <Function Name="EGFR_tot" Domain="Compartment">(EGFR_tot_Count * (UnitFactor_nM_um3_molecules_neg_1 / Size_c0))</Function>
+        <Function Name="Grb2" Domain="Compartment">(Grb2_Count * (UnitFactor_nM_um3_molecules_neg_1 / Size_c0))</Function>
+        <Function Name="Grb2_Sos" Domain="Compartment">(Grb2_Sos_Count * (UnitFactor_nM_um3_molecules_neg_1 / Size_c0))</Function>
+        <Function Name="Grb2_tot" Domain="Compartment">(Grb2_tot_Count * (UnitFactor_nM_um3_molecules_neg_1 / Size_c0))</Function>
+        <Function Name="L" Domain="Compartment">(L_Count * (UnitFactor_nM_um3_molecules_neg_1 / Size_c0))</Function>
+        <Function Name="O0_Sos_tot" Domain="Compartment">(O0_Sos_tot_Count * (UnitFactor_nM_um3_molecules_neg_1 / Size_c0))</Function>
+        <Function Name="P_r0" Domain="Compartment">(Kf_r0 * UnitFactor_nM_um3_molecules_neg_1 / Size_c0)</Function>
+        <Function Name="P_r0_reverse" Domain="Compartment">Kr_r0</Function>
+        <Function Name="P_r1" Domain="Compartment">(Kf_r1 * UnitFactor_nM_um3_molecules_neg_1 / Size_c0)</Function>
+        <Function Name="P_r1_reverse" Domain="Compartment">Kr_r1</Function>
+        <Function Name="P_r2" Domain="Compartment">Kf_r2</Function>
+        <Function Name="P_r3" Domain="Compartment">Kf_r3</Function>
+        <Function Name="P_r4" Domain="Compartment">Kf_r4</Function>
+        <Function Name="P_r5" Domain="Compartment">Kf_r5</Function>
+        <Function Name="P_r6" Domain="Compartment">(Kf_r6 * UnitFactor_nM_um3_molecules_neg_1 / Size_c0)</Function>
+        <Function Name="P_r6_reverse" Domain="Compartment">Kr_r6</Function>
+        <Function Name="R" Domain="Compartment">(R_Count * (UnitFactor_nM_um3_molecules_neg_1 / Size_c0))</Function>
+        <Function Name="R_Grb2" Domain="Compartment">(R_Grb2_Count * (UnitFactor_nM_um3_molecules_neg_1 / Size_c0))</Function>
+        <Function Name="Shc" Domain="Compartment">(Shc_Count * (UnitFactor_nM_um3_molecules_neg_1 / Size_c0))</Function>
+        <Function Name="Shc_tot" Domain="Compartment">(Shc_tot_Count * (UnitFactor_nM_um3_molecules_neg_1 / Size_c0))</Function>
+        <Function Name="Total_phosp" Domain="Compartment">(Total_phosp_Count * (UnitFactor_nM_um3_molecules_neg_1 / Size_c0))</Function>
+        <Function Name="UnitFactor_nM_um3_molecules_neg_1">(500.0 / 301.0)</Function>
+        <Function Name="Y1068_phosp" Domain="Compartment">(Y1068_phosp_Count * (UnitFactor_nM_um3_molecules_neg_1 / Size_c0))</Function>
+        <Function Name="Y1173_phosp" Domain="Compartment">(Y1173_phosp_Count * (UnitFactor_nM_um3_molecules_neg_1 / Size_c0))</Function>
+        <CompartmentSubDomain Name="Compartment">
+          <BoundaryType Boundary="Xm" Type="Value" />
+          <BoundaryType Boundary="Xp" Type="Value" />
+          <BoundaryType Boundary="Ym" Type="Value" />
+          <BoundaryType Boundary="Yp" Type="Value" />
+          <BoundaryType Boundary="Zm" Type="Value" />
+          <BoundaryType Boundary="Zp" Type="Value" />
+          <ParticleJumpProcess Name="r0">
+            <SelectedParticle Name="speciesPattern10" />
+            <SelectedParticle Name="speciesPattern11" />
+            <MacroscopicRateConstant>P_r0</MacroscopicRateConstant>
+            <Effect VarName="speciesPattern10" Operation="destroy" />
+            <Effect VarName="speciesPattern11" Operation="destroy" />
+            <Effect VarName="speciesPattern12" Operation="create" />
+          </ParticleJumpProcess>
+          <ParticleJumpProcess Name="r0_reverse">
+            <SelectedParticle Name="speciesPattern12" />
+            <MacroscopicRateConstant>P_r0_reverse</MacroscopicRateConstant>
+            <Effect VarName="speciesPattern10" Operation="create" />
+            <Effect VarName="speciesPattern11" Operation="create" />
+            <Effect VarName="speciesPattern12" Operation="destroy" />
+          </ParticleJumpProcess>
+          <ParticleJumpProcess Name="r1">
+            <SelectedParticle Name="speciesPattern13" />
+            <SelectedParticle Name="speciesPattern14" />
+            <MacroscopicRateConstant>P_r1</MacroscopicRateConstant>
+            <Effect VarName="speciesPattern13" Operation="destroy" />
+            <Effect VarName="speciesPattern14" Operation="destroy" />
+            <Effect VarName="speciesPattern15" Operation="create" />
+          </ParticleJumpProcess>
+          <ParticleJumpProcess Name="r1_reverse">
+            <SelectedParticle Name="speciesPattern15" />
+            <MacroscopicRateConstant>P_r1_reverse</MacroscopicRateConstant>
+            <Effect VarName="speciesPattern13" Operation="create" />
+            <Effect VarName="speciesPattern14" Operation="create" />
+            <Effect VarName="speciesPattern15" Operation="destroy" />
+          </ParticleJumpProcess>
+          <ParticleJumpProcess Name="r2">
+            <SelectedParticle Name="speciesPattern16" />
+            <MacroscopicRateConstant>P_r2</MacroscopicRateConstant>
+            <Effect VarName="speciesPattern16" Operation="destroy" />
+            <Effect VarName="speciesPattern17" Operation="create" />
+          </ParticleJumpProcess>
+          <ParticleJumpProcess Name="r3">
+            <SelectedParticle Name="speciesPattern18" />
+            <MacroscopicRateConstant>P_r3</MacroscopicRateConstant>
+            <Effect VarName="speciesPattern18" Operation="destroy" />
+            <Effect VarName="speciesPattern19" Operation="create" />
+          </ParticleJumpProcess>
+          <ParticleJumpProcess Name="r4">
+            <SelectedParticle Name="speciesPattern20" />
+            <MacroscopicRateConstant>P_r4</MacroscopicRateConstant>
+            <Effect VarName="speciesPattern20" Operation="destroy" />
+            <Effect VarName="speciesPattern21" Operation="create" />
+          </ParticleJumpProcess>
+          <ParticleJumpProcess Name="r5">
+            <SelectedParticle Name="speciesPattern22" />
+            <MacroscopicRateConstant>P_r5</MacroscopicRateConstant>
+            <Effect VarName="speciesPattern22" Operation="destroy" />
+            <Effect VarName="speciesPattern23" Operation="create" />
+          </ParticleJumpProcess>
+          <ParticleJumpProcess Name="r6">
+            <SelectedParticle Name="speciesPattern22" />
+            <SelectedParticle Name="speciesPattern24" />
+            <MacroscopicRateConstant>P_r6</MacroscopicRateConstant>
+            <Effect VarName="speciesPattern22" Operation="destroy" />
+            <Effect VarName="speciesPattern24" Operation="destroy" />
+            <Effect VarName="speciesPattern25" Operation="create" />
+          </ParticleJumpProcess>
+          <ParticleJumpProcess Name="r6_reverse">
+            <SelectedParticle Name="speciesPattern25" />
+            <MacroscopicRateConstant>P_r6_reverse</MacroscopicRateConstant>
+            <Effect VarName="speciesPattern22" Operation="create" />
+            <Effect VarName="speciesPattern24" Operation="create" />
+            <Effect VarName="speciesPattern25" Operation="destroy" />
+          </ParticleJumpProcess>
+          <ParticleProperties Name="speciesPattern26">
+            <ParticleInitialCount>
+              <ParticleCount>R_Count_initCount</ParticleCount>
+              <ParticleLocationX>0.0</ParticleLocationX>
+              <ParticleLocationY>u</ParticleLocationY>
+              <ParticleLocationZ>u</ParticleLocationZ>
+            </ParticleInitialCount>
+            <ParticleDiffusion>0.0</ParticleDiffusion>
+            <ParticleDriftX>0.0</ParticleDriftX>
+            <ParticleDriftY>0.0</ParticleDriftY>
+            <ParticleDriftZ>0.0</ParticleDriftZ>
+          </ParticleProperties>
+          <ParticleProperties Name="speciesPattern11">
+            <ParticleInitialCount>
+              <ParticleCount>L_Count_initCount</ParticleCount>
+              <ParticleLocationX>0.0</ParticleLocationX>
+              <ParticleLocationY>u</ParticleLocationY>
+              <ParticleLocationZ>u</ParticleLocationZ>
+            </ParticleInitialCount>
+            <ParticleDiffusion>0.0</ParticleDiffusion>
+            <ParticleDriftX>0.0</ParticleDriftX>
+            <ParticleDriftY>0.0</ParticleDriftY>
+            <ParticleDriftZ>0.0</ParticleDriftZ>
+          </ParticleProperties>
+          <ParticleProperties Name="speciesPattern24">
+            <ParticleInitialCount>
+              <ParticleCount>Grb2_Count_initCount</ParticleCount>
+              <ParticleLocationX>0.0</ParticleLocationX>
+              <ParticleLocationY>u</ParticleLocationY>
+              <ParticleLocationZ>u</ParticleLocationZ>
+            </ParticleInitialCount>
+            <ParticleDiffusion>0.0</ParticleDiffusion>
+            <ParticleDriftX>0.0</ParticleDriftX>
+            <ParticleDriftY>0.0</ParticleDriftY>
+            <ParticleDriftZ>0.0</ParticleDriftZ>
+          </ParticleProperties>
+          <ParticleProperties Name="speciesPattern27">
+            <ParticleInitialCount>
+              <ParticleCount>Shc_Count_initCount</ParticleCount>
+              <ParticleLocationX>0.0</ParticleLocationX>
+              <ParticleLocationY>u</ParticleLocationY>
+              <ParticleLocationZ>u</ParticleLocationZ>
+            </ParticleInitialCount>
+            <ParticleDiffusion>0.0</ParticleDiffusion>
+            <ParticleDriftX>0.0</ParticleDriftX>
+            <ParticleDriftY>0.0</ParticleDriftY>
+            <ParticleDriftZ>0.0</ParticleDriftZ>
+          </ParticleProperties>
+          <ParticleProperties Name="speciesPattern28">
+            <ParticleInitialCount>
+              <ParticleCount>Grb2_Sos_Count_initCount</ParticleCount>
+              <ParticleLocationX>0.0</ParticleLocationX>
+              <ParticleLocationY>u</ParticleLocationY>
+              <ParticleLocationZ>u</ParticleLocationZ>
+            </ParticleInitialCount>
+            <ParticleDiffusion>0.0</ParticleDiffusion>
+            <ParticleDriftX>0.0</ParticleDriftX>
+            <ParticleDriftY>0.0</ParticleDriftY>
+            <ParticleDriftZ>0.0</ParticleDriftZ>
+          </ParticleProperties>
+        </CompartmentSubDomain>
+        <Version Name="NFSim_generated" KeyValue="97075413" BranchId="97075362" Archived="0" Date="07-Oct-2015 17:05:24" FromVersionable="false">
+          <Owner Name="mblinov" Identifier="12487253" />
+          <GroupAccess Type="1" />
+        </Version>
+      </MathDescription>
+      <Simulation Name="Simulation1">
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="NFSim">
+          <TimeBound StartTime="0.0" EndTime="120.0" />
+          <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+          <OutputOptions OutputTimeStep="0.05" />
+          <NFSimSimulationOptions>
+            <ObservableComputationOff>true</ObservableComputationOff>
+            <PreventIntraBonds>false</PreventIntraBonds>
+            <AggregateBookkeeping>true</AggregateBookkeeping>
+            <MatchComplexes>true</MatchComplexes>
+            <MoleculeDistance>1000</MoleculeDistance>
+            <NumOfTrials>1</NumOfTrials>
+          </NFSimSimulationOptions>
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides />
+        <Version Name="Simulation1" KeyValue="97075401" BranchId="97075402" Archived="0" Date="07-Oct-2015 17:05:16" FromVersionable="false">
+          <Owner Name="mblinov" Identifier="12487253" />
+          <GroupAccess Type="1" />
+        </Version>
+      </Simulation>
+      <Version Name="NFSim" KeyValue="97075415" BranchId="97075390" Archived="0" Date="07-Oct-2015 17:05:24" FromVersionable="false">
+        <Owner Name="mblinov" Identifier="12487253" />
+        <GroupAccess Type="1" />
+        <Annotation>(copied from Application0)</Annotation>
+      </Version>
+      <MicroscopeMeasurement Name="fluor">
+        <ConvolutionKernel Type="ProjectionZKernel" />
+      </MicroscopeMeasurement>
+    </SimulationSpec>
+    <Version Name="egfr_beginning" KeyValue="97075423" BranchId="97075405" Archived="0" Date="07-Oct-2015 17:05:24" FromVersionable="false">
+      <Owner Name="mblinov" Identifier="12487253" />
+      <GroupAccess Type="1" />
+    </Version>
+    <pathwayModel>
+      <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bp="http://www.biopax.org/release/biopax-level3.owl#" version="3.0" />
+    </pathwayModel>
+    <relationshipModel>
+      <RMNS version="3.0" />
+    </relationshipModel>
+    <vcmetadata>
+      <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" />
+      <nonrdfAnnotationList />
+      <uriBindingList />
+    </vcmetadata>
+  </BioModel>
+</vcml>
+
