@@ -287,6 +287,10 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
 			}
 			return false;
 		}
+
+		public boolean isEmpty() {
+			return insideFeatures.size() + outsideFeatures.size() + enclosingMembrane.size() == 0;
+		}
 		
 		
 		/*public String showStructureHierarchy() {
@@ -1960,7 +1964,7 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
 		}
 	}
 	
-public final static Map<ReservedSymbolRole, Double> reservedConstantsMap = new HashMap<ReservedSymbolRole, Double> () {
+private final static Map<ReservedSymbolRole, Double> reservedConstantsMap = new HashMap<ReservedSymbolRole, Double> () {
 	{
 		put(ReservedSymbolRole.PI_CONSTANT, Math.PI);
 		put(ReservedSymbolRole.FARADAY_CONSTANT, 9.64853321e4);			// exactly 96485.3321233100184 C/mol

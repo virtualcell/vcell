@@ -231,6 +231,9 @@ public class MathGenCompareTest {
 		//new_simContext.setUsingMassConservationModelReduction(false);
 		new_simContext.updateAll(false);
 		MathDescription newMath = new_simContext.getMathDescription();
+		if (bTransformKMOLE){
+			BioModelTransforms.restoreLatestReservedSymbols(transformed_biomodel);
+		}
 		MathDescription newMathClone = new MathDescription(newMath); // test round trip to/from MathDescription.readFromDatabase()
 		MathCompareResults results = null;
 		if (bTransformVariables) {

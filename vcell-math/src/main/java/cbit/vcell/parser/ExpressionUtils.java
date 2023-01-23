@@ -30,7 +30,9 @@ import java.util.function.BiPredicate;
  */
 public class ExpressionUtils {
 	private static Logger lg = LogManager.getLogger(ExpressionUtils.class);
-	public static String value_molecules_per_uM_um3_NUMERATOR = "6.02214179E8";
+	public final static String legacy_molecules_per_uM_um3_NUMERATOR = "6.02e8";
+	public final static String latest_molecules_per_uM_um3_NUMERATOR = "6.02214179E8";
+	public static String value_molecules_per_uM_um3_NUMERATOR = latest_molecules_per_uM_um3_NUMERATOR;
 
 	public static Expression getLinearFactor(Expression exp, String k) throws ExpressionException {
 		// let exp = f(k,x)
