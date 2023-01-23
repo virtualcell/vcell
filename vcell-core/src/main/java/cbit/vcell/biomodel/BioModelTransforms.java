@@ -126,5 +126,140 @@ public class BioModelTransforms {
         ExpressionUtils.value_molecules_per_uM_um3_NUMERATOR = ExpressionUtils.latest_molecules_per_uM_um3_NUMERATOR;
         bioModel.refreshDependencies();
     }
+
+    public static void repairLegacyProblems(BioModel bioModel){
+        reconcileLegacyAbsRelSizes(bioModel);
     }
+
+    public static void reconcileLegacyAbsRelSizes(BioModel bioModel) {
+        /**
+         * if both relative and absolute sizes exist in structure mappings of legacy models,
+         * then remove either absolute sizes or relative sizes (whichever way is consistent with MathDescription).
+         */
+        Model.StructureTopology structureTopology = bioModel.getModel().getStructureTopology();
+        if (structureTopology.isEmpty()){
+            return;
+        }
+
+        for (SimulationContext simulationContext : bioModel.getSimulationContexts()){
+            MathDescription mathDescription = simulationContext.getMathDescription();
+            StructureMapping[] structureMappings = simulationContext.getGeometryContext().getStructureMappings();
+            ArrayList<String> relativeSizesDefinedAsConstantsInMath = new ArrayList<String>();
+            ArrayList<String> absoluteSizesDefinedAsConstantsInMath = new ArrayList<String>();
+            boolean relativeSizesDefinedInModel = false;
+            boolean absoluteSizesDefinedInModel = false;
+            for (StructureMapping sm : structureMappings){
+                StructureMapping.StructureMappingParameter unitSizeParameter = sm.getUnitSizeParameter();
+                if (unitSizeParameter!=null && unitSizeParameter.getExpression()!=null){
+                    absoluteSizesDefinedInModel = true;
+                    String mathName = null;
+                    switch (unitSizeParameter.getRole()){
+                        case StructureMapping.ROLE_AreaPerUnitArea:{
+                            mathName = "AreaPerUnitArea_" + sm.getStructure().getName();
+                            break;
+                        }
+                        case StructureMapping.ROLE_AreaPerUnitVolume:{
+                            mathName = "AreaPerUnitVolume_" + sm.getStructure().getName();
+                            break;
+                        }
+                        case StructureMapping.ROLE_VolumePerUnitVolume:{
+                            mathName = "VolumePerUnitVolume_" + sm.getStructure().getName();
+                            break;
+                        }
+                        case StructureMapping.ROLE_VolumePerUnitArea:{
+                            mathName = "VolumePerUnitArea_" + sm.getStructure().getName();
+                            break;
+                        }
+                    }
+                    if (mathName != null){
+                        Variable unitSize = mathDescription.getVariable(mathName);
+                        if (unitSize instanceof Constant){
+                            absoluteSizesDefinedAsConstantsInMath.add(unitSize.getName());
+                        }
+                    }
+                }
+                if (sm.getSizeParameter()!=null && sm.getSizeParameter().getExpression()!=null){
+                    absoluteSizesDefinedInModel = true;
+                    Variable size = mathDescription.getVariable("Size_"+sm.getStructure().getName());
+                    if (size instanceof Constant){
+                        absoluteSizesDefinedAsConstantsInMath.add(size.getName());
+                    }
+                }
+                if (sm instanceof MembraneMapping){
+                    MembraneMapping mm = (MembraneMapping)sm;
+                    if (mm.getSurfaceToVolumeParameter() != null && mm.getSurfaceToVolumeParameter().getExpression()!=null) {
+                        relativeSizesDefinedInModel = true;
+                        Variable surfToVol = mathDescription.getVariable("SurfToVol_"+mm.getMembrane().getName());
+                        if (surfToVol instanceof Constant){
+                            relativeSizesDefinedAsConstantsInMath.add(surfToVol.getName());
+                        }
+                    }
+                    if (mm.getVolumeFractionParameter() != null && mm.getVolumeFractionParameter().getExpression()!=null) {
+                        relativeSizesDefinedInModel = true;
+                        Variable volFract = mathDescription.getVariable("VolFract_"+structureTopology.getInsideFeature(mm.getMembrane()).getName());
+                        if (volFract instanceof Constant){
+                            relativeSizesDefinedAsConstantsInMath.add(volFract.getName());
+                        }
+                    }
+                }
+            }
+            if (relativeSizesDefinedInModel && absoluteSizesDefinedInModel){
+                // check to see if absolute size constants or relative size constants are used in Functions
+                boolean bAbsoluteSizesReferenced = false;
+                boolean bRelativeSizesReferenced = false;
+                for (Variable var : mathDescription.getVariableList()){
+                    if (var instanceof Function){
+                        Function function = (Function) var;
+                        String[] referencedSymbols = function.getExpression().getSymbols();
+                        if (referencedSymbols!=null) {
+                            for (String referencedSymbol : referencedSymbols) {
+                                if (absoluteSizesDefinedAsConstantsInMath.contains(referencedSymbol)) {
+                                    bAbsoluteSizesReferenced = true;
+                                }
+                                if (relativeSizesDefinedAsConstantsInMath.contains(referencedSymbol)) {
+                                    bRelativeSizesReferenced = true;
+                                }
+                            }
+                        }
+                    }
+                }
+                if (!bRelativeSizesReferenced && !bAbsoluteSizesReferenced){
+                    return;  // very simple math, nothing to do
+                }
+                if (bRelativeSizesReferenced && bAbsoluteSizesReferenced){
+//                    throw new RuntimeException("could not reconcile structure sizes, both relative and absolute sizes used in Math");
+                    lg.warn("skipping: could not reconcile structure sizes, both relative and absolute sizes used in Math for BioModel("+bioModel.getVersion()+"):"+simulationContext.getName());
+                }
+                try {
+                    if (bRelativeSizesReferenced && !bAbsoluteSizesReferenced) {
+                        // throw away absolute sizes
+                        for (StructureMapping sm : structureMappings) {
+                            if (sm.getUnitSizeParameter() != null && sm.getUnitSizeParameter().getExpression() != null) {
+                                sm.getUnitSizeParameter().setExpression(null);
+                            }
+                            if (sm.getSizeParameter() != null && sm.getSizeParameter().getExpression() != null) {
+                                sm.getSizeParameter().setExpression(null);
+                            }
+                        }
+                    } else if (bAbsoluteSizesReferenced && !bRelativeSizesReferenced) {
+                        // throw away relative sizes
+                        for (StructureMapping sm : structureMappings) {
+                            if (sm instanceof MembraneMapping) {
+                                MembraneMapping mm = (MembraneMapping) sm;
+                                if (mm.getSurfaceToVolumeParameter() != null && mm.getSurfaceToVolumeParameter().getExpression() != null) {
+                                    mm.getSurfaceToVolumeParameter().setExpression(null);
+                                }
+                                if (mm.getVolumeFractionParameter() != null && mm.getVolumeFractionParameter().getExpression() != null) {
+                                    mm.getVolumeFractionParameter().setExpression(null);
+                                }
+                            }
+                        }
+                    }
+                } catch (ExpressionBindingException e){
+                    throw new RuntimeException("failed to reconcile structure mapping sizes", e);
+                }
+            }
+        }
+    }
+
 }
