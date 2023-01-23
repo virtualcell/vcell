@@ -25,9 +25,10 @@ import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.document.Identifiable;
 
 @SuppressWarnings("serial")
+@Deprecated
 public class MolecularTypeSpec implements Matchable, Serializable, IssueSource,
 	Identifiable, Displayable {
-
+@Deprecated
 	public class InternalLink implements Identifiable {
 		private MolecularComponentPattern fieldMolecularComponentPatternOne = null;
 		private MolecularComponentPattern fieldMolecularComponentPatternTwo = null;
@@ -86,7 +87,7 @@ public class MolecularTypeSpec implements Matchable, Serializable, IssueSource,
 			this.linkLength = linkLength;
 		}
 	}
-	
+	@Deprecated
 	public class SiteAttributes implements Identifiable {
 		
 		private MolecularComponentPattern fieldMolecularComponentPattern = null;

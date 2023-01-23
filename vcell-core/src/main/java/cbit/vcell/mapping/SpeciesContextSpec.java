@@ -38,6 +38,8 @@ import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.SurfaceClass;
 import cbit.vcell.geometry.surface.GeometricRegion;
+import cbit.vcell.mapping.MolecularTypeSpec.InternalLink;
+import cbit.vcell.mapping.MolecularTypeSpec.SiteAttributes;
 import cbit.vcell.mapping.SimulationContext.Kind;
 import cbit.vcell.mapping.spatial.SpatialObject;
 import cbit.vcell.mapping.spatial.SpatialObject.QuantityCategory;
@@ -426,6 +428,10 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
 //	private boolean        bEnableDiffusing = DEFAULT_ENABLE_DIFFUSING;
 	private Boolean        bWellMixed = DEFAULT_WELL_MIXED;
 	private Boolean        bForceContinuous = DEFAULT_FORCECONTINUOUS;
+	
+	private Set<MolecularInternalLinkSpec> internalLinkSet = new LinkedHashSet<> ();
+	private Map<MolecularComponentPattern, SiteAttributesSpec> siteAttributesMap = new LinkedHashMap<> ();
+	
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
 	private SpeciesContextSpecParameter[] fieldParameters = null;
 	private SpeciesContextSpecProxyParameter[] fieldProxyParameters = new SpeciesContextSpecProxyParameter[0];
@@ -1771,11 +1777,6 @@ public SpatialQuantity[] getVelocityQuantities(QuantityComponent component) {
 		}
 	}
 	return velocityQuantities.toArray(new SpatialQuantity[0]);
-}
-
-public static MolecularTypeSpec getMolecularTypeSpec(SimulationContext sc, SpeciesContextSpec scs) {
-	// TODO: implement this
-	return null;
 }
 
 @Override
