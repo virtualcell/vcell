@@ -11,14 +11,20 @@ import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 public class Hdf5Writer {
+
+    private final static Logger logger = LogManager.getLogger(Hdf5Writer.class);
 
     public static void writeHdf5(Hdf5FileWrapper hdf5FileWrapper, File outDirForCurrentSedml) throws HDF5Exception {
         NativeLib.HDF5.load();
         File hdf5TempFile = new File(outDirForCurrentSedml, "reports.h5");
-        System.out.println("writing to file "+hdf5TempFile.getAbsolutePath());
+        logger.info("writing to file " + hdf5TempFile.getAbsolutePath());
         int hdf5FileID = H5.H5Fcreate(hdf5TempFile.getAbsolutePath(), HDF5Constants.H5F_ACC_TRUNC,HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
         int jobGroupID = Hdf5Utils.createGroup(hdf5FileID, hdf5FileWrapper.combineArchiveLocation);
+        
         try {
             for (Hdf5DatasetWrapper datasetWrapper : hdf5FileWrapper.datasetWrappers) {
                 // here this is either a plot or a report

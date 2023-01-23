@@ -11,6 +11,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.vcell.cli.CLIRecorder;
 import org.vcell.cli.PythonStreamException;
 import org.vcell.cli.run.hdf5.Hdf5DatasetWrapper;
+import org.vcell.cli.run.hdf5.Hdf5Factory;
 import org.vcell.cli.run.hdf5.Hdf5FileWrapper;
 import org.vcell.cli.run.hdf5.Hdf5Writer;
 import org.vcell.util.DataAccessException;
@@ -332,6 +333,7 @@ public class SedmlJob {
         logDocumentMessage += "Generating HDF5 file... ";
         logger.info("Generating HDF5 file... ");
 
+        /*
         Hdf5FileWrapper hdf5FileWrapper = new Hdf5FileWrapper();
         hdf5FileWrapper.combineArchiveLocation = outDirForCurrentSedml.getName();
         hdf5FileWrapper.uri = outDirForCurrentSedml.getName();
@@ -341,7 +343,11 @@ public class SedmlJob {
         hdf5FileWrapper.datasetWrappers.addAll(nonspatialDatasets);
         hdf5FileWrapper.datasetWrappers.addAll(spatialDatasets);
 
-        Hdf5Writer.writeHdf5(hdf5FileWrapper, outDirForCurrentSedml);
+        */
+
+        Hdf5Factory hdf5Factory = new Hdf5Factory(outDirForCurrentSedml.getName(), sedml, solverHandler.taskToSimulationMap, sedmlLocation);
+
+        Hdf5Writer.writeHdf5(hdf5Factory.generateHdf5File(solverHandler.nonSpatialResults, solverHandler.spatialResults), outDirForCurrentSedml);
 
         for (File tempH5File : solverHandler.spatialResults.values()){
             if (tempH5File!=null) Files.delete(tempH5File.toPath());
