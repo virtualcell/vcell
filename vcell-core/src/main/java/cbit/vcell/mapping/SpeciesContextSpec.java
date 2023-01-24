@@ -429,7 +429,7 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
 	private Boolean        bWellMixed = DEFAULT_WELL_MIXED;
 	private Boolean        bForceContinuous = DEFAULT_FORCECONTINUOUS;
 	
-	private Set<MolecularInternalLinkSpec> internalLinkSet = new LinkedHashSet<> ();
+	private Set<MolecularInternalLinkSpec> internalLinkSet = new LinkedHashSet<> ();			// SpringSaLaD
 	private Map<MolecularComponentPattern, SiteAttributesSpec> siteAttributesMap = new LinkedHashMap<> ();
 	
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
@@ -1767,6 +1767,21 @@ public List<SpeciesContextSpecParameter> computeApplicableParameterList() {
 	return speciesContextSpecParameterList;
 }
 
+public Set<MolecularInternalLinkSpec> getInternalLinkSet() {
+	return internalLinkSet;
+}
+public void setInternalLinkSet(Set<MolecularInternalLinkSpec> internalLinkSet) {
+	this.internalLinkSet = internalLinkSet;
+}
+
+
+public Map<MolecularComponentPattern, SiteAttributesSpec> getSiteAttributesMap() {
+	return siteAttributesMap;
+}
+public void setSiteAttributesMap(Map<MolecularComponentPattern, SiteAttributesSpec> siteAttributesMap) {
+	this.siteAttributesMap = siteAttributesMap;
+}
+
 public SpatialQuantity[] getVelocityQuantities(QuantityComponent component) {
 	ArrayList<SpatialQuantity> velocityQuantities = new ArrayList<SpatialQuantity>();
 	for (SpatialObject spatialObject : simulationContext.getSpatialObjects(speciesContext.getStructure())){
@@ -1796,5 +1811,6 @@ public String getDisplayName() {
 public String getDisplayType() {
 	return typeName;
 }
+
 
 }
