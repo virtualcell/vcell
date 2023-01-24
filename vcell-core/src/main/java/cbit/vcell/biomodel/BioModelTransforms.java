@@ -143,6 +143,9 @@ public class BioModelTransforms {
 
         for (SimulationContext simulationContext : bioModel.getSimulationContexts()){
             MathDescription mathDescription = simulationContext.getMathDescription();
+            if (mathDescription==null){
+                continue;
+            }
             StructureMapping[] structureMappings = simulationContext.getGeometryContext().getStructureMappings();
             ArrayList<String> relativeSizesDefinedAsConstantsInMath = new ArrayList<String>();
             ArrayList<String> absoluteSizesDefinedAsConstantsInMath = new ArrayList<String>();
