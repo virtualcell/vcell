@@ -35,6 +35,7 @@ import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.mapping.RateRule;
 import cbit.vcell.mapping.ReactionContext;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SiteAttributesSpec;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.mapping.gui.SpeciesContextSpecsTableModel.ColumnType;
@@ -137,6 +138,34 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 		}
 	}
 	
+	public void setValueAt(Object aValue, int row, int col) {
+		MolecularComponentPattern mcp = getValueAt(row);
+		ColumnType columnType = columns.get(col);
+		switch (columnType) {
+		case COLUMN_SITE:
+		case COLUMN_SPECIESCONTEXT:
+		case COLUMN_STRUCTURE:
+		case COLUMN_STATE:
+			return;
+		case COLUMN_RADIUS:
+			if (aValue instanceof String) {
+				String newExpressionString = (String)aValue;
+				double result = Double.parseDouble(newExpressionString);
+				SiteAttributesSpec sas = getSpeciesContextSpec().getSiteAttributesMap().get(mcp);
+//				sas.setRadius();	//  TODO: make setters
+			}
+		case COLUMN_DIFFUSION:
+			if (aValue instanceof String) {
+				String newExpressionString = (String)aValue;
+				double result = Double.parseDouble(newExpressionString);
+				SiteAttributesSpec sas = getSpeciesContextSpec().getSiteAttributesMap().get(mcp);
+//				sas.setDiffusionRate();
+			}
+		default:
+			return;
+		}
+	}
+	
 	@Override
 	public boolean isCellEditable(int row, int col) {
 		MolecularComponentPattern mcp = getValueAt(row);
@@ -153,8 +182,31 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 		default:
 			return false;
 		}
-
-		
+	}
+	
+	@Override
+	public Comparator<MolecularComponentPattern> getComparator(final int col, final boolean ascending) {
+		return new Comparator<MolecularComponentPattern>() {	
+			/**
+			 * Compares its two arguments for order.  Returns a negative integer,
+			 * zero, or a positive integer as the first argument is less than, equal
+			 * to, or greater than the second.<p>
+			 */
+			public int compare(MolecularComponentPattern mcp1, MolecularComponentPattern mcp2){			
+				
+				ColumnType columnType = columns.get(col);
+				switch (columnType) {
+				case COLUMN_SITE:
+				case COLUMN_SPECIESCONTEXT:
+				case COLUMN_STRUCTURE:
+				case COLUMN_STATE:
+				case COLUMN_RADIUS:
+				case COLUMN_DIFFUSION:
+				default:
+					return 1;
+				}
+			}
+		};
 	}
 	
 	private void refreshColumns() {
@@ -277,14 +329,28 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 	
 
 	
-	@Override
-	protected Comparator<MolecularComponentPattern> getComparator(int col, boolean ascending) {
-		return null;
-	}
+
 
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
-		
+		if (evt.getSource() instanceof ReactionContext && evt.getPropertyName().equals("speciesContextSpecs")) {
+			refreshData();
+		}
+		if (evt.getSource() instanceof SpeciesContext && evt.getPropertyName().equals("name")) {
+			fireTableRowsUpdated(0,getRowCount()-1);
+		}
+
+		if (evt.getSource() instanceof SpeciesContextSpec) {
+			fireTableRowsUpdated(0,getRowCount()-1);
+		}
+		if (evt.getSource() instanceof SpeciesContextSpec.SpeciesContextSpecParameter) {
+			fireTableRowsUpdated(0,getRowCount()-1);
+		}
+		if (evt.getSource() instanceof GeometryContext) {
+			refreshColumns();
+			fireTableStructureChanged();
+		}
+
 	}
 	
 
