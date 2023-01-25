@@ -37,33 +37,55 @@ public class SiteAttributesSpec implements Identifiable {
 	// the BondType must be None, can be recovered from the MolecularComponentPattern
 	
 	public SiteAttributesSpec(MolecularComponentPattern mcp, double radius, double diffusion, Structure location, Coordinate coordinate, Color color) {
-		fieldMolecularComponentPattern = mcp;
-		fieldRadius = radius;
-		fieldDiffusionRate = diffusion;
-		fieldLocation = location;
-		fieldCoordinate = coordinate;
-		fieldColor = color;
+		setMolecularComponentPattern(mcp);
+		setRadius(radius);
+		setDiffusionRate(diffusion);
+		setLocation(location);
+		setCoordinate(coordinate);
+		setColor(color);
 	}
-	
-	// TODO: hopefully we won't need setters, we just invoke the constructor 
-	// from the MolecularStructuresPanel just in time, when component selection changes
+
 	public MolecularComponentPattern getMolecularComponentPattern() {
 		return fieldMolecularComponentPattern;
 	}
+	public void setMolecularComponentPattern(MolecularComponentPattern molecularComponentPattern) {
+		this.fieldMolecularComponentPattern = molecularComponentPattern;
+	}
+
 	public double getRadius() {
 		return fieldRadius;
 	}
+	public void setRadius(double radius) {
+		this.fieldRadius = radius;
+	}
+
 	public double getDiffusionRate() {
 		return fieldDiffusionRate;
 	}
+	public void setDiffusionRate(double diffusionRate) {
+		this.fieldDiffusionRate = diffusionRate;
+	}
+
 	public Structure getLocation() {
 		return fieldLocation;
 	}
+	public void setLocation(Structure location) {
+		this.fieldLocation = location;
+	}
+
 	public Coordinate getCoordinate() {
 		return fieldCoordinate;
 	}
+	public void setCoordinate(Coordinate coordinate) {
+		this.fieldCoordinate = coordinate;
+	}
+
 	public Color getColor() {
 		return fieldColor;
 	}
+	public void setColor(Color color) {
+		this.fieldColor = color;
+	}
+
 }
 	

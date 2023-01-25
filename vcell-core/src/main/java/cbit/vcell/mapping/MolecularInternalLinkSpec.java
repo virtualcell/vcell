@@ -79,10 +79,21 @@ public class MolecularInternalLinkSpec implements Identifiable {
 	public MolecularComponentPattern getMolecularComponentPatternTwo() {
 		return fieldMolecularComponentPatternTwo;
 	}
+
 	public double getLinkLength() {
 		return linkLength;
 	}
 	public void setLinkLength(double linkLength) {
 		this.linkLength = linkLength;
+	}
+	
+	public Pair<MolecularComponentPattern, MolecularComponentPattern> getLink() {
+		return new Pair<MolecularComponentPattern, MolecularComponentPattern>(fieldMolecularComponentPatternOne, fieldMolecularComponentPatternTwo);
+	}
+	public static Pair<MolecularComponentPattern, MolecularComponentPattern> getLink(MolecularInternalLinkSpec internalLink) {
+		if(internalLink == null) {
+			return null;
+		}
+		return new Pair<MolecularComponentPattern, MolecularComponentPattern>(internalLink.fieldMolecularComponentPatternOne, internalLink.fieldMolecularComponentPatternTwo);
 	}
 }

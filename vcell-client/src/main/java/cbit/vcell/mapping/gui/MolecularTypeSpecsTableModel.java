@@ -152,14 +152,14 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 				String newExpressionString = (String)aValue;
 				double result = Double.parseDouble(newExpressionString);
 				SiteAttributesSpec sas = getSpeciesContextSpec().getSiteAttributesMap().get(mcp);
-//				sas.setRadius();	//  TODO: make setters
+				sas.setRadius(result);	//  TODO: make setters
 			}
 		case COLUMN_DIFFUSION:
 			if (aValue instanceof String) {
 				String newExpressionString = (String)aValue;
 				double result = Double.parseDouble(newExpressionString);
 				SiteAttributesSpec sas = getSpeciesContextSpec().getSiteAttributesMap().get(mcp);
-//				sas.setDiffusionRate();
+				sas.setDiffusionRate(result);
 			}
 		default:
 			return;
@@ -168,7 +168,6 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 	
 	@Override
 	public boolean isCellEditable(int row, int col) {
-		MolecularComponentPattern mcp = getValueAt(row);
 		ColumnType columnType = columns.get(col);
 		switch (columnType) {
 		case COLUMN_SITE:
