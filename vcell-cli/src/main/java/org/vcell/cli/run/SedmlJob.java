@@ -345,7 +345,7 @@ public class SedmlJob {
 
         */
 
-        Hdf5Factory hdf5Factory = new Hdf5Factory(outDirForCurrentSedml.getName(), sedml, solverHandler.taskToSimulationMap, sedmlLocation);
+        Hdf5Factory hdf5Factory = new Hdf5Factory(sedml, solverHandler.taskToSimulationMap, sedmlLocation);
 
         Hdf5Writer.writeHdf5(hdf5Factory.generateHdf5File(solverHandler.nonSpatialResults, solverHandler.spatialResults), outDirForCurrentSedml);
 

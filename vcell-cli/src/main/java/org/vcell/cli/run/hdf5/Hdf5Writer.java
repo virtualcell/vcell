@@ -8,6 +8,7 @@ import ncsa.hdf.hdf5lib.exceptions.HDF5Exception;
 import org.jlibsedml.Variable;
 
 import java.io.File;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -22,8 +23,20 @@ public class Hdf5Writer {
         NativeLib.HDF5.load();
         File hdf5TempFile = new File(outDirForCurrentSedml, "reports.h5");
         logger.info("writing to file " + hdf5TempFile.getAbsolutePath());
+
+        // Generate File ID
         int hdf5FileID = H5.H5Fcreate(hdf5TempFile.getAbsolutePath(), HDF5Constants.H5F_ACC_TRUNC,HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
-        int jobGroupID = Hdf5Utils.createGroup(hdf5FileID, hdf5FileWrapper.combineArchiveLocation);
+        
+
+        // Generate group IDs
+        for (String uri : hdf5FileWrapper.pathToGroupIDTranslator.keySet()){
+            int groupID = Hdf5Utils.createGroup(hdf5FileID, uri);
+            hdf5FileWrapper.pathToGroupIDTranslator.put(uri, groupID);
+            Hdf5Utils.insertAttribute(groupID, "combineArchiveLocation", uri);
+            Hdf5Utils.insertAttribute(groupID, "uri", uri);
+        }
+
+        int jobGroupID = hdf5FileWrapper.pathToGroupIDTranslator.get(hdf5FileWrapper.uri);
         
         try {
             for (Hdf5DatasetWrapper datasetWrapper : hdf5FileWrapper.datasetWrappers) {
@@ -70,9 +83,10 @@ public class Hdf5Writer {
                             bufferOffset += (int)numTimePoints;
                         }
                     }
-                    String datasetPath = "/"+hdf5FileWrapper.combineArchiveLocation+"/"+datasetWrapper.datasetMetadata.sedmlId;
+                    String datasetPath = Paths.get(hdf5FileWrapper.uri, datasetWrapper.datasetMetadata.sedmlId).toString();
+                    //String datasetPath = "/"+hdf5FileWrapper.uri+"/"+datasetWrapper.datasetMetadata.sedmlId;
                     hdf5DataspaceID = H5.H5Screate_simple(dataDimensions.length, dataDimensions, null);
-                    hdf5DatasetID = H5.H5Dcreate(jobGroupID, datasetPath, HDF5Constants.H5T_NATIVE_DOUBLE, hdf5DataspaceID, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
+                    hdf5DatasetID = H5.H5Dcreate(jobGroupID, File.separator + datasetPath, HDF5Constants.H5T_NATIVE_DOUBLE, hdf5DataspaceID, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
                     H5.H5Dwrite_double(hdf5DatasetID, HDF5Constants.H5T_NATIVE_DOUBLE, HDF5Constants.H5S_ALL, HDF5Constants.H5S_ALL, HDF5Constants.H5P_DEFAULT, (double[])bigDataBuffer);
                 }else if (datasetWrapper.dataSource instanceof Hdf5DataSourceSpatial) {
                     Hdf5DataSourceSpatial dataSourceSpatial = (Hdf5DataSourceSpatial)datasetWrapper.dataSource;
@@ -124,7 +138,7 @@ public class Hdf5Writer {
                         }
                     }
 
-                    String datasetPath = "/"+hdf5FileWrapper.combineArchiveLocation+"/"+datasetWrapper.datasetMetadata.sedmlId;
+                    String datasetPath = "/"+hdf5FileWrapper.uri+"/"+datasetWrapper.datasetMetadata.sedmlId;
                     hdf5DataspaceID = H5.H5Screate_simple(dataDimensions.length, dataDimensions, null);
                     hdf5DatasetID = H5.H5Dcreate(jobGroupID, datasetPath, HDF5Constants.H5T_NATIVE_DOUBLE, hdf5DataspaceID, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
                     H5.H5Dwrite_double(hdf5DatasetID, HDF5Constants.H5T_NATIVE_DOUBLE, HDF5Constants.H5S_ALL, HDF5Constants.H5S_ALL, HDF5Constants.H5P_DEFAULT, (double[])bigDataBuffer);
@@ -143,11 +157,10 @@ public class Hdf5Writer {
                     Hdf5Utils.insertAttributes(hdf5DatasetID, "sedmlDataSetNames", datasetWrapper.datasetMetadata.sedmlDataSetNames);
                 }
                 Hdf5Utils.insertAttributes(hdf5DatasetID, "sedmlDataSetLabels", datasetWrapper.datasetMetadata.sedmlDataSetLabels);
-//                Hdf5Utils.insertAttributes(hdf5DatasetID, "sedmlDataSetShapes", datasetWrapper.datasetMetadata.sedmlDataSetShapes);
+                Hdf5Utils.insertAttributes(hdf5DatasetID, "sedmlDataSetShapes", datasetWrapper.datasetMetadata.sedmlDataSetShapes);
                 Hdf5Utils.insertAttribute(hdf5DatasetID, "sedmlId", datasetWrapper.datasetMetadata.sedmlId);
                 Hdf5Utils.insertAttribute(hdf5DatasetID, "sedmlName", datasetWrapper.datasetMetadata.sedmlName);
-                //Hdf5Utils.insertAttribute(hdf5DatasetID, "uri", datasetWrapper.datasetMetadata.uri); 
-                Hdf5Utils.insertAttribute(hdf5DatasetID, "uri", "/"+hdf5FileWrapper.combineArchiveLocation+"/"+datasetWrapper.datasetMetadata.sedmlId);
+                Hdf5Utils.insertAttribute(hdf5DatasetID, "uri", hdf5FileWrapper.uri + "/" + datasetWrapper.datasetMetadata.sedmlId);
 //                if (paramNames.size() != 0) {
 //                    // for scans????
 //                    Hdf5Utils.insertAttributes(help0.hdf5DatasetValuesID, "paramNames", paramNames);
@@ -156,7 +169,11 @@ public class Hdf5Writer {
                 H5.H5Dclose(hdf5DatasetID);
                 H5.H5Sclose(hdf5DataspaceID);
             }
-            H5.H5Gclose(jobGroupID);
+
+            // Close all groups
+            for (Integer groupID : hdf5FileWrapper.pathToGroupIDTranslator.values()){
+                H5.H5Gclose(groupID);
+            }
         } finally {
             if (hdf5FileID != -1) {
                 try {

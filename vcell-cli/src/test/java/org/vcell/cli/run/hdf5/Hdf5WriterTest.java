@@ -92,8 +92,9 @@ public class Hdf5WriterTest {
         Hdf5FileWrapper hdf5FileWrapper = new Hdf5FileWrapper();
         hdf5FileWrapper.datasetWrappers.add(plotDatasetWrapper);
         hdf5FileWrapper.datasetWrappers.add(reportDatasetWrapper);
-        hdf5FileWrapper.combineArchiveLocation = "___0_export_NO_scan_test.sedml";
+        //hdf5FileWrapper.combineArchiveLocation = "___0_export_NO_scan_test.sedml";
         hdf5FileWrapper.uri = "___0_export_NO_scan_test.sedml";
+        hdf5FileWrapper.pathToGroupIDTranslator = Hdf5Factory.generateGroupsMap(hdf5FileWrapper.uri);
 
         return hdf5FileWrapper;
     }

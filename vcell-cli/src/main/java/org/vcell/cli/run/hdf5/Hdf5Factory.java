@@ -6,6 +6,7 @@ import cbit.vcell.solver.ode.ODESolverResultSet;
 import ncsa.hdf.hdf5lib.exceptions.HDF5Exception;
 //import org.jlibsedml.*;
 import org.jlibsedml.SedML;
+import org.jlibsedml.AbstractIdentifiableElement;
 import org.jlibsedml.AbstractTask;
 import org.jlibsedml.Output;
 import org.jlibsedml.Report;
@@ -22,38 +23,50 @@ import org.jlibsedml.modelsupport.SBMLSupport;
 import org.vcell.cli.run.TaskJob;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.*;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 
 public class Hdf5Factory {
     private SedML sedml;
     private Map<AbstractTask, Simulation> taskToSimulationMap;
-    private String sedmlLocation, nameOfSedmlOutDir;
+    private String sedmlLocation, sedmlRoot;
 
     private final static Logger logger = LogManager.getLogger(Hdf5Factory.class);
 
-    public Hdf5Factory(String nameOfSedmlOutDir, SedML sedml, Map<AbstractTask, Simulation> taskToSimulationMap, String sedmlLocation){
-        this.nameOfSedmlOutDir = nameOfSedmlOutDir;
+    public Hdf5Factory(SedML sedml, Map<AbstractTask, Simulation> taskToSimulationMap, String sedmlLocation){
         this.sedml = sedml;
         this.taskToSimulationMap = taskToSimulationMap;
-        this.sedmlLocation = sedmlLocation;
+        this.sedmlRoot = Paths.get(sedml.getPathForURI()).toString();
+        this.sedmlLocation = Paths.get(this.sedmlRoot, this.sedml.getFileName()).toString();
     }
 
     public Hdf5FileWrapper generateHdf5File(Map<TaskJob, ODESolverResultSet> nonSpatialResults, Map<TaskJob, File> spatialResults) throws HDF5Exception, ExpressionException, DataAccessException, IOException {
         Hdf5FileWrapper hdf5FileWrapper = new Hdf5FileWrapper();
 
-        hdf5FileWrapper.combineArchiveLocation = nameOfSedmlOutDir;
-        hdf5FileWrapper.uri = nameOfSedmlOutDir;
-
+        hdf5FileWrapper.uri = this.sedmlLocation; 
+        hdf5FileWrapper.pathToGroupIDTranslator = Hdf5Factory.generateGroupsMap(this.sedmlLocation);
         hdf5FileWrapper.datasetWrappers.addAll(this.collectNonspatialDatasets(this.sedml, nonSpatialResults, this.taskToSimulationMap, this.sedmlLocation));
         hdf5FileWrapper.datasetWrappers.addAll(this.collectSpatialDatasets(this.sedml, spatialResults, this.taskToSimulationMap, this.sedmlLocation));
 
         return hdf5FileWrapper;
+    }
+
+    public static Map<String, Integer> generateGroupsMap(String sedmlLocation){
+        Map<String, Integer> pathToGroupIDTranslator = new HashMap<>();
+        Path pathRelativeToCombineArchive = Paths.get(sedmlLocation);
+        logger.info("Processing: " + pathRelativeToCombineArchive.toString());
+        
+        do {
+            pathToGroupIDTranslator.put(pathRelativeToCombineArchive.toString(), null);
+        } while ((pathRelativeToCombineArchive = pathRelativeToCombineArchive.getParent()) != null);
+
+        return pathToGroupIDTranslator;
     }
 
     public List<Hdf5DatasetWrapper> collectNonspatialDatasets(SedML sedml, Map<TaskJob, ODESolverResultSet> nonspatialResultsHash, Map<AbstractTask, Simulation> taskToSimulationMap, String sedmlLocation) throws DataAccessException, IOException, HDF5Exception, ExpressionException {
@@ -62,11 +75,8 @@ public class Hdf5Factory {
         for (Report report : this.getReports(sedml.getOutputs())){
             Map<DataSet, Map<Variable, NonspatialValueHolder>> dataSetValues = new LinkedHashMap<>();
 
-            logger.info("Generating report `" + report.getId() + "`.");
-
             // go through each entry (dataset)
             for (DataSet dataset : report.getListOfDataSets()) { 
-                
                 List<String> varIDs = new ArrayList<>();
                 Map<Variable, NonspatialValueHolder> values = new HashMap<>();
                 int maxLengthOfAllData = 0; // We have to pad up to this value
@@ -150,7 +160,7 @@ public class Hdf5Factory {
             hdf5DatasetWrapper.datasetMetadata._type = report.getKind();
             hdf5DatasetWrapper.datasetMetadata.sedmlId = report.getId();
             hdf5DatasetWrapper.datasetMetadata.sedmlName = report.getName();
-            hdf5DatasetWrapper.datasetMetadata.uri = sedmlLocation;
+            hdf5DatasetWrapper.datasetMetadata.uri = Paths.get(sedmlLocation, report.getId()).toString();
 
             Map<Variable, NonspatialValueHolder> firstValues = dataSetValues.entrySet().iterator().next().getValue();
             if (firstValues.size()==0){
@@ -160,32 +170,40 @@ public class Hdf5Factory {
             int numJobs = valuesForFirstVar.getNumJobs();
 
             Hdf5DataSourceNonspatial dataSourceNonspatial = new Hdf5DataSourceNonspatial();
-            hdf5DatasetWrapper.dataSource = dataSourceNonspatial;
+            hdf5DatasetWrapper.dataSource = dataSourceNonspatial; // Using upcasting
+            hdf5DatasetWrapper.datasetMetadata.sedmlDataSetShapes = new LinkedList<>();
+
             for (int i=0; i<numJobs; i++) {
                 dataSourceNonspatial.jobData.add(new Hdf5DataSourceNonspatial.Hdf5JobData());
             }
 
+            List<String> shapes = new LinkedList<>();
             for (Map.Entry<DataSet, Map<Variable, NonspatialValueHolder>> dataSetEntry : dataSetValues.entrySet()){
                 DataSet dataSet = dataSetEntry.getKey();
                 Map<Variable, NonspatialValueHolder> values = dataSetEntry.getValue();
+                //hdf5DatasetWrapper.datasetMetadata.sedmlDataSetShapes = new LinkedList<>();
 
                 for (Map.Entry<Variable, NonspatialValueHolder> varEntry : values.entrySet()){
                     Variable var = varEntry.getKey();
                     NonspatialValueHolder dataArrays = varEntry.getValue();
+                    
+
                     dataSourceNonspatial.scanBounds = dataArrays.vcSimulation.getMathOverrides().getScanBounds();
                     dataSourceNonspatial.scanParameterNames = dataArrays.vcSimulation.getMathOverrides().getScannedConstantNames();
-                    for (int jobIndex=0; jobIndex<numJobs; jobIndex++){
+                    for (int jobIndex=0; jobIndex < numJobs; jobIndex++){
                         double[] data = dataArrays.values.get(jobIndex);
                         Hdf5DataSourceNonspatial.Hdf5JobData hdf5JobData = dataSourceNonspatial.jobData.get(jobIndex);
                         hdf5JobData.varData.put(var,data);
+                        shapes.add(Integer.toString(data.length));
                     }
                 }
                 hdf5DatasetWrapper.datasetMetadata.sedmlDataSetDataTypes.add("float64");
                 hdf5DatasetWrapper.datasetMetadata.sedmlDataSetIds.add(dataSet.getId());
                 hdf5DatasetWrapper.datasetMetadata.sedmlDataSetLabels.add(dataSet.getLabel());
                 hdf5DatasetWrapper.datasetMetadata.sedmlDataSetNames.add(dataSet.getName());
+                hdf5DatasetWrapper.datasetMetadata.sedmlDataSetShapes = shapes;
             }
-            hdf5DatasetWrapper.datasetMetadata.sedmlDataSetShapes = null;
+
             datasetWrappers.add(hdf5DatasetWrapper);
         } // outputs/reports
         return datasetWrappers;
@@ -194,12 +212,10 @@ public class Hdf5Factory {
 
     public List<Hdf5DatasetWrapper> collectSpatialDatasets(SedML sedml, Map<TaskJob, File> spatialResultsHash, Map<AbstractTask, Simulation> taskToSimulationMap, String sedmlLocation) throws DataAccessException, IOException, HDF5Exception, ExpressionException {
         List<Hdf5DatasetWrapper> datasetWrappers = new ArrayList<>();
-        
+
         for (Report report : this.getReports(sedml.getOutputs())){
             boolean bNotSpatial = false;
             Hdf5DataSourceSpatial hdf5DataSourceSpatial = new Hdf5DataSourceSpatial();
-
-            logger.info("Generating report `" + report.getId() + "`.");
 
             // go through each entry (dataset)
             for (DataSet dataset : report.getListOfDataSets()) { 
@@ -271,7 +287,7 @@ public class Hdf5Factory {
             hdf5DatasetWrapper.datasetMetadata._type = report.getKind();
             hdf5DatasetWrapper.datasetMetadata.sedmlId = report.getId();
             hdf5DatasetWrapper.datasetMetadata.sedmlName = report.getName();
-            hdf5DatasetWrapper.datasetMetadata.uri = sedmlLocation;
+            hdf5DatasetWrapper.datasetMetadata.uri = Paths.get(sedmlLocation, report.getId()).toString();
 
             hdf5DatasetWrapper.dataSource = hdf5DataSourceSpatial;
             for (Hdf5DataSourceSpatialVarDataItem job : hdf5DataSourceSpatial.varDataItems){
@@ -280,6 +296,7 @@ public class Hdf5Factory {
                 hdf5DatasetWrapper.datasetMetadata.sedmlDataSetIds.add(dataSet.getId());
                 hdf5DatasetWrapper.datasetMetadata.sedmlDataSetLabels.add(dataSet.getLabel());
                 hdf5DatasetWrapper.datasetMetadata.sedmlDataSetNames.add(dataSet.getName());
+                hdf5DatasetWrapper.datasetMetadata.sedmlDataSetShapes.add(null);
             }
             hdf5DatasetWrapper.datasetMetadata.sedmlDataSetShapes = null;
             datasetWrappers.add(hdf5DatasetWrapper);
@@ -316,6 +333,7 @@ public class Hdf5Factory {
              switch(var.getSymbol().name()){
                  case "TIME": { // TIME is t, etc
                      sbmlVarId = "t"; // this is VCell reserved symbold for time
+                     break;
                  }
                  default:{
                      sbmlVarId = var.getSymbol().name();

@@ -90,7 +90,7 @@ public final class SedML extends SEDBase {
     private int version = 2;
     private Namespace xmlns = null;
 
-    private List additionalNamespaces = new ArrayList();
+    private List<Namespace> additionalNamespaces = new ArrayList<>();
 
     private List<Model> models = new ArrayList<Model>();
     private List<Simulation> simulations = new ArrayList<Simulation>();
@@ -200,7 +200,7 @@ public final class SedML extends SEDBase {
     /**
      * Sets additional namespaces on SedDocument
      */
-    public void setAdditionalNamespaces(List additionalNamespaces) {
+    public void setAdditionalNamespaces(List<Namespace> additionalNamespaces) {
         this.additionalNamespaces = additionalNamespaces;
     }
 
@@ -499,7 +499,7 @@ public final class SedML extends SEDBase {
      * 
      * @return list of namespaces
      */
-    public List getAdditionalNamespaces() {
+    public List<Namespace> getAdditionalNamespaces() {
         return additionalNamespaces;
     }
 
