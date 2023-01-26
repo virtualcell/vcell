@@ -19,6 +19,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 
 import javax.swing.BorderFactory;
+import javax.swing.DefaultListSelectionModel;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -29,10 +30,12 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.border.Border;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableModel;
 
@@ -102,7 +105,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 	private JButton addLinkButton = null;
 
 	
-	private class EventHandler implements FocusListener, ActionListener, PropertyChangeListener {
+	private class EventHandler implements FocusListener, ActionListener, PropertyChangeListener, ListSelectionListener {
 
 		public void actionPerformed(ActionEvent e) {
 			Object source = e.getSource();
@@ -126,8 +129,20 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 			if(event.getSource() instanceof Model && event.getPropertyName().equals(RbmModelContainer.PROPERTY_NAME_MOLECULAR_TYPE_LIST)) {
 				refreshInterface();
 			}
-
 		}
+		public void valueChanged(javax.swing.event.ListSelectionEvent e) {
+			if (e.getValueIsAdjusting()) {
+				return;
+			}
+			if (e.getSource() == getSpeciesContextSpecsTable().getSelectionModel()) {
+				setSelectedObjectsFromTable(getSpeciesContextSpecsTable(), speciesContextSpecsTableModel);
+				int row = getSpeciesContextSpecsTable().getSelectedRow();
+				SpeciesContextSpec scsSelected = speciesContextSpecsTableModel.getValueAt(row);
+				setSpeciesContextSpec(scsSelected);
+			}
+		};
+
+
 	}
 
 	public MolecularStructuresPanel() {
@@ -156,6 +171,13 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		siteYField.addActionListener(eventHandler);
 		siteZField.addActionListener(eventHandler);
 		linkLengthField.addActionListener(eventHandler);
+		
+		ListSelectionModel lsm = getSpeciesContextSpecsTable().getSelectionModel();
+		if(lsm instanceof DefaultListSelectionModel) {
+			DefaultListSelectionModel dlsm = (DefaultListSelectionModel)lsm;
+			dlsm.addListSelectionListener(eventHandler);
+		}
+
 
 	}
 	
@@ -631,7 +653,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 			oldValue.removePropertyChangeListener(eventHandler);
 		}
 		// commit the changes before switch to another species
-		changeSpeciesContextStep();
+		changeSpeciesContextSpec();
 		
 		fieldSpeciesContextSpec = newValue;
 		if (newValue != null) {
@@ -681,7 +703,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 
 	@Override
 	protected void onSelectedObjectsChange(Object[] selectedObjects) {
-
+		setTableSelections(selectedObjects, speciesContextSpecsTable, speciesContextSpecsTableModel);
 	}
 	
 //	private void initialize() {
@@ -1081,7 +1103,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 	 * commit changes to current (old) SpeciesContextStep 
 	 * before the newly selected SpeciesContextStep becomes current
 	 */
-	private void changeSpeciesContextStep() {
+	private void changeSpeciesContextSpec() {
 
 		
 	}

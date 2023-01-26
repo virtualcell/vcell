@@ -87,7 +87,7 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 		case COLUMN_SITE:
 			return MolecularComponentPattern.class;
 		case COLUMN_SPECIESCONTEXT:
-				return SpeciesContext.class;
+				return MolecularType.class;
 		case COLUMN_STRUCTURE:
 				return Structure.class;
 		case COLUMN_STATE:
@@ -120,15 +120,23 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 			case COLUMN_SITE:
 				return mcp.getMolecularComponent().getName();
 			case COLUMN_SPECIESCONTEXT:
-					return sc.getName();
+				return mtp.getMolecularType().getName();
 			case COLUMN_STRUCTURE:
-					return sc.getStructure();
+				return sc.getStructure().getName();
 			case COLUMN_STATE:
-				return mcp.getComponentStatePattern().getComponentStateDefinition().getName();
+				ComponentStatePattern csp = mcp.getComponentStatePattern();
+				if(csp == null) {
+					return ComponentStatePattern.strNone;
+				}
+				if(csp.isAny()) {
+					return ComponentStatePattern.strAny;
+				}
+				String name = csp.getComponentStateDefinition().getName();
+				return name;
 			case COLUMN_RADIUS:
-				return new Expression("1");		// nm
+				return "1";		// nm
 			case COLUMN_DIFFUSION:
-				return new Expression("1");		// um^2/s
+				return "1";		// um^2/s
 			default:
 				return null;
 			}
@@ -152,14 +160,22 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 				String newExpressionString = (String)aValue;
 				double result = Double.parseDouble(newExpressionString);
 				SiteAttributesSpec sas = getSpeciesContextSpec().getSiteAttributesMap().get(mcp);
-				sas.setRadius(result);	//  TODO: make setters
+				if(sas == null) {
+					sas = new SiteAttributesSpec(mcp);
+				}
+				sas.setRadius(result);
 			}
+			return;
 		case COLUMN_DIFFUSION:
 			if (aValue instanceof String) {
 				String newExpressionString = (String)aValue;
 				double result = Double.parseDouble(newExpressionString);
 				SiteAttributesSpec sas = getSpeciesContextSpec().getSiteAttributesMap().get(mcp);
+				if(sas == null) {
+					sas = new SiteAttributesSpec(mcp);
+				}
 				sas.setDiffusionRate(result);
+				return;
 			}
 		default:
 			return;
@@ -297,15 +313,19 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 	}
 	protected List<MolecularComponentPattern> computeData() {
 		ArrayList<MolecularComponentPattern> allParameterList = new ArrayList<MolecularComponentPattern>();
-		if(fieldSpeciesContextSpec != null) {
-			MolecularTypePattern mtp = fieldSpeciesContextSpec.getSpeciesContext().getSpeciesPattern().getMolecularTypePatterns().get(0);
+		if(fieldSpeciesContextSpec != null && fieldSpeciesContextSpec.getSpeciesContext() != null) {
+			SpeciesPattern sp = fieldSpeciesContextSpec.getSpeciesContext().getSpeciesPattern();
+			if(sp == null) {
+				return null;
+			}
+			MolecularTypePattern mtp = sp.getMolecularTypePatterns().get(0);
 			MolecularType mt = mtp.getMolecularType();
 			List<MolecularComponent> componentList = mt.getComponentList();
 			for(MolecularComponent mc : componentList) {
 				MolecularComponentPattern mcp = mtp.getMolecularComponentPattern(mc);
 				allParameterList.add(mcp);
 			}
-		}else{
+		} else {
 			return null;
 		}
 		return allParameterList;
