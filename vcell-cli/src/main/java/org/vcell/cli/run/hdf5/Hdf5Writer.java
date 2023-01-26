@@ -84,7 +84,6 @@ public class Hdf5Writer {
                         }
                     }
                     String datasetPath = Paths.get(hdf5FileWrapper.uri, datasetWrapper.datasetMetadata.sedmlId).toString();
-                    //String datasetPath = "/"+hdf5FileWrapper.uri+"/"+datasetWrapper.datasetMetadata.sedmlId;
                     hdf5DataspaceID = H5.H5Screate_simple(dataDimensions.length, dataDimensions, null);
                     hdf5DatasetID = H5.H5Dcreate(jobGroupID, File.separator + datasetPath, HDF5Constants.H5T_NATIVE_DOUBLE, hdf5DataspaceID, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
                     H5.H5Dwrite_double(hdf5DatasetID, HDF5Constants.H5T_NATIVE_DOUBLE, HDF5Constants.H5S_ALL, HDF5Constants.H5S_ALL, HDF5Constants.H5P_DEFAULT, (double[])bigDataBuffer);
@@ -138,9 +137,9 @@ public class Hdf5Writer {
                         }
                     }
 
-                    String datasetPath = "/"+hdf5FileWrapper.uri+"/"+datasetWrapper.datasetMetadata.sedmlId;
+                    String datasetPath = Paths.get(hdf5FileWrapper.uri, datasetWrapper.datasetMetadata.sedmlId).toString();
                     hdf5DataspaceID = H5.H5Screate_simple(dataDimensions.length, dataDimensions, null);
-                    hdf5DatasetID = H5.H5Dcreate(jobGroupID, datasetPath, HDF5Constants.H5T_NATIVE_DOUBLE, hdf5DataspaceID, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
+                    hdf5DatasetID = H5.H5Dcreate(jobGroupID, File.separator + datasetPath, HDF5Constants.H5T_NATIVE_DOUBLE, hdf5DataspaceID, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
                     H5.H5Dwrite_double(hdf5DatasetID, HDF5Constants.H5T_NATIVE_DOUBLE, HDF5Constants.H5S_ALL, HDF5Constants.H5S_ALL, HDF5Constants.H5P_DEFAULT, (double[])bigDataBuffer);
 
                     Hdf5Utils.insertAttributes(hdf5DatasetID, "times", firstVarDataItem.times);
