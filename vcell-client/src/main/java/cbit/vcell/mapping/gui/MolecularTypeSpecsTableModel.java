@@ -15,6 +15,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.TreeSet;
 
 import org.vcell.model.rbm.ComponentStatePattern;
@@ -32,6 +34,7 @@ import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.mapping.AssignmentRule;
 import cbit.vcell.mapping.GeometryContext;
+import cbit.vcell.mapping.MolecularInternalLinkSpec;
 import cbit.vcell.mapping.RateRule;
 import cbit.vcell.mapping.ReactionContext;
 import cbit.vcell.mapping.SimulationContext;
@@ -59,7 +62,7 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 
 	private enum ColumnType {
 		COLUMN_SITE("Site"),
-		COLUMN_SPECIESCONTEXT("Molecule"),
+		COLUMN_MOLECULE("Molecule"),
 		COLUMN_STRUCTURE("Location"),
 		COLUMN_STATE("Initial State"),
 		COLUMN_RADIUS("Radius"),
@@ -86,7 +89,7 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 		switch (columnType) {
 		case COLUMN_SITE:
 			return MolecularComponentPattern.class;
-		case COLUMN_SPECIESCONTEXT:
+		case COLUMN_MOLECULE:
 				return MolecularType.class;
 		case COLUMN_STRUCTURE:
 				return Structure.class;
@@ -111,7 +114,9 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 	@Override
 	public Object getValueAt(int row, int col) {
 		try {
+			Map<MolecularComponentPattern, SiteAttributesSpec> siteAttributesMap = getSpeciesContextSpec().getSiteAttributesMap();
 			MolecularComponentPattern mcp = getValueAt(row);
+			SiteAttributesSpec sas = siteAttributesMap.get(mcp);
 			SpeciesContext sc = fieldSpeciesContextSpec.getSpeciesContext();
 			SpeciesPattern sp = sc.getSpeciesPattern();
 			MolecularTypePattern mtp = sp.getMolecularTypePatterns().get(0);
@@ -119,7 +124,7 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 			switch (columnType) {
 			case COLUMN_SITE:
 				return mcp.getMolecularComponent().getName();
-			case COLUMN_SPECIESCONTEXT:
+			case COLUMN_MOLECULE:
 				return mtp.getMolecularType().getName();
 			case COLUMN_STRUCTURE:
 				return sc.getStructure().getName();
@@ -134,9 +139,9 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 				String name = csp.getComponentStateDefinition().getName();
 				return name;
 			case COLUMN_RADIUS:
-				return "1";		// nm
+				return sas.getRadius();		// nm
 			case COLUMN_DIFFUSION:
-				return "1";		// um^2/s
+				return sas.getDiffusionRate();		// um^2/s
 			default:
 				return null;
 			}
@@ -151,7 +156,7 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 		ColumnType columnType = columns.get(col);
 		switch (columnType) {
 		case COLUMN_SITE:
-		case COLUMN_SPECIESCONTEXT:
+		case COLUMN_MOLECULE:
 		case COLUMN_STRUCTURE:
 		case COLUMN_STATE:
 			return;
@@ -187,7 +192,7 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 		ColumnType columnType = columns.get(col);
 		switch (columnType) {
 		case COLUMN_SITE:
-		case COLUMN_SPECIESCONTEXT:
+		case COLUMN_MOLECULE:
 		case COLUMN_STRUCTURE:
 		case COLUMN_STATE:
 			return false;
@@ -212,7 +217,7 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 				ColumnType columnType = columns.get(col);
 				switch (columnType) {
 				case COLUMN_SITE:
-				case COLUMN_SPECIESCONTEXT:
+				case COLUMN_MOLECULE:
 				case COLUMN_STRUCTURE:
 				case COLUMN_STATE:
 				case COLUMN_RADIUS:
@@ -264,6 +269,7 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 			oldValue.removePropertyChangeListener(this);
 		}
 		fieldSpeciesContextSpec = speciesContextSpec;
+		initializeForSpringSaLaD();
 		refreshColumns();
 		int newColumnCount = getColumnCount();
 		if (oldColumnCount != newColumnCount) {
@@ -301,6 +307,39 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 				Parameter newParameters[] = newSpecs[i].getParameters();
 				for (int j = 0; j < newParameters.length ; j++){
 					newParameters[j].addPropertyChangeListener(this);
+				}
+			}
+		}
+	}
+	
+	private void initializeForSpringSaLaD() {
+		if(fieldSpeciesContextSpec != null && fieldSpeciesContextSpec.getSpeciesContext() != null) {
+			SpeciesPattern sp = fieldSpeciesContextSpec.getSpeciesContext().getSpeciesPattern();
+			if(sp == null) {
+				return;
+			}
+			Set<MolecularInternalLinkSpec> internalLinkSet = getSpeciesContextSpec().getInternalLinkSet();
+			Map<MolecularComponentPattern, SiteAttributesSpec> siteAttributesMap = getSpeciesContextSpec().getSiteAttributesMap();
+			MolecularTypePattern mtp = sp.getMolecularTypePatterns().get(0);
+			MolecularType mt = mtp.getMolecularType();
+			List<MolecularComponent> componentList = mt.getComponentList();
+			for(MolecularComponent mc : componentList) {
+				MolecularComponentPattern mcp = mtp.getMolecularComponentPattern(mc);
+				SiteAttributesSpec sas = siteAttributesMap.get(mcp);
+				if(sas == null || sas.getMolecularComponentPattern() == null) {
+					sas = new SiteAttributesSpec(mcp);
+					siteAttributesMap.put(mcp,  sas);
+				}
+			}
+			if(internalLinkSet.isEmpty()) {
+				for(int i=0; i< componentList.size()-1; i++) {
+					MolecularComponent mcOne = componentList.get(i);
+					MolecularComponent mcTwo = componentList.get(i+1);
+					MolecularComponentPattern mcpOne = mtp.getMolecularComponentPattern(mcOne);
+					MolecularComponentPattern mcpTwo = mtp.getMolecularComponentPattern(mcTwo);
+					MolecularInternalLinkSpec link = new MolecularInternalLinkSpec(fieldSpeciesContextSpec, mcpOne, mcpTwo);
+					link.setLinkLength(2.0);
+					internalLinkSet.add(link);
 				}
 			}
 		}
