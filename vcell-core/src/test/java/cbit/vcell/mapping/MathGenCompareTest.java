@@ -94,6 +94,28 @@ public class MathGenCompareTest {
 	/**
 	 * each file in the knownFaultsMap hold known problems in the current software
 	 */
+	public static Set<String> knownMathGenerationFailures() {
+		Set<String> faults = new HashSet<>();
+		// most of these are private Hybrid PDE/Particle models
+		faults.add("biomodel_179548819.vcml:Application0"); // The Min Trigger Condition for BioEvent 'event0' cannot be <= 0.
+		faults.add("biomodel_82790975.vcml:NONSPATIAL Stochastic/Deterministic Integrin Ligand Activation"); // Non-constant species is forced continuous, not supported for nonspatial stochastic applications.
+		faults.add("biomodel_82800592.vcml:Stochastic Nonsptial"); // Non-constant species is forced continuous, not supported for nonspatial stochastic applications.
+		faults.add("biomodel_82805340.vcml:Stochastic/Deterministic Integrin Ligand Activation"); // Failed to intepret kinetic rate for reaction 'r2' as mass action.
+		faults.add("biomodel_82807862.vcml:Stochastic Spatial QUARTER CELL SHORT"); // Failed to intepret kinetic rate for reaction 'r2' as mass action.
+		faults.add("biomodel_82807862.vcml:Stochastic/Deterministic Integrin Ligand Activation"); // Failed to intepret kinetic rate for reaction 'r2' as mass action.
+		faults.add("biomodel_82808340.vcml:Stochastic Spatial QUARTER CELL SHORT"); // Failed to intepret kinetic rate for reaction 'r2' as mass action.
+		faults.add("biomodel_82809548.vcml:Stochastic Spatial QUARTER CELL SHORT"); // Failed to intepret kinetic rate for reaction 'r2' as mass action.
+		faults.add("biomodel_82809548.vcml:Stochastic/Deterministic Integrin Ligand Activation"); // Failed to intepret kinetic rate for reaction 'r2' as mass action.
+		faults.add("biomodel_82809548.vcml:Copy of Stochastic Spatial QUARTER CELL SHORT"); // Failed to intepret kinetic rate for reaction 'r2' as mass action.
+		faults.add("biomodel_82809561.vcml:Stochastic Spatial QUARTER CELL SHORT"); // Failed to intepret kinetic rate for reaction 'r2' as mass action.
+		faults.add("biomodel_82809561.vcml:Stochastic/Deterministic Integrin Ligand Activation"); // Failed to intepret kinetic rate for reaction 'r2' as mass action.
+		faults.add("biomodel_82809561.vcml:Copy of Stochastic Spatial QUARTER CELL SHORT"); // Failed to intepret kinetic rate for reaction 'r2' as mass action.
+		faults.add("biomodel_88789981.vcml:Copy of Copy of Application0"); // Clamped Species must be continuous rather than particles.
+		faults.add("biomodel_88820373.vcml:Copy of Copy of Application0");
+		faults.add("biomodel_88834881.vcml:Copy of Copy of Application0"); // Clamped Species must be continuous rather than particles.
+		return faults;
+	}
+
 	public static Map<String, MathCompareResults.Decision> knownLegacyFaults() {
 		HashMap<String, MathCompareResults.Decision> faults = new HashMap();
 		faults.put("lumped_reaction_proper_size_in_rate.vcml:Application0", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION); // =LEGACY= MathDifferent:DifferentExpression:expressions are different: ' - (0.001660538783162726 * s1)' vs ' -
@@ -229,9 +251,18 @@ if (true
 		MathDescription origMathClone = new MathDescription(originalMath); // test round trip to/from MathDescription.readFromDatabase()
 		SimulationContext new_simContext = transformed_biomodel.getSimulationContexts(orig_simContext.getName());
 		//new_simContext.setUsingMassConservationModelReduction(false);
+		boolean bKnownMathGenerationFailure = knownMathGenerationFailures().contains(filename_colon_appname);
 		try {
 			if (bTransformKMOLE) BioModelTransforms.restoreOldReservedSymbolsIfNeeded(transformed_biomodel);
 			new_simContext.updateAll(false);
+			Assert.assertFalse("math generation succeeded for '"+filename_colon_appname+"', " +
+					"but expecting math generation failure, remove from knownMathGenerationFailures()",
+					bKnownMathGenerationFailure);
+		} catch (Exception e){
+			e.printStackTrace();
+			if (!bKnownMathGenerationFailure){
+				Assert.fail("math generation failed for '"+filename_colon_appname+"', but expecting math to generate, add to knownMathGenerationFailures()");
+			}
 		} finally {
 			if (bTransformKMOLE) BioModelTransforms.restoreLatestReservedSymbols(transformed_biomodel);
 		}
