@@ -121,6 +121,65 @@ public class MathGenCompareTest {
 		faults.put("lumped_reaction_proper_size_in_rate.vcml:Application0", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION); // =LEGACY= MathDifferent:DifferentExpression:expressions are different: ' - (0.001660538783162726 * s1)' vs ' -
 		faults.put("biomodel_47429473.vcml:NWASP at Lam Tip in 3D Geometry", MathCompareResults.Decision.MathDifferent_DIFFERENT_FASTINV_EXPRESSION); // =LEGACY= MathDifferent:DifferentFastInvExpression:could not find a match for fast invariant expression'Expres
 		faults.put("biomodel_55178308.vcml:Spatial 1 - 3D -  electrophysiology", MathCompareResults.Decision.MathDifferent_FAILURE_UNKNOWN); // =LEGACY= MathDifferent:FailedUnknown:line #630 Exception: variable Na not defined
+
+		// Hybrid models (MOST OF THEM ARE PRIVATE - do not commit private files to repo)
+		faults.put("biomodel_100059482.vcml:3D hybrid", MathCompareResults.Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS);
+		faults.put("biomodel_101986247.vcml:Application0", MathCompareResults.Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS);
+		faults.put("biomodel_102370928.vcml:single cycle_hybrid_stirred", MathCompareResults.Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS);
+		faults.put("biomodel_103611108.vcml:Application0", MathCompareResults.Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS);
+		faults.put("biomodel_111277118.vcml:single cycle_hybrid_stirred", MathCompareResults.Decision.MathDifferent_FAILURE_UNKNOWN); // infinite loop in eliminating function nesting
+		faults.put("biomodel_111277118.vcml:Copy of single cycle_hybrid_stirred", MathCompareResults.Decision.MathDifferent_FAILURE_UNKNOWN);
+		faults.put("biomodel_205139889.vcml:pde", MathCompareResults.Decision.MathDifferent_DIFFERENT_PostProcessingBlock);
+		faults.put("biomodel_82162188.vcml:hybrid", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_PARTICLE_JUMP_PROCESS);
+		faults.put("biomodel_82456311.vcml:hybrid", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION); // ' - ((s0 * s2) - (2.0 * s1))' vs ' - ((0.0016611295681063123 * s0 * s2) - (0.0033222591362126247 * s1))'
+		faults.put("biomodel_82456311.vcml:smoldyn", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_PARTICLE_JUMP_PROCESS);
+		faults.put("biomodel_82456701.vcml:hybrid", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION); // ' - ((s0 * s2) - (2.0 * s1))' vs ' - ((0.0016611295681063123 * s0 * s2) - (0.0033222591362126247 * s1))'
+		faults.put("biomodel_82456701.vcml:smoldyn", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_PARTICLE_JUMP_PROCESS);
+		faults.put("biomodel_82457170.vcml:hybrid", MathCompareResults.Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS);
+		faults.put("biomodel_82457170.vcml:smoldyn", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_PARTICLE_JUMP_PROCESS);
+		faults.put("biomodel_82457836.vcml:3D stoch", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_PARTICLE_JUMP_PROCESS);
+		faults.put("biomodel_82457836.vcml:Copy of 3D stoch", MathCompareResults.Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS);
+		faults.put("biomodel_82790975.vcml:Stochastic/Deterministic Integrin Ligand Activation", MathCompareResults.Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS);
+		faults.put("biomodel_82790975.vcml:Stochastic Spatial QUARTER CELL SHORT", MathCompareResults.Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS);
+		faults.put("biomodel_82800592.vcml:Test of Hybrid", MathCompareResults.Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS);
+		faults.put("biomodel_83462193.vcml:spatial-hybrid", MathCompareResults.Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS);
+		faults.put("biomodel_83462243.vcml:spatial-hybrid", MathCompareResults.Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS);
+		faults.put("biomodel_83651737.vcml:hybrid", MathCompareResults.Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS);
+		faults.put("biomodel_83651737.vcml:pde", MathCompareResults.Decision.MathDifferent_DIFFERENT_PostProcessingBlock);
+		faults.put("biomodel_85831960.vcml:Copy of Determistic3D", MathCompareResults.Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS);
+		faults.put("biomodel_85831960.vcml:Hybrid3D", MathCompareResults.Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS);
+		faults.put("biomodel_88789981.vcml:Copy of Application0", MathCompareResults.Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS);
+		faults.put("biomodel_88820373.vcml:Stochastic_VGCCopening", MathCompareResults.Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS);
+		faults.put("biomodel_88834881.vcml:Stochastic_VGCCopening", MathCompareResults.Decision.MathDifferent_FAILURE_UNKNOWN);
+		faults.put("biomodel_89716975.vcml:Hybrid", MathCompareResults.Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS);
+		faults.put("biomodel_93521159.vcml:flux", MathCompareResults.Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS);
+		faults.put("biomodel_93521159.vcml:flux_reaction", MathCompareResults.Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS);
+		faults.put("biomodel_93521456.vcml:flux", MathCompareResults.Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS);
+		faults.put("biomodel_93521456.vcml:flux_reaction", MathCompareResults.Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS);
+		faults.put("biomodel_95401413.vcml:3D Stochastic", MathCompareResults.Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS);
+		faults.put("biomodel_95401413.vcml:Application0", MathCompareResults.Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS);
+		faults.put("biomodel_95401686.vcml:3D Stochastic", MathCompareResults.Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS);
+		faults.put("biomodel_95401705.vcml:3D Stochastic", MathCompareResults.Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS);
+		faults.put("biomodel_95401705.vcml:Application0", MathCompareResults.Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS);
+		faults.put("biomodel_95420572.vcml:3D Stochastic Spatial", MathCompareResults.Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS);
+		faults.put("biomodel_95420572.vcml:3D Stochastic Spatial Small Cube", MathCompareResults.Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS);
+		faults.put("biomodel_95439383.vcml:3D Stochastic", MathCompareResults.Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS);
+		faults.put("biomodel_95439383.vcml:Application0", MathCompareResults.Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS);
+		faults.put("biomodel_97188386.vcml:3D hybrid", MathCompareResults.Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS);
+		faults.put("biomodel_97210786.vcml:3D hybrid", MathCompareResults.Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS);
+		faults.put("biomodel_97236290.vcml:3D hybrid", MathCompareResults.Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS);
+		faults.put("biomodel_97236377.vcml:3D hybrid", MathCompareResults.Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS);
+		faults.put("biomodel_97536525.vcml:3D hybrid", MathCompareResults.Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS);
+		faults.put("biomodel_97553821.vcml:3D hybrid", MathCompareResults.Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS);
+		faults.put("biomodel_97557776.vcml:3D hybrid", MathCompareResults.Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS);
+		faults.put("biomodel_97785961.vcml:spatial-hybrid", MathCompareResults.Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS);
+		faults.put("biomodel_97786886.vcml:hybrid", MathCompareResults.Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS);
+		faults.put("biomodel_97786886.vcml:pde", MathCompareResults.Decision.MathDifferent_DIFFERENT_PostProcessingBlock);
+		faults.put("biomodel_97787114.vcml:hybrid", MathCompareResults.Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS);
+		faults.put("biomodel_97787114.vcml:pde", MathCompareResults.Decision.MathDifferent_DIFFERENT_PostProcessingBlock);
+		faults.put("biomodel_98707721.vcml:Application0", MathCompareResults.Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS);
+		faults.put("biomodel_98730962.vcml:Application0", MathCompareResults.Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS);
+		faults.put("biomodel_98745308.vcml:Application0", MathCompareResults.Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS);
 		return faults;
 	}
 
@@ -197,16 +256,15 @@ public class MathGenCompareTest {
 
 		ArrayList<String> appTestCases = new ArrayList<>();
 		for (String filename : filenames){
-if (true
-&& !filename.equals("biomodel_97705317.vcml")
-&& !filename.equals("biomodel_83651737.vcml")
-&& !filename.equals("biomodel_97075423.vcml")
-&& !filename.equals("biomodel_97705317.vcml")
-&& !filename.equals("biomodel_97786619.vcml")
-&& !filename.equals("biomodel_97786886.vcml")
-&& !filename.equals("biomodel_97787114.vcml")
-&& !filename.equals("biomodel_98730962.vcml")
-) continue;
+//if (true
+////&& !filename.equals("biomodel_83651737.vcml") // schaff Aug 2013 (demohybridccb2013)
+////&& !filename.equals("biomodel_97786886.vcml") // schaff Dec 2015 (demohybridccb2013)
+////&& !filename.equals("biomodel_97787114.vcml") // schaff Dec 2015 (demohybridccb2013)
+//&& !filename.equals("biomodel_97075423.vcml") // mblinov Oct 2015 (egfr_beginning)
+////&& !filename.equals("biomodel_97705317.vcml") // BioNetGen Nov 2015 (Mix_Reactions_Rules)
+////&& !filename.equals("biomodel_97786619.vcml") // BioNetGen Dec 2015 (Mix_Reactions_Rules)
+////&& !filename.equals("biomodel_98730962.vcml") // schaff Mar 2016 (Nuc_pore_and_channels)
+//) continue;
 			String vcmlStr;
 			try (InputStream testFileInputStream = VcmlTestSuiteFiles.getVcmlTestCase(filename);) {
 				vcmlStr = new BufferedReader(new InputStreamReader(testFileInputStream))
