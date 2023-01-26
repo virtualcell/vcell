@@ -224,20 +224,18 @@ if (true
 		boolean bTransformKMOLE = true;
 		boolean bTransformVariables = false;
 
-		if (bTransformKMOLE){
-			BioModelTransforms.restoreOldReservedSymbolsIfNeeded(transformed_biomodel);
-		}
-
 		SimulationContext orig_simContext = orig_biomodel.getSimulationContext(simContextName);
 		MathDescription originalMath = orig_simContext.getMathDescription();
 		MathDescription origMathClone = new MathDescription(originalMath); // test round trip to/from MathDescription.readFromDatabase()
 		SimulationContext new_simContext = transformed_biomodel.getSimulationContexts(orig_simContext.getName());
 		//new_simContext.setUsingMassConservationModelReduction(false);
-		new_simContext.updateAll(false);
-		MathDescription newMath = new_simContext.getMathDescription();
-		if (bTransformKMOLE){
-			BioModelTransforms.restoreLatestReservedSymbols(transformed_biomodel);
+		try {
+			if (bTransformKMOLE) BioModelTransforms.restoreOldReservedSymbolsIfNeeded(transformed_biomodel);
+			new_simContext.updateAll(false);
+		} finally {
+			if (bTransformKMOLE) BioModelTransforms.restoreLatestReservedSymbols(transformed_biomodel);
 		}
+		MathDescription newMath = new_simContext.getMathDescription();
 		MathDescription newMathClone = new MathDescription(newMath); // test round trip to/from MathDescription.readFromDatabase()
 		MathCompareResults results = null;
 		if (bTransformVariables) {
