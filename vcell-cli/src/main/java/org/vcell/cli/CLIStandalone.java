@@ -1,5 +1,6 @@
 package org.vcell.cli;
 
+import org.vcell.admin.cli.AdminCLI;
 import org.vcell.cli.biosimulation.BiosimulationsCommand;
 import org.vcell.cli.run.ExecuteCommand;
 import org.vcell.cli.sbml.ModelCommand;
@@ -10,6 +11,8 @@ import org.apache.logging.log4j.Logger;
 
 import cbit.vcell.mongodb.VCMongoMessage;
 import org.vcell.util.VCellUtilityHub;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 
@@ -36,7 +39,10 @@ public class CLIStandalone {
             if (logger.isDebugEnabled()) logger.debug("!!!DEBUG Mode Active!!!");
             VCMongoMessage.enabled = false;
             VCellUtilityHub.startup(VCellUtilityHub.MODE.CLI);
-            exitCode = new CommandLine(new CLIStandalone()).execute(args);
+            CommandLine commandLine = new CommandLine(new CLIStandalone());
+            commandLine.registerConverter(KeyValue.class, new CLIStandalone.KeyValueTypeConverter());
+            commandLine.registerConverter(User.class, new CLIStandalone.UserTypeConverter());
+            exitCode = commandLine.execute(args);
         } catch (Throwable t){
             logger.fatal("VCell encountered a serious error: " + t.getMessage(), t);
         } finally {
@@ -49,6 +55,29 @@ public class CLIStandalone {
             System.exit(exitCode);
         }
     }
+
+    static class KeyValueTypeConverter implements CommandLine.ITypeConverter<KeyValue> {
+        @Override
+        public KeyValue convert(String value) {
+            return new KeyValue(value);
+        }
+    }
+
+    static class UserTypeConverter implements CommandLine.ITypeConverter<User> {
+        @Override
+        public User convert(String userString) {
+            // expecting "userid:key" format
+            String[] tokens = userString.split(":");
+            if (tokens == null || tokens.length != 2){
+                throw new RuntimeException("'"+userString+"' not in 'userid:userkey' format");
+            }
+            String userid = tokens[0];
+            KeyValue key = new KeyValue(tokens[1]);
+            return new User(userid, key);
+        }
+    }
+
+
 }
 
 

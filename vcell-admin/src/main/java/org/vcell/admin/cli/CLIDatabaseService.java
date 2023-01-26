@@ -18,9 +18,17 @@ import java.util.stream.Collectors;
 public class CLIDatabaseService implements AutoCloseable {
     private ConnectionFactory conFactory = null;
     private List<BioModelInfo> publicBioModelInfos = null;
+    private DatabaseServerImpl databaseServer = null;
 
     public CLIDatabaseService() throws SQLException {
         conFactory = DatabaseService.getInstance().createConnectionFactory();
+    }
+
+    private DatabaseServerImpl getDatabaseServer() throws DataAccessException {
+        if (databaseServer==null){
+            databaseServer = new DatabaseServerImpl(conFactory, conFactory.getKeyFactory());
+        }
+        return databaseServer;
     }
 
     public List<BioModelInfo> queryPublicBioModels() throws SQLException, DataAccessException {
@@ -59,15 +67,18 @@ public class CLIDatabaseService implements AutoCloseable {
         if (!bioModelInfo.isPresent()){
             throw new RuntimeException("biomodel key "+bioModelKey+" not found as a public bioodel");
         }
-        DatabaseServerImpl databaseServer = new DatabaseServerImpl(conFactory, conFactory.getKeyFactory());
-        ServerDocumentManager serverDocumentManager = new ServerDocumentManager(databaseServer);
-        User user = bioModelInfo.get().getVersion().getOwner(); // impersonate owner for this public model
-        String biomodelXML = serverDocumentManager.getBioModelXML(new QueryHashtable(),user,bioModelKey,bRegenerateXML);
+        return getBioModelXML(bioModelKey, bRegenerateXML, bioModelInfo.get().getVersion().getOwner());
+    }
+
+    public String getBioModelXML(KeyValue bioModelKey, boolean bRegenerateXML, User owner) throws DataAccessException {
+        ServerDocumentManager serverDocumentManager = getDatabaseServer().getServerDocumentManager();
+        User user = owner; // impersonate owner for this model
+        String biomodelXML = serverDocumentManager.getBioModelXML(new QueryHashtable(), user, bioModelKey, bRegenerateXML);
         return biomodelXML;
     }
 
     public String getBioModelVCML(BioModelInfo bioModelInfo, boolean bWithXMLCache) throws SQLException, DataAccessException, XmlParseException {
-        DatabaseServerImpl databaseServerImpl = new DatabaseServerImpl(conFactory, conFactory.getKeyFactory());
+        DatabaseServerImpl databaseServerImpl = getDatabaseServer();
         KeyValue versionKey = bioModelInfo.getVersion().getVersionKey();
         if (bWithXMLCache) {
             return databaseServerImpl.getBioModelXML(User.tempUser, versionKey).toString();
