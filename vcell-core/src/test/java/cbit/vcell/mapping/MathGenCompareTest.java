@@ -314,8 +314,17 @@ public class MathGenCompareTest {
 		//new_simContext.setUsingMassConservationModelReduction(false);
 		boolean bKnownMathGenerationFailure = knownMathGenerationFailures().contains(filename_colon_appname);
 		try {
-			if (bTransformKMOLE) BioModelTransforms.restoreOldReservedSymbolsIfNeeded(transformed_biomodel);
-			new_simContext.updateAll(false);
+			if (bTransformKMOLE) {
+				boolean bWasTransformed = false;
+				try {
+					bWasTransformed = BioModelTransforms.restoreOldReservedSymbolsIfNeeded(transformed_biomodel);
+					new_simContext.updateAll(false);
+				} finally {
+					if (bWasTransformed) BioModelTransforms.restoreLatestReservedSymbols(transformed_biomodel);
+				}
+			}else{
+				new_simContext.updateAll(false);
+			}
 			Assert.assertFalse("math generation succeeded for '"+filename_colon_appname+"', " +
 					"but expecting math generation failure, remove from knownMathGenerationFailures()",
 					bKnownMathGenerationFailure);
@@ -324,8 +333,6 @@ public class MathGenCompareTest {
 			if (!bKnownMathGenerationFailure){
 				Assert.fail("math generation failed for '"+filename_colon_appname+"', but expecting math to generate, add to knownMathGenerationFailures()");
 			}
-		} finally {
-			if (bTransformKMOLE) BioModelTransforms.restoreLatestReservedSymbols(transformed_biomodel);
 		}
 		MathDescription newMath = new_simContext.getMathDescription();
 		MathDescription newMathClone = new MathDescription(newMath); // test round trip to/from MathDescription.readFromDatabase()
@@ -342,7 +349,27 @@ public class MathGenCompareTest {
 		if (!results.isEquivalent()){
 			// try again using non-reduced math
 			new_simContext.setUsingMassConservationModelReduction(false);
-			new_simContext.updateAll(false);
+			try {
+				if (bTransformKMOLE) {
+					boolean bWasTransformed = false;
+					try {
+						bWasTransformed = BioModelTransforms.restoreOldReservedSymbolsIfNeeded(transformed_biomodel);
+						new_simContext.updateAll(false);
+					} finally {
+						if (bWasTransformed) BioModelTransforms.restoreLatestReservedSymbols(transformed_biomodel);
+					}
+				}else{
+					new_simContext.updateAll(false);
+				}
+				Assert.assertFalse("math generation succeeded for '"+filename_colon_appname+"', " +
+									"but expecting math generation failure, remove from knownMathGenerationFailures()",
+							bKnownMathGenerationFailure);
+			} catch (Exception e) {
+				e.printStackTrace();
+				if (!bKnownMathGenerationFailure) {
+					Assert.fail("math generation failed for '" + filename_colon_appname + "', but expecting math to generate, add to knownMathGenerationFailures()");
+				}
+			}
 			newMath = new_simContext.getMathDescription();
 			MathCompareResults results2 = MathDescription.testEquivalency(SimulationSymbolTable.createMathSymbolTableFactory(), originalMath, newMath);
 
