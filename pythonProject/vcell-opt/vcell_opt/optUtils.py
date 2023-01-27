@@ -1,9 +1,13 @@
+import os.path
+from pathlib import Path
 from typing import Dict, List, Union
 
 import basico
+import json
 import pandas as pd
 
-from .data import CopasiOptimizationMethodOptimizationMethodType, OptProblem, CopasiOptimizationParameterParamType
+from .data import CopasiOptimizationMethodOptimizationMethodType, CopasiOptimizationParameterParamType, OptProblem, \
+    OptProgressItem, OptProgressReport
 
 
 def get_copasi_opt_method_settings(vcell_opt_problem: OptProblem) -> Dict[str, Union[str, float]]:
@@ -44,6 +48,10 @@ def _get_copasi_method_param(param_type: CopasiOptimizationParameterParamType) -
         return "Start Temperature"
     if param_type == CopasiOptimizationParameterParamType.TOLERANCE:
         return "Tolerance"
+    if param_type == CopasiOptimizationParameterParamType.SWARM_SIZE:
+        return "Swarm Size"
+    if param_type == CopasiOptimizationParameterParamType.STD_DEVIATION:
+        return "Std. Deviation"
     raise Exception(f"unexpected parameter type {param_type}")
 
 
@@ -92,3 +100,48 @@ def get_reference_data(vcell_opt_problem: OptProblem) -> pd.DataFrame:
 def get_fit_parameters(vcell_opt_problem: OptProblem) -> List[Dict[str, Union[str, float]]]:
     fit_items: List[Dict[str, Union[str, float]]] = [dict(name=f"Values[{a.name}]", lower=a.min_value, upper=a.max_value) for a in vcell_opt_problem.parameter_description_list]
     return fit_items
+
+
+def get_progress_report(report_file: Path, max_records: int = 49) -> OptProgressReport:
+    '''
+    first line in file is names of parameters in order
+    each line in file is as follows (tab separated)
+    100  0.000233223 ( 3.332 5.433 6.543 )
+    '''
+
+    progress_items: List[OptProgressItem] = []
+    param_values = []
+    with open(report_file, "r") as f_reportfile:
+        line_offsets: List[int] = list()  # Map from line index -> file position.
+        # line_offsets.append(0)
+        while f_reportfile.readline():
+            line_offsets.append(f_reportfile.tell())
+        line_offsets.pop()
+
+        f_reportfile.seek(0)
+        names_str = f_reportfile.readline()
+        names = json.loads(names_str)
+
+        N = max_records-1 # -1 to allow for adding last row if not included
+        step = max(1, round(0.5 + (len(line_offsets) / float(N))))
+        offsets = line_offsets[::step]  # N evenly spaced record offsets
+        if offsets[len(offsets)-1] != line_offsets[len(line_offsets)-1]:
+            # add in last record if not already there
+            offsets.append(line_offsets[len(line_offsets)-1])
+
+        # seek and read lines
+        for offset in offsets:
+            f_reportfile.seek(offset)
+            line = f_reportfile.readline()
+            tokens = line.split("\t")
+            num_function_evaluations = int(tokens[0])
+            objective_function = float(tokens[1])
+            progress_item = OptProgressItem(
+                num_function_evaluations=num_function_evaluations,
+                obj_func_value=objective_function)
+            progress_items.append(progress_item)
+        if tokens is not None:
+            param_values = [float(token) for token in tokens[3:len(tokens) - 1]]
+
+    best_param_values: Dict[str, float] = {names[i]: param_values[i] for i in range(len(names))}
+    return OptProgressReport(progress_items=progress_items, best_param_values=best_param_values)

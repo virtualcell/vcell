@@ -283,7 +283,24 @@ public synchronized String getBasicStatistics() throws SQLException,DataAccessEx
 	Connection con = conFactory.getConnection(lock);
 	Statement stmt = null;
 	try {
-		StringBuffer sb = new StringBuffer("<html><body>");
+		StringBuffer sb = new StringBuffer(
+				"<html>" +
+				"<head>\n" +
+				"<style>\n" +
+				"table, td, th {\n" +
+				"  border: 1px solid;\n" +
+				"}\n" +
+				"table {\n" +
+				"  width: 100%;\n" +
+				"  border-collapse: collapse;\n" +
+				"}\n" +
+				"th, td {\n" +
+				"  padding: 5px;\n" +
+				"  text-align: left;\n" +
+				"}\n" +
+				"</style>\n" +
+				"</head>\n" +
+				"<body>");
 		stmt = con.createStatement();
 		final int[] pastTime = new int[] {7,30,90,180,365};
 		final String[] pastTimeDescr = new String[] {"last week","last month","last 3 month","last 6 month","last year"};
@@ -340,7 +357,7 @@ public synchronized String getBasicStatistics() throws SQLException,DataAccessEx
 		htmlWithBreak("Total public simulations=", sb, stmt, puballsimssQuery);
 		
 		sb.append("<br></br>");
-		sb.append("Users running sims over various time periods:");
+		sb.append("<h2>Users running sims over various time periods:</h2>");
 		sb.append("<table>");
 		sb.append("<tr>");
 		for (int j = 0; j < pastTimeDescr.length; j++) {

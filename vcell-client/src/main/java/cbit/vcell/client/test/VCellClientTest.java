@@ -66,6 +66,8 @@ public class VCellClientTest {
  */
 public static void main(java.lang.String[] args) {
 
+	System.out.println("raw CLI arguments = "+Arrays.asList(args));
+
 	new Thread(new Runnable() {
 		@Override
 		public void run() {

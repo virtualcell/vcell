@@ -14,6 +14,7 @@ import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.resource.PropertyLoader;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Files;
+import com.google.gson.Gson;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.sbml.jsbml.SBMLException;
@@ -24,15 +25,11 @@ import org.vcell.optimization.jtd.ParameterDescription;
 import org.vcell.sbml.vcell.MathModel_SBMLExporter;
 
 import javax.xml.stream.XMLStreamException;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class CopasiUtils {
     private final static Logger lg = LogManager.getLogger(CopasiUtils.class);
@@ -289,17 +286,35 @@ public class CopasiUtils {
         writeOptProblem(optProblemFile, optProblem);
 
         File resultsFile = new File(tempDir, "optResults.json");
+        File reportFile = new File(tempDir, "optReport.tsv");
 
         // call copasi via vcell_opt package to run parameter estimation
-        callCopasiPython(optProblemFile.toPath(), resultsFile.toPath());
+        callCopasiPython(optProblemFile.toPath(), resultsFile.toPath(), reportFile.toPath());
 
         // read VCellopt results
         Vcellopt results = objectMapper.readValue(resultsFile, Vcellopt.class);
         return results;
     }
 
-    public static OptimizationResultSet optRunToOptimizationResultSet(ParameterEstimationTask parameterEstimationTask, Vcellopt optRun) throws Exception {
-        OptResultSet optResultSet = optRun.getOptResultSet();
+
+    public static OptimizationResultSet getOptimizationResultSet(ParameterEstimationTask parameterEstimationTask, OptProgressReport latestProgressReport) throws Exception {
+        OptResultSet optResultSet = new OptResultSet();
+        optResultSet.setOptParameterValues(latestProgressReport.getBestParamValues());
+        optResultSet.setOptProgressReport(latestProgressReport);
+
+        if (latestProgressReport==null || latestProgressReport.getProgressItems()==null || latestProgressReport.getProgressItems().size()==0) {
+            return null;
+        }
+        OptProgressItem lastProgressItem = latestProgressReport.getProgressItems().get(latestProgressReport.getProgressItems().size()-1);
+        optResultSet.setNumFunctionEvaluations(lastProgressItem.getNumFunctionEvaluations());
+        optResultSet.setObjectiveFunction(lastProgressItem.getObjFuncValue());
+
+        OptimizationStatus status = new OptimizationStatus(OptimizationStatus.NORMAL_TERMINATION, "Stopped by user");
+
+        return optRunToOptimizationResultSet(parameterEstimationTask, optResultSet, status);
+    }
+
+    public static OptimizationResultSet optRunToOptimizationResultSet(ParameterEstimationTask parameterEstimationTask, OptResultSet optResultSet, OptimizationStatus status) throws Exception {
         int numFittedParameters = optResultSet.getOptParameterValues().size();
         String[] paramNames = new String[numFittedParameters];
         double[] paramValues = new double[numFittedParameters];
@@ -311,7 +326,6 @@ public class CopasiUtils {
         }
 
         ParameterEstimationTaskSimulatorIDA parestSimulator = new ParameterEstimationTaskSimulatorIDA();
-        OptimizationStatus status = new OptimizationStatus(OptimizationStatus.NORMAL_TERMINATION, optRun.getStatusMessage());
         OptSolverResultSet.OptRunResultSet optRunResultSet = new OptSolverResultSet.OptRunResultSet(paramValues, optResultSet.getObjectiveFunction(), optResultSet.getNumFunctionEvaluations(), status);
         OptSolverResultSet copasiOptSolverResultSet = new OptSolverResultSet(paramNames, optRunResultSet);
         RowColumnResultSet copasiRcResultSet = parestSimulator.getRowColumnRestultSetByBestEstimations(parameterEstimationTask, paramNames, paramValues);
@@ -319,12 +333,16 @@ public class CopasiUtils {
         return copasiOptimizationResultSet;
     }
 
-    public static void callCopasiPython(Path optProblemFile, Path resultsFile) throws InterruptedException, IOException {
+    public static void callCopasiPython(Path optProblemFile, Path resultsFile, Path reportFile) throws InterruptedException, IOException {
         //final String pythonExe = pythonExeName;
         File installDir = PropertyLoader.getRequiredDirectory(PropertyLoader.installationRoot);
         File optDir = Paths.get(installDir.getAbsolutePath(),"pythonProject", "vcell-opt").toAbsolutePath().toFile();
 //        final String pythonExe = "/Users/schaff/Library/Caches/pypoetry/virtualenvs/vcell-opt-XIpjcTyI-py3.9/bin/python";
-        ProcessBuilder pb = new ProcessBuilder(new String[]{"poetry","run","python", "-m", "vcell_opt.optService", String.valueOf(optProblemFile.toAbsolutePath()), String.valueOf(resultsFile.toAbsolutePath())});
+        ProcessBuilder pb = new ProcessBuilder(new String[]{
+                "poetry","run","python", "-m", "vcell_opt.optService",
+                String.valueOf(optProblemFile.toAbsolutePath()),
+                String.valueOf(resultsFile.toAbsolutePath()),
+                String.valueOf(reportFile.toAbsolutePath())});
         pb.directory(optDir);
         System.out.println(pb.command());
         runAndPrintProcessStreams(pb, "", "");
@@ -358,5 +376,77 @@ public class CopasiUtils {
         }
     }
 
+    public static OptProgressReport readProgressReportFromCSV(File progressReportFile) throws IOException {
+        return readProgressReportFromCSV(progressReportFile,10);
+    }
+
+    public static OptProgressReport readProgressReportFromCSV(File progressReportFile, int maxRecords) throws IOException {
+        List<OptProgressItem> progressItems = new ArrayList<>();
+        long fileSize = java.nio.file.Files.size(progressReportFile.toPath());
+        long N = maxRecords-1;
+        long numLines = 0;
+        List<String> paramNames = null;
+        try (LineNumberReader reader = new LineNumberReader(new FileReader(progressReportFile))) {
+            String header = reader.readLine();
+            if (header != null){
+                Gson gson = new Gson();
+                paramNames = gson.fromJson(header, List.class);
+            }
+            while (reader.readLine() != null) {
+                numLines++;
+            }
+        }
+
+        int step = Math.max(1, (int)Math.ceil(numLines/(maxRecords-1)));
+        String line = null;
+        String[] tokens = null;
+        int lineNumber = 0;
+        try (LineNumberReader reader = new LineNumberReader(new FileReader(progressReportFile))) {
+            reader.readLine(); // skip header
+            while ((line = reader.readLine()) != null) {
+                if (lineNumber%step != 0 && lineNumber < numLines-1){
+                    lineNumber++;
+                    continue;
+                }
+                tokens = line.replace("(", "")
+                        .replace(")", "")
+                        .replace("\t\t", "\t")
+                        .split("\t");
+                int numFunctionEvaluations = Integer.parseInt(tokens[0]);
+                double objectiveFunctionValue = Double.parseDouble(tokens[1]);
+                OptProgressItem progressItem = new OptProgressItem();
+                progressItem.setNumFunctionEvaluations(numFunctionEvaluations);
+                progressItem.setObjFuncValue(objectiveFunctionValue);
+                progressItems.add(progressItem);
+                lineNumber++;
+            }
+        }
+        List<Double> paramValues = new ArrayList<>();
+        if (tokens != null) {
+            for (int i = 2; i < tokens.length; i++) {
+                paramValues.add(Double.parseDouble(tokens[i]));
+            }
+        }
+        OptProgressReport progressReport = new OptProgressReport();
+        progressReport.setProgressItems(progressItems);
+        Map<String, Double> bestParamValues = new HashMap<>();
+        for (int i=0; i<paramValues.size(); i++){
+            bestParamValues.put(paramNames.get(i), paramValues.get(i));
+        }
+        progressReport.setBestParamValues(bestParamValues);
+
+        return progressReport;
+    }
+
+    public static String progressReportString(OptProgressReport optProgressReport){
+        if (optProgressReport == null){
+            return "null";
+        }else if (optProgressReport.getProgressItems()==null || optProgressReport.getProgressItems().size()==0){
+            return "OptProgressReport[]";
+        }else{
+            OptProgressItem lastProgressItem = optProgressReport.getProgressItems().get(optProgressReport.getProgressItems().size()-1);
+            return "OptProgressReport["+lastProgressItem.getNumFunctionEvaluations()+", "+lastProgressItem.getObjFuncValue()+", "+optProgressReport.getBestParamValues()+"]";
+        }
+    }
 
 }

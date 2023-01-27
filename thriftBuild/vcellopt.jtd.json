@@ -44,11 +44,24 @@
 				"copasiOptimizationMethod": { "ref": "CopasiOptimizationMethod"}
 			}
 		},
+		"OptProgressItem": {
+			"properties": {
+				"numFunctionEvaluations": { "type": "int32" },
+				"objFuncValue": { "type":  "float64" }
+			}
+		},
+		"OptProgressReport": {
+			"properties": {
+				"progressItems": { "elements":  { "ref": "OptProgressItem" }},
+				"bestParamValues": { "values": { "type": "float64"}}
+			}
+		},
 		"OptResultSet": {
 			"properties": {
 				"objectiveFunction": { "type": "float64" },
 				"numFunctionEvaluations": { "type": "int32" },
-				"optParameterValues": { "values": { "type": "float64"}}
+				"optParameterValues": { "values": { "type": "float64"}},
+				"optProgressReport": { "ref": "OptProgressReport" }
 			}
 		}
 	},

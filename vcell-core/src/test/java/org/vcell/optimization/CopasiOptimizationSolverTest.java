@@ -57,6 +57,9 @@ public class CopasiOptimizationSolverTest {
 
         boolean filesEqual = Files.equal(optProblemFile, optProblemFile1);
         Assert.assertTrue("round trip files should be equal", filesEqual);
+
+        optProblemFile.delete();
+        optProblemFile1.delete();
     }
 
     @Test
