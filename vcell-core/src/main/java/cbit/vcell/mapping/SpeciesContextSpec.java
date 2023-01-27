@@ -897,6 +897,19 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
 			}
 		}
 	}
+	
+	if(getSimulationContext().getApplicationType() == SimulationContext.Application.SPRINGSALAD) {
+		if(getSpeciesContext() != null && getSpeciesContext().getSpeciesPattern() != null) {
+			for(MolecularInternalLinkSpec mils : getInternalLinkSet()) {
+				mils.gatherIssues(issueContext, issueVector);
+			}
+			for(Map.Entry<MolecularComponentPattern, SiteAttributesSpec> entry : getSiteAttributesMap().entrySet()) {
+				MolecularComponentPattern key = entry.getKey();
+				SiteAttributesSpec sas = entry.getValue();
+				sas.gatherIssues(issueContext, issueVector);
+			}
+		}
+	}
 }
 
 /**

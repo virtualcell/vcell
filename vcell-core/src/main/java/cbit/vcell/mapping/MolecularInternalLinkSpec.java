@@ -13,6 +13,7 @@ import java.awt.Color;
 import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -95,5 +96,9 @@ public class MolecularInternalLinkSpec implements Identifiable {
 			return null;
 		}
 		return new Pair<MolecularComponentPattern, MolecularComponentPattern>(internalLink.fieldMolecularComponentPatternOne, internalLink.fieldMolecularComponentPatternTwo);
+	}
+	public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
+		// TODO Auto-generated method stub
+		
 	}
 }

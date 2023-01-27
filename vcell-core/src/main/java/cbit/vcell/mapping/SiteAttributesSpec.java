@@ -13,6 +13,7 @@ import java.awt.Color;
 import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -31,7 +32,7 @@ public class SiteAttributesSpec implements Identifiable {
 	private double fieldRadius = 1.0;
 	private double fieldDiffusionRate = 1.0;
 	private Structure fieldLocation = null;		// feature or membrane
-	private Coordinate fieldCoordinate = null;	// double x,y,z; has distanceTo()
+	private Coordinate fieldCoordinate = new Coordinate(0,0,0);	// double x,y,z; has distanceTo()
 	private Color fieldColor = Color.GRAY;
 	// the ComponentStatePattern must not be Any; can be recovered from the MolecularComponentPattern
 	// the BondType must be None, can be recovered from the MolecularComponentPattern
@@ -88,6 +89,9 @@ public class SiteAttributesSpec implements Identifiable {
 	}
 	public void setColor(Color color) {
 		this.fieldColor = color;
+	}
+	public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
+		
 	}
 
 }
