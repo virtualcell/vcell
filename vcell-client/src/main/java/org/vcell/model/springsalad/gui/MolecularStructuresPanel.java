@@ -40,6 +40,8 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableModel;
 
 import org.apache.commons.lang3.StringEscapeUtils;
+import org.vcell.model.rbm.MolecularComponentPattern;
+import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.EditorScrollTable;
@@ -57,10 +59,13 @@ import cbit.vcell.client.desktop.biomodel.SelectionManager;
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
 import cbit.vcell.graph.SmallShapeManager;
+import cbit.vcell.graph.SpeciesPatternLargeShape;
 import cbit.vcell.graph.SpeciesPatternSmallShape;
+import cbit.vcell.graph.gui.LargeShapePanel;
 import cbit.vcell.mapping.AssignmentRule;
 import cbit.vcell.mapping.RateRule;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SiteAttributesSpec;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.TaskCallbackMessage;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
@@ -84,9 +89,11 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 	private EventHandler eventHandler = new EventHandler();
 	private SimulationContext fieldSimulationContext;
 	private SpeciesContextSpec fieldSpeciesContextSpec;
+	private MolecularComponentPattern fieldMolecularComponentPattern;
+	
 	private IssueManager fieldIssueManager;
 	private SelectionManager fieldSelectionManager;
-	
+
 	private EditorScrollTable speciesContextSpecsTable = null;
 	private SpeciesContextSpecsTableModel speciesContextSpecsTableModel = null;
 	private SmallShapeManager shapeManager = new SmallShapeManager(false, false, false, false);
@@ -113,6 +120,8 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 				changePosition();
 			} else if(source == linkLengthField) {
 				changeLinkLength();
+			} else if(source == addLinkButton) {
+				addLink();
 			}
 		}
 		public void focusGained(FocusEvent e) {
@@ -125,10 +134,19 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 				changeLinkLength();
 			}
 		}
-		public void propertyChange(java.beans.PropertyChangeEvent event) {
-			if(event.getSource() instanceof Model && event.getPropertyName().equals(RbmModelContainer.PROPERTY_NAME_MOLECULAR_TYPE_LIST)) {
-				refreshInterface();
+		public void propertyChange(java.beans.PropertyChangeEvent e) {
+			if(e.getSource() instanceof Model && e.getPropertyName().equals(RbmModelContainer.PROPERTY_NAME_MOLECULAR_TYPE_LIST)) {
+				updateInterface();
 			}
+			// TODO: I think this is not needed
+//			if (e.getSource() == selectionManager) {
+//				if (e.getPropertyName().equals(SelectionManager.PROPERTY_NAME_SELECTED_OBJECTS)) {
+//					Object[] objects = selectionManager.getSelectedObjects();
+//					onSelectedObjectsChange(objects);
+//				} else if (e.getPropertyName().equals(SelectionManager.PROPERTY_NAME_ACTIVE_VIEW)) {
+//					onActiveViewChange(selectionManager.getActiveView());
+//				}
+//			}
 		}
 		public void valueChanged(javax.swing.event.ListSelectionEvent e) {
 			if (e.getValueIsAdjusting()) {
@@ -139,6 +157,11 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 				int row = getSpeciesContextSpecsTable().getSelectedRow();
 				SpeciesContextSpec scsSelected = speciesContextSpecsTableModel.getValueAt(row);
 				setSpeciesContextSpec(scsSelected);
+			}
+			if (e.getSource() == getMolecularTypeSpecsTable().getSelectionModel()) {
+				int row = getMolecularTypeSpecsTable().getSelectedRow();
+				MolecularComponentPattern mcmSelected = molecularTypeSpecsTableModel.getValueAt(row);
+				setMolecularComponentPattern(mcmSelected);
 			}
 		};
 
@@ -162,7 +185,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		
 	}
 	
-	private void initConnections() throws java.lang.Exception {
+	private void initConnections() throws java.lang.Exception {		// listeners here!
 		siteXField.addFocusListener(eventHandler);
 		siteYField.addFocusListener(eventHandler);
 		siteZField.addFocusListener(eventHandler);
@@ -171,10 +194,17 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		siteYField.addActionListener(eventHandler);
 		siteZField.addActionListener(eventHandler);
 		linkLengthField.addActionListener(eventHandler);
+		addLinkButton.addActionListener(eventHandler);
 		
 		ListSelectionModel lsm = getSpeciesContextSpecsTable().getSelectionModel();
 		if(lsm instanceof DefaultListSelectionModel) {
 			DefaultListSelectionModel dlsm = (DefaultListSelectionModel)lsm;
+			dlsm.addListSelectionListener(eventHandler);
+		}
+		
+		ListSelectionModel lsm2 = getMolecularTypeSpecsTable().getSelectionModel();
+		if(lsm2 instanceof DefaultListSelectionModel) {
+			DefaultListSelectionModel dlsm = (DefaultListSelectionModel)lsm2;
 			dlsm.addListSelectionListener(eventHandler);
 		}
 
@@ -628,22 +658,11 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		}
 		speciesContextSpecsTableModel.setSimulationContext(simulationContext);
 		molecularTypeSpecsTableModel.setSimulationContext(simulationContext);
-		refreshInterface();
+		updateInterface();
 	}
 	public SimulationContext getSimulationContext() {
 		return fieldSimulationContext;
 	}
-
-	public void setSelectionManager(SelectionManager selectionManager) {
-		fieldSelectionManager = selectionManager;
-	}
-	public IssueManager getIssueManager() {
-		return fieldIssueManager;
-	}
-	public void setIssueManager(IssueManager issueManager) {
-		fieldIssueManager = issueManager;
-	}
-	
 	void setSpeciesContextSpec(SpeciesContextSpec newValue) {
 		if (fieldSpeciesContextSpec == newValue) {
 			return;
@@ -662,27 +681,61 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		molecularTypeSpecsTableModel.setSpeciesContextSpec(fieldSpeciesContextSpec);
 		updateInterface();
 	}
+	void setMolecularComponentPattern(MolecularComponentPattern mcp) {
+		fieldMolecularComponentPattern = mcp;
+		//TODO: stuff
+		updateInterface();
+	}
+
+	// ============================================================================================
+	
+	public void setSelectionManager(SelectionManager selectionManager) {
+		fieldSelectionManager = selectionManager;
+	}
+	public IssueManager getIssueManager() {
+		return fieldIssueManager;
+	}
+	public void setIssueManager(IssueManager issueManager) {
+		fieldIssueManager = issueManager;
+	}
+	
 
 	private void updateInterface() {
 		boolean bNonNullSpeciesContextSpec = fieldSpeciesContextSpec != null && fieldSimulationContext != null;
-		if(bNonNullSpeciesContextSpec) {
+		boolean bNonNullSpeciesPattern = bNonNullSpeciesContextSpec && fieldSpeciesContextSpec.getSpeciesContext().getSpeciesPattern() != null;
+		boolean bNonNullMolecularTypePattern = bNonNullSpeciesPattern && fieldSpeciesContextSpec.getSpeciesContext().getSpeciesPattern().getMolecularTypePatterns().get(0) != null;
+		boolean bNonNullMolecularComponentPattern = bNonNullMolecularTypePattern && fieldMolecularComponentPattern != null;
+		
+		MolecularTypePattern mtp = null;
+		if(bNonNullMolecularTypePattern) {
+			mtp = fieldSpeciesContextSpec.getSpeciesContext().getSpeciesPattern().getMolecularTypePatterns().get(0);
+		}
+		
+		if(bNonNullMolecularTypePattern && mtp.getComponentPatternList().size() > 1) {		// a link requires 2 sites (components)
+			// TODO: populate / empty the siteLinksList
+			linkLengthField.setEditable(true);
+			linkLengthField.setText("6");
+			addLinkButton.setEnabled(true);
+		} else {
+			linkLengthField.setEditable(false);
+			linkLengthField.setText(null);
+			addLinkButton.setEnabled(false);
+		}
+		if(bNonNullMolecularComponentPattern) {
+			SiteAttributesSpec sas = fieldSpeciesContextSpec.getSiteAttributesMap().get(fieldMolecularComponentPattern);
 			siteXField.setEditable(true);
 			siteYField.setEditable(true);
 			siteZField.setEditable(true);
-			linkLengthField.setEditable(true);
-			siteXField.setText("5");
-			siteYField.setText("5");
-			siteZField.setText("5");
-			linkLengthField.setText("6");
+			siteXField.setText(sas.getCoordinate().getX()+"");
+			siteYField.setText(sas.getCoordinate().getY()+"");
+			siteZField.setText(sas.getCoordinate().getZ()+"");
 		} else {
 			siteXField.setEditable(false);
 			siteYField.setEditable(false);
 			siteZField.setEditable(false);
-			linkLengthField.setEditable(false);
 			siteXField.setText(null);
 			siteYField.setText(null);
 			siteZField.setText(null);
-			linkLengthField.setText(null);
 			
 		}
 	}
@@ -694,12 +747,6 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 	private void appendToConsole(TaskCallbackMessage newCallbackMessage) {
 		fieldSimulationContext.appendToConsole(newCallbackMessage);
 	}
-	
-	public void refreshInterface() {
-
-
-	}
-	
 
 	@Override
 	protected void onSelectedObjectsChange(Object[] selectedObjects) {
@@ -1104,27 +1151,24 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 	 * before the newly selected SpeciesContextStep becomes current
 	 */
 	private void changeSpeciesContextSpec() {
-
 		
 	}
 
 	private void changePosition() {
 		System.out.println("Site coordinates changed");
-	
 		recalculateLinkLengths();
 	}
-	private void recalculateLinkLengths() {
-		// TODO Auto-generated method stub
-		
-	}
-	
 	private void changeLinkLength() {
 		System.out.println("Link length changed");
-		
 		recalculatePositions();
 	}
 	
+	private void recalculateLinkLengths() {
+	}
 	private void recalculatePositions() {
+	}
+
+	private void addLink() {
 		// TODO Auto-generated method stub
 		
 	}
