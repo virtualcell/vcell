@@ -165,6 +165,7 @@ public class MathGenCompareTest {
 		faults.put("biomodel_95420572.vcml:3D Stochastic Spatial Small Cube", MathCompareResults.Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS);
 		faults.put("biomodel_95439383.vcml:3D Stochastic", MathCompareResults.Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS);
 		faults.put("biomodel_95439383.vcml:Application0", MathCompareResults.Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS);
+		faults.put("biomodel_97075423.vcml:NFSim", MathCompareResults.Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS);
 		faults.put("biomodel_97188386.vcml:3D hybrid", MathCompareResults.Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS);
 		faults.put("biomodel_97210786.vcml:3D hybrid", MathCompareResults.Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS);
 		faults.put("biomodel_97236290.vcml:3D hybrid", MathCompareResults.Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS);
@@ -172,7 +173,9 @@ public class MathGenCompareTest {
 		faults.put("biomodel_97536525.vcml:3D hybrid", MathCompareResults.Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS);
 		faults.put("biomodel_97553821.vcml:3D hybrid", MathCompareResults.Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS);
 		faults.put("biomodel_97557776.vcml:3D hybrid", MathCompareResults.Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS);
+		faults.put("biomodel_97705317.vcml:NFSim app", MathCompareResults.Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS);
 		faults.put("biomodel_97785961.vcml:spatial-hybrid", MathCompareResults.Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS);
+		faults.put("biomodel_97786619.vcml:NFSim app", MathCompareResults.Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS);
 		faults.put("biomodel_97786886.vcml:hybrid", MathCompareResults.Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS);
 		faults.put("biomodel_97786886.vcml:pde", MathCompareResults.Decision.MathDifferent_DIFFERENT_PostProcessingBlock);
 		faults.put("biomodel_97787114.vcml:hybrid", MathCompareResults.Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS);
