@@ -264,6 +264,7 @@ public class VcmlTestSuiteFiles {
             "biomodel_111113048_smaller.vcml",
 
             // more public models
+            "biomodel_83462243.vcml",
             "biomodel_83651737.vcml",
             "biomodel_97075423.vcml",
             "biomodel_97705317.vcml",
@@ -362,7 +363,7 @@ public class VcmlTestSuiteFiles {
 //            "biomodel_82809548.vcml",
 //            "biomodel_82809561.vcml",
 //            "biomodel_83462193.vcml",
-//            "biomodel_83462243.vcml",
+//            "biomodel_83462243.vcml", // public
 //            "biomodel_83651304.vcml",
 //            "biomodel_83651737.vcml", // public
 //            "biomodel_84440330.vcml",
