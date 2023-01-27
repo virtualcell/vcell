@@ -49,7 +49,7 @@ public class BioModelTransforms {
     private final static double GAS_CONSTANT_new = 8314.46261815;
     private final static double KMOLE_new = 1.0/602.214179;
 
-    public static void restoreOldReservedSymbolsIfNeeded(BioModel bioModel) {
+    public static boolean restoreOldReservedSymbolsIfNeeded(BioModel bioModel) {
 
         // restore old values of KMOLE and other ReservedSymbols if present in original Math
         // this ensures that newly generated math descriptions will use the same values
@@ -66,7 +66,7 @@ public class BioModelTransforms {
         }
 
         if (!bHasOldKMOLE){
-            return;
+            return false;
         }
 
         // set old values for physical constants for backward compatibility
@@ -94,6 +94,7 @@ public class BioModelTransforms {
         assert ExpressionUtils.value_molecules_per_uM_um3_NUMERATOR.equals(ExpressionUtils.latest_molecules_per_uM_um3_NUMERATOR);
         ExpressionUtils.value_molecules_per_uM_um3_NUMERATOR = ExpressionUtils.legacy_molecules_per_uM_um3_NUMERATOR;
         bioModel.refreshDependencies();
+        return true;
     }
 
     public static void restoreLatestReservedSymbols(BioModel bioModel) {
@@ -120,7 +121,7 @@ public class BioModelTransforms {
 
         Model.ReservedSymbol transformed_KMOLE = bioModel.getModel().getReservedSymbolByRole(Model.ReservedSymbolRole.KMOLE);
         if (!ExpressionUtils.functionallyEquivalent(transformed_KMOLE.getExpression(),new Expression(KMOLE_new))) {
-            transformed_KMOLE.getExpression().substituteInPlace(transformed_KMOLE.getExpression(), new Expression(KMOLE_value_old));
+            transformed_KMOLE.getExpression().substituteInPlace(transformed_KMOLE.getExpression(), new Expression(KMOLE_new));
         }
 
         ExpressionUtils.value_molecules_per_uM_um3_NUMERATOR = ExpressionUtils.latest_molecules_per_uM_um3_NUMERATOR;
