@@ -348,8 +348,15 @@ public class MathGenCompareTest {
 
 			if (!results2.isEquivalent()) {
 				try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(knownProblemFile, true));) {
-					bufferedWriter.write("faults.put(\"" + filename_colon_appname + "\", MathCompareResults.Decision." + results2.decision + "); // =LEGACY= "
-							+ results2.toDatabaseStatus().substring(0, Math.min(results2.toDatabaseStatus().length(), 100)) + "\n");
+					Version version = orig_biomodel.getVersion();
+					String ownerinfo = (version!=null && version.getOwner()!=null && version.getDate()!=null)
+							?("("+version.getOwner().getName()+
+							":"+version.getOwner().getID()+
+							":"+new java.sql.Date(version.getDate().getTime()).toLocalDate()+
+							":"+version.getGroupAccess()+")")
+							:"(not saved)";
+					bufferedWriter.write("faults.put(\"" + filename_colon_appname + "\", MathCompareResults.Decision." + results2.decision + ");" +
+							" // "+ownerinfo+": "+results2.toCause().substring(0, Math.min(results2.toCause().length(), 180)) + "\n");
 				}
 				if (knownFault == null) {
 					Assert.fail("'" + filename_colon_appname + "' expecting equivalent, " +

@@ -544,12 +544,9 @@ private MathCompareResults compareEquivalentCanonicalMath(MathDescription newMat
 										//
 										// difference couldn't be reconciled
 										//
-										String msg = "expressions are different: '" + oldExps.get(k).infix() + "' vs '"
-												+ newExps.get(k).infix() + "'";
-										logMathTexts(this, newMathDesc, Decision.MathDifferent_DIFFERENT_EXPRESSION,
-												msg);
-										return new MathCompareResults(Decision.MathDifferent_DIFFERENT_EXPRESSION,
-												msg);
+										String msg = "expressions are different: '" + oldExps.get(k).infix() + "' vs '" + newExps.get(k).infix() + "'";
+										logMathTexts(this, newMathDesc, Decision.MathDifferent_DIFFERENT_EXPRESSION, msg);
+										return new MathCompareResults(Decision.MathDifferent_DIFFERENT_EXPRESSION, msg);
 									}
 								}else{
 									//if (!bSilent) System.out.println("expressions are equivalent Old: '"+oldExps[k]+"'\n"+
@@ -814,8 +811,11 @@ private MathCompareResults compareEquivalentCanonicalMath(MathDescription newMat
 						}
 					}
 					if (!bEqual) {
-						logMathTexts(this, newMathDesc, Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS, "");
-						return new MathCompareResults(Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS);
+						String msg = "PJP='"+oldPjp.getName()+"', " +
+								"old='"+ Arrays.asList(oldPjp.getParticleRateDefinition().getExpressions()).stream().map(e->e.infix()).collect(Collectors.toList())+"', " +
+								"new='"+ ((matchingPjp==null)?"null":Arrays.asList(matchingPjp.getParticleRateDefinition().getExpressions()).stream().map(e->e.infix()).collect(Collectors.toList()))+"'";
+						logMathTexts(this, newMathDesc, Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS, msg);
+						return new MathCompareResults(Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS, msg);
 					}
 				}
 			}
