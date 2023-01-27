@@ -794,21 +794,53 @@ private MathCompareResults compareEquivalentCanonicalMath(MathDescription newMat
 					}
 				}
 				
-				List<ParticleJumpProcess> oldPjpList = subDomainsOld.get(i).getParticleJumpProcesses();
-				List<ParticleJumpProcess> newPjpList = subDomainsNew.get(i).getParticleJumpProcesses();
+				List<ParticleJumpProcess> oldPjpList = subDomainsOld.get(i).getParticleJumpProcesses().stream().filter(pjp -> !pjp.actionsNoop()).collect(Collectors.toList());
+				List<ParticleJumpProcess> newPjpList = subDomainsNew.get(i).getParticleJumpProcesses().stream().filter(pjp -> !pjp.actionsNoop()).collect(Collectors.toList());;
 				if (oldPjpList.size() != newPjpList.size()) {
-					logMathTexts(this, newMathDesc, Decision.MathDifferent_DIFFERENT_NUMBER_OF_PARTICLE_JUMP_PROCESS, "");
-					return new MathCompareResults(Decision.MathDifferent_DIFFERENT_NUMBER_OF_PARTICLE_JUMP_PROCESS);
+					Set<String> oldPjpNameSet = oldPjpList.stream().map(pjp->pjp.getName()).collect(Collectors.toSet());
+					Set<String> newPjpNameSet = newPjpList.stream().map(pjp->pjp.getName()).collect(Collectors.toSet());
+					Set<String> removedPjpNames = new LinkedHashSet<>(oldPjpNameSet);
+					removedPjpNames.removeAll(newPjpNameSet);
+					Set<String> addedPjpNames = new LinkedHashSet<>(newPjpNameSet);
+					addedPjpNames.removeAll(oldPjpNameSet);
+					String msg = "removed PJPs="+removedPjpNames+", added PJPs="+addedPjpNames;
+					logMathTexts(this, newMathDesc, Decision.MathDifferent_DIFFERENT_NUMBER_OF_PARTICLE_JUMP_PROCESS, msg);
+					return new MathCompareResults(Decision.MathDifferent_DIFFERENT_NUMBER_OF_PARTICLE_JUMP_PROCESS, msg);
 				}
 				for (ParticleJumpProcess oldPjp : oldPjpList) {
 					boolean bEqual = false;
+					boolean bEqualAfterKMOLE = false;
+					ParticleJumpProcess matchingPjp = null;
 					for (ParticleJumpProcess newPjp : newPjpList) {
-						if (Compare.isEqualOrNull(oldPjp, newPjp)) {
+						if (Compare.isEqualOrNull(oldPjp.getName(), newPjp.getName())) {
+							matchingPjp = newPjp;
 							if (oldPjp.compareEqual(newPjp)) {
 								bEqual = true;
+							}else if (newPjp.getParticleRateDefinition() instanceof MacroscopicRateConstant){
+								final double KMOLE_new = 1.0/602.214179;
+								final double KMOLE_value_old = 1.0/602.0;
+								MacroscopicRateConstant macroscopicRateConstant = (MacroscopicRateConstant) newPjp.getParticleRateDefinition();
+								final int MAX_POWER_KMOLE = 2;
+								Expression savedExp = new Expression(macroscopicRateConstant.getExpression());
+								for (int pow=1; pow <= MAX_POWER_KMOLE; pow++) {
+									Expression scaledRate = Expression.mult(macroscopicRateConstant.getExpression(), new Expression(KMOLE_value_old)).flattenSafe();
+									macroscopicRateConstant.getExpression().substituteInPlace(macroscopicRateConstant.getExpression(), scaledRate);
+									if (oldPjp.compareEqual(newPjp)) {
+										bEqualAfterKMOLE = true;
+										break;
+									}
+								}
+								macroscopicRateConstant.setExpression(savedExp);
 							}
 							break;
 						}
+					}
+					if (bEqualAfterKMOLE) {
+						String msg = "PJP='"+oldPjp.getName()+"', " +
+								"old='"+ Arrays.asList(oldPjp.getParticleRateDefinition().getExpressions()).stream().map(e->e.infix()).collect(Collectors.toList())+"', " +
+								"new='"+ ((matchingPjp==null)?"null":Arrays.asList(matchingPjp.getParticleRateDefinition().getExpressions()).stream().map(e->e.infix()).collect(Collectors.toList()))+"'";
+						logMathTexts(this, newMathDesc, Decision.MathDifferent_LEGACY_PARTICLE_JUMP_PROCESS, msg);
+						return new MathCompareResults(Decision.MathDifferent_LEGACY_PARTICLE_JUMP_PROCESS, msg);
 					}
 					if (!bEqual) {
 						String msg = "PJP='"+oldPjp.getName()+"', " +
@@ -832,7 +864,7 @@ private MathCompareResults compareEquivalentCanonicalMath(MathDescription newMat
 	}
 }
 
-private void setMissingEquationBoundaryConditionsToDefault(SubDomain.DomainWithBoundaryConditions subdomain, int geometryDim){
+	private void setMissingEquationBoundaryConditionsToDefault(SubDomain.DomainWithBoundaryConditions subdomain, int geometryDim){
 	List<PdeEquation> pdeEquations = subdomain.getEquationCollection().stream().filter(e -> e instanceof PdeEquation).map(e -> (PdeEquation) e).collect(Collectors.toList());
 	//
 	// CompartmentSubDomains have correct boundary condition types for external boundaries.

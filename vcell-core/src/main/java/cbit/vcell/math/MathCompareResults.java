@@ -35,6 +35,7 @@ public class MathCompareResults {
 		MathDifferent_DIFFERENT_PARTICLE_PROPERTIES(false,"MathDifferent:DifferentParticleProperties"),
 		MathDifferent_DIFFERENT_NUMBER_OF_PARTICLE_JUMP_PROCESS(false,"MathDifferent:DifferentNumParticleJumpProcs"),
 		MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS(false,"MathDifferent:DifferentParticleJumpProc"),
+		MathDifferent_LEGACY_PARTICLE_JUMP_PROCESS(false,"MathDifferent:LegacyParticleJumpProc"),
 		MathDifferent_DIFFERENT_VARIABLE_IN_EQUATION(false,"MathDifferent:DifferentVariableInEquation"),
 
 		MathDifferent_DIFFERENT_NUMBER_OF_EXPRESSIONS(false,"MathDifferent:DifferentNumberOfExpressions"),
