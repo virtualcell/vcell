@@ -30,7 +30,8 @@ public class MathGenCompareTest {
 	private String filename_colon_appname;
 
 	private static String previousInstalldirPropertyValue;
-	private static File knownProblemFile;
+	private static File codeKnownProblemFile;
+	private static File csvKnownProblemFile;
 
 	public MathGenCompareTest(String filename_colon_appname){
 		this.filename_colon_appname = filename_colon_appname;
@@ -42,8 +43,10 @@ public class MathGenCompareTest {
 		previousInstalldirPropertyValue = System.getProperty("vcell.installDir");
 		System.setProperty("vcell.installDir", "..");
 		NativeLib.combinej.load();
-		knownProblemFile = Files.createTempFile("MathGenCompareTest","knownProblems").toFile();
-		System.err.println("known problem file: "+knownProblemFile.getAbsolutePath());
+		codeKnownProblemFile = Files.createTempFile("MathGenCompareTest","code_KnownProblems").toFile();
+		csvKnownProblemFile = Files.createTempFile("MathGenCompareTest","csv_KnownProblems").toFile();
+		System.err.println("code known problem file: "+codeKnownProblemFile.getAbsolutePath());
+		System.err.println("csv known problem file: "+csvKnownProblemFile.getAbsolutePath());
 	}
 
 	@AfterClass
@@ -51,7 +54,8 @@ public class MathGenCompareTest {
 		if (previousInstalldirPropertyValue!=null) {
 			System.setProperty("vcell.installDir", previousInstalldirPropertyValue);
 		}
-		System.err.println("known problem file: "+knownProblemFile.getAbsolutePath());
+		System.err.println("code known problem file: "+codeKnownProblemFile.getAbsolutePath());
+		System.err.println("csv known problem file: "+csvKnownProblemFile.getAbsolutePath());
 	}
 
 	@BeforeClass
@@ -356,16 +360,23 @@ public class MathGenCompareTest {
 			MathCompareResults results2 = MathDescription.testEquivalency(SimulationSymbolTable.createMathSymbolTableFactory(), originalMath, newMath);
 
 			if (!results2.isEquivalent()) {
-				try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(knownProblemFile, true));) {
+				try (BufferedWriter codeProblemFileWriter = new BufferedWriter(new FileWriter(codeKnownProblemFile, true));
+					 BufferedWriter csvProblemFileWriter = new BufferedWriter(new FileWriter(csvKnownProblemFile, true));
+				) {
 					Version version = orig_biomodel.getVersion();
-					String ownerinfo = (version!=null && version.getOwner()!=null && version.getDate()!=null)
-							?("("+version.getOwner().getName()+
-							":"+version.getOwner().getID()+
-							":"+new java.sql.Date(version.getDate().getTime()).toLocalDate()+
-							":"+version.getGroupAccess()+")")
-							:"(not saved)";
-					bufferedWriter.write("faults.put(\"" + filename_colon_appname + "\", MathCompareResults.Decision." + results2.decision + ");" +
-							" // "+ownerinfo+": "+results2.toCause().substring(0, Math.min(results2.toCause().length(), 180)) + "\n");
+					String ownerUserid = "", ownerKey = "", date = "", privacy = "";
+					if (version != null && version.getOwner() != null){
+						ownerUserid = version.getOwner().getName();
+						ownerKey = version.getOwner().getID().toString();
+						date = new java.sql.Date(version.getDate().getTime()).toLocalDate().toString();
+						privacy = version.getGroupAccess().toString();
+					}
+					String cause = results2.toCause().substring(0, Math.min(results2.toCause().length(), 180));
+					codeProblemFileWriter.write("faults.put(\"" + filename_colon_appname + "\"" +
+							",MathCompareResults.Decision." + results2.decision + ");" +
+							" // ("+ownerKey+":"+date+":"+privacy+"): " + cause + "\n");
+					csvProblemFileWriter.write(filename+"|"+date+"|"+ownerUserid+"("+ownerKey+")"+"|"+privacy+
+							"|"+orig_biomodel.getName()+"|"+simContextName+"|"+results2.decision+"|"+cause+"\n");
 				}
 				if (knownFault == null) {
 					Assert.fail("'" + filename_colon_appname + "' expecting equivalent, " +
@@ -467,7 +478,7 @@ public class MathGenCompareTest {
 			Assert.fail("math equivalent for '"+filename_colon_appname+"', but expecting '"+knownReductionFault+"', remove known fault");
 		}
 		if (!reductionCompareResults.isEquivalent()){
-			try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(knownProblemFile, true));){
+			try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(codeKnownProblemFile, true));){
 				bufferedWriter.write("faults.put(\""+filename_colon_appname+"\", MathCompareResults.Decision."+reductionCompareResults.decision+"); // =REDUCED= "
 						+reductionCompareResults.toDatabaseStatus().substring(0, Math.min(reductionCompareResults.toDatabaseStatus().length(), 100))+"\n");
 			}
