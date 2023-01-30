@@ -723,12 +723,15 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 
 }
 
-
+public void repairLegacyModelProblems() {
+	BioModelTransforms.repairLegacyProblems(this);
+}
 /**
  * Insert the method's description here.
  * Creation date: (4/12/01 11:24:12 AM)
  */
 public void refreshDependencies() {
+	repairLegacyModelProblems();
 	//
 	// listen to self
 	//

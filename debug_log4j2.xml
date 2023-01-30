@@ -10,19 +10,19 @@
     </Appenders>
 
     <Loggers>
-        <Logger name="org.vcell" level="debug" additivity="false">
+        <Logger name="org.vcell" level="info" additivity="false">
             <AppenderRef ref="console"/>
         </Logger>
-        <Logger name="cbit" level="debug" additivity="false">
+        <Logger name="cbit" level="info" additivity="false">
             <AppenderRef ref="console"/>
         </Logger>
-        <Logger name="cbit" level="debug" additivity="false">
+        <Logger name="cbit" level="info" additivity="false">
             <AppenderRef ref="console"/>
         </Logger>
-        <Logger name="org.apache.http" level="debug" additivity="false">
+        <Logger name="org.apache.http" level="info" additivity="false">
             <AppenderRef ref="console"/>
         </Logger>
-        <Logger name="org.eclipse.jetty" level="debug" additivity="false">
+        <Logger name="org.eclipse.jetty" level="info" additivity="false">
             <AppenderRef ref="console"/>
         </Logger>
         <Root level="info">

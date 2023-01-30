@@ -39,14 +39,11 @@ needed remote dirs
 **activemqsim** (webcenter/activemq:5.14.3) (handles messages from running solvers and 'sched' service)  
 **vcell-opt** [DockerFile](build/Dockerfile-opt-dev) (Provides REST service to running optimization with copasi)  
 
-**--Logger Stack--(VCell docker swarm cluster) (Docker Logging,not necressary for VCell) ** [see logger stack definition](swarm/docker-stack-logspout.yml)  
-**logspout** (reads from docker daemon logs wich come from stdout of services, global, starts on every node, gets log stream from all running containers, sends to logstash)
-
-
 **Linux Logging elk client services** [see ELK definition](swarm/README_ELK.yml) **(elk.cam.uchc.edu)**  
-**logstash** (listens for logging events, forwards to elasticsearch)  
+**elastic-agent** (installed directly on all nodes, forwards logging events and metrics directly to elasticsearch)  
+**fleet** (orchestrates and managed 'fleet' of elastic-agents)  
 **elasticsearch** (searchables database of logging events)  
-**kibana** (users interface for elastic search)
+**kibana** (users interface for elastic search and managing elastic-agent's via fleet)
 
 
 **Not a --VCell Stack-- service but sent to all hpc nodes during deployment**  
@@ -59,8 +56,8 @@ vcell-batch.img  => singularity image temporarily stored /opt/build/vcell/docker
 **vcell-clientgen (generates Install4J installers during deployment)**  
 Docker container containing install4j and built (on-the-fly) vcell-client software => docker image in registry  
 
-**logspout service [details](swarm/docker-stack-logspout.yml)**  
-not part of normal deploy, do this once manually after swarm has been initialized    
+**elastic-agent service**  
+installed directly on nodes, managed by elastic fleet server on elk.cam.uchc.edu
 
 ```
 sudo docker stack deploy -c vcell/docker/swarm/docker-stack-logspout.yml logspout

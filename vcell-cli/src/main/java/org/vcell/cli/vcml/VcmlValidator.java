@@ -67,6 +67,9 @@ public class VcmlValidator {
                 SimulationContext new_simContext = transformed_biomodel.getSimulationContexts(orig_simContext.getName());
 				new_simContext.updateAll(false);
                 MathDescription newMath = new_simContext.getMathDescription();
+                if (bTransformKMOLE){
+                    BioModelTransforms.restoreLatestReservedSymbols(transformed_biomodel);
+                }
                 MathCompareResults results = null;
                 if (bTransformVariables) {
                     results = MathDescription.testEquivalencyWithRename(SimulationSymbolTable.createMathSymbolTableFactory(), originalMath, newMath);

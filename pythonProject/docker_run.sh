@@ -1,8 +1,8 @@
 #!/bin/bash
 
 show_help() {
-	echo "usage: docker run --rm -e v1=a -e v2=b -v /host/path/to/file:/simdata ghcr.io/virtualcell/vcell-opt:latest [OPTIONS] optProblem.json results.json"
-	echo "  or   singularity run --bind /host/path/to/file:/simdata ghcr_io_virtualcell_vcell_opt_latest.img [OPTIONS] optProblem.json results.json"
+	echo "usage: docker run --rm -e v1=a -e v2=b -v /host/path/to/file:/simdata ghcr.io/virtualcell/vcell-opt:latest [OPTIONS] optProblem.json results.json report.txt"
+	echo "  or   singularity run --bind /host/path/to/file:/simdata ghcr_io_virtualcell_vcell_opt_latest.img [OPTIONS] optProblem.json results.json report.txt"
 	echo "  [OPTIONS]"
 	echo "    -h | --help                  show this message"
 	echo "    -e | --env var=value         add environment variable (needed for Singularity only)"

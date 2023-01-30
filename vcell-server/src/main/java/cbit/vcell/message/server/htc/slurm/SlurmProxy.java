@@ -1073,7 +1073,8 @@ public class SlurmProxy extends HtcProxy {
 	}
 
 	@Override
-	public HtcJobID submitOptimizationJob(String jobName, File sub_file_internal, File sub_file_external,File optProblemInput,File optProblemOutput) throws ExecutableException{
+	public HtcJobID submitOptimizationJob(String jobName, File sub_file_internal, File sub_file_external,
+										  File optProblemInputFile,File optProblemOutputFile,File optReportFile) throws ExecutableException{
 		try {
 			if (LG.isDebugEnabled()) {
 				LG.debug("generating local SLURM submit script for jobName="+jobName);
@@ -1081,8 +1082,9 @@ public class SlurmProxy extends HtcProxy {
 //			String text = generateScript(jobName, commandSet, ncpus, memSizeMB, postProcessingCommands, simTask);
 			LG.info("sub_file_internal: "+sub_file_internal.getAbsolutePath());
 			LG.info("sub_file_external: "+sub_file_external.getAbsolutePath());
-			LG.info("optProblemInput: "+optProblemInput.getAbsolutePath());
-			LG.info("optProblemOutput: "+optProblemOutput.getAbsolutePath());
+			LG.info("optProblemInput: "+optProblemInputFile.getAbsolutePath());
+			LG.info("optProblemOutput: "+optProblemOutputFile.getAbsolutePath());
+			LG.info("optReport: "+optReportFile.getAbsolutePath());
 
 			String primaryDataDirInternal = PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirInternalProperty);
 			String primaryDataDirExternal = PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirExternalProperty);
@@ -1105,7 +1107,7 @@ public class SlurmProxy extends HtcProxy {
 
 			LineStringBuilder lsb = new LineStringBuilder();
 			slurmScriptInit(jobName, false, memoryMBAllowed, lsb);
-			File optDataDir = optProblemInput.getParentFile();
+			File optDataDir = optProblemInputFile.getParentFile();
 			File optDataDirExternal = new File(optDataDir.getAbsolutePath().replace(primaryDataDirInternal, primaryDataDirExternal));
 			if (!optDataDirExternal.exists() && !optDataDirExternal.mkdir()){
 				LG.error("failed to make optimization data directory "+optDataDir.getAbsolutePath());
@@ -1121,9 +1123,10 @@ public class SlurmProxy extends HtcProxy {
 			lsb.append("echo command = ");
 			lsb.write("${cmd_prefix}" + "");
 
-			String optProblemInput_container_filename = optProblemInput.getAbsolutePath().replace(optProblemInput.getParent(),"/simdata");
-			String optProblemOutput_container_filename = optProblemOutput.getAbsolutePath().replace(optProblemOutput.getParent(),"/simdata");
-			lsb.write("${cmd_prefix} " + optProblemInput_container_filename+" " + optProblemOutput_container_filename);
+			String optProblemInput_container_filename = optProblemInputFile.getAbsolutePath().replace(optProblemInputFile.getParent(),"/simdata");
+			String optProblemOutput_container_filename = optProblemOutputFile.getAbsolutePath().replace(optProblemOutputFile.getParent(),"/simdata");
+			String optReport_container_filename = optReportFile.getAbsolutePath().replace(optReportFile.getParent(),"/simdata");
+			lsb.write("${cmd_prefix} " + optProblemInput_container_filename + " " + optProblemOutput_container_filename + " " + optReport_container_filename);
 
 			File tempFile = File.createTempFile("tempSubFile", ".sub");
 

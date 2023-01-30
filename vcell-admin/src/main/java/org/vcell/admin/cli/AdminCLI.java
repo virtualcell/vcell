@@ -8,6 +8,7 @@ import org.vcell.admin.cli.db.DatabaseCompareSchemaCommand;
 import org.vcell.admin.cli.db.DatabaseDestroyAndRecreateCommand;
 import org.vcell.admin.cli.mathverifier.ModeldbMathGenTestCommand;
 import org.vcell.admin.cli.mathverifier.ModeldbLoadTestCommand;
+import org.vcell.admin.cli.tools.UsageCommand;
 import org.vcell.util.document.KeyValue;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
@@ -18,7 +19,8 @@ import picocli.CommandLine.Command;
         ModeldbMathGenTestCommand.class,
         DatabaseCompareSchemaCommand.class,
         DatabaseDestroyAndRecreateCommand.class,
-        CommandLine.HelpCommand.class
+        UsageCommand.class,
+        CommandLine.HelpCommand.class,
 })
 public class AdminCLI {
 

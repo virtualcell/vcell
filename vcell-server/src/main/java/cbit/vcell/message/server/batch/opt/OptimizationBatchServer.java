@@ -10,6 +10,7 @@ import org.apache.logging.log4j.Logger;
 import org.vcell.optimization.CopasiUtils;
 import org.vcell.optimization.OptMessage;
 import org.vcell.optimization.jtd.OptProblem;
+import org.vcell.optimization.jtd.OptProgressReport;
 import org.vcell.optimization.jtd.Vcellopt;
 import org.vcell.util.exe.ExecutableException;
 
@@ -91,27 +92,34 @@ public class OptimizationBatchServer {
                             // else ask the batch system for the status
                             HtcJobStatus htcJobStatus = optServerGetJobStatus(optServerJobInfo.getHtcJobInfo());
                             if (htcJobStatus == null) {//pending
-                                oos.writeObject(new OptMessage.OptJobStatusResponseMessage(jobQuery, OptMessage.OptJobMessageStatus.QUEUED, "queued"));
+                                oos.writeObject(new OptMessage.OptJobStatusResponseMessage(jobQuery, OptMessage.OptJobMessageStatus.QUEUED, "queued", null));
                                 oos.flush();
                                 lg.info("returned status of " + OptMessage.OptJobMessageStatus.QUEUED + " for job optID=" + optCommandMessage.optID);
                             } else {
                                 if (htcJobStatus.isFailed()) {
                                     String errorMsg = "slurm job " + optServerJobInfo.getHtcJobInfo().getHtcJobID() + " failed";
                                     oos.writeObject(new OptMessage.OptJobStatusResponseMessage(
-                                            jobQuery, OptMessage.OptJobMessageStatus.FAILED, errorMsg));
+                                            jobQuery, OptMessage.OptJobMessageStatus.FAILED, errorMsg,null));
                                     oos.flush();
                                     lg.error(errorMsg);
                                     throw new Exception(errorMsg);
                                 } else if (htcJobStatus.isComplete()) { // but file not found yet
                                     String optID = optCommandMessage.optID;
                                     String errMsg = "job optID=" + optID + " status is COMPLETE but result file "+generateOptOutputFilePath(optID)+" not found yet";
-                                    oos.writeObject(new OptMessage.OptJobStatusResponseMessage(jobQuery, OptMessage.OptJobMessageStatus.RUNNING, errMsg));
+                                    String progressReportJsonString = getProgressReportJsonString(optID);
+                                    oos.writeObject(new OptMessage.OptJobStatusResponseMessage(
+                                            jobQuery, OptMessage.OptJobMessageStatus.RUNNING, errMsg, progressReportJsonString));
                                     oos.flush();
                                     lg.error(errMsg);
                                 } else {//running
+                                    String optID = optCommandMessage.optID;
                                     String msg = "slurm job " + optServerJobInfo.getHtcJobInfo().getHtcJobID() + " running";
+                                    String progressReportJsonString = getProgressReportJsonString(optID);
+                                    if (progressReportJsonString == null) {
+                                        lg.warn("failed to read progress report for optID="+optID);
+                                    }
                                     oos.writeObject(new OptMessage.OptJobStatusResponseMessage(
-                                            jobQuery, OptMessage.OptJobMessageStatus.RUNNING, msg));
+                                            jobQuery, OptMessage.OptJobMessageStatus.RUNNING, msg, progressReportJsonString));
                                     oos.flush();
                                     lg.info(msg);
                                 }
@@ -125,42 +133,7 @@ public class OptimizationBatchServer {
                             String optID = optServerJobInfo.getOptID();
                             oos.writeObject(new OptMessage.OptJobRunResponseMessage(optID, runCommand));
                             oos.flush();
-                        }
-                        // don't yet have intermediate status
-//                        else {
-//                            // assume this string is a status query
-//                            String optID = obj.toString();
-//                            if (sendOptResults(optID, oos)) {
-//                                return;
-//                            }
-//                            File f = generateOptInterresultsFilePath(optID);
-//                            boolean bExist = hackFileExists(f);//make container read results status
-//                            long lastModified = f.lastModified();
-//                            if (lastModified == 0 && (System.currentTimeMillis() - jobStart) > 60000) {
-//                                throw new Exception("results progress timed out");
-//                            } else if (lastModified != 0 && (lastModified - jobStart) > 60000) {
-//                                throw new Exception("results progress timed out");
-//                            } else if (lastModified != 0) {
-//                                jobStart = lastModified;
-//                            }
-//                            if (bExist/*f.exists()*/) {
-//                                List<String> progressLines = Files.readAllLines(f.toPath());
-//                                if (progressLines != null && progressLines.size() > 0) {
-//                                    String optRunstatus = progressLines.get(progressLines.size() - 1);
-//                                    if (optRunstatus.toLowerCase().trim().startsWith("except")) {
-//                                        throw new Exception("python script error " + optRunstatus);
-//                                    }
-//                                    optRunstatus = VcelloptStatus.RUNNING.name() + ":" + optRunstatus;
-//                                    oos.writeObject(optRunstatus);
-//                                } else {
-//                                    oos.writeObject(VcelloptStatus.QUEUED.name() + ":0:0:0");
-//                                }
-//
-//                            } else {
-//                                oos.writeObject(VcelloptStatus.QUEUED.name() + ":0:0:0");
-//                            }
-//
-                        else {
+                        } else {
                             throw new Exception("Unexpected command " + optCommandMessage);
                         }
                     } catch (SocketException | EOFException e) {
@@ -201,6 +174,17 @@ public class OptimizationBatchServer {
         }
     }
 
+    private String getProgressReportJsonString(String optID) throws IOException {
+        String progressReportJsonString = null;
+        OptProgressReport progressReport = getProgressReport(optID);
+        lg.info(CopasiUtils.progressReportString(progressReport));
+        if (progressReport != null){
+            ObjectMapper objectMapper = new ObjectMapper();
+            progressReportJsonString = objectMapper.writeValueAsString(progressReport);
+        }
+        return progressReportJsonString;
+    }
+
     public OptimizationBatchServer(HtcProxy.HtcProxyFactory htcProxyFactory){
         this.htcProxyFactory = htcProxyFactory;
     }
@@ -239,6 +223,15 @@ public class OptimizationBatchServer {
         return null;
     }
 
+    private OptProgressReport getProgressReport(String optID) throws IOException {
+        File f = generateOptReportFilePath(optID);
+        if (f.exists()) { // opt has report (may still be open for reading)
+            return CopasiUtils.readProgressReportFromCSV(f);
+        }else {
+            return null;
+        }
+    }
+
     private OptServerJobInfo submitOptProblem(OptProblem optProblem) throws IOException, ExecutableException {
         HtcProxy htcProxyClone = getHtcProxy().cloneThreadsafe();
         File htcLogDirExternal = new File(PropertyLoader.getRequiredProperty(PropertyLoader.htcLogDirExternal));
@@ -249,6 +242,7 @@ public class OptimizationBatchServer {
         File sub_file_internal = new File(htcLogDirInternal, optSubFileName);
         File optProblemFile = generateOptProblemFilePath(optID+"");
         File optOutputFile = generateOptOutputFilePath(optID+"");
+        File optReportFile = generateOptReportFilePath(optID+"");
         CopasiUtils.writeOptProblem(optProblemFile, optProblem);//save param optimization problem to user dir
         //make sure all can read and write
         File optDir = generateOptimizeDirName(optID+"");
@@ -256,7 +250,7 @@ public class OptimizationBatchServer {
         optDir.setWritable(true,false);
 
         String slurmOptJobName = generateOptFilePrefix(optID+"");
-        HtcJobID htcJobID = htcProxyClone.submitOptimizationJob(slurmOptJobName, sub_file_internal, sub_file_external,optProblemFile,optOutputFile);
+        HtcJobID htcJobID = htcProxyClone.submitOptimizationJob(slurmOptJobName, sub_file_internal, sub_file_external,optProblemFile,optOutputFile,optReportFile);
         return new OptServerJobInfo(optID+"", new HtcProxy.HtcJobInfo(htcJobID, slurmOptJobName));
     }
     private void optServerStopJob(OptServerJobInfo optServerJobInfo) {
@@ -316,6 +310,10 @@ public class OptimizationBatchServer {
     }
     private File generateOptOutputFilePath(String optID) {
         String optOutputFileName = generateOptFilePrefix(optID)+"_optRun.json";
+        return new File(generateOptimizeDirName(optID), optOutputFileName);
+    }
+    private File generateOptReportFilePath(String optID) {
+        String optOutputFileName = generateOptFilePrefix(optID)+"_optReport.txt";
         return new File(generateOptimizeDirName(optID), optOutputFileName);
     }
     private File generateOptProblemFilePath(String optID) {

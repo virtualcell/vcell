@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 
-if (( $# < 2 )); then
-    echo "expecting at least two parameters (e.g. optProblem.json and results.json)"
+if (( $# < 3 )); then
+    echo "expecting at least three parameters (e.g. optProblem.json results.json report.txt)"
     exit 2
 fi
 
 optFile=$1
 resultsFile=$2
+reportFile=$3
 
-docker run -it --rm -v $PWD:/data/ vcell_opt /data/${optFile} /data/${resultsFile}
+docker run -it --rm -v $PWD:/data/ vcell_opt /data/${optFile} /data/${resultsFile} /data/${reportFile}
