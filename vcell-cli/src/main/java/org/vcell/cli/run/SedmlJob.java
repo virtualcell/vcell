@@ -285,7 +285,7 @@ public class SedmlJob {
         }
 
         // This may no longer make sense, as we could have multiple hdf5 reports, and renaming would be complicated.
-        //Files.copy(new File(outDirForCurrentSedml,"reports.h5").toPath(),Paths.get(this.resultsDirPath,"reports.h5"));
+        Files.copy(new File(outDirForCurrentSedml,"reports.h5").toPath(),Paths.get(this.resultsDirPath,"reports.h5"));
 
         // archiving result files
         logger.info("Archiving result files");
