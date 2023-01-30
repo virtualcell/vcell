@@ -76,6 +76,7 @@ import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.mapping.TaskCallbackMessage.TaskCallbackStatus;
 import cbit.vcell.mapping.gui.MolecularTypeSpecsTableModel;
 import cbit.vcell.mapping.gui.SpeciesContextSpecsTableModel;
+import cbit.vcell.mapping.gui.StructureMappingTableModel;
 import cbit.vcell.mapping.gui.SpeciesContextSpecsTableModel.ColumnType;
 import cbit.vcell.mapping.gui.StructureMappingTableRenderer.TextIcon;
 import cbit.vcell.model.Model;
@@ -458,6 +459,26 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 				return this;
 			}
 		};
+		
+		DefaultScrollTableCellRenderer structuresTableCellRenderer = new DefaultScrollTableCellRenderer() {
+			final Color lightBlueBackground = new Color(214, 234, 248);
+			@Override
+			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
+					int row, int column) {
+				super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+				
+				if (table.getModel() instanceof MolecularTypeSpecsTableModel) {
+					MolecularTypeSpecsTableModel molecularTypeSpecsTableModel = (MolecularTypeSpecsTableModel)table.getModel();
+					if (value instanceof Structure) {
+						Structure structure = (Structure)value;
+						setText(structure.getName());
+					} else {
+						setText(value.toString());
+					}
+				}
+				return this;
+			}
+		};
 
 		getSpeciesContextSpecsTable().setDefaultRenderer(SpeciesContext.class, renderer);
 		getSpeciesContextSpecsTable().setDefaultRenderer(Structure.class, renderer);
@@ -619,6 +640,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		linksPanel.add(addLinkButton, gbc);
 		
 		getMolecularTypeSpecsTable().setDefaultRenderer(String.class, new DefaultScrollTableCellRenderer());
+		getMolecularTypeSpecsTable().setDefaultRenderer(Structure.class, structuresTableCellRenderer);
 		
 		
 		

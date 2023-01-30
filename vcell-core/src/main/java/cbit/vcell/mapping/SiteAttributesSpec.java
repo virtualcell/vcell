@@ -37,8 +37,9 @@ public class SiteAttributesSpec implements Identifiable {
 	// the ComponentStatePattern must not be Any; can be recovered from the MolecularComponentPattern
 	// the BondType must be None, can be recovered from the MolecularComponentPattern
 	
-	public SiteAttributesSpec(MolecularComponentPattern mcp) {
+	public SiteAttributesSpec(MolecularComponentPattern mcp, Structure structure) {
 		setMolecularComponentPattern(mcp);
+		setLocation(structure);
 	}
 	public SiteAttributesSpec(MolecularComponentPattern mcp, double radius, double diffusion, Structure location, Coordinate coordinate, Color color) {
 		setMolecularComponentPattern(mcp);
