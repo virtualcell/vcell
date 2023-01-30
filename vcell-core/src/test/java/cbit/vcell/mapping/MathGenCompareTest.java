@@ -126,12 +126,9 @@ public class MathGenCompareTest {
 		faults.put("lumped_reaction_proper_size_in_rate.vcml:Application0", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION); // (not saved): expressions are different: ' - (3.321077566325453E-8 * s1)' vs ' - (0.001660538783162726 * s1)'
 		faults.put("biomodel_47429473.vcml:NWASP at Lam Tip in 3D Geometry", MathCompareResults.Decision.MathDifferent_DIFFERENT_FASTINV_EXPRESSION); // (les:6:2010-08-12:Public): could not find a match for fast invariant expression'Expression@b29ced42 '(BarbedD_Cyt - Prof_Cyt + BarbedDPi_Cyt + BarbedT_Cyt)''
 		faults.put("biomodel_55178308.vcml:Spatial 1 - 3D -  electrophysiology", MathCompareResults.Decision.MathDifferent_FAILURE_UNKNOWN); // (Brown:26331356:2011-03-12:Private): line #630 Exception: variable Na not defined
-		faults.put("biomodel_83651737.vcml:pde", MathCompareResults.Decision.MathDifferent_DIFFERENT_PostProcessingBlock); // (schaff:17:2013-08-02:Public): Post processing block does not match
 		faults.put("biomodel_97075423.vcml:NFSim", MathCompareResults.Decision.MathDifferent_LEGACY_SYMMETRY_PARTICLE_JUMP_PROCESS); // (mblinov:12487253:2015-10-07:Private): PJP='r1', ProcessSymmetryFactor: old='1.0', new='0.5'
 		faults.put("biomodel_97705317.vcml:NFSim app", MathCompareResults.Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS); // (BioNetGen:95093638:2015-11-23:Public): PJP='r10', SymmetryFactor: old='0.5' new='0.5', rate: old='[0.0016611295681063123]', new='[0.0033222591362126247]'
 		faults.put("biomodel_97786619.vcml:NFSim app", MathCompareResults.Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS); // (BioNetGen:95093638:2015-12-02:Public): PJP='r10', SymmetryFactor: old='0.5' new='0.5', rate: old='[0.0016611295681063123]', new='[0.0033222591362126247]'
-		faults.put("biomodel_97786886.vcml:pde", MathCompareResults.Decision.MathDifferent_DIFFERENT_PostProcessingBlock); // (schaff:17:2015-12-02:Public): Post processing block does not match
-		faults.put("biomodel_97787114.vcml:pde", MathCompareResults.Decision.MathDifferent_DIFFERENT_PostProcessingBlock); // (schaff:17:2015-12-02:Public): Post processing block does not match
 
 		// Private Hybrid models (files not committed to repo)
 		faults.put("biomodel_100059482.vcml:3D hybrid", MathCompareResults.Decision.MathDifferent_LEGACY_RATE_PARTICLE_JUMP_PROCESS); // (gerardw:81356985:2016-05-20:Group=[fgao(6606010),schaff(17)]): PJP='flux0_reverse', old='[(2.0 * RanC_nuc)]', new='[(1204.0 * RanC_nuc)]'
@@ -139,7 +136,6 @@ public class MathGenCompareTest {
 		faults.put("biomodel_102370928.vcml:single cycle_hybrid_stirred", MathCompareResults.Decision.MathDifferent_LEGACY_RATE_PARTICLE_JUMP_PROCESS); // (boris:21:2016-09-15:Private): PJP='r0', old='[(1.920265780730897E-4 * S)]', new='[(0.1156 * S)]'
 		faults.put("biomodel_111277118.vcml:single cycle_hybrid_stirred", MathCompareResults.Decision.MathDifferent_FAILURE_UNKNOWN); // (boris:21:2017-04-14:Group=[DCResasco(14570623),schaff(17)]): infinite loop in eliminating function nesting
 		faults.put("biomodel_111277118.vcml:Copy of single cycle_hybrid_stirred", MathCompareResults.Decision.MathDifferent_FAILURE_UNKNOWN); // (boris:21:2017-04-14:Group=[DCResasco(14570623),schaff(17)]):
-		faults.put("biomodel_205139889.vcml:pde", MathCompareResults.Decision.MathDifferent_DIFFERENT_PostProcessingBlock); // (user_4:203957850:2021-04-22:Private): Post processing block does not match
 		faults.put("biomodel_82456311.vcml:smoldyn", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_PARTICLE_JUMP_PROCESS); // (schaff:17:2013-05-30:Private): removed PJPs=[], added PJPs=[r0_reverse, r0]
 		faults.put("biomodel_82456311.vcml:hybrid", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION); // (schaff:17:2013-05-30:Private): expressions are different: ' - ((s0 * s2) - (2.0 * s1))' vs ' - ((0.0016611295681063123 * s0 * s2) - (0.0033222591362126247 * s1))'
 		faults.put("biomodel_82456701.vcml:smoldyn", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_PARTICLE_JUMP_PROCESS); // (schaff:17:2013-05-30:Private): removed PJPs=[], added PJPs=[r0_reverse, r0]

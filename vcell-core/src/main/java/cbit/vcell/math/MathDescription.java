@@ -2721,6 +2721,10 @@ void makeCanonical(MathSymbolTableFactory mathSymbolTableFactory) throws MathExc
 			((RandomVariable)var).flatten(mathSymbolTable,bRoundCoefficients);
 		}
 	}
+
+	if (postProcessingBlock!=null){
+		postProcessingBlock.flatten(mathSymbolTable,bRoundCoefficients);
+	}
 	
 	//
 	// for each subdomain, substitute all rates, initial conditions, boundary conditions, jump conditions
