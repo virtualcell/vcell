@@ -35,6 +35,7 @@ public class MathCompareResults {
 		MathDifferent_DIFFERENT_PARTICLE_PROPERTIES(false,"MathDifferent:DifferentParticleProperties"),
 		MathDifferent_DIFFERENT_NUMBER_OF_PARTICLE_JUMP_PROCESS(false,"MathDifferent:DifferentNumParticleJumpProcs"),
 		MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS(false,"MathDifferent:DifferentParticleJumpProc"),
+		MathDifferent_LEGACY_PARTICLE_JUMP_PROCESS(false,"MathDifferent:LegacyParticleJumpProc"),
 		MathDifferent_DIFFERENT_VARIABLE_IN_EQUATION(false,"MathDifferent:DifferentVariableInEquation"),
 
 		MathDifferent_DIFFERENT_NUMBER_OF_EXPRESSIONS(false,"MathDifferent:DifferentNumberOfExpressions"),
@@ -94,7 +95,23 @@ public class MathCompareResults {
 			return decision.description+":";
 		}
 	}
-	
+
+	public String toCause() {
+		StringBuffer buffer = new StringBuffer();
+		if (details!=null){
+			buffer.append(details);
+		}
+		if (varsNotFoundMath1!=null && varsNotFoundMath1.size()>0){
+			buffer.append(" varsNotFound1="+varsNotFoundMath1);
+		}
+		if (varsNotFoundMath2!=null && varsNotFoundMath2.size()>0){
+			buffer.append(" varsNotFound2="+varsNotFoundMath2);
+		}
+		return buffer.toString();
+	}
+
+
+
 	public String toString(){
 		return toDatabaseStatus();
 	}
