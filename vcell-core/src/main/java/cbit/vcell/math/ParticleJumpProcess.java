@@ -136,7 +136,7 @@ public ParticleJumpProcess(String name, List<ParticleVariable> particles, JumpPr
 //	return processParticleMappings;
 //}
 //
-public void setProcessParticleMappings(ProcessSymmetryFactor processSymmetryFactor){	
+public void setProcessSymmetryFactor(ProcessSymmetryFactor processSymmetryFactor){
 	this.processSymmetryFactor = processSymmetryFactor;
 }
 
