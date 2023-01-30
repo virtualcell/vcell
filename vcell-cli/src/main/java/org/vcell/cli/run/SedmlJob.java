@@ -284,8 +284,8 @@ public class SedmlJob {
             return false;
         }
 
-        Files.move(new File(outDirForCurrentSedml,"reports.h5").toPath(),Paths.get(this.resultsDirPath,"reports.h5"));
-        org.apache.commons.io.FileUtils.deleteDirectory(this.plotsDirectory);    // removing temp path generated from python
+        // This may no longer make sense, as we could have multiple hdf5 reports, and renaming would be complicated.
+        //Files.copy(new File(outDirForCurrentSedml,"reports.h5").toPath(),Paths.get(this.resultsDirPath,"reports.h5"));
 
         // archiving result files
         logger.info("Archiving result files");
