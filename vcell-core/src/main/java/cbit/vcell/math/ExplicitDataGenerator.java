@@ -1,5 +1,6 @@
 package cbit.vcell.math;
 
+import cbit.vcell.parser.ExpressionException;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 
@@ -23,6 +24,13 @@ public class ExplicitDataGenerator extends DataGenerator {
 	public void bind(SymbolTable symbolTable) throws ExpressionBindingException {
 		if (expression!=null){
 			expression.bindExpression(symbolTable);
+		}
+	}
+
+	@Override
+	public void flatten(MathSymbolTable mathSymbolTable, boolean bRoundCoefficients) throws MathException, ExpressionException {
+		if (expression != null){
+			expression = Equation.getFlattenedExpression(mathSymbolTable, expression, bRoundCoefficients);
 		}
 	}
 

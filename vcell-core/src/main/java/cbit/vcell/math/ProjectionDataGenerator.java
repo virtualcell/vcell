@@ -11,6 +11,13 @@ import cbit.vcell.parser.SymbolTable;
 
 public class ProjectionDataGenerator extends DataGenerator {
 
+	@Override
+	public void flatten(MathSymbolTable mathSymbolTable, boolean bRoundCoefficients) throws MathException, ExpressionException {
+		if (function != null){
+			function = Equation.getFlattenedExpression(mathSymbolTable, function, bRoundCoefficients);
+		}
+	}
+
 	public enum Operation {
 		max,
 		min,
