@@ -2677,10 +2677,6 @@ public static void validateSimulationContextSupport(SimulationContext simulation
 		applicationTypeErrorMessage = "Application '" + simulationContext.getName() + "' has reaction rules, SBML Export is not supported";
 	}else {
 		switch (simulationContext.getApplicationType()) {
-			case SPRINGSALAD: {
-				applicationTypeErrorMessage = "Application '" + simulationContext.getName() + "' is a Spring Salad application, SBML Export is not supported";
-				break;
-			}
 			case NETWORK_DETERMINISTIC: {
 				break;
 			}
