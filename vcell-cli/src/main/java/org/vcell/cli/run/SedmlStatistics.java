@@ -114,8 +114,8 @@ public class SedmlStatistics {
      * @returns the relevant info as a comma separated list or an error message
      */
     public String toFormattedString(){
-        if (this.nModels < 0 && this.nSimulations < 0 && this.nTasks < 0 && this.nModels < 0 && 
-            this.nModels < 0 && this.nModels < 0 && this.nModels < 0) return "Processing incomplete; no reportable data.";
+        if (this.nModels == null && this.nSimulations == null && this.nTasks == null && this.nModels == null && 
+            this.nModels == null && this.nModels == null && this.nModels == null) return "Processing incomplete; no reportable data.";
         return String.format(
             "%d model%s, %d simulation%s, %d task%s, %d output%s, %d report%s, %d 2D plot%s, %d 3D plot%s, %s Math Overrides, %s Paramerter Scans", 
             this.getNumModels(), this.nModels != 1 ? "s" : "",
