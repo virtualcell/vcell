@@ -38,7 +38,6 @@ import cbit.vcell.client.desktop.biomodel.SelectionManager;
 import cbit.vcell.client.desktop.biomodel.SpatialObjectTableModel;
 import cbit.vcell.client.desktop.biomodel.SpatialProcessTableModel;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.mapping.gui.NetworkConstraintsTableModel;
 import cbit.vcell.mapping.spatial.PointObject;
 import cbit.vcell.mapping.spatial.SpatialObject;
@@ -164,9 +163,6 @@ public class DefaultScrollTableCellRenderer extends DefaultTableCellRenderer {
 					icon = VCellIcons.appStoSpatialIcon;
 		    		toolTipSuffix =  "Stochastic / Spatial";
 				}
-			} else if(simContext.getApplicationType() == Application.SPRINGSALAD) {
-				icon = VCellIcons.appSpringSaLaDSpatialIcon;
-				toolTipSuffix = "SpringSaLaD / Spatial";
 			} else {		// deterministic
 				if(simContext.getGeometry().getDimension() == 0) {
 					icon = VCellIcons.appDetNonspIcon;
