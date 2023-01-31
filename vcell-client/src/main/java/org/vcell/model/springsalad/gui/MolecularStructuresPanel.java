@@ -460,6 +460,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 			}
 		};
 		
+		// The Structures combobox cell renderer in the MolecularTypeSpecsTable
 		DefaultScrollTableCellRenderer structuresTableCellRenderer = new DefaultScrollTableCellRenderer() {
 			final Color lightBlueBackground = new Color(214, 234, 248);
 			@Override
@@ -640,9 +641,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		linksPanel.add(addLinkButton, gbc);
 		
 		getMolecularTypeSpecsTable().setDefaultRenderer(String.class, new DefaultScrollTableCellRenderer());
-		getMolecularTypeSpecsTable().setDefaultRenderer(Structure.class, structuresTableCellRenderer);
-		
-		
+		getMolecularTypeSpecsTable().setDefaultRenderer(Structure.class, structuresTableCellRenderer);	// The Structures combobox cell renderer
 		
 		
 		initConnections();		// adding listeners
@@ -1232,6 +1231,10 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 	}
 	
 	private void showLinkLength(MolecularInternalLinkSpec selectedValue) {
+		if(selectedValue == null) {
+			System.out.println("SelectedValue is null");
+			return;		// nothing selected
+		}
 		linkLengthField.setText(selectedValue.getLinkLength()+"");
 		
 	};
