@@ -158,7 +158,8 @@ public abstract class HtcProxy {
 	 */
 	public abstract HtcJobID submitJob(String jobName, File sub_file_internal, File sub_file_external, ExecutableCommand.Container commandSet,
 			int ncpus, double memSize, Collection<PortableCommand> postProcessingCommands, SimulationTask simTask,File primaryUserDirExternal) throws ExecutableException;
-	public abstract HtcJobID submitOptimizationJob(String jobName, File sub_file_internal, File sub_file_external,File optProblemInput,File optProblemOutput)throws ExecutableException;
+	public abstract HtcJobID submitOptimizationJob(String jobName, File sub_file_internal, File sub_file_external,
+												   File optProblemInputFile,File optProblemOutputFile,File optReportFile)throws ExecutableException;
 	public abstract HtcProxy cloneThreadsafe();
 
 	public abstract Map<HtcJobInfo,HtcJobStatus> getRunningJobs() throws ExecutableException, IOException;

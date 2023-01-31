@@ -183,9 +183,9 @@ public class SEDMLTags {
     public static final String SET_VALUE_KIND               = "SetValue";
 	public static final String DATAGEN_VARIABLE_KIND 		= "DataGenVariable";		// refers to a task
 	public static final String CHANGE_MATH_VARIABLE_KIND 	= "ChangeMathVariable";		// refers to a model
-	public static final String PLOT2D_KIND 					= "Plot2D";					// refers to a data generator
-	public static final String PLOT3D_KIND 					= "Plot3D";
-	public static final String REPORT_KIND 					= "Report";
+	public static final String PLOT2D_KIND 					= "SedPlot2D";					// refers to a data generator
+	public static final String PLOT3D_KIND 					= "SedPlot3D";
+	public static final String REPORT_KIND 					= "SedReport";
     public static final String SIMUL_UTC_KIND               = "uniformTimeCourse";
     public static final String SIMUL_OS_KIND                = "oneStep";
     public static final String SIMUL_SS_KIND                = "steadyState";

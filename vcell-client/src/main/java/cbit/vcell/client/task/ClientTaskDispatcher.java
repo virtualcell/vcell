@@ -253,13 +253,24 @@ public static BlockingTimer getBlockingTimer(Component requester,PDEDataContext 
 	return null;
 }
 
-/**
- * Insert the method's description here.
- * Creation date: (5/31/2004 5:37:06 PM)
- * @param tasks cbit.vcell.desktop.controls.ClientTask[]
- */
-public static void dispatch(final Component requester, final Hashtable<String, Object> hash, final AsynchClientTask[] tasks, final ProgressDialog customDialog,
-		final boolean bShowProgressPopup, final boolean bKnowProgress, final boolean cancelable, final ProgressDialogListener progressDialogListener, final boolean bInputBlocking) {
+public enum StopStrategy {
+	THREAD_INTERRUPT,
+	@Deprecated THREAD_KILL
+}
+
+public static void dispatch(final Component requester, final Hashtable<String, Object> hash, final AsynchClientTask[] tasks,
+								final ProgressDialog customDialog, final boolean bShowProgressPopup, final boolean bKnowProgress,
+								final boolean cancelable, final ProgressDialogListener progressDialogListener,
+								final boolean bInputBlocking) {
+	dispatch(requester, hash, tasks, customDialog, bShowProgressPopup, bKnowProgress, cancelable, progressDialogListener,
+			bInputBlocking, StopStrategy.THREAD_INTERRUPT);
+}
+
+
+public static void dispatch(final Component requester, final Hashtable<String, Object> hash, final AsynchClientTask[] tasks,
+							final ProgressDialog customDialog, final boolean bShowProgressPopup, final boolean bKnowProgress,
+							final boolean cancelable, final ProgressDialogListener progressDialogListener,
+							final boolean bInputBlocking, final StopStrategy stopStrategy) {
 	// check tasks - swing non-blocking can be only at the end
 		entryCounter++;
 	if(entryCounter>1){
@@ -302,6 +313,7 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 				} else {
 					pp = new AsynchProgressPopup(requester, customDialog, Thread.currentThread(), bInputBlocking, bKnowProgress, cancelable, progressDialogListener);
 				}
+				pp.setStopStrategy(stopStrategy);
 				if (bInputBlocking) {
 					pp.startKeepOnTop();
 				} else {

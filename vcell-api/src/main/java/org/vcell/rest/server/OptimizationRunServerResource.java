@@ -84,7 +84,7 @@ public class OptimizationRunServerResource extends AbstractServerResource implem
 
 	private String submitOptProblem(Representation optProblemJsonRep,ServerResource serverResource) throws ResourceException {
 		synchronized (paramOptActiveSockets) {
-			if (paramOptActiveSockets.size() >= 20) {
+			if (paramOptActiveSockets.size() >= 100) {
 				String[] keys = paramOptActiveSockets.keySet().toArray(new String[0]);
 				for (int i = 0; i < keys.length; i++) {
 					OptSocketStreams optSocketStreams = paramOptActiveSockets.get(keys[i]);
@@ -110,7 +110,7 @@ public class OptimizationRunServerResource extends AbstractServerResource implem
 						optSocketStreams.closeAll(optSocketStreams.optID);
 					}
 				}
-				if (paramOptActiveSockets.size() >= 20) {
+				if (paramOptActiveSockets.size() >= 100) {
 					throw new ResourceException(Status.SERVER_ERROR_INTERNAL, "Too many active optimization jobs, try again later");
 				}
 			}
@@ -232,7 +232,11 @@ public class OptimizationRunServerResource extends AbstractServerResource implem
 							throw new RuntimeException("status request failed for optID="+optID+": "+errorResponse.errorMessage);
 						}else if (response instanceof OptMessage.OptJobStatusResponseMessage){
 							OptMessage.OptJobStatusResponseMessage statusResponse = (OptMessage.OptJobStatusResponseMessage) response;
-							return new JsonRepresentation(statusResponse.status.name()+":");
+							if (statusResponse.progressReportJsonString==null) {
+								return new JsonRepresentation(statusResponse.status.name() + ":");
+							}else{
+								return new JsonRepresentation(statusResponse.progressReportJsonString);
+							}
 						}else if (response instanceof OptMessage.OptJobSolutionResponseMessage){
 							OptMessage.OptJobSolutionResponseMessage solutionResponse = (OptMessage.OptJobSolutionResponseMessage) response;
 							return new JsonRepresentation(solutionResponse.optRunJsonString);

@@ -17,6 +17,9 @@ public class OptResultSet {
     @JsonProperty("optParameterValues")
     private Map<String, Double> optParameterValues;
 
+    @JsonProperty("optProgressReport")
+    private OptProgressReport optProgressReport;
+
     public OptResultSet() {
     }
 
@@ -60,5 +63,19 @@ public class OptResultSet {
      */
     public void setOptParameterValues(Map<String, Double> optParameterValues) {
         this.optParameterValues = optParameterValues;
+    }
+
+    /**
+     * Getter for optProgressReport.<p>
+     */
+    public OptProgressReport getOptProgressReport() {
+        return optProgressReport;
+    }
+
+    /**
+     * Setter for optProgressReport.<p>
+     */
+    public void setOptProgressReport(OptProgressReport optProgressReport) {
+        this.optProgressReport = optProgressReport;
     }
 }

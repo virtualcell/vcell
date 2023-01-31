@@ -99,11 +99,15 @@ public class OptMessage implements Serializable {
     public static class OptJobStatusResponseMessage extends OptResponseMessage {
         public final OptJobMessageStatus status;
         public final String statusMessage;
+        public final String progressReportJsonString;
+
         public OptJobStatusResponseMessage(OptJobQueryCommandMessage optJobQueryCommandMessage,
-                                           OptJobMessageStatus status, String statusMessage) {
+                                           OptJobMessageStatus status, String statusMessage,
+                                           String progressReportJsonString) {
             super(optJobQueryCommandMessage);
             this.status = status;
             this.statusMessage = statusMessage;
+            this.progressReportJsonString = progressReportJsonString;
         }
         public String toString() {
             return super.toString() + "(id="+optID+", status='"+status+", statusMessage='"+statusMessage+"')";

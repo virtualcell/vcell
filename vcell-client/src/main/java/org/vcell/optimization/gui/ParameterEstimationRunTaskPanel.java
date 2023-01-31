@@ -10,65 +10,17 @@
 
 package org.vcell.optimization.gui;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.EventObject;
-import java.util.Hashtable;
-import java.util.List;
-
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.border.TitledBorder;
-
-import cbit.vcell.client.TopLevelWindowManager;
-import cbit.vcell.client.server.ClientServerInfo;
-import org.vcell.client.logicalwindow.LWContainerHandle;
-import org.vcell.client.logicalwindow.LWNamespace;
-import org.vcell.optimization.CopasiOptSolverCallbacks;
-import org.vcell.optimization.CopasiOptimizationSolver;
-import org.vcell.optimization.ParameterEstimationTaskSimulatorIDA;
-import org.vcell.util.BeanUtils;
-import org.vcell.util.Issue;
-import org.vcell.util.IssueContext;
-import org.vcell.util.ProgressDialogListener;
-import org.vcell.util.UtilCancelException;
-import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.GuiUtils;
-import org.vcell.util.gui.HyperLinkLabel;
-import org.vcell.util.gui.ProgressDialog;
-import org.vcell.util.gui.ScrollTable;
-
+import cbit.plot.Plot2D;
+import cbit.plot.PlotData;
+import cbit.plot.gui.Plot2DPanel;
 import cbit.vcell.client.ClientRequestManager;
+import cbit.vcell.client.TopLevelWindowManager;
 import cbit.vcell.client.VCellLookAndFeel;
 import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
+import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.vcell.mapping.MathMappingCallbackTaskAdapter;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
@@ -81,22 +33,38 @@ import cbit.vcell.modelopt.ParameterEstimationTask;
 import cbit.vcell.modelopt.ReferenceDataMappingSpec;
 import cbit.vcell.modelopt.gui.MultisourcePlotListModel.SortDataReferenceHelper;
 import cbit.vcell.modelopt.gui.MultisourcePlotPane;
-import cbit.vcell.opt.CopasiOptSettings;
-import cbit.vcell.opt.CopasiOptimizationMethod;
+import cbit.vcell.opt.*;
 import cbit.vcell.opt.CopasiOptimizationMethod.CopasiOptimizationMethodType;
-import cbit.vcell.opt.CopasiOptimizationParameter;
-import cbit.vcell.opt.OptimizationException;
-import cbit.vcell.opt.OptimizationResultSet;
-import cbit.vcell.opt.OptimizationSolverSpec;
-import cbit.vcell.opt.OptimizationSpec;
-import cbit.vcell.opt.ReferenceData;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.ode.ODESolverResultSet;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.vcell.client.logicalwindow.LWContainerHandle;
+import org.vcell.client.logicalwindow.LWNamespace;
+import org.vcell.optimization.CopasiOptSolverCallbacks;
+import org.vcell.optimization.CopasiOptimizationSolver;
+import org.vcell.optimization.CopasiUtils;
+import org.vcell.optimization.ParameterEstimationTaskSimulatorIDA;
+import org.vcell.optimization.jtd.OptProgressItem;
+import org.vcell.optimization.jtd.OptProgressReport;
+import org.vcell.util.*;
+import org.vcell.util.gui.*;
+
+import javax.swing.*;
+import javax.swing.border.TitledBorder;
+import java.awt.*;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.beans.PropertyChangeListener;
+import java.util.List;
+import java.util.*;
 
 @SuppressWarnings("serial")
 public class ParameterEstimationRunTaskPanel extends JPanel {
+	private final static Logger lg = LogManager.getLogger(ParameterEstimationRunTaskPanel.class);
 
 	private JTextArea optimizeResultsTextArea = null;
 	private JComboBox<CopasiOptimizationMethodType> optimizationMethodComboBox = null;
@@ -132,6 +100,8 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 		private JTextField objectiveFunctionValueTextField = null;
 		private JTextField currentValueTextField = null;
 		private JLabel progressLabel;
+		private ParameterEstimationTask parameterEstimationTask = null;
+		private Plot2DPanel plot2DPanel = null;
 //		private JLabel numRunsLabel;
 		RunStatusProgressDialog(LWContainerHandle owner) {
 			super(owner);
@@ -154,7 +124,11 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 
 			currentValueTextField = new javax.swing.JTextField();
 			currentValueTextField.setEditable(false);
-			
+
+			plot2DPanel = new Plot2DPanel();
+//			plot2DPanel.setPlot2D(Plot2DPanel.getSamplePlot2D());
+			plot2DPanel.setBackground(Color.gray.brighter().brighter());
+
 			int gridy = 0;	//number of runs label
 //			numRunsLabel = new JLabel("");
 			java.awt.GridBagConstraints gbc = new java.awt.GridBagConstraints();
@@ -194,7 +168,24 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 			gbc.weightx = 1.0;
 			gbc.insets = new java.awt.Insets(4, 4, 4, 4);
 			runStatusPanel.add(numEvaluationsTextField, gbc);
-			
+
+			gridy ++;
+			gbc = new java.awt.GridBagConstraints();
+			gbc.gridx = 0; gbc.gridy = gridy;
+			gbc.insets = new java.awt.Insets(4, 4, 4, 4);
+			gbc.anchor = GridBagConstraints.LINE_END;
+			runStatusPanel.add(new javax.swing.JLabel("log error vs evals: "), gbc);
+
+			gbc = new java.awt.GridBagConstraints();
+			//gbc.gridwidth = 2;
+			gbc.gridx = 1;
+			gbc.gridy = gridy;
+			gbc.insets = new java.awt.Insets(4, 4, 4, 4);
+			gbc.fill = GridBagConstraints.BOTH;
+			gbc.weightx = 1.0;
+			gbc.weighty = 1.0;
+			runStatusPanel.add(plot2DPanel, gbc);
+
 			gridy ++;
 			gbc = new java.awt.GridBagConstraints();
 			gbc.gridx = 0; 
@@ -262,6 +253,30 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 			
 		}
 
+
+		public Plot2D getProgressPlot2D(OptProgressReport optProgressReport) {
+			if (optProgressReport==null || optProgressReport.getProgressItems()==null || optProgressReport.getProgressItems().size()==0){
+				return null;
+			}
+			PlotData plotData1 = getProgressPlotData(optProgressReport);
+			return new Plot2D(null,null,new String[] {"plot one"}, new PlotData[] {plotData1}, new String[] {"title", "X Data", "Y Data"}, new boolean[] {true});
+		}
+
+
+		public PlotData getProgressPlotData(OptProgressReport optProgressReport) {
+			OptProgressItem lastProgressItem = optProgressReport.getProgressItems().get(optProgressReport.getProgressItems().size()-1);
+			int size = optProgressReport.getProgressItems().size();
+			double[] xArray = new double[size];
+			double[] yArray = new double[size];
+			for (int i=0;i<size;i++){
+				xArray[i] = optProgressReport.getProgressItems().get(i).getNumFunctionEvaluations();
+				yArray[i] = Math.log10(optProgressReport.getProgressItems().get(i).getObjFuncValue());
+			}
+			PlotData plotData = new PlotData(xArray,yArray);
+			return plotData;
+		}
+
+
 		@Override
 		public void setCancelButtonVisible(boolean bVisible) {
 		}
@@ -270,6 +285,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 		public void setMessageImpl(String message) {
 //			numRunsLabel.setText(message);
 			getProgressBar().setString(message);
+			System.out.println(">>>>>>> "+message);
 		}
 		@Override
 		public void setProgress(int progress) {
@@ -311,6 +327,10 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 //				currentValueTextField.setVisible(true);
 //				break;
 			}
+		}
+
+		public void setPlot(Plot2D plot2D) {
+			plot2DPanel.setPlot2D(plot2D);
 		}
 	}
 
@@ -370,10 +390,15 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 		
 		public void refresh(OptimizationResultSet optimizationResultSet) {
 			ArrayList<OptimizationTaskSummary> list = new ArrayList<OptimizationTaskSummary>();
-			double objVal = optimizationResultSet.getOptSolverResultSet().getLeastObjectiveFunctionValue();
-			long numEval = optimizationResultSet.getOptSolverResultSet().getObjFunctionEvaluations();
-			list.add(new OptimizationTaskSummary("Objective Value", objVal));
-			list.add(new OptimizationTaskSummary("No. of Evaluations", numEval));
+			if (optimizationResultSet!=null) {
+				double objVal = optimizationResultSet.getOptSolverResultSet().getLeastObjectiveFunctionValue();
+				long numEval = optimizationResultSet.getOptSolverResultSet().getObjFunctionEvaluations();
+				list.add(new OptimizationTaskSummary("Objective Value", objVal));
+				list.add(new OptimizationTaskSummary("No. of Evaluations", numEval));
+			}else{
+				list.add(new OptimizationTaskSummary("Objective Value", Double.POSITIVE_INFINITY));
+				list.add(new OptimizationTaskSummary("No. of Evaluations", 0));
+			}
 			setData(list);
 		}
 
@@ -524,6 +549,9 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 			if (e.getSource() == getSolveButton()) {
 				ParameterEstimationRunTaskPanel.this.getRunStatusDialog().setProgress(0);
 				ParameterEstimationRunTaskPanel.this.getRunStatusDialog().setMessage("Starting...");
+				ParameterEstimationRunTaskPanel.this.getRunStatusDialog().setObjectFunctionValue(Double.POSITIVE_INFINITY);
+				ParameterEstimationRunTaskPanel.this.getRunStatusDialog().setNumEvaluations(0);
+				getRunStatusDialog().setPlot(null);
 				solve();
 			}else if (e.getSource() == getOptimizationMethodComboBox()) { 
 				optimizationMethodComboBox_ActionPerformed();	
@@ -539,16 +567,34 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (evt.getSource() == parameterEstimationTask && (evt.getPropertyName().equals("optimizationResultSet"))) 
 				optimizationResultSet_This();
-			if (evt.getSource() == optSolverCallbacks && (evt.getPropertyName().equals(CopasiOptSolverCallbacks.COPASI_EVALUATION_HOLDER))) { 
-				getRunStatusDialog().setNumEvaluations(optSolverCallbacks.getEvaluationCount());
-				getRunStatusDialog().setObjectFunctionValue(optSolverCallbacks.getObjectiveFunctionValue());
-//				getRunStatusDialog().setNumRunMessage(optSolverCallbacks.getRunNumber(), parameterEstimationTask.getOptimizationSolverSpec().getNumOfRuns());
-//				if (optimizationMethodParameterTableModel.copasiOptimizationMethod.getType().getProgressType() == CopasiOptSettings.CopasiOptProgressType.Progress) {
-					getRunStatusDialog().setProgress((int) (optSolverCallbacks.getRunNumber() * 100.0 /parameterEstimationTask.getOptimizationSolverSpec().getNumOfRuns()));
-//				}
-//				if (optimizationMethodParameterTableModel.copasiOptimizationMethod.getType().getProgressType() == CopasiOptSettings.CopasiOptProgressType.Current_Value) {
-//					getRunStatusDialog().setCurrentValue(optSolverCallbacks.getCurrentValue());
-//				}
+			if (evt.getSource() == optSolverCallbacks && (evt.getPropertyName().equals(CopasiOptSolverCallbacks.OPT_PROGRESS_REPORT))) {
+				try {
+					if (optSolverCallbacks.getProgressReport() != null) {
+						OptProgressReport optProgressReport = optSolverCallbacks.getProgressReport();
+						lg.info(CopasiUtils.progressReportString(optProgressReport));
+						if (optProgressReport == null || optProgressReport.getProgressItems() == null || optProgressReport.getProgressItems().size() == 0) {
+							getRunStatusDialog().setNumEvaluations(0);
+							getRunStatusDialog().setObjectFunctionValue(Double.POSITIVE_INFINITY);
+						} else {
+							OptProgressItem lastProgressItem = optProgressReport.getProgressItems().get(optProgressReport.getProgressItems().size() - 1);
+							getRunStatusDialog().setNumEvaluations(lastProgressItem.getNumFunctionEvaluations());
+							getRunStatusDialog().setObjectFunctionValue(lastProgressItem.getObjFuncValue());
+							getRunStatusDialog().setPlot(getRunStatusDialog().getProgressPlot2D(optProgressReport));
+						}
+					}
+				} catch (Exception e) {
+					lg.error(e);
+				}
+			}
+			if (evt.getSource() == optSolverCallbacks && (evt.getPropertyName().equals(CopasiOptSolverCallbacks.STOP_REQUESTED))) {
+				if (optSolverCallbacks.getProgressReport()!=null) {
+					try {
+						OptimizationResultSet optimizationResultSet = CopasiUtils.getOptimizationResultSet(parameterEstimationTask, optSolverCallbacks.getProgressReport());
+						parameterEstimationTask.setOptimizationResultSet(optimizationResultSet);
+					} catch (Exception e) {
+						lg.error(e);
+					}
+				}
 			}
 		}
 	}
@@ -748,7 +794,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 				solverPanel.add(helpButton, gbc);
 				
 			} catch (java.lang.Throwable ivjExc) {
-				handleException(ivjExc);
+				lg.error(ivjExc);
 			}
 		}
 		return solverPanel;
@@ -758,6 +804,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 		LWContainerHandle ch = LWNamespace.findLWOwner(this);
 		if (runStatusDialog == null) {
 			runStatusDialog = new RunStatusProgressDialog(ch);
+			runStatusDialog.setMinimumSize(new Dimension(300,350));
 		}	
 		return runStatusDialog;
 	}
@@ -820,7 +867,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 				solutionPanel.add(panel, gbc);
 
 			} catch (java.lang.Throwable ivjExc) {
-				handleException(ivjExc);
+				lg.error(ivjExc);
 			}
 		}
 		return solutionPanel;
@@ -836,7 +883,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 				optimizeResultsTextArea = new javax.swing.JTextArea(5,20);
 				optimizeResultsTextArea.setLineWrap(true);
 			} catch (java.lang.Throwable ivjExc) {
-				handleException(ivjExc);
+				lg.error(ivjExc);
 			}
 		}
 		return optimizeResultsTextArea;
@@ -852,7 +899,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 				plotButton = new JButton("Plot");
 				plotButton.setEnabled(false);
 			} catch (Throwable ivjExc) {
-				handleException(ivjExc);
+				lg.error(ivjExc);
 			}
 		}
 		return plotButton;
@@ -864,7 +911,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 //				evaluateConfidenceIntervalButton = new javax.swing.JButton("Confidence Interval");
 //				evaluateConfidenceIntervalButton.setEnabled(false);
 //			} catch (Throwable ivjExc) {
-//				handleException(ivjExc);
+//				lg.error(ivjExc);
 //			}
 //		}
 //		return evaluateConfidenceIntervalButton;
@@ -882,7 +929,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 				saveSolutionAsNewSimButton.setText("Create New Simulation from Solution...");
 				saveSolutionAsNewSimButton.setEnabled(false);
 			} catch (java.lang.Throwable ivjExc) {
-				handleException(ivjExc);
+				lg.error(ivjExc);
 			}
 		}
 		return saveSolutionAsNewSimButton;
@@ -897,7 +944,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 			try {
 				solveButton = new javax.swing.JButton("Solve by Copasi");
 			} catch (java.lang.Throwable ivjExc) {
-				handleException(ivjExc);
+				lg.error(ivjExc);
 			}
 		}
 		return solveButton;
@@ -925,7 +972,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 				optimizationMethodComboBox = new JComboBox<CopasiOptimizationMethodType>();
 				optimizationMethodComboBox.setName("SolverTypeComboBox");
 			} catch (Throwable ivjExc) {
-				handleException(ivjExc);
+				lg.error(ivjExc);
 			}
 		}
 		return optimizationMethodComboBox;
@@ -953,15 +1000,6 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 		return numberOfRunComboBox;
 	}
 
-	/**
-	 * Called whenever the part throws an exception.
-	 * @param exception java.lang.Throwable
-	 */
-	private void handleException(Throwable exception) {
-		System.out.println("--------- UNCAUGHT EXCEPTION ---------");
-		exception.printStackTrace(System.out);
-	}
-
 
 	/**
 	 * Comment
@@ -969,14 +1007,14 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 	private void optimizationResultSet_This() 
 	{
 		OptimizationResultSet optResultSet = parameterEstimationTask.getOptimizationResultSet();
-		optimizationSolutionParameterTableModel.refresh(optResultSet, parameterEstimationTask);
-		optimizationTaskSummaryTableModel.refresh(optResultSet);
-		if(optResultSet.getOptSolverResultSet().getOptimizationStatus()!= null)
-		{
-			String message = displayResults(optResultSet);
-			parameterEstimationTask.appendSolverMessageText("\n"+message);
-		}
 		if (optResultSet!=null){
+			optimizationSolutionParameterTableModel.refresh(optResultSet, parameterEstimationTask);
+			optimizationTaskSummaryTableModel.refresh(optResultSet);
+			if(optResultSet.getOptSolverResultSet().getOptimizationStatus()!= null)
+			{
+				String message = displayResults(optResultSet);
+				parameterEstimationTask.appendSolverMessageText("\n"+message);
+			}
 			getSaveSolutionAsNewSimButton().setEnabled(true);
 			getPlotButton().setEnabled(true);
 		}else{
@@ -1080,8 +1118,6 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 		parameterEstimationTask.setOptimizationSolverSpec(optSolverSpec);
 		parameterEstimationTask.getModelOptimizationSpec().setComputeProfileDistributions(computeProfileDistributionsCheckBox.isSelected());
 		optSolverCallbacks.reset();
-		Double endValue = com.getEndValue();
-		optSolverCallbacks.setEvaluation(0, Double.POSITIVE_INFINITY, 0, endValue, 0);
 		getRunStatusDialog().showProgressBar(com);//(endValue != null);
 
 		Collection<AsynchClientTask> taskList = ClientRequestManager.updateMath(this, parameterEstimationTask.getSimulationContext(), false, NetworkGenerationRequirements.ComputeFullStandardTimeout);
@@ -1116,6 +1152,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				// OptimizationResultSet optResultSet = CopasiOptimizationSolver.solveLocalPython(parameterEstimationTask);
 				ClientServerInfo clientServerInfo = TopLevelWindowManager.activeManager().getRequestManager().getClientServerInfo();
+				optSolverCallbacks.setProgressReport(new OptProgressReport());
 				OptimizationResultSet optResultSet = CopasiOptimizationSolver.solveRemoteApi(parameterEstimationTask,optSolverCallbacks,getClientTaskStatusSupport(), clientServerInfo);
 				hashTable.put(ORS_KEY, optResultSet);
 			}

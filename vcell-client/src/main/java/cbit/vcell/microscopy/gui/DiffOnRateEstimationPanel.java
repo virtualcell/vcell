@@ -339,7 +339,8 @@ public class DiffOnRateEstimationPanel extends JPanel
 			double bsDiffRate = 0;
 			//kon = 4*PI*D*R, D is sum of reactants' diff rates, R is sum of reactants' radius. 1/602.214179 is a conversion rate from um3/s to 1/(uM.s)
 			//double kon = 4*FRAPReacDiffEstimationGuidePanel.PI*(freeDiffRate+bsDiffRate)*(fRadius+bsRadius)/602.0;
-			double kon = 4*FRAPReacDiffEstimationGuidePanel.PI*(freeDiffRate+bsDiffRate)*(fRadius+bsRadius)*Model.reservedConstantsMap.get(ReservedSymbolRole.KMOLE);
+			double KMOLE_value = Double.parseDouble(new Model("").getReservedSymbolByRole(ReservedSymbolRole.KMOLE).getExpression().infix());
+			double kon = 4*FRAPReacDiffEstimationGuidePanel.PI*(freeDiffRate+bsDiffRate)*(fRadius+bsRadius)*KMOLE_value;
 			onRateValLabel.setText(NumberUtils.formatNumber(kon, 10));
 		}catch(NumberFormatException e)
 		{

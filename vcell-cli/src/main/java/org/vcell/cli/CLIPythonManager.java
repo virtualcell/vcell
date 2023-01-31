@@ -92,7 +92,7 @@ public class CLIPythonManager {
                     stringBuilder.append(stdOutLog);
                     // search string can be one or more... (potential python 2.7.X bug here?) Maybe use regex?
                     if (!stringBuilder.toString().toLowerCase().startsWith("python 3")) throw new PythonStreamException();
-
+                    logger.debug(String.format("Python initialized as version %s", stringBuilder.toString().split(" ")[1]));
                 }
             }
         } catch (PythonStreamException e) {

@@ -16,6 +16,7 @@ import java.util.EventObject;
 
 import javax.swing.SwingUtilities;
 
+import cbit.vcell.client.task.ClientTaskDispatcher;
 import org.vcell.client.logicalwindow.LWContainerHandle;
 import org.vcell.client.logicalwindow.LWNamespace;
 import org.vcell.util.BeanUtils;
@@ -69,6 +70,8 @@ public class AsynchProgressPopup extends AsynchGuiUpdater implements ClientTaskS
 	private String title = null;
 	private String message = null;  
 	private boolean bCancelable = false;
+
+	private ClientTaskDispatcher.StopStrategy stopStrategy = ClientTaskDispatcher.StopStrategy.THREAD_INTERRUPT;
 	private ProgressDialogListener progressDialogListener = null;
 	private Thread nonswingThread = null;
 	
@@ -131,7 +134,11 @@ public AsynchProgressPopup(Component requester, String title, String message, Th
 				getDialog().dispose();
 				interrupt();
 				if(nonswingThread !=null){
-					nonswingThread.interrupt();
+					if (getStopStrategy() == ClientTaskDispatcher.StopStrategy.THREAD_INTERRUPT) {
+						nonswingThread.interrupt();
+					}else if (getStopStrategy() == ClientTaskDispatcher.StopStrategy.THREAD_KILL) {
+						nonswingThread.stop();
+					}
 				}
 			}
 		}
@@ -154,8 +161,13 @@ public AsynchProgressPopup(Component requester, ProgressDialog customDialog, Thr
 			if (bCancelable) {
 				getDialog().dispose();
 				interrupt();
-//				nonswingThread.interrupt();
-				nonswingThread.stop();
+				if (nonswingThread != null) {
+					if (getStopStrategy() == ClientTaskDispatcher.StopStrategy.THREAD_INTERRUPT) {
+						nonswingThread.interrupt();
+					} else if (getStopStrategy() == ClientTaskDispatcher.StopStrategy.THREAD_KILL) {
+						nonswingThread.stop();
+					}
+				}
 			}
 		}
 	};
@@ -362,6 +374,14 @@ public void setVisible(final boolean bVisible) {
 
 public void addProgressDialogListener(ProgressDialogListener progressDialogListener) {
 	getDialog().addProgressDialogListener(progressDialogListener);	
+}
+
+public ClientTaskDispatcher.StopStrategy getStopStrategy() {
+	return stopStrategy;
+}
+
+public void setStopStrategy(ClientTaskDispatcher.StopStrategy stopStrategy) {
+	this.stopStrategy = stopStrategy;
 }
 
 }
