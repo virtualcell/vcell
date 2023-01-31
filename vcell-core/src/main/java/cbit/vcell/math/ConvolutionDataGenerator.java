@@ -1,15 +1,12 @@
 package cbit.vcell.math;
 
 import java.io.Serializable;
+import java.util.function.BiPredicate;
 
+import cbit.vcell.parser.*;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
-
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionBindingException;
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.SymbolTable;
 
 @SuppressWarnings("serial")
 public class ConvolutionDataGenerator extends DataGenerator {
@@ -57,10 +54,10 @@ public class ConvolutionDataGenerator extends DataGenerator {
 				return false;
 			}
 			GaussianConvolutionDataGeneratorKernel gck = (GaussianConvolutionDataGeneratorKernel)obj;
-			if (!Compare.isEqualOrNull(sigmaXY_um, gck.sigmaXY_um)) {
+			if (!Compare.isEqualOrNull(sigmaXY_um, gck.sigmaXY_um, new ExpressionUtils.ExpressionEquivalencePredicate())) {
 				return false;
 			}
-			if (!Compare.isEqualOrNull(sigmaZ_um, gck.sigmaZ_um)) {
+			if (!Compare.isEqualOrNull(sigmaZ_um, gck.sigmaZ_um, new ExpressionUtils.ExpressionEquivalencePredicate())) {
 				return false;
 			}
 			return true;
@@ -96,6 +93,26 @@ public class ConvolutionDataGenerator extends DataGenerator {
 		super(argName, null);
 		read(tokens);
 	}
+
+	@Override
+	public void flatten(MathSymbolTable mathSymbolTable, boolean bRoundCoefficients) throws MathException, ExpressionException {
+		if (memFunction != null){
+			memFunction = Equation.getFlattenedExpression(mathSymbolTable, memFunction, bRoundCoefficients);
+		}
+		if (volFunction != null){
+			volFunction = Equation.getFlattenedExpression(mathSymbolTable, volFunction, bRoundCoefficients);
+		}
+		if (kernel instanceof GaussianConvolutionDataGeneratorKernel){
+			GaussianConvolutionDataGeneratorKernel gk = (GaussianConvolutionDataGeneratorKernel)kernel;
+			if (gk.sigmaXY_um != null) {
+				gk.sigmaXY_um = Equation.getFlattenedExpression(mathSymbolTable, gk.sigmaXY_um, bRoundCoefficients);
+			}
+			if (gk.sigmaZ_um != null) {
+				gk.sigmaZ_um = Equation.getFlattenedExpression(mathSymbolTable, gk.sigmaZ_um, bRoundCoefficients);
+			}
+		}
+	}
+
 	private void read(CommentStringTokenizer tokens) throws MathFormatException, ExpressionException {
 		String token = tokens.nextToken();
 		if (!token.equalsIgnoreCase(VCML.BeginBlock)){
@@ -158,10 +175,10 @@ public class ConvolutionDataGenerator extends DataGenerator {
 		if (!Compare.isEqualOrNull(kernel, cdg.kernel)){
 			return false;
 		}
-		if (!Compare.isEqualOrNull(volFunction, cdg.volFunction)){
+		if (!Compare.isEqualOrNull(volFunction, cdg.volFunction, new ExpressionUtils.ExpressionEquivalencePredicate())){
 			return false;
 		}
-		if (!Compare.isEqualOrNull(memFunction, cdg.memFunction)){
+		if (!Compare.isEqualOrNull(memFunction, cdg.memFunction, new ExpressionUtils.ExpressionEquivalencePredicate())){
 			return false;
 		}
 		return true;

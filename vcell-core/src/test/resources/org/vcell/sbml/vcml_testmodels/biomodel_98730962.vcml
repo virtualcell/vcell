@@ -1,0 +1,859 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--This biomodel was generated in VCML Version Alpha_Version_7.4.0_build_87-->
+<vcml xmlns="http://sourceforge.net/projects/vcell/vcml" Version="Alpha_Version_7.4.0_build_87">
+  <BioModel Name="Nuc_pore_and_channels">
+    <Model Name="model">
+      <Compound Name="s0" />
+      <Compound Name="s1" />
+      <Compound Name="s2" />
+      <Compound Name="s3" />
+      <Compound Name="s4" />
+      <Compound Name="s5" />
+      <Feature Name="nuc_lumen" KeyValue="98697585" />
+      <Feature Name="nuc_erlumen" KeyValue="98697587" />
+      <Feature Name="cytosol" KeyValue="98697589" />
+      <Membrane MembraneVoltage="Voltage_nuc_env" Name="nuc_env" KeyValue="98697591" />
+      <LocalizedCompound Name="pore" CompoundRef="s0" Structure="nuc_env" OverrideName="true" KeyValue="98697593" />
+      <LocalizedCompound Name="chan_open" CompoundRef="s1" Structure="nuc_env" OverrideName="true" KeyValue="98697594" />
+      <LocalizedCompound Name="chan_closed" CompoundRef="s2" Structure="nuc_env" OverrideName="true" KeyValue="98697595" />
+      <LocalizedCompound Name="ca_cyt" CompoundRef="s3" Structure="cytosol" OverrideName="true" KeyValue="98697596" />
+      <LocalizedCompound Name="ca_nuc" CompoundRef="s4" Structure="nuc_lumen" OverrideName="true" KeyValue="98697597" />
+      <LocalizedCompound Name="ca_proximal" CompoundRef="s5" Structure="nuc_erlumen" OverrideName="true" KeyValue="98697598" />
+      <SimpleReaction Structure="nuc_env" Name="r1" Reversible="true" FluxOption="MolecularOnly" KeyValue="98697599">
+        <Reactant LocalizedCompoundRef="chan_closed" Stoichiometry="1" KeyValue="98697600" />
+        <Product LocalizedCompoundRef="chan_open" Stoichiometry="1" KeyValue="98697601" />
+        <Kinetics KineticsType="MassAction">
+          <Parameter Name="J" Role="reaction rate" Unit="molecules.um-2.s-1">((Kf * chan_closed) - (Kr * chan_open))</Parameter>
+          <Parameter Name="I" Role="inward current density" Unit="pA.um-2">0.0</Parameter>
+          <Parameter Name="netValence" Role="net charge valence" Unit="1">1.0</Parameter>
+          <Parameter Name="Kf" Role="forward rate constant" Unit="s-1">2.0</Parameter>
+          <Parameter Name="Kr" Role="reverse rate constant" Unit="s-1">5.0</Parameter>
+        </Kinetics>
+      </SimpleReaction>
+      <SimpleReaction Structure="nuc_env" Name="r2" Reversible="true" FluxOption="MolecularOnly" KeyValue="98697602">
+        <Reactant LocalizedCompoundRef="pore" Stoichiometry="1" KeyValue="98697603" />
+        <Reactant LocalizedCompoundRef="ca_cyt" Stoichiometry="1" KeyValue="98697604" />
+        <Product LocalizedCompoundRef="ca_nuc" Stoichiometry="1" KeyValue="98697605" />
+        <Product LocalizedCompoundRef="pore" Stoichiometry="1" KeyValue="98697606" />
+        <Kinetics KineticsType="MassAction">
+          <Parameter Name="J" Role="reaction rate" Unit="molecules.um-2.s-1">(((Kf * pore) * ca_cyt) - ((Kr * ca_nuc) * pore))</Parameter>
+          <Parameter Name="I" Role="inward current density" Unit="pA.um-2">0.0</Parameter>
+          <Parameter Name="netValence" Role="net charge valence" Unit="1">1.0</Parameter>
+          <Parameter Name="Kf" Role="forward rate constant" Unit="s-1.uM-1">porePerm</Parameter>
+          <Parameter Name="Kr" Role="reverse rate constant" Unit="s-1.uM-1">porePerm</Parameter>
+          <Parameter Name="porePerm" Role="user defined" Unit="s-1.uM-1">10.0</Parameter>
+        </Kinetics>
+      </SimpleReaction>
+      <SimpleReaction Structure="nuc_env" Name="r3" Reversible="true" FluxOption="MolecularOnly" KeyValue="98697607">
+        <Reactant LocalizedCompoundRef="chan_open" Stoichiometry="1" KeyValue="98697608" />
+        <Reactant LocalizedCompoundRef="ca_proximal" Stoichiometry="1" KeyValue="98697609" />
+        <Product LocalizedCompoundRef="ca_nuc" Stoichiometry="1" KeyValue="98697610" />
+        <Product LocalizedCompoundRef="chan_open" Stoichiometry="1" KeyValue="98697611" />
+        <Kinetics KineticsType="MassAction">
+          <Parameter Name="J" Role="reaction rate" Unit="molecules.um-2.s-1">(((Kf * chan_open) * ca_proximal) - ((Kr * ca_nuc) * chan_open))</Parameter>
+          <Parameter Name="I" Role="inward current density" Unit="pA.um-2">0.0</Parameter>
+          <Parameter Name="netValence" Role="net charge valence" Unit="1">1.0</Parameter>
+          <Parameter Name="Kf" Role="forward rate constant" Unit="s-1.uM-1">chanPerm</Parameter>
+          <Parameter Name="Kr" Role="reverse rate constant" Unit="s-1.uM-1">chanPerm</Parameter>
+          <Parameter Name="chanPerm" Role="user defined" Unit="s-1.uM-1">10.0</Parameter>
+        </Kinetics>
+      </SimpleReaction>
+      <Diagram Name="c2" Structure="cytosol">
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="ca_proximal" LocationX="86" LocationY="125" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="chan_closed" LocationX="30" LocationY="228" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="r1" LocationX="82" LocationY="198" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="ca_nuc" LocationX="96" LocationY="73" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="ca_stores" LocationX="138" LocationY="152" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="ca_cyt" LocationX="112" LocationY="61" />
+        <FluxReactionShape NodeReferenceModeAttrTag="full" FluxReactionRef="flux3" LocationX="55" LocationY="70" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="r0" LocationX="22" LocationY="136" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="pore" LocationX="52" LocationY="49" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="chan_open" LocationX="49" LocationY="174" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="r3" LocationX="52" LocationY="131" />
+        <FluxReactionShape NodeReferenceModeAttrTag="full" FluxReactionRef="flux2" LocationX="49" LocationY="93" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="r2" LocationX="67" LocationY="94" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="ca_proximal" LocationX="86" LocationY="125" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="chan_closed" LocationX="30" LocationY="228" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="molecule" SimpleReactionRef="r1" LocationX="82" LocationY="198" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="ca_nuc" LocationX="96" LocationY="73" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="ca_stores" LocationX="138" LocationY="152" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="ca_cyt" LocationX="112" LocationY="61" />
+        <FluxReactionShape NodeReferenceModeAttrTag="molecule" FluxReactionRef="flux3" LocationX="55" LocationY="70" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="molecule" SimpleReactionRef="r0" LocationX="22" LocationY="136" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="pore" LocationX="52" LocationY="49" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="chan_open" LocationX="49" LocationY="174" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="molecule" SimpleReactionRef="r3" LocationX="52" LocationY="131" />
+        <FluxReactionShape NodeReferenceModeAttrTag="molecule" FluxReactionRef="flux2" LocationX="49" LocationY="93" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="molecule" SimpleReactionRef="r2" LocationX="67" LocationY="94" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="ca_proximal" LocationX="86" LocationY="125" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="chan_closed" LocationX="30" LocationY="228" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="rule" SimpleReactionRef="r1" LocationX="82" LocationY="198" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="ca_nuc" LocationX="96" LocationY="73" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="ca_stores" LocationX="138" LocationY="152" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="ca_cyt" LocationX="112" LocationY="61" />
+        <FluxReactionShape NodeReferenceModeAttrTag="rule" FluxReactionRef="flux3" LocationX="55" LocationY="70" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="rule" SimpleReactionRef="r0" LocationX="22" LocationY="136" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="pore" LocationX="52" LocationY="49" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="chan_open" LocationX="49" LocationY="174" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="rule" SimpleReactionRef="r3" LocationX="52" LocationY="131" />
+        <FluxReactionShape NodeReferenceModeAttrTag="rule" FluxReactionRef="flux2" LocationX="49" LocationY="93" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="rule" SimpleReactionRef="r2" LocationX="67" LocationY="94" />
+      </Diagram>
+      <Diagram Name="c1" Structure="nuc_erlumen">
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="ca_proximal" LocationX="86" LocationY="125" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="chan_closed" LocationX="30" LocationY="228" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="r1" LocationX="82" LocationY="198" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="ca_nuc" LocationX="96" LocationY="73" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="ca_stores" LocationX="138" LocationY="152" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="ca_cyt" LocationX="112" LocationY="61" />
+        <FluxReactionShape NodeReferenceModeAttrTag="full" FluxReactionRef="flux3" LocationX="55" LocationY="70" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="r0" LocationX="22" LocationY="136" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="pore" LocationX="52" LocationY="49" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="chan_open" LocationX="49" LocationY="174" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="r3" LocationX="52" LocationY="131" />
+        <FluxReactionShape NodeReferenceModeAttrTag="full" FluxReactionRef="flux2" LocationX="49" LocationY="93" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="r2" LocationX="67" LocationY="94" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="ca_proximal" LocationX="86" LocationY="125" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="chan_closed" LocationX="30" LocationY="228" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="molecule" SimpleReactionRef="r1" LocationX="82" LocationY="198" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="ca_nuc" LocationX="96" LocationY="73" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="ca_stores" LocationX="138" LocationY="152" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="ca_cyt" LocationX="112" LocationY="61" />
+        <FluxReactionShape NodeReferenceModeAttrTag="molecule" FluxReactionRef="flux3" LocationX="55" LocationY="70" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="molecule" SimpleReactionRef="r0" LocationX="22" LocationY="136" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="pore" LocationX="52" LocationY="49" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="chan_open" LocationX="49" LocationY="174" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="molecule" SimpleReactionRef="r3" LocationX="52" LocationY="131" />
+        <FluxReactionShape NodeReferenceModeAttrTag="molecule" FluxReactionRef="flux2" LocationX="49" LocationY="93" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="molecule" SimpleReactionRef="r2" LocationX="67" LocationY="94" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="ca_proximal" LocationX="86" LocationY="125" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="chan_closed" LocationX="30" LocationY="228" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="rule" SimpleReactionRef="r1" LocationX="82" LocationY="198" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="ca_nuc" LocationX="96" LocationY="73" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="ca_stores" LocationX="138" LocationY="152" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="ca_cyt" LocationX="112" LocationY="61" />
+        <FluxReactionShape NodeReferenceModeAttrTag="rule" FluxReactionRef="flux3" LocationX="55" LocationY="70" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="rule" SimpleReactionRef="r0" LocationX="22" LocationY="136" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="pore" LocationX="52" LocationY="49" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="chan_open" LocationX="49" LocationY="174" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="rule" SimpleReactionRef="r3" LocationX="52" LocationY="131" />
+        <FluxReactionShape NodeReferenceModeAttrTag="rule" FluxReactionRef="flux2" LocationX="49" LocationY="93" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="rule" SimpleReactionRef="r2" LocationX="67" LocationY="94" />
+      </Diagram>
+      <Diagram Name="m0" Structure="nuc_env">
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="ca_proximal" LocationX="86" LocationY="125" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="chan_closed" LocationX="30" LocationY="228" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="r1" LocationX="82" LocationY="198" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="ca_nuc" LocationX="96" LocationY="73" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="ca_stores" LocationX="138" LocationY="152" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="ca_cyt" LocationX="112" LocationY="61" />
+        <FluxReactionShape NodeReferenceModeAttrTag="full" FluxReactionRef="flux3" LocationX="55" LocationY="70" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="r0" LocationX="22" LocationY="136" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="pore" LocationX="52" LocationY="49" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="chan_open" LocationX="49" LocationY="174" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="r3" LocationX="52" LocationY="131" />
+        <FluxReactionShape NodeReferenceModeAttrTag="full" FluxReactionRef="flux2" LocationX="49" LocationY="93" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="r2" LocationX="67" LocationY="94" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="ca_proximal" LocationX="86" LocationY="125" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="chan_closed" LocationX="30" LocationY="228" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="molecule" SimpleReactionRef="r1" LocationX="82" LocationY="198" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="ca_nuc" LocationX="96" LocationY="73" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="ca_stores" LocationX="138" LocationY="152" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="ca_cyt" LocationX="112" LocationY="61" />
+        <FluxReactionShape NodeReferenceModeAttrTag="molecule" FluxReactionRef="flux3" LocationX="55" LocationY="70" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="molecule" SimpleReactionRef="r0" LocationX="22" LocationY="136" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="pore" LocationX="52" LocationY="49" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="chan_open" LocationX="49" LocationY="174" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="molecule" SimpleReactionRef="r3" LocationX="52" LocationY="131" />
+        <FluxReactionShape NodeReferenceModeAttrTag="molecule" FluxReactionRef="flux2" LocationX="49" LocationY="93" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="molecule" SimpleReactionRef="r2" LocationX="67" LocationY="94" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="ca_proximal" LocationX="86" LocationY="125" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="chan_closed" LocationX="30" LocationY="228" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="rule" SimpleReactionRef="r1" LocationX="82" LocationY="198" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="ca_nuc" LocationX="96" LocationY="73" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="ca_stores" LocationX="138" LocationY="152" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="ca_cyt" LocationX="112" LocationY="61" />
+        <FluxReactionShape NodeReferenceModeAttrTag="rule" FluxReactionRef="flux3" LocationX="55" LocationY="70" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="rule" SimpleReactionRef="r0" LocationX="22" LocationY="136" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="pore" LocationX="52" LocationY="49" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="chan_open" LocationX="49" LocationY="174" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="rule" SimpleReactionRef="r3" LocationX="52" LocationY="131" />
+        <FluxReactionShape NodeReferenceModeAttrTag="rule" FluxReactionRef="flux2" LocationX="49" LocationY="93" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="rule" SimpleReactionRef="r2" LocationX="67" LocationY="94" />
+      </Diagram>
+      <Diagram Name="c0" Structure="nuc_lumen">
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="ca_proximal" LocationX="86" LocationY="125" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="chan_closed" LocationX="30" LocationY="228" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="r1" LocationX="82" LocationY="198" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="ca_nuc" LocationX="96" LocationY="73" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="ca_stores" LocationX="138" LocationY="152" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="ca_cyt" LocationX="112" LocationY="61" />
+        <FluxReactionShape NodeReferenceModeAttrTag="full" FluxReactionRef="flux3" LocationX="55" LocationY="70" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="r0" LocationX="22" LocationY="136" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="pore" LocationX="52" LocationY="49" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="chan_open" LocationX="49" LocationY="174" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="r3" LocationX="52" LocationY="131" />
+        <FluxReactionShape NodeReferenceModeAttrTag="full" FluxReactionRef="flux2" LocationX="49" LocationY="93" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="r2" LocationX="67" LocationY="94" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="ca_proximal" LocationX="86" LocationY="125" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="chan_closed" LocationX="30" LocationY="228" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="molecule" SimpleReactionRef="r1" LocationX="82" LocationY="198" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="ca_nuc" LocationX="96" LocationY="73" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="ca_stores" LocationX="138" LocationY="152" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="ca_cyt" LocationX="112" LocationY="61" />
+        <FluxReactionShape NodeReferenceModeAttrTag="molecule" FluxReactionRef="flux3" LocationX="55" LocationY="70" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="molecule" SimpleReactionRef="r0" LocationX="22" LocationY="136" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="pore" LocationX="52" LocationY="49" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="chan_open" LocationX="49" LocationY="174" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="molecule" SimpleReactionRef="r3" LocationX="52" LocationY="131" />
+        <FluxReactionShape NodeReferenceModeAttrTag="molecule" FluxReactionRef="flux2" LocationX="49" LocationY="93" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="molecule" SimpleReactionRef="r2" LocationX="67" LocationY="94" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="ca_proximal" LocationX="86" LocationY="125" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="chan_closed" LocationX="30" LocationY="228" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="rule" SimpleReactionRef="r1" LocationX="82" LocationY="198" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="ca_nuc" LocationX="96" LocationY="73" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="ca_stores" LocationX="138" LocationY="152" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="ca_cyt" LocationX="112" LocationY="61" />
+        <FluxReactionShape NodeReferenceModeAttrTag="rule" FluxReactionRef="flux3" LocationX="55" LocationY="70" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="rule" SimpleReactionRef="r0" LocationX="22" LocationY="136" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="pore" LocationX="52" LocationY="49" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="chan_open" LocationX="49" LocationY="174" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="rule" SimpleReactionRef="r3" LocationX="52" LocationY="131" />
+        <FluxReactionShape NodeReferenceModeAttrTag="rule" FluxReactionRef="flux2" LocationX="49" LocationY="93" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="rule" SimpleReactionRef="r2" LocationX="67" LocationY="94" />
+      </Diagram>
+      <Version Name="model" KeyValue="98697577" BranchId="98697362" Archived="0" Date="17-Mar-2016 15:41:48" FromVersionable="false">
+        <Owner Name="schaff" Identifier="17" />
+        <GroupAccess Type="1" />
+      </Version>
+      <ModelUnitSystem VolumeSubstanceUnit="uM.um3" MembraneSubstanceUnit="molecules" LumpedReactionSubstanceUnit="molecules" VolumeUnit="um3" AreaUnit="um2" LengthUnit="um" TimeUnit="s" />
+    </Model>
+    <SimulationSpec Name="Application0" Stochastic="true" UseConcentration="true" RuleBased="false" MassConservationModelReduction="true" InsufficientIterations="false" InsufficientMaxMolecules="false" CharacteristicSize="0.10403160765672961">
+      <NetworkConstraints RbmMaxIteration="3" RbmMaxMoleculesPerSpecies="10" RbmSpeciesLimit="800" RbmReactionsLimit="2500" />
+      <Annotation />
+      <Geometry Name="Geometry1148804461" Dimension="3">
+        <Extent X="10.0" Y="10.0" Z="10.0" />
+        <Origin X="0.0" Y="0.0" Z="0.0" />
+        <SubVolume Name="nuc" Handle="1" Type="Analytical" KeyValue="98697351">
+          <AnalyticExpression>((((x - 5.0) ^ 2.0) + ((y - 5.0) ^ 2.0) + ((z - 5.0) ^ 2.0)) &lt; (3.0 ^ 2.0))</AnalyticExpression>
+        </SubVolume>
+        <SubVolume Name="subdomain0" Handle="0" Type="Analytical" KeyValue="98697352">
+          <AnalyticExpression>1.0</AnalyticExpression>
+        </SubVolume>
+        <SurfaceClass Name="nuc_subdomain0_membrane" SubVolume1Ref="nuc" SubVolume2Ref="subdomain0" KeyValue="98697353" />
+        <SurfaceDescription NumSamplesX="101" NumSamplesY="101" NumSamplesZ="101" CutoffFrequency="0.3">
+          <VolumeRegion Name="subdomain00" RegionID="0" SubVolume="subdomain0" Size="887.029" Unit="um3" />
+          <VolumeRegion Name="nuc1" RegionID="1" SubVolume="nuc" Size="112.971" Unit="um3" />
+          <MembraneRegion Name="membrane_subdomain00_nuc1" VolumeRegion1="nuc1" VolumeRegion2="subdomain00" Size="112.7895723139222" Unit="um2" />
+        </SurfaceDescription>
+        <Version Name="Geometry1148804461" KeyValue="98697347" BranchId="98697348" Archived="0" Date="17-Mar-2016 15:13:40" FromVersionable="false">
+          <Owner Name="schaff" Identifier="17" />
+          <GroupAccess Type="1" />
+        </Version>
+      </Geometry>
+      <GeometryContext>
+        <FeatureMapping Feature="nuc_lumen" GeometryClass="nuc" SubVolume="nuc" Size="50000.0" VolumePerUnitVolume="1.0">
+          <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
+        </FeatureMapping>
+        <FeatureMapping Feature="nuc_erlumen" GeometryClass="nuc_subdomain0_membrane" Size="50000.0" VolumePerUnitArea="1.0">
+          <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
+        </FeatureMapping>
+        <FeatureMapping Feature="cytosol" GeometryClass="subdomain0" SubVolume="subdomain0" Size="50000.0" VolumePerUnitVolume="1.0">
+          <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
+        </FeatureMapping>
+        <MembraneMapping Membrane="nuc_env" Size="6563.0" AreaPerUnitArea="1.0" CalculateVoltage="false" SpecificCapacitance="1.0" InitialVoltage="0.0" GeometryClass="nuc_subdomain0_membrane">
+          <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
+        </MembraneMapping>
+      </GeometryContext>
+      <ReactionContext>
+        <LocalizedCompoundSpec LocalizedCompoundRef="ca_nuc" ForceConstant="false" WellMixed="false" ForceContinuous="true">
+          <InitialConcentration>0.05</InitialConcentration>
+          <Diffusion>50.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="ca_proximal" ForceConstant="false" WellMixed="false" ForceContinuous="true">
+          <InitialConcentration>1000.0</InitialConcentration>
+          <Diffusion>0.1</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="ca_cyt" ForceConstant="false" WellMixed="false" ForceContinuous="true">
+          <InitialConcentration>0.05</InitialConcentration>
+          <Diffusion>50.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="pore" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>6.509492434617742</InitialConcentration>
+          <Diffusion>0.001</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="chan_open" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>0.0</InitialConcentration>
+          <Diffusion>0.001</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="chan_closed" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>0.1562278184308258</InitialConcentration>
+          <Diffusion>0.001</Diffusion>
+        </LocalizedCompoundSpec>
+        <ReactionSpec ReactionStepRef="r1" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="r2" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="r3" ReactionMapping="included" />
+      </ReactionContext>
+      <MathDescription Name="Application0_generated">
+        <Constant Name="_F_">96480.0</Constant>
+        <Constant Name="_F_nmol_">9.648E-5</Constant>
+        <Constant Name="_K_GHK_">1.0E-9</Constant>
+        <Constant Name="_N_pmol_">6.02E11</Constant>
+        <Constant Name="_PI_">3.141592653589793</Constant>
+        <Constant Name="_R_">8314.0</Constant>
+        <Constant Name="_T_">300.0</Constant>
+        <Constant Name="AreaPerUnitArea_nuc_env">1.0</Constant>
+        <Constant Name="ca_cyt_diffusionRate">50.0</Constant>
+        <Constant Name="ca_cyt_init_uM">0.05</Constant>
+        <Constant Name="ca_nuc_diffusionRate">50.0</Constant>
+        <Constant Name="ca_nuc_init_uM">0.05</Constant>
+        <Constant Name="ca_proximal_diffusionRate">0.1</Constant>
+        <Constant Name="ca_proximal_init_uM">1000.0</Constant>
+        <Constant Name="chan_closed_conc_diffusionRate">0.001</Constant>
+        <Constant Name="chan_closed_conc_init_molecules_um_2">0.1562278184308258</Constant>
+        <Constant Name="chan_closed_diffusionRate">0.001</Constant>
+        <Constant Name="chan_closed_init_molecules_um_2">0.1562278184308258</Constant>
+        <Constant Name="chan_open_conc_diffusionRate">0.001</Constant>
+        <Constant Name="chan_open_conc_init_molecules_um_2">0.0</Constant>
+        <Constant Name="chan_open_diffusionRate">0.001</Constant>
+        <Constant Name="chan_open_init_molecules_um_2">0.0</Constant>
+        <Constant Name="chanPerm">10.0</Constant>
+        <Constant Name="K_millivolts_per_volt">1000.0</Constant>
+        <Constant Name="Kf_r1">2.0</Constant>
+        <Constant Name="KMOLE">(1.0 / 602.0)</Constant>
+        <Constant Name="Kr_r1">5.0</Constant>
+        <Constant Name="netValence_r1">1.0</Constant>
+        <Constant Name="netValence_r2">1.0</Constant>
+        <Constant Name="netValence_r3">1.0</Constant>
+        <Constant Name="pore_conc_diffusionRate">0.001</Constant>
+        <Constant Name="pore_conc_init_molecules_um_2">6.509492434617742</Constant>
+        <Constant Name="pore_diffusionRate">0.001</Constant>
+        <Constant Name="pore_init_molecules_um_2">6.509492434617742</Constant>
+        <Constant Name="porePerm">10.0</Constant>
+        <Constant Name="Voltage_nuc_env">0.0</Constant>
+        <Constant Name="VolumePerUnitArea_nuc_erlumen">1.0</Constant>
+        <Constant Name="VolumePerUnitVolume_cytosol">1.0</Constant>
+        <Constant Name="VolumePerUnitVolume_nuc_lumen">1.0</Constant>
+        <VolumeVariable Name="ca_cyt" Domain="subdomain0" />
+        <VolumeVariable Name="ca_nuc" Domain="nuc" />
+        <MembraneVariable Name="ca_proximal" Domain="nuc_subdomain0_membrane" />
+        <MembraneParticleVariable Name="chan_closed" Domain="nuc_subdomain0_membrane" />
+        <MembraneParticleVariable Name="chan_open" Domain="nuc_subdomain0_membrane" />
+        <MembraneParticleVariable Name="pore" Domain="nuc_subdomain0_membrane" />
+        <Function Name="chan_closed_conc" Domain="nuc_subdomain0_membrane">chan_closed</Function>
+        <Function Name="chan_open_conc" Domain="nuc_subdomain0_membrane">chan_open</Function>
+        <Function Name="J_r1" Domain="nuc_subdomain0_membrane">((Kf_r1 * chan_closed_conc) - (Kr_r1 * chan_open_conc))</Function>
+        <Function Name="J_r2" Domain="nuc_subdomain0_membrane">(((Kf_r2 * pore_conc) * ca_cyt) - ((Kr_r2 * ca_nuc) * pore_conc))</Function>
+        <Function Name="J_r3" Domain="nuc_subdomain0_membrane">(((Kf_r3 * chan_open_conc) * ca_proximal) - ((Kr_r3 * ca_nuc) * chan_open_conc))</Function>
+        <Function Name="Kf_r2" Domain="nuc_subdomain0_membrane">porePerm</Function>
+        <Function Name="Kf_r3" Domain="nuc_subdomain0_membrane">chanPerm</Function>
+        <Function Name="KFlux_nuc_env_cytosol" Domain="nuc_subdomain0_membrane">(AreaPerUnitArea_nuc_env / VolumePerUnitVolume_cytosol)</Function>
+        <Function Name="KFlux_nuc_env_nuc_erlumen" Domain="nuc_subdomain0_membrane">(AreaPerUnitArea_nuc_env / VolumePerUnitArea_nuc_erlumen)</Function>
+        <Function Name="KFlux_nuc_env_nuc_lumen" Domain="nuc_subdomain0_membrane">(AreaPerUnitArea_nuc_env / VolumePerUnitVolume_nuc_lumen)</Function>
+        <Function Name="Kr_r2" Domain="nuc_subdomain0_membrane">porePerm</Function>
+        <Function Name="Kr_r3" Domain="nuc_subdomain0_membrane">chanPerm</Function>
+        <Function Name="pore_conc" Domain="nuc_subdomain0_membrane">pore</Function>
+        <Function Name="Size_cytosol" Domain="subdomain0">(VolumePerUnitVolume_cytosol * vcRegionVolume('subdomain0'))</Function>
+        <Function Name="Size_nuc_env" Domain="nuc_subdomain0_membrane">(AreaPerUnitArea_nuc_env * vcRegionArea('nuc_subdomain0_membrane'))</Function>
+        <Function Name="Size_nuc_erlumen" Domain="nuc_subdomain0_membrane">((VolumePerUnitArea_nuc_erlumen * UnitFactor_molecules_uM_neg_1_um_neg_3) * vcRegionVolume('nuc_subdomain0_membrane'))</Function>
+        <Function Name="Size_nuc_lumen" Domain="nuc">(VolumePerUnitVolume_nuc_lumen * vcRegionVolume('nuc'))</Function>
+        <Function Name="UnitFactor_molecules_uM_neg_1_um_neg_3">(602.0 / 1.0)</Function>
+        <Function Name="UnitFactor_uM_um3_molecules_neg_1">(1.0 / 602.0)</Function>
+        <CompartmentSubDomain Name="nuc">
+          <BoundaryType Boundary="Xm" Type="Flux" />
+          <BoundaryType Boundary="Xp" Type="Flux" />
+          <BoundaryType Boundary="Ym" Type="Flux" />
+          <BoundaryType Boundary="Yp" Type="Flux" />
+          <BoundaryType Boundary="Zm" Type="Flux" />
+          <BoundaryType Boundary="Zp" Type="Flux" />
+          <PdeEquation Name="ca_nuc" SolutionType="Unknown">
+            <Rate>0.0</Rate>
+            <Diffusion>ca_nuc_diffusionRate</Diffusion>
+            <Initial>ca_nuc_init_uM</Initial>
+          </PdeEquation>
+        </CompartmentSubDomain>
+        <CompartmentSubDomain Name="subdomain0">
+          <BoundaryType Boundary="Xm" Type="Flux" />
+          <BoundaryType Boundary="Xp" Type="Flux" />
+          <BoundaryType Boundary="Ym" Type="Flux" />
+          <BoundaryType Boundary="Yp" Type="Flux" />
+          <BoundaryType Boundary="Zm" Type="Flux" />
+          <BoundaryType Boundary="Zp" Type="Flux" />
+          <PdeEquation Name="ca_cyt" SolutionType="Unknown">
+            <Rate>0.0</Rate>
+            <Diffusion>ca_cyt_diffusionRate</Diffusion>
+            <Initial>ca_cyt_init_uM</Initial>
+          </PdeEquation>
+        </CompartmentSubDomain>
+        <MembraneSubDomain Name="nuc_subdomain0_membrane" InsideCompartment="nuc" OutsideCompartment="subdomain0">
+          <BoundaryType Boundary="Xm" Type="Value" />
+          <BoundaryType Boundary="Xp" Type="Value" />
+          <BoundaryType Boundary="Ym" Type="Value" />
+          <BoundaryType Boundary="Yp" Type="Value" />
+          <BoundaryType Boundary="Zm" Type="Value" />
+          <BoundaryType Boundary="Zp" Type="Value" />
+          <PdeEquation Name="ca_proximal" SolutionType="Unknown">
+            <Rate>- (UnitFactor_uM_um3_molecules_neg_1 * KFlux_nuc_env_nuc_erlumen * J_r3)</Rate>
+            <Diffusion>ca_proximal_diffusionRate</Diffusion>
+            <Initial>ca_proximal_init_uM</Initial>
+          </PdeEquation>
+          <JumpCondition Name="ca_nuc">
+            <InFlux>((UnitFactor_uM_um3_molecules_neg_1 * KFlux_nuc_env_nuc_lumen * J_r2) + (UnitFactor_uM_um3_molecules_neg_1 * KFlux_nuc_env_nuc_lumen * J_r3))</InFlux>
+            <OutFlux>0.0</OutFlux>
+          </JumpCondition>
+          <JumpCondition Name="ca_cyt">
+            <InFlux>0.0</InFlux>
+            <OutFlux>- (UnitFactor_uM_um3_molecules_neg_1 * KFlux_nuc_env_cytosol * J_r2)</OutFlux>
+          </JumpCondition>
+          <ParticleProperties Name="pore">
+            <ParticleInitialConcentration>
+              <ParticleDistribution>pore_init_molecules_um_2</ParticleDistribution>
+            </ParticleInitialConcentration>
+            <ParticleDiffusion>pore_diffusionRate</ParticleDiffusion>
+          </ParticleProperties>
+          <ParticleProperties Name="chan_open">
+            <ParticleInitialConcentration>
+              <ParticleDistribution>chan_open_init_molecules_um_2</ParticleDistribution>
+            </ParticleInitialConcentration>
+            <ParticleDiffusion>chan_open_diffusionRate</ParticleDiffusion>
+          </ParticleProperties>
+          <ParticleProperties Name="chan_closed">
+            <ParticleInitialConcentration>
+              <ParticleDistribution>chan_closed_init_molecules_um_2</ParticleDistribution>
+            </ParticleInitialConcentration>
+            <ParticleDiffusion>chan_closed_diffusionRate</ParticleDiffusion>
+          </ParticleProperties>
+          <ParticleJumpProcess Name="r1">
+            <SelectedParticle Name="chan_closed" />
+            <MacroscopicRateConstant>Kf_r1</MacroscopicRateConstant>
+            <Effect VarName="chan_closed" Operation="destroy" />
+            <Effect VarName="chan_open" Operation="create" />
+          </ParticleJumpProcess>
+          <ParticleJumpProcess Name="r1_reverse">
+            <SelectedParticle Name="chan_open" />
+            <MacroscopicRateConstant>Kr_r1</MacroscopicRateConstant>
+            <Effect VarName="chan_closed" Operation="create" />
+            <Effect VarName="chan_open" Operation="destroy" />
+          </ParticleJumpProcess>
+          <ParticleJumpProcess Name="r2">
+            <SelectedParticle Name="pore" />
+            <MacroscopicRateConstant>((porePerm / UnitFactor_molecules_uM_neg_1_um_neg_3) * ca_cyt)</MacroscopicRateConstant>
+            <Effect VarName="pore" Operation="destroy" />
+            <Effect VarName="pore" Operation="create" />
+          </ParticleJumpProcess>
+          <ParticleJumpProcess Name="r2_reverse">
+            <SelectedParticle Name="pore" />
+            <MacroscopicRateConstant>((porePerm / UnitFactor_molecules_uM_neg_1_um_neg_3) * ca_nuc)</MacroscopicRateConstant>
+            <Effect VarName="pore" Operation="create" />
+            <Effect VarName="pore" Operation="destroy" />
+          </ParticleJumpProcess>
+          <ParticleJumpProcess Name="r3">
+            <SelectedParticle Name="chan_open" />
+            <MacroscopicRateConstant>((chanPerm / UnitFactor_molecules_uM_neg_1_um_neg_3) * ca_proximal)</MacroscopicRateConstant>
+            <Effect VarName="chan_open" Operation="destroy" />
+            <Effect VarName="chan_open" Operation="create" />
+          </ParticleJumpProcess>
+          <ParticleJumpProcess Name="r3_reverse">
+            <SelectedParticle Name="chan_open" />
+            <MacroscopicRateConstant>((chanPerm / UnitFactor_molecules_uM_neg_1_um_neg_3) * ca_nuc)</MacroscopicRateConstant>
+            <Effect VarName="chan_open" Operation="create" />
+            <Effect VarName="chan_open" Operation="destroy" />
+          </ParticleJumpProcess>
+        </MembraneSubDomain>
+        <Version Name="Application0_generated" KeyValue="98730887" BranchId="98697359" Archived="0" Date="21-Mar-2016 10:30:19" FromVersionable="false">
+          <Owner Name="schaff" Identifier="17" />
+          <GroupAccess Type="1" />
+        </Version>
+      </MathDescription>
+      <OutputFunctions>
+        <AnnotatedFunction Name="ca" ErrorString="" FunctionType="Volume">(ca_cyt + ca_nuc)</AnnotatedFunction>
+      </OutputFunctions>
+      <Simulation Name="Simulation0">
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Finite Volume Standalone, Regular Grid">
+          <TimeBound StartTime="0.0" EndTime="1.0" />
+          <TimeStep DefaultTime="5.0E-5" MinTime="0.0" MaxTime="0.1" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-8" />
+          <OutputOptions OutputTimeStep="0.005" />
+          <SmoldynSimulationOptions>
+            <Accuracy>10.0</Accuracy>
+            <HighResolutionSample>true</HighResolutionSample>
+            <saveParticleFiles>false</saveParticleFiles>
+            <gaussianTableSize>4096</gaussianTableSize>
+            <SmoldynStepMultiplier>1</SmoldynStepMultiplier>
+          </SmoldynSimulationOptions>
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides />
+        <MeshSpecification>
+          <Size X="51" Y="51" Z="51" />
+        </MeshSpecification>
+        <Version Name="Simulation0" KeyValue="98730923" BranchId="98697438" Archived="0" Date="21-Mar-2016 10:30:21" FromVersionable="false">
+          <Owner Name="schaff" Identifier="17" />
+          <GroupAccess Type="1" />
+          <ParentSimRef KeyValue="98697730" />
+        </Version>
+      </Simulation>
+      <Simulation Name="Copy of Simulation0">
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Finite Volume Standalone, Regular Grid">
+          <TimeBound StartTime="0.0" EndTime="1.0" />
+          <TimeStep DefaultTime="5.0E-5" MinTime="0.0" MaxTime="0.1" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-8" />
+          <OutputOptions OutputTimeStep="0.005" />
+          <SmoldynSimulationOptions>
+            <Accuracy>10.0</Accuracy>
+            <HighResolutionSample>true</HighResolutionSample>
+            <saveParticleFiles>false</saveParticleFiles>
+            <gaussianTableSize>4096</gaussianTableSize>
+            <SmoldynStepMultiplier>1</SmoldynStepMultiplier>
+          </SmoldynSimulationOptions>
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides />
+        <MeshSpecification>
+          <Size X="51" Y="51" Z="51" />
+        </MeshSpecification>
+        <Version Name="Copy of Simulation0" KeyValue="98730925" BranchId="98709635" Archived="0" Date="21-Mar-2016 10:30:21" FromVersionable="false">
+          <Owner Name="schaff" Identifier="17" />
+          <GroupAccess Type="1" />
+          <ParentSimRef KeyValue="98709634" />
+        </Version>
+      </Simulation>
+      <Simulation Name="Simulation3">
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Finite Volume Standalone, Regular Grid">
+          <TimeBound StartTime="0.0" EndTime="1.0" />
+          <TimeStep DefaultTime="5.0E-4" MinTime="1.0E-8" MaxTime="1.0" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-8" />
+          <OutputOptions OutputTimeStep="0.05" />
+          <SmoldynSimulationOptions>
+            <Accuracy>10.0</Accuracy>
+            <HighResolutionSample>true</HighResolutionSample>
+            <saveParticleFiles>false</saveParticleFiles>
+            <gaussianTableSize>4096</gaussianTableSize>
+            <SmoldynStepMultiplier>1</SmoldynStepMultiplier>
+          </SmoldynSimulationOptions>
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides />
+        <MeshSpecification>
+          <Size X="51" Y="51" Z="51" />
+        </MeshSpecification>
+        <Version Name="Simulation3" KeyValue="98730960" BranchId="98730944" Archived="0" Date="21-Mar-2016 10:44:51" FromVersionable="false">
+          <Owner Name="schaff" Identifier="17" />
+          <GroupAccess Type="1" />
+        </Version>
+      </Simulation>
+      <SpatialObjects>
+        <SpatialObject Name="vobj_subdomain00" Type="Volume" subVolume="subdomain0" regionId="0">
+          <QuantityCategoryList>
+            <QuantityCategory Name="VolumeCentroid" Enabled="false" />
+            <QuantityCategory Name="InteriorVelocity" Enabled="false" />
+            <QuantityCategory Name="VolumeRegionSize" Enabled="true" />
+          </QuantityCategoryList>
+        </SpatialObject>
+        <SpatialObject Name="vobj_nuc1" Type="Volume" subVolume="nuc" regionId="1">
+          <QuantityCategoryList>
+            <QuantityCategory Name="VolumeCentroid" Enabled="false" />
+            <QuantityCategory Name="InteriorVelocity" Enabled="false" />
+            <QuantityCategory Name="VolumeRegionSize" Enabled="true" />
+          </QuantityCategoryList>
+        </SpatialObject>
+        <SpatialObject Name="sobj_nuc1_subdomain00" Type="Surface" subVolumeInside="nuc" regionIdInside="1" subVolumeOutside="subdomain0" regionIdOutside="0">
+          <QuantityCategoryList>
+            <QuantityCategory Name="SurfaceNormal" Enabled="false" />
+            <QuantityCategory Name="SurfaceVelocity" Enabled="false" />
+            <QuantityCategory Name="DistanceToSurface" Enabled="false" />
+            <QuantityCategory Name="DirectionToSurface" Enabled="false" />
+            <QuantityCategory Name="SurfaceSize" Enabled="true" />
+          </QuantityCategoryList>
+        </SpatialObject>
+      </SpatialObjects>
+      <Version Name="Application0" KeyValue="98730891" BranchId="98697416" Archived="0" Date="21-Mar-2016 10:30:20" FromVersionable="false">
+        <Owner Name="schaff" Identifier="17" />
+        <GroupAccess Type="1" />
+      </Version>
+      <MicroscopeMeasurement Name="fluor">
+        <ConvolutionKernel Type="ProjectionZKernel" />
+      </MicroscopeMeasurement>
+    </SimulationSpec>
+    <SimulationSpec Name="Copy of Application0" Stochastic="false" UseConcentration="true" RuleBased="false" MassConservationModelReduction="true" InsufficientIterations="false" InsufficientMaxMolecules="false" CharacteristicSize="0.10403160765672961">
+      <NetworkConstraints RbmMaxIteration="3" RbmMaxMoleculesPerSpecies="10" RbmSpeciesLimit="800" RbmReactionsLimit="2500" />
+      <Annotation>(copied from Application0)</Annotation>
+      <Geometry Name="Geometry1148804461" Dimension="3">
+        <Extent X="10.0" Y="10.0" Z="10.0" />
+        <Origin X="0.0" Y="0.0" Z="0.0" />
+        <SubVolume Name="nuc" Handle="1" Type="Analytical" KeyValue="98697450">
+          <AnalyticExpression>((((x - 5.0) ^ 2.0) + ((y - 5.0) ^ 2.0) + ((z - 5.0) ^ 2.0)) &lt; (3.0 ^ 2.0))</AnalyticExpression>
+        </SubVolume>
+        <SubVolume Name="subdomain0" Handle="0" Type="Analytical" KeyValue="98697451">
+          <AnalyticExpression>1.0</AnalyticExpression>
+        </SubVolume>
+        <SurfaceClass Name="nuc_subdomain0_membrane" SubVolume1Ref="nuc" SubVolume2Ref="subdomain0" KeyValue="98697452" />
+        <SurfaceDescription NumSamplesX="101" NumSamplesY="101" NumSamplesZ="101" CutoffFrequency="0.3">
+          <VolumeRegion Name="subdomain00" RegionID="0" SubVolume="subdomain0" Size="887.029" Unit="um3" />
+          <VolumeRegion Name="nuc1" RegionID="1" SubVolume="nuc" Size="112.971" Unit="um3" />
+          <MembraneRegion Name="membrane_subdomain00_nuc1" VolumeRegion1="nuc1" VolumeRegion2="subdomain00" Size="112.7895723139222" Unit="um2" />
+        </SurfaceDescription>
+        <Version Name="Geometry1148804461" KeyValue="98697447" BranchId="98697348" Archived="0" Date="17-Mar-2016 15:29:41" FromVersionable="false">
+          <Owner Name="schaff" Identifier="17" />
+          <GroupAccess Type="1" />
+        </Version>
+      </Geometry>
+      <GeometryContext>
+        <FeatureMapping Feature="nuc_lumen" GeometryClass="nuc" SubVolume="nuc" Size="50000.0" VolumePerUnitVolume="1.0">
+          <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
+        </FeatureMapping>
+        <FeatureMapping Feature="nuc_erlumen" GeometryClass="nuc_subdomain0_membrane" Size="50000.0" VolumePerUnitArea="1.0">
+          <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
+        </FeatureMapping>
+        <FeatureMapping Feature="cytosol" GeometryClass="subdomain0" SubVolume="subdomain0" Size="50000.0" VolumePerUnitVolume="1.0">
+          <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
+        </FeatureMapping>
+        <MembraneMapping Membrane="nuc_env" Size="6563.0" AreaPerUnitArea="1.0" CalculateVoltage="false" SpecificCapacitance="1.0" InitialVoltage="0.0" GeometryClass="nuc_subdomain0_membrane">
+          <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
+        </MembraneMapping>
+      </GeometryContext>
+      <ReactionContext>
+        <LocalizedCompoundSpec LocalizedCompoundRef="ca_nuc" ForceConstant="false" WellMixed="false" ForceContinuous="true">
+          <InitialConcentration>0.05</InitialConcentration>
+          <Diffusion>50.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="ca_proximal" ForceConstant="false" WellMixed="false" ForceContinuous="true">
+          <InitialConcentration>1000.0</InitialConcentration>
+          <Diffusion>0.1</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="ca_cyt" ForceConstant="false" WellMixed="false" ForceContinuous="true">
+          <InitialConcentration>0.05</InitialConcentration>
+          <Diffusion>50.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="pore" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>6.509492434617742</InitialConcentration>
+          <Diffusion>0.001</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="chan_open" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>0.0</InitialConcentration>
+          <Diffusion>0.001</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="chan_closed" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>0.1562278184308258</InitialConcentration>
+          <Diffusion>0.001</Diffusion>
+        </LocalizedCompoundSpec>
+        <ReactionSpec ReactionStepRef="r1" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="r2" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="r3" ReactionMapping="included" />
+      </ReactionContext>
+      <MathDescription Name="Copy of Application0_generated">
+        <Constant Name="_F_">96480.0</Constant>
+        <Constant Name="_F_nmol_">9.648E-5</Constant>
+        <Constant Name="_K_GHK_">1.0E-9</Constant>
+        <Constant Name="_N_pmol_">6.02E11</Constant>
+        <Constant Name="_PI_">3.141592653589793</Constant>
+        <Constant Name="_R_">8314.0</Constant>
+        <Constant Name="_T_">300.0</Constant>
+        <Constant Name="AreaPerUnitArea_nuc_env">1.0</Constant>
+        <Constant Name="ca_cyt_diffusionRate">50.0</Constant>
+        <Constant Name="ca_cyt_init_uM">0.05</Constant>
+        <Constant Name="ca_nuc_diffusionRate">50.0</Constant>
+        <Constant Name="ca_nuc_init_uM">0.05</Constant>
+        <Constant Name="ca_proximal_diffusionRate">0.1</Constant>
+        <Constant Name="ca_proximal_init_uM">1000.0</Constant>
+        <Constant Name="chan_closed_diffusionRate">0.001</Constant>
+        <Constant Name="chan_closed_init_molecules_um_2">0.1562278184308258</Constant>
+        <Constant Name="chan_open_diffusionRate">0.001</Constant>
+        <Constant Name="chan_open_init_molecules_um_2">0.0</Constant>
+        <Constant Name="chanPerm">10.0</Constant>
+        <Constant Name="K_millivolts_per_volt">1000.0</Constant>
+        <Constant Name="Kf_r1">2.0</Constant>
+        <Constant Name="KMOLE">(1.0 / 602.0)</Constant>
+        <Constant Name="Kr_r1">5.0</Constant>
+        <Constant Name="netValence_r1">1.0</Constant>
+        <Constant Name="netValence_r2">1.0</Constant>
+        <Constant Name="netValence_r3">1.0</Constant>
+        <Constant Name="pore_diffusionRate">0.001</Constant>
+        <Constant Name="pore_init_molecules_um_2">6.509492434617742</Constant>
+        <Constant Name="porePerm">10.0</Constant>
+        <Constant Name="Voltage_nuc_env">0.0</Constant>
+        <Constant Name="VolumePerUnitArea_nuc_erlumen">1.0</Constant>
+        <Constant Name="VolumePerUnitVolume_cytosol">1.0</Constant>
+        <Constant Name="VolumePerUnitVolume_nuc_lumen">1.0</Constant>
+        <VolumeVariable Name="ca_cyt" Domain="subdomain0" />
+        <VolumeVariable Name="ca_nuc" Domain="nuc" />
+        <MembraneVariable Name="ca_proximal" Domain="nuc_subdomain0_membrane" />
+        <MembraneVariable Name="chan_closed" Domain="nuc_subdomain0_membrane" />
+        <MembraneVariable Name="chan_open" Domain="nuc_subdomain0_membrane" />
+        <MembraneVariable Name="pore" Domain="nuc_subdomain0_membrane" />
+        <Function Name="J_r1" Domain="nuc_subdomain0_membrane">((Kf_r1 * chan_closed) - (Kr_r1 * chan_open))</Function>
+        <Function Name="J_r2" Domain="nuc_subdomain0_membrane">(((Kf_r2 * pore) * ca_cyt) - ((Kr_r2 * ca_nuc) * pore))</Function>
+        <Function Name="J_r3" Domain="nuc_subdomain0_membrane">(((Kf_r3 * chan_open) * ca_proximal) - ((Kr_r3 * ca_nuc) * chan_open))</Function>
+        <Function Name="Kf_r2" Domain="nuc_subdomain0_membrane">porePerm</Function>
+        <Function Name="Kf_r3" Domain="nuc_subdomain0_membrane">chanPerm</Function>
+        <Function Name="KFlux_nuc_env_cytosol" Domain="nuc_subdomain0_membrane">(AreaPerUnitArea_nuc_env / VolumePerUnitVolume_cytosol)</Function>
+        <Function Name="KFlux_nuc_env_nuc_erlumen" Domain="nuc_subdomain0_membrane">(AreaPerUnitArea_nuc_env / VolumePerUnitArea_nuc_erlumen)</Function>
+        <Function Name="KFlux_nuc_env_nuc_lumen" Domain="nuc_subdomain0_membrane">(AreaPerUnitArea_nuc_env / VolumePerUnitVolume_nuc_lumen)</Function>
+        <Function Name="Kr_r2" Domain="nuc_subdomain0_membrane">porePerm</Function>
+        <Function Name="Kr_r3" Domain="nuc_subdomain0_membrane">chanPerm</Function>
+        <Function Name="Size_cytosol" Domain="subdomain0">(VolumePerUnitVolume_cytosol * vcRegionVolume('subdomain0'))</Function>
+        <Function Name="Size_nuc_env" Domain="nuc_subdomain0_membrane">(AreaPerUnitArea_nuc_env * vcRegionArea('nuc_subdomain0_membrane'))</Function>
+        <Function Name="Size_nuc_erlumen" Domain="nuc_subdomain0_membrane">((VolumePerUnitArea_nuc_erlumen * UnitFactor_molecules_uM_neg_1_um_neg_3) * vcRegionVolume('nuc_subdomain0_membrane'))</Function>
+        <Function Name="Size_nuc_lumen" Domain="nuc">(VolumePerUnitVolume_nuc_lumen * vcRegionVolume('nuc'))</Function>
+        <Function Name="UnitFactor_molecules_uM_neg_1_um_neg_3">(602.0 / 1.0)</Function>
+        <Function Name="UnitFactor_uM_um3_molecules_neg_1">(1.0 / 602.0)</Function>
+        <CompartmentSubDomain Name="nuc">
+          <BoundaryType Boundary="Xm" Type="Flux" />
+          <BoundaryType Boundary="Xp" Type="Flux" />
+          <BoundaryType Boundary="Ym" Type="Flux" />
+          <BoundaryType Boundary="Yp" Type="Flux" />
+          <BoundaryType Boundary="Zm" Type="Flux" />
+          <BoundaryType Boundary="Zp" Type="Flux" />
+          <PdeEquation Name="ca_nuc" SolutionType="Unknown">
+            <Rate>0.0</Rate>
+            <Diffusion>ca_nuc_diffusionRate</Diffusion>
+            <Initial>ca_nuc_init_uM</Initial>
+          </PdeEquation>
+        </CompartmentSubDomain>
+        <CompartmentSubDomain Name="subdomain0">
+          <BoundaryType Boundary="Xm" Type="Flux" />
+          <BoundaryType Boundary="Xp" Type="Flux" />
+          <BoundaryType Boundary="Ym" Type="Flux" />
+          <BoundaryType Boundary="Yp" Type="Flux" />
+          <BoundaryType Boundary="Zm" Type="Flux" />
+          <BoundaryType Boundary="Zp" Type="Flux" />
+          <PdeEquation Name="ca_cyt" SolutionType="Unknown">
+            <Rate>0.0</Rate>
+            <Diffusion>ca_cyt_diffusionRate</Diffusion>
+            <Initial>ca_cyt_init_uM</Initial>
+          </PdeEquation>
+        </CompartmentSubDomain>
+        <MembraneSubDomain Name="nuc_subdomain0_membrane" InsideCompartment="nuc" OutsideCompartment="subdomain0">
+          <BoundaryType Boundary="Xm" Type="Value" />
+          <BoundaryType Boundary="Xp" Type="Value" />
+          <BoundaryType Boundary="Ym" Type="Value" />
+          <BoundaryType Boundary="Yp" Type="Value" />
+          <BoundaryType Boundary="Zm" Type="Value" />
+          <BoundaryType Boundary="Zp" Type="Value" />
+          <PdeEquation Name="ca_proximal" SolutionType="Unknown">
+            <Rate>- (UnitFactor_uM_um3_molecules_neg_1 * KFlux_nuc_env_nuc_erlumen * J_r3)</Rate>
+            <Diffusion>ca_proximal_diffusionRate</Diffusion>
+            <Initial>ca_proximal_init_uM</Initial>
+          </PdeEquation>
+          <PdeEquation Name="pore" SolutionType="Unknown">
+            <Rate>0.0</Rate>
+            <Diffusion>pore_diffusionRate</Diffusion>
+            <Initial>pore_init_molecules_um_2</Initial>
+          </PdeEquation>
+          <PdeEquation Name="chan_open" SolutionType="Unknown">
+            <Rate>J_r1</Rate>
+            <Diffusion>chan_open_diffusionRate</Diffusion>
+            <Initial>chan_open_init_molecules_um_2</Initial>
+          </PdeEquation>
+          <PdeEquation Name="chan_closed" SolutionType="Unknown">
+            <Rate>- J_r1</Rate>
+            <Diffusion>chan_closed_diffusionRate</Diffusion>
+            <Initial>chan_closed_init_molecules_um_2</Initial>
+          </PdeEquation>
+          <JumpCondition Name="ca_nuc">
+            <InFlux>((UnitFactor_uM_um3_molecules_neg_1 * KFlux_nuc_env_nuc_lumen * J_r2) + (UnitFactor_uM_um3_molecules_neg_1 * KFlux_nuc_env_nuc_lumen * J_r3))</InFlux>
+            <OutFlux>0.0</OutFlux>
+          </JumpCondition>
+          <JumpCondition Name="ca_cyt">
+            <InFlux>0.0</InFlux>
+            <OutFlux>- (UnitFactor_uM_um3_molecules_neg_1 * KFlux_nuc_env_cytosol * J_r2)</OutFlux>
+          </JumpCondition>
+        </MembraneSubDomain>
+        <Version Name="Copy of Application0_generated" KeyValue="98730889" BranchId="98697460" Archived="0" Date="21-Mar-2016 10:30:20" FromVersionable="false">
+          <Owner Name="schaff" Identifier="17" />
+          <GroupAccess Type="1" />
+        </Version>
+      </MathDescription>
+      <Simulation Name="Simulation1">
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Sundials Stiff PDE Solver (Variable Time Step)">
+          <TimeBound StartTime="0.0" EndTime="1.0" />
+          <TimeStep DefaultTime="0.05" MinTime="0.0" MaxTime="0.1" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-7" />
+          <OutputOptions OutputTimeStep="0.05" />
+          <SundialsSolverOptions>
+            <maxOrderAdvection>2</maxOrderAdvection>
+          </SundialsSolverOptions>
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides />
+        <MeshSpecification>
+          <Size X="51" Y="51" Z="51" />
+        </MeshSpecification>
+        <Version Name="Simulation1" KeyValue="98730927" BranchId="98697562" Archived="0" Date="21-Mar-2016 10:30:21" FromVersionable="false">
+          <Owner Name="schaff" Identifier="17" />
+          <GroupAccess Type="1" />
+          <ParentSimRef KeyValue="98697732" />
+        </Version>
+      </Simulation>
+      <Simulation Name="Simulation2">
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Sundials Stiff PDE Solver (Variable Time Step)">
+          <TimeBound StartTime="0.0" EndTime="1.0" />
+          <TimeStep DefaultTime="0.1" MinTime="0.0" MaxTime="0.1" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-7" />
+          <OutputOptions OutputTimeStep="0.05" />
+          <SundialsSolverOptions>
+            <maxOrderAdvection>2</maxOrderAdvection>
+          </SundialsSolverOptions>
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides />
+        <MeshSpecification>
+          <Size X="51" Y="51" Z="51" />
+        </MeshSpecification>
+        <Version Name="Simulation2" KeyValue="98730929" BranchId="98730930" Archived="0" Date="21-Mar-2016 10:30:21" FromVersionable="false">
+          <Owner Name="schaff" Identifier="17" />
+          <GroupAccess Type="1" />
+        </Version>
+      </Simulation>
+      <SpatialObjects>
+        <SpatialObject Name="vobj_subdomain00" Type="Volume" subVolume="subdomain0" regionId="0">
+          <QuantityCategoryList>
+            <QuantityCategory Name="VolumeCentroid" Enabled="false" />
+            <QuantityCategory Name="InteriorVelocity" Enabled="false" />
+            <QuantityCategory Name="VolumeRegionSize" Enabled="true" />
+          </QuantityCategoryList>
+        </SpatialObject>
+        <SpatialObject Name="vobj_nuc1" Type="Volume" subVolume="nuc" regionId="1">
+          <QuantityCategoryList>
+            <QuantityCategory Name="VolumeCentroid" Enabled="false" />
+            <QuantityCategory Name="InteriorVelocity" Enabled="false" />
+            <QuantityCategory Name="VolumeRegionSize" Enabled="true" />
+          </QuantityCategoryList>
+        </SpatialObject>
+        <SpatialObject Name="sobj_nuc1_subdomain00" Type="Surface" subVolumeInside="nuc" regionIdInside="1" subVolumeOutside="subdomain0" regionIdOutside="0">
+          <QuantityCategoryList>
+            <QuantityCategory Name="SurfaceNormal" Enabled="false" />
+            <QuantityCategory Name="SurfaceVelocity" Enabled="false" />
+            <QuantityCategory Name="DistanceToSurface" Enabled="false" />
+            <QuantityCategory Name="DirectionToSurface" Enabled="false" />
+            <QuantityCategory Name="SurfaceSize" Enabled="true" />
+          </QuantityCategoryList>
+        </SpatialObject>
+      </SpatialObjects>
+      <Version Name="Copy of Application0" KeyValue="98730908" BranchId="98697538" Archived="0" Date="21-Mar-2016 10:30:20" FromVersionable="false">
+        <Owner Name="schaff" Identifier="17" />
+        <GroupAccess Type="1" />
+        <Annotation>(copied from Application0)</Annotation>
+      </Version>
+      <MicroscopeMeasurement Name="fluor">
+        <ConvolutionKernel Type="ProjectionZKernel" />
+      </MicroscopeMeasurement>
+    </SimulationSpec>
+    <Version Name="Nuc_pore_and_channels" KeyValue="98730962" BranchId="98697441" Archived="0" Date="21-Mar-2016 10:44:51" FromVersionable="false">
+      <Owner Name="schaff" Identifier="17" />
+      <GroupAccess Type="0" />
+    </Version>
+    <pathwayModel>
+      <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bp="http://www.biopax.org/release/biopax-level3.owl#" version="3.0" />
+    </pathwayModel>
+    <relationshipModel>
+      <RMNS version="3.0" />
+    </relationshipModel>
+    <vcmetadata>
+      <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" />
+      <nonrdfAnnotationList />
+      <uriBindingList />
+    </vcmetadata>
+  </BioModel>
+</vcml>
+

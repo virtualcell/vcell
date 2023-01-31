@@ -544,12 +544,9 @@ private MathCompareResults compareEquivalentCanonicalMath(MathDescription newMat
 										//
 										// difference couldn't be reconciled
 										//
-										String msg = "expressions are different: '" + oldExps.get(k).infix() + "' vs '"
-												+ newExps.get(k).infix() + "'";
-										logMathTexts(this, newMathDesc, Decision.MathDifferent_DIFFERENT_EXPRESSION,
-												msg);
-										return new MathCompareResults(Decision.MathDifferent_DIFFERENT_EXPRESSION,
-												msg);
+										String msg = "expressions are different: '" + oldExps.get(k).infix() + "' vs '" + newExps.get(k).infix() + "'";
+										logMathTexts(this, newMathDesc, Decision.MathDifferent_DIFFERENT_EXPRESSION, msg);
+										return new MathCompareResults(Decision.MathDifferent_DIFFERENT_EXPRESSION, msg);
 									}
 								}else{
 									//if (!bSilent) System.out.println("expressions are equivalent Old: '"+oldExps[k]+"'\n"+
@@ -796,26 +793,90 @@ private MathCompareResults compareEquivalentCanonicalMath(MathDescription newMat
 						return new MathCompareResults(Decision.MathDifferent_UNKNOWN_DIFFERENCE_IN_EQUATION, msg);
 					}
 				}
-				
-				List<ParticleJumpProcess> oldPjpList = subDomainsOld.get(i).getParticleJumpProcesses();
-				List<ParticleJumpProcess> newPjpList = subDomainsNew.get(i).getParticleJumpProcesses();
+				//
+				// 1) get list of old and new ParticleJumpProcesses
+				// 2) filter out 'no-op' PJPs (e.g. those only with trivial Actions such as open->open)
+				// 3) add trivial Symmetry factor (1.0) if missing
+				//
+				List<ParticleJumpProcess> oldPjpList = subDomainsOld.get(i).getParticleJumpProcesses().stream().filter(pjp -> !pjp.actionsNoop()).collect(Collectors.toList());
+				List<ParticleJumpProcess> newPjpList = subDomainsNew.get(i).getParticleJumpProcesses().stream().filter(pjp -> !pjp.actionsNoop()).collect(Collectors.toList());;
+				for (ParticleJumpProcess oldPjp : oldPjpList)
+					if (oldPjp.getProcessSymmetryFactor() == null) oldPjp.setProcessSymmetryFactor(new ParticleJumpProcess.ProcessSymmetryFactor(1.0));
+				for (ParticleJumpProcess newPjp : newPjpList)
+					if (newPjp.getProcessSymmetryFactor() == null) newPjp.setProcessSymmetryFactor(new ParticleJumpProcess.ProcessSymmetryFactor(1.0));
+
 				if (oldPjpList.size() != newPjpList.size()) {
-					logMathTexts(this, newMathDesc, Decision.MathDifferent_DIFFERENT_NUMBER_OF_PARTICLE_JUMP_PROCESS, "");
-					return new MathCompareResults(Decision.MathDifferent_DIFFERENT_NUMBER_OF_PARTICLE_JUMP_PROCESS);
+					Set<String> oldPjpNameSet = oldPjpList.stream().map(pjp->pjp.getName()).collect(Collectors.toSet());
+					Set<String> newPjpNameSet = newPjpList.stream().map(pjp->pjp.getName()).collect(Collectors.toSet());
+					Set<String> removedPjpNames = new LinkedHashSet<>(oldPjpNameSet);
+					removedPjpNames.removeAll(newPjpNameSet);
+					Set<String> addedPjpNames = new LinkedHashSet<>(newPjpNameSet);
+					addedPjpNames.removeAll(oldPjpNameSet);
+					String msg = "removed PJPs="+removedPjpNames+", added PJPs="+addedPjpNames;
+					logMathTexts(this, newMathDesc, Decision.MathDifferent_DIFFERENT_NUMBER_OF_PARTICLE_JUMP_PROCESS, msg);
+					return new MathCompareResults(Decision.MathDifferent_DIFFERENT_NUMBER_OF_PARTICLE_JUMP_PROCESS, msg);
 				}
 				for (ParticleJumpProcess oldPjp : oldPjpList) {
 					boolean bEqual = false;
+					boolean bEqualAfterKMOLE = false;
+					boolean bSymmetryFactorDifferent = false;
+					ParticleJumpProcess matchingPjp = null;
 					for (ParticleJumpProcess newPjp : newPjpList) {
-						if (Compare.isEqualOrNull(oldPjp, newPjp)) {
-							if (oldPjp.compareEqual(newPjp)) {
-								bEqual = true;
+						if (Compare.isEqualOrNull(oldPjp.getName(), newPjp.getName())) {
+							matchingPjp = newPjp;
+							bSymmetryFactorDifferent = oldPjp.getProcessSymmetryFactor().factor != matchingPjp.getProcessSymmetryFactor().factor;
+							double savedSymmetryFactor = matchingPjp.getProcessSymmetryFactor().factor;
+							try {
+								if (bSymmetryFactorDifferent) {
+									matchingPjp.setProcessSymmetryFactor(new ParticleJumpProcess.ProcessSymmetryFactor(oldPjp.getProcessSymmetryFactor().factor));
+								}
+								if (oldPjp.compareEqual(newPjp)) {
+									bEqual = true;
+								} else if (newPjp.getParticleRateDefinition() instanceof MacroscopicRateConstant) {
+									final double KMOLE_new = 1.0 / 602.214179;
+									final double KMOLE_value_old = 1.0 / 602.0;
+									MacroscopicRateConstant macroscopicRateConstant = (MacroscopicRateConstant) newPjp.getParticleRateDefinition();
+									final int MAX_POWER_KMOLE = 2;
+									Expression savedExp = new Expression(macroscopicRateConstant.getExpression());
+									for (int pow = 1; pow <= MAX_POWER_KMOLE; pow++) {
+										Expression scaledRate = Expression.mult(macroscopicRateConstant.getExpression(), new Expression(KMOLE_value_old)).flattenSafe();
+										macroscopicRateConstant.getExpression().substituteInPlace(macroscopicRateConstant.getExpression(), scaledRate);
+										if (oldPjp.compareEqual(newPjp)) {
+											bEqualAfterKMOLE = true;
+											break;
+										}
+									}
+									macroscopicRateConstant.setExpression(savedExp);
+								}
+							}finally {
+								if (bSymmetryFactorDifferent) {
+									matchingPjp.setProcessSymmetryFactor(new ParticleJumpProcess.ProcessSymmetryFactor(savedSymmetryFactor));
+								}
 							}
 							break;
 						}
 					}
+					if (bEqualAfterKMOLE && !bSymmetryFactorDifferent) {
+						String msg = "PJP='"+oldPjp.getName()+"', " +
+								"old='"+ Arrays.asList(oldPjp.getParticleRateDefinition().getExpressions()).stream().map(e->e.infix()).collect(Collectors.toList())+"', " +
+								"new='"+ ((matchingPjp==null)?"null":Arrays.asList(matchingPjp.getParticleRateDefinition().getExpressions()).stream().map(e->e.infix()).collect(Collectors.toList()))+"'";
+						logMathTexts(this, newMathDesc, Decision.MathDifferent_LEGACY_RATE_PARTICLE_JUMP_PROCESS, msg);
+						return new MathCompareResults(Decision.MathDifferent_LEGACY_RATE_PARTICLE_JUMP_PROCESS, msg);
+					}
+					if ((bEqual || bEqualAfterKMOLE) && bSymmetryFactorDifferent) {
+						String msg = "PJP='"+oldPjp.getName()+"', " +
+								"ProcessSymmetryFactor: old='"+oldPjp.getProcessSymmetryFactor().getFactor()+"', "+
+								"new='"+ ((matchingPjp==null)?"null":matchingPjp.getProcessSymmetryFactor().getFactor())+"'";
+						logMathTexts(this, newMathDesc, Decision.MathDifferent_LEGACY_SYMMETRY_PARTICLE_JUMP_PROCESS, msg);
+						return new MathCompareResults(Decision.MathDifferent_LEGACY_SYMMETRY_PARTICLE_JUMP_PROCESS, msg);
+					}
 					if (!bEqual) {
-						logMathTexts(this, newMathDesc, Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS, "");
-						return new MathCompareResults(Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS);
+						String msg = "PJP='"+oldPjp.getName()+"', SymmetryFactor: old='"+oldPjp.getProcessSymmetryFactor().getFactor()+"' "+
+								"new='"+ ((matchingPjp==null)?"null":matchingPjp.getProcessSymmetryFactor().getFactor())+"', rate: "+
+								"old='"+ Arrays.asList(oldPjp.getParticleRateDefinition().getExpressions()).stream().map(e->e.infix()).collect(Collectors.toList())+"', " +
+								"new='"+ ((matchingPjp==null)?"null":Arrays.asList(matchingPjp.getParticleRateDefinition().getExpressions()).stream().map(e->e.infix()).collect(Collectors.toList()))+"'";
+						logMathTexts(this, newMathDesc, Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS, msg);
+						return new MathCompareResults(Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS, msg);
 					}
 				}
 			}
@@ -832,7 +893,7 @@ private MathCompareResults compareEquivalentCanonicalMath(MathDescription newMat
 	}
 }
 
-private void setMissingEquationBoundaryConditionsToDefault(SubDomain.DomainWithBoundaryConditions subdomain, int geometryDim){
+	private void setMissingEquationBoundaryConditionsToDefault(SubDomain.DomainWithBoundaryConditions subdomain, int geometryDim){
 	List<PdeEquation> pdeEquations = subdomain.getEquationCollection().stream().filter(e -> e instanceof PdeEquation).map(e -> (PdeEquation) e).collect(Collectors.toList());
 	//
 	// CompartmentSubDomains have correct boundary condition types for external boundaries.
@@ -2659,6 +2720,10 @@ void makeCanonical(MathSymbolTableFactory mathSymbolTableFactory) throws MathExc
 		if (var instanceof RandomVariable){
 			((RandomVariable)var).flatten(mathSymbolTable,bRoundCoefficients);
 		}
+	}
+
+	if (postProcessingBlock!=null){
+		postProcessingBlock.flatten(mathSymbolTable,bRoundCoefficients);
 	}
 	
 	//

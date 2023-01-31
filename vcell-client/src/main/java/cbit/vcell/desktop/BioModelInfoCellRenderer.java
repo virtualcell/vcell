@@ -129,8 +129,6 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 				} else {
 					setIcon(VCellIcons.appStoSpatialIcon);
 				}
-			} else if(MathType.SpringSaLaD.getDescription().equals(node.getRenderHint("appType"))) {
-				setIcon(VCellIcons.appSpringSaLaDSpatialIcon);
 			} else if(MathType.Deterministic.getDescription().equals(node.getRenderHint("appType"))) {
 				if("0".equals(node.getRenderHint("dimension"))) {
 					setIcon(VCellIcons.appDetNonspIcon);

@@ -3,6 +3,7 @@ package org.vcell.vmicro.workflow.data;
 import java.io.File;
 import java.util.StringTokenizer;
 
+import cbit.vcell.math.*;
 import org.vcell.util.Compare;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ISize;
@@ -14,10 +15,6 @@ import org.vcell.util.document.User;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldUtilities;
-import cbit.vcell.math.DataGenerator;
-import cbit.vcell.math.FieldFunctionDefinition;
-import cbit.vcell.math.MathException;
-import cbit.vcell.math.VariableType;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.resource.PropertyLoader;
@@ -54,7 +51,13 @@ public class ROIDataGenerator extends DataGenerator {
 		this.bStoreEnabled = bStoreEnabled;
 	}
 
-	
+	@Override
+	public void flatten(MathSymbolTable mathSymbolTable, boolean bRoundCoefficients) throws MathException, ExpressionException {
+//		if (fieldFuncArguments != null && fieldFuncArguments.getTime() != null){
+//			fieldFuncArguments.function = Equation.getFlattenedExpression(mathSymbolTable, function, bRoundCoefficients);
+//		}
+	}
+
 	public String getROIDataGeneratorDescription(File userDirectory, SimulationJob simulationJob) throws Exception { //DataAccessException, FileNotFoundException, MathException, IOException, DivideByZeroException, ExpressionException 
 		Simulation simulation = simulationJob.getSimulation();
 		

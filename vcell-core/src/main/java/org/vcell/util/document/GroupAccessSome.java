@@ -202,7 +202,8 @@ public boolean isNormalMember(User user) {
  */
 public String toString() {
 	StringBuffer sb = new StringBuffer();
-	sb.append("Group id="+getGroupid()+" Hash="+getHash()+" Members= ");
+//	sb.append("Group id="+getGroupid()+" Hash="+getHash()+" Members= ");
+	sb.append("Group=[");
 	for(int i = 0; i<groupMembers.length;i+= 1){
 		if(hiddenMembers[i]){
 			sb.append("*");
@@ -212,6 +213,7 @@ public String toString() {
 			sb.append(",");
 		}
 	}
+	sb.append("]");
  	return sb.toString();
 }
 }

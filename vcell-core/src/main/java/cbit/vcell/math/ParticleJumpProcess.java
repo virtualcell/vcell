@@ -12,6 +12,8 @@ package cbit.vcell.math;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
@@ -134,8 +136,19 @@ public ParticleJumpProcess(String name, List<ParticleVariable> particles, JumpPr
 //	return processParticleMappings;
 //}
 //
-public void setProcessParticleMappings(ProcessSymmetryFactor processSymmetryFactor){	
+public void setProcessSymmetryFactor(ProcessSymmetryFactor processSymmetryFactor){
 	this.processSymmetryFactor = processSymmetryFactor;
+}
+
+public boolean actionsNoop() {
+	Set<String> createdSet = actions.stream()
+			.filter(a -> a.getOperation().equals(Action.ACTION_CREATE))
+			.map(a -> a.getVar().getName()).collect(Collectors.toSet());
+	Set<String> destroyedSet = actions.stream()
+			.filter(a -> a.getOperation().equals(Action.ACTION_DESTROY))
+			.map(a -> a.getVar().getName()).collect(Collectors.toSet());
+	boolean bNoop = createdSet.equals(destroyedSet);
+	return bNoop;
 }
 
 public ProcessSymmetryFactor getProcessSymmetryFactor() {	
