@@ -65,31 +65,52 @@ public class Hdf5Utils {
 		H5.H5Sclose(hdf5DataspaceIDSlice);
 	}
 	public static void insertAttribute(int hdf5GroupID,String dataspaceName,String data) throws NullPointerException, HDF5Exception {
-		insertAttributes(hdf5GroupID, dataspaceName, new ArrayList<String>(Arrays.asList(new String[] {data})));
+		//insertAttributes(hdf5GroupID, dataspaceName, new ArrayList<String>(Arrays.asList(new String[] {data})));
+		//String[] attr = data.toArray(new String[0]);
+
+		String attr = data + '\u0000';
+
+		//https://support.hdfgroup.org/ftp/HDF5/examples/misc-examples/vlstra.c
+		int h5attrcs1 = H5.H5Tcopy(HDF5Constants.H5T_C_S1);
+		H5.H5Tset_size (h5attrcs1, attr.length() /*HDF5Constants.H5T_VARIABLE*/);
+		int dataspace_id = -1;
+		//dataspace_id = H5.H5Screate_simple(dims.length, dims,null);
+		dataspace_id = H5.H5Screate(HDF5Constants.H5S_SCALAR);
+		int attribute_id = H5.H5Acreate(hdf5GroupID, dataspaceName, h5attrcs1, dataspace_id, HDF5Constants.H5P_DEFAULT,HDF5Constants.H5P_DEFAULT);
+		H5.H5Awrite(attribute_id, h5attrcs1, attr.getBytes());
+		H5.H5Sclose(dataspace_id);
+		H5.H5Aclose(attribute_id);
+		H5.H5Tclose(h5attrcs1);
 	}
+	
 	public static void insertAttributes(int hdf5GroupID,String dataspaceName,List<String> data) throws NullPointerException, HDF5Exception {
 		String[] attr = data.toArray(new String[0]);
-		long[] dims = new long[] {attr.length};
+		long[] dims = new long[] {attr.length}; // Always an array of length == 1
 		StringBuffer sb = new StringBuffer();
 		int MAXSTRSIZE=  -1;
+
+		// Get the max length of all the data strings
 		for(int i=0;i<attr.length;i++) {
 			int len = attr[i] == null ? -1 : attr[i].length(); // passing a 0 causes null exception
 			if (attr[i] == null) attr[i] = "";
 			MAXSTRSIZE = Math.max(MAXSTRSIZE, len);
 		}
+
+		// Append data to single string buffer, padding with null characters to create uniformity.
 		for(int i=0;i<attr.length;i++) {
 			sb.append(attr[i]);
 			for(int j=0;j<(MAXSTRSIZE-attr[i].length());j++) {
 				sb.append('\u0000');//null terminated string for hdf5 native code
 			}
 		}
+
 		//https://support.hdfgroup.org/ftp/HDF5/examples/misc-examples/vlstra.c
 		int h5attrcs1 = H5.H5Tcopy(HDF5Constants.H5T_C_S1);
 		H5.H5Tset_size (h5attrcs1, MAXSTRSIZE/*HDF5Constants.H5T_VARIABLE*/);
 		int dataspace_id = -1;
 		dataspace_id = H5.H5Screate_simple(dims.length, dims,null);
 		int attribute_id = H5.H5Acreate(hdf5GroupID, dataspaceName, h5attrcs1, dataspace_id, HDF5Constants.H5P_DEFAULT,HDF5Constants.H5P_DEFAULT);
-		H5.H5Awrite (attribute_id, h5attrcs1, sb.toString().getBytes());
+		H5.H5Awrite(attribute_id, h5attrcs1, sb.toString().getBytes());
 		H5.H5Sclose(dataspace_id);
 		H5.H5Aclose(attribute_id);
 		H5.H5Tclose(h5attrcs1);

@@ -151,6 +151,7 @@ public class Hdf5Writer {
                 Hdf5Utils.insertAttributes(hdf5DatasetID, "scanParameterNames", Arrays.asList(datasetWrapper.dataSource.scanParameterNames));
                 Hdf5Utils.insertAttributes(hdf5DatasetID, "sedmlDataSetDataTypes", datasetWrapper.datasetMetadata.sedmlDataSetDataTypes);
                 Hdf5Utils.insertAttributes(hdf5DatasetID, "sedmlDataSetIds", datasetWrapper.datasetMetadata.sedmlDataSetIds);
+                Hdf5Utils.insertAttributes(hdf5DatasetID, "sedmlDataSetNames", datasetWrapper.datasetMetadata.sedmlDataSetNames);
                 if (datasetWrapper.datasetMetadata.sedmlDataSetNames.get(0) != null &&
                         datasetWrapper.datasetMetadata.sedmlDataSetNames.get(0).length()>0) {
                     Hdf5Utils.insertAttributes(hdf5DatasetID, "sedmlDataSetNames", datasetWrapper.datasetMetadata.sedmlDataSetNames);
