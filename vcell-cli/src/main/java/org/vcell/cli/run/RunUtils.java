@@ -541,12 +541,13 @@ public class RunUtils {
 
 
     public static boolean removeAndMakeDirs(File f) {
+        boolean removalSuccess = true;
         if (f.exists()) {
             boolean isRemoved = CLIUtils.removeDirs(f);
             if (!isRemoved)
-                return false;
+                removalSuccess = false;
         }
-        return f.mkdirs();
+        return f.mkdirs() && removalSuccess;
     }
 
     public static void createCSVFromODEResultSet(ODESolverResultSet resultSet, File f) throws ExpressionException {

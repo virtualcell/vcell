@@ -504,20 +504,25 @@ public static boolean isEqualOrNull(Matchable v1[], Matchable v2[]) {
 	}
 }
 
-public static boolean isEqualOrNull(Matchable obj1, Matchable obj2) {
-	if (obj1==null && obj2==null){
+	public static boolean isEqualOrNull(Matchable obj1, Matchable obj2, BiPredicate<Matchable, Matchable> predicate) {
+		if (obj1==null && obj2==null){
+			return true;
+		}
+		if (obj1==null || obj2==null){
+			return logFailure();
+		}
+		if (!predicate.test(obj1,obj2)){
+			return logFailure();
+		}
 		return true;
 	}
-	if (obj1==null || obj2==null){
-		return logFailure();
-	}
-	if (!obj1.compareEqual(obj2)){
-		return logFailure();
-	}
-	return true;
-}
 
-public static boolean isEqualOrNull(java.lang.Number obj1, java.lang.Number obj2) {
+	public static boolean isEqualOrNull(Matchable obj1, Matchable obj2) {
+		BiPredicate<Matchable,Matchable> predicate = (vv1, vv2) -> vv1.compareEqual(vv2);
+		return isEqualOrNull(obj1, obj2, predicate);
+	}
+
+	public static boolean isEqualOrNull(java.lang.Number obj1, java.lang.Number obj2) {
 	return isEqualOrNull0(obj1, obj2);
 }
 

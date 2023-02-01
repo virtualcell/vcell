@@ -140,13 +140,21 @@ public class SEDMLExporterSBMLTest extends SEDMLExporterCommon {
 		faults.put("biomodel_81284732.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_82250339.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_83446023.vcml", SEDML_FAULT.MATH_OVERRIDE_NOT_EQUIVALENT); // simulation 'Simulation0' in simContext 'compartmental'
+		faults.put("biomodel_83462243.vcml", SEDML_FAULT.SIMCONTEXT_NOT_FOUND_BY_NAME); // roundtripped simulationContext not found with name 'spatial-hybrid'
+		faults.put("biomodel_83651737.vcml", SEDML_FAULT.SIMCONTEXT_NOT_FOUND_BY_NAME);
 		faults.put("biomodel_84982474.vcml", SEDML_FAULT.DIFF_NUMBER_OF_BIOMODELS); // not supported nonspatial histogram
 		faults.put("biomodel_9254662.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_92705462.vcml", SEDML_FAULT.SIMCONTEXT_NOT_FOUND_BY_NAME);  // roundtripped simulationContext not found with name 'stoch'
+		faults.put("biomodel_97075423.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
+		faults.put("biomodel_97705317.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
+		faults.put("biomodel_97786619.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
+		faults.put("biomodel_97786886.vcml", SEDML_FAULT.SIMCONTEXT_NOT_FOUND_BY_NAME); // roundtripped simulationContext not found with name 'hybrid'
+		faults.put("biomodel_97787114.vcml", SEDML_FAULT.SIMCONTEXT_NOT_FOUND_BY_NAME); // roundtripped simulationContext not found with name 'hybrid'
 		faults.put("biomodel_98147638.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_98150237.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX); // new
 		faults.put("biomodel_98174143.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_98296160.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
+		faults.put("biomodel_98730962.vcml", SEDML_FAULT.SIMCONTEXT_NOT_FOUND_BY_NAME); // roundtripped simulationContext not found with name 'Application0'
 		faults.put("biomodel_165181964.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		return faults;
 	}

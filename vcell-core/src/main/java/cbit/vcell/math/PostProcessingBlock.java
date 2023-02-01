@@ -140,4 +140,10 @@ public final class PostProcessingBlock implements SymbolTable, Serializable, Mat
 	public final int getNumDataGenerators() {
 		return dataGeneratorList.size();
 	}
+
+    public void flatten(MathSymbolTable mathSymbolTable, boolean bRoundCoefficients) throws MathException, ExpressionException {
+		for (DataGenerator dataGenerator : dataGeneratorList) {
+			dataGenerator.flatten(mathSymbolTable, bRoundCoefficients);
+		}
+	}
 }
