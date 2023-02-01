@@ -59,6 +59,8 @@ import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.xml.XMLTags;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
+
+import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jdom.Element;
@@ -1932,7 +1934,7 @@ private void roundTripValidation() throws SBMLValidationException {
 	// TODO: create method that does real checks and generates warnings as needed 
 //	checkUnistSystem();
 	
-	translateBioModel();
+	translateBioModel(sbmlDocument);
 
 	// include specific vcellInfo annotations
 	Element sbmlImportRelatedElement = null; // new Element(XMLTags.VCellRelatedInfoTag, sbml_vcml_ns);
@@ -2757,7 +2759,7 @@ public static void validateSimulationContextSupport(SimulationContext simulation
  * @throws SbmlException 
  * @throws XMLStreamException 
  */
-private void translateBioModel() throws SbmlException, UnsupportedSbmlExportException, XMLStreamException {
+private void translateBioModel(SBMLDocument sbmlDocument) throws SbmlException, UnsupportedSbmlExportException, XMLStreamException {
 
 	validateSimulationContextSupport(vcSelectedSimContext);
 
@@ -2797,6 +2799,7 @@ private void translateBioModel() throws SbmlException, UnsupportedSbmlExportExce
 	addEvents();				// Add Events
 	
 	postProcessExpressions();
+	filterUnusedReservedSymbols(sbmlDocument);
 }
 
 private SimulationContext getSelectedSimContext() {
@@ -2805,6 +2808,22 @@ private SimulationContext getSelectedSimContext() {
 
 private void setSelectedSimContext(SimulationContext vcSelectedSimContext) {
 	this.vcSelectedSimContext = vcSelectedSimContext;
+}
+
+private void filterUnusedReservedSymbols(SBMLDocument sbmlDocument) throws SBMLException, XMLStreamException {
+	SBMLWriter sbmlWriter = new SBMLWriter();
+	String sbmlStr = sbmlWriter.writeSBMLToString(sbmlDocument);
+	Model vcModel = getSelectedSimContext().getModel();
+	ReservedSymbol[] vcReservedSymbols = vcModel.getReservedSymbols();  
+	for (ReservedSymbol vcParam : vcReservedSymbols) {
+		if(vcParam.isTime() || vcParam.isX() || vcParam.isY() || vcParam.isZ()) {
+			continue;
+		}
+		int count = StringUtils.countMatches(sbmlStr, vcParam.getName());
+		if(count == 1) {
+			sbmlModel.removeParameter(vcParam.getName());	// we know for sure that the sbmlParam id is same as vcmlParam name
+		}
+	}
 }
 
 // now that we have a complete symbolTableEntryNameToSidMap, we can substitute in all expressions the
