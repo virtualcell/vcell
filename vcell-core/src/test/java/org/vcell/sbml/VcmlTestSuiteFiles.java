@@ -1,5 +1,6 @@
 package org.vcell.sbml;
 
+import cbit.vcell.parser.Expression;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -8,6 +9,7 @@ import org.vcell.test.Fast;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.List;
 import java.util.function.Predicate;
 
 
@@ -288,8 +290,290 @@ public class VcmlTestSuiteFiles {
             "biomodel_92967115.vcml",
             "biomodel_92968671.vcml",
             "biomodel_92981603.vcml",
-
-            // ALL biomodels models in /vcell-core/src/test/resources/org/vcell/sbml/vcell_hybrid/ (many are private)
+//
+//            // ALL biomodels in /vcell-core/src/test/resources/org/vcell/sbml/local/massaction/ (many are private)
+//            "biomodel_100950012.vcml",
+//            "biomodel_101106339.vcml",
+//            "biomodel_101112525.vcml",
+//            "biomodel_102661590.vcml",
+//            "biomodel_105923905.vcml",
+//            "biomodel_105923935.vcml",
+//            "biomodel_106181298.vcml",
+//            "biomodel_110339900.vcml",
+//            "biomodel_110693704.vcml",
+//            "biomodel_110875599.vcml",
+//            "biomodel_110912005.vcml",
+//            "biomodel_111127250.vcml",
+//            "biomodel_111128660.vcml",
+//            "biomodel_111128947.vcml",
+//            "biomodel_111129726.vcml",
+//            "biomodel_111134102.vcml",
+//            "biomodel_111136876.vcml",
+//            "biomodel_111195079.vcml",
+//            "biomodel_111196455.vcml",
+//            "biomodel_111366857.vcml",
+//            "biomodel_111366982.vcml",
+//            "biomodel_111367285.vcml",
+//            "biomodel_111367855.vcml",
+//            "biomodel_111368266.vcml",
+//            "biomodel_111375407.vcml",
+//            "biomodel_111406453.vcml",
+//            "biomodel_111407404.vcml",
+//            "biomodel_111420974.vcml",
+//            "biomodel_111514614.vcml",
+//            "biomodel_111514898.vcml",
+//            "biomodel_111603975.vcml",
+//            "biomodel_111604093.vcml",
+//            "biomodel_111604503.vcml",
+//            "biomodel_111605144.vcml",
+//            "biomodel_111605317.vcml",
+//            "biomodel_115999897.vcml",
+//            "biomodel_122586175.vcml",
+//            "biomodel_122586235.vcml",
+//            "biomodel_122586277.vcml",
+//            "biomodel_122586572.vcml",
+//            "biomodel_122586652.vcml",
+//            "biomodel_122588382.vcml",
+//            "biomodel_122609044.vcml",
+//            "biomodel_12848184.vcml",
+//            "biomodel_131665490.vcml",
+//            "biomodel_144659630.vcml",
+//            "biomodel_147175216.vcml",
+//            "biomodel_147945292.vcml",
+//            "biomodel_147946596.vcml",
+//            "biomodel_14932493.vcml",
+//            "biomodel_14933564.vcml",
+//            "biomodel_166890778.vcml",
+//            "biomodel_166890855.vcml",
+//            "biomodel_168676084.vcml",
+//            "biomodel_168784637.vcml",
+//            "biomodel_168785982.vcml",
+//            "biomodel_171254911.vcml",
+//            "biomodel_175517664.vcml",
+//            "biomodel_175526470.vcml",
+//            "biomodel_175745130.vcml",
+//            "biomodel_185316278.vcml",
+//            "biomodel_185317385.vcml",
+//            "biomodel_188709535.vcml",
+//            "biomodel_18978432.vcml",
+//            "biomodel_19134724.vcml",
+//            "biomodel_19168243.vcml",
+//            "biomodel_196341655.vcml",
+//            "biomodel_196348974.vcml",
+//            "biomodel_196433861.vcml",
+//            "biomodel_2000010.vcml",
+//            "biomodel_2000018.vcml",
+//            "biomodel_2000021.vcml",
+//            "biomodel_20106855.vcml",
+//            "biomodel_2022013.vcml",
+//            "biomodel_2024264.vcml",
+//            "biomodel_2024458.vcml",
+//            "biomodel_2024689.vcml",
+//            "biomodel_2024849.vcml",
+//            "biomodel_2025449.vcml",
+//            "biomodel_2025920.vcml",
+//            "biomodel_2026127.vcml",
+//            "biomodel_2027262.vcml",
+//            "biomodel_2027455.vcml",
+//            "biomodel_2027747.vcml",
+//            "biomodel_2028176.vcml",
+//            "biomodel_2028610.vcml",
+//            "biomodel_2028855.vcml",
+//            "biomodel_2030592.vcml",
+//            "biomodel_2034941.vcml",
+//            "biomodel_2035774.vcml",
+//            "biomodel_20370142.vcml",
+//            "biomodel_2037792.vcml",
+//            "biomodel_203950881.vcml",
+//            "biomodel_2040373.vcml",
+//            "biomodel_2041093.vcml",
+//            "biomodel_2044946.vcml",
+//            "biomodel_2045527.vcml",
+//            "biomodel_2045795.vcml",
+//            "biomodel_20526839.vcml",
+//            "biomodel_2061001.vcml",
+//            "biomodel_2069112.vcml",
+//            "biomodel_2071137.vcml",
+//            "biomodel_2072397.vcml",
+//            "biomodel_2073109.vcml",
+//            "biomodel_2082195.vcml",
+//            "biomodel_211132289.vcml",
+//            "biomodel_211551763.vcml",
+//            "biomodel_212471469.vcml",
+//            "biomodel_214386898.vcml",
+//            "biomodel_2155626.vcml",
+//            "biomodel_217115750.vcml",
+//            "biomodel_2177828.vcml",
+//            "biomodel_2209906.vcml",
+//            "biomodel_22332502.vcml",
+//            "biomodel_2274967.vcml",
+//            "biomodel_231459684.vcml",
+//            "biomodel_231538392.vcml",
+//            "biomodel_237013469.vcml",
+//            "biomodel_237093711.vcml",
+//            "biomodel_237313189.vcml",
+//            "biomodel_24470582.vcml",
+//            "biomodel_26817063.vcml",
+//            "biomodel_2766960.vcml",
+//            "biomodel_2845845.vcml",
+//            "biomodel_28552229.vcml",
+//            "biomodel_28555193.vcml",
+//            "biomodel_28572365.vcml",
+//            "biomodel_29136875.vcml",
+//            "biomodel_29136972.vcml",
+//            "biomodel_29476020.vcml",
+//            "biomodel_30497750.vcml",
+//            "biomodel_30510577.vcml",
+//            "biomodel_33838068.vcml",
+//            "biomodel_33862744.vcml",
+//            "biomodel_33863932.vcml",
+//            "biomodel_33863937.vcml",
+//            "biomodel_33910317.vcml",
+//            "biomodel_33910543.vcml",
+//            "biomodel_33917485.vcml",
+//            "biomodel_34398701.vcml",
+//            "biomodel_34399436.vcml",
+//            "biomodel_34540124.vcml",
+//            "biomodel_34540163.vcml",
+//            "biomodel_34860206.vcml",
+//            "biomodel_35990212.vcml",
+//            "biomodel_35990461.vcml",
+//            "biomodel_35993899.vcml",
+//            "biomodel_36310541.vcml",
+//            "biomodel_36587627.vcml",
+//            "biomodel_36588994.vcml",
+//            "biomodel_36800083.vcml",
+//            "biomodel_37345720.vcml",
+//            "biomodel_37346296.vcml",
+//            "biomodel_38770411.vcml",
+//            "biomodel_39781155.vcml",
+//            "biomodel_39781314.vcml",
+//            "biomodel_40500269.vcml",
+//            "biomodel_40917343.vcml",
+//            "biomodel_40917768.vcml",
+//            "biomodel_4123574.vcml",
+//            "biomodel_41261123.vcml",
+//            "biomodel_44582721.vcml",
+//            "biomodel_45416823.vcml",
+//            "biomodel_45488947.vcml",
+//            "biomodel_46530867.vcml",
+//            "biomodel_4722484.vcml",
+//            "biomodel_4733342.vcml",
+//            "biomodel_47468216.vcml",
+//            "biomodel_47517979.vcml",
+//            "biomodel_47520230.vcml",
+//            "biomodel_4793687.vcml",
+//            "biomodel_49074913.vcml",
+//            "biomodel_49105516.vcml",
+//            "biomodel_50908630.vcml",
+//            "biomodel_50920720.vcml",
+//            "biomodel_50946331.vcml",
+//            "biomodel_51538868.vcml",
+//            "biomodel_51594531.vcml",
+//            "biomodel_51760975.vcml",
+//            "biomodel_51959799.vcml",
+//            "biomodel_52085206.vcml",
+//            "biomodel_52235352.vcml",
+//            "biomodel_52517558.vcml",
+//            "biomodel_52699692.vcml",
+//            "biomodel_52699794.vcml",
+//            "biomodel_52699891.vcml",
+//            "biomodel_52708463.vcml",
+//            "biomodel_52710562.vcml",
+//            "biomodel_55099663.vcml",
+//            "biomodel_55554804.vcml",
+//            "biomodel_5560175.vcml",
+//            "biomodel_5569486.vcml",
+//            "biomodel_56426191.vcml",
+//            "biomodel_56588035.vcml",
+//            "biomodel_56643975.vcml",
+//            "biomodel_56658553.vcml",
+//            "biomodel_56661708.vcml",
+//            "biomodel_56760249.vcml",
+//            "biomodel_5746758.vcml",
+//            "biomodel_58132981.vcml",
+//            "biomodel_58133018.vcml",
+//            "biomodel_58133056.vcml",
+//            "biomodel_58183740.vcml",
+//            "biomodel_58723464.vcml",
+//            "biomodel_60083893.vcml",
+//            "biomodel_60104088.vcml",
+//            "biomodel_61648741.vcml",
+//            "biomodel_62181882.vcml",
+//            "biomodel_63853150.vcml",
+//            "biomodel_64127077.vcml",
+//            "biomodel_66105071.vcml",
+//            "biomodel_67074258.vcml",
+//            "biomodel_67384832.vcml",
+//            "biomodel_72498027.vcml",
+//            "biomodel_72915381.vcml",
+//            "biomodel_75098399.vcml",
+//            "biomodel_75371432.vcml",
+//            "biomodel_75374449.vcml",
+//            "biomodel_77579660.vcml",
+//            "biomodel_7824657.vcml",
+//            "biomodel_80226984.vcml",
+//            "biomodel_8111589.vcml",
+//            "biomodel_8111616.vcml",
+//            "biomodel_8183019.vcml",
+//            "biomodel_8183059.vcml",
+//            "biomodel_8209036.vcml",
+//            "biomodel_82680211.vcml",
+//            "biomodel_82708948.vcml",
+//            "biomodel_82739668.vcml",
+//            "biomodel_82748209.vcml",
+//            "biomodel_82749999.vcml",
+//            "biomodel_82890243.vcml",
+//            "biomodel_84282778.vcml",
+//            "biomodel_84282940.vcml",
+//            "biomodel_84828274.vcml",
+//            "biomodel_84891775.vcml",
+//            "biomodel_85221354.vcml",
+//            "biomodel_85241086.vcml",
+//            "biomodel_85305461.vcml",
+//            "biomodel_85305618.vcml",
+//            "biomodel_85305764.vcml",
+//            "biomodel_85305863.vcml",
+//            "biomodel_85306257.vcml",
+//            "biomodel_85306479.vcml",
+//            "biomodel_85633295.vcml",
+//            "biomodel_86917088.vcml",
+//            "biomodel_87760173.vcml",
+//            "biomodel_87853640.vcml",
+//            "biomodel_87853970.vcml",
+//            "biomodel_87864565.vcml",
+//            "biomodel_87865323.vcml",
+//            "biomodel_87866170.vcml",
+//            "biomodel_87867732.vcml",
+//            "biomodel_87868961.vcml",
+//            "biomodel_87869297.vcml",
+//            "biomodel_87893730.vcml",
+//            "biomodel_88592639.vcml",
+//            "biomodel_90359828.vcml",
+//            "biomodel_90373208.vcml",
+//            "biomodel_90401613.vcml",
+//            "biomodel_90961594.vcml",
+//            "biomodel_91024265.vcml",
+//            "biomodel_91969953.vcml",
+//            "biomodel_92019006.vcml",
+//            "biomodel_92692049.vcml",
+//            "biomodel_92972365.vcml",
+//            "biomodel_92972560.vcml",
+//            "biomodel_93070707.vcml",
+//            "biomodel_93074445.vcml",
+//            "biomodel_93074627.vcml",
+//            "biomodel_94462536.vcml",
+//            "biomodel_94794583.vcml",
+//            "biomodel_94899206.vcml",
+//            "biomodel_95070726.vcml",
+//            "biomodel_95105284.vcml",
+//            "biomodel_95234506.vcml",
+//            "biomodel_95491173.vcml",
+//            "biomodel_96750507.vcml",
+//            "biomodel_97667827.vcml",
+//            "biomodel_97765842.vcml",
+//
+            // ALL biomodels in /vcell-core/src/test/resources/org/vcell/sbml/local/hybrid/ (many are private)
 //            "biomodel_100059482.vcml",
 //            "biomodel_101082318.vcml",
 //            "biomodel_101986247.vcml",
@@ -363,9 +647,9 @@ public class VcmlTestSuiteFiles {
 //            "biomodel_82809548.vcml",
 //            "biomodel_82809561.vcml",
 //            "biomodel_83462193.vcml",
-//            "biomodel_83462243.vcml", // public
+//            //"biomodel_83462243.vcml", // public
 //            "biomodel_83651304.vcml",
-//            "biomodel_83651737.vcml", // public
+//            //"biomodel_83651737.vcml", // public
 //            "biomodel_84440330.vcml",
 //            "biomodel_85831960.vcml",
 //            "biomodel_88789981.vcml",
@@ -390,10 +674,10 @@ public class VcmlTestSuiteFiles {
 //            "biomodel_97553821.vcml",
 //            "biomodel_97557776.vcml",
 //            "biomodel_97785961.vcml",
-//            "biomodel_97786886.vcml", // public
-//            "biomodel_97787114.vcml", // public
+//            //"biomodel_97786886.vcml", // public
+//            //"biomodel_97787114.vcml", // public
 //            "biomodel_98707721.vcml",
-//            "biomodel_98730962.vcml", // public
+//            //"biomodel_98730962.vcml", // public
 //            "biomodel_98745308.vcml",
     };
 
@@ -407,27 +691,37 @@ public class VcmlTestSuiteFiles {
         if (!Arrays.stream(allTestFiles).anyMatch(file -> file.equals(testFile))) {
             throw new RuntimeException("file not found for VCell Published Test Suite test "+testFile);
         }
+        List<String> pathPrefixes = Arrays.asList(
+                "vcml_published/",
+                "vcml_testmodels/",
+                "local/massaction/",
+                "local/hybrid/"
+        );
         try {
-            return getFileFromResourceAsStream("vcml_published/"+testFile);
+            return getFileFromResourceAsStream(pathPrefixes, testFile);
         }catch (FileNotFoundException e){
-            try {
-                return getFileFromResourceAsStream("vcml_testmodels/"+testFile);
-            }catch (FileNotFoundException e2) {
-                try {
-                    return getFileFromResourceAsStream("vcell_hybrid/" + testFile);
-                } catch (FileNotFoundException e3) {
-                    throw new RuntimeException("failed to find test case file in vcml_published/ and vcml_testmodels/ and vcell_hybrid/: " + e2.getMessage(), e2);
-                }
-            }
+            throw new RuntimeException("failed to find test case file '"+testFile+"' in paths "+pathPrefixes+": " + e.getMessage(), e);
         }
     }
 
-     private static InputStream getFileFromResourceAsStream(String fileName) throws FileNotFoundException {
-        InputStream inputStream = VcmlTestSuiteFiles.class.getResourceAsStream(fileName);
-        if (inputStream == null) {
-            throw new FileNotFoundException("file not found! " + fileName);
-        } else {
-            return inputStream;
+     private static InputStream getFileFromResourceAsStream(List<String> pathPrefixes, String fileName) throws FileNotFoundException {
+        FileNotFoundException fileNotFoundException = null;
+        for (String pathPrefix : pathPrefixes) {
+            try {
+                InputStream inputStream = VcmlTestSuiteFiles.class.getResourceAsStream(pathPrefix+fileName);
+                if (inputStream == null) {
+                    throw new FileNotFoundException("file not found! " + fileName);
+                } else {
+                    return inputStream;
+                }
+            } catch (FileNotFoundException e) {
+                fileNotFoundException = e;
+            }
+        }
+        if (fileNotFoundException != null) {
+            throw fileNotFoundException;
+        }else{
+            throw new RuntimeException("unexpected exception");
         }
     }
 

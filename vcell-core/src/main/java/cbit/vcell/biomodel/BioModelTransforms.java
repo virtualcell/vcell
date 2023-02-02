@@ -3,18 +3,16 @@ package cbit.vcell.biomodel;
 import cbit.vcell.mapping.MembraneMapping;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.StructureMapping;
-import cbit.vcell.math.Constant;
-import cbit.vcell.math.Function;
-import cbit.vcell.math.MathDescription;
-import cbit.vcell.math.Variable;
-import cbit.vcell.model.Model;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionBindingException;
-import cbit.vcell.parser.ExpressionUtils;
+import cbit.vcell.math.*;
+import cbit.vcell.model.*;
+import cbit.vcell.parser.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.vcell.util.TokenMangler;
 
-import java.util.ArrayList;
+import java.beans.PropertyVetoException;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class BioModelTransforms {
 
@@ -130,7 +128,152 @@ public class BioModelTransforms {
 
     public static void repairLegacyProblems(BioModel bioModel){
         reconcileLegacyAbsRelSizes(bioModel);
+        fixLegacyMassAction(bioModel); // no susbstrate and non-zero kf or no products - capture original intent of model.
     }
+
+    private static void fixLegacyMassAction(BioModel bioModel) {
+        //
+        // non-zero mass action Kf parameters should have been ignored if no reactants (zero-order source term).
+        // non-zero mass action Kr parameters should have been ignored if no products (zero-order degradation term).
+        //
+        // early versions of VCell treated these parameters as constant terms (e.g. Kf * Product_of(reactants_i) -> Kf, if no reactants)
+        // recent versions of VCell ignore these non-zero parameter terms as violating the expected semantics of "Mass Action" kinetics from Chemistry (and a warning is presented to the user).
+        //
+        // Here we transform the legacy BioModel as needed to preserve the original intent of the legacy models (should be mathematically equivalent)
+        // 1) if the parameter WAS used as a source term in any math description - then convert the kinetic law to GeneralKinetics and preserve the math.
+        // 2) if the parameter WAS NOT used as a source term in any math description - then set it to 0.0 upon loading - leave it as-is in the database.
+        //
+
+        // collect list of non-zero mass action reaction parameters (Kf, Kr) that should no longer be used (if no reactants or no products)
+        Map<String, Kinetics.KineticsParameter> potentialMassActionSourceParameters = new HashMap<>();
+        for (ReactionStep rs : bioModel.getModel().getReactionSteps()){
+            if (rs.getKinetics() instanceof MassActionKinetics){
+                MassActionKinetics massActionKinetics = (MassActionKinetics) rs.getKinetics();
+                if (rs.getNumReactants() == 0) {
+                    Kinetics.KineticsParameter forwardRateParameter = massActionKinetics.getForwardRateParameter();
+                    if (!forwardRateParameter.getExpression().isZero()) {
+                        String varName = TokenMangler.fixTokenStrict(forwardRateParameter.getName()+"_"+rs.getName());
+                        potentialMassActionSourceParameters.put(varName, forwardRateParameter); // Kf_r0
+                        potentialMassActionSourceParameters.put(forwardRateParameter.getName(), forwardRateParameter); // Kf
+                    }
+                }
+                if (rs.getNumProducts() == 0) {
+                    Kinetics.KineticsParameter reverseRateParameter = massActionKinetics.getReverseRateParameter();
+                    if (!reverseRateParameter.getExpression().isZero()) {
+                        String varName = TokenMangler.fixTokenStrict(reverseRateParameter.getName()+"_"+rs.getName());
+                        potentialMassActionSourceParameters.put(varName, reverseRateParameter);
+                        potentialMassActionSourceParameters.put(reverseRateParameter.getName(), reverseRateParameter);
+                    }
+                }
+            }
+        }
+        Set<Kinetics.KineticsParameter> referencedParameters = new HashSet<>();
+        for (SimulationContext simulationContext : bioModel.getSimulationContexts()){
+            final MathDescription math = simulationContext.getMathDescription();
+            if (math == null){
+                break;
+            }
+            SymbolTable symbolTable = new SymbolTable(){
+                @Override
+                public SymbolTableEntry getEntry(String identifierString) {
+                    SymbolTableEntry ste = math.getEntry(identifierString);
+                    if (ste != null){
+                        Kinetics.KineticsParameter kineticsParameter = potentialMassActionSourceParameters.get(ste.getName());
+                        if (kineticsParameter != null){
+                            referencedParameters.add(kineticsParameter);
+                        }
+                    }
+                    return ste;
+                }
+                @Override
+                public void getEntries(Map<String, SymbolTableEntry> entryMap) {
+                    math.getEntries(entryMap);
+                }
+            };
+            for (Function function : Collections.list(math.getFunctions())){
+                if (!function.getName().startsWith("J_")){
+                    continue;
+                }
+                Expression exp = function.getExpression();
+                try {
+                    // side-effect is to visit all symbol references and populate 'referencedParameters' set.
+                    exp.bindExpression(symbolTable);
+                }catch (ExpressionException e){
+                    lg.warn("failed to bind expression");
+                }
+            }
+//            List<Expression> allExpressions = new ArrayList<>();
+//            math.getAllExpressions(allExpressions);
+//            for (Expression exp : allExpressions){
+//                try {
+//                    // side-effect is to visit all symbol references and populate 'referencedParameters' set.
+//                    exp.bindExpression(symbolTable);
+//                }catch (ExpressionException e){
+//                    lg.warn("failed to bind expression");
+//                }
+//            }
+        }
+        HashSet<Kinetics.KineticsParameter> uniquePotentialMASourceParameters = new HashSet<>(potentialMassActionSourceParameters.values());
+        for (Kinetics.KineticsParameter kp : uniquePotentialMASourceParameters){
+            if (referencedParameters.contains(kp)){
+                //
+                // respect legacy intepretation of zero-order term by transforming legacy MassActionKinetics into
+                // corresponding GeneralKinetics (including the zero-order term).
+                //
+                MassActionKinetics maKinetics = (MassActionKinetics) kp.getKinetics();
+                ReactionStep rs = maKinetics.getReactionStep();
+                Expression forwardTerm = new Expression(maKinetics.getForwardRateParameter(), rs.getNameScope());
+                for (Reactant reactant : rs.getReactants()){
+                    forwardTerm = Expression.mult(forwardTerm, new Expression(reactant.getSpeciesContext(), rs.getModel().getNameScope())); // to be replaced by proxy parameters as needed
+                }
+                Expression reverseTerm = new Expression(maKinetics.getReverseRateParameter(), rs.getNameScope());
+                for (Product product : rs.getProducts()){
+                    reverseTerm = Expression.mult(reverseTerm, new Expression(product.getSpeciesContext(), rs.getModel().getNameScope())); // to be replaced by proxy parameters as needed
+                }
+                Expression newGeneralKineticsRateExp = Expression.add(forwardTerm,Expression.negate(reverseTerm));
+                List<Kinetics.KineticsParameter> origUserDefinedParameters = Arrays.stream(maKinetics.getKineticsParameters())
+                        .filter(p -> p.getRole() == Kinetics.ROLE_UserDefined).collect(Collectors.toList());
+                try {
+                    GeneralKinetics generalKinetics = new GeneralKinetics(rs);
+                    newGeneralKineticsRateExp.bindExpression(null);
+
+                    Kinetics.KineticsParameter origKf = maKinetics.getForwardRateParameter();
+                    Expression origKfExp = new Expression(origKf.getExpression());
+                    origKfExp.bindExpression(null);
+
+                    Kinetics.KineticsParameter origKr = maKinetics.getReverseRateParameter();
+                    Expression origKrExp = new Expression(origKr.getExpression());
+                    origKrExp.bindExpression(null);
+
+                    // transfer original build-in parameters (J, Kf, Kr) to General Kinetics
+                    generalKinetics.setParameterValue(generalKinetics.getReactionRateParameter(), newGeneralKineticsRateExp);
+                    generalKinetics.setParameterValue(generalKinetics.getKineticsParameter(origKf.getName()), origKfExp);
+                    generalKinetics.setParameterValue(generalKinetics.getKineticsParameter(origKr.getName()), origKrExp);
+
+                    // set Values of user-defined parameters into the new Kinetics object
+                    for (Kinetics.KineticsParameter origUserDefinedParameter : origUserDefinedParameters) {
+                        Kinetics.KineticsParameter newUserDefinedParam = generalKinetics.getKineticsParameter(origUserDefinedParameter.getName());
+                        if (newUserDefinedParam != null){
+                            Expression newExp = new Expression(origUserDefinedParameter.getExpression());
+                            newExp.bindExpression(null);
+                            generalKinetics.setParameterValue(newUserDefinedParam, newExp);
+                        }else{
+                            lg.error("failed to transform legacy mass action kinetics for reaction '"+rs.getName()+"', " +
+                                    "user defined parameter '"+origUserDefinedParameter.getName()+"' not found in new Kinetics");
+                        }
+                    }
+                    rs.setKinetics(generalKinetics);
+                    rs.rebindAllToModel(rs.getModel());
+                }catch (ExpressionException | PropertyVetoException | ModelException e){
+                    lg.error("failed to transform legacy mass action kinetics for reaction '"+rs.getName()+"'", e);
+                }
+            }else{
+                // reinforce modern interpretation - set ambiguous mass action parameter to zero (will continue to be ignored by current math generation)
+                kp.setExpression(new Expression(0.0));
+            }
+        }
+    }
+
 
     public static void reconcileLegacyAbsRelSizes(BioModel bioModel) {
         /**
