@@ -170,6 +170,9 @@ public class BioModelTransforms {
         Set<Kinetics.KineticsParameter> referencedParameters = new HashSet<>();
         for (SimulationContext simulationContext : bioModel.getSimulationContexts()){
             final MathDescription math = simulationContext.getMathDescription();
+            if (math == null){
+                break;
+            }
             SymbolTable symbolTable = new SymbolTable(){
                 @Override
                 public SymbolTableEntry getEntry(String identifierString) {
