@@ -91,8 +91,14 @@ public class Hdf5Utils {
 
 		// Get the max length of all the data strings
 		for(int i=0;i<attr.length;i++) {
-			int len = attr[i] == null ? -1 : attr[i].length(); // passing a 0 causes null exception
-			if (attr[i] == null) attr[i] = "";
+			int len = attr[i] == null ? -1 : attr[i].length(); 
+
+			if (len == 0) 
+				len = 1; // Need to pad with null char for empty str; passing a 0 causes null exception
+
+			if (attr[i] == null) 
+				attr[i] = "";
+			
 			MAXSTRSIZE = Math.max(MAXSTRSIZE, len);
 		}
 
