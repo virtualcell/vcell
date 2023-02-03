@@ -1247,7 +1247,7 @@ private ArrayList<KineticsParameter> getKineticsParametersFromTokens(String kine
 	// merge parameters with same name (one is UserDefined, the other is Reserved role)
 	//
 	boolean bDirty = true;
-	while (bDirty){
+	while (bDirty) {
 		bDirty = false;
 		for (KineticsParameter kp1 : localParameters){
 			KineticsParameter kp_withSameName = null;
