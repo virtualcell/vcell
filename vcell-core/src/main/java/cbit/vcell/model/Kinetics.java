@@ -1209,9 +1209,19 @@ private ArrayList<KineticsParameter> getKineticsParametersFromTokens(String kine
 		}
 	}
 	
-	//
-	// rename reserved parameter names and update expressions to reflect new names
-	//
+	/*
+	 * rename reserved parameter names and update expressions to reflect new names
+	 * typical renaming example of kinetics_vcmlStr, Kf, Kr renamed to K1, K2
+	 * 
+	 Kinetics MassActionKinetics { 
+		Parameter J ((K1 * s0) - (K2 * s1)); [uM.s-1]
+		Parameter K1 (g0 / g1); [s-1]
+		Parameter K2 (g1 / g0); [s-1]
+		Rate J;
+		ForwardRate K1;
+		ReverseRate K2;
+	} 
+	 */
 	for (String origSymbol : symbolRenamings.keySet()){
 		String newSymbol = symbolRenamings.get(origSymbol);
 		KineticsParameter newParam = null;
