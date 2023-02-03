@@ -449,7 +449,10 @@ java.io.Serializable, IssueSource, Relatable
 			}
 			super.firePropertyChange(PROPERTYNAME_NAME, oldValue, name);
 		}
-
+		private void replaceNameLocal(String name) {
+			fieldParameterName = name;
+		}
+		
 		public boolean isDescriptionEditable() {
 			return false;
 		}
@@ -1129,14 +1132,14 @@ private ArrayList<KineticsParameter> getKineticsParametersFromTokens(String kine
 		}
 
 		String nextTokenAfterRole = tokens.nextToken();
-		if (nextTokenAfterRole.endsWith("'") && nextTokenAfterRole.startsWith("'")){
+		if (nextTokenAfterRole.endsWith(";")){
 			//
 			// if requiredIdentifier name is present (delimited by single quotes)
 			// use it as the user-supplied name for that required parameter
 			//
 			//     e.g. CurrentDensity 'currentDensity'
 			//
-			String parmName = nextTokenAfterRole.substring(1,nextTokenAfterRole.length()-1);
+			String parmName = nextTokenAfterRole.substring(0,nextTokenAfterRole.length()-1);
 			if (!parameterForRole.getName().equals(parmName)){
 				symbolRenamings.put(parameterForRole.getName(),parmName);
 			}
@@ -1219,7 +1222,7 @@ private ArrayList<KineticsParameter> getKineticsParametersFromTokens(String kine
 		}
 		for (KineticsParameter kp : localParameters){
 			if (kp.getName().equals(origSymbol)){
-				kp.setName(newSymbol);
+				kp.replaceNameLocal(newSymbol);
 				if (newParam != null && kp.getExpression().isZero()){
 					kp.setExpression(new Expression(newParam.getExpression()));
 				}
