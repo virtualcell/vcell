@@ -456,7 +456,8 @@ public class VcmlTestSuiteFiles {
 //            "biomodel_87515021.vcml",
 //            "biomodel_87516092.vcml",
 //            "biomodel_87516509.vcml",
-//            "biomodel_90935642.vcml",
+//            "biomodel_90935642.vcml", // public archived, user schaff (regenerated bad cached XML 2/5/2023)
+//            "biomodel_90935642_old.vcml", // public archived, user schaff (old cached XML 2014 - saved in VC_BIOMODELXML_BACKUP)
 //            "biomodel_90982755.vcml",
 //            "biomodel_90984254.vcml",
 //            "biomodel_90984408.vcml",
