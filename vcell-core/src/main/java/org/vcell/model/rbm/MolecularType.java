@@ -284,7 +284,11 @@ public class MolecularType extends RbmElementAbstract implements BioModelEntityO
 		if(!isAnchorAll() && getAnchors().isEmpty()) {
 			String msg = getDisplayType() + " " + getDisplayName() + " must be anchored to at least one Structure.";
 			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.ERROR));
-
+		}
+		if(!isAnchorAll() && getAnchors().size() > 1) {
+			String msg = "Anchoring to more than one structure may produce errorneous results with NFSim solver";
+			String tip = "In rare situations the NFSim solver may place a species in the wrong structure if multiple anchors are selected.";
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
 		}
 	}
 	

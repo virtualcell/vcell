@@ -101,23 +101,34 @@ public class MathGenCompareTest {
 	 */
 	public static Set<String> knownMathGenerationFailures() {
 		Set<String> faults = new HashSet<>();
-		// most of these are private Hybrid PDE/Particle models
-		faults.add("biomodel_179548819.vcml:Application0"); // The Min Trigger Condition for BioEvent 'event0' cannot be <= 0.
-		faults.add("biomodel_82790975.vcml:NONSPATIAL Stochastic/Deterministic Integrin Ligand Activation"); // Non-constant species is forced continuous, not supported for nonspatial stochastic applications.
-		faults.add("biomodel_82800592.vcml:Stochastic Nonsptial"); // Non-constant species is forced continuous, not supported for nonspatial stochastic applications.
-		faults.add("biomodel_82805340.vcml:Stochastic/Deterministic Integrin Ligand Activation"); // Failed to intepret kinetic rate for reaction 'r2' as mass action.
-		faults.add("biomodel_82807862.vcml:Stochastic Spatial QUARTER CELL SHORT"); // Failed to intepret kinetic rate for reaction 'r2' as mass action.
-		faults.add("biomodel_82807862.vcml:Stochastic/Deterministic Integrin Ligand Activation"); // Failed to intepret kinetic rate for reaction 'r2' as mass action.
-		faults.add("biomodel_82808340.vcml:Stochastic Spatial QUARTER CELL SHORT"); // Failed to intepret kinetic rate for reaction 'r2' as mass action.
-		faults.add("biomodel_82809548.vcml:Stochastic Spatial QUARTER CELL SHORT"); // Failed to intepret kinetic rate for reaction 'r2' as mass action.
-		faults.add("biomodel_82809548.vcml:Stochastic/Deterministic Integrin Ligand Activation"); // Failed to intepret kinetic rate for reaction 'r2' as mass action.
-		faults.add("biomodel_82809548.vcml:Copy of Stochastic Spatial QUARTER CELL SHORT"); // Failed to intepret kinetic rate for reaction 'r2' as mass action.
-		faults.add("biomodel_82809561.vcml:Stochastic Spatial QUARTER CELL SHORT"); // Failed to intepret kinetic rate for reaction 'r2' as mass action.
-		faults.add("biomodel_82809561.vcml:Stochastic/Deterministic Integrin Ligand Activation"); // Failed to intepret kinetic rate for reaction 'r2' as mass action.
-		faults.add("biomodel_82809561.vcml:Copy of Stochastic Spatial QUARTER CELL SHORT"); // Failed to intepret kinetic rate for reaction 'r2' as mass action.
-		faults.add("biomodel_88789981.vcml:Copy of Copy of Application0"); // Clamped Species must be continuous rather than particles.
-		faults.add("biomodel_88820373.vcml:Copy of Copy of Application0");
-		faults.add("biomodel_88834881.vcml:Copy of Copy of Application0"); // Clamped Species must be continuous rather than particles.
+		// public models
+
+		// all flux models
+		faults.add("biomodel_158988094.vcml:Application1"); // local/flux: NPE in StructureSizeSolver.updateUnitStructureSizes_symbolic(StructureSizeSolver.java:649)
+
+		// all private hybrid models
+		faults.add("biomodel_101106339.vcml:Application0"); // local/massaction: 'FB-ECM' not legal identifier for rule-based modeling, try 'FB_ECM'.
+		faults.add("biomodel_211551763.vcml:Application1"); // local/massaction: NullPointerException in BioEvent.getConstantParameterValue()
+		faults.add("biomodel_2177828.vcml:ttt"); // local/massaction: Enable diffusion in Application 'ttt'. This must be done for any species (e.g 'calcium_Feature') in flux reactions.
+		faults.add("biomodel_88592639.vcml:tissue"); // local/massaction:
+
+		// all private Hybrid PDE/Particle models
+		faults.add("biomodel_179548819.vcml:Application0"); // local/hybrid: The Min Trigger Condition for BioEvent 'event0' cannot be <= 0.
+		faults.add("biomodel_82790975.vcml:NONSPATIAL Stochastic/Deterministic Integrin Ligand Activation"); // local/hybrid: Non-constant species is forced continuous, not supported for nonspatial stochastic applications.
+		faults.add("biomodel_82800592.vcml:Stochastic Nonsptial"); // local/hybrid: Non-constant species is forced continuous, not supported for nonspatial stochastic applications.
+		faults.add("biomodel_82805340.vcml:Stochastic/Deterministic Integrin Ligand Activation"); // local/hybrid: Failed to intepret kinetic rate for reaction 'r2' as mass action.
+		faults.add("biomodel_82807862.vcml:Stochastic Spatial QUARTER CELL SHORT"); // local/hybrid: Failed to intepret kinetic rate for reaction 'r2' as mass action.
+		faults.add("biomodel_82807862.vcml:Stochastic/Deterministic Integrin Ligand Activation"); // local/hybrid: Failed to intepret kinetic rate for reaction 'r2' as mass action.
+		faults.add("biomodel_82808340.vcml:Stochastic Spatial QUARTER CELL SHORT"); // local/hybrid: Failed to intepret kinetic rate for reaction 'r2' as mass action.
+		faults.add("biomodel_82809548.vcml:Stochastic Spatial QUARTER CELL SHORT"); // local/hybrid: Failed to intepret kinetic rate for reaction 'r2' as mass action.
+		faults.add("biomodel_82809548.vcml:Stochastic/Deterministic Integrin Ligand Activation"); // local/hybrid: Failed to intepret kinetic rate for reaction 'r2' as mass action.
+		faults.add("biomodel_82809548.vcml:Copy of Stochastic Spatial QUARTER CELL SHORT"); // local/hybrid: Failed to intepret kinetic rate for reaction 'r2' as mass action.
+		faults.add("biomodel_82809561.vcml:Stochastic Spatial QUARTER CELL SHORT"); // local/hybrid: Failed to intepret kinetic rate for reaction 'r2' as mass action.
+		faults.add("biomodel_82809561.vcml:Stochastic/Deterministic Integrin Ligand Activation"); // local/hybrid: Failed to intepret kinetic rate for reaction 'r2' as mass action.
+		faults.add("biomodel_82809561.vcml:Copy of Stochastic Spatial QUARTER CELL SHORT"); // local/hybrid: Failed to intepret kinetic rate for reaction 'r2' as mass action.
+		faults.add("biomodel_88789981.vcml:Copy of Copy of Application0"); // local/hybrid: Clamped Species must be continuous rather than particles.
+		faults.add("biomodel_88820373.vcml:Copy of Copy of Application0"); // local/hybrid:
+		faults.add("biomodel_88834881.vcml:Copy of Copy of Application0"); // local/hybrid: Clamped Species must be continuous rather than particles.
 		return faults;
 	}
 
@@ -130,7 +141,57 @@ public class MathGenCompareTest {
 		faults.put("biomodel_97705317.vcml:NFSim app", MathCompareResults.Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS); // (BioNetGen:95093638:2015-11-23:Public): PJP='r10', SymmetryFactor: old='0.5' new='0.5', rate: old='[0.0016611295681063123]', new='[0.0033222591362126247]'
 		faults.put("biomodel_97786619.vcml:NFSim app", MathCompareResults.Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS); // (BioNetGen:95093638:2015-12-02:Public): PJP='r10', SymmetryFactor: old='0.5' new='0.5', rate: old='[0.0016611295681063123]', new='[0.0033222591362126247]'
 
-		// Private Hybrid models (files not committed to repo)
+		// all private legacy Mass Action models with no reactant and no-zero Kf (all rest of models identified in issue 536 are fixed)
+		faults.put("biomodel_115999897.vcml:Application0",MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION); // (60339657:2017-08-06:Private): expressions are different: '(PI45P2 - (0.03 * IP3))' vs '((0.0928262 * PI45P2) - (0.03 * IP3))'
+		faults.put("biomodel_18978432.vcml:Aggregation",MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_EXPRESSIONS); // (17350612:2006-08-27:Private): equations have different number of expressions
+		faults.put("biomodel_196348974.vcml:prise2",MathCompareResults.Decision.MathDifferent_SUBDOMAINS_DONT_MATCH); // (195757411:2020-12-17:Private): subdomain Compartment
+		faults.put("biomodel_2027455.vcml:FrogEggExtractSimple",MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION); // (120904:2001-06-07:Private): expressions are different: ' - ( - (2.0E-5 * (0.1 - MPFia_Cell - Cdc2_Cell - MPF_Cell - MPFi_Cell) * Cdc25i_Cell / (0.1 + Cdc25i_Cell)) + (0.1 * (0.001 - Cdc25i_Cell) / (1.001 - Cd
+		faults.put("biomodel_2027455.vcml:testing",MathCompareResults.Decision.MathDifferent_EQUATION_REMOVED); // (120904:2001-06-07:Private): only one mathDescription had equation for 'Compartment::APCa_Cell' in SubDomain 'Compartment'
+		faults.put("biomodel_2027747.vcml:FrogEggExtractSimple",MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION); // (120904:2001-06-07:Private): expressions are different: ' - ( - (2.0E-5 * (0.1 - MPFia_Cell - Cdc2_Cell - MPF_Cell - MPFi_Cell) * Cdc25i_Cell / (0.1 + Cdc25i_Cell)) + (0.1 * (0.001 - Cdc25i_Cell) / (1.001 - Cd
+		faults.put("biomodel_2027747.vcml:testing",MathCompareResults.Decision.MathDifferent_EQUATION_REMOVED); // (120904:2001-06-07:Private): only one mathDescription had equation for 'Compartment::APCa_Cell' in SubDomain 'Compartment'
+		faults.put("biomodel_2028176.vcml:FrogEggExtractSimple",MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION); // (120904:2001-06-07:Private): expressions are different: ' - ( - (2.0E-5 * (0.1 - MPFia_Cell - Cdc2_Cell - MPF_Cell - MPFi_Cell) * Cdc25i_Cell / (0.1 + Cdc25i_Cell)) + (0.1 * (0.001 - Cdc25i_Cell) / (1.001 - Cd
+		faults.put("biomodel_2028176.vcml:testing",MathCompareResults.Decision.MathDifferent_EQUATION_REMOVED); // (120904:2001-06-07:Private): only one mathDescription had equation for 'Compartment::APCa_Cell' in SubDomain 'Compartment'
+		faults.put("biomodel_2028610.vcml:FrogEggExtractSimple",MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION); // (120904:2001-06-07:Private): expressions are different: ' - ( - (2.0E-5 * (0.1 - MPFia_Cell - Cdc2_Cell - MPF_Cell - MPFi_Cell) * Cdc25i_Cell / (0.1 + Cdc25i_Cell)) + (0.1 * (0.001 - Cdc25i_Cell) / (1.001 - Cd
+		faults.put("biomodel_2028610.vcml:testing",MathCompareResults.Decision.MathDifferent_EQUATION_REMOVED); // (120904:2001-06-07:Private): only one mathDescription had equation for 'Compartment::APCa_Cell' in SubDomain 'Compartment'
+		faults.put("biomodel_2028855.vcml:testing",MathCompareResults.Decision.MathDifferent_EQUATION_REMOVED); // (120904:2001-06-07:Private): only one mathDescription had equation for 'Compartment::APCa_Cell' in SubDomain 'Compartment'
+		faults.put("biomodel_2030592.vcml:FrogEggExtractSimple",MathCompareResults.Decision.MathDifferent_EQUATION_ADDED); // (120904:2001-06-07:Private): only one mathDescription had equation for 'APCa_Cell' in SubDomain 'Compartment'
+		faults.put("biomodel_24470582.vcml:comp2",MathCompareResults.Decision.MathDifferent_DIFFERENT_FASTRATE_EXPRESSION); // (17:2007-11-15:Private): fast rate expressions are different Old: 'Expression@d009a7a0 ' - ( - (100.0 * IP3_cyt * RI) - (30.000000030000002 * RI))''fast rate expressions are different New: 'Expression@ef6
+		faults.put("biomodel_29476020.vcml:s",MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_VARIABLES); // (2302355:2008-10-28:Private): 2 vs 3
+		faults.put("biomodel_29476020.vcml:stoch",MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_VARIABLES); // (2302355:2008-10-28:Private): 2 vs 3
+		faults.put("biomodel_29476020.vcml:s2",MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_VARIABLES); // (2302355:2008-10-28:Private): 2 vs 3
+		faults.put("biomodel_36587627.vcml:gradient_sensing",MathCompareResults.Decision.MathDifferent_EQUATION_REMOVED); // (35091731:2009-11-07:Group=[jmhaugh(13213103)]):
+		faults.put("biomodel_36588994.vcml:RL_binding",MathCompareResults.Decision.MathDifferent_EQUATION_REMOVED); // (35091731:2009-11-07:Group=[jmhaugh(13213103)]):
+		faults.put("biomodel_36588994.vcml:gradient",MathCompareResults.Decision.MathDifferent_EQUATION_REMOVED); // (35091731:2009-11-07:Group=[jmhaugh(13213103)]):
+		faults.put("biomodel_36800083.vcml:RL_binding",MathCompareResults.Decision.MathDifferent_EQUATION_REMOVED); // (35091731:2009-11-17:Group=[jmhaugh(13213103)]):
+		faults.put("biomodel_36800083.vcml:gradient",MathCompareResults.Decision.MathDifferent_EQUATION_REMOVED); // (35091731:2009-11-17:Group=[jmhaugh(13213103)]):
+		faults.put("biomodel_38770411.vcml:RL_binding",MathCompareResults.Decision.MathDifferent_EQUATION_REMOVED); // (35091731:2010-02-11:Private):
+		faults.put("biomodel_40500269.vcml:3D",MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_EXPRESSIONS); // (15957189:2010-03-19:Private): fast invariants have different number of expressions
+		faults.put("biomodel_40500269.vcml:2Dprova3D",MathCompareResults.Decision.MathDifferent_FAILURE_UNKNOWN); // (15957189:2010-03-19:Private): line #128 Exception: variable Ca1_green not defined
+		faults.put("biomodel_40500269.vcml:3Dsph",MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_EXPRESSIONS); // (15957189:2010-03-19:Private): fast invariants have different number of expressions
+		faults.put("biomodel_40500269.vcml:3DclustB",MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_EXPRESSIONS); // (15957189:2010-03-19:Private): fast invariants have different number of expressions
+		faults.put("biomodel_40500269.vcml:3DclustBCh",MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_EXPRESSIONS); // (15957189:2010-03-19:Private): fast invariants have different number of expressions
+		faults.put("biomodel_40500269.vcml:3D clust Ch",MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_EXPRESSIONS); // (15957189:2010-03-19:Private): fast invariants have different number of expressions
+		faults.put("biomodel_40500269.vcml:3D clust ch piccolo",MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_EXPRESSIONS); // (15957189:2010-03-19:Private): fast invariants have different number of expressions
+		faults.put("biomodel_40500269.vcml:clust pic double",MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_EXPRESSIONS); // (15957189:2010-03-19:Private): fast invariants have different number of expressions
+		faults.put("biomodel_40500269.vcml:clust pic double sx dx",MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_EXPRESSIONS); // (15957189:2010-03-19:Private): fast invariants have different number of expressions
+		faults.put("biomodel_44582721.vcml:1",MathCompareResults.Decision.MathDifferent_EQUATION_REMOVED); // (37651188:2010-05-16:Private):
+		faults.put("biomodel_50946331.vcml:C:\\Documents and Settings\\cfalkenberg\\.vcell\\BioNetGen\\vcell_bng_24405\\vcell_bng_24405_Compartmental",MathCompareResults.Decision.MathDifferent_FAILURE_UNKNOWN); // (3886845:2010-11-03:Private):
+		faults.put("biomodel_50946331.vcml:v2",MathCompareResults.Decision.MathDifferent_FAILURE_UNKNOWN); // (3886845:2010-11-03:Private):
+		faults.put("biomodel_5560175.vcml:SpatialModelUSASmall",MathCompareResults.Decision.MathDifferent_UNKNOWN_DIFFERENCE_IN_EQUATION); // (418:2003-06-19:Private): couldn't find problem with jumpCondition for I in compartment Inside_Outside_membrane
+		faults.put("biomodel_56588035.vcml:Smol_r4",MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_PARTICLE_JUMP_PROCESS); // (17096841:2011-04-27:Private): removed PJPs=[r4_reverse], added PJPs=[]
+		faults.put("biomodel_56588035.vcml:Smol_r3",MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_PARTICLE_JUMP_PROCESS); // (17096841:2011-04-27:Private): removed PJPs=[r3_reverse], added PJPs=[]
+		faults.put("biomodel_56588035.vcml:Smol_r1",MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_PARTICLE_JUMP_PROCESS); // (17096841:2011-04-27:Private): removed PJPs=[r1], added PJPs=[]
+		faults.put("biomodel_56588035.vcml:Smol_r0",MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_PARTICLE_JUMP_PROCESS); // (17096841:2011-04-27:Private): removed PJPs=[r0], added PJPs=[]
+		faults.put("biomodel_56588035.vcml:Smol_r5",MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_PARTICLE_JUMP_PROCESS); // (17096841:2011-04-27:Private): removed PJPs=[r5], added PJPs=[]
+		faults.put("biomodel_56588035.vcml:Smol_r6",MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_PARTICLE_JUMP_PROCESS); // (17096841:2011-04-27:Private): removed PJPs=[r6_reverse], added PJPs=[]
+		faults.put("biomodel_85221354.vcml:Application1",MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_EXPRESSIONS); // (84148778:2013-11-25:Private): equations have different number of expressions
+		faults.put("biomodel_85241086.vcml:Application1",MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_EXPRESSIONS); // (84148778:2013-11-27:Private): equations have different number of expressions
+		faults.put("biomodel_85305863.vcml:Application0",MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_EXPRESSIONS); // (84148778:2013-12-03:Private): equations have different number of expressions
+		faults.put("biomodel_87760173.vcml:Application0",MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION); // (34302033:2014-04-30:Private): expressions are different: ' - (4.697674418604652E-5 * Ste2_active * ((0.0012 * Ste2_active * Alfa) - (0.6 * Ste2_active) - (0.24 * Ste2_active)) * Alfa)' vs ' - (4.697674418604652
+		faults.put("biomodel_94794583.vcml:Steady state",MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION); // (94778569:2015-05-13:Private): expressions are different: ' - (20.0 * IP3_Cyt)' vs '0.0'
+
+
+		// all private Hybrid models (files not committed to repo)
 		faults.put("biomodel_100059482.vcml:3D hybrid", MathCompareResults.Decision.MathDifferent_LEGACY_RATE_PARTICLE_JUMP_PROCESS); // (gerardw:81356985:2016-05-20:Group=[fgao(6606010),schaff(17)]): PJP='flux0_reverse', old='[(2.0 * RanC_nuc)]', new='[(1204.0 * RanC_nuc)]'
 		faults.put("biomodel_101986247.vcml:Application0", MathCompareResults.Decision.MathDifferent_LEGACY_RATE_PARTICLE_JUMP_PROCESS); // (boris:21:2016-08-18:Private): PJP='r0', old='[(0.0016611295681063123 * A)]', new='[A]'
 		faults.put("biomodel_102370928.vcml:single cycle_hybrid_stirred", MathCompareResults.Decision.MathDifferent_LEGACY_RATE_PARTICLE_JUMP_PROCESS); // (boris:21:2016-09-15:Private): PJP='r0', old='[(1.920265780730897E-4 * S)]', new='[(0.1156 * S)]'
@@ -244,11 +305,13 @@ public class MathGenCompareTest {
 		ArrayList<String> appTestCases = new ArrayList<>();
 		for (String filename : filenames){
 //if (true
-//&& !filename.equals("biomodel_82456311.vcml")
-//&& !filename.equals("biomodel_82162188.vcml")
-//&& !filename.equals("biomodel_82456701.vcml")
-//&& !filename.equals("biomodel_82457170.vcml")
-//&& !filename.equals("biomodel_98730962.vcml")
+//&& !filename.equals("biomodel_28555193.vcml")
+//&& !filename.equals("biomodel_28572365.vcml")
+//&& !filename.equals("biomodel_29136875.vcml")
+//&& !filename.equals("biomodel_29136972.vcml")
+//&& !filename.equals("biomodel_39781155.vcml")
+//&& !filename.equals("biomodel_39781314.vcml")
+//&& !filename.equals("biomodel_94794583.vcml")
 //) continue;
 			String vcmlStr;
 			try (InputStream testFileInputStream = VcmlTestSuiteFiles.getVcmlTestCase(filename);) {

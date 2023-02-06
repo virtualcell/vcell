@@ -213,4 +213,5 @@ vcell-client/UserDocumentation/originalXML/helpSearchConfig.txt
 
 pythonProject/vcell-opt/dist/
 
-vcell-core/src/test/resources/org/vcell/sbml/vcell_hybrid/
+vcell-core/src/test/resources/org/vcell/sbml/local
+
