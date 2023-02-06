@@ -1224,6 +1224,16 @@ private ArrayList<KineticsParameter> getKineticsParametersFromTokens(String kine
 		ForwardRate K1;
 		ReverseRate K2;
 	} 
+	 ... or ...
+	Kinetics MassActionKinetics {
+		ForwardRate 'Kf_PIP2_PLC'
+		ReverseRate 'Kr_PIP2_PLC'
+		Parameter Kf_PIP2_PLC kf_PIP2PLC;
+		Parameter Kr_PIP2_PLC kr_PIP2PLC;
+		Parameter kf_PIP2PLC 200.0;
+		Parameter kr_PIP2PLC (Kd_PIP2PLC * kf_PIP2PLC);
+		Parameter Kd_PIP2PLC 2.0;
+	}
 	 */
 	for (String origSymbol : symbolRenamings.keySet()){
 		String newSymbol = symbolRenamings.get(origSymbol);
