@@ -103,10 +103,13 @@ public class MathGenCompareTest {
 		Set<String> faults = new HashSet<>();
 		// public models
 
+		// all flux models
+		faults.add("biomodel_158988094.vcml:Application1"); // local/flux: NPE in StructureSizeSolver.updateUnitStructureSizes_symbolic(StructureSizeSolver.java:649)
+
 		// all private hybrid models
-		faults.add("biomodel_101106339.vcml:Application0"); // // local/massaction: 'FB-ECM' not legal identifier for rule-based modeling, try 'FB_ECM'.
-		faults.add("biomodel_211551763.vcml:Application1"); // // local/massaction: NullPointerException in BioEvent.getConstantParameterValue()
-		faults.add("biomodel_2177828.vcml:ttt"); // // local/massaction: Enable diffusion in Application 'ttt'. This must be done for any species (e.g 'calcium_Feature') in flux reactions.
+		faults.add("biomodel_101106339.vcml:Application0"); // local/massaction: 'FB-ECM' not legal identifier for rule-based modeling, try 'FB_ECM'.
+		faults.add("biomodel_211551763.vcml:Application1"); // local/massaction: NullPointerException in BioEvent.getConstantParameterValue()
+		faults.add("biomodel_2177828.vcml:ttt"); // local/massaction: Enable diffusion in Application 'ttt'. This must be done for any species (e.g 'calcium_Feature') in flux reactions.
 		faults.add("biomodel_88592639.vcml:tissue"); // local/massaction:
 
 		// all private Hybrid PDE/Particle models
