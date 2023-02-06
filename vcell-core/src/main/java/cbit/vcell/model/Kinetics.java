@@ -1132,14 +1132,14 @@ private ArrayList<KineticsParameter> getKineticsParametersFromTokens(String kine
 		}
 
 		String nextTokenAfterRole = tokens.nextToken();
-		if (nextTokenAfterRole.endsWith(";")){
+		if (nextTokenAfterRole.endsWith("'") && nextTokenAfterRole.startsWith("'")){
 			//
 			// if requiredIdentifier name is present (delimited by single quotes)
 			// use it as the user-supplied name for that required parameter
 			//
 			//     e.g. CurrentDensity 'currentDensity'
 			//
-			String parmName = nextTokenAfterRole.substring(0,nextTokenAfterRole.length()-1);
+			String parmName = nextTokenAfterRole.substring(1,nextTokenAfterRole.length()-1);
 			if (!parameterForRole.getName().equals(parmName)){
 				symbolRenamings.put(parameterForRole.getName(),parmName);
 			}
