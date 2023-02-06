@@ -105,8 +105,6 @@ public class MathGenCompareTest {
 
 		// all flux models
 		faults.add("biomodel_158988094.vcml:Application1"); // local/flux: NPE in StructureSizeSolver.updateUnitStructureSizes_symbolic(StructureSizeSolver.java:649)
-		faults.add("biomodel_90935642_old.vcml:non-spatial stoch"); // (old cached XML - regenerated 2/5/2023) local/flux: Failed to intepret kinetic rate for reaction 'flux0' as mass action.
-		faults.add("biomodel_90935642_old.vcml:3D stoch"); // (old cached XML - regenerated 2/5/2023) local/flux: Failed to intepret kinetic rate for reaction 'flux0' as mass action.
 
 		// all private hybrid models
 		faults.add("biomodel_101106339.vcml:Application0"); // local/massaction: 'FB-ECM' not legal identifier for rule-based modeling, try 'FB_ECM'.
@@ -142,10 +140,6 @@ public class MathGenCompareTest {
 		faults.put("biomodel_97075423.vcml:NFSim", MathCompareResults.Decision.MathDifferent_LEGACY_SYMMETRY_PARTICLE_JUMP_PROCESS); // (mblinov:12487253:2015-10-07:Private): PJP='r1', ProcessSymmetryFactor: old='1.0', new='0.5'
 		faults.put("biomodel_97705317.vcml:NFSim app", MathCompareResults.Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS); // (BioNetGen:95093638:2015-11-23:Public): PJP='r10', SymmetryFactor: old='0.5' new='0.5', rate: old='[0.0016611295681063123]', new='[0.0033222591362126247]'
 		faults.put("biomodel_97786619.vcml:NFSim app", MathCompareResults.Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS); // (BioNetGen:95093638:2015-12-02:Public): PJP='r10', SymmetryFactor: old='0.5' new='0.5', rate: old='[0.0016611295681063123]', new='[0.0033222591362126247]'
-
-		// all private/public legacy Flux Reaction problems (bad cached XML) rest of 309 models are okay (this model is user 'schaff')
-		faults.put("biomodel_90935642_old.vcml:3D pde",MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION); // (17:2014-09-10:Public): expressions are different: ' - (2.0 * (RanC_cyt - RanC_nuc))' vs '0.0'
-		faults.put("biomodel_90935642_old.vcml:non-spatial ODE",MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION); // (17:2014-09-10:Public): expressions are different: '( - (RanC_cyt - (1000.0 * C_cyt * C_cyt)) - (0.1889313531211006 * (RanC_cyt - (2.704885868157603E-4 * (1.6611295681063125 - (14891.899581611733 * C_cyt)
 
 		// all private legacy Mass Action models with no reactant and no-zero Kf (all rest of models identified in issue 536 are fixed)
 		faults.put("biomodel_115999897.vcml:Application0",MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION); // (60339657:2017-08-06:Private): expressions are different: '(PI45P2 - (0.03 * IP3))' vs '((0.0928262 * PI45P2) - (0.03 * IP3))'
