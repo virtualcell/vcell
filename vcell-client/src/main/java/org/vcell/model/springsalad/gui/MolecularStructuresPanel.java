@@ -2,8 +2,6 @@ package org.vcell.model.springsalad.gui;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Container;
-import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -12,11 +10,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
 
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer;
@@ -24,7 +18,6 @@ import javax.swing.DefaultListModel;
 import javax.swing.DefaultListSelectionModel;
 import javax.swing.Icon;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -48,10 +41,8 @@ import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.EditorScrollTable;
-import org.vcell.util.gui.ScrollTable;
 import org.vcell.util.gui.VCellIcons;
 import org.vcell.util.gui.ScrollTable.ScrollTableBooleanCellRenderer;
-import org.vcell.util.gui.sorttable.JSortTable;
 import org.vcell.util.gui.sorttable.SortTableModel;
 
 import cbit.gui.ScopedExpression;
@@ -62,9 +53,7 @@ import cbit.vcell.client.desktop.biomodel.SelectionManager;
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
 import cbit.vcell.graph.SmallShapeManager;
-import cbit.vcell.graph.SpeciesPatternLargeShape;
 import cbit.vcell.graph.SpeciesPatternSmallShape;
-import cbit.vcell.graph.gui.LargeShapePanel;
 import cbit.vcell.mapping.AssignmentRule;
 import cbit.vcell.mapping.MolecularInternalLinkSpec;
 import cbit.vcell.mapping.RateRule;
@@ -76,8 +65,6 @@ import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.mapping.TaskCallbackMessage.TaskCallbackStatus;
 import cbit.vcell.mapping.gui.MolecularTypeSpecsTableModel;
 import cbit.vcell.mapping.gui.SpeciesContextSpecsTableModel;
-import cbit.vcell.mapping.gui.StructureMappingTableModel;
-import cbit.vcell.mapping.gui.SpeciesContextSpecsTableModel.ColumnType;
 import cbit.vcell.mapping.gui.StructureMappingTableRenderer.TextIcon;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Species;
@@ -294,7 +281,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		gbc.gridx = 0;
 		gbc.gridy = 0;
 		gbc.weightx = 1.0;
-		gbc.weighty = 0.7;
+		gbc.weighty = 0.8;
 		gbc.fill = GridBagConstraints.BOTH;
 		gbc.insets = new Insets(3, 0, 0, 0);	//  top, left, bottom, right 
 		thePanel.add(top, gbc);
@@ -474,7 +461,9 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 						Structure structure = (Structure)value;
 						setText(structure.getName());
 					} else {
-						setText(value.toString());
+						if(value != null) {
+							setText(value.toString());
+						}
 					}
 				}
 				return this;
@@ -537,7 +526,6 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		gbc.gridx = 1;
 		gbc.gridy = 5;
 		gbc.weightx = 1.0;
-		gbc.weighty = 1.0;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.anchor = GridBagConstraints.SOUTH;
 		gbc.insets = new Insets(2, 2, 2, 2);
@@ -554,7 +542,6 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		gbc.gridx = 3;
 		gbc.gridy = 5;
 		gbc.weightx = 1.0;
-		gbc.weighty = 1.0;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.anchor = GridBagConstraints.SOUTH;
 		gbc.insets = new Insets(2, 2, 2, 2);
@@ -571,7 +558,6 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		gbc.gridx = 5;
 		gbc.gridy = 5;
 		gbc.weightx = 1.0;
-		gbc.weighty = 1.0;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.anchor = GridBagConstraints.SOUTH;
 		gbc.insets = new Insets(2, 2, 2, 2);
@@ -588,7 +574,6 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		gbc.gridx = 7;
 		gbc.gridy = 5;
 		gbc.weightx = 1.0;
-		gbc.weighty = 1.0;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.anchor = GridBagConstraints.SOUTH;
 		gbc.insets = new Insets(2, 2, 2, 2);
@@ -604,8 +589,6 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 
 		
 		linksPanel.setLayout(new GridBagLayout());
-//		siteLinksList.setBorder(loweredEtchedBorder);
-		
 		JScrollPane scrollPane1 = new JScrollPane(siteLinksList, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
@@ -616,7 +599,6 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		gbc.fill = GridBagConstraints.BOTH;
 		gbc.insets = new Insets(5, 2, 2, 3);
 		linksPanel.add(scrollPane1, gbc);
-//		linksPanel.add(siteLinksList, gbc);
 
 		gbc = new GridBagConstraints();		// ----------------------
 		gbc.gridx = 0;
@@ -759,13 +741,13 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		}
 		
 		if(bNonNullMolecularTypePattern && mtp.getComponentPatternList().size() > 1) {		// a link requires 2 sites (components)
-			linkLengthField.setEditable(true);
 			addLinkButton.setEnabled(true);
 			refreshSiteLinksList();
 		} else {
 			linkLengthField.setEditable(false);
 			linkLengthField.setText(null);
 			addLinkButton.setEnabled(false);
+			refreshSiteLinksList();
 		}
 		if(bNonNullMolecularComponentPattern) {
 			SiteAttributesSpec sas = fieldSpeciesContextSpec.getSiteAttributesMap().get(fieldMolecularComponentPattern);
@@ -788,8 +770,10 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 	
 	private void refreshSiteLinksList() {
 		siteLinksListModel.removeAllElements();
-		for (MolecularInternalLinkSpec mils : fieldSpeciesContextSpec.getInternalLinkSet()){
-			siteLinksListModel.addElement(mils);
+		if(fieldSpeciesContextSpec != null) {
+			for (MolecularInternalLinkSpec mils : fieldSpeciesContextSpec.getInternalLinkSet()){
+				siteLinksListModel.addElement(mils);
+			}
 		}
 	}
 
@@ -1233,8 +1217,11 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 	private void showLinkLength(MolecularInternalLinkSpec selectedValue) {
 		if(selectedValue == null) {
 			System.out.println("SelectedValue is null");
+			linkLengthField.setEditable(false);
+			linkLengthField.setText(null);
 			return;		// nothing selected
 		}
+		linkLengthField.setEditable(true);
 		linkLengthField.setText(selectedValue.getLinkLength()+"");
 		
 	};

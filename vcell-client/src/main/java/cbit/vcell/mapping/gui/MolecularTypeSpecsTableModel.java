@@ -124,6 +124,9 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 	@Override
 	public Object getValueAt(int row, int col) {
 		try {
+			if(getSpeciesContextSpec() == null) {
+				return null;
+			}
 			Map<MolecularComponentPattern, SiteAttributesSpec> siteAttributesMap = getSpeciesContextSpec().getSiteAttributesMap();
 			MolecularComponentPattern mcp = getValueAt(row);
 			SiteAttributesSpec sas = siteAttributesMap.get(mcp);
