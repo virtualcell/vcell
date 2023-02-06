@@ -450,6 +450,7 @@ java.io.Serializable, IssueSource, Relatable
 			super.firePropertyChange(PROPERTYNAME_NAME, oldValue, name);
 		}
 		private void replaceNameLocal(String name) {
+			// used rather than setName() to avoid unnecessary propogation of an alternate name during parsing.
 			fieldParameterName = name;
 		}
 		
@@ -1158,6 +1159,8 @@ private ArrayList<KineticsParameter> getKineticsParametersFromTokens(String kine
 			
 			//
 			// find out if expression refers to another parameter declaration (expression of type "paramName;").
+			//
+			//     e.g. CurrentDensity I2;
 			//
 			String[] symbols = exp.getSymbols();
 			boolean bIsSingleId = false;
