@@ -2815,12 +2815,17 @@ private void filterUnusedReservedSymbols(SBMLDocument sbmlDocument) throws SBMLE
 	String sbmlStr = sbmlWriter.writeSBMLToString(sbmlDocument);
 	Model vcModel = getSelectedSimContext().getModel();
 	ReservedSymbol[] vcReservedSymbols = vcModel.getReservedSymbols();  
+	Set<String> overriddenSymbols = new HashSet<>();
+	for (Simulation sim : getSelectedSimContext().getSimulations()){
+		overriddenSymbols.addAll(Arrays.asList(sim.getMathOverrides().getOverridenConstantNames()));
+	}
 	for (ReservedSymbol vcParam : vcReservedSymbols) {
 		if(vcParam.isTime() || vcParam.isX() || vcParam.isY() || vcParam.isZ()) {
 			continue;
 		}
 		int count = StringUtils.countMatches(sbmlStr, vcParam.getName());
-		if(count == 1) {
+		if (count == 1 && !overriddenSymbols.contains(vcParam.getName())){
+			// remove if only found once (in declaration) and not overridden in any simulation
 			sbmlModel.removeParameter(vcParam.getName());	// we know for sure that the sbmlParam id is same as vcmlParam name
 		}
 	}
