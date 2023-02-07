@@ -2,6 +2,7 @@ package org.vcell.model.springsalad.gui;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -46,6 +47,8 @@ import org.vcell.util.gui.ScrollTable.ScrollTableBooleanCellRenderer;
 import org.vcell.util.gui.sorttable.SortTableModel;
 
 import cbit.gui.ScopedExpression;
+import cbit.vcell.client.ChildWindowManager;
+import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.desktop.biomodel.ApplicationSpecificationsPanel;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.client.desktop.biomodel.IssueManager;
@@ -102,6 +105,9 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 	private JTextField linkLengthField = null;
 	private JButton addLinkButton = null;
 
+	//
+	// TODO: make it possible to use right click menu to delete links
+	//
 	private JList<MolecularInternalLinkSpec> siteLinksList = null;
 	private DefaultListModel<MolecularInternalLinkSpec> siteLinksListModel = new DefaultListModel<>();
 	private ListCellRenderer<Object> siteLinksCellRenderer = new DefaultListCellRenderer(){
@@ -109,8 +115,10 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 			Component component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 			if (value instanceof MolecularInternalLinkSpec && component instanceof JLabel){
-				MolecularInternalLinkSpec sc = (MolecularInternalLinkSpec)value;
-				((JLabel)component).setText(" " + "ala bala");
+				MolecularInternalLinkSpec mils = (MolecularInternalLinkSpec)value;
+				MolecularComponentPattern firstMcp = mils.getMolecularComponentPatternOne();
+				MolecularComponentPattern secondtMcp = mils.getMolecularComponentPatternTwo();
+				((JLabel)component).setText(firstMcp.getMolecularComponent().getName() + " :: " + secondtMcp.getMolecularComponent().getName());
 			}
 			return component;
 		}
@@ -710,6 +718,9 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		molecularTypeSpecsTableModel.setSpeciesContextSpec(fieldSpeciesContextSpec);
 		updateInterface();
 	}
+	public SpeciesContextSpec getSpeciesContextSpec() {
+		return fieldSpeciesContextSpec;
+	}
 	void setMolecularComponentPattern(MolecularComponentPattern mcp) {
 		fieldMolecularComponentPattern = mcp;
 		//TODO: stuff
@@ -775,15 +786,6 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 				siteLinksListModel.addElement(mils);
 			}
 		}
-	}
-
-	
-	private void appendToConsole(String string) {
-		TaskCallbackMessage newCallbackMessage = new TaskCallbackMessage(TaskCallbackStatus.Error, string);
-		fieldSimulationContext.appendToConsole(newCallbackMessage);
-	}
-	private void appendToConsole(TaskCallbackMessage newCallbackMessage) {
-		fieldSimulationContext.appendToConsole(newCallbackMessage);
 	}
 
 	@Override
@@ -1206,17 +1208,34 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 	}
 
 	private void addLinkActionPerformed() {
-		// TODO make a dialog and let the user select the 2 components of the link
-		// for now just make a link
-		SpeciesPattern sp = fieldSpeciesContextSpec.getSpeciesContext().getSpeciesPattern();
-		MolecularTypePattern mtp = sp.getMolecularTypePatterns().get(0);
-		MolecularInternalLinkSpec mils = new MolecularInternalLinkSpec(fieldSpeciesContextSpec, mtp.getComponentPatternList().get(0), mtp.getComponentPatternList().get(1));
-		fieldSpeciesContextSpec.getInternalLinkSet().add(mils);
+		AddLinkPanel panel = new AddLinkPanel(this);
+		ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(this);
+		ChildWindow childWindow = childWindowManager.addChildWindow(panel, panel, " Add Link ");
+		Dimension dim = new Dimension(320, 330);
+		childWindow.pack();
+		panel.setChildWindow(childWindow);
+		childWindow.setPreferredSize(dim);
+		childWindow.showModal();
+
+		if(panel.getButtonPushed() == AddLinkPanel.ActionButtons.Apply) {
+			
+			// TODO: verify if the link doesn't exist already
+			// TODO: verify that the mcp are different
+			
+			MolecularComponentPattern firstMcp = panel.getFirstSiteList().getSelectedValue();
+			MolecularComponentPattern secondMcp = panel.getSecondSiteList().getSelectedValue();
+			MolecularInternalLinkSpec mils = new MolecularInternalLinkSpec(fieldSpeciesContextSpec, firstMcp, secondMcp);
+			fieldSpeciesContextSpec.getInternalLinkSet().add(mils);
+			return;
+		} else {
+			
+			return;
+		}
 	}
 	
 	private void showLinkLength(MolecularInternalLinkSpec selectedValue) {
 		if(selectedValue == null) {
-			System.out.println("SelectedValue is null");
+			System.out.println("showLinkLength: SelectedValue is null");
 			linkLengthField.setEditable(false);
 			linkLengthField.setText(null);
 			return;		// nothing selected
