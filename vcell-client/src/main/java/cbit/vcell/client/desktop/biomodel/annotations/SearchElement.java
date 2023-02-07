@@ -1,6 +1,8 @@
 package cbit.vcell.client.desktop.biomodel.annotations;
 
 
+import org.biojava.nbio.ontology.Synonym;
+
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +28,13 @@ public class SearchElement {
 
     }
 
+    public SearchElement(String name, String id) {
+        this.entityName = name;
+        this.synonyms = new ArrayList<>();
+        this.definition = "";
+        this.dbLink = URI.create("https://www.uniprot.org/uniprot/"+id);
+    }
+
     public String getEntityName() {
         return entityName;
     }
@@ -44,10 +53,21 @@ public class SearchElement {
 
     @Override
     public String toString() {
-        return  "Name: " + entityName +
-                "\nSynonyms: " + synonyms.toString() +
-                "\nDefinition: " + definition +
-                "\nLink: " + dbLink;
+        String result = "";
+        if (!entityName.isEmpty())
+            result += "Name: " + entityName;
+        if (!synonyms.isEmpty())
+            result += "\nSynonyms: " + synonyms;
+        if (!definition.isEmpty())
+            result += "\nDefinition: " + definition;
+        if (!dbLink.toString().isEmpty())
+            result += "\nLink: " + dbLink;
+
+        return result;
+//        return  "Name: " + entityName +
+//                "\nSynonyms: " + synonyms.toString() +
+//                "\nDefinition: " + definition +
+//                "\nLink: " + dbLink;
     }
 }
 
