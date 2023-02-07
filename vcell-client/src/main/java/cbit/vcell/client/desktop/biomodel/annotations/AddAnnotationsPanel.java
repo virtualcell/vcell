@@ -1,5 +1,6 @@
 package cbit.vcell.client.desktop.biomodel.annotations;
 
+import cbit.vcell.biomodel.meta.MiriamManager;
 import cbit.vcell.biomodel.meta.VCMetaDataMiriamManager;
 import org.vcell.util.document.Identifiable;
 import org.xml.sax.SAXException;
@@ -15,6 +16,8 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Objects;
+
+import static cbit.vcell.biomodel.meta.VCMetaDataMiriamManager.VCMetaDataDataType.DataType_UNIPROT;
 
 public class AddAnnotationsPanel extends JFrame implements ActionListener {
 
@@ -273,7 +276,12 @@ public class AddAnnotationsPanel extends JFrame implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent evt) {
         if (evt.getSource() == searchButton) {
-            getSearchResults();
+            try {
+                getSearchResults();
+            } catch (IOException | URISyntaxException | ParserConfigurationException | InterruptedException |
+                     SAXException e) {
+                throw new RuntimeException(e);
+            }
         } else if (evt.getSource() == addButton) {
             setAnnotationDescAndIdentifier();
         } else if (evt.getSource() == oKButton) {
@@ -281,43 +289,42 @@ public class AddAnnotationsPanel extends JFrame implements ActionListener {
         }
     }
 
-    private void getSearchResults() {
+    private void getSearchResults() throws IOException, URISyntaxException, ParserConfigurationException, InterruptedException, SAXException {
         //clear description area and search list before new
         descriptionArea.setText(null);
-//        list.removeAll();
         DefaultListModel<String> dlm = new DefaultListModel<>();
         String searchTerm = searchBar.getText();
-        BioPortalSearch bioPortalSearch = new BioPortalSearch();
 
-//        String bioPortalDatabases = Objects.equals(ontologiesBox.getSelectedItem(), "All Selected") ?
-//                "GO,NCIT,CHEBI,FMA,BTO" : Objects.requireNonNull(ontologiesBox.getSelectedItem()).toString();
-        //MiriamManager.DataType dataType = (MiriamManager.DataType) annotationsPanel.getJComboBoxURI().getSelectedItem();
+
         VCMetaDataMiriamManager.VCMetaDataDataType mdt = (VCMetaDataMiriamManager.VCMetaDataDataType)jComboBoxURI.getSelectedItem();
-//        String bioPortalDatabases = dataType.getDataTypeName();
+
         String bioPortalDatabases = mdt.getDataTypeName();
 
         boolean exactMatch = Objects.equals(containsBox.getSelectedItem(), "exact");
 
         int pageSize = Integer.parseInt(Objects.requireNonNull(limitBox.getSelectedItem()).toString());
 
-        try {
+        if (mdt.getDataTypeName().equals(DataType_UNIPROT.getDataTypeName())) {
+            UniProtSearch uniProtSearch = new UniProtSearch();
+            SearchElements = uniProtSearch.search(searchTerm,pageSize);
+        } else {
+            BioPortalSearch bioPortalSearch = new BioPortalSearch();
             SearchElements = bioPortalSearch.search(searchTerm,pageSize,bioPortalDatabases,exactMatch);
-            if (!SearchElements.isEmpty()) {
-                list.setEnabled(true);
-                list.setFont(new Font("TimesRoman",Font.PLAIN,13));
-                for (SearchElement element: SearchElements) {
-                    dlm.addElement(element.getEntityName());
-                }
-            } else {
-                list.setFont(new Font("Arial", Font.BOLD, 14));
-                dlm.addElement("No matches found");
-                list.setEnabled(false);
-            }
-            list.setModel(dlm);
-        } catch (IOException | SAXException | URISyntaxException | ParserConfigurationException |
-                 InterruptedException ex) {
-            throw new RuntimeException(ex);
         }
+
+
+        if (!SearchElements.isEmpty()) {
+            list.setEnabled(true);
+            list.setFont(new Font("TimesRoman",Font.PLAIN,13));
+            for (SearchElement element: SearchElements) {
+                dlm.addElement(element.getEntityName());
+            }
+        } else {
+            list.setFont(new Font("Arial", Font.BOLD, 14));
+            dlm.addElement("No matches found");
+            list.setEnabled(false);
+        }
+        list.setModel(dlm);
     }
 
     private void getDescription() {

@@ -167,14 +167,11 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 		public void actionPerformed(ActionEvent evt) {
 			if (evt.getSource() == getJButtonAddRef()) {
 				initializeAddAnnotationsPanel();
-
 //				addIdentifier();
 			}
 			else if(evt.getSource() == addAnnotationsPanel.getOkButton()) {
 				annotationTextArea.setText("A test from the void");
-			}
-
-			else if(evt.getSource() == getJButtonDeleteRef()) {
+			} else if(evt.getSource() == getJButtonDeleteRef()) {
 				removeIdentifier();
 			} else if(evt.getSource() == getJButtonRemoveText()) {
 				removeText();
@@ -992,7 +989,7 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 		}
 	}
 	private String getId(URI uri, String dataTypeName) {
-		String id = "Wrong ID";
+		String id = "IDError";
 
 		if (uri.toString().contains("BTO"))
 			id = uri.getPath().replace("/obo/BTO_","");
@@ -1010,6 +1007,8 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 			id = uri.getPath().replace("/obo/PATO_","");
 		else if (uri.toString().contains("PR"))
 			id = uri.getPath().replace("/obo/PR_","");
+		else if (uri.toString().contains("uniprot"))
+			id = uri.getPath().replace("/uniprot/","");
 
 		return id;
 	}
@@ -1041,7 +1040,7 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 						e.printStackTrace(System.out);
 					}
 				}
-				if(found == true) {
+				if(found) {
 					updateInterface();
 					if(selectedObject instanceof ReactionStep) {
 						((ReactionStep) selectedObject).firePropertyChange("addIdentifier", true, false);

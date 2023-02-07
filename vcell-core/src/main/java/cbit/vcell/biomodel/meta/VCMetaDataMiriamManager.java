@@ -177,12 +177,12 @@ public class VCMetaDataMiriamManager implements MiriamManager, Serializable {
 				"urn:miriam:reactome",
 				"The Reactome project is a collaboration to develop a curated resource of core pathways and reactions in human biology.",
 				"R-HSA-201451");																			// https://reactome.org/content/detail/R-HSA-50825
-		public final static DataType DataType_UNIPROT 		= new VCMetaDataDataType("UniProt",
+		public final static DataType DataType_UNIPROT = new VCMetaDataDataType("UniProt",
 				"http://www.uniprot.org/",
 //				"http://www.ebi.uniprot.org/entry/",														// old
 				"https://www.uniprot.org/uniprot/",															// ^([A-N,R-Z][0-9]([A-Z][A-Z, 0-9][A-Z, 0-9][0-9]){1,2})|([O,P,Q][0-9][A-Z, 0-9][A-Z, 0-9][A-Z, 0-9][0-9])(\.\d+)?$
 				"urn:miriam:uniprot",
-				"UniProt (Universal Protein Resource) is the world's most comprehensive catalog of information on proteins. It is a central repository of protein sequence and function created by joining the information contained in Swiss-Prot, TrEMBL, and PIR.",
+				"UniProt (Universal ProteUin Resource) is the world's most comprehensive catalog of information on proteins. It is a central repository of protein sequence and function created by joining the information contained in Swiss-Prot, TrEMBL, and PIR.",
 				"P00533");
 		public final static DataType DataType_ICD 			= new VCMetaDataDataType("ICD",	
 				"http://www.who.int/classifications/icd/",
@@ -506,7 +506,7 @@ public class VCMetaDataMiriamManager implements MiriamManager, Serializable {
 		} else if(entity instanceof Species || entity instanceof MolecularType || entity instanceof RbmObservable) {
 			list.add(VCMetaDataDataType.DataType_Chebi);
 //			list.add(VCMetaDataDataType.DataType_KEGGCOMPOUND);
-//			list.add(VCMetaDataDataType.DataType_UNIPROT);
+			list.add(VCMetaDataDataType.DataType_UNIPROT);
 //			list.add(VCMetaDataDataType.DataType_ECCODE);
 //			list.add(VCMetaDataDataType.DataType_REACTOME);
 			list.add(VCMetaDataDataType.DataType_CL);
@@ -519,7 +519,7 @@ public class VCMetaDataMiriamManager implements MiriamManager, Serializable {
 		} else if(entity instanceof Model.ModelParameter) {
 			list.add(VCMetaDataDataType.DataType_Chebi);
 //			list.add(VCMetaDataDataType.DataType_KEGGCOMPOUND);
-//			list.add(VCMetaDataDataType.DataType_UNIPROT);
+			list.add(VCMetaDataDataType.DataType_UNIPROT);
 //			list.add(VCMetaDataDataType.DataType_ECCODE);
 //			list.add(VCMetaDataDataType.DataType_REACTOME);
 			list.add(VCMetaDataDataType.DataType_CL);
