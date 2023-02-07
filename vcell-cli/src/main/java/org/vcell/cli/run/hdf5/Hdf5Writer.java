@@ -56,8 +56,9 @@ public class Hdf5Writer {
                     path += ("/" + group); // Start from first group, then travel down the path.
                     if (masterHdf5.containsGroup(path)) continue;
                     int groupId = masterHdf5.addGroup(path);
-                    masterHdf5.insertAttribute_classic(groupId, "combineArchiveLocation", path);
-                    masterHdf5.insertAttribute_classic(groupId, "uri", path);
+                    String relativePath = path.substring(1);
+                    masterHdf5.insertAttribute_classic(groupId, "combineArchiveLocation", relativePath);
+                    masterHdf5.insertAttribute_classic(groupId, "uri", relativePath);
                     // We leave them open because there may be other datasets that share (some of) the same parent groups
                 }
     
@@ -85,7 +86,7 @@ public class Hdf5Writer {
                     masterHdf5.insertAttributes_classic(currentDatasetId, "sedmlDataSetShapes", data.datasetMetadata.sedmlDataSetShapes);
                     masterHdf5.insertAttribute_classic(currentDatasetId, "sedmlId", data.datasetMetadata.sedmlId);
                     masterHdf5.insertAttribute_classic(currentDatasetId, "sedmlName", data.datasetMetadata.sedmlName);
-                    masterHdf5.insertAttribute_classic(currentDatasetId, "uri", path + "/" + data.datasetMetadata.sedmlId);
+                    masterHdf5.insertAttribute_classic(currentDatasetId, "uri", path.substring(1) + "/" + data.datasetMetadata.sedmlId);
     
                     masterHdf5.closeDataset(currentDatasetId);
                 }
