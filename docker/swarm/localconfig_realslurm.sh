@@ -178,6 +178,7 @@ VCELL_SIMDATADIR_ARCHIVE_EXTERNAL=/share/apps/vcell3/dev_archive_users
 VCELL_SIMDATADIR_ARCHIVE_INTERNAL=/Volumes/vcell/dev_archive_users
 VCELL_SIMDATADIR_EXTERNAL=/share/apps/vcell3/users
 VCELL_SIMDATADIR_HOST=/Volumes/vcell/users
+VCELL_SIMDATADIR_SECONDARY_HOST=/Volumes/vcell/users
 VCELL_SIMDATADIR_PARALLEL_EXTERNAL=/share/apps/vcell3parallel
 VCELL_SITE_CAMEL=${_site_camel}
 VCELL_SITE=$VCELL_SITE
