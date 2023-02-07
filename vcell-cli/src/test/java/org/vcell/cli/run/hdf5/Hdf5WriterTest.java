@@ -8,6 +8,7 @@ import cbit.vcell.resource.NativeLib;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.vcell.test.Fast;
+import org.vcell.util.VCellUtilityHub;
 
 import static org.vcell.cli.run.hdf5.Hdf5DataSourceNonspatial.Hdf5JobData;
 
@@ -104,6 +105,7 @@ public class Hdf5WriterTest {
     @Test
     public void test() throws HDF5Exception, IOException {
         System.setProperty(PropertyLoader.installationRoot, new File("..").getAbsolutePath());
+        VCellUtilityHub.startup(VCellUtilityHub.MODE.CLI);
         NativeLib.HDF5.load();
         Hdf5DataWrapper exampleHdf5FileWrapper = createExampleData();
         File dir = Files.createTempDir();

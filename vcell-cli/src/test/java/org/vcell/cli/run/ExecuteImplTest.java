@@ -8,6 +8,8 @@ import org.junit.experimental.categories.Category;
 import org.vcell.cli.CLIPythonManager;
 import org.vcell.cli.CLIRecorder;
 import org.vcell.test.Fast;
+import org.vcell.util.VCellUtilityHub;
+
 import picocli.CommandLine;
 
 import java.io.File;
@@ -24,6 +26,7 @@ public class ExecuteImplTest {
         System.setProperty(PropertyLoader.installationRoot, new File("..").getAbsolutePath());
         NativeLib.HDF5.load();
         NativeLib.combinej.load();
+        VCellUtilityHub.startup(VCellUtilityHub.MODE.CLI);
 
         System.setProperty(PropertyLoader.cliWorkingDir, new File("../vcell-cli-utils").getAbsolutePath());
         VCMongoMessage.enabled = false;
