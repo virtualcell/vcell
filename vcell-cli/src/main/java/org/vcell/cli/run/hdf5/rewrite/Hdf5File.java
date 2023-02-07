@@ -10,7 +10,6 @@ import java.nio.ByteOrder;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.HashMap;
 
 import ncsa.hdf.hdf5lib.H5;
@@ -35,6 +34,8 @@ public class Hdf5File {
     final private int H5T_C_S1 = HDF5Constants.H5T_C_S1;
     final private int H5I_INVALID_HID = HDF5Constants.H5I_INVALID_HID;
     final private int H5T_VARIABLE = HDF5Constants.H5T_VARIABLE;
+    final private int H5T_STR_NULLTERM = HDF5Constants.H5T_STR_NULLTERM;
+    final private int H5T_CSET_UTF8 = HDF5Constants.H5T_CSET_UTF8;
 
     private File javaFileTarget;
     private int fileId;
@@ -152,7 +153,7 @@ public class Hdf5File {
 		//insertAttributes(hdf5GroupID, dataspaceName, new ArrayList<String>(Arrays.asList(new String[] {data})));
 		//String[] attr = data.toArray(new String[0]);
 
-		String attr = data + '\u0000';
+		String attr = data;
 
 		int datatypeId = this.createVLStringDatatype();
 		int dataspace_id = H5.H5Screate(HDF5Constants.H5S_SCALAR);
@@ -295,10 +296,12 @@ public class Hdf5File {
     }
 
     private int createVLStringDatatype() {
-        int datatypeId = H5I_INVALID_HID, baseDatatypeId;
+        int datatypeId = H5I_INVALID_HID;
         try {
-            baseDatatypeId = H5.H5Tcopy(H5T_C_S1);
-            int status = H5.H5Tset_size(baseDatatypeId, H5T_VARIABLE);
+            datatypeId = H5.H5Tcopy(H5T_C_S1);
+            int status = H5.H5Tset_size(datatypeId, H5T_VARIABLE);
+            H5.H5Tset_strpad(datatypeId, H5T_STR_NULLTERM);
+            H5.H5Tset_cset(datatypeId, H5T_CSET_UTF8);
 
             if (status < 0){
                 throw new HDF5LibraryException("Size unable to be set");

@@ -73,7 +73,7 @@ public class Hdf5Writer {
                     if (data.dataSource instanceof Hdf5DataSourceSpatial){
                         masterHdf5.insertAttributes(currentDatasetId, "times", Hdf5DataPreparer.getSpacialHdf5Attribute_Times(data));
                     }  
-                    masterHdf5.insertAttribute_classic(currentDatasetId, "_type", data.datasetMetadata._type);
+                    masterHdf5.insertAttribute(currentDatasetId, "_type", data.datasetMetadata._type);
                     masterHdf5.insertAttributes_classic(currentDatasetId, "scanParameterNames", Arrays.asList(data.dataSource.scanParameterNames));
                     masterHdf5.insertAttributes_classic(currentDatasetId, "sedmlDataSetDataTypes", data.datasetMetadata.sedmlDataSetDataTypes);
                     masterHdf5.insertAttributes_classic(currentDatasetId, "sedmlDataSetIds", data.datasetMetadata.sedmlDataSetIds);
