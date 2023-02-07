@@ -154,7 +154,7 @@ jobs:
       - name: Upload results of round-trip
         uses: actions/upload-artifact@v3
         with:
-          name: export_results
+          name: export_results.txt
           path: ~/work/vcell/vcell/public/biomodel/vcml/export_results.txt
       
       - name: Upload original log of export
@@ -219,7 +219,7 @@ jobs:
       - name: Upload Results of Round-Trip
         uses: actions/upload-artifact@v3
         with:
-          name: import_results
+          name: import_results.txt
           path: ~/import_results.txt
           
       - name: Upload Results of Round-Trip
