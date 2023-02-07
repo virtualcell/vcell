@@ -9,7 +9,7 @@ import java.io.IOException;
 
 import org.vcell.util.VCellUtilityHub;
 import org.vcell.util.recording.Recorder;
-import org.vcell.util.recording.FileRecord;
+import org.vcell.util.recording.TextFileRecord;
 import org.vcell.util.recording.GsonExceptionSerializer;
 
 import org.apache.logging.log4j.LogManager;
@@ -26,7 +26,7 @@ public class SEDMLRecorder extends Recorder {
 	private SEDMLConversion operation;
 	private List<SEDMLTaskRecord> taskLogs = new LinkedList<>();
 	private transient Set<Class<? extends Exception>> exceptionTypes;
-	private transient FileRecord jsonFile;
+	private transient TextFileRecord jsonFile;
 	
 
 	public SEDMLRecorder(String jobName, SEDMLConversion conversion) {
@@ -38,8 +38,11 @@ public class SEDMLRecorder extends Recorder {
 		this.identifier = jobName;
 		this.operation = conversion;
 		this.exceptionTypes = new HashSet<>();
-		if (jsonFilePath != null) this.jsonFile = VCellUtilityHub.getLogManager().requestNewFileLog(jsonFilePath);
-		else this.jsonFile = null;
+		if (jsonFilePath != null) {
+			this.jsonFile = VCellUtilityHub.getLogManager().requestNewRecord(jsonFilePath);
+		} else {
+			this.jsonFile = null;
+		}
 	}
 
 	public String getIdentifier(){

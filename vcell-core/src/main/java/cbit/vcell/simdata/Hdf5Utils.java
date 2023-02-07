@@ -64,7 +64,7 @@ public class Hdf5Utils {
 		H5.H5Sselect_none(dataspaceID);
 		H5.H5Sclose(hdf5DataspaceIDSlice);
 	}
-	public static void insertAttribute(int hdf5GroupID,String dataspaceName,String data) throws NullPointerException, HDF5Exception {
+	public static void insertAttribute(int hdf5GroupID,String attributeName,String data) throws NullPointerException, HDF5Exception {
 		//insertAttributes(hdf5GroupID, dataspaceName, new ArrayList<String>(Arrays.asList(new String[] {data})));
 		//String[] attr = data.toArray(new String[0]);
 
@@ -76,14 +76,14 @@ public class Hdf5Utils {
 		int dataspace_id = -1;
 		//dataspace_id = H5.H5Screate_simple(dims.length, dims,null);
 		dataspace_id = H5.H5Screate(HDF5Constants.H5S_SCALAR);
-		int attribute_id = H5.H5Acreate(hdf5GroupID, dataspaceName, h5attrcs1, dataspace_id, HDF5Constants.H5P_DEFAULT,HDF5Constants.H5P_DEFAULT);
+		int attribute_id = H5.H5Acreate(hdf5GroupID, attributeName, h5attrcs1, dataspace_id, HDF5Constants.H5P_DEFAULT,HDF5Constants.H5P_DEFAULT);
 		H5.H5Awrite(attribute_id, h5attrcs1, attr.getBytes());
 		H5.H5Sclose(dataspace_id);
 		H5.H5Aclose(attribute_id);
 		H5.H5Tclose(h5attrcs1);
 	}
 	
-	public static void insertAttributes(int hdf5GroupID,String dataspaceName,List<String> data) throws NullPointerException, HDF5Exception {
+	public static void insertAttributes(int hdf5GroupID,String attributeName,List<String> data) throws NullPointerException, HDF5Exception {
 		String[] attr = data.toArray(new String[0]);
 		long[] dims = new long[] {attr.length}; // Always an array of length == 1
 		StringBuffer sb = new StringBuffer();
@@ -115,7 +115,7 @@ public class Hdf5Utils {
 		H5.H5Tset_size (h5attrcs1, MAXSTRSIZE/*HDF5Constants.H5T_VARIABLE*/);
 		int dataspace_id = -1;
 		dataspace_id = H5.H5Screate_simple(dims.length, dims,null);
-		int attribute_id = H5.H5Acreate(hdf5GroupID, dataspaceName, h5attrcs1, dataspace_id, HDF5Constants.H5P_DEFAULT,HDF5Constants.H5P_DEFAULT);
+		int attribute_id = H5.H5Acreate(hdf5GroupID, attributeName, h5attrcs1, dataspace_id, HDF5Constants.H5P_DEFAULT,HDF5Constants.H5P_DEFAULT);
 		H5.H5Awrite(attribute_id, h5attrcs1, sb.toString().getBytes());
 		H5.H5Sclose(dataspace_id);
 		H5.H5Aclose(attribute_id);

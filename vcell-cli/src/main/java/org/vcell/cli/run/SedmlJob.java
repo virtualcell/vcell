@@ -10,10 +10,8 @@ import org.jlibsedml.*;
 import org.apache.commons.io.FilenameUtils;
 import org.vcell.cli.CLIRecorder;
 import org.vcell.cli.PythonStreamException;
-import org.vcell.cli.run.hdf5.Hdf5DatasetWrapper;
-import org.vcell.cli.run.hdf5.Hdf5Factory;
-import org.vcell.cli.run.hdf5.Hdf5FileWrapper;
-import org.vcell.cli.run.hdf5.Hdf5Writer;
+import org.vcell.cli.run.hdf5.Hdf5WrapperFactory;
+import org.vcell.cli.run.hdf5.Hdf5DataWrapper;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.FileUtils;
 import org.vcell.util.GenericExtensionFilter;
@@ -196,7 +194,7 @@ public class SedmlJob {
      * @throws IOException if there are system I/O issues
      * @throws ExecutionException if an execution specfic error occurs
      */
-    public boolean simulateSedml() throws InterruptedException, ExecutionException, PythonStreamException, IOException {
+    public boolean simulateSedml(Hdf5DataWrapper masterHdf5File) throws InterruptedException, ExecutionException, PythonStreamException, IOException {
         /*  temp code to test plot name correctness
         String idNamePlotsMap = utils.generateIdNamePlotsMap(sedml, outDirForCurrentSedml);
         utils.execPlotOutputSedDoc(inputFile, idNamePlotsMap, this.resultsDirPath);
@@ -212,7 +210,11 @@ public class SedmlJob {
 
         this.runSimulations(solverHandler, externalDocInfo);
         this.recordRunDetails(solverHandler);
-        this.processOutputs(solverHandler);
+        try {
+            this.processOutputs(solverHandler, masterHdf5File);
+        } catch (Exception e){ // TODO: Make more Fine grain
+            logger.warn("Outputs could not be processed.", e);
+        }
         return this.evalulateResults();
     }
 
@@ -238,7 +240,7 @@ public class SedmlJob {
         this.recordRunDetails(solverHandler);
     }
 
-    private void processOutputs(SolverHandler solverHandler) throws PythonStreamException, InterruptedException, IOException, ExecutionException {
+    private void processOutputs(SolverHandler solverHandler, Hdf5DataWrapper masterHdf5File) throws PythonStreamException, InterruptedException, IOException, ExecutionException {
         // WARNING!!! Current logic dictates that if any task fails we fail the sedml document
         // change implemented on Nov 11, 2021
         // Previous logic was that if at least one task produces some results we declare the sedml document status as successful
@@ -256,7 +258,7 @@ public class SedmlJob {
             if (!solverHandler.nonSpatialResults.isEmpty()) {
                 this.generateCSV(solverHandler);
                 this.generatePlots();
-                this.generateHDF5(solverHandler);
+                this.generateHDF5(solverHandler, masterHdf5File);
             }
             
             if (!solverHandler.spatialResults.isEmpty()) {
@@ -284,8 +286,7 @@ public class SedmlJob {
             return false;
         }
 
-        // This may no longer make sense, as we could have multiple hdf5 reports, and renaming would be complicated.
-        Files.copy(new File(outDirForCurrentSedml,"reports.h5").toPath(),Paths.get(this.resultsDirPath,"reports.h5"));
+        //Files.copy(new File(outDirForCurrentSedml,"reports.h5").toPath(),Paths.get(this.resultsDirPath,"reports.h5"));
 
         // archiving result files
         logger.info("Archiving result files");
@@ -329,30 +330,20 @@ public class SedmlJob {
         //              }
     }
 
-    private void generateHDF5(SolverHandler solverHandler) throws HDF5Exception, ExpressionException, DataAccessException, IOException {
+    private void generateHDF5(SolverHandler solverHandler, Hdf5DataWrapper masterHdf5File) throws HDF5Exception, ExpressionException, DataAccessException, IOException {
         logDocumentMessage += "Generating HDF5 file... ";
         logger.info("Generating HDF5 file... ");
 
-        /*
-        Hdf5FileWrapper hdf5FileWrapper = new Hdf5FileWrapper();
-        hdf5FileWrapper.combineArchiveLocation = outDirForCurrentSedml.getName();
-        hdf5FileWrapper.uri = outDirForCurrentSedml.getName();
+        Hdf5WrapperFactory hdf5Factory = new Hdf5WrapperFactory(sedml, solverHandler.taskToSimulationMap, sedmlLocation);
 
-        List<Hdf5DatasetWrapper> nonspatialDatasets = RunUtils.prepareNonspatialHdf5(sedml, solverHandler.nonSpatialResults, solverHandler.taskToSimulationMap, sedmlLocation);
-        List<Hdf5DatasetWrapper> spatialDatasets = RunUtils.prepareSpatialHdf5(sedml, solverHandler.spatialResults, solverHandler.taskToSimulationMap, sedmlLocation);
-        hdf5FileWrapper.datasetWrappers.addAll(nonspatialDatasets);
-        hdf5FileWrapper.datasetWrappers.addAll(spatialDatasets);
-
-        */
-
-        Hdf5Factory hdf5Factory = new Hdf5Factory(sedml, solverHandler.taskToSimulationMap, sedmlLocation);
-
-        Hdf5Writer.writeHdf5(hdf5Factory.generateHdf5File(solverHandler.nonSpatialResults, solverHandler.spatialResults), outDirForCurrentSedml);
+        Hdf5DataWrapper partialHdf5File = hdf5Factory.generateHdf5File(solverHandler.nonSpatialResults, solverHandler.spatialResults);
+        //Hdf5Writer.writeHdf5(partialHdf5File, outDirForCurrentSedml); // Make a partial, relative hdf5
+        masterHdf5File.incorporate(partialHdf5File); // Add the data to the master hdf5 file wrapper.
 
         for (File tempH5File : solverHandler.spatialResults.values()){
             if (tempH5File!=null) Files.delete(tempH5File.toPath());
         }
-
+        /*
         if (!containsExtension(outDirForCurrentSedml.getAbsolutePath(), "h5")) {
             String errorMessage = "Failed to generate the HDF5 output file.";
             somethingFailed = somethingDidFail();
@@ -361,6 +352,7 @@ public class SedmlJob {
         } else {
             logDocumentMessage += "Done. ";
         }
+        */
     }
 
     // This method is a bit weird; it uses a temp file as a reference to compare against while getting the file straight from the archive.

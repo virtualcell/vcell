@@ -10,7 +10,7 @@ import org.vcell.util.recording.*;
 public class CLIRecorder extends Recorder implements CLIRecordable {
     protected final static boolean DEFAULT_SHOULD_PRINT_LOG_FILES = false, DEFAULT_SHOULD_FLUSH_LOG_FILES = false;
     protected boolean shouldPrintLogFiles, shouldFlushLogFiles;
-    protected FileRecord detailedErrorLog, fullSuccessLog, errorLog, detailedResultsLog, spatialLog, importErrorLog;
+    protected TextFileRecord detailedErrorLog, fullSuccessLog, errorLog, detailedResultsLog, spatialLog, importErrorLog;
     protected File outputDirectory;
 
     // Note: this constructor is not public
@@ -49,20 +49,25 @@ public class CLIRecorder extends Recorder implements CLIRecordable {
         }
         this.outputDirectory = outputDirectory;
 
-        RecordManager logManager = VCellUtilityHub.getLogManager();
-        this.detailedErrorLog = logManager.requestNewFileLog(Paths.get(this.outputDirectory.getAbsolutePath(), "detailedErrorLog.txt").toString());
-        this.fullSuccessLog = logManager.requestNewFileLog(Paths.get(this.outputDirectory.getAbsolutePath(), "fullSuccessLog.txt").toString());
-        this.errorLog = logManager.requestNewFileLog(Paths.get(this.outputDirectory.getAbsolutePath(), "errorLog.txt").toString());
-        this.detailedResultsLog = logManager.requestNewFileLog(Paths.get(this.outputDirectory.getAbsolutePath(), "detailedResultLog.txt").toString());
-        this.spatialLog = logManager.requestNewFileLog(Paths.get(this.outputDirectory.getAbsolutePath(), "hasSpatialLog.txt").toString());
-        this.importErrorLog = logManager.requestNewFileLog(Paths.get(this.outputDirectory.getAbsolutePath(), "importErrorLog.txt").toString());
+        CLIRecordManager logManager;
+        if (VCellUtilityHub.getLogManager() instanceof CLIRecordManager){
+            logManager = (CLIRecordManager)VCellUtilityHub.getLogManager();
+        } else {
+            throw new RuntimeException("LogManager is not initalized to CLI-mode");
+        }
+        this.detailedErrorLog = logManager.requestNewRecord(Paths.get(this.outputDirectory.getAbsolutePath(), "detailedErrorLog.txt").toString());
+        this.fullSuccessLog = logManager.requestNewRecord(Paths.get(this.outputDirectory.getAbsolutePath(), "fullSuccessLog.txt").toString());
+        this.errorLog = logManager.requestNewRecord(Paths.get(this.outputDirectory.getAbsolutePath(), "errorLog.txt").toString());
+        this.detailedResultsLog = logManager.requestNewRecord(Paths.get(this.outputDirectory.getAbsolutePath(), "detailedResultLog.txt").toString());
+        this.spatialLog = logManager.requestNewRecord(Paths.get(this.outputDirectory.getAbsolutePath(), "hasSpatialLog.txt").toString());
+        this.importErrorLog = logManager.requestNewRecord(Paths.get(this.outputDirectory.getAbsolutePath(), "importErrorLog.txt").toString());
         
         this.createHeader();
     }
 
     // Logging file methods
 
-    private void writeToFileLog(FileRecord log, String message) throws IOException {
+    private void writeToFileLog(TextFileRecord log, String message) throws IOException {
         if (!this.shouldPrintLogFiles) return;
         log.print(message + "\n");
         if (this.shouldFlushLogFiles) log.flush();

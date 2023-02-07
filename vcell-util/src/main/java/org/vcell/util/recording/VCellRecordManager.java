@@ -9,7 +9,7 @@ public class VCellRecordManager implements RecordManager {
     protected static VCellRecordManager instance;
     protected Map<String,Record> logMap; 
 
-    public static RecordManager getInstance(){
+    public static VCellRecordManager getInstance(){
         return VCellRecordManager.instance == null ? instance = new VCellRecordManager() : VCellRecordManager.instance;
     }
 
@@ -18,16 +18,16 @@ public class VCellRecordManager implements RecordManager {
     }
 
     @Override
-    public FileRecord requestNewFileLog(String filePath){
+    public TextFileRecord requestNewRecord(String filePath){
         if (this.logMap.containsKey(filePath)) 
-            return (FileRecord)this.logMap.get(filePath);
+            return (TextFileRecord)this.logMap.get(filePath);
         // The log hasn't been registered yet; lets do that.
 
         // Make parent if it doesn't exist
         File parent = (new File(filePath)).getParentFile();
         if (!parent.exists())parent.mkdirs();
         
-        return (FileRecord)this.addLog(filePath, new FileRecord(filePath));
+        return (TextFileRecord)this.addLog(filePath, new TextFileRecord(filePath));
     }
 
     // Note: uses AutoClose

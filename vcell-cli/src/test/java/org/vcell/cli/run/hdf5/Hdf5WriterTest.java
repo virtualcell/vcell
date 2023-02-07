@@ -12,13 +12,15 @@ import org.vcell.test.Fast;
 import static org.vcell.cli.run.hdf5.Hdf5DataSourceNonspatial.Hdf5JobData;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 @Category(Fast.class)
 public class Hdf5WriterTest {
 
-    public static Hdf5FileWrapper createExampleData() {
+    public static Hdf5DataWrapper createExampleData() {
 
         Variable t = new Variable("t","t","","");
         Variable s0 = new Variable("s0","s0","","");
@@ -89,21 +91,21 @@ public class Hdf5WriterTest {
         reportJob_2.varData.put(s1, row_S1);
         reportDataSourceNonspatial.jobData.add(reportJob_2);
 
-        Hdf5FileWrapper hdf5FileWrapper = new Hdf5FileWrapper();
-        hdf5FileWrapper.datasetWrappers.add(plotDatasetWrapper);
-        hdf5FileWrapper.datasetWrappers.add(reportDatasetWrapper);
-        //hdf5FileWrapper.combineArchiveLocation = "___0_export_NO_scan_test.sedml";
-        hdf5FileWrapper.uri = "___0_export_NO_scan_test.sedml";
-        hdf5FileWrapper.pathToGroupIDTranslator = Hdf5Factory.generateGroupsMap(hdf5FileWrapper.uri);
+        Hdf5DataWrapper hdf5FileWrapper = new Hdf5DataWrapper();
+        String uri = "___0_export_NO_scan_test.sedml";
+        List<Hdf5DatasetWrapper> wrappers = new ArrayList<>();
+        wrappers.add(plotDatasetWrapper);
+        wrappers.add(reportDatasetWrapper);
+        hdf5FileWrapper.datasetWrapperMap.put(uri, wrappers);
 
         return hdf5FileWrapper;
     }
 
     @Test
-    public void test() throws HDF5Exception {
+    public void test() throws HDF5Exception, IOException {
         System.setProperty(PropertyLoader.installationRoot, new File("..").getAbsolutePath());
         NativeLib.HDF5.load();
-        Hdf5FileWrapper exampleHdf5FileWrapper = createExampleData();
+        Hdf5DataWrapper exampleHdf5FileWrapper = createExampleData();
         File dir = Files.createTempDir();
         Hdf5Writer.writeHdf5(exampleHdf5FileWrapper, dir);
     }

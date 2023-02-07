@@ -30,7 +30,7 @@ public class VCellUtilityHub {
     private static VCellUtilityHub instance;
 
     // Utility declarations
-    private static RecordManager logManager;
+    private static VCellRecordManager logManager;
 
     // Methods
     /**
@@ -80,7 +80,7 @@ public class VCellUtilityHub {
      * 
      * @return The {@code LogManager} for current execution of VCell
      */
-    public static RecordManager getLogManager(){
+    public static VCellRecordManager getLogManager(){
         if (instance == null) {
             // Attempt to auto-start in standard mode
             try {

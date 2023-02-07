@@ -4,9 +4,8 @@ import cbit.vcell.solver.Simulation;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import ncsa.hdf.hdf5lib.exceptions.HDF5Exception;
-//import org.jlibsedml.*;
+
 import org.jlibsedml.SedML;
-import org.jlibsedml.AbstractIdentifiableElement;
 import org.jlibsedml.AbstractTask;
 import org.jlibsedml.Output;
 import org.jlibsedml.Report;
@@ -27,46 +26,33 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.*;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
 
-public class Hdf5Factory {
+public class Hdf5WrapperFactory {
     private SedML sedml;
     private Map<AbstractTask, Simulation> taskToSimulationMap;
     private String sedmlLocation, sedmlRoot;
 
-    private final static Logger logger = LogManager.getLogger(Hdf5Factory.class);
+    private final static Logger logger = LogManager.getLogger(Hdf5WrapperFactory.class);
 
-    public Hdf5Factory(SedML sedml, Map<AbstractTask, Simulation> taskToSimulationMap, String sedmlLocation){
+    public Hdf5WrapperFactory(SedML sedml, Map<AbstractTask, Simulation> taskToSimulationMap, String sedmlLocation){
         this.sedml = sedml;
         this.taskToSimulationMap = taskToSimulationMap;
         this.sedmlRoot = Paths.get(sedml.getPathForURI()).toString();
         this.sedmlLocation = Paths.get(this.sedmlRoot, this.sedml.getFileName()).toString();
     }
 
-    public Hdf5FileWrapper generateHdf5File(Map<TaskJob, ODESolverResultSet> nonSpatialResults, Map<TaskJob, File> spatialResults) throws HDF5Exception, ExpressionException, DataAccessException, IOException {
-        Hdf5FileWrapper hdf5FileWrapper = new Hdf5FileWrapper();
+    public Hdf5DataWrapper generateHdf5File(Map<TaskJob, ODESolverResultSet> nonSpatialResults, Map<TaskJob, File> spatialResults) throws HDF5Exception, ExpressionException, DataAccessException, IOException {
+        List<Hdf5DatasetWrapper> wrappers = new ArrayList<>();
+        Hdf5DataWrapper hdf5FileWrapper = new Hdf5DataWrapper();
 
-        hdf5FileWrapper.uri = this.sedmlLocation; 
-        hdf5FileWrapper.pathToGroupIDTranslator = Hdf5Factory.generateGroupsMap(this.sedmlLocation);
-        hdf5FileWrapper.datasetWrappers.addAll(this.collectNonspatialDatasets(this.sedml, nonSpatialResults, this.taskToSimulationMap, this.sedmlLocation));
-        hdf5FileWrapper.datasetWrappers.addAll(this.collectSpatialDatasets(this.sedml, spatialResults, this.taskToSimulationMap, this.sedmlLocation));
+        wrappers.addAll(this.collectNonspatialDatasets(this.sedml, nonSpatialResults, this.taskToSimulationMap, this.sedmlLocation));
+        wrappers.addAll(this.collectSpatialDatasets(this.sedml, spatialResults, this.taskToSimulationMap, this.sedmlLocation));
 
+        hdf5FileWrapper.datasetWrapperMap.put(this.sedmlLocation, wrappers);
         return hdf5FileWrapper;
-    }
-
-    public static Map<String, Integer> generateGroupsMap(String sedmlLocation){
-        Map<String, Integer> pathToGroupIDTranslator = new HashMap<>();
-        Path pathRelativeToCombineArchive = Paths.get(sedmlLocation);
-        logger.info("Processing: " + pathRelativeToCombineArchive.toString());
-        
-        do {
-            pathToGroupIDTranslator.put(pathRelativeToCombineArchive.toString(), null);
-        } while ((pathRelativeToCombineArchive = pathRelativeToCombineArchive.getParent()) != null);
-
-        return pathToGroupIDTranslator;
     }
 
     public List<Hdf5DatasetWrapper> collectNonspatialDatasets(SedML sedml, Map<TaskJob, ODESolverResultSet> nonspatialResultsHash, Map<AbstractTask, Simulation> taskToSimulationMap, String sedmlLocation) throws DataAccessException, IOException, HDF5Exception, ExpressionException {
