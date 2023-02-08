@@ -107,6 +107,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 
 	//
 	// TODO: make it possible to use right click menu to delete links
+	// TODO: the list must only allow single selection
 	//
 	private JList<MolecularInternalLinkSpec> siteLinksList = null;
 	private DefaultListModel<MolecularInternalLinkSpec> siteLinksListModel = new DefaultListModel<>();
@@ -1195,10 +1196,14 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 
 	private void changePosition() {
 		System.out.println("Site coordinates changed");
+		// TODO: save X,Y,Z in coordinate object
 		recalculateLinkLengths();
 	}
 	private void changeLinkLength() {
 		System.out.println("Link length changed");
+		Double linkLength = Double.parseDouble(linkLengthField.getText());
+		MolecularInternalLinkSpec selectedValue = siteLinksList.getSelectedValue();
+		selectedValue.setLinkLength(linkLength);
 		recalculatePositions();
 	}
 	

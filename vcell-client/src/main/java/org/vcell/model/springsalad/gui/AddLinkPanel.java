@@ -69,6 +69,7 @@ public class AddLinkPanel extends DocumentEditorSubPanel  {
 	private final MolecularStructuresPanel owner;
 	private ChildWindow parentChildWindow;
 	
+	// TODO: both lists must only allow single selection
 	private JList<MolecularComponentPattern> firstSiteList = null;
 	private DefaultListModel<MolecularComponentPattern> firstSiteListModel = new DefaultListModel<>();
 	private ListCellRenderer<Object> firstSiteCellRenderer = new DefaultListCellRenderer(){
