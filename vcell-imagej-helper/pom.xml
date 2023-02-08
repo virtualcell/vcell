@@ -117,14 +117,17 @@
 		<dependency>
 			<groupId>io.scif</groupId>
 			<artifactId>scifio-bf-compat</artifactId>
+			<version>${scifio-bf-compat.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>ome</groupId>
 			<artifactId>bio-formats_plugins</artifactId>
+			<version>${bio-formats_plugins.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>net.imagej</groupId>
 			<artifactId>imagej</artifactId>
+			<version>${imagej.version}</version>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/org.apache.httpcomponents/httpclient -->
 		<dependency>
@@ -151,6 +154,7 @@
 <dependency>
     <groupId>org.jfree</groupId>
     <artifactId>jfreechart</artifactId>
+	<version>${jfreechart.version}</version>
 <!--     <version>1.5.0</version> -->
 </dependency>
 
