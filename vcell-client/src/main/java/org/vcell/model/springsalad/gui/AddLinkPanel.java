@@ -29,6 +29,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
+import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -69,7 +70,6 @@ public class AddLinkPanel extends DocumentEditorSubPanel  {
 	private final MolecularStructuresPanel owner;
 	private ChildWindow parentChildWindow;
 	
-	// TODO: both lists must only allow single selection
 	private JList<MolecularComponentPattern> firstSiteList = null;
 	private DefaultListModel<MolecularComponentPattern> firstSiteListModel = new DefaultListModel<>();
 	private ListCellRenderer<Object> firstSiteCellRenderer = new DefaultListCellRenderer(){
@@ -162,6 +162,8 @@ private void initialize() {
 		firstSiteList.setCellRenderer(firstSiteCellRenderer);
 		secondSiteList = new JList<MolecularComponentPattern>(secondSiteListModel);
 		secondSiteList.setCellRenderer(secondSiteCellRenderer);
+		firstSiteList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		secondSiteList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
 		for(MolecularComponentPattern mcp : mtp.getComponentPatternList()) {
 			firstSiteListModel.addElement(mcp);

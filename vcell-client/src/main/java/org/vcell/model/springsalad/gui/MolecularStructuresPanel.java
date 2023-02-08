@@ -107,7 +107,6 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 
 	//
 	// TODO: make it possible to use right click menu to delete links
-	// TODO: the list must only allow single selection
 	//
 	private JList<MolecularInternalLinkSpec> siteLinksList = null;
 	private DefaultListModel<MolecularInternalLinkSpec> siteLinksListModel = new DefaultListModel<>();
@@ -212,6 +211,8 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		siteZField.addActionListener(eventHandler);
 		
 		siteLinksList.addListSelectionListener(eventHandler);
+		siteLinksList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
 		linkLengthField.addActionListener(eventHandler);
 		addLinkButton.addActionListener(eventHandler);
 		
