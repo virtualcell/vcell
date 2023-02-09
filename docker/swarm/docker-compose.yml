@@ -275,6 +275,7 @@ services:
     volumes:
       - "${VCELL_SIMDATADIR_HOST}:/simdata"
       - "${VCELL_SIMDATADIR_ARCHIVE_INTERNAL}:${VCELL_SIMDATADIR_ARCHIVE_INTERNAL}"
+      - "${VCELL_SIMDATADIR_SECONDARY_HOST}:/simdata_secondary"
       - "${VCELL_EXPORTDIR_HOST}:/exportdir"
     secrets:
       - dbpswd
