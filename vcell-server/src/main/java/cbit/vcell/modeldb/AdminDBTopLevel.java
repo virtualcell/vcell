@@ -994,6 +994,26 @@ void updateUserStat(UserLoginInfo userLoginInfo,boolean bEnableRetry) throws SQL
 	}
 }
 
+    public KeyValue[] getSimulationKeysFromBiomodel(KeyValue biomodelKey, boolean bEnableRetry) throws SQLException, DataAccessException {
+		BioModelDbDriver bioModelDbDriver = new BioModelDbDriver(conFactory.getDatabaseSyntax(), conFactory.getKeyFactory());
+		Object lock = new Object();
+		Connection con = conFactory.getConnection(lock);
+		try {
+			return bioModelDbDriver.getSimulationEntriesFromBioModel(con, biomodelKey);
+		} catch (Throwable e) {
+			lg.error("failure in getSimulationKeysFromBiomodel()",e);
+			if (bEnableRetry && isBadConnection(con)) {
+				conFactory.failed(con,lock);
+				return getSimulationKeysFromBiomodel(biomodelKey, false);
+			}else{
+				handle_DataAccessException_SQLException(e);
+				return null; // never gets here;
+			}
+		} finally {
+			conFactory.release(con,lock);
+		}
+    }
+
 
 public interface TransactionalServiceOperation {
 	ServiceStatus doOperation(ServiceStatus oldStatus) throws Exception;

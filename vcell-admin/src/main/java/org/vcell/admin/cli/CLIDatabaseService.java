@@ -2,10 +2,13 @@ package org.vcell.admin.cli;
 
 import cbit.sql.CompareDatabaseSchema;
 import cbit.sql.QueryHashtable;
+import cbit.vcell.message.server.dispatcher.SimulationDatabase;
+import cbit.vcell.message.server.dispatcher.SimulationDatabaseDirect;
 import cbit.vcell.modeldb.*;
 import cbit.vcell.server.SimulationJobStatusPersistent;
 import cbit.vcell.xml.XmlParseException;
 import org.vcell.admin.cli.sim.ResultSetCrawler;
+import org.vcell.admin.cli.sim.SimDataVerifier;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
 import org.vcell.util.DataAccessException;
@@ -119,4 +122,10 @@ public class CLIDatabaseService implements AutoCloseable {
         return new ResultSetCrawler(adminDBTopLevel, dbServerImpl);
     }
 
+    public SimDataVerifier getSimDataVerifier() throws DataAccessException, SQLException {
+        AdminDBTopLevel adminDBTopLevel = new AdminDBTopLevel(conFactory);
+        DatabaseServerImpl dbServerImpl = new DatabaseServerImpl(conFactory, conFactory.getKeyFactory());
+        SimulationDatabase simulationDatabase = new SimulationDatabaseDirect(adminDBTopLevel, dbServerImpl,false);
+        return new SimDataVerifier(adminDBTopLevel, dbServerImpl, simulationDatabase);
+    }
 }

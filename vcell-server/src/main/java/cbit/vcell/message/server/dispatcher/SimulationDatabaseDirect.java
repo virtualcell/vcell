@@ -13,6 +13,7 @@ import java.util.TreeMap;
 import java.util.Vector;
 import java.util.concurrent.TimeUnit;
 
+import cbit.vcell.modeldb.BioModelDbDriver;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.util.BigString;
@@ -202,6 +203,11 @@ public class SimulationDatabaseDirect implements SimulationDatabase {
 			cache.put(key, new SimStatusCacheEntry(simulationJobStatus,null));
 			return simulationJobStatus;
 		}
+	}
+
+	@Override
+	public KeyValue[] getSimulationKeysFromBiomodel(KeyValue biomodelKey) throws SQLException, DataAccessException {
+		return adminDbTopLevel.getSimulationKeysFromBiomodel(biomodelKey, true);
 	}
 
 	@Override
