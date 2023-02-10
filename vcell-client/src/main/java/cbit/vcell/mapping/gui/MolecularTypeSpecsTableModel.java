@@ -177,7 +177,7 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 				Structure structure = (Structure)aValue;
 				SiteAttributesSpec sas = getSpeciesContextSpec().getSiteAttributesMap().get(mcp);
 				if(sas == null) {
-					sas = new SiteAttributesSpec(mcp, structure);
+					sas = new SiteAttributesSpec(fieldSpeciesContextSpec, mcp, structure);
 				} else {
 					sas.setLocation(structure);
 				}
@@ -189,7 +189,7 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 				double result = Double.parseDouble(newExpressionString);
 				SiteAttributesSpec sas = getSpeciesContextSpec().getSiteAttributesMap().get(mcp);
 				if(sas == null) {
-					sas = new SiteAttributesSpec(mcp, getSpeciesContextSpec().getSpeciesContext().getStructure());
+					sas = new SiteAttributesSpec(fieldSpeciesContextSpec, mcp, getSpeciesContextSpec().getSpeciesContext().getStructure());
 				}
 				sas.setRadius(result);
 			}
@@ -200,7 +200,7 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 				double result = Double.parseDouble(newExpressionString);
 				SiteAttributesSpec sas = getSpeciesContextSpec().getSiteAttributesMap().get(mcp);
 				if(sas == null) {
-					sas = new SiteAttributesSpec(mcp, getSpeciesContextSpec().getSpeciesContext().getStructure());
+					sas = new SiteAttributesSpec(fieldSpeciesContextSpec, mcp, getSpeciesContextSpec().getSpeciesContext().getStructure());
 				}
 				sas.setDiffusionRate(result);
 				return;
@@ -350,7 +350,7 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 				MolecularComponentPattern mcp = mtp.getMolecularComponentPattern(mc);
 				SiteAttributesSpec sas = siteAttributesMap.get(mcp);
 				if(sas == null || sas.getMolecularComponentPattern() == null) {
-					sas = new SiteAttributesSpec(mcp, getSpeciesContextSpec().getSpeciesContext().getStructure());
+					sas = new SiteAttributesSpec(fieldSpeciesContextSpec, mcp, getSpeciesContextSpec().getSpeciesContext().getStructure());
 					siteAttributesMap.put(mcp, sas);
 				}
 			}

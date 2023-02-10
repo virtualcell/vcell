@@ -51,10 +51,12 @@ import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.mapping.GeometryContext.UnmappedGeometryClass;
 import cbit.vcell.mapping.MicroscopeMeasurement;
+import cbit.vcell.mapping.MolecularInternalLinkSpec;
 import cbit.vcell.mapping.NetworkTransformer;
 import cbit.vcell.mapping.RateRule;
 import cbit.vcell.mapping.ReactionSpec.ReactionCombo;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SiteAttributesSpec;
 import cbit.vcell.mapping.SimulationContext.SimulationContextNameScope;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.StructureMapping;
@@ -280,8 +282,23 @@ public class IssuePanel extends DocumentEditorSubPanel {
 				followHyperlink(new ActiveView(null, DocumentEditorTreeFolderClass.REACTIONS_NODE, ActiveViewID.reactions), new Object[] {object});
 			} else if (object instanceof SpeciesContextSpec) {
 				SpeciesContextSpec scs = (SpeciesContextSpec)object;
-				ActiveView av = new ActiveView(scs.getSimulationContext(), DocumentEditorTreeFolderClass.SPECIFICATIONS_NODE, ActiveViewID.species_settings);
+				ActiveView av;
+//				if(scs.getSimulationContext().getApplicationType() == SimulationContext.Application.SPRINGSALAD) {
+//					av = new ActiveView(scs.getSimulationContext(), DocumentEditorTreeFolderClass.SPECIFICATIONS_NODE, ActiveViewID.molecular_structure_setting);
+//				} else {
+					av = new ActiveView(scs.getSimulationContext(), DocumentEditorTreeFolderClass.SPECIFICATIONS_NODE, ActiveViewID.species_settings);
+//				}
 				followHyperlink(av, new Object[] {object});
+//			} else if(object instanceof MolecularInternalLinkSpec) {
+//				MolecularInternalLinkSpec mils = (MolecularInternalLinkSpec)object;
+//				SpeciesContextSpec scs = mils.getSpeciesContextSpec();
+//				ActiveView av = new ActiveView(scs.getSimulationContext(), DocumentEditorTreeFolderClass.SPECIFICATIONS_NODE, ActiveViewID.molecular_structure_setting);
+//				followHyperlink(av, new Object[] {object});
+//			} else if(object instanceof SiteAttributesSpec) {
+//				SiteAttributesSpec sas = (SiteAttributesSpec)object;
+//				SpeciesContextSpec scs = sas.getSpeciesContextSpec();
+//				ActiveView av = new ActiveView(scs.getSimulationContext(), DocumentEditorTreeFolderClass.SPECIFICATIONS_NODE, ActiveViewID.molecular_structure_setting);
+//				followHyperlink(av, new Object[] {object});
 			} else if (object instanceof ReactionCombo) {
 				ReactionCombo rc = (ReactionCombo)object;
 				followHyperlink(new ActiveView(rc.getReactionContext().getSimulationContext(), DocumentEditorTreeFolderClass.SPECIFICATIONS_NODE, ActiveViewID.reaction_setting),new Object[] {((ReactionCombo)object).getReactionSpec()});

@@ -901,12 +901,21 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
 	if(getSimulationContext().getApplicationType() == SimulationContext.Application.SPRINGSALAD) {
 		if(getSpeciesContext() != null && getSpeciesContext().getSpeciesPattern() != null) {
 			for(MolecularInternalLinkSpec mils : getInternalLinkSet()) {
-				mils.gatherIssues(issueContext, issueVector);
+				if(mils.getMolecularComponentPatternOne() == mils.getMolecularComponentPatternTwo()) {
+					String msg = "Both sites of the Link are identical.";
+					String tip = "A generic issue for MolecularInternalLinkSpec entity.";
+					issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+					break;
+				}
 			}
 			for(Map.Entry<MolecularComponentPattern, SiteAttributesSpec> entry : getSiteAttributesMap().entrySet()) {
 				MolecularComponentPattern key = entry.getKey();
 				SiteAttributesSpec sas = entry.getValue();
-				sas.gatherIssues(issueContext, issueVector);
+				if(sas.getLocation() instanceof Membrane) {
+					String msg = "Location is a Membrane.";
+					String tip = "A generic issue for SiteAttributesSpec entity.";
+					issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+				}
 			}
 		}
 	}

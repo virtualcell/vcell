@@ -22,12 +22,14 @@ import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.*;
+import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
+import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.document.Identifiable;
 
 @SuppressWarnings("serial")
-public class SiteAttributesSpec implements Identifiable {
-		
+public class SiteAttributesSpec implements Identifiable, Displayable, IssueSource {
+	private SpeciesContextSpec fieldSpeciesContextSpec = null;
 	private MolecularComponentPattern fieldMolecularComponentPattern = null;
 	private double fieldRadius = 1.0;
 	private double fieldDiffusionRate = 1.0;
@@ -37,11 +39,13 @@ public class SiteAttributesSpec implements Identifiable {
 	// the ComponentStatePattern must not be Any; can be recovered from the MolecularComponentPattern
 	// the BondType must be None, can be recovered from the MolecularComponentPattern
 	
-	public SiteAttributesSpec(MolecularComponentPattern mcp, Structure structure) {
+	public SiteAttributesSpec(SpeciesContextSpec scs, MolecularComponentPattern mcp, Structure structure) {
+		fieldSpeciesContextSpec = scs;
 		setMolecularComponentPattern(mcp);
 		setLocation(structure);
 	}
-	public SiteAttributesSpec(MolecularComponentPattern mcp, double radius, double diffusion, Structure location, Coordinate coordinate, Color color) {
+	public SiteAttributesSpec(SpeciesContextSpec scs, MolecularComponentPattern mcp, double radius, double diffusion, Structure location, Coordinate coordinate, Color color) {
+		fieldSpeciesContextSpec = scs;
 		setMolecularComponentPattern(mcp);
 		setRadius(radius);
 		setDiffusionRate(diffusion);
@@ -50,6 +54,9 @@ public class SiteAttributesSpec implements Identifiable {
 		setColor(color);
 	}
 
+	public SpeciesContextSpec getSpeciesContextSpec() {
+		return fieldSpeciesContextSpec;
+	}
 	public MolecularComponentPattern getMolecularComponentPattern() {
 		return fieldMolecularComponentPattern;
 	}
@@ -92,7 +99,26 @@ public class SiteAttributesSpec implements Identifiable {
 		this.fieldColor = color;
 	}
 	public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
-		
+		issueContext = issueContext.newChildContext(ContextType.SiteAttributesSpec, this);
+
+		if(fieldLocation instanceof Membrane) {
+			String tip = "A generic issue for SiteAttributesSpec entity.";
+			String msg = "Location is a Membrane.";
+			issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+		}
+	}
+
+	public static final String typeName = "SiteAttributesSpec";
+	@Override
+	public String getDisplayName() {
+		if(fieldMolecularComponentPattern != null) {
+			return fieldMolecularComponentPattern.getMolecularComponent().getDisplayName();
+		}
+		return("?");
+	}
+	@Override
+	public String getDisplayType() {
+		return typeName;
 	}
 
 }

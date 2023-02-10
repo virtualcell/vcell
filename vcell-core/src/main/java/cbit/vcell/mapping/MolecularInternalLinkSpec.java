@@ -22,16 +22,20 @@ import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.*;
+import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
+import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.document.Identifiable;
 
 @SuppressWarnings("serial")
-public class MolecularInternalLinkSpec implements Identifiable {
+public class MolecularInternalLinkSpec implements Identifiable, IssueSource {
+	SpeciesContextSpec fieldSpeciesContextSpec = null;
 	private MolecularComponentPattern fieldMolecularComponentPatternOne = null;
 	private MolecularComponentPattern fieldMolecularComponentPatternTwo = null;
 	private double linkLength = 0;
 
 	public MolecularInternalLinkSpec(SpeciesContextSpec scs, MolecularComponentPattern linkOne, MolecularComponentPattern linkTwo) throws IllegalArgumentException {
+		fieldSpeciesContextSpec = scs;
 		SpeciesContext sc = scs.getSpeciesContext();
 		SpeciesPattern sp = sc.getSpeciesPattern();
 		if(sp == null || sp.getMolecularTypePatterns().size() != 1) {
@@ -74,6 +78,9 @@ public class MolecularInternalLinkSpec implements Identifiable {
 			}
 		}
 	}
+	public SpeciesContextSpec getSpeciesContextSpec() {
+		return fieldSpeciesContextSpec;
+	}
 	public MolecularComponentPattern getMolecularComponentPatternOne() {
 		return fieldMolecularComponentPatternOne;
 	}
@@ -97,8 +104,15 @@ public class MolecularInternalLinkSpec implements Identifiable {
 		}
 		return new Pair<MolecularComponentPattern, MolecularComponentPattern>(internalLink.fieldMolecularComponentPatternOne, internalLink.fieldMolecularComponentPatternTwo);
 	}
-	public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
-		// TODO Auto-generated method stub
-		
-	}
+	
+//	// TODO: not working properly, will use direct calls from SpeciesContextSpec
+//	public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
+//		issueContext = issueContext.newChildContext(ContextType.MolecularInternalLinkSpec, this);
+//		if(fieldMolecularComponentPatternOne == fieldMolecularComponentPatternTwo) {
+//			String msg = "A generic issue for MolecularInternalLinkSpec entity.";
+//			String tip = "Both sites of the Link are identical.";
+//			issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+//		}
+//	}
+	
 }

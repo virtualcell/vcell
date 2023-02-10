@@ -40,10 +40,12 @@ import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.mapping.GeometryContext.UnmappedGeometryClass;
 import cbit.vcell.mapping.MicroscopeMeasurement;
+import cbit.vcell.mapping.MolecularInternalLinkSpec;
 import cbit.vcell.mapping.RateRule;
 import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.mapping.ReactionSpec.ReactionCombo;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SiteAttributesSpec;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.mapping.StructureMapping.StructureMappingNameScope;
@@ -322,6 +324,10 @@ public class IssueTableModel extends VCellSortTableModel<Issue> implements Issue
 				return "Protocols / Events";
 			} else if (source instanceof MathDescription) {
 				return "Math Description";
+			} else if(source instanceof SiteAttributesSpec) {
+				return "SpringSaLaD Application";
+			} else if(source instanceof MolecularInternalLinkSpec) {
+				return "SpringSaLaD Application";
 			} else {
 				System.err.println("unknown source type in IssueTableModel.getSourceObjectPathDescription(): " + source.getClass());
 			}
@@ -430,6 +436,10 @@ public class IssueTableModel extends VCellSortTableModel<Issue> implements Issue
 				return ((AssignmentRule)object).getDisplayName()+"";
 			} else if (object instanceof RateRule) {
 				return ((RateRule)object).getDisplayName()+"";
+			} else if(object instanceof SiteAttributesSpec) {
+				description = ((SiteAttributesSpec)object).getDisplayName();
+			} else if(object instanceof MolecularInternalLinkSpec) {
+				return "Link";
 			} else {
 				System.err.println("unknown object type in IssueTableModel.getSourceObjectDescription(): " + object.getClass());
 			}
