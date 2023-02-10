@@ -21,7 +21,6 @@ import cbit.vcell.server.SimulationJobStatus;
 import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.simdata.Cachetable;
 import cbit.vcell.simdata.DataSetControllerImpl;
-import cbit.vcell.simdata.SimulationData;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import org.apache.logging.log4j.LogManager;
@@ -31,6 +30,7 @@ import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.document.*;
 
 import java.io.*;
+import java.security.Key;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -76,30 +76,7 @@ public class SimDataVerifier {
 			//
 			// determine the list of users to scan
 			//
-			lg.info("getting user info");
-			Comparator<User> userComparator = Comparator.comparing((User u) -> u.getName().toLowerCase());
-			List<User> allUsers = Arrays.stream(adminDbTopLevel.getUserInfos(true))
-					.map(ui -> new User(ui.userid, ui.id))
-					.sorted(userComparator).collect(Collectors.toList());
-
-			List<User> usersToScan = new ArrayList<>();
-			for (User user : allUsers) {
-				if (bIgnoreTestAccount && user.getName().equals(User.VCellTestAccountName)) {
-					continue;
-				}
-				if (singleUsername != null) { // accept only the "singleUser"
-					if (user.getName().equals(singleUsername)) {
-						usersToScan.add(user);
-						break;
-					}
-				} else if (startingUsername != null) { // accept all users starting with the "startingUser"
-					if (user.getName().compareToIgnoreCase(startingUsername) >= 0) {
-						usersToScan.add(user);
-					}
-				} else { // all users
-					usersToScan.add(user);
-				}
-			}
+			List<User> usersToScan = getUsers(singleUsername, startingUsername, bIgnoreTestAccount, modelVisibilities);
 
 			//
 			// process one user at a time
@@ -107,6 +84,66 @@ public class SimDataVerifier {
 			for (User user : usersToScan) {
 				processUser(bRerunLostData, bRunNeverRan, modelVisibilities,
 						primaryDataRootDir, secondaryDataRootDir, user, dataSetController, reportWriter);
+			}
+		}
+	}
+
+	private List<User> getUsers(String singleUsername, String startingUsername, boolean bIgnoreTestAccount,
+								EnumSet<SimDataVerifierCommand.ModelVisibility> modelVisibilities)
+			throws DataAccessException, SQLException {
+
+		if (singleUsername != null){
+			User user = adminDbTopLevel.getUser(singleUsername, true);
+			if (user == null){
+				throw new RuntimeException("failed to find user "+singleUsername);
+			}
+			return Arrays.asList(user);
+		} else {
+			Comparator<User> userComparator = Comparator.comparing((User u) -> u.getName().toLowerCase());
+			if (modelVisibilities.contains(SimDataVerifierCommand.ModelVisibility.PRIVATE)) {
+				lg.info("getting all users");
+				List<User> allUsers = Arrays.stream(adminDbTopLevel.getUserInfos(true))
+						.map(ui -> new User(ui.userid, ui.id)).collect(Collectors.toList());
+
+				List<User> usersToScan = new ArrayList<>();
+				for (User user : allUsers) {
+					if (bIgnoreTestAccount && user.getName().equals(User.VCellTestAccountName)) {
+						continue;
+					}
+					if (startingUsername != null) { // accept all users starting with the "startingUser"
+						if (user.getName().compareToIgnoreCase(startingUsername) >= 0) {
+							usersToScan.add(user);
+						}
+					} else { // all users
+						usersToScan.add(user);
+					}
+				}
+				usersToScan.sort(userComparator);
+				return usersToScan;
+			} else if (modelVisibilities.contains(SimDataVerifierCommand.ModelVisibility.PUBLISHED) ||
+				modelVisibilities.contains(SimDataVerifierCommand.ModelVisibility.PUBLIC)){
+				lg.info("getting all users with public BioModels");
+				BioModelInfo[] publicBioModelInfos = dbServerImpl.getBioModelInfos(User.tempUser, true);
+				Set<User> allUsersWithPublicModels = Arrays.stream(publicBioModelInfos)
+						.map(bmi -> bmi.getVersion().getOwner()).collect(Collectors.toSet());
+
+				List<User> usersToScan = new ArrayList<>();
+				for (User user : allUsersWithPublicModels) {
+					if (bIgnoreTestAccount && user.getName().equals(User.VCellTestAccountName)) {
+						continue;
+					}
+					if (startingUsername != null) { // accept all users starting with the "startingUser"
+						if (user.getName().compareToIgnoreCase(startingUsername) >= 0) {
+							usersToScan.add(user);
+						}
+					} else { // all users
+						usersToScan.add(user);
+					}
+				}
+				usersToScan.sort(userComparator);
+				return usersToScan;
+			} else {
+				throw new RuntimeException("no model visibility was specified");
 			}
 		}
 	}
@@ -121,9 +158,14 @@ public class SimDataVerifier {
 		//
 		lg.info("processing user "+user);
 		reportWriter.write("processing user "+user);
-		BioModelInfo[] bioModelInfos = dbServerImpl.getBioModelInfos(user, false);
-		Set<KeyValue> simulationKeys = getSimulationKeys(modelVisibilities, bioModelInfos);
-		String msg = "processing user "+user+", considering "+bioModelInfos.length+" biomodels and "+simulationKeys.size()+" simulations";
+		List<BioModelInfo> bioModelInfos = getVisibleBioModels(modelVisibilities, user);
+		Set<KeyValue> simulationKeys = new LinkedHashSet<>();
+		for (BioModelInfo bmi : bioModelInfos){
+			KeyValue[] simKeys = simulationDatabase.getSimulationKeysFromBiomodel(bmi.getVersion().getVersionKey());
+			simulationKeys.addAll(Arrays.asList(simKeys));
+		}
+
+		String msg = "processing user "+user+", considering "+bioModelInfos.size()+" biomodels and "+simulationKeys.size()+" simulations";
 		lg.info(msg);
 		reportWriter.write(msg+"\n");
 		reportWriter.flush();
@@ -218,10 +260,11 @@ public class SimDataVerifier {
 		}
 	}
 
-	private Set<KeyValue> getSimulationKeys(EnumSet<SimDataVerifierCommand.ModelVisibility> modelVisibilities,
-											BioModelInfo[] bioModelInfos) throws SQLException, DataAccessException {
+	private List<BioModelInfo> getVisibleBioModels(EnumSet<SimDataVerifierCommand.ModelVisibility> modelVisibilities,
+											User user) throws DataAccessException {
 
-		Set<KeyValue> simulationKeys = new LinkedHashSet<>();
+		BioModelInfo[] bioModelInfos = dbServerImpl.getBioModelInfos(user, false);
+		List<BioModelInfo> visibleBioModelInfos = new ArrayList<>();
 		for (BioModelInfo bmi : bioModelInfos) {
 			GroupAccess groupAccess = bmi.getVersion().getGroupAccess();
 			boolean bPublished = false;
@@ -243,11 +286,11 @@ public class SimDataVerifier {
 				bKeepThisBiomodel = true;
 			}
 			if (bKeepThisBiomodel) {
-				KeyValue[] simKeys = simulationDatabase.getSimulationKeysFromBiomodel(bmi.getVersion().getVersionKey());
-				simulationKeys.addAll(Arrays.asList(simKeys));
+				visibleBioModelInfos.add(bmi);
 			}
 		}
-		return simulationKeys;
+		return visibleBioModelInfos;
 	}
+
 
 }
