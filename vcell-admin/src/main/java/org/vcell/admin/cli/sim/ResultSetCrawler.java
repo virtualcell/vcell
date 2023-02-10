@@ -8,10 +8,11 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.modeldb;
+package org.vcell.admin.cli.sim;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.PrintWriter;
+import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -22,11 +23,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
+import cbit.vcell.modeldb.AdminDBTopLevel;
+import cbit.vcell.modeldb.DatabaseServerImpl;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.db.ConnectionFactory;
-import org.vcell.db.DatabaseService;
-import org.vcell.db.KeyFactory;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
@@ -45,143 +46,73 @@ import cbit.vcell.util.AmplistorUtils;
  */
 public class ResultSetCrawler {
 	public static final Logger lg = LogManager.getLogger(ResultSetCrawler.class);
+
+	private AdminDBTopLevel adminDbTopLevel;
+	private DatabaseServerImpl dbServerImpl;
+
+	public ResultSetCrawler(AdminDBTopLevel adminDbTopLevel, DatabaseServerImpl dbServerImpl) {
+		this.adminDbTopLevel = adminDbTopLevel;
+		this.dbServerImpl = dbServerImpl;
+	}
 	
-	public static void main(String[] args) {
-		ConnectionFactory conFactory = null;
-		try {		
-			boolean SCAN_ONLY = true;
-			String singleUsername = null;
-			String startingUsername = null;
-			String outputDirName = ".";
+	public void run(File outputDir, boolean bScanOnly, String singleUsername, String startingUsername
+//			, String ampliCredName, String ampliCredPassword
+			) throws SQLException, RemoteException, DataAccessException {
 
-			String ampliCredName = null;
-			String ampliCredPassword = null;
-			int count = 0;
-
-			while (count < args.length) {
-				if (args[count].equals("-h")) {
-					printUsage();
-					System.exit(0);
-				} else if (args[count].equals("-u")) {
-					count ++;
-					singleUsername = args[count];
-				} else if (args[count].equals("-c")) {
-					count ++;
-					startingUsername = args[count];
-				} else if (args[count].equals("-o")) {
-					count ++;
-					outputDirName = args[count];
-				} else if (args[count].equals("-d")) {
-					SCAN_ONLY = false;
-				} else if (args[count].equals("-s")) {
-					SCAN_ONLY = true;
-				} else if (args[count].equals("-y")) {
-					count ++;
-					ampliCredName = args[count];
-				} else if (args[count].equals("-z")) {
-					count ++;
-					ampliCredPassword = args[count];
-				} else {
-					System.out.println("Wrong arguments, see usage below.");
-					printUsage();
-					System.exit(1);
-				}
-				count ++;
-			}
-				
-			File outputDir = null;
-			if (outputDirName == null) {
-				outputDir = new File(".");
-			} else {
-				outputDir = new File(outputDirName);		
-				if (!outputDir.exists()) {
-					throw new RuntimeException("Outuput directory doesn't exist!");
-				}
-			}
-			
-			PropertyLoader.loadProperties();
-
-			File primaryDataRootDir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirInternalProperty));
-			File secondaryDataRootDir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.secondarySimDataDirInternalProperty));
-			if (primaryDataRootDir.equals(secondaryDataRootDir)){
-				secondaryDataRootDir = null;
-			}
-			
-			// initialize database
-			conFactory = DatabaseService.getInstance().createConnectionFactory();
-			KeyFactory keyFactory = conFactory.getKeyFactory();
-			AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(conFactory);
-			DatabaseServerImpl dbServerImpl = new DatabaseServerImpl(conFactory,keyFactory);
-			
-			//
-			// determine the list of users to scan
-			//
-			UserInfo[] allUserInfos = adminDbTopLevel.getUserInfos(true);
-			HashMap<String,User> usersToScan = new HashMap<String, User>();
-			for (UserInfo userInfo : allUserInfos) {
-				if (singleUsername!=null){ // accept only the "singleUser"
-					if (userInfo.userid.equals(singleUsername)){
-						usersToScan.put(userInfo.userid, new User(userInfo.userid,userInfo.id));
-						break;
-					}
-				}else if (startingUsername!=null){ // accept all users starting with the "startingUser"
-					if (userInfo.userid.compareToIgnoreCase(startingUsername)>=0){
-						usersToScan.put(userInfo.userid, new User(userInfo.userid,userInfo.id));
-					}
-				}else{ // all users
-					usersToScan.put(userInfo.userid, new User(userInfo.userid,userInfo.id));
-				}
-			}
-			
-			//
-			// get list of directories to scan (for selected users on both user data directories)
-			//
-			List<File> useDirectoriesToScan = getDirectoriesToScan(usersToScan, primaryDataRootDir, secondaryDataRootDir);
-			
-			for (File userDir : useDirectoriesToScan){
-				try {
-					if (lg.isTraceEnabled()) lg.trace("USER: " + userDir.getName());
-					
-					User user = usersToScan.get(userDir.getName());
-					
-					// find all the user simulations and external data sets (field data)
-					SimulationInfo[] simulationInfos = dbServerImpl.getSimulationInfos(user, false);
-					ExternalDataIdentifier[] extDataIDArr = adminDbTopLevel.getExternalDataIdentifiers(user,true);
-					
-					// scan this user directory
-					scanUserDirectory(userDir, extDataIDArr, simulationInfos, outputDir, SCAN_ONLY,(ampliCredName==null || ampliCredPassword==null?null:new AmplistorUtils.AmplistorCredential(ampliCredName, ampliCredPassword)));
-				} catch (Exception ex) {
-					lg.error(ex.getMessage(), ex);
-				}
-			}
-			
-		} catch (Exception ex) {
-			ex.printStackTrace(System.out);
-		} finally {
-			try {
-				if (conFactory != null) {
-					conFactory.close();
-				}
-			} catch (Throwable ex) {
-				ex.printStackTrace();
-			}
-			System.exit(0);		
+		File primaryDataRootDir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirInternalProperty));
+		File secondaryDataRootDir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.secondarySimDataDirInternalProperty));
+		if (primaryDataRootDir.equals(secondaryDataRootDir)){
+			secondaryDataRootDir = null;
 		}
 
+		//
+		// determine the list of users to scan
+		//
+		UserInfo[] allUserInfos = adminDbTopLevel.getUserInfos(true);
+		HashMap<String,User> usersToScan = new HashMap<String, User>();
+		for (UserInfo userInfo : allUserInfos) {
+			if (singleUsername!=null){ // accept only the "singleUser"
+				if (userInfo.userid.equals(singleUsername)){
+					usersToScan.put(userInfo.userid, new User(userInfo.userid,userInfo.id));
+					break;
+				}
+			}else if (startingUsername!=null){ // accept all users starting with the "startingUser"
+				if (userInfo.userid.compareToIgnoreCase(startingUsername)>=0){
+					usersToScan.put(userInfo.userid, new User(userInfo.userid,userInfo.id));
+				}
+			}else{ // all users
+				usersToScan.put(userInfo.userid, new User(userInfo.userid,userInfo.id));
+			}
+		}
+
+		//
+		// get list of directories to scan (for selected users on both user data directories)
+		//
+		List<File> useDirectoriesToScan = getDirectoriesToScan(usersToScan, primaryDataRootDir, secondaryDataRootDir);
+
+		for (File userDir : useDirectoriesToScan){
+			try {
+				if (lg.isTraceEnabled()) lg.trace("USER: " + userDir.getName());
+
+				User user = usersToScan.get(userDir.getName());
+
+				// find all the user simulations and external data sets (field data)
+				SimulationInfo[] simulationInfos = dbServerImpl.getSimulationInfos(user, false);
+				ExternalDataIdentifier[] extDataIDArr = adminDbTopLevel.getExternalDataIdentifiers(user,true);
+
+				// scan this user directory
+				AmplistorUtils.AmplistorCredential amplistorCredential = null;
+//				if (ampliCredName != null && ampliCredPassword != null){
+//					new AmplistorUtils.AmplistorCredential(ampliCredName, ampliCredPassword);
+//				}
+				scanUserDirectory(userDir, extDataIDArr, simulationInfos, outputDir, bScanOnly, amplistorCredential);
+			} catch (Exception ex) {
+				lg.error(ex.getMessage(), ex);
+			}
+		}
 	}
 
 
-	private static void printUsage() {
-		System.out.println("ResultSetCrawler [-h] [-u username] [-c username] [-o outputdir] [-d | -s] [-y ampliCredName] [-z ampliCredPassword]");
-		System.out.println("-h : \n\thelp");
-		System.out.println("-u username: \n\tscan a single user only");
-		System.out.println("-c username: \n\tcontinue scanning from a user");
-		System.out.println("-o outputdir : \n\tdirectory where scan results are stored (default is current directory)");
-		System.out.println("-s : \n\tscan only (default)");
-		System.out.println("-d : \n\tscan and delete files");
-		System.out.println("-y ampliCredName: \n\tAmplistor Credential (username), must have delete permission on amplistor");
-		System.out.println("-z ampliCredPassword: \n\tAmplistor Credential (password)");
-	}
 
 
 

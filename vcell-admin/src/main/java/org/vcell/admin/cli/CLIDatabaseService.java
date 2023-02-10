@@ -5,6 +5,7 @@ import cbit.sql.QueryHashtable;
 import cbit.vcell.modeldb.*;
 import cbit.vcell.server.SimulationJobStatusPersistent;
 import cbit.vcell.xml.XmlParseException;
+import org.vcell.admin.cli.sim.ResultSetCrawler;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
 import org.vcell.util.DataAccessException;
@@ -111,4 +112,11 @@ public class CLIDatabaseService implements AutoCloseable {
     public CompareDatabaseSchema getCompareDatabaseSchemas() {
         return new CompareDatabaseSchema(conFactory);
     }
+
+    public ResultSetCrawler getResultSetCrawler() throws DataAccessException, SQLException {
+        AdminDBTopLevel adminDBTopLevel = new AdminDBTopLevel(conFactory);
+        DatabaseServerImpl dbServerImpl = new DatabaseServerImpl(conFactory, conFactory.getKeyFactory());
+        return new ResultSetCrawler(adminDBTopLevel, dbServerImpl);
+    }
+
 }

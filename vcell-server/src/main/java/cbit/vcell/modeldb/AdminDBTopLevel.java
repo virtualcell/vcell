@@ -179,13 +179,6 @@ public Set<KeyValue> getUnreferencedSimulations(boolean bEnableRetry) throws jav
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (1/31/2003 2:35:44 PM)
- * @return cbit.vcell.solvers.SimulationJobStatus[]
- * @param bActiveOnly boolean
- * @param owner cbit.vcell.server.User
- */
 public SimulationJobStatusPersistent getSimulationJobStatus(KeyValue simKey, int jobIndex, int taskID, boolean bEnableRetry) throws java.sql.SQLException, DataAccessException {
 
 	Object lock = new Object();
@@ -208,13 +201,6 @@ public SimulationJobStatusPersistent getSimulationJobStatus(KeyValue simKey, int
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (1/31/2003 2:35:44 PM)
- * @return cbit.vcell.solvers.SimulationJobStatus[]
- * @param bActiveOnly boolean
- * @param owner cbit.vcell.server.User
- */
 public SimulationJobStatusPersistent[] getSimulationJobStatusArray(KeyValue simKey, boolean bEnableRetry) throws java.sql.SQLException, DataAccessException {
 
 	Object lock = new Object();
@@ -237,13 +223,6 @@ public SimulationJobStatusPersistent[] getSimulationJobStatusArray(KeyValue simK
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (1/31/2003 2:35:44 PM)
- * @return cbit.vcell.solvers.SimulationJobStatus[]
- * @param bActiveOnly boolean
- * @param owner cbit.vcell.server.User
- */
 public SimulationJobStatusPersistent[] getSimulationJobStatusArray(KeyValue simKey, int jobIndex, boolean bEnableRetry) throws java.sql.SQLException, DataAccessException {
 
 	Object lock = new Object();
@@ -551,13 +530,6 @@ SimulationJobStatusPersistent[] getSimulationJobStatus(boolean bActiveOnly, User
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (1/31/2003 2:35:44 PM)
- * @return cbit.vcell.solvers.SimulationJobStatus[]
- * @param bActiveOnly boolean
- * @param owner cbit.vcell.server.User
- */
 SimulationStatusPersistent[] getSimulationStatus(KeyValue simulationKeys[], boolean bEnableRetry) throws java.sql.SQLException, DataAccessException {
 
 	Object lock = new Object();
@@ -594,13 +566,6 @@ SimulationStatusPersistent[] getSimulationStatus(KeyValue simulationKeys[], bool
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (1/31/2003 2:35:44 PM)
- * @return cbit.vcell.solvers.SimulationJobStatus[]
- * @param bActiveOnly boolean
- * @param owner cbit.vcell.server.User
- */
 SimulationStatusPersistent getSimulationStatus(KeyValue simKey, boolean bEnableRetry) throws java.sql.SQLException, DataAccessException {
 
 	Object lock = new Object();
@@ -757,16 +722,6 @@ public ApiClient getApiClient(String clientId, boolean bEnableRetry) throws SQLE
 
 
 
-/**
- * This method was created in VisualAge.
- * @return cbit.sql.Versionable
- * @param object cbit.sql.Versionable
- * @param name java.lang.String
- * @param bVersion boolean
- * @exception org.vcell.util.DataAccessException The exception description.
- * @exception java.sql.SQLException The exception description.
- * @exception cbit.sql.RecordChangedException The exception description.
- */
 public User getUser(String userid, boolean bEnableRetry) throws DataAccessException, java.sql.SQLException {
 
 	Object lock = new Object();
@@ -788,16 +743,6 @@ public User getUser(String userid, boolean bEnableRetry) throws DataAccessExcept
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return cbit.sql.Versionable
- * @param object cbit.sql.Versionable
- * @param name java.lang.String
- * @param bVersion boolean
- * @exception org.vcell.util.DataAccessException The exception description.
- * @exception java.sql.SQLException The exception description.
- * @exception cbit.sql.RecordChangedException The exception description.
- */
 public User getUserFromSimulationKey(KeyValue simKey, boolean bEnableRetry) throws DataAccessException, java.sql.SQLException {
 
 	Object lock = new Object();
@@ -819,17 +764,7 @@ public User getUserFromSimulationKey(KeyValue simKey, boolean bEnableRetry) thro
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return cbit.sql.Versionable
- * @param object cbit.sql.Versionable
- * @param name java.lang.String
- * @param bVersion boolean
- * @exception org.vcell.util.DataAccessException The exception description.
- * @exception java.sql.SQLException The exception description.
- * @exception cbit.sql.RecordChangedException The exception description.
- */
-UserInfo getUserInfo(KeyValue key, boolean bEnableRetry) 
+UserInfo getUserInfo(KeyValue key, boolean bEnableRetry)
 				throws DataAccessException, java.sql.SQLException, ObjectNotFoundException {
 
 	Object lock = new Object();
@@ -870,17 +805,7 @@ void sendLostPassword(String userid, boolean bEnableRetry) throws DataAccessExce
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return cbit.sql.Versionable
- * @param object cbit.sql.Versionable
- * @param name java.lang.String
- * @param bVersion boolean
- * @exception org.vcell.util.DataAccessException The exception description.
- * @exception java.sql.SQLException The exception description.
- * @exception cbit.sql.RecordChangedException The exception description.
- */
-UserInfo[] getUserInfos(boolean bEnableRetry) 
+public UserInfo[] getUserInfos(boolean bEnableRetry)
 				throws DataAccessException, java.sql.SQLException, ObjectNotFoundException {
 
 	Object lock = new Object();
@@ -902,11 +827,6 @@ UserInfo[] getUserInfos(boolean bEnableRetry)
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return cbit.sql.UserInfo
- * @param newUserInfo cbit.sql.UserInfo
- */
 public void insertSimulationJobStatus(SimulationJobStatusPersistent simulationJobStatus, boolean bEnableRetry) throws SQLException, DataAccessException, UpdateSynchronizationException {
 
 	Object lock = new Object();
@@ -981,11 +901,6 @@ KeyValue insertUserInfo(UserInfo newUserInfo, boolean bEnableRetry) throws SQLEx
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return cbit.sql.UserInfo
- * @param newUserInfo cbit.sql.UserInfo
- */
 public void updateSimulationJobStatus(SimulationJobStatusPersistent newSimulationJobStatus, boolean bEnableRetry) throws SQLException, DataAccessException {
 
 	Object lock = new Object();
@@ -1081,7 +996,7 @@ void updateUserStat(UserLoginInfo userLoginInfo,boolean bEnableRetry) throws SQL
 
 
 public interface TransactionalServiceOperation {
-	public ServiceStatus doOperation(ServiceStatus oldStatus) throws Exception;
+	ServiceStatus doOperation(ServiceStatus oldStatus) throws Exception;
 }
 
 public ServiceStatus insertServiceStatus(ServiceStatus serviceStatus, boolean bEnableRetry) throws SQLException, UpdateSynchronizationException {
