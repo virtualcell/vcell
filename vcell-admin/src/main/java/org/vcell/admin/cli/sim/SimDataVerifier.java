@@ -30,9 +30,9 @@ import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.document.*;
 
 import java.io.*;
-import java.security.Key;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 
@@ -42,11 +42,11 @@ import java.util.stream.Collectors;
  * (3) optionally submit/resubmit the simulations as the original user
  */
 public class SimDataVerifier {
-	public static final Logger lg = LogManager.getLogger(SimDataVerifier.class);
+	private static final Logger lg = LogManager.getLogger(SimDataVerifier.class);
 
-	private AdminDBTopLevel adminDbTopLevel;
-	private DatabaseServerImpl dbServerImpl;
-	private SimulationDatabase simulationDatabase;
+	private final AdminDBTopLevel adminDbTopLevel;
+	private final DatabaseServerImpl dbServerImpl;
+	private final SimulationDatabase simulationDatabase;
 
 	public SimDataVerifier(AdminDBTopLevel adminDbTopLevel, DatabaseServerImpl dbServerImpl, SimulationDatabase simulationDatabase) {
 		this.adminDbTopLevel = adminDbTopLevel;
@@ -77,6 +77,10 @@ public class SimDataVerifier {
 			// determine the list of users to scan
 			//
 			List<User> usersToScan = getUsers(singleUsername, startingUsername, bIgnoreTestAccount, modelVisibilities);
+			reportWriter.write(usersToScan.size()+" users to scan:\n");
+			for (User user : usersToScan){
+				reportWriter.write(user.getName()+"\n");
+			}
 
 			//
 			// process one user at a time
@@ -105,47 +109,50 @@ public class SimDataVerifier {
 				List<User> allUsers = Arrays.stream(adminDbTopLevel.getUserInfos(true))
 						.map(ui -> new User(ui.userid, ui.id)).collect(Collectors.toList());
 
-				List<User> usersToScan = new ArrayList<>();
-				for (User user : allUsers) {
-					if (bIgnoreTestAccount && user.getName().equals(User.VCellTestAccountName)) {
-						continue;
-					}
-					if (startingUsername != null) { // accept all users starting with the "startingUser"
-						if (user.getName().compareToIgnoreCase(startingUsername) >= 0) {
-							usersToScan.add(user);
-						}
-					} else { // all users
-						usersToScan.add(user);
-					}
-				}
-				usersToScan.sort(userComparator);
+				List<User> usersToScan = selectUserSubsetByName(startingUsername, bIgnoreTestAccount, userComparator, allUsers);
 				return usersToScan;
-			} else if (modelVisibilities.contains(SimDataVerifierCommand.ModelVisibility.PUBLISHED) ||
-				modelVisibilities.contains(SimDataVerifierCommand.ModelVisibility.PUBLIC)){
-				lg.info("getting all users with public BioModels");
+			} else if (modelVisibilities.contains(SimDataVerifierCommand.ModelVisibility.PUBLIC) ||
+						modelVisibilities.contains(SimDataVerifierCommand.ModelVisibility.PUBLISHED)) {
+
 				BioModelInfo[] publicBioModelInfos = dbServerImpl.getBioModelInfos(User.tempUser, true);
+
+				final Predicate<BioModelInfo> visibilityFilter;
+				if (! modelVisibilities.contains(SimDataVerifierCommand.ModelVisibility.PUBLIC)){
+					lg.info("getting all users with published BioModels");
+					visibilityFilter = (bioModelInfo -> bioModelInfo.getPublicationInfos()!=null && bioModelInfo.getPublicationInfos().length > 0);
+				}else {
+					lg.info("getting all users with public BioModels");
+					visibilityFilter = (bioModelInfo -> true);
+				}
+
 				Set<User> allUsersWithPublicModels = Arrays.stream(publicBioModelInfos)
+						.filter(visibilityFilter)
 						.map(bmi -> bmi.getVersion().getOwner()).collect(Collectors.toSet());
 
-				List<User> usersToScan = new ArrayList<>();
-				for (User user : allUsersWithPublicModels) {
-					if (bIgnoreTestAccount && user.getName().equals(User.VCellTestAccountName)) {
-						continue;
-					}
-					if (startingUsername != null) { // accept all users starting with the "startingUser"
-						if (user.getName().compareToIgnoreCase(startingUsername) >= 0) {
-							usersToScan.add(user);
-						}
-					} else { // all users
-						usersToScan.add(user);
-					}
-				}
-				usersToScan.sort(userComparator);
+				List<User> usersToScan = selectUserSubsetByName(startingUsername,bIgnoreTestAccount,userComparator,allUsersWithPublicModels);
 				return usersToScan;
 			} else {
 				throw new RuntimeException("no model visibility was specified");
 			}
 		}
+	}
+
+	private List<User> selectUserSubsetByName(String startingUsername, boolean bIgnoreTestAccount, Comparator<User> userComparator, Collection<User> allUsers) {
+		List<User> usersToScan = new ArrayList<>();
+		for (User user : allUsers) {
+			if (bIgnoreTestAccount && user.getName().equals(User.VCellTestAccountName)) {
+				continue;
+			}
+			if (startingUsername != null) { // accept all users starting with the "startingUser"
+				if (user.getName().compareToIgnoreCase(startingUsername) >= 0) {
+					usersToScan.add(user);
+				}
+			} else { // all users
+				usersToScan.add(user);
+			}
+		}
+		usersToScan.sort(userComparator);
+		return usersToScan;
 	}
 
 	private void processUser(boolean bRerunLostData, boolean bRunNeverRan,
