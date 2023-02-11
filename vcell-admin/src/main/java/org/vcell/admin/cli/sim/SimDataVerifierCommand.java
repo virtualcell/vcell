@@ -6,6 +6,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.vcell.admin.cli.CLIDatabaseService;
+import org.vcell.util.document.KeyValue;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
@@ -27,6 +28,9 @@ public class SimDataVerifierCommand implements Callable<Integer> {
 
     @Option(names = { "-o", "--outputDir"}, description = "directory where scan report is stored (default is current directory)", required = false)
     private File outputDir;
+
+    @Option(names = {"-s", "--simulation-id"}, description = "id of single simulation to process, (should be used with --username)")
+    private KeyValue singleSimID;
 
     @Option(names = {"-u", "--username"}, description = "username to restrict scan")
     private String username;
@@ -73,7 +77,7 @@ public class SimDataVerifierCommand implements Callable<Integer> {
                     throw new RuntimeException("Output directory doesn't exist!");
                 }
                 SimDataVerifier simDataVerifier = cliDatabaseService.getSimDataVerifier();
-                simDataVerifier.run(outputDir, bRerunLostData, bRunNeverRan, username, startUsername,
+                simDataVerifier.run(outputDir, bRerunLostData, bRunNeverRan, singleSimID, username, startUsername,
                         bIgnoreTestAccount, modelVisibilities
 //                        , amplistorUsername, amplistorPassword
                         );

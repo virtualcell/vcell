@@ -55,7 +55,7 @@ public class SimDataVerifier {
 	}
 
 	public void run(File outputDir,
-					boolean bRerunLostData, boolean bRunNeverRan,
+					boolean bRerunLostData, boolean bRunNeverRan, KeyValue singleSimID,
 					String singleUsername, String startingUsername, boolean bIgnoreTestAccount,
 					EnumSet<SimDataVerifierCommand.ModelVisibility> modelVisibilities
 //					,String ampliCredName, String ampliCredPassword
@@ -71,7 +71,7 @@ public class SimDataVerifier {
 		Cachetable cacheTable = new Cachetable(MessageConstants.MINUTE_IN_MS * 20, maxMemSize);
 		DataSetControllerImpl dataSetController = new DataSetControllerImpl(cacheTable, primaryDataRootDir, secondaryDataRootDir);
 
-		File reportFile = new File(outputDir, "report_"+Math.abs(new Random().nextInt())+".txt");
+		File reportFile = new File(outputDir, "report_"+System.currentTimeMillis()+".txt");
 		try (BufferedWriter reportWriter = new BufferedWriter(new FileWriter(reportFile))) {
 			//
 			// determine the list of users to scan
@@ -86,7 +86,7 @@ public class SimDataVerifier {
 			// process one user at a time
 			//
 			for (User user : usersToScan) {
-				processUser(bRerunLostData, bRunNeverRan, modelVisibilities,
+				processUser(bRerunLostData, bRunNeverRan, modelVisibilities, singleSimID,
 						primaryDataRootDir, secondaryDataRootDir, user, dataSetController, reportWriter);
 			}
 		}
@@ -156,30 +156,40 @@ public class SimDataVerifier {
 	}
 
 	private void processUser(boolean bRerunLostData, boolean bRunNeverRan,
-							 EnumSet<SimDataVerifierCommand.ModelVisibility> modelVisibilities,
+							 EnumSet<SimDataVerifierCommand.ModelVisibility> modelVisibilities, KeyValue singleSimID,
 							 File primaryDataRootDir, File secondaryDataRootDir, User user,
 							 DataSetControllerImpl dataSetController, Writer reportWriter)
 			throws DataAccessException, SQLException, IOException {
-		//
-		// get list of all simulations with the specified visibility including one or more of (PRIVATE, PUBLIC, PUBLISHED)
-		//
-		lg.info("processing user "+user);
-		reportWriter.write("processing user "+user);
-		List<BioModelInfo> bioModelInfos = getVisibleBioModels(modelVisibilities, user);
-		Set<KeyValue> simulationKeys = new LinkedHashSet<>();
-		for (BioModelInfo bmi : bioModelInfos){
-			KeyValue[] simKeys = simulationDatabase.getSimulationKeysFromBiomodel(bmi.getVersion().getVersionKey());
-			simulationKeys.addAll(Arrays.asList(simKeys));
-		}
-
-		String msg = "processing user "+user+", considering "+bioModelInfos.size()+" biomodels and "+simulationKeys.size()+" simulations";
-		lg.info(msg);
-		reportWriter.write(msg+"\n");
-		reportWriter.flush();
-		for (KeyValue simKey : simulationKeys) {
-			processSimulation(bRerunLostData, bRunNeverRan, primaryDataRootDir, secondaryDataRootDir,
-					user, simKey, dataSetController, reportWriter);
+		if (singleSimID != null){
+			String msg = "processing user " + user + ", considering only simID " + singleSimID;
+			lg.info(msg);
+			reportWriter.write(msg + "\n");
 			reportWriter.flush();
+			processSimulation(bRerunLostData, bRunNeverRan, primaryDataRootDir, secondaryDataRootDir,
+					user, singleSimID, dataSetController, reportWriter);
+			reportWriter.flush();
+		}else {
+			//
+			// get list of all simulations with the specified visibility including one or more of (PRIVATE, PUBLIC, PUBLISHED)
+			//
+			lg.info("processing user " + user);
+			reportWriter.write("processing user " + user);
+			List<BioModelInfo> bioModelInfos = getVisibleBioModels(modelVisibilities, user);
+			Set<KeyValue> simulationKeys = new LinkedHashSet<>();
+			for (BioModelInfo bmi : bioModelInfos) {
+				KeyValue[] simKeys = simulationDatabase.getSimulationKeysFromBiomodel(bmi.getVersion().getVersionKey());
+				simulationKeys.addAll(Arrays.asList(simKeys));
+			}
+
+			String msg = "processing user " + user + ", considering " + bioModelInfos.size() + " biomodels and " + simulationKeys.size() + " simulations";
+			lg.info(msg);
+			reportWriter.write(msg + "\n");
+			reportWriter.flush();
+			for (KeyValue simKey : simulationKeys) {
+				processSimulation(bRerunLostData, bRunNeverRan, primaryDataRootDir, secondaryDataRootDir,
+						user, simKey, dataSetController, reportWriter);
+				reportWriter.flush();
+			}
 		}
 	}
 
