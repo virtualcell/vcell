@@ -21,4 +21,7 @@ public class CacheException extends Exception {
 public CacheException(String s) {
 	super(s);
 }
+public CacheException(String s, Exception e) {
+	super(s, e);
+}
 }
