@@ -10,15 +10,15 @@ if [ "$#" -lt 1 ]; then
     show_help
 fi
 
-echo $@
-
 shopt -s -o nounset
 
-echo "softwareVersion is $softwareVersion"
-echo "dbpswdfile is $dbpswdfile"
-echo "VCELL_VERSION is $VCELL_VERSION"
 arguments=$*
-java -Xdebug -Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=n \
+
+# to debug, EXPOSE port 8000 (in Dockerfile) and include the following JVM arguments
+# -Xdebug
+# -Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=n
+
+java \
   -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:MaxRAMFraction=1 -Xms64M \
 	-Dvcell.softwareVersion="$VCELL_VERSION" \
 	-Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager \

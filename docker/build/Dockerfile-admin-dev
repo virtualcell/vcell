@@ -37,6 +37,6 @@ VOLUME /simdata
 VOLUME /simdata_secondary
 VOLUME /run/secrets
 
-EXPOSE 8000
+#EXPOSE 8000
 
 ENTRYPOINT [ "/vcellscripts/entrypoint.sh" ]
