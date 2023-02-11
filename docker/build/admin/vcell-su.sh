@@ -3,7 +3,7 @@
 cd /share/apps/vcell3/deployed_github/config
 
 show_help() {
-  echo "vcell administrative cli - USE THIS POWER WITH CAUTION - for vcell admins only"
+  echo "vcell superuser cli - USE THIS POWER WITH CAUTION - for vcell admins only"
   echo "   example commands:"
   echo "      help"
   echo "      simdata-verifier help"

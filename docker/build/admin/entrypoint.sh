@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 show_help() {
-	echo "VCell admin CLI"
+	echo "VCell superuser CLI"
 	echo "type help for usage"
 	exit 1
 }
