@@ -2,6 +2,8 @@ package org.vcell.service.registration.localdb;
 
 import java.sql.SQLException;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.scijava.Priority;
 import org.scijava.plugin.Plugin;
 import org.scijava.service.AbstractService;
@@ -21,6 +23,7 @@ import cbit.vcell.server.AdminDatabaseServer;
 
 @Plugin(type = Service.class)
 public class LocaldbRegistrationService extends AbstractService implements RegistrationService {
+	private final static Logger lg = LogManager.getLogger(LocaldbRegistrationService.class);
 
 	private AdminDatabaseServer adminDbServer = null;
 	
@@ -36,10 +39,10 @@ public class LocaldbRegistrationService extends AbstractService implements Regis
 				KeyFactory keyFactory = conFactory.getKeyFactory();
 				adminDbServer = new LocalAdminDbServer(conFactory, keyFactory);
 			} catch (SQLException e) {
-				e.printStackTrace();
+				lg.error(e);
 				throw new RuntimeException("failed to establish database connection for RegistrationService: "+e.getMessage(),e);
 			} catch (DataAccessException e) {
-				e.printStackTrace();
+				lg.error(e);
 				throw e;
 			}
 		}

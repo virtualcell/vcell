@@ -1141,8 +1141,7 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 				}
 			}
 		} catch (Throwable e) {
-			e.printStackTrace(System.out);
-			throw new DataAccessException("line #" + (tokens.lineIndex()+1) + " Exception: " + e.getMessage());
+			throw new DataAccessException("line #" + (tokens.lineIndex()+1) + " Exception: " + e.getMessage(), e);
 		}
 
 		if (keepEvery != -1) {

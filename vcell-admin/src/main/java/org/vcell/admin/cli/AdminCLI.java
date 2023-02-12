@@ -6,8 +6,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.admin.cli.db.DatabaseCompareSchemaCommand;
 import org.vcell.admin.cli.db.DatabaseDestroyAndRecreateCommand;
-import org.vcell.admin.cli.mathverifier.ModeldbMathGenTestCommand;
 import org.vcell.admin.cli.mathverifier.ModeldbLoadTestCommand;
+import org.vcell.admin.cli.mathverifier.ModeldbMathGenTestCommand;
+import org.vcell.admin.cli.sim.ResultSetCrawlerCommand;
+import org.vcell.admin.cli.sim.SimDataVerifierCommand;
 import org.vcell.admin.cli.tools.UsageCommand;
 import org.vcell.util.document.KeyValue;
 import picocli.CommandLine;
@@ -20,6 +22,8 @@ import picocli.CommandLine.Command;
         DatabaseCompareSchemaCommand.class,
         DatabaseDestroyAndRecreateCommand.class,
         UsageCommand.class,
+        ResultSetCrawlerCommand.class,
+        SimDataVerifierCommand.class,
         CommandLine.HelpCommand.class,
 })
 public class AdminCLI {

@@ -99,7 +99,7 @@ private void deleteGeometrySQL(Connection con, User user,KeyValue geomKey) throw
 
 	sql = DatabasePolicySQL.enforceOwnershipDelete(user,geomTable,GeometryTable.table.id + " = " + geomKey);
 	
-//System.out.println(sql);
+//lg.info(sql);
 
 	updateCleanSQL(con,sql);
 
@@ -108,7 +108,7 @@ private void deleteGeometrySQL(Connection con, User user,KeyValue geomKey) throw
 	//Don't have to check if other Geometries are using because Geometries never share sizetable
 	if (imageRefKey == null) {
 		sql = "DELETE FROM " + extentTable.getTableName() + " WHERE " + extentTable.id + " = " + extentKey;
-		//System.out.println(sql);
+		//lg.info(sql);
 		updateCleanSQL(con,sql);
 	}
 }
@@ -128,13 +128,13 @@ private void deleteVCImageSQL(Connection con, User user, KeyValue imageKey) thro
 
 	//Delete ImageTable entry, all children go ON DELETE CASCADE
 	sql = DatabasePolicySQL.enforceOwnershipDelete(user,imageTable,imageTable.id + " = " + imageKey);
-//System.out.println(sql);
+//lg.info(sql);
 	updateCleanSQL(con,sql);
 	//
 	
 	//Delete SizeTable entry because we know there can't be any more refs to it.  Do Last because it is parent of image
 	sql = "DELETE FROM " + extentTable.getTableName() + " WHERE " + extentTable.id + " = " + extentKey;
-	//System.out.println(sql);
+	//lg.info(sql);
 	updateCleanSQL(con,sql);
 }
 
@@ -174,7 +174,7 @@ private KeyValue getExtentRefKeyFromGeometry(Connection con, KeyValue geomKey) t
 			" FROM " + geomTable.getTableName()+
 			" WHERE " + geomTable.id + " = " + geomKey;
 
-//System.out.println(sql);
+//lg.info(sql);
 	
 	//Connection con = conFact.getConnection();
 	
@@ -208,7 +208,7 @@ private KeyValue getExtentRefKeyFromImage(Connection con, KeyValue imageKey) thr
 			" FROM " + imageTable.getTableName()+
 			" WHERE " + imageTable.id + " = " + imageKey;
 
-//System.out.println(sql);
+//lg.info(sql);
 	
 	//Connection con = conFact.getConnection();
 	
@@ -243,7 +243,7 @@ private void getFilaments(Connection con, Geometry geom) throws SQLException, Da
 						curveTable.getTableName() +
 			" WHERE " + filamentTable.geometryRef.getQualifiedColName() + " = " + geom.getVersion().getVersionKey() +
 			" AND " + curveTable.filamentRef.getQualifiedColName() + " = " + filamentTable.id.getQualifiedColName();
-//System.out.println(sql);
+//lg.info(sql);
 	Statement stmt = con.createStatement();
 	try {
 		ResultSet rset = stmt.executeQuery(sql);
@@ -280,7 +280,7 @@ private Geometry getGeometry(QueryHashtable dbc, Connection con, User user, KeyV
 					" AND " + userTable.id.getQualifiedColName() + " = " + geomTable.ownerRef.getQualifiedColName() +
 					" AND " + extentTable.id.getQualifiedColName() + " = " + geomTable.extentRef.getQualifiedColName();
 	sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,(LeftOuterJoin)null,condition,null,bCheckPermission);
-//System.out.println(sql);
+//lg.info(sql);
 	
   	Geometry geom = null;
 	//Connection con = conFact.getConnection();
@@ -412,7 +412,7 @@ private KeyValue getImageRefKeyFromGeometry(Connection con, KeyValue geomKey) th
 			" FROM " + geomTable.getTableName()+
 			" WHERE " + geomTable.id + " = " + geomKey;
 
-//System.out.println(sql);
+//lg.info(sql);
 	
 	//Connection con = conFact.getConnection();
 	
@@ -450,7 +450,7 @@ private void getImageRegionsForVCImage(QueryHashtable dbc, Connection con, VCIma
 	" WHERE " + imageRegionTable.imageRef + " = " + vcImage.getVersion().getVersionKey() +
 	" ORDER BY " + imageRegionTable.id;
 	//
-	//System.out.println(sql);
+	//lg.info(sql);
 	//
 	//Connection con = conFact.getConnection();
 	Statement stmt = con.createStatement();
@@ -512,7 +512,7 @@ private VCPixelClass getPixelClass(QueryHashtable dbc, Connection con, KeyValue 
 			" FROM  " + imageRegionTable.getTableName() +
 			" WHERE " + imageRegionTable.id + " = " + imageRegionKey;
 	//
-	//System.out.println(sql);
+	//lg.info(sql);
 	//
 	//Connection con = conFact.getConnection();
 	Statement stmt = con.createStatement();
@@ -632,7 +632,7 @@ private SubVolume[] getSubVolumesFromGeometry(QueryHashtable dbc, Connection con
 			" WHERE " + subVolumeTable.geometryRef + " = " + geomKey + 
 			" ORDER BY " + subVolumeTable.ordinal;
 
-//System.out.println(sql);
+//lg.info(sql);
 	
 	Statement stmt = con.createStatement();
 	Vector<SubVolume> subVolumeList = new Vector<SubVolume>();
@@ -670,7 +670,7 @@ private SurfaceClass[] getSurfaceClassesFromGeometry(QueryHashtable dbc, Connect
 			" FROM " + SurfaceClassTable.table.getTableName() +
 			" WHERE " + SurfaceClassTable.table.geometryRef + " = " + geomKey;
 
-//System.out.println(sql);
+//lg.info(sql);
 	
 	Statement stmt = con.createStatement();
 	Vector<SurfaceClass> surfaceClassV = new Vector<SurfaceClass>();
@@ -705,7 +705,7 @@ private SurfaceClass[] getSurfaceClassesFromGeometry(QueryHashtable dbc, Connect
  * @param geom cbit.vcell.geometry.Geometry
  */
 private void getSurfaceDescription(Connection con, Geometry geom) throws SQLException, DataAccessException {
-//System.out.println(sql);
+//lg.info(sql);
 	Statement stmt = con.createStatement();
 	try {
 		String sql = null;
@@ -801,7 +801,7 @@ private VCImage getVCImage(QueryHashtable dbc, Connection con, User user, KeyVal
 					" AND " + imageTable.id.getQualifiedColName() + " = " + imageDataTable.imageRef.getQualifiedColName()+
 					" AND " + imageTable.extentRef.getQualifiedColName() + " = " + extentTable.id.getQualifiedColName();
 	sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,(LeftOuterJoin)null,condition,null,bCheckPermission);
-//System.out.println(sql);
+//lg.info(sql);
 	
 	//Connection con = conFact.getConnection();
 	
@@ -863,7 +863,7 @@ private void insertBrowseImageDataSQL(Connection con, KeyValue key, KeyValue ima
 	sql = "INSERT INTO " + browseImageDataTable.getTableName() + " " + 
 		browseImageDataTable.getSQLColumnList() + " VALUES " + 
 		browseImageDataTable.getSQLValueList(key, imageKey, dbSyntax);
-	//	System.out.println(sql);
+	//	lg.info(sql);
 
 	byte[] gifEncodedImage = null;
 	try{
@@ -879,7 +879,7 @@ private void insertBrowseImageDataSQL(Connection con, KeyValue key, KeyValue ima
 			}
 		}
 	}catch(Exception e){
-		e.printStackTrace();
+		lg.error(e);
 	}
 	if(gifEncodedImage == null){
 		gifEncodedImage =
@@ -918,7 +918,7 @@ private void insertExtentSQL(Connection con, KeyValue key, double extentX, doubl
 	sql = "INSERT INTO " + extentTable.getTableName() + " " + 
 		extentTable.getSQLColumnList() + " VALUES " + 
 		extentTable.getSQLValueList(key, extentX, extentY, extentZ);
-	//	System.out.println(sql);
+	//	lg.info(sql);
 
 	updateCleanSQL(con,sql);
 }
@@ -1001,7 +1001,7 @@ private void insertGeometry(InsertHashtable hash, QueryHashtable dbc, Connection
 				//try{
 					//geometrySpec.setImage(getVCImage(con,user,imageVersionKey));
 				//}catch(PropertyVetoException e){
-					//e.printStackTrace();
+					//lg.error(e);
 					//throw new DataAccessException(e.getMessage());
 				//}
 			//}
@@ -1023,7 +1023,7 @@ private void insertGeometry(InsertHashtable hash, QueryHashtable dbc, Connection
 		try {
 			geom.getGeometrySpec().setImage(resavedImage);
 		} catch (PropertyVetoException e) {
-			e.printStackTrace();
+			lg.error(e);
 			throw new DataAccessException(e.getMessage());
 		}
 	}
@@ -1050,7 +1050,7 @@ private void insertSurfaceClassesSQL(InsertHashtable hash, Connection con, Geome
 			KeyValue newSurfaceClassKey = keyFactory.getNewKey(con);
 			String sql = "INSERT INTO " + SurfaceClassTable.table.getTableName() + " " + SurfaceClassTable.table.getSQLColumnList() + 
 				" VALUES " + SurfaceClassTable.table.getSQLValueList(hash,newSurfaceClassKey, geom, surfaceClass,geomKey);
-	//System.out.println(sql);
+	//lg.info(sql);
 			updateCleanSQL(con,sql);
 			hash.put(surfaceClass,newSurfaceClassKey);
 		}
@@ -1065,7 +1065,7 @@ private void insertGeometrySQL(Connection con, Geometry geom, KeyValue imageKey,
 	String sql;
 	Object[] o = {imageKey,geom,sizeKey};
 	sql = DatabasePolicySQL.enforceOwnershipInsert(user,geomTable,o,version,dbSyntax);
-//System.out.println(sql);
+//lg.info(sql);
 	updateCleanSQL(con,sql);
 }
 
@@ -1086,7 +1086,7 @@ private void insertGeometrySQL(Connection con, Geometry geom, KeyValue imageKey,
 	KeyValue newGeomSurfDescKey = keyFactory.getNewKey(con);
 	sql = "INSERT INTO " + geoSurfaceTable.getTableName() + " " + geoSurfaceTable.getSQLColumnList() +
 		" VALUES " + geoSurfaceTable.getSQLValueList(newGeomSurfDescKey,geoSurfaceDescription,geomKey);
-//System.out.println(sql);
+//lg.info(sql);
 	updateCleanSQL(con,sql);
 
 	//
@@ -1116,7 +1116,7 @@ private void insertGeometrySQL(Connection con, Geometry geom, KeyValue imageKey,
 				KeyValue subvolumeKey = hash.getDatabaseKey(volumeRegion.getSubVolume());
 				sql = "INSERT INTO " + geoRegionTable.getTableName() + " " + geoRegionTable.getSQLColumnList() + 
 					" VALUES " + geoRegionTable.getSQLValueList(newVolumeRegionKey,volumeRegion,subvolumeKey,geomKey);
-		//System.out.println(sql);
+		//lg.info(sql);
 				updateCleanSQL(con,sql);
 				hash.put(volumeRegion,newVolumeRegionKey);
 			}
@@ -1134,7 +1134,7 @@ private void insertGeometrySQL(Connection con, Geometry geom, KeyValue imageKey,
 				KeyValue volumeRegion2Key = hash.getDatabaseKey((VolumeGeometricRegion)surfaceRegion.getAdjacentGeometricRegions()[1]);
 				sql = "INSERT INTO " + geoRegionTable.getTableName() + " " + geoRegionTable.getSQLColumnList() + 
 					" VALUES " + geoRegionTable.getSQLValueList(newSurfaceRegionKey,surfaceRegion,volumeRegion1Key,volumeRegion2Key,geomKey);
-		//System.out.println(sql);
+		//lg.info(sql);
 				updateCleanSQL(con,sql);
 				hash.put(surfaceRegion,newSurfaceRegionKey);
 			}
@@ -1153,7 +1153,7 @@ private void insertImageDataSQL(Connection con, KeyValue key, KeyValue imageKey,
 	String sql;
 	sql = "INSERT INTO " + imageDataTable.getTableName() + " " + imageDataTable.getSQLColumnList() + " VALUES " + 
 		imageDataTable.getSQLValueList(key, imageKey, dbSyntax);
-//System.out.println(sql);
+//lg.info(sql);
 	switch (dbSyntax){
 	case ORACLE:{
 		updateCleanSQL(con,sql);
@@ -1186,7 +1186,7 @@ private void insertImageSQL(Connection con, VCImage image, KeyValue keySizeRef,V
 	String sql;
 	Object[] o = {image, keySizeRef};
 	sql = DatabasePolicySQL.enforceOwnershipInsert(user,imageTable,o,version,dbSyntax);
-//System.out.println(sql);
+//lg.info(sql);
 
 	updateCleanSQL(con,sql);
 }
@@ -1203,7 +1203,7 @@ private void insertPixelClassSQL(Connection con, KeyValue key, KeyValue imageKey
 	sql = "INSERT INTO " + imageRegionTable.getTableName() + " " +
 		imageRegionTable.getSQLColumnList() + " VALUES " +
 		imageRegionTable.getSQLValueList(key, imageKey, pc);
-//System.out.println(sql);
+//lg.info(sql);
 
 	updateCleanSQL(con,sql);
 }
@@ -1225,7 +1225,7 @@ private void insertSubVolumesSQL(InsertHashtable hash, Connection con, Geometry 
 			KeyValue newSVKey = keyFactory.getNewKey(con);
 			sql = "INSERT INTO " + subVolumeTable.getTableName() + " " + subVolumeTable.getSQLColumnList() + 
 				" VALUES " + subVolumeTable.getSQLValueList(hash,newSVKey, geom, sv,geomKey, ordinal);
-	//System.out.println(sql);
+	//lg.info(sql);
 			updateCleanSQL(con,sql);
 			hash.put(sv,newSVKey);
 		}

@@ -12,7 +12,7 @@ mvn_repo=$HOME/.m2
 show_help() {
 	echo "usage: build.sh [OPTIONS] target repo tag"
 	echo "  ARGUMENTS"
-	echo "    target                ( batch | api | db | sched | submit | data | mongo | clientgen | web | opt | appservices | all)"
+	echo "    target                ( batch | api | db | sched | submit | data | mongo | clientgen | web | opt | appservices | admin | all)"
 	echo "                              where appservices = (api, db, sched, submit, data, web)"
 	echo ""
 	echo "    repo                  ( schaff | localhost:5000 | vcell-docker.cam.uchc.edu:5000 )"
@@ -168,6 +168,17 @@ build_web() {
 		sudo docker push $repo/vcell-web:$tag
 	fi
 }
+
+build_admin() {
+	echo "building $repo/vcell-admin:$tag"
+	echo "sudo docker build -f Dockerfile-admin-dev --tag $repo/vcell-admin:$tag ../.."
+	sudo docker build -f Dockerfile-admin-dev --tag $repo/vcell-admin:$tag ../..
+	if [[ $? -ne 0 ]]; then echo "docker build failed"; exit 1; fi
+	if [ "$skip_push" == "false" ]; then
+		sudo docker push $repo/vcell-admin:$tag
+	fi
+}
+
 
 build_opt() {
 	echo "building $repo/vcell-opt:$tag"
@@ -453,8 +464,12 @@ case $target in
 		build_clientgen
 		exit $?
 		;;
+	admin)
+		build_admin
+		exit $?
+		;;
 	all)
-		build_batch && build_api && build_db && build_sched && build_submit && build_data && build_web && build_opt && build_clientgen && build_mongo && build_batch_singularity && build_opt_singularity
+		build_batch && build_api && build_db && build_sched && build_submit && build_data && build_web && build_opt && build_clientgen && build_mongo && build_batch_singularity && build_opt_singularity && build_admin
 		exit $?
 		;;
 	appservices)

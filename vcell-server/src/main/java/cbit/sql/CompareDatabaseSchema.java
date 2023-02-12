@@ -15,6 +15,8 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
 import org.vcell.db.DatabaseSyntax;
@@ -23,7 +25,7 @@ import org.vcell.db.KeyFactory;
 import cbit.vcell.modeldb.SQLCreateAllTables;
 
 public class CompareDatabaseSchema {
-
+	private final static Logger lg = LogManager.getLogger(CompareDatabaseSchema.class);
 
 	private final ConnectionFactory connectionFactory;
 
@@ -177,8 +179,7 @@ public class CompareDatabaseSchema {
 			}
 		}
 	} catch (SQLException exc) {
-		System.out.println(exc.getMessage());
-		exc.printStackTrace(System.out);
+		lg.error(exc);
 	} finally {
 		conFactory.release(con, lock);
 	}
@@ -238,7 +239,7 @@ public static void main(java.lang.String[] args) {
 		CompareDatabaseSchema compareDatabaseSchema = new CompareDatabaseSchema(conFactory);
         compareDatabaseSchema.runCompareSchemas();
     } catch (Throwable e) {
-        e.printStackTrace(System.out);
+		lg.error(e);
     }
     System.exit(0);
 }

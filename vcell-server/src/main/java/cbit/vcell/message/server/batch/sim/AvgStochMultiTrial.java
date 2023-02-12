@@ -17,9 +17,11 @@ import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.ode.SundialsSolver;
 import cbit.vcell.util.ColumnDescription;
 import cbit.vcell.xml.XmlHelper;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class AvgStochMultiTrial  implements PortableCommand{
-
+	private final static Logger lg = LogManager.getLogger(AvgStochMultiTrial.class);
 	private final String primaryUserDirInternal;
 	private final String xmlSimTask;
 	private transient Exception exc = null; 
@@ -38,7 +40,7 @@ public class AvgStochMultiTrial  implements PortableCommand{
 			FileUtils.write(new File(allAvgIDA), s, Charset.forName(StandardCharsets.UTF_8.name()));
 			return 0;
 		} catch (Exception e) {
-			e.printStackTrace();
+			lg.error(e);
 			exc = e;
 			return 1;
 		}
@@ -96,13 +98,13 @@ public class AvgStochMultiTrial  implements PortableCommand{
 					}
 					sb.append("\n");
 				}
-		//		System.out.println(sb.toString());
+		//		lg.debug(sb.toString());
 		//		String allAvgIDA = ResourceUtil.forceUnixPath(new File(primaryUserDirInternal ,simTask.getSimulationJobID()+SimDataConstants.IDA_DATA_EXTENSION).toString());
 		//		FileUtils.write(new File(allAvgIDA), sb.toString(), Charset.forName(StandardCharsets.UTF_8.name()));
 				return sb.toString();
 			}catch(Exception e) {
 				doCnt++;
-				e.printStackTrace();
+				lg.error(e);
 				lastError = e;
 			}
 			Thread.sleep(10000);

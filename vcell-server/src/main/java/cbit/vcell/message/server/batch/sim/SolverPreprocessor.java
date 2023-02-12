@@ -71,7 +71,7 @@ public class SolverPreprocessor  {
 			service.close();
 			sleep(500);
 		} catch (VCMessagingException e1) {
-			e1.printStackTrace();
+			lg.error(e1);
 		} finally {
 			System.exit(-1);
 		}
@@ -128,12 +128,12 @@ public class SolverPreprocessor  {
 					try {
 						super.initialize();
 					} catch (Exception e) {
-						e.printStackTrace();
+						lg.error(e);
 						SimulationMessage simMessage = SimulationMessage.jobFailed(e.getMessage());
 						try {
 							sendFailureAndExit(this, simTask, hostName, simMessage);
 						} catch (Exception e1) {
-							e1.printStackTrace();
+							lg.error(e1);
 						}
 					}
 				}
@@ -152,7 +152,7 @@ public class SolverPreprocessor  {
 					try {
 						sendFailureAndExit(htcSolver, simTask, hostName, event.getSimulationMessage());
 					} catch (Exception e) {
-						e.printStackTrace();
+						lg.error(e);
 					}
 				}
 				public void solverStarting(SolverEvent event) {
@@ -172,7 +172,7 @@ public class SolverPreprocessor  {
 					try {
 						sendFailureAndExit(htcSolver, simTask, hostName, event.getSimulationMessage());
 					} catch (VCMessagingException e) {
-						e.printStackTrace();
+						lg.error(e);
 					}
 				}
 			};
@@ -214,7 +214,7 @@ public class SolverPreprocessor  {
 				try {
 					AmplistorUtils.getObjectDataPutInFile(amplistorUserPath+"/"+fileName, simDataAmplistorInfo.getAmplistorCredential(), destinationFile);
 				} catch (Exception e) {
-					e.printStackTrace();
+					lg.error(e);
 					//ignore
 				}
 			}
@@ -277,8 +277,7 @@ public class SolverPreprocessor  {
 				}
 			}catch(Exception e){
 				//ignore, try to run sim
-				System.out.println("recoverLastSimulationData exception " + e.getMessage());
-				lg.info("recoverLastSimulationData",e);
+				lg.info("recoverLastSimulationData  exception " + e.getMessage(), e);
 			}
 		}
 

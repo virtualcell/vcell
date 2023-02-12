@@ -15,6 +15,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseSyntax;
 import org.vcell.db.KeyFactory;
@@ -65,6 +67,8 @@ import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 
 public class IonItems {
+	private final static Logger lg = LogManager.getLogger(IonItems.class);
+	
 	//See vcell-node1:/opt/build/frm/cbit_vcell_tools_IonItems.info
 	private static final String PUBLISHEDMODELVCML = "publishedmodelvcml";
 	private static final String TESTSUITEMODELVCML = "testsuitemodelvcml";
@@ -129,11 +133,11 @@ public class IonItems {
 			}
 
 		} catch (Exception e) {
-			e.printStackTrace();
+			lg.error(e);
 			return;
 		} finally{
-			if(stmt != null){try{stmt.close();}catch(Exception e){e.printStackTrace();}}
-			if(con != null){try{con.close();}catch(Exception e){e.printStackTrace();}}
+			if(stmt != null){try{stmt.close();}catch(Exception e){lg.error(e);}}
+			if(con != null){try{con.close();}catch(Exception e){lg.error(e);}}
 		}
 		
 		if(command.toLowerCase().equals(PUBLICMODELWITHSIMS)) {
@@ -242,7 +246,7 @@ public class IonItems {
 //				}
 			} catch (Exception e) {
 				System.out.println("----------GENERALERROR "+vcDoc.getVersion().getVersionKey());
-				e.printStackTrace();
+				lg.error(e);
 				if(vcDoc != null) {
 					PrintWriter pw = new PrintWriter(new File(dirToSaveVCML,vcDoc.getVersion().getVersionKey().toString()+"_exception.xml"));
 					pw.write("");
@@ -251,7 +255,7 @@ public class IonItems {
 			}
 			}
 		} finally{
-			if(stmt != null){try{stmt.close();}catch(Exception e){e.printStackTrace();}}
+			if(stmt != null){try{stmt.close();}catch(Exception e){lg.error(e);}}
 		}
 
 	}
@@ -308,7 +312,7 @@ public class IonItems {
 					}
 				}
 			} catch (Exception e) {
-				e.printStackTrace();
+				lg.error(e);
 				sb.append("-----ERROR "+file.getName()+"\n   "+e.getMessage());
 			}
 		}
@@ -457,7 +461,7 @@ public class IonItems {
 							}
 						} catch (Exception e) {
 							System.out.println("-----SIMERROR "+vcDoc.getVersion().getVersionKey()+"\n-----Sim="+sims[j].getVersion());
-							e.printStackTrace();
+							lg.error(e);
 							if(e.getMessage().contains("HDF5")) {
 								return;
 							}
@@ -481,7 +485,7 @@ public class IonItems {
 //				}
 			} catch (Exception e) {
 				System.out.println("----------GENERALERROR "+vcDoc.getVersion().getVersionKey());
-				e.printStackTrace();
+				lg.error(e);
 				if(vcDoc != null) {
 					PrintWriter pw = new PrintWriter(new File(dirToSaveVCML,vcDoc.getVersion().getVersionKey().toString()+"_exception.xml"));
 					pw.write("");
@@ -498,9 +502,9 @@ public class IonItems {
 //
 //			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			lg.error(e);
 		} finally{
-			if(stmt != null){try{stmt.close();}catch(Exception e){e.printStackTrace();}}
+			if(stmt != null){try{stmt.close();}catch(Exception e){lg.error(e);}}
 		}
 	}
 	

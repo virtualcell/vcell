@@ -122,7 +122,7 @@ public class SolverPostprocessor  {
 				try {
 					vcMessagingService.close();
 				} catch (VCMessagingException e) {
-					e.printStackTrace();
+					lg.error(e);
 				}
 			}
 			ApplicationTerminator.beginCountdown(TimeUnit.SECONDS, 10,0);

@@ -139,10 +139,10 @@ private ReactionParticipant getReactionParticipant(QueryHashtable dbc, Connectio
 //		try {
 //			((FluxReaction) rs).setFluxCarrier(speciesContext.getSpecies(), null);
 //		}catch (ModelException e){
-//			e.printStackTrace(System.out);
+//			lg.error(e);
 //			throw new DataAccessException("ModelException: "+e.getMessage());
 //		}catch (PropertyVetoException e){
-//			e.printStackTrace(System.out);
+//			lg.error(e);
 //			throw new DataAccessException("PropertyVetoException: "+e.getMessage());
 //		}
 //	}
@@ -169,7 +169,7 @@ private ReactionParticipant[] getReactionParticipants(QueryHashtable dbc, Connec
 			" FROM " + reactPartTable.getTableName() + 
 			" WHERE " + reactPartTable.reactStepRef + " = " + reactStepID;
 
-//System.out.println(sql);
+//lg.info(sql);
 
 	java.util.Vector rpList = new java.util.Vector();
 	Statement stmt = con.createStatement();
@@ -406,7 +406,7 @@ public Species getSpecies(QueryHashtable dbc, Connection con, KeyValue speciesID
 			" FROM " + speciesTable.getTableName() + 
 			" WHERE " + speciesTable.id + " = " + speciesID;
 
-	//System.out.println(sql);
+	//lg.info(sql);
 
 	Statement stmt = con.createStatement();
 	try {
@@ -446,7 +446,7 @@ public Species[] getSpecies(QueryHashtable dbc, Connection con,User user) throws
 				" AND " + SpeciesContextModelTable.table.speciesRef.getQualifiedColName() +" = " + speciesTable.id.getQualifiedColName() +
 				" ORDER BY "+ speciesTable.commonName.getQualifiedColName();
 
-	//System.out.println(sql);
+	//lg.info(sql);
 
 	Statement stmt = con.createStatement();
 	java.util.Vector speciesList = new java.util.Vector();
@@ -542,7 +542,7 @@ public Structure getStructure(QueryHashtable dbc, Connection con, KeyValue struc
 			" FROM " + structTable.getTableName() +
 			" WHERE " + structTable.id.getQualifiedColName() + " = " + structureKey;
 
-//System.out.println(sql);
+//lg.info(sql);
 
 	Statement stmt = con.createStatement();
 	Structure struct = null;
@@ -746,7 +746,7 @@ public Structure[] getStructuresFromModel(QueryHashtable dbc, Connection con,Key
 						" = " + 
 						structTable.getTableName() + "." + structTable.id;
 
-	//System.out.println(sql);
+	//lg.info(sql);
 
 	//Connection con = conFact.getConnection();
 	Vector<Structure> structList = new Vector<Structure>();
@@ -812,7 +812,7 @@ private void insertReactionParticipantSQL(InsertHashtable hash, Connection con, 
 			reactPartTable.getSQLColumnList() + " VALUES " + 
 			reactPartTable.getSQLValueList(hash, key, reactionParticipant, reactStepKey);
 
-//System.out.println(sql);
+//lg.info(sql);
 
 	updateCleanSQL(con,sql);
 	//Statement stat = con.createStatement();
@@ -927,7 +927,7 @@ public KeyValue insertSpecies(InsertHashtable hash, Connection con,cbit.vcell.mo
 	sql = "INSERT INTO " + speciesTable.getTableName() + " " + 
 			speciesTable.getSQLColumnList() + " VALUES " + 
 			speciesTable.getSQLValueList(key, ownerKey, species);
-//System.out.println(sql);
+//lg.info(sql);
 
 	updateCleanSQL(con,sql);
 	hash.put(species,key);
@@ -967,7 +967,7 @@ public KeyValue insertStructure(InsertHashtable hash, Connection con, cbit.vcell
 //	" SET " + structTable.getSQLUpdateList(parentKey, insideKey, outsideKey) + 
 //	" WHERE " + structTable.id.getUnqualifiedColName() + " = " + structKey;
 
-//System.out.println(sql);
+//lg.info(sql);
 
 	updateCleanSQL(con,sql);
 	hash.put(structure,key);
@@ -993,7 +993,7 @@ public void updateStructureKeys(Connection con, StructureKeys structureKeys) thr
 					  structTable.posFeatureRef.getUnqualifiedColName() + " = "+posFeatureKey + " " +
 			" WHERE " + structTable.id.getQualifiedColName() + " = " + structKey;	
 
-//System.out.println(sql);
+//lg.info(sql);
 
 	updateCleanSQL(con,sql);
 }

@@ -56,7 +56,7 @@ public void stopService() {
 						vcMessagingService_int.close();
 					}
 				} catch (VCMessagingException e) {
-					e.printStackTrace();
+					lg.error(e);
 				}
 			}
 		};
@@ -67,7 +67,7 @@ public void stopService() {
 						vcMessagingService_sim.close();
 					}
 				} catch (VCMessagingException e) {
-					e.printStackTrace();
+					lg.error(e);
 				}
 			}
 		};

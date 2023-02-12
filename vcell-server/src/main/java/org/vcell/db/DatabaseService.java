@@ -14,6 +14,8 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.ServiceConfigurationError;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.scijava.SciJava;
 import org.vcell.db.spi.Database;
 
@@ -23,6 +25,7 @@ import cbit.vcell.resource.PropertyLoader;
  * Service for database connection factory
  */
 public class DatabaseService {
+	private static final Logger lg = LogManager.getLogger(DatabaseService.class);
 	
 	private static DatabaseService service;
 	private SciJava scijava;
@@ -56,7 +59,7 @@ public class DatabaseService {
 			}
 			throw new SQLException("no database provider found");
 		} catch (ServiceConfigurationError serviceError){
-			serviceError.printStackTrace();
+			lg.error(serviceError);
 			throw new SQLException("database provider configuration error: "+serviceError.getMessage(),serviceError);
 		}
 	}

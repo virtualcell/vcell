@@ -15,7 +15,6 @@ public class PostgresConnectionFactoryProvider implements Database {
 		try {
 			return new PostgresConnectionFactory(argDriverName, argConnectURL, argUserid, argPassword);
 		} catch (Exception e) {
-			e.printStackTrace();
 			throw new RuntimeException("failed to create OraclePoolingConnectionFactory: "+e.getMessage(),e);
 		}
 	}
