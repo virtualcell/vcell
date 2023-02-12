@@ -129,7 +129,7 @@ public class MathVerifier {
             try {
                 this.conFactory.close();
             } catch (Exception e) {
-                e.printStackTrace();
+                lg.error(e);
             }
         }
 
@@ -438,7 +438,7 @@ public class MathVerifier {
                         simContextNewMath.getGeometry().getGeometrySurfaceDescription().updateAll();
                     }
                 } catch (Exception e) {
-                    e.printStackTrace(System.out);
+                    lg.error(e);
                 }
 
                 //
@@ -457,13 +457,13 @@ public class MathVerifier {
                 }
 
                 mathCompareResults_latest = MathDescription.testEquivalency(SimulationSymbolTable.createMathSymbolTableFactory(), origMathDesc, newMathDesc);
-                System.out.println(">>>BioModel(" + bioModelFromDB.getVersion().getVersionKey() + ") '" + bioModelFromDB.getName() + "':" + bioModelFromDB.getVersion().getDate() + ", Application(" + simContextFromDB.getKey() + ") '" + simContextFromDB.getName() + "' <<EQUIV=" + mathCompareResults_latest.isEquivalent() + ">>: " + mathCompareResults_latest.toDatabaseStatus());
+                lg.info(">>>BioModel(" + bioModelFromDB.getVersion().getVersionKey() + ") '" + bioModelFromDB.getName() + "':" + bioModelFromDB.getVersion().getDate() + ", Application(" + simContextFromDB.getKey() + ") '" + simContextFromDB.getName() + "' <<EQUIV=" + mathCompareResults_latest.isEquivalent() + ">>: " + mathCompareResults_latest.toDatabaseStatus());
                 MathDescription mathDesc_4_8 = null;
                 try {
                     mathDesc_4_8 = new MathMapping_4_8(simContextNewMath).getMathDescription();
                     mathCompareResults_4_8 = MathDescription.testEquivalency(SimulationSymbolTable.createMathSymbolTableFactory(), origMathDesc, mathDesc_4_8);
                 } catch (Exception e) {
-                    e.printStackTrace(System.out);
+                    lg.error(e);
                     mathCompareResults_4_8 = new MathCompareResults(Decision.MathDifferent_FAILURE_UNKNOWN, e.getMessage());
                 }
 
@@ -513,7 +513,7 @@ public class MathVerifier {
                                             null,
                                             mathCompareResults_4_8.isEquivalent(),
                                             mathCompareResults_4_8.toDatabaseStatus());
-                            System.out.println(INSERTSTATUS);
+                            lg.info(INSERTSTATUS);
                             int numRowsInserted = stmt.executeUpdate(INSERTSTATUS);
                             if (numRowsInserted != 1){
                                 lg.warn("failed to insert status for simcontext: "+simContextFromDB.getKey());
@@ -547,7 +547,7 @@ public class MathVerifier {
                                 " WHERE " + SimContextStat2Table.table.simContextRef.getUnqualifiedColName() + " = " + simContextFromDB.getKey();
                         int numRowsChanged = stmt.executeUpdate(UPDATESTATUS);
                         if (numRowsChanged != 1) {
-                            System.out.println("failed to update status with exception");
+                            lg.info("failed to update status with exception");
                         }
                         con.commit();
                         if (lg.isTraceEnabled())
@@ -589,7 +589,7 @@ public class MathVerifier {
                                     " WHERE " + SimStatTable.table.simRef.getUnqualifiedColName() + " = " + appSimsFromDB[l].getKey();
                             int numRowsChanged = stmt.executeUpdate(UPDATESTATUS);
                             if (numRowsChanged != 1) {
-                                System.out.println("failed to update status");
+                                lg.info("failed to update status");
                             }
                             con.commit();
                             if (lg.isTraceEnabled())
@@ -619,7 +619,7 @@ public class MathVerifier {
                                     " WHERE " + SimStatTable.table.simRef.getUnqualifiedColName() + " = " + appSimsFromDB[l].getKey();
                             int numRowsChanged = stmt.executeUpdate(UPDATESTATUS);
                             if (numRowsChanged != 1) {
-                                System.out.println("failed to update status with exception");
+                                lg.info("failed to update status with exception");
                             }
                             con.commit();
                             if (lg.isTraceEnabled())
@@ -755,7 +755,7 @@ public class MathVerifier {
                     simContextNewMath.getGeometry().getGeometrySurfaceDescription().updateAll();
                 }
             } catch (Exception e) {
-                e.printStackTrace(System.out);
+                lg.error(e);
             }
 
             //
@@ -781,7 +781,7 @@ public class MathVerifier {
             try {
                 mathCompareResults_4_8 = MathDescription.testEquivalency(SimulationSymbolTable.createMathSymbolTableFactory(), origMathDesc, mathDesc_4_8);
             } catch (Exception e) {
-                e.printStackTrace(System.out);
+                lg.error(e);
                 mathCompareResults_4_8 = new MathCompareResults(Decision.MathDifferent_FAILURE_UNKNOWN, e.getMessage());
             }
             return new MathGenerationResults(bioModelFromDB, simContextFromDB, origMathDesc, mathDesc_latest, mathCompareResults_latest, mathDesc_4_8, mathCompareResults_4_8);
@@ -999,9 +999,9 @@ public class MathVerifier {
                     Compare.loggingEnabled = true;
                 }
                 bSameSelfCachedRoundtrip = VCMLComparator.compareEquals(xmlRndTrip0, xmlRndTrip1, true);
-                System.out.println("----------XML same=" + bSameSelfCachedRoundtrip);
+                lg.info("----------XML same=" + bSameSelfCachedRoundtrip);
                 boolean objectSame = bioModelRndTrip0.compareEqual(bioModelRndTrip1);
-                System.out.println("----------Objects same=" + objectSame);
+                lg.info("----------Objects same=" + objectSame);
                 bSameSelfCachedRoundtrip = bSameSelfCachedRoundtrip && objectSame;
             } catch (Exception e) {
                 bSameSelfCachedRoundtrip = null;
@@ -1086,14 +1086,13 @@ public class MathVerifier {
                     bSameCachedAndNotCachedXML, bSameCachedAndNotCachedObj, bSameSelfCachedRoundtrip,
                     bSameCachedAndNotCachedXMLExc, bSameCachedAndNotCachedObjExc, bSameSelfXMLCachedRoundtripExc);
         } else {
-            System.out.println("loadOriginalXMLTime=" + null/*loadOriginalXMLTime*/ + " loadUnresolvedTime=" + loadUnresolvedTime);
-            System.out.println("bSameCachedAndNotCachedXML=" + bSameCachedAndNotCachedXML +
+            lg.info("loadOriginalXMLTime=" + null/*loadOriginalXMLTime*/ + " loadUnresolvedTime=" + loadUnresolvedTime);
+            lg.info("bSameCachedAndNotCachedXML=" + bSameCachedAndNotCachedXML +
                     " bSameCachedAndNotCachedObj=" + bSameCachedAndNotCachedObj +
                     " bSameSelfXMLCachedRoundtrip=" + bSameSelfCachedRoundtrip);
-            System.out.println("bSameCachedAndNotCachedXMLExc=" + bSameCachedAndNotCachedXMLExc +
+            lg.info("bSameCachedAndNotCachedXMLExc=" + bSameCachedAndNotCachedXMLExc +
                     "\nbSameCachedAndNotCachedObjExc=" + bSameCachedAndNotCachedObjExc +
                     "\nbSameSelfXMLCachedRoundtripExc=" + bSameSelfXMLCachedRoundtripExc);
-            System.out.println();
         }
     }
 
@@ -1171,7 +1170,7 @@ public class MathVerifier {
                                 simContextNewMath.getGeometry().getGeometrySurfaceDescription().updateAll();
                             }
                         } catch (Exception e) {
-                            e.printStackTrace(System.out);
+                            lg.error(e);
                         }
 
                         //
@@ -1211,7 +1210,7 @@ public class MathVerifier {
                                         " WHERE " + SimContextStat2Table.table.simContextRef.getUnqualifiedColName() + " = " + simContextFromDB.getKey();
                                 int numRowsChanged = stmt.executeUpdate(UPDATESTATUS);
                                 if (numRowsChanged != 1) {
-                                    System.out.println("failed to update status");
+                                    lg.info("failed to update status");
                                 }
                                 con.commit();
                                 if (lg.isTraceEnabled())
@@ -1242,7 +1241,7 @@ public class MathVerifier {
                                         " WHERE " + SimContextStat2Table.table.simContextRef.getUnqualifiedColName() + " = " + simContextFromDB.getKey();
                                 int numRowsChanged = stmt.executeUpdate(UPDATESTATUS);
                                 if (numRowsChanged != 1) {
-                                    System.out.println("failed to update status with exception");
+                                    lg.info("failed to update status with exception");
                                 }
                                 con.commit();
                                 if (lg.isTraceEnabled())
@@ -1284,7 +1283,7 @@ public class MathVerifier {
                                             " WHERE " + SimStatTable.table.simRef.getUnqualifiedColName() + " = " + appSimsFromDB[l].getKey();
                                     int numRowsChanged = stmt.executeUpdate(UPDATESTATUS);
                                     if (numRowsChanged != 1) {
-                                        System.out.println("failed to update status");
+                                        lg.info("failed to update status");
                                     }
                                     con.commit();
                                     if (lg.isTraceEnabled())
@@ -1315,7 +1314,7 @@ public class MathVerifier {
                                             " WHERE " + SimStatTable.table.simRef.getUnqualifiedColName() + " = " + appSimsFromDB[l].getKey();
                                     int numRowsChanged = stmt.executeUpdate(UPDATESTATUS);
                                     if (numRowsChanged != 1) {
-                                        System.out.println("failed to update status with exception");
+                                        lg.info("failed to update status with exception");
                                     }
                                     con.commit();
                                     if (lg.isTraceEnabled())
@@ -1447,7 +1446,7 @@ public class MathVerifier {
                                 simContextNewMath.getGeometry().getGeometrySurfaceDescription().updateAll();
                             }
                         } catch (Exception e) {
-                            e.printStackTrace(System.out);
+                            lg.error(e);
                         }
 
                         //
@@ -1487,7 +1486,7 @@ public class MathVerifier {
                                         " WHERE " + SimContextStat2Table.table.simContextRef.getUnqualifiedColName() + " = " + simContextFromDB.getKey();
                                 int numRowsChanged = stmt.executeUpdate(UPDATESTATUS);
                                 if (numRowsChanged != 1) {
-                                    System.out.println("failed to update status");
+                                    lg.info("failed to update status");
                                 }
                                 con.commit();
                                 if (lg.isTraceEnabled())
@@ -1518,7 +1517,7 @@ public class MathVerifier {
                                         " WHERE " + SimContextStat2Table.table.simContextRef.getUnqualifiedColName() + " = " + simContextFromDB.getKey();
                                 int numRowsChanged = stmt.executeUpdate(UPDATESTATUS);
                                 if (numRowsChanged != 1) {
-                                    System.out.println("failed to update status with exception");
+                                    lg.info("failed to update status with exception");
                                 }
                                 con.commit();
                                 if (lg.isTraceEnabled())
@@ -1557,7 +1556,7 @@ public class MathVerifier {
                                             " WHERE " + SimStatTable.table.simRef.getUnqualifiedColName() + " = " + appSimsFromDB[l].getKey();
                                     int numRowsChanged = stmt.executeUpdate(UPDATESTATUS);
                                     if (numRowsChanged != 1) {
-                                        System.out.println("failed to update status");
+                                        lg.info("failed to update status");
                                     }
                                     con.commit();
                                     if (lg.isTraceEnabled())
@@ -1588,7 +1587,7 @@ public class MathVerifier {
                                             " WHERE " + SimStatTable.table.simRef.getUnqualifiedColName() + " = " + appSimsFromDB[l].getKey();
                                     int numRowsChanged = stmt.executeUpdate(UPDATESTATUS);
                                     if (numRowsChanged != 1) {
-                                        System.out.println("failed to update status with exception");
+                                        lg.info("failed to update status with exception");
                                     }
                                     con.commit();
                                     if (lg.isTraceEnabled())
@@ -1622,7 +1621,7 @@ public class MathVerifier {
                                 " WHERE " + SimContextStat2Table.table.simContextRef.getUnqualifiedColName() + " = " + simContextKey;
                         int numRowsChanged = stmt.executeUpdate(UPDATESTATUS);
                         if (numRowsChanged != 1) {
-                            System.out.println("failed to update status with exception");
+                            lg.info("failed to update status with exception");
                         }
                         con.commit();
                         if (lg.isTraceEnabled())

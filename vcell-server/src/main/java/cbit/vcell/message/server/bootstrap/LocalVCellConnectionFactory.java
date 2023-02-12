@@ -113,7 +113,7 @@ private void linkHDFLib( ) {
 			FileFormat.addFileFormat(FileFormat.FILE_TYPE_HDF5, fileformat);
 		}
 	} catch(Throwable t) {
-		t.printStackTrace();
+		lg.error(t);
 	}
 }
 }

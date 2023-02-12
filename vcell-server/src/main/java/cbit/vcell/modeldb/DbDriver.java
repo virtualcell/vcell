@@ -229,7 +229,7 @@ public static KeyValue savePublicationRep(Connection con,PublicationRep publicat
 				try {
 					updateCleanSQL(con, "INSERT INTO "+PublicationModelLinkTable.table.getTableName()+" VALUES ("+keyFactory.nextSEQ()+","+pubID.toString()+","+bioModelReferenceRep.getBmKey().toString()+",NULL)");
 				} catch (Exception e) {
-					e.printStackTrace();
+					lg.error(e);
 					throw new SQLException("Error inserting biomodelKey="+bioModelReferenceRep.getBmKey().toString()+" link to publicationID="+pubID.toString()+"\n"+e.getMessage(),e);
 				}
 			}
@@ -239,7 +239,7 @@ public static KeyValue savePublicationRep(Connection con,PublicationRep publicat
 				try {
 					updateCleanSQL(con, "INSERT INTO "+PublicationModelLinkTable.table.getTableName()+" VALUES ("+keyFactory.nextSEQ()+","+pubID.toString()+",NULL,"+mathModelReferenceRep.getMmKey().toString()+")");
 				} catch (Exception e) {
-					e.printStackTrace();
+					lg.error(e);
 					throw new SQLException("Error inserting mathmodelKey="+mathModelReferenceRep.getMmKey().toString()+" link to publicationID="+pubID.toString()+"\n"+e.getMessage(),e);
 				}
 			}
@@ -257,7 +257,7 @@ private static String parseWittid(String wittid) throws DataAccessException{
 	try {
 		return new Long(wittid).toString();
 	} catch (NumberFormatException e) {
-		e.printStackTrace();
+		lg.error(e);
 		throw new DataAccessException("Error parsing wittid='"+wittid+"', expecting integer.");
 	}
 }
@@ -322,7 +322,7 @@ public static void cleanupDeletedReferences(Connection con,User user,ExternalDat
 //				")"+
 //		")";
 			if(bPrintOnly){
-				System.out.println(sql+";");
+				lg.info(sql+";");
 			}else{
 				updateCleanSQL(con, sql);
 			}
@@ -378,7 +378,7 @@ public static void cleanupDeletedReferences(Connection con,User user,ExternalDat
 //				")"+
 //		")";
 			if(bPrintOnly){
-				System.out.println(sql+";");
+				lg.info(sql+";");
 			}else{
 				updateCleanSQL(con, sql);
 			}
@@ -398,7 +398,7 @@ public static void cleanupDeletedReferences(Connection con,User user,ExternalDat
 				MathDescExternalDataLinkTable.table.extDataRef+" = "+extDataIDKey.toString()+
 			")";
 			if(bPrintOnly){
-				System.out.println(sql+";");
+				lg.info(sql+";");
 			}else{
 				updateCleanSQL(con, sql);
 			}
@@ -440,7 +440,7 @@ public static void cleanupDeletedReferences(Connection con,User user,ExternalDat
 //				" WHERE "+SimulationTable.table.versionParentSimRef_ColumnName+" IS NOT NULL"+	
 //		")";
 //	if(bPrintOnly){
-//		System.out.println(sql+";");
+//		lg.info(sql+";");
 //	}else{
 //		updateCleanSQL(con, sql);
 //	}
@@ -456,7 +456,7 @@ public static void cleanupDeletedReferences(Connection con,User user,ExternalDat
 //			" FROM "+BioModelSimContextLinkTable.table.getTableName()+
 //		")";	
 //	if(bPrintOnly){
-//		System.out.println(sql+";");
+//		lg.info(sql+";");
 //	}else{
 //		updateCleanSQL(con, sql);
 //	}
@@ -485,7 +485,7 @@ public static void cleanupDeletedReferences(Connection con,User user,ExternalDat
 //			" WHERE "+SimulationTable.table.mathRef.getQualifiedColName()+" IS NOT NULL	"+	
 //		")";										
 //	if(bPrintOnly){
-//		System.out.println(sql+";");
+//		lg.info(sql+";");
 //	}else{
 //		updateCleanSQL(con, sql);
 //	}
@@ -506,7 +506,7 @@ public static void cleanupDeletedReferences(Connection con,User user,ExternalDat
 //			" FROM "+MathDescTable.table.getTableName()+				
 //		")";										
 //	if(bPrintOnly){
-//		System.out.println(sql+";");
+//		lg.info(sql+";");
 //	}else{
 //		updateCleanSQL(con, sql);
 //	}
@@ -522,7 +522,7 @@ public static void cleanupDeletedReferences(Connection con,User user,ExternalDat
 //			" FROM "+SimContextTable.table.getTableName()+			
 //		")";										
 //	if(bPrintOnly){
-//		System.out.println(sql+";");
+//		lg.info(sql+";");
 //	}else{
 //		updateCleanSQL(con, sql);
 //	}
@@ -1413,7 +1413,7 @@ public static VCInfoContainer getVCInfoContainer(User user,Connection con, Datab
 	//										}
 	//									}
 	//		//							if(scanCount > 1) {
-	//		//								System.out.println("bmid="+bmID+" simid="+simID+" scans="+scanCount+" "+simName);
+	//		//								lg.info("bmid="+bmID+" simid="+simID+" scans="+scanCount+" "+simName);
 	//		//							}
 										bmInfo.addMathOverrides(simName, mathOverrideElements);
 									}
@@ -1430,7 +1430,7 @@ public static VCInfoContainer getVCInfoContainer(User user,Connection con, Datab
 					}
 					
 				}catch(Exception e) {
-					e.printStackTrace();
+					lg.error(e);
 					//ignore
 				}
 			}
@@ -1548,7 +1548,7 @@ public static VCInfoContainer getVCInfoContainer(User user,Connection con, Datab
 						rset.close();
 					}
 				}catch(Exception e) {
-					e.printStackTrace();
+					lg.error(e);
 					//ignore
 				}
 			}
@@ -1629,7 +1629,7 @@ public static VCInfoContainer getVCInfoContainer(User user,Connection con, Datab
 			bm_mm_VCDocumentInfos.addAll(Arrays.asList((mathModelInfos!=null?mathModelInfos:new MathModelInfo[0])));
 			DbDriver.addPublicationInfos(con, stmt, bm_mm_VCDocumentInfos);
 		} catch (Exception e) {
-			e.printStackTrace();
+			lg.error(e);
 			//Don't fail if something goes wrong with setting publication info
 		}
 	}finally{
@@ -1672,7 +1672,7 @@ public static void addPublicationInfos(Connection con,Statement stmt,Vector<Vers
 			" vc_mathmodel.id=vc_publicationmodellink.mathmodelref and vc_userinfo.id=vc_mathmodel.ownerref"+
 			" and vc_publication.id=vc_publicationmodellink.pubref and vc_publicationmodellink.pubref is not null"+
 			" and vc_publicationmodellink.mathmodelref is not null");
-	System.out.println(sql);
+	lg.info(sql);
 	ResultSet rset = null;
 	try {
 		rset = stmt.executeQuery(sql);
@@ -1690,7 +1690,7 @@ public static void addPublicationInfos(Connection con,Statement stmt,Vector<Vers
 				//publicationInfoArr.add(publicationInfo);
 		}
 	} catch (Exception e) {
-		e.printStackTrace();
+		lg.error(e);
 		throw new DataAccessException(DbDriver.class.getName()+".getPublicationInfo(...) Error -"+e.getMessage(), e);
 	}finally {
 		if(rset != null) {rset.close();}
@@ -1755,7 +1755,7 @@ public static Vector<VersionInfo> getVersionableInfos(Connection con,User user, 
 	optimizedSQL.insert(7, Table.SQL_GLOBAL_HINT);
 	sql = optimizedSQL.toString();
 	//
-	//System.out.println("getVersionableInfo--->"+sql);
+	//lg.info("getVersionableInfo--->"+sql);
 	VersionInfo vInfo;
 	Vector<VersionInfo> vInfoList = new Vector<VersionInfo>();
 	//Connection con = conFact.getConnection();
@@ -1794,7 +1794,7 @@ public static Vector<VersionInfo> getVersionableInfos(Connection con,User user, 
 		try {
 			DbDriver.addPublicationInfos(con, stmt, vInfoList);
 		} catch (Exception e) {
-			e.printStackTrace();
+			lg.error(e);
 			//Don't fail if something goes wring with setting publication info
 		}
 	} finally {
@@ -2024,7 +2024,7 @@ public static void groupAddUser(Connection con, KeyFactory keyFactory, User owne
 	String cond = vTable.id.getQualifiedColName() + " = " + vKey;
 				//" AND " + vTable.ownerRef.getQualifiedColName() + " = " + owner.getID();
 	sql = DatabasePolicySQL.enforceOwnershipUpdate(owner,vTable,set,cond);
-//System.out.println(sql);
+//lg.info(sql);
 	int numRowsProcessed = updateCleanSQL(con, sql);
 	
 	if (numRowsProcessed != 1){
@@ -2152,7 +2152,7 @@ public static void groupRemoveUser(Connection con,KeyFactory keyFactory, User ow
 	String cond = vTable.id.getQualifiedColName() + " = " + vKey;
 				//" AND " + vTable.ownerRef.getQualifiedColName() + " = " + owner.getID();
 	sql = DatabasePolicySQL.enforceOwnershipUpdate(owner,vTable,set,cond);
-//System.out.println(sql);
+//lg.info(sql);
 	int numRowsProcessed = updateCleanSQL(con, sql);
 	
 	if (numRowsProcessed != 1){
@@ -2188,7 +2188,7 @@ public static void groupSetPrivate(Connection con,User owner,
 	String set = vTable.privacy.getUnqualifiedColName() + " = " + updatedGroupID;
 	String cond = vTable.id.getQualifiedColName() + " = " + vKey;
 	String sql = DatabasePolicySQL.enforceOwnershipUpdate(owner,vTable,set,cond);
-//System.out.println(sql);
+//lg.info(sql);
 	int numRowsProcessed = updateCleanSQL(con, sql);
 	if (numRowsProcessed != 1){
 		//
@@ -2224,7 +2224,7 @@ public static void groupSetPublic(Connection con,User owner,
 	String cond = vTable.id.getQualifiedColName() + " = " + vKey;
 				//" AND " + vTable.ownerRef.getQualifiedColName() + " = " + owner.getID();
 	String sql = DatabasePolicySQL.enforceOwnershipUpdate(owner,vTable,set,cond);
-//System.out.println(sql);
+//lg.info(sql);
 	int numRowsProcessed = updateCleanSQL(con, sql);
 	if (numRowsProcessed != 1){
 		//
@@ -2412,7 +2412,7 @@ protected static boolean isNameUsed(Connection con, VersionableType vType, User 
 
 	boolean bNameUsed = false;
 	
-//System.out.println(sql);
+//lg.info(sql);
 	Statement stmt = con.createStatement();
 	try {
 		ResultSet rset = stmt.executeQuery(sql);
@@ -2524,7 +2524,7 @@ protected void setVersioned(Connection con, User user,Versionable versionable) t
 public static void showMetaData(ResultSet rset) throws SQLException {
 	ResultSetMetaData metaData = rset.getMetaData();
 	for (int i = 1; i <= metaData.getColumnCount(); i++) {
-		System.out.println("column(" + i + ") = " + metaData.getColumnName(i));
+		lg.info("column(" + i + ") = " + metaData.getColumnName(i));
 	}
 }
 
@@ -2589,7 +2589,7 @@ public static TestSuiteNew testSuiteGet(BigDecimal getThisTS,Connection con,User
 			v.add(new VariableComparisonSummary(varName,minRef,maxRef,absError,relError,mse,timeAbsError,indexAbsError,timeRelError,indexRelError));
 //counter+= 1;
 		}
-//System.out.println("VCS count="+counter+" time="+((System.currentTimeMillis()-begTime)/1000));
+//lg.info("VCS count="+counter+" time="+((System.currentTimeMillis()-begTime)/1000));
 		rset.close();
 		}
 		
@@ -2623,7 +2623,7 @@ public static TestSuiteNew testSuiteGet(BigDecimal getThisTS,Connection con,User
 			TFTestCriteriaTable.table.simulationRef.getQualifiedColName()+"="+SimulationTable.table.id.getQualifiedColName()+
 			" ORDER BY UPPER("+SimulationTable.table.name.getQualifiedColName()+")";
 			
-//System.out.println(sql);
+//lg.info(sql);
 		rset = stmt.executeQuery(sql);
 		while(rset.next()){
 			BigDecimal tcritKey = rset.getBigDecimal(TFTestCriteriaTable.table.id.getUnqualifiedColName());
@@ -2704,7 +2704,7 @@ public static TestSuiteNew testSuiteGet(BigDecimal getThisTS,Connection con,User
 			}
 //counter+= 1;
 		}
-//System.out.println("TCrit count="+counter+" time="+((System.currentTimeMillis()-begTime)/1000));
+//lg.info("TCrit count="+counter+" time="+((System.currentTimeMillis()-begTime)/1000));
 		rset.close();
 		}
 
@@ -2740,7 +2740,7 @@ public static TestSuiteNew testSuiteGet(BigDecimal getThisTS,Connection con,User
 							" AND " +
 							TFTestCaseTable.table.bmAppRef.getQualifiedColName()+" IS NOT NULL ";
 			
-//System.out.println(sql);
+//lg.info(sql);
 		rset = stmt.executeQuery(sql);
 		while(rset.next()){
 			BigDecimal tcritKey = rset.getBigDecimal(TFTestCriteriaTable.table.id.getUnqualifiedColName());
@@ -2834,7 +2834,7 @@ public static TestSuiteNew testSuiteGet(BigDecimal getThisTS,Connection con,User
 			}
 //counter+= 1;
 		}
-//System.out.println("TCrit count="+counter+" time="+((System.currentTimeMillis()-begTime)/1000));
+//lg.info("TCrit count="+counter+" time="+((System.currentTimeMillis()-begTime)/1000));
 		rset.close();
 		}
 		
@@ -2972,7 +2972,7 @@ public static TestSuiteNew testSuiteGet(BigDecimal getThisTS,Connection con,User
 			
 //counter+= 1;
 		}
-//System.out.println("TCase count="+counter+" time="+((System.currentTimeMillis()-begTime)/1000));
+//lg.info("TCase count="+counter+" time="+((System.currentTimeMillis()-begTime)/1000));
 		rset.close();
 		
 		}
@@ -4572,7 +4572,7 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 
 	Object[] changedTSKeys = changedTestSuiteKeys.toArray();
 	for(int i=0;i<changedTSKeys.length;i+= 1){
-		System.out.println("TestSuite "+changedTSKeys[i].toString()+" changed");
+		lg.info("TestSuite "+changedTSKeys[i].toString()+" changed");
 		//testSuiteHash.remove(changedTSKeys[i]);
 	}
 	return new TestSuiteOPResults(null);
@@ -4592,7 +4592,7 @@ protected final static void updateCleanLOB(Connection con,String conditionalColu
 					" WHERE "+conditionalColumnName+" = " + conditionalValue +
 					" FOR UPDATE OF " + table+"."+column.getUnqualifiedColName();
 		//
-		//System.out.println(sql);
+		//lg.info(sql);
 		//
 		Statement s = con.createStatement();
 		try {

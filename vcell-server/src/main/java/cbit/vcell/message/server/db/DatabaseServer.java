@@ -163,7 +163,7 @@ public static void main(java.lang.String[] args) {
 		DatabaseServer databaseServer = new DatabaseServer(serviceInstanceStatus, databaseServerImpl, vcMessagingService, false);
         databaseServer.init();
     } catch (Throwable e) {
-	    e.printStackTrace(System.out); 
+	    lg.error(e);
     }
 }
 

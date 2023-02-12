@@ -120,7 +120,7 @@ public TreeMap<User.SPECIAL_CLAIM,TreeMap<User,String>> getSpecialUsers(User use
 	try {
 		return dbTop.getSpecialUsers(user,true);
 	} catch (Exception e) {
-		e.printStackTrace();
+		lg.error(e);
 		throw new DataAccessException(e.getMessage(),e);
 	}
 }
@@ -129,7 +129,7 @@ public void cleanupDatabase() throws DataAccessException {
 	try {
 		dbTop.cleanupDatabase(true);
 	} catch (DataAccessException | SQLException e) {
-		e.printStackTrace();
+		lg.error(e);
 		throw new DataAccessException(e.getMessage(),e);
 	}
 }

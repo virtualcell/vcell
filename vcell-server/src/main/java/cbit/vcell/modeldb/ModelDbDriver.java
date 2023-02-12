@@ -179,7 +179,7 @@ private cbit.vcell.model.Diagram[] getDiagramsFromModel(QueryHashtable dbc, Conn
 	XmlReader.reorderDiagramsInPlace_UponRead(vCellSoftwareVersion, diagramArray, structureTopology);
 
 //	//Check this----------------------------
-//	System.out.println("-------------------------------------------Starting Diagram check------------------------------------------------------------------------");
+//	lg.info("-------------------------------------------Starting Diagram check------------------------------------------------------------------------");
 //	int count = 0;
 //	boolean bOrderMatched = true;
 //	sql = 	" SELECT *" + 
@@ -191,7 +191,7 @@ private cbit.vcell.model.Diagram[] getDiagramsFromModel(QueryHashtable dbc, Conn
 //		ResultSet rset = stmt.executeQuery(sql);
 //		while(rset.next()){
 //			Diagram diagram = getDiagram(dbc, con,rset, structureTopology);
-//			System.out.println(rset.getBigDecimal(diagramTable.id.getUnqualifiedColName())+" "+
+//			lg.info(rset.getBigDecimal(diagramTable.id.getUnqualifiedColName())+" "+
 //					"ord='"+diagram.getStructure().getName()+"' "+
 //					"unord='"+diagramArray[count].getStructure().getName()+"' "+
 //					rset.getString(diagramTable.name.getUnqualifiedColName())+" "+
@@ -206,7 +206,7 @@ private cbit.vcell.model.Diagram[] getDiagramsFromModel(QueryHashtable dbc, Conn
 //		stmt.close();
 //	}
 //	if(!bOrderMatched){
-//		System.out.println("Order not match!!!!!");
+//		lg.info("Order not match!!!!!");
 //	}
 //	//----------------------------------------
 	return diagramArray;
@@ -389,7 +389,7 @@ public SpeciesContext getSpeciesContext(QueryHashtable dbc, Connection con, KeyV
 			" FROM " + speciesContextModelTable.getTableName() + 
 			" WHERE " + speciesContextModelTable.id + " = " + speciesContextID;
 
-	//System.out.println(sql);
+	//lg.info(sql);
 
 	Statement stmt = con.createStatement();
 	try {
@@ -470,7 +470,7 @@ private SpeciesContext[] getSpeciesContextFromModel(QueryHashtable dbc, Connecti
 			" WHERE " + speciesContextModelTable.getTableName()+"."+speciesContextModelTable.modelRef+" = "+modelKey +
 			" ORDER BY " + speciesContextModelTable.id;
 	
-//System.out.println(sql);
+//lg.info(sql);
 	//Connection con = conFact.getConnection();
 	Vector<SpeciesContext> speciesContextList = new Vector<SpeciesContext>();
 	Statement stmt = con.createStatement();
@@ -656,7 +656,7 @@ private void insertModel(InsertHashtable hash, Connection con,User user ,Model m
 //		Model.ModelParameter testParam = model.new ModelParameter("test",new Expression("1.0"),Model.ROLE_UserDefined,VCUnitDefinition.UNIT_molecules);
 //		model.setModelParameters(new Model.ModelParameter[] {testParam});
 //	}catch(Exception e){
-//		e.printStackTrace();
+//		lg.error(e);
 //	}
 //	//-----------------
 	
@@ -671,7 +671,7 @@ private void insertModelSQL(Connection con,User user, Model model,Version newVer
 	String rbmXmlStr = ModelTable.getRbmForDatabase(model);
 	Object[] o = {model,rbmXmlStr};
 	sql = DatabasePolicySQL.enforceOwnershipInsert(user,modelTable,o,newVersion,dbSyntax);
-//System.out.println(sql);
+//lg.info(sql);
 	
 	if (rbmXmlStr!=null){
 		varchar2_CLOB_update(
@@ -696,7 +696,7 @@ private void insertModelStructLinkSQL(Connection con, KeyValue key, KeyValue mod
 	sql = 	"INSERT INTO " + modelStructLinkTable.getTableName() + " " + 
 				modelStructLinkTable.getSQLColumnList() + 
 			" VALUES " + modelStructLinkTable.getSQLValueList(key, modelKey, structKey);
-//System.out.println(sql);
+//lg.info(sql);
 
 	updateCleanSQL(con,sql);
 }
@@ -708,7 +708,7 @@ private void insertSpeciesContextSQL(InsertHashtable hash, Connection con, KeyVa
 	sql = "INSERT INTO " + speciesContextModelTable.getTableName() + " " + 
 			speciesContextModelTable.getSQLColumnList() + " VALUES " + 
 			speciesContextModelTable.getSQLValueList(hash, key, speciesContext, modelKey);
-//System.out.println(sql);
+//lg.info(sql);
 
 	updateCleanSQL(con,sql);
 	hash.put(speciesContext,key);

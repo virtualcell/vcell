@@ -87,7 +87,7 @@ public User.SpecialUser getUserFromUserid(Connection con, String userid) throws 
 					specials.add(User.SPECIAL_CLAIM.fromDatabase(special));
 				}catch(Exception e) {
 					//keep going
-					e.printStackTrace();
+					lg.error(e);
 				}
 			}
 		}
@@ -118,7 +118,7 @@ public User getUserFromUseridAndPassword(Connection con, String userid, UserLogi
 			" FROM " + userTable.getTableName() + 
 			" WHERE " + UserTable.table.userid + " = '" + userid + "'";
 			
-	//System.out.println(sql);
+	//lg.info(sql);
 	
 	User user = null;
 	try {
@@ -170,7 +170,7 @@ public User getUserFromUseridAndPassword(Connection con, String userid, UserLogi
 			}
 		}
 	} finally {
-		if(stmt != null){try{stmt.close();}catch(Exception e){e.printStackTrace();}}
+		if(stmt != null){try{stmt.close();}catch(Exception e){lg.error(e);}}
 	}
 	return user;
 }
@@ -206,7 +206,7 @@ public void sendLostPassword(Connection con,String userid) throws SQLException, 
 			"Your password has been reset to '"+clearTextPassword+"'.  Login with the new password and change your password as soon as possible.  To change your password, log into VCell and select Account->'Update Registration Info...' from the Top Menu.  Enter a new password where indicated."
 		);
 	} catch (Exception e) {
-		e.printStackTrace();
+		lg.error(e);
 		throw new DataAccessException("Error sending lost password\n"+e.getMessage(),e);
 	}
 	
@@ -224,7 +224,7 @@ public UserInfo getUserInfo(Connection con, KeyValue key) throws SQLException, D
 			" FROM " + userTable.getTableName() + 
 			" WHERE " + userTable.id + " = " + key;
 
-	//System.out.println(sql);
+	//lg.info(sql);
 
 	//Connection con = conFact.getConnection();
 	Statement stmt = con.createStatement();
@@ -234,7 +234,7 @@ public UserInfo getUserInfo(Connection con, KeyValue key) throws SQLException, D
 
 		//  	ResultSetMetaData metaData = rset.getMetaData();
 		//  	for (int i=1;i<=metaData.getColumnCount();i++){
-		//	  	System.out.println("column("+i+") = "+metaData.getColumnName(i));
+		//	  	lg.info("column("+i+") = "+metaData.getColumnName(i));
 		//  	}
 		if (rset.next()){
 			userInfo = userTable.getUserInfo(rset);
@@ -257,7 +257,7 @@ public UserInfo[] getUserInfos(Connection con) throws SQLException, DataAccessEx
 	String sql;
 	sql = " SELECT " + " * " + " FROM " + userTable.getTableName();
 
-	//System.out.println(sql);
+	//lg.info(sql);
 
 	//Connection con = conFact.getConnection();
 	Statement stmt = con.createStatement();
@@ -267,7 +267,7 @@ public UserInfo[] getUserInfos(Connection con) throws SQLException, DataAccessEx
 
 		//  	ResultSetMetaData metaData = rset.getMetaData();
 		//  	for (int i=1;i<=metaData.getColumnCount();i++){
-		//	  	System.out.println("column("+i+") = "+metaData.getColumnName(i));
+		//	  	lg.info("column("+i+") = "+metaData.getColumnName(i));
 		//  	}
 		userList = new java.util.Vector<UserInfo>();
 		UserInfo userInfo;
@@ -344,7 +344,7 @@ private void removeUserInfoSQL(Connection con, User user) throws SQLException {
 	sql = "DELETE FROM " + userTable.getTableName() +
 			" WHERE " + userTable.id+" = "+user.getID();
 			
-//System.out.println(sql);
+//lg.info(sql);
 
 	DbDriver.updateCleanSQL(con, sql);
 }
@@ -372,7 +372,7 @@ private void updateUserInfoSQL(Connection con, UserInfo userInfo) throws SQLExce
 			" SET "   + userTable.getSQLUpdateList(userInfo) + 
 			" WHERE " + userTable.id     + " = " + userInfo.id;
 
-//System.out.println(sql);
+//lg.info(sql);
 			
 	DbDriver.updateCleanSQL(con,sql);
 }
@@ -481,7 +481,7 @@ public ApiAccessToken getApiAccessToken(Connection con, String accessToken) thro
 			" WHERE " + userTable.id.getQualifiedColName() + " = " + tokenTable.userref +
 			" AND " + tokenTable.accesstoken + " = '" + accessToken + "'";
 			
-	//System.out.println(sql);
+	//lg.info(sql);
 	stmt = con.createStatement();
 	ApiAccessToken apiAccessToken = null;
 	try {
@@ -509,7 +509,7 @@ public ApiClient getApiClient(Connection con, String clientId) throws SQLExcepti
 			" FROM " + clientTable.getTableName() + 
 			" WHERE " + clientTable.clientId + " = '" + clientId + "'";
 			
-	//System.out.println(sql);
+	//lg.info(sql);
 	stmt = con.createStatement();
 	ApiClient apiClient = null;
 	try {

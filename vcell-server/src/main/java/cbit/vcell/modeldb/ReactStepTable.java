@@ -172,9 +172,9 @@ public ReactionStep getReactionStep(Structure structure, Model model, KeyValue r
 // for debug purposes only, remove when unresolvedParameters are ok ... when globals exist
 //
 //if (kinetics.getUnresolvedParameters().length!=0){
-//	System.out.println("<<<WARNING>>> ReactStepTable.getReactionStep(key="+rsKey+") has "+kinetics.getUnresolvedParameters().length+" UnresolvedParameters");
+//	lg.info(t.println("<<<WARNING>>> ReactStepTable.getReactionStep(key="+rsKey+") has "+kinetics.getUnresolvedParameters().length+" UnresolvedParameters");
 //	for (int i = 0; i < kinetics.getUnresolvedParameters().length; i++){
-//		System.out.println(">>>>>>>>>>>>> UnresolvedParameter["+i+"] = "+kinetics.getUnresolvedParameters()[i].toString());
+//		lg.info(t.println(">>>>>>>>>>>>> UnresolvedParameter["+i+"] = "+kinetics.getUnresolvedParameters()[i].toString());
 //	}
 //}
 		KineticsParameter chargeValenceParameter = kinetics.getChargeValenceParameter();
@@ -212,7 +212,7 @@ public ReactionStep getReactionStep(Structure structure, Model model, KeyValue r
 		try {
 			rs.setSbmlName(sbmlName);
 		} catch (PropertyVetoException e) {
-			e.printStackTrace();
+			lg.error(e);
 			throw new DataAccessException(e.getMessage(), e);
 		}
 	}

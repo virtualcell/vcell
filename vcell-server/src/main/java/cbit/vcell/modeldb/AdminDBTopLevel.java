@@ -246,7 +246,7 @@ public SimulationJobStatusPersistent[] getSimulationJobStatusArray(KeyValue simK
 private static final String QUERY_VALUE = "QUERY_VALUE";
 private static int htmlWithBreak(String descr,StringBuffer sb,Statement stmt,String query) throws SQLException{
 	sb.append("<br>"+descr);
-	System.out.println(query);
+	lg.info(query);
 	ResultSet rset = stmt.executeQuery(query);
 	int val = 0;
 	if(rset.next()) {
@@ -379,7 +379,7 @@ public synchronized String getBasicStatistics() throws SQLException,DataAccessEx
 		handle_DataAccessException_SQLException(e);
 		return null; // never gets here;
 	} finally {
-		try{if(stmt != null) {stmt.close();}}catch(Exception e) {e.printStackTrace();}
+		try{if(stmt != null) {stmt.close();}}catch(Exception e) {lg.error(e);}
 		conFactory.release(con,lock);
 	}
 	//select vcuserid,count(vc_simulationjob.id) simcount

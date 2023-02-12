@@ -72,14 +72,15 @@ public class SlurmProxy extends HtcProxy {
 				commandService.command(new String[] { "/usr/bin/env bash -c ls | head -5" });
 //				lg.trace("SSH Connection test passed with installed keyfile, running ls as user "+sshUser+" on "+sshHost);
 			} catch (Exception e) {
-				e.printStackTrace();
+				LG.warn(e);
 				try {
 					commandService = new CommandServiceSshNative(htcDispatchHostNames.toArray(new String[0]),sshUser,sshKeyFile,new File("/root"));
 					CommandOutput commandOutput = commandService.command(new String[] { "/usr/bin/env bash -c ls | head -5" });
 //					lg.trace("SSH Connection test passed after installing keyfile, running ls as user "+sshUser+" on "+sshHost);
 				} catch (Exception e2) {
-					e.printStackTrace();
-					throw new RuntimeException("failed to establish an ssh command connection to "+sshHostUserKeyfile[0]+" as user '"+sshUser+"' using key '"+sshKeyFile+"'",e);
+					String msg = "failed to establish an ssh command connection to "+sshHostUserKeyfile[0]+" as user '"+sshUser+"' using key '"+sshKeyFile+"'";
+					LG.error(msg, e2);
+					throw new RuntimeException(msg, e2);
 				}
 			}
 			AbstractSolver.bMakeUserDirs = false; // can't make user directories, they are remote.
@@ -1043,7 +1044,7 @@ public class SlurmProxy extends HtcProxy {
 			//----------
 
 		} catch (IOException ex) {
-			ex.printStackTrace(System.out);
+			LG.error(ex);
 			return null;
 		}
 
@@ -1139,7 +1140,7 @@ public class SlurmProxy extends HtcProxy {
 			FileUtils.copyFile(tempFile, sub_file_internal);
 			tempFile.delete();
 		} catch (IOException ex) {
-			ex.printStackTrace(System.out);
+			LG.error(ex);
 			return null;
 		}
 

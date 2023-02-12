@@ -34,13 +34,13 @@ public class ConsumerContextJms implements Runnable {
 	
 	public void run(){
 		bProcessing = true;
-		System.out.println(toString()+" consumer thread starting.");
+		lg.info(toString()+" consumer thread starting.");
 		while (bProcessing){
 			MessageProducerSessionJms temporaryMessageProducerSession = null;
 			try {
 				Message jmsMessage = jmsMessageConsumer.receive(CONSUMER_POLLING_INTERVAL_MS);
 				if (jmsMessage!=null){
-//						System.out.println(toString()+"===============message received within "+CONSUMER_POLLING_INTERVAL_MS+" ms");
+//						lg.info(toString()+"===============message received within "+CONSUMER_POLLING_INTERVAL_MS+" ms");
 					if (vcConsumer instanceof VCQueueConsumer){
 						VCQueueConsumer queueConsumer = (VCQueueConsumer)vcConsumer;
 						VCMessageJms vcMessage = new VCMessageJms(jmsMessage, vcMessagingServiceJms.getDelegate());
@@ -70,7 +70,7 @@ public class ConsumerContextJms implements Runnable {
 						throw new RuntimeException("unexpected VCConsumer type "+vcConsumer);
 					}
 				}else{
-//						System.out.println(toString()+"no message received within "+CONSUMER_POLLING_INTERVAL_MS+" ms");
+//						lg.info(toString()+"no message received within "+CONSUMER_POLLING_INTERVAL_MS+" ms");
 				}
 			} catch (JMSException e) {
 				onException(e);
@@ -89,7 +89,7 @@ public class ConsumerContextJms implements Runnable {
 				}
 			}
 		}
-		System.out.println(toString()+" consumer thread exiting.");
+		lg.info(toString()+" consumer thread exiting.");
 	}
 	
 	
@@ -105,7 +105,7 @@ public class ConsumerContextJms implements Runnable {
 	public void stop(){
 		if (bProcessing){
 			bProcessing=false;
-			System.out.println(toString()+" consumer thread stop requested");
+			lg.info(toString()+" consumer thread stop requested");
 		}
 	}
 	public void init() throws JMSException {
@@ -122,7 +122,7 @@ public class ConsumerContextJms implements Runnable {
 			this.jmsSession = this.jmsConnection.createSession(bTransacted, acknowledgeMode);
 			this.jmsMessageConsumer = this.vcMessagingServiceJms.createConsumer(this.jmsSession, vcConsumer.getVCDestination(), vcConsumer.getSelector(), vcConsumer.getPrefetchLimit());
 		}catch (JMSException | VCMessagingException e){
-			e.printStackTrace(System.out);
+			lg.error(e);
 			onException(e);
 		}
 	}
