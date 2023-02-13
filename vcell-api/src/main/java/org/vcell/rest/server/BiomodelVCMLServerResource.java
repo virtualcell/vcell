@@ -3,6 +3,8 @@ package org.vcell.rest.server;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.restlet.data.Status;
 import org.restlet.ext.wadl.MethodInfo;
 import org.restlet.ext.wadl.ParameterInfo;
@@ -25,6 +27,7 @@ import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 
 public class BiomodelVCMLServerResource extends AbstractServerResource implements BiomodelVCMLResource {
+	private final static Logger lg = LogManager.getLogger(BiomodelVCMLServerResource.class);
 
 	private String biomodelid;
 	
@@ -96,10 +99,10 @@ public class BiomodelVCMLServerResource extends AbstractServerResource implement
 				String latestVcml = XmlHelper.bioModelToXML(bioModel);
 				return latestVcml;
 			} catch (PermissionException e) {
-				e.printStackTrace();
+				lg.error(e);
 				throw new ResourceException(Status.CLIENT_ERROR_UNAUTHORIZED, "permission denied to requested resource");
 			} catch (ObjectNotFoundException e) {
-				e.printStackTrace();
+				lg.error(e);
 				throw new ResourceException(Status.CLIENT_ERROR_NOT_FOUND, "biomodel not found");
 			} catch (Exception e){
 				throw new ResourceException(Status.SERVER_ERROR_INTERNAL, e.getMessage());

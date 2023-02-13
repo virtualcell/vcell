@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.restlet.data.LocalReference;
 import org.restlet.data.MediaType;
 import org.restlet.data.Reference;
@@ -36,7 +38,8 @@ import cbit.vcell.server.SimpleJobStatus;
 import freemarker.template.Configuration;
 
 public class SimulationTasksServerResource extends AbstractServerResource implements SimulationTasksResource {
-
+	private final static Logger lg = LogManager.getLogger(SimulationTasksServerResource.class);
+	
     public static final String PARAM_USER = "user";
     public static final String PARAM_SIM_ID = "simId";
     public static final String PARAM_JOB_ID = "jobId";
@@ -194,10 +197,10 @@ public class SimulationTasksServerResource extends AbstractServerResource implem
 			} catch (PermissionException ee){
 				throw new ResourceException(Status.CLIENT_ERROR_UNAUTHORIZED, "permission denied to requested resource");
 			} catch (DataAccessException e) {
-				e.printStackTrace();
+				lg.error(e);
 				throw new RuntimeException("failed to retrieve active jobs from VCell Database : "+e.getMessage());
 			} catch (SQLException e) {
-				e.printStackTrace();
+				lg.error(e);
 				throw new RuntimeException("failed to retrieve active jobs from VCell Database : "+e.getMessage());
 			}
 			return simTaskReps.toArray(new SimulationTaskRepresentation[0]);

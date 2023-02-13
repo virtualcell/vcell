@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.restlet.Request;
 import org.restlet.data.Form;
 import org.restlet.data.Status;
@@ -30,6 +32,7 @@ import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 
 public class BiomodelSBMLServerResource extends AbstractServerResource implements BiomodelSBMLResource {
+	private final static Logger lg = LogManager.getLogger(BiomodelSBMLServerResource.class);
 
 	private String biomodelid;
 	private String appName;
@@ -117,7 +120,7 @@ public class BiomodelSBMLServerResource extends AbstractServerResource implement
 			boolean bRoundTripValidation = true;
 			return XmlHelper.exportSBML(simulationContext.getBioModel(), 3, 1, 0, (simulationContext.getGeometryContext().getGeometry().getDimension()>0), simulationContext, null, bRoundTripValidation);
 		} catch (PermissionException e) {
-			e.printStackTrace();
+			lg.error(e);
 			throw new ResourceException(Status.CLIENT_ERROR_UNAUTHORIZED, "permission denied to requested resource");
 		} catch (Exception e){
 			throw new ResourceException(Status.SERVER_ERROR_INTERNAL, e.getMessage());

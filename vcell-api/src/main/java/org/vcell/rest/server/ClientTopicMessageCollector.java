@@ -193,7 +193,6 @@ public void onTopicMessage(VCMessage message, VCMessageSession session) {
 			throw new Exception(this.getClass().getName()+".onControlTopicMessage: Unimplemented message "+message.show());
 		}
 	} catch (Exception e) {
-		e.printStackTrace();
 		lg.error(e.getMessage(),e);
 	}
 }
