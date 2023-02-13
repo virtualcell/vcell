@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.restlet.data.LocalReference;
 import org.restlet.data.MediaType;
 import org.restlet.data.Reference;
@@ -37,6 +39,7 @@ import cbit.vcell.parser.ExpressionException;
 import freemarker.template.Configuration;
 
 public class PublicationsServerResource extends AbstractServerResource implements PublicationsResource {
+	private final static Logger lg = LogManager.getLogger(PublicationsServerResource.class);
 
 	public static final String PARAM_PUB_ID = "pubId";
 	public static final String PARAM_ORDERBY = "orderBy";
@@ -122,10 +125,10 @@ public class PublicationsServerResource extends AbstractServerResource implement
 				publicationRepresentations.add(publicationRepresentation);
 			}
 		} catch (PermissionException ee){
-			ee.printStackTrace();
+			lg.error(ee);
 			throw new ResourceException(Status.CLIENT_ERROR_UNAUTHORIZED, "not authorized");
 		} catch (DataAccessException | SQLException | ExpressionException e) {
-			e.printStackTrace();
+			lg.error(e);
 			throw new RuntimeException("failed to retrieve biomodels from VCell Database : "+e.getMessage());
 		}
 		return publicationRepresentations.toArray(new PublicationRepresentation[0]);

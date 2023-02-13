@@ -43,6 +43,8 @@ import java.util.stream.Collectors;
  */
 public class SimDataVerifier {
 	private static final Logger lg = LogManager.getLogger(SimDataVerifier.class);
+	private static final String VCellTestAccountName = "vcelltestaccount";
+
 
 	private final AdminDBTopLevel adminDbTopLevel;
 	private final DatabaseServerImpl dbServerImpl;
@@ -140,7 +142,7 @@ public class SimDataVerifier {
 	private List<User> selectUserSubsetByName(String startingUsername, boolean bIgnoreTestAccount, Comparator<User> userComparator, Collection<User> allUsers) {
 		List<User> usersToScan = new ArrayList<>();
 		for (User user : allUsers) {
-			if (bIgnoreTestAccount && user.getName().equals(User.VCellTestAccountName)) {
+			if (bIgnoreTestAccount && user.getName().equals(VCellTestAccountName)) {
 				continue;
 			}
 			if (startingUsername != null) { // accept all users starting with the "startingUser"

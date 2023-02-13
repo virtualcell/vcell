@@ -3,6 +3,8 @@ package org.vcell.rest.users;
 import java.io.IOException;
 import java.util.Date;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.restlet.Context;
 import org.restlet.Request;
 import org.restlet.Response;
@@ -22,6 +24,8 @@ import org.vcell.util.document.UserLoginInfo.DigestedPassword;
 import cbit.vcell.resource.PropertyLoader;
 
 public final class LostPasswordRestlet extends Restlet {
+	private final static Logger lg = LogManager.getLogger(LostPasswordRestlet.class);
+
 	public LostPasswordRestlet(Context context) {
 		super(context);
 	}
@@ -29,7 +33,7 @@ public final class LostPasswordRestlet extends Restlet {
 	@Override
 	public void handle(Request request, Response response) {
 		if (request.getMethod().equals(Method.POST)){
-			System.out.println("in LostPasswordRestlet.handle()");
+			lg.info("in LostPasswordRestlet.handle()");
 			String userid = request.getEntityAsText();
 			if (userid==null || userid.length()==0) {
 				response.setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
@@ -47,7 +51,7 @@ public final class LostPasswordRestlet extends Restlet {
 				VCellApiApplication vcellApiApplication = (VCellApiApplication)getApplication();
 				vcellApiApplication.getRestDatabaseService().sendLostPassword(userid);
 			} catch (Exception e) {
-				e.printStackTrace();
+				lg.error(e);
 				response.setStatus(Status.SERVER_ERROR_INTERNAL);
 				response.setEntity("we failed to send a verification email for account '"+userid+"': "+e.getMessage(), MediaType.TEXT_PLAIN);
 				return;

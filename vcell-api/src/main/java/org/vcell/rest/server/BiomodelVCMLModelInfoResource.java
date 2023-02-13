@@ -5,6 +5,8 @@ import java.util.Iterator;
 import java.util.TreeMap;
 
 import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.restlet.data.MediaType;
 import org.restlet.data.Status;
 import org.restlet.representation.StringRepresentation;
@@ -35,7 +37,8 @@ import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 
 public class BiomodelVCMLModelInfoResource extends AbstractServerResource/* implements BiomodelVCMLResource*/ {
-
+	private final static Logger lg = LogManager.getLogger(BiomodelVCMLModelInfoResource.class);
+	
 //	private String biomodelid;
 	
 	
@@ -97,7 +100,7 @@ public class BiomodelVCMLModelInfoResource extends AbstractServerResource/* impl
 			StringBuffer sb = createHtml(bm);
 			return new StringRepresentation(sb.toString(), MediaType.TEXT_HTML);
 		} catch (Exception e) {
-			e.printStackTrace();
+			lg.error(e);
 			if(e instanceof ResourceException) {
 				throw (ResourceException)e;
 			}
@@ -165,10 +168,10 @@ public class BiomodelVCMLModelInfoResource extends AbstractServerResource/* impl
 			BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(cachedVcml.toString()));
 			return bioModel;
 		} catch (PermissionException e) {
-			e.printStackTrace();
+			lg.error(e);
 			throw new ResourceException(Status.CLIENT_ERROR_UNAUTHORIZED, "permission denied to requested resource");
 		} catch (ObjectNotFoundException e) {
-			e.printStackTrace();
+			lg.error(e);
 			throw new ResourceException(Status.CLIENT_ERROR_NOT_FOUND, "biomodel not found");
 		} catch (Exception e){
 			throw new ResourceException(Status.SERVER_ERROR_INTERNAL, e.getMessage());
@@ -188,10 +191,10 @@ public class BiomodelVCMLModelInfoResource extends AbstractServerResource/* impl
 			}
 			throw new Exception("VCDocument named '"+modelName+"'"+" not found");
 		} catch (PermissionException e) {
-			e.printStackTrace();
+			lg.error(e);
 			throw new ResourceException(Status.CLIENT_ERROR_UNAUTHORIZED, "permission denied to requested resource");
 		} catch (ObjectNotFoundException e) {
-			e.printStackTrace();
+			lg.error(e);
 			throw new ResourceException(Status.CLIENT_ERROR_NOT_FOUND, "biomodel not found");
 		} catch (Exception e){
 			throw new ResourceException(Status.SERVER_ERROR_INTERNAL, e.getMessage());

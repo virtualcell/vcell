@@ -415,7 +415,7 @@ shift
 
 if [ "$skip_maven" == "false" ]; then
 	pushd ../..
-	mvn -Dmaven.repo.local=$mvn_repo clean install dependency:copy-dependencies -DskipTests=true
+	mvn --batch-mode -Dmaven.repo.local=$mvn_repo clean install dependency:copy-dependencies -DskipTests=true
 	popd
 fi
 

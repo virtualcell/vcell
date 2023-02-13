@@ -3,6 +3,8 @@ package org.vcell.rest;
 import java.sql.SQLException;
 import java.util.logging.Level;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.restlet.Request;
 import org.restlet.Response;
 import org.restlet.data.ChallengeResponse;
@@ -22,6 +24,7 @@ import cbit.vcell.modeldb.ApiAccessToken;
 import cbit.vcell.modeldb.ApiClient;
 
 public class VCellCookieAuthenticator extends CookieAuthenticator {
+	private final static Logger lg = LogManager.getLogger(VCellCookieAuthenticator.class);
 	
 	private VCellApiApplication vcellApiApplication = null;
 
@@ -60,10 +63,10 @@ public class VCellCookieAuthenticator extends CookieAuthenticator {
 
 	        response.redirectSeeOther(Reference.decode(redirectURL.getValue()));
 		} catch (SQLException e) {
-			e.printStackTrace();
+			lg.error(e);
 			getLogger().log(Level.SEVERE,"MyCookieAuthenticator.login(request,response) - exception",e);
 		} catch (DataAccessException e) {
-			e.printStackTrace();
+			lg.error(e);
 			getLogger().log(Level.SEVERE,"MyCookieAuthenticator.login(request,response) - exception",e);
 		}
 	}
@@ -82,7 +85,7 @@ public class VCellCookieAuthenticator extends CookieAuthenticator {
 	        }
 
 		}catch (Exception e){
-			e.printStackTrace(System.out);
+			lg.error(e);
 			getLogger().log(Level.SEVERE,"MyCookieAuthenticator.logout(request,response) - exception while invalidating '"+CustomAuthHelper.ACCESS_TOKEN+"'",e);
 		}
 		
