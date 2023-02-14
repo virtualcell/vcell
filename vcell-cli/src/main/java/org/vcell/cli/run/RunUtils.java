@@ -14,7 +14,6 @@ import cbit.vcell.solver.*;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.util.ColumnDescription;
 import com.google.common.io.Files;
-import ncsa.hdf.hdf5lib.exceptions.HDF5Exception;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jlibsedml.*;
@@ -23,10 +22,9 @@ import org.jlibsedml.Simulation;
 import org.jlibsedml.execution.IXPathToVariableIDResolver;
 import org.jlibsedml.modelsupport.SBMLSupport;
 import org.vcell.cli.CLIUtils;
-import org.vcell.cli.run.hdf5.*;
 import org.vcell.stochtest.TimeSeriesMultitrialData;
-import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.GenericExtensionFilter;
 import org.vcell.util.document.User;
 
 import org.apache.logging.log4j.LogManager;
@@ -38,10 +36,15 @@ import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+/**
+ * Static class with a series of runtime utilities. Needs to be properly docummented still
+ */
 public class RunUtils {
 
     public final static String VCELL_TEMP_DIR_PREFIX = "vcell_temp_";
     private final static Logger logger = LogManager.getLogger(RunUtils.class);
+
+    private RunUtils(){} // Static class, no instances allowed
 
     public static ODESolverResultSet interpolate(ODESolverResultSet odeSolverResultSet, UniformTimeCourse sedmlSim) throws ExpressionException {
         double outputStart = sedmlSim.getOutputStartTime();
@@ -583,13 +586,15 @@ public class RunUtils {
             sb.append("\n");
         }
 
-
+        PrintWriter out = null;
         try {
-            PrintWriter out = new PrintWriter(f);
+            out = new PrintWriter(f);
             out.print(sb.toString());
             out.flush();
         } catch (FileNotFoundException e) {
             logger.error("Unable to find path, failed with err: " + e.getMessage(), e);
+        } finally {
+            if (out != null) out.close();
         }
 
     }
@@ -604,6 +609,19 @@ public class RunUtils {
                 f.delete();
             }
         }
+    }
+
+    public static boolean containsExtension(String folder, String ext) {
+        GenericExtensionFilter filter = new GenericExtensionFilter(ext);
+        File dir = new File(folder);
+        if (dir.isDirectory() == false) {
+            return false;
+        }
+        String[] list = dir.list(filter);
+        if (list.length > 0) {
+            return true;
+        }
+        return false;
     }
 
     public static void saveTimeSeriesMultitrialDataAsCSV(TimeSeriesMultitrialData data, File outDir) {
@@ -653,13 +671,15 @@ public class RunUtils {
         }
 
         String csvAsString = allRowsBuilder.toString();
-
+        PrintWriter out = null;
         try {
-            PrintWriter out = new PrintWriter(outFile);
+            out = new PrintWriter(outFile);
             out.print(csvAsString);
             out.flush();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
+        } finally {
+            if (out != null) out.close();
         }
 
     }

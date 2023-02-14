@@ -1,4 +1,4 @@
-package org.vcell.cli.run.hdf5.rewrite;
+package org.vcell.cli.run.hdf5;
 
 import java.util.Arrays;
 import java.util.List;
@@ -7,15 +7,12 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.jlibsedml.Variable;
-
-import org.vcell.cli.run.hdf5.Hdf5DatasetWrapper;
-import org.vcell.cli.run.hdf5.Hdf5DataSourceSpatial;
-import org.vcell.cli.run.hdf5.Hdf5DataSourceNonspatial;
-import org.vcell.cli.run.hdf5.Hdf5DataSourceSpatialVarDataItem;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+/**
+ * Static data preparation class for Hdf5 files
+ */
 public class Hdf5DataPreparer {
     private final static Logger logger = LogManager.getLogger(Hdf5File.class);
 
@@ -25,10 +22,22 @@ public class Hdf5DataPreparer {
         public double[] flattenedDataBuffer;
     }
 
+    /**
+     * Spacial Data has a special attribute called "times". This function extracts that value
+     * 
+     * @param datasetWrapper
+     * @return the times data
+     */
     public static double[] getSpacialHdf5Attribute_Times(Hdf5DatasetWrapper datasetWrapper){
         return ((Hdf5DataSourceSpatial)datasetWrapper.dataSource).varDataItems.get(0).times;
     }
 
+    /**
+     * Reads a `Hdf5DatasetWrapper` contents and generates `Hdf5PreparedData` with spacial data for writing out to Hdf5 format via Hdf5Writer
+     * 
+     * @param datasetWrapper the data relevant to an hdf5 output file
+     * @return the prepared spacial data
+     */
     public static Hdf5PreparedData prepareSpacialData (Hdf5DatasetWrapper datasetWrapper){
         Hdf5DataSourceSpatial dataSourceSpatial = (Hdf5DataSourceSpatial)datasetWrapper.dataSource; 
         logger.debug(dataSourceSpatial);
@@ -44,7 +53,7 @@ public class Hdf5DataPreparer {
         int numJobs = 1;
 
         if (numTimes != spaceTimeDimensions[spaceTimeDimensions.length-1]){
-            throw new RuntimeException("unexpected dimension "+spaceTimeDimensions+" for data, expected last dimension to be that of time: "+numTimes);
+            throw new RuntimeException("unexpected dimension " + spaceTimeDimensions + " for data, expected last dimension to be that of time: " + numTimes);
         }
         
         
@@ -92,16 +101,14 @@ public class Hdf5DataPreparer {
         preparedData.dataDimensions = dataDimensions;
         preparedData.flattenedDataBuffer = bigDataBuffer;
         return preparedData;
-
-        //String datasetPath = Paths.get(sedmlUri, datasetWrapper.datasetMetadata.sedmlId).toString();
-        //int hdf5DataspaceID = H5.H5Screate_simple(dataDimensions.length, dataDimensions, null);
-        //int hdf5DatasetID = H5.H5Dcreate(jobGroupID, File.separator + datasetPath, HDF5Constants.H5T_NATIVE_DOUBLE, hdf5DataspaceID, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
-        //int hdf5DatasetID = H5.H5Dcreate(jobGroupID, File.separator + datasetWrapper.datasetMetadata.sedmlId, HDF5Constants.H5T_NATIVE_DOUBLE, hdf5DataspaceID, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
-        //H5.H5Dwrite_double(hdf5DatasetID, HDF5Constants.H5T_NATIVE_DOUBLE, HDF5Constants.H5S_ALL, HDF5Constants.H5S_ALL, HDF5Constants.H5P_DEFAULT, (double[])bigDataBuffer);
-
-        //Hdf5Utils.insertAttributes(hdf5DatasetID, "times", firstVarDataItem.times);
     }
 
+    /**
+     * Reads a `Hdf5DatasetWrapper` contents and generates `Hdf5PreparedData` with nonspacial data for writing out to Hdf5 format via Hdf5Writer
+     * 
+     * @param datasetWrapper the data relevant to an hdf5 output file
+     * @return the prepared nonspacial data
+     */
     public static Hdf5PreparedData prepareNonspacialData(Hdf5DatasetWrapper datasetWrapper){
         Hdf5DataSourceNonspatial dataSourceNonspatial = (Hdf5DataSourceNonspatial) datasetWrapper.dataSource;
         Map<Variable, double[]> varDataMap = dataSourceNonspatial.jobData.get(0).varData;
@@ -110,10 +117,10 @@ public class Hdf5DataPreparer {
         long numTimePoints = varDataMap.get(vars.get(0)).length;
 
         List<Long> dataDimensionList = new ArrayList<>();
-        int numJobs = 1;
+        //int numJobs = 1;
         for (int scanBound : dataSourceNonspatial.scanBounds){
             dataDimensionList.add((long)scanBound+1);
-            numJobs *= (scanBound+1);
+            //numJobs *= (scanBound+1);
         }
         dataDimensionList.add(numVariablesPerJob);
         dataDimensionList.add(numTimePoints);
@@ -141,11 +148,5 @@ public class Hdf5DataPreparer {
         preparedData.dataDimensions = dataDimensions;
         preparedData.flattenedDataBuffer = bigDataBuffer;
         return preparedData;
-
-        //String datasetPath = Paths.get(sedmlUri, datasetWrapper.datasetMetadata.sedmlId).toString();
-        //int hdf5DataspaceID = H5.H5Screate_simple(dataDimensions.length, dataDimensions, null);
-        //int hdf5DatasetID = H5.H5Dcreate(jobGroupID, File.separator + datasetPath, HDF5Constants.H5T_NATIVE_DOUBLE, hdf5DataspaceID, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
-        //H5.H5Dwrite_double(hdf5DatasetID, HDF5Constants.H5T_NATIVE_DOUBLE, HDF5Constants.H5S_ALL, HDF5Constants.H5S_ALL, HDF5Constants.H5P_DEFAULT, (double[])bigDataBuffer);
-                    
     }
 }

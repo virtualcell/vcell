@@ -1,4 +1,4 @@
-package org.vcell.cli.run.hdf5.rewrite;
+package org.vcell.cli.run.hdf5;
 //import ncsa.hdf.hdf5lib.*;
 
 import java.io.File;
@@ -19,13 +19,13 @@ import ncsa.hdf.hdf5lib.exceptions.HDF5LibraryException;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.vcell.cli.run.hdf5.rewrite.Hdf5DataPreparer.Hdf5PreparedData;
+import org.vcell.cli.run.hdf5.Hdf5DataPreparer.Hdf5PreparedData;
 
 /**
- * Class to handle Hdf5 creation and I/O.
+ * Class to handle Hdf5 creation, data, and assist with I/O.
  */
 public class Hdf5File {
-
+    // NB: Hdf5 group management is ***important***.
     private final static Logger logger = LogManager.getLogger(Hdf5File.class);
 
     final private int H5F_ACC_TRUNC = HDF5Constants.H5F_ACC_TRUNC;
@@ -41,8 +41,8 @@ public class Hdf5File {
     private int fileId;
     private boolean isOpen, allowExceptions;
 
-    // Hdf5 group management is important.
-    // TODO: create actual java Bimap implementation(s) with accompaning java interface
+    
+    // TODO: create actual java Bimap implementation(s) with accompaning java interface (good intro task for new appdevI hires?)
     private Map<Integer, String> idToPathMap;
     private Map<String, Integer> pathToIdMap;
     private Map<Integer, Integer> datasetToDataspaceMap;
@@ -51,18 +51,23 @@ public class Hdf5File {
         this.fileId = HDF5Constants.H5I_INVALID_HID;
         this.isOpen = false;
 
-        // Explicit generic typing to elaborate relationship; this is a "bi-map":
+        // Explicit generic typing to highlight relationship; this is a "bi-map":
         this.idToPathMap = new HashMap<Integer, String>();
         this.pathToIdMap = new HashMap<String, Integer>();
         this.datasetToDataspaceMap = new HashMap<>();
     }
 
+    /**
+     * Creates an Hdf5File named "reports.h5" in the provided directory, and will throw exceptions where c-style error codes would be returned.
+     * 
+     * @param parentDir the directory to put the Hdf5 file inside of.
+     */
     public Hdf5File(File parentDir) { //"/home/ldrescher/VCell/hdf5Rebuild/testingDir"
         this(parentDir, true);
     }
 
     /**
-     * The main constructor for Hdf5File. Note the special interpretation of enableExceptions
+     * The main constructor for Hdf5File. Note the special interpretation of allowExceptions.
      * 
      * @param parentDir the directory to put the Hdf5 file inside of.
      * @param allowExceptions Whether to interperate C-style error codes as exceptions or let the user handle them.
@@ -72,16 +77,38 @@ public class Hdf5File {
         this(parentDir, "reports.h5", allowExceptions);
     }
 
+    /**
+     * Complete constructor of `Hdf5File`
+     * 
+     * @param parentDir the directory to put the Hdf5 file inside of.
+     * @param filename name of the h5 file to write.
+     * @param allowExceptions Whether to interperate C-style error codes as exceptions or let the user handle them.
+     *                        Hdf5 Library-produced exceptions will still be generated regardless.
+     */
     public Hdf5File(File parentDir, String filename, boolean allowExceptions){
         this();
         this.javaFileTarget = new File(parentDir, filename);
         this.allowExceptions = allowExceptions;
     }
 
+    /**
+     * Opens the Hdf5 file
+     * 
+     * @throws HDF5LibraryException
+     * @throws IOException
+     */
     public void open() throws HDF5LibraryException, IOException {
         this.open(true);
     }
 
+    /**
+     * Opens the Hdf5 file if and only the file does not already exist
+     * 
+     * @param overwrite allow an overwrite of an existing file
+     * @return the HDF5 id number of the file
+     * @throws HDF5LibraryException
+     * @throws IOException
+     */
     public int open(boolean overwrite) throws HDF5LibraryException, IOException {
         String path = this.javaFileTarget.getCanonicalPath();
         int accessMod = overwrite ? H5F_ACC_TRUNC: H5F_ACC_EXCL;
@@ -294,6 +321,12 @@ public class Hdf5File {
 
         return this.fileId < 0 ? this.fileId : (this.fileId = H5.H5Fclose(this.fileId));
     }
+
+
+
+    //----------------------------------------------------------------------------------------------------------------
+
+
 
     private int createVLStringDatatype() {
         int datatypeId = H5I_INVALID_HID;

@@ -15,6 +15,11 @@ import java.util.concurrent.TimeoutException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+/**
+ * Singleton class that manages VCell CLI's interaction with the `cli.py` external python calls
+ * 
+ * The general operation of this class is opening a single, dedicated, interative python session, and running all commands through it.
+ */
 public class CLIPythonManager {
     /*
      * NOTES:
@@ -23,11 +28,10 @@ public class CLIPythonManager {
      *      To prevent this, we catch the prefix to Python's prompt for a new command (">>> ") to stop before we wait for etinity and break our program.
      */
 
-    private final static Logger logger = LogManager.getLogger(CLIPythonManager.class);
+    private static final Logger logger = LogManager.getLogger(CLIPythonManager.class);
 
-    public static final Path currentWorkingDir = Paths.get("").toAbsolutePath();
-
-    private static final String pythonExeName = OperatingSystemInfo.getInstance().isWindows() ? "python" : "python3";
+    public static final Path CURRENT_WORKING_DIR = Paths.get("").toAbsolutePath();
+    private static final String PYTHON_EXE_NAME = OperatingSystemInfo.getInstance().isWindows() ? "python" : "python3";
 
     private static CLIPythonManager instance = null;
 
@@ -35,6 +39,10 @@ public class CLIPythonManager {
     private OutputStreamWriter pythonOSW; 	// input channel *to* python interpreter (see above)
     private BufferedReader pythonISB; 		// output channel ("Input Stream Buffer") *from* python interpreter (see above)
 
+    /**
+     * Retrieve the Python Manager, or create and return if it doesn't exist.
+     * @return
+     */
     public static CLIPythonManager getInstance(){
         logger.trace("Getting Python instance");
         if (instance == null){
@@ -43,67 +51,40 @@ public class CLIPythonManager {
         return instance;
     }
 
-    // returns parsed interpreter return
+    /**
+     * Call one of the python functions in cli.py, and get it's return
+     * 
+     * @param functionName name of the pythonFucntion to call
+     * @param arguments the arugments to provide to the function call, each as their own string, in the correct order
+     * @return the return response from Python
+     * @throws PythonStreamException if there is any exception encountered in this exchange.
+     */
     public String callPython(String functionName, String... arguments) throws PythonStreamException {
         return this.callPython(this.formatPythonFuctionCall(functionName, arguments));
     }
 
-    private String callPython(String command) throws PythonStreamException {
-        String returnString = "";
-        try {
-            this.instantiatePythonProcess(); // Make sure we have a python instance; calling will not override an existing intance
-            this.sendNewCommand(command);
-            returnString = this.getResultsOfLastCommand();
-        } catch (IOException | InterruptedException | TimeoutException e){
-            throw new PythonStreamException("Python process encounted an exception:\n" + e);
-        }
-        return returnString;
-    }
-
+    /**
+     * 
+     * @param cliCommand the commmand to run
+     * @param sedmlPath path to the sedml file
+     * @param resultOutDir where to put the results
+     * @throws InterruptedException if the python process was interrupted
+     * @throws IOException if there was a system IO failure
+     */
     @Deprecated
     public static void callNonsharedPython(String cliCommand, String sedmlPath, String resultOutDir) throws InterruptedException, IOException {
         logger.warn("Using old style python invocation!");
         Path cliWorkingDir = Paths.get(PropertyLoader.getRequiredProperty(PropertyLoader.cliWorkingDir));
         Path cliPath = Paths.get(cliWorkingDir.toString(), "vcell_cli_utils", "cli.py");
-        ProcessBuilder pb = new ProcessBuilder(new String[]{pythonExeName, cliPath.toString(), cliCommand, sedmlPath, resultOutDir});
-        runAndPrintProcessStreams(pb, "","");
+        ProcessBuilder pb = new ProcessBuilder(new String[]{PYTHON_EXE_NAME, cliPath.toString(), cliCommand, sedmlPath, resultOutDir});
+        CLIPythonManager.runAndPrintProcessStreams(pb, "","");
     }
 
-    private void executeThroughPython(String command) throws PythonStreamException {
-        String results = callPython(command);
-        this.parsePythonReturn(results);
-    }
-
-    private int checkPythonInstallation() {
-        String version = "--version", stdOutLog;
-        ProcessBuilder processBuilder;
-        Process process;
-        int exitCode = -10;
-        BufferedReader bufferedReader;
-        StringBuilder stringBuilder = new StringBuilder();
-
-        try {
-            processBuilder = execShellCommand(new String[]{pythonExeName, version});
-            process = processBuilder.start();
-            exitCode = process.waitFor();
-            if (exitCode == 0) {
-                bufferedReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-                while ((stdOutLog = bufferedReader.readLine()) != null) {
-                    stringBuilder.append(stdOutLog);
-                    // search string can be one or more... (potential python 2.7.X bug here?) Maybe use regex?
-                    if (!stringBuilder.toString().toLowerCase().startsWith("python 3")) throw new PythonStreamException();
-                    logger.debug(String.format("Python initialized as version %s", stringBuilder.toString().split(" ")[1]));
-                }
-            }
-        } catch (PythonStreamException e) {
-            logger.error("Please check your local Python and PIP Installation, install required packages and versions", e);
-            throw new MissingResourceException("Error validating Python installation:\n" + e.getMessage(), "Python 3.9+", "");
-        } catch (IOException | InterruptedException e) {
-            logger.error("System produced " + e.getClass().getSimpleName() + " when trying to validate Python.", e);
-        }
-        return exitCode;
-    }
-
+    /**
+     * Shuts down the python session and cleans up.
+     * 
+     * @throws IOException if there is a system IO issue.
+     */
     public void closePythonProcess() throws IOException {
         // Exit the living Python Process
         logger.debug("Closing Python Instance");
@@ -122,7 +103,10 @@ public class CLIPythonManager {
 
     // Python Process Accessory Methods
     /**
-     * Facilitates the construction of the python instance connection
+     * Facilitates the construction of the python instance connection. This is done automatically with `callPython`, so use this 
+     * as means of installation verification.
+     * 
+     * @throws IOException
      */
     public void instantiatePythonProcess() throws IOException {
         if (this.pythonProcess != null) return; // prevent override
@@ -132,7 +116,7 @@ public class CLIPythonManager {
         // install virtual environment
         // e.g. source /Users/schaff/Library/Caches/pypoetry/virtualenvs/vcell-cli-utils-g4hrdDfL-py3.9/bin/activate
 
-        // Start Python
+        // Start poetry based Python
         ProcessBuilder pb = new ProcessBuilder("poetry", "run", "python", "-i", "-W ignore");
         pb.redirectErrorStream(true);
         File cliWorkingDir = PropertyLoader.getRequiredDirectory(PropertyLoader.cliWorkingDir).getCanonicalFile();
@@ -153,6 +137,18 @@ public class CLIPythonManager {
         }
     }
 
+    // Needs properly formatted python command
+    private String callPython(String command) throws PythonStreamException {
+        String returnString = "";
+        try {
+            this.instantiatePythonProcess(); // Make sure we have a python instance; calling will not override an existing intance
+            this.sendNewCommand(command);
+            returnString = this.getResultsOfLastCommand();
+        } catch (IOException | InterruptedException | TimeoutException e){
+            throw new PythonStreamException("Python process encounted an exception:\n" + e.getMessage(), e);
+        }
+        return returnString;
+    }
 
     private String getResultsOfLastCommand() throws IOException, TimeoutException, InterruptedException {
         String importantPrefix = ">>> ";
@@ -178,7 +174,6 @@ public class CLIPythonManager {
         return results == "" ? null : results;
     }
 
-
     private void sendNewCommand(String cmd) throws IOException {
         // we can easily send the command, but we need to format it first.
 
@@ -186,6 +181,42 @@ public class CLIPythonManager {
         logger.trace("Sent cmd to Python: " + command);
         pythonOSW.write(command);
         pythonOSW.flush();
+    }
+
+    // Helper method for easy, local calling.
+    private void executeThroughPython(String command) throws PythonStreamException {
+        String results = callPython(command);
+        this.parsePythonReturn(results);
+    }
+
+    private int checkPythonInstallation() {
+        String version = "--version", stdOutLog;
+        ProcessBuilder processBuilder;
+        Process process;
+        int exitCode = -10;
+        BufferedReader bufferedReader;
+        StringBuilder stringBuilder = new StringBuilder();
+
+        try {
+            processBuilder = execShellCommand(new String[]{PYTHON_EXE_NAME, version});
+            process = processBuilder.start();
+            exitCode = process.waitFor();
+            if (exitCode == 0) {
+                bufferedReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                while ((stdOutLog = bufferedReader.readLine()) != null) {
+                    stringBuilder.append(stdOutLog);
+                    // search string can be one or more... (potential python 2.7.X bug here?) Maybe use regex?
+                    if (!stringBuilder.toString().toLowerCase().startsWith("python 3")) throw new PythonStreamException();
+                    logger.debug(String.format("Python initialized as version %s", stringBuilder.toString().split(" ")[1]));
+                }
+            }
+        } catch (PythonStreamException e) {
+            logger.error("Please check your local Python and PIP Installation, install required packages and versions", e);
+            throw new MissingResourceException("Error validating Python installation:\n" + e.getMessage(), "Python 3.9+", "");
+        } catch (IOException | InterruptedException e) {
+            logger.error("System produced " + e.getClass().getSimpleName() + " when trying to validate Python.", e);
+        }
+        return exitCode;
     }
 
     private static ProcessBuilder execShellCommand(String[] args) {
@@ -198,8 +229,8 @@ public class CLIPythonManager {
 
     public static void runAndPrintProcessStreams(ProcessBuilder pb, String outString, String errString) throws InterruptedException, IOException {
         // Process printing code goes here
-        File of = File.createTempFile("temp-", ".out", currentWorkingDir.toFile());
-        File ef = File.createTempFile("temp-", ".err", currentWorkingDir.toFile());
+        File of = File.createTempFile("temp-", ".out", CURRENT_WORKING_DIR.toFile());
+        File ef = File.createTempFile("temp-", ".err", CURRENT_WORKING_DIR.toFile());
         pb.redirectError(ef);
         pb.redirectOutput(of);
         Process process = pb.start();
@@ -238,7 +269,7 @@ public class CLIPythonManager {
             return;
         }
 
-        if (
+        if (    // time for complex error checking
                 (returnedString.length() >= ERROR_PHRASE1.length() && ERROR_PHRASE1.equals(returnedString.substring(0, ERROR_PHRASE1.length())))
             ||  (returnedString.length() >= ERROR_PHRASE2.length() && ERROR_PHRASE2.equals(returnedString.substring(0, ERROR_PHRASE2.length())))
             ||  (returnedString.contains("File \"<stdin>\""))
@@ -261,7 +292,7 @@ public class CLIPythonManager {
         String argList = "";
         int adjArgLength;
         for (String arg : arguments){
-            argList += "r\"\"\"" + CLIUtils.stripString(arg) + "\"\"\",";
+            argList += "r\"\"\"" + CLIUtils.stripString(arg) + "\"\"\","; // python r-string
         }
         adjArgLength = argList.length() == 0 ? 0 : argList.length() - 1;
         return argList.substring(0, adjArgLength);

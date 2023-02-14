@@ -2,12 +2,8 @@ package org.vcell.cli.run.hdf5;
 
 import cbit.vcell.resource.NativeLib;
 import ncsa.hdf.hdf5lib.exceptions.HDF5Exception;
-import org.vcell.cli.run.hdf5.rewrite.Hdf5DataPreparer;
-import org.vcell.cli.run.hdf5.rewrite.Hdf5File;
-import org.vcell.cli.run.hdf5.rewrite.Hdf5DataPreparer.Hdf5PreparedData;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import org.vcell.cli.run.hdf5.Hdf5DataPreparer.Hdf5PreparedData;
 import java.util.*;
 import java.io.File;
 import java.io.IOException;
@@ -15,26 +11,23 @@ import java.io.IOException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+/**
+ * Static class for writing out Hdf5 formatted files
+ */
 public class Hdf5Writer {
 
     private final static Logger logger = LogManager.getLogger(Hdf5Writer.class);
 
-    private Hdf5Writer(){
-        
-    }
+    private Hdf5Writer(){} // Static class = no instances allowed
 
-    public static Map<String, Integer> generateGroupsMap(String sedmlLocation){
-        Map<String, Integer> pathToGroupIDTranslator = new HashMap<>();
-        Path pathRelativeToCombineArchive = Paths.get(sedmlLocation);
-        logger.info("Processing: " + pathRelativeToCombineArchive.toString());
-        
-        do {
-            pathToGroupIDTranslator.put(pathRelativeToCombineArchive.toString(), null);
-        } while ((pathRelativeToCombineArchive = pathRelativeToCombineArchive.getParent()) != null);
-
-        return pathToGroupIDTranslator;
-    }
-
+    /**
+     * Writes an Hdf5 formatted file given a hdf5FileWrapper and a destination to write the file to.
+     * 
+     * @param hdf5FileWrapper
+     * @param outDirForCurrentSedml
+     * @throws HDF5Exception
+     * @throws IOException
+     */
     public static void writeHdf5(Hdf5DataWrapper hdf5FileWrapper, File outDirForCurrentSedml) throws HDF5Exception, IOException {
         Hdf5File masterHdf5 = null;
 

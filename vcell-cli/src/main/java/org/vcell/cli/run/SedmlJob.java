@@ -14,7 +14,6 @@ import org.vcell.cli.run.hdf5.Hdf5WrapperFactory;
 import org.vcell.cli.run.hdf5.Hdf5DataWrapper;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.FileUtils;
-import org.vcell.util.GenericExtensionFilter;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -30,6 +29,9 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
+/**
+ * Class that deals with the processing quest of a sedml file.
+ */
 public class SedmlJob {
     private boolean somethingFailed, hasScans, hasOverrides, bKeepTempFiles, bExactMatchOnly, bSmallMeshOverride;
     private String sedmlLocation, bioModelBaseName, resultsDirPath, logDocumentMessage, logDocumentError, sedmlName;
@@ -118,6 +120,7 @@ public class SedmlJob {
                     hasOverrides = true;
                 }
             }
+            
             for(AbstractTask at : sedmlFromOmex.getTasks()) {
                 if(at instanceof RepeatedTask) {
                     RepeatedTask rt = (RepeatedTask)at;
@@ -387,19 +390,6 @@ public class SedmlJob {
         
         logger.debug(String.format("Something failed in %s @ line %d", elem.getClassName(), elem.getLineNumber()));
         return true;
-    }
-
-    private static boolean containsExtension(String folder, String ext) {
-        GenericExtensionFilter filter = new GenericExtensionFilter(ext);
-        File dir = new File(folder);
-        if (dir.isDirectory() == false) {
-            return false;
-        }
-        String[] list = dir.list(filter);
-        if (list.length > 0) {
-            return true;
-        }
-        return false;
     }
 
     /**

@@ -114,7 +114,7 @@ public class BiosimulationsCommand implements Callable<Integer> {
         }
     }
 
-    public int noFurtherActionNeeded(boolean bQuiet, boolean bDebug, boolean bVersion){
+    private int noFurtherActionNeeded(boolean bQuiet, boolean bDebug, boolean bVersion){
         logger.debug("Validating CLI arguments");
         if (bVersion) {
             String version = PropertyLoader.getRequiredProperty(PropertyLoader.vcellSoftwareVersion);
