@@ -20,7 +20,6 @@ import org.jlibsedml.DataSet;
 import org.jlibsedml.execution.IXPathToVariableIDResolver;
 import org.jlibsedml.modelsupport.SBMLSupport;
 import org.vcell.cli.run.TaskJob;
-import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -143,8 +142,8 @@ public class Hdf5WrapperFactory {
             } // end of dataset
 
             Hdf5DatasetWrapper hdf5DatasetWrapper = new Hdf5DatasetWrapper();
-            hdf5DatasetWrapper.datasetMetadata._type = report.getKind();
-            hdf5DatasetWrapper.datasetMetadata.sedmlId = report.getId();
+            hdf5DatasetWrapper.datasetMetadata._type = Hdf5WrapperFactory.getKind(report.getId());
+            hdf5DatasetWrapper.datasetMetadata.sedmlId = Hdf5WrapperFactory.removeVCellPrefixes(report.getId(), report.getId());
             hdf5DatasetWrapper.datasetMetadata.sedmlName = report.getName();
             hdf5DatasetWrapper.datasetMetadata.uri = Paths.get(sedmlLocation, report.getId()).toString();
 
@@ -184,7 +183,8 @@ public class Hdf5WrapperFactory {
                     }
                 }
                 hdf5DatasetWrapper.datasetMetadata.sedmlDataSetDataTypes.add("float64");
-                hdf5DatasetWrapper.datasetMetadata.sedmlDataSetIds.add(dataSet.getId());
+                hdf5DatasetWrapper.datasetMetadata.sedmlDataSetIds.add(
+                    Hdf5WrapperFactory.removeVCellPrefixes(dataSet.getId(), hdf5DatasetWrapper.datasetMetadata.sedmlId));
                 hdf5DatasetWrapper.datasetMetadata.sedmlDataSetLabels.add(dataSet.getLabel());
                 hdf5DatasetWrapper.datasetMetadata.sedmlDataSetNames.add(dataSet.getName());
                 hdf5DatasetWrapper.datasetMetadata.sedmlDataSetShapes = shapes;
@@ -270,8 +270,8 @@ public class Hdf5WrapperFactory {
 
             Hdf5DatasetWrapper hdf5DatasetWrapper = new Hdf5DatasetWrapper();
             hdf5DatasetWrapper.dataSource = hdf5DataSourceSpatial;
-            hdf5DatasetWrapper.datasetMetadata._type = report.getKind();
-            hdf5DatasetWrapper.datasetMetadata.sedmlId = report.getId();
+            hdf5DatasetWrapper.datasetMetadata._type = Hdf5WrapperFactory.getKind(report.getId());
+            hdf5DatasetWrapper.datasetMetadata.sedmlId = Hdf5WrapperFactory.removeVCellPrefixes(report.getId(), report.getId());
             hdf5DatasetWrapper.datasetMetadata.sedmlName = report.getName();
             hdf5DatasetWrapper.datasetMetadata.uri = Paths.get(sedmlLocation, report.getId()).toString();
 
@@ -279,7 +279,8 @@ public class Hdf5WrapperFactory {
             for (Hdf5DataSourceSpatialVarDataItem job : hdf5DataSourceSpatial.varDataItems){
                 DataSet dataSet = job.sedmlDataset;
                 hdf5DatasetWrapper.datasetMetadata.sedmlDataSetDataTypes.add("float64");
-                hdf5DatasetWrapper.datasetMetadata.sedmlDataSetIds.add(dataSet.getId());
+                hdf5DatasetWrapper.datasetMetadata.sedmlDataSetIds.add(
+                    Hdf5WrapperFactory.removeVCellPrefixes(dataSet.getId(), hdf5DatasetWrapper.datasetMetadata.sedmlId));
                 hdf5DatasetWrapper.datasetMetadata.sedmlDataSetLabels.add(dataSet.getLabel());
                 hdf5DatasetWrapper.datasetMetadata.sedmlDataSetNames.add(dataSet.getName());
                 hdf5DatasetWrapper.datasetMetadata.sedmlDataSetShapes.add(null);
@@ -290,9 +291,21 @@ public class Hdf5WrapperFactory {
         return datasetWrappers;
     }
 
-    private List<Report> getReports(List<Output> outputs){
+    /*private List<Report> getReports(){
         List<Report> reports = new LinkedList<>();
         for (Output out : sedml.getOutputs()) {
+            if (out instanceof Report){
+                reports.add((Report)out);
+            } else {
+                logger.info("Ignoring unsupported output `" + out.getId() + "` while CSV generation.");
+            }
+        } 
+        return reports;
+    }*/
+
+    private List<Report> getReports(List<Output> outputs){
+        List<Report> reports = new LinkedList<>();
+        for (Output out : outputs) {
             if (out instanceof Report){
                 reports.add((Report)out);
             } else {
@@ -347,7 +360,7 @@ public class Hdf5WrapperFactory {
             return values.size();
         }
 
-        public int[] getJobCoordinate(int index){
+        /*public int[] getJobCoordinate(int index){
             String[] names = vcSimulation.getMathOverrides().getScannedConstantNames();
             java.util.Arrays.sort(names); // must do things in a consistent way
             int[] bounds = new int[names.length]; // bounds of scanning matrix
@@ -356,6 +369,47 @@ public class Hdf5WrapperFactory {
             }
             int[] coordinates = BeanUtils.indexToCoordinate(index, bounds);
             return coordinates;
+        }*/
+    }
+
+
+    private static String getKind(String prefixedSedmlId){
+        String plotPrefix = "__plot__";
+        if (prefixedSedmlId.startsWith(plotPrefix))
+            return "SedPlot2D";
+        return "SedReport";
+    }
+
+    /**
+     * We need the sedmlId to help remove prefixes, but the sedmlId itself may need to be fixed.
+     * 
+     * If a sedmlId is being checked, just provide itself twice
+     * 
+     * The reason for this, is having an overload with just "(String s)" as a requirment is misleading.
+     */
+    private static String removeVCellPrefixes(String s, String sedmlId){
+        String plotPrefix = "__plot__";
+        String reservedPrefix = "__vcell_reserved_data_set_prefix__";
+        
+        String checkedId = sedmlId.startsWith(plotPrefix) ? sedmlId.replace(plotPrefix, "") : sedmlId;
+        if (sedmlId.equals(s)) return checkedId;
+        
+        if (s.startsWith(plotPrefix)){
+            s = s.replace(plotPrefix, "");
+        } 
+        
+        if (s.startsWith(reservedPrefix)){
+            s = s.replace(reservedPrefix, "");
         }
+
+        if (s.startsWith(checkedId + "_")){
+            s = s.replace(checkedId + "_", "");
+        }
+
+        if (s.startsWith(checkedId)){
+            s = s.replace(checkedId, "");
+        }
+
+        return s;
     }
 }
