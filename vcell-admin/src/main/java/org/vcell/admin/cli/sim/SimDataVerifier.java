@@ -217,11 +217,11 @@ public class SimDataVerifier {
 			// find data on disk
 			boolean bAnyDataMissing = false;
 			for (int jobIndex = 0; jobIndex < simulationRep.getScanCount(); jobIndex++) {
-				VCDataIdentifier vcDataIdentifier = new VCSimulationDataIdentifier(vcSimID, jobIndex);
 				try {
+					VCDataIdentifier vcDataIdentifier = new VCSimulationDataIdentifier(vcSimID, jobIndex);
 					double[] times = dataSetController.getDataSetTimes(vcDataIdentifier);
-				} catch (DataAccessException e) {
-					String msg = "failed to read or not found: '" + vcDataIdentifier + ": " + e.getMessage();
+				} catch (Exception e) {
+					String msg = "failed to read or not found: simID='" + vcSimID + ", jobIndex=" + jobIndex+": " + e.getMessage();
 					lg.error(msg);
 					bAnyDataMissing = true;
 				}
