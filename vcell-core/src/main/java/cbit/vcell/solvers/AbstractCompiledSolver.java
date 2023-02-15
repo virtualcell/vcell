@@ -363,7 +363,7 @@ public abstract class AbstractCompiledSolver extends AbstractSolver implements j
             functionFileGenerator.generateFunctionFile();
         } catch (Exception e) {
             e.printStackTrace(System.out);
-            throw new RuntimeException("Error creating .function file for " + functionFileGenerator.getBasefileName() + e.getMessage(), e);
+            throw new RuntimeException("Error creating .function file for " + functionFileGenerator.getBasefileName() + ": " + e.getMessage(), e);
         }
     }
 
