@@ -29,6 +29,8 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.chombo.ChomboSolverSpec;
 import org.vcell.chombo.RefinementRoi;
 import org.vcell.chombo.RefinementRoi.RoiType;
@@ -136,6 +138,8 @@ import cbit.vcell.solver.server.SolverFileWriter;
  * @author: Fei Gao
  */
 public class FiniteVolumeFileWriter extends SolverFileWriter {
+	private final static Logger lg = LogManager.getLogger(FiniteVolumeFileWriter.class);
+
 	private static final String RANDOM_VARIABLE_FILE_EXTENSION = ".rv";
 	private static final String DISTANCE_MAP_FILE_EXTENSION = ".dmf";
 	private File workingDirectory = null;
@@ -1169,15 +1173,19 @@ private void getDiscontinuityTimes(Vector<Discontinuity> discontinuities, TreeSe
 						+  ": time discontinuity " + discontinuity.getDiscontinuityExp().infix() + " can only be a function of time");
 			}
 			Expression deriv = rfexp.differentiate(ReservedVariable.TIME.getName());
-			double d = deriv.evaluateConstant(); // we don't allow 5t < 3 
-			if (d != 1 && d != -1) {
-				throw new ExpressionException(simulation.getSolverTaskDescription().getSolverDescription().getDisplayLabel() 
-						+  ": time discontinuity " + discontinuity.getDiscontinuityExp().infix() + " is not allowed.");
+			try {
+				double d = deriv.evaluateConstant(); // we don't allow 5t < 3
+				if (d != 1 && d != -1) {
+					throw new ExpressionException(simulation.getSolverTaskDescription().getSolverDescription().getDisplayLabel()
+							+ ": time discontinuity " + discontinuity.getDiscontinuityExp().infix() + " is not allowed.");
+				}
+				rfexp.substituteInPlace(new Expression(ReservedVariable.TIME.getName()), new Expression(0));
+				rfexp.flatten();
+				double st = Math.abs(rfexp.evaluateConstant());
+				discontinuityTimes.add(st);
+			} catch (ExpressionException e){
+				lg.debug("unable to extract discontinuity time from expression '"+rfexp.infix()+"': "+e.getMessage(),e);
 			}
-			rfexp.substituteInPlace(new Expression(ReservedVariable.TIME.getName()), new Expression(0));
-			rfexp.flatten();
-			double st = Math.abs(rfexp.evaluateConstant());
-			discontinuityTimes.add(st);
 		}
 	}
 	
