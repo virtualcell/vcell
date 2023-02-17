@@ -10,6 +10,8 @@
 
 package org.vcell.pathway.kinetics;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.pathway.sbo.SBOList;
 
 import cbit.vcell.model.Catalyst;
@@ -24,6 +26,7 @@ import cbit.vcell.parser.NameScope;
 
 
 public class SBPAXHMMRevLawBuilder implements KineticLawBuilder {
+	private final static Logger lg = LogManager.getLogger(SBPAXHMMRevLawBuilder.class);
 
 	public Match getMatch(KineticContext context) {
 		if(context.getReactants().size() != 1 || context.getProducts().size() != 1) {
@@ -96,7 +99,7 @@ public class SBPAXHMMRevLawBuilder implements KineticLawBuilder {
 				}
 			}
 		} catch (ExpressionException e) {
-			e.printStackTrace();
+			lg.error(e);
 		}
 	}
 

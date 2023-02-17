@@ -5,6 +5,8 @@ import java.util.Arrays;
 import java.util.Vector;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.BeanUtils.CastInfo;
 import org.vcell.util.ProgrammingException;
@@ -23,6 +25,8 @@ import ncsa.hdf.object.h5.H5ScalarDS;
  *
  */
 public class MovingBoundaryReader implements MovingBoundaryTypes {
+	private final static Logger lg = LogManager.getLogger(MovingBoundaryReader.class);
+
 	private static final String ELEM = "elements";
 
 	private final String filename;
@@ -132,7 +136,7 @@ public class MovingBoundaryReader implements MovingBoundaryTypes {
 //		da = getDoubleArray("elements","volumePointsX");
 //		System.out.println(da);
 		} catch (Exception e) {
-			e.printStackTrace();
+			lg.error(e);
 		}
 
 	}

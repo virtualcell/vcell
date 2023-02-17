@@ -26,6 +26,8 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jdom.Document;
 import org.jlibsedml.SEDMLDocument;
 import org.jlibsedml.SedML;
@@ -44,6 +46,8 @@ import org.w3c.dom.NodeList;
  *
  */
 public class SchematronValidator extends AbstractDocumentValidator {
+    private final static Logger lg = LogManager.getLogger(SchematronValidator.class);
+
     private static final String SVRL_NS_PREFIX = "svrl";
     private static final String SCHEMATRON_NS_URI = "http://purl.oclc.org/dsdl/svrl";
     private SedML sedml;
@@ -69,8 +73,7 @@ public class SchematronValidator extends AbstractDocumentValidator {
         try {
             transformer = tf.newTransformer(ss);
         } catch (TransformerConfigurationException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            lg.error(e);
         }
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream(1024);
@@ -78,8 +81,7 @@ public class SchematronValidator extends AbstractDocumentValidator {
         try {
             transformer.transform(new StreamSource(new StringReader(docAsString)), target);
         } catch (TransformerException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+             lg.error(e);
         }
         // now use XPath to get the failed asserts, and from the location
         // XPaths,
@@ -171,8 +173,7 @@ public class SchematronValidator extends AbstractDocumentValidator {
             NodeList nodes = (NodeList) result;
             return nodes;
         } catch (XPathExpressionException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            lg.error(e);
             return null;
         }
     }
@@ -210,8 +211,7 @@ public class SchematronValidator extends AbstractDocumentValidator {
             return nodes;
 
         } catch (XPathExpressionException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            lg.error(e);
             return null;
         }
     }

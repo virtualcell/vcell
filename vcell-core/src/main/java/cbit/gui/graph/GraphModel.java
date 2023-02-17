@@ -30,8 +30,11 @@ import java.util.Map;
 import java.util.Set;
 
 import cbit.gui.graph.GraphResizeManager.ResizeMode;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public abstract class GraphModel {
+	private final static Logger lg = LogManager.getLogger(GraphModel.class);
 	
 	@SuppressWarnings("serial")
 	public static class NotReadyException extends Exception {
@@ -302,13 +305,6 @@ public abstract class GraphModel {
 		return resizeManager.getZoomPercent();
 	}
 
-	protected void handleException(Throwable exception) {
-		/* Uncomment the following lines to print uncaught exceptions to stdout */
-		System.out
-				.println("--------- UNCAUGHT EXCEPTION --------- in GraphModel");
-		exception.printStackTrace(System.out);
-	}
-
 	boolean hasEdge(ElipseShape node1, ElipseShape node2) {
 		for (Shape fs : objectShapeMap.values()) {
 			if (fs instanceof EdgeShape) {
@@ -351,7 +347,7 @@ public abstract class GraphModel {
 			g.setColor(Color.red);
 			g.drawString("EXCEPTION IN GraphModel.paint(): " + e.getMessage(),
 					20, 20);
-			e.printStackTrace(System.out);
+			lg.error(e);
 			return;
 		}
 	}

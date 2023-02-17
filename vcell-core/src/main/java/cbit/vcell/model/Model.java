@@ -28,6 +28,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.model.rbm.ComponentStateDefinition;
 import org.vcell.model.rbm.ComponentStatePattern;
 import org.vcell.model.rbm.MolecularComponent;
@@ -68,7 +70,7 @@ import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitException;
 @SuppressWarnings("serial")
 public class Model implements Versionable, Matchable, Relatable, PropertyChangeListener, VetoableChangeListener, Serializable, ScopedSymbolTable, IssueSource {
-	
+	private final static Logger lg = LogManager.getLogger(Model.class);
 	public static interface Owner {
 		public Model getModel();
 	}
@@ -1933,7 +1935,7 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
 				new Model.ModelFunction("sum3", new String[] { "a",  "b", "c" }, new Expression("a+b+c"), unitSystem.getInstance_DIMENSIONLESS())
 			};
 		} catch (ExpressionException e) {
-			e.printStackTrace();
+			lg.error(e);
 		}
 	}      	
 	
@@ -1960,7 +1962,7 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
 				new Model.ModelFunction("sum3", new String[] { "a",  "b", "c" }, new Expression("a+b+c"), unitSystem.getInstance_DIMENSIONLESS())
 			};
 		} catch (ExpressionException e) {
-			e.printStackTrace();
+			lg.error(e);
 		}
 	}
 	
@@ -2369,7 +2371,7 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 			}
 		}
 	}catch (Throwable e){
-		e.printStackTrace(System.out);
+		lg.error(e);
 		issueList.add(new Issue(this,issueContext, IssueCategory.Units,"unexpected exception: "+e.getMessage(),Issue.SEVERITY_WARNING));
 	}
 	
@@ -2515,12 +2517,8 @@ public Feature createFeature() {
 	}
 	try {
 		return addFeature(featureName);
-	} catch (ModelException e) {
-		e.printStackTrace(System.out);
-		throw new RuntimeException(e.getMessage());
-	} catch (PropertyVetoException e) {
-		e.printStackTrace(System.out);
-		throw new RuntimeException(e.getMessage());
+	} catch (ModelException | PropertyVetoException e) {
+		throw new RuntimeException(e.getMessage(), e);
 	}
 }
 
@@ -2535,7 +2533,6 @@ public SimpleReaction createSimpleReaction(Structure structure) {
 		addReactionStep(simpleReaction);
 		return simpleReaction;
 	} catch (PropertyVetoException e) {
-		e.printStackTrace(System.out);
 		throw new RuntimeException(e.getMessage(),e);
 	}
 }
@@ -2609,8 +2606,7 @@ public FluxReaction createFluxReaction(Membrane membrane) {
 		addReactionStep(fluxReaction);
 		return fluxReaction;
 	} catch (PropertyVetoException e) {
-		e.printStackTrace(System.out);
-		throw new RuntimeException(e.getMessage());
+		throw new RuntimeException(e.getMessage(), e);
 	}
 }
 
@@ -2688,8 +2684,7 @@ public SpeciesContext createSpeciesContext(Structure structure, SpeciesPattern s
 		addSpeciesContext(speciesContext);
 		return speciesContext;
 	} catch (PropertyVetoException ex) {
-		ex.printStackTrace(System.out);
-		throw new RuntimeException(ex.getMessage());
+		throw new RuntimeException(ex.getMessage(), ex);
 	}
 }
 
@@ -2708,8 +2703,7 @@ public ModelParameter createModelParameter() {
 		addModelParameter(modelParameter);
 		return modelParameter;
 	} catch (PropertyVetoException e) {
-		e.printStackTrace(System.out);
-		throw new RuntimeException(e.getMessage());
+		throw new RuntimeException(e.getMessage(), e);
 	}
 }
 
@@ -3268,13 +3262,12 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			System.out.println("too many candidates to rename");
 		} else {
 			RbmObservable candidate = candidates.get(0);
-			System.out.println("renaming --- " + candidate.getName());
+			lg.info("renaming --- " + candidate.getName());
 			try {
 				String prefix = candidate.getName().substring(0, candidate.getName().indexOf("_"));
 				candidate.setName(prefix + "_" + newName + "_tot");
 			} catch (PropertyVetoException e) {
-				System.out.println("Cannot rename observable " + candidate.getName() + ", " + e.getMessage());
-				e.printStackTrace();
+				lg.error("Cannot rename observable " + candidate.getName() + ", " + e.getMessage(), e);
 			}
 		}
 	}
@@ -3297,8 +3290,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 					fieldModelParameters[i].setExpression(renamedExp);
 				}
 			} catch (ExpressionBindingException e) {
-				e.printStackTrace(System.out);
-				throw new RuntimeException(e.getMessage());
+				throw new RuntimeException(e.getMessage(), e);
 			}
 		}
 	}
@@ -3370,7 +3362,7 @@ public void refreshDependencies() {
 		try {
 			fieldReactionSteps[i].rebindAllToModel(this);
 		}catch (Exception e){
-			e.printStackTrace(System.out);
+			lg.error(e);
 		}
 		fieldReactionSteps[i].refreshDependencies();
 	}
@@ -3401,7 +3393,7 @@ public void refreshDependencies() {
 		try {
 			reactionRule.rebindAllToModel(this);
 		}catch (Exception e){
-			e.printStackTrace(System.out);
+			lg.error(e);
 		}
 		reactionRule.refreshDependencies();
 	}
@@ -3452,8 +3444,7 @@ private void refreshDiagrams() {
         try {
             setDiagrams(newDiagrams);
         } catch (PropertyVetoException e) {
-            e.printStackTrace(System.out);
-            throw new RuntimeException(e.getMessage());
+            throw new RuntimeException(e.getMessage(), e);
         }
     }
 
@@ -3743,7 +3734,7 @@ public void setReactionSteps(ReactionStep[] reactionSteps) throws java.beans.Pro
 		try {
 			rs.rebindAllToModel(this);
 		}catch (Exception e){
-			e.printStackTrace(System.out);
+			lg.error(e);
 		}
 	}
 	firePropertyChange(PROPERTY_NAME_REACTION_STEPS, oldValue, reactionSteps);
@@ -3851,7 +3842,7 @@ public void setSpeciesContexts(SpeciesContext[] speciesContexts) throws java.bea
 		try{
 			removeSpecies(spIterator.next());
 		}catch(Throwable e){
-			e.printStackTrace(System.out);
+			lg.error(e);
 		}
 	}
 }
@@ -4524,7 +4515,7 @@ public void populateVCMetadata(boolean bMetadataPopulated) {
 									miriamResources);
 					}
 				}catch(Exception e){
-					e.printStackTrace();
+					lg.error(e);
 				}
 			}
 		}
@@ -4667,12 +4658,8 @@ public String isValidForStochApp()
 		}
 		try {
 			return addMembrane(membraneName);
-		} catch (ModelException e) {
-			e.printStackTrace(System.out);
-			throw new RuntimeException(e.getMessage());
-		} catch (PropertyVetoException e) {
-			e.printStackTrace(System.out);
-			throw new RuntimeException(e.getMessage());
+		} catch (ModelException | PropertyVetoException e) {
+			throw new RuntimeException(e.getMessage(), e);
 		}
 	}
 
@@ -4783,7 +4770,7 @@ public String isValidForStochApp()
 			addRateRuleVariable(rateRuleVar);
 			return rateRuleVar;
 		} catch (ModelPropertyVetoException e) {
-			e.printStackTrace(System.out);
+			lg.error(e);
 			throw new RuntimeException(e.getMessage());
 		}
 	}

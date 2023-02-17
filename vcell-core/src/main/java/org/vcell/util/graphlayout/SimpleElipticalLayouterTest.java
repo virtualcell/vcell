@@ -27,10 +27,13 @@ import javax.swing.SwingUtilities;
 
 import edu.uci.ics.jung.algorithms.layout.SpringLayout;
 import edu.uci.ics.jung.graph.DirectedSparseMultigraph;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-	
-    
+
 public class SimpleElipticalLayouterTest extends JPanel {
+	private final static Logger lg = LogManager.getLogger(SimpleElipticalLayouterTest.class);
+
 	
 	final String[][] pairs = {			// edge definitions
 //			{ "s", "t", "11" },
@@ -193,9 +196,8 @@ public class SimpleElipticalLayouterTest extends JPanel {
 			}
 			System.out.println("Done recalculating, steps = " + step);
 			displayPanel.repaint();
-		} catch (Throwable exception) {
-			System.err.println("Exception occurred in main() of SimpleElipticalLayouterTest");
-			exception.printStackTrace(System.out);
+		} catch (Exception exception) {
+			lg.error(exception);
 		}
 	}
 		

@@ -444,7 +444,6 @@ java.io.Serializable, IssueSource, Relatable
 			try {
 				renameParameter(oldValue, name);
 			} catch (ExpressionException e) {
-				e.printStackTrace();
 				throw new RuntimeException("failed to change kinetic parameter "+oldValue+" to "+name+": "+e.getMessage(),e);
 			}
 			super.firePropertyChange(PROPERTYNAME_NAME, oldValue, name);

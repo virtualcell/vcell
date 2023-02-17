@@ -423,10 +423,9 @@ class SEDMLWriter {
                                                                      // 'math'
                                                                      // attribute
                 } catch (Exception e) {
-                    e.printStackTrace(System.out);
                     throw new RuntimeException(
                             "Unable to process mathML for functional range '"
-                                    + fr.getId() + "' : " + e.getMessage());
+                                    + fr.getId() + "' : " + e.getMessage(), e);
                 }
             }
             return node;
@@ -612,11 +611,10 @@ class SEDMLWriter {
                                                                  // 'math'
                                                                  // attribute
             } catch (Exception e) {
-                e.printStackTrace(System.out);
                 throw new RuntimeException(
                         "Unable to process mathML for datagenerator '"
                                 + sedmlDataGen.getId() + "' : "
-                                + e.getMessage());
+                                + e.getMessage(), e);
             }
         }
 

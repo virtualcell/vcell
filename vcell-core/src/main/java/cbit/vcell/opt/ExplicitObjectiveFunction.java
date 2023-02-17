@@ -23,10 +23,6 @@ import cbit.vcell.parser.ExpressionException;
 public class ExplicitObjectiveFunction extends ObjectiveFunction {
 	private Expression exp = null;
 
-/**
- * ExplicitObjectiveFunction constructor comment.
- * @param exp cbit.vcell.parser.Expression
- */
 public ExplicitObjectiveFunction(cbit.vcell.parser.Expression argExpression) {
 	if (argExpression == null){
 		throw new IllegalArgumentException("expression cannot be null");
@@ -81,8 +77,7 @@ public Expression getScaledExpression(String[] symbols, String[] scaledSymbols, 
 		}
 		return scaledExp;
 	}catch (ExpressionException e){
-		e.printStackTrace(System.out);
-		throw new RuntimeException(e.getMessage());
+		throw new RuntimeException(e.getMessage(), e);
 	}
 }
 

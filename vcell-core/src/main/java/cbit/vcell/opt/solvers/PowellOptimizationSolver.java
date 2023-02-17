@@ -10,6 +10,8 @@
 
 package cbit.vcell.opt.solvers;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.optimization.OptSolverCallbacks;
 
 import cbit.vcell.opt.OptSolverResultSet;
@@ -27,6 +29,8 @@ import cbit.vcell.solver.ode.ODESolverResultSet;
  * @author: 
  */
 public class PowellOptimizationSolver implements OptimizationSolver {
+	private final static Logger lg = LogManager.getLogger(PowellOptimizationSolver.class);
+
 /**
  * CFSQPOptimizationSolver constructor comment.
  */
@@ -35,15 +39,6 @@ public PowellOptimizationSolver() {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (3/5/00 11:15:15 PM)
- * @return double[]
- * @param optSpec cbit.vcell.opt.OptimizationSpec
- * @exception java.io.IOException The exception description.
- * @exception cbit.vcell.parser.ExpressionException The exception description.
- * @exception cbit.vcell.opt.OptimizationException The exception description.
- */
 public OptimizationResultSet solve(OptimizationSpec os, OptimizationSolverSpec optSolverSpec, OptSolverCallbacks optSolverCallbacks) throws java.io.IOException, cbit.vcell.parser.ExpressionException, OptimizationException {
 
 	final double power = 2.0;
@@ -88,7 +83,7 @@ public OptimizationResultSet solve(OptimizationSpec os, OptimizationSolverSpec o
 				break;
 			}
 		} catch (Exception ex) {
-			ex.printStackTrace();
+			lg.error(ex);
 			break;
 		}
 	}

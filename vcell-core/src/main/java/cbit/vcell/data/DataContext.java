@@ -43,7 +43,7 @@ public class DataContext implements Matchable, Serializable {
 //			FunctionInvocation[] functionInvocations = exp.getFunctionInvocations(null);
 //			addDataSymbol(new FieldDataSymbol("myFieldDataVariable", this, VCUnitDefinition.UNIT_TBD, new FieldFunctionArguments(functionInvocations[0])));
 //		}catch (ExpressionException e){
-//			e.printStackTrace(System.out);
+//			lg.error(e);
 //			throw new RuntimeException(e.getMessage());
 //		}
 	}

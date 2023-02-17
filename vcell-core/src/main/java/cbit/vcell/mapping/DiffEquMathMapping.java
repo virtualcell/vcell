@@ -367,8 +367,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 				try {
 					eap = addEventAssignmentOrRateRuleInitParameter(modelParameters[j], modelParamExpr, PARAMETER_ROLE_EVENTASSIGN_OR_RATERULE_INITCONDN, paramUnit);
 				} catch (PropertyVetoException e) {
-					e.printStackTrace(System.out);
-					throw new MappingException(e.getMessage());
+					throw new MappingException(e.getMessage(), e);
 				}
 				
 				if(geometryClass == null) {
@@ -779,8 +778,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 		try {
 			mpInitParam = addEventAssignmentOrRateRuleInitParameter(mp, mpInitExpr, PARAMETER_ROLE_EVENTASSIGN_OR_RATERULE_INITCONDN, paramUnit);
 		} catch (PropertyVetoException e) {
-			e.printStackTrace(System.out);
-			throw new MappingException(e.getMessage());
+			throw new MappingException(e.getMessage(), e);
 		}
 		rateRuleInitToModelParamMapping.put(mpInitParam, mp);
 		modelParamTorateRuleInitMapping.put(mp, mpInitParam);
@@ -1276,8 +1274,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 					varHash.addVariable(param);
 					rateParam = addRateRuleRateParameter(sc, rateExpr, PARAMETER_ROLE_RATERULE_RATE, rateUnit);
 				} catch (PropertyVetoException e) {
-					e.printStackTrace(System.out);
-					throw new MappingException(e.getMessage());
+					throw new MappingException(e.getMessage(), e);
 				}
 				rateRuleRateParamHash.put(scm.getVariable(), rateParam);	// we generate the ODE equation elsewhere (later)
 			}
@@ -1305,8 +1302,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 					varHash.addVariable(param);
 					rateParam = addRateRuleRateParameter(sc, rateExpr, PARAMETER_ROLE_RATERULE_RATE, rateUnit);
 				} catch (PropertyVetoException e) {
-					e.printStackTrace(System.out);
-					throw new MappingException(e.getMessage());
+					throw new MappingException(e.getMessage(), e);
 				}
 				rateRuleRateParamHash.put(var, rateParam);		// we generate the ODE equation elsewhere (later)
 			}
@@ -1351,8 +1347,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 				varHash.addVariable(param);
 				rateParam = addRateRuleRateParameter(mp, rateExpr, PARAMETER_ROLE_RATERULE_RATE, rateUnit);
 			} catch (PropertyVetoException e) {
-				e.printStackTrace(System.out);
-				throw new MappingException(e.getMessage());
+				throw new MappingException(e.getMessage(), e);
 			}
 			// no need to put it in the hash, we make the ODE Equation right here
 			//rateRuleRateParamHash.put(variable, rateParam);
@@ -1432,8 +1427,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 		try {
 			mathDesc.setGeometry(simContext.getGeometryContext().getGeometry());
 		}catch (java.beans.PropertyVetoException e){
-			e.printStackTrace(System.out);
-			throw new MappingException("failure setting geometry "+e.getMessage());
+			throw new MappingException("failure setting geometry "+e.getMessage(), e);
 		}
 	}else{
 		throw new MappingException("geometry must be defined");

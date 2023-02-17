@@ -67,8 +67,7 @@ public MembraneMapping(Membrane membrane, SimulationContext argSimulationContext
 						new StructureMappingParameter(DefaultNames[ROLE_AreaPerUnitVolume], /*new Expression(1)*/ null, ROLE_AreaPerUnitVolume, lengthUnitDefn.getInverse())
 		});
 	}catch (java.beans.PropertyVetoException e){
-		e.printStackTrace(System.out);
-		throw new RuntimeException(e.getMessage());
+		throw new RuntimeException(e.getMessage(), e);
 	}
 	addVetoableChangeListener(this);
 }

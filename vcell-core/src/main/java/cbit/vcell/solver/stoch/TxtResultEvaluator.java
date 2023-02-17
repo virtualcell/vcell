@@ -44,8 +44,7 @@ public class TxtResultEvaluator {
 			fr=new java.io.FileReader(fin);
 		}catch(FileNotFoundException e)
 		{
-			e.printStackTrace(System.err);
-			throw new RuntimeException(e.getMessage());
+			throw new RuntimeException(e.getMessage(), e);
 		}
 		BufferedReader br=new BufferedReader(fr);
 		String str = null;
@@ -76,8 +75,7 @@ public class TxtResultEvaluator {
 			}
 		}catch(IOException e)
 		{
-			e.printStackTrace(System.err);
-			throw new RuntimeException(e.getMessage());
+			throw new RuntimeException(e.getMessage(), e);
 		}
 	}
 	

@@ -14,6 +14,8 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.Comparator;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.PropertyChangeListenerProxyVCell;
@@ -32,6 +34,7 @@ import cbit.vcell.solvers.CartesianMesh;
  * @author: 
  */
 public abstract class PDEDataContext implements PropertyChangeListener {
+	protected final static Logger lg = LogManager.getLogger(PDEDataContext.class);
 		
 public static final String PROPERTY_NAME_VCDATA_IDENTIFIER = "vcDataIdentifier";
 public static final String PROPERTY_NAME_TIME_POINTS = "timePoints";
@@ -97,26 +100,15 @@ public static final String PROPERTY_NAME_VARIABLE = "variable";
 			}
 		};
 
-/**
- * Insert the method's description here.
- * Creation date: (5/22/2001 3:18:21 PM)
- * @param simManager cbit.vcell.desktop.controls.SimulationManager
- */
 public PDEDataContext() {
 	addPropertyChangeListener(this);
 }
 
 
-/**
- * The addPropertyChangeListener method was generated to support the propertyChange field.
- */
 public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
 	PropertyChangeListenerProxyVCell.addProxyListener(getPropertyChange(), listener);
 }
 
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
 public void firePropertyChange(java.lang.String propertyName, java.lang.Object oldValue, java.lang.Object newValue) {
 	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
 }
@@ -125,40 +117,19 @@ protected void externalRefresh() throws DataAccessException {
 	refreshData(fieldDataIdentifier, getTimePoint(),true);
 }
 
-/**
- * Insert the method's description here.
- * Creation date: (5/22/2001 3:47:36 PM)
- * @return cbit.vcell.solvers.CartesianMesh
- */
 public CartesianMesh getCartesianMesh() {
 	return cartesianMesh;
 }
 
 
-/**
- * Gets the variableName property (java.lang.String) value.
- * @return The variableName property value.
- * @see #setVariableName
- */
 public DataIdentifier getDataIdentifier() {
 	return fieldDataIdentifier;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (5/22/2001 3:29:26 PM)
- * @return java.lang.String[]
- */
 public DataIdentifier[] getDataIdentifiers() {
 	return dataIdentifiers;
 }
 
-/**
- * Insert the method's description here.
- * Creation date: (5/22/2001 3:27:11 PM)
- * @return double[]
- */
 public double[] getDataValues() {
 	return dataValues;
 }
@@ -208,19 +179,9 @@ public ParticleDataBlock getParticleDataBlock() {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (3/19/2004 11:20:57 AM)
- * @return cbit.vcell.simdata.SimDataBlock
- * @param varName java.lang.String
- * @param time double
- */
 protected abstract ParticleDataBlock getParticleDataBlock(double time) throws DataAccessException;
 
 
-/**
- * Accessor for the propertyChange field.
- */
 protected java.beans.PropertyChangeSupport getPropertyChange() {
 	if (propertyChange == null) {
 		propertyChange = new java.beans.PropertyChangeSupport(this);
@@ -229,32 +190,15 @@ protected java.beans.PropertyChangeSupport getPropertyChange() {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (3/19/2004 11:20:57 AM)
- * @return cbit.vcell.simdata.SimDataBlock
- * @param varName java.lang.String
- * @param time double
- */
 protected abstract SimDataBlock getSimDataBlock(String varName, double time) throws DataAccessException;
 public abstract DataOperationResults doDataOperation(DataOperation dataOperation) throws DataAccessException;
 
 
-/**
- * Gets the timePoint property (double) value.
- * @return The timePoint property value.
- * @see #setTimePoint
- */
 public double getTimePoint() {
 	return fieldTimePoint;
 }
 
 
-/**
- * Gets the timePoints property (double[]) value.
- * @return The timePoints property value.
- * @see #setTimePoints
- */
 public double[] getTimePoints() {
 	return fieldTimePoints;
 }
@@ -262,9 +206,6 @@ public double[] getTimePoints() {
 
 /**
  * retrieves a time series (single point as a function of time) of a specified spatial data set.
- *
- * @param variable name of variable to be sampled
- * @param index identifies index into data array.
  *
  * @returns annotated array of 'concentration vs. time' in a plot ready format.
  *
@@ -324,11 +265,6 @@ public boolean hasParticleData() {
 }
 
 
-/**
- * This method was created in VisualAge.
- *
- * @param exportSpec cbit.vcell.export.server.ExportSpecs
- */
 public abstract void makeRemoteFile(ExportSpecs exportSpecs) throws DataAccessException;
 
 
@@ -365,7 +301,7 @@ public synchronized void waitWhileBusy(){
 		try {
 			wait();
 		} catch (InterruptedException e) {
-			e.printStackTrace();
+			lg.error(e);
 		}
 	}
 }
@@ -382,7 +318,7 @@ private synchronized void refreshData(DataIdentifier selectedDataIdentifier, dou
 //			Thread.sleep(3000);
 //		} catch (InterruptedException e) {
 //			// TODO Auto-generated catch block
-//			e.printStackTrace();
+//			lg.error(e);
 //		}
 
 		if(!bForce){
@@ -486,11 +422,6 @@ protected void setCartesianMesh(CartesianMesh newCartesianMesh) {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (5/22/2001 3:29:26 PM)
- * @param newVariableNames java.lang.String[]
- */
 protected void setDataIdentifiers(DataIdentifier[] newDataIdentifiers) throws DataAccessException{
 	DataIdentifier[] oldDataIdentifiers = dataIdentifiers;
 	dataIdentifiers = newDataIdentifiers;

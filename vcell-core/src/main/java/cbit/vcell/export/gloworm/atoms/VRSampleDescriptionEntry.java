@@ -42,7 +42,7 @@ public boolean writeData(java.io.DataOutputStream out) {
 		return true;
 	} catch (java.io.IOException e) {
 		System.out.println("Unable to write: " + e.getMessage());
-		e.printStackTrace();
+		lg.error(e);
 		return false;
 	}
 }

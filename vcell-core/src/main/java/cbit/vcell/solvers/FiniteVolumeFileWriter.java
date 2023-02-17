@@ -1255,7 +1255,7 @@ private void getDiscontinuityTimes(Vector<Discontinuity> discontinuities, TreeSe
 	System.out.println("elapsedTime of computation = "+(finalTimeMS-currentTimeMS)+" ms, found " + rootTimes.size() + " roots (not unique)");
 	
 }catch (Exception e){
-	e.printStackTrace(System.out);
+	lg.error(e);
 }
 
  */
@@ -1269,7 +1269,7 @@ private void getDiscontinuityTimes(Vector<Discontinuity> discontinuities, TreeSe
 			try {
 				return function_exp.evaluateVector(values);
 			} catch (ExpressionException e) {
-				e.printStackTrace();
+				lg.error(e);
 				throw new RuntimeException("expression exception "+e.getMessage());
 			}
 		}
@@ -1283,7 +1283,7 @@ private void getDiscontinuityTimes(Vector<Discontinuity> discontinuities, TreeSe
 			try {
 				return derivative_exp.evaluateVector(values);
 			} catch (ExpressionException e) {
-				e.printStackTrace();
+				lg.error(e);
 				throw new RuntimeException("expression exception "+e.getMessage());
 			}
 		}

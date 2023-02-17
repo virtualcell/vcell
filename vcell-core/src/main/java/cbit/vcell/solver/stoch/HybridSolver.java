@@ -82,7 +82,7 @@ public void cleanup()
 	{
 		printStochFile();
 	}catch (Throwable e){
-		e.printStackTrace(System.out);
+		lg.error(e);
 		fireSolverAborted(SimulationMessage.solverAborted(e.getMessage()));
 	}
 }
@@ -144,8 +144,7 @@ public ODESolverResultSet getHybridSolverResultSet()
 			ncEva.setNetCDFTarget(filename);
 			ncReader = ncEva.getNetCDFReader();
 		}catch (Exception e) {
-			e.printStackTrace(System.err);
-			throw new RuntimeException("Cannot open simulation result file: "+ filename +"!");
+			throw new RuntimeException("Cannot open simulation result file: "+ filename +"!", e);
 		}
 		
 		//  Read result according to trial number
@@ -257,8 +256,7 @@ public ODESolverResultSet getHybridSolverResultSet()
 		}
 		
 	} catch (Exception e) {
-		e.printStackTrace(System.err);
-		throw new RuntimeException("Problem encountered in parsing hybrid simulation results.\n"+e.getMessage());
+		throw new RuntimeException("Problem encountered in parsing hybrid simulation results.\n"+e.getMessage(), e);
 	} 
 	
 	/*
@@ -276,18 +274,14 @@ public ODESolverResultSet getHybridSolverResultSet()
 				Expression exp1 = new Expression(functions[i].getExpression());
 				try {
 					exp1 = simSymbolTable.substituteFunctions(exp1);
-				} catch (MathException e) {
-					e.printStackTrace(System.out);
-					throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
-				} catch (ExpressionException e) {
-					e.printStackTrace(System.out);
-					throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
+				} catch (MathException | ExpressionException e) {
+					throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage(), e);
 				}
 				try {
 					FunctionColumnDescription cd = new FunctionColumnDescription(exp1.flatten(),functions[i].getName(), null, functions[i].getName(), false);
 					stSolverResultSet.addFunctionColumn(cd);
 				}catch (ExpressionException e){
-					e.printStackTrace(System.out);
+					lg.error(e);
 				}
 			}
 		}
@@ -307,8 +301,7 @@ private void writeLogFile() throws SolverException {
 		pw.println(netCDFFileName);
 		pw.close();
 	} catch (FileNotFoundException e) {
-		e.printStackTrace();
-		throw new SolverException(e.getMessage());
+		throw new SolverException(e.getMessage(), e);
 	} finally {
 		if (pw != null) {
 			pw.close();
@@ -337,8 +330,7 @@ protected void initialize() throws SolverException
 		ncWriter.initialize();
 	} catch (Exception e) {
 		setSolverStatus(new cbit.vcell.solver.server.SolverStatus(SolverStatus.SOLVER_ABORTED, SimulationMessage.solverAborted("Could not initialize StochFileWriter...")));
-		e.printStackTrace(System.out);
-		throw new SolverException("autocode init exception: " + e.getMessage());
+		throw new SolverException("autocode init exception: " + e.getMessage(), e);
 	}
 	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, SimulationMessage.MESSAGE_SOLVER_RUNNING_INPUT_FILE));
 	fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_INPUT_FILE);
@@ -347,8 +339,7 @@ protected void initialize() throws SolverException
 		ncWriter.writeHybridInputFile();
 	}catch (Exception e){
 		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, SimulationMessage.solverAborted("Could not generate input file: " + e.getMessage())));
-		e.printStackTrace(System.err);
-		throw new SolverException("solver input file exception: " + e.getMessage());
+		throw new SolverException("solver input file exception: " + e.getMessage(), e);
 	}
 	//
 	//
@@ -494,7 +485,7 @@ public void propertyChange(java.beans.PropertyChangeEvent event)
 			try {
 				printToFile(appMessage.getProgress());
 			}catch (IOException e){
-				e.printStackTrace(System.out);
+				lg.error(e);
 			}
 		}
 	}
@@ -517,7 +508,7 @@ public static void main(String[] args) {
 	HybridSolver hs = new HybridSolver(null,null,HybridSolver.EMIntegrator, false);
 	hs.getHybridSolverResultSet(); //put file name to be open in getHybridSolverResultSet()
 	}catch(Exception e){
-		e.printStackTrace(System.err);
+		lg.error(e);
 	}
 	
 }

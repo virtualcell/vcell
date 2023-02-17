@@ -31,6 +31,8 @@ import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.Coordinate;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
@@ -141,6 +143,7 @@ publishing preferences object. The same ITextWriter instance can be reused to pu
 */
  
 public abstract class ITextWriter {
+	private final static Logger lg = LogManager.getLogger(ITextWriter.class);
 
 	public static final String PDF_WRITER = "PDF_WRITER";
 	public static final String HTM_WRITER = "HTML_WRITER";
@@ -803,8 +806,7 @@ protected Font getBold() {
 				BaseFont boldBaseFont = BaseFont.createFont(BaseFont.HELVETICA_BOLD, BaseFont.CP1252, BaseFont.NOT_EMBEDDED);
 				fieldBold = new Font(boldBaseFont, DEF_FONT_SIZE, Font.NORMAL);
 			} catch (Exception e) {
-				System.out.println("ITextWriter.getBold() threw an unexpected exception!!!");
-				e.printStackTrace();
+				lg.error(e);
 			}
 		}
 		return(fieldBold);
@@ -817,8 +819,7 @@ protected Font getFont() {
 			BaseFont fontBaseFont = BaseFont.createFont(BaseFont.HELVETICA, BaseFont.CP1252, BaseFont.NOT_EMBEDDED);
 			fieldFont = new Font(fontBaseFont, DEF_FONT_SIZE, Font.NORMAL);
 		} catch (Exception e) {
-			System.out.println("ITextWriter.getFont() threw an unexpected exception!!!");
-			e.printStackTrace();
+			lg.error(e);
 		}
 	}
 	return(fieldFont);
@@ -922,55 +923,49 @@ public void writeBioModel(BioModel bioModel, FileOutputStream fos, PageFormat pa
 	if (bioModel == null || fos == null || pageFormat == null || preferences == null) {
 		throw new IllegalArgumentException("One or more null params while publishing BioModel.");
 	}
-	try {
-		createDocument(pageFormat);
-		createDocWriter(fos);
-		// Add metadata before you open the document...
-		String name = bioModel.getName().trim();
-		String userName = "Unknown";
-		if (bioModel.getVersion() != null) {
-			userName = bioModel.getVersion().getOwner().getName();
-		}
-		document.addTitle(name + "[owned by " + userName + "]");
-		document.addCreator("Virtual Cell");
-		document.addCreationDate();
-		//writeWatermark(document, pageFormat);
-		writeHeaderFooter("BioModel: " + name);
-		document.open();
-		//
-		Section introSection = null;
-		int chapterNum = 1;
-		if (preferences.includePhysio()) {
-			Chapter physioChapter = new Chapter("Physiology For " + name, chapterNum++);
-			introSection = physioChapter.addSection("General Info", physioChapter.numberDepth() + 1);      
-			String freeTextAnnotation = bioModel.getVCMetaData().getFreeTextAnnotation(bioModel);
-			writeMetadata(introSection, name, freeTextAnnotation, userName, "BioModel");
-			writeModel(physioChapter, bioModel.getModel());
-			document.add(physioChapter);
-		}
-		if (preferences.includeApp()) {
-			SimulationContext simContexts [] = bioModel.getSimulationContexts();
-			if (simContexts.length > 0) {
-				Chapter simContextsChapter = new Chapter("Applications For " + name, chapterNum++);
-				if (introSection == null) {
-					introSection = simContextsChapter.addSection("General Info", simContextsChapter.numberDepth() + 1);         
-					String freeTextAnnotation = bioModel.getVCMetaData().getFreeTextAnnotation(bioModel);
-					writeMetadata(introSection, name, freeTextAnnotation, userName, "BioModel");
-				}
-				for (int i = 0; i < simContexts.length; i++) {
-					writeSimulationContext(simContextsChapter, simContexts[i], preferences);                           
-				}
-				document.add(simContextsChapter);
-			} else {
-				System.err.println("Bad Request: No applications to publish for Biomodel: " + bioModel.getName());
-			}
-		}
-		document.close();
-	} catch (DocumentException e) {
-		System.err.println("Unable to publish BioModel.");
-		e.printStackTrace();
-		throw e;
+	createDocument(pageFormat);
+	createDocWriter(fos);
+	// Add metadata before you open the document...
+	String name = bioModel.getName().trim();
+	String userName = "Unknown";
+	if (bioModel.getVersion() != null) {
+		userName = bioModel.getVersion().getOwner().getName();
 	}
+	document.addTitle(name + "[owned by " + userName + "]");
+	document.addCreator("Virtual Cell");
+	document.addCreationDate();
+	//writeWatermark(document, pageFormat);
+	writeHeaderFooter("BioModel: " + name);
+	document.open();
+	//
+	Section introSection = null;
+	int chapterNum = 1;
+	if (preferences.includePhysio()) {
+		Chapter physioChapter = new Chapter("Physiology For " + name, chapterNum++);
+		introSection = physioChapter.addSection("General Info", physioChapter.numberDepth() + 1);
+		String freeTextAnnotation = bioModel.getVCMetaData().getFreeTextAnnotation(bioModel);
+		writeMetadata(introSection, name, freeTextAnnotation, userName, "BioModel");
+		writeModel(physioChapter, bioModel.getModel());
+		document.add(physioChapter);
+	}
+	if (preferences.includeApp()) {
+		SimulationContext simContexts [] = bioModel.getSimulationContexts();
+		if (simContexts.length > 0) {
+			Chapter simContextsChapter = new Chapter("Applications For " + name, chapterNum++);
+			if (introSection == null) {
+				introSection = simContextsChapter.addSection("General Info", simContextsChapter.numberDepth() + 1);
+				String freeTextAnnotation = bioModel.getVCMetaData().getFreeTextAnnotation(bioModel);
+				writeMetadata(introSection, name, freeTextAnnotation, userName, "BioModel");
+			}
+			for (int i = 0; i < simContexts.length; i++) {
+				writeSimulationContext(simContextsChapter, simContexts[i], preferences);
+			}
+			document.add(simContextsChapter);
+		} else {
+			System.err.println("Bad Request: No applications to publish for Biomodel: " + bioModel.getName());
+		}
+	}
+	document.close();
 }
 
 	protected void writeEquation(Section container, Equation eq) throws DocumentException {
@@ -1076,8 +1071,7 @@ public void writeBioModel(BioModel bioModel, FileOutputStream fos, PageFormat pa
 			geomTable.addCell(createCell(originStr, getFont()));
 			geomSection.add(geomTable);
 		} catch (Exception e) {
-			System.err.println("Unable to add geometry image to report.");
-			e.printStackTrace();
+			lg.error("Unable to add geometry image to report.", e);
 		}
 	}
 
@@ -1120,8 +1114,7 @@ public void writeBioModel(BioModel bioModel, FileOutputStream fos, PageFormat pa
 			document.add(geomChapter);
 			document.close();
 		} catch (DocumentException e) {
-			System.err.println("Unable to publish BioModel.");
-			e.printStackTrace();
+			lg.error("Unable to publish BioModel.", e);
 			throw e;
 		}
 	}
@@ -1219,8 +1212,7 @@ protected void writeHorizontalLine() throws DocumentException {
 			try {
 				expArray = new Expression[] { Expression.assign(new Expression(constant.getName()), exp.flatten()) };
 			} catch(ExpressionException ee) {
-				System.err.println("Unable to process constant " + constant.getName() + " for publishing");
-				ee.printStackTrace();
+				lg.error("Unable to process constant " + constant.getName() + " for publishing", ee);
 				continue;
 			}
 			try {
@@ -1238,8 +1230,7 @@ protected void writeHorizontalLine() throws DocumentException {
 				}
 				mathDescSubSection.add(expImage);
 			} catch (Exception e) {
-				System.err.println("Unable to add structure mapping image to report.");
-				e.printStackTrace();
+				lg.error("Unable to add structure mapping image to report.", e);
 			}
 		}
 		mathDescSubSection = null;
@@ -1251,8 +1242,7 @@ protected void writeHorizontalLine() throws DocumentException {
 			try {
 				expArray = new Expression[] { Expression.assign(new Expression(function.getName()), exp.flatten()) };
 			} catch(ExpressionException ee) {
-				System.err.println("Unable to process function " + function.getName() + " for publishing");
-				ee.printStackTrace();
+				lg.error("Unable to process function " + function.getName() + " for publishing", ee);
 				continue;
 			}
 			try {    
@@ -1270,8 +1260,7 @@ protected void writeHorizontalLine() throws DocumentException {
 				}
 				mathDescSubSection.add(expImage);
 			} catch (Exception e) {
-				System.err.println("Unable to add structure mapping image to report.");
-				e.printStackTrace();
+				lg.error("Unable to add structure mapping image to report.", e);
 			}
 		}
 		writeSubDomainsEquationsAsImages(mathDescSection, mathDesc);
@@ -1405,8 +1394,7 @@ protected void writeHorizontalLine() throws DocumentException {
 			}
 			document.close();
 		} catch (DocumentException e) {
-			System.err.println("Unable to publish MathModel.");
-			e.printStackTrace();
+			lg.error("Unable to publish MathModel.", e);
 			throw e;
 		}
 	}
@@ -1612,7 +1600,7 @@ protected void writeModel(Chapter physioChapter, Model model) throws DocumentExc
 //			addImage(structSection, bos);
 //		} catch(Exception e) {
 //			System.err.println("Unable to add structures image for model: " + model.getName());
-//			e.printStackTrace();
+//			lg.error(e);
 //		}
 //	}
 	//write structures
@@ -1858,8 +1846,7 @@ protected void writeModel(Chapter physioChapter, Model model) throws DocumentExc
 			imageCell = new Cell();
 			imageCell.add(rpImage);
 		} catch (Exception e) {
-			System.err.println("Unable to add structure mapping image to report.");
-			e.printStackTrace();
+			lg.error("Unable to add structure mapping image to report.", e);
 		}
 
 		return imageCell;
@@ -1878,7 +1865,7 @@ protected void writeModel(Chapter physioChapter, Model model) throws DocumentExc
 		try{
 			addImage(reactionDiagramSection, encodeJPEG(generateDocReactionsImage(model,null)));
 		}catch(Exception e){
-			e.printStackTrace();
+			lg.error(e);
 			throw new DocumentException(e.getClass().getName()+": "+e.getMessage());
 		}
 
@@ -2179,7 +2166,7 @@ protected void writeSpecies(Species[] species) throws DocumentException {
 				linkFont = new Font(fontBaseFont, DEF_FONT_SIZE, Font.NORMAL, new java.awt.Color(0, 0, 255));
 			} catch (Exception e) {
 				linkFont = getFont();
-				e.printStackTrace();
+				lg.error(e);
 			}
 			linkParagraph.add(new Chunk(struct.getName(), linkFont).setLocalGoto(struct.getName()));  
 			Cell structLinkCell = new Cell(linkParagraph);
@@ -2225,7 +2212,7 @@ protected void writeSpecies(Species[] species) throws DocumentException {
 			structMappSection.add(structMapImage);
 		} catch (Exception e) {
 			System.err.println("Unable to add structure mapping image to report.");
-			e.printStackTrace();
+			lg.error(e);
 		}*/
 		StructureMapping structMap [] = gc.getStructureMappings();
 		Table structMapTable = null;
@@ -2315,8 +2302,7 @@ protected void writeSpecies(Species[] species) throws DocumentException {
 						expList.add(exp.flatten());
 					}
 				} catch (ExpressionException ee) {
-					System.err.println("Unable to process the equation for subdomain: " + subDomain.getName());
-					ee.printStackTrace();
+					lg.error("Unable to process the equation for subdomain: " + subDomain.getName(), ee);
 					continue;
 				}
 			}
@@ -2351,8 +2337,7 @@ protected void writeSpecies(Species[] species) throws DocumentException {
 				tempSection.add(imageTable);*/
 				tempSection.add(expImage);
 			} catch (Exception e) {
-				System.err.println("Unable to add subdomain equation image to report.");
-				e.printStackTrace();
+				lg.error("Unable to add subdomain equation image to report.", e);
 			}
 		}
 		if (volDomains.isEmpty()) {

@@ -99,7 +99,6 @@ public class ROI implements Matchable {
 					roiSubImages[z] = uShortImage;
 				}
 			}catch(Exception e){
-				e.printStackTrace();
 				throw new RuntimeException("Error ROI constructor. "+e.getMessage(),e);
 			}
 		}

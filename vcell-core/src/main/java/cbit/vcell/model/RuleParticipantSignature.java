@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.model.bngl.ParseException;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.MolecularTypePattern;
@@ -14,6 +16,7 @@ import org.vcell.model.rbm.SpeciesPattern;
 import cbit.vcell.graph.ModelCartoon;
 
 public abstract class RuleParticipantSignature {
+	private final static Logger lg = LogManager.getLogger(RuleParticipantSignature.class);
 
 	protected Structure structure = null;
 	protected SpeciesPattern firstSpeciesPattern = null;
@@ -41,7 +44,7 @@ public abstract class RuleParticipantSignature {
 			SpeciesPattern theirSpeciesPattern = RbmUtils.parseSpeciesPattern(theirMolecularSignature, modelCartoon.getModel());
 			return compareByCriteria(theirSpeciesPattern, criteria);
 		} catch (ParseException e) {
-			e.printStackTrace();
+			lg.error(e);
 //			throw new RuntimeException("Unable to parse species pattern signature: " + e.getMessage());
 			return false;
 		}

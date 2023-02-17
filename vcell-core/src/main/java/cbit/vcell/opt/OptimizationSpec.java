@@ -365,18 +365,12 @@ public void read(CommentStringTokenizer tokens) {
 			}
 			throw new RuntimeException("unexpected identifier "+token);
 		}
-	}catch (Throwable e){
-		e.printStackTrace(System.out);
-		throw new RuntimeException("line #"+(tokens.lineIndex()+1)+" Exception: "+e.getMessage());
+	}catch (Exception e){
+		throw new RuntimeException("line #"+(tokens.lineIndex()+1)+" Exception: "+e.getMessage(), e);
 	}
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (3/3/00 12:36:57 AM)
- * @param constant cbit.vcell.math.Constant
- */
 public void setObjectiveFunction(ObjectiveFunction argObjectiveFunction) {
 	this.objectiveFunction = argObjectiveFunction;
 }

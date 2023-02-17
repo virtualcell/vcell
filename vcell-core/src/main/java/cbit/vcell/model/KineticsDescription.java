@@ -68,7 +68,6 @@ public Kinetics createKinetics(ReactionStep reactionStep) {
 				constructor = fieldKineticsClass.getConstructor(new Class[] { SimpleReaction.class });
 			}
 		}catch (NoSuchMethodException e2){
-			e.printStackTrace(System.out);
 			throw new RuntimeException(e.getMessage(),e2);
 		}
 	}
@@ -76,13 +75,10 @@ public Kinetics createKinetics(ReactionStep reactionStep) {
 		Kinetics kinetics = constructor.newInstance(new Object[]{ reactionStep });
 		return kinetics;
 	}catch (InstantiationException e3){
-		e3.printStackTrace(System.out);
 		throw new RuntimeException(e3.getMessage(),e3);
 	}catch (java.lang.reflect.InvocationTargetException e3){
-		e3.printStackTrace(System.out);
 		throw new RuntimeException(e3.getMessage(),e3);
 	}catch (IllegalAccessException e3){
-		e3.printStackTrace(System.out);
 		throw new RuntimeException(e3.getMessage(),e3);
 	}
 }

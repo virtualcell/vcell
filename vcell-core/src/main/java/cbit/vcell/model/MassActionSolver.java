@@ -15,6 +15,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.*;
 
 import cbit.vcell.matrix.MatrixException;
@@ -30,6 +32,7 @@ import cbit.vcell.parser.RationalExpUtils;
 import cbit.vcell.parser.SymbolTableEntry;
 
 public class MassActionSolver {
+	private final static Logger lg = LogManager.getLogger(MassActionSolver.class);
 
 	public static final double Epsilon = 1e-6; // to be used for double calculation
 	private static final int[] primeIntNumbers = new int[]{2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97}; 
@@ -114,7 +117,7 @@ public class MassActionSolver {
 							bSubstituted = true;
 						}
 					} catch (ExpressionException e1) {
-						e1.printStackTrace();
+						lg.error(e1);
 						throw new ExpressionException(e1.getMessage());
 					}
 				}else if (substituteConst && ste instanceof Model.ReservedSymbol){
@@ -126,7 +129,7 @@ public class MassActionSolver {
 							bSubstituted = true;
 						}
 					} catch (ExpressionException e1) {
-						e1.printStackTrace();
+						lg.error(e1);
 						throw new ExpressionException(e1.getMessage());
 					}
 				}
@@ -336,8 +339,7 @@ public class MassActionSolver {
 					throw(e);	// if failed to simplify, continue with what we have, otherwise rethrow
 				}
 			} catch (MatrixException e) {
-				e.printStackTrace();
-				throw new ModelException(VCellErrorMessages.getMassActionSolverMessage(rs.getName(), "MatrixException: " + e.getMessage()));
+				throw new ModelException(VCellErrorMessages.getMassActionSolverMessage(rs.getName(), "MatrixException: " + e.getMessage()), e);
 			}
 			forwardExp = new Expression(solution[0].infixString());
 			reverseExp = new Expression(solution[1].infixString());
@@ -393,7 +395,7 @@ public class MassActionSolver {
 						}
 					}catch(ExpressionException e){
 						// not expecting a problem because forwardExpCopy didn't have a problem, but in any case it is ok to swallow this exception
-						e.printStackTrace(System.out);
+						lg.error(e);
 					}
 				}
 				
@@ -420,7 +422,7 @@ public class MassActionSolver {
 						}
 					}catch(ExpressionException e){
 						// not expecting a problem because reverseExpCopy didn't have a problem, but in any case it is ok to swallow this exception
-						e.printStackTrace(System.out);
+						lg.error(e);
 					}
 				}
 			}

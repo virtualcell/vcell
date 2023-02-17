@@ -97,8 +97,7 @@ public Geometry(Geometry geometry, VCImage aVCImage) {
 	try {
 		getGeometrySpec().setImage(aVCImage);
 	}catch (PropertyVetoException e){
-		e.printStackTrace(System.out);
-		throw new RuntimeException(e.getMessage());
+		throw new RuntimeException(e.getMessage(), e);
 	}
 	fieldGeometrySurfaceDescription = new GeometrySurfaceDescription(this);
 }

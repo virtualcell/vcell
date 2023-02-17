@@ -34,7 +34,7 @@ public static void main(String[] args) {
 		imageFile.writeAsTIFF(filename+".tif");
 		System.out.println("read and write complete");
 	} catch (Throwable e) {
-		e.printStackTrace(System.out);
+		e.printStackTrace();
 		System.exit(1);
 	}
 }

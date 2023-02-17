@@ -10,6 +10,8 @@
 
 package cbit.vcell.export.gloworm.quicktime;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.BeanUtils;
 
 import cbit.vcell.export.gloworm.atoms.MediaData;
@@ -25,6 +27,8 @@ import cbit.vcell.export.gloworm.atoms.VideoSampleDescriptionEntryRaw;
  * @author: Ion Moraru
  */
 public class AtomReader {
+	private final static Logger lg = LogManager.getLogger(AtomReader.class);
+
 	private String fileName = "";
 	private javax.swing.tree.DefaultMutableTreeNode rootNode = null;
 	java.util.Hashtable nodeHash = new java.util.Hashtable(); // key = AtomInfo; element = TreeNode
@@ -54,21 +58,11 @@ public class AtomReader {
 		}
 	}
 
-/**
- * Insert the method's description here.
- * Creation date: (11/5/2005 12:04:35 PM)
- * @param din java.io.DataInputStream
- */
 public AtomReader(String fileName) {
 	this.fileName = fileName;
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (11/5/2005 12:07:18 PM)
- * @return int
- */
 public AtomReader.AtomInfo[] getAtoms(String atomType) throws java.io.IOException {
 	java.util.Enumeration en = nodeHash.keys();
 	java.util.Vector v = new java.util.Vector();
@@ -245,7 +239,7 @@ public void printSelectionDetails(AtomInfo info) {
 		System.out.println(s);
 		din.close();
 	} catch (Exception e) {
-		e.printStackTrace();
+		lg.error(e);
 	}
 }
 

@@ -42,9 +42,12 @@ import ncsa.hdf.object.Dataset;
 import ncsa.hdf.object.FileFormat;
 import ncsa.hdf.object.Group;
 import ncsa.hdf.object.HObject;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class DataSet implements java.io.Serializable
 {
+	private final static Logger lg = LogManager.getLogger(DataSet.class);
 
    private Vector<DataBlock> dataBlockList;
    private FileHeader fileHeader;
@@ -323,7 +326,6 @@ void read(File file, File zipFile, SolverDataType solverDataType) throws IOExcep
 				try {
 					readHdf5SolutionMetaData(is);
 				} catch (Exception e) {
-					e.printStackTrace();
 					throw new IOException(e.getMessage(),e);
 				}
 			}else{
@@ -339,10 +341,10 @@ void read(File file, File zipFile, SolverDataType solverDataType) throws IOExcep
 		}
 	}finally{
 		if (dataInputStream != null) {
-			try{dataInputStream.close();}catch(Exception e){e.printStackTrace();}
+			try{dataInputStream.close();}catch(Exception e){lg.error(e);}
 		}
 		if (zipZipFile != null) {
-			try{zipZipFile.close();}catch(Exception e){e.printStackTrace();}
+			try{zipZipFile.close();}catch(Exception e){lg.error(e);}
 		}
 	}
 }
@@ -562,11 +564,10 @@ public static void writeNew(File file, String[] varNameArr, VariableType[] varTy
 			}
 		}
 	} catch (Exception e) {
-		e.printStackTrace();
 		if(e instanceof IOException){
 			throw (IOException)e;
 		}else{
-			throw new RuntimeException(e.getMessage());
+			throw new RuntimeException(e.getMessage(), e);
 		}
 	}finally{
 		try{

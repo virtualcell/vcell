@@ -195,12 +195,8 @@ public abstract class LumpedKinetics extends Kinetics {
 			}
 
 			return lumpedKinetics;
-		} catch (PropertyVetoException e) {
-			e.printStackTrace();
-			throw new RuntimeException("failed to create lumped Kinetics for reaction: \""+reactionStep.getName()+"\": "+e.getMessage());
-		} catch (ExpressionException e) {
-			e.printStackTrace();
-			throw new RuntimeException("failed to create lumped Kinetics for reaction: \""+reactionStep.getName()+"\": "+e.getMessage());
+		} catch (PropertyVetoException | ExpressionException e) {
+			throw new RuntimeException("failed to create lumped Kinetics for reaction: \""+reactionStep.getName()+"\": "+e.getMessage(), e);
 		}
 	}
 

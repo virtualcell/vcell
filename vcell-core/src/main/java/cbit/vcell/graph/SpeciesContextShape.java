@@ -27,6 +27,8 @@ import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.sybil.models.miriam.MIRIAMQualifier;
 
 import cbit.gui.graph.ElipseShape;
@@ -39,6 +41,8 @@ import cbit.vcell.biomodel.meta.MiriamManager.MiriamRefGroup;
 import cbit.vcell.model.SpeciesContext;
 
 public class SpeciesContextShape extends ElipseShape {
+	private final static Logger lg = LogManager.getLogger(SpeciesContextShape.class);
+
 	SpeciesContext speciesContext = null;
 	private static final int RADIUS = 8;
 	public static final int DIAMETER = 2*RADIUS;
@@ -149,7 +153,7 @@ public class SpeciesContextShape extends ElipseShape {
 					bHasPCLink = true;
 				}
 			}catch (Exception e){
-				e.printStackTrace(System.out);
+				lg.error(e);
 			}
 		}
 		if(sc.getSpecies().getDBSpecies() != null || bHasPCLink){

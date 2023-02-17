@@ -286,7 +286,7 @@ public class FRAPOptData {
 //
 //			return dataProcessingOutput;
 //		}catch (Exception e){
-//			e.printStackTrace(System.out);
+//			lg.error(e);
 //			throw new DataAccessException(e.getMessage(),e);
 //		}
 //	}
@@ -340,7 +340,6 @@ public class FRAPOptData {
 			
 			return referenceSimKeyValue;
 		}catch(Exception e){
-			e.printStackTrace(System.out);
 			if(bioModel != null && bioModel.getSimulations() != null){
 				FRAPStudy.removeExternalDataAndSimulationFiles(
 					bioModel.getSimulations()[0].getVersion().getVersionKey(), null, null, getLocalWorkspace());
@@ -887,7 +886,6 @@ public class FRAPOptData {
 //			}
 			
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} 
 

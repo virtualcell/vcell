@@ -130,14 +130,10 @@ public static void main(java.lang.String[] args) {
 			">" + test.getDisplayName() + "<" +
 			">" + test.toString() + "<");
 	}catch (Throwable e){
-		e.printStackTrace(System.out);
+		e.printStackTrace();
 	}
 }
-/**
- * Insert the method's description here.
- * Creation date: (1/16/2003 5:45:33 PM)
- * @param newFieldExpression cbit.vcell.parser.Expression
- */
+
 public void setExpression(cbit.vcell.parser.Expression newExpression) {
 	fieldExpression = newExpression;
 }

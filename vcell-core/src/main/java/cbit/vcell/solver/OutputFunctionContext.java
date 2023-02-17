@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
@@ -60,7 +62,7 @@ import cbit.vcell.solver.AnnotatedFunction.FunctionCategory;
 
 @SuppressWarnings("serial")
 public class OutputFunctionContext implements ScopedSymbolTable, Matchable, Serializable, VetoableChangeListener, PropertyChangeListener {
-	
+	private final static Logger lg = LogManager.getLogger(OutputFunctionContext.class);
 	public static final String PROPERTY_OUTPUT_FUNCTIONS = "outputFunctions";
 
 	public class OutputFunctionNameScope extends AbstractNameScope  {
@@ -141,9 +143,8 @@ public class OutputFunctionContext implements ScopedSymbolTable, Matchable, Seri
 				func.getExpression().bindExpression(this);
 			}
 		} catch (ExpressionBindingException e) {
-			e.printStackTrace(System.out);
 			throw new RuntimeException("Error parsing the following output function in '" + getSimulationOwner().getName() + "' \n\n" 
-					+ func.getName() + " = " + func.getExpression().infix() + "\n\n" + e.getMessage());
+					+ func.getName() + " = " + func.getExpression().infix() + "\n\n" + e.getMessage(), e);
 		}
 	}
 
@@ -154,8 +155,7 @@ public class OutputFunctionContext implements ScopedSymbolTable, Matchable, Seri
 		try {
 			obsFunction.getExpression().bindExpression(this);
 		} catch (ExpressionBindingException e) {
-			e.printStackTrace(System.out);
-			throw new RuntimeException(e.getMessage());
+			throw new RuntimeException(e.getMessage(), e);
 		}
 
 		ArrayList<AnnotatedFunction> newFunctionsList = new ArrayList<AnnotatedFunction>(outputFunctionsList);
@@ -221,19 +221,14 @@ public class OutputFunctionContext implements ScopedSymbolTable, Matchable, Seri
 						AnnotatedFunction newFunc = new AnnotatedFunction(function.getName(), function.getExpression(), function.getDomain(), "", newFuncType, FunctionCategory.OUTPUTFUNCTION);
 						newFuncList.add(newFunc);
 						newFunc.bind(this);
-					} catch (ExpressionException ex) {
-						ex.printStackTrace();
-						throw new RuntimeException(ex.getMessage());
-					} catch (InconsistentDomainException ex) {
-						ex.printStackTrace();
-						throw new RuntimeException(ex.getMessage());
+					} catch (ExpressionException | InconsistentDomainException ex) {
+						throw new RuntimeException(ex.getMessage(), ex);
 					}
 				}
 				try {
 					setOutputFunctions0(newFuncList);
-				} catch (PropertyVetoException e) {					
-					e.printStackTrace();
-					throw new RuntimeException(e.getMessage());
+				} catch (PropertyVetoException e) {
+					throw new RuntimeException(e.getMessage(), e);
 				}
 			}
 		}
@@ -472,7 +467,7 @@ public class OutputFunctionContext implements ScopedSymbolTable, Matchable, Seri
 			newexp = MathUtilities.substituteFunctions(newexp, this).flatten();
 		} catch (ExpressionBindingException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			lg.error(e);
 			newexp = MathUtilities.substituteFunctions(newexp, this,true).flatten();
 		}
 		String[] symbols = newexp.getSymbols();

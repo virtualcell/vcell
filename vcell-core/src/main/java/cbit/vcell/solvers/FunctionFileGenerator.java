@@ -21,6 +21,8 @@ import java.util.HashSet;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.TokenMangler;
 
 import cbit.vcell.math.MathFunctionDefinitions;
@@ -39,6 +41,8 @@ import cbit.vcell.solver.AnnotatedFunction.FunctionCategory;
  * @author: Anuradha Lakshminarayana
  */
 public class FunctionFileGenerator {
+	private final static Logger lg = LogManager.getLogger(FunctionFileGenerator.class);
+
 	private Vector <AnnotatedFunction> annotatedFunctionList;
 	private java.lang.String basefileName;
 	
@@ -77,7 +81,7 @@ public void generateFunctionFile() throws Exception {
 	}catch (java.io.IOException e){
 		throw new RuntimeException("error writing .function file '"+basefileName+": "+e.getMessage(), e);
 	}finally{
-		if(functionFile != null){try{functionFile.close();}catch(Exception e){e.printStackTrace();}}		
+		if(functionFile != null){try{functionFile.close();}catch(Exception e){lg.error(e);}}
 	}
 		
 }
@@ -93,10 +97,6 @@ public java.lang.String getBasefileName() {
 }
 
 
-/**
- * This method was created in VisualAge.
- * @param logFile java.io.File
- */
 public static synchronized Vector<AnnotatedFunction> readFunctionsFile(File functionsFile, String simJobID) throws java.io.FileNotFoundException, java.io.IOException {
 	// Check if file exists
 	if (!functionsFile.exists()){
@@ -192,7 +192,7 @@ public static synchronized Vector<AnnotatedFunction> readFunctionsFile(File func
 				try {
 					func.bind(simpleSymbolTable);
 				} catch (ExpressionBindingException e) {
-					e.printStackTrace();
+					lg.error(e);
 				}
 			}		
 		}
@@ -216,7 +216,7 @@ public static synchronized Vector<AnnotatedFunction> readFunctionsFile(File func
 							exp, func.getDomain(), func.getName(), func.getErrorString(), func.getFunctionType(), FunctionCategory.OLDUSERDEFINED);
 					annotatedFunctionsVector.set(i, newfunc);
 				} catch (ExpressionBindingException e) {
-					e.printStackTrace();
+					lg.error(e);
 				}
 			}		
 		}		

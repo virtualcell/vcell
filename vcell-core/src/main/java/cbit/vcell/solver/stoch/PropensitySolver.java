@@ -156,7 +156,7 @@ public class PropensitySolver {
 				propensityFunction.show();
 			}
 		} catch (Exception e) {
-			e.printStackTrace(System.out);
+			e.printStackTrace();
 		}
 	}
 		
@@ -255,8 +255,7 @@ public class PropensitySolver {
 				orderList.add(iter.getCurrentOrders().clone());
 			}
 		}catch(Exception e){
-			e.printStackTrace();
-			throw new MathException("Did not recognize propensity function from \""+original_expression.infix()+ " product of species shoulde have order less than or equal to 3 and the form like 'rateConstant*species1*(species1-1)*species2'.");
+			throw new MathException("Did not recognize propensity function from \""+original_expression.infix()+ " product of species shoulde have order less than or equal to 3 and the form like 'rateConstant*species1*(species1-1)*species2'.", e);
 		}
 			
 		Expression expression_for_K = Expression.mult(original_expression.flatten(),Expression.invert(canonical_expression.flatten()));

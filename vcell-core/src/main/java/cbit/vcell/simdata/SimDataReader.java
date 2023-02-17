@@ -186,7 +186,6 @@ private void getNextDataAtCurrentTimeChombo(double[][] returnValues)  throws Exc
 					}
 				}
 			} catch (Exception e) {
-				e.printStackTrace(System.out);
 				throw new DataAccessException(e.getMessage(), e);
 			}
 		}
@@ -220,7 +219,6 @@ public void getNextDataAtCurrentTime(double[][] returnValues) throws IOException
 		try {
 			getNextDataAtCurrentTimeChombo(returnValues);
 		} catch (Exception e) {
-			e.printStackTrace(System.out);
 			throw new DataAccessException(e.getMessage(), e);
 		}
 	} else {

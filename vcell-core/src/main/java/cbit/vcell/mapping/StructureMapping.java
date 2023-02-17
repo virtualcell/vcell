@@ -439,7 +439,7 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
 //						issueVector.add(new Issue(this, issueContext, IssueCategory.StructureMappingSizeParameterNotPositive, "Size parameter is not positive.",Issue.SEVERITY_ERROR));
 //					}
 //				} catch (ExpressionException e) {
-//					e.printStackTrace();
+//					lg.error(e);
 //					issueVector.add(new Issue(this, issueContext, IssueCategory.StructureMappingSizeParameterNotConstant, "Size parameter is not a constant.",Issue.SEVERITY_ERROR));
 //				}
 //			}

@@ -42,8 +42,7 @@ public abstract class Task extends WorkflowObject {
 				this.posX = diagramStyle.posX;
 				this.posY = diagramStyle.posY;
 			}catch (JsonParseException e){
-				e.printStackTrace(System.out);
-				throw new RuntimeException("failed to parse DiagramStyle '"+styleText+"', : "+e.getMessage());
+				throw new RuntimeException("failed to parse DiagramStyle '"+styleText+"', : "+e.getMessage(), e);
 			}
 		}
 	}

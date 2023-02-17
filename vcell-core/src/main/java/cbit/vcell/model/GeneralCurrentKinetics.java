@@ -41,8 +41,7 @@ public GeneralCurrentKinetics(ReactionStep reactionStep) throws ExpressionExcept
 		updateGeneratedExpressions();
 		refreshUnits();
 	}catch (PropertyVetoException e){
-		e.printStackTrace(System.out);
-		throw new RuntimeException("unexpected exception: "+e.getMessage());
+		throw new RuntimeException("unexpected exception: "+e.getMessage(), e);
 	}
 }
 

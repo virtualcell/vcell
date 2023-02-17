@@ -8,6 +8,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jdom.Comment;
 import org.jdom.Element;
 import org.jdom.output.Format;
@@ -52,6 +54,7 @@ import cbit.vcell.solver.SolverException;
 import cbit.vcell.xml.XMLTags;
 
 public class NFsimXMLWriter {
+	private final static Logger lg = LogManager.getLogger(NFsimXMLWriter.class);
 	
 	public static class Bond {
 		public final String bondID;		// this is the ID we show in the xml file, format RR0_RP0_B0
@@ -265,8 +268,7 @@ public class NFsimXMLWriter {
 		try {
 			System.out.println("VCML ORIGINAL .... START\n"+origSimTask.getSimulation().getMathDescription().getVCML_database()+"\nVCML ORIGINAL .... END\n====================\n");
 		} catch (MathException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
+			lg.error(e1);
 		}
 		SimulationTask clonedSimTask = null;
 		try {
@@ -385,8 +387,7 @@ public class NFsimXMLWriter {
 				try {
 					System.out.println("===============================\n ----------- VCML HACKED .... START\n"+clonedMathDesc.getVCML_database()+"\nVCML HACKED .... END\n====================\n");
 				} catch (MathException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
+					lg.error(e1);
 				}
 			}catch (Exception e){
 				throw new SolverException("failed to apply location mark transformation: "+e.getMessage(), e);
@@ -503,8 +504,7 @@ public class NFsimXMLWriter {
 				try {
 					substitutedValExpr = simulationSymbolTable.substituteFunctions(expression);
 				}catch (MathException | ExpressionException e){
-					e.printStackTrace(System.out);
-					throw new SolverException("ParticleJumpProcess "+particleJumpProcess.getName()+" substitution failed : exp = \""+expression.infix()+"\": "+e.getMessage());
+					throw new SolverException("ParticleJumpProcess "+particleJumpProcess.getName()+" substitution failed : exp = \""+expression.infix()+"\": "+e.getMessage(), e);
 				}
 				Double value = null;
 				try {
@@ -793,9 +793,9 @@ public class NFsimXMLWriter {
 //			Document document = (Document) builder.build(reader);
 //			e1 = document.getRootElement();
 //		} catch (IOException ex) {
-//			ex.printStackTrace();
+//			lg.error(e);
 //		} catch (JDOMException ex) {
-//			ex.printStackTrace();
+//			lg.error(e);
 //		}
 ////		return e1;
 		return sbmlElement;
@@ -813,8 +813,7 @@ public class NFsimXMLWriter {
 				try {
 					substitutedValExpr = simulationSymbolTable.substituteFunctions(valExpression);
 				}catch (Exception e){
-					e.printStackTrace(System.out);
-					throw new SolverException("Constant or Function "+var.getName()+" substitution failed : exp = \""+var.getExpression().infix()+"\": "+e.getMessage());
+					throw new SolverException("Constant or Function "+var.getName()+" substitution failed : exp = \""+var.getExpression().infix()+"\": "+e.getMessage(), e);
 				}
 				try {
 					value = substitutedValExpr.evaluateConstant();
@@ -920,7 +919,7 @@ public class NFsimXMLWriter {
 					patternElement = getObservableParticipantPattern(prefix0, molecularPatternID, (VolumeParticleSpeciesPattern)pattern, "Pattern", particleObservable.getSequence(), particleObservable.getQuantity());
 					listOfPatternsElement.addContent(patternElement);
 				} catch (SolverException e) {
-					e.printStackTrace();
+					lg.error(e);
 				}
 			}
 		}
@@ -967,8 +966,7 @@ public class NFsimXMLWriter {
 				}
 				speciesElement.setAttribute("concentration",Double.toString(value));
 			} catch (ExpressionException | MathException e) {
-				e.printStackTrace();
-				throw new SolverException("error processing initial count of "+ParticleSpeciesPattern.class.getSimpleName()+" "+seedSpecies.getName()+": "+e.getMessage());
+				throw new SolverException("error processing initial count of "+ParticleSpeciesPattern.class.getSimpleName()+" "+seedSpecies.getName()+": "+e.getMessage(), e);
 			}
 			HashMap<Bond,BondSites> bondSiteMapping = new HashMap<Bond,BondSites>();
 			Element listOfMoleculesElement = getListOfMolecules(speciesID, seedSpecies, bondSiteMapping);
@@ -1269,8 +1267,7 @@ public class NFsimXMLWriter {
 				try {
 					substitutedValExpr = simulationSymbolTable.substituteFunctions(valExpression);
 				}catch (Exception e){
-					e.printStackTrace(System.out);
-					throw new SolverException("Constant or Function "+var.getName()+" substitution failed : exp = \""+var.getExpression().infix()+"\": "+e.getMessage());
+					throw new SolverException("Constant or Function "+var.getName()+" substitution failed : exp = \""+var.getExpression().infix()+"\": "+e.getMessage(),e);
 				}
 				try {
 					value = substitutedValExpr.evaluateConstant();
@@ -1302,8 +1299,7 @@ public class NFsimXMLWriter {
 				try {
 					substitutedValExpr = simulationSymbolTable.substituteFunctions(valExpression);
 				}catch (Exception e){
-					e.printStackTrace(System.out);
-					throw new SolverException("Constant or Function "+var.getName()+" substitution failed : exp = \""+var.getExpression().infix()+"\": "+e.getMessage());
+					throw new SolverException("Constant or Function "+var.getName()+" substitution failed : exp = \""+var.getExpression().infix()+"\": "+e.getMessage(), e);
 				}
 				try {
 					value = substitutedValExpr.evaluateConstant();
@@ -1331,8 +1327,7 @@ public class NFsimXMLWriter {
 							try {
 								substitutedReferenceExpression = simulationSymbolTable.substituteFunctions(referenceExpression);
 							}catch (Exception e){
-								e.printStackTrace(System.out);
-								throw new SolverException("Constant or Function "+var.getName()+" substitution failed : exp = \""+var.getExpression().infix()+"\": "+e.getMessage());
+								throw new SolverException("Constant or Function "+var.getName()+" substitution failed : exp = \""+var.getExpression().infix()+"\": "+e.getMessage(), e);
 							}
 							try {
 								referenceValue = substitutedReferenceExpression.evaluateConstant();

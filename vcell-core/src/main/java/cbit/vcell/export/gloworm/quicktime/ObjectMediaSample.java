@@ -14,6 +14,8 @@ import cbit.vcell.export.gloworm.atoms.AtomConstants;
 import cbit.vcell.export.gloworm.atoms.ObjectSampleDescriptionEntry;
 import cbit.vcell.export.gloworm.atoms.SampleDescriptionEntry;
 import cbit.vcell.export.gloworm.atoms.VRAtom;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 
 /**
@@ -22,6 +24,8 @@ import cbit.vcell.export.gloworm.atoms.VRAtom;
  * @author: Ion Moraru
  */
 public class ObjectMediaSample implements MediaSample {
+	private final static Logger lg = LogManager.getLogger(ObjectMediaSample.class);
+
 	private VRWorld vrWorld;
 	private int nodeIndex;
 /**
@@ -42,7 +46,7 @@ public byte[] getDataBytes() {
 	try {
 		vrWorld.getVRObjectInfoContainer(nodeIndex).writeData(dout);
 	} catch (java.io.IOException exc) {
-		exc.printStackTrace();
+		lg.error(exc);
 	}
 	return bout.toByteArray();
 }

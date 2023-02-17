@@ -13,6 +13,8 @@ package org.vcell.util.document;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.BioModelChildSummary.MathType;
 /**
@@ -22,6 +24,7 @@ import org.vcell.util.document.BioModelChildSummary.MathType;
  */
 @SuppressWarnings("serial")
 public class MathModelChildSummary implements java.io.Serializable {
+	private final static Logger lg = LogManager.getLogger(MathModelChildSummary.class);
 	private String geoName = null;
 	private int geoDim = 0;
 	
@@ -106,8 +109,7 @@ public static MathModelChildSummary fromDatabaseSerialization(String databaseSer
 		mmcs.simAnnots = (String[])simAnnotsV.toArray(new String[simAnnotsV.size()]);
 	}catch(Exception e)
 	{
-		System.out.println("Failed reading MathModelChildSummary info..." + st.toString());
-		e.printStackTrace(System.out);
+		lg.error("Failed reading MathModelChildSummary info..." + st.toString(), e);
 	}
 	return mmcs;
 }

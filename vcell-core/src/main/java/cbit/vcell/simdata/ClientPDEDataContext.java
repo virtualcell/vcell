@@ -9,6 +9,8 @@
  */
 
 package cbit.vcell.simdata;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.TimeSeriesJobResults;
 import org.vcell.util.document.TimeSeriesJobSpec;
@@ -21,20 +23,11 @@ import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solvers.CartesianMesh;
 
-/**
- * Insert the type's description here.
- * Creation date: (3/19/2004 10:42:31 AM)
- * @author: Fei Gao
- */
 public class ClientPDEDataContext extends PDEDataContext implements DataListener {
+	private final static Logger lg = LogManager.getLogger(ClientPDEDataContext.class);
 		//
 	private PDEDataManager dataManager = null;
 
-/**
- * Insert the method's description here.
- * Creation date: (5/22/2001 3:18:21 PM)
- * @param simManager cbit.vcell.desktop.controls.SimulationManager
- */
 public ClientPDEDataContext(PDEDataManager argDataManager) {
 	super();
 	if (argDataManager != null) {
@@ -46,11 +39,6 @@ public ClientPDEDataContext(PDEDataManager argDataManager) {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (5/22/2001 3:19:48 PM)
- * @return cbit.vcell.desktop.controls.SimulationManager
- */
 public PDEDataManager getDataManager() {
 	return dataManager;
 }
@@ -88,25 +76,11 @@ public PlotData getLineScan(java.lang.String variable, double time, SpatialSelec
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (3/19/2004 11:27:04 AM)
- * @return cbit.vcell.simdata.SimDataBlock
- * @param varName java.lang.String
- * @param time double
- */
 protected ParticleDataBlock getParticleDataBlock(double time) throws DataAccessException {
 	return getDataManager().getParticleDataBlock(time);
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (3/19/2004 11:27:04 AM)
- * @return cbit.vcell.simdata.SimDataBlock
- * @param varName java.lang.String
- * @param time double
- */
 protected SimDataBlock getSimDataBlock(java.lang.String varName, double time) throws DataAccessException {
 	return getDataManager().getSimDataBlock(varName, time);
 }
@@ -118,10 +92,7 @@ public DataOperationResults doDataOperation(DataOperation dataOperation) throws 
 
 /**
  * retrieves a time series (single point as a function of time) of a specified spatial data set.
- *
- * @param variable name of variable to be sampled
- * @param index identifies index into data array.
- *
+ **
  * @returns annotated array of 'concentration vs. time' in a plot ready format.
  *
  * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
@@ -155,24 +126,11 @@ private void initialize() {
 		}
 		setVariableAndTime(variable, tp);
 	} catch (DataAccessException exc) {
-		exc.printStackTrace(System.out);
 		throw new RuntimeException(exc.getMessage(),exc);
 	}
 }
 
 
-/**
- * This method was created in VisualAge.
- *
- * @param exportSpec cbit.vcell.export.server.ExportSpecs
- */
-//public abstract void makeRemoteFile(ExportSpecs exportSpecs) throws DataAccessException;
-
-
-/**
- * 
- * @param event cbit.vcell.desktop.controls.SimulationEvent
- */
 public void newData(DataEvent event) {
 	try {
 		setTimePoints(getDataManager().getDataSetTimes());
@@ -181,16 +139,9 @@ public void newData(DataEvent event) {
 		//if after referesh the time is set again, the property won't propagate
 		//refreshData();
 	} catch (DataAccessException exc) {
-		exc.printStackTrace(System.out);
+		lg.error(exc);
 	}
 }
-
-
-/**
- * Insert the method's description here.
- * Creation date: (10/3/00 5:03:43 PM)
- */
-//public abstract void refreshIdentifiers();
 
 
 /**
@@ -219,36 +170,23 @@ public void setDataManager(PDEDataManager newDataManager) throws DataAccessExcep
 }
 
 
-/**
- * This method was created in VisualAge.
- *
- * @param exportSpec cbit.vcell.export.server.ExportSpecs
- */
 @Override
 public void makeRemoteFile(ExportSpecs exportSpecs) throws DataAccessException {
 	throw new RuntimeException("should not use this method in NewClientPDEDataContext");
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (10/3/00 5:03:43 PM)
- */
 @Override
 public void refreshIdentifiers() {
 	try {
 		DataIdentifier[] newDataIdentifiers = getDataManager().getDataIdentifiers();
 		setDataIdentifiers(newDataIdentifiers);
 	} catch (DataAccessException exc) {
-		exc.printStackTrace(System.out);
+		lg.error(exc);
 	}
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (10/3/00 5:03:43 PM)
- */
 public void refreshTimes() throws DataAccessException {
 	setTimePoints(getDataManager().getDataSetTimes());
 }

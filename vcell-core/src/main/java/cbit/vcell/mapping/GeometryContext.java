@@ -18,6 +18,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
@@ -52,6 +54,7 @@ import cbit.vcell.parser.ExpressionException;
  */
 @SuppressWarnings("serial")
 public  class GeometryContext implements Serializable, Matchable, PropertyChangeListener, IssueSource {
+	private final static Logger lg = LogManager.getLogger(GeometryContext.class);
 	public static final String PROPERTY_STRUCTURE_MAPPINGS = "structureMappings";	
 	
 	protected transient java.beans.PropertyChangeSupport propertyChange;
@@ -75,11 +78,6 @@ public  class GeometryContext implements Serializable, Matchable, PropertyChange
 		}
 	}
 	
-/**
- * This method was created by a SmartGuide.
- * @param model cbit.vcell.model.Model
- * @param geometry cbit.vcell.geometry.Geometry
- */
 GeometryContext(GeometryContext geometryContext, SimulationContext newSimulationContext, Geometry newClonedGeometry) {
 	this.fieldGeometry = newClonedGeometry;
 	this.fieldModel = geometryContext.getModel();
@@ -104,7 +102,7 @@ GeometryContext(GeometryContext geometryContext, SimulationContext newSimulation
 		refreshStructureMappings();
 		newSimulationContext.refreshSpatialObjects();
 	}catch (Exception e){
-		e.printStackTrace(System.out);
+		lg.error(e);
 	}	
 	refreshDependencies();
 }
@@ -121,7 +119,7 @@ GeometryContext (Model model, Geometry geometry, SimulationContext simulationCon
 	try {
 		refreshStructureMappings();
 	}catch (Exception e){
-		e.printStackTrace(System.out);
+		lg.error(e);
 	}		
 }
 /**
@@ -136,12 +134,7 @@ public synchronized void addPropertyChangeListener(java.beans.PropertyChangeList
 public synchronized void addVetoableChangeListener(java.beans.VetoableChangeListener listener) {
 	getVetoPropertyChange().addVetoableChangeListener(listener);
 }
-/**
- * This method was created in VisualAge.
- * @param feature cbit.vcell.model.Feature
- * @param geometryClass cbit.vcell.geometry.SubVolume
- * @throws MappingException 
- */
+
 public void assignStructure(Structure structure, GeometryClass geometryClass) throws IllegalMappingException, PropertyVetoException, MappingException {
 	
 	StructureMapping structureMapping = (StructureMapping)getStructureMapping(structure);
@@ -433,8 +426,7 @@ public boolean isAllSizeSpecifiedPositive()
 			}
 			catch (ExpressionException e)
 			{
-				e.printStackTrace();
-				throw new RuntimeException("Size of structure "+structureMappings[i].getStructure().getName()+ "cannot be evaluated to a constant.");
+				throw new RuntimeException("Size of structure "+structureMappings[i].getStructure().getName()+ "cannot be evaluated to a constant.", e);
 			}
 		}
 	}
@@ -533,26 +525,22 @@ public void propertyChange(PropertyChangeEvent event) {
 		try {
 			refreshStructureMappings();
 			//getSimulationContext().refreshSpatialObjects();
-		}catch (MappingException e){
-			e.printStackTrace(System.out);
-		}catch (PropertyVetoException e){
-			e.printStackTrace(System.out);
 		}catch (Exception e){
-			e.printStackTrace(System.out);
+			lg.error(e);
 		}
 	}
 	if (event.getSource() == getGeometry().getGeometrySurfaceDescription()){
 		try {
 			getSimulationContext().refreshSpatialObjects();
 		}catch (Exception e){
-			e.printStackTrace(System.out);
+			lg.error(e);
 		}
 	}
 	if (event.getSource() == this && event.getPropertyName().equals(PROPERTY_STRUCTURE_MAPPINGS)){
 		try {
 			fieldSimulationContext.getReactionContext().refreshSpeciesContextSpecBoundaryUnits(getStructureMappings());
 		}catch (Exception e){
-			e.printStackTrace(System.out);
+			lg.error(e);
 		}
 	}
 	if (event.getSource() instanceof StructureMapping){
@@ -560,7 +548,7 @@ public void propertyChange(PropertyChangeEvent event) {
 			try {
 				fieldSimulationContext.getReactionContext().refreshSpeciesContextSpecBoundaryUnits(getStructureMappings());
 			}catch (Exception e){
-				e.printStackTrace(System.out);
+				lg.error(e);
 			}
 		}
 	}
@@ -718,8 +706,7 @@ public void refreshStructureMappings() throws MappingException, PropertyVetoExce
 		try {
 			setStructureMappings(newStructureMappings);
 		}catch (Exception e){
-			e.printStackTrace(System.out);
-			throw new MappingException(e.getMessage());
+			throw new MappingException(e.getMessage(), e);
 		}
 	}
 	
@@ -742,7 +729,7 @@ private void setDefaultUnitSizes() throws PropertyVetoException {
 					try {
 						unitSizeParameter.setExpression(new Expression(1.0));
 					} catch (ExpressionBindingException e) {
-						e.printStackTrace();
+						lg.error(e);
 					}
 				}
 			} else if (sm instanceof FeatureMapping) {
@@ -752,7 +739,7 @@ private void setDefaultUnitSizes() throws PropertyVetoException {
 						try {
 							unitSizeParameter.setExpression(new Expression(1.0));
 						} catch (ExpressionBindingException e) {
-							e.printStackTrace();
+							lg.error(e);
 						}
 					}
 				} else {
@@ -760,7 +747,7 @@ private void setDefaultUnitSizes() throws PropertyVetoException {
 						try {
 							unitSizeParameter.setExpression(new Expression(1.0));
 						} catch (ExpressionBindingException e) {
-							e.printStackTrace();
+							lg.error(e);
 						}
 					}
 				}
@@ -868,8 +855,7 @@ void setGeometry(Geometry geometry) throws MappingException {
 		refreshDependencies();
 		getSimulationContext().refreshSpatialObjects();
 	}catch (PropertyVetoException e){
-		e.printStackTrace(System.out);
-		throw new MappingException(e.getMessage());
+		throw new MappingException(e.getMessage(), e);
 	}
 	firePropertyChange(GeometryOwner.PROPERTY_NAME_GEOMETRY, oldValue, geometry);
 }
@@ -885,8 +871,7 @@ public void setModel(Model model) throws MappingException {
 		refreshStructureMappings();
 		refreshDependencies();
 	}catch (PropertyVetoException e){
-		e.printStackTrace(System.out);
-		throw new MappingException(e.getMessage());
+		throw new MappingException(e.getMessage(), e);
 	}
 	firePropertyChange("model", oldValue, model);
 }

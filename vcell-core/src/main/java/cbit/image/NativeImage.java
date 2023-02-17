@@ -192,7 +192,6 @@ public BufferedImage getJavaImage() {
 	try {
 		return ImageIO.read(new ByteArrayInputStream(nativeData));
 	} catch (IOException e) {
-		e.printStackTrace();
 		throw new RuntimeException("failed to read Native image :"+e.getMessage(),e);
 	}
 }

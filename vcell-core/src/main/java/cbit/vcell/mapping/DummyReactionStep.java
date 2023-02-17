@@ -24,8 +24,7 @@ public abstract class DummyReactionStep extends SimpleReaction {
 		try {
 			setKinetics(new GeneralKinetics(this));
 		} catch (ExpressionException e) {
-			e.printStackTrace(System.out);
-			throw new RuntimeException(e.getMessage());
+			throw new RuntimeException(e.getMessage(), e);
 		}
 		addReactionParticipant(new Reactant(null,this,speciesContext,1));
 	}

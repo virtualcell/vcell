@@ -73,8 +73,6 @@ public class IdleProcessSelfTerminator extends Thread {
 			
 		catch (Exception e) {
 			lg.error("IdleProcessSelfTerminator exception shutdown",e);
-			System.err.println("IdleProcessSelfTerminator exception shutdown");
-			e.printStackTrace(System.err);
 		}
 	}
 }

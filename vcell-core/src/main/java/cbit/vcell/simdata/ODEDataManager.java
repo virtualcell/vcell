@@ -9,6 +9,8 @@
  */
 
 package cbit.vcell.simdata;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.solver.nfsim.NFSimMolecularConfigurations;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.VCDataIdentifier;
@@ -27,6 +29,8 @@ import cbit.vcell.util.ColumnDescription;
  * @author: Ion Moraru
  */
 public class ODEDataManager implements DataManager {
+	private final static Logger lg = LogManager.getLogger(ODEDataManager.class);
+
 	private VCDataManager vcDataManager = null;
 	private VCDataIdentifier vcDataIdentifier = null;
 	private ODESolverResultSet odeSolverResultSet = null;
@@ -50,8 +54,7 @@ public void setOutputContext(OutputContext newOutputContext) {
 						try {
 							odeSolverResultSet.removeFunctionColumn(funcColDesc);
 						} catch (ExpressionException e) {
-							e.printStackTrace(System.out);
-							throw new RuntimeException("Cannot remove function column from result set."+e.getMessage());
+							throw new RuntimeException("Cannot remove function column from result set."+e.getMessage(), e);
 						}
 					}
 				}
@@ -85,9 +88,7 @@ public ODEDataManager(OutputContext outputContext, VCDataManager vcDataManager, 
 
 /**
  * retrieves a list of data names (state variables and functions) defined for this Simulation.
- * 
- * @param simulationInfo simulation database reference
- * 
+ *
  * @returns array of availlable data names.
  * 
  * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
@@ -194,14 +195,14 @@ private void addOutputFunction(AnnotatedFunction function, ODESolverResultSet od
 	} catch (ExpressionException e) {
 		javax.swing.JOptionPane.showMessageDialog(null, e.getMessage()+". "+funcName+" not added.", "Error Adding Function ", javax.swing.JOptionPane.ERROR_MESSAGE);
 		// Commenting the Stack trace for exception .... annoying to have the exception thrown after dealing with pop-up error message!
-		// e.printStackTrace(System.out);
+		// lg.error(e);
 		return;
 	}
 	try {
 		odeRS.addFunctionColumn(fcd);
 	} catch (ExpressionException e) {
 		javax.swing.JOptionPane.showMessageDialog(null, e.getMessage()+". "+funcName+" not added.", "Error Adding Function ", javax.swing.JOptionPane.ERROR_MESSAGE);
-		e.printStackTrace(System.out);
+		lg.error(e);
 	}
 }
 

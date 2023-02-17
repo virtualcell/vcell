@@ -3,6 +3,8 @@ package org.jlibsedml.modelsupport;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jlibsedml.execution.IModelResolver;
 
 /**
@@ -12,6 +14,7 @@ import org.jlibsedml.execution.IModelResolver;
  *
  */
 public class URLResourceRetriever extends AbstractResourceRetriever implements IModelResolver {
+    private final static Logger lg = LogManager.getLogger(URLResourceRetriever.class);
 
     /**
      * This implementation will try to resolve the URI as a URL and retrieve the resource at that 
@@ -35,7 +38,7 @@ public class URLResourceRetriever extends AbstractResourceRetriever implements I
       
     } catch (UnsupportedEncodingException e) {
         // TODO Auto-generated catch block
-        e.printStackTrace();
+        lg.error(e);
         return null;
     }
     }

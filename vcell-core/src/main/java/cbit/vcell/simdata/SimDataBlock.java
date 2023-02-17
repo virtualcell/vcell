@@ -14,10 +14,14 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 import cbit.vcell.math.VariableType;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 /**
  * This type was created in VisualAge.
  */
 public class SimDataBlock implements java.io.Serializable,SimDataHolder {
+	private final static Logger lg = LogManager.getLogger(SimDataBlock.class);
 
 	private transient PDEDataInfo info = null;
 	private transient double data[] = null;
@@ -90,12 +94,6 @@ public VariableType getVariableType() {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (9/13/2004 9:33:11 AM)
- * @param out java.io.ObjectOutputStream
- * @exception java.io.IOException The exception description.
- */
 private void inflate() {
 	if (compressedBytes == null) {
 		return;
@@ -111,18 +109,11 @@ private void inflate() {
 		compressedBytes = null;
 		
 	} catch (Exception ex) {
-		ex.printStackTrace(System.out);
-		throw new RuntimeException(ex.getMessage());
+		throw new RuntimeException(ex.getMessage(), ex);
 	}
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (9/13/2004 9:33:11 AM)
- * @param out java.io.ObjectOutputStream
- * @exception java.io.IOException The exception description.
- */
 private void readObject(ObjectInputStream s) throws IOException, ClassNotFoundException {
 	int compressedSize = s.readInt();
 	compressedBytes = new byte[compressedSize];
@@ -130,12 +121,6 @@ private void readObject(ObjectInputStream s) throws IOException, ClassNotFoundEx
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (9/13/2004 9:33:11 AM)
- * @param out java.io.ObjectOutputStream
- * @exception java.io.IOException The exception description.
- */
 private void writeObject(ObjectOutputStream s) throws IOException {
 	Object objArray[] =  { varType, info, data};
 
