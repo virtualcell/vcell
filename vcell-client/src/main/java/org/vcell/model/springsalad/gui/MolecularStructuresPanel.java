@@ -145,7 +145,8 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 			if (source == siteXField || source == siteYField || source == siteZField) {
 				changePosition();
 			} else if(source == linkLengthField) {
-				changeLinkLength();
+				// TODO: do NOT call here changeLinkLength(), it will modified the newly selected link instead the old one
+				// changeLinkLength();
 			}
 		}
 		public void propertyChange(java.beans.PropertyChangeEvent e) {
@@ -154,6 +155,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 			}
 			// TODO: I think this is not needed
 //			if (e.getSource() == selectionManager) {
+//				System.out.println(e.getPropertyName());
 //				if (e.getPropertyName().equals(SelectionManager.PROPERTY_NAME_SELECTED_OBJECTS)) {
 //					Object[] objects = selectionManager.getSelectedObjects();
 //					onSelectedObjectsChange(objects);
@@ -181,7 +183,6 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 				showLinkLength(siteLinksList.getSelectedValue());
 			}
 		}
-		
 	}
 
 	public MolecularStructuresPanel() {
@@ -1201,9 +1202,10 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		recalculateLinkLengths();
 	}
 	private void changeLinkLength() {
-		System.out.println("Link length changed");
 		Double linkLength = Double.parseDouble(linkLengthField.getText());
 		MolecularInternalLinkSpec selectedValue = siteLinksList.getSelectedValue();
+		int selectedIndex = siteLinksList.getSelectedIndex();
+		System.out.println("changeLinkLength(): selected index '" + selectedIndex + "' being set to " + linkLength);
 		selectedValue.setLinkLength(linkLength);
 		recalculatePositions();
 	}
@@ -1246,6 +1248,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 			linkLengthField.setText(null);
 			return;		// nothing selected
 		}
+		System.out.println("showLinkLength(): Selected row is '" + siteLinksList.getSelectedIndex() + "'");
 		linkLengthField.setEditable(true);
 		linkLengthField.setText(selectedValue.getLinkLength()+"");
 		
