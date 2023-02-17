@@ -14,6 +14,8 @@ import java.util.Collection;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.TokenMangler;
 /**
  * Insert the type's description here.
@@ -22,6 +24,7 @@ import org.vcell.util.TokenMangler;
  */
 @SuppressWarnings("serial")
 public class BioModelChildSummary implements java.io.Serializable {
+	private final static Logger lg = LogManager.getLogger(BioModelChildSummary.class);
 //	public static final boolean debug = true;
 	private String scNames[] = new String[0];
 	private String scAnnots[] = new String[0];
@@ -154,8 +157,7 @@ public static BioModelChildSummary fromDatabaseSerialization(String databaseSeri
 		bmcs.simAnnots = (String[][])simAnnotsV.toArray(new String[simAnnotsV.size()][]);
 	}catch(Exception e)
 	{
-		System.out.println("Failed reading BioModelChildSummary info..." + st.toString());
-		e.printStackTrace(System.out);
+		lg.error("Failed reading BioModelChildSummary info..." + st.toString(), e);
 	}
 	return bmcs;
 }

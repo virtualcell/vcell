@@ -172,7 +172,6 @@ public class ParameterContext implements Matchable, ScopedSymbolTable, Serializa
 			try {
 				renameLocalParameter(getName(), name);
 			} catch (ExpressionException e) {
-				e.printStackTrace();
 				throw new RuntimeException("failed to change parameter "+oldValue+" to "+name+": "+e.getMessage(),e);
 			}
 			super.firePropertyChange("name", oldValue, name);
@@ -578,12 +577,6 @@ public NameScope getNameScope() {
 	return nameScope;
 }
 
-/**
- * Insert the method's description here.
- * Creation date: (4/3/2004 10:48:38 AM)
- * @return cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter
- * @param role int
- */
 public ParameterContext.LocalParameter getLocalParameterFromName(String name) {
 	for (int i = 0; i < fieldParameters.length; i++){
 		if (fieldParameters[i].getName().equals(name)){
@@ -594,12 +587,6 @@ public ParameterContext.LocalParameter getLocalParameterFromName(String name) {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (4/3/2004 10:48:38 AM)
- * @return cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter
- * @param role int
- */
 public ParameterContext.LocalParameter getLocalParameterFromRole(ParameterRoleEnum role) {
 	for (int i = 0; i < fieldParameters.length; i++){
 		if (fieldParameters[i].getRole() == role){
@@ -609,11 +596,6 @@ public ParameterContext.LocalParameter getLocalParameterFromRole(ParameterRoleEn
 	return null;
 }
 
-/**
- * Gets the parameters property (cbit.vcell.model.Parameter[]) value.
- * @return The parameters property value.
- * @see #setParameters
- */
 public LocalParameter[] getLocalParameters() {
 	return fieldParameters;
 }
@@ -797,8 +779,7 @@ private void removeParameter(ParameterContext.LocalParameter parameter) {
 			try {
 				setLocalParameters(newParameters);
 			} catch (PropertyVetoException | ExpressionBindingException e) {
-				e.printStackTrace();
-				throw new RuntimeException(e.getMessage());
+				throw new RuntimeException(e.getMessage(), e);
 			}
 			return;
 		}
@@ -894,13 +875,6 @@ final void cleanupParameters() throws ExpressionException, PropertyVetoException
 }
 
 
-/**
- * Sets the parameters property (cbit.vcell.model.Parameter[]) value.
- * @param parameters The new value for the property.
- * @exception java.beans.PropertyVetoException The exception description.
- * @throws ExpressionBindingException 
- * @see #getParameters
- */
 public void setLocalParameters(LocalParameter[] parameters) throws java.beans.PropertyVetoException, ExpressionBindingException {
 	LocalParameter[] oldValue = fieldParameters;
 	fireVetoableChange("localParameters", oldValue, parameters);
@@ -1068,8 +1042,7 @@ public void setParameterValue(LocalParameter parm, Expression exp, boolean autoc
 			}
 			cleanupParameters();
 		}catch (PropertyVetoException e){
-			e.printStackTrace(System.out);
-			throw new RuntimeException(e.getMessage());
+			throw new RuntimeException(e.getMessage(), e);
 		}
 	}
 }

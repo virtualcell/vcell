@@ -181,7 +181,7 @@ public class PathwayReaderBiopax3 {
 			pathwayModel.reconcileReferences(null);
 			System.out.println(pathwayModel.show(false));
 		}catch (Exception e){
-			e.printStackTrace(System.out);			
+			e.printStackTrace();
 		}
 	}
 

@@ -54,8 +54,7 @@ public MeshSpecification(MeshSpecification meshSpecification) {
 	try {
 		setSamplingSize(meshSpecification.getSamplingSize());
 	}catch (PropertyVetoException e){
-		e.printStackTrace(System.out);
-		throw new RuntimeException(e.getMessage());
+		throw new RuntimeException(e.getMessage(), e);
 	}
 }
 

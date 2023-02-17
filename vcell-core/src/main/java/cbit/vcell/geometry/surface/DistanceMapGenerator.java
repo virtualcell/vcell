@@ -18,6 +18,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
@@ -30,6 +32,7 @@ import cbit.vcell.render.FastMarchingMethodHA;
 import cbit.vcell.render.Vect3d;
 
 public class DistanceMapGenerator {
+	private final static Logger lg = LogManager.getLogger(DistanceMapGenerator.class);
 	
     private static final double MAX_NUMBER = Double.POSITIVE_INFINITY;
 
@@ -933,7 +936,7 @@ public class DistanceMapGenerator {
 				System.out.println("Distance to triangle = " + distanceToTriangle3d + "  (closest to vertex t2) - should be " + distanceToTriangleExperimental);
 			}
 		} catch (Exception e) {
-			e.printStackTrace(System.out);
+			lg.error(e);
 		}
 			
 		// we work inside a cube of 100x100x100

@@ -22,6 +22,8 @@ import java.util.Hashtable;
 import java.util.Vector;
 
 import cbit.vcell.solver.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.optimization.ProfileData;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.Compare;
@@ -86,6 +88,8 @@ import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.solvers.FVSolverStandalone;
 
 public class FRAPStudy implements Matchable{
+	private final static Logger lg = LogManager.getLogger(FRAPStudy.class);
+
 	public static final String EXTRACELLULAR_NAME = "extracellular";
 	public static final String PLASMAMEMBRANE_NAME = "plasmaMembrane";
 	public static final String CYTOSOL_NAME = "cytosol";
@@ -257,8 +261,7 @@ public class FRAPStudy implements Matchable{
 		try {
 			maskImage = new VCImageUncompressed(null,bytePixels,extent,numX,numY,numZ);
 		} catch (ImageException e) {
-			e.printStackTrace();
-			throw new RuntimeException("failed to create mask image for geometry");
+			throw new RuntimeException("failed to create mask image for geometry", e);
 		}
 		Geometry geometry = new Geometry("geometry",maskImage);
 		if(geometry.getGeometrySpec().getNumSubVolumes() != 2){
@@ -418,8 +421,7 @@ public class FRAPStudy implements Matchable{
 		try {
 			maskImage = new VCImageUncompressed(null,bytePixels,extent,numX,numY,numZ);
 		} catch (ImageException e) {
-			e.printStackTrace();
-			throw new RuntimeException("failed to create mask image for geometry");
+			throw new RuntimeException("failed to create mask image for geometry", e);
 		}
 		Geometry geometry = new Geometry("geometry",maskImage);
 		if(geometry.getGeometrySpec().getNumSubVolumes() != 2){
@@ -739,7 +741,7 @@ public class FRAPStudy implements Matchable{
 				Thread.sleep(1000);
 			}catch(InterruptedException ex)
 			{
-				ex.printStackTrace(System.out);
+				//lg.error(e);
 				//catch interrupted exception and ignore it, otherwise it will popup a dialog in user interface saying"sleep interrupted"
 			}
 			status = fvSolver.getSolverStatus();
@@ -800,7 +802,7 @@ public class FRAPStudy implements Matchable{
 					Thread.sleep(1000);
 				}catch(InterruptedException ex)
 				{
-					ex.printStackTrace(System.out);
+					//lg.error(e);
 					//catch interrupted exception and ignore it, otherwise it will popup a dialog in user interface saying"sleep interrupted"
 				}
 				status = fvSolver.getSolverStatus();
@@ -1064,8 +1066,7 @@ public class FRAPStudy implements Matchable{
 		    	fdos.isize = isize;
 		    	localWorkspace.getDataSetControllerImpl().fieldDataFileOperation(fdos);
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				lg.error(e);
 			}
 			return new ROIDataGenerator(ROI_EXTDATA_NAME, /*name*/
 					                    new int[] {0}/* volumePoints*/, 
@@ -1123,8 +1124,7 @@ public class FRAPStudy implements Matchable{
 	    	FieldDataIdentifierSpec fdis = new FieldDataIdentifierSpec(psfFieldFunc, newPsfExtDataID);
 	    	return fdis;
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			lg.error(e);
 			return null;
 		}					                                               
 	}

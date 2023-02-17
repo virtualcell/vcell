@@ -45,7 +45,7 @@ public static void main(String[] args) {
 		System.out.println("STDERR");
 		System.out.println(mathExecutable.getStderrString());
 	}catch (Throwable e){
-		e.printStackTrace(System.out);
+		e.printStackTrace();
 	}
 }
 }

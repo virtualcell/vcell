@@ -10,58 +10,35 @@
 
 package cbit.vcell.export.gloworm.atoms;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.DataOutputStream;
 import java.io.IOException;
 /**
  * This type was created in VisualAge.
  */
 public class VideoSampleDescriptionEntryJPEG extends VideoSampleDescriptionEntry {
+	private final static Logger lg = LogManager.getLogger(VideoSampleDescriptionEntryJPEG.class);
+
 	public final static int SIZE = 86;
 	public final static String DATA_FORMAT = "jpeg";
 
-/**
- * This method was created in VisualAge.
- * @param frameWidth int
- * @param frameHeight int
- * @param frameResolution int
- * @param colorDepth int
- */
 public VideoSampleDescriptionEntryJPEG(int frameWidth, int frameHeight) {
 	this((short)frameWidth, (short)frameHeight, defaultFrameResolution, defaultColorDepth, (short)0);
 }
 
 
-/**
- * This method was created in VisualAge.
- * @param frameWidth int
- * @param frameHeight int
- * @param frameResolution int
- * @param colorDepth int
- */
 public VideoSampleDescriptionEntryJPEG(int frameWidth, int frameHeight, int referenceIndex) {
 	this((short)frameWidth, (short)frameHeight, defaultFrameResolution, defaultColorDepth, (short)referenceIndex);
 }
 
 
-/**
- * This method was created in VisualAge.
- * @param frameWidth int
- * @param frameHeight int
- * @param frameResolution int
- * @param colorDepth int
- */
 public VideoSampleDescriptionEntryJPEG(int frameWidth, int frameHeight, int frameResolution, int colorDepth, int referenceIndex) {
 	this((short)frameWidth, (short)frameHeight, frameResolution, (short)colorDepth, (short)referenceIndex);
 }
 
 
-/**
- * This method was created in VisualAge.
- * @param width short
- * @param height short
- * @param resolution short
- * @param depth short
- */
 public VideoSampleDescriptionEntryJPEG(short frameWidth, short frameHeight, int frameResolution, short colorDepth, short referenceIndex) {
 	size = SIZE;
 	dataFormat = DATA_FORMAT;
@@ -83,9 +60,6 @@ public VideoSampleDescriptionEntryJPEG(short frameWidth, short frameHeight, int 
 }
 
 
-/**
- * writeData method comment.
- */
 public boolean writeData(DataOutputStream out) {
 	try {
 		out.writeInt(size);
@@ -108,8 +82,7 @@ public boolean writeData(DataOutputStream out) {
 		out.writeShort(colorTableID);
 		return true;
 	} catch (IOException e) {
-		System.out.println("Unable to write: " + e.getMessage());
-		e.printStackTrace();
+		lg.error("Unable to write: " + e.getMessage(), e);
 		return false;
 	}
 }

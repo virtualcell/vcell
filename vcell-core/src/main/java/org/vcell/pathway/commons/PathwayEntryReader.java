@@ -14,6 +14,8 @@ import static org.vcell.pathway.PathwayXMLHelper.showUnexpected;
 
 import java.io.File;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jdom.Attribute;
 import org.jdom.Document;
 import org.jdom.Element;
@@ -21,6 +23,7 @@ import org.jdom.Element;
 import cbit.util.xml.XmlUtil;
 
 public class PathwayEntryReader {
+	private final static Logger lg = LogManager.getLogger(PathwayEntryReader.class);
 
 	public int numDuplicates = 0;
 	private PathwayEntryModel pathwayModel = new PathwayEntryModel();
@@ -37,7 +40,7 @@ public class PathwayEntryReader {
 			System.out.println("   " + pathwayModel.getPathwayEntryObjects().size() + " elements.");
 			System.out.println("   " + pathwayReader.numDuplicates + " duplicates.");
 		}catch (Exception e){
-			e.printStackTrace(System.out);
+			lg.error(e);
 		}
 	}
 

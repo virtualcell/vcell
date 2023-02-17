@@ -28,17 +28,13 @@ public class NetCDFRefDataReader {
 	
 	private NetcdfFile ncfile = null;
 	private String filename = null;
-	/**
-	 * The constructor, which opens and .nc file. and output required arraies.
-	 * @param String filename: the NetCDF file name.
-	 */
+
 	public NetCDFRefDataReader(String fname) throws IOException {
 		filename = fname;
 		try {
 			ncfile = NetcdfFile.open(filename);
 		} catch (IOException ioe) {
-			ioe.printStackTrace(System.out);
-		    throw new IOException("Cannot open file:"+filename +"!"+ ioe.getMessage());
+		    throw new IOException("Cannot open file:"+filename +"!"+ ioe.getMessage(), ioe);
 		} 
 	}
 	/**
@@ -48,8 +44,7 @@ public class NetCDFRefDataReader {
 		if (null != ncfile) try {
 	      ncfile.close();
 	    } catch (IOException ioe) {
-	    	ioe.printStackTrace(System.out);
-		    throw new IOException("Cannot close file:"+filename+"!");
+		    throw new IOException("Cannot close file:"+filename+"!", ioe);
 	    }
 	}
 	
@@ -87,8 +82,7 @@ public class NetCDFRefDataReader {
 			try{
 				data = (ArrayDouble.D1)time.read();
 			}catch(IOException ioe){
-				ioe.printStackTrace(System.err);
-				throw new IOException("Can not read time points from the model.");
+				throw new IOException("Can not read time points from the model.", ioe);
 			}
 			for(int i=0; i<shape[0]; i++)
 			{
@@ -119,8 +113,7 @@ public class NetCDFRefDataReader {
 			try{
 				data = (ArrayDouble.D2)regionVars.read();
 			}catch(Exception e){
-				e.printStackTrace(System.err);
-				throw new IOException("Can not read species' names from the model.");
+				throw new IOException("Can not read species' names from the model.", e);
 			}
 			int numTimePoints = shape[0];
 			double[] values = new double[numTimePoints];
@@ -149,8 +142,7 @@ public class NetCDFRefDataReader {
 			try{
 				data = (ArrayDouble.D2)regionVars.read();
 			}catch(Exception e){
-				e.printStackTrace(System.err);
-				throw new IOException("Can not read species' names from the model.");
+				throw new IOException("Can not read species' names from the model.", e);
 			}
 			int numRois = shape[1];
 			int numTimePoints = shape[0];
@@ -177,7 +169,7 @@ public class NetCDFRefDataReader {
 		try
 		{
 //			ncEva.setNetCDFTarget("C:/trial_10_EM.nc");
-		}catch (Exception e) {e.printStackTrace(System.err);}
+		}catch (Exception e) {e.printStackTrace();}
 		
 		try
 		{
@@ -208,14 +200,14 @@ public class NetCDFRefDataReader {
 //					System.out.println("array type is double with rank 3. ");
 //				System.out.println("array rank is "+arr.getRank());
 			//NCdump.printArray(arr,"State",System.out,null);
-		}catch (Exception e){e.printStackTrace(System.err);}
+		}catch (Exception e){e.printStackTrace();}
 //		if(ncEva.getNetCDFReader() != null)
 //		{
 //			try{
 //				ncEva.getNetCDFReader().close();
 //			}catch(IOException ioe)
 //			{
-//				ioe.printStackTrace(System.err);
+//				iolg.error(e);
 //			}
 //		}
 	}

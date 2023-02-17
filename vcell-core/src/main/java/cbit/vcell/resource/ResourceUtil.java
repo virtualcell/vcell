@@ -114,15 +114,13 @@ public class ResourceUtil {
 			}
 			return perlExe;
 		} catch (InterruptedException | FileNotFoundException e) {
-			e.printStackTrace();
-			throw new IOException("failed to find perl executable: "+e.getMessage()+"\n\n please install perl (see https://www.perl.org/)");
+			throw new IOException("failed to find perl executable: "+e.getMessage()+"\n\n please install perl (see https://www.perl.org/)", e);
 		}
 	}
 	/**
 	 * get executable based on name; will try stored values, common program names and optional finder
 	 * @param name
 	 * @param useBitSuffix whether to use VCell rules for naming executable
-	 * @param efinder extra steps to find executable, may be null
 	 * @return executable file if it can be found
 	 * @throws FileNotFoundException if it can't
 	 * @throws BackingStoreException
@@ -185,7 +183,7 @@ public class ResourceUtil {
 
 	/**
 	 * add system specific environment settings
-	 * @param envs
+	 * @param env
 	 */
 	public static void setEnvForOperatingSystem(Map<String,String> env) {
 		OperatingSystemInfo osi = OperatingSystemInfo.getInstance( );
@@ -205,13 +203,6 @@ public class ResourceUtil {
 		}
 	}
 
-	/**VCell
-	 * load solver executable from resources along with libraries
-	 * @param basename name of executable without path or os specific extension
-	 * @param vl VersionedLibrary, may not be null
-	 * @return executable
-	 * @throws IOException
-	 */
 	public static File findSolverExecutable(String basename) throws IOException {
 		OperatingSystemInfo osi = OperatingSystemInfo.getInstance( );
 		String name = basename + osi.getExeBitSuffix();
@@ -401,7 +392,6 @@ public class ResourceUtil {
 				return sb.toString();
 			} catch (IOException e) {
 				logger.warn("Can't extract " + resname, e);
-				e.printStackTrace();
 			}
 		}
 		} catch (IOException e1) {
@@ -504,7 +494,8 @@ public class ResourceUtil {
 			}
 		}
 		if(javaCmd.equals(defaultJavaCmd)) {
-			(new Exception("Failed to find java executable in installation dir '"+ResourceUtil.getVCellInstall()+"'")).printStackTrace();
+			Exception e = new Exception("Failed to find java executable in installation dir '"+ResourceUtil.getVCellInstall()+"'");
+			logger.error(e);
 		}
 		return javaCmd;
 	}

@@ -948,8 +948,7 @@ private void addReactions() throws SbmlException, XMLStreamException {
 			ASTNode exprFormulaNode = getFormulaFromExpression(rateExpr);
 			sbmlKLaw.setMath(exprFormulaNode);
 		} catch (cbit.vcell.parser.ExpressionException e) {
-			e.printStackTrace(System.out);
-			throw new RuntimeException("Error getting value of parameter : "+e.getMessage());
+			throw new RuntimeException("Error getting value of parameter : "+e.getMessage(), e);
 		}
 		
 		// Add kineticLaw to sbmlReaction - not needed now, since we use sbmlRxn.createKLaw() ??
@@ -1013,7 +1012,7 @@ private void addReactions() throws SbmlException, XMLStreamException {
 //				try {
 //					SBMLHelper.addNote(sr, "VCELL guess: how do we know if reaction is constant?");
 //				} catch (Exception e) {
-//					e.printStackTrace();
+//					lg.error(e);
 //				}
 			}
 		}
@@ -1137,14 +1136,9 @@ private void addSpecies() throws XMLStreamException, SbmlException {
 		if (initConc.getExpression() == null) {
 			try {
 				getSelectedSimContext().convertSpeciesIniCondition(true);
-			} catch (MappingException e) {
+			} catch (MappingException | PropertyVetoException e) {
 				// TODO Auto-generated catch block
-				e.printStackTrace();
-				throw new RuntimeException(e.getMessage());
-			} catch (PropertyVetoException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				throw new RuntimeException(e.getMessage());
+				throw new RuntimeException(e.getMessage(), e);
 			}
 		}
 		Expression initConcExp = initConc.getExpression();
@@ -1259,8 +1253,7 @@ private void addSpecies() throws XMLStreamException, SbmlException {
 								try {
 									bDiffExprIsZero =  (diffExpr.evaluateConstant() == 0.0);
 								} catch (Exception e) {
-									e.printStackTrace(System.out);
-									throw new RuntimeException("Unable to evalute numeric value of diffusion parameter for speciesContext '" + vcSpeciesContexts[i] + "'.");
+									throw new RuntimeException("Unable to evalute numeric value of diffusion parameter for speciesContext '" + vcSpeciesContexts[i] + "'.", e);
 								} 
 							}
 							boolean bDiffusionZero = (bDiffExprNull || bDiffExprIsZero);
@@ -1493,8 +1486,7 @@ private org.sbml.jsbml.Parameter createSBMLParamFromSpeciesParam(SpeciesContext 
 		}
 		return param;
 	} catch (ExpressionException e) {
-		e.printStackTrace(System.out);
-		throw new RuntimeException("Unable to interpret parameter '" + scsParam.getName() + "' of species : " + spContext.getName());
+		throw new RuntimeException("Unable to interpret parameter '" + scsParam.getName() + "' of species : " + spContext.getName(), e);
 	}
 }
 
@@ -1562,8 +1554,7 @@ private void addEvents() {
 				ASTNode math = getFormulaFromExpression(flattenedTrigger,MathType.BOOLEAN);
 				trigger.setMath(math);
 			}catch (ExpressionException e){
-				e.printStackTrace(System.out);
-				throw new RuntimeException("failed to generate trigger expression for event "+vcEvent.getName()+": "+e.getMessage());
+				throw new RuntimeException("failed to generate trigger expression for event "+vcEvent.getName()+": "+e.getMessage(), e);
 			}
 		
 			// create delay
@@ -1720,7 +1711,7 @@ private static ASTNode getFormulaFromExpression(Expression expression, MathType 
 //		expression.substituteInPlace(new Expression("t"), new Expression("time"));
 //	} catch (ExpressionException e2) {
 //		// TODO Auto-generated catch block
-//		e2.printStackTrace();
+//		lg.error(e);
 //		throw new RuntimeException(e2.toString());
 //	}
 //
@@ -1732,7 +1723,7 @@ private static ASTNode getFormulaFromExpression(Expression expression, MathType 
 //			return math;
 //		} catch (ParseException e) {
 //			// (konm * (h ^  - 1.0) / koffm)
-//			e.printStackTrace();
+//			lg.error(e);
 //			throw new RuntimeException(e.toString());
 //		}
 //	}
@@ -1742,12 +1733,8 @@ private static ASTNode getFormulaFromExpression(Expression expression, MathType 
 
 	try {
 		expMathMLStr = cbit.vcell.parser.ExpressionMathMLPrinter.getMathML(expression, false, desiredType, ExpressionMathMLPrinter.Dialect.SBML_SUBSET);
-	} catch (java.io.IOException e) {
-		e.printStackTrace(System.out);
-		throw new RuntimeException("Error converting expression to MathML string :" + e.getMessage());
-	} catch (cbit.vcell.parser.ExpressionException e1) {
-		e1.printStackTrace(System.out);
-		throw new RuntimeException("Error converting expression to MathML string :" + e1.getMessage());
+	} catch (IOException | ExpressionException e) {
+		throw new RuntimeException("Error converting expression to MathML string :" + e.getMessage(), e);
 	}
 
 	// Use libSBMl routines to convert MathML string to MathML document and a libSBML-readable formula string
@@ -2022,8 +2009,6 @@ private void checkUnistSystem() {
 	try {
 		modifiedBiomodel = ModelUnitConverter.createBioModelWithNewUnitSystem(getSelectedSimContext().getBioModel(), forcedModelUnitSystem);
 	} catch (ExpressionException | XmlParseException e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
 		throw new RuntimeException("could not convert units to SBML compatible", e);
 	}
 	vcBioModel = modifiedBiomodel;
@@ -2153,8 +2138,7 @@ private void addGeometry() throws SbmlException {
 				compMapping.setUnitSize(e.evaluateConstant());
 			}
 		} catch (ExpressionException e) {
-			e.printStackTrace(System.out);
-			throw new RuntimeException("Unable to create compartment mapping for structureMapping '" + compMapping.getId() +"' : " + e.getMessage());
+			throw new RuntimeException("Unable to create compartment mapping for structureMapping '" + compMapping.getId() +"' : " + e.getMessage(), e);
 		}
 	}
 	
@@ -2225,8 +2209,7 @@ private void addGeometry() throws SbmlException {
 		try {
 			vcGSD.updateAll();
 		} catch (Exception e) {
-			e.printStackTrace(System.out);
-			throw new RuntimeException("Unable to generate region images for geometry");
+			throw new RuntimeException("Unable to generate region images for geometry", e);
 		}
 	}
 	GeometricRegion[] vcGeometricRegions = vcGSD.getGeometricRegions();
@@ -2334,8 +2317,7 @@ private void addGeometry() throws SbmlException {
 					ASTNode mathMLNode = ASTNode.readMathMLFromString(mathMLStr);
 					analyticVol.setMath(mathMLNode);
 				} catch (Exception e) {
-					e.printStackTrace(System.out);
-					throw new RuntimeException("Error converting VC subvolume expression to mathML" + e.getMessage());
+					throw new RuntimeException("Error converting VC subvolume expression to mathML" + e.getMessage(), e);
 				}
 			}
 		}
@@ -2384,7 +2366,7 @@ private void addGeometry() throws SbmlException {
 //					vcGeometry.precomputeAll(new GeometryThumbnailImageFactoryAWT());
 //					vcImageGeometry = RayCaster.resampleGeometry(new GeometryThumbnailImageFactoryAWT(), vcGeometry, imageSize);
 //				} catch (Throwable e) {
-//					e.printStackTrace(System.out);
+//					lg.error(e);
 //					throw new RuntimeException("Unable to convert the original analytic or constructed solid geometry to image-based geometry : " + e.getMessage());
 //				}
 //			} else {
@@ -2402,7 +2384,7 @@ private void addGeometry() throws SbmlException {
 //					vcImageGeometry.getGeometrySurfaceDescription().setFilterCutoffFrequency(vcGeometry.getGeometrySurfaceDescription().getFilterCutoffFrequency());
 //					vcImageGeometry.precomputeAll(new GeometryThumbnailImageFactoryAWT(), true,true);
 //				} catch (Exception e) {
-//					e.printStackTrace(System.out);
+//					lg.error(e);
 //					throw new RuntimeException("Unable to convert the original analytic or constructed solid geometry to image-based geometry : " + e.getMessage());
 //				}
 //			}
@@ -2450,8 +2432,7 @@ private void addGeometry() throws SbmlException {
 				segmentedImageSampledField.setSamplesLength(compressedData.length);
 				segmentedImageSampledField.setSamples(compressedBuffer.toString().trim());
 			} catch (ImageException | IOException e) {
-				e.printStackTrace(System.out);
-				throw new RuntimeException("Unable to export image from VCell to SBML : " + e.getMessage());
+				throw new RuntimeException("Unable to export image from VCell to SBML : " + e.getMessage(), e);
 			}
 		}
 
@@ -2464,7 +2445,7 @@ private void addGeometry() throws SbmlException {
 			try {
 				distanceMaps = DistanceMapGenerator.computeDistanceMaps(vcImageGeometry, vcImageGeometry.getGeometrySpec().getImage(), false, false);
 			} catch (ImageException e) {
-				e.printStackTrace(System.out);
+				lg.error(e);
 				System.err.println("Unable to export distance map sampled field from VCell to SBML : " + e.getMessage());
 				// throw new RuntimeException("Unable to export distance map sampled field from VCell to SBML : " + e.getMessage());
 				
@@ -2784,14 +2765,12 @@ private void translateBioModel(SBMLDocument sbmlDocument) throws SbmlException, 
 	try {
 		addParameters();		// Add Parameters
 	} catch (ExpressionException e) {
-		e.printStackTrace(System.out);
-		throw new RuntimeException(e.getMessage());
+		throw new RuntimeException(e.getMessage(), e);
 	}
 	try {
 		addOverrideInitialAssignments();
 	} catch (Exception e) {
-		e.printStackTrace(System.out);
-		throw new RuntimeException(e.getMessage());
+		throw new RuntimeException(e.getMessage(), e);
 	}
 	addRateRules();				// Add Rules
 	addAssignmentRules();

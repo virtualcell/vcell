@@ -60,8 +60,7 @@ public FeatureMapping(Feature feature, SimulationContext argSimulationContext, M
 				new StructureMappingParameter(DefaultNames[ROLE_VolumePerUnitVolume], null, ROLE_VolumePerUnitVolume, modelUnitSystem.getInstance_DIMENSIONLESS()),			
 		});
 	}catch (java.beans.PropertyVetoException e){
-		e.printStackTrace(System.out);
-		throw new RuntimeException(e.getMessage());
+		throw new RuntimeException(e.getMessage(), e);
 	}
 }
 

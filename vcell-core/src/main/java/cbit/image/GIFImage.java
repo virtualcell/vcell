@@ -32,9 +32,8 @@ public GIFImage(byte AgifEncodedData[]) throws GifParsingException{
 	this.gifEncodedData = AgifEncodedData;
 	try{
 		getJavaImage();
-	}catch(Throwable e){
-		e.printStackTrace(System.out);
-		throw new GifParsingException("Error parsing gifEncodedData");
+	}catch(Exception e){
+		throw new GifParsingException("Error parsing gifEncodedData", e);
 	}
 }
 
@@ -56,7 +55,6 @@ public BufferedImage getJavaImage() {
 	try {
 		return ImageIO.read(new ByteArrayInputStream(gifEncodedData));
 	} catch (IOException e) {
-		e.printStackTrace();
 		throw new RuntimeException("error reading gif image: "+e.getMessage(),e);
 	}
 }

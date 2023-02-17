@@ -226,8 +226,7 @@ public class GIFInputStream extends BitInputStream
 		}
 		catch(LZWException ex)
 		{
-			ex.printStackTrace();
-			throw new GIFFormatException("LZW decoding failed");
+			throw new GIFFormatException("LZW decoding failed", ex);
 		}
 
 		return pixels;

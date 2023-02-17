@@ -176,7 +176,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 //						throw new MappingException("model structure '"+sm.getStructure().getName()+"' unit size = "+unitSize+" != 1.0 ... partial volume or surface mapping not yet supported for particles");
 //					}
 //				}catch (ExpressionException e){
-//					e.printStackTrace(System.out);
+//					lg.error(e);
 //					throw new MappingException("couldn't evaluate unit size for model structure '"+sm.getStructure().getName()+"' : "+e.getMessage());
 //				}
 //			}
@@ -488,8 +488,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 		try {
 			mathDesc.setGeometry(getSimulationContext().getGeometryContext().getGeometry());
 		}catch (java.beans.PropertyVetoException e){
-			e.printStackTrace(System.out);
-			throw new MappingException("failure setting geometry "+e.getMessage());
+			throw new MappingException("failure setting geometry "+e.getMessage(), e);
 		}
 	}else{
 		throw new MappingException("geometry must be defined");

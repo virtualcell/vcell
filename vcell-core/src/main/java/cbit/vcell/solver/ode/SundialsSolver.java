@@ -89,7 +89,7 @@ public void cleanup() {
 	try {
 		printODEFile();
 	}catch (Throwable e){
-		e.printStackTrace(System.out);
+		lg.error(e);
 		fireSolverAborted(SimulationMessage.solverAborted(e.getMessage()));
 	}
 }
@@ -202,19 +202,15 @@ public ODESolverResultSet getODESolverResultSet()  {
 			Expression exp1 = new Expression(functions[i].getExpression());
 			try {
 				exp1 = simSymbolTable.substituteFunctions(exp1);
-			} catch (MathException e) {
-				e.printStackTrace(System.out);
-				throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
-			} catch (ExpressionException e) {
-				e.printStackTrace(System.out);
-				throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
+			} catch (MathException | ExpressionException e) {
+				throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage(), e);
 			}
 			
 			try {
 				FunctionColumnDescription cd = new FunctionColumnDescription(exp1.flatten(),functions[i].getName(), null, functions[i].getName(), false);
 				odeSolverResultSet.addFunctionColumn(cd);
 			}catch (ExpressionException e){
-				e.printStackTrace(System.out);
+				lg.error(e);
 			}
 		}
 	}
@@ -248,12 +244,8 @@ public ODESolverResultSet getODESolverResultSet()  {
 					}
 				}
 			}
-		} catch (MathException e) {
-			e.printStackTrace(System.out);
-			throw new RuntimeException("Error adding function to resultSet: "+e.getMessage());
-		} catch (ExpressionException e) {
-			e.printStackTrace(System.out);
-			throw new RuntimeException("Error adding function to resultSet: "+e.getMessage());
+		} catch (MathException | ExpressionException e) {
+			throw new RuntimeException("Error adding function to resultSet: "+e.getMessage(), e);
 		}
 	} 
 
@@ -306,7 +298,7 @@ private ODESolverResultSet getStateVariableResultSet() {
 		}
 		//
 	} catch (Exception e) {
-		e.printStackTrace(System.out);
+		lg.error(e);
 		return null;
 	} finally {
 		try {
@@ -424,7 +416,7 @@ public void propertyChange(java.beans.PropertyChangeEvent event) {
 			try {
 				printToFile(appMessage.getProgress());
 			}catch (IOException e){
-				e.printStackTrace(System.out);
+				lg.error(e);
 			}
 		}
 	}
@@ -478,12 +470,8 @@ public Vector<AnnotatedFunction> createFunctionList() {
 					}
 				}
 			}
-		} catch (MathException e) {
-			e.printStackTrace(System.out);
-			throw new RuntimeException("Error adding function to resultSet: "+e.getMessage());
-		} catch (ExpressionException e) {
-			e.printStackTrace(System.out);
-			throw new RuntimeException("Error adding function to resultSet: "+e.getMessage());
+		} catch (MathException | ExpressionException e) {
+			throw new RuntimeException("Error adding function to resultSet: "+e.getMessage(), e);
 		}
 	} 
 	return funcList;
@@ -504,8 +492,7 @@ private void writeLogFile() throws SolverException {
 		}		
 		pw.close();
 	} catch (FileNotFoundException e) {
-		e.printStackTrace();
-		throw new SolverException(e.getMessage());
+		throw new SolverException(e.getMessage(), e);
 	} finally {
 		if (pw != null) {
 			pw.close();

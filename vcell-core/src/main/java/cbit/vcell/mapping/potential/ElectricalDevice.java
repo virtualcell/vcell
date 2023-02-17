@@ -11,6 +11,8 @@
 package cbit.vcell.mapping.potential;
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.Matchable;
 import org.vcell.util.Relatable;
 import org.vcell.util.RelationVisitor;
@@ -32,6 +34,8 @@ import cbit.vcell.units.VCUnitDefinition;
  * @author: Jim Schaff
  */
 public abstract class ElectricalDevice implements ScopedSymbolTable {
+	private final static Logger lg = LogManager.getLogger(ElectricalDevice.class);
+
 	private String name = null;
 	private ElectricalDeviceNameScope nameScope = new ElectricalDeviceNameScope();
 	protected AbstractMathMapping mathMapping = null; // for determining NameScope parent only
@@ -167,7 +171,7 @@ public abstract class ElectricalDevice implements ScopedSymbolTable {
 //			try {
 //				expression.bindExpression(ElectricalDevice.this);
 //			} catch (ExpressionBindingException e) {
-//				e.printStackTrace();
+//				lg.error(e);
 //				throw new PropertyVetoException(e.getMessage(),null);
 //			}
 			Expression oldValue = fieldParameterExpression;
@@ -299,12 +303,6 @@ public NameScope getNameScope() {
 }
 
 
-/**
- * Gets the mappingParameters index property (cbit.vcell.mapping.MappingParameter) value.
- * @return The mappingParameters property value.
- * @param index The index value into the property array.
- * @see #setMappingParameters
- */
 public ElectricalDevice.ElectricalDeviceParameter getParameter(String argName) {
 	for (int i = 0; i < fieldParameters.length; i++){
 		if (fieldParameters[i].getName().equals(argName)){
@@ -315,12 +313,6 @@ public ElectricalDevice.ElectricalDeviceParameter getParameter(String argName) {
 }
 
 
-/**
- * Gets the structureMappingParameters index property (cbit.vcell.mapping.StructureMappingParameter) value.
- * @return The structureMappingParameters property value.
- * @param index The index value into the property array.
- * @see #setStructureMappingParameters
- */
 public ElectricalDeviceParameter getParameterFromRole(int role) {
 	for (int i = 0; i < fieldParameters.length; i++){
 		if (fieldParameters[i] instanceof ElectricalDeviceParameter){
@@ -413,7 +405,7 @@ void setParameters(ElectricalDevice.ElectricalDeviceParameter[] parameters) {
 				fieldParameters[i].getExpression().bindExpression(this);
 			}
 		}catch (ExpressionBindingException e){
-			e.printStackTrace(System.out);
+			lg.error(e);
 		}
 	}
 }

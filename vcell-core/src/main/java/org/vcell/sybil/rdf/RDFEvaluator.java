@@ -17,6 +17,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.openrdf.model.Graph;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -30,6 +32,7 @@ import org.vcell.sybil.rdf.pool.RDFObjectSets;
 import org.vcell.sybil.rdf.pool.UnsupportedRDFTypeException;
 
 public class RDFEvaluator {
+	private final static Logger lg = LogManager.getLogger(RDFEvaluator.class);
 
 	protected final Set<Graph> graphs = new HashSet<Graph>();
 	
@@ -71,7 +74,7 @@ public class RDFEvaluator {
 								pool.getOrCreateObject(statement.getSubject(), 
 										Collections.singleton(type)));
 					} catch (UnsupportedRDFTypeException e) {
-						e.printStackTrace();
+						lg.error(e);
 					}
 				}
 			}

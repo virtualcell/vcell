@@ -51,7 +51,7 @@ public class WebClient {
 //		} 
 //		catch (IOException e) {
 //			System.err.println("Failed to fetch URL " + args + ": " + e.getMessage());
-//			e.printStackTrace();
+//			lg.error(e);
 //		}
 //        System.out.println("WebClient: exiting doWork()");
 		return results;

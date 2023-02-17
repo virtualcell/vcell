@@ -17,6 +17,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.optimization.DefaultOptSolverCallbacks;
 import org.vcell.optimization.OptSolverCallbacks;
 
@@ -34,6 +36,8 @@ import cbit.vcell.parser.ExpressionException;
 
 public class ReactionDominantTest 
 {
+	private final static Logger lg = LogManager.getLogger(ReactionDominantTest.class);
+
 	public static final int DATA_LENGTH = 300;
 	public static final String Fbleached_bleachFast = "(Omega + alpha*W)/Omega_c - Omega/Omega_c*(1-alpha)*(1/(1+Koff/Kon_star))*exp(-Koff*t)";
 	public static final String Funbleached_bleachFast = "(Omega + alpha*W)/Omega_c + Omega/Omega_c*(1-alpha)*(1/(1+Koff/Kon_star))*exp(-Koff*t)";
@@ -158,7 +162,7 @@ public class ReactionDominantTest
 		    System.out.println("Output is done. Restults saved to " + outFileName);
 		}catch(IOException e)
 		{
-			e.printStackTrace(System.out);
+			lg.error(e);
 		}
 	}
 	
@@ -173,7 +177,7 @@ public class ReactionDominantTest
 		}
 		catch(Exception e)
 		{
-			e.printStackTrace(System.out);
+			e.printStackTrace();
 		}
 	}
 	

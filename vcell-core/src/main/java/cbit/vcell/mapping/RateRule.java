@@ -196,8 +196,7 @@ public class RateRule implements Matchable, Serializable, IssueSource, Simulatio
 		try {
 			bind();
 		} catch (ExpressionBindingException e) {
-			e.printStackTrace(System.out);
-			throw new RuntimeException(e.getMessage());
+			throw new RuntimeException(e.getMessage(), e);
 		}
 	}
 	

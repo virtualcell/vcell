@@ -7,6 +7,8 @@ import java.io.FileWriter;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -19,6 +21,7 @@ import org.w3c.dom.NodeList;
  * run this program to update SBOListEx.java
  */
 public class SBOBuilder {
+	private final static Logger lg = LogManager.getLogger(SBOBuilder.class);
 
 static final private String newLine = "\n";			// String to add after every line. i.e. \r\n or just \n.
 static final private String fileName = "C:\\dan\\projects\\VCell_trunk\\src\\org\\vcell\\pathway\\sbo\\SBOListEx.java";
@@ -121,7 +124,7 @@ public static void main(String argv[]) {
 		writer.close();
 
 	} catch (Exception e) {
-		e.printStackTrace();
+		lg.error(e);
 	}
 }
 

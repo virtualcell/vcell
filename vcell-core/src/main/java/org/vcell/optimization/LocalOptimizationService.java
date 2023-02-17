@@ -51,16 +51,9 @@ public OptimizationResultSet solve(OptimizationSpec optSpec, OptimizationSolverS
 	OptimizationResultSet optResultSet = null;
 	try {
 		optResultSet = optSolver.solve(optSpec,optSolverSpec,optSolverCallbacks);
-	}catch (IOException e){
-		e.printStackTrace(System.out);
-		throw new RuntimeException(e.getMessage());
-	}catch (ExpressionException e){
-		e.printStackTrace(System.out);
-		throw new RuntimeException(e.getMessage());
-	}catch(OptimizationException e) {
-		e.printStackTrace(System.out);
-		throw new RuntimeException(e.getMessage());
-	}	
+	}catch (IOException | ExpressionException | OptimizationException e){
+		throw new RuntimeException(e.getMessage(), e);
+	}
 	return optResultSet;
 }
 }

@@ -109,8 +109,7 @@ public static Solver createSolver(File userDir, File parallelDir, SimulationTask
 			String simTaskXmlText = XmlHelper.simTaskToXML(simTask);
 			XmlUtil.writeXMLStringToFile(simTaskXmlText, simTaskFile.toString(), true);
 		}catch (Exception e){
-			e.printStackTrace(System.out);
-			throw new SolverException("unable to write SimulationTask file");
+			throw new SolverException("unable to write SimulationTask file", e);
 		}
 	}
 

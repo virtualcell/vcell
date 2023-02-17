@@ -51,8 +51,7 @@ public static AugmentedObjectiveFunction getExample1() {
 
 		return aof;
 	}catch (ExpressionException e){
-		e.printStackTrace();
-		throw new RuntimeException(e.getMessage());
+		throw new RuntimeException(e.getMessage(), e);
 	}
 }
 
@@ -77,8 +76,7 @@ public static AugmentedObjectiveFunction getExample2() {
 
 		return aof;
 	}catch (ExpressionException e){
-		e.printStackTrace();
-		throw new RuntimeException(e.getMessage());
+		throw new RuntimeException(e.getMessage(), e);
 	}
 }
 

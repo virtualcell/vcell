@@ -111,12 +111,6 @@ public cbit.image.VCImageInfo[] getVCImageInfos() {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (9/13/2004 9:33:11 AM)
- * @param out java.io.ObjectOutputStream
- * @exception java.io.IOException The exception description.
- */
 private void inflate() {
 	if (compressedBytes == null) {
 		return;
@@ -134,31 +128,16 @@ private void inflate() {
 		compressedBytes = null;
 		
 	} catch (Exception ex) {
-		ex.printStackTrace(System.out);
-		throw new RuntimeException(ex.getMessage());
+		throw new RuntimeException(ex.getMessage(), ex);
 	}
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (9/13/2004 9:33:11 AM)
- * @param out java.io.ObjectOutputStream
- * @exception java.io.IOException The exception description.
- */
 private void readObject(ObjectInputStream s) throws IOException, ClassNotFoundException {
 	int compressedSize = s.readInt();
 	compressedBytes = new byte[compressedSize];
 	s.readFully(compressedBytes, 0, compressedSize);
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (9/13/2004 9:33:11 AM)
- * @param out java.io.ObjectOutputStream
- * @exception java.io.IOException The exception description.
- */
 private void writeObject(ObjectOutputStream s) throws IOException {
 	Object objArray[] =  { user, bioModelInfos, mathModelInfos, geometryInfos, vcImageInfos};
 

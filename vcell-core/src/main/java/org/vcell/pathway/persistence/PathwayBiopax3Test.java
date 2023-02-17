@@ -47,7 +47,7 @@ public class PathwayBiopax3Test {
 			bioModelToXML(pathwayModel);
 			
 		}catch (Exception e){
-			e.printStackTrace(System.out);
+			e.printStackTrace();
 		}
 	}
 	
@@ -77,7 +77,6 @@ public class PathwayBiopax3Test {
 			System.out.println(xmlString);
 
 		} catch (Exception e) {
-			e.printStackTrace();
 			throw new XmlParseException("Unable to generate PathwayModel XML", e);
 		} 
 		

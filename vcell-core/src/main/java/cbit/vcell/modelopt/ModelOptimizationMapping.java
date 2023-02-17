@@ -77,12 +77,8 @@ public void applySolutionToMathOverrides(Simulation simulation, OptimizationResu
 	if (mathSymbolMapping==null){
 		try {
 			computeOptimizationSpec();
-		}catch (MappingException e){
-			e.printStackTrace(System.out);
-			throw new RuntimeException("couldn't generate math to map parameters to simulation");
-		}catch (MathException e){
-			e.printStackTrace(System.out);
-			throw new RuntimeException("couldn't generate math to map parameters to simulation");
+		}catch (MappingException | MathException e){
+			throw new RuntimeException("couldn't generate math to map parameters to simulation", e);
 		}
 	}
 //	ParameterMappingSpec[] parameterMappingSpecs = getModelOptimizationSpec().getParameterMappingSpecs();
@@ -131,15 +127,8 @@ MathSymbolMapping computeOptimizationSpec() throws MathException, MappingExcepti
 	try {
 		origMathDesc = mathMapping.getMathDescription();
 		mathSymbolMapping = mathMapping.getMathSymbolMapping();
-	}catch (MatrixException e){
-		e.printStackTrace(System.out);
-		throw new MappingException(e.getMessage());
-	}catch (ModelException e){
-		e.printStackTrace(System.out);
-		throw new MappingException(e.getMessage());
-	}catch (ExpressionException e){
-		e.printStackTrace(System.out);
-		throw new MathException(e.getMessage());
+	}catch (MatrixException | ModelException | ExpressionException e){
+		throw new MappingException(e.getMessage(), e);
 	}
 
 	//
@@ -230,8 +219,7 @@ MathSymbolMapping computeOptimizationSpec() throws MathException, MappingExcepti
 	try {
 		origMathDesc.setAllVariables(allVars);
 	}catch (ExpressionBindingException e){
-		e.printStackTrace(System.out);
-		throw new MathException(e.getMessage());
+		throw new MathException(e.getMessage(), e);
 	}
 
 	//
@@ -351,7 +339,6 @@ private ReferenceData getRemappedReferenceData(MathMapping mathMapping) throws M
 				rowColResultSet.addDataColumn(new ODESolverResultSetColumnDescription(symbol));
 			}
 		} catch (MathException | MatrixException | ExpressionException | ModelException e) {
-			e.printStackTrace();
 			throw new MappingException(e.getMessage(),e);
 		}
 	}

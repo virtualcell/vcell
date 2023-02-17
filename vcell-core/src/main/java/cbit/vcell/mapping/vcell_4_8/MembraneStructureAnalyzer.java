@@ -96,8 +96,7 @@ void refresh() {
 	try {
 		refreshResolvedFluxes();
 	}catch (Exception e){
-		e.printStackTrace(System.out);
-		throw new RuntimeException(e.getMessage());
+		throw new RuntimeException(e.getMessage(), e);
 	}
 }
 /**

@@ -139,7 +139,7 @@ private static byte[] gifFromVCImage(VCImage vci) throws ImageException, IOExcep
 //		
 //		System.out.println("done");
 //	}catch (Exception e){
-//		e.printStackTrace(System.out);
+//		lg.error(e);
 //	}
 //}
 
@@ -150,7 +150,6 @@ public static GIFImage makeBrowseGIFImage2(cbit.image.VCImage vci) throws cbit.i
 	try{
 		return new GIFImage(gifFromVCImage2(vci));
 	}catch(Exception e){
-		e.printStackTrace(System.out);
 		throw new cbit.image.GifParsingException("Error creating gif image: "+e.getMessage(),e);
 	}
 }
@@ -166,7 +165,6 @@ public static GIFImage makeBrowseGIFImage(cbit.image.VCImage vci) throws cbit.im
 	try{
 		return new GIFImage(makeBrowseImage(vci));
 	}catch(Exception e){
-		e.printStackTrace(System.out);
 		throw new cbit.image.GifParsingException("Error creating gif image: "+e.getMessage(),e);
 	}
 }
@@ -200,8 +198,7 @@ private static byte[] makeBrowseImage(cbit.image.VCImage vci) throws cbit.image.
 		}
 		return createGifFromImage(browseImage);
 	}catch (IOException e){
-		e.printStackTrace(System.out);
-		throw new ImageException(e.getMessage());
+		throw new ImageException(e.getMessage(), e);
 	}
 }
 }

@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.Namespace;
@@ -66,6 +68,7 @@ import cbit.vcell.server.bionetgen.BNGInput;
 import cbit.vcell.server.bionetgen.BNGOutput;
 
 public class RulebasedTransformer implements SimContextTransformer {
+	private final static Logger lg = LogManager.getLogger(RulebasedTransformer.class);
 
 	interface Operation {
 	}
@@ -295,8 +298,7 @@ public class RulebasedTransformer implements SimContextTransformer {
 			transformedSimContext.refreshDependencies();
 			transformedSimContext.compareEqual(originalSimContext);
 		} catch (ClassNotFoundException | IOException e) {
-			e.printStackTrace();
-			throw new RuntimeException("Unexpected transform exception: "+e.getMessage());
+			throw new RuntimeException("Unexpected transform exception: "+e.getMessage(), e);
 		}
 		final Model transformedModel = transformedSimContext.getModel();
 		transformedModel.refreshDependencies();
@@ -306,8 +308,7 @@ public class RulebasedTransformer implements SimContextTransformer {
 		try {
 			transform(originalSimContext,transformedSimContext,entityMappings,mathMappingCallback);
 		} catch (PropertyVetoException e) {
-			e.printStackTrace();
-			throw new RuntimeException("Unexpected transform exception: "+e.getMessage());
+			throw new RuntimeException("Unexpected transform exception: "+e.getMessage(), e);
 		}
 		ModelEntityMapping[] modelEntityMappings = entityMappings.toArray(new ModelEntityMapping[0]);
 		return new RulebasedTransformation(originalSimContext, transformedSimContext, modelEntityMappings, ruleElementMap, rulesForwardMap, rulesReverseMap);
@@ -354,11 +355,9 @@ public class RulebasedTransformer implements SimContextTransformer {
 				em = new ModelEntityMapping(originalSpeciesContext, newo);	// map new observable to old species context
 				entityMappings.add(em);
 			} catch (ModelException e) {
-				e.printStackTrace();
-				throw new RuntimeException("unable to transform species context: "+e.getMessage());
+				throw new RuntimeException("unable to transform species context: "+e.getMessage(), e);
 			} catch (PropertyVetoException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				lg.error(e);
 			}
 		}
 		ReactionSpec[] reactionSpecs = transformedSimulationContext.getReactionContext().getReactionSpecs();
@@ -451,8 +450,7 @@ public class RulebasedTransformer implements SimContextTransformer {
 					}
 				}
 			} catch (ExpressionException e) {
-				e.printStackTrace();
-				throw new RuntimeException("Problem attempting to set RbmKineticLaw expression: "+ e.getMessage());
+				throw new RuntimeException("Problem attempting to set RbmKineticLaw expression: "+ e.getMessage(), e);
 			}
 			rr.setKineticLaw(kineticLaw);
 			
@@ -521,8 +519,7 @@ public class RulebasedTransformer implements SimContextTransformer {
 			// we invoke bngl just for the purpose of generating the xml file, which we'll then use to extract the symmetry factor
 			generateNetwork(transformedSimulationContext, fromReactions, mathMappingCallback);
 		} catch (ClassNotFoundException | IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			lg.error(e);
 		}
 		System.out.println("Finished RuleBased Transformer.");
 	}
@@ -581,11 +578,9 @@ public class RulebasedTransformer implements SimContextTransformer {
 			final BNGExecutorService bngService = BNGExecutorService.getInstanceOld(bngInput,networkGenerationRequirements.timeoutDurationMS);
 			bngOutput = bngService.executeBNG();
 		} catch (RuntimeException ex) {
-			ex.printStackTrace(System.out);
-			throw ex; //rethrow without losing context
+			throw new RuntimeException(ex); //rethrow without losing context
 		} catch (Exception ex) {
-			ex.printStackTrace(System.out);
-			throw new RuntimeException(ex.getMessage());
+			throw new RuntimeException(ex.getMessage(), ex);
 		}
 
 		simContext.setInsufficientIterations(false);
@@ -861,8 +856,7 @@ public class RulebasedTransformer implements SimContextTransformer {
 						rkl.setLocalParameterValue(RbmKineticLawParameterType.MassActionReverseRate, expression);
 					}
 				} catch (ExpressionException | PropertyVetoException exc) {
-					exc.printStackTrace();
-					throw new RuntimeException("Unexpected transform exception: "+exc.getMessage());
+					throw new RuntimeException("Unexpected transform exception: "+exc.getMessage(), exc);
 				}
 				rulesReverseMap.put(rr, rar);
 			} else {
@@ -875,8 +869,7 @@ public class RulebasedTransformer implements SimContextTransformer {
 						rkl.setLocalParameterValue(RbmKineticLawParameterType.MassActionForwardRate, expression);
 					}
 				} catch (ExpressionException | PropertyVetoException exc) {
-					exc.printStackTrace();
-					throw new RuntimeException("Unexpected transform exception: "+exc.getMessage());
+					throw new RuntimeException("Unexpected transform exception: "+exc.getMessage(), exc);
 				}
 				rulesForwardMap.put(rr, rar);
 			}

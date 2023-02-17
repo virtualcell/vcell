@@ -10,12 +10,22 @@
 
 package org.vcell.relationship;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.rmi.RemoteException;
+import cbit.util.xml.XmlUtil;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.jdom.Element;
+import org.jdom.Namespace;
+import org.vcell.util.DataAccessException;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
+import uk.ac.ebi.jdbfetch.exceptions.DbfConnException;
+import uk.ac.ebi.jdbfetch.exceptions.DbfException;
+import uk.ac.ebi.jdbfetch.exceptions.DbfNoEntryFoundException;
+import uk.ac.ebi.jdbfetch.exceptions.DbfParamsException;
+import uk.ac.ebi.www.webservices.chebi.*;
+import uk.ac.ebi.www.ws.services.WSDbfetch.InputException;
+import uk.ac.ebi.www.ws.services.WSDbfetch.WSDBFetchServer;
+import uk.ac.ebi.www.ws.services.WSDbfetch.WSDBFetchServerServiceLocator;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -23,27 +33,12 @@ import javax.xml.rpc.ServiceException;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
-
-import org.jdom.Element;
-import org.jdom.Namespace;
-import org.vcell.util.DataAccessException;
-import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
-
-import cbit.util.xml.XmlUtil;
-import uk.ac.ebi.jdbfetch.exceptions.DbfConnException;
-import uk.ac.ebi.jdbfetch.exceptions.DbfException;
-import uk.ac.ebi.jdbfetch.exceptions.DbfNoEntryFoundException;
-import uk.ac.ebi.jdbfetch.exceptions.DbfParamsException;
-import uk.ac.ebi.www.webservices.chebi.ChebiWebServiceFault;
-import uk.ac.ebi.www.webservices.chebi.ChebiWebServicePortType;
-import uk.ac.ebi.www.webservices.chebi.ChebiWebServiceServiceLocator;
-import uk.ac.ebi.www.webservices.chebi.LiteEntity;
-import uk.ac.ebi.www.webservices.chebi.SearchCategory;
-import uk.ac.ebi.www.webservices.chebi.StarsCategory;
-import uk.ac.ebi.www.ws.services.WSDbfetch.InputException;
-import uk.ac.ebi.www.ws.services.WSDbfetch.WSDBFetchServer;
-import uk.ac.ebi.www.ws.services.WSDbfetch.WSDBFetchServerServiceLocator;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.rmi.RemoteException;
 
 
 /**
@@ -55,6 +50,7 @@ import uk.ac.ebi.www.ws.services.WSDbfetch.WSDBFetchServerServiceLocator;
 
 
 public class DataBaseReferenceReader {
+	private final static Logger lg = LogManager.getLogger(DataBaseReferenceReader.class);
 	
 	public static final String UniProt_RootNodeTag = "uniprot";
 	public static final String UniProt_EntryTag	= "entry";
@@ -201,13 +197,13 @@ public class DataBaseReferenceReader {
 //			System.out.println((le!=null)?le[0].getChebiAsciiName():"cannot find" + chebiId);
 		} catch (ChebiWebServiceFault e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			lg.error(e);
 		} catch (RemoteException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			lg.error(e);
 		} catch (ServiceException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			lg.error(e);
 		}
 		return name;
 	}
@@ -238,19 +234,19 @@ public class DataBaseReferenceReader {
 		
 		} catch (MalformedURLException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			lg.error(e);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			lg.error(e);
 		} catch (SAXException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			lg.error(e);
 		} catch (ParserConfigurationException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			lg.error(e);
 		} catch (XPathExpressionException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			lg.error(e);
 		}
 		return name;
 	}
@@ -263,25 +259,25 @@ public class DataBaseReferenceReader {
 			System.out.println("Name is ....." + name);
 		} catch (DbfConnException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			lg.error(e);
 		} catch (DbfNoEntryFoundException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			lg.error(e);
 		} catch (DbfParamsException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			lg.error(e);
 		} catch (DbfException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			lg.error(e);
 		} catch (InputException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			lg.error(e);
 		} catch (RemoteException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			lg.error(e);
 		} catch (ServiceException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			lg.error(e);
 		}
 	}
 	

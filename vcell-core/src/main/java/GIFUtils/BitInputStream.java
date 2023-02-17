@@ -8,6 +8,9 @@ package GIFUtils;
  * 22/08/98  Initial Version
  */
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.EOFException;
 import java.io.FilterInputStream;
 import java.io.IOException;
@@ -22,6 +25,7 @@ import java.io.InputStream;
 
 public class BitInputStream extends FilterInputStream 
 {
+	private final static Logger lg = LogManager.getLogger(BitInputStream.class);
 	/** any cached bits which have been read in from the underlying stream
 			but not yet returned to the user */
 	protected long cachedBits;
@@ -51,9 +55,7 @@ public class BitInputStream extends FilterInputStream
 		}
 		catch (IOException ex)
 		{
-			System.err.println(
-				"BitInputStream.<init>:  IOException while reading intial 5 bytes:");
-			ex.printStackTrace();
+			lg.error("BitInputStream.<init>:  IOException while reading intial 5 bytes", ex);
 		}
 	}
 	/**

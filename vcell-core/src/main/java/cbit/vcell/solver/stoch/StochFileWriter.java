@@ -35,6 +35,8 @@ import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.UniformOutputTimeSpec;
 import cbit.vcell.solver.server.SolverFileWriter;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * The function reads model information from simulation and
@@ -44,6 +46,7 @@ import cbit.vcell.solver.server.SolverFileWriter;
  */
 public class StochFileWriter extends SolverFileWriter 
 {
+	private final static Logger lg = LogManager.getLogger(StochFileWriter.class);
 
 	private boolean isMultiTrialNonHisto = false;
 /**
@@ -279,7 +282,7 @@ public void write(String[] parameterNames) throws Exception,ExpressionException
 			  		//System.out.println("expectedCount: " + expectedCount + ", varCount: " + varCount);
 		  			printWriter.println(varIniCondition.getVar().getName()+"\t" + varCount);
 		  		}catch(ExpressionException ex) {
-		  			ex.printStackTrace();
+					lg.error("variable "+varIniCondition.getVar().getName()+"'s initial condition is required to be a constant.", ex);
 		  			throw new MathFormatException("variable "+varIniCondition.getVar().getName()+"'s initial condition is required to be a constant.");
 		  		}
 			}
@@ -322,8 +325,9 @@ public void write(String[] parameterNames) throws Exception,ExpressionException
 					}
 				}catch(cbit.vcell.parser.ExpressionException ex)
 				{
-					ex.printStackTrace();
-					throw new cbit.vcell.parser.ExpressionException("Binding math description error in probability rate in jump process "+temProc.getName()+". Some symbols can not be resolved.");	
+					String msg = "Binding math description error in probability rate in jump process " + temProc.getName() + ". Some symbols can not be resolved.";
+					lg.error(msg, ex);
+					throw new cbit.vcell.parser.ExpressionException(msg);
 				}
 				//Expression temp = replaceVarIniInProbability(probExp);
 				printWriter.println("\t"+"Propensity"+"\t"+ probExp.infix()); //Propensity

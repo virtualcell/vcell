@@ -31,6 +31,8 @@ import java.util.zip.DataFormatException;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.Coordinate;
 import org.vcell.util.DataAccessException;
@@ -73,6 +75,7 @@ import cbit.vcell.util.AmplistorUtils;
  * @author: Ion Moraru
  */
 public class IMGExporter implements ExportConstants {
+	private final static Logger lg = LogManager.getLogger(IMGExporter.class);
 	
 	private static final int FULL_MODE_ALL_SLICES = -1;
 
@@ -189,7 +192,7 @@ public ExportOutput[] makeMediaData(
 				mediaArr = expOutputs.toArray(new ExportOutput[0]);
 			}
 		}catch(Exception e){
-			e.printStackTrace();
+			lg.error(e);
 		}
 	}else{
 		throw new IllegalArgumentException("Unknown FormatSpecificSpecs.PARTICLE flag="+particleMode);
@@ -342,7 +345,7 @@ private File[] getParticleFiles(ExportSpecs exportSpecs,User user,DataServerImpl
 //				try {
 //					Thread.sleep(1000);
 //				} catch (InterruptedException e) {
-//					e.printStackTrace();
+//					lg.error(e);
 //					return;//This shouldn't happen but if so just quit
 //				}
 //			}
@@ -628,7 +631,7 @@ for (int sliceNumber = startSlice; sliceNumber < startSlice+sliceCount; sliceNum
 //					ImageIO.write(bufferedImage, "jpg", tempFile);
 //					System.out.println("Wrote temp jpg "+tempFile.getAbsolutePath());
 //				}catch(Exception e){
-//					e.printStackTrace();
+//					lg.error(e);
 //				}
 //				int[] pixels = ((DataBufferInt)(bufferedImage.getRaster().getDataBuffer())).getData();
 //				boolean bAllZero = true;
@@ -801,9 +804,9 @@ private static void createMedia(Vector<ExportOutput> exportOutputV,VCDataIdentif
 				movieHolder.getVarNameVideoMediaChunkHash().clear();
 				movieHolder.getVarNameDataIDHash().clear();
 			}finally{
-				if(movieos != null){try{movieos.close();}catch(Exception e){e.printStackTrace();}}
-				if(bos != null){try{bos.close();}catch(Exception e){e.printStackTrace();}}
-				if(fos != null){try{fos.close();}catch(Exception e){e.printStackTrace();}}
+				if(movieos != null){try{movieos.close();}catch(Exception e){lg.error(e);}}
+				if(bos != null){try{bos.close();}catch(Exception e){lg.error(e);}}
+				if(fos != null){try{fos.close();}catch(Exception e){lg.error(e);}}
 			}
 		}else if(bEndVars && bEndTime && bEndSlice && bQTVR){
 			String simID = exportSpecs.getVCDataIdentifier().getID();
@@ -829,9 +832,9 @@ private static void createMedia(Vector<ExportOutput> exportOutputV,VCDataIdentif
 					movieos.close();
 					exportOutputV.add(exportOutput);
 				}finally{
-					if(movieos != null){try{movieos.close();}catch(Exception e){e.printStackTrace();}}
-					if(bos != null){try{bos.close();}catch(Exception e){e.printStackTrace();}}
-					if(fos != null){try{fos.close();}catch(Exception e){e.printStackTrace();}}
+					if(movieos != null){try{movieos.close();}catch(Exception e){lg.error(e);}}
+					if(bos != null){try{bos.close();}catch(Exception e){lg.error(e);}}
+					if(fos != null){try{fos.close();}catch(Exception e){lg.error(e);}}
 				}
 			}
 			movieHolder.getVarNameVideoMediaChunkHash().clear();

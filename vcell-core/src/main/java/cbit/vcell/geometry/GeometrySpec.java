@@ -88,8 +88,7 @@ public GeometrySpec(Version aVersion, int aDimension) {
 		try {
 			setSubVolumes(new SubVolume[] { new CompartmentSubVolume(null,0) });
 		}catch (PropertyVetoException e){
-			e.printStackTrace(System.out);
-			System.out.println("<<<<<<<<<PropertyVetoException in Geometry(Version,int=0): this should never happen>>>>>>>>>>>");
+			lg.error("PropertyVetoException in Geometry(Version,int=0): this should never happen", e);
 		}
 	}
 }
@@ -101,7 +100,7 @@ public GeometrySpec(Version aVersion, VCImage aVCImage) {
 	try {
 		setImage(aVCImage);
 	}catch (PropertyVetoException e){
-		e.printStackTrace(System.out);
+		lg.error(e);
 		throw new RuntimeException(e.getMessage());
 	}
 }
@@ -114,7 +113,7 @@ public GeometrySpec(GeometrySpec geometrySpec){
 		try {
 			this.vcImage = new VCImageUncompressed(geometrySpec.vcImage);
 		} catch (ImageException e) {
-			e.printStackTrace();
+			lg.error(e);
 			throw new RuntimeException(e.getMessage(), e);
 		}
 	}
@@ -139,7 +138,7 @@ public GeometrySpec(GeometrySpec geometrySpec){
 		}
 		setSubVolumes(newSubvolumes);
 	}catch (PropertyVetoException e){
-		e.printStackTrace(System.out);
+		lg.error(e);
 		throw new RuntimeException(e.getMessage());
 	}
 	//this.curveTypeList = (Vector)geometry.curveTypeList.clone();
@@ -155,8 +154,7 @@ public GeometrySpec(String aName, int aDimension) {
 		try {
 			setSubVolumes(new SubVolume[] { new CompartmentSubVolume(null,0) });
 		}catch (PropertyVetoException e){
-			e.printStackTrace(System.out);
-			System.out.println("<<<<<<<<<PropertyVetoException in Geometry(String,int=0): this should never happen>>>>>>>>>>>");
+			lg.error("PropertyVetoException in Geometry(String,int=0): this should never happen", e);
 		}
 	}
 }
@@ -168,7 +166,7 @@ public GeometrySpec(String aName, VCImage aVCImage) {
 	try {
 		setImage(aVCImage);
 	}catch (PropertyVetoException e){
-		e.printStackTrace(System.out);
+		lg.error(e);
 		throw new RuntimeException(e.getMessage());
 	}
 }
@@ -513,7 +511,7 @@ public VCImage createSampledImage(ISize sampleSize) throws GeometryException, Im
 						try {
 							this.addAnalyticSubVolumeOrCSGObject(backgroundSubVol, false);
 						} catch (PropertyVetoException e) {
-							e.printStackTrace(System.out);
+							lg.error(e);
 							throw new GeometryException("Issue adding a background subvolume to geometry : " + e.getMessage());
 						}
 						handles[displayIndex] = (byte)backgroundSubVol.getHandle();
@@ -1050,7 +1048,7 @@ public void refreshDependencies() {
 			try {
 				((AnalyticSubVolume)sv).rebind();
 			}catch (ExpressionException e){
-				e.printStackTrace(System.out);
+				lg.error(e);
 			}
 		}
 	}

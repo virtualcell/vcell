@@ -99,12 +99,8 @@ protected void initialize() throws SolverException
 	// write subdomains file
 	try {
 		SubdomainInfo.write(new File(getBaseName() + SimDataConstants.SUBDOMAINS_FILE_SUFFIX), simTask.getSimulation().getMathDescription());
-	} catch (IOException e1) {
-		e1.printStackTrace();
-		throw new SolverException(e1.getMessage());
-	} catch (MathException e1) {
-		e1.printStackTrace();
-		throw new SolverException(e1.getMessage());
+	} catch (IOException | MathException e1) {
+		throw new SolverException(e1.getMessage(), e1);
 	}
 
 	String inputFilename = getInputFilename();
@@ -141,8 +137,7 @@ protected void initialize() throws SolverException
 		}
 	} catch (Exception e) {
 		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, SimulationMessage.solverAborted("Could not generate input file: " + e.getMessage())));
-		e.printStackTrace(System.out);
-		throw new SolverException(e.getMessage());
+		throw new SolverException(e.getMessage(), e);
 	} finally {
 		if (pw != null) {
 			pw.close();	

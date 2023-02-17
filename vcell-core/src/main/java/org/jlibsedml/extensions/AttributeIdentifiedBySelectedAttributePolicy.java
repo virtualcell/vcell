@@ -2,6 +2,8 @@ package org.jlibsedml.extensions;
 
 import java.io.IOException;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jdom.Attribute;
 import org.jdom.Document;
 import org.jdom.Element;
@@ -19,6 +21,7 @@ import org.jdom.JDOMException;
  */
 public class AttributeIdentifiedBySelectedAttributePolicy implements
 		ISelectionChangedPolicy {
+	private final static Logger lg = LogManager.getLogger(AttributeIdentifiedBySelectedAttributePolicy.class);
   
 	public AttributeIdentifiedBySelectedAttributePolicy(Document doc,Attribute attIdentifier) {
 		super();
@@ -41,12 +44,8 @@ public class AttributeIdentifiedBySelectedAttributePolicy implements
 			try {
 				return new XMLUtils().getXPathForAttributeIdentifiedByAttribute(att.getParent(),
 						att, doc, attIdentifier);
-			} catch (JDOMException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			} catch (JDOMException | IOException e) {
+				lg.error(e);
 			}
 			return null;
 		

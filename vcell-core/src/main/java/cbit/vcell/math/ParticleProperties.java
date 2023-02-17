@@ -106,7 +106,7 @@ public class ParticleProperties implements Serializable, Matchable {
 				this.locationZ = locationZ == null ? new Expression("u") : locationZ;
 			} catch (ExpressionException e) {
 				// ignore
-//				e.printStackTrace();
+//				lg.error(e);
 			}
 		}
 		public ParticleInitialConditionCount(CommentStringTokenizer tokens) throws MathFormatException, ExpressionException {

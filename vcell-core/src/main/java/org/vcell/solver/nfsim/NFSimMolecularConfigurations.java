@@ -22,10 +22,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.Pair;
 
 public class NFSimMolecularConfigurations implements Serializable
 {
+	private final static Logger lg = LogManager.getLogger(NFSimMolecularConfigurations.class);
 
 	// database representation:
 	// Double timepoint, String simId, String expression, Integer count
@@ -75,12 +78,12 @@ public class NFSimMolecularConfigurations implements Serializable
 				}
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			lg.error(e);
 		} finally {
 			try {
 				reader.close();
 			} catch (IOException e) {
-				e.printStackTrace();
+				lg.error(e);
 			}
 		}
 		return timePointMap;

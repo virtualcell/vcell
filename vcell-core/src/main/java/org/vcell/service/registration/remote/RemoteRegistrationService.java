@@ -39,14 +39,12 @@ public class RemoteRegistrationService extends AbstractService implements Regist
 		try {
 			apiClient = new VCellApiClient(host, port, bIgnoreCertProblems, bIgnoreHostMismatch);
 		} catch (KeyManagementException | NoSuchAlgorithmException | KeyStoreException e) {
-			e.printStackTrace();
 			throw new RemoteProxyException("failure inserting user: "+e.getMessage(), e);
 		}
 		org.vcell.api.common.UserInfo apiUserInfo;
 		try {
 			apiUserInfo = apiClient.insertUserInfo(newUserInfo.getApiUserInfo());
 		} catch (IOException e) {
-			e.printStackTrace();
 			throw new RemoteProxyException("failed to insert user: "+e.getMessage(), e);
 		}
 		return UserInfo.fromApiUserInfo(apiUserInfo);
@@ -70,13 +68,11 @@ public class RemoteRegistrationService extends AbstractService implements Regist
 		try {
 			apiClient = new VCellApiClient(host, port, bIgnoreCertProblems, bIgnoreHostMismatch);
 		} catch (KeyManagementException | NoSuchAlgorithmException | KeyStoreException e) {
-			e.printStackTrace();
 			throw new RemoteProxyException("failure in send lost password request: "+e.getMessage(), e);
 		}
 		try {
 			apiClient.sendLostPassword(userid);
 		} catch (Exception e) {
-			e.printStackTrace();
 			throw new RemoteProxyException("failed to request lost password: "+e.getMessage(), e);
 		}
 	}
