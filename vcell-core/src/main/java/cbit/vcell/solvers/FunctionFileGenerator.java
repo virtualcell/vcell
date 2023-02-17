@@ -75,8 +75,7 @@ public void generateFunctionFile() throws Exception {
 		functionFile = new PrintWriter(osFunc);
 		writefunctionFile(functionFile);
 	}catch (java.io.IOException e){
-		e.printStackTrace(System.out);
-		throw new RuntimeException("error opening code file '"+basefileName+": "+e.getMessage());
+		throw new RuntimeException("error writing .function file '"+basefileName+": "+e.getMessage(), e);
 	}finally{
 		if(functionFile != null){try{functionFile.close();}catch(Exception e){e.printStackTrace();}}		
 	}
