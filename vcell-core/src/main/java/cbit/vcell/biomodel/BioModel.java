@@ -1335,7 +1335,7 @@ public String getFreeSimulationName() {
 	}
 }
 
-private Simulation getSimulation(String name) {
+public Simulation getSimulation(String name) {
 	for (Simulation simulation : fieldSimulations){
 		if (simulation.getName().equals(name)) {
 			return simulation;
