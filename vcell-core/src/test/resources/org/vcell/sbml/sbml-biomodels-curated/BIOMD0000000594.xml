@@ -1,0 +1,2973 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<sbml xmlns="http://www.sbml.org/sbml/level2/version4" level="2" metaid="_4e2ae330-f9e3-4241-b43d-dc7179cb2002" version="4" xmlns:html="http://www.w3.org/1999/xhtml" xmlns:jigcell="http://www.sbml.org/2001/ns/jigcell" xmlns:math="http://www.w3.org/1998/Math/MathML" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:sbml="http://www.sbml.org/sbml/level2/version4" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <model id="MODEL1505190001" metaid="_60a7d86d-4dc9-4870-a87c-16c4b84d2564" name="Capuani2015 - Binding of Cbl and Gbr2 to EGFR (Multisite Phosphorylation Model - MPM)">
+    <annotation>
+	<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+        <rdf:Description rdf:about="#_60a7d86d-4dc9-4870-a87c-16c4b84d2564">
+	<dc:creator>
+	<rdf:Bag>
+	<rdf:li rdf:parseType="Resource">
+	<vCard:N rdf:parseType="Resource">
+	<vCard:Family>Capuani</vCard:Family>
+	<vCard:Given>Fabrizio</vCard:Given>
+	</vCard:N>
+	<vCard:EMAIL>fabrizio.capuani@ifom.eu</vCard:EMAIL>
+	<vCard:ORG rdf:parseType="Resource">
+	<vCard:Orgname>IFOM Firct Institute of Molecular Oncology</vCard:Orgname>
+	</vCard:ORG>
+	</rdf:li>
+	<rdf:li rdf:parseType="Resource">
+	<vCard:N rdf:parseType="Resource">
+	<vCard:Family>Hume</vCard:Family>
+	<vCard:Given>Alastair</vCard:Given>
+	</vCard:N>
+	<vCard:EMAIL>a.hume@ed.ac.uk</vCard:EMAIL>
+	<vCard:ORG rdf:parseType="Resource">
+	<vCard:Orgname>The University of Edinburgh</vCard:Orgname>
+	</vCard:ORG>
+	</rdf:li>
+	</rdf:Bag>
+	</dc:creator>
+	<dcterms:created rdf:parseType="Resource">
+	<dcterms:W3CDTF>2016-02-10T14:07:57Z</dcterms:W3CDTF>
+	</dcterms:created>
+	<dcterms:modified rdf:parseType="Resource">
+	<dcterms:W3CDTF>2016-04-19T21:55:48Z</dcterms:W3CDTF>
+	</dcterms:modified>
+	<bqmodel:is>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/biomodels.db/MODEL1505190001"/>
+	</rdf:Bag>
+	</bqmodel:is>
+	<bqmodel:is>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/biomodels.db/BIOMD0000000594"/>
+	</rdf:Bag>
+	</bqmodel:is>
+	<bqmodel:isDescribedBy>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/pubmed/26264748"/>
+	</rdf:Bag>
+	</bqmodel:isDescribedBy>
+	<bqbiol:hasProperty>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/doid/DOID:162"/>
+	</rdf:Bag>
+	</bqbiol:hasProperty>
+	<bqbiol:hasTaxon>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/taxonomy/9606"/>
+	</rdf:Bag>
+	</bqbiol:hasTaxon>
+	<bqbiol:occursIn>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/bto/BTO:0000567"/>
+	</rdf:Bag>
+	</bqbiol:occursIn>
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/go/GO:0007173"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+	</rdf:RDF>
+	</annotation>
+      <listOfCompartments>
+      <compartment id="cell" metaid="_7c89f655-52c4-4d03-808d-d5fe6c7969a3" name="cell" size="1"/>
+    </listOfCompartments>
+    <listOfSpecies>
+      <species compartment="cell" id="Cbl" initialConcentration="2.80975332814237E-5" metaid="aef1e7fd-f61a-42e5-93d4-5e61e24e46db" name="Cbl">
+        <annotation>
+	<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#aef1e7fd-f61a-42e5-93d4-5e61e24e46db">
+	<bqbiol:hasVersion>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/uniprot/P22681"/>
+	</rdf:Bag>
+	</bqbiol:hasVersion>
+	</rdf:Description>
+	
+	</rdf:RDF>
+	</annotation>
+            </species>
+      <species compartment="cell" id="Grb2" initialConcentration="3.30538809753328" metaid="aee5e96f-e6aa-4c0a-a575-bd8fa4388bb1" name="Grb2">
+        <annotation>
+	<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+            <rdf:Description rdf:about="#aee5e96f-e6aa-4c0a-a575-bd8fa4388bb1">
+	<bqmodel:is>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/uniprot/P62993"/>
+	</rdf:Bag>
+	</bqmodel:is>
+	</rdf:Description>
+	
+	</rdf:RDF>
+	</annotation>
+            </species>
+      <species compartment="cell" id="CG" initialConcentration="0.0146119024667186" metaid="a8bb6d62-0e04-4f29-9682-295a50250693" name="CG">
+        <annotation>
+	<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#a8bb6d62-0e04-4f29-9682-295a50250693">
+	<bqbiol:hasPart>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/uniprot/P22681"/>
+	<rdf:li rdf:resource="http://identifiers.org/uniprot/P62993"/>
+	</rdf:Bag>
+	</bqbiol:hasPart>
+	</rdf:Description>
+	
+	</rdf:RDF>
+	</annotation>
+            </species>
+      <species compartment="cell" id="Tyr" metaid="_27f29f2b-481e-4f79-9949-9413cdc5ed6b" name="Tyr"/>
+      <species compartment="cell" id="Ub" metaid="_9e795c8e-36a7-498b-80b1-92b1430dad35" name="Ub"/>
+      <species compartment="cell" id="TyrNorm" metaid="_89345de4-38cc-4383-9f40-cc2bba009cdc" name="TyrNorm"/>
+      <species compartment="cell" id="UbNorm" metaid="_7a7beb8e-e944-4a59-89ef-e56d980e1758" name="UbNorm"/>
+      <species compartment="cell" id="EGFR_00UU" initialConcentration="0.833" metaid="aaebc351-2a14-475e-b12f-44456d9dc846" name="EGFR_00UU">
+        <annotation>
+	<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#aaebc351-2a14-475e-b12f-44456d9dc846">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/uniprot/P00533"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+	</rdf:RDF>
+	</annotation>
+            </species>
+      <species compartment="cell" id="EGFR_10UU" initialConcentration="0" metaid="fbf8a658-4a3e-4188-9431-2192c968a94d" name="EGFR_10UU"/>
+      <species compartment="cell" id="EGFR_10CU" initialConcentration="0" metaid="_7d995311-8ca7-4d30-a5bd-f66fd4544275" name="EGFR_10CU"/>
+      <species compartment="cell" id="EGFR_10LU" initialConcentration="0" metaid="_856346dc-8322-40bc-8064-29be22e2784a" name="EGFR_10LU"/>
+      <species compartment="cell" id="EGFR_01UU" initialConcentration="0" metaid="d6772519-11fb-4b7f-b54a-70d44512fc33" name="EGFR_01UU"/>
+      <species compartment="cell" id="EGFR_01UG" initialConcentration="0" metaid="d0f16480-b9a0-46e0-aa04-5c5b89457fd9" name="EGFR_01UG"/>
+      <species compartment="cell" id="EGFR_01UL" initialConcentration="0" metaid="_7b821433-5000-48ed-b1fb-219273fe51d5" name="EGFR_01UL"/>
+      <species compartment="cell" id="EGFR_11UU" initialConcentration="0" metaid="_5fe3b3de-50de-4c6b-9c9c-2ea89daaea3b" name="EGFR_11UU"/>
+      <species compartment="cell" id="EGFR_11CU" initialConcentration="0" metaid="_0b636d4a-3c61-42d1-81cb-f84a2d2f4fbc" name="EGFR_11CU"/>
+      <species compartment="cell" id="EGFR_11LU" initialConcentration="0" metaid="_6ae137b8-2f13-419b-bf7e-e7112954c980" name="EGFR_11LU"/>
+      <species compartment="cell" id="EGFR_11UG" initialConcentration="0" metaid="_65ca7fad-5b55-4dbf-a414-d3c857c11094" name="EGFR_11UG"/>
+      <species compartment="cell" id="EGFR_11UL" initialConcentration="0" metaid="_52d66685-bdc8-476f-a085-a99d5658b4e0" name="EGFR_11UL"/>
+      <species compartment="cell" id="EGFR_11CG" initialConcentration="0" metaid="_16516176-45fc-45b6-9db2-3e7cd0dc1f45" name="EGFR_11CG"/>
+      <species compartment="cell" id="EGFR_11CC" initialConcentration="0" metaid="_4a9cbc4c-4812-47c3-934a-3c6ede197d5f" name="EGFR_11CC"/>
+      <species compartment="cell" id="EGFR_11LG" initialConcentration="0" metaid="_53b33679-cb46-48f9-9418-4ca175b25a09" name="EGFR_11LG"/>
+      <species compartment="cell" id="EGFR_02UU" initialConcentration="0" metaid="af9c5b05-2fed-46ab-a79e-a5b45cfbbe54" name="EGFR_02UU"/>
+      <species compartment="cell" id="EGFR_02UG" initialConcentration="0" metaid="c4b6d77d-2235-427b-9e0b-18e5bc75b68d" name="EGFR_02UG"/>
+      <species compartment="cell" id="EGFR_02UL" initialConcentration="0" metaid="_98ddf15c-9e95-4e12-9fe3-4995d2a0ef55" name="EGFR_02UL"/>
+      <species compartment="cell" id="EGFR_12UU" initialConcentration="0" metaid="f0f0b25c-3c46-4235-ae5f-b53c176e1169" name="EGFR_12UU"/>
+      <species compartment="cell" id="EGFR_12CU" initialConcentration="0" metaid="_35ee7795-4e7e-4e04-b6d1-2dffea702ecb" name="EGFR_12CU"/>
+      <species compartment="cell" id="EGFR_12LU" initialConcentration="0" metaid="e433cd85-2bf1-478a-895a-072828f4662e" name="EGFR_12LU"/>
+      <species compartment="cell" id="EGFR_12UG" initialConcentration="0" metaid="_46e7d2be-636e-451f-9544-731e90174bcf" name="EGFR_12UG"/>
+      <species compartment="cell" id="EGFR_12UL" initialConcentration="0" metaid="_885d250b-184f-4e90-929c-b1166cc62403" name="EGFR_12UL"/>
+      <species compartment="cell" id="EGFR_12CG" initialConcentration="0" metaid="_723e9edf-92d1-4868-bd5f-ff4098511110" name="EGFR_12CG"/>
+      <species compartment="cell" id="EGFR_12CC" initialConcentration="0" metaid="_3554afbf-50f2-49e3-9c98-c01e3693dd47" name="EGFR_12CC"/>
+      <species compartment="cell" id="EGFR_12LG" initialConcentration="0" metaid="d52f9536-534b-448e-bec4-223f6a87a42e" name="EGFR_12LG"/>
+    </listOfSpecies>
+    <listOfParameters>
+      <parameter constant="false" id="K45P" metaid="_14e37c9e-3f2a-4635-a08b-a657b299099d" name="K45P"/>
+      <parameter constant="false" id="KcgP" metaid="d93c9697-8046-4a59-b337-043be38ac7c3" name="KcgP"/>
+      <parameter constant="false" id="kptp68" metaid="_8cec3f4d-eaa0-473a-8711-aed724432a7e" name="kptp68"/>
+      <parameter constant="false" id="kkin" metaid="d1692213-cf39-41bb-9806-c9fcae9cab06" name="kkin"/>
+      <parameter constant="false" id="kkin68" metaid="_9ae965c1-542c-4e30-8c7a-267b86976352" name="kkin68"/>
+      <parameter constant="false" id="kb45" metaid="_2dbca865-2bec-4bbb-8866-2e43a9433fe6" name="kb45"/>
+      <parameter constant="false" id="ku45M" metaid="f21e8baa-67e7-4781-948d-6673d83f5525" name="ku45M"/>
+      <parameter constant="false" id="kb45P" metaid="e1d1984a-05a5-4540-9249-09e12aa9feec" name="kb45P"/>
+      <parameter constant="false" id="kb68" metaid="_51575be6-2a8a-45a1-a26d-d06c20c821c6" name="kb68"/>
+      <parameter constant="false" id="ku68" metaid="_622d49ef-a249-4da3-a761-a592a27c9cd3" name="ku68"/>
+      <parameter constant="false" id="kb68P" metaid="_2dd22deb-c395-43b6-b565-f5f50289b064" name="kb68P"/>
+      <parameter constant="false" id="ku68M" metaid="c4e48855-6fdc-4d41-a981-be744eedd0ab" name="ku68M"/>
+      <parameter constant="false" id="kbcg" metaid="_145599ed-1fd0-4b3a-8ce7-d04b8fde658c" name="kbcg"/>
+      <parameter constant="false" id="kbcgP" metaid="_31a81f16-c2ab-48fa-a53f-b439596197ab" name="kbcgP"/>
+      <parameter constant="false" id="kucgM" metaid="_1afe22e0-f700-41ef-8b0d-da87dfd04054" name="kucgM"/>
+      <parameter id="Ltot" metaid="_6881e1b1-3739-4921-9994-a33e01aaf1c6" name="Ltot" value="0"/>
+      <parameter id="RT" metaid="d3ef9e39-0598-429f-9343-4149c9f63e4e" name="RT" value="0.833"/>
+      <parameter id="CblT" metaid="eb228c94-1b76-46ca-ada0-ae1a4654500d" name="CblT" value="0.01464"/>
+      <parameter id="Grb2T" metaid="cc2c736c-41a9-4ca0-95e5-62ad76da7fe9" name="Grb2T" value="3.32"/>
+      <parameter id="kptp" metaid="_9a65d51d-e4bc-4e27-b756-b6a7a44afe0f" name="kptp" value="0.016"/>
+      <parameter id="kkinbase" metaid="_843c9171-a70c-456e-91e5-c2d7ced66500" name="kkinbase" value="0.0759155"/>
+      <parameter id="nH" metaid="_3e6bda49-726c-45d3-9f2f-72be4de14941" name="nH" value="1.13"/>
+      <parameter id="xT" metaid="_0565b112-c676-4c6d-8dba-3ac404eb0864" name="xT" value="4.59181"/>
+      <parameter id="K45" metaid="ebada5c1-2800-4ef0-bc0c-88b987d7f304" name="K45" value="0.201361"/>
+      <parameter id="Kcg" metaid="_7fb9ebf2-970f-4f9c-87bb-168c20cdc897" name="Kcg" value="0.006356"/>
+      <parameter id="ku45" metaid="b99db2c6-e621-4676-a594-2541565d436d" name="ku45" value="0.001011"/>
+      <parameter id="kucg" metaid="c308be0f-81c5-41f7-9e03-02e921f19306" name="kucg" value="0.309271"/>
+      <parameter id="PYMax" metaid="b806b431-6f8a-499a-8750-60bb4b96e9f6" name="PYMax" value="2.279493223"/>
+      <parameter id="UbMax" metaid="_470667ee-9fb9-4635-8dc7-99674eff1789" name="UbMax" value="0.014306"/>
+      <parameter id="floc" metaid="_537c8c2b-2ccb-4e5a-bbda-6e5b908c1d8e" name="floc" value="20000"/>
+      <parameter id="CblWT" metaid="_68760be7-a332-4fb2-9bc3-b21f15a7c597" name="CblWT" value="0.01464"/>
+      <parameter id="CblFactor" metaid="_4e4b77b9-1f58-49d1-96ca-7752b20e5bbe" name="CblFactor" value="1"/>
+    </listOfParameters>
+    <listOfRules>
+      <assignmentRule metaid="_7efc9a4a-1435-4ae0-8ba0-83a9cf0aa66d" variable="kkin">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <apply>
+            <times/>
+            <ci> kkinbase </ci>
+            <apply>
+              <divide/>
+              <apply>
+                <power/>
+                <ci> Ltot </ci>
+                <ci> nH </ci>
+              </apply>
+              <apply>
+                <plus/>
+                <apply>
+                  <power/>
+                  <ci> Ltot </ci>
+                  <ci> nH </ci>
+                </apply>
+                <apply>
+                  <power/>
+                  <ci> xT </ci>
+                  <ci> nH </ci>
+                </apply>
+              </apply>
+            </apply>
+          </apply>
+        </math>
+            </assignmentRule>
+      <assignmentRule metaid="_804b7694-ed32-4aae-8afc-39cd8f59351c" variable="K45P">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <apply>
+            <divide/>
+            <ci> K45 </ci>
+            <ci> floc </ci>
+          </apply>
+        </math>
+            </assignmentRule>
+      <assignmentRule metaid="_38ab5312-8343-4b5e-9bc0-d259572b939a" variable="KcgP">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <apply>
+            <divide/>
+            <ci> Kcg </ci>
+            <ci> floc </ci>
+          </apply>
+        </math>
+            </assignmentRule>
+      <assignmentRule metaid="eefc58bb-7d89-4542-85a7-44211f7f58d3" variable="kkin68">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <ci> kkin </ci>
+        </math>
+            </assignmentRule>
+      <assignmentRule metaid="e3c0ad4c-2db4-455d-b8fd-5feba5b6a3e7" variable="kptp68">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <ci> kptp </ci>
+        </math>
+            </assignmentRule>
+      <assignmentRule metaid="_7f682000-18fa-4c51-8441-2f891997f44b" variable="kb45">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <apply>
+            <divide/>
+            <ci> ku45 </ci>
+            <ci> K45 </ci>
+          </apply>
+        </math>
+            </assignmentRule>
+      <assignmentRule metaid="f3db562b-99cb-42f9-8998-89c310450b56" variable="kb68">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <ci> kb45 </ci>
+        </math>
+            </assignmentRule>
+      <assignmentRule metaid="_1b12b03f-8dd3-46d3-be94-10d845a28fd0" variable="ku68">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <ci> ku45 </ci>
+        </math>
+            </assignmentRule>
+      <assignmentRule metaid="_02790f5f-5685-419f-b06c-970a0f8db9f1" variable="kbcg">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <apply>
+            <divide/>
+            <ci> kucg </ci>
+            <ci> Kcg </ci>
+          </apply>
+        </math>
+            </assignmentRule>
+      <assignmentRule metaid="b57ce7b0-0039-4872-a54c-26cf65225be6" variable="ku45M">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <ci> ku45 </ci>
+        </math>
+            </assignmentRule>
+      <assignmentRule metaid="_39de0839-1db2-4a99-b22d-656f47616a60" variable="kb45P">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <apply>
+            <divide/>
+            <ci> ku45M </ci>
+            <ci> K45P </ci>
+          </apply>
+        </math>
+            </assignmentRule>
+      <assignmentRule metaid="_64dd30bf-8e76-4557-9615-62b4ee6c40a2" variable="kb68P">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <ci> kb45P </ci>
+        </math>
+            </assignmentRule>
+      <assignmentRule metaid="cc35d62d-1ea1-4b21-ab75-6030801a7923" variable="ku68M">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <ci> ku45M </ci>
+        </math>
+            </assignmentRule>
+      <assignmentRule metaid="c28c6798-2732-44c8-b416-b3c606a72a80" variable="kucgM">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <ci> kucg </ci>
+        </math>
+            </assignmentRule>
+      <assignmentRule metaid="_8b1a8618-afa4-48a2-bec4-3f194d46fbf6" variable="kbcgP">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <apply>
+            <divide/>
+            <ci> kucgM </ci>
+            <ci> KcgP </ci>
+          </apply>
+        </math>
+            </assignmentRule>
+      <assignmentRule metaid="_5a08bebd-0da4-48b0-8fab-6590e3a98463" variable="Tyr">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <apply>
+            <plus/>
+            <ci> EGFR_10UU </ci>
+            <ci> EGFR_10CU </ci>
+            <ci> EGFR_10LU </ci>
+            <apply>
+              <times/>
+              <cn> 1 </cn>
+              <apply>
+                <plus/>
+                <ci> EGFR_01UU </ci>
+                <ci> EGFR_01UG </ci>
+                <ci> EGFR_01UL </ci>
+              </apply>
+            </apply>
+            <apply>
+              <times/>
+              <cn> 2 </cn>
+              <apply>
+                <plus/>
+                <ci> EGFR_11UU </ci>
+                <ci> EGFR_11CU </ci>
+                <ci> EGFR_11LU </ci>
+                <ci> EGFR_11UG </ci>
+                <ci> EGFR_11UL </ci>
+                <ci> EGFR_11CG </ci>
+                <ci> EGFR_11CC </ci>
+                <ci> EGFR_11LG </ci>
+              </apply>
+            </apply>
+            <apply>
+              <times/>
+              <cn> 2 </cn>
+              <apply>
+                <plus/>
+                <ci> EGFR_02UU </ci>
+                <ci> EGFR_02UG </ci>
+                <ci> EGFR_02UL </ci>
+              </apply>
+            </apply>
+            <apply>
+              <times/>
+              <cn> 3 </cn>
+              <apply>
+                <plus/>
+                <ci> EGFR_12UU </ci>
+                <ci> EGFR_12CU </ci>
+                <ci> EGFR_12LU </ci>
+                <ci> EGFR_12UG </ci>
+                <ci> EGFR_12UL </ci>
+                <ci> EGFR_12CG </ci>
+                <ci> EGFR_12CC </ci>
+                <ci> EGFR_12LG </ci>
+              </apply>
+            </apply>
+          </apply>
+        </math>
+            </assignmentRule>
+      <assignmentRule metaid="_1d336c69-12eb-43c2-a910-a04dfc858be5" variable="Ub">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <apply>
+            <plus/>
+            <ci> EGFR_11CC </ci>
+            <ci> EGFR_12CC </ci>
+            <ci> EGFR_10CU </ci>
+            <ci> EGFR_11CU </ci>
+            <ci> EGFR_12CU </ci>
+            <ci> EGFR_10LU </ci>
+            <ci> EGFR_11LU </ci>
+            <ci> EGFR_12LU </ci>
+            <ci> EGFR_11CG </ci>
+            <ci> EGFR_12CG </ci>
+            <ci> EGFR_11LG </ci>
+            <ci> EGFR_12LG </ci>
+          </apply>
+        </math>
+            </assignmentRule>
+      <assignmentRule metaid="_9ab6635a-d592-4995-b7f8-501b3e6e2805" variable="TyrNorm">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <apply>
+            <divide/>
+            <ci> Tyr </ci>
+            <ci> PYMax </ci>
+          </apply>
+        </math>
+            </assignmentRule>
+      <assignmentRule metaid="_24244b82-3b93-4114-9b5d-963cde0466ca" variable="UbNorm">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <apply>
+            <divide/>
+            <ci> Ub </ci>
+            <apply>
+              <times/>
+              <ci> UbMax </ci>
+              <ci> CblFactor </ci>
+            </apply>
+          </apply>
+        </math>
+            </assignmentRule>
+    </listOfRules>
+    <listOfReactions>
+      <reaction id="r1" metaid="_0b1ea99b-f4bb-42ea-9678-74e74842a256" name="EGFR_10UU has site Y1045 dephosphorylated">
+        <listOfReactants>
+          <speciesReference metaid="dbeda73e-ef86-4ee5-8064-8052d3436ed2" species="EGFR_10UU"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_11d5e0d4-e098-4ce5-8647-c6ceb627fede" species="EGFR_00UU"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_7f0beaf2-7044-48c5-b471-76a8b9860cf8" species="EGFR_10UU"/>
+        </listOfModifiers>
+        <kineticLaw metaid="d6497dc3-791b-41d5-878d-d31b1ef0cb34">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kptp </ci>
+              <ci> EGFR_10UU </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r2" metaid="f4b3ab3a-8d97-4ca5-a1dd-05f718c9aad7" name="EGFR_01UU has site Y1068/Y1086 dephosphorylated">
+        <listOfReactants>
+          <speciesReference metaid="_26b9638b-431a-49f1-a456-5633ecfe72a6" species="EGFR_01UU"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_742b2dbf-0b5e-4dcf-9f99-ca31286feae3" species="EGFR_00UU"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_3aaf40c2-fdde-46ee-8093-ca6e1bb573fc" species="EGFR_01UU"/>
+        </listOfModifiers>
+        <kineticLaw metaid="ed6b13cf-0f1d-4ea2-b7a7-393a507ecfb8">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kptp68 </ci>
+              <ci> EGFR_01UU </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r3" metaid="_5dad442f-7be6-405e-b219-07885b4f6a6c" name="EGFR_11UU has site Y1045 dephosphorylated">
+        <listOfReactants>
+          <speciesReference metaid="_7db05edf-4293-4f53-b2a5-5c7a099cdee9" species="EGFR_11UU"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_0ff2dfda-a6d2-4ad5-9a3c-9695b7badf23" species="EGFR_01UU"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_0b613b68-ca35-4272-989d-652ac5694e2b" species="EGFR_11UU"/>
+        </listOfModifiers>
+        <kineticLaw metaid="ac59bd20-3bab-4813-9d19-2b19bff353e8">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kptp </ci>
+              <ci> EGFR_11UU </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r4" metaid="dc9f578e-4ff0-4da4-ac02-c6e194c05692" name="EGFR_11UU has site Y1068/Y1086 dephosphorylated">
+        <listOfReactants>
+          <speciesReference metaid="_14c78ce5-ce01-4589-a209-8e0d52dc977e" species="EGFR_11UU"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="c0cce645-dc26-4f89-bd52-3af45e5b50a6" species="EGFR_10UU"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_164c80c2-b7ea-4372-abfb-324b31936fde" species="EGFR_11UU"/>
+        </listOfModifiers>
+        <kineticLaw metaid="e4caa432-1cf4-4932-a576-d68198420908">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kptp68 </ci>
+              <ci> EGFR_11UU </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r5" metaid="_2019c3ef-7749-495c-962f-335ec4f06de7" name="EGFR_11CU has site Y1068/Y1086 dephosphorylated">
+        <listOfReactants>
+          <speciesReference metaid="_010349a4-fc2c-4135-b738-473cf8b89d64" species="EGFR_11CU"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_0cf58e4c-86a7-418f-abdd-6346d152a032" species="EGFR_10CU"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="ca0ff014-5b27-4aad-83a1-cb1d8becf3a8" species="EGFR_11CU"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_81bcb313-eb37-4296-9e55-6244e7a456f5">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kptp68 </ci>
+              <ci> EGFR_11CU </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r6" metaid="_921fa9ce-2269-421a-92b9-7a9346f16da9" name="EGFR_11LU has site Y1068/Y1086 dephosphorylated">
+        <listOfReactants>
+          <speciesReference metaid="_4ef89ff0-0f0f-491b-b2e0-992574af4547" species="EGFR_11LU"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_60f8a369-2c6d-4614-b860-4da2d5cee676" species="EGFR_10LU"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_2fc6cc8f-6c11-4eea-9d08-72b3bd74964e" species="EGFR_11LU"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_2e3bf18b-d70f-4ab6-af8b-8731513b0e85">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kptp68 </ci>
+              <ci> EGFR_11LU </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r7" metaid="_2063fdd4-abd9-4744-bea0-b26ed2db4eb5" name="EGFR_11UG has site Y1045 dephosphorylated">
+        <listOfReactants>
+          <speciesReference metaid="_53abf683-4c4e-4837-ab12-1fe0021de4af" species="EGFR_11UG"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_210f3302-0b1a-4063-b5e8-f3285edf962e" species="EGFR_01UG"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_4ad44452-a14c-4c37-8996-0cf767e15bdc" species="EGFR_11UG"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_75ad5d0d-1b73-426d-bc9c-a1b345be0a85">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kptp </ci>
+              <ci> EGFR_11UG </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r8" metaid="_5b09a0c3-36f4-4da0-bb10-afe63d81e758" name="EGFR_11UL has site Y1045 dephosphorylated">
+        <listOfReactants>
+          <speciesReference metaid="_152a344a-3e21-43bb-b824-2ca8aa009475" species="EGFR_11UL"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="f9a63a82-493b-4827-a822-ce1ac19ed29b" species="EGFR_01UL"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_7948e669-bfb7-48a6-be63-da19b4d2a7dc" species="EGFR_11UL"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_26495e22-8aa6-4a23-8ead-76df45b6490b">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kptp </ci>
+              <ci> EGFR_11UL </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r9" metaid="_3a053b2f-8c91-47b2-9edf-33cf4dac430a" name="EGFR_02UU has site Y1068/Y1086 dephosphorylated">
+        <listOfReactants>
+          <speciesReference metaid="_7b85de94-f88d-468a-b9c0-b28cc82eccd1" species="EGFR_02UU"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_60d9e04b-c3f5-4647-9773-ec59df718028" species="EGFR_01UU"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_826e7338-e796-4862-bed5-b975fb57e050" species="EGFR_02UU"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_8578dd68-1fa1-45ca-bf7b-d558fc295679">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <cn> 2 </cn>
+              <ci> kptp68 </ci>
+              <ci> EGFR_02UU </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r10" metaid="_8f9a1f3c-c7c6-44d5-a871-fc76951c497e" name="EGFR_02UG has site Y1068/Y1-86 dephosphorylated">
+        <listOfReactants>
+          <speciesReference metaid="_6471f072-312a-4bc1-9e48-bd7bc07723e8" species="EGFR_02UG"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_79e424bf-2f33-4ff9-9822-016a7e60d79d" species="EGFR_01UG"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_9ac8127e-a6ef-472e-aff6-605c4cb8d108" species="EGFR_02UG"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_1b33fe38-3c55-4b73-a6b9-e200ad2bcbd1">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kptp68 </ci>
+              <ci> EGFR_02UG </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r11" metaid="b1bffd4f-3475-4aee-8dea-d51e8fae3c14" name="EGFR_02UL has site Y1068/Y1-86 dephosphorylated">
+        <listOfReactants>
+          <speciesReference metaid="_0040263c-8c0f-48c8-9a37-af459732c8fa" species="EGFR_02UL"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="bdb6e230-e118-49d6-89fb-5e37af8e2b7b" species="EGFR_01UL"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="fd74c387-26f3-40f0-ba39-2a3da86c5a9a" species="EGFR_02UL"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_81f39f2c-faff-4de3-b872-b64b1c09e10b">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kptp68 </ci>
+              <ci> EGFR_02UL </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r12" metaid="_060e7663-9193-4f29-aa73-f604d7072c58" name="EGFR_12UU has site Y1045 dephosphorylated">
+        <listOfReactants>
+          <speciesReference metaid="ed54e2dc-a782-4214-ac58-32250a680f1a" species="EGFR_12UU"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_76ae2ce5-b312-4001-ae7a-213b2d51e8f0" species="EGFR_02UU"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_5646b220-5501-4816-8b3a-41090bd3d041" species="EGFR_12UU"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_4c8a9ad6-7a2a-4764-a293-ac4355fc9ce8">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kptp </ci>
+              <ci> EGFR_12UU </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r13" metaid="_3ec0b3eb-e376-4eed-a820-53ae497c86da" name="EGFR_12UU has site Y1068/Y1086 dephosphorylated">
+        <listOfReactants>
+          <speciesReference metaid="b5562928-61de-4d30-929d-78602706d281" species="EGFR_12UU"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_7612a6ba-a12b-4f94-82aa-352968c2e4ab" species="EGFR_11UU"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="bbff57f0-38b9-48f5-9330-dfb5508a381f" species="EGFR_12UU"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_51ad4fcf-b687-4f58-af20-f5eeed13e20a">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <cn> 2 </cn>
+              <ci> kptp68 </ci>
+              <ci> EGFR_12UU </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r14" metaid="_29c86171-ec81-43ce-9a52-db94d64086d2" name="EGFR_12CU has site Y1068/Y1086 dephosphorylated">
+        <listOfReactants>
+          <speciesReference metaid="c30c81e0-4401-4ddb-944c-edbdfb4bf5c2" species="EGFR_12CU"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_93173b19-9fe2-4671-9e90-ec9a3474d4ca" species="EGFR_11CU"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="f717879a-8160-4297-9bcb-68dba9e2f072" species="EGFR_12CU"/>
+        </listOfModifiers>
+        <kineticLaw metaid="b5f1333d-52ab-4b99-bd68-1ea39c187cef">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <cn> 2 </cn>
+              <ci> kptp68 </ci>
+              <ci> EGFR_12CU </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r15" metaid="_0cf4ef62-c969-4926-bc8e-651f09350fa6" name="EGFR_12LU has site Y1068/Y1086 dephosphorylated">
+        <listOfReactants>
+          <speciesReference metaid="_782949cb-4e25-431c-bf2a-b94c4815ce6f" species="EGFR_12LU"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_47e93ee3-8a31-4129-a70c-fe6ff1ef948a" species="EGFR_11LU"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_879e8892-7007-43c5-b138-d05ecf4574b1" species="EGFR_12LU"/>
+        </listOfModifiers>
+        <kineticLaw metaid="eaa30a97-1a4d-4bea-891f-7722230fb767">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <cn> 2 </cn>
+              <ci> kptp68 </ci>
+              <ci> EGFR_12LU </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r16" metaid="a5d13977-8235-4e54-ae6b-447785906cae" name="EGFR_12UG has site Y1045 dephosphorylated">
+        <listOfReactants>
+          <speciesReference metaid="c2050088-9ecd-4189-9720-903d8731644f" species="EGFR_12UG"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_1cee38f6-b481-419c-bfff-6db957455bb6" species="EGFR_02UG"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_1580cdf1-5dd3-401e-bf70-968d654eac3a" species="EGFR_12UG"/>
+        </listOfModifiers>
+        <kineticLaw metaid="dc8cca66-6516-45ff-9ecd-b46d616c57bd">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kptp </ci>
+              <ci> EGFR_12UG </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r17" metaid="_2b3be333-7223-4390-bb34-7244890ca0c7" name="EGFR_12UG has site Y1068/Y1-86 dephosphorylated">
+        <listOfReactants>
+          <speciesReference metaid="e9202c40-5d55-46bc-8211-d5fbc7ffe52e" species="EGFR_12UG"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="cb2c4e62-9f29-4366-8c84-ba65f336f313" species="EGFR_11UG"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="fc796731-e802-455b-afb7-291ff68543e3" species="EGFR_12UG"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_199db1d0-fd58-4af2-a28c-655035ce90f3">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kptp68 </ci>
+              <ci> EGFR_12UG </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r18" metaid="eb3f75f5-0ac8-4876-ab1c-1d61b38c361e" name="EGFR_12UL has site Y1045 dephosphorylated">
+        <listOfReactants>
+          <speciesReference metaid="bc0d1201-c9d7-47bc-94cc-cea29dae294a" species="EGFR_12UL"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_073daa70-71f8-4363-ac2b-07eb1c2ded90" species="EGFR_02UL"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_58db4183-8976-450f-a4e1-1adc0bab69ba" species="EGFR_12UL"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_1ff518b5-7041-4742-9f7f-c3ffcfc53118">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kptp </ci>
+              <ci> EGFR_12UL </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r19" metaid="_838ea177-ddb6-4423-8fd1-efa49df8342e" name="EGFR_12UL has site Y1068/Y1-86 dephosphorylated">
+        <listOfReactants>
+          <speciesReference metaid="a384ca0f-2a74-44e9-b2ea-62985cf5e139" species="EGFR_12UL"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_84f284ac-856f-4c92-a97c-61eddfec5187" species="EGFR_11UL"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="ab4f4f2b-295a-425e-b423-3a20110ded47" species="EGFR_12UL"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_56bebbab-886a-42d5-bbc1-c1b41f13a8c6">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kptp68 </ci>
+              <ci> EGFR_12UL </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r20" metaid="_9636e9ee-4637-40f6-9013-024bdf46874f" name="EGFR_12CG has site Y1068/Y1-86 dephosphorylated">
+        <listOfReactants>
+          <speciesReference metaid="_0be41f10-3649-4511-a207-8dde7834a581" species="EGFR_12CG"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_238739f8-f347-4ff2-94b0-56539dbdcb3f" species="EGFR_11CG"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="f8a26136-02fe-4ad7-8992-081d9e64b67e" species="EGFR_12CG"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_9678f26c-3809-40ab-9cb3-44076fba6f17">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kptp68 </ci>
+              <ci> EGFR_12CG </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r21" metaid="_0874bcc4-5ed1-49d8-a74c-5ffa5dc77e50" name="EGFR_12CC has site Y1068/Y1-86 dephosphorylated">
+        <listOfReactants>
+          <speciesReference metaid="a2c075d8-08b5-4771-9d0e-a5caee2c33ba" species="EGFR_12CC"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_1644aa13-20b1-4ea3-b177-b57839594a40" species="EGFR_11CC"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_43c24cdb-28af-4cdd-a192-221a227c45b9" species="EGFR_12CC"/>
+        </listOfModifiers>
+        <kineticLaw metaid="dd0ac919-8d32-4ca8-b4d2-e83682b40f8b">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kptp68 </ci>
+              <ci> EGFR_12CC </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r22" metaid="aaaa06de-cee3-4039-a50c-5f1df5a7e909" name="EGFR_12LG has site Y1068/Y1-86 dephosphorylated">
+        <listOfReactants>
+          <speciesReference metaid="_6a99f6ba-6a11-46a1-a3b8-00f0e2178945" species="EGFR_12LG"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="e994209c-be1e-45f5-a970-ec42fefccb4f" species="EGFR_11LG"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="f33fb0e6-a003-4d3d-ae72-42f6a361f08b" species="EGFR_12LG"/>
+        </listOfModifiers>
+        <kineticLaw metaid="d413fe22-395a-4af9-84d7-9593dc9086dd">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kptp68 </ci>
+              <ci> EGFR_12LG </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r23" metaid="_0fbe5d49-1f62-4d33-b1ca-fea2c6fee2bb" name="EGFR_00UU has site Y1045 phosphorylated">
+        <listOfReactants>
+          <speciesReference metaid="_7a6538ba-3d93-4371-81d2-49db85986366" species="EGFR_00UU"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_864ad7ac-8f5f-4f6e-95e5-02dae48f87e3" species="EGFR_10UU"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_87467a62-de24-4e05-adbb-f3d506438da2" species="EGFR_00UU"/>
+        </listOfModifiers>
+        <kineticLaw metaid="ed501c49-7503-4ae2-afe0-ec68d65bfd8c">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kkin </ci>
+              <ci> EGFR_00UU </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r24" metaid="_75f351e2-8567-4623-b843-e8e86bd2167c" name="EGFR_00UU has site Y1068/Y1086 phosphorylated">
+        <listOfReactants>
+          <speciesReference metaid="_3852968e-3b82-45fc-8a64-c27c886603c1" species="EGFR_00UU"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_1d0e71ea-b9db-4e32-8fd0-4336473ebc30" species="EGFR_01UU"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_622989d7-26bb-463f-86b4-e60a8351c57f" species="EGFR_00UU"/>
+        </listOfModifiers>
+        <kineticLaw metaid="d8ce45b2-2cef-4106-ac8d-e141b2bd4e6a">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <cn> 2 </cn>
+              <ci> kkin68 </ci>
+              <ci> EGFR_00UU </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r25" metaid="_7eac71c7-e0bf-4317-87cb-3f2f4eac80f6" name="EGFR_10UU has site Y1068/Y1086 phosphorylated">
+        <listOfReactants>
+          <speciesReference metaid="a3840e55-db4d-4c55-819a-de4886c24c07" species="EGFR_10UU"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="e34d175c-e881-4a99-99ed-4f4c31ec0c9c" species="EGFR_11UU"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="d08da5dc-3b70-4b3b-8f2e-e2d6c6026a55" species="EGFR_10UU"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_57e26379-3c41-4d9b-b57c-82484a38c2d8">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <cn> 2 </cn>
+              <ci> kkin68 </ci>
+              <ci> EGFR_10UU </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r26" metaid="_3726df00-6cda-4ea5-b5e0-e9655cc3ff7e" name="EGFR_10CU has site Y1068/Y1086 phosphorylated">
+        <listOfReactants>
+          <speciesReference metaid="_084bc3f5-6d27-417a-a4d0-7660d6d88b46" species="EGFR_10CU"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_76fc83d8-30c6-49b0-8fdb-5b1b5de2a5fa" species="EGFR_11CU"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_5842273e-a93b-476b-9167-0f32ac12934c" species="EGFR_10CU"/>
+        </listOfModifiers>
+        <kineticLaw metaid="d34e5752-f06e-4035-91a6-2196f7172d28">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <cn> 2 </cn>
+              <ci> kkin68 </ci>
+              <ci> EGFR_10CU </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r27" metaid="_38a65db4-1506-48ca-8aae-9c328215ec66" name="EGFR_10LU has site Y1068/Y1086 phosphorylated">
+        <listOfReactants>
+          <speciesReference metaid="_16b919f3-73d5-444c-93d6-2cba6afb3de7" species="EGFR_10LU"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="b48af3de-6980-41a7-9ade-7d600a73cd9b" species="EGFR_11LU"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_942f2f92-e452-4d27-8d30-ed3a4a830d21" species="EGFR_10LU"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_5927bf01-313c-43fb-aa7b-297022f8661e">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <cn> 2 </cn>
+              <ci> kkin68 </ci>
+              <ci> EGFR_10LU </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r28" metaid="_84209cb1-9ad6-4f72-a34f-6e1f0f99a0bc" name="EGFR_01UU has site Y1045 phosphorylated">
+        <listOfReactants>
+          <speciesReference metaid="_09f50fe3-54d3-45e1-9f4f-9dd31b1ad4e0" species="EGFR_01UU"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="ac881ad7-28b4-4da6-b04c-5cfac506e812" species="EGFR_11UU"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="db162340-78ec-4b8c-93f4-9d31bbf0bc35" species="EGFR_01UU"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_741718e1-c798-4b5b-8d13-0e116952cafa">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kkin </ci>
+              <ci> EGFR_01UU </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r29" metaid="_995e50d9-33ef-4899-9de2-1d7e53b4b7e4" name="EGFR_01UU has site Y1068/Y1086 phosphorylated">
+        <listOfReactants>
+          <speciesReference metaid="_6cb37980-d569-44a3-b476-cb540b078386" species="EGFR_01UU"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="f1f117f9-fa48-45c8-9a9b-f4b474d5c57d" species="EGFR_02UU"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_19a2ae8d-c9a8-4f90-9d21-0fcffaeeb83f" species="EGFR_01UU"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_29d719bb-b4f8-4ed3-9baf-e07b1399a034">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kkin68 </ci>
+              <ci> EGFR_01UU </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r30" metaid="_46775693-adae-4ef0-862d-eaf89975e067" name="EGFR_01UG has site Y1045 phosphorylated">
+        <listOfReactants>
+          <speciesReference metaid="cb1e0226-df37-4302-8755-fd304a13acf4" species="EGFR_01UG"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_1ae0a41c-c566-4634-8020-e4ffc391e81b" species="EGFR_11UG"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_1e15f224-5bfb-461c-8025-a10f33df69f8" species="EGFR_01UG"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_6652f0d6-c47e-42e5-a74a-9d667c429716">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kkin </ci>
+              <ci> EGFR_01UG </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r31" metaid="_7388bb9a-0b52-4212-b8c3-b56863613c36" name="EGFR_01UG has site Y1068/Y1086 phosphorylated">
+        <listOfReactants>
+          <speciesReference metaid="dc2552d1-5e72-407a-ae04-e689768cdd6a" species="EGFR_01UG"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_1b386102-15ae-48bf-9a59-2f9a3f4f1d6a" species="EGFR_02UG"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="bbd9655d-01eb-4ee7-8b05-2c0beb2a38c0" species="EGFR_01UG"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_4697c9c6-67b1-4551-83c1-951bd05287e9">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kkin68 </ci>
+              <ci> EGFR_01UG </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r32" metaid="_7b9ce8af-8ad8-4388-b69a-98b1a8a40969" name="EGFR_01UL has site Y1045 phosphorylated">
+        <listOfReactants>
+          <speciesReference metaid="a76679b9-8d98-4267-a764-3a5ed615153c" species="EGFR_01UL"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_10f13aa4-e46d-4afc-9afb-c849cf2a1682" species="EGFR_11UL"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_311c2c8c-89b1-40d2-90a3-ef3059cdac12" species="EGFR_01UL"/>
+        </listOfModifiers>
+        <kineticLaw metaid="a8fceef3-b3a9-4e2b-8559-805d20143400">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kkin </ci>
+              <ci> EGFR_01UL </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r33" metaid="_07d47b21-f9f3-4367-b885-a9ef17933b0c" name="EGFR_01UL has site Y1068/Y1086 phosphorylated">
+        <listOfReactants>
+          <speciesReference metaid="_515291b1-2611-4c4e-825e-82599e5111ba" species="EGFR_01UL"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_118e10a5-4c8f-4dc2-9fea-ba079c9ff97f" species="EGFR_02UL"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="b0f6792b-895c-4041-94f0-932d344931b9" species="EGFR_01UL"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_07ff47a8-6bd4-408e-a785-3f865c4563f8">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kkin68 </ci>
+              <ci> EGFR_01UL </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r34" metaid="aa2efedb-af58-4c45-b719-7646e174ad0e" name="EGFR_11UU has site Y1068/Y1086 phosphorylated">
+        <listOfReactants>
+          <speciesReference metaid="f3588e6c-1e95-4c09-91de-cb069983295c" species="EGFR_11UU"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="dc473241-bbbc-4713-909c-8f6da67527f3" species="EGFR_12UU"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_41ad06b9-4f78-4370-9096-4b74428024a5" species="EGFR_11UU"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_0a79a3e5-2f19-4c14-89ee-628f781cafe0">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kkin68 </ci>
+              <ci> EGFR_11UU </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r35" metaid="_91892a57-9e0e-4267-88ad-f2be62355af0" name="EGFR_11CU has site Y1068/Y1086 phosphorylated">
+        <listOfReactants>
+          <speciesReference metaid="_4fd946bf-95c0-4f60-840b-6eada53ecbfc" species="EGFR_11CU"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_6246bbb5-b39e-40ce-9b10-b0797f27dba4" species="EGFR_12CU"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_46da6918-4971-4596-b91d-89a39b700301" species="EGFR_11CU"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_8b58e079-9749-41b1-a52c-e172c90f123d">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kkin68 </ci>
+              <ci> EGFR_11CU </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r36" metaid="b13c3d52-97f7-4b3e-addf-fb5dab475cd4" name="EGFR_11LU has site Y1068/Y1086 phosphorylated">
+        <listOfReactants>
+          <speciesReference metaid="_13b18c9b-48dd-4fc4-b816-ce646c918435" species="EGFR_11LU"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_62b74808-3420-4d6d-89ca-77bef83c9a81" species="EGFR_12LU"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_31ef38ac-fda4-41bf-8132-6c1c2f4d631f" species="EGFR_11LU"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_34bb5947-f268-4218-9788-c2c644d353f2">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kkin68 </ci>
+              <ci> EGFR_11LU </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r37" metaid="f2791609-7f10-4364-b4cf-5d974fbd76d9" name="EGFR_11UG has site Y1068/Y1086 phosphorylated">
+        <listOfReactants>
+          <speciesReference metaid="_565563f5-2267-4f1b-9a96-b13830585e48" species="EGFR_11UG"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="faf7447c-4998-43f1-8710-a93f607b280a" species="EGFR_12UG"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="d457608e-1726-4d55-8993-fd4d37b8d109" species="EGFR_11UG"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_2a27b322-e3ed-4fb5-92bd-a94cd9ebcb99">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kkin68 </ci>
+              <ci> EGFR_11UG </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r38" metaid="_8d046c3d-b505-4f29-9981-366d441dc121" name="EGFR_11UL has site Y1068/Y1086 phosphorylated">
+        <listOfReactants>
+          <speciesReference metaid="_3f9eee53-a786-49ca-87ad-7f5b64ab6fba" species="EGFR_11UL"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="e6cebf19-a37a-464b-bd77-aa7b83b7d634" species="EGFR_12UL"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_5d92fc17-9ea8-435c-8aa5-60ee2827a417" species="EGFR_11UL"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_03c1d341-11d1-4602-b49d-c7eba25b6a9c">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kkin68 </ci>
+              <ci> EGFR_11UL </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r39" metaid="eabcbcda-b2aa-4463-a898-7ef71e6321d4" name="EGFR_11CG has site Y1068/Y1086 phosphorylated">
+        <listOfReactants>
+          <speciesReference metaid="ea8b5b99-6e60-4c7f-9b53-0577cc2f9e5a" species="EGFR_11CG"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_8e9ae803-f136-4d5e-b77a-11db89e89ec2" species="EGFR_12CG"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_19c58b67-7207-4e5b-8a4a-3f52edf192f5" species="EGFR_11CG"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_7b55c4fb-e962-47c0-a8e0-48cba9657c02">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kkin68 </ci>
+              <ci> EGFR_11CG </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r40" metaid="_66071896-d1e4-4db7-8fa7-ebbd77ef0b61" name="EGFR_11CC has site Y1068/Y1086 phosphorylated">
+        <listOfReactants>
+          <speciesReference metaid="f425e939-356f-4717-be61-aa8f5c4c7a6f" species="EGFR_11CC"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_266f0520-ff87-445a-823e-a89e355e137e" species="EGFR_12CC"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="c174b146-c6bb-473d-9373-dee91656bccc" species="EGFR_11CC"/>
+        </listOfModifiers>
+        <kineticLaw metaid="fd56497a-8448-46db-908b-7423ab498e87">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kkin68 </ci>
+              <ci> EGFR_11CC </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r41" metaid="d2557e49-3ef7-42c5-b321-974bbd4b28de" name="EGFR_11LG has site Y1068/Y1086 phosphorylated">
+        <listOfReactants>
+          <speciesReference metaid="b5c6a521-4994-4abf-a50e-c8bee63aa39c" species="EGFR_11LG"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_33caf24b-1f16-4749-abc6-1c74e5961ebe" species="EGFR_12LG"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_23ba8b83-3f7d-4e39-a2c7-939154180a46" species="EGFR_11LG"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_2a28bebf-b19e-4fd7-8988-f5d4da64eba3">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kkin68 </ci>
+              <ci> EGFR_11LG </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r42" metaid="_6c711e35-7477-4821-8629-c0cffd40297c" name="EGFR_02UU has site Y1045 phosphorylated">
+        <listOfReactants>
+          <speciesReference metaid="_0db6b9af-b1ed-40bd-8ffe-57272b0feb0b" species="EGFR_02UU"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_1a95e7f5-4797-4e81-96dc-3288afc224f7" species="EGFR_12UU"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="cce60f66-0d10-4252-a718-2ad0f8a0d14d" species="EGFR_02UU"/>
+        </listOfModifiers>
+        <kineticLaw metaid="eebf7cf7-f35e-4a2a-9f2c-2dc76e093679">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kkin </ci>
+              <ci> EGFR_02UU </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r43" metaid="a6aa39f1-e9bb-46f1-8185-43e618cece8e" name="EGFR_02UG has site Y1045 phosphorylated">
+        <listOfReactants>
+          <speciesReference metaid="_9b40575b-7f47-4f93-93f2-cb6877570d70" species="EGFR_02UG"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_9b884735-18d4-4274-995e-e57b5ef75449" species="EGFR_12UG"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_9d49e3f5-4f9f-4d30-995d-7df6400d980c" species="EGFR_02UG"/>
+        </listOfModifiers>
+        <kineticLaw metaid="be34cbbd-afec-4bc5-a31f-f4daea148f35">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kkin </ci>
+              <ci> EGFR_02UG </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r44" metaid="bd9a116e-15ec-4b57-b891-9ee7c4843344" name="EGFR_02UL has site Y1045 phosphorylated">
+        <listOfReactants>
+          <speciesReference metaid="_9a11fe9e-1190-4b52-a042-3b1b91b6a358" species="EGFR_02UL"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_123d077b-7573-4931-a284-ae164e188864" species="EGFR_12UL"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_564bd82f-3f13-42c7-971d-83b78ea04585" species="EGFR_02UL"/>
+        </listOfModifiers>
+        <kineticLaw metaid="d238e9cd-f005-4c1d-a50a-43c84b18ee17">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kkin </ci>
+              <ci> EGFR_02UL </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r45" metaid="_0fd6cc5b-5c1c-4d9d-aa95-4630f84dd9d5" name="Cbl and Grb2  bind yielding  CG">
+        <listOfReactants>
+          <speciesReference metaid="d5305d2b-3d84-4205-814a-437e06f4afe4" species="Cbl"/>
+          <speciesReference metaid="_7c994cf8-d4b7-468f-9149-9decd6f93406" species="Grb2"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="d8373338-c00d-45af-9bd0-f367f8f5183e" species="CG"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_7831ecd0-54fb-4f5c-aff8-bdea97d71e13" species="Cbl"/>
+          <modifierSpeciesReference metaid="_4e936e04-a067-4af6-aaf0-2636427517b7" species="Grb2"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_520f7be2-bc5f-412e-a751-44e20248f056">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kbcg </ci>
+              <ci> Cbl </ci>
+              <ci> Grb2 </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r46" metaid="_4bef9009-ef86-41ec-a5ba-56f8fb3ae684" name="CG  dissociates to  Cbl and Grb2">
+        <listOfReactants>
+          <speciesReference metaid="a56aef20-5449-4fe8-b249-61ea84e9edff" species="CG"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_7b2cc7a5-4eb4-42e0-8fe1-e15da01f26fe" species="Cbl"/>
+          <speciesReference metaid="_46d05249-e395-4b23-bf72-6572a4baa383" species="Grb2"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="e2b691f4-4d2a-40a6-a1c8-1b7671cfe14e" species="CG"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_037c4031-fefc-4833-8d69-8e5f2431506a">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kucg </ci>
+              <ci> CG </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r47" metaid="_75d1b04e-9ab2-4bf0-ae11-4e8afe838910" name="Cbl and EGFR_10UU  bind yielding  EGFR_10CU">
+        <listOfReactants>
+          <speciesReference metaid="_9e09a8e4-6368-4c61-914f-8d5e5148e42a" species="Cbl"/>
+          <speciesReference metaid="c3dc06e7-fb1b-4694-95d8-4ebe185f0e0a" species="EGFR_10UU"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_1156cfc6-c280-42f5-b0c8-e33c0315078d" species="EGFR_10CU"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_571966b2-68b5-4fda-af98-5de607a2c1ef" species="Cbl"/>
+          <modifierSpeciesReference metaid="cf621b9a-96f3-40f0-814c-d4c43bf2620c" species="EGFR_10UU"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_076ad1e1-0e72-4340-a9fa-4ecdacb2eb60">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kb45 </ci>
+              <ci> Cbl </ci>
+              <ci> EGFR_10UU </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r48" metaid="_537d4958-56a2-4f3e-b963-ea6ea99b0a39" name="EGFR_10CU  dissociates to  Cbl and EGFR_10UU">
+        <listOfReactants>
+          <speciesReference metaid="_28929945-cd9f-407b-8335-4120aa9243b4" species="EGFR_10CU"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="a9b5f19f-7525-47d2-82f5-d9c8d613bd38" species="Cbl"/>
+          <speciesReference metaid="_11bf4cd2-8260-4a97-94fc-32367e11bbb9" species="EGFR_10UU"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_41dc9978-659a-4510-ab4d-2214cd2d1072" species="EGFR_10CU"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_0fd57f43-c824-4610-a86e-3ff0b31c9d12">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> ku45 </ci>
+              <ci> EGFR_10CU </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r49" metaid="d185013e-1929-4253-8303-6f20131457d2" name="CG and EGFR_10UU  bind yielding  EGFR_10LU">
+        <listOfReactants>
+          <speciesReference metaid="ff48272e-b466-4b33-8b0d-67a8d1f3578b" species="CG"/>
+          <speciesReference metaid="_6e66bdef-92a0-4897-8b58-7fa009431dff" species="EGFR_10UU"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="d6ab2ac6-59d9-4f0b-9fd9-aae545623488" species="EGFR_10LU"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_8aadb81a-7778-4110-90ba-cb6d717a6e91" species="CG"/>
+          <modifierSpeciesReference metaid="_53c8f701-4b42-40ff-bf6b-436b254c0f57" species="EGFR_10UU"/>
+        </listOfModifiers>
+        <kineticLaw metaid="ee654786-a81e-45c7-9aa3-5465f19e06e5">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kb45 </ci>
+              <ci> CG </ci>
+              <ci> EGFR_10UU </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r50" metaid="_8fdc21b0-2c95-4053-b430-0b2589a9cc0e" name="EGFR_10LU  dissociates to  CG and EGFR_10UU">
+        <listOfReactants>
+          <speciesReference metaid="_5ad87e2f-0d02-4ec6-b366-be497eae2832" species="EGFR_10LU"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_1238bc71-1920-438d-8535-7ddedd25defb" species="CG"/>
+          <speciesReference metaid="_87b29afb-b97d-42fd-a882-03265212e7b8" species="EGFR_10UU"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_50440596-4e7f-4038-9ddf-afc5b49a9608" species="EGFR_10LU"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_68a4c505-3c47-41ea-8382-0d86884cad9f">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> ku45 </ci>
+              <ci> EGFR_10LU </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r51" metaid="_7fec3d2c-1428-4298-ba30-cf3d5a816d9e" name="Grb2 and EGFR_10CU  bind yielding  EGFR_10LU">
+        <listOfReactants>
+          <speciesReference metaid="e0e69949-be81-4f9a-af83-6dd0b6ad99d6" species="Grb2"/>
+          <speciesReference metaid="f7f6c79d-4d35-4dba-9598-d19e1d067185" species="EGFR_10CU"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_9f6a2591-303b-46cf-a56c-0edd20627f74" species="EGFR_10LU"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_3c06dc62-7b26-49ba-9f39-28d8aced1c38" species="Grb2"/>
+          <modifierSpeciesReference metaid="_73a28e2f-4b80-4cfe-848d-98a4abff68a5" species="EGFR_10CU"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_495e8f56-67f9-4e82-ae06-64c81b4cbecc">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kbcg </ci>
+              <ci> Grb2 </ci>
+              <ci> EGFR_10CU </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r52" metaid="_0087a09d-c668-44ce-a1ba-eae769f292a9" name="EGFR_10LU  dissociates to  Grb2 and EGFR_10CU">
+        <listOfReactants>
+          <speciesReference metaid="bfaf6966-c56a-4a6f-bb08-59a568d1880b" species="EGFR_10LU"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="bf7d036d-25d9-4bab-ac4c-0abaa3be279d" species="Grb2"/>
+          <speciesReference metaid="_90dd7be3-3bcd-4abf-93c8-178559815f89" species="EGFR_10CU"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="e6874a0e-0686-4b9b-b6b6-c609c9770d40" species="EGFR_10LU"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_96c72023-09e4-4aaf-ba71-f331e1750375">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kucg </ci>
+              <ci> EGFR_10LU </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r53" metaid="e30b13cd-255d-4c80-b598-f74705a6b32f" name="Grb2 and EGFR_01UU  bind yielding  EGFR_01UG">
+        <listOfReactants>
+          <speciesReference metaid="a0778dc1-aaba-446a-af03-9b2518741bd3" species="Grb2"/>
+          <speciesReference metaid="_413f9677-2dd5-4005-8a6d-c4ff2ada1e53" species="EGFR_01UU"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_83f24a8a-47e3-4e30-a211-164ba9cabc03" species="EGFR_01UG"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="cf49b410-1949-4b67-9b89-8a461df2a4c5" species="Grb2"/>
+          <modifierSpeciesReference metaid="eadb65f2-5aa9-4be1-9e33-4c997575f51b" species="EGFR_01UU"/>
+        </listOfModifiers>
+        <kineticLaw metaid="d18c1268-c872-46fa-bd72-9fc13f5c961d">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kb68 </ci>
+              <ci> Grb2 </ci>
+              <ci> EGFR_01UU </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r54" metaid="_536faee0-78f8-4c0b-99fd-dbedd6c8c8a7" name="EGFR_01UG  dissociates to  Grb2 and EGFR_01UU">
+        <listOfReactants>
+          <speciesReference metaid="_93836e2f-5e69-4175-83cb-00942257b2ca" species="EGFR_01UG"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_65026b01-fdfc-4e3d-863e-6b15627c6176" species="Grb2"/>
+          <speciesReference metaid="_4340db9c-1110-4ba1-a388-82787af97864" species="EGFR_01UU"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_1103a108-1c98-483c-87a7-dff11693b496" species="EGFR_01UG"/>
+        </listOfModifiers>
+        <kineticLaw metaid="d4c600ec-723d-4138-a58e-9d0351e22166">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> ku68 </ci>
+              <ci> EGFR_01UG </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r55" metaid="_608c14a0-b7b3-440f-8b4d-5ccfb65f8d14" name="CG and EGFR_01UU  bind yielding  EGFR_01UL">
+        <listOfReactants>
+          <speciesReference metaid="c9252890-495b-4fce-ab97-69eb0b9ad5b3" species="CG"/>
+          <speciesReference metaid="_79992e65-8ebd-4859-a9bb-7a158fb2613b" species="EGFR_01UU"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_28c584bf-d1fe-4905-80a7-7f120f83f287" species="EGFR_01UL"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="f4e62126-1314-480d-ab09-2ac0492b7a13" species="CG"/>
+          <modifierSpeciesReference metaid="c9a24e7e-529d-4eb5-8dda-b59692b6badc" species="EGFR_01UU"/>
+        </listOfModifiers>
+        <kineticLaw metaid="d18c0924-6f19-4ae1-bf57-0a74d2dcc5e4">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kb68 </ci>
+              <ci> CG </ci>
+              <ci> EGFR_01UU </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r56" metaid="_3ee487ad-5327-4864-b66a-37191d6f3520" name="EGFR_01UL  dissociates to  CG and EGFR_01UU">
+        <listOfReactants>
+          <speciesReference metaid="_26bb509f-0250-4c84-9aaf-e0df5727e0da" species="EGFR_01UL"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_127403a5-696e-4247-b53a-187eb3270df4" species="CG"/>
+          <speciesReference metaid="dc231026-5b07-4f75-aacb-c4e1774e0865" species="EGFR_01UU"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_6b68f28c-55bb-4c37-a78b-3679e89d4d56" species="EGFR_01UL"/>
+        </listOfModifiers>
+        <kineticLaw metaid="ab0b4c23-7b2d-42e1-8e81-4dfff4e49c01">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> ku68 </ci>
+              <ci> EGFR_01UL </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r57" metaid="_982f9e17-1ca6-425f-ac0c-5f5772782647" name="Cbl and EGFR_01UG  bind yielding  EGFR_01UL">
+        <listOfReactants>
+          <speciesReference metaid="_94be8fab-3a07-4f23-9cd8-4178970207bd" species="Cbl"/>
+          <speciesReference metaid="_33db9d46-f98e-4e0b-ae7f-b8e46c84f03a" species="EGFR_01UG"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_73c5533a-b2b8-4625-80a8-02f99fab0941" species="EGFR_01UL"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_8650ed64-19c5-439d-a12f-39057eb4fc2f" species="Cbl"/>
+          <modifierSpeciesReference metaid="_653be010-4763-473e-97f9-46d49803bcec" species="EGFR_01UG"/>
+        </listOfModifiers>
+        <kineticLaw metaid="ebb54b95-cd21-4071-a53f-5a004d4ffd19">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kbcg </ci>
+              <ci> Cbl </ci>
+              <ci> EGFR_01UG </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r58" metaid="cd5522d3-ef34-4503-91e7-f4c0dd8690d6" name="EGFR_01UL  dissociates to Cbl and EGFR_01UG">
+        <listOfReactants>
+          <speciesReference metaid="_4598bd0c-e7dc-4fb9-8270-cbb886b68daa" species="EGFR_01UL"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_3c84f6a3-b2b2-4140-93cc-b47a80289e83" species="Cbl"/>
+          <speciesReference metaid="_8e017229-3fe1-43f4-98c9-cecc144a289f" species="EGFR_01UG"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_31e13b1e-3ddd-464b-8285-0887760cea99" species="EGFR_01UL"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_877865a4-7eb1-4f67-84b1-98cafd0e0e1f">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kucg </ci>
+              <ci> EGFR_01UL </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r59" metaid="_397b15f1-96f4-4d31-9c44-c9db658887a8" name="Cbl and EGFR_11UU  bind yielding  EGFR_11CU">
+        <listOfReactants>
+          <speciesReference metaid="_5a58c97e-eb4d-4b7d-aecd-d2a9af354061" species="Cbl"/>
+          <speciesReference metaid="_69f6d55c-e9e2-450a-b57b-5403319a02f7" species="EGFR_11UU"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_23412422-3cf4-4c57-b0c0-3a94836e0ad7" species="EGFR_11CU"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="cce00223-8938-49ab-8d6d-37eff14109b0" species="Cbl"/>
+          <modifierSpeciesReference metaid="_509827d8-8dd4-4d2b-87d6-258ea76c4eae" species="EGFR_11UU"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_41d2ec5e-5211-4917-b330-9dad8907ece1">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kb45 </ci>
+              <ci> Cbl </ci>
+              <ci> EGFR_11UU </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r60" metaid="_9d8b6106-9985-4a6f-9c54-d16e12ac3b61" name="EGFR_11CU  dissociates to  Cbl and EGFR_11UU">
+        <listOfReactants>
+          <speciesReference metaid="_7c645a18-a8b5-4e3d-93cf-4187373365ba" species="EGFR_11CU"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_4b6b238c-89f1-43bb-93be-b3c4728f52c7" species="Cbl"/>
+          <speciesReference metaid="_51059e90-371f-4bda-a00e-14d83c8adff5" species="EGFR_11UU"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="b21e628a-8b3d-4343-b32d-1f52ec649a46" species="EGFR_11CU"/>
+        </listOfModifiers>
+        <kineticLaw metaid="fa0323cc-db7a-4499-8503-b4967c5a13df">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> ku45 </ci>
+              <ci> EGFR_11CU </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r61" metaid="_33e210c4-67c1-467f-b251-4ecdcc2be4ee" name="CG and EGFR_11UU  bind yielding  EGFR_11LU">
+        <listOfReactants>
+          <speciesReference metaid="_3b736b77-8769-40f4-ac54-d470f946efb0" species="CG"/>
+          <speciesReference metaid="_14c35263-a3d2-47be-934a-473d8f80fdaa" species="EGFR_11UU"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_095d9f6a-7fac-48ea-a473-ff1a4775fd95" species="EGFR_11LU"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_7612c7b1-3fc7-4db4-a491-535cf7e8d7cc" species="CG"/>
+          <modifierSpeciesReference metaid="_8cb0461d-6fbd-4711-ba25-3a59c59e1ae0" species="EGFR_11UU"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_3709b99b-c953-490c-bcb7-9355e8136163">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kb45 </ci>
+              <ci> CG </ci>
+              <ci> EGFR_11UU </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r62" metaid="_686bd24a-e469-46f0-acfa-6befb1bf094a" name="EGFR_11LU  dissociates to  CG and EGFR_11UU">
+        <listOfReactants>
+          <speciesReference metaid="e01d2dd8-60b8-4aa4-821d-c9b02cffc23d" species="EGFR_11LU"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_6fbca88f-26b8-4a67-a738-2fdb3f47a575" species="CG"/>
+          <speciesReference metaid="ddabfcac-9800-4145-b67e-5701816bfa4a" species="EGFR_11UU"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="b94b811a-c3ae-433b-bd16-b3e480fdb234" species="EGFR_11LU"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_7571d3c3-f579-4a07-b424-0a00cacce504">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> ku45 </ci>
+              <ci> EGFR_11LU </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r63" metaid="_2fa23da0-1533-40a6-8e96-ffe403ecbde1" name="Grb2 and EGFR_11UU  bind yielding  EGFR_11UG">
+        <listOfReactants>
+          <speciesReference metaid="_67042d5b-b62c-4c56-9174-0738a5a84403" species="Grb2"/>
+          <speciesReference metaid="_6cc79895-0e79-49ca-83a8-0a314e87418b" species="EGFR_11UU"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_9db65292-6061-44d8-a2e6-3fa956fcd1be" species="EGFR_11UG"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="be30e632-85c6-47d9-86bd-13a1c72d0fa9" species="Grb2"/>
+          <modifierSpeciesReference metaid="_636b6c43-60d0-495d-aa90-829e3b06842b" species="EGFR_11UU"/>
+        </listOfModifiers>
+        <kineticLaw metaid="f6ac9a5f-d16f-4ab0-99b0-fb7617918490">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kb68 </ci>
+              <ci> Grb2 </ci>
+              <ci> EGFR_11UU </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r64" metaid="ab7cdbe6-6cfd-4c1c-a78b-eb9c86d6cf52" name="EGFR_11UG  dissociates to  Grb2 and EGFR_11UU">
+        <listOfReactants>
+          <speciesReference metaid="ebbed9c0-da61-4ab6-9a71-aa3ec8aa1505" species="EGFR_11UG"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_9029906b-520b-4615-9471-2c28e3c9f9a7" species="Grb2"/>
+          <speciesReference metaid="_160b1d01-7794-4d03-8b16-484207e02c1a" species="EGFR_11UU"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="d5d6df40-2daf-496f-93cd-370d7b05ec8c" species="EGFR_11UG"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_10568c00-63ea-4191-9862-58a04bb6cd49">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> ku68 </ci>
+              <ci> EGFR_11UG </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r65" metaid="_28713579-f0bf-4f27-b605-283cdbeaebe3" name="CG and EGFR_11UU  bind yielding  EGFR_11UL">
+        <listOfReactants>
+          <speciesReference metaid="_9e985819-47f6-486e-b46c-625cd8dd588d" species="CG"/>
+          <speciesReference metaid="_94f5444c-8f8f-4261-bb24-148cd0dd1fb9" species="EGFR_11UU"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_63b59913-7515-4c30-855a-108519ac179f" species="EGFR_11UL"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_26ba9cfd-f9a1-4fd7-ba3b-47831fad6bfc" species="CG"/>
+          <modifierSpeciesReference metaid="e8dbad5c-d0cc-4a7b-b10c-4db1747f2193" species="EGFR_11UU"/>
+        </listOfModifiers>
+        <kineticLaw metaid="c20da891-f3a1-42df-9650-27af7890a4e0">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kb68 </ci>
+              <ci> CG </ci>
+              <ci> EGFR_11UU </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r66" metaid="d8fbe8ae-850d-4319-aa85-8e3ddbe27a1b" name="EGFR_11UL  dissociates to  CG and EGFR_11UU">
+        <listOfReactants>
+          <speciesReference metaid="a4e996c5-1cc7-434e-8940-958dd80bc039" species="EGFR_11UL"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="e3181ded-42a1-446c-946e-208a73a0d139" species="CG"/>
+          <speciesReference metaid="f6e0fd0b-5c26-426c-b2b6-80c2bf02cdf3" species="EGFR_11UU"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_427c1fa4-eaab-49f9-997c-f8d47b3fc6e5" species="EGFR_11UL"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_464e16e8-ef31-4ada-bc86-f87d8af14e10">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> ku68 </ci>
+              <ci> EGFR_11UL </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r67" metaid="_8de52176-60ee-44b5-a0a8-c6c5dab57258" name="Grb2 and EGFR_11CU  bind yielding  EGFR_11LU">
+        <listOfReactants>
+          <speciesReference metaid="c2e80f08-fd50-4071-9833-f0f54ffe9c00" species="Grb2"/>
+          <speciesReference metaid="ca4fe768-81c8-4c18-9ea9-b44a1fe55736" species="EGFR_11CU"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_9cd45c71-a227-45c7-a405-c71c7372f8eb" species="EGFR_11LU"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="ad197670-a531-4614-a368-882c4b95995c" species="Grb2"/>
+          <modifierSpeciesReference metaid="d1e50b78-ea54-4101-a2f9-ac035cdda7d1" species="EGFR_11CU"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_4b50e946-0fc5-4a0a-9fe8-d2153c0b7e03">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kbcg </ci>
+              <ci> Grb2 </ci>
+              <ci> EGFR_11CU </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r68" metaid="b5576190-0b73-456c-849f-5189c30eadcf" name="EGFR_11LU  dissociates to  Grb2 and EGFR_11CU">
+        <listOfReactants>
+          <speciesReference metaid="_85a8bfd5-0412-4294-87f2-160fd24387ca" species="EGFR_11LU"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_2c1b8143-c4aa-4561-bcb3-2059435a65ff" species="Grb2"/>
+          <speciesReference metaid="b7937460-4b9f-460b-949a-33e924003123" species="EGFR_11CU"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_8e2914fb-f53f-4813-85b5-d89a5276dcbb" species="EGFR_11LU"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_5290fc4e-8835-46d8-baf3-d5fd145f84a8">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kucg </ci>
+              <ci> EGFR_11LU </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r69" metaid="_59584e92-a923-4ee4-a7ef-6f282880cad8" name="Grb2 and EGFR_11CU  bind yielding  EGFR_11CG">
+        <listOfReactants>
+          <speciesReference metaid="_3844b546-8a32-421f-92a3-4134945da273" species="Grb2"/>
+          <speciesReference metaid="_3792a704-221f-4de3-8bc9-99603b6de7c6" species="EGFR_11CU"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_99900525-8c7d-43f2-bc39-337ae6dcccce" species="EGFR_11CG"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="e944bb50-e738-4905-ab54-bd86974a6199" species="Grb2"/>
+          <modifierSpeciesReference metaid="df8673f8-85d5-4a73-9fe0-cff1ea1b6104" species="EGFR_11CU"/>
+        </listOfModifiers>
+        <kineticLaw metaid="e7e155ac-5074-4701-a27e-c826d0db8374">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kb68 </ci>
+              <ci> Grb2 </ci>
+              <ci> EGFR_11CU </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r70" metaid="_71e4478d-ca81-46fe-aac7-04646048cada" name="EGFR_11CG  dissociates to  Grb2 and EGFR_11CU">
+        <listOfReactants>
+          <speciesReference metaid="a51e9993-d584-44e0-968f-a964d02e2841" species="EGFR_11CG"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="c00f7fa1-e2cc-4330-9990-0ce4f768e2b8" species="Grb2"/>
+          <speciesReference metaid="a36d5896-196d-4a5e-915b-58dc2dc01a09" species="EGFR_11CU"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="fce36422-782d-4f55-ac35-92924fde22c3" species="EGFR_11CG"/>
+        </listOfModifiers>
+        <kineticLaw metaid="b96b0aa3-5a54-492a-a01c-7f5662fa47ea">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> ku68 </ci>
+              <ci> EGFR_11CG </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r71" metaid="_8910ba1c-96d9-423b-9e70-d20a869164b7" name="Grb2 and EGFR_11LU  bind yielding  EGFR_11LG">
+        <listOfReactants>
+          <speciesReference metaid="_4f9c9793-f1a9-43f3-af33-edbe27e9e7fb" species="Grb2"/>
+          <speciesReference metaid="b1ccc56b-1afe-4cec-bb0f-bb34d4e98eff" species="EGFR_11LU"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_442df0f3-3c20-4e8c-af2b-f2f3d06dc5f0" species="EGFR_11LG"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="ea751800-f34a-4d04-ac23-c6a28cf2a0b8" species="Grb2"/>
+          <modifierSpeciesReference metaid="a0a30142-e71b-4728-a53a-a359cd02456c" species="EGFR_11LU"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_2e2f3eee-ccfe-4016-ba32-281f179d165d">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kb68 </ci>
+              <ci> Grb2 </ci>
+              <ci> EGFR_11LU </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r72" metaid="c2a535f2-ffa5-47a4-b37c-a485c14f20a6" name="EGFR_11LG  dissociates to  Grb2 and EGFR_11LU">
+        <listOfReactants>
+          <speciesReference metaid="f21da636-f24c-4ecb-9a95-c3b1d8d2d647" species="EGFR_11LG"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_44d8f7f9-db04-417a-8c70-8479360d7c9b" species="Grb2"/>
+          <speciesReference metaid="_81a31098-9d23-4f00-baa4-e257c485134f" species="EGFR_11LU"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_555c406a-ab76-4f65-930d-9a0f7d8bde47" species="EGFR_11LG"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_25dcb1fb-211a-41f0-b10e-3fb677215d08">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> ku68 </ci>
+              <ci> EGFR_11LG </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r73" metaid="b7357928-cabc-4d79-825d-abbd11e6d9e1" name="EGFR_11LU  transforms in (singly-bound -> doubly-bound)  EGFR_11CC">
+        <listOfReactants>
+          <speciesReference metaid="_39e5c16e-fa25-4c82-9008-cc14240c56d1" species="EGFR_11LU"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_3f7115d6-5d56-4ff8-840d-a6edc2c295d8" species="EGFR_11CC"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="c3b74455-a9df-4e87-951d-dda487f22620" species="EGFR_11LU"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_82024c76-00c2-4304-af40-22d7e94dab30">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kb68P </ci>
+              <ci> EGFR_11LU </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r74" metaid="c5de79bc-bb77-4f66-8488-779ebe61a516" name="EGFR_11CC  tranforms in (doubly-bound -> singly-bound)  EGFR_11LU">
+        <listOfReactants>
+          <speciesReference metaid="_301e7c8d-c055-4c29-913e-111facd98f27" species="EGFR_11CC"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_0361a09b-42b2-4afc-ac1f-e7b21744f6f4" species="EGFR_11LU"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="c9355e2d-25b2-457a-a5f3-f5da4b11a716" species="EGFR_11CC"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_174bb30e-247c-4794-b943-9e7bf1142bed">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> ku68M </ci>
+              <ci> EGFR_11CC </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r75" metaid="_7988a9ba-8d64-44da-b7e5-1b35a023b6c2" name="Cbl and EGFR_11UG  bind yielding  EGFR_11CG">
+        <listOfReactants>
+          <speciesReference metaid="f453ff14-ea69-459f-a8ce-f51267faf5a7" species="Cbl"/>
+          <speciesReference metaid="_969a0354-cf9f-4a2b-8b6a-25d1e9472e52" species="EGFR_11UG"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_64a84de5-a4dd-48e6-b3c4-114edf7fe350" species="EGFR_11CG"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_505ee032-4a84-4179-9a00-5f7721775b6e" species="Cbl"/>
+          <modifierSpeciesReference metaid="_3b3a730f-0046-4f58-8c27-9768b2968510" species="EGFR_11UG"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_08acc83b-449f-4a66-a45b-73c978b0d8bb">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kb45 </ci>
+              <ci> Cbl </ci>
+              <ci> EGFR_11UG </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r76" metaid="_70a8726e-2595-41d0-8e8a-6123332eb131" name="EGFR_11CG  dissociates to  Cbl and EGFR_11UG">
+        <listOfReactants>
+          <speciesReference metaid="c2da6086-2527-40ce-a62b-5741b308c2d5" species="EGFR_11CG"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_15b5a365-1d20-4e57-934d-7163ffe36088" species="Cbl"/>
+          <speciesReference metaid="b944371b-ba2b-4f5f-bca8-b097c11f5743" species="EGFR_11UG"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_25a7db00-398a-4c6d-9a60-f6de978d32c8" species="EGFR_11CG"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_0e2f9830-6810-40cc-bd6d-e8d959bcb5cf">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> ku45 </ci>
+              <ci> EGFR_11CG </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r77" metaid="e5acebf6-1b99-4b45-9e99-80acfd44a07d" name="CG and EGFR_11UG  bind yielding  EGFR_11LG">
+        <listOfReactants>
+          <speciesReference metaid="d7c89022-d064-4d2c-b5ad-7fe245d539a6" species="CG"/>
+          <speciesReference metaid="_7ec211c4-6a63-4a99-bc2c-9151e2cea9fb" species="EGFR_11UG"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_8e3f29b6-56ac-4f41-8a26-db5a3160d8b2" species="EGFR_11LG"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_6cea1770-faea-42eb-9d7d-5e2b9b164754" species="CG"/>
+          <modifierSpeciesReference metaid="_91889e8b-ad44-4af1-ae14-24bdd6d1e00b" species="EGFR_11UG"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_73bfebe3-7af5-4aa1-b2e4-cafbea86dc69">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kb45 </ci>
+              <ci> CG </ci>
+              <ci> EGFR_11UG </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r78" metaid="a0c59cf9-60eb-4522-80c4-3e639747ec7b" name="EGFR_11LG  dissociates to  CG and EGFR_11UG">
+        <listOfReactants>
+          <speciesReference metaid="_1d9e168b-52fc-4072-9469-3be5f855aa2a" species="EGFR_11LG"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_25059be5-2e5d-4934-a56c-d2cf5444cf72" species="CG"/>
+          <speciesReference metaid="_4ee235c5-0095-4032-86fb-a8a305f20371" species="EGFR_11UG"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="fc2fcece-f83b-49a3-a57a-08ccd7ce5004" species="EGFR_11LG"/>
+        </listOfModifiers>
+        <kineticLaw metaid="b1923c3d-5a08-4c7e-8af2-ec9626a0119b">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> ku45 </ci>
+              <ci> EGFR_11LG </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r79" metaid="_62c89ba9-5687-4d65-ab4e-c0f2e6976969" name="Cbl and EGFR_11UG  bind yielding  EGFR_11UL">
+        <listOfReactants>
+          <speciesReference metaid="_6aca9791-f569-4113-b557-45d9fd6f05ae" species="Cbl"/>
+          <speciesReference metaid="_9530429d-993f-4b5c-a47c-e46c5222feb6" species="EGFR_11UG"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_56f77660-6877-4a87-8898-5ed6ce6f7811" species="EGFR_11UL"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_5c172b22-9a31-47b9-9c5b-bcfb1e6ac6aa" species="Cbl"/>
+          <modifierSpeciesReference metaid="e0ee285d-366a-4263-bd91-81aef98b68ad" species="EGFR_11UG"/>
+        </listOfModifiers>
+        <kineticLaw metaid="d7025b21-05ac-45d2-bb55-eb7032e3c3d3">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kbcg </ci>
+              <ci> Cbl </ci>
+              <ci> EGFR_11UG </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r80" metaid="_5dee428a-f762-4c6e-8dba-4216fcd6ccdf" name="EGFR_11UL  dissociates to Cbl and EGFR_11UG">
+        <listOfReactants>
+          <speciesReference metaid="db0ca4b7-da88-492d-b6db-b5c2f680b240" species="EGFR_11UL"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_1e73cb52-78e1-4ac1-8977-a8901003de51" species="Cbl"/>
+          <speciesReference metaid="_4c6721ab-443d-4d6b-9bb6-1588abe024f0" species="EGFR_11UG"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_87112c66-53de-4ffc-9f48-38a7467732de" species="EGFR_11UL"/>
+        </listOfModifiers>
+        <kineticLaw metaid="cce624ab-911e-4e8d-a943-5cdb04b1245a">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kucg </ci>
+              <ci> EGFR_11UL </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r81" metaid="cadc624e-2ba6-43f3-a4bc-6ffb94f4ce9d" name="EGFR_11UL  transforms in (singly-bound -> doubly-bound)  EGFR_11CC">
+        <listOfReactants>
+          <speciesReference metaid="e6c4db5c-1c5a-4d20-a46b-81e316d4f251" species="EGFR_11UL"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_238e173e-2047-409a-9409-f48ed71de91a" species="EGFR_11CC"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_5125084d-62e1-4133-9cb4-38aacf3f74bb" species="EGFR_11UL"/>
+        </listOfModifiers>
+        <kineticLaw metaid="d3eee04a-65a0-449a-9739-b902a7f22632">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kb45P </ci>
+              <ci> EGFR_11UL </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r82" metaid="_4ffc238a-a6d2-4535-a271-0bb603dc34b0" name="EGFR_11CC  tranforms in (doubly-bound -> singly-bound)  EGFR_11UL">
+        <listOfReactants>
+          <speciesReference metaid="b752b927-b449-4e93-8ae8-a5e6a8b1eb39" species="EGFR_11CC"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_454f5f87-74d2-48c5-a149-181aa7cc9cb4" species="EGFR_11UL"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_58d983e5-e648-4f8c-86f2-9647bdb10384" species="EGFR_11CC"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_2d04b23a-5c9e-47fb-8826-5d7135cf7919">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> ku45M </ci>
+              <ci> EGFR_11CC </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r83" metaid="_00670ef4-f78d-427f-b389-b8062e01324b" name="EGFR_11CG  transforms in (Cbl bind Grb2 directly)  EGFR_11CC">
+        <listOfReactants>
+          <speciesReference metaid="_337da438-f52f-4a4c-ba4f-26678186a7e3" species="EGFR_11CG"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_7290f895-8bef-4132-a6b2-68825eef4b95" species="EGFR_11CC"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="a78c8ee7-df74-4b61-859f-f8340335c3b8" species="EGFR_11CG"/>
+        </listOfModifiers>
+        <kineticLaw metaid="fc9fdf5d-bdb0-493d-9e97-53cfdf06b121">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kbcgP </ci>
+              <ci> EGFR_11CG </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r84" metaid="_53d65e70-df16-470f-8f7c-653ef3d11ca4" name="EGFR_11CC  tranforms in (Cbl-Grb2 loose direct binding, but stay bound to EGFR)  EGFR_11CG">
+        <listOfReactants>
+          <speciesReference metaid="cdba5012-0983-47bb-85fd-231c4aa4bf2d" species="EGFR_11CC"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_1833f873-bc6f-4d9b-9573-59d39f3288c1" species="EGFR_11CG"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_5a7deaf7-3cde-45d8-a296-80f3cd086731" species="EGFR_11CC"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_336aff0e-0049-4cd2-a6c2-fcd0af670a1c">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kucgM </ci>
+              <ci> EGFR_11CC </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r85" metaid="_612b72b6-0678-478c-8c4a-951c0c6df1d6" name="Grb2 and EGFR_11CG  bind yielding  EGFR_11LG">
+        <listOfReactants>
+          <speciesReference metaid="b321b2fd-01af-46f1-9dab-8b0503effef5" species="Grb2"/>
+          <speciesReference metaid="_5de655d0-a9d2-4276-9180-bd72d0cd9291" species="EGFR_11CG"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="d4c03a95-1957-4072-a80d-748b7905fe9a" species="EGFR_11LG"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="a584f5dd-fb35-4050-b9fe-f562137823ed" species="Grb2"/>
+          <modifierSpeciesReference metaid="dfb14af7-04d7-4649-a57a-223c49751cac" species="EGFR_11CG"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_631b2e2d-73c6-42a0-98e9-0c034fb8bb59">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kbcg </ci>
+              <ci> Grb2 </ci>
+              <ci> EGFR_11CG </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r86" metaid="_4ee6fdd2-1202-47d8-a627-305ba8c7060f" name="EGFR_11LG  dissociates to  Grb2 and EGFR_11CG">
+        <listOfReactants>
+          <speciesReference metaid="ab237635-b55e-46ac-a18d-40ffe61d84b8" species="EGFR_11LG"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_0b02e371-e288-4f77-9d21-001ef15f36e1" species="Grb2"/>
+          <speciesReference metaid="_8a3e21c6-1616-46b8-a2e1-2f0c10cc106c" species="EGFR_11CG"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="ff7ab23d-ea10-4531-bac7-4f797ffa3176" species="EGFR_11LG"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_4aa06de4-516e-4332-a341-745edd03aec9">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kucg </ci>
+              <ci> EGFR_11LG </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r87" metaid="_4b76d94e-52df-457c-9e3d-00fce1b7462e" name="Grb2 and EGFR_02UU  bind yielding  EGFR_02UG">
+        <listOfReactants>
+          <speciesReference metaid="ad07b3d4-6fcd-4623-b0b2-7e43b69d7698" species="Grb2"/>
+          <speciesReference metaid="_310e0df6-5b14-4f54-a5db-bc27d513f039" species="EGFR_02UU"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_8aa5a55b-225c-4d40-9cb6-7db1b9ed9d33" species="EGFR_02UG"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_96070f50-c548-400a-bff6-c1800dc36099" species="Grb2"/>
+          <modifierSpeciesReference metaid="_18e0ffc8-7b4f-44ec-9400-5970f962ff8a" species="EGFR_02UU"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_80c11d1e-3bda-4f54-bddf-a62d13be7c63">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <cn> 2 </cn>
+              <ci> kb68 </ci>
+              <ci> Grb2 </ci>
+              <ci> EGFR_02UU </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r88" metaid="_8aa524f4-ca15-407c-89a6-3696b51f55c8" name="EGFR_02UG  dissociates to  Grb2 and EGFR_02UU">
+        <listOfReactants>
+          <speciesReference metaid="_1c3d4f17-d051-444b-b66c-d8f763b6068a" species="EGFR_02UG"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_2fb626ac-4d9f-4a1a-b538-a7722321e073" species="Grb2"/>
+          <speciesReference metaid="e9544c5a-9d82-4a87-b9c0-bdcf6bcdaca4" species="EGFR_02UU"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_4d1f657d-b250-4c00-8492-1fed5f6afd78" species="EGFR_02UG"/>
+        </listOfModifiers>
+        <kineticLaw metaid="d2d9e91b-c17b-4afc-b2c6-cbe66d6184c7">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> ku68 </ci>
+              <ci> EGFR_02UG </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r89" metaid="c1249a5a-0d7f-4206-b8d2-6f1637c2124c" name="CG and EGFR_02UU  bind yielding  EGFR_02UL">
+        <listOfReactants>
+          <speciesReference metaid="dceb8c2f-60f2-446d-9e45-24453f4ef25e" species="CG"/>
+          <speciesReference metaid="_5a1dd46c-08dd-41f3-821d-375f90ffecff" species="EGFR_02UU"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_602e6e23-dc12-46e3-97a4-c8f6ff6a934d" species="EGFR_02UL"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_51ab3d9c-3c4c-42e2-a668-004f18da49f4" species="CG"/>
+          <modifierSpeciesReference metaid="_76343fc8-66d8-47e3-927b-249ca693339e" species="EGFR_02UU"/>
+        </listOfModifiers>
+        <kineticLaw metaid="e5380f1e-2bd5-4b46-bba3-de8b940ebe4a">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <cn> 2 </cn>
+              <ci> kb68 </ci>
+              <ci> CG </ci>
+              <ci> EGFR_02UU </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r90" metaid="_264192da-1694-4309-952b-53b3bd0a74cc" name="EGFR_02UL  dissociates to  CG and EGFR_02UU">
+        <listOfReactants>
+          <speciesReference metaid="e63ca6d3-27bc-4352-a0d3-eb48ec2c52ec" species="EGFR_02UL"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="c81c53fd-a8ef-4dd6-9444-2549955b18b5" species="CG"/>
+          <speciesReference metaid="aa9576f7-9f8f-49d5-8c95-419918cbcafc" species="EGFR_02UU"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_827176e0-3948-451f-a848-8bf6394729be" species="EGFR_02UL"/>
+        </listOfModifiers>
+        <kineticLaw metaid="bd29c103-859e-406a-b7ef-ba851dc05fa8">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> ku68 </ci>
+              <ci> EGFR_02UL </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r91" metaid="_2cdaecbb-6b56-4872-9a22-adebab171249" name="Cbl and EGFR_02UG  bind yielding  EGFR_02UL">
+        <listOfReactants>
+          <speciesReference metaid="_344a5372-46a5-4e1e-b680-596e2f3f1120" species="Cbl"/>
+          <speciesReference metaid="_0f4d357e-2241-4ebd-b431-d606e568ba1c" species="EGFR_02UG"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_73324b89-cec1-4ebc-a263-59ba74a45f61" species="EGFR_02UL"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_72ce3f3c-1e51-462a-a102-539e0b8dafbd" species="Cbl"/>
+          <modifierSpeciesReference metaid="c2f08eca-c3ec-44d4-94c1-5ae3d5b601ad" species="EGFR_02UG"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_6a687779-5c3f-43a2-abb9-d70aed3e5f06">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kbcg </ci>
+              <ci> Cbl </ci>
+              <ci> EGFR_02UG </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r92" metaid="a23af3b5-392e-4f66-9eed-e2737ab93fb6" name="EGFR_02UL  dissociates to Cbl and EGFR_02UG">
+        <listOfReactants>
+          <speciesReference metaid="_0953ef64-0475-4957-8946-26c8198dabd0" species="EGFR_02UL"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_3547f5a3-0d8f-4269-a680-09ca11117d58" species="Cbl"/>
+          <speciesReference metaid="_311d9d3d-d9b6-4117-9860-871eb4d324f6" species="EGFR_02UG"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_00c8a855-141d-4d5d-bf44-53003a2abd5d" species="EGFR_02UL"/>
+        </listOfModifiers>
+        <kineticLaw metaid="c22fcaa5-509b-4d6f-aa3a-8cdbfd86518e">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kucg </ci>
+              <ci> EGFR_02UL </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r93" metaid="_8ee07aa1-645b-4691-894f-e82343885772" name="Cbl and EGFR_12UU  bind yielding  EGFR_12CU">
+        <listOfReactants>
+          <speciesReference metaid="cd3c25c2-571d-44c5-aca0-8e45d47b2604" species="Cbl"/>
+          <speciesReference metaid="_04b84b05-07c6-4f54-b948-fbb532d24f7e" species="EGFR_12UU"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="f2ecb1bb-7163-4a21-bdc4-21161bb85fdd" species="EGFR_12CU"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_5f1610c8-b991-4f25-9cd7-6fdbc16d2b21" species="Cbl"/>
+          <modifierSpeciesReference metaid="bf18a5f8-d88a-405f-868d-957a9f37fd06" species="EGFR_12UU"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_90b866c7-92a6-4117-b2e8-9c47d3105f8c">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kb45 </ci>
+              <ci> Cbl </ci>
+              <ci> EGFR_12UU </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r94" metaid="b951ceac-e9d8-4c04-a5af-89d469a3b353" name="EGFR_12CU  dissociates to  Cbl and EGFR_12UU">
+        <listOfReactants>
+          <speciesReference metaid="_9c5a7136-a90a-4d2e-bdae-b9c47c6af226" species="EGFR_12CU"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_9b2d6fb8-ae7b-41b2-bd6d-1ffaa3ce82a8" species="Cbl"/>
+          <speciesReference metaid="_2529f243-30e3-4e6c-90bb-812e5772edc1" species="EGFR_12UU"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="a05b5102-d83f-48b9-96db-7ba44cf2fe43" species="EGFR_12CU"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_3b0f3ba0-9256-4d9d-a5fd-8e93bb994b95">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> ku45 </ci>
+              <ci> EGFR_12CU </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r95" metaid="_904132db-f663-41d6-96cd-c4d2af3a2654" name="CG and EGFR_12UU  bind yielding  EGFR_12LU">
+        <listOfReactants>
+          <speciesReference metaid="db2315d4-6448-45d8-bad4-c8ca44e48dc4" species="CG"/>
+          <speciesReference metaid="_320303de-f681-4e78-9bbf-b201c79384a2" species="EGFR_12UU"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_57ee8b93-fe68-436a-a38e-fae7d5203516" species="EGFR_12LU"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="fe4e2aba-4b9f-4f5d-9a47-0f237ba9e19f" species="CG"/>
+          <modifierSpeciesReference metaid="_86702935-fd6b-4770-aaf9-c476064fb40e" species="EGFR_12UU"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_11db2e13-48f0-45b7-82e0-0f64ec9d4844">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kb45 </ci>
+              <ci> CG </ci>
+              <ci> EGFR_12UU </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r96" metaid="_9966f43e-2781-48f5-9f66-9f1d52124b9e" name="EGFR_12LU  dissociates to  CG and EGFR_12UU">
+        <listOfReactants>
+          <speciesReference metaid="_839eb614-7eab-4f89-889f-0b89db218489" species="EGFR_12LU"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_86279bad-0479-4fa2-9da3-17ef3936d986" species="CG"/>
+          <speciesReference metaid="_23377ac7-e04c-4325-a694-f6874de33301" species="EGFR_12UU"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="a45b4cd6-94e9-4194-b4d6-02cce345ebbe" species="EGFR_12LU"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_9f90dbe1-7860-4e79-b5ed-d0446939a149">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> ku45 </ci>
+              <ci> EGFR_12LU </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r97" metaid="cffc6012-52bc-493e-a3d7-2b365b72945e" name="Grb2 and EGFR_12UU  bind yielding  EGFR_12UG">
+        <listOfReactants>
+          <speciesReference metaid="dd5778bb-252f-4e3e-9534-986af1696216" species="Grb2"/>
+          <speciesReference metaid="_7b8f906c-8c48-495e-b81d-6cd3f092baea" species="EGFR_12UU"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_6787fc41-48cd-4188-b8c8-e732d6d61014" species="EGFR_12UG"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_52691044-a6e2-460d-bcdf-a2be57d8a9dd" species="Grb2"/>
+          <modifierSpeciesReference metaid="_37529dc6-da73-4bae-aaa4-927ac25726e6" species="EGFR_12UU"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_6cb16be2-36d6-4072-b90d-d9bbdfa2a3ff">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <cn> 2 </cn>
+              <ci> kb68 </ci>
+              <ci> Grb2 </ci>
+              <ci> EGFR_12UU </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r98" metaid="_24dc23b3-adb7-4c7b-b930-ce6a1f70c11f" name="EGFR_12UG  dissociates to  Grb2 and EGFR_12UU">
+        <listOfReactants>
+          <speciesReference metaid="f4382e02-5af4-4f01-affc-7f3c1698cbd7" species="EGFR_12UG"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="fbd26131-4e54-4944-ac97-b300f47ae832" species="Grb2"/>
+          <speciesReference metaid="b3329e6c-bb28-415c-9aeb-3d316bc92b29" species="EGFR_12UU"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_7e6fb9c7-b2c0-452f-a3a7-b84b7020447b" species="EGFR_12UG"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_88844ec9-c245-41c6-97d7-698b8cb5a993">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> ku68 </ci>
+              <ci> EGFR_12UG </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r99" metaid="a7bbacc8-016c-4ab1-a450-955169a00b9d" name="CG and EGFR_12UU  bind yielding  EGFR_12UL">
+        <listOfReactants>
+          <speciesReference metaid="eeefc439-c656-4526-94ff-37c90f361062" species="CG"/>
+          <speciesReference metaid="_3a0a91e4-fa80-4dbe-b588-f221c4891f44" species="EGFR_12UU"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_0748462d-2144-4960-839d-d68f3f2b8920" species="EGFR_12UL"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_9a0d60bb-1079-4c49-ab36-a658bd83147e" species="CG"/>
+          <modifierSpeciesReference metaid="b5ea9aff-6601-4bc4-9332-a82d0b0916b9" species="EGFR_12UU"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_3d416c71-f049-45a9-9151-bd59d90a386d">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <cn> 2 </cn>
+              <ci> kb68 </ci>
+              <ci> CG </ci>
+              <ci> EGFR_12UU </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r100" metaid="_4e365aa8-192f-4200-9e3f-10d38847cb66" name="EGFR_12UL  dissociates to  CG and EGFR_12UU">
+        <listOfReactants>
+          <speciesReference metaid="c8b31473-2d86-4071-b3ee-55b29f57af2f" species="EGFR_12UL"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_9690a3c4-ac2a-4ad4-8b62-9d5f4ca2edff" species="CG"/>
+          <speciesReference metaid="_8fe96359-2457-43e6-864b-071967849771" species="EGFR_12UU"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="b4b75c5e-1cbf-4427-a620-5a7cf2b6ce64" species="EGFR_12UL"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_0ce6a171-fd28-4022-a25e-bdd1b1d38f3c">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> ku68 </ci>
+              <ci> EGFR_12UL </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r101" metaid="_9af4d5e5-1d23-4f75-a3ee-e2b3e1aac549" name="Grb2 and EGFR_12CU  bind yielding  EGFR_12LU">
+        <listOfReactants>
+          <speciesReference metaid="_78f81493-fbc8-4eaa-8e5b-873658dede2f" species="Grb2"/>
+          <speciesReference metaid="d52dfb01-b87f-40f4-a1a3-a8a296f63463" species="EGFR_12CU"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="fff8f735-7e8e-4b1a-b81a-e9e6b77d54c6" species="EGFR_12LU"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="c836754e-fe09-4b02-a047-325cae94fb12" species="Grb2"/>
+          <modifierSpeciesReference metaid="_14437c76-18d5-4c60-85a8-d3a1123fa735" species="EGFR_12CU"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_6ef2ea3d-b580-47ae-b0d3-a0918b771e94">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kbcg </ci>
+              <ci> Grb2 </ci>
+              <ci> EGFR_12CU </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r102" metaid="_58390609-3f15-4110-b01b-eee223295fa1" name="EGFR_12LU  dissociates to  Grb2 and EGFR_12CU">
+        <listOfReactants>
+          <speciesReference metaid="_488c607f-1693-4ad7-b076-446603e447d0" species="EGFR_12LU"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="f718cdf6-dbd2-47ef-8ac8-4e48da29e569" species="Grb2"/>
+          <speciesReference metaid="c332e239-a8d2-470d-8eff-df1b8eb8c485" species="EGFR_12CU"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="d6089016-8ffd-4f42-8d8d-98ae29bb8e57" species="EGFR_12LU"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_32c2a7e1-7d88-448e-95e1-fc4e883a65cd">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kucg </ci>
+              <ci> EGFR_12LU </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r103" metaid="f8e59785-3186-4b1d-aa5c-52334c41b652" name="Grb2 and EGFR_12CU  bind yielding  EGFR_12CG">
+        <listOfReactants>
+          <speciesReference metaid="_2ae62698-e105-40b8-bdb5-cae4ef61553f" species="Grb2"/>
+          <speciesReference metaid="_0771b1e2-99f9-412e-a922-229b7f2125f9" species="EGFR_12CU"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_9042836e-6f81-4349-8272-cdf76c7cbe1b" species="EGFR_12CG"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_3c24172b-4afc-43e4-8fd3-c13b55706e51" species="Grb2"/>
+          <modifierSpeciesReference metaid="_03bb502d-ded0-4e02-9857-32a368083f6b" species="EGFR_12CU"/>
+        </listOfModifiers>
+        <kineticLaw metaid="bbe6319f-871b-49cd-8dea-6db2b744c923">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <cn> 2 </cn>
+              <ci> kb68 </ci>
+              <ci> Grb2 </ci>
+              <ci> EGFR_12CU </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r104" metaid="_0d9ed49e-6550-4461-b83a-5f5bf6df9559" name="EGFR_12CG  dissociates to  Grb2 and EGFR_12CU">
+        <listOfReactants>
+          <speciesReference metaid="b3136752-bd67-4a53-af32-ca8a4471d923" species="EGFR_12CG"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="e00fc0da-c4db-4f7d-9784-67d17f460e86" species="Grb2"/>
+          <speciesReference metaid="_624577a4-8cdd-4464-9c1e-47c60c7b65a8" species="EGFR_12CU"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="b1c6c935-1aec-4786-9cd2-833add32929c" species="EGFR_12CG"/>
+        </listOfModifiers>
+        <kineticLaw metaid="bcd20a2f-7b5f-4025-9a52-0b66c22b5108">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> ku68 </ci>
+              <ci> EGFR_12CG </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r105" metaid="ddf8b6bd-5f32-4f99-afc7-de429abf53e5" name="Grb2 and EGFR_12LU  bind yielding  EGFR_12LG">
+        <listOfReactants>
+          <speciesReference metaid="ea6a77d6-f021-475b-bf1c-4848f2f92236" species="Grb2"/>
+          <speciesReference metaid="_26a9ca89-db93-4aaf-9f67-b35ec4a5b252" species="EGFR_12LU"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_87ec60f5-6808-4b1a-a74c-3d5ee3c332f9" species="EGFR_12LG"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="e538b9a5-4733-401d-9ad6-27e4f3e196ea" species="Grb2"/>
+          <modifierSpeciesReference metaid="_75fc3356-a6e2-4451-9849-f542b32eef49" species="EGFR_12LU"/>
+        </listOfModifiers>
+        <kineticLaw metaid="c1133e8f-fce2-43fb-be03-b05845e924de">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <cn> 2 </cn>
+              <ci> kb68 </ci>
+              <ci> Grb2 </ci>
+              <ci> EGFR_12LU </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r106" metaid="_1f91a15f-2ec2-4c1f-abc5-f6d32382d12a" name="EGFR_12LG  dissociates to  Grb2 and EGFR_12LU">
+        <listOfReactants>
+          <speciesReference metaid="b47052b2-ed54-47e3-8db8-b321a1b6ece8" species="EGFR_12LG"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_61296f74-9767-477d-9e62-17dd2f72efff" species="Grb2"/>
+          <speciesReference metaid="_09307089-3bf6-43ae-9fa7-26e662891810" species="EGFR_12LU"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_4d58847c-276e-42cc-819d-cff4f0a55593" species="EGFR_12LG"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_1964d1c7-ab0a-41e1-9b97-a0c6840b752c">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> ku68 </ci>
+              <ci> EGFR_12LG </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r107" metaid="f74e0f9d-0a90-4936-917b-43441bd5f1fb" name="EGFR_12LU  transforms in (singly-bound -> doubly-bound)  EGFR_12CC">
+        <listOfReactants>
+          <speciesReference metaid="_5d8195b9-5314-4092-a1be-f5954d92d56d" species="EGFR_12LU"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="b14833dc-8b19-4470-9be1-6da3bd0a0980" species="EGFR_12CC"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_4efa91f3-89ec-428d-bb61-40bd898df631" species="EGFR_12LU"/>
+        </listOfModifiers>
+        <kineticLaw metaid="b0b96cec-e102-4dab-a023-35f0ae2d9218">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <cn> 2 </cn>
+              <ci> kb68P </ci>
+              <ci> EGFR_12LU </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r108" metaid="_0cbcae87-6fc1-4ad6-b382-da825ce328aa" name="EGFR_12CC  tranforms in (doubly-bound -> singly-bound)  EGFR_12LU">
+        <listOfReactants>
+          <speciesReference metaid="ea58e138-c271-4359-afdb-ef0e9ba46cf1" species="EGFR_12CC"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_8c29394a-71d0-4ddc-9062-f577fcc59465" species="EGFR_12LU"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_47cf2d3e-4382-418a-aa8e-fd7e570b7b8c" species="EGFR_12CC"/>
+        </listOfModifiers>
+        <kineticLaw metaid="a68a7ce6-e271-4518-922f-68cc0c8bf679">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> ku68M </ci>
+              <ci> EGFR_12CC </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r109" metaid="a623d6c4-7fc6-4b5d-a0e3-0abd01534f13" name="Cbl and EGFR_12UG  bind yielding  EGFR_12CG">
+        <listOfReactants>
+          <speciesReference metaid="_1462d62a-1376-4f27-8cb5-b63c45c71c50" species="Cbl"/>
+          <speciesReference metaid="_6040a8f9-34f4-4c42-9e7f-5d752f16db14" species="EGFR_12UG"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_917aabd5-20cd-4a83-b1e6-c7d3f084c3a1" species="EGFR_12CG"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="b4ece693-7967-48ba-983d-baee4195edcd" species="Cbl"/>
+          <modifierSpeciesReference metaid="_6414f375-3d91-4ae1-8509-e6264fa20340" species="EGFR_12UG"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_8fca14a0-5c89-428a-8e48-b168936ea6d2">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kb45 </ci>
+              <ci> Cbl </ci>
+              <ci> EGFR_12UG </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r110" metaid="c51233b6-8e79-42cd-a019-d80ad1d41bb8" name="EGFR_12CG  dissociates to  Cbl and EGFR_12UG">
+        <listOfReactants>
+          <speciesReference metaid="c8ae5dbd-1b14-451b-ab1f-3b349b7628d7" species="EGFR_12CG"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_67244e6e-a9d6-4e7a-b4f9-c4473ffc0a7f" species="Cbl"/>
+          <speciesReference metaid="_8a8a8a94-e776-4b34-9fdf-1a828d2eb575" species="EGFR_12UG"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_1e4a117e-b82c-40f0-8fa0-056056e4b1f9" species="EGFR_12CG"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_0231501e-37ca-45b1-917f-111fc47705da">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> ku45 </ci>
+              <ci> EGFR_12CG </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r111" metaid="_76e8769e-b737-4f27-aeb5-0fd929af20c9" name="CG and EGFR_12UG  bind yielding  EGFR_12LG">
+        <listOfReactants>
+          <speciesReference metaid="cc0ed80a-870f-4add-ba1b-c70f54b2eadb" species="CG"/>
+          <speciesReference metaid="cb194909-fce1-47c6-afcc-4284e6c54c32" species="EGFR_12UG"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_48e7415d-d5cd-4e9b-be04-ed76d1d56a67" species="EGFR_12LG"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_609da9bc-95ee-4c3b-8ca8-7b5e8c323911" species="CG"/>
+          <modifierSpeciesReference metaid="_0065c270-e668-4b6c-836b-fe1397636e32" species="EGFR_12UG"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_7271e199-9766-4587-b6c7-3a1b7f6529e2">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kb45 </ci>
+              <ci> CG </ci>
+              <ci> EGFR_12UG </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r112" metaid="cc09a597-bb7a-49e7-be6d-9ef2fc07de81" name="EGFR_12LG  dissociates to  CG and EGFR_12UG">
+        <listOfReactants>
+          <speciesReference metaid="dbef91da-52d3-4bdf-a1d3-eb72c648617e" species="EGFR_12LG"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_0f9b5110-86d0-42ff-97fe-268a8a63637b" species="CG"/>
+          <speciesReference metaid="a2cd1035-e94d-445b-886e-c3ec507d41a6" species="EGFR_12UG"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_0636f083-c628-49cd-b97e-121444b215e3" species="EGFR_12LG"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_66c3e0b6-c464-4c95-b887-c4961c88291c">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> ku45 </ci>
+              <ci> EGFR_12LG </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r113" metaid="c605aafb-a03e-4e3a-b75e-9d7c1958f27a" name="Cbl and EGFR_12UG  bind yielding  EGFR_12UL">
+        <listOfReactants>
+          <speciesReference metaid="_7204c2f5-fcc7-4af3-8330-865434e5217e" species="Cbl"/>
+          <speciesReference metaid="af35d65f-b687-42bb-baa8-d8e0e376363d" species="EGFR_12UG"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_580043e1-7230-49ac-b199-f61fae3d1abb" species="EGFR_12UL"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_0d1e1b08-a94f-4088-8eab-0d071907e3b1" species="Cbl"/>
+          <modifierSpeciesReference metaid="_0b374e8b-900d-4079-86b1-de2df91e2660" species="EGFR_12UG"/>
+        </listOfModifiers>
+        <kineticLaw metaid="cab6e9fa-2a35-4dc4-961e-4c338db1adec">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kbcg </ci>
+              <ci> Cbl </ci>
+              <ci> EGFR_12UG </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r114" metaid="_8215ebbe-852b-459f-b345-f81d64f0ae66" name="EGFR_12UL  dissociates to Cbl and EGFR_12UG">
+        <listOfReactants>
+          <speciesReference metaid="_81583fed-ef89-4262-83a2-8053ae4547d0" species="EGFR_12UL"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_8aa1ea6f-7993-4779-8e39-9c1d1ff4c8f4" species="Cbl"/>
+          <speciesReference metaid="b29f2a39-fc29-4a9e-b00f-eeb12bbd9d40" species="EGFR_12UG"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="a82a4525-ac68-49b2-8be8-a3b9dc80a6cf" species="EGFR_12UL"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_359458bd-ed1c-4ce3-b52a-3218454fd999">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kucg </ci>
+              <ci> EGFR_12UL </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r115" metaid="_4c13d4b2-371d-4a89-8387-e95d3040829f" name="EGFR_12UL  transforms in (singly-bound -> doubly-bound)  EGFR_12CC">
+        <listOfReactants>
+          <speciesReference metaid="d917bf4f-1ace-49f4-b72a-8e4d09ef24b6" species="EGFR_12UL"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_4c8f76c4-7e4e-4631-b59a-92bbb4346a9c" species="EGFR_12CC"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_696d4c85-d23e-4a3c-970b-79452135de0d" species="EGFR_12UL"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_83924b2b-87ca-4ad8-a026-5ff226fd9820">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kb45P </ci>
+              <ci> EGFR_12UL </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r116" metaid="_3b0a204d-b74d-4ec4-bc39-d7f4c14a2c04" name="EGFR_12CC  tranforms in (doubly-bound -> singly-bound)  EGFR_12UL">
+        <listOfReactants>
+          <speciesReference metaid="_8f67de3a-b57a-423d-99f6-1de69f4a3a61" species="EGFR_12CC"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="f465faa4-586d-4996-b7ba-1df1560de1cd" species="EGFR_12UL"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_56cdef45-fd14-46ee-8956-7899db448147" species="EGFR_12CC"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_060891f1-4559-453a-a7bc-9fdc361ff57a">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> ku45M </ci>
+              <ci> EGFR_12CC </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r117" metaid="aaed6138-cb56-4470-9909-4788b949646b" name="EGFR_12CG  transforms in (Cbl bind Grb2 directly)  EGFR_12CC">
+        <listOfReactants>
+          <speciesReference metaid="_4f094f56-751a-42a3-bce6-05a396498d43" species="EGFR_12CG"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_31c6c6ce-4c79-467b-9803-945386b330e1" species="EGFR_12CC"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_927207c0-5d76-48d5-94aa-1cf8e60697ff" species="EGFR_12CG"/>
+        </listOfModifiers>
+        <kineticLaw metaid="dbc98a36-29bb-435a-bcac-99680d75920b">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kbcgP </ci>
+              <ci> EGFR_12CG </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r118" metaid="_949967ce-8cb3-4051-be0f-102e70d6dd36" name="EGFR_12CC  tranforms in (Cbl-Grb2 loose direct binding, but stay bound to EGFR)  EGFR_12CG">
+        <listOfReactants>
+          <speciesReference metaid="_439f434b-1142-4eef-8399-0575daca3ad0" species="EGFR_12CC"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="b1ade74e-8936-408a-9d3d-f8b53d996270" species="EGFR_12CG"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_8f9aa5bc-c4b2-42a0-b912-7487841c0be8" species="EGFR_12CC"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_295e4161-a0c5-4ed5-b83a-38792f273fd8">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kucgM </ci>
+              <ci> EGFR_12CC </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r119" metaid="_1e660b41-98d4-4fe1-9e10-4ec335a660e9" name="Grb2 and EGFR_12CG  bind yielding  EGFR_12LG">
+        <listOfReactants>
+          <speciesReference metaid="_088e20f2-7eb7-4779-83d2-17400afbafdf" species="Grb2"/>
+          <speciesReference metaid="_5f7849f7-254e-4ae9-bde2-c51d3f308454" species="EGFR_12CG"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="b329dd00-a24a-4dce-991b-97afa56ad69d" species="EGFR_12LG"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="ff1d1911-f74d-460a-8f33-5e63850dc0f8" species="Grb2"/>
+          <modifierSpeciesReference metaid="_9f62091c-62e7-480d-a689-c09fd321b142" species="EGFR_12CG"/>
+        </listOfModifiers>
+        <kineticLaw metaid="c70c4366-67bf-40e9-b306-19c06191bd44">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kbcg </ci>
+              <ci> Grb2 </ci>
+              <ci> EGFR_12CG </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="r120" metaid="c2fb2a9d-8f6a-4d7c-88bd-dad0ea812797" name="EGFR_12LG  dissociates to  Grb2 and EGFR_12CG">
+        <listOfReactants>
+          <speciesReference metaid="f92a623d-76e3-4487-98ee-3978e100bc22" species="EGFR_12LG"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_15917db3-e3e4-486f-a2ba-d78ced46f3bc" species="Grb2"/>
+          <speciesReference metaid="_4bef4f59-b3d7-4f1d-bcd6-b7de8f00dd5d" species="EGFR_12CG"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_7a0ed4bd-d94c-4e2e-89dc-361e5a3f6422" species="EGFR_12LG"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_1b3c71b8-7d68-49d1-af3f-024e64f3bd55">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kucg </ci>
+              <ci> EGFR_12LG </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+    </listOfReactions>
+  </model>
+</sbml>
