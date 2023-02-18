@@ -194,7 +194,7 @@ public Function[] getFunctions() {
 }
 
 
-private Constant getLocalConstant(Constant referenceConstant) throws ExpressionException {
+public Constant getLocalConstant(Constant referenceConstant) throws ExpressionException {
 	if (localVariableHash == null) {
 		localVariableHash = new HashMap<String, Variable>();
 	}

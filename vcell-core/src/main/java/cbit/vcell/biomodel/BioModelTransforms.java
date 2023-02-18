@@ -9,6 +9,7 @@ import cbit.vcell.model.*;
 import cbit.vcell.parser.*;
 import cbit.vcell.solver.MathOverrides;
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationSymbolTable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.util.TokenMangler;
@@ -412,7 +413,7 @@ public class BioModelTransforms {
         }
     }
 
-    public static void applyMathOverrides(Simulation simulation, BioModel bioModel) throws MappingException, ExpressionException {
+    public static void applyMathOverrides(Simulation simulation, int jobIndex, BioModel bioModel) throws MappingException, ExpressionException {
         if (simulation == null) {
             throw new RuntimeException("simulation was null");
         }
@@ -442,7 +443,8 @@ public class BioModelTransforms {
                 throw new RuntimeException("biological symbol table entry for variable '"+overriddenConstantName+"'");
             }
             Expression defaultExpression = mathOverrides.getDefaultExpression(overriddenConstantName);
-            Expression actualExpression = mathOverrides.getActualExpression(overriddenConstantName,0).flatten();
+            SimulationSymbolTable simulationSymbolTable = new SimulationSymbolTable(simulation, jobIndex);
+            Expression actualExpression = simulationSymbolTable.getLocalConstant((Constant)var).getExpression().flatten();
             if (!actualExpression.isNumeric()){
                 throw new RuntimeException("applying non-numeric overrides to a biomodel not yet supported: "+overriddenConstantName+": default = "+defaultExpression.infix()+", actual = "+actualExpression.infix());
             }

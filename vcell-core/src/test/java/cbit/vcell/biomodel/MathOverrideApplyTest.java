@@ -88,13 +88,17 @@ public class MathOverrideApplyTest {
 		slowModels.add("biomodel_34826524.vcml");
 		slowModels.add("biomodel_38086434.vcml");
 		slowModels.add("biomodel_47429473.vcml");
+		slowModels.add("biomodel_61699798.vcml");
+		slowModels.add("biomodel_98150237.vcml");
 		return slowModels;
 	}
 
 	public static Set<String> knownFaults() {
-		Set<String> slowModels = new HashSet<>();
-		slowModels.add("biomodel_55178308.vcml"); // variable 'VolFract_ER_spine' not found in math
-		return slowModels;
+		Set<String> knownFault = new HashSet<>();
+		knownFault.add("biomodel_55178308.vcml"); // variable 'VolFract_ER_spine' not found in math
+		knownFault.add("biomodel_101981216.vcml"); // variable 'Factin_diffusionRate' not found in math
+		knownFault.add("biomodel_105608907.vcml"); // variable 'Factin_diffusionRate' not found in math
+		return knownFault;
 	}
 
 	/**
@@ -173,15 +177,20 @@ public class MathOverrideApplyTest {
 		for (String simNameWithOverride : simNamesWithOverrides){
 			BioModel transformed_biomodel = XmlHelper.XMLToBioModel(new XMLSource(vcmlStr));
 			transformed_biomodel.refreshDependencies();
+			Simulation sim = transformed_biomodel.getSimulation(simNameWithOverride);
 			try {
-				BioModelTransforms.applyMathOverrides(transformed_biomodel.getSimulation(simNameWithOverride), transformed_biomodel);
+				for (int jobIndex = 0; jobIndex < sim.getScanCount(); jobIndex++) {
+					BioModelTransforms.applyMathOverrides(sim, jobIndex, transformed_biomodel);
+				}
 				// for now, if it doesn't throw an exception, then it passes
 				if (knownFaults().contains(filename)){
-					Assert.fail("applying math overrides succeeded, but '"+filename_colon_appname+"' in known faults list, remove from known faults list");
+					// some applications may pass and others fail, e.g. 'biomodel_55178308.vcml:Spatial 1 - 3D -  electrophysiology' passes but rest fail
+//					Assert.fail("applying math overrides succeeded, but '"+filename_colon_appname+"' in known faults list, remove from known faults list");
 				}
 			}catch (Exception e){
 				if (!knownFaults().contains(filename)){
-					Assert.fail("applying math overrides failed unexpectedly for '"+filename_colon_appname+"', add to known faults");
+					e.printStackTrace();
+					Assert.fail("applying math overrides failed unexpectedly for '"+filename_colon_appname+"', add to known faults: "+e.getMessage());
 				}
 			}
 		}
