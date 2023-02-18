@@ -311,6 +311,14 @@ public class XmlHelper {
 						// Hence retreive the correct instance from mathSymbolMapping (mathMapping -> mathDescription) and use it to
 						// retrieve its value (symbolTableEntry) from hash.
 						cbit.vcell.math.Variable overriddenVar = msm.findVariableByName(overriddenConstant.getName());
+						if (overriddenVar == null){
+							MathOverridesResolver.SymbolReplacement replacement = overriddenSimContext.getMathOverridesResolver()
+									.getSymbolReplacement(overriddenConstant.getName(),false);
+							overriddenVar = msm.findVariableByName(replacement.newName);
+							if (overriddenVar == null) {
+								throw new RuntimeException("did not find overridden constant " + overriddenConstant.getName() + " in math description");
+							}
+						}
 						cbit.vcell.parser.SymbolTableEntry[] stes = msm.getBiologicalSymbol(overriddenVar);
 						if (stes == null) {
 							throw new NullPointerException("No matching biological symbol for : " + overriddenConstant.getName());
