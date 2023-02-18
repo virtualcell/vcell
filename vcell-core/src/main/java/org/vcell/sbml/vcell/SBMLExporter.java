@@ -109,7 +109,6 @@ public class SBMLExporter {
 	private final boolean bRoundTripValidation;
 
 	private SimulationContext vcSelectedSimContext = null;
-	private SimulationJob vcSelectedSimJob = null;
 
 	private final Map<String, UnitDefinition> vcUnitSymbolToSBMLUnit = new LinkedHashMap<>(); // to avoid repeated creation of
 
@@ -1627,46 +1626,6 @@ private void addAssignmentRules()  {
 		}
 	}
 }
-private void addOverrideInitialAssignments() throws ExpressionException, MappingException, MathException, MatrixException, ModelException  {
-	// used for overrides and parameter scan exports only!
-	// for species, the initial assignments are done in addSpecies()
-	if(vcSelectedSimJob == null) {
-		return;
-	}
-	int index = vcSelectedSimJob.getJobIndex();
-	System.out.println("Simulation Job index = " + index);
-	
-	MathOverrides mathOverride = vcSelectedSimJob.getSimulation().getMathOverrides();
-	if(mathOverride == null || !mathOverride.hasOverrides()) {
-		return;
-	}
-	//
-	// TODO: SEDMLExporter is doing it differently, much more complicated
-	//
-	MathMapping mm = vcSelectedSimContext.createNewMathMapping();
-	MathSymbolMapping msm = mm.getMathSymbolMapping();
-	String[] overridenConstantNames = mathOverride.getOverridenConstantNames();
-
-	for(String overriddenConstantName : overridenConstantNames) {
-		SymbolTableEntry ste = SEDMLExporter.getSymbolTableEntryForModelEntity(msm, overriddenConstantName);
-		Expression exp = mathOverride.getActualExpression(overriddenConstantName, index);
-		String name = "";
-		if(ste != null) {
-			name = sbmlExportSymbolMapping.getSid(ste);
-			if (name == null){
-				throw new MappingException("symbolTableEntry "+ste+" not mapped to an SBML Sid");
-			}
-		} else {
-			throw new MappingException("Math Override name " + overriddenConstantName + " not found in mathSymbolMapping");
-		}
-		logger.info("symbol: " + name + ", overriden constant: " + overriddenConstantName + ", expression: " + exp.infix());
-		org.sbml.jsbml.InitialAssignment initialAssignment = sbmlModel.createInitialAssignment();
-		initialAssignment.setVariable(name);
-		sbmlExportSymbolMapping.initialAssignmentToVcmlExpressionMap.put(initialAssignment, exp);
-//		ASTNode math = getFormulaFromExpression(exp);
-//		ia.setMath(math);
-	}
-}
 
 /**
  * 	getInitialConc : 
@@ -1742,13 +1701,6 @@ private static ASTNode getFormulaFromExpression(Expression expression, MathType 
 	return mathNode;
 }
 
-private Simulation getSelectedSimulation() {
-	if (vcSelectedSimJob == null) {
-		return null;
-	}
-	return vcSelectedSimJob.getSimulation();
-}
-
 public String getSBMLString() throws SbmlException, SBMLException, XMLStreamException, SBMLValidationException {
 	String rval = null;
 	VCellSBMLDoc vdoc = convertToSBML();
@@ -1815,44 +1767,38 @@ private void roundTripValidation() throws SBMLValidationException {
 		}
 
 		//
-		// if vcSelectedSimJob is null or has empty math overrides - then it is safe to try to compare for math equivalence
+		// before testing for mathematical equivalence, we have to make sure the imported SimulationContext has the same mathematical framework
 		//
-		if (vcSelectedSimJob == null || vcSelectedSimJob.getSimulation().getMathOverrides().getSize() == 0) {
-
+		Application applicationType_original = bioModel.getSimulationContext(0).getApplicationType();
+		Application applicationType_reread = reread_BioModel_vcell_units.getSimulationContext(0).getApplicationType();
+		if (!applicationType_original.equals(applicationType_reread)) {
 			//
-			// before testing for mathematical equivalence, we have to make sure the imported SimulationContext has the same mathematical framework
+			// replace re-read SimualtionContext with transformed SimulationContext with the same mathenmatical framework
+			// (e.g. nonspatial determinstic, nonspatial stochastic, spatial deterministic)
 			//
-			Application applicationType_original = bioModel.getSimulationContext(0).getApplicationType();
-			Application applicationType_reread = reread_BioModel_vcell_units.getSimulationContext(0).getApplicationType();
-			if (!applicationType_original.equals(applicationType_reread)) {
-				//
-				// replace re-read SimualtionContext with transformed SimulationContext with the same mathenmatical framework
-				// (e.g. nonspatial determinstic, nonspatial stochastic, spatial deterministic)
-				//
-				boolean bSpatial_original = bioModel.getSimulationContext(0).getGeometry().getDimension() > 0;
-				boolean bSpatial_reread = reread_BioModel_vcell_units.getSimulationContext(0).getGeometry().getDimension() > 0;
-				if (bSpatial_original != bSpatial_reread){
-					String failureMessage = "original application and reread application differ regarding spatial/nonspatial";
-					throw new SBMLValidationException(failureMessage);
-				}
-
-				SimulationContext simulationContextToReplace = reread_BioModel_vcell_units.getSimulationContext(0);
-				String simContextName = simulationContextToReplace.getName();
-				SimulationContext newSimulationContext = SimulationContext.copySimulationContext(simulationContextToReplace, simContextName, bSpatial_original, applicationType_original);
-				newSimulationContext.getGeometry().precomputeAll(new GeometryThumbnailImageFactoryAWT());
-				reread_BioModel_vcell_units.setSimulationContexts(new SimulationContext[] { newSimulationContext });
-				reread_BioModel_vcell_units.updateAll(false);
-			}
-
-			MathDescription origMathDescription = bioModel.getSimulationContext(0).getMathDescription();
-			MathDescription rereadMathDescription = reread_BioModel_vcell_units.getSimulationContext(0).getMathDescription();
-			MathCompareResults mathCompareResults = MathDescription.testEquivalency(SimulationSymbolTable.createMathSymbolTableFactory(), origMathDescription, rereadMathDescription);
-			if (!mathCompareResults.isEquivalent()) {
-				String failureMessage = "MathDescriptions not equivalent after VCML->SBML->VCML: " + mathCompareResults.toDatabaseStatus();
+			boolean bSpatial_original = bioModel.getSimulationContext(0).getGeometry().getDimension() > 0;
+			boolean bSpatial_reread = reread_BioModel_vcell_units.getSimulationContext(0).getGeometry().getDimension() > 0;
+			if (bSpatial_original != bSpatial_reread){
+				String failureMessage = "original application and reread application differ regarding spatial/nonspatial";
 				throw new SBMLValidationException(failureMessage);
-			} else {
-				logger.info("Round trip math validation passed: "+mathCompareResults.toDatabaseStatus());
 			}
+
+			SimulationContext simulationContextToReplace = reread_BioModel_vcell_units.getSimulationContext(0);
+			String simContextName = simulationContextToReplace.getName();
+			SimulationContext newSimulationContext = SimulationContext.copySimulationContext(simulationContextToReplace, simContextName, bSpatial_original, applicationType_original);
+			newSimulationContext.getGeometry().precomputeAll(new GeometryThumbnailImageFactoryAWT());
+			reread_BioModel_vcell_units.setSimulationContexts(new SimulationContext[] { newSimulationContext });
+			reread_BioModel_vcell_units.updateAll(false);
+		}
+
+		MathDescription origMathDescription = bioModel.getSimulationContext(0).getMathDescription();
+		MathDescription rereadMathDescription = reread_BioModel_vcell_units.getSimulationContext(0).getMathDescription();
+		MathCompareResults mathCompareResults = MathDescription.testEquivalency(SimulationSymbolTable.createMathSymbolTableFactory(), origMathDescription, rereadMathDescription);
+		if (!mathCompareResults.isEquivalent()) {
+			String failureMessage = "MathDescriptions not equivalent after VCML->SBML->VCML: " + mathCompareResults.toDatabaseStatus();
+			throw new SBMLValidationException(failureMessage);
+		} else {
+			logger.info("Round trip math validation passed: "+mathCompareResults.toDatabaseStatus());
 		}
 
 		if (bWriteDebugFiles) {
@@ -1904,11 +1850,7 @@ private void roundTripValidation() throws SBMLValidationException {
 	// TO DO expand to formally label version and build
 	sbmlDocument.setNotes("Exported by VCell 7.3");
 		
-	// If the chosen simulation is not null, the exported model's name should reflect it
-	String modelName = vcBioModel.getName() + "_" + getSelectedSimContext().getName();  
-	if (getSelectedSimulation() != null) {
-		modelName += "_" + getSelectedSimulation().getName();
-	}
+	String modelName = vcBioModel.getName() + "_" + getSelectedSimContext().getName();
 	sbmlModel = sbmlDocument.createModel(TokenMangler.mangleToSName(modelName));	// it's enough to mangle, there can be no conflict at this point
 	sbmlModel.setName(modelName);
 
@@ -2646,10 +2588,6 @@ if (translateZ != vcTranslation.getTranslation().getZ()){
 	}
 }
 
-public void setSelectedSimulationJob(SimulationJob newVcSelectedSimJob) {
-	vcSelectedSimJob = newVcSelectedSimJob;
-}
-
 public Map<Pair <String, String>, String> getLocalToGlobalTranslationMap() {
 	return l2gMap;
 }
@@ -2765,11 +2703,6 @@ private void translateBioModel(SBMLDocument sbmlDocument) throws SbmlException, 
 	try {
 		addParameters();		// Add Parameters
 	} catch (ExpressionException e) {
-		throw new RuntimeException(e.getMessage(), e);
-	}
-	try {
-		addOverrideInitialAssignments();
-	} catch (Exception e) {
 		throw new RuntimeException(e.getMessage(), e);
 	}
 	addRateRules();				// Add Rules

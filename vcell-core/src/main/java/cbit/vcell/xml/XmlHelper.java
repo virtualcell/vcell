@@ -16,6 +16,7 @@ import cbit.util.xml.VCLogger;
 import cbit.util.xml.VCLoggerException;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.biomodel.BioModelTransforms;
 import cbit.vcell.biomodel.ModelUnitConverter;
 import cbit.vcell.biomodel.meta.IdentifiableProvider;
 import cbit.vcell.biomodel.meta.VCMetaData;
@@ -196,8 +197,8 @@ public class XmlHelper {
 
 	public static Pair <String, Map<Pair <String, String>, String>> exportSBMLwithMap(
 			VCDocument vcDoc, int level, int version, int pkgVersion, boolean isSpatial,
-			SimulationContext simContext, SimulationJob simJob, boolean bRoundTripValidation) throws XmlParseException {
-		return translateSBML(vcDoc, level, version, simContext, simJob, bRoundTripValidation);
+			SimulationContext simContext, boolean bRoundTripValidation) throws XmlParseException {
+		return translateSBML(vcDoc, level, version, simContext, bRoundTripValidation);
 	}
 
 
@@ -207,13 +208,13 @@ public class XmlHelper {
 	 * Creation date: (4/8/2003 12:30:27 PM)
 	 * @return java.lang.String
 	 */
-	public static String exportSBML(VCDocument vcDoc, int level, int version, int pkgVersion, boolean isSpatial, SimulationContext simContext, SimulationJob simJob, boolean bRoundTripValidation) throws XmlParseException {
-		return translateSBML(vcDoc, level, version, simContext, simJob, bRoundTripValidation).one;
+	public static String exportSBML(VCDocument vcDoc, int level, int version, int pkgVersion, boolean isSpatial, SimulationContext simContext, boolean bRoundTripValidation) throws XmlParseException {
+		return translateSBML(vcDoc, level, version, simContext, bRoundTripValidation).one;
 	}
 
 
 	private static Pair <String, Map<Pair <String, String>, String>> translateSBML(VCDocument vcDoc, int level, int version, SimulationContext simContext,
-			SimulationJob simJob, boolean bRoundTripValidation) throws XmlParseException {
+			boolean bRoundTripValidation) throws XmlParseException {
 		if (vcDoc == null) {
 			throw new XmlParseException("Invalid arguments for exporting SBML.");
 		}
@@ -237,18 +238,10 @@ public class XmlHelper {
 					sbmlPreferredUnitsBM = bm;
 				}
 				// we assume BioModel was cloned !!
-				// extract the simContext from new Biomodel. Apply overrides to *this* modified simContext
-				SimulationContext simContextFromClonedBioModel = sbmlPreferredUnitsBM.getSimulationContext(simContext.getName());
-				SimulationContext clonedSimContext = applyOverridesForSBML(sbmlPreferredUnitsBM, simContextFromClonedBioModel, simJob);
-				// extract sim (in simJob) from modified Biomodel, if not null
-				SimulationJob modifiedSimJob = null;
-				if (simJob != null) {
-					Simulation simFromClonedBiomodel = clonedSimContext.getSimulation(simJob.getSimulation().getName());
-					modifiedSimJob = new SimulationJob(simFromClonedBiomodel, simJob.getJobIndex(), null);
-				}
-				
+				// extract the simContext from new Biomodel.
+				SimulationContext clonedSimContext = sbmlPreferredUnitsBM.getSimulationContext(simContext.getName());
+
 				SBMLExporter sbmlExporter = new SBMLExporter(clonedSimContext, level, version, bRoundTripValidation);
-				sbmlExporter.setSelectedSimulationJob(modifiedSimJob);
 				String sbmlString  = sbmlExporter.getSBMLString();
 
 				// cleanup the string of all the "sameAs" statements
@@ -266,91 +259,6 @@ public class XmlHelper {
 		} else{
 			throw new RuntimeException("unsupported Document Type "+vcDoc.getClass().getName()+" for SBML export");
 		}
-	}
-
-	/**
-	 * applyOverrides: private method to apply overrides from the simulation in 'simJob' to simContext, if any.
-	 * 				Start off by cloning biomodel, since all the references are required in cloned simContext and is
-	 * 				best retained by cloning biomodel.
-	 * @param bm - biomodel to be cloned
-	 * @param sc - simulationContext to be cloned and overridden using math overrides in simulation
-	 * @param simJob - simulationJob from where simulation with overrides is obtained.
-	 * @return
-	 */
-	public static SimulationContext applyOverridesForSBML(BioModel bm, SimulationContext sc, SimulationJob simJob) {
-		SimulationContext overriddenSimContext = sc;
-		if (simJob != null ) {
-			Simulation sim = simJob.getSimulation();
-			// need to clone Biomodel, simContext, etc. only if simulation has override(s)
-			try {
-				if (sim != null && sim.getMathOverrides().hasOverrides()) {
-//				BioModel clonedBM = (BioModel)BeanUtils.cloneSerializable(bm);
-					BioModel clonedBM = XMLToBioModel(new XMLSource(bioModelToXML(bm)));
-					clonedBM.refreshDependencies();
-					// get the simContext in cloned Biomodel that corresponds to 'sc'
-					SimulationContext[] simContexts = clonedBM.getSimulationContexts();
-					for (int i = 0; i < simContexts.length; i++) {
-						if (simContexts[i].getName().equals(sc.getName())) {
-							overriddenSimContext = simContexts[i];
-							break;
-						}
-					}
-					//
-					overriddenSimContext.getModel().refreshDependencies();
-					overriddenSimContext.refreshDependencies();
-					MathMapping mathMapping = overriddenSimContext.createNewMathMapping();
-					MathSymbolMapping msm = mathMapping.getMathSymbolMapping();
-
-					MathOverrides mathOverrides = sim.getMathOverrides();
-					String[] moConstNames = mathOverrides.getOverridenConstantNames();
-					for (int i = 0; i < moConstNames.length; i++){
-						cbit.vcell.math.Constant overriddenConstant = mathOverrides.getConstant(moConstNames[i]);
-						// Expression overriddenExpr = mathOverrides.getActualExpression(moConstNames[i], 0);
-						Expression overriddenExpr = mathOverrides.getActualExpression(moConstNames[i], simJob.getJobIndex());
-						// The above constant (from mathoverride) is not the same instance as the one in the MathSymbolMapping hash.
-						// Hence retreive the correct instance from mathSymbolMapping (mathMapping -> mathDescription) and use it to
-						// retrieve its value (symbolTableEntry) from hash.
-						cbit.vcell.math.Variable overriddenVar = msm.findVariableByName(overriddenConstant.getName());
-						if (overriddenVar == null){
-							MathOverridesResolver.SymbolReplacement replacement = overriddenSimContext.getMathOverridesResolver()
-									.getSymbolReplacement(overriddenConstant.getName(),false);
-							overriddenVar = msm.findVariableByName(replacement.newName);
-							if (overriddenVar == null) {
-								throw new RuntimeException("did not find overridden constant " + overriddenConstant.getName() + " in math description");
-							}
-						}
-						cbit.vcell.parser.SymbolTableEntry[] stes = msm.getBiologicalSymbol(overriddenVar);
-						if (stes == null) {
-							throw new NullPointerException("No matching biological symbol for : " + overriddenConstant.getName());
-						}
-						if (stes.length > 1) {
-							throw new RuntimeException("Cannot have more than one mapping entry for constant : " + overriddenConstant.getName());
-						}
-						if (stes[0] instanceof Parameter) {
-							Parameter param = (Parameter)stes[0];
-							if (param.isExpressionEditable()) {
-								if (param instanceof Kinetics.KineticsParameter) {
-									// Kinetics param has to be set separately for the integrity of the kinetics object
-									Kinetics.KineticsParameter kinParam = (Kinetics.KineticsParameter)param;
-									ReactionStep[] rs = overriddenSimContext.getModel().getReactionSteps();
-									for (int j = 0; j < rs.length; j++){
-										if (rs[j].getNameScope().getName().equals(kinParam.getNameScope().getName())) {
-											rs[j].getKinetics().setParameterValue(kinParam, overriddenExpr);
-										}
-									}
-								} else if (param instanceof cbit.vcell.model.ExpressionContainer) {
-									// If it is any other editable param, set its expression with the
-									((cbit.vcell.model.ExpressionContainer)param).setExpression(overriddenExpr);
-								}
-							}
-						}	// end - if (stes[0] is Parameter)
-					}	// end  - for moConstNames
-				} 	// end if (sim has MathOverrides)
-			} catch (Exception e) {
-				throw new RuntimeException("Could not apply overrides from simulation to application parameters : " + e.getMessage(), e);
-			}
-		}	// end if (simJob != null)
-		return overriddenSimContext;
 	}
 
 	/**
