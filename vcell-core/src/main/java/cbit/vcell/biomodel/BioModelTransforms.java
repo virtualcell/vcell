@@ -1,11 +1,14 @@
 package cbit.vcell.biomodel;
 
+import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.MembraneMapping;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.math.*;
 import cbit.vcell.model.*;
 import cbit.vcell.parser.*;
+import cbit.vcell.solver.MathOverrides;
+import cbit.vcell.solver.Simulation;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.util.TokenMangler;
@@ -406,6 +409,57 @@ public class BioModelTransforms {
                     throw new RuntimeException("failed to reconcile structure mapping sizes", e);
                 }
             }
+        }
+    }
+
+    public static void applyMathOverrides(Simulation simulation, BioModel bioModel) throws MappingException, ExpressionException {
+        if (simulation == null) {
+            throw new RuntimeException("simulation was null");
+        }
+        SimulationContext simulationContext = null;
+        for (SimulationContext sc : bioModel.getSimulationContexts()) {
+            if (sc.getSimulation(simulation.getName()) == simulation) {
+                simulationContext = sc;
+                break;
+            }
+        }
+        if (simulationContext == null) {
+            throw new RuntimeException("simulation " + simulation.getName() + " instance not found in BioModel");
+        }
+        simulationContext.updateAll(false);
+        MathOverrides mathOverrides = simulation.getMathOverrides();
+        for (String overriddenConstantName : mathOverrides.getOverridenConstantNames()) {
+            if (mathOverrides.isScan(overriddenConstantName)) {
+                lg.warn("skipping application of math override for "+overriddenConstantName+" in simulation "+simulation.getName()+" in biomodel "+bioModel.getName());
+                continue;
+            }
+            Variable var = simulationContext.getMathDescription().getVariable(overriddenConstantName);
+            if (var == null){
+                throw new RuntimeException("variable '"+overriddenConstantName+"' not found in math");
+            }
+            SymbolTableEntry[] ste = simulationContext.getMathDescription().getSourceSymbolMapping().getBiologicalSymbol(var);
+            if (ste == null || ste.length != 1){
+                throw new RuntimeException("biological symbol table entry for variable '"+overriddenConstantName+"'");
+            }
+            Expression defaultExpression = mathOverrides.getDefaultExpression(overriddenConstantName);
+            Expression actualExpression = mathOverrides.getActualExpression(overriddenConstantName,0).flatten();
+            if (!actualExpression.isNumeric()){
+                throw new RuntimeException("applying non-numeric overrides to a biomodel not yet supported: "+overriddenConstantName+": default = "+defaultExpression.infix()+", actual = "+actualExpression.infix());
+            }
+            String msg = "found math '"+overriddenConstantName+"' as bio '"+Arrays.asList(ste)+"', now have to apply the override: from '"+defaultExpression.infix()+"' to '"+actualExpression+"'";
+            if (ste[0] instanceof EditableSymbolTableEntry && ((EditableSymbolTableEntry)ste[0]).isExpressionEditable()){
+                EditableSymbolTableEntry editableSTE = (EditableSymbolTableEntry) ste[0];
+                editableSTE.setExpression(new Expression(actualExpression));
+            }else{
+                if (ste[0] instanceof Membrane.MembraneVoltage){
+                    Membrane.MembraneVoltage membraneVoltage = (Membrane.MembraneVoltage) ste[0];
+                    MembraneMapping membraneMapping = (MembraneMapping) simulationContext.getGeometryContext().getStructureMapping(membraneVoltage.getMembrane());
+                    membraneMapping.getInitialVoltageParameter().setExpression(actualExpression);
+                }else {
+                    throw new RuntimeException("biomodel ste '" + ste[0] + "' not editable");
+                }
+            }
+            System.out.println(msg);
         }
     }
 
