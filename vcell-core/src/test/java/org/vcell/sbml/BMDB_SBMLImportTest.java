@@ -3,6 +3,10 @@ package org.vcell.sbml;
 import cbit.util.xml.VCLogger;
 import cbit.util.xml.VCLoggerException;
 import cbit.vcell.biomodel.BioModel;
+import org.jdom.Document;
+import org.jdom.Element;
+import org.jdom.output.Format;
+import org.jdom.output.XMLOutputter;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -10,11 +14,14 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.sbml.jsbml.SBMLDocument;
+import org.sbml.jsbml.SBMLReader;
 import org.vcell.sbml.vcell.SBMLImporter;
 import org.vcell.test.SBML_IT;
 
 import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -274,6 +281,49 @@ public class BMDB_SBMLImportTest {
 			if (knownFault != null){
 				Assert.fail("BiomodelsDB model "+biomodelsDbModelNumber+" passed, but expected fault "+knownFault.name()+", remove from known faults");
 			}
+		}
+	}
+
+	public static void main(String[] args) {
+		try {
+			if (args.length != 1){
+				System.out.println("usage: BMDB_SBMLImportTest xmlManifestFile");
+				System.out.println("   e.g. /path/to/vcell/vcell-client/src/main/resources/bioModelsNetInfo.xml");
+				System.exit(1);
+			}
+			File bioModelsNetInfoFile = new File(args[0]);
+			Document document = new Document();
+			Element root = new Element("Supported_BioModelsNet");
+			for (int model_id : BMDB_SBML_Files.allCuratedModels) {
+				Element row = new Element("BioModelInfo");
+				row.setAttribute("ID",String.format("BIOMD%010d", model_id));
+				SBMLTestSuiteImportTest.FAULT fault = knownFaults().get(model_id);
+				if (fault == null) {
+					row.setAttribute("Supported", "true");
+				}else {
+					row.setAttribute("Supported", "false");
+				}
+				row.setAttribute("vcell_ran", "false");
+				row.setAttribute("COPASI_ran", "false");
+				row.setAttribute("mSBML_ran", "false");
+				SBMLReader reader = new SBMLReader();
+				try (InputStream sbmlInputStream = new BufferedInputStream(BMDB_SBML_Files.getFileFromResourceAsStream(model_id))) {
+					SBMLDocument sbmlDocument = reader.readSBMLFromStream(sbmlInputStream);
+					String sbmlModelName = sbmlDocument.getModel().getName();
+					row.setAttribute("Name", sbmlModelName);
+				}
+				if (fault != null){
+					row.setAttribute("exception", fault.name());
+				}
+				root.addContent(row);
+			}
+			document.setContent(root);
+			try (FileWriter xmlFileWriter = new FileWriter(bioModelsNetInfoFile)){
+				 XMLOutputter outputter = new XMLOutputter(Format.getPrettyFormat());
+				 outputter.output(document, xmlFileWriter);
+			}
+		}catch (Throwable e){
+			e.printStackTrace();
 		}
 	}
 }

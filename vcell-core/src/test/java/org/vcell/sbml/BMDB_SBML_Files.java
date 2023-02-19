@@ -14,7 +14,7 @@ import java.util.stream.IntStream;
 @Category(Fast.class)
 public class BMDB_SBML_Files {
 
-    private final static int[] allCuratedModels = IntStream.rangeClosed(1, 1064)
+    public final static int[] allCuratedModels = IntStream.rangeClosed(1, 1064)
             .filter(n -> !Arrays.asList(649,694,992,993,1049,1050,1051).contains(n)).toArray();
     private final static String BiomodelsCuratedFileFormatPattern = "sbml-biomodels-curated/BIOMD%010d.xml";
 
@@ -35,13 +35,14 @@ public class BMDB_SBML_Files {
             throw new RuntimeException("model number "+modelNumber+" not in list of models");
         }
         try {
-            return getFileFromResourceAsStream(String.format(BiomodelsCuratedFileFormatPattern, modelNumber));
+            return getFileFromResourceAsStream(modelNumber);
         }catch (FileNotFoundException e){
             throw new RuntimeException("failed to find file file: "+e.getMessage(), e);
         }
     }
 
-     private static InputStream getFileFromResourceAsStream(String fileName) throws FileNotFoundException {
+     static InputStream getFileFromResourceAsStream(int modelNumber) throws FileNotFoundException {
+        String fileName = String.format(BiomodelsCuratedFileFormatPattern, modelNumber);
         InputStream inputStream = BMDB_SBML_Files.class.getResourceAsStream(fileName);
         if (inputStream == null) {
             throw new FileNotFoundException("file not found! " + fileName);
