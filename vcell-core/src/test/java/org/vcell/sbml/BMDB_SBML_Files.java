@@ -22,7 +22,7 @@ public class BMDB_SBML_Files {
         // only those Biomodels Database models which are committed to the vcell repo
         // Uncomment "includeFilter = n -> true;" to run all tests (must have the other models installed in proper directory).
         IntPredicate includeFilter = n -> Arrays.asList(48,205,264,427,452,453,594,595,623,826).contains(n);
-        //includeFilter = n -> true;
+        //IntPredicate includeFilter = n -> true;
 
         IntPredicate testFilter = n -> includeFilter.test(n);
 

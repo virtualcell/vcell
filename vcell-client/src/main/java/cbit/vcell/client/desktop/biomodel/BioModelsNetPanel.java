@@ -50,6 +50,7 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
+import org.jdom.Attribute;
 import org.jdom.DataConversionException;
 import org.jdom.Element;
 import org.vcell.util.BeanUtils;
@@ -200,8 +201,10 @@ public class BioModelsNetPanel extends DocumentEditorSubPanel {
 	public static final String BIOMODELINFO_ELEMENT_NAME = "BioModelInfo";
 	public static final String ID_ATTRIBUTE_NAME = "ID";
 	public static final String MODELNAME_ATTRIBUTE_NAME = "Name";
-	public static final String SUPPORTED_ATTRIBUTE_NAME = "Supported";	
-	
+	public static final String SUPPORTED_ATTRIBUTE_NAME = "Supported";
+	public static final String SLOW_ATTRIBUTE_NAME = "Slow";
+
+
 	private class EventHandler implements ActionListener, TreeSelectionListener {
 		
 		public void actionPerformed(ActionEvent e) {
@@ -536,6 +539,11 @@ TODO:
 			Element temp = (Element) ruleiterator.next();
 			//System.out.println(temp.getAttributeValue("TagName") + ":" + temp.getAttributeValue("AttrName"));
 			boolean bSupported = temp.getAttribute(BioModelsNetPanel.SUPPORTED_ATTRIBUTE_NAME).getBooleanValue();
+			Attribute slowAttribute = temp.getAttribute(BioModelsNetPanel.SLOW_ATTRIBUTE_NAME);
+			boolean bSlow = (slowAttribute==null || slowAttribute.getBooleanValue()==false);
+			if (bSlow){
+				bSupported = false;
+			}
 //			if(bSupported) {
 			String id = temp.getAttributeValue(BioModelsNetPanel.ID_ATTRIBUTE_NAME);
 			String name = temp.getAttributeValue(BioModelsNetPanel.MODELNAME_ATTRIBUTE_NAME);
