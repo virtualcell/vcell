@@ -505,18 +505,19 @@ TODO:
 		List<BioModelsNetModelInfo> vcellCompatibleBioModelsList = new ArrayList<BioModelsNetModelInfo>();
 
 		final String BIOMODELSNET_INFO_FILENAME_ALT = "/bioModelsNetInfo.xml";
-		final String BIOMODELSNET_INFO_FILENAME = "https://vcell.org/webstart/VCellBMDBInfo/bioModelsNetInfo.xml";
-		URL u = new URL(BIOMODELSNET_INFO_FILENAME);
-		HttpsURLConnection conn = (HttpsURLConnection)(u).openConnection();
-		conn.setRequestMethod("GET");
-		conn.setConnectTimeout(5000);
-		conn.setReadTimeout(5000);
-		InputStream tableInputStream = conn.getInputStream();
+//		final String BIOMODELSNET_INFO_FILENAME = "https://vcell.org/webstart/VCellBMDBInfo/bioModelsNetInfo.xml";
+//		URL u = new URL(BIOMODELSNET_INFO_FILENAME);
+//		HttpsURLConnection conn = (HttpsURLConnection)(u).openConnection();
+//		conn.setRequestMethod("GET");
+//		conn.setConnectTimeout(5000);
+//		conn.setReadTimeout(5000);
+//		InputStream tableInputStream = conn.getInputStream();
 
-		
-		if (tableInputStream==null){
-			tableInputStream = getClass().getResourceAsStream(BIOMODELSNET_INFO_FILENAME_ALT);
-		}
+
+//		if (tableInputStream==null){
+//			tableInputStream = getClass().getResourceAsStream(BIOMODELSNET_INFO_FILENAME_ALT);
+//		}
+		InputStream tableInputStream = getClass().getResourceAsStream(BIOMODELSNET_INFO_FILENAME_ALT);
 		if (tableInputStream==null){
 			throw new FileNotFoundException(BIOMODELSNET_INFO_FILENAME_ALT + " not found");
 		}
