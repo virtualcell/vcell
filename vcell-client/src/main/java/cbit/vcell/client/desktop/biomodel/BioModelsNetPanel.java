@@ -50,6 +50,7 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
+import org.jdom.Attribute;
 import org.jdom.DataConversionException;
 import org.jdom.Element;
 import org.vcell.util.BeanUtils;
@@ -200,8 +201,10 @@ public class BioModelsNetPanel extends DocumentEditorSubPanel {
 	public static final String BIOMODELINFO_ELEMENT_NAME = "BioModelInfo";
 	public static final String ID_ATTRIBUTE_NAME = "ID";
 	public static final String MODELNAME_ATTRIBUTE_NAME = "Name";
-	public static final String SUPPORTED_ATTRIBUTE_NAME = "Supported";	
-	
+	public static final String SUPPORTED_ATTRIBUTE_NAME = "Supported";
+	public static final String SLOW_ATTRIBUTE_NAME = "Slow";
+
+
 	private class EventHandler implements ActionListener, TreeSelectionListener {
 		
 		public void actionPerformed(ActionEvent e) {
@@ -505,18 +508,19 @@ TODO:
 		List<BioModelsNetModelInfo> vcellCompatibleBioModelsList = new ArrayList<BioModelsNetModelInfo>();
 
 		final String BIOMODELSNET_INFO_FILENAME_ALT = "/bioModelsNetInfo.xml";
-		final String BIOMODELSNET_INFO_FILENAME = "https://vcell.org/webstart/VCellBMDBInfo/bioModelsNetInfo.xml";
-		URL u = new URL(BIOMODELSNET_INFO_FILENAME);
-		HttpsURLConnection conn = (HttpsURLConnection)(u).openConnection();
-		conn.setRequestMethod("GET");
-		conn.setConnectTimeout(5000);
-		conn.setReadTimeout(5000);
-		InputStream tableInputStream = conn.getInputStream();
+//		final String BIOMODELSNET_INFO_FILENAME = "https://vcell.org/webstart/VCellBMDBInfo/bioModelsNetInfo.xml";
+//		URL u = new URL(BIOMODELSNET_INFO_FILENAME);
+//		HttpsURLConnection conn = (HttpsURLConnection)(u).openConnection();
+//		conn.setRequestMethod("GET");
+//		conn.setConnectTimeout(5000);
+//		conn.setReadTimeout(5000);
+//		InputStream tableInputStream = conn.getInputStream();
 
-		
-		if (tableInputStream==null){
-			tableInputStream = getClass().getResourceAsStream(BIOMODELSNET_INFO_FILENAME_ALT);
-		}
+
+//		if (tableInputStream==null){
+//			tableInputStream = getClass().getResourceAsStream(BIOMODELSNET_INFO_FILENAME_ALT);
+//		}
+		InputStream tableInputStream = getClass().getResourceAsStream(BIOMODELSNET_INFO_FILENAME_ALT);
 		if (tableInputStream==null){
 			throw new FileNotFoundException(BIOMODELSNET_INFO_FILENAME_ALT + " not found");
 		}
@@ -535,6 +539,11 @@ TODO:
 			Element temp = (Element) ruleiterator.next();
 			//System.out.println(temp.getAttributeValue("TagName") + ":" + temp.getAttributeValue("AttrName"));
 			boolean bSupported = temp.getAttribute(BioModelsNetPanel.SUPPORTED_ATTRIBUTE_NAME).getBooleanValue();
+			Attribute slowAttribute = temp.getAttribute(BioModelsNetPanel.SLOW_ATTRIBUTE_NAME);
+			boolean bSlow = (slowAttribute != null && slowAttribute.getBooleanValue());
+			if (bSlow){
+				bSupported = false;
+			}
 //			if(bSupported) {
 			String id = temp.getAttributeValue(BioModelsNetPanel.ID_ATTRIBUTE_NAME);
 			String name = temp.getAttributeValue(BioModelsNetPanel.MODELNAME_ATTRIBUTE_NAME);

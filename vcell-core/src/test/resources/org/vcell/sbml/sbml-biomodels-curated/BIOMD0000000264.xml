@@ -1,0 +1,1196 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<sbml xmlns="http://www.sbml.org/sbml/level2/version4" level="2" metaid="_85750e78-3445-475b-88ae-101c8537ecdf" version="4">
+  <model id="Model_1" metaid="COPASI1" name="Fujita2010_Akt_Signalling_EGFRinhib">
+    <notes>
+      <body xmlns="http://www.w3.org/1999/xhtml">
+        <p>      <span style="font-size:16pt">Akt pathway model with EGFR inhibitor</span>
+                </p>
+            <p>      <span style="font-size:8pt">made by Kazuhiro A. Fujita.</span>
+                </p>
+            <p/>
+            <p>This is the Akt pathway model with an EGFR inhibitor described in:      <br/>
+                <strong>Decoupling of receptor and downstream signals in the Akt pathway by its low-pass filter characteristics.</strong>
+                <br/>
+          Fujita KA, Toyoshima Y, Uda S, Ozaki Y, Kubota H, and Kuroda S.      <em>Sci Signal.</em>
+          2010 Jul 27;3(132):ra56. PMID:      <a href="http://www.ncbi.nlm.nih.gov/pubmed/20664065">20664065</a>
+          ; DOI:      <a href="http://dx.doi.org/10.1126/scisignal.2000810">10.1126/scisignal.2000810</a>
+                <br/>
+          Abstract:      <br/>
+          In cellular signal transduction, the information in an external stimulus is encoded in temporal patterns in the activities of signaling molecules; for example, pulses of a stimulus may produce an increasing response or may produce pulsatile responses in the signaling molecules. Here, we show how the Akt pathway, which is involved in cell growth, specifically transmits temporal information contained in upstream signals to downstream effectors. We modeled the epidermal growth factor (EGF)–dependent Akt pathway in PC12 cells on the basis of experimental results. We obtained counterintuitive results indicating that the sizes of the peak amplitudes of receptor and downstream effector phosphorylation were decoupled; weak, sustained EGF receptor (EGFR) phosphorylation, rather than strong, transient phosphorylation, strongly induced phosphorylation of the ribosomal protein S6, a molecule downstream of Akt. Using frequency response analysis, we found that a three-component Akt pathway exhibited the property of a low-pass filter and that this property could explain decoupling of the peak amplitudes of receptor phosphorylation and that of downstream effectors. Furthermore, we found that lapatinib, an EGFR inhibitor used as an anticancer drug, converted strong, transient Akt phosphorylation into weak, sustained Akt phosphorylation, and, because of the low-pass filter characteristics of the Akt pathway, this led to stronger S6 phosphorylation than occurred in the absence of the inhibitor. Thus, an EGFR inhibitor can potentially act as a downstream activator of some effectors.      </p>
+            <p>The different versions of input, step, pulse and ramp, can be simulated using the parameters      <em>EGF_conc_pulse</em>
+          ,      <em>EGF_conc_step</em>
+          and      <em>EGF_conc_ramp</em>
+          . Depending on which one is set unequal to 0, either a continous pulse with value      <em>EGF_conc_pulse</em>
+          , a 60 second step with      <em>EGF_conc_step</em>
+          or a signal increasing from 0 to      <em>EGF_conc_pulse</em>
+          over a time periode of 3600 seconds are used as input. In case more than one parameter are set to values greater than 0 these input profiles are added to each other.  The pulse time and the time over which the ramp input increases can be set by      <em>pulse_time</em>
+          and      <em>ramp_time</em>
+          .      </p>
+            <p>This model originates from BioModels Database: A Database of Annotated Published Models. It is copyright (c) 2005-2010 The BioModels Team.      <br/>
+          For more information see the      <a href="http://www.ebi.ac.uk/biomodels/legal.html" target="_blank">terms of use</a>
+          .      <br/>
+          To cite BioModels Database, please use      <a href="http://www.pubmedcentral.nih.gov/articlerender.fcgi?tool=pubmed&amp;pubmedid=16381960" target="_blank">Le Novère N., Bornstein B., Broicher A., Courtot M., Donizelli M., Dharuri H., Li L., Sauro H., Schilstra M., Shapiro B., Snoep J.L., Hucka M. (2006) BioModels Database: A Free, Centralized Database of Curated, Published, Quantitative Kinetic Models of Biochemical and Cellular Systems Nucleic Acids Res., 34: D689-D691.</a>
+                </p>
+            </body>
+      
+    </notes>
+    <annotation>
+      <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+        <rdf:Description rdf:about="#COPASI1">
+	<dc:creator>
+	<rdf:Bag>
+	<rdf:li rdf:parseType="Resource">
+	<vCard:N rdf:parseType="Resource">
+	<vCard:Family>Endler</vCard:Family>
+	<vCard:Given>Lukas</vCard:Given>
+	</vCard:N>
+	<vCard:EMAIL>lukas@ebi.ac.uk</vCard:EMAIL>
+	<vCard:ORG rdf:parseType="Resource">
+	<vCard:Orgname>EMBL-EBI</vCard:Orgname>
+	</vCard:ORG>
+	</rdf:li>
+	<rdf:li rdf:parseType="Resource">
+	<vCard:N rdf:parseType="Resource">
+	<vCard:Family>Fujita</vCard:Family>
+	<vCard:Given>Kazuhiro</vCard:Given>
+	</vCard:N>
+	<vCard:EMAIL>kazuhiro.fujita@gmail.com</vCard:EMAIL>
+	<vCard:ORG rdf:parseType="Resource">
+	<vCard:Orgname>University of Tokyo</vCard:Orgname>
+	</vCard:ORG>
+	</rdf:li>
+	</rdf:Bag>
+	</dc:creator>
+	<dcterms:created rdf:parseType="Resource">
+	<dcterms:W3CDTF>2010-08-24T13:34:45Z</dcterms:W3CDTF>
+	</dcterms:created>
+	<dcterms:modified rdf:parseType="Resource">
+	<dcterms:W3CDTF>2014-02-21T16:40:08Z</dcterms:W3CDTF>
+	</dcterms:modified>
+	<bqmodel:is>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/biomodels.db/MODEL1004060003"/>
+	</rdf:Bag>
+	</bqmodel:is>
+	<bqmodel:is>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/biomodels.db/BIOMD0000000264"/>
+	</rdf:Bag>
+	</bqmodel:is>
+	<bqmodel:isDescribedBy>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/pubmed/20664065"/>
+	</rdf:Bag>
+	</bqmodel:isDescribedBy>
+	<bqbiol:hasVersion>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/reactome/REACT_9417.3"/>
+	<rdf:li rdf:resource="http://identifiers.org/reactome/REACT_12464.1"/>
+	<rdf:li rdf:resource="http://identifiers.org/go/GO:0070849"/>
+	<rdf:li rdf:resource="http://identifiers.org/go/GO:0043491"/>
+	<rdf:li rdf:resource="http://identifiers.org/go/GO:0007173"/>
+	</rdf:Bag>
+	</bqbiol:hasVersion>
+	<bqbiol:occursIn>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/bto/BTO:0001009"/>
+	</rdf:Bag>
+	</bqbiol:occursIn>
+	<bqbiol:hasTaxon>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/taxonomy/10116"/>
+	</rdf:Bag>
+	</bqbiol:hasTaxon>
+	</rdf:Description>
+	
+      </rdf:RDF>
+    </annotation>
+      <listOfUnitDefinitions>
+      <unitDefinition id="substance" metaid="d077094b-34f0-4fdb-8175-7e8afa4d08eb" name="arbitrary_amount">
+        <listOfUnits>
+          <unit kind="dimensionless" metaid="c636200f-5e40-4d84-86c8-44abcf79e0c8"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="conc" metaid="_515bf2e3-5abb-4516-affe-d68f08c11c0f" name="arbitrary_conc">
+        <listOfUnits>
+          <unit kind="dimensionless" metaid="_12b573d0-9d7f-4034-9938-3f7770f6c27b"/>
+          <unit exponent="-1" kind="litre" metaid="eb07c0f9-f5c2-4e33-9382-e026409a41dd" scale="-3"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="time" metaid="_357d6793-5005-42bf-a6b0-f11d03acafa1" name="seconds">
+        <listOfUnits>
+          <unit kind="second" metaid="_8952a77b-9222-46b1-af23-38d31b17d4b4"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="volume" metaid="_30b9a01b-a6e9-4cae-9dab-0de564e2e6bb" name="ml">
+        <listOfUnits>
+          <unit kind="litre" metaid="cbd4a00a-60be-4832-8738-efa015a4457c" scale="-3"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="per_sec" metaid="_53b50bef-8e28-40e5-a301-5b9942e10772" name="per second">
+        <listOfUnits>
+          <unit exponent="-1" kind="second" metaid="_03cc34bf-f644-4439-8355-7e957e93834b"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="ng" metaid="_87662d3d-cad0-4c26-9e2d-b20ff4e4c283" name="ng">
+        <listOfUnits>
+          <unit kind="gram" metaid="c6bbc352-4a32-4caf-b7b9-95cab625cf2b" scale="-9"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="ng_per_ml" metaid="f5749c2f-f69b-421c-943a-ff82e6a6a9bd" name="ng_per_ml">
+        <listOfUnits>
+          <unit kind="gram" metaid="_5092fcb8-7d8c-456d-b122-d5e5242750a1" scale="-9"/>
+          <unit exponent="-1" kind="litre" metaid="_627fd98b-b9fe-4ca4-b7c8-bada3f774461" scale="-3"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="ml_per_ng_per_sec" metaid="_46503db6-c7ed-4b38-94e1-f2ea5015899b" name="ml_per_ng_per_sec">
+        <listOfUnits>
+          <unit kind="litre" metaid="_67b6be12-a8a1-431b-b675-207a17aae12e" scale="-3"/>
+          <unit exponent="-1" kind="gram" metaid="_505e5328-c31e-4f9a-b54a-55f35c5bd375" scale="-9"/>
+          <unit exponent="-1" kind="second" metaid="b513f771-4934-4f7b-a3ee-801feb70871a"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="per_conc_per_sec" metaid="b711071a-3c90-4158-a8b4-c322445f6667" name="per conc per second">
+        <listOfUnits>
+          <unit kind="litre" metaid="_2aac550c-e7e2-4b70-b37f-efc60973847b" scale="-3"/>
+          <unit kind="dimensionless" metaid="ef4c6b7f-715e-4558-8770-7006b126f872"/>
+          <unit exponent="-1" kind="second" metaid="_6fb9f8ab-cb28-48e0-b243-cd4621bae8a6"/>
+        </listOfUnits>
+      </unitDefinition>
+    </listOfUnitDefinitions>
+    <listOfCompartments>
+      <compartment id="Cell" metaid="_282936" name="Cell" sboTerm="SBO:0000290" size="1">
+        <annotation>
+          <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_282936">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/go/GO:0005623"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+          </rdf:RDF>
+        </annotation>
+            </compartment>
+    </listOfCompartments>
+    <listOfSpecies>
+      <species boundaryCondition="true" compartment="Cell" id="EGF" initialConcentration="30" metaid="_282937" name="EGF" sboTerm="SBO:0000252" substanceUnits="ng">
+        <annotation>
+          <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_282937">
+              <bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/uniprot/P07522"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	
+	<bqbiol:hasProperty>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/go/GO:0005154"/>
+	</rdf:Bag>
+	</bqbiol:hasProperty>
+	</rdf:Description>
+	
+          </rdf:RDF>
+        </annotation>
+            </species>
+      <species compartment="Cell" id="EGFR" initialConcentration="6.81902000000002E4" metaid="_282938" name="EGFR" sboTerm="SBO:0000297">
+        <annotation>
+          <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_282938">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/uniprot/Q9WTS1"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+          </rdf:RDF>
+        </annotation>
+            </species>
+      <species compartment="Cell" id="pEGFR" initialConcentration="0" metaid="_282939" name="pEGFR" sboTerm="SBO:0000297">
+        <annotation>
+          <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_282939">
+              <bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/uniprot/Q9WTS1"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/kegg.compound/C00562"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+          </rdf:RDF>
+        </annotation>
+            </species>
+      <species compartment="Cell" id="pEGFR_Akt" initialConcentration="0" metaid="_282941" name="pEGFR_Akt" sboTerm="SBO:0000297">
+        <annotation>
+          <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_282941">
+              <bqbiol:hasPart>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/uniprot/Q63484"/>
+	<rdf:li rdf:resource="http://identifiers.org/uniprot/Q9WTS1"/>
+	</rdf:Bag>
+	</bqbiol:hasPart>
+	
+	<bqbiol:hasVersion>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/kegg.compound/C00562"/>
+	</rdf:Bag>
+	</bqbiol:hasVersion>
+	</rdf:Description>
+	
+          </rdf:RDF>
+        </annotation>
+            </species>
+      <species compartment="Cell" id="Akt" initialConcentration="0.043309" metaid="_282942" name="Akt" sboTerm="SBO:0000252">
+        <annotation>
+          <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_282942">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/uniprot/Q63484"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+          </rdf:RDF>
+        </annotation>
+            </species>
+      <species compartment="Cell" id="pAkt" initialConcentration="0" metaid="_282943" name="pAkt" sboTerm="SBO:0000252">
+        <annotation>
+          <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_282943">
+              <bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/kegg.compound/C00562"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/uniprot/Q63484"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+          </rdf:RDF>
+        </annotation>
+            </species>
+      <species compartment="Cell" id="S6" initialConcentration="3.54317" metaid="_282944" name="S6" sboTerm="SBO:0000252">
+        <annotation>
+          <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_282944">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/uniprot/P62755"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+          </rdf:RDF>
+        </annotation>
+            </species>
+      <species compartment="Cell" id="pAkt_S6" initialConcentration="0" metaid="_282946" name="pAkt_S6" sboTerm="SBO:0000297">
+        <annotation>
+          <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_282946">
+              <bqbiol:hasVersion>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/uniprot/Q63484"/>
+	</rdf:Bag>
+	</bqbiol:hasVersion>
+	
+	<bqbiol:hasVersion>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/uniprot/P62755"/>
+	<rdf:li rdf:resource="http://identifiers.org/kegg.compound/C00562"/>
+	</rdf:Bag>
+	</bqbiol:hasVersion>
+	</rdf:Description>
+	
+          </rdf:RDF>
+        </annotation>
+            </species>
+      <species compartment="Cell" id="pS6" initialConcentration="0" metaid="_282947" name="pS6" sboTerm="SBO:0000252">
+        <annotation>
+          <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_282947">
+              <bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/kegg.compound/C00562"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/uniprot/P62755"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+          </rdf:RDF>
+        </annotation>
+            </species>
+      <species boundaryCondition="true" compartment="Cell" constant="true" id="pro_EGFR" initialConcentration="6.81902000000002E4" metaid="_282948" name="pro_EGFR" sboTerm="SBO:0000252">
+        <annotation>
+          <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_282948">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/uniprot/Q9WTS1"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+          </rdf:RDF>
+        </annotation>
+            </species>
+      <species compartment="Cell" id="EGF_EGFR" initialConcentration="0" metaid="_282949" name="EGF_EGFR" sboTerm="SBO:0000297">
+        <annotation>
+          <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_282949">
+              <bqbiol:hasPart>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/uniprot/Q9WTS1"/>
+	</rdf:Bag>
+	</bqbiol:hasPart>
+	
+	<bqbiol:hasVersion>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/uniprot/P07522"/>
+	</rdf:Bag>
+	</bqbiol:hasVersion>
+	</rdf:Description>
+	
+          </rdf:RDF>
+        </annotation>
+            </species>
+      <species compartment="Cell" id="EGFR_i" initialConcentration="0" metaid="_282951" name="EGFR_i" sboTerm="SBO:0000297">
+        <annotation>
+          <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_282951">
+	<bqbiol:hasPart>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/chebi/CHEBI:49603"/>
+	<rdf:li rdf:resource="http://identifiers.org/uniprot/Q9WTS1"/>
+	</rdf:Bag>
+	</bqbiol:hasPart>
+	</rdf:Description>
+	
+          </rdf:RDF>
+        </annotation>
+            </species>
+      <species compartment="Cell" id="EGF_EGFR_i" initialConcentration="0" metaid="_282952" name="EGF_EGFR_i" sboTerm="SBO:0000297">
+        <annotation>
+          <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_282952">
+              <bqbiol:hasPart>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/chebi/CHEBI:49603"/>
+	<rdf:li rdf:resource="http://identifiers.org/uniprot/Q9WTS1"/>
+	</rdf:Bag>
+	</bqbiol:hasPart>
+	
+	<bqbiol:hasVersion>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/uniprot/P07522"/>
+	</rdf:Bag>
+	</bqbiol:hasVersion>
+	</rdf:Description>
+	
+          </rdf:RDF>
+        </annotation>
+            </species>
+      <species boundaryCondition="true" compartment="Cell" constant="true" id="Inhibitor" initialConcentration="0" metaid="_282953" name="Inhibitor" sboTerm="SBO:0000247">
+        <annotation>
+          <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_282953">
+              <bqbiol:is>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/kegg.drug/D08108"/>
+	</rdf:Bag>
+	</bqbiol:is>
+	
+	<bqbiol:hasProperty>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/go/GO:0005154"/>
+	</rdf:Bag>
+	</bqbiol:hasProperty>
+	</rdf:Description>
+	
+          </rdf:RDF>
+        </annotation>
+            </species>
+    </listOfSpecies>
+    <listOfParameters>
+      <parameter constant="false" id="pEGFR_total" metaid="_282999" name="pEGFR_total" units="ng_per_ml" value="0">
+        <annotation>
+          <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_282999">
+              <bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/kegg.compound/C00562"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/uniprot/Q9WTS1"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	
+	<bqbiol:hasVersion>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/uniprot/Q63484"/>
+	</rdf:Bag>
+	</bqbiol:hasVersion>
+	</rdf:Description>
+	
+          </rdf:RDF>
+        </annotation>
+            </parameter>
+      <parameter constant="false" id="pAkt_total" metaid="_283001" name="pAkt_total" units="ng_per_ml" value="0">
+        <annotation>
+          <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_283001">
+              <bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/kegg.compound/C00562"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	
+	<bqbiol:hasVersion>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/uniprot/Q63484"/>
+	</rdf:Bag>
+	</bqbiol:hasVersion>
+	</rdf:Description>
+	
+          </rdf:RDF>
+        </annotation>
+            </parameter>
+      <parameter id="pEGFR_scaleFactor" metaid="_283002" name="pEGFR_scaleFactor" units="ng" value="0.000181735"/>
+      <parameter id="pAkt_scaleFactor" metaid="_283003" name="pAkt_scaleFactor" units="ng" value="60.0588"/>
+      <parameter id="pS6_scaleFactor" metaid="_283004" name="pS6_scaleFactor" units="ng" value="4.98862E4"/>
+      <parameter constant="false" id="pS6_total" metaid="_283006" name="pS6_total" units="ng_per_ml" value="0">
+        <annotation>
+          <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_283006">
+              <bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/uniprot/P62755"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/kegg.compound/C00562"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+          </rdf:RDF>
+        </annotation>
+            </parameter>
+      <parameter id="EGF_conc_step" metaid="_283007" name="EGF_conc_step" units="ng_per_ml" value="30"/>
+      <parameter id="EGF_conc_pulse" metaid="_283008" name="EGF_conc_pulse" units="ng_per_ml" value="0"/>
+      <parameter id="EGF_conc_ramp" metaid="_283009" name="EGF_conc_ramp" units="ng_per_ml" value="0"/>
+      <parameter id="EGFR_turnover" metaid="_283011" name="EGFR_turnover" units="per_sec" value="0.000106386"/>
+      <parameter id="EGF_binding_kf" metaid="_283012" name="EGF_binding_kf" units="ml_per_ng_per_sec" value="0.00673816"/>
+      <parameter id="EGF_binding_kb" metaid="_283013" name="EGF_binding_kb" units="per_sec" value="0.040749"/>
+      <parameter id="inhibitor_binding_kf" metaid="_283014" name="inhibitor_binding_kf" units="per_conc_per_sec" value="2.43466029020655E-5"/>
+      <parameter id="inhibitor_binding_kb" metaid="_283016" name="inhibitor_binding_kb" units="per_sec" value="5.25096686262403E-5"/>
+      <parameter id="pulse_time" metaid="_283017" name="pulse_time" units="time" value="60"/>
+      <parameter id="ramp_time" metaid="_283018" name="ramp_time" units="time" value="3600"/>
+    </listOfParameters>
+    <listOfInitialAssignments>
+      <initialAssignment metaid="_54113893-8128-42c4-bb2b-a4f77c8615c0" symbol="EGFR">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <apply>
+            <divide/>
+            <ci> pro_EGFR </ci>
+            <apply>
+              <plus/>
+              <cn> 1 </cn>
+              <apply>
+                <divide/>
+                <apply>
+                  <times/>
+                  <ci> inhibitor_binding_kf </ci>
+                  <ci> Inhibitor </ci>
+                </apply>
+                <apply>
+                  <plus/>
+                  <ci> inhibitor_binding_kb </ci>
+                  <ci> EGFR_turnover </ci>
+                </apply>
+              </apply>
+            </apply>
+          </apply>
+        </math>
+            </initialAssignment>
+      <initialAssignment metaid="_7c02fe50-d36e-46b5-9106-96e824d7989d" symbol="EGFR_i">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <apply>
+            <minus/>
+            <ci> pro_EGFR </ci>
+            <ci> EGFR </ci>
+          </apply>
+        </math>
+            </initialAssignment>
+    </listOfInitialAssignments>
+    <listOfRules>
+      <assignmentRule metaid="_282994" variable="pAkt_total">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <apply>
+            <times/>
+            <apply>
+              <plus/>
+              <ci> pAkt </ci>
+              <ci> pAkt_S6 </ci>
+            </apply>
+            <ci> pAkt_scaleFactor </ci>
+          </apply>
+        </math>
+            </assignmentRule>
+      <assignmentRule metaid="_282995" variable="pEGFR_total">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <apply>
+            <times/>
+            <apply>
+              <plus/>
+              <ci> pEGFR </ci>
+              <ci> pEGFR_Akt </ci>
+            </apply>
+            <ci> pEGFR_scaleFactor </ci>
+          </apply>
+        </math>
+            </assignmentRule>
+      <assignmentRule metaid="_282996" variable="EGF">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <apply>
+            <plus/>
+            <ci> EGF_conc_step </ci>
+            <piecewise>
+              <piece>
+                <ci> EGF_conc_pulse </ci>
+                <apply>
+                  <leq/>
+                  <csymbol encoding="text" definitionURL="http://www.sbml.org/sbml/symbols/time"> time </csymbol>
+                  <ci> pulse_time </ci>
+                </apply>
+              </piece>
+              <otherwise>
+                <cn> 0 </cn>
+              </otherwise>
+            </piecewise>
+            <apply>
+              <divide/>
+              <apply>
+                <times/>
+                <ci> EGF_conc_ramp </ci>
+                <csymbol encoding="text" definitionURL="http://www.sbml.org/sbml/symbols/time"> time </csymbol>
+              </apply>
+              <ci> ramp_time </ci>
+            </apply>
+          </apply>
+        </math>
+            </assignmentRule>
+      <assignmentRule metaid="_282997" variable="pS6_total">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <apply>
+            <times/>
+            <ci> pS6 </ci>
+            <ci> pS6_scaleFactor </ci>
+          </apply>
+        </math>
+            </assignmentRule>
+    </listOfRules>
+    <listOfReactions>
+      <reaction id="reaction_1" metaid="_282954" name="EGF+EGFR" sboTerm="SBO:0000177">
+        <annotation>
+          <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_282954">
+              <bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/go/GO:0005154"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/go/GO:0005515"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+          </rdf:RDF>
+        </annotation>
+              <listOfReactants>
+          <speciesReference metaid="d7868474-20bd-4014-9e39-edfcc172ec6d" species="EGF"/>
+          <speciesReference metaid="_6c17c59c-44bd-4a5a-9c9c-c98fde638c15" species="EGFR"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_75f1feeb-1e03-4c71-b89c-06834355aa2f" species="EGF_EGFR"/>
+        </listOfProducts>
+        <kineticLaw metaid="_508da5ee-d548-4019-a8d6-0327001083df">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> Cell </ci>
+              <apply>
+                <minus/>
+                <apply>
+                  <times/>
+                  <ci> EGF_binding_kf </ci>
+                  <ci> EGF </ci>
+                  <ci> EGFR </ci>
+                </apply>
+                <apply>
+                  <times/>
+                  <ci> EGF_binding_kb </ci>
+                  <ci> EGF_EGFR </ci>
+                </apply>
+              </apply>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="reaction_2" metaid="_282955" name="pEGFR+Akt" sboTerm="SBO:0000177">
+        <annotation>
+          <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_282955">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/go/GO:0043422"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+          </rdf:RDF>
+        </annotation>
+              <listOfReactants>
+          <speciesReference metaid="_8443939f-e106-48e7-a0db-44a6106b6162" species="pEGFR"/>
+          <speciesReference metaid="_25f79038-0d46-4bfb-8df6-d26b227ee01c" species="Akt"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="b0b593fe-cad8-412f-96d9-71fe5856c3ae" species="pEGFR_Akt"/>
+        </listOfProducts>
+        <kineticLaw metaid="c4ded48d-e3d8-4b7b-8205-b68e768769d8">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> Cell </ci>
+              <apply>
+                <minus/>
+                <apply>
+                  <times/>
+                  <ci> k1 </ci>
+                  <ci> pEGFR </ci>
+                  <ci> Akt </ci>
+                </apply>
+                <apply>
+                  <times/>
+                  <ci> k2 </ci>
+                  <ci> pEGFR_Akt </ci>
+                </apply>
+              </apply>
+            </apply>
+          </math>
+                  <listOfParameters>
+            <parameter id="k1" metaid="_282973" name="k1" units="per_conc_per_sec" value="1.5543E-5"/>
+            <parameter id="k2" metaid="_282975" name="k2" units="per_sec" value="0.00517473"/>
+          </listOfParameters>
+        </kineticLaw>
+      </reaction>
+      <reaction id="reaction_3" metaid="_282956" name="Akt_phosphorylation" reversible="false" sboTerm="SBO:0000216">
+        <annotation>
+          <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_282956">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/go/GO:0032148"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+          </rdf:RDF>
+        </annotation>
+              <listOfReactants>
+          <speciesReference metaid="d383ae46-3d13-42ed-a73b-0612949f43d0" species="pEGFR_Akt"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="b19970d1-e5f4-4e97-bdea-8eb644f4d89a" species="pEGFR"/>
+          <speciesReference metaid="_277a2546-6b00-4586-b87a-7a3233765d27" species="pAkt"/>
+        </listOfProducts>
+        <kineticLaw metaid="_0cd958d6-6ed5-49c6-b1d6-e5967893b7a4">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> Cell </ci>
+              <ci> k1 </ci>
+              <ci> pEGFR_Akt </ci>
+            </apply>
+          </math>
+                  <listOfParameters>
+            <parameter id="k1" metaid="_282977" name="k1" units="per_sec" value="0.0528141"/>
+          </listOfParameters>
+        </kineticLaw>
+      </reaction>
+      <reaction id="reaction_4" metaid="_282958" name="pEGFR_degradation" reversible="false" sboTerm="SBO:0000179">
+        <annotation>
+          <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_282958">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/go/GO:0030163"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+          </rdf:RDF>
+        </annotation>
+              <listOfReactants>
+          <speciesReference metaid="fae810d4-1cb6-4d9b-8f34-495ed9f398c3" species="pEGFR"/>
+        </listOfReactants>
+        <kineticLaw metaid="_6c1f9f74-83c3-4aca-b3d7-6d89556b47b5">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> Cell </ci>
+              <ci> k1 </ci>
+              <ci> pEGFR </ci>
+            </apply>
+          </math>
+                  <listOfParameters>
+            <parameter id="k1" metaid="_282978" name="k1" units="per_sec" value="0.0997194"/>
+          </listOfParameters>
+        </kineticLaw>
+      </reaction>
+      <reaction id="reaction_5" metaid="_282959" name="pAkt+S6" sboTerm="SBO:0000177">
+        <annotation>
+          <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_282959">
+              <bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/go/GO:0005515"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/reactome/REACT_12442"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+          </rdf:RDF>
+        </annotation>
+              <listOfReactants>
+          <speciesReference metaid="cb1c2d6e-8488-463f-aa2c-f1cda44e225a" species="pAkt"/>
+          <speciesReference metaid="_4d79276a-5bc6-474d-8cf5-bdb4149d1a5d" species="S6"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_555603d8-82d1-4a95-86ac-15f6c36a2c07" species="pAkt_S6"/>
+        </listOfProducts>
+        <kineticLaw metaid="_6225a367-f9af-4d12-ae94-684a920475d3">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> Cell </ci>
+              <apply>
+                <minus/>
+                <apply>
+                  <times/>
+                  <ci> k1 </ci>
+                  <ci> pAkt </ci>
+                  <ci> S6 </ci>
+                </apply>
+                <apply>
+                  <times/>
+                  <ci> k2 </ci>
+                  <ci> pAkt_S6 </ci>
+                </apply>
+              </apply>
+            </apply>
+          </math>
+                  <listOfParameters>
+            <parameter id="k1" metaid="_282980" name="k1" units="per_conc_per_sec" value="2.10189E-6"/>
+            <parameter id="k2" metaid="_282982" name="k2" units="per_sec" value="5.1794E-15"/>
+          </listOfParameters>
+        </kineticLaw>
+      </reaction>
+      <reaction id="reaction_6" metaid="_282960" name="S6_phosphorylation" reversible="false" sboTerm="SBO:0000216">
+        <annotation>
+          <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_282960">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/go/GO:0004672"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+          </rdf:RDF>
+        </annotation>
+              <listOfReactants>
+          <speciesReference metaid="ac3a9ba6-e0e8-4ac3-8f3a-953eed618217" species="pAkt_S6"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="f0de8c5a-c07d-4756-a332-18ee271c9faf" species="pAkt"/>
+          <speciesReference metaid="_0c030f2d-ecb1-4f7c-a140-75850c4830cc" species="pS6"/>
+        </listOfProducts>
+        <kineticLaw metaid="eff51a7d-eb7a-487b-b1da-648d81c0612a">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> Cell </ci>
+              <ci> k1 </ci>
+              <ci> pAkt_S6 </ci>
+            </apply>
+          </math>
+                  <listOfParameters>
+            <parameter id="k1" metaid="_282984" name="k1" units="per_sec" value="0.00121498"/>
+          </listOfParameters>
+        </kineticLaw>
+      </reaction>
+      <reaction id="reaction_7" metaid="_282961" name="pAkt_dephospho" reversible="false" sboTerm="SBO:0000330">
+        <annotation>
+          <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_282961">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/go/GO:0004721"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+          </rdf:RDF>
+        </annotation>
+              <listOfReactants>
+          <speciesReference metaid="_9b3c8f8e-7186-401f-a263-9379d40649a4" species="pAkt"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_95ebbdb8-a6fc-4f1e-904d-36f42ccc9e75" species="Akt"/>
+        </listOfProducts>
+        <kineticLaw metaid="_9449d5e0-8ae5-4dbf-88a6-4aee3c45207d">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> Cell </ci>
+              <ci> k1 </ci>
+              <ci> pAkt </ci>
+            </apply>
+          </math>
+                  <listOfParameters>
+            <parameter id="k1" metaid="_282985" name="k1" units="per_sec" value="0.0327962"/>
+          </listOfParameters>
+        </kineticLaw>
+      </reaction>
+      <reaction id="reaction_8" metaid="_282963" name="pS6_dephospho" reversible="false" sboTerm="SBO:0000330">
+        <annotation>
+          <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_282963">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/go/GO:0004721"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+          </rdf:RDF>
+        </annotation>
+              <listOfReactants>
+          <speciesReference metaid="dc8f0e6a-c1a2-43cd-9c28-418e98fc60e9" species="pS6"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="c9d6b335-970b-42ea-abae-5ea7e7cb17fe" species="S6"/>
+        </listOfProducts>
+        <kineticLaw metaid="_8a9aa4de-d1fb-48c3-b90c-371b101f5488">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> Cell </ci>
+              <ci> k1 </ci>
+              <ci> pS6 </ci>
+            </apply>
+          </math>
+                  <listOfParameters>
+            <parameter id="k1" metaid="_282987" name="k1" units="per_sec" value="0.00113102"/>
+          </listOfParameters>
+        </kineticLaw>
+      </reaction>
+      <reaction id="reaction_9" metaid="_282964" name="EGFR_synthesis" reversible="false" sboTerm="SBO:0000184">
+        <annotation>
+          <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_282964">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/go/GO:0010467"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+          </rdf:RDF>
+        </annotation>
+              <listOfReactants>
+          <speciesReference metaid="d324635f-bc3d-4db5-8651-9a863dcb13fa" species="pro_EGFR"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="dec5ad53-c863-4b35-a76f-47ce2a2f374d" species="EGFR"/>
+        </listOfProducts>
+        <kineticLaw metaid="d29d7387-dc3a-4ea6-8867-c0a1966860b6">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> Cell </ci>
+              <ci> EGFR_turnover </ci>
+              <ci> pro_EGFR </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="reaction_10" metaid="_282965" name="EGFR_phosphorylation" reversible="false" sboTerm="SBO:0000216">
+        <annotation>
+          <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_282965">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/go/GO:0004672"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+          </rdf:RDF>
+        </annotation>
+              <listOfReactants>
+          <speciesReference metaid="fe3669e4-6783-4976-ae33-441f091279ab" species="EGF_EGFR"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="ee1613a2-cb8c-4150-9e0e-097605de673f" species="pEGFR"/>
+        </listOfProducts>
+        <kineticLaw metaid="cac4b4a6-77a3-4d50-b671-82a23364405e">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> Cell </ci>
+              <ci> k1 </ci>
+              <ci> EGF_EGFR </ci>
+            </apply>
+          </math>
+                  <listOfParameters>
+            <parameter id="k1" metaid="_282989" name="k1" units="per_sec" value="0.0192391"/>
+          </listOfParameters>
+        </kineticLaw>
+      </reaction>
+      <reaction id="reaction_11" metaid="_282966" name="EGFR_degradation" reversible="false" sboTerm="SBO:0000179">
+        <annotation>
+          <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_282966">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/go/GO:0030163"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+          </rdf:RDF>
+        </annotation>
+              <listOfReactants>
+          <speciesReference metaid="_61a42a78-0349-4f51-bb3d-5adfd43ecebf" species="EGFR"/>
+        </listOfReactants>
+        <kineticLaw metaid="_0a7457b8-ec56-42d9-bd81-531ec9f81e6b">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> Cell </ci>
+              <ci> EGFR_turnover </ci>
+              <ci> EGFR </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="reaction_12" metaid="_282968" name="EGFR+i" sboTerm="SBO:0000177">
+        <annotation>
+          <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_282968">
+              <bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/go/GO:0005154"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/go/GO:0005515"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+          </rdf:RDF>
+        </annotation>
+              <listOfReactants>
+          <speciesReference metaid="_6b68a9d6-3071-48b9-b0c5-053146153a01" species="Inhibitor"/>
+          <speciesReference metaid="_15c3efb2-7738-4384-bf4e-20355715b35c" species="EGFR"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_457f9536-137b-4e28-9526-d455d8d236b0" species="EGFR_i"/>
+        </listOfProducts>
+        <kineticLaw metaid="_4bec4d01-61c7-46bb-b645-141b1d0b5d61">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> Cell </ci>
+              <apply>
+                <minus/>
+                <apply>
+                  <times/>
+                  <ci> inhibitor_binding_kf </ci>
+                  <ci> Inhibitor </ci>
+                  <ci> EGFR </ci>
+                </apply>
+                <apply>
+                  <times/>
+                  <ci> inhibitor_binding_kb </ci>
+                  <ci> EGFR_i </ci>
+                </apply>
+              </apply>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="reaction_13" metaid="_282969" name="EGF_EGFR+i" sboTerm="SBO:0000177">
+        <annotation>
+          <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_282969">
+              <bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/go/GO:0005154"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/go/GO:0005515"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+          </rdf:RDF>
+        </annotation>
+              <listOfReactants>
+          <speciesReference metaid="_31369102-8b3f-4410-be9b-3f7966b18246" species="Inhibitor"/>
+          <speciesReference metaid="b9fcd85b-a221-48ee-b9c1-ae09c9589dd7" species="EGF_EGFR"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="c0902060-a29a-4195-b2be-e6ec1614ad62" species="EGF_EGFR_i"/>
+        </listOfProducts>
+        <kineticLaw metaid="b050b409-e904-439f-ba97-93ab8303fdc7">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> Cell </ci>
+              <apply>
+                <minus/>
+                <apply>
+                  <times/>
+                  <ci> inhibitor_binding_kf </ci>
+                  <ci> Inhibitor </ci>
+                  <ci> EGF_EGFR </ci>
+                </apply>
+                <apply>
+                  <times/>
+                  <ci> inhibitor_binding_kb </ci>
+                  <ci> EGF_EGFR_i </ci>
+                </apply>
+              </apply>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="reaction_14" metaid="_282970" name="EGF+EGFR_i" sboTerm="SBO:0000177">
+        <annotation>
+          <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_282970">
+              <bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/go/GO:0005154"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/go/GO:0005515"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+          </rdf:RDF>
+        </annotation>
+              <listOfReactants>
+          <speciesReference metaid="_3f49c89f-0745-46c4-8fc7-7703781ad001" species="EGF"/>
+          <speciesReference metaid="c81fb550-f04b-4278-ab9d-0bddb4fa22a4" species="EGFR_i"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_29a8f2d1-ae95-4687-8b3c-d9f13e10f93e" species="EGF_EGFR_i"/>
+        </listOfProducts>
+        <kineticLaw metaid="b28cdb3e-a801-48e5-9ab2-46fb761e47e6">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> Cell </ci>
+              <apply>
+                <minus/>
+                <apply>
+                  <times/>
+                  <ci> EGF_binding_kf </ci>
+                  <ci> EGF </ci>
+                  <ci> EGFR_i </ci>
+                </apply>
+                <apply>
+                  <times/>
+                  <ci> EGF_binding_kb </ci>
+                  <ci> EGF_EGFR_i </ci>
+                </apply>
+              </apply>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="reaction_15" metaid="_282971" name="EGFR_i_degradation" reversible="false" sboTerm="SBO:0000179">
+        <annotation>
+          <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_282971">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/go/GO:0030163"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+          </rdf:RDF>
+        </annotation>
+              <listOfReactants>
+          <speciesReference metaid="_8b471601-6109-4889-a853-1bf6b909494b" species="EGFR_i"/>
+        </listOfReactants>
+        <kineticLaw metaid="ca97a145-9729-471d-9c16-9744546e7893">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> Cell </ci>
+              <ci> EGFR_turnover </ci>
+              <ci> EGFR_i </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+    </listOfReactions>
+  </model>
+</sbml>
