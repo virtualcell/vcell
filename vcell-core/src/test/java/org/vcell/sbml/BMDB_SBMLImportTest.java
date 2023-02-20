@@ -86,6 +86,7 @@ public class BMDB_SBMLImportTest {
 	public static Set<Integer> slowModelSet() {
 		Set<Integer> slowModels = new HashSet<>();
 		slowModels.add(235); // 3 minutes 19 seconds - it passes
+		slowModels.add(255); // 6 minutes 33 seconds - it passes
 		slowModels.add(595); // > 5 minutes - unknown if it would pass, didn't wait long enough
 		return slowModels;
 	}
@@ -105,25 +106,19 @@ public class BMDB_SBMLImportTest {
 		faults.put(151, SBMLTestSuiteImportTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('0.5' for product 'x13' in reaction 'R23') or stoichiometryMath not handled in VCell at this time.
 		faults.put(154, SBMLTestSuiteImportTest.FAULT.DELAY);  // cause:  UnsupportedConstruct: unsupported SBML element 'delay' in expression ' <math><apply><times/><ci> compartment </ci><ci> beta_y </ci><ci> psi </ci><apply><csymbol encoding="text" de
 		faults.put(155, SBMLTestSuiteImportTest.FAULT.DELAY);  // cause:  UnsupportedConstruct: unsupported SBML element 'delay' in expression ' <math><apply><times/><ci> compartment </ci><ci> beta_y </ci><ci> psi </ci><apply><csymbol encoding="text" de
-		faults.put(175, SBMLTestSuiteImportTest.FAULT.REACTANT_AND_MODIFIER);  // cause:  reactionParticipant E_E1 already defined as a Reactant or a Catalyst of the reaction.
 		faults.put(196, SBMLTestSuiteImportTest.FAULT.DELAY);  // cause:  UnsupportedConstruct: unsupported SBML element 'delay' in expression ' <math><apply><times/><ci> vM4 </ci><apply><divide/><apply><times/><apply><plus/><cn> 1 </cn><apply><divide/>
 		faults.put(199, SBMLTestSuiteImportTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('0.5' for reactant 'NADPH' in reaction 'r4') or stoichiometryMath not handled in VCell at this time.
 		faults.put(206, SBMLTestSuiteImportTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('0.1' for product 's6o' in reaction 'v10') or stoichiometryMath not handled in VCell at this time.
-		faults.put(220, SBMLTestSuiteImportTest.FAULT.REACTANT_AND_MODIFIER);  // cause:  reactionParticipant Baxm already defined as a Reactant or a Catalyst of the reaction.
 		faults.put(232, SBMLTestSuiteImportTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('0.5' for reactant 'O2' in reaction 'vresp') or stoichiometryMath not handled in VCell at this time.
-		faults.put(243, SBMLTestSuiteImportTest.FAULT.REACTANT_AND_MODIFIER);  // cause:  reactionParticipant p43_p41 already defined as a Product or a Catalyst of the reaction.
 		faults.put(244, SBMLTestSuiteImportTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('0.5' for reactant 'FBP' in reaction 'e_Emp') or stoichiometryMath not handled in VCell at this time.
 		faults.put(245, SBMLTestSuiteImportTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('0.978' for product 's_pyr' in reaction 'r1') or stoichiometryMath not handled in VCell at this time.
 		faults.put(246, SBMLTestSuiteImportTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('0.001' for product 'Ca_in' in reaction 'vo') or stoichiometryMath not handled in VCell at this time.
 		faults.put(248, SBMLTestSuiteImportTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Unable to create and add rate rule to VC model : 'Capillary.Capillary' is either not found in your model or is not allowed to be used in the current context. Check that you have p
-		faults.put(255, SBMLTestSuiteImportTest.FAULT.REACTANT_AND_MODIFIER);  // cause:  reactionParticipant c499 already defined as a Reactant or a Catalyst of the reaction.
 		faults.put(256, SBMLTestSuiteImportTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'XIAP_ini' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context. Check that you hav
 		faults.put(305, SBMLTestSuiteImportTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'V' to model: 'Fw_1st_step' is either not found in your model or is not allowed to be used in the current context. Check that you have provided the
 		faults.put(319, SBMLTestSuiteImportTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('0.02' for product 'gamma' in reaction 'r3') or stoichiometryMath not handled in VCell at this time.
 		faults.put(340, SBMLTestSuiteImportTest.FAULT.MATHML_PARSING);  // cause:  UnsupportedConstruct: error parsing expression ' <math><apply><gt/><piecewise><piece><apply><minus/><csymbol encoding="text" definitionURL="http://www.sbml.org/sbml/symbols/time">
 		faults.put(342, SBMLTestSuiteImportTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'TGF_beta_dose_mol_per_cell' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context.
-		faults.put(351, SBMLTestSuiteImportTest.FAULT.REACTANT_AND_MODIFIER);  // cause:  reactionParticipant I already defined as a Reactant or a Catalyst of the reaction.
-		faults.put(352, SBMLTestSuiteImportTest.FAULT.REACTANT_AND_MODIFIER);  // cause:  reactionParticipant I already defined as a Reactant or a Catalyst of the reaction.
 		faults.put(353, SBMLTestSuiteImportTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('12345.7' for reactant 'cpd_C00369Glc_CS' in reaction 'rn_R02112CS_G2') or stoichiometryMath not handled in VCell at this time.
 		faults.put(383, SBMLTestSuiteImportTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('1.5' for product 'PGA' in reaction 'PGA_prod_Vo') or stoichiometryMath not handled in VCell at this time.
 		faults.put(384, SBMLTestSuiteImportTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('1.5' for product 'PGA' in reaction 'PGA_prod_Vo') or stoichiometryMath not handled in VCell at this time.
@@ -132,21 +127,18 @@ public class BMDB_SBMLImportTest {
 		faults.put(387, SBMLTestSuiteImportTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('1.5' for product 'PGA' in reaction 'PGA_prod_Vo') or stoichiometryMath not handled in VCell at this time.
 		faults.put(388, SBMLTestSuiteImportTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('0.6' for product 'Ru5P' in reaction 'GAP2Ru5P') or stoichiometryMath not handled in VCell at this time.
 		faults.put(392, SBMLTestSuiteImportTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('0.5' for reactant 'ATP' in reaction 'RuBisCO_6_O2') or stoichiometryMath not handled in VCell at this time.
-		faults.put(397, SBMLTestSuiteImportTest.FAULT.REACTANT_AND_MODIFIER);  // cause:  reactionParticipant s32 already defined as a Reactant or a Catalyst of the reaction.
 		faults.put(415, SBMLTestSuiteImportTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('0.574' for product 'species_7' in reaction 'reaction_1') or stoichiometryMath not handled in VCell at this time.
 		faults.put(426, SBMLTestSuiteImportTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('0.08' for reactant 'species_31' in reaction 'reaction_28') or stoichiometryMath not handled in VCell at this time.
 		faults.put(429, SBMLTestSuiteImportTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'parameter_18' to model: 'UNRESOLVED.Size' is either not found in your model or is not allowed to be used in the current context. Check that you hav
-		faults.put(452, SBMLTestSuiteImportTest.FAULT.REACTANT_AND_MODIFIER);  // cause:  reactionParticipant mw7eacabf9_d68c_491a_aba2_ec0809a8ecc8 already defined as a Reactant or a Catalyst of the reaction.
-		faults.put(453, SBMLTestSuiteImportTest.FAULT.REACTANT_AND_MODIFIER);  // cause:  reactionParticipant mw7eacabf9_d68c_491a_aba2_ec0809a8ecc8 already defined as a Reactant or a Catalyst of the reaction.
 		faults.put(457, SBMLTestSuiteImportTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'parameter_1' to model: 'UNRESOLVED.Size' is either not found in your model or is not allowed to be used in the current context. Check that you have
 		faults.put(463, SBMLTestSuiteImportTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('8.5' for reactant 'species_14' in reaction 'reaction_11') or stoichiometryMath not handled in VCell at this time.
-		faults.put(468, SBMLTestSuiteImportTest.FAULT.UNCATEGORIZED);  // cause:  found more than one SBase match for sid=unitime, matched [org.vcell.sbml.vcell.SBMLSymbolMapping$SBaseWrapper@1264ba58, org.vcell.sbml.vcell.SBMLSymbolMapping$SBaseWrapper@5f20bd6
+		faults.put(468, SBMLTestSuiteImportTest.FAULT.UNCATEGORIZED);  // cause:  found more than one SBase match for sid=unitime, matched [org.vcell.sbml.vcell.SBMLSymbolMapping$SBaseWrapper@2c4d648b, org.vcell.sbml.vcell.SBMLSymbolMapping$SBaseWrapper@7d7dd2b
 		faults.put(469, SBMLTestSuiteImportTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('1.5' for reactant 's_1372' in reaction 'r_1230') or stoichiometryMath not handled in VCell at this time.
 		faults.put(470, SBMLTestSuiteImportTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('1.5' for reactant 's_1372' in reaction 'r_1230') or stoichiometryMath not handled in VCell at this time.
 		faults.put(471, SBMLTestSuiteImportTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('4.33333333333333' for reactant 's_0056' in reaction 'r_1052') or stoichiometryMath not handled in VCell at this time.
 		faults.put(472, SBMLTestSuiteImportTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('4.33333333333333' for reactant 's_0056' in reaction 'r_1052') or stoichiometryMath not handled in VCell at this time.
 		faults.put(473, SBMLTestSuiteImportTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('1.8' for reactant 's_0595' in reaction 'r_1014') or stoichiometryMath not handled in VCell at this time.
-		faults.put(474, SBMLTestSuiteImportTest.FAULT.UNCATEGORIZED);  // cause:  found more than one SBase match for sid=v, matched [org.vcell.sbml.vcell.SBMLSymbolMapping$SBaseWrapper@5b24d8d3, org.vcell.sbml.vcell.SBMLSymbolMapping$SBaseWrapper@5da043ba]
+		faults.put(474, SBMLTestSuiteImportTest.FAULT.UNCATEGORIZED);  // cause:  found more than one SBase match for sid=v, matched [org.vcell.sbml.vcell.SBMLSymbolMapping$SBaseWrapper@5d2c4564, org.vcell.sbml.vcell.SBMLSymbolMapping$SBaseWrapper@4f269c94]
 		faults.put(496, SBMLTestSuiteImportTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('1.1358' for reactant 's_0001' in reaction 'r_1812') or stoichiometryMath not handled in VCell at this time.
 		faults.put(497, SBMLTestSuiteImportTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('1.1358' for reactant 's_0001' in reaction 'r_1812') or stoichiometryMath not handled in VCell at this time.
 		faults.put(499, SBMLTestSuiteImportTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Metabolite_9' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context. Check that you
@@ -174,7 +166,7 @@ public class BMDB_SBMLImportTest {
 		faults.put(632, SBMLTestSuiteImportTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'k4b' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context. Check that you have pro
 		faults.put(696, SBMLTestSuiteImportTest.FAULT.MATHML_PARSING);  // cause:  Error adding Lambda function UnsupportedConstruct: error parsing expression ' <math><notanumber/></math>': node type 'notanumber' not supported yet
 		faults.put(705, SBMLTestSuiteImportTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Metabolite_21' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context. Check that yo
-		faults.put(706, SBMLTestSuiteImportTest.FAULT.UNCATEGORIZED);  // cause:  found more than one SBase match for sid=v, matched [org.vcell.sbml.vcell.SBMLSymbolMapping$SBaseWrapper@7b2e0075, org.vcell.sbml.vcell.SBMLSymbolMapping$SBaseWrapper@557377c1]
+		faults.put(706, SBMLTestSuiteImportTest.FAULT.UNCATEGORIZED);  // cause:  found more than one SBase match for sid=v, matched [org.vcell.sbml.vcell.SBMLSymbolMapping$SBaseWrapper@67cc48df, org.vcell.sbml.vcell.SBMLSymbolMapping$SBaseWrapper@483ac21f]
 		faults.put(710, SBMLTestSuiteImportTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Metabolite_0_0' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context. Check that y
 		faults.put(731, SBMLTestSuiteImportTest.FAULT.UNCATEGORIZED);  // cause:  OverallWarning: missing or unexpected value attribute '-Infinity' for SBML object id log_Treg
 		faults.put(739, SBMLTestSuiteImportTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Metabolite_19' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context. Check that yo
@@ -223,7 +215,7 @@ public class BMDB_SBMLImportTest {
 	@Test
 	public void testSbmlTestSuiteImport() throws Exception{
 		System.out.println("testing Biomodels DB model "+biomodelsDbModelNumber);
-//		if (knownFaults().get(biomodelsDbModelNumber) != SBMLTestSuiteImportTest.FAULT.UNCATEGORIZED) return;
+		//if (knownFaults().get(biomodelsDbModelNumber) != SBMLTestSuiteImportTest.FAULT.REACTANT_AND_MODIFIER) { System.out.println("skipping"); return; }
 		InputStream testFileInputStream = BMDB_SBML_Files.getBiomodelsDbCuratedModel(biomodelsDbModelNumber);
 		TestVCLogger vcl = new TestVCLogger();
 		boolean bValidateSBML = true;

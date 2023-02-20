@@ -540,7 +540,7 @@ TODO:
 			//System.out.println(temp.getAttributeValue("TagName") + ":" + temp.getAttributeValue("AttrName"));
 			boolean bSupported = temp.getAttribute(BioModelsNetPanel.SUPPORTED_ATTRIBUTE_NAME).getBooleanValue();
 			Attribute slowAttribute = temp.getAttribute(BioModelsNetPanel.SLOW_ATTRIBUTE_NAME);
-			boolean bSlow = (slowAttribute==null || slowAttribute.getBooleanValue()==false);
+			boolean bSlow = (slowAttribute != null && slowAttribute.getBooleanValue());
 			if (bSlow){
 				bSupported = false;
 			}

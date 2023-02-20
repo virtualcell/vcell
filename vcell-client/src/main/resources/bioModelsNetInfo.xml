@@ -174,7 +174,7 @@
   <BioModelInfo ID="BIOMD0000000172" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Pritchard2002_glycolysis" />
   <BioModelInfo ID="BIOMD0000000173" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Schmierer_2008_Smad_Tgfb" />
   <BioModelInfo ID="BIOMD0000000174" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Del_Conte_Zerial2008_Rab5_Rab7_cut_out_switch" />
-  <BioModelInfo ID="BIOMD0000000175" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Birtwistle2007_ErbB_Signalling" exception="REACTANT_AND_MODIFIER" />
+  <BioModelInfo ID="BIOMD0000000175" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Birtwistle2007_ErbB_Signalling" />
   <BioModelInfo ID="BIOMD0000000176" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Conant2007_WGD_glycolysis_2A3AB" />
   <BioModelInfo ID="BIOMD0000000177" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Conant2007_glycolysis_2C" />
   <BioModelInfo ID="BIOMD0000000178" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Lebeda2008 - BoTN Paralysis (4 step model)" />
@@ -219,7 +219,7 @@
   <BioModelInfo ID="BIOMD0000000217" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Bruggeman2005_AmmoniumAssimilation" />
   <BioModelInfo ID="BIOMD0000000218" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Singh2006_TCA_mtu_model2" />
   <BioModelInfo ID="BIOMD0000000219" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Singh2006_TCA_mtu_model1" />
-  <BioModelInfo ID="BIOMD0000000220" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Albeck2008_extrinsic_apoptosis" exception="REACTANT_AND_MODIFIER" />
+  <BioModelInfo ID="BIOMD0000000220" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Albeck2008_extrinsic_apoptosis" />
   <BioModelInfo ID="BIOMD0000000221" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Singh2006_TCA_Ecoli_acetate" />
   <BioModelInfo ID="BIOMD0000000222" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Singh2006_TCA_Ecoli_glucose" />
   <BioModelInfo ID="BIOMD0000000223" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Borisov2009_EGF_Insulin_Crosstalk" />
@@ -242,7 +242,7 @@
   <BioModelInfo ID="BIOMD0000000240" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Veening2008_DegU_Regulation" />
   <BioModelInfo ID="BIOMD0000000241" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Shi1993_Caffeine_pressor_tolerance" />
   <BioModelInfo ID="BIOMD0000000242" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Bai2003_G1phaseRegulation" />
-  <BioModelInfo ID="BIOMD0000000243" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Neumann2010_CD95Stimulation_NFkB_Apoptosis" exception="REACTANT_AND_MODIFIER" />
+  <BioModelInfo ID="BIOMD0000000243" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Neumann2010_CD95Stimulation_NFkB_Apoptosis" />
   <BioModelInfo ID="BIOMD0000000244" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Kotte2010_Ecoli_Metabolic_Adaption" exception="NONINTEGER_STOICH" />
   <BioModelInfo ID="BIOMD0000000245" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Lei2001_Yeast_Aerobic_Metabolism" exception="NONINTEGER_STOICH" />
   <BioModelInfo ID="BIOMD0000000246" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Vasalou2010_Pacemaker_Neuron_SCN" exception="NONINTEGER_STOICH" />
@@ -254,7 +254,7 @@
   <BioModelInfo ID="BIOMD0000000252" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Hunziker2010_p53_StressSpecificResponse" />
   <BioModelInfo ID="BIOMD0000000253" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Teusink1998_Glycolysis_TurboDesign" />
   <BioModelInfo ID="BIOMD0000000254" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Bier2000_GlycolyticOscillation" />
-  <BioModelInfo ID="BIOMD0000000255" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Chen2009 - ErbB Signaling" exception="REACTANT_AND_MODIFIER" />
+  <BioModelInfo ID="BIOMD0000000255" Supported="true" Slow="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Chen2009 - ErbB Signaling" />
   <BioModelInfo ID="BIOMD0000000256" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Rehm2006_Caspase" exception="EXPRESSION_BINDING_EXCEPTION" />
   <BioModelInfo ID="BIOMD0000000257" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Piedrafita2010_MR_System" />
   <BioModelInfo ID="BIOMD0000000258" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Ortega2006 - bistability from double phosphorylation in signal transduction" />
@@ -350,8 +350,8 @@
   <BioModelInfo ID="BIOMD0000000348" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Fridlyand2010_GlucoseSensitivity_A" />
   <BioModelInfo ID="BIOMD0000000349" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Fridlyand2010_GlucoseSensitivity_B" />
   <BioModelInfo ID="BIOMD0000000350" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Troein2011_ClockCircuit_OstreococcusTauri" />
-  <BioModelInfo ID="BIOMD0000000351" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Vernoux2011_AuxinSignaling_AuxinSingleStepInput" exception="REACTANT_AND_MODIFIER" />
-  <BioModelInfo ID="BIOMD0000000352" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Vernoux2011_AuxinSignaling_AuxinFluctuating" exception="REACTANT_AND_MODIFIER" />
+  <BioModelInfo ID="BIOMD0000000351" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Vernoux2011_AuxinSignaling_AuxinSingleStepInput" />
+  <BioModelInfo ID="BIOMD0000000352" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Vernoux2011_AuxinSignaling_AuxinFluctuating" />
   <BioModelInfo ID="BIOMD0000000353" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Nag2011_ChloroplasticStarchDegradation" exception="NONINTEGER_STOICH" />
   <BioModelInfo ID="BIOMD0000000354" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Abell2011_CalciumSignaling_WithoutAdaptation" />
   <BioModelInfo ID="BIOMD0000000355" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Abell2011_CalciumSignaling_WithAdaptation" />
@@ -396,7 +396,7 @@
   <BioModelInfo ID="BIOMD0000000394" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Sivakumar2011 - EGF Receptor Signaling Pathway" />
   <BioModelInfo ID="BIOMD0000000395" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Sivakumar2011 - Hedgehog Signaling Pathway" />
   <BioModelInfo ID="BIOMD0000000396" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Sivakumar2011 - Notch Signaling Pathway" />
-  <BioModelInfo ID="BIOMD0000000397" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Sivakumar2011_WntSignalingPathway" exception="REACTANT_AND_MODIFIER" />
+  <BioModelInfo ID="BIOMD0000000397" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Sivakumar2011_WntSignalingPathway" />
   <BioModelInfo ID="BIOMD0000000398" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Sivakumar2011_NeuralStemCellDifferentiation_Crosstalk" />
   <BioModelInfo ID="BIOMD0000000399" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Jenkinson2011_EGF_MAPK" />
   <BioModelInfo ID="BIOMD0000000400" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Cooling2007_IP3transients_CardiacMyocyte" />
@@ -451,8 +451,8 @@
   <BioModelInfo ID="BIOMD0000000449" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Brännmark2013 - Insulin signalling in human adipocytes (diabetic condition)" />
   <BioModelInfo ID="BIOMD0000000450" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Reyes-Palomares2012 -  a combined model hepatic polyamine and sulfur aminoacid metabolism - version2" />
   <BioModelInfo ID="BIOMD0000000451" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Carbo2013 - Cytokine driven CD4+ T Cell differentiation and phenotype plasticity" />
-  <BioModelInfo ID="BIOMD0000000452" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Bidkhori2012 - normal EGFR signalling" exception="REACTANT_AND_MODIFIER" />
-  <BioModelInfo ID="BIOMD0000000453" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Bidkhori2012 - EGFR signalling in NSCLC" exception="REACTANT_AND_MODIFIER" />
+  <BioModelInfo ID="BIOMD0000000452" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Bidkhori2012 - normal EGFR signalling" />
+  <BioModelInfo ID="BIOMD0000000453" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Bidkhori2012 - EGFR signalling in NSCLC" />
   <BioModelInfo ID="BIOMD0000000454" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Smallbone2013 - Metabolic Control Analysis - Example 1" />
   <BioModelInfo ID="BIOMD0000000455" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Smallbone2013 - Metabolic Control Analysis - Example 2" />
   <BioModelInfo ID="BIOMD0000000456" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Smallbone2013 - Metabolic Control Analysis - Example 3" />

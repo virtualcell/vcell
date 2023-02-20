@@ -230,7 +230,7 @@ public class BioModelsNetJPanel extends JPanel {
 			//System.out.println(temp.getAttributeValue("TagName") + ":" + temp.getAttributeValue("AttrName"));
 			boolean bSupported = temp.getAttribute(BioModelsNetPanel.SUPPORTED_ATTRIBUTE_NAME).getBooleanValue();
 			Attribute slowAttribute = temp.getAttribute(BioModelsNetPanel.SLOW_ATTRIBUTE_NAME);
-			boolean bSlow = (slowAttribute==null || slowAttribute.getBooleanValue()==false);
+			boolean bSlow = (slowAttribute != null && slowAttribute.getBooleanValue());
 			if(bSupported && !bSlow){
 				String id = temp.getAttributeValue(BioModelsNetPanel.ID_ATTRIBUTE_NAME);
 				String name = temp.getAttributeValue(BioModelsNetPanel.MODELNAME_ATTRIBUTE_NAME);
