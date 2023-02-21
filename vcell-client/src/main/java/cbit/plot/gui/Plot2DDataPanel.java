@@ -1168,11 +1168,11 @@ private void showPopupMenu(MouseEvent mouseEvent, javax.swing.JPopupMenu menu) {
 		getJMenuItemCopyRow().setEnabled(getScrollPaneTable().getSelectedColumnCount() > 0);
 		getJMenuItemExportHDF5().setEnabled(getScrollPaneTable().getSelectedColumnCount() > 0);
 		menu.show(getScrollPaneTable(), mouseEvent.getPoint().x, mouseEvent.getPoint().y);
-		if(simulation.getMathDescription().isNonSpatialStoch()) {
-			getJMenuItemCopy().setEnabled(false);
-			getJMenuItemCopyRow().setEnabled(false);
-			getJMenuItemExportHDF5().setEnabled(false);
-		}
+//		if(simulation.getMathDescription().isNonSpatialStoch()) {
+//			getJMenuItemCopy().setEnabled(false);
+//			getJMenuItemCopyRow().setEnabled(false);
+//			getJMenuItemExportHDF5().setEnabled(false);
+//		}
 	}
 }
 
