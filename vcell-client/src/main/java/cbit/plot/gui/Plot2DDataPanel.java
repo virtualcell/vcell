@@ -47,6 +47,7 @@ import cbit.vcell.client.UserMessage;
 import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.SimpleSymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.simdata.Hdf5Utils;
 import cbit.vcell.simdata.Hdf5Utils.HDF5WriteHelper;
@@ -825,7 +826,10 @@ private synchronized void copyCells0(CopyAction copyAction,boolean isHDF5) {
 			if(!bHistogram && (!bHasTimeColumn || i>0)) {
 				//dataNames[i-(bHasTimeColumn?1:0)] = getScrollPaneTable().getColumnName(columns[i]);
 				tableSymbolTableEntries[i-(bHasTimeColumn?1:0)] = null;
-				SymbolTableEntry ste = getPlot2D().getPlotDataSymbolTableEntry(columns[i]);
+				SymbolTableEntry ste = null;
+				if(getPlot2D().getSymbolTableEntries() != null) {
+					ste = getPlot2D().getPlotDataSymbolTableEntry(columns[i]);
+				}
 				tableSymbolTableEntries[i-(bHasTimeColumn?1:0)] = ste;
 				buffer.append(
 					(ste != null?"(Var="+(ste.getNameScope() != null?ste.getNameScope().getName()+"_":"")+ste.getName()+") ":"")+
