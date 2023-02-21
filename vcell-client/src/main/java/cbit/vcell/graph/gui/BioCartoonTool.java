@@ -388,42 +388,44 @@ public abstract class BioCartoonTool extends cbit.gui.graph.gui.CartoonTool {
 				LinkedHashSet<String> scMap = new LinkedHashSet<String>();
 				SpeciesContext[] speciesContextArr = rsCopy.getSpeciesContextArr();
 				
-				for(SpeciesContext scToPaste : speciesContextArr) {		// make list with all the scToPaste names
-					scMap.add(scToPaste.getName());
-				}
-				for(SpeciesContext scToPaste : speciesContextArr) {
-
-					int count = 0;				// generate unique name for the species
-					String sName = null;
-					String nameRoot = "s";
-					while (true) {
-						sName = nameRoot + count;	
-						if (Model.isNameUnused(sName, pasteModel) && !scMap.contains(sName)) {
-							break;
-						}	
-						count++;
+				if(speciesContextArr != null) {
+					for(SpeciesContext scToPaste : speciesContextArr) {		// make list with all the scToPaste names
+						scMap.add(scToPaste.getName());
 					}
-					Species sNew = new Species(sName, null);
-					pasteModel.addSpecies(sNew);
-					SpeciesPattern sp = scToPaste.getSpeciesPattern();
-					// SpeciesContext(KeyValue key, String name, Species species, Structure structure, SpeciesPattern speciesPattern)
-					SpeciesContext scNew = new SpeciesContext(null, scToPaste.getName(), sNew, structTo, sp);
-					pasteModel.addSpeciesContext(scNew);
-					System.out.println(sNew.getCommonName() + ", " + scNew.getName());
+					for(SpeciesContext scToPaste : speciesContextArr) {
+	
+						int count = 0;				// generate unique name for the species
+						String sName = null;
+						String nameRoot = "s";
+						while (true) {
+							sName = nameRoot + count;	
+							if (Model.isNameUnused(sName, pasteModel) && !scMap.contains(sName)) {
+								break;
+							}	
+							count++;
+						}
+						Species sNew = new Species(sName, null);
+						pasteModel.addSpecies(sNew);
+						SpeciesPattern sp = scToPaste.getSpeciesPattern();
+						// SpeciesContext(KeyValue key, String name, Species species, Structure structure, SpeciesPattern speciesPattern)
+						SpeciesContext scNew = new SpeciesContext(null, scToPaste.getName(), sNew, structTo, sp);
+						pasteModel.addSpeciesContext(scNew);
+						System.out.println(sNew.getCommonName() + ", " + scNew.getName());
+					}
+									
+	//				for(SpeciesContext sc : pasteModel.getSpeciesContexts()) {
+	//					scMap.put(sc.getName(), sc);
+	//				}
+	//				for(Species s : pasteModel.getSpecies()) {
+	//					sMap.put(s.getCommonName(), s);
+	//				}
+	//				SpeciesContext[] sca = new SpeciesContext[scMap.size()];
+	//				scMap.values().toArray(sca);
+	//				Species[] sa = new HashSet<Species>(sMap.values()).toArray(new Species[0]);
+	//				pasteModel.setSpecies(sa);
+	//				pasteModel.setSpeciesContexts(sca);
+	
 				}
-								
-//				for(SpeciesContext sc : pasteModel.getSpeciesContexts()) {
-//					scMap.put(sc.getName(), sc);
-//				}
-//				for(Species s : pasteModel.getSpecies()) {
-//					sMap.put(s.getCommonName(), s);
-//				}
-//				SpeciesContext[] sca = new SpeciesContext[scMap.size()];
-//				scMap.values().toArray(sca);
-//				Species[] sa = new HashSet<Species>(sMap.values()).toArray(new Species[0]);
-//				pasteModel.setSpecies(sa);
-//				pasteModel.setSpeciesContexts(sca);
-
 				System.out.println("done");
 			}
 		};
