@@ -150,37 +150,64 @@ public class Hdf5File {
             if (this.allowExceptions) throw e;
         }
 
-        //int status = 
-
         this.idToPathMap.put(groupId, groupPath);
         this.pathToIdMap.put(groupPath, groupId);
 
         return groupId;
     }
 
-    public String getGroup(int id){
+    /**
+     * Get the path to the group referenced by the provided group ID
+     * 
+     * @param id the identification number of the group
+     * @return the hdf5 path connected to the id, or null if the group is not registered / does not exist.
+     */
+    public String getGroupPath(int id){
         if (this.idToPathMap.containsKey(id)) return this.idToPathMap.get(id);
         return null;
     }
 
+    /**
+     * Get the group ID of a group specfified by the provided hdf5 path 
+     * 
+     * @param path path where the the group is located in the HDF5 file
+     * @return the group ID, or -1 if the group is not registered / does not exist.
+     */
     public int getGroup(String path){
         if (this.pathToIdMap.containsKey(path)) return this.pathToIdMap.get(path);
         return -1;
     }
 
+    /**
+     * Checks if a group exists based on a provided group ID
+     * 
+     * @param id the woulb be identification number of the group
+     * @return whether or not the group could be found
+     */
     public boolean containsGroup(int id){
         return this.idToPathMap.containsKey(id);
     }
 
+    /**
+     * Checks if a group exists based on a provided hdf5 path
+     * 
+     * @param path path where the the group would be located in the HDF5 file
+     * @return whether or not the group could be found
+     */
     public boolean containsGroup(String path){
         return this.pathToIdMap.containsKey(path);
     }
 
-    public void insertAttribute(int hdf5GroupID, String attributeName, String data) throws NullPointerException, HDF5LibraryException {
-		//insertAttributes(hdf5GroupID, dataspaceName, new ArrayList<String>(Arrays.asList(new String[] {data})));
-		//String[] attr = data.toArray(new String[0]);
-
-		String attr = data;
+    /**
+     * [BROKEN, made private until var strings inplemented] Inserts a HDF5 attribute into a HDF5 group (including datasets) with a variable length string datum
+     * 
+     * @param hdf5GroupID the id of the group to place the attribute in
+     * @param attributeName the name of the attribute to insert
+     * @param datum the attribute data / value to apply
+     * @throws HDF5LibraryException if HDF5 encountered a problem
+     */
+    private void insertVarStringAttribute(int hdf5GroupID, String attributeName, String datum) throws HDF5LibraryException {
+		String attr = datum;
 
 		int datatypeId = this.createVLStringDatatype();
 		int dataspace_id = H5.H5Screate(HDF5Constants.H5S_SCALAR);
@@ -191,11 +218,16 @@ public class Hdf5File {
 		H5.H5Tclose(datatypeId);
 	}
 
-    public void insertAttribute_classic(int hdf5GroupID, String attributeName, String data) throws NullPointerException, HDF5LibraryException {
-		//insertAttributes(hdf5GroupID, dataspaceName, new ArrayList<String>(Arrays.asList(new String[] {data})));
-		//String[] attr = data.toArray(new String[0]);
-
-		String attr = data + '\u0000';
+    /**
+     * Inserts a HDF5 attribute into a HDF5 group (including datasets) with a fixed length string datum
+     * 
+     * @param hdf5GroupID the id of the group to place the attribute in
+     * @param attributeName the name of the attribute to insert
+     * @param datum the attribute data / value to apply
+     * @throws HDF5LibraryException if HDF5 encountered a problem
+     */
+    public void insertFixedStringAttribute (int hdf5GroupID, String attributeName, String datum) throws HDF5LibraryException {
+		String attr = datum + '\u0000';
 
 		//https://support.hdfgroup.org/ftp/HDF5/examples/misc-examples/vlstra.c
 		int h5attrcs1 = H5.H5Tcopy(HDF5Constants.H5T_C_S1);
@@ -210,7 +242,15 @@ public class Hdf5File {
 		H5.H5Tclose(h5attrcs1);
 	}
 	
-	public void insertAttributes(int hdf5GroupID, String attributeName, List<String> data) throws NullPointerException, HDF5Exception {
+    /**
+     * [BROKEN, made private until var strings inplemented] Inserts a HDF5 attribute into a HDF5 group (including datasets) with a list of fixed length strings of data
+     *  
+     * @param hdf5GroupID the id of the group to place the attribute in
+     * @param attributeName the name of the attribute to insert
+     * @param data the attribute data / value list to apply
+     * @throws HDF5Exception if HDF5 encountered a problem.
+     */
+	private void insertVarStringAttributes(int hdf5GroupID, String attributeName, List<String> data) throws HDF5Exception {
         String flatData = "";
         for (String datum : data){
             flatData += (datum + '\u0000');
@@ -227,7 +267,15 @@ public class Hdf5File {
 		H5.H5Tclose(typeId); 
 	}
 
-    public void insertAttributes_classic(int hdf5GroupID, String attributeName, List<String> data) throws NullPointerException, HDF5Exception {
+    /**
+     * Inserts a HDF5 attribute into a HDF5 group (including datasets) with a fixed length string of data
+     *  
+     * @param hdf5GroupID the id of the group to place the attribute in
+     * @param attributeName the name of the attribute to insert
+     * @param data the attribute data / value list to apply
+     * @throws HDF5Exception if HDF5 encountered a problem
+     */
+    public void insertFixedStringAttributes(int hdf5GroupID, String attributeName, List<String> data) throws HDF5Exception {
 		String[] attr = data.toArray(new String[0]);
 		long[] dims = new long[] {attr.length}; // Always an array of length == 1
 		StringBuffer sb = new StringBuffer();
@@ -263,7 +311,15 @@ public class Hdf5File {
 		H5.H5Tclose(h5attrcs1);
 	}
 
-    public void insertAttributes(int hdf5GroupID,String dataspaceName,double[] data) throws NullPointerException, HDF5Exception {
+    /**
+     * Inserts a HDF5 attribute into a HDF5 group (including datasets) with a fixed length string of data
+     *  
+     * @param hdf5GroupID the id of the group to place the attribute in
+     * @param attributeName the name of the attribute to insert
+     * @param data the attribute data / value list to apply
+     * @throws HDF5Exception if HDF5 encountered a problem
+     */
+    public void insertNumericAttributes(int hdf5GroupID,String dataspaceName,double[] data) throws HDF5Exception {
 		long[] dims = new long[] {data.length};
 		//https://support.hdfgroup.org/ftp/HDF5/examples/misc-examples/vlstra.c
 		int dataspace_id = H5.H5Screate_simple(dims.length, dims,null);
@@ -291,6 +347,13 @@ public class Hdf5File {
         return hdf5DatasetID;
     }
 
+    /**
+     * 
+     * 
+     * @param datasetId
+     * @return
+     * @throws HDF5Exception
+     */
     public int closeDataset(int datasetId) throws HDF5Exception {
         if (!this.datasetToDataspaceMap.containsKey(datasetId)){
             if (this.allowExceptions) throw new HDF5Exception("Dataset provided has not been created.");

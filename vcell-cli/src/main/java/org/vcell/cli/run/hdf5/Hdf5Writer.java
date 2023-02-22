@@ -50,8 +50,8 @@ public class Hdf5Writer {
                     if (masterHdf5.containsGroup(path)) continue;
                     int groupId = masterHdf5.addGroup(path);
                     String relativePath = path.substring(1);
-                    masterHdf5.insertAttribute_classic(groupId, "combineArchiveLocation", relativePath);
-                    masterHdf5.insertAttribute_classic(groupId, "uri", relativePath);
+                    masterHdf5.insertFixedStringAttribute(groupId, "combineArchiveLocation", relativePath);
+                    masterHdf5.insertFixedStringAttribute(groupId, "uri", relativePath);
                     // We leave them open because there may be other datasets that share (some of) the same parent groups
                 }
     
@@ -65,21 +65,21 @@ public class Hdf5Writer {
                     int currentDatasetId = masterHdf5.insertSedmlData(path, preparedData);
                     
                     if (data.dataSource instanceof Hdf5DataSourceSpatial){
-                        masterHdf5.insertAttributes(currentDatasetId, "times", Hdf5DataPreparer.getSpacialHdf5Attribute_Times(data));
+                        masterHdf5.insertNumericAttributes(currentDatasetId, "times", Hdf5DataPreparer.getSpacialHdf5Attribute_Times(data));
                     }  
-                    masterHdf5.insertAttribute_classic(currentDatasetId, "_type", data.datasetMetadata._type);
-                    masterHdf5.insertAttributes_classic(currentDatasetId, "scanParameterNames", Arrays.asList(data.dataSource.scanParameterNames));
-                    masterHdf5.insertAttributes_classic(currentDatasetId, "sedmlDataSetDataTypes", data.datasetMetadata.sedmlDataSetDataTypes);
-                    masterHdf5.insertAttributes_classic(currentDatasetId, "sedmlDataSetIds", data.datasetMetadata.sedmlDataSetIds);
+                    masterHdf5.insertFixedStringAttribute(currentDatasetId, "_type", data.datasetMetadata._type);
+                    masterHdf5.insertFixedStringAttributes(currentDatasetId, "scanParameterNames", Arrays.asList(data.dataSource.scanParameterNames));
+                    masterHdf5.insertFixedStringAttributes(currentDatasetId, "sedmlDataSetDataTypes", data.datasetMetadata.sedmlDataSetDataTypes);
+                    masterHdf5.insertFixedStringAttributes(currentDatasetId, "sedmlDataSetIds", data.datasetMetadata.sedmlDataSetIds);
                     
                     if (data.datasetMetadata.sedmlDataSetNames.get(0) != null) {
-                        masterHdf5.insertAttributes_classic(currentDatasetId, "sedmlDataSetNames", data.datasetMetadata.sedmlDataSetNames);
+                        masterHdf5.insertFixedStringAttributes(currentDatasetId, "sedmlDataSetNames", data.datasetMetadata.sedmlDataSetNames);
                     }
-                    masterHdf5.insertAttributes_classic(currentDatasetId, "sedmlDataSetLabels", data.datasetMetadata.sedmlDataSetLabels);
-                    masterHdf5.insertAttributes_classic(currentDatasetId, "sedmlDataSetShapes", data.datasetMetadata.sedmlDataSetShapes);
-                    masterHdf5.insertAttribute_classic(currentDatasetId, "sedmlId", data.datasetMetadata.sedmlId);
-                    masterHdf5.insertAttribute_classic(currentDatasetId, "sedmlName", data.datasetMetadata.sedmlName);
-                    masterHdf5.insertAttribute_classic(currentDatasetId, "uri", path.substring(1) + "/" + data.datasetMetadata.sedmlId);
+                    masterHdf5.insertFixedStringAttributes(currentDatasetId, "sedmlDataSetLabels", data.datasetMetadata.sedmlDataSetLabels);
+                    masterHdf5.insertFixedStringAttributes(currentDatasetId, "sedmlDataSetShapes", data.datasetMetadata.sedmlDataSetShapes);
+                    masterHdf5.insertFixedStringAttribute(currentDatasetId, "sedmlId", data.datasetMetadata.sedmlId);
+                    masterHdf5.insertFixedStringAttribute(currentDatasetId, "sedmlName", data.datasetMetadata.sedmlName);
+                    masterHdf5.insertFixedStringAttribute(currentDatasetId, "uri", path.substring(1) + "/" + data.datasetMetadata.sedmlId);
     
                     masterHdf5.closeDataset(currentDatasetId);
                 }
