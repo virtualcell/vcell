@@ -71,10 +71,10 @@ public class MicroscopeMeasurementPanel extends javax.swing.JPanel {
 	private JTextField sigmaXYTextField;
 	private JTextField sigmaZTextField;
 
-	private JPanel experimentalPsfPanel;
-	private JRadioButton rdbtnExperimental = null;
-	private JComboBox pointSpreadFunctionsComboBox = null;
-	private JButton importPsfButton;
+//	private JPanel experimentalPsfPanel;
+//	private JRadioButton rdbtnExperimental = null;
+//	private JComboBox pointSpreadFunctionsComboBox = null;
+//	private JButton importPsfButton;
 	
 	
 	private SimulationContext simulationContext = null;
@@ -111,15 +111,15 @@ public class MicroscopeMeasurementPanel extends javax.swing.JPanel {
 			if (e.getSource() == removeButton) {
 				removeButtonActionPerformed();
 			} else if (e.getSource() == rdbtnZprojection
-					|| e.getSource() == radioButtonGaussian
-					|| e.getSource() == rdbtnExperimental) {
+					|| e.getSource() == radioButtonGaussian) {
+//					|| e.getSource() == rdbtnExperimental) {
 				setKernel();
-			} else if (e.getSource() == pointSpreadFunctionsComboBox) {
-				pointSpreadFunctionsComboBoxActionPerformed();
+//			} else if (e.getSource() == pointSpreadFunctionsComboBox) {
+//				pointSpreadFunctionsComboBoxActionPerformed();
 			} else if (e.getSource() == addButton) {
 				addButtonActionPerformed();
-			} else if (e.getSource() == importPsfButton) {
-				importPSFButtonActionPerformed();
+//			} else if (e.getSource() == importPsfButton) {
+//				importPSFButtonActionPerformed();
 			}
 		}
 		
@@ -290,25 +290,25 @@ public class MicroscopeMeasurementPanel extends javax.swing.JPanel {
 		gbc.anchor = GridBagConstraints.LINE_START;
 		panel.add(gaussianPsfPanel, gbc);		
 		
-		gridy ++;
-		gbc = new GridBagConstraints();
-		gbc.gridx = 0;
-		gbc.gridy = gridy;
-		gbc.insets = new Insets(0, 4, 4, 4);
-		gbc.anchor = GridBagConstraints.LINE_START;
-		panel.add(rdbtnExperimental, gbc);	
+//		gridy ++;
+//		gbc = new GridBagConstraints();
+//		gbc.gridx = 0;
+//		gbc.gridy = gridy;
+//		gbc.insets = new Insets(0, 4, 4, 4);
+//		gbc.anchor = GridBagConstraints.LINE_START;
+//		panel.add(rdbtnExperimental, gbc);	
 		
-		experimentalPsfPanel = new JPanel(new GridLayout(1, 2, 10, 0));
-		experimentalPsfPanel.add(pointSpreadFunctionsComboBox);
-		experimentalPsfPanel.add(importPsfButton);
-		gbc = new GridBagConstraints();
-		gbc.gridx = 1;
-		gbc.gridy = gridy;
-		gbc.weightx = 1.0;
-		gbc.gridwidth = GridBagConstraints.REMAINDER;
-		gbc.insets = new Insets(0, 4, 4, 4);
-		gbc.anchor = GridBagConstraints.LINE_START;
-		panel.add(experimentalPsfPanel, gbc);		
+//		experimentalPsfPanel = new JPanel(new GridLayout(1, 2, 10, 0));
+//		experimentalPsfPanel.add(pointSpreadFunctionsComboBox);
+//		experimentalPsfPanel.add(importPsfButton);
+//		gbc = new GridBagConstraints();
+//		gbc.gridx = 1;
+//		gbc.gridy = gridy;
+//		gbc.weightx = 1.0;
+//		gbc.gridwidth = GridBagConstraints.REMAINDER;
+//		gbc.insets = new Insets(0, 4, 4, 4);
+//		gbc.anchor = GridBagConstraints.LINE_START;
+//		panel.add(experimentalPsfPanel, gbc);		
 		
 		panel.setBorder(GuiConstants.TAB_PANEL_BORDER);
 		return panel;
@@ -333,26 +333,26 @@ public class MicroscopeMeasurementPanel extends javax.swing.JPanel {
 			removeButton.addActionListener(internalEventHandler);
 			removeButton.setEnabled(false);
 
-			rdbtnExperimental = new JRadioButton("Experimental");
-			rdbtnExperimental.addActionListener(internalEventHandler);
-			rdbtnExperimental.setEnabled(false);
+//			rdbtnExperimental = new JRadioButton("Experimental");
+//			rdbtnExperimental.addActionListener(internalEventHandler);
+//			rdbtnExperimental.setEnabled(false);
 			
-			pointSpreadFunctionsComboBox = new JComboBox(pointSpreadFunctionsComboModel);
-			pointSpreadFunctionsComboBox.addActionListener(internalEventHandler);
-			pointSpreadFunctionsComboBox.setEnabled(false);
+//			pointSpreadFunctionsComboBox = new JComboBox(pointSpreadFunctionsComboModel);
+//			pointSpreadFunctionsComboBox.addActionListener(internalEventHandler);
+//			pointSpreadFunctionsComboBox.setEnabled(false);
 			
 			rdbtnZprojection = new JRadioButton("Z Projection");
 			rdbtnZprojection.addActionListener(internalEventHandler);
 			
-			importPsfButton = new JButton("Import PSF");
-			importPsfButton.addActionListener(internalEventHandler);
+//			importPsfButton = new JButton("Import PSF");
+//			importPsfButton.addActionListener(internalEventHandler);
 
 			radioButtonGaussian = new JRadioButton("Gaussian");
 			radioButtonGaussian.addActionListener(internalEventHandler);
 			
 			ButtonGroup buttonGroup = new ButtonGroup();
 			buttonGroup.add(rdbtnZprojection);
-			buttonGroup.add(rdbtnExperimental);
+//			buttonGroup.add(rdbtnExperimental);
 			buttonGroup.add(radioButtonGaussian);
 
 			sigmaXYTextField = new JTextField(15);
@@ -504,16 +504,16 @@ public class MicroscopeMeasurementPanel extends javax.swing.JPanel {
 			if(!rdbtnZprojection.isSelected()) {
 				rdbtnZprojection.setSelected(true);
 			}
-			if(rdbtnExperimental.isEnabled()) {
-				rdbtnExperimental.setEnabled(false);
-			}
-			if(pointSpreadFunctionsComboBox.isEnabled()) {
-				pointSpreadFunctionsComboBox.setEnabled(false);
-			}
-		} else {
-			if(!rdbtnExperimental.isEnabled()) {
-				rdbtnExperimental.setEnabled(true);
-			}
+//			if(rdbtnExperimental.isEnabled()) {
+//				rdbtnExperimental.setEnabled(false);
+//			}
+//			if(pointSpreadFunctionsComboBox.isEnabled()) {
+//				pointSpreadFunctionsComboBox.setEnabled(false);
+//			}
+//		} else {
+//			if(!rdbtnExperimental.isEnabled()) {
+//				rdbtnExperimental.setEnabled(true);
+//			}
 		}
 	}
 	
@@ -522,21 +522,21 @@ public class MicroscopeMeasurementPanel extends javax.swing.JPanel {
 		if (rdbtnZprojection.isSelected()) {
 			microscopeMeasurement.setConvolutionKernel(new ProjectionZKernel());
 			BeanUtils.enableComponents(gaussianPsfPanel, false);
-			BeanUtils.enableComponents(experimentalPsfPanel, false);
+//			BeanUtils.enableComponents(experimentalPsfPanel, false);
 		} else if (radioButtonGaussian.isSelected()) {
 			microscopeMeasurement.setConvolutionKernel(new GaussianConvolutionKernel());
 			BeanUtils.enableComponents(gaussianPsfPanel, true);
-			BeanUtils.enableComponents(experimentalPsfPanel, false);
-		} else if (rdbtnExperimental.isSelected()) {
-			String psfName = (String)pointSpreadFunctionsComboBox.getSelectedItem();
-			for (DataSymbol dataSymbol : simulationContext.getDataContext().getDataSymbols()){
-				if (dataSymbol.getName().equals(psfName)){
-					microscopeMeasurement.setConvolutionKernel(new ExperimentalPSF(dataSymbol));
-					break;
-				}
-			}
-			BeanUtils.enableComponents(gaussianPsfPanel, false);
-			BeanUtils.enableComponents(experimentalPsfPanel, true);
+//			BeanUtils.enableComponents(experimentalPsfPanel, false);
+//		} else if (rdbtnExperimental.isSelected()) {
+//			String psfName = (String)pointSpreadFunctionsComboBox.getSelectedItem();
+//			for (DataSymbol dataSymbol : simulationContext.getDataContext().getDataSymbols()){
+//				if (dataSymbol.getName().equals(psfName)){
+//					microscopeMeasurement.setConvolutionKernel(new ExperimentalPSF(dataSymbol));
+//					break;
+//				}
+//			}
+//			BeanUtils.enableComponents(gaussianPsfPanel, false);
+//			BeanUtils.enableComponents(experimentalPsfPanel, true);
 		}
 	}
 
@@ -555,17 +555,17 @@ public class MicroscopeMeasurementPanel extends javax.swing.JPanel {
 		if (ck instanceof ProjectionZKernel) {
 			rdbtnZprojection.setSelected(true);
 			BeanUtils.enableComponents(gaussianPsfPanel, false);
-			BeanUtils.enableComponents(experimentalPsfPanel, false);
+//			BeanUtils.enableComponents(experimentalPsfPanel, false);
 		} else if (ck instanceof GaussianConvolutionKernel) {
 			radioButtonGaussian.setSelected(true);
 			BeanUtils.enableComponents(gaussianPsfPanel, true);
-			BeanUtils.enableComponents(experimentalPsfPanel, false);
+//			BeanUtils.enableComponents(experimentalPsfPanel, false);
 			sigmaXYTextField.setText(((GaussianConvolutionKernel) ck).getSigmaXY_um().infix());
 			sigmaZTextField.setText(((GaussianConvolutionKernel) ck).getSigmaZ_um().infix());
-		} else if (ck instanceof ExperimentalPSF) {
-			rdbtnExperimental.setSelected(true);
-			BeanUtils.enableComponents(gaussianPsfPanel, false);
-			BeanUtils.enableComponents(experimentalPsfPanel, true);			
+//		} else if (ck instanceof ExperimentalPSF) {
+//			rdbtnExperimental.setSelected(true);
+//			BeanUtils.enableComponents(gaussianPsfPanel, false);
+//			BeanUtils.enableComponents(experimentalPsfPanel, true);			
 		}
 		pointSpreadFunctionsComboModel.removeAllElements();
 		if (simulationContext.getDataContext() != null){
@@ -609,11 +609,11 @@ public class MicroscopeMeasurementPanel extends javax.swing.JPanel {
 		}
 	}
 	
-	protected void importPSFButtonActionPerformed() {
-		PointSpreadFunctionManagement psfManager = new PointSpreadFunctionManagement(MicroscopeMeasurementPanel.this, 
-				getSimulationContext());
-		psfManager.importPointSpreadFunction();
-	}
+//	protected void importPSFButtonActionPerformed() {
+//		PointSpreadFunctionManagement psfManager = new PointSpreadFunctionManagement(MicroscopeMeasurementPanel.this, 
+//				getSimulationContext());
+//		psfManager.importPointSpreadFunction();
+//	}
 
 
 	private void handleException(Throwable exception) {
