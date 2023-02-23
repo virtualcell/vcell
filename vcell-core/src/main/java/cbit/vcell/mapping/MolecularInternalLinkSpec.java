@@ -29,7 +29,7 @@ import org.vcell.util.document.Identifiable;
 
 @SuppressWarnings("serial")
 public class MolecularInternalLinkSpec implements Identifiable, IssueSource {
-	SpeciesContextSpec fieldSpeciesContextSpec = null;
+	private final SpeciesContextSpec fieldSpeciesContextSpec;
 	private MolecularComponentPattern fieldMolecularComponentPatternOne = null;
 	private MolecularComponentPattern fieldMolecularComponentPatternTwo = null;
 	private double linkLength = 0;

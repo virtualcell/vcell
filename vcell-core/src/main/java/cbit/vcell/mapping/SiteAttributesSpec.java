@@ -29,7 +29,7 @@ import org.vcell.util.document.Identifiable;
 
 @SuppressWarnings("serial")
 public class SiteAttributesSpec implements Identifiable, Displayable, IssueSource {
-	private SpeciesContextSpec fieldSpeciesContextSpec = null;
+	private final SpeciesContextSpec fieldSpeciesContextSpec;
 	private MolecularComponentPattern fieldMolecularComponentPattern = null;
 	private double fieldRadius = 1.0;
 	private double fieldDiffusionRate = 1.0;
