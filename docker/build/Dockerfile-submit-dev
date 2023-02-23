@@ -31,6 +31,7 @@ ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
     mongodb_port_external="mongodb-port-external-not-set" \
 #    export_baseurl="export-baseurl-not-set" \
     simdatadir_external=/path/to/external/simdata/ \
+    simdatadir_secondary_external=/path/to/external/secondary/simdata/ \
     simdatadir_parallel_external=/path/to/external/parallel/simdata/ \
 #    htclogdir_internal=/path/to/internal/htclogs/ \
     htclogdir_external=/path/to/external/htclogs/ \
@@ -78,6 +79,7 @@ ENTRYPOINT java \
 	-Dlog4j.configurationFile=/usr/local/app/vcell-submit.log4j.xml \
 	-Dvcell.server.id="${serverid}" \
 	-Dvcell.primarySimdatadir.internal=/simdata \
+	-Dvcell.secondarySimdatadir.external="${simdatadir_secondary_external}" \
 	-Dvcell.secondarySimdatadir.internal=/simdata_secondary \
 	-Dvcell.htc.simPerUserMemLimitFile=sim_mem_per_user_limits.txt \
 	-Dvcell.primarySimdatadir.external="${simdatadir_external}" \

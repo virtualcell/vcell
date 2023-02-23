@@ -143,6 +143,7 @@ services:
       - mongodb_host_external=${VCELL_MONGO_HOST_EXTERNAL}
       - mongodb_port_external=${VCELL_MONGO_PORT_EXTERNAL}
       - simdatadir_external=${VCELL_SIMDATADIR_EXTERNAL}
+      - simdatadir_secondary_external=${VCELL_SIMDATADIR_SECONDARY_EXTERNAL}
       - simdatadir_parallel_external=${VCELL_SIMDATADIR_PARALLEL_EXTERNAL}
 
       - batchhost=${VCELL_BATCH_HOST}
@@ -183,7 +184,7 @@ services:
       - "8877"
     volumes:
       - "${VCELL_SIMDATADIR_HOST}:/simdata"
-      - "${VCELL_SIMDATADIR_ARCHIVE_INTERNAL}:${VCELL_SIMDATADIR_ARCHIVE_INTERNAL}"
+      - "${VCELL_SIMDATADIR_SECONDARY_HOST}:/simdata_secondary"
       - "${VCELL_SIMDATADIR_ARCHIVE_HOST}:${VCELL_SIMDATADIR_ARCHIVE_INTERNAL}"
       - "${VCELL_HTCLOGS_HOST}:/htclogs"
     secrets:
@@ -271,6 +272,7 @@ services:
     volumes:
       - "${VCELL_SIMDATADIR_HOST}:/simdata"
       - "${VCELL_SIMDATADIR_ARCHIVE_HOST}:${VCELL_SIMDATADIR_ARCHIVE_INTERNAL}"
+      - "${VCELL_SIMDATADIR_SECONDARY_HOST}:/simdata_secondary"
       - "${VCELL_EXPORTDIR_HOST}:/exportdir"
     secrets:
       - dbpswd

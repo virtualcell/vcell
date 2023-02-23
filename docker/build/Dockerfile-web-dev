@@ -33,7 +33,6 @@ ENV dbpswdfile=/run/secrets/dbpswd \
     keystorepswdfile=/run/secrets/keystorepswd
     
 VOLUME /simdata
-VOLUME /altsimdata
 VOLUME /exportdir
 
 ENTRYPOINT java \
