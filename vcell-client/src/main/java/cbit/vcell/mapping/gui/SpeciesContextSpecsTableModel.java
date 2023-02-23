@@ -182,6 +182,7 @@ private void refreshColumns(){
 		columns.remove(ColumnType.COLUMN_DIFFUSION);
 		columns.remove(ColumnType.COLUMN_FORCECONTINUOUS);
 		columns.remove(ColumnType.COLUMN_WELLMIXED);
+		columns.remove(ColumnType.COLUMN_RULES);
 	}
 }
 /**

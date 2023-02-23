@@ -25,6 +25,8 @@ import cbit.vcell.model.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.model.rbm.MolecularComponentPattern;
+import org.vcell.model.rbm.MolecularTypePattern;
+import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.*;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
@@ -900,6 +902,25 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
 	
 	if(getSimulationContext().getApplicationType() == SimulationContext.Application.SPRINGSALAD) {
 		if(getSpeciesContext() != null && getSpeciesContext().getSpeciesPattern() != null) {
+			SpeciesPattern sp = getSpeciesContext().getSpeciesPattern();
+			List<MolecularTypePattern> mtpList = sp.getMolecularTypePatterns();
+			if(mtpList.size() != 1) {
+				String msg = "SpringSaLaD requires all Species to be associated with exactly one MolecularType.";
+				String tip = msg;
+				issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+			} else {
+				MolecularTypePattern mtp = mtpList.get(0);
+				List<MolecularComponentPattern> mcpList = mtp.getComponentPatternList();
+				if(mcpList.size() == 0) {
+					String msg = "SpringSaLaD requires the MolecularType to have at least one Site.";
+					String tip = msg;
+					issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+				} else if(mcpList.size() == 1) {
+					String msg = "Internal Links are possible only when the Molecule has at least 2 sites.";
+					String tip = msg;
+					issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+				}
+			}
 			for(MolecularInternalLinkSpec mils : getInternalLinkSet()) {
 				if(mils.getMolecularComponentPatternOne() == mils.getMolecularComponentPatternTwo()) {
 					String msg = "Both sites of the Link are identical.";
@@ -915,8 +936,13 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
 					String msg = "Location is a Membrane.";
 					String tip = "A generic issue for SiteAttributesSpec entity.";
 					issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+					break;
 				}
 			}
+		} else {
+			String msg = "SpringSaLaD requires all Species to be associated with a MolecularType.";
+			String tip = "Associate a MolecularType to the Species in Physiology / Species panel.";
+			issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
 		}
 	}
 }
