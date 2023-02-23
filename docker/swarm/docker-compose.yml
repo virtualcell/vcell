@@ -66,10 +66,6 @@ services:
       - dbdriver=${VCELL_DB_DRIVER}
       - dbuser=${VCELL_DB_USER}
 
-#      - jmshost_sim_external=${VCELL_JMS_SIM_HOST_EXTERNAL}
-#      - jmsrestport_sim_external=${VCELL_JMS_SIM_RESTPORT_EXTERNAL}
-#      - jmsport_sim_external=${VCELL_JMS_SIM_PORT_EXTERNAL}
-
       - batchhost=${VCELL_BATCH_HOST}
       - batchuser=${VCELL_BATCH_USER}
       - htcnodelist=${VCELL_HTC_NODELIST}
@@ -107,7 +103,7 @@ services:
       retries: 2
     volumes:
       - "${VCELL_SIMDATADIR_HOST}:/simdata"
-      - "${VCELL_SIMDATADIR_ARCHIVE_INTERNAL}:${VCELL_SIMDATADIR_ARCHIVE_INTERNAL}"
+      - "${VCELL_SIMDATADIR_ARCHIVE_HOST}:${VCELL_SIMDATADIR_ARCHIVE_INTERNAL}"
       - "${VCELL_HTCLOGS_HOST}:/htclogs"
     secrets:
       - dbpswd
@@ -148,7 +144,6 @@ services:
       - mongodb_port_external=${VCELL_MONGO_PORT_EXTERNAL}
       - simdatadir_external=${VCELL_SIMDATADIR_EXTERNAL}
       - simdatadir_parallel_external=${VCELL_SIMDATADIR_PARALLEL_EXTERNAL}
-#      - export_baseurl=${VCELL_EXPORT_BASEURL}
 
       - batchhost=${VCELL_BATCH_HOST}
       - batchuser=${VCELL_BATCH_USER}
@@ -189,7 +184,7 @@ services:
     volumes:
       - "${VCELL_SIMDATADIR_HOST}:/simdata"
       - "${VCELL_SIMDATADIR_SECONDARY_HOST}:/simdata_secondary"
-      - "${VCELL_SIMDATADIR_ARCHIVE_INTERNAL}:${VCELL_SIMDATADIR_ARCHIVE_INTERNAL}"
+      - "${VCELL_SIMDATADIR_ARCHIVE_HOST}:${VCELL_SIMDATADIR_ARCHIVE_INTERNAL}"
       - "${VCELL_HTCLOGS_HOST}:/htclogs"
     secrets:
       - jmspswd
@@ -275,7 +270,7 @@ services:
       - "8000" # java remote debugging
     volumes:
       - "${VCELL_SIMDATADIR_HOST}:/simdata"
-      - "${VCELL_SIMDATADIR_ARCHIVE_INTERNAL}:${VCELL_SIMDATADIR_ARCHIVE_INTERNAL}"
+      - "${VCELL_SIMDATADIR_ARCHIVE_HOST}:${VCELL_SIMDATADIR_ARCHIVE_INTERNAL}"
       - "${VCELL_SIMDATADIR_SECONDARY_HOST}:/simdata_secondary"
       - "${VCELL_EXPORTDIR_HOST}:/exportdir"
     secrets:
@@ -386,7 +381,7 @@ services:
       - "${VCELL_WEB_DATA_PORT}:${VCELL_WEB_DATA_PORT}"
     volumes:
       - "${VCELL_SIMDATADIR_HOST}:/simdata"
-      - "${VCELL_SIMDATADIR_ARCHIVE_INTERNAL}:/altsimdata"
+      - "${VCELL_SIMDATADIR_ARCHIVE_HOST}:${VCELL_SIMDATADIR_ARCHIVE_INTERNAL}"
       - "${VCELL_EXPORTDIR_HOST}:/exportdir"
     secrets:
       - dbpswd

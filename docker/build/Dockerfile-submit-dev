@@ -57,7 +57,6 @@ ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
     jmsblob_minsize=100000 \
     vcell_ssh_cmd_cmdtimeout="cmdSrvcSshCmdTimeoutMS-not-set" \
     vcell_ssh_cmd_restoretimeout="cmdSrvcSshCmdRestoreTimeoutFactor-not-set" \
-#    simdatadir_archive_internal="simdatadir_archive_internal-not-set" \
     simdatadir_archive_external="simdatadir_archive_external-not-set"
 
 ENV jmspswdfile=/run/secrets/jmspswd \
@@ -65,7 +64,6 @@ ENV jmspswdfile=/run/secrets/jmspswd \
     batchuserkeyfile=/run/secrets/batchuserkeyfile
 
 VOLUME /simdata
-#VOLUME /share/apps/vcell12/users
 VOLUME /simdata_secondary
 VOLUME /htclogs
 

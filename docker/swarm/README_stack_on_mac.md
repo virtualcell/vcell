@@ -14,7 +14,7 @@ popd
 
 ```bash
 pushd ../build
-./build.sh --skip-maven --skip-singularity all ghcr.io/virtualcell dev
+./build.sh --skip-maven --skip-singularity --skip-sudo all ghcr.io/virtualcell dev
 popd
 ```
 
