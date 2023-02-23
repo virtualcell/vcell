@@ -1,12 +1,14 @@
 #!/usr/bin/env bash
 
 shopt -s -o nounset
+set -v -x
 
 ssh_user=$(whoami)
 ssh_key=
 skip_push=false
 skip_maven=false
 skip_singularity=false
+SUDO_CMD=sudo
 mvn_repo=$HOME/.m2
 
 show_help() {
@@ -33,6 +35,8 @@ show_help() {
 	echo "    --skip-maven          skip vcell software build prior to building containers"
 	echo ""
 	echo "    --skip-push           skip pushing containers to repository"
+	echo ""
+	echo "    --skip-sudo           skip sudo for docker commands"
 	echo ""
 	echo "    --mvn-repo REPO_DIR   override local maven repository (defaults to $HOME/.m2)"
 	exit 1
@@ -66,6 +70,9 @@ while :; do
 		--skip-push)
 			skip_push=true
 			;;
+		--skip-sudo)
+			SUDO_CMD=
+			;;
 		--skip-singularity)
 			skip_singularity=true
 			;;
@@ -90,113 +97,113 @@ tag=$3
 
 build_api() {
 	echo "building $repo/vcell-api:$tag"
-	echo "sudo docker build -f Dockerfile-api-dev --tag $repo/vcell-api:$tag ../.."
-	sudo docker build -f Dockerfile-api-dev --tag $repo/vcell-api:$tag ../..
+	echo "$SUDO_CMD docker build -f Dockerfile-api-dev --tag $repo/vcell-api:$tag ../.."
+	$SUDO_CMD docker build -f Dockerfile-api-dev --tag $repo/vcell-api:$tag ../..
 	if [[ $? -ne 0 ]]; then echo "docker build failed"; exit 1; fi
 	if [ "$skip_push" == "false" ]; then
-		sudo docker push $repo/vcell-api:$tag
+		$SUDO_CMD docker push $repo/vcell-api:$tag
 	fi
 }
 
 
 build_batch() {
 	echo "building $repo/vcell-batch:$tag"
-	echo "sudo docker build -f Dockerfile-batch-dev --tag $repo/vcell-batch:$tag ../.."
-	sudo docker build -f Dockerfile-batch-dev --tag $repo/vcell-batch:$tag ../..
+	echo "$SUDO_CMD docker build -f Dockerfile-batch-dev --tag $repo/vcell-batch:$tag ../.."
+	$SUDO_CMD docker build -f Dockerfile-batch-dev --tag $repo/vcell-batch:$tag ../..
 	if [[ $? -ne 0 ]]; then echo "docker build failed"; exit 1; fi
 	if [ "$skip_push" == "false" ]; then
-		sudo docker push $repo/vcell-batch:$tag
+		$SUDO_CMD docker push $repo/vcell-batch:$tag
 	fi
 }
 
 build_clientgen() {
 	echo "building $repo/vcell-clientgen:$tag"
-	echo "sudo docker build -f Dockerfile-clientgen-dev --tag $repo/vcell-clientgen:$tag ../.."
-	sudo docker build -f Dockerfile-clientgen-dev --tag $repo/vcell-clientgen:$tag ../..
+	echo "$SUDO_CMD docker build -f Dockerfile-clientgen-dev --tag $repo/vcell-clientgen:$tag ../.."
+	$SUDO_CMD docker build -f Dockerfile-clientgen-dev --tag $repo/vcell-clientgen:$tag ../..
 	if [[ $? -ne 0 ]]; then echo "docker build failed"; exit 1; fi
 	if [ "$skip_push" == "false" ]; then
-		sudo docker push $repo/vcell-clientgen:$tag
+		$SUDO_CMD docker push $repo/vcell-clientgen:$tag
 	fi
 }
 
 build_db() {
 	echo "building $repo/vcell-db:$tag"
-	echo "sudo docker build -f Dockerfile-db-dev --tag $repo/vcell-db:$tag ../.."
-	sudo docker build -f Dockerfile-db-dev --tag $repo/vcell-db:$tag ../..
+	echo "$SUDO_CMD docker build -f Dockerfile-db-dev --tag $repo/vcell-db:$tag ../.."
+	$SUDO_CMD docker build -f Dockerfile-db-dev --tag $repo/vcell-db:$tag ../..
 	if [[ $? -ne 0 ]]; then echo "docker build failed"; exit 1; fi
 	if [ "$skip_push" == "false" ]; then
-		sudo docker push $repo/vcell-db:$tag
+		$SUDO_CMD docker push $repo/vcell-db:$tag
 	fi
 }
 
 build_sched() {
 	echo "building $repo/vcell-sched:$tag"
-	echo "sudo docker build -f Dockerfile-sched-dev --tag $repo/vcell-sched:$tag ../.."
-	sudo docker build -f Dockerfile-sched-dev --tag $repo/vcell-sched:$tag ../..
+	echo "$SUDO_CMD docker build -f Dockerfile-sched-dev --tag $repo/vcell-sched:$tag ../.."
+	$SUDO_CMD docker build -f Dockerfile-sched-dev --tag $repo/vcell-sched:$tag ../..
 	if [[ $? -ne 0 ]]; then echo "docker build failed"; exit 1; fi
 	if [ "$skip_push" == "false" ]; then
-		sudo docker push $repo/vcell-sched:$tag
+		$SUDO_CMD docker push $repo/vcell-sched:$tag
 	fi
 }
 
 build_submit() {
 	echo "building $repo/vcell-submit:$tag"
-	echo "sudo docker build -f Dockerfile-submit-dev --tag $repo/vcell-submit:$tag ../.."
-	sudo docker build -f Dockerfile-submit-dev --tag $repo/vcell-submit:$tag ../..
+	echo "$SUDO_CMD docker build -f Dockerfile-submit-dev --tag $repo/vcell-submit:$tag ../.."
+	$SUDO_CMD docker build -f Dockerfile-submit-dev --tag $repo/vcell-submit:$tag ../..
 	if [[ $? -ne 0 ]]; then echo "docker build failed"; exit 1; fi
 	if [ "$skip_push" == "false" ]; then
-		sudo docker push $repo/vcell-submit:$tag
+		$SUDO_CMD docker push $repo/vcell-submit:$tag
 	fi
 }
 
 build_data() {
 	echo "building $repo/vcell-data:$tag"
-	echo "sudo docker build -f Dockerfile-data-dev --tag $repo/vcell-data:$tag ../.."
-	sudo docker build -f Dockerfile-data-dev --tag $repo/vcell-data:$tag ../..
+	echo "$SUDO_CMD docker build -f Dockerfile-data-dev --tag $repo/vcell-data:$tag ../.."
+	$SUDO_CMD docker build -f Dockerfile-data-dev --tag $repo/vcell-data:$tag ../..
 	if [[ $? -ne 0 ]]; then echo "docker build failed"; exit 1; fi
 	if [ "$skip_push" == "false" ]; then
-		sudo docker push $repo/vcell-data:$tag
+		$SUDO_CMD docker push $repo/vcell-data:$tag
 	fi
 }
 
 build_web() {
 	echo "building $repo/vcell-web:$tag"
-	echo "sudo docker build -f Dockerfile-web-dev --tag $repo/vcell-web:$tag ../.."
-	sudo docker build -f Dockerfile-web-dev --tag $repo/vcell-web:$tag ../..
+	echo "$SUDO_CMD docker build -f Dockerfile-web-dev --tag $repo/vcell-web:$tag ../.."
+	$SUDO_CMD docker build -f Dockerfile-web-dev --tag $repo/vcell-web:$tag ../..
 	if [[ $? -ne 0 ]]; then echo "docker build failed"; exit 1; fi
 	if [ "$skip_push" == "false" ]; then
-		sudo docker push $repo/vcell-web:$tag
+		$SUDO_CMD docker push $repo/vcell-web:$tag
 	fi
 }
 
 build_admin() {
 	echo "building $repo/vcell-admin:$tag"
-	echo "sudo docker build -f Dockerfile-admin-dev --tag $repo/vcell-admin:$tag ../.."
-	sudo docker build -f Dockerfile-admin-dev --tag $repo/vcell-admin:$tag ../..
+	echo "$SUDO_CMD docker build -f Dockerfile-admin-dev --tag $repo/vcell-admin:$tag ../.."
+	$SUDO_CMD docker build -f Dockerfile-admin-dev --tag $repo/vcell-admin:$tag ../..
 	if [[ $? -ne 0 ]]; then echo "docker build failed"; exit 1; fi
 	if [ "$skip_push" == "false" ]; then
-		sudo docker push $repo/vcell-admin:$tag
+		$SUDO_CMD docker push $repo/vcell-admin:$tag
 	fi
 }
 
 
 build_opt() {
 	echo "building $repo/vcell-opt:$tag"
-	echo "sudo docker build -f ../../pythonProject/Dockerfile --tag $repo/vcell-opt:$tag ../../pythonProject"
-	sudo docker build -f ../../pythonProject/Dockerfile --tag $repo/vcell-opt:$tag ../../pythonProject
+	echo "$SUDO_CMD docker build -f ../../pythonProject/Dockerfile --tag $repo/vcell-opt:$tag ../../pythonProject"
+	$SUDO_CMD docker build -f ../../pythonProject/Dockerfile --tag $repo/vcell-opt:$tag ../../pythonProject
 	if [[ $? -ne 0 ]]; then echo "docker build failed"; exit 1; fi
 	if [ "$skip_push" == "false" ]; then
-		sudo docker push $repo/vcell-opt:$tag
+		$SUDO_CMD docker push $repo/vcell-opt:$tag
 	fi
 }
 
 build_mongo() {
 	echo "building $repo/vcell-mongo:$tag"
-	echo "sudo docker build -f mongo/Dockerfile --tag $repo/vcell-mongo:$tag mongo"
-	sudo docker build -f mongo/Dockerfile --tag $repo/vcell-mongo:$tag mongo
+	echo "$SUDO_CMD docker build -f mongo/Dockerfile --tag $repo/vcell-mongo:$tag mongo"
+	$SUDO_CMD docker build -f mongo/Dockerfile --tag $repo/vcell-mongo:$tag mongo
 	if [[ $? -ne 0 ]]; then echo "docker build failed"; exit 1; fi
 	if [ "$skip_push" == "false" ]; then
-		sudo docker push $repo/vcell-mongo:$tag
+		$SUDO_CMD docker push $repo/vcell-mongo:$tag
 	fi
 }
 

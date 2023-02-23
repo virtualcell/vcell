@@ -31,6 +31,7 @@ ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
     mongodb_port_external="mongodb-port-external-not-set" \
 #    export_baseurl="export-baseurl-not-set" \
     simdatadir_external=/path/to/external/simdata/ \
+    simdatadir_secondary_external=/path/to/external/secondary/simdata/ \
     simdatadir_parallel_external=/path/to/external/parallel/simdata/ \
 #    htclogdir_internal=/path/to/internal/htclogs/ \
     htclogdir_external=/path/to/external/htclogs/ \
@@ -57,7 +58,6 @@ ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
     jmsblob_minsize=100000 \
     vcell_ssh_cmd_cmdtimeout="cmdSrvcSshCmdTimeoutMS-not-set" \
     vcell_ssh_cmd_restoretimeout="cmdSrvcSshCmdRestoreTimeoutFactor-not-set" \
-#    simdatadir_archive_internal="simdatadir_archive_internal-not-set" \
     simdatadir_archive_external="simdatadir_archive_external-not-set"
 
 ENV jmspswdfile=/run/secrets/jmspswd \
@@ -65,7 +65,6 @@ ENV jmspswdfile=/run/secrets/jmspswd \
     batchuserkeyfile=/run/secrets/batchuserkeyfile
 
 VOLUME /simdata
-#VOLUME /share/apps/vcell12/users
 VOLUME /simdata_secondary
 VOLUME /htclogs
 
@@ -80,6 +79,7 @@ ENTRYPOINT java \
 	-Dlog4j.configurationFile=/usr/local/app/vcell-submit.log4j.xml \
 	-Dvcell.server.id="${serverid}" \
 	-Dvcell.primarySimdatadir.internal=/simdata \
+	-Dvcell.secondarySimdatadir.external="${simdatadir_secondary_external}" \
 	-Dvcell.secondarySimdatadir.internal=/simdata_secondary \
 	-Dvcell.htc.simPerUserMemLimitFile=sim_mem_per_user_limits.txt \
 	-Dvcell.primarySimdatadir.external="${simdatadir_external}" \
