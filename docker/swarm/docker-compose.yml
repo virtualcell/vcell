@@ -66,9 +66,9 @@ services:
       - dbdriver=${VCELL_DB_DRIVER}
       - dbuser=${VCELL_DB_USER}
 
-      - jmshost_sim_external=${VCELL_JMS_SIM_HOST_EXTERNAL}
-      - jmsrestport_sim_external=${VCELL_JMS_SIM_RESTPORT_EXTERNAL}
-      - jmsport_sim_external=${VCELL_JMS_SIM_PORT_EXTERNAL}
+#      - jmshost_sim_external=${VCELL_JMS_SIM_HOST_EXTERNAL}
+#      - jmsrestport_sim_external=${VCELL_JMS_SIM_RESTPORT_EXTERNAL}
+#      - jmsport_sim_external=${VCELL_JMS_SIM_PORT_EXTERNAL}
 
       - batchhost=${VCELL_BATCH_HOST}
       - batchuser=${VCELL_BATCH_USER}
@@ -148,7 +148,7 @@ services:
       - mongodb_port_external=${VCELL_MONGO_PORT_EXTERNAL}
       - simdatadir_external=${VCELL_SIMDATADIR_EXTERNAL}
       - simdatadir_parallel_external=${VCELL_SIMDATADIR_PARALLEL_EXTERNAL}
-      - export_baseurl=${VCELL_EXPORT_BASEURL}
+#      - export_baseurl=${VCELL_EXPORT_BASEURL}
 
       - batchhost=${VCELL_BATCH_HOST}
       - batchuser=${VCELL_BATCH_USER}
@@ -188,6 +188,7 @@ services:
       - "8877"
     volumes:
       - "${VCELL_SIMDATADIR_HOST}:/simdata"
+      - "${VCELL_SIMDATADIR_SECONDARY_HOST}:/simdata_secondary"
       - "${VCELL_SIMDATADIR_ARCHIVE_INTERNAL}:${VCELL_SIMDATADIR_ARCHIVE_INTERNAL}"
       - "${VCELL_HTCLOGS_HOST}:/htclogs"
     secrets:

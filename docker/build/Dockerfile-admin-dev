@@ -23,11 +23,11 @@ COPY ./nativelibs/linux64 ./nativelibs/linux64
 
 COPY ./docker/build/admin/entrypoint.sh /vcellscripts/
 
-ENV softwareVersion=$VCELL_VERSION \
-	serverid=$VCELL_SITE \
-	dburl=$VCELL_DB_URL \
-    dbdriver=$VCELL_DB_DRIVER \
-    dbuser=$VCELL_DB_USER
+ENV VCELL_VERSION="vcell-version-not-set" \
+	VCELL_SITE="vcell-site-not-set" \
+	VCELL_DB_URL="vcell-db-url-not-set" \
+    VCELL_DB_DRIVER="vcell-db-driver-not-set" \
+    VCELL_DB_USER="vcell-db-user-not-set"
 
 ENV dbpswdfile=/run/secrets/dbpswd.txt \
     jmspswdfile=/run/secrets/jmspswd.txt
