@@ -458,6 +458,7 @@ public class SlurmProxy extends HtcProxy {
 
 		LineStringBuilder lsb = new LineStringBuilder();
 		String primaryDataDirExternal = PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirExternalProperty);
+		String secondaryDataDirExternal = PropertyLoader.getRequiredProperty(PropertyLoader.secondarySimDataDirExternalProperty);
 
 		String jmshost_sim_external = PropertyLoader.getRequiredProperty(PropertyLoader.jmsSimHostExternal);
 		String jmsport_sim_external = PropertyLoader.getRequiredProperty(PropertyLoader.jmsSimPortExternal);
@@ -491,14 +492,15 @@ public class SlurmProxy extends HtcProxy {
 				"mongodbhost_internal="+mongodbhost_external,
 				"mongodbport_internal="+mongodbport_external,
 				"mongodb_database="+mongodb_database,
-				"datadir_external="+primaryDataDirExternal,
+				"primary_datadir_external="+primaryDataDirExternal,
+				"secondary_datadir_external="+secondaryDataDirExternal,
 				"htclogdir_external="+htclogdir_external,
 				"softwareVersion="+softwareVersion,
 				"serverid="+serverid
 		};
 		lsb.write("echo \"1 date=`date`\"");
 		LineStringBuilder singularityLSB = new LineStringBuilder();
-		slurmInitSingularity(singularityLSB, primaryDataDirExternal, htclogdir_external, softwareVersion,
+		slurmInitSingularity(singularityLSB, primaryDataDirExternal, Optional.of(secondaryDataDirExternal), htclogdir_external, softwareVersion,
 				slurm_singularity_local_image_filepath, slurm_tmpdir, slurm_central_singularity_dir,
 				slurm_local_singularity_dir, simDataDirArchiveHost, slurm_singularity_central_filepath,
 				environmentVars);
@@ -691,8 +693,9 @@ public class SlurmProxy extends HtcProxy {
 	}
 
 
-	private void slurmInitSingularity(LineStringBuilder lsb, String primaryDataDirExternal, String htclogdir_external,
-			String softwareVersion, String slurm_singularity_local_image_filepath, String slurm_tmpdir,
+	private void slurmInitSingularity(LineStringBuilder lsb, String primaryDataDirExternal,
+			Optional<String> secondaryDataDirExternal, String htclogdir_external, String softwareVersion,
+			String slurm_singularity_local_image_filepath, String slurm_tmpdir,
 			String slurm_central_singularity_dir, String slurm_local_singularity_dir, String simDataDirArchiveHost,
 			File slurm_singularity_central_filepath, String[] environmentVars) {
 		lsb.write("#BEGIN---------SlurmProxy.generateScript():slurmInitSingularity----------");
@@ -771,7 +774,13 @@ public class SlurmProxy extends HtcProxy {
 		for (String envVar : environmentVars) {
 			singularityEnvironmentVars.append(" --env "+envVar);
 		}
-		lsb.write("   container_prefix=\"singularity run --bind "+primaryDataDirExternal+":/simdata --bind "+simDataDirArchiveHost+":"+simDataDirArchiveHost+" --bind "+htclogdir_external+":/htclogs  --bind "+slurm_tmpdir+":/solvertmp $localSingularityImage "+singularityEnvironmentVars+" \"");
+		lsb.write("   container_prefix=\"singularity run " +
+				"--bind "+primaryDataDirExternal+":/simdata " +
+				((secondaryDataDirExternal.isPresent()) ? "--bind "+secondaryDataDirExternal.get()+":/simdata_secondary " : "") +
+				"--bind "+simDataDirArchiveHost+":"+simDataDirArchiveHost+" " +
+				"--bind "+htclogdir_external+":/htclogs  " +
+				"--bind "+slurm_tmpdir+":/solvertmp " +
+				"$localSingularityImage "+singularityEnvironmentVars+" \"");
 		lsb.write("else");
 		lsb.write("    echo \"Required singularity command not found (module load singularity/2.4.2) \"");
 		lsb.write("    exit 1");
@@ -1114,7 +1123,7 @@ public class SlurmProxy extends HtcProxy {
 				LG.error("failed to make optimization data directory "+optDataDir.getAbsolutePath());
 			}
 //			if (optDataDirExternal.setWritable(true,false))
-			slurmInitSingularity(lsb, optDataDirExternal.getAbsolutePath(), htclogdir_external, softwareVersion,
+			slurmInitSingularity(lsb, optDataDirExternal.getAbsolutePath(), Optional.empty(), htclogdir_external, softwareVersion,
 					slurm_singularity_local_image_filepath, slurm_tmpdir, slurm_central_singularity_dir,
 					slurm_local_singularity_dir, simDataDirArchiveHost, slurm_singularity_central_filepath,
 					environmentVars);

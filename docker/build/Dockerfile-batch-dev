@@ -113,8 +113,10 @@ ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
     jmsuser="jms-user-not-set" \
     jmspswd="jms-pswd-not-set" \
     blob_message_use_mongo=true \
-    datadir_internal=/simdata \
-    datadir_external=/path/to/external/simdata \
+    primary_datadir_internal=/simdata \
+    primary_datadir_external=/path/to/external/simdata \
+    secondary_datadir_internal=/simdata_secondary \
+    secondary_datadir_external=/path/to/external/simdata \
     htclogdir_internal=/htclogs \
     htclogdir_external=/path/to/external/htclogs \
     mongodbhost_internal="mongo-host-not-set" \
@@ -125,7 +127,8 @@ ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
     jmsblob_minsize=100000
 
 VOLUME /simdata
-VOLUME /share/apps/vcell12/users
+VOLUME /simdata_secondary
+#VOLUME /share/apps/vcell12/users
 VOLUME /htclogs
 VOLUME /solvertmp
 
