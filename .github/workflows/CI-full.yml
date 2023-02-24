@@ -61,12 +61,13 @@ jobs:
         poetry install
         poetry run python -m pytest
 
-    - name: setup java 8 with maven cache
-      uses: actions/setup-java@v2
-      with:
-        java-version: '8'
-        distribution: 'adopt'
-        cache: 'maven'
+      - name: setup java 17 with maven cache
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'maven'
+
     - name: Install Singularity # to make singularity image for cluster
       uses: eWaterCycle/setup-singularity@v6
       with:

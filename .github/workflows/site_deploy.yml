@@ -9,7 +9,7 @@ on:
       vcell_version:
         description: 'version.major.minor' 
         required: true
-        default: '7.4.0'
+        default: '7.5.0'
       vcell_build:
         description: 'build number'
         required: true

@@ -45,11 +45,11 @@ jobs:
           poetry install
           poetry run python -m pytest
 
-      - name: setup java 8 with maven cache
+      - name: setup java 17 with maven cache
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: '8'
+          java-version: '17'
           cache: 'maven'
 
       - name: Add Linux dependencies
@@ -108,11 +108,11 @@ jobs:
           poetry install
           poetry run python -m pytest
 
-      - name: setup java 8 with maven cache
+      - name: setup java 17 with maven cache
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: '8'
+          java-version: '17'
           cache: 'maven'
 
       - name: Add Linux dependencies
@@ -159,11 +159,11 @@ jobs:
           poetry install
           poetry run python -m pytest
 
-      - name: setup java 8 with maven cache
+      - name: setup java 17 with maven cache
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: '8'
+          java-version: '17'
           cache: 'maven'
 
       - name: Get the VCell version from tags
