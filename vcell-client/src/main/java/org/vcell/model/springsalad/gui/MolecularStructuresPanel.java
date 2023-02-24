@@ -24,6 +24,7 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
@@ -40,6 +41,7 @@ import org.apache.commons.lang3.StringEscapeUtils;
 import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.SpeciesPattern;
+import org.vcell.util.gui.DefaultScrollTableActionManager;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.EditorScrollTable;
 import org.vcell.util.gui.VCellIcons;
@@ -55,6 +57,7 @@ import cbit.vcell.client.desktop.biomodel.IssueManager;
 import cbit.vcell.client.desktop.biomodel.SelectionManager;
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
+import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.graph.SmallShapeManager;
 import cbit.vcell.graph.SpeciesPatternSmallShape;
 import cbit.vcell.mapping.AssignmentRule;
@@ -86,8 +89,8 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 	private SpeciesContextSpec fieldSpeciesContextSpec;
 	private MolecularComponentPattern fieldMolecularComponentPattern;
 	
-	private IssueManager fieldIssueManager;
-	private SelectionManager fieldSelectionManager;
+//	private IssueManager fieldIssueManager;
+//	private SelectionManager fieldSelectionManager;
 
 	private EditorScrollTable speciesContextSpecsTable = null;
 	private SpeciesContextSpecsTableModel speciesContextSpecsTableModel = null;
@@ -124,7 +127,26 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		}
 	};
 
-	
+	// TODO: this is for popup menus in the table
+//	private class InternalScrollTableActionManager extends DefaultScrollTableActionManager {
+//		InternalScrollTableActionManager(JTable table) {
+//			super(table);
+//			ApplicationSpecificationsPanel asp;
+//		}
+//		@Override
+//		protected void constructPopupMenu() {
+//			if (popupMenu == null) {
+//				super.constructPopupMenu();
+//				int pos = 0;
+//				DocumentEditorSubPanel.addFieldDataMenuItem(getOwnerTable(), popupMenu, pos++);
+//				popupMenu.insert(new JSeparator(), pos++);
+//			}
+//			Object obj = VCellTransferable.getFromClipboard(VCellTransferable.OBJECT_FLAVOR);	
+//			boolean bPastable = obj instanceof VCellTransferable.ResolvedValuesSelection;
+//			boolean bSomethingSelected = getSpeciesContextSpecsTable().getSelectedRows() != null && getSpeciesContextSpecsTable().getSelectedRows().length > 0;
+//		}
+//	}
+
 	private class EventHandler implements FocusListener, ActionListener, PropertyChangeListener, ListSelectionListener {
 
 		public void actionPerformed(ActionEvent e) {
@@ -405,58 +427,58 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 			}
 		};
 		
-		DefaultScrollTableCellRenderer rulesTableCellRenderer = new DefaultScrollTableCellRenderer() {
-			final Color lightBlueBackground = new Color(214, 234, 248);
-			@Override
-			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
-					int row, int column) {
-				super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-				
-				if (table.getModel() instanceof SpeciesContextSpecsTableModel) {
-					Icon icon = VCellIcons.issueGoodIcon;
-					Object selectedObject = null;
-					if (table.getModel() == speciesContextSpecsTableModel) {
-						selectedObject = speciesContextSpecsTableModel.getValueAt(row);
-					}
-					if (selectedObject != null) {
-						if(isSelected) {
-							setBackground(lightBlueBackground);
-						}
-						if(selectedObject instanceof SpeciesContextSpec) {
-							SpeciesContextSpec scs = (SpeciesContextSpec)selectedObject;
-							SpeciesContext sc = scs.getSpeciesContext();
-
-							boolean foundRuleMatch = false;
-							if(fieldSimulationContext.getRateRules() != null && fieldSimulationContext.getRateRules().length > 0) {
-								for(RateRule rr : fieldSimulationContext.getRateRules()) {
-									if(rr.getRateRuleVar() == null) {
-										continue;
-									}
-									if(sc.getName().equals(rr.getRateRuleVar().getName())) {
-										foundRuleMatch = true;
-										icon = VCellIcons.ruleRateIcon;
-										break;
-									}
-								}
-							}
-							if(!foundRuleMatch && fieldSimulationContext.getAssignmentRules() != null && fieldSimulationContext.getAssignmentRules().length > 0) {
-								for(AssignmentRule rr : fieldSimulationContext.getAssignmentRules()) {
-									if(rr.getAssignmentRuleVar() == null) {
-										continue;
-									}
-									if(sc.getName().equals(rr.getAssignmentRuleVar().getName())) {
-										icon = VCellIcons.ruleAssignIcon;
-										break;
-									}
-								}
-							}
-						}
-					}
-					setIcon(icon);
-				}
-				return this;
-			}
-		};
+//		DefaultScrollTableCellRenderer rulesTableCellRenderer = new DefaultScrollTableCellRenderer() {
+//			final Color lightBlueBackground = new Color(214, 234, 248);
+//			@Override
+//			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
+//					int row, int column) {
+//				super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+//				
+//				if (table.getModel() instanceof SpeciesContextSpecsTableModel) {
+//					Icon icon = VCellIcons.issueGoodIcon;
+//					Object selectedObject = null;
+//					if (table.getModel() == speciesContextSpecsTableModel) {
+//						selectedObject = speciesContextSpecsTableModel.getValueAt(row);
+//					}
+//					if (selectedObject != null) {
+//						if(isSelected) {
+//							setBackground(lightBlueBackground);
+//						}
+//						if(selectedObject instanceof SpeciesContextSpec) {
+//							SpeciesContextSpec scs = (SpeciesContextSpec)selectedObject;
+//							SpeciesContext sc = scs.getSpeciesContext();
+//
+//							boolean foundRuleMatch = false;
+//							if(fieldSimulationContext.getRateRules() != null && fieldSimulationContext.getRateRules().length > 0) {
+//								for(RateRule rr : fieldSimulationContext.getRateRules()) {
+//									if(rr.getRateRuleVar() == null) {
+//										continue;
+//									}
+//									if(sc.getName().equals(rr.getRateRuleVar().getName())) {
+//										foundRuleMatch = true;
+//										icon = VCellIcons.ruleRateIcon;
+//										break;
+//									}
+//								}
+//							}
+//							if(!foundRuleMatch && fieldSimulationContext.getAssignmentRules() != null && fieldSimulationContext.getAssignmentRules().length > 0) {
+//								for(AssignmentRule rr : fieldSimulationContext.getAssignmentRules()) {
+//									if(rr.getAssignmentRuleVar() == null) {
+//										continue;
+//									}
+//									if(sc.getName().equals(rr.getAssignmentRuleVar().getName())) {
+//										icon = VCellIcons.ruleAssignIcon;
+//										break;
+//									}
+//								}
+//							}
+//						}
+//					}
+//					setIcon(icon);
+//				}
+//				return this;
+//			}
+//		};
 		
 		// The Structures combobox cell renderer in the MolecularTypeSpecsTable
 		DefaultScrollTableCellRenderer structuresTableCellRenderer = new DefaultScrollTableCellRenderer() {
@@ -487,7 +509,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		getSpeciesContextSpecsTable().setDefaultRenderer(Species.class, renderer);
 		getSpeciesContextSpecsTable().setDefaultRenderer(ScopedExpression.class, renderer);
 		getSpeciesContextSpecsTable().setDefaultRenderer(Boolean.class, new ScrollTableBooleanCellRenderer());
-		getSpeciesContextSpecsTable().setDefaultRenderer(SpeciesContextSpecsTableModel.RulesProvenance.class, rulesTableCellRenderer);	// rules icons
+//		getSpeciesContextSpecsTable().setDefaultRenderer(SpeciesContextSpecsTableModel.RulesProvenance.class, rulesTableCellRenderer);	// rules icons
 
 		// ---------------------------------------------------------------------------------------------
 		
@@ -633,6 +655,12 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		gbc.insets = new Insets(5, 2, 2, 3);
 		linksPanel.add(addLinkButton, gbc);
 		
+//		private EditorScrollTable speciesContextSpecsTable = null;
+//		private SpeciesContextSpecsTableModel speciesContextSpecsTableModel = null;
+//
+//		private EditorScrollTable molecularTypeSpecsTable = null;
+//		private MolecularTypeSpecsTableModel molecularTypeSpecsTableModel = null;
+
 		getMolecularTypeSpecsTable().setDefaultRenderer(String.class, new DefaultScrollTableCellRenderer());
 		getMolecularTypeSpecsTable().setDefaultRenderer(Structure.class, structuresTableCellRenderer);	// The Structures combobox cell renderer
 		
@@ -667,7 +695,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 				speciesContextSpecsTableModel = new SpeciesContextSpecsTableModel(speciesContextSpecsTable);
 				speciesContextSpecsTableModel.setEditable(false);
 				speciesContextSpecsTable.setModel(speciesContextSpecsTableModel);
-//				scsTable.setScrollTableActionManager(new InternalScrollTableActionManager(table));
+//				speciesContextSpecsTable.setScrollTableActionManager(new InternalScrollTableActionManager(speciesContextSpecsTable));
 				speciesContextSpecsTable.setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
 			} catch (java.lang.Throwable ivjExc) {
 				handleException(ivjExc);
@@ -732,14 +760,17 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 
 	// ============================================================================================
 	
-	public void setSelectionManager(SelectionManager selectionManager) {
-		fieldSelectionManager = selectionManager;
-	}
-	public IssueManager getIssueManager() {
-		return fieldIssueManager;
-	}
+//	public void setSelectionManager(SelectionManager selectionManager) {
+//		super.setIssueManager(issueManager);
+//		fieldSelectionManager = selectionManager;
+//	}
+//	public IssueManager getIssueManager() {
+//		return fieldIssueManager;
+//	}
 	public void setIssueManager(IssueManager issueManager) {
-		fieldIssueManager = issueManager;
+//		fieldIssueManager = issueManager;
+		super.setIssueManager(issueManager);
+		speciesContextSpecsTableModel.setIssueManager(issueManager);
 	}
 	
 
