@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
 shopt -s -o nounset
-set -v -x
 
 ssh_user=$(whoami)
 ssh_key=
