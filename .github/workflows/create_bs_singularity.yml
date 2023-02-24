@@ -37,11 +37,12 @@ jobs:
         run: |
           cd docker/swarm/vcell-admin
           poetry install
-      - name: setup java 8 with maven cache
+
+      - name: setup java 17 with maven cache
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: '8'
+          java-version: '17'
           cache: 'maven'
 
       - name: Add Linux dependencies
