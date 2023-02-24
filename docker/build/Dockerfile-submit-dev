@@ -58,7 +58,8 @@ ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
     jmsblob_minsize=100000 \
     vcell_ssh_cmd_cmdtimeout="cmdSrvcSshCmdTimeoutMS-not-set" \
     vcell_ssh_cmd_restoretimeout="cmdSrvcSshCmdRestoreTimeoutFactor-not-set" \
-    simdatadir_archive_external="simdatadir_archive_external-not-set"
+    simdatadir_archive_external="simdatadir_archive_external-not-set" \
+    simdatadir_archive_internal="simdatadir_archive_internal-not-set"
 
 ENV jmspswdfile=/run/secrets/jmspswd \
 	jmsrestpswdfile=/run/secrets/jmsrestpswd \
@@ -126,8 +127,8 @@ ENTRYPOINT java \
 	-Dvcell.mongodb.host.external=${mongodb_host_external} \
 	-Dvcell.mongodb.port.external=${mongodb_port_external} \
 	-Dvcell.mongodb.database=${mongodb_database} \
-	-Dvcell.simdatadir.archive.internal=${simdatadir_archive_host_internal} \
-	-Dvcell.simdatadir.archive.external=${simdatadir_archive_host_external} \
+	-Dvcell.simdatadir.archive.internal=${simdatadir_archive_internal} \
+	-Dvcell.simdatadir.archive.external=${simdatadir_archive_external} \
 	-Dvcell.ssh.cmd.cmdtimeout=${vcell_ssh_cmd_cmdtimeout} \
 	-Dvcell.ssh.cmd.restoretimeout=${vcell_ssh_cmd_restoretimeout} \
 	-cp "./lib/*" cbit.vcell.message.server.batch.sim.HtcSimulationWorker \

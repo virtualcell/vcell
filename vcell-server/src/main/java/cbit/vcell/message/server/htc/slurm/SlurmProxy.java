@@ -478,7 +478,8 @@ public class SlurmProxy extends HtcProxy {
 		String slurm_tmpdir = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_tmpdir);
 		String slurm_central_singularity_dir = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_central_singularity_dir);
 		String slurm_local_singularity_dir = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_local_singularity_dir);
-		String simDataDirArchiveHost = PropertyLoader.getRequiredProperty(PropertyLoader.simDataDirArchiveExternal);
+		String simDataDirArchiveExternal = PropertyLoader.getRequiredProperty(PropertyLoader.simDataDirArchiveExternal);
+		String simDataDirArchiveInternal = PropertyLoader.getRequiredProperty(PropertyLoader.simDataDirArchiveInternal);
 		File slurm_singularity_central_filepath = new File(slurm_central_singularity_dir,new File(slurm_singularity_local_image_filepath).getName());
 		
 		String[] environmentVars = new String[] {
@@ -502,7 +503,7 @@ public class SlurmProxy extends HtcProxy {
 		LineStringBuilder singularityLSB = new LineStringBuilder();
 		slurmInitSingularity(singularityLSB, primaryDataDirExternal, Optional.of(secondaryDataDirExternal), htclogdir_external, softwareVersion,
 				slurm_singularity_local_image_filepath, slurm_tmpdir, slurm_central_singularity_dir,
-				slurm_local_singularity_dir, simDataDirArchiveHost, slurm_singularity_central_filepath,
+				slurm_local_singularity_dir, simDataDirArchiveExternal, simDataDirArchiveInternal, slurm_singularity_central_filepath,
 				environmentVars);
 
 		LineStringBuilder sendFailMsgLSB = new LineStringBuilder();
@@ -696,7 +697,8 @@ public class SlurmProxy extends HtcProxy {
 	private void slurmInitSingularity(LineStringBuilder lsb, String primaryDataDirExternal,
 			Optional<String> secondaryDataDirExternal, String htclogdir_external, String softwareVersion,
 			String slurm_singularity_local_image_filepath, String slurm_tmpdir,
-			String slurm_central_singularity_dir, String slurm_local_singularity_dir, String simDataDirArchiveHost,
+			String slurm_central_singularity_dir, String slurm_local_singularity_dir,
+			String simDataDirArchiveExternal, String simDataDirArchiveInternal,
 			File slurm_singularity_central_filepath, String[] environmentVars) {
 		lsb.write("#BEGIN---------SlurmProxy.generateScript():slurmInitSingularity----------");
 		lsb.write("set -x");
@@ -777,7 +779,7 @@ public class SlurmProxy extends HtcProxy {
 		lsb.write("   container_prefix=\"singularity run " +
 				"--bind "+primaryDataDirExternal+":/simdata " +
 				((secondaryDataDirExternal.isPresent()) ? "--bind "+secondaryDataDirExternal.get()+":/simdata_secondary " : "") +
-				"--bind "+simDataDirArchiveHost+":"+simDataDirArchiveHost+" " +
+				"--bind "+simDataDirArchiveExternal+":"+simDataDirArchiveInternal+" " +
 				"--bind "+htclogdir_external+":/htclogs  " +
 				"--bind "+slurm_tmpdir+":/solvertmp " +
 				"$localSingularityImage "+singularityEnvironmentVars+" \"");
@@ -1107,7 +1109,8 @@ public class SlurmProxy extends HtcProxy {
 			String slurm_tmpdir = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_tmpdir);
 			String slurm_central_singularity_dir = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_central_singularity_dir);
 			String slurm_local_singularity_dir = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_local_singularity_dir);
-			String simDataDirArchiveHost = PropertyLoader.getRequiredProperty(PropertyLoader.simDataDirArchiveExternal);
+			String simDataDirArchiveExternal = PropertyLoader.getRequiredProperty(PropertyLoader.simDataDirArchiveExternal);
+			String simDataDirArchiveInternal = PropertyLoader.getRequiredProperty(PropertyLoader.simDataDirArchiveInternal);
 			File slurm_singularity_central_filepath = new File(slurm_central_singularity_dir,new File(slurm_singularity_local_image_filepath).getName());
 
 			HtcProxy.MemLimitResults memoryMBAllowed = new HtcProxy.MemLimitResults(256, "Optimization Default");
@@ -1125,8 +1128,8 @@ public class SlurmProxy extends HtcProxy {
 //			if (optDataDirExternal.setWritable(true,false))
 			slurmInitSingularity(lsb, optDataDirExternal.getAbsolutePath(), Optional.empty(), htclogdir_external, softwareVersion,
 					slurm_singularity_local_image_filepath, slurm_tmpdir, slurm_central_singularity_dir,
-					slurm_local_singularity_dir, simDataDirArchiveHost, slurm_singularity_central_filepath,
-					environmentVars);
+					slurm_local_singularity_dir, simDataDirArchiveExternal, simDataDirArchiveInternal,
+					slurm_singularity_central_filepath, environmentVars);
 
 			lsb.write("   cmd_prefix=\"$container_prefix\"");
 			lsb.write("echo \"cmd_prefix is '${cmd_prefix}'\"");
