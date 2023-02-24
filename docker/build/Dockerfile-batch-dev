@@ -128,7 +128,6 @@ ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
 
 VOLUME /simdata
 VOLUME /simdata_secondary
-#VOLUME /share/apps/vcell12/users
 VOLUME /htclogs
 VOLUME /solvertmp
 
