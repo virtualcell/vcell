@@ -46,15 +46,11 @@
     <filesets>
       <fileset name="MacOSX" id="1113" />
       <fileset name="Windows64" id="1115" />
-      <fileset name="Windows32" id="1117" />
-      <fileset name="Linux32" id="1119" />
       <fileset name="Linux64" id="1121" />
     </filesets>
     <roots>
       <root id="1114" fileset="1113" />
       <root id="1116" fileset="1115" />
-      <root id="1118" fileset="1117" />
-      <root id="1120" fileset="1119" />
       <root id="1122" fileset="1121" />
     </roots>
     <mountPoints>
@@ -73,14 +69,6 @@
       <mountPoint id="1356" root="1116" location="localsolvers" />
       <mountPoint id="1360" root="1116" location="localsolvers/win64" />
       <mountPoint id="2546" root="1116" location="lib" />
-      <mountPoint id="1361" root="1118" location="nativelibs" />
-      <mountPoint id="1362" root="1118" location="nativelibs/win32" />
-      <mountPoint id="1363" root="1118" location="localsolvers" />
-      <mountPoint id="1367" root="1118" location="localsolvers/win32" />
-      <mountPoint id="1368" root="1120" location="nativelibs" />
-      <mountPoint id="1369" root="1120" location="nativelibs/linux32" />
-      <mountPoint id="1370" root="1120" location="localsolvers" />
-      <mountPoint id="1374" root="1120" location="localsolvers/linux32" />
       <mountPoint id="1375" root="1122" location="nativelibs" />
       <mountPoint id="1376" root="1122" location="nativelibs/linux64" />
       <mountPoint id="1377" root="1122" location="localsolvers" />
@@ -98,10 +86,6 @@
       <dirEntry mountPoint="1355" file="${compiler:vcellNativeLibsDirSourcePath}/win64" />
       <dirEntry mountPoint="1360" file="${compiler:vcellLocalSolversDirPath}/win64" />
       <fileEntry mountPoint="2546" file="${compiler:vcellNativeLibsDirSourcePath}/../non-maven-java-libs/org/sbml/libcombine/libCombineWin64/0.2.7/libCombineWin64-0.2.7.jar" />
-      <dirEntry mountPoint="1362" file="${compiler:vcellNativeLibsDirSourcePath}/win32" />
-      <dirEntry mountPoint="1367" file="${compiler:vcellLocalSolversDirPath}/win32" />
-      <dirEntry mountPoint="1369" file="${compiler:vcellNativeLibsDirSourcePath}/linux32" />
-      <dirEntry mountPoint="1374" file="${compiler:vcellLocalSolversDirPath}/linux32" fileMode="755" overrideFileMode="true" />
       <dirEntry mountPoint="1376" file="${compiler:vcellNativeLibsDirSourcePath}/linux64" />
       <dirEntry mountPoint="1381" file="${compiler:vcellLocalSolversDirPath}/linux64" fileMode="755" overrideFileMode="true" />
       <fileEntry mountPoint="2727" file="${compiler:vcellNativeLibsDirSourcePath}/../non-maven-java-libs/org/sbml/libcombine/libCombineLinux64/0.2.7/libCombineLinux64-0.2.7.jar" />
@@ -1430,30 +1414,6 @@ if (context.isUnattended()) {
       </variables>
       <jreBundle jreBundleSource="preCreated" includedJre="${compiler:win64JrePath}" manualJreEntry="true" />
     </windows>
-    <windows name="Windows ${compiler:vcellVersion} ${compiler:Site} 32 Bit" id="450" mediaFileName="${compiler:sys.shortName}_${compiler:sys.platform}_${compiler:sys.version}_32bit" installDir="VCell_${compiler:Site}" architecture="32">
-      <excludedLaunchers>
-        <launcher id="102" />
-        <launcher id="345" />
-        <launcher id="534" />
-        <launcher id="627" />
-      </excludedLaunchers>
-      <excludedBeans>
-        <bean refId="1599" />
-        <bean refId="1672" />
-        <bean refId="1674" />
-        <bean refId="1675" />
-      </excludedBeans>
-      <exclude>
-        <entry filesetId="1113" />
-        <entry filesetId="1115" />
-        <entry filesetId="1119" />
-        <entry filesetId="1121" />
-      </exclude>
-      <variables>
-        <variable name="resourceDir" value="resources" />
-      </variables>
-      <jreBundle jreBundleSource="preCreated" includedJre="${compiler:win32JrePath}" manualJreEntry="true" />
-    </windows>
     <unixInstaller name="Linux ${compiler:vcellVersion} ${compiler:Site} 64 Bit" id="652" mediaFileName="${compiler:sys.shortName}_${compiler:sys.platform}_${compiler:sys.version}_64bit" installDir="VCell_${compiler:Site}">
       <excludedLaunchers>
         <launcher id="102" />
@@ -1477,30 +1437,6 @@ if (context.isUnattended()) {
         <variable name="resourceDir" value="resources" />
       </variables>
       <jreBundle jreBundleSource="preCreated" includedJre="${compiler:linux64JrePath}" manualJreEntry="true" />
-    </unixInstaller>
-    <unixInstaller name="Linux ${compiler:vcellVersion} ${compiler:Site} 32 Bit" id="547" mediaFileName="${compiler:sys.shortName}_${compiler:sys.platform}_${compiler:sys.version}_32bit" installDir="VCell_${compiler:Site}">
-      <excludedLaunchers>
-        <launcher id="102" />
-        <launcher id="345" />
-        <launcher id="447" />
-        <launcher id="627" />
-      </excludedLaunchers>
-      <excludedBeans>
-        <bean refId="1599" />
-        <bean refId="1672" />
-        <bean refId="1673" />
-        <bean refId="1675" />
-      </excludedBeans>
-      <exclude>
-        <entry filesetId="1113" />
-        <entry filesetId="1115" />
-        <entry filesetId="1117" />
-        <entry filesetId="1121" />
-      </exclude>
-      <variables>
-        <variable name="resourceDir" value="resources" />
-      </variables>
-      <jreBundle jreBundleSource="preCreated" includedJre="${compiler:linux32JrePath}" manualJreEntry="true" />
     </unixInstaller>
   </mediaSets>
   <buildIds>
