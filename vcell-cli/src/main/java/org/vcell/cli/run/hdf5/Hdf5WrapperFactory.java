@@ -29,6 +29,9 @@ import java.nio.file.Paths;
 import java.util.*;
 
 
+/**
+ * Factory class to create Hdf5DataWrappers from a sedml object and simulation data.
+ */
 public class Hdf5WrapperFactory {
     private SedML sedml;
     private Map<AbstractTask, Simulation> taskToSimulationMap;
@@ -36,6 +39,13 @@ public class Hdf5WrapperFactory {
 
     private final static Logger logger = LogManager.getLogger(Hdf5WrapperFactory.class);
 
+    /**
+     * Constructor to initialize the factory for a given set of simulation and model data.
+     * 
+     * @param sedml the sedml object to get outputs, datasets, and data generators from.
+     * @param taskToSimulationMap mapping of task to its simulation data
+     * @param sedmlLocation relative path to the sedml file within the archive
+     */
     public Hdf5WrapperFactory(SedML sedml, Map<AbstractTask, Simulation> taskToSimulationMap, String sedmlLocation){
         this.sedml = sedml;
         this.taskToSimulationMap = taskToSimulationMap;
@@ -43,12 +53,44 @@ public class Hdf5WrapperFactory {
         this.sedmlLocation = Paths.get(this.sedmlRoot, this.sedml.getFileName()).toString();
     }
 
-    public Hdf5DataWrapper generateHdf5File(Map<TaskJob, ODESolverResultSet> nonSpatialResults, Map<TaskJob, File> spatialResults) throws HDF5Exception, ExpressionException, DataAccessException, IOException {
+    /**
+     * 
+     * @param nonSpatialResults
+     * @param spatialResults
+     * @return
+     * @see collectNonspatialDatasets, collectSpatialDatasets
+     * @throws HDF5Exception from collecting datasets, 
+     * @throws ExpressionException
+     * @throws DataAccessException
+     * @throws IOException
+     */
+    public Hdf5DataWrapper generateHdf5File(Map<TaskJob, ODESolverResultSet> nonSpatialResults, Map<TaskJob, File> spatialResults) {
         List<Hdf5DatasetWrapper> wrappers = new ArrayList<>();
         Hdf5DataWrapper hdf5FileWrapper = new Hdf5DataWrapper();
+        Exception nonSpacialException = null, spacialException = null;
 
-        wrappers.addAll(this.collectNonspatialDatasets(this.sedml, nonSpatialResults, this.taskToSimulationMap, this.sedmlLocation));
-        wrappers.addAll(this.collectSpatialDatasets(this.sedml, spatialResults, this.taskToSimulationMap, this.sedmlLocation));
+        try {
+            wrappers.addAll(this.collectNonspatialDatasets(this.sedml, nonSpatialResults, this.taskToSimulationMap, this.sedmlLocation));
+        } catch (Exception e){
+            logger.warn("Collection of nonspatial datasets failed for " + this.sedml.getFileName(), e);
+            nonSpacialException = e;
+        }
+
+        try {
+            wrappers.addAll(this.collectSpatialDatasets(this.sedml, spatialResults, this.taskToSimulationMap, this.sedmlLocation));
+        } catch (Exception e){
+            logger.warn("Collection of spatial datasets failed for " + this.sedml.getFileName(), e);
+            spacialException = e;
+        }
+
+        if (nonSpacialException != null && nonSpacialException != null){
+            throw new RuntimeException("Encountered complete dataset collection failure;\nNonSpacial Reported:\n" + nonSpacialException.getMessage()
+                + "\nSpacial Reported:\n" + spacialException.getMessage());
+        } else if (nonSpacialException != null || nonSpacialException != null){
+            Exception exception = nonSpacialException == null ? spacialException : nonSpacialException;
+            throw new RuntimeException("Encountered " + (nonSpacialException == null ? "spacial " : "nonspacial") 
+                + "dataset collection failure.", exception);
+        } // else no problem
 
         hdf5FileWrapper.datasetWrapperMap.put(this.sedmlLocation, wrappers);
         return hdf5FileWrapper;

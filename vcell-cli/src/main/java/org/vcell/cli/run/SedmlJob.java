@@ -333,7 +333,7 @@ public class SedmlJob {
         //              }
     }
 
-    private void generateHDF5(SolverHandler solverHandler, Hdf5DataWrapper masterHdf5File) throws HDF5Exception, ExpressionException, DataAccessException, IOException {
+    private void generateHDF5(SolverHandler solverHandler, Hdf5DataWrapper masterHdf5File) throws IOException {
         logDocumentMessage += "Generating HDF5 file... ";
         logger.info("Generating HDF5 file... ");
 
