@@ -1,7 +1,7 @@
-FROM ubuntu:18.04
+FROM openjdk:17-jdk-slim
 
 RUN apt-get -y update && \
-    apt-get install -y curl openjdk-8-jre dnsutils && \
+    apt-get install -y curl dnsutils && \
     mkdir -p /usr/local/app/lib 
 	
 WORKDIR /usr/local/app
