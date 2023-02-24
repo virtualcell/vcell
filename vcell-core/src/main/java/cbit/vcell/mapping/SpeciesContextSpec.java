@@ -924,8 +924,28 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
 			for(MolecularInternalLinkSpec mils : getInternalLinkSet()) {
 				if(mils.getMolecularComponentPatternOne() == mils.getMolecularComponentPatternTwo()) {
 					String msg = "Both sites of the Link are identical.";
-					String tip = "A generic issue for MolecularInternalLinkSpec entity.";
+					String tip = "A site cannot be linked to itself.";
 					issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+					break;
+				}
+			}
+			boolean bDuplicate = false;
+			for(MolecularInternalLinkSpec candidate : getInternalLinkSet()) {
+				for(MolecularInternalLinkSpec other : getInternalLinkSet()) {
+					if(candidate == other) {
+						continue;
+					}
+					if(candidate.compareEqual(other)) {
+						String one = candidate.getMolecularComponentPatternOne().getMolecularComponent().getName();
+						String two = candidate.getMolecularComponentPatternTwo().getMolecularComponent().getName();
+						String msg = "Duplicate link: " + one + " :: " + two;
+						String tip = msg;
+						issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+						bDuplicate = true;
+						break;
+					}
+				}
+				if(bDuplicate) {
 					break;
 				}
 			}
@@ -934,7 +954,7 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
 				SiteAttributesSpec sas = entry.getValue();
 				if(sas.getLocation() instanceof Membrane) {
 					String msg = "Location is a Membrane.";
-					String tip = "A generic issue for SiteAttributesSpec entity.";
+					String tip = msg;
 					issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
 					break;
 				}

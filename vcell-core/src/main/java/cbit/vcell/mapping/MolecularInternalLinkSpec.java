@@ -26,9 +26,10 @@ import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.document.Identifiable;
+import org.vcell.util.document.VersionFlag;
 
 @SuppressWarnings("serial")
-public class MolecularInternalLinkSpec implements Identifiable, IssueSource {
+public class MolecularInternalLinkSpec implements Identifiable, IssueSource, Matchable {
 	private final SpeciesContextSpec fieldSpeciesContextSpec;
 	private MolecularComponentPattern fieldMolecularComponentPatternOne = null;
 	private MolecularComponentPattern fieldMolecularComponentPatternTwo = null;
@@ -103,6 +104,25 @@ public class MolecularInternalLinkSpec implements Identifiable, IssueSource {
 			return null;
 		}
 		return new Pair<MolecularComponentPattern, MolecularComponentPattern>(internalLink.fieldMolecularComponentPatternOne, internalLink.fieldMolecularComponentPatternTwo);
+	}
+	@Override
+	public boolean compareEqual(Matchable obj) {
+		if (obj == this) {
+			return true;
+		}
+		if (!(obj instanceof MolecularInternalLinkSpec)) {
+			return false;
+		}
+		MolecularInternalLinkSpec candidate = (MolecularInternalLinkSpec)obj;
+		if(fieldSpeciesContextSpec != candidate.getSpeciesContextSpec()) {
+			return false;
+		}
+		if((fieldMolecularComponentPatternOne == candidate.fieldMolecularComponentPatternOne) && 
+				(fieldMolecularComponentPatternTwo == candidate.fieldMolecularComponentPatternTwo)) {
+			return true;
+		}
+		
+		return false;
 	}
 	
 //	// TODO: not working properly, will use direct calls from SpeciesContextSpec
