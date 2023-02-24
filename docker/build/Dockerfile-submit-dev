@@ -111,7 +111,6 @@ ENTRYPOINT java \
 	-Dvcell.installDir=/usr/local/app \
 	-Dvcell.jms.int.host.internal="${jmshost_int_internal}" \
 	-Dvcell.jms.int.port.internal="${jmsport_int_internal}" \
-	-Dvcell.jms.int.restport.internal="${jmsrestport_internal}" \
 	-Dvcell.jms.sim.host.internal="${jmshost_sim_internal}" \
 	-Dvcell.jms.sim.port.internal="${jmsport_sim_internal}" \
 	-Dvcell.jms.sim.host.external="${jmshost_sim_external}" \
