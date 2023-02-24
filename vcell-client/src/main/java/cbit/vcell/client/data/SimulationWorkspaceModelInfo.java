@@ -491,7 +491,7 @@ mappings.add(var.getName()+"   "+mathInfo+"    ==>    "+bioInfo+", tooltipString
 //				metadataMap.put(ReservedVariable.X.getName(),new DataSymbolMetadata(FilterCategoryType.ReservedXYZT,unitSystem.getLengthUnit()));
 //				metadataMap.put(ReservedVariable.Y.getName(),new DataSymbolMetadata(FilterCategoryType.ReservedXYZT,unitSystem.getLengthUnit()));
 //				metadataMap.put(ReservedVariable.Z.getName(),new DataSymbolMetadata(FilterCategoryType.ReservedXYZT,unitSystem.getLengthUnit()));
-			} catch (MappingException | MathException | MatrixException	| ExpressionException | ModelException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 				throw new RuntimeException("Failed to determine metadata for data symbols: "+e.getMessage(), e);
 			}
