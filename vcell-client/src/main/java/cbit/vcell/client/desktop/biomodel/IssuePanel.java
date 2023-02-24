@@ -283,11 +283,11 @@ public class IssuePanel extends DocumentEditorSubPanel {
 			} else if (object instanceof SpeciesContextSpec) {
 				SpeciesContextSpec scs = (SpeciesContextSpec)object;
 				ActiveView av;
-//				if(scs.getSimulationContext().getApplicationType() == SimulationContext.Application.SPRINGSALAD) {
-//					av = new ActiveView(scs.getSimulationContext(), DocumentEditorTreeFolderClass.SPECIFICATIONS_NODE, ActiveViewID.molecular_structure_setting);
-//				} else {
+				if(scs.getSimulationContext().getApplicationType() == SimulationContext.Application.SPRINGSALAD) {
+					av = new ActiveView(scs.getSimulationContext(), DocumentEditorTreeFolderClass.SPECIFICATIONS_NODE, ActiveViewID.molecular_structure_setting);
+				} else {
 					av = new ActiveView(scs.getSimulationContext(), DocumentEditorTreeFolderClass.SPECIFICATIONS_NODE, ActiveViewID.species_settings);
-//				}
+				}
 				followHyperlink(av, new Object[] {object});
 //			} else if(object instanceof MolecularInternalLinkSpec) {
 //				MolecularInternalLinkSpec mils = (MolecularInternalLinkSpec)object;
