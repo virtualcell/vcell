@@ -1,7 +1,23 @@
+FROM eclipse-temurin:11 as jre-build
 
-FROM ubuntu:20.04
+# Create a custom Java runtime
+RUN $JAVA_HOME/bin/jlink \
+         --add-modules java.base \
+         --strip-debug \
+         --no-man-pages \
+         --no-header-files \
+         --compress=2 \
+         --output /javaruntime
 
-ARG SIMULATOR_VERSION="7.4.0.51"
+# Define base image and copy in jlink created minimal Java 17 environment
+FROM python:3.9.7-slim
+ENV JAVA_HOME=/opt/java/openjdk
+ENV PATH "${JAVA_HOME}/bin:${PATH}"
+COPY --from=jre-build /javaruntime $JAVA_HOME
+
+# now we have Java 17 and Python 3.9
+
+ARG SIMULATOR_VERSION="7.5.0.11"
 ARG MAX_JAVA_MEM=0
 # Make sure you don't sap all of docker's memory when you set this.
 ENV ENV_SIMULATOR_VERSION=$SIMULATOR_VERSION
@@ -32,10 +48,7 @@ LABEL \
     maintainer="BioSimulators Team <info@biosimulators.org>"
 
 RUN apt-get -y update
-RUN apt-get install -y --no-install-recommends curl openjdk-8-jre dnsutils
-RUN apt-get install -y python3.9 python3-pip python3.9-venv
-
-RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.8 20 && update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.9 40
+RUN apt-get install -y --no-install-recommends curl dnsutils
 
 RUN mkdir -p /usr/local/app/vcell/lib && \
     mkdir -p /usr/local/app/vcell/simulation && \
@@ -63,7 +76,6 @@ COPY ./vcell-client/target/vcell-client-0.0.1-SNAPSHOT.jar \
  	 ./vcell-oracle/target/vcell-oracle-0.0.1-SNAPSHOT.jar \
      ./vcell-oracle/target/maven-jars/*.jar \
      ./vcell-admin/target/vcell-admin-0.0.1-SNAPSHOT.jar \
-     ./vcell-admin/target/vcell-admin-0.0.1-SNAPSHOT-tests.jar \
      ./vcell-admin/target/maven-jars/*.jar \
      ./vcell-cli/target/vcell-cli-0.0.1-SNAPSHOT.jar \
      ./vcell-cli/target/maven-jars/*.jar \
