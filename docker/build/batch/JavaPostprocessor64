@@ -19,6 +19,7 @@ shopt -s -o nounset
 postprocessor_mainclass=cbit.vcell.message.server.batch.sim.SolverPostprocessor
 
 jvmprop="-Djava.io.tmpdir=/tmp"
+jvmprop="${jvmprop} -Djava.awt.headless=true"
 jvmprop="${jvmprop} -Dvcell.installDir=${installdir}"
 jvmprop="${jvmprop} -Dvcell.jms.sim.host.internal=${jmshost_sim_internal}"
 jvmprop="${jvmprop} -Dvcell.jms.sim.port.internal=${jmsport_sim_internal}"
