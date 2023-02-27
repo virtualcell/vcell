@@ -23,6 +23,7 @@ import cbit.vcell.resource.ErrorUtils;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.server.*;
 import cbit.vcell.simdata.VCDataManager;
+import com.google.inject.Inject;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpResponseException;
 import org.apache.logging.log4j.LogManager;
@@ -43,6 +44,9 @@ import java.io.IOException;
  */
 public class ClientServerManager implements SessionManager,DataSetControllerProvider {
 	private final static Logger lg = LogManager.getLogger(ClientServerManager.class);
+
+	@Inject
+	private LocalVCellConnectionService localVCellConnectionService;
 
 	
 	public interface InteractiveContext {
@@ -394,7 +398,6 @@ private VCellConnection connectToServer(InteractiveContext requester,boolean bSh
 				}
 				case SERVER_LOCAL: {
 					new PropertyLoader();
-					LocalVCellConnectionService localVCellConnectionService = VCellServiceHelper.getInstance().loadService(LocalVCellConnectionService.class);
 					vcConnFactory = localVCellConnectionService.getLocalVCellConnectionFactory(getClientServerInfo().getUserLoginInfo());
 					setConnectionStatus(new ClientConnectionStatus(getClientServerInfo().getUsername(), null, null, ConnectionStatus.INITIALIZING));
 					newVCellConnection = vcConnFactory.createVCellConnection();

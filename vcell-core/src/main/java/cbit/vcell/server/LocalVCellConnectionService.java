@@ -1,8 +1,7 @@
 package cbit.vcell.server;
 
-import org.vcell.service.VCellService;
 import org.vcell.util.document.UserLoginInfo;
 
-public interface LocalVCellConnectionService extends VCellService {
+public interface LocalVCellConnectionService {
 	VCellConnectionFactory getLocalVCellConnectionFactory(UserLoginInfo userLoginInfo);
 }
