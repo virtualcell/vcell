@@ -28,7 +28,6 @@ import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpResponseException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.vcell.service.VCellServiceHelper;
 import org.vcell.service.registration.RegistrationService;
 import org.vcell.util.*;
 import org.vcell.util.document.User;

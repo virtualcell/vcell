@@ -1,7 +1,5 @@
 package cbit.vcell.server;
 
-import org.scijava.Context;
-import org.scijava.plugin.PluginInfo;
 import org.vcell.service.registration.RegistrationService;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.UseridIDExistsException;
@@ -32,27 +30,5 @@ public class VCellConnectionRegistrationProvider implements RegistrationService 
 	@Override
 	public void sendLostPassword(String userid) throws DataAccessException,RemoteProxyException{
 		vcellConnection.getUserMetaDbServer().userRegistrationOP(UserRegistrationOP.createLostPasswordOP(userid));
-	}
-	@Override
-	public Context context() {
-		return null;
-	}
-	@Override
-	public Context getContext() {
-		return null;
-	}
-	@Override
-	public double getPriority() {
-		return 0;
-	}
-	@Override
-	public void setPriority(double priority) {
-	}
-	@Override
-	public PluginInfo<?> getInfo() {
-		return null;
-	}
-	@Override
-	public void setInfo(PluginInfo<?> info) {
 	}
 }

@@ -5,12 +5,11 @@ import java.util.Vector;
 
 import javax.swing.JOptionPane;
 
-import org.vcell.service.VCellServiceHelper;
+import com.google.inject.Inject;
 import org.vcell.service.registration.RegistrationService;
 import org.vcell.util.Compare;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.UserCancelException;
-import org.vcell.util.UseridIDExistsException;
 import org.vcell.util.document.UserInfo;
 import org.vcell.util.gui.DialogUtils;
 
@@ -24,7 +23,10 @@ import cbit.vcell.desktop.RegistrationPanel;
 import cbit.vcell.server.UserRegistrationOP;
 
 public class UserRegistrationManager {
-	
+
+	@Inject
+	private static RegistrationService injectedRegistrationService;
+
 	private static RegistrationPanel registrationPanel = null;
 
 	public static void registrationOperationGUI(final RequestManager requestManager, final DocumentWindowManager currWindowManager, 
@@ -40,12 +42,10 @@ public class UserRegistrationManager {
 			if(userAction.equals(LoginManager.USERACTION_EDITINFO) && clientServerManager == null){
 				throw new IllegalArgumentException(UserRegistrationOP.class.getName()+".registrationOperationGUI:  Edit User Info requires clientServerManager not null.");			
 			}
-	
-			RegistrationService registrationService = null;
+
+			RegistrationService registrationService = injectedRegistrationService;
 			if(clientServerManager != null){
 				registrationService = clientServerManager.getRegistrationProvider();
-			} else {
-				registrationService = VCellServiceHelper.getInstance().loadService(RegistrationService.class);
 			}
 			if(userAction.equals(LoginManager.USERACTION_LOSTPASSWORD)){
 				if(currentClientServerInfo.getUsername() == null || currentClientServerInfo.getUsername().length() == 0){
