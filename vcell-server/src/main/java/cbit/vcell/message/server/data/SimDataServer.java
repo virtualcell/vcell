@@ -36,6 +36,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 
+import cbit.vcell.message.jms.activeMQ.VCMessagingServiceActiveMQ;
 import org.apache.commons.httpclient.URI;
 import org.apache.http.HttpException;
 import org.apache.http.HttpRequest;
@@ -413,7 +414,7 @@ public static void main(java.lang.String[] args) {
 		
 		DataServerImpl dataServerImpl = new DataServerImpl(dataSetControllerImpl, exportServiceImpl);
 
-		VCMessagingService vcMessagingService = VCellServiceHelper.getInstance().loadService(VCMessagingService.class);
+		VCMessagingService vcMessagingService = new VCMessagingServiceActiveMQ();
 		String jmshost = PropertyLoader.getRequiredProperty(PropertyLoader.jmsIntHostInternal);
 		int jmsport = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.jmsIntPortInternal));
 		vcMessagingService.setConfiguration(new ServerMessagingDelegate(), jmshost, jmsport);

@@ -11,6 +11,7 @@
 package cbit.vcell.message.server.db;
 import java.util.Date;
 
+import cbit.vcell.message.jms.activeMQ.VCMessagingServiceActiveMQ;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
 import org.vcell.db.KeyFactory;
@@ -155,7 +156,7 @@ public static void main(java.lang.String[] args) {
 		KeyFactory keyFactory = conFactory.getKeyFactory();
 		DatabaseServerImpl databaseServerImpl = new DatabaseServerImpl(conFactory, keyFactory);
 		
-		VCMessagingService vcMessagingService = VCellServiceHelper.getInstance().loadService(VCMessagingService.class);
+		VCMessagingService vcMessagingService = new VCMessagingServiceActiveMQ();
 		String jmshost = PropertyLoader.getRequiredProperty(PropertyLoader.jmsIntHostInternal);
 		int jmsport = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.jmsIntPortInternal));
 		vcMessagingService.setConfiguration(new ServerMessagingDelegate(), jmshost, jmsport);
