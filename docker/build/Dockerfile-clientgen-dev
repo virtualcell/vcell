@@ -1,9 +1,9 @@
 FROM openjdk:17-jdk-slim
 
 RUN mkdir /installer && cd /installer && \
-    wget --quiet -O install4j_unix_8_0_5.tar.gz \
+    wget --quiet -O install4j_unix_10_0_4.tar.gz \
         https://download.ej-technologies.com/install4j/install4j_unix_10_0_4.tar.gz && \
-    tar xzf install4j_unix_8_0_5.tar.gz
+    tar xzf install4j_unix_10_0_4.tar.gz
 
 COPY ./license.txt \
     ./vcell-client/src/main/resources/thirdpartylicenses.txt \
@@ -59,6 +59,8 @@ ENV compiler_updateSiteBaseUrl="update-site-not-set" \
     compiler_applicationId="client-applicationId-not-set" \
     macJre=macosx-amd64-1.8.0_141 \
     win64Jre=windows-amd64-1.8.0_141 \
-    linux64Jre=linux-amd64-1.8.0_66
+    win32Jre=windows-x86-1.8.0_141 \
+    linux64Jre=linux-amd64-1.8.0_66 \
+    linux32Jre=linux-x86-1.8.0_66
 
 ENTRYPOINT [ "/config/build_installers.sh" ]

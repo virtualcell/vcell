@@ -52,7 +52,24 @@
 #    rm -rf /tmp/tmprt /var/cache/apk/* bin/jjs bin/keytool bin/orbd bin/pack200 bin/policytool \
 #    bin/rmid bin/rmiregistry bin/servertool bin/tnameserv bin/unpack200 
 
-FROM schaff/vtk-openjdk-alpine:latest
+FROM eclipse-temurin:17 as jre-build
+
+# Create a custom Java runtime
+RUN $JAVA_HOME/bin/jlink \
+         --add-modules java.base \
+         --strip-debug \
+         --no-man-pages \
+         --no-header-files \
+         --compress=2 \
+         --output /javaruntime
+
+# Define base image and copy in jlink created minimal Java 17 environment
+FROM python:3.9.7-slim
+ENV JAVA_HOME=/opt/java/openjdk
+ENV PATH "${JAVA_HOME}/bin:${PATH}"
+COPY --from=jre-build /javaruntime $JAVA_HOME
+
+# now we have Java 17 and Python 3.9
 
 RUN mkdir -p /usr/local/app && \
 	apk update && \
@@ -63,6 +80,8 @@ RUN mkdir -p /usr/local/app && \
 ENV TZ=America/New_York
 RUN unlink /etc/localtime || true
 RUN ln -s /usr/share/zoneinfo/America/New_York /etc/localtime
+
+RUN pip install vtk
 
 WORKDIR /usr/local/app
 

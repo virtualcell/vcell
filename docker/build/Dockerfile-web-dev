@@ -1,8 +1,21 @@
-FROM ubuntu:18.04
+FROM eclipse-temurin:17 as jre-build
 
-RUN apt-get -y update && \
-    apt-get install -y curl openjdk-8-jre wget dnsutils && \
-    mkdir -p /usr/local/app/lib
+# Create a custom Java runtime
+RUN $JAVA_HOME/bin/jlink \
+         --add-modules java.base \
+         --strip-debug \
+         --no-man-pages \
+         --no-header-files \
+         --compress=2 \
+         --output /javaruntime
+
+# Define base image and copy in jlink created minimal Java 17 environment
+FROM debian:buster-slim
+ENV JAVA_HOME=/opt/java/openjdk
+ENV PATH "${JAVA_HOME}/bin:${PATH}"
+COPY --from=jre-build /javaruntime $JAVA_HOME
+
+RUN apt-get -y update && apt-get install -y bash nano wget
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tzdata
 RUN unlink /etc/localtime || true
