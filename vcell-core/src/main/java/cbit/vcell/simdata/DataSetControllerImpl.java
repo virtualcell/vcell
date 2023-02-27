@@ -32,11 +32,11 @@ import java.util.Vector;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import com.google.inject.Inject;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.vcell.service.VCellServiceHelper;
 import org.vcell.solver.nfsim.NFSimMolecularConfigurations;
 import org.vcell.util.CacheException;
 import org.vcell.util.Coordinate;
@@ -140,7 +140,10 @@ import ncsa.hdf.object.h5.H5ScalarDS;
 
 public class DataSetControllerImpl implements SimDataConstants,DataJobListenerHolder {
 	public static final Logger lg = LogManager.getLogger(DataSetControllerImpl.class);
-	
+
+	@Inject
+	private static ExternalDataIdentifierService extDataIDService;
+
 	private boolean bAllowOptimizedTimeDataRetrieval = true;
 	
 	private static final int TXYZ_OFFSET = 4;
@@ -2911,7 +2914,6 @@ FieldFunctionArguments[] fieldFuncArgumentsArr,User user,boolean bForceUpdate, H
 		userExtDataIdentifiersV.size() < fieldFuncArgumentsArr.length ||
 		bForceUpdate){
 		//must refresh
-		ExternalDataIdentifierService extDataIDService = VCellServiceHelper.getInstance().loadService(ExternalDataIdentifierService.class);
 		userExtDataIDH2 = extDataIDService.getAllExternalDataIdentifiers();
 		userExtDataIdentifiersV = userExtDataIDH2.get(user);
 	}
