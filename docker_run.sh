@@ -80,6 +80,7 @@ echo "VCell shall execute <$command" "$arguments>"
 
 java \
   -classpath '/usr/local/app/vcell/lib/*' \
+  -XX:MaxRAMPercentage=80 \
   -Dlog4j.configurationFile=/usr/local/app/vcell/installDir/biosimulations_log4j2.xml \
   -Dvcell.softwareVersion=$ENV_SIMULATOR_VERSION \
   -Dvcell.installDir=/usr/local/app/vcell/installDir \
@@ -91,5 +92,5 @@ java \
   -Dvcell.mongodb.port.internal=27017 \
   -Dvcell.server.dbDriverName=oracle.jdbc.driver.OracleDriver \
   -Dvcell.server.dbConnectURL=jdbc:oracle:thin:@VCELL-DB.cam.uchc.edu:1521/vcelldborcl.cam.uchc.edu \
-  -Dcli.workingDir=/usr/local/app/vcell/installDir/python/vcell_cli_utils/ $(if [ $MAX_JAVA_MEM_MB -gt 0 ]; then echo "-Xmx${MAX_JAVA_MEM_MB}m"; fi) \
+  -Dcli.workingDir=/usr/local/app/vcell/installDir/python/vcell_cli_utils/ \
   org.vcell.cli.CLIStandalone $command $arguments
