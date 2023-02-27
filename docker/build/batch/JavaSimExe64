@@ -19,6 +19,7 @@ shopt -s -o nounset
 javasolver_mainclass=cbit.vcell.message.server.batch.sim.JavaSimulationExecutable
 
 jvmprop="-Djava.io.tmpdir=/tmp"
+jvmprop="${jvmprop} -Djava.awt.headless=true"
 jvmprop="${jvmprop} -Dvcell.installDir=${installdir}"
 jvmprop="${jvmprop} -Dvcell.jms.sim.host.internal=${jmshost_sim_internal}"
 jvmprop="${jvmprop} -Dvcell.jms.sim.port.internal=${jmsport_sim_internal}"
