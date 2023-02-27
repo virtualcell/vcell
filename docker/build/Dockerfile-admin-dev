@@ -1,7 +1,23 @@
-FROM ubuntu:18.04
+FROM eclipse-temurin:17 as jre-build
 
+# Create a custom Java runtime
+RUN $JAVA_HOME/bin/jlink \
+         --add-modules java.base \
+         --strip-debug \
+         --no-man-pages \
+         --no-header-files \
+         --compress=2 \
+         --output /javaruntime
+
+# Define base image and copy in jlink created minimal Java 17 environment
+FROM debian:buster-slim
+ENV JAVA_HOME=/opt/java/openjdk
+ENV PATH "${JAVA_HOME}/bin:${PATH}"
+COPY --from=jre-build /javaruntime $JAVA_HOME
+
+# now we have Java 17
 RUN apt-get -y update && \
-    apt-get install -y curl openjdk-8-jre dnsutils && \
+    apt-get install -y curl dnsutils && \
     mkdir -p /usr/local/app/lib 
 	
 WORKDIR /usr/local/app
