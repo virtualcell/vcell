@@ -21,6 +21,11 @@ public class ServerModule extends AbstractModule {
         // server-side implementation (talk directly to database)
         // RegistrationService interface is not clean - mixes new registration with updates - is there another way?
         bind(RegistrationService.class).toInstance(new LocaldbRegistrationService());
-//        bind(RegistrationService.class).toInstance(new RemoteRegistrationService()); // used on remote client.
+        //bind(RegistrationService.class).toInstance(new RemoteRegistrationService()); // used on remote client.
+
+        bind(VCMessagingService.class).toInstance(new VCMessagingServiceActiveMQ());
+        //bind(VCMessagingService.class).toInstance(new VCMessagingServiceEmbedded()); // used for testing.
+
+        MapBinder<String, Database> mapBinder = MapBinder.newMapBinder(binder(), String.class, Database.class);
     }
 }

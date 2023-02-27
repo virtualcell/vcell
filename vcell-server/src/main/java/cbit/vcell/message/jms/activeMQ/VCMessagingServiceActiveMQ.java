@@ -1,7 +1,5 @@
 package cbit.vcell.message.jms.activeMQ;
 
-import java.util.Objects;
-
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
 import javax.jms.JMSException;
@@ -9,8 +7,6 @@ import javax.jms.MessageConsumer;
 import javax.jms.Session;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
-import org.scijava.Priority;
-import org.scijava.plugin.Plugin;
 
 import cbit.vcell.message.VCDestination;
 import cbit.vcell.message.VCMessageSelector;
@@ -20,16 +16,11 @@ import cbit.vcell.message.VCellQueue;
 import cbit.vcell.message.jms.VCMessagingServiceJms;
 import cbit.vcell.resource.PropertyLoader;
 
-@Plugin(type = VCMessagingService.class)
-public class VCMessagingServiceActiveMQ extends VCMessagingServiceJms {
-	
-	public VCMessagingServiceActiveMQ() throws VCMessagingException {
+
+public class VCMessagingServiceActiveMQ extends VCMessagingServiceJms implements VCMessagingService {
+
+	public VCMessagingServiceActiveMQ() {
 		super();
-		setPriority(Priority.NORMAL_PRIORITY);
-//		String jmsProvider = PropertyLoader.getRequiredProperty(PropertyLoader.jmsProvider);
-//		if (!jmsProvider.equalsIgnoreCase(PropertyLoader.jmsProviderValueActiveMQ)){
-//			throw new RuntimeException("unrecognized jms provider : "+jmsProvider);
-//		}
 	}
 	
 	@Override

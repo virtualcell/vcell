@@ -1,6 +1,7 @@
 package org.vcell.rest;
 
 import cbit.vcell.message.*;
+import cbit.vcell.message.jms.activeMQ.VCMessagingServiceActiveMQ;
 import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.modeldb.LocalAdminDbServer;
@@ -87,7 +88,7 @@ public class VCellApiMain {
 			AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(conFactory);
 			
 			lg.trace("messaging service (next)");
-			VCMessagingService vcMessagingService_int = VCellServiceHelper.getInstance().loadService(VCMessagingService.class);
+			VCMessagingService vcMessagingService_int = new VCMessagingServiceActiveMQ();
 			VCMessagingDelegate delegate = new VCMessagingDelegate() {
 				
 				@Override

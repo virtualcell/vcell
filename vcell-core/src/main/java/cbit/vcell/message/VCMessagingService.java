@@ -2,9 +2,7 @@ package cbit.vcell.message;
 
 import java.util.List;
 
-import org.vcell.service.VCellService;
-
-public interface VCMessagingService extends VCellService, AutoCloseable {
+public interface VCMessagingService extends AutoCloseable {
 	
 	VCMessageSession createProducerSession();
 	

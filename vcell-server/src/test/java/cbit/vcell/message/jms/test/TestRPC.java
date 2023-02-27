@@ -1,5 +1,6 @@
 package cbit.vcell.message.jms.test;
 
+import cbit.vcell.message.jms.activeMQ.VCMessagingServiceEmbedded;
 import org.vcell.service.VCellServiceHelper;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
@@ -39,8 +40,8 @@ public class TestRPC {
 		try {
 			
 			PropertyLoader.loadProperties();
-    		VCMessagingService messagingService = VCellServiceHelper.getInstance().loadService(VCMessagingService.class);
-    		String jmshost = PropertyLoader.getRequiredProperty(PropertyLoader.jmsIntHostInternal);
+    		VCMessagingService messagingService = new VCMessagingServiceEmbedded();
+			String jmshost = PropertyLoader.getRequiredProperty(PropertyLoader.jmsIntHostInternal);
     		int jmsport = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.jmsIntPortInternal));
     		messagingService.setConfiguration(new SimpleMessagingDelegate(), jmshost, jmsport);
 	    	
