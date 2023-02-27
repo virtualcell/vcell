@@ -80,6 +80,7 @@ echo "VCell shall execute <$command" "$arguments>"
 
 java \
   -classpath '/usr/local/app/vcell/lib/*' \
+  -XX:MaxRAMPercentage=80 \
   -Dlog4j.configurationFile=/usr/local/app/vcell/installDir/biosimulations_log4j2.xml \
   -Dvcell.softwareVersion=$ENV_SIMULATOR_VERSION \
   -Dvcell.installDir=/usr/local/app/vcell/installDir \
