@@ -812,7 +812,8 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		MolecularInternalLinkSpec selectedValue = siteLinksList.getSelectedValue();
 		int selectedIndex = siteLinksList.getSelectedIndex();
 		System.out.println("changeLinkLength(): selected index '" + selectedIndex + "' being set to " + linkLength);
-		selectedValue.setLinkLength(linkLength);
+		// TODO: set x,y,z for sites, link length will be always calculated from xyz
+//		selectedValue.setLinkLength(linkLength);
 		recalculatePositions();
 	}
 	

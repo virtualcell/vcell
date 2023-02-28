@@ -361,7 +361,8 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 					MolecularComponentPattern mcpOne = mtp.getMolecularComponentPattern(mcOne);
 					MolecularComponentPattern mcpTwo = mtp.getMolecularComponentPattern(mcTwo);
 					MolecularInternalLinkSpec link = new MolecularInternalLinkSpec(fieldSpeciesContextSpec, mcpOne, mcpTwo);
-					link.setLinkLength(2.0);
+					// TODO: set x,y,z instead, link will be computed
+//					link.setLinkLength(2.0);
 					internalLinkSet.add(link);
 				}
 			}
