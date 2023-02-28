@@ -271,7 +271,7 @@ public class RbmNetworkGenerator {
 //				Expression sizeExpr = sm.getSizeParameter().getExpression();
 //				volume = sizeExpr.evaluateConstant();
 //			} catch(ExpressionException e){
-//				e.printStackTrace(System.out);
+//				lg.error(e);
 //			}
 			//
 			// compartment size is always 1 when we export internally to bngl

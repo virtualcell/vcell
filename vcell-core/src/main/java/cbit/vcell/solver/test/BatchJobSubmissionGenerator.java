@@ -5,6 +5,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.FileUtils;
 /*
  * Generating multiple PBS submission files for hybrid multiple trials.
@@ -14,6 +16,8 @@ import org.vcell.util.FileUtils;
  * After executing this java file, jobxxx.sub files and submission script and runhybridtest script will be saved in the working directory.
  */
 public class BatchJobSubmissionGenerator {
+	private final static Logger lg = LogManager.getLogger(BatchJobSubmissionGenerator.class);
+
 	public static final String WORK_DIR = "C:\\testHybrid\\batchSubmissionFiles\\";
 	public static final String JOB_FILE_BASE_NAME = "job";
     public static final String JOB_FILE_EXT = ".sub";
@@ -49,8 +53,7 @@ public class BatchJobSubmissionGenerator {
 				pw1.println(cmdLine);
 				pw1.close();	
 			} catch (FileNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				lg.error(e);
 				if(pw1 != null) pw1.close();
 			}
 		}
@@ -68,8 +71,7 @@ public class BatchJobSubmissionGenerator {
 			pw2.print("done\n");
 			pw2.close();	
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			lg.error(e);
 			if(pw2 != null) pw2.close();
 		}
 		//copy runhybridtest script
@@ -78,8 +80,7 @@ public class BatchJobSubmissionGenerator {
 		try {
 			FileUtils.copyFile(sourceFile, destFile);
 		} catch (IOException e) {
-			System.out.println("Cannot create runhybridtest script. File is located at cbit/vcell/solver/test, please manually copy it to server.");
-			e.printStackTrace(System.out);
+			lg.error("Cannot create runhybridtest script. File is located at cbit/vcell/solver/test, please manually copy it to server.", e);
 		}
     }
 }

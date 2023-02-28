@@ -169,8 +169,7 @@ public class CartesianMeshMovingBoundary extends CartesianMesh
 			extent = (Extent)objArray[++ index];
 			compressedBytes = null;
 		} catch (Exception ex) {
-			ex.printStackTrace(System.out);
-			throw new RuntimeException(ex.getMessage());
+			throw new RuntimeException(ex.getMessage(), ex);
 		}
 	}
 	

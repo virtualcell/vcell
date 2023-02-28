@@ -17,6 +17,8 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Vector;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
@@ -31,6 +33,7 @@ import cbit.vcell.parser.SymbolTableEntry;
  */
 @SuppressWarnings("serial")
 public class PdeEquation extends Equation {
+	private final static Logger lg = LogManager.getLogger(PdeEquation.class);
 	private Expression diffusionExp = null;
 	private boolean bSteady = false;
 //	private boolean bFixedDiffusion = false;
@@ -90,24 +93,13 @@ public class PdeEquation extends Equation {
 			return buffer.toString();
 		}
 	}
-/**
- * This method was created by a SmartGuide.
- * @param volVar cbit.vcell.math.VolVariable
- */
+
 public PdeEquation (MemVariable memVar) {
 	super(memVar);
 	
 }
 
 
-/**
- * PdeEquation constructor comment.
- * @param compartmentSubDomain cbit.vcell.math.CompartmentSubDomain
- * @param var cbit.vcell.math.Variable
- * @param initialExp cbit.vcell.parser.Expression
- * @param rateExp cbit.vcell.parser.Expression
- * @param diffusionRate cbit.vcell.parser.Expression
- */
 public PdeEquation(Variable var, boolean steady, Expression initialExp,	Expression rateExp, Expression diffusionRate) {
 	super(var, initialExp, rateExp);
 	diffusionExp = diffusionRate;
@@ -291,11 +283,6 @@ public BoundaryConditionValue getBoundaryConditionValue(int index) {
 }
 
 
-/**
- * Get a boundaryConditionValue from list by boundaryConditionValue's name.
- * @return boundaryConditionValue
- * @param varName java.lang.String
- */
 public BoundaryConditionValue getBoundaryConditionValue(String boundaryCondnValueName) {
 	for (BoundaryConditionValue bcv : listOfInternalBoundaryValues){
 		if (bcv.getSubdomainName().equals(boundaryCondnValueName)) {
@@ -323,10 +310,6 @@ public void removeBoundaryConditionValue(int index) {
 }
 
 
-/**
- * Remove a BoundaryConditionValue from list by it's name in the list.
- * @param subDomainName java.lang.String
- */
 public void removeBoundaryConditionValue(String bcValueName) {
 	for (BoundaryConditionValue bcs : listOfInternalBoundaryValues){
 		if(bcs.getSubdomainName().equals(bcValueName)){
@@ -399,7 +382,7 @@ public Vector<Expression> getExpressions(MathDescription mathDesc) {
 				}
 			}
 		}catch (Exception e){
-			e.printStackTrace(System.out);
+			lg.error(e);
 		}
 	}
 
@@ -886,8 +869,7 @@ public boolean isDummy(MathSymbolTable simSymbolTable, CompartmentSubDomain this
 		  						return true;			  						
 		  					}
 		  				} catch (ExpressionException ex) {
-		  					ex.printStackTrace(System.out);
-		  					throw new RuntimeException("PdeEquation::isDummy(), not expected: " + ex.getMessage());
+		  					throw new RuntimeException("PdeEquation::isDummy(), not expected: " + ex.getMessage(), ex);
 		  				}
 		  			}
 		  			return false; // the variable is not found to be invariant in this fast system, might be changed by fast system

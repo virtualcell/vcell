@@ -397,7 +397,7 @@ public class FRAPDataAnalysis {
 //			}
 //			FRAPDataPanel.showCurve(windowListener, new String[] { "f", "fakeCurve" }, frapData.getImageDataset().getImageTimeStamps(),new double[][] { roiRecovery, fakeCurveData });
 //		}catch (Exception e){
-//			e.printStackTrace(System.out);
+//			lg.error(e);
 //		}
 //	}
 	/*

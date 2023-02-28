@@ -74,7 +74,6 @@ public void startExport(OutputContext outputContext,ExportSpecs exportSpecs) thr
 		ExportEvent event = getClientServerManager().getDataSetController().makeRemoteFile(outputContext,exportSpecs);
 		// ignore; we'll get two downloads otherwise... getClientServerManager().getAsynchMessageManager().fireExportEvent(event);
 	} catch (DataAccessException exc) {
-		exc.printStackTrace();
 		throw new RemoteProxyException(exc.getMessage(), exc);
 	}
 }

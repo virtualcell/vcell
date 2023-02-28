@@ -23,10 +23,13 @@ import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.server.BioModelLink;
 import cbit.vcell.server.MathModelLink;
 import cbit.vcell.server.SimulationDocumentLink;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 
 public class SimulationRepresentation {
-	
+	private final static Logger lg = LogManager.getLogger(SimulationRepresentation.class);
+
 	private final String key;
 	private final String branchId;
 	private final String name;
@@ -136,7 +139,7 @@ public class SimulationRepresentation {
 			mathDesc = simContext.getMathDescription();
 			mathSymbolMapping = (MathSymbolMapping) simContext.getMathDescription().getSourceSymbolMapping();
 		} catch (Exception e1) {
-			System.err.println(e1.getMessage());
+			lg.warn(e1);
 		}
 		ArrayList<ParameterRepresentation> parameterReps = new ArrayList<ParameterRepresentation>();
 		Enumeration<Constant> enumMath = mathDesc.getConstants();
@@ -157,7 +160,7 @@ public class SimulationRepresentation {
 					parameterReps.add(new ParameterRepresentation(constant.getName(), constant.getExpression().evaluateConstant(),biologicalSymbolTableEntry));
 				} catch (ExpressionException e) {
 					// can't happen, because constant expression is numeric
-					e.printStackTrace();
+					lg.error(e);
 				}
 			}
 		}

@@ -18,6 +18,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
@@ -41,6 +43,7 @@ import cbit.vcell.units.VCUnitDefinition;
  *  
  */
 public  class ReactionContext implements Serializable, Matchable, PropertyChangeListener, VetoableChangeListener {
+	private final static Logger lg = LogManager.getLogger(ReactionContext.class);
 
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
@@ -50,11 +53,6 @@ public  class ReactionContext implements Serializable, Matchable, PropertyChange
 	private Model fieldModel = null;
 	private SimulationContext simContext = null;
 
-/**
- * This method was created by a SmartGuide.
- * @param model cbit.vcell.model.Model
- * @param geoContext cbit.vcell.mapping.GeometryContext
- */
 ReactionContext(ReactionContext reactionContext, SimulationContext argSimulationContext) {
 	this.fieldModel = reactionContext.fieldModel;
 	this.simContext = argSimulationContext;
@@ -74,11 +72,6 @@ ReactionContext(ReactionContext reactionContext, SimulationContext argSimulation
 }
 
 
-/**
- * This method was created by a SmartGuide.
- * @param model cbit.vcell.model.Model
- * @param geoContext cbit.vcell.mapping.GeometryContext
- */
 ReactionContext (Model argModel, SimulationContext argSimulationContext) {
 	this.fieldModel = argModel;
 	if (argModel != null){
@@ -190,12 +183,6 @@ protected java.beans.PropertyChangeSupport getPropertyChange() {
 }
 
 
-/**
- * Gets the reactionSpecs index property (cbit.vcell.mapping.ReactionSpec) value.
- * @return The reactionSpecs property value.
- * @param index The index value into the property array.
- * @see #setReactionSpecs
- */
 public ReactionSpec getReactionSpec(ReactionStep reactionStep) {
 	for (int i=0;fieldReactionSpecs!=null && i<fieldReactionSpecs.length;i++){
 		if (fieldReactionSpecs[i].getReactionStep() == reactionStep){
@@ -205,12 +192,6 @@ public ReactionSpec getReactionSpec(ReactionStep reactionStep) {
 	return null;
 }
 
-/**
- * Gets the reactionRuleSpecs index property (cbit.vcell.mapping.ReactionRuleSpec) value.
- * @return The reactionRuleSpecs property value.
- * @param index The index value into the property array.
- * @see #setReactionRuleSpecs
- */
 public ReactionRuleSpec getReactionRuleSpec(ReactionRule reactionRule) {
 	for (int i=0;fieldReactionRuleSpecs!=null && i<fieldReactionRuleSpecs.length;i++){
 		if (fieldReactionRuleSpecs[i].getReactionRule() == reactionRule){
@@ -315,11 +296,6 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	}
 }
 
-/**
- * This method was created by a SmartGuide.
- * @param o java.util.Observable
- * @param obj java.lang.Object
- */
 private void refreshAll()
 {
 	try {
@@ -330,7 +306,7 @@ private void refreshAll()
 			refreshSpeciesContextSpecBoundaryUnits(simContext.getGeometryContext().getStructureMappings());
 		}
 	}catch (Exception e){
-		e.printStackTrace(System.out);
+		lg.error(e);
 	}		
 	return;
 }
@@ -570,7 +546,7 @@ void refreshSpeciesContextSpecBoundaryUnits(StructureMapping structureMappings[]
 					}
 					}
 				}catch (java.beans.PropertyVetoException e){
-					e.printStackTrace(System.out);
+					lg.error(e);
 				}
 			}
 		}
@@ -626,8 +602,7 @@ private void refreshSpeciesContextSpecs() throws MappingException {
 		try {
 			setSpeciesContextSpecs(newSpeciesContextSpecs);
 		}catch (java.beans.PropertyVetoException e){
-			e.printStackTrace(System.out);
-			throw new MappingException(e.getMessage());
+			throw new MappingException(e.getMessage(), e);
 		}
 	}
 }

@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
@@ -18,6 +20,7 @@ import org.jlibsedml.extensions.XMLUtils;
  * Helper class to add multiple simple datagenerators / variables to the SEDML file
  */
  class XpathGeneratorHelper {
+     private final static Logger lg = LogManager.getLogger(XpathGeneratorHelper.class);
      
      public XpathGeneratorHelper(SedML sedml) {
         super();
@@ -59,20 +62,10 @@ import org.jlibsedml.extensions.XMLUtils;
        }
       
            
-        } catch (URISyntaxException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+        } catch (URISyntaxException | JDOMException | IOException e) {
+            lg.error(e);
             return false;
-        } catch (JDOMException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-            return false;
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-            return false;
-        
-       }
+        }
         
         return true;
     }

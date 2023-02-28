@@ -12,6 +12,8 @@ package cbit.vcell.export.server;
 import java.io.IOException;
 import java.io.Serializable;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.BeanUtils;
 
 import cbit.vcell.geometry.SinglePoint;
@@ -21,6 +23,8 @@ import cbit.vcell.simdata.SpatialSelectionMembrane;
  * This type was created in VisualAge.
  */
 public class GeometrySpecs implements Serializable {
+	private final static Logger lg = LogManager.getLogger(GeometrySpecs.class);
+
 	private byte[][] serializedSelections = null;
 	private transient SpatialSelection[] spatialSelections = null;
 	private int axis;
@@ -43,7 +47,7 @@ public GeometrySpecs(SpatialSelection[] selections, int axis, int sliceNumber, i
 				serializedSelections[i] = BeanUtils.toSerialized(selections[i]);
 			}
 		} catch (IOException exc) {
-			exc.printStackTrace(System.out);
+			lg.error(exc);
 		}
 	}
 	this.axis = axis;
@@ -225,7 +229,7 @@ public SpatialSelection[] getSelections() {
 		}
 		return spatialSelections;
 	} catch (Exception exc) {
-		exc.printStackTrace(System.out);
+		lg.error(exc);
 		return null;
 	}
 }

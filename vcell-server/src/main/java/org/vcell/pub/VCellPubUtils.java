@@ -9,6 +9,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.vcell.db.KeyFactory;
@@ -22,6 +24,7 @@ import com.google.gson.Gson;
 import cbit.util.xml.XmlUtil;
 
 public class VCellPubUtils {
+	private final static Logger lg = LogManager.getLogger(VCellPubUtils.class);
 	
 	public static class PubMedData {
 		public Record[] variables;
@@ -271,7 +274,7 @@ public class VCellPubUtils {
 			// read();
 			readNewRecords(new File("src/org/vcell/pub/NewPublishedModels_2016_11_29.xml"), new PostgresKeyFactory());
 		}catch (Exception e){
-			e.printStackTrace();
+			lg.error(e);
 		}
 	}
 

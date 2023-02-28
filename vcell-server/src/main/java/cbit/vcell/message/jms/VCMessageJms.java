@@ -15,6 +15,8 @@ import javax.jms.Queue;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.bson.types.ObjectId;
 import org.fusesource.hawtbuf.ByteArrayInputStream;
 
@@ -28,7 +30,8 @@ import cbit.vcell.mongodb.VCMongoDbDriver;
 import cbit.vcell.resource.PropertyLoader;
 
 public class VCMessageJms implements VCMessage {
-	
+	private final static Logger lg = LogManager.getLogger(VCMessageJms.class);
+
 	public static final String BLOB_MESSAGE_FILE_NAME = "blobMessageFileName";
 	public static final String BLOB_MESSAGE_PRODUCER_TEMPDIR = "blobProducerTempDir";
 	public static final String BLOB_MESSAGE_OBJECT_TYPE = "blobObjectType";
@@ -111,7 +114,7 @@ public class VCMessageJms implements VCMessage {
 				fis.close();
 				delegate.onTraceEvent("VCMessageJms.loadBlobFile(): size="+jmsMessage.getIntProperty(BLOB_MESSAGE_OBJECT_SIZE)+", type="+jmsMessage.getStringProperty(BLOB_MESSAGE_OBJECT_TYPE)+", elapsedTime = "+(System.currentTimeMillis()-t1)+" ms");
 			} catch (Exception e) {
-				e.printStackTrace();
+				lg.error(e);
 				throw new RuntimeException(e.getMessage(),e);
 			}
 		}
@@ -135,7 +138,7 @@ public class VCMessageJms implements VCMessage {
 				bis.close();
 				delegate.onTraceEvent("VCMessageJms.loadBlobFile(): size="+jmsMessage.getIntProperty(BLOB_MESSAGE_OBJECT_SIZE)+", type="+jmsMessage.getStringProperty(BLOB_MESSAGE_OBJECT_TYPE)+", elapsedTime = "+(System.currentTimeMillis()-t1)+" ms");
 			} catch (Exception e) {
-				e.printStackTrace();
+				lg.error(e);
 				throw new RuntimeException(e.getMessage(),e);
 			}
 		}
@@ -150,7 +153,7 @@ public class VCMessageJms implements VCMessage {
 				blobFile.delete();
 			}catch (Exception e){
 				delegate.onException(e);
-				e.printStackTrace(System.out);
+				lg.error(e);
 			}
 		}
 		if (blobObjectId != null) {
@@ -158,7 +161,7 @@ public class VCMessageJms implements VCMessage {
 				VCMongoDbDriver.getInstance().removeBLOB(blobObjectId);
 			}catch (Exception e) {
 				delegate.onException(e);
-				e.printStackTrace(System.out);
+				lg.error(e);
 			}
 		}
 	}
@@ -341,7 +344,7 @@ public class VCMessageJms implements VCMessage {
 	
 	private void handleJMSException(JMSException e){
 		delegate.onException(e);
-		e.printStackTrace(System.out);
+		lg.error(e);
 	}
 
 	public VCDestination getReplyTo() {
@@ -425,7 +428,7 @@ public class VCMessageJms implements VCMessage {
 				buffer.append("'");
 			}
 		} catch (JMSException e) {
-			e.printStackTrace(System.out);
+			lg.error(e);
 			throw new RuntimeException(e.getMessage(),e);
 		}
 		return buffer.toString();

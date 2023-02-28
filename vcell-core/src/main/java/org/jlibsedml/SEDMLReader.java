@@ -816,9 +816,8 @@ class SEDMLReader {
 			}
 
 		} catch (Exception e) {
-			e.printStackTrace(System.out);
 			throw new XMLException("Error loading sed-ml document : "
-					+ e.getMessage());
+					+ e.getMessage(), e);
 			// return sedDoc;
 		}
 		return sedDoc;

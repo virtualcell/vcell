@@ -23,6 +23,8 @@ import java.util.Vector;
 
 import javax.swing.Timer;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.db.KeyFactory;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.TokenMangler;
@@ -51,6 +53,7 @@ import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.simdata.SimulationData;
 
 public class FieldDataDBOperationDriver{
+	private final static Logger lg = LogManager.getLogger(FieldDataDBOperationDriver.class);
 	
 	private static String DATE_FORMAT_STRING = "'DD-MON-YYYY HH24:MI:SS'";
 
@@ -73,7 +76,7 @@ public class FieldDataDBOperationDriver{
 	private static synchronized void closeConnection(){
 //		System.err.println("connection Closed");
 		if(liveConnection != null){
-			try{liveConnection.close();}catch(Exception e){e.printStackTrace();}
+			try{liveConnection.close();}catch(Exception e){lg.error(e);}
 			liveConnection = null;
 		}
 	}
@@ -343,10 +346,10 @@ public class FieldDataDBOperationDriver{
 				userExtDataIDV.add(extDataID);
 			}
 		}catch(Exception e){
-			e.printStackTrace();
+			lg.error(e);
 			throw new DataAccessException("Error: getAllExternalDataIdentifiers",e);
 		}finally {
-			if(stmt != null){try{stmt.close();}catch(Exception e){e.printStackTrace();}}
+			if(stmt != null){try{stmt.close();}catch(Exception e){lg.error(e);}}
 		}
 		return allUserExtDataIDH;
 	}
@@ -403,10 +406,10 @@ public class FieldDataDBOperationDriver{
 			);
 		}
 	}catch(Exception e){
-		e.printStackTrace();
+		lg.error(e);
 		throw new DataAccessException("Error: getFunctionFileNamesAndSimKeys",e);
 	}finally {
-		if(stmt != null){try{stmt.close();}catch(Exception e){e.printStackTrace();}}
+		if(stmt != null){try{stmt.close();}catch(Exception e){lg.error(e);}}
 	}
 	return functionNamesH;
 }
@@ -553,10 +556,10 @@ public class FieldDataDBOperationDriver{
 			}
 		}
 	}catch(Exception e){
-		e.printStackTrace();
+		lg.error(e);
 		throw new DataAccessException("Error: getModelDescriptionForSimulation",e);
 	}finally {
-		if(stmt != null){try{stmt.close();}catch(Exception e){e.printStackTrace();}}
+		if(stmt != null){try{stmt.close();}catch(Exception e){lg.error(e);}}
 	}
 	return fieldDataRefInfo;
 }

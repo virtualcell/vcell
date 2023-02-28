@@ -9,6 +9,9 @@
  */
 
 package cbit.vcell.message.server;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.net.UnknownHostException;
 import java.util.StringTokenizer;
 
@@ -18,6 +21,7 @@ import java.util.StringTokenizer;
  * @author: Fei Gao
  */
 public class ManageUtils {
+	private final static Logger lg = LogManager.getLogger(ManageUtils.class);
 	private static java.text.SimpleDateFormat dateTimeFormatter = new java.text.SimpleDateFormat(" yyyy_MM_dd 'at' HH-mm-ss", java.util.Locale.US);
 
 /**
@@ -34,7 +38,7 @@ public static String getHostName() {
 		hostname = st.nextToken(); // abbr hostname
 		return hostname;
 	} catch (UnknownHostException ex) {
-		ex.printStackTrace();
+		lg.error(ex);
 		return "UnknownHost";
 	}	 
 }
@@ -67,7 +71,7 @@ public static void archiveByDateAndTime(String fileName, String arcDir) {
 			file.renameTo(new java.io.File(archiveDirectory, archivedName));
 		}
 	} catch (Throwable exc) {
-		exc.printStackTrace(System.out);
+		lg.error(exc);
 	}
 }
 

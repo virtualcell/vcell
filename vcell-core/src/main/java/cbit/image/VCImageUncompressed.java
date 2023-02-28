@@ -117,8 +117,7 @@ public byte[] getPixelsCompressed() throws ImageException {
 		byte[] compressed = VCImage.deflate(pixels);
 		return compressed;
 	}catch (IOException e){
-		e.printStackTrace(System.out);
-		throw new ImageException(e.getMessage());
+		throw new ImageException(e.getMessage(), e);
 	}
 }
 }

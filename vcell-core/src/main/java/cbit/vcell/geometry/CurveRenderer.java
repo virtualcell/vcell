@@ -16,6 +16,8 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Coordinate;
 import org.vcell.util.DrawPaneModel;
@@ -24,6 +26,7 @@ import cbit.image.DisplayAdapterService;
 import cbit.vcell.solvers.CartesianMesh;
 
 public class CurveRenderer implements DrawPaneModel {
+	private final static Logger lg = LogManager.getLogger(CurveRenderer.class);
 	//
 	DisplayAdapterService displayAdapterService;
 	java.awt.TexturePaint highlightTexture = null;
@@ -163,10 +166,6 @@ public boolean curveSatisfyWorldConstraints(Curve curve) {
 }
 
 
-/**
- * This method was created in VisualAge.
- * @param coord cbit.vcell.geometry.Coordinate
- */
 private double distanceToProjectedCurve(java.awt.geom.Point2D.Double pickPoint, CurveRendererCurveInfo crci) {
 	Curve curve = crci.getCurve();
 	Point2D.Double[] p2d = crci.fetchProjectedCurvePoints(getScaling2D(),getNormalAxis());
@@ -272,17 +271,12 @@ public void draw(java.awt.Graphics g) {
 				drawControlPoints(g2D, crci, bSatisfyWorldConstraints);
 			}
 		}
-	}catch (Throwable e){
-		e.printStackTrace(System.out);
+	}catch (Exception e){
+		lg.error(e);
 	}
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (8/13/00 3:59:42 PM)
- * @param g2d java.awt.Graphics2D
- */
 private void drawControlPoints(java.awt.Graphics2D g2D, CurveRendererCurveInfo crci, boolean bSatisfyWorldConstraints) {
 	if (getSelection() != null && getSelection().getCurve() == crci.getCurve()) {
 		if (crci.getSubSelectionType() != SUBSELECTION_CONTROL_POINT) {
@@ -316,12 +310,6 @@ private void drawControlPoints(java.awt.Graphics2D g2D, CurveRendererCurveInfo c
 	}
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (8/13/00 3:59:42 PM)
- * @param g2d java.awt.Graphics2D
- */
 private void drawCurve(
 	java.awt.Graphics2D g2D,
 	CurveRendererCurveInfo crci,
@@ -403,12 +391,6 @@ private void drawCurve(
 	}
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (10/15/00 1:40:02 PM)
- * @param mousePoint java.awt.Point
- */
 public CurveSelectionInfo extend(Coordinate pickPoint) {
 	if(getSelection() == null){
 		return null;
@@ -692,10 +674,6 @@ private double getMinPickDistance(Curve curve){
 
 }
 
-/**
- * Sets the normalAxis property (int) value.
- * @param normalAxis The new value for the property.
- */
 public int getNormalAxis() {
 	return fieldNormalAxis;
 }
@@ -925,13 +903,6 @@ private CurveSelectionInfo pickControlPoint(Coordinate pickPoint, ControlPointCu
 	return csi;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (7/18/00 4:08:13 PM)
- * @return int
- * @param point java.awt.Point
- */
 private int pickControlPointProjected(Coordinate pickPoint3D, ControlPointCurve pickCurve) {
 	Point2D.Double pickPoint2D = CurveRendererCurveInfo.projectAndScale3DPoint(pickPoint3D, getNormalAxis(), getScaling2D());
 	double minPickDistance = getMinPickDistance(pickCurve);
@@ -1009,13 +980,6 @@ private CurveSelectionInfo pickU(Coordinate pickPoint,Curve pickCurve) {
 	return csi;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (10/10/00 12:50:48 PM)
- * @return int
- * @param pickCoord cbit.vcell.geometry.Coordinate
- */
 public double pickUProjected(Coordinate pickPoint3D, Curve pickCurve){
 	//Must implement
 	/*
@@ -1056,11 +1020,6 @@ public double pickUProjected(Coordinate pickPoint3D, Curve pickCurve){
 	return 0;
 }
 
-
-/**
- * This method was created in VisualAge.
- * @param curve cbit.vcell.geometry.Curve
- */
 public void removeAllCurves() {
 	curveTable.clear();
 	selectNothing();
@@ -1115,13 +1074,6 @@ public void removeSelected(int operation) {
 	}
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (10/19/00 3:04:55 PM)
- * @param curve cbit.vcell.geometry.Curve
- * @param lwm double
- */
 public void renderPropertyEditable(Curve curve, boolean editable) {
 	if (curveTable.containsKey(curve)) {
 		CurveRendererCurveInfo crci = (CurveRendererCurveInfo) curveTable.get(curve);
@@ -1129,13 +1081,6 @@ public void renderPropertyEditable(Curve curve, boolean editable) {
 	}
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (10/19/00 3:04:55 PM)
- * @param curve cbit.vcell.geometry.Curve
- * @param lwm double
- */
 public void renderPropertyLineWidthMultiplier(Curve curve, double lwm) {
 	if (curveTable.containsKey(curve)) {
 		CurveRendererCurveInfo crci = (CurveRendererCurveInfo) curveTable.get(curve);
@@ -1143,13 +1088,6 @@ public void renderPropertyLineWidthMultiplier(Curve curve, double lwm) {
 	}
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (10/19/00 3:04:55 PM)
- * @param curve cbit.vcell.geometry.Curve
- * @param lwm double
- */
 public void renderPropertySegmentColors(Curve curve, int[] segmentColors) {
 	if (curveTable.containsKey(curve)) {
 		CurveRendererCurveInfo crci = (CurveRendererCurveInfo) curveTable.get(curve);
@@ -1157,13 +1095,6 @@ public void renderPropertySegmentColors(Curve curve, int[] segmentColors) {
 	}
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (10/19/00 3:04:55 PM)
- * @param curve cbit.vcell.geometry.Curve
- * @param lwm double
- */
 public void renderPropertySegmentIndexes(Curve curve, int[] segmentIndexes) {
 	if (curveTable.containsKey(curve)) {
 		CurveRendererCurveInfo crci = (CurveRendererCurveInfo) curveTable.get(curve);
@@ -1171,13 +1102,6 @@ public void renderPropertySegmentIndexes(Curve curve, int[] segmentIndexes) {
 	}
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (10/19/00 3:04:55 PM)
- * @param curve cbit.vcell.geometry.Curve
- * @param lwm double
- */
 public void renderPropertySelectable(Curve curve, boolean selectable) {
 	if (curveTable.containsKey(curve)) {
 		CurveRendererCurveInfo crci = (CurveRendererCurveInfo) curveTable.get(curve);
@@ -1185,13 +1109,6 @@ public void renderPropertySelectable(Curve curve, boolean selectable) {
 	}
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (10/19/00 3:04:55 PM)
- * @param curve cbit.vcell.geometry.Curve
- * @param lwm double
- */
 public void renderPropertySubSelectionType(Curve curve, int subSelectionType) {
 	if (subSelectionType == SUBSELECTION_NONE || 
 		subSelectionType == SUBSELECTION_SEGMENT || 
@@ -1207,13 +1124,6 @@ public void renderPropertySubSelectionType(Curve curve, int subSelectionType) {
 	}
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (10/19/00 3:04:55 PM)
- * @param curve cbit.vcell.geometry.Curve
- * @param lwm double
- */
 public void renderPropertyVisible(Curve curve, boolean visible) {
 	if (curveTable.containsKey(curve)) {
 		CurveRendererCurveInfo crci = (CurveRendererCurveInfo) curveTable.get(curve);
@@ -1221,11 +1131,6 @@ public void renderPropertyVisible(Curve curve, boolean visible) {
 	}
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (8/12/00 5:43:16 PM)
- */
 public void selectNext() {
 	if (getSelection() != null) {
 		if (getSelection().getType() == CurveSelectionInfo.TYPE_CONTROL_POINT) {
@@ -1323,12 +1228,6 @@ public void setNormalAxis(int normalAxis) {
 	updateOriginAndScaling2D();
 }
 
-
-/**
- * Sets the scaling2D property (java.awt.geom.Point2D.Double) value.
- * @param scaling2D The new value for the property.
- * @see #getScaling2D
- */
 private void setOrigin2D(Point2D.Double origin2D) {
 	if (origin2D == null && fieldOrigin2D == null) {
 		return;
@@ -1402,12 +1301,6 @@ private void setSelectionValid(boolean selectionValid) {
 	firePropertyChange("selectionValid", new Boolean(oldValue), new Boolean(selectionValid));
 }
 
-
-/**
- * Sets the worldDelta property (cbit.vcell.geometry.Coordinate) value.
- * @param worldDelta The new value for the property.
- * @see #getWorldDelta
- */
 public void setWorldDelta(org.vcell.util.Coordinate wd) {
 	if(wd == null && fieldWorldDelta == null){
 		return;
@@ -1423,12 +1316,6 @@ public void setWorldDelta(org.vcell.util.Coordinate wd) {
 	firePropertyChange("worldDelta", oldValue, wd);
 }
 
-
-/**
- * Sets the worldDelta property (cbit.vcell.geometry.Coordinate) value.
- * @param worldDelta The new value for the property.
- * @see #getWorldDelta
- */
 public void setWorldOrigin(org.vcell.util.Coordinate wo) {
 	if(wo == null && fieldWorldOrigin == null){
 		return;

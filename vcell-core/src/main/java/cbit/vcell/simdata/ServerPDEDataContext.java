@@ -29,13 +29,7 @@ public class ServerPDEDataContext extends PDEDataContext {
 	private User user = null;
 	private OutputContext outputContext = null;
 
-/**
- * Insert the method's description here.
- * Creation date: (3/2/2001 12:38:48 AM)
- * @param dataSetController cbit.vcell.server.DataSetController
- * @param simulationIdentifier java.lang.String
- */
-public ServerPDEDataContext(OutputContext outputContext,User user0, DataServerImpl dataServerImpl, VCDataIdentifier vcdID) throws Exception { 
+public ServerPDEDataContext(OutputContext outputContext,User user0, DataServerImpl dataServerImpl, VCDataIdentifier vcdID) throws Exception {
 	super();
 	user = user0;
 	setDataServerImpl(dataServerImpl);
@@ -87,25 +81,11 @@ public PlotData getLineScan(java.lang.String variable, double time, SpatialSelec
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (3/19/2004 11:31:29 AM)
- * @return cbit.vcell.simdata.SimDataBlock
- * @param varName java.lang.String
- * @param time double
- */
 protected ParticleDataBlock getParticleDataBlock(double time) throws DataAccessException {
 	return getDataServerImpl().getParticleDataBlock(user, getVCDataIdentifier(), time);
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (3/19/2004 11:31:29 AM)
- * @return cbit.vcell.simdata.SimDataBlock
- * @param varName java.lang.String
- * @param time double
- */
 protected SimDataBlock getSimDataBlock(java.lang.String varName, double time) throws DataAccessException {
 	return getDataServerImpl().getSimDataBlock(getOutputContext(),user, getVCDataIdentifier(), varName, time);
 }
@@ -117,9 +97,6 @@ public DataOperationResults doDataOperation(DataOperation dataOperation) throws 
 
 /**
  * retrieves a time series (single point as a function of time) of a specified spatial data set.
- *
- * @param variable name of variable to be sampled
- * @param index identifies index into data array.
  *
  * @returns annotated array of 'concentration vs. time' in a plot ready format.
  *
@@ -148,16 +125,11 @@ private void initialize() {
 			setVariableName(getVariableNames()[0]);
 		}
 	} catch (DataAccessException exc) {
-		exc.printStackTrace(System.out);
+		lg.error(exc);
 	}
 }
 
 
-/**
- * This method was created in VisualAge.
- *
- * @param exportSpec cbit.vcell.export.server.ExportSpecs
- */
 public void makeRemoteFile(ExportSpecs exportSpecs) throws DataAccessException {
 	dataServerImpl.makeRemoteFile(getOutputContext(),user, exportSpecs);
 }
@@ -181,7 +153,7 @@ public void refreshIdentifiers() {
 		//if after referesh the variable is set again, the property won't propagate
 		externalRefresh();
 	} catch (DataAccessException exc) {
-		exc.printStackTrace(System.out);
+		lg.error(exc);
 	}
 }
 
@@ -194,16 +166,11 @@ public void refreshTimes() {
 	try {
 		setTimePoints(getDataServerImpl().getDataSetTimes(user, getVCDataIdentifier()));
 	} catch (DataAccessException exc) {
-		exc.printStackTrace(System.out);
+		lg.error(exc);
 	}
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (3/2/2001 12:36:13 AM)
- * @param newDataSetController cbit.vcell.server.DataSetController
- */
 private void setDataServerImpl(DataServerImpl newDataServerImpl) {
 	dataServerImpl = newDataServerImpl;
 }

@@ -12,6 +12,8 @@ package cbit.vcell.solver.server;
 
 import java.io.Serializable;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.Compare;
 
 //import cbit.vcell.messaging.db.SimulationJobStatusPersistent.SchedulerStatus;
@@ -19,6 +21,7 @@ import cbit.vcell.server.HtcJobID;
 import cbit.vcell.server.SimulationJobStatusPersistent.SchedulerStatus;
 
 public class SimulationMessagePersistent implements Serializable {
+	private final static Logger lg = LogManager.getLogger(SimulationMessagePersistent.class);
 	
 	public enum DetailedState {		
 		UNKNOWN,
@@ -192,7 +195,7 @@ public class SimulationMessagePersistent implements Serializable {
 					}
 				}
 			} catch (Exception ex) {
-				ex.printStackTrace(System.out);
+				lg.error(ex);
 			}
 		}
 		return null;

@@ -133,7 +133,7 @@ public class Reconnector {
 				}
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			lg.error(e);
 		}
 	}
 }

@@ -13,7 +13,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 import cbit.vcell.export.server.FileDataContainerManager;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 public class NrrdWriter {
+	private final static Logger lg = LogManager.getLogger(NrrdWriter.class);
 /**
  * Insert the method's description here.
  * Creation date: (4/26/2004 4:26:18 PM)
@@ -68,15 +72,6 @@ private static String getArrayFieldString(String name, String[] data)  {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (4/26/2004 10:51:32 AM)
- * @param headerFileName java.lang.String
- * @param baseDir java.io.File
- * @param nrrdInfo cbit.vcell.export.nrrd.NrrdInfo
- * @exception java.io.IOException The exception description.
- * @exception java.io.FileNotFoundException The exception description.
- */
 public static NrrdInfo writeNRRD(NrrdInfo nrrdInfo,FileDataContainerManager fileDataContainerManager) throws IOException{
 	// write header first
 	nrrdInfo.setHeaderFileID(fileDataContainerManager.getNewFileDataContainerID());
@@ -107,7 +102,7 @@ public static NrrdInfo writeNRRD(NrrdInfo nrrdInfo,FileDataContainerManager file
 			fileDataContainerManager.append(nrrdInfo.getHeaderFileID(),"\n");
 		}
 	}finally {
-		if(headerFileWriter != null){try{headerFileWriter.close();}catch(Exception e){e.printStackTrace();}}
+		if(headerFileWriter != null){try{headerFileWriter.close();}catch(Exception e){lg.error(e);}}
 	}
 	// if we didn't want a detached header, append the datafile
 	//BufferedOutputStream headerdOut = null;
@@ -127,8 +122,8 @@ public static NrrdInfo writeNRRD(NrrdInfo nrrdInfo,FileDataContainerManager file
 //			}
 //			headerdOut.flush();
 //		}finally {
-//			if(headerdOut != null){try{headerdOut.close();}catch(Exception e){e.printStackTrace();}}
-//			if(dataIN != null){try{dataIN.close();}catch(Exception e){e.printStackTrace();}}
+//			if(headerdOut != null){try{headerdOut.close();}catch(Exception e){lg.error(e);}}
+//			if(dataIN != null){try{dataIN.close();}catch(Exception e){lg.error(e);}}
 //		}
 	}
 	// successful write

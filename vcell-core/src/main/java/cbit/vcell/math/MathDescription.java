@@ -62,7 +62,7 @@ public class MathDescription implements Versionable, Matchable, SymbolTable, Ser
 	}
 
 	private transient SourceSymbolMapping sourceSymbolMapping;
-	private final static Logger logger = LogManager.getLogger(MathDescription.class);
+	private final static Logger lg = LogManager.getLogger(MathDescription.class);
 
 	public static final TreeMap<Long,TreeSet<String>> originalHasLowPrecisionConstants = new TreeMap<>();
 	public final static String MATH_FUNC_INIT_SUFFIX_PREFIX = "_init";
@@ -124,7 +124,6 @@ public MathDescription(MathDescription mathDescription) {
 	try {
 		read_database(new CommentStringTokenizer(mathDescription.getVCML_database()));
 	}catch (MathException e){
-		e.printStackTrace(System.out);
 		throw new RuntimeException(e.getMessage(), e);
 	}
 }
@@ -287,8 +286,7 @@ public static void updateReservedSymbols(MathDescription updateThis,ReservedSymb
 					f.getExpression().substituteInPlace(f.getExpression(), new Expression("(1000000.0 / "+ExpressionUtils.value_molecules_per_uM_um3_NUMERATOR+")"));
 				}
 			} catch (ExpressionException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				lg.error(e);
 			}
 		}
 	}
@@ -887,7 +885,7 @@ private MathCompareResults compareEquivalentCanonicalMath(MathDescription newMat
 			return oldMathDesc.compareInvariantAttributes(newMathDesc,true);
 		}
 	}catch (Exception e){
-		logger.error("unexpected failure comparing math descriptions: "+e.getMessage(), e);
+		lg.error("unexpected failure comparing math descriptions: "+e.getMessage(), e);
 		logMathTexts(this, newMathDesc, Decision.MathDifferent_FAILURE_UNKNOWN, "Failure comparing math: "+e.getMessage());
 		return new MathCompareResults(Decision.MathDifferent_FAILURE_UNKNOWN, "failed to compare math: "+e.getMessage());
 	}
@@ -971,16 +969,16 @@ private static boolean compareUpdate(Expression nExp, Expression oExp, Consumer<
 }
 
 private static void logMathTexts(MathDescription math1, MathDescription math2, Decision decision, String msg){
-	if (logger.isTraceEnabled()) {
+	if (lg.isTraceEnabled()) {
 		try {
-		logger.trace("maths different: "+decision.name()+" details: "+msg
+		lg.trace("maths different: "+decision.name()+" details: "+msg
 				+"\n===================MATH 1==================\n"
 				+ math1.getVCML_database() + "\n"
 				+ "==================MATH 2====================\n"
 				+ math2.getVCML_database() + "\n"
 				+ "==================END MATHS=================");
 		}catch (Exception e){
-			logger.error("error logging math description text: "+e.getMessage(), e);
+			lg.error("error logging math description text: "+e.getMessage(), e);
 		}
 	}
 }
@@ -1124,7 +1122,7 @@ public static MathDescription fromEditor(MathDescription oldMathDesc, String vcm
 	// compute warning string (if necessary)
 	//
 	if (!mathDesc.isValid()){
-		logger.warn("Math is invalid after parsing: '"+mathDesc.getWarning()+"'");
+		lg.warn("Math is invalid after parsing: '"+mathDesc.getWarning()+"'");
 	}
 	
 	return mathDesc;
@@ -1268,8 +1266,7 @@ public static Function[] getFlattenedFunctions(MathSymbolTableFactory mathSymbol
 						exp1 = simSymbolTable.substituteFunctions(exp1);
 						functions[i] = new Function(function.getName(),exp1.flatten(),function.getDomain());
 					} catch (MathException e) {
-						e.printStackTrace(System.out);
-						throw new RuntimeException("Substitute function failed on function "+function.getName()+" "+e.getMessage());
+						throw new RuntimeException("Substitute function failed on function "+function.getName()+" "+e.getMessage(), e);
 					}
 				}
 			}
@@ -1654,7 +1651,7 @@ public String getVCML_database(boolean includeComments) throws MathException {
 	}
 	buffer.append("}\n");
 	final String rval = buffer.toString();		
-	logger.debug(rval);
+	lg.debug(rval);
 	return rval;
 }
 
@@ -2004,7 +2001,7 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 				var.getExpression().evaluateConstant();
 			} catch (Exception ex) {
 				String msg = "Constant cannot be evaluated to a number, "+var.getName()+"="+var.getExpression().infix();
-				logger.error(msg, ex);
+				lg.error(msg, ex);
 				Issue issue = new Issue(var, issueContext, IssueCategory.MathDescription_Constant_NotANumber, VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_CONSTANT, var.getExpression().infix()), Issue.SEVERITY_ERROR);
 				issueList.add(issue);
 			}
@@ -2145,7 +2142,7 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 					try{
 						iniExp.bindExpression(this);
 					}catch(Exception ex){
-						ex.printStackTrace(System.out);
+						lg.error(ex);
 						setWarning(ex.getMessage());
 					}				
 				}
@@ -2155,7 +2152,7 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 					try{
 						probExp.bindExpression(this);
 					}catch(Exception ex){
-						ex.printStackTrace(System.out);
+						lg.error(ex);
 						setWarning(ex.getMessage());
 					}
 				}
@@ -2358,7 +2355,7 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 						//geometry.getGeometrySurfaceDescription().updateAll();
 						//regions = geometry.getGeometrySurfaceDescription().getGeometricRegions();
 					//}catch (Exception e){
-						//e.printStackTrace(System.out);
+						//lg.error(e);
 					//}
 				//}
 				if (regions==null){
@@ -2423,19 +2420,19 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 				}
 				}
 		//}catch (GeometryException e){
-			//e.printStackTrace(System.out);
+			//lg.error(e);
 			//setWarning("error validating MathDescription: "+e.getMessage());
 			//return false;
 		//}catch (ImageException e){
-			//e.printStackTrace(System.out);
+			//lg.error(e);
 			//setWarning("error validating MathDescription: "+e.getMessage());
 			//return false;
 		//}catch (ExpressionException e){
-			//e.printStackTrace(System.out);
+			//lg.error(e);
 			//setWarning("error validating MathDescription: "+e.getMessage());
 			//return false;
 		}catch (Exception e){
-			e.printStackTrace(System.out);
+			lg.error(e);
 			Issue issue = new Issue(geometry, issueContext, IssueCategory.MathDescription_SpatialModel_Geometry,	e.getMessage(), Issue.SEVERITY_ERROR);
 			issueList.add(issue);
 		}
@@ -3129,7 +3126,6 @@ if(name.equals("ATP/ADP"))
 			throw new MathFormatException("unexpected identifier "+tokenStr);
 		}		
 	}catch (Exception e){
-		e.printStackTrace(System.out);
 		throw new MathException("line #" + tokens.lineIndex() + " Exception: "+e.getMessage(), e);
 	}
 	refreshDependencies();
@@ -3149,7 +3145,7 @@ public void refreshDependencies() {
 		try {
 			var.bind(this);
 		} catch (ExpressionBindingException e) {
-			logger.warn("unable to bind expression for math variable "+var.getName()+" when reading from VCML: "+e.getMessage());
+			lg.warn("unable to bind expression for math variable "+var.getName()+" when reading from VCML: "+e.getMessage());
 		}
 	}
 
@@ -3415,9 +3411,9 @@ public static MathCompareResults testEquivalency(MathSymbolTableFactory mathSymb
 					//try again to see whether invariants are equivalent after rename
 					MathCompareResults invariantResults2 = newMath.compareInvariantAttributes(copyMath1, false);
 					if (!invariantResults2.isEquivalent()) {
-						logger.error("Could not fix invariants by renaming");
-						logger.error("Initial invariantResults: "+invariantResults);
-						logger.error("After rename: "+invariantResults2);
+						lg.error("Could not fix invariants by renaming");
+						lg.error("Initial invariantResults: "+invariantResults);
+						lg.error("After rename: "+invariantResults2);
 						if (!invariantResults2.decision.equals(Decision.MathDifferent_DIFFERENT_NUMBER_OF_VARIABLES)) {
 							// can't be equivalent or equal
 							return invariantResults2;
@@ -3429,7 +3425,7 @@ public static MathCompareResults testEquivalency(MathSymbolTableFactory mathSymb
 					oldMath = copyMath1;
 				} else {
 					// could not rename variables, may not have legacy naming issues
-					logger.error("Attempt to rename legacy variables failed");
+					lg.error("Attempt to rename legacy variables failed");
 					if (!invariantResults.decision.equals(Decision.MathDifferent_DIFFERENT_NUMBER_OF_VARIABLES)) {
 						// can't be equivalent or equal
 						return invariantResults;
@@ -3455,7 +3451,7 @@ public static MathCompareResults testEquivalency(MathSymbolTableFactory mathSymb
 		}
 	}catch (Exception e){
 		String msg = "failure while testing for math equivalency: "+e.getMessage();
-		logger.error(msg, e);
+		lg.error(msg, e);
 		return new MathCompareResults(Decision.MathDifferent_FAILURE_UNKNOWN, e.getMessage());
 	}
 }
@@ -3685,7 +3681,7 @@ private static boolean tryLegacyVarNameDomainExtensive(MathDescription mathDescr
 			}
 		}
 		if (nameMatches == 0) {
-			logger.error("did not find any match for variable "+var.getName());
+			lg.error("did not find any match for variable "+var.getName());
 			return false;
 		}
 		if (nameMatches > 1) {
@@ -3701,11 +3697,11 @@ private static boolean tryLegacyVarNameDomainExtensive(MathDescription mathDescr
 					Equation eq = sd.getEquation(var);
 					if (eq != null) {
 						if (!eq.getRateExpression().isZero()) {
-							logger.error("variable "+var.getName()+" mapped to constant but has non-zero rate equation: "+eq.getRateExpression());
+							lg.error("variable "+var.getName()+" mapped to constant but has non-zero rate equation: "+eq.getRateExpression());
 							return false;
 						}
 						if (eq instanceof PdeEquation && !((PdeEquation)eq).getDiffusionExpression().isZero()) {
-							logger.error("variable "+var.getName()+" mapped to constant but has non-zero diffusion: "+((PdeEquation)eq).getDiffusionExpression());
+							lg.error("variable "+var.getName()+" mapped to constant but has non-zero diffusion: "+((PdeEquation)eq).getDiffusionExpression());
 							return false;
 						}
 						sd.removeEquation(var);
@@ -3746,7 +3742,7 @@ private static boolean tryLegacyVarNameDomainExtensive(MathDescription mathDescr
 				}
 			}
 		} catch (Exception e) {
-			logger.error("failed to rename legacy variable "+oldName, e);
+			lg.error("failed to rename legacy variable "+oldName, e);
 			return false;
 		}
 	}
@@ -3778,11 +3774,11 @@ private static boolean tryLegacyVarNameDomainExtensive(MathDescription mathDescr
 					Equation eq = sd.getEquation(oldVar);
 					if (eq != null) {
 						if (!eq.getRateExpression().isZero()) {
-							logger.error("variable "+oldVar.getName()+" mapped to constant but has non-zero rate equation: "+eq.getRateExpression());
+							lg.error("variable "+oldVar.getName()+" mapped to constant but has non-zero rate equation: "+eq.getRateExpression());
 							return false;
 						}
 						if (eq instanceof PdeEquation && !((PdeEquation)eq).getDiffusionExpression().isZero()) {
-							logger.error("variable "+oldVar.getName()+" mapped to constant but has non-zero diffusion: "+((PdeEquation)eq).getDiffusionExpression());
+							lg.error("variable "+oldVar.getName()+" mapped to constant but has non-zero diffusion: "+((PdeEquation)eq).getDiffusionExpression());
 							return false;
 						}
 						sd.removeEquation(oldVar);
@@ -3835,7 +3831,7 @@ private static boolean tryLegacyVarNameDomainExtensive(MathDescription mathDescr
 					clonedVar.setDomain(new Domain(sd));
 					mathDescription1.addVariable0(clonedVar);
 				} catch (ClassNotFoundException | ExpressionBindingException | IOException | MathException e) {
-					logger.error("could not add new variable "+newName);
+					lg.error("could not add new variable "+newName);
 					return false;
 				}
 			}
@@ -3906,7 +3902,7 @@ private static boolean tryLegacyVarNameDomainExtensive(MathDescription mathDescr
 							}
 							msd.removeJumpCondition(oldVar);
 						} catch (ClassNotFoundException | IOException | MathException e) {
-							logger.error("could not split jump condition for "+oldName);
+							lg.error("could not split jump condition for "+oldName);
 							return false;
 						}
 					}

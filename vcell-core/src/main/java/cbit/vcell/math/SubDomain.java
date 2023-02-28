@@ -232,7 +232,7 @@ public abstract class SubDomain extends CommentedBlockObject implements Serializ
 						try{
 							varIniExp.bindExpression(mathDesc);
 						}catch(Exception ex){
-							ex.printStackTrace(System.out);
+							lg.error(e);
 							throw new MathException(ex.getMessage());
 						}
 						VarIniCount vic= new VarIniCount(var,varIniExp);
@@ -256,7 +256,7 @@ public abstract class SubDomain extends CommentedBlockObject implements Serializ
 						try{
 							varIniExp.bindExpression(mathDesc);
 						}catch(Exception ex){
-							ex.printStackTrace(System.out);
+							lg.error(e);
 							throw new MathException(ex.getMessage());
 						}
 						VarIniPoissonExpectedCount vic= new VarIniPoissonExpectedCount(var,varIniExp);
@@ -325,7 +325,7 @@ public abstract class SubDomain extends CommentedBlockObject implements Serializ
 										exp.bindExpression(mathDesc);
 									}
 									catch(Exception ex){
-										ex.printStackTrace(System.out);
+										lg.error(e);
 										throw new MathException(ex.getMessage());
 									}
 									Action action = Action.createIncrementAction(var,exp);

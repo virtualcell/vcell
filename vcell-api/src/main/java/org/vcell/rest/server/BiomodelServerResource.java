@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.restlet.data.LocalReference;
 import org.restlet.data.MediaType;
 import org.restlet.data.Reference;
@@ -33,7 +35,8 @@ import cbit.vcell.modeldb.BioModelRep;
 import freemarker.template.Configuration;
 
 public class BiomodelServerResource extends AbstractServerResource implements BiomodelResource {
-
+	private final static Logger lg = LogManager.getLogger(BiomodelServerResource.class);
+	
 	private String biomodelid;
 	
 	
@@ -131,10 +134,10 @@ public class BiomodelServerResource extends AbstractServerResource implements Bi
 				BiomodelRepresentation biomodelRep = new BiomodelRepresentation(bioModelRep);
 				return biomodelRep;
 			} catch (PermissionException e) {
-				e.printStackTrace();
+				lg.error(e);
 				throw new ResourceException(Status.CLIENT_ERROR_UNAUTHORIZED, "permission denied to requested resource");
 			} catch (ObjectNotFoundException e) {
-				e.printStackTrace();
+				lg.error(e);
 				throw new ResourceException(Status.CLIENT_ERROR_NOT_FOUND, "biomodel not found");
 			} catch (Exception e){
 				throw new ResourceException(Status.SERVER_ERROR_INTERNAL, e.getMessage());

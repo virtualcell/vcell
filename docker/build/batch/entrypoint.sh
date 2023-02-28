@@ -163,7 +163,8 @@ shift
 
 arguments=$*
 
-arguments=${arguments//$datadir_external/$datadir_internal}
+arguments=${arguments//$primary_datadir_external/$primary_datadir_internal}
+arguments=${arguments//$secondary_datadir_external/$secondary_datadir_internal}
 arguments=${arguments//$htclogdir_external/$htclogdir_internal}
 
 case $command in

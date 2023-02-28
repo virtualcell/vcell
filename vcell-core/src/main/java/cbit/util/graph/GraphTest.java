@@ -41,7 +41,7 @@ public static void main(java.lang.String[] args) {
 		testTopologicalSort();
 		
 	}catch (Throwable e){
-		e.printStackTrace(System.out);
+		e.printStackTrace();
 		System.exit(1);
 	}
 }
@@ -565,7 +565,7 @@ public static void testDigraphMethods() {
 		}
 		
 	}catch (Throwable e){
-		e.printStackTrace(System.out);
+		e.printStackTrace();
 		System.exit(1);
 	}
 }
@@ -609,7 +609,7 @@ public static void testTopologicalSort() {
 		}
 		
 	}catch (Throwable e){
-		e.printStackTrace(System.out);
+		e.printStackTrace();
 		System.exit(1);
 	}
 }

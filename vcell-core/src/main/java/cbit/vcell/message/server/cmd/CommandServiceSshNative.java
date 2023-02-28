@@ -115,7 +115,7 @@ public class CommandServiceSshNative extends CommandService {
 					commandOutputHolder.put(tryThisHost,tempCommandOutput);
 				}
 			} catch (Exception e) {
-				e.printStackTrace();
+				lg.error(e);
 				System.out.println("failed execution, using "+tryThisHost);
 				StringWriter sw = new StringWriter();
 				PrintWriter pw = new PrintWriter(sw);
@@ -155,8 +155,7 @@ public class CommandServiceSshNative extends CommandService {
 		try {
 			return new CommandServiceSshNative(remoteHostNames, username, this.installedKeyFile);
 		}catch (Exception e){
-			e.printStackTrace();
-			throw new RuntimeException(e.getMessage());
+			throw new RuntimeException(e.getMessage(), e);
 		}
 	}
 	

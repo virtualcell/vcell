@@ -1,5 +1,8 @@
 package org.jlibsedml.modelsupport;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -8,6 +11,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 class KisaoTermParser {
+    private final static Logger lg = LogManager.getLogger(KisaoTermParser.class);
+
     final String Kisao_OBO = "kisao_rev28_vSat_Jan_24_18-58-35_2009_UTC-2.obo";
 
     final String TERM_PATTERN = "\\[Term\\]";
@@ -87,7 +92,7 @@ class KisaoTermParser {
             }
         } catch (IOException e) {
             // TODO Auto-generated catch block
-            e.printStackTrace();
+            lg.error(e);
         }
         ontology.createRelations();
         return ontology;

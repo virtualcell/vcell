@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.restlet.data.LocalReference;
 import org.restlet.data.MediaType;
 import org.restlet.data.Reference;
@@ -35,6 +37,7 @@ import com.google.gson.Gson;
 import freemarker.template.Configuration;
 
 public class SimulationStatusServerResource extends AbstractServerResource implements SimulationStatusesResource {
+	private final static Logger lg = LogManager.getLogger(SimulationStatusServerResource.class);
 
     public static final String PARAM_USER = "user";
     public static final String PARAM_SIM_ID = "simId";
@@ -167,10 +170,10 @@ public class SimulationStatusServerResource extends AbstractServerResource imple
 		} catch (PermissionException ee){
 			throw new ResourceException(Status.CLIENT_ERROR_UNAUTHORIZED, "permission denied to requested resource");
 		} catch (DataAccessException e) {
-			e.printStackTrace();
+			lg.error(e);
 			throw new RuntimeException("failed to retrieve active jobs from VCell Database : "+e.getMessage());
 		} catch (SQLException e) {
-			e.printStackTrace();
+			lg.error(e);
 			throw new RuntimeException("failed to retrieve active jobs from VCell Database : "+e.getMessage());
 		}
 	}

@@ -121,7 +121,6 @@ public class NormalizedSampleFunction {
 		try {
 			roiImage = new UShortImage(pixels,getOrigin(),getExtent(),getISize().getX(),getISize().getY(),1);
 		} catch (ImageException e) {
-			e.printStackTrace();
 			throw new RuntimeException("failed to create image: "+e.getMessage(),e);
 		}
 		ROI roi = new ROI(roiImage, getName());

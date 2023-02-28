@@ -79,7 +79,7 @@ public class NonGUIFRAPTest {
 //			FormatDescriptor.create(bufferedImage, DataBuffer.TYPE_BYTE,null).createInstance(),
 //			"bmp",outputStream);
 //		}catch(Exception e){
-//			e.printStackTrace();
+//			lg.error(e);
 //		}
 //	}
 

@@ -93,8 +93,7 @@ Identifiable, IdentifiableProvider, IssueSource, Displayable, VCellSbmlName
 		try {
 			setVersion(version);
 		} catch (PropertyVetoException e) {
-			e.printStackTrace(System.out);
-			throw new RuntimeException(e.getMessage());
+			throw new RuntimeException(e.getMessage(), e);
 		}
 	}
 	/**
@@ -616,8 +615,8 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 					try {
 						fieldSimulations[i].setMathDescription((MathDescription)evt.getNewValue());
 					}catch (PropertyVetoException e){
-						System.out.println("error propagating math from SimulationContext '"+((SimulationContext)evt.getSource()).getName()+"' to Simulation '"+fieldSimulations[i].getName());
-						e.printStackTrace(System.out);
+						lg.error("error propagating math from SimulationContext '"+((SimulationContext)evt.getSource()).getName()+"' " +
+								"to Simulation '"+fieldSimulations[i].getName(), e);
 					}
 				}
 			}
@@ -912,7 +911,7 @@ private void updateSimulationOwners(){
 			sim.setSimulationOwner(getSimulationContext(sim));
 		} catch (ObjectNotFoundException e) {
 			sim.setSimulationOwner(null);
-			e.printStackTrace();
+			lg.error(e);
 		}
 	}
 }
@@ -1271,8 +1270,7 @@ public VCID getVCID(Identifiable identifiable) {
 	try {
 		vcid = VCID.fromString(className+"("+localName+")");
 	} catch (VCID.InvalidVCIDException e) {
-		e.printStackTrace();
-		throw new RuntimeException(e.getMessage());
+		throw new RuntimeException(e.getMessage(), e);
 	}
 	return vcid;
 }
@@ -1337,7 +1335,7 @@ public String getFreeSimulationName() {
 	}
 }
 
-private Simulation getSimulation(String name) {
+public Simulation getSimulation(String name) {
 	for (Simulation simulation : fieldSimulations){
 		if (simulation.getName().equals(name)) {
 			return simulation;

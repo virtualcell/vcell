@@ -306,8 +306,7 @@ public class Workflow implements Serializable, IssueSource {
 					task = taskClass.getConstructor(String.class).newInstance(token0);
 					workflow.addTask(task);
 				} catch (Exception e) {
-					e.printStackTrace();
-					throw new RuntimeException("failed to create task "+token0+" on line "+lineNumber+", reason = "+e.getMessage());
+					throw new RuntimeException("failed to create task "+token0+" on line "+lineNumber+", reason = "+e.getMessage(), e);
 				}
 			}else if (token0.contains(".")){
 				//
@@ -336,8 +335,7 @@ public class Workflow implements Serializable, IssueSource {
 						Field targetInputField = targetTask.getClass().getField(targetInputName);
 						dataInput = (DataInput)targetInputField.get(targetTask);
 					}catch (Exception e){
-						e.printStackTrace();
-						throw new RuntimeException("failed to resolve task input "+token0+" on line "+lineNumber);
+						throw new RuntimeException("failed to resolve task input "+token0+" on line "+lineNumber, e);
 					}
 					if (token1.contains(".")){
 						String[] sourceParts = token1.split("\\.");
@@ -353,8 +351,7 @@ public class Workflow implements Serializable, IssueSource {
 								throw new RuntimeException("failed to resolve task output "+token1+" on line "+lineNumber);
 							}
 						}catch (Exception e){
-							e.printStackTrace();
-							throw new RuntimeException("failed to resolve task output "+token1+" on line "+lineNumber);
+							throw new RuntimeException("failed to resolve task output "+token1+" on line "+lineNumber, e);
 						}
 					}else{
 						WorkflowParameter generalParameter = workflow.getParameter(token1);

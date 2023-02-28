@@ -15,6 +15,8 @@ import java.io.Serializable;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.CacheException;
 import org.vcell.util.CacheStatus;
 import org.vcell.util.Cacheable;
@@ -29,6 +31,8 @@ import cbit.vcell.resource.PropertyLoader;
  * This type was created in VisualAge.
  */
 public class DBCacheTable implements Pingable {
+	private final static Logger lg = LogManager.getLogger(DBCacheTable.class);
+
 	public static final long minute = 60000;
 
 	private double costRatio_MegaBytes_per_Minute = 1.0;
@@ -44,7 +48,6 @@ public class DBCacheTable implements Pingable {
 	private long maxMemSize = 0;
 	private double cleanupFraction = 0.8;
 
-	private boolean bQuiet = true;
 /**
  * This method was created in VisualAge.
  * @param expireTime long
@@ -64,16 +67,16 @@ public DBCacheTable(long expireTimeMillisec, long maxMemSize) {
 		try {
 			String cacheSize = PropertyLoader.getRequiredProperty(PropertyLoader.databaseCacheSizeProperty);
 			maxMemSize = Long.parseLong(cacheSize);
-			System.out.print("Database cache size="+maxMemSize+" (given by property file)");
+			lg.info("Database cache size="+maxMemSize+" (given by property file)");
 		}catch (Exception e){
 			maxMemSize = Runtime.getRuntime().totalMemory()/4;
-			System.out.println("Database cache size="+maxMemSize+" (given by 1/4 of Runtime.getRuntime().totalMemory())");
+			lg.info("Database cache size="+maxMemSize+" (given by 1/4 of Runtime.getRuntime().totalMemory())");
 		}
 	}else{
-		System.out.println("Database cache size="+maxMemSize+" (forced by application)");
+		lg.info("Database cache size="+maxMemSize+" (forced by application)");
 	}
 
-	System.out.println(" database object expiration="+(expireTimeMillisec/1000.0)+" seconds");
+	lg.info(" database object expiration="+(expireTimeMillisec/1000.0)+" seconds");
 	
 	this.expireTimeMillisec = expireTimeMillisec;
 
@@ -115,10 +118,10 @@ public synchronized Cacheable get(KeyValue key) {
 	if (timeWrapper != null) {
 		DbObjectWrapper objWrapper = (DbObjectWrapper) timeWrapper.getObject();
 		Cacheable cacheable = objWrapper.getWorkingCopy();
-//System.out.println("DBCacheTable.get: "+cacheable.getClass().getName());
+//lg.trace("DBCacheTable.get: "+cacheable.getClass().getName());
 		return cacheable;
 	} else {
-//System.out.println("DBCacheTable.get: null");
+//lg.trace("DBCacheTable.get: null");
 		return null;
 	}
 }
@@ -151,10 +154,10 @@ public synchronized Cacheable getCloned(KeyValue key) {
 	if (timeWrapper != null) {
 		DbObjectWrapper objWrapper = (DbObjectWrapper) timeWrapper.getObject();
 		Cacheable cacheable = objWrapper.getClonedCopy();
-//System.out.println("DBCacheTable.get: "+cacheable.getClass().getName());
+//lg.trace("DBCacheTable.get: "+cacheable.getClass().getName());
 		return cacheable;
 	} else {
-//System.out.println("DBCacheTable.get: null");
+//lg.trace("DBCacheTable.get: null");
 		return null;
 	}
 }
@@ -167,7 +170,7 @@ public synchronized void ping() {
 		if ((tw != null) && (tw.getAge() > expireTimeMillisec)) {
 			remove0(key);
 			bRemovedAny = true;
-//			System.out.println("Cachetable.ping(), expiring key="+key.toString());
+//			lg.trace("Cachetable.ping(), expiring key="+key.toString());
 		}
 	}
 	if (bRemovedAny){
@@ -220,8 +223,7 @@ public void putProtected(KeyValue key, Cacheable cacheable) throws CacheExceptio
 		//
 		dataSize = objData.length * 3;
 	}catch (IOException e){
-		e.printStackTrace(System.out);
-		throw new CacheException(e.getMessage());
+		throw new CacheException(e.getMessage(), e);
 	}
 	TimeWrapper oldTimeWrapper = put(key, new TimeWrapper(new DbObjectWrapper(cacheable,objData),dataSize,key));
 
@@ -229,7 +231,7 @@ public void putProtected(KeyValue key, Cacheable cacheable) throws CacheExceptio
 // checking to see if another object has the same key
 //
 if (oldTimeWrapper!=null){
-System.out.println("replacing object ALREADY IN DATABASE_CACHE "+oldTimeWrapper.getObject()+" at key "+key);
+lg.info("replacing object ALREADY IN DATABASE_CACHE "+oldTimeWrapper.getObject()+" at key "+key);
 }
 //
 // checking to see if same object (using compareEqual) already in hash
@@ -242,12 +244,12 @@ System.out.println("replacing object ALREADY IN DATABASE_CACHE "+oldTimeWrapper.
 //Cacheable cacheObj = objWrapper.getWorkingCopy();
 //if (cacheable != cacheObj && cacheable.compareEqual(cacheObj)){
 ////	throw new RuntimeException("DBCacheTable.put("+cacheable+"), already in cache as ("+cacheObj+")");
-//System.out.println("DBCacheTable.put("+cacheable+"), already in cache as ("+cacheObj+")");
+//lg.trace("DBCacheTable.put("+cacheable+"), already in cache as ("+cacheObj+")");
 //}
 //}
 //}
 	
-//	System.out.print("put(cacheable="+cacheable+") ");
+//	lg.trace("put(cacheable="+cacheable+") ");
 	show();	
 }
 public void putUnprotected(KeyValue key, Cacheable cacheable) throws CacheException {
@@ -263,8 +265,7 @@ public void putUnprotected(KeyValue key, Cacheable cacheable) throws CacheExcept
 		byte[] objData = org.vcell.util.BeanUtils.toSerialized(cacheable);
 		dataSize = objData.length;
 	}catch (IOException e){
-		e.printStackTrace(System.out);
-		throw new CacheException(e.getMessage());
+		throw new CacheException(e.getMessage(), e);
 	}
 	TimeWrapper oldTimeWrapper = put(key, new TimeWrapper(new DbObjectWrapper(cacheable),dataSize,key));
 
@@ -272,7 +273,7 @@ public void putUnprotected(KeyValue key, Cacheable cacheable) throws CacheExcept
 // checking to see if another object has the same key
 //
 if (oldTimeWrapper!=null){
-System.out.println("replacing object ALREADY IN DATABASE_CACHE "+oldTimeWrapper.getObject()+" at key "+key);
+lg.info("replacing object ALREADY IN DATABASE_CACHE "+oldTimeWrapper.getObject()+" at key "+key);
 }
 //
 // checking to see if same object (using compareEqual) already in hash
@@ -285,12 +286,12 @@ System.out.println("replacing object ALREADY IN DATABASE_CACHE "+oldTimeWrapper.
 //Cacheable cacheObj = objWrapper.getWorkingCopy();
 //if (cacheable != cacheObj && cacheable.compareEqual(cacheObj)){
 ////	throw new RuntimeException("DBCacheTable.put("+cacheable+"), already in cache as ("+cacheObj+")");
-//System.out.println("DBCacheTable.put("+cacheable+"), already in cache as ("+cacheObj+")");
+//lg.trace("DBCacheTable.put("+cacheable+"), already in cache as ("+cacheObj+")");
 //}
 //}
 //}
 	
-//	System.out.print("put(cacheable="+cacheable+") ");
+//	lg.trace("put(cacheable="+cacheable+") ");
 	show();	
 }
 /**
@@ -358,7 +359,7 @@ private synchronized void resize(long desiredMemSize) {
 		//
 		// evaluate how we did (may need to increase 'costPerByte' if poor convergence)
 		//
-		System.out.println("resize(): desiredMemSize="+desiredMemSize+"  cost min="+minCost+", max="+maxCost+", avg="+avgCost+" thresholdCost="+thresholdCost);
+		lg.info("resize(): desiredMemSize="+desiredMemSize+"  cost min="+minCost+", max="+maxCost+", avg="+avgCost+" thresholdCost="+thresholdCost);
 		show();
 	}
 }
@@ -366,8 +367,6 @@ private synchronized void resize(long desiredMemSize) {
  * This method was created in VisualAge.
  */
 public void show() {
-	if (!bQuiet){
-		System.out.println("DBCacheTable ("+hashTable.size()+" entries): currMemSize="+currMemSize+" maxMemSize="+maxMemSize);
-	}
+	lg.trace("DBCacheTable ("+hashTable.size()+" entries): currMemSize="+currMemSize+" maxMemSize="+maxMemSize);
 }
 }

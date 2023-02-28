@@ -70,10 +70,9 @@ import java.util.Collections;
 
 
 public class SEDMLImporter {
-
 	private final static Logger logger = LogManager.getLogger(SEDMLImporter.class);
-
 	private final String MODEL_REFERENCE_ERROR = "Unresolvable Model(s) encountered. Either there is invalid SED-ML, or changed models reference each other.";
+
 	
 	private SedML sedml;
 	private ExternalDocInfo externalDocInfo;
@@ -398,7 +397,7 @@ public class SEDMLImporter {
 						}
 						bioModels.get(i).refreshDependencies();
 					} catch (XmlParseException | PropertyVetoException e) {
-						e.printStackTrace();
+						logger.error(e);
 						return;
 					}
 				}
@@ -430,7 +429,7 @@ public class SEDMLImporter {
 				}
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error(e);
 			return;
 		}
 		// re-read XML into a single BioModel and replace docs List
@@ -439,7 +438,7 @@ public class SEDMLImporter {
 			String mergedXML = XmlUtil.xmlToString(dom, true);
 			mergedBM = XmlHelper.XMLToBioModel(new XMLSource(mergedXML));
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error(e);
 			return;
 		}
 		// merge succeeded, replace the list
@@ -944,19 +943,15 @@ public class SEDMLImporter {
 			}
 		} catch (PropertyVetoException e){
 			String message = "PropertyVetoException occured: " + e.getMessage();
-			logger.error(message, e);
 			throw new RuntimeException(message, e);
 		} catch (XmlParseException e){
 			String message = "XmlParseException occured: " + e.getMessage();
-			logger.error(message, e);
 			throw new RuntimeException(message, e);
 		} catch (VCLoggerException e){
 			String message = "VCLoggerException occured: " + e.getMessage();
-			logger.error(message, e);
 			throw new RuntimeException(message, e);
 		} catch (MappingException e){
 			String message = "MappingException occured: " + e.getMessage();
-			logger.error(message, e);
 			throw new RuntimeException(message, e);
 		} catch (Exception e) {
 			logger.error("Unknown error occured:" + e.getMessage());

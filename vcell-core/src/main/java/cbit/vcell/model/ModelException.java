@@ -27,4 +27,7 @@ public ModelException() {
 public ModelException(String s) {
 	super(s);
 }
+	public ModelException(String s, Exception e) {
+		super(s, e);
+	}
 }

@@ -8,6 +8,8 @@ import java.util.Vector;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
+import cbit.vcell.biomodel.BioModelTransforms;
+import cbit.vcell.xml.XMLSource;
 import org.apache.commons.io.FilenameUtils;
 import org.vcell.sbml.gui.ApplnSelectionAndStructureSizeInputPanel;
 import org.vcell.sbml.gui.SimulationSelectionPanel;
@@ -245,17 +247,19 @@ public class SbmlExtensionFilter extends SelectorExtensionFilter {
 		final int sbmlPkgVersion = 0;
 		boolean bRoundTripValidation = true;
 		if (selectedSimWOSBE == null) {
-			String resultString = XmlHelper.exportSBML(bioModel, sbmlLevel, sbmlVersion, sbmlPkgVersion, isSpatial, selectedSimContext, null, bRoundTripValidation);
+			String resultString = XmlHelper.exportSBML(bioModel, sbmlLevel, sbmlVersion, sbmlPkgVersion, isSpatial, selectedSimContext, bRoundTripValidation);
 			XmlUtil.writeXMLStringToFile(resultString, exportFile.getAbsolutePath(), true);
 			return;
 		} else {
+			BioModel clonedBM = XmlHelper.XMLToBioModel(new XMLSource(XmlHelper.bioModelToXML(bioModel)));
+			clonedBM.refreshDependencies();
 			String originalExportFilename = exportFile.getPath();
 			Files.deleteIfExists(Paths.get(originalExportFilename));
-			for (int sc = 0; sc < selectedSimWOSBE.getScanCount(); sc++) {
-				SimulationJob simJob = new SimulationJob(selectedSimWOSBE, sc, null);
-				String resultString = XmlHelper.exportSBML(bioModel, sbmlLevel, sbmlVersion, sbmlPkgVersion, isSpatial, selectedSimContext, simJob, bRoundTripValidation);
+			for (int jobIndex = 0; jobIndex < selectedSimWOSBE.getScanCount(); jobIndex++) {
+				BioModelTransforms.applyMathOverrides(selectedSimWOSBE, jobIndex, clonedBM);
+				String resultString = XmlHelper.exportSBML(clonedBM, sbmlLevel, sbmlVersion, sbmlPkgVersion, isSpatial, selectedSimContext, bRoundTripValidation);
 				// Need to export each parameter scan into a separate file
-				String newExportFileName = exportFile.getPath().substring(0, exportFile.getPath().indexOf(".xml")) + "_" + sc + ".xml";
+				String newExportFileName = exportFile.getPath().substring(0, exportFile.getPath().indexOf(".xml")) + "_" + jobIndex + ".xml";
 				Files.deleteIfExists(Paths.get(newExportFileName));
 				XmlUtil.writeXMLStringToFile(resultString, exportFile.getAbsolutePath(), true);
 				exportFile.renameTo(new File(newExportFileName));

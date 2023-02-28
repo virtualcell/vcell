@@ -165,8 +165,7 @@ protected String writeEquations(HashMap<Discontinuity, String> discontinuityName
 			newSlowRateVector = new RationalExpMatrix(numDependent,1);
 			newSlowRateVector.matmul(fastInvarianceMatrix,origSlowRateVector);
 		} catch (MatrixException ex) {
-			ex.printStackTrace();
-			throw new MathException(ex.getMessage());
+			throw new MathException(ex.getMessage(), ex);
 		}
 
 		sb.append("TRANSFORM\n");

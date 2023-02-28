@@ -37,12 +37,7 @@ public class RungeKuttaFehlbergSolver extends RungeKuttaSolver {
 	};
 	private static double[] c = { 16.0/135.0, 0.0, 6656.0/12825.0, 28561.0/56430.0, -9.0/50.0, 2.0/55.0 };
 	private static double[] e = { -1.0/360.0,  0.0, 128.0/4275.0, 2197.0/75240.0, -1.0/50.0, -2.0/55.0 };
-/**
- * ForwardEulerIntegrator constructor comment.
- * @param mathDesc cbit.vcell.math.MathDescription
- * @param sessionLog cbit.vcell.server.SessionLog
- * @param numVectors int
- */
+
 public RungeKuttaFehlbergSolver(SimulationTask simTask, File directory) throws SolverException {
 	super(simTask, directory, 3, 6);
 }
@@ -230,12 +225,8 @@ protected void integrate() throws cbit.vcell.solver.SolverException, UserStopExc
 			int keepEvery = ((DefaultOutputTimeSpec)taskDescription.getOutputTimeSpec()).getKeepEvery();
 			if ((iteration % keepEvery) != 0) updateResultSet();
 		}
-	} catch (ExpressionException expressionException) {
-		expressionException.printStackTrace(System.out);
-		throw new SolverException(expressionException.getMessage());
-	} catch (MathException mathException) {
-		mathException.printStackTrace(System.out);
-		throw new SolverException(mathException.getMessage());
+	} catch (ExpressionException | MathException e) {
+		throw new SolverException(e.getMessage(), e);
 	}
 }
 /**

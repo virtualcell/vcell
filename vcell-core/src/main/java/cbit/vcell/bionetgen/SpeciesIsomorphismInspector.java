@@ -326,7 +326,7 @@ public class SpeciesIsomorphismInspector {
 			
 		} catch (Throwable e) {
 			System.out.println("Uncaught exception in SpeciesIsomorphismInspector.main()");
-			e.printStackTrace(System.out);
+			e.printStackTrace();
 		}
 	}
 

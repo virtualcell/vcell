@@ -1,0 +1,1383 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<sbml xmlns="http://www.sbml.org/sbml/level2/version4" level="2" metaid="_149688" version="4" xmlns:html="http://www.w3.org/1999/xhtml">
+  <model id="MODEL1209230000" metaid="_149700" name="Bianconi2012 - EGFR and IGF1R pathway in lung cancer">
+    <notes>
+      <body xmlns="http://www.w3.org/1999/xhtml">
+        <div class="dc:title">Bianconi2012 - EGFR and IGF1R pathway in lung cancer</div>
+            <div class="dc:description">      <p>EGFR and IGF1R pathways play a key role in various human cancers and are crucial for tumour transformation and survival of malignant cells. High EGFR and IGF1R expression  and activity has been associated with multiple aspects of cancer progression including tumourigenesis, metastasis, resistance to chemotherapeutics and other molecularly targeted drugs. Here, the biological relationship between the proteins involved in EGFR and IGF1R pathways and the downstream MAPK and PIK3 networks has been modelled to study the time behaviour of the overall system, and the functional interdependencies among the receptors, the proteins and kinases involved.</p>
+                </div>
+            <div class="dc:bibliographicCitation">      <p>This model is described in the article:</p>
+                <div class="bibo:title">        <a href="http://identifiers.org/pubmed/21620944" title="Access to this publication">Computational model of EGFR and IGF1R pathways in lung cancer: a Systems Biology approach for Translational Oncology.</a>
+                    </div>
+                <div class="bibo:authorList">Bianconi F, Baldelli E, Ludovini V, Crinò L, Flacco A, Valigi P.</div>
+                <div class="bibo:Journal">Biotechnol Adv. 2012 Jan-Feb;30(1):142-53.</div>
+                <p>Abstract:</p>
+                <div class="bibo:abstract">        <p>In this paper we propose a Systems Biology approach to understand the molecular biology of the Epidermal Growth Factor Receptor (EGFR, also known as ErbB1/HER1) and type 1 Insulin-like Growth Factor (IGF1R) pathways in non-small cell lung cancer (NSCLC). This approach, combined with Translational Oncology methodologies, is used to address the experimental evidence of a close relationship among EGFR and IGF1R protein expression, by immunohistochemistry (IHC) and gene amplification, by in situ hybridization (FISH) and the corresponding ability to develop a more aggressive behavior. We develop a detailed in silico model, based on ordinary differential equations, of the pathways and study the dynamic implications of receptor alterations on the time behavior of the MAPK cascade down to ERK, which in turn governs proliferation and cell migration. In addition, an extensive sensitivity analysis of the proposed model is carried out and a simplified model is proposed which allows us to infer a similar relationship among EGFR and IGF1R activities and disease outcome.</p>
+                    </div>
+                </div>
+            <div class="dc:publisher">      <p>This model is hosted on        <a href="http://www.ebi.ac.uk/biomodels">BioModels Database</a>
+            and identified by:        <a href="http://identifiers.org/biomodels.db/MODEL1209230000">MODEL1209230000</a>
+            .        </p>
+                <p>To cite BioModels Database, please use:        <a href="http://identifiers.org/pubmed/20587024" title="Latest BioModels Database publication">BioModels Database: An enhanced, curated and annotated resource for published quantitative kinetic models</a>
+            .        </p>
+                </div>
+            <div class="dc:license">      <p>To the extent possible under law, all copyright and related or neighbouring rights to this encoded model have been dedicated to the public domain worldwide. Please refer to        <a href="http://creativecommons.org/publicdomain/zero/1.0/" title="Access to: CC0 1.0 Universal (CC0 1.0), Public Domain Dedication">CC0 Public Domain Dedication</a>
+            for more information.        </p>
+                </div>
+            </body>
+      
+    </notes>
+    <annotation>
+	<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+        <rdf:Description rdf:about="#_149700">
+	<dc:creator>
+	<rdf:Bag>
+	<rdf:li rdf:parseType="Resource">
+	<vCard:N rdf:parseType="Resource">
+	<vCard:Family>Chelliah</vCard:Family>
+	<vCard:Given>Vijayalakshmi</vCard:Given>
+	</vCard:N>
+	<vCard:EMAIL>viji@ebi.ac.uk</vCard:EMAIL>
+	<vCard:ORG rdf:parseType="Resource">
+	<vCard:Orgname>EMBL-EBI</vCard:Orgname>
+	</vCard:ORG>
+	</rdf:li>
+	<rdf:li rdf:parseType="Resource">
+	<vCard:N rdf:parseType="Resource">
+	<vCard:Family>Bianconi</vCard:Family>
+	<vCard:Given>Fortunato</vCard:Given>
+	</vCard:N>
+	<vCard:EMAIL>fortunato.bianconi@gmail.com</vCard:EMAIL>
+	<vCard:ORG rdf:parseType="Resource">
+	<vCard:Orgname>Univeristy of Perugia</vCard:Orgname>
+	</vCard:ORG>
+	</rdf:li>
+	</rdf:Bag>
+	</dc:creator>
+	<dcterms:created rdf:parseType="Resource">
+	<dcterms:W3CDTF>2012-11-20T18:31:02Z</dcterms:W3CDTF>
+	</dcterms:created>
+	<dcterms:modified rdf:parseType="Resource">
+	<dcterms:W3CDTF>2017-05-23T10:30:00Z</dcterms:W3CDTF>
+	</dcterms:modified>
+	<bqmodel:is>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/biomodels.db/MODEL1209230000"/>
+	</rdf:Bag>
+	</bqmodel:is>
+	<bqmodel:is>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/biomodels.db/BIOMD0000000427"/>
+	</rdf:Bag>
+	</bqmodel:is>
+	<bqmodel:isDescribedBy>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/pubmed/21620944"/>
+	</rdf:Bag>
+	</bqmodel:isDescribedBy>
+	<bqbiol:hasProperty>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/mamo/MAMO_0000046"/>
+	</rdf:Bag>
+	</bqbiol:hasProperty>
+	<bqbiol:hasTaxon>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/taxonomy/9606"/>
+	</rdf:Bag>
+	</bqbiol:hasTaxon>
+	<bqbiol:isPartOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/go/GO:0048009"/>
+	<rdf:li rdf:resource="http://identifiers.org/go/GO:0007173"/>
+	<rdf:li rdf:resource="http://identifiers.org/pw/PW:0000703"/>
+	</rdf:Bag>
+	</bqbiol:isPartOf>
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/go/GO:0070372"/>
+	<rdf:li rdf:resource="http://identifiers.org/go/GO:0014066"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	<bqbiol:hasVersion>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/doid/DOID:3908"/>
+	</rdf:Bag>
+	</bqbiol:hasVersion>
+	</rdf:Description>
+	
+	
+	
+	</rdf:RDF>
+	</annotation>
+      <listOfCompartments>
+      <compartment id="cell_nsclc" metaid="_149712" name="cell_nsclc" size="1">
+        <annotation>
+	<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_149712">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/bto/BTO:0002058"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+	
+	
+	</rdf:RDF>
+	</annotation>
+            </compartment>
+    </listOfCompartments>
+    <listOfSpecies>
+      <species compartment="cell_nsclc" id="EGFR_active" initialAmount="8000" metaid="_149724" name="EGFR_active">
+        <annotation>
+	<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_149724">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/uniprot/Q504U8"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+	
+	
+	</rdf:RDF>
+	</annotation>
+            </species>
+      <species compartment="cell_nsclc" id="D_SOS" initialAmount="120000" metaid="_149736" name="D_SOS">
+        <annotation>
+	<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_149736">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/uniprot/Q07889"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+	
+	
+	</rdf:RDF>
+	</annotation>
+            </species>
+      <species compartment="cell_nsclc" id="A_SOS" initialAmount="0" metaid="_149748" name="A_SOS">
+        <annotation>
+	<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_149748">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/uniprot/Q07889"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+	
+	
+	</rdf:RDF>
+	</annotation>
+            </species>
+      <species compartment="cell_nsclc" id="Raf" initialAmount="120000" metaid="_149760" name="Raf">
+        <annotation>
+	<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_149760">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/uniprot/P04049"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+	
+	
+	</rdf:RDF>
+	</annotation>
+            </species>
+      <species compartment="cell_nsclc" id="Ras_active" initialAmount="0" metaid="_149772" name="Ras_active">
+        <annotation>
+	<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_149772">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/uniprot/P62070"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+	
+	
+	</rdf:RDF>
+	</annotation>
+            </species>
+      <species compartment="cell_nsclc" id="Mek_active" initialAmount="0" metaid="_149784" name="Mek_active">
+        <annotation>
+	<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_149784">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/uniprot/Q02750"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+	
+	
+	</rdf:RDF>
+	</annotation>
+            </species>
+      <species compartment="cell_nsclc" id="ERK" initialAmount="600000" metaid="_149796" name="ERK">
+        <annotation>
+	<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_149796">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/uniprot/P27361"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+	
+	
+	</rdf:RDF>
+	</annotation>
+            </species>
+      <species compartment="cell_nsclc" id="ERK_active" initialAmount="0" metaid="_149808" name="ERK_active">
+        <annotation>
+	<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_149808">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/uniprot/P27361"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+	
+	
+	</rdf:RDF>
+	</annotation>
+            </species>
+      <species compartment="cell_nsclc" id="IGFR_active" initialAmount="800" metaid="_149820" name="IGFR_active">
+        <annotation>
+	<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_149820">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/uniprot/Q9H665"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+	
+	
+	</rdf:RDF>
+	</annotation>
+            </species>
+      <species compartment="cell_nsclc" id="PI3KCA" initialAmount="120000" metaid="_149832" name="PI3KCA">
+        <annotation>
+	<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_149832">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/uniprot/O00443"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+	
+	
+	</rdf:RDF>
+	</annotation>
+            </species>
+      <species compartment="cell_nsclc" id="PI3KCA_active" initialAmount="0" metaid="_149844" name="PI3KCA_active">
+        <annotation>
+	<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_149844">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/uniprot/O00443"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+	
+	
+	</rdf:RDF>
+	</annotation>
+            </species>
+      <species compartment="cell_nsclc" id="AKT_active" initialAmount="0" metaid="_149856" name="AKT_active">
+        <annotation>
+	<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_149856">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/uniprot/P31751"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+	
+	
+	</rdf:RDF>
+	</annotation>
+            </species>
+      <species compartment="cell_nsclc" id="AKT" initialAmount="600000" metaid="_149868" name="AKT">
+        <notes>
+          <p xmlns="http://www.w3.org/1999/xhtml">
+        The initial concentration of AKT has been corrected from 120000 to 600000 after refering the matlab file</p>
+          
+        </notes>
+        <annotation>
+	<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_149868">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/uniprot/P31751"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+	
+	
+	</rdf:RDF>
+	</annotation>
+            </species>
+      <species compartment="cell_nsclc" id="PP2A" initialAmount="120000" metaid="_149880" name="PP2A">
+        <annotation>
+	<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_149880">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/go/GO:0000159"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+	
+	
+	</rdf:RDF>
+	</annotation>
+            </species>
+      <species compartment="cell_nsclc" id="Ras" initialAmount="120000" metaid="_149892" name="Ras">
+        <annotation>
+	<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_149892">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/uniprot/P62070"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+	
+	
+	</rdf:RDF>
+	</annotation>
+            </species>
+      <species compartment="cell_nsclc" id="Raf_active" initialAmount="0" metaid="_149904" name="Raf_active">
+        <annotation>
+	<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_149904">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/uniprot/P04049"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+	
+	
+	</rdf:RDF>
+	</annotation>
+            </species>
+      <species compartment="cell_nsclc" id="Mek" initialAmount="600000" metaid="_149916" name="Mek">
+        <annotation>
+	<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_149916">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/uniprot/Q02750"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+	
+	
+	</rdf:RDF>
+	</annotation>
+            </species>
+      <species compartment="cell_nsclc" id="RasGapActive" initialAmount="120000" metaid="_149928" name="RasGapActive">
+        <annotation>
+	<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_149928">
+	<bqbiol:hasPart>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/uniprot/P62070"/>
+	</rdf:Bag>
+	</bqbiol:hasPart>
+	</rdf:Description>
+	
+	
+	
+	</rdf:RDF>
+	</annotation>
+            </species>
+      <species compartment="cell_nsclc" id="RafPP" initialAmount="120000" metaid="_149940" name="RafPP">
+        <annotation>
+	<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_149940">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/uniprot/P04049"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+	
+	
+	</rdf:RDF>
+	</annotation>
+            </species>
+      <species compartment="cell_nsclc" id="P90RskInactive" initialAmount="120000" metaid="_149952" name="P90RskInactive">
+        <annotation>
+	<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_149952">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/uniprot/Q9UK32"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+	
+	
+	</rdf:RDF>
+	</annotation>
+            </species>
+      <species compartment="cell_nsclc" id="P90Rsk_Active" initialAmount="0" metaid="_149964" name="P90Rsk_Active">
+        <annotation>
+	<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_149964">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/uniprot/Q9UK32"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+	
+	
+	</rdf:RDF>
+	</annotation>
+            </species>
+    </listOfSpecies>
+    <listOfParameters>
+      <parameter id="gamma_IGFR" metaid="_149976" name="gamma_IGFR" value="0.02"/>
+      <parameter id="kd_PI3K_a" metaid="_149988" name="kd_PI3K_a" value="0.005"/>
+      <parameter id="k_P90Rsk_ERKActive" metaid="_150000" name="k_P90Rsk_ERKActive" value="0.0213697"/>
+      <parameter id="KM_P90Rsk_ERKActive" metaid="_150012" name="KM_P90Rsk_ERKActive" value="763523"/>
+      <parameter id="gamma_EGFR" metaid="_150024" name="gamma_EGFR" value="0.02"/>
+    </listOfParameters>
+    <listOfReactions>
+      <reaction fast="false" id="SOS_conformational_activation" metaid="_150036" name="SOS conformational activation" reversible="false">
+        <listOfReactants>
+          <speciesReference metaid="_150048" species="D_SOS"/>
+          <speciesReference metaid="_150060" species="EGFR_active"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_150072" species="A_SOS"/>
+          <speciesReference metaid="_150084" species="EGFR_active"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_457656" species="EGFR_active"/>
+          <modifierSpeciesReference metaid="_457668" species="D_SOS"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_150096">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <divide/>
+              <apply>
+                <times/>
+                <ci> k_SOS_E </ci>
+                <ci> EGFR_active </ci>
+                <apply>
+                  <power/>
+                  <ci> D_SOS </ci>
+                  <ci> n_SOS </ci>
+                </apply>
+              </apply>
+              <apply>
+                <plus/>
+                <apply>
+                  <power/>
+                  <ci> KM_SOS_E </ci>
+                  <ci> n_SOS </ci>
+                </apply>
+                <apply>
+                  <power/>
+                  <ci> D_SOS </ci>
+                  <ci> n_SOS </ci>
+                </apply>
+              </apply>
+            </apply>
+          </math>
+                  <listOfParameters>
+            <parameter id="k_SOS_E" metaid="_150108" name="k_SOS_E" value="694.731"/>
+            <parameter id="n_SOS" metaid="_150120" name="n_SOS" value="1"/>
+            <parameter id="KM_SOS_E" metaid="_150132" name="KM_SOS_E" value="6086070"/>
+          </listOfParameters>
+        </kineticLaw>
+      </reaction>
+      <reaction fast="false" id="kRas_Activation" metaid="_150144" name="kRas Activation" reversible="false">
+        <listOfReactants>
+          <speciesReference metaid="_150156" species="A_SOS"/>
+          <speciesReference metaid="_150168" species="Ras"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_150180" species="Ras_active"/>
+          <speciesReference metaid="_150192" species="A_SOS"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_457680" species="A_SOS"/>
+          <modifierSpeciesReference metaid="_457692" species="Ras"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_150204">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <divide/>
+              <apply>
+                <times/>
+                <ci> A_SOS </ci>
+                <ci> k_Ras_SOS </ci>
+                <apply>
+                  <power/>
+                  <ci> Ras </ci>
+                  <ci> n_Ras_SOS </ci>
+                </apply>
+              </apply>
+              <apply>
+                <plus/>
+                <apply>
+                  <power/>
+                  <ci> KM_Ras_SOS </ci>
+                  <ci> n_Ras_SOS </ci>
+                </apply>
+                <apply>
+                  <power/>
+                  <ci> Ras </ci>
+                  <ci> n_Ras_SOS </ci>
+                </apply>
+              </apply>
+            </apply>
+          </math>
+                  <listOfParameters>
+            <parameter id="k_Ras_SOS" metaid="_150216" name="k_Ras_SOS" value="32.344"/>
+            <parameter id="n_Ras_SOS" metaid="_150228" name="n_Ras_SOS" value="1"/>
+            <parameter id="KM_Ras_SOS" metaid="_150240" name="KM_Ras_SOS" value="3.59543E4"/>
+          </listOfParameters>
+        </kineticLaw>
+      </reaction>
+      <reaction fast="false" id="EGFR_degradation" metaid="_150252" name="EGFR degradation" reversible="false">
+        <listOfReactants>
+          <speciesReference metaid="_150264" species="EGFR_active"/>
+        </listOfReactants>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_457704" species="EGFR_active"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_150276">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> gamma_EGFR </ci>
+              <ci> EGFR_active </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction fast="false" id="ERK_activationBy_Mek" metaid="_150288" name="ERK activation by Mek" reversible="false">
+        <listOfReactants>
+          <speciesReference metaid="_150300" species="ERK"/>
+          <speciesReference metaid="_150312" species="Mek_active"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_150324" species="ERK_active"/>
+          <speciesReference metaid="_150336" species="Mek_active"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_457716" species="Mek_active"/>
+          <modifierSpeciesReference metaid="_457728" species="ERK"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_150348">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <divide/>
+              <apply>
+                <times/>
+                <ci> Mek_active </ci>
+                <ci> k_ERK_MekActive </ci>
+                <ci> ERK </ci>
+              </apply>
+              <apply>
+                <plus/>
+                <ci> KM_ERK_MekActive </ci>
+                <ci> ERK </ci>
+              </apply>
+            </apply>
+          </math>
+                  <listOfParameters>
+            <parameter id="k_ERK_MekActive" metaid="_150360" name="k_ERK_MekActive" value="9.85367"/>
+            <parameter id="KM_ERK_MekActive" metaid="_150372" name="KM_ERK_MekActive" value="1007340"/>
+          </listOfParameters>
+        </kineticLaw>
+      </reaction>
+      <reaction fast="false" id="SOS_deactivationBy_P90" metaid="_150384" name="SOS deactivation by P90" reversible="false">
+        <listOfReactants>
+          <speciesReference metaid="_150396" species="P90Rsk_Active"/>
+          <speciesReference metaid="_150408" species="A_SOS"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_150420" species="D_SOS"/>
+          <speciesReference metaid="_150432" species="P90Rsk_Active"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_457740" species="P90Rsk_Active"/>
+          <modifierSpeciesReference metaid="_457752" species="A_SOS"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_150444">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <divide/>
+              <apply>
+                <times/>
+                <ci> P90Rsk_Active </ci>
+                <ci> k_D_SOS_P90Rsk </ci>
+                <apply>
+                  <power/>
+                  <ci> A_SOS </ci>
+                  <ci> n_D_SOS </ci>
+                </apply>
+              </apply>
+              <apply>
+                <plus/>
+                <apply>
+                  <power/>
+                  <ci> KM_D_SOS_P90Rsk </ci>
+                  <ci> n_D_SOS </ci>
+                </apply>
+                <apply>
+                  <power/>
+                  <ci> A_SOS </ci>
+                  <ci> n_D_SOS </ci>
+                </apply>
+              </apply>
+            </apply>
+          </math>
+                  <listOfParameters>
+            <parameter id="k_D_SOS_P90Rsk" metaid="_150456" name="k_D_SOS_P90Rsk" value="161197"/>
+            <parameter id="n_D_SOS" metaid="_150468" name="n_D_SOS" value="1"/>
+            <parameter id="KM_D_SOS_P90Rsk" metaid="_150480" name="KM_D_SOS_P90Rsk" value="896896"/>
+          </listOfParameters>
+        </kineticLaw>
+      </reaction>
+      <reaction fast="false" id="SOS_activationBy_IGF" metaid="_150492" name="SOS activation by IGF" reversible="false">
+        <listOfReactants>
+          <speciesReference metaid="_150504" species="IGFR_active"/>
+          <speciesReference metaid="_150516" species="D_SOS"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_150528" species="A_SOS"/>
+          <speciesReference metaid="_150540" species="IGFR_active"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_457764" species="IGFR_active"/>
+          <modifierSpeciesReference metaid="_457776" species="D_SOS"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_150552">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <divide/>
+              <apply>
+                <times/>
+                <ci> IGFR_active </ci>
+                <ci> k_A_SOS_I </ci>
+                <apply>
+                  <power/>
+                  <ci> D_SOS </ci>
+                  <ci> n_A_SOS_I </ci>
+                </apply>
+              </apply>
+              <apply>
+                <plus/>
+                <apply>
+                  <power/>
+                  <ci> KM_A_SOS_I </ci>
+                  <ci> n_A_SOS_I </ci>
+                </apply>
+                <apply>
+                  <power/>
+                  <ci> D_SOS </ci>
+                  <ci> n_A_SOS_I </ci>
+                </apply>
+              </apply>
+            </apply>
+          </math>
+                  <listOfParameters>
+            <parameter id="k_A_SOS_I" metaid="_150564" name="k_A_SOS_I" value="500"/>
+            <parameter id="n_A_SOS_I" metaid="_150576" name="n_A_SOS_I" value="1"/>
+            <parameter id="KM_A_SOS_I" metaid="_150588" name="KM_A_SOS_I" value="100000"/>
+          </listOfParameters>
+        </kineticLaw>
+      </reaction>
+      <reaction fast="false" id="PI3KCA_activationBy_IGF1R" metaid="_150600" name="PI3KCA activation by IGF1R" reversible="false">
+        <listOfReactants>
+          <speciesReference metaid="_150612" species="PI3KCA"/>
+          <speciesReference metaid="_150624" species="IGFR_active"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_150636" species="PI3KCA_active"/>
+          <speciesReference metaid="_150648" species="IGFR_active"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_457788" species="IGFR_active"/>
+          <modifierSpeciesReference metaid="_457800" species="PI3KCA"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_150660">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <divide/>
+              <apply>
+                <times/>
+                <ci> IGFR_active </ci>
+                <ci> k_PI3K_IGF1R </ci>
+                <apply>
+                  <power/>
+                  <ci> PI3KCA </ci>
+                  <ci> n_PI3K_I </ci>
+                </apply>
+              </apply>
+              <apply>
+                <plus/>
+                <apply>
+                  <power/>
+                  <ci> KM_PI3K_IGF1R </ci>
+                  <ci> n_PI3K_I </ci>
+                </apply>
+                <apply>
+                  <power/>
+                  <ci> PI3KCA </ci>
+                  <ci> n_PI3K_I </ci>
+                </apply>
+              </apply>
+            </apply>
+          </math>
+                  <listOfParameters>
+            <parameter id="k_PI3K_IGF1R" metaid="_150672" name="k_PI3K_IGF1R" value="10.6737"/>
+            <parameter id="n_PI3K_I" metaid="_150684" name="n_PI3K_I" value="1"/>
+            <parameter id="KM_PI3K_IGF1R" metaid="_150696" name="KM_PI3K_IGF1R" value="184912"/>
+          </listOfParameters>
+        </kineticLaw>
+      </reaction>
+      <reaction fast="false" id="PI3KCA_activationBy_EGF" metaid="_150708" name="PI3KCA activation by EGF" reversible="false">
+        <listOfReactants>
+          <speciesReference metaid="_150720" species="PI3KCA"/>
+          <speciesReference metaid="_150732" species="EGFR_active"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_150744" species="PI3KCA_active"/>
+          <speciesReference metaid="_150756" species="EGFR_active"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_457812" species="EGFR_active"/>
+          <modifierSpeciesReference metaid="_457824" species="PI3KCA"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_150768">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <divide/>
+              <apply>
+                <times/>
+                <ci> EGFR_active </ci>
+                <ci> k_PI3K_EGF1R </ci>
+                <ci> EGFR_active </ci>
+                <apply>
+                  <power/>
+                  <ci> PI3KCA </ci>
+                  <ci> n_PI3K_E </ci>
+                </apply>
+              </apply>
+              <apply>
+                <plus/>
+                <apply>
+                  <power/>
+                  <ci> KM_PI3K_EGF1R </ci>
+                  <ci> n_PI3K_E </ci>
+                </apply>
+                <apply>
+                  <power/>
+                  <ci> PI3KCA </ci>
+                  <ci> n_PI3K_E </ci>
+                </apply>
+              </apply>
+            </apply>
+          </math>
+                  <listOfParameters>
+            <parameter id="k_PI3K_EGF1R" metaid="_150780" name="k_PI3K_EGF1R" value="10.6737"/>
+            <parameter id="n_PI3K_E" metaid="_150792" name="n_PI3K_E" value="1"/>
+            <parameter id="KM_PI3K_EGF1R" metaid="_150804" name="KM_PI3K_EGF1R" value="184912"/>
+          </listOfParameters>
+        </kineticLaw>
+      </reaction>
+      <reaction fast="false" id="Akt_activationBy_PI3KCA" metaid="_150816" name="Akt activation by PI3KCA" reversible="false">
+        <listOfReactants>
+          <speciesReference metaid="_150828" species="AKT"/>
+          <speciesReference metaid="_150840" species="PI3KCA_active"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_150852" species="AKT_active"/>
+          <speciesReference metaid="_150864" species="PI3KCA_active"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_457836" species="PI3KCA_active"/>
+          <modifierSpeciesReference metaid="_457848" species="AKT"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_150876">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <divide/>
+              <apply>
+                <times/>
+                <ci> PI3KCA_active </ci>
+                <ci> k_AKT_PI3K </ci>
+                <apply>
+                  <power/>
+                  <ci> AKT </ci>
+                  <ci> n_AKT_PI3K </ci>
+                </apply>
+              </apply>
+              <apply>
+                <plus/>
+                <apply>
+                  <power/>
+                  <ci> KM_AKT_PI3K </ci>
+                  <ci> n_AKT_PI3K </ci>
+                </apply>
+                <apply>
+                  <power/>
+                  <ci> AKT </ci>
+                  <ci> n_AKT_PI3K </ci>
+                </apply>
+              </apply>
+            </apply>
+          </math>
+                  <listOfParameters>
+            <parameter id="k_AKT_PI3K" metaid="_150888" name="k_AKT_PI3K" value="0.0566279"/>
+            <parameter id="n_AKT_PI3K" metaid="_150900" name="n_AKT_PI3K" value="1"/>
+            <parameter id="KM_AKT_PI3K" metaid="_150912" name="KM_AKT_PI3K" value="653951"/>
+          </listOfParameters>
+        </kineticLaw>
+      </reaction>
+      <reaction fast="false" id="Akt_deactivation" metaid="_150924" name="Akt deactivation" reversible="false">
+        <listOfReactants>
+          <speciesReference metaid="_150936" species="AKT_active"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_150948" species="AKT"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_457860" species="AKT_active"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_150960">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kd_AKT </ci>
+              <ci> AKT_active </ci>
+            </apply>
+          </math>
+                  <listOfParameters>
+            <parameter id="kd_AKT" metaid="_150972" name="kd_AKT" value="0.005"/>
+          </listOfParameters>
+        </kineticLaw>
+      </reaction>
+      <reaction fast="false" id="ERK_deactivationBy_PP2A" metaid="_150984" name="ERK deactivation by PP2A" reversible="false">
+        <listOfReactants>
+          <speciesReference metaid="_150996" species="ERK_active"/>
+          <speciesReference metaid="_151008" species="PP2A"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_151020" species="ERK"/>
+          <speciesReference metaid="_151032" species="PP2A"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_457872" species="PP2A"/>
+          <modifierSpeciesReference metaid="_457884" species="ERK_active"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_151044">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <divide/>
+              <apply>
+                <times/>
+                <ci> PP2A </ci>
+                <ci> k_ERKactive_PP2A </ci>
+                <apply>
+                  <power/>
+                  <ci> ERK_active </ci>
+                  <ci> n_ERKactive_PP2A </ci>
+                </apply>
+              </apply>
+              <apply>
+                <plus/>
+                <apply>
+                  <power/>
+                  <ci> KM_ERKactive_PP2A </ci>
+                  <ci> n_ERKactive_PP2A </ci>
+                </apply>
+                <apply>
+                  <power/>
+                  <ci> ERK_active </ci>
+                  <ci> n_ERKactive_PP2A </ci>
+                </apply>
+              </apply>
+            </apply>
+          </math>
+                  <listOfParameters>
+            <parameter id="k_ERKactive_PP2A" metaid="_151056" name="k_ERKactive_PP2A" value="8.8912"/>
+            <parameter id="n_ERKactive_PP2A" metaid="_151068" name="n_ERKactive_PP2A" value="1"/>
+            <parameter id="KM_ERKactive_PP2A" metaid="_151080" name="KM_ERKactive_PP2A" value="3496490"/>
+          </listOfParameters>
+        </kineticLaw>
+      </reaction>
+      <reaction fast="false" id="PI3KCA_activationBy_kRas" metaid="_151092" name="PI3KCA activation by kRas" reversible="false">
+        <listOfReactants>
+          <speciesReference metaid="_151104" species="PI3KCA"/>
+          <speciesReference metaid="_151116" species="Ras_active"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_151128" species="PI3KCA_active"/>
+          <speciesReference metaid="_151140" species="Ras_active"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_457896" species="Ras_active"/>
+          <modifierSpeciesReference metaid="_457908" species="PI3KCA"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_151152">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <divide/>
+              <apply>
+                <times/>
+                <ci> Ras_active </ci>
+                <ci> k_PI3K_Ras </ci>
+                <apply>
+                  <power/>
+                  <ci> PI3KCA </ci>
+                  <ci> n_PI3K_Ras </ci>
+                </apply>
+              </apply>
+              <apply>
+                <plus/>
+                <apply>
+                  <power/>
+                  <ci> KM_PI3K_Ras </ci>
+                  <ci> n_PI3K_Ras </ci>
+                </apply>
+                <apply>
+                  <power/>
+                  <ci> PI3KCA </ci>
+                  <ci> n_PI3K_Ras </ci>
+                </apply>
+              </apply>
+            </apply>
+          </math>
+                  <listOfParameters>
+            <parameter id="k_PI3K_Ras" metaid="_151164" name="k_PI3K_Ras" value="0.0771067"/>
+            <parameter id="n_PI3K_Ras" metaid="_151176" name="n_PI3K_Ras" value="1"/>
+            <parameter id="KM_PI3K_Ras" metaid="_151188" name="KM_PI3K_Ras" value="272056"/>
+          </listOfParameters>
+        </kineticLaw>
+      </reaction>
+      <reaction fast="false" id="Raf_activationBy_kRas" metaid="_151200" name="Raf activation by kRas" reversible="false">
+        <listOfReactants>
+          <speciesReference metaid="_151212" species="Ras_active"/>
+          <speciesReference metaid="_151224" species="Raf"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_151236" species="Raf_active"/>
+          <speciesReference metaid="_151248" species="Ras_active"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_457920" species="Ras_active"/>
+          <modifierSpeciesReference metaid="_457932" species="Raf"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_151260">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <divide/>
+              <apply>
+                <times/>
+                <ci> Ras_active </ci>
+                <ci> k_Raf_RasActive </ci>
+                <apply>
+                  <power/>
+                  <ci> Raf </ci>
+                  <ci> n_Raf_RasActive </ci>
+                </apply>
+              </apply>
+              <apply>
+                <plus/>
+                <ci> KM_Raf_RasActive </ci>
+                <apply>
+                  <power/>
+                  <ci> Raf </ci>
+                  <ci> n_Raf_RasActive </ci>
+                </apply>
+              </apply>
+            </apply>
+          </math>
+                  <listOfParameters>
+            <parameter id="k_Raf_RasActive" metaid="_151272" name="k_Raf_RasActive" value="0.884096"/>
+            <parameter id="n_Raf_RasActive" metaid="_151284" name="n_Raf_RasActive" value="1"/>
+            <parameter id="KM_Raf_RasActive" metaid="_151296" name="KM_Raf_RasActive" value="6.24646E4"/>
+          </listOfParameters>
+        </kineticLaw>
+      </reaction>
+      <reaction fast="false" id="Mek_activationBy_Raf" metaid="_151308" name="Mek activation by Raf" reversible="false">
+        <listOfReactants>
+          <speciesReference metaid="_151320" species="Raf_active"/>
+          <speciesReference metaid="_151332" species="Mek"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_151344" species="Mek_active"/>
+          <speciesReference metaid="_151356" species="Raf_active"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_457944" species="Raf_active"/>
+          <modifierSpeciesReference metaid="_457956" species="Mek"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_151368">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <divide/>
+              <apply>
+                <times/>
+                <ci> Raf_active </ci>
+                <ci> k_Mek_PP2A </ci>
+                <apply>
+                  <power/>
+                  <ci> Mek </ci>
+                  <ci> n_Mek_PP2A </ci>
+                </apply>
+              </apply>
+              <apply>
+                <plus/>
+                <apply>
+                  <power/>
+                  <ci> KM_MekPP2A </ci>
+                  <ci> n_Mek_PP2A </ci>
+                </apply>
+                <apply>
+                  <power/>
+                  <ci> Mek </ci>
+                  <ci> n_Mek_PP2A </ci>
+                </apply>
+              </apply>
+            </apply>
+          </math>
+                  <listOfParameters>
+            <parameter id="k_Mek_PP2A" metaid="_151380" name="k_Mek_PP2A" value="185.759"/>
+            <parameter id="n_Mek_PP2A" metaid="_151392" name="n_Mek_PP2A" value="1"/>
+            <parameter id="KM_MekPP2A" metaid="_151404" name="KM_MekPP2A" value="4768350"/>
+          </listOfParameters>
+        </kineticLaw>
+      </reaction>
+      <reaction fast="false" id="Raf_deactivationBy_Akt" metaid="_151416" name="Raf deactivation by Akt" reversible="false">
+        <listOfReactants>
+          <speciesReference metaid="_151428" species="AKT_active"/>
+          <speciesReference metaid="_151440" species="Raf_active"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_151452" species="Raf"/>
+          <speciesReference metaid="_151464" species="AKT_active"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_457968" species="AKT_active"/>
+          <modifierSpeciesReference metaid="_457980" species="Raf_active"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_151476">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <divide/>
+              <apply>
+                <times/>
+                <ci> AKT_active </ci>
+                <ci> k_Raf_AKT </ci>
+                <apply>
+                  <power/>
+                  <ci> Raf_active </ci>
+                  <ci> n_Raf_AKT </ci>
+                </apply>
+              </apply>
+              <apply>
+                <plus/>
+                <apply>
+                  <power/>
+                  <ci> KM_Raf_AKT </ci>
+                  <ci> n_Raf_AKT </ci>
+                </apply>
+                <apply>
+                  <power/>
+                  <ci> Raf_active </ci>
+                  <ci> n_Raf_AKT </ci>
+                </apply>
+              </apply>
+            </apply>
+          </math>
+                  <listOfParameters>
+            <parameter id="k_Raf_AKT" metaid="_151488" name="k_Raf_AKT" value="15.1212"/>
+            <parameter id="n_Raf_AKT" metaid="_151500" name="n_Raf_AKT" value="1"/>
+            <parameter id="KM_Raf_AKT" metaid="_151512" name="KM_Raf_AKT" value="119355"/>
+          </listOfParameters>
+        </kineticLaw>
+      </reaction>
+      <reaction fast="false" id="Ras_deactivation" metaid="_151524" name="Ras deactivation by RasGab" reversible="false">
+        <listOfReactants>
+          <speciesReference metaid="_151536" species="RasGapActive"/>
+          <speciesReference metaid="_151548" species="Ras_active"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_151560" species="Ras"/>
+          <speciesReference metaid="_151572" species="RasGapActive"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_457992" species="RasGapActive"/>
+          <modifierSpeciesReference metaid="_458004" species="Ras_active"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_151584">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <divide/>
+              <apply>
+                <times/>
+                <ci> RasGapActive </ci>
+                <ci> k_RasActiveRasGap </ci>
+                <apply>
+                  <power/>
+                  <ci> Ras_active </ci>
+                  <ci> n_RasActiveRasGap </ci>
+                </apply>
+              </apply>
+              <apply>
+                <plus/>
+                <apply>
+                  <power/>
+                  <ci> KM_RasActiveRasGap </ci>
+                  <ci> n_RasActiveRasGap </ci>
+                </apply>
+                <apply>
+                  <power/>
+                  <ci> Ras_active </ci>
+                  <ci> n_RasActiveRasGap </ci>
+                </apply>
+              </apply>
+            </apply>
+          </math>
+                  <listOfParameters>
+            <parameter id="k_RasActiveRasGap" metaid="_151596" name="k_RasActiveRasGap" value="1509.36"/>
+            <parameter id="n_RasActiveRasGap" metaid="_151608" name="n_RasActiveRasGap" value="1"/>
+            <parameter id="KM_RasActiveRasGap" metaid="_151620" name="KM_RasActiveRasGap" value="1432410"/>
+          </listOfParameters>
+        </kineticLaw>
+      </reaction>
+      <reaction fast="false" id="Mek_deactivation" metaid="_151632" name="Mek deactivation by PP2A" reversible="false">
+        <listOfReactants>
+          <speciesReference metaid="_151644" species="PP2A"/>
+          <speciesReference metaid="_151656" species="Mek_active"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_151668" species="Mek"/>
+          <speciesReference metaid="_151680" species="PP2A"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_458016" species="PP2A"/>
+          <modifierSpeciesReference metaid="_458028" species="Mek_active"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_151692">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <divide/>
+              <apply>
+                <times/>
+                <ci> PP2A </ci>
+                <ci> k_MekActivePP2A </ci>
+                <apply>
+                  <power/>
+                  <ci> Mek_active </ci>
+                  <ci> n_MekActivePP2A </ci>
+                </apply>
+              </apply>
+              <apply>
+                <plus/>
+                <apply>
+                  <power/>
+                  <ci> KM_MekActivePP2A </ci>
+                  <ci> n_MekActivePP2A </ci>
+                </apply>
+                <apply>
+                  <power/>
+                  <ci> Mek_active </ci>
+                  <ci> n_MekActivePP2A </ci>
+                </apply>
+              </apply>
+            </apply>
+          </math>
+                  <listOfParameters>
+            <parameter id="k_MekActivePP2A" metaid="_151704" name="k_MekActivePP2A" value="2.83243"/>
+            <parameter id="n_MekActivePP2A" metaid="_151716" name="n_MekActivePP2A" value="1"/>
+            <parameter id="KM_MekActivePP2A" metaid="_151728" name="KM_MekActivePP2A" value="518753"/>
+          </listOfParameters>
+        </kineticLaw>
+      </reaction>
+      <reaction fast="false" id="IGFR_active_degradation" metaid="_151740" name="IGFR active degradation" reversible="false">
+        <listOfReactants>
+          <speciesReference metaid="_151752" species="IGFR_active"/>
+        </listOfReactants>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_458040" species="IGFR_active"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_151764">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> gamma_IGFR </ci>
+              <ci> IGFR_active </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction fast="false" id="PI3KCA_deactivation" metaid="_151776" name="PI3KCA deactivation" reversible="false">
+        <listOfReactants>
+          <speciesReference metaid="_151788" species="PI3KCA_active"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_151800" species="PI3KCA"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_458052" species="PI3KCA_active"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_151812">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kd_PI3K_a </ci>
+              <ci> PI3KCA_active </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction fast="false" id="Raf_deactivation" metaid="_151824" name="Raf deactivation by RafPP" reversible="false">
+        <listOfReactants>
+          <speciesReference metaid="_151836" species="RafPP"/>
+          <speciesReference metaid="_151848" species="Raf_active"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_151860" species="Raf"/>
+          <speciesReference metaid="_151872" species="RafPP"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_458064" species="RafPP"/>
+          <modifierSpeciesReference metaid="_458076" species="Raf_active"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_151884">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <divide/>
+              <apply>
+                <times/>
+                <ci> RafPP </ci>
+                <ci> k_RasActive_RafPP </ci>
+                <apply>
+                  <power/>
+                  <ci> Raf_active </ci>
+                  <ci> n_RasActive_RafPP </ci>
+                </apply>
+              </apply>
+              <apply>
+                <plus/>
+                <apply>
+                  <power/>
+                  <ci> KM_RasActive_RafPP </ci>
+                  <ci> n_RasActive_RafPP </ci>
+                </apply>
+                <apply>
+                  <power/>
+                  <ci> Raf_active </ci>
+                  <ci> n_RasActive_RafPP </ci>
+                </apply>
+              </apply>
+            </apply>
+          </math>
+                  <listOfParameters>
+            <parameter id="k_RasActive_RafPP" metaid="_151896" name="k_RasActive_RafPP" value="0.126329"/>
+            <parameter id="n_RasActive_RafPP" metaid="_151908" name="n_RasActive_RafPP" value="1"/>
+            <parameter id="KM_RasActive_RafPP" metaid="_151920" name="KM_RasActive_RafPP" value="1061.71"/>
+          </listOfParameters>
+        </kineticLaw>
+      </reaction>
+      <reaction fast="false" id="P90_activationBy_ERK" metaid="_151932" name="P90 activation by ERK" reversible="false">
+        <listOfReactants>
+          <speciesReference metaid="_151944" species="P90RskInactive"/>
+          <speciesReference metaid="_151956" species="ERK_active"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_151968" species="P90Rsk_Active"/>
+          <speciesReference metaid="_151980" species="ERK_active"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_458088" species="ERK_active"/>
+          <modifierSpeciesReference metaid="_458100" species="P90RskInactive"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_151992">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <divide/>
+              <apply>
+                <times/>
+                <ci> ERK_active </ci>
+                <ci> k_P90Rsk_ERKActive </ci>
+                <ci> P90RskInactive </ci>
+              </apply>
+              <apply>
+                <plus/>
+                <ci> KM_P90Rsk_ERKActive </ci>
+                <ci> P90RskInactive </ci>
+              </apply>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction fast="false" id="P90_deactivation" metaid="_152004" name="P90 deactivation" reversible="false">
+        <listOfReactants>
+          <speciesReference metaid="_152016" species="P90Rsk_Active"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_152028" species="P90RskInactive"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_458112" species="P90Rsk_Active"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_152040">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> kd_P90Rsk </ci>
+              <ci> P90Rsk_Active </ci>
+            </apply>
+          </math>
+                  <listOfParameters>
+            <parameter id="kd_P90Rsk" metaid="_152052" name="kd_P90Rsk" value="0.005"/>
+          </listOfParameters>
+        </kineticLaw>
+      </reaction>
+    </listOfReactions>
+  </model>
+</sbml>

@@ -49,7 +49,7 @@ public class User implements java.io.Serializable, Matchable, Immutable {
 	};//Must match a name 'special' column of 'vc_specialusers' table
 	private String userName = null;
 	private KeyValue key = null;
-	private static final String VCellTestAccountName = "vcelltestaccount";
+	public static final String VCellTestAccountName = "vcelltestaccount";
 
 	public static final String[] publishers = {"frm","schaff","ion"};
 

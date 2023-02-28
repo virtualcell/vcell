@@ -43,8 +43,7 @@ public HMM_IRRKinetics(SimpleReaction simpleReaction) throws ExpressionException
 		updateGeneratedExpressions();
 		refreshUnits();
 	}catch (PropertyVetoException e){
-		e.printStackTrace(System.out);
-		throw new RuntimeException("unexpected exception: "+e.getMessage());
+		throw new RuntimeException("unexpected exception: "+e.getMessage(), e);
 	}
 
 }
@@ -109,20 +108,10 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 	}
 }
 
-/**
- * Insert the method's description here.
- * Creation date: (8/6/2002 9:52:55 AM)
- * @return cbit.vcell.model.KineticsDescription
- */
 public KineticsDescription getKineticsDescription() {
 	return KineticsDescription.HMM_irreversible;
 }
-/**
- * Gets the kineticsParameters index property (cbit.vcell.model.KineticsParameter) value.
- * @return The kineticsParameters property value.
- * @param index The index value into the property array.
- * @see #setKineticsParameters
- */
+
 public KineticsParameter getKineticsParameterFromRole(int role) {
 	if (role == ROLE_KmFwd) {
 		role = ROLE_Km;
@@ -132,26 +121,15 @@ public KineticsParameter getKineticsParameterFromRole(int role) {
 
 	return super.getKineticsParameterFromRole(role);	
 }
-/**
- * Insert the method's description here.
- * Creation date: (8/6/2002 3:48:16 PM)
- * @return cbit.vcell.model.KineticsParameter
- */
+
 public KineticsParameter getKmParameter() {
 	return getKineticsParameterFromRole(ROLE_Km);
 }
-/**
- * Insert the method's description here.
- * Creation date: (8/6/2002 3:48:16 PM)
- * @return cbit.vcell.model.KineticsParameter
- */
+
 public KineticsParameter getVmaxParameter() {
 	return getKineticsParameterFromRole(ROLE_Vmax);
 }
-/**
- * Insert the method's description here.
- * Creation date: (3/31/2004 3:56:05 PM)
- */
+
 protected void refreshUnits() {
 	if (bRefreshingUnits){
 		return;
@@ -217,11 +195,7 @@ protected void refreshUnits() {
 		bRefreshingUnits=false;
 	}
 }
-/**
- * Insert the method's description here.
- * Creation date: (10/19/2003 12:05:14 AM)
- * @exception cbit.vcell.parser.ExpressionException The exception description.
- */
+
 protected void updateGeneratedExpressions() throws ExpressionException, PropertyVetoException {
 	KineticsParameter rateParm = getKineticsParameterFromRole(ROLE_ReactionRate);
 	KineticsParameter currentParm = getKineticsParameterFromRole(ROLE_CurrentDensity);

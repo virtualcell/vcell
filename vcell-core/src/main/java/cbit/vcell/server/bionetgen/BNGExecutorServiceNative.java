@@ -103,8 +103,7 @@ public BNGOutput executeBNG() throws BNGException {
 			if (LG.isWarnEnabled() ) {
 				LG.warn("error opening input file '"+bngInputFile,e);
 			}
-			e.printStackTrace(System.out);
-			throw new RuntimeException("error opening input file '"+bngInputFile.getName()+": "+e.getMessage());
+			throw new RuntimeException("error opening input file '"+bngInputFile.getName()+": "+e.getMessage(), e);
 		}	
 
 		PrintWriter inputFile = new PrintWriter(fos);

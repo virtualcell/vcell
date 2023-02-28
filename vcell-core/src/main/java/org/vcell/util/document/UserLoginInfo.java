@@ -15,10 +15,14 @@ import java.io.FileReader;
 import java.io.Serializable;
 
 import cbit.vcell.resource.PropertyLoader;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.api.common.AccessTokenRepresentation;
 
 @SuppressWarnings("serial")
 public class UserLoginInfo implements Serializable {
+	private final static Logger lg = LogManager.getLogger(UserLoginInfo.class);
+
 	private String userName;
 	private DigestedPassword digestedPassword;// obfuscate password
 	private AccessTokenRepresentation access_token;
@@ -92,9 +96,7 @@ public class UserLoginInfo implements Serializable {
 				}
 
 			} catch (Exception e) {
-				System.err
-						.println("Exception trying to determine Linux bit size");
-				e.printStackTrace();
+				lg.error("Exception trying to determine Linux bit size", e);
 			}
 		}
 
@@ -121,10 +123,9 @@ public class UserLoginInfo implements Serializable {
 				messageDigest = java.security.MessageDigest
 						.getInstance("SHA-1");
 			} catch (Exception e) {
-				e.printStackTrace();
 				throw new RuntimeException(
 						"Error processing password, Couldn't get instance of MessageDigest "
-								+ e.getMessage());
+								+ e.getMessage(), e);
 			}
 			messageDigest.reset();
 			messageDigest.update(clearTextPassword.getBytes());

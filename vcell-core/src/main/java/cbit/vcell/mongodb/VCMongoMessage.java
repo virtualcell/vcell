@@ -372,7 +372,7 @@ public final class VCMongoMessage {
 	
 			VCMongoDbDriver.getInstance().addMessage(Level.ERROR, new VCMongoMessage(dbObject), "exception: "+message);
 		} catch (Exception e){
-			e.printStackTrace(System.out);
+			lg.error(e);
 			// cannot put exception to SessionLog ... infinite recursion.
 			// lg.error(e.getMessage(),e); 
 			//

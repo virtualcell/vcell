@@ -147,8 +147,8 @@ public SimDataServer(ServiceInstanceStatus serviceInstanceStatus, DataServerImpl
             	try {
 					URI uri = new URI(request.getRequestLine().getUri(),true);
 					final List<NameValuePair> parse = URLEncodedUtils.parse(uri.getQuery(),Charset.forName("utf-8"));
-					System.out.println(uri.getQuery());
-					System.out.println(uri.getPath());
+					lg.info(uri.getQuery());
+					lg.info(uri.getPath());
 					final Path path = Paths.get(uri.getPath());
 					final Iterator<Path> iterator = path.iterator();
 					final String SIMDATADDF5 = "simhdf5";
@@ -192,7 +192,7 @@ public SimDataServer(ServiceInstanceStatus serviceInstanceStatus, DataServerImpl
 					response.setStatusCode(HttpStatus.SC_NOT_FOUND);
 					response.setEntity(new StringEntity("Not Found"));
 				} catch (Exception e) {
-					e.printStackTrace();
+					lg.error(e);
 					response.setStatusCode(HttpStatus.SC_INTERNAL_SERVER_ERROR);
 					response.setEntity(new StringEntity(e.getMessage()));
 
@@ -202,7 +202,7 @@ public SimDataServer(ServiceInstanceStatus serviceInstanceStatus, DataServerImpl
 		server.start();
 		
 	}catch(Exception e) {
-		e.printStackTrace();
+		lg.error(e);
 	}
 	
 	
@@ -294,8 +294,8 @@ private File createHdf5(VCSimulationIdentifier vcsid,Integer[] scanJobs,double b
 		hdf5FileID = -1;
 		return hdf5TempFile;
 	} finally {
-		if(jobGroupID != -1) {try{H5.H5Gclose(jobGroupID);}catch(Exception e2){e2.printStackTrace();}}
-		if(hdf5FileID != -1) {try{H5.H5Fclose(hdf5FileID);}catch(Exception e2){e2.printStackTrace();}}
+		if(jobGroupID != -1) {try{H5.H5Gclose(jobGroupID);}catch(Exception e2){lg.error(e2);}}
+		if(hdf5FileID != -1) {try{H5.H5Fclose(hdf5FileID);}catch(Exception e2){lg.error(e2);}}
 	}
 }
 public void init() throws Exception {
@@ -354,7 +354,7 @@ public static void main(java.lang.String[] args) {
 	OperatingSystemInfo.getInstance();
 
 	if (args.length != 1) {
-		System.out.println("Missing arguments: " + SimDataServer.class.getName() + " (CombinedData | ExportDataOnly | SimDataOnly)");
+		lg.info("Missing arguments: " + SimDataServer.class.getName() + " (CombinedData | ExportDataOnly | SimDataOnly)");
 		System.exit(1);
 	}
 	

@@ -278,7 +278,7 @@ public abstract class HtcProxy {
 					source = "Empty used FALLBACK_MEM_LIMIT_MB";
 				}
 			} catch (Exception e) {
-				e.printStackTrace();
+				LG.debug(e);
 				result = FALLBACK_MEM_LIMIT_MB;
 				source = "Exception "+e.getClass().getSimpleName()+" used FALLBACK_MEM_LIMIT_MB";
 			}
@@ -329,10 +329,10 @@ public abstract class HtcProxy {
 //				for (Iterator<String> iterator = perUserLimits.iterator(); iterator.hasNext();) {
 //					String userAndLimit = iterator.next().trim();
 //					if(userAndLimit.length()==0 || userAndLimit.startsWith("//")) {
-//						if(bDebugMemLimit){System.out.println("-----skipped '"+userAndLimit+"'");}
+//						if(bDebugMemLimit){LG.trace("-----skipped '"+userAndLimit+"'");}
 //						continue;
 //					}
-////					System.out.println("-----"+userAndLimit);
+////					LG.trace("-----"+userAndLimit);
 //					
 //					StringTokenizer st = new StringTokenizer(userAndLimit);
 //					String limitUserid = st.nextToken();
@@ -341,14 +341,14 @@ public abstract class HtcProxy {
 //						try {
 //							memLimit = Long.parseLong(st.nextToken());
 //						} catch (Exception e) {
-//							if(bDebugMemLimit){System.out.println("-----ERROR '"+userAndLimit+"' token memlimit not parsed");}
+//							if(bDebugMemLimit){LG.debug("-----ERROR '"+userAndLimit+"' token memlimit not parsed");}
 //							//bad line in limit file, continue processing other lines
-//							//e.printStackTrace(System.out);
+//							//lg.debug(e);
 //							continue;
 //						}
 //						if(solverDescription != null && limitUserid.equals(solverDescription.name())) {
 //							perSolverMax = memLimit;
-//							if(bDebugMemLimit){System.out.println("-----"+"MATCH Solver "+userAndLimit);}
+//							if(bDebugMemLimit){LG.debug("-----"+"MATCH Solver "+userAndLimit);}
 //							continue;
 //						}
 //						//get simid
@@ -360,38 +360,38 @@ public abstract class HtcProxy {
 //								throw new Exception(" token 'simSpecifier' expected to be '*' or simID");
 //							}
 //						} catch (Exception e) {
-//							if(bDebugMemLimit){System.out.println("-----ERROR '"+userAndLimit+"' "+e.getClass().getName()+" "+e.getMessage());}
+//							if(bDebugMemLimit){LG.debug("-----ERROR '"+userAndLimit+"' "+e.getClass().getName()+" "+e.getMessage());}
 //							//bad line in limit file, continue processing other lines
-//							//e.printStackTrace(System.out);
+//							//lg.debug(e);
 //							continue;
 //						}
 //						// * means all sims for that user, don't set if sim specific limit is already set
 //						if(simSpecifier.equals("*") && perSimMemMax == null) {
 //							perUserMemMax = memLimit;// use this unless overriden by specific simid
-//							if(bDebugMemLimit){System.out.println("-----"+"MATCH USER "+userAndLimit);}
+//							if(bDebugMemLimit){LG.debug("-----"+"MATCH USER "+userAndLimit);}
 //						}
 //						//Set sim specific limit, set even if * limit has been set
 //						if(simID != null && simID.toString().equals(simSpecifier)) {
 //							perSimMemMax = memLimit;// use sim limit
-//							if(bDebugMemLimit){System.out.println("-----"+"MATCH SIM "+userAndLimit);}
+//							if(bDebugMemLimit){LG.debug("-----"+"MATCH SIM "+userAndLimit);}
 //						}
 //					}else if(limitUserid.equals("defaultSimMemoryLimitMb")) {//Master sim mem limit
 //						try {
 //							defaultSimMemoryLimitMbFromFile = Long.parseLong(st.nextToken());
-//							if(bDebugMemLimit){System.out.println("-----"+"MATCH DEFAULT "+userAndLimit);}
+//							if(bDebugMemLimit){LG.debug("-----"+"MATCH DEFAULT "+userAndLimit);}
 //						} catch (Exception e) {
-//							if(bDebugMemLimit){System.out.println("-----ERROR '"+userAndLimit+"' "+e.getClass().getName()+" "+e.getMessage());}
+//							if(bDebugMemLimit){LG.debug("-----ERROR '"+userAndLimit+"' "+e.getClass().getName()+" "+e.getMessage());}
 //							//bad line in limit file, continue processing other lines
-//							//e.printStackTrace(System.out);
+//							//LG.debug(e);
 //							continue;
 //						}
 //					}else {
-//						if(bDebugMemLimit){System.out.println("-----"+"NO MATCH "+userAndLimit);}
+//						if(bDebugMemLimit){LG.debug("-----"+"NO MATCH "+userAndLimit);}
 //					}
 //				}
 //				if(perUserMemMax != null || perSimMemMax != null) {
 //					long finalMax = (perSimMemMax!=null?perSimMemMax:perUserMemMax);
-//					if(bDebugMemLimit){System.out.println("Set memory limit for user '"+vcellUserid+"' to "+finalMax + (perSimMemMax!=null?" for simID="+simID:""));}
+//					if(bDebugMemLimit){LG.debug("Set memory limit for user '"+vcellUserid+"' to "+finalMax + (perSimMemMax!=null?" for simID="+simID:""));}
 //					return new MemLimitResults(finalMax,
 //						(perSimMemMax!=null?
 //							"MemoryMax(FILE PerSimulation):"+simID+",User='"+vcellUserid+"' from "+memLimitFile.getAbsolutePath():
@@ -407,11 +407,11 @@ public abstract class HtcProxy {
 //					}
 //				}
 //			}else {
-//				if(bDebugMemLimit){System.out.println("-----MemLimitFile "+(memLimitFile==null?"not defined":memLimitFile.getAbsolutePath()+" not exist"));}
+//				if(bDebugMemLimit){LG.debug("-----MemLimitFile "+(memLimitFile==null?"not defined":memLimitFile.getAbsolutePath()+" not exist"));}
 //			}
 //		} catch (Exception e) {
 //			//ignore, try defaults
-//			e.printStackTrace();
+//			LG.error(e);
 //		}
 ////		long estimatedMemSizeMBL = (long)Math.ceil(estimatedMemSizeMB*1.5);
 //		boolean bHasMemLimitFile = defaultSimMemoryLimitMbFromFile!=null;

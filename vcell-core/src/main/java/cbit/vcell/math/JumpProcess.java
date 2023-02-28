@@ -23,12 +23,6 @@ public class JumpProcess implements org.vcell.util.Matchable,java.io.Serializabl
 	private Expression  probabilityRate=null;
 	private ArrayList<Action> actions = null;
 
-/**
- * JumpProcess constructor comment.
- * @param var cbit.vcell.math.Variable
- * @param initialExp cbit.vcell.parser.Expression
- * @param rateExp cbit.vcell.parser.Expression
- */
 public JumpProcess(String name, cbit.vcell.parser.Expression probRate)
 {
 	processName = name;
@@ -58,8 +52,7 @@ public void addAction(Action newAction) throws MathException
 			actions.remove(action);
 			actions.add(Action.createIncrementAction(newAction.getVar(), newOperand));
 		} catch(cbit.vcell.parser.ExpressionException ex) {
-			ex.printStackTrace(System.out);
-			throw new MathException(ex.getMessage());
+			throw new MathException(ex.getMessage(), ex);
 		}
 	}
 	else
@@ -103,25 +96,18 @@ public boolean compareEqual(org.vcell.util.Matchable object)
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (10/2/2006 5:20:53 PM)
- * @return double
- * @param names java.lang.String[]
- * @param values double[]
- */
-public double evaluateProbabilityRate(String[] names, double[] values) 
-{
-	double result = 0;
-	try
-	{
-		cbit.vcell.parser.SymbolTable symTable= new cbit.vcell.parser.SimpleSymbolTable(names);
-		getProbabilityRate().bindExpression(symTable);
-		result = getProbabilityRate().evaluateVector(values);
-	} catch (cbit.vcell.parser.ExpressionException e) {e.printStackTrace();}
-
-	return result;	
-}
+//public double evaluateProbabilityRate(String[] names, double[] values)
+//{
+//	double result = 0;
+//	try
+//	{
+//		cbit.vcell.parser.SymbolTable symTable= new cbit.vcell.parser.SimpleSymbolTable(names);
+//		getProbabilityRate().bindExpression(symTable);
+//		result = getProbabilityRate().evaluateVector(values);
+//	} catch (cbit.vcell.parser.ExpressionException e) {lg.error(e);}
+//
+//	return result;
+//}
 
 
 /**
@@ -138,12 +124,6 @@ public Action getAction(int index)
 }
 
 
-/**
- * Get an action from action list by it's variable name.
- * Creation date: (6/27/2006 10:12:16 AM)
- * @return cbit.vcell.math.Action
- * @param actionName java.lang.String
- */
 public Action getAction(String varName) //again the problem here, do we allow same variables applear in actionlist more than once.
 {
 	for(int i=0; i<actions.size(); i++)

@@ -30,7 +30,6 @@ public class LookupTableObjectiveFunction extends DefaultScalarFunction {
 		    return error;
 		}catch(Exception e)
 		{
-			e.printStackTrace(System.out);
 			throw new RuntimeException(e.getMessage(),e);
 		}
 	}

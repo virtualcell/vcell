@@ -39,7 +39,6 @@ public AnalyticSubVolume(AnalyticSubVolume oldAnalyticSubVolume){
 	try {
 		setExpression(new Expression(oldAnalyticSubVolume.getExpression()));
 	} catch (ExpressionBindingException e) {
-		e.printStackTrace();
 		throw new RuntimeException(e.getMessage(), e);
 	}
 }

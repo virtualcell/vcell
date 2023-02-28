@@ -21,8 +21,11 @@ import java.util.Set;
 import cbit.gui.graph.GraphModel;
 import cbit.gui.graph.GraphView;
 import cbit.gui.graph.Shape;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class VCGroupManager {
+	private final static Logger lg = LogManager.getLogger(VCGroupManager.class);
 
 	public static interface GroupNamer {
 		public String createName();
@@ -65,7 +68,7 @@ public class VCGroupManager {
 			ShapeGroupUtil.collapseGroup(groupShape);
 			graphView.repaint();
 		} catch (Exception e) {
-			e.printStackTrace();
+			lg.error(e);
 		}
 	}
 	
