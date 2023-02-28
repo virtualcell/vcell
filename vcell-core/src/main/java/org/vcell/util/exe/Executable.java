@@ -133,7 +133,7 @@ protected void executeProcess(int[] expectedReturnCodes) throws org.vcell.util.e
 			// will return the exit code once the process terminates
 			int exitCode = monitorProcess(getProcess().getInputStream(), getProcess().getErrorStream(), 10);
 			Thread.interrupted(); //clear interrupted status
-			setExitValue(new Integer(exitCode));
+			setExitValue(Integer.valueOf(exitCode));
 		} catch (Exception e) {
 			String processName = (command.length > 0) ? '"' +command[0] + '"' : "<unknown>";
 			logger.error(String.format("Process %s ecountered a problem: ", processName), e);
@@ -479,17 +479,17 @@ private final void close(){
 		try {
 			getProcess().getInputStream().close();
 		} catch (Exception e) {
-			lg.error(e);
+			logger.error(e);
 		}
 		try {
 			getProcess().getOutputStream().close();
 		} catch (Exception e) {
-			lg.error(e);
+			logger.error(e);
 		}
 		try {
 			getProcess().getErrorStream().close();
 		} catch (Exception e) {
-			lg.error(e);
+			logger.error(e);
 		}
 		getProcess().destroy();
 		setProcess(null);
