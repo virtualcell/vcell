@@ -70,7 +70,6 @@ public class SEDMLExporterSBMLTest extends SEDMLExporterCommon {
 	@Override
 	Map<String, SEDMLExporterCommon.SEDML_FAULT> knownSEDMLFaults() {
 		HashMap<String, SEDML_FAULT> faults = new HashMap();
-		faults.put("__export_adv_test.vcml", SEDML_FAULT.SIMULATION_NOT_FOUND_BY_NAME);  // roundtripped simulation not found with name 'spatialnoscan'
 		faults.put("biomodel_100596964.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_100961371.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_113655498.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
