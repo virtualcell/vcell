@@ -3,6 +3,7 @@ package org.vcell.cli.run;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -181,26 +182,33 @@ return faults;
 			if (knownFault != null){
 				throw new RuntimeException("test case passed, but expected "+knownFault.name()+", remove "+testCaseFilename+" from known faults");
 			}
-			Assert.assertNull("file "+testCaseFilename+" passed, but knownFault was set", knownFault);
+			Assert.assertNull("file " + testCaseFilename + " passed, but knownFault was set", knownFault);
 
 		}catch (Exception | AssertionError e){
-			String errMsg = e.getMessage();
-			if (errMsg != null && errMsg.contains("refers to either a non-existent model (invalid SED-ML) or to another model with changes (not supported yet)")){
-				if (knownFault == FAULT.SEDML_UNSUPPORTED_MODEL_REFERENCE) {
-					System.err.println("Expected error: "+e.getMessage());
-					return;
-				} else {
-					System.err.println("add FAULT.SEDML_UNSUPPORTED_MODEL_REFERENCE to " + testCaseFilename);
-				}
-			}
+			FAULT fault = this.determineFault(e);
+			if (knownFault == fault) {
+				System.err.println("Expected error: " + e.getMessage());
+				return;
+			} 
+		
+			System.err.println("add FAULT." + fault.name() + " to " + testCaseFilename);
 			throw e;
 		}
 	}
 
-	private FAULT determineFault(String errorMessage){
+	private FAULT determineFault(Throwable caughtException){ // Throwable because Assertion Error
 		FAULT determinedFault = FAULT.UNCATETORIZED_FAULT;
+		String errorMessage = caughtException.getMessage();
+		if (errorMessage == null) errorMessage = ""; // Prevent nullptr exception
+
 		if (errorMessage.contains("refers to either a non-existent model")) { //"refers to either a non-existent model (invalid SED-ML) or to another model with changes (not supported yet)"
 			determinedFault = FAULT.SEDML_UNSUPPORTED_MODEL_REFERENCE;
+		} else if (errorMessage.contains("System IO encountered a fatal error")){
+			Throwable subException = caughtException.getCause();
+			String subMessage = (subException == null) ? "" : subException.getMessage();
+			if (subException instanceof FileAlreadyExistsException){
+				determinedFault = FAULT.HDF5_FILE_ALREADY_EXISTS;
+			}
 		}
 
 		return determinedFault;
