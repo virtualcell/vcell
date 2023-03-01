@@ -47,7 +47,7 @@ public class BSTS_OmexExecTest {
 	}
 
 	@BeforeClass
-	public static void teardown() throws IOException {
+	public static void teardown() throws Exception {
 		CLIPythonManager.getInstance().closePythonProcess();
 		VCellUtilityHub.shutdown();
 	}
