@@ -37,6 +37,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -110,6 +111,8 @@ import cbit.vcell.client.desktop.biomodel.BioModelEditor;
 import cbit.vcell.client.desktop.biomodel.AnnotationsPanel.ComboboxToolTipRenderer;
 import cbit.vcell.client.server.ClientServerManager;
 import cbit.vcell.client.server.UserPreferences;
+import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.graph.CatalystShape;
 import cbit.vcell.graph.ContainerContainerShape;
@@ -747,53 +750,67 @@ public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonToo
 					DialogUtils.showErrorDialog(requester, e.getMessage());
 					return;
 				}
-				ReactionDescription reactionDescription = DBReactionWizardPanel.createReactionDescription(reactionSpeciesCopy.getReactStepArr()[0], null, reactionSpeciesCopy.getFromStructure().getKey());
-				RXParticipantResolverPanel rxParticipantResolverPanel = new RXParticipantResolverPanel();
-//				rxParticipantResolverPanel.setPasteToModel(getModel());
-				rxParticipantResolverPanel.setupRX(reactionDescription,getModel(),pasteToStructure);
-//				JDialog j = new JDialog();
-//				j.setModal(true);
-//				j.setAlwaysOnTop(true);
-//				j.getContentPane().add(rxParticipantResolverPanel);
-//				j.pack();
-//				j.setVisible(true);
-//				int result = DialogUtils.showComponentOKCancelDialog(getGraphPane(), rxParticipantResolverPanel, "Assign Reaction elements");
-//				if(result != JOptionPane.OK_OPTION) {
-//					return;
-//				}
-				BioCartoonTool.AssignmentHelper assignmentHelper = new BioCartoonTool.AssignmentHelper() {
-					@Override
-					public JComboBox[] getStructureAssignmentJCB() {
-						return rxParticipantResolverPanel.getStructureAssignmentJCB();
-					}
-					@Override
-					public JComboBox[] getSpeciesAssignmentJCB() {
-						return rxParticipantResolverPanel.getSpeciesAssignmentJCB();
-					}
-					@Override
-					public ArrayList<JTextField> getFinalNames() {
-						// TODO Auto-generated method stub
-						return rxParticipantResolverPanel.getFinalNamesJTF();
-					}
-					@Override
-					public Component getParent() {
-						return getGraphPane();
-					}
-					@Override
-					public Component getAssignmentInterface() {
-						return rxParticipantResolverPanel;
-					}
-					@Override
-					public void close() {
-						//Do Nothing
-					}
-				};
+				
+				Model modelSource = reactionSpeciesCopy.getReactStepArr()[0].getModel();
+				Model modelDest = bioModel.getModel();
+				AsynchClientTask[] asynchClientTask = new AsynchClientTask[reactionSpeciesCopy.getReactStepArr().length];
+				for(int i=0; i<reactionSpeciesCopy.getReactStepArr().length; i++) {
+					final int ii = i;
+					AsynchClientTask pasteRXTask = new AsynchClientTask("ProcessingReaction..." + i, AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+						@Override
+						public void run(Hashtable<String, Object> hashTable)throws Exception {
+				
+							ReactionDescription reactionDescription = DBReactionWizardPanel.createReactionDescription(reactionSpeciesCopy.getReactStepArr()[ii], null, reactionSpeciesCopy.getFromStructure().getKey());
+							RXParticipantResolverPanel rxParticipantResolverPanel = new RXParticipantResolverPanel();
+			//				rxParticipantResolverPanel.setPasteToModel(getModel());
+							rxParticipantResolverPanel.setupRX(reactionDescription,getModel(),pasteToStructure);
+			//				JDialog j = new JDialog();
+			//				j.setModal(true);
+			//				j.setAlwaysOnTop(true);
+			//				j.getContentPane().add(rxParticipantResolverPanel);
+			//				j.pack();
+			//				j.setVisible(true);
+			//				int result = DialogUtils.showComponentOKCancelDialog(getGraphPane(), rxParticipantResolverPanel, "Assign Reaction elements");
+			//				if(result != JOptionPane.OK_OPTION) {
+			//					return;
+			//				}
+							BioCartoonTool.AssignmentHelper assignmentHelper = new BioCartoonTool.AssignmentHelper() {
+								@Override
+								public JComboBox[] getStructureAssignmentJCB() {
+									return rxParticipantResolverPanel.getStructureAssignmentJCB();
+								}
+								@Override
+								public JComboBox[] getSpeciesAssignmentJCB() {
+									return rxParticipantResolverPanel.getSpeciesAssignmentJCB();
+								}
+								@Override
+								public ArrayList<JTextField> getFinalNames() {
+									// TODO Auto-generated method stub
+									return rxParticipantResolverPanel.getFinalNamesJTF();
+								}
+								@Override
+								public Component getParent() {
+									return getGraphPane();
+								}
+								@Override
+								public Component getAssignmentInterface() {
+									return rxParticipantResolverPanel;
+								}
+								@Override
+								public void close() {
+									//Do Nothing
+								}
+							};
 
-				BioCartoonTool.pasteReactionSteps(requester, ReactionCartoonTool.this, reactionDescription,
-					reactionSpeciesCopy.getReactStepArr()[0].getModel(), reactionSpeciesCopy.getFromStructure(),reactionSpeciesCopy.getReactStepArr()[0],
-					bioModel.getModel(), pasteToStructure,
-					assignmentHelper);
-//				pasteReactionSteps(getGraphPane(),reactionSpeciesCopy.getReactStepArr(), getModel(),structure,true, null,ReactionCartoonTool.this);
+							BioCartoonTool.pasteReactionSteps(requester, ReactionCartoonTool.this, reactionDescription,
+									modelSource, reactionSpeciesCopy.getFromStructure(),reactionSpeciesCopy.getReactStepArr()[ii],
+									modelDest, pasteToStructure, assignmentHelper);
+						}
+					};
+					asynchClientTask[i] = pasteRXTask;
+				}
+				ClientTaskDispatcher.dispatch(requester, new Hashtable<>(), asynchClientTask, false);
+
 			} else if(reactionSpeciesCopy.getReactionRuleArr() != null && (response == null || response.equals(RXSPECIES_PASTERX))){
 			
 				pasteReactionsAndRules(getGraphPane(), reactionSpeciesCopy, getModel(), pasteToStructure, ReactionCartoonTool.this);
