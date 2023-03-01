@@ -2,6 +2,7 @@ package org.vcell.cli.run;
 
 import ncsa.hdf.hdf5lib.exceptions.HDF5Exception;
 
+import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.xml.ExternalDocInfo;
 import org.apache.commons.io.FilenameUtils;
