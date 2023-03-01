@@ -139,8 +139,9 @@ public class ExecutionJob {
             logger.error("Python-processing encountered fatal error. Execution is unable to properly continue.", e);
             throw e;
         } catch(InterruptedException|IOException e){
-            logger.error("System IO encountered a fatal error");
-            throw new ExecutionException();
+            String message = "System IO encountered a fatal error";
+            logger.error(message, e);
+            throw new ExecutionException(message, e);
         } 
     }
 

@@ -1,5 +1,6 @@
 package org.vcell.cli.run;
 
+import ncsa.hdf.hdf5lib.exceptions.HDF5Exception;
 
 import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.xml.ExternalDocInfo;
