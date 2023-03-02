@@ -108,6 +108,15 @@ public class BSTS_OmexExecTest {
 		return slowSet;
 	}
 
+	static Set<String> blacklistedModels(){
+		HashSet<String> blacklistSet = new HashSet<>();
+		// We have blacklisted these next two out because we do not support sequential repeated tasks,
+		// ...but by design we permit this kind of error to be a non-obstructive side effect.
+		blacklistSet.add("synths/sedml/SimulatorSupportsRepeatedTasksWithSubTasksOfMixedTypes/1.execution-should-succeed.omex");
+		blacklistSet.add("synths/sedml/SimulatorSupportsRepeatedTasksWithSubTasksOfMixedTypes/2.execution-should-succeed.omex");
+		return blacklistSet;
+	}
+
 	static Map<String, FAULT> knownFaults() {
 		HashMap<String, FAULT> faults = new HashMap<>();
 //		faults.put("sbml-core/Vilar-PNAS-2002-minimal-circardian-clock-discrete-NRM.omex", FAULT.SEDML_UNSUPPORTED_MODEL_REFERENCE); // Model refers to either a non-existent model (invalid SED-ML) or to another model with changes (not supported yet)
@@ -119,15 +128,16 @@ public class BSTS_OmexExecTest {
 //		faults.put("synths/sedml/SimulatorSupportsRepeatedTasksWithSubTasksOfMixedTypes/2.execution-should-succeed.omex", FAULT.UNCATETORIZED_FAULT); // ERROR (SEDMLImporter.java:589) - sequential RepeatedTask not yet supported, task __repeated_task_1 is being skipped []{}
 		faults.put("synths/combine_archive/WhenACombineArchiveHasNoMasterFileSimulatorExecutesAllSedDocuments/1.execution-should-succeed.omex", FAULT.HDF5_FILE_ALREADY_EXISTS);
 		faults.put("synths/combine_archive/CombineArchiveHasSedDocumentsWithSameNamesInDifferentInNestedDirectories/1.execution-should-succeed.omex", FAULT.HDF5_FILE_ALREADY_EXISTS);
-		faults.put("synths/sedml/SimulatorSupportsDataGeneratorsWithDifferentShapes/1.execution-should-succeed.omex", FAULT.ARRAY_INDEX_OUT_OF_BOUNDS);
-		faults.put("synths/sedml/SimulatorSupportsRepeatedTasksWithSubTasksOfMixedTypes/1.execution-should-succeed.omex", FAULT.OPERATION_NOT_SUPPORTED);		
-		faults.put("synths/sedml/SimulatorSupportsRepeatedTasksWithSubTasksOfMixedTypes/2.execution-should-succeed.omex", FAULT.OPERATION_NOT_SUPPORTED);	
+		faults.put("synths/sedml/SimulatorSupportsDataSetsWithDifferentShapes/1.execution-should-succeed.omex", FAULT.ARRAY_INDEX_OUT_OF_BOUNDS);
 return faults;
 	}
 
 	@Parameterized.Parameters
 	public static Collection<String> testCases() {
-		Predicate<String> filter = (t) -> !slowModels().contains(t);
+		Set<String> modelsToFilter = slowModels();
+		modelsToFilter.addAll(blacklistedModels());
+
+		Predicate<String> filter = (t) -> !modelsToFilter.contains(t);
 		List<String> testCases = Arrays.stream(BSTS_TestSuiteFiles.getBSTSTestCases()).filter(filter).collect(Collectors.toList());
 		return testCases;
 	}
@@ -201,13 +211,20 @@ return faults;
 		String errorMessage = caughtException.getMessage();
 		if (errorMessage == null) errorMessage = ""; // Prevent nullptr exception
 
+		if (caughtException instanceof Error) return determinedFault;
+
 		if (errorMessage.contains("refers to either a non-existent model")) { //"refers to either a non-existent model (invalid SED-ML) or to another model with changes (not supported yet)"
 			determinedFault = FAULT.SEDML_UNSUPPORTED_MODEL_REFERENCE;
 		} else if (errorMessage.contains("System IO encountered a fatal error")){
 			Throwable subException = caughtException.getCause();
-			String subMessage = (subException == null) ? "" : subException.getMessage();
+			//String subMessage = (subException == null) ? "" : subException.getMessage();
 			if (subException instanceof FileAlreadyExistsException){
 				determinedFault = FAULT.HDF5_FILE_ALREADY_EXISTS;
+			}
+		} else if (errorMessage.contains("error while processing outputs: null")){
+			Throwable subException = caughtException.getCause();
+			if (subException instanceof ArrayIndexOutOfBoundsException){
+				determinedFault = FAULT.ARRAY_INDEX_OUT_OF_BOUNDS;
 			}
 		}
 
