@@ -63,12 +63,12 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.Queue;
-import java.util.PriorityQueue;
 import java.util.Iterator;
-import java.util.Comparator;
 import java.util.Collections;
 
-
+/**
+ * Serves as a means to convert sedml documents into VCell BioModels
+ */
 public class SEDMLImporter {
 
 	private final static Logger logger = LogManager.getLogger(SEDMLImporter.class);
@@ -88,6 +88,16 @@ public class SEDMLImporter {
 	
 	private HashMap<BioModel, SBMLImporter> importMap = new HashMap<BioModel, SBMLImporter>();
 	
+	/**
+	 * Prepares a sedml for import as biomodels
+	 * 
+	 * @param transLogger the VC logger to use
+	 * @param externalDocInfo contextual information necessary for import
+	 * @param sedml the sedml to import
+	 * @param exactMatchOnly do not substitute for "compatible" kisao solvers, use the exact solver only.
+	 * @throws FileNotFoundException if the sedml archive can not be found
+	 * @throws XMLException if the sedml has invalid xml.
+	 */
 	public  SEDMLImporter(VCLogger transLogger, ExternalDocInfo externalDocInfo, SedML sedml, boolean exactMatchOnly) throws FileNotFoundException, XMLException {
 		this.transLogger = transLogger;
 		this.externalDocInfo = externalDocInfo;
@@ -115,6 +125,9 @@ public class SEDMLImporter {
 		sbmlSupport = new SBMLSupport();
 	}
 
+	/**
+	 * Get the list of biomodels from the sedml initialized at construction time.
+	 */
 	public List<BioModel> getBioModels() throws Exception {
 		uniqueBioModelsList = new ArrayList<BioModel>();
 

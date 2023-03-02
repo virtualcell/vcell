@@ -58,7 +58,7 @@ public class SEDMLExporterSBMLTest extends SEDMLExporterCommon {
 
 	@Override
 	Map<String, SEDMLExporterCommon.FAULT> knownFaults() {
-		HashMap<String, FAULT> faults = new HashMap();
+		HashMap<String, FAULT> faults = new HashMap<>();
 		faults.put("biomodel_123269393.vcml", FAULT.MATHOVERRIDES_INVALID); // Kf_r7 - biomodel needs fixing
 		faults.put("biomodel_124562627.vcml", FAULT.NULL_POINTER_EXCEPTION); // CSG/analytic geometry issue
 		faults.put("biomodel_156134818.vcml", FAULT.UNKNOWN_IDENTIFIER);  // species named I conflicts with membrane parameter I
@@ -69,7 +69,7 @@ public class SEDMLExporterSBMLTest extends SEDMLExporterCommon {
 
 	@Override
 	Map<String, SEDMLExporterCommon.SEDML_FAULT> knownSEDMLFaults() {
-		HashMap<String, SEDML_FAULT> faults = new HashMap();
+		HashMap<String, SEDML_FAULT> faults = new HashMap<>();
 		faults.put("__export_adv_test.vcml", SEDML_FAULT.SIMULATION_NOT_FOUND_BY_NAME);  // roundtripped simulation not found with name 'spatialnoscan'
 		faults.put("biomodel_100596964.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_100961371.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
