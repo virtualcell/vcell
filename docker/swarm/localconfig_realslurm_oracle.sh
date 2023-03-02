@@ -77,8 +77,8 @@ case $VCELL_SITE in
 		;;
 esac
 
-VCELL_DB_URL="jdbc:postgresql://${DATABASE_HOST}:5432/postgres"
-VCELL_DB_DRIVER="org.postgresql.Driver"
+VCELL_DB_URL="jdbc:oracle:thin:@VCELL-DB.cam.uchc.edu:1521/vcelldborcl.cam.uchc.edu"
+VCELL_DB_DRIVER="oracle.jdbc.driver.OracleDriver"
 VCELL_DB_USER="vcell"
 VCELL_JMS_SIM_HOST_EXTERNAL=vcell-node3.cam.uchc.edu
 VCELL_MONGO_HOST_EXTERNAL=$VCELL_API_HOST_EXTERNAL
@@ -129,7 +129,7 @@ VCELL_SSH_CMD_RESTORE_TIMEOUT=5
 
 #
 # write out the environment file to be for:
-# 1. deployment actions (not applicable here because localconfig_realslurm.sh is designed for local computation on a dev machine).
+# 1. deployment actions (not applicable here because localconfig_realslurm_postgres.sh is designed for local computation on a dev machine).
 # 2. runtime environment for the docker stack run command
 #
 cat <<EOF >"$_outputfile"
@@ -148,7 +148,7 @@ VCELL_CLIENT_APPID=${_applicationId}
 VCELL_DB_DRIVER=$VCELL_DB_DRIVER
 VCELL_DB_URL=$VCELL_DB_URL
 VCELL_DB_USER=$VCELL_DB_USER
-VCELL_DEPLOY_SECRETS_DIR=${HOME}/vcellkeys
+VCELL_DEPLOY_SECRETS_DIR=${HOME}/vcellkeys_oracle
 VCELL_EXPORT_BASEURL=$VCELL_EXPORT_BASEURL
 VCELL_EXPORTDIR_HOST=$VCELL_EXPORTDIR_HOST
 VCELL_HTC_NODELIST=$VCELL_HTC_NODELIST
@@ -173,7 +173,7 @@ VCELL_OPT_DOCKER_IMAGE=$VCELL_OPT_DOCKER_IMAGE
 VCELL_OPT_SINGULARITY_FILENAME=$VCELL_OPT_SINGULARITY_FILENAME
 VCELL_OPT_SINGULARITY_IMAGE_EXTERNAL=$VCELL_OPT_SINGULARITY_IMAGE_EXTERNAL
 VCELL_REPO_NAMESPACE=$VCELL_REPO_NAMESPACE
-VCELL_SECRETS_DIR=${HOME}/vcellkeys
+VCELL_SECRETS_DIR=${HOME}/vcellkeys_oracle
 VCELL_SIMDATADIR_ARCHIVE_EXTERNAL=/share/apps/vcell12/users
 VCELL_SIMDATADIR_ARCHIVE_INTERNAL=/share/apps/vcell12/users
 VCELL_SIMDATADIR_ARCHIVE_HOST=/Volumes/vcell-2/users

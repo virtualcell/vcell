@@ -386,7 +386,7 @@ create local deploy configuration file (e.g. Test2 7.0.0 build 7) file for local
 ```bash
 export VCELL_VERSION=7.0.0 VCELL_BUILD=8 VCELL_SITE=test2
 export VCELL_CONFIG_FILE_NAME=${VCELL_TAG}.config
-./localconfig_realslurm.sh $VCELL_SITE $VCELL_REPO_NAMESPACE \
+./localconfig_realslurm_postgres.sh $VCELL_SITE $VCELL_REPO_NAMESPACE \
   $VCELL_TAG $VCELL_VERSION $VCELL_BUILD $VCELL_CONFIG_FILE_NAME
 ```
 

@@ -51,7 +51,7 @@ also, make sure vcell-batch container is current.
 3. Update local configuration to run locally (stored in <vcell>/docker_env.txt)
 
 ```bash
-./localconfig_realslurm.sh TEST ghcr.io/virtualcell dev 7.4.0 1234 ../../docker_env.txt
+./localconfig_realslurm_postgres.sh TEST ghcr.io/virtualcell dev 7.4.0 1234 ../../docker_env.txt
 ```
 
 5. run local middleware services
