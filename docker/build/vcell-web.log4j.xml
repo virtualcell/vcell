@@ -8,7 +8,7 @@
                           locationInfoEnabled="true"
                           maxStringLength="65535"
                           truncatedStringSuffix="...TRUNCATED...">
-        <EventTemplateAdditionalField key="vcell_service" value="vcell-admin"/>
+        <EventTemplateAdditionalField key="vcell_service" value="vcell-web"/>
       </JsonTemplateLayout>
     </Console>
   </Appenders>

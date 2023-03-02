@@ -4,7 +4,12 @@
     <Console name="Console" target="SYSTEM_OUT">
       <!--      <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>-->
       <!--      <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} %5p (%F:%L) - %m %x%X%n"/>-->
-      <JsonTemplateLayout eventTemplateUri="classpath:EcsLayout.json" locationInfoEnabled="true"/>
+      <JsonTemplateLayout eventTemplateUri="classpath:EcsLayout.json"
+                          locationInfoEnabled="true"
+                          maxStringLength="65535"
+                          truncatedStringSuffix="...TRUNCATED...">
+        <EventTemplateAdditionalField key="vcell_service" value="vcell-submit"/>
+      </JsonTemplateLayout>
     </Console>
   </Appenders>
   <Loggers>
