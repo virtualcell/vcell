@@ -30,7 +30,7 @@ sudo yum install squashfs-tools.x86_64
 3) deploy a vcell production stack (named "local") on a single machine Docker swarm mode
 
 ```bash
-./localconfig_mockslurm.sh test localhost:5000 dev 7.0.0 4 local_mockslurm.config
+./localconfig_mockslurm-not-used.sh test localhost:5000 dev 7.0.0 4 local_mockslurm.config
 env $(cat local_mockslurm.config | xargs) docker stack deploy -c docker-compose.yml -c docker-compose-swarm.yml local
 ```
 
@@ -41,7 +41,7 @@ pushd ..
 mvn clean install dependency:copy-dependencies
 popd
 ./build.sh all localhost:5000 dev
-./localconfig_mockslurm.sh test localhost:5000 dev 7.0.0 4 local_mockslurm.config
+./localconfig_mockslurm-not-used.sh test localhost:5000 dev 7.0.0 4 local_mockslurm.config
 env $(cat local_mockslurm.config | xargs) docker-compose -f docker-compose-clientgen.yml rm --force
 env $(cat local_mockslurm.config | xargs) docker-compose -f docker-compose-clientgen.yml up
 open ./generated_installers/VCell_Test_macos_7_0_0_4_64bit.dmg
@@ -348,7 +348,7 @@ create local deploy configuration file (e.g. Test2 7.0.0 build 7) file for local
 ```bash
 export VCELL_VERSION=7.0.0 VCELL_BUILD=9 VCELL_SITE=test2
 export VCELL_CONFIG_FILE_NAME=local-${VCELL_SITE}_${VCELL_VERSION}_${VCELL_BUILD}_${VCELL_TAG}.config
-./localconfig_mockslurm.sh $VCELL_SITE $VCELL_REPO_NAMESPACE \
+./localconfig_mockslurm-not-used.sh $VCELL_SITE $VCELL_REPO_NAMESPACE \
   $VCELL_TAG $VCELL_VERSION $VCELL_BUILD $VCELL_CONFIG_FILE_NAME
 ```
 
@@ -415,7 +415,7 @@ create local deploy configuration file (e.g. Test2 7.0.0 build 7) file for local
 ```bash
 export VCELL_VERSION=7.0.0 VCELL_BUILD=9 VCELL_SITE=test2
 export VCELL_CONFIG_FILE_NAME=sbmlsolvers_${VCELL_VERSION}_${VCELL_BUILD}_${VCELL_TAG}.config
-./localconfig_mockslurm.sh $VCELL_SITE $VCELL_REPO_NAMESPACE \
+./localconfig_mockslurm-not-used.sh $VCELL_SITE $VCELL_REPO_NAMESPACE \
   $VCELL_TAG $VCELL_VERSION $VCELL_BUILD $VCELL_CONFIG_FILE_NAME
 ```
 

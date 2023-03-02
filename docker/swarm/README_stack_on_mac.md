@@ -58,7 +58,7 @@ also, make sure vcell-batch container is current.
    1. Postgres on 0.0.0.0 (not just loopback adapter)
    2. run local MongoDB on 0.0.0.0 (not just loopback adapter)
 
-6. make sure ActiveMQ is still running on UCHC cluster according to config in [docker-compose-dev.yml](./docker-compose-dev.yml) 
+6. make sure ActiveMQ is still running on UCHC cluster according to config in [docker-compose.yml](./docker-compose.yml) 
     * for example:
        * VCELL_JMS_SIM_HOST_EXTERNAL=vcell-node3.cam.uchc.edu
        * VCELL_JMS_SIM_PORT_EXTERNAL=61619
@@ -66,8 +66,8 @@ also, make sure vcell-batch container is current.
     * this is needed so that batch and opt jobs running on Slurm can send status, and listen for kills.
 
 
-5. execute docker compose using [docker-compose-dev.yml](./docker-compose-dev.yml) 
+5. execute docker compose using [docker-compose.yml](./docker-compose.yml) 
    with environment variable configuration in [docker_env.txt](../../docker_env.txt) in IDE (intellij)
 
 
-6. execute local VCell GUI (VCellClientMain) pointing to local backend (vcell-api port as defined in [docker-compose-dev.yml](./docker-compose-dev.yml))
+6. execute local VCell GUI (VCellClientMain) pointing to local backend (vcell-api port as defined in [docker-compose.yml](./docker-compose.yml))

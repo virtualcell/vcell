@@ -32,7 +32,7 @@ services:
 
     ports:
       - "${VCELL_API_PORT_EXTERNAL}:8080"
-      - "8000" # java remote debugging
+      - "${VCELL_DEBUG_PORT_VCELL_API}:8000" # java remote debugging
     healthcheck:
       test: ["CMD", "curl", "-f", "--insecure", "https://localhost:8080/health?check=login"]
       interval: 600s
@@ -95,7 +95,7 @@ services:
       - mongodb_port_internal=27017
       - mongodb_database=test
     ports:
-      - "8000" # java remote debugging
+      - "${VCELL_DEBUG_PORT_VCELL_SCHED}:8000" # java remote debugging
     healthcheck:
       test: ["CMD", "curl", "-f", "--insecure", "https://api:8080/health?check=sim"]
       interval: 600s
@@ -180,7 +180,7 @@ services:
       - mongodb_port_internal=27017
       - mongodb_database=test
     ports:
-      - "8000" # java remote debugging
+      - "${VCELL_DEBUG_PORT_VCELL_SUBMIT}:8000" # java remote debugging
       - "8877"
     volumes:
       - "${VCELL_SIMDATADIR_HOST}:/simdata"
@@ -227,7 +227,7 @@ services:
       - mongodb_port_internal=27017
       - mongodb_database=test
     ports:
-      - "8000" # java remote debugging
+      - "${VCELL_DEBUG_PORT_VCELL_DB}:8000" # java remote debugging
     secrets:
       - dbpswd
       - jmspswd
@@ -268,7 +268,7 @@ services:
 
       - servertype=CombinedData
     ports:
-      - "8000" # java remote debugging
+      - "${VCELL_DEBUG_PORT_VCELL_DATA}:8000" # java remote debugging
     volumes:
       - "${VCELL_SIMDATADIR_HOST}:/simdata"
       - "${VCELL_SIMDATADIR_ARCHIVE_HOST}:${VCELL_SIMDATADIR_ARCHIVE_INTERNAL}"
@@ -378,7 +378,7 @@ services:
       - dbdriver=${VCELL_DB_DRIVER}
       - dbuser=${VCELL_DB_USER}
     ports:
-      - "8000" # java remote debugging
+      - "${VCELL_DEBUG_PORT_VCELL_WEB}:8000" # java remote debugging
       - "${VCELL_WEB_DATA_PORT}:${VCELL_WEB_DATA_PORT}"
     volumes:
       - "${VCELL_SIMDATADIR_HOST}:/simdata"
