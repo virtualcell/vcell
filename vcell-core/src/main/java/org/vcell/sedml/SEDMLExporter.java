@@ -226,7 +226,7 @@ public class SEDMLExporter {
 						try {
 							SBMLExporter.validateSimulationContextSupport(simContext);
 							boolean isSpatial = simContext.getGeometry().getDimension() > 0 ? true : false;
-							Pair <String, Map<Pair <String, String>, String>> pair = XmlHelper.exportSBMLwithMap(vcBioModel, 3, 2, 0, isSpatial, simContext, null, bRoundTripSBMLValidation);
+							Pair <String, Map<Pair <String, String>, String>> pair = XmlHelper.exportSBMLwithMap(vcBioModel, 3, 2, 0, isSpatial, simContext, bRoundTripSBMLValidation);
 							sbmlString = pair.one;
 							l2gMap = pair.two;
 							writeModelSBML(savePath, sBaseFileName, sbmlString, simContext);

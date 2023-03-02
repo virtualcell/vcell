@@ -129,8 +129,7 @@ public Simulation(SimulationVersion argSimulationVersion, MathDescription mathDe
 	try {
 		setMathDescription(mathDescription);
 	} catch (java.beans.PropertyVetoException e) {
-		e.printStackTrace();
-		throw new RuntimeException(e.getMessage());
+		throw new RuntimeException(e.getMessage(), e);
 	}
 	//  Must set the MathDescription before constructing these...
 	if (mathDescription.getGeometry().getDimension()>0){
@@ -195,8 +194,7 @@ public Simulation(MathDescription mathDescription, SimulationOwner simulationOwn
 	try {
 		setMathDescription(mathDescription);
 	} catch (java.beans.PropertyVetoException e) {
-		e.printStackTrace();
-		throw new RuntimeException(e.getMessage());
+		throw new RuntimeException(e.getMessage(), e);
 	}
 	fieldName = mathDescription.getName()+"_"+Math.random();
 	this.simulationOwner = simulationOwner;
@@ -912,7 +910,6 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 			try{
 				refreshMeshSpec();
 			}catch(PropertyVetoException e){
-				e.printStackTrace();
 				throw new RuntimeException(e.getMessage(),e);
 			}
 		}

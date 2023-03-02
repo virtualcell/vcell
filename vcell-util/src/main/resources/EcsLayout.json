@@ -23,6 +23,14 @@
     "$resolver": "logger",
     "field": "name"
   },
+  "line_number": {
+    "$resolver": "source",
+    "field": "lineNumber"
+  },
+  "class": {
+    "$resolver": "source",
+    "field": "className"
+  },
   "labels": {
     "$resolver": "mdc",
     "flatten": true,

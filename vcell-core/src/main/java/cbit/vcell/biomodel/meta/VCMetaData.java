@@ -22,6 +22,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jdom.Element;
 import org.jdom.Namespace;
 import org.openrdf.model.Graph;
@@ -69,6 +71,8 @@ import cbit.vcell.xml.XMLTags;
 
 @SuppressWarnings("serial")
 public class VCMetaData implements Serializable {
+	private final static Logger lg = LogManager.getLogger(VCMetaData.class);
+
 	public interface AnnotationEventListener {
 		void annotationChanged(AnnotationEvent annotationEvent);
 	}
@@ -249,7 +253,7 @@ public class VCMetaData implements Serializable {
 //			String s2 = printRdfPretty();
 //			System.out.println(s2);
 //		} catch (RDFHandlerException e) {
-//			e.printStackTrace();
+//			lg.error(e);
 //		}
 		miriamManager.invalidateCache();
 	}
@@ -277,7 +281,7 @@ public class VCMetaData implements Serializable {
 						}
 					}
 				} catch (URNParseFailureException e) {
-					e.printStackTrace(System.out);
+					lg.error(e);
 				}
 				// set nonRDF annotations to null
 				NonRDFAnnotation nonRDFAnnotation = getExistingNonRDFAnnotation(entryIdentifiable);

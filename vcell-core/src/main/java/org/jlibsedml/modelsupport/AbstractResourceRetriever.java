@@ -3,9 +3,12 @@ package org.jlibsedml.modelsupport;
 import java.io.IOException;
 import java.net.MalformedURLException;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jlibsedml.webtools.WebFile;
 
 abstract class AbstractResourceRetriever {
+    private final static Logger lg = LogManager.getLogger(AbstractResourceRetriever.class);
 
     String getResource(final String url) {
 
@@ -19,11 +22,11 @@ abstract class AbstractResourceRetriever {
             }
         } catch (MalformedURLException e) {
             // TODO Auto-generated catch block
-            e.printStackTrace();
+            lg.error(e);
             return null;
         } catch (IOException e) {
             // TODO Auto-generated catch block
-            e.printStackTrace();
+            lg.error(e);
             return null;
         }
 

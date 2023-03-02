@@ -13,11 +13,15 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 
 import org.apache.commons.compress.utils.IOUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.FileUtils;
 
 import cbit.vcell.resource.PropertyLoader;
 
 public class FileDataContainerManager {
+	private final static Logger lg = LogManager.getLogger(FileDataContainerManager.class);
+
 	ArrayList<FileDataContainer> fileDataContainers = new ArrayList<FileDataContainer>();
 	private long aggregateDataSize = 0;
 	private static long AGGREGATE_DATA_SIZE_IN_MEMORY_LIMIT= PropertyLoader.getLongProperty(PropertyLoader.exportMaxInMemoryLimit, 1024*1024*100); 
@@ -223,7 +227,7 @@ public class FileDataContainerManager {
 		void deleteTempFile() throws IOException {
 			if(isDataInFile() && getDataFile().exists()){
 				if (!getDataFile().delete()){
-					new Exception("Failed to delete ExportOutput Tempfile '"+getDataFile().getAbsolutePath()+"'").printStackTrace();
+					lg.error(new Exception("Failed to delete ExportOutput Tempfile '"+getDataFile().getAbsolutePath()+"'"));
 				}
 			}
 		}
@@ -452,7 +456,7 @@ public class FileDataContainerManager {
 //			
 //			
 //		}catch(Exception e){
-//			e.printStackTrace();
+//			lg.error(e);
 //		}
 //	}
 

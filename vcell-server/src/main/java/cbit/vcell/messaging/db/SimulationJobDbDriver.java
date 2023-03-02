@@ -569,7 +569,7 @@ public List<SimpleJobStatusPersistent> getSimpleJobStatus(Connection con, String
 					std = new cbit.vcell.solver.SolverTaskDescription(new org.vcell.util.CommentStringTokenizer(org.vcell.util.TokenMangler.getSQLRestoredString(taskDesc)));
 				}
 			} catch (DataAccessException ex) {
-				ex.printStackTrace();
+				lg.error(ex);
 				lg.error("failed to parse SolverTaskDescription",ex);
 			}
 			Integer meshSizeX = rset.getInt(SimulationTable.table.meshSpecX.getUnqualifiedColName());
@@ -595,7 +595,6 @@ public List<SimpleJobStatusPersistent> getSimpleJobStatus(Connection con, String
 					bioModelLink.clearZeroPadding();
 					simulationDocumentLink = bioModelLink;
 				}catch (Exception e) {
-					e.printStackTrace();
 					lg.error("failed to parse BioModelLink",e);
 				}
 			}
@@ -607,7 +606,6 @@ public List<SimpleJobStatusPersistent> getSimpleJobStatus(Connection con, String
 					mathModelLink.clearZeroPadding();
 					simulationDocumentLink = mathModelLink;
 				}catch (Exception e) {
-					e.printStackTrace();
 					lg.error("failed to parse MathModelLink",e);
 				}
 			}

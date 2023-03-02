@@ -42,8 +42,7 @@ public Species(String commonName,String argAnnotation, DBSpecies argDBSpecies) t
 	try {
 		setCommonName(commonName);
 	}catch (PropertyVetoException e){
-		e.printStackTrace(System.out);
-		throw new IllegalArgumentException(e.getMessage());
+		throw new IllegalArgumentException(e.getMessage(), e);
 	}
 }      
 

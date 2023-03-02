@@ -8,6 +8,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.restlet.data.LocalReference;
 import org.restlet.data.MediaType;
 import org.restlet.data.Reference;
@@ -38,7 +40,8 @@ import cbit.vcell.parser.ExpressionException;
 import freemarker.template.Configuration;
 
 public class BiomodelsServerResource extends AbstractServerResource implements BiomodelsResource {
-
+	private final static Logger lg = LogManager.getLogger(BiomodelsServerResource.class);
+	
 	public static final String PARAM_USER = "user";
 	public static final String PARAM_BM_NAME = "bmName";
 	public static final String PARAM_BM_ID = "bmId";
@@ -109,7 +112,7 @@ public class BiomodelsServerResource extends AbstractServerResource implements B
 			bmReps = getBiomodelRepresentations(vcellUser);
 		} catch (ParseException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			lg.error(e);
 		}
         return bmReps;
     }
@@ -125,7 +128,7 @@ public class BiomodelsServerResource extends AbstractServerResource implements B
 			biomodels = getBiomodelRepresentations(vcellUser);
 		} catch (ParseException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			lg.error(e);
 			bFormatErr = true;
 		}
 		Map<String,Object> dataModel = new HashMap<String,Object>();
@@ -185,10 +188,10 @@ public class BiomodelsServerResource extends AbstractServerResource implements B
 					biomodelReps.add(biomodelRep);
 				}
 			} catch (PermissionException ee){
-				ee.printStackTrace();
+				lg.error(ee);
 				throw new ResourceException(Status.CLIENT_ERROR_UNAUTHORIZED, "not authorized");
 			} catch (DataAccessException | SQLException | ExpressionException e) {
-				e.printStackTrace();
+				lg.error(e);
 				throw new RuntimeException("failed to retrieve biomodels from VCell Database : "+e.getMessage());
 			}
 			return biomodelReps.toArray(new BiomodelRepresentation[0]);

@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.zip.DeflaterOutputStream;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jdom.Element;
 import org.vcell.optimization.ProfileData;
 import org.vcell.optimization.ProfileDataElement;
@@ -45,6 +47,7 @@ import cbit.vcell.xml.Xmlproducer;
  * @version $Revision: 1.0 $
  */
 public class MicroscopyXmlproducer {
+	private final static Logger lg = LogManager.getLogger(MicroscopyXmlproducer.class);
 
 	public static void writeXMLFile(FRAPStudy frapStudy,File outputFile,boolean bPrintKeys, ClientTaskStatusSupport progressListener,boolean bSaveCompressed) throws Exception{
 
@@ -120,10 +123,9 @@ public class MicroscopyXmlproducer {
 			try {
 				dos.write(byteBuffer.array());
 			}catch (IOException e){
-				e.printStackTrace(System.out);
-				throw new XmlParseException("failed to create compressed pixel data");
+				throw new XmlParseException("failed to create compressed pixel data", e);
 			}finally{
-				if(dos != null){try{dos.close();}catch(Exception e2){e2.printStackTrace();}}
+				if(dos != null){try{dos.close();}catch(Exception e2){lg.error(e2);}}
 			}
 			compressedPixels = bos.toByteArray();
 			if(!bSaveCompressed || bForceUncompressed){

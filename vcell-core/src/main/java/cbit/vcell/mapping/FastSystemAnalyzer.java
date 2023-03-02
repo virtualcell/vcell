@@ -232,8 +232,7 @@ private void refreshInvarianceMatrix() throws MathException, ExpressionException
 		try {
 			matrix.gaussianElimination(new RationalExpMatrix(rows,rows));
 		}catch(MatrixException e){
-			e.printStackTrace(System.out);
-			throw new MathException(e.getMessage());
+			throw new MathException(e.getMessage(), e);
 		}
 	}
 //	matrix.show();

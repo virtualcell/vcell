@@ -178,8 +178,7 @@ public void scanBioModels(VCDatabaseVisitor databaseVisitor, PrintStream logFile
 		logFilePrintStream.close();
 	}catch(Exception e)
 	{
-		e.printStackTrace();
-		System.err.println("error writing to log file.");
+		lg.error("error writing to log file.", e);
 	}
 }
 
@@ -366,8 +365,9 @@ public void multiScanBioModels(VCMultiBioVisitor databaseVisitor, Writer writer,
 								try {
 									sc.createNewMathMapping().getMathDescription();
 								} catch (Exception e) {
-									printWriter.println("\t " + bioModel.getName() + " :: " + sc.getName() + " ----> math regeneration failed.s");
-									// e.printStackTrace();
+									String msg = bioModel.getName() + " :: " + sc.getName() + " ----> math regeneration failed.s";
+									printWriter.println("\t " + msg);
+									lg.warn(msg, e);
 								}
 							}
 						}
@@ -383,9 +383,8 @@ public void multiScanBioModels(VCMultiBioVisitor databaseVisitor, Writer writer,
 		}
 		
 		printWriter.close();
-	}catch(Exception e)
-	{
-		e.printStackTrace();
+	}catch(Exception e) {
+		lg.error(e);
 	}
 }
 
@@ -511,7 +510,7 @@ private static void scanDbObjects(VersionableType versionableType, final java.la
 
 	} catch (Throwable exception) {
 		System.out.println("Exception occurred in main() of VCBioModelVisitor");
-		exception.printStackTrace(System.out);
+		lg.error(exception);
 	} finally {
 		System.exit(0);
 	}

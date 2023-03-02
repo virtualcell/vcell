@@ -27,4 +27,7 @@ public GeometryException() {
 public GeometryException(String s) {
 	super(s);
 }
+	public GeometryException(String s, Exception e) {
+		super(s, e);
+	}
 }

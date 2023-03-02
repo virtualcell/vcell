@@ -56,16 +56,13 @@ public class SEDMLUtils {
 			  
 			} catch ( JaxenException e) {
 				// An error occurred parsing or executing the XPath
-				e.printStackTrace(System.out);
-				throw new RuntimeException(e.getMessage());
+				throw new RuntimeException(e.getMessage(), e);
 			} catch ( IOException e) {
 			  // An error occurred opening the document
-				e.printStackTrace(System.out);
-				throw new RuntimeException(e.getMessage());
+				throw new RuntimeException(e.getMessage(), e);
 			} catch ( ParsingException e) {
 			  // An error occurred parsing the document
-				e.printStackTrace(System.out);
-				throw new RuntimeException(e.getMessage());
+				throw new RuntimeException(e.getMessage(), e);
 			}
 		
 			
@@ -93,8 +90,7 @@ public class SEDMLUtils {
 			SedML sedDoc = reader.getSedDocument(sedRoot);
 			return sedDoc;
 		} catch (Exception e) {
-			e.printStackTrace(System.out);
-			throw new RuntimeException("Could not create SedMLDocument from file '" + fileName + "'");
+			throw new RuntimeException("Could not create SedMLDocument from file '" + fileName + "'", e);
 		}
 	}
 
@@ -135,8 +131,7 @@ public class SEDMLUtils {
 			   // Element varElement = SEDMLUtils.parseXPath(newXPathStr, modelXmlFile);
 			   // return varElement.getAttributeValue("id");
 			} catch (Exception e) {
-				e.printStackTrace();
-				throw new RuntimeException("Error parsing Xpath string : " + e.getMessage());
+				throw new RuntimeException("Error parsing Xpath string : " + e.getMessage(), e);
 			}
 	   }
 	   return null;

@@ -44,7 +44,7 @@ class ModelTransformationUtils {
 	/**
 	 * Will delete all elements matching the supplied XPath expression
 	 * 
-	 * @param originalModel
+	 * @param doc
 	 *            A String of the XML of the model to be altered
 	 * @param xPathToElementToDelete
 	 *            A valid XPath String defining the elements to be removed
@@ -109,8 +109,6 @@ class ModelTransformationUtils {
 
 			result = expr.evaluate(doc, XPathConstants.NODESET);
 		} catch (XPathExpressionException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 			throw new XPathEvaluationException("Could not evaluate XPath", e);
 		}
 		return result;
@@ -119,7 +117,7 @@ class ModelTransformationUtils {
 	/**
 	 * Inserts a block of XML in the model.
 	 * 
-	 * @param model
+	 * @param doc
 	 *            A String of the XML Representation of the model
 	 * @param xmlToAdd
 	 *            The XML to insert
@@ -133,10 +131,10 @@ class ModelTransformationUtils {
 	 *             if errors occur applying the XPath expression.
 	 */
 	static void addXMLelement(final Document doc, String xmlToAdd,
-			String xPathTpoParentElement,  XPath xpath)
+			String xPathToParentElement,  XPath xpath)
 			throws XMLException, XPathEvaluationException {
 
-		Object result = applyXpath(xPathTpoParentElement, xpath, doc);
+		Object result = applyXpath(xPathToParentElement, xpath, doc);
 		NodeList nodes = (NodeList) result;
 		try {
 			for (int i = 0; i < nodes.getLength(); i++) {

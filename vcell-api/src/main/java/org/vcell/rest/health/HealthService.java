@@ -216,7 +216,7 @@ public class HealthService {
 			try {
 				Thread.sleep(LOGIN_LOOP_SLEEP);
 			} catch (InterruptedException e) {
-				e.printStackTrace();
+				lg.info(e);
 			}
 		}
 	}
@@ -309,7 +309,7 @@ public class HealthService {
 						try {
 							vcellConnection.getSimulationController().stopSimulation(runningSimId);
 						}catch (Exception e) {
-							e.printStackTrace(System.out);
+							lg.error(e);
 						}
 					}
 					if (savedBioModelKey!=null) {

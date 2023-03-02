@@ -112,7 +112,7 @@ private void start() {
 		
 		runSimulation();
 	} catch (Throwable ex) {
-		ex.printStackTrace();
+		lg.error(ex);
 		sendFailed(SimulationMessage.solverAborted(ex.getMessage()));
 	}
 }
@@ -222,12 +222,12 @@ public static void main(String[] args) {
 		worker.start();
 		
 	} catch (Throwable ex) {
-		ex.printStackTrace();
+		lg.error(ex);
 		if (worker!=null && worker.workerEventSession!=null){
 			try {
 				WorkerEventMessage.sendFailed(worker.workerEventSession, worker, worker.simulationTask, ManageUtils.getHostName(), SimulationMessage.jobFailed(ex.getMessage()));
 			} catch (VCMessagingException e) {
-				e.printStackTrace();
+				lg.error(e);
 			}
 		}
 
@@ -241,7 +241,7 @@ public static void main(String[] args) {
 				vcMessagingService.close();
 			}
 		} catch (VCMessagingException ex) {
-			ex.printStackTrace(System.out);
+			lg.error(ex);
 		}
 
 		System.exit(0);
@@ -288,7 +288,7 @@ private void sendNewData(double progress, double timeSec, SimulationMessage simu
 			bProgress = false;
 		}
 	} catch (VCMessagingException e) {
-		e.printStackTrace(System.out);
+		lg.error(e);
 	}
 }
 

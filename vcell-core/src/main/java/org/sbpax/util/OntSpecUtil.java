@@ -20,6 +20,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.openrdf.model.Graph;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -33,19 +35,18 @@ import org.sbpax.schemas.util.DefaultNameSpaces;
 import cbit.util.xml.XmlUtil;
 
 public class OntSpecUtil {
+	private final static Logger lg = LogManager.getLogger(OntSpecUtil.class);
+
 
 	public static void writeToFile(Graph schema, String fileName, RDFFormat style) {
-		System.out.println("Writing Ontology to " + fileName);
+		lg.debug("Writing Ontology to " + fileName);
 		try { 
 			java.io.StringWriter strWriter = new StringWriter();
 			SesameRioUtil.writeRDFToWriter(strWriter, schema, DefaultNameSpaces.defaultMap.convertToMap(), style);
 			XmlUtil.writeXMLStringToFile(strWriter.getBuffer().toString(), fileName, true);
-		} catch (IOException e) { 
-			e.printStackTrace(System.out); 
-		} catch (RDFHandlerException e) {
-			e.printStackTrace();
+		} catch (IOException | RDFHandlerException e) {
+			lg.error(e);
 		}
-		System.out.println("Done");
 	}
 	
 	public static void writeToFiles(Graph schema, String baseFileName) {

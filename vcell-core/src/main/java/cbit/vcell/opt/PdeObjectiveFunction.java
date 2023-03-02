@@ -110,8 +110,7 @@ public String getVCML() {
 	try {
 		buffer.append(mathDescription.getVCML_database()+"\n");
 	}catch (cbit.vcell.math.MathException e){
-		e.printStackTrace(System.out);
-		throw new RuntimeException("unexpected error serializing mathDescription: "+e.getMessage());
+		throw new RuntimeException("unexpected error serializing mathDescription: "+e.getMessage(), e);
 	}
 
 	buffer.append(referenceData.getVCML()+"\n");

@@ -12,6 +12,8 @@ package org.vcell.cellml;
 import java.util.ArrayList;
 import java.util.TreeMap;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jdom.Element;
 import org.jdom.Namespace;
 
@@ -37,6 +39,7 @@ protected access to the wrapped ucar units in VCUnitDefinition.
  * @author: Rashad Badrawi
  */
 public class VCUnitTranslator {
+	private final static Logger lg = LogManager.getLogger(VCUnitTranslator.class);
 
 	//a utility class that holds cellML unit defs, coupled with their owner (model/compartment).
 	public static class TransCellMLUnits {
@@ -190,8 +193,7 @@ private VCUnitTranslator() { super(); }
 				unit = unitDB.get(kind);
 			}
 		} catch(UnitException e) {
-			System.err.println("Unable to retrieve the standard unit database. >>> 3"); 
-			e.printStackTrace();
+			lg.error("Unable to retrieve the standard unit database. >>> 3", e);
 			return null;
 		}
 
@@ -343,7 +345,7 @@ private VCUnitTranslator() { super(); }
 				unit = new OffsetUnit(unit, Double.parseDouble(offset) , uName);
 			}
 		} catch (UnitException e) {
-			e.printStackTrace();
+			lg.error(e);
 			throw new cbit.vcell.units.VCUnitException("Unable to set unit value: "+e.getMessage());
 		}
 

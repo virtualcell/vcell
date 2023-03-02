@@ -18,9 +18,7 @@ import java.io.Serializable;
 import java.util.*;
 
 import cbit.vcell.biomodel.ModelUnitConverter;
-import cbit.vcell.biomodel.meta.IdentifiableProvider;
 import cbit.vcell.biomodel.meta.VCID;
-import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.math.*;
 import cbit.vcell.solver.*;
 import org.vcell.model.rbm.NetworkConstraints;
@@ -64,7 +62,6 @@ import cbit.vcell.mapping.MicroscopeMeasurement.ExperimentalPSF;
 import cbit.vcell.mapping.MicroscopeMeasurement.GaussianConvolutionKernel;
 import cbit.vcell.mapping.MicroscopeMeasurement.ProjectionZKernel;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
-import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.mapping.spatial.CurveObject;
 import cbit.vcell.mapping.spatial.PointObject;
@@ -112,7 +109,7 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 	ScopedSymbolTable, PropertyChangeListener, VetoableChangeListener, Serializable, IssueSource,
 	Displayable, Identifiable {
 
-	private final static Logger logger = LogManager.getLogger(SimulationContext.class);
+	private final static Logger lg = LogManager.getLogger(SimulationContext.class);
 
 	public interface MathMappingCallback {
 		public void setMessage(String message);
@@ -339,7 +336,7 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 												}
 											}
 										}
-										logger.warn("could not find replacement symbol for "+name);
+										lg.warn("could not find replacement symbol for "+name);
 										// look for corresponding items instead (e.g. initCount vs initConc) ????
 									}
 								}
@@ -356,7 +353,7 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 					String repaired_name = name.replace(replacementTemplate.oldNameSuffix, replacementTemplate.newNameSuffix);
 					Variable mathVar = mathDesc.getVariable(repaired_name);
 					if (mathVar instanceof Constant) {
-						logger.info("replaced math override name " + name + " with " + repaired_name + " with factor " + replacementTemplate.factor + " using template pattern");
+						lg.info("replaced math override name " + name + " with " + repaired_name + " with factor " + replacementTemplate.factor + " using template pattern");
 						return new SymbolReplacement(repaired_name, new Expression(replacementTemplate.factor));
 					}
 				}
@@ -772,7 +769,7 @@ public SimulationContext(SimulationContext oldSimulationContext,Geometry newClon
 		} catch (ExpressionException e) {
 			//if cannot create parameter estimation task, we don't want to block the vcell running.
 			//it will leave an empty task, which users can actually use "new" button to create parameter estimation task later.
-			e.printStackTrace(System.out);
+			lg.error(e);
 		}
 	}
 	refreshDependencies();
@@ -957,7 +954,6 @@ public SimulationContextParameter createSimulationContextParameter() {
 		addSimulationContextParameter(parameter);
 		return parameter;
 	} catch (PropertyVetoException e) {
-		e.printStackTrace();
 		throw new RuntimeException("error creating new application parameter: "+e.getMessage(),e);
 	}
 }
@@ -967,8 +963,7 @@ public void refreshMathDescription(MathMappingCallback callback, NetworkGenerati
 	try {
 		checkValidity();
 	} catch (MappingException e1) {
-		e1.printStackTrace(System.out);
-		throw new RuntimeException(e1.getMessage());
+		throw new RuntimeException(e1.getMessage(), e1);
 	}
 	
 	if (getMathDescription()==null){
@@ -977,8 +972,7 @@ public void refreshMathDescription(MathMappingCallback callback, NetworkGenerati
 			setMathDescription(createNewMathMapping(callback, networkGenerationRequirements).getMathDescription());
 		} catch (Exception e) {
 			String msg = "Application '"+getName()+"' has no generated Math, Failed to generate new Math: "+ e.getMessage();
-			logger.error(msg, e);
-			throw new RuntimeException(msg);
+			throw new RuntimeException(msg, e);
 		}
 	}
 }
@@ -1864,7 +1858,7 @@ public void propertyChange(java.beans.PropertyChangeEvent event) {
 				characteristicSize = null;
 				refreshCharacteristicSize();
 			}catch (PropertyVetoException e){
-				e.printStackTrace(System.out);
+				lg.error(e);
 			}
 		}
 		else if (pname.equals(GeometrySpec.PROPERTY_NAME_GEOMETRY_NAME)) {
@@ -1872,14 +1866,14 @@ public void propertyChange(java.beans.PropertyChangeEvent event) {
 				try {
 					spatialObject.refreshName();
 				} catch (PropertyVetoException e) {
-					e.printStackTrace();
+					lg.error(e);
 				}
 			}
 			for (SimulationContextParameter appParameter : fieldSimulationContextParameters){
 				try {
 					appParameter.getExpression().renameBoundSymbols(this.getNameScope());
 				} catch (ExpressionBindingException e) {
-					e.printStackTrace();
+					lg.error(e);
 				}
 			}
 			MathMappingCallback  mmc = new MathMappingCallbackTaskAdapter(null);
@@ -1961,8 +1955,7 @@ private void fixAssignmentRuleExpressions(Map<String, String> entitiesToRename) 
 					exp.substituteInPlace(new Expression(symbol), new Expression(entitiesToRename.get(symbol)));
 					replaced = true;
 				} catch (ExpressionException e) {
-					e.printStackTrace();
-					throw new RuntimeException(errMsg);
+					throw new RuntimeException(errMsg, e);
 				}
 			}
 		}
@@ -1971,8 +1964,7 @@ private void fixAssignmentRuleExpressions(Map<String, String> entitiesToRename) 
 				rule.bind();
 			}
 		} catch (ExpressionBindingException e) {
-			e.printStackTrace();
-			throw new RuntimeException(errMsg);
+			throw new RuntimeException(errMsg, e);
 		}
 	}
 }
@@ -1991,8 +1983,7 @@ private void fixRateRuleExpressions(Map<String, String> entitiesToRename) {
 					exp.substituteInPlace(new Expression(symbol), new Expression(entitiesToRename.get(symbol)));
 					replaced = true;
 				} catch (ExpressionException e) {
-					e.printStackTrace();
-					throw new RuntimeException(errMsg);
+					throw new RuntimeException(errMsg, e);
 				}
 			}
 		}
@@ -2001,8 +1992,7 @@ private void fixRateRuleExpressions(Map<String, String> entitiesToRename) {
 				rule.bind();
 			}
 		} catch (ExpressionBindingException e) {
-			e.printStackTrace();
-			throw new RuntimeException(errMsg);
+			throw new RuntimeException(errMsg, e);
 		}
 	}
 }
@@ -2024,9 +2014,8 @@ private void fixEventsExpressions(Map<String, String> entitiesToRename) {
 							exp.substituteInPlace(new Expression(symbol), new Expression(entitiesToRename.get(symbol)));
 							replaced = true;
 						} catch (ExpressionException e) {
-							e.printStackTrace();
 							String errMsg = "Failed to rename.";
-							throw new RuntimeException(errMsg);
+							throw new RuntimeException(errMsg, e);
 						}
 					}
 				}
@@ -2049,9 +2038,8 @@ private void fixEventsExpressions(Map<String, String> entitiesToRename) {
 							exp.substituteInPlace(new Expression(symbol), new Expression(entitiesToRename.get(symbol)));
 							replaced = true;
 						} catch (ExpressionException e) {
-							e.printStackTrace();
 							String errMsg = "Failed to rename.";
-							throw new RuntimeException(errMsg);
+							throw new RuntimeException(errMsg, e);
 						}
 					}
 				}
@@ -2062,9 +2050,8 @@ private void fixEventsExpressions(Map<String, String> entitiesToRename) {
 				event.bind();
 			}
 		} catch (ExpressionBindingException e) {
-			e.printStackTrace();
 			String errMsg = "Failed to bind.";
-			throw new RuntimeException(errMsg);
+			throw new RuntimeException(errMsg, e);
 		}
 	}
 }
@@ -2191,7 +2178,7 @@ public void refreshDependencies1(boolean isRemoveUncoupledParameters) {
 		try {
 			fieldSimulationContextParameters[i].getExpression().bindExpression(this);
 		} catch (ExpressionBindingException e) {
-			e.printStackTrace(System.out);
+			lg.error(e);
 //			throw new RuntimeException("Error binding global parameter '" + fieldSimulationContextParameters[i].getName() + "' to model."  + e.getMessage());
 		}
 	}
@@ -2263,7 +2250,7 @@ private void refreshElectrodes(){
 			try {
 				electrode.setFeature(newFeature);
 			}catch (PropertyVetoException e){
-				e.printStackTrace(System.out);
+				lg.error(e);
 			}
 		}else{
 			newStimuli = (ElectricalStimulus[])BeanUtils.removeElement(newStimuli,stimulus);
@@ -2274,8 +2261,7 @@ private void refreshElectrodes(){
 		try {
 			setElectricalStimuli(newStimuli);
 		}catch (PropertyVetoException e){
-			e.printStackTrace(System.out);
-			throw new RuntimeException(e.getMessage());
+			throw new RuntimeException(e.getMessage(), e);
 		}
 	}
 	//
@@ -2300,13 +2286,13 @@ private void refreshElectrodes(){
 			try {
 				getGroundElectrode().setFeature(newFeature);
 			}catch (PropertyVetoException e){
-				e.printStackTrace(System.out);
+				lg.error(e);
 			}
 		}else{
 			try {
 				setGroundElectrode(null);
 			}catch (PropertyVetoException e){
-				e.printStackTrace(System.out);
+				lg.error(e);
 			}
 		}
 	}
@@ -2524,8 +2510,7 @@ public void setGeometry(Geometry geometry) throws MappingException {
 		try {
 			refreshCharacteristicSize();
 		}catch (PropertyVetoException e){
-			e.printStackTrace(System.out);
-			throw new RuntimeException(e.getMessage());
+			throw new RuntimeException(e.getMessage(), e);
 		}
 		refreshSpatialObjects();
 		oldGeometry.getGeometrySpec().removePropertyChangeListener(this);
@@ -2547,9 +2532,8 @@ public void setGeometry(Geometry geometry) throws MappingException {
 				if (oldGeometry!=null && oldGeometry.getDimension()==0){	// && geometry != null && geometry.getDimension() > 0
 					initializeForSpatial();
 				}
-			} catch (PropertyVetoException e) {				
-				e.printStackTrace(System.out);
-				throw new MappingException(e.getMessage());
+			} catch (PropertyVetoException e) {
+				throw new MappingException(e.getMessage(), e);
 			}
 		}
 // now firing from geoContext
@@ -2632,7 +2616,7 @@ public void refreshSpatialObjects() {
 					VolumeRegionObject vro = new VolumeRegionObject(unmappedVolRegion.getSubVolume(), unmappedVolRegion.getRegionID(), this);
 					addSpatialObject(vro);
 				} catch (PropertyVetoException e) {
-					e.printStackTrace();
+					lg.error(e);
 				}
 			}else if (unmappedRegion instanceof SurfaceGeometricRegion){
 				SurfaceGeometricRegion unmappedSurfRegion = (SurfaceGeometricRegion) unmappedRegion;
@@ -2648,7 +2632,7 @@ public void refreshSpatialObjects() {
 					try {
 						addSpatialObject(new SurfaceRegionObject(insideSubVolume, insideRegionID, outsideSubVolume, outsideRegionID, this));
 					} catch (PropertyVetoException e) {
-						e.printStackTrace();
+						lg.error(e);
 					}
 				}
 			}
@@ -2660,20 +2644,20 @@ public void refreshSpatialObjects() {
 		try {
 			for (SpatialObject unmappedSpatialObject : unmappedSpatialObjects){
 				if (unmappedSpatialObject instanceof VolumeRegionObject){
-					logger.error("volume region spatial object '"+unmappedSpatialObject.getName()+"' not found in geometry, delete.");
+					lg.error("volume region spatial object '"+unmappedSpatialObject.getName()+"' not found in geometry, delete.");
 					removeSpatialObject(unmappedSpatialObject);
 				}
 				if (unmappedSpatialObject instanceof SurfaceRegionObject){
-					logger.error("surface region spatial object '"+unmappedSpatialObject.getName()+"' not found in geometry, delete.");
+					lg.error("surface region spatial object '"+unmappedSpatialObject.getName()+"' not found in geometry, delete.");
 					removeSpatialObject(unmappedSpatialObject);
 				}
 				if (unmappedSpatialObject instanceof PointObject){
-					logger.error("point spatial object '"+unmappedSpatialObject.getName()+"' not found in geometry, this is expected.");
+					lg.error("point spatial object '"+unmappedSpatialObject.getName()+"' not found in geometry, this is expected.");
 //					removeSpatialObject(unmappedSpatialObject);
 				}
 			}
 		} catch (PropertyVetoException e) {
-			logger.error("failed to remove spatial objects: "+e.getMessage(), e);
+			lg.error("failed to remove spatial objects: "+e.getMessage(), e);
 		}
 	}
 }
@@ -2968,8 +2952,7 @@ public void convertSpeciesIniCondition(boolean bUseConcentration) throws Mapping
 	try {
 		getReactionContext().convertSpeciesIniCondition(bUseConcentration);
 	} catch (ExpressionException e) {
-		e.printStackTrace();
-		throw new MappingException(e.getMessage());
+		throw new MappingException(e.getMessage(), e);
 	}
 }
 
@@ -3214,12 +3197,12 @@ public MathMapping createNewMathMapping() {
 	MathMappingCallback callback = new MathMappingCallback() {
 		@Override
 		public void setProgressFraction(float fractionDone) {
-			logger.info("mathMapping: progress = "+(fractionDone*100.0)+"% done");
+			lg.info("mathMapping: progress = "+(fractionDone*100.0)+"% done");
 		}
 		
 		@Override
 		public void setMessage(String message) {
-			logger.info("mathMapping: message = "+message);
+			lg.info("mathMapping: message = "+message);
 		}
 		
 		@Override
@@ -3285,7 +3268,7 @@ public void createDefaultParameterEstimationTask()
 		{
 			//if cannot create parameter estimation task, we don't want to block the vcell running.
 			//it will leave an empty task, which users can actually use "new" button to create parameter estimation task later.
-			e.printStackTrace(System.out);
+			lg.error(e);
 		}
 		
 	}
@@ -3571,7 +3554,7 @@ public PointObject createPointObject() {
 //			pointLocation.getParameter(SpatialProcessParameterType.PointPositionY).setExpression(new Expression(2.0));
 //			pointLocation.getParameter(SpatialProcessParameterType.PointPositionZ).setExpression(new Expression(3.0));
 //		} catch (ExpressionBindingException e) {
-//			e.printStackTrace();
+//			lg.error(e);
 //		}
 	}catch (PropertyVetoException e){
 		throw new RuntimeException(e.getMessage(),e);
@@ -3715,7 +3698,7 @@ public static
 			try {
 				destSimContext.convertSpeciesIniCondition(true);
 			} catch (MappingException e) {
-				e.printStackTrace();
+				lg.error(e);
 				throw new java.beans.PropertyVetoException(e.getMessage(), null);
 			}
 		}

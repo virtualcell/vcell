@@ -15,6 +15,8 @@ import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
 import javax.jms.Session;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.scijava.service.AbstractService;
 
 import cbit.vcell.message.SimpleMessagingDelegate;
@@ -28,6 +30,7 @@ import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.resource.PropertyLoader;
 
 public abstract class VCMessagingServiceJms extends AbstractService implements VCMessagingService {
+	private final static Logger lg = LogManager.getLogger(VCMessagingServiceJms.class);
 	
 	private ArrayList<ConsumerContextJms> consumerContexts = new ArrayList<ConsumerContextJms>();
     private ArrayList<MessageProducerSessionJms> messagingProducerSessions = new ArrayList<MessageProducerSessionJms>();
@@ -60,7 +63,7 @@ public abstract class VCMessagingServiceJms extends AbstractService implements V
 					};
 					blobDir.listFiles(gcFileVisitor);
 				}catch (Exception e){
-					e.printStackTrace();
+					lg.error(e);
 					if (getDelegate()!=null){
 						getDelegate().onException(e);
 					}
@@ -80,7 +83,7 @@ public abstract class VCMessagingServiceJms extends AbstractService implements V
 	
 	private void onException(Exception e){
 		delegate.onException(e);
-		e.printStackTrace(System.out);
+		lg.error(e);
 	}
 	
 	@Override
@@ -118,16 +121,16 @@ public abstract class VCMessagingServiceJms extends AbstractService implements V
 		
 	@Override
 	public void close() throws VCMessagingException {
-		System.out.println(toString()+" closeAll() started");
+		lg.info(toString()+" closeAll() started");
 		for (ConsumerContextJms consumerContext : consumerContexts){
 			consumerContext.stop();
 		}
 		try {
 			Thread.sleep(ConsumerContextJms.CONSUMER_POLLING_INTERVAL_MS*2);
 		} catch (InterruptedException e) {
-			e.printStackTrace();
+			lg.error(e);
 		}
-	//	System.out.println(toString()+" consumer close() invocations");
+	//	lg.info(toString()+" consumer close() invocations");
 		
 		{
 			Iterator<ConsumerContextJms> iter = consumerContexts.iterator();
@@ -138,14 +141,14 @@ public abstract class VCMessagingServiceJms extends AbstractService implements V
 			}
 		}
 		
-//		System.out.println(toString()+" message producer close requests");
+//		lg.info(toString()+" message producer close requests");
 		Iterator<MessageProducerSessionJms> iter = messagingProducerSessions.iterator();
 		while (iter.hasNext()) {
 			MessageProducerSessionJms mp = iter.next( );
 			iter.remove();
 			mp.close();
 		}
-//		System.out.println(toString()+" closeAll() complete");
+//		lg.info(toString()+" closeAll() complete");
 	}
 
 	@Override
@@ -162,7 +165,7 @@ public abstract class VCMessagingServiceJms extends AbstractService implements V
 		try {
 			consumerContext.init();
 		} catch (JMSException e1) {
-			e1.printStackTrace();
+			lg.error(e1);
 			onException(e1);
 		}
 		consumerContext.start();

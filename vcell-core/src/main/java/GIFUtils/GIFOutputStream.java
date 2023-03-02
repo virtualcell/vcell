@@ -184,8 +184,7 @@ public class GIFOutputStream extends BitOutputStream
 		}
 		catch(LZWException ex)
 		{
-			ex.printStackTrace();
-			throw new GIFFormatException("LZW encoding failed");
+			throw new GIFFormatException("LZW encoding failed", ex);
 		} 
 
 

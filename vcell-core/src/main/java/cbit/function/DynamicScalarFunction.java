@@ -68,8 +68,7 @@ public double f(double[] x){
 		return functionExp.evaluateVector(x);
 		
 	}catch(cbit.vcell.parser.ExpressionException e){
-		e.printStackTrace(System.out);
-		throw new RuntimeException(e.getMessage());
+		throw new RuntimeException(e.getMessage(), e);
 	}		
 
 }

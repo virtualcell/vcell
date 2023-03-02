@@ -19,6 +19,8 @@ import java.util.Vector;
 
 import javax.xml.stream.XMLStreamException;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jdom.Element;
 import org.jdom.Namespace;
 import org.jdom.output.XMLOutputter;
@@ -60,6 +62,7 @@ import cbit.vcell.xml.XmlHelper;
  */
 
 public class SBMLAnnotationUtil {
+	private final static Logger lg = LogManager.getLogger(SBMLAnnotationUtil.class);
 
 	protected VCMetaData metaData;
 	protected RDFChopper chopper;
@@ -306,9 +309,9 @@ public class SBMLAnnotationUtil {
 						Map<String, String> nsMap = new HashMap<String, String>();
 						try {
 							SesameRioUtil.readRDFFromString(text, rdfNew, nsMap, RDFFormat.RDFXML, nsSBML);
-						} catch (RDFParseException e) { e.printStackTrace(); } 
-						catch (RDFHandlerException e) { e.printStackTrace(); } 
-						catch (IOException e) { e.printStackTrace(); }
+						} catch (RDFParseException e) { lg.error(e); }
+						catch (RDFHandlerException e) { lg.error(e); }
+						catch (IOException e) { lg.error(e); }
 //						System.out.println("SBML NS :\n" + MIRIAMAnnotationViewer.prettyPrintJenaModel(rdfNew, nsSBML));
 						metaData.add(rdfNew);
 //						System.out.println("VCML NS :\n" + MIRIAMAnnotationViewer.prettyPrintJenaModel(metaData.getRdfData(), XMLTags.VCML_NS));
@@ -353,7 +356,7 @@ public class SBMLAnnotationUtil {
 							String str = clonedAnnotRoot.toXMLString();
 							elementXML = (XmlUtil.stringToXML(str, null)).getRootElement();//(XmlUtil.stringToXML(xmlString, null)).getRootElement();
 						} catch (Exception e) {
-//							e.printStackTrace(System.out);
+//							lg.error(e);
 							// don't do anything .... we want to continue reading in the model, we cannot fail import because annotation is not well-formed.
 							//try wrap in namespace element
 //							System.out.println(sBase.toSBML()+"\n\n"+annotationRoot.toXMLString());
@@ -369,7 +372,7 @@ public class SBMLAnnotationUtil {
 //									elementXML = (XmlUtil.stringToXML(wrap, null)).getRootElement();
 //									System.out.println("-----PROBLEM FIXED-----");
 //								}catch(Exception e2){
-//									e.printStackTrace();
+//									lg.error(e);
 //								}
 //							}
 						}
@@ -430,7 +433,7 @@ public class SBMLAnnotationUtil {
 		try {
 			annotationElement = (XmlUtil.stringToXML(xmlString, null)).getRootElement();
 		} catch (RuntimeException e) {
-			e.printStackTrace(System.out);
+			lg.error(e);
 			// don't do anything .... we want to continue reading in the model, we cannot fail import because annotation is not well-formed.
 		}
 		return annotationElement;

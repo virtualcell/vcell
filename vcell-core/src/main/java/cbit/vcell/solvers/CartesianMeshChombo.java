@@ -653,8 +653,7 @@ public class CartesianMeshChombo extends CartesianMesh {
 			compressedBytes = null;
 			
 		} catch (Exception ex) {
-			ex.printStackTrace(System.out);
-			throw new RuntimeException(ex.getMessage());
+			throw new RuntimeException(ex.getMessage(), ex);
 		}
 	}
 	

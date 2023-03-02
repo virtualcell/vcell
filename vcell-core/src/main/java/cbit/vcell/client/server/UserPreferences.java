@@ -15,6 +15,8 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Preference;
 
@@ -33,6 +35,8 @@ Consider doing the following: (09/02/04):
  * @author: Ion Moraru
  */
 public class UserPreferences {
+	private final static Logger lg = LogManager.getLogger(UserPreferences.class);
+
 	private ClientServerManager clientServerManager = null;
 
 	//the two broad types of preferences
@@ -138,8 +142,7 @@ public File getCurrentDialogPath() {
 		//setGenPref(GENERAL_LAST_PATH_USED, homeDirPath);
 		return new File(homeDirPath);
 	} catch (Exception e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
+		lg.error(e);
 		return new File(ResourceUtil.getUserHomeDir().getAbsolutePath());
 	}
 }
@@ -154,30 +157,13 @@ public boolean getSendModelInfoInErrorReportPreference(){
 			prefString = "true";
 		}
 	} catch (Exception e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
+		lg.error(e);
 		prefString = "true";
 	}
 	return Boolean.valueOf(prefString);
 }
 
 
-/**
- * return general preference as boolean
- * @param prefType key of general preference
- * @return true if present and true, false if problem
- */
-//public boolean getGenPrefBoolean(int prefType) {
-//	return Boolean.valueOf(getGenPref(prefType)); 
-//}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (5/21/2004 3:06:29 AM)
- * @return boolean
- * @param preference java.lang.String
- */
 public boolean getShowWarning(int warningType) {
 	try {
 		if (warningHash.containsKey(UserPreferences.WARN+warningType)) {
@@ -188,7 +174,7 @@ public boolean getShowWarning(int warningType) {
 		}
 	} catch (ArrayIndexOutOfBoundsException e) {
 		ArrayIndexOutOfBoundsException exc = new ArrayIndexOutOfBoundsException("Unknown warning type: " + warningType);
-		exc.printStackTrace(System.out);
+		lg.error(e);
 		throw exc;
 	}
 }
@@ -234,13 +220,7 @@ private Preference[] getUserChoices() {
 	}
 
 
-/**
- * Insert the method's description here.
- * Creation date: (5/21/2004 3:06:29 AM)
- * @return boolean
- * @param preference java.lang.String
- */
-protected void resetFromSaved(Preference[] savedPreferences) {                  
+protected void resetFromSaved(Preference[] savedPreferences) {
 	/* look in getUserChoices() for keys and values strings encoding of the preferences */
 	// reset to defaults
 	warningHash.clear();
@@ -271,8 +251,8 @@ private void saveToDatabase() {
 		public void run() {
 			try {
 				clientServerManager.getDocumentManager().replacePreferences(getUserChoices());
-			} catch (Throwable exc) {
-				exc.printStackTrace(System.out);
+			} catch (Exception exc) {
+				lg.error(exc);
 			}
 		}
 	};
@@ -291,7 +271,7 @@ private void saveToDatabase() {
 				System.out.println("Resetting user preference: " + newPreference.getKey() + "=" + newPreference.getValue());
 			}
 		} catch (Exception e) {
-			e.printStackTrace(System.out);
+			lg.error(e);
 			//throw e;
 		}
 	}
@@ -310,24 +290,6 @@ private void saveToDatabase() {
 		setGenPref(UserPreferences.SEND_MODEL_INFO_IN_ERROR_REPORT, newPreference);
 	}
 
-/**
- * Insert the method's description here.
- * Creation date: (5/21/2004 3:06:29 AM)
- * @return boolean
- * @param preference java.lang.String
- */
-//public void setGenPref(int prefType, String preferenceString) {
-//	Preference newPreference = new Preference(UserPreferences.GEN_PREF +prefType, preferenceString);
-//	setGenPref(prefType, newPreference);
-//}
-/**
- * set boolean preference
- * @param prefType
- * @param boolPref new value
- */
-//public void setGenPref(int prefType, boolean boolPref) { 
-//	setGenPref(prefType, Boolean.toString(boolPref) );
-//}
 
 private void setShowWarning(int warningType, Preference newPreference) {
 	
@@ -339,18 +301,11 @@ private void setShowWarning(int warningType, Preference newPreference) {
 		}
 	} catch (ArrayIndexOutOfBoundsException e) {
 		ArrayIndexOutOfBoundsException exc = new ArrayIndexOutOfBoundsException("Unknown warning type: " + warningType);
-		exc.printStackTrace(System.out);
+		lg.error(e);
 		throw exc;
 	}
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (5/21/2004 3:06:29 AM)
- * @return boolean
- * @param preference java.lang.String
- */
 public void setShowWarning(int warningType, boolean choice) {
 
 	Preference newPreference = new Preference(UserPreferences.WARN +warningType, String.valueOf(choice));

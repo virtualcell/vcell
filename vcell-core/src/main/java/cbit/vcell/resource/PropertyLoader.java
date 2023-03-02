@@ -173,7 +173,6 @@ public class PropertyLoader {
 	public static final String jmsIntPortInternal			= record("vcell.jms.int.port.internal",ValueType.GEN);
 	public static final String jmsSimHostInternal			= record("vcell.jms.sim.host.internal",ValueType.GEN);
 	public static final String jmsSimPortInternal			= record("vcell.jms.sim.port.internal",ValueType.GEN);
-	public static final String jmsSimRestPortInternal		= record("vcell.jms.sim.restport.internal",ValueType.GEN);
 	public static final String jmsSimHostExternal			= record("vcell.jms.sim.host.external",ValueType.GEN);
 	public static final String jmsSimPortExternal			= record("vcell.jms.sim.port.external",ValueType.GEN);
 	public static final String jmsSimRestPortExternal		= record("vcell.jms.sim.restport.external",ValueType.GEN);

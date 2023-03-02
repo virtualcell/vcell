@@ -20,6 +20,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.*;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
@@ -104,6 +106,7 @@ import cbit.vcell.units.VCUnitException;
  * to get an updated MathDescription.
  */
 public class MathMapping_4_8 implements ScopedSymbolTable, UnitFactorProvider, IssueSource {
+	private final static Logger lg = LogManager.getLogger(MathMapping_4_8.class);
 	
 	public static final String BIO_PARAM_SUFFIX_SPECIES_COUNT = "_temp_Count";
 	public static final String BIO_PARAM_SUFFIX_SPECIES_CONCENTRATION = "_temp_Conc";
@@ -373,11 +376,6 @@ public class MathMapping_4_8 implements ScopedSymbolTable, UnitFactorProvider, I
 		System.out.println("MathMapping: capacitances must not be overridden and must be constant (used as literals in KVL)");
 	};
 
-/**
- * This method was created in VisualAge.
- * @param model cbit.vcell.model.Model
- * @param geometry cbit.vcell.geometry.Geometry
- */
 public MathMapping_4_8(SimulationContext simContext) {
 	this.simContext = simContext;
 	this.issueContext = new IssueContext(ContextType.SimContext,simContext,null).newChildContext(ContextType.MathMapping,this);
@@ -610,7 +608,7 @@ protected Expression getIdentifierSubstitutions(Expression origExp, VCUnitDefini
 		System.out.println(".........exp='"+expStr+"' exception='"+e.getMessage()+"'");
 		localIssueList.add(new Issue(origExp, issueContext, IssueCategory.Units,"expected=["+((desiredExpUnitDef!=null)?(desiredExpUnitDef.getSymbol()):("null"))+"], exception="+e.getMessage(),Issue.SEVERITY_WARNING));
 	}catch (Exception e){
-		e.printStackTrace(System.out);
+		lg.error(e);
 		localIssueList.add(new Issue(origExp, issueContext, IssueCategory.Units,"expected=["+((desiredExpUnitDef!=null)?(desiredExpUnitDef.getSymbol()):("null"))+"], exception="+e.getMessage(),Issue.SEVERITY_WARNING));
 	}
 	Expression newExp = new Expression(origExp);
@@ -752,11 +750,6 @@ public MathDescription getMathDescription() throws MappingException, MathExcepti
 }
 
 
-/**
- * Gets the mathMappingParameters index property (cbit.vcell.mapping.MathMappingParameter) value.
- * @return The mathMappingParameters property value.
- * @param index The index value into the property array.
- */
 public MathMappingParameter getMathMappingParameter(String argName) {
 	for (int i = 0; i < fieldMathMappingParameters.length; i++){
 		if (fieldMathMappingParameters[i].getName().equals(argName)){
@@ -767,32 +760,16 @@ public MathMappingParameter getMathMappingParameter(String argName) {
 }
 
 
-/**
- * Gets the mathMappingParameters property (MathMappingParameter[]) value.
- * @return The mathMappingParameters property value.
- */
 public MathMappingParameter[] getMathMappingParameters() {
 	return fieldMathMappingParameters;
 }
 
 
-/**
- * Gets the mathMappingParameters index property (cbit.vcell.mapping.MathMappingParameter) value.
- * @return The mathMappingParameters property value.
- * @param index The index value into the property array.
- */
 public MathMappingParameter getMathMappingParameters(int index) {
 	return getMathMappingParameters()[index];
 }
 
 
-/**
- * Substitutes appropriate variables for speciesContext bindings
- *
- * @return cbit.vcell.parser.Expression
- * @param origExp cbit.vcell.parser.Expression
- * @param structureMapping cbit.vcell.mapping.StructureMapping
- */
 public String getMathSymbol(SymbolTableEntry ste, StructureMapping structureMapping) throws MappingException {
 
 	String mathSymbol = getMathSymbol0(ste,structureMapping);
@@ -844,13 +821,7 @@ protected void refreshLocalNameCount() {
 		}
 	}
 }
-/**
- * Substitutes appropriate variables for speciesContext bindings
- *
- * @return cbit.vcell.parser.Expression
- * @param origExp cbit.vcell.parser.Expression
- * @param structureMapping cbit.vcell.mapping.StructureMapping
- */
+
 private String getMathSymbol0(SymbolTableEntry ste, StructureMapping structureMapping) throws MappingException {
 	String steName = ste.getName();
 	if (ste instanceof Kinetics.KineticsParameter){
@@ -920,8 +891,7 @@ private String getMathSymbol0(SymbolTableEntry ste, StructureMapping structureMa
 				try {
 					expr = substituteGlobalParameters(mp.getExpression());
 				} catch (ExpressionException e) {
-					e.printStackTrace(System.out);
-					throw new RuntimeException("Could not substitute expression for global parameter '" + mp.getName() + "' with expression '" + "'" + e.getMessage());
+					throw new RuntimeException("Could not substitute expression for global parameter '" + mp.getName() + "' with expression '" + "'" + e.getMessage(), e);
 				}
 				// find symbols (typically speciesContexts) in 'exp' that do not match with the arg 'structureMapping' 
 				String[] symbols = expr.getSymbols();
@@ -1412,11 +1382,6 @@ protected Variable newFunctionOrConstant(String name, Expression exp) {
 }
 
 
-/**
- * This method was created in VisualAge.
- * @param obs java.util.Observable
- * @param obj java.lang.Object
- */
 private void refresh() throws MappingException, ExpressionException, MatrixException, MathException, ModelException {
 //System.out.println("MathMapping.refresh()");
 	VCellThreadChecker.checkCpuIntensiveInvocation();
@@ -1482,8 +1447,7 @@ private void refreshKFluxParameters() throws ExpressionException {
 	try {
 		setMathMapppingParameters(newMathMappingParameters);
 	}catch (java.beans.PropertyVetoException e){
-		e.printStackTrace(System.out);
-		throw new RuntimeException(e.getMessage());
+		throw new RuntimeException(e.getMessage(), e);
 	}
 }
 
@@ -1616,8 +1580,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 					eap = addEventAssignmentInitParameter(modelParameters[j].getName(), modelParameters[j].getExpression(), 
 							PARAMETER_ROLE_EVENTASSIGN_INITCONDN, modelParameters[j].getUnitDefinition());
 				} catch (PropertyVetoException e) {
-					e.printStackTrace(System.out);
-					throw new MappingException(e.getMessage());
+					throw new MappingException(e.getMessage(), e);
 				}
 				// varHash.addVariable(newFunctionOrConstant(getMathSymbol(eap, null), modelParamExpr));
 				VolVariable volVar = new VolVariable(modelParameters[j].getName(),nullDomain);
@@ -2137,8 +2100,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 						varHash.addVariable(new Constant(getMathSymbol(sizeParm,sm),new Expression(value)));
 					}catch (ExpressionException e){
 						//varHash.addVariable(new Function(getMathSymbol(parm,sm),getIdentifierSubstitutions(parm.getExpression(),parm.getUnitDefinition(),sm)));
-						e.printStackTrace(System.out);
-						throw new MappingException("Size of structure:"+sm.getNameScope().getName()+" cannot be evaluated as constant.");
+						throw new MappingException("Size of structure:"+sm.getNameScope().getName()+" cannot be evaluated as constant.", e);
 					}
 				}
 			}else{
@@ -2224,8 +2186,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 		try {
 			mathDesc.setGeometry(simContext.getGeometryContext().getGeometry());
 		}catch (java.beans.PropertyVetoException e){
-			e.printStackTrace(System.out);
-			throw new MappingException("failure setting geometry "+e.getMessage());
+			throw new MappingException("failure setting geometry "+e.getMessage(), e);
 		}
 	}else{
 		throw new MappingException("geometry must be defined");
@@ -2891,12 +2852,6 @@ public synchronized void removeVetoableChangeListener(java.beans.VetoableChangeL
 }
 
 
-/**
- * Sets the mathMappingParameters property (MathMapping.MathMappingParameter[]) value.
- * @param kineticsParameters The new value for the property.
- * @exception java.beans.PropertyVetoException The exception description.
- * @see #getMathMappingParameters
- */
 void setMathMapppingParameters(MathMappingParameter[] mathMappingParameters) throws java.beans.PropertyVetoException {
 	MathMapping_4_8.MathMappingParameter[] oldValue = fieldMathMappingParameters;
 	fireVetoableChange("mathMappingParameters", oldValue, mathMappingParameters);

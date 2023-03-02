@@ -57,11 +57,6 @@ public Expression getExpression() {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (3/3/00 12:33:43 AM)
- * @return cbit.vcell.parser.Expression
- */
 public Expression getLogicalExpression() {
 
 	try {
@@ -71,8 +66,7 @@ public Expression getLogicalExpression() {
 			return new Expression(exp.infix()+" <= 0");
 		}
 	} catch (ExpressionException e) {
-		e.printStackTrace(System.out);
-		throw new RuntimeException("Error in exp : "+e.getMessage());
+		throw new RuntimeException("Error in exp : "+e.getMessage(), e);
 	}
 }
 }

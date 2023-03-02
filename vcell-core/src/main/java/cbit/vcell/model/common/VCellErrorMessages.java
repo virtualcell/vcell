@@ -30,7 +30,7 @@ public class VCellErrorMessages {
 //			DialogUtils.showErrorDialog(frame, getErrorMessage(NETWORK_FAIL_MESSAGE, ""));			
 //		} catch (Throwable exception) {
 //			System.err.println("Exception occurred in main() of BioModelDbTreePanelTest");
-//			exception.printStackTrace(System.out);
+//			lg.error(e);
 //		}
 //	}
 	public static String getMassActionSolverMessage(String reactionStepName, String reasonStr) 

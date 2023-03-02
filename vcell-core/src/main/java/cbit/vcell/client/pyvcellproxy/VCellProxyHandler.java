@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.thrift.TException;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.FileUtils;
@@ -19,7 +21,8 @@ import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.simdata.VtkManager;
 
 public class VCellProxyHandler implements VCellProxy.Iface{
-	
+	private final static Logger lg = LogManager.getLogger(VCellProxyHandler.class);
+
 	private final VCellClientDataService vcellClientDataService;
 //private final VCellClient vcellClient;
 private final File localVisDataDir;
@@ -80,7 +83,7 @@ public List<VariableInfo> getVariableList(SimulationDataSetRef simulationDataSet
 		}
 		return varInfoList;
 	} catch (Exception e) {
-		e.printStackTrace();
+		lg.error("failed to retrieve variable list for data set.", e);
 		throw new ThriftDataAccessException("failed to retrieve variable list for data set.");
 	}
 
@@ -168,8 +171,9 @@ public String getDataSetFileOfVariableAtTimeIndex(SimulationDataSetRef simulatio
 		}
 		return meshFileForVariableAndTime.getAbsolutePath();
 	} catch (Exception e) {
-		e.printStackTrace();
-		throw new ThriftDataAccessException("failed to retrieve data file for variable "+var.getVariableVtuName()+" at time index "+timeIndex);
+		String msg = "failed to retrieve data file for variable "+var.getVariableVtuName()+" at time index "+timeIndex;
+		lg.error(msg, e);
+		throw new ThriftDataAccessException(msg);
 	}
 }
 
@@ -184,7 +188,7 @@ private File getEmptyMeshFile(SimulationDataSetRef simulationDataSetRef, String 
 	try {
 		vtuEmptyMeshFile = getEmptyMeshFileLocation(simulationDataSetRef, domainName, timeIndex);
 	} catch (FileNotFoundException e1) {
-		e1.printStackTrace();
+		lg.error("failed to find data location", e1);
 		throw new ThriftDataAccessException("failed to find data location: "+e1.getMessage());
 	}
 
@@ -209,8 +213,7 @@ private File getEmptyMeshFile(SimulationDataSetRef simulationDataSetRef, String 
 			System.out.println("vtuData file exists, " + vtuEmptyMeshFile);
 
 		}catch (IOException e){
-			e.printStackTrace();
-			System.out.println("failed to export entire dataset: "+e.getMessage());
+			lg.error("failed to export entire dataset: "+e.getMessage(), e);
 			throw new ThriftDataAccessException("failed to export entire dataset: "+e.getMessage());
 		}
 	}
@@ -224,7 +227,7 @@ private VtuFileContainer downloadEmptyVtuFileContainer(SimulationDataSetRef simu
 		VtuFileContainer vtuFileContainer = vtkManager.getEmptyVtuMeshFiles(timeIndex);
 		return vtuFileContainer;
 	}catch (Exception e){
-		e.printStackTrace();
+		lg.error("failed to get data for simulation "+simulationDataSetRef, e);
 		throw new ThriftDataAccessException("failed to get data for simulation "+simulationDataSetRef+": "+e.getMessage());
 	}
 }
@@ -245,7 +248,7 @@ public List<Double> getTimePoints(SimulationDataSetRef simulationDataSetRef) thr
 		}
 		return null;
 	} catch (FileNotFoundException | DataAccessException e) {
-		e.printStackTrace();
+		lg.error("failed to get time points", e);
 		throw new ThriftDataAccessException(e.getMessage());
 	}
 }
@@ -262,7 +265,7 @@ public void displayPostProcessingDataInVCell(SimulationDataSetRef simulationData
 	 try {
 		 vcellClientDataService.displayPostProcessingDataInVCell(simulationDataSetRef);
 	} catch (Throwable exc2) {
-		 exc2.printStackTrace();
+		 lg.error(exc2);
 		 throw new ThriftDataAccessException(exc2.getMessage());
 	}
 }

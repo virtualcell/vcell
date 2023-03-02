@@ -77,11 +77,6 @@ import cbit.vcell.units.VCUnitDefinition;
 public class StochMathMapping extends AbstractStochMathMapping {
 	private static Logger lg = LogManager.getLogger(StochMathMapping.class);
 
-	/**
-	 * The constructor, which pass the simulationContext pointer.
-	 * @param model cbit.vcell.model.Model
-	 * @param geometry cbit.vcell.geometry.Geometry
-	 */
 	protected StochMathMapping(SimulationContext simContext, MathMappingCallback callback,	NetworkGenerationRequirements networkGenerationRequirements) {
 		super(simContext, callback, networkGenerationRequirements);
 	}
@@ -260,7 +255,7 @@ private Expression getProbabilityRate(ReactionStep reactionStep, Expression rate
 						}
 					}
 				}catch (ExpressionException e){
-					e.printStackTrace(System.out);
+					lg.error(e);
 				}
 			}
 		}
@@ -370,7 +365,7 @@ private Expression getProbabilityRate(ReactionStep reactionStep, Expression rate
 					varHash.addVariable(newFunctionOrConstant(getMathSymbol(memMapping.getMembrane().getMembraneVoltage(),memMapping.getGeometryClass()),
 							getIdentifierSubstitutions(memMapping.getInitialVoltageParameter().getExpression(),memMapping.getInitialVoltageParameter().getUnitDefinition(),memMapping.getGeometryClass()),memMapping.getGeometryClass()));
 				}catch(ExpressionException e){
-					e.printStackTrace(System.out);
+					lg.error(e);
 					throw new MappingException("Membrane initial voltage: "+initialVoltageParm.getName()+" cannot be evaluated as constant.");
 				}
 			}
@@ -423,7 +418,7 @@ private Expression getProbabilityRate(ReactionStep reactionStep, Expression rate
 					varHash.addVariable(new Constant(getMathSymbol(parm,sm.getGeometryClass()),new Expression(value)));
 				}catch (ExpressionException e){
 					//varHash.addVariable(new Function(getMathSymbol0(parm,sm),getIdentifierSubstitutions(parm.getExpression(),parm.getUnitDefinition(),sm)));
-					e.printStackTrace(System.out);
+					lg.error(e);
 					throw new MappingException("Size of structure:"+sm.getNameScope().getName()+" cannot be evaluated as constant.");
 				}
 			}
@@ -451,7 +446,7 @@ private Expression getProbabilityRate(ReactionStep reactionStep, Expression rate
 			try {
 				mathDesc.setGeometry(simContext.getGeometryContext().getGeometry());
 			}catch (java.beans.PropertyVetoException e){
-				e.printStackTrace(System.out);
+				lg.error(e);
 				throw new MappingException("failure setting geometry "+e.getMessage());
 			}
 		}else{
@@ -658,8 +653,7 @@ private Expression getProbabilityRate(ReactionStep reactionStep, Expression rate
 					try{
 						probParm = addProbabilityParameter(PARAMETER_PROBABILITYRATE_PREFIX+jpName, exp, PARAMETER_ROLE_P, probabilityParamUnit,reactionStep);
 					}catch(PropertyVetoException pve){
-						pve.printStackTrace();
-						throw new MappingException(pve.getMessage());
+						throw new MappingException(pve.getMessage(), pve);
 					}
 					
 					//add probability to function or constant
@@ -709,8 +703,7 @@ private Expression getProbabilityRate(ReactionStep reactionStep, Expression rate
 					try{
 						probRevParm = addProbabilityParameter(PARAMETER_PROBABILITYRATE_PREFIX+jpName,exp,PARAMETER_ROLE_P_reverse, probabilityParamUnit,reactionStep);
 					}catch(PropertyVetoException pve){
-						pve.printStackTrace();
-						throw new MappingException(pve.getMessage());
+						throw new MappingException(pve.getMessage(), pve);
 					}
 					//add probability to function or constant
 					varHash.addVariable(newFunctionOrConstant(getMathSymbol(probRevParm,geometryClass),getIdentifierSubstitutions(exp, probabilityParamUnit, geometryClass),geometryClass));
@@ -787,8 +780,7 @@ private Expression getProbabilityRate(ReactionStep reactionStep, Expression rate
 						try{
 							probParm = addProbabilityParameter(PARAMETER_PROBABILITYRATE_PREFIX+jpName,probExp,PARAMETER_ROLE_P, probabilityParamUnit,reactionStep);
 						}catch(PropertyVetoException pve){
-							pve.printStackTrace();
-							throw new MappingException(pve.getMessage());
+							throw new MappingException(pve.getMessage(), pve);
 						}
 						//add probability to function or constant
 						String ms = getMathSymbol(probParm,geometryClass);
@@ -838,8 +830,7 @@ private Expression getProbabilityRate(ReactionStep reactionStep, Expression rate
 						try{
 							probRevParm = addProbabilityParameter(PARAMETER_PROBABILITYRATE_PREFIX+jpName,probExp,PARAMETER_ROLE_P_reverse, probabilityParamUnit,reactionStep);
 						}catch(PropertyVetoException pve){
-							pve.printStackTrace();
-							throw new MappingException(pve.getMessage());
+							throw new MappingException(pve.getMessage(), pve);
 						}
 						//add probability to function or constant
 						varHash.addVariable(newFunctionOrConstant(getMathSymbol(probRevParm,geometryClass),getIdentifierSubstitutions(probExp, probabilityParamUnit, geometryClass),geometryClass));
@@ -937,8 +928,7 @@ protected void refreshVariables() throws MappingException {
 			Expression countExp = new Expression(0.0);
 			spCountParm = addSpeciesCountParameter(countName, countExp, PARAMETER_ROLE_SPECIES_COUNT, scs.getInitialCountParameter().getUnitDefinition(), scs.getSpeciesContext());
 		}catch(PropertyVetoException pve){
-			pve.printStackTrace();
-			throw new MappingException(pve.getMessage());
+			throw new MappingException(pve.getMessage(), pve);
 		}
 		
 		//add concentration of species as MathMappingParameter - this will map to species concentration function
@@ -948,7 +938,6 @@ protected void refreshVariables() throws MappingException {
 			concExp.bindExpression(this);
 			addSpeciesConcentrationParameter(concName, concExp, PARAMETER_ROLE_SPECIES_CONCENRATION, scs.getSpeciesContext().getUnitDefinition(), scs.getSpeciesContext());
 		}catch(Exception e){
-			e.printStackTrace();
 			throw new MappingException(e.getMessage(),e);
 		}
 		//we always add variables, all species are independent variables, no matter they are constant or not.
@@ -976,7 +965,6 @@ protected void refreshVariables() throws MappingException {
 						//countExp.bindExpression(this);
 						addObservableCountParameter(concObservableParameter.getName() + BIO_PARAM_SUFFIX_SPECIES_COUNT, countExp, PARAMETER_ROLE_OBSERVABLE_COUNT, getSimulationContext().getModel().getUnitSystem().getStochasticSubstanceUnit(), observable);
 					} catch (ExpressionException | PropertyVetoException e) {
-						e.printStackTrace();
 						throw new MappingException(e.getMessage(),e);
 					}
 				}

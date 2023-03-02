@@ -180,8 +180,7 @@ public class AssignmentRule implements Matchable, Serializable, IssueSource, Sim
 		try {
 			bind();
 		} catch (ExpressionBindingException e) {
-			e.printStackTrace(System.out);
-			throw new RuntimeException(e.getMessage());
+			throw new RuntimeException(e.getMessage(), e);
 		}
 	}
 

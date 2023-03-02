@@ -1,27 +1,23 @@
 package org.vcell.cli.run;
 
-import cbit.vcell.parser.ExpressionException;
+
 import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.xml.ExternalDocInfo;
-import ncsa.hdf.hdf5lib.exceptions.HDF5Exception;
-
-import org.jlibsedml.*;
-
 import org.apache.commons.io.FilenameUtils;
-import org.vcell.cli.CLIRecorder;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.jlibsedml.*;
+import org.vcell.cli.CLIRecordable;
 import org.vcell.cli.PythonStreamException;
-import org.vcell.cli.run.hdf5.Hdf5WrapperFactory;
 import org.vcell.cli.run.hdf5.Hdf5DataWrapper;
+import org.vcell.cli.run.hdf5.Hdf5WrapperFactory;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.FileUtils;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
-
 import java.io.File;
-import java.io.IOException;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -40,7 +36,7 @@ public class SedmlJob {
     private SedML sedml;
     private File masterOmexArchive, rootOutputDir, plotsDirectory, plotFile;
     private List<Output> outputs;
-    private CLIRecorder cliRecorder;
+    private CLIRecordable cliRecorder;
     private File outDirForCurrentSedml;
 
     private final static Logger logger = LogManager.getLogger(SedmlJob.class);
@@ -61,7 +57,7 @@ public class SedmlJob {
      * @param logOmexMessage a string-builder to contain progress updates of omex execution
      */
     public SedmlJob(String sedmlLocation, OmexHandler omexHandler, File masterOmexArchive, File rootOutputDir, String resultsDirPath, String sedmlPath2d3dString,
-            CLIRecorder cliRecorder, boolean bKeepTempFiles, boolean bExactMatchOnly, boolean bSmallMeshOverride, StringBuilder logOmexMessage){
+                    CLIRecordable cliRecorder, boolean bKeepTempFiles, boolean bExactMatchOnly, boolean bSmallMeshOverride, StringBuilder logOmexMessage){
         this.somethingFailed = false;
         this.masterOmexArchive = masterOmexArchive;
         this.sedmlLocation = sedmlLocation;
@@ -275,7 +271,7 @@ public class SedmlJob {
             logDocumentError += e.getMessage();
             this.reportProblem(e);
             org.apache.commons.io.FileUtils.deleteDirectory(this.plotsDirectory);    // removing temp path generated from python
-            throw new ExecutionException();
+            throw new ExecutionException("error while processing outputs: "+e.getMessage(), e);
         }
     }
 

@@ -31,8 +31,11 @@ import cbit.vcell.model.RuleParticipantSignature;
 import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class ReactionCartoonFull extends ReactionCartoon {
+	private final static Logger lg = LogManager.getLogger(ReactionCartoonFull.class);
 
 	@Override
 	protected GroupingCriteria getRuleParticipantGroupingCriteria() {
@@ -538,8 +541,8 @@ public class ReactionCartoonFull extends ReactionCartoon {
 				}				
 			}
 			fireGraphChanged(new GraphEvent(this));
-		} catch (Throwable e) {
-			handleException(e);
+		} catch (Exception e) {
+			lg.error(e);
 		}
 	}
 }

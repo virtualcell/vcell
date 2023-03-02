@@ -932,9 +932,9 @@ public static DataOperationResults getDataProcessingOutput(DataOperation dataOpe
 			throw new FileNotFoundException("Data Processing Output file '"+dataProcessingOutputFileHDF5.getPath()+"' not found");
 		}
 	}catch(Exception e){
-		e.printStackTrace();
+		lg.error(e);
 	}finally{
-		if(hdf5FileFormat != null){try{hdf5FileFormat.close();}catch(Exception e){e.printStackTrace();}}
+		if(hdf5FileFormat != null){try{hdf5FileFormat.close();}catch(Exception e){lg.error(e);}}
 	}
 
 	return dataProcessingOutputResults;
@@ -1300,7 +1300,7 @@ private static void populateStatNamesAndUnits(HObject hObject,DataProcessingHelp
 //		file_id = H5.H5Fopen(hdfFile.getAbsolutePath(), HDF5Constants.H5F_ACC_RDONLY, HDF5Constants.H5P_DEFAULT);
 //	}
 //	catch (Exception e) {
-//		e.printStackTrace();
+//		lg.error(e);
 //	}
 //
 //	// Begin iteration.
@@ -1333,7 +1333,7 @@ private static void populateStatNamesAndUnits(HObject hObject,DataProcessingHelp
 //		}
 //	}
 //	catch (Exception e) {
-//		e.printStackTrace();
+//		lg.error(e);
 //	}
 //
 //	// Close the file.
@@ -1342,7 +1342,7 @@ private static void populateStatNamesAndUnits(HObject hObject,DataProcessingHelp
 //			H5.H5Fclose(file_id);
 //	}
 //	catch (Exception e) {
-//		e.printStackTrace();
+//		lg.error(e);
 //	}
 //}
 
@@ -2037,7 +2037,7 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
 							fieldDataFileOperationSpec.owner,
 							FieldDataFileOperationSpec.JOBINDEX_DEFAULT));
 		}catch(Exception e){
-			e.printStackTrace();
+			lg.error(e);
 			try{
 				for(int i=0;i<removeFilesIfErrorV.size();i+= 1){
 					removeFilesIfErrorV.elementAt(i).delete();
@@ -2045,7 +2045,7 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
 			}catch(Throwable e2){
 				//ignore, we tried to cleanup
 			}
-			throw new RuntimeException("Error copying sim data to new Field Data\n"+e.getMessage());
+			throw new RuntimeException("Error copying sim data to new Field Data\n"+e.getMessage(), e);
 		}
 
 	}else if(fieldDataFileOperationSpec.opType == FieldDataFileOperationSpec.FDOS_ADD){
@@ -2184,7 +2184,7 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
 			try{
 				zipOut.close();
 			}catch(IOException e){
-				e.printStackTrace();
+				lg.error(e);
 				//ignore
 			}
 		}
@@ -2197,15 +2197,14 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
 			fos = new FileOutputStream(meshFile);
 			mesh.write(new PrintStream(fos));
 		} catch (IOException e) {
-			e.printStackTrace();
-			throw new RuntimeException("Error writing mesh file "+meshFile.getAbsolutePath()+"\n"+e.getMessage());
+			throw new RuntimeException("Error writing mesh file "+meshFile.getAbsolutePath()+"\n"+e.getMessage(), e);
 		}finally{
 			try {
 				if(fos != null){
 					fos.close();
 				}
 			} catch (IOException e) {
-				e.printStackTrace();
+				lg.error(e);
 				//ignore
 			}
 		}
@@ -2225,8 +2224,7 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
 			ps2.flush();
 			ps2.close();
 		} catch (IOException e) {
-			e.printStackTrace();
-			throw new RuntimeException("Error writing function file "+funcFile.getAbsolutePath()+"\n"+e.getMessage());
+			throw new RuntimeException("Error writing function file "+funcFile.getAbsolutePath()+"\n"+e.getMessage(), e);
 		}finally{
 			if(ps2 != null){
 				ps2.close();
@@ -2242,7 +2240,7 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
 							fieldDataFileOperationSpec.owner,
 							FieldDataFileOperationSpec.JOBINDEX_DEFAULT));
 		}catch(Exception e){
-			e.printStackTrace();
+			lg.error(e);
 			//ignore
 		}
 		
@@ -2257,7 +2255,7 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
 //				FieldDataDBOperationDriver.getFunctionFileNamesAndSimKeys(
 //					fieldDataFileOperationSpec.specEDI.getOwner());
 //		}catch(Exception e){
-//			e.printStackTrace();
+//			lg.error(e);
 //			throw new RuntimeException("couldn't get Function File names from Database\n"+e.getMessage());
 //		}
 //		//String regex = "^.*"+MathMLTags.FIELD+"\\s*\\(\\s*"+fieldDataFileOperationSpec.specEDI.getName()+"\\s*,.*$";
@@ -2316,10 +2314,10 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
 ////						}
 //					}
 //				}catch(Exception e){
-//					e.printStackTrace();
+//					lg.error(e);
 //					throw new RuntimeException(e.getMessage(),e);
 //				}finally{
-//					if(lineNumberReader != null){try{lineNumberReader.close();}catch(Exception e){e.printStackTrace();}}
+//					if(lineNumberReader != null){try{lineNumberReader.close();}catch(Exception e){lg.error(e);}}
 //				}
 //			}
 //		}
@@ -2886,8 +2884,7 @@ public double[] getDataSetTimes(VCDataIdentifier vcdID) throws DataAccessExcepti
 		if (lg.isTraceEnabled()) lg.trace("DataSetControllerImpl.getDataSetTimes() returning ["+timeString+"]");
 		return times;
 	}catch (IOException e){
-		lg.error(e.getMessage(), e);
-		throw new DataAccessException(e.getMessage());
+		throw new DataAccessException(e.getMessage(), e);
 	}
 }
 
@@ -2944,8 +2941,7 @@ public AnnotatedFunction getFunction(OutputContext outputContext,VCDataIdentifie
 		checkFieldDataExists(annotatedFunction,vcdID.getOwner());
 		return annotatedFunction;
 	}catch (IOException e){
-		lg.error(e.getMessage(), e);
-		throw new DataAccessException(e.getMessage());
+		throw new DataAccessException(e.getMessage(), e);
 	}
 }
 /**
@@ -2957,8 +2953,7 @@ public AnnotatedFunction[] getFunctions(OutputContext outputContext,VCDataIdenti
 		VCData simData = getVCData(vcdID);
 		return simData.getFunctions(outputContext);
 	}catch (IOException e){
-		lg.error(e.getMessage(), e);
-		throw new DataAccessException(e.getMessage());
+		throw new DataAccessException(e.getMessage(), e);
 	}
 }
 
@@ -3126,11 +3121,9 @@ public PlotData getLineScan(OutputContext outputContext, VCDataIdentifier vcdID,
 		}
 
 	} catch (DataAccessException e) {
-		lg.error(e.getMessage(), e);
 		throw e;
 	} catch (IOException e) {
-		lg.error(e.getMessage(), e);
-		throw new DataAccessException(e.getMessage());
+		throw new DataAccessException(e.getMessage(), e);
 	}
 }
 
@@ -3208,7 +3201,7 @@ public ODEDataBlock getODEDataBlock(VCDataIdentifier vcdID) throws DataAccessExc
 						cacheTable0.put(odeDataInfo, odeDataBlock);
 					} catch (CacheException e) {
 						// if can't cache the results, it is ok
-						e.printStackTrace();
+						lg.error(e);
 					}
 				}
 				return odeDataBlock;
@@ -3219,8 +3212,7 @@ public ODEDataBlock getODEDataBlock(VCDataIdentifier vcdID) throws DataAccessExc
 			}
 		}
 	}catch (IOException e){
-		lg.error(e.getMessage(), e);
-		throw new DataAccessException(e.getMessage());
+		throw new DataAccessException(e.getMessage(), e);
 	}
 }
 
@@ -3252,7 +3244,7 @@ public ParticleDataBlock getParticleDataBlock(VCDataIdentifier vcdID, double tim
 						cacheTable0.put(particleDataInfo, particleDataBlock);
 					} catch (CacheException e) {
 						// if can't cache the data, it is ok
-						e.printStackTrace();
+						lg.error(e);
 					}
 				}
 				return particleDataBlock;
@@ -3263,8 +3255,7 @@ public ParticleDataBlock getParticleDataBlock(VCDataIdentifier vcdID, double tim
 			}
 		}
 	}catch (IOException e){
-		lg.error(e.getMessage(), e);
-		throw new DataAccessException(e.getMessage());
+		throw new DataAccessException(e.getMessage(), e);
 	}
 }
 
@@ -3315,7 +3306,7 @@ public SimDataBlock getSimDataBlock(OutputContext outputContext, VCDataIdentifie
 							cacheTable0.put(pdeDataInfo,simDataBlock);
 						} catch (CacheException e) {
 							// if can't cache the data, it is ok
-							e.printStackTrace();
+							lg.error(e);
 						}
 					}
 				}
@@ -3345,17 +3336,14 @@ public SimDataBlock getSimDataBlock(OutputContext outputContext, VCDataIdentifie
 			throw new DataAccessException(msg);			
 		}
 	}catch (MathException e){
-		lg.error(e.getMessage(), e);
 		VCMongoMessage.sendTrace("DataSetControllerImpl.getSimDataBlock(" + varName + ", " + time + ")  <<EXIT-Exception>>");
-		throw new DataAccessException(e.getMessage());
+		throw new DataAccessException(e.getMessage(), e);
 	}catch (IOException e){
-		lg.error(e.getMessage(), e);
 		VCMongoMessage.sendTrace("DataSetControllerImpl.getSimDataBlock(" + varName + ", " + time + ")  <<EXIT-Exception>>");
-		throw new DataAccessException(e.getMessage());
+		throw new DataAccessException(e.getMessage(), e);
 	}catch (ExpressionException e){
-		lg.error(e.getMessage(), e);
 		VCMongoMessage.sendTrace("DataSetControllerImpl.getSimDataBlock(" + varName + ", " + time + ")  <<EXIT-Exception>>");
-		throw new DataAccessException(e.getMessage());
+		throw new DataAccessException(e.getMessage(), e);
 	}
 }
 
@@ -3647,7 +3635,7 @@ private TimeSeriesJobResults getTimeSeriesValues_private(OutputContext outputCon
 		}
 	}catch(Exception e){
 		//ignore
-		e.printStackTrace();
+		lg.error(e);
 	}
 	if(dataTimes == null){
 		dataTimes =  getDataSetTimes(vcdID);
@@ -3890,11 +3878,9 @@ private TimeSeriesJobResults getTimeSeriesValues_private(OutputContext outputCon
 		}
 		
 	}catch (DataAccessException e){
-		lg.error(e.getMessage(), e);
 		throw e;
 	}catch (Throwable e){
-		lg.error(e.getMessage(), e);
-		throw new DataAccessException("DataSetControllerImpl.getTimeSeriesValues: "+(e.getMessage() == null?e.getClass().getName():e.getMessage()));
+		throw new DataAccessException("DataSetControllerImpl.getTimeSeriesValues: "+(e.getMessage() == null?e.getClass().getName():e.getMessage()), e);
 	}
 }
 
@@ -3914,7 +3900,7 @@ public TimeSeriesJobResults getTimeSeriesValues(OutputContext outputContext,fina
 		return timeSeriesJobResults;		
 	}catch (Exception e) {
 		failException = e;
-		e.printStackTrace();
+		lg.error(e);
 		if(e instanceof DataAccessException){
 			throw (DataAccessException)e;
 		}else{
@@ -3991,8 +3977,7 @@ public VCData getVCData(VCDataIdentifier vcdID) throws DataAccessException, IOEx
 				vcData = new MergedData(user, getPrimaryUserDir(vcdID.getOwner(), false), getSecondaryUserDir(vcdID.getOwner()), this, vcdIdentifiers, ((MergedDataInfo)vcdID).getDataSetPrefix());
 				VCMongoMessage.sendTrace("DataSetControllerImpl.getVCData("+vcdID.getID()+") : creating new MergedData : <<END>>");
 			} catch (IOException e) {
-				e.printStackTrace(System.out);
-				throw new RuntimeException(e.getMessage());
+				throw new RuntimeException(e.getMessage(), e);
 			}
 		} else {  // assume vcdID instanceof cbit.vcell.solver.SimulationInfo or a test adapter
 			VCMongoMessage.sendTrace("DataSetControllerImpl.getVCData("+vcdID.getID()+") : creating new SimulationData : <<BEGIN>>");
@@ -4007,7 +3992,7 @@ public VCData getVCData(VCDataIdentifier vcdID) throws DataAccessException, IOEx
 				VCMongoMessage.sendTrace("DataSetControllerImpl.getVCData("+vcdID.getID()+") : caching vcData : <<END>>");
 			} catch (CacheException e) {
 				// if  can't cache the data, it is ok
-				e.printStackTrace();
+				lg.error(e);
 			}
 		}
 	}
@@ -4215,7 +4200,7 @@ public void writeFieldFunctionData(
 			try{
 				newResampledFieldDataFile = ((SimulationData)getVCData(simResampleInfoProvider)).getFieldDataFile(simResampleInfoProvider, argFieldDataIDSpecs[i].getFieldFuncArgs());
 			}catch(FileNotFoundException e){
-				e.printStackTrace();
+				lg.error(e);
 				//use the original way
 				newResampledFieldDataFile = new File(getPrimaryUserDir(simResampleInfoProvider.getOwner(), true),
 				SimulationData.createCanonicalResampleFileName(simResampleInfoProvider,argFieldDataIDSpecs[i].getFieldFuncArgs()));
@@ -4297,8 +4282,7 @@ public void writeFieldFunctionData(
 					new double[][]{newData});
 		}
 	} catch (Exception ex) {
-		ex.printStackTrace(System.out);
-		throw new DataAccessException(ex.getMessage());
+		throw new DataAccessException(ex.getMessage(), ex);
 	}
 }
 
@@ -4351,7 +4335,7 @@ public boolean getIsChombo(VCDataIdentifier vcdataID) throws IOException, DataAc
 	try {
 		simData = getVCData(vcdataID);
 	}catch (DataAccessException e){
-		e.printStackTrace(System.err);
+		lg.error(e);
 	}
 	
 	if (simData==null){
@@ -4407,10 +4391,8 @@ public ChomboFiles getChomboFiles(VCDataIdentifier vcdataID) throws DataAccessEx
 	try {
 		return simData.getChomboFiles();
 	} catch (XmlParseException e) {
-		e.printStackTrace();
 		throw new DataAccessException("failed to getChomboFiles(): "+e.getMessage(),e);
 	} catch (ExpressionException e) {
-		e.printStackTrace();
 		throw new DataAccessException("failed to getChomboFiles(): "+e.getMessage(),e);
 	}
 }
@@ -4479,7 +4461,7 @@ public ComsolSimFiles getComsolSimFiles(VCDataIdentifier vcdataID) throws DataAc
 							chomboExtrapolatedValuesCache.put(pdeDataInfo,simDataBlock);
 						} catch (CacheException e) {
 							// if can't cache the data, it is ok
-							e.printStackTrace();
+							lg.error(e);
 						}
 					}
 				}
@@ -4494,9 +4476,8 @@ public ComsolSimFiles getComsolSimFiles(VCDataIdentifier vcdataID) throws DataAc
 			if (lg.isWarnEnabled()) lg.warn(methodName +msg);
 			throw new DataAccessException(msg);			
 		} catch (Exception e){
-			lg.error(e.getMessage(), e);
 			VCMongoMessage.sendTrace(methodName + "  <<EXIT-Exception>>");
-			throw new DataAccessException(e.getMessage());
+			throw new DataAccessException(e.getMessage(), e);
 		}
 	}
 
@@ -4511,7 +4492,6 @@ public ComsolSimFiles getComsolSimFiles(VCDataIdentifier vcdataID) throws DataAc
 			VtuFileContainer vtuFiles = comsolVTKFileWriter.getEmptyVtuMeshFiles(comsolSimFiles, primaryDirectory);
 			return vtuFiles;
 		}catch (Exception e){
-			lg.error(e.getMessage(), e);
 			throw new DataAccessException("failed to retrieve VTK files: "+e.getMessage(),e);
 		}
 	}
@@ -4526,7 +4506,6 @@ public ComsolSimFiles getComsolSimFiles(VCDataIdentifier vcdataID) throws DataAc
 			VtuFileContainer vtuFiles = chomboVTKFileWriter.getEmptyVtuMeshFiles(chomboFiles, primaryDirectory);
 			return vtuFiles;
 		}catch (Exception e){
-			lg.error(e.getMessage(), e);
 			throw new DataAccessException("failed to retrieve VTK files: "+e.getMessage(),e);
 		}
 	}
@@ -4541,7 +4520,6 @@ public ComsolSimFiles getComsolSimFiles(VCDataIdentifier vcdataID) throws DataAc
 			VtuFileContainer vtuFiles = cartesianMeshVTKFileWriter.getEmptyVtuMeshFiles(vcellSimFiles, primaryDirectory);
 			return vtuFiles;
 		}catch (Exception e){
-			lg.error(e.getMessage(), e);
 			throw new DataAccessException("failed to retrieve VTK files: "+e.getMessage(),e);
 		}
 	}
@@ -4553,7 +4531,6 @@ public ComsolSimFiles getComsolSimFiles(VCDataIdentifier vcdataID) throws DataAc
 			VtuFileContainer vtuFiles = movingBoundaryVtkFileWriter.getEmptyVtuMeshFiles(movingBoundarySimFiles, timeIndex, primaryDirectory);
 			return vtuFiles;
 		}catch (Exception e){
-			lg.error(e.getMessage(), e);
 			throw new DataAccessException("failed to retrieve VTK files: "+e.getMessage(),e);
 		}
 	}
@@ -4581,7 +4558,6 @@ public ComsolSimFiles getComsolSimFiles(VCDataIdentifier vcdataID) throws DataAc
 			double[] vtuData = comsolVTKFileWriter.getVtuMeshData(comsolSimFiles, outputContext, getUserDataDirectory(vcdataID), time, var, timeIndex);
 			return vtuData;
 		}catch (Exception e){
-			lg.error(e.getMessage(), e);
 			throw new DataAccessException("failed to retrieve VTK files: "+e.getMessage(),e);
 		}
 	}
@@ -4603,7 +4579,6 @@ public ComsolSimFiles getComsolSimFiles(VCDataIdentifier vcdataID) throws DataAc
 			double[] vtuData = chomboVTKFileWriter.getVtuMeshData(chomboFiles, outputContext, getUserDataDirectory(vcdataID), time, var, timeIndex);
 			return vtuData;
 		}catch (Exception e){
-			lg.error(e.getMessage(), e);
 			throw new DataAccessException("failed to retrieve VTK files: "+e.getMessage(),e);
 		}
 	}
@@ -4628,7 +4603,6 @@ public ComsolSimFiles getComsolSimFiles(VCDataIdentifier vcdataID) throws DataAc
 			double[] vtuData = movingBoundaryVtkFileWriter.getVtuMeshData(movingBoundarySimFiles, volumeVarData, getUserDataDirectory(vcdataID), var, timeIndex);
 			return vtuData;
 		}catch (Exception e){
-			lg.error(e.getMessage(), e);
 			throw new DataAccessException("failed to retrieve VTK files: "+e.getMessage(),e);
 		}
 	}
@@ -4647,7 +4621,6 @@ public ComsolSimFiles getComsolSimFiles(VCDataIdentifier vcdataID) throws DataAc
 			double[] vtuData = cartesianMeshVTKFileWriter.getVtuMeshData(vcellFiles, outputContext, simDataBlock, getUserDataDirectory(vcdataID), var, time);
 			return vtuData;
 		}catch (Exception e){
-			lg.error(e.getMessage(), e);
 			throw new DataAccessException("failed to retrieve VTK files: "+e.getMessage(),e);
 		}
 	}
@@ -4659,7 +4632,6 @@ public ComsolSimFiles getComsolSimFiles(VCDataIdentifier vcdataID) throws DataAc
 			VtuVarInfo[] vtuVarInfos = cartesianMeshVTKFileWriter.getVtuVarInfos(vcellFiles, outputContext, getVCData(vcdataID));
 			return vtuVarInfos;
 		}catch (Exception e){
-			lg.error(e.getMessage(), e);
 			throw new DataAccessException("failed to retrieve VTK variable list: "+e.getMessage(),e);
 		}
 	}
@@ -4671,7 +4643,6 @@ public ComsolSimFiles getComsolSimFiles(VCDataIdentifier vcdataID) throws DataAc
 			VtuVarInfo[] vtuVarInfos = chomboVTKFileWriter.getVtuVarInfos(chomboFiles, outputContext, getVCData(vcdataID));
 			return vtuVarInfos;
 		}catch (Exception e){
-			lg.error(e.getMessage(), e);
 			throw new DataAccessException("failed to retrieve VTK variable list: "+e.getMessage(),e);
 		}
 	}
@@ -4717,7 +4688,6 @@ if (name.toUpperCase().contains("SIZE")){
 			}
 			return vtuVarInfos.toArray(new VtuVarInfo[0]);
 		}catch (Exception e){
-			lg.error(e.getMessage(), e);
 			throw new DataAccessException("failed to retrieve VTK variable list: "+e.getMessage(),e);
 		}
 	}
@@ -4764,7 +4734,6 @@ if (name.toUpperCase().contains("SIZE")){
 			}
 			return vtuVarInfos.toArray(new VtuVarInfo[0]);
 		}catch (Exception e){
-			lg.error(e.getMessage(), e);
 			throw new DataAccessException("failed to retrieve VTK variable list: "+e.getMessage(),e);
 		}
 	}
@@ -4788,8 +4757,7 @@ if (name.toUpperCase().contains("SIZE")){
 				return null;		// file exists only for NFSim
 			}
 		}catch (IOException e){
-			lg.error(e.getMessage(), e);
-			throw new DataAccessException(e.getMessage());
+			throw new DataAccessException(e.getMessage(), e);
 		}
 	}
 

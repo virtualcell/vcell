@@ -38,6 +38,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 
+import org.jdom.Attribute;
 import org.jdom.Element;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.ClientTaskStatusSupport;
@@ -228,7 +229,9 @@ public class BioModelsNetJPanel extends JPanel {
 			Element temp = (Element) ruleiterator.next();
 			//System.out.println(temp.getAttributeValue("TagName") + ":" + temp.getAttributeValue("AttrName"));
 			boolean bSupported = temp.getAttribute(BioModelsNetPanel.SUPPORTED_ATTRIBUTE_NAME).getBooleanValue();
-			if(bSupported){
+			Attribute slowAttribute = temp.getAttribute(BioModelsNetPanel.SLOW_ATTRIBUTE_NAME);
+			boolean bSlow = (slowAttribute != null && slowAttribute.getBooleanValue());
+			if(bSupported && !bSlow){
 				String id = temp.getAttributeValue(BioModelsNetPanel.ID_ATTRIBUTE_NAME);
 				String name = temp.getAttributeValue(BioModelsNetPanel.MODELNAME_ATTRIBUTE_NAME);
 				vcellCompatibleBioModelsHash.put(id, name);

@@ -14,6 +14,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jdom.Attribute;
 import org.jdom.Element;
 import org.jdom.Namespace;
@@ -59,6 +61,8 @@ import cbit.vcell.parser.MathMLTags;
  * @author: Rashad Badrawi
  */
 public class CellQuanVCTranslator extends Translator {
+	private final static Logger lg = LogManager.getLogger(CellQuanVCTranslator.class);
+
 
 	public static final String GEOM_NAME = "Default";
 	public static final String SUBVOL_NAME = "Compartmental";
@@ -180,8 +184,7 @@ public class CellQuanVCTranslator extends Translator {
 						rateExp = rateExp.flatten();
 						nl.mangleString(rateExp.infix());
 					} catch (ExpressionException e) {
-						e.printStackTrace(System.out);
-						throw new RuntimeException(e.getMessage());
+						throw new RuntimeException(e.getMessage(), e);
 					}
 					Expression initExp = new Expression(getInitial(comp, varName));
 					Domain domain = null;
@@ -217,8 +220,7 @@ public class CellQuanVCTranslator extends Translator {
 					exp = processMathExp(comp, exp);
 					nl.mangleString(expStr);
 				} catch (ExpressionException e) {
-					e.printStackTrace(System.out);
-					throw new RuntimeException(e.getMessage());
+					throw new RuntimeException(e.getMessage(), e);
 				} 
 			}
 		}
@@ -228,8 +230,7 @@ public class CellQuanVCTranslator extends Translator {
 			try {
 				exp = (new ExpressionMathMLParser(null)).fromMathML(trimmedMath, "t");
 			} catch (ExpressionException e) {
-				e.printStackTrace(System.out);
-				throw new RuntimeException(e.getMessage());
+				throw new RuntimeException(e.getMessage(), e);
 			}
 			exp = processMathExp(comp, exp);
 			expStr = exp.infix();
@@ -249,8 +250,7 @@ public class CellQuanVCTranslator extends Translator {
 			geometry.getGeometrySpec().setOrigin(new org.vcell.util.Origin(0.0, 0.0, 0.0));
 			mathDescription.setGeometry(geometry);
 		} catch (Exception e) {
-			e.printStackTrace(System.out);
-			throw new RuntimeException("Error creating geometry for model : " + e.getMessage());
+			throw new RuntimeException("Error creating geometry for model : " + e.getMessage(), e);
 		}
 	}
 
@@ -273,8 +273,7 @@ public class CellQuanVCTranslator extends Translator {
 	    	//set mathmodel name - doing it here, since a try-catch block is required.
 			mathModel.setName(modelName);
 	    } catch (Exception e) {
-	    	e.printStackTrace(System.out);
-	    	throw new RuntimeException("Error adding compartment subdomain : " + e.getMessage());
+	    	throw new RuntimeException("Error adding compartment subdomain : " + e.getMessage(), e);
 	    }
 	    mathModel.setMathDescription(mathDescription);
 	  	// refresh mathmodel
@@ -317,8 +316,7 @@ public class CellQuanVCTranslator extends Translator {
 					// fnsVector.add(function);
 					// mathDescription.addVariable(function);
 				} catch (Exception e) {
-					e.printStackTrace(System.out);
-					throw new RuntimeException("Error adding function (" + mangledName + ") to mathDexcription : " + e.getMessage());
+					throw new RuntimeException("Error adding function (" + mangledName + ") to mathDexcription : " + e.getMessage(), e);
 				}
 			}
 		}
@@ -600,7 +598,7 @@ public class CellQuanVCTranslator extends Translator {
 				}
 			}
 		} catch (ExpressionException e) {
-			e.printStackTrace();
+			lg.error("posprocessing failed, returning expression anyway", e);
 			return exp;
 		}
 
@@ -661,8 +659,7 @@ public class CellQuanVCTranslator extends Translator {
 						varsHash.addVariable(constant);
 					}
 			    } catch (Exception e) {
-			    	e.printStackTrace(System.out);
-			    	throw new RuntimeException("Error adding variable to variablesHash : " + e.getMessage());
+			    	throw new RuntimeException("Error adding variable to variablesHash : " + e.getMessage(), e);
 			    }
 			}	// end iteration for VARIABLES
 	    }	// end iteration for COMPONENTS
@@ -670,8 +667,7 @@ public class CellQuanVCTranslator extends Translator {
 	    try {
 		    mathDescription.setAllVariables(varsHash.getAlphabeticallyOrderedVariables());
 		} catch (Exception e) {
-	    	e.printStackTrace(System.out);
-	    	throw new RuntimeException("Error adding variables to mathDescription : " + e.getMessage());
+	    	throw new RuntimeException("Error adding variables to mathDescription : " + e.getMessage(), e);
 		}
     }
     

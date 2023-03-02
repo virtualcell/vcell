@@ -101,7 +101,7 @@ public class CommandServiceSsh_sshj extends CommandService {
 				}
 				return true;
 			} catch (TransportException | ConnectionException e) {
-				e.printStackTrace();
+				lg.error(e);
 				return false;
 			}
 		}
@@ -239,7 +239,6 @@ public class CommandServiceSsh_sshj extends CommandService {
 					pool.returnObject(sshConnection);
 				} catch (Exception e) {
 					lg.error("failed to return ssh connection to pool", e);
-					e.printStackTrace();
 				}
 			}
 		}
@@ -250,8 +249,7 @@ public class CommandServiceSsh_sshj extends CommandService {
 		try {
 			return new CommandServiceSsh_sshj(remoteHostName, username, keyFile);
 		}catch (Exception e){
-			e.printStackTrace();
-			throw new RuntimeException(e.getMessage());
+			throw new RuntimeException(e.getMessage(), e);
 		}
 	}
 	
@@ -286,7 +284,7 @@ public class CommandServiceSsh_sshj extends CommandService {
 //					pool.returnObject(ssh);
 //				} catch (Exception e) {
 //					lg.error("failed to return ssh connection to pool", e);
-//					e.printStackTrace();
+//					lg.error(e);
 //				}
 //			}
 //		}
@@ -320,7 +318,7 @@ public class CommandServiceSsh_sshj extends CommandService {
 //					pool.returnObject(ssh);
 //				} catch (Exception e) {
 //					lg.error("failed to return ssh connection to pool", e);
-//					e.printStackTrace();
+//					lg.error(e);
 //				}
 //			}
 //		}

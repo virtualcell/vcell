@@ -3,6 +3,8 @@ package org.vcell.rest.server;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.restlet.data.MediaType;
 import org.restlet.data.Status;
 import org.restlet.ext.wadl.MethodInfo;
@@ -24,7 +26,8 @@ import org.vcell.util.document.User;
 import cbit.vcell.modeldb.SimulationRep;
 
 public class BiomodelSimulationStartServerResource extends AbstractServerResource implements BiomodelSimulationStartResource {
-
+	private final static Logger lg = LogManager.getLogger(BiomodelSimulationStartServerResource.class);
+	
 	private String biomodelid;
 	
 	
@@ -88,10 +91,10 @@ public class BiomodelSimulationStartServerResource extends AbstractServerResourc
 					"&"+SimulationTasksServerResource.PARAM_MAX_ROWS+"="+Integer.toString(simRep.getScanCount()*4));
 			return representation;
 		} catch (PermissionException e) {
-			e.printStackTrace();
+			lg.error(e);
 			throw new ResourceException(Status.CLIENT_ERROR_UNAUTHORIZED, "not authorized to start simulation");
 		} catch (ObjectNotFoundException e) {
-			e.printStackTrace();
+			lg.error(e);
 			throw new ResourceException(Status.CLIENT_ERROR_NOT_FOUND, "simulation not found");
 		} catch (Exception e){
 			throw new ResourceException(Status.SERVER_ERROR_INTERNAL, e.getMessage());

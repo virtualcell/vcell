@@ -7,6 +7,8 @@ import cbit.vcell.resource.PropertyLoader;
 import com.google.gson.Gson;
 import freemarker.template.Configuration;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.restlet.data.*;
 import org.restlet.ext.freemarker.TemplateRepresentation;
 import org.restlet.ext.wadl.*;
@@ -32,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 
 public class PublicationServerResource extends AbstractServerResource implements PublicationResource {
+	private final static Logger lg = LogManager.getLogger(PublicationServerResource.class);
 
 	private static final String AUTOMATICALLY_GENERATED = "Automatically Generated";
 	private String publicationid;
@@ -253,10 +256,10 @@ public class PublicationServerResource extends AbstractServerResource implements
 				PublicationRepresentation publicationRepresentation = new PublicationRepresentation(publicationRep);
 				return publicationRepresentation;
 			} catch (PermissionException e) {
-				e.printStackTrace();
+				lg.error(e);
 				throw new ResourceException(Status.CLIENT_ERROR_UNAUTHORIZED, "permission denied to requested resource");
 			} catch (ObjectNotFoundException e) {
-				e.printStackTrace();
+				lg.error(e);
 				throw new ResourceException(Status.CLIENT_ERROR_NOT_FOUND, "publication not found");
 			} catch (Exception e){
 				throw new ResourceException(Status.SERVER_ERROR_INTERNAL, e.getMessage());

@@ -18,6 +18,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.openrdf.model.Graph;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -29,6 +31,7 @@ import org.vcell.sybil.rdf.RDFBagUtil;
 import org.vcell.sybil.util.keys.KeyOfOne;
 
 public class RefGroup extends KeyOfOne<Resource> {
+	private final static Logger lg = LogManager.getLogger(RefGroup.class);
 
 	public RefGroup(Resource bag) { super(bag); }
 
@@ -72,7 +75,7 @@ public class RefGroup extends KeyOfOne<Resource> {
 						String value = resourceRef.stringValue();
 						MIRIAMRef ref = MIRIAMRef.createFromURN(value);
 						refs.add(ref);
-					} catch (URNParseFailureException e) { e.printStackTrace(); }
+					} catch (URNParseFailureException e) { lg.error(e); }
 				}
 			}			
 		}

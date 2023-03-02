@@ -53,7 +53,7 @@ public class VCellApiMain {
 	public static void main(String[] args) {
 		try {
 			if (args.length!=2){
-				System.out.println("usage: VCellApiMain javascriptDir port");
+				lg.info("usage: VCellApiMain javascriptDir port");
 				System.exit(1);
 			}
 			File javascriptDir = new File(args[0]);
@@ -70,7 +70,7 @@ public class VCellApiMain {
 			try {
 				port = Integer.parseInt(portString);
 			}catch (NumberFormatException e){
-				e.printStackTrace();
+				lg.error(e);
 				throw new RuntimeException("failed to parse port argument '"+portString+"'",e);
 			}
 			
@@ -137,7 +137,7 @@ public class VCellApiMain {
 			VCMongoMessage.enabled=true;
 			VCMongoMessage.serviceStartup(ServiceName.unknown, port, args);
 
-			System.out.println("setting up server configuration");
+			lg.info("setting up server configuration");
 
 			lg.trace("register engine (next)");
 			Engine.register(true);
@@ -236,10 +236,10 @@ public class VCellApiMain {
 			lg.trace("attach app");
 			component.getDefaultHost().attach(app);  
 
-			System.out.println("component start()");
+			lg.info("component start()");
 			lg.trace("start component");
 			component.start();
-			System.out.println("component ended.");
+			lg.info("component ended.");
 			lg.trace("component started");
 
 			lg.trace("start VCell Health Monitoring service");

@@ -1,5 +1,7 @@
 package org.vcell.rest.admin;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.restlet.Context;
 import org.restlet.Request;
 import org.restlet.Response;
@@ -19,6 +21,7 @@ import cbit.vcell.server.SimpleJobStatusQuerySpec;
 import cbit.vcell.server.SimulationJobStatus;
 
 public final class AdminJobsRestlet extends Restlet {
+	private final static Logger lg = LogManager.getLogger(AdminJobsRestlet.class);
 	
 	public static final String PARAM_SUBMIT_LOW			= "submitLowMS";
 	public static final String PARAM_SUBMIT_HIGH			= "submitHighMS";
@@ -109,7 +112,7 @@ public final class AdminJobsRestlet extends Restlet {
 				
 			} catch (Exception e) {
 				getLogger().severe("failed to retrieve job status: "+e.getMessage());
-				e.printStackTrace();
+				lg.error(e);
 				response.setStatus(Status.SERVER_ERROR_INTERNAL);
 				response.setEntity("failed to retrieve job status: "+e.getMessage(), MediaType.TEXT_PLAIN);
 			}

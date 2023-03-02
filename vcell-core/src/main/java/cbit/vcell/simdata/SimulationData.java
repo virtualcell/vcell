@@ -172,7 +172,7 @@ public class SimulationData extends VCData {
 					}
 				}catch(Exception e){
 					bNotFound = true;
-					e.printStackTrace();
+					lg.error(e);
 			}
 			}else{
 				bNotFound = true;
@@ -198,9 +198,9 @@ public class SimulationData extends VCData {
 						solverDataType = SolverDataType.COMSOL;
 					}
 				}catch(Exception e){
-					e.printStackTrace();
+					lg.error(e);
 				}finally{
-					if(fis != null){try{fis.close();}catch(Exception e){e.printStackTrace();}}
+					if(fis != null){try{fis.close();}catch(Exception e){lg.error(e);}}
 				}
 			}
 
@@ -215,7 +215,7 @@ public class SimulationData extends VCData {
 				}
 				return amplistorFileExists(simDataAmplistorInfo, user.getName(), simLogFileName);
 			}finally{
-				if(urlCon != null){try{urlCon.disconnect();}catch(Exception e){e.printStackTrace();}}
+				if(urlCon != null){try{urlCon.disconnect();}catch(Exception e){lg.error(e);}}
 			}
 		}
 
@@ -314,15 +314,13 @@ public class SimulationData extends VCData {
 						simDataAmplistorInfo.amplistorVCellUsersRootPath+"/"+getVCDataiDataIdentifier().getOwner().getName()+"/"+file.getName(),
 						simDataAmplistorInfo.amplistorCredential,
 						file);
-				}catch(Exception e){
-					if(e instanceof FileNotFoundException){
-						amplistorNotfoundSet.add(file.getName());
-						if(getVCDataiDataIdentifier() != null && getVCDataiDataIdentifier().getOwner() != null){
-							System.out.println("FileNotFoundException: SimulationData.AmplistorHelper.xferAmplistor(...) "+(getVCDataiDataIdentifier().getOwner().getName()+"/"+file.getName())+".  This may not be an error.");
-						}
-					}else{
-						e.printStackTrace();
+				} catch (FileNotFoundException e) {
+					amplistorNotfoundSet.add(file.getName());
+					if (getVCDataiDataIdentifier() != null && getVCDataiDataIdentifier().getOwner() != null) {
+						lg.warn("FileNotFoundException: SimulationData.AmplistorHelper.xferAmplistor(...) " + (getVCDataiDataIdentifier().getOwner().getName() + "/" + file.getName()) + ".  This may not be an error.");
 					}
+				} catch (Exception e){
+					lg.error(e);
 				}
 			}
 		}
@@ -499,7 +497,6 @@ public AnnotatedFunction simplifyFunction(AnnotatedFunction function) throws Exp
 		exp.bindExpression(this);
 		simpleFunction.setExpression(exp);
 	} catch (Exception ex) {
-		ex.printStackTrace(System.out);
 		throw new ExpressionException(ex.getMessage());
 	}
 	return simpleFunction;
@@ -594,12 +591,8 @@ public synchronized double[] getDataTimes() throws DataAccessException {
 				LG.warn("cannot find time ('t') column in ODESimData, assuming first column holds the independent variable (maybe not time)");
 			}
 			dataTimes = odeSimData.extractColumn(timeIndex);
-		}catch (ExpressionException e){
-			e.printStackTrace(System.out);
-			throw new DataAccessException("error getting dataset times: "+e.getMessage());
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-			throw new DataAccessException("error getting dataset times: "+e.getMessage());
+		}catch (ExpressionException | FileNotFoundException e){
+			throw new DataAccessException("error getting dataset times: "+e.getMessage(), e);
 		}
 	}
 	return dataTimes;
@@ -649,7 +642,7 @@ public AnnotatedFunction getFunction(OutputContext outputContext,String identifi
 	try {
 		getFunctionDataIdentifiers(outputContext);
 	} catch (Exception ex) {
-		ex.printStackTrace(System.out);
+		lg.error(ex);
 	}
 
 	// Get the function from each annotatedFunction in annotatedFunctionList, check if name is same as 'identifier' argument
@@ -699,7 +692,7 @@ public AnnotatedFunction[] getFunctions(OutputContext outputContext) {
 	try {
 		getFunctionDataIdentifiers(outputContext);
 	} catch (Exception ex) {
-		ex.printStackTrace(System.out);
+		lg.error(ex);
 	}
 
 	AnnotatedFunction functions[] = new AnnotatedFunction[annotatedFunctionList.size()];
@@ -932,11 +925,9 @@ public synchronized ODEDataBlock getODEDataBlock() throws DataAccessException, I
 			colIndex = odeSimData.findColumn(SimDataConstants.HISTOGRAM_INDEX_NAME);
 		dataTimes = odeSimData.extractColumn(colIndex);
 	} catch (ExpressionException e){
-		e.printStackTrace(System.out);
-		throw new DataAccessException("error getting data times: "+e.getMessage());
+		throw new DataAccessException("error getting data times: "+e.getMessage(), e);
 	} catch (FileNotFoundException e) {
-		e.printStackTrace();
-		throw new DataAccessException("error getting dataset times: "+e.getMessage());
+		throw new DataAccessException("error getting dataset times: "+e.getMessage(), e);
 	}
 	ODEDataInfo odeDataInfo = new ODEDataInfo(vcDataId.getOwner(), vcDataId.getID(), lastModified);
 	VCAssert.assertFalse(odeSimData == null, "should have returned null already");
@@ -1088,7 +1079,6 @@ private synchronized DataSet getPDEDataSet(File pdeFile, double time) throws Dat
 	try {
 		dataSet.read(pdeFile, zipFile, amplistorHelper.solverDataType);
 	} catch (IOException ex) {
-		ex.printStackTrace();
 		throw new DataAccessException("data at time="+time+" read error",ex);
 	}
 
@@ -1171,7 +1161,7 @@ public synchronized SimDataBlock getSimDataBlock(OutputContext outputContext, St
 	try {
 		getFunctionDataIdentifiers(outputContext);
 	} catch (Exception ex) {
-		ex.printStackTrace(System.out);
+		lg.error(ex);
 	}
 	try{
 		if(isPostProcessing(outputContext, varName)){
@@ -1184,7 +1174,7 @@ public synchronized SimDataBlock getSimDataBlock(OutputContext outputContext, St
 		}
 	}catch(Exception e){
 		//ignore
-		e.printStackTrace();
+		lg.warn(e);
 	}
 
 	File pdeFile = getPDEDataFile(time);
@@ -1213,13 +1203,11 @@ public synchronized SimDataBlock getSimDataBlock(OutputContext outputContext, St
 	try {
 		variableType = VariableType.getVariableTypeFromInteger(varTypeInt);
 	}catch (IllegalArgumentException e){
-		e.printStackTrace(System.out);
-		System.out.println("invalid varTypeInt = "+varTypeInt+" for variable "+varName+" at time "+time);
+		lg.error("invalid varTypeInt = "+varTypeInt+" for variable "+varName+" at time "+time, e);
 		try {
 			variableType = SimulationData.getVariableTypeFromLength(getMesh(),data.length);
 		} catch (MathException ex) {
-			ex.printStackTrace(System.out);
-			throw new DataAccessException(ex.getMessage());
+			throw new DataAccessException(ex.getMessage(), ex);
 		}
 	}
 	PDEDataInfo pdeDataInfo = new PDEDataInfo(vcDataId.getOwner(),vcDataId.getID(),varName,time,lastModified);
@@ -1249,7 +1237,7 @@ synchronized double[][][] getSimDataTimeSeries0(
 	try {
 		getFunctionDataIdentifiers(outputContext);
 	} catch (Exception ex) {
-		ex.printStackTrace(System.out);
+		lg.error(ex);
 	}
 
 	int resultsCounter = 0;
@@ -1297,7 +1285,7 @@ synchronized double[][][] getSimDataTimeSeries0(
 		}
 	}catch(Exception e){
 		//ignore
-		e.printStackTrace();
+		lg.warn(e);
 	}
 
 	String varNamesInDataSet[] = new String[varNames.length];
@@ -1411,7 +1399,6 @@ public synchronized DataIdentifier[] getVarAndFunctionDataIdentifiers(OutputCont
 	try {
 		bIsChombo = isChombo();
 	}catch (FileNotFoundException e){
-		e.printStackTrace(System.out);
 	}
 	File zipFile1 = getZipFile(bIsChombo, null);
 	File zipFile2 = getZipFile(bIsChombo, 0);
@@ -1428,14 +1415,12 @@ public synchronized DataIdentifier[] getVarAndFunctionDataIdentifiers(OutputCont
 	try {
 		bIsComsol = isComsol();
 	}catch (FileNotFoundException e){
-		e.printStackTrace(System.out);
 	}
 	if (!bIsComsol){
 		try {
 			refreshMeshFile();
 		}catch (MathException e){
-			e.printStackTrace(System.out);
-			throw new DataAccessException(e.getMessage());
+			throw new DataAccessException(e.getMessage(), e);
 		}
 	}
 	
@@ -1527,17 +1512,16 @@ public synchronized DataIdentifier[] getVarAndFunctionDataIdentifiers(OutputCont
 						}
 						dataSetIdentifierList.addElement(new DataSetIdentifier(var.getName(), varType, var.getDomain()));
 					}else if (var instanceof Constant){
-						System.out.println("ignoring Constant "+var.getName());
+						lg.trace("ignoring Constant "+var.getName());
 					}else if (var instanceof InsideVariable){
-						System.out.println("ignoring InsideVariable "+var.getName());
+						lg.trace("ignoring InsideVariable "+var.getName());
 					}else if (var instanceof OutsideVariable){
-						System.out.println("ignoring OutsideVariable "+var.getName());
+						lg.trace("ignoring OutsideVariable "+var.getName());
 					}else{
 						throw new RuntimeException("unexpected variable "+var.getName()+" of type "+var.getClass().getName());
 					}
 				}
 			} catch (XmlParseException | ExpressionException e) {
-				e.printStackTrace();
 				throw new RuntimeException("failed to read sim task file, msg: "+e.getMessage(),e);
 			}
 		}
@@ -1629,8 +1613,7 @@ private void readFunctions(OutputContext outputContext) throws FileNotFoundExcep
 		try {
 			addFunctionToList(annotatedFunction);
 		} catch (ExpressionException e) {
-			e.printStackTrace(System.out);
-			throw new RuntimeException("Could not add function "+annotatedFunction.getName()+" to annotatedFunctionList");
+			throw new RuntimeException("Could not add function "+annotatedFunction.getName()+" to annotatedFunctionList", e);
 		}
 	}
 }
@@ -1646,14 +1629,14 @@ private synchronized void readLog(File logFile) throws FileNotFoundException, Da
 		long length = logFile.length();
 		long lastModified = logFile.lastModified();
 		if (lastModified == logFileLastModified && logFileLength == length){
-//System.out.println("<<<SYSOUT ALERT>>>SimResults.readLog("+info.getSimID()+") lastModified and fileLength unchanged (no re-read), logFile.lastModified() = "+(new java.util.Date(lastModified)).toString());
+//lg.error("<<<SYSOUT ALERT>>>SimResults.readLog("+info.getSimID()+") lastModified and fileLength unchanged (no re-read), logFile.lastModified() = "+(new java.util.Date(lastModified)).toString());
 			VCMongoMessage.sendTrace("SimulationData.readLog() hasn't been modified ... <<EXIT>>");
 			return;
 		}else{
 //String status = "";
 //status += (lastModified == logFileLastModified)?"":" lastModified=("+(new java.util.Date(lastModified)).toString()+")";
 //status += (logFileLength == length)?"":" fileLength=("+length+")";
-//System.out.println("<<<SYSOUT ALERT>>>SimResults.readLog("+info.getSimID()+") "+status+" changed (forced a re-read)");
+//lg.error("<<<SYSOUT ALERT>>>SimResults.readLog("+info.getSimID()+") "+status+" changed (forced a re-read)");
 			dataFilenames = null;
 			zipFilenames = null;
 			dataTimes = null;
@@ -1690,7 +1673,7 @@ private synchronized void readLog(File logFile) throws FileNotFoundException, Da
 	VCMongoMessage.sendTrace("SimulationData.readLog() log file read into string buffer");
 	String logfileContent = stringBuffer.toString();
 	if (logfileContent.length() != logFileLength){
-		System.out.println("<<<SYSOUT ALERT>>>SimResults.readLog(), read "+stringBuffer.length()+" of "+logFileLength+" bytes of log file");
+		lg.error("read "+stringBuffer.length()+" of "+logFileLength+" bytes of log file");
 	}
 	if ((logfileContent.startsWith(IDA_DATA_IDENTIFIER)) || (logfileContent.startsWith(ODE_DATA_IDENTIFIER)) || (logfileContent.startsWith(NETCDF_DATA_IDENTIFIER)))
 	{
@@ -1724,7 +1707,7 @@ private synchronized void readLog(File logFile) throws FileNotFoundException, Da
 		@SuppressWarnings("unused")
 		String s2 = st.nextToken();
 		String filename = st.nextToken();
-		System.out.println("filename: " + filename);
+		lg.trace("filename: " + filename);
 		String xxx = (new File(filename)).getName();
 		dataFilenames = new String[1];
 		dataFilenames[0] = xxx;
@@ -1898,16 +1881,9 @@ private synchronized void refreshLogFile() throws DataAccessException {
 	try {
 		readLog(getLogFilePrivate());
 	} catch (FileNotFoundException e) {
-	} catch (IOException e) {
-		e.printStackTrace(System.out);
-		throw new DataAccessException(e.getMessage(),e);
-	}catch (SecurityException e){
-		//Added because "new FileInputStream(...) throws security exception when file permissions wrong
-		e.printStackTrace(System.out);
+	} catch (IOException | SecurityException e) {
 		throw new DataAccessException(e.getMessage(),e);
 	}catch (RuntimeException e){
-		//log exceptions we are passing on
-		e.printStackTrace(System.out);
 		throw e;
 	}
 	VCMongoMessage.sendTrace("SimulationData.refreshLogFile() <<EXIT>>");
@@ -1928,9 +1904,8 @@ private synchronized void refreshMeshFile() throws DataAccessException, MathExce
 	} catch (FileNotFoundException e) {
 		VCMongoMessage.sendTrace("SimulationData.refreshMeshFile() <<EXIT-file not found>>");
 	} catch (Exception e) {
-		e.printStackTrace(System.out);
 		VCMongoMessage.sendTrace("SimulationData.refreshMeshFile() <<EXIT-IOException>>");
-		throw new DataAccessException(e.getMessage());
+		throw new DataAccessException(e.getMessage(), e);
 	}
 }
 
@@ -1964,7 +1939,7 @@ private synchronized void removeAllResults(File logFile, File meshFile) {
 	try {
 		times = getDataTimes();
 	} catch (DataAccessException exc) {
-		System.out.println("<<EXCEPTION>> SimResults:removeAllResults() " + exc.getMessage());
+		lg.error("failed to getDataTimes(): " + exc.getMessage());
 	}
 	//
 	// if ODE, remove .ode
@@ -1974,7 +1949,7 @@ private synchronized void removeAllResults(File logFile, File meshFile) {
 		try {
 			odeFile = getODEDataFile();
 		}catch (DataAccessException e){
-			System.out.println("<<EXCEPTION>> SimResults:removeAllResults() removing .ode file: " + e.getMessage());
+			lg.error("failed to remove .ode file: " + e.getMessage());
 		}
 		if (odeFile!=null && odeFile.exists()){
 			odeFile.delete();
@@ -1991,7 +1966,7 @@ private synchronized void removeAllResults(File logFile, File meshFile) {
 				try {
 					zipFile = getPDEDataZipFile(times[i]);
 				} catch (DataAccessException exc) {
-					System.out.println("<<EXCEPTION>> SimResults:removeAllResults() removing .zip file " + exc.getMessage());
+					lg.error("failed to remove .zip file " + exc.getMessage());
 				}
 				if (zipFile != null && zipFile.exists()) {
 					zipFile.delete();
@@ -2000,7 +1975,7 @@ private synchronized void removeAllResults(File logFile, File meshFile) {
 				try {
 					dataFile = getPDEDataFile(times[i]);
 				} catch (DataAccessException exc) {
-					System.out.println("<<EXCEPTION>> SimResults:removeAllResults() removing .sim file " + exc.getMessage());
+					lg.error("failed to remove .sim file " + exc.getMessage());
 				}
 				if (dataFile!=null && dataFile.exists()){
 					dataFile.delete();
@@ -2009,7 +1984,7 @@ private synchronized void removeAllResults(File logFile, File meshFile) {
 				try {
 					particleFile = getParticleDataFile(times[i]);
 				} catch (DataAccessException exc) {
-					System.out.println("<<EXCEPTION>> SimResults:removeAllResults() removing .particle file " + exc.getMessage());
+					lg.error("failed to remove .particle file " + exc.getMessage());
 				}
 				if (particleFile!=null && particleFile.exists()){
 					particleFile.delete();
@@ -2380,7 +2355,6 @@ public VCDataIdentifier getVcDataId() {
 		try {
 			dataSet.read(pdeFile, zipFile);
 		} catch (IOException ex) {
-			ex.printStackTrace();
 			throw new DataAccessException("data at time="+time+" read error",ex);
 		}
 

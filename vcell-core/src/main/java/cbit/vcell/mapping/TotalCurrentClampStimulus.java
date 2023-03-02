@@ -16,20 +16,17 @@ import cbit.vcell.model.Parameter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.units.VCUnitDefinition;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 /**
  * Insert the type's description here.
  * Creation date: (4/8/2002 1:39:52 PM)
  * @author: Anuradha Lakshminarayana
  */
 public class TotalCurrentClampStimulus extends ElectricalStimulus {
-/**
- * CurrentClampStimulus constructor comment.
- * @param argElectrode cbit.vcell.mapping.Electrode
- * @param argName java.lang.String
- * @param argVoltName java.lang.String
- * @param argCurrName java.lang.String
- * @param argAnnotation java.lang.String
- */
+	private final static Logger lg = LogManager.getLogger(TotalCurrentClampStimulus.class);
+
 	public TotalCurrentClampStimulus(Electrode argElectrode, String argName, Expression argCurrExpr, SimulationContext argSimulationContext) {
 		super(argElectrode, argName, argSimulationContext);
 
@@ -37,8 +34,8 @@ public class TotalCurrentClampStimulus extends ElectricalStimulus {
 		try {
 			argCurrExpr.bindExpression(parameterContext);
 		}catch (ExpressionBindingException e){
-			e.printStackTrace(System.out);
-			//throw new RuntimeException(e.getMessage());
+			lg.error(e);
+			//throw new RuntimeException(e.getMessage(), e);
 		}
 		LocalParameter[] localParameters = new LocalParameter[1];
 		VCUnitDefinition currentUnit = argSimulationContext.getModel().getUnitSystem().getCurrentUnit();
@@ -50,8 +47,7 @@ public class TotalCurrentClampStimulus extends ElectricalStimulus {
 		try {
 			parameterContext.setLocalParameters(localParameters);
 		} catch (PropertyVetoException | ExpressionBindingException e) {
-			e.printStackTrace();
-			throw new RuntimeException(e.getMessage());
+			throw new RuntimeException(e.getMessage(), e);
 		}
 	}
 

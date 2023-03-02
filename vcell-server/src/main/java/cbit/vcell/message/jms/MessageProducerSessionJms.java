@@ -47,7 +47,7 @@ public class MessageProducerSessionJms implements VCMessageSession {
 		private static Logger lg = LogManager.getLogger(MessageProducerSessionJms.class);
 
 		public MessageProducerSessionJms(VCMessagingServiceJms vcMessagingServiceJms) throws JMSException, VCMessagingException {
-//			System.out.println("-----\nmpjms MessageProducerSessionJms(VCMessagingServiceJms vcMessagingServiceJms)\ntmpQCnt="+(++tmpQCnt)+"----------");
+//			lg.info("-----\nmpjms MessageProducerSessionJms(VCMessagingServiceJms vcMessagingServiceJms)\ntmpQCnt="+(++tmpQCnt)+"----------");
 //			Thread.dumpStack();
 			this.vcMessagingServiceJms = vcMessagingServiceJms;
 			this.connection = vcMessagingServiceJms.createConnectionFactory().createConnection();
@@ -64,7 +64,7 @@ public class MessageProducerSessionJms implements VCMessageSession {
 		}
 
 //		public MessageProducerSessionJms(Session session, VCMessagingServiceJms vcMessagingServiceJms) {
-//			System.out.println("-----\nmpjms MessageProducerSessionJms(Session session, VCMessagingServiceJms vcMessagingServiceJms)\ntmpQCnt="+(++tmpQCnt)+"----------");
+//			lg.info("-----\nmpjms MessageProducerSessionJms(Session session, VCMessagingServiceJms vcMessagingServiceJms)\ntmpQCnt="+(++tmpQCnt)+"----------");
 //			Thread.dumpStack();
 //			this.vcMessagingServiceJms = vcMessagingServiceJms;
 //			this.session = session;
@@ -116,7 +116,7 @@ public class MessageProducerSessionJms implements VCMessageSession {
 						replyConsumer.close();
 					}
 					if (replyMessage == null) {
-						System.out.println("Request timed out");
+						lg.info("Request timed out");
 					}
 
 					if (replyMessage == null || !(replyMessage instanceof ObjectMessage)) {
@@ -326,12 +326,12 @@ public class MessageProducerSessionJms implements VCMessageSession {
 				getDelegate().onException(e);
 			}
 			lg.error(e.getMessage(), e);
-			e.printStackTrace(System.out);
+			lg.error(e);
 		}
 
 		public void close() {
 			try {
-//				System.out.println("---------------\nmpjms close()\ntmpQCnt="+(--tmpQCnt)+"--------------------");
+//				lg.info("---------------\nmpjms close()\ntmpQCnt="+(--tmpQCnt)+"--------------------");
 //				Thread.dumpStack();
 ////				if(msgProducers.size() > 0){
 //					Thread.dumpStack();

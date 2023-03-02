@@ -129,11 +129,6 @@ public Structure[] getStructures() {
 }
 
 
-/**
- * This method was created in VisualAge.
- * @param o java.util.Observable
- * @param obj java.lang.Object
- */
 public void refresh() {
 	try {
 //System.out.println("StructureAnalyzer.refresh()");
@@ -150,9 +145,7 @@ public void refresh() {
 			substituteIntoFastSystem();
 		}
 	} catch (Exception e){
-		System.out.println("Exception caught in StructureAnalyzer.update()");
-		e.printStackTrace(System.out);
-		throw new RuntimeException(e.getMessage());
+		throw new RuntimeException("Exception caught in StructureAnalyzer.update(): "+e.getMessage(), e);
 	}
 }
 
@@ -343,11 +336,6 @@ private void refreshFastSystem() throws Exception {
 protected abstract void refreshStructures();
 
 
-/**
- * This method was created by a SmartGuide.
- * @param b cbit.vcell.math.Matrix
- * @param vars java.lang.String[]
- */
 private void refreshTotalDependancies() throws Exception {
 
 //System.out.println("StructureAnalyzer.refreshTotalDependancies()");
@@ -407,12 +395,7 @@ private void refreshTotalDependancies() throws Exception {
 }
 
 
-/**
- * This method was created by a SmartGuide.
- * @param b cbit.vcell.math.Matrix
- * @param vars java.lang.String[]
- */
-public static StructureAnalyzer.Dependency[] refreshTotalDependancies(RationalMatrix nullSpaceMatrix, SpeciesContextMapping[] speciesContextMappings, 
+public static StructureAnalyzer.Dependency[] refreshTotalDependancies(RationalMatrix nullSpaceMatrix, SpeciesContextMapping[] speciesContextMappings,
 		AbstractMathMapping argMathMapping, boolean bFast) throws Exception {
 
 //System.out.println("StructureAnalyzer.refreshTotalDependancies()");

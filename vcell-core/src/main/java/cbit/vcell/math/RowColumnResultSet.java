@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Vector;
 
+import com.lowagie.text.Row;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.util.BeanUtils;
@@ -254,10 +255,10 @@ public synchronized double[] extractColumn(int c) throws ExpressionException {
 				try {
 					values[r] = exp.evaluateVector(getRow(r));
 				}catch (DivideByZeroException e){
-					e.printStackTrace(System.out);
+					lg.error("divide by zero, setting value to NaN: exp = '"+exp.infix()+"'", e);
 					values[r] = Double.NaN;
 				}catch (FunctionDomainException e){
-					e.printStackTrace(System.out);
+					lg.error("function domain exception, setting value to NaN: exp = '"+exp.infix()+"'", e);
 					values[r] = Double.NaN;
 				}
 			}			
@@ -318,11 +319,6 @@ public void firePropertyChange(java.lang.String propertyName, boolean oldValue, 
 }
 
 
-/**
- * Gets the columnDescriptions property (cbit.vcell.util.ColumnDescription[]) value.
- * @return The columnDescriptions property value.
- * @see #setColumnDescriptions
- */
 public final ColumnDescription[] getColumnDescriptions() {
 	if (fieldColumnDescriptions == null) {
 		fieldColumnDescriptions = new ColumnDescription[getDataColumnCount()+getFunctionColumnCount()];
@@ -338,12 +334,6 @@ public final ColumnDescription[] getColumnDescriptions() {
 }
 
 
-/**
- * Gets the columnDescriptions index property (cbit.vcell.util.ColumnDescription) value.
- * @return The columnDescriptions property value.
- * @param index The index value into the property array.
- * @see #setColumnDescriptions
- */
 public ColumnDescription getColumnDescriptions(int index) {
 	if (index < fieldDataColumnDescriptions.size()) {
 		return fieldDataColumnDescriptions.get(index);
@@ -613,7 +603,7 @@ public synchronized void trimRows(int maxRowCount) {
 			threshold = TOLERANCE/10;
 		}
 	}
-	System.out.println("final tolerance="+TOLERANCE+" final threshold="+threshold+", "+linkedList.size()+" remaining (keepAtMost="+maxRowCount+")");
+	lg.trace("final tolerance="+TOLERANCE+" final threshold="+threshold+", "+linkedList.size()+" remaining (keepAtMost="+maxRowCount+")");
 	ArrayList<double[]> values = new ArrayList<double[]>();
 	if (linkedList.size()>maxRowCount){//just sample list evenly in this case
 		values.add(fieldValues.get(0));//Add first value

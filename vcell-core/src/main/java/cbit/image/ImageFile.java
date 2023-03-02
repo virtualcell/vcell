@@ -42,11 +42,6 @@ public class ImageFile
 	private boolean bValid = false;
 	private String imageName = null;
 
-/**
- * This method was created in VisualAge.
- * @param filename java.lang.String
- * @exception java.lang.Exception The exception description.
- */
 public ImageFile(byte data[]) throws ImageException, IOException {
 	try {
 		//
@@ -76,10 +71,6 @@ public ImageFile(byte data[]) throws ImageException, IOException {
 }
 
 
-/**
- * This method was created in VisualAge.
- * @param image image.Image
- */
 public ImageFile(VCImage vcImage) throws ImageException {
 	createFromVCImage(vcImage);
 }
@@ -193,7 +184,6 @@ private void getRawPixelsFromImage(BufferedImage bufferedImage) throws ImageExce
 		}
 		this.originalRGB = origRGB;
 	} catch(InterruptedException e) {
-		e.printStackTrace(System.out);
 		throw new ImageException("ImageProcess: ERROR Grabbing Pixels: "+e.getMessage(),e);
 	}
 }
@@ -557,11 +547,6 @@ void loadRAWFormat(String imageName, int width, int height, int depth, int offse
 }
 
 
-/**
- * This method was created by a SmartGuide.
- * @param imageName java.lang.String
- * @exception java.lang.Exception The exception description.
- */
 void loadTIFFFormat(TiffInputSource tiffInputSource) throws TiffException, IOException {
 	bValid = false;
 	this.imageName = "unknown.tif";

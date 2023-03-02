@@ -43,10 +43,6 @@ public class NetCDFEvaluator {
 	{
 		return ncreader;
 	}
-	/**
-	 * create a NetCDFReader from a given NetCDF file.
-	 * @param String, file name.
-	 */
 	public void setNetCDFTarget(String fn)
 	{
 		try 
@@ -54,9 +50,8 @@ public class NetCDFEvaluator {
 			ncreader = new NetCDFReader(fn);
 		}catch(IOException ioe)
 		{
-			ioe.printStackTrace(System.out );
 			//DialogUtils.showErrorDialog("Can not open NetCDF file:"+fn+"!");
-			throw new RuntimeException("Can not open NetCDF file:"+fn+"!");
+			throw new RuntimeException("Can not open NetCDF file:"+fn+"!", ioe);
 		} 
 		
 	}
@@ -76,8 +71,7 @@ public class NetCDFEvaluator {
 				return result;
 			}catch(IOException e)
 			{
-				e.printStackTrace(System.err);
-			    throw new IOException("Unable to read variable "+ncreader.getState().getName()+"!");
+			    throw new IOException("Unable to read variable "+ncreader.getState().getName()+"!", e);
 			}
 		}
 		return null;
@@ -96,8 +90,7 @@ public class NetCDFEvaluator {
 				return result;
 			}catch(IOException e)
 			{
-				e.printStackTrace(System.err);
-			    throw new IOException("Unable to read variable "+ncreader.getState().getName()+"!");
+			    throw new IOException("Unable to read variable "+ncreader.getState().getName()+"!", e);
 			}
 		}
 		return null;
@@ -155,8 +148,7 @@ public class NetCDFEvaluator {
 				}
 			}catch(Exception e)
 			{
-				e.printStackTrace(System.err);
-				throw new IOException("Can not get species' names from model.");
+				throw new IOException("Can not get species' names from model.", e);
 			}
 		}
 	}
@@ -195,55 +187,55 @@ public class NetCDFEvaluator {
 	 * @param args
 	 */
 	//need to put specific NETCDF file name and last time point number(e.g No.50 means there are total 51 time points) for printAllHistogram().
-	public static void main(String[] args) {
-		NetCDFEvaluator ncEva = new NetCDFEvaluator();
-		try
-		{
-			ncEva.setNetCDFTarget("C:/sim1.nc");
-		}catch (Exception e) {e.printStackTrace(System.err);}
-		
+//	public static void main(String[] args) {
+//		NetCDFEvaluator ncEva = new NetCDFEvaluator();
 //		try
 //		{
-//			ArrayDouble.D2 data = ((ArrayDouble.D2)(ncEva.getTimeSeriesData(0)));
-//			int[] shape = data.getShape();
-//			for(int i=0;i<shape[1];i++)
-//			{
-//				double val = data.get(shape[0]-1,i);
-//				System.out.println("\t"+val);
-//			}
-//		}catch (Exception e){e.printStackTrace(System.err);}
-//		
-//		try
+//			ncEva.setNetCDFTarget("C:/sim1.nc");
+//		}catch (Exception e) {lg.error(e);}
+//
+////		try
+////		{
+////			ArrayDouble.D2 data = ((ArrayDouble.D2)(ncEva.getTimeSeriesData(0)));
+////			int[] shape = data.getShape();
+////			for(int i=0;i<shape[1];i++)
+////			{
+////				double val = data.get(shape[0]-1,i);
+////				System.out.println("\t"+val);
+////			}
+////		}catch (Exception e){lg.error(e);}
+////
+////		try
+////		{
+////			ArrayDouble.D2 data = ((ArrayDouble.D2)(ncEva.getDataOverTrials(10)));
+////			int[] shape = data.getShape();
+////			for(int i=0;i<shape[0];i++)
+////			{
+////				for(int j=0;j<shape[1];j++)
+////				{
+////					double val = data.get(i,j);
+////					System.out.println("\t"+val);
+////				}
+////				System.out.println("\n");
+////			}
+////		}catch (Exception e){lg.error(e);}
+//		try{
+//			ncEva.printAllHistograms(20);
+//		}catch(IOException e)
 //		{
-//			ArrayDouble.D2 data = ((ArrayDouble.D2)(ncEva.getDataOverTrials(10)));
-//			int[] shape = data.getShape();
-//			for(int i=0;i<shape[0];i++)
+//			lg.error(e);
+//			throw new RuntimeException(e.getMessage());
+//		}
+//		if(ncEva.getNetCDFReader() != null)
+//		{
+//			try{
+//				ncEva.getNetCDFReader().close();
+//			}catch(IOException ioe)
 //			{
-//				for(int j=0;j<shape[1];j++)
-//				{
-//					double val = data.get(i,j);
-//					System.out.println("\t"+val);
-//				}
-//				System.out.println("\n");
+//				iolg.error(e);
 //			}
-//		}catch (Exception e){e.printStackTrace(System.err);}
-		try{
-			ncEva.printAllHistograms(20);
-		}catch(IOException e)
-		{
-			e.printStackTrace(System.err);
-			throw new RuntimeException(e.getMessage());
-		}
-		if(ncEva.getNetCDFReader() != null)
-		{
-			try{
-				ncEva.getNetCDFReader().close();
-			}catch(IOException ioe)
-			{
-				ioe.printStackTrace(System.err);
-			}
-		}
-
-	}
+//		}
+//
+//	}
 
 }

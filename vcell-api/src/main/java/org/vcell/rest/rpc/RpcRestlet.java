@@ -89,7 +89,7 @@ public final class RpcRestlet extends Restlet {
 			} catch (Exception e) {
 				String errMesg = "<html><body>Error RpcRestlet.handle(...) req='"+req.toString()+"' <br>err='"+e.getMessage()+"'</br>"+"</body></html>";
 				getLogger().severe(errMesg);
-				e.printStackTrace();
+				lg.error(e);
 				response.setStatus(Status.SERVER_ERROR_INTERNAL);
 				response.setEntity(errMesg, MediaType.TEXT_HTML);
 			}
@@ -178,7 +178,7 @@ public final class RpcRestlet extends Restlet {
 				response.setEntity(new ByteArrayRepresentation(serializedResultObject));
 			} catch (Exception e) {
 				getLogger().severe("internal error invoking "+destination+":"+method+"(): "+e.getMessage());
-				e.printStackTrace();
+				lg.error(e);
 				response.setStatus(Status.SERVER_ERROR_INTERNAL);
 				if(e.getCause() instanceof ServerRejectedSaveException) {//send back actual exception, client needs specific cause
 					try {
@@ -186,7 +186,7 @@ public final class RpcRestlet extends Restlet {
 						response.setEntity(new ByteArrayRepresentation(serializedResultObject));
 						return;
 					} catch (Exception e1) {
-						e1.printStackTrace();
+						lg.error(e1);
 						//continue and send error message
 					}
 				}

@@ -142,7 +142,6 @@ public Reader getReader() {
 		try {
 			return new FileReader(file);
 		} catch (FileNotFoundException e) {
-			e.printStackTrace();
 			throw new RuntimeException(e.getMessage(),e);
 		}
 	}else if (textContents!=null){

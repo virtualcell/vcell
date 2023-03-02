@@ -71,7 +71,7 @@ public class VCPooledQueueConsumer implements VCQueueConsumer.QueueListener {
 				try {
 					Thread.sleep(100);
 				} catch (InterruptedException e) {
-					e.printStackTrace();
+					lg.error(e);
 				}
 			}
 		}

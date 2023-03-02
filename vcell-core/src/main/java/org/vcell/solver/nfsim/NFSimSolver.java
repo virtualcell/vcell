@@ -114,8 +114,7 @@ public class NFSimSolver extends SimpleCompiledSolver {
 		} catch (Exception e) {
 			setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED,
 					SimulationMessage.solverAborted("Could not generate input file: " + e.getMessage())));
-			e.printStackTrace(System.out);
-			throw new SolverException(e.getMessage());
+			throw new SolverException(e.getMessage(), e);
 		} 
 
 		PrintWriter lg = null;
@@ -129,8 +128,7 @@ public class NFSimSolver extends SimpleCompiledSolver {
 		} catch (Exception e) {
 			setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED,
 					SimulationMessage.solverAborted("Could not generate log file: " + e.getMessage())));
-			e.printStackTrace(System.out);
-			throw new SolverException(e.getMessage());
+			throw new SolverException(e.getMessage(), e);
 		} finally {
 			if (lg != null) {
 				lg.close();
@@ -256,7 +254,7 @@ public class NFSimSolver extends SimpleCompiledSolver {
 //				writer.close();
 //			} catch (FileNotFoundException | UnsupportedEncodingException e) {
 //				// Auto-generated catch block
-//				e.printStackTrace();
+//				lg.error(e);
 //			}
 		}
 		
@@ -526,14 +524,14 @@ public class NFSimSolver extends SimpleCompiledSolver {
 			
 	    System.out.println("\n\n\n\nDone\n\n");
 		} catch (IOException e) {
-			e.printStackTrace();
+			lg.error(e);
 		} finally {
 			try {
 				if (br != null) {
 					br.close();
 				}
 			} catch (IOException ex) {
-				ex.printStackTrace();
+				lg.error(ex);
 			}
 		}	
 	}

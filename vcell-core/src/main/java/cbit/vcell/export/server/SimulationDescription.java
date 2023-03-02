@@ -76,8 +76,7 @@ public SimulationDescription(OutputContext outputContext,User user, DataServerIm
 			else throw new RuntimeException("error getting time or trial number in simulation. ");
 			
 		}catch (cbit.vcell.parser.ExpressionException e){
-				e.printStackTrace(System.out);
-				throw new RuntimeException("error getting time: "+e.getMessage());
+			throw new RuntimeException("error getting time: "+e.getMessage(), e);
 		}
 		this.timeNumber = times.length;
 		this.variableNumber = variables.length;

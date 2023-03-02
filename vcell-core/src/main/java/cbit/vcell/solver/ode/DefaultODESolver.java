@@ -59,11 +59,6 @@ public abstract class DefaultODESolver extends AbstractJavaSolver implements ODE
 	private transient RateSensitivity rateSensitivity = null;
 	private transient Jacobian jacobian = null;
 
-/**
- * Set sensitivityParameter to null if sensitivity analysis
- * is not to be performed...
- * @param simContext cbit.vcell.math.MathDescription
- */
 public DefaultODESolver(SimulationTask simTask, File directory, int valueVectorCount)  throws SolverException {
 	super(simTask, directory);
 	if (simTask.getSimulation().isSpatial()) {
@@ -187,8 +182,7 @@ private ODESolverResultSet createODESolverResultSet() throws ExpressionException
 			try {
 				exp1 = simSymbolTable.substituteFunctions(exp1);
 			} catch (MathException e) {
-				e.printStackTrace(System.out);
-				throw new RuntimeException("Substitute function failed on function "+function.getName()+" "+e.getMessage());
+				throw new RuntimeException("Substitute function failed on function "+function.getName()+" "+e.getMessage(), e);
 			}
 			odeSolverResultSet.addFunctionColumn(new FunctionColumnDescription(exp1.flatten(),function.getName(), null, function.getName(), false));
 		}
@@ -210,8 +204,7 @@ private ODESolverResultSet createODESolverResultSet() throws ExpressionException
 				try {
 					depSensFnExpr = simSymbolTable.substituteFunctions(depSensFnExpr);
 				} catch (MathException e) {
-					e.printStackTrace(System.out);
-					throw new RuntimeException("Substitute function failed on function "+depSensFunction.getName()+" "+e.getMessage());
+					throw new RuntimeException("Substitute function failed on function "+depSensFunction.getName()+" "+e.getMessage(), e);
 				}
 				depSensFnExpr = getFunctionSensitivity(depSensFnExpr, getSensitivityParameter(), stateVars);
 				// depSensFnExpr = depSensFnExpr.flatten(); 	// already bound and flattened in getFunctionSensitivity, no need here ...
@@ -321,20 +314,11 @@ public final double getCurrentTime() {
 }
 
 
-/**
- * Gets the timeIndex property (int) value.
- * @return The timeIndex property value.
- */
 public final FastAlgebraicSystem getFastAlgebraicSystem() {
 	return fieldFastAlgebraicSystem;
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return double[]
- * @param vectorIndex int
- */
 public final ODESolverResultSet getODESolverResultSet() {
 	if (fieldODESolverResultSet == null) {
 		return new ODESolverResultSet();
@@ -344,11 +328,6 @@ public final ODESolverResultSet getODESolverResultSet() {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (6/28/01 2:37:27 PM)
- * @return double
- */
 public double getProgress() {
 	Simulation sim = simTask.getSimulation();
 
@@ -363,14 +342,6 @@ public double getProgress() {
 	}
 }
 
-
-/**
- * Gets the sensitivityParameter property (cbit.vcell.math.Constant) value.
- * THIS IS ONLY A CONVENIENCE FUNCTION...AND IT WOULD BE GOOD TO GET RID OF IT
- * EVENTUALLY...WHEN YOU HAVE TIME!!!
- * @return The sensitivityParameter property value.
- * @see #setSensitivityParameter
- */
 public Constant getSensitivityParameter() {
 	SimulationSymbolTable simSymbolTable = simTask.getSimulationJob().getSimulationSymbolTable();
 	
@@ -438,40 +409,21 @@ public int getTimeIndex() {
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return double[]
- * @param vectorIndex int
- */
 protected final double[] getValueVector(int vectorIndex) {
 	return fieldValueVectors.getValues(vectorIndex);
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return boolean
- * @param variableName java.lang.String
- */
 public int getValueVectorCount() {
 	return fieldValueVectorCount;
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return double[]
- * @param vectorIndex int
- */
 protected final int getVariableIndex(int i) {
 	return fieldVariableIndexes[i];
 }
 
 
-/**
- * This method was created by a SmartGuide.
- * @exception SolverException The exception description.
- */
 protected void initialize() throws SolverException {
 	SimulationSymbolTable simSymbolTable = simTask.getSimulationJob().getSimulationSymbolTable();
 	Simulation sim = simSymbolTable.getSimulation();
@@ -514,12 +466,8 @@ protected void initialize() throws SolverException {
 		fieldODESolverResultSet = createODESolverResultSet();
 		// reset - in the ** default ** solvers we don't pick up from where we left off, we can override that behaviour in integrate() if ever necessary
 		fieldCurrentTime = sim.getSolverTaskDescription().getTimeBounds().getStartingTime();
-	} catch (ExpressionException expressionException) {
-		expressionException.printStackTrace(System.out);
-		throw new SolverException(expressionException.getMessage());
-	} catch (MathException mathException) {
-		mathException.printStackTrace(System.out);
-		throw new SolverException(mathException.getMessage());
+	} catch (ExpressionException | MathException e) {
+		throw new SolverException(e.getMessage(), e);
 	}
 }
 

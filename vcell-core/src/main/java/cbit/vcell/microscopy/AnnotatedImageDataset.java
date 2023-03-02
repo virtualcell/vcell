@@ -53,11 +53,6 @@ public abstract class AnnotatedImageDataset {
 		}
 	}
 
-	/**
-	 * Constructor for AnnotatedImageDataset.
-	 * @param argImageDataset ImageDataset
-	 * @param argROITypes ROI.RoiType[]
-	 */
 	public AnnotatedImageDataset(ImageDataset argImageDataset, String[] argROINames) {
 		// Error checking
 		if (argImageDataset.getAllImages().length == 0) {
@@ -75,8 +70,7 @@ public abstract class AnnotatedImageDataset {
 					java.util.Arrays.fill(roiImages[j].getPixels(),(short)0);
 				}
 			} catch (ImageException e) {
-				e.printStackTrace();
-				throw new RuntimeException(e.getMessage());
+				throw new RuntimeException(e.getMessage(), e);
 			}
 			//comment added in Feb, 2008. Each roi contains images, whoes size equals to size of z slices.
 			ROI roi = new ROI(roiImages,argROINames[i]);
@@ -110,11 +104,6 @@ public abstract class AnnotatedImageDataset {
 		}
 	}
 	
-	/**
-	 * Method getRoi.
-	 * @param roiType RoiType
-	 * @return ROI
-	 */
 	public ROI getRoi(String roiName) {
 		for (int i = 0;i<rois.size(); i++) {
 			if (rois.get(i).getROIName().equals(roiName)){
@@ -153,14 +142,6 @@ public abstract class AnnotatedImageDataset {
 		return resultROIs;
 	}
 	
-	/**
-	 * Method getAverageUnderROI.
-	 * @param channelIndex int
-	 * @param timeIndex int
-	 * @param roi ROI
-	 * @return double
-	 */
-	//average under roi at each time point
 	public double getAverageUnderROI(int timeIndex, ROI roi,double[] normalizeFactorXYZ,double preNormalizeOffset){
 		short[] dataArray = AnnotatedImageDataset.collectAllZAtOneTimepointIntoOneArray(imageDataset, timeIndex);
 		short[] roiArray = roi.getPixelsXYZ();

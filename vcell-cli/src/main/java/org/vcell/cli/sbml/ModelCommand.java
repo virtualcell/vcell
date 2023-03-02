@@ -65,7 +65,7 @@ public class ModelCommand implements Callable<Integer> {
                 if (bioModel.getNumSimulationContexts() > appIndex) {
                     SimulationContext application = bioModel.getSimulationContext(appIndex);
                     boolean isSpatial = application.getGeometry().getDimension() > 0;
-                    String resultString = XmlHelper.exportSBML(bioModel, 3, 2, 0, isSpatial, application, null, roundTripValidation);
+                    String resultString = XmlHelper.exportSBML(bioModel, 3, 2, 0, isSpatial, application, roundTripValidation);
                     XmlUtil.writeXMLStringToFile(resultString, outputFile.getAbsolutePath(), true);
                 }
             }

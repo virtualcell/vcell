@@ -46,8 +46,7 @@ public class Microscopic_IRRKinetics extends DistributedKinetics {
 			updateGeneratedExpressions();
 			refreshUnits();
 		}catch (PropertyVetoException e){
-			e.printStackTrace(System.out);
-			throw new RuntimeException("unexpected exception: "+e.getMessage());
+			throw new RuntimeException("unexpected exception: "+e.getMessage(), e);
 		}
 	}
 

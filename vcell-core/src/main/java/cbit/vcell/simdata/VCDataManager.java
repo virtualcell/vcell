@@ -10,6 +10,8 @@
 
 package cbit.vcell.simdata;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.solver.nfsim.NFSimMolecularConfigurations;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.VCellThreadChecker;
@@ -34,13 +36,10 @@ import cbit.vcell.solvers.CartesianMesh;
  * @author: Ion Moraru
  */
 public class VCDataManager {
+	private final static Logger lg = LogManager.getLogger(VCDataManager.class);
+
 	private DataSetControllerProvider dataSetControllerProvider;
 
-/**
- * Insert the method's description here.
- * Creation date: (6/11/2004 5:57:21 AM)
- * @param clientServerManager cbit.vcell.client.server.ClientServerManager
- */
 public VCDataManager(DataSetControllerProvider dataSetControllerProvider) {
 	this.dataSetControllerProvider = dataSetControllerProvider;
 }
@@ -72,9 +71,7 @@ private DataSetControllerProvider getDataSetControllerProvider() {
 
 /**
  * retrieves a list of data names (state variables and functions) defined for this Simulation.
- *
- * @param simulationInfo simulation database reference
- *
+ **
  * @returns array of availlable data names.
  *
  * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
@@ -111,8 +108,6 @@ private DataSetController getDataSetController() throws DataAccessException {
 /**
  * gets all times at which simulation result data is availlable for this Simulation.
  *
- * @param simulationInfo simulation database reference
- *
  * @returns double array of times of availlable data, or null if no data.
  *
  * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
@@ -135,8 +130,6 @@ public synchronized double[] getDataSetTimes(VCDataIdentifier vcdID) throws Data
 /**
  * gets all times at which simulation result data is availlable for this Simulation.
  *
- * @param simulationInfo simulation database reference
- *
  * @returns double array of times of availlable data, or null if no data.
  *
  * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
@@ -158,8 +151,6 @@ public synchronized double[] getVtuTimes(VCDataIdentifier vcdID) throws DataAcce
 
 /**
  * gets list of named Functions defined for the simulation.
- *
- * @param simulationInfo simulation set database reference
  *
  * @returns array of functions, or null if no functions.
  *
@@ -185,8 +176,7 @@ public synchronized cbit.vcell.solver.AnnotatedFunction[] getFunctions(OutputCon
 /**
  * retrieves a line scan (data sampled along a curve in space) for the specified simulation.
  *
- * @param simulationInfo simulation database reference
- * @param variable name of variable to be sampled
+  * @param variable name of variable to be sampled
  * @param time simulation time which is to be sampled.
  * @param spatialSelection spatial curve used for sampling.
  *
@@ -214,8 +204,6 @@ public synchronized PlotData getLineScan(OutputContext outputContext, VCDataIden
 /**
  * retrieves the Mesh object for this Simulation.
  *
- * @param simulationInfo simulation database reference
- *
  * @returns mesh associated with this data (allows spatial interpretation of indexed data).
  *
  * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
@@ -239,9 +227,7 @@ public synchronized CartesianMesh getMesh(VCDataIdentifier vcdID) throws DataAcc
 
 /**
  * retrieves the non-spatial (ODE) results for this Simulation.
- *
- * @param simulationInfo simulation database reference
- *
+ **
  * @returns non-spatial (ODE) data.
  *
  * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
@@ -278,8 +264,6 @@ public synchronized NFSimMolecularConfigurations getNFSimMolecularConfigurations
 
 /**
  * retrieves the particle data for this Simulation.
- *
- * @param simulationInfo simulation database reference
  *
  * @returns particle data for this result set.
  *
@@ -320,8 +304,6 @@ public synchronized DataOperationResults doDataOperation(DataOperation dataOpera
 /**
  * determines if the result set for this Simulation contains particle data.
  *
- * @param simulationInfo simulation database reference
- *
  * @returns <i>true</i> if there is particle data availlable.
  *
  * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
@@ -344,7 +326,6 @@ public synchronized boolean getParticleDataExists(VCDataIdentifier vcdID) throws
 /**
  * retrieves the spatial (PDE) data for this Simulation, Variable, and Time.
  *
- * @param simulationInfo simulation database reference.
  * @param varName name of dataSet (state variable or function).
  * @param time simulation time of data.
  *
@@ -371,9 +352,6 @@ public synchronized SimDataBlock getSimDataBlock(OutputContext outputContext, VC
 /**
  * retrieves a time series (single point as a function of time) of a specified spatial data set.
  *
- * @param simulationInfo simulation database reference
- * @param variable name of variable to be sampled
- * @param index identifies index into data array.
  *
  * @returns annotated array of 'concentration vs. time' in a plot ready format.
  *
@@ -395,16 +373,8 @@ public synchronized TimeSeriesJobResults getTimeSeriesValues(OutputContext outpu
 	}
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (1/4/01 1:38:14 PM)
- * @param RemoteProxyException RemoteProxyException
- */
-private void handleRemoteProxyException(RemoteProxyException RemoteProxyException) {
-	System.out.println("\n\n.... Handling RemoteProxyException ...\n");
-	RemoteProxyException.printStackTrace(System.out);
-	System.out.println("\n\n");
+private void handleRemoteProxyException(RemoteProxyException remoteProxyException) {
+	lg.error("Handling RemoteProxyException", remoteProxyException);
 }
 
 

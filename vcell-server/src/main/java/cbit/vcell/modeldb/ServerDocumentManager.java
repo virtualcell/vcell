@@ -397,7 +397,7 @@ public String getBioModelXML(QueryHashtable dbc, User user, KeyValue bioModelKey
 					BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(bioModelXML));
 					return cbit.vcell.xml.XmlHelper.bioModelToXML(bioModel);
 				} catch (XmlParseException e) {
-					e.printStackTrace();
+					lg.error(e);
 					throw new DataAccessException(e.getMessage(),e);
 				}
 			}else{
@@ -541,7 +541,7 @@ public String getMathModelXML(QueryHashtable dbc, User user, KeyValue mathModelK
 					MathModel mathModel = XmlHelper.XMLToMathModel(new XMLSource(mathModelXML));
 					return cbit.vcell.xml.XmlHelper.mathModelToXML(mathModel);
 				} catch (XmlParseException e) {
-					e.printStackTrace();
+					lg.error(e);
 					throw new DataAccessException(e.getMessage(),e);
 				}
 			}else{

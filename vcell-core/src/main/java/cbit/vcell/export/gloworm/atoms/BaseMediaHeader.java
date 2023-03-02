@@ -10,12 +10,16 @@
 
 package cbit.vcell.export.gloworm.atoms;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.DataOutputStream;
 import java.io.IOException;
 /**
  * This type was created in VisualAge.
  */
 public class BaseMediaHeader extends Atoms {
+	private final static Logger lg = LogManager.getLogger(BaseMediaHeader.class);
 
 	public static final String type = "gmhd";
 	protected BaseMediaInfo baseMediaInfo;
@@ -40,8 +44,7 @@ public boolean writeData(DataOutputStream out) {
 		baseMediaInfo.writeData(out);
 		return true;
 	} catch (IOException e) {
-		System.out.println("Unable to write: " + e.getMessage());
-		e.printStackTrace();
+		lg.error("Unable to write: " + e.getMessage(), e);
 		return false;
 	}
 }

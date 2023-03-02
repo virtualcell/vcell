@@ -403,22 +403,30 @@ public class SimulationStateMachine {
 			return;
 		}
 
+		SimulationJobStatus newJobStatus = saveSimulationStartRequest(vcSimID, jobIndex, simulationDatabase);
+//		addStateMachineTransition(new StateMachineTransition(new StartStateMachineEvent(newTaskID), oldSimulationJobStatus, newJobStatus));
+			
+		StatusMessage message = new StatusMessage(newJobStatus, user.getName(), null, null);
+		message.sendToClient(session);
+	}
+
+	public static SimulationJobStatus saveSimulationStartRequest(VCSimulationIdentifier vcSimID, int jobIndex, SimulationDatabase simulationDatabase) throws DataAccessException, SQLException {
 		//
 		// get latest simulation job task (if any).
 		//
-		SimulationJobStatus oldSimulationJobStatus = simulationDatabase.getLatestSimulationJobStatus(simKey, jobIndex);
+		SimulationJobStatus oldSimulationJobStatus = simulationDatabase.getLatestSimulationJobStatus(vcSimID.getSimulationKey(), jobIndex);
 		int oldTaskID = -1;
 		if (oldSimulationJobStatus != null){
 			oldTaskID = oldSimulationJobStatus.getTaskID();
 		}
 		// if already started by another thread
 		if (oldSimulationJobStatus != null && !oldSimulationJobStatus.getSchedulerStatus().isDone()) {
-			VCMongoMessage.sendInfo("onStartRequest("+vcSimID.getID()+") ignoring start simulation request - (currentSimJobStatus:"+oldSimulationJobStatus.getSchedulerStatus().getDescription()+"): simID="+vcSimID);
+			VCMongoMessage.sendInfo("onStartRequest("+ vcSimID.getID()+") ignoring start simulation request - (currentSimJobStatus:"+oldSimulationJobStatus.getSchedulerStatus().getDescription()+"): simID="+ vcSimID);
 			throw new RuntimeException("Can't start, simulation[" + vcSimID + "] job [" + jobIndex + "] task [" + oldTaskID + "] is running already ("+oldSimulationJobStatus.getSchedulerStatus().getDescription()+")");
 		}
-		
+
 		int newTaskID;
-		
+
 		if (oldTaskID > -1){
 			// calculate new task
 			newTaskID = (oldTaskID & SimulationStatus.TASKID_USERCOUNTER_MASK) + SimulationStatus.TASKID_USERINCREMENT;
@@ -426,11 +434,11 @@ public class SimulationStateMachine {
 			// first task, start with 0
 			newTaskID = 0;
 		}
-				
+
 		Date currentDate = new Date();
 		// new queue status
 		SimulationQueueEntryStatus newQueueStatus = new SimulationQueueEntryStatus(currentDate, PRIORITY_DEFAULT, SimulationJobStatus.SimulationQueueID.QUEUE_ID_WAITING);
-		
+
 		// new exe status
 		Date lastUpdateDate = new Date();
 		String computeHost = null;
@@ -438,22 +446,19 @@ public class SimulationStateMachine {
 		Date endDate = null;
 		HtcJobID htcJobID = null;
 		boolean hasData = false;
-		
+
 		SimulationExecutionStatus newExeStatus = new SimulationExecutionStatus(startDate, computeHost, lastUpdateDate, endDate, hasData, htcJobID);
-		
+
 		VCellServerID vcServerID = VCellServerID.getSystemServerID();
 		Date submitDate = currentDate;
-		
+
 		SimulationJobStatus newJobStatus = new SimulationJobStatus(vcServerID, vcSimID, jobIndex, submitDate, SchedulerStatus.WAITING,
 				newTaskID, SimulationMessage.MESSAGE_JOB_WAITING, newQueueStatus, newExeStatus);
-		
+
 		simulationDatabase.insertSimulationJobStatus(newJobStatus);
-//		addStateMachineTransition(new StateMachineTransition(new StartStateMachineEvent(newTaskID), oldSimulationJobStatus, newJobStatus));
-			
-		StatusMessage message = new StatusMessage(newJobStatus, user.getName(), null, null);
-		message.sendToClient(session);
+		return newJobStatus;
 	}
-	
+
 
 	public synchronized void onDispatch(Simulation simulation, SimulationJobStatus oldSimulationJobStatus, SimulationDatabase simulationDatabase, VCMessageSession session) throws VCMessagingException, DataAccessException, SQLException {
 		updateSolverProcessTimestamp();

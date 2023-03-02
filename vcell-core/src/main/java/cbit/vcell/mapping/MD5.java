@@ -1,10 +1,14 @@
 package cbit.vcell.mapping;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 public class MD5 {
+	private final static Logger lg = LogManager.getLogger(MD5.class);
 	
 	
 	public static String md5(String s) {
@@ -21,7 +25,7 @@ public class MD5 {
 			BigInteger i = new BigInteger(1,m.digest());
 			return String.format("%1$032x", i).substring(0, length);         
 		} catch (NoSuchAlgorithmException e) {
-			e.printStackTrace();
+			lg.error(e);
 		}
 		return null;
 	}

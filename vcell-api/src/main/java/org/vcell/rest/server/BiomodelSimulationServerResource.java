@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.restlet.data.LocalReference;
 import org.restlet.data.MediaType;
 import org.restlet.data.Reference;
@@ -39,6 +41,7 @@ import cbit.vcell.xml.XmlParseException;
 import freemarker.template.Configuration;
 
 public class BiomodelSimulationServerResource extends AbstractServerResource implements SimulationResource {
+	private final static Logger lg = LogManager.getLogger(BiomodelSimulationServerResource.class);
 
 	private String biomodelid;
 	
@@ -135,11 +138,11 @@ public class BiomodelSimulationServerResource extends AbstractServerResource imp
 				SimulationRepresentation simulationRepresentation = restDatabaseService.query(this,vcellUser);
 				return simulationRepresentation;
 			} catch (PermissionException ee){
-				ee.printStackTrace();
+				lg.error(ee);
 				throw new ResourceException(Status.CLIENT_ERROR_UNAUTHORIZED, "not authorized");
 			} catch (DataAccessException | SQLException | ExpressionException | XmlParseException | MappingException | MathException
 					| MatrixException | ModelException e) {
-				e.printStackTrace();
+				lg.error("failed to retrieve biomodels from VCell Database", e);
 				throw new RuntimeException("failed to retrieve biomodels from VCell Database : "+e.getMessage());
 			}
 //		}

@@ -36,7 +36,6 @@ public class PointLocation extends SpatialProcess {
 		try {
 			setParameters(new LocalParameter[] { posX, posY, posZ });
 		} catch (ExpressionBindingException | PropertyVetoException e) {
-			e.printStackTrace();
 			throw new RuntimeException("failed to create parameters: "+e.getMessage(),e);
 		}
 	}

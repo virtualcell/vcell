@@ -13,6 +13,8 @@ package cbit.vcell.simdata;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.CacheException;
 import org.vcell.util.CacheStatus;
 import org.vcell.util.Ping;
@@ -25,6 +27,8 @@ import cbit.vcell.resource.PropertyLoader;
  * This type was created in VisualAge.
  */
 public class Cachetable implements Pingable {
+	private final static Logger lg = LogManager.getLogger(Cachetable.class);
+
 	public static final long minute = 60000;
 
 	private double costRatio_MegaBytes_per_Minute = 1.0;
@@ -40,7 +44,6 @@ public class Cachetable implements Pingable {
 	private long maxMemSize = 0;
 	private double cleanupFraction = 0.8;
 
-	private boolean bQuiet = true;
 /**
  * This method was created in VisualAge.
  * @param expireTime long
@@ -109,10 +112,10 @@ public SimDataBlock get(PDEDataInfo pdeDataInfo) {
 private synchronized TimeWrapper get0(Object key) {
 	TimeWrapper timeWrapper = (TimeWrapper)hashTable.get(key);
 	if (timeWrapper!=null){
-//System.out.println("........Cachetable.get(key="+key+") <<<returning object>>>");
+//lg.trace("........Cachetable.get(key="+key+") <<<returning object>>>");
 		return timeWrapper;
 	}else{
-//System.out.println("........Cachetable.get(key="+key+") <<<missed>>>");
+//lg.trace("........Cachetable.get(key="+key+") <<<missed>>>");
 		return null;
 	}
 }
@@ -132,7 +135,7 @@ public synchronized void ping() {
 		if ((tw != null) && (tw.getAge() > expireTime)) {
 			remove0(key);
 			bRemovedAny = true;
-//			System.out.println("Cachetable.ping(), expiring key="+key.toString());
+//			lg.trace("Cachetable.ping(), expiring key="+key.toString());
 		}
 	}
 	if (bRemovedAny){
@@ -221,7 +224,7 @@ private synchronized TimeWrapper put(Object key, TimeWrapper timeWrapper) throws
 	if (currMemSize<0 || currMemSize>=maxMemSize){
 		throw new CacheException("Error: adding data item "+key+". currMemSize="+currMemSize+" maxMemSize="+maxMemSize);
 	}
-	//System.out.println("........Cachetable.put(key="+key+")");
+	//lg.trace("........Cachetable.put(key="+key+")");
 	return oldTimeWrapper;
 }
 /**
@@ -244,7 +247,7 @@ private synchronized Object remove0(Object key) {
  */
 public synchronized void removeAll(VCDataIdentifier vcDataID) {
 	
-	System.out.println("removeAll(vcDataID="+vcDataID+")");
+	lg.trace("removeAll(vcDataID="+vcDataID+")");
 
 	
 	remove0(vcDataID);
@@ -268,7 +271,7 @@ public synchronized void removeAll(VCDataIdentifier vcDataID) {
  */
 public synchronized void removeVariable(VCDataIdentifier vcDataID, String varName) {
 	
-	System.out.println("Cachetable.removeVariable(vcDataID="+vcDataID+",varName="+varName+")");
+	lg.trace("Cachetable.removeVariable(vcDataID="+vcDataID+",varName="+varName+")");
 
 	Enumeration enum1 = hashTable.elements();
 	while (enum1.hasMoreElements()){
@@ -326,7 +329,7 @@ private synchronized void resize(long desiredMemSize) {
 		//
 		// evaluate how we did (may need to increase 'costPerByte' if poor convergence)
 		//
-		System.out.println("resize(): desiredMemSize="+desiredMemSize+"  cost min="+minCost+", max="+maxCost+", avg="+avgCost+" thresholdCost="+thresholdCost);
+		lg.info("resize(): desiredMemSize="+desiredMemSize+"  cost min="+minCost+", max="+maxCost+", avg="+avgCost+" thresholdCost="+thresholdCost);
 		show();
 	}
 }
@@ -334,8 +337,6 @@ private synchronized void resize(long desiredMemSize) {
  * This method was created in VisualAge.
  */
 public void show() {
-	if (!bQuiet){
-		System.out.println("...simdata.Cachetable ("+hashTable.size()+" entries): currMemSize="+currMemSize+" maxMemSize="+maxMemSize);
-	}
+	lg.trace("...simdata.Cachetable ("+hashTable.size()+" entries): currMemSize="+currMemSize+" maxMemSize="+maxMemSize);
 }
 }

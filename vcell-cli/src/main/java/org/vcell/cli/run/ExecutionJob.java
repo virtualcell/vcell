@@ -1,6 +1,6 @@
 package org.vcell.cli.run;
 
-import org.vcell.cli.CLIRecorder;
+import org.vcell.cli.CLIRecordable;
 import org.vcell.cli.PythonStreamException;
 import org.vcell.cli.run.hdf5.Hdf5DataWrapper;
 import org.vcell.util.FileUtils;
@@ -35,7 +35,7 @@ public class ExecutionJob {
     private Path sedmlPath2d3d;
     private File inputFile;
 
-    private CLIRecorder cliRecorder;
+    private CLIRecordable cliRecorder;
 
     /** 
      * Constructor to provide all necessary info.
@@ -48,7 +48,7 @@ public class ExecutionJob {
      * @param bEncapsulateOutput whether to provide a sub-folder for outputs (needed for batch jobs)
      * @param bSmallMeshOverride whether to use small meshes or standard meshes.
      */
-    public ExecutionJob(File inputFile, File rootOutputDir, CLIRecorder cliRecorder,
+    public ExecutionJob(File inputFile, File rootOutputDir, CLIRecordable cliRecorder,
             boolean bKeepTempFiles, boolean bExactMatchOnly, boolean bEncapsulateOutput, boolean bSmallMeshOverride){
         this();
         this.inputFile = inputFile;

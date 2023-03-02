@@ -98,12 +98,8 @@ protected void writeJavaInputFile() throws SolverException {
 			pw.println(xmlString);
 			pw.close();
 		}		
-	} catch (XmlParseException e) {		
-		e.printStackTrace(System.out);
-		throw new SolverException(e.getMessage());
-	} catch (FileNotFoundException e) {
-		e.printStackTrace(System.out);
-		throw new SolverException(e.getMessage());
+	} catch (XmlParseException | FileNotFoundException e) {
+		throw new SolverException(e.getMessage(), e);
 	} finally {
 		if (pw != null) {
 			pw.close();

@@ -20,8 +20,7 @@ public class LegacySimContextTransformer implements SimContextTransformer {
 		try {
 			transformedSimContext = (SimulationContext)BeanUtils.cloneSerializable(originalSimContext);
 		} catch (ClassNotFoundException | IOException e) {
-			e.printStackTrace();
-			throw new RuntimeException("unexpected exception: "+e.getMessage());
+			throw new RuntimeException("unexpected exception: "+e.getMessage(), e);
 		}
 		try {
 			StructureMapping structureMapping = transformedSimContext.getGeometryContext().getStructureMappings()[0];

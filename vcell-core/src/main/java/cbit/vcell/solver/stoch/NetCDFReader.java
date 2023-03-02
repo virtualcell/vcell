@@ -32,15 +32,14 @@ public class NetCDFReader {
 	private String filename = null;
 	/**
 	 * The constructor, which opens and .nc file. and output required arraies.
-	 * @param String filename: the NetCDF file name.
+	 * @param fname: the NetCDF file name.
 	 */
 	public NetCDFReader(String fname) throws IOException {
 		filename = fname;
 		try {
 			ncfile = NetcdfFile.open(filename);
 		} catch (IOException ioe) {
-			ioe.printStackTrace(System.out);
-		    throw new IOException("Cannot open file:"+filename +"!"+ ioe.getMessage());
+		    throw new IOException("Cannot open file:"+filename +"!"+ ioe.getMessage(), ioe);
 		} 
 	}
 	/**
@@ -50,8 +49,7 @@ public class NetCDFReader {
 		if (null != ncfile) try {
 	      ncfile.close();
 	    } catch (IOException ioe) {
-	    	ioe.printStackTrace(System.out);
-		    throw new IOException("Cannot close file:"+filename+"!");
+		    throw new IOException("Cannot close file:"+filename+"!", ioe);
 	    }
 	}
 	/**
@@ -150,8 +148,7 @@ public class NetCDFReader {
 			val = v.readScalarDouble();
 		}catch (IOException ioe)
 		{
-			ioe.printStackTrace(System.err);
-			throw new IOException("Cannot get proper starting time from the model.");
+			throw new IOException("Cannot get proper starting time from the model.", ioe);
 		}
 		return val;
 	}
@@ -168,8 +165,7 @@ public class NetCDFReader {
 			val = v.readScalarDouble();
 		}catch (IOException ioe)
 		{
-			ioe.printStackTrace(System.err);
-			throw new IOException("Cannot get proper ending time from the model.");
+			throw new IOException("Cannot get proper ending time from the model.", ioe);
 		}
 		return val;
 	}
@@ -186,8 +182,7 @@ public class NetCDFReader {
 			val = v.readScalarDouble();
 		}catch (IOException ioe)
 		{
-			ioe.printStackTrace(System.err);
-			throw new IOException("Cannot get proper save period from the model.");
+			throw new IOException("Cannot get proper save period from the model.", ioe);
 		}
 		return val;
 	}
@@ -204,8 +199,7 @@ public class NetCDFReader {
 			val = v.readScalarDouble();
 		}catch (IOException ioe)
 		{
-			ioe.printStackTrace(System.err);
-			throw new IOException("Cannot get proper volume from the model.");
+			throw new IOException("Cannot get proper volume from the model.", ioe);
 		}
 		return val;
 	}
@@ -222,8 +216,7 @@ public class NetCDFReader {
 			val = v.readScalarDouble();
 		}catch (IOException ioe)
 		{
-			ioe.printStackTrace(System.err);
-			throw new IOException("Cannot get proper cell growth time from the model.");
+			throw new IOException("Cannot get proper cell growth time from the model.", ioe);
 		}
 		return val;
 	}
@@ -240,8 +233,7 @@ public class NetCDFReader {
 			val = v.readScalarDouble();
 		}catch (IOException ioe)
 		{
-			ioe.printStackTrace(System.err);
-			throw new IOException("Cannot get proper standard deviation of the time between cell divisions from the model.");
+			throw new IOException("Cannot get proper standard deviation of the time between cell divisions from the model.", ioe);
 		}
 		return val;
 	}
@@ -260,8 +252,7 @@ public class NetCDFReader {
 			val = v.readScalarInt();
 		}catch (IOException ioe)
 		{
-			ioe.printStackTrace(System.err);
-			throw new IOException("Cannot get proper experiment type from the model.");
+			throw new IOException("Cannot get proper experiment type from the model.", ioe);
 		}
 		return val;
 	}
@@ -278,8 +269,7 @@ public class NetCDFReader {
 			val = v.readScalarInt();
 		}catch (IOException ioe)
 		{
-			ioe.printStackTrace(System.err);
-			throw new IOException("Cannot get proper last trial number from the model.");
+			throw new IOException("Cannot get proper last trial number from the model.", ioe);
 		}
 		return val;
 	}
@@ -296,8 +286,7 @@ public class NetCDFReader {
 			val = v.readScalarInt();
 		}catch (IOException ioe)
 		{
-			ioe.printStackTrace(System.err);
-			throw new IOException("Cannot get proper last model number from the file.");
+			throw new IOException("Cannot get proper last model number from the file.", ioe);
 		}
 		return val;
 	}
@@ -314,8 +303,7 @@ public class NetCDFReader {
 			val = v.readScalarInt();
 		}catch (IOException ioe)
 		{
-			ioe.printStackTrace(System.err);
-			throw new IOException("Cannot get proper max number of models from the file.");
+			throw new IOException("Cannot get proper max number of models from the file.", ioe);
 		}
 		return val;
 	}
@@ -332,8 +320,7 @@ public class NetCDFReader {
 			val = v.readScalarInt();
 		}catch (IOException ioe)
 		{
-			ioe.printStackTrace(System.err);
-			throw new IOException("Cannot get proper variable of number of models from the file.");
+			throw new IOException("Cannot get proper variable of number of models from the file.", ioe);
 		}
 		return val;
 	}
@@ -358,8 +345,7 @@ public class NetCDFReader {
 			try{
 				data = (ArrayChar.D2)snames.read();
 			}catch(Exception e){
-				e.printStackTrace(System.err);
-				throw new IOException("Can not read species' names from the model.");
+				throw new IOException("Can not read species' names from the model.", e);
 			}
 			for(int i=0;i<shape[0];i++)
 			{
@@ -394,8 +380,7 @@ public class NetCDFReader {
 			try{
 				data = (ArrayDouble.D1)time.read();
 			}catch(IOException ioe){
-				ioe.printStackTrace(System.err);
-				throw new IOException("Can not read time points from the model.");
+				throw new IOException("Can not read time points from the model.", ioe);
 			}
 			for(int i=0; i<shape[0]; i++)
 			{
@@ -418,7 +403,7 @@ public class NetCDFReader {
 		try
 		{
 			ncEva.setNetCDFTarget("C:/trial_10_EM.nc");
-		}catch (Exception e) {e.printStackTrace(System.err);}
+		}catch (Exception e) {e.printStackTrace();}
 		
 		try
 		{
@@ -449,14 +434,14 @@ public class NetCDFReader {
 //					System.out.println("array type is double with rank 3. ");
 //				System.out.println("array rank is "+arr.getRank());
 			//NCdump.printArray(arr,"State",System.out,null);
-		}catch (Exception e){e.printStackTrace(System.err);}
+		}catch (Exception e){e.printStackTrace();}
 		if(ncEva.getNetCDFReader() != null)
 		{
 			try{
 				ncEva.getNetCDFReader().close();
 			}catch(IOException ioe)
 			{
-				ioe.printStackTrace(System.err);
+				ioe.printStackTrace();
 			}
 		}
 	}

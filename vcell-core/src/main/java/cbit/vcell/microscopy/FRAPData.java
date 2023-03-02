@@ -29,6 +29,8 @@ import javax.media.jai.operator.ErodeDescriptor;
 import javax.media.jai.operator.ExtremaDescriptor;
 import javax.media.jai.operator.LookupDescriptor;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.Compare;
 import org.vcell.util.Extent;
 import org.vcell.util.Matchable;
@@ -48,6 +50,7 @@ import cbit.vcell.VirtualMicroscopy.UShortImage;
  */
 
 public class FRAPData extends AnnotatedImageDataset implements Matchable, VFrap_ROISourceData{
+	private final static Logger lg = LogManager.getLogger(FRAPData.class);
 
 //	public static class OriginalGlobalScaleInfo{
 //		public final int originalGlobalScaledMin;
@@ -90,11 +93,6 @@ public class FRAPData extends AnnotatedImageDataset implements Matchable, VFrap_
 		super(argImageDataset, argROIs);
 	}
 
-	/**
-	 * Constructor for FRAPData.
-	 * @param argImageDataset ImageDataset
-	 * @param argROITypes ROI.RoiType[]
-	 */
 	public FRAPData(ImageDataset argImageDataset, String[] argROINames) {
 		super(argImageDataset, argROINames);
 	}
@@ -496,7 +494,7 @@ protected void refreshDependentROIs()
 		dilatedROI_2D_1.and(reverseBleach_2D);
 
 	}catch (ImageException e){
-		e.printStackTrace(System.out);
+		lg.error(e);
 	}
 	ROI roiBleachedRing1_2D = getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING1.name());
 	if (roiBleachedRing1_2D==null){

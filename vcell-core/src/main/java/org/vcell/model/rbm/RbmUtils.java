@@ -15,6 +15,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.model.bngl.ASTAction;
 import org.vcell.model.bngl.ASTAddNode;
 import org.vcell.model.bngl.ASTAnchor;
@@ -104,7 +106,8 @@ import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.parser.SymbolTableFunctionEntry;
 
 public class RbmUtils {
-	
+	private final static Logger lg = LogManager.getLogger(RbmUtils.class);
+
 	@Deprecated
 	public static int reactionRuleLabelIndex;
 	@Deprecated
@@ -210,8 +213,7 @@ public class RbmUtils {
 						scs.setConstant(node.isClamped());
 					}
 				} catch (Exception ex) {
-					ex.printStackTrace(System.out);
-					throw new RuntimeException(ex.getMessage());
+					throw new RuntimeException(ex.getMessage(), ex);
 				}
 			}
 			return seedSpecies;
@@ -248,8 +250,7 @@ public class RbmUtils {
 				try {
 					model.getRbmModelContainer().addReactionRule(reactionRule);
 				} catch (PropertyVetoException ex) {
-					ex.printStackTrace();
-					throw new RuntimeException("Unexpected " + ReactionRule.typeName + " exception: " + ex.getMessage());
+					throw new RuntimeException("Unexpected " + ReactionRule.typeName + " exception: " + ex.getMessage(), ex);
 				}
 				return reactionRule;
 			}
@@ -327,14 +328,14 @@ public class RbmUtils {
 //						rr.getKineticLaw().setParameterValue(RbmKineticLaw.ParameterType.MassActionForwardRate, new Expression(node.getValue()));
 //					} catch (PropertyVetoException | ExpressionException e1) {
 //						// TODO Auto-generated catch block
-//						e1.printStackTrace();
+//						lg.error(e);
 //					}
 //				} else {
 //					try {
 //						rr.getKineticLaw().setParameterValue(RbmKineticLaw.ParameterType.MassActionReverseRate, new Expression(node.getValue()));
 //					} catch (ExpressionException | PropertyVetoException e1) {
 //						// TODO Auto-generated catch block
-//						e1.printStackTrace();
+//						lg.error(e);
 //					}
 //				}
 //			}
@@ -388,7 +389,7 @@ public class RbmUtils {
 							}
 						}
 					} catch (PropertyVetoException | ExpressionException e1) {
-						e1.printStackTrace();
+						lg.error(e1);
 					}
 				} else {		// second parameter, always mass action reverse rate (can't be MM)
 					try {
@@ -406,8 +407,7 @@ public class RbmUtils {
 							rr.getKineticLaw().setLocalParameterValue(RbmKineticLawParameterType.MassActionReverseRate, newExpression);
 						}
 					} catch (ExpressionException | PropertyVetoException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
+						lg.error(e1);
 					}
 				}
 			}
@@ -454,8 +454,7 @@ public class RbmUtils {
 					try {
 						model.getRbmModelContainer().addMolecularType(molecularType, false);
 					} catch (ModelException | PropertyVetoException e) {
-						e.printStackTrace();
-						throw new RuntimeException("Unexpected " + SpeciesPattern.typeName + " exception: " + e.getMessage());
+						throw new RuntimeException("Unexpected " + SpeciesPattern.typeName + " exception: " + e.getMessage(), e);
 					}
 				}
 				MolecularTypePattern molecularTypePattern = new MolecularTypePattern(molecularType, false);
@@ -580,11 +579,7 @@ public class RbmUtils {
 				try {
 					model.getRbmModelContainer().addObservable(observable);
 					observable.setName(node.getName());
-				} catch (PropertyVetoException e) {
-					e.printStackTrace();
-					throw new RuntimeException(e.getMessage(), e);
-				} catch (ModelException e) {
-					e.printStackTrace();
+				} catch (PropertyVetoException | ModelException e) {
 					throw new RuntimeException(e.getMessage(), e);
 				}
 				node.childrenAccept(this, observable);
@@ -629,7 +624,7 @@ public class RbmUtils {
 				try {
 					exp = new Expression(node.toBNGL());
 				} catch (ExpressionException e) {
-					e.printStackTrace();
+					lg.error(e);
 					throw new RuntimeException("expression exception: "+e.getMessage(),e);
 				}
 				if (((ReactionRule) data).getForwardRate() == null) {
@@ -753,8 +748,7 @@ public class RbmUtils {
 					model.addFeature(name);
 				}
 			} catch (ModelException | PropertyVetoException e) {
-				e.printStackTrace();
-				throw new RuntimeException("BngVisitor: Unable to create Structure, " + e.getMessage());
+				throw new RuntimeException("BngVisitor: Unable to create Structure, " + e.getMessage(), e);
 			}
 			return null;
 		}
@@ -1194,12 +1188,12 @@ public class RbmUtils {
 			return astModel;
 //			BnglObjectConstructionVisitor constructionVisitor = new BnglObjectConstructionVisitor(rbmModelContainer);
 //			astModel.jjtAccept(constructionVisitor, rbmModelContainer); 
-		} catch (Throwable ex) {
-//			ex.printStackTrace();
+		} catch (Exception ex) {
 			if(ex instanceof ParseException) {
 				ParseException pe = (ParseException)ex;
 				throw pe;
 			} else {
+				lg.error(ex);
 				throw new ParseException(ex.getMessage());
 			}
 		}
@@ -1277,8 +1271,8 @@ public class RbmUtils {
 			BnglObjectConstructionVisitor constructionVisitor = new BnglObjectConstructionVisitor();
 			MolecularType molecularType = (MolecularType) astMolecularPattern.jjtAccept(constructionVisitor, null);
 			return molecularType;
-		} catch (Throwable ex) {
-			ex.printStackTrace();
+		} catch (Exception ex) {
+			lg.error(ex);
 			throw new ParseException(ex.getMessage());
 		}
 	}
@@ -1459,8 +1453,8 @@ public class RbmUtils {
 			BnglObjectConstructionVisitor constructionVisitor = new BnglObjectConstructionVisitor(model, null, true);
 			SpeciesPattern speciesPattern = (SpeciesPattern) astSpeciesPattern.jjtAccept(constructionVisitor, null);
 			return speciesPattern;
-		} catch (Throwable ex) {
-			ex.printStackTrace();
+		} catch (Exception ex) {
+			lg.error(ex);
 			throw new ParseException(ex.getMessage());
 		}
 	}
@@ -1515,8 +1509,8 @@ public class RbmUtils {
 				reactionRule.addProduct(new ProductPattern(speciesPattern,reactionRule.getStructure()));
 			}			
 			return reactionRule;
-		} catch (Throwable ex) {
-			ex.printStackTrace();
+		} catch (Exception ex) {
+			lg.error(ex);
 			throw new ParseException(ex.getMessage());
 		}
 	}
@@ -2091,7 +2085,7 @@ public class RbmUtils {
 //				try {
 //					exp2.substituteInPlace(new Expression(symbol), new Expression(PREFIX+"_"+count));
 //				} catch (ExpressionException e) {
-//					e.printStackTrace();
+//					lg.error(e);
 //					throw new RuntimeException("Exception generating BNGL format: "+e.getMessage(),e);
 //				}
 //				count++;

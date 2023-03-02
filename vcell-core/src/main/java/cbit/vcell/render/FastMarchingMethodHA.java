@@ -18,12 +18,16 @@ import java.util.Random;
 
 import cbit.vcell.geometry.surface.DistanceMapGenerator;
 import cbit.vcell.geometry.surface.Node;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /***
  * This class implements the fast marching method, high accuracy version
  * You are not expected to understand this code
  ***/
 public class FastMarchingMethodHA {
+	private final static Logger lg = LogManager.getLogger(FastMarchingMethodHA.class);
+
 	@SuppressWarnings("unused")
 	private static final double epsilon = 1e-8;
     // auxiliary constants used for selecting max and min values of certain variables
@@ -749,7 +753,7 @@ public class FastMarchingMethodHA {
 		out.close();
 		System.out.println("Delta above threshold " + errorThreshold + " occured in " + errorCount + " cases out of " + numIterations);
 		} catch (IOException e) {
-			e.printStackTrace();
+			lg.error(e);
 		}
 
 		System.out.println("A few random examples: ffm distance vs. exact distance");

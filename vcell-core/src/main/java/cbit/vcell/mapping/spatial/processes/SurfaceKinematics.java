@@ -36,7 +36,6 @@ public class SurfaceKinematics extends SpatialProcess {
 		try {
 			setParameters(new LocalParameter[] { velX, velY, velZ });
 		} catch (ExpressionBindingException | PropertyVetoException e) {
-			e.printStackTrace();
 			throw new RuntimeException("failed to create parameters: "+e.getMessage(),e);
 		}
 	}
