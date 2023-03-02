@@ -1,6 +1,5 @@
 package org.vcell.cli.run;
 
-
 import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.xml.ExternalDocInfo;
 import org.apache.commons.io.FilenameUtils;
