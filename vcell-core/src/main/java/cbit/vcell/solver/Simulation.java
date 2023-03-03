@@ -33,6 +33,7 @@ import org.vcell.util.document.SimulationVersion;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.Versionable;
 
+import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.mapping.SimulationContext.Kind;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContextEntity;
@@ -960,6 +961,21 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 	}
 	public String getImportedTaskID() {
 		return fieldImportedTaskID;
+	}
+	
+	public void writeData(StringBuilder sb) {				// SpringSaLaD exporting the time information
+		if(!(getSimulationOwner() instanceof SimulationContext)) {
+			sb.append("\n");
+			return;
+		}
+		SimulationContext sc = (SimulationContext)getSimulationOwner();
+		if(sc.getApplicationType() != Application.SPRINGSALAD) {
+			sb.append("\n");
+			return;
+		}
+		sb.append("time info stub");		// TODO: append time information
+		sb.append("\n");
+		return;
 	}
 	
 	

@@ -37,6 +37,7 @@ import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.SurfaceClass;
 import cbit.vcell.geometry.surface.GeometricRegion;
+import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.mapping.SimulationContext.Kind;
 import cbit.vcell.mapping.spatial.SpatialObject;
 import cbit.vcell.mapping.spatial.SpatialObject.QuantityCategory;
@@ -66,6 +67,7 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
 	private static final String PROPERTY_NAME_WELL_MIXED = "wellMixed";
 	private static final String PROPERTY_NAME_FORCECONTINUOUS = "forceContinuous";
 
+	public static final boolean trackClusters = true;	// SpringSaLaD specific
 
 	public class SpeciesContextSpecNameScope extends BioNameScope {
 		private final NameScope children[] = new NameScope[0]; // always empty
@@ -1861,6 +1863,20 @@ public SpatialQuantity[] getVelocityQuantities(QuantityComponent component) {
 public Kind getSimulationContextKind() {
 	return SimulationContext.Kind.SPECIFICATIONS_KIND;
 }
+
+public void writeData(StringBuilder sb) {				// SpringSaLaD exporting the species / molecule information
+	if(getSimulationContext().getApplicationType() != Application.SPRINGSALAD) {
+		sb.append("\n");
+		return;
+	}
+	sb.append("SpeciesContextSpec info stub");		// TODO: append SpeciesContextSpec information
+	sb.append("\n");
+	return;
+}
+public String getFilename() {	// SpringSaLaD specific, external file with molecule information
+	return null;	// not implemented
+}
+
 
 public static final String typeName = "SpeciesContextSpec";
 @Override
