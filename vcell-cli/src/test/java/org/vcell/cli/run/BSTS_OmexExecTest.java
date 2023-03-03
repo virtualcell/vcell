@@ -85,6 +85,7 @@ public class BSTS_OmexExecTest {
 		SEDML_MATH_OVERRIDE_NAMES_DIFFERENT,
 		SEDML_SIMCONTEXT_NOT_FOUND_BY_NAME,
 		SEDML_SIMULATION_NOT_FOUND_BY_NAME,
+		SEDML_SEQUENTIAL_REPEATED_TASKS,
 
 		SEDML_UNSUPPORTED_MODEL_REFERENCE, // Model refers to either a non-existent model (invalid SED-ML) or to another model with changes (not supported yet)
 
@@ -108,13 +109,13 @@ public class BSTS_OmexExecTest {
 		return slowSet;
 	}
 
-	static Set<String> blacklistedModels(){
-		HashSet<String> blacklistSet = new HashSet<>();
-		// We have blacklisted these next two out because we do not support sequential repeated tasks,
-		// ...but by design we permit this kind of error to be a non-obstructive side effect.
-		blacklistSet.add("synths/sedml/SimulatorSupportsRepeatedTasksWithSubTasksOfMixedTypes/1.execution-should-succeed.omex");
-		blacklistSet.add("synths/sedml/SimulatorSupportsRepeatedTasksWithSubTasksOfMixedTypes/2.execution-should-succeed.omex");
-		return blacklistSet;
+	// We have blacklisted these next two out because we do not support sequential repeated tasks,
+	// ...but by design we permit this kind of error to be a non-obstructive side effect.
+	static Set<String> sequentialRepeatedTasks(){
+		HashSet<String> srtSet = new HashSet<>();
+		srtSet.add("synths/sedml/SimulatorSupportsRepeatedTasksWithSubTasksOfMixedTypes/1.execution-should-succeed.omex");
+		srtSet.add("synths/sedml/SimulatorSupportsRepeatedTasksWithSubTasksOfMixedTypes/2.execution-should-succeed.omex");
+		return srtSet;
 	}
 
 	static Map<String, FAULT> knownFaults() {
@@ -135,7 +136,6 @@ return faults;
 	@Parameterized.Parameters
 	public static Collection<String> testCases() {
 		Set<String> modelsToFilter = slowModels();
-		modelsToFilter.addAll(blacklistedModels());
 
 		Predicate<String> filter = (t) -> !modelsToFilter.contains(t);
 		List<String> testCases = Arrays.stream(BSTS_TestSuiteFiles.getBSTSTestCases()).filter(filter).collect(Collectors.toList());
@@ -225,6 +225,10 @@ return faults;
 			Throwable subException = caughtException.getCause();
 			if (subException instanceof ArrayIndexOutOfBoundsException){
 				determinedFault = FAULT.ARRAY_INDEX_OUT_OF_BOUNDS;
+			}
+		} else if (errorMessage.contains("ailure executing the sed ")){
+			if (BSTS_OmexExecTest.sequentialRepeatedTasks().contains(this.testCaseFilename)){
+				determinedFault = FAULT.SEDML_SEQUENTIAL_REPEATED_TASKS;
 			}
 		}
 

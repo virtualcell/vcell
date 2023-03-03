@@ -273,7 +273,7 @@ public class SedmlJob {
 
     private boolean evalulateResults() throws PythonStreamException, InterruptedException, IOException {
         if (this.somethingFailed) {        // something went wrong but no exception was fired
-            Exception e = new RuntimeException("Failure executing the sed document. ");
+            Exception e = new RuntimeException("Failure executing the sed document.");
             logDocumentError += e.getMessage();
             this.reportProblem(e);
             org.apache.commons.io.FileUtils.deleteDirectory(this.plotsDirectory);    // removing temp path generated from python
