@@ -24,6 +24,7 @@ import java.util.Set;
 import cbit.vcell.model.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.vcell.model.rbm.MolecularComponent;
 import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.SpeciesPattern;
@@ -33,7 +34,9 @@ import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.document.Identifiable;
 
+import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryClass;
+import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.SurfaceClass;
 import cbit.vcell.geometry.surface.GeometricRegion;
@@ -54,6 +57,7 @@ import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.parser.SymbolTableFunctionEntry;
+import cbit.vcell.solver.Simulation;
 import cbit.vcell.units.VCUnitDefinition;
 import net.sourceforge.interval.ia_math.RealInterval;
 
@@ -67,7 +71,11 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
 	private static final String PROPERTY_NAME_WELL_MIXED = "wellMixed";
 	private static final String PROPERTY_NAME_FORCECONTINUOUS = "forceContinuous";
 
-	public static final boolean trackClusters = true;	// SpringSaLaD specific
+	public static final boolean TrackClusters = true;			// SpringSaLaD specific
+	public static final boolean InitialLocationRandom = true;
+	private static final String InitialLocationRandomString = "Random";
+	private static final String InitialLocationSetString = "Set";
+
 
 	public class SpeciesContextSpecNameScope extends BioNameScope {
 		private final NameScope children[] = new NameScope[0]; // always empty
@@ -522,7 +530,7 @@ public SpeciesContextSpec(SpeciesContextSpec speciesContextSpec, SimulationConte
 		fieldParameters[i] = new SpeciesContextSpecParameter(otherParm.getName(),otherParmExp,otherParm.getRole(),otherParm.getUnitDefinition(),otherParm.getDescription());
 	}
 	refreshDependencies();
-}            
+}
 
 
 public SpeciesContextSpec(SpeciesContext speciesContext, SimulationContext argSimulationContext) {
@@ -618,7 +626,7 @@ private VCUnitDefinition getLengthPerTimeUnit() {
 	ModelUnitSystem modelUnitSystem = getSimulationContext().getModel().getUnitSystem();
 	VCUnitDefinition lengthPerTimeUnit = modelUnitSystem.getLengthUnit().divideBy(modelUnitSystem.getTimeUnit());
 	return lengthPerTimeUnit;
-}            
+}
 
 public void initializeForSpatial() {
 	if(getDiffusionParameter() != null && getDiffusionParameter().getExpression() != null && getDiffusionParameter().getExpression().isZero()) {
@@ -1869,7 +1877,75 @@ public void writeData(StringBuilder sb) {				// SpringSaLaD exporting the specie
 		sb.append("\n");
 		return;
 	}
-	sb.append("SpeciesContextSpec info stub");		// TODO: append SpeciesContextSpec information
+	// ----------------------------------------------------------------------------------
+//	private Set<MolecularInternalLinkSpec> internalLinkSet = new LinkedHashSet<> ();			// SpringSaLaD
+//	private Map<MolecularComponentPattern, SiteAttributesSpec> siteAttributesMap = new LinkedHashMap<> ();
+//	for(Map.Entry<MolecularComponentPattern, SiteAttributesSpec> entry : getSiteAttributesMap().entrySet()) {
+//		MolecularComponentPattern key = entry.getKey();
+//		SiteAttributesSpec sas = entry.getValue();
+
+	Simulation simulation = getSimulationContext().getSimulations(0);
+	Geometry geometry = getSimulationContext().getGeometry();
+	GeometryContext geometryContext = getSimulationContext().getGeometryContext();
+	GeometrySpec geometrySpec = geometry.getGeometrySpec();
+	ReactionContext reactionContext = getSimulationContext().getReactionContext();
+	SpeciesContextSpec[] speciesContextSpecs = reactionContext.getSpeciesContextSpecs();
+	ReactionSpec[] reactionSpecs = reactionContext.getReactionSpecs();
+	ReactionRuleSpec[] reactionRuleSpecs = reactionContext.getReactionRuleSpecs();
+	
+	SpeciesContextSpecParameter initialCountParameter = getInitialCountParameter();
+	SpeciesPattern sp = getSpeciesContext().getSpeciesPattern();
+	if(sp == null || sp.getMolecularTypePatterns() == null || sp.getMolecularTypePatterns().isEmpty()) {
+		sb.append("MOLECULE: \"" + getSpeciesContext().getName() + "\" " + "ERROR");
+		sb.append("\n");
+		sb.append("\n");
+		return;
+	}
+	List<MolecularComponent> componentList = sp.getMolecularTypePatterns().get(0).getMolecularType().getComponentList();
+	int dimension = geometry.getDimension();
+
+	sb.append("MOLECULE: \"" + getSpeciesContext().getName() + "\" " + getSpeciesContext().getStructure().getName() + 
+			" Number " + initialCountParameter.getExpression() + 
+			" Site_Types " + componentList.size() + " Total"  + "_Sites " + siteAttributesMap.size() + 
+			" Total_Links " + internalLinkSet.size() + " is2D " + (dimension == 2 ? true : false));
+	sb.append("\n");
+	sb.append("{");
+	sb.append("\n");
+	
+	for(Map.Entry<MolecularComponentPattern, SiteAttributesSpec> entry : siteAttributesMap.entrySet()) {
+		SiteAttributesSpec sas = entry.getValue();
+		sb.append("     ");
+		sas.writeType(sb);		// writeMolecularComponent
+	}
+	sb.append("\n");
+	for(Map.Entry<MolecularComponentPattern, SiteAttributesSpec> entry : siteAttributesMap.entrySet()) {
+		SiteAttributesSpec sas = entry.getValue();
+		sb.append("     ");
+		sas.writeSite(sb);
+	}
+	sb.append("\n");
+	for(MolecularInternalLinkSpec mils : internalLinkSet) {
+		sb.append("     ");
+		mils.writeLink(sb);
+	}
+	
+	sb.append("\n");
+	sb.append("     Initial_Positions: ");
+	if(InitialLocationRandom) {
+		sb.append(InitialLocationRandomString);
+		sb.append("\n");
+//	} else {
+//		sb.append(InitialLocationSetString);
+//		sb.append("\n");
+//		sb.append("     x: " + IOHelp.printArrayList(initialCondition.getXIC(), 5));
+//		sb.append("\n");
+//		sb.append("     y: " + IOHelp.printArrayList(initialCondition.getYIC(), 5));
+//		sb.append("\n");
+//		sb.append("     z: " + IOHelp.printArrayList(initialCondition.getZIC(), 5));
+//		sb.append("\n");
+	}
+	sb.append("}");
+	sb.append("\n");
 	sb.append("\n");
 	return;
 }

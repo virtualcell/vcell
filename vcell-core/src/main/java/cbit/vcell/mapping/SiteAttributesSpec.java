@@ -22,6 +22,7 @@ import java.util.Set;
 import cbit.vcell.model.*;
 
 import org.vcell.model.rbm.ComponentStateDefinition;
+import org.vcell.model.rbm.ComponentStatePattern;
 import org.vcell.model.rbm.MolecularComponent;
 import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularType;
@@ -123,25 +124,40 @@ public class SiteAttributesSpec implements Identifiable, Displayable, IssueSourc
 		return index;
 	}
 	
-	public void writeType(PrintWriter p) {		// I/O the MolecularType
+	public void writeType(StringBuilder sb) {		// I/O the MolecularType
 		MolecularTypePattern mtp = getSpeciesContextSpec().getSpeciesContext().getSpeciesPattern().getMolecularTypePatterns().get(0);
 		MolecularType mt = mtp.getMolecularType();
 		List<ComponentStateDefinition> csdList = getMolecularComponentPattern().getMolecularComponent().getComponentStateDefinitions();
-		p.print("TYPE: Name \"" + mt.getName() + "\"");
-		p.print(" Radius " + IOHelp.DF[5].format(getRadius()) + " D " + IOHelp.DF[3].format(getDiffusionRate()) + " Color " + getColor().getName());
-		p.print(" STATES ");
+		sb.append("TYPE: Name \"" + mt.getName() + "\"");
+		sb.append(" Radius " + IOHelp.DF[5].format(getRadius()) + " D " + IOHelp.DF[3].format(getDiffusionRate()) + " Color " + getColor().getName());
+		sb.append(" STATES ");
 		for (ComponentStateDefinition state : csdList) {
-			p.print("\"" + state.getName() + "\"" + " ");
+			sb.append("\"" + state.getName() + "\"" + " ");
 		}
-		p.println();
+		sb.append("\n");
 	}
-	public void writeSite(PrintWriter p) {
-		String initialState = getMolecularComponentPattern().getComponentStatePattern().getComponentStateDefinition().getName();
-
-		p.println("SITE " + this.getIndex() + " : " + getLocation().getName() + " : Initial State '" + initialState + "'");
-		p.print("          ");
-		this.writeType(p);
-		p.println("          " + "x " + IOHelp.DF[5].format(getX()) + " y " + IOHelp.DF[5].format(getY()) + " z " + IOHelp.DF[5].format(getZ()) + " ");
+	public void writeSite(StringBuilder sb) {
+		MolecularComponentPattern mcp = getMolecularComponentPattern();
+		if(mcp == null) {
+			throw new RuntimeException("writeSite(): mcp is null");
+		}
+		ComponentStatePattern csp = mcp.getComponentStatePattern();
+		if(csp == null) {
+			sb.append("SITE " + this.getIndex() + " : " + getLocation().getName() + " : Initial State '" + "ERROR: at least one State is needed"  + "'");
+			sb.append("\n");
+			return;
+		}
+		ComponentStateDefinition csd = csp.getComponentStateDefinition();
+		if(csd == null) {
+			throw new RuntimeException("writeSite(): csd is null");
+		}
+		String initialState = csd.getName();
+		sb.append("SITE " + this.getIndex() + " : " + getLocation().getName() + " : Initial State '" + initialState + "'");
+		sb.append("\n");
+		sb.append("          ");
+		this.writeType(sb);
+		sb.append("          " + "x " + IOHelp.DF[5].format(getX()) + " y " + IOHelp.DF[5].format(getY()) + " z " + IOHelp.DF[5].format(getZ()) + " ");
+		sb.append("\n");
 	}
 
 	

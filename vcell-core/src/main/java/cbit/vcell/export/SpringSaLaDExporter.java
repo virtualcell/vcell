@@ -25,6 +25,7 @@ import cbit.vcell.mapping.ReactionRuleSpec;
 import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
+import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.Species;
@@ -84,6 +85,8 @@ public class SpringSaLaDExporter {
 		ReactionRuleSpec[] reactionRuleSpecs = reactionContext.getReactionRuleSpecs();
 		
 		try {
+			reactionContext.convertSpeciesIniCondition(false);	// convert to count if currently is concentration
+			
 			StringBuilder sb = new StringBuilder();
 			/* ********* BEGIN BY WRITING THE TIMES *********/
 			sb.append("*** " + TIME_INFORMATION + " ***");
@@ -103,6 +106,7 @@ public class SpringSaLaDExporter {
 			sb.append("\n");
 			for(SpeciesContext sc : model.getSpeciesContexts()) {
 				SpeciesContextSpec scs = reactionContext.getSpeciesContextSpec(sc);
+				SpeciesContextSpecParameter initialCountParameter = scs.getInitialCountParameter();
 				scs.writeData(sb);
 			}
 			/* ******* WRITE THE SPECIES INFORMATION ***********/
@@ -156,7 +160,7 @@ public class SpringSaLaDExporter {
 					continue;
 				}
 //				sb.append(reaction.writeReaction());
-				sb.append("rrs");
+//				rrs.writeData(sb);							// TODO: BINDING REACTION
 			}
 			sb.append("\n");
 
@@ -207,7 +211,7 @@ public class SpringSaLaDExporter {
 			sb.append("*** " + CLUSTER_COUNTERS + " ***");
 			sb.append("\n");
 			sb.append("\n");
-			sb.append("Track_Clusters: " + SpeciesContextSpec.trackClusters);
+			sb.append("Track_Clusters: " + SpeciesContextSpec.TrackClusters);
 			sb.append("\n");
 			sb.append("\n");
 
@@ -223,17 +227,21 @@ public class SpringSaLaDExporter {
 			sb.append("\n");
 			sb.append("\n");
 //			writeMoleculeAnnotations(sb);
+			sb.append("\n");
 
 			/* ****** WRITE THE REACTION ANNOTATIONS *****************/
 			sb.append("*** " + REACTION_ANNOTATIONS + " ***");
 			sb.append("\n");
 			sb.append("\n");
 //			writeReactionAnnotations(sb);
+			sb.append("\n");
 
-			} catch(Exception ex) {
-				ex.printStackTrace(System.out);
-			}
-
+			String ret = sb.toString();
+			System.out.println(ret);
+			return ret;
+		} catch(Exception ex) {
+			ex.printStackTrace(System.out);
+		}
 		return null;
 	}
 

@@ -213,14 +213,15 @@ public class MolecularInternalLinkSpec implements Identifiable, IssueSource, Mat
 		g2.drawLine(x1, y1, x2, y2);
     }
     
-	public void writeLink(PrintWriter p) {
+	public void writeLink(StringBuilder sb) {
 		if(getSite1() == null) {
 			System.out.println("Site 1 is null.");
 		}
 		if(getSite2() == null) {
 			System.out.println("Site 2 is null.");
 		}
-		p.println("LINK: Site " + getSite1().getIndex() + " ::: Site " + getSite2().getIndex());
+		sb.append("LINK: Site " + getSite1().getIndex() + " ::: Site " + getSite2().getIndex());
+		sb.append("\n");
 	}
 
 
