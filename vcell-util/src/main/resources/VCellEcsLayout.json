@@ -13,7 +13,7 @@
   },
   "message": {
     "$resolver": "message",
-    "stringified": true
+    "fallbackKey": "formattedMessage"
   },
   "process.thread.name": {
     "$resolver": "thread",
