@@ -11,9 +11,13 @@
     "$resolver": "level",
     "field": "name"
   },
+  "log.msg": {
+    "$resolver": "message",
+    "field": "msg"
+  },
   "message": {
     "$resolver": "message",
-    "fallbackKey": "formattedMessage"
+    "stringified": true
   },
   "process.thread.name": {
     "$resolver": "thread",
