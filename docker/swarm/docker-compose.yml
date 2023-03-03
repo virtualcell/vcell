@@ -367,22 +367,28 @@ services:
           memory: 1500M
         reservations:
           memory: 1000M
-
   web:
     image: "${VCELL_REPO_NAMESPACE}/vcell-web:${VCELL_TAG}"
     environment:
+      - softwareVersion=${VCELL_VERSION}
+      - serverid=${VCELL_SITE}
       - export_baseurl=${VCELL_EXPORT_BASEURL}
+
       - simdataCacheSize=${VCELL_SIMDATA_CACHE_SIZE:-10000000}
-      - webDataPort=${VCELL_WEB_DATA_PORT}
+
+
       - dburl=${VCELL_DB_URL}
       - dbdriver=${VCELL_DB_DRIVER}
       - dbuser=${VCELL_DB_USER}
+
+      - webDataPort=${VCELL_WEB_DATA_PORT}
     ports:
       - "${VCELL_DEBUG_PORT_VCELL_WEB}:8000" # java remote debugging
       - "${VCELL_WEB_DATA_PORT}:${VCELL_WEB_DATA_PORT}"
     volumes:
       - "${VCELL_SIMDATADIR_HOST}:/simdata"
       - "${VCELL_SIMDATADIR_ARCHIVE_HOST}:${VCELL_SIMDATADIR_ARCHIVE_INTERNAL}"
+      - "${VCELL_SIMDATADIR_SECONDARY_HOST}:/simdata_secondary"
       - "${VCELL_EXPORTDIR_HOST}:/exportdir"
     secrets:
       - dbpswd
