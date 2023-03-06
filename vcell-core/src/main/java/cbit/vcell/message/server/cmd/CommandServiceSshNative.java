@@ -115,8 +115,7 @@ public class CommandServiceSshNative extends CommandService {
 					commandOutputHolder.put(tryThisHost,tempCommandOutput);
 				}
 			} catch (Exception e) {
-				lg.error(e);
-				System.out.println("failed execution, using "+tryThisHost);
+				lg.error("failed execution, using "+tryThisHost+", command="+Arrays.asList(commandStrings)+", error: "+e.getMessage(), e);
 				StringWriter sw = new StringWriter();
 				PrintWriter pw = new PrintWriter(sw);
 				e.printStackTrace(pw);
@@ -137,14 +136,14 @@ public class CommandServiceSshNative extends CommandService {
 				problemHosts.add(new HostNameAgeTuple(tryThisHost,System.currentTimeMillis()));
 			}
 			if(tryTheseHosts.isEmpty()) {
-				System.out.println("failed, exhausted all hostnames");
+				lg.error("failed, exhausted all hostnames, command="+Arrays.asList(commandStrings));
 				//If any commandHosts are working we should never get here
 				//All available command hosts failed to return expected results
 				return commandOutputHolder.get(tryThisHost);
 			}
 			//We get to this point if the selected commandHost failed to return expected results
 			//but there are still other commandHosts available so loop and try again with the next commandHost
-			System.out.println("failed returnCode test, using "+tryThisHost);
+			lg.warn("failed returnCode test, using "+tryThisHost+", command="+Arrays.asList(commandStrings));
 		}
 		//Should never get here
 		throw new ExecutableException("No suitable result");

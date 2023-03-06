@@ -9,7 +9,6 @@
                           maxStringLength="65535"
                           truncatedStringSuffix="...TRUNCATED...">
         <EventTemplateAdditionalField key="vcell_service" value="vcell-submit"/>
-        <JsonProperty name="message" pattern="%msg" />
       </JsonTemplateLayout>
     </Console>
   </Appenders>
