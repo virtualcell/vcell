@@ -241,11 +241,15 @@ private Object rpc(String methodName, Object[] args) throws ObjectNotFoundExcept
 		lg.error(e.getMessage(), e);
 		throw e;
 	} catch (Exception e){
-		lg.error(e.getMessage(), e);
 		if(e.getCause() instanceof ServerRejectedSaveException) {
-			throw (ServerRejectedSaveException)e.getCause();
+			ServerRejectedSaveException serverRejectedSaveException = (ServerRejectedSaveException)e.getCause();
+			lg.info("caught and rethrowing wrapped ServerRejectedSaveException, original exception: "+e.getMessage(), e);
+			lg.warn("rethrowing ServerRejectedSaveException:" +serverRejectedSaveException.getMessage(), serverRejectedSaveException);
+			throw serverRejectedSaveException;
+		}else{
+			lg.error(e.getMessage(), e);
+			throw new RuntimeException(e.getMessage(),e);
 		}
-		throw new RuntimeException(e.getMessage(),e);
 	}
 }
 
