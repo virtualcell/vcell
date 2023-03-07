@@ -1,14 +1,15 @@
 package org.vcell.cli.run;
 
+import ncsa.hdf.hdf5lib.exceptions.HDF5Exception;
+
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.xml.ExternalDocInfo;
-import ncsa.hdf.hdf5lib.exceptions.HDF5Exception;
-
-import org.jlibsedml.*;
-
 import org.apache.commons.io.FilenameUtils;
-import org.vcell.cli.CLIRecorder;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.jlibsedml.*;
+import org.vcell.cli.CLIRecordable;
 import org.vcell.cli.PythonStreamException;
 import org.vcell.cli.run.hdf5.Hdf5DatasetWrapper;
 import org.vcell.cli.run.hdf5.Hdf5FileWrapper;
@@ -17,13 +18,10 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.FileUtils;
 import org.vcell.util.GenericExtensionFilter;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
-
 import java.io.File;
-import java.io.IOException;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -33,13 +31,13 @@ import java.util.List;
 
 public class SedmlJob {
     private boolean somethingFailed, hasScans, hasOverrides, bKeepTempFiles, bExactMatchOnly, bSmallMeshOverride;
-    private String sedmlLocation, bioModelBaseName, resultsDirPath, logDocumentMessage, logDocumentError, sedmlName;
+    private String sedmlLocation, bioModelBaseName, resultsDirPath, logDocumentMessage, logDocumentError, sedmlName, problemsOccured;
     private StringBuilder logOmexMessage;
     private SedmlStatistics docStatistics;
     private SedML sedml;
     private File masterOmexArchive, rootOutputDir, plotsDirectory, plotFile;
     private List<Output> outputs;
-    private CLIRecorder cliRecorder;
+    private CLIRecordable cliRecorder;
     private File outDirForCurrentSedml;
 
     private final static Logger logger = LogManager.getLogger(SedmlJob.class);
@@ -60,7 +58,7 @@ public class SedmlJob {
      * @param logOmexMessage a string-builder to contain progress updates of omex execution
      */
     public SedmlJob(String sedmlLocation, OmexHandler omexHandler, File masterOmexArchive, File rootOutputDir, String resultsDirPath, String sedmlPath2d3dString,
-            CLIRecorder cliRecorder, boolean bKeepTempFiles, boolean bExactMatchOnly, boolean bSmallMeshOverride, StringBuilder logOmexMessage){
+                    CLIRecordable cliRecorder, boolean bKeepTempFiles, boolean bExactMatchOnly, boolean bSmallMeshOverride, StringBuilder logOmexMessage){
         this.somethingFailed = false;
         this.masterOmexArchive = masterOmexArchive;
         this.sedmlLocation = sedmlLocation;
@@ -77,6 +75,7 @@ public class SedmlJob {
         this.cliRecorder = cliRecorder;
         this.logDocumentMessage = "Initializing SED-ML document... ";
         this.logDocumentError = "";
+        this.problemsOccured = "";
         
     }
 
@@ -269,13 +268,13 @@ public class SedmlJob {
             logDocumentError += e.getMessage();
             this.reportProblem(e);
             org.apache.commons.io.FileUtils.deleteDirectory(this.plotsDirectory);    // removing temp path generated from python
-            throw new ExecutionException();
+            throw new ExecutionException("error while processing outputs: "+e.getMessage(), e);
         }
     }
 
     private boolean evalulateResults() throws PythonStreamException, InterruptedException, IOException {
         if (this.somethingFailed) {        // something went wrong but no exception was fired
-            Exception e = new RuntimeException("Failure executing the sed document. ");
+            Exception e = new RuntimeException("Failure executing the sed document:\n" + this.problemsOccured);
             logDocumentError += e.getMessage();
             this.reportProblem(e);
             org.apache.commons.io.FileUtils.deleteDirectory(this.plotsDirectory);    // removing temp path generated from python
@@ -384,10 +383,11 @@ public class SedmlJob {
         return null;
     }
 
-    private static boolean somethingDidFail(){
+    private boolean somethingDidFail(){
         StackTraceElement elem = new Exception().getStackTrace()[1];
-        
-        logger.debug(String.format("Something failed in %s @ line %d", elem.getClassName(), elem.getLineNumber()));
+        String failString = String.format("Something failed in %s @ line %d", elem.getClassName(), elem.getLineNumber());
+        this.problemsOccured += failString + '\n';
+        logger.debug(failString);
         return true;
     }
 
