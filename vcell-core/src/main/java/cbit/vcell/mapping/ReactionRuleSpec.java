@@ -9,13 +9,21 @@
  */
 
 package cbit.vcell.mapping;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.vcell.model.rbm.MolecularComponentPattern;
+import org.vcell.model.rbm.MolecularTypePattern;
+import org.vcell.model.rbm.SpeciesPattern;
+import org.vcell.model.rbm.MolecularComponentPattern.BondType;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.IssueContext;
 import org.vcell.util.Matchable;
 
+import cbit.vcell.model.ProductPattern;
+import cbit.vcell.model.ReactantPattern;
 import cbit.vcell.model.ReactionRule;
 
 public class ReactionRuleSpec implements ModelProcessSpec {
@@ -75,13 +83,13 @@ public class ReactionRuleSpec implements ModelProcessSpec {
 		setReactionRule(argReactionRuleSpec.reactionRule);
 		this.fieldReactionRuleMapping = argReactionRuleSpec.fieldReactionRuleMapping;
 		refreshDependencies();
-	}            
+	}
 
 
 	public ReactionRuleSpec(ReactionRule argReactionRule) {
 		setReactionRule(argReactionRule);
 		refreshDependencies();
-	}          
+	}  
 
 
 /**
@@ -124,6 +132,54 @@ public void firePropertyChange(String propertyName, Object oldValue, Object newV
 	getPropertyChange().firePropertyChange(propertyName,oldValue,newValue);
 }
 
+public void writeData(StringBuilder sb) {			// SpringSaLaD exporting the binding rule information
+	Map<MolecularComponentPattern, MolecularTypePattern> productSpecifiedBondsMap = new LinkedHashMap<> ();
+	List<ReactantPattern> rpList = reactionRule.getReactantPatterns();
+	List<ProductPattern> ppList = reactionRule.getProductPatterns();
+	int transitions = 0;
+	for(ProductPattern pp : ppList) {
+		SpeciesPattern sp = pp.getSpeciesPattern();
+		List<MolecularTypePattern> mtpList = sp.getMolecularTypePatterns();
+		for(MolecularTypePattern mtp : mtpList) {
+			List<MolecularComponentPattern> mcpList = mtp.getComponentPatternList();
+			for(MolecularComponentPattern mcp : mcpList) {
+				if(mcp.getBondType() == BondType.Specified) {
+					productSpecifiedBondsMap.put(mcp, mtp);	// all the components in the product with specified bonds
+				}
+			}
+		}
+	}
+	for(ReactantPattern rp : rpList) {		// we look to find exactly 2 components that change BondType from None to Specified
+		SpeciesPattern sp = rp.getSpeciesPattern();
+		List<MolecularTypePattern> mtpList = sp.getMolecularTypePatterns();
+		for(MolecularTypePattern mtp : mtpList) {
+			List<MolecularComponentPattern> mcpList = mtp.getComponentPatternList();
+			for(MolecularComponentPattern mcp : mcpList) {
+				if(mcp.getBondType() == BondType.None) {		// bingo, found a transition
+					MolecularTypePattern candidate = productSpecifiedBondsMap.get(mcp);
+					if(candidate != null && mtp == candidate) {		// bingo, found a transition
+						transitions++;
+					}
+				}
+			}
+		}
+	}
+	
+	
+//	sb.append("'").append(reactionRule.getName()).append("'       ");
+//	if(molecule[0] != null && molecule[1] != null){
+//		sb.append("'").append(molecule[0].getName()).append("' : '")
+//		.append(type[0].getName()).append("' : '")
+//		.append(state[0].toString());
+//		sb.append("'  -->  '");
+//		sb.append(molecule[1].getName()).append("' : '")
+//		.append(type[1].getName()).append("' : '")
+//		.append(state[1].toString());
+//		sb.append("'  kon  ").append(Double.toString(kon));
+//		sb.append("  koff ").append(Double.toString(koff));
+//		sb.append("  Bond_Length ").append(Double.toString(bondLength));
+//	}
+}
 
 
 /**

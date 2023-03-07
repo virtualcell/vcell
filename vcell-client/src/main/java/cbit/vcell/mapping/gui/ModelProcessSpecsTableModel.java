@@ -41,6 +41,7 @@ public class ModelProcessSpecsTableModel extends VCellSortTableModel<ModelProces
 		COLUMN_NAME("Name"),
 		COLUMN_DEPICTION("Depiction"),
 		COLUMN_TYPE("Type"),
+		COLUMN_SUBTYPE("Subtype"),
 		COLUMN_ENABLED("Enabled"),
 		COLUMN_FAST("Fast");
 		
@@ -70,6 +71,7 @@ public String getColumnName(int columnIndex){
 private void refreshColumns(){
 	columns.clear();
 	columns.addAll(Arrays.asList(ColumnType.values())); // initialize to all columns
+	columns.remove(ColumnType.COLUMN_SUBTYPE);		// it's springsalad-only
 	if(getSimulationContext() == null) {
 		return;
 	}
@@ -78,6 +80,9 @@ private void refreshColumns(){
 	}
 	if (getSimulationContext().getApplicationType() == Application.NETWORK_STOCHASTIC){
 		columns.remove(ColumnType.COLUMN_FAST);
+	}
+	if(getSimulationContext().getApplicationType() == Application.SPRINGSALAD) {
+		columns.add(ColumnType.COLUMN_SUBTYPE);
 	}
 }
 @Override
@@ -136,6 +141,9 @@ public Class<?> getColumnClass(int column) {
 		case COLUMN_TYPE:{
 			return String.class;
 		}
+		case COLUMN_SUBTYPE:{
+			return String.class;
+		}
 		case COLUMN_ENABLED:{
 			return Boolean.class;
 		}
@@ -176,6 +184,14 @@ public Object getValueAt(int row, int col) {
 		}
 		case COLUMN_TYPE:{
 			return modelProcessSpec.getModelProcess().getDisplayType();
+		}
+		case COLUMN_SUBTYPE:{
+			ModelProcess modelProcess = modelProcessSpec.getModelProcess();
+			if(getSimulationContext().getApplicationType() == Application.SPRINGSALAD) {
+				return getSubtype(modelProcess);
+			} else {
+				return null;
+			}
 		}
 		case COLUMN_ENABLED:{
 			return new Boolean(!modelProcessSpec.isExcluded());
@@ -356,6 +372,14 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 		}
 	}catch (java.beans.PropertyVetoException e){
 		e.printStackTrace(System.out);
+	}
+}
+
+public String getSubtype(ModelProcess modelProcess) {
+	if(modelProcess instanceof ReactionRule) {
+		return "Binding";
+	} else {
+		return "Simple";
 	}
 }
 

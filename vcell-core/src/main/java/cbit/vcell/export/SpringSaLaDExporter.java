@@ -160,7 +160,7 @@ public class SpringSaLaDExporter {
 					continue;
 				}
 //				sb.append(reaction.writeReaction());
-//				rrs.writeData(sb);							// TODO: BINDING REACTION
+				rrs.writeData(sb);							// TODO: BINDING REACTION
 			}
 			sb.append("\n");
 
