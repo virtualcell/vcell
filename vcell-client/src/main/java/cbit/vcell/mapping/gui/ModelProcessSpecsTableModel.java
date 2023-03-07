@@ -15,6 +15,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
+import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.gui.ScrollTable;
 
@@ -27,6 +28,8 @@ import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.model.ModelProcess;
+import cbit.vcell.model.ProductPattern;
+import cbit.vcell.model.ReactantPattern;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SimpleReaction;
@@ -83,6 +86,7 @@ private void refreshColumns(){
 	}
 	if(getSimulationContext().getApplicationType() == Application.SPRINGSALAD) {
 		columns.add(ColumnType.COLUMN_SUBTYPE);
+		columns.remove(ColumnType.COLUMN_FAST);
 	}
 }
 @Override
@@ -377,6 +381,28 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 
 public String getSubtype(ModelProcess modelProcess) {
 	if(modelProcess instanceof ReactionRule) {
+		ReactionRule rr = (ReactionRule)modelProcess;
+		List<ReactantPattern> rpList = rr.getReactantPatterns();
+		if(rpList.size() == 1) {
+			SpeciesPattern sp = rpList.get(0).getSpeciesPattern();
+			if(sp.getMolecularTypePatterns().size() == 1) {
+				MolecularTypePattern mtp = sp.getMolecularTypePatterns().get(0);
+				if(mtp.getComponentPatternList().size() == 0) {
+					return "Creation";
+				}
+			}
+		}
+		List<ProductPattern> ppList = rr.getProductPatterns();
+		if(ppList.size() == 1) {
+			SpeciesPattern sp = ppList.get(0).getSpeciesPattern();
+			if(sp.getMolecularTypePatterns().size() == 1) {
+				MolecularTypePattern mtp = sp.getMolecularTypePatterns().get(0);
+				if(mtp.getComponentPatternList().size() == 0) {
+					return "Destruction";
+				}
+			}
+		}
+		// TODO: implement logic for binding. When 2 unbound sites in the single reactant become bound to each other in the product
 		return "Binding";
 	} else {
 		return "Simple";
