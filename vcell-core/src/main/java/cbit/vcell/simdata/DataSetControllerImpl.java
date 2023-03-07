@@ -1717,7 +1717,7 @@ private SimDataBlock evaluateFunction(
 	}
 
 	if (!variableType.equals(computedVariableType)) {
-		System.err.println("function [" + function.getName() + "] variable type [" + variableType.getTypeName() + "] is not equal to computed variable type [" + computedVariableType.getTypeName() + "].");
+		lg.warn("function [" + function.getName() + "] variable type [" + variableType.getTypeName() + "] is not equal to computed variable type [" + computedVariableType.getTypeName() + "], vcdID="+vcdID);
 	}
 	if (dataLength == 0)
 	{
