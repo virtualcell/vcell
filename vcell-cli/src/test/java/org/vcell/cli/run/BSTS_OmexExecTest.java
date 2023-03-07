@@ -145,7 +145,7 @@ public class BSTS_OmexExecTest {
 	}
 
 	@Test
-	public void test_sedml_roundtrip_SBML() throws Exception {
+	public void testSedmlExecutions() throws Exception {
 		FAULT knownFault = knownFaults().get(testCaseFilename);
 		try {
 			System.out.println("running test " + testCaseFilename);
