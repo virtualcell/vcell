@@ -75,7 +75,7 @@ public static void main(String[] args)
 			System.out.println("Func. value at solution "+fret);
 		}
 	}catch (Throwable e){
-		e.printStackTrace(System.out);
+		e.printStackTrace();
 	}
 	
 }

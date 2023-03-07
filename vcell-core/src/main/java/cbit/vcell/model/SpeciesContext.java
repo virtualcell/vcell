@@ -75,8 +75,7 @@ public SpeciesContext(KeyValue key, String name, Species species, Structure stru
 	try {
 		setName(name);
 	}catch (PropertyVetoException e){
-		e.printStackTrace(System.out);
-		throw new RuntimeException(e.getMessage());
+		throw new RuntimeException(e.getMessage(), e);
 	}
 	this.species = species;
 	setStructure(structure);
@@ -423,8 +422,7 @@ if(speciesPatternString != null) {
 			SpeciesPattern sp = RbmUtils.parseSpeciesPattern(speciesPatternString, model);
 			setSpeciesPattern(sp);
 		} catch (ParseException e) {
-			e.printStackTrace();
-			throw new RuntimeException("Bad format for repository species pattern string: " + e.getMessage());
+			throw new RuntimeException("Bad format for repository species pattern string: " + e.getMessage(), e);
 		}
 	}
 }

@@ -247,15 +247,13 @@ public static SimpleReferenceData fromVCML(CommentStringTokenizer tokens) throws
 	try {
 		numRows = Integer.parseInt(tokens.nextToken());
 	}catch (NumberFormatException e){
-		e.printStackTrace(System.out);
-		throw new DataAccessException("error reading number of rows: "+e.getMessage());
+		throw new DataAccessException("error reading number of rows: "+e.getMessage(), e);
 	}
 	
 	try {
 		numColumns = Integer.parseInt(tokens.nextToken());
 	}catch (NumberFormatException e){
-		e.printStackTrace(System.out);
-		throw new DataAccessException("error reading number of columns: "+e.getMessage());
+		throw new DataAccessException("error reading number of columns: "+e.getMessage(), e);
 	}
 
 	String names[] = new String[numColumns];

@@ -106,7 +106,7 @@ public void cleanup() {
 //			annotatedFunctionVector.addAll(oldUserDefinedFunctions);
 //		}
 //	}catch(Exception e){
-//		e.printStackTrace();
+//		lg.error(e);
 //		//ignore
 //	}
 //	return annotatedFunctionVector;
@@ -194,8 +194,7 @@ public Geometry getResampledGeometry() throws SolverException {
 			geoSurfaceDesc.setVolumeSampleSize(newSize);
 			geoSurfaceDesc.updateAll();
 		} catch (Exception e) {
-			e.printStackTrace();
-			throw new SolverException(e.getMessage());
+			throw new SolverException(e.getMessage(), e);
 		}
 	}
 	return resampledGeometry;

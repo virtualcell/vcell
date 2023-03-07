@@ -16,27 +16,24 @@ import cbit.vcell.model.Parameter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.units.VCUnitDefinition;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 /**
  * Insert the type's description here.
  * Creation date: (4/8/2002 11:45:12 AM)
  * @author: Anuradha Lakshminarayana
  */
 public class VoltageClampStimulus extends ElectricalStimulus {
-/**
- * VoltageClampStimulus constructor comment.
- * @param argElectrode cbit.vcell.mapping.Electrode
- * @param argName java.lang.String
- * @param argVoltName java.lang.String
- * @param argCurrName java.lang.String
- * @param argAnnotation java.lang.String
- */
-public VoltageClampStimulus(Electrode argElectrode, String argName, Expression argVoltExpr, SimulationContext argSimulationContext) {
+	private final static Logger lg = LogManager.getLogger(VoltageClampStimulus.class);
+
+	public VoltageClampStimulus(Electrode argElectrode, String argName, Expression argVoltExpr, SimulationContext argSimulationContext) {
 	super(argElectrode, argName, argSimulationContext);
 
 	try {
 		argVoltExpr.bindExpression(parameterContext);
 	}catch (ExpressionBindingException e){
-		e.printStackTrace(System.out);
+		lg.error(e);
 		//throw new RuntimeException(e.getMessage());
 	}
 	LocalParameter[] localParameters = new LocalParameter[1];
@@ -49,8 +46,7 @@ public VoltageClampStimulus(Electrode argElectrode, String argName, Expression a
 	try {
 		parameterContext.setLocalParameters(localParameters);
 	} catch (PropertyVetoException | ExpressionBindingException e) {
-		e.printStackTrace();
-		throw new RuntimeException(e.getMessage());
+		throw new RuntimeException(e.getMessage(), e);
 	}
 }
 

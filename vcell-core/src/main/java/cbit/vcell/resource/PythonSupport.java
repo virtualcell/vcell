@@ -169,7 +169,6 @@ public class PythonSupport {
 //			}
 			return true;
 		} catch (ExecutableException e) {
-			e.printStackTrace();
 			throw new RuntimeException("Python test invocation failed: " + e.getMessage(), e);
 		}
 	}
@@ -192,7 +191,7 @@ public class PythonSupport {
 			System.out.println(exe.getStderrString());
 			return true;
 		} catch (ExecutableException e) {
-//			e.printStackTrace();
+//			lg.error(e);
 			System.out.println("Exit value: " + exe.getExitValue());
 			System.out.println(exe.getStdoutString());
 			System.out.println(exe.getStderrString());
@@ -209,7 +208,7 @@ public class PythonSupport {
 				getPythonExe();
 			}catch (Exception e){
 				System.out.println("failed before verification ... this is supposed to happen");
-				e.printStackTrace(System.out);
+				e.printStackTrace();
 			}
 			
 			System.out.println("verified Python = " + getPythonExe());

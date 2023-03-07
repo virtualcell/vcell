@@ -109,7 +109,6 @@ public class SBMLExporter {
 	private final boolean bRoundTripValidation;
 
 	private SimulationContext vcSelectedSimContext = null;
-	private SimulationJob vcSelectedSimJob = null;
 
 	private final Map<String, UnitDefinition> vcUnitSymbolToSBMLUnit = new LinkedHashMap<>(); // to avoid repeated creation of
 
@@ -948,8 +947,7 @@ private void addReactions() throws SbmlException, XMLStreamException {
 			ASTNode exprFormulaNode = getFormulaFromExpression(rateExpr);
 			sbmlKLaw.setMath(exprFormulaNode);
 		} catch (cbit.vcell.parser.ExpressionException e) {
-			e.printStackTrace(System.out);
-			throw new RuntimeException("Error getting value of parameter : "+e.getMessage());
+			throw new RuntimeException("Error getting value of parameter : "+e.getMessage(), e);
 		}
 		
 		// Add kineticLaw to sbmlReaction - not needed now, since we use sbmlRxn.createKLaw() ??
@@ -1013,7 +1011,7 @@ private void addReactions() throws SbmlException, XMLStreamException {
 //				try {
 //					SBMLHelper.addNote(sr, "VCELL guess: how do we know if reaction is constant?");
 //				} catch (Exception e) {
-//					e.printStackTrace();
+//					lg.error(e);
 //				}
 			}
 		}
@@ -1137,14 +1135,9 @@ private void addSpecies() throws XMLStreamException, SbmlException {
 		if (initConc.getExpression() == null) {
 			try {
 				getSelectedSimContext().convertSpeciesIniCondition(true);
-			} catch (MappingException e) {
+			} catch (MappingException | PropertyVetoException e) {
 				// TODO Auto-generated catch block
-				e.printStackTrace();
-				throw new RuntimeException(e.getMessage());
-			} catch (PropertyVetoException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				throw new RuntimeException(e.getMessage());
+				throw new RuntimeException(e.getMessage(), e);
 			}
 		}
 		Expression initConcExp = initConc.getExpression();
@@ -1259,8 +1252,7 @@ private void addSpecies() throws XMLStreamException, SbmlException {
 								try {
 									bDiffExprIsZero =  (diffExpr.evaluateConstant() == 0.0);
 								} catch (Exception e) {
-									e.printStackTrace(System.out);
-									throw new RuntimeException("Unable to evalute numeric value of diffusion parameter for speciesContext '" + vcSpeciesContexts[i] + "'.");
+									throw new RuntimeException("Unable to evalute numeric value of diffusion parameter for speciesContext '" + vcSpeciesContexts[i] + "'.", e);
 								} 
 							}
 							boolean bDiffusionZero = (bDiffExprNull || bDiffExprIsZero);
@@ -1493,8 +1485,7 @@ private org.sbml.jsbml.Parameter createSBMLParamFromSpeciesParam(SpeciesContext 
 		}
 		return param;
 	} catch (ExpressionException e) {
-		e.printStackTrace(System.out);
-		throw new RuntimeException("Unable to interpret parameter '" + scsParam.getName() + "' of species : " + spContext.getName());
+		throw new RuntimeException("Unable to interpret parameter '" + scsParam.getName() + "' of species : " + spContext.getName(), e);
 	}
 }
 
@@ -1562,8 +1553,7 @@ private void addEvents() {
 				ASTNode math = getFormulaFromExpression(flattenedTrigger,MathType.BOOLEAN);
 				trigger.setMath(math);
 			}catch (ExpressionException e){
-				e.printStackTrace(System.out);
-				throw new RuntimeException("failed to generate trigger expression for event "+vcEvent.getName()+": "+e.getMessage());
+				throw new RuntimeException("failed to generate trigger expression for event "+vcEvent.getName()+": "+e.getMessage(), e);
 			}
 		
 			// create delay
@@ -1636,46 +1626,6 @@ private void addAssignmentRules()  {
 		}
 	}
 }
-private void addOverrideInitialAssignments() throws ExpressionException, MappingException, MathException, MatrixException, ModelException  {
-	// used for overrides and parameter scan exports only!
-	// for species, the initial assignments are done in addSpecies()
-	if(vcSelectedSimJob == null) {
-		return;
-	}
-	int index = vcSelectedSimJob.getJobIndex();
-	System.out.println("Simulation Job index = " + index);
-	
-	MathOverrides mathOverride = vcSelectedSimJob.getSimulation().getMathOverrides();
-	if(mathOverride == null || !mathOverride.hasOverrides()) {
-		return;
-	}
-	//
-	// TODO: SEDMLExporter is doing it differently, much more complicated
-	//
-	MathMapping mm = vcSelectedSimContext.createNewMathMapping();
-	MathSymbolMapping msm = mm.getMathSymbolMapping();
-	String[] overridenConstantNames = mathOverride.getOverridenConstantNames();
-
-	for(String overriddenConstantName : overridenConstantNames) {
-		SymbolTableEntry ste = SEDMLExporter.getSymbolTableEntryForModelEntity(msm, overriddenConstantName);
-		Expression exp = mathOverride.getActualExpression(overriddenConstantName, index);
-		String name = "";
-		if(ste != null) {
-			name = sbmlExportSymbolMapping.getSid(ste);
-			if (name == null){
-				throw new MappingException("symbolTableEntry "+ste+" not mapped to an SBML Sid");
-			}
-		} else {
-			throw new MappingException("Math Override name " + overriddenConstantName + " not found in mathSymbolMapping");
-		}
-		logger.info("symbol: " + name + ", overriden constant: " + overriddenConstantName + ", expression: " + exp.infix());
-		org.sbml.jsbml.InitialAssignment initialAssignment = sbmlModel.createInitialAssignment();
-		initialAssignment.setVariable(name);
-		sbmlExportSymbolMapping.initialAssignmentToVcmlExpressionMap.put(initialAssignment, exp);
-//		ASTNode math = getFormulaFromExpression(exp);
-//		ia.setMath(math);
-	}
-}
 
 /**
  * 	getInitialConc : 
@@ -1720,7 +1670,7 @@ private static ASTNode getFormulaFromExpression(Expression expression, MathType 
 //		expression.substituteInPlace(new Expression("t"), new Expression("time"));
 //	} catch (ExpressionException e2) {
 //		// TODO Auto-generated catch block
-//		e2.printStackTrace();
+//		lg.error(e);
 //		throw new RuntimeException(e2.toString());
 //	}
 //
@@ -1732,7 +1682,7 @@ private static ASTNode getFormulaFromExpression(Expression expression, MathType 
 //			return math;
 //		} catch (ParseException e) {
 //			// (konm * (h ^  - 1.0) / koffm)
-//			e.printStackTrace();
+//			lg.error(e);
 //			throw new RuntimeException(e.toString());
 //		}
 //	}
@@ -1742,24 +1692,13 @@ private static ASTNode getFormulaFromExpression(Expression expression, MathType 
 
 	try {
 		expMathMLStr = cbit.vcell.parser.ExpressionMathMLPrinter.getMathML(expression, false, desiredType, ExpressionMathMLPrinter.Dialect.SBML_SUBSET);
-	} catch (java.io.IOException e) {
-		e.printStackTrace(System.out);
-		throw new RuntimeException("Error converting expression to MathML string :" + e.getMessage());
-	} catch (cbit.vcell.parser.ExpressionException e1) {
-		e1.printStackTrace(System.out);
-		throw new RuntimeException("Error converting expression to MathML string :" + e1.getMessage());
+	} catch (IOException | ExpressionException e) {
+		throw new RuntimeException("Error converting expression to MathML string :" + e.getMessage(), e);
 	}
 
 	// Use libSBMl routines to convert MathML string to MathML document and a libSBML-readable formula string
 	ASTNode mathNode = ASTNode.readMathMLFromString(expMathMLStr);
 	return mathNode;
-}
-
-private Simulation getSelectedSimulation() {
-	if (vcSelectedSimJob == null) {
-		return null;
-	}
-	return vcSelectedSimJob.getSimulation();
 }
 
 public String getSBMLString() throws SbmlException, SBMLException, XMLStreamException, SBMLValidationException {
@@ -1828,44 +1767,38 @@ private void roundTripValidation() throws SBMLValidationException {
 		}
 
 		//
-		// if vcSelectedSimJob is null or has empty math overrides - then it is safe to try to compare for math equivalence
+		// before testing for mathematical equivalence, we have to make sure the imported SimulationContext has the same mathematical framework
 		//
-		if (vcSelectedSimJob == null || vcSelectedSimJob.getSimulation().getMathOverrides().getSize() == 0) {
-
+		Application applicationType_original = bioModel.getSimulationContext(0).getApplicationType();
+		Application applicationType_reread = reread_BioModel_vcell_units.getSimulationContext(0).getApplicationType();
+		if (!applicationType_original.equals(applicationType_reread)) {
 			//
-			// before testing for mathematical equivalence, we have to make sure the imported SimulationContext has the same mathematical framework
+			// replace re-read SimualtionContext with transformed SimulationContext with the same mathenmatical framework
+			// (e.g. nonspatial determinstic, nonspatial stochastic, spatial deterministic)
 			//
-			Application applicationType_original = bioModel.getSimulationContext(0).getApplicationType();
-			Application applicationType_reread = reread_BioModel_vcell_units.getSimulationContext(0).getApplicationType();
-			if (!applicationType_original.equals(applicationType_reread)) {
-				//
-				// replace re-read SimualtionContext with transformed SimulationContext with the same mathenmatical framework
-				// (e.g. nonspatial determinstic, nonspatial stochastic, spatial deterministic)
-				//
-				boolean bSpatial_original = bioModel.getSimulationContext(0).getGeometry().getDimension() > 0;
-				boolean bSpatial_reread = reread_BioModel_vcell_units.getSimulationContext(0).getGeometry().getDimension() > 0;
-				if (bSpatial_original != bSpatial_reread){
-					String failureMessage = "original application and reread application differ regarding spatial/nonspatial";
-					throw new SBMLValidationException(failureMessage);
-				}
-
-				SimulationContext simulationContextToReplace = reread_BioModel_vcell_units.getSimulationContext(0);
-				String simContextName = simulationContextToReplace.getName();
-				SimulationContext newSimulationContext = SimulationContext.copySimulationContext(simulationContextToReplace, simContextName, bSpatial_original, applicationType_original);
-				newSimulationContext.getGeometry().precomputeAll(new GeometryThumbnailImageFactoryAWT());
-				reread_BioModel_vcell_units.setSimulationContexts(new SimulationContext[] { newSimulationContext });
-				reread_BioModel_vcell_units.updateAll(false);
-			}
-
-			MathDescription origMathDescription = bioModel.getSimulationContext(0).getMathDescription();
-			MathDescription rereadMathDescription = reread_BioModel_vcell_units.getSimulationContext(0).getMathDescription();
-			MathCompareResults mathCompareResults = MathDescription.testEquivalency(SimulationSymbolTable.createMathSymbolTableFactory(), origMathDescription, rereadMathDescription);
-			if (!mathCompareResults.isEquivalent()) {
-				String failureMessage = "MathDescriptions not equivalent after VCML->SBML->VCML: " + mathCompareResults.toDatabaseStatus();
+			boolean bSpatial_original = bioModel.getSimulationContext(0).getGeometry().getDimension() > 0;
+			boolean bSpatial_reread = reread_BioModel_vcell_units.getSimulationContext(0).getGeometry().getDimension() > 0;
+			if (bSpatial_original != bSpatial_reread){
+				String failureMessage = "original application and reread application differ regarding spatial/nonspatial";
 				throw new SBMLValidationException(failureMessage);
-			} else {
-				logger.info("Round trip math validation passed: "+mathCompareResults.toDatabaseStatus());
 			}
+
+			SimulationContext simulationContextToReplace = reread_BioModel_vcell_units.getSimulationContext(0);
+			String simContextName = simulationContextToReplace.getName();
+			SimulationContext newSimulationContext = SimulationContext.copySimulationContext(simulationContextToReplace, simContextName, bSpatial_original, applicationType_original);
+			newSimulationContext.getGeometry().precomputeAll(new GeometryThumbnailImageFactoryAWT());
+			reread_BioModel_vcell_units.setSimulationContexts(new SimulationContext[] { newSimulationContext });
+			reread_BioModel_vcell_units.updateAll(false);
+		}
+
+		MathDescription origMathDescription = bioModel.getSimulationContext(0).getMathDescription();
+		MathDescription rereadMathDescription = reread_BioModel_vcell_units.getSimulationContext(0).getMathDescription();
+		MathCompareResults mathCompareResults = MathDescription.testEquivalency(SimulationSymbolTable.createMathSymbolTableFactory(), origMathDescription, rereadMathDescription);
+		if (!mathCompareResults.isEquivalent()) {
+			String failureMessage = "MathDescriptions not equivalent after VCML->SBML->VCML: " + mathCompareResults.toDatabaseStatus();
+			throw new SBMLValidationException(failureMessage);
+		} else {
+			logger.info("Round trip math validation passed: "+mathCompareResults.toDatabaseStatus());
 		}
 
 		if (bWriteDebugFiles) {
@@ -1917,11 +1850,7 @@ private void roundTripValidation() throws SBMLValidationException {
 	// TO DO expand to formally label version and build
 	sbmlDocument.setNotes("Exported by VCell 7.3");
 		
-	// If the chosen simulation is not null, the exported model's name should reflect it
-	String modelName = vcBioModel.getName() + "_" + getSelectedSimContext().getName();  
-	if (getSelectedSimulation() != null) {
-		modelName += "_" + getSelectedSimulation().getName();
-	}
+	String modelName = vcBioModel.getName() + "_" + getSelectedSimContext().getName();
 	sbmlModel = sbmlDocument.createModel(TokenMangler.mangleToSName(modelName));	// it's enough to mangle, there can be no conflict at this point
 	sbmlModel.setName(modelName);
 
@@ -2022,8 +1951,6 @@ private void checkUnistSystem() {
 	try {
 		modifiedBiomodel = ModelUnitConverter.createBioModelWithNewUnitSystem(getSelectedSimContext().getBioModel(), forcedModelUnitSystem);
 	} catch (ExpressionException | XmlParseException e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
 		throw new RuntimeException("could not convert units to SBML compatible", e);
 	}
 	vcBioModel = modifiedBiomodel;
@@ -2153,8 +2080,7 @@ private void addGeometry() throws SbmlException {
 				compMapping.setUnitSize(e.evaluateConstant());
 			}
 		} catch (ExpressionException e) {
-			e.printStackTrace(System.out);
-			throw new RuntimeException("Unable to create compartment mapping for structureMapping '" + compMapping.getId() +"' : " + e.getMessage());
+			throw new RuntimeException("Unable to create compartment mapping for structureMapping '" + compMapping.getId() +"' : " + e.getMessage(), e);
 		}
 	}
 	
@@ -2225,8 +2151,7 @@ private void addGeometry() throws SbmlException {
 		try {
 			vcGSD.updateAll();
 		} catch (Exception e) {
-			e.printStackTrace(System.out);
-			throw new RuntimeException("Unable to generate region images for geometry");
+			throw new RuntimeException("Unable to generate region images for geometry", e);
 		}
 	}
 	GeometricRegion[] vcGeometricRegions = vcGSD.getGeometricRegions();
@@ -2334,8 +2259,7 @@ private void addGeometry() throws SbmlException {
 					ASTNode mathMLNode = ASTNode.readMathMLFromString(mathMLStr);
 					analyticVol.setMath(mathMLNode);
 				} catch (Exception e) {
-					e.printStackTrace(System.out);
-					throw new RuntimeException("Error converting VC subvolume expression to mathML" + e.getMessage());
+					throw new RuntimeException("Error converting VC subvolume expression to mathML" + e.getMessage(), e);
 				}
 			}
 		}
@@ -2384,7 +2308,7 @@ private void addGeometry() throws SbmlException {
 //					vcGeometry.precomputeAll(new GeometryThumbnailImageFactoryAWT());
 //					vcImageGeometry = RayCaster.resampleGeometry(new GeometryThumbnailImageFactoryAWT(), vcGeometry, imageSize);
 //				} catch (Throwable e) {
-//					e.printStackTrace(System.out);
+//					lg.error(e);
 //					throw new RuntimeException("Unable to convert the original analytic or constructed solid geometry to image-based geometry : " + e.getMessage());
 //				}
 //			} else {
@@ -2402,7 +2326,7 @@ private void addGeometry() throws SbmlException {
 //					vcImageGeometry.getGeometrySurfaceDescription().setFilterCutoffFrequency(vcGeometry.getGeometrySurfaceDescription().getFilterCutoffFrequency());
 //					vcImageGeometry.precomputeAll(new GeometryThumbnailImageFactoryAWT(), true,true);
 //				} catch (Exception e) {
-//					e.printStackTrace(System.out);
+//					lg.error(e);
 //					throw new RuntimeException("Unable to convert the original analytic or constructed solid geometry to image-based geometry : " + e.getMessage());
 //				}
 //			}
@@ -2450,8 +2374,7 @@ private void addGeometry() throws SbmlException {
 				segmentedImageSampledField.setSamplesLength(compressedData.length);
 				segmentedImageSampledField.setSamples(compressedBuffer.toString().trim());
 			} catch (ImageException | IOException e) {
-				e.printStackTrace(System.out);
-				throw new RuntimeException("Unable to export image from VCell to SBML : " + e.getMessage());
+				throw new RuntimeException("Unable to export image from VCell to SBML : " + e.getMessage(), e);
 			}
 		}
 
@@ -2464,7 +2387,7 @@ private void addGeometry() throws SbmlException {
 			try {
 				distanceMaps = DistanceMapGenerator.computeDistanceMaps(vcImageGeometry, vcImageGeometry.getGeometrySpec().getImage(), false, false);
 			} catch (ImageException e) {
-				e.printStackTrace(System.out);
+				lg.error(e);
 				System.err.println("Unable to export distance map sampled field from VCell to SBML : " + e.getMessage());
 				// throw new RuntimeException("Unable to export distance map sampled field from VCell to SBML : " + e.getMessage());
 				
@@ -2665,10 +2588,6 @@ if (translateZ != vcTranslation.getTranslation().getZ()){
 	}
 }
 
-public void setSelectedSimulationJob(SimulationJob newVcSelectedSimJob) {
-	vcSelectedSimJob = newVcSelectedSimJob;
-}
-
 public Map<Pair <String, String>, String> getLocalToGlobalTranslationMap() {
 	return l2gMap;
 }
@@ -2784,14 +2703,7 @@ private void translateBioModel(SBMLDocument sbmlDocument) throws SbmlException, 
 	try {
 		addParameters();		// Add Parameters
 	} catch (ExpressionException e) {
-		e.printStackTrace(System.out);
-		throw new RuntimeException(e.getMessage());
-	}
-	try {
-		addOverrideInitialAssignments();
-	} catch (Exception e) {
-		e.printStackTrace(System.out);
-		throw new RuntimeException(e.getMessage());
+		throw new RuntimeException(e.getMessage(), e);
 	}
 	addRateRules();				// Add Rules
 	addAssignmentRules();

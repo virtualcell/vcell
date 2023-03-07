@@ -118,7 +118,7 @@ public class BiomodelSBMLServerResource extends AbstractServerResource implement
 				simulationContext = bioModel.getSimulationContext(0);
 			}
 			boolean bRoundTripValidation = true;
-			return XmlHelper.exportSBML(simulationContext.getBioModel(), 3, 1, 0, (simulationContext.getGeometryContext().getGeometry().getDimension()>0), simulationContext, null, bRoundTripValidation);
+			return XmlHelper.exportSBML(simulationContext.getBioModel(), 3, 1, 0, (simulationContext.getGeometryContext().getGeometry().getDimension()>0), simulationContext, bRoundTripValidation);
 		} catch (PermissionException e) {
 			lg.error(e);
 			throw new ResourceException(Status.CLIENT_ERROR_UNAUTHORIZED, "permission denied to requested resource");

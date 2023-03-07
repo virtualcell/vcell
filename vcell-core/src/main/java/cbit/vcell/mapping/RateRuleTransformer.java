@@ -11,6 +11,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.model.bngl.ParseException;
 import org.vcell.model.rbm.FakeReactionRuleRateParameter;
 import org.vcell.model.rbm.FakeSeedSpeciesInitialConditionsParameter;
@@ -69,6 +71,7 @@ import cbit.vcell.units.VCUnitDefinition;
  * Flattening a Rule-based Model
  */
 public class RateRuleTransformer implements SimContextTransformer {
+	private final static Logger lg = LogManager.getLogger(RateRuleTransformer.class);
 
 	@Override
 	final public SimContextTransformation transform(SimulationContext originalSimContext, MathMappingCallback mathMappingCallback, NetworkGenerationRequirements networkGenerationRequirements) {
@@ -77,8 +80,7 @@ public class RateRuleTransformer implements SimContextTransformer {
 			mathMappingCallback.setMessage("transforming the Rate Rules...");
 			transformedSimContext = (SimulationContext)BeanUtils.cloneSerializable(originalSimContext);
 		} catch (ClassNotFoundException | IOException e) {
-			e.printStackTrace();
-			throw new RuntimeException("unexpected exception: "+e.getMessage());
+			throw new RuntimeException("unexpected exception: "+e.getMessage(), e);
 		}
 		transformedSimContext.getModel().refreshDependencies();
 		transformedSimContext.refreshDependencies1(false);
@@ -119,7 +121,7 @@ public class RateRuleTransformer implements SimContextTransformer {
 				try {
 					model.removeModelParameter(mp);
 				} catch (PropertyVetoException e) {
-					e.printStackTrace();
+					lg.warn(e);
 				}
 
 				
@@ -129,16 +131,14 @@ public class RateRuleTransformer implements SimContextTransformer {
 					model.addSpecies(sp);
 					model.addSpeciesContext(sc);
 				} catch (PropertyVetoException exc) {
-					exc.printStackTrace();
-					throw new RuntimeException("RateRule '" + rr.getName() + "' conversion failed.\n" + exc.getMessage());
+					throw new RuntimeException("RateRule '" + rr.getName() + "' conversion failed.\n" + exc.getMessage(), exc);
 				}
 				rr.setRateRuleVar(sc);
 				SpeciesContextSpec scs = reactionContext.getSpeciesContextSpec(sc);
 				try {
 					scs.getInitialConcentrationParameter().setExpression(exp);
 				} catch (ExpressionBindingException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					lg.error(e);
 				}
 			}
 			
@@ -162,7 +162,7 @@ public class RateRuleTransformer implements SimContextTransformer {
 //					model.addSpecies(sp);
 //					model.addSpeciesContext(sc);
 //				} catch (PropertyVetoException exc) {
-//					exc.printStackTrace();
+//					lg.error(e);
 //					throw new RuntimeException("RateRule '" + rr.getName() + "' conversion failed.\n" + exc.getMessage());
 //				}
 //			} else if(ste instanceof SpeciesContext) {

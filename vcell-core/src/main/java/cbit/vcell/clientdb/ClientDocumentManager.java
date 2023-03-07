@@ -21,8 +21,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.Locale;
-import java.util.TimeZone;
 import java.util.Vector;
 
 import org.apache.logging.log4j.LogManager;
@@ -103,13 +101,9 @@ import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 import cbit.vcell.xml.XmlReader;
-/**
- * Insert the type's description here.
- * Creation date: (10/28/00 12:08:30 AM)
- * @author: 
- */
+
 public class ClientDocumentManager implements DocumentManager{
-	private static final Logger LG = LogManager.getLogger(ClientDocumentManager.class);
+	private static final Logger lg = LogManager.getLogger(ClientDocumentManager.class);
 	//
 	//
 	private SessionManager sessionManager = null;
@@ -188,12 +182,6 @@ public void addFieldDataDBListener(FieldDataDBEventListener newFieldDataDBEventL
 	fieldDataDBEventListenerH.add(newFieldDataDBEventListener);
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (11/28/00 5:43:44 PM)
- * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
- */
 public VCImageInfo addUserToGroup(VCImageInfo imageInfo, String userToAdd) throws DataAccessException {
 
 	try {
@@ -216,12 +204,6 @@ public VCImageInfo addUserToGroup(VCImageInfo imageInfo, String userToAdd) throw
 	}	
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (11/28/00 5:43:44 PM)
- * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
- */
 public BioModelInfo addUserToGroup(BioModelInfo bioModelInfo, String userToAdd) throws DataAccessException {
 
 	try {
@@ -244,12 +226,6 @@ public BioModelInfo addUserToGroup(BioModelInfo bioModelInfo, String userToAdd) 
 	}	
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (11/28/00 5:43:44 PM)
- * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
- */
 public GeometryInfo addUserToGroup(GeometryInfo geometryInfo, String userToAdd) throws DataAccessException {
 
 	try {
@@ -286,12 +262,6 @@ public GeometryInfo addUserToGroup(GeometryInfo geometryInfo, String userToAdd) 
 	}	
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (11/28/00 5:43:44 PM)
- * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
- */
 public MathModelInfo addUserToGroup(MathModelInfo mathModelInfo, String userToAdd) throws DataAccessException {
 
 	try {
@@ -314,12 +284,6 @@ public MathModelInfo addUserToGroup(MathModelInfo mathModelInfo, String userToAd
 	}	
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (11/28/00 5:43:44 PM)
- * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
- */
 private <T extends VersionInfo> T addUserToGroup0(VersionInfo versionInfo, VersionableType vType, Hashtable<KeyValue,T> vInfoHash, String userToAdd) throws RemoteProxyException, DataAccessException {
 
 	//
@@ -349,12 +313,6 @@ private <T extends VersionInfo> T addUserToGroup0(VersionInfo versionInfo, Versi
 	return newVersionInfo;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (9/22/2004 5:29:35 PM)
- * @param sims cbit.vcell.solver.Simulation[]
- */
 private void cacheSimulations(Simulation[] sims) throws DataAccessException{
 	System.out.println("ClientDocumentManager.cacheSimulations() has been disabled until needed");
 	//try{
@@ -362,16 +320,11 @@ private void cacheSimulations(Simulation[] sims) throws DataAccessException{
 			//xmlHash.put(sims[i].getVersion().getVersionKey(),cbit.vcell.xml.XmlHelper.simToXML(sims[i]));
 		//}
 	//}catch(Exception e){
-		//e.printStackTrace();
+		//lg.error(e);
 		//throw new DataAccessException(e.getClass().getName()+": "+e.getMessage());
 	//}
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (5/23/2006 9:23:34 AM)
- */
 public void curate(CurateSpec curateSpec) throws DataAccessException{
 	
 	try{
@@ -390,19 +343,12 @@ public void curate(CurateSpec curateSpec) throws DataAccessException{
 		fireDatabaseUpdate(new DatabaseEvent(this, DatabaseEvent.UPDATE, curateSpec.getVCDocumentInfo(), newVCDocumentInfo));
 		
 	}catch(Exception e){
-		e.printStackTrace();
-		throw new DataAccessException(e.getClass().getName()+" "+e.getMessage());
+		throw new DataAccessException(e.getClass().getName()+" "+e.getMessage(), e);
 	}
 
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (2/5/01 4:58:40 PM)
- * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
- * @exception org.vcell.util.DataAccessException The exception description.
- */
 public void delete(VCImageInfo vcImageInfo) throws DataAccessException {
 
 	try {
@@ -425,11 +371,6 @@ public void delete(VCImageInfo vcImageInfo) throws DataAccessException {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (11/28/00 5:43:44 PM)
- * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
- */
 public void delete(BioModelInfo bioModelInfo) throws DataAccessException {
 	
 	try {
@@ -467,11 +408,6 @@ public void delete(BioModelInfo bioModelInfo) throws DataAccessException {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (11/28/00 5:43:44 PM)
- * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
- */
 public void delete(GeometryInfo geometryInfo) throws DataAccessException {
 
 	try {
@@ -494,11 +430,6 @@ public void delete(GeometryInfo geometryInfo) throws DataAccessException {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (3/26/2001 11:26:16 PM)
- * @param bioModelInfo cbit.vcell.mathmodel.MathModelInfo
- */
 public void delete(MathModelInfo mathModelInfo) throws DataAccessException {
 
 	try {
@@ -551,7 +482,7 @@ public ExternalDataIdentifier saveFieldData(FieldDataFileOperationSpec fdos, Str
 	try {
 		// Add to Server Disk
 		FieldDataFileOperationResults fdor = fieldDataFileOperation(fdos);
-		LG.debug(fdor);
+		lg.debug(fdor);
 	} catch (DataAccessException e) {
 		try{
 			// try to cleanup new ExtDataID
@@ -564,12 +495,7 @@ public ExternalDataIdentifier saveFieldData(FieldDataFileOperationSpec fdos, Str
 	}
 	return eid;
 }
-/**
- * Insert the method's description here.
- * Creation date: (1/9/2007 9:39:53 AM)
- * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
- * @exception org.vcell.util.DataAccessException The exception description.
- */
+
 public FieldDataDBOperationResults fieldDataDBOperation(FieldDataDBOperationSpec fieldDataDBOperationSpec) throws DataAccessException {
 
 	try{
@@ -586,10 +512,6 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (10/17/2004 11:27:37 AM)
- */
 public TestSuiteOPResults doTestSuiteOP(TestSuiteOP tsop) throws DataAccessException {
 	if(!getUser().isTestAccount()){
 		throw new PermissionException("User="+getUser().getName()+" not allowed TestSuiteInfo");
@@ -599,34 +521,21 @@ public TestSuiteOPResults doTestSuiteOP(TestSuiteOP tsop) throws DataAccessExcep
 		//fireDatabaseRefresh(new DatabaseEvent(this, DatabaseEvent.REFRESH, null, null));
 		return tsopr;
 	}catch (RemoteProxyException e){
-		e.printStackTrace(System.out);
-		throw new DataAccessException(e.getMessage());
+		throw new DataAccessException(e.getMessage(), e);
 	}
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (11/6/2005 9:41:21 AM)
- * @return cbit.sql.Versionable
- * @param vType cbit.sql.VersionableType
- * @param key cbit.sql.KeyValue
- */
 public ReferenceQueryResult findReferences(ReferenceQuerySpec rqs) throws DataAccessException {
 
 	try{
 		return getSessionManager().getUserMetaDbServer().findReferences(rqs);
 	}catch(Exception e){
-		e.printStackTrace();
-		throw new DataAccessException(e.getClass().getName()+" "+e.getMessage());
+		throw new DataAccessException(e.getClass().getName()+" "+e.getMessage(), e);
 	}
 }
 
 
-/**
- * Method to support listener events.
- * @param event cbit.vcell.clientdb.DatabaseEvent
- */
 protected void fireDatabaseDelete(DatabaseEvent event) {
 	if (aDatabaseListener == null) {
 		return;
@@ -775,10 +684,10 @@ protected void fireFieldDataDB(final FieldDataDBEvent fieldDataDBEvent) {
 //			ImageIO.write(reactionsImage,"jpg", fos);
 //		} catch (java.io.IOException e) {
 //			System.err.println("Unable to save image to file.");
-//			e.printStackTrace();
+//			lg.error(e);
 //			throw e;
 //		} finally {
-//			try{fos.close();}catch(Exception e){e.printStackTrace();}
+//			try{fos.close();}catch(Exception e){lg.error(e);}
 //		}
 //	}
 
@@ -794,18 +703,12 @@ protected void fireFieldDataDB(final FieldDataDBEvent fieldDataDBEvent) {
 //			bos.close();
 //		} catch (java.io.IOException e) {
 //			System.err.println("Unable to print image to file.");
-//			e.printStackTrace();
+//			lg.error(e);
 //			throw e;
 //		}
 	}
 
 
-/**
- * Insert the method's description here.
- * Creation date: (11/14/00 4:02:44 PM)
- * @return cbit.vcell.biomodel.BioModel
- * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
- */
 	public BioModel getBioModel(KeyValue bioModelKey) throws DataAccessException {
 
 		XMLHolder<BioModel> bioModelXML = getBioModelXML(bioModelKey);
@@ -851,17 +754,10 @@ private BioModel getBioModelFromDatabaseXML(XMLHolder<BioModel> bioModelXMLHolde
 		//bm.refreshDependencies(); 
 		return bm;
 	}catch(XmlParseException e){
-		e.printStackTrace();
-		throw new DataAccessException(e.getMessage());
+		throw new DataAccessException(e.getMessage(), e);
 	}
 }
-/**
- * Insert the method's description here.
- * Creation date: (11/14/00 2:50:07 PM)
- * @return cbit.sql.Versionable
- * @param vType cbit.sql.VersionableType
- * @param key cbit.sql.KeyValue
- */
+
 public synchronized BioModelInfo getBioModelInfo(KeyValue key) throws DataAccessException {
 	if (key==null){
 System.out.println("<<<NULL>>>> ClientDocumentManager.getBioModelInfo("+key+")");
@@ -906,13 +802,6 @@ public BioModelInfo[] getBioModelInfos() {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (3/29/2004 4:04:16 PM)
- * @return java.lang.String
- * @param vType cbit.sql.VersionableType
- * @param vKey cbit.sql.KeyValue
- */
 private XMLHolder<BioModel> getBioModelXML(KeyValue vKey) throws DataAccessException {
 
 	try{
@@ -935,7 +824,7 @@ private XMLHolder<BioModel> getBioModelXML(KeyValue vKey) throws DataAccessExcep
 		throw new DataAccessException("BioModel (id=" + vKey + ") does not exist. It either " +
 			"has been deleted or its reference is outdated. Please use menu 'Server->Reconnect' to update document references.");
 	}catch(Exception e){
-		e.printStackTrace(System.out);
+		lg.error(e);
 		throw FailToLoadDocumentExc.createException(e, vKey, this);
 	}
 }
@@ -954,7 +843,7 @@ public static class FailToLoadDocumentExc extends DataAccessException {
 			VCDocumentInfo docInfo = clientDocumentManager.getBioModelInfo(documentKey);
 			documentSoftwareVersion = docInfo.getSoftwareVersion();
 		}catch(Exception e){
-			e.printStackTrace();
+			lg.error(e);
 		}
 		return new FailToLoadDocumentExc(cause,VCellSoftwareVersion.fromSystemProperty(),documentSoftwareVersion);
 	}
@@ -978,8 +867,7 @@ public DBSpecies getBoundSpecies(DBFormalSpecies dbfs) throws DataAccessExceptio
 	try {
 		return sessionManager.getUserMetaDbServer().getBoundSpecies(dbfs);
 	}catch (RemoteProxyException e){
-		e.printStackTrace(System.out);
-		throw new DataAccessException(e.getMessage());
+		throw new DataAccessException(e.getMessage(), e);
 	}
 }
 
@@ -993,32 +881,20 @@ public DBFormalSpecies[] getDatabaseSpecies(String likeString, boolean isBound, 
 	try {
 		return sessionManager.getUserMetaDbServer().getDatabaseSpecies(likeString,isBound,speciesType,restrictSearch,rowLimit,bOnlyUser);
 	}catch (RemoteProxyException e){
-		e.printStackTrace(System.out);
-		throw new DataAccessException(e.getMessage());
+		throw new DataAccessException(e.getMessage(), e);
 	}
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (4/30/2003 10:26:17 PM)
- */
 public ReactionDescription[] getDictionaryReactions(ReactionQuerySpec reactionQuerySpec) throws DataAccessException {
 	try {
 		return sessionManager.getUserMetaDbServer().getDictionaryReactions(reactionQuerySpec);
 	}catch (RemoteProxyException e){
-		e.printStackTrace(System.out);
-		throw new DataAccessException(e.getMessage());
+		throw new DataAccessException(e.getMessage(), e);
 	}
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (11/14/00 4:02:44 PM)
- * @return cbit.vcell.biomodel.BioModel
- * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
- */
 public Geometry getGeometry(KeyValue geometryKey) throws DataAccessException {
 
 	String geometryXML = getGeometryXML(geometryKey);
@@ -1028,13 +904,6 @@ public Geometry getGeometry(KeyValue geometryKey) throws DataAccessException {
 	return geometry;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (11/14/00 4:02:44 PM)
- * @return cbit.vcell.biomodel.BioModel
- * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
- */
 public Geometry getGeometry(GeometryInfo geometryInfo) throws DataAccessException {
 
 	Geometry geometry = null;
@@ -1042,8 +911,7 @@ public Geometry getGeometry(GeometryInfo geometryInfo) throws DataAccessExceptio
 		XMLSource geomSource = new XMLSource(getGeometryXML(geometryInfo.getVersion().getVersionKey()));
 		geometry = XmlHelper.XMLToGeometry(geomSource);
 	}catch (XmlParseException e){
-		e.printStackTrace(System.out);
-		throw new DataAccessException(e.getMessage());
+		throw new DataAccessException(e.getMessage(), e);
 	}
 	
 	try {
@@ -1051,20 +919,13 @@ public Geometry getGeometry(GeometryInfo geometryInfo) throws DataAccessExceptio
 			geometry.getGeometrySurfaceDescription().updateAll();
 		}
 	}catch (Exception e){
-		e.printStackTrace(System.out);
+		lg.error(e);
 		//throw new DataAccessException("Geometric surface generation error:\n"+e.getMessage());
 	}
 	
 	return geometry;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (9/22/2004 5:22:40 PM)
- * @return cbit.vcell.mathmodel.MathModel
- * @param mathModelXML java.lang.String
- */
 private Geometry getGeometryFromDatabaseXML(String geometryXML) throws DataAccessException{
 
 	try{
@@ -1076,25 +937,16 @@ private Geometry getGeometryFromDatabaseXML(String geometryXML) throws DataAcces
 				geometry.getGeometrySurfaceDescription().updateAll();
 			}
 		}catch (Exception e){
-			e.printStackTrace(System.out);
-			throw new DataAccessException("Geometric surface generation error:\n"+e.getMessage());
+			throw new DataAccessException("Geometric surface generation error:\n"+e.getMessage(), e);
 		}
 
 		return geometry;
 	}catch(XmlParseException e){
-		e.printStackTrace();
-		throw new DataAccessException(e.getClass().getName()+": "+e.getMessage());
+		throw new DataAccessException(e.getClass().getName()+": "+e.getMessage(), e);
 	}
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (11/14/00 2:50:07 PM)
- * @return cbit.sql.Versionable
- * @param vType cbit.sql.VersionableType
- * @param key cbit.sql.KeyValue
- */
 public synchronized GeometryInfo getGeometryInfo(KeyValue key) throws DataAccessException {
 	if (key==null){
 System.out.println("<<<NULL>>>> ClientDocumentManager.getGeometryInfo("+key+")");
@@ -1138,14 +990,6 @@ public GeometryInfo[] getGeometryInfos() {
 	return (GeometryInfo[])arrayList.toArray(new GeometryInfo[geoInfoHash.size()]);
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (3/29/2004 4:04:16 PM)
- * @return java.lang.String
- * @param vType cbit.sql.VersionableType
- * @param vKey cbit.sql.KeyValue
- */
 private String getGeometryXML(KeyValue vKey) throws DataAccessException {
 
 	try{
@@ -1165,49 +1009,29 @@ private String getGeometryXML(KeyValue vKey) throws DataAccessException {
 		throw new DataAccessException("Geometry (id=" + vKey + ") does not exist. It either " +
 			"has been deleted or its reference is outdated. Please use menu 'Server->Reconnect' to update document references.");
 	}catch(Exception e){
-		e.printStackTrace(System.out);
+		lg.error(e);
 		throw FailToLoadDocumentExc.createException(e, vKey, this);
 	}
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (11/14/00 4:02:44 PM)
- * @return cbit.vcell.biomodel.BioModel
- * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
- */
 public VCImage getImage(VCImageInfo vcImageInfo) throws DataAccessException {
 	
 	VCImage vcImage = null;
 	try {
 		vcImage = XmlHelper.XMLToImage(getImageXML(vcImageInfo.getVersion().getVersionKey()));
 	}catch (XmlParseException e){
-		e.printStackTrace(System.out);
-		throw new DataAccessException(e.getMessage());
+		throw new DataAccessException(e.getMessage(), e);
 	}
 	
 	return vcImage;
 }
 
-/**
- * Insert the method's description here.
- * Creation date: (2/5/01 4:58:40 PM)
- */
 public VCImageInfo[] getImageInfos() throws DataAccessException {
 	ArrayList<VCImageInfo> arrayList = new ArrayList<VCImageInfo>(imgInfoHash.values());
 	Collections.sort(arrayList,new VersionInfoComparator());
 	return (VCImageInfo[])arrayList.toArray(new VCImageInfo[imgInfoHash.size()]);
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (3/29/2004 4:04:16 PM)
- * @return java.lang.String
- * @param vType cbit.sql.VersionableType
- * @param vKey cbit.sql.KeyValue
- */
 private String getImageXML(KeyValue vKey) throws DataAccessException {
 
 	try{
@@ -1226,17 +1050,11 @@ private String getImageXML(KeyValue vKey) throws DataAccessException {
 	}catch (ObjectNotFoundException e){
 		return null;
 	}catch(Exception e){
-		e.printStackTrace(System.out);
+		lg.error(e);
 		throw FailToLoadDocumentExc.createException(e, vKey, this);
 	}
 }
 
-/**
- * Insert the method's description here.
- * Creation date: (11/14/00 4:02:44 PM)
- * @return cbit.vcell.biomodel.BioModel
- * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
- */
 public MathModel getMathModel(KeyValue mathModelKey) throws DataAccessException {
 
 	XMLHolder<MathModel> mathModelXML = getMathModelXML(mathModelKey);
@@ -1255,25 +1073,12 @@ public MathModel getMathModel(KeyValue mathModelKey) throws DataAccessException 
 	return mathModel;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (11/14/00 4:02:44 PM)
- * @return cbit.vcell.biomodel.BioModel
- * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
- */
 public MathModel getMathModel(MathModelInfo mathModelInfo) throws DataAccessException {
 	
 	return getMathModel(mathModelInfo.getVersion().getVersionKey());
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (9/22/2004 5:22:40 PM)
- * @return cbit.vcell.mathmodel.MathModel
- * @param mathModelXML java.lang.String
- */
 private MathModel getMathModelFromDatabaseXML(XMLHolder<MathModel> mathModelXML) throws DataAccessException{
 
 	try{
@@ -1289,25 +1094,15 @@ private MathModel getMathModelFromDatabaseXML(XMLHolder<MathModel> mathModelXML)
 				mm.getMathDescription().getGeometry().getGeometrySurfaceDescription().updateAll();
 			}
 		}catch (Exception e){
-			e.printStackTrace(System.out);
-			throw new DataAccessException("Geometric surface generation error:\n"+e.getMessage());
+			throw new DataAccessException("Geometric surface generation error:\n"+e.getMessage(), e);
 		}
 
 		return mm;
 	}catch(XmlParseException e){
-		e.printStackTrace();
-		throw new DataAccessException(e.getClass().getName()+": "+e.getMessage());
+		throw new DataAccessException(e.getClass().getName()+": "+e.getMessage(), e);
 	}
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (11/14/00 2:50:07 PM)
- * @return cbit.sql.Versionable
- * @param vType cbit.sql.VersionableType
- * @param key cbit.sql.KeyValue
- */
 public synchronized MathModelInfo getMathModelInfo(KeyValue key) throws DataAccessException {
 	if (key==null){
 System.out.println("<<<NULL>>>> ClientDocumentManager.getMathModelInfo("+key+")");
@@ -1343,26 +1138,12 @@ System.out.println("<<<NULL>>>> ClientDocumentManager.getMathModelInfo("+key+")"
 	return null;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (11/14/00 5:33:21 PM)
- * @return cbit.vcell.biomodel.BioModelInfo[]
- */
 public MathModelInfo[] getMathModelInfos() {
 	ArrayList<MathModelInfo> arrayList = new ArrayList<MathModelInfo>(mathModelInfoHash.values());
 	Collections.sort(arrayList,new VersionInfoComparator());
 	return (MathModelInfo[])arrayList.toArray(new MathModelInfo[mathModelInfoHash.size()]);
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (3/29/2004 4:04:16 PM)
- * @return java.lang.String
- * @param vType cbit.sql.VersionableType
- * @param vKey cbit.sql.KeyValue
- */
 private XMLHolder<MathModel> getMathModelXML(KeyValue vKey) throws DataAccessException {
 
 	try{
@@ -1384,19 +1165,11 @@ private XMLHolder<MathModel> getMathModelXML(KeyValue vKey) throws DataAccessExc
 		throw new DataAccessException("MathModel (id=" + vKey + ") does not exist. It either " +
 			"has been deleted or its reference is outdated. Please use menu 'Server->Reconnect' to update document references.");
 	}catch(Exception e){
-		e.printStackTrace(System.out);
+		lg.error(e);
 		throw FailToLoadDocumentExc.createException(e, vKey, this);
 	}
 }
 
-
-/**
- * This method was created in VisualAge.
- * @return void
- * @param key KeyValue
- * @exception org.vcell.util.DataAccessException The exception description.
- * @exception RemoteProxyException The exception description.
- */
 public Preference[] getPreferences() throws DataAccessException{
 
 	System.out.println("ClientDocumentManager.getPreferences()");
@@ -1413,11 +1186,6 @@ public Preference[] getPreferences() throws DataAccessException{
 	}
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (8/25/2003 5:10:41 PM)
- */
 public Model getReactionStepAsModel(KeyValue reactionStepKey) throws DataAccessException {
 	try {
 		String str = sessionManager.getUserMetaDbServer().getReactionStepAsModel(reactionStepKey);
@@ -1428,25 +1196,17 @@ public Model getReactionStepAsModel(KeyValue reactionStepKey) throws DataAccessE
 				reactionModel = (Model)BeanUtils.cloneSerializable(reactionModel);
 				reactionModel.refreshDependencies();
 			}catch(Exception e){
-				e.printStackTrace(System.out);
-				throw new DataAccessException(e.getMessage());
+				throw new DataAccessException(e.getMessage(), e);
 			}
 		}
 		return reactionModel;
 		
 	}catch (Exception e){
-		e.printStackTrace(System.out);
-		throw new DataAccessException(e.getMessage());
+		throw new DataAccessException(e.getMessage(), e);
 	}
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (9/1/2004 10:48:52 AM)
- * @return cbit.vcell.solver.ode.gui.SimulationStatus
- * @param vcSimulationIdentifier cbit.vcell.solver.VCSimulationIdentifier
- */
 public SimulationStatus getServerSimulationStatus(VCSimulationIdentifier vcSimulationIdentifier) throws DataAccessException {
 	if (simulationStatusHash.containsKey(vcSimulationIdentifier.getSimulationKey())){
 		return (SimulationStatus)simulationStatusHash.get(vcSimulationIdentifier.getSimulationKey());
@@ -1473,33 +1233,18 @@ public SimulationStatus getServerSimulationStatus(VCSimulationIdentifier vcSimul
 		return sessionManager;
 	}
 
-
-/**
- * Insert the method's description here.
- * Creation date: (11/14/00 4:02:44 PM)
- * @return cbit.vcell.biomodel.BioModel
- * @param simulationInfo cbit.vcell.solver.SimulationInfo
- */
 public Simulation getSimulation(SimulationInfo simulationInfo) throws DataAccessException {
 	
 	Simulation simulation = null;
 	try {
 		simulation = XmlHelper.XMLToSim(getSimulationXML(simulationInfo.getVersion().getVersionKey()));
 	}catch (XmlParseException e){
-		e.printStackTrace(System.out);
-		throw new DataAccessException(e.getMessage());
+		throw new DataAccessException(e.getMessage(), e);
 	}
 	
 	return simulation;
 }
 
-/**
- * Insert the method's description here.
- * Creation date: (3/29/2004 4:04:16 PM)
- * @return java.lang.String
- * @param vType cbit.sql.VersionableType
- * @param vKey cbit.sql.KeyValue
- */
 private String getSimulationXML(KeyValue vKey) throws DataAccessException {
 
 	try{
@@ -1518,8 +1263,7 @@ private String getSimulationXML(KeyValue vKey) throws DataAccessException {
 	}catch (ObjectNotFoundException e){
 		return null;
 	}catch(Exception e){
-		e.printStackTrace(System.out);
-		throw new DataAccessException("Error getting XML document from server: "+e.getMessage());
+		throw new DataAccessException("Error getting XML document from server: "+e.getMessage(), e);
 		//return null;
 	}
 }
@@ -1536,8 +1280,7 @@ public TestSuiteNew getTestSuite(java.math.BigDecimal getThisTS) throws DataAcce
 	try {
 		return getSessionManager().getUserMetaDbServer().getTestSuite(getThisTS);
 	}catch (RemoteProxyException e){
-		e.printStackTrace(System.out);
-		throw new DataAccessException(e.getMessage());
+		throw new DataAccessException(e.getMessage(), e);
 	}
 }
 
@@ -1554,8 +1297,7 @@ public TestSuiteInfoNew[] getTestSuiteInfos() throws DataAccessException {
 	try {
 		return getSessionManager().getUserMetaDbServer().getTestSuiteInfos();
 	}catch (RemoteProxyException e){
-		e.printStackTrace(System.out);
-		throw new DataAccessException(e.getMessage());
+		throw new DataAccessException(e.getMessage(), e);
 	}
 }
 
@@ -1577,8 +1319,7 @@ public ReactionDescription[] getUserReactionDescriptions(ReactionQuerySpec react
 	try {
 		return sessionManager.getUserMetaDbServer().getUserReactionDescriptions(reactionQuerySpec);
 	}catch (RemoteProxyException e){
-		e.printStackTrace(System.out);
-		throw new DataAccessException(e.getMessage());
+		throw new DataAccessException(e.getMessage(), e);
 	}
 }
 
@@ -1591,8 +1332,7 @@ public ReactionStepInfo[] getUserReactionStepInfos(KeyValue[] reactionStepKeys) 
 	try {
 		return sessionManager.getUserMetaDbServer().getReactionStepInfos(reactionStepKeys);
 	}catch (RemoteProxyException e){
-		e.printStackTrace(System.out);
-		throw new DataAccessException(e.getMessage());
+		throw new DataAccessException(e.getMessage(), e);
 	}
 }
 
@@ -1602,9 +1342,7 @@ public ReactionStepInfo[] getUserReactionStepInfos(KeyValue[] reactionStepKeys) 
  * @param e RemoteProxyException
  */
 private void handleRemoteProxyException(RemoteProxyException e) {
-	System.out.println("\n\n.... Handling RemoteProxyException ...\n");
-	e.printStackTrace(System.out);
-	System.out.println("\n\n");
+	lg.error("Handling RemoteProxyException", e);
 }
 
 
@@ -1719,8 +1457,8 @@ public boolean isChanged(VCImage vcImage, String vcImageXML) throws DataAccessEx
 
 	try {
 		savedImageXML = getImageXML(vcImage.getVersion().getVersionKey());
-	}catch (Throwable e){
-		e.printStackTrace(System.out);
+	}catch (Exception e){
+		lg.error(e);
 		//
 		// loaded version has been deleted
 		//
@@ -1745,8 +1483,7 @@ public boolean isChanged(VCImage vcImage, String vcImageXML) throws DataAccessEx
 			return true;
 		}
 	}catch (XmlParseException e){
-		e.printStackTrace(System.out);
-		throw new DataAccessException(e.getMessage());
+		throw new DataAccessException(e.getMessage(), e);
 	}
 
 
@@ -1803,8 +1540,7 @@ public boolean isChanged(BioModel bioModel, String bioModelXML) throws DataAcces
 			}
 			return false;			
 		}catch (XmlParseException e){
-			e.printStackTrace(System.out);
-			throw new DataAccessException(e.getMessage());
+			throw new DataAccessException(e.getMessage(), e);
 		}
 	}
 
@@ -1848,8 +1584,8 @@ public boolean isChanged(Geometry geometry, String geometryXML) throws DataAcces
 
 	try {
 		savedGeometryXML = getImageXML(geometry.getVersion().getVersionKey());
-	}catch (Throwable e){
-		e.printStackTrace(System.out);
+	}catch (Exception e){
+		lg.error(e);
 		//
 		// loaded version has been deleted
 		//
@@ -1874,8 +1610,7 @@ public boolean isChanged(Geometry geometry, String geometryXML) throws DataAcces
 			return true;
 		}
 	}catch (XmlParseException e){
-		e.printStackTrace(System.out);
-		throw new DataAccessException(e.getMessage());
+		throw new DataAccessException(e.getMessage(), e);
 	}
 
 	return false;
@@ -1939,8 +1674,7 @@ public boolean isChanged(MathModel mathModel, String mathModelXML) throws DataAc
 			}
 			return !VCMLComparator.compareEquals(savedMathModelXML.getXmlString(),mathModelXML, true);
 		}catch (XmlParseException e){
-			e.printStackTrace(System.out);
-			throw new DataAccessException(e.getMessage());
+			throw new DataAccessException(e.getMessage(), e);
 		}
 	}
 }
@@ -1971,8 +1705,7 @@ public boolean isChanged(Simulation sim) throws DataAccessException{
 	try{
 		return !VCMLComparator.compareEquals(XmlHelper.simToXML(sim),loadedSimXML, false);
 	}catch (XmlParseException e){
-		e.printStackTrace(System.out);
-		throw new DataAccessException(e.getMessage());
+		throw new DataAccessException(e.getMessage(), e);
 	}
 	
 }
@@ -2036,7 +1769,7 @@ private void preloadSimulationStatus(KeyValue[] simKeys) {
 				simulationStatusHash.put(simKeys[i],simulationStatus);
 			}
 		}catch (DataAccessException e){
-			e.printStackTrace(System.out);
+			lg.error(e);
 		}
 	}
 }
@@ -2120,12 +1853,6 @@ public void removeFieldDataDBListener(EventListener oldFieldDataDBListener) {
 	fieldDataDBEventListenerH.remove(oldFieldDataDBListener);
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (11/28/00 5:43:44 PM)
- * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
- */
 public VCImageInfo removeUserFromGroup(VCImageInfo imageInfo, String userToRemove) throws DataAccessException {
 
 	try {
@@ -2148,12 +1875,6 @@ public VCImageInfo removeUserFromGroup(VCImageInfo imageInfo, String userToRemov
 	}	
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (11/28/00 5:43:44 PM)
- * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
- */
 public BioModelInfo removeUserFromGroup(BioModelInfo bioModelInfo, String userToRemove) throws DataAccessException {
 
 	try {
@@ -2176,12 +1897,6 @@ public BioModelInfo removeUserFromGroup(BioModelInfo bioModelInfo, String userTo
 	}	
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (11/28/00 5:43:44 PM)
- * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
- */
 public GeometryInfo removeUserFromGroup(GeometryInfo geometryInfo, String userToRemove) throws DataAccessException {
 
 	try {
@@ -2218,12 +1933,6 @@ public GeometryInfo removeUserFromGroup(GeometryInfo geometryInfo, String userTo
 	}	
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (11/28/00 5:43:44 PM)
- * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
- */
 public MathModelInfo removeUserFromGroup(MathModelInfo mathModelInfo, String userToRemove) throws DataAccessException {
 
 	try {
@@ -2246,12 +1955,6 @@ public MathModelInfo removeUserFromGroup(MathModelInfo mathModelInfo, String use
 	}	
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (11/28/00 5:43:44 PM)
- * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
- */
 private <T extends VersionInfo> T removeUserFromGroup0(VersionInfo versionInfo, VersionableType vType, Hashtable<KeyValue,T> vInfoHash, String userToAdd) throws RemoteProxyException, DataAccessException {
 
 	//
@@ -2281,14 +1984,6 @@ private <T extends VersionInfo> T removeUserFromGroup0(VersionInfo versionInfo, 
 	return newVersionInfo;
 }
 
-
-/**
- * This method was created in VisualAge.
- * @return void
- * @param key KeyValue
- * @exception org.vcell.util.DataAccessException The exception description.
- * @exception RemoteProxyException The exception description.
- */
 public void replacePreferences(Preference[] argPreferences) throws DataAccessException{
 
 	if (argPreferences==null){
@@ -2306,19 +2001,13 @@ public void replacePreferences(Preference[] argPreferences) throws DataAccessExc
 	}
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (2/5/01 4:58:40 PM)
- */
 public VCImage save(VCImage vcImage) throws DataAccessException {
 	try {
 		String vcImageXML = null;
 		try {
 			vcImageXML = XmlHelper.imageToXML(vcImage);
 		}catch (XmlParseException e){
-			e.printStackTrace(System.out);
-			throw new DataAccessException(e.getMessage());
+			throw new DataAccessException(e.getMessage(), e);
 		}
 
 		String savedVCImageXML = sessionManager.getUserMetaDbServer().saveVCImage(new BigString(vcImageXML)).toString();
@@ -2327,8 +2016,7 @@ public VCImage save(VCImage vcImage) throws DataAccessException {
 		try {
 			savedVCImage = XmlHelper.XMLToImage(savedVCImageXML);
 		}catch (XmlParseException e){
-			e.printStackTrace(System.out);
-			throw new DataAccessException(e.getMessage());
+			throw new DataAccessException(e.getMessage(), e);
 		}
 		savedVCImage.refreshDependencies();
 		
@@ -2346,13 +2034,12 @@ public VCImage save(VCImage vcImage) throws DataAccessException {
 			
 			fireDatabaseInsert(new DatabaseEvent(this, DatabaseEvent.INSERT, null, savedVCImageInfo));
 		}catch (Exception e){
-			e.printStackTrace(System.out);
+			lg.error(e);
 		}
 		
 		return savedVCImage;
 	}catch (RemoteProxyException e){
-		e.printStackTrace(System.out);
-		throw new DataAccessException(VCellErrorMessages.FAIL_SAVE_MESSAGE + "\n\n" + e.getMessage());
+		throw new DataAccessException(VCellErrorMessages.FAIL_SAVE_MESSAGE + "\n\n" + e.getMessage(), e);
 	}	
 }
 
@@ -2391,8 +2078,7 @@ public BioModel save(BioModel bioModel, String independentSims[]) throws DataAcc
 			bioModel.getVCMetaData().cleanupMetadata();
 			bioModelXML = XmlHelper.bioModelToXML(bioModel);
 		}catch (XmlParseException e){
-			e.printStackTrace(System.out);
-			throw new DataAccessException(e.getMessage());
+			throw new DataAccessException(e.getMessage(), e);
 		}
 		
 		String savedBioModelXML = sessionManager.getUserMetaDbServer().saveBioModel(new BigString(bioModelXML),independentSims).toString();
@@ -2425,8 +2111,7 @@ public BioModel save(BioModel bioModel, String independentSims[]) throws DataAcc
 
 		return savedBioModel;
 	}catch (RemoteProxyException e){
-		e.printStackTrace(System.out);
-		throw new DataAccessException(VCellErrorMessages.FAIL_SAVE_MESSAGE + "\n\n" + e.getMessage());
+		throw new DataAccessException(VCellErrorMessages.FAIL_SAVE_MESSAGE + "\n\n" + e.getMessage(), e);
 	}	
 }
 
@@ -2441,8 +2126,7 @@ public Geometry save(Geometry geometry) throws DataAccessException {
 		try {
 			geometryXML = XmlHelper.geometryToXML(geometry);
 		}catch (XmlParseException e){
-			e.printStackTrace(System.out);
-			throw new DataAccessException(e.getMessage());
+			throw new DataAccessException(e.getMessage(), e);
 		}
 
 		String savedGeometryXML = sessionManager.getUserMetaDbServer().saveGeometry(new BigString(geometryXML)).toString();
@@ -2464,8 +2148,7 @@ public Geometry save(Geometry geometry) throws DataAccessException {
 
 		return savedGeometry;
 	}catch (RemoteProxyException e){
-		e.printStackTrace(System.out);
-		throw new DataAccessException(VCellErrorMessages.FAIL_SAVE_MESSAGE + "\n\n" + e.getMessage());
+		throw new DataAccessException(VCellErrorMessages.FAIL_SAVE_MESSAGE + "\n\n" + e.getMessage(), e);
 	}	
 }
 
@@ -2480,19 +2163,18 @@ public MathModel save(MathModel mathModel, String independentSims[]) throws Data
 		String mathModelXML = null;
 		try {
 			mathModelXML = XmlHelper.mathModelToXML(mathModel);
-			if (LG.isInfoEnabled()) {
-				LG.info(XmlUtil.beautify(mathModelXML));
+			if (lg.isInfoEnabled()) {
+				lg.info(XmlUtil.beautify(mathModelXML));
 			}
 		}catch (XmlParseException e){
-			e.printStackTrace(System.out);
-			throw new DataAccessException(e.getMessage());
+			throw new DataAccessException(e.getMessage(), e);
 		}
 			
 		String savedMathModelXML = sessionManager.getUserMetaDbServer().saveMathModel(new BigString(mathModelXML),independentSims).toString();
 
 		MathModel savedMathModel = getMathModelFromDatabaseXML(new XMLHolder<MathModel>(savedMathModelXML));
-		if (LG.isInfoEnabled()) { 
-			LG.info(XmlUtil.beautify(savedMathModelXML));
+		if (lg.isInfoEnabled()) {
+			lg.info(XmlUtil.beautify(savedMathModelXML));
 		}
 		
 		KeyValue savedKey = savedMathModel.getVersion().getVersionKey();
@@ -2510,8 +2192,7 @@ public MathModel save(MathModel mathModel, String independentSims[]) throws Data
 
 		return savedMathModel;
 	}catch (RemoteProxyException e){
-		e.printStackTrace(System.out);
-		throw new DataAccessException(VCellErrorMessages.FAIL_SAVE_MESSAGE + "\n\n" + e.getMessage());
+		throw new DataAccessException(VCellErrorMessages.FAIL_SAVE_MESSAGE + "\n\n" + e.getMessage(), e);
 	}	
 }
 
@@ -2526,8 +2207,7 @@ public VCImage saveAsNew(VCImage vcImage, java.lang.String newName) throws DataA
 		try {
 			vcImageXML = XmlHelper.imageToXML(vcImage);
 		}catch (XmlParseException e){
-			e.printStackTrace(System.out);
-			throw new DataAccessException(e.getMessage());
+			throw new DataAccessException(e.getMessage(), e);
 		}
 
 		String savedVCImageXML = sessionManager.getUserMetaDbServer().saveVCImageAs(new BigString(vcImageXML), newName).toString();
@@ -2536,8 +2216,7 @@ public VCImage saveAsNew(VCImage vcImage, java.lang.String newName) throws DataA
 		try {
 			savedVCImage = XmlHelper.XMLToImage(savedVCImageXML);
 		}catch (XmlParseException e){
-			e.printStackTrace(System.out);
-			throw new DataAccessException(e.getMessage());
+			throw new DataAccessException(e.getMessage(), e);
 		}
 		savedVCImage.refreshDependencies();
 		
@@ -2555,13 +2234,12 @@ public VCImage saveAsNew(VCImage vcImage, java.lang.String newName) throws DataA
 			
 			fireDatabaseInsert(new DatabaseEvent(this, DatabaseEvent.INSERT, null, savedVCImageInfo));
 		}catch (Exception e){
-			e.printStackTrace(System.out);
+			lg.error(e);
 		}
 		
 		return savedVCImage;
 	}catch (RemoteProxyException e){
-		e.printStackTrace(System.out);
-		throw new DataAccessException(VCellErrorMessages.FAIL_SAVE_MESSAGE + "\n\n" + e.getMessage());
+		throw new DataAccessException(VCellErrorMessages.FAIL_SAVE_MESSAGE + "\n\n" + e.getMessage(), e);
 	}	
 }
 
@@ -2579,8 +2257,7 @@ public BioModel saveAsNew(BioModel bioModel, java.lang.String newName, String in
 			bioModel.getVCMetaData().cleanupMetadata();
 			bioModelXML = XmlHelper.bioModelToXML(bioModel);
 		}catch (XmlParseException e){
-			e.printStackTrace(System.out);
-			throw new DataAccessException(e.getMessage());
+			throw new DataAccessException(e.getMessage(), e);
 		}
 
 		String savedBioModelXML = sessionManager.getUserMetaDbServer().saveBioModelAs(new BigString(bioModelXML), newName, independentSims).toString();
@@ -2606,8 +2283,7 @@ public BioModel saveAsNew(BioModel bioModel, java.lang.String newName, String in
 
 		return savedBioModel;
 	}catch (RemoteProxyException e){
-		e.printStackTrace(System.out);
-		throw new DataAccessException(VCellErrorMessages.FAIL_SAVE_MESSAGE + "\n\n" + e.getMessage());
+		throw new DataAccessException(VCellErrorMessages.FAIL_SAVE_MESSAGE + "\n\n" + e.getMessage(), e);
 	}	
 }
 
@@ -2622,8 +2298,7 @@ public Geometry saveAsNew(Geometry geometry, java.lang.String newName) throws Da
 		try {
 			geometryXML = XmlHelper.geometryToXML(geometry);
 		}catch (XmlParseException e){
-			e.printStackTrace(System.out);
-			throw new DataAccessException(e.getMessage());
+			throw new DataAccessException(e.getMessage(), e);
 		}
 
 		if (isChanged(geometry,geometryXML)==false){
@@ -2650,8 +2325,7 @@ public Geometry saveAsNew(Geometry geometry, java.lang.String newName) throws Da
 
 		return savedGeometry;
 	}catch (RemoteProxyException e){
-		e.printStackTrace(System.out);
-		throw new DataAccessException(VCellErrorMessages.FAIL_SAVE_MESSAGE + "\n\n" + e.getMessage());
+		throw new DataAccessException(VCellErrorMessages.FAIL_SAVE_MESSAGE + "\n\n" + e.getMessage(), e);
 	}	
 }
 
@@ -2667,8 +2341,7 @@ public MathModel saveAsNew(MathModel mathModel, java.lang.String newName, String
 		try {
 			mathModelXML = XmlHelper.mathModelToXML(mathModel);
 		}catch (XmlParseException e){
-			e.printStackTrace(System.out);
-			throw new DataAccessException(e.getMessage());
+			throw new DataAccessException(e.getMessage(), e);
 		}
 //		System.out.println(mathModelXML);
 		String savedMathModelXML = sessionManager.getUserMetaDbServer().saveMathModelAs(new BigString(mathModelXML), newName, independentSims).toString();
@@ -2691,17 +2364,10 @@ public MathModel saveAsNew(MathModel mathModel, java.lang.String newName, String
 
 		return savedMathModel;
 	}catch (RemoteProxyException e){
-		e.printStackTrace(System.out);
-		throw new DataAccessException(VCellErrorMessages.FAIL_SAVE_MESSAGE + "\n\n" + e.getMessage());
+		throw new DataAccessException(VCellErrorMessages.FAIL_SAVE_MESSAGE + "\n\n" + e.getMessage(), e);
 	}	
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (11/28/00 5:43:44 PM)
- * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
- */
 public VCImageInfo setGroupPrivate(VCImageInfo imageInfo) throws DataAccessException {
 
 	try {
@@ -2752,12 +2418,6 @@ public BioModelInfo setGroupPrivate(BioModelInfo bioModelInfo) throws DataAccess
 	}	
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (11/28/00 5:43:44 PM)
- * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
- */
 public GeometryInfo setGroupPrivate(GeometryInfo geometryInfo) throws DataAccessException {
 
 	try {
@@ -2794,12 +2454,6 @@ public GeometryInfo setGroupPrivate(GeometryInfo geometryInfo) throws DataAccess
 	}	
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (11/28/00 5:43:44 PM)
- * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
- */
 public MathModelInfo setGroupPrivate(MathModelInfo mathModelInfo) throws DataAccessException {
 
 	try {
@@ -2822,12 +2476,6 @@ public MathModelInfo setGroupPrivate(MathModelInfo mathModelInfo) throws DataAcc
 	}	
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (11/28/00 5:43:44 PM)
- * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
- */
 private <T extends VersionInfo> T setGroupPrivate0(VersionInfo versionInfo, VersionableType vType, Hashtable<KeyValue,T> vInfoHash) throws RemoteProxyException, DataAccessException {
 
 	//
@@ -2857,12 +2505,6 @@ private <T extends VersionInfo> T setGroupPrivate0(VersionInfo versionInfo, Vers
 	return newVersionInfo;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (11/28/00 5:43:44 PM)
- * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
- */
 public VCImageInfo setGroupPublic(VCImageInfo imageInfo) throws DataAccessException {
 
 	try {
@@ -2913,12 +2555,6 @@ public BioModelInfo setGroupPublic(BioModelInfo bioModelInfo) throws DataAccessE
 	}	
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (11/28/00 5:43:44 PM)
- * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
- */
 public GeometryInfo setGroupPublic(GeometryInfo geometryInfo) throws DataAccessException {
 
 	try {
@@ -2955,12 +2591,6 @@ public GeometryInfo setGroupPublic(GeometryInfo geometryInfo) throws DataAccessE
 	}	
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (11/28/00 5:43:44 PM)
- * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
- */
 public MathModelInfo setGroupPublic(MathModelInfo mathModelInfo) throws DataAccessException {
 
 	try {
@@ -2983,12 +2613,6 @@ public MathModelInfo setGroupPublic(MathModelInfo mathModelInfo) throws DataAcce
 	}	
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (11/28/00 5:43:44 PM)
- * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
- */
 private <T extends VersionInfo> T setGroupPublic0(VersionInfo versionInfo, VersionableType vType, Hashtable<KeyValue,T> vInfoHash) throws RemoteProxyException, DataAccessException {
 
 	//
@@ -3096,7 +2720,7 @@ public void substituteFieldFuncNames(VCDocument vcDocument,VersionableTypeVersio
 		}
 		fireFieldDataDB(new FieldDataDBEvent(this));
 	}catch(Exception e){
-		e.printStackTrace();
+		lg.error(e);
 		//Cleanup
 		for(int i=0;i<errorCleanupExtDataIDV.size();i+= 1){
 			try{

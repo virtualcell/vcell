@@ -14,7 +14,7 @@ popd
 
 ```bash
 pushd ../build
-./build.sh --skip-maven --skip-singularity all ghcr.io/virtualcell dev
+./build.sh --skip-maven --skip-singularity --skip-sudo all ghcr.io/virtualcell dev
 popd
 ```
 
@@ -51,14 +51,15 @@ also, make sure vcell-batch container is current.
 3. Update local configuration to run locally (stored in <vcell>/docker_env.txt)
 
 ```bash
-./localconfig_realslurm.sh TEST ghcr.io/virtualcell dev 7.4.0 1234 ../../docker_env.txt
+./localconfig_realslurm_postgres.sh TEST ghcr.io/virtualcell dev 7.4.0 1234 ../../docker_env_postgres.txt
+./localconfig_realslurm_oracle.sh TEST ghcr.io/virtualcell dev 7.4.0 1234 ../../docker_env_oracle.txt
 ```
 
 5. run local middleware services
    1. Postgres on 0.0.0.0 (not just loopback adapter)
    2. run local MongoDB on 0.0.0.0 (not just loopback adapter)
 
-6. make sure ActiveMQ is still running on UCHC cluster according to config in [docker-compose-dev.yml](./docker-compose-dev.yml) 
+6. make sure ActiveMQ is still running on UCHC cluster according to config in [docker-compose.yml](./docker-compose.yml) 
     * for example:
        * VCELL_JMS_SIM_HOST_EXTERNAL=vcell-node3.cam.uchc.edu
        * VCELL_JMS_SIM_PORT_EXTERNAL=61619
@@ -66,8 +67,8 @@ also, make sure vcell-batch container is current.
     * this is needed so that batch and opt jobs running on Slurm can send status, and listen for kills.
 
 
-5. execute docker compose using [docker-compose-dev.yml](./docker-compose-dev.yml) 
-   with environment variable configuration in [docker_env.txt](../../docker_env.txt) in IDE (intellij)
+5. execute docker compose using [docker-compose.yml](./docker-compose.yml) 
+   with environment variable configuration in [docker_env_postgres.txt](../../docker_env_postgres.txt) or [docker_env_oracle.txt](../../docker_env_oracle.txt) in IDE (intellij)
 
 
-6. execute local VCell GUI (VCellClientMain) pointing to local backend (vcell-api port as defined in [docker-compose-dev.yml](./docker-compose-dev.yml))
+6. execute local VCell GUI (VCellClientMain) pointing to local backend (vcell-api port as defined in [docker-compose.yml](./docker-compose.yml))

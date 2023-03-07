@@ -66,7 +66,7 @@ public class ComsolSolver extends AbstractSolver {
 			setSolverStatus(new SolverStatus(SolverStatus.SOLVER_FINISHED, SimulationMessage.MESSAGE_SOLVER_FINISHED));
 			fireSolverFinished();
 		}catch (Exception e){
-			e.printStackTrace(System.out);
+			lg.error(e);
 			setSolverStatus(new SolverStatus (SolverStatus.SOLVER_ABORTED, SimulationMessage.solverAborted(e.getMessage())));
 			fireSolverAborted(SimulationMessage.solverAborted(e.getMessage()));
 		}
@@ -128,8 +128,7 @@ public class ComsolSolver extends AbstractSolver {
 				CartesianMesh mesh = CartesianMesh.createSimpleCartesianMesh(simTask.getSimulation().getMathDescription().getGeometry());
 				mesh.write(new PrintStream(new BufferedOutputStream(fos)));
 			} catch (Exception e) {
-				e.printStackTrace(System.out);
-				throw new SolverException(e.getMessage());
+				throw new SolverException(e.getMessage(), e);
 			}
 			
 			ComsolServiceFactory factory = ComsolServiceFactory.instance;
@@ -139,7 +138,6 @@ public class ComsolSolver extends AbstractSolver {
 			this.comsolService = factory.newComsolService();
 
 		} catch (ExpressionException e) {
-			e.printStackTrace();
 			throw new SolverException("failed to generate VCell Comsol Model in ComsolSolver: "+e.getMessage(),e);
 		}
 	}

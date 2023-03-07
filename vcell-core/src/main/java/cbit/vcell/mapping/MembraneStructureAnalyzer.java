@@ -33,11 +33,7 @@ import cbit.vcell.units.VCUnitDefinition;
 public class MembraneStructureAnalyzer extends StructureAnalyzer {
 	private SurfaceClass surfaceClass = null;
 	private ResolvedFlux resolvedFluxes[] = null;
-/**
- * MembraneStructureAnalyzer constructor comment.
- * @param mathMapping cbit.vcell.mapping.MathMapping
- * @param subVolume cbit.vcell.geometry.SubVolume
- */
+
 public MembraneStructureAnalyzer(DiffEquMathMapping mathMapping, SurfaceClass surfaceClass) {
 	super(mathMapping);
 	this.surfaceClass = surfaceClass;
@@ -66,8 +62,7 @@ public void refresh() {
 	try {
 		refreshResolvedFluxes();
 	}catch (Exception e){
-		e.printStackTrace(System.out);
-		throw new RuntimeException(e.getMessage());
+		throw new RuntimeException(e.getMessage(), e);
 	}
 }
 /**

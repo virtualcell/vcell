@@ -237,15 +237,14 @@ private void writeMeshFile() throws SolverException {
 		fos = new FileOutputStream(meshFile);
 		cartesianMesh.write(new PrintStream(fos));
 	} catch (Exception e) {
-		e.printStackTrace(System.out);
-		throw new SolverException(e.getMessage());
+		throw new SolverException(e.getMessage(), e);
 	} finally{
 		try {
 			if(fos != null){
 				fos.close();
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			lg.error(e);
 		}
 	}
 
@@ -279,7 +278,7 @@ private void init() throws SolverException {
 		geoSurfaceDesc.updateAll();
 		bHasNoSurface = geoSurfaceDesc.getSurfaceClasses() == null || geoSurfaceDesc.getSurfaceClasses().length == 0;
 	} catch (Exception e) {
-		e.printStackTrace();
+		lg.error(e);
 		throw new SolverException(e.getMessage());
 	}
 	if (!bGraphicOpenGL) {
@@ -307,10 +306,9 @@ public void write(String[] parameterNames) throws ExpressionException, MathExcep
 			writeHighResVolumeSamples();
 		}catch(Exception ex)
 		{
-			ex.printStackTrace(System.out);
 			throw new SolverException(ex.getMessage() + "\n" +
 		                              "Problem may be solved by disable \'fast mesh sampling\'. It may take much longer time to complete the simulation." + "\n" +
-					                  "Select \'Edit Simulation\' -> \'Solver\' -> \'Advanced Solver Options\' -> uncheck \'fast mesh sampling\'.");
+					                  "Select \'Edit Simulation\' -> \'Solver\' -> \'Advanced Solver Options\' -> uncheck \'fast mesh sampling\'.", ex);
 		}
 	}
 	writeSurfaces();
@@ -418,8 +416,7 @@ private void writeHighResVolumeSamples() throws SolverException {
 		printWriter.println(VCellSmoldynKeyword.end_highResVolumeSamples);
 		printWriter.println();
 	} catch (Exception ex) {
-		ex.printStackTrace(System.out);
-		throw new RuntimeException("Error writing High Resolution Volume Samples: " + ex.getMessage());
+		throw new RuntimeException("Error writing High Resolution Volume Samples: " + ex.getMessage(), ex);
 	}
 }
 
@@ -488,7 +485,7 @@ private void writeGraphicsOpenGL() throws MathException {
 			if(fios != null) {fios.close();}
 		}
 	} catch (Exception e) {
-		e.printStackTrace();
+		lg.error(e);
 		throw new MathException(e.getMessage());
 	}
 }*/

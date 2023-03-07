@@ -1,8 +1,11 @@
 package cbit.vcell.message;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.document.UserLoginInfo;
 
 public class SimpleMessagingDelegate implements VCMessagingDelegate {
+	private final static Logger lg = LogManager.getLogger(SimpleMessagingDelegate.class);
 
 	@Override
 	public void onMessageReceived(VCMessage vcMessage, VCDestination vcDestination) {
@@ -11,7 +14,7 @@ public class SimpleMessagingDelegate implements VCMessagingDelegate {
 
 	@Override
 	public void onException(Exception e) {
-		e.printStackTrace(System.out);
+		lg.error(e);
 	}
 
 	@Override

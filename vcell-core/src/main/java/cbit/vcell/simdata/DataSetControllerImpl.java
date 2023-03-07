@@ -932,9 +932,9 @@ public static DataOperationResults getDataProcessingOutput(DataOperation dataOpe
 			throw new FileNotFoundException("Data Processing Output file '"+dataProcessingOutputFileHDF5.getPath()+"' not found");
 		}
 	}catch(Exception e){
-		e.printStackTrace();
+		lg.error(e);
 	}finally{
-		if(hdf5FileFormat != null){try{hdf5FileFormat.close();}catch(Exception e){e.printStackTrace();}}
+		if(hdf5FileFormat != null){try{hdf5FileFormat.close();}catch(Exception e){lg.error(e);}}
 	}
 
 	return dataProcessingOutputResults;
@@ -1300,7 +1300,7 @@ private static void populateStatNamesAndUnits(HObject hObject,DataProcessingHelp
 //		file_id = H5.H5Fopen(hdfFile.getAbsolutePath(), HDF5Constants.H5F_ACC_RDONLY, HDF5Constants.H5P_DEFAULT);
 //	}
 //	catch (Exception e) {
-//		e.printStackTrace();
+//		lg.error(e);
 //	}
 //
 //	// Begin iteration.
@@ -1333,7 +1333,7 @@ private static void populateStatNamesAndUnits(HObject hObject,DataProcessingHelp
 //		}
 //	}
 //	catch (Exception e) {
-//		e.printStackTrace();
+//		lg.error(e);
 //	}
 //
 //	// Close the file.
@@ -1342,7 +1342,7 @@ private static void populateStatNamesAndUnits(HObject hObject,DataProcessingHelp
 //			H5.H5Fclose(file_id);
 //	}
 //	catch (Exception e) {
-//		e.printStackTrace();
+//		lg.error(e);
 //	}
 //}
 
@@ -2037,7 +2037,7 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
 							fieldDataFileOperationSpec.owner,
 							FieldDataFileOperationSpec.JOBINDEX_DEFAULT));
 		}catch(Exception e){
-			e.printStackTrace();
+			lg.error(e);
 			try{
 				for(int i=0;i<removeFilesIfErrorV.size();i+= 1){
 					removeFilesIfErrorV.elementAt(i).delete();
@@ -2045,7 +2045,7 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
 			}catch(Throwable e2){
 				//ignore, we tried to cleanup
 			}
-			throw new RuntimeException("Error copying sim data to new Field Data\n"+e.getMessage());
+			throw new RuntimeException("Error copying sim data to new Field Data\n"+e.getMessage(), e);
 		}
 
 	}else if(fieldDataFileOperationSpec.opType == FieldDataFileOperationSpec.FDOS_ADD){
@@ -2184,7 +2184,7 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
 			try{
 				zipOut.close();
 			}catch(IOException e){
-				e.printStackTrace();
+				lg.error(e);
 				//ignore
 			}
 		}
@@ -2197,15 +2197,14 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
 			fos = new FileOutputStream(meshFile);
 			mesh.write(new PrintStream(fos));
 		} catch (IOException e) {
-			e.printStackTrace();
-			throw new RuntimeException("Error writing mesh file "+meshFile.getAbsolutePath()+"\n"+e.getMessage());
+			throw new RuntimeException("Error writing mesh file "+meshFile.getAbsolutePath()+"\n"+e.getMessage(), e);
 		}finally{
 			try {
 				if(fos != null){
 					fos.close();
 				}
 			} catch (IOException e) {
-				e.printStackTrace();
+				lg.error(e);
 				//ignore
 			}
 		}
@@ -2225,8 +2224,7 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
 			ps2.flush();
 			ps2.close();
 		} catch (IOException e) {
-			e.printStackTrace();
-			throw new RuntimeException("Error writing function file "+funcFile.getAbsolutePath()+"\n"+e.getMessage());
+			throw new RuntimeException("Error writing function file "+funcFile.getAbsolutePath()+"\n"+e.getMessage(), e);
 		}finally{
 			if(ps2 != null){
 				ps2.close();
@@ -2242,7 +2240,7 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
 							fieldDataFileOperationSpec.owner,
 							FieldDataFileOperationSpec.JOBINDEX_DEFAULT));
 		}catch(Exception e){
-			e.printStackTrace();
+			lg.error(e);
 			//ignore
 		}
 		
@@ -2257,7 +2255,7 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
 //				FieldDataDBOperationDriver.getFunctionFileNamesAndSimKeys(
 //					fieldDataFileOperationSpec.specEDI.getOwner());
 //		}catch(Exception e){
-//			e.printStackTrace();
+//			lg.error(e);
 //			throw new RuntimeException("couldn't get Function File names from Database\n"+e.getMessage());
 //		}
 //		//String regex = "^.*"+MathMLTags.FIELD+"\\s*\\(\\s*"+fieldDataFileOperationSpec.specEDI.getName()+"\\s*,.*$";
@@ -2316,10 +2314,10 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
 ////						}
 //					}
 //				}catch(Exception e){
-//					e.printStackTrace();
+//					lg.error(e);
 //					throw new RuntimeException(e.getMessage(),e);
 //				}finally{
-//					if(lineNumberReader != null){try{lineNumberReader.close();}catch(Exception e){e.printStackTrace();}}
+//					if(lineNumberReader != null){try{lineNumberReader.close();}catch(Exception e){lg.error(e);}}
 //				}
 //			}
 //		}
@@ -3203,7 +3201,7 @@ public ODEDataBlock getODEDataBlock(VCDataIdentifier vcdID) throws DataAccessExc
 						cacheTable0.put(odeDataInfo, odeDataBlock);
 					} catch (CacheException e) {
 						// if can't cache the results, it is ok
-						e.printStackTrace();
+						lg.error(e);
 					}
 				}
 				return odeDataBlock;
@@ -3246,7 +3244,7 @@ public ParticleDataBlock getParticleDataBlock(VCDataIdentifier vcdID, double tim
 						cacheTable0.put(particleDataInfo, particleDataBlock);
 					} catch (CacheException e) {
 						// if can't cache the data, it is ok
-						e.printStackTrace();
+						lg.error(e);
 					}
 				}
 				return particleDataBlock;
@@ -3308,7 +3306,7 @@ public SimDataBlock getSimDataBlock(OutputContext outputContext, VCDataIdentifie
 							cacheTable0.put(pdeDataInfo,simDataBlock);
 						} catch (CacheException e) {
 							// if can't cache the data, it is ok
-							e.printStackTrace();
+							lg.error(e);
 						}
 					}
 				}
@@ -3637,7 +3635,7 @@ private TimeSeriesJobResults getTimeSeriesValues_private(OutputContext outputCon
 		}
 	}catch(Exception e){
 		//ignore
-		e.printStackTrace();
+		lg.error(e);
 	}
 	if(dataTimes == null){
 		dataTimes =  getDataSetTimes(vcdID);
@@ -3902,7 +3900,7 @@ public TimeSeriesJobResults getTimeSeriesValues(OutputContext outputContext,fina
 		return timeSeriesJobResults;		
 	}catch (Exception e) {
 		failException = e;
-		e.printStackTrace();
+		lg.error(e);
 		if(e instanceof DataAccessException){
 			throw (DataAccessException)e;
 		}else{
@@ -3979,8 +3977,7 @@ public VCData getVCData(VCDataIdentifier vcdID) throws DataAccessException, IOEx
 				vcData = new MergedData(user, getPrimaryUserDir(vcdID.getOwner(), false), getSecondaryUserDir(vcdID.getOwner()), this, vcdIdentifiers, ((MergedDataInfo)vcdID).getDataSetPrefix());
 				VCMongoMessage.sendTrace("DataSetControllerImpl.getVCData("+vcdID.getID()+") : creating new MergedData : <<END>>");
 			} catch (IOException e) {
-				e.printStackTrace(System.out);
-				throw new RuntimeException(e.getMessage());
+				throw new RuntimeException(e.getMessage(), e);
 			}
 		} else {  // assume vcdID instanceof cbit.vcell.solver.SimulationInfo or a test adapter
 			VCMongoMessage.sendTrace("DataSetControllerImpl.getVCData("+vcdID.getID()+") : creating new SimulationData : <<BEGIN>>");
@@ -3995,7 +3992,7 @@ public VCData getVCData(VCDataIdentifier vcdID) throws DataAccessException, IOEx
 				VCMongoMessage.sendTrace("DataSetControllerImpl.getVCData("+vcdID.getID()+") : caching vcData : <<END>>");
 			} catch (CacheException e) {
 				// if  can't cache the data, it is ok
-				e.printStackTrace();
+				lg.error(e);
 			}
 		}
 	}
@@ -4203,7 +4200,7 @@ public void writeFieldFunctionData(
 			try{
 				newResampledFieldDataFile = ((SimulationData)getVCData(simResampleInfoProvider)).getFieldDataFile(simResampleInfoProvider, argFieldDataIDSpecs[i].getFieldFuncArgs());
 			}catch(FileNotFoundException e){
-				e.printStackTrace();
+				lg.error(e);
 				//use the original way
 				newResampledFieldDataFile = new File(getPrimaryUserDir(simResampleInfoProvider.getOwner(), true),
 				SimulationData.createCanonicalResampleFileName(simResampleInfoProvider,argFieldDataIDSpecs[i].getFieldFuncArgs()));
@@ -4285,8 +4282,7 @@ public void writeFieldFunctionData(
 					new double[][]{newData});
 		}
 	} catch (Exception ex) {
-		ex.printStackTrace(System.out);
-		throw new DataAccessException(ex.getMessage());
+		throw new DataAccessException(ex.getMessage(), ex);
 	}
 }
 
@@ -4339,7 +4335,7 @@ public boolean getIsChombo(VCDataIdentifier vcdataID) throws IOException, DataAc
 	try {
 		simData = getVCData(vcdataID);
 	}catch (DataAccessException e){
-		e.printStackTrace(System.err);
+		lg.error(e);
 	}
 	
 	if (simData==null){
@@ -4395,10 +4391,8 @@ public ChomboFiles getChomboFiles(VCDataIdentifier vcdataID) throws DataAccessEx
 	try {
 		return simData.getChomboFiles();
 	} catch (XmlParseException e) {
-		e.printStackTrace();
 		throw new DataAccessException("failed to getChomboFiles(): "+e.getMessage(),e);
 	} catch (ExpressionException e) {
-		e.printStackTrace();
 		throw new DataAccessException("failed to getChomboFiles(): "+e.getMessage(),e);
 	}
 }
@@ -4467,7 +4461,7 @@ public ComsolSimFiles getComsolSimFiles(VCDataIdentifier vcdataID) throws DataAc
 							chomboExtrapolatedValuesCache.put(pdeDataInfo,simDataBlock);
 						} catch (CacheException e) {
 							// if can't cache the data, it is ok
-							e.printStackTrace();
+							lg.error(e);
 						}
 					}
 				}

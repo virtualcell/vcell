@@ -14,10 +14,7 @@ package cbit.vcell.simdata;
  * This type was created in VisualAge.
  */
 public class DataSetTest {
-/**
- * Starts the application.
- * @param args an array of command-line arguments
- */
+
 public static void main(java.lang.String[] argv) {
 
 	if (argv.length!=5){

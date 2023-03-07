@@ -114,7 +114,7 @@ public class GeometryThumbnailImageFactoryAWT implements GeometryThumbnailImageF
 //			
 //			System.out.println("done");
 //		}catch (Exception e){
-//			e.printStackTrace(System.out);
+//			lg.error(e);
 //		}
 //	}
 }

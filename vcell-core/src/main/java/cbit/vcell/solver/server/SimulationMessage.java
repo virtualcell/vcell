@@ -12,11 +12,15 @@ package cbit.vcell.solver.server;
 
 import java.io.Serializable;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.Compare;
 
 import cbit.vcell.server.HtcJobID;
 
 public class SimulationMessage implements Serializable {
+	private final static Logger lg = LogManager.getLogger(SimulationMessage.class);
+
 	
 	public enum DetailedState {		
 		UNKNOWN,
@@ -147,7 +151,7 @@ public class SimulationMessage implements Serializable {
 					}
 				}
 			} catch (Exception ex) {
-				ex.printStackTrace(System.out);
+				lg.error(ex);
 			}
 		}
 		return null;

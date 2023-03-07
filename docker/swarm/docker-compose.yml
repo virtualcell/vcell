@@ -32,7 +32,7 @@ services:
 
     ports:
       - "${VCELL_API_PORT_EXTERNAL}:8080"
-      - "8000" # java remote debugging
+      - "${VCELL_DEBUG_PORT_VCELL_API}:8000" # java remote debugging
     healthcheck:
       test: ["CMD", "curl", "-f", "--insecure", "https://localhost:8080/health?check=login"]
       interval: 600s
@@ -66,10 +66,6 @@ services:
       - dbdriver=${VCELL_DB_DRIVER}
       - dbuser=${VCELL_DB_USER}
 
-      - jmshost_sim_external=${VCELL_JMS_SIM_HOST_EXTERNAL}
-      - jmsrestport_sim_external=${VCELL_JMS_SIM_RESTPORT_EXTERNAL}
-      - jmsport_sim_external=${VCELL_JMS_SIM_PORT_EXTERNAL}
-
       - batchhost=${VCELL_BATCH_HOST}
       - batchuser=${VCELL_BATCH_USER}
       - htcnodelist=${VCELL_HTC_NODELIST}
@@ -99,7 +95,7 @@ services:
       - mongodb_port_internal=27017
       - mongodb_database=test
     ports:
-      - "8000" # java remote debugging
+      - "${VCELL_DEBUG_PORT_VCELL_SCHED}:8000" # java remote debugging
     healthcheck:
       test: ["CMD", "curl", "-f", "--insecure", "https://api:8080/health?check=sim"]
       interval: 600s
@@ -107,7 +103,7 @@ services:
       retries: 2
     volumes:
       - "${VCELL_SIMDATADIR_HOST}:/simdata"
-      - "${VCELL_SIMDATADIR_ARCHIVE_INTERNAL}:${VCELL_SIMDATADIR_ARCHIVE_INTERNAL}"
+      - "${VCELL_SIMDATADIR_ARCHIVE_HOST}:${VCELL_SIMDATADIR_ARCHIVE_INTERNAL}"
       - "${VCELL_HTCLOGS_HOST}:/htclogs"
     secrets:
       - dbpswd
@@ -147,8 +143,8 @@ services:
       - mongodb_host_external=${VCELL_MONGO_HOST_EXTERNAL}
       - mongodb_port_external=${VCELL_MONGO_PORT_EXTERNAL}
       - simdatadir_external=${VCELL_SIMDATADIR_EXTERNAL}
+      - simdatadir_secondary_external=${VCELL_SIMDATADIR_SECONDARY_EXTERNAL}
       - simdatadir_parallel_external=${VCELL_SIMDATADIR_PARALLEL_EXTERNAL}
-      - export_baseurl=${VCELL_EXPORT_BASEURL}
 
       - batchhost=${VCELL_BATCH_HOST}
       - batchuser=${VCELL_BATCH_USER}
@@ -184,11 +180,12 @@ services:
       - mongodb_port_internal=27017
       - mongodb_database=test
     ports:
-      - "8000" # java remote debugging
+      - "${VCELL_DEBUG_PORT_VCELL_SUBMIT}:8000" # java remote debugging
       - "8877"
     volumes:
       - "${VCELL_SIMDATADIR_HOST}:/simdata"
-      - "${VCELL_SIMDATADIR_ARCHIVE_INTERNAL}:${VCELL_SIMDATADIR_ARCHIVE_INTERNAL}"
+      - "${VCELL_SIMDATADIR_SECONDARY_HOST}:/simdata_secondary"
+      - "${VCELL_SIMDATADIR_ARCHIVE_HOST}:${VCELL_SIMDATADIR_ARCHIVE_INTERNAL}"
       - "${VCELL_HTCLOGS_HOST}:/htclogs"
     secrets:
       - jmspswd
@@ -230,7 +227,7 @@ services:
       - mongodb_port_internal=27017
       - mongodb_database=test
     ports:
-      - "8000" # java remote debugging
+      - "${VCELL_DEBUG_PORT_VCELL_DB}:8000" # java remote debugging
     secrets:
       - dbpswd
       - jmspswd
@@ -244,9 +241,9 @@ services:
       replicas: 1
       resources:
         limits:
-          memory: 1000M
+          memory: 2000M
         reservations:
-          memory: 500M
+          memory: 1000M
   data:
     image: "${VCELL_REPO_NAMESPACE}/vcell-data:${VCELL_TAG}"
     environment:
@@ -271,10 +268,10 @@ services:
 
       - servertype=CombinedData
     ports:
-      - "8000" # java remote debugging
+      - "${VCELL_DEBUG_PORT_VCELL_DATA}:8000" # java remote debugging
     volumes:
       - "${VCELL_SIMDATADIR_HOST}:/simdata"
-      - "${VCELL_SIMDATADIR_ARCHIVE_INTERNAL}:${VCELL_SIMDATADIR_ARCHIVE_INTERNAL}"
+      - "${VCELL_SIMDATADIR_ARCHIVE_HOST}:${VCELL_SIMDATADIR_ARCHIVE_INTERNAL}"
       - "${VCELL_SIMDATADIR_SECONDARY_HOST}:/simdata_secondary"
       - "${VCELL_EXPORTDIR_HOST}:/exportdir"
     secrets:
@@ -370,22 +367,28 @@ services:
           memory: 1500M
         reservations:
           memory: 1000M
-
   web:
     image: "${VCELL_REPO_NAMESPACE}/vcell-web:${VCELL_TAG}"
     environment:
+      - softwareVersion=${VCELL_VERSION}
+      - serverid=${VCELL_SITE}
       - export_baseurl=${VCELL_EXPORT_BASEURL}
+
       - simdataCacheSize=${VCELL_SIMDATA_CACHE_SIZE:-10000000}
-      - webDataPort=${VCELL_WEB_DATA_PORT}
+
+
       - dburl=${VCELL_DB_URL}
       - dbdriver=${VCELL_DB_DRIVER}
       - dbuser=${VCELL_DB_USER}
+
+      - webDataPort=${VCELL_WEB_DATA_PORT}
     ports:
-      - "8000" # java remote debugging
+      - "${VCELL_DEBUG_PORT_VCELL_WEB}:8000" # java remote debugging
       - "${VCELL_WEB_DATA_PORT}:${VCELL_WEB_DATA_PORT}"
     volumes:
       - "${VCELL_SIMDATADIR_HOST}:/simdata"
-      - "${VCELL_SIMDATADIR_ARCHIVE_INTERNAL}:/altsimdata"
+      - "${VCELL_SIMDATADIR_ARCHIVE_HOST}:${VCELL_SIMDATADIR_ARCHIVE_INTERNAL}"
+      - "${VCELL_SIMDATADIR_SECONDARY_HOST}:/simdata_secondary"
       - "${VCELL_EXPORTDIR_HOST}:/exportdir"
     secrets:
       - dbpswd

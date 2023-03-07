@@ -14,6 +14,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Vector;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.BeanUtils;
 
 import cbit.vcell.parser.ConstraintSymbolTableEntry;
@@ -27,6 +29,8 @@ import cbit.vcell.units.VCUnitDefinition;
 import net.sourceforge.interval.ia_math.RealInterval;
 
 public class ConstraintSolver implements SymbolTable, java.beans.PropertyChangeListener {
+	private final static Logger lg = LogManager.getLogger(ConstraintSolver.class);
+
 	private Vector<Expression> expressionList = new java.util.Vector<Expression>();
 	private Vector<ConstraintSolver.Symbol> symbolList = new Vector<ConstraintSolver.Symbol>();
 	private ConstraintContainerImpl constraintContainerImpl = null;
@@ -316,7 +320,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			updateExpressions();
 			resetIntervals();
 		}catch (ExpressionBindingException e){
-			e.printStackTrace(System.out);
+			lg.error(e);
 		}
 	}
 	if (evt.getSource() instanceof SimpleBounds && evt.getPropertyName().equals("active")){
@@ -324,7 +328,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			updateExpressions();
 			resetIntervals();
 		}catch (ExpressionBindingException e){
-			e.printStackTrace(System.out);
+			lg.error(e);
 		}
 	}
 	if (evt.getSource() == constraintContainerImpl && evt.getPropertyName().equals("generalConstraints")){
@@ -340,7 +344,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			updateExpressions();
 			resetIntervals();
 		}catch (ExpressionBindingException e){
-			e.printStackTrace(System.out);
+			lg.error(e);
 		}
 	}
 	if (evt.getSource() == constraintContainerImpl && evt.getPropertyName().equals("simpleBounds")){
@@ -356,7 +360,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			updateExpressions();
 			resetIntervals();
 		}catch (ExpressionBindingException e){
-			e.printStackTrace(System.out);
+			lg.error(e);
 		}
 	}
 	if (evt.getSource() instanceof GeneralConstraint && evt.getPropertyName().equals("expression")){
@@ -364,7 +368,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			updateExpressions();
 			resetIntervals();
 		}catch (ExpressionBindingException e){
-			e.printStackTrace(System.out);
+			lg.error(e);
 		}
 	}
 	if (evt.getSource() instanceof SimpleBounds && evt.getPropertyName().equals("bounds")){
@@ -372,7 +376,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			updateExpressions();
 			resetIntervals();
 		}catch (ExpressionBindingException e){
-			e.printStackTrace(System.out);
+			lg.error(e);
 		}
 	}
 }

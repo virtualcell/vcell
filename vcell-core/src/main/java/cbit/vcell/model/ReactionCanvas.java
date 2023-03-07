@@ -9,6 +9,9 @@
  */
 
 package cbit.vcell.model;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Image;
@@ -18,6 +21,8 @@ import java.util.Vector;
  * 
  */
 public class ReactionCanvas extends javax.swing.JPanel implements java.beans.PropertyChangeListener {
+	private final static Logger lg = LogManager.getLogger(ReactionCanvas.class);
+
 	private java.awt.Dimension expressionBounds = new Dimension();
 	private java.awt.Image offScreenImage = null;
 	private java.awt.Dimension offScreenImageSize = null;
@@ -56,8 +61,7 @@ public ReactionCanvas() {
 		}		
 	}catch (Exception e){
 		offScreenImage = null;
-		System.out.println("exception in ReactionCanvas.refreshGraphics()");
-		e.printStackTrace(System.out);
+		lg.error("exception in ReactionCanvas.refreshGraphics()", e);
 	}
 	
 	return fontSize;
@@ -92,7 +96,7 @@ private void handleException(java.lang.Throwable exception) {
 
 	/* Uncomment the following lines to print uncaught exceptions to stdout */
 	// System.out.println("--------- UNCAUGHT EXCEPTION ---------");
-	// exception.printStackTrace(System.out);
+	// lg.error(e);
 }
 
 
@@ -136,7 +140,7 @@ public static void main(java.lang.String[] args) {
 		frame.setVisible(true);
 	} catch (Throwable exception) {
 		System.err.println("Exception occurred in main() of javax.swing.JPanel");
-		exception.printStackTrace(System.out);
+		exception.printStackTrace();
 	}
 }
 
@@ -178,10 +182,6 @@ public void propertyChange(java.beans.PropertyChangeEvent event) {
 }
 
 
-/**
- * This method was created by a SmartGuide.
- * @param g java.awt.Graphics
- */
 private synchronized void refreshGraphics () {
 
 	try {
@@ -195,17 +195,12 @@ private synchronized void refreshGraphics () {
 		refreshGraphics0(offScreenImage,offScreenImageSize.width,offScreenImageSize.height,12);
 	}catch (Exception e){
 		offScreenImage = null;
-		System.out.println("exception in ReactionCanvas.refreshGraphics()");
-		e.printStackTrace(System.out);
+		lg.error("exception in ReactionCanvas.refreshGraphics()", e);
 	}			
 	return;
 }
 
 
-/**
- * This method was created by a SmartGuide.
- * @param g java.awt.Graphics
- */
 private void refreshGraphics0(Image offScreenImage, int width, int height, int fontSize) {
 
 	try {
@@ -271,8 +266,7 @@ private void refreshGraphics0(Image offScreenImage, int width, int height, int f
 		}		
 	}catch (Exception e){
 		offScreenImage = null;
-		System.out.println("exception in ReactionCanvas.refreshGraphics()");
-		e.printStackTrace(System.out);
+		lg.error("exception in ReactionCanvas.refreshGraphics()", e);
 	}			
 	return;
 }
@@ -292,7 +286,7 @@ private void resizeToExpression() {
 			setSize(parentDim.width - 10, parentDim.height - 10);
 		}
 	} catch (Exception e) {
-		e.printStackTrace();
+		lg.error(e);
 	}
 }
 
@@ -335,12 +329,6 @@ public void setReactionStep(cbit.vcell.model.ReactionStep reactionStep) {
 	updateDisplaySpecFromReactionStep();
 }
 
-
-/**
- * This method was created by a SmartGuide.
- * @param observable java.util.Observable
- * @param object java.lang.Object
- */
 private void updateDisplaySpecFromReactionStep() {
 	try {
 		if (getReactionStep()!=null){
@@ -454,8 +442,7 @@ private void updateDisplaySpecFromReactionStep() {
 			setReactionCanvasDisplaySpec(new ReactionCanvasDisplaySpec(reactantString,productString,forwardRateString,reverseRateString,arrowType));
 		}	
 	}catch (Exception e){
-		System.out.println("exception in ReactionCanvas.update(Observable, Object)");
-		e.printStackTrace(System.out);
+		lg.error("exception in ReactionCanvas.update(Observable, Object)", e);
 	}		
 }
 

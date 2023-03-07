@@ -10,9 +10,13 @@ import org.apache.commons.configuration2.builder.FileBasedConfigurationBuilder;
 import org.apache.commons.configuration2.builder.fluent.FileBasedBuilderParameters;
 import org.apache.commons.configuration2.builder.fluent.Parameters;
 import org.apache.commons.configuration2.sync.ReadWriteSynchronizer;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.ConfigurationException;
 
 public class VCellConfiguration {
+	private final static Logger lg = LogManager.getLogger(VCellConfiguration.class);
+
 	private static FileBasedConfigurationBuilder<PropertiesConfiguration> configurationBuilder = null;
 	private static PropertiesConfiguration propertiesConfiguration = null;
 
@@ -24,7 +28,7 @@ public class VCellConfiguration {
 				try {
 					propertiesFile.createNewFile();
 				} catch (IOException e) {
-					e.printStackTrace();
+					lg.error(e);
 				}
 			}
 			FileBasedBuilderParameters thing = params.fileBased().setFile(propertiesFile);
@@ -34,7 +38,7 @@ public class VCellConfiguration {
 				propertiesConfiguration = configurationBuilder.getConfiguration();
 				propertiesConfiguration.setSynchronizer(new ReadWriteSynchronizer());
 			}catch (org.apache.commons.configuration2.ex.ConfigurationException e){
-				e.printStackTrace();
+				lg.error(e);
 				throw new ConfigurationException("failed to create configuration from file "+propertiesFile+": "+e.getMessage());
 			}
 		}

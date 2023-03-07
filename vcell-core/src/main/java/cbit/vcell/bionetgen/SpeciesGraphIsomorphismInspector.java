@@ -242,7 +242,7 @@ public class SpeciesGraphIsomorphismInspector {
 			
 		} catch (Throwable e) {
 			System.out.println("Uncaught exception in SpeciesIsomorphismInspector.main()");
-			e.printStackTrace(System.out);
+			e.printStackTrace();
 		}
 	}
 

@@ -57,7 +57,7 @@ public DefaultVectorFunctionTest() {
 			}
 		}catch (Throwable e){
 			System.out.println("Uncaught exception in JacobianTest.main()");
-			e.printStackTrace(System.out);
+			e.printStackTrace();
 		}
 	}
 }

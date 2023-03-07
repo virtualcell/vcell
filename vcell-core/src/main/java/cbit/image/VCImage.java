@@ -703,8 +703,7 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 		try {
 			pixelVals = getUniquePixelValues();
 		}catch (ImageException e){
-			e.printStackTrace(System.out);
-			throw new RuntimeException("unexpected exception: "+e.getMessage());
+			throw new RuntimeException("unexpected exception: "+e.getMessage(), e);
 		}
 		for (int c = 0; c < pixelVals.length; c++) {
 			flag = false;

@@ -40,8 +40,7 @@ public GeneralPermeabilityKinetics(FluxReaction fluxReaction) throws ExpressionE
 		updateGeneratedExpressions();
 		refreshUnits();
 	}catch (java.beans.PropertyVetoException e){
-		e.printStackTrace(System.out);
-		throw new RuntimeException("unexpected exception: "+e.getMessage());
+		throw new RuntimeException("unexpected exception: "+e.getMessage(), e);
 	}
 }
 

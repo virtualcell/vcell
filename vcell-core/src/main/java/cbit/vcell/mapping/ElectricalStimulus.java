@@ -214,8 +214,7 @@ protected ElectricalStimulus(ElectricalStimulus otherStimulus, SimulationContext
 	try {
 		parameterContext.setLocalParameters(newParameters);
 	} catch (PropertyVetoException | ExpressionBindingException e) {
-		e.printStackTrace();
-		throw new RuntimeException(e.getMessage());
+		throw new RuntimeException(e.getMessage(), e);
 	}
 }
 
@@ -464,11 +463,6 @@ public final void parameterVCMLSet(CommentStringTokenizer tokens) throws Express
 }
 
 
-/**
- * This method was created by a SmartGuide.
- * @param ps java.io.PrintStream
- * @exception java.lang.Exception The exception description.
- */
 public final void parameterVCMLWrite(java.io.PrintWriter pw) {
 	
 	//Example:
@@ -576,11 +570,6 @@ public void setName(java.lang.String name) throws java.beans.PropertyVetoExcepti
 }
 
 
-/**
- * This method was created by a SmartGuide.
- * @param expressionString java.lang.String
- * @exception java.lang.Exception The exception description.
- */
 public void setParameterValue(LocalParameter parm, Expression exp) throws ExpressionException, PropertyVetoException {
 	Parameter p = parameterContext.getLocalParameterFromName(parm.getName());
 	if (p != parm){
@@ -613,8 +602,7 @@ public void setParameterValue(LocalParameter parm, Expression exp) throws Expres
 			}
 			parameterContext.cleanupParameters();
 		}catch (PropertyVetoException e){
-			e.printStackTrace(System.out);
-			throw new RuntimeException(e.getMessage());
+			throw new RuntimeException(e.getMessage(), e);
 		}
 	}
 }
@@ -626,11 +614,6 @@ public AutoCompleteSymbolFilter getAutoCompleteSymbolFilter() {
 	return simulationContext.getAutoCompleteSymbolFilter();
 }
 
-/**
- * Insert the method's description here.
- * Creation date: (5/11/2004 6:19:00 PM)
- * @param bReading boolean
- */
 public void reading(boolean argReading) {
 	if (argReading == bReading){
 		throw new RuntimeException("flag conflict");

@@ -10,24 +10,6 @@
 
 package cbit.vcell.client.server;
 
-import java.io.IOException;
-
-import org.apache.http.HttpStatus;
-import org.apache.http.client.HttpResponseException;
-import org.apache.http.conn.HttpHostConnectException;
-import org.vcell.api.client.examples.VCellApiClientTest;
-import org.vcell.service.VCellServiceHelper;
-import org.vcell.service.registration.RegistrationService;
-import org.vcell.util.AuthenticationException;
-import org.vcell.util.BeanUtils;
-import org.vcell.util.Compare;
-import org.vcell.util.DataAccessException;
-import org.vcell.util.VCellThreadChecker;
-import org.vcell.util.document.User;
-import org.vcell.util.document.VCellSoftwareVersion;
-import org.vcell.util.document.VCellSoftwareVersion.VCellSite;
-import org.vcell.util.document.UserLoginInfo.DigestedPassword;
-
 import cbit.rmi.event.MessageEvent;
 import cbit.vcell.client.server.ClientServerInfo.ServerType;
 import cbit.vcell.clientdb.ClientDocumentManager;
@@ -39,24 +21,28 @@ import cbit.vcell.message.server.bootstrap.client.RemoteProxyVCellConnectionFact
 import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.resource.ErrorUtils;
 import cbit.vcell.resource.PropertyLoader;
-import cbit.vcell.server.ConnectionException;
-import cbit.vcell.server.DataSetController;
-import cbit.vcell.server.DataSetControllerProvider;
-import cbit.vcell.server.ExportController;
-import cbit.vcell.server.LocalVCellConnectionService;
-import cbit.vcell.server.SessionManager;
-import cbit.vcell.server.SimulationController;
-import cbit.vcell.server.UserMetaDbServer;
-import cbit.vcell.server.VCellConnection;
-import cbit.vcell.server.VCellConnectionFactory;
-import cbit.vcell.server.VCellConnectionRegistrationProvider;
+import cbit.vcell.server.*;
 import cbit.vcell.simdata.VCDataManager;
+import org.apache.http.HttpStatus;
+import org.apache.http.client.HttpResponseException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.vcell.service.VCellServiceHelper;
+import org.vcell.service.registration.RegistrationService;
+import org.vcell.util.*;
+import org.vcell.util.document.User;
+import org.vcell.util.document.UserLoginInfo.DigestedPassword;
+import org.vcell.util.document.VCellSoftwareVersion;
+import org.vcell.util.document.VCellSoftwareVersion.VCellSite;
+
+import java.io.IOException;
 /**
  * Insert the type's description here.
  * Creation date: (5/12/2004 4:31:18 PM)
  * @author: Ion Moraru
  */
 public class ClientServerManager implements SessionManager,DataSetControllerProvider {
+	private final static Logger lg = LogManager.getLogger(ClientServerManager.class);
 
 	
 	public interface InteractiveContext {
@@ -81,11 +67,6 @@ public class ClientServerManager implements SessionManager,DataSetControllerProv
 		private String userName = null;
 		private int status = NOT_CONNECTED;
 
-		/**
-		 * @param userName java.lang.String
-		 * @param serverHost java.lang.String
-		 * @param status int
-		 */
 		private ClientConnectionStatus(String userName, String apihost, Integer apiport, int status) {
 			switch (status) {
 				case NOT_CONNECTED: {
@@ -267,7 +248,7 @@ private void changeConnection(InteractiveContext requester, VCellConnection newV
 			lastVCellConnection = getVcellConnection();
 			setVcellConnection(null);
 			setConnectionStatus(new ClientConnectionStatus(getClientServerInfo().getUsername(), getClientServerInfo().getApihost(), getClientServerInfo().getApiport(), ConnectionStatus.DISCONNECTED));
-			exc.printStackTrace(System.out);
+			lg.error("Server connection failed", exc);
 			requester.showErrorDialog("Server connection failed:\n\n" + exc.getMessage());
 		}
 	} else if(lastVCellConnection != null) {
@@ -368,11 +349,6 @@ public void reconnect(InteractiveContext requester) {
 	}
 }
 
-/**
- * Insert the method's description here.
- * Creation date: (5/17/2004 6:26:14 PM)
- * @param clientServerInfo cbit.vcell.client.server.ClientServerInfo
- */
 public void connectAs(InteractiveContext requester, String user, DigestedPassword digestedPassword) {
 	reconnectStat = ReconnectStatus.NOT;
 	switch (getClientServerInfo().getServerType()) {
@@ -428,23 +404,23 @@ private VCellConnection connectToServer(InteractiveContext requester,boolean bSh
 			requester.clearConnectWarning();
 			reconnectStat = ReconnectStatus.NOT;
 		}catch(Exception e) {
-			e.printStackTrace();
+			lg.error(e);
 			if(bShowErrors) {
 				throw e;
 			}
 		}
 	} catch (AuthenticationException aexc) {
-		aexc.printStackTrace(System.out);
+		lg.error(aexc);
 		requester.showErrorDialog(aexc.getMessage());
 	} catch (ConnectionException cexc) {
 		String msg = badConnectMessage(badConnStr) + "\n" + cexc.getMessage();
-		cexc.printStackTrace(System.out);
+		lg.error(cexc);
 		ErrorUtils.sendRemoteLogMessage(getClientServerInfo().getUserLoginInfo(),msg);
 		if (reconnectStat != ReconnectStatus.SUBSEQUENT) {
 			requester.showConnectWarning(msg);
 		}
 	} catch (HttpResponseException httpexc) {
-		httpexc.printStackTrace(System.out);
+		lg.error(httpexc);
 		if (httpexc.getStatusCode() == HttpStatus.SC_UNAUTHORIZED) {
 			requester.showErrorDialog("Invalid Userid or Password\n\n"+httpexc.getMessage());
 		}else {
@@ -453,7 +429,7 @@ private VCellConnection connectToServer(InteractiveContext requester,boolean bSh
 			requester.showErrorDialog(msg);
 		}
 	} catch (Exception exc) {
-		exc.printStackTrace(System.out);
+		lg.error(exc);
 		String msg = "Exception: "+exc.getMessage() + "\n\n" + badConnectMessage(badConnStr);
 		ErrorUtils.sendRemoteLogMessage(getClientServerInfo().getUserLoginInfo(),msg);
 		requester.showErrorDialog(msg);
@@ -556,14 +532,13 @@ public synchronized DataSetController getDataSetController() throws DataAccessEx
 			dataSetController = getVcellConnection().getDataSetController();
 			return dataSetController;
 		} catch (RemoteProxyException rexc) {
-			rexc.printStackTrace(System.out);
+			lg.error(rexc);
 			try {
 				// one more time before we fail../
 				dataSetController = getVcellConnection().getDataSetController();
 				return dataSetController;
 			} catch (RemoteProxyException rexc2) {
-				rexc.printStackTrace(System.out);
-				throw new DataAccessException("RemoteProxyException: "+rexc2.getMessage());
+				throw new DataAccessException("RemoteProxyException: "+rexc2.getMessage(), rexc2);
 			}
 		}
 	}
@@ -633,14 +608,13 @@ public synchronized SimulationController getSimulationController() {
 			simulationController = getVcellConnection().getSimulationController();
 			return simulationController;
 		} catch (RemoteProxyException rexc) {
-			rexc.printStackTrace(System.out);
+			lg.error(rexc);
 			try {
 				// one more time before we fail../
 				simulationController = getVcellConnection().getSimulationController();
 				return simulationController;
 			} catch (RemoteProxyException rexc2) {
-				rexc.printStackTrace(System.out);
-				throw new RuntimeException("RemoteProxyException: "+rexc2.getMessage());
+				throw new RuntimeException("RemoteProxyException: "+rexc2.getMessage(), rexc2);
 			}
 		}
 	}
@@ -663,8 +637,7 @@ public synchronized User getUser() {
 			user = getVcellConnection().getUserLoginInfo().getUser();
 			return user;
 		} catch (RemoteProxyException rexc) {
-			rexc.printStackTrace(System.out);
-			throw new RuntimeException("RemoteProxyException: "+rexc.getMessage());
+			throw new RuntimeException("RemoteProxyException: "+rexc.getMessage(), rexc);
 		}
 	}
 }
@@ -686,14 +659,13 @@ public synchronized UserMetaDbServer getUserMetaDbServer() throws DataAccessExce
 			userMetaDbServer = getVcellConnection().getUserMetaDbServer();
 			return userMetaDbServer;
 		} catch (RemoteProxyException rexc) {
-			rexc.printStackTrace(System.out);
+			lg.error(rexc);
 			try {
 				// one more time before we fail../
 				userMetaDbServer = getVcellConnection().getUserMetaDbServer();
 				return userMetaDbServer;
 			} catch (RemoteProxyException rexc2) {
-				rexc.printStackTrace(System.out);
-				throw new DataAccessException("RemoteProxyException: "+rexc2.getMessage());
+				throw new DataAccessException("RemoteProxyException: "+rexc2.getMessage(), rexc2);
 			}
 		}
 	}
@@ -846,8 +818,7 @@ private void setVcellConnection(VCellConnection newVcellConnection) {
 		getDataSetController();
 		getUserMetaDbServer();
 	} catch (DataAccessException ex) {
-		ex.printStackTrace(System.out);
-		throw new RuntimeException("DataAccessException: "+ex.getMessage());
+		throw new RuntimeException("DataAccessException: "+ex.getMessage(), ex);
 	}
 }
 
@@ -867,7 +838,7 @@ public void sendErrorReport(Throwable exception, VCellConnection.ExtraContext ex
 	try {
 		getVcellConnection().sendErrorReport(exception, extraContext);
 	} catch (Exception ex) {
-		ex.printStackTrace(System.out);
+		lg.error(ex);
 	}
 }
 

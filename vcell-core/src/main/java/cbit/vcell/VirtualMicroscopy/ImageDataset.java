@@ -147,8 +147,7 @@ public class ImageDataset implements Matchable{
 			try {
 				images[i] = new UShortImage(imageDataset.images[i]);
 			} catch (ImageException e) {
-				e.printStackTrace();
-				throw new RuntimeException(e.getMessage());
+				throw new RuntimeException(e.getMessage(), e);
 			}
 		}
 		if (imageDataset.imageTimeStamps!=null){

@@ -43,7 +43,6 @@ public class ImageDatasetReaderService {
 				return null;
 			}
 		} catch (ServiceConfigurationError serviceError){
-			serviceError.printStackTrace();
 			throw new RuntimeException("imageDatasetReader provider configuration error: "+serviceError.getMessage(),serviceError);
 		}
 	}

@@ -53,8 +53,7 @@ public class XMLMetaDataReader extends XMLMetaData {
 					metaData.getRegistry().newEntry(metaData.getRdfData(), identifiableProvider.getIdentifiableObject(vcid), uri);
 					
 				} catch (VCID.InvalidVCIDException e){
-					e.printStackTrace();
-					throw new XmlParseException(e);
+					throw new XmlParseException("invalid VCID",e);
 				}
 			}
 		}
@@ -63,15 +62,8 @@ public class XMLMetaDataReader extends XMLMetaData {
 			// read RDF
 			try { 
 				metaData.addToModelFromElement(rdfElement);
-			} catch (RDFParseException e) {
-				e.printStackTrace();
-				throw new XmlParseException(e.getMessage());
-			} catch (RDFHandlerException e) {
-				e.printStackTrace();
-				throw new XmlParseException(e.getMessage());
-			} catch (IOException e) {
-				e.printStackTrace();
-				throw new XmlParseException(e.getMessage());
+			} catch (RDFParseException | RDFHandlerException | IOException e) {
+				throw new XmlParseException(e.getMessage(), e);
 			}
 		}
 		Element nonRDFAnnotationListElement = metadataElement.getChild(XMLMetaData.NONRDF_ANNOTATION_LIST_TAG, VCMetaData.nsVCML);
@@ -83,8 +75,7 @@ public class XMLMetaDataReader extends XMLMetaData {
 				try {
 					vcid = VCID.fromString(vcidString);
 				} catch (InvalidVCIDException e) {
-					e.printStackTrace();
-					throw new XmlParseException(e.getMessage());
+					throw new XmlParseException(e.getMessage(), e);
 				}
 				Identifiable identifiable = identifiableProvider.getIdentifiableObject(vcid);
 				if (identifiable!=null){

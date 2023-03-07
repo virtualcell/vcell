@@ -75,8 +75,7 @@ public static String unMangle(String param) {
 			tempExp = new Expression(unMangle(expStr)); 
 			tempExp = MathFunctionDefinitions.fixFunctionSyntax(tempExp);
 		}catch (ExpressionException e){
-			e.printStackTrace(System.out);
-			throw new RuntimeException(e.getMessage());
+			throw new RuntimeException(e.getMessage(), e);
 		}
 		
 		return tempExp;

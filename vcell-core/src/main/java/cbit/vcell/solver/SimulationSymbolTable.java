@@ -18,6 +18,8 @@ import java.util.Set;
 import java.util.Vector;
 
 import cbit.vcell.mapping.SimulationContext;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.BeanUtils;
 
 import cbit.vcell.field.FieldFunctionArguments;
@@ -67,6 +69,8 @@ import cbit.vcell.solver.AnnotatedFunction.FunctionCategory;
  * @author: John Wagner
  */
 public class SimulationSymbolTable implements ScopedSymbolTable, MathSymbolTable {
+	private final static Logger lg = LogManager.getLogger(SimulationSymbolTable.class);
+
 	private Simulation simulation = null;
 	//	
 	private transient HashMap<String, Variable> localVariableHash = null;	
@@ -137,16 +141,14 @@ public SymbolTableEntry getEntry(java.lang.String identifierString) {
 			Constant constant = getLocalConstant((Constant)ste);
 			return constant;
 		}catch (ExpressionException e){
-			e.printStackTrace(System.out);
-			throw new RuntimeException("Simulation.getEntry(), error getting local Constant (math override)"+identifierString);
+			throw new RuntimeException("Simulation.getEntry(), error getting local Constant (math override)"+identifierString, e);
 		}
 	}else if (ste instanceof Function){
 		try {
 			Function function = getLocalFunction((Function)ste);
 			return function;
 		}catch (ExpressionException e){
-			e.printStackTrace(System.out);
-			throw new RuntimeException("Simulation.getEntry(), error getting local Function "+identifierString+", "+e.getMessage());
+			throw new RuntimeException("Simulation.getEntry(), error getting local Function "+identifierString+", "+e.getMessage(), e);
 		}
 	}else{
 		return ste;
@@ -192,13 +194,7 @@ public Function[] getFunctions() {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (6/6/2001 7:52:15 PM)
- * @return cbit.vcell.math.Function
- * @param functionName java.lang.String
- */
-private Constant getLocalConstant(Constant referenceConstant) throws ExpressionException {
+public Constant getLocalConstant(Constant referenceConstant) throws ExpressionException {
 	if (localVariableHash == null) {
 		localVariableHash = new HashMap<String, Variable>();
 	}
@@ -233,12 +229,6 @@ private Constant getLocalConstant(Constant referenceConstant) throws ExpressionE
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (6/6/2001 7:52:15 PM)
- * @return cbit.vcell.math.Function
- * @param functionName java.lang.String
- */
 private Function getLocalFunction(Function referenceFunction) throws ExpressionException {
 	if (localVariableHash == null) {
 		localVariableHash = new HashMap<String, Variable>();
@@ -308,8 +298,7 @@ public Variable[] getVariables() {
 				Constant overriddenConstant = getLocalConstant((Constant)mathDescriptionVar);
 				varList.addElement(overriddenConstant);
 			}catch (ExpressionException e){
-				e.printStackTrace(System.out);
-				throw new RuntimeException("local Constant "+mathDescriptionVar.getName()+" not found for Simulation");
+				throw new RuntimeException("local Constant "+mathDescriptionVar.getName()+" not found for Simulation", e);
 			}
 		//
 		// replace all Functions with local Functions that are bound to this Simulation
@@ -319,8 +308,7 @@ public Variable[] getVariables() {
 				Function overriddenFunction = getLocalFunction((Function)mathDescriptionVar);
 				varList.addElement(overriddenFunction);
 			}catch (ExpressionException e){
-				e.printStackTrace(System.out);
-				throw new RuntimeException("local Function "+mathDescriptionVar.getName()+" not found for Simulation");
+				throw new RuntimeException("local Function "+mathDescriptionVar.getName()+" not found for Simulation", e);
 			}
 		//
 		// pass all other Variables through
@@ -361,7 +349,7 @@ private void rebindAll() {
 			try {
 				variable.bind(this); // update bindings to latest mathOverrides
 			}catch (ExpressionBindingException e){
-				e.printStackTrace(System.out);
+				lg.error(e);
 			}
 		}
 	}
@@ -529,13 +517,9 @@ public void getEntries(Map<String, SymbolTableEntry> entryMap) {
 					Expression substitutedExp = substituteFunctions(functions[i].getExpression());
 					substitutedExp.bindExpression(this);
 					functions[i].setExpression(substitutedExp.flatten());
-				}catch (MathException e){
-					e.printStackTrace(System.out);
+				}catch (MathException | ExpressionException e){
+					lg.error(e);
 					errString = errString+", "+e.getMessage();	
-					// throw new RuntimeException(e.getMessage());
-				}catch (ExpressionException e){
-					e.printStackTrace(System.out);
-					errString = errString+", "+e.getMessage();				
 					// throw new RuntimeException(e.getMessage());
 				}
 	

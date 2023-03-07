@@ -21,11 +21,11 @@ public class RefinementRoi implements Serializable, Matchable {
 		Membrane,
 		Volume
 	}
-
+	
 	private Expression roiExpression = null;
 	private RoiType type = null;
 	private int level = 0;
-
+	
 	public RefinementRoi(RoiType type, int level, String roi) throws ExpressionException {
 		if (roi == null || roi.isEmpty())
 		{
@@ -35,7 +35,7 @@ public class RefinementRoi implements Serializable, Matchable {
 		this.level  = level;
 		setRoiExpression(roi);
 	}
-
+	
 	public RefinementRoi(CommentStringTokenizer tokens) throws DataAccessException {
 		readVCML(tokens);
 	}
@@ -52,7 +52,7 @@ public class RefinementRoi implements Serializable, Matchable {
 	public void setLevel(int level) {
 		this.level = level;
 	}
-
+	
 	public String getVCML() {
 		StringBuilder buffer = new StringBuilder();
 
@@ -65,20 +65,20 @@ public class RefinementRoi implements Serializable, Matchable {
 		}
 
 		buffer.append(VCML.EndBlock+"\n");
-
+			
 		return buffer.toString();
 	}
-
+	
 	private void readVCML(CommentStringTokenizer tokens) throws DataAccessException {
 		try {
 			String token = tokens.nextToken();
 			if (token.equalsIgnoreCase(VCML.RefinementRoi)) {
 				token = tokens.nextToken();
 				if (!token.equalsIgnoreCase(VCML.BeginBlock)) {
-					throw new DataAccessException("unexpected token " + token + " expecting " + VCML.BeginBlock);
+					throw new DataAccessException("unexpected token " + token + " expecting " + VCML.BeginBlock); 
 				}
 			}
-
+			
 			while (tokens.hasMoreTokens()) {
 				token = tokens.nextToken();
 				if (token.equalsIgnoreCase(VCML.EndBlock)) {
@@ -110,8 +110,7 @@ public class RefinementRoi implements Serializable, Matchable {
 				}
 			}
 		} catch (Throwable e) {
-			e.printStackTrace(System.out);
-			throw new DataAccessException("line #" + (tokens.lineIndex()+1) + " Exception: " + e.getMessage());
+			throw new DataAccessException("line #" + (tokens.lineIndex()+1) + " Exception: " + e.getMessage(), e);
 		}
 	}
 
@@ -130,7 +129,7 @@ public class RefinementRoi implements Serializable, Matchable {
 		{
 			return false;
 		}
-
+		
 		return true;
 	}
 	public Expression getRoiExpression() {
@@ -154,7 +153,7 @@ public class RefinementRoi implements Serializable, Matchable {
 	public int getLevel() {
 		return level;
 	}
-
+	
 	public static RefinementRoi createNewRoi(RoiType roiType, int nextLevel) throws ExpressionException
 	{
 		return new RefinementRoi(roiType, nextLevel, roiType == RoiType.Membrane ? "1.0" : "0.0");
@@ -163,7 +162,7 @@ public class RefinementRoi implements Serializable, Matchable {
 	public RoiType getType() {
 		return type;
 	}
-
+	
 	public double getDx(Simulation simulation)
 	{
 		Extent extent = simulation.getMathDescription().getGeometry().getExtent();

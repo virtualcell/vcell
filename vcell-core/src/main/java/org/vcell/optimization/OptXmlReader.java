@@ -34,12 +34,10 @@ public class OptXmlReader {
 			Document sDoc = builder.build(reader);
 			Element root = sDoc.getRootElement();
 			return root;
-		} catch (JDOMException e) { 
-	    	e.printStackTrace();
-	    	throw new RuntimeException("source document is not well-formed\n"+e.getMessage());
-    	} catch (IOException e) { 
-        	e.printStackTrace();
-        	throw new RuntimeException("Unable to read source document\n"+e.getMessage());
+		} catch (JDOMException e) {
+	    	throw new RuntimeException("source document is not well-formed\n"+e.getMessage(), e);
+    	} catch (IOException e) {
+        	throw new RuntimeException("Unable to read source document\n"+e.getMessage(), e);
 		}		
 	}
 	
@@ -62,8 +60,7 @@ public class OptXmlReader {
 			OptSolverResultSet optResultSet = new OptSolverResultSet(parameterNames, bestResultSet);
 			return optResultSet;
 		} catch (DataConversionException e){
-			e.printStackTrace(System.out);
-			throw new RuntimeException(e.getMessage());
+			throw new RuntimeException(e.getMessage(), e);
 		}
 	}
 	

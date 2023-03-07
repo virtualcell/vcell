@@ -13,6 +13,8 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.output.Format;
@@ -23,6 +25,7 @@ import cbit.util.xml.VCLogger;
 import cbit.util.xml.XmlUtil;
 
 public abstract class Translator {
+	private final static Logger lg = LogManager.getLogger(Translator.class);
 
 	//supported translations
 //	public static final String VC_QUAL_CELL = "VCQualCell";
@@ -75,8 +78,7 @@ public abstract class Translator {
 		        xmlOut.output(tRoot, outStream);
 		  	}
 	  	} catch (IOException e) {
-			System.err.println("Unable to write out XML file.");
-			e.printStackTrace();
+			lg.error("Unable to write out XML file.", e);
 	  	}
 	}
 

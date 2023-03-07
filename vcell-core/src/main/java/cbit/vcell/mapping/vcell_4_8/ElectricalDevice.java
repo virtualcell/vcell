@@ -12,6 +12,8 @@ package cbit.vcell.mapping.vcell_4_8;
 
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.Matchable;
 import org.vcell.util.Relatable;
 import org.vcell.util.RelationVisitor;
@@ -26,12 +28,10 @@ import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.units.VCUnitDefinition;
-/**
- * Insert the type's description here.
- * Creation date: (2/12/2002 1:01:13 PM)
- * @author: Jim Schaff
- */
+
 abstract class ElectricalDevice implements ScopedSymbolTable {
+	private final static Logger lg = LogManager.getLogger(ElectricalDevice.class);
+
 	private String name = null;
 	private ElectricalDeviceNameScope nameScope = new ElectricalDeviceNameScope();
 	protected MathMapping_4_8 mathMapping_4_8 = null; // for determining NameScope parent only
@@ -166,7 +166,7 @@ abstract class ElectricalDevice implements ScopedSymbolTable {
 //			try {
 //				expression.bindExpression(ElectricalDevice.this);
 //			} catch (ExpressionBindingException e) {
-//				e.printStackTrace();
+//				lg.error(e);
 //				throw new PropertyVetoException(e.getMessage(),null);
 //			}
 			Expression oldValue = fieldParameterExpression;
@@ -204,28 +204,14 @@ abstract class ElectricalDevice implements ScopedSymbolTable {
 
 	}
 
-/**
- * ElectricalDevice constructor comment.
- */
 ElectricalDevice(String argName, MathMapping_4_8 argMathMapping) {
 	this.name = argName;
 	this.mathMapping_4_8 = argMathMapping;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (2/19/2002 11:37:04 AM)
- * @return boolean
- */
 abstract boolean getCalculateVoltage();
 
 
-/**
- * Insert the method's description here.
- * Creation date: (4/7/2004 12:49:17 PM)
- * @return cbit.vcell.parser.Expression
- */
 Expression getDependentVoltageExpression() {
 	return dependentVoltageExpression;
 }
@@ -254,55 +240,27 @@ public void getEntries(Map<String, SymbolTableEntry> entryMap) {
 	getNameScope().getExternalEntries(entryMap);	
 }
 
-/**
- * Insert the method's description here.
- * Creation date: (2/12/2002 2:15:22 PM)
- * @return java.lang.String
- */
 final SymbolTableEntry getTotalCurrentSymbol() {
 	return getParameterFromRole(ROLE_TotalCurrent);
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (4/7/2004 10:57:40 AM)
- * @return cbit.vcell.parser.SymbolTableEntry
- * @param identifier java.lang.String
- */
 public SymbolTableEntry getLocalEntry(String identifier) {
 	ElectricalDevice.ElectricalDeviceParameter parameter = getParameter(identifier);
 	
 	return parameter;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (2/12/2002 2:09:38 PM)
- * @return java.lang.String
- */
 final String getName() {
 	return name;
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (12/8/2003 12:47:06 PM)
- * @return cbit.vcell.parser.NameScope
- */
 public NameScope getNameScope() {
 	return nameScope;
 }
 
 
-/**
- * Gets the mappingParameters index property (cbit.vcell.mapping.MappingParameter) value.
- * @return The mappingParameters property value.
- * @param index The index value into the property array.
- * @see #setMappingParameters
- */
 ElectricalDevice.ElectricalDeviceParameter getParameter(String argName) {
 	for (int i = 0; i < fieldParameters.length; i++){
 		if (fieldParameters[i].getName().equals(argName)){
@@ -312,13 +270,6 @@ ElectricalDevice.ElectricalDeviceParameter getParameter(String argName) {
 	return null;
 }
 
-
-/**
- * Gets the structureMappingParameters index property (cbit.vcell.mapping.StructureMappingParameter) value.
- * @return The structureMappingParameters property value.
- * @param index The index value into the property array.
- * @see #setStructureMappingParameters
- */
 ElectricalDeviceParameter getParameterFromRole(int role) {
 	for (int i = 0; i < fieldParameters.length; i++){
 		if (fieldParameters[i] instanceof ElectricalDeviceParameter){
@@ -331,86 +282,30 @@ ElectricalDeviceParameter getParameterFromRole(int role) {
 	return null;
 }
 
-
-/**
- * Gets the parameters property (cbit.vcell.model.Parameter[]) value.
- * @return The parameters property value.
- * @see #setParameters
- */
 ElectricalDevice.ElectricalDeviceParameter[] getParameters() {
 	return fieldParameters;
 }
 
-
-/**
- * Gets the parameters index property (cbit.vcell.model.Parameter) value.
- * @return The parameters property value.
- * @param index The index value into the property array.
- * @see #setParameters
- */
 ElectricalDevice.ElectricalDeviceParameter getParameters(int index) {
 	return getParameters()[index];
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (4/7/2004 11:31:15 AM)
- * @return boolean
- */
 abstract boolean getResolved();
 
-
-/**
- * Insert the method's description here.
- * Creation date: (4/7/2004 3:00:30 PM)
- * @return java.lang.String
- */
 final SymbolTableEntry getSourceSymbol() {
 	return getParameterFromRole(ROLE_TransmembraneCurrent);
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (4/7/2004 2:48:20 PM)
- * @return java.lang.String
- */
 abstract SymbolTableEntry getVoltageSymbol();
 
-
-/**
- * Insert the method's description here.
- * Creation date: (2/19/2002 11:37:04 AM)
- * @return boolean
- */
 abstract boolean hasCapacitance();
 
-
-/**
- * Insert the method's description here.
- * Creation date: (4/22/2002 5:39:45 PM)
- * @return boolean
- */
 abstract boolean isVoltageSource();
 
-
-/**
- * Insert the method's description here.
- * Creation date: (4/7/2004 12:49:17 PM)
- * @param newDependentVoltageExpression cbit.vcell.parser.Expression
- */
 void setDependentVoltageExpression(Expression newDependentVoltageExpression) {
 	dependentVoltageExpression = newDependentVoltageExpression;
 }
 
-
-/**
- * Sets the parameters property (cbit.vcell.model.Parameter[]) value.
- * @param parameters The new value for the property.
- * @exception java.beans.PropertyVetoException The exception description.
- * @see #getParameters
- */
 void setParameters(ElectricalDevice.ElectricalDeviceParameter[] parameters) {
 	fieldParameters = parameters;
 	for (int i = 0; i < fieldParameters.length; i++){
@@ -419,17 +314,11 @@ void setParameters(ElectricalDevice.ElectricalDeviceParameter[] parameters) {
 				fieldParameters[i].getExpression().bindExpression(this);
 			}
 		}catch (ExpressionBindingException e){
-			e.printStackTrace(System.out);
+			lg.error(e);
 		}
 	}
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (2/12/2002 4:02:31 PM)
- * @return java.lang.String
- */
 public String toString() {
 	return getName();
 }

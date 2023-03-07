@@ -54,7 +54,7 @@ import net.sourceforge.interval.ia_math.RealInterval;
 public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Serializable, SimulationContextEntity, IssueSource,
 	Identifiable, Displayable {
 
-	private final static Logger logger = LogManager.getLogger(SpeciesContextSpec.class);
+	private final static Logger lg = LogManager.getLogger(SpeciesContextSpec.class);
 
 	public static final String PARAMETER_NAME_PROXY_PARAMETERS = "proxyParameters";
 	private static final String PROPERTY_NAME_WELL_MIXED = "wellMixed";
@@ -255,10 +255,8 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
 			fieldParameterExpression = expression;
 			try {
 				SpeciesContextSpec.this.cleanupParameters();
-			} catch (ModelException e) {
-				e.printStackTrace();
-			} catch (ExpressionException e) {
-				e.printStackTrace();
+			} catch (ModelException | ExpressionException e) {
+				lg.error(e);
 			}
 			super.firePropertyChange("expression", oldValue, expression);
 		}
@@ -404,7 +402,7 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
 					cleanupParameters();
 
 				}catch (ModelException | ExpressionException | PropertyVetoException e1){
-					logger.error("property change failed", e1);
+					lg.error("property change failed", e1);
 				}
 			} 
 		} 
@@ -628,8 +626,7 @@ public void initializeForSpatial() {
 		try {
 			getDiffusionParameter().setExpression(e);
 		} catch (ExpressionBindingException e1) {
-			e1.printStackTrace();
-			throw new RuntimeException("Error while initializing diffusion rate, " + e1.getMessage());
+			throw new RuntimeException("Error while initializing diffusion rate, " + e1.getMessage(), e1);
 		}
 	}
 }
@@ -1379,7 +1376,7 @@ public void refreshDependencies() {
 				fieldParameters[i].getExpression().bindExpression(this);
 			}
 		}catch (ExpressionException e){
-			logger.error("error binding expression '"+fieldParameters[i].getExpression().infix()+"', "+e.getMessage());
+			lg.error("error binding expression '"+fieldParameters[i].getExpression().infix()+"', "+e.getMessage());
 		}
 	}
 }
@@ -1491,10 +1488,8 @@ private void setParameters(SpeciesContextSpecParameter[] parameters) throws java
 	fieldParameters = parameters;
 	try {
 		cleanupParameters();
-	} catch (ModelException e) {
-		e.printStackTrace();
-	} catch (ExpressionException e) {
-		e.printStackTrace();
+	} catch (ModelException | ExpressionException e) {
+		lg.error(e);
 	}
 	firePropertyChange("parameters", oldValue, parameters);
 }

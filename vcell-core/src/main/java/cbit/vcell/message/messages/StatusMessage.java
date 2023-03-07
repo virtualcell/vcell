@@ -19,11 +19,6 @@ import cbit.vcell.message.VCMessagingException;
 import cbit.vcell.message.VCellTopic;
 import cbit.vcell.server.SimulationJobStatus;
 
-/**
- * Insert the type's description here.
- * Creation date: (2/5/2004 12:35:20 PM)
- * @author: Fei Gao
- */
 public class StatusMessage {
 	private SimulationJobStatus jobStatus = null;
 	private Double timePoint = null;
@@ -31,11 +26,6 @@ public class StatusMessage {
 
 	private java.lang.String userName = null;
 
-/**
- * Insert the method's description here.
- * Creation date: (12/31/2003 12:53:34 PM)
- * @param param javax.jms.Message
- */
 public StatusMessage(SimulationJobStatus jobStatus0, String userName0, Double progress0, Double timepoint0) {
 	jobStatus = jobStatus0;
 	userName = userName0;
@@ -43,72 +33,30 @@ public StatusMessage(SimulationJobStatus jobStatus0, String userName0, Double pr
 	timePoint = timepoint0;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (12/31/2003 12:53:34 PM)
- * @param param javax.jms.Message
- */
 public StatusMessage(VCMessage message) {
 	parseMessage(message);
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (2/5/2004 2:17:03 PM)
- * @return cbit.vcell.messaging.db.SimulationJobStatus
- */
 public SimulationJobStatus getJobStatus() {
 	return jobStatus;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (2/5/2004 2:17:03 PM)
- * @return java.lang.Double
- */
 public java.lang.Double getProgress() {
 	return progress;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (12/31/2003 12:56:45 PM)
- * @return cbit.vcell.solver.SimulationInfo
- */
 public SimulationJobStatus getSimulationJobStatus() {
 	return jobStatus;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (2/5/2004 2:17:03 PM)
- * @return java.lang.Double
- */
 public java.lang.Double getTimePoint() {
 	return timePoint;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (2/9/2004 10:24:41 AM)
- * @return java.lang.String
- */
 public java.lang.String getUserName() {
 	return userName;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (2/5/2004 2:19:48 PM)
- * @param message javax.jms.Message
- */
 private void parseMessage(VCMessage message) {
 	if (message == null) {
 		throw new RuntimeException("Null message");
@@ -120,8 +68,7 @@ private void parseMessage(VCMessage message) {
 			throw new RuntimeException("Wrong message");
 		}
 	} catch (MessagePropertyNotFoundException ex) {
-		ex.printStackTrace(System.out);
-		throw new RuntimeException("Wrong message");
+		throw new RuntimeException("Wrong message", ex);
 	}
 			
 	if (message.getObjectContent()==null){
@@ -144,26 +91,11 @@ private void parseMessage(VCMessage message) {
 	
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (2/5/2004 1:59:04 PM)
- * @return javax.jms.Message
- * @param session cbit.vcell.messaging.VCellSession
- * @throws VCMessagingException 
- */
 public void sendToClient(VCMessageSession session) throws VCMessagingException {
 	VCMessage message = toMessage(session);
 	session.sendTopicMessage(VCellTopic.ClientStatusTopic, message);
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (2/5/2004 1:59:04 PM)
- * @return javax.jms.Message
- * @param session cbit.vcell.messaging.VCellSession
- */
 private VCMessage toMessage(VCMessageSession session) {
 	VCMessage message = session.createObjectMessage(jobStatus);
 	message.setStringProperty(VCMessagingConstants.MESSAGE_TYPE_PROPERTY, MessageConstants.MESSAGE_TYPE_SIMSTATUS_VALUE);
@@ -178,12 +110,6 @@ private VCMessage toMessage(VCMessageSession session) {
 	return message;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (2/13/2004 9:55:17 AM)
- * @return java.lang.String
- */
 public String toString() {
 	return "StatusMessage [" + jobStatus.getSimulationMessage().getDisplayMessage() + "," + progress + "," + timePoint + "]";
 }

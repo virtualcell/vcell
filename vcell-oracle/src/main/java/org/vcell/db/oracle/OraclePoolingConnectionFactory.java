@@ -76,24 +76,29 @@ public void failed(Connection con, Object lock) throws SQLException {
 @Override
 public synchronized Connection getConnection(Object lock) throws SQLException {
 	Connection conn = null;
+	Exception exception = null;
+	String detailedErrorMsg = null;
 	try {
 		conn = poolDataSource.getConnection();
 	} catch (SQLException ex) {
 		// might be invalid or stale connection
-		if (lg.isTraceEnabled()) lg.trace("first time #getConnection( ) fail " + ex.getMessage() + ", state " + ex.getSQLState() + ", attempting refresh");
+		detailedErrorMsg = "first time #getConnection(lock="+lock.hashCode()+") failed, state='"+ex.getSQLState()+"', msg='"+ex.getMessage()+"'";
+		lg.info(detailedErrorMsg);
 		// get connection again.
 		try {
 			conn = poolDataSource.getConnection();
 		} catch (SQLException e) {
-			if (lg.isTraceEnabled()) lg.trace("refresh failed");
-			lg.error(e.getMessage(),e);
+			exception = e;
+			detailedErrorMsg = "second time #getConnection(lock="+lock.hashCode()+") connection refresh failed, state='"+e.getSQLState()+"', msg='"+e.getMessage()+"'";
+			lg.error(detailedErrorMsg, e);
 		}
 	}
 	if (conn == null) {
 		throw new SQLException("Cannot get a connection to the database. This could be caused by\n" +
 				"1. Max connection limit has reached. No connections are available.\n" +
 				"2. there is a problem with database server.\n" +
-				"3. there is a problem with network.\n");
+				"3. there is a problem with network.\n" +
+				"details: "+detailedErrorMsg, exception);
 	}
 	return conn;
 }

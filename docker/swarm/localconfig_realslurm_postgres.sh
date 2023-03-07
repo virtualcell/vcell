@@ -80,6 +80,7 @@ esac
 VCELL_DB_URL="jdbc:postgresql://${DATABASE_HOST}:5432/postgres"
 VCELL_DB_DRIVER="org.postgresql.Driver"
 VCELL_DB_USER="vcell"
+VCELL_DEBUG_PORT_BASE=5000
 VCELL_JMS_SIM_HOST_EXTERNAL=vcell-node3.cam.uchc.edu
 VCELL_MONGO_HOST_EXTERNAL=$VCELL_API_HOST_EXTERNAL
 VCELL_BATCH_HOST="hpc-ext-1.cam.uchc.edu,hpc-ext-2.cam.uchc.edu,hpc-ext-3.cam.uchc.edu,hpc-ext-4.cam.uchc.edu"
@@ -129,7 +130,7 @@ VCELL_SSH_CMD_RESTORE_TIMEOUT=5
 
 #
 # write out the environment file to be for:
-# 1. deployment actions (not applicable here because localconfig_realslurm.sh is designed for local computation on a dev machine).
+# 1. deployment actions (not applicable here because localconfig_realslurm_postgres.sh is designed for local computation on a dev machine).
 # 2. runtime environment for the docker stack run command
 #
 cat <<EOF >"$_outputfile"
@@ -148,7 +149,13 @@ VCELL_CLIENT_APPID=${_applicationId}
 VCELL_DB_DRIVER=$VCELL_DB_DRIVER
 VCELL_DB_URL=$VCELL_DB_URL
 VCELL_DB_USER=$VCELL_DB_USER
-VCELL_DEPLOY_SECRETS_DIR=${HOME}/vcellkeys
+VCELL_DEBUG_PORT_VCELL_API=$((VCELL_DEBUG_PORT_BASE+1))
+VCELL_DEBUG_PORT_VCELL_DATA=$((VCELL_DEBUG_PORT_BASE+2))
+VCELL_DEBUG_PORT_VCELL_DB=$((VCELL_DEBUG_PORT_BASE+3))
+VCELL_DEBUG_PORT_VCELL_SCHED=$((VCELL_DEBUG_PORT_BASE+4))
+VCELL_DEBUG_PORT_VCELL_SUBMIT=$((VCELL_DEBUG_PORT_BASE+5))
+VCELL_DEBUG_PORT_VCELL_WEB=$((VCELL_DEBUG_PORT_BASE+6))
+VCELL_DEPLOY_SECRETS_DIR=${HOME}/vcellkeys_postgres
 VCELL_EXPORT_BASEURL=$VCELL_EXPORT_BASEURL
 VCELL_EXPORTDIR_HOST=$VCELL_EXPORTDIR_HOST
 VCELL_HTC_NODELIST=$VCELL_HTC_NODELIST
@@ -173,12 +180,14 @@ VCELL_OPT_DOCKER_IMAGE=$VCELL_OPT_DOCKER_IMAGE
 VCELL_OPT_SINGULARITY_FILENAME=$VCELL_OPT_SINGULARITY_FILENAME
 VCELL_OPT_SINGULARITY_IMAGE_EXTERNAL=$VCELL_OPT_SINGULARITY_IMAGE_EXTERNAL
 VCELL_REPO_NAMESPACE=$VCELL_REPO_NAMESPACE
-VCELL_SECRETS_DIR=${HOME}/vcellkeys
-VCELL_SIMDATADIR_ARCHIVE_EXTERNAL=/share/apps/vcell3/dev_archive_users
-VCELL_SIMDATADIR_ARCHIVE_INTERNAL=/Volumes/vcell/dev_archive_users
+VCELL_SECRETS_DIR=${HOME}/vcellkeys_postgres
+VCELL_SIMDATADIR_ARCHIVE_EXTERNAL=/share/apps/vcell12/users
+VCELL_SIMDATADIR_ARCHIVE_INTERNAL=/share/apps/vcell12/users
+VCELL_SIMDATADIR_ARCHIVE_HOST=/Volumes/vcell-2/users
 VCELL_SIMDATADIR_EXTERNAL=/share/apps/vcell3/users
 VCELL_SIMDATADIR_HOST=/Volumes/vcell/users
-VCELL_SIMDATADIR_SECONDARY_HOST=/Volumes/vcell/users
+VCELL_SIMDATADIR_SECONDARY_EXTERNAL=/share/apps/vcell10/users
+VCELL_SIMDATADIR_SECONDARY_HOST=/Volumes/vcell-1/users
 VCELL_SIMDATADIR_PARALLEL_EXTERNAL=/share/apps/vcell3parallel
 VCELL_SITE_CAMEL=${_site_camel}
 VCELL_SITE=$VCELL_SITE

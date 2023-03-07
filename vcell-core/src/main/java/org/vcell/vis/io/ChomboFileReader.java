@@ -227,7 +227,7 @@ public class ChomboFileReader {
 			ChomboMeshData meshdata = readMesh("C:\\Developer\\eclipse\\workspace\\pyVCell\\ChomboUtils\\SimData\\SimID_85232385_0_.mesh.hdf5","C:\\Developer\\eclipse\\workspace\\pyVCell\\ChomboUtils\\SimData\\SimID_85232385_0_000075.feature_EC.vol0.hdf5");
 			System.out.println("read mesh of dimension "+meshdata.getMesh().getDimension());
 		} catch (Exception e) {
-			e.printStackTrace(System.out);
+			e.printStackTrace();
 		}
 	}
 	

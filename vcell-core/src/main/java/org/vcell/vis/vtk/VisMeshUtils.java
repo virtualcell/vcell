@@ -34,7 +34,6 @@ public class VisMeshUtils {
 		try {
 			deserializer.deserialize(chomboIndexData, blob);
 		} catch (TException e) {
-			e.printStackTrace();
 			throw new IOException("error reading ChomboIndexData from file "+chomboIndexDataFile.getPath()+": "+e.getMessage(),e);
 		}
 		return chomboIndexData;
@@ -47,7 +46,6 @@ public class VisMeshUtils {
 		try {
 			deserializer.deserialize(movingBoundaryIndexData, blob);
 		} catch (TException e) {
-			e.printStackTrace();
 			throw new IOException("error reading MovingBoundaryIndexData from file "+movingBoundaryIndexDataFile.getPath()+": "+e.getMessage(),e);
 		}
 		return movingBoundaryIndexData;
@@ -60,7 +58,6 @@ public class VisMeshUtils {
 		try {
 			deserializer.deserialize(finiteVolumeIndexData, blob);
 		} catch (TException e) {
-			e.printStackTrace();
 			throw new IOException("error reading FiniteVolumeIndexData from file "+finiteVolumeIndexFile.getPath()+": "+e.getMessage(),e);
 		}
 		return finiteVolumeIndexData;
@@ -72,7 +69,6 @@ public class VisMeshUtils {
 			byte[] blob = serializer.serialize(chomboIndexData);
 			FileUtils.writeByteArrayToFile(chomboIndexFile, blob);
 		} catch (TException e) {
-			e.printStackTrace();
 			throw new IOException("error writing ChomboIndexData to file "+chomboIndexFile.getPath()+": "+e.getMessage(),e);
 		}
 	}
@@ -83,7 +79,6 @@ public class VisMeshUtils {
 			byte[] blob = serializer.serialize(simDataSetRef);
 			FileUtils.writeByteArrayToFile(simDataSetRefFile, blob);
 		} catch (TException e) {
-			e.printStackTrace();
 			throw new IOException("error writing SimulationDataSetRef to file "+simDataSetRefFile.getPath()+": "+e.getMessage(),e);
 		}
 	}
@@ -94,7 +89,6 @@ public class VisMeshUtils {
 			byte[] blob = serializer.serialize(visMesh);
 			FileUtils.writeByteArrayToFile(visMeshFile, blob);
 		} catch (TException e) {
-			e.printStackTrace();
 			throw new IOException("error writing VisMesh to file "+visMeshFile.getPath()+": "+e.getMessage(),e);
 		}
 	}
@@ -105,7 +99,6 @@ public class VisMeshUtils {
 			byte[] blob = serializer.serialize(finiteVolumeIndexData);
 			FileUtils.writeByteArrayToFile(finiteVolumeIndexFile, blob);
 		} catch (TException e) {
-			e.printStackTrace();
 			throw new IOException("error writing FiniteVolumeIndexData to file "+finiteVolumeIndexFile.getPath()+": "+e.getMessage(),e);
 		}
 	}

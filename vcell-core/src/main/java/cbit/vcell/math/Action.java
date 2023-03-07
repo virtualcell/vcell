@@ -9,6 +9,8 @@
  */
 
 package cbit.vcell.math;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 
@@ -26,6 +28,8 @@ import cbit.vcell.parser.SymbolTable;
  */
 public class Action implements Matchable,java.io.Serializable
 {
+	private final static Logger lg = LogManager.getLogger(Action.class);
+
 	private Variable var;
 	private String operation;
 	private Expression operand;
@@ -165,7 +169,7 @@ public String getVCML()
 		try
 		{
 			value = (int)(getOperand().evaluateConstant());
-		}catch (ExpressionException e) {e.printStackTrace();}
+		}catch (ExpressionException e) {lg.debug(e);}
 		
 		buffer.append("\t\t"+VCML.Action+"\t"+getVar().getName()+"\t"+getOperation()+"\t"+value+";\n");
 	}else if (getOperation().equals(ACTION_CREATE)){
@@ -187,7 +191,7 @@ public String toString() {
 	try
 	{
 		value = (int)(getOperand().evaluateConstant());
-	}catch (ExpressionException e) {e.printStackTrace();}
+	}catch (ExpressionException e) {lg.error(e);}
 	buffer.append(getVar().getName()+"  "+getOperation()+"  "+value);
 	return buffer.toString();
 }

@@ -91,11 +91,6 @@ import jscl.text.ParseException;
  */
 public class RulebasedMathMapping extends AbstractStochMathMapping {
 
-/**
- * This method was created in VisualAge.
- * @param model cbit.vcell.model.Model
- * @param geometry cbit.vcell.geometry.Geometry
- */
 protected RulebasedMathMapping(SimulationContext simContext, MathMappingCallback callback, NetworkGenerationRequirements networkGenerationRequirements) {
 	super(simContext, callback, networkGenerationRequirements);
 }
@@ -168,7 +163,7 @@ protected RulebasedMathMapping(SimulationContext simContext, MathMappingCallback
 						}
 					}
 				}catch (ExpressionException e){
-					e.printStackTrace(System.out);
+					lg.error(e);
 				}
 			}
 		}
@@ -275,8 +270,7 @@ protected RulebasedMathMapping(SimulationContext simContext, MathMappingCallback
 					varHash.addVariable(newFunctionOrConstant(getMathSymbol(memMapping.getMembrane().getMembraneVoltage(),memMapping.getGeometryClass()),
 							getIdentifierSubstitutions(memMapping.getInitialVoltageParameter().getExpression(),memMapping.getInitialVoltageParameter().getUnitDefinition(),memMapping.getGeometryClass()),memMapping.getGeometryClass()));
 				}catch(ExpressionException e){
-					e.printStackTrace(System.out);
-					throw new MappingException("Membrane initial voltage: "+initialVoltageParm.getName()+" cannot be evaluated as constant.");
+					throw new MappingException("Membrane initial voltage: "+initialVoltageParm.getName()+" cannot be evaluated as constant.", e);
 				}
 			}
 		}
@@ -328,8 +322,7 @@ protected RulebasedMathMapping(SimulationContext simContext, MathMappingCallback
 					varHash.addVariable(new Constant(getMathSymbol(parm,sm.getGeometryClass()),new Expression(value)));
 				}catch (ExpressionException e){
 					//varHash.addVariable(new Function(getMathSymbol0(parm,sm),getIdentifierSubstitutions(parm.getExpression(),parm.getUnitDefinition(),sm)));
-					e.printStackTrace(System.out);
-					throw new MappingException("Size of structure:"+sm.getNameScope().getName()+" cannot be evaluated as constant.");
+					throw new MappingException("Size of structure:"+sm.getNameScope().getName()+" cannot be evaluated as constant.", e);
 				}
 			}
 		}
@@ -345,8 +338,7 @@ protected RulebasedMathMapping(SimulationContext simContext, MathMappingCallback
 			try {
 				mathDesc.setGeometry(simContext.getGeometryContext().getGeometry());
 			}catch (java.beans.PropertyVetoException e){
-				e.printStackTrace(System.out);
-				throw new MappingException("failure setting geometry "+e.getMessage());
+				throw new MappingException("failure setting geometry "+e.getMessage(), e);
 			}
 		}else{
 			throw new MappingException("Geometry must be defined in Application "+simContext.getName());
@@ -379,7 +371,6 @@ protected RulebasedMathMapping(SimulationContext simContext, MathMappingCallback
 		try {
 			addParticleJumpProcesses(varHash, geometryClass, subDomain, speciesPatternMap);
 		} catch (PropertyVetoException e1) {
-			e1.printStackTrace();
 			throw new MappingException(e1.getMessage(),e1);
 		}	
 
@@ -631,7 +622,7 @@ protected RulebasedMathMapping(SimulationContext simContext, MathMappingCallback
 //			forward_sizeFactor = RationalExpUtils.getRationalExp(forward_sizeFactor).simplifyAsExpression();
 //			forward_sizeFactor.bindExpression(getSimulationContext().getModel());
 //		} catch (ParseException e) {
-//			e.printStackTrace();
+//			lg.error(e);
 //		}
 //		
 //		Expression forward_rateExp = Expression.mult(new Expression(forward_rateParameter, getNameScope()),forward_sizeFactor,getUnitFactor(forward_substanceConversionUnit)).flatten();
@@ -684,7 +675,7 @@ protected RulebasedMathMapping(SimulationContext simContext, MathMappingCallback
 //				reverse_sizeFactor = RationalExpUtils.getRationalExp(reverse_sizeFactor).simplifyAsExpression();
 //				reverse_sizeFactor.bindExpression(getSimulationContext().getModel());
 //			} catch (ParseException e) {
-//				e.printStackTrace();
+//				lg.error(e);
 //			}
 //			
 //			Expression reverse_rateExp = Expression.mult(new Expression(reverse_rateParameter, getNameScope()),reverse_sizeFactor,getUnitFactor(reverse_substanceConversionUnit)).flatten();
@@ -809,7 +800,7 @@ protected RulebasedMathMapping(SimulationContext simContext, MathMappingCallback
 			forward_sizeFactor = RationalExpUtils.getRationalExp(forward_sizeFactor).simplifyAsExpression();
 			forward_sizeFactor.bindExpression(getSimulationContext().getModel());
 		} catch (ParseException e) {
-			e.printStackTrace();
+			lg.error(e);
 		}
 		
 		Expression forward_rateExp = Expression.mult(getUnitFactor(forward_substanceConversionUnit), new Expression(forward_rateParameter, getNameScope()),forward_sizeFactor).simplifyJSCL();
@@ -892,7 +883,7 @@ protected RulebasedMathMapping(SimulationContext simContext, MathMappingCallback
 				reverse_sizeFactor = RationalExpUtils.getRationalExp(reverse_sizeFactor).simplifyAsExpression();
 				reverse_sizeFactor.bindExpression(getSimulationContext().getModel());
 			} catch (ParseException e) {
-				e.printStackTrace();
+				lg.error(e);
 			}
 			
 			Expression reverse_rateExp = Expression.mult(new Expression(reverse_rateParameter, getNameScope()),reverse_sizeFactor,getUnitFactor(reverse_substanceConversionUnit)).simplifyJSCL();
@@ -1220,8 +1211,7 @@ protected void refreshVariables() throws MappingException {
 			Expression countExp = new Expression(0.0);
 			spCountParm = addSpeciesCountParameter(countName, countExp, PARAMETER_ROLE_SPECIES_COUNT, scs.getInitialCountParameter().getUnitDefinition(), scs.getSpeciesContext());
 		}catch(PropertyVetoException pve){
-			pve.printStackTrace();
-			throw new MappingException(pve.getMessage());
+			throw new MappingException(pve.getMessage(), pve);
 		}
 		
 		//add concentration of species as MathMappingParameter - this will map to species concentration function
@@ -1231,8 +1221,7 @@ protected void refreshVariables() throws MappingException {
 			concExp.bindExpression(this);
 			addSpeciesConcentrationParameter(concName, concExp, PARAMETER_ROLE_SPECIES_CONCENRATION, scs.getSpeciesContext().getUnitDefinition(), scs.getSpeciesContext());
 		}catch(Exception e){
-			e.printStackTrace();
-			throw new MappingException(e.getMessage());
+			throw new MappingException(e.getMessage(), e);
 		}
 		//we always add variables, all species are independent variables, no matter they are constant or not.
 		String countMathSymbol = getMathSymbol(spCountParm, getSimulationContext().getGeometryContext().getStructureMapping(scs.getSpeciesContext().getStructure()).getGeometryClass());
@@ -1248,8 +1237,7 @@ protected void refreshVariables() throws MappingException {
 			Expression countExp = new Expression(0.0);
 			observableCountParm = addObservableCountParameter(countName, countExp, PARAMETER_ROLE_OBSERVABLE_COUNT, simContext.getModel().getUnitSystem().getStochasticSubstanceUnit(), observable);
 		}catch(PropertyVetoException pve){
-			pve.printStackTrace();
-			throw new MappingException(pve.getMessage());
+			throw new MappingException(pve.getMessage(), pve);
 		}
 		
 		//add concentration of species as MathMappingParameter - this will map to species concentration function
@@ -1259,8 +1247,7 @@ protected void refreshVariables() throws MappingException {
 			concExp.bindExpression(this);
 			addObservableConcentrationParameter(concName, concExp, PARAMETER_ROLE_OBSERVABLE_CONCENTRATION, observable.getUnitDefinition(), observable);
 		}catch(Exception e){
-			e.printStackTrace();
-			throw new MappingException(e.getMessage());
+			throw new MappingException(e.getMessage(), e);
 		}
 //		//we always add variables, all species are independent variables, no matter they are constant or not.
 //		String countMathSymbol = getMathSymbol(observableCountParm, getSimulationContext().getGeometryContext().getStructureMapping(scs.getSpeciesContext().getStructure()).getGeometryClass());

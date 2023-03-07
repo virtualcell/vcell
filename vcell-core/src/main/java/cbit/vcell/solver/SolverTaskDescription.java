@@ -135,8 +135,7 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 		try {
 			fieldOutputTimeSpec = (OutputTimeSpec)BeanUtils.cloneSerializable(solverTaskDescription.getOutputTimeSpec());
 		}catch (Exception e){
-			e.printStackTrace(System.out);
-			throw new RuntimeException(e.getMessage());
+			throw new RuntimeException(e.getMessage(), e);
 		}
 		fieldSensitivityParameter = solverTaskDescription.getSensitivityParameter();
 		fieldSolverDescription = solverTaskDescription.getSolverDescription();
@@ -155,9 +154,9 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 		else {
 			setStochOpt(null);
 		}
-		if (simulation.getMathDescription().isNonSpatialStoch() &&
-				(!solverTaskDescription.getSolverDescription().isGibsonSolver()) &&
-				(solverTaskDescription.getStochHybridOpt() != null))
+		if (simulation.getMathDescription().isNonSpatialStoch() && 
+			(!solverTaskDescription.getSolverDescription().isGibsonSolver()) &&
+			(solverTaskDescription.getStochHybridOpt() != null))
 		{
 			setStochHybridOpt(solverTaskDescription.getStochHybridOpt());
 		}
@@ -198,7 +197,7 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 		}
 		numProcessors = solverTaskDescription.numProcessors;
 	}
-
+	
 	private void resetSolverTaskDescriptionIfNecessary() {
 		final MathDescription md = fieldSimulation.getMathDescription();
 		if (fieldSolverDescription != null) {
@@ -216,11 +215,10 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 		try {
 			setSolverDescription(SolverDescription.getDefaultSolverDescription(md));
 		} catch (PropertyVetoException e) {
-			e.printStackTrace();
 			throw new RuntimeException("failed to set SolverDescription for simulation "+getSimulation().getName(),e);
 		}
 	}
-
+	
 
 
 	/**
@@ -732,7 +730,7 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 				}
 			}
 		} catch (PropertyVetoException e) {
-			e.printStackTrace();
+			lg.error(e);
 		}
 	}
 
@@ -773,7 +771,7 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 		//			RelativeErrorTolerance 1e-4
 		//		}
 
-
+		
 		//		StochSimOptions {
 		//			UseCustomSeed	false
 		//			CustomSeed	0
@@ -866,7 +864,7 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 						sd = SolverDescription.fromDatabaseName(token);
 						setSolverDescription(sd);
 					}catch (java.beans.PropertyVetoException e){
-						e.printStackTrace(System.out);
+						lg.error(e);
 					}
 					continue;
 				}
@@ -908,10 +906,10 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 					Double lambda = null;
 					Double MSRTolerance = null;
 					Double SDETolerance = null;
-
+					
 					token = tokens.nextToken();
 					if (!token.equalsIgnoreCase(VCML.BeginBlock)) {
-						throw new DataAccessException("unexpected token " + token + " expecting " + VCML.BeginBlock);
+						throw new DataAccessException("unexpected token " + token + " expecting " + VCML.BeginBlock); 
 					}
 					while (tokens.hasMoreTokens()) {
 						token = tokens.nextToken();
@@ -953,7 +951,7 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 							bHistogram = Boolean.parseBoolean(token);
 							continue;
 						}
-
+						
 						//
 						// for backward compatibility, try to read NonspatialStochHybridOptions also
 						//
@@ -1015,7 +1013,7 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 					Double SDETolerance = null;
 					token = tokens.nextToken();
 					if (!token.equalsIgnoreCase(VCML.BeginBlock)) {
-						throw new DataAccessException("unexpected token " + token + " expecting " + VCML.BeginBlock);
+						throw new DataAccessException("unexpected token " + token + " expecting " + VCML.BeginBlock); 
 					}
 					while (tokens.hasMoreTokens()) {
 						token = tokens.nextToken();
@@ -1141,8 +1139,7 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 				}
 			}
 		} catch (Throwable e) {
-			e.printStackTrace(System.out);
-			throw new DataAccessException("line #" + (tokens.lineIndex()+1) + " Exception: " + e.getMessage());
+			throw new DataAccessException("line #" + (tokens.lineIndex()+1) + " Exception: " + e.getMessage(), e);
 		}
 
 		if (keepEvery != -1) {
@@ -1245,7 +1242,7 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 		//	try {
 		//		setSmoldynDefaultTimeStep();
 		//	} catch (Exception ex) {
-		//		ex.printStackTrace();
+		//		lg.error(e);
 		//	}
 	}
 
@@ -1283,7 +1280,7 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 		if (lg.isDebugEnabled()) {
 			lg.debug("setStochOption " + Objects.hashCode(newStochOpt) +  ' ' + Objects.toString(newStochOpt));
 		}
-
+		
 		if (!Matchable.areEqual(fieldNonspatialStochOpt,newStochOpt)) {
 			NonspatialStochSimOptions oldValue = fieldNonspatialStochOpt;
 			fieldNonspatialStochOpt = newStochOpt;
@@ -1300,7 +1297,7 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 		if (lg.isDebugEnabled()) {
 			lg.debug("setStochOption " + Objects.hashCode(newStochHybridOpt) +  ' ' + Objects.toString(newStochHybridOpt));
 		}
-
+		
 		if (!Matchable.areEqual(fieldNonspatialStochHybridOpt,newStochHybridOpt)) {
 			NonspatialStochHybridOptions oldValue = fieldNonspatialStochHybridOpt;
 			fieldNonspatialStochHybridOpt = newStochHybridOpt;

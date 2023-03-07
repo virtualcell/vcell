@@ -199,8 +199,7 @@ public class MolecularTypePattern extends RbmElementAbstract implements Matchabl
 			this.participantMatchLabel = participantMatchLabel;
 			return;
 		} catch(NumberFormatException e) {
-			e.printStackTrace(System.out);
-			throw new RuntimeException(e.getMessage());
+			throw new RuntimeException(e.getMessage(), e);
 		}
 	}
 	public boolean hasExplicitParticipantMatch() {

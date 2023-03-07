@@ -102,7 +102,7 @@ public class ModelUnitConverter {
 //			try {
 //				jsclExpression = jscl.math.Expression.valueOf(jsclExpressionString);
 //			}catch (jscl.text.ParseException e){
-//				e.printStackTrace(System.out);
+//				lg.error(e);
 //				System.out.println("JSCL couldn't parse \""+jsclExpressionString+"\"");
 //				return null;
 //			}
