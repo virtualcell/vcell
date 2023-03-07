@@ -148,33 +148,58 @@ public void firePropertyChange(String propertyName, Object oldValue, Object newV
 }
 
 
-public Subtype getSubtype() {
+public Subtype getSubtype(Map<String, Object> analysisResults) {
+	if(isCreationReaction() == true) {
+		return Subtype.CREATION;
+	}
+	if(isDecayReaction() == true) {
+		return Subtype.DECAY;
+	}
+
+	if(isBindingReaction(analysisResults) == true) {
+		return Subtype.BINDING;
+	}
+	return Subtype.INCOMPATIBLE;
+}
+
+private boolean isCreationReaction() {
 	List<ReactantPattern> rpList = reactionRule.getReactantPatterns();
 	if(rpList.size() == 1) {
 		SpeciesPattern sp = rpList.get(0).getSpeciesPattern();
 		if(sp.getMolecularTypePatterns().size() == 1) {
 			MolecularTypePattern mtp = sp.getMolecularTypePatterns().get(0);
 			if(mtp.getComponentPatternList().size() == 0) {
-				return Subtype.CREATION;
+				return true;
 			}
 		}
 	}
+	return false;
+}
+private boolean isDecayReaction() {
 	List<ProductPattern> ppList = reactionRule.getProductPatterns();
 	if(ppList.size() == 1) {
 		SpeciesPattern sp = ppList.get(0).getSpeciesPattern();
 		if(sp.getMolecularTypePatterns().size() == 1) {
 			MolecularTypePattern mtp = sp.getMolecularTypePatterns().get(0);
 			if(mtp.getComponentPatternList().size() == 0) {
-				return Subtype.DECAY;
+				return true;
 			}
 		}
 	}
-	if(isBindingReaction() == true) {
-		return Subtype.BINDING;
-	}
-	return Subtype.INCOMPATIBLE;
+	return false;
 }
-private boolean isBindingReaction() {
+private boolean isBindingReaction(Map<String, Object> analysisResults) {
+	int transitions = (int)analysisResults.get("transitions");
+	if(transitions == 2) {
+		return true;
+	}
+	return false;
+}
+
+public void analizeReaction(Map<String, Object> analysisResults) {
+	
+	// looks expensive but a springsalad binding reaction has exactly 2 reactants one molecule each
+	// and exactly one product made of 2 molecules
 	Map<MolecularComponentPattern, MolecularTypePattern> productSpecifiedBondsMap = new LinkedHashMap<> ();
 	List<ReactantPattern> rpList = reactionRule.getReactantPatterns();
 	List<ProductPattern> ppList = reactionRule.getProductPatterns();
@@ -200,20 +225,28 @@ private boolean isBindingReaction() {
 				if(mcp.getBondType() == BondType.None) {
 					MolecularTypePattern candidate = productSpecifiedBondsMap.get(mcp);
 					if(candidate != null && mtp == candidate) {		// bingo, found a transition
+						// TODO: all the instances are different, not working w. patterns. Will try with mt, mc instances, or even names
+						String mtpKey = "mtp" + (transitions+1);
+						String mcpKey = "mcp" + (transitions+1);
+						analysisResults.put(mtpKey, mtp);
+						analysisResults.put(mcpKey, mcp);
+						
 						transitions++;
 					}
 				}
 			}
 		}
 	}
-	if(transitions == 2) {
-		return true;
-	}
-	return false;
+	analysisResults.put("transitions", transitions);
+	// TODO: should also check that all states stay unchanged
+	return;
 }
 
 public void writeData(StringBuilder sb) {			// SpringSaLaD exporting the binding rule information
-	switch(getSubtype()) {
+	Map<String, Object> analysisResults = new LinkedHashMap<> ();
+	analizeReaction(analysisResults);
+	
+	switch(getSubtype(analysisResults)) {
 	case CREATION:
 	case DECAY:
 		writeDecayData(sb);
@@ -225,7 +258,7 @@ public void writeData(StringBuilder sb) {			// SpringSaLaD exporting the binding
 		writeAllostericData(sb);
 		break;
 	case BINDING:
-		writeBindingData(sb);
+		writeBindingData(sb, analysisResults);
 		break;
 	default:
 		break;
@@ -241,53 +274,31 @@ private void writeTransitionData(StringBuilder sb) {
 private void writeAllostericData(StringBuilder sb) {
 
 }
-private void writeBindingData(StringBuilder sb) {
-	Map<MolecularComponentPattern, MolecularTypePattern> productSpecifiedBondsMap = new LinkedHashMap<> ();
-	List<ReactantPattern> rpList = reactionRule.getReactantPatterns();
-	List<ProductPattern> ppList = reactionRule.getProductPatterns();
-	int transitions = 0;
-	for(ProductPattern pp : ppList) {
-		SpeciesPattern sp = pp.getSpeciesPattern();
-		List<MolecularTypePattern> mtpList = sp.getMolecularTypePatterns();
-		for(MolecularTypePattern mtp : mtpList) {
-			List<MolecularComponentPattern> mcpList = mtp.getComponentPatternList();
-			for(MolecularComponentPattern mcp : mcpList) {
-				if(mcp.getBondType() == BondType.Specified) {
-					productSpecifiedBondsMap.put(mcp, mtp);	// all the components in the product with specified bonds
-				}
-			}
-		}
-	}
-	for(ReactantPattern rp : rpList) {		// we look to find exactly 2 components that change BondType from None to Specified
-		SpeciesPattern sp = rp.getSpeciesPattern();
-		List<MolecularTypePattern> mtpList = sp.getMolecularTypePatterns();
-		for(MolecularTypePattern mtp : mtpList) {
-			List<MolecularComponentPattern> mcpList = mtp.getComponentPatternList();
-			for(MolecularComponentPattern mcp : mcpList) {
-				if(mcp.getBondType() == BondType.None) {
-					MolecularTypePattern candidate = productSpecifiedBondsMap.get(mcp);
-					if(candidate != null && mtp == candidate) {		// bingo, found a transition
-						transitions++;
-					}
-				}
-			}
-		}
+private void writeBindingData(StringBuilder sb, Map<String, Object> analysisResults) {
+	MolecularTypePattern mtpOne = (MolecularTypePattern)analysisResults.get("mtp1");
+	MolecularTypePattern mtpTwo = (MolecularTypePattern)analysisResults.get("mtp2");
+	MolecularComponentPattern mcpOne = (MolecularComponentPattern)analysisResults.get("mcp1");
+	MolecularComponentPattern mcpTwo = (MolecularComponentPattern)analysisResults.get("mcp2");
+	String stateOne = "any";
+	String stateTwo = "any";
+	if(mtpOne == null || mtpTwo == null || mcpOne == null || mcpTwo == null) {
+		throw new RuntimeException("writeBindingData() error: something is wrong");
 	}
 	
+	sb.append("'").append(reactionRule.getName()).append("'       ");
+
 	
-//	sb.append("'").append(reactionRule.getName()).append("'       ");
-//	if(molecule[0] != null && molecule[1] != null){
-//		sb.append("'").append(molecule[0].getName()).append("' : '")
-//		.append(type[0].getName()).append("' : '")
-//		.append(state[0].toString());
-//		sb.append("'  -->  '");
-//		sb.append(molecule[1].getName()).append("' : '")
-//		.append(type[1].getName()).append("' : '")
-//		.append(state[1].toString());
-//		sb.append("'  kon  ").append(Double.toString(kon));
-//		sb.append("  koff ").append(Double.toString(koff));
-//		sb.append("  Bond_Length ").append(Double.toString(bondLength));
-//	}
+		sb.append("'").append(mtpOne.getMolecularType().getName()).append("' : '")
+		.append(mcpOne.getMolecularComponent().getName()).append("' : '")
+		.append(stateOne);
+		sb.append("'  -->  '");
+		sb.append(mtpTwo.getMolecularType().getName()).append("' : '")
+		.append(mcpTwo.getMolecularComponent().getName()).append("' : '")
+		.append(stateTwo);
+		// TODO: get the real values from kinetic law
+		sb.append("'  kon  ").append(Double.toString(0.9));
+		sb.append("  koff ").append(Double.toString(0.2));
+		sb.append("  Bond_Length ").append(Double.toString(getFieldBondLength()));
 }
 
 

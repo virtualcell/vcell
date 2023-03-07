@@ -13,7 +13,9 @@ package cbit.vcell.mapping.gui;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.SpeciesPattern;
@@ -87,7 +89,7 @@ private void refreshColumns(){
 		columns.remove(ColumnType.COLUMN_FAST);
 	}
 	if(getSimulationContext().getApplicationType() == Application.SPRINGSALAD) {
-//		columns.add(ColumnType.COLUMN_SUBTYPE);
+		columns.add(ColumnType.COLUMN_SUBTYPE);
 //		columns.add(ColumnType.COLUMN_BOND_LENGTH);
 		columns.remove(ColumnType.COLUMN_FAST);
 	}
@@ -407,7 +409,9 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 public static String getSubtype(ModelProcessSpec modelProcessSpec) {
 	if(modelProcessSpec instanceof ReactionRuleSpec) {
 		ReactionRuleSpec rrs = (ReactionRuleSpec)modelProcessSpec;
-		ReactionRuleSpec.Subtype st = rrs.getSubtype();
+		Map<String, Object> analysisResults = new LinkedHashMap<> ();
+		rrs.analizeReaction(analysisResults);
+		ReactionRuleSpec.Subtype st = rrs.getSubtype(analysisResults);
 		return st.columnName;
 	} else {
 		return ReactionRuleSpec.Subtype.INCOMPATIBLE.columnName;
