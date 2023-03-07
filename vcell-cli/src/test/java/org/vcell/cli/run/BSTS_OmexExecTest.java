@@ -130,7 +130,11 @@ public class BSTS_OmexExecTest {
 		faults.put("synths/combine_archive/WhenACombineArchiveHasNoMasterFileSimulatorExecutesAllSedDocuments/1.execution-should-succeed.omex", FAULT.HDF5_FILE_ALREADY_EXISTS);
 		faults.put("synths/combine_archive/CombineArchiveHasSedDocumentsWithSameNamesInDifferentInNestedDirectories/1.execution-should-succeed.omex", FAULT.HDF5_FILE_ALREADY_EXISTS);
 		faults.put("synths/sedml/SimulatorSupportsDataSetsWithDifferentShapes/1.execution-should-succeed.omex", FAULT.ARRAY_INDEX_OUT_OF_BOUNDS);
-return faults;
+		faults.put("synths/sedml/SimulatorSupportsRepeatedTasksWithSubTasksOfMixedTypes/1.execution-should-succeed.omex", FAULT.SEDML_SEQUENTIAL_REPEATED_TASKS);
+		faults.put("synths/sedml/SimulatorSupportsRepeatedTasksWithSubTasksOfMixedTypes/2.execution-should-succeed.omex", FAULT.SEDML_SEQUENTIAL_REPEATED_TASKS);
+
+
+		return faults;
 	}
 
 	@Parameterized.Parameters
@@ -210,8 +214,6 @@ return faults;
 		FAULT determinedFault = FAULT.UNCATETORIZED_FAULT;
 		String errorMessage = caughtException.getMessage();
 		if (errorMessage == null) errorMessage = ""; // Prevent nullptr exception
-
-		if (caughtException instanceof Error) return determinedFault;
 
 		if (errorMessage.contains("refers to either a non-existent model")) { //"refers to either a non-existent model (invalid SED-ML) or to another model with changes (not supported yet)"
 			determinedFault = FAULT.SEDML_UNSUPPORTED_MODEL_REFERENCE;
