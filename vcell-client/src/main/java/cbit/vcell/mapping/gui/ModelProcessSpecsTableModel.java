@@ -33,6 +33,7 @@ import cbit.vcell.model.ReactantPattern;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SimpleReaction;
+import cbit.vcell.parser.Expression;
 /**
  * Insert the type's description here.
  * Creation date: (2/23/01 10:52:36 PM)
@@ -46,7 +47,8 @@ public class ModelProcessSpecsTableModel extends VCellSortTableModel<ModelProces
 		COLUMN_TYPE("Type"),
 		COLUMN_SUBTYPE("Subtype"),
 		COLUMN_ENABLED("Enabled"),
-		COLUMN_FAST("Fast");
+		COLUMN_FAST("Fast"),
+		COLUMN_BOND_LENGTH("Bond Length");
 		
 		public final String label;
 		private ColumnType(String label){
@@ -85,7 +87,8 @@ private void refreshColumns(){
 		columns.remove(ColumnType.COLUMN_FAST);
 	}
 	if(getSimulationContext().getApplicationType() == Application.SPRINGSALAD) {
-		columns.add(ColumnType.COLUMN_SUBTYPE);
+//		columns.add(ColumnType.COLUMN_SUBTYPE);
+//		columns.add(ColumnType.COLUMN_BOND_LENGTH);
 		columns.remove(ColumnType.COLUMN_FAST);
 	}
 }
@@ -151,6 +154,9 @@ public Class<?> getColumnClass(int column) {
 		case COLUMN_ENABLED:{
 			return Boolean.class;
 		}
+		case COLUMN_BOND_LENGTH:{
+			return Expression.class;
+		}
 		case COLUMN_FAST:{
 			return Boolean.class;
 		}
@@ -192,13 +198,21 @@ public Object getValueAt(int row, int col) {
 		case COLUMN_SUBTYPE:{
 			ModelProcess modelProcess = modelProcessSpec.getModelProcess();
 			if(getSimulationContext().getApplicationType() == Application.SPRINGSALAD) {
-				return getSubtype(modelProcess);
+				return getSubtype(modelProcessSpec);
 			} else {
 				return null;
 			}
 		}
 		case COLUMN_ENABLED:{
 			return new Boolean(!modelProcessSpec.isExcluded());
+		}
+		case COLUMN_BOND_LENGTH:{
+			ModelProcess modelProcess = modelProcessSpec.getModelProcess();
+			if(getSimulationContext().getApplicationType() == Application.SPRINGSALAD) {
+				return getBondLength(modelProcessSpec);
+			} else {
+				return null;
+			}
 		}
 		case COLUMN_FAST:{
 			if (!(modelProcessSpec.getModelProcess() instanceof SimpleReaction)){
@@ -222,11 +236,11 @@ public Object getValueAt(int row, int col) {
  */
 public boolean isCellEditable(int rowIndex, int columnIndex) {
 	ColumnType columnType = columns.get(columnIndex);
-	switch (columnType){
-	case COLUMN_ENABLED:{
+	switch (columnType) {
+	case COLUMN_ENABLED:
+	case COLUMN_BOND_LENGTH:
 		return true;
-	}
-	case COLUMN_FAST:{
+	case COLUMN_FAST: {
 		if(getSimulationContext()!=null) {
 			ModelProcessSpec ModelProcessSpec = getValueAt(rowIndex);
 			//
@@ -236,7 +250,7 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 		}
 		return false;
 	}
-	default:{
+	default: {
 		return false;
 	}
 	}
@@ -360,6 +374,17 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 				fireTableRowsUpdated(rowIndex,rowIndex);
 				break;
 			}
+			case COLUMN_BOND_LENGTH: {
+				if(modelProcessSpec instanceof ReactionSpec) {
+					ReactionRuleSpec reactionRuleSpec = (ReactionRuleSpec)modelProcessSpec;
+					if (aValue instanceof String) {
+						String newExpressionString = (String)aValue;
+						double result = Double.parseDouble(newExpressionString);
+						reactionRuleSpec.setFieldBondLength(result);
+					}
+				}
+				break;
+			}
 			case COLUMN_FAST:{
 				boolean bFast = ((Boolean)aValue).booleanValue();
 				if (modelProcessSpec instanceof ReactionSpec){
@@ -379,34 +404,24 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 	}
 }
 
-public String getSubtype(ModelProcess modelProcess) {
-	if(modelProcess instanceof ReactionRule) {
-		ReactionRule rr = (ReactionRule)modelProcess;
-		List<ReactantPattern> rpList = rr.getReactantPatterns();
-		if(rpList.size() == 1) {
-			SpeciesPattern sp = rpList.get(0).getSpeciesPattern();
-			if(sp.getMolecularTypePatterns().size() == 1) {
-				MolecularTypePattern mtp = sp.getMolecularTypePatterns().get(0);
-				if(mtp.getComponentPatternList().size() == 0) {
-					return "Creation";
-				}
-			}
-		}
-		List<ProductPattern> ppList = rr.getProductPatterns();
-		if(ppList.size() == 1) {
-			SpeciesPattern sp = ppList.get(0).getSpeciesPattern();
-			if(sp.getMolecularTypePatterns().size() == 1) {
-				MolecularTypePattern mtp = sp.getMolecularTypePatterns().get(0);
-				if(mtp.getComponentPatternList().size() == 0) {
-					return "Destruction";
-				}
-			}
-		}
-		// TODO: implement logic for binding. When 2 unbound sites in the single reactant become bound to each other in the product
-		return "Binding";
+public static String getSubtype(ModelProcessSpec modelProcessSpec) {
+	if(modelProcessSpec instanceof ReactionRuleSpec) {
+		ReactionRuleSpec rrs = (ReactionRuleSpec)modelProcessSpec;
+		ReactionRuleSpec.Subtype st = rrs.getSubtype();
+		return st.columnName;
 	} else {
-		return "Simple";
+		return ReactionRuleSpec.Subtype.INCOMPATIBLE.columnName;
 	}
+}
+public double getBondLength(ModelProcessSpec modelProcessSpec) {
+	if(modelProcessSpec instanceof ReactionRuleSpec) {
+		ReactionRuleSpec rrs = (ReactionRuleSpec)modelProcessSpec;
+		double bondLength = rrs.getFieldBondLength();
+		return bondLength;
+	} else {
+		return -1.0;
+	}
+ 
 }
 
 	public Comparator<ModelProcessSpec> getComparator(int col, boolean ascending) {

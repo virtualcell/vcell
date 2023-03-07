@@ -91,13 +91,13 @@ public class SpringSaLaDExporter {
 			/* ********* BEGIN BY WRITING THE TIMES *********/
 			sb.append("*** " + TIME_INFORMATION + " ***");
 			sb.append("\n");
-			simulation.writeData(sb);
+			simulation.writeData(sb);	// TODO: need proper sim
 			sb.append("\n");
 
 			/* ********* WRITE THE SPATIAL INFORMATION **********/
 			sb.append("*** " + SPATIAL_INFORMATION + " ***");
 			sb.append("\n");
-			geometryContext.writeData(sb);
+			geometryContext.writeData(sb);	// TODO: need geometry
 			sb.append("\n");
 
 			/* ******* WRITE THE SPECIES INFORMATION ***********/
@@ -106,7 +106,6 @@ public class SpringSaLaDExporter {
 			sb.append("\n");
 			for(SpeciesContext sc : model.getSpeciesContexts()) {
 				SpeciesContextSpec scs = reactionContext.getSpeciesContextSpec(sc);
-				SpeciesContextSpecParameter initialCountParameter = scs.getInitialCountParameter();
 				scs.writeData(sb);
 			}
 			/* ******* WRITE THE SPECIES INFORMATION ***********/

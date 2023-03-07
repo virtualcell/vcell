@@ -19,6 +19,7 @@ import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.model.rbm.MolecularComponentPattern.BondType;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueSource;
+import org.vcell.util.document.BioModelChildSummary.MathType;
 import org.vcell.util.IssueContext;
 import org.vcell.util.Matchable;
 
@@ -40,15 +41,12 @@ public class ReactionRuleSpec implements ModelProcessSpec {
 			this.displayName = displayName;
 			this.databaseName = databaseName;
 		}
-		
 		public String getDisplayName(){
 			return this.displayName;
 		}
-
 		public String getDatabaseName() {
 			return this.databaseName;
 		}
-		
 		public static ReactionRuleMappingType fromDatabaseName(String databaseName){
 			for (ReactionRuleMappingType t : values()){
 				if (t.getDatabaseName().equals(databaseName)){
@@ -57,11 +55,28 @@ public class ReactionRuleSpec implements ModelProcessSpec {
 			}
 			return null;
 		}
-		
 	}
+	
+	public enum Subtype {
+		INCOMPATIBLE("Not Compatible"),
+		CREATION("Creation"),
+		DECAY("Decay"),
+		TRANSITION("Transition"),
+		ALLOSTERIC("Allosteric"),
+		BINDING("Binding");
+		
+		final public String columnName;		// column name in ModelProcessSpecsTableModel
+
+		private Subtype(String columnName) {
+			this.columnName = columnName;
+		}
+	}
+
 	
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private ReactionRuleMappingType fieldReactionRuleMapping = ReactionRuleMappingType.INCLUDED;
+	private double fieldBondLength = 1;
+
 	
 	public class ReactionRuleCombo implements IssueSource {	// used only for Issue reporting stuff
 		final ReactionRuleSpec rs;
@@ -132,7 +147,34 @@ public void firePropertyChange(String propertyName, Object oldValue, Object newV
 	getPropertyChange().firePropertyChange(propertyName,oldValue,newValue);
 }
 
-public void writeData(StringBuilder sb) {			// SpringSaLaD exporting the binding rule information
+
+public Subtype getSubtype() {
+	List<ReactantPattern> rpList = reactionRule.getReactantPatterns();
+	if(rpList.size() == 1) {
+		SpeciesPattern sp = rpList.get(0).getSpeciesPattern();
+		if(sp.getMolecularTypePatterns().size() == 1) {
+			MolecularTypePattern mtp = sp.getMolecularTypePatterns().get(0);
+			if(mtp.getComponentPatternList().size() == 0) {
+				return Subtype.CREATION;
+			}
+		}
+	}
+	List<ProductPattern> ppList = reactionRule.getProductPatterns();
+	if(ppList.size() == 1) {
+		SpeciesPattern sp = ppList.get(0).getSpeciesPattern();
+		if(sp.getMolecularTypePatterns().size() == 1) {
+			MolecularTypePattern mtp = sp.getMolecularTypePatterns().get(0);
+			if(mtp.getComponentPatternList().size() == 0) {
+				return Subtype.DECAY;
+			}
+		}
+	}
+	if(isBindingReaction() == true) {
+		return Subtype.BINDING;
+	}
+	return Subtype.INCOMPATIBLE;
+}
+private boolean isBindingReaction() {
 	Map<MolecularComponentPattern, MolecularTypePattern> productSpecifiedBondsMap = new LinkedHashMap<> ();
 	List<ReactantPattern> rpList = reactionRule.getReactantPatterns();
 	List<ProductPattern> ppList = reactionRule.getProductPatterns();
@@ -155,7 +197,74 @@ public void writeData(StringBuilder sb) {			// SpringSaLaD exporting the binding
 		for(MolecularTypePattern mtp : mtpList) {
 			List<MolecularComponentPattern> mcpList = mtp.getComponentPatternList();
 			for(MolecularComponentPattern mcp : mcpList) {
-				if(mcp.getBondType() == BondType.None) {		// bingo, found a transition
+				if(mcp.getBondType() == BondType.None) {
+					MolecularTypePattern candidate = productSpecifiedBondsMap.get(mcp);
+					if(candidate != null && mtp == candidate) {		// bingo, found a transition
+						transitions++;
+					}
+				}
+			}
+		}
+	}
+	if(transitions == 2) {
+		return true;
+	}
+	return false;
+}
+
+public void writeData(StringBuilder sb) {			// SpringSaLaD exporting the binding rule information
+	switch(getSubtype()) {
+	case CREATION:
+	case DECAY:
+		writeDecayData(sb);
+		break;
+	case TRANSITION:
+		writeTransitionData(sb);
+		break;
+	case ALLOSTERIC:
+		writeAllostericData(sb);
+		break;
+	case BINDING:
+		writeBindingData(sb);
+		break;
+	default:
+		break;
+	}
+}
+
+private void writeDecayData(StringBuilder sb) {
+
+}
+private void writeTransitionData(StringBuilder sb) {
+
+}
+private void writeAllostericData(StringBuilder sb) {
+
+}
+private void writeBindingData(StringBuilder sb) {
+	Map<MolecularComponentPattern, MolecularTypePattern> productSpecifiedBondsMap = new LinkedHashMap<> ();
+	List<ReactantPattern> rpList = reactionRule.getReactantPatterns();
+	List<ProductPattern> ppList = reactionRule.getProductPatterns();
+	int transitions = 0;
+	for(ProductPattern pp : ppList) {
+		SpeciesPattern sp = pp.getSpeciesPattern();
+		List<MolecularTypePattern> mtpList = sp.getMolecularTypePatterns();
+		for(MolecularTypePattern mtp : mtpList) {
+			List<MolecularComponentPattern> mcpList = mtp.getComponentPatternList();
+			for(MolecularComponentPattern mcp : mcpList) {
+				if(mcp.getBondType() == BondType.Specified) {
+					productSpecifiedBondsMap.put(mcp, mtp);	// all the components in the product with specified bonds
+				}
+			}
+		}
+	}
+	for(ReactantPattern rp : rpList) {		// we look to find exactly 2 components that change BondType from None to Specified
+		SpeciesPattern sp = rp.getSpeciesPattern();
+		List<MolecularTypePattern> mtpList = sp.getMolecularTypePatterns();
+		for(MolecularTypePattern mtp : mtpList) {
+			List<MolecularComponentPattern> mcpList = mtp.getComponentPatternList();
+			for(MolecularComponentPattern mcp : mcpList) {
+				if(mcp.getBondType() == BondType.None) {
 					MolecularTypePattern candidate = productSpecifiedBondsMap.get(mcp);
 					if(candidate != null && mtp == candidate) {		// bingo, found a transition
 						transitions++;
@@ -307,12 +416,18 @@ public ReactionRule getModelProcess() {
 	return reactionRule;
 }
 
-
 @Override
 public boolean isFast() {
 	return false;
 }
 
+public double getFieldBondLength() {
+	return fieldBondLength;
+}
+
+public void setFieldBondLength(double fieldBondLength) {
+	this.fieldBondLength = fieldBondLength;
+}
 
 
 }
