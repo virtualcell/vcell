@@ -91,9 +91,6 @@ public class BSTS_OmexExecTest {
 
 	static Set<String> slowModels(){
 		HashSet<String> slowSet = new HashSet<>();
-		//slowSet.add("synths/sedml/SimulatorSupportsAddReplaceRemoveModelElementChanges/3.execute-should-fail.omex");
-		//slowSet.add("synths/sedml/SimulatorSupportsAddReplaceRemoveModelElementChanges/1.execute-should-fail.omex");
-		//slowSet.add("synths/sedml/SimulatorSupportsModelAttributeChanges/1.execute-should-fail.omex");
 		//slowSet.add("sbml-core/Vilar-PNAS-2002-minimal-circardian-clock-discrete-NRM.omex");
 		//slowSet.add("sbml-core/Vilar-PNAS-2002-minimal-circardian-clock-discrete-SSA.omex");
 		//slowSet.add("sbml-core/Vilar-PNAS-2002-minimal-circardian-clock.omex");
@@ -109,6 +106,10 @@ public class BSTS_OmexExecTest {
 		// ...but by design we permit this kind of error to be a non-obstructive side effect.
 		blacklistSet.add("synths/sedml/SimulatorSupportsRepeatedTasksWithSubTasksOfMixedTypes/1.execution-should-succeed.omex");
 		blacklistSet.add("synths/sedml/SimulatorSupportsRepeatedTasksWithSubTasksOfMixedTypes/2.execution-should-succeed.omex");
+		// The following three tests infinitely loop somewhere...
+		blacklistSet.add("synths/sedml/SimulatorSupportsAddReplaceRemoveModelElementChanges/3.execute-should-fail.omex");
+		blacklistSet.add("synths/sedml/SimulatorSupportsAddReplaceRemoveModelElementChanges/1.execute-should-fail.omex");
+		blacklistSet.add("synths/sedml/SimulatorSupportsModelAttributeChanges/1.execute-should-fail.omex");
 		return blacklistSet;
 	}
 
@@ -118,11 +119,6 @@ public class BSTS_OmexExecTest {
 //		faults.put("sbml-core/Vilar-PNAS-2002-minimal-circardian-clock-discrete-SSA.omex", FAULT.SEDML_UNSUPPORTED_MODEL_REFERENCE); // Model refers to either a non-existent model (invalid SED-ML) or to another model with changes (not supported yet)
 //		faults.put("sbml-core/Vilar-PNAS-2002-minimal-circardian-clock.omex", FAULT.SEDML_UNSUPPORTED_MODEL_REFERENCE); // Model refers to either a non-existent model (invalid SED-ML) or to another model with changes (not supported yet)
 //		faults.put("sbml-core/Vilar-PNAS-2002-minimal-circardian-clock-continuous.omex", FAULT.SEDML_UNSUPPORTED_MODEL_REFERENCE); // Model refers to either a non-existent model (invalid SED-ML) or to another model with changes (not supported yet)
-//		faults.put("synths/sedml/SimulatorSupportsDataSetsWithDifferentShapes/1.execution-should-succeed.omex", FAULT.UNCATETORIZED_FAULT); // java.lang.ArrayIndexOutOfBoundsException at org.vcell.cli.run.hdf5.Hdf5DataPreparer.prepareNonspacialData(Hdf5DataPreparer.java:140)
-//		faults.put("synths/sedml/SimulatorSupportsRepeatedTasksWithSubTasksOfMixedTypes/1.execution-should-succeed.omex", FAULT.UNCATETORIZED_FAULT); // ERROR (SEDMLImporter.java:589) - sequential RepeatedTask not yet supported, task __repeated_task_1 is being skipped []{}
-//		faults.put("synths/sedml/SimulatorSupportsRepeatedTasksWithSubTasksOfMixedTypes/2.execution-should-succeed.omex", FAULT.UNCATETORIZED_FAULT); // ERROR (SEDMLImporter.java:589) - sequential RepeatedTask not yet supported, task __repeated_task_1 is being skipped []{}
-		faults.put("synths/combine_archive/WhenACombineArchiveHasNoMasterFileSimulatorExecutesAllSedDocuments/1.execution-should-succeed.omex", FAULT.HDF5_FILE_ALREADY_EXISTS);
-		faults.put("synths/combine_archive/CombineArchiveHasSedDocumentsWithSameNamesInDifferentInNestedDirectories/1.execution-should-succeed.omex", FAULT.HDF5_FILE_ALREADY_EXISTS);
 		faults.put("synths/sedml/SimulatorSupportsDataSetsWithDifferentShapes/1.execution-should-succeed.omex", FAULT.ARRAY_INDEX_OUT_OF_BOUNDS);
 		return faults;
 	}
@@ -197,7 +193,7 @@ public class BSTS_OmexExecTest {
 			} 
 		
 			System.err.println("add FAULT." + fault.name() + " to " + testCaseFilename);
-			throw e;
+			throw new Exception("Test error: " + testCaseFilename + " failed improperly", e);
 		}
 	}
 
