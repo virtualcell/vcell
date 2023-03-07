@@ -31,7 +31,7 @@ import java.util.List;
 
 public class SedmlJob {
     private boolean somethingFailed, hasScans, hasOverrides, bKeepTempFiles, bExactMatchOnly, bSmallMeshOverride;
-    private String sedmlLocation, bioModelBaseName, resultsDirPath, logDocumentMessage, logDocumentError, sedmlName;
+    private String sedmlLocation, bioModelBaseName, resultsDirPath, logDocumentMessage, logDocumentError, sedmlName, problemsOccured;
     private StringBuilder logOmexMessage;
     private SedmlStatistics docStatistics;
     private SedML sedml;
@@ -75,6 +75,7 @@ public class SedmlJob {
         this.cliRecorder = cliRecorder;
         this.logDocumentMessage = "Initializing SED-ML document... ";
         this.logDocumentError = "";
+        this.problemsOccured = "";
         
     }
 
@@ -273,7 +274,7 @@ public class SedmlJob {
 
     private boolean evalulateResults() throws PythonStreamException, InterruptedException, IOException {
         if (this.somethingFailed) {        // something went wrong but no exception was fired
-            Exception e = new RuntimeException("Failure executing the sed document.");
+            Exception e = new RuntimeException("Failure executing the sed document:\n" + this.problemsOccured);
             logDocumentError += e.getMessage();
             this.reportProblem(e);
             org.apache.commons.io.FileUtils.deleteDirectory(this.plotsDirectory);    // removing temp path generated from python
@@ -382,10 +383,11 @@ public class SedmlJob {
         return null;
     }
 
-    private static boolean somethingDidFail(){
+    private boolean somethingDidFail(){
         StackTraceElement elem = new Exception().getStackTrace()[1];
-        
-        logger.debug(String.format("Something failed in %s @ line %d", elem.getClassName(), elem.getLineNumber()));
+        String failString = String.format("Something failed in %s @ line %d", elem.getClassName(), elem.getLineNumber());
+        this.problemsOccured += failString + '\n';
+        logger.debug(failString);
         return true;
     }
 

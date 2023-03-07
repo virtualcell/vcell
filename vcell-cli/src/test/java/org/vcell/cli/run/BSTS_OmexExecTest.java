@@ -130,7 +130,9 @@ public class BSTS_OmexExecTest {
 		faults.put("synths/combine_archive/WhenACombineArchiveHasNoMasterFileSimulatorExecutesAllSedDocuments/1.execution-should-succeed.omex", FAULT.HDF5_FILE_ALREADY_EXISTS);
 		faults.put("synths/combine_archive/CombineArchiveHasSedDocumentsWithSameNamesInDifferentInNestedDirectories/1.execution-should-succeed.omex", FAULT.HDF5_FILE_ALREADY_EXISTS);
 		faults.put("synths/sedml/SimulatorSupportsDataSetsWithDifferentShapes/1.execution-should-succeed.omex", FAULT.ARRAY_INDEX_OUT_OF_BOUNDS);
-return faults;
+		faults.put("synths/sedml/SimulatorSupportsRepeatedTasksWithSubTasksOfMixedTypes/1.execution-should-succeed.omex", FAULT.SEDML_SEQUENTIAL_REPEATED_TASKS);
+		faults.put("synths/sedml/SimulatorSupportsRepeatedTasksWithSubTasksOfMixedTypes/2.execution-should-succeed.omex", FAULT.SEDML_SEQUENTIAL_REPEATED_TASKS);
+		return faults;
 	}
 
 	@Parameterized.Parameters
@@ -194,7 +196,7 @@ return faults;
 			}
 			Assert.assertNull("file " + testCaseFilename + " passed, but knownFault was set", knownFault);
 
-		}catch (Exception | AssertionError e){
+		} catch (Exception | AssertionError e){
 			FAULT fault = this.determineFault(e);
 			if (knownFault == fault) {
 				System.err.println("Expected error: " + e.getMessage());
@@ -226,7 +228,7 @@ return faults;
 			if (subException instanceof ArrayIndexOutOfBoundsException){
 				determinedFault = FAULT.ARRAY_INDEX_OUT_OF_BOUNDS;
 			}
-		} else if (errorMessage.contains("ailure executing the sed ")){
+		} else if (errorMessage.contains("Something failed in org.vcell.cli.run.SedmlJob")){
 			if (BSTS_OmexExecTest.sequentialRepeatedTasks().contains(this.testCaseFilename)){
 				determinedFault = FAULT.SEDML_SEQUENTIAL_REPEATED_TASKS;
 			}
