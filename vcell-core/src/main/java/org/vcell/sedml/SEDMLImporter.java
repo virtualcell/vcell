@@ -84,38 +84,40 @@ public class SEDMLImporter {
 	}
 	
 	private void initialize() throws FileNotFoundException, XMLException {
-		bioModelBaseName = FileUtils.getBaseName(externalDocInfo.getFile().getAbsolutePath());		// extract bioModel name from sedx (or sedml) file
+		this.bioModelBaseName = FileUtils.getBaseName(externalDocInfo.getFile().getAbsolutePath());		// extract bioModel name from sedx (or sedml) file
+		this.resolver = new ModelResolver(sedml);
+		this.sbmlSupport = new SBMLSupport();
+
 		if(externalDocInfo.getFile().getPath().toLowerCase().endsWith("sedx") || externalDocInfo.getFile().getPath().toLowerCase().endsWith("omex")) {
-			ac = Libsedml.readSEDMLArchive(new FileInputStream(externalDocInfo.getFile().getPath()));
+			this.ac = Libsedml.readSEDMLArchive(new FileInputStream(externalDocInfo.getFile().getPath()));
 		}
-		resolver = new ModelResolver(sedml);
-		if(ac != null) {
+		
+		if(this.ac != null) {
 			ArchiveModelResolver amr = new ArchiveModelResolver(ac);
 			amr.setSedmlPath(sedml.getPathForURI());
-			resolver.add(amr);
+			this.resolver.add(amr);
 		} else {
-			resolver.add(new FileModelResolver()); // assumes absolute paths
+			this.resolver.add(new FileModelResolver()); // assumes absolute paths
 			String sedmlRelativePrefix = externalDocInfo.getFile().getParent() + File.separator;
-			resolver.add(new RelativeFileModelResolver(sedmlRelativePrefix)); // in case model URIs are relative paths
+			this.resolver.add(new RelativeFileModelResolver(sedmlRelativePrefix)); // in case model URIs are relative paths
 		}
-		sbmlSupport = new SBMLSupport();
+		
 	}
 
 	public List<BioModel> getBioModels() throws Exception {
-		uniqueBioModelsList = new ArrayList<BioModel>();
-
 		List<org.jlibsedml.Model> modelList;
 		List<org.jlibsedml.Simulation> simulationList;
 		List<AbstractTask> abstractTaskList;
 		List<DataGenerator> dataGeneratorList;
 		List<Output> outputList;
-
-		Map<String, BioModel> bmMap; // Holds all entries for all SEDML Models where some may reference the same BioModel
+		Map<String, BioModel> bioModelMap; // Holds all entries for all SEDML Models where some may reference the same BioModel
 		Map<String, Simulation> vcSimulations = new HashMap<>(); // We will parse all tasks and create Simulations in BioModels
+
+		this.uniqueBioModelsList = new ArrayList<BioModel>();
+		
 		try {
 	        // iterate through all the elements and show them at the console
-	        modelList = sedml.getModels();
-	        if (modelList.isEmpty()) return uniqueBioModelsList; // nothing to import
+	        if ((modelList = sedml.getModels()).isEmpty()) return this.uniqueBioModelsList; // nothing to import
 	        simulationList = sedml.getSimulations();
 	        abstractTaskList = sedml.getTasks();
 	        dataGeneratorList = sedml.getDataGenerators();
@@ -124,155 +126,11 @@ public class SEDMLImporter {
 			this.printSEDMLSummary(modelList, simulationList, abstractTaskList, dataGeneratorList, outputList);
 	        
 			// NB: We don't know how many BioModels we'll end up with as some model changes may be translatable as simulations with overrides
-			bmMap = this.createBioModels(modelList);
-			
+			bioModelMap = this.createBioModels(modelList);
+
 			// Creating one VCell Simulation for each SED-ML actual Task (RepeatedTasks get added as parameter scan overrides)
 			for (AbstractTask selectedTask : abstractTaskList) {
-				org.jlibsedml.Simulation sedmlSimulation = null;	// this will become the vCell simulation
-				org.jlibsedml.Model sedmlModel = null;				// the "original" model referred to by the task
-				String sedmlOriginalModelName = null;				// this will be used in the BioModel name
-				String sedmlOriginalModelLanguage = null;			// can be sbml or vcml
-
-				if(selectedTask instanceof Task) {
-					sedmlModel = sedml.getModelWithId(selectedTask.getModelReference());
-					sedmlSimulation = sedml.getSimulation(selectedTask.getSimulationReference());
-					sedmlOriginalModelLanguage = sedmlModel.getLanguage();
-				} else if (selectedTask instanceof RepeatedTask) {
-					continue; // Repeated tasks refer to regular tasks, so first we need to create simulations for all regular tasks 
-				} else {
-					throw new RuntimeException("Unexpected task " + selectedTask);
-				}
-				
-				if(!(sedmlSimulation instanceof UniformTimeCourse)) { // only UTC sims supported
-					logger.error("task '" + selectedTask.getName() + "' is being skipped, it references an unsupported simulation type: " + sedmlSimulation);
-					continue;
-				}
-
-				// at this point we assume that the sedml simulation, algorithm and kisaoID are all valid
-
-				// identify the vCell solvers that would match best the sedml solver kisao id
-				String kisaoID = sedmlSimulation.getAlgorithm().getKisaoID();
-				// try to find a match in the ontology tree
-				SolverDescription solverDescription = SolverUtilities.matchSolverWithKisaoId(kisaoID, exactMatchOnly);
-				if (solverDescription != null) {
-					logger.info("Task (id='"+selectedTask.getId()+"') is compatible, solver match found in ontology: '" + kisaoID + "' matched to " + solverDescription);
-				} else {
-					// give it a try anyway with our deterministic default solver
-					solverDescription = SolverDescription.CombinedSundials;
-					logger.error("Task (id='"+selectedTask.getId()+")' is not compatible, no equivalent solver found in ontology for requested algorithm '"+kisaoID + "'; trying with deterministic default solver "+solverDescription);
-				}
-				// find out everything else we need about the application we're going to use,
-				// some of the info will be needed when we parse the sbml file
-				boolean bSpatial = false;
-				Application appType = Application.NETWORK_DETERMINISTIC;
-				Set<SolverDescription.SolverFeature> sfList = solverDescription.getSupportedFeatures();
-				for(SolverDescription.SolverFeature sf : sfList) {
-					switch(sf) {
-						case Feature_Rulebased:
-							appType = Application.RULE_BASED_STOCHASTIC;
-							break;
-						case Feature_Stochastic:
-							appType = Application.NETWORK_STOCHASTIC;
-							break;
-						case Feature_Deterministic:
-							appType = Application.NETWORK_DETERMINISTIC;
-							break;
-						case Feature_Spatial:
-							bSpatial = true;
-							break;
-						default:
-							break;
-					}
-				}
-
-				BioModel bioModel = bmMap.get(sedmlModel.getId());
-				
-				// if language is VCML, we don't need to create Applications and Simulations in BioModel
-				// we allow a subset of SED-ML Simulation settings (may have been edited) to override existing BioModel Simulation settings
-				
-				if(sedmlOriginalModelLanguage.contentEquals(SUPPORTED_LANGUAGE.VCELL_GENERIC.getURN())) {
-					Simulation theSimulation = null;
-					for (Simulation sim : bioModel.getSimulations()) {
-						if (sim.getName().equals(selectedTask.getName())) {
-							logger.trace(" --- selected task - name: " + selectedTask.getName() + ", id: " + selectedTask.getId());
-							sim.setImportedTaskID(selectedTask.getId());
-							theSimulation = sim;
-							break;	// found the one, no point to continue the for loop
-						}
-					}if(theSimulation == null) {
-						logger.error("Couldn't match sedml task '" + selectedTask.getName() + "' with any biomodel simulation");
-						// TODO: should we throw an exception?
-						continue;	// should never happen
-					}
-					
-					SolverTaskDescription simTaskDesc = theSimulation.getSolverTaskDescription();
-					translateTimeBounds(simTaskDesc, sedmlSimulation);
-					continue;
-				}
-				
-				// if language is SBML, we must create Simulations
-				// we may need to also create Applications, since the default one from SBML import may not be the right type)
-				
-				// see first if there is a suitable application type for the specified kisao
-				// if not, we add one by doing a "copy as" to the right type
-				SimulationContext[] existingSimulationContexts = bioModel.getSimulationContexts();
-				SimulationContext matchingSimulationContext = null;
-				for (SimulationContext simContext : existingSimulationContexts) {
-					if (simContext.getApplicationType().equals(appType) && ((simContext.getGeometry().getDimension() > 0) == bSpatial)) {
-						matchingSimulationContext = simContext;
-						break;
-					}
-				}
-				if (matchingSimulationContext == null) {
-					// this happens if we need a NETWORK_STOCHASTIC application
-					matchingSimulationContext = SimulationContext.copySimulationContext(bioModel.getSimulationContext(0), sedmlOriginalModelName+"_"+existingSimulationContexts.length, bSpatial, appType);
-					bioModel.addSimulationContext(matchingSimulationContext);
-					try {
-						String importedSCName = bioModel.getSimulationContext(0).getName();
-						bioModel.getSimulationContext(0).setName("original_imported_"+importedSCName);
-						matchingSimulationContext.setName(importedSCName);
-					} catch (PropertyVetoException e) {
-						// we should never bomb out just for trying to set a pretty name
-						logger.warn("could not set pretty name on application from name of model "+sedmlModel);
-					}
-				}
-				matchingSimulationContext.refreshDependencies();
-				MathMappingCallback callback = new MathMappingCallbackTaskAdapter(null);
-				matchingSimulationContext.refreshMathDescription(callback, NetworkGenerationRequirements.ComputeFullStandardTimeout);
-
-				// making the new vCell simulation based on the sedml simulation
-				Simulation newSimulation = new Simulation(matchingSimulationContext.getMathDescription(), matchingSimulationContext);
-				if (selectedTask instanceof Task) {
-					String newSimName = selectedTask.getId();
-					if(SEDMLUtil.getName(selectedTask) != null) {
-						newSimName += "_" + SEDMLUtil.getName(selectedTask);
-					}
-					newSimulation.setName(newSimName);
-					newSimulation.setImportedTaskID(selectedTask.getId());
-					vcSimulations.put(selectedTask.getId(), newSimulation);
-				} else {
-					newSimulation.setName(SEDMLUtil.getName(sedmlSimulation)+"_"+SEDMLUtil.getName(selectedTask));
-				}
-				
-				// we identify the type of sedml simulation (uniform time course, etc)
-				// and set the vCell simulation parameters accordingly
-				SolverTaskDescription simTaskDesc = newSimulation.getSolverTaskDescription();
-				if(solverDescription != null) {
-					simTaskDesc.setSolverDescription(solverDescription);
-				}
-
-				translateTimeBounds(simTaskDesc, sedmlSimulation);
-				translateAlgorithmParams(simTaskDesc, sedmlSimulation);
-				
-				newSimulation.setSolverTaskDescription(simTaskDesc);
-				newSimulation.setDescription(SEDMLUtil.getName(selectedTask));
-				bioModel.addSimulation(newSimulation);
-				newSimulation.refreshDependencies();
-				
-				// finally, add MathOverrides if referenced model has specified compatible changes
-				if (!sedmlModel.getListOfChanges().isEmpty() && canTranslateToOverrides(bioModel, sedmlModel)) {
-					createOverrides(newSimulation, sedmlModel.getListOfChanges());
-				}
+				this.generateSimulations(bioModelMap, vcSimulations, selectedTask);
 				
 			}
 			// now process repeated tasks, if any
@@ -325,8 +183,154 @@ public class SEDMLImporter {
 				vcbms.add((vcbm == null)? bm : vcbm);
 			}
 			return vcbms;
-		} catch (Exception e) {
-			throw new RuntimeException("Unable to initialize bioModel for the given selection\n"+e.getMessage(), e);
+		} catch (Throwable e) {
+			if (e instanceof RuntimeException) throw e;
+			else throw new RuntimeException("Unable to initialize bioModel for the given selection\n"+e.getMessage(), e);
+		}
+	}
+
+	private void generateSimulations(Map<String, BioModel> bioModelMap, Map<String, Simulation> vcSimulations, AbstractTask selectedTask)
+			throws Exception {
+		org.jlibsedml.Simulation sedmlSimulation = null;	// this will become the vCell simulation
+		org.jlibsedml.Model sedmlModel = null;				// the "original" model referred to by the task
+		String sedmlOriginalModelName = null;				// this will be used in the BioModel name
+		String sedmlOriginalModelLanguage = null;			// can be sbml or vcml
+
+		// Determine Type of Task
+		if(selectedTask instanceof Task) {
+			sedmlModel = sedml.getModelWithId(selectedTask.getModelReference());
+			sedmlSimulation = sedml.getSimulation(selectedTask.getSimulationReference());
+			sedmlOriginalModelLanguage = sedmlModel.getLanguage();
+		} else if (selectedTask instanceof RepeatedTask) {
+			return; // Repeated tasks refer to regular tasks, so first we need to create simulations for all regular tasks 
+		} else {
+			throw new RuntimeException("Unexpected task " + selectedTask);
+		}
+		
+		// Confirm it's a UTC sim
+		if(!(sedmlSimulation instanceof UniformTimeCourse)) { // only UTC sims supported
+			logger.error("task '" + selectedTask.getName() + "' is being skipped, it references an unsupported simulation type: " + sedmlSimulation);
+			return;
+		}
+
+		// at this point we assume that the sedml simulation, algorithm and kisaoID are all valid
+
+		// identify the vCell solvers that would match best the sedml solver kisao id
+		SolverDescription solverDescription = this.determineKisaoSolver(sedmlSimulation, selectedTask);
+
+		// find out everything else we need about the application we're going to use,
+		// some of the info will be needed when we parse the sbml file
+		boolean bSpatial = false;
+		Application appType = Application.NETWORK_DETERMINISTIC;
+		Set<SolverDescription.SolverFeature> sfList = solverDescription.getSupportedFeatures();
+		for(SolverDescription.SolverFeature sf : sfList) {
+			switch(sf) {
+				case Feature_Rulebased:
+					appType = Application.RULE_BASED_STOCHASTIC;
+					break;
+				case Feature_Stochastic:
+					appType = Application.NETWORK_STOCHASTIC;
+					break;
+				case Feature_Deterministic:
+					appType = Application.NETWORK_DETERMINISTIC;
+					break;
+				case Feature_Spatial:
+					bSpatial = true;
+					break;
+				default:
+					break;
+			}
+		}
+
+		BioModel bioModel = bioModelMap.get(sedmlModel.getId());
+		
+		// if language is VCML, we don't need to create Applications and Simulations in BioModel
+		// we allow a subset of SED-ML Simulation settings (may have been edited) to override existing BioModel Simulation settings
+		
+		if(sedmlOriginalModelLanguage.contentEquals(SUPPORTED_LANGUAGE.VCELL_GENERIC.getURN())) {
+			Simulation theSimulation = null;
+			for (Simulation sim : bioModel.getSimulations()) {
+				if (sim.getName().equals(selectedTask.getName())) {
+					logger.trace(" --- selected task - name: " + selectedTask.getName() + ", id: " + selectedTask.getId());
+					sim.setImportedTaskID(selectedTask.getId());
+					theSimulation = sim;
+					break;	// found the one, no point to continue the for loop
+				}
+			}
+			
+			if(theSimulation == null) {
+				logger.error("Couldn't match sedml task '" + selectedTask.getName() + "' with any biomodel simulation");
+				// TODO: should we throw an exception?
+				return;	// should never happen
+			}
+			
+			SolverTaskDescription simTaskDesc = theSimulation.getSolverTaskDescription();
+			this.translateTimeBounds(simTaskDesc, sedmlSimulation);
+			return;
+		}
+		
+		// if language is SBML, we must create Simulations
+		// we may need to also create Applications, since the default one from SBML import may not be the right type)
+		
+		// see first if there is a suitable application type for the specified kisao
+		// if not, we add one by doing a "copy as" to the right type
+		SimulationContext[] existingSimulationContexts = bioModel.getSimulationContexts();
+		SimulationContext matchingSimulationContext = null;
+		for (SimulationContext simContext : existingSimulationContexts) {
+			if (simContext.getApplicationType().equals(appType) && ((simContext.getGeometry().getDimension() > 0) == bSpatial)) {
+				matchingSimulationContext = simContext;
+				break;
+			}
+		}
+		if (matchingSimulationContext == null) {
+			// this happens if we need a NETWORK_STOCHASTIC application
+			matchingSimulationContext = SimulationContext.copySimulationContext(bioModel.getSimulationContext(0), sedmlOriginalModelName+"_"+existingSimulationContexts.length, bSpatial, appType);
+			bioModel.addSimulationContext(matchingSimulationContext);
+			try {
+				String importedSCName = bioModel.getSimulationContext(0).getName();
+				bioModel.getSimulationContext(0).setName("original_imported_"+importedSCName);
+				matchingSimulationContext.setName(importedSCName);
+			} catch (PropertyVetoException e) {
+				// we should never bomb out just for trying to set a pretty name
+				logger.warn("could not set pretty name on application from name of model "+sedmlModel);
+			}
+		}
+		matchingSimulationContext.refreshDependencies();
+		MathMappingCallback callback = new MathMappingCallbackTaskAdapter(null);
+		matchingSimulationContext.refreshMathDescription(callback, NetworkGenerationRequirements.ComputeFullStandardTimeout);
+
+		// making the new vCell simulation based on the sedml simulation
+		Simulation newSimulation = new Simulation(matchingSimulationContext.getMathDescription(), matchingSimulationContext);
+		if (selectedTask instanceof Task) {
+			String newSimName = selectedTask.getId();
+			if(SEDMLUtil.getName(selectedTask) != null) {
+				newSimName += "_" + SEDMLUtil.getName(selectedTask);
+			}
+			newSimulation.setName(newSimName);
+			newSimulation.setImportedTaskID(selectedTask.getId());
+			vcSimulations.put(selectedTask.getId(), newSimulation);
+		} else {
+			newSimulation.setName(SEDMLUtil.getName(sedmlSimulation)+"_"+SEDMLUtil.getName(selectedTask));
+		}
+		
+		// we identify the type of sedml simulation (uniform time course, etc)
+		// and set the vCell simulation parameters accordingly
+		SolverTaskDescription simTaskDesc = newSimulation.getSolverTaskDescription();
+		if(solverDescription != null) {
+			simTaskDesc.setSolverDescription(solverDescription);
+		}
+
+		translateTimeBounds(simTaskDesc, sedmlSimulation);
+		translateAlgorithmParams(simTaskDesc, sedmlSimulation);
+		
+		newSimulation.setSolverTaskDescription(simTaskDesc);
+		newSimulation.setDescription(SEDMLUtil.getName(selectedTask));
+		bioModel.addSimulation(newSimulation);
+		newSimulation.refreshDependencies();
+		
+		// finally, add MathOverrides if referenced model has specified compatible changes
+		if (!sedmlModel.getListOfChanges().isEmpty() && canTranslateToOverrides(bioModel, sedmlModel)) {
+			createOverrides(newSimulation, sedmlModel.getListOfChanges());
 		}
 	}
 
@@ -970,5 +974,89 @@ public class SEDMLImporter {
 			}
 		}
 		simTaskDesc.setErrorTolerance(errorTolerance);
+	}
+
+	private SolverDescription determineKisaoSolver(org.jlibsedml.Simulation sedmlSimulation, AbstractTask selectedTask){
+		String kisaoID = sedmlSimulation.getAlgorithm().getKisaoID();
+		SolverDescription solverDescription = SolverUtilities.matchSolverWithKisaoId(kisaoID, exactMatchOnly); // try to find a match in the ontology tree
+		if (solverDescription != null) {
+			logger.info("Task (id='"+selectedTask.getId()+"') is compatible, solver match found in ontology: '" + kisaoID + "' matched to " + solverDescription);
+		} else {
+			solverDescription = SolverDescription.CombinedSundials; // give it a try anyway with our deterministic default solver
+			logger.error("Task (id='"+selectedTask.getId()+")' is not compatible, no equivalent solver found in ontology for requested algorithm '"+kisaoID + "'; trying with deterministic default solver "+solverDescription);
+		}
+
+		return solverDescription;
+	}
+
+	private void processSBML(BioModel bioModel, org.jlibsedml.Model sedmlModel, org.jlibsedml.Simulation sedmlSimulation, AbstractTask selectedTask, 
+			SolverDescription solverDescription, Map<String, Simulation> vcSimulations, Application appType, String sedmlOriginalModelName, boolean bSpatial) throws Exception {
+		// if language is SBML, we must create Simulations
+		// we may need to also create Applications, since the default one from SBML import may not be the right type)
+		
+		// see first if there is a suitable application type for the specified kisao
+		// if not, we add one by doing a "copy as" to the right type
+		SimulationContext[] existingSimulationContexts = bioModel.getSimulationContexts();
+		SimulationContext matchingSimulationContext = null;
+		for (SimulationContext simContext : existingSimulationContexts) {
+			if (simContext.getApplicationType().equals(appType) && ((simContext.getGeometry().getDimension() > 0) == bSpatial)) {
+				matchingSimulationContext = simContext;
+				break;
+			}
+		}
+		if (matchingSimulationContext == null) {
+			// this happens if we need a NETWORK_STOCHASTIC application
+			matchingSimulationContext = SimulationContext.copySimulationContext(bioModel.getSimulationContext(0), sedmlOriginalModelName+"_"+existingSimulationContexts.length, bSpatial, appType);
+			bioModel.addSimulationContext(matchingSimulationContext);
+			try {
+				String importedSCName = bioModel.getSimulationContext(0).getName();
+				bioModel.getSimulationContext(0).setName("original_imported_"+importedSCName);
+				matchingSimulationContext.setName(importedSCName);
+			} catch (PropertyVetoException e) {
+				// we should never bomb out just for trying to set a pretty name
+				logger.warn("could not set pretty name on application from name of model "+sedmlModel);
+			}
+		}
+		matchingSimulationContext.refreshDependencies();
+		MathMappingCallback callback = new MathMappingCallbackTaskAdapter(null);
+		matchingSimulationContext.refreshMathDescription(callback, NetworkGenerationRequirements.ComputeFullStandardTimeout);
+
+		// making the new vCell simulation based on the sedml simulation
+		Simulation newSimulation = new Simulation(matchingSimulationContext.getMathDescription(), matchingSimulationContext);
+		if (selectedTask instanceof Task) {
+			String newSimName = selectedTask.getId();
+			if(SEDMLUtil.getName(selectedTask) != null) {
+				newSimName += "_" + SEDMLUtil.getName(selectedTask);
+			}
+			newSimulation.setName(newSimName);
+			newSimulation.setImportedTaskID(selectedTask.getId());
+			vcSimulations.put(selectedTask.getId(), newSimulation);
+		} else {
+			newSimulation.setName(SEDMLUtil.getName(sedmlSimulation)+"_"+SEDMLUtil.getName(selectedTask));
+		}
+		
+		// we identify the type of sedml simulation (uniform time course, etc)
+		// and set the vCell simulation parameters accordingly
+		SolverTaskDescription simTaskDesc = newSimulation.getSolverTaskDescription();
+		if(solverDescription != null) {
+			simTaskDesc.setSolverDescription(solverDescription);
+		}
+
+		translateTimeBounds(simTaskDesc, sedmlSimulation);
+		translateAlgorithmParams(simTaskDesc, sedmlSimulation);
+		
+		newSimulation.setSolverTaskDescription(simTaskDesc);
+		newSimulation.setDescription(SEDMLUtil.getName(selectedTask));
+		bioModel.addSimulation(newSimulation);
+		newSimulation.refreshDependencies();
+		
+		// finally, add MathOverrides if referenced model has specified compatible changes
+		if (!sedmlModel.getListOfChanges().isEmpty() && canTranslateToOverrides(bioModel, sedmlModel)) {
+			createOverrides(newSimulation, sedmlModel.getListOfChanges());
+		}
+	} 
+
+	private void processVCML(){
+		
 	}
 }
