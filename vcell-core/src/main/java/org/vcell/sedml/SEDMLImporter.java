@@ -862,13 +862,6 @@ public class SEDMLImporter {
 		if (model.getSource().startsWith("#")) {
 			referenceId = model.getSource().substring(1); // direct reference within sedml
 		} else {
-			/*
-			// need to check if it is an indirect reference (another model using same source URI)
-			for (Model otherModel : sedml.getModels()) {
-				if (otherModel != model && otherModel.getSource().equals(model.getSource())) {
-					referenceId = otherModel.getId();
-				}
-			}*/
 			referenceId = model.getSource();
 		}
 		return referenceId;
@@ -896,23 +889,19 @@ public class SEDMLImporter {
 	private BioModel getModelReference(String referenceId, Model model, Map<String, BioModel> idToBiomodelMap){
 		boolean translateToOverrides;
 		BioModel processedBioModel;
-		Model processedModel;
 		// Were we given a reference ID? We need to check if the parent was processed yet.
 		if (referenceId != null && model.getSource() != referenceId){
 			BioModel parentBiomodel = idToBiomodelMap.get(referenceId);
 			if (parentBiomodel == null) throw new RuntimeException("The parent hasn't been processed yet!");
 			Model parentModel = this.sedml.getModelWithId(referenceId);
 			if (parentModel == null) throw new RuntimeException("We have a serious problem?");
-			processedModel = new Model(parentModel, model.getId());
-			for (Change c : model.getListOfChanges())
-				processedModel.addChange(c);
-		} else {
-			processedModel = model;
 		}
-		processedBioModel = this.importModel(processedModel);
-		if (!processedModel.getListOfChanges().isEmpty() && !canTranslateToOverrides(processedBioModel, processedModel)){
-			// We can't apply the changes, and we know they exist (we used to just import the parent??)
-			throw new RuntimeException("VCell can not apply the changes!");
+
+		processedBioModel = this.importModel(model);
+		if (!model.getListOfChanges().isEmpty() && canTranslateToOverrides(processedBioModel, model)){
+			// We just need to import the parents, and we'll handle the rest later
+			BioModel parentBiomodel = idToBiomodelMap.get(referenceId);
+			if (parentBiomodel != null) processedBioModel = parentBiomodel;
 		}
 
 		return processedBioModel;

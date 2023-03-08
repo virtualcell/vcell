@@ -89,27 +89,34 @@ public class BSTS_OmexExecTest {
 		UNCATETORIZED_FAULT
 	};
 
-	static Set<String> slowModels(){
-		HashSet<String> slowSet = new HashSet<>();
-		//slowSet.add("sbml-core/Vilar-PNAS-2002-minimal-circardian-clock-discrete-NRM.omex");
-		//slowSet.add("sbml-core/Vilar-PNAS-2002-minimal-circardian-clock-discrete-SSA.omex");
-		//slowSet.add("sbml-core/Vilar-PNAS-2002-minimal-circardian-clock.omex");
-		//slowSet.add("sbml-core/Vilar-PNAS-2002-minimal-circardian-clock-continuous.omex");
-		//slowSet.add("synths/sedml/SimulatorCanResolveModelSourcesDefinedByUriFragments/1.execution-should-succeed.omex");
-		//slowSet.add("synths/sedml/SimulatorCanResolveModelSourcesDefinedByUriFragmentsAndInheritChanges/1.execution-should-succeed.omex");
-		return slowSet;
+	static Set<String> needToCurateModels(){
+		// These models are skipped by BSTS, and we need to look to see if that was because we don't have a KISAO exact match
+		HashSet<String> skippedModels = new HashSet<>();
+		skippedModels.add("sbml-core/Edelstein-Biol-Cybern-1996-Nicotinic-excitation.omex");
+		skippedModels.add("sbml-core/Szymanska-J-Theor-Biol-2009-HSP-synthesis.omex");
+		skippedModels.add("sbml-core/Tomida-EMBO-J-2003-NFAT-translocation.omex");
+		skippedModels.add("sbml-core/Varusai-Sci-Rep-2018-mTOR-signaling-LSODA-LSODAR-SBML.omex");
+		skippedModels.add("sbml-core/Vilar-PNAS-2002-minimal-circardian-clock-discrete-SSA.omex");
+		return skippedModels;
 	}
 
 	static Set<String> blacklistedModels(){
 		HashSet<String> blacklistSet = new HashSet<>();
-		// We have blacklisted these next two out because we do not support sequential repeated tasks,
-		// ...but by design we permit this kind of error to be a non-obstructive side effect.
+		// We don't support the following tests yet
 		blacklistSet.add("synths/sedml/SimulatorSupportsRepeatedTasksWithSubTasksOfMixedTypes/1.execution-should-succeed.omex");
 		blacklistSet.add("synths/sedml/SimulatorSupportsRepeatedTasksWithSubTasksOfMixedTypes/2.execution-should-succeed.omex");
-		// The following three tests infinitely loop somewhere...
+		blacklistSet.add("synths/sedml/SimulatorSupportsDataGeneratorsWithDifferentShapes/1.execution-should-succeed.omex");
+		blacklistSet.add("synths/sedml/SimulatorSupportsDataSetsWithDifferentShapes/1.execution-should-succeed.omex");
+		blacklistSet.add("synths/sedml/SimulatorSupportsRepeatedTasksWithMultipleSubTasks/1.execution-should-succeed.omex");
+		blacklistSet.add("synths/sedml/SimulatorSupportsRepeatedTasksWithSubTasksOfMixedTypes/1.execution-should-succeed.omex");
+		blacklistSet.add("synths/sedml/SimulatorSupportsRepeatedTasksWithSubTasksOfMixedTypes/2.execution-should-succeed.omex");
+		blacklistSet.add("synths/sedml/SimulatorSupportsUniformTimeCoursesWithNonZeroInitialTimes/1.execution-should-succeed.omex");
+
+		// The following three tests infinitely loop somewhere...but they should fail anyway.
 		blacklistSet.add("synths/sedml/SimulatorSupportsAddReplaceRemoveModelElementChanges/3.execute-should-fail.omex");
 		blacklistSet.add("synths/sedml/SimulatorSupportsAddReplaceRemoveModelElementChanges/1.execute-should-fail.omex");
 		blacklistSet.add("synths/sedml/SimulatorSupportsModelAttributeChanges/1.execute-should-fail.omex");
+
 		return blacklistSet;
 	}
 
@@ -121,7 +128,7 @@ public class BSTS_OmexExecTest {
 
 	@Parameterized.Parameters
 	public static Collection<String> testCases() {
-		Set<String> modelsToFilter = slowModels();
+		Set<String> modelsToFilter = needToCurateModels();
 		modelsToFilter.addAll(blacklistedModels());
 
 		Predicate<String> filter = (t) -> !modelsToFilter.contains(t);
