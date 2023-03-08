@@ -137,8 +137,8 @@ public class SEDMLImporter {
 			this.printSEDMLSummary(modelList, simulationList, abstractTaskList, dataGeneratorList, outputList);
 	        
 			// NB: We don't know how many BioModels we'll end up with as some model changes may be translatable as simulations with overrides
-			bmMap = this.createBioModels(modelList);
-			//bmMap = this.altCreateBioModels(modelList);
+			//bmMap = this.createBioModels(modelList);
+			bmMap = this.altCreateBioModels(modelList);
 			
 			// Creating one VCell Simulation for each SED-ML actual Task (RepeatedTasks get added as parameter scan overrides)
 			for (AbstractTask selectedTask : abstractTaskList) {
@@ -829,20 +829,22 @@ public class SEDMLImporter {
 			Queue<Model> advancedModels = advancedModelsList.remove();
 			
 			while (!advancedModels.isEmpty()){
+				// If we're unable to resolve the current set of models, put them into the next set.
 				if (count >= advancedModels.size()){
 					if (!advancedModelsList.isEmpty()) {
 						advancedModelsList.element().addAll(advancedModels); // Move this set to the next set to process
 					} else {
-						throw new RuntimeException(MODEL_REFERENCE_ERROR);
+						throw new RuntimeException(MODEL_REFERENCE_ERROR); // Something must be broken with the sedml
 					}
 				}
 
+				// Try and process the model
 				Model nextModel = advancedModels.remove();
 				String referenceId = this.getReferenceId(nextModel, idToBiomodelMap);
 				BioModel bioModel;
 				try {
 					if (null == (bioModel = this.getModelReference(referenceId, nextModel, idToBiomodelMap)))
-						continue;
+						throw new RuntimeException("Not ready for this model yet");
 					idToBiomodelMap.put(nextModel.getId(), bioModel);
 					count = 0;
 				} catch (RuntimeException e){
@@ -860,17 +862,19 @@ public class SEDMLImporter {
 		if (model.getSource().startsWith("#")) {
 			referenceId = model.getSource().substring(1); // direct reference within sedml
 		} else {
+			/*
 			// need to check if it is an indirect reference (another model using same source URI)
 			for (Model otherModel : sedml.getModels()) {
 				if (otherModel != model && otherModel.getSource().equals(model.getSource())) {
 					referenceId = otherModel.getId();
 				}
-			}
+			}*/
+			referenceId = model.getSource();
 		}
 		return referenceId;
 	}
 
-	private BioModel getModelReference(String referenceId, Model model, Map<String, BioModel> idToBiomodelMap){
+	/*private BioModel altGetModelReference(String referenceId, Model model, Map<String, BioModel> idToBiomodelMap){
 		BioModel referenceBiomodel = referenceId == null ? importModel(model) : null;
 
 		if (referenceId != null) {
@@ -887,6 +891,31 @@ public class SEDMLImporter {
 
 		//idToBiomodelMap.put(model.getId(), referenceBiomodel);
 		return referenceBiomodel;
+	}*/
+
+	private BioModel getModelReference(String referenceId, Model model, Map<String, BioModel> idToBiomodelMap){
+		boolean translateToOverrides;
+		BioModel processedBioModel;
+		Model processedModel;
+		// Were we given a reference ID? We need to check if the parent was processed yet.
+		if (referenceId != null && model.getSource() != referenceId){
+			BioModel parentBiomodel = idToBiomodelMap.get(referenceId);
+			if (parentBiomodel == null) throw new RuntimeException("The parent hasn't been processed yet!");
+			Model parentModel = this.sedml.getModelWithId(referenceId);
+			if (parentModel == null) throw new RuntimeException("We have a serious problem?");
+			processedModel = new Model(parentModel, model.getId());
+			for (Change c : model.getListOfChanges())
+				processedModel.addChange(c);
+		} else {
+			processedModel = model;
+		}
+		processedBioModel = this.importModel(processedModel);
+		if (!processedModel.getListOfChanges().isEmpty() && !canTranslateToOverrides(processedBioModel, processedModel)){
+			// We can't apply the changes, and we know they exist (we used to just import the parent??)
+			throw new RuntimeException("VCell can not apply the changes!");
+		}
+
+		return processedBioModel;
 	}
 
 	private boolean canTranslateToOverrides(BioModel refBM, Model mm) {

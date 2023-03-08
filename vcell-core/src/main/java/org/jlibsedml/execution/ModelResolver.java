@@ -116,7 +116,13 @@ public class ModelResolver {
         // resolve base model if we've not already done so
         URI srcURI = null;
         try {
-            srcURI = sedml.getModelWithId(baseModelRef).getSourceURI();
+            String modelRef = baseModelRef;
+            do {
+                srcURI = sedml.getModelWithId(modelRef).getSourceURI();
+                // If we need to recurse to the next level:
+                modelRef = sedml.getModelWithId(modelRef.startsWith("#") ?
+                        modelRef.substring(1): modelRef).getSource();
+            } while (srcURI != null && srcURI.toString().contains("#"));
         } catch (URISyntaxException e) {
             logger.error(MODEL_SRC_NOT_VALID_URI+": "+e.getMessage(), e);
             message = MODEL_SRC_NOT_VALID_URI;

@@ -115,10 +115,6 @@ public class BSTS_OmexExecTest {
 
 	static Map<String, FAULT> knownFaults() {
 		HashMap<String, FAULT> faults = new HashMap<>();
-//		faults.put("sbml-core/Vilar-PNAS-2002-minimal-circardian-clock-discrete-NRM.omex", FAULT.SEDML_UNSUPPORTED_MODEL_REFERENCE); // Model refers to either a non-existent model (invalid SED-ML) or to another model with changes (not supported yet)
-//		faults.put("sbml-core/Vilar-PNAS-2002-minimal-circardian-clock-discrete-SSA.omex", FAULT.SEDML_UNSUPPORTED_MODEL_REFERENCE); // Model refers to either a non-existent model (invalid SED-ML) or to another model with changes (not supported yet)
-//		faults.put("sbml-core/Vilar-PNAS-2002-minimal-circardian-clock.omex", FAULT.SEDML_UNSUPPORTED_MODEL_REFERENCE); // Model refers to either a non-existent model (invalid SED-ML) or to another model with changes (not supported yet)
-//		faults.put("sbml-core/Vilar-PNAS-2002-minimal-circardian-clock-continuous.omex", FAULT.SEDML_UNSUPPORTED_MODEL_REFERENCE); // Model refers to either a non-existent model (invalid SED-ML) or to another model with changes (not supported yet)
 		faults.put("synths/sedml/SimulatorSupportsDataSetsWithDifferentShapes/1.execution-should-succeed.omex", FAULT.ARRAY_INDEX_OUT_OF_BOUNDS);
 		return faults;
 	}
