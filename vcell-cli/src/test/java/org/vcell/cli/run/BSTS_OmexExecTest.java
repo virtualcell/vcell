@@ -3,29 +3,33 @@ package org.vcell.cli.run;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.resource.NativeLib;
 import cbit.vcell.resource.PropertyLoader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.vcell.cli.CLIPythonManager;
 import org.vcell.cli.CLIRecordable;
-import org.vcell.test.SEDML_SBML_IT;
 import org.vcell.util.VCellUtilityHub;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.*;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-
 @RunWith(Parameterized.class)
-@Category({SEDML_SBML_IT.class})
 public class BSTS_OmexExecTest {
 	private final String testCaseFilename;
 
@@ -47,7 +51,7 @@ public class BSTS_OmexExecTest {
 	}
 
 	@BeforeClass
-	public static void teardown() throws IOException {
+	public static void teardown() throws Exception {
 		CLIPythonManager.getInstance().closePythonProcess();
 		VCellUtilityHub.shutdown();
 	}
@@ -66,6 +70,7 @@ public class BSTS_OmexExecTest {
 		UNKNOWN_IDENTIFIER,
 		SBML_IMPORT_FAILURE,
 		DIVIDE_BY_ZERO,
+		ARRAY_INDEX_OUT_OF_BOUNDS,
 		UNSUPPORTED_NONSPATIAL_STOCH_HISTOGRAM,
 		SEDML_UNSUPPORTED_ENTITY,
 		SEDML_DIFF_NUMBER_OF_BIOMODELS,
@@ -79,32 +84,51 @@ public class BSTS_OmexExecTest {
 
 		SEDML_UNSUPPORTED_MODEL_REFERENCE, // Model refers to either a non-existent model (invalid SED-ML) or to another model with changes (not supported yet)
 
+		HDF5_FILE_ALREADY_EXISTS, // reports.h5 file already exists, so action is blocked. Fixed in branch to be merged in.
+		OPERATION_NOT_SUPPORTED, // VCell simply doesn't have the necessary features to run this archive.
 		UNCATETORIZED_FAULT
 	};
 
 	static Set<String> slowModels(){
 		HashSet<String> slowSet = new HashSet<>();
-		slowSet.add("synths/sedml/SimulatorSupportsAddReplaceRemoveModelElementChanges/3.execute-should-fail.omex");
-		slowSet.add("synths/sedml/SimulatorSupportsAddReplaceRemoveModelElementChanges/1.execute-should-fail.omex");
-		slowSet.add("synths/sedml/SimulatorSupportsModelAttributeChanges/1.execute-should-fail.omex");
+		//slowSet.add("sbml-core/Vilar-PNAS-2002-minimal-circardian-clock-discrete-NRM.omex");
+		//slowSet.add("sbml-core/Vilar-PNAS-2002-minimal-circardian-clock-discrete-SSA.omex");
+		//slowSet.add("sbml-core/Vilar-PNAS-2002-minimal-circardian-clock.omex");
+		//slowSet.add("sbml-core/Vilar-PNAS-2002-minimal-circardian-clock-continuous.omex");
+		//slowSet.add("synths/sedml/SimulatorCanResolveModelSourcesDefinedByUriFragments/1.execution-should-succeed.omex");
+		//slowSet.add("synths/sedml/SimulatorCanResolveModelSourcesDefinedByUriFragmentsAndInheritChanges/1.execution-should-succeed.omex");
 		return slowSet;
 	}
 
+	static Set<String> blacklistedModels(){
+		HashSet<String> blacklistSet = new HashSet<>();
+		// We have blacklisted these next two out because we do not support sequential repeated tasks,
+		// ...but by design we permit this kind of error to be a non-obstructive side effect.
+		blacklistSet.add("synths/sedml/SimulatorSupportsRepeatedTasksWithSubTasksOfMixedTypes/1.execution-should-succeed.omex");
+		blacklistSet.add("synths/sedml/SimulatorSupportsRepeatedTasksWithSubTasksOfMixedTypes/2.execution-should-succeed.omex");
+		// The following three tests infinitely loop somewhere...
+		blacklistSet.add("synths/sedml/SimulatorSupportsAddReplaceRemoveModelElementChanges/3.execute-should-fail.omex");
+		blacklistSet.add("synths/sedml/SimulatorSupportsAddReplaceRemoveModelElementChanges/1.execute-should-fail.omex");
+		blacklistSet.add("synths/sedml/SimulatorSupportsModelAttributeChanges/1.execute-should-fail.omex");
+		return blacklistSet;
+	}
+
 	static Map<String, FAULT> knownFaults() {
-		HashMap<String, FAULT> faults = new HashMap();
+		HashMap<String, FAULT> faults = new HashMap<>();
 //		faults.put("sbml-core/Vilar-PNAS-2002-minimal-circardian-clock-discrete-NRM.omex", FAULT.SEDML_UNSUPPORTED_MODEL_REFERENCE); // Model refers to either a non-existent model (invalid SED-ML) or to another model with changes (not supported yet)
 //		faults.put("sbml-core/Vilar-PNAS-2002-minimal-circardian-clock-discrete-SSA.omex", FAULT.SEDML_UNSUPPORTED_MODEL_REFERENCE); // Model refers to either a non-existent model (invalid SED-ML) or to another model with changes (not supported yet)
 //		faults.put("sbml-core/Vilar-PNAS-2002-minimal-circardian-clock.omex", FAULT.SEDML_UNSUPPORTED_MODEL_REFERENCE); // Model refers to either a non-existent model (invalid SED-ML) or to another model with changes (not supported yet)
 //		faults.put("sbml-core/Vilar-PNAS-2002-minimal-circardian-clock-continuous.omex", FAULT.SEDML_UNSUPPORTED_MODEL_REFERENCE); // Model refers to either a non-existent model (invalid SED-ML) or to another model with changes (not supported yet)
-//		faults.put("synths/sedml/SimulatorSupportsDataSetsWithDifferentShapes/1.execution-should-succeed.omex", FAULT.UNCATETORIZED_FAULT); // java.lang.ArrayIndexOutOfBoundsException at org.vcell.cli.run.hdf5.Hdf5DataPreparer.prepareNonspacialData(Hdf5DataPreparer.java:140)
-//		faults.put("synths/sedml/SimulatorSupportsRepeatedTasksWithSubTasksOfMixedTypes/1.execution-should-succeed.omex", FAULT.UNCATETORIZED_FAULT); // ERROR (SEDMLImporter.java:589) - sequential RepeatedTask not yet supported, task __repeated_task_1 is being skipped []{}
-//		faults.put("synths/sedml/SimulatorSupportsRepeatedTasksWithSubTasksOfMixedTypes/2.execution-should-succeed.omex", FAULT.UNCATETORIZED_FAULT); // ERROR (SEDMLImporter.java:589) - sequential RepeatedTask not yet supported, task __repeated_task_1 is being skipped []{}
+		faults.put("synths/sedml/SimulatorSupportsDataSetsWithDifferentShapes/1.execution-should-succeed.omex", FAULT.ARRAY_INDEX_OUT_OF_BOUNDS);
 		return faults;
 	}
 
 	@Parameterized.Parameters
 	public static Collection<String> testCases() {
-		Predicate<String> filter = (t) -> !slowModels().contains(t);
+		Set<String> modelsToFilter = slowModels();
+		modelsToFilter.addAll(blacklistedModels());
+
+		Predicate<String> filter = (t) -> !modelsToFilter.contains(t);
 		List<String> testCases = Arrays.stream(BSTS_TestSuiteFiles.getBSTSTestCases()).filter(filter).collect(Collectors.toList());
 		return testCases;
 	}
@@ -159,20 +183,43 @@ public class BSTS_OmexExecTest {
 			if (knownFault != null){
 				throw new RuntimeException("test case passed, but expected "+knownFault.name()+", remove "+testCaseFilename+" from known faults");
 			}
-			Assert.assertNull("file "+testCaseFilename+" passed, but knownFault was set", knownFault);
+			Assert.assertNull("file " + testCaseFilename + " passed, but knownFault was set", knownFault);
 
 		}catch (Exception | AssertionError e){
-			String errMsg = e.getMessage();
-			if (errMsg != null && errMsg.contains("refers to either a non-existent model (invalid SED-ML) or to another model with changes (not supported yet)")){
-				if (knownFault == FAULT.SEDML_UNSUPPORTED_MODEL_REFERENCE) {
-					System.err.println("Expected error: "+e.getMessage());
-					return;
-				} else {
-					System.err.println("add FAULT.SEDML_UNSUPPORTED_MODEL_REFERENCE to " + testCaseFilename);
-				}
-			}
-			throw e;
+			FAULT fault = this.determineFault(e);
+			if (knownFault == fault) {
+				System.err.println("Expected error: " + e.getMessage());
+				return;
+			} 
+		
+			System.err.println("add FAULT." + fault.name() + " to " + testCaseFilename);
+			throw new Exception("Test error: " + testCaseFilename + " failed improperly", e);
 		}
+	}
+
+	private FAULT determineFault(Throwable caughtException){ // Throwable because Assertion Error
+		FAULT determinedFault = FAULT.UNCATETORIZED_FAULT;
+		String errorMessage = caughtException.getMessage();
+		if (errorMessage == null) errorMessage = ""; // Prevent nullptr exception
+
+		if (caughtException instanceof Error) return determinedFault;
+
+		if (errorMessage.contains("refers to either a non-existent model")) { //"refers to either a non-existent model (invalid SED-ML) or to another model with changes (not supported yet)"
+			determinedFault = FAULT.SEDML_UNSUPPORTED_MODEL_REFERENCE;
+		} else if (errorMessage.contains("System IO encountered a fatal error")){
+			Throwable subException = caughtException.getCause();
+			//String subMessage = (subException == null) ? "" : subException.getMessage();
+			if (subException instanceof FileAlreadyExistsException){
+				determinedFault = FAULT.HDF5_FILE_ALREADY_EXISTS;
+			}
+		} else if (errorMessage.contains("error while processing outputs: null")){
+			Throwable subException = caughtException.getCause();
+			if (subException instanceof ArrayIndexOutOfBoundsException){
+				determinedFault = FAULT.ARRAY_INDEX_OUT_OF_BOUNDS;
+			}
+		}
+
+		return determinedFault;
 	}
 
 }

@@ -150,8 +150,8 @@ public class SEDMLImporter {
 			this.printSEDMLSummary(modelList, simulationList, abstractTaskList, dataGeneratorList, outputList);
 	        
 			// NB: We don't know how many BioModels we'll end up with as some model changes may be translatable as simulations with overrides
-			//bmMap = this.createBioModels(modelList);
-			bmMap = this.altCreateBioModels(modelList);
+			bmMap = this.createBioModels(modelList);
+			//bmMap = this.altCreateBioModels(modelList);
 			
 			// Creating one VCell Simulation for each SED-ML actual Task (RepeatedTasks get added as parameter scan overrides)
 			for (AbstractTask selectedTask : abstractTaskList) {
