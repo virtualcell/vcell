@@ -13,10 +13,14 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.vcell.model.rbm.ComponentStateDefinition;
+import org.vcell.model.rbm.ComponentStatePattern;
+import org.vcell.model.rbm.MolecularComponent;
 import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.model.rbm.MolecularComponentPattern.BondType;
+import org.vcell.model.rbm.MolecularType;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.document.BioModelChildSummary.MathType;
@@ -57,6 +61,8 @@ public class ReactionRuleSpec implements ModelProcessSpec {
 		}
 	}
 	
+	public static final String ANY_STATE = "Any_State";
+	private double fieldBondLength = 1;
 	public enum Subtype {
 		INCOMPATIBLE("Not Compatible"),
 		CREATION("Creation"),
@@ -75,8 +81,6 @@ public class ReactionRuleSpec implements ModelProcessSpec {
 	
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private ReactionRuleMappingType fieldReactionRuleMapping = ReactionRuleMappingType.INCLUDED;
-	private double fieldBondLength = 1;
-
 	
 	public class ReactionRuleCombo implements IssueSource {	// used only for Issue reporting stuff
 		final ReactionRuleSpec rs;
@@ -197,39 +201,66 @@ private boolean isBindingReaction(Map<String, Object> analysisResults) {
 }
 
 public void analizeReaction(Map<String, Object> analysisResults) {
-	
 	// looks expensive but a springsalad binding reaction has exactly 2 reactants one molecule each
 	// and exactly one product made of 2 molecules
-	Map<MolecularComponentPattern, MolecularTypePattern> productSpecifiedBondsMap = new LinkedHashMap<> ();
+	// since instances of mtp / mcp are different between reactants and products, we work with instances of mc / mp
+	Map<MolecularComponent, MolecularTypePattern> productSpecifiedBondsMap = new LinkedHashMap<> ();
 	List<ReactantPattern> rpList = reactionRule.getReactantPatterns();
 	List<ProductPattern> ppList = reactionRule.getProductPatterns();
 	int transitions = 0;
 	for(ProductPattern pp : ppList) {
 		SpeciesPattern sp = pp.getSpeciesPattern();
-		List<MolecularTypePattern> mtpList = sp.getMolecularTypePatterns();
-		for(MolecularTypePattern mtp : mtpList) {
-			List<MolecularComponentPattern> mcpList = mtp.getComponentPatternList();
-			for(MolecularComponentPattern mcp : mcpList) {
-				if(mcp.getBondType() == BondType.Specified) {
-					productSpecifiedBondsMap.put(mcp, mtp);	// all the components in the product with specified bonds
+		List<MolecularTypePattern> mtpProductList = sp.getMolecularTypePatterns();
+		for(MolecularTypePattern mtpProduct : mtpProductList) {
+			List<MolecularComponentPattern> mcpProductList = mtpProduct.getComponentPatternList();
+			if(mcpProductList == null || mcpProductList.isEmpty()) {
+				return;		// no components in this product molecule, must be Decay reaction
+			}
+			for(MolecularComponentPattern mcpProduct : mcpProductList) {
+				if(mcpProduct.getBondType() == BondType.Specified) {
+					// TODO: we still have a problem when we have a bond between the same site of 2 molecules of the same type
+					productSpecifiedBondsMap.put(mcpProduct.getMolecularComponent(), mtpProduct);	// all the components in the product with specified bonds
 				}
 			}
 		}
 	}
+	// we go through all the bonds in the product and we compare with the corresponding bond type of the reactant
 	for(ReactantPattern rp : rpList) {		// we look to find exactly 2 components that change BondType from None to Specified
 		SpeciesPattern sp = rp.getSpeciesPattern();
 		List<MolecularTypePattern> mtpList = sp.getMolecularTypePatterns();
-		for(MolecularTypePattern mtp : mtpList) {
-			List<MolecularComponentPattern> mcpList = mtp.getComponentPatternList();
-			for(MolecularComponentPattern mcp : mcpList) {
-				if(mcp.getBondType() == BondType.None) {
-					MolecularTypePattern candidate = productSpecifiedBondsMap.get(mcp);
-					if(candidate != null && mtp == candidate) {		// bingo, found a transition
-						// TODO: all the instances are different, not working w. patterns. Will try with mt, mc instances, or even names
+		for(MolecularTypePattern mtpReactant : mtpList) {
+			List<MolecularComponentPattern> mcpReactantList = mtpReactant.getComponentPatternList();
+			if(mcpReactantList == null || mcpReactantList.isEmpty()) {
+				return;		// no components in this reactant molecule, must be Creation reaction
+			}
+			for(MolecularComponentPattern mcpReactant : mcpReactantList) {
+				if(mcpReactant.getBondType() == BondType.None) {
+					MolecularTypePattern mtpProduct = productSpecifiedBondsMap.get(mcpReactant.getMolecularComponent());
+					if(mtpProduct == null) {
+						continue;	// we found an unbound site in a reactant that's not bound in the product, we don't care about it
+					}
+					MolecularType mtProduct = mtpProduct.getMolecularType();
+					String pmlProduct = mtpProduct.getParticipantMatchLabel();
+					MolecularType mtReactant = mtpReactant.getMolecularType();
+					String pmlReactant = mtpReactant.getParticipantMatchLabel();
+					if(mtpProduct != null && mtReactant == mtProduct && pmlReactant == pmlProduct) {		// bingo, found a transition
 						String mtpKey = "mtp" + (transitions+1);
 						String mcpKey = "mcp" + (transitions+1);
-						analysisResults.put(mtpKey, mtp);
-						analysisResults.put(mcpKey, mcp);
+						analysisResults.put(mtpKey, mtpReactant);
+						analysisResults.put(mcpKey, mcpReactant);
+						
+						String stateReactant;
+						ComponentStatePattern cspReactant = mcpReactant.getComponentStatePattern();
+						if(cspReactant == null) {
+							stateReactant = "ERROR";
+						} else if(cspReactant.isAny()) {
+							stateReactant = ANY_STATE;
+						} else {
+							ComponentStateDefinition csdReactant = cspReactant.getComponentStateDefinition();
+							stateReactant = csdReactant.getName();
+						}
+						String cspKey = "csp" + (transitions+1);
+						analysisResults.put(cspKey, stateReactant);
 						
 						transitions++;
 					}
@@ -279,26 +310,25 @@ private void writeBindingData(StringBuilder sb, Map<String, Object> analysisResu
 	MolecularTypePattern mtpTwo = (MolecularTypePattern)analysisResults.get("mtp2");
 	MolecularComponentPattern mcpOne = (MolecularComponentPattern)analysisResults.get("mcp1");
 	MolecularComponentPattern mcpTwo = (MolecularComponentPattern)analysisResults.get("mcp2");
-	String stateOne = "any";
-	String stateTwo = "any";
+	String stateOne = (String)analysisResults.get("csp1");
+	String stateTwo =  (String)analysisResults.get("csp2");
 	if(mtpOne == null || mtpTwo == null || mcpOne == null || mcpTwo == null) {
 		throw new RuntimeException("writeBindingData() error: something is wrong");
 	}
 	
 	sb.append("'").append(reactionRule.getName()).append("'       ");
-
-	
-		sb.append("'").append(mtpOne.getMolecularType().getName()).append("' : '")
+	sb.append("'").append(mtpOne.getMolecularType().getName()).append("' : '")
 		.append(mcpOne.getMolecularComponent().getName()).append("' : '")
 		.append(stateOne);
 		sb.append("'  -->  '");
-		sb.append(mtpTwo.getMolecularType().getName()).append("' : '")
+	sb.append(mtpTwo.getMolecularType().getName()).append("' : '")
 		.append(mcpTwo.getMolecularComponent().getName()).append("' : '")
 		.append(stateTwo);
 		// TODO: get the real values from kinetic law
-		sb.append("'  kon  ").append(Double.toString(0.9));
-		sb.append("  koff ").append(Double.toString(0.2));
-		sb.append("  Bond_Length ").append(Double.toString(getFieldBondLength()));
+	sb.append("'  kon  ").append(Double.toString(0.9));
+	sb.append("  koff ").append(Double.toString(0.2));
+	sb.append("  Bond_Length ").append(Double.toString(getFieldBondLength()));
+	sb.append("\n");
 }
 
 
