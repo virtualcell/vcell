@@ -73,6 +73,7 @@ jobs:
         env | grep VCELL > variables
     - name: send home config file and variables
       run: |
+        scp docker/build/admin/vcell-su.sh ${{ secrets.CD_FULL_USER }}@${VCELL_MANAGER_NODE}:${VCELL_DEPLOY_REMOTE_DIR}
         scp docker/swarm/$VCELL_CONFIG_FILE_NAME ${{ secrets.CD_FULL_USER }}@${VCELL_MANAGER_NODE}:${VCELL_DEPLOY_REMOTE_DIR}
         scp docker/swarm/variables ${{ secrets.CD_FULL_USER }}@${VCELL_MANAGER_NODE}:${VCELL_DEPLOY_REMOTE_DIR}/variables_$VCELL_TAG
     - name: upload variables
