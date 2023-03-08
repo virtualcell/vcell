@@ -277,7 +277,7 @@ def slurmjobs_command(slurm_host: str = typer.Option("vcell-service.cam.uchc.edu
     print(tabulate(table, headers=col_names))
 
 
-@app.command(name="logjobs", help="show simulation job logs (from MongoDB)")
+@app.command(name="logjobs", help="show simulation job logs (needs rewrite to query ElasticSearch)")
 def logjobs_command(sim_id: Optional[int] = typer.Option(None, "--simId", "-s", help="simulation id"),
                     job_id: Optional[int] = typer.Option(None, "--jobId", "-j",
                                                          help="sim job id (index for scans/trials)"),
