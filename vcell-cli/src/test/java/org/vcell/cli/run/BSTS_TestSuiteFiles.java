@@ -14,7 +14,7 @@ import java.util.function.Predicate;
 @Category(Fast.class)
 public class BSTS_TestSuiteFiles {
 
-    private final static String[] allTestFiles = new String[]{ //* 
+    private final static String[] allTestFiles = new String[]{
         "sbml-core/Caravagna-J-Theor-Biol-2010-tumor-suppressive-oscillations.omex",
         "sbml-core/Parmar-BMC-Syst-Biol-2017-iron-distribution.omex",
         "sbml-core/Vilar-PNAS-2002-minimal-circardian-clock-discrete-NRM.omex",
