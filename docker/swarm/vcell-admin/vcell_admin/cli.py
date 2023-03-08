@@ -287,30 +287,31 @@ def logjobs_command(sim_id: Optional[int] = typer.Option(None, "--simId", "-s", 
                     mongo_port: int = typer.Option(27017, "--mongoport", help='port of mongodb service'),
                     max_rows: int = typer.Option(1000, "--maxRows", "-m", help="max records returned from Mongo"),
                     debug: bool = typer.Option(False, is_flag=True)):
-
-    set_debug(debug)
-    client = MongoClient("mongodb://" + host + ":" + str(mongo_port))
-    db: Database = client['test']
-    collection: Collection = db['logging']
-    query = {}
-    if sim_id is not None:
-        query["simId"] = str(sim_id)
-    if job_id is not None:
-        query["jobIndex"] = str(job_id)
-    if task_id is not None:
-        query["taskId"] = str(task_id)
-    pprint(query)
-    result_set: Cursor = collection.find(query).limit(max_rows)
-    table = []
-    col_names = ["computeHost", "destination", "simId", "jobIndex", "taskId", "serviceName", "simMessageMsg"]
-    rowcount = 0
-    for record in result_set:
-        table.append([record.get(col_name, '') for col_name in col_names])
-        rowcount += 1
-        if rowcount < 10 and debug:
-            pprint(record)
-
-    print(tabulate(table, headers=col_names))
+    print("Mongo logs are gone: re-implement as ElasticSearch query (move this to vcell-su for ES credentials")
+#
+#     set_debug(debug)
+#     client = MongoClient("mongodb://" + host + ":" + str(mongo_port))
+#     db: Database = client['test']
+#     collection: Collection = db['logging']
+#     query = {}
+#     if sim_id is not None:
+#         query["simId"] = str(sim_id)
+#     if job_id is not None:
+#         query["jobIndex"] = str(job_id)
+#     if task_id is not None:
+#         query["taskId"] = str(task_id)
+#     pprint(query)
+#     result_set: Cursor = collection.find(query).limit(max_rows)
+#     table = []
+#     col_names = ["computeHost", "destination", "simId", "jobIndex", "taskId", "serviceName", "simMessageMsg"]
+#     rowcount = 0
+#     for record in result_set:
+#         table.append([record.get(col_name, '') for col_name in col_names])
+#         rowcount += 1
+#         if rowcount < 10 and debug:
+#             pprint(record)
+#
+#     print(tabulate(table, headers=col_names))
 
 
 @app.command(name="killjobs", help="kill simulation job (from a vcell-batch container)")
