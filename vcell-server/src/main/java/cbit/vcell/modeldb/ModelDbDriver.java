@@ -94,7 +94,7 @@ private void deleteModelSQL(Connection con, User user, KeyValue modelKey)
 	sql = DatabasePolicySQL.enforceOwnershipDelete(user,modelTable,modelTable.id.getQualifiedColName()+" = "+modelKey);
 	if (lg.isDebugEnabled()) lg.debug(sql);
 
-	updateCleanSQL(con, sql);
+	int changed = updateCleanSQL(con, sql);
 }
 
 
@@ -687,10 +687,9 @@ private void insertModelSQL(Connection con,User user, Model model,Version newVer
 			ModelTable.table.rbmSmall,
 			dbSyntax);
 	}else{
-		updateCleanSQL(con,sql);
+		int changed = updateCleanSQL(con,sql);
 	}
 
-//	updateCleanSQL(con,sql);
 }
 
 
@@ -701,7 +700,7 @@ private void insertModelStructLinkSQL(Connection con, KeyValue key, KeyValue mod
 			" VALUES " + modelStructLinkTable.getSQLValueList(key, modelKey, structKey);
 	if (lg.isDebugEnabled()) lg.debug(sql);
 
-	updateCleanSQL(con,sql);
+	int changed = updateCleanSQL(con,sql);
 }
 
 
@@ -713,7 +712,7 @@ private void insertSpeciesContextSQL(InsertHashtable hash, Connection con, KeyVa
 			speciesContextModelTable.getSQLValueList(hash, key, speciesContext, modelKey);
 	if (lg.isDebugEnabled()) lg.debug(sql);
 
-	updateCleanSQL(con,sql);
+	int changed = updateCleanSQL(con,sql);
 	hash.put(speciesContext,key);
 }
 

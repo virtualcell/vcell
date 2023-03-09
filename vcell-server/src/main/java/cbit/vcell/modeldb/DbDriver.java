@@ -227,12 +227,14 @@ public static KeyValue savePublicationRep(Connection con,PublicationRep publicat
 		if (lg.isDebugEnabled()) lg.debug(sql);
 		updateCleanSQL(con, sql);
 		//Remove all current links to this publication
-		updateCleanSQL(con, "DELETE FROM "+PublicationModelLinkTable.table.getTableName()+" WHERE "+PublicationModelLinkTable.table.pubRef.getUnqualifiedColName()+"="+pubID.toString());
+		sql = "DELETE FROM "+PublicationModelLinkTable.table.getTableName()+" WHERE "+PublicationModelLinkTable.table.pubRef.getUnqualifiedColName()+"="+pubID.toString();
+		changed = updateCleanSQL(con, sql);
 		//Add link table entry
-			if(publicationRep.getBiomodelReferenceReps() != null && publicationRep.getBiomodelReferenceReps().length > 0) {
+		if (publicationRep.getBiomodelReferenceReps() != null && publicationRep.getBiomodelReferenceReps().length > 0) {
 			for(BioModelReferenceRep bioModelReferenceRep:publicationRep.getBiomodelReferenceReps()) {
 				try {
-					updateCleanSQL(con, "INSERT INTO "+PublicationModelLinkTable.table.getTableName()+" VALUES ("+keyFactory.nextSEQ()+","+pubID.toString()+","+bioModelReferenceRep.getBmKey().toString()+",NULL)");
+					sql = "INSERT INTO "+PublicationModelLinkTable.table.getTableName()+" VALUES ("+keyFactory.nextSEQ()+","+pubID.toString()+","+bioModelReferenceRep.getBmKey().toString()+",NULL)";
+					changed = updateCleanSQL(con,sql);
 				} catch (Exception e) {
 					lg.error(e);
 					throw new SQLException("Error inserting biomodelKey="+bioModelReferenceRep.getBmKey().toString()+" link to publicationID="+pubID.toString()+"\n"+e.getMessage(),e);
@@ -242,7 +244,8 @@ public static KeyValue savePublicationRep(Connection con,PublicationRep publicat
 		if(publicationRep.getMathmodelReferenceReps() != null && publicationRep.getMathmodelReferenceReps().length > 0) {
 			for(MathModelReferenceRep mathModelReferenceRep:publicationRep.getMathmodelReferenceReps()) {
 				try {
-					updateCleanSQL(con, "INSERT INTO "+PublicationModelLinkTable.table.getTableName()+" VALUES ("+keyFactory.nextSEQ()+","+pubID.toString()+",NULL,"+mathModelReferenceRep.getMmKey().toString()+")");
+					sql = "INSERT INTO "+PublicationModelLinkTable.table.getTableName()+" VALUES ("+keyFactory.nextSEQ()+","+pubID.toString()+",NULL,"+mathModelReferenceRep.getMmKey().toString()+")";
+					changed = updateCleanSQL(con, sql);
 				} catch (Exception e) {
 					lg.error(e);
 					throw new SQLException("Error inserting mathmodelKey="+mathModelReferenceRep.getMmKey().toString()+" link to publicationID="+pubID.toString()+"\n"+e.getMessage(),e);
@@ -330,7 +333,7 @@ public static void cleanupDeletedReferences(Connection con,User user,ExternalDat
 				lg.info(sql+";");
 			}else{
 				if (lg.isDebugEnabled()) lg.debug(sql);
-				updateCleanSQL(con, sql);
+				int changed = updateCleanSQL(con, sql);
 			}
 		
 			
@@ -387,7 +390,7 @@ public static void cleanupDeletedReferences(Connection con,User user,ExternalDat
 				lg.info(sql+";");
 			}else{
 				if (lg.isDebugEnabled()) lg.debug(sql);
-				updateCleanSQL(con, sql);
+				int changed = updateCleanSQL(con, sql);
 			}
 
 			
@@ -408,7 +411,7 @@ public static void cleanupDeletedReferences(Connection con,User user,ExternalDat
 				lg.info(sql+";");
 			}else{
 				if (lg.isDebugEnabled()) lg.debug(sql);
-				updateCleanSQL(con, sql);
+				int changed = updateCleanSQL(con, sql);
 			}
 			
 	} catch (SQLException e) {
@@ -450,7 +453,7 @@ public static void cleanupDeletedReferences(Connection con,User user,ExternalDat
 //	if(bPrintOnly){
 //		lg.info(sql+";");
 //	}else{
-//		updateCleanSQL(con, sql);
+//		int changed = updateCleanSQL(con, sql);
 //	}
 //	
 //	sql =
@@ -466,7 +469,7 @@ public static void cleanupDeletedReferences(Connection con,User user,ExternalDat
 //	if(bPrintOnly){
 //		lg.info(sql+";");
 //	}else{
-//		updateCleanSQL(con, sql);
+//		int changed = updateCleanSQL(con, sql);
 //	}
 //	
 //	sql = 
@@ -495,7 +498,7 @@ public static void cleanupDeletedReferences(Connection con,User user,ExternalDat
 //	if(bPrintOnly){
 //		lg.info(sql+";");
 //	}else{
-//		updateCleanSQL(con, sql);
+//		int changed = updateCleanSQL(con, sql);
 //	}
 //	
 //	sql =
@@ -516,7 +519,7 @@ public static void cleanupDeletedReferences(Connection con,User user,ExternalDat
 //	if(bPrintOnly){
 //		lg.info(sql+";");
 //	}else{
-//		updateCleanSQL(con, sql);
+//		int changed = updateCleanSQL(con, sql);
 //	}
 //	
 //	sql=
@@ -532,7 +535,7 @@ public static void cleanupDeletedReferences(Connection con,User user,ExternalDat
 //	if(bPrintOnly){
 //		lg.info(sql+";");
 //	}else{
-//		updateCleanSQL(con, sql);
+//		int changed = updateCleanSQL(con, sql);
 //	}
 }
 /**
@@ -584,13 +587,15 @@ public static VCDocumentInfo curate(CurateSpec curateSpec,Connection con,User us
 	String cond = vTable.id.getQualifiedColName() + " = " + vKey;
 	String sql = DatabasePolicySQL.enforceOwnershipUpdate(user,vTable,set,cond);
 	if (lg.isDebugEnabled()) lg.debug(sql);
-	int numRowsProcessed = updateCleanSQL(con, sql);
+	int changed = updateCleanSQL(con, sql);
 
 	//Clear XML
 	if(vType.equals(VersionableType.BioModelMetaData)){
-		updateCleanSQL(con,"DELETE FROM "+BioModelXMLTable.table.getTableName()+" WHERE "+BioModelXMLTable.table.bioModelRef.getQualifiedColName()+" = "+vKey.toString());
+		sql = "DELETE FROM "+BioModelXMLTable.table.getTableName()+" WHERE "+BioModelXMLTable.table.bioModelRef.getQualifiedColName()+" = "+vKey.toString();
+		changed = updateCleanSQL(con,sql);
 	}else if(vType.equals(VersionableType.MathModelMetaData)){
-		updateCleanSQL(con,"DELETE FROM "+MathModelXMLTable.table.getTableName()+" WHERE "+MathModelXMLTable.table.mathModelRef.getQualifiedColName()+" = "+vKey.toString());
+		sql = "DELETE FROM "+MathModelXMLTable.table.getTableName()+" WHERE "+MathModelXMLTable.table.mathModelRef.getQualifiedColName()+" = "+vKey.toString();
+		changed = updateCleanSQL(con,sql);
 	}
 
 	
@@ -664,9 +669,9 @@ protected void deleteVersionableInit(Connection con, User user, VersionableType 
 	//if(VersionTable.hasExternalRef(con,user,vType,versionKey)){
 	//	throw new DependencyException( vTable + ",id=" + versionKey + " has external references");
 	//}
-	updateCleanSQL(con,
-		"DELETE FROM "+SoftwareVersionTable.table.getTableName()+
-		" WHERE "+SoftwareVersionTable.table.versionableRef.toString() + " = " + versionKey.toString());
+	String sql = "DELETE FROM "+SoftwareVersionTable.table.getTableName()+
+			" WHERE "+SoftwareVersionTable.table.versionableRef.toString() + " = " + versionKey.toString();
+	int changed = updateCleanSQL(con,sql);
 
 
 
@@ -2000,7 +2005,7 @@ public static void groupAddUser(Connection con, KeyFactory keyFactory, User owne
 				(isHiddenFromOwner?"1":"0")+","+
 				newHash +
 				" )";
-		updateCleanSQL(con,sql);
+		int changed = updateCleanSQL(con,sql);
 
 		if(currentVersion.getGroupAccess() instanceof GroupAccessSome){
 			// Add all the old Normal Users
@@ -2015,7 +2020,7 @@ public static void groupAddUser(Connection con, KeyFactory keyFactory, User owne
 						(false?"1":"0")+","+
 						newHash +
 						" )";
-				updateCleanSQL(con,sql);
+				changed = updateCleanSQL(con,sql);
 			}
 			// Add all the old Hidden Users
 			User[] hiddenUsers = ((GroupAccessSome)currentVersion.getGroupAccess()).getHiddenGroupMembers();
@@ -2029,7 +2034,7 @@ public static void groupAddUser(Connection con, KeyFactory keyFactory, User owne
 						(true?"1":"0")+","+
 						newHash +
 						" )";
-				updateCleanSQL(con,sql);
+				changed = updateCleanSQL(con,sql);
 			}
 		}
 	}
@@ -2139,7 +2144,7 @@ public static void groupRemoveUser(Connection con,KeyFactory keyFactory, User ow
 						(false?"1":"0")+","+
 						newHash +
 						" )";
-				updateCleanSQL(con,sql);
+				int changed = updateCleanSQL(con,sql);
 			}
 		}
 		//
@@ -2157,7 +2162,7 @@ public static void groupRemoveUser(Connection con,KeyFactory keyFactory, User ow
 						(true?"1":"0")+","+
 						newHash +
 						" )";
-				updateCleanSQL(con,sql);
+				int changed = updateCleanSQL(con,sql);
 			}
 		}
 	}
@@ -2258,11 +2263,10 @@ private void insertSoftwareVersion(Connection con, KeyValue versionKey) throws S
 	//
 	//Insert Software Version
 	//
-	updateCleanSQL(con,
-		"INSERT INTO "+SoftwareVersionTable.table.getTableName()+" "+
-		SoftwareVersionTable.table.getSQLColumnList()+
-		" VALUES "+SoftwareVersionTable.table.getSQLValueList(versionKey,keyFactory)
-		);
+	String sql = "INSERT INTO "+SoftwareVersionTable.table.getTableName()+" "+
+			SoftwareVersionTable.table.getSQLColumnList()+
+			" VALUES "+SoftwareVersionTable.table.getSQLValueList(versionKey,keyFactory);
+	int changed = updateCleanSQL(con, sql);
 }
 
 
@@ -2365,20 +2369,23 @@ public static void insertVersionableXML(Connection con,String xml,VersionableTyp
 	}else{
 		throw new IllegalArgumentException("vType " + vType + " not supported");
 	}
-	updateCleanSQL(con,"DELETE FROM "+xmlTableName +
-			" WHERE " + versionableRefColName + " = " + vKey.toString());
+	String sql = "DELETE FROM "+xmlTableName +
+			" WHERE " + versionableRefColName + " = " + vKey.toString();
+	int changed = updateCleanSQL(con,sql);
 
 	switch (dbSyntax){
 	case ORACLE:{
-		updateCleanSQL(con,"INSERT INTO "+xmlTableName+
-			" VALUES ("+keyFactory.nextSEQ()+","+vKey.toString()+",EMPTY_CLOB(),current_timestamp)");
+		sql = "INSERT INTO "+xmlTableName+
+				" VALUES ("+keyFactory.nextSEQ()+","+vKey.toString()+",EMPTY_CLOB(),current_timestamp)";
+		changed = updateCleanSQL(con,sql);
 		
 		updateCleanLOB(con,versionableRefColName,vKey,xmlTableName,xmlCol,xml,dbSyntax);
 		break;
 	}
 	case POSTGRES:{
-		updatePreparedCleanSQL(con,"INSERT INTO "+xmlTableName+
-				" VALUES ("+keyFactory.nextSEQ()+","+vKey.toString()+",?,current_timestamp)",xml);
+		sql = "INSERT INTO "+xmlTableName+
+				" VALUES ("+keyFactory.nextSEQ()+","+vKey.toString()+",?,current_timestamp)";
+		changed = updatePreparedCleanSQL(con,sql, xml);
 		break;
 	}
 	default:{
@@ -2473,7 +2480,7 @@ public static void replacePreferences(Connection con, KeyFactory keyFactory, Use
 		" WHERE " +
 			UserPreferenceTable.table.userRef.getQualifiedColName() + " = " + user.getID().toString();
 			
-	updateCleanSQL(con,sql);
+	int changed = updateCleanSQL(con,sql);
 	
 	PreparedStatement pstmt = null;
 	try{
@@ -2527,8 +2534,9 @@ protected void setVersioned(Connection con, User user,Versionable versionable) t
 				" WHERE " + vTable.id + " = " + versionable.getVersion().getVersionKey() +
 				//" AND " + vTable.versionFlag + " = " + VersionFlag.CURRENT +
 				" AND " + vTable.ownerRef + " = " + user.getID();
+		int changed = updateCleanSQL(con,sql);
 				
-		if (updateCleanSQL(con,sql)!=1){
+		if (changed!=1){
 			throw new DataAccessException("setVersioned failed for :"+versionable.getVersion());
 		}
 	}
@@ -3352,7 +3360,7 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 						LoadModelsStatTable.table.softwareVers + " = " + "'"+deleteTheseVersTimeStamps[i].getSoftwareVersion()+"'"+
 						" AND " +
 						LoadModelsStatTable.table.timeStamp + " = " + "'"+deleteTheseVersTimeStamps[i].getRunTimeStamp()+"'";
-					DbDriver.updateCleanSQL(con, sql);
+					changed = DbDriver.updateCleanSQL(con, sql);
 				}
 				return null;
 			}
@@ -4864,7 +4872,7 @@ public final static void varchar2_CLOB_update(
 	            marker_index,
 	            marker_index + INSERT_CLOB_HERE.length(),
 	            "EMPTY_CLOB()");
-	        updateCleanSQL(con, sb.toString());
+	        int changed = updateCleanSQL(con, sb.toString());
 	        updateCleanLOB(
 	            con,
 	            targetTable.id.getUnqualifiedColName(),
@@ -4884,7 +4892,7 @@ public final static void varchar2_CLOB_update(
 	            marker_index,
 	            marker_index + INSERT_CLOB_HERE.length(),
 	            "?");
-	        updatePreparedCleanSQL(con, sb.toString(), data);
+			int changed = updatePreparedCleanSQL(con, sb.toString(), data);
 	        break;
     	}
     	default:{
