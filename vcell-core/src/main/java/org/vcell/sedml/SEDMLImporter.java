@@ -56,15 +56,7 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 //import java.util.*;
-import java.util.List;
-import java.util.LinkedList;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Set;
-import java.util.Queue;
-import java.util.Iterator;
-import java.util.Collections;
+import java.util.*;
 
 /**
  * Serves as a means to convert sedml documents into VCell BioModels
@@ -332,13 +324,14 @@ public class SEDMLImporter {
 				}
 				if (doc.getSimulationContexts().length == 0) docIter.remove();
 			}
+			List<BioModel> usedBiomodels = new ArrayList<>(new HashSet<>(bmMap.values()));
 			// try to consolidate SimContexts into fewer (posibly just one) BioModels
 			// unlikely to happen from SEDMLs not originating from VCell, but very useful for roundtripping if so
 			// TODO: maybe try to detect that and only try if of VCell origin
-			mergeBioModels(uniqueBioModelsList);
+			mergeBioModels(usedBiomodels);
 			// make imported BioModel(s) VCell-friendly
 			List<BioModel> vcbms = new ArrayList<BioModel>();
-			for (BioModel bm : uniqueBioModelsList) {
+			for (BioModel bm : usedBiomodels) {
 				BioModel vcbm = null;
 				// we should not fail if any of these steps don't succeed
 				try {
