@@ -55,40 +55,36 @@ public class Hdf5WrapperFactory {
 
     /**
      * 
-     * @param nonSpatialResults
-     * @param spatialResults
-     * @return
+     * @param nonSpatialResults the nonspatial results set of a sedml execution
+     * @param spatialResults the spatial results set of a sedml execution
+     * @return a wrapper for hdf5 relevant data
      * @see collectNonspatialDatasets, collectSpatialDatasets
-     * @throws HDF5Exception from collecting datasets, 
-     * @throws ExpressionException
-     * @throws DataAccessException
-     * @throws IOException
      */
     public Hdf5DataWrapper generateHdf5File(Map<TaskJob, ODESolverResultSet> nonSpatialResults, Map<TaskJob, File> spatialResults) {
         List<Hdf5DatasetWrapper> wrappers = new ArrayList<>();
         Hdf5DataWrapper hdf5FileWrapper = new Hdf5DataWrapper();
-        Exception nonSpacialException = null, spacialException = null;
+        Exception nonSpatialException = null, spatialException = null;
 
         try {
             wrappers.addAll(this.collectNonspatialDatasets(this.sedml, nonSpatialResults, this.taskToSimulationMap, this.sedmlLocation));
         } catch (Exception e){
             logger.warn("Collection of nonspatial datasets failed for " + this.sedml.getFileName(), e);
-            nonSpacialException = e;
+            nonSpatialException = e;
         }
 
         try {
             wrappers.addAll(this.collectSpatialDatasets(this.sedml, spatialResults, this.taskToSimulationMap, this.sedmlLocation));
         } catch (Exception e){
             logger.warn("Collection of spatial datasets failed for " + this.sedml.getFileName(), e);
-            spacialException = e;
+            spatialException = e;
         }
 
-        if (nonSpacialException != null && nonSpacialException != null){
-            throw new RuntimeException("Encountered complete dataset collection failure;\nNonSpacial Reported:\n" + nonSpacialException.getMessage()
-                + "\nSpacial Reported:\n" + spacialException.getMessage());
-        } else if (nonSpacialException != null || nonSpacialException != null){
-            Exception exception = nonSpacialException == null ? spacialException : nonSpacialException;
-            throw new RuntimeException("Encountered " + (nonSpacialException == null ? "spacial " : "nonspacial") 
+        if (nonSpatialException != null && nonSpatialException != null){
+            throw new RuntimeException("Encountered complete dataset collection failure;\nNonSpatial Reported:\n" + nonSpatialException.getMessage()
+                + "\nSpatial Reported:\n" + spatialException.getMessage());
+        } else if (nonSpatialException != null || nonSpatialException != null){
+            Exception exception = nonSpatialException == null ? spatialException : nonSpatialException;
+            throw new RuntimeException("Encountered " + (nonSpatialException == null ? "spatial " : "nonspatial") 
                 + "dataset collection failure.", exception);
         } // else no problem
 
@@ -96,7 +92,7 @@ public class Hdf5WrapperFactory {
         return hdf5FileWrapper;
     }
 
-    public List<Hdf5DatasetWrapper> collectNonspatialDatasets(SedML sedml, Map<TaskJob, ODESolverResultSet> nonspatialResultsHash, Map<AbstractTask, Simulation> taskToSimulationMap, String sedmlLocation) throws DataAccessException, IOException, HDF5Exception, ExpressionException {
+    private List<Hdf5DatasetWrapper> collectNonspatialDatasets(SedML sedml, Map<TaskJob, ODESolverResultSet> nonspatialResultsHash, Map<AbstractTask, Simulation> taskToSimulationMap, String sedmlLocation) throws DataAccessException, IOException, HDF5Exception, ExpressionException {
         List<Hdf5DatasetWrapper> datasetWrappers = new ArrayList<>();
 
         for (Report report : this.getReports(sedml.getOutputs())){
@@ -238,7 +234,7 @@ public class Hdf5WrapperFactory {
     }
 
 
-    public List<Hdf5DatasetWrapper> collectSpatialDatasets(SedML sedml, Map<TaskJob, File> spatialResultsHash, Map<AbstractTask, Simulation> taskToSimulationMap, String sedmlLocation) throws DataAccessException, IOException, HDF5Exception, ExpressionException {
+    private List<Hdf5DatasetWrapper> collectSpatialDatasets(SedML sedml, Map<TaskJob, File> spatialResultsHash, Map<AbstractTask, Simulation> taskToSimulationMap, String sedmlLocation) throws DataAccessException, IOException, HDF5Exception, ExpressionException {
         List<Hdf5DatasetWrapper> datasetWrappers = new ArrayList<>();
 
         for (Report report : this.getReports(sedml.getOutputs())){

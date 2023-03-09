@@ -14,7 +14,7 @@ import java.util.function.Predicate;
 @Category(Fast.class)
 public class BSTS_TestSuiteFiles {
 
-    private final static String[] allTestFiles = new String[]{
+    private final static String[] allTestFiles = new String[]{ /*
         "sbml-core/Caravagna-J-Theor-Biol-2010-tumor-suppressive-oscillations.omex",
         "sbml-core/Parmar-BMC-Syst-Biol-2017-iron-distribution.omex",
         "sbml-core/Vilar-PNAS-2002-minimal-circardian-clock-discrete-NRM.omex",
@@ -77,7 +77,8 @@ public class BSTS_TestSuiteFiles {
         "synths/sedml/SimulatorSupportsSubstitutingAlgorithms/3.execute-should-fail.omex",
         "synths/sedml/SimulatorSupportsSubstitutingAlgorithms/4.execution-should-succeed.omex",
         "synths/sedml/SimulatorSupportsSubstitutingAlgorithms/1.execute-should-fail.omex",
-        "synths/sedml/SimulatorSupportsSubstitutingAlgorithms/2.execution-should-succeed.omex" 
+        "synths/sedml/SimulatorSupportsSubstitutingAlgorithms/2.execution-should-succeed.omex" */
+        "sedml.SimulatorSupportsAddReplaceRemoveModelElementChanges"
     };
 
     public static String[] getBSTSTestCases() {

@@ -112,8 +112,8 @@ public class BSTS_OmexExecTest {
 		//blacklistSet.add("synths/sedml/SimulatorSupportsUniformTimeCoursesWithNonZeroInitialTimes/1.execution-should-succeed.omex");
 
 		// The following three tests infinitely loop somewhere...but they should fail anyway.
-		blacklistSet.add("synths/sedml/SimulatorSupportsAddReplaceRemoveModelElementChanges/3.execute-should-fail.omex");
-		blacklistSet.add("synths/sedml/SimulatorSupportsAddReplaceRemoveModelElementChanges/1.execute-should-fail.omex");
+		//blacklistSet.add("synths/sedml/SimulatorSupportsAddReplaceRemoveModelElementChanges/3.execute-should-fail.omex");
+		//blacklistSet.add("synths/sedml/SimulatorSupportsAddReplaceRemoveModelElementChanges/1.execute-should-fail.omex");
 		blacklistSet.add("synths/sedml/SimulatorSupportsModelAttributeChanges/1.execute-should-fail.omex");
 
 		return blacklistSet;

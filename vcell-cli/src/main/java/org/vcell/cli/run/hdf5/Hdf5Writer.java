@@ -23,10 +23,10 @@ public class Hdf5Writer {
     /**
      * Writes an Hdf5 formatted file given a hdf5FileWrapper and a destination to write the file to.
      * 
-     * @param hdf5FileWrapper
-     * @param outDirForCurrentSedml
-     * @throws HDF5Exception
-     * @throws IOException
+     * @param hdf5FileWrapper the wrapper of hdf5 relevant data
+     * @param outDirForCurrentSedml the directory to place the report file into, NOT the report file itself.
+     * @throws HDF5Exception if there is an expection thrown from hdf5 while using the library.
+     * @throws IOException if the computer encounteres an unexepcted system IO problem
      */
     public static void writeHdf5(Hdf5DataWrapper hdf5FileWrapper, File outDirForCurrentSedml) throws HDF5Exception, IOException {
         Hdf5File masterHdf5 = null;
