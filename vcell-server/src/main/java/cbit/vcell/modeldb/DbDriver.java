@@ -3933,10 +3933,10 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 					" removed row count="+numRowsUpdated+" expected "+removetcrit_tsop.getTestCriterias().length);
 			}
 		}else if(tsop instanceof RemoveTestSuiteOP){
+			RemoveTestSuiteOP removets_tsop = (RemoveTestSuiteOP)tsop;
 			sql = "DELETE FROM "+TFTestSuiteTable.table.getTableName()+
 					" WHERE "+
 					TFTestSuiteTable.table.id.getUnqualifiedColName()+"="+removets_tsop.getTestSuiteKey().toString();
-			RemoveTestSuiteOP removets_tsop = (RemoveTestSuiteOP)tsop;
 			int numRowsUpdated = stmt.executeUpdate(sql);
 			if(numRowsUpdated != 1){
 				throw new DataAccessException("Remove SINGLE TestSuite - key="+removets_tsop.getTestSuiteKey().toString()+" removed row count="+numRowsUpdated);
