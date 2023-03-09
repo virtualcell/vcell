@@ -81,9 +81,8 @@ public class BSTS_OmexExecTest {
 		SEDML_MATH_OVERRIDE_NAMES_DIFFERENT,
 		SEDML_SIMCONTEXT_NOT_FOUND_BY_NAME,
 		SEDML_SIMULATION_NOT_FOUND_BY_NAME,
-
+		SEDML_ERRONIOUS_UNIT_SYSTEM,
 		SEDML_UNSUPPORTED_MODEL_REFERENCE, // Model refers to either a non-existent model (invalid SED-ML) or to another model with changes (not supported yet)
-
 		HDF5_FILE_ALREADY_EXISTS, // reports.h5 file already exists, so action is blocked. Fixed in branch to be merged in.
 		OPERATION_NOT_SUPPORTED, // VCell simply doesn't have the necessary features to run this archive.
 		UNCATETORIZED_FAULT
@@ -103,14 +102,14 @@ public class BSTS_OmexExecTest {
 	static Set<String> blacklistedModels(){
 		HashSet<String> blacklistSet = new HashSet<>();
 		// We don't support the following tests yet
-		blacklistSet.add("synths/sedml/SimulatorSupportsRepeatedTasksWithSubTasksOfMixedTypes/1.execution-should-succeed.omex");
-		blacklistSet.add("synths/sedml/SimulatorSupportsRepeatedTasksWithSubTasksOfMixedTypes/2.execution-should-succeed.omex");
-		blacklistSet.add("synths/sedml/SimulatorSupportsDataGeneratorsWithDifferentShapes/1.execution-should-succeed.omex");
-		blacklistSet.add("synths/sedml/SimulatorSupportsDataSetsWithDifferentShapes/1.execution-should-succeed.omex");
-		blacklistSet.add("synths/sedml/SimulatorSupportsRepeatedTasksWithMultipleSubTasks/1.execution-should-succeed.omex");
-		blacklistSet.add("synths/sedml/SimulatorSupportsRepeatedTasksWithSubTasksOfMixedTypes/1.execution-should-succeed.omex");
-		blacklistSet.add("synths/sedml/SimulatorSupportsRepeatedTasksWithSubTasksOfMixedTypes/2.execution-should-succeed.omex");
-		blacklistSet.add("synths/sedml/SimulatorSupportsUniformTimeCoursesWithNonZeroInitialTimes/1.execution-should-succeed.omex");
+		//blacklistSet.add("synths/sedml/SimulatorSupportsRepeatedTasksWithSubTasksOfMixedTypes/1.execution-should-succeed.omex");
+		//blacklistSet.add("synths/sedml/SimulatorSupportsRepeatedTasksWithSubTasksOfMixedTypes/2.execution-should-succeed.omex");
+		//blacklistSet.add("synths/sedml/SimulatorSupportsDataGeneratorsWithDifferentShapes/1.execution-should-succeed.omex");
+		//blacklistSet.add("synths/sedml/SimulatorSupportsDataSetsWithDifferentShapes/1.execution-should-succeed.omex");
+		//blacklistSet.add("synths/sedml/SimulatorSupportsRepeatedTasksWithMultipleSubTasks/1.execution-should-succeed.omex");
+		//blacklistSet.add("synths/sedml/SimulatorSupportsRepeatedTasksWithSubTasksOfMixedTypes/1.execution-should-succeed.omex");
+		//blacklistSet.add("synths/sedml/SimulatorSupportsRepeatedTasksWithSubTasksOfMixedTypes/2.execution-should-succeed.omex");
+		//blacklistSet.add("synths/sedml/SimulatorSupportsUniformTimeCoursesWithNonZeroInitialTimes/1.execution-should-succeed.omex");
 
 		// The following three tests infinitely loop somewhere...but they should fail anyway.
 		blacklistSet.add("synths/sedml/SimulatorSupportsAddReplaceRemoveModelElementChanges/3.execute-should-fail.omex");
@@ -122,16 +121,26 @@ public class BSTS_OmexExecTest {
 
 	static Map<String, FAULT> knownFaults() {
 		HashMap<String, FAULT> faults = new HashMap<>();
-		faults.put("synths/sedml/SimulatorSupportsDataSetsWithDifferentShapes/1.execution-should-succeed.omex", FAULT.ARRAY_INDEX_OUT_OF_BOUNDS);
+		faults.put("synths/sedml/SimulatorSupportsDataSetsWithDifferentShapes/1.execution-should-succeed.omex",
+				FAULT.ARRAY_INDEX_OUT_OF_BOUNDS);
+		faults.put("synths/sedml/SimulatorSupportsModelAttributeChanges/1.execute-should-fail.omex",
+				FAULT.SEDML_ERRONIOUS_UNIT_SYSTEM);
+		faults.put("synths/sedml/SimulatorSupportsAddReplaceRemoveModelElementChanges/1.execute-should-fail.omex",
+				FAULT.SEDML_ERRONIOUS_UNIT_SYSTEM);
+		faults.put("synths/sedml/SimulatorSupportsAddReplaceRemoveModelElementChanges/3.execute-should-fail.omex",
+				FAULT.SEDML_ERRONIOUS_UNIT_SYSTEM);
 		return faults;
 	}
 
 	@Parameterized.Parameters
 	public static Collection<String> testCases() {
-		Set<String> modelsToFilter = needToCurateModels();
-		modelsToFilter.addAll(blacklistedModels());
+		//Set<String> modelsToFilter = needToCurateModels();
+		//modelsToFilter.addAll(blacklistedModels());
 
-		Predicate<String> filter = (t) -> !modelsToFilter.contains(t);
+		Set<String> modelsToFilter = blacklistedModels();
+		Predicate<String> filter = (t) -> modelsToFilter.contains(t);
+
+		//Predicate<String> filter = (t) -> !modelsToFilter.contains(t);
 		List<String> testCases = Arrays.stream(BSTS_TestSuiteFiles.getBSTSTestCases()).filter(filter).collect(Collectors.toList());
 		return testCases;
 	}
@@ -205,7 +214,8 @@ public class BSTS_OmexExecTest {
 		String errorMessage = caughtException.getMessage();
 		if (errorMessage == null) errorMessage = ""; // Prevent nullptr exception
 
-		if (caughtException instanceof Error) return determinedFault;
+		if (caughtException instanceof Error && caughtException.getCause() != null)
+			errorMessage = caughtException.getCause().getMessage();
 
 		if (errorMessage.contains("refers to either a non-existent model")) { //"refers to either a non-existent model (invalid SED-ML) or to another model with changes (not supported yet)"
 			determinedFault = FAULT.SEDML_UNSUPPORTED_MODEL_REFERENCE;
@@ -220,6 +230,9 @@ public class BSTS_OmexExecTest {
 			if (subException instanceof ArrayIndexOutOfBoundsException){
 				determinedFault = FAULT.ARRAY_INDEX_OUT_OF_BOUNDS;
 			}
+		} else if (errorMessage.contains("nconsistent unit system in SBML model") ||
+				errorMessage.contains("ust be of type")){
+			determinedFault = FAULT.SEDML_ERRONIOUS_UNIT_SYSTEM;
 		}
 
 		return determinedFault;

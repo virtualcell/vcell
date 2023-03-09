@@ -229,9 +229,15 @@ public class SedmlJob {
             solverHandler.simulateAllTasks(externalDocInfo, sedml, cliRecorder, outDirForCurrentSedml, this.resultsDirPath,
                     this.rootOutputDir.getAbsolutePath(), sedmlLocation, bKeepTempFiles, bExactMatchOnly, bSmallMeshOverride);
         } catch (Exception e) {
+            Throwable currentTierOfException = e;
+            String errorMessage = "";
             somethingFailed = somethingDidFail();
-            logDocumentError = e.getMessage();        // probably the hash is empty
-            logger.error(e.getMessage(), e);
+            while (currentTierOfException != null && !currentTierOfException.equals(currentTierOfException.getCause())){
+                errorMessage += currentTierOfException.getMessage();
+                currentTierOfException = currentTierOfException.getCause();
+            }
+            logDocumentError = errorMessage;        // probably the hash is empty
+            logger.error(errorMessage, e);
             // still possible to have some data in the hash, from some task that was successful - that would be partial success
         }
 
