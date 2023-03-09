@@ -151,7 +151,7 @@ public class PythonCalls {
     // Due to what appears to be a leaky python function call, this method will continue using execShellCommand until the unerlying python is fixed
     public static void genPlotsPseudoSedml(String sedmlPath, String resultOutDir) throws PythonStreamException, InterruptedException, IOException {
         logger.trace("Dialing Python function genPlotsPseudoSedml");
-        CLIPythonManager.callNonsharedPython("genPlotsPseudoSedml", sedmlPath, resultOutDir);
+        CLIPythonManager.callNonSharedPython("genPlotsPseudoSedml", sedmlPath, resultOutDir);
 
         /**
          * replace with the following once the leak is fixed
