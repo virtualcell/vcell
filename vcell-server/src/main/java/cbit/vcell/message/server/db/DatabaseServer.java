@@ -169,6 +169,7 @@ public static void main(java.lang.String[] args) {
 
 private static final String REQUIRED_SERVICE_PROPERTIES[] = {
 		PropertyLoader.vcellServerIDProperty,
+		PropertyLoader.vcellSoftwareVersion,
 		PropertyLoader.installationRoot,
 		PropertyLoader.dbConnectURL,
 		PropertyLoader.dbDriverName,

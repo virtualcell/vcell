@@ -43,7 +43,7 @@ if [ "$#" -lt 1 ]; then
     show_help
 fi
 
-sudo docker pull ghcr.io/virtualcell/vcell-admin:latest
+sudo docker pull "${REPO_NAMESPACE}/vcell-admin:${CONTAINER_TAG}"
 
 arguments=$*
 

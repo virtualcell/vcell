@@ -16,7 +16,7 @@ import picocli.CommandLine;
 import picocli.CommandLine.Command;
 
 
-@Command(name = "AdminCLI", subcommands = {
+@Command(name = "vcell-su", subcommands = {
         ModeldbLoadTestCommand.class,
         ModeldbMathGenTestCommand.class,
         DatabaseCompareSchemaCommand.class,
