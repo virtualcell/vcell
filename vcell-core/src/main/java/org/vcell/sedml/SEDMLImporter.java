@@ -120,30 +120,30 @@ public class SEDMLImporter {
 	 * Get the list of biomodels from the sedml initialized at construction time.
 	 */
 	public List<BioModel> getBioModels() throws Exception {
-		uniqueBioModelsList = new ArrayList<BioModel>();
-
 		List<org.jlibsedml.Model> modelList;
 		List<org.jlibsedml.Simulation> simulationList;
 		List<AbstractTask> abstractTaskList;
 		List<DataGenerator> dataGeneratorList;
 		List<Output> outputList;
 
-		Map<String, BioModel> bmMap; // Holds all entries for all SEDML Models where some may reference the same BioModel
+		Map<String, BioModel> bioModelMap; // Holds all entries for all SEDML Models where some may reference the same BioModel
 		Map<String, Simulation> vcSimulations = new HashMap<>(); // We will parse all tasks and create Simulations in BioModels
+
+		this.uniqueBioModelsList = new ArrayList<BioModel>();
 		try {
 	        // iterate through all the elements and show them at the console
-	        modelList = sedml.getModels();
-	        if (modelList.isEmpty()) return uniqueBioModelsList; // nothing to import
-	        simulationList = sedml.getSimulations();
-	        abstractTaskList = sedml.getTasks();
-	        dataGeneratorList = sedml.getDataGenerators();
-	        outputList = sedml.getOutputs();
+	        modelList = this.sedml.getModels();
+	        if (modelList.isEmpty()) return this.uniqueBioModelsList; // nothing to import
+	        simulationList = this.sedml.getSimulations();
+	        abstractTaskList = this.sedml.getTasks();
+	        dataGeneratorList = this.sedml.getDataGenerators();
+	        outputList = this.sedml.getOutputs();
 	        
 			this.printSEDMLSummary(modelList, simulationList, abstractTaskList, dataGeneratorList, outputList);
 	        
 			// NB: We don't know how many BioModels we'll end up with as some model changes may be translatable as simulations with overrides
-			//bmMap = this.createBioModels(modelList);
-			bmMap = this.altCreateBioModels(modelList);
+			//bioModelMap = this.createBioModels(modelList);
+			bioModelMap = this.createBioModels(modelList);
 			
 			// Creating one VCell Simulation for each SED-ML actual Task (RepeatedTasks get added as parameter scan overrides)
 			for (AbstractTask selectedTask : abstractTaskList) {
@@ -153,8 +153,8 @@ public class SEDMLImporter {
 				String sedmlOriginalModelLanguage = null;			// can be sbml or vcml
 
 				if(selectedTask instanceof Task) {
-					sedmlModel = sedml.getModelWithId(selectedTask.getModelReference());
-					sedmlSimulation = sedml.getSimulation(selectedTask.getSimulationReference());
+					sedmlModel = this.sedml.getModelWithId(selectedTask.getModelReference());
+					sedmlSimulation = this.sedml.getSimulation(selectedTask.getSimulationReference());
 					sedmlOriginalModelLanguage = sedmlModel.getLanguage();
 				} else if (selectedTask instanceof RepeatedTask) {
 					continue; // Repeated tasks refer to regular tasks, so first we need to create simulations for all regular tasks 
@@ -204,7 +204,7 @@ public class SEDMLImporter {
 					}
 				}
 
-				BioModel bioModel = bmMap.get(sedmlModel.getId());
+				BioModel bioModel = bioModelMap.get(sedmlModel.getId());
 				
 				// if language is VCML, we don't need to create Applications and Simulations in BioModel
 				// we allow a subset of SED-ML Simulation settings (may have been edited) to override existing BioModel Simulation settings
@@ -324,7 +324,7 @@ public class SEDMLImporter {
 				}
 				if (doc.getSimulationContexts().length == 0) docIter.remove();
 			}
-			List<BioModel> usedBiomodels = new ArrayList<>(new HashSet<>(bmMap.values()));
+			List<BioModel> usedBiomodels = new ArrayList<>(new HashSet<>(bioModelMap.values()));
 			// try to consolidate SimContexts into fewer (posibly just one) BioModels
 			// unlikely to happen from SEDMLs not originating from VCell, but very useful for roundtripping if so
 			// TODO: maybe try to detect that and only try if of VCell origin
@@ -729,95 +729,22 @@ public class SEDMLImporter {
 		}
 	}
 
-	private Map<String, BioModel> createBioModels(List<org.jlibsedml.Model> mmm) throws RuntimeException {
-		// first go through models without changes which are unique and must be imported as new BioModel/SimContext
-		Map<String, BioModel> bmMap = new HashMap<>();
-		List<Model> modelsWithoutReferences = new ArrayList<Model>();
-		for(Model mm : mmm) {
-			if (/*mm.getListOfChanges().isEmpty()*/!mm.getSource().startsWith("#")) {
-				modelsWithoutReferences.add(mm);
-			}
-		}
-		if (!modelsWithoutReferences.isEmpty()) {
-			boolean needMoreImport;
-			do {
-				needMoreImport = false;
-				for (Model mm : modelsWithoutReferences) {
-					// check first whether it is simply a reference to another model within this sedml, so we don't duplicate
-					String refID = null;
-					if (mm.getSource().startsWith("#")) {
-						refID = mm.getSource().substring(1); // direct reference within sedml
-					} else {
-						// need to check if it is an indirect reference (another model using same source URI)
-						for (Model model : sedml.getModels()) {
-							if (model != mm && model.getSource().equals(mm.getSource())) {
-								refID = model.getId();
-							}
-						}
-					}
-					if (refID == null) {
-						bmMap.put(mm.getId(), this.importModel(mm));
-					} else {
-						BioModel refBM = bmMap.get(refID);
-						if (refBM != null) {
-							bmMap.put(mm.getId(), refBM);
-						} else {
-							needMoreImport = true;
-						}
-					}
-				} 
-			} while (needMoreImport);
-		}
-		// now go through models with changes and see if they refer to another model within this sedml
-		for(Model mm : mmm) {
-			if (!mm.getListOfChanges().isEmpty()) {
-				String refID = null;
-				if (mm.getSource().startsWith("#")) {
-					refID = mm.getSource().substring(1); // direct reference within sedml
-				} else {
-					// need to check if it is an indirect reference (another model using same source URI)
-					for (Model model : sedml.getModels()) {
-						if (model != mm && model.getSource().equals(mm.getSource())) {
-							refID = model.getId();
-						}
-					}
-				}
-				if (refID != null) {
-					BioModel refBM = bmMap.get(refID);
-					if (refBM == null) {
-						//TODO at some point we need to check for sequential application of changes and apply in chain
-						throw new RuntimeException("Model " + mm
-								+ " refers to either a non-existent model (invalid SED-ML) or to another model with changes (not supported yet)");
-					}
-					boolean translateToOverrides = canTranslateToOverrides(refBM, mm);
-					if (!translateToOverrides) {
-						bmMap.put(mm.getId(), importModel(mm));
-					} else {
-						bmMap.put(mm.getId(), refBM);
-					} 
-				} else {
-					bmMap.put(mm.getId(), importModel(mm));
-				}
-			}
-		}
-		return bmMap;
-	}
-
 	// We need to process biomodels that may depend on other biomodels, either with changes or with references!
-	private Map<String, BioModel> altCreateBioModels(List<Model>  models) {
-		final int CHANGED_MODELS = 0, REFERENCING_MODELS = 1; // Order which type of models to process first based on least-to-greatest priority
+	private Map<String, BioModel> createBioModels(List<Model> models) {
+		// Order which type of models to process first based on least-to-greatest priority
 		Map<String, BioModel> idToBiomodelMap = new HashMap<>();
-		// Separate "Basic" Models (No overrides, no references) from "Complex" Models
-		List<Model> basicModels = new LinkedList<>();
+		List<Model> basicModels = new LinkedList<>(); // No overrides, no references. These come first!
 		LinkedList<Queue<Model>> advancedModelsList = new LinkedList<>(); // works as both queue and list!
-		Collections.addAll(advancedModelsList, new LinkedList<>(), new LinkedList<>());
+		for (ADVANCED_MODEL_TYPES amt : ADVANCED_MODEL_TYPES.values()){
+			advancedModelsList.add(new LinkedList<>());
+		}
 		
 		// Group models by type for processing order
 		for (Model model : models){
 			if (model.getSource().startsWith("#")){
-				advancedModelsList.get(REFERENCING_MODELS).add(model);
+				advancedModelsList.get(ADVANCED_MODEL_TYPES.REFERENCING_MODELS.ordinal()).add(model);
 			} else if (!model.getListOfChanges().isEmpty()) {
-				advancedModelsList.get(CHANGED_MODELS).add(model);
+				advancedModelsList.get(ADVANCED_MODEL_TYPES.CHANGED_MODELS.ordinal()).add(model);
 			} else {
 				basicModels.add(model);
 			}
@@ -1095,5 +1022,9 @@ public class SEDMLImporter {
 			}
 		}
 		simTaskDesc.setErrorTolerance(errorTolerance);
+	}
+
+	private enum ADVANCED_MODEL_TYPES {
+		CHANGED_MODELS, REFERENCING_MODELS
 	}
 }
