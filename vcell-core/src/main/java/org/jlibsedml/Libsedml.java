@@ -1,13 +1,12 @@
 package org.jlibsedml;
 
-import java.io.BufferedReader;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
@@ -17,7 +16,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -69,8 +67,7 @@ import org.jmathml.TextToASTNodeMathParser2;
  */
 public class Libsedml {
 
-    private Libsedml() {
-    }
+    private Libsedml() {}
 
     /**
      * Reader for creating a SEDML document from a file.
