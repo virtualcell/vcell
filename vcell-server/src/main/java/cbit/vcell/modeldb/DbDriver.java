@@ -228,7 +228,7 @@ public static KeyValue savePublicationRep(Connection con,PublicationRep publicat
 		updateCleanSQL(con, sql);
 		//Remove all current links to this publication
 		sql = "DELETE FROM "+PublicationModelLinkTable.table.getTableName()+" WHERE "+PublicationModelLinkTable.table.pubRef.getUnqualifiedColName()+"="+pubID.toString();
-		changed = updateCleanSQL(con, sql);
+		int changed = updateCleanSQL(con, sql);
 		//Add link table entry
 		if (publicationRep.getBiomodelReferenceReps() != null && publicationRep.getBiomodelReferenceReps().length > 0) {
 			for(BioModelReferenceRep bioModelReferenceRep:publicationRep.getBiomodelReferenceReps()) {
@@ -2495,7 +2495,10 @@ public static void replacePreferences(Connection con, KeyFactory keyFactory, Use
 			String value = preferences[i].getValue();
 			pstmt.setString(1,TokenMangler.getSQLEscapedString(key));
 			pstmt.setString(2,TokenMangler.getSQLEscapedString(value));
-			pstmt.executeUpdate();
+			changed = pstmt.executeUpdate();
+			if (changed!=1){
+				lg.error(changed+" records changed: "+sql, new StackTraceGenerationException());
+			}
 		}
 	}finally{
 		if(pstmt != null){
@@ -3354,13 +3357,12 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 				LoadTestSoftwareVersionTimeStamp[] deleteTheseVersTimeStamps =
 					((LoadTestInfoOP)tsop).getLoadTestSoftwareVersionTimeStamps();
 				for (int i = 0; i < deleteTheseVersTimeStamps.length; i++) {
-					sql =
-						"DELETE FROM "+LoadModelsStatTable.table.getTableName()+
+					sql = "DELETE FROM "+LoadModelsStatTable.table.getTableName()+
 						" WHERE "+
 						LoadModelsStatTable.table.softwareVers + " = " + "'"+deleteTheseVersTimeStamps[i].getSoftwareVersion()+"'"+
 						" AND " +
 						LoadModelsStatTable.table.timeStamp + " = " + "'"+deleteTheseVersTimeStamps[i].getRunTimeStamp()+"'";
-					changed = DbDriver.updateCleanSQL(con, sql);
+					int changed = DbDriver.updateCleanSQL(con, sql);
 				}
 				return null;
 			}
@@ -3561,7 +3563,11 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 					changedTSKey+",'"+addts_tsop.getTestSuiteVersionID()+"',"+
 					"'"+addts_tsop.getVCellBuildVersionID()+"'"+","+"'"+addts_tsop.getNumericsBuildVersionID()+"'"+","+
 					"current_timestamp,current_timestamp,"+(annotation == null?"NULL":"'"+annotation+"'")+","+NOT_LOCKED+")";
-			stmt.executeUpdate(sql);
+			int changed = stmt.executeUpdate(sql);
+			if (changed!=1){
+				lg.error(changed+" records changed: "+sql, new StackTraceGenerationException());
+			}
+
 			if(addts_tsop.getAddTestCasesOPs() != null){
 				for(int i=0;i<addts_tsop.getAddTestCasesOPs().length;i+= 1){
 					//Set new TSKey and do child OPs
@@ -3618,10 +3624,14 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 			if(annotation != null){
 				annotation = TokenMangler.getSQLEscapedString(annotation);
 			}
-			stmt.executeUpdate(
-				"INSERT INTO "+TFTestCaseTable.table.getTableName()+" VALUES("+
+			sql = "INSERT INTO "+TFTestCaseTable.table.getTableName()+" VALUES("+
 					tcKey.toString()+","+addtc_tsop.getTestSuiteKey().toString()+",NULL,"+
-					"'"+addtc_tsop.getTestCaseType()+"'"+","+"'"+annotation+"'"+","+"current_timestamp"+","+bmSimContextLinkRef.toString()+")");
+					"'"+addtc_tsop.getTestCaseType()+"'"+","+"'"+annotation+"'"+","+"current_timestamp"+","+bmSimContextLinkRef.toString()+")";
+			int changed = stmt.executeUpdate(sql);
+			if (changed!=1){
+				lg.error(changed+" records changed: "+sql, new StackTraceGenerationException());
+			}
+
 			if(addtc_tsop.getAddTestCriteriaOPsBioModel() != null){
 				for(int i=0;i<addtc_tsop.getAddTestCriteriaOPsBioModel().length;i+= 1){
 					//Set new TSKey,TCaseKey and do child OPs
@@ -3645,10 +3655,13 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 			if(annotation != null){
 				annotation = TokenMangler.getSQLEscapedString(annotation);
 			}
-			stmt.executeUpdate(
-				"INSERT INTO "+TFTestCaseTable.table.getTableName()+" VALUES("+
+			sql = "INSERT INTO "+TFTestCaseTable.table.getTableName()+" VALUES("+
 					tcKey.toString()+","+addtc_tsop.getTestSuiteKey().toString()+","+mmKey.toString()+","+
-					"'"+addtc_tsop.getTestCaseType()+"'"+","+"'"+annotation+"'"+","+"current_timestamp"+",NULL)");
+					"'"+addtc_tsop.getTestCaseType()+"'"+","+"'"+annotation+"'"+","+"current_timestamp"+",NULL)";
+			int changed = stmt.executeUpdate(sql);
+			if (changed!=1){
+				lg.error(changed+" records changed: "+sql, new StackTraceGenerationException());
+			}
 			if(addtc_tsop.getAddTestCriteriaOPsMathModel() != null){
 				for(int i=0;i<addtc_tsop.getAddTestCriteriaOPsMathModel().length;i+= 1){
 					//Set new TSKey,TCaseKey and do child OPs
@@ -3678,12 +3691,14 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 				changedTestSuiteKeys.add(rset.getBigDecimal(TFTestSuiteTable.table.id.getUnqualifiedColName()));			
 			}
 			rset.close();
-			
-			int numRowsUpdated = stmt.executeUpdate(
-				"DELETE FROM "+TFTestCaseTable.table.getTableName()+
-				" WHERE "+
-				TFTestCaseTable.table.id.getUnqualifiedColName()+" IN ("+sb.toString()+")"
-				);
+
+			sql = "DELETE FROM "+TFTestCaseTable.table.getTableName()+
+					" WHERE "+
+					TFTestCaseTable.table.id.getUnqualifiedColName()+" IN ("+sb.toString()+")";
+			int numRowsUpdated = stmt.executeUpdate(sql);
+			if (numRowsUpdated!=1){
+				lg.error(numRowsUpdated+" records changed: "+sql, new StackTraceGenerationException());
+			}
 			if(numRowsUpdated != removetc_tsop.getTestCasesKeys().length){
 				throw new DataAccessException("Remove TestCase keys="+sb.toString()+
 					" from TSKey="+removetc_tsop.getTestSuiteKey()+
@@ -3760,7 +3775,10 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 				"NULL,NULL,"+
 				"'"+TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT+"'"+",null"+
 				")";
-			stmt.executeUpdate(sql);
+			int changed = stmt.executeUpdate(sql);
+			if (changed!=1){
+				lg.error(changed+" records changed: "+sql, new StackTraceGenerationException());
+			}
 			if(addtcrit_tsop.getRegressionMathModelSimKey() != null){
 				testSuiteOP(
 					new EditTestCriteriaOPMathModel(
@@ -3858,7 +3876,10 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 				(addtcrit_tsop.getMaxAbsoluteError() != null?"CAST('"+addtcrit_tsop.getMaxAbsoluteError().toString()+"' as NUMERIC)":"null")+","+
 				"NULL,NULL,"+"'"+TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT+"'"+",null"+
 				")";
-			stmt.executeUpdate(sql);
+			int changed = stmt.executeUpdate(sql);
+			if (changed!=1){
+				lg.error(changed+" records changed: "+sql, new StackTraceGenerationException());
+			}
 			if(addtcrit_tsop.getRegressionBioModelSimKey() != null){
 				testSuiteOP(
 					new EditTestCriteriaOPBioModel(
@@ -3904,20 +3925,19 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 			}
 			rset.close();
 
-			int numRowsUpdated = stmt.executeUpdate(
-				"DELETE FROM " + TFTestCriteriaTable.table.getTableName() +
-				" WHERE " + TFTestCriteriaTable.table.id.getUnqualifiedColName() + " IN ("+sb.toString() + ")"
-				);
+			sql = "DELETE FROM " + TFTestCriteriaTable.table.getTableName() +
+							" WHERE " + TFTestCriteriaTable.table.id.getUnqualifiedColName() + " IN ("+sb.toString() + ")";
+			int numRowsUpdated = stmt.executeUpdate(sql);
 			if(numRowsUpdated != removetcrit_tsop.getTestCriterias().length){
 				throw new DataAccessException("Remove TestCriteria keys="+sb.toString()+
 					" removed row count="+numRowsUpdated+" expected "+removetcrit_tsop.getTestCriterias().length);
 			}
 		}else if(tsop instanceof RemoveTestSuiteOP){
+			sql = "DELETE FROM "+TFTestSuiteTable.table.getTableName()+
+					" WHERE "+
+					TFTestSuiteTable.table.id.getUnqualifiedColName()+"="+removets_tsop.getTestSuiteKey().toString();
 			RemoveTestSuiteOP removets_tsop = (RemoveTestSuiteOP)tsop;
-			int numRowsUpdated = stmt.executeUpdate(
-				"DELETE FROM "+TFTestSuiteTable.table.getTableName()+
-				" WHERE "+
-				TFTestSuiteTable.table.id.getUnqualifiedColName()+"="+removets_tsop.getTestSuiteKey().toString());
+			int numRowsUpdated = stmt.executeUpdate(sql);
 			if(numRowsUpdated != 1){
 				throw new DataAccessException("Remove SINGLE TestSuite - key="+removets_tsop.getTestSuiteKey().toString()+" removed row count="+numRowsUpdated);
 			}
@@ -3954,7 +3974,10 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 					"CAST('"+vcs[i].getTimeAbsoluteError()+"' as NUMERIC)"+","+"CAST('"+vcs[i].getIndexAbsoluteError()+"' as INTEGER)"+","+
 					"CAST('"+vcs[i].getTimeRelativeError()+"' as NUMERIC)"+","+"CAST('"+vcs[i].getIndexRelativeError()+"' as INTEGER)"+
 					")";
-				stmt.executeUpdate(sql);
+				int changed = stmt.executeUpdate(sql);
+				if (changed!=1){
+					lg.error(changed+" records changed: "+sql, new StackTraceGenerationException());
+				}
 			}
 			
 			rset = stmt.executeQuery(
@@ -3972,10 +3995,13 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 			StringBuffer sb = new StringBuffer();
 			for(int i=0;i<removetr_tsop.getTestCriteriaKeys().length;i+= 1){
 				if(i != 0){sb.append(",");}sb.append(removetr_tsop.getTestCriteriaKeys()[i].toString());
-				stmt.executeUpdate(
-					"DELETE FROM "+TFTestResultTable.table.getTableName()+
-					" WHERE "+
-					TFTestResultTable.table.testCriteriaRef.getUnqualifiedColName()+"="+removetr_tsop.getTestCriteriaKeys()[i].toString());
+				sql = "DELETE FROM "+TFTestResultTable.table.getTableName()+
+						" WHERE "+
+						TFTestResultTable.table.testCriteriaRef.getUnqualifiedColName()+"="+removetr_tsop.getTestCriteriaKeys()[i].toString();
+				int changed = stmt.executeUpdate(sql);
+				if (changed!=1){
+					lg.error(changed+" records changed: "+sql, new StackTraceGenerationException());
+				}
 			}
 
 			ResultSet rset = stmt.executeQuery(
@@ -4013,13 +4039,15 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 				reportStatusMessage =
 					reportStatusMessage.substring(0,Math.min(TFTestCriteriaTable.MAX_MESSAGE_SIZE,reportStatusMessage.length()));
 			}
-			stmt.executeUpdate(
-				"UPDATE "+TFTestCriteriaTable.table.getTableName()+
-				" SET "+
+			sql = "UPDATE "+TFTestCriteriaTable.table.getTableName()+
+					" SET "+
 					TFTestCriteriaTable.table.reportStatus.getUnqualifiedColName()+"="+(newRS != null?"'"+newRS+"'":"null")+","+
 					TFTestCriteriaTable.table.reportMessage.getUnqualifiedColName()+"="+(reportStatusMessage!= null?"'"+reportStatusMessage+"'":"null")+
-				" WHERE "+TFTestCriteriaTable.table.id.getQualifiedColName()+"="+tcritKey.toString()
-				);
+					" WHERE "+TFTestCriteriaTable.table.id.getQualifiedColName()+"="+tcritKey.toString();
+			int changed = stmt.executeUpdate(sql);
+			if (changed!=1){
+				lg.error(changed+" records changed: "+sql, new StackTraceGenerationException());
+			}
 			if(newRS.equals(TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT)){
 				testSuiteOP(new RemoveTestResultsOP(new BigDecimal[] {tcritKey}), con, user,keyFactory);
 			}
@@ -4067,14 +4095,16 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 				}
 				rset.close();
 			}
-			stmt.executeUpdate(
-				"UPDATE "+TFTestCriteriaTable.table.getTableName()+
-				" SET "+
+			sql = "UPDATE "+TFTestCriteriaTable.table.getTableName()+
+					" SET "+
 					TFTestCriteriaTable.table.maxAbsError.getUnqualifiedColName()+"="+(maxAbsError != null?"CAST('"+maxAbsError.toString()+"' as NUMERIC)":"null")+","+
 					TFTestCriteriaTable.table.maxRelError.getUnqualifiedColName()+"="+(maxRelError != null?"CAST('"+maxRelError.toString()+"' as NUMERIC)":"null")+","+
 					TFTestCriteriaTable.table.regressionMMSimRef.getUnqualifiedColName()+"="+(regrMathModelSimLink != null?regrMathModelSimLink.toString():"null")+
-				" WHERE "+TFTestCriteriaTable.table.id.getUnqualifiedColName()+"="+tcritKey.toString()
-				);
+					" WHERE "+TFTestCriteriaTable.table.id.getUnqualifiedColName()+"="+tcritKey.toString();
+			int changed = stmt.executeUpdate(sql);
+			if (changed!=1){
+				lg.error(changed+" records changed: "+sql, new StackTraceGenerationException());
+			}
 			testSuiteOP(new EditTestCriteriaOPReportStatus(tcritKey,TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT,null), con, user,keyFactory);
 
 			ResultSet rset = stmt.executeQuery(
@@ -4135,16 +4165,17 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 				}
 				rset.close();
 			}
-
-			stmt.executeUpdate(
-				"UPDATE "+TFTestCriteriaTable.table.getTableName()+
-				" SET "+
+			sql = "UPDATE "+TFTestCriteriaTable.table.getTableName()+
+					" SET "+
 					TFTestCriteriaTable.table.maxAbsError.getUnqualifiedColName()+"="+(maxAbsError != null?"CAST('"+maxAbsError.toString()+"' as NUMERIC)":"null")+","+
 					TFTestCriteriaTable.table.maxRelError.getUnqualifiedColName()+"="+(maxRelError != null?"CAST('"+maxRelError.toString()+"' as NUMERIC)":"null")+","+
 					TFTestCriteriaTable.table.regressionBMAPPRef.getUnqualifiedColName()+"="+(bmscAppKey != null?bmscAppKey.toString():"NULL")+","+
 					TFTestCriteriaTable.table.regressionBMSimRef.getUnqualifiedColName()+"="+(bmsltSimKey != null?bmsltSimKey.toString():"NULL")+
-				" WHERE "+TFTestCriteriaTable.table.id.getQualifiedColName()+"="+tcritKey.toString()
-				);
+					" WHERE "+TFTestCriteriaTable.table.id.getQualifiedColName()+"="+tcritKey.toString();
+			int changed = stmt.executeUpdate(sql);
+			if (changed!=1){
+				lg.error(changed+" records changed: "+sql, new StackTraceGenerationException());
+			}
 			testSuiteOP(new EditTestCriteriaOPReportStatus(tcritKey,TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT,null), con, user,keyFactory);
 			
 			ResultSet rset = stmt.executeQuery(
@@ -4169,14 +4200,16 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 			for (int i = 0; i < tcritKeyArr.length; i++) {
 				if(i!= 0){tcritList.append(",");}
 				tcritList.append(tcritKeyArr[i]);
-				stmt.executeUpdate(
-					"UPDATE "+TFTestCriteriaTable.table.getTableName()+
-					" SET "+
-					(maxAbsErrorArr != null?TFTestCriteriaTable.table.maxAbsError.getUnqualifiedColName()+"="+maxAbsErrorArr[i]:"")+
-					(maxAbsErrorArr != null && maxRelErrorArr != null?",":"")+
-					(maxRelErrorArr != null?TFTestCriteriaTable.table.maxRelError.getUnqualifiedColName()+"="+maxRelErrorArr[i]:"")+
-					" WHERE "+TFTestCriteriaTable.table.id.getQualifiedColName()+"="+tcritKeyArr[i].toString()
-					);
+				sql = "UPDATE "+TFTestCriteriaTable.table.getTableName()+
+						" SET "+
+						(maxAbsErrorArr != null?TFTestCriteriaTable.table.maxAbsError.getUnqualifiedColName()+"="+maxAbsErrorArr[i]:"")+
+						(maxAbsErrorArr != null && maxRelErrorArr != null?",":"")+
+						(maxRelErrorArr != null?TFTestCriteriaTable.table.maxRelError.getUnqualifiedColName()+"="+maxRelErrorArr[i]:"")+
+						" WHERE "+TFTestCriteriaTable.table.id.getQualifiedColName()+"="+tcritKeyArr[i].toString();
+				int changed = stmt.executeUpdate(sql);
+				if (changed!=1){
+					lg.error(changed+" records changed: "+sql, new StackTraceGenerationException());
+				}
 				testSuiteOP(new EditTestCriteriaOPReportStatus(tcritKeyArr[i],TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT,null), con, user, keyFactory);
 			}
 			ResultSet rset = stmt.executeQuery(
@@ -4210,12 +4243,14 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 							annotation = TokenMangler.getSQLEscapedString(annotation);
 						}
 					}
-					stmt.executeUpdate(
-						"UPDATE "+TFTestCaseTable.table.getTableName()+
-						" SET "+
+					sql = "UPDATE "+TFTestCaseTable.table.getTableName()+
+							" SET "+
 							TFTestCaseTable.table.tcAnnotation.getUnqualifiedColName()+"="+(annotation == null?"NULL":"'"+annotation+"'")+
-						" WHERE "+TFTestCaseTable.table.id.getQualifiedColName()+"="+tcaseKeys[i].toString()
-						);
+							" WHERE "+TFTestCaseTable.table.id.getQualifiedColName()+"="+tcaseKeys[i].toString();
+					int changed = stmt.executeUpdate(sql);
+					if (changed!=1){
+						lg.error(changed+" records changed: "+sql, new StackTraceGenerationException());
+					}
 				}
 				if(newSteadyStates != null){
 					//Make sure the change is for EXACT type
@@ -4246,13 +4281,15 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 					rset.close();
 					//Change SteadyState type for TestCase
 					boolean newSteadyState = newSteadyStates[i];
-					stmt.executeUpdate(
-						"UPDATE "+TFTestCaseTable.table.getTableName()+
-						" SET "+
+					sql = "UPDATE "+TFTestCaseTable.table.getTableName()+
+							" SET "+
 							TFTestCaseTable.table.tcSolutionType.getUnqualifiedColName()+"="+
 							(newSteadyState?"'"+TestCaseNew.EXACT_STEADY+"'":"'"+TestCaseNew.EXACT+"'")+
-						" WHERE "+TFTestCaseTable.table.id.getQualifiedColName()+"="+tcaseKeys[i].toString()
-						);
+							" WHERE "+TFTestCaseTable.table.id.getQualifiedColName()+"="+tcaseKeys[i].toString();
+					int changed = stmt.executeUpdate(sql);
+					if (changed!=1){
+						lg.error(changed+" records changed: "+sql, new StackTraceGenerationException());
+					}
 					//Change Report status
 					for (int j = 0; j < tcritKeyV.size(); j++) {
 						EditTestCriteriaOPReportStatus etcors = 
@@ -4284,13 +4321,15 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 				if(i != 0){sb.append(",");}sb.append(tsKeys[i].toString());
 				
 				if(editts_tsop.isLock() != null){
-					stmt.executeUpdate(
-							"UPDATE "+TFTestSuiteTable.table.getTableName()+
+					sql = "UPDATE "+TFTestSuiteTable.table.getTableName()+
 							" SET "+
-								TFTestSuiteTable.table.isLocked.getUnqualifiedColName()+"= 1"+
-							" WHERE "+TFTestSuiteTable.table.id.getQualifiedColName()+"="+tsKeys[i].toString()
-							);
-					
+							TFTestSuiteTable.table.isLocked.getUnqualifiedColName()+"= 1"+
+							" WHERE "+TFTestSuiteTable.table.id.getQualifiedColName()+"="+tsKeys[i].toString();
+					int changed = stmt.executeUpdate(sql);
+					if (changed!=1){
+						lg.error(changed+" records changed: "+sql, new StackTraceGenerationException());
+					}
+
 				}else{
 					if(annots != null){
 						String annotation = annots[i];
@@ -4301,12 +4340,14 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 								annotation = TokenMangler.getSQLEscapedString(annotation);
 							}
 						}
-						stmt.executeUpdate(
-							"UPDATE "+TFTestSuiteTable.table.getTableName()+
-							" SET "+
+						sql = "UPDATE "+TFTestSuiteTable.table.getTableName()+
+								" SET "+
 								TFTestSuiteTable.table.tsAnnotation.getUnqualifiedColName()+"="+(annotation == null?"NULL":"'"+annotation+"'")+
-							" WHERE "+TFTestSuiteTable.table.id.getQualifiedColName()+"="+tsKeys[i].toString()
-							);
+								" WHERE "+TFTestSuiteTable.table.id.getQualifiedColName()+"="+tsKeys[i].toString();
+						int changed = stmt.executeUpdate(sql);
+						if (changed!=1){
+							lg.error(changed+" records changed: "+sql, new StackTraceGenerationException());
+						}
 					}
 				}
 			}			
@@ -4650,7 +4691,8 @@ protected final static void updateCleanLOB(Connection con,String conditionalColu
 	}	
 }
 
-
+public static class StackTraceGenerationException extends Exception {
+}
 /**
  * This method was created in VisualAge.
  * @param sql java.lang.String
@@ -4664,7 +4706,11 @@ public static int updateCleanSQL(Connection con, String sql) throws SQLException
 	}
 	Statement s = con.createStatement();
 	try {
-		return s.executeUpdate(sql);
+		int numRowsChanged = s.executeUpdate(sql);
+		if (numRowsChanged != 1){
+			lg.error(numRowsChanged + " records changed: " + sql, new StackTraceGenerationException());
+		}
+		return numRowsChanged;
 	} finally {
 		s.close();
 	}
@@ -4686,7 +4732,11 @@ public static int updatePreparedCleanSQL(Connection con, String sql, String data
 	}
 	try (PreparedStatement ps = con.prepareStatement(sql)){
 		ps.setString(1, data);
-		return ps.executeUpdate();
+		int numRowsChanged = ps.executeUpdate();
+		if (numRowsChanged != 1){
+			lg.error(numRowsChanged + " records changed: " + sql, new StackTraceGenerationException());
+		}
+		return numRowsChanged;
 	}
 }
 
@@ -4706,7 +4756,11 @@ public static int updatePreparedCleanSQL(Connection con, String sql, byte[] data
 	}
 	try (PreparedStatement ps = con.prepareStatement(sql)){
 		ps.setBytes(1, data);
-		return ps.executeUpdate();
+		int numRowsChanged = ps.executeUpdate();
+		if (numRowsChanged != 1){
+			lg.error(numRowsChanged + " records changed: " + sql, new StackTraceGenerationException());
+		}
+		return numRowsChanged;
 	}
 }
 
