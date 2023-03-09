@@ -1905,7 +1905,7 @@ public void writeData(StringBuilder sb) {				// SpringSaLaD exporting the specie
 	int dimension = geometry.getDimension();
 
 	sb.append("MOLECULE: \"" + getSpeciesContext().getName() + "\" " + getSpeciesContext().getStructure().getName() + 
-			" Number " + initialCountParameter.getExpression() + 
+			" Number " + initialCountParameter.getExpression().infix() + 
 			" Site_Types " + componentList.size() + " Total"  + "_Sites " + siteAttributesMap.size() + 
 			" Total_Links " + internalLinkSet.size() + " is2D " + (dimension == 2 ? true : false));
 	sb.append("\n");

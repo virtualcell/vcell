@@ -178,7 +178,6 @@ private void refreshColumns(){
 		columns.remove(ColumnType.COLUMN_FORCECONTINUOUS);
 	}
 	if (getSimulationContext() == null || getSimulationContext().getApplicationType().equals(SimulationContext.Application.SPRINGSALAD)) {
-		columns.remove(ColumnType.COLUMN_CLAMPED);
 		columns.remove(ColumnType.COLUMN_DIFFUSION);
 		columns.remove(ColumnType.COLUMN_FORCECONTINUOUS);
 		columns.remove(ColumnType.COLUMN_WELLMIXED);
