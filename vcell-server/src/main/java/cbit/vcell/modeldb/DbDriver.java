@@ -161,18 +161,22 @@ public static void publishDirectly(Connection con,KeyValue[] publishTheseBiomode
 		String sql = "UPDATE "+BioModelTable.table.getTableName()+
 			" SET "+BioModelTable.table.privacy.getUnqualifiedColName()+"="+GroupAccess.GROUPACCESS_ALL.toString()+
 			" WHERE "+BioModelTable.table.id.getUnqualifiedColName()+" IN ("+StringUtils.join(publishTheseBiomodels, ',')+")";
+		if (lg.isDebugEnabled()) lg.debug(sql);
 		updateCleanSQL(con, sql);
 		sql = "UPDATE "+BioModelTable.table.getTableName()+" SET "+BioModelTable.table.versionFlag.getUnqualifiedColName()+"="+VersionFlag.Published.getIntValue()+
 			" WHERE "+BioModelTable.table.id.getUnqualifiedColName()+" IN ("+StringUtils.join(publishTheseBiomodels, ',')+")";
+		if (lg.isDebugEnabled()) lg.debug(sql);
 		updateCleanSQL(con, sql);
 	}
 	if(publishTheseMathmodels != null && publishTheseMathmodels.length>0) {
 		String sql = "UPDATE "+MathModelTable.table.getTableName()+
 			" SET "+MathModelTable.table.privacy.getUnqualifiedColName()+"="+GroupAccess.GROUPACCESS_ALL.toString()+
 			" WHERE "+MathModelTable.table.id.getUnqualifiedColName()+" IN ("+StringUtils.join(publishTheseMathmodels, ',')+")";
+		if (lg.isDebugEnabled()) lg.debug(sql);
 		updateCleanSQL(con, sql);
 		sql = "UPDATE "+MathModelTable.table.getTableName()+" SET "+MathModelTable.table.versionFlag.getUnqualifiedColName()+"="+VersionFlag.Published.getIntValue()+
 			" WHERE "+MathModelTable.table.id.getUnqualifiedColName()+" IN ("+StringUtils.join(publishTheseMathmodels, ',')+")";
+		if (lg.isDebugEnabled()) lg.debug(sql);
 		updateCleanSQL(con, sql);
 	}
 }
@@ -220,6 +224,7 @@ public static KeyValue savePublicationRep(Connection con,PublicationRep publicat
 			PublicationTable.table.pubdate.getUnqualifiedColName()+"="+(publicationRep.getDate()==null?"NULL":" TO_DATE('" + simpleDateFormat.format(publicationRep.getDate()) + "','"+YMD_FORMAT_STRING+"') ")+
 			" WHERE "+PublicationTable.table.id.getUnqualifiedColName()+"="+ pubID.toString();		
 		}
+		if (lg.isDebugEnabled()) lg.debug(sql);
 		updateCleanSQL(con, sql);
 		//Remove all current links to this publication
 		updateCleanSQL(con, "DELETE FROM "+PublicationModelLinkTable.table.getTableName()+" WHERE "+PublicationModelLinkTable.table.pubRef.getUnqualifiedColName()+"="+pubID.toString());
@@ -324,6 +329,7 @@ public static void cleanupDeletedReferences(Connection con,User user,ExternalDat
 			if(bPrintOnly){
 				lg.info(sql+";");
 			}else{
+				if (lg.isDebugEnabled()) lg.debug(sql);
 				updateCleanSQL(con, sql);
 			}
 		
@@ -380,6 +386,7 @@ public static void cleanupDeletedReferences(Connection con,User user,ExternalDat
 			if(bPrintOnly){
 				lg.info(sql+";");
 			}else{
+				if (lg.isDebugEnabled()) lg.debug(sql);
 				updateCleanSQL(con, sql);
 			}
 
@@ -400,6 +407,7 @@ public static void cleanupDeletedReferences(Connection con,User user,ExternalDat
 			if(bPrintOnly){
 				lg.info(sql+";");
 			}else{
+				if (lg.isDebugEnabled()) lg.debug(sql);
 				updateCleanSQL(con, sql);
 			}
 			
@@ -575,6 +583,7 @@ public static VCDocumentInfo curate(CurateSpec curateSpec,Connection con,User us
 	String set = vTable.versionFlag.getUnqualifiedColName() + " = " + updatedVersionFlag.getIntValue();
 	String cond = vTable.id.getQualifiedColName() + " = " + vKey;
 	String sql = DatabasePolicySQL.enforceOwnershipUpdate(user,vTable,set,cond);
+	if (lg.isDebugEnabled()) lg.debug(sql);
 	int numRowsProcessed = updateCleanSQL(con, sql);
 
 	//Clear XML
@@ -762,6 +771,7 @@ private static void findAllChildren(java.sql.Connection con, VersionableTypeVers
 				" AND " + vr.getLinkField().getQualifiedColName() + " = " + vtv.getVersion().getVersionKey() +
 				" AND " + table.ownerRef.getQualifiedColName() + " = " + userTable.id.getQualifiedColName();
 		}
+		if (lg.isDebugEnabled()) lg.debug(sql);
 		java.sql.Statement stmt = con.createStatement();
 		Vector<VersionableTypeVersion> allChildrenVTV = new Vector<VersionableTypeVersion>();
 		try { //Get KeyValues from statement and put into Vector, so we can close statement(good idea because we are recursive)
@@ -848,6 +858,7 @@ private static void findAllReferences(java.sql.Connection con, VersionableTypeVe
 				" AND " + vr.getLinkField().getQualifiedColName() + " = " + table.id.getQualifiedColName() +
 				" AND " + table.ownerRef.getQualifiedColName() + " = " + userTable.id.getQualifiedColName();
 		}
+		if (lg.isDebugEnabled()) lg.debug(sql);
 		java.sql.Statement stmt = con.createStatement();
 		Vector<VersionableTypeVersion> allReferencingVTV = new Vector<VersionableTypeVersion>();
 		try { //Get KeyValues from statement and put into Vector, so we can close statement(good idea because we are recursive)
@@ -902,6 +913,7 @@ protected static KeyValue[] getChildrenFromLinkTable(java.sql.Connection con, Ta
 	sql = 	"SELECT " + linkTable.getTableName() + "." + childField + 
 			" FROM " + linkTable.getTableName() + 
 			" WHERE " + linkTable.getTableName() + "." + parentField + " = " + parentKey;
+	if (lg.isDebugEnabled()) lg.debug(sql);
 
 	java.sql.Statement stmt = con.createStatement();
 	Vector<KeyValue> keyList = new Vector<KeyValue>();
@@ -928,7 +940,8 @@ private static KeyValue[] getExternalRefs(java.sql.Connection con,cbit.sql.Field
 	sql = 	"SELECT " + table.getTableName() + "." + table.id + 
 			" FROM " + table.getTableName() + 
 			" WHERE " + table.getTableName() + "." + field + " = " + versionKey;
-			
+	if (lg.isDebugEnabled()) lg.debug(sql);
+
 	java.sql.Statement stmt = null;
 	Vector<KeyValue> externalRefsV = new Vector<KeyValue>();
 	try {
@@ -958,7 +971,8 @@ protected static KeyValue getForeignRefByOwner(java.sql.Connection con,cbit.sql.
 			" WHERE " + table.getTableName() + "." + table.id + " = " + idKey +
 			" AND " + refTable.getTableName() + "." + refTable.id + " = " + table.getTableName() + "." + field +
 			" AND " + refTable.getTableName() + "." + refTable.ownerRef + " = " + owner.getID();
-			
+	if (lg.isDebugEnabled()) lg.debug(sql);
+
 	java.sql.Statement stmt = con.createStatement();
 	try {
 		java.sql.ResultSet rset = stmt.executeQuery(sql);
