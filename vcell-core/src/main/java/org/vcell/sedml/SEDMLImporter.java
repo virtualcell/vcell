@@ -55,16 +55,25 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
-//import java.util.*;
-import java.util.*;
+
+import java.util.List;
+import java.util.LinkedList;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Set;
+import java.util.Queue;
+import java.util.Iterator;
+import java.util.Collections;
+
 
 /**
  * Serves as a means to convert sedml documents into VCell BioModels
  */
 public class SEDMLImporter {
 	private final static Logger logger = LogManager.getLogger(SEDMLImporter.class);
-	private final String MODEL_REFERENCE_ERROR = "Unresolvable Model(s) encountered. Either there is invalid SED-ML, or changed models reference each other.";
-
+	private final String MODEL_RESOLUTION_ERROR = "Unresolvable Model(s) encountered. Either there is incompatible " +
+			"/ unsupported SED-ML features, or there are unresolvable references.";
 	
 	private SedML sedml;
 	private ExternalDocInfo externalDocInfo;
@@ -735,6 +744,9 @@ public class SEDMLImporter {
 		Map<String, BioModel> idToBiomodelMap = new HashMap<>();
 		List<Model> basicModels = new LinkedList<>(); // No overrides, no references. These come first!
 		LinkedList<Queue<Model>> advancedModelsList = new LinkedList<>(); // works as both queue and list!
+		String errorsReported = "";
+
+		// Initialize the advanced models list (effectively a "2D-Array")
 		for (ADVANCED_MODEL_TYPES amt : ADVANCED_MODEL_TYPES.values()){
 			advancedModelsList.add(new LinkedList<>());
 		}
@@ -748,6 +760,12 @@ public class SEDMLImporter {
 			} else {
 				basicModels.add(model);
 			}
+		}
+
+		// Streamline advanced models
+		for (int i = 0; i < advancedModelsList.size(); i++){
+			if (advancedModelsList.get(i).isEmpty())
+				advancedModelsList.remove(i--); // have to adjust the iterator
 		}
 
 		// Process basic models
@@ -766,8 +784,11 @@ public class SEDMLImporter {
 				if (count >= advancedModels.size()){
 					if (!advancedModelsList.isEmpty()) {
 						advancedModelsList.element().addAll(advancedModels); // Move this set to the next set to process
+						break;
 					} else {
-						throw new RuntimeException(MODEL_REFERENCE_ERROR); // Something must be broken with the sedml
+						String message = String.format("Errors reported:\n%s", errorsReported);
+						Exception errorFilledException = new Exception(message);
+						throw new RuntimeException(MODEL_RESOLUTION_ERROR, errorFilledException);
 					}
 				}
 
@@ -781,6 +802,7 @@ public class SEDMLImporter {
 					idToBiomodelMap.put(nextModel.getId(), bioModel);
 					count = 0;
 				} catch (RuntimeException e){
+					errorsReported += e.getMessage() + "\n";
 					advancedModels.add(nextModel);
 					count++;
 				}
@@ -791,33 +813,13 @@ public class SEDMLImporter {
 	}
 
 	private String getReferenceId(Model model, Map<String, BioModel> idToBiomodelMap){
-		String referenceId = null;
-		if (model.getSource().startsWith("#")) {
-			referenceId = model.getSource().substring(1); // direct reference within sedml
-		} else {
-			referenceId = model.getSource();
-		}
+		String referenceId = model.getSource();
+
+		if (referenceId.startsWith("#"))
+			referenceId = referenceId.substring(1);
+
 		return referenceId;
 	}
-
-	/*private BioModel altGetModelReference(String referenceId, Model model, Map<String, BioModel> idToBiomodelMap){
-		BioModel referenceBiomodel = referenceId == null ? importModel(model) : null;
-
-		if (referenceId != null) {
-			referenceBiomodel = idToBiomodelMap.get(referenceId);
-			if (referenceBiomodel == null) {
-				//TODO at some point we need to check for sequential application of changes and apply in chain
-				throw new RuntimeException("Model " + model
-						+ " refers to either a non-existent model (invalid SED-ML) or to another model with changes (not supported yet)");
-			} else {
-				boolean translateToOverrides = model.getListOfChanges().isEmpty() ? false : canTranslateToOverrides(referenceBiomodel, model);
-				referenceBiomodel = translateToOverrides || model.getSource().startsWith("#") ? referenceBiomodel : importModel(model);
-			}	
-		} 
-
-		//idToBiomodelMap.put(model.getId(), referenceBiomodel);
-		return referenceBiomodel;
-	}*/
 
 	private BioModel getModelReference(String referenceId, Model model, Map<String, BioModel> idToBiomodelMap){
 		boolean translateToOverrides;
@@ -893,19 +895,22 @@ public class SEDMLImporter {
 				importMap.put(bioModel, sbmlImporter);
 			}
 		} catch (PropertyVetoException e){
-			String message = "PropertyVetoException occured: " + e.getMessage();
+			String message = "PropertyVetoException occurred: " + e.getMessage();
 			throw new RuntimeException(message, e);
 		} catch (XmlParseException e){
-			String message = "XmlParseException occured: " + e.getMessage();
+			String message = "XmlParseException occurred: " + e.getMessage();
 			throw new RuntimeException(message, e);
 		} catch (VCLoggerException e){
-			String message = "VCLoggerException occured: " + e.getMessage();
+			String message = "VCLoggerException occurred: " + e.getMessage();
 			throw new RuntimeException(message, e);
 		} catch (MappingException e){
-			String message = "MappingException occured: " + e.getMessage();
+			String message = "MappingException occurred: " + e.getMessage();
+			throw new RuntimeException(message, e);
+		} catch (IllegalArgumentException e) {
+			String message = "IllegalArgumentException occurred: " + e.getMessage();
 			throw new RuntimeException(message, e);
 		} catch (Exception e) {
-			logger.error("Unknown error occured:" + e.getMessage());
+			logger.error("Unknown error occurred:" + e.getMessage());
 			throw e;
 		}
 		return bioModel;
