@@ -323,57 +323,81 @@ private boolean isBindingReaction(Map<String, Object> analysisResults) {
 	}
 	return false;
 }
-public void writeData(StringBuilder sb) {			// SpringSaLaD exporting the binding rule information
+public void writeData(StringBuilder sb, Subtype subtype) {			// SpringSaLaD exporting the binding rule information
 	Map<String, Object> analysisResults = new LinkedHashMap<> ();
 	analizeReaction(analysisResults);
 	
 	switch(getSubtype(analysisResults)) {
 	case CREATION:
 	case DECAY:
-		writeDecayData(sb);
+		writeDecayData(sb, subtype);
 		break;
 	case TRANSITION:
-		writeTransitionData(sb);
+		writeTransitionData(sb, subtype, analysisResults);
 		break;
 	case ALLOSTERIC:
-		writeAllostericData(sb);
+		writeAllostericData(sb, subtype, analysisResults);
 		break;
 	case BINDING:
-		writeBindingData(sb, analysisResults);
+		writeBindingData(sb, subtype, analysisResults);
 		break;
 	default:
 		break;
 	}
 }
 
-private void writeDecayData(StringBuilder sb) {
+private void writeDecayData(StringBuilder sb, Subtype subtype) {
+	if(subtype != ReactionRuleSpec.Subtype.CREATION && subtype != ReactionRuleSpec.Subtype.DECAY) {
+		return;
+	}
 
 }
-private void writeTransitionData(StringBuilder sb) {
+private void writeTransitionData(StringBuilder sb, Subtype subtype, Map<String, Object> analysisResults) {
+	if(subtype != ReactionRuleSpec.Subtype.TRANSITION) {
+		return;
+	}
+	MolecularTypePattern mtpReactant = (MolecularTypePattern)analysisResults.get("mtp1");
+	MolecularTypePattern mtpProduct = (MolecularTypePattern)analysisResults.get("mtp2");
+	MolecularComponentPattern mcpReactant = (MolecularComponentPattern)analysisResults.get("mcp1");
+	MolecularComponentPattern mcpProduct = (MolecularComponentPattern)analysisResults.get("mcp2");
+	String stateReactant = (String)analysisResults.get("csp1");
+	String stateProduct =  (String)analysisResults.get("csp2");
 
 }
-private void writeAllostericData(StringBuilder sb) {
+private void writeAllostericData(StringBuilder sb, Subtype subtype, Map<String, Object> analysisResults) {
+	if(subtype != ReactionRuleSpec.Subtype.ALLOSTERIC) {
+		return;
+	}
+	MolecularTypePattern mtpReactant = (MolecularTypePattern)analysisResults.get("mtp1");
+	MolecularTypePattern mtpProduct = (MolecularTypePattern)analysisResults.get("mtp2");
+	MolecularComponentPattern mcpReactant = (MolecularComponentPattern)analysisResults.get("mcp1");
+	MolecularComponentPattern mcpProduct = (MolecularComponentPattern)analysisResults.get("mcp2");
+	String stateReactant = (String)analysisResults.get("csp1");
+	String stateProduct =  (String)analysisResults.get("csp2");
 
 }
-private void writeBindingData(StringBuilder sb, Map<String, Object> analysisResults) {
-	MolecularTypePattern mtpOne = (MolecularTypePattern)analysisResults.get("mtp1");
-	MolecularTypePattern mtpTwo = (MolecularTypePattern)analysisResults.get("mtp2");
-	MolecularComponentPattern mcpOne = (MolecularComponentPattern)analysisResults.get("mcp1");
-	MolecularComponentPattern mcpTwo = (MolecularComponentPattern)analysisResults.get("mcp2");
-	String stateOne = (String)analysisResults.get("csp1");
-	String stateTwo =  (String)analysisResults.get("csp2");
-	if(mtpOne == null || mtpTwo == null || mcpOne == null || mcpTwo == null) {
+private void writeBindingData(StringBuilder sb, Subtype subtype, Map<String, Object> analysisResults) {
+	if(subtype != ReactionRuleSpec.Subtype.BINDING) {
+		return;
+	}
+	MolecularTypePattern mtpReactantOne = (MolecularTypePattern)analysisResults.get("mtp1");
+	MolecularTypePattern mtpReactantTwo = (MolecularTypePattern)analysisResults.get("mtp2");
+	MolecularComponentPattern mcpReactantOne = (MolecularComponentPattern)analysisResults.get("mcp1");
+	MolecularComponentPattern mcpReactantTwo = (MolecularComponentPattern)analysisResults.get("mcp2");
+	String stateReactantOne = (String)analysisResults.get("csp1");
+	String stateReactantTwo =  (String)analysisResults.get("csp2");
+	if(mtpReactantOne == null || mtpReactantTwo == null || mcpReactantOne == null || mcpReactantTwo == null) {
 		throw new RuntimeException("writeBindingData() error: something is wrong");
 	}
 	
 	sb.append("'").append(reactionRule.getName()).append("'       ");
-	sb.append("'").append(mtpOne.getMolecularType().getName()).append("' : '")
-		.append(mcpOne.getMolecularComponent().getName()).append("' : '")
-		.append(stateOne);
+	sb.append("'").append(mtpReactantOne.getMolecularType().getName()).append("' : '")
+		.append(mcpReactantOne.getMolecularComponent().getName()).append("' : '")
+		.append(stateReactantOne);
 		sb.append("'  +  '");
-	sb.append(mtpTwo.getMolecularType().getName()).append("' : '")
-		.append(mcpTwo.getMolecularComponent().getName()).append("' : '")
-		.append(stateTwo);
+	sb.append(mtpReactantTwo.getMolecularType().getName()).append("' : '")
+		.append(mcpReactantTwo.getMolecularComponent().getName()).append("' : '")
+		.append(stateReactantTwo);
 		// TODO: get the real values from kinetic law
 	sb.append("'  kon  ").append(Double.toString(0.9));
 	sb.append("  koff ").append(Double.toString(0.2));
