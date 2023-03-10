@@ -817,25 +817,20 @@ public class SEDMLImporter {
 	}
 
 	private BioModel getModelReference(String referenceId, Model model, Map<String, BioModel> idToBiomodelMap){
-		BioModel processedBioModel;
 		// Were we given a reference ID? We need to check if the parent was processed yet.
 		if (referenceId != null && !model.getSource().equals(referenceId)){
+			boolean canTranslate;
 			BioModel parentBiomodel = idToBiomodelMap.get(referenceId);
-			if (parentBiomodel == null) throw new RuntimeException("The parent hasn't been processed yet!");
-			Model parentModel = this.sedml.getModelWithId(referenceId);
-			if (parentModel == null) throw new RuntimeException("We have a serious problem?");
-		}
 
-		processedBioModel = this.importModel(model);
-		if (!model.getListOfChanges().isEmpty() && this.canTranslateToOverrides(processedBioModel, model)){
-			// We just need to import the parents, and we'll handle the rest later
-			BioModel parentBiomodel = idToBiomodelMap.get(referenceId);
-			if (parentBiomodel != null){
-				return parentBiomodel;
-			}
-		}
+			if (parentBiomodel == null)
+				throw new RuntimeException("The parent hasn't been processed yet!");
 
-		return processedBioModel;
+			canTranslate = this.canTranslateToOverrides(parentBiomodel, model);
+			return !model.getListOfChanges().isEmpty() && canTranslate ?
+					parentBiomodel : this.importModel(model);
+		} else {
+			return this.importModel(model);
+		}
 	}
 
 	private boolean canTranslateToOverrides(BioModel refBM, Model mm) {
