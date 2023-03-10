@@ -31,6 +31,7 @@ import java.util.TreeSet;
 import java.util.Vector;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.db.DatabaseSyntax;
@@ -2371,7 +2372,7 @@ public static void insertVersionableXML(Connection con,String xml,VersionableTyp
 	}
 	String sql = "DELETE FROM "+xmlTableName +
 			" WHERE " + versionableRefColName + " = " + vKey.toString();
-	int changed = updateCleanSQL(con,sql);
+	int changed = updateCleanSQL(con,sql,UpdateExpectation.ROW_UPDATE_IS_POSSIBLE);
 
 	switch (dbSyntax){
 	case ORACLE:{
@@ -4693,11 +4694,18 @@ protected final static void updateCleanLOB(Connection con,String conditionalColu
 
 public static class StackTraceGenerationException extends Exception {
 }
-/**
- * This method was created in VisualAge.
- * @param sql java.lang.String
- */
+
+public enum UpdateExpectation {
+	ROW_UPDATE_IS_POSSIBLE,
+	ROW_UPDATE_IS_EXPECTED
+}
+
 public static int updateCleanSQL(Connection con, String sql) throws SQLException {
+	UpdateExpectation updateExpectation = UpdateExpectation.ROW_UPDATE_IS_EXPECTED;
+	return updateCleanSQL(con,sql, updateExpectation);
+}
+
+public static int updateCleanSQL(Connection con, String sql, UpdateExpectation updateExpectation) throws SQLException {
 	if (sql == null || con == null) {
 		throw new IllegalArgumentException("Improper parameters for updateClean");
 	}
@@ -4708,7 +4716,8 @@ public static int updateCleanSQL(Connection con, String sql) throws SQLException
 	try {
 		int numRowsChanged = s.executeUpdate(sql);
 		if (numRowsChanged != 1){
-			lg.error(numRowsChanged + " records changed: " + sql, new StackTraceGenerationException());
+			Level logLevel = (updateExpectation == UpdateExpectation.ROW_UPDATE_IS_POSSIBLE) ? Level.INFO : Level.ERROR;
+			lg.log(logLevel, numRowsChanged + " records changed: " + sql, new StackTraceGenerationException());
 		}
 		return numRowsChanged;
 	} finally {
