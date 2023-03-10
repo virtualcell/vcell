@@ -230,14 +230,24 @@ public void analizeReaction(Map<String, Object> analysisResults) {
 		if(cspReactant != null) {
 			if(!cspReactant.compareEqual(cspProduct)) {
 				stateTransitionCounter++;		// state changed between corresponding reactant and product sites
+				String mtpReactantKey = "mtpReactantState" + stateTransitionCounter;
+				String mcpReactantKey = "mcpReactantState" + stateTransitionCounter;
+				String mtpProductKey = "mtpProductState" + stateTransitionCounter;
+				String mcpProductKey = "mcpProductState" + stateTransitionCounter;
+				MolecularTypePattern mtpReactant = siteToMoleculeMap.get(mcpReactant);
+				MolecularTypePattern mtpProduct = siteToMoleculeMap.get(mcpProduct);
+				analysisResults.put(mtpReactantKey, mtpReactant);
+				analysisResults.put(mcpReactantKey, mcpReactant);
+				analysisResults.put(mtpProductKey, mtpProduct);
+				analysisResults.put(mcpProductKey, mcpProduct);
 			}
 		}
 		
 		if(mcpReactant.getBondType() == BondType.None && mcpProduct.getBondType() == BondType.Specified) {
 			MolecularTypePattern mtpReactant = siteToMoleculeMap.get(mcpProduct);
 			bondTransitionCounter++;
-			String mtpKey = "mtp" + bondTransitionCounter;
-			String mcpKey = "mcp" + bondTransitionCounter;
+			String mtpKey = "mtpReactantBond" + bondTransitionCounter;
+			String mcpKey = "mcpReactantBond" + bondTransitionCounter;
 			analysisResults.put(mtpKey, mtpReactant);
 			analysisResults.put(mcpKey, mcpReactant);
 			
@@ -256,7 +266,7 @@ public void analizeReaction(Map<String, Object> analysisResults) {
 				ComponentStateDefinition csdReactant = cspReactant.getComponentStateDefinition();
 				stateReactant = csdReactant.getName();
 			}
-			String cspKey = "csp" + bondTransitionCounter;
+			String cspKey = "cspBondReactantBond" + bondTransitionCounter;
 			analysisResults.put(cspKey, stateReactant);
 		}
 		mcpCount++;
@@ -356,36 +366,35 @@ private void writeTransitionData(StringBuilder sb, Subtype subtype, Map<String, 
 	if(subtype != ReactionRuleSpec.Subtype.TRANSITION) {
 		return;
 	}
-	MolecularTypePattern mtpReactant = (MolecularTypePattern)analysisResults.get("mtp1");
-	MolecularTypePattern mtpProduct = (MolecularTypePattern)analysisResults.get("mtp2");
-	MolecularComponentPattern mcpReactant = (MolecularComponentPattern)analysisResults.get("mcp1");
-	MolecularComponentPattern mcpProduct = (MolecularComponentPattern)analysisResults.get("mcp2");
-	String stateReactant = (String)analysisResults.get("csp1");
-	String stateProduct =  (String)analysisResults.get("csp2");
+	// one reactant and one product
+	MolecularTypePattern mtpReactant = (MolecularTypePattern)analysisResults.get("mtpReactantState");
+	MolecularTypePattern mtpProduct = (MolecularTypePattern)analysisResults.get("mtpProductState");
+	MolecularComponentPattern mcpReactant = (MolecularComponentPattern)analysisResults.get("mcpReactantState");
+	MolecularComponentPattern mcpProduct = (MolecularComponentPattern)analysisResults.get("mcpProductState");
 
 }
 private void writeAllostericData(StringBuilder sb, Subtype subtype, Map<String, Object> analysisResults) {
 	if(subtype != ReactionRuleSpec.Subtype.ALLOSTERIC) {
 		return;
 	}
-	MolecularTypePattern mtpReactant = (MolecularTypePattern)analysisResults.get("mtp1");
-	MolecularTypePattern mtpProduct = (MolecularTypePattern)analysisResults.get("mtp2");
-	MolecularComponentPattern mcpReactant = (MolecularComponentPattern)analysisResults.get("mcp1");
-	MolecularComponentPattern mcpProduct = (MolecularComponentPattern)analysisResults.get("mcp2");
-	String stateReactant = (String)analysisResults.get("csp1");
-	String stateProduct =  (String)analysisResults.get("csp2");
+	// one reactant and one product
+	MolecularTypePattern mtpReactant = (MolecularTypePattern)analysisResults.get("mtpReactantState");
+	MolecularTypePattern mtpProduct = (MolecularTypePattern)analysisResults.get("mtpProductState");
+	MolecularComponentPattern mcpReactant = (MolecularComponentPattern)analysisResults.get("mcpReactantState");
+	MolecularComponentPattern mcpProduct = (MolecularComponentPattern)analysisResults.get("mcpProductState");
 
 }
 private void writeBindingData(StringBuilder sb, Subtype subtype, Map<String, Object> analysisResults) {
 	if(subtype != ReactionRuleSpec.Subtype.BINDING) {
 		return;
 	}
-	MolecularTypePattern mtpReactantOne = (MolecularTypePattern)analysisResults.get("mtp1");
-	MolecularTypePattern mtpReactantTwo = (MolecularTypePattern)analysisResults.get("mtp2");
-	MolecularComponentPattern mcpReactantOne = (MolecularComponentPattern)analysisResults.get("mcp1");
-	MolecularComponentPattern mcpReactantTwo = (MolecularComponentPattern)analysisResults.get("mcp2");
-	String stateReactantOne = (String)analysisResults.get("csp1");
-	String stateReactantTwo =  (String)analysisResults.get("csp2");
+	// here we only deal with the 2 reactants
+	MolecularTypePattern mtpReactantOne = (MolecularTypePattern)analysisResults.get("mtpReactantBond1");		// '1' - reactant. left side of the bond
+	MolecularTypePattern mtpReactantTwo = (MolecularTypePattern)analysisResults.get("mtpReactantBond2");		// '2' - reactant, right side of the bond
+	MolecularComponentPattern mcpReactantOne = (MolecularComponentPattern)analysisResults.get("mcpReactantBond1");
+	MolecularComponentPattern mcpReactantTwo = (MolecularComponentPattern)analysisResults.get("mcpReactantBond2");
+	String stateReactantOne = (String)analysisResults.get("cspReactantBond1");
+	String stateReactantTwo =  (String)analysisResults.get("cspReactantBond2");
 	if(mtpReactantOne == null || mtpReactantTwo == null || mcpReactantOne == null || mcpReactantTwo == null) {
 		throw new RuntimeException("writeBindingData() error: something is wrong");
 	}
