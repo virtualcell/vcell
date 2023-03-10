@@ -16,6 +16,9 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+import cbit.vcell.modeldb.DbDriver;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.VCellServerID;
 
@@ -28,6 +31,8 @@ import cbit.vcell.message.server.bootstrap.ServiceType;
  * @author: Fei Gao
  */
 public class ServiceStatusDbDriver {
+	private final static Logger lg = LogManager.getLogger(ServiceStatusDbDriver.class);
+
 	private static final ServiceTable serviceTable = ServiceTable.table;
 
 /**
@@ -47,7 +52,11 @@ public ServiceStatusDbDriver() {
 private int executeUpdate(Connection con, String sql) throws SQLException {
 	Statement s = con.createStatement();
 	try {
-		return s.executeUpdate(sql);
+		int changed = s.executeUpdate(sql);
+		if (changed != 1){
+			lg.error(changed + " records changed: "+sql, new DbDriver.StackTraceGenerationException());
+		}
+		return changed;
 	} finally {
 		s.close();
 	}	

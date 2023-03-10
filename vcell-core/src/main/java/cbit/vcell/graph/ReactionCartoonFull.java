@@ -65,7 +65,7 @@ public class ReactionCartoonFull extends ReactionCartoon {
 					}
 				}
 			} else if(node.nodeType == NodeReference.RULE_PARTICIPANT_SIGNATURE_SHORT_NODE) {
-				System.out.println("ReactionCartoonFull, rebindAll(), wrong NodeReference type RULE_PARTICIPANT_SIGNATURE_SHORT_NODE");
+				lg.warn("rebindAll(), wrong NodeReference type RULE_PARTICIPANT_SIGNATURE_SHORT_NODE");
 			}
 		}
 	}
@@ -83,8 +83,7 @@ public class ReactionCartoonFull extends ReactionCartoon {
 			case NodeReference.SIMPLE_REACTION_NODE:
 				obj = getModel().getReactionStep(node.name);
 				if (!(obj instanceof SimpleReaction)) {
-					System.out
-							.println("ReactionCartoon.applyDefaults(), diagram reaction "
+					lg.warn("applyDefaults(), diagram reaction "
 									+ node.name
 									+ " type mismatch in model, using location anyway");
 				}
@@ -92,8 +91,7 @@ public class ReactionCartoonFull extends ReactionCartoon {
 			case NodeReference.FLUX_REACTION_NODE:
 				obj = getModel().getReactionStep(node.name);
 				if (!(obj instanceof FluxReaction)) {
-					System.out
-							.println("ReactionCartoon.applyDefaults(), diagram flux "
+					lg.warn("applyDefaults(), diagram flux "
 									+ node.name
 									+ " type mismatch in model, using location anyway");
 				}
@@ -117,7 +115,7 @@ public class ReactionCartoonFull extends ReactionCartoon {
 				}
 				break;
 			case NodeReference.RULE_PARTICIPANT_SIGNATURE_SHORT_NODE:
-				System.out.println("ReactionCartoonFull, RULE_PARTICIPANT_SIGNATURE_SHORT_NODE detected");
+				lg.warn("RULE_PARTICIPANT_SIGNATURE_SHORT_NODE detected");
 				for(RuleParticipantSignature signature : ruleParticipantSignatures) {
 					if (signature instanceof RuleParticipantShortSignature && signature.getStructure() == struct && signature.compareByCriteria(node.getName(), GroupingCriteria.full)){
 						obj = signature;
@@ -180,7 +178,7 @@ public class ReactionCartoonFull extends ReactionCartoon {
 					nodeList.add(nr);
 				}
 			} else if (shape instanceof RuleParticipantSignatureShortDiagramShape) {
-				System.out.println("ReactionCartoonFull, Invalid shape type 'RuleParticipantSignatureShortDiagramShape'");
+				lg.warn("Invalid shape type 'RuleParticipantSignatureShortDiagramShape'");
 				RuleParticipantSignature ruleParticipantSignature = (RuleParticipantSignature) shape.getModelObject();
 				if (ruleParticipantSignature.getStructure() == diagram.getStructure()){
 					String spAsString = ruleParticipantSignature.getFirstSpeciesPatternAsString();
@@ -199,7 +197,9 @@ public class ReactionCartoonFull extends ReactionCartoon {
 			if (getModel() == null || getStructureSuite() == null) {
 				return;
 			}
-			System.out.println("ReactionCartoonFull, RefreshAll()");
+			if (lg.isDebugEnabled()) {
+				lg.debug("ReactionCartoonFull, RefreshAll()");
+			}
 			for(Structure structure : structureSuite.getStructures()) {
 				Diagram diagram = getModel().getDiagram(structure);
 				if (diagram != null) {
@@ -374,7 +374,7 @@ public class ReactionCartoonFull extends ReactionCartoon {
 							}
 							for (RuleParticipantSignature signature : ruleParticipantSignatures) {
 								if (signature instanceof RuleParticipantShortSignature && signature.getStructure() == participant.getStructure()) {
-									System.out.println("ReactionCartoonFull, refreshAll(), RuleParticipantShortSignature");
+									lg.debug("refreshAll(), RuleParticipantShortSignature");
 								}
 							}
 							//
@@ -469,7 +469,7 @@ public class ReactionCartoonFull extends ReactionCartoon {
 				if(getStructureSuite().areReactionsShownFor(structure)) {
 					ReactionContainerShape reactionContainerShape =	(ReactionContainerShape) getShapeFromModelObject(structure);
 					if(reactionContainerShape == null) {
-						System.out.println("Reaction container shape is null for structure " + structure +
+						lg.warn("Reaction container shape is null for structure " + structure +
 								" for reaction step " + reactionStep);
 					}
 					ReactionStepShape reactionStepShape = (ReactionStepShape) getShapeFromModelObject(reactionStep);

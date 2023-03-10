@@ -177,8 +177,7 @@ public final class RpcRestlet extends Restlet {
 				response.setStatus(Status.SUCCESS_OK, "rpc method="+method+" succeeded");
 				response.setEntity(new ByteArrayRepresentation(serializedResultObject));
 			} catch (Exception e) {
-				getLogger().severe("internal error invoking "+destination+":"+method+"(): "+e.getMessage());
-				lg.error(e);
+				lg.error("internal error invoking "+destination+":"+method+"(): "+e.getMessage(), e);
 				response.setStatus(Status.SERVER_ERROR_INTERNAL);
 				if(e.getCause() instanceof ServerRejectedSaveException) {//send back actual exception, client needs specific cause
 					try {

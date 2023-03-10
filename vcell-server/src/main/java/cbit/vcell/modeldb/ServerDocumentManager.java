@@ -1555,7 +1555,8 @@ long start = System.currentTimeMillis();
 		//If we got here were were doing 'save' or 'save as new version' but no changes were detected
 		boolean bError = !bSomethingChanged && !isSaveAsNew;
 		if(bError) {
-			throw new ServerRejectedSaveException(origBioModel.getVersion().getVersionKey().toString());
+			throw new ServerRejectedSaveException("Warning: BioModel was not saved because contents match already saved version "+
+					origBioModel.getVersion().getDate()+" "+origBioModel.getVersion().getVersionKey());
 		}
 
 		return bioModelXML;
@@ -2066,7 +2067,8 @@ public String saveMathModel(QueryHashtable dbc, User user, String mathModelXML, 
 		//If we got here were were doing 'save' or 'save as new version' but no changes were detected
 		boolean bError = !bSomethingChanged && !isSaveAsNew;
 		if(bError) {
-			throw new ServerRejectedSaveException(origMathModel.getVersion().getVersionKey().toString());
+			throw new ServerRejectedSaveException("Warning: MathModel was not saved because contents match already saved version "
+					+origMathModel.getVersion().getDate()+" "+origMathModel.getVersion().getVersionKey());
 		}
 
 		return mathModelXML;

@@ -10,7 +10,7 @@ import picocli.CommandLine.Option;
 
 import java.util.concurrent.Callable;
 
-@Command(name = "db-destroy-and-recreate", description = "destroy existing database and recreate it")
+@Command(name = "db-destroy-and-recreate", hidden = true, description = "destroy existing database and recreate it")
 public class DatabaseDestroyAndRecreateCommand implements Callable<Integer> {
 
     private final static Logger logger = LogManager.getLogger(DatabaseDestroyAndRecreateCommand.class);

@@ -35,7 +35,7 @@ create local deploy configuration file (e.g. Test2 7.0.0 build 7) file for local
 ```bash
 export VCELL_VERSION=7.0.0 VCELL_BUILD=9 VCELL_SITE=test2
 export VCELL_CONFIG_FILE_NAME=local-${VCELL_SITE}_${VCELL_VERSION}_${VCELL_BUILD}_${VCELL_TAG}.config
-./localconfig_mockslurm.sh $VCELL_SITE $VCELL_REPO_NAMESPACE \
+./localconfig_mockslurm-not-used.sh $VCELL_SITE $VCELL_REPO_NAMESPACE \
   $VCELL_TAG $VCELL_VERSION $VCELL_BUILD $VCELL_CONFIG_FILE_NAME
 ```
 
@@ -46,7 +46,7 @@ Deploy VCell Docker containers on local machine in Swarm Mode with mocked SLURM 
   --ssh-user `whoami` --ssh-key ~/.ssh/id_rsa --build-installers \
   `hostname` \
   ./$VCELL_CONFIG_FILE_NAME $PWD/${VCELL_CONFIG_FILE_NAME}.config \
-  ./docker-compose-dev.yml $PWD/local-docker-compose-dev-${VCELL_TAG}.yml \
+  ./docker-compose.yml $PWD/local-docker-compose-${VCELL_TAG}.yml \
   vcell${VCELL_SITE}
 ```
 
@@ -55,7 +55,7 @@ Deploy VCell Docker containers on local machine in Swarm Mode with mocked SLURM 
   --ssh-user `whoami` --ssh-key ~/.ssh/id_rsa \
   `hostname` \
   ./$VCELL_CONFIG_FILE_NAME $PWD/${VCELL_CONFIG_FILE_NAME}.config \
-  ./docker-compose-dev.yml $PWD/local-docker-compose-dev-${VCELL_TAG}.yml \
+  ./docker-compose.yml $PWD/local-docker-compose-${VCELL_TAG}.yml \
   vcell${VCELL_SITE}
 ```
 
@@ -73,7 +73,7 @@ create local deploy configuration file (e.g. Test2 7.0.0 build 7) file for local
 ```bash
 export VCELL_VERSION=7.0.0 VCELL_BUILD=8 VCELL_SITE=test2
 export VCELL_CONFIG_FILE_NAME=${VCELL_TAG}.config
-./localconfig_realslurm.sh $VCELL_SITE $VCELL_REPO_NAMESPACE \
+./localconfig_realslurm_postgres.sh $VCELL_SITE $VCELL_REPO_NAMESPACE \
   $VCELL_TAG $VCELL_VERSION $VCELL_BUILD $VCELL_CONFIG_FILE_NAME
 ```
 
@@ -84,7 +84,7 @@ Deploy VCell Docker containers on local machine in Swarm Mode with mocked SLURM 
   --ssh-user `whoami` --ssh-key ~/.ssh/schaff_rsa --build-installers --install-singularity \
   `hostname` \
   ./$VCELL_CONFIG_FILE_NAME $PWD/local-${VCELL_TAG}.config \
-  ./docker-compose-dev.yml $PWD/local-docker-compose-${VCELL_TAG}.yml \
+  ./docker-compose.yml $PWD/local-docker-compose-${VCELL_TAG}.yml \
   vcell${VCELL_SITE}
 ```
 
@@ -102,7 +102,7 @@ create local deploy configuration file (e.g. Test2 7.0.0 build 7) file for local
 ```bash
 export VCELL_VERSION=7.0.0 VCELL_BUILD=9 VCELL_SITE=test2
 export VCELL_CONFIG_FILE_NAME=sbmlsolvers_${VCELL_VERSION}_${VCELL_BUILD}_${VCELL_TAG}.config
-./localconfig_mockslurm.sh $VCELL_SITE $VCELL_REPO_NAMESPACE \
+./localconfig_mockslurm-not-used.sh $VCELL_SITE $VCELL_REPO_NAMESPACE \
   $VCELL_TAG $VCELL_VERSION $VCELL_BUILD $VCELL_CONFIG_FILE_NAME
 ```
 
@@ -113,19 +113,19 @@ Deploy VCell Docker containers on local machine in Swarm Mode with mocked SLURM 
   --ssh-user `whoami` --ssh-key ~/.ssh/id_rsa \
   `hostname` \
   ./$VCELL_CONFIG_FILE_NAME $PWD/${VCELL_CONFIG_FILE_NAME} \
-  ./docker-compose-dev.yml $PWD/local-docker-compose-dev-${VCELL_TAG}.yml \
+  ./docker-compose.yml $PWD/local-docker-compose-${VCELL_TAG}.yml \
   vcell${VCELL_SITE}
 ./deploy.sh \
   --ssh-user `whoami` --ssh-key ~/.ssh/schaff_rsa --build-installers --install-singularity \
   `hostname` \
   ./$VCELL_CONFIG_FILE_NAME $PWD/local-${VCELL_TAG}.config \
-  ./docker-compose-dev.yml $PWD/local-docker-compose-${VCELL_TAG}.yml \
+  ./docker-compose.yml $PWD/local-docker-compose-${VCELL_TAG}.yml \
   vcell${VCELL_SITE}
 ```
 
 **(optional)deploy a vcell production stack (named "local") on a single machine Docker swarm mode**
 
 ```bash
-./localconfig_mockslurm.sh test localhost:5000 dev 7.0.0 4 local_mockslurm.config
+./localconfig_mockslurm-not-used.sh test localhost:5000 dev 7.0.0 4 local_mockslurm.config
 env $(cat local_mockslurm.config | xargs) docker stack deploy -c docker-compose.yml -c docker-compose-swarm.yml local
 ```

@@ -92,6 +92,9 @@ public static String enforceOwnershipInsert(User user, VersionTable vTable, Obje
 		sb.append(((ModelTable) vTable).getSQLValueList(	(cbit.vcell.model.Model) valueData[0],
 															(String) valueData[1],
 															version));
+	}else {
+		throw new RuntimeException("database table "+vTable.getTableName() +
+				" not supported for DatabasePolicySQL.enforceOwnershipInsert()");
 	}
 	if (lg.isTraceEnabled()){
 		lg.trace("\nDatabasePolicySQL.enforceOwnershipInsert(), sql = "+sb.toString());
