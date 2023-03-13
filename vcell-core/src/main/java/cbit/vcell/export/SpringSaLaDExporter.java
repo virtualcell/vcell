@@ -91,7 +91,7 @@ public class SpringSaLaDExporter {
 			/* ********* BEGIN BY WRITING THE TIMES *********/
 			sb.append("*** " + TIME_INFORMATION + " ***");
 			sb.append("\n");
-			simulation.writeData(sb);	// TODO: need proper sim
+			simulation.getSolverTaskDescription().writeData(sb);	// TODO: need proper sim
 			sb.append("\n");
 
 			/* ********* WRITE THE SPATIAL INFORMATION **********/
@@ -170,6 +170,7 @@ public class SpringSaLaDExporter {
 //			for(Molecule molecule: molecules) {
 //				molecule.getMoleculeCounter().writeMoleculeCounter(sb);
 //			}
+			Simulation.Counters.writeMoleculeCounters(simulation, sb);
 			sb.append("\n");
 
 			/* ******  WRITE THE STATE COUNTERS *************/
@@ -183,6 +184,7 @@ public class SpringSaLaDExporter {
 //					}
 //				}
 //			}
+			Simulation.Counters.writeStateCounters(simulation, sb);
 			sb.append("\n");
 
 			/* ***** WRITE THE BOND COUNTERS ***************/
@@ -192,6 +194,7 @@ public class SpringSaLaDExporter {
 //			for(BindingReaction reaction: bindingReactions) {
 //				reaction.getBondCounter().writeBondCounter(sb);
 //			}
+			Simulation.Counters.writeBondCounters(simulation, sb);
 			sb.append("\n");
 
 			/* ********  WRITE THE SITE PROPERTY COUNTERS ************/

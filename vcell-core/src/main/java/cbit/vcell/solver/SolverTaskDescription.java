@@ -23,6 +23,8 @@ import org.vcell.util.Compare;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Matchable;
 
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathFunctionDefinitions;
@@ -1526,6 +1528,29 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 
 	public void setMovingBoundarySolverOptions(MovingBoundarySolverOptions mb) {
 		this.movingBoundarySolverOptions = mb;
+	}
+
+	public void writeData(StringBuilder sb) {				// SpringSaLaD exporting the time information
+		if(!(fieldSimulation.getSimulationOwner() instanceof SimulationContext)) {
+			sb.append("\n");
+			return;
+		}
+		SimulationContext sc = (SimulationContext)fieldSimulation.getSimulationOwner();
+		if(sc.getApplicationType() != Application.SPRINGSALAD) {
+			sb.append("\n");
+			return;
+		}
+		sb.append("Total time: 1.00E-2");
+		sb.append("\n");
+		sb.append("dt: 1.00E-8");
+		sb.append("\n");
+		sb.append("dt_spring: 1.00E-9");
+		sb.append("\n");
+		sb.append("dt_data: 1.00E-4");
+		sb.append("\n");
+		sb.append("dt_image: 1.00E-4");
+		sb.append("\n");
+		return;
 	}
 
 	//double calculateBindingRadius(ParticleJumpProcess pjp, SubDomain subDomain) throws Exception

@@ -951,7 +951,19 @@ public void writeData(StringBuilder sb) {				// SpringSaLaD exporting the time i
 		sb.append("\n");
 		return;
 	}
-	sb.append("geometry info stub");		// TODO: append time information
+	sb.append("L_x: 0.1");
+	sb.append("\n");
+	sb.append("L_y: 0.1");
+	sb.append("\n");
+	sb.append("L_z_out: 0.01");
+	sb.append("\n");
+	sb.append("L_z_in: 0.09");
+	sb.append("\n");
+	sb.append("Partition Nx: 10");
+	sb.append("\n");
+	sb.append("Partition Ny: 10");
+	sb.append("\n");
+	sb.append("Partition Nz: 10");
 	sb.append("\n");
 	return;
 }
