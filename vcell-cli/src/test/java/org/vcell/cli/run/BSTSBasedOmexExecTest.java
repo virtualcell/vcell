@@ -135,9 +135,10 @@ public class BSTSBasedOmexExecTest {
 		Set<String> modelsToFilter = new HashSet<>();
 		Predicate<String> filter;
 
-		modelsToFilter.addAll(needToCurateModels());
+		modelsToFilter.addAll(needToCurateModels()); // Comment out if checking that current version will satisfy BSTS
 		modelsToFilter.addAll(blacklistedModels());
 		filter = (t) -> !modelsToFilter.contains(t);
+
 		return Arrays.stream(BSTSBasedTestSuiteFiles.getBSTSTestCases()).filter(filter).collect(Collectors.toList());
 	}
 
