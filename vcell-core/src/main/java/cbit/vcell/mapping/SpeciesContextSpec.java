@@ -24,8 +24,10 @@ import java.util.Set;
 import cbit.vcell.model.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.vcell.model.rbm.ComponentStateDefinition;
 import org.vcell.model.rbm.MolecularComponent;
 import org.vcell.model.rbm.MolecularComponentPattern;
+import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.*;
@@ -75,6 +77,9 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
 	public static final boolean InitialLocationRandom = true;
 	private static final String InitialLocationRandomString = "Random";
 	private static final String InitialLocationSetString = "Set";
+	private static final String SourceMoleculeString = "Source";	// molecule used in creation reaction subtype (reserved name)
+	private static final String SinkMoleculeString = "Sink";		// molecule used in decay reaction subtype (reserved name)
+	private static final String AnchorSiteString = "Anchor";		// required name for reserved special site of membrane species
 
 
 	public class SpeciesContextSpecNameScope extends BioNameScope {
@@ -911,24 +916,32 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
 	}
 	
 	if(getSimulationContext().getApplicationType() == SimulationContext.Application.SPRINGSALAD) {
-		if(getSpeciesContext() != null && getSpeciesContext().getSpeciesPattern() != null) {
-			SpeciesPattern sp = getSpeciesContext().getSpeciesPattern();
+		SpeciesContext sc = getSpeciesContext();
+		if(sc != null && sc.getSpeciesPattern() != null) {
+			SpeciesPattern sp = sc.getSpeciesPattern();
 			List<MolecularTypePattern> mtpList = sp.getMolecularTypePatterns();
 			if(mtpList.size() != 1) {
 				String msg = "SpringSaLaD requires all Species to be associated with exactly one MolecularType.";
 				String tip = msg;
 				issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
-			} else {
-				MolecularTypePattern mtp = mtpList.get(0);
-				List<MolecularComponentPattern> mcpList = mtp.getComponentPatternList();
-				if(mcpList.size() == 0) {
-					String msg = "SpringSaLaD requires the MolecularType to have at least one Site.";
+				return;
+			}
+			MolecularTypePattern mtp = mtpList.get(0);
+			List<MolecularComponentPattern> mcpList = mtp.getComponentPatternList();
+			if(mcpList.size() == 0) {
+				String msg = "SpringSaLaD requires the MolecularType to have at least one Site.";
+				String tip = msg;
+				issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+				return;
+			}
+			for(MolecularComponentPattern mcp : mcpList) {
+				MolecularComponent mc = mcp.getMolecularComponent();
+				List<ComponentStateDefinition> csd = mc.getComponentStateDefinitions();
+				if(csd.size() < 2) {
+					String msg = "Each Site must have at least one State.";
 					String tip = msg;
 					issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
-				} else if(mcpList.size() == 1) {
-					String msg = "Internal Links are possible only when the Molecule has at least 2 sites.";
-					String tip = msg;
-					issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+					return;
 				}
 			}
 			for(MolecularInternalLinkSpec mils : getInternalLinkSet()) {
@@ -936,10 +949,15 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
 					String msg = "Both sites of the Link are identical.";
 					String tip = "A site cannot be linked to itself.";
 					issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
-					break;
+					return;
 				}
 			}
-			boolean bDuplicate = false;
+			if(mcpList.size()>1 && mcpList.size() > getInternalLinkSet().size()+1) {
+				String msg = "Link chain within the molecule has at least one discontinuity.";
+				String tip = "One or more links are missing";
+				issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+				return;
+			}
 			for(MolecularInternalLinkSpec candidate : getInternalLinkSet()) {
 				for(MolecularInternalLinkSpec other : getInternalLinkSet()) {
 					if(candidate == other) {
@@ -951,14 +969,16 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
 						String msg = "Duplicate link: " + one + " :: " + two;
 						String tip = msg;
 						issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
-						bDuplicate = true;
-						break;
+						return;
 					}
 				}
-				if(bDuplicate) {
-					break;
-				}
 			}
+			if(mcpList.size() == 1) {
+				String msg = "Internal Links are possible only when the Molecule has at least 2 sites.";
+				String tip = msg;
+				issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+			}
+
 			for(Map.Entry<MolecularComponentPattern, SiteAttributesSpec> entry : getSiteAttributesMap().entrySet()) {
 				MolecularComponentPattern key = entry.getKey();
 				SiteAttributesSpec sas = entry.getValue();
@@ -969,6 +989,41 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
 					break;
 				}
 			}
+			// TODO: if the species context is on membrane it must have a site named Anchor on the membrane
+			Structure struct = sc.getStructure();
+			if(struct instanceof Membrane) {
+				boolean anchorExists = false;
+				for(MolecularComponentPattern mcp : mcpList) {
+					MolecularComponent mc = mcp.getMolecularComponent();
+					if(AnchorSiteString.equals(mc.getName())) {
+						anchorExists = true;
+						SiteAttributesSpec sas = getSiteAttributesMap().get(mcp);
+						if(!(sas.getLocation() instanceof Membrane)) {
+							String msg = "The reserved Site 'Anchor' must be located on a Membrane.";
+							String tip = msg;
+							issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+						}
+						break;
+					}
+				}
+				if(anchorExists == false) {
+					String msg = "Species localized on a membrane require a reserved site named 'Anchor'";
+					String tip = msg;
+					issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+				} else {
+					// TODO: anchor must have a single site named Anchor
+					;
+				}
+			} else {
+				// TODO: a species inside a Feature must NOT have a site named Anchor
+				;
+			}
+			
+			// TODO: each species context is associated with one and only one molecular type and viceversa
+			// coresp biunivoca
+			;
+			// TODO: the species context and the molecular type must have the same name
+			;
 		} else {
 			String msg = "SpringSaLaD requires all Species to be associated with a MolecularType.";
 			String tip = "Associate a MolecularType to the Species in Physiology / Species panel.";
@@ -1892,7 +1947,10 @@ public void writeData(StringBuilder sb) {				// SpringSaLaD exporting the specie
 	SpeciesContextSpec[] speciesContextSpecs = reactionContext.getSpeciesContextSpecs();
 	ReactionSpec[] reactionSpecs = reactionContext.getReactionSpecs();
 	ReactionRuleSpec[] reactionRuleSpecs = reactionContext.getReactionRuleSpecs();
-	
+	String name = getSpeciesContext().getName();
+	if(SourceMoleculeString.equals(name) || SinkMoleculeString.equals(name)) {
+		return;		// the solver doesn't need to know about Sink and Source
+	}
 	SpeciesContextSpecParameter initialCountParameter = getInitialCountParameter();
 	SpeciesPattern sp = getSpeciesContext().getSpeciesPattern();
 	if(sp == null || sp.getMolecularTypePatterns() == null || sp.getMolecularTypePatterns().isEmpty()) {
@@ -1901,7 +1959,8 @@ public void writeData(StringBuilder sb) {				// SpringSaLaD exporting the specie
 		sb.append("\n");
 		return;
 	}
-	List<MolecularComponent> componentList = sp.getMolecularTypePatterns().get(0).getMolecularType().getComponentList();
+	MolecularType mt = sp.getMolecularTypePatterns().get(0).getMolecularType();
+	List<MolecularComponent> componentList = mt.getComponentList();
 	int dimension = geometry.getDimension();
 
 	sb.append("MOLECULE: \"" + getSpeciesContext().getName() + "\" " + getSpeciesContext().getStructure().getName() + 

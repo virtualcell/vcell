@@ -207,6 +207,7 @@ public class SpringSaLaDExporter {
 //					site.getPropertyCounter().writeSitePropertyCounter(sb);
 //				}
 //			}
+			Simulation.Counters.writeSitePropertyCounters(simulation, sb);
 			sb.append("\n");
 
 			/* *************** WRITE THE TRACK CLUSTERS BOOLEAN ***********/

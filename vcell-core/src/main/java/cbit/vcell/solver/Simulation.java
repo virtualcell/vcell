@@ -204,6 +204,34 @@ public class Simulation implements Versionable, Matchable, java.beans.VetoableCh
 			}
 		}
 		
+		public static void writeSitePropertyCounters(Simulation simulation, StringBuilder sb) {
+			if(!(simulation.getSimulationOwner() instanceof SimulationContext)) {
+				sb.append("\n");
+				return;
+			}
+			SimulationContext simContext = (SimulationContext)simulation.getSimulationOwner();
+			if(simContext.getApplicationType() != Application.SPRINGSALAD) {
+				sb.append("\n");
+				return;
+			}
+			Model model = simContext.getBioModel().getModel();
+			SpeciesContext[] speciesContexts = model.getSpeciesContexts();
+			for(SpeciesContext sc : speciesContexts) {
+				SpeciesPattern sp = sc.getSpeciesPattern();
+				if(sp == null || sp.getMolecularTypePatterns() == null || sp.getMolecularTypePatterns().isEmpty()) {
+					continue;
+				}
+				MolecularType mt = sp.getMolecularTypePatterns().get(0).getMolecularType();
+				List<MolecularComponent> mcList = mt.getComponentList();
+				for(MolecularComponent mc : mcList) {
+					sb.append("'").append(mt.getName()).append("' : ")
+						.append("SITE " + (mc.getIndex()-1)).append(" : ")
+						.append("Track Properties true");
+					sb.append("\n");
+				}
+			}
+		}
+		
 	}
 	
 private Simulation( ) {

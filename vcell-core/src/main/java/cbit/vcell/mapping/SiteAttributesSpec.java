@@ -143,7 +143,7 @@ public class SiteAttributesSpec implements Identifiable, Displayable, IssueSourc
 		}
 		ComponentStatePattern csp = mcp.getComponentStatePattern();
 		if(csp == null) {
-			sb.append("SITE " + this.getIndex() + " : " + getLocation().getName() + " : Initial State '" + "ERROR: at least one State is needed"  + "'");
+			sb.append("SITE " + (this.getIndex()-1) + " : " + getLocation().getName() + " : Initial State '" + "ERROR: at least one State is needed"  + "'");
 			sb.append("\n");
 			return;
 		}
@@ -152,7 +152,7 @@ public class SiteAttributesSpec implements Identifiable, Displayable, IssueSourc
 			throw new RuntimeException("writeSite(): csd is null");
 		}
 		String initialState = csd.getName();
-		sb.append("SITE " + this.getIndex() + " : " + getLocation().getName() + " : Initial State '" + initialState + "'");
+		sb.append("SITE " + (this.getIndex()-1) + " : " + getLocation().getName() + " : Initial State '" + initialState + "'");
 		sb.append("\n");
 		sb.append("          ");
 		this.writeType(sb);
