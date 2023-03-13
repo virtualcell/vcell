@@ -446,7 +446,7 @@ public static VCUnitDefinition getVCUnitDefinition(org.sbml.jsbml.UnitDefinition
 	}
 	symbol = symbol.substring(1,symbol.length()-1);
 	if (!symbol.equals(vcUnitDefn.getSymbol())){
-		logger.warn("new symbol is "+symbol+",   old symbol is "+vcUnitDefn.getSymbol());
+		if (logger.isDebugEnabled()) { logger.debug("new symbol is "+symbol+",   old symbol is "+vcUnitDefn.getSymbol()); }
 		VCUnitDefinition new_vcUnitDefn = vcUnitSystem.getInstance(symbol);
 		if (!new_vcUnitDefn.isEquivalent(vcUnitDefn)){
 			throw new RuntimeException("failed to simplify unit "+vcUnitDefn.getSymbol()+", created wrong symbol "+symbol);
