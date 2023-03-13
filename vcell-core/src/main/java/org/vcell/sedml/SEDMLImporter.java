@@ -826,11 +826,10 @@ public class SEDMLImporter {
 				throw new RuntimeException("The parent hasn't been processed yet!");
 
 			canTranslate = this.canTranslateToOverrides(parentBiomodel, model);
-			return !model.getListOfChanges().isEmpty() && canTranslate ?
-					parentBiomodel : this.importModel(model);
-		} else {
-			return this.importModel(model);
+			if (canTranslate)
+				return parentBiomodel;
 		}
+			return this.importModel(model);
 	}
 
 	private boolean canTranslateToOverrides(BioModel refBM, Model mm) {
