@@ -79,7 +79,8 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
 	private static final String InitialLocationSetString = "Set";
 	private static final String SourceMoleculeString = "Source";	// molecule used in creation reaction subtype (reserved name)
 	private static final String SinkMoleculeString = "Sink";		// molecule used in decay reaction subtype (reserved name)
-	private static final String AnchorSiteString = "Anchor";		// required name for reserved special site of membrane species
+	private static final String AnchorSiteString = "Anchor";		// required name for reserved special Site of membrane species
+	private static final String AnchorStateString = "Anchor";		// required name for reserved special State of the Anchor site
 
 
 	public class SpeciesContextSpecNameScope extends BioNameScope {
@@ -983,47 +984,88 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
 				MolecularComponentPattern key = entry.getKey();
 				SiteAttributesSpec sas = entry.getValue();
 				if(sas.getLocation() instanceof Membrane) {
-					String msg = "Location is a Membrane.";
+					String msg = "Location is a Membrane.";		// TODO: remove this, useful just for early testing
 					String tip = msg;
 					issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
 					break;
 				}
 			}
-			// TODO: if the species context is on membrane it must have a site named Anchor on the membrane
+			// if the species context is on membrane it must have a site named Anchor on the membrane
 			Structure struct = sc.getStructure();
+			MolecularComponentPattern mcpAnchor = null;
 			if(struct instanceof Membrane) {
 				boolean anchorExists = false;
 				for(MolecularComponentPattern mcp : mcpList) {
 					MolecularComponent mc = mcp.getMolecularComponent();
 					if(AnchorSiteString.equals(mc.getName())) {
 						anchorExists = true;
+						mcpAnchor = mcp;
 						SiteAttributesSpec sas = getSiteAttributesMap().get(mcp);
 						if(!(sas.getLocation() instanceof Membrane)) {
 							String msg = "The reserved Site 'Anchor' must be located on a Membrane.";
 							String tip = msg;
 							issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
 						}
-						break;
+						return;
 					}
 				}
 				if(anchorExists == false) {
 					String msg = "Species localized on a membrane require a reserved site named 'Anchor'";
 					String tip = msg;
 					issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+					return;
 				} else {
-					// TODO: anchor must have a single site named Anchor
-					;
+					// the anchor Site must have just one single State, also named Anchor
+					String msg = "The reserved Site 'Anchor' must have exactly one State named 'Anchor'.";
+					MolecularComponent mcAnchor = mcpAnchor.getMolecularComponent();
+					List<ComponentStateDefinition> csdAnchorList = mcAnchor.getComponentStateDefinitions();
+					if(csdAnchorList.size() != 1) {
+						String tip = msg;
+						issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+						return;
+					}
+					ComponentStateDefinition csdAnchor = csdAnchorList.get(0);
+					if(!AnchorStateString.equals(csdAnchor.getName())) {
+						String tip = msg;
+						issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+						return;
+					}
 				}
-			} else {
-				// TODO: a species inside a Feature must NOT have a site named Anchor
-				;
+			} else {		// a species inside a Feature must NOT have a site named Anchor
+				for(MolecularComponentPattern mcp : mcpList) {
+					MolecularComponent mc = mcp.getMolecularComponent();
+					if(AnchorSiteString.equals(mc.getName())) {
+						String msg = "The reserved Site 'Anchor' can be used only for a Species located on a Membrane.";
+						String tip = msg;
+						issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+						return;
+					}
+				}
 			}
 			
-			// TODO: each species context is associated with one and only one molecular type and viceversa
-			// coresp biunivoca
-			;
-			// TODO: the species context and the molecular type must have the same name
-			;
+			// each species context is associated with one and only one molecular type and viceversa (biunivocal correspondence)
+			SpeciesContextSpec[] scsArray = getSimulationContext().getReactionContext().getSpeciesContextSpecs();
+			for(SpeciesContextSpec scsCandidate : scsArray) {
+				SpeciesContext scCandidate = scsCandidate.getSpeciesContext();
+				if(sc == scCandidate) {
+					continue;			// skip self
+				}
+				MolecularType mtCandidate = scCandidate.getSpeciesPattern().getMolecularTypePatterns().get(0).getMolecularType();
+				if(mtp.getMolecularType() == mtCandidate) {
+					String msg = "There must be a biunivocal correspondence between the Species and the associated MolecularType.";
+					String tip = "In SpringSaLaD, two Seed Species cannot share the same Molecular Type.";
+					issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+					return;
+				}
+			}
+			
+			// the species context and the molecular type must have the same name
+			if(!sc.getName().equals(mtp.getMolecularType().getName())) {
+				String msg = "The Species and the Molecular Type must share the same name.";
+				String tip = msg;
+				issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+				return;
+			}
 		} else {
 			String msg = "SpringSaLaD requires all Species to be associated with a MolecularType.";
 			String tip = "Associate a MolecularType to the Species in Physiology / Species panel.";
