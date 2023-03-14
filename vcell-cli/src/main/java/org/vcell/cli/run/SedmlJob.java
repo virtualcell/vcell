@@ -341,7 +341,6 @@ public class SedmlJob {
         Hdf5WrapperFactory hdf5Factory = new Hdf5WrapperFactory(sedml, solverHandler.taskToSimulationMap, sedmlLocation);
 
         Hdf5DataWrapper partialHdf5File = hdf5Factory.generateHdf5File(solverHandler.nonSpatialResults, solverHandler.spatialResults);
-        //Hdf5Writer.writeHdf5(partialHdf5File, outDirForCurrentSedml); // Make a partial, relative hdf5
         masterHdf5File.incorporate(partialHdf5File); // Add the data to the master hdf5 file wrapper.
 
         for (File tempH5File : solverHandler.spatialResults.values()){

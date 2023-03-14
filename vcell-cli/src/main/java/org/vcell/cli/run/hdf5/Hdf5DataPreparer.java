@@ -110,13 +110,17 @@ public class Hdf5DataPreparer {
      * @return the prepared nonspacial data
      */
     public static Hdf5PreparedData prepareNonspacialData(Hdf5DatasetWrapper datasetWrapper){
+        final double NaN = 0.0/0.0;
         Hdf5DataSourceNonspatial dataSourceNonspatial = (Hdf5DataSourceNonspatial) datasetWrapper.dataSource;
         Map<Variable, double[]> varDataMap = dataSourceNonspatial.jobData.get(0).varData;
         List<Variable> vars = new ArrayList<>(varDataMap.keySet());
         long numVariablesPerJob = varDataMap.keySet().size();
-        long numTimePoints = varDataMap.get(vars.get(0)).length;
-
+        long numTimePoints = 0;
         List<Long> dataDimensionList = new ArrayList<>();
+        for (Variable var : vars){
+            numTimePoints = Long.max(numTimePoints, varDataMap.get(var).length);
+        }
+        
         //int numJobs = 1;
         for (int scanBound : dataSourceNonspatial.scanBounds){
             dataDimensionList.add((long)scanBound+1);
@@ -136,9 +140,21 @@ public class Hdf5DataPreparer {
             for (int varIndex = 0; varIndex < vars.size(); varIndex++) {
                 Variable var = vars.get(varIndex);
                 double[] dataArray = jobData.varData.get(var);
+                if (dataArray.length < numTimePoints){
+                    double[] paddedArray = new double[Math.toIntExact(numTimePoints)];
+                    System.arraycopy(dataArray, 0, paddedArray, 0, dataArray.length);
+                    for (int i = dataArray.length; i < numTimePoints; i++){
+                        paddedArray[i] = NaN;
+                    }
+                    dataArray = paddedArray;
+                }
+
+                System.arraycopy(dataArray, 0, bigDataBuffer, bufferOffset, dataArray.length);
+
+                /*
                 for (int dataIndex = 0; dataIndex < dataArray.length; dataIndex++) {
                     System.arraycopy(dataArray,0, bigDataBuffer, bufferOffset, dataArray.length);
-                }
+                }*/
                 bufferOffset += (int)numTimePoints;
             }
         }
