@@ -11,10 +11,13 @@
 package cbit.vcell.export;
 
 import java.io.IOException;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.SpeciesPattern;
+import org.vcell.util.Pair;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.geometry.Geometry;
@@ -27,10 +30,12 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.RbmKineticLaw;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
+import cbit.vcell.parser.Expression;
 import cbit.vcell.solver.Simulation;
 
 public class SpringSaLaDExporter {
@@ -84,6 +89,80 @@ public class SpringSaLaDExporter {
 		ReactionSpec[] reactionSpecs = reactionContext.getReactionSpecs();
 		ReactionRuleSpec[] reactionRuleSpecs = reactionContext.getReactionRuleSpecs();
 		
+		Map<ReactionRuleSpec, SpeciesContext> creationMap = new LinkedHashMap<> ();
+		Map<ReactionRuleSpec, SpeciesContext> decayMap = new LinkedHashMap<> ();
+		Map<ReactionRuleSpec, Map<String, Object>> transitionMap = new LinkedHashMap<> ();
+		Map<ReactionRuleSpec, Map<String, Object>> allostericMap = new LinkedHashMap<> ();
+		Map<ReactionRuleSpec, Map<String, Object>> bindingMap = new LinkedHashMap<> ();
+		Map<SpeciesContext, Pair<String, String>> moleculeCreationDecayRates = new LinkedHashMap<> ();
+		try {
+			for(ReactionRuleSpec rrs : reactionRuleSpecs) {
+				if(rrs.isExcluded()) {
+					continue;
+				}
+				Map<String, Object> analysisResults = new LinkedHashMap<> ();
+				rrs.analizeReaction(analysisResults);
+				switch(rrs.getSubtype(analysisResults)) {
+				case CREATION:
+					SpeciesContext scCreated = rrs.getCreatedSpecies(speciesContextSpecs);
+					// if it doesn't exist, we should make a seed species exactly like the product pattern
+					// and with the same name (maybe just make an Issue)
+					creationMap.put(rrs, scCreated);
+					break;
+				case DECAY:
+					SpeciesContext scDestroyed = rrs.getDestroyedSpecies(speciesContextSpecs);
+					// see above, we need a seed species to match the reactant pattern
+					decayMap.put(rrs, scDestroyed);
+					break;
+				case TRANSITION:
+					transitionMap.put(rrs, analysisResults);
+					break;
+				case ALLOSTERIC:
+					allostericMap.put(rrs, analysisResults);
+					break;
+				case BINDING:
+					bindingMap.put(rrs, analysisResults);
+					break;
+				default:
+					break;
+				}
+			}
+			// prepare the data for the creation/decay output
+			for(SpeciesContext sc : model.getSpeciesContexts()) {
+				// skip the Source and the Sink molecules (use in Creation / Destruction reactions)
+				if(SpeciesContextSpec.SourceMoleculeString.equals(sc.getName()) || SpeciesContextSpec.SinkMoleculeString.equals(sc.getName())) {
+					continue;
+				}
+				moleculeCreationDecayRates.put(sc, new Pair("0.0", "0.0"));	// initialize all species with zero
+			}
+			for (Map.Entry<ReactionRuleSpec, SpeciesContext> entry : creationMap.entrySet()) {
+				ReactionRuleSpec rrs = entry.getKey();
+				SpeciesContext sc = entry.getValue();
+				Pair<String, String> oldPair = moleculeCreationDecayRates.get(sc);
+				if(oldPair == null) {
+					throw new RuntimeException("Molecule being created not found in the list of Species");
+				}
+				RbmKineticLaw kineticLaw = rrs.getReactionRule().getKineticLaw();
+				Expression kon = kineticLaw.getLocalParameterValue(RbmKineticLaw.RbmKineticLawParameterType.MassActionForwardRate);
+				Pair<String, String> newPair = new Pair<> (kon.infix(), oldPair.two);
+				moleculeCreationDecayRates.put(sc, newPair);
+			}
+			for (Map.Entry<ReactionRuleSpec, SpeciesContext> entry : decayMap.entrySet()) {
+				ReactionRuleSpec rrs = entry.getKey();
+				SpeciesContext sc = entry.getValue();
+				Pair<String, String> oldPair = moleculeCreationDecayRates.get(sc);
+				if(oldPair == null) {
+					throw new RuntimeException("Molecule being destroyed not found in the list of Species");
+				}
+				RbmKineticLaw kineticLaw = rrs.getReactionRule().getKineticLaw();
+				Expression koff = kineticLaw.getLocalParameterValue(RbmKineticLaw.RbmKineticLawParameterType.MassActionReverseRate);
+				Pair<String, String> newPair = new Pair<> (oldPair.one, koff.infix());
+				moleculeCreationDecayRates.put(sc, newPair);
+			}
+		} catch(Exception ex) {
+			throw new RuntimeException("Failed to categorize the reaction rules by SpringSaLaD subtype: " + ex.getMessage());
+		}
+		
 		try {
 			reactionContext.convertSpeciesIniCondition(false);	// convert to count if currently is concentration
 			
@@ -127,10 +206,7 @@ public class SpringSaLaDExporter {
 			sb.append("*** " + DECAY_REACTIONS + " ***");
 			sb.append("\n");
 			sb.append("\n");
-//			for(Molecule molecule : molecules) {
-//				sb.append(molecule.getDecayReaction().writeReaction());
-//				sb.append("\n");
-//			}
+			ReactionRuleSpec.writeDecayData(sb, moleculeCreationDecayRates);
 			sb.append("\n");
 
 			/* ******* WRITE THE TRANSITION REACTIONS **********/

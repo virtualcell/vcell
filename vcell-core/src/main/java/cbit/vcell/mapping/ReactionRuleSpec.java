@@ -22,19 +22,22 @@ import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.model.rbm.MolecularComponentPattern.BondType;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.util.Issue;
+import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.document.BioModelChildSummary.MathType;
 import org.vcell.util.IssueContext;
 import org.vcell.util.Matchable;
+import org.vcell.util.Pair;
 
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.model.ProductPattern;
 import cbit.vcell.model.RbmKineticLaw;
 import cbit.vcell.model.ReactantPattern;
 import cbit.vcell.model.ReactionRule;
+import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.parser.Expression;
 
-public class ReactionRuleSpec implements ModelProcessSpec {
+public class ReactionRuleSpec implements ModelProcessSpec, IssueSource {
 	private ReactionRule reactionRule = null;
 
 	public enum ReactionRuleMappingType {
@@ -343,7 +346,7 @@ public void writeData(StringBuilder sb, Subtype subtype) {			// SpringSaLaD expo
 	switch(getSubtype(analysisResults)) {
 	case CREATION:
 	case DECAY:
-		writeDecayData(sb, subtype);
+		// we invoke the static method below (writeDecayData()) on all species at once
 		break;
 	case TRANSITION:
 		writeTransitionData(sb, subtype, analysisResults);
@@ -359,11 +362,15 @@ public void writeData(StringBuilder sb, Subtype subtype) {			// SpringSaLaD expo
 	}
 }
 
-private void writeDecayData(StringBuilder sb, Subtype subtype) {
-	if(subtype != ReactionRuleSpec.Subtype.CREATION && subtype != ReactionRuleSpec.Subtype.DECAY) {
-		return;
+public static void writeDecayData(StringBuilder sb, Map<SpeciesContext, Pair<String, String>> moleculeCreationDecayRates) {
+	for (Map.Entry<SpeciesContext, Pair<String, String>> entry : moleculeCreationDecayRates.entrySet()) {
+		SpeciesContext sc = entry.getKey();
+		Pair<String, String> pair = entry.getValue();
+		sb.append("'").append(sc.getName()).append("' : ")
+			.append("kcreate  ").append(pair.one).append("  ")
+			.append("kdecay  ").append(pair.two);
+		sb.append("\n");
 	}
-
 }
 private void writeTransitionData(StringBuilder sb, Subtype subtype, Map<String, Object> analysisResults) {
 	if(subtype != ReactionRuleSpec.Subtype.TRANSITION) {
@@ -420,7 +427,42 @@ private void writeBindingData(StringBuilder sb, Subtype subtype, Map<String, Obj
 	sb.append("\n");
 }
 
-
+public SpeciesContext getCreatedSpecies(SpeciesContextSpec[] speciesContextSpecs) {
+	if(!isCreationReaction()) {
+		return null;	// also verify we use the reserved name SpeciesContextSpec.SourceMoleculeString
+	}
+	List<ProductPattern> ppList = reactionRule.getProductPatterns();
+	if(ppList.size() == 1) {
+		SpeciesPattern spOurs = ppList.get(0).getSpeciesPattern();
+		for(SpeciesContextSpec scs : speciesContextSpecs) {
+			SpeciesContext scCandidate = scs.getSpeciesContext();
+			SpeciesPattern spCandidate = scCandidate.getSpeciesPattern();
+			if(spOurs.compareEqual(spCandidate)) {
+				return scCandidate;
+			}
+		}
+	}
+	return null;
+}
+public SpeciesContext getDestroyedSpecies(SpeciesContextSpec[] speciesContextSpecs) {
+	if(!isDecayReaction()) {
+		return null;
+	}
+	List<ReactantPattern> rpList = reactionRule.getReactantPatterns();
+	if(rpList.size() == 1) {
+		SpeciesPattern spOurs = rpList.get(0).getSpeciesPattern();
+		MolecularType mtOurs = spOurs.getMolecularTypePatterns().get(0).getMolecularType();
+		for(SpeciesContextSpec scs : speciesContextSpecs) {
+			SpeciesContext scCandidate = scs.getSpeciesContext();
+			SpeciesPattern spCandidate = scCandidate.getSpeciesPattern();
+			MolecularType mtCandidate = spCandidate.getMolecularTypePatterns().get(0).getMolecularType();
+			if(mtOurs == mtCandidate) {
+				return scCandidate;
+			}
+		}
+	}
+	return null;
+}
 /**
  * Insert the method's description here.
  * Creation date: (11/1/2005 10:06:04 AM)
@@ -451,6 +493,13 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList, React
 //			issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.SEVERITY_WARNING));
 //		}
 //	}
+	if(rc.getSimulationContext().getApplicationType() == SimulationContext.Application.SPRINGSALAD) {
+		if(isDecayReaction()) {
+			String msg = "Decay Reaction.";
+			String tip = msg;
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+		}
+	}
 }
 
 /**
