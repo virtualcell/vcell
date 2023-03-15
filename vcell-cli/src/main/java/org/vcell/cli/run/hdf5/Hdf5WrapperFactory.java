@@ -1,7 +1,11 @@
 package org.vcell.cli.run.hdf5;
 
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.parser.DivideByZeroException;
+import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.SimpleSymbolTable;
+import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import ncsa.hdf.hdf5lib.exceptions.HDF5Exception;
 
@@ -27,6 +31,7 @@ import org.apache.logging.log4j.Logger;
 import java.io.*;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Stream;
 
 
 /**
@@ -65,6 +70,7 @@ public class Hdf5WrapperFactory {
         Hdf5DataWrapper hdf5FileWrapper = new Hdf5DataWrapper();
         Exception nonSpatialException = null, spatialException = null;
 
+        // Nonspacial Collection
         try {
             wrappers.addAll(this.collectNonspatialDatasets(this.sedml, nonSpatialResults, this.taskToSimulationMap, this.sedmlLocation));
         } catch (Exception e){
@@ -72,6 +78,7 @@ public class Hdf5WrapperFactory {
             nonSpatialException = e;
         }
 
+        // Spacial Collection
         try {
             wrappers.addAll(this.collectSpatialDatasets(this.sedml, spatialResults, this.taskToSimulationMap, this.sedmlLocation));
         } catch (Exception e){
@@ -79,6 +86,7 @@ public class Hdf5WrapperFactory {
             spatialException = e;
         }
 
+        // Error Checking
         if (nonSpatialException != null && nonSpatialException != null){
             throw new RuntimeException("Encountered complete dataset collection failure;\nNonSpatial Reported:\n" + nonSpatialException.getMessage()
                 + "\nSpatial Reported:\n" + spatialException.getMessage());
@@ -102,7 +110,6 @@ public class Hdf5WrapperFactory {
             for (DataSet dataset : report.getListOfDataSets()) { 
                 List<String> varIDs = new ArrayList<>();
                 Map<Variable, NonspatialValueHolder> values = new HashMap<>();
-                int maxLengthOfAllData = 0; // We have to pad up to this value
 
                 // use the data reference to obtain the data generator
                 DataGenerator datagen = sedml.getDataGeneratorWithId(dataset.getDataReference()); assert datagen != null;
@@ -165,7 +172,6 @@ public class Hdf5WrapperFactory {
                             data = correctiveData;
                         }
 
-                        maxLengthOfAllData = Integer.max(maxLengthOfAllData, data.length);
                         if (initialTask instanceof RepeatedTask && values.containsKey(var)) { // double[] exists
                             variablesList = values.get(var);
                         } else { // this is the first double[]
@@ -175,6 +181,9 @@ public class Hdf5WrapperFactory {
                         values.put(var, variablesList);
                     }
                 }
+
+                // Missing functionality!!! We need to computer the variables into the proper values
+
                 dataSetValues.put(dataset, values);
 
             } // end of dataset
@@ -449,5 +458,33 @@ public class Hdf5WrapperFactory {
         }
 
         return s;
+    }
+
+    private class SimpleDataGenCalculator {
+        private Expression equation;
+        private Map<String, Double> bindingMap;
+
+        public SimpleDataGenCalculator(DataGenerator dataGen, List<String> paramters) throws ExpressionException {
+            this.equation = new Expression(dataGen.getMathAsString());
+            this.bindingMap = new LinkedHashMap<>(); // LinkedHashMap preserves insertion order
+
+            String[] variableArray = paramters.toArray(new String[dataGen.getListOfVariables().size()]);
+            SymbolTable symTable = new SimpleSymbolTable(variableArray);
+            this.equation.bindExpression(symTable);
+
+            for (String var : variableArray){
+                bindingMap.put(var, Double.NaN);
+            }
+        }
+
+        public void setArgument(String parameter, Double argument){
+            if (!this.bindingMap.containsKey(parameter)) throw new IllegalArgumentException(String.format("\"%s\" is not a parameter of the expression", parameter));
+            this.bindingMap.put(parameter, argument);
+        }
+
+        public Double evaluateWithCurrentArguments() throws ExpressionException, DivideByZeroException {
+            Double[] args = this.bindingMap.values().toArray(new Double[0]);
+            return this.equation.evaluateVector(Stream.of(args).mapToDouble(Double::doubleValue).toArray());
+        }
     }
 }
