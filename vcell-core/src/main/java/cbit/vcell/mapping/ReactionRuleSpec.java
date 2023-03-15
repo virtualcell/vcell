@@ -27,9 +27,12 @@ import org.vcell.util.document.BioModelChildSummary.MathType;
 import org.vcell.util.IssueContext;
 import org.vcell.util.Matchable;
 
+import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.model.ProductPattern;
+import cbit.vcell.model.RbmKineticLaw;
 import cbit.vcell.model.ReactantPattern;
 import cbit.vcell.model.ReactionRule;
+import cbit.vcell.parser.Expression;
 
 public class ReactionRuleSpec implements ModelProcessSpec {
 	private ReactionRule reactionRule = null;
@@ -266,7 +269,7 @@ public void analizeReaction(Map<String, Object> analysisResults) {
 				ComponentStateDefinition csdReactant = cspReactant.getComponentStateDefinition();
 				stateReactant = csdReactant.getName();
 			}
-			String cspKey = "cspBondReactantBond" + bondTransitionCounter;
+			String cspKey = "cspReactantBond" + bondTransitionCounter;
 			analysisResults.put(cspKey, stateReactant);
 		}
 		mcpCount++;
@@ -407,9 +410,12 @@ private void writeBindingData(StringBuilder sb, Subtype subtype, Map<String, Obj
 	sb.append(mtpReactantTwo.getMolecularType().getName()).append("' : '")
 		.append(mcpReactantTwo.getMolecularComponent().getName()).append("' : '")
 		.append(stateReactantTwo);
-		// TODO: get the real values from kinetic law
-	sb.append("'  kon  ").append(Double.toString(0.9));
-	sb.append("  koff ").append(Double.toString(0.2));
+	
+	RbmKineticLaw kineticLaw = reactionRule.getKineticLaw();
+	Expression kon = kineticLaw.getLocalParameterValue(RbmKineticLaw.RbmKineticLawParameterType.MassActionForwardRate);
+	Expression koff = kineticLaw.getLocalParameterValue(RbmKineticLaw.RbmKineticLawParameterType.MassActionReverseRate);
+	sb.append("'  kon  ").append(kon.infix());
+	sb.append("  koff ").append(koff.infix());
 	sb.append("  Bond_Length ").append(Double.toString(getFieldBondLength()));
 	sb.append("\n");
 }

@@ -155,8 +155,9 @@ public class SiteAttributesSpec implements Identifiable, Displayable, IssueSourc
 		sb.append("SITE " + (this.getIndex()-1) + " : " + getLocation().getName() + " : Initial State '" + initialState + "'");
 		sb.append("\n");
 		sb.append("          ");
-		this.writeType(sb);
-		sb.append("          " + "x " + IOHelp.DF[5].format(getX()) + " y " + IOHelp.DF[5].format(getY()) + " z " + IOHelp.DF[5].format(getZ()) + " ");
+		this.writeType(sb);	// ex: TYPE: Name "Type2" Radius 1.00000 D 1.000 Color LIME STATES "State0" "State1" 
+		sb.append("          " + "x " + IOHelp.DF[5].format(getX()) + " y " + IOHelp.DF[5].format(getY()) + 
+				" z " + IOHelp.DF[5].format(getZ()) + " ");		// ex: x 4.00000 y 4.00000 z 20.00000
 		sb.append("\n");
 	}
 

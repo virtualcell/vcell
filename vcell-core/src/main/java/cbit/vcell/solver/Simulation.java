@@ -133,6 +133,9 @@ public class Simulation implements Versionable, Matchable, java.beans.VetoableCh
 			Model model = simContext.getBioModel().getModel();
 			SpeciesContext[] speciesContexts = model.getSpeciesContexts();
 			for(SpeciesContext sc : speciesContexts) {
+				if(SpeciesContextSpec.SourceMoleculeString.equals(sc.getName()) || SpeciesContextSpec.SinkMoleculeString.equals(sc.getName())) {
+					continue;	// skip the Source and the Sink molecules (use in Creation / Destruction reactions)
+				}
 				SpeciesPattern sp = sc.getSpeciesPattern();
 				if(sp == null || sp.getMolecularTypePatterns() == null || sp.getMolecularTypePatterns().isEmpty()) {
 					continue;

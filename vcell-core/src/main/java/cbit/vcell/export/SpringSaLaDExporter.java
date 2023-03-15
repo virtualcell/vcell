@@ -113,6 +113,10 @@ public class SpringSaLaDExporter {
 			sb.append("\n");
 			sb.append("\n");
 			for(SpeciesContext sc : model.getSpeciesContexts()) {
+				// skip the Source and the Sink molecules (use in Creation / Destruction reactions)
+				if(SpeciesContextSpec.SourceMoleculeString.equals(sc.getName()) || SpeciesContextSpec.SinkMoleculeString.equals(sc.getName())) {
+					continue;
+				}
 				SpeciesContextSpec scs = reactionContext.getSpeciesContextSpec(sc);
 				sb.append("MOLECULE: " + sc.getName() + " " + scs.getFilename());
 				sb.append("\n");
