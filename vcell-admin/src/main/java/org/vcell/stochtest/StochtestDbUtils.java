@@ -3,6 +3,9 @@ package org.vcell.stochtest;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import cbit.vcell.modeldb.DbDriver;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.stochtest.TimeSeriesMultitrialData.SummaryStatistics;
 import org.vcell.util.DataAccessException;
@@ -14,6 +17,7 @@ import cbit.vcell.modeldb.StochtestRunTable;
 import cbit.vcell.modeldb.StochtestTable;
 
 public class StochtestDbUtils {
+	private static final Logger lg = LogManager.getLogger(StochtestDbUtils.class);
 
 	public static StochtestRun getStochtestRun(ConnectionFactory conFactory, KeyValue stochtestRunKey) throws IllegalArgumentException, SQLException, DataAccessException {
 		
@@ -112,11 +116,13 @@ for (int i = 0; i < numColumns; i++){
 								stochtestRunTable.networkGenProbs.getUnqualifiedColName() + " = " + networkGenProbsRHS + " " +
 						" WHERE "+stochtestRunTable.id.getUnqualifiedColName()+" = " + acceptedStochtestRun.key.toString();
 				stmt = con.createStatement();
-System.out.println(sql);
-			    int numrows = stmt.executeUpdate(sql);
-			    if (numrows != 1){
-			    	throw new DataAccessException("failed to update mathgen status for id = "+acceptedStochtestRun.key);
-			    }
+				if (lg.isDebugEnabled()) {
+					lg.debug("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
+				}
+				int numrows = stmt.executeUpdate(sql); // jcs: added logging
+				if (numrows != 1) {
+					throw new DataAccessException("failed to update mathgen status for id = " + acceptedStochtestRun.key);
+				}
 			} finally {
 				if (stmt != null) {
 					stmt.close();
@@ -171,11 +177,13 @@ System.out.println(sql);
 					}
 					sql += " WHERE "+stochtestCompareTable.id.getUnqualifiedColName()+" = " + acceptedStochtestCompare.key.toString();
 				stmt = con.createStatement();
-System.out.println(sql);
-			    int numrows = stmt.executeUpdate(sql);
-			    if (numrows != 1){
-			    	throw new DataAccessException("failed to update mathgen status for id = "+acceptedStochtestCompare.key);
-			    }
+				if (lg.isDebugEnabled()) {
+					lg.debug("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
+				}
+				int numrows = stmt.executeUpdate(sql); // jcs: added logging
+				if (numrows != 1) {
+					throw new DataAccessException("failed to update mathgen status for id = " + acceptedStochtestCompare.key);
+				}
 			} finally {
 				if (stmt != null) {
 					stmt.close();
@@ -262,11 +270,13 @@ for (int i = 0; i < numColumns; i++){
 						" SET "+stochtestRunTable.status.getUnqualifiedColName() + " = " + "'"+StochtestRun.StochtestRunStatus.accepted+"'" +
 						" WHERE "+stochtestRunTable.id.getUnqualifiedColName()+" = " + stochtestRun.key.toString();
 				stmt = con.createStatement();
-System.out.println(sql);
-			    int numrows = stmt.executeUpdate(sql);
-			    if (numrows != 1){
-			    	throw new DataAccessException("failed to update mathgen status for id = "+stochtestRun.key);
-			    }
+				if (lg.isDebugEnabled()) {
+					lg.debug("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
+				}
+				int numrows = stmt.executeUpdate(sql); // jcs: added logging
+				if (numrows != 1) {
+					throw new DataAccessException("failed to update mathgen status for id = " + stochtestRun.key);
+				}
 			} finally {
 				if (stmt != null) {
 					stmt.close();
@@ -341,11 +351,13 @@ for (int i = 0; i < numColumns; i++){
 						" SET "+stochtestCompareTable.status.getUnqualifiedColName() + " = " + "'"+StochtestCompare.StochtestCompareStatus.accepted+"'" +
 						" WHERE "+stochtestCompareTable.id.getUnqualifiedColName()+" = " + stochtestCompare.key.toString();
 				stmt = con.createStatement();
-System.out.println(sql);
-			    int numrows = stmt.executeUpdate(sql);
-			    if (numrows != 1){
-			    	throw new DataAccessException("failed to update mathgen status for id = "+stochtestCompare.key);
-			    }
+				if (lg.isDebugEnabled()) {
+					lg.debug("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
+				}
+				int numrows = stmt.executeUpdate(sql); // jcs: added logging
+				if (numrows != 1) {
+					throw new DataAccessException("failed to update mathgen status for id = " + stochtestCompare.key);
+				}
 			} finally {
 				if (stmt != null) {
 					stmt.close();

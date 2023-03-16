@@ -3564,9 +3564,12 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 					changedTSKey+",'"+addts_tsop.getTestSuiteVersionID()+"',"+
 					"'"+addts_tsop.getVCellBuildVersionID()+"'"+","+"'"+addts_tsop.getNumericsBuildVersionID()+"'"+","+
 					"current_timestamp,current_timestamp,"+(annotation == null?"NULL":"'"+annotation+"'")+","+NOT_LOCKED+")";
-			int changed = stmt.executeUpdate(sql);
-			if (changed!=1){
-				lg.error(changed+" records changed: "+sql, new StackTraceGenerationException());
+			if (lg.isDebugEnabled()) {
+				lg.debug("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
+			}
+			int changed = stmt.executeUpdate(sql); // jcs: added logging
+			if (changed != 1) {
+				lg.error(changed + " records changed: " + sql, new StackTraceGenerationException());
 			}
 
 			if(addts_tsop.getAddTestCasesOPs() != null){
@@ -3628,7 +3631,10 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 			sql = "INSERT INTO "+TFTestCaseTable.table.getTableName()+" VALUES("+
 					tcKey.toString()+","+addtc_tsop.getTestSuiteKey().toString()+",NULL,"+
 					"'"+addtc_tsop.getTestCaseType()+"'"+","+"'"+annotation+"'"+","+"current_timestamp"+","+bmSimContextLinkRef.toString()+")";
-			int changed = stmt.executeUpdate(sql);
+			if (lg.isDebugEnabled()) {
+				lg.debug("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
+			}
+			int changed = stmt.executeUpdate(sql); // jcs: added logging
 			if (changed!=1){
 				lg.error(changed+" records changed: "+sql, new StackTraceGenerationException());
 			}
@@ -3659,12 +3665,15 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 			sql = "INSERT INTO "+TFTestCaseTable.table.getTableName()+" VALUES("+
 					tcKey.toString()+","+addtc_tsop.getTestSuiteKey().toString()+","+mmKey.toString()+","+
 					"'"+addtc_tsop.getTestCaseType()+"'"+","+"'"+annotation+"'"+","+"current_timestamp"+",NULL)";
-			int changed = stmt.executeUpdate(sql);
-			if (changed!=1){
-				lg.error(changed+" records changed: "+sql, new StackTraceGenerationException());
+			if (lg.isDebugEnabled()) {
+				lg.debug("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
 			}
-			if(addtc_tsop.getAddTestCriteriaOPsMathModel() != null){
-				for(int i=0;i<addtc_tsop.getAddTestCriteriaOPsMathModel().length;i+= 1){
+			int changed = stmt.executeUpdate(sql); // jcs: added logging
+			if (changed != 1) {
+				lg.error(changed + " records changed: " + sql, new StackTraceGenerationException());
+			}
+			if (addtc_tsop.getAddTestCriteriaOPsMathModel() != null) {
+				for (int i = 0; i < addtc_tsop.getAddTestCriteriaOPsMathModel().length; i += 1) {
 					//Set new TSKey,TCaseKey and do child OPs
 					AddTestCriteriaOPMathModel atcritOP = addtc_tsop.getAddTestCriteriaOPsMathModel()[i];
 					testSuiteOP(
@@ -3696,9 +3705,12 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 			sql = "DELETE FROM "+TFTestCaseTable.table.getTableName()+
 					" WHERE "+
 					TFTestCaseTable.table.id.getUnqualifiedColName()+" IN ("+sb.toString()+")";
-			int numRowsUpdated = stmt.executeUpdate(sql);
-			if (numRowsUpdated!=1){
-				lg.error(numRowsUpdated+" records changed: "+sql, new StackTraceGenerationException());
+			if (lg.isDebugEnabled()) {
+				lg.debug("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
+			}
+			int numRowsUpdated = stmt.executeUpdate(sql); // jcs: added logging
+			if (numRowsUpdated != 1) {
+				lg.error(numRowsUpdated + " records changed: " + sql, new StackTraceGenerationException());
 			}
 			if(numRowsUpdated != removetc_tsop.getTestCasesKeys().length){
 				throw new DataAccessException("Remove TestCase keys="+sb.toString()+
@@ -3776,11 +3788,14 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 				"NULL,NULL,"+
 				"'"+TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT+"'"+",null"+
 				")";
-			int changed = stmt.executeUpdate(sql);
-			if (changed!=1){
-				lg.error(changed+" records changed: "+sql, new StackTraceGenerationException());
+			if (lg.isDebugEnabled()) {
+				lg.debug("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
 			}
-			if(addtcrit_tsop.getRegressionMathModelSimKey() != null){
+			int changed = stmt.executeUpdate(sql); // jcs: added logging
+			if (changed != 1) {
+				lg.error(changed + " records changed: " + sql, new StackTraceGenerationException());
+			}
+			if (addtcrit_tsop.getRegressionMathModelSimKey() != null) {
 				testSuiteOP(
 					new EditTestCriteriaOPMathModel(
 						tcritKey,
@@ -3877,9 +3892,12 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 				(addtcrit_tsop.getMaxAbsoluteError() != null?"CAST('"+addtcrit_tsop.getMaxAbsoluteError().toString()+"' as NUMERIC)":"null")+","+
 				"NULL,NULL,"+"'"+TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT+"'"+",null"+
 				")";
-			int changed = stmt.executeUpdate(sql);
-			if (changed!=1){
-				lg.error(changed+" records changed: "+sql, new StackTraceGenerationException());
+			if (lg.isDebugEnabled()) {
+				lg.debug("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
+			}
+			int changed = stmt.executeUpdate(sql); // jcs: added logging
+			if (changed != 1) {
+				lg.error(changed + " records changed: " + sql, new StackTraceGenerationException());
 			}
 			if(addtcrit_tsop.getRegressionBioModelSimKey() != null){
 				testSuiteOP(
@@ -3928,22 +3946,28 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 
 			sql = "DELETE FROM " + TFTestCriteriaTable.table.getTableName() +
 							" WHERE " + TFTestCriteriaTable.table.id.getUnqualifiedColName() + " IN ("+sb.toString() + ")";
-			int numRowsUpdated = stmt.executeUpdate(sql);
-			if(numRowsUpdated != removetcrit_tsop.getTestCriterias().length){
-				throw new DataAccessException("Remove TestCriteria keys="+sb.toString()+
-					" removed row count="+numRowsUpdated+" expected "+removetcrit_tsop.getTestCriterias().length);
+			if (lg.isDebugEnabled()) {
+				lg.debug("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
 			}
-		}else if(tsop instanceof RemoveTestSuiteOP){
-			RemoveTestSuiteOP removets_tsop = (RemoveTestSuiteOP)tsop;
-			sql = "DELETE FROM "+TFTestSuiteTable.table.getTableName()+
-					" WHERE "+
-					TFTestSuiteTable.table.id.getUnqualifiedColName()+"="+removets_tsop.getTestSuiteKey().toString();
-			int numRowsUpdated = stmt.executeUpdate(sql);
-			if(numRowsUpdated != 1){
-				throw new DataAccessException("Remove SINGLE TestSuite - key="+removets_tsop.getTestSuiteKey().toString()+" removed row count="+numRowsUpdated);
+			int numRowsUpdated = stmt.executeUpdate(sql); // jcs: added logging
+			if (numRowsUpdated != removetcrit_tsop.getTestCriterias().length) {
+				throw new DataAccessException("Remove TestCriteria keys=" + sb.toString() +
+						" removed row count=" + numRowsUpdated + " expected " + removetcrit_tsop.getTestCriterias().length);
+			}
+		}else if(tsop instanceof RemoveTestSuiteOP) {
+			RemoveTestSuiteOP removets_tsop = (RemoveTestSuiteOP) tsop;
+			sql = "DELETE FROM " + TFTestSuiteTable.table.getTableName() +
+					" WHERE " +
+					TFTestSuiteTable.table.id.getUnqualifiedColName() + "=" + removets_tsop.getTestSuiteKey().toString();
+			if (lg.isDebugEnabled()) {
+				lg.debug("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
+			}
+			int numRowsUpdated = stmt.executeUpdate(sql); // jcs: added logging
+			if (numRowsUpdated != 1) {
+				throw new DataAccessException("Remove SINGLE TestSuite - key=" + removets_tsop.getTestSuiteKey().toString() + " removed row count=" + numRowsUpdated);
 			}
 
-			changedTestSuiteKeys.add(removets_tsop.getTestSuiteKey());	
+			changedTestSuiteKeys.add(removets_tsop.getTestSuiteKey());
 		}else if(tsop instanceof AddTestResultsOP){
 			AddTestResultsOP addtr_tsop = (AddTestResultsOP)tsop;
 			VariableComparisonSummary[] vcs = addtr_tsop.getVariableComparisonSummaries();
@@ -3975,9 +3999,12 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 					"CAST('"+vcs[i].getTimeAbsoluteError()+"' as NUMERIC)"+","+"CAST('"+vcs[i].getIndexAbsoluteError()+"' as INTEGER)"+","+
 					"CAST('"+vcs[i].getTimeRelativeError()+"' as NUMERIC)"+","+"CAST('"+vcs[i].getIndexRelativeError()+"' as INTEGER)"+
 					")";
-				int changed = stmt.executeUpdate(sql);
-				if (changed!=1){
-					lg.error(changed+" records changed: "+sql, new StackTraceGenerationException());
+				if (lg.isDebugEnabled()) {
+					lg.debug("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
+				}
+				int changed = stmt.executeUpdate(sql); // jcs: added logging
+				if (changed != 1) {
+					lg.error(changed + " records changed: " + sql, new StackTraceGenerationException());
 				}
 			}
 			
@@ -3999,6 +4026,9 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 				sql = "DELETE FROM "+TFTestResultTable.table.getTableName()+
 						" WHERE "+
 						TFTestResultTable.table.testCriteriaRef.getUnqualifiedColName()+"="+removetr_tsop.getTestCriteriaKeys()[i].toString();
+				if (lg.isDebugEnabled()) {
+					lg.debug("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
+				}
 				int changed = stmt.executeUpdate(sql);
 				if (changed!=1){
 					lg.error(changed+" records changed: "+sql, new StackTraceGenerationException());
@@ -4045,12 +4075,15 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 					TFTestCriteriaTable.table.reportStatus.getUnqualifiedColName()+"="+(newRS != null?"'"+newRS+"'":"null")+","+
 					TFTestCriteriaTable.table.reportMessage.getUnqualifiedColName()+"="+(reportStatusMessage!= null?"'"+reportStatusMessage+"'":"null")+
 					" WHERE "+TFTestCriteriaTable.table.id.getQualifiedColName()+"="+tcritKey.toString();
-			int changed = stmt.executeUpdate(sql);
-			if (changed!=1){
-				lg.error(changed+" records changed: "+sql, new StackTraceGenerationException());
+			if (lg.isDebugEnabled()) {
+				lg.debug("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
 			}
-			if(newRS.equals(TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT)){
-				testSuiteOP(new RemoveTestResultsOP(new BigDecimal[] {tcritKey}), con, user,keyFactory);
+			int changed = stmt.executeUpdate(sql); // jcs: added logging
+			if (changed != 1) {
+				lg.error(changed + " records changed: " + sql, new StackTraceGenerationException());
+			}
+			if (newRS.equals(TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT)) {
+				testSuiteOP(new RemoveTestResultsOP(new BigDecimal[]{tcritKey}), con, user, keyFactory);
 			}
 
 			ResultSet rset = stmt.executeQuery(
@@ -4102,11 +4135,14 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 					TFTestCriteriaTable.table.maxRelError.getUnqualifiedColName()+"="+(maxRelError != null?"CAST('"+maxRelError.toString()+"' as NUMERIC)":"null")+","+
 					TFTestCriteriaTable.table.regressionMMSimRef.getUnqualifiedColName()+"="+(regrMathModelSimLink != null?regrMathModelSimLink.toString():"null")+
 					" WHERE "+TFTestCriteriaTable.table.id.getUnqualifiedColName()+"="+tcritKey.toString();
-			int changed = stmt.executeUpdate(sql);
-			if (changed!=1){
-				lg.error(changed+" records changed: "+sql, new StackTraceGenerationException());
+			if (lg.isDebugEnabled()) {
+				lg.debug("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
 			}
-			testSuiteOP(new EditTestCriteriaOPReportStatus(tcritKey,TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT,null), con, user,keyFactory);
+			int changed = stmt.executeUpdate(sql); // jcs: added logging
+			if (changed != 1) {
+				lg.error(changed + " records changed: " + sql, new StackTraceGenerationException());
+			}
+			testSuiteOP(new EditTestCriteriaOPReportStatus(tcritKey, TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT, null), con, user, keyFactory);
 
 			ResultSet rset = stmt.executeQuery(
 				"SELECT DISTINCT "+TFTestSuiteTable.table.id.getQualifiedColName()+
@@ -4173,12 +4209,15 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 					TFTestCriteriaTable.table.regressionBMAPPRef.getUnqualifiedColName()+"="+(bmscAppKey != null?bmscAppKey.toString():"NULL")+","+
 					TFTestCriteriaTable.table.regressionBMSimRef.getUnqualifiedColName()+"="+(bmsltSimKey != null?bmsltSimKey.toString():"NULL")+
 					" WHERE "+TFTestCriteriaTable.table.id.getQualifiedColName()+"="+tcritKey.toString();
-			int changed = stmt.executeUpdate(sql);
-			if (changed!=1){
-				lg.error(changed+" records changed: "+sql, new StackTraceGenerationException());
+			if (lg.isDebugEnabled()) {
+				lg.debug("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
 			}
-			testSuiteOP(new EditTestCriteriaOPReportStatus(tcritKey,TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT,null), con, user,keyFactory);
-			
+			int changed = stmt.executeUpdate(sql); // jcs: added logging
+			if (changed != 1) {
+				lg.error(changed + " records changed: " + sql, new StackTraceGenerationException());
+			}
+			testSuiteOP(new EditTestCriteriaOPReportStatus(tcritKey, TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT, null), con, user, keyFactory);
+
 			ResultSet rset = stmt.executeQuery(
 				"SELECT DISTINCT "+TFTestSuiteTable.table.id.getQualifiedColName()+
 				" FROM "+TFTestSuiteTable.table.getTableName()+","+TFTestCaseTable.table.getTableName()+","+TFTestCriteriaTable.table.getTableName()+
@@ -4207,11 +4246,14 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 						(maxAbsErrorArr != null && maxRelErrorArr != null?",":"")+
 						(maxRelErrorArr != null?TFTestCriteriaTable.table.maxRelError.getUnqualifiedColName()+"="+maxRelErrorArr[i]:"")+
 						" WHERE "+TFTestCriteriaTable.table.id.getQualifiedColName()+"="+tcritKeyArr[i].toString();
-				int changed = stmt.executeUpdate(sql);
-				if (changed!=1){
-					lg.error(changed+" records changed: "+sql, new StackTraceGenerationException());
+				if (lg.isDebugEnabled()) {
+					lg.debug("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
 				}
-				testSuiteOP(new EditTestCriteriaOPReportStatus(tcritKeyArr[i],TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT,null), con, user, keyFactory);
+				int changed = stmt.executeUpdate(sql); // jcs: added logging
+				if (changed != 1) {
+					lg.error(changed + " records changed: " + sql, new StackTraceGenerationException());
+				}
+				testSuiteOP(new EditTestCriteriaOPReportStatus(tcritKeyArr[i], TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT, null), con, user, keyFactory);
 			}
 			ResultSet rset = stmt.executeQuery(
 					"SELECT DISTINCT "+TFTestSuiteTable.table.id.getQualifiedColName()+
@@ -4248,9 +4290,12 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 							" SET "+
 							TFTestCaseTable.table.tcAnnotation.getUnqualifiedColName()+"="+(annotation == null?"NULL":"'"+annotation+"'")+
 							" WHERE "+TFTestCaseTable.table.id.getQualifiedColName()+"="+tcaseKeys[i].toString();
-					int changed = stmt.executeUpdate(sql);
-					if (changed!=1){
-						lg.error(changed+" records changed: "+sql, new StackTraceGenerationException());
+					if (lg.isDebugEnabled()) {
+						lg.debug("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
+					}
+					int changed = stmt.executeUpdate(sql); // jcs: added logging
+					if (changed != 1) {
+						lg.error(changed + " records changed: " + sql, new StackTraceGenerationException());
 					}
 				}
 				if(newSteadyStates != null){
@@ -4287,9 +4332,12 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 							TFTestCaseTable.table.tcSolutionType.getUnqualifiedColName()+"="+
 							(newSteadyState?"'"+TestCaseNew.EXACT_STEADY+"'":"'"+TestCaseNew.EXACT+"'")+
 							" WHERE "+TFTestCaseTable.table.id.getQualifiedColName()+"="+tcaseKeys[i].toString();
-					int changed = stmt.executeUpdate(sql);
-					if (changed!=1){
-						lg.error(changed+" records changed: "+sql, new StackTraceGenerationException());
+					if (lg.isDebugEnabled()) {
+						lg.debug("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
+					}
+					int changed = stmt.executeUpdate(sql); // jcs: added logging
+					if (changed != 1) {
+						lg.error(changed + " records changed: " + sql, new StackTraceGenerationException());
 					}
 					//Change Report status
 					for (int j = 0; j < tcritKeyV.size(); j++) {
@@ -4326,9 +4374,12 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 							" SET "+
 							TFTestSuiteTable.table.isLocked.getUnqualifiedColName()+"= 1"+
 							" WHERE "+TFTestSuiteTable.table.id.getQualifiedColName()+"="+tsKeys[i].toString();
-					int changed = stmt.executeUpdate(sql);
-					if (changed!=1){
-						lg.error(changed+" records changed: "+sql, new StackTraceGenerationException());
+					if (lg.isDebugEnabled()) {
+						lg.debug("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
+					}
+					int changed = stmt.executeUpdate(sql); // jcs: added logging
+					if (changed != 1) {
+						lg.error(changed + " records changed: " + sql, new StackTraceGenerationException());
 					}
 
 				}else{
@@ -4345,9 +4396,12 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 								" SET "+
 								TFTestSuiteTable.table.tsAnnotation.getUnqualifiedColName()+"="+(annotation == null?"NULL":"'"+annotation+"'")+
 								" WHERE "+TFTestSuiteTable.table.id.getQualifiedColName()+"="+tsKeys[i].toString();
-						int changed = stmt.executeUpdate(sql);
-						if (changed!=1){
-							lg.error(changed+" records changed: "+sql, new StackTraceGenerationException());
+						if (lg.isDebugEnabled()) {
+							lg.debug("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
+						}
+						int changed = stmt.executeUpdate(sql); // jcs: added logging
+						if (changed != 1) {
+							lg.error(changed + " records changed: " + sql, new StackTraceGenerationException());
 						}
 					}
 				}
@@ -4714,8 +4768,11 @@ public static int updateCleanSQL(Connection con, String sql, UpdateExpectation u
 	}
 	Statement s = con.createStatement();
 	try {
-		int numRowsChanged = s.executeUpdate(sql);
-		if (numRowsChanged != 1){
+		if (lg.isDebugEnabled()) {
+			lg.debug("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
+		}
+		int numRowsChanged = s.executeUpdate(sql); // jcs: added logging
+		if (numRowsChanged != 1) {
 			Level logLevel = (updateExpectation == UpdateExpectation.ROW_UPDATE_IS_POSSIBLE) ? Level.INFO : Level.ERROR;
 			lg.log(logLevel, numRowsChanged + " records changed: " + sql, new StackTraceGenerationException());
 		}

@@ -1084,8 +1084,11 @@ public class DBBackupAndClean {
 		try{
 			logStringBuffer.append(sql+";\n");
 			stmt = con.createStatement();
-			int updateCount = stmt.executeUpdate(sql);
-			logStringBuffer.append("Update count="+updateCount+"\n");
+			if (lg.isDebugEnabled()) {
+				lg.debug("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
+			}
+			int updateCount = stmt.executeUpdate(sql); // jcs: added logging
+			logStringBuffer.append("Update count=" + updateCount + "\n");
 			con.commit();
 			logStringBuffer.append("COMMIT\n\n");
 		}catch(Exception e){

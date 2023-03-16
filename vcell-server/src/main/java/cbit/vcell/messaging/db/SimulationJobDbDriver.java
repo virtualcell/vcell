@@ -81,12 +81,15 @@ public SimulationJobDbDriver(DatabaseSyntax dbSyntax) {
 private int executeUpdate(Connection con, String sql) throws SQLException {
 	Statement s = con.createStatement();
 	try {
-		int numRecordsChanged = s.executeUpdate(sql);
-		if (numRecordsChanged != 1){
-			lg.error(numRecordsChanged + " records changed: "+sql, new DbDriver.StackTraceGenerationException());
-		}
-		return numRecordsChanged;
-	} finally {
+        if (lg.isDebugEnabled()) {
+            lg.debug("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
+        }
+        int numRecordsChanged = s.executeUpdate(sql); // jcs: added logging
+        if (numRecordsChanged != 1) {
+            lg.error(numRecordsChanged + " records changed: " + sql, new DbDriver.StackTraceGenerationException());
+        }
+        return numRecordsChanged;
+    } finally {
 		s.close();
 	}	
 }

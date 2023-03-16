@@ -486,10 +486,13 @@ public class MathVerifier {
                                 SimContextStat2Table.table.status_4_8.getUnqualifiedColName() + " = '" + org.vcell.util.TokenMangler.getSQLEscapedString(mathCompareResults_4_8.toDatabaseStatus(), 255) + "'" +
                                 // ((issueString!=null)?(", "+SimContextStat2Table.table.comments.getUnqualifiedColName()+" = '"+org.vcell.util.TokenMangler.getSQLEscapedString(issueString,255)+"'"):(""))+
                                 " WHERE " + SimContextStat2Table.table.simContextRef.getUnqualifiedColName() + " = " + simContextFromDB.getKey();
-                        int numRowsChanged = stmt.executeUpdate(UPDATESTATUS);
+                        if (lg.isDebugEnabled()) {
+                            lg.debug("executeUpdate() SQL: '" + UPDATESTATUS + "'", new DbDriver.StackTraceGenerationException());
+                        }
+                        int numRowsChanged = stmt.executeUpdate(UPDATESTATUS); // jcs: added logging
                         if (numRowsChanged > 1) {
-                            lg.warn("failed to update status for simcontext: "+simContextFromDB.getKey());
-                        } else if (numRowsChanged == 0){
+                            lg.warn("failed to update status for simcontext: " + simContextFromDB.getKey());
+                        } else if (numRowsChanged == 0) {
                             /**
                              * KeyValue key,
                              * KeyValue simContextKey,
@@ -504,19 +507,22 @@ public class MathVerifier {
 
                             String INSERTSTATUS = "INSERT INTO " + SimContextStat2Table.table.getTableName() +
                                     " VALUES " + SimContextStat2Table.getSQLValueList(
-                                            conFactory.getKeyFactory().getNewKey(con),
-                                            simContextFromDB.getKey(),
-                                            bApplicationHasData,
-                                            mathCompareResults_latest.isEquivalent(),
-                                            mathCompareResults_latest.toDatabaseStatus(),
-                                            null,
-                                            null,
-                                            mathCompareResults_4_8.isEquivalent(),
-                                            mathCompareResults_4_8.toDatabaseStatus());
+                                    conFactory.getKeyFactory().getNewKey(con),
+                                    simContextFromDB.getKey(),
+                                    bApplicationHasData,
+                                    mathCompareResults_latest.isEquivalent(),
+                                    mathCompareResults_latest.toDatabaseStatus(),
+                                    null,
+                                    null,
+                                    mathCompareResults_4_8.isEquivalent(),
+                                    mathCompareResults_4_8.toDatabaseStatus());
                             lg.info(INSERTSTATUS);
-                            int numRowsInserted = stmt.executeUpdate(INSERTSTATUS);
-                            if (numRowsInserted != 1){
-                                lg.warn("failed to insert status for simcontext: "+simContextFromDB.getKey());
+                            if (lg.isDebugEnabled()) {
+                                lg.debug("executeUpdate() SQL: '" + INSERTSTATUS + "'", new DbDriver.StackTraceGenerationException());
+                            }
+                            int numRowsInserted = stmt.executeUpdate(INSERTSTATUS); // jcs: added logging
+                            if (numRowsInserted != 1) {
+                                lg.warn("failed to insert status for simcontext: " + simContextFromDB.getKey());
                             }
                         }
                         con.commit();
@@ -545,7 +551,10 @@ public class MathVerifier {
                         String UPDATESTATUS = "UPDATE " + SimContextStat2Table.table.getTableName() +
                                 " SET " + SimContextStat2Table.table.status.getUnqualifiedColName() + " = 'EXCEPTION: " + org.vcell.util.TokenMangler.getSQLEscapedString(e.toString()) + "'" +
                                 " WHERE " + SimContextStat2Table.table.simContextRef.getUnqualifiedColName() + " = " + simContextFromDB.getKey();
-                        int numRowsChanged = stmt.executeUpdate(UPDATESTATUS);
+                        if (lg.isDebugEnabled()) {
+                            lg.debug("executeUpdate() SQL: '" + UPDATESTATUS + "'", new DbDriver.StackTraceGenerationException());
+                        }
+                        int numRowsChanged = stmt.executeUpdate(UPDATESTATUS); // jcs: added logging
                         if (numRowsChanged != 1) {
                             lg.info("failed to update status with exception");
                         }
@@ -587,7 +596,10 @@ public class MathVerifier {
                                     " SET " + SimStatTable.table.equiv.getUnqualifiedColName() + " = " + ((bSimEquivalent) ? (1) : (0)) + ", " +
                                     SimStatTable.table.status.getUnqualifiedColName() + " = '" + org.vcell.util.TokenMangler.getSQLEscapedString(mathCompareResults_latest.decision.description) + "'" +
                                     " WHERE " + SimStatTable.table.simRef.getUnqualifiedColName() + " = " + appSimsFromDB[l].getKey();
-                            int numRowsChanged = stmt.executeUpdate(UPDATESTATUS);
+                            if (lg.isDebugEnabled()) {
+                                lg.debug("executeUpdate() SQL: '" + UPDATESTATUS + "'", new DbDriver.StackTraceGenerationException());
+                            }
+                            int numRowsChanged = stmt.executeUpdate(UPDATESTATUS); // jcs: added logging
                             if (numRowsChanged != 1) {
                                 lg.info("failed to update status");
                             }
@@ -617,7 +629,10 @@ public class MathVerifier {
                             String UPDATESTATUS = "UPDATE " + SimStatTable.table.getTableName() +
                                     " SET " + SimStatTable.table.status.getUnqualifiedColName() + " = 'EXCEPTION: " + org.vcell.util.TokenMangler.getSQLEscapedString(e.toString()) + "'" +
                                     " WHERE " + SimStatTable.table.simRef.getUnqualifiedColName() + " = " + appSimsFromDB[l].getKey();
-                            int numRowsChanged = stmt.executeUpdate(UPDATESTATUS);
+                            if (lg.isDebugEnabled()) {
+                                lg.debug("executeUpdate() SQL: '" + UPDATESTATUS + "'", new DbDriver.StackTraceGenerationException());
+                            }
+                            int numRowsChanged = stmt.executeUpdate(UPDATESTATUS); // jcs: added logging
                             if (numRowsChanged != 1) {
                                 lg.info("failed to update status with exception");
                             }
@@ -1208,7 +1223,10 @@ public class MathVerifier {
                                         SimContextStat2Table.table.status.getUnqualifiedColName() + " = '" + TokenMangler.getSQLEscapedString(mathCompareResults.toDatabaseStatus()) + "'" +
                                         ((issueString != null) ? (", " + SimContextStat2Table.table.comments.getUnqualifiedColName() + " = '" + TokenMangler.getSQLEscapedString(issueString, 255) + "'") : ("")) +
                                         " WHERE " + SimContextStat2Table.table.simContextRef.getUnqualifiedColName() + " = " + simContextFromDB.getKey();
-                                int numRowsChanged = stmt.executeUpdate(UPDATESTATUS);
+                                if (lg.isDebugEnabled()) {
+                                    lg.debug("executeUpdate() SQL: '" + UPDATESTATUS + "'", new DbDriver.StackTraceGenerationException());
+                                }
+                                int numRowsChanged = stmt.executeUpdate(UPDATESTATUS); // jcs: added logging
                                 if (numRowsChanged != 1) {
                                     lg.info("failed to update status");
                                 }
@@ -1239,7 +1257,10 @@ public class MathVerifier {
                                 String UPDATESTATUS = "UPDATE " + SimContextStat2Table.table.getTableName() +
                                         " SET " + SimContextStat2Table.table.status.getUnqualifiedColName() + " = " + status +
                                         " WHERE " + SimContextStat2Table.table.simContextRef.getUnqualifiedColName() + " = " + simContextFromDB.getKey();
-                                int numRowsChanged = stmt.executeUpdate(UPDATESTATUS);
+                                if (lg.isDebugEnabled()) {
+                                    lg.debug("executeUpdate() SQL: '" + UPDATESTATUS + "'", new DbDriver.StackTraceGenerationException());
+                                }
+                                int numRowsChanged = stmt.executeUpdate(UPDATESTATUS); // jcs: added logging
                                 if (numRowsChanged != 1) {
                                     lg.info("failed to update status with exception");
                                 }
@@ -1281,7 +1302,10 @@ public class MathVerifier {
                                             " SET " + SimStatTable.table.equiv.getUnqualifiedColName() + " = " + ((bSimEquivalent) ? (1) : (0)) + ", " +
                                             SimStatTable.table.status.getUnqualifiedColName() + " = '" + TokenMangler.getSQLEscapedString(mathCompareResults.decision.description) + "'" +
                                             " WHERE " + SimStatTable.table.simRef.getUnqualifiedColName() + " = " + appSimsFromDB[l].getKey();
-                                    int numRowsChanged = stmt.executeUpdate(UPDATESTATUS);
+                                    if (lg.isDebugEnabled()) {
+                                        lg.debug("executeUpdate() SQL: '" + UPDATESTATUS + "'", new DbDriver.StackTraceGenerationException());
+                                    }
+                                    int numRowsChanged = stmt.executeUpdate(UPDATESTATUS); // jcs: added logging
                                     if (numRowsChanged != 1) {
                                         lg.info("failed to update status");
                                     }
@@ -1312,7 +1336,10 @@ public class MathVerifier {
                                     String UPDATESTATUS = "UPDATE " + SimStatTable.table.getTableName() +
                                             " SET " + SimStatTable.table.status.getUnqualifiedColName() + " = " + status +
                                             " WHERE " + SimStatTable.table.simRef.getUnqualifiedColName() + " = " + appSimsFromDB[l].getKey();
-                                    int numRowsChanged = stmt.executeUpdate(UPDATESTATUS);
+                                    if (lg.isDebugEnabled()) {
+                                        lg.debug("executeUpdate() SQL: '" + UPDATESTATUS + "'", new DbDriver.StackTraceGenerationException());
+                                    }
+                                    int numRowsChanged = stmt.executeUpdate(UPDATESTATUS); // jcs: added logging
                                     if (numRowsChanged != 1) {
                                         lg.info("failed to update status with exception");
                                     }
@@ -1484,7 +1511,10 @@ public class MathVerifier {
                                         + SimContextStat2Table.table.status.getUnqualifiedColName() + " = '" + TokenMangler.getSQLEscapedString(mathCompareResults.toDatabaseStatus()) + "'"
                                         + ((issueString != null) ? (", " + SimContextStat2Table.table.comments.getUnqualifiedColName() + " = '" + TokenMangler.getSQLEscapedString(issueString, 255) + "'") : ("")) +
                                         " WHERE " + SimContextStat2Table.table.simContextRef.getUnqualifiedColName() + " = " + simContextFromDB.getKey();
-                                int numRowsChanged = stmt.executeUpdate(UPDATESTATUS);
+                                if (lg.isDebugEnabled()) {
+                                    lg.debug("executeUpdate() SQL: '" + UPDATESTATUS + "'", new DbDriver.StackTraceGenerationException());
+                                }
+                                int numRowsChanged = stmt.executeUpdate(UPDATESTATUS); // jcs: added logging
                                 if (numRowsChanged != 1) {
                                     lg.info("failed to update status");
                                 }
@@ -1515,7 +1545,10 @@ public class MathVerifier {
                                 String UPDATESTATUS = "UPDATE " + SimContextStat2Table.table.getTableName() +
                                         " SET " + SimContextStat2Table.table.status.getUnqualifiedColName() + " = " + status +
                                         " WHERE " + SimContextStat2Table.table.simContextRef.getUnqualifiedColName() + " = " + simContextFromDB.getKey();
-                                int numRowsChanged = stmt.executeUpdate(UPDATESTATUS);
+                                if (lg.isDebugEnabled()) {
+                                    lg.debug("executeUpdate() SQL: '" + UPDATESTATUS + "'", new DbDriver.StackTraceGenerationException());
+                                }
+                                int numRowsChanged = stmt.executeUpdate(UPDATESTATUS); // jcs: added logging
                                 if (numRowsChanged != 1) {
                                     lg.info("failed to update status with exception");
                                 }
@@ -1554,7 +1587,10 @@ public class MathVerifier {
                                     String UPDATESTATUS = "UPDATE " + SimStatTable.table.getTableName() +
                                             " SET " + SimStatTable.table.equiv.getUnqualifiedColName() + " = " + ((bSimEquivalent) ? (1) : (0)) + ", " + SimStatTable.table.status.getUnqualifiedColName() + " = '" + TokenMangler.getSQLEscapedString(mathCompareResults.toDatabaseStatus()) + "'" +
                                             " WHERE " + SimStatTable.table.simRef.getUnqualifiedColName() + " = " + appSimsFromDB[l].getKey();
-                                    int numRowsChanged = stmt.executeUpdate(UPDATESTATUS);
+                                    if (lg.isDebugEnabled()) {
+                                        lg.debug("executeUpdate() SQL: '" + UPDATESTATUS + "'", new DbDriver.StackTraceGenerationException());
+                                    }
+                                    int numRowsChanged = stmt.executeUpdate(UPDATESTATUS); // jcs: added logging
                                     if (numRowsChanged != 1) {
                                         lg.info("failed to update status");
                                     }
@@ -1585,7 +1621,10 @@ public class MathVerifier {
                                     String UPDATESTATUS = "UPDATE " + SimStatTable.table.getTableName() +
                                             " SET " + SimStatTable.table.status.getUnqualifiedColName() + " = " + status +
                                             " WHERE " + SimStatTable.table.simRef.getUnqualifiedColName() + " = " + appSimsFromDB[l].getKey();
-                                    int numRowsChanged = stmt.executeUpdate(UPDATESTATUS);
+                                    if (lg.isDebugEnabled()) {
+                                        lg.debug("executeUpdate() SQL: '" + UPDATESTATUS + "'", new DbDriver.StackTraceGenerationException());
+                                    }
+                                    int numRowsChanged = stmt.executeUpdate(UPDATESTATUS); // jcs: added logging
                                     if (numRowsChanged != 1) {
                                         lg.info("failed to update status with exception");
                                     }
@@ -1619,7 +1658,10 @@ public class MathVerifier {
                         String UPDATESTATUS = "UPDATE " + SimContextStat2Table.table.getTableName() +
                                 " SET " + SimContextStat2Table.table.status.getUnqualifiedColName() + " = 'BIOMODEL EXCEPTION: " + TokenMangler.getSQLEscapedString(e.toString()) + "'" +
                                 " WHERE " + SimContextStat2Table.table.simContextRef.getUnqualifiedColName() + " = " + simContextKey;
-                        int numRowsChanged = stmt.executeUpdate(UPDATESTATUS);
+                        if (lg.isDebugEnabled()) {
+                            lg.debug("executeUpdate() SQL: '" + UPDATESTATUS + "'", new DbDriver.StackTraceGenerationException());
+                        }
+                        int numRowsChanged = stmt.executeUpdate(UPDATESTATUS); // jcs: added logging
                         if (numRowsChanged != 1) {
                             lg.info("failed to update status with exception");
                         }
