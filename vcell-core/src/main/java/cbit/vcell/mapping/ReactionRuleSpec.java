@@ -288,7 +288,12 @@ public Subtype getSubtype(Map<String, Object> analysisResults) {
 	if(isDecayReaction() == true) {
 		return Subtype.DECAY;
 	}
-
+	if(isTransitionReaction(analysisResults) == true) {
+		return Subtype.TRANSITION;
+	}
+	if(isAllostericReaction(analysisResults) == true) {
+		return Subtype.ALLOSTERIC;
+	}
 	if(isBindingReaction(analysisResults) == true) {
 		return Subtype.BINDING;
 	}
@@ -300,7 +305,7 @@ private boolean isCreationReaction() {
 		SpeciesPattern sp = rpList.get(0).getSpeciesPattern();
 		if(sp.getMolecularTypePatterns().size() == 1) {
 			MolecularTypePattern mtp = sp.getMolecularTypePatterns().get(0);
-			if(mtp.getComponentPatternList().size() == 0) {
+			if(mtp.getComponentPatternList().size() == 0 && SpeciesContextSpec.SourceMoleculeString.equals(mtp.getMolecularType().getName())) {
 				return true;
 			}
 		}
@@ -313,11 +318,19 @@ private boolean isDecayReaction() {
 		SpeciesPattern sp = ppList.get(0).getSpeciesPattern();
 		if(sp.getMolecularTypePatterns().size() == 1) {
 			MolecularTypePattern mtp = sp.getMolecularTypePatterns().get(0);
-			if(mtp.getComponentPatternList().size() == 0) {
+			if(mtp.getComponentPatternList().size() == 0 && SpeciesContextSpec.SinkMoleculeString.equals(mtp.getMolecularType().getName())) {
 				return true;
 			}
 		}
 	}
+	return false;
+}
+private boolean isTransitionReaction(Map<String, Object> analysisResults) {
+	
+	return false;
+}
+private boolean isAllostericReaction(Map<String, Object> analysisResults) {
+	
 	return false;
 }
 private boolean isBindingReaction(Map<String, Object> analysisResults) {
@@ -497,7 +510,7 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList, React
 		if(isDecayReaction()) {
 			String msg = "Decay Reaction.";
 			String tip = msg;
-			issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+//			issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
 		}
 	}
 }

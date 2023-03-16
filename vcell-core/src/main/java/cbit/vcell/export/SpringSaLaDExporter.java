@@ -143,8 +143,8 @@ public class SpringSaLaDExporter {
 					throw new RuntimeException("Molecule being created not found in the list of Species");
 				}
 				RbmKineticLaw kineticLaw = rrs.getReactionRule().getKineticLaw();
-				Expression kon = kineticLaw.getLocalParameterValue(RbmKineticLaw.RbmKineticLawParameterType.MassActionForwardRate);
-				Pair<String, String> newPair = new Pair<> (kon.infix(), oldPair.two);
+				Expression creationRate = kineticLaw.getLocalParameterValue(RbmKineticLaw.RbmKineticLawParameterType.MassActionForwardRate);
+				Pair<String, String> newPair = new Pair<> (creationRate.infix(), oldPair.two);
 				moleculeCreationDecayRates.put(sc, newPair);
 			}
 			for (Map.Entry<ReactionRuleSpec, SpeciesContext> entry : decayMap.entrySet()) {
@@ -155,8 +155,8 @@ public class SpringSaLaDExporter {
 					throw new RuntimeException("Molecule being destroyed not found in the list of Species");
 				}
 				RbmKineticLaw kineticLaw = rrs.getReactionRule().getKineticLaw();
-				Expression koff = kineticLaw.getLocalParameterValue(RbmKineticLaw.RbmKineticLawParameterType.MassActionReverseRate);
-				Pair<String, String> newPair = new Pair<> (oldPair.one, koff.infix());
+				Expression decayRate = kineticLaw.getLocalParameterValue(RbmKineticLaw.RbmKineticLawParameterType.MassActionForwardRate);
+				Pair<String, String> newPair = new Pair<> (oldPair.one, decayRate.infix());
 				moleculeCreationDecayRates.put(sc, newPair);
 			}
 		} catch(Exception ex) {
