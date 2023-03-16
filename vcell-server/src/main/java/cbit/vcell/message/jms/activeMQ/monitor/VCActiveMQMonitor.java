@@ -43,7 +43,7 @@ public class VCActiveMQMonitor  implements VCJmsConfig{
 				System.out.println("Usage: [configuration xml file]");
 			}
 		} catch (Exception e) {
-			LG.error(e);
+			LG.error(e.getMessage(), e);
 		}
 	}
     
@@ -137,7 +137,7 @@ public class VCActiveMQMonitor  implements VCJmsConfig{
 				sm.getWriter().println(msg);
 				sm.stop();
 			} catch (Exception e) {
-				LG.error(e);
+				LG.error(e.getMessage(), e);
 			}
 		}
 	}

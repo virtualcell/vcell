@@ -379,7 +379,7 @@ public synchronized String getBasicStatistics() throws SQLException,DataAccessEx
 		handle_DataAccessException_SQLException(e);
 		return null; // never gets here;
 	} finally {
-		try{if(stmt != null) {stmt.close();}}catch(Exception e) {lg.error(e);}
+		try{if(stmt != null) {stmt.close();}}catch(Exception e) {lg.error(e.getMessage(), e);}
 		conFactory.release(con,lock);
 	}
 	//select vcuserid,count(vc_simulationjob.id) simcount

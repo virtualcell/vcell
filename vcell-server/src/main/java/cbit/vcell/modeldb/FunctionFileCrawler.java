@@ -146,7 +146,7 @@ public static void main(String[] args) {
 		}
 		System.exit(0);
 	} catch (Exception ex) {
-		lg.error(ex);
+		lg.error(ex.getMessage(), ex);
 	} finally {
 		try {
 			if (conFactory != null) {

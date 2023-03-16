@@ -172,7 +172,7 @@ public class SimulationData extends VCData {
 					}
 				}catch(Exception e){
 					bNotFound = true;
-					lg.error(e);
+					lg.error(e.getMessage(), e);
 			}
 			}else{
 				bNotFound = true;
@@ -198,9 +198,9 @@ public class SimulationData extends VCData {
 						solverDataType = SolverDataType.COMSOL;
 					}
 				}catch(Exception e){
-					lg.error(e);
+					lg.error(e.getMessage(), e);
 				}finally{
-					if(fis != null){try{fis.close();}catch(Exception e){lg.error(e);}}
+					if(fis != null){try{fis.close();}catch(Exception e){lg.error(e.getMessage(), e);}}
 				}
 			}
 
@@ -215,7 +215,7 @@ public class SimulationData extends VCData {
 				}
 				return amplistorFileExists(simDataAmplistorInfo, user.getName(), simLogFileName);
 			}finally{
-				if(urlCon != null){try{urlCon.disconnect();}catch(Exception e){lg.error(e);}}
+				if(urlCon != null){try{urlCon.disconnect();}catch(Exception e){lg.error(e.getMessage(), e);}}
 			}
 		}
 
@@ -320,7 +320,7 @@ public class SimulationData extends VCData {
 						lg.warn("FileNotFoundException: SimulationData.AmplistorHelper.xferAmplistor(...) " + (getVCDataiDataIdentifier().getOwner().getName() + "/" + file.getName()) + ".  This may not be an error.");
 					}
 				} catch (Exception e){
-					lg.error(e);
+					lg.error(e.getMessage(), e);
 				}
 			}
 		}
@@ -642,7 +642,7 @@ public AnnotatedFunction getFunction(OutputContext outputContext,String identifi
 	try {
 		getFunctionDataIdentifiers(outputContext);
 	} catch (Exception ex) {
-		lg.error(ex);
+		lg.error(ex.getMessage(), ex);
 	}
 
 	// Get the function from each annotatedFunction in annotatedFunctionList, check if name is same as 'identifier' argument
@@ -692,7 +692,7 @@ public AnnotatedFunction[] getFunctions(OutputContext outputContext) {
 	try {
 		getFunctionDataIdentifiers(outputContext);
 	} catch (Exception ex) {
-		lg.error(ex);
+		lg.error(ex.getMessage(), ex);
 	}
 
 	AnnotatedFunction functions[] = new AnnotatedFunction[annotatedFunctionList.size()];
@@ -1161,7 +1161,7 @@ public synchronized SimDataBlock getSimDataBlock(OutputContext outputContext, St
 	try {
 		getFunctionDataIdentifiers(outputContext);
 	} catch (Exception ex) {
-		lg.error(ex);
+		lg.error(ex.getMessage(), ex);
 	}
 	try{
 		if(isPostProcessing(outputContext, varName)){
@@ -1237,7 +1237,7 @@ synchronized double[][][] getSimDataTimeSeries0(
 	try {
 		getFunctionDataIdentifiers(outputContext);
 	} catch (Exception ex) {
-		lg.error(ex);
+		lg.error(ex.getMessage(), ex);
 	}
 
 	int resultsCounter = 0;

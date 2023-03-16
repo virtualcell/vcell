@@ -384,7 +384,7 @@ public void multiScanBioModels(VCMultiBioVisitor databaseVisitor, Writer writer,
 		
 		printWriter.close();
 	}catch(Exception e) {
-		lg.error(e);
+		lg.error(e.getMessage(), e);
 	}
 }
 

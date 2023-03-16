@@ -101,7 +101,7 @@ public static void readRbmElement(Connection con,Model model,DatabaseSyntax dbSy
 			}
 		}
 	}finally{
-		if(stmt != null){try{stmt.close();}catch(Exception e){lg.error(e);}}
+		if(stmt != null){try{stmt.close();}catch(Exception e){lg.error(e.getMessage(), e);}}
 	}
 }
 

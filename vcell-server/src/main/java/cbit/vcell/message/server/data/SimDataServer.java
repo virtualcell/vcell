@@ -192,7 +192,7 @@ public SimDataServer(ServiceInstanceStatus serviceInstanceStatus, DataServerImpl
 					response.setStatusCode(HttpStatus.SC_NOT_FOUND);
 					response.setEntity(new StringEntity("Not Found"));
 				} catch (Exception e) {
-					lg.error(e);
+					lg.error(e.getMessage(), e);
 					response.setStatusCode(HttpStatus.SC_INTERNAL_SERVER_ERROR);
 					response.setEntity(new StringEntity(e.getMessage()));
 
@@ -202,7 +202,7 @@ public SimDataServer(ServiceInstanceStatus serviceInstanceStatus, DataServerImpl
 		server.start();
 		
 	}catch(Exception e) {
-		lg.error(e);
+		lg.error(e.getMessage(), e);
 	}
 	
 	
@@ -294,8 +294,8 @@ private File createHdf5(VCSimulationIdentifier vcsid,Integer[] scanJobs,double b
 		hdf5FileID = -1;
 		return hdf5TempFile;
 	} finally {
-		if(jobGroupID != -1) {try{H5.H5Gclose(jobGroupID);}catch(Exception e2){lg.error(e2);}}
-		if(hdf5FileID != -1) {try{H5.H5Fclose(hdf5FileID);}catch(Exception e2){lg.error(e2);}}
+		if(jobGroupID != -1) {try{H5.H5Gclose(jobGroupID);}catch(Exception e2){lg.error(e2.getMessage(), e2);}}
+		if(hdf5FileID != -1) {try{H5.H5Fclose(hdf5FileID);}catch(Exception e2){lg.error(e2.getMessage(), e2);}}
 	}
 }
 public void init() throws Exception {

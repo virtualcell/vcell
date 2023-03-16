@@ -320,7 +320,7 @@ private Action getAction(Element param, MathDescription md) throws XmlParseExcep
 	try {
 		Action action = new Action(var, operation, exp);
 		return action;
-	} catch (Exception e){lg.error(e);}
+	} catch (Exception e){lg.error(e.getMessage(), e);}
 	
 	return null;
 }
@@ -5872,7 +5872,7 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 	try {
 		newgeometry = getGeometry( param.getChild(XMLTags.GeometryTag, vcNamespace));
 	} catch (Exception e) {
-		lg.error(e);
+		lg.error(e.getMessage(), e);
 		String stackTrace = null;
 		try{
 			java.io.ByteArrayOutputStream bos = new java.io.ByteArrayOutputStream();
@@ -5921,7 +5921,7 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 					}
 				}
 			} catch (Exception e) {
-				lg.error(e);
+				lg.error(e.getMessage(), e);
 			}
 		}
 	}
@@ -7352,7 +7352,7 @@ private VarIniCondition getVarIniCount(Element param, MathDescription md) throws
 	try {
 		VarIniCondition varIni= new VarIniCount(var,exp);
 		return varIni;		
-	} catch (Exception e){lg.error(e);}
+	} catch (Exception e){lg.error(e.getMessage(), e);}
 	
 	return null;	
 }
@@ -7399,7 +7399,7 @@ private VarIniCondition getVarIniPoissonExpectedCount(Element param, MathDescrip
 	try {
 		VarIniCondition varIni= new VarIniPoissonExpectedCount(var,exp);
 		return varIni;		
-	} catch (Exception e){lg.error(e);}
+	} catch (Exception e){lg.error(e.getMessage(), e);}
 	
 	return null;	
 }

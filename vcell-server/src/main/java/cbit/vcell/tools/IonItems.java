@@ -133,11 +133,11 @@ public class IonItems {
 			}
 
 		} catch (Exception e) {
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 			return;
 		} finally{
-			if(stmt != null){try{stmt.close();}catch(Exception e){lg.error(e);}}
-			if(con != null){try{con.close();}catch(Exception e){lg.error(e);}}
+			if(stmt != null){try{stmt.close();}catch(Exception e){lg.error(e.getMessage(), e);}}
+			if(con != null){try{con.close();}catch(Exception e){lg.error(e.getMessage(), e);}}
 		}
 		
 		if(command.toLowerCase().equals(PUBLICMODELWITHSIMS)) {
@@ -246,7 +246,7 @@ public class IonItems {
 //				}
 			} catch (Exception e) {
 				System.out.println("----------GENERALERROR "+vcDoc.getVersion().getVersionKey());
-				lg.error(e);
+				lg.error(e.getMessage(), e);
 				if(vcDoc != null) {
 					PrintWriter pw = new PrintWriter(new File(dirToSaveVCML,vcDoc.getVersion().getVersionKey().toString()+"_exception.xml"));
 					pw.write("");
@@ -255,7 +255,7 @@ public class IonItems {
 			}
 			}
 		} finally{
-			if(stmt != null){try{stmt.close();}catch(Exception e){lg.error(e);}}
+			if(stmt != null){try{stmt.close();}catch(Exception e){lg.error(e.getMessage(), e);}}
 		}
 
 	}
@@ -312,7 +312,7 @@ public class IonItems {
 					}
 				}
 			} catch (Exception e) {
-				lg.error(e);
+				lg.error(e.getMessage(), e);
 				sb.append("-----ERROR "+file.getName()+"\n   "+e.getMessage());
 			}
 		}
@@ -461,7 +461,7 @@ public class IonItems {
 							}
 						} catch (Exception e) {
 							System.out.println("-----SIMERROR "+vcDoc.getVersion().getVersionKey()+"\n-----Sim="+sims[j].getVersion());
-							lg.error(e);
+							lg.error(e.getMessage(), e);
 							if(e.getMessage().contains("HDF5")) {
 								return;
 							}
@@ -485,7 +485,7 @@ public class IonItems {
 //				}
 			} catch (Exception e) {
 				System.out.println("----------GENERALERROR "+vcDoc.getVersion().getVersionKey());
-				lg.error(e);
+				lg.error(e.getMessage(), e);
 				if(vcDoc != null) {
 					PrintWriter pw = new PrintWriter(new File(dirToSaveVCML,vcDoc.getVersion().getVersionKey().toString()+"_exception.xml"));
 					pw.write("");
@@ -502,9 +502,9 @@ public class IonItems {
 //
 //			}
 		} catch (Exception e) {
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 		} finally{
-			if(stmt != null){try{stmt.close();}catch(Exception e){lg.error(e);}}
+			if(stmt != null){try{stmt.close();}catch(Exception e){lg.error(e.getMessage(), e);}}
 		}
 	}
 	

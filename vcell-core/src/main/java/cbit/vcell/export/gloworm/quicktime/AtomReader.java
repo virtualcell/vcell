@@ -239,7 +239,7 @@ public void printSelectionDetails(AtomInfo info) {
 		System.out.println(s);
 		din.close();
 	} catch (Exception e) {
-		lg.error(e);
+		lg.error(e.getMessage(), e);
 	}
 }
 

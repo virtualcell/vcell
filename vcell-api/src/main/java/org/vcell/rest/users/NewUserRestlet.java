@@ -113,7 +113,7 @@ public final class NewUserRestlet extends Restlet {
 					request.getResourceRef().getHostIdentifier()+"/"+VCellApiApplication.NEWUSER_VERIFY+"?"+VCellApiApplication.EMAILVERIFYTOKEN_FORMNAME+"="+emailVerifyToken.getString()
 				);
 			} catch (Exception e) {
-				lg.error(e);
+				lg.error(e.getMessage(), e);
 				response.setStatus(Status.SERVER_ERROR_INTERNAL);
 				response.setEntity("we failed to send a verification email to "+newUserInfo.email, MediaType.TEXT_PLAIN);
 				return;
@@ -227,7 +227,7 @@ public final class NewUserRestlet extends Restlet {
 					request.getResourceRef().getHostIdentifier()+"/"+VCellApiApplication.NEWUSER_VERIFY+"?"+VCellApiApplication.EMAILVERIFYTOKEN_FORMNAME+"="+emailVerifyToken.getString()
 				);
 			} catch (Exception e) {
-				lg.error(e);
+				lg.error(e.getMessage(), e);
 				response.setStatus(Status.SERVER_ERROR_INTERNAL);
 				response.setEntity("we failed to send a verification email to "+newUserInfo.email, MediaType.TEXT_PLAIN);
 			}

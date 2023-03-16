@@ -94,7 +94,7 @@ private void writeChunks(byte[] dataBytes, boolean bInitializeFile) throws IOExc
 		fw.seek(0);
 		fw.writeInt((int)dataFile.length());
 	}finally{
-		if(fw!= null){try{fw.close();}catch(Exception e){lg.error(e);}}
+		if(fw!= null){try{fw.close();}catch(Exception e){lg.error(e.getMessage(), e);}}
 	}
 }
 

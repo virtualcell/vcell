@@ -553,7 +553,7 @@ buffer.append(	"print('(3) physics ConvectionDiffusionEquation for field name "+
 			File jsFile = new File(javaFile.getParentFile(), javaFile.getName().replace(".java",".js"));
 			run(engine, vccModel, reportFile, javaFile, mphFile, jsFile);
 		} catch (Exception e) {
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 		} finally {
 			Thread.currentThread().setContextClassLoader(origClassLoader);
 			System.out.println("disconnecting");

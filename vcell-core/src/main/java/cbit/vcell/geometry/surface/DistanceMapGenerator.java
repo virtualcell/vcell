@@ -936,7 +936,7 @@ public class DistanceMapGenerator {
 				System.out.println("Distance to triangle = " + distanceToTriangle3d + "  (closest to vertex t2) - should be " + distanceToTriangleExperimental);
 			}
 		} catch (Exception e) {
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 		}
 			
 		// we work inside a cube of 100x100x100

@@ -125,7 +125,7 @@ public class MicroscopyXmlproducer {
 			}catch (IOException e){
 				throw new XmlParseException("failed to create compressed pixel data", e);
 			}finally{
-				if(dos != null){try{dos.close();}catch(Exception e2){lg.error(e2);}}
+				if(dos != null){try{dos.close();}catch(Exception e2){lg.error(e2.getMessage(), e2);}}
 			}
 			compressedPixels = bos.toByteArray();
 			if(!bSaveCompressed || bForceUncompressed){

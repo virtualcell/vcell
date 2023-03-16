@@ -46,9 +46,9 @@ public class OptimizationRunServerResource extends AbstractServerResource implem
 		}
 		public void closeAll(String optID) {
 			paramOptActiveSockets.remove(optID);
-			try{ois.close();}catch(Exception e2) { lg.error(e2); }
-			try{oos.close();}catch(Exception e2) { lg.error(e2); }
-			try{optSocket.close();}catch(Exception e2) { lg.error(e2); }
+			try{ois.close();}catch(Exception e2) { lg.error(e2.getMessage(), e2); }
+			try{oos.close();}catch(Exception e2) { lg.error(e2.getMessage(), e2); }
+			try{optSocket.close();}catch(Exception e2) { lg.error(e2.getMessage(), e2); }
 		}
 		public OptMessage.OptResponseMessage sendCommand(OptMessage.OptCommandMessage optCommandMessage) throws IOException,ClassNotFoundException{
 			lg.info("sending command "+optCommandMessage+" with ID="+optCommandMessage.optID);

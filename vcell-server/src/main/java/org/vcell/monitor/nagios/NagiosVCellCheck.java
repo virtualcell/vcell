@@ -250,8 +250,8 @@ public class NagiosVCellCheck {
 									messageEvents = vcellConnection.getMessageEvents();
 								}
 							}finally{
-								try{if(copy1Key != null){vcellConnection.getUserMetaDbServer().deleteBioModel(copy1Key);}}catch(Exception e){lg.error(e);}
-								try{if(copy2Key != null){vcellConnection.getUserMetaDbServer().deleteBioModel(copy2Key);}}catch(Exception e){lg.error(e);}
+								try{if(copy1Key != null){vcellConnection.getUserMetaDbServer().deleteBioModel(copy1Key);}}catch(Exception e){lg.error(e.getMessage(), e);}
+								try{if(copy2Key != null){vcellConnection.getUserMetaDbServer().deleteBioModel(copy2Key);}}catch(Exception e){lg.error(e.getMessage(), e);}
 							}
 						}
 					}

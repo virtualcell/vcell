@@ -284,7 +284,7 @@ public class AnnotationMapping {
 					//System.out.println(xref.getDb());
 				}
 			} catch (Exception e) {
-				lg.error(e);
+				lg.error(e.getMessage(), e);
 			}
 		}
 

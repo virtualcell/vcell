@@ -81,7 +81,7 @@ public void generateFunctionFile() throws Exception {
 	}catch (java.io.IOException e){
 		throw new RuntimeException("error writing .function file '"+basefileName+": "+e.getMessage(), e);
 	}finally{
-		if(functionFile != null){try{functionFile.close();}catch(Exception e){lg.error(e);}}
+		if(functionFile != null){try{functionFile.close();}catch(Exception e){lg.error(e.getMessage(), e);}}
 	}
 		
 }

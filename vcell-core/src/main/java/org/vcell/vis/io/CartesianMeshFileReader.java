@@ -61,8 +61,8 @@ public class CartesianMeshFileReader {
 		CartesianMesh mesh = readCartesianMesh(meshST,membraneMeshMetrics,subdomainInfo);
 		return mesh;
 		}finally{
-			if(meshReader != null){try{meshReader.close();}catch(Exception e){lg.error(e);}}
-			if(meshMetricsReader != null){try{meshMetricsReader.close();}catch(Exception e){lg.error(e);}}
+			if(meshReader != null){try{meshReader.close();}catch(Exception e){lg.error(e.getMessage(), e);}}
+			if(meshMetricsReader != null){try{meshMetricsReader.close();}catch(Exception e){lg.error(e.getMessage(), e);}}
 		}
 	} 
 

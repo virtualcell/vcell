@@ -63,7 +63,7 @@ public abstract class VCMessagingServiceJms extends AbstractService implements V
 					};
 					blobDir.listFiles(gcFileVisitor);
 				}catch (Exception e){
-					lg.error(e);
+					lg.error(e.getMessage(), e);
 					if (getDelegate()!=null){
 						getDelegate().onException(e);
 					}
@@ -83,7 +83,7 @@ public abstract class VCMessagingServiceJms extends AbstractService implements V
 	
 	private void onException(Exception e){
 		delegate.onException(e);
-		lg.error(e);
+		lg.error(e.getMessage(), e);
 	}
 	
 	@Override

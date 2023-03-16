@@ -636,7 +636,7 @@ public static boolean compareMesh(CartesianMesh mesh1, CartesianMesh mesh2, Prin
 		}
 			
 	} catch (Exception ex) {
-		lg.error(ex);
+		lg.error(ex.getMessage(), ex);
 	}
 	return true;
 }
@@ -2013,8 +2013,8 @@ public static CartesianMesh readFromFiles(File meshFile, File meshmetricsFile, F
 	mesh.read(meshST,membraneMeshMetrics);
 	return mesh;
 	}finally{
-		if(meshReader != null){try{meshReader.close();}catch(Exception e){lg.error(e);}}
-		if(meshMetricsReader != null){try{meshMetricsReader.close();}catch(Exception e){lg.error(e);}}
+		if(meshReader != null){try{meshReader.close();}catch(Exception e){lg.error(e.getMessage(), e);}}
+		if(meshMetricsReader != null){try{meshMetricsReader.close();}catch(Exception e){lg.error(e.getMessage(), e);}}
 	}
 } 
 	
@@ -2030,7 +2030,7 @@ public static void test() {
 			System.out.println("-------------------- generated file ----------------");
 			mesh.write(System.out);
 		}catch (Exception e){
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 		}
 	}
 

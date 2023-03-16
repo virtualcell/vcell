@@ -40,7 +40,7 @@ public class PathwayEntryReader {
 			System.out.println("   " + pathwayModel.getPathwayEntryObjects().size() + " elements.");
 			System.out.println("   " + pathwayReader.numDuplicates + " duplicates.");
 		}catch (Exception e){
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 		}
 	}
 

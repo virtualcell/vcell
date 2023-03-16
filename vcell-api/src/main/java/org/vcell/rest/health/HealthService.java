@@ -309,7 +309,7 @@ public class HealthService {
 						try {
 							vcellConnection.getSimulationController().stopSimulation(runningSimId);
 						}catch (Exception e) {
-							lg.error(e);
+							lg.error(e.getMessage(), e);
 						}
 					}
 					if (savedBioModelKey!=null) {

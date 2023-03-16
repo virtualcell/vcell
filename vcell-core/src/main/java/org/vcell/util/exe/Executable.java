@@ -476,17 +476,17 @@ private final void close(){
 		try {
 			getProcess().getInputStream().close();
 		} catch (Exception e) {
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 		}
 		try {
 			getProcess().getOutputStream().close();
 		} catch (Exception e) {
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 		}
 		try {
 			getProcess().getErrorStream().close();
 		} catch (Exception e) {
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 		}
 		getProcess().destroy();
 		setProcess(null);

@@ -51,7 +51,7 @@ public class VCMessagingServiceEmbedded extends VCMessagingServiceJms {
 //			broker.addConnector(connector);
 			broker.start();
 		} catch (Exception e) {
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 			throw new VCMessagingException(e.getMessage(),e);
 		}
 	}

@@ -87,7 +87,7 @@ public User.SpecialUser getUserFromUserid(Connection con, String userid) throws 
 					specials.add(User.SPECIAL_CLAIM.fromDatabase(special));
 				}catch(Exception e) {
 					//keep going
-					lg.error(e);
+					lg.error(e.getMessage(), e);
 				}
 			}
 		}
@@ -170,7 +170,7 @@ public User getUserFromUseridAndPassword(Connection con, String userid, UserLogi
 			}
 		}
 	} finally {
-		if(stmt != null){try{stmt.close();}catch(Exception e){lg.error(e);}}
+		if(stmt != null){try{stmt.close();}catch(Exception e){lg.error(e.getMessage(), e);}}
 	}
 	return user;
 }
@@ -206,7 +206,7 @@ public void sendLostPassword(Connection con,String userid) throws SQLException, 
 			"Your password has been reset to '"+clearTextPassword+"'.  Login with the new password and change your password as soon as possible.  To change your password, log into VCell and select Account->'Update Registration Info...' from the Top Menu.  Enter a new password where indicated."
 		);
 	} catch (Exception e) {
-		lg.error(e);
+		lg.error(e.getMessage(), e);
 		throw new DataAccessException("Error sending lost password\n"+e.getMessage(),e);
 	}
 	

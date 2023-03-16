@@ -237,7 +237,7 @@ public static KeyValue savePublicationRep(Connection con,PublicationRep publicat
 					sql = "INSERT INTO "+PublicationModelLinkTable.table.getTableName()+" VALUES ("+keyFactory.nextSEQ()+","+pubID.toString()+","+bioModelReferenceRep.getBmKey().toString()+",NULL)";
 					changed = updateCleanSQL(con,sql);
 				} catch (Exception e) {
-					lg.error(e);
+					lg.error(e.getMessage(), e);
 					throw new SQLException("Error inserting biomodelKey="+bioModelReferenceRep.getBmKey().toString()+" link to publicationID="+pubID.toString()+"\n"+e.getMessage(),e);
 				}
 			}
@@ -248,7 +248,7 @@ public static KeyValue savePublicationRep(Connection con,PublicationRep publicat
 					sql = "INSERT INTO "+PublicationModelLinkTable.table.getTableName()+" VALUES ("+keyFactory.nextSEQ()+","+pubID.toString()+",NULL,"+mathModelReferenceRep.getMmKey().toString()+")";
 					changed = updateCleanSQL(con, sql);
 				} catch (Exception e) {
-					lg.error(e);
+					lg.error(e.getMessage(), e);
 					throw new SQLException("Error inserting mathmodelKey="+mathModelReferenceRep.getMmKey().toString()+" link to publicationID="+pubID.toString()+"\n"+e.getMessage(),e);
 				}
 			}
@@ -1450,7 +1450,7 @@ public static VCInfoContainer getVCInfoContainer(User user,Connection con, Datab
 					}
 					
 				}catch(Exception e) {
-					lg.error(e);
+					lg.error(e.getMessage(), e);
 					//ignore
 				}
 			}
@@ -1568,7 +1568,7 @@ public static VCInfoContainer getVCInfoContainer(User user,Connection con, Datab
 						rset.close();
 					}
 				}catch(Exception e) {
-					lg.error(e);
+					lg.error(e.getMessage(), e);
 					//ignore
 				}
 			}
@@ -1649,7 +1649,7 @@ public static VCInfoContainer getVCInfoContainer(User user,Connection con, Datab
 			bm_mm_VCDocumentInfos.addAll(Arrays.asList((mathModelInfos!=null?mathModelInfos:new MathModelInfo[0])));
 			DbDriver.addPublicationInfos(con, stmt, bm_mm_VCDocumentInfos);
 		} catch (Exception e) {
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 			//Don't fail if something goes wrong with setting publication info
 		}
 	}finally{
@@ -1710,7 +1710,7 @@ public static void addPublicationInfos(Connection con,Statement stmt,Vector<Vers
 				//publicationInfoArr.add(publicationInfo);
 		}
 	} catch (Exception e) {
-		lg.error(e);
+		lg.error(e.getMessage(), e);
 		throw new DataAccessException(DbDriver.class.getName()+".getPublicationInfo(...) Error -"+e.getMessage(), e);
 	}finally {
 		if(rset != null) {rset.close();}
@@ -1814,7 +1814,7 @@ public static Vector<VersionInfo> getVersionableInfos(Connection con,User user, 
 		try {
 			DbDriver.addPublicationInfos(con, stmt, vInfoList);
 		} catch (Exception e) {
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 			//Don't fail if something goes wring with setting publication info
 		}
 	} finally {

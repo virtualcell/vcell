@@ -265,8 +265,8 @@ public class VCellSimStatus {
 		    		}
 		    	}
 			}finally {
-	    		if(command != null){try{command.close();}catch(Exception e){lg.error(e);}}
-	    		if(session != null){try{session.close();}catch(Exception e){lg.error(e);}}
+	    		if(command != null){try{command.close();}catch(Exception e){lg.error(e.getMessage(), e);}}
+	    		if(session != null){try{session.close();}catch(Exception e){lg.error(e.getMessage(), e);}}
 			}
 	    	String completeStr = "update vc_simulationjob set schedulerstatus=4,statusmsg='WORKEREVENT_COMPLETED|completed' where id in (";
 			StringBuffer updateComplete = new StringBuffer();
@@ -323,11 +323,11 @@ public class VCellSimStatus {
 		    System.out.println("update vc_simulationjob set schedulerstatus=5,statusmsg='stopped' where id in ("+vc_simulationjob_ids.toString()+");\n");
 		    
 		} catch (Exception e) {
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 		}finally{
-			if(stmt != null){try{stmt.close();}catch(Exception e){lg.error(e);}}
-			if(con != null){try{con.close();}catch(Exception e){lg.error(e);}}
-			if(sshClient != null){try{sshClient.disconnect();}catch(Exception e2){lg.error(e2);}}
+			if(stmt != null){try{stmt.close();}catch(Exception e){lg.error(e.getMessage(), e);}}
+			if(con != null){try{con.close();}catch(Exception e){lg.error(e.getMessage(), e);}}
+			if(sshClient != null){try{sshClient.disconnect();}catch(Exception e2){lg.error(e2.getMessage(), e2);}}
 		}
 	}
 

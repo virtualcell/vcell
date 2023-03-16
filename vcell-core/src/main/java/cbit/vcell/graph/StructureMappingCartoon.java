@@ -44,7 +44,7 @@ public class StructureMappingCartoon extends GraphModel implements PropertyChang
 		try {
 			refreshAll();
 		} catch (Exception e) {
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 		}
 	}
 

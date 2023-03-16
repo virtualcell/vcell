@@ -129,7 +129,7 @@ public class MathVerifier {
             try {
                 this.conFactory.close();
             } catch (Exception e) {
-                lg.error(e);
+                lg.error(e.getMessage(), e);
             }
         }
 
@@ -438,7 +438,7 @@ public class MathVerifier {
                         simContextNewMath.getGeometry().getGeometrySurfaceDescription().updateAll();
                     }
                 } catch (Exception e) {
-                    lg.error(e);
+                    lg.error(e.getMessage(), e);
                 }
 
                 //
@@ -463,7 +463,7 @@ public class MathVerifier {
                     mathDesc_4_8 = new MathMapping_4_8(simContextNewMath).getMathDescription();
                     mathCompareResults_4_8 = MathDescription.testEquivalency(SimulationSymbolTable.createMathSymbolTableFactory(), origMathDesc, mathDesc_4_8);
                 } catch (Exception e) {
-                    lg.error(e);
+                    lg.error(e.getMessage(), e);
                     mathCompareResults_4_8 = new MathCompareResults(Decision.MathDifferent_FAILURE_UNKNOWN, e.getMessage());
                 }
 
@@ -755,7 +755,7 @@ public class MathVerifier {
                     simContextNewMath.getGeometry().getGeometrySurfaceDescription().updateAll();
                 }
             } catch (Exception e) {
-                lg.error(e);
+                lg.error(e.getMessage(), e);
             }
 
             //
@@ -781,7 +781,7 @@ public class MathVerifier {
             try {
                 mathCompareResults_4_8 = MathDescription.testEquivalency(SimulationSymbolTable.createMathSymbolTableFactory(), origMathDesc, mathDesc_4_8);
             } catch (Exception e) {
-                lg.error(e);
+                lg.error(e.getMessage(), e);
                 mathCompareResults_4_8 = new MathCompareResults(Decision.MathDifferent_FAILURE_UNKNOWN, e.getMessage());
             }
             return new MathGenerationResults(bioModelFromDB, simContextFromDB, origMathDesc, mathDesc_latest, mathCompareResults_latest, mathDesc_4_8, mathCompareResults_4_8);
@@ -1170,7 +1170,7 @@ public class MathVerifier {
                                 simContextNewMath.getGeometry().getGeometrySurfaceDescription().updateAll();
                             }
                         } catch (Exception e) {
-                            lg.error(e);
+                            lg.error(e.getMessage(), e);
                         }
 
                         //
@@ -1446,7 +1446,7 @@ public class MathVerifier {
                                 simContextNewMath.getGeometry().getGeometrySurfaceDescription().updateAll();
                             }
                         } catch (Exception e) {
-                            lg.error(e);
+                            lg.error(e.getMessage(), e);
                         }
 
                         //

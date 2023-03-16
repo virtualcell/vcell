@@ -197,7 +197,7 @@ public class SimpleElipticalLayouterTest extends JPanel {
 			System.out.println("Done recalculating, steps = " + step);
 			displayPanel.repaint();
 		} catch (Exception exception) {
-			lg.error(exception);
+			lg.error(exception.getMessage(), exception);
 		}
 	}
 		

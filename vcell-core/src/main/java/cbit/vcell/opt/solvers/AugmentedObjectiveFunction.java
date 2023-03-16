@@ -77,7 +77,7 @@ public double f(double[] x) {
 
 		return penalty + objFunValue;
 	} catch (Exception e) {
-		lg.error(e);
+		lg.error(e.getMessage(), e);
 		System.out.println("penalty = "+penalty);
 		if (penalty > 0) {
 			System.out.println("too high ... aborting augmentedObjective function");

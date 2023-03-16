@@ -229,7 +229,7 @@ public SpatialSelection[] getSelections() {
 		}
 		return spatialSelections;
 	} catch (Exception exc) {
-		lg.error(exc);
+		lg.error(exc.getMessage(), exc);
 		return null;
 	}
 }

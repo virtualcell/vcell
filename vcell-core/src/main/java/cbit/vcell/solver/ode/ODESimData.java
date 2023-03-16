@@ -443,7 +443,7 @@ public static ODESimData readIDADataFile(VCDataIdentifier vcdId, File dataFile, 
 		}
 		//
 	} catch (Exception e) {
-		lg.error(e);
+		lg.error(e.getMessage(), e);
 		return null;
 	} finally {
 		try {
@@ -451,7 +451,7 @@ public static ODESimData readIDADataFile(VCDataIdentifier vcdId, File dataFile, 
 				bufferedReader.close();
 			}
 		} catch (Exception ex) {
-			lg.error(ex);
+			lg.error(ex.getMessage(), ex);
 		}
 	}
 	

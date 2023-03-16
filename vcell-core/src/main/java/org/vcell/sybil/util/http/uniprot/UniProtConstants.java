@@ -99,7 +99,7 @@ public class UniProtConstants {
 			Graph model = ((ModelResponse) response).model();
 			box.add(UniProtExtractor.extractBox(model));
 		} else if(response instanceof ExceptionResponse) {
-			lg.error(((ExceptionResponse) response).exception());
+			lg.error(((ExceptionResponse) response).exception().getMessage(), ((ExceptionResponse) response).exception());
 		} else {
 			System.out.println("no model");
 		}
