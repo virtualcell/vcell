@@ -104,12 +104,14 @@ public class Hdf5WrapperFactory {
         List<Hdf5DatasetWrapper> datasetWrappers = new ArrayList<>();
 
         for (Report report : this.getReports(sedml.getOutputs())){
-            Map<DataSet, Map<Variable, NonspatialValueHolder>> dataSetValues = new LinkedHashMap<>();
+            //Map<DataSet, Map<Variable, NonspatialValueHolder>> dataSetValues = new LinkedHashMap<>();
+            Map<DataSet, Double[]> dataSetValues = new LinkedHashMap<>();
 
             // go through each entry (dataset)
             for (DataSet dataset : report.getListOfDataSets()) { 
-                List<String> varIDs = new ArrayList<>();
-                Map<Variable, NonspatialValueHolder> values = new HashMap<>();
+                Map<String, List<Double>> idToDataMap = new LinkedHashMap<>();
+                //List<String> varIDs = new ArrayList<>();
+                //List<Double> values = new ArrayList<>();
 
                 // use the data reference to obtain the data generator
                 DataGenerator datagen = sedml.getDataGeneratorWithId(dataset.getDataReference()); assert datagen != null;
@@ -147,7 +149,7 @@ public class Hdf5WrapperFactory {
 
                     if (taskJobs.isEmpty()) continue;
 
-                    varIDs.add(var.getId());
+                    //varIDs.add(var.getId());
 
                     if (!(sedmlSim instanceof UniformTimeCourse)){
                         logger.error("only uniform time course simulations are supported");
@@ -157,12 +159,12 @@ public class Hdf5WrapperFactory {
                     // we want to keep the last outputNumberOfPoints only
                     int outputNumberOfPoints = ((UniformTimeCourse) sedmlSim).getNumberOfPoints();
                     double outputStartTime = ((UniformTimeCourse) sedmlSim).getOutputStartTime();
-                    NonspatialValueHolder variablesList;
+                    //NonspatialValueHolder variablesList;
+                    List<Double> variablesList;
 
                     for (TaskJob taskJob : taskJobs) {
                         ODESolverResultSet results = nonspatialResultsHash.get(taskJob);
-                        int column = results.findColumn(sbmlVarId);
-                        double[] data = results.extractColumn(column);
+                        double[] data = results.extractColumn(results.findColumn(sbmlVarId));
                         
                         if (outputStartTime > 0){
                             double[] correctiveData = new double[outputNumberOfPoints + 1];
@@ -172,17 +174,26 @@ public class Hdf5WrapperFactory {
                             data = correctiveData;
                         }
 
-                        if (initialTask instanceof RepeatedTask && values.containsKey(var)) { // double[] exists
-                            variablesList = values.get(var);
+                        /*if (initialTask instanceof RepeatedTask && idToDataMap.containsKey(var.getId())) { // double[] exists
+                            variablesList = idToDataMap.get(var.getId());
                         } else { // this is the first double[]
-                            variablesList = new NonspatialValueHolder(taskToSimulationMap.get(initialTask));
-                        }
-                        variablesList.values.add(data);
-                        values.put(var, variablesList);
+                            variablesList = new LinkedList<>();
+                        }*/
+                        // really ugly convert from double[] to List<Double>
+                        variablesList = Arrays.asList(Arrays.stream(data).boxed().toArray(Double[]::new));
+                        idToDataMap.put(var.getId(), variablesList);
                     }
                 }
 
                 // Missing functionality!!! We need to computer the variables into the proper values
+                if (varIDs.isEmpty()) continue;
+                List<Double[]> data = new LinkedList<>();
+                for (int i = 0; i < varIDs.size(); i++) data.add(null);
+                for (Variable var : values.keySet()){
+                    if (varIDs.contains(var.getId())) data.set(data.indexOf(var.getId()), values.get(var));
+                }
+                SimpleDataGenCalculator calc = new SimpleDataGenCalculator(datagen, varIDs);
+
 
                 dataSetValues.put(dataset, values);
 
@@ -482,9 +493,32 @@ public class Hdf5WrapperFactory {
             this.bindingMap.put(parameter, argument);
         }
 
-        public Double evaluateWithCurrentArguments() throws ExpressionException, DivideByZeroException {
+        public void setArguments(Map<String, Double> parameterToArgumentMap){
+            for (String param : parameterToArgumentMap.keySet()){
+                this.bindingMap.put(param, parameterToArgumentMap.get(param));
+            }
+        }
+
+        public double evaluateWithCurrentArguments() throws ExpressionException, DivideByZeroException {
             Double[] args = this.bindingMap.values().toArray(new Double[0]);
             return this.equation.evaluateVector(Stream.of(args).mapToDouble(Double::doubleValue).toArray());
+        }
+
+        public double evaluateWithProvidedArguments(Map<String, Double> parameterToArgumentMap) throws ExpressionException, DivideByZeroException {
+            Double[] dummyArray = new Double[0];
+            List<Double> args = new LinkedList<>();
+
+            // Confirm we have the correct params
+            if (parameterToArgumentMap.size() != this.bindingMap.size()) throw new IllegalArgumentException("Incorrect number of entries.");
+            if (!parameterToArgumentMap.keySet().equals(this.bindingMap.keySet())) throw new IllegalArgumentException("Parameter 'keys' don't match");
+
+            // Prepare args
+            for (String param : this.bindingMap.keySet()){ // binding map, because keys are set-similar but only binding map preserves order for sure!
+                args.add(parameterToArgumentMap.get(param));
+            }
+
+            // Solve
+            return this.equation.evaluateVector(Stream.of(args.toArray(dummyArray)).mapToDouble(Double::doubleValue).toArray());
         }
     }
 }
