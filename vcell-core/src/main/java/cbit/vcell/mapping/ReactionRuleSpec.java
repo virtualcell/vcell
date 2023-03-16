@@ -469,8 +469,8 @@ public SpeciesContext getDestroyedSpecies(SpeciesContextSpec[] speciesContextSpe
  * @param issueList java.util.Vector
  */
 public void gatherIssues(IssueContext issueContext, List<Issue> issueList, ReactionContext rc) {
-//	ReactionRuleCombo r = new ReactionRuleCombo(this, rc);
-//	ReactionRule reactionRule = getReactionRule();
+	ReactionRuleCombo r = new ReactionRuleCombo(this, rc);
+	ReactionRule reactionRule = getReactionRule();
 //	if(!isExcluded() && rc.getSimulationContext().isStoch() && (rc.getSimulationContext().getGeometry().getDimension()>0)) {
 //		boolean haveParticle = false;
 //		boolean haveContinuous = false;
@@ -497,7 +497,7 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList, React
 		if(isDecayReaction()) {
 			String msg = "Decay Reaction.";
 			String tip = msg;
-			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+			issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
 		}
 	}
 }

@@ -54,6 +54,8 @@ import cbit.vcell.mapping.MicroscopeMeasurement;
 import cbit.vcell.mapping.MolecularInternalLinkSpec;
 import cbit.vcell.mapping.NetworkTransformer;
 import cbit.vcell.mapping.RateRule;
+import cbit.vcell.mapping.ReactionRuleSpec;
+import cbit.vcell.mapping.ReactionRuleSpec.ReactionRuleCombo;
 import cbit.vcell.mapping.ReactionSpec.ReactionCombo;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SiteAttributesSpec;
@@ -300,8 +302,14 @@ public class IssuePanel extends DocumentEditorSubPanel {
 //				ActiveView av = new ActiveView(scs.getSimulationContext(), DocumentEditorTreeFolderClass.SPECIFICATIONS_NODE, ActiveViewID.molecular_structure_setting);
 //				followHyperlink(av, new Object[] {object});
 			} else if (object instanceof ReactionCombo) {
-				ReactionCombo rc = (ReactionCombo)object;
-				followHyperlink(new ActiveView(rc.getReactionContext().getSimulationContext(), DocumentEditorTreeFolderClass.SPECIFICATIONS_NODE, ActiveViewID.reaction_setting),new Object[] {((ReactionCombo)object).getReactionSpec()});
+				ReactionCombo rCombo = (ReactionCombo)object;
+				followHyperlink(new ActiveView(rCombo.getReactionContext().getSimulationContext(), DocumentEditorTreeFolderClass.SPECIFICATIONS_NODE, ActiveViewID.reaction_setting),new Object[] {((ReactionCombo)object).getReactionSpec()});
+			} else if (object instanceof ReactionRuleCombo) {	// --------------------------
+				ReactionRuleCombo rCombo = (ReactionRuleCombo)object;
+				SimulationContext simContext = rCombo.getReactionContext().getSimulationContext();
+				ActiveView activeView = new ActiveView(simContext, DocumentEditorTreeFolderClass.SPECIFICATIONS_NODE, ActiveViewID.reaction_setting);
+				 Object[] newSelection = new Object[] {((ReactionRuleCombo)object).getReactionSpec()};
+				followHyperlink(activeView, newSelection);
 			} else if (object instanceof SpeciesContext) {
 				followHyperlink(new ActiveView(null, DocumentEditorTreeFolderClass.SPECIES_NODE, ActiveViewID.species), new Object[] {object});
 			} else if (object instanceof RbmObservable) {

@@ -264,6 +264,8 @@ public class DefaultScrollTableCellRenderer extends DefaultTableCellRenderer {
 	}
 	
 	public static void issueRenderer(JLabel renderer, String defaultToolTipText, JTable table, int row, int column, SortTableModel tableModel) {
+		// if the following lists are empty (when they shouldn't), check in tableModel.getIssues() 
+		// if the instanceof the class of the IssueSource is properly filtered in
 		List<Issue> issueListError = tableModel.getIssues(row, column, Issue.Severity.ERROR);
 		List<Issue> issueListWarning = tableModel.getIssues(row, column, Issue.Severity.WARNING);
 		Icon icon = null;

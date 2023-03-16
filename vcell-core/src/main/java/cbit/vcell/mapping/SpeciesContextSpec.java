@@ -938,7 +938,7 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
 			for(MolecularComponentPattern mcp : mcpList) {
 				MolecularComponent mc = mcp.getMolecularComponent();
 				List<ComponentStateDefinition> csd = mc.getComponentStateDefinitions();
-				if(csd.size() < 2) {
+				if(csd.size() < 1) {
 					String msg = "Each Site must have at least one State.";
 					String tip = msg;
 					issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));

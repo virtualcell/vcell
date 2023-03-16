@@ -42,6 +42,8 @@ import cbit.vcell.mapping.GeometryContext.UnmappedGeometryClass;
 import cbit.vcell.mapping.MicroscopeMeasurement;
 import cbit.vcell.mapping.MolecularInternalLinkSpec;
 import cbit.vcell.mapping.RateRule;
+import cbit.vcell.mapping.ReactionRuleSpec;
+import cbit.vcell.mapping.ReactionRuleSpec.ReactionRuleCombo;
 import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.mapping.ReactionSpec.ReactionCombo;
 import cbit.vcell.mapping.SimulationContext;
@@ -288,6 +290,9 @@ public class IssueTableModel extends VCellSortTableModel<Issue> implements Issue
 			} else if (source instanceof ReactionCombo) {
 				ReactionCombo rc = (ReactionCombo)source;
 				description = "App(" + rc.getReactionContext().getSimulationContext().getName() + ") / Specifications / Reactions";
+			} else if (source instanceof ReactionRuleCombo) {		// --------------
+				ReactionRuleCombo rrCombo = (ReactionRuleCombo)source;
+				description = "App(" + rrCombo.getReactionContext().getSimulationContext().getName() + ") / Specifications / Reactions";
 			} else if (source instanceof RbmModelContainer) {
 				IssueCategory ic = issue.getCategory();
 				switch(ic) {
@@ -417,8 +422,13 @@ public class IssueTableModel extends VCellSortTableModel<Issue> implements Issue
 				SpeciesContextSpec scs = (SpeciesContextSpec)object;
 				description = scs.getSpeciesContext().getName();
 			} else if (object instanceof ReactionCombo) {
-				ReactionSpec rs = ((ReactionCombo)object).getReactionSpec();
+				ReactionCombo rCombo = (ReactionCombo)object;
+				ReactionSpec rs = rCombo.getReactionSpec();
 				description = rs.getReactionStep().getName();
+			} else if (object instanceof ReactionRuleCombo) {		// --------------
+				ReactionRuleCombo rrCombo = (ReactionRuleCombo)object;
+				ReactionRuleSpec rrs = rrCombo.getReactionSpec();
+				description = rrs.getReactionRule().getName();
 			} else if (object instanceof RbmModelContainer) {
 				//RbmModelContainer mc = (RbmModelContainer)object;
 				description = "Rules validator";

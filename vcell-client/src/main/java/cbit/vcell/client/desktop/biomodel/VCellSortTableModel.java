@@ -31,6 +31,7 @@ import org.vcell.util.gui.sorttable.SortTableModel;
 
 import cbit.vcell.client.desktop.biomodel.IssueManager.IssueEvent;
 import cbit.vcell.client.desktop.biomodel.IssueManager.IssueEventListener;
+import cbit.vcell.mapping.ReactionRuleSpec.ReactionRuleCombo;
 import cbit.vcell.mapping.ReactionSpec.ReactionCombo;
 import cbit.vcell.solver.OutputFunctionContext.OutputFunctionIssueSource;
 
@@ -293,6 +294,10 @@ protected abstract Comparator<T> getComparator(final int col, final boolean asce
 				if (issue.getSeverity() == severity) {
 					if(source instanceof ReactionCombo) {
 						if(((ReactionCombo)source).getReactionSpec() == rowAt) {
+							iL.add(issue);
+						}
+					} else if(source instanceof ReactionRuleCombo) {
+						if(((ReactionRuleCombo)source).getReactionSpec() == rowAt) {
 							iL.add(issue);
 						}
 					} else if (source instanceof OutputFunctionIssueSource) {
