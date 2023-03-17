@@ -157,18 +157,48 @@ public void firePropertyChange(String propertyName, Object oldValue, Object newV
 	getPropertyChange().firePropertyChange(propertyName,oldValue,newValue);
 }
 
+public static final String NumReactants = "numReactants";
+public static final String NumProducts = "numProducts";
+public static final String MtpReactantState = "mtpReactantState";
+public static final String McpReactantState = "mcpReactantState";
+public static final String MtpProductState = "mtpProductState";
+public static final String McpProductState = "mcpProductState";
+public static final String MtpReactantBond = "mtpReactantBond";
+public static final String McpReactantBond = "mcpReactantBond";
+public static final String BondAndStateChange = "bondAndStateChange";
+public static final String StateTransitionCounter = "stateTransitionCounter";
+public static final String BondTransitionCounter = "bondTransitionCounter";
+public static final String CspReactantBond = "cspReactantBond";
+
 // --------------------------------------------------------------------------------------------------------
 public void analizeReaction(Map<String, Object> analysisResults) {
 	List<ReactantPattern> rpList = reactionRule.getReactantPatterns();
 	List<ProductPattern> ppList = reactionRule.getProductPatterns();
 	// sanity check; get out of here fast if basic conditions are not satisfied
 	// TODO: move some tests in issues code maybe
-	if(rpList == null || rpList.isEmpty() | rpList.size() > 2) {
-		return;					// no matter the reaction, we can't have have more than 2 reactants
+	boolean wrongNumberOfReactantsProducts = false;
+	if(rpList == null || rpList.isEmpty()) {
+		analysisResults.put(NumReactants, 0);
+		wrongNumberOfReactantsProducts = true;
 	}
-	if(ppList == null || ppList.size() != 1) {
-		return;					// no matter the reaction, we have exactly 1 product
+	if(ppList == null || ppList.isEmpty()) {
+		analysisResults.put(NumProducts, 0);
+		wrongNumberOfReactantsProducts = true;
 	}
+	if(rpList.size() > 2) {
+		analysisResults.put(NumReactants, rpList.size());
+		wrongNumberOfReactantsProducts = true;
+	}
+	if(ppList.size() > 2) {
+		analysisResults.put(NumProducts, ppList.size());
+		wrongNumberOfReactantsProducts = true;
+	}
+	if(wrongNumberOfReactantsProducts) {
+		return;
+	}
+	analysisResults.put(NumReactants, rpList.size());
+	analysisResults.put(NumProducts, ppList.size());
+
 	for(ReactantPattern rp : rpList) {
 		SpeciesPattern sp = rp.getSpeciesPattern();
 		if(sp == null) {
@@ -188,6 +218,7 @@ public void analizeReaction(Map<String, Object> analysisResults) {
 	if(mtpProductList == null || mtpProductList.size() > 2) {	// no more than 2 molecules in the product
 		return;
 	}
+	
 	// looks expensive but a springsalad binding reaction has exactly 2 reactants one molecule each
 	// and exactly one product made of 2 molecules
 	// since instances of mtp / mcp are different between reactants and products, we work with instances of mc / mp
@@ -199,30 +230,32 @@ public void analizeReaction(Map<String, Object> analysisResults) {
 	for(ReactantPattern rp : rpList) {
 		SpeciesPattern spReactant = rp.getSpeciesPattern();
 		List<MolecularTypePattern> mtpReactantList = spReactant.getMolecularTypePatterns();
-		MolecularTypePattern mtpReactant = mtpReactantList.get(0);
-		for(MolecularTypePattern mtpProduct : mtpProductList) {
-			MolecularType mtProduct = mtpProduct.getMolecularType();
-			MolecularType mtReactant = mtpReactant.getMolecularType();
-			String pmlProduct = mtpProduct.getParticipantMatchLabel();
-			String pmlReactant = mtpReactant.getParticipantMatchLabel();
-			if(mtProduct == mtReactant && pmlProduct.equals(pmlReactant)) {
-				// bingo, matched a reactant with a product
-				List<MolecularComponentPattern> mcpReactantList = mtpReactant.getComponentPatternList();
-				List<MolecularComponentPattern> mcpProductList = mtpProduct.getComponentPatternList();
-				if(mcpReactantList == null || mcpProductList == null || mcpReactantList.isEmpty() || mcpProductList.isEmpty()) {
-					return;		// no components in some molecule, need at least one
-				}
-				for(MolecularComponentPattern mcpReactant : mcpReactantList) {
-					MolecularComponentPattern mcpProduct = mtpProduct.getMolecularComponentPattern(mcpReactant.getMolecularComponent());
-					reactantToProductSitesMap.put(mcpReactant, mcpProduct);
-					productToReactantSitesMap.put(mcpProduct, mcpReactant);
-					siteToMoleculeMap.put(mcpReactant, mtpReactant);
-					siteToMoleculeMap.put(mcpProduct, mtpProduct);
+		
+		for(MolecularTypePattern mtpReactant : mtpReactantList) {
+			for(MolecularTypePattern mtpProduct : mtpProductList) {
+				MolecularType mtProduct = mtpProduct.getMolecularType();
+				MolecularType mtReactant = mtpReactant.getMolecularType();
+				String pmlProduct = mtpProduct.getParticipantMatchLabel();
+				String pmlReactant = mtpReactant.getParticipantMatchLabel();
+				if(mtProduct == mtReactant && pmlProduct.equals(pmlReactant)) {
+					// bingo, matched a reactant with a product
+					List<MolecularComponentPattern> mcpReactantList = mtpReactant.getComponentPatternList();
+					List<MolecularComponentPattern> mcpProductList = mtpProduct.getComponentPatternList();
+					if(mcpReactantList == null || mcpProductList == null || mcpReactantList.isEmpty() || mcpProductList.isEmpty()) {
+						return;		// no components in some molecule, need at least one
+					}
+					for(MolecularComponentPattern mcpReactant : mcpReactantList) {
+						MolecularComponentPattern mcpProduct = mtpProduct.getMolecularComponentPattern(mcpReactant.getMolecularComponent());
+						reactantToProductSitesMap.put(mcpReactant, mcpProduct);
+						productToReactantSitesMap.put(mcpProduct, mcpReactant);
+						siteToMoleculeMap.put(mcpReactant, mtpReactant);
+						siteToMoleculeMap.put(mcpProduct, mtpProduct);
+					}
 				}
 			}
 		}
 	}
-
+	
 	boolean bondAndStateChange = false;
 	int mcpCount = 0;					// index in the for loop
 	int stateTransitionCounter = 0;		// number of state changes between reactant site anc corresponding product site
@@ -236,10 +269,10 @@ public void analizeReaction(Map<String, Object> analysisResults) {
 		if(cspReactant != null) {
 			if(!cspReactant.compareEqual(cspProduct)) {
 				stateTransitionCounter++;		// state changed between corresponding reactant and product sites
-				String mtpReactantKey = "mtpReactantState" + stateTransitionCounter;
-				String mcpReactantKey = "mcpReactantState" + stateTransitionCounter;
-				String mtpProductKey = "mtpProductState" + stateTransitionCounter;
-				String mcpProductKey = "mcpProductState" + stateTransitionCounter;
+				String mtpReactantKey = MtpReactantState + stateTransitionCounter;
+				String mcpReactantKey = McpReactantState + stateTransitionCounter;
+				String mtpProductKey = MtpProductState + stateTransitionCounter;
+				String mcpProductKey = McpProductState + stateTransitionCounter;
 				MolecularTypePattern mtpReactant = siteToMoleculeMap.get(mcpReactant);
 				MolecularTypePattern mtpProduct = siteToMoleculeMap.get(mcpProduct);
 				analysisResults.put(mtpReactantKey, mtpReactant);
@@ -252,8 +285,8 @@ public void analizeReaction(Map<String, Object> analysisResults) {
 		if(mcpReactant.getBondType() == BondType.None && mcpProduct.getBondType() == BondType.Specified) {
 			MolecularTypePattern mtpReactant = siteToMoleculeMap.get(mcpProduct);
 			bondTransitionCounter++;
-			String mtpKey = "mtpReactantBond" + bondTransitionCounter;
-			String mcpKey = "mcpReactantBond" + bondTransitionCounter;
+			String mtpKey = MtpReactantBond + bondTransitionCounter;
+			String mcpKey = McpReactantBond + bondTransitionCounter;
 			analysisResults.put(mtpKey, mtpReactant);
 			analysisResults.put(mcpKey, mcpReactant);
 			
@@ -272,14 +305,14 @@ public void analizeReaction(Map<String, Object> analysisResults) {
 				ComponentStateDefinition csdReactant = cspReactant.getComponentStateDefinition();
 				stateReactant = csdReactant.getName();
 			}
-			String cspKey = "cspReactantBond" + bondTransitionCounter;
+			String cspKey = CspReactantBond + bondTransitionCounter;
 			analysisResults.put(cspKey, stateReactant);
 		}
 		mcpCount++;
 	}
-	analysisResults.put("bondAndStateChange", bondAndStateChange);
-	analysisResults.put("stateTransitionCounter", stateTransitionCounter);
-	analysisResults.put("bondTransitionCounter", bondTransitionCounter);
+	analysisResults.put(BondAndStateChange, bondAndStateChange);
+	analysisResults.put(StateTransitionCounter, stateTransitionCounter);
+	analysisResults.put(BondTransitionCounter, bondTransitionCounter);
 }
 public Subtype getSubtype(Map<String, Object> analysisResults) {
 	if(isCreationReaction() == true) {
@@ -334,7 +367,7 @@ private boolean isAllostericReaction(Map<String, Object> analysisResults) {
 	return false;
 }
 private boolean isBindingReaction(Map<String, Object> analysisResults) {
-	Object ret = analysisResults.get("bondAndStateChange");
+	Object ret = analysisResults.get(BondAndStateChange);
 	if(ret == null) {
 		return false;
 	}
@@ -342,7 +375,7 @@ private boolean isBindingReaction(Map<String, Object> analysisResults) {
 	if(bondAndStateChange == true) {
 		return false;
 	}
-	ret = analysisResults.get("bondTransitionCounter");
+	ret = analysisResults.get(BondTransitionCounter);
 	if(ret == null) {
 		return false;
 	}
@@ -359,7 +392,7 @@ public void writeData(StringBuilder sb, Subtype subtype) {			// SpringSaLaD expo
 	switch(getSubtype(analysisResults)) {
 	case CREATION:
 	case DECAY:
-		// we invoke the static method below (writeDecayData()) on all species at once
+		// we invoke the static method below (writeDecayData()) on all species at once from SpringSaLaDExporter.getDocumentAsString()
 		break;
 	case TRANSITION:
 		writeTransitionData(sb, subtype, analysisResults);
@@ -390,10 +423,10 @@ private void writeTransitionData(StringBuilder sb, Subtype subtype, Map<String, 
 		return;
 	}
 	// one reactant and one product
-	MolecularTypePattern mtpReactant = (MolecularTypePattern)analysisResults.get("mtpReactantState");
-	MolecularTypePattern mtpProduct = (MolecularTypePattern)analysisResults.get("mtpProductState");
-	MolecularComponentPattern mcpReactant = (MolecularComponentPattern)analysisResults.get("mcpReactantState");
-	MolecularComponentPattern mcpProduct = (MolecularComponentPattern)analysisResults.get("mcpProductState");
+	MolecularTypePattern mtpReactant = (MolecularTypePattern)analysisResults.get(MtpReactantState);
+	MolecularTypePattern mtpProduct = (MolecularTypePattern)analysisResults.get(MtpProductState);
+	MolecularComponentPattern mcpReactant = (MolecularComponentPattern)analysisResults.get(McpReactantState);
+	MolecularComponentPattern mcpProduct = (MolecularComponentPattern)analysisResults.get(McpProductState);
 
 }
 private void writeAllostericData(StringBuilder sb, Subtype subtype, Map<String, Object> analysisResults) {
@@ -401,10 +434,10 @@ private void writeAllostericData(StringBuilder sb, Subtype subtype, Map<String, 
 		return;
 	}
 	// one reactant and one product
-	MolecularTypePattern mtpReactant = (MolecularTypePattern)analysisResults.get("mtpReactantState");
-	MolecularTypePattern mtpProduct = (MolecularTypePattern)analysisResults.get("mtpProductState");
-	MolecularComponentPattern mcpReactant = (MolecularComponentPattern)analysisResults.get("mcpReactantState");
-	MolecularComponentPattern mcpProduct = (MolecularComponentPattern)analysisResults.get("mcpProductState");
+	MolecularTypePattern mtpReactant = (MolecularTypePattern)analysisResults.get(MtpReactantState);
+	MolecularTypePattern mtpProduct = (MolecularTypePattern)analysisResults.get(MtpProductState);
+	MolecularComponentPattern mcpReactant = (MolecularComponentPattern)analysisResults.get(McpReactantState);
+	MolecularComponentPattern mcpProduct = (MolecularComponentPattern)analysisResults.get(McpProductState);
 
 }
 private void writeBindingData(StringBuilder sb, Subtype subtype, Map<String, Object> analysisResults) {
@@ -412,12 +445,12 @@ private void writeBindingData(StringBuilder sb, Subtype subtype, Map<String, Obj
 		return;
 	}
 	// here we only deal with the 2 reactants
-	MolecularTypePattern mtpReactantOne = (MolecularTypePattern)analysisResults.get("mtpReactantBond1");		// '1' - reactant. left side of the bond
-	MolecularTypePattern mtpReactantTwo = (MolecularTypePattern)analysisResults.get("mtpReactantBond2");		// '2' - reactant, right side of the bond
-	MolecularComponentPattern mcpReactantOne = (MolecularComponentPattern)analysisResults.get("mcpReactantBond1");
-	MolecularComponentPattern mcpReactantTwo = (MolecularComponentPattern)analysisResults.get("mcpReactantBond2");
-	String stateReactantOne = (String)analysisResults.get("cspReactantBond1");
-	String stateReactantTwo =  (String)analysisResults.get("cspReactantBond2");
+	MolecularTypePattern mtpReactantOne = (MolecularTypePattern)analysisResults.get(MtpReactantBond + "1");		// '1' - reactant. left side of the bond
+	MolecularTypePattern mtpReactantTwo = (MolecularTypePattern)analysisResults.get(MtpReactantBond + "2");		// '2' - reactant, right side of the bond
+	MolecularComponentPattern mcpReactantOne = (MolecularComponentPattern)analysisResults.get(McpReactantBond + "1");
+	MolecularComponentPattern mcpReactantTwo = (MolecularComponentPattern)analysisResults.get(McpReactantBond + "2");
+	String stateReactantOne = (String)analysisResults.get(CspReactantBond + "1");
+	String stateReactantTwo =  (String)analysisResults.get(CspReactantBond + "2");
 	if(mtpReactantOne == null || mtpReactantTwo == null || mcpReactantOne == null || mcpReactantTwo == null) {
 		throw new RuntimeException("writeBindingData() error: something is wrong");
 	}
@@ -511,6 +544,49 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList, React
 			String msg = "Decay Reaction.";
 			String tip = msg;
 //			issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+		}
+	} else {
+		if(reactionRule.getReactantPatterns() == null || reactionRule.getProductPatterns() == null) {
+			return;		// issue reported in physiology
+		}
+		// check if there are disjoint patterns (molecules not explicitely connected through components)
+		for(ReactantPattern rp : reactionRule.getReactantPatterns()) {
+			SpeciesPattern sp = rp.getSpeciesPattern();
+			if(sp.getMolecularTypePatterns().size() < 2) {
+				continue;	// no point in looking since the pattern has a single molecule
+			}
+			boolean isDisjoint = false;
+			for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
+				if(mtp.isDisjoint()) {
+					isDisjoint = true;
+					break;		// found an unconnected molecule in the species pattern
+				}
+			}
+			if(isDisjoint) {	// tell the world
+				String message = "Found disjoint sets in a reactant pattern, as in A().B() with no explicit bond through components.";
+				String toolTip = "These type of patterns may make NFSim run slower or even fail. Is it highly advised to express this pattern with a different syntax.";
+				issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, message, toolTip, Issue.Severity.WARNING));
+				return;
+			}
+		}
+		for(ProductPattern pp : reactionRule.getProductPatterns()) {
+			SpeciesPattern sp = pp.getSpeciesPattern();
+			if(sp.getMolecularTypePatterns().size() < 2) {
+				continue;
+			}
+			boolean isDisjoint = false;
+			for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
+				if(mtp.isDisjoint()) {
+					isDisjoint = true;
+					break;
+				}
+			}
+			if(isDisjoint) {
+				String message = "Found disjoint sets in a product pattern, as in A().B() with no explicit bond through components.";
+				String toolTip = "These type of patterns may make NFSim run slower or even fail. Is it highly advised to express this pattern with a different syntax.";
+				issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, message, toolTip, Issue.Severity.WARNING));
+				return;
+			}
 		}
 	}
 }
