@@ -19,7 +19,7 @@ LABEL \
     org.opencontainers.image.vendor="BioSimulators Team" \
     org.opencontainers.image.licenses="MIT" \
     \
-    base_image="ubuntu:18.04" \
+    base_image="ubuntu:20.04" \
     version="${SIMULATOR_VERSION}" \
     software="Virtual Cell" \
     software.version="${SIMULATOR_VERSION}" \

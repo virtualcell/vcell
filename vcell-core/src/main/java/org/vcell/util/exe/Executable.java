@@ -31,7 +31,7 @@ import cbit.vcell.resource.ResourceUtil;
  * @author: Ion Moraru
  */
 public class Executable implements IExecutable {
-	private static final Logger lg = LogManager.getLogger(Executable.class);
+	private static final Logger logger = LogManager.getLogger(Executable.class);
 	
 	private String[] command = null;
 	private Process process = null;
@@ -109,7 +109,7 @@ public Executable(String[] command, long arg_timeoutMS) {
  */
 protected void executeProcess(int[] expectedReturnCodes) throws org.vcell.util.exe.ExecutableException {
 	
-	if (lg.isTraceEnabled()) lg.trace("Executable.executeProcess(" + getCommand() + ") starting...");
+	if (logger.isTraceEnabled()) logger.trace("Executable.executeProcess(" + getCommand() + ") starting...");
 	try {
 		try {
 			active.set(true);
@@ -133,15 +133,18 @@ protected void executeProcess(int[] expectedReturnCodes) throws org.vcell.util.e
 			// will return the exit code once the process terminates
 			int exitCode = monitorProcess(getProcess().getInputStream(), getProcess().getErrorStream(), 10);
 			Thread.interrupted(); //clear interrupted status
-			setExitValue(new Integer(exitCode));
+			setExitValue(Integer.valueOf(exitCode));
+		} catch (Exception e) {
+			String processName = (command.length > 0) ? '"' +command[0] + '"' : "<unknown>";
+			logger.error(String.format("Process %s ecountered a problem: ", processName), e);
 		} finally {
 			active.set(false);
 		}
 		// log what happened and update status
 		if (getStatus().equals(org.vcell.util.exe.ExecutableStatus.STOPPED)) {
-			if (lg.isWarnEnabled()) lg.warn("\nExecutable.executeProcess(" + getCommand() + ") STOPPED\n");
+			if (logger.isWarnEnabled()) logger.warn("\nExecutable.executeProcess(" + getCommand() + ") STOPPED\n");
 		} else {
-			if (lg.isTraceEnabled()) lg.trace("\nExecutable.executeProcess(" + getCommand() + ") executable returned with returncode = " + getExitValue() + "\n");
+			if (logger.isTraceEnabled()) logger.trace("\nExecutable.executeProcess(" + getCommand() + ") executable returned with returncode = " + getExitValue() + "\n");
 			boolean bExpectedReturnCode = false;
 			for (int expectedReturnCode : expectedReturnCodes){
 				if (expectedReturnCode == getExitValue()){
@@ -155,13 +158,13 @@ protected void executeProcess(int[] expectedReturnCodes) throws org.vcell.util.e
 			}
 		}
 		// log output
-		if (lg.isTraceEnabled()) lg.trace("Executable.executeProcess(" + getCommand() + ") stdout:\n" + getOutputString());
+		if (logger.isTraceEnabled()) logger.trace("Executable.executeProcess(" + getCommand() + ") stdout:\n" + getOutputString());
 		// finally, throw if it was a failure
 		if (getStatus().isError()) {
 			throw new Exception(getErrorString());
 		}
 	} catch (Throwable e) {
-		lg.error(e.getMessage(),e);
+		logger.error(e.getMessage(),e);
 		if (getStatus().isError()) {
 			// process failed and we relay the exception thrown on error status finish above
 			throw new ExecutableException(e.getMessage() + "\n\n(" + getCommand() + ")");
@@ -323,7 +326,7 @@ protected final int monitorProcess(InputStream inputStreamOut, InputStream input
 				numReadOut = 0;
 			}
 		} catch (IOException ioexc) {
-			lg.error("EXCEPTION (process " + getCommand() + ") - IOException while reading StdOut: " + ioexc.getMessage(), ioexc);
+			logger.error("EXCEPTION (process " + getCommand() + ") - IOException while reading StdOut: " + ioexc.getMessage(), ioexc);
 			numReadOut = 0;
 		}
 		try {
@@ -333,7 +336,7 @@ protected final int monitorProcess(InputStream inputStreamOut, InputStream input
 				numReadErr = 0;
 			}
 		} catch (IOException ioexc) {
-			lg.error("EXCEPTION (process " + getCommand() + ") - IOException while reading StdErr: " + ioexc.getMessage(), ioexc);
+			logger.error("EXCEPTION (process " + getCommand() + ") - IOException while reading StdErr: " + ioexc.getMessage(), ioexc);
 			numReadErr = 0;
 		}
 		if (numReadOut > 0) {
@@ -353,7 +356,7 @@ protected final int monitorProcess(InputStream inputStreamOut, InputStream input
 		inputStreamReaderOut.close();
 		inputStreamReaderErr.close();
 	} catch (IOException ioexc) {
-		lg.error("EXCEPTION (process " + getCommand() + ") - IOException while closing streams: " + ioexc.getMessage(), ioexc);
+		logger.error("EXCEPTION (process " + getCommand() + ") - IOException while closing streams: " + ioexc.getMessage(), ioexc);
 		numReadOut = 0;
 	}
 	return exitValue;
@@ -435,7 +438,7 @@ public final void start(int[] expectedReturnCodes) throws org.vcell.util.exe.Exe
     try {
         executeProcess(expectedReturnCodes);
     } catch (ExecutableException e) {
-        lg.error(e.getMessage(),e);
+        logger.error(e.getMessage(),e);
         setStatus(ExecutableStatus.getError("Executable Exception: " + e.getMessage()));
         throw e;
     }
@@ -455,7 +458,7 @@ public final void stop() {
 			Thread.interrupted();
 		}
 		if (getProcess() != null) {
-			lg.error("Executable.stop( ) failed to clean up properly");
+			logger.error("Executable.stop( ) failed to clean up properly");
 		}
 	}
 }
@@ -476,17 +479,17 @@ private final void close(){
 		try {
 			getProcess().getInputStream().close();
 		} catch (Exception e) {
-			lg.error(e.getMessage(), e);
+			logger.error(e.getMessage(), e);
 		}
 		try {
 			getProcess().getOutputStream().close();
 		} catch (Exception e) {
-			lg.error(e.getMessage(), e);
+			logger.error(e.getMessage(), e);
 		}
 		try {
 			getProcess().getErrorStream().close();
 		} catch (Exception e) {
-			lg.error(e.getMessage(), e);
+			logger.error(e.getMessage(), e);
 		}
 		getProcess().destroy();
 		setProcess(null);
@@ -513,7 +516,7 @@ public static long getTimeoutMS() {
 }
 
 public static void setTimeoutMS(long timeoutMS) {
-	lg.trace("Setting timeout to: " + Long.toString(timeoutMS) + "ms");
+	logger.trace("Setting timeout to: " + Long.toString(timeoutMS) + "ms");
 	Executable.timeoutMS = timeoutMS;
 }
 }

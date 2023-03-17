@@ -331,7 +331,7 @@ public class VcmlOmexConverter {
         SEDMLDocument sedmlDocument = sedmlExporter.getSEDMLDocument(outputDir, vcmlName,
 				modelFormat, true, bValidate);
         
-		writeFileEntry(outputBaseDir, sedmlExporter.getSedmlLogger().getLogsCSV(), jobLogFile, bForceLogFiles);
+		writeFileEntry(outputBaseDir, sedmlExporter.getSedmlLogger().getRecordsAsCSV(), jobLogFile, bForceLogFiles);
         
         if (sedmlExporter.getSedmlLogger().hasErrors()) {
             File dir = new File(outputDir);

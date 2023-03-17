@@ -3,7 +3,7 @@ package org.vcell.cli.run;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 
-import org.vcell.cli.CLIRecorder;
+import org.vcell.cli.CLIRecordable;
 import org.vcell.cli.PythonStreamException;
 import org.vcell.cli.vcml.VCMLHandler;
 import org.vcell.util.FileUtils;
@@ -22,7 +22,7 @@ public class ExecuteImpl {
     
     private final static Logger logger = LogManager.getLogger(ExecuteImpl.class);
 
-    public static void batchMode(File dirOfArchivesToProcess, File outputDir, CLIRecorder cliLogger,
+    public static void batchMode(File dirOfArchivesToProcess, File outputDir, CLIRecordable cliLogger,
                                  boolean bKeepTempFiles, boolean bExactMatchOnly, boolean bSmallMeshOverride) {
         FilenameFilter filter = (f, name) -> name.endsWith(".omex") || name.endsWith(".vcml");
         File[] inputFiles = dirOfArchivesToProcess.listFiles(filter);
@@ -67,7 +67,7 @@ public class ExecuteImpl {
         }
     }
 
-    public static void singleMode(File inputFile, File rootOutputDir, CLIRecorder cliLogger,
+    public static void singleMode(File inputFile, File rootOutputDir, CLIRecordable cliLogger,
             boolean bKeepTempFiles, boolean bExactMatchOnly, boolean bEncapsulateOutput, boolean bSmallMeshOverride) throws Exception {
         // Build statuses
         String bioModelBaseName = FileUtils.getBaseName(inputFile.getName()); // bioModelBaseName = input file without the path
@@ -81,7 +81,7 @@ public class ExecuteImpl {
         ExecuteImpl.singleExecOmex(inputFile, rootOutputDir, cliLogger, bKeepTempFiles, bExactMatchOnly, bEncapsulateOutput, bSmallMeshOverride);
     }
 
-    public static void singleMode(File inputFile, File outputDir, CLIRecorder cliLogger) throws Exception {
+    public static void singleMode(File inputFile, File outputDir, CLIRecordable cliLogger) throws Exception {
         final boolean bKeepTempFiles = false;
         final boolean bExactMatchOnly = false;
         final boolean bEncapsulateOutput = false;
@@ -91,7 +91,7 @@ public class ExecuteImpl {
     }
 
     @Deprecated
-    public static void singleExecVcml(File vcmlFile, File outputDir, CLIRecorder cliLogger) {
+    public static void singleExecVcml(File vcmlFile, File outputDir, CLIRecordable cliLogger) {
         logger.warn("Using deprecated function to execute vcml");
         VCMLHandler.outputDir = outputDir.getAbsolutePath();
         logger.debug("Executing VCML file " + vcmlFile);
@@ -143,7 +143,7 @@ public class ExecuteImpl {
         }
     }
 
-    private static void singleExecOmex(File inputFile, File rootOutputDir, CLIRecorder cliRecorder,
+    private static void singleExecOmex(File inputFile, File rootOutputDir, CLIRecordable cliRecorder,
             boolean bKeepTempFiles, boolean bExactMatchOnly, boolean bEncapsulateOutput, boolean bSmallMeshOverride) 
             throws ExecutionException, PythonStreamException, IOException, InterruptedException {
         ExecutionJob requestedExecution = new ExecutionJob(inputFile, rootOutputDir, cliRecorder, 

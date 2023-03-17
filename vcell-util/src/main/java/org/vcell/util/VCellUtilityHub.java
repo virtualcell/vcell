@@ -4,12 +4,19 @@ import org.vcell.util.recording.CLIRecordManager;
 import org.vcell.util.recording.RecordManager;
 import org.vcell.util.recording.VCellRecordManager;
 
+import java.io.IOException;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 /**
  * Class to hold all singletons and resources needed across VCell.
  * 
  * @since VCell 7.4.0.62
  */
 public class VCellUtilityHub {
+
+    private final static Logger logger = LogManager.getLogger(VCellUtilityHub.class);
 
     /*
      * For each way we want to initialize VCell:
@@ -30,7 +37,7 @@ public class VCellUtilityHub {
     private static VCellUtilityHub instance;
 
     // Utility declarations
-    private static RecordManager logManager;
+    private static VCellRecordManager logManager;
 
     // Methods
     /**
@@ -38,8 +45,13 @@ public class VCellUtilityHub {
      * @param mode the mode in which VCell was launched.
      */
     public static void startup(MODE mode){
-        if (instance == null) instance = new VCellUtilityHub(mode);
-        else throw new RuntimeException("VCellUtilityHub already started.");
+        if (VCellUtilityHub.instance == null) VCellUtilityHub.instance = new VCellUtilityHub(mode);
+        else {
+            logger.warn("Restarting VCellUtilityHub...");
+            VCellUtilityHub.shutdown();
+            VCellUtilityHub.instance = null;
+            VCellUtilityHub.startup(mode);
+        };
     }
 
     /**
@@ -47,8 +59,14 @@ public class VCellUtilityHub {
      * 
      * @throws Exception if closing anything produced errors
      */
-    public static void shutdown() throws Exception {
-        logManager.close();
+    public static void shutdown() {
+        try {
+            logManager.close();
+        } catch (IOException e){
+            String message = "Log Manager could not close.";
+            logger.error(message);
+            throw new RuntimeException(message, e);
+        }
     }
 
     private VCellUtilityHub(MODE m){
@@ -80,7 +98,7 @@ public class VCellUtilityHub {
      * 
      * @return The {@code LogManager} for current execution of VCell
      */
-    public static RecordManager getLogManager(){
+    public static VCellRecordManager getLogManager(){
         if (instance == null) {
             // Attempt to auto-start in standard mode
             try {

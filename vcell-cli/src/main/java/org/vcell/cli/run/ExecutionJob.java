@@ -1,8 +1,11 @@
 package org.vcell.cli.run;
 
-import org.vcell.cli.CLIRecorder;
+import org.vcell.cli.CLIRecordable;
 import org.vcell.cli.PythonStreamException;
+import org.vcell.cli.run.hdf5.Hdf5DataWrapper;
 import org.vcell.util.FileUtils;
+
+import ncsa.hdf.hdf5lib.exceptions.HDF5Exception;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -32,7 +35,7 @@ public class ExecutionJob {
     private Path sedmlPath2d3d;
     private File inputFile;
 
-    private CLIRecorder cliRecorder;
+    private CLIRecordable cliRecorder;
 
     /** 
      * Constructor to provide all necessary info.
@@ -45,7 +48,7 @@ public class ExecutionJob {
      * @param bEncapsulateOutput whether to provide a sub-folder for outputs (needed for batch jobs)
      * @param bSmallMeshOverride whether to use small meshes or standard meshes.
      */
-    public ExecutionJob(File inputFile, File rootOutputDir, CLIRecorder cliRecorder,
+    public ExecutionJob(File inputFile, File rootOutputDir, CLIRecordable cliRecorder,
             boolean bKeepTempFiles, boolean bExactMatchOnly, boolean bEncapsulateOutput, boolean bSmallMeshOverride){
         this();
         this.inputFile = inputFile;
@@ -118,6 +121,7 @@ public class ExecutionJob {
      */
     public void executeArchive() throws InterruptedException, PythonStreamException, IOException, ExecutionException {
         try {
+            Hdf5DataWrapper masterHdf5File = new Hdf5DataWrapper();
             this.queueAllSedml();
 
             for (String sedmlLocation : this.sedmlLocations){
@@ -129,19 +133,23 @@ public class ExecutionJob {
                     this.anySedmlDocumentHasFailed = true;
                 }
                 SedmlStatistics stats = job.getDocStatistics();
-                boolean hasSucceeded = job.simulateSedml();
+                boolean hasSucceeded = job.simulateSedml(masterHdf5File);
                 this.anySedmlDocumentHasSucceeded |= hasSucceeded;
                 this.anySedmlDocumentHasFailed &= hasSucceeded;
                 if (hasSucceeded) logger.info("Processing of SedML succeeded.\n" + stats.toString());
                 else logger.error("Processing of SedML has failed.\n" + stats.toString());
             }
+
+            Hdf5DataWrapper.writeToFile(masterHdf5File, new File(this.outputDir));
         } catch(PythonStreamException e){
             logger.error("Python-processing encountered fatal error. Execution is unable to properly continue.", e);
             throw e;
         } catch(InterruptedException|IOException e){
             logger.error("System IO encountered a fatal error");
-            throw new ExecutionException();
-        } 
+            throw new ExecutionException(e);
+        } catch (HDF5Exception e){
+            logger.warn("There was an error generating the HDF5 File", e);
+        }
     }
 
     /**
