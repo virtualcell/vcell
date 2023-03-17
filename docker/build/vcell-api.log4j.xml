@@ -18,7 +18,7 @@
     </Root>
     <!--    <Logger name="org.vcell" level="warn" />-->
     <!--    <Logger name="cbit.vcell" level="warn" />-->
-    <!--    <Logger name="cbit.vcell.modeldb" level="warn" />-->
+            <Logger name="cbit.vcell.modeldb" level="debug" />
     <!--    <Logger name="cbit.vcell.message.server.cmd" level="debug" />-->
     <!--    <Logger name="org.vcell.util.exe" level="debug" />-->
     <!--    <Logger name="org.vcell.util.CommentStringTokenizer" level="warn" />-->
