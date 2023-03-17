@@ -6,11 +6,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 
-public class FileRecord extends Record {
+public class TextFileRecord extends Record {
     protected File logFile;
     protected StringBuffer sBuff;
 
-    public FileRecord(String filePath){
+    public TextFileRecord(String filePath){
         this.sBuff = new StringBuffer();
         this.logFile = new File(filePath);
         try {

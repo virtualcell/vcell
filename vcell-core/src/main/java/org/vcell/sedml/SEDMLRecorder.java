@@ -9,7 +9,7 @@ import java.io.IOException;
 
 import org.vcell.util.VCellUtilityHub;
 import org.vcell.util.recording.Recorder;
-import org.vcell.util.recording.FileRecord;
+import org.vcell.util.recording.TextFileRecord;
 import org.vcell.util.recording.GsonExceptionSerializer;
 
 import org.apache.logging.log4j.LogManager;
@@ -18,6 +18,9 @@ import org.apache.logging.log4j.Logger;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+/**
+ * Sedml-specific recorder class
+ */
 public class SEDMLRecorder extends Recorder {
 
 	private final static Logger logger = LogManager.getLogger(SEDMLRecorder.class);
@@ -26,26 +29,50 @@ public class SEDMLRecorder extends Recorder {
 	private SEDMLConversion operation;
 	private List<SEDMLTaskRecord> taskLogs = new LinkedList<>();
 	private transient Set<Class<? extends Exception>> exceptionTypes;
-	private transient FileRecord jsonFile;
+	private transient TextFileRecord jsonFile;
 	
 
+	/**
+	 * Creates a recorder object with no correlated json
+	 * 
+	 * @param jobName name of the job this recorder is recording
+	 * @param conversion whether the sedml is imported or exported
+	 */
 	public SEDMLRecorder(String jobName, SEDMLConversion conversion) {
 		this(jobName, conversion, null);
 	}
 
+	/**
+	 * Creates a recorder object with output to a json.
+	 * 
+	 * @param jobName name of the job this recorder is recording
+	 * @param conversion whether the sedml is imported or exported
+	 * @param jsonFilePath path to the json file to be created.
+	 */
 	public SEDMLRecorder(String jobName, SEDMLConversion conversion, String jsonFilePath) {
 		super(SEDMLRecorder.class);
 		this.identifier = jobName;
 		this.operation = conversion;
 		this.exceptionTypes = new HashSet<>();
-		if (jsonFilePath != null) this.jsonFile = VCellUtilityHub.getLogManager().requestNewFileLog(jsonFilePath);
-		else this.jsonFile = null;
+		if (jsonFilePath != null) {
+			this.jsonFile = VCellUtilityHub.getLogManager().requestNewRecord(jsonFilePath);
+		} else {
+			this.jsonFile = null;
+		}
 	}
 
+	/**
+	 * Gets the job name of this recorder
+	 * @return the job name / identifier
+	 */
 	public String getIdentifier(){
 		return this.identifier;
 	}
 
+	/**
+	 * Get the operation type as a string
+	 * @return whether the sedml recorded is for inmport or export.
+	 */
 	public String getOperationAsString(){
 		String result;
 		switch(this.operation){
@@ -62,10 +89,18 @@ public class SEDMLRecorder extends Recorder {
 		return result;
 	}
 
-	public List<SEDMLTaskRecord> getLogs() {
+	/**
+	 * Gets any already written records
+	 * @return
+	 */
+	public List<SEDMLTaskRecord> getRecords() {
 		return this.taskLogs;
 	}
 
+	/**
+	 * Checks if any failure has been recorded
+	 * @return if any failure is recorded
+	 */
 	public boolean hasErrors() {
 		for (SEDMLTaskRecord taskLog : taskLogs) 
 			if (taskLog.getTaskResult() == TaskResult.FAILED) 
@@ -73,12 +108,25 @@ public class SEDMLRecorder extends Recorder {
 		return false; 
 	}
 
-	public void addTaskLog(String taskName, TaskType taskType, TaskResult taskResult, Exception exception) {
+	/**
+	 * Adds a new record
+	 * 
+	 * @param taskName name of the task to record
+	 * @param taskType type of the task to record
+	 * @param taskResult what the task resulted in
+	 * @param exception if an expection was recorded
+	 */
+	public void addTaskRecord(String taskName, TaskType taskType, TaskResult taskResult, Exception exception) {
 		this.taskLogs.add(new SEDMLTaskRecord(identifier, taskName, taskType, taskResult, exception));
 		this.addException(exception);
 	}
 
-	public String getLogsCSV() {
+	/**
+	 * Get the records in csv formatted string
+	 * 
+	 * @return the csv formatted string
+	 */
+	public String getRecordsAsCSV() {
 		String lines = "\n-----------START-EXPORT-LOG-CSV-----------\n";
 		lines += this.identifier + "," + this.operation + "\n";
 		for (SEDMLTaskRecord taskLog : taskLogs) {
@@ -88,6 +136,12 @@ public class SEDMLRecorder extends Recorder {
 		return lines;
 	}
 
+	/**
+	 * If initialized with a json path, export the records to a json file.
+	 * Regardless, return the records in json format.
+	 * 
+	 * @return the records in json-formatted string
+	 */
 	public String exportToJSON() {
 		Gson gson; GsonBuilder builder;
 		String jsonPrefix;

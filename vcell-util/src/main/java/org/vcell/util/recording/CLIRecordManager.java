@@ -8,7 +8,7 @@ public class CLIRecordManager extends VCellRecordManager {
         super();
     }
 
-    public static RecordManager getInstance(){
+    public static VCellRecordManager getInstance(){
         return CLIRecordManager.instance == null ? instance = new CLIRecordManager() : CLIRecordManager.instance;
     }
 }

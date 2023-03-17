@@ -37,7 +37,7 @@ import org.jlibsedml.Variable;
 import org.jlibsedml.XPathTarget;
 import org.jlibsedml.modelsupport.SBMLSupport;
 import org.jmathml.ASTNode;
-import org.vcell.cli.CLIRecorder;
+import org.vcell.cli.CLIRecordable;
 import org.vcell.sbml.vcell.SBMLImportException;
 import org.vcell.sbml.vcell.SBMLImporter;
 import org.vcell.util.ISize;
@@ -281,7 +281,7 @@ public class SolverHandler {
         System.out.println("topTaskToBaseTask: " + topTaskToBaseTask.size());
     }
 
-    public void simulateAllTasks(ExternalDocInfo externalDocInfo, SedML sedml, CLIRecorder cliLogger,
+    public void simulateAllTasks(ExternalDocInfo externalDocInfo, SedML sedml, CLIRecordable cliLogger,
                                  File outputDirForSedml, String outDir, String outputBaseDir, String sedmlLocation,
                                  boolean keepTempFiles, boolean exactMatchOnly, boolean bSmallMeshOverride) throws Exception {
         // create the VCDocument(s) (bioModel(s) + application(s) + simulation(s)), do sanity checks

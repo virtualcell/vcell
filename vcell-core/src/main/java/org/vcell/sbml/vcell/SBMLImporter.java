@@ -2825,7 +2825,7 @@ public class SBMLImporter {
 						origKinetics.setReactionStep(reactionStep);
 						try {
 							DistributedKinetics.toDistributedKinetics((LumpedKinetics) origKinetics, false);
-							logger.info("transformed lumped reaction " + reactionStep.getName() + " to distributed");
+							logger.debug("transformed lumped reaction " + reactionStep.getName() + " to distributed");
 						} catch (Exception e) {
 							logger.warn("failed to transform lumped reaction " + reactionStep.getName() + " to distributed: " + e.getMessage());
 							// original kinetics may have been altered when the conversion failed, replace with clone
@@ -3468,7 +3468,7 @@ public class SBMLImporter {
 		try {
 			geometry = mplugin.getGeometry();
 		} catch (PropertyUndefinedError e){
-			logger.info("model '"+sbmlModel.getId()+"' doesn't have a spatial geometry");
+			logger.debug("model '"+sbmlModel.getId()+"' doesn't have a spatial geometry");
 			localIssueList.add(new Issue(new SBMLIssueSource(sbmlModel),
 					issueContext,
 					IssueCategory.SBMLImport_UnsupportedAttributeOrElement,

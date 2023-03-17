@@ -1,29 +1,22 @@
 package org.vcell.cli.run;
 
-import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.xml.ExternalDocInfo;
-import ncsa.hdf.hdf5lib.exceptions.HDF5Exception;
-
-import org.jlibsedml.*;
-
 import org.apache.commons.io.FilenameUtils;
-import org.vcell.cli.CLIRecorder;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.jlibsedml.*;
+import org.vcell.cli.CLIRecordable;
 import org.vcell.cli.PythonStreamException;
-import org.vcell.cli.run.hdf5.Hdf5DatasetWrapper;
-import org.vcell.cli.run.hdf5.Hdf5FileWrapper;
-import org.vcell.cli.run.hdf5.Hdf5Writer;
+import org.vcell.cli.run.hdf5.Hdf5DataWrapper;
+import org.vcell.cli.run.hdf5.Hdf5WrapperFactory;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.FileUtils;
-import org.vcell.util.GenericExtensionFilter;
-
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -31,6 +24,9 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
+/**
+ * Class that deals with the processing quest of a sedml file.
+ */
 public class SedmlJob {
     private boolean somethingFailed, hasScans, hasOverrides, bKeepTempFiles, bExactMatchOnly, bSmallMeshOverride;
     private String sedmlLocation, bioModelBaseName, resultsDirPath, logDocumentMessage, logDocumentError, sedmlName;
@@ -39,7 +35,7 @@ public class SedmlJob {
     private SedML sedml;
     private File masterOmexArchive, rootOutputDir, plotsDirectory, plotFile;
     private List<Output> outputs;
-    private CLIRecorder cliRecorder;
+    private CLIRecordable cliRecorder;
     private File outDirForCurrentSedml;
 
     private final static Logger logger = LogManager.getLogger(SedmlJob.class);
@@ -60,7 +56,7 @@ public class SedmlJob {
      * @param logOmexMessage a string-builder to contain progress updates of omex execution
      */
     public SedmlJob(String sedmlLocation, OmexHandler omexHandler, File masterOmexArchive, File rootOutputDir, String resultsDirPath, String sedmlPath2d3dString,
-            CLIRecorder cliRecorder, boolean bKeepTempFiles, boolean bExactMatchOnly, boolean bSmallMeshOverride, StringBuilder logOmexMessage){
+                    CLIRecordable cliRecorder, boolean bKeepTempFiles, boolean bExactMatchOnly, boolean bSmallMeshOverride, StringBuilder logOmexMessage){
         this.somethingFailed = false;
         this.masterOmexArchive = masterOmexArchive;
         this.sedmlLocation = sedmlLocation;
@@ -112,13 +108,14 @@ public class SedmlJob {
             logger.info("Processing SED-ML: " + this.sedmlName);
             PythonCalls.updateSedmlDocStatusYml(sedmlLocation, Status.RUNNING, this.resultsDirPath);
 
-            this.docStatistics.nModels = sedmlFromOmex.getModels().size();
+            this.docStatistics.setNumModels(sedmlFromOmex.getModels().size());
             for(Model m : sedmlFromOmex.getModels()) {
                 List<Change> changes = m.getListOfChanges();	// change attribute caused by a math override
                 if(changes != null && changes.size() > 0) {
                     hasOverrides = true;
                 }
             }
+            
             for(AbstractTask at : sedmlFromOmex.getTasks()) {
                 if(at instanceof RepeatedTask) {
                     RepeatedTask rt = (RepeatedTask)at;
@@ -128,22 +125,22 @@ public class SedmlJob {
                     }
                 }
             }
-            this.docStatistics.nTasks = sedmlFromOmex.getTasks().size();
+            this.docStatistics.setNumTasks(sedmlFromOmex.getTasks().size());
             this.outputs = sedmlFromOmex.getOutputs();
-            this.docStatistics.nOutputs = outputs.size();
+            this.docStatistics.setNumOutputs(outputs.size());;
             for (Output output : this.outputs) {
-                if (output instanceof Report) docStatistics.nReportsCount++;
-                if (output instanceof Plot2D) docStatistics.nPlots2DCount++;
-                if (output instanceof Plot3D) docStatistics.nPlots3DCount++;
+                if (output instanceof Report) docStatistics.setReportsCount(docStatistics.getReportsCount() + 1);
+                if (output instanceof Plot2D) docStatistics.setPlots2DCount(docStatistics.getPlots2DCount() + 1);
+                if (output instanceof Plot3D) docStatistics.setPlots3Dcount(docStatistics.getPlots3Dcount() + 1);
             }
-            this.docStatistics.nSimulations = sedmlFromOmex.getSimulations().size();
+            this.docStatistics.setNumSimultions(sedmlFromOmex.getSimulations().size());
             String summarySedmlContentString = "Found one SED-ML document with "
-                    + this.docStatistics.nModels + " model(s), "
-                    + this.docStatistics.nSimulations + " simulation(s), "
-                    + this.docStatistics.nTasks + " task(s), "
-                    + this.docStatistics.nReportsCount + "  report(s),  "
-                    + this.docStatistics.nPlots2DCount + " plot2D(s), and "
-                    + this.docStatistics.nPlots3DCount + " plot3D(s)\n";
+                    + this.docStatistics.getNumModels() + " model(s), "
+                    + this.docStatistics.getNumSimultions() + " simulation(s), "
+                    + this.docStatistics.getNumTasks() + " task(s), "
+                    + this.docStatistics.getReportsCount() + "  report(s),  "
+                    + this.docStatistics.getPlots2DCount() + " plot2D(s), and "
+                    + this.docStatistics.getPlots3Dcount() + " plot3D(s)\n";
             logger.info(summarySedmlContentString);
 
             logDocumentMessage += "done. ";
@@ -195,7 +192,7 @@ public class SedmlJob {
      * @throws IOException if there are system I/O issues
      * @throws ExecutionException if an execution specfic error occurs
      */
-    public boolean simulateSedml() throws InterruptedException, ExecutionException, PythonStreamException, IOException {
+    public boolean simulateSedml(Hdf5DataWrapper masterHdf5File) throws InterruptedException, ExecutionException, PythonStreamException, IOException {
         /*  temp code to test plot name correctness
         String idNamePlotsMap = utils.generateIdNamePlotsMap(sedml, outDirForCurrentSedml);
         utils.execPlotOutputSedDoc(inputFile, idNamePlotsMap, this.resultsDirPath);
@@ -211,7 +208,11 @@ public class SedmlJob {
 
         this.runSimulations(solverHandler, externalDocInfo);
         this.recordRunDetails(solverHandler);
-        this.processOutputs(solverHandler);
+        try {
+            this.processOutputs(solverHandler, masterHdf5File);
+        } catch (Exception e){ // TODO: Make more Fine grain
+            logger.warn("Outputs could not be processed.", e);
+        }
         return this.evalulateResults();
     }
 
@@ -228,16 +229,22 @@ public class SedmlJob {
             solverHandler.simulateAllTasks(externalDocInfo, sedml, cliRecorder, outDirForCurrentSedml, this.resultsDirPath,
                     this.rootOutputDir.getAbsolutePath(), sedmlLocation, bKeepTempFiles, bExactMatchOnly, bSmallMeshOverride);
         } catch (Exception e) {
+            Throwable currentTierOfException = e;
+            String errorMessage = "";
             somethingFailed = somethingDidFail();
-            logDocumentError = e.getMessage();        // probably the hash is empty
-            logger.error(e.getMessage(), e);
+            while (currentTierOfException != null && !currentTierOfException.equals(currentTierOfException.getCause())){
+                errorMessage += currentTierOfException.getMessage();
+                currentTierOfException = currentTierOfException.getCause();
+            }
+            logDocumentError = errorMessage;        // probably the hash is empty
+            logger.error(errorMessage, e);
             // still possible to have some data in the hash, from some task that was successful - that would be partial success
         }
 
         this.recordRunDetails(solverHandler);
     }
 
-    private void processOutputs(SolverHandler solverHandler) throws PythonStreamException, InterruptedException, IOException, ExecutionException {
+    private void processOutputs(SolverHandler solverHandler, Hdf5DataWrapper masterHdf5File) throws PythonStreamException, InterruptedException, IOException, ExecutionException {
         // WARNING!!! Current logic dictates that if any task fails we fail the sedml document
         // change implemented on Nov 11, 2021
         // Previous logic was that if at least one task produces some results we declare the sedml document status as successful
@@ -255,7 +262,7 @@ public class SedmlJob {
             if (!solverHandler.nonSpatialResults.isEmpty()) {
                 this.generateCSV(solverHandler);
                 this.generatePlots();
-                this.generateHDF5(solverHandler);
+                this.generateHDF5(solverHandler, masterHdf5File);
             }
             
             if (!solverHandler.spatialResults.isEmpty()) {
@@ -269,7 +276,7 @@ public class SedmlJob {
             logDocumentError += e.getMessage();
             this.reportProblem(e);
             org.apache.commons.io.FileUtils.deleteDirectory(this.plotsDirectory);    // removing temp path generated from python
-            throw new ExecutionException();
+            throw new ExecutionException("error while processing outputs: "+e.getMessage(), e);
         }
     }
 
@@ -283,8 +290,7 @@ public class SedmlJob {
             return false;
         }
 
-        Files.move(new File(outDirForCurrentSedml,"reports.h5").toPath(),Paths.get(this.resultsDirPath,"reports.h5"));
-        org.apache.commons.io.FileUtils.deleteDirectory(this.plotsDirectory);    // removing temp path generated from python
+        //Files.copy(new File(outDirForCurrentSedml,"reports.h5").toPath(),Paths.get(this.resultsDirPath,"reports.h5"));
 
         // archiving result files
         logger.info("Archiving result files");
@@ -328,25 +334,19 @@ public class SedmlJob {
         //              }
     }
 
-    private void generateHDF5(SolverHandler solverHandler) throws HDF5Exception, ExpressionException, DataAccessException, IOException {
+    private void generateHDF5(SolverHandler solverHandler, Hdf5DataWrapper masterHdf5File) throws IOException {
         logDocumentMessage += "Generating HDF5 file... ";
         logger.info("Generating HDF5 file... ");
 
-        Hdf5FileWrapper hdf5FileWrapper = new Hdf5FileWrapper();
-        hdf5FileWrapper.combineArchiveLocation = outDirForCurrentSedml.getName();
-        hdf5FileWrapper.uri = outDirForCurrentSedml.getName();
+        Hdf5WrapperFactory hdf5Factory = new Hdf5WrapperFactory(sedml, solverHandler.taskToSimulationMap, sedmlLocation);
 
-        List<Hdf5DatasetWrapper> nonspatialDatasets = RunUtils.prepareNonspatialHdf5(sedml, solverHandler.nonSpatialResults, solverHandler.taskToSimulationMap, sedmlLocation);
-        List<Hdf5DatasetWrapper> spatialDatasets = RunUtils.prepareSpatialHdf5(sedml, solverHandler.spatialResults, solverHandler.taskToSimulationMap, sedmlLocation);
-        hdf5FileWrapper.datasetWrappers.addAll(nonspatialDatasets);
-        hdf5FileWrapper.datasetWrappers.addAll(spatialDatasets);
-
-        Hdf5Writer.writeHdf5(hdf5FileWrapper, outDirForCurrentSedml);
+        Hdf5DataWrapper partialHdf5File = hdf5Factory.generateHdf5File(solverHandler.nonSpatialResults, solverHandler.spatialResults);
+        masterHdf5File.incorporate(partialHdf5File); // Add the data to the master hdf5 file wrapper.
 
         for (File tempH5File : solverHandler.spatialResults.values()){
             if (tempH5File!=null) Files.delete(tempH5File.toPath());
         }
-
+        /*
         if (!containsExtension(outDirForCurrentSedml.getAbsolutePath(), "h5")) {
             String errorMessage = "Failed to generate the HDF5 output file.";
             somethingFailed = somethingDidFail();
@@ -355,6 +355,7 @@ public class SedmlJob {
         } else {
             logDocumentMessage += "Done. ";
         }
+        */
     }
 
     // This method is a bit weird; it uses a temp file as a reference to compare against while getting the file straight from the archive.
@@ -391,19 +392,6 @@ public class SedmlJob {
         return true;
     }
 
-    private static boolean containsExtension(String folder, String ext) {
-        GenericExtensionFilter filter = new GenericExtensionFilter(ext);
-        File dir = new File(folder);
-        if (dir.isDirectory() == false) {
-            return false;
-        }
-        String[] list = dir.list(filter);
-        if (list.length > 0) {
-            return true;
-        }
-        return false;
-    }
-
     /**
      * In its current state, the sed-ml generated with python is missing two important fields;
      * this function fixes that.
@@ -430,10 +418,10 @@ public class SedmlJob {
     }
 
     private void recordRunDetails(SolverHandler solverHandler) throws IOException {
-        String message = this.docStatistics.nModels + ",";
-        message += this.docStatistics.nSimulations + ",";
-        message += this.docStatistics.nTasks + ",";
-        message += this.docStatistics.nOutputs + ",";
+        String message = this.docStatistics.getNumModels() + ",";
+        message += this.docStatistics.getNumSimultions() + ",";
+        message += this.docStatistics.getNumTasks() + ",";
+        message += this.docStatistics.getNumOutputs() + ",";
         
         message += solverHandler.countBioModels + ",";
         message += hasOverrides + ",";

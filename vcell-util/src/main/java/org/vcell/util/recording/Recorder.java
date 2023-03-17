@@ -2,9 +2,9 @@ package org.vcell.util.recording;
 
 /**
  * Interface through which all VCell based Logging goes that has been requested by the user's requests.
- * All formatting, input validation, etc. should be done in a class that derrives this logger class
+ * All formatting, input validation, etc. should be done in a class that derrives this Recorder class
  * 
- * Note: Loggers must log Log4J through themselves, or explicitly as themselves; 
+ * Note: Recorders must log Log4J through themselves, or explicitly as themselves; 
  * current implementation style of Log4JLog.java will automatically skip over classes that extend this one when determining caller automatically.
  * 
  * @since VCell 7.4.0.62
