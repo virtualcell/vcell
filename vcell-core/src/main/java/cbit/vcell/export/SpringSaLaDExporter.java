@@ -104,13 +104,13 @@ public class SpringSaLaDExporter {
 				rrs.analizeReaction(analysisResults);
 				switch(rrs.getSubtype(analysisResults)) {
 				case CREATION:
-					SpeciesContext scCreated = rrs.getCreatedSpecies(speciesContextSpecs);
+					SpeciesContext scCreated = rrs.getCreatedSpecies(speciesContextSpecs, analysisResults);
 					// if it doesn't exist, we should make a seed species exactly like the product pattern
 					// and with the same name (maybe just make an Issue)
 					creationMap.put(rrs, scCreated);
 					break;
 				case DECAY:
-					SpeciesContext scDestroyed = rrs.getDestroyedSpecies(speciesContextSpecs);
+					SpeciesContext scDestroyed = rrs.getDestroyedSpecies(speciesContextSpecs, analysisResults);
 					// see above, we need a seed species to match the reactant pattern
 					decayMap.put(rrs, scDestroyed);
 					break;
