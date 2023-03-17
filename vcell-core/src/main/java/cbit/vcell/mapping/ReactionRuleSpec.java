@@ -357,19 +357,82 @@ private boolean isTransitionReaction(Map<String, Object> analysisResults) {
 	return false;
 }
 private boolean isAllostericReaction(Map<String, Object> analysisResults) {
-	
+	Object ret = analysisResults.get(WrongNumberOfMolecules);
+	if(ret == null || (boolean)ret == true) {
+		return false;
+	}
+	ret = analysisResults.get(StateTransitionCounter);
+	if(ret == null || (int)ret != 1) {
+		return false;		// we need exactly 1 state transition
+	}
+	ret = analysisResults.get(BondTransitionCounter);
+	if(ret == null || (int)ret != 0) {
+		return false;		// no binding allowed
+	}
+	ret = analysisResults.get(NumReactants);
+	if(ret == null || (int)ret != 1) {
+		return false;		// exactly 1 reactant
+	}
+	ret = analysisResults.get(NumProducts);
+	if(ret == null || (int)ret != 1) {
+		return false;		// exactly 1 product
+	}
+	List<ReactantPattern> rpList = reactionRule.getReactantPatterns();		// we already know that this list is not empty
+	List<ProductPattern> ppList = reactionRule.getProductPatterns();
+	List<MolecularTypePattern> mtpReactantList = rpList.get(0).getSpeciesPattern().getMolecularTypePatterns();
+	List<MolecularTypePattern> mtpProductList = ppList.get(0).getSpeciesPattern().getMolecularTypePatterns();
+	if(mtpReactantList.size() != 1 || mtpProductList.size() != 1) {
+		return false;
+	}
+	MolecularTypePattern mtpReactant = mtpReactantList.get(0);
+	MolecularTypePattern mtpProduct = mtpProductList.get(0);
+	int reactantExplicitStates = 0;
+	int productExplicitStates = 0;
+	List<MolecularComponentPattern> mcpReactantList = mtpReactant.getComponentPatternList();
+	List<MolecularComponentPattern> mcpProductList = mtpProduct.getComponentPatternList();
+	for(MolecularComponentPattern mcp : mcpReactantList) {
+		if(!mcp.getComponentStatePattern().isAny()) {
+			reactantExplicitStates++;
+		}
+	}
+	for(MolecularComponentPattern mcp : mcpProductList) {
+		if(!mcp.getComponentStatePattern().isAny()) {
+			productExplicitStates++;
+		}
+	}
+	if(reactantExplicitStates == 2 && productExplicitStates == 2) {
+		return true;	// we need 2 explicit states: one that is transitioning and one for the allosteric condition
+	}
 	return false;
 }
 private boolean isBindingReaction(Map<String, Object> analysisResults) {
-	Object ret = analysisResults.get(StateTransitionCounter);
-	if(ret == null) {
+	
+	Object ret = analysisResults.get(WrongNumberOfMolecules);
+	if(ret == null || (boolean)ret == true) {
 		return false;
 	}
-	int stateTransitions = (int)ret;
-	if(stateTransitions != 0) {
+	ret = analysisResults.get(StateTransitionCounter);
+	if(ret == null || (int)ret != 0) {
 		return false;		// no state transitions allowed in a binding reaction
 	}
-
+	ret = analysisResults.get(NumReactants);
+	if(ret == null || (int)ret != 2) {
+		return false;		// exactly 2 reactants
+	}
+	ret = analysisResults.get(NumProducts);
+	if(ret == null || (int)ret != 1) {
+		return false;		// exactly 1 product
+	}
+	List<ReactantPattern> rpList = reactionRule.getReactantPatterns();		// we already know that these 2 lists are not empty
+	List<ProductPattern> ppList = reactionRule.getProductPatterns();
+	for(ReactantPattern p : rpList) {
+		if(p.getSpeciesPattern().getMolecularTypePatterns().size() != 1) {			// each reactant must have 1 molecule
+			return false;
+		}
+	}
+	if(ppList.get(0).getSpeciesPattern().getMolecularTypePatterns().size() != 2) {	// the product must have 2 molecules
+		return false;
+	}
 	ret = analysisResults.get(BondTransitionCounter);
 	if(ret == null) {
 		return false;
