@@ -229,10 +229,10 @@ public class DataSet implements java.io.Serializable
 			}
 		}finally{
 			if (dataInputStream != null) {
-				try{dataInputStream.close();}catch(Exception e){lg.error(e);}
+				try{dataInputStream.close();}catch(Exception e){lg.error(e.getMessage(), e);}
 			}
 			if (zipZipFile != null) {
-				try{zipZipFile.close();}catch(Exception e){lg.error(e);}
+				try{zipZipFile.close();}catch(Exception e){lg.error(e.getMessage(), e);}
 			}
 		}
 	}

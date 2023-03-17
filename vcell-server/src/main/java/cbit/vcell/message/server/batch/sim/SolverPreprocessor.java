@@ -128,12 +128,12 @@ public class SolverPreprocessor  {
 					try {
 						super.initialize();
 					} catch (Exception e) {
-						lg.error(e);
+						lg.error(e.getMessage(), e);
 						SimulationMessage simMessage = SimulationMessage.jobFailed(e.getMessage());
 						try {
 							sendFailureAndExit(this, simTask, hostName, simMessage);
 						} catch (Exception e1) {
-							lg.error(e1);
+							lg.error(e1.getMessage(), e1);
 						}
 					}
 				}
@@ -152,7 +152,7 @@ public class SolverPreprocessor  {
 					try {
 						sendFailureAndExit(htcSolver, simTask, hostName, event.getSimulationMessage());
 					} catch (Exception e) {
-						lg.error(e);
+						lg.error(e.getMessage(), e);
 					}
 				}
 				public void solverStarting(SolverEvent event) {
@@ -214,7 +214,7 @@ public class SolverPreprocessor  {
 				try {
 					AmplistorUtils.getObjectDataPutInFile(amplistorUserPath+"/"+fileName, simDataAmplistorInfo.getAmplistorCredential(), destinationFile);
 				} catch (Exception e) {
-					lg.error(e);
+					lg.error(e.getMessage(), e);
 					//ignore
 				}
 			}

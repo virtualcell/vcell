@@ -375,7 +375,7 @@ System.out.println(objectiveFunctionLimit);
 			try {
 				System.out.println("ParestRun.optimize():  bFake="+bFakeOptimization+", report="+getReport());
 			} catch (Exception e) {
-				lg.error(e);
+				lg.error(e.getMessage(), e);
 			}
 		}
 		
@@ -507,7 +507,7 @@ System.out.println(objectiveFunctionLimit);
 			ProfileLikelihood pl = new ProfileLikelihood(callback);
 			pl.run((ParameterEstimationTask) task[0]);
 		} catch (Exception e) {
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 		}
 	}
 	

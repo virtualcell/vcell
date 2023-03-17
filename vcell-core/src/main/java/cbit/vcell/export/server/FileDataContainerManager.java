@@ -227,7 +227,7 @@ public class FileDataContainerManager {
 		void deleteTempFile() throws IOException {
 			if(isDataInFile() && getDataFile().exists()){
 				if (!getDataFile().delete()){
-					lg.error(new Exception("Failed to delete ExportOutput Tempfile '"+getDataFile().getAbsolutePath()+"'"));
+					lg.error(new Exception("Failed to delete ExportOutput Tempfile '"+getDataFile().getAbsolutePath()+"'").getMessage(), new Exception("Failed to delete ExportOutput Tempfile '"+getDataFile().getAbsolutePath()+"'"));
 				}
 			}
 		}

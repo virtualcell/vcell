@@ -151,7 +151,7 @@ public class SimulationMessage implements Serializable {
 					}
 				}
 			} catch (Exception ex) {
-				lg.error(ex);
+				lg.error(ex.getMessage(), ex);
 			}
 		}
 		return null;

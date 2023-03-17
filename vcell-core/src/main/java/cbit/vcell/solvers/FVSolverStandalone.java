@@ -267,7 +267,7 @@ protected void initialize() throws SolverException {
 						}
 					}
 				}catch(Exception e){
-					lg.error(e);
+					lg.error(e.getMessage(), e);
 					//ignore
 				}
 				

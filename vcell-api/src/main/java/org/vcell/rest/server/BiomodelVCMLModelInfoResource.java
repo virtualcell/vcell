@@ -100,7 +100,7 @@ public class BiomodelVCMLModelInfoResource extends AbstractServerResource/* impl
 			StringBuffer sb = createHtml(bm);
 			return new StringRepresentation(sb.toString(), MediaType.TEXT_HTML);
 		} catch (Exception e) {
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 			if(e instanceof ResourceException) {
 				throw (ResourceException)e;
 			}

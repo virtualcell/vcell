@@ -157,7 +157,7 @@ public ODESolverResultSet getStochSolverResultSet()
 		}
 		//
 	} catch (Exception e) {
-		lg.error(e);
+		lg.error(e.getMessage(), e);
 		return null;
 	} finally {
 		try {

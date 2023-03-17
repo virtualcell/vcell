@@ -59,7 +59,7 @@ public class KisaoTermParser {
 				}
 			}
 		} catch(Exception e) {
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 		}
 		
 		ontology.createRelations();

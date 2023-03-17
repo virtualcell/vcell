@@ -192,7 +192,7 @@ public ExportOutput[] makeMediaData(
 				mediaArr = expOutputs.toArray(new ExportOutput[0]);
 			}
 		}catch(Exception e){
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 		}
 	}else{
 		throw new IllegalArgumentException("Unknown FormatSpecificSpecs.PARTICLE flag="+particleMode);
@@ -804,9 +804,9 @@ private static void createMedia(Vector<ExportOutput> exportOutputV,VCDataIdentif
 				movieHolder.getVarNameVideoMediaChunkHash().clear();
 				movieHolder.getVarNameDataIDHash().clear();
 			}finally{
-				if(movieos != null){try{movieos.close();}catch(Exception e){lg.error(e);}}
-				if(bos != null){try{bos.close();}catch(Exception e){lg.error(e);}}
-				if(fos != null){try{fos.close();}catch(Exception e){lg.error(e);}}
+				if(movieos != null){try{movieos.close();}catch(Exception e){lg.error(e.getMessage(), e);}}
+				if(bos != null){try{bos.close();}catch(Exception e){lg.error(e.getMessage(), e);}}
+				if(fos != null){try{fos.close();}catch(Exception e){lg.error(e.getMessage(), e);}}
 			}
 		}else if(bEndVars && bEndTime && bEndSlice && bQTVR){
 			String simID = exportSpecs.getVCDataIdentifier().getID();
@@ -832,9 +832,9 @@ private static void createMedia(Vector<ExportOutput> exportOutputV,VCDataIdentif
 					movieos.close();
 					exportOutputV.add(exportOutput);
 				}finally{
-					if(movieos != null){try{movieos.close();}catch(Exception e){lg.error(e);}}
-					if(bos != null){try{bos.close();}catch(Exception e){lg.error(e);}}
-					if(fos != null){try{fos.close();}catch(Exception e){lg.error(e);}}
+					if(movieos != null){try{movieos.close();}catch(Exception e){lg.error(e.getMessage(), e);}}
+					if(bos != null){try{bos.close();}catch(Exception e){lg.error(e.getMessage(), e);}}
+					if(fos != null){try{fos.close();}catch(Exception e){lg.error(e.getMessage(), e);}}
 				}
 			}
 			movieHolder.getVarNameVideoMediaChunkHash().clear();

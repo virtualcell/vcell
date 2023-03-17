@@ -52,9 +52,12 @@ public ServiceStatusDbDriver() {
 private int executeUpdate(Connection con, String sql) throws SQLException {
 	Statement s = con.createStatement();
 	try {
-		int changed = s.executeUpdate(sql);
-		if (changed != 1){
-			lg.error(changed + " records changed: "+sql, new DbDriver.StackTraceGenerationException());
+		if (lg.isDebugEnabled()) {
+			lg.debug("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
+		}
+		int changed = s.executeUpdate(sql); // jcs: added logging
+		if (changed != 1) {
+			lg.error(changed + " records changed: " + sql, new DbDriver.StackTraceGenerationException());
 		}
 		return changed;
 	} finally {

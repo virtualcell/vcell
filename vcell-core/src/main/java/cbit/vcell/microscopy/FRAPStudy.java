@@ -1066,7 +1066,7 @@ public class FRAPStudy implements Matchable{
 		    	fdos.isize = isize;
 		    	localWorkspace.getDataSetControllerImpl().fieldDataFileOperation(fdos);
 			} catch (Exception e) {
-				lg.error(e);
+				lg.error(e.getMessage(), e);
 			}
 			return new ROIDataGenerator(ROI_EXTDATA_NAME, /*name*/
 					                    new int[] {0}/* volumePoints*/, 
@@ -1124,7 +1124,7 @@ public class FRAPStudy implements Matchable{
 	    	FieldDataIdentifierSpec fdis = new FieldDataIdentifierSpec(psfFieldFunc, newPsfExtDataID);
 	    	return fdis;
 		} catch (Exception e) {
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 			return null;
 		}					                                               
 	}

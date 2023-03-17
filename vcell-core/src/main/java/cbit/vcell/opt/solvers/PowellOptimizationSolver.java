@@ -83,7 +83,7 @@ public OptimizationResultSet solve(OptimizationSpec os, OptimizationSolverSpec o
 				break;
 			}
 		} catch (Exception ex) {
-			lg.error(ex);
+			lg.error(ex.getMessage(), ex);
 			break;
 		}
 	}

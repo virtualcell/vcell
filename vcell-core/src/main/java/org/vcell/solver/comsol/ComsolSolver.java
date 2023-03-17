@@ -66,7 +66,7 @@ public class ComsolSolver extends AbstractSolver {
 			setSolverStatus(new SolverStatus(SolverStatus.SOLVER_FINISHED, SimulationMessage.MESSAGE_SOLVER_FINISHED));
 			fireSolverFinished();
 		}catch (Exception e){
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 			setSolverStatus(new SolverStatus (SolverStatus.SOLVER_ABORTED, SimulationMessage.solverAborted(e.getMessage())));
 			fireSolverAborted(SimulationMessage.solverAborted(e.getMessage()));
 		}

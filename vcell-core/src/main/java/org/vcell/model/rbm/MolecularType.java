@@ -77,7 +77,7 @@ public class MolecularType extends RbmElementAbstract implements BioModelEntityO
 				}
 			}
 		} catch(Exception e){
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 		}
 	}
 	

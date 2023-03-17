@@ -436,7 +436,7 @@ public class SEDMLImporter {
 				}
 			}
 		} catch (Exception e) {
-			logger.error(e);
+			logger.error(e.getMessage(), e);
 			return bioModels;
 		}
 		// re-read XML into a single BioModel and replace docs List
@@ -445,7 +445,7 @@ public class SEDMLImporter {
 			String mergedXML = XmlUtil.xmlToString(dom, true);
 			mergedBioModel = XmlHelper.XMLToBioModel(new XMLSource(mergedXML));
 		} catch (Exception e) {
-			logger.error(e);
+			logger.error(e.getMessage(), e);
 			return bioModels;
 		}
 		// merge succeeded, replace the list

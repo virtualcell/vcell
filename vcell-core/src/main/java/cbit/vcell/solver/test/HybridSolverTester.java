@@ -191,7 +191,7 @@ public class HybridSolverTester {
 				}
 			}
 		} catch (Exception e) {
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 		}
 	}
 	
@@ -314,7 +314,7 @@ public class HybridSolverTester {
 				}
 				break;
 			}catch(Exception e){
-				lg.error(e);
+				lg.error(e.getMessage(), e);
 			}
 			if(dataProcessingOutputInfo == null){
 				System.out.println("No postprocessing found for "+jobCounter+" trials in dir "+userSimDataDir.getAbsolutePath()+" matching SimID="+altArgsHelper.simID);
@@ -720,10 +720,10 @@ public class HybridSolverTester {
 				hst.runHybridTest(site);
 			}
 		}catch(Exception e){
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 			System.exit(1);
 		}finally{
-			if(fw !=null){try{fw.close();}catch(Exception e){lg.error(e);}}
+			if(fw !=null){try{fw.close();}catch(Exception e){lg.error(e.getMessage(), e);}}
 		}
 	}
 

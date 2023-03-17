@@ -382,7 +382,7 @@ public Vector<Expression> getExpressions(MathDescription mathDesc) {
 				}
 			}
 		}catch (Exception e){
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 		}
 	}
 

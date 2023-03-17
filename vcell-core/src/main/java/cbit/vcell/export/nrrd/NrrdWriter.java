@@ -102,7 +102,7 @@ public static NrrdInfo writeNRRD(NrrdInfo nrrdInfo,FileDataContainerManager file
 			fileDataContainerManager.append(nrrdInfo.getHeaderFileID(),"\n");
 		}
 	}finally {
-		if(headerFileWriter != null){try{headerFileWriter.close();}catch(Exception e){lg.error(e);}}
+		if(headerFileWriter != null){try{headerFileWriter.close();}catch(Exception e){lg.error(e.getMessage(), e);}}
 	}
 	// if we didn't want a detached header, append the datafile
 	//BufferedOutputStream headerdOut = null;

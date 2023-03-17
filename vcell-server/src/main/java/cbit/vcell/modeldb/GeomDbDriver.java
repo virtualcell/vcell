@@ -879,7 +879,7 @@ private void insertBrowseImageDataSQL(Connection con, KeyValue key, KeyValue ima
 			}
 		}
 	}catch(Exception e){
-		lg.error(e);
+		lg.error(e.getMessage(), e);
 	}
 	if(gifEncodedImage == null){
 		gifEncodedImage =

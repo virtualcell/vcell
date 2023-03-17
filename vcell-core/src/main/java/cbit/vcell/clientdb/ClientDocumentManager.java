@@ -824,7 +824,7 @@ private XMLHolder<BioModel> getBioModelXML(KeyValue vKey) throws DataAccessExcep
 		throw new DataAccessException("BioModel (id=" + vKey + ") does not exist. It either " +
 			"has been deleted or its reference is outdated. Please use menu 'Server->Reconnect' to update document references.");
 	}catch(Exception e){
-		lg.error(e);
+		lg.error(e.getMessage(), e);
 		throw FailToLoadDocumentExc.createException(e, vKey, this);
 	}
 }
@@ -843,7 +843,7 @@ public static class FailToLoadDocumentExc extends DataAccessException {
 			VCDocumentInfo docInfo = clientDocumentManager.getBioModelInfo(documentKey);
 			documentSoftwareVersion = docInfo.getSoftwareVersion();
 		}catch(Exception e){
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 		}
 		return new FailToLoadDocumentExc(cause,VCellSoftwareVersion.fromSystemProperty(),documentSoftwareVersion);
 	}
@@ -919,7 +919,7 @@ public Geometry getGeometry(GeometryInfo geometryInfo) throws DataAccessExceptio
 			geometry.getGeometrySurfaceDescription().updateAll();
 		}
 	}catch (Exception e){
-		lg.error(e);
+		lg.error(e.getMessage(), e);
 		//throw new DataAccessException("Geometric surface generation error:\n"+e.getMessage());
 	}
 	
@@ -1009,7 +1009,7 @@ private String getGeometryXML(KeyValue vKey) throws DataAccessException {
 		throw new DataAccessException("Geometry (id=" + vKey + ") does not exist. It either " +
 			"has been deleted or its reference is outdated. Please use menu 'Server->Reconnect' to update document references.");
 	}catch(Exception e){
-		lg.error(e);
+		lg.error(e.getMessage(), e);
 		throw FailToLoadDocumentExc.createException(e, vKey, this);
 	}
 }
@@ -1050,7 +1050,7 @@ private String getImageXML(KeyValue vKey) throws DataAccessException {
 	}catch (ObjectNotFoundException e){
 		return null;
 	}catch(Exception e){
-		lg.error(e);
+		lg.error(e.getMessage(), e);
 		throw FailToLoadDocumentExc.createException(e, vKey, this);
 	}
 }
@@ -1165,7 +1165,7 @@ private XMLHolder<MathModel> getMathModelXML(KeyValue vKey) throws DataAccessExc
 		throw new DataAccessException("MathModel (id=" + vKey + ") does not exist. It either " +
 			"has been deleted or its reference is outdated. Please use menu 'Server->Reconnect' to update document references.");
 	}catch(Exception e){
-		lg.error(e);
+		lg.error(e.getMessage(), e);
 		throw FailToLoadDocumentExc.createException(e, vKey, this);
 	}
 }
@@ -1458,7 +1458,7 @@ public boolean isChanged(VCImage vcImage, String vcImageXML) throws DataAccessEx
 	try {
 		savedImageXML = getImageXML(vcImage.getVersion().getVersionKey());
 	}catch (Exception e){
-		lg.error(e);
+		lg.error(e.getMessage(), e);
 		//
 		// loaded version has been deleted
 		//
@@ -1585,7 +1585,7 @@ public boolean isChanged(Geometry geometry, String geometryXML) throws DataAcces
 	try {
 		savedGeometryXML = getImageXML(geometry.getVersion().getVersionKey());
 	}catch (Exception e){
-		lg.error(e);
+		lg.error(e.getMessage(), e);
 		//
 		// loaded version has been deleted
 		//
@@ -2034,7 +2034,7 @@ public VCImage save(VCImage vcImage) throws DataAccessException {
 			
 			fireDatabaseInsert(new DatabaseEvent(this, DatabaseEvent.INSERT, null, savedVCImageInfo));
 		}catch (Exception e){
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 		}
 		
 		return savedVCImage;
@@ -2234,7 +2234,7 @@ public VCImage saveAsNew(VCImage vcImage, java.lang.String newName) throws DataA
 			
 			fireDatabaseInsert(new DatabaseEvent(this, DatabaseEvent.INSERT, null, savedVCImageInfo));
 		}catch (Exception e){
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 		}
 		
 		return savedVCImage;
@@ -2720,7 +2720,7 @@ public void substituteFieldFuncNames(VCDocument vcDocument,VersionableTypeVersio
 		}
 		fireFieldDataDB(new FieldDataDBEvent(this));
 	}catch(Exception e){
-		lg.error(e);
+		lg.error(e.getMessage(), e);
 		//Cleanup
 		for(int i=0;i<errorCleanupExtDataIDV.size();i+= 1){
 			try{

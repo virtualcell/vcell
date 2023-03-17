@@ -1556,7 +1556,7 @@ private void generateSurfaceCollection(int numRegions,
 		}
 	}catch(Exception e){
 		//If MembraneNeighbors fails somewhere let Surfacecollection generate without membraneneighbors (original behavior just in case)
-		lg.error(e);
+		lg.error(e.getMessage(), e);
 		bMembraneNeighborCalculationFailed = true;
 	}finally{
 		//these aren't needed after fail or surfacecollection.set(...)
@@ -1624,7 +1624,7 @@ private void addQuadToSurface(
 			updateEdgeMap(nodeArr, surfIndex, surfQuadsV.elementAt(surfIndex).size()-1,plane);
 		}
 	}catch(Exception e){
-		lg.error(e);
+		lg.error(e.getMessage(), e);
 		bMembraneNeighborCalculationFailed = true;
 	}
 }

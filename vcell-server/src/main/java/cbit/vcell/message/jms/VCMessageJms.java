@@ -114,7 +114,7 @@ public class VCMessageJms implements VCMessage {
 				fis.close();
 				delegate.onTraceEvent("VCMessageJms.loadBlobFile(): size="+jmsMessage.getIntProperty(BLOB_MESSAGE_OBJECT_SIZE)+", type="+jmsMessage.getStringProperty(BLOB_MESSAGE_OBJECT_TYPE)+", elapsedTime = "+(System.currentTimeMillis()-t1)+" ms");
 			} catch (Exception e) {
-				lg.error(e);
+				lg.error(e.getMessage(), e);
 				throw new RuntimeException(e.getMessage(),e);
 			}
 		}
@@ -138,7 +138,7 @@ public class VCMessageJms implements VCMessage {
 				bis.close();
 				delegate.onTraceEvent("VCMessageJms.loadBlobFile(): size="+jmsMessage.getIntProperty(BLOB_MESSAGE_OBJECT_SIZE)+", type="+jmsMessage.getStringProperty(BLOB_MESSAGE_OBJECT_TYPE)+", elapsedTime = "+(System.currentTimeMillis()-t1)+" ms");
 			} catch (Exception e) {
-				lg.error(e);
+				lg.error(e.getMessage(), e);
 				throw new RuntimeException(e.getMessage(),e);
 			}
 		}
@@ -153,7 +153,7 @@ public class VCMessageJms implements VCMessage {
 				blobFile.delete();
 			}catch (Exception e){
 				delegate.onException(e);
-				lg.error(e);
+				lg.error(e.getMessage(), e);
 			}
 		}
 		if (blobObjectId != null) {
@@ -161,7 +161,7 @@ public class VCMessageJms implements VCMessage {
 				VCMongoDbDriver.getInstance().removeBLOB(blobObjectId);
 			}catch (Exception e) {
 				delegate.onException(e);
-				lg.error(e);
+				lg.error(e.getMessage(), e);
 			}
 		}
 	}

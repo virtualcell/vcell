@@ -306,7 +306,7 @@ private void refreshAll()
 			refreshSpeciesContextSpecBoundaryUnits(simContext.getGeometryContext().getStructureMappings());
 		}
 	}catch (Exception e){
-		lg.error(e);
+		lg.error(e.getMessage(), e);
 	}		
 	return;
 }

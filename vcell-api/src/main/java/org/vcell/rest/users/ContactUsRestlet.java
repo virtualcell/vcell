@@ -67,7 +67,7 @@ public final class ContactUsRestlet extends Restlet {
 
 				sendErrorReportEmail(errorReport);
 			} catch (Exception e) {
-				lg.error(e);
+				lg.error(e.getMessage(), e);
 				response.setStatus(Status.SERVER_ERROR_INTERNAL);
 				response.setEntity("We failed to report an error to VCell support", MediaType.TEXT_PLAIN);
 				return;

@@ -136,7 +136,7 @@ public class MovingBoundaryReader implements MovingBoundaryTypes {
 //		da = getDoubleArray("elements","volumePointsX");
 //		System.out.println(da);
 		} catch (Exception e) {
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 		}
 
 	}

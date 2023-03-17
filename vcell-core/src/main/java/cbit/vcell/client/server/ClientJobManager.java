@@ -139,7 +139,7 @@ public void simulationJobStatusChanged(cbit.rmi.event.SimulationJobStatusEvent s
 		getClientServerManager().getDocumentManager().updateServerSimulationStatusFromJobEvent(simJobStatusEvent);
 		fireSimStatusEvent(new SimStatusEvent(this, simJobStatusEvent.getVCSimulationIdentifier(), simJobStatusEvent.getTimepoint() != null, simJobStatusEvent.getJobStatus().getSchedulerStatus().isFailed(), simJobStatusEvent.getJobStatus().getJobIndex()));
 	} catch (Exception e) {
-		lg.error(e);
+		lg.error(e.getMessage(), e);
 	}
 }
 

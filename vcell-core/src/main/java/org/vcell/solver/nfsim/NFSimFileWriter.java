@@ -254,7 +254,7 @@ public static void main(String[] args) {
 		}
 		System.out.println("Done");
 	} catch (Exception e) {
-		lg.error(e);
+		lg.error(e.getMessage(), e);
 	}
 }
 

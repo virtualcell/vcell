@@ -88,13 +88,13 @@ public class VCMongoDbDriver {
 		        	}
 		        }
    			} catch (Exception e) {
-   				lg.error(e);
+   				lg.error(e.getMessage(), e);
    				try {
    					if (m!=null){
    						m.close();
    					}
    				}catch (Exception e2){
-   					lg.error(e);
+   					lg.error(e.getMessage(), e);
    				} finally {
    					m = null;
    				}
@@ -246,13 +246,13 @@ public class VCMongoDbDriver {
 			ObjectId fileId = gridFSBucket.uploadFromStream(blobName, in, options);
 			return fileId;
 		} catch (Exception e) {
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 			try {
 				if (m != null) {
 					m.close();
 				}
 			} catch (Exception e2) {
-				lg.error(e);
+				lg.error(e.getMessage(), e);
 			} finally {
 				m = null;
 			}
@@ -274,13 +274,13 @@ public class VCMongoDbDriver {
 			byte[] blob = streamToDownloadTo.toByteArray();
 			return blob;
 		} catch (Exception e) {
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 			try {
 				if (m != null) {
 					m.close();
 				}
 			} catch (Exception e2) {
-				lg.error(e);
+				lg.error(e.getMessage(), e);
 			} finally {
 				m = null;
 			}
@@ -299,13 +299,13 @@ public class VCMongoDbDriver {
 			GridFSBucket gridFSBucket = GridFSBuckets.create(db);
 			gridFSBucket.delete(objectId);
 		} catch (Exception e) {
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 			try {
 				if (m != null) {
 					m.close();
 				}
 			} catch (Exception e2) {
-				lg.error(e);
+				lg.error(e.getMessage(), e);
 			} finally {
 				m = null;
 			}
@@ -349,7 +349,7 @@ public class VCMongoDbDriver {
 			}
             
 		} catch (Exception e) {
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 		} finally {
 			if (m!=null){
 				m.close();

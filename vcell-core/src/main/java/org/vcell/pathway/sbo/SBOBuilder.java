@@ -124,7 +124,7 @@ public static void main(String argv[]) {
 		writer.close();
 
 	} catch (Exception e) {
-		lg.error(e);
+		lg.error(e.getMessage(), e);
 	}
 }
 

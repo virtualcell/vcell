@@ -347,7 +347,7 @@ public AnnotatedFunction getFunction(OutputContext outputContext,String identifi
 	try {
 		getFunctionDataIdentifiers(outputContext);
 	} catch (Exception ex) {
-		lg.error(ex);
+		lg.error(ex.getMessage(), ex);
 	}
 		
 	// Get the function from each annotatedFunction in annotatedFunctionList, check if name is same as 'identifier' argument
@@ -398,7 +398,7 @@ public AnnotatedFunction[] getFunctions(OutputContext outputContext) {
 	try {
 		getFunctionDataIdentifiers(outputContext);
 	} catch (Exception ex) {
-		lg.error(ex);
+		lg.error(ex.getMessage(), ex);
 	}
 	
 	ArrayList<AnnotatedFunction> functionsArr = new ArrayList<>();

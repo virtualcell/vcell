@@ -2142,7 +2142,7 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 					try{
 						iniExp.bindExpression(this);
 					}catch(Exception ex){
-						lg.error(ex);
+						lg.error(ex.getMessage(), ex);
 						setWarning(ex.getMessage());
 					}				
 				}
@@ -2152,7 +2152,7 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 					try{
 						probExp.bindExpression(this);
 					}catch(Exception ex){
-						lg.error(ex);
+						lg.error(ex.getMessage(), ex);
 						setWarning(ex.getMessage());
 					}
 				}
@@ -2432,7 +2432,7 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 			//setWarning("error validating MathDescription: "+e.getMessage());
 			//return false;
 		}catch (Exception e){
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 			Issue issue = new Issue(geometry, issueContext, IssueCategory.MathDescription_SpatialModel_Geometry,	e.getMessage(), Issue.SEVERITY_ERROR);
 			issueList.add(issue);
 		}

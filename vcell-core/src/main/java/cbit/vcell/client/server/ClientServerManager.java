@@ -404,7 +404,7 @@ private VCellConnection connectToServer(InteractiveContext requester,boolean bSh
 			requester.clearConnectWarning();
 			reconnectStat = ReconnectStatus.NOT;
 		}catch(Exception e) {
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 			if(bShowErrors) {
 				throw e;
 			}
@@ -429,7 +429,7 @@ private VCellConnection connectToServer(InteractiveContext requester,boolean bSh
 			requester.showErrorDialog(msg);
 		}
 	} catch (Exception exc) {
-		lg.error(exc);
+		lg.error(exc.getMessage(), exc);
 		String msg = "Exception: "+exc.getMessage() + "\n\n" + badConnectMessage(badConnStr);
 		ErrorUtils.sendRemoteLogMessage(getClientServerInfo().getUserLoginInfo(),msg);
 		requester.showErrorDialog(msg);
@@ -838,7 +838,7 @@ public void sendErrorReport(Throwable exception, VCellConnection.ExtraContext ex
 	try {
 		getVcellConnection().sendErrorReport(exception, extraContext);
 	} catch (Exception ex) {
-		lg.error(ex);
+		lg.error(ex.getMessage(), ex);
 	}
 }
 

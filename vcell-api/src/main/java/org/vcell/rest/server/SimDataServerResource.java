@@ -91,7 +91,7 @@ public class SimDataServerResource extends AbstractServerResource implements Sim
 		try {
 			simData = getSimDataRepresentation(vcellUser);
 		}catch (Exception e){
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 		}
 		Map<String,Object> dataModel = new HashMap<String,Object>();
 		

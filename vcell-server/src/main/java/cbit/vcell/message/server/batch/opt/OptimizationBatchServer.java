@@ -149,7 +149,7 @@ public class OptimizationBatchServer {
                             oos.writeObject(new OptMessage.OptErrorResponseMessage(optCommandMessage, errMsg));
                             oos.flush();
                         } catch (Exception e2) {
-                            lg.error(e2);
+                            lg.error(e2.getMessage(), e2);
                         }
                     }
                 }
@@ -168,7 +168,7 @@ public class OptimizationBatchServer {
                         }
                     }
                 }catch (Exception e2){
-                    lg.error(e2);
+                    lg.error(e2.getMessage(), e2);
                 }
             }
         }

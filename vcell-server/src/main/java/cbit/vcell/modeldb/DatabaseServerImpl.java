@@ -120,7 +120,7 @@ public TreeMap<User.SPECIAL_CLAIM,TreeMap<User,String>> getSpecialUsers(User use
 	try {
 		return dbTop.getSpecialUsers(user,true);
 	} catch (Exception e) {
-		lg.error(e);
+		lg.error(e.getMessage(), e);
 		throw new DataAccessException(e.getMessage(),e);
 	}
 }

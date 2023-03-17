@@ -169,7 +169,7 @@ public class UserVerifier implements Verifier {
 					return AuthenticationStatus.valid;
 				}
 			}catch (Exception e){
-				lg.error(e);
+				lg.error(e.getMessage(), e);
 				return AuthenticationStatus.invalid;
 			}
 		}else{

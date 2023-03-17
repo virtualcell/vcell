@@ -272,7 +272,7 @@ public void draw(java.awt.Graphics g) {
 			}
 		}
 	}catch (Exception e){
-		lg.error(e);
+		lg.error(e.getMessage(), e);
 	}
 }
 

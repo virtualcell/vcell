@@ -508,7 +508,7 @@ public static void main(String[] args) {
 	HybridSolver hs = new HybridSolver(null,null,HybridSolver.EMIntegrator, false);
 	hs.getHybridSolverResultSet(); //put file name to be open in getHybridSolverResultSet()
 	}catch(Exception e){
-		lg.error(e);
+		lg.error(e.getMessage(), e);
 	}
 	
 }

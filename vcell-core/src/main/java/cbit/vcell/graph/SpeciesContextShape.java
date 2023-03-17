@@ -153,7 +153,7 @@ public class SpeciesContextShape extends ElipseShape {
 					bHasPCLink = true;
 				}
 			}catch (Exception e){
-				lg.error(e);
+				lg.error(e.getMessage(), e);
 			}
 		}
 		if(sc.getSpecies().getDBSpecies() != null || bHasPCLink){

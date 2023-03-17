@@ -194,7 +194,7 @@ public class RestDatabaseService {
 			try {
 				userLoginInfo.setUser(vcellUser);
 			} catch (Exception e) {
-				lg.error(e);
+				lg.error(e.getMessage(), e);
 				throw new DataAccessException(e.getMessage());
 			}
 			RpcSimServerProxy rpcSimServerProxy = new RpcSimServerProxy(userLoginInfo, rpcSession);
@@ -223,7 +223,7 @@ public class RestDatabaseService {
 			try {
 				userLoginInfo.setUser(vcellUser);
 			} catch (Exception e) {
-				lg.error(e);
+				lg.error(e.getMessage(), e);
 				throw new DataAccessException(e.getMessage());
 			}
 			RpcSimServerProxy rpcSimServerProxy = new RpcSimServerProxy(userLoginInfo, rpcSession);
@@ -713,7 +713,7 @@ public class RestDatabaseService {
 			try {
 				userLoginInfo.setUser(vcellUser);
 			} catch (Exception e) {
-				lg.error(e);
+				lg.error(e.getMessage(), e);
 				throw new DataAccessException(e.getMessage());
 			}
 			RpcSimServerProxy rpcSimServerProxy = new RpcSimServerProxy(userLoginInfo, rpcSession);
@@ -778,7 +778,7 @@ public class RestDatabaseService {
 			try {
 				userLoginInfo.setUser(vcellUser);
 			} catch (Exception e) {
-				lg.error(e);
+				lg.error(e.getMessage(), e);
 				throw new DataAccessException(e.getMessage());
 			}
 			RpcSimServerProxy rpcSimServerProxy = new RpcSimServerProxy(userLoginInfo, rpcSession);

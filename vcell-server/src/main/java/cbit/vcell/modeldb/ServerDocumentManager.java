@@ -10,10 +10,7 @@
 
 package cbit.vcell.modeldb;
 import java.beans.PropertyVetoException;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.Hashtable;
-import java.util.Vector;
+import java.util.*;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -752,6 +749,11 @@ long start = System.currentTimeMillis();
 	// this invokes "update" on the database layer
 	//
 	BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(bioModelXML));
+	if (lg.isInfoEnabled()){
+		KeyValue key = (bioModel.getVersion()!=null) ? bioModel.getVersion().getVersionKey() : null;
+		List<BioModel.VersionableInfo> versionableInfos = bioModel.gatherChildVersionableInfos();
+		lg.info("saving Biomodel("+key+"): "+versionableInfos);
+	}
 
 	forceDeepDirtyIfForeign(user,bioModel);
 	boolean isSaveAsNew = true;
@@ -778,11 +780,16 @@ long start = System.currentTimeMillis();
 			origBioModel = XmlHelper.XMLToBioModel(new XMLSource(origBioModelXML));
 		}catch(ObjectNotFoundException nfe){
 			if(isSaveAsNew){
-				User foceClearVersionUser = new User("foceClearVersionUser",new KeyValue("0"));
-				forceDeepDirtyIfForeign(foceClearVersionUser, bioModel);
+				User forceClearVersionUser = new User("forceClearVersionUser",new KeyValue("0"));
+				forceDeepDirtyIfForeign(forceClearVersionUser, bioModel);
 			}else{
 				throw new DataAccessException("Stored model has been changed or removed, please use 'Save As..'");
 			}
+		}
+		if (lg.isInfoEnabled()){
+			KeyValue key = (origBioModel.getVersion()!=null) ? origBioModel.getVersion().getVersionKey() : null;
+			List<BioModel.VersionableInfo> versionableInfos = origBioModel.gatherChildVersionableInfos();
+			lg.info("Cached Biomodel("+key+"): "+versionableInfos);
 		}
 	}
 
@@ -1679,8 +1686,8 @@ public String saveMathModel(QueryHashtable dbc, User user, String mathModelXML, 
 			origMathModel = XmlHelper.XMLToMathModel(new XMLSource(origMathModelXML));
 		}catch(ObjectNotFoundException nfe){
 			if(isSaveAsNew){
-				User foceClearVersionUser = new User("foceClearVersionUser",new KeyValue("0"));
-				forceDeepDirtyIfForeign(foceClearVersionUser, mathModel);
+				User forceClearVersionUser = new User("forceClearVersionUser",new KeyValue("0"));
+				forceDeepDirtyIfForeign(forceClearVersionUser, mathModel);
 			}else{
 				throw new DataAccessException("Stored model has been changed or removed, please use 'Save As..'");
 			}
