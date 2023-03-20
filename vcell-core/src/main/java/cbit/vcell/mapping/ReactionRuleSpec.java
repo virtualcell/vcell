@@ -581,25 +581,54 @@ private void writeTransitionData(StringBuilder sb, Subtype subtype, Map<String, 
 	if(subtype != ReactionRuleSpec.Subtype.TRANSITION) {
 		return;
 	}
-	// one reactant and one product
+	// one reactant and one product, these are the mtp and mcp of the site that is transitioning its state
 	MolecularTypePattern mtpReactant = (MolecularTypePattern)analysisResults.get(MtpReactantState + "1");		// one mtp, one mcp
-	MolecularTypePattern mtpProduct = (MolecularTypePattern)analysisResults.get(MtpProductState + "1");
-	MolecularComponentPattern mcpReactant = (MolecularComponentPattern)analysisResults.get(McpReactantState + "1");
-	MolecularComponentPattern mcpProduct = (MolecularComponentPattern)analysisResults.get(McpProductState + "1");
+	MolecularComponentPattern mcpTransitionReactant = (MolecularComponentPattern)analysisResults.get(McpReactantState + "1");
 	
+	// we may have another mtp if the reaction condition is "Bound"!
 
 }
 private void writeAllostericData(StringBuilder sb, Subtype subtype, Map<String, Object> analysisResults) {
 	if(subtype != ReactionRuleSpec.Subtype.ALLOSTERIC) {
 		return;
 	}
-	// one reactant and one product
+	// one reactant and one product, one mtp, the mcp that is changing state
 	MolecularTypePattern mtpReactant = (MolecularTypePattern)analysisResults.get(MtpReactantState + "1");
-	MolecularTypePattern mtpProduct = (MolecularTypePattern)analysisResults.get(MtpProductState + "1");
-	MolecularComponentPattern mcpReactant = (MolecularComponentPattern)analysisResults.get(McpReactantState + "1");
-	MolecularComponentPattern mcpProduct = (MolecularComponentPattern)analysisResults.get(McpProductState + "1");
+	MolecularComponentPattern mcpTransitionReactant = (MolecularComponentPattern)analysisResults.get(McpReactantState + "1");
+	MolecularComponentPattern mcpTransitionProduct = (MolecularComponentPattern)analysisResults.get(McpProductState + "1");
+	ComponentStatePattern cspTransitionReactant = mcpTransitionReactant.getComponentStatePattern();
+	ComponentStatePattern cspTransitionProduct = mcpTransitionProduct.getComponentStatePattern();
+	int mcpAllostericReactantIndex = -1;
+	MolecularComponentPattern mcpAllostericReactant = null;
+	for(MolecularComponentPattern mcp : mtpReactant.getComponentPatternList()) {
+		mcpAllostericReactantIndex++;
+		if(mcpTransitionReactant == mcp) {
+			continue;		// found the allosteric site index
+		}
+		if(mcp.getComponentStatePattern().isAny()) {
+			continue;	// the allosteric state must be explicit
+		}
+		mcpAllostericReactant = mcp;
+		break;		// we found the one and only site with an explicit state (other than the state transitioning site
+	}
+	if(mcpAllostericReactant == null) {
+		throw new RuntimeException("writeAllostericData() error: something is wrong");
+	}
+	ComponentStatePattern cspAllostericReactant = mcpAllostericReactant.getComponentStatePattern();
 	
+	RbmKineticLaw kineticLaw = reactionRule.getKineticLaw();
+	Expression kon = kineticLaw.getLocalParameterValue(RbmKineticLaw.RbmKineticLawParameterType.MassActionForwardRate);
 
+	sb.append("'").append(reactionRule.getName()).append("' ::     ");
+	sb.append("'").append(mtpReactant.getMolecularType().getName()).append("' : '")
+		.append(mcpTransitionReactant.getMolecularComponent().getName()).append("' : '")
+		.append(cspTransitionReactant.getComponentStateDefinition().getName());
+	sb.append("' --> '");
+	sb.append(cspTransitionProduct.getComponentStateDefinition().getName());
+	sb.append("'  Rate ").append(kon.infix());
+	sb.append(" Allosteric_Site ").append(mcpAllostericReactantIndex);
+	sb.append(" State '").append(cspAllostericReactant.getComponentStateDefinition().getName()).append("'");
+	sb.append("\n");
 }
 private void writeBindingData(StringBuilder sb, Subtype subtype, Map<String, Object> analysisResults) {
 	if(subtype != ReactionRuleSpec.Subtype.BINDING) {

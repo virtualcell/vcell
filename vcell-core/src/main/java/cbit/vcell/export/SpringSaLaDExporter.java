@@ -213,33 +213,35 @@ public class SpringSaLaDExporter {
 			sb.append("*** " + TRANSITION_REACTIONS + " ***");
 			sb.append("\n");
 			sb.append("\n");
-//			for(TransitionReaction reaction : transitionReactions) {
-//				sb.append(reaction.writeReaction());
-//				sb.append("\n");
-//			}
+			for(ReactionRuleSpec rrs : reactionRuleSpecs) {
+				if(rrs.isExcluded()) {
+					continue;
+				}
+				rrs.writeData(sb, ReactionRuleSpec.Subtype.TRANSITION);
+			}
 			sb.append("\n");
 
 			/* ******* WRITE THE ALLOSTERIC REACTIONS **********/
 			sb.append("*** " + ALLOSTERIC_REACTIONS + " ***");
 			sb.append("\n");
 			sb.append("\n");
-//			for(AllostericReaction reaction: allostericReactions) {
-//				sb.append(reaction.writeReaction());
-//				sb.append("\n");
-//			}
+			for(ReactionRuleSpec rrs : reactionRuleSpecs) {
+				if(rrs.isExcluded()) {
+					continue;
+				}
+				rrs.writeData(sb, ReactionRuleSpec.Subtype.ALLOSTERIC);
+			}
 			sb.append("\n");
 
 			/* ******* WRITE THE BINDING REACTIONS ************/
 			sb.append("*** " + BINDING_REACTIONS + " ***");
 			sb.append("\n");
 			sb.append("\n");
-			
 			for(ReactionRuleSpec rrs : reactionRuleSpecs) {
 				if(rrs.isExcluded()) {
 					continue;
 				}
-//				sb.append(reaction.writeReaction());
-				rrs.writeData(sb, ReactionRuleSpec.Subtype.BINDING);							// TODO: BINDING REACTION
+				rrs.writeData(sb, ReactionRuleSpec.Subtype.BINDING);
 			}
 			sb.append("\n");
 
@@ -250,7 +252,7 @@ public class SpringSaLaDExporter {
 //			for(Molecule molecule: molecules) {
 //				molecule.getMoleculeCounter().writeMoleculeCounter(sb);
 //			}
-			Simulation.Counters.writeMoleculeCounters(simulation, sb);
+			Simulation.Counters.writeMoleculeCounters(simulation, sb);	// everything here is initialized with default
 			sb.append("\n");
 
 			/* ******  WRITE THE STATE COUNTERS *************/
@@ -264,7 +266,7 @@ public class SpringSaLaDExporter {
 //					}
 //				}
 //			}
-			Simulation.Counters.writeStateCounters(simulation, sb);
+			Simulation.Counters.writeStateCounters(simulation, sb);	// everything here is initialized with default
 			sb.append("\n");
 
 			/* ***** WRITE THE BOND COUNTERS ***************/
@@ -274,7 +276,7 @@ public class SpringSaLaDExporter {
 //			for(BindingReaction reaction: bindingReactions) {
 //				reaction.getBondCounter().writeBondCounter(sb);
 //			}
-			Simulation.Counters.writeBondCounters(simulation, sb);
+			Simulation.Counters.writeBondCounters(simulation, sb);	// everything here is initialized with default
 			sb.append("\n");
 
 			/* ********  WRITE THE SITE PROPERTY COUNTERS ************/
@@ -287,7 +289,7 @@ public class SpringSaLaDExporter {
 //					site.getPropertyCounter().writeSitePropertyCounter(sb);
 //				}
 //			}
-			Simulation.Counters.writeSitePropertyCounters(simulation, sb);
+			Simulation.Counters.writeSitePropertyCounters(simulation, sb);	// everything here is initialized with default
 			sb.append("\n");
 
 			/* *************** WRITE THE TRACK CLUSTERS BOOLEAN ***********/
