@@ -191,12 +191,11 @@ public class Hdf5WrapperFactory {
                 List<Double> data = new LinkedList<>();
                 
                 SimpleDataGenCalculator calc = new SimpleDataGenCalculator(datagen);
+
                 for (List<Double> varData : idToDataMap.values())
                     if (varData.size() > maxLengthOfData)
                         maxLengthOfData = varData.size();
                 
-                    
-
                 for (int i = 0; i < maxLengthOfData; i++){
                     for (String varId : idToDataMap.keySet()){
                         List<Double> varData = idToDataMap.get(varId);
@@ -216,12 +215,8 @@ public class Hdf5WrapperFactory {
             hdf5DatasetWrapper.datasetMetadata.sedmlName = report.getName();
             hdf5DatasetWrapper.datasetMetadata.uri = Paths.get(sedmlLocation, report.getId()).toString();
 
-            Map<Variable, NonspatialValueHolder> firstValues = dataSetValues.entrySet().iterator().next().getValue();
-            if (firstValues.size()==0){
-                continue;
-            }
-            NonspatialValueHolder valuesForFirstVar = firstValues.entrySet().iterator().next().getValue();
-            int numJobs = valuesForFirstVar.getNumJobs();
+            Double[] valuesForFirstVar = dataSetValues.entrySet().iterator().next().getValue();
+            int numJobs = valuesForFirstVar.length;
 
             Hdf5DataSourceNonspatial dataSourceNonspatial = new Hdf5DataSourceNonspatial();
             hdf5DatasetWrapper.dataSource = dataSourceNonspatial; // Using upcasting
