@@ -791,6 +791,9 @@ long start = System.currentTimeMillis();
 			List<BioModel.VersionableInfo> versionableInfos = origBioModel.gatherChildVersionableInfos();
 			lg.info("Cached Biomodel("+key+"): "+versionableInfos);
 		}
+//	}else{
+//		User forceClearVersionUser = new User("forceClearVersionUser",new KeyValue("0"));
+//		forceDeepDirtyIfForeign(forceClearVersionUser, bioModel);
 	}
 
 	boolean bSomethingChanged = false;
