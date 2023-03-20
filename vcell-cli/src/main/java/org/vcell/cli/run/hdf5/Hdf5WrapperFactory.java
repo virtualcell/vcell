@@ -160,7 +160,7 @@ public class Hdf5WrapperFactory {
                     int outputNumberOfPoints = ((UniformTimeCourse) sedmlSim).getNumberOfPoints();
                     double outputStartTime = ((UniformTimeCourse) sedmlSim).getOutputStartTime();
                     //NonspatialValueHolder variablesList;
-                    List<Double> variablesList;
+                    List<Double> formattedData;
 
                     for (TaskJob taskJob : taskJobs) {
                         ODESolverResultSet results = nonspatialResultsHash.get(taskJob);
@@ -180,22 +180,33 @@ public class Hdf5WrapperFactory {
                             variablesList = new LinkedList<>();
                         }*/
                         // really ugly convert from double[] to List<Double>
-                        variablesList = Arrays.asList(Arrays.stream(data).boxed().toArray(Double[]::new));
-                        idToDataMap.put(var.getId(), variablesList);
+                        formattedData = Arrays.asList(Arrays.stream(data).boxed().toArray(Double[]::new));
+                        idToDataMap.put(var.getId(), formattedData);
                     }
                 }
 
                 // Missing functionality!!! We need to computer the variables into the proper values
-                if (varIDs.isEmpty()) continue;
-                List<Double[]> data = new LinkedList<>();
-                for (int i = 0; i < varIDs.size(); i++) data.add(null);
-                for (Variable var : values.keySet()){
-                    if (varIDs.contains(var.getId())) data.set(data.indexOf(var.getId()), values.get(var));
+                if (idToDataMap.isEmpty()) continue;
+                int maxLengthOfData = 0;
+                List<Double> data = new LinkedList<>();
+                
+                SimpleDataGenCalculator calc = new SimpleDataGenCalculator(datagen);
+                for (List<Double> varData : idToDataMap.values())
+                    if (varData.size() > maxLengthOfData)
+                        maxLengthOfData = varData.size();
+                
+                    
+
+                for (int i = 0; i < maxLengthOfData; i++){
+                    for (String varId : idToDataMap.keySet()){
+                        List<Double> varData = idToDataMap.get(varId);
+                        Double value = i >= varData.size() ? Double.NaN : varData.get(i);
+                        calc.setArgument(varId, value);
+                    }
+                    data.add(calc.evaluateWithCurrentArguments());
                 }
-                SimpleDataGenCalculator calc = new SimpleDataGenCalculator(datagen, varIDs);
 
-
-                dataSetValues.put(dataset, values);
+                dataSetValues.put(dataset, data.stream().toArray(Double[]::new));
 
             } // end of dataset
 
@@ -475,11 +486,11 @@ public class Hdf5WrapperFactory {
         private Expression equation;
         private Map<String, Double> bindingMap;
 
-        public SimpleDataGenCalculator(DataGenerator dataGen, List<String> paramters) throws ExpressionException {
+        public SimpleDataGenCalculator(DataGenerator dataGen) throws ExpressionException {
             this.equation = new Expression(dataGen.getMathAsString());
             this.bindingMap = new LinkedHashMap<>(); // LinkedHashMap preserves insertion order
-
-            String[] variableArray = paramters.toArray(new String[dataGen.getListOfVariables().size()]);
+            
+            String[] variableArray = dataGen.getListOfVariables().stream().map(Variable::getId).toArray(String[]::new);
             SymbolTable symTable = new SimpleSymbolTable(variableArray);
             this.equation.bindExpression(symTable);
 
@@ -505,7 +516,6 @@ public class Hdf5WrapperFactory {
         }
 
         public double evaluateWithProvidedArguments(Map<String, Double> parameterToArgumentMap) throws ExpressionException, DivideByZeroException {
-            Double[] dummyArray = new Double[0];
             List<Double> args = new LinkedList<>();
 
             // Confirm we have the correct params
@@ -518,7 +528,7 @@ public class Hdf5WrapperFactory {
             }
 
             // Solve
-            return this.equation.evaluateVector(Stream.of(args.toArray(dummyArray)).mapToDouble(Double::doubleValue).toArray());
+            return this.equation.evaluateVector(args.stream().mapToDouble(Double::doubleValue).toArray());
         }
     }
 }
