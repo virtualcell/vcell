@@ -370,8 +370,8 @@ private boolean isTransitionReaction(Map<String, Object> analysisResults) {
 	}
 	int numReactants = (int)analysisResults.get(NumReactants);
 	int numProducts = (int)analysisResults.get(NumProducts);
-	if(numReactants <1 || numReactants>2 || numProducts <1 || numProducts >2) {
-		return false;		// we may only have 1 or 2 reactants / products
+	if(numReactants != 1 || numProducts != 1) {
+		return false;		// we may only have 1 reactant and 1 product
 	}
 	if((numReactants == 1 && numProducts != 1) || (numReactants == 2 && numProducts != 2)) {
 		return false;		// equal number of reactant and products, either 1 of each or 2 of each
@@ -380,14 +380,80 @@ private boolean isTransitionReaction(Map<String, Object> analysisResults) {
 	List<ProductPattern> ppList = reactionRule.getProductPatterns();
 	List<MolecularTypePattern> mtpReactantList = rpList.get(0).getSpeciesPattern().getMolecularTypePatterns();
 	List<MolecularTypePattern> mtpProductList = ppList.get(0).getSpeciesPattern().getMolecularTypePatterns();
-	if(numReactants == 1 && numProducts == 1) {		// check if it's a simple transition (exactly one site must be unbounded or ?)
-		
-	} else if(numReactants == 2 && numProducts == 2) {		// check if it's a bond-conditioned transition
+	if((mtpReactantList.size() == 1 && mtpProductList.size() != 1) || (mtpReactantList.size() == 2 && mtpProductList.size() != 2)) {
+		return false;		// equal number of molecules in the reactant and product, either 1 of each or 2 of each
+	}
+
+	if(mtpReactantList.size() == 1 && mtpProductList.size() == 1) {		// check if it's a simple transition
+		MolecularTypePattern mtpReactant = mtpReactantList.get(0);
+		List<MolecularComponentPattern> mcpList = mtpReactant.getComponentPatternList();
+		if(mcpList == null || mcpList.isEmpty()) {
+			return false;
+		}
+		int numExplicitStates = 0;
+		int numAnyStates = 0;
+		int numBondsPossible = 0;
+		int numBondsUnbound = 0;
+		int numBondsOther = 0;
+		for(MolecularComponentPattern mcpReactant : mtpReactant.getComponentPatternList()) {
+			ComponentStatePattern cspReactant = mcpReactant.getComponentStatePattern();
+			BondType bondTypeReactant = mcpReactant.getBondType();
+			if(!cspReactant.isAny() && BondType.Possible != bondTypeReactant) {
+				// this is the transition site, bond must be "Possible"
+				return false;
+			}
+			if(!cspReactant.isAny()) {
+				numExplicitStates++;	// state counter
+			} else {
+				numAnyStates++;
+			}
+			if(BondType.Possible == bondTypeReactant) {
+				numBondsPossible++;
+			} else if(BondType.None == bondTypeReactant) {
+				numBondsUnbound++;
+			} else {
+				return false;	// all bonds must be either none or possible
+			}
+		}
+		if(numBondsPossible-1 == numAnyStates && numBondsPossible == mtpReactant.getComponentPatternList().size()) {
+			return true;	// transition reaction condition is "None" (all sites except the transition site are possibly bound AND in "Any" state)
+		} else if(numBondsUnbound == numAnyStates && numBondsUnbound == mtpReactant.getComponentPatternList().size()-1) {
+			return true;	// transition reaction condition is "Free" (all sites except the transition site are unbound AND in "Any" state)
+		}
+	} else if(mtpReactantList.size() == 2 && mtpProductList.size() == 2) {		// check if it's a 2 molecules bond-conditioned transition
 		// the transition reactant is the one containing the Site which is transitioning (changing state)
 		// the other molecule is the bond condition
+		int numExplicitStates[] = { 0, 0};
+		for(int i=0; i < mtpReactantList.size(); i++) {
+			MolecularTypePattern mtpReactant = mtpReactantList.get(i);
+			List<MolecularComponentPattern> mcpList = mtpReactant.getComponentPatternList();
+			if(mcpList == null || mcpList.isEmpty()) {
+				return false;
+			}
+			for(MolecularComponentPattern mcpReactant : mtpReactant.getComponentPatternList()) {
+				ComponentStatePattern cspReactant = mcpReactant.getComponentStatePattern();
+				BondType bondTypeReactant = mcpReactant.getBondType();
+				if(BondType.Possible != bondTypeReactant) {
+					return false;		// all bonds in the reactant must be of type "Possible"
+					// note: we know that the 2 molecules are bound somehow, because they are in the same species
+					// but we don't care between which sites the bond is
+				}
+				if(cspReactant.isAny()) {
+					continue;
+				}
+				numExplicitStates[i]++;
+			}
+		}
+		if(numExplicitStates[0] == 1 && numExplicitStates[1] == 1) {
+			return true;	// must have exactly one explicit state in each molecule 
+		} else if(numExplicitStates[0] == 0 && numExplicitStates[1] == 1) {
+			// this else-if and the next: the only explicit site is the one transitioning
+			// the conditional site type may also be in the "any" state
+			return true;
+		} else if(numExplicitStates[0] == 1 && numExplicitStates[1] == 0) {
+			return true;
+		}
 	}
-	
-	
 	return false;
 }
 private boolean isAllostericReaction(Map<String, Object> analysisResults) {
@@ -485,6 +551,7 @@ public void writeData(StringBuilder sb, Subtype subtype) {			// SpringSaLaD expo
 	case CREATION:
 	case DECAY:
 		// we invoke the static method below (writeDecayData()) on all species at once from SpringSaLaDExporter.getDocumentAsString()
+		// because we must collect first all the species that are being created / destroyed and their rates
 		break;
 	case TRANSITION:
 		writeTransitionData(sb, subtype, analysisResults);
@@ -515,10 +582,11 @@ private void writeTransitionData(StringBuilder sb, Subtype subtype, Map<String, 
 		return;
 	}
 	// one reactant and one product
-	MolecularTypePattern mtpReactant = (MolecularTypePattern)analysisResults.get(MtpReactantState);
-	MolecularTypePattern mtpProduct = (MolecularTypePattern)analysisResults.get(MtpProductState);
-	MolecularComponentPattern mcpReactant = (MolecularComponentPattern)analysisResults.get(McpReactantState);
-	MolecularComponentPattern mcpProduct = (MolecularComponentPattern)analysisResults.get(McpProductState);
+	MolecularTypePattern mtpReactant = (MolecularTypePattern)analysisResults.get(MtpReactantState + "1");		// one mtp, one mcp
+	MolecularTypePattern mtpProduct = (MolecularTypePattern)analysisResults.get(MtpProductState + "1");
+	MolecularComponentPattern mcpReactant = (MolecularComponentPattern)analysisResults.get(McpReactantState + "1");
+	MolecularComponentPattern mcpProduct = (MolecularComponentPattern)analysisResults.get(McpProductState + "1");
+	
 
 }
 private void writeAllostericData(StringBuilder sb, Subtype subtype, Map<String, Object> analysisResults) {
@@ -526,10 +594,11 @@ private void writeAllostericData(StringBuilder sb, Subtype subtype, Map<String, 
 		return;
 	}
 	// one reactant and one product
-	MolecularTypePattern mtpReactant = (MolecularTypePattern)analysisResults.get(MtpReactantState);
-	MolecularTypePattern mtpProduct = (MolecularTypePattern)analysisResults.get(MtpProductState);
-	MolecularComponentPattern mcpReactant = (MolecularComponentPattern)analysisResults.get(McpReactantState);
-	MolecularComponentPattern mcpProduct = (MolecularComponentPattern)analysisResults.get(McpProductState);
+	MolecularTypePattern mtpReactant = (MolecularTypePattern)analysisResults.get(MtpReactantState + "1");
+	MolecularTypePattern mtpProduct = (MolecularTypePattern)analysisResults.get(MtpProductState + "1");
+	MolecularComponentPattern mcpReactant = (MolecularComponentPattern)analysisResults.get(McpReactantState + "1");
+	MolecularComponentPattern mcpProduct = (MolecularComponentPattern)analysisResults.get(McpProductState + "1");
+	
 
 }
 private void writeBindingData(StringBuilder sb, Subtype subtype, Map<String, Object> analysisResults) {
