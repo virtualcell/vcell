@@ -353,6 +353,40 @@ private boolean isDecayReaction(Map<String, Object> analysisResults) {
 	return false;
 }
 private boolean isTransitionReaction(Map<String, Object> analysisResults) {
+	Object ret = analysisResults.get(WrongNumberOfMolecules);
+	if(ret == null || (boolean)ret == true) {
+		return false;
+	}
+	ret = analysisResults.get(StateTransitionCounter);
+	if(ret == null || (int)ret != 1) {
+		return false;		// we need exactly 1 state transition
+	}
+	ret = analysisResults.get(BondTransitionCounter);
+	if(ret == null || (int)ret != 0) {
+		return false;		// no binding allowed
+	}
+	if(analysisResults.get(NumReactants) == null || analysisResults.get(NumProducts) == null)  {
+		return false;
+	}
+	int numReactants = (int)analysisResults.get(NumReactants);
+	int numProducts = (int)analysisResults.get(NumProducts);
+	if(numReactants <1 || numReactants>2 || numProducts <1 || numProducts >2) {
+		return false;		// we may only have 1 or 2 reactants / products
+	}
+	if((numReactants == 1 && numProducts != 1) || (numReactants == 2 && numProducts != 2)) {
+		return false;		// equal number of reactant and products, either 1 of each or 2 of each
+	}
+	List<ReactantPattern> rpList = reactionRule.getReactantPatterns();		// we already know that this list is not empty
+	List<ProductPattern> ppList = reactionRule.getProductPatterns();
+	List<MolecularTypePattern> mtpReactantList = rpList.get(0).getSpeciesPattern().getMolecularTypePatterns();
+	List<MolecularTypePattern> mtpProductList = ppList.get(0).getSpeciesPattern().getMolecularTypePatterns();
+	if(numReactants == 1 && numProducts == 1) {		// check if it's a simple transition (exactly one site must be unbounded or ?)
+		
+	} else if(numReactants == 2 && numProducts == 2) {		// check if it's a bond-conditioned transition
+		// the transition reactant is the one containing the Site which is transitioning (changing state)
+		// the other molecule is the bond condition
+	}
+	
 	
 	return false;
 }
