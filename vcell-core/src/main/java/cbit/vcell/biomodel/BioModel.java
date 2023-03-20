@@ -15,6 +15,7 @@ import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.beans.VetoableChangeSupport;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import cbit.image.VCImage;
@@ -184,6 +185,32 @@ Identifiable, IdentifiableProvider, IssueSource, Displayable, VCellSbmlName
 			versionSet.add(new VersionableInfo(VersionableType.VCImage, sim.getName(), sim.getKey()));
 		}
 		return new ArrayList<>(versionSet);
+	}
+
+	public final static class ClearVersion implements Consumer<Versionable> {
+		@Override
+		public void accept(Versionable versionable) {
+			versionable.clearVersion();
+		}
+	}
+
+	public void visitChildVersionables(Consumer<Versionable> operation) {
+		operation.accept(getModel());
+		for (SimulationContext sc : getSimulationContexts()){
+			operation.accept(sc);
+			if (sc.getGeometry()!=null){
+				operation.accept(sc.getGeometry());
+				if (sc.getGeometry().getGeometrySpec().getImage()!=null){
+					operation.accept(sc.getGeometry().getGeometrySpec().getImage());
+				}
+			}
+			if (sc.getMathDescription() != null){
+				operation.accept(sc.getMathDescription());
+			}
+		}
+		for (Simulation sim : getSimulations()){
+			operation.accept(sim);
+		}
 	}
 
 /**
