@@ -390,20 +390,21 @@ private boolean isTransitionReaction(Map<String, Object> analysisResults) {
 		if(mcpList == null || mcpList.isEmpty()) {
 			return false;
 		}
-		int numExplicitStates = 0;
 		int numAnyStates = 0;
 		int numBondsPossible = 0;
 		int numBondsUnbound = 0;
-		int numBondsOther = 0;
 		for(MolecularComponentPattern mcpReactant : mtpReactant.getComponentPatternList()) {
 			ComponentStatePattern cspReactant = mcpReactant.getComponentStatePattern();
 			BondType bondTypeReactant = mcpReactant.getBondType();
+			if(cspReactant == null) {
+				return false;	// all sites must have at least one state
+			}
 			if(!cspReactant.isAny() && BondType.Possible != bondTypeReactant) {
 				// this is the transition site, bond must be "Possible"
 				return false;
 			}
 			if(!cspReactant.isAny()) {
-				numExplicitStates++;	// state counter
+				;
 			} else {
 				numAnyStates++;
 			}
@@ -432,6 +433,9 @@ private boolean isTransitionReaction(Map<String, Object> analysisResults) {
 			}
 			for(MolecularComponentPattern mcpReactant : mtpReactant.getComponentPatternList()) {
 				ComponentStatePattern cspReactant = mcpReactant.getComponentStatePattern();
+				if(cspReactant == null) {
+					return false;	// all sites must have at least one state
+				}
 				BondType bondTypeReactant = mcpReactant.getBondType();
 				if(BondType.Possible != bondTypeReactant) {
 					return false;		// all bonds in the reactant must be of type "Possible"
@@ -491,6 +495,9 @@ private boolean isAllostericReaction(Map<String, Object> analysisResults) {
 	List<MolecularComponentPattern> mcpReactantList = mtpReactant.getComponentPatternList();
 	List<MolecularComponentPattern> mcpProductList = mtpProduct.getComponentPatternList();
 	for(MolecularComponentPattern mcp : mcpReactantList) {
+		if(mcp.getComponentStatePattern() == null) {
+			return false;		// all sites must have at least one state
+		}
 		if(!mcp.getComponentStatePattern().isAny()) {
 			reactantExplicitStates++;
 		}
@@ -506,7 +513,6 @@ private boolean isAllostericReaction(Map<String, Object> analysisResults) {
 	return false;
 }
 private boolean isBindingReaction(Map<String, Object> analysisResults) {
-	
 	Object ret = analysisResults.get(WrongNumberOfMolecules);
 	if(ret == null || (boolean)ret == true) {
 		return false;
@@ -543,6 +549,7 @@ private boolean isBindingReaction(Map<String, Object> analysisResults) {
 	}
 	return false;
 }
+
 public void writeData(StringBuilder sb, Subtype subtype) {			// SpringSaLaD exporting the binding rule information
 	Map<String, Object> analysisResults = new LinkedHashMap<> ();
 	analizeReaction(analysisResults);
@@ -733,12 +740,13 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList, React
 		Map<String, Object> analysisResults = new LinkedHashMap<> ();
 		analizeReaction(analysisResults);
 		
-		if(isDecayReaction(analysisResults)) {
-			String msg = "Decay Reaction.";
-			String tip = msg;
-//			issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+		if(Subtype.INCOMPATIBLE == getSubtype(analysisResults)) {
+			String msg = "Reaction incompatible with SpringSaLaD.";
+			String tip = "Please edit the reaction so that it matches a SpringSaLaD subtype or disable it in this table";
+			issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
 		}
-	} else {
+		
+	} else {		// not SpringSaLaD
 		if(reactionRule.getReactantPatterns() == null || reactionRule.getProductPatterns() == null) {
 			return;		// issue reported in physiology
 		}
