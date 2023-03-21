@@ -20,6 +20,7 @@ import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.model.rbm.MolecularComponentPattern.BondType;
+import org.vcell.model.rbm.SpeciesPattern.Bond;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
@@ -67,7 +68,7 @@ public class ReactionRuleSpec implements ModelProcessSpec, IssueSource {
 		}
 	}
 	
-	public static final String ANY_STATE = "Any_State";
+	public static final String ANY_STATE = "Any_State";		// SpringSaLaD stuff
 	private double fieldBondLength = 1;
 	public enum Subtype {
 		INCOMPATIBLE("Not Compatible"),
@@ -78,8 +79,17 @@ public class ReactionRuleSpec implements ModelProcessSpec, IssueSource {
 		BINDING("Binding");
 		
 		final public String columnName;		// column name in ModelProcessSpecsTableModel
-
 		private Subtype(String columnName) {
+			this.columnName = columnName;
+		}
+	}
+	public enum TransitionCondition {
+		NONE("None"),
+		FREE("Free"),
+		BOUND("Bound");
+		
+		final public String columnName;
+		private TransitionCondition(String columnName) {
 			this.columnName = columnName;
 		}
 	}
@@ -156,12 +166,12 @@ public void firePropertyChange(String propertyName, Object oldValue, Object newV
 public static final String WrongNumberOfMolecules = "wrongNumberOfMolecules";
 public static final String NumReactants = "numReactants";
 public static final String NumProducts = "numProducts";
-public static final String MtpReactantState = "mtpReactantState";
-public static final String McpReactantState = "mcpReactantState";
+public static final String MtpReactantState = "mtpReactantState";		// the mtp with a state change
+public static final String McpReactantState = "mcpReactantState";		// the site where the state changes
 public static final String MtpProductState = "mtpProductState";
 public static final String McpProductState = "mcpProductState";
-public static final String MtpReactantBond = "mtpReactantBond";
-public static final String McpReactantBond = "mcpReactantBond";
+public static final String MtpReactantBond = "mtpReactantBond";			// the mtp with a binding transition
+public static final String McpReactantBond = "mcpReactantBond";			// the site that is bonding
 public static final String StateTransitionCounter = "stateTransitionCounter";
 public static final String BondTransitionCounter = "bondTransitionCounter";
 public static final String CspReactantBond = "cspReactantBond";
@@ -424,7 +434,11 @@ private boolean isTransitionReaction(Map<String, Object> analysisResults) {
 	} else if(mtpReactantList.size() == 2 && mtpProductList.size() == 2) {		// check if it's a 2 molecules bond-conditioned transition
 		// the transition reactant is the one containing the Site which is transitioning (changing state)
 		// the other molecule is the bond condition
+		MolecularTypePattern mtpTransitionReactant = (MolecularTypePattern)analysisResults.get(MtpReactantState + "1");		// one mtp, one mcp
+		int totalExistsBonds = 0;
+		int totalExplicitStates = 0;
 		int numExplicitStates[] = { 0, 0};
+		int numExistsBonds[] = { 0, 0 };
 		for(int i=0; i < mtpReactantList.size(); i++) {
 			MolecularTypePattern mtpReactant = mtpReactantList.get(i);
 			List<MolecularComponentPattern> mcpList = mtpReactant.getComponentPatternList();
@@ -437,24 +451,48 @@ private boolean isTransitionReaction(Map<String, Object> analysisResults) {
 					return false;	// all sites must have at least one state
 				}
 				BondType bondTypeReactant = mcpReactant.getBondType();
-				if(BondType.Possible != bondTypeReactant) {
-					return false;		// all bonds in the reactant must be of type "Possible"
-					// note: we know that the 2 molecules are bound somehow, because they are in the same species
+				if(BondType.Exists == bondTypeReactant) {
+					if(mtpTransitionReactant == mtpReactant) {
+						// the transition site must be in one molecule, the condition bound site must be in the other
+						return false;
+					}
+					numExistsBonds[i]++;	// the condition binding site has bond type "Exists"
+					totalExistsBonds++;
+				} else if(BondType.Possible != bondTypeReactant) {
+					return false;		// all other bonds in the reactant must be of type "Possible"
+					// we know that the 2 molecules are bound somehow, because they are in the same species
 					// but we don't care between which sites the bond is
 				}
 				if(cspReactant.isAny()) {
 					continue;
+				} else {
+					// the site with explicit state must be the same that has bond type exists
+					if(BondType.Exists != bondTypeReactant && mtpTransitionReactant != mtpReactant) {
+						return false;
+					}
 				}
 				numExplicitStates[i]++;
+				totalExplicitStates++;
 			}
 		}
+		
+		if(totalExistsBonds != 1) {
+			return false;		// the condition bound site is the only one with BondType "exists"
+		}
+		if(totalExplicitStates < 1 || totalExplicitStates > 2) {
+			// transitioning site must be in explicit state
+			// the condition binding site may be explicit or any
+			// all the other sites must be in "Any" state
+			return false;
+		}
 		if(numExplicitStates[0] == 1 && numExplicitStates[1] == 1) {
+			// TODO: here we should also make sure that the transition molecule and the condition molecule are not the same
 			return true;	// must have exactly one explicit state in each molecule 
-		} else if(numExplicitStates[0] == 0 && numExplicitStates[1] == 1) {
+		} else if(numExplicitStates[0] == 0 && numExplicitStates[1] == 1 && numExistsBonds[0] == 1) {
 			// this else-if and the next: the only explicit site is the one transitioning
-			// the conditional site type may also be in the "any" state
+			// the conditional site type may also be in the "any" state but must have bond type "Exists"
 			return true;
-		} else if(numExplicitStates[0] == 1 && numExplicitStates[1] == 0) {
+		} else if(numExplicitStates[0] == 1 && numExplicitStates[1] == 0 && numExistsBonds[1] == 1) {
 			return true;
 		}
 	}
@@ -589,25 +627,82 @@ private void writeTransitionData(StringBuilder sb, Subtype subtype, Map<String, 
 		return;
 	}
 	// one reactant and one product, these are the mtp and mcp of the site that is transitioning its state
-	MolecularTypePattern mtpReactant = (MolecularTypePattern)analysisResults.get(MtpReactantState + "1");		// one mtp, one mcp
+	MolecularTypePattern mtpTransitionReactant = (MolecularTypePattern)analysisResults.get(MtpReactantState + "1");		// one mtp, one mcp
 	MolecularComponentPattern mcpTransitionReactant = (MolecularComponentPattern)analysisResults.get(McpReactantState + "1");
+	MolecularComponentPattern mcpTransitionProduct = (MolecularComponentPattern)analysisResults.get(McpProductState + "1");
+	ComponentStatePattern cspTransitionReactant = mcpTransitionReactant.getComponentStatePattern();
+	ComponentStatePattern cspTransitionProduct = mcpTransitionProduct.getComponentStatePattern();
 	
-	// we may have another mtp if the reaction condition is "Bound"!
+	MolecularTypePattern mtpConditionReactant = null;			// the bound condition molecule
+	MolecularComponentPattern mcpConditionReactant = null;		// the bound condition site (must be bond type "Exists")
+	String stateConditionReactant = ANY_STATE;
+	
+	// we may have 2 mtp if the reaction condition is "Bound"!
+	List<ReactantPattern> rpList = reactionRule.getReactantPatterns();		// we already know that this list is not empty
+	List<MolecularTypePattern> mtpReactantList = rpList.get(0).getSpeciesPattern().getMolecularTypePatterns();
 
+	TransitionCondition transitionCondition = TransitionCondition.FREE;		// molecules with just one site belong to free
+	if(mtpReactantList.size() == 1) {	// transition reaction condition "None" or "Free"
+		for(MolecularComponentPattern mcpOtherReactant : mtpTransitionReactant.getComponentPatternList()) {
+			if(mcpOtherReactant != mcpTransitionReactant) {
+				if(BondType.None == mcpOtherReactant.getBondType()) {
+					// transition "None" has the bond types of all sites set to "None" (except the transitioning site which is "Possible")
+					transitionCondition = TransitionCondition.NONE;
+					break;
+				}
+			}
+		}
+	} else if(mtpReactantList.size() == 2) {	// transition reaction condition "Bound"
+		transitionCondition = TransitionCondition.BOUND;
+		if(mtpTransitionReactant == mtpReactantList.get(0)) {
+			mtpConditionReactant = mtpReactantList.get(1);
+		} else {
+			mtpConditionReactant = mtpReactantList.get(0);
+		}
+		// now let's find the Site and the State of the binding condition molecule
+		for(MolecularComponentPattern mcpCandidate : mtpConditionReactant.getComponentPatternList()) {
+			if(BondType.Exists == mcpCandidate.getBondType()) {
+				mcpConditionReactant = mcpCandidate;	// found the bond condition site, it's the one with bond type "Exists"
+				if(!mcpConditionReactant.getComponentStatePattern().isAny()) {
+					stateConditionReactant = mcpConditionReactant.getComponentStatePattern().getComponentStateDefinition().getName();
+				}
+				break;
+			}
+		}
+	} else {
+		throw new RuntimeException("writeTransitionData() error: something is wrong");
+	}
+	
+	RbmKineticLaw kineticLaw = reactionRule.getKineticLaw();
+	Expression kon = kineticLaw.getLocalParameterValue(RbmKineticLaw.RbmKineticLawParameterType.MassActionForwardRate);
+	
+	sb.append("'").append(reactionRule.getName()).append("' ::     ");
+	sb.append("'").append(mtpTransitionReactant.getMolecularType().getName()).append("' : '")
+		.append(mcpTransitionReactant.getMolecularComponent().getName()).append("' : '")
+		.append(cspTransitionReactant.getComponentStateDefinition().getName());
+	sb.append("' --> '");
+	sb.append(cspTransitionProduct.getComponentStateDefinition().getName());
+	sb.append("'  Rate ").append(kon.infix());
+	sb.append("  Condition ").append(transitionCondition.columnName);
+	if(TransitionCondition.BOUND == transitionCondition) {
+		sb.append(" '").append(mtpConditionReactant.getMolecularType().getName()).append("' : '")
+		.append(mcpConditionReactant.getMolecularComponent().getName()).append("' : '")
+		.append(stateConditionReactant);
+	}
 }
 private void writeAllostericData(StringBuilder sb, Subtype subtype, Map<String, Object> analysisResults) {
 	if(subtype != ReactionRuleSpec.Subtype.ALLOSTERIC) {
 		return;
 	}
 	// one reactant and one product, one mtp, the mcp that is changing state
-	MolecularTypePattern mtpReactant = (MolecularTypePattern)analysisResults.get(MtpReactantState + "1");
+	MolecularTypePattern mtpTransitionReactant = (MolecularTypePattern)analysisResults.get(MtpReactantState + "1");
 	MolecularComponentPattern mcpTransitionReactant = (MolecularComponentPattern)analysisResults.get(McpReactantState + "1");
 	MolecularComponentPattern mcpTransitionProduct = (MolecularComponentPattern)analysisResults.get(McpProductState + "1");
 	ComponentStatePattern cspTransitionReactant = mcpTransitionReactant.getComponentStatePattern();
 	ComponentStatePattern cspTransitionProduct = mcpTransitionProduct.getComponentStatePattern();
 	int mcpAllostericReactantIndex = -1;
 	MolecularComponentPattern mcpAllostericReactant = null;
-	for(MolecularComponentPattern mcp : mtpReactant.getComponentPatternList()) {
+	for(MolecularComponentPattern mcp : mtpTransitionReactant.getComponentPatternList()) {
 		mcpAllostericReactantIndex++;
 		if(mcpTransitionReactant == mcp) {
 			continue;		// found the allosteric site index
@@ -627,7 +722,7 @@ private void writeAllostericData(StringBuilder sb, Subtype subtype, Map<String, 
 	Expression kon = kineticLaw.getLocalParameterValue(RbmKineticLaw.RbmKineticLawParameterType.MassActionForwardRate);
 
 	sb.append("'").append(reactionRule.getName()).append("' ::     ");
-	sb.append("'").append(mtpReactant.getMolecularType().getName()).append("' : '")
+	sb.append("'").append(mtpTransitionReactant.getMolecularType().getName()).append("' : '")
 		.append(mcpTransitionReactant.getMolecularComponent().getName()).append("' : '")
 		.append(cspTransitionReactant.getComponentStateDefinition().getName());
 	sb.append("' --> '");
