@@ -159,7 +159,6 @@ public class Hdf5WrapperFactory {
                     // we want to keep the last outputNumberOfPoints only
                     int outputNumberOfPoints = ((UniformTimeCourse) sedmlSim).getNumberOfPoints();
                     double outputStartTime = ((UniformTimeCourse) sedmlSim).getOutputStartTime();
-                    //NonspatialValueHolder variablesList;
                     List<Double> formattedData;
 
                     for (TaskJob taskJob : taskJobs) {
@@ -379,6 +378,11 @@ public class Hdf5WrapperFactory {
         return reports;
     }
 
+    /**
+     * Goes though references of repeated tasks, finding the "base" task that isn't repeated.
+     * @param task the task to check if repeated
+     * @return the base task (not a repeated task)
+     */
     private AbstractTask getOriginalTask(AbstractTask task){
         while (task instanceof RepeatedTask) { // We need to find the original task burried beneath.
             // We assume that we can never have a sequential repeated task at this point, we check for that in SEDMLImporter
