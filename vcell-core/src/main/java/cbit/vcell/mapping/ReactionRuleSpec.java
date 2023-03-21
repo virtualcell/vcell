@@ -486,7 +486,7 @@ private boolean isTransitionReaction(Map<String, Object> analysisResults) {
 			return false;
 		}
 		if(numExplicitStates[0] == 1 && numExplicitStates[1] == 1) {
-			// TODO: here we should also make sure that the transition molecule and the condition molecule are not the same
+			// above we made sure that the transition molecule and the condition molecule are not the same
 			return true;	// must have exactly one explicit state in each molecule 
 		} else if(numExplicitStates[0] == 0 && numExplicitStates[1] == 1 && numExistsBonds[0] == 1) {
 			// this else-if and the next: the only explicit site is the one transitioning
@@ -689,6 +689,7 @@ private void writeTransitionData(StringBuilder sb, Subtype subtype, Map<String, 
 		.append(mcpConditionReactant.getMolecularComponent().getName()).append("' : '")
 		.append(stateConditionReactant);
 	}
+	sb.append("\n");
 }
 private void writeAllostericData(StringBuilder sb, Subtype subtype, Map<String, Object> analysisResults) {
 	if(subtype != ReactionRuleSpec.Subtype.ALLOSTERIC) {
