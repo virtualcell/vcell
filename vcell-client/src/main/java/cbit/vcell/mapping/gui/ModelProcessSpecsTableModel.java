@@ -48,6 +48,7 @@ public class ModelProcessSpecsTableModel extends VCellSortTableModel<ModelProces
 		COLUMN_DEPICTION("Depiction"),
 		COLUMN_TYPE("Type"),
 		COLUMN_SUBTYPE("Subtype"),
+		COLUMN_CONDITION("Condition"),
 		COLUMN_ENABLED("Enabled"),
 		COLUMN_FAST("Fast"),
 		COLUMN_BOND_LENGTH("Bond Length");
@@ -78,7 +79,9 @@ public String getColumnName(int columnIndex){
 private void refreshColumns(){
 	columns.clear();
 	columns.addAll(Arrays.asList(ColumnType.values())); // initialize to all columns
-	columns.remove(ColumnType.COLUMN_SUBTYPE);		// it's springsalad-only
+	columns.remove(ColumnType.COLUMN_BOND_LENGTH);		// bond length, subtype and condition are springsalad-only
+	columns.remove(ColumnType.COLUMN_SUBTYPE);
+	columns.remove(ColumnType.COLUMN_CONDITION);
 	if(getSimulationContext() == null) {
 		return;
 	}
@@ -89,8 +92,9 @@ private void refreshColumns(){
 		columns.remove(ColumnType.COLUMN_FAST);
 	}
 	if(getSimulationContext().getApplicationType() == Application.SPRINGSALAD) {
+		columns.add(ColumnType.COLUMN_BOND_LENGTH);
 		columns.add(ColumnType.COLUMN_SUBTYPE);
-//		columns.add(ColumnType.COLUMN_BOND_LENGTH);
+		columns.add(ColumnType.COLUMN_CONDITION);
 		columns.remove(ColumnType.COLUMN_FAST);
 	}
 }
@@ -153,6 +157,9 @@ public Class<?> getColumnClass(int column) {
 		case COLUMN_SUBTYPE:{
 			return String.class;
 		}
+		case COLUMN_CONDITION:{
+			return String.class;
+		}
 		case COLUMN_ENABLED:{
 			return Boolean.class;
 		}
@@ -201,6 +208,14 @@ public Object getValueAt(int row, int col) {
 			ModelProcess modelProcess = modelProcessSpec.getModelProcess();
 			if(getSimulationContext().getApplicationType() == Application.SPRINGSALAD) {
 				return getSubtype(modelProcessSpec);
+			} else {
+				return null;
+			}
+		}
+		case COLUMN_CONDITION:{
+			ModelProcess modelProcess = modelProcessSpec.getModelProcess();
+			if(getSimulationContext().getApplicationType() == Application.SPRINGSALAD) {
+				return getTransitionCondition(modelProcessSpec);
 			} else {
 				return null;
 			}
@@ -416,6 +431,18 @@ public static String getSubtype(ModelProcessSpec modelProcessSpec) {
 	} else {
 		return ReactionRuleSpec.Subtype.INCOMPATIBLE.columnName;
 	}
+}
+public static String getTransitionCondition(ModelProcessSpec modelProcessSpec) {
+	if(modelProcessSpec instanceof ReactionRuleSpec) {
+		ReactionRuleSpec rrs = (ReactionRuleSpec)modelProcessSpec;
+		Map<String, Object> analysisResults = new LinkedHashMap<> ();
+		rrs.analizeReaction(analysisResults);
+		ReactionRuleSpec.TransitionCondition tc = rrs.getTransitionCondition(analysisResults);
+		if(tc != null) {
+			return tc.columnName;
+		}
+	}
+	return null;
 }
 public double getBondLength(ModelProcessSpec modelProcessSpec) {
 	if(modelProcessSpec instanceof ReactionRuleSpec) {
