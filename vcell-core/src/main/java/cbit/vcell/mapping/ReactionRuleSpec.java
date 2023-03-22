@@ -337,110 +337,138 @@ public Subtype getSubtype(Map<String, Object> analysisResults) {
 	return Subtype.INCOMPATIBLE;
 }
 public TransitionCondition getTransitionCondition(Map<String, Object> analysisResults) {
-	Subtype st = getSubtype(analysisResults);
-	if(Subtype.TRANSITION == st) {
-		List<ReactantPattern> rpList = reactionRule.getReactantPatterns();		// we already know that this list is not empty
-		List<ProductPattern> ppList = reactionRule.getProductPatterns();
-		List<MolecularTypePattern> mtpReactantList = rpList.get(0).getSpeciesPattern().getMolecularTypePatterns();
-		List<MolecularTypePattern> mtpProductList = ppList.get(0).getSpeciesPattern().getMolecularTypePatterns();
-		if(mtpReactantList.size() == 1 && mtpProductList.size() == 1) {
-			int numAnyStates = 0;
-			int numBondsPossible = 0;
-			int numBondsUnbound = 0;
-			MolecularTypePattern mtpReactant = mtpReactantList.get(0);
+	Object ret = analysisResults.get(WrongNumberOfMolecules);
+	if(ret == null || (boolean)ret == true) {
+		return null;
+	}
+	ret = analysisResults.get(StateTransitionCounter);
+	if(ret == null || (int)ret != 1) {
+		return null;		// we need exactly 1 state transition
+	}
+	ret = analysisResults.get(BondTransitionCounter);
+	if(ret == null || (int)ret != 0) {
+		return null;		// no binding allowed
+	}
+	if(analysisResults.get(NumReactants) == null || analysisResults.get(NumProducts) == null)  {
+		return null;
+	}
+	int numReactants = (int)analysisResults.get(NumReactants);
+	int numProducts = (int)analysisResults.get(NumProducts);
+	if(numReactants != 1 || numProducts != 1) {
+		return null;		// we may only have 1 reactant and 1 product
+	}
+	if((numReactants == 1 && numProducts != 1) || (numReactants == 2 && numProducts != 2)) {
+		return null;		// equal number of reactant and products, either 1 of each or 2 of each
+	}
+	List<ReactantPattern> rpList = reactionRule.getReactantPatterns();		// we already know that this list is not empty
+	List<ProductPattern> ppList = reactionRule.getProductPatterns();
+	List<MolecularTypePattern> mtpReactantList = rpList.get(0).getSpeciesPattern().getMolecularTypePatterns();
+	List<MolecularTypePattern> mtpProductList = ppList.get(0).getSpeciesPattern().getMolecularTypePatterns();
+	if((mtpReactantList.size() == 1 && mtpProductList.size() != 1) || (mtpReactantList.size() == 2 && mtpProductList.size() != 2)) {
+		return null;		// equal number of molecules in the reactant and product, either 1 of each or 2 of each
+	}
+
+	if(mtpReactantList.size() == 1 && mtpProductList.size() == 1) {		// check if it's a simple transition (Condition "None" or "Free")
+		int numAnyStates = 0;
+		int numBondsPossible = 0;
+		int numBondsUnbound = 0;
+		MolecularTypePattern mtpReactant = mtpReactantList.get(0);
+		for(MolecularComponentPattern mcpReactant : mtpReactant.getComponentPatternList()) {
+			ComponentStatePattern cspReactant = mcpReactant.getComponentStatePattern();
+			BondType bondTypeReactant = mcpReactant.getBondType();
+			if(cspReactant == null) {
+				return null;	// all sites must have at least one state
+			}
+			if(!cspReactant.isAny() && BondType.Possible != bondTypeReactant) {
+				// this is the transition site, bond must be "Possible"
+				return null;
+			}
+			if(!cspReactant.isAny()) {
+				;
+			} else {
+				numAnyStates++;
+			}
+			if(BondType.Possible == bondTypeReactant) {
+				numBondsPossible++;
+			} else if(BondType.None == bondTypeReactant) {
+				numBondsUnbound++;
+			} else {
+				return null;	// all bonds must be either none or possible
+			}
+		}
+		int numSites = mtpReactant.getComponentPatternList().size();
+		if(numBondsUnbound > 0 && numBondsPossible == 1 && numBondsUnbound == numSites-1 && numAnyStates == numSites-1) {
+			// transition site is bond Possible and in explicit state
+			// all the other sites are unbound AND in "Any" state
+			return TransitionCondition.NONE;	// condition is "None"
+		} else if(numBondsUnbound == 0 && numBondsPossible == numSites && numAnyStates == numSites-1) {
+			// transition site is bond Possible and in explicit state
+			// all the other sites are bond Possible AND in "Any" state
+			return TransitionCondition.FREE;	// transition reaction condition is "Free"
+		}
+		return null;
+	} else if(mtpReactantList.size() == 2 && mtpProductList.size() == 2) {		// we look for transition with "Bound" condition, means 2 molecules
+		MolecularTypePattern mtpTransitionReactant = (MolecularTypePattern)analysisResults.get(MtpReactantState + "1");	// the transitioning molecule
+		int totalExistsBonds = 0;
+		int totalExplicitStates = 0;
+		int numExplicitStates[] = { 0, 0};
+		int numExistsBonds[] = { 0, 0 };
+		for(int i=0; i < mtpReactantList.size(); i++) {
+			MolecularTypePattern mtpReactant = mtpReactantList.get(i);
+			List<MolecularComponentPattern> mcpList = mtpReactant.getComponentPatternList();
+			if(mcpList == null || mcpList.isEmpty()) {
+				return null;
+			}
 			for(MolecularComponentPattern mcpReactant : mtpReactant.getComponentPatternList()) {
 				ComponentStatePattern cspReactant = mcpReactant.getComponentStatePattern();
-				BondType bondTypeReactant = mcpReactant.getBondType();
 				if(cspReactant == null) {
 					return null;	// all sites must have at least one state
 				}
-				if(!cspReactant.isAny() && BondType.Possible != bondTypeReactant) {
-					// this is the transition site, bond must be "Possible"
-					return null;
+				BondType bondTypeReactant = mcpReactant.getBondType();
+				if(BondType.Exists == bondTypeReactant) {
+					if(mtpTransitionReactant == mtpReactant) {
+						// the transition site must be in one molecule, the condition bound site must be in the other
+						return null;
+					}
+					numExistsBonds[i]++;	// the condition binding site has bond type "Exists"
+					totalExistsBonds++;
+				} else if(BondType.Possible != bondTypeReactant) {
+					return null;		// all other bonds in the reactant must be of type "Possible"
+					// we know that the 2 molecules are bound somehow, because they are in the same species
+					// but we don't care between which sites the bond is
 				}
-				if(!cspReactant.isAny()) {
-					;
+				if(cspReactant.isAny()) {
+					continue;
 				} else {
-					numAnyStates++;
-				}
-				if(BondType.Possible == bondTypeReactant) {
-					numBondsPossible++;
-				} else if(BondType.None == bondTypeReactant) {
-					numBondsUnbound++;
-				} else {
-					return null;	// all bonds must be either none or possible
-				}
-			}
-			if(numBondsPossible-1 == numAnyStates && numBondsPossible == mtpReactant.getComponentPatternList().size()) {
-				return TransitionCondition.NONE;	// transition reaction condition is "None" (all sites except the transition site are possibly bound AND in "Any" state)
-			} else if(numBondsUnbound == numAnyStates && numBondsUnbound == mtpReactant.getComponentPatternList().size()-1) {
-				return TransitionCondition.FREE;	// transition reaction condition is "Free" (all sites except the transition site are unbound AND in "Any" state)
-			}
-			return null;
-		} else if(mtpReactantList.size() == 2 && mtpProductList.size() == 2) {
-			MolecularTypePattern mtpTransitionReactant = (MolecularTypePattern)analysisResults.get(MtpReactantState + "1");		// one mtp, one mcp
-			int totalExistsBonds = 0;
-			int totalExplicitStates = 0;
-			int numExplicitStates[] = { 0, 0};
-			int numExistsBonds[] = { 0, 0 };
-			for(int i=0; i < mtpReactantList.size(); i++) {
-				MolecularTypePattern mtpReactant = mtpReactantList.get(i);
-				List<MolecularComponentPattern> mcpList = mtpReactant.getComponentPatternList();
-				if(mcpList == null || mcpList.isEmpty()) {
-					return null;
-				}
-				for(MolecularComponentPattern mcpReactant : mtpReactant.getComponentPatternList()) {
-					ComponentStatePattern cspReactant = mcpReactant.getComponentStatePattern();
-					if(cspReactant == null) {
-						return null;	// all sites must have at least one state
+					// the site with explicit state must be the same that has bond type exists
+					if(BondType.Exists != bondTypeReactant && mtpTransitionReactant != mtpReactant) {
+						return null;
 					}
-					BondType bondTypeReactant = mcpReactant.getBondType();
-					if(BondType.Exists == bondTypeReactant) {
-						if(mtpTransitionReactant == mtpReactant) {
-							// the transition site must be in one molecule, the condition bound site must be in the other
-							return null;
-						}
-						numExistsBonds[i]++;	// the condition binding site has bond type "Exists"
-						totalExistsBonds++;
-					} else if(BondType.Possible != bondTypeReactant) {
-						return null;		// all other bonds in the reactant must be of type "Possible"
-						// we know that the 2 molecules are bound somehow, because they are in the same species
-						// but we don't care between which sites the bond is
-					}
-					if(cspReactant.isAny()) {
-						continue;
-					} else {
-						// the site with explicit state must be the same that has bond type exists
-						if(BondType.Exists != bondTypeReactant && mtpTransitionReactant != mtpReactant) {
-							return null;
-						}
-					}
-					numExplicitStates[i]++;
-					totalExplicitStates++;
 				}
-			}
-			
-			if(totalExistsBonds != 1) {
-				return null;		// the condition bound site is the only one with BondType "exists"
-			}
-			if(totalExplicitStates < 1 || totalExplicitStates > 2) {
-				// transitioning site must be in explicit state
-				// the condition binding site may be explicit or any
-				// all the other sites must be in "Any" state
-				return null;
-			}
-			if(numExplicitStates[0] == 1 && numExplicitStates[1] == 1) {
-				// above we made sure that the transition molecule and the condition molecule are not the same
-				return TransitionCondition.BOUND;	// must have exactly one explicit state in each molecule 
-			} else if(numExplicitStates[0] == 0 && numExplicitStates[1] == 1 && numExistsBonds[0] == 1) {
-				// this else-if and the next: the only explicit site is the one transitioning
-				// the conditional site type may also be in the "any" state but must have bond type "Exists"
-				return TransitionCondition.BOUND;
-			} else if(numExplicitStates[0] == 1 && numExplicitStates[1] == 0 && numExistsBonds[1] == 1) {
-				return TransitionCondition.BOUND;
+				numExplicitStates[i]++;
+				totalExplicitStates++;
 			}
 		}
-		return null;
+		
+		if(totalExistsBonds != 1) {
+			return null;		// the condition bound site is the only one with BondType "exists"
+		}
+		if(totalExplicitStates < 1 || totalExplicitStates > 2) {
+			// transitioning site must be in explicit state
+			// the condition binding site may be explicit or any
+			// all the other sites must be in "Any" state
+			return null;
+		}
+		if(numExplicitStates[0] == 1 && numExplicitStates[1] == 1) {
+			// above we made sure that the transition molecule and the condition molecule are not the same
+			return TransitionCondition.BOUND;	// must have exactly one explicit state in each molecule 
+		} else if(numExplicitStates[0] == 0 && numExplicitStates[1] == 1 && numExistsBonds[0] == 1) {
+			// this else-if and the next: the only explicit site is the one transitioning
+			// the conditional site type may also be in the "any" state but must have bond type "Exists"
+			return TransitionCondition.BOUND;
+		} else if(numExplicitStates[0] == 1 && numExplicitStates[1] == 0 && numExistsBonds[1] == 1) {
+			return TransitionCondition.BOUND;
+		}
 	}
 	return null;
 }
@@ -471,138 +499,9 @@ private boolean isDecayReaction(Map<String, Object> analysisResults) {
 	return false;
 }
 private boolean isTransitionReaction(Map<String, Object> analysisResults) {
-	Object ret = analysisResults.get(WrongNumberOfMolecules);
-	if(ret == null || (boolean)ret == true) {
-		return false;
-	}
-	ret = analysisResults.get(StateTransitionCounter);
-	if(ret == null || (int)ret != 1) {
-		return false;		// we need exactly 1 state transition
-	}
-	ret = analysisResults.get(BondTransitionCounter);
-	if(ret == null || (int)ret != 0) {
-		return false;		// no binding allowed
-	}
-	if(analysisResults.get(NumReactants) == null || analysisResults.get(NumProducts) == null)  {
-		return false;
-	}
-	int numReactants = (int)analysisResults.get(NumReactants);
-	int numProducts = (int)analysisResults.get(NumProducts);
-	if(numReactants != 1 || numProducts != 1) {
-		return false;		// we may only have 1 reactant and 1 product
-	}
-	if((numReactants == 1 && numProducts != 1) || (numReactants == 2 && numProducts != 2)) {
-		return false;		// equal number of reactant and products, either 1 of each or 2 of each
-	}
-	List<ReactantPattern> rpList = reactionRule.getReactantPatterns();		// we already know that this list is not empty
-	List<ProductPattern> ppList = reactionRule.getProductPatterns();
-	List<MolecularTypePattern> mtpReactantList = rpList.get(0).getSpeciesPattern().getMolecularTypePatterns();
-	List<MolecularTypePattern> mtpProductList = ppList.get(0).getSpeciesPattern().getMolecularTypePatterns();
-	if((mtpReactantList.size() == 1 && mtpProductList.size() != 1) || (mtpReactantList.size() == 2 && mtpProductList.size() != 2)) {
-		return false;		// equal number of molecules in the reactant and product, either 1 of each or 2 of each
-	}
-
-	if(mtpReactantList.size() == 1 && mtpProductList.size() == 1) {		// check if it's a simple transition
-		MolecularTypePattern mtpReactant = mtpReactantList.get(0);
-		List<MolecularComponentPattern> mcpList = mtpReactant.getComponentPatternList();
-		if(mcpList == null || mcpList.isEmpty()) {
-			return false;
-		}
-		int numAnyStates = 0;
-		int numBondsPossible = 0;
-		int numBondsUnbound = 0;
-		for(MolecularComponentPattern mcpReactant : mtpReactant.getComponentPatternList()) {
-			ComponentStatePattern cspReactant = mcpReactant.getComponentStatePattern();
-			BondType bondTypeReactant = mcpReactant.getBondType();
-			if(cspReactant == null) {
-				return false;	// all sites must have at least one state
-			}
-			if(!cspReactant.isAny() && BondType.Possible != bondTypeReactant) {
-				// this is the transition site, bond must be "Possible"
-				return false;
-			}
-			if(!cspReactant.isAny()) {
-				;
-			} else {
-				numAnyStates++;
-			}
-			if(BondType.Possible == bondTypeReactant) {
-				numBondsPossible++;
-			} else if(BondType.None == bondTypeReactant) {
-				numBondsUnbound++;
-			} else {
-				return false;	// all bonds must be either none or possible
-			}
-		}
-		if(numBondsPossible-1 == numAnyStates && numBondsPossible == mtpReactant.getComponentPatternList().size()) {
-			return true;	// transition reaction condition is "None" (all sites except the transition site are possibly bound AND in "Any" state)
-		} else if(numBondsUnbound == numAnyStates && numBondsUnbound == mtpReactant.getComponentPatternList().size()-1) {
-			return true;	// transition reaction condition is "Free" (all sites except the transition site are unbound AND in "Any" state)
-		}
-	} else if(mtpReactantList.size() == 2 && mtpProductList.size() == 2) {		// check if it's a 2 molecules bond-conditioned transition
-		// the transition reactant is the one containing the Site which is transitioning (changing state)
-		// the other molecule is the bond condition
-		MolecularTypePattern mtpTransitionReactant = (MolecularTypePattern)analysisResults.get(MtpReactantState + "1");		// one mtp, one mcp
-		int totalExistsBonds = 0;
-		int totalExplicitStates = 0;
-		int numExplicitStates[] = { 0, 0};
-		int numExistsBonds[] = { 0, 0 };
-		for(int i=0; i < mtpReactantList.size(); i++) {
-			MolecularTypePattern mtpReactant = mtpReactantList.get(i);
-			List<MolecularComponentPattern> mcpList = mtpReactant.getComponentPatternList();
-			if(mcpList == null || mcpList.isEmpty()) {
-				return false;
-			}
-			for(MolecularComponentPattern mcpReactant : mtpReactant.getComponentPatternList()) {
-				ComponentStatePattern cspReactant = mcpReactant.getComponentStatePattern();
-				if(cspReactant == null) {
-					return false;	// all sites must have at least one state
-				}
-				BondType bondTypeReactant = mcpReactant.getBondType();
-				if(BondType.Exists == bondTypeReactant) {
-					if(mtpTransitionReactant == mtpReactant) {
-						// the transition site must be in one molecule, the condition bound site must be in the other
-						return false;
-					}
-					numExistsBonds[i]++;	// the condition binding site has bond type "Exists"
-					totalExistsBonds++;
-				} else if(BondType.Possible != bondTypeReactant) {
-					return false;		// all other bonds in the reactant must be of type "Possible"
-					// we know that the 2 molecules are bound somehow, because they are in the same species
-					// but we don't care between which sites the bond is
-				}
-				if(cspReactant.isAny()) {
-					continue;
-				} else {
-					// the site with explicit state must be the same that has bond type exists
-					if(BondType.Exists != bondTypeReactant && mtpTransitionReactant != mtpReactant) {
-						return false;
-					}
-				}
-				numExplicitStates[i]++;
-				totalExplicitStates++;
-			}
-		}
-		
-		if(totalExistsBonds != 1) {
-			return false;		// the condition bound site is the only one with BondType "exists"
-		}
-		if(totalExplicitStates < 1 || totalExplicitStates > 2) {
-			// transitioning site must be in explicit state
-			// the condition binding site may be explicit or any
-			// all the other sites must be in "Any" state
-			return false;
-		}
-		if(numExplicitStates[0] == 1 && numExplicitStates[1] == 1) {
-			// above we made sure that the transition molecule and the condition molecule are not the same
-			return true;	// must have exactly one explicit state in each molecule 
-		} else if(numExplicitStates[0] == 0 && numExplicitStates[1] == 1 && numExistsBonds[0] == 1) {
-			// this else-if and the next: the only explicit site is the one transitioning
-			// the conditional site type may also be in the "any" state but must have bond type "Exists"
-			return true;
-		} else if(numExplicitStates[0] == 1 && numExplicitStates[1] == 0 && numExistsBonds[1] == 1) {
-			return true;
-		}
+	TransitionCondition tc = getTransitionCondition(analysisResults);
+	if(tc instanceof TransitionCondition) {
+		return true;
 	}
 	return false;
 }
