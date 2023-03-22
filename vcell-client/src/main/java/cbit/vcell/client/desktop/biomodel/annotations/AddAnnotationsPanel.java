@@ -1,8 +1,6 @@
 package cbit.vcell.client.desktop.biomodel.annotations;
 
-import cbit.vcell.biomodel.meta.MiriamManager;
 import cbit.vcell.biomodel.meta.VCMetaDataMiriamManager;
-import org.vcell.util.document.Identifiable;
 import org.xml.sax.SAXException;
 
 import javax.swing.*;
@@ -23,19 +21,19 @@ public class AddAnnotationsPanel extends JFrame implements ActionListener {
 
     private JButton searchButton;
     private JTextField searchBar;
+    private JTextField organismSearchField;
     private JList<String> list;
+    private DefaultListModel<String> dlm;
     private JComboBox<String> ontologiesBox;
     private JComboBox<String> containsBox;
     private JComboBox<String> limitBox;
     private JTextArea descriptionArea;
     private List<SearchElement> SearchElements;
-    private final JButton addButton, oKButton;
+    private final JButton addButton, closeWinButton;
     private final AnnotationsPanel annotationsPanel; //to connect AnnotationsPanel with AddAnnotationsPanel
     private String annotDescription;
     private JComboBox jComboBoxURI, jComboBoxQualifier;			// identity provider combo
-    DefaultComboBoxModel defaultComboBoxModelURI = null;
-    public static final int MAX_URI_LENGTH = 130;
-    private Identifiable selectedObject = null;
+    private JPanel searchComponents;
 
     public AddAnnotationsPanel (AnnotationsPanel annotationsPanel, JComboBox JComboBoxURI, JComboBox JComboBoxQualifier) {
         this.annotationsPanel = annotationsPanel;
@@ -48,6 +46,7 @@ public class AddAnnotationsPanel extends JFrame implements ActionListener {
 
         GridBagLayout gbl = new GridBagLayout();
         JPanel mainPanel = new JPanel(gbl);
+        searchComponents = new JPanel();
 
 
         GridBagConstraints gbc = new GridBagConstraints();
@@ -94,11 +93,11 @@ public class AddAnnotationsPanel extends JFrame implements ActionListener {
         gbc.fill = GridBagConstraints.NONE;
         gbc.anchor = GridBagConstraints.EAST;
         gbc.insets = new Insets(0,0,12,15);
-        oKButton = new JButton("OK");
-        oKButton.setSize(10,20);
-        oKButton.setMinimumSize(oKButton.getPreferredSize());
-        oKButton.addActionListener(this);
-        mainPanel.add(oKButton, gbc);
+        closeWinButton = new JButton("Close");
+        closeWinButton.setSize(10,20);
+        closeWinButton.setMinimumSize(closeWinButton.getPreferredSize());
+        closeWinButton.addActionListener(this);
+        mainPanel.add(closeWinButton, gbc);
 
         this.getContentPane().add(mainPanel);
         this.pack();
@@ -107,7 +106,7 @@ public class AddAnnotationsPanel extends JFrame implements ActionListener {
     }
 
     public JButton getOkButton() {
-        return oKButton;
+        return closeWinButton;
     }
 
     private void addSearchPanelComponents(JPanel leftPanel) {
@@ -123,23 +122,19 @@ public class AddAnnotationsPanel extends JFrame implements ActionListener {
         sGbc.gridy = 0;
         sGbc.gridx = 0;
         sGbc.insets = new Insets(0,10,0,0);
-        JLabel selectOntologyLabel = new JLabel("Select Ontology:");
+        JLabel selectOntologyLabel = new JLabel("Select Provider:");
         leftPanel.add(selectOntologyLabel, sGbc);
 
         //adding ontologies combobox
         sGbc.gridy = 0;
         sGbc.gridx = 1;
         sGbc.insets = new Insets(0,10,0,0);
-
-//        ontologiesBox = new JComboBox<>();
-//        ontologiesBox.addItem("All Selected");
-//        ontologiesBox.addItem("GO");
-//        ontologiesBox.addItem("NCIT");
-//        ontologiesBox.addItem("CHEBI");
-//        ontologiesBox.addItem("FMA");
-//        ontologiesBox.addItem("BTO");
-//        leftPanel.add(ontologiesBox, sGbc);
-//        leftPanel.add(annotationsPanel.getJComboBoxURI(), sGbc);
+        jComboBoxURI.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                updateGUI();
+            }
+        });
         leftPanel.add(jComboBoxURI, sGbc);
 
         //adding search label
@@ -149,12 +144,12 @@ public class AddAnnotationsPanel extends JFrame implements ActionListener {
         sGbc.insets = new Insets(15,0,0,0);
         JLabel searchLabel = new JLabel("Search term:");
         leftPanel.add(searchLabel, sGbc);
-
+/////////////////////////////////////////////////////////////////////////////////////////////////
         //adding contains/exaxt Jcombobox
         sGbc.gridy = 1;
         sGbc.gridx = 1;
         sGbc.anchor = GridBagConstraints.CENTER;
-        sGbc.insets = new Insets(15,0,0,5);
+        sGbc.insets = new Insets(15,0,0,0);
 
         containsBox = new JComboBox<>();
         containsBox.addItem("contains");
@@ -165,12 +160,19 @@ public class AddAnnotationsPanel extends JFrame implements ActionListener {
         sGbc.gridy = 1;
         sGbc.fill = GridBagConstraints.HORIZONTAL;
         sGbc.gridx = 2;
-        sGbc.gridwidth = 2;
-        sGbc.anchor = GridBagConstraints.CENTER;
-        sGbc.insets = new Insets(15,0,0,10);
+        sGbc.gridwidth = 1;
+        sGbc.anchor = GridBagConstraints.WEST;
+        sGbc.insets = new Insets(15,0,0,6);
         searchBar = new JTextField(25);
-        leftPanel.add(searchBar, sGbc);
+//        searchBar = new JTextField(15);
+//        leftPanel.add(searchBar, sGbc);
+        setSearchComponents();
+        leftPanel.add(searchComponents, sGbc);
 
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////
         //adding limit label
         sGbc.fill = GridBagConstraints.NONE;
         sGbc.anchor = GridBagConstraints.EAST;
@@ -228,6 +230,8 @@ public class AddAnnotationsPanel extends JFrame implements ActionListener {
         sGbc.insets = new Insets(0,10,15,0);
         sGbc.ipady = 80;
         list = new JList<>();
+        dlm = new DefaultListModel<>();
+        list.setModel(dlm);
         list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         list.addListSelectionListener(new ListSelectionListener() {
             @Override
@@ -238,6 +242,51 @@ public class AddAnnotationsPanel extends JFrame implements ActionListener {
             }
         });
         leftPanel.add(new JScrollPane(list), sGbc);
+    }
+
+    private void setSearchComponents() {
+//        searchComponents = new JPanel();
+        searchComponents.removeAll();
+
+        GridBagLayout gbl = new GridBagLayout();
+        GridBagConstraints gbc = new GridBagConstraints();
+        searchComponents.setLayout(gbl);
+
+        //adding search bar
+        gbc.gridy = 0;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.gridx = 0;
+        gbc.gridwidth = 1;
+        gbc.anchor = GridBagConstraints.WEST;
+//        gbc.insets = new Insets(15,0,0,10);
+//        searchBar = new JTextField(25);
+        searchBar = new JTextField(25);
+        searchComponents.add(searchBar, gbc);
+
+        VCMetaDataMiriamManager.VCMetaDataDataType mdt = (VCMetaDataMiriamManager.VCMetaDataDataType)jComboBoxURI.getSelectedItem();
+        if (mdt == DataType_UNIPROT) {
+            searchBar.setColumns(15);
+
+            gbc.gridx++;
+            gbc.anchor = GridBagConstraints.CENTER;
+            gbc.insets = new Insets(0,5,0,0);
+            JLabel organismLabel = new JLabel("in Organism:");
+            searchComponents.add(organismLabel, gbc);
+//            organismLabel.setVisible(false);
+
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+            gbc.gridx++;
+            gbc.gridwidth = 1;
+            gbc.anchor = GridBagConstraints.CENTER;
+            gbc.insets = new Insets(0,5,0,10);
+            organismSearchField = new JTextField(8);
+            searchComponents.add(organismSearchField, gbc);
+//            organismSearchField.setVisible(false);
+//            organismLabel.setVisible(true);
+//            organismSearchField.setVisible(true);
+            this.pack();
+        }
+//
     }
 
     private void addDescriptionPanelComponents(JPanel rightPanel) {
@@ -253,7 +302,7 @@ public class AddAnnotationsPanel extends JFrame implements ActionListener {
         dGbc.gridy = 0;
         dGbc.anchor = GridBagConstraints.SOUTH;
         dGbc.insets = new Insets(0,0,5,0);
-        JLabel descLabel = new JLabel("Description:");
+        JLabel descLabel = new JLabel("Select an item for more info:");
         rightPanel.add(descLabel, dGbc);
 
         //adding text area
@@ -276,55 +325,68 @@ public class AddAnnotationsPanel extends JFrame implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent evt) {
         if (evt.getSource() == searchButton) {
+            dlm.clear();
             try {
                 getSearchResults();
             } catch (IOException | URISyntaxException | ParserConfigurationException | InterruptedException |
                      SAXException e) {
                 throw new RuntimeException(e);
             }
-        } else if (evt.getSource() == addButton) {
+        }else if (evt.getSource() == addButton) {
             setAnnotationDescAndIdentifier();
-        } else if (evt.getSource() == oKButton) {
+        }else if (evt.getSource() == closeWinButton) {
             this.dispose();
         }
     }
 
-    private void getSearchResults() throws IOException, URISyntaxException, ParserConfigurationException, InterruptedException, SAXException {
-        //clear description area and search list before new
-        descriptionArea.setText(null);
-        DefaultListModel<String> dlm = new DefaultListModel<>();
-        String searchTerm = searchBar.getText();
-
+    public void updateGUI() {
+        dlm.clear();
+        searchBar.setText(null);
+        searchBar.requestFocusInWindow();
 
         VCMetaDataMiriamManager.VCMetaDataDataType mdt = (VCMetaDataMiriamManager.VCMetaDataDataType)jComboBoxURI.getSelectedItem();
-
-        String bioPortalDatabases = mdt.getDataTypeName();
-
-        boolean exactMatch = Objects.equals(containsBox.getSelectedItem(), "exact");
-
-        int pageSize = Integer.parseInt(Objects.requireNonNull(limitBox.getSelectedItem()).toString());
-
-        if (mdt.getDataTypeName().equals(DataType_UNIPROT.getDataTypeName())) {
-            UniProtSearch uniProtSearch = new UniProtSearch();
-            SearchElements = uniProtSearch.search(searchTerm,pageSize);
+        if (mdt == DataType_UNIPROT) {
+            containsBox.removeItem("exact");
         } else {
+            if (containsBox.getItemCount() < 2) {
+                containsBox.addItem("exact");
+            }
+        }
+        setSearchComponents();
+    }
+
+    private void getSearchResults() throws IOException, URISyntaxException, ParserConfigurationException, InterruptedException, SAXException {
+        //clear description area and search list before new search
+//        dlm.clear();
+
+        String searchTerm = searchBar.getText();
+        VCMetaDataMiriamManager.VCMetaDataDataType mdt = (VCMetaDataMiriamManager.VCMetaDataDataType)jComboBoxURI.getSelectedItem();
+
+        String selectedProvider = mdt != null ? mdt.getDataTypeName() : null;
+
+        int searchSize = Integer.parseInt(Objects.requireNonNull(limitBox.getSelectedItem()).toString());
+
+        if (mdt == DataType_UNIPROT) {
+            UniProtSearch uniProtSearch = new UniProtSearch();
+            SearchElements = uniProtSearch.search(searchTerm,searchSize,organismSearchField.getText());
+        } else {
+            boolean isExactMatch = Objects.equals(containsBox.getSelectedItem(), "exact");
             BioPortalSearch bioPortalSearch = new BioPortalSearch();
-            SearchElements = bioPortalSearch.search(searchTerm,pageSize,bioPortalDatabases,exactMatch);
+            SearchElements = bioPortalSearch.search(searchTerm,searchSize,selectedProvider,isExactMatch);
         }
 
 
         if (!SearchElements.isEmpty()) {
             list.setEnabled(true);
-            list.setFont(new Font("TimesRoman",Font.PLAIN,13));
+            list.setFont(new Font("TimesRoman",Font.PLAIN,14));
             for (SearchElement element: SearchElements) {
                 dlm.addElement(element.getEntityName());
             }
         } else {
-            list.setFont(new Font("Arial", Font.BOLD, 14));
+            list.setFont(new Font("Arial", Font.BOLD, 16));
             dlm.addElement("No matches found");
             list.setEnabled(false);
         }
-        list.setModel(dlm);
     }
 
     private void getDescription() {
@@ -332,6 +394,8 @@ public class AddAnnotationsPanel extends JFrame implements ActionListener {
             annotDescription = SearchElements.get(list.getSelectedIndex()).toString();
             descriptionArea.setText(annotDescription);
             descriptionArea.setCaretPosition(0);
+        } else {
+            descriptionArea.setText(null);
         }
     }
 
@@ -341,29 +405,5 @@ public class AddAnnotationsPanel extends JFrame implements ActionListener {
         }
         annotationsPanel.addIdentifier(SearchElements.get(list.getSelectedIndex()));
     }
-
-    //getter and setter for JComboBoxURI
-    public JComboBox getjComboBoxURI() {
-        return jComboBoxURI;
-    }
-
-    public void setjComboBoxURI(JComboBox jComboBoxURI) {
-        this.jComboBoxURI = jComboBoxURI;
-    }
-
-
-//    JComboBox getJComboBoxURI() {
-//        if (jComboBoxURI == null) {
-//            jComboBoxURI = new JComboBox();
-//            defaultComboBoxModelURI = new DefaultComboBoxModel();
-//            jComboBoxURI.setModel(defaultComboBoxModelURI);
-//            Dimension d = jComboBoxURI.getPreferredSize();
-//            jComboBoxURI.setMinimumSize(new Dimension(MAX_URI_LENGTH, d.height));
-//            jComboBoxURI.setPreferredSize(new Dimension(MAX_URI_LENGTH, d.height));
-//            AnnotationsPanel.ComboboxToolTipRenderer renderer = new AnnotationsPanel.ComboboxToolTipRenderer();
-//            jComboBoxURI.setRenderer(renderer);
-//        }
-//        return jComboBoxURI;
-//    }
 
 }

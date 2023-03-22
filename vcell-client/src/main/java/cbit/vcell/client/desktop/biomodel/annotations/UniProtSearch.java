@@ -15,25 +15,32 @@ public class UniProtSearch {
     private final String REST_URL = "https://rest.uniprot.org/uniprotkb/search?query=";
     private final List<SearchElement> searchElements = new ArrayList<>();
 //    private String proteinName = "egfr";
-    private String gene = "grb2";
-    private String organismName = "homo";
+//    private String gene = "grb2";
+//    private String organismName = "homo";
 //    private int size = 50;
 
-    public List<SearchElement> search(String searchTerm, int pageSize) throws IOException {
+    public List<SearchElement> search(String searchTerm, int searchSize, String organismName) throws IOException {
         //https://rest.uniprot.org/uniprotkb/search?query=
         //protein_name:egfr+OR+gene:grb2+AND+organism_name:homo&format=json&fields=accession,protein_name&size=1
+        StringBuilder request = new StringBuilder();
+        request.append(REST_URL);
+        request.append(searchTerm);
+        if (organismName.length() > 0) request.append("+AND+organism_name:").append(organismName);
+        request.append("&format=json");
+        request.append("&display_links=false");
+        request.append("&fields=accession,protein_name");
+        request.append("&size=").append(searchSize);
 
-        String response = get(REST_URL +
-                "protein_name:" + searchTerm +
-                "+OR+" +
-                "gene:" + gene +
-                "+AND+" +
-                "organism_name:" + organismName +
-                "&format=json" +
-                "&display_links=false" +
-                "&fields=accession,protein_name" +
-                "&size=" + pageSize
-        );
+        String response = get(request.toString());
+//        String response = get(REST_URL +
+//                searchTerm +
+//                "+AND+" +
+//                "organism_name:" + organismName +
+//                "&format=json" +
+//                "&display_links=false" +
+//                "&fields=accession,protein_name" +
+//                "&size=" + searchSize
+//        );
 
         System.out.println(response);
         System.out.println("Parsing JSON\n");
