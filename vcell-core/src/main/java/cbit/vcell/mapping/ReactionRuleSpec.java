@@ -336,6 +336,114 @@ public Subtype getSubtype(Map<String, Object> analysisResults) {
 	}
 	return Subtype.INCOMPATIBLE;
 }
+public TransitionCondition getTransitionCondition(Map<String, Object> analysisResults) {
+	Subtype st = getSubtype(analysisResults);
+	if(Subtype.TRANSITION == st) {
+		List<ReactantPattern> rpList = reactionRule.getReactantPatterns();		// we already know that this list is not empty
+		List<ProductPattern> ppList = reactionRule.getProductPatterns();
+		List<MolecularTypePattern> mtpReactantList = rpList.get(0).getSpeciesPattern().getMolecularTypePatterns();
+		List<MolecularTypePattern> mtpProductList = ppList.get(0).getSpeciesPattern().getMolecularTypePatterns();
+		if(mtpReactantList.size() == 1 && mtpProductList.size() == 1) {
+			int numAnyStates = 0;
+			int numBondsPossible = 0;
+			int numBondsUnbound = 0;
+			MolecularTypePattern mtpReactant = mtpReactantList.get(0);
+			for(MolecularComponentPattern mcpReactant : mtpReactant.getComponentPatternList()) {
+				ComponentStatePattern cspReactant = mcpReactant.getComponentStatePattern();
+				BondType bondTypeReactant = mcpReactant.getBondType();
+				if(cspReactant == null) {
+					return null;	// all sites must have at least one state
+				}
+				if(!cspReactant.isAny() && BondType.Possible != bondTypeReactant) {
+					// this is the transition site, bond must be "Possible"
+					return null;
+				}
+				if(!cspReactant.isAny()) {
+					;
+				} else {
+					numAnyStates++;
+				}
+				if(BondType.Possible == bondTypeReactant) {
+					numBondsPossible++;
+				} else if(BondType.None == bondTypeReactant) {
+					numBondsUnbound++;
+				} else {
+					return null;	// all bonds must be either none or possible
+				}
+			}
+			if(numBondsPossible-1 == numAnyStates && numBondsPossible == mtpReactant.getComponentPatternList().size()) {
+				return TransitionCondition.NONE;	// transition reaction condition is "None" (all sites except the transition site are possibly bound AND in "Any" state)
+			} else if(numBondsUnbound == numAnyStates && numBondsUnbound == mtpReactant.getComponentPatternList().size()-1) {
+				return TransitionCondition.FREE;	// transition reaction condition is "Free" (all sites except the transition site are unbound AND in "Any" state)
+			}
+			return null;
+		} else if(mtpReactantList.size() == 2 && mtpProductList.size() == 2) {
+			MolecularTypePattern mtpTransitionReactant = (MolecularTypePattern)analysisResults.get(MtpReactantState + "1");		// one mtp, one mcp
+			int totalExistsBonds = 0;
+			int totalExplicitStates = 0;
+			int numExplicitStates[] = { 0, 0};
+			int numExistsBonds[] = { 0, 0 };
+			for(int i=0; i < mtpReactantList.size(); i++) {
+				MolecularTypePattern mtpReactant = mtpReactantList.get(i);
+				List<MolecularComponentPattern> mcpList = mtpReactant.getComponentPatternList();
+				if(mcpList == null || mcpList.isEmpty()) {
+					return null;
+				}
+				for(MolecularComponentPattern mcpReactant : mtpReactant.getComponentPatternList()) {
+					ComponentStatePattern cspReactant = mcpReactant.getComponentStatePattern();
+					if(cspReactant == null) {
+						return null;	// all sites must have at least one state
+					}
+					BondType bondTypeReactant = mcpReactant.getBondType();
+					if(BondType.Exists == bondTypeReactant) {
+						if(mtpTransitionReactant == mtpReactant) {
+							// the transition site must be in one molecule, the condition bound site must be in the other
+							return null;
+						}
+						numExistsBonds[i]++;	// the condition binding site has bond type "Exists"
+						totalExistsBonds++;
+					} else if(BondType.Possible != bondTypeReactant) {
+						return null;		// all other bonds in the reactant must be of type "Possible"
+						// we know that the 2 molecules are bound somehow, because they are in the same species
+						// but we don't care between which sites the bond is
+					}
+					if(cspReactant.isAny()) {
+						continue;
+					} else {
+						// the site with explicit state must be the same that has bond type exists
+						if(BondType.Exists != bondTypeReactant && mtpTransitionReactant != mtpReactant) {
+							return null;
+						}
+					}
+					numExplicitStates[i]++;
+					totalExplicitStates++;
+				}
+			}
+			
+			if(totalExistsBonds != 1) {
+				return null;		// the condition bound site is the only one with BondType "exists"
+			}
+			if(totalExplicitStates < 1 || totalExplicitStates > 2) {
+				// transitioning site must be in explicit state
+				// the condition binding site may be explicit or any
+				// all the other sites must be in "Any" state
+				return null;
+			}
+			if(numExplicitStates[0] == 1 && numExplicitStates[1] == 1) {
+				// above we made sure that the transition molecule and the condition molecule are not the same
+				return TransitionCondition.BOUND;	// must have exactly one explicit state in each molecule 
+			} else if(numExplicitStates[0] == 0 && numExplicitStates[1] == 1 && numExistsBonds[0] == 1) {
+				// this else-if and the next: the only explicit site is the one transitioning
+				// the conditional site type may also be in the "any" state but must have bond type "Exists"
+				return TransitionCondition.BOUND;
+			} else if(numExplicitStates[0] == 1 && numExplicitStates[1] == 0 && numExistsBonds[1] == 1) {
+				return TransitionCondition.BOUND;
+			}
+		}
+		return null;
+	}
+	return null;
+}
 private boolean isCreationReaction(Map<String, Object> analysisResults) {
 	List<ReactantPattern> rpList = reactionRule.getReactantPatterns();
 	if(rpList.size() == 1) {
@@ -807,6 +915,7 @@ public SpeciesContext getDestroyedSpecies(SpeciesContextSpec[] speciesContextSpe
  * Creation date: (11/1/2005 10:06:04 AM)
  * @param issueList java.util.Vector
  */
+private final static String GenericTip = "Please edit the reaction so that it matches a SpringSaLaD subtype or disable it in this table";
 public void gatherIssues(IssueContext issueContext, List<Issue> issueList, ReactionContext rc) {
 	ReactionRuleCombo r = new ReactionRuleCombo(this, rc);
 	ReactionRule reactionRule = getReactionRule();
@@ -835,10 +944,65 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList, React
 	if(rc.getSimulationContext().getApplicationType() == SimulationContext.Application.SPRINGSALAD) {
 		Map<String, Object> analysisResults = new LinkedHashMap<> ();
 		analizeReaction(analysisResults);
-		
 		if(Subtype.INCOMPATIBLE == getSubtype(analysisResults)) {
-			String msg = "Reaction incompatible with SpringSaLaD.";
-			String tip = "Please edit the reaction so that it matches a SpringSaLaD subtype or disable it in this table";
+			List<ReactantPattern> rpList = reactionRule.getReactantPatterns();
+			List<ProductPattern> ppList = reactionRule.getProductPatterns();
+			if(rpList == null || ppList == null) {
+				String msg = "At least one reactant and one product are required.";
+				String tip = GenericTip;
+				issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+				return;
+			}
+			int numReactants = rpList.size();
+			int numProducts = ppList.size();
+			if(numReactants == 0 || numProducts == 0) {
+				String msg = "At least one reactant and one product are required.";
+				String tip = GenericTip;
+				issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+				return;
+			}
+			if(numProducts > 1) {
+				String msg = "SpringSaLaD only accepts one Product.";
+				String tip = GenericTip;
+				issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+				return;
+			}
+			if(numReactants > 2) {
+				String msg = "SpringSaLaD only accepts 2 Reactants for the binding reactions and 1 Reactant for the other subtypes.";
+				String tip = GenericTip;
+				issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+				return;
+			}
+		}
+		if(Subtype.INCOMPATIBLE == getSubtype(analysisResults)) {
+			Object bondObject = analysisResults.get(BondTransitionCounter);
+			Object stateObject = analysisResults.get(StateTransitionCounter);
+			if(bondObject != null && stateObject != null) {
+				int bondTransitionCounter = (int)bondObject;
+				int stateTransitionCounter = (int)stateObject;
+				if(bondTransitionCounter > 3) {		// a binding reaction produces 2 transitions
+					String msg = "SpringSaLaD only accepts one binding transition in any reaction.";
+					String tip = GenericTip;
+					issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+					return;
+				}
+				if(stateTransitionCounter > 1) {
+					String msg = "SpringSaLaD only accepts one state transition in any reaction.";
+					String tip = GenericTip;
+					issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+					return;
+				}
+				if(stateTransitionCounter > 0 && bondTransitionCounter > 0) {
+					String msg = "SpringSaLaD does not accept a combination of state and binding transitions in any reaction.";
+					String tip = GenericTip;
+					issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+					return;
+				}
+			}
+		}
+		if(Subtype.INCOMPATIBLE == getSubtype(analysisResults)) {
+			String msg = "Reaction incompatible with any SpringSaLaD reaction subtype.";
+			String tip = GenericTip;
 			issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
 		}
 		
