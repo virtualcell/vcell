@@ -11,9 +11,10 @@
 package org.vcell.util.springsalad;
 
 import java.awt.Color;
+import java.io.Serializable;
 
-
-public class NamedColor {
+@SuppressWarnings("serial")
+public class NamedColor implements Serializable {
 	private final Color color;
 	private final String name;
 	

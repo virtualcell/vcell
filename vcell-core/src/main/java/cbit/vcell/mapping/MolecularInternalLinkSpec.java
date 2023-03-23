@@ -31,7 +31,7 @@ import org.vcell.util.document.Identifiable;
 import org.vcell.util.document.VersionFlag;
 
 @SuppressWarnings("serial")
-public class MolecularInternalLinkSpec implements Identifiable, IssueSource, Matchable {
+public class MolecularInternalLinkSpec implements Identifiable, IssueSource, Matchable, Serializable {
 	private final SpeciesContextSpec fieldSpeciesContextSpec;
 	private MolecularComponentPattern fieldMolecularComponentPatternOne = null;
 	private MolecularComponentPattern fieldMolecularComponentPatternTwo = null;

@@ -38,7 +38,7 @@ import org.vcell.util.springsalad.IOHelp;
 import org.vcell.util.springsalad.NamedColor;
 
 @SuppressWarnings("serial")
-public class SiteAttributesSpec implements Identifiable, Displayable, IssueSource {
+public class SiteAttributesSpec implements Serializable, Identifiable, Displayable, IssueSource {
 	private final SpeciesContextSpec fieldSpeciesContextSpec;
 	private MolecularComponentPattern fieldMolecularComponentPattern = null;
 	private double fieldRadius = 1.0;
