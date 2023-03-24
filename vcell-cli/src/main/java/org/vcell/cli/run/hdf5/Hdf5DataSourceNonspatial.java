@@ -1,14 +1,15 @@
 package org.vcell.cli.run.hdf5;
 
-import org.jlibsedml.Variable;
-
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.LinkedHashMap;
+
+import org.jlibsedml.Variable;
 
 /**
- * Struct-class to hold list of nonspacial variable data
+ * Class
  */
 public class Hdf5DataSourceNonspatial extends Hdf5DataSource {
     public Hdf5DataSourceNonspatial() {}
@@ -16,7 +17,7 @@ public class Hdf5DataSourceNonspatial extends Hdf5DataSource {
     /**
      * List of all data contained within a job relevant to HDF5 formatted files
      */
-    public List<Hdf5JobData> jobData = new ArrayList<>();
+    public List<Hdf5JobData> jobData = new LinkedList<>();
 
     /**
      * Struct-Subclass for holding job data
@@ -28,6 +29,4 @@ public class Hdf5DataSourceNonspatial extends Hdf5DataSource {
          */
         public Map<Variable, double[]> varData = new LinkedHashMap<>();
     }
-
-    
 }

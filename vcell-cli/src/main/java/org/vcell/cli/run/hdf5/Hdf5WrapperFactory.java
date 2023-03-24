@@ -1,7 +1,11 @@
 package org.vcell.cli.run.hdf5;
 
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.parser.DivideByZeroException;
+import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.SimpleSymbolTable;
+import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import ncsa.hdf.hdf5lib.exceptions.HDF5Exception;
 
@@ -27,6 +31,7 @@ import org.apache.logging.log4j.Logger;
 import java.io.*;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Stream;
 
 
 /**
@@ -65,6 +70,7 @@ public class Hdf5WrapperFactory {
         Hdf5DataWrapper hdf5FileWrapper = new Hdf5DataWrapper();
         Exception nonSpatialException = null, spatialException = null;
 
+        // Nonspacial Collection
         try {
             wrappers.addAll(this.collectNonspatialDatasets(this.sedml, nonSpatialResults, this.taskToSimulationMap, this.sedmlLocation));
         } catch (Exception e){
@@ -72,6 +78,7 @@ public class Hdf5WrapperFactory {
             nonSpatialException = e;
         }
 
+        // Spacial Collection
         try {
             wrappers.addAll(this.collectSpatialDatasets(this.sedml, spatialResults, this.taskToSimulationMap, this.sedmlLocation));
         } catch (Exception e){
@@ -79,6 +86,7 @@ public class Hdf5WrapperFactory {
             spatialException = e;
         }
 
+        // Error Checking
         if (nonSpatialException != null && nonSpatialException != null){
             throw new RuntimeException("Encountered complete dataset collection failure;\nNonSpatial Reported:\n" + nonSpatialException.getMessage()
                 + "\nSpatial Reported:\n" + spatialException.getMessage());
@@ -100,9 +108,9 @@ public class Hdf5WrapperFactory {
 
             // go through each entry (dataset)
             for (DataSet dataset : report.getListOfDataSets()) { 
-                List<String> varIDs = new ArrayList<>();
-                Map<Variable, NonspatialValueHolder> values = new HashMap<>();
-                int maxLengthOfAllData = 0; // We have to pad up to this value
+                Map<String, List<Double>> idToDataMap = new LinkedHashMap<>();
+                //List<String> varIDs = new ArrayList<>();
+                //List<Double> values = new ArrayList<>();
 
                 // use the data reference to obtain the data generator
                 DataGenerator datagen = sedml.getDataGeneratorWithId(dataset.getDataReference()); assert datagen != null;
@@ -140,7 +148,7 @@ public class Hdf5WrapperFactory {
 
                     if (taskJobs.isEmpty()) continue;
 
-                    varIDs.add(var.getId());
+                    //varIDs.add(var.getId());
 
                     if (!(sedmlSim instanceof UniformTimeCourse)){
                         logger.error("only uniform time course simulations are supported");
@@ -150,12 +158,11 @@ public class Hdf5WrapperFactory {
                     // we want to keep the last outputNumberOfPoints only
                     int outputNumberOfPoints = ((UniformTimeCourse) sedmlSim).getNumberOfPoints();
                     double outputStartTime = ((UniformTimeCourse) sedmlSim).getOutputStartTime();
-                    NonspatialValueHolder variablesList;
+                    List<Double> formattedData;
 
                     for (TaskJob taskJob : taskJobs) {
                         ODESolverResultSet results = nonspatialResultsHash.get(taskJob);
-                        int column = results.findColumn(sbmlVarId);
-                        double[] data = results.extractColumn(column);
+                        double[] data = results.extractColumn(results.findColumn(sbmlVarId));
                         
                         if (outputStartTime > 0){
                             double[] correctiveData = new double[outputNumberOfPoints + 1];
@@ -165,17 +172,38 @@ public class Hdf5WrapperFactory {
                             data = correctiveData;
                         }
 
-                        maxLengthOfAllData = Integer.max(maxLengthOfAllData, data.length);
-                        if (initialTask instanceof RepeatedTask && values.containsKey(var)) { // double[] exists
-                            variablesList = values.get(var);
+                        /*if (initialTask instanceof RepeatedTask && idToDataMap.containsKey(var.getId())) { // double[] exists
+                            variablesList = idToDataMap.get(var.getId());
                         } else { // this is the first double[]
-                            variablesList = new NonspatialValueHolder(taskToSimulationMap.get(initialTask));
-                        }
-                        variablesList.values.add(data);
-                        values.put(var, variablesList);
+                            variablesList = new LinkedList<>();
+                        }*/
+                        // really ugly convert from double[] to List<Double>
+                        formattedData = Arrays.asList(Arrays.stream(data).boxed().toArray(Double[]::new));
+                        idToDataMap.put(var.getId(), formattedData);
                     }
                 }
-                dataSetValues.put(dataset, values);
+
+                // Missing functionality!!! We need to computer the variables into the proper values
+                if (idToDataMap.isEmpty()) continue;
+                int maxLengthOfData = 0;
+                List<Double> data = new LinkedList<>();
+                
+                SimpleDataGenCalculator calc = new SimpleDataGenCalculator(datagen);
+
+                for (List<Double> varData : idToDataMap.values())
+                    if (varData.size() > maxLengthOfData)
+                        maxLengthOfData = varData.size();
+                
+                for (int i = 0; i < maxLengthOfData; i++){
+                    for (String varId : idToDataMap.keySet()){
+                        List<Double> varData = idToDataMap.get(varId);
+                        Double value = i >= varData.size() ? Double.NaN : varData.get(i);
+                        calc.setArgument(varId, value);
+                    }
+                    data.add(calc.evaluateWithCurrentArguments());
+                }
+
+                //dataSetValues.put(dataset, data.stream().toArray(Double[]::new));
 
             } // end of dataset
 
@@ -353,6 +381,11 @@ public class Hdf5WrapperFactory {
         return reports;
     }
 
+    /**
+     * Goes though references of repeated tasks, finding the "base" task that isn't repeated.
+     * @param task the task to check if repeated
+     * @return the base task (not a repeated task)
+     */
     private AbstractTask getOriginalTask(AbstractTask task){
         while (task instanceof RepeatedTask) { // We need to find the original task burried beneath.
             // We assume that we can never have a sequential repeated task at this point, we check for that in SEDMLImporter
@@ -449,5 +482,55 @@ public class Hdf5WrapperFactory {
         }
 
         return s;
+    }
+
+    private class SimpleDataGenCalculator {
+        private Expression equation;
+        private Map<String, Double> bindingMap;
+
+        public SimpleDataGenCalculator(DataGenerator dataGen) throws ExpressionException {
+            this.equation = new Expression(dataGen.getMathAsString());
+            this.bindingMap = new LinkedHashMap<>(); // LinkedHashMap preserves insertion order
+            
+            String[] variableArray = dataGen.getListOfVariables().stream().map(Variable::getId).toArray(String[]::new);
+            SymbolTable symTable = new SimpleSymbolTable(variableArray);
+            this.equation.bindExpression(symTable);
+
+            for (String var : variableArray){
+                bindingMap.put(var, Double.NaN);
+            }
+        }
+
+        public void setArgument(String parameter, Double argument){
+            if (!this.bindingMap.containsKey(parameter)) throw new IllegalArgumentException(String.format("\"%s\" is not a parameter of the expression", parameter));
+            this.bindingMap.put(parameter, argument);
+        }
+
+        public void setArguments(Map<String, Double> parameterToArgumentMap){
+            for (String param : parameterToArgumentMap.keySet()){
+                this.bindingMap.put(param, parameterToArgumentMap.get(param));
+            }
+        }
+
+        public double evaluateWithCurrentArguments() throws ExpressionException, DivideByZeroException {
+            Double[] args = this.bindingMap.values().toArray(new Double[0]);
+            return this.equation.evaluateVector(Stream.of(args).mapToDouble(Double::doubleValue).toArray());
+        }
+
+        public double evaluateWithProvidedArguments(Map<String, Double> parameterToArgumentMap) throws ExpressionException, DivideByZeroException {
+            List<Double> args = new LinkedList<>();
+
+            // Confirm we have the correct params
+            if (parameterToArgumentMap.size() != this.bindingMap.size()) throw new IllegalArgumentException("Incorrect number of entries.");
+            if (!parameterToArgumentMap.keySet().equals(this.bindingMap.keySet())) throw new IllegalArgumentException("Parameter 'keys' don't match");
+
+            // Prepare args
+            for (String param : this.bindingMap.keySet()){ // binding map, because keys are set-similar but only binding map preserves order for sure!
+                args.add(parameterToArgumentMap.get(param));
+            }
+
+            // Solve
+            return this.equation.evaluateVector(args.stream().mapToDouble(Double::doubleValue).toArray());
+        }
     }
 }
