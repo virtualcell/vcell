@@ -10,7 +10,7 @@ import org.junit.experimental.categories.Category;
 import org.vcell.test.Fast;
 import org.vcell.util.VCellUtilityHub;
 
-import static org.vcell.cli.run.hdf5.Hdf5DataSourceNonspatial.Hdf5DataFragment;
+import static org.vcell.cli.run.hdf5.Hdf5DataSourceNonspatial.Hdf5JobData;
 
 import java.io.File;
 import java.io.IOException;
@@ -61,7 +61,7 @@ public class Hdf5WriterTest {
         plotDataSourceNonspatial.scanBounds = new int[0];
         plotDataSourceNonspatial.scanParameterNames = new String[0];
         plotDatasetWrapper.dataSource = plotDataSourceNonspatial;
-        Hdf5DataFragment plotJob = new Hdf5DataFragment();
+        Hdf5JobData plotJob = new Hdf5JobData();
         plotJob.varData.put(t, row_t);
         plotJob.varData.put(s0, row_S0_0);
         plotJob.varData.put(s1, row_S1);
@@ -74,19 +74,19 @@ public class Hdf5WriterTest {
         reportDataSourceNonspatial.scanBounds = new int[] { 3 };
         reportDataSourceNonspatial.scanParameterNames = new String[] { "k1" };
         reportDatasetWrapper.dataSource = reportDataSourceNonspatial;
-        Hdf5DataFragment reportJob_0 = new Hdf5DataFragment();
+        Hdf5JobData reportJob_0 = new Hdf5JobData();
         reportJob_0.varData.put(t, row_t);
         reportJob_0.varData.put(s0, row_S0_0);
         reportJob_0.varData.put(s1, row_S1);
         reportDataSourceNonspatial.jobData.add(reportJob_0);
 
-        Hdf5DataFragment reportJob_1 = new Hdf5DataFragment();
+        Hdf5JobData reportJob_1 = new Hdf5JobData();
         reportJob_1.varData.put(t, row_t);
         reportJob_1.varData.put(s0, row_S0_1);
         reportJob_1.varData.put(s1, row_S1);
         reportDataSourceNonspatial.jobData.add(reportJob_1);
 
-        Hdf5DataFragment reportJob_2 = new Hdf5DataFragment();
+        Hdf5JobData reportJob_2 = new Hdf5JobData();
         reportJob_2.varData.put(t, row_t);
         reportJob_2.varData.put(s0, row_S0_2);
         reportJob_2.varData.put(s1, row_S1);

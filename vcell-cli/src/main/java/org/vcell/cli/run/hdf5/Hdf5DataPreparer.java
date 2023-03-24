@@ -136,7 +136,7 @@ public class Hdf5DataPreparer {
 
         double[] bigDataBuffer = new double[totalDataSize];
         int bufferOffset = 0;
-        for (Hdf5DataSourceNonspatial.Hdf5DataFragment jobData : dataSourceNonspatial.jobData) {
+        for (Hdf5DataSourceNonspatial.Hdf5JobData jobData : dataSourceNonspatial.jobData) {
             for (int varIndex = 0; varIndex < vars.size(); varIndex++) {
                 Variable var = vars.get(varIndex);
                 double[] dataArray = jobData.varData.get(var);

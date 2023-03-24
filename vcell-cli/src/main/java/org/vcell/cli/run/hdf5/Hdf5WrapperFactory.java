@@ -104,8 +104,7 @@ public class Hdf5WrapperFactory {
         List<Hdf5DatasetWrapper> datasetWrappers = new ArrayList<>();
 
         for (Report report : this.getReports(sedml.getOutputs())){
-            //Map<DataSet, Map<Variable, NonspatialValueHolder>> dataSetValues = new LinkedHashMap<>();
-            Map<DataSet, Double[]> dataSetValues = new LinkedHashMap<>();
+            Map<DataSet, Map<Variable, NonspatialValueHolder>> dataSetValues = new LinkedHashMap<>();
 
             // go through each entry (dataset)
             for (DataSet dataset : report.getListOfDataSets()) { 
@@ -204,7 +203,7 @@ public class Hdf5WrapperFactory {
                     data.add(calc.evaluateWithCurrentArguments());
                 }
 
-                dataSetValues.put(dataset, data.stream().toArray(Double[]::new));
+                //dataSetValues.put(dataset, data.stream().toArray(Double[]::new));
 
             } // end of dataset
 
@@ -214,15 +213,19 @@ public class Hdf5WrapperFactory {
             hdf5DatasetWrapper.datasetMetadata.sedmlName = report.getName();
             hdf5DatasetWrapper.datasetMetadata.uri = Paths.get(sedmlLocation, report.getId()).toString();
 
-            Double[] valuesForFirstVar = dataSetValues.entrySet().iterator().next().getValue();
-            int numJobs = valuesForFirstVar.length;
+            Map<Variable, NonspatialValueHolder> firstValues = dataSetValues.entrySet().iterator().next().getValue();
+            if (firstValues.size()==0){
+                continue;
+            }
+            NonspatialValueHolder valuesForFirstVar = firstValues.entrySet().iterator().next().getValue();
+            int numJobs = valuesForFirstVar.getNumJobs();
 
             Hdf5DataSourceNonspatial dataSourceNonspatial = new Hdf5DataSourceNonspatial();
             hdf5DatasetWrapper.dataSource = dataSourceNonspatial; // Using upcasting
             hdf5DatasetWrapper.datasetMetadata.sedmlDataSetShapes = new LinkedList<>();
 
             for (int i=0; i<numJobs; i++) {
-                dataSourceNonspatial.jobData.add(new Hdf5DataSourceNonspatial.Hdf5DataFragment());
+                dataSourceNonspatial.jobData.add(new Hdf5DataSourceNonspatial.Hdf5JobData());
             }
 
             List<String> shapes = new LinkedList<>();
@@ -240,7 +243,7 @@ public class Hdf5WrapperFactory {
                     dataSourceNonspatial.scanParameterNames = dataArrays.vcSimulation.getMathOverrides().getScannedConstantNames();
                     for (int jobIndex=0; jobIndex < numJobs; jobIndex++){
                         double[] data = dataArrays.values.get(jobIndex);
-                        Hdf5DataSourceNonspatial.Hdf5DataFragment hdf5JobData = dataSourceNonspatial.jobData.get(jobIndex);
+                        Hdf5DataSourceNonspatial.Hdf5JobData hdf5JobData = dataSourceNonspatial.jobData.get(jobIndex);
                         hdf5JobData.varData.put(var,data);
                         shapes.add(Integer.toString(data.length));
                     }
