@@ -127,9 +127,14 @@ public enum SolverDescription {
 	      false),
 
 	   NFSim(TimeStep.VARIABLE, ErrorTol.NO, TimeSpecCreated.UNIFORM, "NFSim","NFSim (Network Free Simulator)","NFSim",
-	      SolverLongDesc.NFSIM, 1,SupportedTimeSpec.UNIFORM,
-	      new SolverFeature[]{SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Rulebased},
-	      SolverExecutable.NFSIM, "KISAO:0000263", false),
+			      SolverLongDesc.NFSIM, 1,SupportedTimeSpec.UNIFORM,
+			      new SolverFeature[]{SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Rulebased},
+			      SolverExecutable.NFSIM, "KISAO:0000263", false),
+	   
+	   Langevin(TimeStep.CONSTANT, ErrorTol.NO, TimeSpecCreated.UNIFORM, "Langevin", "LangevinNoVis","Langevin",
+			      SolverLongDesc.LANGEVIN, 1,SupportedTimeSpec.UNIFORM,
+			      new SolverFeature[]{SolverFeature.Feature_Spatial, SolverFeature.Feature_Rulebased, SolverFeature.Feature_Stochastic},
+			      SolverExecutable.LANGEVIN, "KISAO:0000263", false),		// TODO: find the right KISAO
 
 	   Comsol(TimeStep.VARIABLE,ErrorTol.NO,TimeSpecCreated.DEFAULT,"Comsol","Comsol Multiphysics","Comsol",
 		  SolverLongDesc.COMSOL,1,SupportedTimeSpec.DEFAULT_UNIFORM,
