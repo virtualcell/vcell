@@ -657,6 +657,7 @@ public void setGeometry(Geometry newValue) {
 						break;
 					case NETWORK_DETERMINISTIC:
 					case NETWORK_STOCHASTIC:
+					case SPRINGSALAD:
 						replaceEnabled = true;
 						break;
 					}
