@@ -26,6 +26,7 @@ import org.vcell.util.TokenMangler;
 
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.SubVolume;
+import cbit.vcell.geometry.SurfaceClass;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.mapping.ParameterContext.UnresolvedParameter;
 import cbit.vcell.mapping.RulebasedTransformer.Operation;
@@ -41,6 +42,7 @@ import cbit.vcell.math.MacroscopicRateConstant;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.MathUtilities;
+import cbit.vcell.math.MembraneSubDomain;
 import cbit.vcell.math.ParticleComponentStateDefinition;
 import cbit.vcell.math.ParticleComponentStatePattern;
 import cbit.vcell.math.ParticleJumpProcess;
@@ -123,9 +125,10 @@ protected LangevinMathMapping(SimulationContext simContext, MathMappingCallback 
 		// verify 3D
 		//
 		// TODO: add 3D default geometry!
-//		if (simContext.getGeometry().getDimension() != 3){
-//			throw new MappingException("Langevin based particle math mapping implemented for 3D spatial geometry - dimension != 3");
-//		}
+		//
+		if (simContext.getGeometry().getDimension() != 3) {
+			throw new MappingException("Langevin based particle math mapping implemented for 3D spatial geometry - dimension != 3");
+		}
 		
 		//
 		// check that we aren't solving for electric potential.
@@ -368,11 +371,69 @@ protected LangevinMathMapping(SimulationContext simContext, MathMappingCallback 
 		}
 
 		//
-		// create subDomains
+		// create subDomains (volume and surfaces)
 		//
-		SubVolume subVolume = simContext.getGeometry().getGeometrySpec().getSubVolumes()[0];
-		SubDomain subDomain = new CompartmentSubDomain(subVolume.getName(),0);
-		mathDesc.addSubDomain(subDomain);
+		// TODO: make a function in ParticleMapMapping with identical code and call it here
+		//
+		GeometryClass[] geometryClasses = getSimulationContext().getGeometryContext().getGeometry().getGeometryClasses();
+		for (int k=0;k<geometryClasses.length;k++){
+			if (geometryClasses[k] instanceof SubVolume){
+				SubVolume subVolume = (SubVolume)geometryClasses[k];
+				//
+				// get priority of subDomain
+				//
+				int priority = k; // now does not have to match spatial feature, *BUT* needs to be unique
+				
+				//
+				// create subDomain
+				//
+				CompartmentSubDomain subDomain = new CompartmentSubDomain(subVolume.getName(),priority);
+				mathDesc.addSubDomain(subDomain);
+
+				//
+				// assign boundary condition types
+				//
+				StructureMapping[] mappedSMs = getSimulationContext().getGeometryContext().getStructureMappings(subVolume);
+				FeatureMapping mappedFM = null;
+				for (int i = 0; i < mappedSMs.length; i++) {
+					if (mappedSMs[i] instanceof FeatureMapping){
+						if (mappedFM!=null){
+							lg.warn("WARNING:::: MathMapping.refreshMathDescription() ... assigning boundary condition types not unique");
+						}
+						mappedFM = (FeatureMapping)mappedSMs[i];
+					}
+				}
+				if (mappedFM != null){
+					subDomain.setBoundaryConditionXm(mappedFM.getBoundaryConditionTypeXm());
+					subDomain.setBoundaryConditionXp(mappedFM.getBoundaryConditionTypeXp());
+					if (getSimulationContext().getGeometry().getDimension()>1){
+						subDomain.setBoundaryConditionYm(mappedFM.getBoundaryConditionTypeYm());
+						subDomain.setBoundaryConditionYp(mappedFM.getBoundaryConditionTypeYp());
+					}
+					if (getSimulationContext().getGeometry().getDimension()>2){
+						subDomain.setBoundaryConditionZm(mappedFM.getBoundaryConditionTypeZm());
+						subDomain.setBoundaryConditionZp(mappedFM.getBoundaryConditionTypeZp());
+					}
+				}
+			}else if (geometryClasses[k] instanceof SurfaceClass){
+				SurfaceClass surfaceClass = (SurfaceClass)geometryClasses[k];
+				// determine membrane inside and outside subvolume
+				// this preserves backward compatibility so that membrane subdomain
+				// inside and outside correspond to structure hierarchy when present
+				Pair<SubVolume,SubVolume> ret = DiffEquMathMapping.computeBoundaryConditionSource(model, simContext, surfaceClass);
+				SubVolume innerSubVolume = ret.one;
+				SubVolume outerSubVolume = ret.two;
+
+				//
+				// create subDomain
+				//
+				CompartmentSubDomain outerCompartment = mathDesc.getCompartmentSubDomain(outerSubVolume.getName());
+				CompartmentSubDomain innerCompartment = mathDesc.getCompartmentSubDomain(innerSubVolume.getName());
+
+				MembraneSubDomain memSubDomain = new MembraneSubDomain(innerCompartment,outerCompartment,surfaceClass.getName());
+				mathDesc.addSubDomain(memSubDomain);
+			}
+		}
 
 		//
 		// define all molecules and unique species patterns (add molecules to mathDesc and speciesPatterns to varHash).
@@ -391,6 +452,10 @@ protected LangevinMathMapping(SimulationContext simContext, MathMappingCallback 
 			varHash.addVariable(particleObservable);
 		}
 
+		//
+		// TODO: subdomain is hardcoded for now to the first one, need to add each jump process to the right one
+		//
+		SubDomain subDomain = mathDesc.getSubDomains().nextElement();
 		try {
 			addParticleJumpProcesses(varHash, geometryClass, subDomain, speciesPatternMap);
 		} catch (PropertyVetoException e1) {
