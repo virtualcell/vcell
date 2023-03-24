@@ -341,10 +341,10 @@ void read(File file, File zipFile, SolverDataType solverDataType) throws IOExcep
 		}
 	}finally{
 		if (dataInputStream != null) {
-			try{dataInputStream.close();}catch(Exception e){lg.error(e);}
+			try{dataInputStream.close();}catch(Exception e){lg.error(e.getMessage(), e);}
 		}
 		if (zipZipFile != null) {
-			try{zipZipFile.close();}catch(Exception e){lg.error(e);}
+			try{zipZipFile.close();}catch(Exception e){lg.error(e.getMessage(), e);}
 		}
 	}
 }

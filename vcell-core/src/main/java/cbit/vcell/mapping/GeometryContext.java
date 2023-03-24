@@ -102,7 +102,7 @@ GeometryContext(GeometryContext geometryContext, SimulationContext newSimulation
 		refreshStructureMappings();
 		newSimulationContext.refreshSpatialObjects();
 	}catch (Exception e){
-		lg.error(e);
+		lg.error(e.getMessage(), e);
 	}	
 	refreshDependencies();
 }
@@ -119,7 +119,7 @@ GeometryContext (Model model, Geometry geometry, SimulationContext simulationCon
 	try {
 		refreshStructureMappings();
 	}catch (Exception e){
-		lg.error(e);
+		lg.error(e.getMessage(), e);
 	}		
 }
 /**
@@ -526,21 +526,21 @@ public void propertyChange(PropertyChangeEvent event) {
 			refreshStructureMappings();
 			//getSimulationContext().refreshSpatialObjects();
 		}catch (Exception e){
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 		}
 	}
 	if (event.getSource() == getGeometry().getGeometrySurfaceDescription()){
 		try {
 			getSimulationContext().refreshSpatialObjects();
 		}catch (Exception e){
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 		}
 	}
 	if (event.getSource() == this && event.getPropertyName().equals(PROPERTY_STRUCTURE_MAPPINGS)){
 		try {
 			fieldSimulationContext.getReactionContext().refreshSpeciesContextSpecBoundaryUnits(getStructureMappings());
 		}catch (Exception e){
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 		}
 	}
 	if (event.getSource() instanceof StructureMapping){
@@ -548,7 +548,7 @@ public void propertyChange(PropertyChangeEvent event) {
 			try {
 				fieldSimulationContext.getReactionContext().refreshSpeciesContextSpecBoundaryUnits(getStructureMappings());
 			}catch (Exception e){
-				lg.error(e);
+				lg.error(e.getMessage(), e);
 			}
 		}
 	}

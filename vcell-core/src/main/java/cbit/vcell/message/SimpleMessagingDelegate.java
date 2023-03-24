@@ -14,7 +14,7 @@ public class SimpleMessagingDelegate implements VCMessagingDelegate {
 
 	@Override
 	public void onException(Exception e) {
-		lg.error(e);
+		lg.error(e.getMessage(), e);
 	}
 
 	@Override

@@ -583,7 +583,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 						}
 					}
 				} catch (Exception e) {
-					lg.error(e);
+					lg.error(e.getMessage(), e);
 				}
 			}
 			if (evt.getSource() == optSolverCallbacks && (evt.getPropertyName().equals(CopasiOptSolverCallbacks.STOP_REQUESTED))) {
@@ -592,7 +592,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 						OptimizationResultSet optimizationResultSet = CopasiUtils.getOptimizationResultSet(parameterEstimationTask, optSolverCallbacks.getProgressReport());
 						parameterEstimationTask.setOptimizationResultSet(optimizationResultSet);
 					} catch (Exception e) {
-						lg.error(e);
+						lg.error(e.getMessage(), e);
 					}
 				}
 			}

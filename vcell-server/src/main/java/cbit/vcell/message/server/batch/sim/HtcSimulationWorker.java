@@ -267,7 +267,7 @@ private static Hashtable<String,MonitorJobInfo> getMonitorJobs(){
 			}
 		}
 	} catch (Exception e) {
-		lg.error(e);
+		lg.error(e.getMessage(), e);
 	}
 	for (String string : theseJobsAreDone) {
 		result.remove(string);
@@ -287,7 +287,7 @@ private void addMonitorJob(long slurmJobID,SimulationTask simTask,boolean bDelet
 		}
 		Files.write(monitorJobsFile.toPath(),(newJobInfo.toString()+"\n").getBytes(),StandardOpenOption.CREATE,StandardOpenOption.WRITE,StandardOpenOption.APPEND);
 	} catch (Exception e) {
-		lg.error(e);
+		lg.error(e.getMessage(), e);
 	}
 }
 private void removeMonitorJob(long slurmJobID) {
@@ -331,7 +331,7 @@ public void startJobMonitor() {
 						lg.debug("sacct stdoutput:\n"+commandOutput.getStandardOutput());
 						lg.debug("sacct stderror:\n"+commandOutput.getStandardError());
 					}catch(Exception e) {
-						lg.error(e);
+						lg.error(e.getMessage(), e);
 					}
 //					Process p = null;
 //					try{
@@ -413,7 +413,7 @@ public void startJobMonitor() {
 //					lg.info("-----sacct stdoutput:\n"+commandOutput.getStandardOutput());
 //					lg.info("-----sacct stderror:\n"+commandOutput.getStandardError());
 				} catch (Exception e) {
-					lg.error(e);
+					lg.error(e.getMessage(), e);
 				}
 			}
 		}

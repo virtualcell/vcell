@@ -89,7 +89,7 @@ public final class RpcRestlet extends Restlet {
 			} catch (Exception e) {
 				String errMesg = "<html><body>Error RpcRestlet.handle(...) req='"+req.toString()+"' <br>err='"+e.getMessage()+"'</br>"+"</body></html>";
 				getLogger().severe(errMesg);
-				lg.error(e);
+				lg.error(e.getMessage(), e);
 				response.setStatus(Status.SERVER_ERROR_INTERNAL);
 				response.setEntity(errMesg, MediaType.TEXT_HTML);
 			}
@@ -185,7 +185,7 @@ public final class RpcRestlet extends Restlet {
 						response.setEntity(new ByteArrayRepresentation(serializedResultObject));
 						return;
 					} catch (Exception e1) {
-						lg.error(e1);
+						lg.error(e1.getMessage(), e1);
 						//continue and send error message
 					}
 				}

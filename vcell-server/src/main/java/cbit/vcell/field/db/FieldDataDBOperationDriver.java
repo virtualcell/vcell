@@ -76,7 +76,7 @@ public class FieldDataDBOperationDriver{
 	private static synchronized void closeConnection(){
 //		System.err.println("connection Closed");
 		if(liveConnection != null){
-			try{liveConnection.close();}catch(Exception e){lg.error(e);}
+			try{liveConnection.close();}catch(Exception e){lg.error(e.getMessage(), e);}
 			liveConnection = null;
 		}
 	}
@@ -346,10 +346,10 @@ public class FieldDataDBOperationDriver{
 				userExtDataIDV.add(extDataID);
 			}
 		}catch(Exception e){
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 			throw new DataAccessException("Error: getAllExternalDataIdentifiers",e);
 		}finally {
-			if(stmt != null){try{stmt.close();}catch(Exception e){lg.error(e);}}
+			if(stmt != null){try{stmt.close();}catch(Exception e){lg.error(e.getMessage(), e);}}
 		}
 		return allUserExtDataIDH;
 	}
@@ -406,10 +406,10 @@ public class FieldDataDBOperationDriver{
 			);
 		}
 	}catch(Exception e){
-		lg.error(e);
+		lg.error(e.getMessage(), e);
 		throw new DataAccessException("Error: getFunctionFileNamesAndSimKeys",e);
 	}finally {
-		if(stmt != null){try{stmt.close();}catch(Exception e){lg.error(e);}}
+		if(stmt != null){try{stmt.close();}catch(Exception e){lg.error(e.getMessage(), e);}}
 	}
 	return functionNamesH;
 }
@@ -556,10 +556,10 @@ public class FieldDataDBOperationDriver{
 			}
 		}
 	}catch(Exception e){
-		lg.error(e);
+		lg.error(e.getMessage(), e);
 		throw new DataAccessException("Error: getModelDescriptionForSimulation",e);
 	}finally {
-		if(stmt != null){try{stmt.close();}catch(Exception e){lg.error(e);}}
+		if(stmt != null){try{stmt.close();}catch(Exception e){lg.error(e.getMessage(), e);}}
 	}
 	return fieldDataRefInfo;
 }

@@ -278,7 +278,7 @@ private void init() throws SolverException {
 		geoSurfaceDesc.updateAll();
 		bHasNoSurface = geoSurfaceDesc.getSurfaceClasses() == null || geoSurfaceDesc.getSurfaceClasses().length == 0;
 	} catch (Exception e) {
-		lg.error(e);
+		lg.error(e.getMessage(), e);
 		throw new SolverException(e.getMessage());
 	}
 	if (!bGraphicOpenGL) {

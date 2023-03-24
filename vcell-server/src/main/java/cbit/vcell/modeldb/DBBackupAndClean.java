@@ -127,7 +127,7 @@ public class DBBackupAndClean {
 				deleteSimsFromDiskMethod2(actionArgs);
 				System.exit(0);
 			} catch (Exception e) {
-				lg.error(e);
+				lg.error(e.getMessage(), e);
 				System.exit(1);
 			}
 		}else if(action.equals(OP_CLEAN_AND_BACKUP) && actionArgs != null){
@@ -350,7 +350,7 @@ public class DBBackupAndClean {
 					exportCommandWithoutPassword+"\r\n"+combinedExportOutput+"\r\nLogInfo\r\n"+logStringBuffer.toString(),false, null);
 			}
 		}catch(Exception e){
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 			writeFile(workingDir, baseFileName,"Script Error:\r\n"+e.getClass().getName()+" "+e.getMessage()+"\r\nLogInfo\r\n"+logStringBuffer.toString(),true, null);
 		}finally{
 			if(con != null){
@@ -764,10 +764,10 @@ public class DBBackupAndClean {
 				}
 			}
 		} catch (Exception e) {
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 			throw new Error("Error writing Error File:\n:"+e.getMessage(), e);
 		}finally{
-			if(fos != null){try{fos.close();}catch(Exception e){lg.error(e);}}
+			if(fos != null){try{fos.close();}catch(Exception e){lg.error(e.getMessage(), e);}}
 		}
 	}
 	
@@ -1084,8 +1084,11 @@ public class DBBackupAndClean {
 		try{
 			logStringBuffer.append(sql+";\n");
 			stmt = con.createStatement();
-			int updateCount = stmt.executeUpdate(sql);
-			logStringBuffer.append("Update count="+updateCount+"\n");
+			if (lg.isDebugEnabled()) {
+				lg.debug("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
+			}
+			int updateCount = stmt.executeUpdate(sql); // jcs: added logging
+			logStringBuffer.append("Update count=" + updateCount + "\n");
 			con.commit();
 			logStringBuffer.append("COMMIT\n\n");
 		}catch(Exception e){
@@ -1294,7 +1297,7 @@ public class DBBackupAndClean {
 //			File userDir = new File(dbBackupHelper.exportDir,userID);
 //			File[] deleteTheseFiles = userDir.listFiles(deleteTheseFilesFilter);
 		}catch(Exception e){
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 			writeFile(dbBackupHelper.workingDir, baseFileName, e.getClass().getName()+"\n"+e.getMessage(),true, dbBackupHelper.exportDir);
 		}finally{
 			closeDB(connectionFactory, conHolder, new StringBuffer() /*throw log*/);
@@ -1303,10 +1306,10 @@ public class DBBackupAndClean {
 
 	public static void closeDB(ConnectionFactory connectionFactory, Connection[] conHolder,StringBuffer logStringBuffer) {
 		if(conHolder[0] != null){
-			try{conHolder[0].close();conHolder[0] = null;}catch(Exception e){logStringBuffer.append("\n"+e.getClass().getName()+"\n"+e.getMessage());lg.error(e);}
+			try{conHolder[0].close();conHolder[0] = null;}catch(Exception e){logStringBuffer.append("\n"+e.getClass().getName()+"\n"+e.getMessage());lg.error(e.getMessage(), e);}
 		}
 		if(connectionFactory != null){
-			try{connectionFactory.close();connectionFactory = null;}catch(Exception e){logStringBuffer.append("\n"+e.getClass().getName()+"\n"+e.getMessage());lg.error(e);}
+			try{connectionFactory.close();connectionFactory = null;}catch(Exception e){logStringBuffer.append("\n"+e.getClass().getName()+"\n"+e.getMessage());lg.error(e.getMessage(), e);}
 		}
 	}
 	private static enum DelSimStatus {init,notfound,delall,delsome,delnone};
@@ -1479,7 +1482,7 @@ lg.info("Del sim simcount="+deleteTheseSims.size());
 				}
 			}
 		}catch(Exception e){
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 			writeFile(dbBackupHelper.workingDir, baseFileName, e.getClass().getName()+"\n"+e.getMessage(),true, dbBackupHelper.exportDir);
 		}finally{
 			closeDB(connectionFactory, conHolder, logStringBuffer);

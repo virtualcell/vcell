@@ -113,7 +113,7 @@ private XmlUtil() {
 			try{
 				if(bis != null){bis.close();}
 			}catch(Exception e){
-				lg.error(e);
+				lg.error(e.getMessage(), e);
 				//ignore so any original Exception is passed
 			}
 		}

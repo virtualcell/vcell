@@ -806,7 +806,7 @@ protected Font getBold() {
 				BaseFont boldBaseFont = BaseFont.createFont(BaseFont.HELVETICA_BOLD, BaseFont.CP1252, BaseFont.NOT_EMBEDDED);
 				fieldBold = new Font(boldBaseFont, DEF_FONT_SIZE, Font.NORMAL);
 			} catch (Exception e) {
-				lg.error(e);
+				lg.error(e.getMessage(), e);
 			}
 		}
 		return(fieldBold);
@@ -819,7 +819,7 @@ protected Font getFont() {
 			BaseFont fontBaseFont = BaseFont.createFont(BaseFont.HELVETICA, BaseFont.CP1252, BaseFont.NOT_EMBEDDED);
 			fieldFont = new Font(fontBaseFont, DEF_FONT_SIZE, Font.NORMAL);
 		} catch (Exception e) {
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 		}
 	}
 	return(fieldFont);
@@ -1865,7 +1865,7 @@ protected void writeModel(Chapter physioChapter, Model model) throws DocumentExc
 		try{
 			addImage(reactionDiagramSection, encodeJPEG(generateDocReactionsImage(model,null)));
 		}catch(Exception e){
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 			throw new DocumentException(e.getClass().getName()+": "+e.getMessage());
 		}
 
@@ -2166,7 +2166,7 @@ protected void writeSpecies(Species[] species) throws DocumentException {
 				linkFont = new Font(fontBaseFont, DEF_FONT_SIZE, Font.NORMAL, new java.awt.Color(0, 0, 255));
 			} catch (Exception e) {
 				linkFont = getFont();
-				lg.error(e);
+				lg.error(e.getMessage(), e);
 			}
 			linkParagraph.add(new Chunk(struct.getName(), linkFont).setLocalGoto(struct.getName()));  
 			Cell structLinkCell = new Cell(linkParagraph);

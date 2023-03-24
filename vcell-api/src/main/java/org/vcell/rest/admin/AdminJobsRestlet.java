@@ -112,7 +112,7 @@ public final class AdminJobsRestlet extends Restlet {
 				
 			} catch (Exception e) {
 				getLogger().severe("failed to retrieve job status: "+e.getMessage());
-				lg.error(e);
+				lg.error(e.getMessage(), e);
 				response.setStatus(Status.SERVER_ERROR_INTERNAL);
 				response.setEntity("failed to retrieve job status: "+e.getMessage(), MediaType.TEXT_PLAIN);
 			}

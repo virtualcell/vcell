@@ -264,7 +264,7 @@ public class SimulationDispatcher extends ServiceProvider {
 			}
 			quotaExemptUsers = adminUserList.toArray(new User[0]);
 		} catch (Exception e1) {
-			lg.error(e1);
+			lg.error(e1.getMessage(), e1);
 		}
 		lastSpecialUserCheck = System.currentTimeMillis();
 	}

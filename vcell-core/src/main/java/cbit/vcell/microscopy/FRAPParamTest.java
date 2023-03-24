@@ -64,7 +64,7 @@ public class FRAPParamTest
 		try {
 			newFRAPStudy = FRAPWorkspace.loadFRAPDataFromImageFile(inFile, null);
 		} catch (Exception e) {
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 		}
 		System.out.println("File " + fileName +" has been loaded.");
 		setFrapStudy(newFRAPStudy);
@@ -79,7 +79,7 @@ public class FRAPParamTest
 		try {
 			newFRAPStudy = FRAPWorkspace.loadFRAPDataFromVcellLogFile(inFile, varName, bleachedMaskVarName, new Double(50000), true, null);
 		} catch (Exception e) {
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 		}
 		System.out.println("File " + fileName +" has been loaded.");
 		setFrapStudy(newFRAPStudy);
@@ -99,7 +99,7 @@ public class FRAPParamTest
 			//create optData
 			newFRAPStudy.setFrapOptData(new FRAPOptData(newFRAPStudy, FRAPModel.NUM_MODEL_PARAMETERS_ONE_DIFF, getLocalWorkspace(), newFRAPStudy.getStoredRefData()));
 		} catch (Exception e) {
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 		} 
 		System.out.println("File " + fileName +" has been loaded.");
 		setFrapStudy(newFRAPStudy);
@@ -421,7 +421,7 @@ public class FRAPParamTest
 				test.runProfileLikelihood();
 			}
 		}catch(Exception e){
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 		}
 	}
 

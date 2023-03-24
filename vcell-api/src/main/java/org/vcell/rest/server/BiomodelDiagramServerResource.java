@@ -95,7 +95,7 @@ public class BiomodelDiagramServerResource extends AbstractServerResource implem
 			byte[] imageBytes = outputStream.toByteArray();
 			return new ByteArrayRepresentation(imageBytes, MediaType.IMAGE_PNG, imageBytes.length);
 		} catch (Exception e) {
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 			throw new ResourceException(Status.SERVER_ERROR_INTERNAL, e.getMessage());
 		}
 	}

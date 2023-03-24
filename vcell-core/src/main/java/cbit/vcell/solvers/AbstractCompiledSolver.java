@@ -239,7 +239,7 @@ public abstract class AbstractCompiledSolver extends AbstractSolver implements j
             try (BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(stdOutFile))){
             	bos.write(sb.toString().getBytes());
             }catch(Exception e) {
-            	lg.error(e);
+            	lg.error(e.getMessage(), e);
             }
             
             java.io.BufferedReader br = new java.io.BufferedReader(new java.io.StringReader(sb.toString()));

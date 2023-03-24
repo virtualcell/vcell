@@ -155,14 +155,17 @@ public class BatchTester extends VCDatabaseScanner {
 							+ "', log_file = '" + filename
 							+ "' where scanned = 0 and scan_process is null and rownum <= "
 							+ chunkSize;
-					int uCount = statement.executeUpdate(query);
+					if (lg.isDebugEnabled()) {
+						lg.debug("executeUpdate() SQL: '" + query + "'", new DbDriver.StackTraceGenerationException());
+					}
+					int uCount = statement.executeUpdate(query); // jcs: added logging
 					if (uCount > chunkSize) {
 						throw new Error("logic / SQL bad");
 					}
 					if (uCount == 0) {
 						printWriter.println("No models to scan, exiting");
 						System.exit(100);
-						
+
 					}
 				}
 				printWriter.println("finding  ours");
@@ -345,14 +348,17 @@ public class BatchTester extends VCDatabaseScanner {
 							+ "', log_file = '" + filename
 							+ "' where scanned = 0 and scan_process is null and rownum <= "
 							+ chunkSize;
-					int uCount = statement.executeUpdate(query);
+					if (lg.isDebugEnabled()) {
+						lg.debug("executeUpdate() SQL: '" + query + "'", new DbDriver.StackTraceGenerationException());
+					}
+					int uCount = statement.executeUpdate(query); // jcs: added logging
 					if (uCount > chunkSize) {
 						throw new Error("logic / SQL bad");
 					}
 					if (uCount == 0) {
 						printWriter.println("No models to scan, exiting");
 						System.exit(100);
-						
+
 					}
 				}
 				printWriter.println("finding  ours");

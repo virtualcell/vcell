@@ -48,7 +48,7 @@ public final class EventsRestlet extends Restlet {
 				response.setEntity(new JsonRepresentation(eventWrappersJSON));
 			} catch (Exception e) {
 				getLogger().severe("internal error retrieving events: "+e.getMessage());
-				lg.error(e);
+				lg.error(e.getMessage(), e);
 				response.setStatus(Status.SERVER_ERROR_INTERNAL);
 				response.setEntity("internal error retrieving events: "+e.getMessage(), MediaType.TEXT_PLAIN);
 			}

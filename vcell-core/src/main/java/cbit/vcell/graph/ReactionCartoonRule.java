@@ -528,7 +528,7 @@ public class ReactionCartoonRule extends ReactionCartoon {
 //			}
 //			fireGraphChanged(new GraphEvent(this));
 		} catch (Exception e) {
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 		}
 	}
 }

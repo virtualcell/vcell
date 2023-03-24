@@ -164,7 +164,7 @@ public class AmplistorUtils {
 				toFile.setLastModified(customModificationDate.getTime());
 	        }
 		}finally{
-			if(bos!=null){try{bos.close();}catch(Exception e){lg.error(e);}}
+			if(bos!=null){try{bos.close();}catch(Exception e){lg.error(e.getMessage(), e);}}
 			if(checkOPHelper != null && checkOPHelper.httpURLConnection != null){checkOPHelper.httpURLConnection.disconnect();}
 		}
 	}
@@ -341,8 +341,8 @@ public class AmplistorUtils {
 			
 			return XmlUtil.stringToXML(response.toString(), null);
 		}finally{
-			if(br != null){try{br.close();}catch(Exception e){lg.error(e);}}
-			if(isr != null){try{isr.close();}catch(Exception e){lg.error(e);}}
+			if(br != null){try{br.close();}catch(Exception e){lg.error(e.getMessage(), e);}}
+			if(isr != null){try{isr.close();}catch(Exception e){lg.error(e.getMessage(), e);}}
 		}
 	}
 

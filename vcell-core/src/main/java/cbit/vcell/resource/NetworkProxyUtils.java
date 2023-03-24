@@ -53,7 +53,7 @@ public class NetworkProxyUtils {
 				}
 			}
 		}catch(Exception e){
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 //			DialogUtils.showErrorDialog(requester,"Error writing proxyOptions file '"+altVMOptionsFile+"'\n"+ e.getMessage());
 		}
 

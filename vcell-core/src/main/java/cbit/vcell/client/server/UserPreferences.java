@@ -142,7 +142,7 @@ public File getCurrentDialogPath() {
 		//setGenPref(GENERAL_LAST_PATH_USED, homeDirPath);
 		return new File(homeDirPath);
 	} catch (Exception e) {
-		lg.error(e);
+		lg.error(e.getMessage(), e);
 		return new File(ResourceUtil.getUserHomeDir().getAbsolutePath());
 	}
 }
@@ -157,7 +157,7 @@ public boolean getSendModelInfoInErrorReportPreference(){
 			prefString = "true";
 		}
 	} catch (Exception e) {
-		lg.error(e);
+		lg.error(e.getMessage(), e);
 		prefString = "true";
 	}
 	return Boolean.valueOf(prefString);
@@ -252,7 +252,7 @@ private void saveToDatabase() {
 			try {
 				clientServerManager.getDocumentManager().replacePreferences(getUserChoices());
 			} catch (Exception exc) {
-				lg.error(exc);
+				lg.error(exc.getMessage(), exc);
 			}
 		}
 	};
@@ -271,7 +271,7 @@ private void saveToDatabase() {
 				System.out.println("Resetting user preference: " + newPreference.getKey() + "=" + newPreference.getValue());
 			}
 		} catch (Exception e) {
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 			//throw e;
 		}
 	}

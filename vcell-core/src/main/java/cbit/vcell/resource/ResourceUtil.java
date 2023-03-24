@@ -495,7 +495,7 @@ public class ResourceUtil {
 		}
 		if(javaCmd.equals(defaultJavaCmd)) {
 			Exception e = new Exception("Failed to find java executable in installation dir '"+ResourceUtil.getVCellInstall()+"'");
-			logger.error(e);
+			logger.error(e.getMessage(), e);
 		}
 		return javaCmd;
 	}

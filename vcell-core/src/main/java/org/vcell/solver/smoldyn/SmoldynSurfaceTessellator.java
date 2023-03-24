@@ -183,7 +183,7 @@ public class SmoldynSurfaceTessellator extends SolverFileWriter {
 			dimension = geo.getDimension();
 			writeSurfaces( );
 		} catch (Exception e) {
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 		}
 	}
 

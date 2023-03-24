@@ -506,7 +506,7 @@ public void removeUncoupledParameters() {
 		paramMappingSpecsList.toArray(parameterMappingSpecs);
 		setParameterMappingSpecs(parameterMappingSpecs);
 	} catch (Exception e){
-		lg.error(e);
+		lg.error(e.getMessage(), e);
 		localIssueList.add(new Issue(this, localIssueContext, IssueCategory.ParameterEstimationGeneralWarning, e.getMessage(),Issue.SEVERITY_WARNING));
 		// throw new RuntimeException(e.getMessage());
 	}

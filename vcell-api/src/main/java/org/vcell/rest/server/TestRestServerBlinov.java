@@ -112,7 +112,7 @@ public class TestRestServerBlinov extends Restlet{
 					mapBMidToBiomodelRep.put(bm.getVersion().getVersionKey().toString(), bmrep);
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
-					lg.error(e);
+					lg.error(e.getMessage(), e);
 				}
 			}
 			//Create a Restlet server on local machine that will accept queries from a regular web browser
@@ -130,7 +130,7 @@ public class TestRestServerBlinov extends Restlet{
 			restletComponent.start();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 		}
 
 	}

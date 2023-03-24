@@ -72,7 +72,7 @@ public class FluxReaction extends ReactionStep {
         try {
             setKinetics(new GeneralKinetics(this));
         } catch (Exception e) {
-            lg.error(e);
+            lg.error(e.getMessage(), e);
         }
     }
 

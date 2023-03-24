@@ -254,7 +254,7 @@ public class NagiosVCellMonitor {
 							exceededTimeouts(nagArgsHelper, lastResult);
 							setVCellStatus(vcellStatus);
 						}catch(Exception e){
-							lg.error(e);
+							lg.error(e.getMessage(), e);
 							setVCellStatus(new VCellErrorStatus(nagArgsHelper.checkLevel+":"+nagArgsHelper.host+" "+e.getMessage(),statusType));
 						}finally{
 							simRunCount++;
@@ -264,7 +264,7 @@ public class NagiosVCellMonitor {
 				}
 			},"VCellTestLoop").start();
 		}catch(Exception e){
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 		}
 		
 	}
@@ -276,7 +276,7 @@ public class NagiosVCellMonitor {
 			NagiosVCellMonitor nagiosVCellMonitor = new NagiosVCellMonitor();
 			nagiosVCellMonitor.startMonitor(new NagArgsHelper(args));
 		}catch(Exception e){
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 		}
 	}
 	
@@ -426,7 +426,7 @@ public class NagiosVCellMonitor {
 										if(userLoginInfo.getUserName().equals(bioModelInfo.getVersion().getOwner().getName()) && bioModelInfo.getVersion().getName().equals(copyModelName)){
 											bMessy = true;
 											if(bForceCleanup){
-												try{vcellConnection.getUserMetaDbServer().deleteBioModel(bioModelInfo.getVersion().getVersionKey());}catch(Exception e){lg.error(e);}
+												try{vcellConnection.getUserMetaDbServer().deleteBioModel(bioModelInfo.getVersion().getVersionKey());}catch(Exception e){lg.error(e.getMessage(), e);}
 											}else{
 												throw new MessyTestEnvironmentException("Messy test environment, not expecting "+copyModelName+" and couldn't cleanup");
 											}
@@ -480,8 +480,8 @@ public class NagiosVCellMonitor {
 									messageEvents = vcellConnection.getMessageEvents();
 								}
 							}finally{
-								try{if(copy1Key != null){vcellConnection.getUserMetaDbServer().deleteBioModel(copy1Key);}}catch(Exception e){lg.error(e);}
-								try{if(copy2Key != null){vcellConnection.getUserMetaDbServer().deleteBioModel(copy2Key);}}catch(Exception e){lg.error(e);}
+								try{if(copy1Key != null){vcellConnection.getUserMetaDbServer().deleteBioModel(copy1Key);}}catch(Exception e){lg.error(e.getMessage(), e);}
+								try{if(copy2Key != null){vcellConnection.getUserMetaDbServer().deleteBioModel(copy2Key);}}catch(Exception e){lg.error(e.getMessage(), e);}
 								if(testRunSimID != null){deleteSimData(testRunSimID);}
 							}
 							levelTimesMillisec.put(VCELL_CHECK_LEVEL.RUN_5, System.currentTimeMillis()-startTime-levelTimesMillisec.get(VCELL_CHECK_LEVEL.DATA_4));
@@ -530,7 +530,7 @@ public class NagiosVCellMonitor {
 						}
 					}
 				}catch(Exception e){
-					lg.error(e);
+					lg.error(e.getMessage(), e);
 				}
 			}
 		}).start();
@@ -781,13 +781,13 @@ public class NagiosVCellMonitor {
 					socketWriter.println(NAGIOS_STATUS.UNKNOWN.ordinal()+"Unknown Request '"+request);
 				}
 			}catch(Exception e){
-				lg.error(e);
+				lg.error(e.getMessage(), e);
 				if(socketWriter != null){
 					socketWriter.println(NAGIOS_STATUS.UNKNOWN.ordinal()+"Request Error '"+e.getClass().getName()+" "+(e.getMessage()==null?"":e.getMessage()));
 				}
 			}finally{
 				if(threadSocket != null){
-					try{threadSocket.close();}catch(Exception e){lg.error(e);}
+					try{threadSocket.close();}catch(Exception e){lg.error(e.getMessage(), e);}
 				}
 			}
 		}
@@ -806,8 +806,8 @@ public class NagiosVCellMonitor {
 			}catch(Exception e){
 				numRetries+= 1;
 				lg.info("claimSocket failed, "+e.getMessage());
-				lg.error(e);
-				try{Thread.sleep(60000);}catch(InterruptedException ie){lg.error(e);}
+				lg.error(e.getMessage(), e);
+				try{Thread.sleep(60000);}catch(InterruptedException ie){lg.error(e.getMessage(), e);}
 			}
 		}
 		lg.error("claimSocket failed, too many retries");
@@ -850,7 +850,7 @@ public class NagiosVCellMonitor {
 		}catch(Exception e){
 			//this can happen is there are no processes we have permission to list
 			//assume the other monitor isn't running
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 			return null;
 		}
 		String s = executable.getStdoutString();

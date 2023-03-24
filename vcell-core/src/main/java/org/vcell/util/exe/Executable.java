@@ -479,17 +479,17 @@ private final void close(){
 		try {
 			getProcess().getInputStream().close();
 		} catch (Exception e) {
-			logger.error(e);
+			logger.error(e.getMessage(), e);
 		}
 		try {
 			getProcess().getOutputStream().close();
 		} catch (Exception e) {
-			logger.error(e);
+			logger.error(e.getMessage(), e);
 		}
 		try {
 			getProcess().getErrorStream().close();
 		} catch (Exception e) {
-			logger.error(e);
+			logger.error(e.getMessage(), e);
 		}
 		getProcess().destroy();
 		setProcess(null);

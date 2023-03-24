@@ -274,7 +274,7 @@ public class VCellPubUtils {
 			// read();
 			readNewRecords(new File("src/org/vcell/pub/NewPublishedModels_2016_11_29.xml"), new PostgresKeyFactory());
 		}catch (Exception e){
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 		}
 	}
 

@@ -116,7 +116,7 @@ public class Xref extends BioPaxObjectImpl implements UtilityClass {
 					buffReader.close();
 				}
 			} catch (Exception ex) {
-				lg.error(ex);
+				lg.error(ex.getMessage(), ex);
 			}
 		}
 		return from_id;	// we don't make a fuss, the browser will probably display a 404 error
@@ -193,7 +193,7 @@ public class Xref extends BioPaxObjectImpl implements UtilityClass {
 			}
 		} catch (Exception e) {
 			System.out.println("Uncaught exception in reactome old-new conversion main()");
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 		} finally {
 			try {
 				reader.close();

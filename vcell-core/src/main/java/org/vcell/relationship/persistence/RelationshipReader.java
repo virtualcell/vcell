@@ -37,7 +37,7 @@ public class RelationshipReader {
 					try{
 						relationshipModel.addRelationshipObject(addObjectRelationshipObject(childElement, provider));
 					}catch(Exception e){
-						lg.error(e);
+						lg.error(e.getMessage(), e);
 					}
 				}else{
 					showUnexpected(childElement);

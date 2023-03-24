@@ -619,7 +619,7 @@ public class NetCDFWriter {
 					results[i].setRateConstant(val);
 				}catch(Exception e)
 				{
-					lg.error(e);
+					lg.error(e.getMessage(), e);
 					throw new ExpressionException(e.getMessage());
 				}
 			}
@@ -634,7 +634,7 @@ public class NetCDFWriter {
 					results[i].setRateConstant(val);
 				}catch(Exception e)
 				{
-					lg.error(e);
+					lg.error(e.getMessage(), e);
 					throw new ExpressionException(e.getMessage());
 				}
 			}
@@ -652,7 +652,7 @@ public class NetCDFWriter {
 						results[i].setRateConstant(val);
 					}catch(Exception e)
 					{
-						lg.error(e);
+						lg.error(e.getMessage(), e);
 						throw new ExpressionException(e.getMessage());
 					}
 				}
@@ -667,7 +667,7 @@ public class NetCDFWriter {
 						results[i].setRateConstant(val);
 					}catch(Exception e)
 					{
-						lg.error(e);
+						lg.error(e.getMessage(), e);
 						throw new ExpressionException(e.getMessage());
 					}
 				}
@@ -698,7 +698,7 @@ public class NetCDFWriter {
 					results[i].setRateConstant(val);
 				}catch(Exception e)
 				{
-					lg.error(e);
+					lg.error(e.getMessage(), e);
 					throw new ExpressionException(e.getMessage());
 				}
 			}

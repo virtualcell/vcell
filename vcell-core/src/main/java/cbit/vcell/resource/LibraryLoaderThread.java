@@ -40,7 +40,7 @@ public class LibraryLoaderThread extends Thread {
 					
 				}
 			} catch (Exception e) {
-				lg.error(e);
+				lg.error(e.getMessage(), e);
 				if (sb == null) {
 					sb = new StringBuilder("Unable to load runtime libraries for ");
 					sb.append(newline);

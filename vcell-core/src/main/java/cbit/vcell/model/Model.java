@@ -3362,7 +3362,7 @@ public void refreshDependencies() {
 		try {
 			fieldReactionSteps[i].rebindAllToModel(this);
 		}catch (Exception e){
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 		}
 		fieldReactionSteps[i].refreshDependencies();
 	}
@@ -3393,7 +3393,7 @@ public void refreshDependencies() {
 		try {
 			reactionRule.rebindAllToModel(this);
 		}catch (Exception e){
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 		}
 		reactionRule.refreshDependencies();
 	}
@@ -3734,7 +3734,7 @@ public void setReactionSteps(ReactionStep[] reactionSteps) throws java.beans.Pro
 		try {
 			rs.rebindAllToModel(this);
 		}catch (Exception e){
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 		}
 	}
 	firePropertyChange(PROPERTY_NAME_REACTION_STEPS, oldValue, reactionSteps);
@@ -4515,7 +4515,7 @@ public void populateVCMetadata(boolean bMetadataPopulated) {
 									miriamResources);
 					}
 				}catch(Exception e){
-					lg.error(e);
+					lg.error(e.getMessage(), e);
 				}
 			}
 		}

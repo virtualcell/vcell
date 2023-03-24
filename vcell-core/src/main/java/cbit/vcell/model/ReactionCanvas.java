@@ -286,7 +286,7 @@ private void resizeToExpression() {
 			setSize(parentDim.width - 10, parentDim.height - 10);
 		}
 	} catch (Exception e) {
-		lg.error(e);
+		lg.error(e.getMessage(), e);
 	}
 }
 

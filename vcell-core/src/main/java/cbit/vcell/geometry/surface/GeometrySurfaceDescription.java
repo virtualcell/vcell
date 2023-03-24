@@ -423,7 +423,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 				getSurfaceCollection0().setDirty();
 				fieldGeometricRegions.setDirty();
 			}catch (Exception e){
-				lg.error(e);
+				lg.error(e.getMessage(), e);
 			}
 		}
 	}
@@ -435,7 +435,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 				getSurfaceCollection0().setDirty();
 				fieldGeometricRegions.setDirty();
 			}catch (Exception e){
-				lg.error(e);
+				lg.error(e.getMessage(), e);
 			}
 		}
 	}
@@ -451,7 +451,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 				getSurfaceCollection0().setDirty();
 				fieldGeometricRegions.setDirty();
 			}catch (Exception e){
-				lg.error(e);
+				lg.error(e.getMessage(), e);
 			}
 		}
 	}
@@ -464,7 +464,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 				getSurfaceCollection0().setDirty();
 				fieldGeometricRegions.setDirty();
 			}catch (Exception e){
-				lg.error(e);
+				lg.error(e.getMessage(), e);
 			}
 		}
 	}
@@ -474,7 +474,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			getSurfaceCollection0().setDirty();
 			fieldGeometricRegions.setDirty();
 		}catch (Exception e){
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 		}		
 	}
 	if (evt.getSource() instanceof SubVolume && evt.getPropertyName().equals("name")) {
@@ -484,7 +484,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			try {
 				fieldGeometricRegions.setDirty();
 			}catch (Exception e){
-				lg.error(e);
+				lg.error(e.getMessage(), e);
 			}
 		}
 	}
@@ -510,7 +510,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 				getSurfaceCollection0().setDirty();
 				fieldGeometricRegions.setDirty();
 			}catch (Exception e){
-				lg.error(e);
+				lg.error(e.getMessage(), e);
 			}
 		} else if (fieldGeometricRegions.getCurrentValue() != null && oldValue != newValue) {
 			//

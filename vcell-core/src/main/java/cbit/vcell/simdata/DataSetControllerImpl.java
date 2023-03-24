@@ -932,9 +932,9 @@ public static DataOperationResults getDataProcessingOutput(DataOperation dataOpe
 			throw new FileNotFoundException("Data Processing Output file '"+dataProcessingOutputFileHDF5.getPath()+"' not found");
 		}
 	}catch(Exception e){
-		lg.error(e);
+		lg.error(e.getMessage(), e);
 	}finally{
-		if(hdf5FileFormat != null){try{hdf5FileFormat.close();}catch(Exception e){lg.error(e);}}
+		if(hdf5FileFormat != null){try{hdf5FileFormat.close();}catch(Exception e){lg.error(e.getMessage(), e);}}
 	}
 
 	return dataProcessingOutputResults;
@@ -2037,7 +2037,7 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
 							fieldDataFileOperationSpec.owner,
 							FieldDataFileOperationSpec.JOBINDEX_DEFAULT));
 		}catch(Exception e){
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 			try{
 				for(int i=0;i<removeFilesIfErrorV.size();i+= 1){
 					removeFilesIfErrorV.elementAt(i).delete();
@@ -2240,7 +2240,7 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
 							fieldDataFileOperationSpec.owner,
 							FieldDataFileOperationSpec.JOBINDEX_DEFAULT));
 		}catch(Exception e){
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 			//ignore
 		}
 		
@@ -3635,7 +3635,7 @@ private TimeSeriesJobResults getTimeSeriesValues_private(OutputContext outputCon
 		}
 	}catch(Exception e){
 		//ignore
-		lg.error(e);
+		lg.error(e.getMessage(), e);
 	}
 	if(dataTimes == null){
 		dataTimes =  getDataSetTimes(vcdID);
@@ -3900,7 +3900,7 @@ public TimeSeriesJobResults getTimeSeriesValues(OutputContext outputContext,fina
 		return timeSeriesJobResults;		
 	}catch (Exception e) {
 		failException = e;
-		lg.error(e);
+		lg.error(e.getMessage(), e);
 		if(e instanceof DataAccessException){
 			throw (DataAccessException)e;
 		}else{

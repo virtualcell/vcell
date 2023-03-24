@@ -1193,7 +1193,7 @@ public class RbmUtils {
 				ParseException pe = (ParseException)ex;
 				throw pe;
 			} else {
-				lg.error(ex);
+				lg.error(ex.getMessage(), ex);
 				throw new ParseException(ex.getMessage());
 			}
 		}
@@ -1272,7 +1272,7 @@ public class RbmUtils {
 			MolecularType molecularType = (MolecularType) astMolecularPattern.jjtAccept(constructionVisitor, null);
 			return molecularType;
 		} catch (Exception ex) {
-			lg.error(ex);
+			lg.error(ex.getMessage(), ex);
 			throw new ParseException(ex.getMessage());
 		}
 	}
@@ -1454,7 +1454,7 @@ public class RbmUtils {
 			SpeciesPattern speciesPattern = (SpeciesPattern) astSpeciesPattern.jjtAccept(constructionVisitor, null);
 			return speciesPattern;
 		} catch (Exception ex) {
-			lg.error(ex);
+			lg.error(ex.getMessage(), ex);
 			throw new ParseException(ex.getMessage());
 		}
 	}
@@ -1510,7 +1510,7 @@ public class RbmUtils {
 			}			
 			return reactionRule;
 		} catch (Exception ex) {
-			lg.error(ex);
+			lg.error(ex.getMessage(), ex);
 			throw new ParseException(ex.getMessage());
 		}
 	}

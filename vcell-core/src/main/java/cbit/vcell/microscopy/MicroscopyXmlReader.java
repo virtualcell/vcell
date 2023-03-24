@@ -145,7 +145,7 @@ public class MicroscopyXmlReader {
 		}catch(Exception e){
 			throw new XmlParseException("error reading image pixels: ", e);
 		}finally{
-			if(rawInputStream != null){try{rawInputStream.close();}catch(Exception e2){lg.error(e2);}}
+			if(rawInputStream != null){try{rawInputStream.close();}catch(Exception e2){lg.error(e2.getMessage(), e2);}}
 		}
 	
 		ByteBuffer byteBuffer = ByteBuffer.wrap(shortsAsBytes);

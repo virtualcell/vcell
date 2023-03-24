@@ -127,7 +127,7 @@ public class BiomodelSimulationSaveServerResource extends AbstractServerResource
 			lg.error(e);
 			throw new ResourceException(Status.CLIENT_ERROR_NOT_FOUND, "simulation not found");
 		} catch (Exception e){
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 			throw new ResourceException(Status.SERVER_ERROR_INTERNAL, e.getMessage());
 		}
 	}

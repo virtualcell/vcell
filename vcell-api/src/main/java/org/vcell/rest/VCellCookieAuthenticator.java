@@ -85,7 +85,7 @@ public class VCellCookieAuthenticator extends CookieAuthenticator {
 	        }
 
 		}catch (Exception e){
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 			getLogger().log(Level.SEVERE,"MyCookieAuthenticator.logout(request,response) - exception while invalidating '"+CustomAuthHelper.ACCESS_TOKEN+"'",e);
 		}
 		

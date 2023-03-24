@@ -608,7 +608,7 @@ protected Expression getIdentifierSubstitutions(Expression origExp, VCUnitDefini
 		System.out.println(".........exp='"+expStr+"' exception='"+e.getMessage()+"'");
 		localIssueList.add(new Issue(origExp, issueContext, IssueCategory.Units,"expected=["+((desiredExpUnitDef!=null)?(desiredExpUnitDef.getSymbol()):("null"))+"], exception="+e.getMessage(),Issue.SEVERITY_WARNING));
 	}catch (Exception e){
-		lg.error(e);
+		lg.error(e.getMessage(), e);
 		localIssueList.add(new Issue(origExp, issueContext, IssueCategory.Units,"expected=["+((desiredExpUnitDef!=null)?(desiredExpUnitDef.getSymbol()):("null"))+"], exception="+e.getMessage(),Issue.SEVERITY_WARNING));
 	}
 	Expression newExp = new Expression(origExp);

@@ -347,7 +347,7 @@ public abstract class GraphModel {
 			g.setColor(Color.red);
 			g.drawString("EXCEPTION IN GraphModel.paint(): " + e.getMessage(),
 					20, 20);
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 			return;
 		}
 	}

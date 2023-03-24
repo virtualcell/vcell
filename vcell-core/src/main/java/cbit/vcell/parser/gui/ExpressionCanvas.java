@@ -467,7 +467,7 @@ public class ExpressionCanvas extends JPanel implements Scrollable {
 			}	
 		}catch (Exception e){
 			offScreenImage = null;
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 		}
 
 		bImageDirty = false;

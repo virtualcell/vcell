@@ -239,6 +239,7 @@ public class HealthService {
 				
 				BioModel templateBioModel = XmlHelper.XMLToBioModel(new XMLSource(vcmlString));
 				templateBioModel.clearVersion();
+				templateBioModel.visitChildVersionables(new BioModel.ClearVersion());
 				String newBiomodelName = "test_"+System.currentTimeMillis();
 				templateBioModel.setName(newBiomodelName);
 				// remove all existing simulations from stored template model, and add new one
@@ -309,7 +310,7 @@ public class HealthService {
 						try {
 							vcellConnection.getSimulationController().stopSimulation(runningSimId);
 						}catch (Exception e) {
-							lg.error(e);
+							lg.error(e.getMessage(), e);
 						}
 					}
 					if (savedBioModelKey!=null) {

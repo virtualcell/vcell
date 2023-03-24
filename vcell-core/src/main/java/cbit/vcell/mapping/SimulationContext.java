@@ -3268,7 +3268,7 @@ public void createDefaultParameterEstimationTask()
 		{
 			//if cannot create parameter estimation task, we don't want to block the vcell running.
 			//it will leave an empty task, which users can actually use "new" button to create parameter estimation task later.
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 		}
 		
 	}
