@@ -3136,6 +3136,7 @@ public DataContext getDataContext() {
  */
 public SimContextTransformer createNewTransformer(){
 	switch (applicationType) {
+	case SPRINGSALAD:
 	case RULE_BASED_STOCHASTIC:
 		return new RulebasedTransformer();
 	case NETWORK_DETERMINISTIC:
@@ -3251,7 +3252,7 @@ public MathMapping createNewMathMapping(MathMappingCallback callback, NetworkGen
 		mostRecentlyCreatedMathMapping = new DiffEquMathMapping(this, callback, networkGenReq);
 		break;
 	case SPRINGSALAD:
-		mostRecentlyCreatedMathMapping = new DiffEquMathMapping(this, callback, networkGenReq);
+		mostRecentlyCreatedMathMapping = new LangevinMathMapping(this, callback, networkGenReq);
 		break;
 	}
 	VCAssert.assertFalse(mostRecentlyCreatedMathMapping == null, "math mapping not generated" );
