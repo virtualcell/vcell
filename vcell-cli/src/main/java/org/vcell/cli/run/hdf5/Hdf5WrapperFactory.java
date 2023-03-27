@@ -1,7 +1,11 @@
 package org.vcell.cli.run.hdf5;
 
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.parser.DivideByZeroException;
+import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.SimpleSymbolTable;
+import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import ncsa.hdf.hdf5lib.exceptions.HDF5Exception;
 
@@ -27,7 +31,7 @@ import org.apache.logging.log4j.Logger;
 import java.io.*;
 import java.nio.file.Paths;
 import java.util.*;
-
+import java.util.stream.Stream;
 
 /**
  * Factory class to create Hdf5DataWrappers from a sedml object and simulation data.
@@ -127,6 +131,7 @@ public class Hdf5WrapperFactory {
                     // If the task isn't in our results hash, it's unwanted and skippable.
                     boolean bFoundTaskInNonspatial = nonspatialResultsHash.keySet().stream().anyMatch(taskJob -> taskJob.getTaskId().equals(topLevelTask.getId()));
                     if (!bFoundTaskInNonspatial){
+                        logger.warn("Was not able to find simutation data for task with ID: " + topLevelTask.getId());
                         break;
                     }
 
@@ -175,6 +180,40 @@ public class Hdf5WrapperFactory {
                         values.put(var, variablesList);
                     }
                 }
+
+                if (values.isEmpty()) continue;
+                int numJobs, maxLengthOfData = 0;
+                Map<Variable, NonspatialValueHolder> processedValues = new LinkedHashMap<>();
+                SimpleDataGenCalculator calc = new SimpleDataGenCalculator(datagen);
+
+                // Get padding value
+                for (NonspatialValueHolder nvh : values.values()){
+                    for (double[] dataSet : nvh.values){
+                        if (dataSet.length > maxLengthOfData){
+                            maxLengthOfData = dataSet.length;
+                        }
+                    }
+                }
+
+                // Determine the num of jobs
+                numJobs = values.values().iterator().next().getNumJobs();
+
+                // Perform the math!
+                for (int jobNum = 0; jobNum < numJobs; jobNum++){
+                    for (int datumIndex = 0; datumIndex < maxLengthOfData; datumIndex++){
+                        NonspatialValueHolder processedDataSet = new NonspatialValueHolder();
+                        for (Variable var : values.keySet()){
+                            //if (processedDataSet == null) processedDataSet = new NonspatialValueHolder(sedml.getTaskWithId(var.getReference()));
+                            NonspatialValueHolder varData = values.get(var);
+                            double[] dataSet = varData.values.get(jobNum);
+                            double datum = datumIndex >= dataSet.length ? Double.NaN : dataSet[datumIndex];
+                            calc.setArgument(var.getId(), datum);
+                        }
+                        processedDataSet.values.add()
+                    }
+                }
+
+
                 dataSetValues.put(dataset, values);
 
             } // end of dataset
@@ -389,6 +428,10 @@ public class Hdf5WrapperFactory {
     private static class NonspatialValueHolder {
         List<double[]> values = new ArrayList<>();
         final Simulation vcSimulation;
+
+        public NonspatialValueHolder(){
+            this.vcSimulation = null;
+        }
 
         public NonspatialValueHolder(Simulation simulation) {
             this.vcSimulation = simulation;
