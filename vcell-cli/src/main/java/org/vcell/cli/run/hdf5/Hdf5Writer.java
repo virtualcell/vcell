@@ -23,12 +23,12 @@ public class Hdf5Writer {
     /**
      * Writes an Hdf5 formatted file given a hdf5FileWrapper and a destination to write the file to.
      * 
-     * @param hdf5FileWrapper the wrapper of hdf5 relevant data
+     * @param hdf5DataWrapper the wrapper of hdf5 relevant data
      * @param outDirForCurrentSedml the directory to place the report file into, NOT the report file itself.
      * @throws HDF5Exception if there is an expection thrown from hdf5 while using the library.
      * @throws IOException if the computer encounteres an unexepcted system IO problem
      */
-    public static void writeHdf5(Hdf5DataWrapper hdf5FileWrapper, File outDirForCurrentSedml) throws HDF5Exception, IOException {
+    public static void writeHdf5(Hdf5DataWrapper hdf5DataWrapper, File outDirForCurrentSedml) throws HDF5Exception, IOException {
         Hdf5File masterHdf5 = null;
 
         // Boot Hdf5 Library
@@ -42,7 +42,7 @@ public class Hdf5Writer {
         
         // Attempt to fill the Hdf5
         try {
-            for (String rawPath : hdf5FileWrapper.datasetWrapperMap.keySet()){
+            for (String rawPath : hdf5DataWrapper.datasetWrapperMap.keySet()){
                 // Process Parent Groups
                 String path = "";
                 for (String group : rawPath.split("/")){ 
@@ -56,7 +56,7 @@ public class Hdf5Writer {
                 }
     
                 // Process the Dataset
-                for (Hdf5DatasetWrapper data : hdf5FileWrapper.datasetWrapperMap.get(rawPath)){
+                for (Hdf5DatasetWrapper data : hdf5DataWrapper.datasetWrapperMap.get(rawPath)){
                     Hdf5PreparedData preparedData;
                     if (data.dataSource instanceof Hdf5DataSourceNonspatial) preparedData = Hdf5DataPreparer.prepareNonspacialData(data);
                     else if (data.dataSource instanceof Hdf5DataSourceSpatial) preparedData = Hdf5DataPreparer.prepareSpacialData(data);

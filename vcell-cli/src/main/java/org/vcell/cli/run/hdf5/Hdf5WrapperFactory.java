@@ -110,17 +110,22 @@ public class Hdf5WrapperFactory {
                 // get the list of variables associated with the data reference
                 for (Variable var : datagen.getListOfVariables()) {
                     // for each variable we recover the task
-                    AbstractTask initialTask = sedml.getTaskWithId(var.getReference());
-                    AbstractTask referredTask = this.getOriginalTask(initialTask);
+                    AbstractTask topLevelTask = sedml.getTaskWithId(var.getReference());
+                    AbstractTask baseTask = this.getBaseTask(topLevelTask); // if !RepeatedTask, baseTask == topLevelTask
                     
                     // from the task we get the sbml model
-                    org.jlibsedml.Simulation sedmlSim = sedml.getSimulation(((Task)referredTask).getSimulationReference());
+                    org.jlibsedml.Simulation sedmlSim = sedml.getSimulation(((Task)baseTask).getSimulationReference());
 
+                    if (!(sedmlSim instanceof UniformTimeCourse)){
+                        logger.error("only uniform time course simulations are supported");
+                        continue;
+                    }
                     
                     // must get variable ID from SBML model
-                    String sbmlVarId = getSbmlVarId(var);
+                    String vcellVarId = convertToVCellSymbol(var); // What's the point of this???
 
-                    boolean bFoundTaskInNonspatial = nonspatialResultsHash.keySet().stream().anyMatch(taskJob -> taskJob.getTaskId().equals(initialTask.getId()));
+                    // If the task isn't in our results hash, it's unwanted and skippable.
+                    boolean bFoundTaskInNonspatial = nonspatialResultsHash.keySet().stream().anyMatch(taskJob -> taskJob.getTaskId().equals(topLevelTask.getId()));
                     if (!bFoundTaskInNonspatial){
                         break;
                     }
@@ -131,9 +136,9 @@ public class Hdf5WrapperFactory {
 
                     for (Map.Entry<TaskJob, ODESolverResultSet> entry : nonspatialResultsHash.entrySet()) {
                         TaskJob taskJob = entry.getKey();
-                        if (entry.getValue() != null && taskJob.getTaskId().equals(initialTask.getId())) {
+                        if (entry.getValue() != null && taskJob.getTaskId().equals(topLevelTask.getId())) {
                             taskJobs.add(taskJob);
-                            if (!(initialTask instanceof RepeatedTask)) 
+                            if (!(topLevelTask instanceof RepeatedTask)) 
                                 break; // No need to keep looking if its not a repeated task
                         }
                     }
@@ -142,11 +147,6 @@ public class Hdf5WrapperFactory {
 
                     varIDs.add(var.getId());
 
-                    if (!(sedmlSim instanceof UniformTimeCourse)){
-                        logger.error("only uniform time course simulations are supported");
-                        continue;
-                    }
-
                     // we want to keep the last outputNumberOfPoints only
                     int outputNumberOfPoints = ((UniformTimeCourse) sedmlSim).getNumberOfPoints();
                     double outputStartTime = ((UniformTimeCourse) sedmlSim).getOutputStartTime();
@@ -154,7 +154,7 @@ public class Hdf5WrapperFactory {
 
                     for (TaskJob taskJob : taskJobs) {
                         ODESolverResultSet results = nonspatialResultsHash.get(taskJob);
-                        int column = results.findColumn(sbmlVarId);
+                        int column = results.findColumn(vcellVarId);
                         double[] data = results.extractColumn(column);
                         
                         if (outputStartTime > 0){
@@ -166,10 +166,10 @@ public class Hdf5WrapperFactory {
                         }
 
                         maxLengthOfAllData = Integer.max(maxLengthOfAllData, data.length);
-                        if (initialTask instanceof RepeatedTask && values.containsKey(var)) { // double[] exists
+                        if (topLevelTask instanceof RepeatedTask && values.containsKey(var)) { // double[] exists
                             variablesList = values.get(var);
                         } else { // this is the first double[]
-                            variablesList = new NonspatialValueHolder(taskToSimulationMap.get(initialTask));
+                            variablesList = new NonspatialValueHolder(taskToSimulationMap.get(topLevelTask));
                         }
                         variablesList.values.add(data);
                         values.put(var, variablesList);
@@ -197,7 +197,7 @@ public class Hdf5WrapperFactory {
             hdf5DatasetWrapper.datasetMetadata.sedmlDataSetShapes = new LinkedList<>();
 
             for (int i=0; i<numJobs; i++) {
-                dataSourceNonspatial.jobData.add(new Hdf5DataSourceNonspatial.Hdf5JobData());
+                dataSourceNonspatial.allJobResults.add(new Hdf5DataSourceNonspatial.Hdf5JobData());
             }
 
             List<String> shapes = new LinkedList<>();
@@ -215,7 +215,7 @@ public class Hdf5WrapperFactory {
                     dataSourceNonspatial.scanParameterNames = dataArrays.vcSimulation.getMathOverrides().getScannedConstantNames();
                     for (int jobIndex=0; jobIndex < numJobs; jobIndex++){
                         double[] data = dataArrays.values.get(jobIndex);
-                        Hdf5DataSourceNonspatial.Hdf5JobData hdf5JobData = dataSourceNonspatial.jobData.get(jobIndex);
+                        Hdf5DataSourceNonspatial.Hdf5JobData hdf5JobData = dataSourceNonspatial.allJobResults.get(jobIndex);
                         hdf5JobData.varData.put(var,data);
                         shapes.add(Integer.toString(data.length));
                     }
@@ -250,7 +250,7 @@ public class Hdf5WrapperFactory {
                 for (Variable var : datagen.getListOfVariables()) {
                     // for each variable we recover the task
                     AbstractTask initialTask = sedml.getTaskWithId(var.getReference());
-                    AbstractTask referredTask = this.getOriginalTask(initialTask);
+                    AbstractTask referredTask = this.getBaseTask(initialTask);
                     // from the task we get the sbml model
                     org.jlibsedml.Simulation sedmlSim = sedml.getSimulation(((Task)referredTask).getSimulationReference());
 
@@ -353,7 +353,7 @@ public class Hdf5WrapperFactory {
         return reports;
     }
 
-    private AbstractTask getOriginalTask(AbstractTask task){
+    private AbstractTask getBaseTask(AbstractTask task){
         while (task instanceof RepeatedTask) { // We need to find the original task burried beneath.
             // We assume that we can never have a sequential repeated task at this point, we check for that in SEDMLImporter
             SubTask st = ((RepeatedTask)task).getSubTasks().entrySet().iterator().next().getValue(); // single subtask
@@ -362,7 +362,7 @@ public class Hdf5WrapperFactory {
         return task;
     }
 
-    private String getSbmlVarId(Variable var){
+    private String convertToVCellSymbol(Variable var){
          // must get variable ID from SBML model
          String sbmlVarId = "";
          if (var.getSymbol() != null) { // it is a predefined symbol

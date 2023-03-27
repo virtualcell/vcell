@@ -112,7 +112,7 @@ public class Hdf5DataPreparer {
     public static Hdf5PreparedData prepareNonspacialData(Hdf5DatasetWrapper datasetWrapper){
         final double NaN = 0.0/0.0;
         Hdf5DataSourceNonspatial dataSourceNonspatial = (Hdf5DataSourceNonspatial) datasetWrapper.dataSource;
-        Map<Variable, double[]> varDataMap = dataSourceNonspatial.jobData.get(0).varData;
+        Map<Variable, double[]> varDataMap = dataSourceNonspatial.allJobResults.get(0).varData;
         List<Variable> vars = new ArrayList<>(varDataMap.keySet());
         long numVariablesPerJob = varDataMap.keySet().size();
         long numTimePoints = 0;
@@ -136,7 +136,7 @@ public class Hdf5DataPreparer {
 
         double[] bigDataBuffer = new double[totalDataSize];
         int bufferOffset = 0;
-        for (Hdf5DataSourceNonspatial.Hdf5JobData jobData : dataSourceNonspatial.jobData) {
+        for (Hdf5DataSourceNonspatial.Hdf5JobData jobData : dataSourceNonspatial.allJobResults) {
             for (int varIndex = 0; varIndex < vars.size(); varIndex++) {
                 Variable var = vars.get(varIndex);
                 double[] dataArray = jobData.varData.get(var);

@@ -65,7 +65,7 @@ public class Hdf5WriterTest {
         plotJob.varData.put(t, row_t);
         plotJob.varData.put(s0, row_S0_0);
         plotJob.varData.put(s1, row_S1);
-        plotDataSourceNonspatial.jobData.add(plotJob);
+        plotDataSourceNonspatial.allJobResults.add(plotJob);
 
 
         Hdf5DatasetWrapper reportDatasetWrapper = new Hdf5DatasetWrapper();
@@ -78,19 +78,19 @@ public class Hdf5WriterTest {
         reportJob_0.varData.put(t, row_t);
         reportJob_0.varData.put(s0, row_S0_0);
         reportJob_0.varData.put(s1, row_S1);
-        reportDataSourceNonspatial.jobData.add(reportJob_0);
+        reportDataSourceNonspatial.allJobResults.add(reportJob_0);
 
         Hdf5JobData reportJob_1 = new Hdf5JobData();
         reportJob_1.varData.put(t, row_t);
         reportJob_1.varData.put(s0, row_S0_1);
         reportJob_1.varData.put(s1, row_S1);
-        reportDataSourceNonspatial.jobData.add(reportJob_1);
+        reportDataSourceNonspatial.allJobResults.add(reportJob_1);
 
         Hdf5JobData reportJob_2 = new Hdf5JobData();
         reportJob_2.varData.put(t, row_t);
         reportJob_2.varData.put(s0, row_S0_2);
         reportJob_2.varData.put(s1, row_S1);
-        reportDataSourceNonspatial.jobData.add(reportJob_2);
+        reportDataSourceNonspatial.allJobResults.add(reportJob_2);
 
         Hdf5DataWrapper hdf5FileWrapper = new Hdf5DataWrapper();
         String uri = "___0_export_NO_scan_test.sedml";

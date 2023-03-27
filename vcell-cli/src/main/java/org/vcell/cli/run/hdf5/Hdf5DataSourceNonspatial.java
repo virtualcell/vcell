@@ -16,7 +16,7 @@ public class Hdf5DataSourceNonspatial extends Hdf5DataSource {
     /**
      * List of all data contained within a job relevant to HDF5 formatted files
      */
-    public List<Hdf5JobData> jobData = new ArrayList<>();
+    public List<Hdf5JobData> allJobResults = new ArrayList<>();
 
     /**
      * Struct-Subclass for holding job data
