@@ -532,6 +532,9 @@ private static Set<String> getAutoCompletionWords() {
 		autoCompletionWords.add(VCML.ParticleDriftX);
 		autoCompletionWords.add(VCML.ParticleDriftY);
 		autoCompletionWords.add(VCML.ParticleDriftZ);
+		autoCompletionWords.add(VCML.Subtype);		
+		autoCompletionWords.add(VCML.TransitionCondition);		
+		autoCompletionWords.add(VCML.BondLength);		
 		
 		autoCompletionWords.add(VCML.PostProcessingBlock);
 		autoCompletionWords.add(VCML.ExplicitDataGenerator);
@@ -832,6 +835,9 @@ public static Set<String> getkeywords() {
 		keywords.add(VCML.ParticleDriftX);
 		keywords.add(VCML.ParticleDriftY);
 		keywords.add(VCML.ParticleDriftZ);
+		keywords.add(VCML.Subtype);
+		keywords.add(VCML.TransitionCondition);
+		keywords.add(VCML.BondLength);
 		
 		keywords.add(VCML.PostProcessingBlock);
 		keywords.add(VCML.ExplicitDataGenerator);

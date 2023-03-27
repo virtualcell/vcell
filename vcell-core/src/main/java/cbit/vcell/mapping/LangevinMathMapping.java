@@ -29,6 +29,8 @@ import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.SurfaceClass;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.mapping.ParameterContext.UnresolvedParameter;
+import cbit.vcell.mapping.ReactionRuleSpec.Subtype;
+import cbit.vcell.mapping.ReactionRuleSpec.TransitionCondition;
 import cbit.vcell.mapping.RulebasedTransformer.Operation;
 import cbit.vcell.mapping.RulebasedTransformer.ReactionRuleAnalysisReport;
 import cbit.vcell.mapping.RulebasedTransformer.RulebasedTransformation;
@@ -38,6 +40,7 @@ import cbit.vcell.math.Action;
 import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.JumpProcessRateDefinition;
+import cbit.vcell.math.LangevinParticleJumpProcess;
 import cbit.vcell.math.MacroscopicRateConstant;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
@@ -589,12 +592,16 @@ protected LangevinMathMapping(SimulationContext simContext, MathMappingCallback 
 					}
 				}
 				
+				Subtype subtype = Subtype.BINDING;
+				TransitionCondition transitionCondition = null;
+				double bondLength = 1.0;
 				StructureMapping sm = getSimulationContext().getGeometryContext().getStructureMapping(reactionRule.getStructure());
 				GeometryClass reactionStepGeometryClass = sm.getGeometryClass();
 				SubDomain subDomain = mathDesc.getSubDomain(reactionStepGeometryClass.getName());
 				if (constantMassActionKineticCoefficients){
 					addStrictMassActionParticleJumpProcess(varHash, geometryClass, subDomain,
 							reactionRule, jpName,
+							subtype, transitionCondition, bondLength,
 							reactantParticles, productParticles, 
 							forwardActions, reverseActions);
 				}else{
@@ -798,6 +805,7 @@ protected LangevinMathMapping(SimulationContext simContext, MathMappingCallback 
 	private Map<ParticleJumpProcess, ReactionRuleAnalysisReport> jumpProcessMap = new  LinkedHashMap<ParticleJumpProcess, ReactionRuleAnalysisReport>();
 	private void addStrictMassActionParticleJumpProcess(VariableHash varHash, GeometryClass geometryClass, SubDomain subDomain,
 														ReactionRule reactionRule, String jpName,
+														Subtype subtype, TransitionCondition transitionCondition, double bondLength,
 														ArrayList<ParticleVariable> reactantParticles, ArrayList<ParticleVariable> productParticles,
 														ArrayList<Action> forwardActions, ArrayList<Action> reverseActions)
 					throws ExpressionException, ExpressionBindingException, PropertyVetoException, MathException, MappingException {
@@ -915,7 +923,10 @@ protected LangevinMathMapping(SimulationContext simContext, MathMappingCallback 
 
 		ReactionRuleAnalysisReport rrarBiomodelForward = ruleBasedTransformation.getRulesForwardMap().get(reactionRule);
 		ProcessSymmetryFactor forwardSymmetryFactor = new ProcessSymmetryFactor(rrarBiomodelForward.getSymmetryFactor());
-		ParticleJumpProcess forward_particleJumpProcess = new ParticleJumpProcess(forward_name,reactantParticles,forward_rateDefinition,forwardActions,forwardSymmetryFactor);
+		LangevinParticleJumpProcess forward_particleJumpProcess = new LangevinParticleJumpProcess(forward_name,reactantParticles,forward_rateDefinition,forwardActions,forwardSymmetryFactor);
+		forward_particleJumpProcess.setSubtype(subtype);
+		forward_particleJumpProcess.setTransitionCondition(transitionCondition);
+		forward_particleJumpProcess.setBondLength(bondLength);
 		subDomain.addParticleJumpProcess(forward_particleJumpProcess);
 		
 		//
@@ -1001,8 +1012,14 @@ protected LangevinMathMapping(SimulationContext simContext, MathMappingCallback 
 			String reverse_name = reactionRuleName+"_reverse";
 			JumpProcessRateDefinition reverse_rateDefinition = new MacroscopicRateConstant(reverse_rate);
 			ReactionRuleAnalysisReport rrarBiomodelReverse = ruleBasedTransformation.getRulesReverseMap().get(reactionRule);
+			
+			
 			ProcessSymmetryFactor reverseSymmetryFactor = new ProcessSymmetryFactor(rrarBiomodelReverse.getSymmetryFactor());
-			ParticleJumpProcess reverse_particleJumpProcess = new ParticleJumpProcess(reverse_name,productParticles,reverse_rateDefinition,reverseActions,reverseSymmetryFactor);
+			LangevinParticleJumpProcess reverse_particleJumpProcess = new LangevinParticleJumpProcess(reverse_name,productParticles,reverse_rateDefinition,reverseActions,reverseSymmetryFactor);
+			reverse_particleJumpProcess.setSubtype(subtype);
+			reverse_particleJumpProcess.setTransitionCondition(transitionCondition);
+			reverse_particleJumpProcess.setBondLength(bondLength);
+
 			subDomain.addParticleJumpProcess(reverse_particleJumpProcess);
 			
 			//
