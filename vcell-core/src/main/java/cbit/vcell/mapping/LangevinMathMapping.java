@@ -448,12 +448,12 @@ protected LangevinMathMapping(SimulationContext simContext, MathMappingCallback 
 		// define observables (those explicitly declared and those corresponding to seed species.
 		//
 		// TODO: we don't have observables per se, we have statistics that we follow
-		// skip for now
+		// keep them for now, will have to replace them at some point
 		//
-//		List<ParticleObservable> observables = addObservables(geometryClass, domain, speciesPatternMap);
-//		for (ParticleObservable particleObservable : observables){
-//			varHash.addVariable(particleObservable);
-//		}
+		List<ParticleObservable> observables = addObservables(geometryClass, domain, speciesPatternMap);
+		for (ParticleObservable particleObservable : observables){
+			varHash.addVariable(particleObservable);
+		}
 
 		// define reaction rules
 		try {
