@@ -447,17 +447,17 @@ protected LangevinMathMapping(SimulationContext simContext, MathMappingCallback 
 		//
 		// define observables (those explicitly declared and those corresponding to seed species.
 		//
-		List<ParticleObservable> observables = addObservables(geometryClass, domain, speciesPatternMap);
-		for (ParticleObservable particleObservable : observables){
-			varHash.addVariable(particleObservable);
-		}
+		// TODO: we don't have observables per se, we have statistics that we follow
+		// skip for now
+		//
+//		List<ParticleObservable> observables = addObservables(geometryClass, domain, speciesPatternMap);
+//		for (ParticleObservable particleObservable : observables){
+//			varHash.addVariable(particleObservable);
+//		}
 
-		//
-		// TODO: subdomain is hardcoded for now to the first one, need to add each jump process to the right one
-		//
-		SubDomain subDomain = mathDesc.getSubDomains().nextElement();
+		// define reaction rules
 		try {
-			addParticleJumpProcesses(varHash, geometryClass, subDomain, speciesPatternMap);
+			addParticleJumpProcesses(varHash, geometryClass, speciesPatternMap);
 		} catch (PropertyVetoException e1) {
 			e1.printStackTrace();
 			throw new MappingException(e1.getMessage(),e1);
@@ -488,6 +488,9 @@ protected LangevinMathMapping(SimulationContext simContext, MathMappingCallback 
 			particleInitialConditions.add(new ParticleInitialConditionCount(e,new Expression(0.0),new Expression(0.0),new Expression(0.0)));
 			
 			ParticleProperties particleProperies = new ParticleProperties(volumeParticleSpeciesPattern,new Expression(0.0),new Expression(0.0),new Expression(0.0),new Expression(0.0),particleInitialConditions);
+			StructureMapping sm = getSimulationContext().getGeometryContext().getStructureMapping(sc.getStructure());
+			GeometryClass reactionStepGeometryClass = sm.getGeometryClass();
+			SubDomain subDomain = mathDesc.getSubDomain(reactionStepGeometryClass.getName());
 			subDomain.addParticleProperties(particleProperies);
 		}
 
@@ -524,7 +527,7 @@ protected LangevinMathMapping(SimulationContext simContext, MathMappingCallback 
 		}
 	}
 
-	private void addParticleJumpProcesses(VariableHash varHash, GeometryClass geometryClass, SubDomain subDomain, HashMap<SpeciesPattern, VolumeParticleSpeciesPattern> speciesPatternMap) throws ExpressionException, MappingException, MathException, PropertyVetoException {
+	private void addParticleJumpProcesses(VariableHash varHash, GeometryClass geometryClass, HashMap<SpeciesPattern, VolumeParticleSpeciesPattern> speciesPatternMap) throws ExpressionException, MappingException, MathException, PropertyVetoException {
 
 		ArrayList<ReactionRule> rrList = new ArrayList<>();
 		for (ReactionRuleSpec rrSpec : getSimulationContext().getReactionContext().getReactionRuleSpecs()){
@@ -586,6 +589,9 @@ protected LangevinMathMapping(SimulationContext simContext, MathMappingCallback 
 					}
 				}
 				
+				StructureMapping sm = getSimulationContext().getGeometryContext().getStructureMapping(reactionRule.getStructure());
+				GeometryClass reactionStepGeometryClass = sm.getGeometryClass();
+				SubDomain subDomain = mathDesc.getSubDomain(reactionStepGeometryClass.getName());
 				if (constantMassActionKineticCoefficients){
 					addStrictMassActionParticleJumpProcess(varHash, geometryClass, subDomain,
 							reactionRule, jpName,
