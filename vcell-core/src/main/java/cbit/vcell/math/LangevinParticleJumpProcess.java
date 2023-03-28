@@ -116,13 +116,41 @@ public static LangevinParticleJumpProcess fromVCML(MathDescription mathDesc, Com
 	if (!token.equals(VCML.BeginBlock)){
 		throw new MathFormatException("expecting "+VCML.BeginBlock+", found "+token);
 	}
-	token = tokens.nextToken();
+	
+	Subtype subtype = null;
+	TransitionCondition transitionCondition = null;		// may be null if Subtype is not TRANSITION
+	double bondLength = -1;
 	ArrayList<ParticleVariable> particles = new ArrayList<ParticleVariable>();
 	JumpProcessRateDefinition particleRateDef = null;
 	ArrayList<Action> actions = new ArrayList<Action>();
 	ProcessSymmetryFactor symmetryFactor = null;
-	while(!token.equals(VCML.EndBlock)){
-		if (token.equals(VCML.SelectedParticle)){
+	
+	token = tokens.nextToken();
+	while(!token.equals(VCML.EndBlock)) {
+		if(token.equals(VCML.Subtype)) {
+			token = tokens.nextToken();
+			String subtypeName = token;
+			subtype = Subtype.valueOf(subtypeName);
+			if(subtype == null) {
+				throw new IllegalArgumentException("Invalid Subtype: " + subtypeName);
+			}
+		} else if(token.equals(VCML.TransitionCondition)) {
+			if(Subtype.TRANSITION == subtype) {
+				token = tokens.nextToken();
+				String transitionConditionName = token;
+				transitionCondition = TransitionCondition.valueOf(transitionConditionName);
+				if(subtype == null) {
+					throw new IllegalArgumentException("Invalid TransitionCondition: " + transitionConditionName);
+				}
+			}
+		} else if(token.equals(VCML.BondLength)) {
+			token = tokens.nextToken();
+			try {
+				bondLength = Double.parseDouble(token);
+			} catch(NumberFormatException ex) {
+				;	// do nothing, the token was '-' which is legal if not a binding reaction
+			}
+		} else if (token.equals(VCML.SelectedParticle)){
 			token = tokens.nextToken();
 			String varName = token;
 			Variable var = mathDesc.getVariable(varName);
@@ -162,6 +190,9 @@ public static LangevinParticleJumpProcess fromVCML(MathDescription mathDesc, Com
 		token = tokens.nextToken();
 	}
 	LangevinParticleJumpProcess pjp = new LangevinParticleJumpProcess(name,particles,particleRateDef,actions,symmetryFactor);
+	pjp.setSubtype(subtype);
+	pjp.setTransitionCondition(transitionCondition);
+	pjp.setBondLength(bondLength);
 	return pjp;
 }
 
