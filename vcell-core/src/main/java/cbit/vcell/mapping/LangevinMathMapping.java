@@ -539,17 +539,26 @@ protected LangevinMathMapping(SimulationContext simContext, MathMappingCallback 
 			}
 		}
 
-		for (ReactionRule reactionRule : rrList){
+		for (ReactionRule reactionRule : rrList) {
+			// recover the SpringSaLaD specific reaction parameters
+			ReactionRuleSpec reactionRuleSpec = getSimulationContext().getReactionContext().getReactionRuleSpec(reactionRule);
+			Map<String, Object> analysisResults = new LinkedHashMap<> ();
+			reactionRuleSpec.analizeReaction(analysisResults);
+			ReactionRuleSpec.Subtype subtype = reactionRuleSpec.getSubtype(analysisResults);
+			if(Subtype.INCOMPATIBLE == subtype) {
+				continue;	// skip unfit reactions, we want to create a compatible math
+			}
+			ReactionRuleSpec.TransitionCondition transitionCondition = reactionRuleSpec.getTransitionCondition(analysisResults);
+			double bondLength = reactionRuleSpec.getFieldBondLength();
 			
 			String jpName = TokenMangler.mangleToSName(reactionRule.getName());
-			
+
 			ArrayList<ParticleVariable> reactantParticles = new ArrayList<ParticleVariable>();
 			for (ReactantPattern reactantSpeciesPattern : reactionRule.getReactantPatterns()){
 				reactantParticles.add(speciesPatternMap.get(reactantSpeciesPattern.getSpeciesPattern()));
 			}
-			
 			ArrayList<ParticleVariable> productParticles = new ArrayList<ParticleVariable>();
-			for (ProductPattern productSpeciesPattern : reactionRule.getProductPatterns()){
+			for (ProductPattern productSpeciesPattern : reactionRule.getProductPatterns()) {
 				productParticles.add(speciesPatternMap.get(productSpeciesPattern.getSpeciesPattern()));
 			}
 			ArrayList<Action> forwardActions = new ArrayList<Action>();
@@ -562,57 +571,51 @@ protected LangevinMathMapping(SimulationContext simContext, MathMappingCallback 
 				forwardActions.add(new Action(product,Action.ACTION_CREATE,new Expression(1.0)));
 				reverseActions.add(new Action(product,Action.ACTION_DESTROY,new Expression(1.0)));
 			}
-			
 			RbmKineticLaw kinetics = reactionRule.getKineticLaw();
 			
 			// check the reaction rate law to see if we need to decompose a reaction(reversible) into two jump processes.
 			// rate constants are important in calculating the probability rate.
 			// for Mass Action, we use KForward and KReverse, 
 			// for General Kinetics we parse reaction rate J to see if it is in Mass Action form.
-
-			if (kinetics.getRateLawType() == RbmKineticLaw.RateLawType.MassAction){
+			if (kinetics.getRateLawType() == RbmKineticLaw.RateLawType.MassAction) {
 				boolean constantMassActionKineticCoefficients = true;
 				
 				StringBuffer errorMessage = new StringBuffer();
 				Parameter forward_rateParameter = kinetics.getLocalParameter(RbmKineticLawParameterType.MassActionForwardRate);
 				Expression substitutedForwardRate = MathUtilities.substituteModelParameters(forward_rateParameter.getExpression(), reactionRule.getNameScope().getScopedSymbolTable());
-				if (!substitutedForwardRate.flatten().isNumeric()){
+				if (!substitutedForwardRate.flatten().isNumeric()) {
 					errorMessage.append("flattened Kf for reactionRule("+reactionRule.getName()+") is not numeric, exp = '"+substitutedForwardRate.flatten().infix()+"'");
 					constantMassActionKineticCoefficients = false;
 				}
-				if (reactionRule.isReversible()){
+				if (reactionRule.isReversible()) {
 					Parameter reverse_rateParameter = kinetics.getLocalParameter(RbmKineticLawParameterType.MassActionReverseRate);
 					if (reverse_rateParameter==null || reverse_rateParameter.getExpression()==null){
 						throw new MappingException("reverse rate constant for reaction rule "+reactionRule.getName()+" is missing");
 					}
 					Expression substitutedReverseRate = MathUtilities.substituteModelParameters(reverse_rateParameter.getExpression(), reactionRule.getNameScope().getScopedSymbolTable());
-					if (!substitutedReverseRate.flatten().isNumeric()){
+					if (!substitutedReverseRate.flatten().isNumeric()) {
 						errorMessage.append("flattened Kr for reactionRule("+reactionRule.getName()+") is not numeric, exp = '"+substitutedReverseRate.flatten().infix()+"'");
 						constantMassActionKineticCoefficients = false;
 					}
 				}
 				
-				Subtype subtype = Subtype.BINDING;
-				TransitionCondition transitionCondition = null;
-				double bondLength = 1.0;
 				StructureMapping sm = getSimulationContext().getGeometryContext().getStructureMapping(reactionRule.getStructure());
 				GeometryClass reactionStepGeometryClass = sm.getGeometryClass();
 				SubDomain subDomain = mathDesc.getSubDomain(reactionStepGeometryClass.getName());
-				if (constantMassActionKineticCoefficients){
+				if (constantMassActionKineticCoefficients) {
 					addStrictMassActionParticleJumpProcess(varHash, geometryClass, subDomain,
 							reactionRule, jpName,
-							subtype, transitionCondition, bondLength,
+							subtype, transitionCondition, bondLength,	// SpringSaLaD specific
 							reactantParticles, productParticles, 
 							forwardActions, reverseActions);
-				}else{
+				} else {
 					throw new MappingException("not mass action: "+errorMessage.toString());
 //					addGeneralParticleJumpProcess(varHash, geometryClass, subDomain,
 //							reactionRule, jpName,
 //							reactantParticles, productParticles, 
 //							forwardActions, reverseActions);
 				}
-				
-			}else{
+			} else {
 				throw new MappingException("rule-based math generation unsupported for Kinetic Law: "+kinetics.getRateLawType());
 			}			
 			
@@ -961,7 +964,7 @@ protected LangevinMathMapping(SimulationContext simContext, MathMappingCallback 
 		//
 		// get reverse rate parameter and make sure it is missing or constant valued.
 		//
-		if (reactionRule.isReversible()){
+		if (reactionRule.isReversible() && Subtype.BINDING == subtype){
 			Parameter reverse_rateParameter = kinetics.getLocalParameter(RbmKineticLawParameterType.MassActionReverseRate);
 			if (reverse_rateParameter==null || reverse_rateParameter.getExpression()==null){
 				throw new MappingException("reverse rate constant for reaction rule "+reactionRule.getName()+" is missing");
@@ -1011,15 +1014,13 @@ protected LangevinMathMapping(SimulationContext simContext, MathMappingCallback 
 			Expression reverse_rate = getIdentifierSubstitutions(new Expression(reverse_probParm,getNameScope()), reverse_probParm.getUnitDefinition(), geometryClass);
 			String reverse_name = reactionRuleName+"_reverse";
 			JumpProcessRateDefinition reverse_rateDefinition = new MacroscopicRateConstant(reverse_rate);
+
 			ReactionRuleAnalysisReport rrarBiomodelReverse = ruleBasedTransformation.getRulesReverseMap().get(reactionRule);
-			
-			
 			ProcessSymmetryFactor reverseSymmetryFactor = new ProcessSymmetryFactor(rrarBiomodelReverse.getSymmetryFactor());
 			LangevinParticleJumpProcess reverse_particleJumpProcess = new LangevinParticleJumpProcess(reverse_name,productParticles,reverse_rateDefinition,reverseActions,reverseSymmetryFactor);
 			reverse_particleJumpProcess.setSubtype(subtype);
 			reverse_particleJumpProcess.setTransitionCondition(transitionCondition);
 			reverse_particleJumpProcess.setBondLength(bondLength);
-
 			subDomain.addParticleJumpProcess(reverse_particleJumpProcess);
 			
 			//
@@ -1028,8 +1029,6 @@ protected LangevinMathMapping(SimulationContext simContext, MathMappingCallback 
 			int reverseRuleIndex = forwardRuleIndex + 1;
 			ReactionRuleAnalysisReport rrar = ruleBasedTransformation.getRulesReverseMap().get(reactionRule);
 			jumpProcessMap.put(reverse_particleJumpProcess, rrar);
-
-			
 		}
 	}
 

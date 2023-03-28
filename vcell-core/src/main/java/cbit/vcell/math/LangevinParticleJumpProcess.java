@@ -72,6 +72,16 @@ public String getVCML()
 	// the jump process will be written inside compartment brackets, therefore a "\t" is needed
 	buffer.append("\t"+VCML.ParticleJumpProcess+"\t"+getName()+" "+VCML.BeginBlock+"\n");
 	buffer.append("\t\t" + VCML.Subtype + "\t\t\t" + subtype.columnName+"\n");
+	if(Subtype.TRANSITION == subtype) {
+		buffer.append("\t\t" + VCML.TransitionCondition + "\t\t" + transitionCondition.columnName + "\n");
+	} else {
+		buffer.append("\t\t" + VCML.TransitionCondition + "\t\t" + " - " + "\n");
+	}
+	if(Subtype.BINDING == subtype) {
+		buffer.append("\t\t" + VCML.BondLength + "\t\t\t" + bondLength + "\n");
+	} else {
+		buffer.append("\t\t" + VCML.BondLength + "\t\t\t" + " - " + "\n");
+	}
 	for (ParticleVariable particleVar : particles){
 		buffer.append("\t\t"+VCML.SelectedParticle+"\t\t"+particleVar.getName()+"\n");
 	}
@@ -155,20 +165,12 @@ public static LangevinParticleJumpProcess fromVCML(MathDescription mathDesc, Com
 	return pjp;
 }
 
-
-
 public void setSubtype(Subtype subtype) {
 	this.subtype = subtype;
 }
-
-
-
 public void setTransitionCondition(TransitionCondition transitionCondition) {
 	this.transitionCondition = transitionCondition;
 }
-
-
-
 public void setBondLength(double bondLength) {
 	this.bondLength  = bondLength;
 }
