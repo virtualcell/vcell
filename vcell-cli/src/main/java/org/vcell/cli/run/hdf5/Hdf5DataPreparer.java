@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.jlibsedml.DataSet;
 import org.jlibsedml.Variable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -28,8 +29,8 @@ public class Hdf5DataPreparer {
      * @param datasetWrapper
      * @return the times data
      */
-    public static double[] getSpacialHdf5Attribute_Times(Hdf5DatasetWrapper datasetWrapper){
-        return ((Hdf5DataSourceSpatial)datasetWrapper.dataSource).varDataItems.get(0).times;
+    public static double[] getSpacialHdf5Attribute_Times(Hdf5SedmlResults datasetWrapper){
+        return ((Hdf5SedmlResultsSpatial)datasetWrapper.dataSource).varDataItems.get(0).times;
     }
 
     /**
@@ -38,8 +39,8 @@ public class Hdf5DataPreparer {
      * @param datasetWrapper the data relevant to an hdf5 output file
      * @return the prepared spacial data
      */
-    public static Hdf5PreparedData prepareSpacialData (Hdf5DatasetWrapper datasetWrapper){
-        Hdf5DataSourceSpatial dataSourceSpatial = (Hdf5DataSourceSpatial)datasetWrapper.dataSource; 
+    public static Hdf5PreparedData prepareSpacialData (Hdf5SedmlResults datasetWrapper){
+        Hdf5SedmlResultsSpatial dataSourceSpatial = (Hdf5SedmlResultsSpatial)datasetWrapper.dataSource; 
         logger.debug(dataSourceSpatial);
         Hdf5DataSourceSpatialVarDataItem firstVarDataItem = dataSourceSpatial.varDataItems.get(0);
         int[] spaceTimeDimensions = firstVarDataItem.spaceTimeDimensions;
@@ -109,59 +110,54 @@ public class Hdf5DataPreparer {
      * @param datasetWrapper the data relevant to an hdf5 output file
      * @return the prepared nonspacial data
      */
-    public static Hdf5PreparedData prepareNonspacialData(Hdf5DatasetWrapper datasetWrapper){
-        final double NaN = 0.0/0.0;
-        Hdf5DataSourceNonspatial dataSourceNonspatial = (Hdf5DataSourceNonspatial) datasetWrapper.dataSource;
-        Map<Variable, double[]> varDataMap = dataSourceNonspatial.allJobResults.get(0).varData;
-        List<Variable> vars = new ArrayList<>(varDataMap.keySet());
-        long numVariablesPerJob = varDataMap.keySet().size();
+    public static Hdf5PreparedData prepareNonspacialData(Hdf5SedmlResults datasetWrapper){
         long numTimePoints = 0;
+        int totalDataVolume = 1;
+        long numVariablesPerJob;
+        double[] bigDataBuffer;
         List<Long> dataDimensionList = new ArrayList<>();
-        for (Variable var : vars){
-            numTimePoints = Long.max(numTimePoints, varDataMap.get(var).length);
-        }
         
-        //int numJobs = 1;
+        Hdf5SedmlResultsNonspatial dataSourceNonspatial = (Hdf5SedmlResultsNonspatial) datasetWrapper.dataSource;
+        Map<DataSet, List<double[]>> dataSetMap = dataSourceNonspatial.allJobResults;
+        numVariablesPerJob = dataSetMap.keySet().size();
+        
+        for (DataSet dataSet : dataSetMap.keySet()){
+            numTimePoints = Long.max(numTimePoints, dataSetMap.get(dataSet).size());
+        }
+
         for (int scanBound : dataSourceNonspatial.scanBounds){
             dataDimensionList.add((long)scanBound+1);
-            //numJobs *= (scanBound+1);
         }
         dataDimensionList.add(numVariablesPerJob);
         dataDimensionList.add(numTimePoints);
-        long[] dataDimensions = dataDimensionList.stream().mapToLong(l -> l).toArray();
-        int totalDataSize = 1;
-        for (long dim : dataDimensions){
-            totalDataSize *= (int)dim;
+        
+        for (long dim : dataDimensionList){
+            totalDataVolume *= (int)dim;
         }
 
-        double[] bigDataBuffer = new double[totalDataSize];
+        bigDataBuffer = new double[totalDataVolume];
         int bufferOffset = 0;
-        for (Hdf5DataSourceNonspatial.Hdf5JobData jobData : dataSourceNonspatial.allJobResults) {
-            for (int varIndex = 0; varIndex < vars.size(); varIndex++) {
-                Variable var = vars.get(varIndex);
-                double[] dataArray = jobData.varData.get(var);
+        
+        for (DataSet dataSet : dataSetMap.keySet()) {
+            List<double[]> dataArrays = dataSourceNonspatial.allJobResults.get(dataSet);
+            for (double[] dataArray : dataArrays){
                 if (dataArray.length < numTimePoints){
                     double[] paddedArray = new double[Math.toIntExact(numTimePoints)];
                     System.arraycopy(dataArray, 0, paddedArray, 0, dataArray.length);
                     for (int i = dataArray.length; i < numTimePoints; i++){
-                        paddedArray[i] = NaN;
+                        paddedArray[i] = Double.NaN;
                     }
                     dataArray = paddedArray;
                 }
-
                 System.arraycopy(dataArray, 0, bigDataBuffer, bufferOffset, dataArray.length);
-
-                /*
-                for (int dataIndex = 0; dataIndex < dataArray.length; dataIndex++) {
-                    System.arraycopy(dataArray,0, bigDataBuffer, bufferOffset, dataArray.length);
-                }*/
                 bufferOffset += (int)numTimePoints;
             }
         }
+        
 
         Hdf5PreparedData preparedData = new Hdf5PreparedData();
         preparedData.sedmlId = datasetWrapper.datasetMetadata.sedmlId;
-        preparedData.dataDimensions = dataDimensions;
+        preparedData.dataDimensions = dataDimensionList.stream().mapToLong(l -> l).toArray();
         preparedData.flattenedDataBuffer = bigDataBuffer;
         return preparedData;
     }

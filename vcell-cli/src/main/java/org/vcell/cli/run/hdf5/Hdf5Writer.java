@@ -28,7 +28,7 @@ public class Hdf5Writer {
      * @throws HDF5Exception if there is an expection thrown from hdf5 while using the library.
      * @throws IOException if the computer encounteres an unexepcted system IO problem
      */
-    public static void writeHdf5(Hdf5DataWrapper hdf5DataWrapper, File outDirForCurrentSedml) throws HDF5Exception, IOException {
+    public static void writeHdf5(Hdf5DataContainer hdf5DataWrapper, File outDirForCurrentSedml) throws HDF5Exception, IOException {
         Hdf5File masterHdf5 = null;
 
         // Boot Hdf5 Library
@@ -42,7 +42,7 @@ public class Hdf5Writer {
         
         // Attempt to fill the Hdf5
         try {
-            for (String rawPath : hdf5DataWrapper.datasetWrapperMap.keySet()){
+            for (String rawPath : hdf5DataWrapper.uriToResultsMap.keySet()){
                 // Process Parent Groups
                 String path = "";
                 for (String group : rawPath.split("/")){ 
@@ -56,15 +56,15 @@ public class Hdf5Writer {
                 }
     
                 // Process the Dataset
-                for (Hdf5DatasetWrapper data : hdf5DataWrapper.datasetWrapperMap.get(rawPath)){
+                for (Hdf5SedmlResults data : hdf5DataWrapper.uriToResultsMap.get(rawPath)){
                     Hdf5PreparedData preparedData;
-                    if (data.dataSource instanceof Hdf5DataSourceNonspatial) preparedData = Hdf5DataPreparer.prepareNonspacialData(data);
-                    else if (data.dataSource instanceof Hdf5DataSourceSpatial) preparedData = Hdf5DataPreparer.prepareSpacialData(data);
+                    if (data.dataSource instanceof Hdf5SedmlResultsNonspatial) preparedData = Hdf5DataPreparer.prepareNonspacialData(data);
+                    else if (data.dataSource instanceof Hdf5SedmlResultsSpatial) preparedData = Hdf5DataPreparer.prepareSpacialData(data);
                     else continue;
     
                     int currentDatasetId = masterHdf5.insertSedmlData(path, preparedData);
                     
-                    if (data.dataSource instanceof Hdf5DataSourceSpatial){
+                    if (data.dataSource instanceof Hdf5SedmlResultsSpatial){
                         masterHdf5.insertNumericAttributes(currentDatasetId, "times", Hdf5DataPreparer.getSpacialHdf5Attribute_Times(data));
                     }  
                     masterHdf5.insertFixedStringAttribute(currentDatasetId, "_type", data.datasetMetadata._type);

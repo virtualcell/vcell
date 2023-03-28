@@ -2,10 +2,12 @@ package org.vcell.cli.run;
 
 import org.vcell.cli.CLIRecordable;
 import org.vcell.cli.PythonStreamException;
-import org.vcell.cli.run.hdf5.Hdf5DataWrapper;
+import org.vcell.cli.run.hdf5.Hdf5DataContainer;
 import org.vcell.util.FileUtils;
 
 import ncsa.hdf.hdf5lib.exceptions.HDF5Exception;
+
+import org.vcell.cli.run.hdf5.Hdf5Writer;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -121,7 +123,7 @@ public class ExecutionJob {
      */
     public void executeArchive() throws InterruptedException, PythonStreamException, IOException, ExecutionException {
         try {
-            Hdf5DataWrapper masterHdf5File = new Hdf5DataWrapper();
+            Hdf5DataContainer masterHdf5File = new Hdf5DataContainer();
             this.queueAllSedml();
 
             for (String sedmlLocation : this.sedmlLocations){
@@ -139,8 +141,7 @@ public class ExecutionJob {
                 if (hasSucceeded) logger.info("Processing of SedML succeeded.\n" + stats.toString());
                 else logger.error("Processing of SedML has failed.\n" + stats.toString());
             }
-
-            Hdf5DataWrapper.writeToFile(masterHdf5File, new File(this.outputDir));
+            Hdf5Writer.writeHdf5(masterHdf5File, new File(this.outputDir));
         } catch(PythonStreamException e){
             logger.error("Python-processing encountered fatal error. Execution is unable to properly continue.", e);
             throw e;
