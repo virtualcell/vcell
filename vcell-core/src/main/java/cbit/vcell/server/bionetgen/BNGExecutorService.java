@@ -14,8 +14,11 @@ import java.util.List;
 
 import org.vcell.model.bngl.ParseException;
 
+import cbit.image.ImageException;
+import cbit.vcell.geometry.GeometryException;
 import cbit.vcell.mapping.BioNetGenUpdaterCallback;
 import cbit.vcell.parser.ExpressionBindingException;
+import cbit.vcell.parser.ExpressionException;
 
 
 public interface BNGExecutorService {
@@ -33,7 +36,7 @@ public interface BNGExecutorService {
 	
 	public List<BioNetGenUpdaterCallback> getCallbacks();
 	
-	public BNGOutput executeBNG() throws BNGException, ParseException, PropertyVetoException, ExpressionBindingException;
+	public BNGOutput executeBNG() throws BNGException, ParseException, PropertyVetoException, ExpressionBindingException, ExpressionException, GeometryException, ImageException;
 	
 	public void stopBNG() throws Exception;
 	

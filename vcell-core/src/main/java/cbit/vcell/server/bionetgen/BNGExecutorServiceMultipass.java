@@ -30,6 +30,7 @@ import org.vcell.model.rbm.RbmUtils;
 import org.vcell.model.rbm.RbmUtils.BnglObjectConstructionVisitor;
 import org.vcell.util.Pair;
 
+import cbit.image.ImageException;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.bionetgen.BNGComplexSpecies;
 import cbit.vcell.bionetgen.BNGMultiStateSpecies;
@@ -38,6 +39,7 @@ import cbit.vcell.bionetgen.BNGOutputSpec;
 import cbit.vcell.bionetgen.BNGReaction;
 import cbit.vcell.bionetgen.BNGSpecies;
 import cbit.vcell.bionetgen.BNGSpeciesComponent;
+import cbit.vcell.geometry.GeometryException;
 import cbit.vcell.mapping.BioNetGenUpdaterCallback;
 import cbit.vcell.mapping.NetworkTransformer;
 import cbit.vcell.mapping.SimulationContext;
@@ -52,6 +54,7 @@ import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.Structure;
 import cbit.vcell.parser.ExpressionBindingException;
+import cbit.vcell.parser.ExpressionException;
 
 public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGenUpdaterCallback {
 
@@ -111,7 +114,7 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 	}
 
 	@Override
-	public BNGOutput executeBNG() throws BNGException, ParseException, PropertyVetoException, ExpressionBindingException {
+	public BNGOutput executeBNG() throws BNGException, ParseException, PropertyVetoException, ExpressionException, GeometryException, ImageException {
 		this.startTime = System.currentTimeMillis();
 		long eltDoWork = 0;		// elapsed time in doWork
 		long eltExecBng = 0;	// elapsed time executing bngl
@@ -868,7 +871,7 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 	// where each molecule has an extra Site with the compartments as possible States
 	// a reserved name will be used for this Site
 	//
-	private String preprocessInput(String cBngInputString) throws ParseException, PropertyVetoException, ExpressionBindingException {
+	private String preprocessInput(String cBngInputString) throws ParseException, PropertyVetoException, ExpressionException, GeometryException, ImageException {
 		
 		// take the cBNGL file (as string), parse it to recover the rules (we'll need them later)
 		// and create the bngl string with the extra, fake site for the compartments

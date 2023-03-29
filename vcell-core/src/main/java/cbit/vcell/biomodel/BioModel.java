@@ -18,6 +18,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import cbit.vcell.mapping.*;
+import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.model.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -45,12 +46,16 @@ import org.vcell.util.document.PropertyConstants;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.Version;
 
+import cbit.image.ImageException;
 import cbit.vcell.biomodel.meta.IdentifiableProvider;
 import cbit.vcell.biomodel.meta.VCID;
 import cbit.vcell.biomodel.meta.VCMetaData;
+import cbit.vcell.geometry.AnalyticSubVolume;
 import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.GeometryException;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.model.Model.RbmModelContainer;
+import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.solver.Simulation;
@@ -130,11 +135,21 @@ Identifiable, IdentifiableProvider, IssueSource, Displayable, VCellSbmlName
 		}
 	}
 
-	public SimulationContext addNewSimulationContext(String newSimulationContextName, SimulationContext.Application app) throws java.beans.PropertyVetoException {
-	SimulationContext simContext = new SimulationContext(getModel(),new Geometry("non-spatial",0), null,null,app);
-	simContext.setName(newSimulationContextName);
-	addSimulationContext(simContext);
-	return simContext;
+	public SimulationContext addNewSimulationContext(String newSimulationContextName, SimulationContext.Application app) throws java.beans.PropertyVetoException, ExpressionException, GeometryException, ImageException {
+		Geometry geometry;
+		if(Application.SPRINGSALAD == app) {
+			geometry = new Geometry("spatial", 3);
+			geometry.getGeometrySpec().setOrigin(new org.vcell.util.Origin(0,0,0));
+			geometry.getGeometrySpec().setExtent(new org.vcell.util.Extent(1.0,1.0,1.0));
+			geometry.getGeometrySpec().addSubVolume(new AnalyticSubVolume("Intracellular",new cbit.vcell.parser.Expression("z<0.9")));
+			cbit.vcell.geometry.surface.GeometrySurfaceUtils.updateGeometricRegions(geometry.getGeometrySurfaceDescription());
+		} else {
+			geometry = new Geometry("non-spatial", 0);
+		}
+		SimulationContext simContext = new SimulationContext(getModel(), geometry, null, null, app);
+		simContext.setName(newSimulationContextName);
+		addSimulationContext(simContext);
+		return simContext;
 }
 
 

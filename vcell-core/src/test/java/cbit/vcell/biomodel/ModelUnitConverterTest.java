@@ -1,5 +1,7 @@
 package cbit.vcell.biomodel;
 
+import cbit.image.ImageException;
+import cbit.vcell.geometry.GeometryException;
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.Constant;
@@ -61,7 +63,7 @@ public class ModelUnitConverterTest {
     }
 
     @Test
-    public void test_MathOverrides_unit_factors_are_idempotent() throws IOException, XmlParseException, ExpressionException, MatrixException, ModelException, MathException, MappingException, PropertyVetoException {
+    public void test_MathOverrides_unit_factors_are_idempotent() throws IOException, XmlParseException, ExpressionException, MatrixException, ModelException, MathException, MappingException, PropertyVetoException, GeometryException, ImageException {
         final double Kf_value_orig = 2.0;
         final double Kr_value_orig = 3.0;
         final double Kf_value_override_orig = 22.0;
