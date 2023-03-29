@@ -36,6 +36,7 @@ public class Hdf5File {
     final private int H5T_VARIABLE = HDF5Constants.H5T_VARIABLE;
     final private int H5T_STR_NULLTERM = HDF5Constants.H5T_STR_NULLTERM;
     final private int H5T_CSET_UTF8 = HDF5Constants.H5T_CSET_UTF8;
+    final private int H5E_DEFAULT_ERROR_STACK = HDF5Constants.H5E_DEFAULT;
 
     private File javaFileTarget;
     private int fileId;
@@ -75,6 +76,17 @@ public class Hdf5File {
      */
     public Hdf5File(File parentDir, boolean allowExceptions){
         this(parentDir, "reports.h5", allowExceptions);
+    }
+
+
+    public void printErrorStack() {
+        try {
+            H5.H5Eprint2(H5E_DEFAULT_ERROR_STACK, null);
+        } catch (HDF5LibraryException e){
+            String message = "Catatrophic HDF5 error reporting failure detected; Something big just happened...";
+            logger.error(message, e);
+            throw new RuntimeException(message, e);
+        }
     }
 
     /**

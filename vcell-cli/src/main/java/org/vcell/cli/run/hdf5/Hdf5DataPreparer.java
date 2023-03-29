@@ -130,7 +130,7 @@ public class Hdf5DataPreparer {
         // Structure dimensionality:
         dataDimensionList.add(numDataSets);                     // ...first by dataSet
         for (int scanBound : dataSourceNonspatial.scanBounds){
-            dataDimensionList.add((long)scanBound);           // ...then by scan bounds / "repeated task" dimensions
+            dataDimensionList.add((long)scanBound + 1);         // ...then by scan bounds / "repeated task" dimensions
         }
         dataDimensionList.add(numTimePoints);                   // ...finally by max time points
         for (long dim : dataDimensionList){

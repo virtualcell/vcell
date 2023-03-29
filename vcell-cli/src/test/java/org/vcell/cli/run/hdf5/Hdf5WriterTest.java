@@ -71,7 +71,7 @@ public class Hdf5WriterTest {
         Hdf5SedmlResults reportDatasetWrapper = new Hdf5SedmlResults();
         reportDatasetWrapper.datasetMetadata = reportMetadata;
         Hdf5SedmlResultsNonspatial reportDataSourceNonspatial = new Hdf5SedmlResultsNonspatial();
-        reportDataSourceNonspatial.scanBounds = new int[] { 3 };
+        reportDataSourceNonspatial.scanBounds = new int[] { 2 }; // zero indexed? 
         reportDataSourceNonspatial.scanParameterNames = new String[] { "k1" };
         reportDatasetWrapper.dataSource = reportDataSourceNonspatial;
         Map<DataSet, List<double[]>> reportJob = new LinkedHashMap<>();

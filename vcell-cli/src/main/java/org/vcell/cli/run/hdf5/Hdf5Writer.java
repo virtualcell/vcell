@@ -1,7 +1,9 @@
 package org.vcell.cli.run.hdf5;
 
 import cbit.vcell.resource.NativeLib;
+import ncsa.hdf.hdf5lib.H5;
 import ncsa.hdf.hdf5lib.exceptions.HDF5Exception;
+import ncsa.hdf.hdf5lib.exceptions.HDF5LibraryException;
 
 import org.vcell.cli.run.hdf5.Hdf5DataPreparer.Hdf5PreparedData;
 import java.util.*;
@@ -87,6 +89,8 @@ public class Hdf5Writer {
         } finally {
             try {
                 masterHdf5.close();
+            } catch (HDF5LibraryException e){
+                masterHdf5.printErrorStack();
             } catch (Exception e) {
                 e.printStackTrace();
             }
