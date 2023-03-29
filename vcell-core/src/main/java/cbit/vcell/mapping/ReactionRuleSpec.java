@@ -843,7 +843,8 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList, React
 	if(rc.getSimulationContext().getApplicationType() == SimulationContext.Application.SPRINGSALAD) {
 		Map<String, Object> analysisResults = new LinkedHashMap<> ();
 		analizeReaction(analysisResults);
-		if(Subtype.INCOMPATIBLE == getSubtype(analysisResults)) {
+		Subtype subtype = getSubtype(analysisResults);
+		if(Subtype.INCOMPATIBLE == subtype) {
 			List<ReactantPattern> rpList = reactionRule.getReactantPatterns();
 			List<ProductPattern> ppList = reactionRule.getProductPatterns();
 			if(rpList == null || ppList == null) {
@@ -873,7 +874,7 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList, React
 				return;
 			}
 		}
-		if(Subtype.INCOMPATIBLE == getSubtype(analysisResults)) {
+		if(Subtype.INCOMPATIBLE == subtype) {
 			Object bondObject = analysisResults.get(BondTransitionCounter);
 			Object stateObject = analysisResults.get(StateTransitionCounter);
 			if(bondObject != null && stateObject != null) {
@@ -899,10 +900,34 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList, React
 				}
 			}
 		}
-		if(Subtype.INCOMPATIBLE == getSubtype(analysisResults)) {
+		if(Subtype.INCOMPATIBLE == subtype) {
 			String msg = "Reaction incompatible with any SpringSaLaD reaction subtype.";
 			String tip = GenericTip;
 			issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+		}
+		switch(subtype) {
+		case CREATION:
+		case DECAY:
+		case TRANSITION:
+		case ALLOSTERIC:
+			if(reactionRule.isReversible()) {
+				String msg = subtype.columnName + " reactions must be irreversible. Make the reaction ireversible.";
+				String tip = "Make this reaction irreversible or disable it in this table.";
+				issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+				return;
+			}
+			break;
+		case BINDING:
+			if(!reactionRule.isReversible()) {
+				String msg = subtype.columnName + " reactions must be reversible. Make the reaction reversible and keep Kr at 0.";
+				String tip = "Make this reaction reversible or disable it in this table.";
+				issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+				return;
+			}
+			break;
+		case INCOMPATIBLE:
+		default:
+			break;
 		}
 		
 	} else {		// not SpringSaLaD

@@ -44,6 +44,7 @@ import cbit.image.VCImage;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.bionetgen.BNGOutputSpec;
 import cbit.vcell.data.DataContext;
+import cbit.vcell.export.SpringSaLaDExporter;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldUtilities;
 import cbit.vcell.geometry.Geometry;
@@ -94,6 +95,7 @@ import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
+import cbit.vcell.model.Structure.SpringStructureEnum;
 import cbit.vcell.modelopt.AnalysisTask;
 import cbit.vcell.modelopt.ParameterEstimationTask;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
@@ -1345,6 +1347,24 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueVector, boo
 			String name = struct.getName();
 			if (!name.equals(TokenMangler.fixTokenStrict(name))) {
 				String msg = "'" + name + "' not legal identifier for rule-based stochastic applications, try '"+TokenMangler.fixTokenStrict(name)+"'.";
+				issueVector.add(new Issue(struct, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.ERROR));
+			}
+		}
+	}
+	if(applicationType.equals(Application.SPRINGSALAD)) {
+		if(getModel().getStructures().length != 3) {
+			String msg = "SpringSaLaD requires exactly 3 Structures: one Membrane and two Features (Compartments)";
+			issueVector.add(new Issue(getModel().getStructures()[0], issueContext, IssueCategory.Identifiers, msg, Issue.Severity.ERROR));
+		}
+		for(Structure struct : getModel().getStructures()) {
+			String name = struct.getName();
+			if(!Structure.springStructureSet.contains(name)) {
+				String msg = "'" + name + "' not legal identifier for SpringSaLaD applications.";
+				if(struct instanceof Feature) {
+					msg += " Try using '" + SpringStructureEnum.Intracellular.columnName + "' or '" + SpringStructureEnum.Extracellular.columnName + "'.";
+				} else {	// Membrane
+					msg += " Try using '" + SpringStructureEnum.Membrane.columnName + "'.";
+				}
 				issueVector.add(new Issue(struct, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.ERROR));
 			}
 		}
