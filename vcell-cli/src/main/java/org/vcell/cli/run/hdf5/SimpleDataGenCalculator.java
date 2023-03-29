@@ -16,6 +16,7 @@ import java.util.LinkedList;
 import java.util.stream.Stream;
 
 public class SimpleDataGenCalculator {
+    private final double EMPTY_VALUE = Double.NaN;
     private Expression equation;
     private Map<String, Double> bindingMap;
 
@@ -28,7 +29,7 @@ public class SimpleDataGenCalculator {
         this.equation.bindExpression(symTable);
 
         for (String var : variableArray){
-            bindingMap.put(var, Double.NaN);
+            bindingMap.put(var, this.EMPTY_VALUE);
         }
     }
 
@@ -43,9 +44,11 @@ public class SimpleDataGenCalculator {
         }
     }
 
-    public double evaluateWithCurrentArguments() throws ExpressionException, DivideByZeroException {
+    public double evaluateWithCurrentArguments(boolean shouldClear) throws ExpressionException, DivideByZeroException {
         Double[] args = this.bindingMap.values().toArray(new Double[0]);
-        return this.equation.evaluateVector(Stream.of(args).mapToDouble(Double::doubleValue).toArray());
+        double answer = this.equation.evaluateVector(Stream.of(args).mapToDouble(Double::doubleValue).toArray());
+        if (shouldClear) for (String key : this.bindingMap.keySet()) this.bindingMap.put(key, EMPTY_VALUE);
+        return answer;
     }
 
     public double evaluateWithProvidedArguments(Map<String, Double> parameterToArgumentMap) throws ExpressionException, DivideByZeroException {

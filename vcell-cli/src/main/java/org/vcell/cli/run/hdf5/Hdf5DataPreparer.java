@@ -113,24 +113,26 @@ public class Hdf5DataPreparer {
     public static Hdf5PreparedData prepareNonspacialData(Hdf5SedmlResults datasetWrapper){
         long numTimePoints = 0;
         int totalDataVolume = 1;
-        long numVariablesPerJob;
+        long numDataSets;
         double[] bigDataBuffer;
         List<Long> dataDimensionList = new ArrayList<>();
         
         Hdf5SedmlResultsNonspatial dataSourceNonspatial = (Hdf5SedmlResultsNonspatial) datasetWrapper.dataSource;
         Map<DataSet, List<double[]>> dataSetMap = dataSourceNonspatial.allJobResults;
-        numVariablesPerJob = dataSetMap.keySet().size();
+        numDataSets = dataSetMap.keySet().size();
         
         for (DataSet dataSet : dataSetMap.keySet()){
-            numTimePoints = Long.max(numTimePoints, dataSetMap.get(dataSet).size());
+            for (double[] resultsSet : dataSetMap.get(dataSet)){
+                numTimePoints = Long.max(numTimePoints, resultsSet.length);
+            }
         }
 
+        // Structure dimensionality:
+        dataDimensionList.add(numDataSets);                     // ...first by dataSet
         for (int scanBound : dataSourceNonspatial.scanBounds){
-            dataDimensionList.add((long)scanBound+1);
+            dataDimensionList.add((long)scanBound);           // ...then by scan bounds / "repeated task" dimensions
         }
-        dataDimensionList.add(numVariablesPerJob);
-        dataDimensionList.add(numTimePoints);
-        
+        dataDimensionList.add(numTimePoints);                   // ...finally by max time points
         for (long dim : dataDimensionList){
             totalDataVolume *= (int)dim;
         }

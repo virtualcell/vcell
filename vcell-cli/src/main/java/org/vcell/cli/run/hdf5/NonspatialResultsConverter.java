@@ -118,7 +118,8 @@ public class NonspatialResultsConverter {
                 
                 if (resultsByVariable.isEmpty()) continue;
                 int numJobs, maxLengthOfData = 0;
-                NonspatialValueHolder synthesizedResults = new NonspatialValueHolder();
+                String exampleReference = resultsByVariable.keySet().iterator().next().getReference();
+                NonspatialValueHolder synthesizedResults = new NonspatialValueHolder(taskToSimulationMap.get(sedml.getTaskWithId(exampleReference)));
                 SimpleDataGenCalculator calc = new SimpleDataGenCalculator(datagen);
 
                 // Get padding value
@@ -144,16 +145,21 @@ public class NonspatialResultsConverter {
                             double[] specficJobDataSet = results.listOfResultSets.get(jobNum);
                             double datum = datumIndex >= specficJobDataSet.length ? Double.NaN : specficJobDataSet[datumIndex];
                             calc.setArgument(var.getId(), datum);
+                            if (!synthesizedResults.vcSimulation.equals(results.vcSimulation)){
+                                logger.warn("Simulations differ across variables; need to fix data structures to accomodate?");
+                            }
                         }
-                        synthesizedDataset[datumIndex] = calc.evaluateWithCurrentArguments();
+                        synthesizedDataset[datumIndex] = calc.evaluateWithCurrentArguments(true);
                     }
                     synthesizedResults.listOfResultSets.add(synthesizedDataset);
+                    //synthesizedResults.vcSimulation;
                 }
 
                 dataSetValues.put(dataset, synthesizedResults);
 
             } // end of current dataset processing
 
+            if (dataSetValues.isEmpty()) continue;
             List<String> shapes = new LinkedList<>();
             Hdf5SedmlResultsNonspatial dataSourceNonspatial = new Hdf5SedmlResultsNonspatial();
             Hdf5SedmlResults hdf5DatasetWrapper = new Hdf5SedmlResults();
