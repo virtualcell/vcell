@@ -24,22 +24,22 @@ public class Hdf5DataPreparer {
     }
 
     /**
-     * Spacial Data has a special attribute called "times". This function extracts that value
+     * Spatial Data has a special attribute called "times". This function extracts that value
      * 
      * @param datasetWrapper
      * @return the times data
      */
-    public static double[] getSpacialHdf5Attribute_Times(Hdf5SedmlResults datasetWrapper){
+    public static double[] getSpatialHdf5Attribute_Times(Hdf5SedmlResults datasetWrapper){
         return ((Hdf5SedmlResultsSpatial)datasetWrapper.dataSource).varDataItems.get(0).times;
     }
 
     /**
-     * Reads a `Hdf5DatasetWrapper` contents and generates `Hdf5PreparedData` with spacial data for writing out to Hdf5 format via Hdf5Writer
+     * Reads a `Hdf5DatasetWrapper` contents and generates `Hdf5PreparedData` with spatial data for writing out to Hdf5 format via Hdf5Writer
      * 
      * @param datasetWrapper the data relevant to an hdf5 output file
-     * @return the prepared spacial data
+     * @return the prepared spatial data
      */
-    public static Hdf5PreparedData prepareSpacialData (Hdf5SedmlResults datasetWrapper){
+    public static Hdf5PreparedData prepareSpatialData (Hdf5SedmlResults datasetWrapper){
         Hdf5SedmlResultsSpatial dataSourceSpatial = (Hdf5SedmlResultsSpatial)datasetWrapper.dataSource; 
         logger.debug(dataSourceSpatial);
         Hdf5DataSourceSpatialVarDataItem firstVarDataItem = dataSourceSpatial.varDataItems.get(0);
@@ -105,12 +105,12 @@ public class Hdf5DataPreparer {
     }
 
     /**
-     * Reads a `Hdf5DatasetWrapper` contents and generates `Hdf5PreparedData` with nonspacial data for writing out to Hdf5 format via Hdf5Writer
+     * Reads a `Hdf5DatasetWrapper` contents and generates `Hdf5PreparedData` with nonspatial data for writing out to Hdf5 format via Hdf5Writer
      * 
      * @param datasetWrapper the data relevant to an hdf5 output file
-     * @return the prepared nonspacial data
+     * @return the prepared nonspatial data
      */
-    public static Hdf5PreparedData prepareNonspacialData(Hdf5SedmlResults datasetWrapper){
+    public static Hdf5PreparedData prepareNonspatialData(Hdf5SedmlResults datasetWrapper){
         long numTimePoints = 0;
         int totalDataVolume = 1;
         long numDataSets;

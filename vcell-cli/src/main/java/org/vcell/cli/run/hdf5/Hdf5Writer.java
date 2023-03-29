@@ -60,14 +60,14 @@ public class Hdf5Writer {
                 // Process the Dataset
                 for (Hdf5SedmlResults data : hdf5DataWrapper.uriToResultsMap.get(rawPath)){
                     Hdf5PreparedData preparedData;
-                    if (data.dataSource instanceof Hdf5SedmlResultsNonspatial) preparedData = Hdf5DataPreparer.prepareNonspacialData(data);
-                    else if (data.dataSource instanceof Hdf5SedmlResultsSpatial) preparedData = Hdf5DataPreparer.prepareSpacialData(data);
+                    if (data.dataSource instanceof Hdf5SedmlResultsNonspatial) preparedData = Hdf5DataPreparer.prepareNonspatialData(data);
+                    else if (data.dataSource instanceof Hdf5SedmlResultsSpatial) preparedData = Hdf5DataPreparer.prepareSpatialData(data);
                     else continue;
     
                     int currentDatasetId = masterHdf5.insertSedmlData(path, preparedData);
                     
                     if (data.dataSource instanceof Hdf5SedmlResultsSpatial){
-                        masterHdf5.insertNumericAttributes(currentDatasetId, "times", Hdf5DataPreparer.getSpacialHdf5Attribute_Times(data));
+                        masterHdf5.insertNumericAttributes(currentDatasetId, "times", Hdf5DataPreparer.getSpatialHdf5Attribute_Times(data));
                     }  
                     masterHdf5.insertFixedStringAttribute(currentDatasetId, "_type", data.datasetMetadata._type);
                     masterHdf5.insertFixedStringAttributes(currentDatasetId, "scanParameterNames", Arrays.asList(data.dataSource.scanParameterNames));
@@ -89,8 +89,10 @@ public class Hdf5Writer {
         } finally {
             try {
                 masterHdf5.close();
+                logger.info("HDF5 file successfully written to.");
             } catch (HDF5LibraryException e){
                 masterHdf5.printErrorStack();
+                logger.error("HDF5 Library Exception encountered while writing out to HDF5 file; Check std::err for stack");
             } catch (Exception e) {
                 e.printStackTrace();
             }

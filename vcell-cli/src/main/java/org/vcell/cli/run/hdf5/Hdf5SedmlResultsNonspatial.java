@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.List;
 
 /**
- * Struct-class to hold list of nonspacial variable data
+ * Struct-class to hold list of nonspatial variable data
  */
 public class Hdf5SedmlResultsNonspatial extends Hdf5SedmlResultData {
     public Hdf5SedmlResultsNonspatial() {}

@@ -55,7 +55,7 @@ public class Hdf5DataSourceSpatialVarDataItem {
     }
 
     /**
-     * Getter for spacial data
+     * Getter for spatial data
      * 
      * @return the data as a double array
      */
