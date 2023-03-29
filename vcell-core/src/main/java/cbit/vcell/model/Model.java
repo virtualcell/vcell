@@ -3464,6 +3464,9 @@ public void removeStructure(Structure removedStructure) throws PropertyVetoExcep
 	if (!contains(removedStructure)){
 		throw new RuntimeException("structure "+removedStructure.getName()+" not found");
 	}
+	if(fieldStructures.length == 1) {
+		throw new RuntimeException("Remove model compartment Error. Cannot remove the last compartment.");
+	}
 	
 	//Check that the feature is empty
 	String prefix = "Remove model compartment Error\n\nStructure to be removed : '"+removedStructure.getName()+"' : ";
