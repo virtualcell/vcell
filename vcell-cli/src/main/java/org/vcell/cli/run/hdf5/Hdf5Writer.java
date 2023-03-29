@@ -1,7 +1,9 @@
 package org.vcell.cli.run.hdf5;
 
 import cbit.vcell.resource.NativeLib;
+import ncsa.hdf.hdf5lib.H5;
 import ncsa.hdf.hdf5lib.exceptions.HDF5Exception;
+import ncsa.hdf.hdf5lib.exceptions.HDF5LibraryException;
 
 import org.vcell.cli.run.hdf5.Hdf5DataPreparer.Hdf5PreparedData;
 import java.util.*;
@@ -23,12 +25,12 @@ public class Hdf5Writer {
     /**
      * Writes an Hdf5 formatted file given a hdf5FileWrapper and a destination to write the file to.
      * 
-     * @param hdf5FileWrapper the wrapper of hdf5 relevant data
+     * @param hdf5DataWrapper the wrapper of hdf5 relevant data
      * @param outDirForCurrentSedml the directory to place the report file into, NOT the report file itself.
      * @throws HDF5Exception if there is an expection thrown from hdf5 while using the library.
      * @throws IOException if the computer encounteres an unexepcted system IO problem
      */
-    public static void writeHdf5(Hdf5DataWrapper hdf5FileWrapper, File outDirForCurrentSedml) throws HDF5Exception, IOException {
+    public static void writeHdf5(Hdf5DataContainer hdf5DataWrapper, File outDirForCurrentSedml) throws HDF5Exception, IOException {
         Hdf5File masterHdf5 = null;
 
         // Boot Hdf5 Library
@@ -42,7 +44,7 @@ public class Hdf5Writer {
         
         // Attempt to fill the Hdf5
         try {
-            for (String rawPath : hdf5FileWrapper.datasetWrapperMap.keySet()){
+            for (String rawPath : hdf5DataWrapper.uriToResultsMap.keySet()){
                 // Process Parent Groups
                 String path = "";
                 for (String group : rawPath.split("/")){ 
@@ -56,16 +58,16 @@ public class Hdf5Writer {
                 }
     
                 // Process the Dataset
-                for (Hdf5DatasetWrapper data : hdf5FileWrapper.datasetWrapperMap.get(rawPath)){
+                for (Hdf5SedmlResults data : hdf5DataWrapper.uriToResultsMap.get(rawPath)){
                     Hdf5PreparedData preparedData;
-                    if (data.dataSource instanceof Hdf5DataSourceNonspatial) preparedData = Hdf5DataPreparer.prepareNonspacialData(data);
-                    else if (data.dataSource instanceof Hdf5DataSourceSpatial) preparedData = Hdf5DataPreparer.prepareSpacialData(data);
+                    if (data.dataSource instanceof Hdf5SedmlResultsNonspatial) preparedData = Hdf5DataPreparer.prepareNonspatialData(data);
+                    else if (data.dataSource instanceof Hdf5SedmlResultsSpatial) preparedData = Hdf5DataPreparer.prepareSpatialData(data);
                     else continue;
     
                     int currentDatasetId = masterHdf5.insertSedmlData(path, preparedData);
                     
-                    if (data.dataSource instanceof Hdf5DataSourceSpatial){
-                        masterHdf5.insertNumericAttributes(currentDatasetId, "times", Hdf5DataPreparer.getSpacialHdf5Attribute_Times(data));
+                    if (data.dataSource instanceof Hdf5SedmlResultsSpatial){
+                        masterHdf5.insertNumericAttributes(currentDatasetId, "times", Hdf5DataPreparer.getSpatialHdf5Attribute_Times(data));
                     }  
                     masterHdf5.insertFixedStringAttribute(currentDatasetId, "_type", data.datasetMetadata._type);
                     masterHdf5.insertFixedStringAttributes(currentDatasetId, "scanParameterNames", Arrays.asList(data.dataSource.scanParameterNames));
@@ -87,6 +89,10 @@ public class Hdf5Writer {
         } finally {
             try {
                 masterHdf5.close();
+                logger.info("HDF5 file successfully written to.");
+            } catch (HDF5LibraryException e){
+                masterHdf5.printErrorStack();
+                logger.error("HDF5 Library Exception encountered while writing out to HDF5 file; Check std::err for stack");
             } catch (Exception e) {
                 e.printStackTrace();
             }
