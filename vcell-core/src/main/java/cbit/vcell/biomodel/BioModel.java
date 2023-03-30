@@ -53,8 +53,10 @@ import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.geometry.AnalyticSubVolume;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryException;
+import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.model.Model.RbmModelContainer;
+import cbit.vcell.model.Structure.SpringStructureEnum;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.SymbolTableEntry;
@@ -135,13 +137,14 @@ Identifiable, IdentifiableProvider, IssueSource, Displayable, VCellSbmlName
 		}
 	}
 
-	public SimulationContext addNewSimulationContext(String newSimulationContextName, SimulationContext.Application app) throws java.beans.PropertyVetoException, ExpressionException, GeometryException, ImageException {
+	public SimulationContext addNewSimulationContext(String newSimulationContextName, SimulationContext.Application app) throws java.beans.PropertyVetoException, ExpressionException, GeometryException, ImageException, IllegalMappingException, MappingException {
 		Geometry geometry;
 		if(Application.SPRINGSALAD == app) {
 			geometry = new Geometry("spatial", 3);
 			geometry.getGeometrySpec().setOrigin(new org.vcell.util.Origin(0,0,0));
 			geometry.getGeometrySpec().setExtent(new org.vcell.util.Extent(1.0,1.0,1.0));
-			geometry.getGeometrySpec().addSubVolume(new AnalyticSubVolume("Intracellular",new cbit.vcell.parser.Expression("z<0.9")));
+			geometry.getGeometrySpec().addSubVolume(new AnalyticSubVolume(SpringStructureEnum.Intracellular.columnName,new cbit.vcell.parser.Expression("z<0.9")));
+			geometry.getGeometrySpec().addSubVolume(new AnalyticSubVolume(SpringStructureEnum.Extracellular.columnName,new cbit.vcell.parser.Expression("1.0;")));
 			cbit.vcell.geometry.surface.GeometrySurfaceUtils.updateGeometricRegions(geometry.getGeometrySurfaceDescription());
 		} else {
 			geometry = new Geometry("non-spatial", 0);
@@ -149,6 +152,25 @@ Identifiable, IdentifiableProvider, IssueSource, Displayable, VCellSbmlName
 		SimulationContext simContext = new SimulationContext(getModel(), geometry, null, null, app);
 		simContext.setName(newSimulationContextName);
 		addSimulationContext(simContext);
+		
+//		Double charSize = simContext.getCharacteristicSize();
+//		simContext.setCharacteristicSize(Double.valueOf(charSize.doubleValue()/2.0));	// TODO: is this needed?
+		GeometryContext geoContext = simContext.getGeometryContext();
+		cbit.vcell.model.Structure structures[] = geoContext.getModel().getStructures();
+		for (int i=0;i<structures.length;i++) {
+			cbit.vcell.model.Structure structure = structures[i];
+			if (structure instanceof cbit.vcell.model.Feature) {
+				cbit.vcell.model.Feature feature = (cbit.vcell.model.Feature)structure;
+				if (feature.getName().equals(SpringStructureEnum.Extracellular.columnName)) {
+					geoContext.assignStructure(feature,geometry.getGeometrySpec().getSubVolume(SpringStructureEnum.Extracellular.columnName));
+				} else {
+					geoContext.assignStructure(feature, geometry.getGeometrySpec().getSubVolume(SpringStructureEnum.Intracellular.columnName));
+				}
+			} else {
+				cbit.vcell.model.Membrane membrane = (cbit.vcell.model.Membrane)structure;
+				// TODO: how do I map this??
+			}
+		}
 		return simContext;
 }
 
