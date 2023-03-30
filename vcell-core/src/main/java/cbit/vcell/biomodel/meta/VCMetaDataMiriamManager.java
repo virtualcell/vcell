@@ -96,6 +96,12 @@ public class VCMetaDataMiriamManager implements MiriamManager, Serializable {
 				"urn:miriam:chebi",
 				"Chemical Entities of Biological Interest (ChEBI) is a freely available dictionary of molecular entities focused on 'small' chemical compounds.",
 				"CHEBI:36927");																				// CHEBI:36927
+		public final static DataType DataType_FLYBASE 	= new VCMetaDataDataType("FlyBase Database",
+				"http://flybase.org/",
+				"https://identifiers.org/fb/",																// ^((BIOMD|MODEL)\d{10})|(BMID\d{12})$
+				"urn:miriam:fb",		// TODO: this may be wrong
+				"FlyBase is the database of the Drosophila Genome Projects and of associated literature.",
+				"FBgn0004644");
 		public final static DataType DataType_IntAct 		= new VCMetaDataDataType("IntAct",
 				"http://www.ebi.ac.uk/intact/",
 				"https://www.ebi.ac.uk/intact/interaction/",												// ^EBI\-[0-9]+$
@@ -487,6 +493,7 @@ public class VCMetaDataMiriamManager implements MiriamManager, Serializable {
 		list.add(VCMetaDataDataType.DataType_DOI);
 		list.add(VCMetaDataDataType.DataType_Ncit);
 		list.add(VCMetaDataDataType.DataType_GO);
+		list.add(VCMetaDataDataType.DataType_FLYBASE);
 		
 		if(entity instanceof BioModel) {
 			list.add(VCMetaDataDataType.DataType_BIOMODELS);
