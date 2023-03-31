@@ -41,6 +41,8 @@ import cbit.vcell.bionetgen.BNGSpecies;
 import cbit.vcell.bionetgen.BNGSpeciesComponent;
 import cbit.vcell.geometry.GeometryException;
 import cbit.vcell.mapping.BioNetGenUpdaterCallback;
+import cbit.vcell.mapping.IllegalMappingException;
+import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.NetworkTransformer;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
@@ -114,7 +116,7 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 	}
 
 	@Override
-	public BNGOutput executeBNG() throws BNGException, ParseException, PropertyVetoException, ExpressionException, GeometryException, ImageException {
+	public BNGOutput executeBNG() throws BNGException, ParseException, PropertyVetoException, ExpressionException, GeometryException, ImageException, IllegalMappingException, MappingException {
 		this.startTime = System.currentTimeMillis();
 		long eltDoWork = 0;		// elapsed time in doWork
 		long eltExecBng = 0;	// elapsed time executing bngl
@@ -871,7 +873,7 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 	// where each molecule has an extra Site with the compartments as possible States
 	// a reserved name will be used for this Site
 	//
-	private String preprocessInput(String cBngInputString) throws ParseException, PropertyVetoException, ExpressionException, GeometryException, ImageException {
+	private String preprocessInput(String cBngInputString) throws ParseException, PropertyVetoException, ExpressionException, GeometryException, ImageException, IllegalMappingException, MappingException {
 		
 		// take the cBNGL file (as string), parse it to recover the rules (we'll need them later)
 		// and create the bngl string with the extra, fake site for the compartments

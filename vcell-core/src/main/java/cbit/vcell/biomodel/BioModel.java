@@ -53,7 +53,10 @@ import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.geometry.AnalyticSubVolume;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryException;
+import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.geometry.SubVolume;
+import cbit.vcell.geometry.SurfaceClass;
+import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.model.Model.RbmModelContainer;
 import cbit.vcell.model.Structure.SpringStructureEnum;
@@ -141,38 +144,55 @@ Identifiable, IdentifiableProvider, IssueSource, Displayable, VCellSbmlName
 		Geometry geometry;
 		if(Application.SPRINGSALAD == app) {
 			geometry = new Geometry("spatial", 3);
-			geometry.getGeometrySpec().setOrigin(new org.vcell.util.Origin(0,0,0));
-			geometry.getGeometrySpec().setExtent(new org.vcell.util.Extent(1.0,1.0,1.0));
-			geometry.getGeometrySpec().addSubVolume(new AnalyticSubVolume(SpringStructureEnum.Intracellular.columnName,new cbit.vcell.parser.Expression("z<0.9")));
-			geometry.getGeometrySpec().addSubVolume(new AnalyticSubVolume(SpringStructureEnum.Extracellular.columnName,new cbit.vcell.parser.Expression("1.0;")));
+			GeometrySpec geometrySpec = geometry.getGeometrySpec();
+			geometrySpec.setOrigin(new org.vcell.util.Origin(0,0,0));
+			geometrySpec.setExtent(new org.vcell.util.Extent(1.0,1.0,1.0));
+			geometrySpec.addSubVolume(new AnalyticSubVolume(SpringStructureEnum.Intracellular.columnName, new cbit.vcell.parser.Expression("z<0.9")));
+			geometrySpec.addSubVolume(new AnalyticSubVolume(SpringStructureEnum.Extracellular.columnName, new cbit.vcell.parser.Expression("1.0;")));
 			cbit.vcell.geometry.surface.GeometrySurfaceUtils.updateGeometricRegions(geometry.getGeometrySurfaceDescription());
+			
+			SimulationContext simContext = new SimulationContext(getModel(), geometry, null, null, app);
+			simContext.setName(newSimulationContextName);
+			addSimulationContext(simContext);
+			
+			Double charSize = simContext.getCharacteristicSize();
+			simContext.setCharacteristicSize(Double.valueOf(charSize.doubleValue()/2.0));
+			GeometryContext geoContext = simContext.getGeometryContext();
+			Model model = geoContext.getModel();
+			cbit.vcell.model.Structure structures[] = model.getStructures();
+			for (int i=0;i<structures.length;i++) {					// map the compartments
+				cbit.vcell.model.Structure structure = structures[i];
+				if (structure instanceof cbit.vcell.model.Feature) {
+					cbit.vcell.model.Feature feature = (cbit.vcell.model.Feature)structure;
+					if (feature.getName().equals(SpringStructureEnum.Extracellular.columnName)) {
+						geoContext.assignStructure(feature, geometrySpec.getSubVolume(SpringStructureEnum.Extracellular.columnName));
+					} else {
+						geoContext.assignStructure(feature, geometrySpec.getSubVolume(SpringStructureEnum.Intracellular.columnName));
+					}
+				}
+			}
+			GeometrySurfaceDescription geometrySurfaceDescription = geometry.getGeometrySurfaceDescription();
+			geometrySurfaceDescription.updateAll();
+			//SurfaceClass[] surfaceClasses = geometrySurfaceDescription.getSurfaceClasses();
+			for (int i=0;i<structures.length;i++) {					// map the membrane
+				cbit.vcell.model.Structure structure = structures[i];
+				if (structure instanceof cbit.vcell.model.Membrane) {
+					cbit.vcell.model.Membrane membrane = (cbit.vcell.model.Membrane)structure;
+					SubVolume svIntra = geometrySpec.getSubVolume(SpringStructureEnum.Intracellular.columnName);
+					SubVolume svExtra = geometrySpec.getSubVolume(SpringStructureEnum.Extracellular.columnName);
+					SurfaceClass surfaceClass = geometrySurfaceDescription.getSurfaceClass(svIntra, svExtra);
+					geoContext.assignStructure(membrane, surfaceClass);
+				}
+			}
+			return simContext;
 		} else {
 			geometry = new Geometry("non-spatial", 0);
+			SimulationContext simContext = new SimulationContext(getModel(), geometry, null, null, app);
+			simContext.setName(newSimulationContextName);
+			addSimulationContext(simContext);
+			return simContext;
 		}
-		SimulationContext simContext = new SimulationContext(getModel(), geometry, null, null, app);
-		simContext.setName(newSimulationContextName);
-		addSimulationContext(simContext);
-		
-//		Double charSize = simContext.getCharacteristicSize();
-//		simContext.setCharacteristicSize(Double.valueOf(charSize.doubleValue()/2.0));	// TODO: is this needed?
-		GeometryContext geoContext = simContext.getGeometryContext();
-		cbit.vcell.model.Structure structures[] = geoContext.getModel().getStructures();
-		for (int i=0;i<structures.length;i++) {
-			cbit.vcell.model.Structure structure = structures[i];
-			if (structure instanceof cbit.vcell.model.Feature) {
-				cbit.vcell.model.Feature feature = (cbit.vcell.model.Feature)structure;
-				if (feature.getName().equals(SpringStructureEnum.Extracellular.columnName)) {
-					geoContext.assignStructure(feature,geometry.getGeometrySpec().getSubVolume(SpringStructureEnum.Extracellular.columnName));
-				} else {
-					geoContext.assignStructure(feature, geometry.getGeometrySpec().getSubVolume(SpringStructureEnum.Intracellular.columnName));
-				}
-			} else {
-				cbit.vcell.model.Membrane membrane = (cbit.vcell.model.Membrane)structure;
-				// TODO: how do I map this??
-			}
-		}
-		return simContext;
-}
+	}
 
 
 /**
