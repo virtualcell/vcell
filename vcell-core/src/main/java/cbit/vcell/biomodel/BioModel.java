@@ -143,6 +143,25 @@ Identifiable, IdentifiableProvider, IssueSource, Displayable, VCellSbmlName
 	public SimulationContext addNewSimulationContext(String newSimulationContextName, SimulationContext.Application app) throws java.beans.PropertyVetoException, ExpressionException, GeometryException, ImageException, IllegalMappingException, MappingException {
 		Geometry geometry;
 		if(Application.SPRINGSALAD == app) {
+			boolean compatibleCompartments = true;
+			if(getModel().getStructures().length != 3) {
+				compatibleCompartments = false;		// springsalad needs exactly 3 compartments
+			}
+			for(Structure struct : getModel().getStructures()) {
+				String name = struct.getName();
+				if(!Structure.springStructureSet.contains(name)) {
+					compatibleCompartments = false;	// names are hardcoded in SpringStructureEnum
+					break;
+				}
+			}
+			if(compatibleCompartments == false) {	// just make a minimal geometry, we'll complain elsewhere
+				geometry = new Geometry("non-spatial", 0);
+				SimulationContext simContext = new SimulationContext(getModel(), geometry, null, null, app);
+				simContext.setName(newSimulationContextName);
+				addSimulationContext(simContext);
+				return simContext;
+			}
+			
 			geometry = new Geometry("spatial", 3);
 			GeometrySpec geometrySpec = geometry.getGeometrySpec();
 			geometrySpec.setOrigin(new org.vcell.util.Origin(0,0,0));
