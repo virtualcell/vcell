@@ -80,6 +80,9 @@ public class SpringSaLaDExporter {
 		List<MolecularType> molecularTypeList = model.getRbmModelContainer().getMolecularTypeList();
 		List<ReactionRule> reactionRuleList = model.getRbmModelContainer().getReactionRuleList();
 		
+		if(simContext.getSimulations() == null || simContext.getSimulations().length == 0) {
+			throw new RuntimeException("Exporting to SpringSaLaD file format needs at least one Langevin Simulation");
+		}
 		Simulation simulation = simContext.getSimulations(0);
 		Geometry geometry = simContext.getGeometry();
 		GeometryContext geometryContext = simContext.getGeometryContext();
