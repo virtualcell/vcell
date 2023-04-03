@@ -55,7 +55,7 @@ public boolean compareEqual(org.vcell.util.Matchable object)
 	if (!(object instanceof ParticleJumpProcess)) {
 		return false;
 	}
-	if(false) {
+	if(false) {			// TODO: compare everything that needs comparing
 		return false;
 	}
 	return super.compareEqual(object);
