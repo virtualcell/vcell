@@ -6,6 +6,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
 
@@ -15,8 +16,10 @@ import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.server.SimpleJobStatusQuerySpec;
 import cbit.vcell.server.SimulationJobStatus;
+import org.vcell.test.Fast;
 
 @Ignore
+@Category(Fast.class)
 public class SimulationDatabaseDirectTest {
 
 	@Before

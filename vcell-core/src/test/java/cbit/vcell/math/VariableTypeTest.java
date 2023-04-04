@@ -2,9 +2,12 @@ package cbit.vcell.math;
 
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.vcell.test.Fast;
 
 @Ignore
-public class TestVariableType {
+@Category(Fast.class)
+public class VariableTypeTest {
 
 	@Test
 	public void list( ) {
