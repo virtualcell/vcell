@@ -73,7 +73,7 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        test-group: [Fast, MathGen_IT, SBML_IT, SEDML_SBML_IT, SEDML_VCML_IT]
+        test-group: [Fast, MathGen_IT, SBML_IT, SEDML_SBML_IT, SEDML_VCML_IT, BSTS_IT]
       fail-fast: false
     if: ${{ github.event_name == 'push' }}
     name: CI-Test-group-${{ matrix.test-group }}

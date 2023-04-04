@@ -9,12 +9,15 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.vcell.test.Fast;
 import org.vcell.util.exe.ExecutableException;
 
 import cbit.vcell.message.server.cmd.CommandService.CommandOutput;
 import cbit.vcell.mongodb.VCMongoMessage;
 
 @Ignore
+@Category(Fast.class)
 public class CommandServiceSsh_sshjTest {
 
 	@Before

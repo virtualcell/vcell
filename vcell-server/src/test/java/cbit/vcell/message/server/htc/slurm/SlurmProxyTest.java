@@ -13,6 +13,7 @@ import org.apache.commons.io.FileUtils;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.vcell.util.exe.ExecutableException;
 
 import cbit.vcell.message.server.cmd.CommandServiceSshNative;
@@ -24,6 +25,7 @@ import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.server.HtcJobID;
 
 @Ignore
+@Category(Test.class)
 public class SlurmProxyTest {
 
     @BeforeClass
