@@ -234,6 +234,8 @@ public Simulation(Simulation simulation, boolean bCloneMath) {
 	fieldMathOverrides = new MathOverrides (this, simulation.getMathOverrides());
 	fieldSolverTaskDescription = new SolverTaskDescription(this, simulation.getSolverTaskDescription());
 	dataProcessingInstructions = simulation.dataProcessingInstructions;
+	fieldImportedTaskID = simulation.fieldImportedTaskID;
+
 	refreshDependencies();
 }
 

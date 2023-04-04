@@ -1,6 +1,7 @@
 package org.vcell.cli.run.hdf5;
 
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.TempSimulation;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 
 import org.jlibsedml.SedML;
@@ -20,7 +21,7 @@ import java.util.Map;
  */
 public class Hdf5DataExtractor {
     private SedML sedml;
-    private Map<AbstractTask, Simulation> taskToSimulationMap;
+    private Map<AbstractTask, TempSimulation> taskToSimulationMap;
     private String sedmlLocation, sedmlRoot;
 
     private final static Logger logger = LogManager.getLogger(Hdf5DataExtractor.class);
@@ -32,7 +33,7 @@ public class Hdf5DataExtractor {
      * @param taskToSimulationMap mapping of task to its simulation data
      * @param sedmlLocation relative path to the sedml file within the archive
      */
-    public Hdf5DataExtractor(SedML sedml, Map<AbstractTask, Simulation> taskToSimulationMap, String sedmlLocation){
+    public Hdf5DataExtractor(SedML sedml, Map<AbstractTask, TempSimulation> taskToSimulationMap, String sedmlLocation){
         this.sedml = sedml;
         this.taskToSimulationMap = taskToSimulationMap;
         this.sedmlRoot = Paths.get(sedml.getPathForURI()).toString();
