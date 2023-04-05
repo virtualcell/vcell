@@ -112,21 +112,20 @@ public class SolverHandler {
         }
         
         {
-    	// we first make a list of all the sub tasks (may be instanceof Task or RepeatedTask)
+    	// we first make a list of all the sub tasks (sub tasks themselves may be instanceof Task or another RepeatedTask)
         Set <AbstractTask> subTasks = new LinkedHashSet<> ();
         for(AbstractTask at : sedml.getTasks()) {
-        	if(at instanceof RepeatedTask) {
-        		RepeatedTask rt = (RepeatedTask)at;
-        		Map<String, SubTask> subTasksOfRepeatedTask = rt.getSubTasks();
-        		for (Map.Entry<String, SubTask> entry : subTasksOfRepeatedTask.entrySet()) {
-        			String subTaskId = entry.getKey();
-        			AbstractTask subTask = sedml.getTaskWithId(subTaskId);
-       				subTasks.add(subTask);
-        		}
-        	}
+        	if(!(at instanceof RepeatedTask)) continue;
+			RepeatedTask rt = (RepeatedTask)at;
+			Map<String, SubTask> subTasksOfRepeatedTask = rt.getSubTasks();
+			for (Map.Entry<String, SubTask> entry : subTasksOfRepeatedTask.entrySet()) {
+				String subTaskId = entry.getKey();
+				AbstractTask subTask = sedml.getTaskWithId(subTaskId);
+				subTasks.add(subTask);
+			}
         }
         // then we make a list of all topmost tasks (Task or RepeatedTask that are not a subtask)
-    	// is the topmost task of a chain that ends with an actual task
+    	// the topmost task is the "actual" task at the end of a chain  of subtasks
         Set <AbstractTask> topmostTasks2 = new LinkedHashSet<> ();	// topmost tasks, different way to calculate (they are not in the list of subtasks above)
         for(AbstractTask at : sedml.getTasks()) {
        		if(!subTasks.contains(at)) {
@@ -303,7 +302,7 @@ public class SolverHandler {
         	countBioModels = bioModelList.size();
         }
         
-        initialize(bioModelList, sedml);
+        this.initialize(bioModelList, sedml);
 
         int simulationJobCount = 0;
         int bioModelCount = 0;
