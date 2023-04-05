@@ -52,7 +52,7 @@ public LangevinParticleJumpProcess(String name, List<ParticleVariable> particles
  */
 public boolean compareEqual(org.vcell.util.Matchable object) 
 {
-	if (!(object instanceof ParticleJumpProcess)) {
+	if (!(object instanceof LangevinParticleJumpProcess)) {
 		return false;
 	}
 	if(false) {			// TODO: compare everything that needs comparing

@@ -87,5 +87,35 @@ public class LangevinParticleMolecularComponent extends ParticleMolecularCompone
 			throw new MathFormatException("unexpected identifier "+token);
 		}	
 	}
+	public double getRadius() {
+		return fieldRadius;
+	}
+	public void setRadius(double fieldRadius) {
+		this.fieldRadius = fieldRadius;
+	}
+	public double getDiffusionRate() {
+		return fieldDiffusionRate;
+	}
+	public void setDiffusionRate(double fieldDiffusionRate) {
+		this.fieldDiffusionRate = fieldDiffusionRate;
+	}
+	public Structure getLocation() {
+		return fieldLocation;
+	}
+	public void setLocation(Structure fieldLocation) {
+		this.fieldLocation = fieldLocation;
+	}
+	public Coordinate getCoordinate() {
+		return fieldCoordinate;
+	}
+	public void setCoordinate(Coordinate fieldCoordinate) {
+		this.fieldCoordinate = fieldCoordinate;
+	}
+	public NamedColor getColor() {
+		return fieldColor;
+	}
+	public void setColor(NamedColor fieldColor) {
+		this.fieldColor = fieldColor;
+	}
 
 }

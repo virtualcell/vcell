@@ -41,6 +41,8 @@ import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.JumpProcessRateDefinition;
 import cbit.vcell.math.LangevinParticleJumpProcess;
+import cbit.vcell.math.LangevinParticleMolecularComponent;
+import cbit.vcell.math.LangevinParticleMolecularType;
 import cbit.vcell.math.MacroscopicRateConstant;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
@@ -1131,11 +1133,13 @@ protected LangevinMathMapping(SimulationContext simContext, MathMappingCallback 
 		List<RbmObservable> observableList = model.getRbmModelContainer().getObservableList();
 		List<MolecularType> molecularTypeList = model.getRbmModelContainer().getMolecularTypeList();
 		for (MolecularType molecularType : molecularTypeList){
-			ParticleMolecularType particleMolecularType = new ParticleMolecularType(molecularType.getName());
+			// TODO: LangevinParticleMolecularType extra fields
+			LangevinParticleMolecularType particleMolecularType = new LangevinParticleMolecularType(molecularType.getName());
 			for (MolecularComponent molecularComponent : molecularType.getComponentList()){
 				String pmcName = molecularComponent.getName();
 				String pmcId = particleMolecularType.getName() + "_" + molecularComponent.getName();
-				ParticleMolecularComponent particleMolecularComponent = new ParticleMolecularComponent(pmcId, pmcName);
+				// TODO: LangevinParticleMolecularComponent extra fields
+				LangevinParticleMolecularComponent particleMolecularComponent = new LangevinParticleMolecularComponent(pmcId, pmcName);
 				for (ComponentStateDefinition componentState : molecularComponent.getComponentStateDefinitions()){
 					ParticleComponentStateDefinition pcsd = particleMolecularComponent.getComponentStateDefinition(componentState.getName());
 					if(pcsd == null) {
@@ -1188,6 +1192,9 @@ protected LangevinMathMapping(SimulationContext simContext, MathMappingCallback 
 			
 			for (MolecularTypePattern molecularTypePattern : speciesPattern.getMolecularTypePatterns()){
 				ParticleMolecularType particleMolecularType = mathDesc.getParticleMolecularType(molecularTypePattern.getMolecularType().getName());
+				if(!(particleMolecularType instanceof LangevinParticleMolecularType)) {
+					throw new RuntimeException("LangevinMathMapping: particleMolecularType must be instanceof LangevinParticleMolecularType");
+				}
 				ParticleMolecularTypePattern particleMolecularTypePattern = new ParticleMolecularTypePattern(particleMolecularType);
 				String participantMatchLabel = molecularTypePattern.getParticipantMatchLabel();
 				if (molecularTypePattern.getParticipantMatchLabel()!=null){
@@ -1197,6 +1204,9 @@ protected LangevinMathMapping(SimulationContext simContext, MathMappingCallback 
 				for (MolecularComponentPattern molecularComponentPattern : molecularTypePattern.getComponentPatternList()){
 					MolecularComponent molecularComponent = molecularComponentPattern.getMolecularComponent();
 					ParticleMolecularComponent particleMolecularComponent = particleMolecularType.getMolecularComponent(molecularComponent.getName());
+					if(!(particleMolecularComponent instanceof LangevinParticleMolecularComponent)) {
+						throw new RuntimeException("LangevinMathMapping: particleMolecularComponent must be instanceof LangevinParticleMolecularComponent");
+					}
 					ParticleMolecularComponentPattern particleMolecularComponentPattern = new ParticleMolecularComponentPattern(particleMolecularComponent);
 					ComponentStatePattern componentState = molecularComponentPattern.getComponentStatePattern();
 					if (componentState != null){

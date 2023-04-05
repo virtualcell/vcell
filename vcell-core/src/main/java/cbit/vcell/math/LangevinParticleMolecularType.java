@@ -25,10 +25,10 @@ public class LangevinParticleMolecularType extends ParticleMolecularType {
 	
 	@Override
 	public boolean compareEqual(Matchable obj) {
-		if(!(obj instanceof ParticleMolecularType)) {
+		if(!(obj instanceof LangevinParticleMolecularType)) {
 			return false;
 		}
-		ParticleMolecularType other = (ParticleMolecularType)obj;
+		LangevinParticleMolecularType other = (LangevinParticleMolecularType)obj;
 		if (false) {
 			return false;			// TODO: compare everything that needs comparing
 		}
@@ -42,7 +42,11 @@ public class LangevinParticleMolecularType extends ParticleMolecularType {
 			buffer.append(" "+VCML.EndBlock+"\n");
 		}else{
 			for (ParticleMolecularComponent component : getComponentList()) {
-				buffer.append("\n    "+component.getVCML());
+				if(component instanceof LangevinParticleMolecularComponent) {
+					buffer.append("\n    "+((LangevinParticleMolecularComponent)component).getVCML());
+				} else {
+					throw new RuntimeException("LangevinParticleMolecularType: Site instance must be LangevinParticleMolecularComponent");
+				}
 			}
 			for(String anchor : getAnchorList()) {
 				buffer.append("\n        " + VCML.ParticleMolecularTypeAnchor + " " + anchor);
@@ -67,7 +71,7 @@ public class LangevinParticleMolecularType extends ParticleMolecularType {
 				token = tokens.nextToken();
 				String molecularComponentName = token;
 				String id = getName() + "_" + molecularComponentName;
-				ParticleMolecularComponent particleMolecularComponent = new ParticleMolecularComponent(id, molecularComponentName);
+				LangevinParticleMolecularComponent particleMolecularComponent = new LangevinParticleMolecularComponent(id, molecularComponentName);
 				particleMolecularComponent.read(tokens);
 				addMolecularComponent(particleMolecularComponent);
 				continue;
@@ -79,6 +83,13 @@ public class LangevinParticleMolecularType extends ParticleMolecularType {
 			}
 			throw new MathFormatException("unexpected identifier "+token);
 		}	
+	}
+
+	public Set<Pair<LangevinParticleMolecularComponent, LangevinParticleMolecularComponent>> getInternalLinkSpec() {
+		return internalLinkSpec;
+	}
+	public void setInternalLinkSpec(Set<Pair<LangevinParticleMolecularComponent, LangevinParticleMolecularComponent>> internalLinkSpec) {
+		this.internalLinkSpec = internalLinkSpec;
 	}
 	
 }
