@@ -5,9 +5,12 @@ import java.io.StringReader;
 
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.vcell.test.Fast;
 import org.vcell.util.CountingLineReader;
 
 @Ignore
+@Category(Fast.class)
 public class CountingLineReaderTest {
 	
 	private final static String BLB =

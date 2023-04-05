@@ -22,13 +22,16 @@ import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.vcell.cli.CLIPythonManager;
 import org.vcell.cli.CLIRecordable;
+import org.vcell.test.BSTS_IT;
 import org.vcell.util.VCellUtilityHub;
 
 @RunWith(Parameterized.class)
+@Category(BSTS_IT.class)
 public class BSTSBasedOmexExecTest {
 	private final String testCaseFilename;
 

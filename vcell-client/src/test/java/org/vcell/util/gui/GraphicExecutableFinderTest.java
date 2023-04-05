@@ -10,18 +10,22 @@ import javax.swing.JFrame;
 import org.junit.Ignore;
 
 import cbit.vcell.resource.ResourceUtil;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.vcell.test.Fast;
 
 @Ignore
+@Category(Fast.class)
 public class GraphicExecutableFinderTest {
 	public static String TEST_EXE  = "MovingBoundary";
-	//@Test
+	@Test
 	public void testDialog( ) throws FileNotFoundException, BackingStoreException, InterruptedException {
 		ExecutableFinderDialog gef = new ExecutableFinderDialog(new JFrame( ), "find the moving boundary executable, okay?");
 		 File f = ResourceUtil.getExecutable(TEST_EXE, false);
 		 System.out.println(f.getAbsolutePath());
 	}
 	
-	//@Test
+	@Test
 	public void qt( ) {
 		Component parentComponent = new JFrame( );
 		String rcode = DialogUtils.showOKCancelWarningDialog(parentComponent, "title" ," Eureka!");

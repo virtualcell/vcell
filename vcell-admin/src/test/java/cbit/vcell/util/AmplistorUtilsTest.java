@@ -19,12 +19,15 @@ import java.util.Scanner;
 
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.vcell.test.Fast;
 import org.vcell.util.AuthenticationException;
 import org.vcell.util.document.KeyValue;
 
 import cbit.vcell.util.AmplistorUtils.AmplistorCredential;
 
 @Ignore
+@Category(Fast.class)
 public class AmplistorUtilsTest {
 	
 	private static final int NUMFILES = 5;
