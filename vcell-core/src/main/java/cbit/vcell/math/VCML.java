@@ -216,6 +216,13 @@ public class VCML {
 	public final static String Subtype					= "Subtype"; // particle Langevin / SpringSaLaD
 	public final static String TransitionCondition		= "TransitionCondition"; // particle Langevin / SpringSaLaD
 	public final static String BondLength				= "BondLength"; // particle Langevin / SpringSaLaD
+	public final static String Links					= "Links";	// particle Langevin / SpringSaLaD
+	public final static String LinkSeparator			= " :: ";	// particle Langevin / SpringSaLaD
+	public final static String ParticleComponentRadius	= "Radius";	// particle Langevin / SpringSaLaD
+	public final static String ParticleComponentDiffusionRate	= "DiffusionRate";	// particle Langevin / SpringSaLaD
+	public final static String ParticleComponentLocation	= "Location";	// particle Langevin / SpringSaLaD
+	public final static String ParticleComponentCoordinate	= "Coordinate";	// particle Langevin / SpringSaLaD
+	public final static String ParticleComponentColor		= "NamedColor";	// particle Langevin / SpringSaLaD
 	
 	public final static String ParticleMolecularComponent	= "Component";
 	public final static String ParticleComponentAllowableState	= "AllowableState";

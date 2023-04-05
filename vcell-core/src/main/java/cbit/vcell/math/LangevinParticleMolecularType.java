@@ -38,15 +38,22 @@ public class LangevinParticleMolecularType extends ParticleMolecularType {
 	public String getVCML() {
 		StringBuffer buffer = new StringBuffer();
 		buffer.append(VCML.ParticleMolecularType + " " + getName() + " " + VCML.BeginBlock);
-		if (getComponentList().size() == 0 && getAnchorList().size() == 0){
+		if (getComponentList().size() == 0 && getAnchorList().size() == 0) {
 			buffer.append(" "+VCML.EndBlock+"\n");
-		}else{
+		} else {
+			if(internalLinkSpec.size() > 0) {
+				buffer.append("\n        " + VCML.Links + "  " + VCML.BeginBlock);
+				for(Pair<LangevinParticleMolecularComponent, LangevinParticleMolecularComponent> pair : internalLinkSpec) {
+					buffer.append("\n            " + pair.one.getName() + VCML.LinkSeparator + pair.two.getName());
+				}
+				buffer.append("\n        " + VCML.EndBlock);
+			}
 			for (ParticleMolecularComponent component : getComponentList()) {
-				if(component instanceof LangevinParticleMolecularComponent) {
-					buffer.append("\n    "+((LangevinParticleMolecularComponent)component).getVCML());
-				} else {
+				if(!(component instanceof LangevinParticleMolecularComponent)) {
 					throw new RuntimeException("LangevinParticleMolecularType: Site instance must be LangevinParticleMolecularComponent");
 				}
+				LangevinParticleMolecularComponent langevinComponent = (LangevinParticleMolecularComponent)component;
+				buffer.append("\n    "+langevinComponent.getVCML());
 			}
 			for(String anchor : getAnchorList()) {
 				buffer.append("\n        " + VCML.ParticleMolecularTypeAnchor + " " + anchor);

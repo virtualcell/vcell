@@ -19,7 +19,7 @@ public class LangevinParticleMolecularComponent extends ParticleMolecularCompone
 	
 	private double fieldRadius = 1.0;
 	private double fieldDiffusionRate = 1.0;
-	private Structure fieldLocation = null;		// feature or membrane
+	private String fieldLocation = null;		// feature or membrane name, identical to subdomain name
 	private Coordinate fieldCoordinate = new Coordinate(0,0,0);	// double x,y,z; has distanceTo()
 	private NamedColor fieldColor = Colors.RED;
 
@@ -52,6 +52,11 @@ public class LangevinParticleMolecularComponent extends ParticleMolecularCompone
 		if (getComponentStateDefinitions().size()==0) {
 			buffer.append(" }");
 		} else {
+			buffer.append("\n            "+VCML.ParticleComponentRadius + " " + fieldRadius + "");
+			buffer.append("\n            "+VCML.ParticleComponentDiffusionRate + " " + fieldDiffusionRate + "");
+			buffer.append("\n            "+VCML.ParticleComponentLocation + " " + fieldLocation + "");
+			buffer.append("\n            "+VCML.ParticleComponentCoordinate + " " + fieldCoordinate + "");
+			buffer.append("\n            "+VCML.ParticleComponentColor + " " + fieldColor + "");
 			for (ParticleComponentStateDefinition state : getComponentStateDefinitions()) {
 				String name = state.getName();
 				buffer.append("\n            "+VCML.ParticleComponentAllowableState + " " + name + "");
@@ -99,10 +104,10 @@ public class LangevinParticleMolecularComponent extends ParticleMolecularCompone
 	public void setDiffusionRate(double fieldDiffusionRate) {
 		this.fieldDiffusionRate = fieldDiffusionRate;
 	}
-	public Structure getLocation() {
+	public String getLocation() {
 		return fieldLocation;
 	}
-	public void setLocation(Structure fieldLocation) {
+	public void setLocation(String fieldLocation) {
 		this.fieldLocation = fieldLocation;
 	}
 	public Coordinate getCoordinate() {

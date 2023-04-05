@@ -129,8 +129,6 @@ protected LangevinMathMapping(SimulationContext simContext, MathMappingCallback 
 		//
 		// verify 3D
 		//
-		// TODO: add 3D default geometry!
-		//
 		if (simContext.getGeometry().getDimension() != 3) {
 			throw new MappingException("Langevin based particle math mapping implemented for 3D spatial geometry - dimension != 3");
 		}
@@ -357,8 +355,24 @@ protected LangevinMathMapping(SimulationContext simContext, MathMappingCallback 
 			}
 		}
 
+		Map<MolecularType, SpeciesContextSpec> molecularTypeToSpeciesContextSpecMap = new LinkedHashMap<> ();
 		SpeciesContextSpec speciesContextSpecs[] = getSimulationContext().getReactionContext().getSpeciesContextSpecs();
-
+		for(SpeciesContextSpec scs : speciesContextSpecs) {
+			SpeciesContext sc = scs.getSpeciesContext();
+			if(!sc.hasSpeciesPattern()) {
+				throw new RuntimeException("LangevinMathMapping: all Species must have valid SpeciesPattern");
+			}
+			SpeciesPattern sp = sc.getSpeciesPattern();
+			List<MolecularTypePattern> molecularTypePatterns = sp.getMolecularTypePatterns();
+			if(molecularTypePatterns== null || molecularTypePatterns.size() != 1) {
+				throw new RuntimeException("LangevinMathMapping: all Species must have exactly one MolecularType");
+			}
+			MolecularType mt = molecularTypePatterns.get(0).getMolecularType();
+			if(molecularTypeToSpeciesContextSpecMap.containsKey(mt)) {
+				throw new RuntimeException("LangevinMathMapping: only one Species can be defined for each MolecularType");
+			}
+			molecularTypeToSpeciesContextSpecMap.put(mt, scs);
+		}
 		addInitialConditions(domain, speciesContextSpecs, varHash);
 		
 		//
@@ -443,7 +457,7 @@ protected LangevinMathMapping(SimulationContext simContext, MathMappingCallback 
 		//
 		// define all molecules and unique species patterns (add molecules to mathDesc and speciesPatterns to varHash).
 		//
-		HashMap<SpeciesPattern, VolumeParticleSpeciesPattern> speciesPatternMap = addSpeciesPatterns(domain, rrList);
+		HashMap<SpeciesPattern, VolumeParticleSpeciesPattern> speciesPatternMap = addSpeciesPatterns(domain, rrList, molecularTypeToSpeciesContextSpecMap);
 		HashSet<VolumeParticleSpeciesPattern> uniqueParticleSpeciesPatterns = new HashSet<>(speciesPatternMap.values());
 		for (VolumeParticleSpeciesPattern volumeParticleSpeciesPattern : uniqueParticleSpeciesPatterns){
 			varHash.addVariable(volumeParticleSpeciesPattern);
@@ -1126,25 +1140,37 @@ protected LangevinMathMapping(SimulationContext simContext, MathMappingCallback 
 		return observables;
 	}
 
-	private HashMap<SpeciesPattern, VolumeParticleSpeciesPattern> addSpeciesPatterns(Domain domain, List<ReactionRule> rrList) throws MathException {
+	private HashMap<SpeciesPattern, VolumeParticleSpeciesPattern> addSpeciesPatterns(Domain domain, List<ReactionRule> rrList,
+			Map<MolecularType, SpeciesContextSpec> molecularTypeToSpeciesContextSpecMap) throws MathException {
 		// Particle Molecular Types
 		//
 		Model model = getSimulationContext().getModel();
 		List<RbmObservable> observableList = model.getRbmModelContainer().getObservableList();
 		List<MolecularType> molecularTypeList = model.getRbmModelContainer().getMolecularTypeList();
-		for (MolecularType molecularType : molecularTypeList){
-			// TODO: LangevinParticleMolecularType extra fields
+		for (MolecularType molecularType : molecularTypeList) {
+			Map<MolecularComponentPattern, LangevinParticleMolecularComponent> mcToLpmc = new LinkedHashMap<> ();
 			LangevinParticleMolecularType particleMolecularType = new LangevinParticleMolecularType(molecularType.getName());
-			for (MolecularComponent molecularComponent : molecularType.getComponentList()){
+			SpeciesContextSpec scs = molecularTypeToSpeciesContextSpecMap.get(molecularType);	// scs may be null for Sink and Source
+			for (MolecularComponent molecularComponent : molecularType.getComponentList()) {
 				String pmcName = molecularComponent.getName();
 				String pmcId = particleMolecularType.getName() + "_" + molecularComponent.getName();
-				// TODO: LangevinParticleMolecularComponent extra fields
 				LangevinParticleMolecularComponent particleMolecularComponent = new LangevinParticleMolecularComponent(pmcId, pmcName);
 				for (ComponentStateDefinition componentState : molecularComponent.getComponentStateDefinitions()){
 					ParticleComponentStateDefinition pcsd = particleMolecularComponent.getComponentStateDefinition(componentState.getName());
 					if(pcsd == null) {
 						particleMolecularComponent.addComponentStateDefinition(new ParticleComponentStateDefinition(componentState.getName()));
 					}
+				}
+				if(scs != null) {
+					Map<MolecularComponentPattern, SiteAttributesSpec> siteAttributesMap = scs.getSiteAttributesMap();
+					MolecularTypePattern mtp = scs.getSpeciesContext().getSpeciesPattern().getMolecularTypePatterns().get(0);	// we know it's valid, no null pointer possible
+					MolecularComponentPattern mcp = mtp.getMolecularComponentPattern(molecularComponent);
+					SiteAttributesSpec sas = siteAttributesMap.get(mcp);
+					particleMolecularComponent.setColor(sas.getColor());
+					particleMolecularComponent.setLocation(sas.getLocation().getName());
+					particleMolecularComponent.setRadius(sas.getRadius());
+					particleMolecularComponent.setDiffusionRate(sas.getDiffusionRate());
+					mcToLpmc.put(mcp, particleMolecularComponent);
 				}
 				particleMolecularType.addMolecularComponent(particleMolecularComponent);
 			}
@@ -1154,6 +1180,19 @@ protected LangevinMathMapping(SimulationContext simContext, MathMappingCallback 
 					anchorList.add(struct.getName());
 				}
 				particleMolecularType.setAnchorList(anchorList);
+			}
+			if(scs != null) {
+				Set<MolecularInternalLinkSpec> internalLinkSet = scs.getInternalLinkSet();
+				if(internalLinkSet == null) {
+					throw new RuntimeException("LangevinMathMapping: the internal link set cannot be null");
+				}
+				for(MolecularInternalLinkSpec mils : internalLinkSet) {
+					Pair<MolecularComponentPattern, MolecularComponentPattern> link = mils.getLink();
+					LangevinParticleMolecularComponent one = mcToLpmc.get(link.one);
+					LangevinParticleMolecularComponent two = mcToLpmc.get(link.two);
+					Pair<LangevinParticleMolecularComponent, LangevinParticleMolecularComponent> pair = new Pair<> (one, two);
+					particleMolecularType.getInternalLinkSpec().add(pair);
+				}
 			}
 			mathDesc.addParticleMolecularType(particleMolecularType);
 		}
