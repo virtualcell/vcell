@@ -3456,7 +3456,7 @@ private void refreshDiagrams() {
 }
 
 
-public void removeStructure(Structure removedStructure) throws PropertyVetoException {
+public void removeStructure(Structure removedStructure, boolean canRemoveLast) throws PropertyVetoException {
 
 	if (removedStructure == null){
 		throw new RuntimeException("structure is null");
@@ -3464,7 +3464,7 @@ public void removeStructure(Structure removedStructure) throws PropertyVetoExcep
 	if (!contains(removedStructure)){
 		throw new RuntimeException("structure "+removedStructure.getName()+" not found");
 	}
-	if(fieldStructures.length == 1) {
+	if(fieldStructures.length == 1 && canRemoveLast == false) {
 		throw new RuntimeException("Remove model compartment Error. Cannot remove the last compartment.");
 	}
 	
@@ -4643,7 +4643,7 @@ public String isValidForStochApp()
 }
 
 	public void removeObject(Object object) throws PropertyVetoException {
-		if(object instanceof Feature || object instanceof Membrane) { removeStructure((Structure) object); }
+		if(object instanceof Feature || object instanceof Membrane) { removeStructure((Structure) object, false); }
 		else if(object instanceof ModelParameter) { removeModelParameter((ModelParameter) object); }
 		else if(object instanceof ReactionStep) { removeReactionStep((ReactionStep) object); }
 		else if(object instanceof Species) { removeSpecies((Species) object); }

@@ -615,7 +615,7 @@ public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonToo
 		} else if (menuAction.equals(CartoonToolEditActions.Delete.MENU_ACTION)) {
 			try {
 				if(getGraphModel().getSelectedShape() instanceof ReactionContainerShape && menuAction.equals(CartoonToolEditActions.Delete.MENU_ACTION)){
-					getModel().removeStructure(((ReactionContainerShape)getGraphModel().getSelectedShape()).getStructure());
+					getModel().removeStructure(((ReactionContainerShape)getGraphModel().getSelectedShape()).getStructure(), false);
 					return;
 				}
 				if (getSelectedReactionStepArray()!=null || getSelectedSpeciesContextArray()!=null) {

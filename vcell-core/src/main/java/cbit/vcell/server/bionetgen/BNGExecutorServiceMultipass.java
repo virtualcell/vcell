@@ -897,7 +897,7 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 			Structure struct = model.getStructure(0);
 			if(struct != null) {
 				try {
-					model.removeStructure(struct);
+					model.removeStructure(struct, true);
 				} catch (PropertyVetoException e) {
 					e.printStackTrace();
 				}
