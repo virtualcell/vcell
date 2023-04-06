@@ -3,8 +3,10 @@ package cbit.vcell.math;
 import java.beans.PropertyVetoException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.vcell.util.CommentStringTokenizer;
@@ -64,16 +66,37 @@ public class LangevinParticleMolecularType extends ParticleMolecularType {
 	}
 
 	public void read(CommentStringTokenizer tokens) throws MathFormatException {
+		Set<Pair<String, String>> linksAsStringsSet = new LinkedHashSet<> ();
+		Map<String, LangevinParticleMolecularComponent> lpmcMap = new LinkedHashMap<> ();
 		String token = null;
 		token = tokens.nextToken();
 		if (!token.equalsIgnoreCase(VCML.BeginBlock)){
 			throw new MathFormatException("unexpected token "+token+" expecting "+VCML.BeginBlock);
-		}			
+		}
 		while (tokens.hasMoreTokens()) {
 			token = tokens.nextToken();
 			if (token.equalsIgnoreCase(VCML.EndBlock)) {
 				break;
-			}			
+			}
+			if (token.equalsIgnoreCase(VCML.Links)) {
+				token = tokens.nextToken();
+				if (!token.equalsIgnoreCase(VCML.BeginBlock)){
+					throw new MathFormatException("unexpected token "+token+" expecting "+VCML.BeginBlock);
+				}
+				while (tokens.hasMoreTokens()) {
+					token = tokens.nextToken();
+					if (token.equalsIgnoreCase(VCML.EndBlock)) {
+						break;
+					}
+					token = tokens.nextToken();
+					String one = token;
+					token = tokens.nextToken();		// the " :: "
+					token = tokens.nextToken();
+					String two = token;
+					Pair<String, String> pair = new Pair<> (one, two);
+					linksAsStringsSet.add(pair);	// at this point we may not have yet the LangevinParticleMolecularComponent
+				}
+			}
 			if (token.equalsIgnoreCase(VCML.ParticleMolecularComponent)) {
 				token = tokens.nextToken();
 				String molecularComponentName = token;
@@ -81,6 +104,7 @@ public class LangevinParticleMolecularType extends ParticleMolecularType {
 				LangevinParticleMolecularComponent particleMolecularComponent = new LangevinParticleMolecularComponent(id, molecularComponentName);
 				particleMolecularComponent.read(tokens);
 				addMolecularComponent(particleMolecularComponent);
+				lpmcMap.put(molecularComponentName, particleMolecularComponent);
 				continue;
 			} else if(token.equalsIgnoreCase(VCML.ParticleMolecularTypeAnchor)) {
 				token = tokens.nextToken();
@@ -89,7 +113,13 @@ public class LangevinParticleMolecularType extends ParticleMolecularType {
 				continue;
 			}
 			throw new MathFormatException("unexpected identifier "+token);
-		}	
+		}
+		for(Pair<String, String> pair : linksAsStringsSet) {
+			LangevinParticleMolecularComponent one = lpmcMap.get(pair.one);
+			LangevinParticleMolecularComponent two = lpmcMap.get(pair.two);
+			Pair<LangevinParticleMolecularComponent, LangevinParticleMolecularComponent> link = new Pair<> (one, two);
+			internalLinkSpec.add(link);
+		}
 	}
 
 	public Set<Pair<LangevinParticleMolecularComponent, LangevinParticleMolecularComponent>> getInternalLinkSpec() {

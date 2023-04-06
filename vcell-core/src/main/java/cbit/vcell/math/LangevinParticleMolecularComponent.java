@@ -76,7 +76,7 @@ public class LangevinParticleMolecularComponent extends ParticleMolecularCompone
 			token = tokens.nextToken();
 			if (token.equalsIgnoreCase(VCML.EndBlock)) {
 				break;
-			}			
+			}
 			if (token.equalsIgnoreCase(VCML.ParticleComponentAllowableState)) {
 				token = tokens.nextToken();
 				String componentName = token;
@@ -88,7 +88,45 @@ public class LangevinParticleMolecularComponent extends ParticleMolecularCompone
 					}
 				}
 				continue;
-			}	
+			}
+			if(token.equalsIgnoreCase(VCML.ParticleComponentRadius)) {
+				token = tokens.nextToken();
+				Double radius = Double.parseDouble(token);
+				setRadius(radius);
+				continue;
+			}
+			if(token.equalsIgnoreCase(VCML.ParticleComponentDiffusionRate)) {
+				token = tokens.nextToken();
+				Double dr = Double.parseDouble(token);
+				setDiffusionRate(dr);
+				continue;
+			}
+			if(token.equalsIgnoreCase(VCML.ParticleComponentLocation)) {
+				token = tokens.nextToken();
+				String loc = token;
+				setLocation(loc);
+				continue;
+			}
+			if(token.equalsIgnoreCase(VCML.ParticleComponentCoordinate)) {
+				token = tokens.nextToken();
+				String x = token;
+				x = x.substring(x.indexOf("="), x.length());
+				token = tokens.nextToken();
+				String y = token;
+				y = y.substring(y.indexOf("="), y.length());
+				token = tokens.nextToken();
+				String z = token;
+				z = z.substring(z.indexOf("="), z.length());
+				Coordinate coordinate = new Coordinate(Double.parseDouble(x), Double.parseDouble(y), Double.parseDouble(z));
+				setCoordinate(coordinate);
+				continue;
+			}
+			if(token.equalsIgnoreCase(VCML.ParticleComponentColor)) {
+				token = tokens.nextToken();
+				NamedColor color = Colors.getColorByName(token);
+				setColor(color);
+				continue;
+			}
 			throw new MathFormatException("unexpected identifier "+token);
 		}	
 	}
