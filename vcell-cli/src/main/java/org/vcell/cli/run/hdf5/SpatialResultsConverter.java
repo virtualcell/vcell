@@ -79,10 +79,10 @@ public class SpatialResultsConverter {
 
                     int outputNumberOfPoints = ((UniformTimeCourse) sedmlSim).getNumberOfPoints();
                     double outputStartTime = ((UniformTimeCourse) sedmlSim).getOutputStartTime();
-                    int jobIndex=0;
+                    int jobIndex = 0;
                     for (TaskJob taskJob : taskJobs) {
                         File spatialH5File = spatialResultsHash.get(taskJob);
-                        if (spatialH5File!=null) {
+                        if (spatialH5File != null) {
                             Hdf5DataSourceSpatialVarDataItem job = new Hdf5DataSourceSpatialVarDataItem(
                                     report, dataset, var, jobIndex, spatialH5File, outputStartTime, outputNumberOfPoints);
                             hdf5DataSourceSpatial.varDataItems.add(job);
@@ -94,7 +94,7 @@ public class SpatialResultsConverter {
                 }
             } // end of dataset
 
-            if (bNotSpatial || hdf5DataSourceSpatial.varDataItems.size()==0){
+            if (bNotSpatial || hdf5DataSourceSpatial.varDataItems.size() == 0){
                 continue;
             }
 

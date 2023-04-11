@@ -51,7 +51,7 @@ public class Hdf5DataSourceSpatialVarDataItem {
         this.hdf5File = hdf5File;
         this.outputStartTime = outputStartTime;
         this.outputNumberOfPoints = outputNumberOfPoints;
-        parseMetadata();
+        this.parseMetadata();
     }
 
     /**
@@ -63,7 +63,7 @@ public class Hdf5DataSourceSpatialVarDataItem {
         try (io.jhdf.HdfFile jhdfFile = new io.jhdf.HdfFile(Paths.get(hdf5File.toURI()))) {
             Dataset dataset = jhdfFile.getDatasetByPath(varToDatasetPathMap.get(sedmlVariable.getName()));
             if (dataset == null){
-                throw new RuntimeException("could not find data for variable "+sedmlVariable.getName());
+                throw new RuntimeException("could not find data for variable " + sedmlVariable.getName());
             }
             return (double[])dataset.getDataFlat();
         }

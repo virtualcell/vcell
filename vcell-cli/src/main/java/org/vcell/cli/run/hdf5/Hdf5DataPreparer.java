@@ -44,7 +44,7 @@ public class Hdf5DataPreparer {
         logger.debug(dataSourceSpatial);
         Hdf5DataSourceSpatialVarDataItem firstVarDataItem = dataSourceSpatial.varDataItems.get(0);
         int[] spaceTimeDimensions = firstVarDataItem.spaceTimeDimensions;
-        int[] spatialDimensions = Arrays.copyOf(spaceTimeDimensions, spaceTimeDimensions.length-1);
+        int[] spatialDimensions = Arrays.copyOf(spaceTimeDimensions, spaceTimeDimensions.length - 1);
         //int numSpatialPoints = Arrays.stream(spatialDimensions).sum();
         //long numJobs = dataSourceSpatial.varDataItems.stream().map(varDataItem -> varDataItem.jobIndex).collect(Collectors.toSet()).size();
         List<Variable> sedmlVars = new ArrayList<>(dataSourceSpatial.varDataItems.stream().map(varDataItem -> varDataItem.sedmlVariable).collect(Collectors.toSet()));
@@ -59,7 +59,7 @@ public class Hdf5DataPreparer {
         
         
         for (int scanBound : dataSourceSpatial.scanBounds){
-            dataDimensionList.add((long)scanBound+1);
+            dataDimensionList.add((long)scanBound + 1);
             numJobs *= (scanBound+1);
         }
 

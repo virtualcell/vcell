@@ -247,10 +247,6 @@ public class NonspatialResultsConverter {
         List<double[]> listOfResultSets = new ArrayList<>();
         final Simulation vcSimulation;
 
-        public NonspatialValueHolder(){
-            this.vcSimulation = null;
-        }
-
         public NonspatialValueHolder(Simulation simulation) {
             this.vcSimulation = simulation;
         }

@@ -338,9 +338,9 @@ public class SedmlJob {
         logDocumentMessage += "Generating HDF5 file... ";
         logger.info("Generating HDF5 file... ");
 
-        Hdf5DataExtractor hdf5Factory = new Hdf5DataExtractor(sedml, solverHandler.taskToSimulationMap, sedmlLocation);
+        Hdf5DataExtractor hdf5Extractor = new Hdf5DataExtractor(sedml, solverHandler.taskToSimulationMap, sedmlLocation);
 
-        Hdf5DataContainer partialHdf5File = hdf5Factory.extractHdf5RelevantData(solverHandler.nonSpatialResults, solverHandler.spatialResults);
+        Hdf5DataContainer partialHdf5File = hdf5Extractor.extractHdf5RelevantData(solverHandler.nonSpatialResults, solverHandler.spatialResults);
         masterHdf5File.incorporate(partialHdf5File); // Add the data to the master hdf5 file wrapper.
 
         for (File tempH5File : solverHandler.spatialResults.values()){
