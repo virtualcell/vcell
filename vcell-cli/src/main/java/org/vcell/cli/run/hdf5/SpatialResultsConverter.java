@@ -2,6 +2,7 @@ package org.vcell.cli.run.hdf5;
 
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.solver.TempSimulation;
 import ncsa.hdf.hdf5lib.exceptions.HDF5Exception;
 
 import org.jlibsedml.SedML;
@@ -26,7 +27,7 @@ import java.util.*;
 public class SpatialResultsConverter {
     private final static Logger logger = LogManager.getLogger(SpatialResultsConverter.class);
 
-    public static List<Hdf5SedmlResults> convertSpatialResultsToSedmlFormat(SedML sedml, Map<TaskJob, File> spatialResultsHash, Map<AbstractTask, Simulation> taskToSimulationMap, String sedmlLocation) throws DataAccessException, IOException, HDF5Exception, ExpressionException {
+    public static List<Hdf5SedmlResults> convertSpatialResultsToSedmlFormat(SedML sedml, Map<TaskJob, File> spatialResultsHash, Map<AbstractTask, TempSimulation> taskToSimulationMap, String sedmlLocation) throws DataAccessException, IOException, HDF5Exception, ExpressionException {
         List<Hdf5SedmlResults> datasetWrappers = new ArrayList<>();
 
         for (Report report : SpatialResultsConverter.getReports(sedml.getOutputs())){

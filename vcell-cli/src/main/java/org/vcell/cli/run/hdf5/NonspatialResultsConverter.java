@@ -2,6 +2,7 @@ package org.vcell.cli.run.hdf5;
 
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.solver.TempSimulation;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import ncsa.hdf.hdf5lib.exceptions.HDF5Exception;
 
@@ -30,7 +31,7 @@ public class NonspatialResultsConverter {
     private final static Logger logger = LogManager.getLogger(NonspatialResultsConverter.class);
 
 
-    public static List<Hdf5SedmlResults> convertNonspatialResultsToSedmlFormat(SedML sedml, Map<TaskJob, ODESolverResultSet> nonspatialResultsHash, Map<AbstractTask, Simulation> taskToSimulationMap, String sedmlLocation) throws DataAccessException, IOException, HDF5Exception, ExpressionException {
+    public static List<Hdf5SedmlResults> convertNonspatialResultsToSedmlFormat(SedML sedml, Map<TaskJob, ODESolverResultSet> nonspatialResultsHash, Map<AbstractTask, TempSimulation> taskToSimulationMap, String sedmlLocation) throws DataAccessException, IOException, HDF5Exception, ExpressionException {
         List<Hdf5SedmlResults> datasetWrappers = new ArrayList<>();
 
         for (Report report : NonspatialResultsConverter.getReports(sedml.getOutputs())){
