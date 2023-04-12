@@ -110,7 +110,7 @@ public class CLIPythonManager {
      * 
      * @throws IOException if there is a problem with System I/O
      */
-    public void instantiatePythonProcess() throws IOException {
+    public void instantiatePythonProcess() throws IOException, PythonStreamException {
         if (this.pythonProcess != null) return; // prevent override
         logger.info("Initializing Python...");
         // Confirm we have python properly installed or kill this exe where it stands.

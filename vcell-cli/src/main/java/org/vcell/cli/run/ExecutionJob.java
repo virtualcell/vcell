@@ -145,7 +145,7 @@ public class ExecutionJob {
         } catch(PythonStreamException e){
             logger.error("Python-processing encountered fatal error. Execution is unable to properly continue.", e);
             throw e;
-        } catch(InterruptedException|IOException e){
+        } catch(InterruptedException | IOException e){
             logger.error("System IO encountered a fatal error");
             throw new ExecutionException(e);
         } catch (HDF5Exception e){

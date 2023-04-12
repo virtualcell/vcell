@@ -26,30 +26,43 @@ public class Hdf5DataPreparer {
     /**
      * Spatial Data has a special attribute called "times". This function extracts that value
      * 
-     * @param datasetWrapper
+     * @param hdf5SedmlResults the results in a sedml friendly format
      * @return the times data
      */
-    public static double[] getSpatialHdf5Attribute_Times(Hdf5SedmlResults datasetWrapper){
-        return ((Hdf5SedmlResultsSpatial)datasetWrapper.dataSource).varDataItems.get(0).times;
+    public static double[] getSpatialHdf5Attribute_Times(Hdf5SedmlResults hdf5SedmlResults){
+        return ((Hdf5SedmlResultsSpatial)hdf5SedmlResults.dataSource).varDataItems.get(0).times;
     }
 
     /**
      * Reads a `Hdf5DatasetWrapper` contents and generates `Hdf5PreparedData` with spatial data for writing out to Hdf5 format via Hdf5Writer
      * 
-     * @param datasetWrapper the data relevant to an hdf5 output file
+     * @param datasetWrapper the data relevant to an HDF5 output file
      * @return the prepared spatial data
      */
     public static Hdf5PreparedData prepareSpatialData (Hdf5SedmlResults datasetWrapper){
         Hdf5SedmlResultsSpatial dataSourceSpatial = (Hdf5SedmlResultsSpatial)datasetWrapper.dataSource; 
         logger.debug(dataSourceSpatial);
-        Hdf5DataSourceSpatialVarDataItem firstVarDataItem = dataSourceSpatial.varDataItems.get(0);
-        int[] spaceTimeDimensions = firstVarDataItem.spaceTimeDimensions;
+        Hdf5DataSourceSpatialVarDataItem exampleVarDataItem = null;
+
+        for (Hdf5DataSourceSpatialVarDataItem item : dataSourceSpatial.varDataItems){
+            if (item.spaceTimeDimensions == null) continue;
+            exampleVarDataItem = item;
+            break;
+        }
+
+        if (exampleVarDataItem.spaceTimeDimensions == null){
+            RuntimeException e = new RuntimeException("No space time dimensions could be found!");
+            logger.error(e);
+            throw e;
+        }
+
+        int[] spaceTimeDimensions = exampleVarDataItem.spaceTimeDimensions;
         int[] spatialDimensions = Arrays.copyOf(spaceTimeDimensions, spaceTimeDimensions.length - 1);
         //int numSpatialPoints = Arrays.stream(spatialDimensions).sum();
         //long numJobs = dataSourceSpatial.varDataItems.stream().map(varDataItem -> varDataItem.jobIndex).collect(Collectors.toSet()).size();
         List<Variable> sedmlVars = new ArrayList<>(dataSourceSpatial.varDataItems.stream().map(varDataItem -> varDataItem.sedmlVariable).collect(Collectors.toSet()));
         long numVars = sedmlVars.size();
-        long numTimes = firstVarDataItem.times.length;
+        long numTimes = exampleVarDataItem.times.length;
         List<Long> dataDimensionList = new ArrayList<>();
         int numJobs = 1;
 

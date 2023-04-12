@@ -152,7 +152,19 @@ public class RunUtils {
         return yi;
     }
 
-    public static void exportPDE2HDF5(SimulationJob vcellSimJob, File userDir, File outputFilePointer) throws DataAccessException, IOException, Exception {
+    /**
+     * Exports the data of a spatial simulation into hdf5 in a VCell-friendly organization.
+     * ...
+     * Note that this function is extremely dense and confusing. It mostly works in side effects and preparations,
+     * but the end result is correct (at least, that's what we believe)
+     * @param vcellSimJob The sim job to get the data from
+     * @param userDir directory to get the user info with
+     * @param outputFilePointer where to put the final hdf5 file.
+     * @throws DataAccessException if the necessary data could not be accessed.
+     * @throws IOException if the system encountered some trouble with file or system IO
+     */
+    public static void exportPDE2HDF5(SimulationJob vcellSimJob, File userDir, File outputFilePointer) throws DataAccessException, IOException {
+        // A ton of initialization
         int jobIndex = vcellSimJob.getJobIndex();
         User user = new User(userDir.getName(), null);
         cbit.vcell.solver.Simulation vcellSim = vcellSimJob.getSimulation();
@@ -166,9 +178,11 @@ public class RunUtils {
         OutputContext outputContext = new OutputContext(simContext.getOutputFunctionContext().getOutputFunctionsList().toArray(new AnnotatedFunction[0]));
         VCSimulationDataIdentifier vcId = new VCSimulationDataIdentifier(vcSimID, jobIndex);
 
+        // Create the export specifications, and prepare to export to a file
         ExportSpecs exportSpecs = RunUtils.getExportSpecs(outputContext, user, dataServerImpl, vcId,
                 dsControllerImpl, vcellSim, jobIndex, vcSimID, simContext);
 
+        // Export to a temp file, then copy the file over to the correct location
         RunUtils.exportDocument(exportServiceImpl, dataServerImpl, outputContext, exportSpecs, vcId, outputFilePointer);
     }
 
@@ -657,6 +671,7 @@ public class RunUtils {
             logger.error(e);
             throw e;
         }
+
         Iterator<ExportOutput> iterator = exportOutputs.iterator();
         ExportOutput exportOutput = iterator.next();
 
