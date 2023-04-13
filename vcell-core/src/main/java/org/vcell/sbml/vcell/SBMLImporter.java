@@ -1302,9 +1302,12 @@ public class SBMLImporter {
 			EditableSymbolTableEntry assignmentTargetSte = sbmlSymbolMapping.getRuntimeSte(targetSbase);
 			try {
 				// only add those assignment rules for runtime targets that don't have editable expressions - not sure what to do about these if they don't map to anything.
+//				if (!assignmentTargetSte.isExpressionEditable()
+//					&& !(assignmentTargetSte instanceof Structure.StructureSize)
+//					&& !(assignmentTargetSte instanceof SpeciesContext)) {
 				if (!assignmentTargetSte.isExpressionEditable()
-					&& !(assignmentTargetSte instanceof Structure.StructureSize)
-					&& !(assignmentTargetSte instanceof SpeciesContext)) {
+				&& !(assignmentTargetSte instanceof Structure.StructureSize)
+				) {
 
 					logger.error("unexpected assignment rule target '"+assignmentTargetSte+"', adding as assignment rule - minimal support provided");
 					logger.error("need to create a VCLogger event");
