@@ -24,7 +24,7 @@ public class Hdf5Writer {
     private Hdf5Writer(){} // Static class = no instances allowed
 
     /**
-     * Writes an Hdf5 formatted file given a hdf5FileWrapper and a destination to write the file to.
+     * Writes an HDF5 formatted file given a hdf5FileWrapper and a destination to write the file to.
      * 
      * @param hdf5DataWrapper the wrapper of hdf5 relevant data
      * @param outDirForCurrentSedml the directory to place the report file into, NOT the report file itself.

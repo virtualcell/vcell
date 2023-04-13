@@ -91,9 +91,6 @@ public class Hdf5DataPreparer {
 
         // Create buffer of contiguous data to hold everything.
         double[] bigDataBuffer = new double[totalDataSize];
-//                    for (int i=0;i<totalDataSize;i++){
-//                        bigDataBuffer[i] = i;
-//                    }
         int bufferOffset = 0;
         for (int jobIndex=0; jobIndex<numJobs; jobIndex++){
             for (int varIndex = 0; varIndex < numVars; varIndex++) {
