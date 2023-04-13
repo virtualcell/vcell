@@ -119,6 +119,7 @@ public class SEDMLTags {
     public static final String UNIFORM_RANGE_ATTR_START     = "start";
     public static final String UNIFORM_RANGE_ATTR_END       = "end";
     public static final String UNIFORM_RANGE_ATTR_NUMP      = "numberOfPoints";
+    public static final String UNIFORM_RANGE_ATTR_NUMS      = "numberOfSteps";
     public static final String UNIFORM_RANGE_ATTR_TYPE      = "type";
     public static final String FUNCTIONAL_RANGE_TAG         = "functionalRange";
     public static final String FUNCTIONAL_RANGE_INDEX       = "range";
