@@ -76,6 +76,7 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 	private boolean bSerialParameterScan = false;
 	private SmoldynSimulationOptions smoldynSimulationOptions = null;
 	private NFsimSimulationOptions nfsimSimulationOptions = null;
+	private LangevinSimulationOptions langevinSimulationOptions = null;
 	private SundialsPdeSolverOptions sundialsPdeSolverOptions = null;
 	private ChomboSolverSpec chomboSolverSpec = null;
 	private MovingBoundarySolverOptions movingBoundarySolverOptions = null;
@@ -1440,6 +1441,9 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 
 	public final NFsimSimulationOptions getNFSimSimulationOptions() {
 		return nfsimSimulationOptions;
+	}
+	public final LangevinSimulationOptions getLangevinSimulationOptions() {
+		return langevinSimulationOptions;
 	}
 
 	public final SundialsPdeSolverOptions getSundialsPdeSolverOptions() {
