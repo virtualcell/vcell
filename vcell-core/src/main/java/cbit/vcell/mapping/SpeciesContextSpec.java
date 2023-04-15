@@ -411,11 +411,11 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
 
 	
 	private SpeciesContext speciesContext = null;
-	private static final boolean DEFAULT_CONSTANT = false;
+	private static final boolean DEFAULT_CLAMPED = false;
 //	private static final boolean DEFAULT_ENABLE_DIFFUSING = true;
 	private static final Boolean DEFAULT_WELL_MIXED = false;
 	private static final Boolean DEFAULT_FORCECONTINUOUS = false;
-	private boolean        bConstant = DEFAULT_CONSTANT;
+	private boolean bClamped = DEFAULT_CLAMPED;
 //	private boolean        bEnableDiffusing = DEFAULT_ENABLE_DIFFUSING;
 	private Boolean        bWellMixed = DEFAULT_WELL_MIXED;
 	private Boolean        bForceContinuous = DEFAULT_FORCECONTINUOUS;
@@ -498,7 +498,7 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
 
 public SpeciesContextSpec(SpeciesContextSpec speciesContextSpec, SimulationContext argSimulationContext) {
 	this.speciesContext = speciesContextSpec.speciesContext;
-	this.bConstant = speciesContextSpec.bConstant;
+	this.bClamped = speciesContextSpec.bClamped;
 //	this.bEnableDiffusing = speciesContextSpec.bEnableDiffusing;
 	this.bWellMixed = speciesContextSpec.bWellMixed;
 	this.bForceContinuous = speciesContextSpec.bForceContinuous;
@@ -680,7 +680,7 @@ public boolean compareEqual(Matchable object) {
 		return false;
 	}
 
-	if (bConstant != scs.bConstant){
+	if (bClamped != scs.bClamped){
 		return false;
 	}
 	
@@ -814,7 +814,7 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
 			issueVector.add(new SimpleBoundsIssue(fieldParameters[i], issueContext, simpleBounds, "parameter "+parmName+": must be within "+simpleBounds.toString()));
 		}
 	}
-	if(bForceContinuous && !bConstant && getSimulationContext().isStoch() && (getSimulationContext().getGeometry().getDimension()>0)) {	// if it's particle or constant we're good
+	if(bForceContinuous && !bClamped && getSimulationContext().isStoch() && (getSimulationContext().getGeometry().getDimension()>0)) {	// if it's particle or constant we're good
 		SpeciesContext sc = getSpeciesContext();
 		ReactionContext rc = getSimulationContext().getReactionContext();
 		ReactionSpec[] rsArray = rc.getReactionSpecs();
@@ -845,14 +845,14 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
 			}
 		}
 	}
-	if(!bForceContinuous && bConstant) {
+	if(!bForceContinuous && bClamped) {
 		if(getSimulationContext().isStoch() && (getSimulationContext().getGeometry().getDimension()>0)) {
 			String msg = "Clamped Species must be continuous rather than particles.";
 			String tip = "If choose 'clamped', must also choose 'forceContinuous'";
 			issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.SEVERITY_ERROR));
 		}
 	}
-	if(bForceContinuous && !bConstant) {
+	if(bForceContinuous && !bClamped) {
 		if(getSimulationContext().isStoch() && (getSimulationContext().getGeometry().getDimension()==0)) {
 			String msg = "Non-constant species is forced continuous, not supported for nonspatial stochastic applications.";
 			issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.SEVERITY_ERROR));
@@ -865,7 +865,7 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
 			}
 			SpeciesContext sc = getSpeciesContext();
 			if(sc.getName().equals(ar.getAssignmentRuleVar().getName())) {
-				if(!bConstant) {		// the assignment rule variables must be clamped
+				if(!bClamped) {		// the assignment rule variables must be clamped
 					String msg = "Assignment rule species variables must be Clamped";
 					String tip = "Used in " + AssignmentRule.typeName + " '" + ar.getDisplayName() + "'";
 					issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
@@ -880,7 +880,7 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
 			}
 			SpeciesContext sc = getSpeciesContext();
 			if(sc.getName().equals(ar.getRateRuleVar().getName())) {
-				if(!bConstant) {		// the rate rule variables must be clamped
+				if(!bClamped) {		// the rate rule variables must be clamped
 					String msg = "Rate rule species variables must be Clamped";
 					String tip = "Used in " + RateRule.typeName + " '" + ar.getDisplayName() + "'";
 					issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
@@ -1242,11 +1242,30 @@ public synchronized boolean hasListeners(java.lang.String propertyName) {
 
 
 /**
- * This method was created by a SmartGuide.
+ * returns whether this species is 'clamped' to the value of it's initialConc or initialCount expressions.
+ * Note that if clamped is true, the initialConc or initialCount parameter values can be functions of time.
+ *
+ * In the future, we should either add clampedConc and clampedCount parameters or rename initialConc and initialCount
+ * to clarify the modeling semantics.
+ * @deprecated
+ * This method name is confusing, use {@link SpeciesContextSpec#isClamped()} instead
  * @return boolean
  */
+@Deprecated
 public boolean isConstant() {
-	return bConstant;
+	return isClamped();
+}
+
+/**
+ * returns whether this species is 'clamped' to the value of it's initialConc or initialCount expressions.
+ * Note that if clamped is true, the initialConc or initialCount parameter values can be functions of time.
+ *
+ * In the future, we should either add clampedConc and clampedCount parameters or rename initialConc and initialCount
+ * to clarify the modeling semantics.
+ * @return boolean
+ */
+public boolean isClamped() {
+	return bClamped;
 }
 
 
@@ -1254,7 +1273,7 @@ public boolean isConstant() {
  * @return boolean
  */
 public boolean isDiffusing() {
-	if (bConstant){
+	if (bClamped){
 		return false;
 	}
 	
@@ -1275,7 +1294,7 @@ public boolean isDiffusing() {
 }
 
 public boolean isAdvecting() {
-	if (bWellMixed || bConstant==true){
+	if (bWellMixed || bClamped ==true){
 		return false;
 	}
 	// If all 3 velocity (x,y,z) parameters are null, there is no advection; return <FALSE>, else return <TRUE>
@@ -1428,7 +1447,7 @@ public synchronized void removeVetoableChangeListener(java.lang.String propertyN
 /**
  */
 private void resetDefaults() {
-	bConstant = DEFAULT_CONSTANT;
+	bClamped = DEFAULT_CLAMPED;
 //	if (getSpeciesContext().getStructure() instanceof Feature || getSpeciesContext().getStructure() instanceof Membrane){
 //		bEnableDiffusing = DEFAULT_ENABLE_DIFFUSING;
 //	}else{
@@ -1440,13 +1459,34 @@ private void resetDefaults() {
 
 
 /**
- * @param isConstant boolean
+ * sets the speciesContext 'clamped' property which specifies the interpretation of the initialConc and initialCount parameter expressions.
+ * Note if clamped is true, the initialConc or initialCount parameter values can be functions of time.
+ *
+ * In the future, we should either add clampedConc and clampedCount parameters or rename initialConc and initialCount
+ * to clarify the modeling semantics.
+ * @deprecated
+ * This method name is confusing, use {@link SpeciesContextSpec#setClamped(boolean)} instead
+ * @return boolean
  */
-public void setConstant(boolean isConstant) {
+@Deprecated
+public void setConstant(boolean isClamped) {
+	setClamped(isClamped);
+}
+
+/**
+ * sets the speciesContext 'clamped' property which specifies the interpretation of the initialConc and initialCount parameter expressions.
+ * Note if clamped is true, the initialConc or initialCount parameter values can be functions of time.
+ *
+ * In the future, we should either add clampedConc and clampedCount parameters or rename initialConc and initialCount
+ * to clarify the modeling semantics.
+ * @return boolean
+ */
+public void setClamped(boolean isClamped) {
 	boolean oldDiffusing = isDiffusing();
-	boolean oldConstant = bConstant;
-	this.bConstant = isConstant;
-	firePropertyChange("constant",new Boolean(oldConstant), new Boolean(isConstant));
+	boolean oldConstant = bClamped;
+	this.bClamped = isClamped;
+	firePropertyChange("constant",new Boolean(oldConstant), new Boolean(isClamped)); // to support legacy/deprecated usage
+	firePropertyChange("clamped",new Boolean(oldConstant), new Boolean(isClamped));
 	firePropertyChange("diffusing", new Boolean(oldDiffusing), new Boolean(isDiffusing()));
 }
 
