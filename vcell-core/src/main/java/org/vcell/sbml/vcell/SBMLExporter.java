@@ -1091,7 +1091,7 @@ private void addSpecies() throws XMLStreamException, SbmlException {
 			sbmlSpecies.setName(vcSpeciesContext.getName());
 		}
 		// Assuming that at this point, the compartment(s) for the model are already filled in.
-		String compartmentSid = sbmlExportSymbolMapping.structureToSidMap.get(vcSpeciesContexts[i].getStructure());
+		String compartmentSid = sbmlExportSymbolMapping.structureToSidMap.get(vcSpeciesContext.getStructure());
 		Compartment compartment = sbmlModel.getCompartment(compartmentSid);
 		if (compartment != null) {
 			sbmlSpecies.setCompartment(compartment.getId());
@@ -1106,7 +1106,7 @@ private void addSpecies() throws XMLStreamException, SbmlException {
 		}
 
 		// Get the speciesContextSpec in the simContext corresponding to the 'speciesContext'; and extract its initial concentration value.
-		SpeciesContextSpec vcSpeciesContextsSpec = getSelectedSimContext().getReactionContext().getSpeciesContextSpec(vcSpeciesContexts[i]);
+		SpeciesContextSpec vcSpeciesContextsSpec = getSelectedSimContext().getReactionContext().getSpeciesContextSpec(vcSpeciesContext);
 		if (bSpatial && vcSpeciesContextsSpec.isWellMixed()) {
 			Element speciesContextSpecSettingsElement = new Element(XMLTags.SBML_VCELL_SpeciesContextSpecSettingsTag, sbml_vcml_ns);
 			speciesContextSpecSettingsElement.setAttribute(XMLTags.SBML_VCELL_SpeciesContextSpecSettingsTag_wellmixedAttr, "true", sbml_vcml_ns);
@@ -1219,7 +1219,7 @@ private void addSpecies() throws XMLStreamException, SbmlException {
 								try {
 									bDiffExprIsZero =  (diffExpr.evaluateConstant() == 0.0);
 								} catch (Exception e) {
-									throw new RuntimeException("Unable to evalute numeric value of diffusion parameter for speciesContext '" + vcSpeciesContexts[i] + "'.", e);
+									throw new RuntimeException("Unable to evalute numeric value of diffusion parameter for speciesContext '" + vcSpeciesContext + "'.", e);
 								}
 							}
 							boolean bDiffusionZero = (bDiffExprNull || bDiffExprIsZero);
