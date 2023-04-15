@@ -121,9 +121,9 @@ services:
       replicas: 1
       resources:
         limits:
-          memory: 1000M
+          memory: 2000M
         reservations:
-          memory: 500M
+          memory: 1000M
       placement:
         constraints:
           - node.labels.zone == INTERNAL
