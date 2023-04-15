@@ -1139,7 +1139,7 @@ private void addSpecies() throws XMLStreamException, SbmlException {
 		if (!vcSpeciesContextsSpec.isClamped() && vcAssignmentRule==null) {
 			// species is not clamped nor assigned, we need an initial condition
 			if (initiConcConstantValue != null) {
-				sbmlSpecies.setConstant(true);
+//				sbmlSpecies.setConstant(true);
 				sbmlSpecies.setInitialConcentration(initiConcConstantValue);
 			}else {
 				//sbmlSpecies.setConstant(false);
