@@ -123,5 +123,10 @@ public class TestMathDescription implements ProblemRequirements {
 		return false;
 	}
 
+	@Override
+	public boolean isLangevin() {
+		return false;
+	}
+
 
 }

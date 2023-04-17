@@ -133,7 +133,7 @@ public enum SolverDescription {
 	   
 	   Langevin(TimeStep.CONSTANT, ErrorTol.NO, TimeSpecCreated.UNIFORM, "Langevin", "LangevinNoVis","Langevin",
 			      SolverLongDesc.LANGEVIN, 1,SupportedTimeSpec.UNIFORM,
-			      new SolverFeature[]{SolverFeature.Feature_Spatial, SolverFeature.Feature_Rulebased, SolverFeature.Feature_Stochastic},
+			      new SolverFeature[]{SolverFeature.Feature_Spatial, SolverFeature.Feature_Rulebased, SolverFeature.Feature_Springs},
 			      SolverExecutable.LANGEVIN, "KISAO:0000263", false),		// TODO: find the right KISAO
 
 	   Comsol(TimeStep.VARIABLE,ErrorTol.NO,TimeSpecCreated.DEFAULT,"Comsol","Comsol Multiphysics","Comsol",
@@ -183,6 +183,7 @@ public enum SolverDescription {
 		Feature_Parallel("Parallel execution"),
 		Feature_Hybrid("Hybrid: both Deterministic and Stochastic"),
 		Feature_Moving("Moving Membrane"),
+		Feature_Springs("Spring connected Sites"),
 		;
 
 		private final String name;
@@ -246,6 +247,11 @@ public enum SolverDescription {
 		new SolverFeature[] { SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Rulebased },
 		new SupportedProblemRequirements() { public boolean supports(ProblemRequirements desc) { return desc.isRuleBased(); }},
 		NFSim,100);
+	
+	public static final SolverFeatureSet LangevinFeatureSet = new SolverFeatureSet (
+		new SolverFeature[] { SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Rulebased, SolverFeature.Feature_Springs },
+		new SupportedProblemRequirements() { public boolean supports(ProblemRequirements desc) { return (desc.isRuleBased() && desc.isLangevin()); }},
+		Langevin,200);
 
 	/*
 	 * Non-spatial solvers
@@ -693,6 +699,11 @@ public enum SolverDescription {
 		return this == NFSim;
 	}
 	
+	public boolean isLangevinSolver()
+	{
+		return this == Langevin;
+	}
+
 	public boolean isDeprecated() {
 		return this.deprecated;
 	}

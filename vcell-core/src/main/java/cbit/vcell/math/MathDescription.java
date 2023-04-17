@@ -1862,6 +1862,23 @@ public boolean isRuleBased(){
 	return false;
 }
 
+@Override
+public boolean isLangevin() {
+	Enumeration<SubDomain> enum1 = getSubDomains();
+	while (enum1.hasMoreElements()) {
+		SubDomain subDomain = enum1.nextElement();
+		List<ParticleJumpProcess> particleJumpProcesses = subDomain.getParticleJumpProcesses();
+		for(ParticleJumpProcess pjp : particleJumpProcesses) {
+			if(pjp instanceof LangevinParticleJumpProcess) {
+				return true;	// the first jump process instance is enough to decide one way or another
+			} else {
+				return false;
+			}
+		}
+	}
+	return false;
+}
+
 public boolean isSpatialHybrid() {
 	if (getGeometry().getDimension() == 0) {
 		return false;

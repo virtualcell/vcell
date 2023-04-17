@@ -51,6 +51,7 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 	public static final String PROPERTY_STOP_AT_SPATIALLY_UNIFORM_ERROR_TOLERANCE = "stopAtSpatiallyUniformErrorTolerance";
 	public static final String PROPERTY_SMOLDYN_SIMULATION_OPTIONS = "smoldynSimulationOptions";
 	public static final String PROPERTY_NFSIM_SIMULATION_OPTIONS = "nfsimSimulationOptions";
+	public static final String PROPERTY_LANGEVIN_SIMULATION_OPTIONS = "langevinSimulationOptions";
 	public static final String PROPERTY_SUNDIALS_SOLVER_OPTIONS = "sundialsSolverOptions";
 
 	//  Or TASK_NONE for use as a default?
@@ -1463,6 +1464,14 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 			NFsimSimulationOptions oldValue = this.nfsimSimulationOptions;
 			this.nfsimSimulationOptions = nfsimSimulationOptions;
 			firePropertyChange(PROPERTY_NFSIM_SIMULATION_OPTIONS, oldValue, nfsimSimulationOptions);
+		}
+	}
+
+	public final void setLangevinSimulationOptions(LangevinSimulationOptions langevinSimulationOptions) {
+		if (!Matchable.areEqual(this.langevinSimulationOptions,langevinSimulationOptions)) {
+			LangevinSimulationOptions oldValue = this.langevinSimulationOptions;
+			this.langevinSimulationOptions = langevinSimulationOptions;
+			firePropertyChange(PROPERTY_LANGEVIN_SIMULATION_OPTIONS, oldValue, langevinSimulationOptions);
 		}
 	}
 
