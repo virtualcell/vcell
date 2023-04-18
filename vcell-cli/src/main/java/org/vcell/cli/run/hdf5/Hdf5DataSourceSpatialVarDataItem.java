@@ -12,10 +12,16 @@ import java.nio.file.Paths;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+
 /**
  * 
  */
 public class Hdf5DataSourceSpatialVarDataItem {
+
+    private final static Logger lg = LogManager.getLogger(Hdf5DataSourceSpatialVarDataItem.class);
     public final Report sedmlReport;
     public final DataSet sedmlDataset;
     public final Variable sedmlVariable;
