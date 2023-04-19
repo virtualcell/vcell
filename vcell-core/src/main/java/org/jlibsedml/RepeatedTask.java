@@ -54,7 +54,7 @@ public class RepeatedTask extends AbstractTask {
         if(subTask == null || subTask.getTaskId() == null || subTask.getTaskId().equals("")) {
             logger.warn("subtask cant't be null, key can't be null, key can't be empty string");
             logger.warn("   ...subtask " + subTask.getTaskId() + " not added to list");
-            return;     // subtask cant't be null, key can't be null, key can't be ""
+            return;     // subtask can't be null, key can't be null, key can't be ""
         }
         if(this.getId().equals(subTask.getTaskId())) {
             logger.warn("'this' repeated task cannot be a subtask for itself");
