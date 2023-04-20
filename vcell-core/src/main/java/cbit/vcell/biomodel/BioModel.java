@@ -1028,78 +1028,29 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
 	 *              change to be rolled back.
 	 */
 	public void vetoableChange(java.beans.PropertyChangeEvent event) throws java.beans.PropertyVetoException {
+		String nameOfPropertyToChange = event.getPropertyName();
+		Object objectMakingTheRequest = event.getSource();
+		Object replacementValueToApply = event.getNewValue();
 
-		if (event.getNewValue() == null){
-			if (event.getSource() == this){
 
-			} else if (event.getSource() instanceof SimulationContext){
-				if (event.getPropertyName().equals("mathDescription")){
-					if (this.fieldSimulations != null){
-						// don't let SimulationContext's MathDescription be set to null if any Simulations depend on it, can't recover from this
-						for (Simulation sim : this.fieldSimulations){
-							if (sim.getMathDescription() != event.getOldValue()) continue;
-							String vetoExceptionMessage = String.format("error: simulation '%s' will be orphaned, MathDescription set to null for Application ''%s",
-									sim.getName(), ((SimulationContext)event.getSource()).getName());
-							throw new PropertyVetoException(vetoExceptionMessage, event);
-						}
-					}
+		if (nameOfPropertyToChange.equals("mathDescription")){
+			if (objectMakingTheRequest instanceof SimulationContext && replacementValueToApply == null && this.fieldSimulations != null){
+				// don't let SimulationContext's MathDescription be set to null if any Simulations depend on it, can't recover from this
+				for (Simulation sim : this.fieldSimulations){
+					if (sim.getMathDescription() != event.getOldValue()) continue;
+					String vetoExceptionMessage = String.format("error: simulation '%s' will be orphaned, MathDescription set to null for Application '%s'",
+							sim.getName(), ((SimulationContext)objectMakingTheRequest).getName());
+					throw new PropertyVetoException(vetoExceptionMessage, event);
+
 				}
-			} else if (event.getSource() instanceof Simulation){
-				if (event.getPropertyName().equals("mathDescription")){
-					if (event.getNewValue() == null){
-						// don't let a Simulation's MathDescription be set to null, can't recover from this!
-						String vetoExceptionMessage = String.format("error: Simulation '%s' will be orphaned (MathDescription set to null)",
-								((Simulation)event.getSource()).getName());
-						throw new PropertyVetoException(vetoExceptionMessage, event);
-					}
-					if (this.fieldSimulationContexts != null){
-						// don't let a Simulation change it's MathDescription unless that MathDescription is from an Application.
-						// note that SimulationContext's MathDescription is changed first, then Simulation's MathDescription is updated
-						// this is ALWAYS the order of events.
-						MathDescription newMathDescription = (MathDescription)event.getNewValue();
-						boolean bMathFound = false;
-
-						for (SimulationContext simulationContext : this.fieldSimulationContexts){
-							if (simulationContext.getMathDescription() != newMathDescription) continue; // Keep looking...
-							bMathFound = true;
-							break;
-						}
-						if (!bMathFound){
-							String vetoExceptionMessage = String.format("error: Simulation '%s' will be orphaned (MathDescription doesn't belong to any Application)",
-									((Simulation)event.getSource()).getName());
-							throw new PropertyVetoException(vetoExceptionMessage, event);
-						}
-					}
-				}
-			}
-		} else {
-
-		}
-
-
-
-		if (event.getSource() == this){
-
-		} else if (event.getSource() instanceof SimulationContext){
-			if (event.getPropertyName().equals("mathDescription")){
-				if (event.getNewValue()==null && this.fieldSimulations != null){
-					// don't let SimulationContext's MathDescription be set to null if any Simulations depend on it, can't recover from this
-					for (Simulation sim : this.fieldSimulations){
-						if (sim.getMathDescription() != event.getOldValue()) continue;
-						String vetoExceptionMessage = String.format("error: simulation '%s' will be orphaned, MathDescription set to null for Application ''%s",
-								sim.getName(), ((SimulationContext)event.getSource()).getName());
-						throw new PropertyVetoException(vetoExceptionMessage, event);
-					}
-				}
-			}
-		} else if (event.getSource() instanceof Simulation){
-			if (event.getPropertyName().equals("mathDescription")){
-				if (event.getNewValue() == null){
-					// don't let a Simulation's MathDescription be set to null, can't recover from this!
+			} else if (objectMakingTheRequest instanceof Simulation){
+				if (replacementValueToApply == null){
+					// don't let a Simulation's MathDescription be set to null, can't recover from this
 					String vetoExceptionMessage = String.format("error: Simulation '%s' will be orphaned (MathDescription set to null)",
-							((Simulation)event.getSource()).getName());
+							((Simulation)objectMakingTheRequest).getName());
 					throw new PropertyVetoException(vetoExceptionMessage, event);
 				}
+
 				if (this.fieldSimulationContexts != null){
 					// don't let a Simulation change it's MathDescription unless that MathDescription is from an Application.
 					// note that SimulationContext's MathDescription is changed first, then Simulation's MathDescription is updated
@@ -1119,76 +1070,25 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
 					}
 				}
 			}
-		}
-
-		//////////////////////////////////
-
-		//
-		// don't let SimulationContext's MathDescription be set to null if any Simulations depend on it, can't recover from this
-		//
-		if (	event.getSource() instanceof SimulationContext
-				&& event.getPropertyName().equals("mathDescription")
-				&& event.getNewValue()==null
-				&& this.fieldSimulations != null
-		){
-			for (Simulation sim : this.fieldSimulations){
-				if (sim.getMathDescription() != event.getOldValue()) continue;
-				String vetoExceptionMessage = String.format("error: simulation '%s' will be orphaned, MathDescription set to null for Application ''%s",
-						sim.getName(), ((SimulationContext)event.getSource()).getName());
-				throw new PropertyVetoException(vetoExceptionMessage, event);
-
+		} else if (nameOfPropertyToChange.equals("name") && replacementValueToApply != null){
+			if (objectMakingTheRequest instanceof Simulation || objectMakingTheRequest instanceof SimulationContext){
+				this.checkForDuplicateNames(event);
+			}
+		} else if (objectMakingTheRequest == this){
+			if (nameOfPropertyToChange.equals(PropertyConstants.PROPERTY_NAME_SIMULATIONS) && replacementValueToApply != null){
+				this.checkForDuplicateNames(event);
+				this.checkSimulationsHaveAssociatedSimContext(event, (Simulation[])event.getNewValue(), this.fieldSimulationContexts);
+			} else if (nameOfPropertyToChange.equals(PROPERTY_NAME_SIMULATION_CONTEXTS) && replacementValueToApply != null){
+				this.checkForDuplicateNames(event);
+				this.checkSimulationsHaveAssociatedSimContext(event, this.fieldSimulations, (SimulationContext[])event.getNewValue());
+			} else if (nameOfPropertyToChange.equals("sbmlId")){
+				// not editable, we use what we get from the importer
+				// do nothing?
+			} else if (nameOfPropertyToChange.equals("sbmlName")){
+				return;
 			}
 		}
-		//
-		// don't let a Simulation's MathDescription be set to null, can't recover from this
-		//
-		if (event.getSource() instanceof Simulation && event.getPropertyName().equals("mathDescription") && event.getNewValue()==null){
-			String vetoExceptionMessage = String.format("error: Simulation '%s' will be orphaned (MathDescription set to null)",
-					((Simulation)event.getSource()).getName());
-			throw new PropertyVetoException(vetoExceptionMessage, event);
-		}
-		//
-		// don't let a Simulation change it's MathDescription unless that MathDescription is from an Application.
-		// note that SimulationContext's MathDescription is changed first, then Simulation's MathDescription is updated
-		// this is ALWAYS the order of events.
-		//
-		if (event.getSource() instanceof Simulation && event.getPropertyName().equals("mathDescription") && this.fieldSimulationContexts != null){
-			MathDescription newMathDescription = (MathDescription)event.getNewValue();
-			boolean bMathFound = false;
 
-			for (SimulationContext simulationContext : this.fieldSimulationContexts){
-				if (simulationContext.getMathDescription() != newMathDescription) continue; // Keep looking...
-				bMathFound = true;
-				break;
-			}
-			if (!bMathFound){
-				String vetoExceptionMessage = String.format("error: Simulation '%s' will be orphaned (MathDescription doesn't belong to any Application)",
-						((Simulation)event.getSource()).getName());
-				throw new PropertyVetoException(vetoExceptionMessage, event);
-			}
-
-		}
-
-		if (event.getSource() == this && event.getPropertyName().equals(PropertyConstants.PROPERTY_NAME_SIMULATIONS) && event.getNewValue()!=null){
-			this.checkForDuplicateNames(event);
-			this.checkSimulationsHaveAssociatedSimContext((Simulation[])event.getNewValue(), this.fieldSimulationContexts);
-		}
-
-		if (event.getSource() instanceof Simulation && event.getPropertyName().equals("name") && event.getNewValue()!=null){
-			this.checkForDuplicateNames(event);
-		}
-		if (event.getSource() == this && event.getPropertyName().equals(PROPERTY_NAME_SIMULATION_CONTEXTS) && event.getNewValue()!=null){
-			this.checkForDuplicateNames(event);
-			this.checkSimulationsHaveAssociatedSimContext(this.fieldSimulations, (SimulationContext[])event.getNewValue());
-		} else if(event.getSource() == this && event.getPropertyName().equals("sbmlId")) {
-			// not editable, we use what we get from the importer
-		} else if(event.getSource() == this && event.getPropertyName().equals("sbmlName") && event.getNewValue() == null) {
-			return;
-		}
-
-		if (event.getSource() instanceof SimulationContext && event.getPropertyName().equals("name") && event.getNewValue()!=null){
-			this.checkForDuplicateNames(event);
-		}
 		TokenMangler.checkNameProperty(this, "BioModel", event);
 	}
 
@@ -1590,7 +1490,8 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
 		}
 	}
 
-	private void checkSimulationsHaveAssociatedSimContext(Simulation[] sims, SimulationContext[] simContexts){
+	private void checkSimulationsHaveAssociatedSimContext(java.beans.PropertyChangeEvent event, Simulation[] sims,
+														  SimulationContext[] simContexts) throws PropertyVetoException {
 		if (sims == null || simContexts == null) return;
 		for (Simulation sim : sims){
 			boolean bFound = false;
