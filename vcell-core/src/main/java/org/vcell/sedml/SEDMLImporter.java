@@ -606,7 +606,7 @@ public class SEDMLImporter {
 
 			Task baseTask = this.getBaseTask(repeatedTask);
 			Simulation simulation = new Simulation(vcSimulations.get(baseTask.getId())); // make a copy of the original simulation
-			SimulationContext importedSimcontext; SimulationContext convertedSimcontext;
+			SimulationContext importedSimcontext,convertedSimcontext;
 			SimulationContext currentSC = (SimulationContext)simulation.getSimulationOwner();
 			if (((SimulationContext)simulation.getSimulationOwner()).getApplicationType() == Application.NETWORK_STOCHASTIC) {
 				importedSimcontext = currentSC.getBioModel().getSimulationContext(0);
