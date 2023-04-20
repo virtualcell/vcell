@@ -42,9 +42,8 @@ import cbit.vcell.solvers.MathExecutable;
 import cbit.vcell.solvers.SimpleCompiledSolver;
 
 /**
- * Gibson solver Creation date: (7/13/2006 9:00:41 AM)
+ * NFSim solver
  * 
- * @author: Tracy LI
  */
 public class NFSimSolver extends SimpleCompiledSolver {
 
@@ -53,15 +52,11 @@ public class NFSimSolver extends SimpleCompiledSolver {
 		super(simTask, directory, bMsging);
 	}
 
-	/**
-	 * Insert the method's description here. Creation date: (7/13/2006 9:00:41
-	 * AM)
-	 */
 	public void cleanup() {
 	}
 
 	/**
-	 * show progress. Creation date: (7/13/2006 9:00:41 AM)
+	 * show progress
 	 * 
 	 * @return cbit.vcell.solvers.ApplicationMessage
 	 * @param message

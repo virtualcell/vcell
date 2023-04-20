@@ -55,12 +55,10 @@ public LangevinFileWriter(PrintWriter pw, SimulationTask simTask, boolean bMessa
 
 @Override
 public void write(String[] parameterNames) throws Exception {	
-	WriterOutputStream wos = new WriterOutputStream(printWriter);
 	LangevinSimulationOptions langevinSimulationOptions = simTask.getSimulation().getSolverTaskDescription().getLangevinSimulationOptions();
-	boolean bUseLocationMarks = true;
-	String langevinLngvString = LangevinLngvWriter.writeLangevinLngv(simTask, randomSeed, langevinSimulationOptions, bUseLocationMarks);
+	String langevinLngvString = LangevinLngvWriter.writeLangevinLngv(simTask, randomSeed, langevinSimulationOptions);
 	
-	// TODO: wrote file
+	// TODO: write file
 }
 
 public static void main(String[] args) {
