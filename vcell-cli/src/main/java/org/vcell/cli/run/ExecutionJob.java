@@ -121,7 +121,7 @@ public class ExecutionJob {
      * @throws IOException if there are system I/O issues
      * @throws ExecutionException if an execution specfic error occurs
      */
-    public void executeArchive() throws InterruptedException, PythonStreamException, IOException, ExecutionException {
+    public void executeArchive() throws HDF5Exception, PythonStreamException, ExecutionException {
         try {
             Hdf5DataContainer masterHdf5File = new Hdf5DataContainer();
             this.queueAllSedml();
@@ -148,8 +148,6 @@ public class ExecutionJob {
         } catch(InterruptedException | IOException e){
             logger.error("System IO encountered a fatal error");
             throw new ExecutionException(e);
-        } catch (HDF5Exception e){
-            logger.warn("There was an error generating the HDF5 File", e);
         }
     }
 

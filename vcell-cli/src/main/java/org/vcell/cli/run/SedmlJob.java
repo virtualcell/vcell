@@ -16,6 +16,7 @@ import org.vcell.util.FileUtils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.AccessDeniedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -263,19 +264,12 @@ public class SedmlJob {
 
             this.logDocumentMessage += "Generating outputs... ";
             logger.info("Generating outputs... ");
-            /*
+
             if (!solverHandler.nonSpatialResults.isEmpty()) {
-
-
+                this.generateCSV(solverHandler);
+                this.generatePlots();
             }
-            
-            if (!solverHandler.spatialResults.isEmpty()) {
-                // TODO
-                // check for failures
-                // generate reports from hdf5 outputs and add to non-spatial reports, if any
-            }*/
-            this.generateCSV(solverHandler);
-            this.generatePlots();
+
             this.generateHDF5(solverHandler, masterHdf5File);
 
         } catch (Exception e) {
@@ -358,8 +352,12 @@ public class SedmlJob {
         Hdf5DataContainer partialHdf5File = hdf5Extractor.extractHdf5RelevantData(solverHandler.nonSpatialResults, solverHandler.spatialResults);
         masterHdf5File.incorporate(partialHdf5File); // Add the data to the master hdf5 file wrapper.
 
-        for (File tempH5File : solverHandler.spatialResults.values()){
-            if (tempH5File!=null) Files.delete(tempH5File.toPath());
+        for (File tempH5File : solverHandler.spatialResults.values()) {
+            try {
+                if (tempH5File != null) Files.delete(tempH5File.toPath());
+            } catch (AccessDeniedException e) {
+                logger.warn("Unable to delete intermediate file.", e);
+            }
         }
     }
 

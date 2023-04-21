@@ -40,6 +40,11 @@ public class Hdf5DataPreparer {
      * @return the prepared spatial data
      */
     public static Hdf5PreparedData prepareSpatialData (Hdf5SedmlResults datasetWrapper){
+        int totalDataVolume = 1;
+        int numJobs = 1;
+        double[] bigDataBuffer;
+        List<Long> dataDimensionList = new ArrayList<>();
+
         Hdf5SedmlResultsSpatial dataSourceSpatial = (Hdf5SedmlResultsSpatial)datasetWrapper.dataSource; 
         logger.debug(dataSourceSpatial);
         Hdf5DataSourceSpatialVarDataItem exampleVarDataItem = null;
@@ -57,44 +62,35 @@ public class Hdf5DataPreparer {
         }
 
         int[] spaceTimeDimensions = exampleVarDataItem.spaceTimeDimensions;
-        int[] spatialDimensions = Arrays.copyOf(spaceTimeDimensions, spaceTimeDimensions.length - 1);
         //int numSpatialPoints = Arrays.stream(spatialDimensions).sum();
         //long numJobs = dataSourceSpatial.varDataItems.stream().map(varDataItem -> varDataItem.jobIndex).collect(Collectors.toSet()).size();
         List<Variable> sedmlVars = new ArrayList<>(dataSourceSpatial.varDataItems.stream().map(varDataItem -> varDataItem.sedmlVariable).collect(Collectors.toSet()));
         long numVars = sedmlVars.size();
-        long numTimes = exampleVarDataItem.times.length;
-        List<Long> dataDimensionList = new ArrayList<>();
-        int numJobs = 1;
 
-        if (numTimes != spaceTimeDimensions[spaceTimeDimensions.length-1]){
-            throw new RuntimeException("unexpected dimension " + spaceTimeDimensions + " for data, expected last dimension to be that of time: " + numTimes);
+        if (exampleVarDataItem.times.length != spaceTimeDimensions[spaceTimeDimensions.length-1]){
+            throw new RuntimeException("unexpected dimension " + spaceTimeDimensions
+                    + " for data, expected last dimension to be that of time: " + exampleVarDataItem.times.length);
         }
-        
-        
+
+        // Structure dimensionality
+        dataDimensionList.add(numVars);                         // ...first by dataSet
         for (int scanBound : dataSourceSpatial.scanBounds){
-            dataDimensionList.add((long)scanBound + 1);
+            dataDimensionList.add((long)scanBound + 1);         // ...then by scan bounds / "repeated task"
             numJobs *= (scanBound+1);
         }
-
-        dataDimensionList.add(numVars);
-        for (long dim : spatialDimensions){
+        for (long dim : spaceTimeDimensions){                   // ...finally by space-time dimensions
             dataDimensionList.add(dim);
         }
-        dataDimensionList.add(numTimes);
 
-        
-        long[] dataDimensions = dataDimensionList.stream().mapToLong(l -> l).toArray(); // What does this streaming do?
-        int totalDataSize = 1;
-        for (long dim : dataDimensions){
-            totalDataSize *= (int)dim;
+        for (long dim : dataDimensionList){
+            totalDataVolume *= (int)dim;
         }
 
         // Create buffer of contiguous data to hold everything.
-        double[] bigDataBuffer = new double[totalDataSize];
+        bigDataBuffer = new double[totalDataVolume];
         int bufferOffset = 0;
         for (int jobIndex=0; jobIndex<numJobs; jobIndex++){
-            for (int varIndex = 0; varIndex < numVars; varIndex++) {
-                Variable var = sedmlVars.get(varIndex);
+            for (Variable var : sedmlVars) {
                 // find data for var and jobIndex
                 for (Hdf5DataSourceSpatialVarDataItem varDataItem : dataSourceSpatial.varDataItems) {
                     if (varDataItem.sedmlVariable.equals(var) && varDataItem.jobIndex == jobIndex){
@@ -109,7 +105,7 @@ public class Hdf5DataPreparer {
 
         Hdf5PreparedData preparedData = new Hdf5PreparedData();
         preparedData.sedmlId = datasetWrapper.datasetMetadata.sedmlId;
-        preparedData.dataDimensions = dataDimensions;
+        preparedData.dataDimensions = dataDimensionList.stream().mapToLong(l -> l).toArray();
         preparedData.flattenedDataBuffer = bigDataBuffer;
         return preparedData;
     }
@@ -143,6 +139,8 @@ public class Hdf5DataPreparer {
             dataDimensionList.add((long)scanBound + 1);         // ...then by scan bounds / "repeated task" dimensions
         }
         dataDimensionList.add(numTimePoints);                   // ...finally by max time points
+
+
         for (long dim : dataDimensionList){
             totalDataVolume *= (int)dim;
         }

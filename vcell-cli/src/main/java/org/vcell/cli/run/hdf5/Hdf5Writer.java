@@ -104,6 +104,7 @@ public class Hdf5Writer {
             } catch (HDF5LibraryException e){
                 masterHdf5.printErrorStack();
                 logger.error("HDF5 Library Exception encountered while writing out to HDF5 file; Check std::err for stack");
+                if (!didFail) throw e;
             } catch (Exception e) {
                 e.printStackTrace();
             }
