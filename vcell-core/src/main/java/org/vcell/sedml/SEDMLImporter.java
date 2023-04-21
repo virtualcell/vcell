@@ -723,28 +723,42 @@ public class SEDMLImporter {
 					functions.add(change);
 				}
 			}
-
+			/*
 			this.createOverrides(simulation, functions);
 			// we didn't bomb out, so update the simulation
 			simulation.setImportedTaskID(abstractedRepeatedTask.getId());
+			simulation.setName(SEDMLUtil.getName(this.sedml.getSimulation(baseTask.getSimulationReference()))
+					+ "_" + SEDMLUtil.getName(repeatedTask));
+			SimulationOwner simOwner = vcSimulations.get(baseTask.getId()).getSimulationOwner();
+			if (!(simOwner instanceof SimulationContext)) throw new RuntimeException("Unexpected sim owner");
+			SimulationContext simContext = (SimulationContext) simOwner;
+			vcSimulations.put(repeatedTask.getId(), simulation);
+			simContext.getBioModel().addSimulation(simulation); // since we cloned, we don't need another sim context
 
+			 */
+
+			simulation.setImportedTaskID(abstractedRepeatedTask.getId());
+
+			//TODO: Need version info on new sim!!!
+			String targetId;
+			SimulationOwner simOwner = vcSimulations.get(baseTask.getId()).getSimulationOwner();
+			if (!(simOwner instanceof SimulationContext)) throw new RuntimeException("Unexpected sim owner");
+			SimulationContext simContext = (SimulationContext) simOwner;
 			// We need to determine if the 'base simulation' is needed for an output
 			// if we don't we should remove the entry in the map.
-			String targetID = baseTask.getId(); // Default is that we overwrite
 			if (this.simulationIsNeededAsOutput(vcSimulations.get(baseTask.getId()))){
-				// we should preserve the base simulation.
-				targetID = repeatedTask.getId();
-				// final steps to prepare a brand new vcell simulation
+				targetId = repeatedTask.getId();
 				simulation.setName(SEDMLUtil.getName(this.sedml.getSimulation(baseTask.getSimulationReference()))
 						+ "_" + SEDMLUtil.getName(repeatedTask));
-				SimulationOwner simOwner = vcSimulations.get(baseTask.getId()).getSimulationOwner();
-				if (!(simOwner instanceof SimulationContext)) throw new RuntimeException("Unexpected sim owner");
-				SimulationContext simContext = (SimulationContext) simOwner;
-				simContext.getBioModel().addSimulation(simulation); // since we cloned, we don't need another sim context?
+			} else {
+				targetId = baseTask.getId();
+				vcSimulations.remove(baseTask.getId());
+				simContext.getBioModel().removeSimulation(vcSimulations.get(baseTask.getId()));
 			}
-			vcSimulations.put(targetID, simulation);
-			// Question: if overwritten, is the originally bound sim now lost and (soon to be) garbage collected?
-		}
+			vcSimulations.put(targetId, simulation);
+			simContext.getBioModel().addSimulation(simulation); // since we cloned, we don't need another sim context
+
+		} // end for loop
 	}
 
 	// We need to process biomodels that may depend on other biomodels, either with changes or with references!
