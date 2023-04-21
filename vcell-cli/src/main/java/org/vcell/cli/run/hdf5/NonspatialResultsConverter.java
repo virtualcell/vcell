@@ -61,12 +61,12 @@ public class NonspatialResultsConverter {
                     }
                     
                     // must get variable ID from SBML model
-                    String vcellVarId = convertToVCellSymbol(var); // What's the point of this???
+                    String vcellVarId = convertToVCellSymbol(var);
 
                     // If the task isn't in our results hash, it's unwanted and skippable.
                     boolean bFoundTaskInNonspatial = nonspatialResultsHash.keySet().stream().anyMatch(taskJob -> taskJob.getTaskId().equals(topLevelTask.getId()));
                     if (!bFoundTaskInNonspatial){
-                        logger.warn("Was not able to find simutation data for task with ID: " + topLevelTask.getId());
+                        logger.warn("Was not able to find simulation data for task with ID: " + topLevelTask.getId());
                         break;
                     }
 
@@ -79,7 +79,7 @@ public class NonspatialResultsConverter {
                         if (entry.getValue() != null && taskJob.getTaskId().equals(topLevelTask.getId())) {
                             taskJobs.add(taskJob);
                             if (!(topLevelTask instanceof RepeatedTask)) 
-                                break; // No need to keep looking if its not a repeated task
+                                break; // No need to keep looking if it's not a repeated task
                         }
                     }
 
@@ -160,7 +160,11 @@ public class NonspatialResultsConverter {
 
             } // end of current dataset processing
 
-            if (dataSetValues.isEmpty()) continue;
+            if (dataSetValues.isEmpty()) {
+                logger.warn("We did not get any entries in the final data set. " +
+                        "This may mean a problem has been encountered.");
+                continue;
+            }
             List<String> shapes = new LinkedList<>();
             Hdf5SedmlResultsNonspatial dataSourceNonspatial = new Hdf5SedmlResultsNonspatial();
             Hdf5SedmlResults hdf5DatasetWrapper = new Hdf5SedmlResults();
@@ -178,10 +182,8 @@ public class NonspatialResultsConverter {
                 dataSourceNonspatial.allJobResults.put(dataSet, new LinkedList<>());
                 dataSourceNonspatial.scanBounds = dataSetValuesSource.vcSimulation.getMathOverrides().getScanBounds();
                 dataSourceNonspatial.scanParameterNames = dataSetValuesSource.vcSimulation.getMathOverrides().getScannedConstantNames();
-                for (int jobIndex = 0; jobIndex < dataSetValuesSource.getNumSets(); jobIndex++){
-                    double[] data = dataSetValuesSource.listOfResultSets.get(jobIndex);
-                    List<double[]> hdf5JobData = dataSourceNonspatial.allJobResults.get(dataSet);
-                    hdf5JobData.add(data);
+                for (double[] data : dataSetValuesSource.listOfResultSets) {
+                    dataSourceNonspatial.allJobResults.get(dataSet).add(data);
                     shapes.add(Integer.toString(data.length));
                 }
                 

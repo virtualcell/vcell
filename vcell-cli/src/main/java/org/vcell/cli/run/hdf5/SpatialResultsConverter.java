@@ -42,44 +42,62 @@ public class SpatialResultsConverter {
                 // get the list of variables associated with the data reference
                 for (Variable var : datagen.getListOfVariables()) {
                     // for each variable we recover the task
-                    AbstractTask initialTask = sedml.getTaskWithId(var.getReference());
-                    AbstractTask referredTask = SpatialResultsConverter.getBaseTask(initialTask, sedml);
+                    AbstractTask topLevelTask = sedml.getTaskWithId(var.getReference());
+                    AbstractTask baseTask = SpatialResultsConverter.getBaseTask(topLevelTask, sedml);
                     // from the task we get the sbml model
-                    org.jlibsedml.Simulation sedmlSim = sedml.getSimulation(((Task)referredTask).getSimulationReference());
+                    org.jlibsedml.Simulation sedmlSim = sedml.getSimulation(((Task)baseTask).getSimulationReference());
 
-                    boolean bFoundTaskInSpatial = spatialResultsHash.keySet().stream().anyMatch(taskJob -> taskJob.getTaskId().equals(initialTask.getId()));
-                    if (!bFoundTaskInSpatial){
-                        bNotSpatial = true;
-                        break;
-                    }
-
-                    // ==================================================================================
                     if (!(sedmlSim instanceof UniformTimeCourse)){
                         logger.error("only uniform time course simulations are supported");
                         continue;
                     }
 
-                    ArrayList<TaskJob> taskJobs = new ArrayList<>();
-                    int[] scanBounds;
-                    String[] scanParamNames;
+                    // Do we need Vcell/sbml name conversion here??
 
-                    if (initialTask instanceof RepeatedTask) {
+                    boolean bFoundTaskInSpatial = spatialResultsHash.keySet().stream().anyMatch(taskJob -> taskJob.getTaskId().equals(topLevelTask.getId()));
+                    if (!bFoundTaskInSpatial){
+                        bNotSpatial = true;
+                        logger.warn("Was not able to find simulation data for task with ID: " + topLevelTask.getId());
+                        break;
+                    }
+
+                    // ==================================================================================
+
+
+                    ArrayList<TaskJob> taskJobs = new ArrayList<>();
+                    int[] scanBounds = new int[0];
+                    String[] scanParamNames = new String[0];
+
+                    /*
+                    if (topLevelTask instanceof RepeatedTask) {
                         for (Map.Entry<TaskJob, File> entry : spatialResultsHash.entrySet()) {
                             TaskJob taskJob = entry.getKey();
-                            if (entry.getValue() != null && taskJob.getTaskId().equals(initialTask.getId())) {
+                            if (entry.getValue() != null && taskJob.getTaskId().equals(topLevelTask.getId())) {
                                 taskJobs.add(taskJob);
                             }
                         }
-                        scanBounds = taskToSimulationMap.get(initialTask).getMathOverrides().getScanBounds();
-                        scanParamNames = taskToSimulationMap.get(initialTask).getMathOverrides().getScannedConstantNames();
-                    } else { // Repeated Tasks
-                        taskJobs.add(new TaskJob(referredTask.getId(), 0));
+                        scanBounds = taskToSimulationMap.get(topLevelTask).getMathOverrides().getScanBounds();
+                        scanParamNames = taskToSimulationMap.get(topLevelTask).getMathOverrides().getScannedConstantNames();
+                    } else { // Not repeated Tasks
+                        taskJobs.add(new TaskJob(baseTask.getId(), 0));
                         scanBounds = new int[0];
                         scanParamNames = new String[0];
+                    }*/
+
+                    for (Map.Entry<TaskJob, File> entry : spatialResultsHash.entrySet()) {
+                        TaskJob taskJob = entry.getKey();
+                        if (entry.getValue() != null && taskJob.getTaskId().equals(topLevelTask.getId())) {
+                            taskJobs.add(taskJob);
+                            if (topLevelTask instanceof RepeatedTask)
+                                break; // No need to keep looking if it's not a repeated task
+                        }
                     }
+
+                    if (taskJobs.isEmpty()) continue;
 
                     int outputNumberOfPoints = ((UniformTimeCourse) sedmlSim).getNumberOfPoints();
                     double outputStartTime = ((UniformTimeCourse) sedmlSim).getOutputStartTime();
+
                     int jobIndex = 0;
                     for (TaskJob taskJob : taskJobs) {
                         File spatialH5File = spatialResultsHash.get(taskJob);
@@ -93,9 +111,12 @@ public class SpatialResultsConverter {
                         jobIndex++;
                     }
                 }
+                // TODO: Data generator logic goes here
             } // end of dataset
 
-            if (bNotSpatial || hdf5DataSourceSpatial.varDataItems.size() == 0){
+            if (bNotSpatial || hdf5DataSourceSpatial.varDataItems.isEmpty()){
+                logger.warn("We encountered non-compatible (or non-existent) data. " +
+                        "This may mean a problem has been encountered.");
                 continue;
             }
 
