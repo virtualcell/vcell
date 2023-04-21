@@ -182,6 +182,15 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 		} else {
 			nfsimSimulationOptions = null;
 		}
+		if (simulation.getMathDescription().isLangevin()) {
+			if(solverTaskDescription.langevinSimulationOptions != null) {
+				langevinSimulationOptions = new LangevinSimulationOptions(solverTaskDescription.langevinSimulationOptions);
+			} else {
+				langevinSimulationOptions = new LangevinSimulationOptions();
+			}
+		} else {
+			langevinSimulationOptions = null;
+		}
 		if (fieldSolverDescription.equals(SolverDescription.SundialsPDE)) {
 			sundialsPdeSolverOptions = new SundialsPdeSolverOptions(solverTaskDescription.sundialsPdeSolverOptions);
 		} else {
@@ -314,6 +323,9 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 				return false;
 			}
 			if (!Compare.isEqualOrNull(nfsimSimulationOptions,solverTaskDescription.nfsimSimulationOptions)) {
+				return false;
+			}
+			if (!Compare.isEqualOrNull(langevinSimulationOptions,solverTaskDescription.langevinSimulationOptions)) {
 				return false;
 			}
 			if (!Compare.isEqualOrNull(movingBoundarySolverOptions,solverTaskDescription.movingBoundarySolverOptions)) {
@@ -610,6 +622,9 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 		if (nfsimSimulationOptions != null) {
 			buffer.append(nfsimSimulationOptions.getVCML());
 		}
+		if (langevinSimulationOptions != null) {
+			buffer.append(langevinSimulationOptions.getVCML());
+		}
 		if (smoldynSimulationOptions != null) {
 			buffer.append(smoldynSimulationOptions.getVCML());
 		}
@@ -710,6 +725,11 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 				if (solverDescription.isNFSimSolver()){
 					if (nfsimSimulationOptions == null){
 						nfsimSimulationOptions = new NFsimSimulationOptions();
+					}
+				}
+				if (solverDescription.isLangevinSolver()) {
+					if (langevinSimulationOptions == null) {
+						langevinSimulationOptions = new LangevinSimulationOptions();
 					}
 				}
 				if (solverDescription.isChomboSolver()) {
@@ -1168,6 +1188,9 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 		if(nfsimSimulationOptions != null) {
 			nfsimSimulationOptions.refreshDependencies();
 		}
+		if(langevinSimulationOptions != null) {
+			langevinSimulationOptions.refreshDependencies();
+		}
 	}
 
 	/**
@@ -1553,6 +1576,9 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 			sb.append("\n");
 			return;
 		}
+		
+		LangevinSimulationOptions simulationOptions = getLangevinSimulationOptions();
+		
 		sb.append("Total time: 1.00E-2");
 		sb.append("\n");
 		sb.append("dt: 1.00E-8");

@@ -17,6 +17,9 @@ import org.vcell.model.rbm.RuleAnalysis;
 import org.vcell.model.rbm.RuleAnalysisReport;
 import org.vcell.util.BeanUtils;
 
+import cbit.vcell.export.SpringSaLaDExporter;
+import cbit.vcell.mapping.GeometryContext;
+import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.Action;
 import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.Constant;
@@ -47,6 +50,8 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.LangevinSimulationOptions;
 import cbit.vcell.solver.NFsimSimulationOptions;
+import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationOwner;
 import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.SolverException;
 //import org.jdom.output.Format;
@@ -69,6 +74,16 @@ public class LangevinLngvWriter {
 			e1.printStackTrace();
 		}
 		
+		Simulation simulation = origSimTask.getSimulation();
+		SimulationOwner so = simulation.getSimulationOwner();
+		if(!(so instanceof SimulationContext)) {
+			throw new RuntimeException("SimulationOwner must be instance of SimulationContext");
+		}
+		SimulationContext simContext = (SimulationContext)so;
+		GeometryContext geometryContext = simContext.getGeometryContext();
+//		langevinSimulationOptions.getSimulationOptions();
+		
+		
 // we don't need to clone anything since we don't have to add the extra location / mark sites (part of the trick to run multi-compartment NFSim)	
 //		SimulationTask clonedSimTask = null;
 //		try {
@@ -81,6 +96,20 @@ public class LangevinLngvWriter {
 		
 		
 			// TODO: start converting the math into lgvn format (input format for the solver)
+		
+		StringBuilder sb = new StringBuilder();
+		/* ********* BEGIN BY WRITING THE TIMES *********/
+		sb.append("*** " + SpringSaLaDExporter.TIME_INFORMATION + " ***");
+		sb.append("\n");
+		simulation.getSolverTaskDescription().writeData(sb);	// TODO: need proper sim
+		sb.append("\n");
+
+		/* ********* WRITE THE SPATIAL INFORMATION **********/
+		sb.append("*** " + SpringSaLaDExporter.SPATIAL_INFORMATION + " ***");
+		sb.append("\n");
+		geometryContext.writeData(sb);	// TODO: need geometry
+		sb.append("\n");
+
 
 			
 		String lngvString = "empty";
