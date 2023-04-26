@@ -73,9 +73,16 @@ public class ExecuteImpl {
         String bioModelBaseName = FileUtils.getBaseName(inputFile.getName()); // bioModelBaseName = input file without the path
         String outputBaseDir = rootOutputDir.getAbsolutePath(); 
         String targetOutputDir = bEncapsulateOutput ? Paths.get(outputBaseDir, bioModelBaseName).toString() : outputBaseDir;
+        File adjustedOutputDir = new File(targetOutputDir);
 
         logger.info("Preparing output directory...");
-        RunUtils.removeAndMakeDirs(new File(targetOutputDir));
+        // we don't want to accidentally delete the input...
+        // if the output is a subset of the input file's housing directory, we shouldn't delete!!
+        if (!inputFile.getParentFile().getCanonicalPath().contains(adjustedOutputDir.getCanonicalPath()))
+            RunUtils.removeAndMakeDirs(adjustedOutputDir);
+        else
+            adjustedOutputDir.mkdirs();
+
         PythonCalls.generateStatusYaml(inputFile.getAbsolutePath(), targetOutputDir);    // generate Status YAML
 
         ExecuteImpl.singleExecOmex(inputFile, rootOutputDir, cliLogger, bKeepTempFiles, bExactMatchOnly, bEncapsulateOutput, bSmallMeshOverride);
