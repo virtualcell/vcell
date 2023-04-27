@@ -549,6 +549,10 @@ public class RunUtils {
             boolean isRemoved = CLIUtils.removeDirs(f);
             if (!isRemoved)
                 removalSuccess = false;
+                // we don't throw an exception up the stack here for two reasons:
+                // 1) deletion of files differs on different OS. Punishing users for their OS or their understanding thereof seems wrong.
+                // 2) the user may be using software that is necessarily holding resources; by blocking on failed deletion, we are
+                //      denying the potential use cases of VCell.
                 try{
                     throw new Exception("File '" + f.getCanonicalPath() + "' could not be deleted!");
                 } catch (Exception e){
