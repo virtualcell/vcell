@@ -75,7 +75,7 @@ public class ExecuteImpl {
         String targetOutputDir = bEncapsulateOutput ? Paths.get(outputBaseDir, bioModelBaseName).toString() : outputBaseDir;
         File adjustedOutputDir = new File(targetOutputDir);
 
-        logger.info("Preparing output directory...");
+        logger.info("Preparing singleMode output directory...");
         // we don't want to accidentally delete the input...
         // if the output is a subset of the input file's housing directory, we shouldn't delete!!
         logger.warn("<<" + inputFile.getParentFile().getCanonicalPath() + ">>");
