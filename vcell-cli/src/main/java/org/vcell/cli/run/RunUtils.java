@@ -549,6 +549,11 @@ public class RunUtils {
             boolean isRemoved = CLIUtils.removeDirs(f);
             if (!isRemoved)
                 removalSuccess = false;
+                try{
+                    throw new Exception("File '" + f.getCanonicalPath() + "' could not be deleted!");
+                } catch (Exception e){
+                    logger.error(e);
+                }
         }
         return f.mkdirs() && removalSuccess;
     }
