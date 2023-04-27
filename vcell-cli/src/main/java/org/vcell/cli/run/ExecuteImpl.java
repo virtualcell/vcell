@@ -78,9 +78,9 @@ public class ExecuteImpl {
         logger.info("Preparing output directory...");
         // we don't want to accidentally delete the input...
         // if the output is a subset of the input file's housing directory, we shouldn't delete!!
+        logger.warn("<<" + inputFile.getParentFile().getCanonicalPath() + ">>");
+        logger.warn("{<" + adjustedOutputDir.getCanonicalPath() + ">}");
         if (!inputFile.getParentFile().getCanonicalPath().contains(adjustedOutputDir.getCanonicalPath()))
-            logger.warn("<<" + inputFile.getParentFile().getCanonicalPath() + ">>");
-            logger.warn("{<" + adjustedOutputDir.getCanonicalPath() + ">}");
             RunUtils.removeAndMakeDirs(adjustedOutputDir);
 
         PythonCalls.generateStatusYaml(inputFile.getAbsolutePath(), targetOutputDir);    // generate Status YAML
