@@ -112,8 +112,9 @@ public class LangevinLngvWriter {
 
 
 			
-		String lngvString = "empty";
-		return lngvString;
+		String ret = sb.toString();
+		System.out.println(ret);
+		return ret;
 	}
 	
 	private static double evaluateConstant(Expression expression, SimulationSymbolTable simulationSymbolTable) throws MathException, ExpressionException{

@@ -1577,15 +1577,28 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 			return;
 		}
 		
-		LangevinSimulationOptions simulationOptions = getLangevinSimulationOptions();
 		
-		sb.append("Total time: 1.00E-2");
+		// ending time is editable, starting time is non-editable, always 0
+		double totalTime = getTimeBounds().getEndingTime() - getTimeBounds().getStartingTime();
+		sb.append("Total time: " + totalTime);		// TODO: for langevin, initialize to 1.00E-2
 		sb.append("\n");
-		sb.append("dt: 1.00E-8");
+		
+		double defaultTimeStep = getTimeStep().getDefaultTimeStep();
+		sb.append("dt: " + defaultTimeStep);		// TODO: initialize to 1.00E-8
 		sb.append("\n");
+		
+		if(!(getOutputTimeSpec() instanceof UniformOutputTimeSpec)) {
+			throw new RuntimeException("Output interval must be uniform");
+		}
+		UniformOutputTimeSpec uots = (UniformOutputTimeSpec)getOutputTimeSpec();
+		double outputInterval = uots.getOutputTimeStep();
+		sb.append("dt_data: " + outputInterval);	// TODO: initialize to 1.00E-4
+		sb.append("\n");
+		
+		// TODO: dt spring and dt image must be obtained from LangevinSimulationOptions
+		LangevinSimulationOptions lso = getLangevinSimulationOptions();
+
 		sb.append("dt_spring: 1.00E-9");
-		sb.append("\n");
-		sb.append("dt_data: 1.00E-4");
 		sb.append("\n");
 		sb.append("dt_image: 1.00E-4");
 		sb.append("\n");
