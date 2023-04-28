@@ -24,6 +24,7 @@ import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditor
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderNode;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.model.Model.RbmModelContainer;
 import cbit.vcell.xml.gui.MiriamTreeModel.LinkNode;
  
@@ -98,6 +99,9 @@ public class BioModelEditorTreeCellRenderer extends DocumentEditorTreeCellRender
 						icon = VCellIcons.appStoSpatialIcon;
 			    		toolTipSuffix =  "Stochastic / Spatial";
 					}
+				} else if(simContext.getApplicationType() == Application.SPRINGSALAD) {
+					icon = VCellIcons.appSpringSaLaDSpatialIcon;
+		    		toolTipSuffix =  "SpringSaLaD / Spatial";
 				} else {		// deterministic
 					if(simContext.getGeometry().getDimension() == 0) {
 						icon = VCellIcons.appDetNonspIcon;
