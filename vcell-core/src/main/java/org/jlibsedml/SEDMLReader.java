@@ -388,8 +388,13 @@ class SEDMLReader {
                 String id = eChild.getAttributeValue(SEDMLTags.RANGE_ATTR_ID);
                 Double start = Double.parseDouble(eChild.getAttributeValue(SEDMLTags.UNIFORM_RANGE_ATTR_START));
                 Double end = Double.parseDouble(eChild.getAttributeValue(SEDMLTags.UNIFORM_RANGE_ATTR_END));
-                int numberOfPoints = Integer.parseInt(eChild.getAttributeValue(SEDMLTags.UNIFORM_RANGE_ATTR_NUMP));
-                String type = eChild.getAttributeValue(SEDMLTags.UNIFORM_RANGE_ATTR_TYPE);
+                int numberOfPoints;
+                if (eChild.getAttributeValue(SEDMLTags.UNIFORM_RANGE_ATTR_NUMP) != null) {
+					numberOfPoints = Integer.parseInt(eChild.getAttributeValue(SEDMLTags.UNIFORM_RANGE_ATTR_NUMP));
+				} else {
+					numberOfPoints = Integer.parseInt(eChild.getAttributeValue(SEDMLTags.UNIFORM_RANGE_ATTR_NUMS));				
+				}
+				String type = eChild.getAttributeValue(SEDMLTags.UNIFORM_RANGE_ATTR_TYPE);
                 range = new UniformRange(id, start, end, numberOfPoints, UniformType.fromString(type));
                 task.addRange(range);
             } else if(eChild.getName().equals(SEDMLTags.FUNCTIONAL_RANGE_TAG)) {

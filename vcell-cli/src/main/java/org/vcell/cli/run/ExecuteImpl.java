@@ -24,7 +24,8 @@ public class ExecuteImpl {
     private final static Logger logger = LogManager.getLogger(ExecuteImpl.class);
 
     public static void batchMode(File dirOfArchivesToProcess, File outputDir, CLIRecordable cliLogger,
-                                 boolean bKeepTempFiles, boolean bExactMatchOnly, boolean bSmallMeshOverride) {
+                                 boolean bKeepTempFiles, boolean bExactMatchOnly, boolean bSmallMeshOverride
+                                ) throws IOException {
         FilenameFilter filter = (f, name) -> name.endsWith(".omex") || name.endsWith(".vcml");
         File[] inputFiles = dirOfArchivesToProcess.listFiles(filter);
         if (inputFiles == null) throw new RuntimeException("Error trying to retrieve files from input directory.");
@@ -34,9 +35,13 @@ public class ExecuteImpl {
             String bioModelBaseName = FileUtils.getBaseName(inputFile.getName());
             String outputBaseDir = outputDir.getAbsolutePath(); // bioModelBaseName = input file without the path
             String targetOutputDir = Paths.get(outputBaseDir, bioModelBaseName).toString();
+            File adjustedOutputDir = new File(targetOutputDir);
 
             logger.info("Preparing output directory...");
-            RunUtils.removeAndMakeDirs(new File(targetOutputDir));
+            // we don't want to accidentally delete the input...
+            // if the output is a subset of the input file's housing directory, we shouldn't delete!!
+            if (!inputFile.getParentFile().getCanonicalPath().contains(adjustedOutputDir.getCanonicalPath()))
+                RunUtils.removeAndMakeDirs(adjustedOutputDir);
             try {
                 PythonCalls.generateStatusYaml(inputFile.getAbsolutePath(), targetOutputDir);    // generate Status YAML
             } catch (PythonStreamException e){
@@ -74,9 +79,14 @@ public class ExecuteImpl {
         String bioModelBaseName = FileUtils.getBaseName(inputFile.getName()); // bioModelBaseName = input file without the path
         String outputBaseDir = rootOutputDir.getAbsolutePath(); 
         String targetOutputDir = bEncapsulateOutput ? Paths.get(outputBaseDir, bioModelBaseName).toString() : outputBaseDir;
+        File adjustedOutputDir = new File(targetOutputDir);
 
         logger.info("Preparing output directory...");
-        RunUtils.removeAndMakeDirs(new File(targetOutputDir));
+        // we don't want to accidentally delete the input...
+        // if the output is a subset of the input file's housing directory, we shouldn't delete!!
+        if (!inputFile.getParentFile().getCanonicalPath().contains(adjustedOutputDir.getCanonicalPath()))
+            RunUtils.removeAndMakeDirs(adjustedOutputDir);
+
         PythonCalls.generateStatusYaml(inputFile.getAbsolutePath(), targetOutputDir);    // generate Status YAML
 
         ExecuteImpl.singleExecOmex(inputFile, rootOutputDir, cliLogger, bKeepTempFiles, bExactMatchOnly, bEncapsulateOutput, bSmallMeshOverride);
@@ -105,7 +115,10 @@ public class ExecuteImpl {
         File outDirForCurrentVcml = new File(Paths.get(outputDir.getAbsolutePath(), vcmlName).toString());
 
         try {
-            RunUtils.removeAndMakeDirs(outDirForCurrentVcml);
+            // we don't want to accidentally delete the input...
+            // if the output is a subset of the input file's housing directory, we shouldn't delete!!
+            if (!vcmlFile.getParentFile().getCanonicalPath().contains(outDirForCurrentVcml.getCanonicalPath()))
+                RunUtils.removeAndMakeDirs(outDirForCurrentVcml);
         } catch (Exception e) {
             logger.error("Error in creating required directories: " + e.getMessage(), e);
             somethingFailed = somethingDidFail();

@@ -221,11 +221,13 @@ class SEDMLWriter {
 	                varList.addContent(getXML(var, VariableType.COMPUTE_CHANGE));
 	            }
             }
-            Element paramList = new Element(SEDMLTags.COMPUTE_CHANGE_PARAMS);
-            node.addContent(paramList);
-            List<Parameter> params = computeChange.getListOfParameters();
-            for (Parameter param : params) {
-                paramList.addContent(getXML(param));
+            if(!computeChange.getListOfParameters().isEmpty()) {
+	            Element paramList = new Element(SEDMLTags.COMPUTE_CHANGE_PARAMS);
+	            node.addContent(paramList);
+	            List<Parameter> params = computeChange.getListOfParameters();
+	            for (Parameter param : params) {
+	                paramList.addContent(getXML(param));
+	            }
             }
             ASTToXMLElementVisitor astElementVisitor = new ASTToXMLElementVisitor();
             computeChange.getMath().accept(astElementVisitor);
