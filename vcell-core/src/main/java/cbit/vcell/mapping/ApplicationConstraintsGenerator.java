@@ -24,13 +24,20 @@ import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.MassActionKinetics;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
 import net.sourceforge.interval.ia_math.RealInterval;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import java.beans.PropertyVetoException;
+
 /**
  * Insert the type's description here.
  * Creation date: (12/29/2004 1:34:26 PM)
  * @author: Jim Schaff
  */
 public class ApplicationConstraintsGenerator {
+	private final static Logger lg = LogManager.getLogger(ApplicationConstraintsGenerator.class);
 /**
  * Insert the method's description here.
  * Creation date: (6/26/01 8:25:55 AM)
@@ -160,7 +167,7 @@ public static ConstraintContainerImpl fromApplication(SimulationContext simConte
 //		try {
 //			simContext.setMathDescription(simContext.createNewMathMapping().getMathDescription());
 //		}catch (Throwable e){
-//			e.printStackTrace(System.out);
+//			lg.error(e);
 //			throw new RuntimeException("cannot create mathDescription");
 //		}
 //		MathDescription mathDesc = simContext.getMathDescription();
@@ -179,21 +186,15 @@ public static ConstraintContainerImpl fromApplication(SimulationContext simConte
 
 		return ccImpl;
 	}catch (cbit.vcell.parser.ExpressionException e){
-		e.printStackTrace(System.out);
+		lg.error(e);
 		return null;
 	}catch (java.beans.PropertyVetoException e){
-		e.printStackTrace(System.out);
+		lg.error(e);
 		return null;
 	}
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (9/19/2003 4:25:50 PM)
- * @return cbit.vcell.parser.Expression
- * @param exp cbit.vcell.parser.Expression
- */
 private static Expression getSteadyStateExpression(Expression argExp) throws cbit.vcell.parser.ExpressionException {
 	Expression exp = new Expression(argExp);
 	exp.substituteInPlace(new Expression("t"),new Expression(0.0));
@@ -278,9 +279,8 @@ public static ConstraintContainerImpl steadyStateFromApplication(SimulationConte
 		//
 		try {
 			simContext.setMathDescription(simContext.createNewMathMapping().getMathDescription());
-		}catch (Throwable e){
-			e.printStackTrace(System.out);
-			throw new RuntimeException("cannot create mathDescription");
+		}catch (Exception e){
+			throw new RuntimeException("cannot create mathDescription", e);
 		}
 		MathDescription mathDesc = simContext.getMathDescription();
 		if (mathDesc.getGeometry().getDimension()>0){
@@ -371,11 +371,8 @@ public static ConstraintContainerImpl steadyStateFromApplication(SimulationConte
 		}
 		
 		return ccImpl;
-	}catch (cbit.vcell.parser.ExpressionException e){
-		e.printStackTrace(System.out);
-		return null;
-	}catch (java.beans.PropertyVetoException e){
-		e.printStackTrace(System.out);
+	}catch (ExpressionException | PropertyVetoException e){
+		lg.error(e);
 		return null;
 	}
 }

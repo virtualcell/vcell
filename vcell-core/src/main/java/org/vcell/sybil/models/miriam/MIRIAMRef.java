@@ -19,9 +19,12 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.sybil.util.keys.KeyOfTwo;
 
 public class MIRIAMRef extends KeyOfTwo<String, String> {
+	private final static Logger lg = LogManager.getLogger(MIRIAMRef.class);
 	
 	public MIRIAMRef(String type, String id) { super(type, id); }
 
@@ -32,12 +35,12 @@ public class MIRIAMRef extends KeyOfTwo<String, String> {
 
 	public static String encode(String raw) { 
 		try {return URLEncoder.encode(raw, encoding); } 
-		catch (UnsupportedEncodingException e) { e.printStackTrace(); return null; } 
+		catch (UnsupportedEncodingException e) { lg.error(e); return null; }
 	}
 	
 	public static String decode(String encoded) {
 		try { return URLDecoder.decode(encoded, encoding); } 
-		catch (UnsupportedEncodingException e) { e.printStackTrace(); return null; }
+		catch (UnsupportedEncodingException e) { lg.error(e); return null; }
 	}
 	
 	public String urn() { return "urn:miriam:" + encode(type()) + ":" + encode(id()); }

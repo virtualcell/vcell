@@ -242,7 +242,6 @@ public abstract class SpatialProcess implements Serializable, IssueSource, Prope
 			try {
 				parameterContext.addLocalParameter(p.getName(), new Expression(p.getExpression()), p.getRole(), p.getUnitDefinition(), p.getDescription());
 			} catch (PropertyVetoException | ExpressionBindingException e) {
-				e.printStackTrace();
 				throw new RuntimeException("failed to copy parameters for SpatialProcess "+getName(),e);
 			}
 		}

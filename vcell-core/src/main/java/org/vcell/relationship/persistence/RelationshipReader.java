@@ -12,6 +12,8 @@ package org.vcell.relationship.persistence;
 
 import static org.vcell.pathway.PathwayXMLHelper.showUnexpected;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jdom.Attribute;
 import org.jdom.Element;
 import org.vcell.relationship.RelationshipModel;
@@ -22,6 +24,7 @@ import cbit.vcell.biomodel.meta.VCID;
 import cbit.vcell.xml.XMLTags;
 
 public class RelationshipReader {
+	private final static Logger lg = LogManager.getLogger(RelationshipReader.class);
 
 	private RelationshipModel relationshipModel = new RelationshipModel();
 		
@@ -34,7 +37,7 @@ public class RelationshipReader {
 					try{
 						relationshipModel.addRelationshipObject(addObjectRelationshipObject(childElement, provider));
 					}catch(Exception e){
-						e.printStackTrace();
+						lg.error(e.getMessage(), e);
 					}
 				}else{
 					showUnexpected(childElement);

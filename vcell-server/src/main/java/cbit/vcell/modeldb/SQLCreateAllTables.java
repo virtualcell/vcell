@@ -22,6 +22,8 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
 import org.vcell.db.DatabaseSyntax;
@@ -33,6 +35,7 @@ import cbit.sql.Table;
  * This type was created in VisualAge.
  */
 public class SQLCreateAllTables {
+	private final static Logger lg = LogManager.getLogger(SQLCreateAllTables.class);
 
 	public static final String POSTGRES_DUAL_VIEW = "public.dual";
 /**
@@ -196,8 +199,7 @@ private static void destroyAndRecreateTables(ConnectionFactory conFactory, KeyFa
 				con.commit();
 			} catch (SQLException exc) {
 				con.rollback();
-				System.out.println(exc.getMessage());
-				exc.printStackTrace(System.out);
+				lg.error(exc);
 			} finally {
 				conFactory.release(con, lock);
 			}
@@ -206,9 +208,8 @@ private static void destroyAndRecreateTables(ConnectionFactory conFactory, KeyFa
 		}
 		System.exit(0);
 	} catch (Throwable exc) {
-		System.out.println(exc.getMessage());
-		exc.printStackTrace(System.out);
-	}	
+		lg.error(exc);
+	}
 }
 /**
  * This method was created in VisualAge.
@@ -225,8 +226,7 @@ private static void dropSequence(Connection con, KeyFactory keyFactory) throws S
 		stmt = con.createStatement();
 		stmt.execute(sql);
 	} catch (SQLException e) {
-		e.printStackTrace(System.out);
-		System.out.println("Exception Dropping Sequence");
+		lg.error("Exception Dropping Sequence", e);
 	}finally{
 		stmt.close();
 	}
@@ -244,7 +244,7 @@ private static void dropSequence(Connection con, KeyFactory keyFactory) throws S
 			pps = con.prepareStatement(sql);
 			boolean status = pps.execute();
 		} catch (Exception e) {
-			//e.printStackTrace(System.out);
+			//lg.error(e);
 			System.out.println(" View " + POSTGRES_DUAL_VIEW +" Not dropped. "+e.getMessage());
 		}finally{
 			if (pps != null){
@@ -271,7 +271,7 @@ private static void dropTables(Connection con, Table tables[], DatabaseSyntax db
 			pps = con.prepareStatement(sql);
 			status = pps.execute();
 		} catch (Exception e) {
-			//e.printStackTrace(System.out);
+			//lg.error(e);
 			System.out.println(" Table " + tables[i].getTableName()+" Not dropped. "+e.getMessage());
 		}finally{
 			if (pps != null){
@@ -428,7 +428,7 @@ public static void main(java.lang.String[] args) {
         }
         destroyAndRecreateTables(conFactory, conFactory.getKeyFactory(), conFactory.getDatabaseSyntax());
     } catch (Throwable e) {
-        e.printStackTrace(System.out);
+        lg.error(e);
     }
     System.exit(0);
 }

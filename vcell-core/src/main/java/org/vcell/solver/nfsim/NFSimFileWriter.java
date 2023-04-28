@@ -13,6 +13,8 @@ package org.vcell.solver.nfsim;
 import java.io.PrintWriter;
 
 import org.apache.commons.io.output.WriterOutputStream;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jdom.Element;
 
 import cbit.util.xml.XmlUtil;
@@ -48,6 +50,8 @@ import cbit.vcell.util.ColumnDescription;
  */
 public class NFSimFileWriter extends SolverFileWriter 
 {
+	private final static Logger lg = LogManager.getLogger(NFSimFileWriter.class);
+
 	private long randomSeed = 0; //value assigned in the constructor
 //	private RandomDataGenerator dist = new RandomDataGenerator();
 	
@@ -250,7 +254,7 @@ public static void main(String[] args) {
 		}
 		System.out.println("Done");
 	} catch (Exception e) {
-		e.printStackTrace();
+		lg.error(e.getMessage(), e);
 	}
 }
 

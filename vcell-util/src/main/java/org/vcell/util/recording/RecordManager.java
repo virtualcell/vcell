@@ -18,5 +18,5 @@ public interface RecordManager extends AutoCloseable {
         }
     }
 
-    public FileRecord requestNewFileLog(String filePath);
+    public Record requestNewRecord(String filePath);
 }

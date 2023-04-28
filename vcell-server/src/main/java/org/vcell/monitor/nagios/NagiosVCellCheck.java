@@ -6,6 +6,8 @@ import java.rmi.Naming;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.BigString;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.KeyValue;
@@ -29,6 +31,7 @@ import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 
 public class NagiosVCellCheck {
+	private final static Logger lg = LogManager.getLogger(NagiosVCellCheck.class);
 
 	private static class UnexpectedTestStateException extends Exception {
 		public UnexpectedTestStateException(String message){
@@ -247,8 +250,8 @@ public class NagiosVCellCheck {
 									messageEvents = vcellConnection.getMessageEvents();
 								}
 							}finally{
-								try{if(copy1Key != null){vcellConnection.getUserMetaDbServer().deleteBioModel(copy1Key);}}catch(Exception e){e.printStackTrace();}
-								try{if(copy2Key != null){vcellConnection.getUserMetaDbServer().deleteBioModel(copy2Key);}}catch(Exception e){e.printStackTrace();}
+								try{if(copy1Key != null){vcellConnection.getUserMetaDbServer().deleteBioModel(copy1Key);}}catch(Exception e){lg.error(e.getMessage(), e);}
+								try{if(copy2Key != null){vcellConnection.getUserMetaDbServer().deleteBioModel(copy2Key);}}catch(Exception e){lg.error(e.getMessage(), e);}
 							}
 						}
 					}

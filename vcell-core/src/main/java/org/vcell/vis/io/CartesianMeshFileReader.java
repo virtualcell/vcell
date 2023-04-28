@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Vector;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Coordinate;
 import org.vcell.util.Hex;
@@ -23,6 +25,8 @@ import cbit.vcell.math.MathFormatException;
 import cbit.vcell.math.VCML;
 
 public class CartesianMeshFileReader {
+	private final static Logger lg = LogManager.getLogger(CartesianMeshFileReader.class);
+
 
 	public final static String VERSION_1_0 = "1.0";		// origin, extent, sizeXYZ, 
 	// membrane (membraneIndex, insideVolumeIndex, outsideVolumeIndex)
@@ -57,8 +61,8 @@ public class CartesianMeshFileReader {
 		CartesianMesh mesh = readCartesianMesh(meshST,membraneMeshMetrics,subdomainInfo);
 		return mesh;
 		}finally{
-			if(meshReader != null){try{meshReader.close();}catch(Exception e){e.printStackTrace();}}
-			if(meshMetricsReader != null){try{meshMetricsReader.close();}catch(Exception e){e.printStackTrace();}}
+			if(meshReader != null){try{meshReader.close();}catch(Exception e){lg.error(e.getMessage(), e);}}
+			if(meshMetricsReader != null){try{meshMetricsReader.close();}catch(Exception e){lg.error(e.getMessage(), e);}}
 		}
 	} 
 

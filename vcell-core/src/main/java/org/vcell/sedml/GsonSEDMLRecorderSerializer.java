@@ -16,7 +16,7 @@ public class GsonSEDMLRecorderSerializer implements JsonSerializer<SEDMLRecorder
         JsonObject jsonObj = new JsonObject();
         jsonObj.add("identifier", new JsonPrimitive(src.getIdentifier()));
         jsonObj.add("operation", new JsonPrimitive(String.valueOf(src.getOperationAsString())));
-        jsonObj.add("taskLogs", context.serialize(src.getLogs()));
+        jsonObj.add("taskLogs", context.serialize(src.getRecords()));
         return jsonObj;
     }
 }

@@ -9,7 +9,7 @@
  */
 
 package cbit.vcell.message.server.dispatcher;
-import java.io.File;
+
 import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -62,14 +62,9 @@ import cbit.vcell.message.server.ServerMessagingDelegate;
 import cbit.vcell.message.server.ServiceInstanceStatus;
 import cbit.vcell.message.server.ServiceProvider;
 import cbit.vcell.message.server.bootstrap.ServiceType;
-import cbit.vcell.message.server.cmd.CommandService;
-import cbit.vcell.message.server.cmd.CommandServiceLocal;
-import cbit.vcell.message.server.cmd.CommandServiceSshNative;
-import cbit.vcell.message.server.combined.VCellServices;
 import cbit.vcell.message.server.dispatcher.BatchScheduler.ActiveJob;
 import cbit.vcell.message.server.dispatcher.BatchScheduler.SchedulerDecisions;
 import cbit.vcell.message.server.htc.HtcException;
-import cbit.vcell.message.server.htc.HtcJobNotFoundException;
 import cbit.vcell.message.server.htc.HtcJobStatus;
 import cbit.vcell.message.server.htc.HtcProxy;
 import cbit.vcell.message.server.htc.HtcProxy.HtcJobInfo;
@@ -83,7 +78,6 @@ import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
 import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.server.HtcJobID;
-import cbit.vcell.server.HtcJobID.BatchSystemType;
 import cbit.vcell.server.SimpleJobStatus;
 import cbit.vcell.server.SimpleJobStatusQuerySpec;
 import cbit.vcell.server.SimulationJobStatus;
@@ -92,7 +86,6 @@ import cbit.vcell.server.SimulationService;
 import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.VCSimulationIdentifier;
-import cbit.vcell.solvers.AbstractSolver;
 
 /**
  * Insert the type's description here.
@@ -271,7 +264,7 @@ public class SimulationDispatcher extends ServiceProvider {
 			}
 			quotaExemptUsers = adminUserList.toArray(new User[0]);
 		} catch (Exception e1) {
-			e1.printStackTrace();
+			lg.error(e1.getMessage(), e1);
 		}
 		lastSpecialUserCheck = System.currentTimeMillis();
 	}
@@ -551,21 +544,17 @@ public class SimulationDispatcher extends ServiceProvider {
 
 					if (bTimedOutSimulation || bUnreferencedSimulation){
 						String failureMessage = (bTimedOutSimulation) ? ("failed: timed out") : ("failed: unreferenced simulation");
-						System.out.println("obsolete job detected at timestampMS="+currentTimeMS+", status=(" + activeJobStatus + ")\n\n");
+						lg.info("obsolete job detected at timestampMS="+currentTimeMS+", status=(" + activeJobStatus + ")");
 						//SimulationStateMachine simStateMachine = simDispatcherEngine.getSimulationStateMachine(activeJobStatus.getVCSimulationIdentifier().getSimulationKey(), activeJobStatus.getJobIndex());
-						//					System.out.println(simStateMachine.show());
+						//					lg.debug(simStateMachine.show());
 						VCMongoMessage.sendObsoleteJob(activeJobStatus,failureMessage);
 						simDispatcherEngine.onSystemAbort(activeJobStatus, failureMessage, simulationDatabase, clientStatusTopicSession_int);
 						if (activeJobStatus.getSimulationExecutionStatus()!=null && activeJobStatus.getSimulationExecutionStatus().getHtcJobID()!=null){
 							HtcJobID htcJobId = activeJobStatus.getSimulationExecutionStatus().getHtcJobID();
 							try {
 								htcProxy.killJobUnsafe(htcJobId);
-							} catch (HtcJobNotFoundException e) {
-								e.printStackTrace();
-							} catch (ExecutableException e) {
-								e.printStackTrace();
-							} catch (HtcException e) {
-								e.printStackTrace();
+							} catch (ExecutableException | HtcException e) {
+								lg.error(e);
 							}
 						}
 					}
@@ -651,7 +640,7 @@ public class SimulationDispatcher extends ServiceProvider {
 							simMonitor.notifyObject.notify();
 						}
 					}catch (IllegalMonitorStateException e){
-						e.printStackTrace();
+						lg.warn(e);
 					}
 				}
 				return;
@@ -710,7 +699,7 @@ public class SimulationDispatcher extends ServiceProvider {
 		OperatingSystemInfo.getInstance();
 
 		if (args.length != 3 && args.length != 0) {
-			System.out.println("Missing arguments: " + VCellServices.class.getName() + " [sshHost sshUser sshKeyFile] ");
+			System.out.println("Missing arguments: " + SimulationDispatcher.class.getName() + " [sshHost sshUser sshKeyFile] ");
 			System.exit(1);
 		}
 
@@ -720,12 +709,6 @@ public class SimulationDispatcher extends ServiceProvider {
 
 			int serviceOrdinal = 99;
 			VCMongoMessage.serviceStartup(ServiceName.dispatch, new Integer(serviceOrdinal), args);
-
-//			//
-//			// JMX registration
-//			//
-//			MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
-//			mbs.registerMBean(new VCellServiceMXBeanImpl(), new ObjectName(VCellServiceMXBean.jmxObjectName));
 
 			ServiceInstanceStatus serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(),
 					ServiceType.DISPATCH, serviceOrdinal, ManageUtils.getHostName(), new Date(), true);

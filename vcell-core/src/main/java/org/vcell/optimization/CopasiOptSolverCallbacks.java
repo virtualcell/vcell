@@ -21,6 +21,7 @@ import org.vcell.util.PropertyChangeListenerProxyVCell;
 
 public class CopasiOptSolverCallbacks {
 	public static final String OPT_PROGRESS_REPORT = "optProgressReport";
+	public static final String STOP_REQUESTED = "stopRequested";
 	private PropertyChangeSupport propertyChange = null;
 	private OptProgressReport optProgressReport = null;
 	private boolean fieldStopRequested = false;
@@ -66,7 +67,7 @@ public class CopasiOptSolverCallbacks {
 	{
 		boolean oldValue = fieldStopRequested;
 		fieldStopRequested = stopRequested;
-		firePropertyChange("stopRequested", new Boolean(oldValue), new Boolean(stopRequested));
+		firePropertyChange(STOP_REQUESTED, new Boolean(oldValue), new Boolean(stopRequested));
 	}
 
 //	public int getRunNumber()

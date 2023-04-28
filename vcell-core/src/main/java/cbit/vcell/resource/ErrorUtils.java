@@ -1,33 +1,18 @@
 package cbit.vcell.resource;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
-import javax.mail.MessagingException;
-import javax.mail.internet.AddressException;
-
 import cbit.vcell.client.server.ClientServerInfo;
-import cbit.vcell.client.server.ClientServerManager;
 import com.google.gson.Gson;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.http.HttpHost;
-import org.apache.http.HttpRequest;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.params.HttpParams;
-import org.apache.http.protocol.HttpContext;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -39,7 +24,7 @@ import cbit.vcell.util.AmplistorUtils;
 
 public class ErrorUtils {
 	
-	private final static Logger logger = LogManager.getLogger(ErrorUtils.class);
+	private final static Logger lg = LogManager.getLogger(ErrorUtils.class);
 
 	private static boolean bDebugMode = false;
 	private static UserLoginInfo loginInfo = null;
@@ -107,7 +92,7 @@ public class ErrorUtils {
 			builder.loadTrustMaterial(null, new TrustSelfSignedStrategy());
 			sslsf = new SSLConnectionSocketFactory(builder.build());
 		}catch (Exception e){
-			logger.error(e.getMessage(), e);
+			lg.error(e.getMessage(), e);
 			throw new RuntimeException(e.getMessage(),e);
 		}
 		try (CloseableHttpClient httpClient = HttpClients.custom().setSSLSocketFactory(sslsf).build()) {
@@ -120,9 +105,9 @@ public class ErrorUtils {
 			httpPost.setHeader("Content-type", "application/json");
 			CloseableHttpResponse response = httpClient.execute(httpPost);
 			if (response.getStatusLine().getStatusCode() == 200){
-				logger.info("sent error message to /contactus");
+				lg.info("sent error message to /contactus");
 			}else{
-				logger.error("failed to send error message to /contactus");
+				lg.error("failed to send error message to /contactus");
 			}
 		} catch (IOException e) {
 			throw new RuntimeException(e);
@@ -141,8 +126,7 @@ public class ErrorUtils {
 							message;
 						AmplistorUtils.uploadString(AmplistorUtils.DEFAULT_PROXY_AMPLI_VCELL_LOGS_URL+userLoginInfo.getUserName()+"_"+System.currentTimeMillis(), null, formattedMessage);
 					}catch(Exception e){
-						e.printStackTrace();
-						System.err.println("Failed to upload message to Amplistor "+AmplistorUtils.DEFAULT_PROXY_AMPLI_VCELL_LOGS_URL+" : "+message);
+						lg.error("Failed to upload message to Amplistor "+AmplistorUtils.DEFAULT_PROXY_AMPLI_VCELL_LOGS_URL+" : "+message, e);
 						//ignore
 					}
 				}

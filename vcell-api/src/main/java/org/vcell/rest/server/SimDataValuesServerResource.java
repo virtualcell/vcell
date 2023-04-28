@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.restlet.data.LocalReference;
 import org.restlet.data.MediaType;
 import org.restlet.data.Reference;
@@ -35,6 +37,7 @@ import cbit.vcell.simdata.DataSetTimeSeries;
 import freemarker.template.Configuration;
 
 public class SimDataValuesServerResource extends AbstractServerResource implements SimDataValuesResource {
+	private final static Logger lg = LogManager.getLogger(SimDataValuesServerResource.class);
 
 	public static final String PARAM_USER = "user";
 	public static final String PARAM_SIM_ID = "simId";
@@ -180,10 +183,10 @@ public class SimDataValuesServerResource extends AbstractServerResource implemen
 				SimDataValuesRepresentation simDataRepresentation = new SimDataValuesRepresentation(dataSetTimeSeries);
 				return simDataRepresentation;
 			} catch (PermissionException e) {
-				e.printStackTrace();
+				lg.error(e);
 				throw new ResourceException(Status.CLIENT_ERROR_UNAUTHORIZED, "not authorized to stop simulation");
 			} catch (ObjectNotFoundException e) {
-				e.printStackTrace();
+				lg.error(e);
 				throw new ResourceException(Status.CLIENT_ERROR_NOT_FOUND, "simulation not found");
 			} catch (Exception e){
 				throw new ResourceException(Status.SERVER_ERROR_INTERNAL, e.getMessage());

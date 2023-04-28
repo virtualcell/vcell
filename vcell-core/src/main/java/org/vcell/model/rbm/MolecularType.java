@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.Compare;
 import org.vcell.util.Displayable;
 import org.vcell.util.Issue;
@@ -29,6 +31,7 @@ import cbit.vcell.model.Structure;
 public class MolecularType extends RbmElementAbstract implements BioModelEntityObject, Matchable, VetoableChangeListener, 
 	IssueSource, Displayable
 {
+	private final static Logger lg = LogManager.getLogger(MolecularType.class);
 	public static final String PROPERTY_NAME_COMPONENT_LIST = "componentList";
 	public static final String PROPERTY_NAME_ANNOTATION = "annotation";
 	
@@ -74,7 +77,7 @@ public class MolecularType extends RbmElementAbstract implements BioModelEntityO
 				}
 			}
 		} catch(Exception e){
-			e.printStackTrace(System.out);
+			lg.error(e.getMessage(), e);
 		}
 	}
 	
@@ -284,7 +287,11 @@ public class MolecularType extends RbmElementAbstract implements BioModelEntityO
 		if(!isAnchorAll() && getAnchors().isEmpty()) {
 			String msg = getDisplayType() + " " + getDisplayName() + " must be anchored to at least one Structure.";
 			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.ERROR));
-
+		}
+		if(!isAnchorAll() && getAnchors().size() > 1) {
+			String msg = "Anchoring to more than one structure may produce errorneous results with NFSim solver";
+			String tip = "In rare situations the NFSim solver may place a species in the wrong structure if multiple anchors are selected.";
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
 		}
 	}
 	

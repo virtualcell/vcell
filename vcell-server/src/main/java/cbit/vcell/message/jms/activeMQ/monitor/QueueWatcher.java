@@ -13,11 +13,15 @@ import javax.jms.Session;
 import org.apache.activemq.advisory.AdvisorySupport;
 import org.apache.activemq.command.ActiveMQMessage;
 import org.apache.activemq.command.ActiveMQTopic;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * watch a specific queue
  */
 public class QueueWatcher {
+	private final static Logger lg = LogManager.getLogger(QueueWatcher.class);
+
 	//note -- see SVN history for examples of watching specific queues
 	private Session session;
 	private final Destination queue;
@@ -64,7 +68,7 @@ public class QueueWatcher {
 			writer.println(topicName);
 			showProperties(msg);
 		} catch (JMSException e) {
-			e.printStackTrace();
+			lg.error(e);
 			
 		}
 		

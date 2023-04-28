@@ -268,20 +268,11 @@ public SymbolTableEntry getEntry(java.lang.String identifierString) {
 	}
 	return getNameScope().getExternalEntry(identifierString,this);
 }
-/**
- * Gets the key property (cbit.sql.KeyValue) value.
- * @return The key property value.
- * @see #setKey
- */
+
 public KeyValue getKey() {
 	return fieldKey;
 }
-/**
- * Insert the method's description here.
- * Creation date: (4/6/2004 9:59:19 AM)
- * @return cbit.vcell.parser.SymbolTableEntry
- * @param identifier java.lang.String
- */
+
 public SymbolTableEntry getLocalEntry(java.lang.String identifier) {
 	
 	SymbolTableEntry ste = getModel().getReservedSymbolByName(identifier);
@@ -352,16 +343,6 @@ protected java.beans.VetoableChangeSupport getVetoPropertyChange() {
 		vetoPropertyChange = new java.beans.VetoableChangeSupport(this);
 	};
 	return vetoPropertyChange;
-}
-/**
- * Called whenever the part throws an exception.
- * @param exception java.lang.Throwable
- */
-protected void handleException(Throwable exception) {
-
-	/* Uncomment the following lines to print uncaught exceptions to stdout */
-	System.out.println("--------- UNCAUGHT EXCEPTION --------- in Feature");
-	exception.printStackTrace(System.out);
 }
 /**
  * The removePropertyChangeListener method was generated to support the propertyChange field.

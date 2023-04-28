@@ -46,6 +46,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
 import org.vcell.db.DatabaseSyntax;
@@ -57,6 +59,7 @@ import cbit.vcell.util.AmplistorUtils;
 
 
 public class DBBackupAndClean {
+	private final static Logger lg = LogManager.getLogger(DBBackupAndClean.class);
 
 	private static boolean bCheckIntegrity = false;
 	
@@ -108,7 +111,7 @@ public class DBBackupAndClean {
 			PropertyLoader.loadProperties();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			lg.error(e);
 			System.exit(1);
 		}
 		String action = args[0];
@@ -124,7 +127,7 @@ public class DBBackupAndClean {
 				deleteSimsFromDiskMethod2(actionArgs);
 				System.exit(0);
 			} catch (Exception e) {
-				e.printStackTrace();
+				lg.error(e.getMessage(), e);
 				System.exit(1);
 			}
 		}else if(action.equals(OP_CLEAN_AND_BACKUP) && actionArgs != null){
@@ -138,7 +141,7 @@ public class DBBackupAndClean {
 	}
 	
 	private static void usageExit(){
-		System.out.println(DBBackupAndClean.class.getName()+" "+OP_BACKUP+          " dbHostName vcellSchema password dbSrvcName workingDir exportDir {amplistorUser amplistorPasswd}");
+		lg.info(DBBackupAndClean.class.getName()+" "+OP_BACKUP+          " dbHostName vcellSchema password dbSrvcName workingDir exportDir {amplistorUser amplistorPasswd}");
 		System.out.println(DBBackupAndClean.class.getName()+" "+OP_CLEAN+           " dbHostName vcellSchema password dbSrvcName workingDir exportDir {amplistorUser amplistorPasswd}");
 		System.out.println(DBBackupAndClean.class.getName()+" "+OP_CLEAN_AND_BACKUP+" dbHostName vcellSchema password dbSrvcName workingDir exportDir {amplistorUser amplistorPasswd}");
 		System.out.println(DBBackupAndClean.class.getName()+" "+OP_IMPORT+" importServerName dumpFileHostPrefix vcellSchema password importSrvcName workingDir exportDir");
@@ -241,7 +244,7 @@ public class DBBackupAndClean {
 			
 //			for (int i = 0; i < oracleDumpFiles.length; i++) {
 //				String datePart = new SimpleDateFormat("MM/dd/yyyy HH_mm_ss").format(oracleDumpFiles[i].lastModified());
-//				System.out.println(oracleDumpFiles[i].getName()+" "+oracleDumpFiles[i].lastModified()+" "+datePart);
+//				lg.info(oracleDumpFiles[i].getName()+" "+oracleDumpFiles[i].lastModified()+" "+datePart);
 //			}
 			
 			File latestDump = oracleDumpFiles[0];
@@ -265,7 +268,7 @@ public class DBBackupAndClean {
 //				dumpCopy = null;
 //				throw new Exception("dumpCopy already exists");
 //			}
-			System.out.println(/*"localHost="+localHostName+*//*" inetLocalHost="+inetLocalHost+*/"importServerName="+importServerName+" importSrvcName="+importDBSrvcName+" dumpFileHostName="+dumpFileHostPrefix+" source="+latestDump.getAbsolutePath());
+			lg.info(/*"localHost="+localHostName+*//*" inetLocalHost="+inetLocalHost+*/"importServerName="+importServerName+" importSrvcName="+importDBSrvcName+" dumpFileHostName="+dumpFileHostPrefix+" source="+latestDump.getAbsolutePath());
 			
 
 			//			BeanUtils.copyFileChannel(oracleDumpFiles[0], dumpCopy, true);
@@ -273,7 +276,7 @@ public class DBBackupAndClean {
 			//jdbc:oracle:<drivertype>:<username/password>@<database>
 			//<database> = <host>:<port>:<SID>
 			String url = "jdbc:oracle:thin:"+"system"+"/"+password+"@//"+importServerName+":1521/"+importDBSrvcName;
-			System.out.println(url);
+			lg.info(url);
 			String dbDriverName = PropertyLoader.getRequiredProperty(PropertyLoader.dbDriverName);
 			connectionFactory = DatabaseService.getInstance().createConnectionFactory(dbDriverName, url, "system", password);
 
@@ -310,7 +313,7 @@ public class DBBackupAndClean {
 			if(!importServerName.toLowerCase().equals(host_name.toLowerCase())){
 				throw new Exception("Expecting 'importServerName'="+importServerName+" to match instance 'host_name'="+host_name);
 			}
-			System.out.println("dumpFileHostPrefix="+dumpFileHostPrefix+" instance host_name="+host_name);
+			lg.info("dumpFileHostPrefix="+dumpFileHostPrefix+" instance host_name="+host_name);
 			if(host_name.toLowerCase().equals(dumpFileHostPrefix.toLowerCase())){
 				throw new Exception("Not expecting import host and dumpFileHostPrefix to be same");
 			}
@@ -331,7 +334,7 @@ public class DBBackupAndClean {
 			}
 			
 			final String importCommandWithPassword = createImportcommand(vcellSchema, password, importServerName, importDBSrvcName, latestDump);
-			System.out.println(importCommandWithPassword);
+			lg.info(importCommandWithPassword);
 			ProcessInfo exportProcessInfo = spawnProcess(importCommandWithPassword);
 			String combinedExportOutput = combineStreamStrings(exportProcessInfo.normalOutput, exportProcessInfo.errorOutput);
 			if(exportProcessInfo.normalOutput.getReaderException() != null || exportProcessInfo.errorOutput.getReaderException() != null){
@@ -347,7 +350,7 @@ public class DBBackupAndClean {
 					exportCommandWithoutPassword+"\r\n"+combinedExportOutput+"\r\nLogInfo\r\n"+logStringBuffer.toString(),false, null);
 			}
 		}catch(Exception e){
-			e.printStackTrace();
+			lg.error(e.getMessage(), e);
 			writeFile(workingDir, baseFileName,"Script Error:\r\n"+e.getClass().getName()+" "+e.getMessage()+"\r\nLogInfo\r\n"+logStringBuffer.toString(),true, null);
 		}finally{
 			if(con != null){
@@ -536,7 +539,7 @@ public class DBBackupAndClean {
 					if(zipEnd != -1){
 						crc32.update(zipBuffer, 0, zipEnd);
 						if(totalIn/100000000 != (totalIn+zipEnd)/100000000){
-							System.out.println((totalIn+zipEnd)/100000000);
+							lg.info((totalIn+zipEnd)/100000000);
 						}
 						totalIn+= zipEnd;
 					}
@@ -727,17 +730,17 @@ public class DBBackupAndClean {
 //			String line;
 //			while (true){
 //				line = readerStream.readLine();
-////				System.out.println(line);
+////				lg.info(line);
 //				if(line == null){
 //					break;
 //				}
 //				sbStream.append((sbStream.length()==0?"":"\n")+line);
-////				System.out.println(sbStream.toString());
+////				lg.info(sbStream.toString());
 //			}
-//			System.out.println(sbStream.toString());
+//			lg.info(sbStream.toString());
 //			return false;
 //		} catch (Exception e) {
-//			e.printStackTrace();
+//			lg.error(e);
 //			sbStream.append((sbStream.length()==0?"":"\n")+e.getClass().getName()+" "+e.getMessage());
 //			return true;
 //		}
@@ -761,10 +764,10 @@ public class DBBackupAndClean {
 				}
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			lg.error(e.getMessage(), e);
 			throw new Error("Error writing Error File:\n:"+e.getMessage(), e);
 		}finally{
-			if(fos != null){try{fos.close();}catch(Exception e){e.printStackTrace();}}
+			if(fos != null){try{fos.close();}catch(Exception e){lg.error(e.getMessage(), e);}}
 		}
 	}
 	
@@ -1081,8 +1084,11 @@ public class DBBackupAndClean {
 		try{
 			logStringBuffer.append(sql+";\n");
 			stmt = con.createStatement();
-			int updateCount = stmt.executeUpdate(sql);
-			logStringBuffer.append("Update count="+updateCount+"\n");
+			if (lg.isDebugEnabled()) {
+				lg.debug("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
+			}
+			int updateCount = stmt.executeUpdate(sql); // jcs: added logging
+			logStringBuffer.append("Update count=" + updateCount + "\n");
 			con.commit();
 			logStringBuffer.append("COMMIT\n\n");
 		}catch(Exception e){
@@ -1128,7 +1134,7 @@ public class DBBackupAndClean {
 			logStringBuffer.append("\n");
 			rset.close();
 		}catch(Exception e){
-			System.out.println("\n"+e.getClass().getName()+"\n"+e.getMessage());
+			lg.info("\n"+e.getClass().getName()+"\n"+e.getMessage());
 			logStringBuffer.append("\n"+e.getClass().getName()+"\n"+e.getMessage());
 			if(con != null){try{con.rollback();}catch(Exception e2){logStringBuffer.append("\n"+e2.getClass().getName()+"\n"+e2.getMessage());}}
 			throw e;
@@ -1145,7 +1151,7 @@ public class DBBackupAndClean {
 		return conHolder[0];
 	}
 	private static void deleteSimsFromDiskMethod2(String[] args) {
-		System.out.println("Getting Backuphelper...");
+		lg.info("Getting Backuphelper...");
 		DBBackupHelper dbBackupHelper = new DBBackupHelper(args);
 		
 		ConnectionFactory connectionFactory  = null;
@@ -1163,18 +1169,18 @@ public class DBBackupAndClean {
 //			//<database> = <host>:<port>:<SID>
 			String url = "jdbc:oracle:thin:"+dbBackupHelper.vcellSchema+"/"+dbBackupHelper.password+"@//"+dbBackupHelper.dbHostName+":1521/"+dbBackupHelper.dbSrvcName;
 			String dbDriverName = PropertyLoader.getRequiredProperty(PropertyLoader.dbDriverName);
-			System.out.println("Getting DB connection..."+url.toString()+" "+dbDriverName);
+			lg.info("Getting DB connection..."+url.toString()+" "+dbDriverName);
 			connectionFactory = DatabaseService.getInstance().createConnectionFactory(dbDriverName, url, dbBackupHelper.vcellSchema, dbBackupHelper.password);
 			String sql = "SELECT vc_simulation.id from vc_simulation";
 //					+",vc_userinfo where userid='frm' and vc_userinfo.id=vc_simulation.ownerref";
-			System.out.println("Doing sims query... "+sql);
+			lg.info("Doing sims query... "+sql);
 			ArrayList<Object[]> unorderedKeepTheseSims = executeQuery(refreshConnection(conHolder, connectionFactory), sql, new StringBuffer() /*throw log*/, true);
 			TreeSet<String> orderedKeepTheseSims = new TreeSet<>();
 			for (Iterator<Object[]> iterator = unorderedKeepTheseSims.iterator(); iterator.hasNext();) {
 				Object[] object = iterator.next();
 				orderedKeepTheseSims.add(object[0].toString());
 			}
-			System.out.println("Doing fdat query... "+sql);
+			lg.info("Doing fdat query... "+sql);
 			sql = "select vc_externaldata.id from vc_externaldata";
 			ArrayList<Object[]> unorderedKeepTheseFieldData = executeQuery(refreshConnection(conHolder, connectionFactory), sql, new StringBuffer() /*throw log*/, true);
 			TreeSet<String> orderedKeepTheseFdats = new TreeSet<>();
@@ -1189,8 +1195,8 @@ public class DBBackupAndClean {
 			unorderedKeepTheseSims = null;
 			unorderedKeepTheseFieldData = null;
 			closeDB(connectionFactory, conHolder, new StringBuffer() /*throw log*/);
-			System.out.println("DB simcount="+orderedKeepTheseSims.size());
-			System.out.println("DB fdat count="+orderedKeepTheseFdats.size());
+			lg.info("DB simcount="+orderedKeepTheseSims.size());
+			lg.info("DB fdat count="+orderedKeepTheseFdats.size());
 //			FileFilter deleteTheseFilesFilter = new FileFilter() {
 //				@Override
 //				public boolean accept(File pathname) {
@@ -1218,7 +1224,7 @@ public class DBBackupAndClean {
 					logStringBuffer.append("DB simcount="+orderedKeepTheseSims.size()+"\n");
 					logStringBuffer.append("DB fdat count="+orderedKeepTheseFdats.size());
 					logStringBuffer.append("-----USER='"+userDirs[i].getName()+"'"+"\n");
-					System.out.println("-----USER='"+userDirs[i].getName()+"'");
+					lg.info("-----USER='"+userDirs[i].getName()+"'");
 					int notInCnt = 0;
 					int isInCnt = 0;
 					StringBuffer fileToRemoveSims_sb = new StringBuffer();
@@ -1246,14 +1252,14 @@ public class DBBackupAndClean {
 	//								}
 									if(orderedKeepTheseSims.contains(simID) || orderedKeepTheseFdats.contains(simID)) {
 										logStringBuffer.append("'"+userDirs[i].getName()+"' keep "+checkTheseFiles[j].getAbsolutePath()+"\n");
-	//									System.out.println("'"+userDirs[i].getName()+"' keep "+checkTheseFiles[j].getAbsolutePath());
+	//									lg.info("'"+userDirs[i].getName()+"' keep "+checkTheseFiles[j].getAbsolutePath());
 										fileToKeepSims_sb.append((isInCnt%SIMS_QUERY==0?(isInCnt==0?"":")\nunion\n")+"select id from vc_simulation where id in (":"")+simID+( ((isInCnt+1)%SIMS_QUERY==0)?"":","));
 										isInCnt++;
 										filesKept++;
 										bytesKept+= checkTheseFiles[j].length();
 									}else {
 										logStringBuffer.append("'"+userDirs[i].getName()+"' remove "+checkTheseFiles[j].getAbsolutePath()+"\n");
-	//									System.out.println("'"+userDirs[i].getName()+"' remove "+checkTheseFiles[j].getAbsolutePath());
+	//									lg.info("'"+userDirs[i].getName()+"' remove "+checkTheseFiles[j].getAbsolutePath());
 										fileToRemoveSims_sb.append((notInCnt%SIMS_QUERY==0?(notInCnt==0?"":")\nunion\n")+"select id from vc_simulation where id in (":"")+simID+( ((notInCnt+1)%SIMS_QUERY==0)?"":","));
 										notInCnt++;
 										filesRemoved++;
@@ -1278,9 +1284,9 @@ public class DBBackupAndClean {
 					}
 					fileToRemoveSims_sb.append(");");
 					fileToKeepSims_sb.append(");");
-//					System.out.println("\n--NOT IN\n"+fileToRemoveSims_sb.toString());
+//					lg.info("\n--NOT IN\n"+fileToRemoveSims_sb.toString());
 					logStringBuffer.append("\n--NOT IN\n"+fileToRemoveSims_sb.toString()+"\n");
-//					System.out.println("\n--IS IN\n"+fileToKeepSims_sb.toString());
+//					lg.info("\n--IS IN\n"+fileToKeepSims_sb.toString());
 					logStringBuffer.append("\n--IS IN\n"+fileToKeepSims_sb.toString()+"\n");
 					logStringBuffer.append("-----'"+userDirs[i]+"' total files removed ="+filesRemoved+" total bytes removed="+bytesRemoved+" total files kept ="+filesKept+" total bytes kept="+bytesKept+"\n\n");
 					if(filesRemoved > 0) {
@@ -1291,7 +1297,7 @@ public class DBBackupAndClean {
 //			File userDir = new File(dbBackupHelper.exportDir,userID);
 //			File[] deleteTheseFiles = userDir.listFiles(deleteTheseFilesFilter);
 		}catch(Exception e){
-			e.printStackTrace();
+			lg.error(e.getMessage(), e);
 			writeFile(dbBackupHelper.workingDir, baseFileName, e.getClass().getName()+"\n"+e.getMessage(),true, dbBackupHelper.exportDir);
 		}finally{
 			closeDB(connectionFactory, conHolder, new StringBuffer() /*throw log*/);
@@ -1300,10 +1306,10 @@ public class DBBackupAndClean {
 
 	public static void closeDB(ConnectionFactory connectionFactory, Connection[] conHolder,StringBuffer logStringBuffer) {
 		if(conHolder[0] != null){
-			try{conHolder[0].close();conHolder[0] = null;}catch(Exception e){logStringBuffer.append("\n"+e.getClass().getName()+"\n"+e.getMessage());e.printStackTrace();}
+			try{conHolder[0].close();conHolder[0] = null;}catch(Exception e){logStringBuffer.append("\n"+e.getClass().getName()+"\n"+e.getMessage());lg.error(e.getMessage(), e);}
 		}
 		if(connectionFactory != null){
-			try{connectionFactory.close();connectionFactory = null;}catch(Exception e){logStringBuffer.append("\n"+e.getClass().getName()+"\n"+e.getMessage());e.printStackTrace();}
+			try{connectionFactory.close();connectionFactory = null;}catch(Exception e){logStringBuffer.append("\n"+e.getClass().getName()+"\n"+e.getMessage());lg.error(e.getMessage(), e);}
 		}
 	}
 	private static enum DelSimStatus {init,notfound,delall,delsome,delnone};
@@ -1312,7 +1318,7 @@ public class DBBackupAndClean {
 //		if(true) {
 //			return;
 //		}
-System.out.println("Getting Backuphelper...");
+lg.info("Getting Backuphelper...");
 		DBBackupHelper dbBackupHelper = new DBBackupHelper(args);
 		
 		ConnectionFactory connectionFactory  = null;
@@ -1329,7 +1335,7 @@ System.out.println("Getting Backuphelper...");
 //			//<database> = <host>:<port>:<SID>
 			String url = "jdbc:oracle:thin:"+dbBackupHelper.vcellSchema+"/"+dbBackupHelper.password+"@//"+dbBackupHelper.dbHostName+":1521/"+dbBackupHelper.dbSrvcName;
 			String dbDriverName = PropertyLoader.getRequiredProperty(PropertyLoader.dbDriverName);
-System.out.println("Getting DB connection..."+url.toString()+" "+dbDriverName);
+lg.info("Getting DB connection..."+url.toString()+" "+dbDriverName);
 			connectionFactory = DatabaseService.getInstance().createConnectionFactory(dbDriverName, url, dbBackupHelper.vcellSchema, dbBackupHelper.password);
 			
 			String sql = 
@@ -1341,9 +1347,9 @@ System.out.println("Getting DB connection..."+url.toString()+" "+dbDriverName);
 				" status='"+DelSimStatus.init.name()+"'" +
 				" and simid not in (select id from vc_simulation)" +
 				" order by userid";
-System.out.println("Doing query... "+sql);
+lg.info("Doing query... "+sql);
 			ArrayList<Object[]> deleteTheseSims = executeQuery(refreshConnection(conHolder, connectionFactory), sql, logStringBuffer, true);
-System.out.println("Del sim simcount="+deleteTheseSims.size());
+lg.info("Del sim simcount="+deleteTheseSims.size());
 			//Organize simIDs by userid
 			HashMap<String, TreeSet<String>> userSimsMap = new HashMap<>();
 			for(Object[] objs:deleteTheseSims){
@@ -1386,7 +1392,7 @@ System.out.println("Del sim simcount="+deleteTheseSims.size());
 					}
 				};
 				for(String simid:userSimsMap.get(userID)){
-					System.out.println("     "+simid);
+					lg.info("     "+simid);
 				}
 				File userDir = new File(dbBackupHelper.exportDir,userID);
 				File[] deleteTheseFiles = userDir.listFiles(deleteTheseFilesFilter);
@@ -1439,9 +1445,9 @@ System.out.println("Del sim simcount="+deleteTheseSims.size());
 					simcount++;
 				}
 				
-				System.out.println(userID+" SimIDs deleted="+fileMatchSimIDidSB.toString());
+				lg.info(userID+" SimIDs deleted="+fileMatchSimIDidSB.toString());
 				for(int i=0;i<smallSB.size();i++){
-					System.out.println(userID+" SimIDs Not Found in files="+smallSB.get(i).toString());					
+					lg.info(userID+" SimIDs Not Found in files="+smallSB.get(i).toString());
 				}
 				
 				for(int i=0;i<smallSB.size();i++){
@@ -1459,9 +1465,9 @@ System.out.println("Del sim simcount="+deleteTheseSims.size());
 							if(deleteFileAndLink(file,logStringBuffer)){
 								delCount++;
 								totalSize+= fileSize;
-	//							System.out.println("deleted "+file.getAbsolutePath());
+	//							lg.info("deleted "+file.getAbsolutePath());
 							}else{
-	//							System.out.println("fail delete "+file.getAbsolutePath());
+	//							lg.info("fail delete "+file.getAbsolutePath());
 							}
 						}
 					}
@@ -1476,7 +1482,7 @@ System.out.println("Del sim simcount="+deleteTheseSims.size());
 				}
 			}
 		}catch(Exception e){
-			e.printStackTrace();
+			lg.error(e.getMessage(), e);
 			writeFile(dbBackupHelper.workingDir, baseFileName, e.getClass().getName()+"\n"+e.getMessage(),true, dbBackupHelper.exportDir);
 		}finally{
 			closeDB(connectionFactory, conHolder, logStringBuffer);
@@ -1488,9 +1494,9 @@ System.out.println("Del sim simcount="+deleteTheseSims.size());
 			ProcessBuilder pb = new ProcessBuilder("readlink","-m",deleteThis.getAbsolutePath());
 			pb.redirectErrorStream(true);// out and err in one stream
 			
-	//			System.out.println("\n--cmd begin--");
+	//			lg.info("\n--cmd begin--");
 	//			Arrays.stream(pb.command().toArray()).map(s->s+" ").forEach(System.out::print);
-	//			System.out.println("\n--cmd end--");
+	//			lg.info("\n--cmd end--");
 	
 			final Process p = pb.start();
 			BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));

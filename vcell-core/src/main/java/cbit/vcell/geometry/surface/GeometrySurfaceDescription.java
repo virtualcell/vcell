@@ -16,6 +16,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.Compare;
 import org.vcell.util.ISize;
 import org.vcell.util.Matchable;
@@ -41,6 +43,8 @@ import cbit.vcell.parser.ExpressionException;
  */
 @SuppressWarnings("serial")
 public class GeometrySurfaceDescription implements Matchable, java.io.Serializable, java.beans.PropertyChangeListener, java.beans.VetoableChangeListener {
+	private final static Logger lg = LogManager.getLogger(GeometrySurfaceDescription.class);
+
 	private static final String PROPERTY_NAME_SURFACE_CLASSES = "surfaceClasses";
 	private static final String PROPERTY_NAME_SURFACE_COLLECTION = "surfaceCollection";
 	private static final String PROPERTY_NAME_GEOMETRIC_REGIONS = "geometricRegions";
@@ -314,7 +318,6 @@ private void refreshSurfaceClasses() {
 		try{
 			setSurfaceClasses(surfaceClasses.toArray(new SurfaceClass[surfaceClasses.size()]));
 		}catch(PropertyVetoException e){
-			e.printStackTrace();
 			throw new RuntimeException("SurfaceClass refresh error: "+e.getMessage(), e);
 		}
 	}
@@ -332,11 +335,6 @@ public GeometricRegion getGeometricRegions(int index) {
 }
 
 
-/**
- * Gets the geometry property (cbit.vcell.geometry.Geometry) value.
- * @return The geometry property value.
- * @see #setGeometry
- */
 public Geometry getGeometry() {
 	return fieldGeometry;
 }
@@ -353,11 +351,6 @@ protected java.beans.PropertyChangeSupport getPropertyChange() {
 }
 
 
-/**
- * Gets the regionImage property (cbit.vcell.geometry.RegionImage) value.
- * @return The regionImage property value.
- * @see #setRegionImage
- */
 public RegionImage getRegionImage() {
 	return getRegionImage0().getCurrentValue();
 }
@@ -430,7 +423,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 				getSurfaceCollection0().setDirty();
 				fieldGeometricRegions.setDirty();
 			}catch (Exception e){
-				e.printStackTrace(System.out);
+				lg.error(e.getMessage(), e);
 			}
 		}
 	}
@@ -442,7 +435,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 				getSurfaceCollection0().setDirty();
 				fieldGeometricRegions.setDirty();
 			}catch (Exception e){
-				e.printStackTrace(System.out);
+				lg.error(e.getMessage(), e);
 			}
 		}
 	}
@@ -458,7 +451,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 				getSurfaceCollection0().setDirty();
 				fieldGeometricRegions.setDirty();
 			}catch (Exception e){
-				e.printStackTrace(System.out);
+				lg.error(e.getMessage(), e);
 			}
 		}
 	}
@@ -471,7 +464,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 				getSurfaceCollection0().setDirty();
 				fieldGeometricRegions.setDirty();
 			}catch (Exception e){
-				e.printStackTrace(System.out);
+				lg.error(e.getMessage(), e);
 			}
 		}
 	}
@@ -481,7 +474,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			getSurfaceCollection0().setDirty();
 			fieldGeometricRegions.setDirty();
 		}catch (Exception e){
-			e.printStackTrace(System.out);
+			lg.error(e.getMessage(), e);
 		}		
 	}
 	if (evt.getSource() instanceof SubVolume && evt.getPropertyName().equals("name")) {
@@ -491,7 +484,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			try {
 				fieldGeometricRegions.setDirty();
 			}catch (Exception e){
-				e.printStackTrace(System.out);
+				lg.error(e.getMessage(), e);
 			}
 		}
 	}
@@ -517,7 +510,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 				getSurfaceCollection0().setDirty();
 				fieldGeometricRegions.setDirty();
 			}catch (Exception e){
-				e.printStackTrace(System.out);
+				lg.error(e.getMessage(), e);
 			}
 		} else if (fieldGeometricRegions.getCurrentValue() != null && oldValue != newValue) {
 			//
@@ -717,8 +710,7 @@ public void updateAll() throws GeometryException, ImageException, ExpressionExce
 			setGeometricRegions(GeometrySurfaceUtils.getUpdatedGeometricRegions(this,getRegionImage(),getSurfaceCollection()));
 			bChanged = true;
 		}catch (java.beans.PropertyVetoException e){
-			e.printStackTrace(System.out);
-			throw new GeometryException("unexpected exception while generating regions: "+e.getMessage());
+			throw new GeometryException("unexpected exception while generating regions: "+e.getMessage(), e);
 		}
 	}
 	

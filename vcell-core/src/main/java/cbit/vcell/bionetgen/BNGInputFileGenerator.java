@@ -120,8 +120,7 @@ public void generateBNGInputFile() {
 	try {
 		osBngInput = new java.io.FileOutputStream(baseFileName);
 	}catch (java.io.IOException e){
-		e.printStackTrace(System.out);
-		throw new RuntimeException("error opening BioNetGen input file '"+baseFileName+": "+e.getMessage());
+		throw new RuntimeException("error opening BioNetGen input file '"+baseFileName+": "+e.getMessage(), e);
 	}	
 		
 	PrintWriter bngInputFile = new PrintWriter(osBngInput);

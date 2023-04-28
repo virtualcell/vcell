@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Map;
 
 import cbit.vcell.model.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.Compare;
 import org.vcell.util.Displayable;
 import org.vcell.util.Issue;
@@ -57,7 +59,8 @@ import net.sourceforge.interval.ia_math.RealInterval;
 @SuppressWarnings("serial")
 public class BioEvent implements Matchable, Serializable, VetoableChangeListener, PropertyChangeListener, 
 		IssueSource, SimulationContextEntity, Displayable, VCellSbmlName {
-	
+
+	private final static Logger lg = LogManager.getLogger(BioEvent.class);
 	private static final String PROPERTY_NAME_NAME = "name";
 
 	public class BioEventNameScope extends BioNameScope {
@@ -341,7 +344,6 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 			try {
 				parameterContext.addLocalParameter(p.getName(), (p.getExpression()!=null?new Expression(p.getExpression()):null), p.getRole(), p.getUnitDefinition(), p.getDescription());
 			} catch (PropertyVetoException | ExpressionBindingException e) {
-				e.printStackTrace();
 				throw new RuntimeException("failed to copy parameters for BioEvent "+getName(),e);
 			}
 		}
@@ -356,8 +358,7 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 				EditableSymbolTableEntry editableSymbolTableEntry = (EditableSymbolTableEntry) simulationContext.getEntry(oldEA.getTarget().getName());
 				newEA = new EventAssignment(editableSymbolTableEntry, new Expression(oldEA.getAssignmentExpression()));
 			} catch (ExpressionBindingException e) {
-				e.printStackTrace(System.out);
-				throw new RuntimeException("Error copying event assignment'" + oldEA.getTarget().getName() + "' in event '" + name + "' : " + e.getMessage());
+				throw new RuntimeException("Error copying event assignment'" + oldEA.getTarget().getName() + "' in event '" + name + "' : " + e.getMessage(), e);
 			}
 			this.eventAssignmentList.add(newEA);
 		}
@@ -728,7 +729,6 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 				try {
 					eventAssignment.rebind();
 				} catch (ExpressionBindingException e) {
-					e.printStackTrace();
 					throw new RuntimeException("failed to bind expression for assignment in event "+getName()+": "+e.getMessage(),e);
 				}
 			}
@@ -904,8 +904,7 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 		try {
 			eventAssign.getAssignmentExpression().bindExpression(this.simulationContext);
 		} catch (ExpressionBindingException e) {
-			e.printStackTrace(System.out);
-			throw new RuntimeException(e.getMessage());
+			throw new RuntimeException(e.getMessage(), e);
 		}
 
 		ArrayList<EventAssignment> newEventAssignmentList = new ArrayList<EventAssignment>((eventAssignmentList==null?new ArrayList<EventAssignment>():eventAssignmentList));
@@ -1047,7 +1046,6 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 							BioEventParameterType.GeneralTriggerFunction.getDescription()),
 				});
 			} catch (PropertyVetoException | ExpressionBindingException e) {
-				e.printStackTrace();
 				throw new RuntimeException(e.getMessage(),e);
 			}
 			break;
@@ -1072,7 +1070,6 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 								BioEventParameterType.Threshold.getDescription()), 
 				});
 			} catch (PropertyVetoException | ExpressionBindingException e) {
-				e.printStackTrace();
 				throw new RuntimeException(e.getMessage(),e);
 			}
 			break;
@@ -1090,7 +1087,6 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 								BioEventParameterType.SingleTriggerTime.getDescription()), 
 				});
 			} catch (PropertyVetoException | ExpressionBindingException e) {
-				e.printStackTrace();
 				throw new RuntimeException(e.getMessage(),e);
 			}
 			break;
@@ -1121,7 +1117,6 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 								BioEventParameterType.RangeNumTimes.getDescription()), 
 				});
 			} catch (PropertyVetoException | ExpressionBindingException e) {
-				e.printStackTrace();
 				throw new RuntimeException(e.getMessage(),e);
 			}
 			break;
@@ -1151,7 +1146,6 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 								BioEventParameterType.TimeListItem.getDescription()), 
 				});
 			} catch (PropertyVetoException | ExpressionBindingException e) {
-				e.printStackTrace();
 				throw new RuntimeException(e.getMessage(),e);
 			}
 			break;
@@ -1217,7 +1211,7 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 						numTimes = Integer.toString((int)Math.floor(numTimesDouble));
 					}
 				} catch (ExpressionException e) {
-					e.printStackTrace();
+					lg.error(e);
 				}
 			}
 			String minTime = getParameter(BioEventParameterType.RangeMinTime).getExpression().infix();

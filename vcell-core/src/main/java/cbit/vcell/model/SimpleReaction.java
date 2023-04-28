@@ -31,8 +31,7 @@ public SimpleReaction(Model model, Structure structure, KeyValue key, String nam
 	try {
 		setKinetics(new MassActionKinetics(this));
 	} catch (ExpressionException e){
-		e.printStackTrace(System.out);
-		throw new RuntimeException(e.getMessage());
+		throw new RuntimeException(e.getMessage(), e);
 	}
 }
 public SimpleReaction(Model model, Structure structure, KeyValue key, String name, boolean bReversible) throws java.beans.PropertyVetoException {

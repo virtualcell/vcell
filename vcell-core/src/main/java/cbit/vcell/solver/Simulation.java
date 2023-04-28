@@ -262,8 +262,7 @@ public Simulation(SimulationVersion argSimulationVersion, MathDescription mathDe
 	try {
 		setMathDescription(mathDescription);
 	} catch (java.beans.PropertyVetoException e) {
-		e.printStackTrace();
-		throw new RuntimeException(e.getMessage());
+		throw new RuntimeException(e.getMessage(), e);
 	}
 	//  Must set the MathDescription before constructing these...
 	if (mathDescription.getGeometry().getDimension()>0){
@@ -314,22 +313,10 @@ public Simulation(MathDescription mathDescription, SimulationOwner simulationOwn
 	this( );
 	addVetoableChangeListener(this);
 
-	// Give temporary fieldSimulationVersion (needed for linuxSharedLibs())
-	fieldSimulationVersion = SimulationVersion.createTempSimulationVersion();
-	
-	fieldName = fieldSimulationVersion.getName();
-	fieldDescription = fieldSimulationVersion.getAnnot();
-	if (fieldSimulationVersion.getParentSimulationReference()!=null){
-		fieldSimulationIdentifier = null;
-	}else{
-		fieldSimulationIdentifier = createSimulationID(fieldSimulationVersion.getVersionKey());
-	}
-
 	try {
 		setMathDescription(mathDescription);
 	} catch (java.beans.PropertyVetoException e) {
-		e.printStackTrace();
-		throw new RuntimeException(e.getMessage());
+		throw new RuntimeException(e.getMessage(), e);
 	}
 	fieldName = mathDescription.getName()+"_"+Math.random();
 	this.simulationOwner = simulationOwner;
@@ -380,6 +367,8 @@ public Simulation(Simulation simulation, boolean bCloneMath) {
 	fieldMathOverrides = new MathOverrides (this, simulation.getMathOverrides());
 	fieldSolverTaskDescription = new SolverTaskDescription(this, simulation.getSolverTaskDescription());
 	dataProcessingInstructions = simulation.dataProcessingInstructions;
+	fieldImportedTaskID = simulation.fieldImportedTaskID;
+
 	refreshDependencies();
 }
 
@@ -1045,7 +1034,6 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 			try{
 				refreshMeshSpec();
 			}catch(PropertyVetoException e){
-				e.printStackTrace();
 				throw new RuntimeException(e.getMessage(),e);
 			}
 		}

@@ -17,6 +17,8 @@ import java.util.HashMap;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jdom.Element;
 import org.vcell.util.BigString;
 import org.vcell.util.document.BioModelInfo;
@@ -43,6 +45,7 @@ import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 
 public class NagiosVCellMonitor {
+	private final static Logger lg = LogManager.getLogger(NagiosVCellMonitor.class);
 
 	public static final String VCELL_NAGIOS_USER = "vcellNagios";
 	
@@ -90,7 +93,7 @@ public class NagiosVCellMonitor {
 			super();
 			//default param values if none supplied on command line
 			tryUpdateParameters(createParamCmd(createParamHash(new int[] {60,2,120,300,180,300,20*60})));
-			System.out.println(printableParamValues());
+			lg.info("printableParamValues: "+printableParamValues());
 
 			for(int i = 0;i < args.length;i++){
 				if(args[i].equals("-H")){
@@ -251,17 +254,17 @@ public class NagiosVCellMonitor {
 							exceededTimeouts(nagArgsHelper, lastResult);
 							setVCellStatus(vcellStatus);
 						}catch(Exception e){
-							e.printStackTrace(System.out);
+							lg.error(e.getMessage(), e);
 							setVCellStatus(new VCellErrorStatus(nagArgsHelper.checkLevel+":"+nagArgsHelper.host+" "+e.getMessage(),statusType));
 						}finally{
 							simRunCount++;
-							try{Thread.sleep(1000*nagArgsHelper.nvmParams.get(NVM_PARAMS.sleepTimeSec));}catch(InterruptedException e2){e2.printStackTrace();}
+							try{Thread.sleep(1000*nagArgsHelper.nvmParams.get(NVM_PARAMS.sleepTimeSec));}catch(InterruptedException e2){lg.error(e2);}
 						}
 					}
 				}
 			},"VCellTestLoop").start();
 		}catch(Exception e){
-			e.printStackTrace();
+			lg.error(e.getMessage(), e);
 		}
 		
 	}
@@ -273,7 +276,7 @@ public class NagiosVCellMonitor {
 			NagiosVCellMonitor nagiosVCellMonitor = new NagiosVCellMonitor();
 			nagiosVCellMonitor.startMonitor(new NagArgsHelper(args));
 		}catch(Exception e){
-			e.printStackTrace();
+			lg.error(e.getMessage(), e);
 		}
 	}
 	
@@ -423,7 +426,7 @@ public class NagiosVCellMonitor {
 										if(userLoginInfo.getUserName().equals(bioModelInfo.getVersion().getOwner().getName()) && bioModelInfo.getVersion().getName().equals(copyModelName)){
 											bMessy = true;
 											if(bForceCleanup){
-												try{vcellConnection.getUserMetaDbServer().deleteBioModel(bioModelInfo.getVersion().getVersionKey());}catch(Exception e){e.printStackTrace();}
+												try{vcellConnection.getUserMetaDbServer().deleteBioModel(bioModelInfo.getVersion().getVersionKey());}catch(Exception e){lg.error(e.getMessage(), e);}
 											}else{
 												throw new MessyTestEnvironmentException("Messy test environment, not expecting "+copyModelName+" and couldn't cleanup");
 											}
@@ -477,8 +480,8 @@ public class NagiosVCellMonitor {
 									messageEvents = vcellConnection.getMessageEvents();
 								}
 							}finally{
-								try{if(copy1Key != null){vcellConnection.getUserMetaDbServer().deleteBioModel(copy1Key);}}catch(Exception e){e.printStackTrace();}
-								try{if(copy2Key != null){vcellConnection.getUserMetaDbServer().deleteBioModel(copy2Key);}}catch(Exception e){e.printStackTrace();}
+								try{if(copy1Key != null){vcellConnection.getUserMetaDbServer().deleteBioModel(copy1Key);}}catch(Exception e){lg.error(e.getMessage(), e);}
+								try{if(copy2Key != null){vcellConnection.getUserMetaDbServer().deleteBioModel(copy2Key);}}catch(Exception e){lg.error(e.getMessage(), e);}
 								if(testRunSimID != null){deleteSimData(testRunSimID);}
 							}
 							levelTimesMillisec.put(VCELL_CHECK_LEVEL.RUN_5, System.currentTimeMillis()-startTime-levelTimesMillisec.get(VCELL_CHECK_LEVEL.DATA_4));
@@ -527,7 +530,7 @@ public class NagiosVCellMonitor {
 						}
 					}
 				}catch(Exception e){
-					e.printStackTrace();
+					lg.error(e.getMessage(), e);
 				}
 			}
 		}).start();
@@ -549,7 +552,7 @@ public class NagiosVCellMonitor {
 			}
 			this.message = message;
 			this.checkResultsMap = (checkResultsMap==null?new HashMap<Integer, CheckResults>():checkResultsMap);
-			System.out.println(getNagiosReply());
+			lg.info("Nagios reply: "+getNagiosReply());
 		}
 
 		private NAGIOS_STATUS getNagiosStatus(){
@@ -778,13 +781,13 @@ public class NagiosVCellMonitor {
 					socketWriter.println(NAGIOS_STATUS.UNKNOWN.ordinal()+"Unknown Request '"+request);
 				}
 			}catch(Exception e){
-				e.printStackTrace();
+				lg.error(e.getMessage(), e);
 				if(socketWriter != null){
 					socketWriter.println(NAGIOS_STATUS.UNKNOWN.ordinal()+"Request Error '"+e.getClass().getName()+" "+(e.getMessage()==null?"":e.getMessage()));
 				}
 			}finally{
 				if(threadSocket != null){
-					try{threadSocket.close();}catch(Exception e){e.printStackTrace();}
+					try{threadSocket.close();}catch(Exception e){lg.error(e.getMessage(), e);}
 				}
 			}
 		}
@@ -798,18 +801,16 @@ public class NagiosVCellMonitor {
 				ServerSocket newServerSocket =  new ServerSocket(port);
 				Thread.sleep(2000);
 				myProcessID = getPidOnPortLinuxLocal(port);
-				System.out.println("Monitor process ID pid="+myProcessID);
+				lg.info("Monitor process ID pid="+myProcessID);
 				return newServerSocket;
 			}catch(Exception e){
 				numRetries+= 1;
-				System.out.println("claimSocket failed, "+e.getMessage());
-				e.printStackTrace();
-				System.out.flush();
-				try{Thread.sleep(60000);}catch(InterruptedException ie){e.printStackTrace();}
+				lg.info("claimSocket failed, "+e.getMessage());
+				lg.error(e.getMessage(), e);
+				try{Thread.sleep(60000);}catch(InterruptedException ie){lg.error(e.getMessage(), e);}
 			}
 		}
-		System.out.println("claimSocket failed, too many retries");
-		System.out.flush();
+		lg.error("claimSocket failed, too many retries");
 		throw new Exception("claimSocket failed, too many retries");
 		
 //		ServerSocket myServersocket = null;
@@ -817,10 +818,10 @@ public class NagiosVCellMonitor {
 //	           NetworkInterface intf = en.nextElement();
 //	           for (Enumeration<InetAddress> enumIpAddr = intf.getInetAddresses(); enumIpAddr.hasMoreElements();) {
 //	               InetAddress inetAddress = enumIpAddr.nextElement();
-//	               System.out.println("InetAddress="+inetAddress.toString()+" intf="+intf.toString());
+//	               lg.info("InetAddress="+inetAddress.toString()+" intf="+intf.toString());
 //	               if (!inetAddress.isLoopbackAddress()) {
 //	                   if (inetAddress instanceof Inet4Address && intf.getName().equals("eth0")) {
-//	                	   System.out.println("socket="+inetAddress.toString());
+//	                	   lg.info("socket="+inetAddress.toString());
 //	                	   myServersocket = new ServerSocket(port,50,inetAddress); //((Inet4Address)inetAddress);
 //	                   }
 //	               }
@@ -849,7 +850,7 @@ public class NagiosVCellMonitor {
 		}catch(Exception e){
 			//this can happen is there are no processes we have permission to list
 			//assume the other monitor isn't running
-			e.printStackTrace();
+			lg.error(e.getMessage(), e);
 			return null;
 		}
 		String s = executable.getStdoutString();
@@ -857,13 +858,13 @@ public class NagiosVCellMonitor {
 	}
 	
 	public static Integer parseLSOF_ReturnPID(String s,int port) throws Exception{
-		System.out.println(s);
+		lg.debug("LSOF: s='"+s+"', port="+port);
 		StringReader sr = new StringReader(s);
 		BufferedReader br = new BufferedReader(sr);
 		String line = null;
 		Integer pid = null;
 		while((line = br.readLine())!=null){
-			System.out.println(line);
+			lg.debug("line: "+line);
 			StringTokenizer st = new StringTokenizer(line," ");
 			String socketElement = null;
 			if(st.nextToken().equals("java")){
@@ -896,12 +897,12 @@ public class NagiosVCellMonitor {
 	public static void killMonitorProcessLinuxLocal(int port) throws Exception{
 		Integer linuxProcessID = getPidOnPortLinuxLocal(port);
 		if(linuxProcessID != null){
-			System.out.println("pid="+linuxProcessID+" port="+port);
+			lg.info("pid="+linuxProcessID+" port="+port);
 			//Find out if this is a monitor
 			Executable executable = new Executable(createChekcMonitorProcess_LinuxCmdParams(linuxProcessID));
 			executable.start();
 			String pStr = executable.getStdoutString();
-			System.out.println(pStr);
+			lg.info("stdout="+pStr);
 			if(pStr.contains(createJvmPortProperty(port))){
 				executable = new Executable(createKillProcess_LinuxCmdParams(linuxProcessID));
 				executable.start();

@@ -13,6 +13,8 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Vector;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
@@ -25,27 +27,16 @@ import cbit.vcell.parser.ExpressionException;
  */
 @SuppressWarnings("serial")
 public class VolumeRegionEquation extends Equation {
+	private final static Logger lg = LogManager.getLogger(VolumeRegionEquation.class);
+
 	private Expression uniformRateExpression = new Expression(0.0);
 	private Expression volumeRateExpression = new Expression(0.0);
 
-/**
- * OdeEquation constructor comment.
- * @param subDomain cbit.vcell.math.SubDomain
- * @param var cbit.cell.math.Variable
- * @param initialExp cbit.vcell.parser.Expression
- * @param rateExp cbit.vcell.parser.Expression
- */
 public VolumeRegionEquation(VolumeRegionVariable var, Expression initialExp) {
 	super(var, initialExp, null);
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (9/4/2003 12:32:19 PM)
- * @return boolean
- * @param object cbit.util.Matchable
- */
 public boolean compareEqual(Matchable object) {
 	VolumeRegionEquation equ = null;
 	if (!(object instanceof VolumeRegionEquation)){
@@ -66,11 +57,6 @@ public boolean compareEqual(Matchable object) {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (10/10/2002 10:41:10 AM)
- * @param sim cbit.vcell.solver.Simulation
- */
 void flatten(MathSymbolTable simSymbolTable, boolean bRoundCoefficients) throws cbit.vcell.parser.ExpressionException, MathException {
 	super.flatten0(simSymbolTable,bRoundCoefficients);
 	
@@ -118,16 +104,12 @@ public Vector<Expression> getExpressions(MathDescription mathDesc){
 			}
 		}
 	}catch (Exception e){
-		e.printStackTrace(System.out);
+		lg.error(e.getMessage(), e);
 	}
 	
 	return list;
 }
 
-/**
- * This method was created by a SmartGuide.
- * @return java.util.Enumeration
- */
 public Enumeration<Expression> getTotalExpressions() throws ExpressionException {
 	Vector<Expression> vector = new Vector<Expression>();
 	Expression lvalueExp = new Expression("VolumeRate_"+getVariable().getName());
@@ -145,20 +127,11 @@ public Enumeration<Expression> getTotalExpressions() throws ExpressionException 
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (7/9/01 2:05:09 PM)
- * @return cbit.vcell.parser.Expression
- */
 public Expression getUniformRateExpression() {
 	return uniformRateExpression;
 }
 
 
-/**
- * This method was created by a SmartGuide.
- * @return java.lang.String
- */
 public String getVCML() {
 	StringBuffer buffer = new StringBuffer();
 	buffer.append("\t"+VCML.VolumeRegionEquation+" "+getVariable().getName()+" {\n");
@@ -243,21 +216,11 @@ public void read(CommentStringTokenizer tokens, MathDescription mathDesc) throws
 		
 }
 
-/**
- * Insert the method's description here.
- * Creation date: (7/9/01 2:05:09 PM)
- * @param newVolumeRateExpression cbit.vcell.parser.Expression
- */
 public void setUniformRateExpression(Expression newUniformRateExpression) {
 	uniformRateExpression = newUniformRateExpression;
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (7/9/01 2:05:09 PM)
- * @param newVolumeRateExpression cbit.vcell.parser.Expression
- */
 public void setVolumeRateExpression(Expression newVolumeRateExpression) {
 	volumeRateExpression = newVolumeRateExpression;
 }

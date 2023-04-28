@@ -1,5 +1,7 @@
 package org.vcell.rest.events;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.restlet.Context;
 import org.restlet.Request;
 import org.restlet.Response;
@@ -18,6 +20,8 @@ import org.vcell.util.document.User;
 import com.google.gson.Gson;
 
 public final class EventsRestlet extends Restlet {
+	private final static Logger lg = LogManager.getLogger(EventsRestlet.class);
+
 	public EventsRestlet(Context context) {
 		super(context);
 	}
@@ -44,7 +48,7 @@ public final class EventsRestlet extends Restlet {
 				response.setEntity(new JsonRepresentation(eventWrappersJSON));
 			} catch (Exception e) {
 				getLogger().severe("internal error retrieving events: "+e.getMessage());
-				e.printStackTrace();
+				lg.error(e.getMessage(), e);
 				response.setStatus(Status.SERVER_ERROR_INTERNAL);
 				response.setEntity("internal error retrieving events: "+e.getMessage(), MediaType.TEXT_PLAIN);
 			}

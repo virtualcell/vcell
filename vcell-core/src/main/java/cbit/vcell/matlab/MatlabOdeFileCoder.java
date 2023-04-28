@@ -13,6 +13,8 @@ package cbit.vcell.matlab;
 import java.util.ArrayList;
 import java.util.Vector;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.BeanUtils;
 
 import cbit.vcell.math.CompartmentSubDomain;
@@ -37,6 +39,8 @@ import cbit.vcell.solver.SimulationSymbolTable;
  * @author: 
  */
 public class MatlabOdeFileCoder {
+	private final static Logger lg = LogManager.getLogger(MatlabOdeFileCoder.class);
+
 	private Simulation simulation = null;
 	private RationalMatrix stoichMatrix = null;
 	private SimulationSymbolTable simulationSymbolTable = null;
@@ -190,7 +194,7 @@ public void write_V6_MFile(java.io.PrintWriter pw, String functionName,OutputFun
 			defaultInitialCondition = initial.evaluateConstant();
 			pw.println("\t"+defaultInitialCondition+";\t\t% yinit("+(j+1)+") is the initial condition for '"+cbit.vcell.parser.SymbolUtils.getEscapedTokenMatlab(volVars[j].getName())+"'");
 		} catch (ExpressionException e) {
-			e.printStackTrace(System.out);
+			lg.error(e);
 			pw.println("\t"+initial.infix_Matlab()+";\t\t% yinit("+(j+1)+") is the initial condition for '"+cbit.vcell.parser.SymbolUtils.getEscapedTokenMatlab(volVars[j].getName())+"'");
 //			throw new RuntimeException("error evaluating initial condition for variable "+volVars[j].getName());
 		}

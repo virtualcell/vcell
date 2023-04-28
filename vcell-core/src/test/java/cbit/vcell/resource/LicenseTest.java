@@ -2,8 +2,11 @@ package cbit.vcell.resource;
 
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.vcell.test.Fast;
 
 @Ignore
+@Category(Fast.class)
 public class LicenseTest {
 	
 	@Test

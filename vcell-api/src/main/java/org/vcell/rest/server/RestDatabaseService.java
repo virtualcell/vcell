@@ -14,6 +14,8 @@ import java.util.Random;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.rest.VCellApiApplication;
 import org.vcell.rest.common.OverrideRepresentation;
 import org.vcell.rest.common.PublicationRepresentation;
@@ -73,6 +75,7 @@ import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 
 public class RestDatabaseService {
+	private final static Logger lg = LogManager.getLogger(RestDatabaseService.class);
 	
 	private DatabaseServerImpl databaseServerImpl = null;
 	private LocalAdminDbServer localAdminDbServer = null;
@@ -191,7 +194,7 @@ public class RestDatabaseService {
 			try {
 				userLoginInfo.setUser(vcellUser);
 			} catch (Exception e) {
-				e.printStackTrace();
+				lg.error(e.getMessage(), e);
 				throw new DataAccessException(e.getMessage());
 			}
 			RpcSimServerProxy rpcSimServerProxy = new RpcSimServerProxy(userLoginInfo, rpcSession);
@@ -220,7 +223,7 @@ public class RestDatabaseService {
 			try {
 				userLoginInfo.setUser(vcellUser);
 			} catch (Exception e) {
-				e.printStackTrace();
+				lg.error(e.getMessage(), e);
 				throw new DataAccessException(e.getMessage());
 			}
 			RpcSimServerProxy rpcSimServerProxy = new RpcSimServerProxy(userLoginInfo, rpcSession);
@@ -631,13 +634,13 @@ public class RestDatabaseService {
 		if (simContextRep!=null){
 			return simContextRep;
 		}else{
-			System.out.println("getting simulation context rep for scKey = "+key);
+			lg.info("getting simulation context rep for scKey = "+key);
 			simContextRep = databaseServerImpl.getSimContextRep(key);
 			if (simContextRep!=null){
-				System.out.println("found simulation context key = " + key + " number of cached simContexts is " + simMap.size());
+				lg.info("found simulation context key = " + key + " number of cached simContexts is " + simMap.size());
 				scMap.put(key, simContextRep);
 			}else{
-				System.out.println("couldn't find simulation key = " + key);
+				lg.info("couldn't find simulation key = " + key);
 			}
 			return simContextRep;
 		}
@@ -649,13 +652,13 @@ public class RestDatabaseService {
 		if (simulationRep!=null){
 			return simulationRep;
 		}else{
-			System.out.println("getting simulation rep for simKey = "+key);
+			lg.info("getting simulation rep for simKey = "+key);
 			simulationRep = databaseServerImpl.getSimulationRep(key);
 			if (simulationRep!=null){
-				System.out.println("found simulation key = " + key + " number of cached simulations is " + simMap.size());
+				lg.info("found simulation key = " + key + " number of cached simulations is " + simMap.size());
 				simMap.put(key, simulationRep);
 			}else{
-				System.out.println("couldn't find simulation key = " + key);
+				lg.info("couldn't find simulation key = " + key);
 			}
 			return simulationRep;
 		}
@@ -710,7 +713,7 @@ public class RestDatabaseService {
 			try {
 				userLoginInfo.setUser(vcellUser);
 			} catch (Exception e) {
-				e.printStackTrace();
+				lg.error(e.getMessage(), e);
 				throw new DataAccessException(e.getMessage());
 			}
 			RpcSimServerProxy rpcSimServerProxy = new RpcSimServerProxy(userLoginInfo, rpcSession);
@@ -775,7 +778,7 @@ public class RestDatabaseService {
 			try {
 				userLoginInfo.setUser(vcellUser);
 			} catch (Exception e) {
-				e.printStackTrace();
+				lg.error(e.getMessage(), e);
 				throw new DataAccessException(e.getMessage());
 			}
 			RpcSimServerProxy rpcSimServerProxy = new RpcSimServerProxy(userLoginInfo, rpcSession);
@@ -802,7 +805,7 @@ public class RestDatabaseService {
 				SimulationRepresentation simRepresentation = new SimulationRepresentation(simRep, simDocLinks.get(simulationKey));
 				simStatusReps.add(new SimulationStatusRepresentation(simRepresentation,simStatuses[i]));
 			}catch (ExpressionException e){
-				e.printStackTrace(System.out);
+				lg.error(e);
 			}
 		}
 		return simStatusReps.toArray(new SimulationStatusRepresentation[0]);

@@ -17,6 +17,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
@@ -74,6 +76,8 @@ import cbit.vcell.parser.SymbolTableEntry;
  */
 @SuppressWarnings("serial")
 public class ModelOptimizationSpec implements java.io.Serializable, Matchable, PropertyChangeListener, IssueSource {
+	private final static Logger lg = LogManager.getLogger(ModelOptimizationSpec.class);
+
 	public static final String PROPERTY_NAME_REFERENCE_DATA = "referenceData";
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
@@ -502,7 +506,7 @@ public void removeUncoupledParameters() {
 		paramMappingSpecsList.toArray(parameterMappingSpecs);
 		setParameterMappingSpecs(parameterMappingSpecs);
 	} catch (Exception e){
-		e.printStackTrace(System.out);
+		lg.error(e.getMessage(), e);
 		localIssueList.add(new Issue(this, localIssueContext, IssueCategory.ParameterEstimationGeneralWarning, e.getMessage(),Issue.SEVERITY_WARNING));
 		// throw new RuntimeException(e.getMessage());
 	}
@@ -658,7 +662,7 @@ private void refreshParameterMappingSpecs() throws ExpressionException {
 		setParameterMappingSpecs(newParameterMappingSpecs);
 //		removeUncoupledParameters();
 	} catch (PropertyVetoException e) {
-		e.printStackTrace(System.out);
+		lg.error(e);
 	}
 }
 
@@ -709,8 +713,7 @@ private void refreshReferenceDataMappingSpecs() {
 				try {
 					newReferenceDataMappingSpecs[i].setModelObject(fieldReferenceDataMappingSpecs[j].getModelObject());
 				}catch (java.beans.PropertyVetoException e){
-					e.printStackTrace(System.out);
-					System.out.println("exception consumed, refresh mapping");
+					lg.warn("exception consumed, refresh mapping", e);
 				}
 			}
 		}
@@ -730,8 +733,7 @@ private void refreshReferenceDataMappingSpecs() {
 						try {
 							newReferenceDataMappingSpecs[i].setModelObject(stes[j]);
 						}catch (java.beans.PropertyVetoException e){
-							e.printStackTrace(System.out);
-							System.out.println("exception consumed, refresh mapping");
+							lg.warn("exception consumed, refresh mapping", e);
 						}
 					}
 				}
@@ -818,7 +820,7 @@ public void propertyChange(PropertyChangeEvent event) {
 	try {
 		refreshParameterMappingSpecs();
 	} catch (ExpressionException e) {
-		e.printStackTrace(System.out);
+		lg.error(e);
 	}
 }
 

@@ -255,7 +255,7 @@ public class VCMLComparator {
 //			}
 //			return result;
 //		} catch (Exception e) {         					//ExpressionException, XmlParseException 
-//			e.printStackTrace();
+//			lg.error(e);
 //			return false;
 //		}
 //	}

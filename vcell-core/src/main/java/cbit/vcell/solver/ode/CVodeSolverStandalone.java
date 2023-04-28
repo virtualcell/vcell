@@ -26,13 +26,7 @@ import cbit.vcell.solvers.MathExecutable;
  * @author: Jim Schaff
  */
 public class CVodeSolverStandalone extends SundialsSolver {
-/**
- * IDASolverStandalone constructor comment.
- * @param simulation cbit.vcell.solver.Simulation
- * @param directory java.io.File
- * @param sessionLog cbit.vcell.server.SessionLog
- * @exception cbit.vcell.solver.SolverException The exception description.
- */
+
 public CVodeSolverStandalone(SimulationTask simTask, java.io.File directory, boolean bMessaging) throws SolverException {
 	super(simTask, directory, bMessaging);
 }
@@ -56,8 +50,7 @@ protected void initialize() throws SolverException {
 		cvodeFileWriter.write();
 	} catch (Exception e) {
 		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, SimulationMessage.solverAborted("CVODE solver could not generate input file: " + e.getMessage())));
-		e.printStackTrace(System.out);
-		throw new SolverException("CVODE solver could not generate input file: " + e.getMessage());
+		throw new SolverException("CVODE solver could not generate input file: " + e.getMessage(), e);
 	} finally {
 		if (pw != null) {
 			pw.close();

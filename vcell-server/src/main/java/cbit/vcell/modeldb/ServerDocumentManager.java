@@ -10,10 +10,7 @@
 
 package cbit.vcell.modeldb;
 import java.beans.PropertyVetoException;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.Hashtable;
-import java.util.Vector;
+import java.util.*;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -397,7 +394,7 @@ public String getBioModelXML(QueryHashtable dbc, User user, KeyValue bioModelKey
 					BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(bioModelXML));
 					return cbit.vcell.xml.XmlHelper.bioModelToXML(bioModel);
 				} catch (XmlParseException e) {
-					e.printStackTrace();
+					lg.error(e);
 					throw new DataAccessException(e.getMessage(),e);
 				}
 			}else{
@@ -541,7 +538,7 @@ public String getMathModelXML(QueryHashtable dbc, User user, KeyValue mathModelK
 					MathModel mathModel = XmlHelper.XMLToMathModel(new XMLSource(mathModelXML));
 					return cbit.vcell.xml.XmlHelper.mathModelToXML(mathModel);
 				} catch (XmlParseException e) {
-					e.printStackTrace();
+					lg.error(e);
 					throw new DataAccessException(e.getMessage(),e);
 				}
 			}else{
@@ -752,6 +749,11 @@ long start = System.currentTimeMillis();
 	// this invokes "update" on the database layer
 	//
 	BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(bioModelXML));
+	if (lg.isInfoEnabled()){
+		KeyValue key = (bioModel.getVersion()!=null) ? bioModel.getVersion().getVersionKey() : null;
+		List<BioModel.VersionableInfo> versionableInfos = bioModel.gatherChildVersionableInfos();
+		lg.info("saving Biomodel("+key+"): "+versionableInfos);
+	}
 
 	forceDeepDirtyIfForeign(user,bioModel);
 	boolean isSaveAsNew = true;
@@ -778,11 +780,16 @@ long start = System.currentTimeMillis();
 			origBioModel = XmlHelper.XMLToBioModel(new XMLSource(origBioModelXML));
 		}catch(ObjectNotFoundException nfe){
 			if(isSaveAsNew){
-				User foceClearVersionUser = new User("foceClearVersionUser",new KeyValue("0"));
-				forceDeepDirtyIfForeign(foceClearVersionUser, bioModel);
+				User forceClearVersionUser = new User("forceClearVersionUser",new KeyValue("0"));
+				forceDeepDirtyIfForeign(forceClearVersionUser, bioModel);
 			}else{
 				throw new DataAccessException("Stored model has been changed or removed, please use 'Save As..'");
 			}
+		}
+		if (lg.isInfoEnabled() && origBioModel!=null){
+			KeyValue key = (origBioModel.getVersion()!=null) ? origBioModel.getVersion().getVersionKey() : null;
+			List<BioModel.VersionableInfo> versionableInfos = origBioModel.gatherChildVersionableInfos();
+			lg.info("Cached Biomodel("+key+"): "+versionableInfos);
 		}
 	}
 
@@ -1555,7 +1562,8 @@ long start = System.currentTimeMillis();
 		//If we got here were were doing 'save' or 'save as new version' but no changes were detected
 		boolean bError = !bSomethingChanged && !isSaveAsNew;
 		if(bError) {
-			throw new ServerRejectedSaveException(origBioModel.getVersion().getVersionKey().toString());
+			throw new ServerRejectedSaveException("Warning: BioModel was not saved because contents match already saved version "+
+					origBioModel.getVersion().getDate()+" "+origBioModel.getVersion().getVersionKey());
 		}
 
 		return bioModelXML;
@@ -1678,8 +1686,8 @@ public String saveMathModel(QueryHashtable dbc, User user, String mathModelXML, 
 			origMathModel = XmlHelper.XMLToMathModel(new XMLSource(origMathModelXML));
 		}catch(ObjectNotFoundException nfe){
 			if(isSaveAsNew){
-				User foceClearVersionUser = new User("foceClearVersionUser",new KeyValue("0"));
-				forceDeepDirtyIfForeign(foceClearVersionUser, mathModel);
+				User forceClearVersionUser = new User("forceClearVersionUser",new KeyValue("0"));
+				forceDeepDirtyIfForeign(forceClearVersionUser, mathModel);
 			}else{
 				throw new DataAccessException("Stored model has been changed or removed, please use 'Save As..'");
 			}
@@ -2066,7 +2074,8 @@ public String saveMathModel(QueryHashtable dbc, User user, String mathModelXML, 
 		//If we got here were were doing 'save' or 'save as new version' but no changes were detected
 		boolean bError = !bSomethingChanged && !isSaveAsNew;
 		if(bError) {
-			throw new ServerRejectedSaveException(origMathModel.getVersion().getVersionKey().toString());
+			throw new ServerRejectedSaveException("Warning: MathModel was not saved because contents match already saved version "
+					+origMathModel.getVersion().getDate()+" "+origMathModel.getVersion().getVersionKey());
 		}
 
 		return mathModelXML;

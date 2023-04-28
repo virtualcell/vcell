@@ -33,6 +33,8 @@ import java.util.Random;
 import java.util.StringTokenizer;
 import java.util.TimeZone;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.vcell.util.AuthenticationException;
@@ -45,6 +47,7 @@ import cbit.vcell.simdata.SimulationData;
 import cbit.vcell.solver.Simulation;
 
 public class AmplistorUtils {
+	private final static Logger lg = LogManager.getLogger(AmplistorUtils.class);
 
 	private static Random rand = null;
 
@@ -135,7 +138,7 @@ public class AmplistorUtils {
 			try{
 				contentLength = Long.parseLong(checkOPHelper.httpURLConnection.getHeaderField("X-Ampli-Size"));
 			}catch(NumberFormatException nfe){
-				nfe.printStackTrace();
+				lg.error(nfe);
 			}
 			if (contentLength > 0) { //zero-byte files have no data to transfer
 				int totalRead = 0;
@@ -161,7 +164,7 @@ public class AmplistorUtils {
 				toFile.setLastModified(customModificationDate.getTime());
 	        }
 		}finally{
-			if(bos!=null){try{bos.close();}catch(Exception e){e.printStackTrace();}}
+			if(bos!=null){try{bos.close();}catch(Exception e){lg.error(e.getMessage(), e);}}
 			if(checkOPHelper != null && checkOPHelper.httpURLConnection != null){checkOPHelper.httpURLConnection.disconnect();}
 		}
 	}
@@ -273,7 +276,7 @@ public class AmplistorUtils {
 		}
 		return null;
 //		} catch (Exception e) {
-//			e.printStackTrace();
+//			lg.error(e);
 //		}
 
 	}
@@ -338,8 +341,8 @@ public class AmplistorUtils {
 			
 			return XmlUtil.stringToXML(response.toString(), null);
 		}finally{
-			if(br != null){try{br.close();}catch(Exception e){e.printStackTrace();}}
-			if(isr != null){try{isr.close();}catch(Exception e){e.printStackTrace();}}
+			if(br != null){try{br.close();}catch(Exception e){lg.error(e.getMessage(), e);}}
+			if(isr != null){try{isr.close();}catch(Exception e){lg.error(e.getMessage(), e);}}
 		}
 	}
 
@@ -421,7 +424,7 @@ public class AmplistorUtils {
 	    try {
 	      md5 = MessageDigest.getInstance("MD5");
 	    } catch(NoSuchAlgorithmException e) {
-	      e.printStackTrace();
+	      lg.error(e);
 	    }
 
 	    // Digest password using the MD5 algorithm

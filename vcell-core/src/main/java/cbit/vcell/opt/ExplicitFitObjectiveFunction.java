@@ -11,6 +11,8 @@
 package cbit.vcell.opt;
 import java.util.HashSet;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Issue;
@@ -29,6 +31,8 @@ import cbit.vcell.parser.ExpressionException;
  * structure ExpressionDataPair.
  */
 public class ExplicitFitObjectiveFunction extends ObjectiveFunction {
+	private final static Logger lg = LogManager.getLogger(ExplicitFitObjectiveFunction.class);
+
 	private ExpressionDataPair[] funcDataPairs = null;
 	private SimpleReferenceData simpleReferenceData = null;
 
@@ -60,7 +64,7 @@ public class ExplicitFitScalarFunction extends DefaultScalarFunction {
 						double weightedError = (dataVal - functionVal)*elementWeights.getWeight(i, pair.referenceDataIndex-1);
 						weightedSquaredErrors += (weightedError*weightedError);
 					} catch (ExpressionException e) {
-						e.printStackTrace();
+						lg.error(e);
 					}
 				}
 			}else if (weights instanceof VariableWeights){
@@ -74,7 +78,7 @@ public class ExplicitFitScalarFunction extends DefaultScalarFunction {
 						double weightedError = (dataVal - functionVal)*weight;
 						weightedSquaredErrors += (weightedError*weightedError);
 					} catch (ExpressionException e) {
-						e.printStackTrace();
+						lg.error(e);
 					}
 				}
 			}else if (weights instanceof TimeWeights){
@@ -87,7 +91,7 @@ public class ExplicitFitScalarFunction extends DefaultScalarFunction {
 						double weightedError = (dataVal - functionVal)*timeWeights.getWeightByTimeIdx(i);
 						weightedSquaredErrors += (weightedError*weightedError);
 					} catch (ExpressionException e) {
-						e.printStackTrace();
+						lg.error(e);
 					}
 				}
 			}
@@ -167,7 +171,7 @@ public static ExplicitFitObjectiveFunction fromVCML(CommentStringTokenizer token
 //	}catch (DataAccessException e){
 //		throw e;
 //	}catch (Throwable e){
-//		e.printStackTrace(System.out);
+//		lg.error(e);
 //		throw new cbit.vcell.server.DataAccessException("line #"+(tokens.lineIndex()+1)+" Exception: "+e.getMessage());
 //	}
 	return null;

@@ -7,6 +7,8 @@ import java.util.logging.Level;
 
 import cbit.vcell.resource.ErrorUtils;
 import com.google.gson.Gson;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.restlet.*;
 import org.restlet.data.Form;
 import org.restlet.data.MediaType;
@@ -27,6 +29,8 @@ import javax.mail.MessagingException;
 import javax.mail.internet.AddressException;
 
 public final class ContactUsRestlet extends Restlet {
+	private final static Logger lg = LogManager.getLogger(ContactUsRestlet.class);
+
 	public ContactUsRestlet(Context context) {
 		super(context);
 	}
@@ -63,7 +67,7 @@ public final class ContactUsRestlet extends Restlet {
 
 				sendErrorReportEmail(errorReport);
 			} catch (Exception e) {
-				e.printStackTrace();
+				lg.error(e.getMessage(), e);
 				response.setStatus(Status.SERVER_ERROR_INTERNAL);
 				response.setEntity("We failed to report an error to VCell support", MediaType.TEXT_PLAIN);
 				return;

@@ -69,7 +69,6 @@ public class VtkServicePython extends VtkService {
 				throw new RuntimeException("mesh generation script for domain "+domainName+" failed with return code "+exe.getExitValue()+": "+exe.getStderrString());
 			}
 		} catch (ExecutableException e) {
-			e.printStackTrace();
 			throw new RuntimeException("vtkService.py invocation failed: "+e.getMessage(),e);
 		}
 	}

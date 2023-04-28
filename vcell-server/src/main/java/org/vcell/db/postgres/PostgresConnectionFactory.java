@@ -90,15 +90,13 @@ private static boolean validate(Connection conn) {
 		@SuppressWarnings("unused")
 		DatabaseMetaData dmd = conn.getMetaData();
 	} catch (Exception e) {
-		System.out.println("testing metadata...failed");
-		e.printStackTrace(System.out);
+		lg.error("testing metadata...failed", e);
 		return false;
 	}
 	try {
 		conn.getAutoCommit();
 	} catch (Exception e) {
-		System.out.println("testing autocommit...failed");
-		e.printStackTrace(System.out);
+		lg.error("testing autocommit...failed", e);
 		return false;
 	}
 
@@ -118,8 +116,7 @@ private static boolean validate(Connection conn) {
 		}
 
 	} catch (Exception e) {
-		System.out.println("query user table...failed");
-		e.printStackTrace(System.out);
+		lg.error("query user table...failed", e);
 		return false;
 	}
 	return true;

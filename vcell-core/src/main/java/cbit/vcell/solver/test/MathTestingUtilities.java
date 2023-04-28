@@ -76,19 +76,9 @@ import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.ode.SensVariable;
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.util.ColumnDescription;
-/**
- * Insert the type's description here.
- * Creation date: (1/16/2003 2:31:28 PM)
- * @author: Jim Schaff
- */
+
 public class MathTestingUtilities {
 
-/**
- * Insert the method's description here.
- * Creation date: (1/17/2003 3:48:36 PM)
- * @param testResultSet cbit.vcell.solver.ode.ODESolverResultSet
- * @param referenceResultSet cbit.vcell.solver.ode.ODESolverResultSet
- */
 public static double calcWeightedSquaredError(ODESolverResultSet testResultSet, ReferenceData referenceData)  {
 	try {
 		double[] testRSTimes = testResultSet.extractColumn(testResultSet.findColumn("t"));
@@ -136,8 +126,7 @@ public static double calcWeightedSquaredError(ODESolverResultSet testResultSet, 
 		}
 		return L2Error;
 	}catch (ExpressionException e){
-		e.printStackTrace(System.out);
-		throw new RuntimeException(e.getMessage());
+		throw new RuntimeException(e.getMessage(), e);
 	}
 }
 
@@ -748,9 +737,8 @@ public static MathDescription constructExactMath(MathDescription mathDesc, java.
 		exactMath = (MathDescription)BeanUtils.cloneSerializable(mathDesc);
 		exactMath.setDescription("constructed exact solution from MathDescription ("+mathDesc.getName()+")");
 		exactMath.setName("exact from "+mathDesc.getName());
-	}catch (Throwable e){
-		e.printStackTrace(System.out);
-		throw new RuntimeException("error cloning MathDescription: "+e.getMessage());
+	}catch (Exception e){
+		throw new RuntimeException("error cloning MathDescription: "+e.getMessage(), e);
 	}
 	//
 	// preload the VariableHash with existing Variables (and Constants,Functions,etc) and then sort all at once.
@@ -1348,12 +1336,6 @@ public static MathDescription constructOdesForSensitivity(MathDescription mathDe
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (1/17/2003 3:47:43 PM)
- * @return cbit.vcell.solver.ode.ODESolverResultSet
- * @param sim cbit.vcell.solver.Simulation
- */
 public static ODESolverResultSet getConstructedResultSet(MathDescription mathDesc, double time[]) throws Exception {
 	if (mathDesc.getGeometry().getDimension()!=0){
 		throw new RuntimeException("can only handle non-spatial simulations.");
@@ -1391,12 +1373,6 @@ public static ODESolverResultSet getConstructedResultSet(MathDescription mathDes
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (1/17/2003 3:47:43 PM)
- * @return cbit.vcell.solver.ode.ODESolverResultSet
- * @param sim cbit.vcell.solver.Simulation
- */
 public static ODESolverResultSet getExactResultSet(MathDescription mathDesc, double time[], Constant sensitivityParam) throws Exception {
 	if (mathDesc.getGeometry().getDimension()!=0){
 		throw new RuntimeException("can only handle non-spatial simulations.");
@@ -1483,12 +1459,6 @@ public static Expression[] getInsideOutsideFunctions(Expression analyticSubDomai
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (1/23/2003 10:30:23 PM)
- * @return cbit.vcell.parser.Expression
- * @param analyticSubDomainExp cbit.vcell.parser.Expression
- */
 public static Function[] getOutwardNormal(Expression analyticSubVolume, String baseName) throws ExpressionException, MappingException, MathException {
 
 	VariableHash varHash = new VariableHash();
@@ -1529,12 +1499,6 @@ public static Function[] getOutwardNormal(Expression analyticSubVolume, String b
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (1/23/2003 10:30:23 PM)
- * @return cbit.vcell.parser.Expression
- * @param analyticSubDomainExp cbit.vcell.parser.Expression
- */
 public static Function[] getOutwardNormalFromInsideOutsideFunction(Expression insideOutsideFunction, String baseName) throws ExpressionException, MappingException {
 	
 	java.util.Vector<Function> varList = new java.util.Vector<Function>();
@@ -1578,13 +1542,6 @@ public static Function[] getOutwardNormalFromInsideOutsideFunction(Expression in
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (1/24/2003 10:18:14 AM)
- * @return cbit.vcell.parser.Expression
- * @param origExp cbit.vcell.parser.Expression
- * @param subDomain cbit.vcell.math.SubDomain
- */
 private static Variable getSimVar(SimulationSymbolTable refSimSymbolTable, String testSimVarName) {
 
 	Variable[] refSimVars = refSimSymbolTable.getVariables();
@@ -1598,14 +1555,6 @@ private static Variable getSimVar(SimulationSymbolTable refSimSymbolTable, Strin
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (10/27/2003 5:07:42 PM)
- * @return double[]
- * @param data double[]
- * @param sourceMesh cbit.vcell.solvers.CartesianMesh
- * @param targetMesh cbit.vcell.solvers.CartesianMesh
- */
 public static double[] resample1DSpatial(double[] sourceData, CartesianMesh sourceMesh, CartesianMesh refMesh) {
 	if (sourceData.length!=sourceMesh.getNumVolumeElements()){
 		throw new RuntimeException("must be volume data, data length doesn't match number of volume elements");
@@ -1696,14 +1645,6 @@ public static double[] resample1DSpatial(double[] sourceData, CartesianMesh sour
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (10/27/2003 5:07:42 PM)
- * @return double[]
- * @param data double[]
- * @param sourceMesh cbit.vcell.solvers.CartesianMesh
- * @param targetMesh cbit.vcell.solvers.CartesianMesh
- */
 public static double[] resample1DSpatialSimple(double[] sourceData, CartesianMesh sourceMesh, CartesianMesh refMesh) {
 	if (sourceData.length!=sourceMesh.getNumVolumeElements()){
 		throw new RuntimeException("must be volume data, data length doesn't match number of volume elements");
@@ -1749,14 +1690,6 @@ public static double[] resample1DSpatialSimple(double[] sourceData, CartesianMes
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (10/27/2003 5:07:42 PM)
- * @return double[]
- * @param data double[]
- * @param sourceMesh cbit.vcell.solvers.CartesianMesh
- * @param targetMesh cbit.vcell.solvers.CartesianMesh
- */
 public static double[] resample2DSpatial(double[] sourceData, CartesianMesh sourceMesh, CartesianMesh refMesh) {
 	if (sourceData.length!=sourceMesh.getNumVolumeElements()){
 		throw new RuntimeException("must be volume data, data length doesn't match number of volume elements");
@@ -1910,14 +1843,6 @@ public static double[] resample2DSpatial(double[] sourceData, CartesianMesh sour
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (10/27/2003 5:07:42 PM)
- * @return double[]
- * @param data double[]
- * @param sourceMesh cbit.vcell.solvers.CartesianMesh
- * @param targetMesh cbit.vcell.solvers.CartesianMesh
- */
 public static double[] resample2DSpatialSimple(double[] sourceData, CartesianMesh sourceMesh, CartesianMesh refMesh) {
 	if (sourceData.length!=sourceMesh.getNumVolumeElements()){
 		throw new RuntimeException("must be volume data, data length doesn't match number of volume elements");
@@ -1985,14 +1910,6 @@ public static double[] resample2DSpatialSimple(double[] sourceData, CartesianMes
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (10/27/2003 5:07:42 PM)
- * @return double[]
- * @param data double[]
- * @param sourceMesh cbit.vcell.solvers.CartesianMesh
- * @param targetMesh cbit.vcell.solvers.CartesianMesh
- */
 public static double[] resample3DSpatial(double[] sourceData, CartesianMesh sourceMesh, CartesianMesh refMesh) {
 	if (sourceData.length!=sourceMesh.getNumVolumeElements()){
 		throw new RuntimeException("must be volume data, data length doesn't match number of volume elements");
@@ -2127,14 +2044,6 @@ public static double[] resample3DSpatial(double[] sourceData, CartesianMesh sour
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (10/27/2003 5:07:42 PM)
- * @return double[]
- * @param data double[]
- * @param sourceMesh cbit.vcell.solvers.CartesianMesh
- * @param targetMesh cbit.vcell.solvers.CartesianMesh
- */
 public static double[] resample3DSpatialSimple(double[] sourceData, CartesianMesh sourceMesh, CartesianMesh refMesh) {
 	if (sourceData.length!=sourceMesh.getNumVolumeElements()){
 		throw new RuntimeException("must be volume data, data length doesn't match number of volume elements");
@@ -2227,13 +2136,6 @@ public static double[] resample3DSpatialSimple(double[] sourceData, CartesianMes
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (1/24/2003 10:18:14 AM)
- * @return cbit.vcell.parser.Expression
- * @param origExp cbit.vcell.parser.Expression
- * @param subDomain cbit.vcell.math.SubDomain
- */
 private static Expression substituteFunctions(Expression origExp, MathDescription exactMathDesc) throws ExpressionException {
 	Expression substitutedExp = new Expression(origExp);
 	substitutedExp.bindExpression(exactMathDesc);
@@ -2246,13 +2148,6 @@ private static Expression substituteFunctions(Expression origExp, MathDescriptio
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (1/24/2003 10:18:14 AM)
- * @return cbit.vcell.parser.Expression
- * @param origExp cbit.vcell.parser.Expression
- * @param subDomain cbit.vcell.math.SubDomain
- */
 private static Expression substituteWithExactSolution(Expression origExp, CompartmentSubDomain subDomain, MathDescription exactMathDesc) throws ExpressionException {
 	Expression substitutedExp = new Expression(origExp);
 	substitutedExp.bindExpression(exactMathDesc);

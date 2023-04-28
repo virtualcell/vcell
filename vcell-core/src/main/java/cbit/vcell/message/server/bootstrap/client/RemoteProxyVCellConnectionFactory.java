@@ -180,7 +180,6 @@ public RemoteProxyVCellConnectionFactory(String apihost, Integer apiport, UserLo
 	try {
 		this.vcellApiClient = new VCellApiClient(this.apihost, this.apiport, bIgnoreCertProblems, bIgnoreHostMismatch);
 	} catch (KeyManagementException | NoSuchAlgorithmException | KeyStoreException e) {
-		e.printStackTrace();
 		throw new RuntimeException("VCellApiClient configuration exception: "+e.getMessage(),e);
 	}
 	
@@ -204,10 +203,8 @@ public static String getVCellSoftwareVersion(String apihost, Integer apiport) {
 		String serverSoftwareVersion = tempApiClient.getServerSoftwareVersion();
 		return serverSoftwareVersion;
 	} catch (KeyManagementException | NoSuchAlgorithmException | KeyStoreException e) {
-		e.printStackTrace();
 		throw new RuntimeException("VCellApiClient configuration exception: "+e.getMessage(),e);
 	} catch (IOException e) {
-		e.printStackTrace();
 		throw new RuntimeException("VCellApiClient communication exception while retrieving server software version: "+e.getMessage(),e);
 	}
 }

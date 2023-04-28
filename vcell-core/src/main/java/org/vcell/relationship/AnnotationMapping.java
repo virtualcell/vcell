@@ -21,6 +21,8 @@ import java.util.TreeMap;
 
 import javax.xml.rpc.ServiceException;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.pathway.BioPaxObject;
 import org.vcell.pathway.BiochemicalReactionImpl;
 import org.vcell.pathway.EntityImpl;
@@ -54,6 +56,8 @@ import uk.ac.ebi.jdbfetch.exceptions.DbfParamsException;
 import uk.ac.ebi.www.ws.services.WSDbfetch.InputException;
 
 public class AnnotationMapping {
+	private final static Logger lg = LogManager.getLogger(AnnotationMapping.class);
+
 		
 	public String annotation2BioPaxObject(BioModel bioModel, Identifiable identifiable){
 		String name = "";
@@ -279,32 +283,8 @@ public class AnnotationMapping {
 				else{
 					//System.out.println(xref.getDb());
 				}
-			} catch (DbfConnException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (DbfNoEntryFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (DbfParamsException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (DbfException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (InputException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (RemoteException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (ServiceException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (DataAccessException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
 			} catch (Exception e) {
-				e.printStackTrace();
+				lg.error(e.getMessage(), e);
 			}
 		}
 

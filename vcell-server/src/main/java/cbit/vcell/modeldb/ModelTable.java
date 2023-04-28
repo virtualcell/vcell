@@ -74,7 +74,7 @@ public static String getRbmForDatabase(Model model) {
 		doc.setRootElement(clone);
 		String xmlString = XmlUtil.xmlToString(doc, false);
 		return xmlString;
-//		System.out.println(xmlString);
+//		lg.info(xmlString);
 	}
 	return null;
 }
@@ -101,7 +101,7 @@ public static void readRbmElement(Connection con,Model model,DatabaseSyntax dbSy
 			}
 		}
 	}finally{
-		if(stmt != null){try{stmt.close();}catch(Exception e){e.printStackTrace();}}
+		if(stmt != null){try{stmt.close();}catch(Exception e){lg.error(e.getMessage(), e);}}
 	}
 }
 

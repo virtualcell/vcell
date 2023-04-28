@@ -46,6 +46,8 @@ public interface SimulationDatabase {
 
 	public void updateSimulationJobStatus(SimulationJobStatus newSimulationJobStatus, StateInfo runningStateInfo) throws DataAccessException, UpdateSynchronizationException, SQLException;
 
+	public KeyValue[] getSimulationKeysFromBiomodel(KeyValue biomodelKey) throws SQLException, DataAccessException;
+
 	public Simulation getSimulation(User user, KeyValue simKey) throws DataAccessException;
 
 	public FieldDataIdentifierSpec[] getFieldDataIdentifierSpecs(Simulation sim) throws DataAccessException;

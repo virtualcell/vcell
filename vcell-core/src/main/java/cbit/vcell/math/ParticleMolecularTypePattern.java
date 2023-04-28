@@ -154,8 +154,7 @@ public class ParticleMolecularTypePattern implements Serializable, Matchable {
 			this.matchLabel = matchLabel;
 			return;
 		} catch(NumberFormatException e) {
-			e.printStackTrace(System.out);
-			throw new RuntimeException(e.getMessage());
+			throw new RuntimeException(e.getMessage(), e);
 		}
 	}
 	

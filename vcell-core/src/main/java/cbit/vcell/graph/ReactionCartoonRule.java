@@ -19,8 +19,11 @@ import cbit.vcell.model.RuleParticipantSignature;
 import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class ReactionCartoonRule extends ReactionCartoon {
+	private final static Logger lg = LogManager.getLogger(ReactionCartoonRule.class);
 
 	private Set<ReactionRuleShortSignature> reactionRuleShortSignatures = new HashSet<>();
 
@@ -524,8 +527,8 @@ public class ReactionCartoonRule extends ReactionCartoon {
 //				}				
 //			}
 //			fireGraphChanged(new GraphEvent(this));
-		} catch (Throwable e) {
-			handleException(e);
+		} catch (Exception e) {
+			lg.error(e.getMessage(), e);
 		}
 	}
 }

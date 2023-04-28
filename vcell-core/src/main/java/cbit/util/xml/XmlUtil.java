@@ -35,6 +35,8 @@ import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
@@ -50,6 +52,7 @@ import org.vcell.util.ClientTaskStatusSupport;
  * @author: Daniel Lucio
  */
 public class XmlUtil {
+	private final static Logger lg = LogManager.getLogger(XmlUtil.class);
 		
 	//some SAX parsers...
 	public static final String PARSER_XERCES = "org.apache.xerces.parsers.SAXParser";
@@ -110,7 +113,7 @@ private XmlUtil() {
 			try{
 				if(bis != null){bis.close();}
 			}catch(Exception e){
-				e.printStackTrace();
+				lg.error(e.getMessage(), e);
 				//ignore so any original Exception is passed
 			}
 		}
@@ -169,12 +172,10 @@ private XmlUtil() {
 	  		} else {
 				XmlUtil.errorLog = "";                     
 	  		}
-		} catch (JDOMException e) { 
-        	e.printStackTrace();
-        	throw new RuntimeException("source document is not well-formed\n"+e.getMessage());
-    	} catch (IOException e) { 
-        	e.printStackTrace();
-        	throw new RuntimeException("Unable to read source document\n"+e.getMessage());
+		} catch (JDOMException e) {
+        	throw new RuntimeException("source document is not well-formed\n"+e.getMessage(), e);
+    	} catch (IOException e) {
+        	throw new RuntimeException("Unable to read source document\n"+e.getMessage(), e);
     	}
 
     	return sDoc;
@@ -198,12 +199,10 @@ private XmlUtil() {
 	  		} else {
 				XmlUtil.errorLog = "";                     
 	  		}
-		} catch (JDOMException e) { 
-        	e.printStackTrace();
-        	throw new RuntimeException("source document is not well-formed\n"+e.getMessage());
-    	} catch (IOException e) { 
-        	e.printStackTrace();
-        	throw new RuntimeException("Unable to read source document\n"+e.getMessage());
+		} catch (JDOMException e) {
+        	throw new RuntimeException("source document is not well-formed\n"+e.getMessage(), e);
+    	} catch (IOException e) {
+        	throw new RuntimeException("Unable to read source document\n"+e.getMessage(), e);
     	}
 
     	return sDoc;
@@ -227,12 +226,10 @@ private XmlUtil() {
 	  		} else {
 				XmlUtil.errorLog = "";                     
 	  		}
-		} catch (JDOMException e) { 
-        	e.printStackTrace();
-        	throw new RuntimeException("source document is not well-formed\n"+e.getMessage());
-    	} catch (IOException e) { 
-        	e.printStackTrace();
-        	throw new RuntimeException("Unable to read source document\n"+e.getMessage());
+		} catch (JDOMException e) {
+        	throw new RuntimeException("source document is not well-formed\n"+e.getMessage(), e);
+    	} catch (IOException e) {
+        	throw new RuntimeException("Unable to read source document\n"+e.getMessage(), e);
     	}
 
     	return sDoc;
@@ -347,7 +344,7 @@ public static org.jdom.Element setDefaultNamespace(org.jdom.Element rootNode, or
 			tfr.transform(src, sr);
 			return sw.toString();
 		} catch (TransformerFactoryConfigurationError | TransformerException e) {
-			e.printStackTrace();
+			lg.error(e);
 		}
 		return xmlInput;
 	}

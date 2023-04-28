@@ -21,6 +21,8 @@ import java.util.Iterator;
 import java.util.TreeSet;
 import java.util.Vector;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.Coordinate;
 import org.vcell.util.Extent;
@@ -45,6 +47,7 @@ import cbit.vcell.render.Vect3d;
 import cbit.vcell.solvers.MembraneElement;
 
 public class RegionImage implements Serializable {
+	private final static Logger lg = LogManager.getLogger(RegionImage.class);
 	
 	public static final double NO_SMOOTHING = .6;
 	
@@ -529,11 +532,6 @@ public static void sortSurfaceCollection(SurfaceCollection surfCollection){
 	}
 }
 
-/**
- * Insert the method's description here.
- * Creation date: (3/28/2002 10:30:20 AM)
- * @param image cbit.image.VCImage
- */
 private void calculateRegions(VCImage vcImage) throws cbit.image.ImageException {
 
 	long time1 = System.currentTimeMillis();
@@ -1558,7 +1556,7 @@ private void generateSurfaceCollection(int numRegions,
 		}
 	}catch(Exception e){
 		//If MembraneNeighbors fails somewhere let Surfacecollection generate without membraneneighbors (original behavior just in case)
-		e.printStackTrace();
+		lg.error(e.getMessage(), e);
 		bMembraneNeighborCalculationFailed = true;
 	}finally{
 		//these aren't needed after fail or surfacecollection.set(...)
@@ -1626,7 +1624,7 @@ private void addQuadToSurface(
 			updateEdgeMap(nodeArr, surfIndex, surfQuadsV.elementAt(surfIndex).size()-1,plane);
 		}
 	}catch(Exception e){
-		e.printStackTrace();
+		lg.error(e.getMessage(), e);
 		bMembraneNeighborCalculationFailed = true;
 	}
 }
@@ -1665,11 +1663,6 @@ private void updateEdgeMap(cbit.vcell.geometry.surface.Node[] polygonNodes,int s
 	}
 }
 
-/**
- * Insert the method's description here.
- * Creation date: (3/28/2002 10:30:20 AM)
- * @param image cbit.image.VCImage
- */
 private static RegionMask[] calculateRegions3D(byte[] imageArray, int sliceOffset, int numX, int numY) {
 	
 	Vector regionMaskList = new Vector();
@@ -1741,11 +1734,6 @@ private static RegionMask[] calculateRegions3D(byte[] imageArray, int sliceOffse
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (3/28/2002 10:30:20 AM)
- * @param image cbit.image.VCImage
- */
 private static RegionMask[] calculateRegions3Dfaster(byte[] imageArray, int sliceOffset, int numX, int numY) {
 	
 	Vector regionMaskList = new Vector();
@@ -1834,13 +1822,6 @@ public int getNumZ() {
 	return numZ;
 }
 
-/**
- * This method was created in VisualAge.
- * @return byte
- * @param x int
- * @param y int
- * @param z int
- */
 public RegionInfo getRegionInfoFromOffset(int offset) throws IndexOutOfBoundsException {
 	//if (x<0||x>=numX||y<0||y>=numY||z<0||z>=numZ){
 		//throw new IndexOutOfBoundsException("("+x+","+y+","+z+") is outside (0,0,0) and ("+(numX-1)+","+(numY-1)+","+(numZ-1)+")");
@@ -1854,13 +1835,6 @@ public RegionInfo getRegionInfoFromOffset(int offset) throws IndexOutOfBoundsExc
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return byte
- * @param x int
- * @param y int
- * @param z int
- */
 public RegionInfo[] getRegionInfos() {
 	return (RegionInfo[])regionInfos.clone();
 }
@@ -1869,11 +1843,6 @@ public double getFilterCutoffFrequency(){
 	return filterCutoffFrequency;
 }
 
-/**
- * Insert the method's description here.
- * Creation date: (12/18/00 2:31:07 PM)
- * @return java.lang.String
- */
 public String toString() {
 	return "RegionImage@"+Integer.toHexString(hashCode())+"("+getNumX()+","+getNumY()+","+getNumZ()+")";
 }

@@ -138,11 +138,9 @@ public final class DataProcessingInstructions implements Matchable, Serializable
 						FieldFunctionArguments[] ffa = FieldUtilities.getFieldFunctionArguments(exp);
 						return new FieldDataIdentifierSpec(ffa[0], new ExternalDataIdentifier(KeyValue.fromString(key), user, ffa[0].getFieldName()));
 					} catch (ExpressionException e) {
-						e.printStackTrace();
-						throw new RuntimeException(e.getMessage());
+						throw new RuntimeException(e.getMessage(), e);
 					} catch (Exception e){
-						e.printStackTrace();
-						throw new RuntimeException("Failed to load data processing script.");
+						throw new RuntimeException("Failed to load data processing script.", e);
 					}
 				}
 			}

@@ -32,7 +32,7 @@ public class ModeldbLoadTestCommand implements Callable<Integer> {
     @Option(names = { "-v", "--software-version" }, required = true, description = "vcell software version")
     private String softwareVersion = null;
 
-    @Option(names = { "--database-mode" }, type = MathVerifier.DatabaseMode.class, defaultValue = "skip_database", required = false, description = "update database - use with caution")
+    @Option(names = { "--database-mode" }, type = MathVerifier.DatabaseMode.class, defaultValue = "skip", required = false, description = "update database - use with caution")
     private MathVerifier.DatabaseMode databaseMode = MathVerifier.DatabaseMode.skip;
 
     @Option(names = {"-d", "--debug"}, description = "full application debug mode")

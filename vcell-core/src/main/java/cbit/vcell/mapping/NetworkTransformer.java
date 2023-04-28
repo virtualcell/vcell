@@ -83,9 +83,7 @@ public class NetworkTransformer implements SimContextTransformer {
 		try {
 			transformedSimContext = (SimulationContext)BeanUtils.cloneSerializable(originalSimContext);
 		} catch (ClassNotFoundException | IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			throw new RuntimeException("unexpected exception: "+e.getMessage());
+			throw new RuntimeException("unexpected exception: "+e.getMessage(), e);
 		}
 		transformedSimContext.getModel().refreshDependencies();
 		transformedSimContext.refreshDependencies1(false);
@@ -213,22 +211,16 @@ public class NetworkTransformer implements SimContextTransformer {
 			bngService.registerBngUpdaterCallback(simContext);
 			bngOutput = bngService.executeBNG();
 		} catch (BNGException ex) {
-			ex.printStackTrace(System.out);
-			System.out.println("bionetgen exception");
 			if(ex.getMessage().contains("was asked to write the network, but no reactions were found")) {
-				RuntimeException rex = new RuntimeException("Specified species and reaction rules are not sufficient to define reaction network.");
+				RuntimeException rex = new RuntimeException("Specified species and reaction rules are not sufficient to define reaction network.", ex);
 				throw rex;
 			} else {
 				throw ex; //rethrow without losing context
 			}
 		} catch (RuntimeException ex) {
-			ex.printStackTrace(System.out);
-			System.out.println("runtime exception");
 			throw ex;
 		} catch (Exception ex) {
-			ex.printStackTrace(System.out);
-			System.out.println("other exception");
-			throw new RuntimeException(ex.getMessage());
+			throw new RuntimeException(ex.getMessage(), ex);
 		}
 		
 //		simContext.setInsufficientIterations(false);
@@ -417,8 +409,7 @@ public class NetworkTransformer implements SimContextTransformer {
 					speciesContext.setSpeciesPattern(sp);
 				}
 			} catch (ParseException e) {
-				e.printStackTrace();
-				throw new RuntimeException("Bad format for species pattern string: " + e.getMessage());
+				throw new RuntimeException("Bad format for species pattern string: " + e.getMessage(), e);
 			}
 //			speciesContext.setSpeciesPatternString(speciesPatternString);
 			
@@ -787,22 +778,8 @@ public class NetworkTransformer implements SimContextTransformer {
 		msg = "Adding " + outputSpec.getObservableGroups().length + " observables to model, " + elapsedTime + " ms";
 		System.out.println(msg);
 
-		} catch (PropertyVetoException ex) {
-			ex.printStackTrace(System.out);
-			throw new RuntimeException(ex.getMessage());
-		} catch (ExpressionBindingException ex) {
-			ex.printStackTrace(System.out);
-			throw new RuntimeException(ex.getMessage());
-		} catch (ModelException ex) {
-			ex.printStackTrace(System.out);
-			throw new RuntimeException(ex.getMessage());
-		} catch (ExpressionException ex) {
-			ex.printStackTrace(System.out);
-			throw new RuntimeException(ex.getMessage());
-		} catch (ClassNotFoundException ex) {
-			throw new RuntimeException(ex.getMessage());
-		} catch (IOException ex) {
-			throw new RuntimeException(ex.getMessage());
+		} catch (PropertyVetoException | ModelException | ExpressionException | ClassNotFoundException | IOException  ex) {
+			throw new RuntimeException(ex.getMessage(), ex);
 		}
 		
 		System.out.println("Done transforming");		
@@ -857,7 +834,6 @@ public class NetworkTransformer implements SimContextTransformer {
 		try {
 			targetKinetics.setParameterValue(rateParameter, newExp);
 		} catch (PropertyVetoException e) {
-			e.printStackTrace();
 			throw new RuntimeException("failed to set kinetics expression for reaction "+targetKinetics.getReactionStep().getName()+": "+e.getMessage(),e);
 		}
 		//
@@ -872,7 +848,6 @@ public class NetworkTransformer implements SimContextTransformer {
 						try {
 							targetKinetics.setParameterValue(userDefinedParam, localParameter.getExpression());
 						} catch (PropertyVetoException e) {
-							e.printStackTrace();
 							throw new RuntimeException("failed to set kinetics expression for reaction "+targetKinetics.getReactionStep().getName()+": "+e.getMessage(),e);
 						}
 					}

@@ -9,9 +9,11 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.vcell.api.client.VCellApiClient;
 import org.vcell.api.client.query.BioModelsQuerySpec;
 import org.vcell.api.common.BiomodelRepresentation;
+import org.vcell.test.Fast;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.UserLoginInfo.DigestedPassword;
@@ -21,6 +23,7 @@ import cbit.vcell.message.server.bootstrap.client.RemoteProxyVCellConnectionFact
 import cbit.vcell.server.VCellConnection;
 
 @Ignore
+@Category(Fast.class)
 public class RemoteProxyVCellConnectionFactoryTest {
 	
 	private RemoteProxyVCellConnectionFactory factory = null;

@@ -270,7 +270,7 @@ public static void main(String[] argv)
 		
 	} catch (Throwable e) {
 		System.out.println("Uncaught exception in BNGSpecies.main()");
-		e.printStackTrace(System.out);
+		e.printStackTrace();
 	}
 }
 

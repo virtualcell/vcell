@@ -14,12 +14,16 @@ import cbit.util.graph.Graph;
 import cbit.util.graph.Node;
 import cbit.vcell.parser.Expression;
 import net.sourceforge.interval.ia_math.RealInterval;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 /**
  * Insert the type's description here.
  * Creation date: (6/26/01 8:25:12 AM)
  * @author: Jim Schaff
  */
 public class ConstraintContainerImplTest {
+	private final static Logger lg = LogManager.getLogger(ConstraintContainerImplTest.class);
 /**
  * Insert the method's description here.
  * Creation date: (7/8/2003 8:17:52 AM)
@@ -92,10 +96,10 @@ public static ConstraintContainerImpl getExample() {
 		ccImpl.addGeneralConstraint(new GeneralConstraint(new Expression("a==K"),AbstractConstraint.MODELING_ASSUMPTION,"no comment"));
 		return ccImpl;
 	}catch (cbit.vcell.parser.ExpressionException e){
-		e.printStackTrace(System.out);
+		lg.error(e);
 		return null;
 	}catch (java.beans.PropertyVetoException e){
-		e.printStackTrace(System.out);
+		lg.error(e);
 		return null;
 	}
 }
@@ -220,10 +224,10 @@ public static ConstraintContainerImpl getMichaelisMentenExample() {
 		
 		return ccImpl;
 	}catch (cbit.vcell.parser.ExpressionException e){
-		e.printStackTrace(System.out);
+		lg.error(e);
 		return null;
 	}catch (java.beans.PropertyVetoException e){
-		e.printStackTrace(System.out);
+		lg.error(e);
 		return null;
 	}
 }
@@ -273,10 +277,10 @@ public static ConstraintContainerImpl getProteomicsExample() {
 		
 		return ccImpl;
 	}catch (cbit.vcell.parser.ExpressionException e){
-		e.printStackTrace(System.out);
+		lg.error(e);
 		return null;
 	}catch (java.beans.PropertyVetoException e){
-		e.printStackTrace(System.out);
+		lg.error(e);
 		return null;
 	}
 }
@@ -316,10 +320,10 @@ public static ConstraintContainerImpl getTaubinExample() {
 		ccImpl.addGeneralConstraint(new GeneralConstraint(new Expression("pow(pow(lambda-mu,2)/(-4*lambda*mu),N)<1+Dpb"),AbstractConstraint.MODELING_ASSUMPTION,"no comment"));
 		return ccImpl;
 	}catch (cbit.vcell.parser.ExpressionException e){
-		e.printStackTrace(System.out);
+		lg.error(e);
 		return null;
 	}catch (java.beans.PropertyVetoException e){
-		e.printStackTrace(System.out);
+		lg.error(e);
 		return null;
 	}
 }

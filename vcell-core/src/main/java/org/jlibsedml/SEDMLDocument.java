@@ -215,9 +215,8 @@ public class SEDMLDocument {
             Libsedml.writeXMLStringToFile(xmlString, file.getAbsolutePath(),
                     true);
         } catch (IOException e) {
-            e.printStackTrace(System.out);
             throw new RuntimeException("Unable to write SEDML to file : "
-                    + e.getMessage());
+                    + e.getMessage(), e);
         }
     }
 

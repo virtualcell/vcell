@@ -16,6 +16,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.sbpax.schemas.util.SBPAX3Util;
 import org.vcell.pathway.sbo.SBOSet;
 import org.vcell.pathway.sbo.SBOTerm;
@@ -30,6 +32,7 @@ import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionStep;
 
 public class KineticContext {
+	private final static Logger lg = LogManager.getLogger(KineticContext.class);
 	
 	protected final ReactionStep reaction;
 	protected final Map<SBOTerm, ModelParameter> termToParam = new HashMap<SBOTerm, ModelParameter>();
@@ -52,7 +55,7 @@ public class KineticContext {
 					SBMeasurable sbMeasurable = (SBMeasurable) entity;
 					termToParam.putAll(SBPAXParameterExtractor.extractParameter(reaction, sbMeasurable));
 				} catch (PropertyVetoException e) {
-					e.printStackTrace();
+					lg.error(e);
 				}
 			}
 		}

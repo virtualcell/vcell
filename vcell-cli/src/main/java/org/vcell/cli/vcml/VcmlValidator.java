@@ -56,17 +56,20 @@ public class VcmlValidator {
             BioModel transformed_biomodel = XmlHelper.XMLToBioModel(new XMLSource(inputFile));
             transformed_biomodel.refreshDependencies();
 
-            if (bTransformKMOLE){
-                BioModelTransforms.restoreOldReservedSymbolsIfNeeded(transformed_biomodel);
-            }
 
             int i = 0;
             int number_succeeded = 0;
             for (SimulationContext orig_simContext : orig_biomodel.getSimulationContexts()) {
                 MathDescription originalMath = orig_simContext.getMathDescription();
                 SimulationContext new_simContext = transformed_biomodel.getSimulationContexts(orig_simContext.getName());
-				new_simContext.updateAll(false);
+                try {
+                    if (bTransformKMOLE) BioModelTransforms.restoreOldReservedSymbolsIfNeeded(transformed_biomodel);
+                    new_simContext.updateAll(false);
+                }finally{
+                    if (bTransformKMOLE) BioModelTransforms.restoreLatestReservedSymbols(transformed_biomodel);
+                }
                 MathDescription newMath = new_simContext.getMathDescription();
+
                 MathCompareResults results = null;
                 if (bTransformVariables) {
                     results = MathDescription.testEquivalencyWithRename(SimulationSymbolTable.createMathSymbolTableFactory(), originalMath, newMath);

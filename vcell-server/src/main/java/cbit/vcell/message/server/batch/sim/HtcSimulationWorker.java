@@ -24,7 +24,6 @@ import cbit.vcell.message.server.ServiceProvider;
 import cbit.vcell.message.server.batch.opt.OptimizationBatchServer;
 import cbit.vcell.message.server.bootstrap.ServiceType;
 import cbit.vcell.message.server.cmd.CommandService.CommandOutput;
-import cbit.vcell.message.server.combined.VCellServices;
 import cbit.vcell.message.server.htc.HtcProxy;
 import cbit.vcell.message.server.htc.slurm.SlurmProxy;
 import cbit.vcell.messaging.server.SimulationTask;
@@ -268,12 +267,12 @@ private static Hashtable<String,MonitorJobInfo> getMonitorJobs(){
 			}
 		}
 	} catch (Exception e) {
-		e.printStackTrace();
+		lg.error(e.getMessage(), e);
 	}
 	for (String string : theseJobsAreDone) {
 		result.remove(string);
 	}
-	System.out.println("----------removed "+theseJobsAreDone.size()+ " left with "+result.size());
+	lg.info("removed "+theseJobsAreDone.size()+" jobs, left with "+result.size());
 	return result;
 }
 private void addMonitorJob(long slurmJobID,SimulationTask simTask,boolean bDelete) {
@@ -288,7 +287,7 @@ private void addMonitorJob(long slurmJobID,SimulationTask simTask,boolean bDelet
 		}
 		Files.write(monitorJobsFile.toPath(),(newJobInfo.toString()+"\n").getBytes(),StandardOpenOption.CREATE,StandardOpenOption.WRITE,StandardOpenOption.APPEND);
 	} catch (Exception e) {
-		e.printStackTrace();
+		lg.error(e.getMessage(), e);
 	}
 }
 private void removeMonitorJob(long slurmJobID) {
@@ -299,7 +298,7 @@ private Thread monitorJobsThread = null;
 public void startJobMonitor() {
 	monitorTheseJobs = getMonitorJobs();
 	try {
-		System.out.println("----------Resetting slurm monitorJobsFile");
+		lg.info("Resetting slurm monitorJobsFile");
 		//clean jobs file
 		StringBuffer sb = new StringBuffer();
 		for (Iterator<String> iterator = monitorTheseJobs.keySet().iterator(); iterator.hasNext();) {
@@ -307,7 +306,7 @@ public void startJobMonitor() {
 		}
 		Files.write(monitorJobsFile.toPath(),sb.toString().getBytes(),StandardOpenOption.CREATE,StandardOpenOption.WRITE,StandardOpenOption.TRUNCATE_EXISTING);
 	} catch (IOException e1) {
-		e1.printStackTrace();
+		lg.error(e1);
 	}
 	monitorJobsThread = new Thread(new Runnable() {
 		@Override
@@ -329,10 +328,10 @@ public void startJobMonitor() {
 						String[] tryStr = new String[] {"sacct","--format=jobid%25,jobname%40,state%30 -n -j "+slurmJobidSB.toString()+" | grep -v \".batch\""+" | grep -v \".extern\""};
 						CommandOutput commandOutput = htcProxy.getCommandService().command(tryStr);
 						slurmJobInfoSB.append(commandOutput.getStandardOutput());
-//						System.out.println("-----sacct stdoutput:\n"+commandOutput.getStandardOutput());
-//						System.out.println("-----sacct stderror:\n"+commandOutput.getStandardError());
+						lg.debug("sacct stdoutput:\n"+commandOutput.getStandardOutput());
+						lg.debug("sacct stderror:\n"+commandOutput.getStandardError());
 					}catch(Exception e) {
-						e.printStackTrace();
+						lg.error(e.getMessage(), e);
 					}
 //					Process p = null;
 //					try{
@@ -346,14 +345,12 @@ public void startJobMonitor() {
 //						}
 //						p.waitFor();
 //					}catch(Exception e) {
-//						e.printStackTrace();
+//						lg.error(e);
 //						continue;
 //					}
 					
-//					System.out.println("-----");
-//					System.out.println("-----"+sb.toString());
-//					System.out.println("-----");
-					
+//					lg.debug("-----"+sb.toString());
+
 					StringTokenizer st = new StringTokenizer(slurmJobInfoSB.toString(),"\n\r");
 					while(st.hasMoreTokens()) {
 						String line = st.nextToken();
@@ -413,11 +410,10 @@ public void startJobMonitor() {
 //					Job terminated upon reaching its time limit.
 					
 //					CommandOutput commandOutput = htcProxy.getCommandService().command(cmd);
-//					System.out.println("-----sacct stdoutput:\n"+commandOutput.getStandardOutput());
-//					System.out.println("-----sacct stderror:\n"+commandOutput.getStandardError());
+//					lg.info("-----sacct stdoutput:\n"+commandOutput.getStandardOutput());
+//					lg.info("-----sacct stderror:\n"+commandOutput.getStandardError());
 				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					lg.error(e.getMessage(), e);
 				}
 			}
 		}
@@ -620,7 +616,7 @@ public static void main(java.lang.String[] args) {
 	OperatingSystemInfo.getInstance();
 
 	if (args.length != 3 && args.length != 0) {
-		System.out.println("Missing arguments: " + VCellServices.class.getName() + " [sshHost sshUser sshKeyFile] ");
+		System.out.println("Missing arguments: " + HtcSimulationWorker.class.getName() + " [sshHost sshUser sshKeyFile] ");
 		System.exit(1);
 	}
 
@@ -631,12 +627,6 @@ public static void main(java.lang.String[] args) {
 
 		int serviceOrdinal = 0;
 		VCMongoMessage.serviceStartup(ServiceName.pbsWorker, new Integer(serviceOrdinal), args);
-
-//		//
-//		// JMX registration
-//		//
-//		MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
-//		mbs.registerMBean(new VCellServiceMXBeanImpl(), new ObjectName(VCellServiceMXBean.jmxObjectName));
 
 		ServiceInstanceStatus serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(),
 				ServiceType.PBSCOMPUTE, serviceOrdinal, ManageUtils.getHostName(), new Date(), true);
@@ -655,7 +645,7 @@ public static void main(java.lang.String[] args) {
 
 		htcSimulationWorker.init();
 	} catch (Throwable e) {
-		e.printStackTrace(System.out);
+		lg.error(e);
 	}
 }
 
@@ -672,13 +662,13 @@ public static void main(java.lang.String[] args) {
 //			commandService.command(new String[] { "/usr/bin/env bash -c ls | head -5" });
 //			lg.trace("SSH Connection test passed with installed keyfile, running ls as user "+sshUser+" on "+sshHost);
 //		} catch (Exception e) {
-//			e.printStackTrace();
+//			lg.error(e);
 //			try {
 //				commandService = new CommandServiceSshNative(sshHost,sshUser,sshKeyFile,new File("/root"));
 //				commandService.command(new String[] { "/usr/bin/env bash -c ls | head -5" });
 //				lg.trace("SSH Connection test passed after installing keyfile, running ls as user "+sshUser+" on "+sshHost);
 //			} catch (Exception e2) {
-//				e.printStackTrace();
+//				lg.error(e2);
 //				throw new RuntimeException("failed to establish an ssh command connection to "+sshHost+" as user '"+sshUser+"' using key '"+sshKeyFile+"'",e);
 //			}
 //		}
@@ -704,6 +694,9 @@ private static final String REQUIRED_SERVICE_PROPERTIES[] = {
 		PropertyLoader.vcellSoftwareVersion,
 		PropertyLoader.primarySimDataDirInternalProperty,
 		PropertyLoader.primarySimDataDirExternalProperty,
+		PropertyLoader.secondarySimDataDirExternalProperty,
+		PropertyLoader.simDataDirArchiveExternal,
+		PropertyLoader.simDataDirArchiveInternal,
 		PropertyLoader.nativeSolverDir_External,
 		PropertyLoader.vcellServerIDProperty,
 		PropertyLoader.installationRoot,

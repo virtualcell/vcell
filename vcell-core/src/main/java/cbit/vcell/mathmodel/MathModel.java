@@ -18,6 +18,8 @@ import java.util.List;
 import java.util.Map;
 
 import cbit.vcell.solver.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
@@ -49,6 +51,8 @@ import cbit.vcell.parser.ExpressionException;
  */
 @SuppressWarnings("serial")
 public class MathModel implements VCDocument, SimulationOwner, Matchable, VetoableChangeListener, PropertyChangeListener, IssueSource {
+	private final static Logger lg = LogManager.getLogger(MathModel.class);
+
 	public static final String PROPERTY_NAME_MATH_DESCRIPTION = "mathDescription";
 	private static final String TIME_UNIT_STRING = "time units";
 
@@ -75,8 +79,7 @@ public MathModel(Version version) {
 	try {
 		setVersion(version);
 	} catch (PropertyVetoException e) {
-		e.printStackTrace(System.out);
-		throw new RuntimeException(e.getMessage());
+		throw new RuntimeException(e.getMessage(), e);
 	}
 }
 
@@ -90,12 +93,6 @@ public UnitInfo getUnitInfo() throws UnsupportedOperationException {
 }
 
 
-/**
- * Sets the simulations property (cbit.vcell.solver.Simulation[]) value.
- * @param simulations The new value for the property.
- * @exception java.beans.PropertyVetoException The exception description.
- * @see #getSimulations
- */
 public Simulation addNewSimulation(String simNamePrefix) throws java.beans.PropertyVetoException {
 	MathDescription math = getMathDescription();
 	if (math==null){
@@ -142,12 +139,6 @@ public synchronized void addPropertyChangeListener(java.beans.PropertyChangeList
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (1/19/01 3:31:00 PM)
- * @param simulationContext cbit.vcell.mapping.SimulationContext
- * @exception java.beans.PropertyVetoException The exception description.
- */
 public void addSimulation(Simulation simulation) throws java.beans.PropertyVetoException {
 	if (contains(simulation)){
 		throw new IllegalArgumentException("MathModel.addSimulation() simulation already present in MathModel");
@@ -209,12 +200,6 @@ public boolean compareEqual(Matchable obj) {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (1/17/01 12:51:23 PM)
- * @return boolean
- * @param simulationContext cbit.vcell.mapping.SimulationContext
- */
 public boolean contains(Simulation simulation) {
 	if (simulation == null){
 		throw new IllegalArgumentException("simulation was null");
@@ -232,12 +217,6 @@ public boolean contains(Simulation simulation) {
 	return bFound;
 }
 
-/**
- * Sets the simulations property (cbit.vcell.solver.Simulation[]) value.
- * @param simulations The new value for the property.
- * @exception java.beans.PropertyVetoException The exception description.
- * @see #getSimulations
- */
 public Simulation copySimulation(Simulation simulation) throws java.beans.PropertyVetoException {
 	MathDescription math = getMathDescription();
 	if (math==null){
@@ -333,41 +312,21 @@ public java.lang.String getDescription() {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (5/28/2004 3:13:34 PM)
- * @return int
- */
 public VCDocumentType getDocumentType() {
 	return VCDocumentType.MATHMODEL_DOC;
 }
 
 
-/**
- * Gets the model property (cbit.vcell.model.Model) value.
- * @return The model property value.
- * @see #setModel
- */
 public MathDescription getMathDescription() {
 	return fieldMathDescription;
 }
 
 
-/**
- * Gets the name property (java.lang.String) value.
- * @return The name property value.
- * @see #setName
- */
 public java.lang.String getName() {
 	return fieldName;
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (11/29/00 2:15:36 PM)
- * @return int
- */
 public int getNumSimulations() {
 	if (getSimulations()==null){
 		return 0;
@@ -376,9 +335,6 @@ public int getNumSimulations() {
 }
 
 
-/**
- * Accessor for the propertyChange field.
- */
 protected java.beans.PropertyChangeSupport getPropertyChange() {
 	if (propertyChange == null) {
 		propertyChange = new java.beans.PropertyChangeSupport(this);
@@ -387,37 +343,19 @@ protected java.beans.PropertyChangeSupport getPropertyChange() {
 }
 
 
-/**
- * Gets the simulations property (cbit.vcell.solver.Simulation[]) value.
- * @return The simulations property value.
- * @see #setSimulations
- */
 public Simulation[] getSimulations() {
 	return fieldSimulations;
 }
 
-/**
- * @return {@link #getSimulations()} as Collection
- */
 public List<Simulation> getSimulationCollection( ) {
 	return Arrays.asList(fieldSimulations);
 }
 
-/**
- * Gets the simulations index property (cbit.vcell.solver.Simulation) value.
- * @return The simulations property value.
- * @param index The index value into the property array.
- * @see #setSimulations
- */
 public Simulation getSimulations(int index) {
 	return getSimulations()[index];
 }
 
 
-/**
- * Gets the VCML property (java.lang.String) value.
- * @return The VCML property value.
- */
 public java.lang.String getVCML() throws Exception {
 	StringBuffer buffer = new StringBuffer();
 	String name = (getName()!=null)?getName():"unnamedMathModel";
@@ -442,18 +380,11 @@ public java.lang.String getVCML() throws Exception {
 }
 
 
-/**
- * Gets the version property (cbit.sql.Version) value.
- * @return The version property value.
- */
 public Version getVersion() {
 	return fieldVersion;
 }
 
 
-/**
- * Accessor for the vetoPropertyChange field.
- */
 protected java.beans.VetoableChangeSupport getVetoPropertyChange() {
 	if (vetoPropertyChange == null) {
 		vetoPropertyChange = new java.beans.VetoableChangeSupport(this);
@@ -462,28 +393,16 @@ protected java.beans.VetoableChangeSupport getVetoPropertyChange() {
 }
 
 
-/**
- * Gets the XML property (java.lang.String) value.
- * @return The XML property value.
- */
 public java.lang.String getXML() {
 	return null;
 }
 
 
-/**
- * The hasListeners method was generated to support the propertyChange field.
- */
 public synchronized boolean hasListeners(java.lang.String propertyName) {
 	return getPropertyChange().hasListeners(propertyName);
 }
 
 
-	/**
-	 * This method gets called when a bound property is changed.
-	 * @param evt A PropertyChangeEvent object describing the event source
-	 *   	and the property that has changed.
-	 */
 public void propertyChange(java.beans.PropertyChangeEvent evt) {
 
 	//
@@ -507,8 +426,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 						try {
 							fieldSimulations[i].setMathDescription((MathDescription)evt.getNewValue());
 						}catch (PropertyVetoException e){
-							System.out.println("error propagating math to Simulation '"+fieldSimulations[i].getName());
-							e.printStackTrace(System.out);
+							lg.warn("error propagating math to Simulation '"+fieldSimulations[i].getName(), e);
 						}
 					}
 				}
@@ -551,10 +469,6 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (4/12/01 11:30:25 AM)
- */
 public void refreshDependencies() {
 	removePropertyChangeListener(this);
 	removeVetoableChangeListener(this);
@@ -584,20 +498,11 @@ public void refreshDependencies() {
 }
 
 
-/**
- * The removePropertyChangeListener method was generated to support the propertyChange field.
- */
 public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener listener) {
 	getPropertyChange().removePropertyChangeListener(listener);
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (1/19/01 3:31:00 PM)
- * @param simulationContext cbit.vcell.mapping.SimulationContext
- * @exception java.beans.PropertyVetoException The exception description.
- */
 public void removeSimulation(Simulation simulation) throws java.beans.PropertyVetoException {
 	if (!contains(simulation)){
 		throw new IllegalArgumentException("MathModel.removeSimulation() simulation not present in MathModel");
@@ -614,12 +519,6 @@ public synchronized void removeVetoableChangeListener(java.beans.VetoableChangeL
 }
 
 
-/**
- * Sets the description property (java.lang.String) value.
- * @param description The new value for the property.
- * @exception java.beans.PropertyVetoException The exception description.
- * @see #getDescription
- */
 public void setDescription(java.lang.String description) throws java.beans.PropertyVetoException {
 	String oldValue = fieldDescription;
 	fireVetoableChange("description", oldValue, description);
@@ -628,11 +527,6 @@ public void setDescription(java.lang.String description) throws java.beans.Prope
 }
 
 
-/**
- * Sets the model property (cbit.vcell.model.Model) value.
- * @param model The new value for the property.
- * @see #getModel
- */
 public void setMathDescription(MathDescription mathDescription) {
 	MathDescription oldValue = fieldMathDescription;
 	fieldMathDescription = mathDescription;

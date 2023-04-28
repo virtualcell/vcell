@@ -21,6 +21,8 @@ import java.util.Set;
 import java.util.StringTokenizer;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.model.rbm.MolecularComponent;
 import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularType;
@@ -64,6 +66,7 @@ import cbit.vcell.model.Structure;
 import cbit.vcell.parser.ExpressionException;
 
 public class PathwayMapping {
+	private final static Logger lg = LogManager.getLogger(PathwayMapping.class);
 	
 	private static List<String> commentKeywords = Arrays.asList (
 			"FUNCTION:",
@@ -258,7 +261,7 @@ public class PathwayMapping {
 			RelationshipObject ro = new RelationshipObject(mt, bioPaxObject);
 			bioModel.getRelationshipModel().addRelationshipObject(ro);
 		} catch (ModelException | PropertyVetoException e) {
-			e.printStackTrace();
+			lg.error(e);
 		}
 		
 		ArrayList<String> commentList = bioPaxObject.getComments();
@@ -294,7 +297,7 @@ public class PathwayMapping {
 				miriamResources.add(mr);
 				miriamManager.addMiriamRefGroup(mt, qualifier, miriamResources);
 			} catch (URNParseFailureException e) {
-				e.printStackTrace();
+				lg.error(e);
 			}
 			System.out.println(xref.getDisplayName());
 		}
@@ -893,9 +896,9 @@ public class PathwayMapping {
 		try {
 			SBPAXKineticsExtractor.extractKineticsExactMatch(reactionStep, process);
 		} catch (ExpressionException e) {
-			e.printStackTrace();
+			lg.error(e);
 		} catch (PropertyVetoException e) {
-			e.printStackTrace();
+			lg.error(e);
 		}		
 //		SBPAXKineticsExtractor.extractKineticsInferredMatch(reactionStep, Collections.<SBEntity>unmodifiableSet(process.getInteractions()));		
 	}

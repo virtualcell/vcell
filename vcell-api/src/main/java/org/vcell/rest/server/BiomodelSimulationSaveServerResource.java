@@ -3,6 +3,8 @@ package org.vcell.rest.server;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -26,7 +28,8 @@ import org.vcell.util.PermissionException;
 import org.vcell.util.document.User;
 
 public class BiomodelSimulationSaveServerResource extends AbstractServerResource implements BiomodelSimulationSaveResource {
-
+	private final static Logger lg = LogManager.getLogger(BiomodelSimulationSaveServerResource.class);
+	
 	private String biomodelid;
 	
 	
@@ -118,13 +121,13 @@ public class BiomodelSimulationSaveServerResource extends AbstractServerResource
 			
 			//return representation;
 		} catch (PermissionException e) {
-			e.printStackTrace();
+			lg.error(e);
 			throw new ResourceException(Status.CLIENT_ERROR_UNAUTHORIZED, "not authorized to save simulation");
 		} catch (ObjectNotFoundException e) {
-			e.printStackTrace();
+			lg.error(e);
 			throw new ResourceException(Status.CLIENT_ERROR_NOT_FOUND, "simulation not found");
 		} catch (Exception e){
-			e.printStackTrace(System.out);
+			lg.error(e.getMessage(), e);
 			throw new ResourceException(Status.SERVER_ERROR_INTERNAL, e.getMessage());
 		}
 	}

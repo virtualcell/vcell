@@ -136,7 +136,7 @@ private void assignReactionSpecsSQL(Connection con,KeyValue simContextKey, Simul
 			" FROM " + reactionSpecTable.getTableName() + 
 			" WHERE " + reactionSpecTable.simContextRef + " = " + simContextKey +
 			" ORDER BY " + reactionSpecTable.id;
-//System.out.println("SimulationContextDbDriver.assignReactionSpecsSQL(), sql = "+sql);
+//lg.info("SimulationContextDbDriver.assignReactionSpecsSQL(), sql = "+sql);
 	Statement stmt = con.createStatement();
 	try {
 		ResultSet rset = stmt.executeQuery(sql);
@@ -513,7 +513,7 @@ private void assignStructureMappingsSQL(QueryHashtable dbc, Connection con,KeyVa
 					sizeExpressionS = TokenMangler.getSQLRestoredString(sizeExpressionS);
 					sizeExpression = new Expression(sizeExpressionS);
 				} catch (ExpressionException e) {
-					e.printStackTrace();
+					lg.error(e);
 					throw new DataAccessException("SimulationContextDbDriver.assignStructureMappingSQL : Couldn't parse non-null size expression for Structure "+theStructure.getName());
 				}
 			}
@@ -652,7 +652,7 @@ private void assignStructureMappingsSQL(QueryHashtable dbc, Connection con,KeyVa
 			} else {
 				throw new DataAccessException("unknown structureMapping type");
 			}
-//System.out.println("Structure Key = " + theStructure + " - " + "SubVolume Key " + theSubVolume.getKey());
+//lg.info("Structure Key = " + theStructure + " - " + "SubVolume Key " + theSubVolume.getKey());
 		}
 	} finally {
 		stmt.close();
@@ -766,7 +766,7 @@ private SimulationContext getSimulationContextSQL(QueryHashtable dbc, Connection
 					" AND " + 
 						simContextTable.ownerRef.getQualifiedColName() + " = " + userTable.id.getQualifiedColName();
 	sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,(LeftOuterJoin)null,condition,null);
-//System.out.println(sql);
+//lg.info(sql);
 
 	Statement stmt = con.createStatement();
 	try {
@@ -903,7 +903,7 @@ private void insertReactionSpecsSQL(Connection con, KeyValue simContextKey, Simu
 		//
 		sql = 	"INSERT INTO " + reactionSpecTable.getTableName() + " " + reactionSpecTable.getSQLColumnList() +
 				" VALUES " + reactionSpecTable.getSQLValueList(newReactionSpecKey, simContextKey, reactionSpecs[i], reactionStepKey);
-//System.out.println("SimulationContextDbDriver.insertReactionSpecsSQL(), sql = "+sql);
+//lg.info("SimulationContextDbDriver.insertReactionSpecsSQL(), sql = "+sql);
 		updateCleanSQL(con, sql);
 	}
 }
@@ -1007,7 +1007,7 @@ private void insertSimulationContextSQL(Connection con, User user,SimulationCont
 	String appComponentXmlStr = SimContextTable.getAppComponentsForDatabase(simContext);
 	Object[] o = {simContext,mathDescKey,modelKey,geomKey, appComponentXmlStr};
 	sql = DatabasePolicySQL.enforceOwnershipInsert(user,simContextTable,o,version,dbSyntax);
-//System.out.println(sql);
+//lg.info(sql);
 	if (appComponentXmlStr!=null){
 		varchar2_CLOB_update(
 			con,
@@ -1040,7 +1040,7 @@ private void insertSpeciesContextSpecsSQL(Connection con, KeyValue simContextKey
 		//
 		sql = 	"INSERT INTO " + speciesContextSpecTable.getTableName() + " " + speciesContextSpecTable.getSQLColumnList() + 
 				" VALUES " + speciesContextSpecTable.getSQLValueList(newSpeciesContextSpecKey, simContextKey, speciesContextSpec, scKey);
-//System.out.println(sql);
+//lg.info(sql);
 		updateCleanSQL(con, sql);
 	}
 }
@@ -1064,7 +1064,7 @@ private void insertStimuliSQL(InsertHashtable hash, Connection con, KeyValue sim
 		//
 		String sql = "INSERT INTO " + stimulusTable.getTableName() + " " + stimulusTable.getSQLColumnList() +
 					" VALUES " + stimulusTable.getSQLValueList(hash, newStimuliKey, simContextKey, stimulus);
-//System.out.println(sql);
+//lg.info(sql);
 		updateCleanSQL(con, sql);
 	}
 	//
@@ -1076,7 +1076,7 @@ private void insertStimuliSQL(InsertHashtable hash, Connection con, KeyValue sim
 		//
 		String sql = "INSERT INTO " + stimulusTable.getTableName() + " " + stimulusTable.getSQLColumnList() +
 					" VALUES " + stimulusTable.getSQLValueList(hash, newStimuliKey, simContextKey, groundElectrode);
-//System.out.println(sql);
+//lg.info(sql);
 		updateCleanSQL(con, sql);
 	}
 }
@@ -1101,7 +1101,7 @@ private void insertStructureMappingsSQL(InsertHashtable hash, Connection con, Ke
 		//
 		sql = 	"INSERT INTO " + structureMappingTable.getTableName() + " " + structureMappingTable.getSQLColumnList() +
 				" VALUES " + structureMappingTable.getSQLValueList(hash, newStuctureMappingKey, simContextKey, structureMapping);
-//System.out.println(sql);
+//lg.info(sql);
 		updateCleanSQL(con, sql);
 	}
 }
@@ -1155,7 +1155,7 @@ public SimContextRep[] getSimContextReps(Connection con, KeyValue startingSimCon
 	
 	PreparedStatement stmt = con.prepareStatement(sql);
 
-//	System.out.println(sql);
+//	lg.info(sql);
 	simContextTable.setPreparedStatement_SimContextReps(stmt, startingSimContextKey, numRows);
 
 	ArrayList<SimContextRep> simContextReps = new ArrayList<SimContextRep>();
@@ -1181,7 +1181,7 @@ public SimContextRep getSimContextRep(Connection con, KeyValue simContextKey)
 	
 	PreparedStatement stmt = con.prepareStatement(sql);
 
-	//System.out.println(sql);
+	//lg.info(sql);
 	simContextTable.setPreparedStatement_SimContextRep(stmt, simContextKey);
 
 	ArrayList<SimContextRep> simContextReps = new ArrayList<SimContextRep>();

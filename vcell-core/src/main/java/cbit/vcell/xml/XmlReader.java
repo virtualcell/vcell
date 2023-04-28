@@ -320,7 +320,7 @@ private Action getAction(Element param, MathDescription md) throws XmlParseExcep
 	try {
 		Action action = new Action(var, operation, exp);
 		return action;
-	} catch (Exception e){e.printStackTrace();}
+	} catch (Exception e){lg.error(e.getMessage(), e);}
 	
 	return null;
 }
@@ -368,7 +368,6 @@ private AnalyticSubVolume getAnalyticSubVolume(Element param) throws XmlParseExc
 	try {
 		newsubvolume =  new AnalyticSubVolume(key, name, newexpression, handle);
 	} catch (ExpressionException e) {
-		e.printStackTrace();
 		throw new XmlParseException("An ExpressionException occured when creating the new AnalyticSubvolume " + name, e);
 	}
 
@@ -407,7 +406,6 @@ public BioModel getBioModel(Element param,VCellSoftwareVersion docVcellSoftwareV
 			biomodel.setDescription(unMangle(annotationText));
 		}
 	} catch(java.beans.PropertyVetoException e) {
-		e.printStackTrace();
 		throw new XmlParseException(e);
 	}
 //long l2 = System.currentTimeMillis();
@@ -434,7 +432,6 @@ public BioModel getBioModel(Element param,VCellSoftwareVersion docVcellSoftwareV
 		try {
 			biomodel.addSimulationContext( simContext );
 		} catch (java.beans.PropertyVetoException e) {
-			e.printStackTrace();
 			throw new XmlParseException("An error occurred while trying to add the SimContext "+ simContext.getName() +" to the BioModel Object!", e);
 		}
 		//process the simulations within this Simspec
@@ -445,7 +442,6 @@ public BioModel getBioModel(Element param,VCellSoftwareVersion docVcellSoftwareV
 			try {
 				biomodel.addSimulation(getSimulation((Element)simIterator.next(), simContext.getMathDescription(), simContext));
 			} catch(java.beans.PropertyVetoException e) {
-				e.printStackTrace();
 				throw new XmlParseException("A PropertyVetoException occurred when adding a Simulation entity to the BioModel " + name, e);
 			}
 		}
@@ -587,7 +583,6 @@ private CompartmentSubDomain getCompartmentSubDomain(Element param, MathDescript
 			try {
 				subDomain.addBoundaryConditionSpec( getBoundaryConditionSpec(tempelement) );
 			} catch (MathException e) {
-				e.printStackTrace();
 				throw new XmlParseException("A MathException was fired when adding a BoundaryConditionSpec to the compartmentSubDomain " + name, e);
 			}
 		}
@@ -602,7 +597,6 @@ private CompartmentSubDomain getCompartmentSubDomain(Element param, MathDescript
 		try {
 			subDomain.addEquation( getOdeEquation(tempelement, mathDesc) );
 		} catch (MathException e) {
-			e.printStackTrace();
 			throw new XmlParseException("A MathException was fired when adding an OdeEquation to the compartmentSubDomain " + name, e);
 		}
 	}
@@ -615,7 +609,6 @@ private CompartmentSubDomain getCompartmentSubDomain(Element param, MathDescript
 		try {
 			subDomain.addEquation( getPdeEquation(tempelement, mathDesc) );
 		} catch (MathException e) {
-			e.printStackTrace();
 			throw new XmlParseException("A MathException was fired when adding an PdeEquation to the compartmentSubDomain " + name, e);
 		}
 	}
@@ -628,7 +621,6 @@ private CompartmentSubDomain getCompartmentSubDomain(Element param, MathDescript
 		try {
 			subDomain.addEquation( getVolumeRegionEquation(tempelement, mathDesc) );
 		} catch (MathException e) {
-			e.printStackTrace();
 			throw new XmlParseException("A MathException was fired when adding a VolumeRegionEquation to the compartmentSubDomain " + name, e);
 		}
 	}
@@ -642,9 +634,8 @@ private CompartmentSubDomain getCompartmentSubDomain(Element param, MathDescript
 			try {
 				subDomain.addVarIniCondition( getVarIniCount(tempelement, mathDesc) );
 			} catch (MathException e) {
-				e.printStackTrace();
 				throw new XmlParseException("A MathException was fired when adding a variable initial condition to the compartmentSubDomain " + name, e);
-			} catch (ExpressionException e) {e.printStackTrace();}
+			} catch (ExpressionException e) {lg.error(e);}
 		}
 	}
 	
@@ -656,9 +647,8 @@ private CompartmentSubDomain getCompartmentSubDomain(Element param, MathDescript
 			try {
 				subDomain.addVarIniCondition( getVarIniCount(tempelement, mathDesc) );
 			} catch (MathException e) {
-				e.printStackTrace();
 				throw new XmlParseException("A MathException was fired when adding a variable initial condition to the compartmentSubDomain " + name, e);
-			} catch (ExpressionException e) {e.printStackTrace();}
+			} catch (ExpressionException e) {lg.error(e);}
 		}
 	}
 	
@@ -670,9 +660,8 @@ private CompartmentSubDomain getCompartmentSubDomain(Element param, MathDescript
 			try {
 				subDomain.addVarIniCondition( getVarIniPoissonExpectedCount(tempelement, mathDesc) );
 			} catch (MathException e) {
-				e.printStackTrace();
 				throw new XmlParseException("A MathException was fired when adding a variable initial condition to the compartmentSubDomain " + name, e);
-			} catch (ExpressionException e) {e.printStackTrace();}
+			} catch (ExpressionException e) {lg.error(e);}
 		}
 	}
 	//	
@@ -683,7 +672,6 @@ private CompartmentSubDomain getCompartmentSubDomain(Element param, MathDescript
 		try {
 			subDomain.addJumpProcess( getJumpProcess(tempelement, mathDesc) );
 		} catch (MathException e) {
-			e.printStackTrace();
 			throw new XmlParseException("A MathException was fired when adding a jump process to the compartmentSubDomain " + name, e);
 		} 
 	}
@@ -694,7 +682,6 @@ private CompartmentSubDomain getCompartmentSubDomain(Element param, MathDescript
 		try {
 			subDomain.addParticleJumpProcess(getParticleJumpProcess(tempelement, mathDesc) );
 		} catch (MathException e) {
-			e.printStackTrace();
 			throw new XmlParseException("A MathException was fired when adding a jump process to the compartmentSubDomain " + name, e);
 		} 
 	}
@@ -705,7 +692,6 @@ private CompartmentSubDomain getCompartmentSubDomain(Element param, MathDescript
 		try {
 			subDomain.addParticleProperties(getParticleProperties(tempelement, mathDesc));
 		} catch (MathException e) {
-			e.printStackTrace();
 			throw new XmlParseException("A MathException was fired when adding a jump process to the compartmentSubDomain " + name, e);
 		} 
 	}
@@ -718,7 +704,6 @@ private CompartmentSubDomain getCompartmentSubDomain(Element param, MathDescript
 		try {
 			subDomain.addEquation( getComputeCentroid(tempelement, mathDesc) );
 		} catch (MathException e) {
-			e.printStackTrace();
 			throw new XmlParseException("A MathException was fired when adding an ComputeCentroid 'equation' to the compartmentSubDomain " + name, e);
 		}
 	}
@@ -731,7 +716,6 @@ private CompartmentSubDomain getCompartmentSubDomain(Element param, MathDescript
 		try {
 			subDomain.addEquation( getComputeMembraneMetric(tempelement, mathDesc) );
 		} catch (MathException e) {
-			e.printStackTrace();
 			throw new XmlParseException("A MathException was fired when adding an ComputeMembraneMetric 'equation' to the compartmentSubDomain " + name, e);
 		}
 	}
@@ -770,7 +754,6 @@ private CompartmentSubVolume getCompartmentSubVolume(Element param) throws XmlPa
 	try {
 		newcompartment.setName(name);
 	} catch (java.beans.PropertyVetoException e) {
-		e.printStackTrace();
 		throw new XmlParseException("A propertyVetoException was fired when setting the name to the compartmentSubVolume " + name, e);
 	}
 	
@@ -1029,7 +1012,6 @@ private ElectricalStimulus getElectricalStimulus(Element param, SimulationContex
 					}
 				}
 			}catch (MathException e){
-				e.printStackTrace(System.out);
 				throw new XmlParseException("error reordering parameters according to dependencies:", e);
 			}
 			LocalParameter tempParam = null;
@@ -1086,7 +1068,6 @@ private ElectricalStimulus getElectricalStimulus(Element param, SimulationContex
 				Domain domain = null;
 				varHash.addVariable(new Function(unresolvedSymbol,new Expression(0.0),domain));  // will turn into an UnresolvedParameter.
 			}catch (MathException e){
-				e.printStackTrace(System.out);
 				throw new XmlParseException(e.getMessage());
 			}
 			clampStimulus.addUnresolvedParameter(unresolvedSymbol);
@@ -1127,12 +1108,8 @@ private ElectricalStimulus getElectricalStimulus(Element param, SimulationContex
 		}
 
 		
-	} catch (java.beans.PropertyVetoException e) {
-		e.printStackTrace(System.out);
+	} catch (PropertyVetoException | ExpressionException e) {
 		throw new XmlParseException("Exception while setting parameters for simContext : " + currentSimulationContext.getName(), e);
-	} catch (ExpressionException e) {
-		e.printStackTrace(System.out);
-		throw new XmlParseException("Exception while settings parameters for simContext : " + currentSimulationContext.getName(), e);
 	} finally {
 		clampStimulus.reading(false);
 	}
@@ -1239,8 +1216,7 @@ private void readParameters(List<Element> parameterElements, ParameterContext pa
 				Domain domain = null;
 				varHash.addVariable(new Function(unresolvedSymbol,new Expression(0.0),domain));  // will turn into an UnresolvedParameter.
 			}catch (MathException e){
-				e.printStackTrace(System.out);
-				throw new XmlParseException(e.getMessage());
+				throw new XmlParseException(e.getMessage(), e);
 			}
 			parameterContext.addUnresolvedParameter(unresolvedSymbol);
 			unresolvedSymbol = varHash.getFirstUnresolvedSymbol();
@@ -1287,7 +1263,6 @@ private void readParameters(List<Element> parameterElements, ParameterContext pa
 		}
 		
 	} catch (PropertyVetoException | ExpressionException | MathException e) {
-		e.printStackTrace(System.out);
 		throw new XmlParseException("Exception while setting parameters for '"+contextName+"': " + e.getMessage(), e);
 	}
 }
@@ -1365,7 +1340,6 @@ private FastSystem getFastSystem(
             fastInvariant = new FastInvariant(newExp);
             fastSystem.addFastInvariant(fastInvariant);
         } catch (MathException e) {
-            e.printStackTrace();
             throw new XmlParseException(
                 "A MathException was fired when adding the FastInvariant " + fastInvariant + ", to a FastSystem!"+" : ", e);
         } 
@@ -1383,7 +1357,6 @@ private FastSystem getFastSystem(
             fastRate = new FastRate(newExp);
             fastSystem.addFastRate(fastRate);
         } catch (MathException e) {
-            e.printStackTrace();
             throw new XmlParseException(
                 "A MathException was fired when adding the FastRate " + fastRate + ", to a FastSystem!", e);
         } 
@@ -1415,7 +1388,6 @@ private Structure getFeature(Element param) throws XmlParseException {
 	try {
 		newfeature = new Feature( key, name );
 	} catch (java.beans.PropertyVetoException e) {
-		e.printStackTrace();
 		throw new XmlParseException(
 			"An error occurred while creating the feature "
 				+ param.getAttributeValue(XMLTags.NameAttrTag), e);
@@ -1459,15 +1431,13 @@ private FeatureMapping getFeatureMapping(Element param, SimulationContext simula
 		try {
 			feamap.getSizeParameter().setExpression(unMangleExpression(size));
 		} catch (ExpressionException e) {
-			e.printStackTrace(System.out);
 			throw new XmlParseException("An expressionException was fired when setting the size Expression " + size + " to a featureMapping!", e);
 		}	
 	}else{
 		try {
 			feamap.getSizeParameter().setExpression(null);
 		} catch (Exception e) {
-			e.printStackTrace();
-			throw new RuntimeException("unexpected exception while setting structure size: "+e.getMessage());
+			throw new RuntimeException("unexpected exception while setting structure size: "+e.getMessage(), e);
 		}
 	}
 	
@@ -1478,7 +1448,6 @@ private FeatureMapping getFeatureMapping(Element param, SimulationContext simula
 		try {
 			feamap.getVolumePerUnitAreaParameter().setExpression(unMangleExpression(volPerUnitArea));
 		} catch (ExpressionException e) {
-			e.printStackTrace(System.out);
 			throw new XmlParseException("An expressionException was fired when setting the VolumePerUnitArea Expression " + volPerUnitArea + " to a featureMapping!", e);
 		}	
 	}
@@ -1490,7 +1459,6 @@ private FeatureMapping getFeatureMapping(Element param, SimulationContext simula
 		try {
 			feamap.getVolumePerUnitVolumeParameter().setExpression(unMangleExpression(volPerUnitVol));
 		} catch (ExpressionException e) {
-			e.printStackTrace(System.out);
 			throw new XmlParseException("An expressionException was fired when setting the size Expression " + volPerUnitVol + " to a featureMapping!", e);
 		}	
 	}
@@ -1502,7 +1470,6 @@ private FeatureMapping getFeatureMapping(Element param, SimulationContext simula
 				try {
 					feamap.setGeometryClass(geometryClasses[i]);
 				} catch (PropertyVetoException e) {
-					e.printStackTrace(System.out);
 					throw new XmlParseException("A propertyVetoException was fired when trying to set the subvolume or surface " + geometryClassName + " to a MembraneMapping!", e);
 				}
 			}
@@ -1590,7 +1557,6 @@ private FilamentSubDomain getFilamentSubDomain(Element param, MathDescription ma
 		try {
 			filDomain.addEquation( getOdeEquation(tempElement, mathDesc) );
 		} catch (MathException e) {
-			e.printStackTrace(System.out);
 			throw new XmlParseException("A MathException was fired when adding an OdeEquation to the FilamentSubDomain " + name, e);
 		}
 	}
@@ -1614,7 +1580,6 @@ private PointSubDomain getPointSubDomain(Element param, MathDescription mathDesc
 		try {
 			pointDomain.addEquation( getOdeEquation(tempElement, mathDesc) );
 		} catch (MathException e) {
-			e.printStackTrace(System.out);
 			throw new XmlParseException("A MathException was fired when adding an OdeEquation to the FilamentSubDomain " + name, e);
 		}
 	}
@@ -1713,7 +1678,6 @@ private FluxReaction getFluxReaction( Element param, Model model) throws XmlPars
         }
 
 	} catch (Exception e) {
-		e.printStackTrace();
 		throw new XmlParseException( "An exception occurred while trying to create the FluxReaction " + name, e);
 	}
 	//resolve reference to the fluxCarrier
@@ -1733,8 +1697,7 @@ private FluxReaction getFluxReaction( Element param, Model model) throws XmlPars
 					fluxreaction.addReactant(outsideSpeciesContext, 1);
 				}
 			}catch (ModelException e){
-				e.printStackTrace(System.out);
-				throw new XmlParseException(e.getMessage());
+				throw new XmlParseException(e.getMessage(), e);
 			}
 		}
 	}
@@ -1759,7 +1722,6 @@ private FluxReaction getFluxReaction( Element param, Model model) throws XmlPars
 				fluxreaction.setPhysicsOptions(FluxReaction.PHYSICS_MOLECULAR_ONLY);
 			} 
 		}catch (java.beans.PropertyVetoException e){
-			e.printStackTrace(System.out);
 			throw new XmlParseException("A propertyVetoException was fired when setting the fluxOption to the flux reaction " + name, e);
 		}
 	}
@@ -1773,8 +1735,7 @@ private FluxReaction getFluxReaction( Element param, Model model) throws XmlPars
 			fluxreaction.addReactionParticipant(getReactant(temp, fluxreaction, model));
 		}
 	} catch (java.beans.PropertyVetoException e) {
-		e.printStackTrace();
-		throw new XmlParseException("Error adding a reactant to the reaction "+ name+" : "+e.getMessage());
+		throw new XmlParseException("Error adding a reactant to the reaction "+ name+" : "+e.getMessage(), e);
 	}
 
 	//Add Products, if any
@@ -1786,8 +1747,7 @@ private FluxReaction getFluxReaction( Element param, Model model) throws XmlPars
 			fluxreaction.addReactionParticipant(getProduct(temp, fluxreaction, model));
         }
 	} catch (java.beans.PropertyVetoException e) {
-		e.printStackTrace();
-		throw new XmlParseException("Error adding a product to the reaction "+ name+" : "+e.getMessage());
+		throw new XmlParseException("Error adding a product to the reaction "+ name+" : "+e.getMessage(), e);
 	}
 
 	//Add Catalyst(Modifiers) (if there are)
@@ -1810,7 +1770,6 @@ private FluxReaction getFluxReaction( Element param, Model model) throws XmlPars
 			}
 		}
 	} catch (NumberFormatException e) {
-		e.printStackTrace();
 		throw new XmlParseException("A NumberFormatException was fired when setting the (integer) valence '"+valenceString+"' (integer) to the flux reaction " + name, e);
 	}
 	return fluxreaction;
@@ -2011,7 +1970,6 @@ public Geometry getGeometry(Element param) throws XmlParseException {
 		try {
 			newimage = getVCImage( param.getChild(XMLTags.ImageTag, vcNamespace), newextent );
 		} catch (Throwable e) {
-			e.printStackTrace();
 			throw new XmlParseException(e);
 		}
 	}
@@ -2051,14 +2009,12 @@ public Geometry getGeometry(Element param) throws XmlParseException {
 			newgeometry.setDescription(unMangle(annotation));
 		}
 	} catch ( java.beans.PropertyVetoException e ) {
-		e.printStackTrace();
 		throw new XmlParseException("A PropertyVetoException occurred when setting the name " + name + " to a Geometry object!", e);
 	}
 	//Add the Extent
 	try {
 		newgeometry.getGeometrySpec().setExtent( newextent );
 	} catch (java.beans.PropertyVetoException e) {
-		e.printStackTrace();
 		throw new XmlParseException("A PropertyVetoException occurred while trying to set the Extent for the Geometry " + name, e);
 	}
 	//Add the Origin
@@ -2075,7 +2031,6 @@ public Geometry getGeometry(Element param) throws XmlParseException {
 	try {
 		newgeometry.getGeometrySpec().setSubVolumes( newsubvolumes );
 	} catch (java.beans.PropertyVetoException e) {
-		e.printStackTrace();
 		throw new XmlParseException("A PropertyVetoException was generated when ading the subvolumes to the Geometry " + name, e);
 	}
 	if(newgeometry.getDimension()>0){
@@ -2090,7 +2045,6 @@ public Geometry getGeometry(Element param) throws XmlParseException {
 		try {
 			newgeometry.getGeometrySurfaceDescription().setSurfaceClasses(newSurfaceClassArr);
 		} catch (java.beans.PropertyVetoException e) {
-			e.printStackTrace();
 			throw new XmlParseException("A PropertyVetoException was generated when ading the subvolumes to the Geometry " + name, e);
 		}
 	}
@@ -2114,12 +2068,8 @@ public Geometry getGeometry(Element param) throws XmlParseException {
 	
 	try {
 		newgeometry.precomputeAll(new GeometryThumbnailImageFactoryAWT(), false, false);
-	} catch (GeometryException e) {
-		e.printStackTrace(System.out);
-	} catch (ImageException e) {
-		e.printStackTrace(System.out);
-	} catch (ExpressionException e) {
-		e.printStackTrace(System.out);
+	} catch (GeometryException | ImageException | ExpressionException e) {
+		lg.error(e);
 	}
 	return newgeometry;
 }
@@ -2206,9 +2156,8 @@ public Geometry getGeometry(Element param) throws XmlParseException {
 		    	gsd.setGeometricRegions((GeometricRegion [])regions.toArray(new GeometricRegion[regions.size()]));
 			}
 		} catch (Exception e) {
-			System.err.println("Unable to read geometry surface description from XML, for geometry: " +
-								((Element) param.getParent()).getAttributeValue(XMLTags.NameAttrTag));
-			e.printStackTrace();
+			lg.error("Unable to read geometry surface description from XML, for geometry: " +
+					((Element) param.getParent()).getAttributeValue(XMLTags.NameAttrTag), e);
 		}
 	    
 		return gsd;	    
@@ -2304,7 +2253,6 @@ private ImageSubVolume getImageSubVolume(Element param) throws XmlParseException
 	try {
 		newsubvolume.setName(name);
 	} catch (java.beans.PropertyVetoException e) {
-		e.printStackTrace();
 		throw new XmlParseException("A propertyVetoException was generated when setting the name " + name +" to an ImageSubvolume object!", e);
 	}
 	
@@ -2396,9 +2344,8 @@ private JumpProcess getJumpProcess(Element param, MathDescription md) throws Xml
 		try {
 			jump.addAction(getAction(tempelement, md));
 		} catch (MathException e) {
-			e.printStackTrace();
 			throw new XmlParseException("A MathException was fired when adding a new Action to the JumpProcess " + name, e);
-		} catch (ExpressionException e) {e.printStackTrace();}
+		} catch (ExpressionException e) {lg.error(e);}
 	}
 	
 	return jump;
@@ -2544,11 +2491,7 @@ private ParticleJumpProcess getParticleJumpProcess(Element param, MathDescriptio
 		Element tempelement = (Element)iterator.next();
 		try {
 			actionList.add(getAction(tempelement, md));
-		} catch (MathException e) {			
-			e.printStackTrace();
-			throw new XmlParseException(e);
-		} catch (ExpressionException e) {
-			e.printStackTrace();
+		} catch (MathException | ExpressionException e) {
 			throw new XmlParseException(e);
 		}
 	}
@@ -2614,7 +2557,6 @@ private Kinetics getKinetics(Element param, ReactionStep reaction, Model model) 
 			throw new XmlParseException("Unknown kinetics type: " + type);
 		}
 	}  catch (ExpressionException e) {
-		e.printStackTrace();
 		throw new XmlParseException("Error creating the kinetics for reaction: "+reaction.getName(), e);
 	}
 	
@@ -2647,7 +2589,6 @@ private Kinetics getKinetics(Element param, ReactionStep reaction, Model model) 
 				varHash.addVariable(new Constant(rp[i].getName(), new Expression(0.0)));			
 			}
 		} catch (MathException e){
-			e.printStackTrace(System.out);
 			throw new XmlParseException("error reordering parameters according to dependencies: ", e);
 		}
 		//
@@ -2668,7 +2609,6 @@ private Kinetics getKinetics(Element param, ReactionStep reaction, Model model) 
 					}
 				}
 			}catch (MathException e){
-				e.printStackTrace(System.out);
 				throw new XmlParseException("error reordering parameters according to dependencies: ", e);
 			}
 			Kinetics.KineticsParameter tempParam = null;
@@ -2715,7 +2655,6 @@ private Kinetics getKinetics(Element param, ReactionStep reaction, Model model) 
 			try {
 				varHash.addVariable(new Function(unresolvedSymbol,new Expression(0.0),null));  // will turn into an UnresolvedParameter.
 			}catch (MathException e){
-				e.printStackTrace(System.out);
 				throw new XmlParseException(e);
 			}
 			newKinetics.addUnresolvedParameter(unresolvedSymbol);
@@ -2753,12 +2692,8 @@ private Kinetics getKinetics(Element param, ReactionStep reaction, Model model) 
 				}
 			}
 		}
-	} catch (java.beans.PropertyVetoException e) {
-		e.printStackTrace(System.out);
+	} catch (PropertyVetoException | ExpressionException e) {
 		throw new XmlParseException("Exception while setting parameters for Reaction : " + reaction.getName(), e);
-	} catch (ExpressionException e) {
-		e.printStackTrace(System.out);
-		throw new XmlParseException("Exception while settings parameters for Reaction : " + reaction.getName(), e);
 	} finally {
 		newKinetics.reading(false);
 	}
@@ -2794,7 +2729,6 @@ MathDescription getMathDescription(Element param, Geometry geometry) throws XmlP
 	try {
 		mathdes.setGeometry(geometry);	//this step is needed!
 	} catch (java.beans.PropertyVetoException e) {
-		e.printStackTrace();
 		throw new XmlParseException("a PropertyVetoException was fired when setting the Geometry to the Mathdescription in the simContext "+ name, e);
 	}
 	//set attributes 
@@ -2811,7 +2745,6 @@ MathDescription getMathDescription(Element param, Geometry geometry) throws XmlP
 			mathdes.setDescription(unMangle(annotationText));
 		}
 	} catch (java.beans.PropertyVetoException e) {
-		e.printStackTrace();
 		throw new XmlParseException("A PropertyVetoException was fired when setting the name " + name + ", to a new MathDescription!", e);
 	}
 	
@@ -2824,7 +2757,6 @@ MathDescription getMathDescription(Element param, Geometry geometry) throws XmlP
 		try {
 			varHash.addVariable( getConstant(tempelement));
 		} catch (MathException e) {
-			e.printStackTrace();
 			throw new XmlParseException(e);
 		}
 	}
@@ -2836,7 +2768,6 @@ MathDescription getMathDescription(Element param, Geometry geometry) throws XmlP
 		try {
 			varHash.addVariable( getFilamentRegionVariable(tempelement) );
 		} catch (MathException e) {
-			e.printStackTrace();
 			throw new XmlParseException(e);
 		}
 	}
@@ -2848,7 +2779,6 @@ MathDescription getMathDescription(Element param, Geometry geometry) throws XmlP
 		try {
 			varHash.addVariable( getFilamentVariable(tempelement) );
 		} catch (MathException e) {
-			e.printStackTrace();
 			throw new XmlParseException(e);
 		}
 	}
@@ -2863,7 +2793,6 @@ MathDescription getMathDescription(Element param, Geometry geometry) throws XmlP
 		try {
 			varHash.addVariable( getMembraneRegionVariable(tempelement) );
 		} catch (MathException e) {
-			e.printStackTrace();
 			throw new XmlParseException(e);
 		}
 
@@ -2876,7 +2805,6 @@ MathDescription getMathDescription(Element param, Geometry geometry) throws XmlP
 		try {
 			varHash.addVariable( getMemVariable(tempelement) );
 		} catch (MathException e) {
-			e.printStackTrace();
 			throw new XmlParseException(e);
 		}
 
@@ -2889,7 +2817,6 @@ MathDescription getMathDescription(Element param, Geometry geometry) throws XmlP
 		try {
 			varHash.addVariable( getPointVariable(tempelement) );
 		} catch (MathException e) {
-			e.printStackTrace();
 			throw new XmlParseException(e);
 		}
 
@@ -2904,7 +2831,6 @@ MathDescription getMathDescription(Element param, Geometry geometry) throws XmlP
 		try {
 			varHash.addVariable( getVolumeRegionVariable(tempelement) );
 		} catch (MathException e) {
-			e.printStackTrace();
 			throw new XmlParseException(e);
 		}
 
@@ -2917,7 +2843,6 @@ MathDescription getMathDescription(Element param, Geometry geometry) throws XmlP
 		try {
 			varHash.addVariable( getVolVariable(tempelement) );
 		} catch (MathException e) {
-			e.printStackTrace();
 			throw new XmlParseException(e);
 		}
 	}
@@ -2929,7 +2854,6 @@ MathDescription getMathDescription(Element param, Geometry geometry) throws XmlP
 		try {
 			varHash.addVariable( getStochVolVariable(tempelement) );
 		} catch (MathException e) {
-			e.printStackTrace();
 			throw new XmlParseException(e);
 		}
 	}
@@ -2941,7 +2865,6 @@ MathDescription getMathDescription(Element param, Geometry geometry) throws XmlP
 		try {
 			varHash.addVariable(getFunction(tempelement));
 		}catch (MathException e){
-			e.printStackTrace();
 			throw new XmlParseException(e);
 		}
 	}
@@ -2952,7 +2875,6 @@ MathDescription getMathDescription(Element param, Geometry geometry) throws XmlP
 		try {
 			varHash.addVariable(getRandomVariable(tempelement));
 		}catch (MathException e){
-			e.printStackTrace();
 			throw new XmlParseException(e);
 		}
 	}
@@ -2962,7 +2884,6 @@ MathDescription getMathDescription(Element param, Geometry geometry) throws XmlP
 		try {
 			varHash.addVariable(getRandomVariable(tempelement));
 		}catch (MathException e){
-			e.printStackTrace();
 			throw new XmlParseException(e);
 		}
 	}
@@ -2972,7 +2893,6 @@ MathDescription getMathDescription(Element param, Geometry geometry) throws XmlP
 		try {
 			varHash.addVariable(getVolumeParticalVariable(tempelement));
 		}catch (MathException e){
-			e.printStackTrace();
 			throw new XmlParseException(e);
 		}
 	}
@@ -2982,7 +2902,6 @@ MathDescription getMathDescription(Element param, Geometry geometry) throws XmlP
 		try {
 			varHash.addVariable(getMembraneParticalVariable(tempelement));
 		}catch (MathException e){
-			e.printStackTrace();
 			throw new XmlParseException(e);
 		}
 	}
@@ -3001,7 +2920,6 @@ MathDescription getMathDescription(Element param, Geometry geometry) throws XmlP
 		try {
 			varHash.addVariable(getVolumeParticleSpeciesPattern(tempelement, mathdes));
 		}catch (MathException e){
-			e.printStackTrace();
 			throw new XmlParseException(e);
 		}
 	}
@@ -3012,7 +2930,6 @@ MathDescription getMathDescription(Element param, Geometry geometry) throws XmlP
 		try {
 			varHash.addVariable(getVolumeParticleObservable(tempelement, varHash));
 		} catch (MathException e) {
-			e.printStackTrace();
 			throw new XmlParseException(e);
 		}
 	}
@@ -3022,11 +2939,7 @@ MathDescription getMathDescription(Element param, Geometry geometry) throws XmlP
 	//
 	try {
 		mathdes.setAllVariables(varHash.getAlphabeticallyOrderedVariables());
-	} catch (MathException e) {
-		e.printStackTrace();
-		throw new XmlParseException("Error adding the Function variables to the MathDescription " + name, e);
-	} catch (ExpressionBindingException e) {
-		e.printStackTrace();
+	} catch (MathException | ExpressionBindingException e) {
 		throw new XmlParseException("Error adding the Function variables to the MathDescription " + name, e);
 	}
 
@@ -3037,7 +2950,6 @@ MathDescription getMathDescription(Element param, Geometry geometry) throws XmlP
 		try {
 			mathdes.addSubDomain( getCompartmentSubDomain(tempelement, mathdes) );
 		} catch (MathException e) {
-			e.printStackTrace();
 			throw new XmlParseException("Error adding a new CompartmentSubDomain to the MathDescription " + name, e);
 		}
 	}
@@ -3049,7 +2961,6 @@ MathDescription getMathDescription(Element param, Geometry geometry) throws XmlP
 		try {
 			mathdes.addSubDomain( getMembraneSubDomain(tempelement, mathdes) );
 		} catch (MathException e) {
-			e.printStackTrace();
 			throw new XmlParseException("Error adding a new MembraneSubDomain to the MathDescription " + name, e);
 		}
 	}
@@ -3060,7 +2971,6 @@ MathDescription getMathDescription(Element param, Geometry geometry) throws XmlP
 		try {
 			mathdes.addSubDomain( getFilamentSubDomain(tempelement, mathdes) );
 		} catch (MathException e) {
-			e.printStackTrace();
 			throw new XmlParseException("Error adding a new FilamentSubDomain to the MathDescription " + name, e);
 		}
 	}
@@ -3071,7 +2981,6 @@ MathDescription getMathDescription(Element param, Geometry geometry) throws XmlP
 		try {
 			mathdes.addSubDomain( getPointSubDomain(tempelement, mathdes) );
 		} catch (MathException e) {
-			e.printStackTrace();
 			throw new XmlParseException("Error adding a new PointSubDomain to the MathDescription " + name, e);
 		}
 	}
@@ -3083,7 +2992,6 @@ MathDescription getMathDescription(Element param, Geometry geometry) throws XmlP
 		try {
 			mathdes.addEvent(event);
 		} catch (MathException e) {
-			e.printStackTrace(System.out);
 			throw new XmlParseException(e);
 		}
 	}
@@ -3330,7 +3238,6 @@ public BioEvent[] getBioEvents(SimulationContext simContext, Element bioEventsEl
 					newBioEvent.setParameterValue(BioEventParameterType.TriggerDelay, delayDurationExpression);
 				}
 			} catch (ExpressionBindingException | PropertyVetoException e) {
-				e.printStackTrace();
 				throw new XmlParseException("failed to read trigger or delay expressions in bioEvent "+name+": "+e.getMessage(), e);
 			}
 			
@@ -3377,7 +3284,6 @@ public BioEvent[] getBioEvents(SimulationContext simContext, Element bioEventsEl
 					newBioEvent.setParameterValue(BioEventParameterType.TriggerDelay, delayDurationExpression);
 				}
 			} catch (ExpressionBindingException | PropertyVetoException e) {
-				e.printStackTrace();
 				throw new XmlParseException("failed to read trigger or delay expressions in bioEvent "+name+": "+e.getMessage(), e);
 			}
 				
@@ -3425,7 +3331,6 @@ public BioEvent[] getBioEvents(SimulationContext simContext, Element bioEventsEl
 			try {
 				newBioEvent.setParameters(parameters.toArray(new LocalParameter[0]));
 			} catch (PropertyVetoException | ExpressionBindingException e) {
-				e.printStackTrace();
 				throw new XmlParseException("failed to read parameters in bioEvent "+name+": "+e.getMessage(), e);
 			}
 		}
@@ -3444,20 +3349,17 @@ public BioEvent[] getBioEvents(SimulationContext simContext, Element bioEventsEl
 				BioEvent.EventAssignment eventAssignment = newBioEvent.new EventAssignment((EditableSymbolTableEntry) target, assignExp);
 				eventAssignmentList.add(eventAssignment);
 			} catch (ExpressionException e) {
-				e.printStackTrace(System.out);
 				throw new XmlParseException(e);
 			}
 		}
 		try {
 			newBioEvent.setEventAssignmentsList(eventAssignmentList);
 		} catch (PropertyVetoException e1) {
-			e1.printStackTrace(System.out);
 			throw new XmlParseException(e1);
 		}
 		try {
 			newBioEvent.bind();
 		} catch (ExpressionBindingException e) {
-			e.printStackTrace(System.out);
 			throw new XmlParseException(e);
 		}
 		bioEventsVector.add(newBioEvent);
@@ -3590,7 +3492,6 @@ public SpatialProcess[] getSpatialProcesses(SimulationContext simContext, Elemen
 		try {
 			spatialProcess.setParameters(parameters.toArray(new LocalParameter[0]));
 		} catch (PropertyVetoException | ExpressionBindingException e) {
-			e.printStackTrace();
 			throw new XmlParseException("failed to read parameters in bioEvent "+name+": "+e.getMessage(), e);
 		}
 		
@@ -3614,7 +3515,6 @@ public RateRule[] getRateRules(SimulationContext simContext, Element rateRulesEl
 		    newRateRule = new RateRule(rrName, rrVar, rrExp, simContext);
 			newRateRule.bind();
 		} catch (ExpressionBindingException e) {
-			e.printStackTrace(System.out);
 			throw new XmlParseException(e.getMessage());
 		}
 		if (newRateRule != null) {
@@ -3638,7 +3538,6 @@ public AssignmentRule[] getAssignmentRules(SimulationContext simContext, Element
 		    newAssignmentRule = new AssignmentRule(rrName, rrVar, rrExp, simContext);
 			newAssignmentRule.bind();
 		} catch (ExpressionBindingException e) {
-			e.printStackTrace(System.out);
 			throw new XmlParseException(e.getMessage());
 		}
 		if (newAssignmentRule != null) {
@@ -3692,7 +3591,7 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
 		    newRateRuleVar = new RateRuleVariable(rrvName, rrvStructure, rrvParameter, rrvRole);
 			newRateRuleVar.bind();
 		} catch (ExpressionBindingException e) {
-			e.printStackTrace(System.out);
+			lg.error(e);
 			throw new XmlParseException(e.getMessage());
 		}
 		if (newRateRuleVar != null) {
@@ -3731,7 +3630,6 @@ public MathModel getMathModel(Element param) throws XmlParseException{
 			mathmodel.setDescription(unMangle(annotationText));
 		}
 	} catch (java.beans.PropertyVetoException e) {
-		e.printStackTrace();
 		throw new XmlParseException("An error occurred while trying to set the name " + param.getAttributeValue(XMLTags.NameAttrTag) + "to a MathModel!", e);
 	}
 	
@@ -3762,7 +3660,6 @@ public MathModel getMathModel(Element param) throws XmlParseException{
 				outputFnContext.addOutputFunction(outputFunction);
 			}
 		} catch (PropertyVetoException e) {
-			e.printStackTrace(System.out);
 			throw new XmlParseException(e);		
 		}
 	}
@@ -3778,7 +3675,6 @@ public MathModel getMathModel(Element param) throws XmlParseException{
 	try {
 		mathmodel.setSimulations(simList);
 	} catch(java.beans.PropertyVetoException e) {
-		e.printStackTrace();
 		throw new XmlParseException("A PropertyVetoException occurred when adding the Simulations to the MathModel " + name, e);
 	}
 
@@ -3817,12 +3713,8 @@ private MathOverrides getMathOverrides(Element param, Simulation simulation) thr
 		ConstantArraySpec[] specs = (ConstantArraySpec[])BeanUtils.getArray(v1, ConstantArraySpec.class);
 		//create new MathOverrides object
 		mathOverrides = new MathOverrides(simulation, constants, specs);
-	} catch (ExpressionException e) {
-		e.printStackTrace();
-		throw new XmlParseException("A ExpressionException was fired when adding a Constant to the MathOverrides", e);
-	} catch (DataConversionException e2) {
-		e2.printStackTrace();
-		throw new XmlParseException("A DataConversionException occured when reading a ConstantArraySpec type", e2);
+	} catch (ExpressionException | DataConversionException e) {
+		throw new XmlParseException("failed to add a Constant to the MathOverrides", e);
 	}
 	return mathOverrides;
 }
@@ -3850,7 +3742,6 @@ private Membrane getMembrane(Model model, Element param, List<Structure> feature
 	try {
 		newmembrane = new Membrane(key, name);
 	} catch (java.beans.PropertyVetoException e) {
-		e.printStackTrace();
 		throw new XmlParseException(
 			"An error occurred while trying to create the Membrane object " + name, e);
 	}
@@ -3904,7 +3795,6 @@ private Membrane getMembrane(Model model, Element param, List<Structure> feature
 	try {
 		newmembrane.getMembraneVoltage().setName(memvoltName);
 	} catch (java.beans.PropertyVetoException e) {
-		e.printStackTrace();
 		throw new XmlParseException("Error setting the membrane Voltage Name", e);
 	}
 
@@ -3937,7 +3827,6 @@ private MembraneMapping getMembraneMapping(Element param, SimulationContext simu
 		try {
 			memmap.getSurfaceToVolumeParameter().setExpression(unMangleExpression(ratio));
 		} catch (ExpressionException e) {
-			e.printStackTrace(System.out);
 			throw new XmlParseException("An expressionException was fired when setting the SurfacetoVolumeRatio Expression " + ratio + " to a membraneMapping!", e);
 		}
 	}
@@ -3949,7 +3838,6 @@ private MembraneMapping getMembraneMapping(Element param, SimulationContext simu
 		try {
 			memmap.getVolumeFractionParameter().setExpression(unMangleExpression(fraction));
 		} catch (ExpressionException e) {
-			e.printStackTrace(System.out);
 			throw new XmlParseException("An expressionException was fired when setting the VolumeFraction Expression " + fraction + " to a membraneMapping!", e);
 		}
 	}
@@ -3961,7 +3849,6 @@ private MembraneMapping getMembraneMapping(Element param, SimulationContext simu
 		try {
 			memmap.getAreaPerUnitAreaParameter().setExpression(unMangleExpression(ratio));
 		} catch (ExpressionException e) {
-			e.printStackTrace(System.out);
 			throw new XmlParseException("An expressionException was fired when setting the AreaPerUnitArea Expression " + ratio + " to a membraneMapping!", e);
 		}
 	}
@@ -3973,7 +3860,6 @@ private MembraneMapping getMembraneMapping(Element param, SimulationContext simu
 		try {
 			memmap.getAreaPerUnitVolumeParameter().setExpression(unMangleExpression(ratio));
 		} catch (ExpressionException e) {
-			e.printStackTrace(System.out);
 			throw new XmlParseException("An expressionException was fired when setting the AreaPerUnitVolume Expression " + ratio + " to a membraneMapping!", e);
 		}
 	}
@@ -3985,14 +3871,12 @@ private MembraneMapping getMembraneMapping(Element param, SimulationContext simu
 		try {
 			memmap.getSizeParameter().setExpression(unMangleExpression(size));
 		} catch (ExpressionException e) {
-			e.printStackTrace(System.out);
 			throw new XmlParseException("An expressionException was fired when setting the size Expression " + size + " to a membraneMapping!", e);
 		}
 	}else{
 		try {
 			memmap.getSizeParameter().setExpression(null);
 		} catch (Exception e) {
-			e.printStackTrace();
 			throw new RuntimeException("unexpected exception while setting structure size", e);
 		}
 	}
@@ -4002,7 +3886,6 @@ private MembraneMapping getMembraneMapping(Element param, SimulationContext simu
 	try {
 		memmap.getSpecificCapacitanceParameter().setExpression(new Expression(specificCap));		
 	} catch (ExpressionException e) {
-		e.printStackTrace(System.out);
 		throw new XmlParseException(e);
 	}
 	
@@ -4016,7 +3899,6 @@ private MembraneMapping getMembraneMapping(Element param, SimulationContext simu
 		Expression initialExpr = unMangleExpression(initialVoltString);
 		memmap.getInitialVoltageParameter().setExpression(initialExpr);
 	} catch (ExpressionException e) {
-		e.printStackTrace(System.out);
 		throw new XmlParseException(e);
 	}
 	
@@ -4032,7 +3914,6 @@ private MembraneMapping getMembraneMapping(Element param, SimulationContext simu
 				try {
 					memmap.setGeometryClass(geometryClasses[i]);
 				} catch (PropertyVetoException e) {
-					e.printStackTrace();
 					throw new XmlParseException("A propertyVetoException was fired when trying to set the subvolume or surface " + geometryClassName + " to a MembraneMapping!", e);
 				}
 			}
@@ -4114,7 +3995,7 @@ private MembraneRegionEquation getMembraneRegionEquation(Element param, MathDesc
 			Expression expression = new Expression( unMangle( temp) );
 			odeEquation.setExactSolution( expression);			
 		} catch (ExpressionException e) {
-			e.printStackTrace();
+			lg.error(e);
 			throw new XmlParseException("An ExpressionException was fired when creating the expression: "+ unMangle(temp)+" : "+e.getMessage());
 		}
 	}
@@ -4125,7 +4006,7 @@ private MembraneRegionEquation getMembraneRegionEquation(Element param, MathDesc
 			Expression expression = new Expression(unMangle(temp));
 			odeEquation.setConstructedSolution( expression );
 		} catch (ExpressionException e) {
-			e.printStackTrace();
+			lg.error(e);
 			throw new XmlParseException("An ExpressionException was fired when creating the expression: "+ unMangle(temp)+" : "+e.getMessage());
 		}
 	}*/
@@ -4313,7 +4194,6 @@ private MembraneSubDomain getMembraneSubDomain(Element param, MathDescription ma
 		try {
 			subDomain.addEquation( odeEquation );
 		} catch (MathException e) {
-			e.printStackTrace();
 			throw new XmlParseException("A MathException was fired when adding an OdeEquation to a MembraneSubDomain!", e);
 		}
 	}
@@ -4326,7 +4206,6 @@ private MembraneSubDomain getMembraneSubDomain(Element param, MathDescription ma
 		try {
 			subDomain.addEquation( getPdeEquation(tempElement, mathDesc) );
 		} catch (MathException e) {
-			e.printStackTrace();
 			throw new XmlParseException("A MathException was fired when adding an PdeEquation to the MembraneSubDomain " + name, e);
 		}
 	}
@@ -4338,7 +4217,6 @@ private MembraneSubDomain getMembraneSubDomain(Element param, MathDescription ma
 		try {
 			subDomain.addJumpCondition( getJumpCondition(tempElement, mathDesc) );
 		} catch (MathException e) {
-			e.printStackTrace();
 			throw new XmlParseException("A MathException was fired when adding a JumpCondition to a MembraneSubDomain!", e);
 		}
 	}
@@ -4356,7 +4234,6 @@ private MembraneSubDomain getMembraneSubDomain(Element param, MathDescription ma
 		try {
 			subDomain.addEquation( getMembraneRegionEquation(tempElement, mathDesc) );
 		} catch (MathException e) {
-			e.printStackTrace();
 			throw new XmlParseException("A MathException was fired when adding a MembraneRegionEquation to a MEmbraneSubDomain!", e);
 		}
 	}
@@ -4367,7 +4244,6 @@ private MembraneSubDomain getMembraneSubDomain(Element param, MathDescription ma
 		try {
 			subDomain.addParticleJumpProcess(getParticleJumpProcess(tempelement, mathDesc) );
 		} catch (MathException e) {
-			e.printStackTrace();
 			throw new XmlParseException("A MathException was fired when adding a jump process to the MembraneSubDomain " + name, e);
 		} 
 	}
@@ -4378,7 +4254,6 @@ private MembraneSubDomain getMembraneSubDomain(Element param, MathDescription ma
 		try {
 			subDomain.addParticleProperties(getParticleProperties(tempelement, mathDesc));
 		} catch (MathException e) {
-			e.printStackTrace();
 			throw new XmlParseException("A MathException was fired when adding a jump process to the MembraneSubDomain " + name, e);
 		} 
 	}
@@ -4391,7 +4266,6 @@ private MembraneSubDomain getMembraneSubDomain(Element param, MathDescription ma
 		try {
 			subDomain.addEquation( getComputeNormal(tempelement, mathDesc) );
 		} catch (MathException e) {
-			e.printStackTrace();
 			throw new XmlParseException("A MathException was fired when adding an ComputeNormal 'equation' to the MembraneSubDomain " + name, e);
 		}
 	}
@@ -4489,7 +4363,6 @@ private MeshSpecification getMeshSpecification(Element param, Geometry geometry)
 	try {
 		meshSpec.setSamplingSize( newsize);
 	} catch (java.beans.PropertyVetoException e) {
-		e.printStackTrace();
 		throw new XmlParseException("A PropertyVetoException was fired when setting the ISize object to a new MeshSpecification", e);
 	}
 	
@@ -4636,10 +4509,9 @@ public Model getModel(Element param) throws XmlParseException {
 			newmodel.setDiagrams(newdiagrams);
 		}
 	} catch (java.beans.PropertyVetoException e) {
-		e.printStackTrace();
 		throw new XmlParseException(e);
 	} catch (ModelException e) {
-		e.printStackTrace();
+		lg.error(e);
 	}
 
 	// model param expresions are not bound when they are read in, since they could be functions of each other or structures/speciesContexts.
@@ -4649,8 +4521,7 @@ public Model getModel(Element param) throws XmlParseException {
 		try {
 			modelParameters[i].getExpression().bindExpression(newmodel);
 		} catch (ExpressionBindingException e) {
-			e.printStackTrace(System.out);
-			throw new RuntimeException("Error binding global parameter '" + modelParameters[i].getName() + "' to model."  + e.getMessage());
+			throw new RuntimeException("Error binding global parameter '" + modelParameters[i].getName() + "' to model."  + e.getMessage(), e);
 		}
 	}
 	return newmodel;
@@ -5031,7 +4902,6 @@ private ReactionRule getRbmReactionRule(Element reactionRuleElement, Model newMo
 		reactionRule.checkMatchConsistency();
 		return reactionRule;	
 	}catch (PropertyVetoException | ExpressionException ex){
-		ex.printStackTrace(System.out);
 		throw new RuntimeException("failed to parse kinetics for reaction rule '"+n+"': "+ex.getMessage(),ex);
 	}
 }
@@ -5488,7 +5358,6 @@ private PdeEquation getPdeEquation(Element param, MathDescription mathDesc) thro
 	    			try {
 	    				pdeEquation.addBoundaryConditionValue( getBoundaryConditionValue(tempelement, pdeEquation) );
 	    			} catch (MathException e) {
-	    				e.printStackTrace();
 	    				throw new XmlParseException("A MathException was fired when adding a BoundaryConditionValue to the compartmentSubDomain " + name, e);
 	    			}
 	    		}
@@ -5547,7 +5416,6 @@ private PdeEquation getPdeEquation(Element param, MathDescription mathDesc) thro
         	}
         }        
     } catch (Exception e) {
-        e.printStackTrace();
         throw new XmlParseException(e);
     }
 
@@ -5680,7 +5548,6 @@ private ReactionSpec getReactionSpec(Element param, SimulationContext simulation
 	try {
 		reactionspec.setReactionMapping( temp );
 	} catch (java.beans.PropertyVetoException e) {
-		e.printStackTrace();
 		throw new XmlParseException("A PropertyVetoException was fired when setting the reactionMapping value " + temp +", in a reactionSpec object!", e);
 	}
 
@@ -5733,7 +5600,6 @@ private SimpleReaction getSimpleReaction(Element param, Model model) throws XmlP
         	simplereaction.setSbmlName(unMangle(param.getAttributeValue(XMLTags.SbmlNameAttrTag)));
         }
     } catch (java.beans.PropertyVetoException e) {
-        e.printStackTrace();
         throw new XmlParseException("An error occurred while trying to create the simpleReaction " + name, e);
     }
 	//Annotation
@@ -5758,7 +5624,6 @@ private SimpleReaction getSimpleReaction(Element param, Model model) throws XmlP
 				simplereaction.setPhysicsOptions(SimpleReaction.PHYSICS_MOLECULAR_ONLY);
 			} 
 		}catch (java.beans.PropertyVetoException e){
-			e.printStackTrace(System.out);
 			throw new XmlParseException("A propertyVetoException was fired when setting the fluxOption to the flux reaction " + name, e);
 		}
 	}
@@ -5773,7 +5638,6 @@ private SimpleReaction getSimpleReaction(Element param, Model model) throws XmlP
 			simplereaction.addReactionParticipant(getReactant(temp, simplereaction, model));
 		}
 	} catch (java.beans.PropertyVetoException e) {
-		e.printStackTrace();
 		throw new XmlParseException("Error adding a reactant to the reaction "+ name, e);
 	}
 
@@ -5788,7 +5652,6 @@ private SimpleReaction getSimpleReaction(Element param, Model model) throws XmlP
 			simplereaction.addReactionParticipant(getProduct(temp, simplereaction, model));
         }
 	} catch (java.beans.PropertyVetoException e) {
-		e.printStackTrace();
 		throw new XmlParseException("Error adding a product to the reaction "+ name+" : ", e);
 	}
 
@@ -5801,7 +5664,6 @@ private SimpleReaction getSimpleReaction(Element param, Model model) throws XmlP
 			simplereaction.addReactionParticipant(getCatalyst(temp, simplereaction, model));
 		}
 	} catch (java.beans.PropertyVetoException e) {
-		e.printStackTrace();
 		throw new XmlParseException("Error adding a catalyst to the reaction "+ name, e);
 	}
  
@@ -5823,7 +5685,6 @@ private SimpleReaction getSimpleReaction(Element param, Model model) throws XmlP
 			}
 		}
 	} catch (NumberFormatException e) {
-		e.printStackTrace();
 		throw new XmlParseException("A NumberFormatException was fired when setting the (integer) valence '"+valenceString+"' (integer) to the reaction " + name, e);
 	}
 
@@ -5879,7 +5740,6 @@ Simulation getSimulation(Element param, MathDescription mathDesc, SimulationOwne
 	try {
 		simulation.setSolverTaskDescription( getSolverTaskDescription(param.getChild(XMLTags.SolverTaskDescriptionTag, vcNamespace), simulation) );
 	} catch (java.beans.PropertyVetoException e) {
-		e.printStackTrace();
 		throw new XmlParseException("A PropertyVetoException was fired when setting the SolverTaskDescroiption object to the Simulation object "+ name, e);
 	}
 	
@@ -5897,7 +5757,6 @@ Simulation getSimulation(Element param, MathDescription mathDesc, SimulationOwne
 		try {
 			simulation.setMeshSpecification( getMeshSpecification(tempElement, mathDesc.getGeometry()) );
 		} catch (java.beans.PropertyVetoException e) {
-			e.printStackTrace();
 			throw new XmlParseException("A ProperyVetoException was fired when setting the MeshSpecification to a new Simulation!", e);
 		}
 	}
@@ -6012,8 +5871,8 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 	Geometry newgeometry = null;
 	try {
 		newgeometry = getGeometry( param.getChild(XMLTags.GeometryTag, vcNamespace));
-	} catch (Throwable e) {
-		e.printStackTrace();
+	} catch (Exception e) {
+		lg.error(e.getMessage(), e);
 		String stackTrace = null;
 		try{
 			java.io.ByteArrayOutputStream bos = new java.io.ByteArrayOutputStream();
@@ -6062,8 +5921,7 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 					}
 				}
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				lg.error(e.getMessage(), e);
 			}
 		}
 	}
@@ -6077,7 +5935,6 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 	try {
 		newsimcontext = new SimulationContext(biomodel.getModel(), newgeometry, newmathdesc, version, bStoch, bRuleBased);
 	} catch (java.beans.PropertyVetoException e) {
-		e.printStackTrace(System.out);
 		throw new XmlParseException("A propertyveto exception was generated when creating the new SimulationContext " + name, e);
 	}
 	
@@ -6108,7 +5965,6 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 		}
 		 
 	} catch(Exception e) {
-		e.printStackTrace(System.out);
 		throw new XmlParseException("Exception", e);
 	} 
 	
@@ -6117,7 +5973,6 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 		try {
 			newsimcontext.setCharacteristicSize( Double.valueOf(tempchar) );
 		} catch (java.beans.PropertyVetoException e) {
-			e.printStackTrace(System.out);
 			throw new XmlParseException("A PropertyVetoException was fired when setting the CharacteristicSize "+ tempchar, e);
 		}
 	}
@@ -6139,7 +5994,6 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 		try {
 			newsimcontext.setSpatialObjects(spatialObjects);
 		} catch (PropertyVetoException e) {
-			e.printStackTrace(System.out);
 			throw new RuntimeException("Error adding spatialObjects to simulationContext", e);
 		}
 	}
@@ -6151,7 +6005,6 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 		try {
 			newsimcontext.setSimulationContextParameters(appParameters);
 		} catch (PropertyVetoException e) {
-			e.printStackTrace(System.out);
 			throw new RuntimeException("Error adding application parameters to simulationContext", e);
 		}
 	}
@@ -6178,12 +6031,8 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 		newsimcontext.getGeometryContext().setStructureMappings(structarray);
 		newsimcontext.getGeometryContext().refreshStructureMappings();
 		newsimcontext.refreshSpatialObjects();
-	} catch (MappingException e) {
-		e.printStackTrace();
-		throw new XmlParseException("A MappingException was fired when trying to set the StructureMappings array to the Geometrycontext of the SimContext "+ name, e);
-	} catch (java.beans.PropertyVetoException e) {
-		e.printStackTrace(System.out);
-		throw new XmlParseException("A PopertyVetoException was fired when trying to set the StructureMappings array to the Geometrycontext of the SimContext "+ name, e);
+	} catch (MappingException | PropertyVetoException e) {
+		throw new XmlParseException("failed to set the StructureMappings array to the Geometrycontext of the SimContext "+ name, e);
 	}
 	//
 	//-Process the ReactionContext-
@@ -6206,7 +6055,6 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 		try {
 			newsimcontext.getReactionContext().setReactionSpecs(reactionSpecs);
 		} catch (java.beans.PropertyVetoException e) {
-			e.printStackTrace(System.out);
 			throw new XmlParseException("A PropertyVetoException occurred while setting the ReactionSpecs to the SimContext " + name, e);
 		}
 	}
@@ -6218,7 +6066,6 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 		try {
 			newsimcontext.getReactionContext().setReactionRuleSpecs(reactionRuleSpecs);
 		} catch (PropertyVetoException e) {
-			e.printStackTrace(System.out);
 			throw new XmlParseException("A PropertyVetoException occurred while setting the ReactionRuleSpecs to the SimContext " + name,e);
 		}
 	}
@@ -6237,7 +6084,6 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 				outputFnContext.addOutputFunction(outputFunction);
 			}
 		} catch (PropertyVetoException e) {
-			e.printStackTrace(System.out);
 			throw new XmlParseException(e);		
 		}
 	}
@@ -6255,7 +6101,6 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 			try {
 				newsimcontext.setElectricalStimuli(electArray);
 			} catch (java.beans.PropertyVetoException e) {
-				e.printStackTrace(System.out);
 				throw new XmlParseException(e);
 			}
 		}
@@ -6267,7 +6112,6 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 			try{
 				newsimcontext.setGroundElectrode(groundElectrode);
 			} catch (java.beans.PropertyVetoException e) {
-				e.printStackTrace(System.out);
 				throw new XmlParseException(e);
 			}
 		}
@@ -6280,7 +6124,6 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 		try {
 			newsimcontext.setBioEvents(bioEvents);
 		} catch (PropertyVetoException e) {
-			e.printStackTrace(System.out);
 			throw new RuntimeException("Error adding events to simulationContext", e);
 		}
 	}
@@ -6292,7 +6135,6 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 		try {
 			newsimcontext.setSpatialProcesses(spatialProcesses);
 		} catch (PropertyVetoException e) {
-			e.printStackTrace(System.out);
 			throw new RuntimeException("Error adding spatialProcesses to simulationContext", e);
 		}
 	}
@@ -6304,7 +6146,6 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 		try {
 			newsimcontext.setRateRules(rateRules);
 		} catch (PropertyVetoException e) {
-			e.printStackTrace(System.out);
 			throw new RuntimeException("Error adding rate rules to simulationContext", e);
 		}
 	}
@@ -6314,7 +6155,6 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 		try {
 			newsimcontext.setAssignmentRules(assignmentRules);
 		} catch (PropertyVetoException e) {
-			e.printStackTrace(System.out);
 			throw new RuntimeException("Error adding assignment rules to simulationContext", e);
 		}
 	}
@@ -6329,7 +6169,6 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 					ParameterEstimationTask parameterEstimationTask = ParameterEstimationTaskXMLPersistence.getParameterEstimationTask(parameterEstimationTaskElement,newsimcontext);
 					analysisTaskList.add(parameterEstimationTask);
 				}catch (Exception e){
-					e.printStackTrace(System.out);
 					throw new XmlParseException("An Exception occurred when parsing AnalysisTasks of SimContext " + name, e);
 				}
 			}
@@ -6337,7 +6176,6 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 				AnalysisTask[] analysisTasks = (AnalysisTask[])BeanUtils.getArray(analysisTaskList,AnalysisTask.class);
 				newsimcontext.setAnalysisTasks(analysisTasks);
 			} catch (java.beans.PropertyVetoException e) {
-				e.printStackTrace(System.out);
 				throw new XmlParseException("A PropertyVetoException occurred when setting the AnalysisTasks of the SimContext " + name, e);
 			}
 		}
@@ -6354,7 +6192,7 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 //		try {
 //			StructureSizeSolver.updateUnitStructureSizes(newsimcontext, gc);
 //		} catch (Exception e) {
-//			e.printStackTrace();
+//			lg.error(e);
 //		}
 //	}
 	
@@ -6474,7 +6312,6 @@ private SimulationVersion getSimulationVersion(Element xmlVersion) throws XmlPar
 			SimpleDateFormat simpleDateFormat = new SimpleDateFormat(BeanUtils.vcDateFormat, Locale.US);
 			date = simpleDateFormat.parse(temp);
 		} catch (java.text.ParseException e) {
-			e.printStackTrace();
 			throw new XmlParseException("Invalid date:"+temp, e);
 		}
 	}
@@ -6545,7 +6382,6 @@ private SolverTaskDescription getSolverTaskDescription(Element param, Simulation
 			throw new XmlParseException("Unexpected task type: " + taskType);
 		}
 	} catch (java.beans.PropertyVetoException e) {
-		e.printStackTrace();
 		throw new XmlParseException("A PropertyVetoException was fired when setting the taskType: " + taskType, e);
 	}
 	int numProcessors = parseIntWithDefault(param, XMLTags.NUM_PROCESSORS, 1); 
@@ -6629,7 +6465,6 @@ private SolverTaskDescription getSolverTaskDescription(Element param, Simulation
 			solverTaskDesc.setMovingBoundarySolverOptions(mb);
 		}
 	} catch (java.beans.PropertyVetoException e) {
-		e.printStackTrace();
 		throw new XmlParseException(e);
 	}
 		
@@ -6695,11 +6530,7 @@ private SmoldynSimulationOptions getSmoldySimulationOptions(Element smoldySimula
 		if (temp != null) {
 			try {
 				sso.setGaussianTableSize(Integer.parseInt(temp));
-			} catch (NumberFormatException e) {
-				e.printStackTrace(System.out);
-				throw new XmlParseException(e);
-			} catch (PropertyVetoException e) {
-				e.printStackTrace(System.out);
+			} catch (NumberFormatException | PropertyVetoException e) {
 				throw new XmlParseException(e);
 			}
 		}
@@ -6787,8 +6618,7 @@ public ModelParameter getModelParameter(Element paramElement, Model model) throw
 		}
 		newGlParam.setModelParameterAnnotation(glParamAnnotation);
 		return newGlParam;
-	} catch (java.beans.PropertyVetoException e) {
-		e.printStackTrace();
+	} catch (PropertyVetoException e) {
 		throw new XmlParseException("An error occurred while trying to create the ModelParameter " + glParamName, e);
 	}
 }
@@ -6877,8 +6707,7 @@ private Species getSpecies(Element param) throws XmlParseException {
 		//read the data
 		try {
 			newspecie.setDBSpecies(getDBSpecies(dbspecieElement));
-		} catch (java.beans.PropertyVetoException e) {
-			e.printStackTrace();
+		} catch (PropertyVetoException e) {
 			throw new XmlParseException(e);
 		}
 	}
@@ -6934,7 +6763,7 @@ private SpeciesContext getSpeciesContext(Element param, Model model) throws XmlP
 		speciecontext.setSbmlName(sbmlName);
 	} catch (PropertyVetoException e) {		// can't happen here, whatever we saved must have been correct
 		// throw new XmlParseException("The SbmlName is invalid");
-		e.printStackTrace();
+		lg.error(e);
 	}
 	return speciecontext;
 }
@@ -6979,7 +6808,7 @@ private void getSpeciesContextSpecs(List<Element> scsChildren, ReactionContext r
 //	try {
 //		specspec.setEnableDiffusing( enabledif );
 //	} catch (MappingException e) {
-//		e.printStackTrace();
+//		lg.error(e);
 //		throw new XmlParseException("error setting the 'enableDiffusing' property of a SpeciesContext: "+e.getMessage());
 //	}
 		if (spatial!=null){
@@ -7026,7 +6855,6 @@ private void getSpeciesContextSpecs(List<Element> scsChildren, ReactionContext r
 	//		Expression expression = unMangleExpression(temp);
 	//		specspec.getInitialConditionParameter().setExpression(expression);
 		} catch (ExpressionException e) {
-			e.printStackTrace();
 			throw new XmlParseException("An expressionException was fired when setting the InitilaconditionExpression "+ temp + ", for a SpeciesContextSpec!", e);
 		}
 		//diffusion (if there is no diffusion information skip it)
@@ -7037,7 +6865,6 @@ private void getSpeciesContextSpecs(List<Element> scsChildren, ReactionContext r
 				Expression expression = unMangleExpression(temp);
 				specspec.getDiffusionParameter().setExpression(expression);
 			} catch (ExpressionException e) {
-				e.printStackTrace();
 				throw new XmlParseException("An ExpressionException was fired when setting the diffusionExpression " + temp + " to a SpeciesContextSpec!", e);
 			}
 		}
@@ -7077,7 +6904,6 @@ private void getSpeciesContextSpecs(List<Element> scsChildren, ReactionContext r
 					specspec.getBoundaryZpParameter().setExpression(unMangleExpression(temp));
 				}
 			} catch (ExpressionException e) {
-				e.printStackTrace();
 				throw new XmlParseException("An ExpressionException was fired when Setting the boundary Expression: " + unMangle(temp), e);
 			}
 		}
@@ -7110,7 +6936,6 @@ private void getSpeciesContextSpecs(List<Element> scsChildren, ReactionContext r
 					}
 				}
 			} catch (ExpressionException e) {
-				e.printStackTrace();
 				throw new XmlParseException("Error setting Velocity parameter for '" + specspec.getSpeciesContext().getName(), e);
 			}
 	        if (dummyVel) {
@@ -7500,7 +7325,6 @@ private void addResevedSymbols(VariableHash varHash, Model model) throws XmlPars
 		varHash.addVariable(new Constant(model.getK_GHK().getName(), new Expression(0.0)));
 		varHash.addVariable(new Constant(model.getTIME().getName(), new Expression(0.0)));
 	} catch (MathException e){
-		e.printStackTrace(System.out);
 		throw new XmlParseException("error reordering parameters according to dependencies", e);
 	}
 }
@@ -7528,7 +7352,7 @@ private VarIniCondition getVarIniCount(Element param, MathDescription md) throws
 	try {
 		VarIniCondition varIni= new VarIniCount(var,exp);
 		return varIni;		
-	} catch (Exception e){e.printStackTrace();}
+	} catch (Exception e){lg.error(e.getMessage(), e);}
 	
 	return null;	
 }
@@ -7575,7 +7399,7 @@ private VarIniCondition getVarIniPoissonExpectedCount(Element param, MathDescrip
 	try {
 		VarIniCondition varIni= new VarIniPoissonExpectedCount(var,exp);
 		return varIni;		
-	} catch (Exception e){e.printStackTrace();}
+	} catch (Exception e){lg.error(e.getMessage(), e);}
 	
 	return null;	
 }
@@ -7606,7 +7430,6 @@ VCImage getVCImage(Element param, Extent extent) throws XmlParseException{
 	try { 
 		newimage = new VCImageCompressed( version, data, extent, aNumX, aNumY, aNumZ);
 	} catch(ImageException e) {
-		e.printStackTrace();
 		throw new XmlParseException("An imageException occurred while trying to create a VCImage!", e);
 	}
 	//set attributes
@@ -7626,7 +7449,6 @@ VCImage getVCImage(Element param, Extent extent) throws XmlParseException{
 		}
 
 	} catch (java.beans.PropertyVetoException e) {
-		e.printStackTrace(System.out);
 		throw new XmlParseException(e);
 	}
 
@@ -7643,7 +7465,6 @@ VCImage getVCImage(Element param, Extent extent) throws XmlParseException{
 		try {
 			newimage.setPixelClasses(pixelClassArray);
 		}catch (java.beans.PropertyVetoException e){
-			e.printStackTrace(System.out);
 			throw new XmlParseException(e);
 		}
 	} else {//Invalid format
@@ -7709,7 +7530,6 @@ private Version getVersion(Element xmlVersion) throws XmlParseException {
 			SimpleDateFormat simpleDateFormat = new SimpleDateFormat(BeanUtils.vcDateFormat, Locale.US);
 			date = simpleDateFormat.parse(temp);
 		} catch (java.text.ParseException e) {
-			e.printStackTrace();
 			throw new XmlParseException("Invalid date:"+temp, e);
 		}
 	}
@@ -7766,7 +7586,7 @@ private VolumeRegionEquation getVolumeRegionEquation(Element param, MathDescript
 			Expression expression = new Expression( unMangle( temp) );
 			odeEquation.setExactSolution( expression);			
 		} catch (ExpressionException e) {
-			e.printStackTrace();
+			lg.error(e);
 			throw new XmlParseException("An ExpressionException was fired when creating the expression: "+ unMangle(temp)+" : "+e.getMessage());
 		}
 	}
@@ -7777,7 +7597,7 @@ private VolumeRegionEquation getVolumeRegionEquation(Element param, MathDescript
 			Expression expression = new Expression(unMangle(temp));
 			odeEquation.setConstructedSolution( expression );
 		} catch (ExpressionException e) {
-			e.printStackTrace();
+			lg.error(e);
 			throw new XmlParseException("An ExpressionException was fired when creating the expression: "+ unMangle(temp) +" : "+e.getMessage());
 		}
 	}*/

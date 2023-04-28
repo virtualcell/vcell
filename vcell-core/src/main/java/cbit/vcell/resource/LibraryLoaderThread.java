@@ -11,6 +11,7 @@ import org.vcell.util.BeanUtils;
  * if exception
  */
 public class LibraryLoaderThread extends Thread {
+	private final static Logger lg = LogManager.getLogger(LibraryLoaderThread.class);
 	private final boolean isGui;
 	
 	private static Logger logger = LogManager.getLogger(LibraryLoaderThread.class);
@@ -39,7 +40,7 @@ public class LibraryLoaderThread extends Thread {
 					
 				}
 			} catch (Exception e) {
-				e.printStackTrace();
+				lg.error(e.getMessage(), e);
 				if (sb == null) {
 					sb = new StringBuilder("Unable to load runtime libraries for ");
 					sb.append(newline);

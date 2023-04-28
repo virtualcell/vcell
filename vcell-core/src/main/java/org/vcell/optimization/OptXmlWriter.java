@@ -243,8 +243,7 @@ public class OptXmlWriter {
 						mappingExpression = new Expression(var.getName());
 					}
 				} catch (ExpressionException e) {
-					e.printStackTrace();
-					throw new OptimizationException(e.getMessage());
+					throw new OptimizationException(e.getMessage(), e);
 				}
 				modelMappingElement.addContent(mappingExpression.infix());
 				objectiveFunctionElement.addContent(modelMappingElement);
@@ -391,8 +390,7 @@ public class OptXmlWriter {
 				geoSurfaceDesc.setVolumeSampleSize(newSize);
 				geoSurfaceDesc.updateAll();		
 			} catch (Exception e) {
-				e.printStackTrace();
-				throw new SolverException(e.getMessage());
+				throw new SolverException(e.getMessage(), e);
 			}	
 			SimulationTask simTask = new SimulationTask(new SimulationJob(simulation, 0, pdeObjectiveFunction.getFieldDataIDSs()),0);
 			
@@ -404,8 +402,7 @@ public class OptXmlWriter {
 			CDATA simulationInputText = new CDATA(simulationInputStringWriter.getBuffer().toString());
 			modelElement.addContent(simulationInputText);
 		}catch (Exception e){
-			e.printStackTrace(System.out);
-			throw new OptimizationException("failed to create fv input file: "+e.getMessage());
+			throw new OptimizationException("failed to create fv input file: "+e.getMessage(), e);
 		}
 		return modelElement;
 	}

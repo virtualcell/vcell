@@ -119,8 +119,7 @@ public abstract class DataSource {
 			try {
 				return rowColumnResultSet.extractColumn(columnIndex);
 			} catch (ExpressionException e) {
-				e.printStackTrace();
-				throw new RuntimeException(e.getMessage());
+				throw new RuntimeException(e.getMessage(), e);
 			}
 		}
 

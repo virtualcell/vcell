@@ -96,8 +96,7 @@ void refresh() {
 	try {
 		refreshResolvedFluxes();
 	}catch (Exception e){
-		e.printStackTrace(System.out);
-		throw new RuntimeException(e.getMessage());
+		throw new RuntimeException(e.getMessage(), e);
 	}
 }
 /**
@@ -248,7 +247,7 @@ void refreshResolvedFluxes() throws Exception {
 	//
 	// for each reaction, incorporate all reactionSteps involving binding with volumetric species
 	//
-	double kMoleValue = Model.reservedConstantsMap.get(ReservedSymbolRole.KMOLE);
+	double kMoleValue = Double.parseDouble(mathMapping_4_8.getSimulationContext().getModel().getKMOLE().getExpression().infix());
 	for (int i=0;i<reactionSpecs.length;i++){
 		if (reactionSpecs[i].isExcluded()){
 			continue;

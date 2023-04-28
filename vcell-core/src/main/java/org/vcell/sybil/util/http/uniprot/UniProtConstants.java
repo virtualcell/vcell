@@ -10,6 +10,8 @@
 
 package org.vcell.sybil.util.http.uniprot;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.openrdf.model.Graph;
 import org.openrdf.model.URI;
 import org.openrdf.model.impl.URIImpl;
@@ -28,6 +30,8 @@ import org.vcell.sybil.util.http.uniprot.box.imp.UniProtBoxImp;
  */
 
 public class UniProtConstants {
+	private final static Logger lg = LogManager.getLogger(UniProtConstants.class);
+
 
 	public static final String urlBase = "http://www.uniprot.org/uniprot/";
 	public static final String uriBase = "http://purl.uniprot.org/uniprot/";
@@ -95,8 +99,7 @@ public class UniProtConstants {
 			Graph model = ((ModelResponse) response).model();
 			box.add(UniProtExtractor.extractBox(model));
 		} else if(response instanceof ExceptionResponse) {
-			System.out.println("an exception was thrown");
-			((ExceptionResponse) response).exception().printStackTrace();
+			lg.error(((ExceptionResponse) response).exception().getMessage(), ((ExceptionResponse) response).exception());
 		} else {
 			System.out.println("no model");
 		}

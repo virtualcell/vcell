@@ -45,7 +45,6 @@ public class CopasiServicePython {
 				throw new RuntimeException("copasi python solver (optService.py) failed with return code "+exe.getExitValue()+": "+exe.getStderrString());
 			}
 		} catch (ExecutableException e) {
-			e.printStackTrace();
 			throw new RuntimeException("optService.py invocation failed: "+e.getMessage(),e);
 		}
 	}

@@ -4,6 +4,9 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Date;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.h2.util.New;
 import org.restlet.Context;
 import org.restlet.Request;
 import org.restlet.Response;
@@ -27,6 +30,8 @@ import com.google.gson.Gson;
 import cbit.vcell.resource.PropertyLoader;
 
 public final class NewUserRestlet extends Restlet {
+	private final static Logger lg = LogManager.getLogger(NewUserRestlet.class);
+	
 	public NewUserRestlet(Context context) {
 		super(context);
 	}
@@ -73,12 +78,12 @@ public final class NewUserRestlet extends Restlet {
 				return;
 				
 			} catch (SQLException | DataAccessException e) {
-				e.printStackTrace();
+				lg.error(e);
 				response.setStatus(Status.SERVER_ERROR_INTERNAL);
 				response.setEntity("failed to add user "+newUserInfo.userid+": "+e.getMessage(), MediaType.TEXT_PLAIN);
 				return;
 			} catch (UseridIDExistsException e) {
-				e.printStackTrace();
+				lg.error(e);
 				response.setStatus(Status.CLIENT_ERROR_FORBIDDEN);
 				response.setEntity("failed to add user "+newUserInfo.userid+": "+e.getMessage(), MediaType.TEXT_PLAIN);
 				return;
@@ -108,7 +113,7 @@ public final class NewUserRestlet extends Restlet {
 					request.getResourceRef().getHostIdentifier()+"/"+VCellApiApplication.NEWUSER_VERIFY+"?"+VCellApiApplication.EMAILVERIFYTOKEN_FORMNAME+"="+emailVerifyToken.getString()
 				);
 			} catch (Exception e) {
-				e.printStackTrace();
+				lg.error(e.getMessage(), e);
 				response.setStatus(Status.SERVER_ERROR_INTERNAL);
 				response.setEntity("we failed to send a verification email to "+newUserInfo.email, MediaType.TEXT_PLAIN);
 				return;
@@ -128,7 +133,7 @@ public final class NewUserRestlet extends Restlet {
 			}
 			
 			String content = request.getEntityAsText();
-			System.out.println(content);
+			lg.info(content);
 			Form form = new Form(entity);
 			
 			String userid = form.getFirstValue(VCellApiApplication.NEWUSERID_FORMNAME,"");
@@ -222,7 +227,7 @@ public final class NewUserRestlet extends Restlet {
 					request.getResourceRef().getHostIdentifier()+"/"+VCellApiApplication.NEWUSER_VERIFY+"?"+VCellApiApplication.EMAILVERIFYTOKEN_FORMNAME+"="+emailVerifyToken.getString()
 				);
 			} catch (Exception e) {
-				e.printStackTrace();
+				lg.error(e.getMessage(), e);
 				response.setStatus(Status.SERVER_ERROR_INTERNAL);
 				response.setEntity("we failed to send a verification email to "+newUserInfo.email, MediaType.TEXT_PLAIN);
 			}

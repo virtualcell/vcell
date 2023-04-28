@@ -47,10 +47,15 @@ public class ParameterEstimationTaskSimulatorIDA {
 		SimulationTask simTask = new SimulationTask(new SimulationJob(simulation, 0, null),0);
 		IDASolverStandalone idaSolver = new IDASolverStandalone(simTask, ResourceUtil.getLocalSimDir("temp"), false);
 		idaSolver.runSolver();	//startSolver();
-		Thread.sleep(1000);
+		try {
+			Thread.sleep(1000);
+		}catch (InterruptedException e){}
 		long startTimeMS = System.currentTimeMillis();
 		while (idaSolver.getSolverStatus().isRunning() && System.currentTimeMillis() < (startTimeMS+10000L)){
-			Thread.sleep(500);
+			try {
+				Thread.sleep(500);
+			}catch (InterruptedException e){
+			}
 		}
 		ODESolverResultSet resultset = idaSolver.getODESolverResultSet();
 		return resultset;

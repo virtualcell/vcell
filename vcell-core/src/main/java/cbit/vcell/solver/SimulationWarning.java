@@ -60,7 +60,7 @@ class SimulationWarning {
 				Map<MembraneSubDomain, List<DiffusionValue>> diffusionValuesMap = analyzeDiffusion(simulation, timeStep, issueContext, issueList);
 				analyzeArea(simulation, timeStep, diffusionValuesMap, issueContext, issueList);
 			} catch (ExpressionException e) {
-				e.printStackTrace();
+				lg.error(e);
 			}
 		}
 	}

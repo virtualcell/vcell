@@ -21,12 +21,8 @@ import cbit.vcell.matrix.SimpleMatrix;
  * @author: Jim Schaff
  */
 public class SVDTest {
-/**
- * Insert the method's description here.
- * Creation date: (5/13/2003 4:37:34 PM)
- * @param matrix Jama.Matrix
- */
-public static RationalMatrix findNullSpaceSVD(RationalMatrix rA) {
+
+	public static RationalMatrix findNullSpaceSVD(RationalMatrix rA) {
 	try {
 		Jama.Matrix A = getJamaMatrix(rA);
 	    Jama.Matrix At = A.transpose();
@@ -69,15 +65,10 @@ public static RationalMatrix findNullSpaceSVD(RationalMatrix rA) {
 		//nsRationalMatrix.show();
 		return nsRationalMatrix;
 	}catch (Throwable e){
-		e.printStackTrace(System.out);
-		throw new RuntimeException(e.getMessage());
+		throw new RuntimeException(e.getMessage(), e);
 	}
 }
-/**
- * Insert the method's description here.
- * Creation date: (5/13/2003 4:37:34 PM)
- * @param matrix Jama.Matrix
- */
+
 public static RationalMatrix findNullSpaceVCell(RationalMatrix rA) {
 	try {
 		SimpleMatrix A = new SimpleMatrix(getJamaMatrix(rA).getArrayCopy());
@@ -86,9 +77,8 @@ public static RationalMatrix findNullSpaceVCell(RationalMatrix rA) {
 		RationalMatrixFast nsRationalMatrix = getRationalMatrixFast(ns);
 		//nsRationalMatrix.show();
 		return nsRationalMatrix;
-	}catch (Throwable e){
-		e.printStackTrace(System.out);
-		throw new RuntimeException(e.getMessage());
+	}catch (Exception e){
+		throw new RuntimeException(e.getMessage(), e);
 	}
 }
 /**
@@ -226,7 +216,7 @@ public static void main(java.lang.String[] args) {
 		RationalMatrixFast nsRationalMatrix = getRationalMatrixFast(matrix);
 		nsRationalMatrix.show();
     } catch (Throwable e) {
-        e.printStackTrace(System.out);
+        e.printStackTrace();
     }
 }
 }

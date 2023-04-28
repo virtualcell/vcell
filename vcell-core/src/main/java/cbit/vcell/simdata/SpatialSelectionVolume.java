@@ -27,28 +27,10 @@ import cbit.vcell.math.VariableType;
  */
 public class SpatialSelectionVolume extends SpatialSelection {
 
-	//
-	//
-	//
-	//
-/**
- * SpatialSelectionMesh constructor comment.
- * @param argCurveSelectionInfo cbit.vcell.geometry.CurveSelectionInfo
- * @param argVarType cbit.vcell.simdata.VariableType
- * @param argMesh cbit.vcell.solvers.CartesianMesh
- * @param sampledDataIndexes int[]
- * @param selectionKind int
- */
 public SpatialSelectionVolume(cbit.vcell.geometry.CurveSelectionInfo argCurveSelectionInfo, cbit.vcell.math.VariableType argVarType, cbit.vcell.solvers.CartesianMesh argMesh) {
 	super(argCurveSelectionInfo, argVarType, argMesh);
 }
-/**
- * Insert the method's description here.
- * Creation date: (10/4/2004 12:21:25 PM)
- * @return boolean
- * @param ci cbit.vcell.math.CoordinateIndex
- * @param ci2 cbit.vcell.math.CoordinateIndex
- */
+
 private boolean areTouching(org.vcell.util.CoordinateIndex ci1, org.vcell.util.CoordinateIndex ci2) {
 	
 	int dx = Math.abs(ci1.x-ci2.x);
@@ -61,13 +43,7 @@ private boolean areTouching(org.vcell.util.CoordinateIndex ci1, org.vcell.util.C
 
 	return true;
 }
-/**
- * Insert the method's description here.
- * Creation date: (10/4/2004 12:21:25 PM)
- * @return boolean
- * @param ci cbit.vcell.math.CoordinateIndex
- * @param ci2 cbit.vcell.math.CoordinateIndex
- */
+
 private boolean areTouchingFace(org.vcell.util.CoordinateIndex ci1, org.vcell.util.CoordinateIndex ci2) {
 	
 	int dx = Math.abs(ci1.x-ci2.x);
@@ -78,12 +54,7 @@ private boolean areTouchingFace(org.vcell.util.CoordinateIndex ci1, org.vcell.ut
 
 	return offCount == 1;
 }
-/**
- * Insert the method's description here.
- * Creation date: (2/26/2001 6:17:10 PM)
- * @return int[]
- * @param numSamples int
- */
+
 private int getConvertedIndexFromCI(CoordinateIndex ci) {
 
 	if (getVariableType().equals(VariableType.VOLUME) || getVariableType().equals(VariableType.POSTPROCESSING)){
@@ -94,45 +65,25 @@ private int getConvertedIndexFromCI(CoordinateIndex ci) {
 		throw new RuntimeException("SpatialSelection.getIndex(), unsupported VariableType = "+getVariableType());
 	}
 }
-/**
- * Insert the method's description here.
- * Creation date: (2/26/2001 6:17:10 PM)
- * @return int[]
- * @param numSamples int
- */
+
 private int getConvertedIndexFromU(double u) {
 	
 	Coordinate sampleCoordinate = getSamplingWorldCoordinate(u);
 	return getConvertedIndexFromWC(sampleCoordinate);
 }
-/**
- * Insert the method's description here.
- * Creation date: (2/26/2001 6:17:10 PM)
- * @return int[]
- * @param numSamples int
- */
+
 private int getConvertedIndexFromWC(Coordinate wc) {
 
 	return getConvertedIndexFromCI(getCoordinateIndexFromWC(wc));
 
 }
-/**
- * Insert the method's description here.
- * Creation date: (10/5/2004 2:13:34 PM)
- * @return cbit.vcell.math.CoordinateIndex
- * @param wc cbit.vcell.geometry.Coordinate
- */
+
 private CoordinateIndex getCoordinateIndexFromWC(Coordinate wc) {
 	
 	Coordinate fi = getMesh().getFractionalCoordinateIndex(wc);
 	return getMesh().getCoordinateIndexFromFractionalIndex(fi);
 }
-/**
- * Insert the method's description here.
- * Creation date: (2/26/2001 6:17:10 PM)
- * @return int[]
- * @param numSamples int
- */
+
 public int getIndex(double u) {
 
 	return getConvertedIndexFromU(u);
@@ -144,12 +95,6 @@ private int getMeshIndexFromU(double u) {
 	return getMesh().getVolumeIndex(ci);
 }
 
-/**
- * Insert the method's description here.
- * Creation date: (2/26/2001 6:17:10 PM)
- * @return int[]
- * @param numSamples int
- */
 public SSHelper getIndexSamples(double begin,double end) {
 
 	//
@@ -391,14 +336,13 @@ private SSHelper makeSSHelper(int[] indexes,int indexCounter,Vector wcV,boolean 
 		try{
 			return resampleMeshBoundaries(finalIndexes,finalWC,bRecenter);
 		}catch(Exception e){
-			e.printStackTrace();
-			throw new RuntimeException("Error resampling mesh boundaries");
+			throw new RuntimeException("Error resampling mesh boundaries", e);
 		}
 //		SSHelper ssvHelper = null;
 //		try{
 //			ssvHelper = resampleMeshBoundaries(finalIndexes,finalWC,bRecenter);
 //		}catch(Throwable e){
-//			e.printStackTrace();
+//			lg.error(e);
 //		}
 //		if(ssvHelper != null){
 //			return ssvHelper;
@@ -424,13 +368,7 @@ private double midpoint(double[] segU,int count) {
 	}
 	return (segU[(count/2)-1] + segU[(count/2)])/2.0;
 }
-/**
- * Insert the method's description here.
- * Creation date: (10/9/2004 12:20:17 PM)
- * @return cbit.vcell.geometry.Coordinate
- * @param from cbit.vcell.geometry.Coordinate
- * @param to cbit.vcell.geometry.Coordinate
- */
+
 private Coordinate offsetCoordinate(Coordinate start, Coordinate towards) {
 
 	// Offset 1/10 the smallest mesh cell dimension length

@@ -221,11 +221,13 @@ class SEDMLWriter {
 	                varList.addContent(getXML(var, VariableType.COMPUTE_CHANGE));
 	            }
             }
-            Element paramList = new Element(SEDMLTags.COMPUTE_CHANGE_PARAMS);
-            node.addContent(paramList);
-            List<Parameter> params = computeChange.getListOfParameters();
-            for (Parameter param : params) {
-                paramList.addContent(getXML(param));
+            if(!computeChange.getListOfParameters().isEmpty()) {
+	            Element paramList = new Element(SEDMLTags.COMPUTE_CHANGE_PARAMS);
+	            node.addContent(paramList);
+	            List<Parameter> params = computeChange.getListOfParameters();
+	            for (Parameter param : params) {
+	                paramList.addContent(getXML(param));
+	            }
             }
             ASTToXMLElementVisitor astElementVisitor = new ASTToXMLElementVisitor();
             computeChange.getMath().accept(astElementVisitor);
@@ -423,10 +425,9 @@ class SEDMLWriter {
                                                                      // 'math'
                                                                      // attribute
                 } catch (Exception e) {
-                    e.printStackTrace(System.out);
                     throw new RuntimeException(
                             "Unable to process mathML for functional range '"
-                                    + fr.getId() + "' : " + e.getMessage());
+                                    + fr.getId() + "' : " + e.getMessage(), e);
                 }
             }
             return node;
@@ -612,11 +613,10 @@ class SEDMLWriter {
                                                                  // 'math'
                                                                  // attribute
             } catch (Exception e) {
-                e.printStackTrace(System.out);
                 throw new RuntimeException(
                         "Unable to process mathML for datagenerator '"
                                 + sedmlDataGen.getId() + "' : "
-                                + e.getMessage());
+                                + e.getMessage(), e);
             }
         }
 

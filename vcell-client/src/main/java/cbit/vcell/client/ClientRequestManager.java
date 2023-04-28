@@ -3863,6 +3863,9 @@ public class ClientRequestManager
 			if (name == null || name.isEmpty()) {
 				continue;
 			}
+			if(id.equals(name)) {
+				continue;
+			}
 			if (isRestrictedXYZT(name, vcBioModel)) {
 				continue;
 			}
@@ -3889,6 +3892,9 @@ public class ClientRequestManager
 			String id = mp.getName();
 			String name = mp.getSbmlName();
 			if (name == null || name.isEmpty()) {
+				continue;
+			}
+			if(id.equals(name)) {
 				continue;
 			}
 			if (isRestrictedXYZT(name, vcBioModel)) {
@@ -3918,6 +3924,9 @@ public class ClientRequestManager
 		if(name == null || name.isEmpty()) {
 			continue;
 		}
+		if(id.equals(name)) {
+			continue;
+		}
 		if(isRestrictedXYZT(name, vcBioModel)) {
 			continue;
 		}
@@ -3945,6 +3954,9 @@ public class ClientRequestManager
 			String id = rs.getName();
 			String name = rs.getSbmlName();
 			if (name == null || name.isEmpty()) {
+				continue;
+			}
+			if(id.equals(name)) {
 				continue;
 			}
 			if (isRestrictedXYZT(name, vcBioModel)) {

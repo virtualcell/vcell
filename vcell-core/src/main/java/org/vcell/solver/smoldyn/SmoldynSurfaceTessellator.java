@@ -16,6 +16,8 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.apache.commons.io.output.NullWriter;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.solver.smoldyn.SmoldynFileWriter.NotAConstantException;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.ISize;
@@ -51,6 +53,8 @@ import cbit.vcell.solver.server.SolverFileWriter;
 import cbit.vcell.solvers.MembraneElement;
 
 public class SmoldynSurfaceTessellator extends SolverFileWriter {
+
+	private final static Logger lg = LogManager.getLogger(SmoldynSurfaceTessellator.class);
 
 	private static final String PANEL_TRIANGLE_NAME_PREFIX = "tri";
 	protected Color[] colors = null;
@@ -179,7 +183,7 @@ public class SmoldynSurfaceTessellator extends SolverFileWriter {
 			dimension = geo.getDimension();
 			writeSurfaces( );
 		} catch (Exception e) {
-			e.printStackTrace();
+			lg.error(e.getMessage(), e);
 		}
 	}
 

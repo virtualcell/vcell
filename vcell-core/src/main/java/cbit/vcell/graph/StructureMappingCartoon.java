@@ -21,8 +21,11 @@ import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.model.Structure;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class StructureMappingCartoon extends GraphModel implements PropertyChangeListener {
+	private final static Logger lg = LogManager.getLogger(StructureMappingCartoon.class);
 	private SimulationContext simulationContext = null;
 	//private GeometryContext geometryContext = null;
 	private SubVolumeContainerShape subVolumeContainerShape = null;
@@ -41,7 +44,7 @@ public class StructureMappingCartoon extends GraphModel implements PropertyChang
 		try {
 			refreshAll();
 		} catch (Exception e) {
-			e.printStackTrace(System.out);
+			lg.error(e.getMessage(), e);
 		}
 	}
 

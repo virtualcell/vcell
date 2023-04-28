@@ -267,10 +267,10 @@ public class RuleAnalysis {
 //			final BNGExecutorService bngService = new BNGExecutorService(bngInput,NetworkGenerationRequirements.StandardTimeoutMS);
 //			bngOutput = bngService.executeBNG();
 //		} catch (RuntimeException ex) {
-//			ex.printStackTrace(System.out);
+//			lg.error(e);
 //			throw ex; //rethrow without losing context
 //		} catch (Exception ex) {
-//			ex.printStackTrace(System.out);
+//			lg.error(e);
 //			throw new RuntimeException(ex.getMessage());
 //		}
 //		

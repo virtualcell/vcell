@@ -45,7 +45,7 @@ public static void main(String[] args) {
 		}
 		
 	} catch (Throwable e) {
-		e.printStackTrace(System.out);
+		e.printStackTrace();
 	}
 }
 }

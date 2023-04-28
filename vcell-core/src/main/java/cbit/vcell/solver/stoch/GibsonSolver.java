@@ -63,7 +63,7 @@ public void cleanup()
 	{
 		printStochFile();
 	}catch (Throwable e){
-		e.printStackTrace(System.out);
+		lg.error(e);
 		fireSolverAborted(SimulationMessage.solverAborted(e.getMessage()));
 	}
 }
@@ -157,7 +157,7 @@ public ODESolverResultSet getStochSolverResultSet()
 		}
 		//
 	} catch (Exception e) {
-		e.printStackTrace(System.out);
+		lg.error(e.getMessage(), e);
 		return null;
 	} finally {
 		try {
@@ -183,18 +183,14 @@ public ODESolverResultSet getStochSolverResultSet()
 				Expression exp1 = new Expression(functions[i].getExpression());
 				try {
 					exp1 = simSymbolTable.substituteFunctions(exp1);
-				} catch (MathException e) {
-					e.printStackTrace(System.out);
-					throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
-				} catch (ExpressionException e) {
-					e.printStackTrace(System.out);
-					throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
+				} catch (MathException | ExpressionException e) {
+					throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage(), e);
 				}
 				try {
 					FunctionColumnDescription cd = new FunctionColumnDescription(exp1.flatten(),functions[i].getName(), null, functions[i].getName(), false);
 					stSolverResultSet.addFunctionColumn(cd);
 				}catch (ExpressionException e){
-					e.printStackTrace(System.out);
+					lg.error(e);
 				}
 			}
 		}
@@ -227,8 +223,7 @@ protected void initialize() throws SolverException
 		stFileWriter.write();
 	} catch (Exception e) {
 		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, SimulationMessage.solverAborted("Could not generate input file: " + e.getMessage())));
-		e.printStackTrace(System.out);
-		throw new SolverException("solver input file exception: " + e.getMessage());
+		throw new SolverException("solver input file exception: " + e.getMessage(), e);
 	} finally {
 		if (pw != null) {
 			pw.close();	
@@ -341,7 +336,7 @@ public void propertyChange(java.beans.PropertyChangeEvent event)
 			try {
 				printToFile(appMessage.getProgress());
 			}catch (IOException e){
-				e.printStackTrace(System.out);
+				lg.error(e);
 			}
 		}
 	}
@@ -358,8 +353,7 @@ private void writeLogFile() throws SolverException {
 		pw.println(ideDataFileName);
 		pw.close();
 	} catch (FileNotFoundException e) {
-		e.printStackTrace();
-		throw new SolverException(e.getMessage());
+		throw new SolverException(e.getMessage(), e);
 	} finally {
 		if (pw != null) {
 			pw.close();

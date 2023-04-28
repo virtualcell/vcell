@@ -1,6 +1,8 @@
 package org.vcell.rest.health;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.restlet.Context;
 import org.restlet.Request;
 import org.restlet.Response;
@@ -18,6 +20,7 @@ import org.vcell.rest.health.HealthService.NagiosStatus;
 import com.google.gson.Gson;
 
 public final class HealthRestlet extends Restlet {
+	private final static Logger lg = LogManager.getLogger(HealthRestlet.class);
 	
 	enum RequestType {
 		login,
@@ -107,7 +110,7 @@ public final class HealthRestlet extends Restlet {
 					}
 				}
 			} catch (Exception e) {
-				e.printStackTrace();
+				lg.error(e.getMessage(), e);
 				response.setStatus(Status.SERVER_ERROR_INTERNAL);
 				response.setEntity("failed to retrieve system health: "+e.getMessage(), MediaType.TEXT_PLAIN);
 			}

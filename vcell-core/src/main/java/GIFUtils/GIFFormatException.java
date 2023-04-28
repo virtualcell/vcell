@@ -27,4 +27,8 @@ public class GIFFormatException extends IOException
 	{
 		super(msg);
 	}
+	public GIFFormatException(String msg, Exception e)
+	{
+		super(msg, e);
+	}
 } // GIFException

@@ -14,8 +14,11 @@ public class TempSimulation extends Simulation {
 	public static final TreeMap<String,String> mapTempSimIDToOriginalSimID = new TreeMap<String,String>();
 	public static final TreeMap<String,String> mapTempSimIDToModelAppSim = new TreeMap<String,String>();
 	final private SimulationVersion tempSimVersion = SimulationVersion.createTempSimulationVersion();
+	final private Simulation originalSimulation;
+
 	public TempSimulation(Simulation simulation, boolean bCloneMath) {
 		super(simulation, bCloneMath);
+		originalSimulation = simulation;
 		mapTempSimIDToModelAppSim.put(tempSimVersion.getVersionKey().toString(), createModelAppSimName(simulation));		
 		mapTempSimIDToOriginalSimID.put(tempSimVersion.getVersionKey().toString(), (simulation.getVersion()==null || simulation.getVersion().getVersionKey()==null?"":simulation.getVersion().getVersionKey().toString()));
 	}
@@ -42,5 +45,9 @@ public class TempSimulation extends Simulation {
 	@Override
 	public SimulationInfo getSimulationInfo() {
 		return new SimulationInfo(null, tempSimVersion, VCellSoftwareVersion.fromSystemProperty());
+	}
+
+	public Simulation getOriginalSimulation() {
+		return originalSimulation;
 	}
 }

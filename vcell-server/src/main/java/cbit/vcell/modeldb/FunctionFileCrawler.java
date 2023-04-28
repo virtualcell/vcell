@@ -146,14 +146,14 @@ public static void main(String[] args) {
 		}
 		System.exit(0);
 	} catch (Exception ex) {
-		ex.printStackTrace(System.out);
+		lg.error(ex.getMessage(), ex);
 	} finally {
 		try {
 			if (conFactory != null) {
 				conFactory.close();
 			}
 		} catch (Throwable ex) {
-			ex.printStackTrace();
+			lg.error(ex);
 		}
 		System.exit(0);		
 	}
@@ -226,7 +226,7 @@ private void scan(File userDir, File outputDir) throws Exception {
 				System.err.println("Function file : " + fnFile.getName() + " does not exist.");
 			}
 		}
-		System.out.println("NUM Files with spaces in names : " + filesWithSpaceInNames + "; NUM Files with No spaces in names : " + (functionFiles.length - filesWithSpaceInNames));
+		lg.info("NUM Files with spaces in names : " + filesWithSpaceInNames + "; NUM Files with No spaces in names : " + (functionFiles.length - filesWithSpaceInNames));
 	} finally {
 		if (pw != null) {
 			pw.close();

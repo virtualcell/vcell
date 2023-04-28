@@ -9,6 +9,7 @@
  */
 
 package org.vcell.sbml.vcell;
+import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -256,8 +257,7 @@ public class StructureSizeSolver {
 
 			logger.trace("done");
 		}catch (ExpressionException e){
-			e.printStackTrace(System.out);
-			throw new Exception(e.getMessage());
+			throw new Exception(e.getMessage(), e);
 		}
 	}
 
@@ -413,8 +413,7 @@ public static void updateUnitStructureSizes(SimulationContext simContext, Geomet
 				myStructMappings[0].getUnitSizeParameter().setExpression(new Expression(1.0));
 				return;
 			}catch (ExpressionException e){
-				e.printStackTrace(System.out);
-				throw new RuntimeException(e.getMessage());
+				throw new RuntimeException(e.getMessage(), e);
 			}
 		}
 	}
@@ -600,12 +599,8 @@ public static void updateUnitStructureSizes(SimulationContext simContext, Geomet
 		}else{
 			throw new RuntimeException("cannot solve for size");
 		}
-	}catch (ExpressionException e){
-		e.printStackTrace(System.out);
-		throw new RuntimeException(e.getMessage());
-	}catch (java.beans.PropertyVetoException e){
-		e.printStackTrace(System.out);
-		throw new RuntimeException(e.getMessage());
+	}catch (ExpressionException | PropertyVetoException e){
+		throw new RuntimeException(e.getMessage(), e);
 	}
 }
 
@@ -623,8 +618,7 @@ public static void updateUnitStructureSizes(SimulationContext simContext, Geomet
 					myStructMappings[0].getUnitSizeParameter().setExpression(new Expression(1.0));
 					return;
 				}catch (ExpressionException e){
-					e.printStackTrace(System.out);
-					throw new RuntimeException(e.getMessage());
+					throw new RuntimeException(e.getMessage(), e);
 				}
 			}
 		}
@@ -799,12 +793,10 @@ public static void updateRelativeStructureSizes(SimulationContext simContext) th
 			}
 		}
 	}catch (NullPointerException e){
-		e.printStackTrace(System.out);
 		//DialogUtils.showErrorDialog("structure sizes must all be specified");
-		throw new Exception("structure sizes must all be specified");
+		throw new Exception("structure sizes must all be specified", e);
 	}catch (ExpressionException e){
-		e.printStackTrace(System.out);
-		throw new Exception(e.getMessage());
+		throw new Exception(e.getMessage(), e);
 	}
 }
 }

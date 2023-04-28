@@ -17,6 +17,8 @@ import java.util.Hashtable;
 import java.util.Vector;
 
 import org.apache.commons.math3.random.RandomDataGenerator;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.Compare;
 
 import cbit.vcell.math.Action;
@@ -59,6 +61,7 @@ import ucar.nc2.NetcdfFileWriteable;
  */
 
 public class NetCDFWriter {
+	private final static Logger lg = LogManager.getLogger(NetCDFWriter.class);
 
 	private String filename = null;
 	private SimulationTask simTask = null;
@@ -68,11 +71,7 @@ public class NetCDFWriter {
 	private Hashtable<String,Integer>[]  varInProbOrderHash = null;
 	private boolean bMessaging;
 
-	/**
-	 * another constructor
-	 * @param arg_simulation
-	 */
-	public NetCDFWriter(SimulationTask simTask, String fn, boolean argMessaging) 
+	public NetCDFWriter(SimulationTask simTask, String fn, boolean argMessaging)
 	{
 		this.simTask = simTask;
 		filename = fn;
@@ -248,8 +247,7 @@ public class NetCDFWriter {
 			try{
 				ncfile.create();
 			}catch(IOException ioe){
-				ioe.printStackTrace(System.err);
-				throw new IOException("Error creating hybrid file "+filename+": "+ioe.getMessage());
+				throw new IOException("Error creating hybrid file "+filename+": "+ioe.getMessage(),ioe);
 			}
 			
 			
@@ -405,15 +403,9 @@ public class NetCDFWriter {
 			    	Action [] actions = (Action[])reactions[i].getActions().toArray(new Action[reactions[i].getActions().size()]);
 			    	for(int j=0; j<actions.length; j++)
 			    	{
-			    		try{
-			    			actions[j].getOperand().evaluateConstant();
-			    			int coeff = (int)Math.round(actions[j].getOperand().evaluateConstant());
-			    			A7.setInt(idx.set(i,j), coeff);
-			    		}catch(ExpressionException ex)
-			    		{
-			    			ex.printStackTrace(System.err);
-			    			throw new ExpressionException(ex.getMessage());
-			    		}
+						actions[j].getOperand().evaluateConstant();
+						int coeff = (int)Math.round(actions[j].getOperand().evaluateConstant());
+						A7.setInt(idx.set(i,j), coeff);
 			    	}
 				}
 			    ncfile.write("Reaction_StoichCoeff", new int[2], A7);
@@ -526,30 +518,24 @@ public class NetCDFWriter {
 			    idx = A12.getIndex();
 			    for(int i=0; i<numSpecies.getLength(); i++)
 			    {
-			    	try{
-			    		VarIniCondition varIniCondition = subDomain.getVarIniCondition(vars.elementAt(i));
-			  			Expression varIniExp = varIniCondition.getIniVal();
-			  			varIniExp.bindExpression(simSymbolTable);
-						varIniExp = simSymbolTable.substituteFunctions(varIniExp).flatten();
-						double expectedCount = varIniExp.evaluateConstant();
-				  		long varCount = 0;
-				  		if(varIniCondition instanceof VarIniCount)
-				  		{
-				  			varCount = (long)expectedCount;
-				  		}
-				  		else
-				  		{
-				  			if(expectedCount > 0)
-				  			{
-				  				varCount = dist.nextPoisson(expectedCount);
-				  			}
-				  		}
-				  		A12.setLong(idx.set(i),varCount);
-			  		}catch(ExpressionException ex)
-			  		{
-			  			ex.printStackTrace(System.err);
-			  			throw new ExpressionException(ex.getMessage());
-			  		}
+					VarIniCondition varIniCondition = subDomain.getVarIniCondition(vars.elementAt(i));
+					Expression varIniExp = varIniCondition.getIniVal();
+					varIniExp.bindExpression(simSymbolTable);
+					varIniExp = simSymbolTable.substituteFunctions(varIniExp).flatten();
+					double expectedCount = varIniExp.evaluateConstant();
+					long varCount = 0;
+					if(varIniCondition instanceof VarIniCount)
+					{
+						varCount = (long)expectedCount;
+					}
+					else
+					{
+						if(expectedCount > 0)
+						{
+							varCount = dist.nextPoisson(expectedCount);
+						}
+					}
+					A12.setLong(idx.set(i),varCount);
 			    }
 			    ncfile.write("SpeciesIC", new int[1], A12);
 			    
@@ -565,11 +551,10 @@ public class NetCDFWriter {
 			    
 			} catch (IOException ioe)
 			{
-				ioe.printStackTrace(System.err);
-				throw new IOException("Error writing hybrid input file "+filename+": "+ioe.getMessage());
+				throw new IOException("Error writing hybrid input file "+filename+": "+ioe.getMessage(), ioe);
 			}catch(InvalidRangeException ire)
 			{
-				ire.printStackTrace(System.err);
+				lg.error(ire);
 				throw new InvalidRangeException("Error writing hybrid input file "+filename+": "+ire.getMessage());
 			}
 			
@@ -582,11 +567,6 @@ public class NetCDFWriter {
 		}		
 	}		
 			
-	/**
-	 * 
-	 * @param reacs
-	 * @return ReactionRateLaw[]
-	 */		
 	private  ReactionRateLaw[] getReactionRateLaws(Expression[] probs) throws ExpressionException, MathException
 	{
 		SimulationSymbolTable simSymbolTable = simTask.getSimulationJob().getSimulationSymbolTable();
@@ -639,7 +619,7 @@ public class NetCDFWriter {
 					results[i].setRateConstant(val);
 				}catch(Exception e)
 				{
-					e.printStackTrace(System.err);
+					lg.error(e.getMessage(), e);
 					throw new ExpressionException(e.getMessage());
 				}
 			}
@@ -654,7 +634,7 @@ public class NetCDFWriter {
 					results[i].setRateConstant(val);
 				}catch(Exception e)
 				{
-					e.printStackTrace(System.err);
+					lg.error(e.getMessage(), e);
 					throw new ExpressionException(e.getMessage());
 				}
 			}
@@ -672,7 +652,7 @@ public class NetCDFWriter {
 						results[i].setRateConstant(val);
 					}catch(Exception e)
 					{
-						e.printStackTrace(System.err);
+						lg.error(e.getMessage(), e);
 						throw new ExpressionException(e.getMessage());
 					}
 				}
@@ -687,7 +667,7 @@ public class NetCDFWriter {
 						results[i].setRateConstant(val);
 					}catch(Exception e)
 					{
-						e.printStackTrace(System.err);
+						lg.error(e.getMessage(), e);
 						throw new ExpressionException(e.getMessage());
 					}
 				}
@@ -718,7 +698,7 @@ public class NetCDFWriter {
 					results[i].setRateConstant(val);
 				}catch(Exception e)
 				{
-					e.printStackTrace(System.err);
+					lg.error(e.getMessage(), e);
 					throw new ExpressionException(e.getMessage());
 				}
 			}

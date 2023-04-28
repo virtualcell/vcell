@@ -20,10 +20,15 @@ import cbit.vcell.export.gloworm.atoms.AtomConstants;
 import cbit.vcell.export.gloworm.atoms.MediaData;
 import cbit.vcell.export.gloworm.atoms.SampleDescriptionEntry;
 import cbit.vcell.export.server.FileDataContainerManager;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 /**
  * This type was created in VisualAge.
  */
 public class VideoMediaChunk implements MediaChunk {
+	private final static Logger lg = LogManager.getLogger(VideoMediaChunk.class);
+
 	private File dataFile;
 	private String dataFormat;
 	private int width;
@@ -89,7 +94,7 @@ private void writeChunks(byte[] dataBytes, boolean bInitializeFile) throws IOExc
 		fw.seek(0);
 		fw.writeInt((int)dataFile.length());
 	}finally{
-		if(fw!= null){try{fw.close();}catch(Exception e){e.printStackTrace();}}
+		if(fw!= null){try{fw.close();}catch(Exception e){lg.error(e.getMessage(), e);}}
 	}
 }
 

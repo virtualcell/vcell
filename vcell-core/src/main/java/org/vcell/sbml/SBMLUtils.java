@@ -101,8 +101,7 @@ public abstract class SBMLUtils {
 			Element root = sDoc.getRootElement();
 			return root;
 		}catch (JDOMException e){
-			e.printStackTrace(System.out);
-			throw new SbmlException(e.getMessage());
+			throw new SbmlException(e.getMessage(), e);
 		}
 	}
 	

@@ -2430,7 +2430,7 @@ Element getXML(MathDescription mathdes) throws XmlParseException {
     	Variable vars [] = varHash.getReorderedVariables();
     	k = new ArrayList(java.util.Arrays.asList(vars)).iterator();
     } catch (cbit.vcell.mapping.MappingException e) {
-		e.printStackTrace();
+		lg.error(e);
 		return null;
     }*/
     while (enum1.hasMoreElements()) {

@@ -58,7 +58,7 @@ public static void main(java.lang.String[] args) {
 		}
 		
 	}catch (Throwable e){
-		e.printStackTrace(System.out);
+		e.printStackTrace();
 	}
 }
 }

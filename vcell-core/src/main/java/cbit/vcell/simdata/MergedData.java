@@ -16,6 +16,8 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.Vector;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
@@ -48,6 +50,7 @@ import cbit.vcell.xml.XmlParseException;
  * This type was created in VisualAge.
  */
 public class MergedData extends VCData {
+	private final static Logger lg = LogManager.getLogger(MergedData.class);
 
 	private double dataTimes[] = null;
 	private String[] dataSetPrefix = null;
@@ -239,8 +242,7 @@ public long getDataBlockTimeStamp(int dataType, double timepoint) throws DataAcc
 			latestTimeStamp = Math.max(latestTimeStamp, datatimeStamp);
 		}
 	} catch (IOException e) {
-		e.printStackTrace(System.out);
-		throw new DataAccessException("\n Error computing Timestamp for CompositeData! " + e.getMessage());
+		throw new DataAccessException("\n Error computing Timestamp for CompositeData! " + e.getMessage(), e);
 	}
  	
 	return latestTimeStamp;
@@ -282,10 +284,10 @@ private DataSetIdentifier getDataSetIdentifier(String identifier) {
 //			}
 //		} catch (FileNotFoundException e) {
 //			// TODO Auto-generated catch block
-//			e.printStackTrace();
+//			lg.error(e);
 //		} catch (IOException e) {
 //			// TODO Auto-generated catch block
-//			e.printStackTrace();
+//			lg.error(e);
 //		}
 //	}
 	return null;
@@ -301,8 +303,7 @@ public double[] getDataTimes() {
 	try {
 		dataTimes = getDatasetControllerImpl().getDataSetTimes(datasetsIDList[0]);
 	} catch (DataAccessException e) {
-		e.printStackTrace(System.out);
-		throw new RuntimeException("Failed to obtain dataTimes from referenceSimInfo "+datasetsIDList[0].getID()+"\n");
+		throw new RuntimeException("Failed to obtain dataTimes from referenceSimInfo "+datasetsIDList[0].getID()+"\n", e);
 	}
 	return dataTimes;
 }
@@ -342,17 +343,11 @@ public SymbolTableEntry getEntry(String identifier) {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (10/11/00 5:16:06 PM)
- * @return cbit.vcell.math.Function
- * @param name java.lang.String
- */
 public AnnotatedFunction getFunction(OutputContext outputContext,String identifier) {
 	try {
 		getFunctionDataIdentifiers(outputContext);
 	} catch (Exception ex) {
-		ex.printStackTrace(System.out);
+		lg.error(ex.getMessage(), ex);
 	}
 		
 	// Get the function from each annotatedFunction in annotatedFunctionList, check if name is same as 'identifier' argument
@@ -367,10 +362,6 @@ public AnnotatedFunction getFunction(OutputContext outputContext,String identifi
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (8/2/2004 10:14:40 AM)
- */
 private void getFunctionDataIdentifiers(OutputContext outputContext) throws DataAccessException, FileNotFoundException, IOException {
 	//
 	// add function names to VarName list that is returned
@@ -403,17 +394,11 @@ private void getFunctionDataIdentifiers(OutputContext outputContext) throws Data
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (10/11/00 5:16:06 PM)
- * @return cbit.vcell.math.Function
- * @param name java.lang.String
- */
 public AnnotatedFunction[] getFunctions(OutputContext outputContext) {
 	try {
 		getFunctionDataIdentifiers(outputContext);
 	} catch (Exception ex) {
-		ex.printStackTrace(System.out);
+		lg.error(ex.getMessage(), ex);
 	}
 	
 	ArrayList<AnnotatedFunction> functionsArr = new ArrayList<>();
@@ -432,12 +417,8 @@ public AnnotatedFunction[] getFunctions(OutputContext outputContext) {
 				AnnotatedFunction myfunc = new AnnotatedFunction(dataSetPrefix[i]+"."+myFuncs[j].getName(),myFuncs[j].getExpression(),myFuncs[j].getDomain(),myFuncs[j].getErrorString(),myFuncs[j].getFunctionType(),myFuncs[j].getFunctionCatogery());
 				functionsArr.add(myfunc);
 			}
-		} catch (ExpressionBindingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (DataAccessException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (ExpressionBindingException | DataAccessException e) {
+			lg.error(e);
 		}
 	}
 	
@@ -445,12 +426,6 @@ public AnnotatedFunction[] getFunctions(OutputContext outputContext) {
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return java.io.File
- * @param user cbit.vcell.server.User
- * @param simID java.lang.String
- */
 private synchronized File getFunctionsFile() throws FileNotFoundException, IOException {
 	File functionsFile = new File(userDirectory,dataInfo.getID()+".functions");
 	if (functionsFile.exists()){
@@ -466,25 +441,15 @@ private synchronized File getFunctionsFile() throws FileNotFoundException, IOExc
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return cbit.vcell.solvers.CartesianMesh
- */
 public CartesianMesh getMesh() throws DataAccessException, MathException {
 	try {
 		return getDatasetControllerImpl().getMesh(datasetsIDList[0]);
 	} catch (IOException e) {
-		e.printStackTrace(System.out);
-		throw new RuntimeException(e.getMessage());
+		throw new RuntimeException(e.getMessage(), e);
 	}
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (1/14/00 2:28:47 PM)
- * @return cbit.vcell.simdata.ODEDataBlock
- */
 public ODEDataBlock getODEDataBlock() throws DataAccessException {
 
 	ODESolverResultSet combinedODESolverRSet = new ODESolverResultSet();
@@ -501,7 +466,7 @@ public ODEDataBlock getODEDataBlock() throws DataAccessException {
 		}
 		times = refSimData.extractColumn(independentVarIndex);
 	} catch (ExpressionException e) {
-		e.printStackTrace(System.out);
+		lg.error(e);
 	}	
 
 	// Adding data/function columns to new resultSet
@@ -516,8 +481,7 @@ public ODEDataBlock getODEDataBlock() throws DataAccessException {
 			try {
 				newODErset = resampleODEData(refSimData, simData);
 			} catch (ExpressionException e) {
-				e.printStackTrace(System.out);
-				throw new RuntimeException("\n >>>> Could not resample data! <<<<\n");
+				throw new RuntimeException("\n >>>> Could not resample data! <<<<\n", e);
 			}
 		} else {
 			newODErset = simData;
@@ -567,7 +531,7 @@ public ODEDataBlock getODEDataBlock() throws DataAccessException {
 				FunctionColumnDescription newFcd = new FunctionColumnDescription(newExp, newColName, fcd.getParameterName(), newColName,fcd.getIsUserDefined());
 				combinedODESolverRSet.addFunctionColumn(newFcd);
 			} catch (ExpressionException e) {
-				e.printStackTrace(System.out);
+				lg.error(e);
 			}
 		}	
 	}
@@ -598,45 +562,23 @@ public ODEDataBlock getODEDataBlock() throws DataAccessException {
 	return new ODEDataBlock(odeDataInfo, odeSimData);
 }
 
-/**
- * This method was created in VisualAge.
- * @return cbit.vcell.simdata.ParticleDataBlock
- * @param double time
- */
 public ParticleDataBlock getParticleDataBlock(double time) throws DataAccessException, IOException {
 	throw new RuntimeException("Not yet implemented!");
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return boolean
- */
 public boolean getParticleDataExists() throws DataAccessException {
 	try {
 		return getDatasetControllerImpl().getParticleDataExists(datasetsIDList[0]);
 	} catch (IOException e) {
-		e.printStackTrace(System.out);
-		throw new DataAccessException(e.getMessage());
+		throw new DataAccessException(e.getMessage(), e);
 	}
 }
 
-
-/**
- * This method was created in VisualAge.
- * @return cbit.vcell.simdata.SimResultsInfo
- */
 public VCDataIdentifier getResultsInfoObject() {
 	return dataInfo;
 }
 
-
-/**
- * This method was created in VisualAge.
- * @return cbit.vcell.simdata.DataBlock
- * @param user cbit.vcell.server.User
- * @param simID java.lang.String
- */
 public SimDataBlock getSimDataBlock(OutputContext outputContext,String varName, double time) throws DataAccessException, IOException {
 	VCDataIdentifier vcDataID = getVCDataIdentifierFromDataId(varName);
 	if (vcDataID == null) {
@@ -699,8 +641,7 @@ public SimDataBlock getSimDataBlock(OutputContext outputContext,String varName, 
 			refMesh = getDatasetControllerImpl().getMesh(datasetsIDList[0]);
 			mesh = getDatasetControllerImpl().getMesh(vcDataID);
 		} catch (MathException e) {
-			e.printStackTrace(System.out);
-			throw new RuntimeException("Could not get Mesh for reference or given dataID");
+			throw new RuntimeException("Could not get Mesh for reference or given dataID", e);
 		}
 		
 		double[] spaceResampledData = null;
@@ -766,12 +707,6 @@ public SimDataBlock getSimDataBlock(OutputContext outputContext,String varName, 
 	}
 }
 
-/**
- * This method was created in VisualAge.
- * @return cbit.vcell.simdata.DataBlock
- * @param user cbit.vcell.server.User
- * @param simID java.lang.String
- */
 synchronized double[][][] getSimDataTimeSeries0(
 		OutputContext outputContext,
 		String varNames[],
@@ -1008,12 +943,6 @@ public DataIdentifier[] getVarAndFunctionDataIdentifiers(OutputContext outputCon
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (10/11/00 5:16:06 PM)
- * @return cbit.vcell.math.Function
- * @param name java.lang.String
- */
 private VCDataIdentifier getVCDataIdentifierFromDataId(String dataID){
 	//
 	// Given the composite dataIdentifier name for a variable in the merged data, extract the
@@ -1040,12 +969,6 @@ int[] getVolumeSize() throws IOException, DataAccessException {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (9/29/2003 2:04:19 PM)
- * @param sim1 cbit.vcell.simdata.SimulationData
- * @param sim2 cbit.vcell.simdata.SimulationData
- */
 private void mergeDatasets() throws DataAccessException, IOException {
 
 	// Method to merge 2 datasets. 
@@ -1104,12 +1027,6 @@ private void readFunctions(OutputContext outputContext) throws FileNotFoundExcep
 	}
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (10/11/00 1:28:51 PM)
- * @param function cbit.vcell.math.Function
- */
 private ODESolverResultSet resampleODEData(ODESimData refSimdata, ODESimData simData) throws ExpressionException {
 
 	// If simData and refSimdata times are equal, return simData without resampling.
@@ -1187,10 +1104,10 @@ public boolean isComsol() throws DataAccessException, IOException {
 	try {
 		return getDatasetControllerImpl().getIsComsol(datasetsIDList[0]);
 	} catch (DataAccessException e) {
-		e.printStackTrace(System.out);
+		lg.error(e);
 		throw e;
 	} catch (FileNotFoundException e) {
-		e.printStackTrace(System.out);
+		lg.error(e);
 		throw e;
 	}
 }
@@ -1199,10 +1116,10 @@ public boolean isChombo() throws DataAccessException, IOException {
 	try {
 		return getDatasetControllerImpl().getIsChombo(datasetsIDList[0]);
 	} catch (DataAccessException e) {
-		e.printStackTrace(System.out);
+		lg.error(e);
 		throw e;
 	} catch (FileNotFoundException e) {
-		e.printStackTrace(System.out);
+		lg.error(e);
 		throw e;
 	}
 }
@@ -1212,10 +1129,10 @@ public boolean isMovingBoundary() throws DataAccessException, IOException {
 	try {
 		return getDatasetControllerImpl().getIsMovingBoundary(datasetsIDList[0]);
 	} catch (DataAccessException e) {
-		e.printStackTrace(System.out);
+		lg.error(e);
 		throw e;
 	} catch (FileNotFoundException e) {
-		e.printStackTrace(System.out);
+		lg.error(e);
 		throw e;
 	}
 }

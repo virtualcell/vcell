@@ -24,9 +24,13 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
 
 public class Xref extends BioPaxObjectImpl implements UtilityClass {
+	private final static Logger lg = LogManager.getLogger(Xref.class);
+
 	private String db;
 	private String dbVersion;
 	private String id;
@@ -112,7 +116,7 @@ public class Xref extends BioPaxObjectImpl implements UtilityClass {
 					buffReader.close();
 				}
 			} catch (Exception ex) {
-				ex.printStackTrace(System.out);
+				lg.error(ex.getMessage(), ex);
 			}
 		}
 		return from_id;	// we don't make a fuss, the browser will probably display a 404 error
@@ -187,15 +191,15 @@ public class Xref extends BioPaxObjectImpl implements UtilityClass {
 					}
 				}
 			}
-		} catch (Throwable e) {
+		} catch (Exception e) {
 			System.out.println("Uncaught exception in reactome old-new conversion main()");
-			e.printStackTrace(System.out);
+			lg.error(e.getMessage(), e);
 		} finally {
 			try {
 				reader.close();
 				writer.close();
 			} catch (IOException e) {
-				e.printStackTrace();
+				lg.error(e);
 			}
 		}
 	}

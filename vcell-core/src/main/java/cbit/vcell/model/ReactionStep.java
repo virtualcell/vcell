@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.*;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
@@ -54,6 +56,7 @@ public abstract class ReactionStep implements ModelProcess, Model.ElectricalTopo
 		Cacheable, Serializable, ScopedSymbolTable, Matchable, VetoableChangeListener, PropertyChangeListener, Identifiable, 
 		IssueSource, Displayable, VCellSbmlName, Relatable
 {
+	private final static Logger lg = LogManager.getLogger(ReactionStep.class);
 
 	public static final String PROPERTY_NAME_REACTION_PARTICIPANTS = "reactionParticipants";
 
@@ -193,8 +196,7 @@ public void addReactionParticipant(ReactionParticipant reactionParticipant) thro
 			ReactionParticipant newReactionParticipants[] = (ReactionParticipant[])BeanUtils.addElement(fieldReactionParticipants, reactionParticipant);
 			setReactionParticipants(newReactionParticipants);
 		}catch (Exception e){
-			e.printStackTrace(System.out);
-			System.out.println("exception: error adding reactionParticipant to reactionStep ..."+e.getMessage());
+			lg.warn("exception: error adding reactionParticipant to reactionStep ..."+e.getMessage(), e);
 			if(e instanceof PropertyVetoException) {
 				throw e;
 			}
@@ -767,7 +769,7 @@ public void propertyChange(PropertyChangeEvent evt) {
 					chargeValence.setExpression(new Expression(1.0));
 				}
 			}catch (ExpressionException e){
-				e.printStackTrace(System.out);
+				lg.error(e);
 			}
 		}
 	}
@@ -862,7 +864,7 @@ private void updateCatalysts() {
 		try {
 			removeReactionParticipant(rp);	// remove all catalysts
 		} catch (PropertyVetoException | ExpressionException | ModelException e) {
-			e.printStackTrace();
+			lg.error(e);
 		}
 	}
 	
@@ -876,7 +878,7 @@ private void updateCatalysts() {
 				try {
 					addCatalyst(sc);
 				} catch (PropertyVetoException | ModelException e) {
-					e.printStackTrace();	// we do nothing
+					lg.error(e);	// we do nothing
 				}
 			}
 		}
@@ -959,7 +961,7 @@ public void setKinetics(Kinetics kinetics) {
 			}
 		}
 	}catch (PropertyVetoException e){
-		e.printStackTrace(System.out);
+		lg.error(e);
 	}	
 	
 	firePropertyChange(PROPERTY_NAME_KINETICS, oldValue, kinetics);

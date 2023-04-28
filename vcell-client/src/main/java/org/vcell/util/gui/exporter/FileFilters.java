@@ -62,8 +62,8 @@ public class FileFilters {
 	public static final FileFilter FILE_FILTER_JPEG 		= new ExtensionFilter(".jpeg",	"JPEG Files (*.jpeg)");
 	public static final FileFilter FILE_FILTER_NRRD 	= new ExtensionFilter(".nrrd", 	"NRRD Files (*.nrrd)");
 	public static final FileFilter FILE_FILTER_ZIP 		= new ExtensionFilter(".zip", 	"ZIP Files (*.zip)");
-	public static final FileFilter FILE_FILTER_EXTERNALDOC	= new ExtensionFilter(new String[] {".xml",".vcml",".sbml", ".cellml", ".vfrap", ".bngl", ".omex", ".sedx", ".sedml"}, "Model Formats (.xml .vcml .sbml .cellml .vfrap .bngl .omex .sedx .sedml)");
-	public static final FileFilter FILE_FILTER_XML2 		= new ExtensionFilter(new String[] {".xml",".vcml",".sbml", ".cellml", ".vfrap"}, "XML Files (.xml .vcml .sbml .cellml .vfrap)");
+	public static final FileFilter FILE_FILTER_EXTERNALDOC	= new ExtensionFilter(new String[] {".xml",".vcml",".sbml", ".vfrap", ".bngl", ".omex", ".sedml"}, "Model Formats (.xml .vcml .sbml .vfrap .bngl .omex .sedml)");
+	public static final FileFilter FILE_FILTER_XML2 		= new ExtensionFilter(new String[] {".xml",".vcml",".sbml", ".vfrap"}, "XML Files (.xml .vcml .sbml .vfrap)");
 	
 	public static final FileFilter FILE_FILTER_VCML		= new VCMLExtensionFilter(); 
 	public static final FileFilter FILE_FILTER_PDF 		= new PDFExtensionFilter(); 

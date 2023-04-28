@@ -3086,7 +3086,8 @@ public void showTransMADialog()
 	boolean cancelable = true;
 	boolean bInputBlocking = false;		// default: false
 	ClientTaskDispatcher.dispatch(this, hashTable, tasks, progressDialog,
-			bShowProgressPopup, bKnowProgress, cancelable, null, bInputBlocking);
+			bShowProgressPopup, bKnowProgress, cancelable, null, bInputBlocking,
+			ClientTaskDispatcher.StopStrategy.THREAD_KILL);
 }
 
 public void showViewJobsDialog() {

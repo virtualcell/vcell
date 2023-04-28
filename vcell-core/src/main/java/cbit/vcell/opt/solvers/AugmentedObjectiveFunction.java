@@ -9,6 +9,8 @@
  */
 
 package cbit.vcell.opt.solvers;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.optimization.OptSolverCallbacks;
 
 import cbit.function.DefaultScalarFunction;
@@ -25,6 +27,8 @@ import cbit.vcell.solver.ode.ODESolverResultSet;
 
  
 public class AugmentedObjectiveFunction extends DefaultScalarFunction {
+	private final static Logger lg = LogManager.getLogger(AugmentedObjectiveFunction.class);
+
 	protected ScalarFunction fobj = null;
 	protected VectorFunction equalityConstraints = null;
 	protected VectorFunction inequalityConstraints = null;
@@ -73,7 +77,7 @@ public double f(double[] x) {
 
 		return penalty + objFunValue;
 	} catch (Exception e) {
-		e.printStackTrace(System.out);
+		lg.error(e.getMessage(), e);
 		System.out.println("penalty = "+penalty);
 		if (penalty > 0) {
 			System.out.println("too high ... aborting augmentedObjective function");

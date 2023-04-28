@@ -9,10 +9,12 @@ import org.jlibsedml.Variable;
 
 import java.io.File;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+/**
+ * 
+ */
 public class Hdf5DataSourceSpatialVarDataItem {
     public final Report sedmlReport;
     public final DataSet sedmlDataset;
@@ -28,16 +30,17 @@ public class Hdf5DataSourceSpatialVarDataItem {
     public int[] spaceTimeDimensions;
     public Map<String, String> varToDatasetPathMap;
 
-    public double[] getSpatialData() {
-        try (io.jhdf.HdfFile jhdfFile = new io.jhdf.HdfFile(Paths.get(hdf5File.toURI()))) {
-            Dataset dataset = jhdfFile.getDatasetByPath(varToDatasetPathMap.get(sedmlVariable.getName()));
-            if (dataset==null){
-                throw new RuntimeException("could not find data for variable "+sedmlVariable.getName());
-            }
-            return (double[])dataset.getDataFlat();
-        }
-    }
-
+    /**
+     * Standard constructor; needs more documentation
+     * 
+     * @param sedmlReport
+     * @param sedmlDataset
+     * @param sedmlVariable
+     * @param jobIndex
+     * @param hdf5File
+     * @param outputStartTime
+     * @param outputNumberOfPoints
+     */
     public Hdf5DataSourceSpatialVarDataItem(
             Report sedmlReport, DataSet sedmlDataset, Variable sedmlVariable,
             int jobIndex, File hdf5File, double outputStartTime, int outputNumberOfPoints) {
@@ -49,6 +52,21 @@ public class Hdf5DataSourceSpatialVarDataItem {
         this.outputStartTime = outputStartTime;
         this.outputNumberOfPoints = outputNumberOfPoints;
         parseMetadata();
+    }
+
+    /**
+     * Getter for spatial data
+     * 
+     * @return the data as a double array
+     */
+    public double[] getSpatialData() {
+        try (io.jhdf.HdfFile jhdfFile = new io.jhdf.HdfFile(Paths.get(hdf5File.toURI()))) {
+            Dataset dataset = jhdfFile.getDatasetByPath(varToDatasetPathMap.get(sedmlVariable.getName()));
+            if (dataset == null){
+                throw new RuntimeException("could not find data for variable "+sedmlVariable.getName());
+            }
+            return (double[])dataset.getDataFlat();
+        }
     }
 
     private void parseMetadata() {

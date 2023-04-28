@@ -82,15 +82,6 @@ public class FVSolverStandalone extends AbstractCompiledSolver {
 		this(simTask, userDir, userDir, bMsging);
 	}
 
-/**
- * This method was created by a SmartGuide.
- * @param mathDesc cbit.vcell.math.MathDescription
- * @param platform cbit.vcell.solvers.Platform
- * @param workingUserDir output files are generated into this directory during simulation
- * @param primaryUserDir in parallel, output files need to copy to this directory for users to see
- * @param simID java.lang.String
- * @param clientProxy cbit.vcell.solvers.ClientProxy
- */
 public FVSolverStandalone (SimulationTask simTask, File userDir, File destinationDirectory, boolean bMsging) throws SolverException {
 	super(simTask, userDir, bMsging);
 	this.destinationDirectory = destinationDirectory;
@@ -162,8 +153,7 @@ public Geometry getResampledGeometry() throws SolverException {
 			geoSurfaceDesc.setVolumeSampleSize(newSize);
 			geoSurfaceDesc.updateAll();		
 		} catch (Exception e) {
-			e.printStackTrace();
-			throw new SolverException(e.getMessage());
+			throw new SolverException(e.getMessage(), e);
 		}
 	}
 	return resampledGeometry;
@@ -199,8 +189,7 @@ protected void writeVCGAndResampleFieldData() throws SolverException {
 						}
 						psfFieldFunc = ffas[0];
 					} catch (ExpressionException e) {
-						e.printStackTrace();
-						throw new DataAccessException(e.getMessage());
+						throw new DataAccessException(e.getMessage(), e);
 					}
 				}
 			}			
@@ -278,7 +267,7 @@ protected void initialize() throws SolverException {
 						}
 					}
 				}catch(Exception e){
-					e.printStackTrace();
+					lg.error(e.getMessage(), e);
 					//ignore
 				}
 				
@@ -288,8 +277,7 @@ protected void initialize() throws SolverException {
 				try {
 					functionFileGenerator.generateFunctionFile();
 				}catch (Exception e){
-					e.printStackTrace(System.out);
-					throw new RuntimeException("Error creating .function file for "+functionFileGenerator.getBasefileName()+e.getMessage());
+					throw new RuntimeException("Error creating .function file for "+functionFileGenerator.getBasefileName()+e.getMessage(), e);
 				}
 			}
 			
@@ -318,8 +306,7 @@ protected void initialize() throws SolverException {
 			}
 		}
 	} catch (Exception ex) {
-		ex.printStackTrace(System.out);
-		throw new SolverException(ex.getMessage());
+		throw new SolverException(ex.getMessage(), ex);
 	}
 }
 

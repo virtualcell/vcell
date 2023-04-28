@@ -13,6 +13,8 @@ import javax.script.ScriptException;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.solver.comsol.model.VCCConvectionDiffusionEquation;
 import org.vcell.solver.comsol.model.VCCGeomFeature;
 import org.vcell.solver.comsol.model.VCCGeomFeature.Keep;
@@ -38,6 +40,7 @@ import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.VCellConfiguration;
 
 public class ComsolServiceScripting implements ComsolService {
+	private final static Logger lg = LogManager.getLogger(ComsolServiceScripting.class);
 
 	private static ClassLoader comsolClassloader = null;
 	
@@ -538,8 +541,7 @@ buffer.append(	"print('(3) physics ConvectionDiffusionEquation for field name "+
 						try {
 							urls.add(f.toURI().toURL());
 						} catch (MalformedURLException e) {
-							e.printStackTrace();
-							throw new RuntimeException("failed to get URL for comsol dependency "+f.getAbsolutePath());
+							throw new RuntimeException("failed to get URL for comsol dependency "+f.getAbsolutePath(), e);
 						}
 					}
 				}
@@ -551,7 +553,7 @@ buffer.append(	"print('(3) physics ConvectionDiffusionEquation for field name "+
 			File jsFile = new File(javaFile.getParentFile(), javaFile.getName().replace(".java",".js"));
 			run(engine, vccModel, reportFile, javaFile, mphFile, jsFile);
 		} catch (Exception e) {
-			e.printStackTrace(System.err);
+			lg.error(e.getMessage(), e);
 		} finally {
 			Thread.currentThread().setContextClassLoader(origClassLoader);
 			System.out.println("disconnecting");

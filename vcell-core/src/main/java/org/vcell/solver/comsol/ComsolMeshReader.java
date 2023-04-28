@@ -34,17 +34,17 @@ public class ComsolMeshReader {
 		}
 	}
 
-	public static void main(String[] args) {
-		try {
-			System.getProperties().setProperty(PropertyLoader.installationRoot, "d:\\developer\\eclipse\\workspace_refactor\\VCell_6.1_userdata");
-			File comsolFile = new File("simoutput_multitime.txt");
-			VisMesh visMesh = new VisMesh();
-			read(visMesh, comsolFile);
-			System.out.println("done");
-		}catch (Exception e){
-			e.printStackTrace();
-		}
-	}
+//	public static void main(String[] args) {
+//		try {
+//			System.getProperties().setProperty(PropertyLoader.installationRoot, "d:\\developer\\eclipse\\workspace_refactor\\VCell_6.1_userdata");
+//			File comsolFile = new File("simoutput_multitime.txt");
+//			VisMesh visMesh = new VisMesh();
+//			read(visMesh, comsolFile);
+//			System.out.println("done");
+//		}catch (Exception e){
+//			lg.error(e);
+//		}
+//	}
 	
 	public static void read(VisMesh visMesh, File comsolFile) throws IOException{
 		ArrayList<Field> fields = new ArrayList<Field>();

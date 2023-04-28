@@ -11,6 +11,8 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.restlet.Component;
 import org.restlet.Restlet;
 import org.restlet.Server;
@@ -41,6 +43,8 @@ import cbit.vcell.xml.XmlHelper;
 import freemarker.template.Configuration;
 
 public class TestRestServerBlinov extends Restlet{
+
+	private final static Logger lg = LogManager.getLogger(TestRestServerBlinov.class);
 
 	private static ArrayList<BioModelRep> bioModelRepArr = new ArrayList<BioModelRep>();
 	private static Hashtable<String,File> mapBMidToFileName = new Hashtable<String,File>();
@@ -108,7 +112,7 @@ public class TestRestServerBlinov extends Restlet{
 					mapBMidToBiomodelRep.put(bm.getVersion().getVersionKey().toString(), bmrep);
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
-					e.printStackTrace();
+					lg.error(e.getMessage(), e);
 				}
 			}
 			//Create a Restlet server on local machine that will accept queries from a regular web browser
@@ -126,7 +130,7 @@ public class TestRestServerBlinov extends Restlet{
 			restletComponent.start();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			lg.error(e.getMessage(), e);
 		}
 
 	}

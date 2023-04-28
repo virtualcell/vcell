@@ -309,11 +309,9 @@ public static ASTNode getFormulaFromExpression(Expression expression, MathType m
 		}
 		expMathMLStr = cbit.vcell.parser.ExpressionMathMLPrinter.getMathML(mangledExpression, false, mathType, ExpressionMathMLPrinter.Dialect.SBML_SUBSET);
 	} catch (java.io.IOException e) {
-		e.printStackTrace(System.out);
-		throw new RuntimeException("Error converting expression to MathML string :" + e.getMessage());
+		throw new RuntimeException("Error converting expression to MathML string :" + e.getMessage(), e);
 	} catch (cbit.vcell.parser.ExpressionException e1) {
-		e1.printStackTrace(System.out);
-		throw new RuntimeException("Error converting expression to MathML string :" + e1.getMessage());
+		throw new RuntimeException("Error converting expression to MathML string :" + e1.getMessage(), e1);
 	}
 	
 	// Use libSBMl routines to convert MathML string to MathML document and a libSBML-readable formula string
@@ -426,8 +424,7 @@ private static void addGeometry(Model sbmlModel, MathModel vcMathModel) {
 		try {
 			vcGSD.updateAll();
 		} catch (Exception e) {
-			e.printStackTrace(System.out);
-			throw new RuntimeException("Unable to generate region images for geometry");
+			throw new RuntimeException("Unable to generate region images for geometry", e);
 		}
 	}
 	GeometricRegion[] vcGeometricRegions = vcGSD.getGeometricRegions();
@@ -516,8 +513,7 @@ private static void addGeometry(Model sbmlModel, MathModel vcMathModel) {
 //		try {
 //			compMapping.setUnitSize(1.0);
 //		} catch (ExpressionException e) {
-//			e.printStackTrace(System.out);
-//			throw new RuntimeException("Unable to create compartment mapping for structureMapping '" + compMapping.getId() +"' : " + e.getMessage());
+//			throw new RuntimeException("Unable to create compartment mapping for structureMapping '" + compMapping.getId() +"' : " + e.getMessage(), e);
 //		}
 	}
 
@@ -556,8 +552,7 @@ private static void addGeometry(Model sbmlModel, MathModel vcMathModel) {
 					ASTNode mathMLNode = ASTNode.readMathMLFromString(mathMLStr);
 					analyticVol.setMath(mathMLNode);
 				} catch (Exception e) {
-					e.printStackTrace(System.out);
-					throw new RuntimeException("Error converting VC subvolume expression to mathML" + e.getMessage());
+					throw new RuntimeException("Error converting VC subvolume expression to mathML" + e.getMessage(), e);
 				}
 			} else {
 				throw new RuntimeException("SBML AnalyticGeometry is null.");
@@ -610,8 +605,7 @@ private static void addGeometry(Model sbmlModel, MathModel vcMathModel) {
 
 			sampledField.setSamples(compressedBuffer.toString().trim());
 		} catch (ImageException | IOException e) {
-			e.printStackTrace(System.out);
-			throw new RuntimeException("Unable to export image from VCell to SBML : " + e.getMessage());
+			throw new RuntimeException("Unable to export image from VCell to SBML : " + e.getMessage(), e);
 		}
 	}
 }
@@ -641,7 +635,7 @@ public static void main(String[] args) {
 			fileWriter.write(sbmlString);
 		}
 	} catch (Throwable e) {
-		e.printStackTrace(System.out);
+		e.printStackTrace();
 	}
 }
 }

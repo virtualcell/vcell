@@ -18,6 +18,8 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.model.bngl.ASTModel;
 import org.vcell.model.bngl.BngUnitSystem;
 import org.vcell.model.bngl.BngUnitSystem.BngUnitOrigin;
@@ -59,6 +61,7 @@ import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 
 public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGenUpdaterCallback {
+	private final static Logger lg = LogManager.getLogger(BNGExecutorServiceMultipass.class);
 
 	private class CorrectedSR {	// corrected species and reactions, at the end of each iteration
 		
@@ -899,7 +902,7 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 				try {
 					model.removeStructure(struct, true);
 				} catch (PropertyVetoException e) {
-					e.printStackTrace();
+					lg.error(e);
 				}
 			}
 		}
@@ -1253,7 +1256,7 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 //	astModel = RbmUtils.importBnglFile(new StringReader(cBngInputString));
 //} catch (ParseException e) {
 //	// TODO Auto-generated catch block
-//	e.printStackTrace();
+//	lg.error(e);
 //	return "";
 //}
 //

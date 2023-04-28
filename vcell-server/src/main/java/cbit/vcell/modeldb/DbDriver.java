@@ -31,6 +31,7 @@ import java.util.TreeSet;
 import java.util.Vector;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.db.DatabaseSyntax;
@@ -161,18 +162,22 @@ public static void publishDirectly(Connection con,KeyValue[] publishTheseBiomode
 		String sql = "UPDATE "+BioModelTable.table.getTableName()+
 			" SET "+BioModelTable.table.privacy.getUnqualifiedColName()+"="+GroupAccess.GROUPACCESS_ALL.toString()+
 			" WHERE "+BioModelTable.table.id.getUnqualifiedColName()+" IN ("+StringUtils.join(publishTheseBiomodels, ',')+")";
+		if (lg.isDebugEnabled()) lg.debug(sql);
 		updateCleanSQL(con, sql);
 		sql = "UPDATE "+BioModelTable.table.getTableName()+" SET "+BioModelTable.table.versionFlag.getUnqualifiedColName()+"="+VersionFlag.Published.getIntValue()+
 			" WHERE "+BioModelTable.table.id.getUnqualifiedColName()+" IN ("+StringUtils.join(publishTheseBiomodels, ',')+")";
+		if (lg.isDebugEnabled()) lg.debug(sql);
 		updateCleanSQL(con, sql);
 	}
 	if(publishTheseMathmodels != null && publishTheseMathmodels.length>0) {
 		String sql = "UPDATE "+MathModelTable.table.getTableName()+
 			" SET "+MathModelTable.table.privacy.getUnqualifiedColName()+"="+GroupAccess.GROUPACCESS_ALL.toString()+
 			" WHERE "+MathModelTable.table.id.getUnqualifiedColName()+" IN ("+StringUtils.join(publishTheseMathmodels, ',')+")";
+		if (lg.isDebugEnabled()) lg.debug(sql);
 		updateCleanSQL(con, sql);
 		sql = "UPDATE "+MathModelTable.table.getTableName()+" SET "+MathModelTable.table.versionFlag.getUnqualifiedColName()+"="+VersionFlag.Published.getIntValue()+
 			" WHERE "+MathModelTable.table.id.getUnqualifiedColName()+" IN ("+StringUtils.join(publishTheseMathmodels, ',')+")";
+		if (lg.isDebugEnabled()) lg.debug(sql);
 		updateCleanSQL(con, sql);
 	}
 }
@@ -220,16 +225,19 @@ public static KeyValue savePublicationRep(Connection con,PublicationRep publicat
 			PublicationTable.table.pubdate.getUnqualifiedColName()+"="+(publicationRep.getDate()==null?"NULL":" TO_DATE('" + simpleDateFormat.format(publicationRep.getDate()) + "','"+YMD_FORMAT_STRING+"') ")+
 			" WHERE "+PublicationTable.table.id.getUnqualifiedColName()+"="+ pubID.toString();		
 		}
+		if (lg.isDebugEnabled()) lg.debug(sql);
 		updateCleanSQL(con, sql);
 		//Remove all current links to this publication
-		updateCleanSQL(con, "DELETE FROM "+PublicationModelLinkTable.table.getTableName()+" WHERE "+PublicationModelLinkTable.table.pubRef.getUnqualifiedColName()+"="+pubID.toString());
+		sql = "DELETE FROM "+PublicationModelLinkTable.table.getTableName()+" WHERE "+PublicationModelLinkTable.table.pubRef.getUnqualifiedColName()+"="+pubID.toString();
+		int changed = updateCleanSQL(con, sql);
 		//Add link table entry
-			if(publicationRep.getBiomodelReferenceReps() != null && publicationRep.getBiomodelReferenceReps().length > 0) {
+		if (publicationRep.getBiomodelReferenceReps() != null && publicationRep.getBiomodelReferenceReps().length > 0) {
 			for(BioModelReferenceRep bioModelReferenceRep:publicationRep.getBiomodelReferenceReps()) {
 				try {
-					updateCleanSQL(con, "INSERT INTO "+PublicationModelLinkTable.table.getTableName()+" VALUES ("+keyFactory.nextSEQ()+","+pubID.toString()+","+bioModelReferenceRep.getBmKey().toString()+",NULL)");
+					sql = "INSERT INTO "+PublicationModelLinkTable.table.getTableName()+" VALUES ("+keyFactory.nextSEQ()+","+pubID.toString()+","+bioModelReferenceRep.getBmKey().toString()+",NULL)";
+					changed = updateCleanSQL(con,sql);
 				} catch (Exception e) {
-					e.printStackTrace();
+					lg.error(e.getMessage(), e);
 					throw new SQLException("Error inserting biomodelKey="+bioModelReferenceRep.getBmKey().toString()+" link to publicationID="+pubID.toString()+"\n"+e.getMessage(),e);
 				}
 			}
@@ -237,9 +245,10 @@ public static KeyValue savePublicationRep(Connection con,PublicationRep publicat
 		if(publicationRep.getMathmodelReferenceReps() != null && publicationRep.getMathmodelReferenceReps().length > 0) {
 			for(MathModelReferenceRep mathModelReferenceRep:publicationRep.getMathmodelReferenceReps()) {
 				try {
-					updateCleanSQL(con, "INSERT INTO "+PublicationModelLinkTable.table.getTableName()+" VALUES ("+keyFactory.nextSEQ()+","+pubID.toString()+",NULL,"+mathModelReferenceRep.getMmKey().toString()+")");
+					sql = "INSERT INTO "+PublicationModelLinkTable.table.getTableName()+" VALUES ("+keyFactory.nextSEQ()+","+pubID.toString()+",NULL,"+mathModelReferenceRep.getMmKey().toString()+")";
+					changed = updateCleanSQL(con, sql);
 				} catch (Exception e) {
-					e.printStackTrace();
+					lg.error(e.getMessage(), e);
 					throw new SQLException("Error inserting mathmodelKey="+mathModelReferenceRep.getMmKey().toString()+" link to publicationID="+pubID.toString()+"\n"+e.getMessage(),e);
 				}
 			}
@@ -257,7 +266,7 @@ private static String parseWittid(String wittid) throws DataAccessException{
 	try {
 		return new Long(wittid).toString();
 	} catch (NumberFormatException e) {
-		e.printStackTrace();
+		lg.error(e);
 		throw new DataAccessException("Error parsing wittid='"+wittid+"', expecting integer.");
 	}
 }
@@ -322,9 +331,10 @@ public static void cleanupDeletedReferences(Connection con,User user,ExternalDat
 //				")"+
 //		")";
 			if(bPrintOnly){
-				System.out.println(sql+";");
+				lg.info(sql+";");
 			}else{
-				updateCleanSQL(con, sql);
+				if (lg.isDebugEnabled()) lg.debug(sql);
+				int changed = updateCleanSQL(con, sql);
 			}
 		
 			
@@ -378,9 +388,10 @@ public static void cleanupDeletedReferences(Connection con,User user,ExternalDat
 //				")"+
 //		")";
 			if(bPrintOnly){
-				System.out.println(sql+";");
+				lg.info(sql+";");
 			}else{
-				updateCleanSQL(con, sql);
+				if (lg.isDebugEnabled()) lg.debug(sql);
+				int changed = updateCleanSQL(con, sql);
 			}
 
 			
@@ -398,9 +409,10 @@ public static void cleanupDeletedReferences(Connection con,User user,ExternalDat
 				MathDescExternalDataLinkTable.table.extDataRef+" = "+extDataIDKey.toString()+
 			")";
 			if(bPrintOnly){
-				System.out.println(sql+";");
+				lg.info(sql+";");
 			}else{
-				updateCleanSQL(con, sql);
+				if (lg.isDebugEnabled()) lg.debug(sql);
+				int changed = updateCleanSQL(con, sql);
 			}
 			
 	} catch (SQLException e) {
@@ -440,9 +452,9 @@ public static void cleanupDeletedReferences(Connection con,User user,ExternalDat
 //				" WHERE "+SimulationTable.table.versionParentSimRef_ColumnName+" IS NOT NULL"+	
 //		")";
 //	if(bPrintOnly){
-//		System.out.println(sql+";");
+//		lg.info(sql+";");
 //	}else{
-//		updateCleanSQL(con, sql);
+//		int changed = updateCleanSQL(con, sql);
 //	}
 //	
 //	sql =
@@ -456,9 +468,9 @@ public static void cleanupDeletedReferences(Connection con,User user,ExternalDat
 //			" FROM "+BioModelSimContextLinkTable.table.getTableName()+
 //		")";	
 //	if(bPrintOnly){
-//		System.out.println(sql+";");
+//		lg.info(sql+";");
 //	}else{
-//		updateCleanSQL(con, sql);
+//		int changed = updateCleanSQL(con, sql);
 //	}
 //	
 //	sql = 
@@ -485,9 +497,9 @@ public static void cleanupDeletedReferences(Connection con,User user,ExternalDat
 //			" WHERE "+SimulationTable.table.mathRef.getQualifiedColName()+" IS NOT NULL	"+	
 //		")";										
 //	if(bPrintOnly){
-//		System.out.println(sql+";");
+//		lg.info(sql+";");
 //	}else{
-//		updateCleanSQL(con, sql);
+//		int changed = updateCleanSQL(con, sql);
 //	}
 //	
 //	sql =
@@ -506,9 +518,9 @@ public static void cleanupDeletedReferences(Connection con,User user,ExternalDat
 //			" FROM "+MathDescTable.table.getTableName()+				
 //		")";										
 //	if(bPrintOnly){
-//		System.out.println(sql+";");
+//		lg.info(sql+";");
 //	}else{
-//		updateCleanSQL(con, sql);
+//		int changed = updateCleanSQL(con, sql);
 //	}
 //	
 //	sql=
@@ -522,9 +534,9 @@ public static void cleanupDeletedReferences(Connection con,User user,ExternalDat
 //			" FROM "+SimContextTable.table.getTableName()+			
 //		")";										
 //	if(bPrintOnly){
-//		System.out.println(sql+";");
+//		lg.info(sql+";");
 //	}else{
-//		updateCleanSQL(con, sql);
+//		int changed = updateCleanSQL(con, sql);
 //	}
 }
 /**
@@ -575,13 +587,16 @@ public static VCDocumentInfo curate(CurateSpec curateSpec,Connection con,User us
 	String set = vTable.versionFlag.getUnqualifiedColName() + " = " + updatedVersionFlag.getIntValue();
 	String cond = vTable.id.getQualifiedColName() + " = " + vKey;
 	String sql = DatabasePolicySQL.enforceOwnershipUpdate(user,vTable,set,cond);
-	int numRowsProcessed = updateCleanSQL(con, sql);
+	if (lg.isDebugEnabled()) lg.debug(sql);
+	int changed = updateCleanSQL(con, sql);
 
 	//Clear XML
 	if(vType.equals(VersionableType.BioModelMetaData)){
-		updateCleanSQL(con,"DELETE FROM "+BioModelXMLTable.table.getTableName()+" WHERE "+BioModelXMLTable.table.bioModelRef.getQualifiedColName()+" = "+vKey.toString());
+		sql = "DELETE FROM "+BioModelXMLTable.table.getTableName()+" WHERE "+BioModelXMLTable.table.bioModelRef.getQualifiedColName()+" = "+vKey.toString();
+		changed = updateCleanSQL(con,sql);
 	}else if(vType.equals(VersionableType.MathModelMetaData)){
-		updateCleanSQL(con,"DELETE FROM "+MathModelXMLTable.table.getTableName()+" WHERE "+MathModelXMLTable.table.mathModelRef.getQualifiedColName()+" = "+vKey.toString());
+		sql = "DELETE FROM "+MathModelXMLTable.table.getTableName()+" WHERE "+MathModelXMLTable.table.mathModelRef.getQualifiedColName()+" = "+vKey.toString();
+		changed = updateCleanSQL(con,sql);
 	}
 
 	
@@ -655,9 +670,9 @@ protected void deleteVersionableInit(Connection con, User user, VersionableType 
 	//if(VersionTable.hasExternalRef(con,user,vType,versionKey)){
 	//	throw new DependencyException( vTable + ",id=" + versionKey + " has external references");
 	//}
-	updateCleanSQL(con,
-		"DELETE FROM "+SoftwareVersionTable.table.getTableName()+
-		" WHERE "+SoftwareVersionTable.table.versionableRef.toString() + " = " + versionKey.toString());
+	String sql = "DELETE FROM "+SoftwareVersionTable.table.getTableName()+
+			" WHERE "+SoftwareVersionTable.table.versionableRef.toString() + " = " + versionKey.toString();
+	int changed = updateCleanSQL(con,sql);
 
 
 
@@ -762,6 +777,7 @@ private static void findAllChildren(java.sql.Connection con, VersionableTypeVers
 				" AND " + vr.getLinkField().getQualifiedColName() + " = " + vtv.getVersion().getVersionKey() +
 				" AND " + table.ownerRef.getQualifiedColName() + " = " + userTable.id.getQualifiedColName();
 		}
+		if (lg.isDebugEnabled()) lg.debug(sql);
 		java.sql.Statement stmt = con.createStatement();
 		Vector<VersionableTypeVersion> allChildrenVTV = new Vector<VersionableTypeVersion>();
 		try { //Get KeyValues from statement and put into Vector, so we can close statement(good idea because we are recursive)
@@ -848,6 +864,7 @@ private static void findAllReferences(java.sql.Connection con, VersionableTypeVe
 				" AND " + vr.getLinkField().getQualifiedColName() + " = " + table.id.getQualifiedColName() +
 				" AND " + table.ownerRef.getQualifiedColName() + " = " + userTable.id.getQualifiedColName();
 		}
+		if (lg.isDebugEnabled()) lg.debug(sql);
 		java.sql.Statement stmt = con.createStatement();
 		Vector<VersionableTypeVersion> allReferencingVTV = new Vector<VersionableTypeVersion>();
 		try { //Get KeyValues from statement and put into Vector, so we can close statement(good idea because we are recursive)
@@ -902,6 +919,7 @@ protected static KeyValue[] getChildrenFromLinkTable(java.sql.Connection con, Ta
 	sql = 	"SELECT " + linkTable.getTableName() + "." + childField + 
 			" FROM " + linkTable.getTableName() + 
 			" WHERE " + linkTable.getTableName() + "." + parentField + " = " + parentKey;
+	if (lg.isDebugEnabled()) lg.debug(sql);
 
 	java.sql.Statement stmt = con.createStatement();
 	Vector<KeyValue> keyList = new Vector<KeyValue>();
@@ -928,7 +946,8 @@ private static KeyValue[] getExternalRefs(java.sql.Connection con,cbit.sql.Field
 	sql = 	"SELECT " + table.getTableName() + "." + table.id + 
 			" FROM " + table.getTableName() + 
 			" WHERE " + table.getTableName() + "." + field + " = " + versionKey;
-			
+	if (lg.isDebugEnabled()) lg.debug(sql);
+
 	java.sql.Statement stmt = null;
 	Vector<KeyValue> externalRefsV = new Vector<KeyValue>();
 	try {
@@ -958,7 +977,8 @@ protected static KeyValue getForeignRefByOwner(java.sql.Connection con,cbit.sql.
 			" WHERE " + table.getTableName() + "." + table.id + " = " + idKey +
 			" AND " + refTable.getTableName() + "." + refTable.id + " = " + table.getTableName() + "." + field +
 			" AND " + refTable.getTableName() + "." + refTable.ownerRef + " = " + owner.getID();
-			
+	if (lg.isDebugEnabled()) lg.debug(sql);
+
 	java.sql.Statement stmt = con.createStatement();
 	try {
 		java.sql.ResultSet rset = stmt.executeQuery(sql);
@@ -1413,7 +1433,7 @@ public static VCInfoContainer getVCInfoContainer(User user,Connection con, Datab
 	//										}
 	//									}
 	//		//							if(scanCount > 1) {
-	//		//								System.out.println("bmid="+bmID+" simid="+simID+" scans="+scanCount+" "+simName);
+	//		//								lg.info("bmid="+bmID+" simid="+simID+" scans="+scanCount+" "+simName);
 	//		//							}
 										bmInfo.addMathOverrides(simName, mathOverrideElements);
 									}
@@ -1430,7 +1450,7 @@ public static VCInfoContainer getVCInfoContainer(User user,Connection con, Datab
 					}
 					
 				}catch(Exception e) {
-					e.printStackTrace();
+					lg.error(e.getMessage(), e);
 					//ignore
 				}
 			}
@@ -1548,7 +1568,7 @@ public static VCInfoContainer getVCInfoContainer(User user,Connection con, Datab
 						rset.close();
 					}
 				}catch(Exception e) {
-					e.printStackTrace();
+					lg.error(e.getMessage(), e);
 					//ignore
 				}
 			}
@@ -1629,7 +1649,7 @@ public static VCInfoContainer getVCInfoContainer(User user,Connection con, Datab
 			bm_mm_VCDocumentInfos.addAll(Arrays.asList((mathModelInfos!=null?mathModelInfos:new MathModelInfo[0])));
 			DbDriver.addPublicationInfos(con, stmt, bm_mm_VCDocumentInfos);
 		} catch (Exception e) {
-			e.printStackTrace();
+			lg.error(e.getMessage(), e);
 			//Don't fail if something goes wrong with setting publication info
 		}
 	}finally{
@@ -1672,7 +1692,7 @@ public static void addPublicationInfos(Connection con,Statement stmt,Vector<Vers
 			" vc_mathmodel.id=vc_publicationmodellink.mathmodelref and vc_userinfo.id=vc_mathmodel.ownerref"+
 			" and vc_publication.id=vc_publicationmodellink.pubref and vc_publicationmodellink.pubref is not null"+
 			" and vc_publicationmodellink.mathmodelref is not null");
-	System.out.println(sql);
+	lg.info(sql);
 	ResultSet rset = null;
 	try {
 		rset = stmt.executeQuery(sql);
@@ -1690,7 +1710,7 @@ public static void addPublicationInfos(Connection con,Statement stmt,Vector<Vers
 				//publicationInfoArr.add(publicationInfo);
 		}
 	} catch (Exception e) {
-		e.printStackTrace();
+		lg.error(e.getMessage(), e);
 		throw new DataAccessException(DbDriver.class.getName()+".getPublicationInfo(...) Error -"+e.getMessage(), e);
 	}finally {
 		if(rset != null) {rset.close();}
@@ -1755,7 +1775,7 @@ public static Vector<VersionInfo> getVersionableInfos(Connection con,User user, 
 	optimizedSQL.insert(7, Table.SQL_GLOBAL_HINT);
 	sql = optimizedSQL.toString();
 	//
-	//System.out.println("getVersionableInfo--->"+sql);
+	//lg.info("getVersionableInfo--->"+sql);
 	VersionInfo vInfo;
 	Vector<VersionInfo> vInfoList = new Vector<VersionInfo>();
 	//Connection con = conFact.getConnection();
@@ -1794,7 +1814,7 @@ public static Vector<VersionInfo> getVersionableInfos(Connection con,User user, 
 		try {
 			DbDriver.addPublicationInfos(con, stmt, vInfoList);
 		} catch (Exception e) {
-			e.printStackTrace();
+			lg.error(e.getMessage(), e);
 			//Don't fail if something goes wring with setting publication info
 		}
 	} finally {
@@ -1986,7 +2006,7 @@ public static void groupAddUser(Connection con, KeyFactory keyFactory, User owne
 				(isHiddenFromOwner?"1":"0")+","+
 				newHash +
 				" )";
-		updateCleanSQL(con,sql);
+		int changed = updateCleanSQL(con,sql);
 
 		if(currentVersion.getGroupAccess() instanceof GroupAccessSome){
 			// Add all the old Normal Users
@@ -2001,7 +2021,7 @@ public static void groupAddUser(Connection con, KeyFactory keyFactory, User owne
 						(false?"1":"0")+","+
 						newHash +
 						" )";
-				updateCleanSQL(con,sql);
+				changed = updateCleanSQL(con,sql);
 			}
 			// Add all the old Hidden Users
 			User[] hiddenUsers = ((GroupAccessSome)currentVersion.getGroupAccess()).getHiddenGroupMembers();
@@ -2015,7 +2035,7 @@ public static void groupAddUser(Connection con, KeyFactory keyFactory, User owne
 						(true?"1":"0")+","+
 						newHash +
 						" )";
-				updateCleanSQL(con,sql);
+				changed = updateCleanSQL(con,sql);
 			}
 		}
 	}
@@ -2024,7 +2044,7 @@ public static void groupAddUser(Connection con, KeyFactory keyFactory, User owne
 	String cond = vTable.id.getQualifiedColName() + " = " + vKey;
 				//" AND " + vTable.ownerRef.getQualifiedColName() + " = " + owner.getID();
 	sql = DatabasePolicySQL.enforceOwnershipUpdate(owner,vTable,set,cond);
-//System.out.println(sql);
+//lg.info(sql);
 	int numRowsProcessed = updateCleanSQL(con, sql);
 	
 	if (numRowsProcessed != 1){
@@ -2125,7 +2145,7 @@ public static void groupRemoveUser(Connection con,KeyFactory keyFactory, User ow
 						(false?"1":"0")+","+
 						newHash +
 						" )";
-				updateCleanSQL(con,sql);
+				int changed = updateCleanSQL(con,sql);
 			}
 		}
 		//
@@ -2143,7 +2163,7 @@ public static void groupRemoveUser(Connection con,KeyFactory keyFactory, User ow
 						(true?"1":"0")+","+
 						newHash +
 						" )";
-				updateCleanSQL(con,sql);
+				int changed = updateCleanSQL(con,sql);
 			}
 		}
 	}
@@ -2152,7 +2172,7 @@ public static void groupRemoveUser(Connection con,KeyFactory keyFactory, User ow
 	String cond = vTable.id.getQualifiedColName() + " = " + vKey;
 				//" AND " + vTable.ownerRef.getQualifiedColName() + " = " + owner.getID();
 	sql = DatabasePolicySQL.enforceOwnershipUpdate(owner,vTable,set,cond);
-//System.out.println(sql);
+//lg.info(sql);
 	int numRowsProcessed = updateCleanSQL(con, sql);
 	
 	if (numRowsProcessed != 1){
@@ -2188,7 +2208,7 @@ public static void groupSetPrivate(Connection con,User owner,
 	String set = vTable.privacy.getUnqualifiedColName() + " = " + updatedGroupID;
 	String cond = vTable.id.getQualifiedColName() + " = " + vKey;
 	String sql = DatabasePolicySQL.enforceOwnershipUpdate(owner,vTable,set,cond);
-//System.out.println(sql);
+//lg.info(sql);
 	int numRowsProcessed = updateCleanSQL(con, sql);
 	if (numRowsProcessed != 1){
 		//
@@ -2224,7 +2244,7 @@ public static void groupSetPublic(Connection con,User owner,
 	String cond = vTable.id.getQualifiedColName() + " = " + vKey;
 				//" AND " + vTable.ownerRef.getQualifiedColName() + " = " + owner.getID();
 	String sql = DatabasePolicySQL.enforceOwnershipUpdate(owner,vTable,set,cond);
-//System.out.println(sql);
+//lg.info(sql);
 	int numRowsProcessed = updateCleanSQL(con, sql);
 	if (numRowsProcessed != 1){
 		//
@@ -2244,11 +2264,10 @@ private void insertSoftwareVersion(Connection con, KeyValue versionKey) throws S
 	//
 	//Insert Software Version
 	//
-	updateCleanSQL(con,
-		"INSERT INTO "+SoftwareVersionTable.table.getTableName()+" "+
-		SoftwareVersionTable.table.getSQLColumnList()+
-		" VALUES "+SoftwareVersionTable.table.getSQLValueList(versionKey,keyFactory)
-		);
+	String sql = "INSERT INTO "+SoftwareVersionTable.table.getTableName()+" "+
+			SoftwareVersionTable.table.getSQLColumnList()+
+			" VALUES "+SoftwareVersionTable.table.getSQLValueList(versionKey,keyFactory);
+	int changed = updateCleanSQL(con, sql);
 }
 
 
@@ -2351,20 +2370,23 @@ public static void insertVersionableXML(Connection con,String xml,VersionableTyp
 	}else{
 		throw new IllegalArgumentException("vType " + vType + " not supported");
 	}
-	updateCleanSQL(con,"DELETE FROM "+xmlTableName +
-			" WHERE " + versionableRefColName + " = " + vKey.toString());
+	String sql = "DELETE FROM "+xmlTableName +
+			" WHERE " + versionableRefColName + " = " + vKey.toString();
+	int changed = updateCleanSQL(con,sql,UpdateExpectation.ROW_UPDATE_IS_POSSIBLE);
 
 	switch (dbSyntax){
 	case ORACLE:{
-		updateCleanSQL(con,"INSERT INTO "+xmlTableName+
-			" VALUES ("+keyFactory.nextSEQ()+","+vKey.toString()+",EMPTY_CLOB(),current_timestamp)");
+		sql = "INSERT INTO "+xmlTableName+
+				" VALUES ("+keyFactory.nextSEQ()+","+vKey.toString()+",EMPTY_CLOB(),current_timestamp)";
+		changed = updateCleanSQL(con,sql);
 		
 		updateCleanLOB(con,versionableRefColName,vKey,xmlTableName,xmlCol,xml,dbSyntax);
 		break;
 	}
 	case POSTGRES:{
-		updatePreparedCleanSQL(con,"INSERT INTO "+xmlTableName+
-				" VALUES ("+keyFactory.nextSEQ()+","+vKey.toString()+",?,current_timestamp)",xml);
+		sql = "INSERT INTO "+xmlTableName+
+				" VALUES ("+keyFactory.nextSEQ()+","+vKey.toString()+",?,current_timestamp)";
+		changed = updatePreparedCleanSQL(con,sql, xml);
 		break;
 	}
 	default:{
@@ -2412,7 +2434,7 @@ protected static boolean isNameUsed(Connection con, VersionableType vType, User 
 
 	boolean bNameUsed = false;
 	
-//System.out.println(sql);
+//lg.info(sql);
 	Statement stmt = con.createStatement();
 	try {
 		ResultSet rset = stmt.executeQuery(sql);
@@ -2459,7 +2481,7 @@ public static void replacePreferences(Connection con, KeyFactory keyFactory, Use
 		" WHERE " +
 			UserPreferenceTable.table.userRef.getQualifiedColName() + " = " + user.getID().toString();
 			
-	updateCleanSQL(con,sql);
+	int changed = updateCleanSQL(con,sql);
 	
 	PreparedStatement pstmt = null;
 	try{
@@ -2474,7 +2496,10 @@ public static void replacePreferences(Connection con, KeyFactory keyFactory, Use
 			String value = preferences[i].getValue();
 			pstmt.setString(1,TokenMangler.getSQLEscapedString(key));
 			pstmt.setString(2,TokenMangler.getSQLEscapedString(value));
-			pstmt.executeUpdate();
+			changed = pstmt.executeUpdate();
+			if (changed!=1){
+				lg.error(changed+" records changed: "+sql, new StackTraceGenerationException());
+			}
 		}
 	}finally{
 		if(pstmt != null){
@@ -2513,8 +2538,9 @@ protected void setVersioned(Connection con, User user,Versionable versionable) t
 				" WHERE " + vTable.id + " = " + versionable.getVersion().getVersionKey() +
 				//" AND " + vTable.versionFlag + " = " + VersionFlag.CURRENT +
 				" AND " + vTable.ownerRef + " = " + user.getID();
+		int changed = updateCleanSQL(con,sql);
 				
-		if (updateCleanSQL(con,sql)!=1){
+		if (changed!=1){
 			throw new DataAccessException("setVersioned failed for :"+versionable.getVersion());
 		}
 	}
@@ -2524,7 +2550,7 @@ protected void setVersioned(Connection con, User user,Versionable versionable) t
 public static void showMetaData(ResultSet rset) throws SQLException {
 	ResultSetMetaData metaData = rset.getMetaData();
 	for (int i = 1; i <= metaData.getColumnCount(); i++) {
-		System.out.println("column(" + i + ") = " + metaData.getColumnName(i));
+		lg.info("column(" + i + ") = " + metaData.getColumnName(i));
 	}
 }
 
@@ -2589,7 +2615,7 @@ public static TestSuiteNew testSuiteGet(BigDecimal getThisTS,Connection con,User
 			v.add(new VariableComparisonSummary(varName,minRef,maxRef,absError,relError,mse,timeAbsError,indexAbsError,timeRelError,indexRelError));
 //counter+= 1;
 		}
-//System.out.println("VCS count="+counter+" time="+((System.currentTimeMillis()-begTime)/1000));
+//lg.info("VCS count="+counter+" time="+((System.currentTimeMillis()-begTime)/1000));
 		rset.close();
 		}
 		
@@ -2623,7 +2649,7 @@ public static TestSuiteNew testSuiteGet(BigDecimal getThisTS,Connection con,User
 			TFTestCriteriaTable.table.simulationRef.getQualifiedColName()+"="+SimulationTable.table.id.getQualifiedColName()+
 			" ORDER BY UPPER("+SimulationTable.table.name.getQualifiedColName()+")";
 			
-//System.out.println(sql);
+//lg.info(sql);
 		rset = stmt.executeQuery(sql);
 		while(rset.next()){
 			BigDecimal tcritKey = rset.getBigDecimal(TFTestCriteriaTable.table.id.getUnqualifiedColName());
@@ -2704,7 +2730,7 @@ public static TestSuiteNew testSuiteGet(BigDecimal getThisTS,Connection con,User
 			}
 //counter+= 1;
 		}
-//System.out.println("TCrit count="+counter+" time="+((System.currentTimeMillis()-begTime)/1000));
+//lg.info("TCrit count="+counter+" time="+((System.currentTimeMillis()-begTime)/1000));
 		rset.close();
 		}
 
@@ -2740,7 +2766,7 @@ public static TestSuiteNew testSuiteGet(BigDecimal getThisTS,Connection con,User
 							" AND " +
 							TFTestCaseTable.table.bmAppRef.getQualifiedColName()+" IS NOT NULL ";
 			
-//System.out.println(sql);
+//lg.info(sql);
 		rset = stmt.executeQuery(sql);
 		while(rset.next()){
 			BigDecimal tcritKey = rset.getBigDecimal(TFTestCriteriaTable.table.id.getUnqualifiedColName());
@@ -2834,7 +2860,7 @@ public static TestSuiteNew testSuiteGet(BigDecimal getThisTS,Connection con,User
 			}
 //counter+= 1;
 		}
-//System.out.println("TCrit count="+counter+" time="+((System.currentTimeMillis()-begTime)/1000));
+//lg.info("TCrit count="+counter+" time="+((System.currentTimeMillis()-begTime)/1000));
 		rset.close();
 		}
 		
@@ -2972,7 +2998,7 @@ public static TestSuiteNew testSuiteGet(BigDecimal getThisTS,Connection con,User
 			
 //counter+= 1;
 		}
-//System.out.println("TCase count="+counter+" time="+((System.currentTimeMillis()-begTime)/1000));
+//lg.info("TCase count="+counter+" time="+((System.currentTimeMillis()-begTime)/1000));
 		rset.close();
 		
 		}
@@ -3332,13 +3358,12 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 				LoadTestSoftwareVersionTimeStamp[] deleteTheseVersTimeStamps =
 					((LoadTestInfoOP)tsop).getLoadTestSoftwareVersionTimeStamps();
 				for (int i = 0; i < deleteTheseVersTimeStamps.length; i++) {
-					sql =
-						"DELETE FROM "+LoadModelsStatTable.table.getTableName()+
+					sql = "DELETE FROM "+LoadModelsStatTable.table.getTableName()+
 						" WHERE "+
 						LoadModelsStatTable.table.softwareVers + " = " + "'"+deleteTheseVersTimeStamps[i].getSoftwareVersion()+"'"+
 						" AND " +
 						LoadModelsStatTable.table.timeStamp + " = " + "'"+deleteTheseVersTimeStamps[i].getRunTimeStamp()+"'";
-					DbDriver.updateCleanSQL(con, sql);
+					int changed = DbDriver.updateCleanSQL(con, sql);
 				}
 				return null;
 			}
@@ -3539,7 +3564,14 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 					changedTSKey+",'"+addts_tsop.getTestSuiteVersionID()+"',"+
 					"'"+addts_tsop.getVCellBuildVersionID()+"'"+","+"'"+addts_tsop.getNumericsBuildVersionID()+"'"+","+
 					"current_timestamp,current_timestamp,"+(annotation == null?"NULL":"'"+annotation+"'")+","+NOT_LOCKED+")";
-			stmt.executeUpdate(sql);
+			if (lg.isDebugEnabled()) {
+				lg.debug("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
+			}
+			int changed = stmt.executeUpdate(sql); // jcs: added logging
+			if (changed != 1) {
+				lg.error(changed + " records changed: " + sql, new StackTraceGenerationException());
+			}
+
 			if(addts_tsop.getAddTestCasesOPs() != null){
 				for(int i=0;i<addts_tsop.getAddTestCasesOPs().length;i+= 1){
 					//Set new TSKey and do child OPs
@@ -3596,10 +3628,17 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 			if(annotation != null){
 				annotation = TokenMangler.getSQLEscapedString(annotation);
 			}
-			stmt.executeUpdate(
-				"INSERT INTO "+TFTestCaseTable.table.getTableName()+" VALUES("+
+			sql = "INSERT INTO "+TFTestCaseTable.table.getTableName()+" VALUES("+
 					tcKey.toString()+","+addtc_tsop.getTestSuiteKey().toString()+",NULL,"+
-					"'"+addtc_tsop.getTestCaseType()+"'"+","+"'"+annotation+"'"+","+"current_timestamp"+","+bmSimContextLinkRef.toString()+")");
+					"'"+addtc_tsop.getTestCaseType()+"'"+","+"'"+annotation+"'"+","+"current_timestamp"+","+bmSimContextLinkRef.toString()+")";
+			if (lg.isDebugEnabled()) {
+				lg.debug("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
+			}
+			int changed = stmt.executeUpdate(sql); // jcs: added logging
+			if (changed!=1){
+				lg.error(changed+" records changed: "+sql, new StackTraceGenerationException());
+			}
+
 			if(addtc_tsop.getAddTestCriteriaOPsBioModel() != null){
 				for(int i=0;i<addtc_tsop.getAddTestCriteriaOPsBioModel().length;i+= 1){
 					//Set new TSKey,TCaseKey and do child OPs
@@ -3623,12 +3662,18 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 			if(annotation != null){
 				annotation = TokenMangler.getSQLEscapedString(annotation);
 			}
-			stmt.executeUpdate(
-				"INSERT INTO "+TFTestCaseTable.table.getTableName()+" VALUES("+
+			sql = "INSERT INTO "+TFTestCaseTable.table.getTableName()+" VALUES("+
 					tcKey.toString()+","+addtc_tsop.getTestSuiteKey().toString()+","+mmKey.toString()+","+
-					"'"+addtc_tsop.getTestCaseType()+"'"+","+"'"+annotation+"'"+","+"current_timestamp"+",NULL)");
-			if(addtc_tsop.getAddTestCriteriaOPsMathModel() != null){
-				for(int i=0;i<addtc_tsop.getAddTestCriteriaOPsMathModel().length;i+= 1){
+					"'"+addtc_tsop.getTestCaseType()+"'"+","+"'"+annotation+"'"+","+"current_timestamp"+",NULL)";
+			if (lg.isDebugEnabled()) {
+				lg.debug("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
+			}
+			int changed = stmt.executeUpdate(sql); // jcs: added logging
+			if (changed != 1) {
+				lg.error(changed + " records changed: " + sql, new StackTraceGenerationException());
+			}
+			if (addtc_tsop.getAddTestCriteriaOPsMathModel() != null) {
+				for (int i = 0; i < addtc_tsop.getAddTestCriteriaOPsMathModel().length; i += 1) {
 					//Set new TSKey,TCaseKey and do child OPs
 					AddTestCriteriaOPMathModel atcritOP = addtc_tsop.getAddTestCriteriaOPsMathModel()[i];
 					testSuiteOP(
@@ -3656,12 +3701,17 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 				changedTestSuiteKeys.add(rset.getBigDecimal(TFTestSuiteTable.table.id.getUnqualifiedColName()));			
 			}
 			rset.close();
-			
-			int numRowsUpdated = stmt.executeUpdate(
-				"DELETE FROM "+TFTestCaseTable.table.getTableName()+
-				" WHERE "+
-				TFTestCaseTable.table.id.getUnqualifiedColName()+" IN ("+sb.toString()+")"
-				);
+
+			sql = "DELETE FROM "+TFTestCaseTable.table.getTableName()+
+					" WHERE "+
+					TFTestCaseTable.table.id.getUnqualifiedColName()+" IN ("+sb.toString()+")";
+			if (lg.isDebugEnabled()) {
+				lg.debug("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
+			}
+			int numRowsUpdated = stmt.executeUpdate(sql); // jcs: added logging
+			if (numRowsUpdated != 1) {
+				lg.error(numRowsUpdated + " records changed: " + sql, new StackTraceGenerationException());
+			}
 			if(numRowsUpdated != removetc_tsop.getTestCasesKeys().length){
 				throw new DataAccessException("Remove TestCase keys="+sb.toString()+
 					" from TSKey="+removetc_tsop.getTestSuiteKey()+
@@ -3738,8 +3788,14 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 				"NULL,NULL,"+
 				"'"+TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT+"'"+",null"+
 				")";
-			stmt.executeUpdate(sql);
-			if(addtcrit_tsop.getRegressionMathModelSimKey() != null){
+			if (lg.isDebugEnabled()) {
+				lg.debug("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
+			}
+			int changed = stmt.executeUpdate(sql); // jcs: added logging
+			if (changed != 1) {
+				lg.error(changed + " records changed: " + sql, new StackTraceGenerationException());
+			}
+			if (addtcrit_tsop.getRegressionMathModelSimKey() != null) {
 				testSuiteOP(
 					new EditTestCriteriaOPMathModel(
 						tcritKey,
@@ -3836,7 +3892,13 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 				(addtcrit_tsop.getMaxAbsoluteError() != null?"CAST('"+addtcrit_tsop.getMaxAbsoluteError().toString()+"' as NUMERIC)":"null")+","+
 				"NULL,NULL,"+"'"+TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT+"'"+",null"+
 				")";
-			stmt.executeUpdate(sql);
+			if (lg.isDebugEnabled()) {
+				lg.debug("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
+			}
+			int changed = stmt.executeUpdate(sql); // jcs: added logging
+			if (changed != 1) {
+				lg.error(changed + " records changed: " + sql, new StackTraceGenerationException());
+			}
 			if(addtcrit_tsop.getRegressionBioModelSimKey() != null){
 				testSuiteOP(
 					new EditTestCriteriaOPBioModel(
@@ -3882,25 +3944,30 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 			}
 			rset.close();
 
-			int numRowsUpdated = stmt.executeUpdate(
-				"DELETE FROM " + TFTestCriteriaTable.table.getTableName() +
-				" WHERE " + TFTestCriteriaTable.table.id.getUnqualifiedColName() + " IN ("+sb.toString() + ")"
-				);
-			if(numRowsUpdated != removetcrit_tsop.getTestCriterias().length){
-				throw new DataAccessException("Remove TestCriteria keys="+sb.toString()+
-					" removed row count="+numRowsUpdated+" expected "+removetcrit_tsop.getTestCriterias().length);
+			sql = "DELETE FROM " + TFTestCriteriaTable.table.getTableName() +
+							" WHERE " + TFTestCriteriaTable.table.id.getUnqualifiedColName() + " IN ("+sb.toString() + ")";
+			if (lg.isDebugEnabled()) {
+				lg.debug("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
 			}
-		}else if(tsop instanceof RemoveTestSuiteOP){
-			RemoveTestSuiteOP removets_tsop = (RemoveTestSuiteOP)tsop;
-			int numRowsUpdated = stmt.executeUpdate(
-				"DELETE FROM "+TFTestSuiteTable.table.getTableName()+
-				" WHERE "+
-				TFTestSuiteTable.table.id.getUnqualifiedColName()+"="+removets_tsop.getTestSuiteKey().toString());
-			if(numRowsUpdated != 1){
-				throw new DataAccessException("Remove SINGLE TestSuite - key="+removets_tsop.getTestSuiteKey().toString()+" removed row count="+numRowsUpdated);
+			int numRowsUpdated = stmt.executeUpdate(sql); // jcs: added logging
+			if (numRowsUpdated != removetcrit_tsop.getTestCriterias().length) {
+				throw new DataAccessException("Remove TestCriteria keys=" + sb.toString() +
+						" removed row count=" + numRowsUpdated + " expected " + removetcrit_tsop.getTestCriterias().length);
+			}
+		}else if(tsop instanceof RemoveTestSuiteOP) {
+			RemoveTestSuiteOP removets_tsop = (RemoveTestSuiteOP) tsop;
+			sql = "DELETE FROM " + TFTestSuiteTable.table.getTableName() +
+					" WHERE " +
+					TFTestSuiteTable.table.id.getUnqualifiedColName() + "=" + removets_tsop.getTestSuiteKey().toString();
+			if (lg.isDebugEnabled()) {
+				lg.debug("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
+			}
+			int numRowsUpdated = stmt.executeUpdate(sql); // jcs: added logging
+			if (numRowsUpdated != 1) {
+				throw new DataAccessException("Remove SINGLE TestSuite - key=" + removets_tsop.getTestSuiteKey().toString() + " removed row count=" + numRowsUpdated);
 			}
 
-			changedTestSuiteKeys.add(removets_tsop.getTestSuiteKey());	
+			changedTestSuiteKeys.add(removets_tsop.getTestSuiteKey());
 		}else if(tsop instanceof AddTestResultsOP){
 			AddTestResultsOP addtr_tsop = (AddTestResultsOP)tsop;
 			VariableComparisonSummary[] vcs = addtr_tsop.getVariableComparisonSummaries();
@@ -3932,7 +3999,13 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 					"CAST('"+vcs[i].getTimeAbsoluteError()+"' as NUMERIC)"+","+"CAST('"+vcs[i].getIndexAbsoluteError()+"' as INTEGER)"+","+
 					"CAST('"+vcs[i].getTimeRelativeError()+"' as NUMERIC)"+","+"CAST('"+vcs[i].getIndexRelativeError()+"' as INTEGER)"+
 					")";
-				stmt.executeUpdate(sql);
+				if (lg.isDebugEnabled()) {
+					lg.debug("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
+				}
+				int changed = stmt.executeUpdate(sql); // jcs: added logging
+				if (changed != 1) {
+					lg.error(changed + " records changed: " + sql, new StackTraceGenerationException());
+				}
 			}
 			
 			rset = stmt.executeQuery(
@@ -3950,10 +4023,16 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 			StringBuffer sb = new StringBuffer();
 			for(int i=0;i<removetr_tsop.getTestCriteriaKeys().length;i+= 1){
 				if(i != 0){sb.append(",");}sb.append(removetr_tsop.getTestCriteriaKeys()[i].toString());
-				stmt.executeUpdate(
-					"DELETE FROM "+TFTestResultTable.table.getTableName()+
-					" WHERE "+
-					TFTestResultTable.table.testCriteriaRef.getUnqualifiedColName()+"="+removetr_tsop.getTestCriteriaKeys()[i].toString());
+				sql = "DELETE FROM "+TFTestResultTable.table.getTableName()+
+						" WHERE "+
+						TFTestResultTable.table.testCriteriaRef.getUnqualifiedColName()+"="+removetr_tsop.getTestCriteriaKeys()[i].toString();
+				if (lg.isDebugEnabled()) {
+					lg.debug("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
+				}
+				int changed = stmt.executeUpdate(sql);
+				if (changed!=1){
+					lg.error(changed+" records changed: "+sql, new StackTraceGenerationException());
+				}
 			}
 
 			ResultSet rset = stmt.executeQuery(
@@ -3991,15 +4070,20 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 				reportStatusMessage =
 					reportStatusMessage.substring(0,Math.min(TFTestCriteriaTable.MAX_MESSAGE_SIZE,reportStatusMessage.length()));
 			}
-			stmt.executeUpdate(
-				"UPDATE "+TFTestCriteriaTable.table.getTableName()+
-				" SET "+
+			sql = "UPDATE "+TFTestCriteriaTable.table.getTableName()+
+					" SET "+
 					TFTestCriteriaTable.table.reportStatus.getUnqualifiedColName()+"="+(newRS != null?"'"+newRS+"'":"null")+","+
 					TFTestCriteriaTable.table.reportMessage.getUnqualifiedColName()+"="+(reportStatusMessage!= null?"'"+reportStatusMessage+"'":"null")+
-				" WHERE "+TFTestCriteriaTable.table.id.getQualifiedColName()+"="+tcritKey.toString()
-				);
-			if(newRS.equals(TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT)){
-				testSuiteOP(new RemoveTestResultsOP(new BigDecimal[] {tcritKey}), con, user,keyFactory);
+					" WHERE "+TFTestCriteriaTable.table.id.getQualifiedColName()+"="+tcritKey.toString();
+			if (lg.isDebugEnabled()) {
+				lg.debug("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
+			}
+			int changed = stmt.executeUpdate(sql); // jcs: added logging
+			if (changed != 1) {
+				lg.error(changed + " records changed: " + sql, new StackTraceGenerationException());
+			}
+			if (newRS.equals(TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT)) {
+				testSuiteOP(new RemoveTestResultsOP(new BigDecimal[]{tcritKey}), con, user, keyFactory);
 			}
 
 			ResultSet rset = stmt.executeQuery(
@@ -4045,15 +4129,20 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 				}
 				rset.close();
 			}
-			stmt.executeUpdate(
-				"UPDATE "+TFTestCriteriaTable.table.getTableName()+
-				" SET "+
+			sql = "UPDATE "+TFTestCriteriaTable.table.getTableName()+
+					" SET "+
 					TFTestCriteriaTable.table.maxAbsError.getUnqualifiedColName()+"="+(maxAbsError != null?"CAST('"+maxAbsError.toString()+"' as NUMERIC)":"null")+","+
 					TFTestCriteriaTable.table.maxRelError.getUnqualifiedColName()+"="+(maxRelError != null?"CAST('"+maxRelError.toString()+"' as NUMERIC)":"null")+","+
 					TFTestCriteriaTable.table.regressionMMSimRef.getUnqualifiedColName()+"="+(regrMathModelSimLink != null?regrMathModelSimLink.toString():"null")+
-				" WHERE "+TFTestCriteriaTable.table.id.getUnqualifiedColName()+"="+tcritKey.toString()
-				);
-			testSuiteOP(new EditTestCriteriaOPReportStatus(tcritKey,TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT,null), con, user,keyFactory);
+					" WHERE "+TFTestCriteriaTable.table.id.getUnqualifiedColName()+"="+tcritKey.toString();
+			if (lg.isDebugEnabled()) {
+				lg.debug("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
+			}
+			int changed = stmt.executeUpdate(sql); // jcs: added logging
+			if (changed != 1) {
+				lg.error(changed + " records changed: " + sql, new StackTraceGenerationException());
+			}
+			testSuiteOP(new EditTestCriteriaOPReportStatus(tcritKey, TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT, null), con, user, keyFactory);
 
 			ResultSet rset = stmt.executeQuery(
 				"SELECT DISTINCT "+TFTestSuiteTable.table.id.getQualifiedColName()+
@@ -4113,18 +4202,22 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 				}
 				rset.close();
 			}
-
-			stmt.executeUpdate(
-				"UPDATE "+TFTestCriteriaTable.table.getTableName()+
-				" SET "+
+			sql = "UPDATE "+TFTestCriteriaTable.table.getTableName()+
+					" SET "+
 					TFTestCriteriaTable.table.maxAbsError.getUnqualifiedColName()+"="+(maxAbsError != null?"CAST('"+maxAbsError.toString()+"' as NUMERIC)":"null")+","+
 					TFTestCriteriaTable.table.maxRelError.getUnqualifiedColName()+"="+(maxRelError != null?"CAST('"+maxRelError.toString()+"' as NUMERIC)":"null")+","+
 					TFTestCriteriaTable.table.regressionBMAPPRef.getUnqualifiedColName()+"="+(bmscAppKey != null?bmscAppKey.toString():"NULL")+","+
 					TFTestCriteriaTable.table.regressionBMSimRef.getUnqualifiedColName()+"="+(bmsltSimKey != null?bmsltSimKey.toString():"NULL")+
-				" WHERE "+TFTestCriteriaTable.table.id.getQualifiedColName()+"="+tcritKey.toString()
-				);
-			testSuiteOP(new EditTestCriteriaOPReportStatus(tcritKey,TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT,null), con, user,keyFactory);
-			
+					" WHERE "+TFTestCriteriaTable.table.id.getQualifiedColName()+"="+tcritKey.toString();
+			if (lg.isDebugEnabled()) {
+				lg.debug("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
+			}
+			int changed = stmt.executeUpdate(sql); // jcs: added logging
+			if (changed != 1) {
+				lg.error(changed + " records changed: " + sql, new StackTraceGenerationException());
+			}
+			testSuiteOP(new EditTestCriteriaOPReportStatus(tcritKey, TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT, null), con, user, keyFactory);
+
 			ResultSet rset = stmt.executeQuery(
 				"SELECT DISTINCT "+TFTestSuiteTable.table.id.getQualifiedColName()+
 				" FROM "+TFTestSuiteTable.table.getTableName()+","+TFTestCaseTable.table.getTableName()+","+TFTestCriteriaTable.table.getTableName()+
@@ -4147,15 +4240,20 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 			for (int i = 0; i < tcritKeyArr.length; i++) {
 				if(i!= 0){tcritList.append(",");}
 				tcritList.append(tcritKeyArr[i]);
-				stmt.executeUpdate(
-					"UPDATE "+TFTestCriteriaTable.table.getTableName()+
-					" SET "+
-					(maxAbsErrorArr != null?TFTestCriteriaTable.table.maxAbsError.getUnqualifiedColName()+"="+maxAbsErrorArr[i]:"")+
-					(maxAbsErrorArr != null && maxRelErrorArr != null?",":"")+
-					(maxRelErrorArr != null?TFTestCriteriaTable.table.maxRelError.getUnqualifiedColName()+"="+maxRelErrorArr[i]:"")+
-					" WHERE "+TFTestCriteriaTable.table.id.getQualifiedColName()+"="+tcritKeyArr[i].toString()
-					);
-				testSuiteOP(new EditTestCriteriaOPReportStatus(tcritKeyArr[i],TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT,null), con, user, keyFactory);
+				sql = "UPDATE "+TFTestCriteriaTable.table.getTableName()+
+						" SET "+
+						(maxAbsErrorArr != null?TFTestCriteriaTable.table.maxAbsError.getUnqualifiedColName()+"="+maxAbsErrorArr[i]:"")+
+						(maxAbsErrorArr != null && maxRelErrorArr != null?",":"")+
+						(maxRelErrorArr != null?TFTestCriteriaTable.table.maxRelError.getUnqualifiedColName()+"="+maxRelErrorArr[i]:"")+
+						" WHERE "+TFTestCriteriaTable.table.id.getQualifiedColName()+"="+tcritKeyArr[i].toString();
+				if (lg.isDebugEnabled()) {
+					lg.debug("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
+				}
+				int changed = stmt.executeUpdate(sql); // jcs: added logging
+				if (changed != 1) {
+					lg.error(changed + " records changed: " + sql, new StackTraceGenerationException());
+				}
+				testSuiteOP(new EditTestCriteriaOPReportStatus(tcritKeyArr[i], TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT, null), con, user, keyFactory);
 			}
 			ResultSet rset = stmt.executeQuery(
 					"SELECT DISTINCT "+TFTestSuiteTable.table.id.getQualifiedColName()+
@@ -4188,12 +4286,17 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 							annotation = TokenMangler.getSQLEscapedString(annotation);
 						}
 					}
-					stmt.executeUpdate(
-						"UPDATE "+TFTestCaseTable.table.getTableName()+
-						" SET "+
+					sql = "UPDATE "+TFTestCaseTable.table.getTableName()+
+							" SET "+
 							TFTestCaseTable.table.tcAnnotation.getUnqualifiedColName()+"="+(annotation == null?"NULL":"'"+annotation+"'")+
-						" WHERE "+TFTestCaseTable.table.id.getQualifiedColName()+"="+tcaseKeys[i].toString()
-						);
+							" WHERE "+TFTestCaseTable.table.id.getQualifiedColName()+"="+tcaseKeys[i].toString();
+					if (lg.isDebugEnabled()) {
+						lg.debug("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
+					}
+					int changed = stmt.executeUpdate(sql); // jcs: added logging
+					if (changed != 1) {
+						lg.error(changed + " records changed: " + sql, new StackTraceGenerationException());
+					}
 				}
 				if(newSteadyStates != null){
 					//Make sure the change is for EXACT type
@@ -4224,13 +4327,18 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 					rset.close();
 					//Change SteadyState type for TestCase
 					boolean newSteadyState = newSteadyStates[i];
-					stmt.executeUpdate(
-						"UPDATE "+TFTestCaseTable.table.getTableName()+
-						" SET "+
+					sql = "UPDATE "+TFTestCaseTable.table.getTableName()+
+							" SET "+
 							TFTestCaseTable.table.tcSolutionType.getUnqualifiedColName()+"="+
 							(newSteadyState?"'"+TestCaseNew.EXACT_STEADY+"'":"'"+TestCaseNew.EXACT+"'")+
-						" WHERE "+TFTestCaseTable.table.id.getQualifiedColName()+"="+tcaseKeys[i].toString()
-						);
+							" WHERE "+TFTestCaseTable.table.id.getQualifiedColName()+"="+tcaseKeys[i].toString();
+					if (lg.isDebugEnabled()) {
+						lg.debug("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
+					}
+					int changed = stmt.executeUpdate(sql); // jcs: added logging
+					if (changed != 1) {
+						lg.error(changed + " records changed: " + sql, new StackTraceGenerationException());
+					}
 					//Change Report status
 					for (int j = 0; j < tcritKeyV.size(); j++) {
 						EditTestCriteriaOPReportStatus etcors = 
@@ -4262,13 +4370,18 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 				if(i != 0){sb.append(",");}sb.append(tsKeys[i].toString());
 				
 				if(editts_tsop.isLock() != null){
-					stmt.executeUpdate(
-							"UPDATE "+TFTestSuiteTable.table.getTableName()+
+					sql = "UPDATE "+TFTestSuiteTable.table.getTableName()+
 							" SET "+
-								TFTestSuiteTable.table.isLocked.getUnqualifiedColName()+"= 1"+
-							" WHERE "+TFTestSuiteTable.table.id.getQualifiedColName()+"="+tsKeys[i].toString()
-							);
-					
+							TFTestSuiteTable.table.isLocked.getUnqualifiedColName()+"= 1"+
+							" WHERE "+TFTestSuiteTable.table.id.getQualifiedColName()+"="+tsKeys[i].toString();
+					if (lg.isDebugEnabled()) {
+						lg.debug("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
+					}
+					int changed = stmt.executeUpdate(sql); // jcs: added logging
+					if (changed != 1) {
+						lg.error(changed + " records changed: " + sql, new StackTraceGenerationException());
+					}
+
 				}else{
 					if(annots != null){
 						String annotation = annots[i];
@@ -4279,12 +4392,17 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 								annotation = TokenMangler.getSQLEscapedString(annotation);
 							}
 						}
-						stmt.executeUpdate(
-							"UPDATE "+TFTestSuiteTable.table.getTableName()+
-							" SET "+
+						sql = "UPDATE "+TFTestSuiteTable.table.getTableName()+
+								" SET "+
 								TFTestSuiteTable.table.tsAnnotation.getUnqualifiedColName()+"="+(annotation == null?"NULL":"'"+annotation+"'")+
-							" WHERE "+TFTestSuiteTable.table.id.getQualifiedColName()+"="+tsKeys[i].toString()
-							);
+								" WHERE "+TFTestSuiteTable.table.id.getQualifiedColName()+"="+tsKeys[i].toString();
+						if (lg.isDebugEnabled()) {
+							lg.debug("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
+						}
+						int changed = stmt.executeUpdate(sql); // jcs: added logging
+						if (changed != 1) {
+							lg.error(changed + " records changed: " + sql, new StackTraceGenerationException());
+						}
 					}
 				}
 			}			
@@ -4572,7 +4690,7 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 
 	Object[] changedTSKeys = changedTestSuiteKeys.toArray();
 	for(int i=0;i<changedTSKeys.length;i+= 1){
-		System.out.println("TestSuite "+changedTSKeys[i].toString()+" changed");
+		lg.info("TestSuite "+changedTSKeys[i].toString()+" changed");
 		//testSuiteHash.remove(changedTSKeys[i]);
 	}
 	return new TestSuiteOPResults(null);
@@ -4592,7 +4710,7 @@ protected final static void updateCleanLOB(Connection con,String conditionalColu
 					" WHERE "+conditionalColumnName+" = " + conditionalValue +
 					" FOR UPDATE OF " + table+"."+column.getUnqualifiedColName();
 		//
-		//System.out.println(sql);
+		//lg.info(sql);
 		//
 		Statement s = con.createStatement();
 		try {
@@ -4628,12 +4746,20 @@ protected final static void updateCleanLOB(Connection con,String conditionalColu
 	}	
 }
 
+public static class StackTraceGenerationException extends Exception {
+}
 
-/**
- * This method was created in VisualAge.
- * @param sql java.lang.String
- */
+public enum UpdateExpectation {
+	ROW_UPDATE_IS_POSSIBLE,
+	ROW_UPDATE_IS_EXPECTED
+}
+
 public static int updateCleanSQL(Connection con, String sql) throws SQLException {
+	UpdateExpectation updateExpectation = UpdateExpectation.ROW_UPDATE_IS_EXPECTED;
+	return updateCleanSQL(con,sql, updateExpectation);
+}
+
+public static int updateCleanSQL(Connection con, String sql, UpdateExpectation updateExpectation) throws SQLException {
 	if (sql == null || con == null) {
 		throw new IllegalArgumentException("Improper parameters for updateClean");
 	}
@@ -4642,7 +4768,15 @@ public static int updateCleanSQL(Connection con, String sql) throws SQLException
 	}
 	Statement s = con.createStatement();
 	try {
-		return s.executeUpdate(sql);
+		if (lg.isDebugEnabled()) {
+			lg.debug("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
+		}
+		int numRowsChanged = s.executeUpdate(sql); // jcs: added logging
+		if (numRowsChanged != 1) {
+			Level logLevel = (updateExpectation == UpdateExpectation.ROW_UPDATE_IS_POSSIBLE) ? Level.INFO : Level.ERROR;
+			lg.log(logLevel, numRowsChanged + " records changed: " + sql, new StackTraceGenerationException());
+		}
+		return numRowsChanged;
 	} finally {
 		s.close();
 	}
@@ -4664,7 +4798,11 @@ public static int updatePreparedCleanSQL(Connection con, String sql, String data
 	}
 	try (PreparedStatement ps = con.prepareStatement(sql)){
 		ps.setString(1, data);
-		return ps.executeUpdate();
+		int numRowsChanged = ps.executeUpdate();
+		if (numRowsChanged != 1){
+			lg.error(numRowsChanged + " records changed: " + sql, new StackTraceGenerationException());
+		}
+		return numRowsChanged;
 	}
 }
 
@@ -4684,7 +4822,11 @@ public static int updatePreparedCleanSQL(Connection con, String sql, byte[] data
 	}
 	try (PreparedStatement ps = con.prepareStatement(sql)){
 		ps.setBytes(1, data);
-		return ps.executeUpdate();
+		int numRowsChanged = ps.executeUpdate();
+		if (numRowsChanged != 1){
+			lg.error(numRowsChanged + " records changed: " + sql, new StackTraceGenerationException());
+		}
+		return numRowsChanged;
 	}
 }
 
@@ -4850,7 +4992,7 @@ public final static void varchar2_CLOB_update(
 	            marker_index,
 	            marker_index + INSERT_CLOB_HERE.length(),
 	            "EMPTY_CLOB()");
-	        updateCleanSQL(con, sb.toString());
+	        int changed = updateCleanSQL(con, sb.toString());
 	        updateCleanLOB(
 	            con,
 	            targetTable.id.getUnqualifiedColName(),
@@ -4870,7 +5012,7 @@ public final static void varchar2_CLOB_update(
 	            marker_index,
 	            marker_index + INSERT_CLOB_HERE.length(),
 	            "?");
-	        updatePreparedCleanSQL(con, sb.toString(), data);
+			int changed = updatePreparedCleanSQL(con, sb.toString(), data);
 	        break;
     	}
     	default:{

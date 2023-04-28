@@ -11,11 +11,15 @@
 package cbit.vcell.export.gloworm.atoms;
 
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.DataOutputStream;
 /**
  * This type was created in VisualAge.
  */
 public abstract class Atoms implements AtomConstants {
+	protected final static Logger lg = LogManager.getLogger(Atoms.class);
 
 	protected int size;
 		

@@ -14,6 +14,7 @@ import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.modelopt.ParameterEstimationTask;
 import cbit.vcell.opt.OptimizationException;
 import cbit.vcell.opt.OptimizationResultSet;
+import cbit.vcell.opt.OptimizationStatus;
 import cbit.vcell.resource.PropertyLoader;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.logging.log4j.LogManager;
@@ -25,6 +26,8 @@ import org.vcell.util.UserCancelException;
 import org.vcell.util.document.UserLoginInfo;
 
 import javax.swing.*;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 
@@ -98,7 +101,9 @@ public class CopasiOptimizationSolver {
 			// wait here until either failure to submit or submitted and retrieved Job ID
 			//
 			while (optIdHolder[0] == null && exceptHolder[0] == null && !optSolverCallbacks.getStopRequested()) {
-				Thread.sleep(200);
+				try {
+					Thread.sleep(200);
+				}catch (InterruptedException e){}
 			}
 
 			//
@@ -118,6 +123,7 @@ public class CopasiOptimizationSolver {
 				clientTaskStatusSupport.setMessage("Waiting for progress...");
 			}
 			Vcellopt optRun = null;
+			OptProgressReport latestProgressReport = null;
 			while ((System.currentTimeMillis() - startTime) < TIMEOUT_MS) {
 				//
 				// check for user stop request
@@ -130,6 +136,14 @@ public class CopasiOptimizationSolver {
 						lg.info("requested job to be stopped jobID="+optIdHolder[0]);
 					}catch (Exception e){
 						lg.error(e.getMessage(), e);
+					}finally{
+						if (latestProgressReport!=null){
+							if (clientTaskStatusSupport != null) {
+								clientTaskStatusSupport.setProgress(100);
+							}
+							OptimizationResultSet copasiOptimizationResultSet = CopasiUtils.getOptimizationResultSet(parameterEstimationTask, latestProgressReport);
+							return copasiOptimizationResultSet;
+						}
 					}
 					throw UserCancelException.CANCEL_GENERIC;
 				}
@@ -189,7 +203,8 @@ public class CopasiOptimizationSolver {
 						//
 						// have intermediate progress report
 						//
-						OptProgressReport progressReport = (OptProgressReport) optObject;
+						latestProgressReport = (OptProgressReport) optObject;
+						final OptProgressReport progressReport = latestProgressReport;
 						SwingUtilities.invokeLater(() -> {
 							try {
 								optSolverCallbacks.setProgressReport(progressReport);
@@ -197,10 +212,10 @@ public class CopasiOptimizationSolver {
 								lg.error(optRunServerMessage, e);
 							}
 							if (clientTaskStatusSupport != null) {
-								int numIterations = 0;
+								int numFunctionEvaluations = 0;
 								if (progressReport.getProgressItems()!=null && progressReport.getProgressItems().size()>0){
 									OptProgressItem lastItem = progressReport.getProgressItems().get(progressReport.getProgressItems().size()-1);
-									numIterations = lastItem.getIteration();
+									numFunctionEvaluations = lastItem.getNumFunctionEvaluations();
 								}
 								clientTaskStatusSupport.setMessage("Running ...");
 							}
@@ -230,7 +245,10 @@ public class CopasiOptimizationSolver {
 				clientTaskStatusSupport.setMessage("Done, getting results...");
 			}
 
-			OptimizationResultSet copasiOptimizationResultSet = CopasiUtils.optRunToOptimizationResultSet(parameterEstimationTask, optRun);
+			OptimizationResultSet copasiOptimizationResultSet = CopasiUtils.optRunToOptimizationResultSet(
+					parameterEstimationTask,
+					optRun.getOptResultSet(),
+					new OptimizationStatus(OptimizationStatus.NORMAL_TERMINATION, optRun.getStatusMessage()));
 			lg.info("done with optimization");
 			if (lg.isTraceEnabled()) {
 				lg.trace("-----------SOLUTION FROM VCellAPI---------------\n" + optResultSet.toString());

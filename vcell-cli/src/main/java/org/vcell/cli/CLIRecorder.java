@@ -5,12 +5,17 @@ import java.io.IOException;
 import java.nio.file.Paths;
 
 import org.vcell.util.VCellUtilityHub;
-import org.vcell.util.recording.*;
+import org.vcell.util.recording.CLIRecordManager;
+import org.vcell.util.recording.Recorder;
+import org.vcell.util.recording.TextFileRecord;
 
+/**
+ * Creates records for VCell CLI and the Record Management System (see `org.vcell.util.recording.*`)
+ */
 public class CLIRecorder extends Recorder implements CLIRecordable {
     protected final static boolean DEFAULT_SHOULD_PRINT_LOG_FILES = false, DEFAULT_SHOULD_FLUSH_LOG_FILES = false;
     protected boolean shouldPrintLogFiles, shouldFlushLogFiles;
-    protected FileRecord detailedErrorLog, fullSuccessLog, errorLog, detailedResultsLog, spatialLog, importErrorLog;
+    protected TextFileRecord detailedErrorLog, fullSuccessLog, errorLog, detailedResultsLog, spatialLog, importErrorLog;
     protected File outputDirectory;
 
     // Note: this constructor is not public
@@ -31,14 +36,34 @@ public class CLIRecorder extends Recorder implements CLIRecordable {
         this.shouldFlushLogFiles = shouldFlushLogFiles;
     }
 
+    /**
+     * Basic constructor, will not override any functionality
+     * 
+     * @param outputDirectoryPath where to put records (if applicable)
+     * @throws IOException if there is a system IO issue breaking execution
+     */
     public CLIRecorder(File outputDirectoryPath) throws IOException {
         this(outputDirectoryPath, DEFAULT_SHOULD_PRINT_LOG_FILES);
     }
 
+    /**
+     * Constructor that allows for forcing the creation of logs, even processing happens all in the same directory, allowing overrides.
+     * 
+     * @param outputDirectory where to put records (if applicable)
+     * @param forceLogFiles whether vcell should force log files to be created
+     * @throws IOException if there is a system IO issue breaking execution.
+     */
     public CLIRecorder(File outputDirectory, boolean forceLogFiles) throws IOException {
         this(outputDirectory, forceLogFiles, DEFAULT_SHOULD_FLUSH_LOG_FILES);
     }
 
+    /**
+     * 
+     * @param outputDirectory where to put records (if applicable)
+     * @param forceLogFiles whether vcell should force log files to be created
+     * @param shouldFlushLogFiles whether vcell should flush all changes to logs immediately to the system.
+     * @throws IOException if there is a system IO issue breaking execution.
+     */
     public CLIRecorder(File outputDirectory, boolean forceLogFiles, boolean shouldFlushLogFiles) throws IOException {
         this(CLIUtils.isBatchExecution(outputDirectory.getAbsolutePath(), forceLogFiles), shouldFlushLogFiles);
         if (!outputDirectory.exists() && !outputDirectory.mkdirs()) {
@@ -49,46 +74,82 @@ public class CLIRecorder extends Recorder implements CLIRecordable {
         }
         this.outputDirectory = outputDirectory;
 
-        RecordManager logManager = VCellUtilityHub.getLogManager();
-        this.detailedErrorLog = logManager.requestNewFileLog(Paths.get(this.outputDirectory.getAbsolutePath(), "detailedErrorLog.txt").toString());
-        this.fullSuccessLog = logManager.requestNewFileLog(Paths.get(this.outputDirectory.getAbsolutePath(), "fullSuccessLog.txt").toString());
-        this.errorLog = logManager.requestNewFileLog(Paths.get(this.outputDirectory.getAbsolutePath(), "errorLog.txt").toString());
-        this.detailedResultsLog = logManager.requestNewFileLog(Paths.get(this.outputDirectory.getAbsolutePath(), "detailedResultLog.txt").toString());
-        this.spatialLog = logManager.requestNewFileLog(Paths.get(this.outputDirectory.getAbsolutePath(), "hasSpatialLog.txt").toString());
-        this.importErrorLog = logManager.requestNewFileLog(Paths.get(this.outputDirectory.getAbsolutePath(), "importErrorLog.txt").toString());
+        CLIRecordManager logManager;
+        if (VCellUtilityHub.getLogManager() instanceof CLIRecordManager){
+            logManager = (CLIRecordManager)VCellUtilityHub.getLogManager();
+        } else {
+            throw new RuntimeException("LogManager is not initalized to CLI-mode");
+        }
+        this.detailedErrorLog = logManager.requestNewRecord(Paths.get(this.outputDirectory.getAbsolutePath(), "detailedErrorLog.txt").toString());
+        this.fullSuccessLog = logManager.requestNewRecord(Paths.get(this.outputDirectory.getAbsolutePath(), "fullSuccessLog.txt").toString());
+        this.errorLog = logManager.requestNewRecord(Paths.get(this.outputDirectory.getAbsolutePath(), "errorLog.txt").toString());
+        this.detailedResultsLog = logManager.requestNewRecord(Paths.get(this.outputDirectory.getAbsolutePath(), "detailedResultLog.txt").toString());
+        this.spatialLog = logManager.requestNewRecord(Paths.get(this.outputDirectory.getAbsolutePath(), "hasSpatialLog.txt").toString());
+        this.importErrorLog = logManager.requestNewRecord(Paths.get(this.outputDirectory.getAbsolutePath(), "importErrorLog.txt").toString());
         
         this.createHeader();
     }
 
     // Logging file methods
 
-    private void writeToFileLog(FileRecord log, String message) throws IOException {
+    private void writeToFileLog(TextFileRecord log, String message) throws IOException {
         if (!this.shouldPrintLogFiles) return;
         log.print(message + "\n");
         if (this.shouldFlushLogFiles) log.flush();
     }
 
+    /**
+     * Write to `detailedErrorLog.txt`
+     * 
+     * @param message string to write to file
+     */
     public void writeDetailedErrorList(String message) throws IOException {
         this.writeToFileLog(this.detailedErrorLog, message);     
     }
 
+    /**
+     * Write to `fullSuccessLog.txt`
+     * 
+     * @param message string to write to file
+     */
     public void writeFullSuccessList(String message) throws IOException {
         this.writeToFileLog(this.fullSuccessLog, message);
     }
 
+    /**
+     * Write to `errorLog.txt`
+     * 
+     * @param message string to write to file
+     */
     public void writeErrorList(String message) throws IOException {
         this.writeToFileLog(this.errorLog, message);
     }
 
+    /**
+     * Write to `detailedResultLog.txt`
+     * 
+     * @param message string to write to file
+     */
     public void writeDetailedResultList(String message) throws IOException {
         this.writeToFileLog(this.detailedResultsLog, message);
     }
 
-    // we make a list with the omex files that contain (some) spatial simulations (FVSolverStandalone solver)
+    
+    /**
+     * Write to `hasSpatialLog.txt`
+     * 
+     * @param message string to write to file
+     */
     public void writeSpatialList(String message) throws IOException {
+        // we make a list with the omex files that contain (some) spatial simulations (FVSolverStandalone solver)
         this.writeToFileLog(this.spatialLog, message);
     }
 
+    /**
+     * Write to `importErrorLog.txt`
+     * 
+     * @param message string to write to file
+     */
     public void writeImportErrorList(String message) throws IOException {
         this.writeToFileLog(this.importErrorLog, message);
     }

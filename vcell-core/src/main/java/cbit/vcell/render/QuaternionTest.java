@@ -25,7 +25,7 @@ public static void main(String[] args) {
 	try {
 		test();
 	} catch (Throwable e) {
-		e.printStackTrace(System.out);
+		e.printStackTrace();
 	}
 }
 /**

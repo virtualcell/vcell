@@ -11,6 +11,8 @@
 package cbit.vcell.client.server;
 import javax.swing.event.EventListenerList;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.DataAccessException;
 
 import cbit.vcell.export.server.ExportSpecs;
@@ -25,6 +27,8 @@ import cbit.vcell.solver.VCSimulationIdentifier;
  * @author: Ion Moraru
  */
 public class ClientJobManager implements JobManager {
+	private final static Logger lg = LogManager.getLogger(ClientJobManager.class);
+
 	private ClientServerManager clientServerManager = null;
 	private EventListenerList listenerList = new EventListenerList();
 
@@ -115,10 +119,10 @@ public SimulationStatus getServerSimulationStatus(VCSimulationIdentifier vcSimul
 /**
  * Insert the method's description here.
  * Creation date: (1/4/01 1:38:14 PM)
- * @param RemoteProxyException RemoteProxyException
+ * @param remoteProxyException RemoteProxyException
  */
-private void handleRemoteProxyException(RemoteProxyException RemoteProxyException) {
-	RemoteProxyException.printStackTrace(System.out);
+private void handleRemoteProxyException(RemoteProxyException remoteProxyException) {
+	lg.error(remoteProxyException);
 }
 
 
@@ -130,19 +134,12 @@ public synchronized void removeSimStatusListener(SimStatusListener listener) {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (10/13/2005 4:36:57 PM)
- * @param newJobStatus cbit.vcell.messaging.db.SimulationJobStatus
- * @param progress java.lang.Double
- * @param timePoint java.lang.Double
- */
 public void simulationJobStatusChanged(cbit.rmi.event.SimulationJobStatusEvent simJobStatusEvent) {
 	try {
 		getClientServerManager().getDocumentManager().updateServerSimulationStatusFromJobEvent(simJobStatusEvent);
 		fireSimStatusEvent(new SimStatusEvent(this, simJobStatusEvent.getVCSimulationIdentifier(), simJobStatusEvent.getTimepoint() != null, simJobStatusEvent.getJobStatus().getSchedulerStatus().isFailed(), simJobStatusEvent.getJobStatus().getJobIndex()));
 	} catch (Exception e) {
-		e.printStackTrace();
+		lg.error(e.getMessage(), e);
 	}
 }
 

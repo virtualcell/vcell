@@ -28,6 +28,8 @@ import java.io.Serializable;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.VCDataIdentifier;
 
@@ -51,6 +53,8 @@ import ucar.ma2.ArrayDouble;
  * @author: John Wagner
  */
 public class ODESimData extends ODESolverResultSet implements SimDataConstants, Serializable {
+
+	private final static Logger lg = LogManager.getLogger(ODESimData.class);
 	private String formatID = null;
 	private String mathName = null;
 	private byte[] hdf5FileBytes;
@@ -80,8 +84,7 @@ public ODESimData(VCDataIdentifier vcdId, ODESolverResultSet odeSolverResultSet)
 		try {
 			addFunctionColumn(new FunctionColumnDescription(functionColumns[c]));
 		}catch (ExpressionException e){
-			e.printStackTrace(System.out);
-			throw new RuntimeException(e.getMessage());
+			throw new RuntimeException(e.getMessage(), e);
 		}
 	}
 	if(odeSolverResultSet instanceof ODESimData) {
@@ -243,11 +246,9 @@ public void readIn(DataInputStream input) throws IOException {
 					Expression expression = new Expression(expressionString);
 					addFunctionColumn(new FunctionColumnDescription(expression, columnName, columnParameterName, columnDisplayName, false));
 				}catch (ExpressionBindingException e){
-					e.printStackTrace(System.out);
-					System.out.println("ODESimData.readIn(): unable to bind expression '"+expressionString+"'");
+					lg.error("unable to bind expression '"+expressionString+"'", e);
 				}catch (ExpressionException e){
-					e.printStackTrace(System.out);
-					System.out.println("ODESimData.readIn(): unable to parse expression '"+expressionString+"'");
+					lg.error("ODESimData.readIn(): unable to parse expression '"+expressionString+"'", e);
 				}
 			}
 		}catch (EOFException e){}
@@ -408,7 +409,7 @@ public void writeOut(DataOutputStream output) throws IOException {
 
 public static ODESimData readIDADataFile(VCDataIdentifier vcdId, File dataFile, int keepMost, File functionsFile) throws DataAccessException {
 	// read ida file
-	System.out.println("reading ida file : " + dataFile);
+	lg.trace("reading ida file : " + dataFile);
 	ODESimData odeSimData = new ODESimData();	
 	odeSimData.formatID = IDA_DATA_FORMAT_ID;
 	odeSimData.mathName = vcdId.getID();
@@ -442,7 +443,7 @@ public static ODESimData readIDADataFile(VCDataIdentifier vcdId, File dataFile, 
 		}
 		//
 	} catch (Exception e) {
-		e.printStackTrace(System.out);
+		lg.error(e.getMessage(), e);
 		return null;
 	} finally {
 		try {
@@ -450,7 +451,7 @@ public static ODESimData readIDADataFile(VCDataIdentifier vcdId, File dataFile, 
 				bufferedReader.close();
 			}
 		} catch (Exception ex) {
-			ex.printStackTrace(System.out);
+			lg.error(ex.getMessage(), ex);
 		}
 	}
 	
@@ -469,11 +470,9 @@ public static ODESimData readIDADataFile(VCDataIdentifier vcdId, File dataFile, 
 				}
 			}	
 		} catch (FileNotFoundException e1) {
-			e1.printStackTrace(System.out);
-			throw new DataAccessException(e1.getMessage());
+			throw new DataAccessException(e1.getMessage(), e1);
 		} catch (IOException e1) {
-			e1.printStackTrace(System.out);
-			throw new DataAccessException(e1.getMessage());
+			throw new DataAccessException(e1.getMessage(), e1);
 		}
 	}
 
@@ -484,7 +483,7 @@ public static ODESimData readIDADataFile(VCDataIdentifier vcdId, File dataFile, 
 }
 
 public static ODESimData readNFSIMDataFile(VCDataIdentifier vcdId, File dataFile, File functionsFile) throws DataAccessException, IOException {
-	System.out.println("reading NetCDF file : " + dataFile);
+	lg.trace("reading NetCDF file : " + dataFile);
 	ODESimData odeSimData = new ODESimData();	
 	odeSimData.formatID = NETCDF_DATA_FORMAT_ID;
 	odeSimData.mathName = vcdId.getID();
@@ -540,12 +539,8 @@ public static ODESimData readNFSIMDataFile(VCDataIdentifier vcdId, File dataFile
 					throw new RuntimeException("Could not add function " + func.getName() + " to annotatedFunctionList");
 				}
 			}	
-		} catch (FileNotFoundException e1) {
-			e1.printStackTrace(System.out);
-			throw new DataAccessException(e1.getMessage());
 		} catch (IOException e1) {
-			e1.printStackTrace(System.out);
-			throw new DataAccessException(e1.getMessage());
+			throw new DataAccessException(e1.getMessage(), e1);
 		}
 	}
 
@@ -555,7 +550,7 @@ public static ODESimData readNFSIMDataFile(VCDataIdentifier vcdId, File dataFile
 
 public static ODESimData readNCDataFile(VCDataIdentifier vcdId, File dataFile, File functionsFile) throws DataAccessException {
 	// read ida file
-	System.out.println("reading NetCDF file : " + dataFile);
+	lg.trace("reading NetCDF file : " + dataFile);
 	ODESimData odeSimData = new ODESimData();	
 	odeSimData.formatID = NETCDF_DATA_FORMAT_ID;
 	odeSimData.mathName = vcdId.getID();
@@ -569,8 +564,7 @@ public static ODESimData readNCDataFile(VCDataIdentifier vcdId, File dataFile, F
 			ncEva.setNetCDFTarget(dataFile.getAbsolutePath());
 			ncReader = ncEva.getNetCDFReader();
 		}catch (Exception e) {
-			e.printStackTrace(System.err);
-			throw new RuntimeException("Cannot open simulation result file: "+ dataFile.getAbsolutePath() +"!");
+			throw new RuntimeException("Cannot open simulation result file: "+ dataFile.getAbsolutePath() +"!", e);
 		}
 		
 		//  Read result according to trial number
@@ -589,14 +583,14 @@ public static ODESimData readNCDataFile(VCDataIdentifier vcdId, File dataFile, F
 			//Read data
 			ArrayDouble data = (ArrayDouble)ncEva.getTimeSeriesData(1);//data only, no time points
 			double timePoints[] = ncReader.getTimePoints();
-			System.out.println("time points length is "+timePoints.length);
+			lg.trace("time points length is "+timePoints.length);
 			//shape[0]:num of timepoints, shape[1]: num of species
 			int[] shape = data.getShape();
             
 			if(shape.length == 1) //one species
 			{
 				ArrayDouble.D1 temData = (ArrayDouble.D1)data;
-				System.out.println("one species in time series data and size is "+temData.getSize());
+				lg.trace("one species in time series data and size is "+temData.getSize());
 				for(int k=0; k<timePoints.length; k++)//rows
 				{
 					double[] values = new double[odeSimData.getDataColumnCount()];
@@ -612,7 +606,7 @@ public static ODESimData readNCDataFile(VCDataIdentifier vcdId, File dataFile, F
 			if(shape.length == 2) //more than one species
 			{
 				ArrayDouble.D2 temData = (ArrayDouble.D2)data;
-				System.out.println("multiple species in time series, the length of time series is :"+data.getShape()[0]+", and the total number of speceis is: "+data.getShape()[1]);
+				lg.trace("multiple species in time series, the length of time series is :"+data.getShape()[0]+", and the total number of species is: "+data.getShape()[1]);
 				for(int k=0; k<timePoints.length; k++)//rows
 				{
 					double[] values = new double[odeSimData.getDataColumnCount()];
@@ -640,14 +634,14 @@ public static ODESimData readNCDataFile(VCDataIdentifier vcdId, File dataFile, F
 			//Read data
 			ArrayDouble data = (ArrayDouble)ncEva.getDataOverTrials(ncReader.getTimePoints().length-1);//data only, no trial numbers
 			int trialNum[] = ncEva.getNetCDFReader().getTrialNumbers();
-			//System.out.println("total trials are "+trialNum.length);
+			//lg.trace("total trials are "+trialNum.length);
 			//shape[0]:number of trials, shape[1]: num of species
 			int[] shape = data.getShape();
             
 			if(shape.length == 1) //one species
 			{
 				ArrayDouble.D1 temData = (ArrayDouble.D1)data;
-				//System.out.println("one species over trials, size is: "+temData.getSize());
+				//lg.trace("one species over trials, size is: "+temData.getSize());
 				for(int k=0; k<trialNum.length; k++)//rows
 				{
 					double[] values = new double[odeSimData.getDataColumnCount()];
@@ -663,7 +657,7 @@ public static ODESimData readNCDataFile(VCDataIdentifier vcdId, File dataFile, F
 			if(shape.length == 2) //more than one species
 			{
 				ArrayDouble.D2 temData = (ArrayDouble.D2)data;
-				//System.out.println("multiple species in multiple trials, the length of trials is :"+data.getShape()[0]+", and the total number of speceis is: "+data.getShape()[1]);
+				//lg.trace("multiple species in multiple trials, the length of trials is :"+data.getShape()[0]+", and the total number of speceis is: "+data.getShape()[1]);
 				for(int k=0; k<trialNum.length; k++)//rows
 				{
 					double[] values = new double[odeSimData.getDataColumnCount()];
@@ -682,8 +676,7 @@ public static ODESimData readNCDataFile(VCDataIdentifier vcdId, File dataFile, F
 		}
 		
 	} catch (Exception e) {
-		e.printStackTrace(System.err);
-		throw new RuntimeException("Problem encountered in parsing hybrid simulation results.\n"+e.getMessage());
+		throw new RuntimeException("Problem encountered in parsing hybrid simulation results.\n"+e.getMessage(), e);
 	} 
 	
 	// read functions file
@@ -700,12 +693,8 @@ public static ODESimData readNCDataFile(VCDataIdentifier vcdId, File dataFile, F
 					throw new RuntimeException("Could not add function " + func.getName() + " to annotatedFunctionList");
 				}
 			}	
-		} catch (FileNotFoundException e1) {
-			e1.printStackTrace(System.out);
-			throw new DataAccessException(e1.getMessage());
 		} catch (IOException e1) {
-			e1.printStackTrace(System.out);
-			throw new DataAccessException(e1.getMessage());
+			throw new DataAccessException(e1.getMessage(), e1);
 		}
 	}
 

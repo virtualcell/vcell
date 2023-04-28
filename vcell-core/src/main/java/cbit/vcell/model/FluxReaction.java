@@ -14,6 +14,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Matchable;
 import org.vcell.util.Relatable;
@@ -21,6 +23,7 @@ import org.vcell.util.RelationVisitor;
 import org.vcell.util.document.KeyValue;
 
 public class FluxReaction extends ReactionStep {
+    private final static Logger lg = LogManager.getLogger(FluxReaction.class);
 
     public static class Flux extends ReactionParticipant {
         public Flux(KeyValue key, FluxReaction fluxReaction, SpeciesContext speciesContext) {
@@ -69,7 +72,7 @@ public class FluxReaction extends ReactionStep {
         try {
             setKinetics(new GeneralKinetics(this));
         } catch (Exception e) {
-            e.printStackTrace(System.out);
+            lg.error(e.getMessage(), e);
         }
     }
 

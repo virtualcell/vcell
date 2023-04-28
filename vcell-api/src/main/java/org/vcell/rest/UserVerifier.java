@@ -6,6 +6,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.logging.Level;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.restlet.Context;
 import org.restlet.Request;
 import org.restlet.Response;
@@ -27,6 +29,8 @@ import cbit.vcell.modeldb.ApiClient;
 
 
 public class UserVerifier implements Verifier {
+	private final static Logger lg = LogManager.getLogger(UserVerifier.class);
+
 	private static class AuthenticationInfo {
 		final User user;
 		final DigestedPassword digestedPassword;
@@ -66,12 +70,8 @@ public class UserVerifier implements Verifier {
 				User user = null;
 				try {
 					user = adminDbTopLevel.getUser(userid, digestedPassword,true,false);
-				} catch (ObjectNotFoundException e) {
-					e.printStackTrace();
-				} catch (DataAccessException e) {
-					e.printStackTrace();
-				} catch (SQLException e) {
-					e.printStackTrace();
+				} catch (DataAccessException | SQLException  e) {
+					lg.error(e);
 				}
 				// refresh stored list of user infos (for authentication)
 				if (user!=null){
@@ -169,7 +169,7 @@ public class UserVerifier implements Verifier {
 					return AuthenticationStatus.valid;
 				}
 			}catch (Exception e){
-				e.printStackTrace(System.out);
+				lg.error(e.getMessage(), e);
 				return AuthenticationStatus.invalid;
 			}
 		}else{

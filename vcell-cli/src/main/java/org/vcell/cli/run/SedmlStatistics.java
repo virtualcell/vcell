@@ -1,5 +1,6 @@
 package org.vcell.cli.run;
 
+
 /**
  * Class containing all the important info of a sedml execution:
  * - nModels :: the number of models
@@ -13,40 +14,119 @@ package org.vcell.cli.run;
  * - hasScans :: if the sedml has parameter scans
  */
 public class SedmlStatistics {
-    public int nModels, nSimulations, nTasks, nOutputs, nReportsCount, nPlots2DCount, nPlots3DCount;
+    private Integer nModels, nSimulations, nTasks, nOutputs, nReportsCount, nPlots2DCount, nPlots3DCount;
     public boolean hasOverrides, hasScans;
 
     public SedmlStatistics(){
-        this.nModels = -1;
-        this.nSimulations = -1;
-        this.nTasks = -1;
-        this.nOutputs = -1;
-        this.nReportsCount = -1;
-        this.nPlots2DCount = -1;
-        this.nPlots3DCount = -1;
+        // -1 indicates the value has not been initalized. 
+        this.nModels = null;
+        this.nSimulations = null;
+        this.nTasks = null;
+        this.nOutputs = null;
+        this.nReportsCount = null;
+        this.nPlots2DCount = null;
+        this.nPlots3DCount = null;
         this.hasOverrides = false;
         this.hasScans = false;
+    }
+
+    public int getNumModels(){
+        return this.nModels == null ? 0 : this.nModels;
+    }
+
+    public int getNumSimultions(){
+        return this.nSimulations == null ? 0 : this.nSimulations;
+    }
+
+    public int getNumTasks(){
+        return this.nTasks == null ? 0 : this.nTasks;
+    }
+
+    public int getNumOutputs(){
+        return this.nOutputs == null ? 0 : this.nOutputs;
+    }
+
+    public int getReportsCount(){
+        return this.nReportsCount == null ? 0 : this.nReportsCount;
+    }
+
+    public int getPlots2DCount(){
+        return this.nPlots2DCount == null ? 0 : this.nPlots2DCount;
+    } 
+
+    public int getPlots3Dcount(){
+        return this.nPlots3DCount == null ? 0 : this.nPlots3DCount;
+    }
+
+    public boolean getHasOverrides(){
+        return this.hasOverrides;
+    }
+
+    public boolean getHasScans(){
+        return this.hasScans;
+    }
+
+    public void setNumModels(int nModels){
+        if (this.nModels == null) this.nModels = 0;
+        this.nModels = nModels;
+    }
+
+    public void setNumSimultions(int nSimulations){
+        if (this.nSimulations == null) this.nSimulations = 0;
+        this.nSimulations = nSimulations;
+    }
+
+    public void setNumTasks(int nTasks){
+        if (this.nTasks == null) this.nTasks = 0;
+        this.nTasks = nTasks;
+    }
+
+    public void setNumOutputs(int nOutputs){
+        if (this.nOutputs == null) this.nOutputs = 0;
+        this.nOutputs = nOutputs;
+    }
+
+    public void setReportsCount(int nReportsCount){
+        if (this.nReportsCount == null) this.nReportsCount = 0;
+        this.nReportsCount = nReportsCount;
+    }
+
+    public void setPlots2DCount(int nPlots2DCount){
+        if (this.nPlots2DCount == null) this.nPlots2DCount = 0;
+        this.nPlots2DCount = nPlots2DCount;
+    } 
+
+    public void setPlots3Dcount(int nPlots3DCount){
+        if (this.nPlots3DCount == null) this.nPlots3DCount = 0;
+        this.nPlots3DCount = nPlots3DCount;
+    }
+
+    public void setHasOverrides(boolean hasOverrides){
+        this.hasOverrides = hasOverrides;
+    }
+
+    public void setHasScans(boolean hasScans){
+        this.hasScans = hasScans;
     }
 
     /**
      * A comma separated list of the contents for logging purposes
      * @returns the relevant info as a comma separated list or an error message
      */
-    @Override
-    public String toString(){
-        if (this.nModels < 0 && this.nModels < 0 && this.nModels < 0 && this.nModels < 0 && 
-            this.nModels < 0 && this.nModels < 0 && this.nModels < 0) return "Processing incomplete; no reportable data.";
+    public String toFormattedString(){
+        if (this.nModels == null && this.nSimulations == null && this.nTasks == null && this.nModels == null && 
+            this.nModels == null && this.nModels == null && this.nModels == null) return "Processing incomplete; no reportable data.";
         return String.format(
             "%d model%s, %d simulation%s, %d task%s, %d output%s, %d report%s, %d 2D plot%s, %d 3D plot%s, %s Math Overrides, %s Paramerter Scans", 
-            this.nModels < 0 ? 0 : this.nModels             , this.nModels != 1 ? "s" : "",
-            this.nSimulations < 0 ? 0 : this.nSimulations   , this.nSimulations != 1 ? "s" : "",
-            this.nTasks < 0 ? 0 : this.nTasks               , this.nTasks != 1 ? "s" : "",
-            this.nOutputs < 0 ? 0 : this.nOutputs           , this.nOutputs != 1 ? "s" : "",
-            this.nReportsCount < 0 ? 0 : this.nReportsCount , this.nReportsCount != 1 ? "s" : "",
-            this.nPlots2DCount < 0 ? 0 : this.nPlots2DCount , this.nPlots2DCount != 1 ? "s" : "",
-            this.nPlots3DCount < 0 ? 0 : this.nPlots3DCount , this.nPlots3DCount != 1 ? "s" : "",
-            this.hasOverrides? "Has" : "Does not have",
-            this.hasScans ? "Has" : "Does not have"
+            this.getNumModels(), this.nModels != 1 ? "s" : "",
+            this.getNumSimultions(), this.nSimulations != 1 ? "s" : "",
+            this.getNumTasks(), this.nTasks != 1 ? "s" : "",
+            this.getNumOutputs(), this.nOutputs != 1 ? "s" : "",
+            this.getReportsCount(), this.nReportsCount != 1 ? "s" : "",
+            this.getPlots2DCount(), this.nPlots2DCount != 1 ? "s" : "",
+            this.getPlots3Dcount(), this.nPlots3DCount != 1 ? "s" : "",
+            this.getHasOverrides() ? "Has" : "Does not have",
+            this.getHasScans() ? "Has" : "Does not have"
         );
     }
 }

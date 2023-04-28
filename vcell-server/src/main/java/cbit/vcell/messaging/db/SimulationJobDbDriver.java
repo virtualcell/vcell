@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import cbit.vcell.modeldb.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.db.DatabaseSyntax;
@@ -32,11 +33,6 @@ import org.vcell.util.document.VCellServerID;
 
 import com.google.gson.Gson;
 
-import cbit.vcell.modeldb.BioModelSimulationLinkTable;
-import cbit.vcell.modeldb.DatabaseConstants;
-import cbit.vcell.modeldb.MathModelSimulationLinkTable;
-import cbit.vcell.modeldb.SimulationTable;
-import cbit.vcell.modeldb.UserTable;
 import cbit.vcell.server.BioModelLink;
 import cbit.vcell.server.MathModelLink;
 import cbit.vcell.server.SimpleJobStatusPersistent;
@@ -85,8 +81,15 @@ public SimulationJobDbDriver(DatabaseSyntax dbSyntax) {
 private int executeUpdate(Connection con, String sql) throws SQLException {
 	Statement s = con.createStatement();
 	try {
-		return s.executeUpdate(sql);
-	} finally {
+        if (lg.isDebugEnabled()) {
+            lg.debug("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
+        }
+        int numRecordsChanged = s.executeUpdate(sql); // jcs: added logging
+        if (numRecordsChanged != 1) {
+            lg.error(numRecordsChanged + " records changed: " + sql, new DbDriver.StackTraceGenerationException());
+        }
+        return numRecordsChanged;
+    } finally {
 		s.close();
 	}	
 }
@@ -569,7 +572,7 @@ public List<SimpleJobStatusPersistent> getSimpleJobStatus(Connection con, String
 					std = new cbit.vcell.solver.SolverTaskDescription(new org.vcell.util.CommentStringTokenizer(org.vcell.util.TokenMangler.getSQLRestoredString(taskDesc)));
 				}
 			} catch (DataAccessException ex) {
-				ex.printStackTrace();
+				lg.error(ex);
 				lg.error("failed to parse SolverTaskDescription",ex);
 			}
 			Integer meshSizeX = rset.getInt(SimulationTable.table.meshSpecX.getUnqualifiedColName());
@@ -595,7 +598,6 @@ public List<SimpleJobStatusPersistent> getSimpleJobStatus(Connection con, String
 					bioModelLink.clearZeroPadding();
 					simulationDocumentLink = bioModelLink;
 				}catch (Exception e) {
-					e.printStackTrace();
 					lg.error("failed to parse BioModelLink",e);
 				}
 			}
@@ -607,7 +609,6 @@ public List<SimpleJobStatusPersistent> getSimpleJobStatus(Connection con, String
 					mathModelLink.clearZeroPadding();
 					simulationDocumentLink = mathModelLink;
 				}catch (Exception e) {
-					e.printStackTrace();
 					lg.error("failed to parse MathModelLink",e);
 				}
 			}

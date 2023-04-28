@@ -167,37 +167,37 @@ class OptProblem:
 
 @dataclass
 class OptProgressItem:
-    best_param_values: 'List[float]'
-    iteration: 'int'
+    num_function_evaluations: 'int'
     obj_func_value: 'float'
 
     @classmethod
     def from_json_data(cls, data: Any) -> 'OptProgressItem':
         return cls(
-            _from_json_data(List[float], data.get("bestParamValues")),
-            _from_json_data(int, data.get("iteration")),
+            _from_json_data(int, data.get("numFunctionEvaluations")),
             _from_json_data(float, data.get("objFuncValue")),
         )
 
     def to_json_data(self) -> Any:
         data: Dict[str, Any] = {}
-        data["bestParamValues"] = _to_json_data(self.best_param_values)
-        data["iteration"] = _to_json_data(self.iteration)
+        data["numFunctionEvaluations"] = _to_json_data(self.num_function_evaluations)
         data["objFuncValue"] = _to_json_data(self.obj_func_value)
         return data
 
 @dataclass
 class OptProgressReport:
+    best_param_values: 'Dict[str, float]'
     progress_items: 'List[OptProgressItem]'
 
     @classmethod
     def from_json_data(cls, data: Any) -> 'OptProgressReport':
         return cls(
+            _from_json_data(Dict[str, float], data.get("bestParamValues")),
             _from_json_data(List[OptProgressItem], data.get("progressItems")),
         )
 
     def to_json_data(self) -> Any:
         data: Dict[str, Any] = {}
+        data["bestParamValues"] = _to_json_data(self.best_param_values)
         data["progressItems"] = _to_json_data(self.progress_items)
         return data
 

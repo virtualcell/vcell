@@ -54,8 +54,7 @@ public void setSolutionFromRowColumnResultSet(RowColumnResultSet rcResultSet)
 				}
 			}
 		}catch (ExpressionException e){
-			e.printStackTrace(System.out);
-			throw new RuntimeException(e.getMessage());
+			throw new RuntimeException(e.getMessage(), e);
 		}
 	}
 }

@@ -24,6 +24,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.BigString;
 import org.vcell.util.CoordinateIndex;
 import org.vcell.util.FileUtils;
@@ -67,6 +69,8 @@ import cbit.vcell.xml.XmlHelper;
  * @author: Tracy LI
  */
 public class HybridSolverTester {
+	private final static Logger lg = LogManager.getLogger(HybridSolverTester.class);
+
 	private static final String POSTPROC = "postproc";
 	private static final String varNameDelimiter = ":";
 	private String mathModelVCMLFileName = null;
@@ -187,8 +191,7 @@ public class HybridSolverTester {
 				}
 			}
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			lg.error(e.getMessage(), e);
 		}
 	}
 	
@@ -311,7 +314,7 @@ public class HybridSolverTester {
 				}
 				break;
 			}catch(Exception e){
-				e.printStackTrace();
+				lg.error(e.getMessage(), e);
 			}
 			if(dataProcessingOutputInfo == null){
 				System.out.println("No postprocessing found for "+jobCounter+" trials in dir "+userSimDataDir.getAbsolutePath()+" matching SimID="+altArgsHelper.simID);
@@ -717,10 +720,10 @@ public class HybridSolverTester {
 				hst.runHybridTest(site);
 			}
 		}catch(Exception e){
-			e.printStackTrace(System.out);
+			lg.error(e.getMessage(), e);
 			System.exit(1);
 		}finally{
-			if(fw !=null){try{fw.close();}catch(Exception e){e.printStackTrace();}}
+			if(fw !=null){try{fw.close();}catch(Exception e){lg.error(e.getMessage(), e);}}
 		}
 	}
 

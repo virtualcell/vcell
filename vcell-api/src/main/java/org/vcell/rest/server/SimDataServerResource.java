@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.restlet.data.LocalReference;
 import org.restlet.data.MediaType;
 import org.restlet.data.Reference;
@@ -35,7 +37,8 @@ import cbit.vcell.simdata.DataSetMetadata;
 import freemarker.template.Configuration;
 
 public class SimDataServerResource extends AbstractServerResource implements SimDataResource {
-
+	private final static Logger lg = LogManager.getLogger(SimDataServerResource.class);
+	
 	public static final String PARAM_USER = "user";
 	public static final String PARAM_SIM_ID = "simId";
 	public static final String PARAM_START_ROW = "startRow";
@@ -88,7 +91,7 @@ public class SimDataServerResource extends AbstractServerResource implements Sim
 		try {
 			simData = getSimDataRepresentation(vcellUser);
 		}catch (Exception e){
-			e.printStackTrace(System.out);
+			lg.error(e.getMessage(), e);
 		}
 		Map<String,Object> dataModel = new HashMap<String,Object>();
 		
@@ -138,10 +141,10 @@ public class SimDataServerResource extends AbstractServerResource implements Sim
 				SimDataRepresentation simDataRepresentation = new SimDataRepresentation(dataSetMetadata,simRep.getScanCount());
 				return simDataRepresentation;
 			} catch (PermissionException e) {
-				e.printStackTrace();
+				lg.error(e);
 				throw new ResourceException(Status.CLIENT_ERROR_UNAUTHORIZED, "not authorized");
 			} catch (ObjectNotFoundException e) {
-				e.printStackTrace();
+				lg.error(e);
 				throw new ResourceException(Status.CLIENT_ERROR_NOT_FOUND, "simulation metadata not found");
 			} catch (Exception e){
 				throw new ResourceException(Status.SERVER_ERROR_INTERNAL, e.getMessage());

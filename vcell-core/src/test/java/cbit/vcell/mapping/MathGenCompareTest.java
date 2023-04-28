@@ -15,6 +15,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.vcell.sbml.VcmlTestSuiteFiles;
 import org.vcell.test.MathGen_IT;
+import org.vcell.util.document.Version;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -29,7 +30,8 @@ public class MathGenCompareTest {
 	private String filename_colon_appname;
 
 	private static String previousInstalldirPropertyValue;
-	private static File knownProblemFile;
+	private static File codeKnownProblemFile;
+	private static File csvKnownProblemFile;
 
 	public MathGenCompareTest(String filename_colon_appname){
 		this.filename_colon_appname = filename_colon_appname;
@@ -41,8 +43,10 @@ public class MathGenCompareTest {
 		previousInstalldirPropertyValue = System.getProperty("vcell.installDir");
 		System.setProperty("vcell.installDir", "..");
 		NativeLib.combinej.load();
-		knownProblemFile = Files.createTempFile("MathGenCompareTest","knownProblems").toFile();
-		System.err.println("known problem file: "+knownProblemFile.getAbsolutePath());
+		codeKnownProblemFile = Files.createTempFile("MathGenCompareTest","code_KnownProblems").toFile();
+		csvKnownProblemFile = Files.createTempFile("MathGenCompareTest","csv_KnownProblems").toFile();
+		System.err.println("code known problem file: "+codeKnownProblemFile.getAbsolutePath());
+		System.err.println("csv known problem file: "+csvKnownProblemFile.getAbsolutePath());
 	}
 
 	@AfterClass
@@ -50,7 +54,8 @@ public class MathGenCompareTest {
 		if (previousInstalldirPropertyValue!=null) {
 			System.setProperty("vcell.installDir", previousInstalldirPropertyValue);
 		}
-		System.err.println("known problem file: "+knownProblemFile.getAbsolutePath());
+		System.err.println("code known problem file: "+codeKnownProblemFile.getAbsolutePath());
+		System.err.println("csv known problem file: "+csvKnownProblemFile.getAbsolutePath());
 	}
 
 	@BeforeClass
@@ -94,18 +99,135 @@ public class MathGenCompareTest {
 	/**
 	 * each file in the knownFaultsMap hold known problems in the current software
 	 */
+	public static Set<String> knownMathGenerationFailures() {
+		Set<String> faults = new HashSet<>();
+		// public models
+
+		// all flux models
+		faults.add("biomodel_158988094.vcml:Application1"); // local/flux: NPE in StructureSizeSolver.updateUnitStructureSizes_symbolic(StructureSizeSolver.java:649)
+
+		// all private hybrid models
+		faults.add("biomodel_101106339.vcml:Application0"); // local/massaction: 'FB-ECM' not legal identifier for rule-based modeling, try 'FB_ECM'.
+		faults.add("biomodel_211551763.vcml:Application1"); // local/massaction: NullPointerException in BioEvent.getConstantParameterValue()
+		faults.add("biomodel_2177828.vcml:ttt"); // local/massaction: Enable diffusion in Application 'ttt'. This must be done for any species (e.g 'calcium_Feature') in flux reactions.
+		faults.add("biomodel_88592639.vcml:tissue"); // local/massaction:
+
+		// all private Hybrid PDE/Particle models
+		faults.add("biomodel_179548819.vcml:Application0"); // local/hybrid: The Min Trigger Condition for BioEvent 'event0' cannot be <= 0.
+		faults.add("biomodel_82790975.vcml:NONSPATIAL Stochastic/Deterministic Integrin Ligand Activation"); // local/hybrid: Non-constant species is forced continuous, not supported for nonspatial stochastic applications.
+		faults.add("biomodel_82800592.vcml:Stochastic Nonsptial"); // local/hybrid: Non-constant species is forced continuous, not supported for nonspatial stochastic applications.
+		faults.add("biomodel_82805340.vcml:Stochastic/Deterministic Integrin Ligand Activation"); // local/hybrid: Failed to intepret kinetic rate for reaction 'r2' as mass action.
+		faults.add("biomodel_82807862.vcml:Stochastic Spatial QUARTER CELL SHORT"); // local/hybrid: Failed to intepret kinetic rate for reaction 'r2' as mass action.
+		faults.add("biomodel_82807862.vcml:Stochastic/Deterministic Integrin Ligand Activation"); // local/hybrid: Failed to intepret kinetic rate for reaction 'r2' as mass action.
+		faults.add("biomodel_82808340.vcml:Stochastic Spatial QUARTER CELL SHORT"); // local/hybrid: Failed to intepret kinetic rate for reaction 'r2' as mass action.
+		faults.add("biomodel_82809548.vcml:Stochastic Spatial QUARTER CELL SHORT"); // local/hybrid: Failed to intepret kinetic rate for reaction 'r2' as mass action.
+		faults.add("biomodel_82809548.vcml:Stochastic/Deterministic Integrin Ligand Activation"); // local/hybrid: Failed to intepret kinetic rate for reaction 'r2' as mass action.
+		faults.add("biomodel_82809548.vcml:Copy of Stochastic Spatial QUARTER CELL SHORT"); // local/hybrid: Failed to intepret kinetic rate for reaction 'r2' as mass action.
+		faults.add("biomodel_82809561.vcml:Stochastic Spatial QUARTER CELL SHORT"); // local/hybrid: Failed to intepret kinetic rate for reaction 'r2' as mass action.
+		faults.add("biomodel_82809561.vcml:Stochastic/Deterministic Integrin Ligand Activation"); // local/hybrid: Failed to intepret kinetic rate for reaction 'r2' as mass action.
+		faults.add("biomodel_82809561.vcml:Copy of Stochastic Spatial QUARTER CELL SHORT"); // local/hybrid: Failed to intepret kinetic rate for reaction 'r2' as mass action.
+		faults.add("biomodel_88789981.vcml:Copy of Copy of Application0"); // local/hybrid: Clamped Species must be continuous rather than particles.
+		faults.add("biomodel_88820373.vcml:Copy of Copy of Application0"); // local/hybrid:
+		faults.add("biomodel_88834881.vcml:Copy of Copy of Application0"); // local/hybrid: Clamped Species must be continuous rather than particles.
+		return faults;
+	}
+
 	public static Map<String, MathCompareResults.Decision> knownLegacyFaults() {
 		HashMap<String, MathCompareResults.Decision> faults = new HashMap();
-		faults.put("lumped_reaction_proper_size_in_rate.vcml:Application0", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION); // =LEGACY= MathDifferent:DifferentExpression:expressions are different: ' - (0.001660538783162726 * s1)' vs ' -
-		faults.put("biomodel_47429473.vcml:NWASP at Lam Tip in 3D Geometry", MathCompareResults.Decision.MathDifferent_DIFFERENT_FASTINV_EXPRESSION); // =LEGACY= MathDifferent:DifferentFastInvExpression:could not find a match for fast invariant expression'Expres
-		faults.put("biomodel_55178308.vcml:Spatial 1 - 3D -  electrophysiology", MathCompareResults.Decision.MathDifferent_FAILURE_UNKNOWN); // =LEGACY= MathDifferent:FailedUnknown:line #630 Exception: variable Na not defined
-		faults.put("biomodel_59361239.vcml:full model", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION); // =LEGACY= MathDifferent:DifferentExpression:expressions are different: '( - (3.0199335548172735E-4 * ((66.2266
-		faults.put("biomodel_59361239.vcml:individual knockouts", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION); // =LEGACY= MathDifferent:DifferentExpression:expressions are different: '( - (3.0199335548172735E-4 * ((66.2266
-		faults.put("biomodel_59361239.vcml:time delay 60 s", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION); // =LEGACY= MathDifferent:DifferentExpression:expressions are different: '( - (3.0199335548172735E-4 * ((66.2266
-		faults.put("biomodel_59361239.vcml:receptor density", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION); // =LEGACY= MathDifferent:DifferentExpression:expressions are different: '( - (3.0199335548172735E-4 * ((66.2266
-		faults.put("biomodel_59361239.vcml:sensitivity analysis", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION); // =LEGACY= MathDifferent:DifferentExpression:expressions are different: '( - (3.0199335548172735E-4 * ((66.2266
-		faults.put("biomodel_59361239.vcml:individual knockouts with delay", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION); // =LEGACY= MathDifferent:DifferentExpression:expressions are different: '( - (3.0199335548172735E-4 * ((66.2266
-		faults.put("biomodel_59361239.vcml:integrin knockout", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION); // =LEGACY= MathDifferent:DifferentExpression:expressions are different: '( - (3.0199335548172735E-4 * ((6680.83
+		faults.put("lumped_reaction_proper_size_in_rate.vcml:Application0", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION); // (not saved): expressions are different: ' - (3.321077566325453E-8 * s1)' vs ' - (0.001660538783162726 * s1)'
+		faults.put("biomodel_47429473.vcml:NWASP at Lam Tip in 3D Geometry", MathCompareResults.Decision.MathDifferent_DIFFERENT_FASTINV_EXPRESSION); // (les:6:2010-08-12:Public): could not find a match for fast invariant expression'Expression@b29ced42 '(BarbedD_Cyt - Prof_Cyt + BarbedDPi_Cyt + BarbedT_Cyt)''
+		faults.put("biomodel_55178308.vcml:Spatial 1 - 3D -  electrophysiology", MathCompareResults.Decision.MathDifferent_FAILURE_UNKNOWN); // (Brown:26331356:2011-03-12:Private): line #630 Exception: variable Na not defined
+		faults.put("biomodel_97075423.vcml:NFSim", MathCompareResults.Decision.MathDifferent_LEGACY_SYMMETRY_PARTICLE_JUMP_PROCESS); // (mblinov:12487253:2015-10-07:Private): PJP='r1', ProcessSymmetryFactor: old='1.0', new='0.5'
+		faults.put("biomodel_97705317.vcml:NFSim app", MathCompareResults.Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS); // (BioNetGen:95093638:2015-11-23:Public): PJP='r10', SymmetryFactor: old='0.5' new='0.5', rate: old='[0.0016611295681063123]', new='[0.0033222591362126247]'
+		faults.put("biomodel_97786619.vcml:NFSim app", MathCompareResults.Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS); // (BioNetGen:95093638:2015-12-02:Public): PJP='r10', SymmetryFactor: old='0.5' new='0.5', rate: old='[0.0016611295681063123]', new='[0.0033222591362126247]'
+
+		// all private legacy Mass Action models with no reactant and no-zero Kf (all rest of models identified in issue 536 are fixed)
+		faults.put("biomodel_115999897.vcml:Application0",MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION); // (60339657:2017-08-06:Private): expressions are different: '(PI45P2 - (0.03 * IP3))' vs '((0.0928262 * PI45P2) - (0.03 * IP3))'
+		faults.put("biomodel_18978432.vcml:Aggregation",MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_EXPRESSIONS); // (17350612:2006-08-27:Private): equations have different number of expressions
+		faults.put("biomodel_196348974.vcml:prise2",MathCompareResults.Decision.MathDifferent_SUBDOMAINS_DONT_MATCH); // (195757411:2020-12-17:Private): subdomain Compartment
+		faults.put("biomodel_2027455.vcml:FrogEggExtractSimple",MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION); // (120904:2001-06-07:Private): expressions are different: ' - ( - (2.0E-5 * (0.1 - MPFia_Cell - Cdc2_Cell - MPF_Cell - MPFi_Cell) * Cdc25i_Cell / (0.1 + Cdc25i_Cell)) + (0.1 * (0.001 - Cdc25i_Cell) / (1.001 - Cd
+		faults.put("biomodel_2027455.vcml:testing",MathCompareResults.Decision.MathDifferent_EQUATION_REMOVED); // (120904:2001-06-07:Private): only one mathDescription had equation for 'Compartment::APCa_Cell' in SubDomain 'Compartment'
+		faults.put("biomodel_2027747.vcml:FrogEggExtractSimple",MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION); // (120904:2001-06-07:Private): expressions are different: ' - ( - (2.0E-5 * (0.1 - MPFia_Cell - Cdc2_Cell - MPF_Cell - MPFi_Cell) * Cdc25i_Cell / (0.1 + Cdc25i_Cell)) + (0.1 * (0.001 - Cdc25i_Cell) / (1.001 - Cd
+		faults.put("biomodel_2027747.vcml:testing",MathCompareResults.Decision.MathDifferent_EQUATION_REMOVED); // (120904:2001-06-07:Private): only one mathDescription had equation for 'Compartment::APCa_Cell' in SubDomain 'Compartment'
+		faults.put("biomodel_2028176.vcml:FrogEggExtractSimple",MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION); // (120904:2001-06-07:Private): expressions are different: ' - ( - (2.0E-5 * (0.1 - MPFia_Cell - Cdc2_Cell - MPF_Cell - MPFi_Cell) * Cdc25i_Cell / (0.1 + Cdc25i_Cell)) + (0.1 * (0.001 - Cdc25i_Cell) / (1.001 - Cd
+		faults.put("biomodel_2028176.vcml:testing",MathCompareResults.Decision.MathDifferent_EQUATION_REMOVED); // (120904:2001-06-07:Private): only one mathDescription had equation for 'Compartment::APCa_Cell' in SubDomain 'Compartment'
+		faults.put("biomodel_2028610.vcml:FrogEggExtractSimple",MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION); // (120904:2001-06-07:Private): expressions are different: ' - ( - (2.0E-5 * (0.1 - MPFia_Cell - Cdc2_Cell - MPF_Cell - MPFi_Cell) * Cdc25i_Cell / (0.1 + Cdc25i_Cell)) + (0.1 * (0.001 - Cdc25i_Cell) / (1.001 - Cd
+		faults.put("biomodel_2028610.vcml:testing",MathCompareResults.Decision.MathDifferent_EQUATION_REMOVED); // (120904:2001-06-07:Private): only one mathDescription had equation for 'Compartment::APCa_Cell' in SubDomain 'Compartment'
+		faults.put("biomodel_2028855.vcml:testing",MathCompareResults.Decision.MathDifferent_EQUATION_REMOVED); // (120904:2001-06-07:Private): only one mathDescription had equation for 'Compartment::APCa_Cell' in SubDomain 'Compartment'
+		faults.put("biomodel_2030592.vcml:FrogEggExtractSimple",MathCompareResults.Decision.MathDifferent_EQUATION_ADDED); // (120904:2001-06-07:Private): only one mathDescription had equation for 'APCa_Cell' in SubDomain 'Compartment'
+		faults.put("biomodel_24470582.vcml:comp2",MathCompareResults.Decision.MathDifferent_DIFFERENT_FASTRATE_EXPRESSION); // (17:2007-11-15:Private): fast rate expressions are different Old: 'Expression@d009a7a0 ' - ( - (100.0 * IP3_cyt * RI) - (30.000000030000002 * RI))''fast rate expressions are different New: 'Expression@ef6
+		faults.put("biomodel_29476020.vcml:s",MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_VARIABLES); // (2302355:2008-10-28:Private): 2 vs 3
+		faults.put("biomodel_29476020.vcml:stoch",MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_VARIABLES); // (2302355:2008-10-28:Private): 2 vs 3
+		faults.put("biomodel_29476020.vcml:s2",MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_VARIABLES); // (2302355:2008-10-28:Private): 2 vs 3
+		faults.put("biomodel_36587627.vcml:gradient_sensing",MathCompareResults.Decision.MathDifferent_EQUATION_REMOVED); // (35091731:2009-11-07:Group=[jmhaugh(13213103)]):
+		faults.put("biomodel_36588994.vcml:RL_binding",MathCompareResults.Decision.MathDifferent_EQUATION_REMOVED); // (35091731:2009-11-07:Group=[jmhaugh(13213103)]):
+		faults.put("biomodel_36588994.vcml:gradient",MathCompareResults.Decision.MathDifferent_EQUATION_REMOVED); // (35091731:2009-11-07:Group=[jmhaugh(13213103)]):
+		faults.put("biomodel_36800083.vcml:RL_binding",MathCompareResults.Decision.MathDifferent_EQUATION_REMOVED); // (35091731:2009-11-17:Group=[jmhaugh(13213103)]):
+		faults.put("biomodel_36800083.vcml:gradient",MathCompareResults.Decision.MathDifferent_EQUATION_REMOVED); // (35091731:2009-11-17:Group=[jmhaugh(13213103)]):
+		faults.put("biomodel_38770411.vcml:RL_binding",MathCompareResults.Decision.MathDifferent_EQUATION_REMOVED); // (35091731:2010-02-11:Private):
+		faults.put("biomodel_40500269.vcml:3D",MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_EXPRESSIONS); // (15957189:2010-03-19:Private): fast invariants have different number of expressions
+		faults.put("biomodel_40500269.vcml:2Dprova3D",MathCompareResults.Decision.MathDifferent_FAILURE_UNKNOWN); // (15957189:2010-03-19:Private): line #128 Exception: variable Ca1_green not defined
+		faults.put("biomodel_40500269.vcml:3Dsph",MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_EXPRESSIONS); // (15957189:2010-03-19:Private): fast invariants have different number of expressions
+		faults.put("biomodel_40500269.vcml:3DclustB",MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_EXPRESSIONS); // (15957189:2010-03-19:Private): fast invariants have different number of expressions
+		faults.put("biomodel_40500269.vcml:3DclustBCh",MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_EXPRESSIONS); // (15957189:2010-03-19:Private): fast invariants have different number of expressions
+		faults.put("biomodel_40500269.vcml:3D clust Ch",MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_EXPRESSIONS); // (15957189:2010-03-19:Private): fast invariants have different number of expressions
+		faults.put("biomodel_40500269.vcml:3D clust ch piccolo",MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_EXPRESSIONS); // (15957189:2010-03-19:Private): fast invariants have different number of expressions
+		faults.put("biomodel_40500269.vcml:clust pic double",MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_EXPRESSIONS); // (15957189:2010-03-19:Private): fast invariants have different number of expressions
+		faults.put("biomodel_40500269.vcml:clust pic double sx dx",MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_EXPRESSIONS); // (15957189:2010-03-19:Private): fast invariants have different number of expressions
+		faults.put("biomodel_44582721.vcml:1",MathCompareResults.Decision.MathDifferent_EQUATION_REMOVED); // (37651188:2010-05-16:Private):
+		faults.put("biomodel_50946331.vcml:C:\\Documents and Settings\\cfalkenberg\\.vcell\\BioNetGen\\vcell_bng_24405\\vcell_bng_24405_Compartmental",MathCompareResults.Decision.MathDifferent_FAILURE_UNKNOWN); // (3886845:2010-11-03:Private):
+		faults.put("biomodel_50946331.vcml:v2",MathCompareResults.Decision.MathDifferent_FAILURE_UNKNOWN); // (3886845:2010-11-03:Private):
+		faults.put("biomodel_5560175.vcml:SpatialModelUSASmall",MathCompareResults.Decision.MathDifferent_UNKNOWN_DIFFERENCE_IN_EQUATION); // (418:2003-06-19:Private): couldn't find problem with jumpCondition for I in compartment Inside_Outside_membrane
+		faults.put("biomodel_56588035.vcml:Smol_r4",MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_PARTICLE_JUMP_PROCESS); // (17096841:2011-04-27:Private): removed PJPs=[r4_reverse], added PJPs=[]
+		faults.put("biomodel_56588035.vcml:Smol_r3",MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_PARTICLE_JUMP_PROCESS); // (17096841:2011-04-27:Private): removed PJPs=[r3_reverse], added PJPs=[]
+		faults.put("biomodel_56588035.vcml:Smol_r1",MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_PARTICLE_JUMP_PROCESS); // (17096841:2011-04-27:Private): removed PJPs=[r1], added PJPs=[]
+		faults.put("biomodel_56588035.vcml:Smol_r0",MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_PARTICLE_JUMP_PROCESS); // (17096841:2011-04-27:Private): removed PJPs=[r0], added PJPs=[]
+		faults.put("biomodel_56588035.vcml:Smol_r5",MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_PARTICLE_JUMP_PROCESS); // (17096841:2011-04-27:Private): removed PJPs=[r5], added PJPs=[]
+		faults.put("biomodel_56588035.vcml:Smol_r6",MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_PARTICLE_JUMP_PROCESS); // (17096841:2011-04-27:Private): removed PJPs=[r6_reverse], added PJPs=[]
+		faults.put("biomodel_85221354.vcml:Application1",MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_EXPRESSIONS); // (84148778:2013-11-25:Private): equations have different number of expressions
+		faults.put("biomodel_85241086.vcml:Application1",MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_EXPRESSIONS); // (84148778:2013-11-27:Private): equations have different number of expressions
+		faults.put("biomodel_85305863.vcml:Application0",MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_EXPRESSIONS); // (84148778:2013-12-03:Private): equations have different number of expressions
+		faults.put("biomodel_87760173.vcml:Application0",MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION); // (34302033:2014-04-30:Private): expressions are different: ' - (4.697674418604652E-5 * Ste2_active * ((0.0012 * Ste2_active * Alfa) - (0.6 * Ste2_active) - (0.24 * Ste2_active)) * Alfa)' vs ' - (4.697674418604652
+		faults.put("biomodel_94794583.vcml:Steady state",MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION); // (94778569:2015-05-13:Private): expressions are different: ' - (20.0 * IP3_Cyt)' vs '0.0'
+
+
+		// all private Hybrid models (files not committed to repo)
+		faults.put("biomodel_100059482.vcml:3D hybrid", MathCompareResults.Decision.MathDifferent_LEGACY_RATE_PARTICLE_JUMP_PROCESS); // (gerardw:81356985:2016-05-20:Group=[fgao(6606010),schaff(17)]): PJP='flux0_reverse', old='[(2.0 * RanC_nuc)]', new='[(1204.0 * RanC_nuc)]'
+		faults.put("biomodel_101986247.vcml:Application0", MathCompareResults.Decision.MathDifferent_LEGACY_RATE_PARTICLE_JUMP_PROCESS); // (boris:21:2016-08-18:Private): PJP='r0', old='[(0.0016611295681063123 * A)]', new='[A]'
+		faults.put("biomodel_102370928.vcml:single cycle_hybrid_stirred", MathCompareResults.Decision.MathDifferent_LEGACY_RATE_PARTICLE_JUMP_PROCESS); // (boris:21:2016-09-15:Private): PJP='r0', old='[(1.920265780730897E-4 * S)]', new='[(0.1156 * S)]'
+		faults.put("biomodel_111277118.vcml:single cycle_hybrid_stirred", MathCompareResults.Decision.MathDifferent_FAILURE_UNKNOWN); // (boris:21:2017-04-14:Group=[DCResasco(14570623),schaff(17)]): infinite loop in eliminating function nesting
+		faults.put("biomodel_111277118.vcml:Copy of single cycle_hybrid_stirred", MathCompareResults.Decision.MathDifferent_FAILURE_UNKNOWN); // (boris:21:2017-04-14:Group=[DCResasco(14570623),schaff(17)]):
+		faults.put("biomodel_82456311.vcml:smoldyn", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_PARTICLE_JUMP_PROCESS); // (schaff:17:2013-05-30:Private): removed PJPs=[], added PJPs=[r0_reverse, r0]
+		faults.put("biomodel_82456311.vcml:hybrid", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION); // (schaff:17:2013-05-30:Private): expressions are different: ' - ((s0 * s2) - (2.0 * s1))' vs ' - ((0.0016611295681063123 * s0 * s2) - (0.0033222591362126247 * s1))'
+		faults.put("biomodel_82456701.vcml:smoldyn", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_PARTICLE_JUMP_PROCESS); // (schaff:17:2013-05-30:Private): removed PJPs=[], added PJPs=[r0_reverse, r0]
+		faults.put("biomodel_82456701.vcml:hybrid", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION); // (schaff:17:2013-05-30:Private): expressions are different: ' - ((s0 * s2) - (2.0 * s1))' vs ' - ((0.0016611295681063123 * s0 * s2) - (0.0033222591362126247 * s1))'
+		faults.put("biomodel_82457170.vcml:smoldyn", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_PARTICLE_JUMP_PROCESS); // (schaff:17:2013-05-30:Private): removed PJPs=[], added PJPs=[r0_reverse, r0]
+		faults.put("biomodel_82457170.vcml:hybrid", MathCompareResults.Decision.MathDifferent_LEGACY_RATE_PARTICLE_JUMP_PROCESS); // (schaff:17:2013-05-30:Private): PJP='r0', old='[(0.0016611295681063123 * s2)]', new='[s2]'
+		faults.put("biomodel_82457836.vcml:3D stoch", MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_PARTICLE_JUMP_PROCESS); // (schaff:17:2013-05-31:Private): removed PJPs=[], added PJPs=[flux0_reverse, flux0]
+		faults.put("biomodel_82457836.vcml:Copy of 3D stoch", MathCompareResults.Decision.MathDifferent_LEGACY_RATE_PARTICLE_JUMP_PROCESS); // (schaff:17:2013-05-31:Private): PJP='flux0_reverse', old='[(2.0 * RanC_nuc)]', new='[(1204.0 * RanC_nuc)]'
+		faults.put("biomodel_82790975.vcml:Stochastic Spatial QUARTER CELL SHORT", MathCompareResults.Decision.MathDifferent_LEGACY_RATE_PARTICLE_JUMP_PROCESS); // (user_3:80664633:2013-06-19:Private): PJP='IntLigandBinding', old='[(0.008305647840531562 * IntLigand)]', new='[(5.0 * IntLigand)]'
+		faults.put("biomodel_82790975.vcml:Stochastic/Deterministic Integrin Ligand Activation", MathCompareResults.Decision.MathDifferent_LEGACY_RATE_PARTICLE_JUMP_PROCESS); // (user_3:80664633:2013-06-19:Private): PJP='IntLigandBinding', old='[(0.008305647840531562 * IntLigand)]', new='[(5.0 * IntLigand)]'
+		faults.put("biomodel_82800592.vcml:Test of Hybrid", MathCompareResults.Decision.MathDifferent_LEGACY_RATE_PARTICLE_JUMP_PROCESS); // (user_3:80664633:2013-06-19:Private): PJP='r0', old='[(0.0049833887043189366 * IntLigand)]', new='[(3.0 * IntLigand)]'
+		faults.put("biomodel_88789981.vcml:Copy of Application0", MathCompareResults.Decision.MathDifferent_LEGACY_RATE_PARTICLE_JUMP_PROCESS); // (user_2:88443094:2014-06-10:Private): PJP='ATP_r', old='[(0.8305647840531561 * Ca_cyt)]', new='[(500.0 * Ca_cyt)]'
+		faults.put("biomodel_88820373.vcml:Stochastic_VGCCopening", MathCompareResults.Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS); // (user_2:88443094:2014-06-10:Private): PJP='Syt_r', SymmetryFactor: old='1.0' new='1.0', rate: old='[(1.4545055544473134E-12 * Ca_cyt)]', new='[(115.0 * Ca_cyt)]'
+		faults.put("biomodel_88834881.vcml:Stochastic_VGCCopening", MathCompareResults.Decision.MathDifferent_FAILURE_UNKNOWN); // (user_2:88443094:2014-06-11:Private):
+		faults.put("biomodel_89716975.vcml:Hybrid", MathCompareResults.Decision.MathDifferent_LEGACY_RATE_PARTICLE_JUMP_PROCESS); // (schaff:17:2014-07-18:Group=[boris(21)]): PJP='rAC', old='[A]', new='[(602.0 * A)]'
+		faults.put("biomodel_95401413.vcml:3D Stochastic", MathCompareResults.Decision.MathDifferent_LEGACY_RATE_PARTICLE_JUMP_PROCESS); // (user_1:93509706:2015-06-26:Private): PJP='V_MARCKS', old='[(0.016611295681063124 * M)]', new='[(10.0 * M)]'
+		faults.put("biomodel_95401413.vcml:Application0", MathCompareResults.Decision.MathDifferent_LEGACY_RATE_PARTICLE_JUMP_PROCESS); // (user_1:93509706:2015-06-26:Private): PJP='PDGF_binding_active_gradient', old='[(1.107419712070875E-5 * (1.0 + (0.001667 * x)))]', new='[(0.006666666666666667 * (1.0 + (0.001667 * x)))]'
+		faults.put("biomodel_95401686.vcml:3D Stochastic", MathCompareResults.Decision.MathDifferent_LEGACY_RATE_PARTICLE_JUMP_PROCESS); // (user_1:93509706:2015-06-26:Private): PJP='V_MARCKS', old='[(0.016611295681063124 * M)]', new='[(10.0 * M)]'
+		faults.put("biomodel_95401705.vcml:3D Stochastic", MathCompareResults.Decision.MathDifferent_LEGACY_RATE_PARTICLE_JUMP_PROCESS); // (user_1:93509706:2015-06-26:Private): PJP='V_MARCKS', old='[(0.016611295681063124 * M)]', new='[(10.0 * M)]'
+		faults.put("biomodel_95401705.vcml:Application0", MathCompareResults.Decision.MathDifferent_LEGACY_RATE_PARTICLE_JUMP_PROCESS); // (user_1:93509706:2015-06-26:Private): PJP='PDGF_binding_active_gradient', old='[1.107419712070875E-5]', new='[0.006666666666666667]'
+		faults.put("biomodel_95420572.vcml:3D Stochastic Spatial", MathCompareResults.Decision.MathDifferent_LEGACY_RATE_PARTICLE_JUMP_PROCESS); // (user_1:93509706:2015-06-29:Private): PJP='V_MARCKS', old='[(0.016611295681063124 * M)]', new='[(10.0 * M)]'
+		faults.put("biomodel_95420572.vcml:3D Stochastic Spatial Small Cube", MathCompareResults.Decision.MathDifferent_LEGACY_RATE_PARTICLE_JUMP_PROCESS); // (user_1:93509706:2015-06-29:Private): PJP='PDGF_binding_active_gradient', old='[(0.70272 * (1.0 + (0.001667 * x)))]', new='[(423.03744000000006 * (1.0 + (0.001667 * x)))]'
+		faults.put("biomodel_95439383.vcml:3D Stochastic", MathCompareResults.Decision.MathDifferent_LEGACY_RATE_PARTICLE_JUMP_PROCESS); // (user_1:93509706:2015-07-01:Private): PJP='V_MARCKS', old='[(0.016611295681063124 * M)]', new='[(10.0 * M)]'
+		faults.put("biomodel_95439383.vcml:Application0", MathCompareResults.Decision.MathDifferent_LEGACY_RATE_PARTICLE_JUMP_PROCESS); // (user_1:93509706:2015-07-01:Private): PJP='PDGF_binding_active_gradient', old='[(0.70272 * (1.0 + (0.001667 * x)))]', new='[(423.03744000000006 * (1.0 + (0.001667 * x)))]'
+		faults.put("biomodel_97188386.vcml:3D hybrid", MathCompareResults.Decision.MathDifferent_LEGACY_RATE_PARTICLE_JUMP_PROCESS); // (gerardw:81356985:2015-10-21:Private): PJP='flux0_reverse', old='[(2.0 * RanC_nuc)]', new='[(1204.0 * RanC_nuc)]'
+		faults.put("biomodel_97210786.vcml:3D hybrid", MathCompareResults.Decision.MathDifferent_LEGACY_RATE_PARTICLE_JUMP_PROCESS); // (gerardw:81356985:2015-10-23:Private): PJP='flux0_reverse', old='[(2.0 * RanC_nuc)]', new='[(1204.0 * RanC_nuc)]'
+		faults.put("biomodel_97236290.vcml:3D hybrid", MathCompareResults.Decision.MathDifferent_LEGACY_RATE_PARTICLE_JUMP_PROCESS); // (gerardw:81356985:2015-10-26:Private): PJP='flux0_reverse', old='[(2.0 * RanC_nuc)]', new='[(1204.0 * RanC_nuc)]'
+		faults.put("biomodel_97236377.vcml:3D hybrid", MathCompareResults.Decision.MathDifferent_LEGACY_RATE_PARTICLE_JUMP_PROCESS); // (gerardw:81356985:2015-10-26:Private): PJP='flux0_reverse', old='[(2.0 * RanC_nuc)]', new='[(1204.0 * RanC_nuc)]'
+		faults.put("biomodel_97536525.vcml:3D hybrid", MathCompareResults.Decision.MathDifferent_LEGACY_RATE_PARTICLE_JUMP_PROCESS); // (gerardw:81356985:2015-11-04:Group=[fgao(6606010),schaff(17)]): PJP='flux0_reverse', old='[(2.0 * RanC_nuc)]', new='[(1204.0 * RanC_nuc)]'
+		faults.put("biomodel_97553821.vcml:3D hybrid", MathCompareResults.Decision.MathDifferent_LEGACY_RATE_PARTICLE_JUMP_PROCESS); // (gerardw:81356985:2015-11-05:Group=[fgao(6606010),schaff(17)]): PJP='flux0_reverse', old='[(2.0 * RanC_nuc)]', new='[(1204.0 * RanC_nuc)]'
+		faults.put("biomodel_97557776.vcml:3D hybrid", MathCompareResults.Decision.MathDifferent_LEGACY_RATE_PARTICLE_JUMP_PROCESS); // (gerardw:81356985:2015-11-06:Group=[fgao(6606010),schaff(17)]): PJP='flux0_reverse', old='[(2.0 * RanC_nuc)]', new='[(1204.0 * RanC_nuc)]'
 		return faults;
 	}
 
@@ -182,15 +304,25 @@ public class MathGenCompareTest {
 
 		ArrayList<String> appTestCases = new ArrayList<>();
 		for (String filename : filenames){
+//if (true
+//&& !filename.equals("biomodel_28555193.vcml")
+//&& !filename.equals("biomodel_28572365.vcml")
+//&& !filename.equals("biomodel_29136875.vcml")
+//&& !filename.equals("biomodel_29136972.vcml")
+//&& !filename.equals("biomodel_39781155.vcml")
+//&& !filename.equals("biomodel_39781314.vcml")
+//&& !filename.equals("biomodel_94794583.vcml")
+//) continue;
 			String vcmlStr;
 			try (InputStream testFileInputStream = VcmlTestSuiteFiles.getVcmlTestCase(filename);) {
 				vcmlStr = new BufferedReader(new InputStreamReader(testFileInputStream))
 						.lines().collect(Collectors.joining("\n"));
 			}
 			BioModel biomodel = XmlHelper.XMLToBioModel(new XMLSource(vcmlStr));
+//if (biomodel.getModel().getStructureTopology().isEmpty()) continue;
 			for (SimulationContext simContext : biomodel.getSimulationContexts()){
 				String test_case_name = filename + ":" + simContext.getName();
-//if (!knownReductionFaults().containsKey(test_case_name)) continue;
+//if (!knownLegacyFaults().containsKey(test_case_name)) continue;
 				appTestCases.add(test_case_name);
 			}
 		}
@@ -220,16 +352,33 @@ public class MathGenCompareTest {
 		boolean bTransformKMOLE = true;
 		boolean bTransformVariables = false;
 
-		if (bTransformKMOLE){
-			BioModelTransforms.restoreOldReservedSymbolsIfNeeded(transformed_biomodel);
-		}
-
 		SimulationContext orig_simContext = orig_biomodel.getSimulationContext(simContextName);
 		MathDescription originalMath = orig_simContext.getMathDescription();
 		MathDescription origMathClone = new MathDescription(originalMath); // test round trip to/from MathDescription.readFromDatabase()
 		SimulationContext new_simContext = transformed_biomodel.getSimulationContexts(orig_simContext.getName());
 		//new_simContext.setUsingMassConservationModelReduction(false);
-		new_simContext.updateAll(false);
+		boolean bKnownMathGenerationFailure = knownMathGenerationFailures().contains(filename_colon_appname);
+		try {
+			if (bTransformKMOLE) {
+				boolean bWasTransformed = false;
+				try {
+					bWasTransformed = BioModelTransforms.restoreOldReservedSymbolsIfNeeded(transformed_biomodel);
+					new_simContext.updateAll(false);
+				} finally {
+					if (bWasTransformed) BioModelTransforms.restoreLatestReservedSymbols(transformed_biomodel);
+				}
+			}else{
+				new_simContext.updateAll(false);
+			}
+			Assert.assertFalse("math generation succeeded for '"+filename_colon_appname+"', " +
+					"but expecting math generation failure, remove from knownMathGenerationFailures()",
+					bKnownMathGenerationFailure);
+		} catch (Exception e){
+			e.printStackTrace();
+			if (!bKnownMathGenerationFailure){
+				Assert.fail("math generation failed for '"+filename_colon_appname+"', but expecting math to generate, add to knownMathGenerationFailures()");
+			}
+		}
 		MathDescription newMath = new_simContext.getMathDescription();
 		MathDescription newMathClone = new MathDescription(newMath); // test round trip to/from MathDescription.readFromDatabase()
 		MathCompareResults results = null;
@@ -245,14 +394,48 @@ public class MathGenCompareTest {
 		if (!results.isEquivalent()){
 			// try again using non-reduced math
 			new_simContext.setUsingMassConservationModelReduction(false);
-			new_simContext.updateAll(false);
+			try {
+				if (bTransformKMOLE) {
+					boolean bWasTransformed = false;
+					try {
+						bWasTransformed = BioModelTransforms.restoreOldReservedSymbolsIfNeeded(transformed_biomodel);
+						new_simContext.updateAll(false);
+					} finally {
+						if (bWasTransformed) BioModelTransforms.restoreLatestReservedSymbols(transformed_biomodel);
+					}
+				}else{
+					new_simContext.updateAll(false);
+				}
+				Assert.assertFalse("math generation succeeded for '"+filename_colon_appname+"', " +
+									"but expecting math generation failure, remove from knownMathGenerationFailures()",
+							bKnownMathGenerationFailure);
+			} catch (Exception e) {
+				e.printStackTrace();
+				if (!bKnownMathGenerationFailure) {
+					Assert.fail("math generation failed for '" + filename_colon_appname + "', but expecting math to generate, add to knownMathGenerationFailures()");
+				}
+			}
 			newMath = new_simContext.getMathDescription();
 			MathCompareResults results2 = MathDescription.testEquivalency(SimulationSymbolTable.createMathSymbolTableFactory(), originalMath, newMath);
 
 			if (!results2.isEquivalent()) {
-				try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(knownProblemFile, true));) {
-					bufferedWriter.write("faults.put(\"" + filename_colon_appname + "\", MathCompareResults.Decision." + results2.decision + "); // =LEGACY= "
-							+ results2.toDatabaseStatus().substring(0, Math.min(results2.toDatabaseStatus().length(), 100)) + "\n");
+				try (BufferedWriter codeProblemFileWriter = new BufferedWriter(new FileWriter(codeKnownProblemFile, true));
+					 BufferedWriter csvProblemFileWriter = new BufferedWriter(new FileWriter(csvKnownProblemFile, true));
+				) {
+					Version version = orig_biomodel.getVersion();
+					String ownerUserid = "", ownerKey = "", date = "", privacy = "";
+					if (version != null && version.getOwner() != null){
+						ownerUserid = version.getOwner().getName();
+						ownerKey = version.getOwner().getID().toString();
+						date = new java.sql.Date(version.getDate().getTime()).toLocalDate().toString();
+						privacy = version.getGroupAccess().toString();
+					}
+					String cause = results2.toCause().substring(0, Math.min(results2.toCause().length(), 180));
+					codeProblemFileWriter.write("faults.put(\"" + filename_colon_appname + "\"" +
+							",MathCompareResults.Decision." + results2.decision + ");" +
+							" // ("+ownerKey+":"+date+":"+privacy+"): " + cause + "\n");
+					csvProblemFileWriter.write(filename+"|"+date+"|"+ownerUserid+"("+ownerKey+")"+"|"+privacy+
+							"|"+orig_biomodel.getName()+"|"+simContextName+"|"+results2.decision+"|"+cause+"\n");
 				}
 				if (knownFault == null) {
 					Assert.fail("'" + filename_colon_appname + "' expecting equivalent, " +
@@ -354,7 +537,7 @@ public class MathGenCompareTest {
 			Assert.fail("math equivalent for '"+filename_colon_appname+"', but expecting '"+knownReductionFault+"', remove known fault");
 		}
 		if (!reductionCompareResults.isEquivalent()){
-			try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(knownProblemFile, true));){
+			try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(codeKnownProblemFile, true));){
 				bufferedWriter.write("faults.put(\""+filename_colon_appname+"\", MathCompareResults.Decision."+reductionCompareResults.decision+"); // =REDUCED= "
 						+reductionCompareResults.toDatabaseStatus().substring(0, Math.min(reductionCompareResults.toDatabaseStatus().length(), 100))+"\n");
 			}

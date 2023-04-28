@@ -20,6 +20,8 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.zip.InflaterInputStream;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jdom.Element;
 import org.vcell.optimization.ProfileData;
 import org.vcell.optimization.ProfileDataElement;
@@ -54,6 +56,7 @@ import cbit.vcell.xml.XmlReader;
  */
  
 public class MicroscopyXmlReader {
+	private final static Logger lg = LogManager.getLogger(MicroscopyXmlReader.class);
 	
 	private XmlReader vcellXMLReader = null;
 	
@@ -140,10 +143,9 @@ public class MicroscopyXmlReader {
 		try{
 			while((readCount+= rawInputStream.read(shortsAsBytes, readCount, shortsAsBytes.length-readCount)) != shortsAsBytes.length){}
 		}catch(Exception e){
-			e.printStackTrace();
 			throw new XmlParseException("error reading image pixels: ", e);
 		}finally{
-			if(rawInputStream != null){try{rawInputStream.close();}catch(Exception e2){e2.printStackTrace();}}
+			if(rawInputStream != null){try{rawInputStream.close();}catch(Exception e2){lg.error(e2.getMessage(), e2);}}
 		}
 	
 		ByteBuffer byteBuffer = ByteBuffer.wrap(shortsAsBytes);
@@ -172,7 +174,6 @@ public class MicroscopyXmlReader {
 		try {
 			newimage = new UShortImage(shortPixels,origin,extent,aNumX,aNumY,aNumZ);
 		} catch (ImageException e) {
-			e.printStackTrace();
 			throw new XmlParseException("error reading image", e);
 		}
 		return newimage;

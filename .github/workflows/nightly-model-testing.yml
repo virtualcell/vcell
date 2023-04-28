@@ -17,6 +17,15 @@ jobs:
         uses: actions/checkout@v3
         with: 
           ref: '${{ github.ref }}'
+          
+      - name: Get GH Reference
+        run: echo '${{ github.ref }}' >> ~/github.ref
+        
+      - name: Upload Ref
+        uses: actions/upload-artifact@v3
+        with:
+          name: github_hash
+          path: ~/github.ref
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -147,6 +156,12 @@ jobs:
         with:
           name: export_results.txt
           path: ~/work/vcell/vcell/public/biomodel/vcml/export_results.txt
+      
+      - name: Upload original log of export
+        uses: actions/upload-artifact@v3
+        with:
+          name: export_log_original
+          path: ~/work/vcell/vcell/public/biomodel/vcml/output/jobLog.txt
           
       # Report a Problem to Slack
       - name: Report Problem to Slack
@@ -206,6 +221,12 @@ jobs:
         with:
           name: import_results.txt
           path: ~/import_results.txt
+          
+      - name: Upload Results of Round-Trip
+        uses: actions/upload-artifact@v3
+        with:
+          name: import_log_original
+          path: ~/input_files/output/jobLog.txt
       
       # Report a Problem to Slack
       - name: Report Problem to Slack

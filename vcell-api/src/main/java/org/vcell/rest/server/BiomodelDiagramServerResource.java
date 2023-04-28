@@ -7,6 +7,8 @@ import java.util.List;
 
 import javax.imageio.ImageIO;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.restlet.data.MediaType;
 import org.restlet.data.Status;
 import org.restlet.ext.wadl.MethodInfo;
@@ -31,7 +33,8 @@ import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 
 public class BiomodelDiagramServerResource extends AbstractServerResource implements BiomodelDiagramResource {
-
+	private final static Logger lg = LogManager.getLogger(BiomodelDiagramServerResource.class);
+	
 	private String biomodelid;
 	
 	
@@ -92,7 +95,7 @@ public class BiomodelDiagramServerResource extends AbstractServerResource implem
 			byte[] imageBytes = outputStream.toByteArray();
 			return new ByteArrayRepresentation(imageBytes, MediaType.IMAGE_PNG, imageBytes.length);
 		} catch (Exception e) {
-			e.printStackTrace();
+			lg.error(e.getMessage(), e);
 			throw new ResourceException(Status.SERVER_ERROR_INTERNAL, e.getMessage());
 		}
 	}
@@ -108,10 +111,10 @@ public class BiomodelDiagramServerResource extends AbstractServerResource implem
 				String vcml = restDatabaseService.query(this,vcellUser);
 				return vcml;
 			} catch (PermissionException e) {
-				e.printStackTrace();
+				lg.error(e);
 				throw new ResourceException(Status.CLIENT_ERROR_UNAUTHORIZED, "permission denied to requested resource");
 			} catch (ObjectNotFoundException e) {
-				e.printStackTrace();
+				lg.error(e);
 				throw new ResourceException(Status.CLIENT_ERROR_NOT_FOUND, "biomodel not found");
 			} catch (Exception e){
 				throw new ResourceException(Status.SERVER_ERROR_INTERNAL, e.getMessage());

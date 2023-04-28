@@ -8,6 +8,8 @@ import javax.jms.Session;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.broker.BrokerService;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.scijava.Priority;
 import org.scijava.plugin.Plugin;
 
@@ -20,6 +22,7 @@ import cbit.vcell.message.jms.VCMessagingServiceJms;
 
 @Plugin(type = VCMessagingService.class)
 public class VCMessagingServiceEmbedded extends VCMessagingServiceJms {
+	private final static Logger lg = LogManager.getLogger(VCMessagingServiceEmbedded.class);
 	private BrokerService broker = null;
 	private boolean initialized = false;
 	
@@ -48,7 +51,7 @@ public class VCMessagingServiceEmbedded extends VCMessagingServiceJms {
 //			broker.addConnector(connector);
 			broker.start();
 		} catch (Exception e) {
-			e.printStackTrace();
+			lg.error(e.getMessage(), e);
 			throw new VCMessagingException(e.getMessage(),e);
 		}
 	}

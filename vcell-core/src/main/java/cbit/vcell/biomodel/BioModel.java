@@ -15,8 +15,10 @@ import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.beans.VetoableChangeSupport;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import cbit.image.VCImage;
 import cbit.vcell.mapping.*;
 import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.model.*;
@@ -39,12 +41,8 @@ import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.Matchable;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.TokenMangler;
-import org.vcell.util.document.BioModelChildSummary;
+import org.vcell.util.document.*;
 import org.vcell.util.document.BioModelChildSummary.MathType;
-import org.vcell.util.document.Identifiable;
-import org.vcell.util.document.PropertyConstants;
-import org.vcell.util.document.VCDocument;
-import org.vcell.util.document.Version;
 
 import cbit.image.ImageException;
 import cbit.vcell.biomodel.meta.IdentifiableProvider;
@@ -103,8 +101,7 @@ Identifiable, IdentifiableProvider, IssueSource, Displayable, VCellSbmlName
 		try {
 			setVersion(version);
 		} catch (PropertyVetoException e) {
-			e.printStackTrace(System.out);
-			throw new RuntimeException(e.getMessage());
+			throw new RuntimeException(e.getMessage(), e);
 		}
 	}
 	/**
@@ -213,6 +210,84 @@ Identifiable, IdentifiableProvider, IssueSource, Displayable, VCellSbmlName
 		}
 	}
 
+	public class VersionableInfo {
+		public final VersionableType versionableType;
+		public final String name;
+		public final KeyValue key;
+
+		public VersionableInfo(VersionableType versionableType, String name, KeyValue key) {
+			this.versionableType = versionableType;
+			this.name = name;
+			this.key = key;
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) return true;
+			if (o == null || getClass() != o.getClass()) return false;
+			VersionableInfo that = (VersionableInfo) o;
+			return Objects.equals(versionableType, that.versionableType) && Objects.equals(name, that.name);
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(versionableType, name);
+		}
+
+		@Override
+		public String toString() {
+			return versionableType.getTypeName()+"("+name+"):"+key;
+		}
+	}
+	public List<VersionableInfo> gatherChildVersionableInfos() {
+		Set<VersionableInfo> versionSet = new LinkedHashSet<>();
+		versionSet.add(new VersionableInfo(VersionableType.Model,getModel().getName(), getModel().getKey()));
+		for (SimulationContext sc : getSimulationContexts()){
+			versionSet.add(new VersionableInfo(VersionableType.SimulationContext, sc.getName(), sc.getKey()));
+			if (sc.getGeometry()!=null){
+				Geometry geo = sc.getGeometry();
+				versionSet.add(new VersionableInfo(VersionableType.Geometry, geo.getName(), geo.getKey()));
+				if (geo.getGeometrySpec().getImage()!=null){
+					VCImage img = geo.getGeometrySpec().getImage();
+					versionSet.add(new VersionableInfo(VersionableType.VCImage, img.getName(), img.getKey()));
+				}
+			}
+			if (sc.getMathDescription() != null){
+				MathDescription math = sc.getMathDescription();
+				versionSet.add(new VersionableInfo(VersionableType.MathDescription, math.getName(), math.getKey()));
+			}
+		}
+		for (Simulation sim : getSimulations()){
+			versionSet.add(new VersionableInfo(VersionableType.VCImage, sim.getName(), sim.getKey()));
+		}
+		return new ArrayList<>(versionSet);
+	}
+
+	public final static class ClearVersion implements Consumer<Versionable> {
+		@Override
+		public void accept(Versionable versionable) {
+			versionable.clearVersion();
+		}
+	}
+
+	public void visitChildVersionables(Consumer<Versionable> operation) {
+		operation.accept(getModel());
+		for (SimulationContext sc : getSimulationContexts()){
+			operation.accept(sc);
+			if (sc.getGeometry()!=null){
+				operation.accept(sc.getGeometry());
+				if (sc.getGeometry().getGeometrySpec().getImage()!=null){
+					operation.accept(sc.getGeometry().getGeometrySpec().getImage());
+				}
+			}
+			if (sc.getMathDescription() != null){
+				operation.accept(sc.getMathDescription());
+			}
+		}
+		for (Simulation sim : getSimulations()){
+			operation.accept(sim);
+		}
+	}
 
 /**
  * The addPropertyChangeListener method was generated to support the propertyChange field.
@@ -692,8 +767,8 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 					try {
 						fieldSimulations[i].setMathDescription((MathDescription)evt.getNewValue());
 					}catch (PropertyVetoException e){
-						System.out.println("error propagating math from SimulationContext '"+((SimulationContext)evt.getSource()).getName()+"' to Simulation '"+fieldSimulations[i].getName());
-						e.printStackTrace(System.out);
+						lg.error("error propagating math from SimulationContext '"+((SimulationContext)evt.getSource()).getName()+"' " +
+								"to Simulation '"+fieldSimulations[i].getName(), e);
 					}
 				}
 			}
@@ -799,12 +874,15 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 
 }
 
-
+public void repairLegacyModelProblems() {
+	BioModelTransforms.repairLegacyProblems(this);
+}
 /**
  * Insert the method's description here.
  * Creation date: (4/12/01 11:24:12 AM)
  */
 public void refreshDependencies() {
+	repairLegacyModelProblems();
 	//
 	// listen to self
 	//
@@ -985,7 +1063,7 @@ private void updateSimulationOwners(){
 			sim.setSimulationOwner(getSimulationContext(sim));
 		} catch (ObjectNotFoundException e) {
 			sim.setSimulationOwner(null);
-			e.printStackTrace();
+			lg.error(e);
 		}
 	}
 }
@@ -1344,8 +1422,7 @@ public VCID getVCID(Identifiable identifiable) {
 	try {
 		vcid = VCID.fromString(className+"("+localName+")");
 	} catch (VCID.InvalidVCIDException e) {
-		e.printStackTrace();
-		throw new RuntimeException(e.getMessage());
+		throw new RuntimeException(e.getMessage(), e);
 	}
 	return vcid;
 }
@@ -1410,7 +1487,7 @@ public String getFreeSimulationName() {
 	}
 }
 
-private Simulation getSimulation(String name) {
+public Simulation getSimulation(String name) {
 	for (Simulation simulation : fieldSimulations){
 		if (simulation.getName().equals(name)) {
 			return simulation;

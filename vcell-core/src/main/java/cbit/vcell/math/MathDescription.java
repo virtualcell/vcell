@@ -62,7 +62,7 @@ public class MathDescription implements Versionable, Matchable, SymbolTable, Ser
 	}
 
 	private transient SourceSymbolMapping sourceSymbolMapping;
-	private final static Logger logger = LogManager.getLogger(MathDescription.class);
+	private final static Logger lg = LogManager.getLogger(MathDescription.class);
 
 	public static final TreeMap<Long,TreeSet<String>> originalHasLowPrecisionConstants = new TreeMap<>();
 	public final static String MATH_FUNC_INIT_SUFFIX_PREFIX = "_init";
@@ -124,7 +124,6 @@ public MathDescription(MathDescription mathDescription) {
 	try {
 		read_database(new CommentStringTokenizer(mathDescription.getVCML_database()));
 	}catch (MathException e){
-		e.printStackTrace(System.out);
 		throw new RuntimeException(e.getMessage(), e);
 	}
 }
@@ -287,8 +286,7 @@ public static void updateReservedSymbols(MathDescription updateThis,ReservedSymb
 					f.getExpression().substituteInPlace(f.getExpression(), new Expression("(1000000.0 / "+ExpressionUtils.value_molecules_per_uM_um3_NUMERATOR+")"));
 				}
 			} catch (ExpressionException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				lg.error(e);
 			}
 		}
 	}
@@ -544,12 +542,9 @@ private MathCompareResults compareEquivalentCanonicalMath(MathDescription newMat
 										//
 										// difference couldn't be reconciled
 										//
-										String msg = "expressions are different: '" + oldExps.get(k).infix() + "' vs '"
-												+ newExps.get(k).infix() + "'";
-										logMathTexts(this, newMathDesc, Decision.MathDifferent_DIFFERENT_EXPRESSION,
-												msg);
-										return new MathCompareResults(Decision.MathDifferent_DIFFERENT_EXPRESSION,
-												msg);
+										String msg = "expressions are different: '" + oldExps.get(k).infix() + "' vs '" + newExps.get(k).infix() + "'";
+										logMathTexts(this, newMathDesc, Decision.MathDifferent_DIFFERENT_EXPRESSION, msg);
+										return new MathCompareResults(Decision.MathDifferent_DIFFERENT_EXPRESSION, msg);
 									}
 								}else{
 									//if (!bSilent) System.out.println("expressions are equivalent Old: '"+oldExps[k]+"'\n"+
@@ -796,26 +791,90 @@ private MathCompareResults compareEquivalentCanonicalMath(MathDescription newMat
 						return new MathCompareResults(Decision.MathDifferent_UNKNOWN_DIFFERENCE_IN_EQUATION, msg);
 					}
 				}
-				
-				List<ParticleJumpProcess> oldPjpList = subDomainsOld.get(i).getParticleJumpProcesses();
-				List<ParticleJumpProcess> newPjpList = subDomainsNew.get(i).getParticleJumpProcesses();
+				//
+				// 1) get list of old and new ParticleJumpProcesses
+				// 2) filter out 'no-op' PJPs (e.g. those only with trivial Actions such as open->open)
+				// 3) add trivial Symmetry factor (1.0) if missing
+				//
+				List<ParticleJumpProcess> oldPjpList = subDomainsOld.get(i).getParticleJumpProcesses().stream().filter(pjp -> !pjp.actionsNoop()).collect(Collectors.toList());
+				List<ParticleJumpProcess> newPjpList = subDomainsNew.get(i).getParticleJumpProcesses().stream().filter(pjp -> !pjp.actionsNoop()).collect(Collectors.toList());;
+				for (ParticleJumpProcess oldPjp : oldPjpList)
+					if (oldPjp.getProcessSymmetryFactor() == null) oldPjp.setProcessSymmetryFactor(new ParticleJumpProcess.ProcessSymmetryFactor(1.0));
+				for (ParticleJumpProcess newPjp : newPjpList)
+					if (newPjp.getProcessSymmetryFactor() == null) newPjp.setProcessSymmetryFactor(new ParticleJumpProcess.ProcessSymmetryFactor(1.0));
+
 				if (oldPjpList.size() != newPjpList.size()) {
-					logMathTexts(this, newMathDesc, Decision.MathDifferent_DIFFERENT_NUMBER_OF_PARTICLE_JUMP_PROCESS, "");
-					return new MathCompareResults(Decision.MathDifferent_DIFFERENT_NUMBER_OF_PARTICLE_JUMP_PROCESS);
+					Set<String> oldPjpNameSet = oldPjpList.stream().map(pjp->pjp.getName()).collect(Collectors.toSet());
+					Set<String> newPjpNameSet = newPjpList.stream().map(pjp->pjp.getName()).collect(Collectors.toSet());
+					Set<String> removedPjpNames = new LinkedHashSet<>(oldPjpNameSet);
+					removedPjpNames.removeAll(newPjpNameSet);
+					Set<String> addedPjpNames = new LinkedHashSet<>(newPjpNameSet);
+					addedPjpNames.removeAll(oldPjpNameSet);
+					String msg = "removed PJPs="+removedPjpNames+", added PJPs="+addedPjpNames;
+					logMathTexts(this, newMathDesc, Decision.MathDifferent_DIFFERENT_NUMBER_OF_PARTICLE_JUMP_PROCESS, msg);
+					return new MathCompareResults(Decision.MathDifferent_DIFFERENT_NUMBER_OF_PARTICLE_JUMP_PROCESS, msg);
 				}
 				for (ParticleJumpProcess oldPjp : oldPjpList) {
 					boolean bEqual = false;
+					boolean bEqualAfterKMOLE = false;
+					boolean bSymmetryFactorDifferent = false;
+					ParticleJumpProcess matchingPjp = null;
 					for (ParticleJumpProcess newPjp : newPjpList) {
-						if (Compare.isEqualOrNull(oldPjp, newPjp)) {
-							if (oldPjp.compareEqual(newPjp)) {
-								bEqual = true;
+						if (Compare.isEqualOrNull(oldPjp.getName(), newPjp.getName())) {
+							matchingPjp = newPjp;
+							bSymmetryFactorDifferent = oldPjp.getProcessSymmetryFactor().factor != matchingPjp.getProcessSymmetryFactor().factor;
+							double savedSymmetryFactor = matchingPjp.getProcessSymmetryFactor().factor;
+							try {
+								if (bSymmetryFactorDifferent) {
+									matchingPjp.setProcessSymmetryFactor(new ParticleJumpProcess.ProcessSymmetryFactor(oldPjp.getProcessSymmetryFactor().factor));
+								}
+								if (oldPjp.compareEqual(newPjp)) {
+									bEqual = true;
+								} else if (newPjp.getParticleRateDefinition() instanceof MacroscopicRateConstant) {
+									final double KMOLE_new = 1.0 / 602.214179;
+									final double KMOLE_value_old = 1.0 / 602.0;
+									MacroscopicRateConstant macroscopicRateConstant = (MacroscopicRateConstant) newPjp.getParticleRateDefinition();
+									final int MAX_POWER_KMOLE = 2;
+									Expression savedExp = new Expression(macroscopicRateConstant.getExpression());
+									for (int pow = 1; pow <= MAX_POWER_KMOLE; pow++) {
+										Expression scaledRate = Expression.mult(macroscopicRateConstant.getExpression(), new Expression(KMOLE_value_old)).flattenSafe();
+										macroscopicRateConstant.getExpression().substituteInPlace(macroscopicRateConstant.getExpression(), scaledRate);
+										if (oldPjp.compareEqual(newPjp)) {
+											bEqualAfterKMOLE = true;
+											break;
+										}
+									}
+									macroscopicRateConstant.setExpression(savedExp);
+								}
+							}finally {
+								if (bSymmetryFactorDifferent) {
+									matchingPjp.setProcessSymmetryFactor(new ParticleJumpProcess.ProcessSymmetryFactor(savedSymmetryFactor));
+								}
 							}
 							break;
 						}
 					}
+					if (bEqualAfterKMOLE && !bSymmetryFactorDifferent) {
+						String msg = "PJP='"+oldPjp.getName()+"', " +
+								"old='"+ Arrays.asList(oldPjp.getParticleRateDefinition().getExpressions()).stream().map(e->e.infix()).collect(Collectors.toList())+"', " +
+								"new='"+ ((matchingPjp==null)?"null":Arrays.asList(matchingPjp.getParticleRateDefinition().getExpressions()).stream().map(e->e.infix()).collect(Collectors.toList()))+"'";
+						logMathTexts(this, newMathDesc, Decision.MathDifferent_LEGACY_RATE_PARTICLE_JUMP_PROCESS, msg);
+						return new MathCompareResults(Decision.MathDifferent_LEGACY_RATE_PARTICLE_JUMP_PROCESS, msg);
+					}
+					if ((bEqual || bEqualAfterKMOLE) && bSymmetryFactorDifferent) {
+						String msg = "PJP='"+oldPjp.getName()+"', " +
+								"ProcessSymmetryFactor: old='"+oldPjp.getProcessSymmetryFactor().getFactor()+"', "+
+								"new='"+ ((matchingPjp==null)?"null":matchingPjp.getProcessSymmetryFactor().getFactor())+"'";
+						logMathTexts(this, newMathDesc, Decision.MathDifferent_LEGACY_SYMMETRY_PARTICLE_JUMP_PROCESS, msg);
+						return new MathCompareResults(Decision.MathDifferent_LEGACY_SYMMETRY_PARTICLE_JUMP_PROCESS, msg);
+					}
 					if (!bEqual) {
-						logMathTexts(this, newMathDesc, Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS, "");
-						return new MathCompareResults(Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS);
+						String msg = "PJP='"+oldPjp.getName()+"', SymmetryFactor: old='"+oldPjp.getProcessSymmetryFactor().getFactor()+"' "+
+								"new='"+ ((matchingPjp==null)?"null":matchingPjp.getProcessSymmetryFactor().getFactor())+"', rate: "+
+								"old='"+ Arrays.asList(oldPjp.getParticleRateDefinition().getExpressions()).stream().map(e->e.infix()).collect(Collectors.toList())+"', " +
+								"new='"+ ((matchingPjp==null)?"null":Arrays.asList(matchingPjp.getParticleRateDefinition().getExpressions()).stream().map(e->e.infix()).collect(Collectors.toList()))+"'";
+						logMathTexts(this, newMathDesc, Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS, msg);
+						return new MathCompareResults(Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS, msg);
 					}
 				}
 			}
@@ -826,13 +885,13 @@ private MathCompareResults compareEquivalentCanonicalMath(MathDescription newMat
 			return oldMathDesc.compareInvariantAttributes(newMathDesc,true);
 		}
 	}catch (Exception e){
-		logger.error("unexpected failure comparing math descriptions: "+e.getMessage(), e);
+		lg.error("unexpected failure comparing math descriptions: "+e.getMessage(), e);
 		logMathTexts(this, newMathDesc, Decision.MathDifferent_FAILURE_UNKNOWN, "Failure comparing math: "+e.getMessage());
 		return new MathCompareResults(Decision.MathDifferent_FAILURE_UNKNOWN, "failed to compare math: "+e.getMessage());
 	}
 }
 
-private void setMissingEquationBoundaryConditionsToDefault(SubDomain.DomainWithBoundaryConditions subdomain, int geometryDim){
+	private void setMissingEquationBoundaryConditionsToDefault(SubDomain.DomainWithBoundaryConditions subdomain, int geometryDim){
 	List<PdeEquation> pdeEquations = subdomain.getEquationCollection().stream().filter(e -> e instanceof PdeEquation).map(e -> (PdeEquation) e).collect(Collectors.toList());
 	//
 	// CompartmentSubDomains have correct boundary condition types for external boundaries.
@@ -910,16 +969,16 @@ private static boolean compareUpdate(Expression nExp, Expression oExp, Consumer<
 }
 
 private static void logMathTexts(MathDescription math1, MathDescription math2, Decision decision, String msg){
-	if (logger.isTraceEnabled()) {
+	if (lg.isTraceEnabled()) {
 		try {
-		logger.trace("maths different: "+decision.name()+" details: "+msg
+		lg.trace("maths different: "+decision.name()+" details: "+msg
 				+"\n===================MATH 1==================\n"
 				+ math1.getVCML_database() + "\n"
 				+ "==================MATH 2====================\n"
 				+ math2.getVCML_database() + "\n"
 				+ "==================END MATHS=================");
 		}catch (Exception e){
-			logger.error("error logging math description text: "+e.getMessage(), e);
+			lg.error("error logging math description text: "+e.getMessage(), e);
 		}
 	}
 }
@@ -1063,7 +1122,7 @@ public static MathDescription fromEditor(MathDescription oldMathDesc, String vcm
 	// compute warning string (if necessary)
 	//
 	if (!mathDesc.isValid()){
-		logger.warn("Math is invalid after parsing: '"+mathDesc.getWarning()+"'");
+		lg.warn("Math is invalid after parsing: '"+mathDesc.getWarning()+"'");
 	}
 	
 	return mathDesc;
@@ -1207,8 +1266,7 @@ public static Function[] getFlattenedFunctions(MathSymbolTableFactory mathSymbol
 						exp1 = simSymbolTable.substituteFunctions(exp1);
 						functions[i] = new Function(function.getName(),exp1.flatten(),function.getDomain());
 					} catch (MathException e) {
-						e.printStackTrace(System.out);
-						throw new RuntimeException("Substitute function failed on function "+function.getName()+" "+e.getMessage());
+						throw new RuntimeException("Substitute function failed on function "+function.getName()+" "+e.getMessage(), e);
 					}
 				}
 			}
@@ -1593,7 +1651,7 @@ public String getVCML_database(boolean includeComments) throws MathException {
 	}
 	buffer.append("}\n");
 	final String rval = buffer.toString();		
-	logger.debug(rval);
+	lg.debug(rval);
 	return rval;
 }
 
@@ -1960,7 +2018,7 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 				var.getExpression().evaluateConstant();
 			} catch (Exception ex) {
 				String msg = "Constant cannot be evaluated to a number, "+var.getName()+"="+var.getExpression().infix();
-				logger.error(msg, ex);
+				lg.error(msg, ex);
 				Issue issue = new Issue(var, issueContext, IssueCategory.MathDescription_Constant_NotANumber, VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_CONSTANT, var.getExpression().infix()), Issue.SEVERITY_ERROR);
 				issueList.add(issue);
 			}
@@ -2101,7 +2159,7 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 					try{
 						iniExp.bindExpression(this);
 					}catch(Exception ex){
-						ex.printStackTrace(System.out);
+						lg.error(ex.getMessage(), ex);
 						setWarning(ex.getMessage());
 					}				
 				}
@@ -2111,7 +2169,7 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 					try{
 						probExp.bindExpression(this);
 					}catch(Exception ex){
-						ex.printStackTrace(System.out);
+						lg.error(ex.getMessage(), ex);
 						setWarning(ex.getMessage());
 					}
 				}
@@ -2314,7 +2372,7 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 						//geometry.getGeometrySurfaceDescription().updateAll();
 						//regions = geometry.getGeometrySurfaceDescription().getGeometricRegions();
 					//}catch (Exception e){
-						//e.printStackTrace(System.out);
+						//lg.error(e);
 					//}
 				//}
 				if (regions==null){
@@ -2379,19 +2437,19 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 				}
 				}
 		//}catch (GeometryException e){
-			//e.printStackTrace(System.out);
+			//lg.error(e);
 			//setWarning("error validating MathDescription: "+e.getMessage());
 			//return false;
 		//}catch (ImageException e){
-			//e.printStackTrace(System.out);
+			//lg.error(e);
 			//setWarning("error validating MathDescription: "+e.getMessage());
 			//return false;
 		//}catch (ExpressionException e){
-			//e.printStackTrace(System.out);
+			//lg.error(e);
 			//setWarning("error validating MathDescription: "+e.getMessage());
 			//return false;
 		}catch (Exception e){
-			e.printStackTrace(System.out);
+			lg.error(e.getMessage(), e);
 			Issue issue = new Issue(geometry, issueContext, IssueCategory.MathDescription_SpatialModel_Geometry,	e.getMessage(), Issue.SEVERITY_ERROR);
 			issueList.add(issue);
 		}
@@ -2676,6 +2734,10 @@ void makeCanonical(MathSymbolTableFactory mathSymbolTableFactory) throws MathExc
 		if (var instanceof RandomVariable){
 			((RandomVariable)var).flatten(mathSymbolTable,bRoundCoefficients);
 		}
+	}
+
+	if (postProcessingBlock!=null){
+		postProcessingBlock.flatten(mathSymbolTable,bRoundCoefficients);
 	}
 	
 	//
@@ -3081,7 +3143,6 @@ if(name.equals("ATP/ADP"))
 			throw new MathFormatException("unexpected identifier "+tokenStr);
 		}		
 	}catch (Exception e){
-		e.printStackTrace(System.out);
 		throw new MathException("line #" + tokens.lineIndex() + " Exception: "+e.getMessage(), e);
 	}
 	refreshDependencies();
@@ -3101,7 +3162,7 @@ public void refreshDependencies() {
 		try {
 			var.bind(this);
 		} catch (ExpressionBindingException e) {
-			logger.warn("unable to bind expression for math variable "+var.getName()+" when reading from VCML: "+e.getMessage());
+			lg.warn("unable to bind expression for math variable "+var.getName()+" when reading from VCML: "+e.getMessage());
 		}
 	}
 
@@ -3367,9 +3428,9 @@ public static MathCompareResults testEquivalency(MathSymbolTableFactory mathSymb
 					//try again to see whether invariants are equivalent after rename
 					MathCompareResults invariantResults2 = newMath.compareInvariantAttributes(copyMath1, false);
 					if (!invariantResults2.isEquivalent()) {
-						logger.error("Could not fix invariants by renaming");
-						logger.error("Initial invariantResults: "+invariantResults);
-						logger.error("After rename: "+invariantResults2);
+						lg.error("Could not fix invariants by renaming");
+						lg.error("Initial invariantResults: "+invariantResults);
+						lg.error("After rename: "+invariantResults2);
 						if (!invariantResults2.decision.equals(Decision.MathDifferent_DIFFERENT_NUMBER_OF_VARIABLES)) {
 							// can't be equivalent or equal
 							return invariantResults2;
@@ -3381,7 +3442,7 @@ public static MathCompareResults testEquivalency(MathSymbolTableFactory mathSymb
 					oldMath = copyMath1;
 				} else {
 					// could not rename variables, may not have legacy naming issues
-					logger.error("Attempt to rename legacy variables failed");
+					lg.error("Attempt to rename legacy variables failed");
 					if (!invariantResults.decision.equals(Decision.MathDifferent_DIFFERENT_NUMBER_OF_VARIABLES)) {
 						// can't be equivalent or equal
 						return invariantResults;
@@ -3407,7 +3468,7 @@ public static MathCompareResults testEquivalency(MathSymbolTableFactory mathSymb
 		}
 	}catch (Exception e){
 		String msg = "failure while testing for math equivalency: "+e.getMessage();
-		logger.error(msg, e);
+		lg.error(msg, e);
 		return new MathCompareResults(Decision.MathDifferent_FAILURE_UNKNOWN, e.getMessage());
 	}
 }
@@ -3637,7 +3698,7 @@ private static boolean tryLegacyVarNameDomainExtensive(MathDescription mathDescr
 			}
 		}
 		if (nameMatches == 0) {
-			logger.error("did not find any match for variable "+var.getName());
+			lg.error("did not find any match for variable "+var.getName());
 			return false;
 		}
 		if (nameMatches > 1) {
@@ -3653,11 +3714,11 @@ private static boolean tryLegacyVarNameDomainExtensive(MathDescription mathDescr
 					Equation eq = sd.getEquation(var);
 					if (eq != null) {
 						if (!eq.getRateExpression().isZero()) {
-							logger.error("variable "+var.getName()+" mapped to constant but has non-zero rate equation: "+eq.getRateExpression());
+							lg.error("variable "+var.getName()+" mapped to constant but has non-zero rate equation: "+eq.getRateExpression());
 							return false;
 						}
 						if (eq instanceof PdeEquation && !((PdeEquation)eq).getDiffusionExpression().isZero()) {
-							logger.error("variable "+var.getName()+" mapped to constant but has non-zero diffusion: "+((PdeEquation)eq).getDiffusionExpression());
+							lg.error("variable "+var.getName()+" mapped to constant but has non-zero diffusion: "+((PdeEquation)eq).getDiffusionExpression());
 							return false;
 						}
 						sd.removeEquation(var);
@@ -3698,7 +3759,7 @@ private static boolean tryLegacyVarNameDomainExtensive(MathDescription mathDescr
 				}
 			}
 		} catch (Exception e) {
-			logger.error("failed to rename legacy variable "+oldName, e);
+			lg.error("failed to rename legacy variable "+oldName, e);
 			return false;
 		}
 	}
@@ -3730,11 +3791,11 @@ private static boolean tryLegacyVarNameDomainExtensive(MathDescription mathDescr
 					Equation eq = sd.getEquation(oldVar);
 					if (eq != null) {
 						if (!eq.getRateExpression().isZero()) {
-							logger.error("variable "+oldVar.getName()+" mapped to constant but has non-zero rate equation: "+eq.getRateExpression());
+							lg.error("variable "+oldVar.getName()+" mapped to constant but has non-zero rate equation: "+eq.getRateExpression());
 							return false;
 						}
 						if (eq instanceof PdeEquation && !((PdeEquation)eq).getDiffusionExpression().isZero()) {
-							logger.error("variable "+oldVar.getName()+" mapped to constant but has non-zero diffusion: "+((PdeEquation)eq).getDiffusionExpression());
+							lg.error("variable "+oldVar.getName()+" mapped to constant but has non-zero diffusion: "+((PdeEquation)eq).getDiffusionExpression());
 							return false;
 						}
 						sd.removeEquation(oldVar);
@@ -3787,7 +3848,7 @@ private static boolean tryLegacyVarNameDomainExtensive(MathDescription mathDescr
 					clonedVar.setDomain(new Domain(sd));
 					mathDescription1.addVariable0(clonedVar);
 				} catch (ClassNotFoundException | ExpressionBindingException | IOException | MathException e) {
-					logger.error("could not add new variable "+newName);
+					lg.error("could not add new variable "+newName);
 					return false;
 				}
 			}
@@ -3858,7 +3919,7 @@ private static boolean tryLegacyVarNameDomainExtensive(MathDescription mathDescr
 							}
 							msd.removeJumpCondition(oldVar);
 						} catch (ClassNotFoundException | IOException | MathException e) {
-							logger.error("could not split jump condition for "+oldName);
+							lg.error("could not split jump condition for "+oldName);
 							return false;
 						}
 					}

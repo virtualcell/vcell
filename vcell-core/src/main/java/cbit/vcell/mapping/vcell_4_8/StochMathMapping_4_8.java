@@ -14,6 +14,8 @@ import java.beans.PropertyVetoException;
 import java.util.Enumeration;
 import java.util.Vector;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.TokenMangler;
 
 import cbit.vcell.geometry.SubVolume;
@@ -76,13 +78,9 @@ import cbit.vcell.units.VCUnitDefinition;
  * @author Tracy LI
  */
 public class StochMathMapping_4_8 extends MathMapping_4_8 {
+	private final static Logger lg = LogManager.getLogger(StochMathMapping_4_8.class);
 
-	/**
-	 * The constructor, which pass the simulationContext pointer.
-	 * @param model cbit.vcell.model.Model
-	 * @param geometry cbit.vcell.geometry.Geometry
-	 */
-	public StochMathMapping_4_8(SimulationContext simContext) {
+public StochMathMapping_4_8(SimulationContext simContext) {
 		super(simContext);
 	}
 
@@ -173,8 +171,8 @@ Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection) throw
 		    	factorExpr = new Expression(sm.getStructure().getStructureSize(), getNameScope());
 		    } else {
 		    	factorExpr = new Expression(sm.getStructure().getStructureSize(), getNameScope());
-		    	Expression kmoleExpr = new Expression(Model.reservedConstantsMap.get(ReservedSymbolRole.KMOLE));
-		    	factorExpr = Expression.mult(factorExpr, kmoleExpr);
+		    	Expression kmoleExpr = new Expression(model.getKMOLE().getExpression());
+				factorExpr = Expression.mult(factorExpr, kmoleExpr);
 			}
 			
 			//complete the probability expression by the reactants' stoichiometries if it is Mass Action rate law
@@ -194,7 +192,7 @@ Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection) throw
 						if(reactSM.getStructure() instanceof Membrane) {
 							speciesFactor = Expression.invert(new Expression(reactSM.getStructure().getStructureSize(), getNameScope()));
 						} else {
-							Expression exp1 = new Expression(Model.reservedConstantsMap.get(ReservedSymbolRole.KMOLE));
+							Expression exp1 = new Expression(model.getKMOLE().getExpression());
 							Expression exp2 = new Expression(reactSM.getStructure().getStructureSize(), getNameScope());
 							speciesFactor =  Expression.div(Expression.invert(exp1), exp2);
 						}
@@ -235,7 +233,7 @@ Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection) throw
 		    	factorExpr = new Expression(sm.getStructure().getStructureSize(), getNameScope());
 		    } else {
 		    	factorExpr = new Expression(sm.getStructure().getStructureSize(), getNameScope());
-		    	Expression exp = new Expression(Model.reservedConstantsMap.get(ReservedSymbolRole.KMOLE));
+		    	Expression exp = new Expression(model.getKMOLE().getExpression());
 		    	factorExpr = Expression.mult(factorExpr, exp);
 			}
 		    
@@ -257,7 +255,7 @@ Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection) throw
 						if(reactSM.getStructure() instanceof Membrane) {
 							speciesFactor = Expression.invert(new Expression(reactSM.getStructure().getStructureSize(), getNameScope()));
 						} else {
-							Expression exp1 = new Expression(Model.reservedConstantsMap.get(ReservedSymbolRole.KMOLE));
+							Expression exp1 = new Expression(model.getKMOLE().getExpression());
 							Expression exp2 = new Expression(reactSM.getStructure().getStructureSize(), getNameScope());
 							speciesFactor =  Expression.div(Expression.invert(exp1), exp2);
 						}
@@ -319,7 +317,7 @@ Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection) throw
 //		probExp = new Expression(ratExp.infixString());
 //		probExp.bindExpression(symbolTable);
 	}catch (ExpressionException e) {
-		e.printStackTrace();
+		lg.error(e);
 	}
 
 	return probExp;
@@ -381,7 +379,7 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 						}
 					}
 				}catch (ExpressionException e){
-					e.printStackTrace(System.out);
+					lg.error(e);
 				}
 			}
 		}
@@ -506,8 +504,7 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 					varHash.addVariable(newFunctionOrConstant(getMathSymbol(memMapping.getMembrane().getMembraneVoltage(),memMapping),
 							getIdentifierSubstitutions(memMapping.getInitialVoltageParameter().getExpression(),memMapping.getInitialVoltageParameter().getUnitDefinition(),memMapping)));
 				}catch(ExpressionException e){
-					e.printStackTrace(System.out);
-					throw new MappingException("Membrane initial voltage: "+initialVoltageParm.getName()+" cannot be evaluated as constant.");
+					throw new MappingException("Membrane initial voltage: "+initialVoltageParm.getName()+" cannot be evaluated as constant.", e);
 				}
 			}
 		}
@@ -553,8 +550,7 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 					varHash.addVariable(new Constant(getMathSymbol(parm,sm),new Expression(value)));
 				}catch (ExpressionException e){
 					//varHash.addVariable(new Function(getMathSymbol0(parm,sm),getIdentifierSubstitutions(parm.getExpression(),parm.getUnitDefinition(),sm)));
-					e.printStackTrace(System.out);
-					throw new MappingException("Size of structure:"+sm.getNameScope().getName()+" cannot be evaluated as constant.");
+					throw new MappingException("Size of structure:"+sm.getNameScope().getName()+" cannot be evaluated as constant.", e);
 				}
 			}
 		}
@@ -615,8 +611,7 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 			try {
 				mathDesc.setGeometry(simContext.getGeometryContext().getGeometry());
 			}catch (java.beans.PropertyVetoException e){
-				e.printStackTrace(System.out);
-				throw new MappingException("failure setting geometry "+e.getMessage());
+				throw new MappingException("failure setting geometry "+e.getMessage(), e);
 			}
 		}else{
 			throw new MappingException("geometry must be defined");
@@ -769,8 +764,7 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 					try{
 						probParm = addProbabilityParameter("P_"+jpName, exp,MathMapping_4_8.PARAMETER_ROLE_P, probabilityParamUnit,reactionSpecs[i]);
 					}catch(PropertyVetoException pve){
-						pve.printStackTrace();
-						throw new MappingException(pve.getMessage());
+						throw new MappingException(pve.getMessage(), pve);
 					}
 					
 					//add probability to function or constant
@@ -822,8 +816,7 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 					try{
 						probRevParm = addProbabilityParameter("P_"+jpName,exp,MathMapping_4_8.PARAMETER_ROLE_P_reverse, probabilityParamUnit,reactionSpecs[i]);
 					}catch(PropertyVetoException pve){
-						pve.printStackTrace();
-						throw new MappingException(pve.getMessage());
+						throw new MappingException(pve.getMessage(), pve);
 					}
 					//add probability to function or constant
 					varHash.addVariable(newFunctionOrConstant(getMathSymbol(probRevParm,sm),getIdentifierSubstitutions(exp, probabilityParamUnit, sm)));
@@ -880,7 +873,7 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 						SpeciesContext scOut = fluxFunc.getReactants().get(0).getSpeciesContext();
 						Expression speciesFactor = null;
 						if(scOut.getStructure() instanceof Feature) {
-							Expression exp1 = new Expression(Model.reservedConstantsMap.get(ReservedSymbolRole.KMOLE));
+							Expression exp1 = new Expression(model.getKMOLE().getExpression());
 							Expression exp2 = new Expression(scOut.getStructure().getStructureSize(), getNameScope());
 							speciesFactor =  Expression.div(Expression.invert(exp1), exp2);
 						} else {
@@ -890,7 +883,7 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 						//get probability expression by adding factor to rate (rate: rate*size_mem/KMOLE)
 						Expression expr1 = Expression.mult(rate, speciesExp);
 						Expression numeratorExpr = Expression.mult(expr1, new Expression(sm.getStructure().getStructureSize(), getNameScope()));
-						Expression exp = new Expression(Model.reservedConstantsMap.get(ReservedSymbolRole.KMOLE));
+						Expression exp = new Expression(model.getKMOLE().getExpression());
 						Expression probExp = Expression.mult(numeratorExpr, exp);
 						probExp.bindExpression(reactionStep);//bind symbol table before substitute identifiers in the reaction step
 
@@ -898,8 +891,7 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 						try{
 							probParm = addProbabilityParameter("P_"+jpName,probExp,MathMapping_4_8.PARAMETER_ROLE_P, probabilityParamUnit,reactionSpecs[i]);
 						}catch(PropertyVetoException pve){
-							pve.printStackTrace();
-							throw new MappingException(pve.getMessage());
+							throw new MappingException(pve.getMessage(), pve);
 						}
 						//add probability to function or constant
 						varHash.addVariable(newFunctionOrConstant(getMathSymbol(probParm,sm),getIdentifierSubstitutions(probExp, probabilityParamUnit, sm)));
@@ -934,7 +926,7 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 						SpeciesContext scIn = fluxFunc.getProducts().get(0).getSpeciesContext();
 						Expression speciesFactor = null;
 						if(scIn.getStructure() instanceof Feature) {
-							Expression exp1 = new Expression(Model.reservedConstantsMap.get(ReservedSymbolRole.KMOLE));
+							Expression exp1 = new Expression(model.getKMOLE().getExpression());
 							Expression exp2 = new Expression(scIn.getStructure().getStructureSize(), getNameScope());
 							speciesFactor =  Expression.div(Expression.invert(exp1), exp2);
 						} else {
@@ -944,7 +936,7 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 						//get probability expression by adding factor to rate (rate: rate*size_mem/KMOLE)
 						Expression expr1 = Expression.mult(rate, speciesExp);
 						Expression numeratorExpr = Expression.mult(expr1, new Expression(sm.getStructure().getStructureSize(), getNameScope()));
-						Expression exp = new Expression(Model.reservedConstantsMap.get(ReservedSymbolRole.KMOLE));
+						Expression exp = new Expression(model.getKMOLE().getExpression());
 						Expression probRevExp = Expression.mult(numeratorExpr, exp);
 						probRevExp.bindExpression(reactionStep);//bind symbol table before substitute identifiers in the reaction step
 						
@@ -952,8 +944,7 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 						try{
 							probRevParm = addProbabilityParameter("P_"+jpName,probRevExp,MathMapping_4_8.PARAMETER_ROLE_P_reverse, probabilityParamUnit,reactionSpecs[i]);
 						}catch(PropertyVetoException pve){
-							pve.printStackTrace();
-							throw new MappingException(pve.getMessage());
+							throw new MappingException(pve.getMessage(), pve);
 						}
 						//add probability to function or constant
 						varHash.addVariable(newFunctionOrConstant(getMathSymbol(probRevParm,sm),getIdentifierSubstitutions(probRevExp, probabilityParamUnit, sm)));
@@ -1032,7 +1023,7 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 				mathDesc.addVariable(var);
 				subDomain.addVarIniCondition(varIni);
 			} catch (cbit.vcell.parser.ExpressionException e) {
-				e.printStackTrace();
+				lg.error(e);
 			}
 		}*/
 
@@ -1214,8 +1205,7 @@ private void refreshVariables() throws MappingException {
 			Expression countExp = new Expression(0.0);
 			spCountParm = addSpeciesCountParameter(countName, countExp, MathMapping_4_8.PARAMETER_ROLE_COUNT, stochSubstanceUnit, scs);
 		}catch(PropertyVetoException pve){
-			pve.printStackTrace();
-			throw new MappingException(pve.getMessage());
+			throw new MappingException(pve.getMessage(), pve);
 		}
 		
 		//add concentration of species as MathMappingParameter - this will map to species concentration function
@@ -1225,8 +1215,7 @@ private void refreshVariables() throws MappingException {
 			concExp.bindExpression(this);
 			addSpeciesConcentrationParameter(concName, concExp, MathMapping_4_8.PARAMETER_ROLE_CONCENRATION, scs.getSpeciesContext().getUnitDefinition(), scs);
 		}catch(Exception e){
-			e.printStackTrace();
-			throw new MappingException(e.getMessage());
+			throw new MappingException(e.getMessage(), e);
 		}
 
 		if (scm.getDependencyExpression() == null && !scs.isConstant()){
@@ -1252,10 +1241,10 @@ private void refreshVariables() throws MappingException {
 //					result.substituteInPlace(new Expression(symbols[k]), new Expression(getMathSymbol0(kp,sm)));	
 //				}
 //			}catch(ExpressionException e1){
-//				e1.printStackTrace();
+//				lg.error(e);
 //				throw new ExpressionException(e1.getMessage());
 //			}catch(MappingException e2){
-//				e2.printStackTrace();
+//				lg.error(e);
 //				throw new MappingException("Erroe occurs when try to get math symbol for kinetic para:"+symbols[k]+".\n"+e2.getMessage());
 //			}
 //		    

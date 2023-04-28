@@ -15,6 +15,8 @@ import cbit.vcell.opt.OptimizationStatus;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 //call parameter est.
 //save the values
 //take the first parameter remove from list
@@ -25,6 +27,8 @@ import cbit.vcell.xml.XmlParseException;
 //repeat for all parameters
 
 public class ProfileLikelihood {
+	private final static Logger lg = LogManager.getLogger(ProfileLikelihood.class);
+
 	//this creates the data set and parameter scan that is being used to update the parameters
 	public static class ProfilelikelihoodDataset {
 		
@@ -319,8 +323,7 @@ System.out.println(objectiveFunctionLimit);
 				taskCopy1.refreshMappings();
 				return taskCopy1;
 			} catch (XmlParseException | MappingException | MathException e) {
-				e.printStackTrace();
-				throw new RuntimeException("failed to clone BioModel");
+				throw new RuntimeException("failed to clone BioModel", e);
 			}
 		}
 		
@@ -372,8 +375,7 @@ System.out.println(objectiveFunctionLimit);
 			try {
 				System.out.println("ParestRun.optimize():  bFake="+bFakeOptimization+", report="+getReport());
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				lg.error(e.getMessage(), e);
 			}
 		}
 		
@@ -504,10 +506,8 @@ System.out.println(objectiveFunctionLimit);
 			};
 			ProfileLikelihood pl = new ProfileLikelihood(callback);
 			pl.run((ParameterEstimationTask) task[0]);
-		} catch (XmlParseException e) {
-			e.printStackTrace();
 		} catch (Exception e) {
-			e.printStackTrace();
+			lg.error(e.getMessage(), e);
 		}
 	}
 	

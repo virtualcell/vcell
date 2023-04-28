@@ -2,9 +2,12 @@ package cbit.vcell.resource;
 
 import java.rmi.server.RMISocketFactory;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.Compare;
 
 public class NetworkProxyUtils {
+	private final static Logger lg = LogManager.getLogger(NetworkProxyUtils.class);
 	
 	public interface RestartWarningProvider {
 		void showRestartWarning(String restartWarningMessage);
@@ -50,7 +53,7 @@ public class NetworkProxyUtils {
 				}
 			}
 		}catch(Exception e){
-			e.printStackTrace();
+			lg.error(e.getMessage(), e);
 //			DialogUtils.showErrorDialog(requester,"Error writing proxyOptions file '"+altVMOptionsFile+"'\n"+ e.getMessage());
 		}
 

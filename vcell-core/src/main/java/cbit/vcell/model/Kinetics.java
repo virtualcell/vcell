@@ -444,12 +444,15 @@ java.io.Serializable, IssueSource, Relatable
 			try {
 				renameParameter(oldValue, name);
 			} catch (ExpressionException e) {
-				e.printStackTrace();
 				throw new RuntimeException("failed to change kinetic parameter "+oldValue+" to "+name+": "+e.getMessage(),e);
 			}
 			super.firePropertyChange(PROPERTYNAME_NAME, oldValue, name);
 		}
-
+		private void replaceNameLocal(String name) {
+			// used rather than setName() to avoid unnecessary propogation of an alternate name during parsing.
+			fieldParameterName = name;
+		}
+		
 		public boolean isDescriptionEditable() {
 			return false;
 		}
@@ -1156,6 +1159,8 @@ private ArrayList<KineticsParameter> getKineticsParametersFromTokens(String kine
 			//
 			// find out if expression refers to another parameter declaration (expression of type "paramName;").
 			//
+			//     e.g. CurrentDensity I2;
+			//
 			String[] symbols = exp.getSymbols();
 			boolean bIsSingleId = false;
 			if (symbols != null && symbols.length==1){
@@ -1206,9 +1211,29 @@ private ArrayList<KineticsParameter> getKineticsParametersFromTokens(String kine
 		}
 	}
 	
-	//
-	// rename reserved parameter names and update expressions to reflect new names
-	//
+	/*
+	 * rename reserved parameter names and update expressions to reflect new names
+	 * typical renaming example of kinetics_vcmlStr, Kf, Kr renamed to K1, K2
+	 * 
+	 Kinetics MassActionKinetics { 
+		Parameter J ((K1 * s0) - (K2 * s1)); [uM.s-1]
+		Parameter K1 (g0 / g1); [s-1]
+		Parameter K2 (g1 / g0); [s-1]
+		Rate J;
+		ForwardRate K1;
+		ReverseRate K2;
+	} 
+	 ... or ...
+	Kinetics MassActionKinetics {
+		ForwardRate 'Kf_PIP2_PLC'
+		ReverseRate 'Kr_PIP2_PLC'
+		Parameter Kf_PIP2_PLC kf_PIP2PLC;
+		Parameter Kr_PIP2_PLC kr_PIP2PLC;
+		Parameter kf_PIP2PLC 200.0;
+		Parameter kr_PIP2PLC (Kd_PIP2PLC * kf_PIP2PLC);
+		Parameter Kd_PIP2PLC 2.0;
+	}
+	 */
 	for (String origSymbol : symbolRenamings.keySet()){
 		String newSymbol = symbolRenamings.get(origSymbol);
 		KineticsParameter newParam = null;
@@ -1219,7 +1244,7 @@ private ArrayList<KineticsParameter> getKineticsParametersFromTokens(String kine
 		}
 		for (KineticsParameter kp : localParameters){
 			if (kp.getName().equals(origSymbol)){
-				kp.setName(newSymbol);
+				kp.replaceNameLocal(newSymbol);
 				if (newParam != null && kp.getExpression().isZero()){
 					kp.setExpression(new Expression(newParam.getExpression()));
 				}
@@ -1234,7 +1259,7 @@ private ArrayList<KineticsParameter> getKineticsParametersFromTokens(String kine
 	// merge parameters with same name (one is UserDefined, the other is Reserved role)
 	//
 	boolean bDirty = true;
-	while (bDirty){
+	while (bDirty) {
 		bDirty = false;
 		for (KineticsParameter kp1 : localParameters){
 			KineticsParameter kp_withSameName = null;

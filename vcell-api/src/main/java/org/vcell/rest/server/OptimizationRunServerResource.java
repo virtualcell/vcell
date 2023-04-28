@@ -46,9 +46,9 @@ public class OptimizationRunServerResource extends AbstractServerResource implem
 		}
 		public void closeAll(String optID) {
 			paramOptActiveSockets.remove(optID);
-			try{ois.close();}catch(Exception e2) { lg.error(e2); }
-			try{oos.close();}catch(Exception e2) { lg.error(e2); }
-			try{optSocket.close();}catch(Exception e2) { lg.error(e2); }
+			try{ois.close();}catch(Exception e2) { lg.error(e2.getMessage(), e2); }
+			try{oos.close();}catch(Exception e2) { lg.error(e2.getMessage(), e2); }
+			try{optSocket.close();}catch(Exception e2) { lg.error(e2.getMessage(), e2); }
 		}
 		public OptMessage.OptResponseMessage sendCommand(OptMessage.OptCommandMessage optCommandMessage) throws IOException,ClassNotFoundException{
 			lg.info("sending command "+optCommandMessage+" with ID="+optCommandMessage.optID);
@@ -84,7 +84,7 @@ public class OptimizationRunServerResource extends AbstractServerResource implem
 
 	private String submitOptProblem(Representation optProblemJsonRep,ServerResource serverResource) throws ResourceException {
 		synchronized (paramOptActiveSockets) {
-			if (paramOptActiveSockets.size() >= 20) {
+			if (paramOptActiveSockets.size() >= 100) {
 				String[] keys = paramOptActiveSockets.keySet().toArray(new String[0]);
 				for (int i = 0; i < keys.length; i++) {
 					OptSocketStreams optSocketStreams = paramOptActiveSockets.get(keys[i]);
@@ -110,7 +110,7 @@ public class OptimizationRunServerResource extends AbstractServerResource implem
 						optSocketStreams.closeAll(optSocketStreams.optID);
 					}
 				}
-				if (paramOptActiveSockets.size() >= 20) {
+				if (paramOptActiveSockets.size() >= 100) {
 					throw new ResourceException(Status.SERVER_ERROR_INTERNAL, "Too many active optimization jobs, try again later");
 				}
 			}

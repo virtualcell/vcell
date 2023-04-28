@@ -1,5 +1,8 @@
 package cbit.util.kisao;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -8,6 +11,7 @@ import java.util.regex.Pattern;
 
 
 public class KisaoTermParser {
+	private final static Logger lg = LogManager.getLogger(KisaoTermParser.class);
 	
 //	final String Kisao_OBO = "kisao_2020_12_13.obo";
 	final String Kisao_OBO = "kisao_algs.obo";
@@ -55,7 +59,7 @@ public class KisaoTermParser {
 				}
 			}
 		} catch(Exception e) {
-			e.printStackTrace();
+			lg.error(e.getMessage(), e);
 		}
 		
 		ontology.createRelations();

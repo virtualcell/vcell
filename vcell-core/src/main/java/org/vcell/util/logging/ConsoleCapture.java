@@ -9,6 +9,8 @@ import java.nio.charset.Charset;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.LineIterator;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.collections.CircularList;
 
 import cbit.vcell.resource.PropertyLoader;
@@ -18,6 +20,7 @@ import cbit.vcell.resource.PropertyLoader;
  * file, and reading it when desired
  */
 public class ConsoleCapture {
+	private final static Logger lg = LogManager.getLogger(ConsoleCapture.class);
 	/**
 	 * where it goes
 	 */
@@ -92,7 +95,7 @@ public class ConsoleCapture {
 					Runtime.getRuntime().addShutdownHook(new ConsoleCapture.FlushOnExit(redirectedOutput));
 				}
 			} catch (Exception e) {
-				e.printStackTrace();
+				lg.error(e.getMessage(), e);
 			}
 			return;
 		}

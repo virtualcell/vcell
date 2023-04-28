@@ -1078,7 +1078,8 @@ public class SBMLImporter {
 		//
 		// add reactants (compress stoichiometry as needed)
 		//
-		HashMap<SpeciesReference, Integer> sbmlReactantsHash = new HashMap<>();
+		HashMap<Species, Integer> sbmlReactantsSpeciesHash = new HashMap<>();
+		HashMap<Species, SpeciesReference> sbmlReactantsSpeciesReferenceHash = new HashMap<>();
 		for (int j = 0; j < sbmlRxn.getNumReactants(); j++) {
 			SpeciesReference reactantSpeciesReference = sbmlRxn.getReactant(j);
 			String sbmlReactantSpId = reactantSpeciesReference.getSpecies();
@@ -1088,6 +1089,7 @@ public class SBMLImporter {
 						" '" + sbmlRxn.getId() + "' not found as species in SBML model.");
 			}
 			final int stoichiometry;
+			final Species species = reactantSpeciesReference.getSpeciesInstance();
 			if (reactantSpeciesReference.isSetStoichiometry()) {
 				double sbmlStoichAttribute = reactantSpeciesReference.getStoichiometry();
 				if (((int) sbmlStoichAttribute != sbmlStoichAttribute) || reactantSpeciesReference.isSetStoichiometryMath()) {
@@ -1110,34 +1112,38 @@ public class SBMLImporter {
 			//
 			// save Reactant in a Map to support reactions such as A + A ->
 			//
-			if (sbmlReactantsHash.get(reactantSpeciesReference) == null) {
-				sbmlReactantsHash.put(reactantSpeciesReference, stoichiometry);
+			if (sbmlReactantsSpeciesHash.get(species) == null) {
+				sbmlReactantsSpeciesHash.put(species, stoichiometry);
+				sbmlReactantsSpeciesReferenceHash.put(species, reactantSpeciesReference);
 			} else {
-				int prevStoich = sbmlReactantsHash.get(reactantSpeciesReference);
-				sbmlReactantsHash.put(reactantSpeciesReference,prevStoich + stoichiometry);
+				int prevStoich = sbmlReactantsSpeciesHash.get(species);
+				sbmlReactantsSpeciesHash.put(species,prevStoich + stoichiometry);
 			}
 		}
 		//
 		// add reactants with net stoichiometry (e.g. A + A -> ) goes to 2A ->
 		//
-		for (Entry<SpeciesReference, Integer> es : sbmlReactantsHash.entrySet()) {
-			SpeciesReference reactantSpeciesReference = es.getKey();
+		for (Entry<Species, Integer> es : sbmlReactantsSpeciesHash.entrySet()) {
+			Species species = es.getKey();
 			int stoich = es.getValue();
 
-			EditableSymbolTableEntry vcellSte = sbmlSymbolMapping.getSte(reactantSpeciesReference.getSpeciesInstance(), SymbolContext.RUNTIME);
+			EditableSymbolTableEntry vcellSte = sbmlSymbolMapping.getSte(species, SymbolContext.RUNTIME);
 			if (!(vcellSte instanceof SpeciesContext)) {
-				throw new SBMLImportException("could not find VCell SpeciesContext for SBML Species "+reactantSpeciesReference.getSpeciesInstance());
+				throw new SBMLImportException("could not find VCell SpeciesContext for SBML Species "+species);
 			}
 			SpeciesContext speciesContext = (SpeciesContext) vcellSte;
 			vcRxn.addReactant(speciesContext, stoich);
 			Reactant reactant = vcRxn.getReactant(speciesContext.getName());
+			// just for the sake of completeness, lets grab the first (of possibly multiple) speciesReference for this vcell reactant (e.g. A + A is transformed to 2A).
+			SpeciesReference reactantSpeciesReference = sbmlReactantsSpeciesReferenceHash.get(species);
 			sbmlSymbolMapping.putRuntime(reactantSpeciesReference, new StoichiometrySymbolTableEntry(reactant));
 		}
 
 		//
 		// add products (compress stoichiometry as needed)
 		//
-		HashMap<SpeciesReference, Integer> sbmlProductsHash = new HashMap<>();
+		HashMap<Species, Integer> sbmlProductsSpeciesHash = new HashMap<>();
+		HashMap<Species, SpeciesReference> sbmlProductsSpeciesReferenceHash = new HashMap<>();
 		for (int j = 0; j < sbmlRxn.getNumProducts(); j++) {
 			SpeciesReference productSpeciesReference = sbmlRxn.getProduct(j);
 			String sbmlProductSpId = productSpeciesReference.getSpecies();
@@ -1147,6 +1153,7 @@ public class SBMLImporter {
 						" '" + sbmlRxn.getId() + "' not found as species in SBML model.");
 			}
 			final int stoichiometry;
+			final Species species = productSpeciesReference.getSpeciesInstance();
 			if (productSpeciesReference.isSetStoichiometry()) {
 				double sbmlStoichAttribute = productSpeciesReference.getStoichiometry();
 				if (((int) sbmlStoichAttribute != sbmlStoichAttribute) || productSpeciesReference.isSetStoichiometryMath()) {
@@ -1169,27 +1176,29 @@ public class SBMLImporter {
 			//
 			// save Product in a Map to support reactions such as ( -> A + A)
 			//
-			if (sbmlProductsHash.get(productSpeciesReference) == null) {
-				sbmlProductsHash.put(productSpeciesReference, stoichiometry);
+			if (sbmlProductsSpeciesHash.get(species) == null) {
+				sbmlProductsSpeciesHash.put(species, stoichiometry);
+				sbmlProductsSpeciesReferenceHash.put(species, productSpeciesReference);
 			} else {
-				int prevStoich = sbmlProductsHash.get(productSpeciesReference);
-				sbmlProductsHash.put(productSpeciesReference,prevStoich + stoichiometry);
+				int prevStoich = sbmlProductsSpeciesHash.get(species);
+				sbmlProductsSpeciesHash.put(species, prevStoich + stoichiometry);
 			}
 		}
 		//
 		// add products with net stoichiometry (e.g.  -> A + A ) goes to ( -> 2A)
 		//
-		for (Entry<SpeciesReference, Integer> es : sbmlProductsHash.entrySet()) {
-			SpeciesReference productSpeciesReference = es.getKey();
+		for (Entry<Species, Integer> es : sbmlProductsSpeciesHash.entrySet()) {
+			Species species = es.getKey();
 			int stoich = es.getValue();
 
-			EditableSymbolTableEntry vcellSte = sbmlSymbolMapping.getSte(productSpeciesReference.getSpeciesInstance(), SymbolContext.RUNTIME);
+			EditableSymbolTableEntry vcellSte = sbmlSymbolMapping.getSte(species, SymbolContext.RUNTIME);
 			if (!(vcellSte instanceof SpeciesContext)) {
-				throw new SBMLImportException("could not find VCell SpeciesContext for SBML Species "+productSpeciesReference.getSpeciesInstance());
+				throw new SBMLImportException("could not find VCell SpeciesContext for SBML Species "+species);
 			}
 			SpeciesContext speciesContext = (SpeciesContext) vcellSte;
 			vcRxn.addProduct(speciesContext, stoich);
 			Product product = vcRxn.getProduct(speciesContext.getName());
+			SpeciesReference productSpeciesReference = sbmlProductsSpeciesReferenceHash.get(species);
 			sbmlSymbolMapping.putRuntime(productSpeciesReference, new StoichiometrySymbolTableEntry(product));
 		}
 
@@ -1293,9 +1302,12 @@ public class SBMLImporter {
 			EditableSymbolTableEntry assignmentTargetSte = sbmlSymbolMapping.getRuntimeSte(targetSbase);
 			try {
 				// only add those assignment rules for runtime targets that don't have editable expressions - not sure what to do about these if they don't map to anything.
+//				if (!assignmentTargetSte.isExpressionEditable()
+//					&& !(assignmentTargetSte instanceof Structure.StructureSize)
+//					&& !(assignmentTargetSte instanceof SpeciesContext)) {
 				if (!assignmentTargetSte.isExpressionEditable()
-					&& !(assignmentTargetSte instanceof Structure.StructureSize)
-					&& !(assignmentTargetSte instanceof SpeciesContext)) {
+				&& !(assignmentTargetSte instanceof Structure.StructureSize)
+				) {
 
 					logger.error("unexpected assignment rule target '"+assignmentTargetSte+"', adding as assignment rule - minimal support provided");
 					logger.error("need to create a VCLogger event");
@@ -2816,7 +2828,7 @@ public class SBMLImporter {
 						origKinetics.setReactionStep(reactionStep);
 						try {
 							DistributedKinetics.toDistributedKinetics((LumpedKinetics) origKinetics, false);
-							logger.info("transformed lumped reaction " + reactionStep.getName() + " to distributed");
+							logger.debug("transformed lumped reaction " + reactionStep.getName() + " to distributed");
 						} catch (Exception e) {
 							logger.warn("failed to transform lumped reaction " + reactionStep.getName() + " to distributed: " + e.getMessage());
 							// original kinetics may have been altered when the conversion failed, replace with clone
@@ -3459,7 +3471,7 @@ public class SBMLImporter {
 		try {
 			geometry = mplugin.getGeometry();
 		} catch (PropertyUndefinedError e){
-			logger.info("model '"+sbmlModel.getId()+"' doesn't have a spatial geometry");
+			logger.debug("model '"+sbmlModel.getId()+"' doesn't have a spatial geometry");
 			localIssueList.add(new Issue(new SBMLIssueSource(sbmlModel),
 					issueContext,
 					IssueCategory.SBMLImport_UnsupportedAttributeOrElement,

@@ -21,6 +21,8 @@ import java.util.TreeMap;
 import java.util.Vector;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.solver.smoldyn.SmoldynVCellMapper;
 import org.vcell.solver.smoldyn.SmoldynVCellMapper.SmoldynKeyword;
 import org.vcell.util.BeanUtils;
@@ -59,6 +61,8 @@ import ncsa.hdf.hdf5lib.exceptions.HDF5LibraryException;
  * @author: Ion Moraru
  */
 public class ASCIIExporter implements ExportConstants {
+	private final static Logger lg = LogManager.getLogger(ASCIIExporter.class);
+
 	private ExportServiceImpl exportServiceImpl = null;
 
 /**
@@ -112,15 +116,6 @@ private StringBuilder[] stringBuilderArray(int size) {
 	}
 	return rval;
 }
-
-/**
- * Insert the method's description here.
- * Creation date: (1/12/00 5:00:28 PM)
- * @return cbit.vcell.export.server.ExportOutput[]
- * @param dsc cbit.vcell.server.DataSetController
- * @param timeSpecs cbit.vcell.export.server.TimeSpecs
- * @throws IOException 
- */
 
 private List<ExportOutput> exportParticleData(OutputContext outputContext,long jobID, User user, DataServerImpl dataServerImpl, ExportSpecs exportSpecs,  
 		ASCIISpecs asciiSpecs,FileDataContainerManager fileDataContainerManager) throws DataAccessException, IOException {
@@ -686,7 +681,6 @@ private List<ExportOutput> exportPDEData(OutputContext outputContext,long jobID,
 			H5.H5Fclose(hdf5FileID);
 		}
 		}catch(HDF5Exception e) {
-			e.printStackTrace();
 			throw new DataAccessException("HDF5 error:"+e.getMessage(),e);
 		}
 	}
@@ -856,7 +850,6 @@ private FileDataContainerID getCurveTimeSeries(int hdf5GroupVarID,PointsCurvesSl
 			Hdf5Utils.insertDoubles(hdf5GroupCurveID, PCS.CURVEVALS.name(), new long[] {endIndex-beginIndex+1,((int[])treePCS.get(PCS.CURVEINDEXES)).length}, (ArrayList<Double>)treePCS.get(PCS.CURVEVALS));//Hdf5Utils.writeHDF5Dataset(hdf5GroupCurveID, PCS.CURVEVALS.name(), new long[] {endIndex-beginIndex+1,((int[])treePCS.get(PCS.CURVEINDEXES)).length}, (ArrayList<Double>)treePCS.get(PCS.CURVEVALS),false);
 			H5.H5Gclose(hdf5GroupCurveID);
 		} catch (Exception e) {
-			e.printStackTrace();
 			throw new DataAccessException(e.getMessage(),e);
 		}
 
@@ -883,18 +876,7 @@ private String getSpatialSelectionCoordinate(SpatialSelection spatialSelection){
 private String getSpatialSelectionDescription(SpatialSelection spatialSelection){
 	return "(roi=('" + getSpatialSelectionName(spatialSelection) + "') coord=("+getSpatialSelectionCoordinate(spatialSelection)+"))";
 }
-/**
- * Insert the method's description here.
- * Creation date: (1/17/00 6:02:37 PM)
- * @return java.lang.String
- * @param odeSimData cbit.vcell.simdata.ODESimData
- * @param variableNames java.lang.String[]
- * @param beginIndex int
- * @param endIndex int
- * @param switchRowsColumns boolean
- * @exception org.vcell.util.DataAccessException The exception description.
- * @throws IOException 
- */
+
 private FileDataContainerID getODEDataValues(long jobID, User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID, String[] variableNames, int beginIndex, int endIndex, boolean switchRowsColumns,FileDataContainerManager fileDataContainerManager) throws DataAccessException, IOException {
 
 	ODESimData odeSimData = dataServerImpl.getODEData(user, vcdID);
@@ -909,7 +891,7 @@ private FileDataContainerID getODEDataValues(long jobID, User user, DataServerIm
 		else if(isMultiTrial)
 			allTimes = odeSimData.extractColumn(odeSimData.findColumn("TrialNo"));
 	}catch (cbit.vcell.parser.ExpressionException e){
-		e.printStackTrace(System.out);
+		lg.error(e);
 	}
 	double[][] variableValues = new double[variableNames.length][endIndex - beginIndex + 1];
 	for (int k=0;k<variableNames.length;k++) {
@@ -919,8 +901,7 @@ private FileDataContainerID getODEDataValues(long jobID, User user, DataServerIm
 			try {
 				variableValues[k][i - beginIndex] = odeSimData.extractColumn(odeSimData.findColumn(variableNames[k]))[i];
 			}catch (cbit.vcell.parser.ExpressionException e){
-				e.printStackTrace(System.out);
-				throw new DataAccessException("error evaluating function in dataset: "+e.getMessage());
+				throw new DataAccessException("error evaluating function in dataset: "+e.getMessage(), e);
 			}
 		}
 	}
@@ -1234,14 +1215,7 @@ private class SliceHelper {
 		}
 	}
 }
-/**
- * This method was created in VisualAge.
- * @return java.io.File
- * @param variable java.lang.String
- * @param time double
- * @throws IOException 
 
- */
 private FileDataContainerID getSlice(SliceHelper sliceHelper, CartesianMesh mesh,double[] allTimes,OutputContext outputContext,User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID, String variable, int timeIndex, String slicePlane, int sliceNumber, boolean switchRowsColumns,FileDataContainerManager fileDataContainerManager) throws HDF5Exception, DataAccessException, IOException {
 	
 	double timepoint = allTimes[timeIndex];

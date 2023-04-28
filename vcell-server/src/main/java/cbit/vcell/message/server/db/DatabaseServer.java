@@ -163,12 +163,13 @@ public static void main(java.lang.String[] args) {
 		DatabaseServer databaseServer = new DatabaseServer(serviceInstanceStatus, databaseServerImpl, vcMessagingService, false);
         databaseServer.init();
     } catch (Throwable e) {
-	    e.printStackTrace(System.out); 
+	    lg.error(e);
     }
 }
 
 private static final String REQUIRED_SERVICE_PROPERTIES[] = {
 		PropertyLoader.vcellServerIDProperty,
+		PropertyLoader.vcellSoftwareVersion,
 		PropertyLoader.installationRoot,
 		PropertyLoader.dbConnectURL,
 		PropertyLoader.dbDriverName,

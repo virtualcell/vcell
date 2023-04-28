@@ -212,3 +212,6 @@ vcell-client/UserDocumentation/originalXML/helpSearchConfig.txt
 .vscode/settings.json
 
 pythonProject/vcell-opt/dist/
+
+vcell-core/src/test/resources/org/vcell/sbml/local
+

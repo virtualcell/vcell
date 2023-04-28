@@ -2,9 +2,13 @@ package org.vcell.admin.cli;
 
 import cbit.sql.CompareDatabaseSchema;
 import cbit.sql.QueryHashtable;
+import cbit.vcell.message.server.dispatcher.SimulationDatabase;
+import cbit.vcell.message.server.dispatcher.SimulationDatabaseDirect;
 import cbit.vcell.modeldb.*;
 import cbit.vcell.server.SimulationJobStatusPersistent;
 import cbit.vcell.xml.XmlParseException;
+import org.vcell.admin.cli.sim.ResultSetCrawler;
+import org.vcell.admin.cli.sim.SimDataVerifier;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
 import org.vcell.util.DataAccessException;
@@ -18,9 +22,17 @@ import java.util.stream.Collectors;
 public class CLIDatabaseService implements AutoCloseable {
     private ConnectionFactory conFactory = null;
     private List<BioModelInfo> publicBioModelInfos = null;
+    private DatabaseServerImpl databaseServer = null;
 
     public CLIDatabaseService() throws SQLException {
         conFactory = DatabaseService.getInstance().createConnectionFactory();
+    }
+
+    private DatabaseServerImpl getDatabaseServer() throws DataAccessException {
+        if (databaseServer==null){
+            databaseServer = new DatabaseServerImpl(conFactory, conFactory.getKeyFactory());
+        }
+        return databaseServer;
     }
 
     public List<BioModelInfo> queryPublicBioModels() throws SQLException, DataAccessException {
@@ -59,15 +71,18 @@ public class CLIDatabaseService implements AutoCloseable {
         if (!bioModelInfo.isPresent()){
             throw new RuntimeException("biomodel key "+bioModelKey+" not found as a public bioodel");
         }
-        DatabaseServerImpl databaseServer = new DatabaseServerImpl(conFactory, conFactory.getKeyFactory());
-        ServerDocumentManager serverDocumentManager = new ServerDocumentManager(databaseServer);
-        User user = bioModelInfo.get().getVersion().getOwner(); // impersonate owner for this public model
-        String biomodelXML = serverDocumentManager.getBioModelXML(new QueryHashtable(),user,bioModelKey,bRegenerateXML);
+        return getBioModelXML(bioModelKey, bRegenerateXML, bioModelInfo.get().getVersion().getOwner());
+    }
+
+    public String getBioModelXML(KeyValue bioModelKey, boolean bRegenerateXML, User owner) throws DataAccessException {
+        ServerDocumentManager serverDocumentManager = getDatabaseServer().getServerDocumentManager();
+        User user = owner; // impersonate owner for this model
+        String biomodelXML = serverDocumentManager.getBioModelXML(new QueryHashtable(), user, bioModelKey, bRegenerateXML);
         return biomodelXML;
     }
 
     public String getBioModelVCML(BioModelInfo bioModelInfo, boolean bWithXMLCache) throws SQLException, DataAccessException, XmlParseException {
-        DatabaseServerImpl databaseServerImpl = new DatabaseServerImpl(conFactory, conFactory.getKeyFactory());
+        DatabaseServerImpl databaseServerImpl = getDatabaseServer();
         KeyValue versionKey = bioModelInfo.getVersion().getVersionKey();
         if (bWithXMLCache) {
             return databaseServerImpl.getBioModelXML(User.tempUser, versionKey).toString();
@@ -83,6 +98,11 @@ public class CLIDatabaseService implements AutoCloseable {
         return statuses;
     }
 
+    public String getBasicStatistics() throws SQLException, DataAccessException {
+        AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(conFactory);
+        return adminDbTopLevel.getBasicStatistics();
+    }
+
     public MathVerifier getMathVerifier() throws DataAccessException, SQLException {
         LocalAdminDbServer adminDbServer = new LocalAdminDbServer(conFactory, conFactory.getKeyFactory());
         return new MathVerifier(conFactory, adminDbServer);
@@ -94,5 +114,18 @@ public class CLIDatabaseService implements AutoCloseable {
 
     public CompareDatabaseSchema getCompareDatabaseSchemas() {
         return new CompareDatabaseSchema(conFactory);
+    }
+
+    public ResultSetCrawler getResultSetCrawler() throws DataAccessException, SQLException {
+        AdminDBTopLevel adminDBTopLevel = new AdminDBTopLevel(conFactory);
+        DatabaseServerImpl dbServerImpl = new DatabaseServerImpl(conFactory, conFactory.getKeyFactory());
+        return new ResultSetCrawler(adminDBTopLevel, dbServerImpl);
+    }
+
+    public SimDataVerifier getSimDataVerifier() throws DataAccessException, SQLException {
+        AdminDBTopLevel adminDBTopLevel = new AdminDBTopLevel(conFactory);
+        DatabaseServerImpl dbServerImpl = new DatabaseServerImpl(conFactory, conFactory.getKeyFactory());
+        SimulationDatabase simulationDatabase = new SimulationDatabaseDirect(adminDBTopLevel, dbServerImpl,false);
+        return new SimDataVerifier(adminDBTopLevel, dbServerImpl, simulationDatabase);
     }
 }
