@@ -45,7 +45,8 @@ public class Hdf5DataExtractor {
      * @param nonSpatialResults the nonspatial results set of a sedml execution
      * @param spatialResults the spatial results set of a sedml execution
      * @return a wrapper for hdf5 relevant data
-     * @see collectNonspatialDatasets, collectSpatialDatasets
+     * @see NonspatialResultsConverter::convertNonspatialResultsToSedmlFormat
+     * @see SpatialResultsConverter::collectSpatialDatasets
      */
     public Hdf5DataContainer extractHdf5RelevantData(Map<TaskJob, ODESolverResultSet> nonSpatialResults, Map<TaskJob, File> spatialResults) {
         List<Hdf5SedmlResults> wrappers = new LinkedList<>();
