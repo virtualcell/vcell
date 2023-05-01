@@ -257,7 +257,6 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 			siteYField.setEditable(false);
 			siteZField.setEditable(false);
 			linkLengthField.setEditable(false);
-
 		
 		// ------------------------------------------- The 2 group boxes --------------------------
 		JPanel thePanel = new JPanel();
