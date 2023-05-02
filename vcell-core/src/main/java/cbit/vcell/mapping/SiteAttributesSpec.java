@@ -124,11 +124,13 @@ public class SiteAttributesSpec implements Serializable, Identifiable, Displayab
 		return index;
 	}
 	
-	public void writeType(StringBuilder sb) {		// I/O the MolecularType
-		MolecularTypePattern mtp = getSpeciesContextSpec().getSpeciesContext().getSpeciesPattern().getMolecularTypePatterns().get(0);
-		MolecularType mt = mtp.getMolecularType();
-		List<ComponentStateDefinition> csdList = getMolecularComponentPattern().getMolecularComponent().getComponentStateDefinitions();
-		sb.append("TYPE: Name \"" + mt.getName() + "\"");
+	public void writeType(StringBuilder sb) {		// I/O the Site Type (mMlecularComponent)
+		if(getMolecularComponentPattern() == null) {
+			throw new RuntimeException("writeType(): MolecularComponentPattern is null");
+		}
+		MolecularComponent mc = getMolecularComponentPattern().getMolecularComponent();
+		List<ComponentStateDefinition> csdList = mc.getComponentStateDefinitions();
+		sb.append("TYPE: Name \"" + mc.getName() + "\"");
 		sb.append(" Radius " + IOHelp.DF[5].format(getRadius()) + " D " + IOHelp.DF[3].format(getDiffusionRate()) + " Color " + getColor().getName());
 		sb.append(" STATES ");
 		for (ComponentStateDefinition state : csdList) {
@@ -137,11 +139,10 @@ public class SiteAttributesSpec implements Serializable, Identifiable, Displayab
 		sb.append("\n");
 	}
 	public void writeSite(StringBuilder sb) {
-		MolecularComponentPattern mcp = getMolecularComponentPattern();
-		if(mcp == null) {
-			throw new RuntimeException("writeSite(): mcp is null");
+		if(getMolecularComponentPattern() == null) {
+			throw new RuntimeException("writeSite(): MolecularComponentPattern is null");
 		}
-		ComponentStatePattern csp = mcp.getComponentStatePattern();
+		ComponentStatePattern csp = getMolecularComponentPattern().getComponentStatePattern();
 		if(csp == null) {
 			sb.append("SITE " + (this.getIndex()-1) + " : " + getLocation().getName() + " : Initial State '" + "ERROR: at least one State is needed"  + "'");
 			sb.append("\n");

@@ -190,7 +190,7 @@ public class SpringSaLaDExporter {
 				SpeciesContextSpec scs = reactionContext.getSpeciesContextSpec(sc);
 				scs.writeData(sb);
 			}
-			/* ******* WRITE THE SPECIES INFORMATION ***********/
+			/* ******* WRITE THE MOLECULE INFORMATION FILES ***********/
 			sb.append("*** " + MOLECULE_FILES + " ***");
 			sb.append("\n");
 			sb.append("\n");
