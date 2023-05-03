@@ -5,11 +5,13 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.vcell.model.rbm.ComponentStateDefinition;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
 import org.vcell.util.Coordinate;
 import org.vcell.util.Matchable;
 import org.vcell.util.springsalad.Colors;
+import org.vcell.util.springsalad.IOHelp;
 import org.vcell.util.springsalad.NamedColor;
 
 import cbit.vcell.model.Structure;
@@ -130,6 +132,28 @@ public class LangevinParticleMolecularComponent extends ParticleMolecularCompone
 			throw new MathFormatException("unexpected identifier "+token);
 		}	
 	}
+	
+	public void writeType(StringBuilder sb) {
+		sb.append("TYPE: Name \"" + getName() + "\"");
+		sb.append(" Radius " + IOHelp.DF[5].format(getRadius()) + " D " + IOHelp.DF[3].format(getDiffusionRate()) + " Color " + getColor().getName());
+		sb.append(" STATES ");
+		for (ParticleComponentStateDefinition state : getComponentStateDefinitions()) {
+			sb.append("\"" + state.getName() + "\"" + " ");
+		}
+		sb.append("\n");
+	}
+	public void writeSite(StringBuilder sb, int index, String initialState) {
+		sb.append("SITE " + index + 
+				" : " + getLocation() + " : Initial State '" + initialState + "'");
+		sb.append("\n");
+		sb.append("          ");
+		this.writeType(sb);	// ex: TYPE: Name "Type2" Radius 1.00000 D 1.000 Color LIME STATES "State0" "State1" 
+		sb.append("          " + "x " + IOHelp.DF[5].format(getCoordinate().getX()) + " y " + 
+				IOHelp.DF[5].format(getCoordinate().getY()) + " z " + 
+				IOHelp.DF[5].format(getCoordinate().getZ()) + " ");		// ex: x 4.00000 y 4.00000 z 20.00000
+		sb.append("\n");
+	}
+	
 	public double getRadius() {
 		return fieldRadius;
 	}

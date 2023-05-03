@@ -16,17 +16,23 @@ import org.jdom.Comment;
 import org.jdom.Element;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
+import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.RbmUtils;
 import org.vcell.model.rbm.RuleAnalysis;
 import org.vcell.model.rbm.RuleAnalysisReport;
 import org.vcell.util.BeanUtils;
+import org.vcell.util.Pair;
 
 import cbit.vcell.export.SpringSaLaDExporter;
+import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryClass;
+import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.mapping.LangevinMathMapping;
 import cbit.vcell.mapping.MathMapping;
+import cbit.vcell.mapping.MolecularInternalLinkSpec;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SiteAttributesSpec;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.math.Action;
@@ -35,6 +41,7 @@ import cbit.vcell.math.Constant;
 import cbit.vcell.math.Function;
 import cbit.vcell.math.JumpProcessRateDefinition;
 import cbit.vcell.math.LangevinParticleJumpProcess;
+import cbit.vcell.math.LangevinParticleMolecularComponent;
 import cbit.vcell.math.LangevinParticleMolecularType;
 import cbit.vcell.math.MacroscopicRateConstant;
 import cbit.vcell.math.MathDescription;
@@ -57,6 +64,7 @@ import cbit.vcell.math.ParticleSpeciesPattern;
 import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VolumeParticleSpeciesPattern;
+import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.model.Structure;
 import cbit.vcell.parser.DivideByZeroException;
@@ -73,8 +81,20 @@ import cbit.vcell.xml.XMLTags;
 
 public class LangevinLngvWriter {
 	
+	public static final boolean TrackClusters = true;			// SpringSaLaD specific
+	public static final boolean InitialLocationRandom = true;
+	private static final String InitialLocationRandomString = "Random";
+	private static final String InitialLocationSetString = "Set";
+	public static final String SourceMoleculeString = "Source";	// molecule used in creation reaction subtype (reserved name)
+	public static final String SinkMoleculeString = "Sink";		// molecule used in decay reaction subtype (reserved name)
+	private static final String AnchorSiteString = "Anchor";		// required name for reserved special Site of membrane species
+	private static final String AnchorStateString = "Anchor";		// required name for reserved special State of the Anchor site
 
-	// TODO: various collections here for the intermediate stuff as we build the lngv file from math
+	// various collections here for the intermediate stuff as we build the lngv file from math
+	private static Map<ParticleProperties, SubDomain> particlePropertiesMap = new LinkedHashMap<> ();			// initial conditions for seed species
+	private static Map<LangevinParticleJumpProcess, SubDomain> particleJumpProcessMap = new LinkedHashMap<> ();	// list of reactions
+	private static Set<LangevinParticleMolecularType> particleMolecularTytpeSet = new LinkedHashSet<> ();		// molecular types
+	private static GeometryContext geometryContext = null;
 	
 //	static ArrayList<MappingOfReactionParticipants> currentMappingOfReactionParticipants = new ArrayList<MappingOfReactionParticipants>();
 //	static HashSet<BondSites> reactionReactantBondSites = new HashSet<BondSites>();
@@ -89,11 +109,17 @@ public class LangevinLngvWriter {
 		
 		Simulation simulation = origSimTask.getSimulation();
 		SimulationOwner so = simulation.getSimulationOwner();
+		if(so instanceof MathModel) {
+			MathModel mm = (MathModel)so;	// TODO: must make this code compatible to math model too
+			// how do I get GeometryContext for a math model?
+		}
+		Geometry geometry = so.getGeometry();
+		GeometrySpec geometrySpec = geometry.getGeometrySpec();
 		if(!(so instanceof SimulationContext)) {
 			throw new RuntimeException("SimulationOwner must be instance of SimulationContext");
 		}
 		SimulationContext simContext = (SimulationContext)so;
-		GeometryContext geometryContext = simContext.getGeometryContext();
+		geometryContext = simContext.getGeometryContext();
 		
 		if(simContext.getApplicationType() != Application.SPRINGSALAD) {
 			throw new RuntimeException("SpringSaLaD application type expected.");
@@ -108,43 +134,16 @@ public class LangevinLngvWriter {
 //		GeometryClass reactionStepGeometryClass = sm.getGeometryClass();
 		
 		MathDescription mathDesc = simulation.getMathDescription();
-
-		Map<ParticleProperties, SubDomain> particlePropertiesMap = new LinkedHashMap<> ();		// initial conditions for seed species
-		Map<LangevinParticleJumpProcess, SubDomain> particleJumpProcessMap = new LinkedHashMap<> ();	// list of reactions
-		Set<LangevinParticleMolecularType> particleMolecularTytpeSet = new LinkedHashSet<> ();			// molecular types
+		particlePropertiesMap.clear();
+		particleJumpProcessMap.clear();
+		particleMolecularTytpeSet.clear();
 		
 		Enumeration<SubDomain> subDomainEnum = mathDesc.getSubDomains();
 		while (subDomainEnum.hasMoreElements()) {
 			SubDomain subDomain = subDomainEnum.nextElement();
 			for(ParticleProperties pp : subDomain.getParticleProperties()) {
 				particlePropertiesMap.put(pp, subDomain);
-				ArrayList<ParticleInitialCondition> particleInitialConditions = pp.getParticleInitialConditions();
-				Variable variable = pp.getVariable();
-				if(!(variable instanceof VolumeParticleSpeciesPattern)) {
-					continue;		// only interested in VolumeParticleSpeciesPattern
-				}
-				VolumeParticleSpeciesPattern vpsp = (VolumeParticleSpeciesPattern)variable;
-				if(vpsp.getParticleMolecularTypePatterns().size() != 1) {
-					throw new RuntimeException("A seed species size must be exactly one molecule");
-				}
-				if(!(vpsp.getParticleMolecularTypePatterns().get(0).getMolecularType() instanceof LangevinParticleMolecularType)) {
-					throw new RuntimeException("LangevinParticleMolecularType expected");
-				}
-				LangevinParticleMolecularType lpmt = (LangevinParticleMolecularType)vpsp.getParticleMolecularTypePatterns().get(0).getMolecularType();
-				String spName = variable.getName();
-				String moleculeName = lpmt.getName();
-				
-				if(particleInitialConditions.size() != 1) {
-					throw new RuntimeException("One initial condition per variable is required");
-				}
-				if(!(particleInitialConditions.get(0) instanceof ParticleInitialConditionCount)) {
-					throw new RuntimeException("Count initial condition is required");
-				}
-				ParticleInitialConditionCount pic = (ParticleInitialConditionCount)particleInitialConditions.get(0);
-				Expression count = pic.getCount();
-				System.out.println(count + "");
 			}
-			
 			
 			for(ParticleJumpProcess pjp : subDomain.getParticleJumpProcesses()) {
 				if(!(pjp instanceof LangevinParticleJumpProcess)) {
@@ -153,17 +152,15 @@ public class LangevinLngvWriter {
 				LangevinParticleJumpProcess lpjp = (LangevinParticleJumpProcess)pjp;
 				particleJumpProcessMap.put(lpjp, subDomain);
 			}
-			
-			
-			for(ParticleMolecularType pmt : mathDesc.getParticleMolecularTypes()) {
-				if(!(pmt instanceof LangevinParticleMolecularType)) {
-					throw new RuntimeException("LangevinParticleMolecularType expected.");
-				}
-				LangevinParticleMolecularType lpmt = (LangevinParticleMolecularType)pmt;
-				particleMolecularTytpeSet.add(lpmt);
-			}
 		}
-		
+			
+		for(ParticleMolecularType pmt : mathDesc.getParticleMolecularTypes()) {
+			if(!(pmt instanceof LangevinParticleMolecularType)) {
+				throw new RuntimeException("LangevinParticleMolecularType expected.");
+			}
+			LangevinParticleMolecularType lpmt = (LangevinParticleMolecularType)pmt;
+			particleMolecularTytpeSet.add(lpmt);
+		}
 		
 		StringBuilder sb = new StringBuilder();
 		/* ********* BEGIN BY WRITING THE TIMES *********/
@@ -182,7 +179,7 @@ public class LangevinLngvWriter {
 		sb.append("*** " + SpringSaLaDExporter.MOLECULES + " ***");
 		sb.append("\n");
 		sb.append("\n");
-
+		writeSpeciesInfo(sb);
 
 
 			
@@ -191,6 +188,96 @@ public class LangevinLngvWriter {
 		
 		return ret;
 	}
+	
+	public static void writeSpeciesInfo(StringBuilder sb) {
+
+		for( Map.Entry<ParticleProperties, SubDomain> entry : particlePropertiesMap.entrySet()) {
+			
+			ParticleProperties pp = entry.getKey();
+			SubDomain subDomain = entry.getValue();
+			
+			ArrayList<ParticleInitialCondition> particleInitialConditions = pp.getParticleInitialConditions();
+			Variable variable = pp.getVariable();
+			if(!(variable instanceof VolumeParticleSpeciesPattern)) {
+				continue;		// only interested in VolumeParticleSpeciesPattern
+			}
+			VolumeParticleSpeciesPattern vpsp = (VolumeParticleSpeciesPattern)variable;
+			if(vpsp.getParticleMolecularTypePatterns().size() != 1) {
+				throw new RuntimeException("A seed species size must be exactly one molecule");
+			}
+			ParticleMolecularTypePattern particleMolecularTypePattern = vpsp.getParticleMolecularTypePatterns().get(0);
+			if(!(particleMolecularTypePattern.getMolecularType() instanceof LangevinParticleMolecularType)) {
+				throw new RuntimeException("LangevinParticleMolecularType expected");
+			}
+			LangevinParticleMolecularType lpmt = (LangevinParticleMolecularType)particleMolecularTypePattern.getMolecularType();
+			String spName = variable.getName();
+			String moleculeName = lpmt.getName();
+			
+			if(particleInitialConditions.size() != 1) {
+				throw new RuntimeException("One initial condition per variable is required");
+			}
+			if(!(particleInitialConditions.get(0) instanceof ParticleInitialConditionCount)) {
+				throw new RuntimeException("Count initial condition is required");
+			}
+			ParticleInitialConditionCount pic = (ParticleInitialConditionCount)particleInitialConditions.get(0);
+			Expression count = pic.getCount();
+			
+			int dimension = geometryContext.getGeometry().getDimension();
+
+			sb.append("MOLECULE: \"" + lpmt.getName() + "\" " + subDomain.getName() + 
+					" Number " + pic.getCount().infix() + 
+					// number of site types and number of sites is the same for the vcell implementation of springsalad
+					" Site_Types " + lpmt.getComponentList().size() + " Total"  + "_Sites " + lpmt.getComponentList().size() + 
+					" Total_Links " + lpmt.getInternalLinkSpec().size() + " is2D " + (dimension == 2 ? true : false));
+			sb.append("\n");
+			sb.append("{");
+			sb.append("\n");
+
+			for(ParticleMolecularComponent pmc : lpmt.getComponentList()) {
+				if(!(pmc instanceof LangevinParticleMolecularComponent)) {
+					throw new RuntimeException("LangevinParticleMolecularComponent required");
+				}
+				LangevinParticleMolecularComponent lpmc = (LangevinParticleMolecularComponent)pmc;
+				sb.append("     ");
+				lpmc.writeType(sb);
+			}
+			sb.append("\n");
+			for(ParticleMolecularComponent pmc : lpmt.getComponentList()) {
+				// a few lines that follow are needed to extract the initial state from the ParticleMolecularComponentPattern
+				ParticleMolecularComponentPattern pmcp = particleMolecularTypePattern.getMolecularComponentPattern(pmc);
+				ParticleComponentStatePattern pcsp = pmcp.getComponentStatePattern();
+				ParticleComponentStateDefinition pcsd = pcsp.getParticleComponentStateDefinition();
+				String initialState = pcsd.getName();
+				LangevinParticleMolecularComponent lpmc = (LangevinParticleMolecularComponent)pmc;
+				sb.append("     ");
+				lpmc.writeSite(sb, lpmt.getComponentList().indexOf(lpmc), initialState);
+			}
+			sb.append("\n");
+			Set<Pair<LangevinParticleMolecularComponent, LangevinParticleMolecularComponent>> internalLinkSpec = lpmt.getInternalLinkSpec();
+			for(Pair<LangevinParticleMolecularComponent, LangevinParticleMolecularComponent> pair : lpmt.getInternalLinkSpec()) {
+				sb.append("     ");
+				// we take advantage of the fact that there is one to one relationship between molecular component (site type) and site
+				int indexOne = lpmt.getComponentList().indexOf(pair.one);
+				int indexTwo = lpmt.getComponentList().indexOf(pair.two);
+				sb.append("LINK: Site " + indexOne + " ::: Site " + indexTwo);
+				sb.append("\n");
+			}
+			
+			sb.append("\n");
+			sb.append("     Initial_Positions: ");
+			if(InitialLocationRandom) {
+				sb.append(InitialLocationRandomString);
+				sb.append("\n");
+			}
+			sb.append("}");
+			sb.append("\n");
+			sb.append("\n");
+		}
+		System.out.println(sb.toString());
+		return;
+	}
+	
+	
 	
 	private static double evaluateConstant(Expression expression, SimulationSymbolTable simulationSymbolTable) throws MathException, ExpressionException{
 		Expression subExp = simulationSymbolTable.substituteFunctions(expression);
