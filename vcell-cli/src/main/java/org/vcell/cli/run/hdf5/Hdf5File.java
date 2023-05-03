@@ -378,7 +378,7 @@ public class Hdf5File {
     }
 
     public int close() throws HDF5Exception {
-        if (this.isOpen == false) return 0;
+        if (!this.isOpen) return 0;
         //this.fileId = HDF5Constants.H5I_INVALID_HID;
         this.isOpen = false;
 

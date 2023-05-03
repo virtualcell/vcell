@@ -10,6 +10,7 @@ import org.jlibsedml.DataSet;
 import org.jlibsedml.Variable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jlibsedml.VariableSymbol;
 
 /**
  * Static data preparation class for Hdf5 files
@@ -44,16 +45,22 @@ public class Hdf5DataPreparer {
         int numJobs = 1;
         double[] bigDataBuffer;
         List<Long> dataDimensionList = new ArrayList<>();
-
-        Hdf5SedmlResultsSpatial dataSourceSpatial = (Hdf5SedmlResultsSpatial)datasetWrapper.dataSource; 
-        logger.debug(dataSourceSpatial);
         Hdf5DataSourceSpatialVarDataItem exampleVarDataItem = null;
+        Hdf5SedmlResultsSpatial spatialDataSource = (Hdf5SedmlResultsSpatial)datasetWrapper.dataSource;
+        Hdf5SedmlResultsSpatial spatialDataResults = new Hdf5SedmlResultsSpatial();
+        logger.debug(spatialDataResults);
 
-        for (Hdf5DataSourceSpatialVarDataItem item : dataSourceSpatial.varDataItems){
-            if (item.spaceTimeDimensions == null) continue;
-            exampleVarDataItem = item;
-            break;
+        spatialDataResults.scanBounds = spatialDataSource.scanBounds;
+        spatialDataResults.scanParameterNames = spatialDataSource.scanParameterNames;
+        for (Hdf5DataSourceSpatialVarDataItem item : spatialDataSource.varDataItems){
+            VariableSymbol symbol = item.sedmlVariable.getSymbol();
+            if (symbol != null && "TIME".equals(symbol.name())) continue;
+            if (exampleVarDataItem == null) exampleVarDataItem = item;
+            spatialDataResults.varDataItems.add(item);
         }
+
+        if (exampleVarDataItem == null)
+            throw new RuntimeException("We have no spatial datasets here somehow! This error shouldn't happen");
 
         if (exampleVarDataItem.spaceTimeDimensions == null){
             RuntimeException e = new RuntimeException("No space time dimensions could be found!");
@@ -63,8 +70,8 @@ public class Hdf5DataPreparer {
 
         int[] spaceTimeDimensions = exampleVarDataItem.spaceTimeDimensions;
         //int numSpatialPoints = Arrays.stream(spatialDimensions).sum();
-        //long numJobs = dataSourceSpatial.varDataItems.stream().map(varDataItem -> varDataItem.jobIndex).collect(Collectors.toSet()).size();
-        List<Variable> sedmlVars = new ArrayList<>(dataSourceSpatial.varDataItems.stream().map(varDataItem -> varDataItem.sedmlVariable).collect(Collectors.toSet()));
+        //long numJobs = spatialDataResults.varDataItems.stream().map(varDataItem -> varDataItem.jobIndex).collect(Collectors.toSet()).size();
+        List<Variable> sedmlVars = new ArrayList<>(spatialDataResults.varDataItems.stream().map(varDataItem -> varDataItem.sedmlVariable).collect(Collectors.toSet()));
         long numVars = sedmlVars.size();
 
         if (exampleVarDataItem.times.length != spaceTimeDimensions[spaceTimeDimensions.length-1]){
@@ -74,7 +81,7 @@ public class Hdf5DataPreparer {
 
         // Structure dimensionality
         dataDimensionList.add(numVars);                         // ...first by dataSet
-        for (int scanBound : dataSourceSpatial.scanBounds){
+        for (int scanBound : spatialDataResults.scanBounds){
             dataDimensionList.add((long)scanBound + 1);         // ...then by scan bounds / "repeated task"
             numJobs *= (scanBound+1);
         }
@@ -92,9 +99,11 @@ public class Hdf5DataPreparer {
         for (int jobIndex=0; jobIndex<numJobs; jobIndex++){
             for (Variable var : sedmlVars) {
                 // find data for var and jobIndex
-                for (Hdf5DataSourceSpatialVarDataItem varDataItem : dataSourceSpatial.varDataItems) {
+                for (Hdf5DataSourceSpatialVarDataItem varDataItem : spatialDataResults.varDataItems) {
                     if (varDataItem.sedmlVariable.equals(var) && varDataItem.jobIndex == jobIndex){
-                        double[] dataArray = varDataItem.getSpatialData();
+                        String varName = varDataItem.sedmlVariable.getSymbol() == null ? null :
+                                varDataItem.sedmlVariable.getSymbol().name();
+                        double[] dataArray = "TIME".equals(varName) ? varDataItem.times: varDataItem.getSpatialData();
                         System.arraycopy(dataArray,0,bigDataBuffer,bufferOffset,dataArray.length);
                         bufferOffset += dataArray.length;
                         break;

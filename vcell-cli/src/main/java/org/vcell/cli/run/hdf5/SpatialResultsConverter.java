@@ -16,6 +16,8 @@ import org.jlibsedml.Task;
 import org.jlibsedml.SubTask;
 import org.jlibsedml.UniformTimeCourse;
 import org.jlibsedml.DataSet;
+import org.jlibsedml.execution.IXPathToVariableIDResolver;
+import org.jlibsedml.modelsupport.SBMLSupport;
 import org.vcell.cli.run.TaskJob;
 import org.vcell.util.DataAccessException;
 import org.apache.logging.log4j.LogManager;
@@ -28,7 +30,7 @@ public class SpatialResultsConverter {
     private final static Logger logger = LogManager.getLogger(SpatialResultsConverter.class);
 
     public static List<Hdf5SedmlResults> convertSpatialResultsToSedmlFormat(SedML sedml, Map<TaskJob, File> spatialResultsHash, Map<AbstractTask, TempSimulation> taskToSimulationMap, String sedmlLocation) throws DataAccessException, IOException, HDF5Exception, ExpressionException {
-        List<Hdf5SedmlResults> datasetWrappers = new ArrayList<>();
+        List<Hdf5SedmlResults> datasetWrappers = new LinkedList<>();
 
         for (Report report : SpatialResultsConverter.getReports(sedml.getOutputs())){
             boolean bNotSpatial = false;
@@ -52,7 +54,7 @@ public class SpatialResultsConverter {
                         continue;
                     }
 
-                    // Do we need Vcell/sbml name conversion here??
+                    String vcellVarId = convertToVCellSymbol(var);
 
                     boolean bFoundTaskInSpatial = spatialResultsHash.keySet().stream().anyMatch(taskJob -> taskJob.getTaskId().equals(topLevelTask.getId()));
                     if (!bFoundTaskInSpatial){
@@ -103,10 +105,14 @@ public class SpatialResultsConverter {
                         File spatialH5File = spatialResultsHash.get(taskJob);
                         if (spatialH5File != null) {
                             Hdf5DataSourceSpatialVarDataItem job = new Hdf5DataSourceSpatialVarDataItem(
-                                    report, dataset, var, jobIndex, spatialH5File, outputStartTime, outputNumberOfPoints);
+                                    report, dataset, var, jobIndex, spatialH5File,
+                                    outputStartTime, outputNumberOfPoints, vcellVarId);
                             hdf5DataSourceSpatial.varDataItems.add(job);
                             hdf5DataSourceSpatial.scanBounds = scanBounds;
                             hdf5DataSourceSpatial.scanParameterNames = scanParamNames;
+                            if (job.spaceTimeDimensions == null && vcellVarId.equals("t")){
+                                job.spaceTimeDimensions = new int[]{1, job.times.length};
+                            }
                         }
                         jobIndex++;
                     }
@@ -135,9 +141,12 @@ public class SpatialResultsConverter {
                     SpatialResultsConverter.removeVCellPrefixes(dataSet.getId(), hdf5DatasetWrapper.datasetMetadata.sedmlId));
                 hdf5DatasetWrapper.datasetMetadata.sedmlDataSetLabels.add(dataSet.getLabel());
                 hdf5DatasetWrapper.datasetMetadata.sedmlDataSetNames.add(dataSet.getName());
-                hdf5DatasetWrapper.datasetMetadata.sedmlDataSetShapes.add(null);
+                List<Integer> shapes = new LinkedList<>();
+                if (hdf5DataSourceSpatial.scanBounds.length > 0)
+                    shapes.add(hdf5DataSourceSpatial.scanBounds[hdf5DataSourceSpatial.scanBounds.length - 1]);
+                for (int size : job.spaceTimeDimensions) shapes.add(size);
+                hdf5DatasetWrapper.datasetMetadata.sedmlDataSetShapes.add(shapes.toString());
             }
-            hdf5DatasetWrapper.datasetMetadata.sedmlDataSetShapes = null;
             datasetWrappers.add(hdf5DatasetWrapper);
         } // outputs/reports
         return datasetWrappers;
@@ -169,6 +178,27 @@ public class SpatialResultsConverter {
         if (prefixedSedmlId.startsWith(plotPrefix))
             return "SedPlot2D";
         return "SedReport";
+    }
+
+    private static String convertToVCellSymbol(Variable var){
+        // must get variable ID from SBML model
+        if (var.getSymbol() != null) { // it is a predefined symbol
+            // search the sbml model to find the vcell variable name associated with the run
+            switch(var.getSymbol().name()){
+                case "TIME": { // TIME is t, etc
+                    return "t"; // this is VCell reserved symbol for time
+                }
+                default:{
+                    return var.getSymbol().name();
+                }
+                // etc, TODO: check spec for other symbols (CSymbols?)
+                // Delay? Avogadro? rateOf?
+            }
+        } else { // it is an XPATH target in model
+            String target = var.getTarget();
+            IXPathToVariableIDResolver resolver = new SBMLSupport();
+            return resolver.getIdFromXPathIdentifer(target);
+        }
     }
 
     /**

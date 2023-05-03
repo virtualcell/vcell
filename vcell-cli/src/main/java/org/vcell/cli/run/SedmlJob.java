@@ -353,10 +353,11 @@ public class SedmlJob {
         masterHdf5File.incorporate(partialHdf5File); // Add the data to the master hdf5 file wrapper.
 
         for (File tempH5File : solverHandler.spatialResults.values()) {
+            if (tempH5File == null) continue;
             try {
-                if (tempH5File != null) Files.delete(tempH5File.toPath());
+                Files.delete(tempH5File.toPath());
             } catch (AccessDeniedException e) {
-                logger.warn("Unable to delete intermediate file.", e);
+                logger.error("Unable to delete intermediate file (due to JHDF suffering from JDK-4715154?).", e);
             }
         }
     }

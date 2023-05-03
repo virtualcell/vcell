@@ -67,10 +67,10 @@ public class Hdf5DataExtractor {
             spatialException = e;
         }
 
-        if (nonSpatialException != null && nonSpatialException != null){
+        if (nonSpatialException != null && spatialException != null){
             throw new RuntimeException("Encountered complete dataset collection failure;\nNonSpatial Reported:\n" + nonSpatialException.getMessage()
                 + "\nSpatial Reported:\n" + spatialException.getMessage());
-        } else if (nonSpatialException != null || nonSpatialException != null){
+        } else if (nonSpatialException != null || spatialException != null){
             Exception exception = nonSpatialException == null ? spatialException : nonSpatialException;
             throw new RuntimeException("Encountered " + (nonSpatialException == null ? "spatial " : "nonspatial") 
                 + "dataset collection failure.", exception);

@@ -8,7 +8,9 @@ import org.jlibsedml.Report;
 import org.jlibsedml.Variable;
 
 import java.io.File;
+import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -49,7 +51,7 @@ public class Hdf5DataSourceSpatialVarDataItem {
      */
     public Hdf5DataSourceSpatialVarDataItem(
             Report sedmlReport, DataSet sedmlDataset, Variable sedmlVariable,
-            int jobIndex, File hdf5File, double outputStartTime, int outputNumberOfPoints) {
+            int jobIndex, File hdf5File, double outputStartTime, int outputNumberOfPoints, String vcellVarId) {
         this.sedmlReport = sedmlReport;
         this.sedmlDataset = sedmlDataset;
         this.sedmlVariable = sedmlVariable;
@@ -66,6 +68,7 @@ public class Hdf5DataSourceSpatialVarDataItem {
      * @return the data as a double array
      */
     public double[] getSpatialData() {
+        lg.info("Fetching experiment data");
         try (io.jhdf.HdfFile jhdfFile = new io.jhdf.HdfFile(Paths.get(this.hdf5File.toURI()))) {
             Dataset dataset = jhdfFile.getDatasetByPath(this.varToDatasetPathMap.get(this.sedmlVariable.getName()));
             if (dataset == null){
@@ -76,10 +79,11 @@ public class Hdf5DataSourceSpatialVarDataItem {
     }
 
     private void parseMetadata() {
+        lg.info("Fetching metadata");
         try (io.jhdf.HdfFile jhdfFile = new io.jhdf.HdfFile(Paths.get(this.hdf5File.toURI()))) {
             Map<String, Node> children = jhdfFile.getChildren();
             Map.Entry<String, Node> topLevelTaskEntry = children.entrySet().stream().findFirst().get();
-            System.out.println(topLevelTaskEntry);
+            System.out.println(topLevelTaskEntry); //TODO log as trace
             if (!(topLevelTaskEntry.getValue() instanceof Group)) {
                 throw new RuntimeException("expecting top level child in spatial data hdf5 file to be a group");
             }
@@ -90,11 +94,11 @@ public class Hdf5DataSourceSpatialVarDataItem {
                     Dataset jhdfDataset = (Dataset) groupEntry.getValue();
                     if (jhdfDataset.getName().equals("TIMEBOUNDS")) {
                         this.timebounds = (int[]) jhdfDataset.getDataFlat();
-                        System.out.println(this.timebounds);
+                        System.out.println(Arrays.toString(this.timebounds));
                     }
                     if (jhdfDataset.getName().equals("TIMES")) {
                         this.times = (double[]) jhdfDataset.getDataFlat();
-                        System.out.println(this.timebounds);
+                        System.out.println(Arrays.toString(this.times));
                     }
                 } else if (groupEntry.getValue() instanceof Group) {
                     Group varGroup = (Group) groupEntry.getValue();
