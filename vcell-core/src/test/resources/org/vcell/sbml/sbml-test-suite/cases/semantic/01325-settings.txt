@@ -1,0 +1,8 @@
+start: 0
+duration: 10
+steps: 10
+variables: x, y
+absolute: 0.0001
+relative: 0.0001
+amount: 
+concentration: 

@@ -1,0 +1,8 @@
+start: 0
+duration: 10
+steps: 101
+variables: Q, R
+absolute: 0.01
+relative: 0.01
+amount:
+concentration:

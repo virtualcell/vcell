@@ -1,0 +1,8 @@
+start: 0
+duration: 25.0
+steps: 50
+variables: X0, X1, T
+absolute: 1.000000e-003
+relative: 0.0001
+amount: X0, X1, T
+concentration:

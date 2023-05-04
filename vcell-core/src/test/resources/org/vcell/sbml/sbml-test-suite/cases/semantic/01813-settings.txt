@@ -1,0 +1,8 @@
+start: 0
+duration: 10
+steps: 10
+variables: NAN, NaN, nan, p, q, r, s
+absolute: 0.0001
+relative: 0.0001
+amount: 
+concentration: 

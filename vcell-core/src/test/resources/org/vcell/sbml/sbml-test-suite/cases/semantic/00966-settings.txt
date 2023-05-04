@@ -1,0 +1,8 @@
+start: 0
+duration: 1000
+steps: 1000
+variables: S, error
+absolute: 0.01
+relative: 0.01
+amount:
+concentration:

@@ -1,0 +1,9 @@
+start: 0
+duration: 3
+steps: 305
+variables: S1, S2, S3, S4, k1, k2, k3, k4, k5, kavo, comp, comp2
+absolute: 0.0001
+relative: 0.0001
+amount: S1, S2, S3, S4
+concentration:
+
