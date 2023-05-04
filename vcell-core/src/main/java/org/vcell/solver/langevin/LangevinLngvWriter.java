@@ -1,86 +1,51 @@
 package org.vcell.solver.langevin;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.jdom.Comment;
-import org.jdom.Element;
-import org.jdom.output.Format;
-import org.jdom.output.XMLOutputter;
-import org.vcell.model.rbm.MolecularComponentPattern;
-import org.vcell.model.rbm.RbmUtils;
-import org.vcell.model.rbm.RuleAnalysis;
-import org.vcell.model.rbm.RuleAnalysisReport;
-import org.vcell.util.BeanUtils;
 import org.vcell.util.Pair;
 
-import cbit.vcell.export.SpringSaLaDExporter;
 import cbit.vcell.geometry.Geometry;
-import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.mapping.GeometryContext;
-import cbit.vcell.mapping.LangevinMathMapping;
-import cbit.vcell.mapping.MathMapping;
-import cbit.vcell.mapping.MolecularInternalLinkSpec;
-import cbit.vcell.mapping.ReactionRuleSpec;
+import cbit.vcell.mapping.ReactionRuleSpec.Subtype;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.mapping.SiteAttributesSpec;
 import cbit.vcell.mapping.SpeciesContextSpec;
-import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.math.Action;
-import cbit.vcell.math.CompartmentSubDomain;
-import cbit.vcell.math.Constant;
-import cbit.vcell.math.Function;
-import cbit.vcell.math.JumpProcessRateDefinition;
 import cbit.vcell.math.LangevinParticleJumpProcess;
 import cbit.vcell.math.LangevinParticleMolecularComponent;
 import cbit.vcell.math.LangevinParticleMolecularType;
-import cbit.vcell.math.MacroscopicRateConstant;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
-import cbit.vcell.math.MathRuleFactory;
-import cbit.vcell.math.MathRuleFactory.MathRuleEntry;
 import cbit.vcell.math.ParticleComponentStateDefinition;
 import cbit.vcell.math.ParticleComponentStatePattern;
 import cbit.vcell.math.ParticleJumpProcess;
 import cbit.vcell.math.ParticleMolecularComponent;
 import cbit.vcell.math.ParticleMolecularComponentPattern;
-import cbit.vcell.math.ParticleMolecularComponentPattern.ParticleBondType;
 import cbit.vcell.math.ParticleMolecularType;
 import cbit.vcell.math.ParticleMolecularTypePattern;
-import cbit.vcell.math.ParticleObservable;
 import cbit.vcell.math.ParticleProperties;
 import cbit.vcell.math.ParticleProperties.ParticleInitialCondition;
 import cbit.vcell.math.ParticleProperties.ParticleInitialConditionCount;
 import cbit.vcell.math.ParticleSpeciesPattern;
 import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.Variable;
-import cbit.vcell.math.VolumeParticleSpeciesPattern;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.messaging.server.SimulationTask;
-import cbit.vcell.model.SpeciesContext;
-import cbit.vcell.model.Structure;
 import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.LangevinSimulationOptions;
-import cbit.vcell.solver.NFsimSimulationOptions;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationOwner;
 import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.SolverException;
 //import org.jdom.output.Format;
-import cbit.vcell.xml.XMLTags;
 
 public class LangevinLngvWriter {
 	
@@ -212,11 +177,11 @@ public class LangevinLngvWriter {
 		writeSpeciesFileInfo(sb);
 		sb.append("\n");
 		
-		/* ******* WRITE THE DECAY REACTIONS ***************/
+		/* ******* WRITE THE CREATION / DECAY REACTIONS ***************/
 		sb.append("*** " + DECAY_REACTIONS + " ***");
 		sb.append("\n");
 		sb.append("\n");
-//		ReactionRuleSpec.writeDecayData(sb, moleculeCreationDecayRates);
+		writeCreationDecayData(sb);
 		sb.append("\n");
 		
 
@@ -227,15 +192,92 @@ public class LangevinLngvWriter {
 		return ret;
 	}
 	
+	private static void writeCreationDecayData(StringBuilder sb) {
+		Map<Variable, Pair<String, String>> creationDecayVariableMap = new LinkedHashMap<> ();
+		for( Map.Entry<ParticleProperties, SubDomain> entry : particlePropertiesMap.entrySet()) {
+			ParticleProperties pp = entry.getKey();
+			Variable var = pp.getVariable();
+			Pair<String, String> rates = new Pair<> ("0", "0");
+			creationDecayVariableMap.put(var, rates);
+		}
+		for(Map.Entry<LangevinParticleJumpProcess, SubDomain> entry : particleJumpProcessMap.entrySet()) {
+			LangevinParticleJumpProcess lpjp = entry.getKey();
+			SubDomain subDomain = entry.getValue();
+			Subtype subtype = lpjp.getSubtype();
+			if(Subtype.CREATION == subtype) {
+				for(Action action : lpjp.getActions()) {
+					if(Action.ACTION_CREATE.equals(action.getOperation())) {	// species being created
+						Pair<String, String> rates = null;
+						Variable var = action.getVar();
+						Expression kCreate = null;
+						try {
+							kCreate = lpjp.getExpressions()[0];
+						} catch(Exception e) {
+							throw new RuntimeException("Reaction Rate is wrong");
+						}
+						if(creationDecayVariableMap.containsKey(var)) {
+							rates = creationDecayVariableMap.get(var);
+							if(!rates.one.equals("0")) {
+								throw new RuntimeException("Cannot have multiple creation reactions for the same Variable");
+							}
+							rates = new Pair<> (kCreate.infix(), rates.two);
+						} else {
+							throw new RuntimeException("Variable missing in the variables map");
+						}
+						creationDecayVariableMap.put(var, rates);
+					}
+				}
+			} else if(Subtype.DECAY == subtype) {
+				for(Action action : lpjp.getActions()) {
+					if(Action.ACTION_DESTROY.equals(action.getOperation())) {	// species being destroyed
+						Pair<String, String> rates = null;
+						Variable var = action.getVar();
+						Expression kDecay = null;
+						try {
+							kDecay = lpjp.getExpressions()[0];
+						} catch(Exception e) {
+							throw new RuntimeException("Reaction Rate is wrong");
+						}
+						if(creationDecayVariableMap.containsKey(var)) {
+							rates = creationDecayVariableMap.get(var);
+							if(!rates.two.equals("0")) {
+								throw new RuntimeException("Cannot have multiple decay reactions for the same Variable");
+							}
+							rates = new Pair<> (rates.one, kDecay.infix());
+						} else {
+							throw new RuntimeException("Variable missing in the variables map");
+						}
+						creationDecayVariableMap.put(var, rates);
+					}
+				}
+			}
+		}
+		for (Map.Entry<Variable, Pair<String, String>> entry : creationDecayVariableMap.entrySet()) {
+			Variable var = entry.getKey();
+			if(!(var instanceof ParticleSpeciesPattern)) {
+				continue;
+			}
+			ParticleSpeciesPattern psp = (ParticleSpeciesPattern)var;
+			ParticleMolecularTypePattern particleMolecularTypePattern = psp.getParticleMolecularTypePatterns().get(0);
+			ParticleMolecularType pmt = particleMolecularTypePattern.getMolecularType();
+			Pair<String, String> rates = entry.getValue();
+			sb.append("'").append(pmt.getName()).append("' : ")
+				.append("kcreate  ").append(rates.one).append("  ")
+				.append("kdecay  ").append(rates.two);
+			sb.append("\n");
+		}
+		return;
+	}
+	
 	private static void writeSpeciesFileInfo(StringBuilder sb) {
 		for( Map.Entry<ParticleProperties, SubDomain> entry : particlePropertiesMap.entrySet()) {
 			ParticleProperties pp = entry.getKey();
-			Variable variable = pp.getVariable();
-			if(!(variable instanceof VolumeParticleSpeciesPattern)) {
-				continue;		// only interested in VolumeParticleSpeciesPattern
+			Variable var = pp.getVariable();
+			if(!(var instanceof ParticleSpeciesPattern)) {
+				continue;		// only interested in ParticleSpeciesPattern
 			}
-			VolumeParticleSpeciesPattern vpsp = (VolumeParticleSpeciesPattern)variable;
-			ParticleMolecularTypePattern particleMolecularTypePattern = vpsp.getParticleMolecularTypePatterns().get(0);
+			ParticleSpeciesPattern psp = (ParticleSpeciesPattern)var;
+			ParticleMolecularTypePattern particleMolecularTypePattern = psp.getParticleMolecularTypePatterns().get(0);
 			ParticleMolecularType pmt = particleMolecularTypePattern.getMolecularType();
 			if(SpeciesContextSpec.SourceMoleculeString.equals(pmt.getName()) || SpeciesContextSpec.SinkMoleculeString.equals(pmt.getName())) {
 				continue;
@@ -251,20 +293,20 @@ public class LangevinLngvWriter {
 			SubDomain subDomain = entry.getValue();
 			
 			ArrayList<ParticleInitialCondition> particleInitialConditions = pp.getParticleInitialConditions();
-			Variable variable = pp.getVariable();
-			if(!(variable instanceof VolumeParticleSpeciesPattern)) {
-				continue;		// only interested in VolumeParticleSpeciesPattern
+			Variable var = pp.getVariable();
+			if(!(var instanceof ParticleSpeciesPattern)) {
+				continue;
 			}
-			VolumeParticleSpeciesPattern vpsp = (VolumeParticleSpeciesPattern)variable;
-			if(vpsp.getParticleMolecularTypePatterns().size() != 1) {
+			ParticleSpeciesPattern psp = (ParticleSpeciesPattern)var;
+			if(psp.getParticleMolecularTypePatterns().size() != 1) {
 				throw new RuntimeException("A seed species size must be exactly one molecule");
 			}
-			ParticleMolecularTypePattern particleMolecularTypePattern = vpsp.getParticleMolecularTypePatterns().get(0);
+			ParticleMolecularTypePattern particleMolecularTypePattern = psp.getParticleMolecularTypePatterns().get(0);
 			if(!(particleMolecularTypePattern.getMolecularType() instanceof LangevinParticleMolecularType)) {
 				throw new RuntimeException("LangevinParticleMolecularType expected");
 			}
 			LangevinParticleMolecularType lpmt = (LangevinParticleMolecularType)particleMolecularTypePattern.getMolecularType();
-			String spName = variable.getName();
+			String spName = var.getName();
 			String moleculeName = lpmt.getName();
 			
 			if(particleInitialConditions.size() != 1) {

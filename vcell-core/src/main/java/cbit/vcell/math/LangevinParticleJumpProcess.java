@@ -199,11 +199,20 @@ public static LangevinParticleJumpProcess fromVCML(MathDescription mathDesc, Com
 public void setSubtype(Subtype subtype) {
 	this.subtype = subtype;
 }
+public Subtype getSubtype() {
+	return subtype;
+}
 public void setTransitionCondition(TransitionCondition transitionCondition) {
 	this.transitionCondition = transitionCondition;
 }
+public TransitionCondition getTransitionCondition() {
+	return transitionCondition;
+}
 public void setBondLength(double bondLength) {
 	this.bondLength  = bondLength;
+}
+public double getBondLength() {
+	return bondLength;
 }
 
 }
