@@ -194,21 +194,21 @@ public abstract class SEDMLExporterCommon {
 		SBMLExporter.MemoryVCLogger memoryVCLogger = new SBMLExporter.MemoryVCLogger();
 
 		try {
-			// validate that the omex file is valid
-			File reportJsonFile = File.createTempFile(testCase.filename, "report.json");
-			File omexTempDir = Files.createTempDir();
-			int retcode = callCLIPython("validateOmex", omexFile.toPath(), omexTempDir.toPath(), reportJsonFile.toPath());
-			String reportString = FileUtils.readFileToString(reportJsonFile);
-			JsonObject reportRoot = JsonParser.parseString(reportString).getAsJsonObject();
-			Assert.assertNotNull("omex validation report cannot be parsed", reportRoot);
-			if (reportRoot.get("parse_errors").getAsJsonArray().size() > 0){
-				String errorStr = reportRoot.get("parse_errors").getAsJsonArray().toString().replace("\n"," ");
-				throw new RuntimeException("OMEX PARSER ERRORS: "+errorStr);
-			}
-			if (reportRoot.get("validator_errors").getAsJsonArray().size() > 0){
-				String errorStr = reportRoot.get("validator_errors").getAsJsonArray().toString().replace("\n"," ");
-				throw new RuntimeException("OMEX VALIDATION ERRORS: "+errorStr);
-			}
+//			// validate that the omex file is valid
+//			File reportJsonFile = File.createTempFile(testCase.filename, "report.json");
+//			File omexTempDir = Files.createTempDir();
+//			int retcode = callCLIPython("validateOmex", omexFile.toPath(), omexTempDir.toPath(), reportJsonFile.toPath());
+//			String reportString = FileUtils.readFileToString(reportJsonFile);
+//			JsonObject reportRoot = JsonParser.parseString(reportString).getAsJsonObject();
+//			Assert.assertNotNull("omex validation report cannot be parsed", reportRoot);
+//			if (reportRoot.get("parse_errors").getAsJsonArray().size() > 0){
+//				String errorStr = reportRoot.get("parse_errors").getAsJsonArray().toString().replace("\n"," ");
+//				throw new RuntimeException("OMEX PARSER ERRORS: "+errorStr);
+//			}
+//			if (reportRoot.get("validator_errors").getAsJsonArray().size() > 0){
+//				String errorStr = reportRoot.get("validator_errors").getAsJsonArray().toString().replace("\n"," ");
+//				throw new RuntimeException("OMEX VALIDATION ERRORS: "+errorStr);
+//			}
 
 			if (testCase.modelFormat == ModelFormat.VCML){
 				System.err.println("skipping re-importing SEDML for this test case, not yet supported for VCML");

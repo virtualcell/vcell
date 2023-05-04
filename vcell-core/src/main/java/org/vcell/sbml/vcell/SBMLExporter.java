@@ -488,9 +488,9 @@ private void setSbmlParameterValueAndUnit(Parameter vcParam, org.sbml.jsbml.Para
 			sbmlExportSymbolMapping.assignmentRuleToVcmlExpressionMap.put(sbmlParamAssignmentRule, paramExpr);    // expression will be post-processed
 		}
 	}
-	if (!sbmlParam.isSetConstant()){
-		sbmlParam.setConstant(isMappedToMathDescriptionConstant(vcParam));
-	}
+//	if (!sbmlParam.isSetConstant()){
+//		sbmlParam.setConstant(isMappedToMathDescriptionConstant(vcParam));
+//	}
 }
 
 private void addParameters() throws ExpressionException, SbmlException, XMLStreamException {
@@ -1086,8 +1086,8 @@ private void addSpecies() throws XMLStreamException, SbmlException {
 		}
 		sbmlSpecies.setId(sbmlSpeciesId);
 
-		boolean bSbmlConstantAttribute = isMappedToMathDescriptionConstant(vcSpeciesContext);
-		sbmlSpecies.setConstant(bSbmlConstantAttribute);
+//		boolean bSbmlConstantAttribute = isMappedToMathDescriptionConstant(vcSpeciesContext);
+//		sbmlSpecies.setConstant(bSbmlConstantAttribute);
 
 		sbmlExportSymbolMapping.putSteToSidMapping(vcSpeciesContext, sbmlSpeciesId);
 		if(vcSpeciesContext.getSbmlName() != null) {
