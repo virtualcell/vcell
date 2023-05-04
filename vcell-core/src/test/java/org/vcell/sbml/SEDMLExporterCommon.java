@@ -7,12 +7,15 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathCompareResults;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.resource.NativeLib;
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 import com.google.common.io.Files;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -21,11 +24,12 @@ import org.vcell.sedml.ModelFormat;
 import org.vcell.sedml.SEDMLExporter;
 import org.vcell.sedml.SEDMLTaskRecord;
 import org.vcell.sedml.TaskResult;
+import org.vcell.util.FileUtils;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -35,6 +39,7 @@ public abstract class SEDMLExporterCommon {
 	static class TestCase {
 		public final String filename;
 		public final ModelFormat modelFormat;
+
 		public TestCase(String filename, ModelFormat modelFormat){
 			this.filename = filename;
 			this.modelFormat = modelFormat;
@@ -77,6 +82,8 @@ public abstract class SEDMLExporterCommon {
 
 	public enum SEDML_FAULT {
 		DIFF_NUMBER_OF_BIOMODELS,
+		OMEX_PARSER_ERRORS,
+		OMEX_VALIDATION_ERRORS,
 		NO_MODELS_IN_OMEX,
 		ERROR_CONSTRUCTING_SIMCONTEXT,
 		NONSPATIAL_STOCH_HISTOGRAM,
@@ -96,7 +103,7 @@ public abstract class SEDMLExporterCommon {
 	}
 
 	@AfterClass
-	public static void teardown() {
+	public static void teardown() throws IOException {
 		if (previousInstalldirPropertyValue!=null) {
 			System.setProperty("vcell.installDir", previousInstalldirPropertyValue);
 		}
@@ -187,6 +194,22 @@ public abstract class SEDMLExporterCommon {
 		SBMLExporter.MemoryVCLogger memoryVCLogger = new SBMLExporter.MemoryVCLogger();
 
 		try {
+			// validate that the omex file is valid
+			File reportJsonFile = File.createTempFile(testCase.filename, "report.json");
+			File omexTempDir = Files.createTempDir();
+			int retcode = callCLIPython("validateOmex", omexFile.toPath(), omexTempDir.toPath(), reportJsonFile.toPath());
+			String reportString = FileUtils.readFileToString(reportJsonFile);
+			JsonObject reportRoot = JsonParser.parseString(reportString).getAsJsonObject();
+			Assert.assertNotNull("omex validation report cannot be parsed", reportRoot);
+			if (reportRoot.get("parse_errors").getAsJsonArray().size() > 0){
+				String errorStr = reportRoot.get("parse_errors").getAsJsonArray().toString().replace("\n"," ");
+				throw new RuntimeException("OMEX PARSER ERRORS: "+errorStr);
+			}
+			if (reportRoot.get("validator_errors").getAsJsonArray().size() > 0){
+				String errorStr = reportRoot.get("validator_errors").getAsJsonArray().toString().replace("\n"," ");
+				throw new RuntimeException("OMEX VALIDATION ERRORS: "+errorStr);
+			}
+
 			if (testCase.modelFormat == ModelFormat.VCML){
 				System.err.println("skipping re-importing SEDML for this test case, not yet supported for VCML");
 				return;
@@ -251,8 +274,23 @@ public abstract class SEDMLExporterCommon {
 			}
 
 			Assert.assertNull("file "+test_case_name+" passed SEDML Round trip, but knownSEDMLFault was set", knownSEDMLFaults().get(testCase.filename));
-
 		}catch (Exception | AssertionError e){
+			if (e.getMessage()!=null && e.getMessage().contains("OMEX PARSER ERRORS: ")){
+				if (knownSEDMLFaults().get(testCase.filename) == SEDML_FAULT.OMEX_PARSER_ERRORS) {
+					System.err.println("Expected error: "+e.getMessage());
+					return;
+				}else{
+					System.err.println("add SEDML_FAULT.OMEX_PARSER_ERRORS to "+test_case_name+": "+e.getMessage());
+				}
+			}
+			if (e.getMessage()!=null && e.getMessage().contains("OMEX VALIDATION ERRORS: ")){
+				if (knownSEDMLFaults().get(testCase.filename) == SEDML_FAULT.OMEX_VALIDATION_ERRORS) {
+					System.err.println("Expected error: "+e.getMessage());
+					return;
+				}else{
+					System.err.println("add SEDML_FAULT.OMEX_VALIDATION_ERRORS to "+test_case_name+": "+e.getMessage());
+				}
+			}
 			if (e.getMessage()!=null && e.getMessage().contains("There are no models in ")){
 				if (knownSEDMLFaults().get(testCase.filename) == SEDML_FAULT.NO_MODELS_IN_OMEX) {
 					System.err.println("Expected error: "+e.getMessage());
@@ -319,6 +357,47 @@ public abstract class SEDMLExporterCommon {
 			}
 			throw e;
 		}
+	}
+
+	public static int callCLIPython(String command, Path omexFile, Path tempDir, Path reportJsonFile) throws InterruptedException, IOException {
+		File installDir = PropertyLoader.getRequiredDirectory(PropertyLoader.installationRoot);
+		File cliPythonDir = Paths.get(installDir.getAbsolutePath(),"vcell-cli-utils").toAbsolutePath().toFile();
+		ProcessBuilder pb = new ProcessBuilder(
+				"poetry", "run", "python",
+				"-m", "vcell_cli_utils.wrapper",
+				command,
+				String.valueOf(omexFile.toAbsolutePath()),
+				String.valueOf(tempDir.toAbsolutePath()),
+				String.valueOf(reportJsonFile.toAbsolutePath()));
+		pb.directory(cliPythonDir);
+		System.out.println(pb.command());
+		return runAndPrintProcessStreams(pb, tempDir);
+	}
+
+	private static int runAndPrintProcessStreams(ProcessBuilder pb, Path tempDir) throws InterruptedException, IOException {
+		// Process printing code goes here
+		File of = File.createTempFile("temp-", ".out", tempDir.toFile());
+		File ef = File.createTempFile("temp-", ".err", tempDir.toFile());
+		pb.redirectError(ef);
+		pb.redirectOutput(of);
+		Process process = pb.start();
+		process.waitFor();
+		StringBuilder sberr = new StringBuilder();
+		StringBuilder sbout = new StringBuilder();
+		List<String> lines = com.google.common.io.Files.readLines(ef, StandardCharsets.UTF_8);
+		lines.forEach(line -> sberr.append(line).append("\n"));
+		String es = sberr.toString();
+		lines = Files.readLines(of, StandardCharsets.UTF_8);
+		lines.forEach(line -> sbout.append(line).append("\n"));
+		String os = sbout.toString();
+		of.delete();
+		ef.delete();
+		System.out.println("stdout: "+os);
+		System.err.println("stderr: "+es);
+		if (process.exitValue() != 0) {
+			throw new RuntimeException(es);
+		}
+		return process.exitValue();
 	}
 
 }
