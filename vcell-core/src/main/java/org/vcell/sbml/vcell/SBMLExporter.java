@@ -40,7 +40,6 @@ import cbit.vcell.mapping.spatial.SpatialObject.SpatialQuantity;
 import cbit.vcell.mapping.spatial.processes.SpatialProcess;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.*;
-import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.model.*;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Kinetics.KineticsParameter;
@@ -71,7 +70,6 @@ import org.vcell.sbml.SBMLUtils;
 import org.vcell.sbml.SbmlException;
 import org.vcell.sbml.UnsupportedSbmlExportException;
 import org.vcell.sbml.vcell.SBMLSymbolMapping.SBaseWrapper;
-import org.vcell.sedml.SEDMLExporter;
 import org.vcell.util.*;
 
 import javax.xml.stream.XMLStreamException;
@@ -490,6 +488,9 @@ private void setSbmlParameterValueAndUnit(Parameter vcParam, org.sbml.jsbml.Para
 			sbmlExportSymbolMapping.assignmentRuleToVcmlExpressionMap.put(sbmlParamAssignmentRule, paramExpr);    // expression will be post-processed
 		}
 	}
+	if (!sbmlParam.isSetConstant()){
+		sbmlParam.setConstant(isMappedToMathDescriptionConstant(vcParam));
+	}
 }
 
 private void addParameters() throws ExpressionException, SbmlException, XMLStreamException {
@@ -504,24 +505,24 @@ private void addParameters() throws ExpressionException, SbmlException, XMLStrea
 			String sbmlParameterId;
 			String sbmlIdBase = TokenMangler.mangleToSName(vcParam.getName());
 			SBase used = sbmlModel.getSBaseById(sbmlIdBase);
-		if(used == null) {
-			sbmlParameterId = sbmlIdBase;
-		} else {			// the mangled vcell name may be already used as id by some other sbml entity
-			while(true) {	// make sure it's unique, otherwise setId will fail
-				sbmlParameterId = sbmlIdBase + idSuffixCounter;
-				if(sbmlModel.getSBaseById(sbmlParameterId) == null) {
-					break;
+			if(used == null) {
+				sbmlParameterId = sbmlIdBase;
+			} else {			// the mangled vcell name may be already used as id by some other sbml entity
+				while(true) {	// make sure it's unique, otherwise setId will fail
+					sbmlParameterId = sbmlIdBase + idSuffixCounter;
+					if(sbmlModel.getSBaseById(sbmlParameterId) == null) {
+						break;
+					}
+					idSuffixCounter++;
 				}
-				idSuffixCounter++;
 			}
-		}
-		sbmlParam.setId(sbmlParameterId);
-		sbmlExportSymbolMapping.putSteToSidMapping(vcParam, sbmlParameterId);
-		String sbmlName = vcParam.getSbmlName();
-		if(sbmlName != null && !sbmlName.isEmpty()) {
-			sbmlParam.setName(sbmlName);
-		} else {	// we give it vcParam name if sbml name is missing
-			sbmlParam.setName(vcParam.getName());
+			sbmlParam.setId(sbmlParameterId);
+			sbmlExportSymbolMapping.putSteToSidMapping(vcParam, sbmlParameterId);
+			String sbmlName = vcParam.getSbmlName();
+			if(sbmlName != null && !sbmlName.isEmpty()) {
+				sbmlParam.setName(sbmlName);
+			} else {	// we give it vcParam name if sbml name is missing
+				sbmlParam.setName(vcParam.getName());
 			}
 
 			setSbmlParameterValueAndUnit(vcParam, sbmlParam);
@@ -1084,6 +1085,10 @@ private void addSpecies() throws XMLStreamException, SbmlException {
 			}
 		}
 		sbmlSpecies.setId(sbmlSpeciesId);
+
+		boolean bSbmlConstantAttribute = isMappedToMathDescriptionConstant(vcSpeciesContext);
+		sbmlSpecies.setConstant(bSbmlConstantAttribute);
+
 		sbmlExportSymbolMapping.putSteToSidMapping(vcSpeciesContext, sbmlSpeciesId);
 		if(vcSpeciesContext.getSbmlName() != null) {
 			sbmlSpecies.setName(vcSpeciesContext.getSbmlName());
@@ -1352,7 +1357,19 @@ private void addSpecies() throws XMLStreamException, SbmlException {
 	}
 }
 
-/**
+	private boolean isMappedToMathDescriptionConstant(SymbolTableEntry ste) {
+		boolean bSbmlConstantAttribute = false;
+		if (vcSelectedSimContext.getMathDescription()!=null
+				&& vcSelectedSimContext.getMathDescription().getSourceSymbolMapping()!=null){
+			Variable var = vcSelectedSimContext.getMathDescription().getSourceSymbolMapping().getVariable(ste);
+			if (!(var instanceof Constant)){
+				bSbmlConstantAttribute = true;
+			}
+		}
+		return bSbmlConstantAttribute;
+	}
+
+	/**
  * createSBMLParamFromSpeciesParam : creates an SBML parameter for each speciesContextSpecParameter (diffusion coefficient, 
  * advection coeffs, boundary conditions (X,Y,Z).
  *  
