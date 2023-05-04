@@ -1,18 +1,18 @@
 import os
-from os.path import basename
-import sys
+
 import fire
 from biosimulators_utils.archive.io import ArchiveReader
-from biosimulators_utils.log.data_model import TaskLog
 import libsedml
 import yaml
 import tempfile
 import zipfile
 import shutil
 import json
+from typing import  Dict, List
 
 # Create temp directory
 tmp_dir = tempfile.mkdtemp()
+
 
 def extract_omex_archive(omex_file) -> list:
     if not os.path.isfile(omex_file):
@@ -33,10 +33,10 @@ def extract_omex_archive(omex_file) -> list:
 
 
 def status_yml(omex_file: str, out_dir: str) -> None:
-    yaml_dict = []
+    yaml_dicts: List[Dict] = []
     for sedml in extract_omex_archive(omex_file):
-        outputs_dict = {"outputs": []}
-        tasks_dict = {"tasks": []}
+        outputs_dict: Dict[str, List[Dict]] = {"outputs": []}
+        tasks_dict: Dict[str, List[Dict]] = {"tasks": []}
         # add temp dir path
         sedml_path = os.path.join(tmp_dir, sedml)
         sedml_doc = libsedml.readSedMLFromFile(sedml_path)
@@ -77,22 +77,22 @@ def status_yml(omex_file: str, out_dir: str) -> None:
 
         for task in task_list:
             exc_dict = {'type': "", 'message': ""}
-            tasks_dict["tasks"].append({"id":task ,"status": "QUEUED", "exception": None, "skipReason": None, "output": None, "duration": None, "algorithm": None,"simulatorDetails":None})
+            tasks_dict["tasks"].append({"id": task ,"status": "QUEUED", "exception": None, "skipReason": None, "output": None, "duration": None, "algorithm": None, "simulatorDetails": None})
 
         exc_dict = {'type': "", 'message': ""}
-        sed_doc_dict = {"location":sedml, "status":"QUEUED", "exception": None, "skipReason":None, "output":None, "duration":None}
+        sed_doc_dict = {"location": sedml, "status": "QUEUED", "exception": None, "skipReason": None, "output": None, "duration": None}
         sed_doc_dict.update(outputs_dict)
         sed_doc_dict.update(tasks_dict)
-        yaml_dict.append(sed_doc_dict)
+        yaml_dicts.append(sed_doc_dict)
     exc_dict = {'type': "", 'message': ""}
-    final_dict = {}
-    final_dict['sedDocuments'] = yaml_dict
-    final_dict['status'] = "QUEUED"
-    final_dict['exception'] = None
-    final_dict['skipReason'] = None
-    final_dict['duration'] = None
-    final_dict['output'] = None
-
+    final_dict: Dict[str, List[Dict] | str | None] = {
+        'sedDocuments': yaml_dicts,
+        'status': "QUEUED",
+        'exception': None,
+        'skipReason': None,
+        'duration': None,
+        'output': None
+    }
 
     status_yaml_path = os.path.join(out_dir, "log.yml")
 
@@ -100,6 +100,7 @@ def status_yml(omex_file: str, out_dir: str) -> None:
         sy.write(yaml.dump(final_dict))
     # "return" final_dict
     shutil.rmtree(tmp_dir)
+
 
 def get_yaml_as_str(yaml_path: str) -> dict:
     # Import yaml
@@ -111,13 +112,15 @@ def get_yaml_as_str(yaml_path: str) -> dict:
     yaml_dict = yaml.load(yaml_str, yaml.SafeLoader)
     return yaml_dict
 
-def dump_yaml_dict(yaml_path: str, yaml_dict: str, out_dir: str):
+
+def dump_yaml_dict(yaml_path: str, yaml_dict: dict, out_dir: str):
     json_path = os.path.join(out_dir, "log.json")
     with open(yaml_path, 'w' , encoding="utf-8") as sy:
         sy.write(yaml.dump(yaml_dict))
         dump_json_dict(json_path,yaml_dict)
 
-def dump_json_dict(json_path: str,yaml_dict: str):
+
+def dump_json_dict(json_path: str,yaml_dict: dict):
     with open(json_path, 'w' , encoding="utf-8") as json_out:
         json.dump(yaml_dict,json_out,sort_keys=True,indent=4)
 
@@ -211,7 +214,7 @@ def update_dataset_status(sedml: str, report: str, dataset: str, status: str, ou
 # outDir            - path to directory where the log files will be placed
 # entityType        - string describing the entity type ex "task" for a task, or "sedml" for sedml document
 #
-def set_output_message(sedmlAbsolutePath:str, entityId:str, out_dir:str, entityType:str , message:str) -> None:
+def set_output_message(sedmlAbsolutePath: str, entityId: str, out_dir: str, entityType: str , message: str) -> None:
 
     yaml_dict = get_yaml_as_str(os.path.join(out_dir, "log.yml"))
     if entityType == 'omex':
@@ -236,7 +239,7 @@ def set_output_message(sedmlAbsolutePath:str, entityId:str, out_dir:str, entityT
     # Convert json to yaml # Save new yaml
     dump_yaml_dict(status_yaml_path, yaml_dict=yaml_dict, out_dir=out_dir)
 
-def set_exception_message(sedmlAbsolutePath:str, entityId:str, out_dir:str, entityType:str, type:str, message:str) -> None:
+def set_exception_message(sedmlAbsolutePath: str, entityId: str, out_dir: str, entityType: str, type: str, message: str) -> None:
 
     yaml_dict = get_yaml_as_str(os.path.join(out_dir, "log.yml"))
     for sedml_list in yaml_dict['sedDocuments']:
@@ -265,6 +268,7 @@ def set_exception_message(sedmlAbsolutePath:str, entityId:str, out_dir:str, enti
 
     # Convert json to yaml # Save new yaml
     dump_yaml_dict(status_yaml_path, yaml_dict=yaml_dict, out_dir=out_dir)
+
 
 if __name__ == "__main__":
     fire.Fire({

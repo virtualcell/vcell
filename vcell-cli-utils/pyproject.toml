@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "vcell-cli-utils"
-version = "0.7.1"
+version = "0.7.2"
 description = "Python utility package for VCell CLI Java App"
 authors = ["Virtual Cell"]
 license = "MIT"
@@ -21,7 +21,8 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = "^3.9"
-biosimulators_utils = "^0.1.127"
+biosimulators_utils = "0.1.177"
+python-libcombine = "0.2.19"
 fire = "^0.4.0"
 PyYAML = "^6.0"
 pandas = "^1.4.3"
@@ -29,8 +30,15 @@ matplotlib = "^3.5.2"
 seaborn = "^0.11.2"
 python-libsbml-experimental = "^5.19.5"
 Deprecated = "^1.2.13"
+dataclasses-json = "^0.5.7"
 
 [tool.poetry.dev-dependencies]
+pytest = "^7.2.0"
+mypy = "^1.2.0"
+
+[tool.poetry.group.dev.dependencies]
+types-deprecated = "1.2.9.2"
+types-PyYAML = "6.0.12.9"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

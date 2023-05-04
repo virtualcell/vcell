@@ -1,0 +1,32 @@
+{
+  "parse_errors": [],
+  "parse_warnings": [
+    [
+      "The manifest does not include its parent COMBINE/OMEX archive. Manifests should include their parent COMBINE/OMEX archives."
+    ]
+  ],
+  "validator_errors": [
+    [
+      "The SED-ML file at location `./VerySimple_vcell_7.5.0.27.sedml` is invalid.",
+      [
+        [
+          "Model `Application0` is invalid.",
+          [
+            [
+              "The model file `VerySimple_vcell_7.5.0.27_Application0.xml` is invalid.",
+              [
+                [
+                  "SBML component consistency (20623) at line 99, column 6: A Species object must have the required attributes 'id', 'compartment', 'hasOnlySubstanceUnits', 'boundaryCondition' and 'constant', and may have the optional attributes 'metaid', 'sboTerm', 'name', 'initialAmount', 'initialConcentration', 'substanceUnits' and 'conversionFactor'. No other attributes from the SBML Level 3 Core namespace are permitted on a Species object.\nReference: L3V2 Section 4.6\n The required attribute 'constant' is missing from the <species> with the id 's0'.\n"
+                ],
+                [
+                  "SBML component consistency (20623) at line 100, column 6: A Species object must have the required attributes 'id', 'compartment', 'hasOnlySubstanceUnits', 'boundaryCondition' and 'constant', and may have the optional attributes 'metaid', 'sboTerm', 'name', 'initialAmount', 'initialConcentration', 'substanceUnits' and 'conversionFactor'. No other attributes from the SBML Level 3 Core namespace are permitted on a Species object.\nReference: L3V2 Section 4.6\n The required attribute 'constant' is missing from the <species> with the id 's1'.\n"
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "validator_warnings": []
+}
