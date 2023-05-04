@@ -31,8 +31,10 @@ import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.mapping.LangevinMathMapping;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.MolecularInternalLinkSpec;
+import cbit.vcell.mapping.ReactionRuleSpec;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SiteAttributesSpec;
+import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.math.Action;
@@ -66,6 +68,7 @@ import cbit.vcell.math.Variable;
 import cbit.vcell.math.VolumeParticleSpeciesPattern;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
@@ -89,6 +92,27 @@ public class LangevinLngvWriter {
 	public static final String SinkMoleculeString = "Sink";		// molecule used in decay reaction subtype (reserved name)
 	private static final String AnchorSiteString = "Anchor";		// required name for reserved special Site of membrane species
 	private static final String AnchorStateString = "Anchor";		// required name for reserved special State of the Anchor site
+
+	public final static String SPATIAL_INFORMATION = "SYSTEM INFORMATION";
+	public final static String TIME_INFORMATION = "TIME INFORMATION";
+	public final static String MOLECULES = "MOLECULES";
+	public final static String MOLECULE_FILES = "MOLECULE FILES";
+	public final static String DECAY_REACTIONS = "CREATION/DECAY REACTIONS";
+	public final static String TRANSITION_REACTIONS = "STATE TRANSITION REACTIONS";
+	public final static String ALLOSTERIC_REACTIONS = "ALLOSTERIC REACTIONS";
+	public final static String BINDING_REACTIONS = "BIMOLECULAR BINDING REACTIONS";
+	public final static String MOLECULE_COUNTERS = "MOLECULE COUNTERS";
+	public final static String STATE_COUNTERS = "STATE COUNTERS";
+	public final static String BOND_COUNTERS = "BOND COUNTERS";
+	public final static String SITE_PROPERTY_COUNTERS = "SITE PROPERTY COUNTERS";
+	public final static String CLUSTER_COUNTERS = "CLUSTER COUNTERS";
+	public final static String SYSTEM_ANNOTATION = "SYSTEM ANNOTATIONS";
+	public final static String MOLECULE_ANNOTATIONS = "MOLECULE ANNOTATIONS";
+	public final static String REACTION_ANNOTATIONS = "REACTION ANNOTATIONS";
+
+	public final static String DEFAULT_FOLDER = "Default Folder";
+	private String systemName;		// The system name (same as the file name, usually)
+	public final static String DEFAULT_SYSTEM_NAME = "New Model";
 
 	// various collections here for the intermediate stuff as we build the lngv file from math
 	private static Map<ParticleProperties, SubDomain> particlePropertiesMap = new LinkedHashMap<> ();			// initial conditions for seed species
@@ -164,23 +188,37 @@ public class LangevinLngvWriter {
 		
 		StringBuilder sb = new StringBuilder();
 		/* ********* BEGIN BY WRITING THE TIMES *********/
-		sb.append("*** " + SpringSaLaDExporter.TIME_INFORMATION + " ***");
+		sb.append("*** " + TIME_INFORMATION + " ***");
 		sb.append("\n");
 		simulation.getSolverTaskDescription().writeData(sb);	// TODO: need proper sim
 		sb.append("\n");
 
 		/* ********* WRITE THE SPATIAL INFORMATION **********/
-		sb.append("*** " + SpringSaLaDExporter.SPATIAL_INFORMATION + " ***");
+		sb.append("*** " + SPATIAL_INFORMATION + " ***");
 		sb.append("\n");
 		geometryContext.writeData(sb);
 		sb.append("\n");
 
 		/* ******* WRITE THE SPECIES INFORMATION ***********/
-		sb.append("*** " + SpringSaLaDExporter.MOLECULES + " ***");
+		sb.append("*** " + MOLECULES + " ***");
 		sb.append("\n");
 		sb.append("\n");
 		writeSpeciesInfo(sb);
 
+		/* ******* WRITE THE MOLECULE INFORMATION FILES ***********/
+		sb.append("*** " + MOLECULE_FILES + " ***");
+		sb.append("\n");
+		sb.append("\n");
+		writeSpeciesFileInfo(sb);
+		sb.append("\n");
+		
+		/* ******* WRITE THE DECAY REACTIONS ***************/
+		sb.append("*** " + DECAY_REACTIONS + " ***");
+		sb.append("\n");
+		sb.append("\n");
+//		ReactionRuleSpec.writeDecayData(sb, moleculeCreationDecayRates);
+		sb.append("\n");
+		
 
 			
 		String ret = sb.toString();
@@ -189,10 +227,26 @@ public class LangevinLngvWriter {
 		return ret;
 	}
 	
-	public static void writeSpeciesInfo(StringBuilder sb) {
-
+	private static void writeSpeciesFileInfo(StringBuilder sb) {
 		for( Map.Entry<ParticleProperties, SubDomain> entry : particlePropertiesMap.entrySet()) {
-			
+			ParticleProperties pp = entry.getKey();
+			Variable variable = pp.getVariable();
+			if(!(variable instanceof VolumeParticleSpeciesPattern)) {
+				continue;		// only interested in VolumeParticleSpeciesPattern
+			}
+			VolumeParticleSpeciesPattern vpsp = (VolumeParticleSpeciesPattern)variable;
+			ParticleMolecularTypePattern particleMolecularTypePattern = vpsp.getParticleMolecularTypePatterns().get(0);
+			ParticleMolecularType pmt = particleMolecularTypePattern.getMolecularType();
+			if(SpeciesContextSpec.SourceMoleculeString.equals(pmt.getName()) || SpeciesContextSpec.SinkMoleculeString.equals(pmt.getName())) {
+				continue;
+			}
+			sb.append("MOLECULE: " + pmt.getName() + " " + getFilename());
+			sb.append("\n");
+		}
+	}
+	
+	private static void writeSpeciesInfo(StringBuilder sb) {
+		for( Map.Entry<ParticleProperties, SubDomain> entry : particlePropertiesMap.entrySet()) {
 			ParticleProperties pp = entry.getKey();
 			SubDomain subDomain = entry.getValue();
 			
@@ -277,7 +331,9 @@ public class LangevinLngvWriter {
 		return;
 	}
 	
-	
+	private static String getFilename() {	// SpringSaLaD specific, external file with molecule information
+		return null;	// not implemented
+	}
 	
 	private static double evaluateConstant(Expression expression, SimulationSymbolTable simulationSymbolTable) throws MathException, ExpressionException{
 		Expression subExp = simulationSymbolTable.substituteFunctions(expression);
