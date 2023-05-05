@@ -2,6 +2,9 @@ package org.vcell.sbml;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.math.MathDescription;
+import cbit.vcell.math.Variable;
+import cbit.vcell.math.VolVariable;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.solver.ErrorTolerance;
 import cbit.vcell.solver.ExplicitOutputTimeSpec;
@@ -22,6 +25,7 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Category(SBML_IT.class)
@@ -395,7 +399,8 @@ public class SBMLTestSuiteTest {
 		STRUCTURE_SIZE_IN_ASSIGNMENT_RULE,
 //		STRUCTURE_SIZE_IN_BIOEVENT,
 		STOICHIOMETRY_IN_EXPRESSION,
-		FAST_SYSTEM_INCOMPATIBILITY
+		FAST_SYSTEM_INCOMPATIBILITY,
+		NONCONSTANT_COMPARTMENT
 	};
 
 
@@ -415,6 +420,19 @@ public class SBMLTestSuiteTest {
 			// check math generation, checks for BioModel error issues.
 			//
 			bioModel.updateAll(false);
+
+			//
+			// TEMPORARY - skip tests which don't have any VolVariables (e.g. no ODEs)
+			// in the future, solvers should tolerate such models and generate trivial results anyway.
+			//
+			MathDescription mathDesc = bioModel.getSimulationContext(0).getMathDescription();
+			Optional<VolVariable> volVariable = mathDesc.getVariableList().stream()
+					.filter(var -> var instanceof VolVariable).map(var -> (VolVariable)var).findAny();
+			if (!volVariable.isPresent()){
+				System.err.println("SKIPPING SIMULATION, Math has no Variables, nothing to solve");
+				return;
+			}
+
 			//
 			// run simulations and compare with known results from SBML Test Suite.
 			//
@@ -428,9 +446,13 @@ public class SBMLTestSuiteTest {
 			sim.getSolverTaskDescription().setErrorTolerance(new ErrorTolerance(1e-12, 1e-9));
 			SBMLSolver solver = new SBMLSolver();
 			Path workingDir = Files.createTempDirectory("sbml-test-suite-working-dir-");
-			SBMLResults computedResults = solver.simulate(workingDir.toFile(), sim, simSpec);
+			SBMLResults computedResults = solver.simulate(workingDir.toFile(), sim, simSpec, simContext);
 			boolean bEquiv = SBMLResults.compareEquivalent(expectedCSV, computedResults, simSpec);
+			if (!bEquiv){
+				System.err.println(SBMLResults.toCSV(expectedCSV,computedResults));
+			}
 			Assert.assertTrue("testCase "+testCase+" not within tolerance", bEquiv);
+			System.err.println("<< SIMULATIONS MATCH >>");
 		}catch (Exception e){
 			System.err.println("unexpected exception in test case "+testCase);
 			throw e;

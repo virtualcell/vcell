@@ -1,6 +1,16 @@
 package org.vcell.sbml;
 
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.StructureMapping;
+import cbit.vcell.math.MathDescription;
+import cbit.vcell.math.SourceSymbolMapping;
+import cbit.vcell.math.Variable;
+import cbit.vcell.model.Parameter;
+import cbit.vcell.model.SpeciesContext;
+import cbit.vcell.model.Structure;
+import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
@@ -53,7 +63,11 @@ public class SBMLResults {
         return new SBMLResults(columnNames, values);
     }
 
-    public static SBMLResults fromOdeSolverResultSet(ODESolverResultSet odeSolverResultSet, SBMLSimulationSpec sbmlSimulationSpec) throws ExpressionException {
+    public static SBMLResults fromOdeSolverResultSet(
+            ODESolverResultSet odeSolverResultSet,
+            SBMLSimulationSpec sbmlSimulationSpec,
+            SimulationContext simulationContext
+    ) throws ExpressionException {
         List<String> columnNames = new ArrayList<>(Arrays.asList(sbmlSimulationSpec.variables));
         columnNames.add(0, "time");
         List<double[]> values = new ArrayList<>();
@@ -61,22 +75,78 @@ public class SBMLResults {
         for (int col=1; col < columnNames.size(); col++) {
             String var = columnNames.get(col);
             int varIndex = odeSolverResultSet.findColumn(var);
-            values.add(odeSolverResultSet.extractColumn(varIndex));
+            if (varIndex<0){
+                throw new RuntimeException("couldn't find var '"+var+"' in vcell sim results");
+            }
+            double[] rawSolution = odeSolverResultSet.extractColumn(varIndex);
+            if (Arrays.asList(sbmlSimulationSpec.concentrationVars).contains(var)){
+                values.add(rawSolution);
+            }else if (Arrays.asList(sbmlSimulationSpec.amountVars).contains(var)) {
+                //
+                // vcell solutions for species (for ODEs) are in rawSolution
+                // since amounts are needed, must multiply by corresponding structure size
+                //
+                MathDescription mathDescription = simulationContext.getMathDescription();
+                Variable mathVar = mathDescription.getVariable(var);
+                SourceSymbolMapping sourceSymbolMapping = mathDescription.getSourceSymbolMapping();
+                SymbolTableEntry[] vcellBioSymbols = sourceSymbolMapping.getBiologicalSymbol(mathVar);
+                if (vcellBioSymbols==null || !(vcellBioSymbols[0] instanceof SpeciesContext)) {
+                    throw new RuntimeException("amount required, failed to find SpeciesContext for var '" + var + "'");
+                }
+                SpeciesContext speciesContext = (SpeciesContext) vcellBioSymbols[0];
+                Structure structure = speciesContext.getStructure();
+                StructureMapping.StructureMappingParameter sizeParameter =
+                        simulationContext.getGeometryContext().getStructureMapping(structure).getSizeParameter();
+                Variable structSizeVar = sourceSymbolMapping.getVariable(sizeParameter);
+                Expression sizeExp = structSizeVar.getExpression().flatten();
+                if (!sizeExp.isNumeric()){
+                    throw new RuntimeException("failed to find Structure size for '"+structure.getName()+"' needed for variable '"+var+"'");
+                }
+                double structureSize = sizeExp.evaluateConstant();
+                double[] amounts = Arrays.stream(rawSolution).map(c -> c * structureSize).toArray();
+                values.add(amounts);
+            }else{
+                values.add(rawSolution);
+            }
         }
         return new SBMLResults(columnNames, values);
     }
 
     public String toCSV() {
+        List<String> lines = toCsvLines(false);
         StringBuffer sb = new StringBuffer();
-        sb.append(String.join(",", columnNames)+"\n");
+        for (int i=0; i<lines.size(); i++){
+            sb.append(lines.get(i)).append("\n");
+        }
+        return sb.toString();
+    }
+
+    private List<String> toCsvLines(boolean bSkipTime) {
+        List<String> lines = new ArrayList<>();
+        lines.add(String.join(",", columnNames.subList(bSkipTime ? 1 : 0, columnNames.size())));
         for (int row=0; row<values.get(0).length; row++){
-            for (int col=0; col<columnNames.size(); col++){
-                if (col > 0){
+            StringBuffer sb = new StringBuffer();
+            int startCol = bSkipTime ? 1 : 0;
+            for (int col=startCol; col<columnNames.size(); col++){
+                if (col > startCol){
                     sb.append(",");
                 }
                 sb.append(values.get(col)[row]);
             }
-            sb.append("\n");
+            lines.add(sb.toString());
+        }
+        return lines;
+    }
+
+    public static String toCSV(SBMLResults results1, SBMLResults results2) {
+        List<String> lines1 = results1.toCsvLines(false);
+        List<String> lines2 = results2.toCsvLines(true);
+        StringBuffer sb = new StringBuffer();
+        for (int i=0; i<lines1.size(); i++){
+            sb.append(lines1.get(i))
+                    .append(",")
+                    .append(lines2.get(i))
+                    .append("\n");
         }
         return sb.toString();
     }
@@ -91,9 +161,9 @@ public class SBMLResults {
             double[] thisColData = correctResults.values.get(col);
             double[] otherColData = computedResults.values.get(col);
             for (int row=0; row < thisColData.length; row++){
-                boolean bWithinTol = withinSbmlTestSuiteTolerance(
+                double err = error(
                         simSpec.absoluteTolerance, simSpec.relativeTolerance, thisColData[row], otherColData[row]);
-                if (!bWithinTol){
+                if (err > 1.0){
                     return false;
                 }
             }
@@ -101,10 +171,10 @@ public class SBMLResults {
         return true;
     }
 
-    public static boolean withinSbmlTestSuiteTolerance(double tolAbs, double tolRel, double correctVal, double unknownVal){
+    public static double error(double tolAbs, double tolRel, double correctVal, double unknownVal){
         /**
          * | Cij − Uij |  ≤  ( Ta + Tr × | Cij | )
          */
-        return Math.abs(correctVal - unknownVal) <= (tolAbs + tolRel * Math.abs(correctVal));
+        return Math.abs(correctVal - unknownVal) / (tolAbs + tolRel * Math.abs(correctVal));
     }
 }

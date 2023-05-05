@@ -1,6 +1,7 @@
 package org.vcell.sbml;
 
 import cbit.vcell.field.FieldDataIdentifierSpec;
+import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.*;
@@ -31,7 +32,12 @@ public class SBMLSolver {
         }
     }
 
-    public SBMLResults simulate(File workingDir, Simulation simulation, SBMLSimulationSpec sbmlSimulationSpec) throws SolverException, ExpressionException {
+    public SBMLResults simulate(File workingDir,
+                                Simulation simulation,
+                                SBMLSimulationSpec sbmlSimulationSpec,
+                                SimulationContext simulationContext
+    ) throws SolverException, ExpressionException {
+
         TempSimulation tempSimulation = new TempSimulation(simulation,false);
         tempSimulation.setSimulationOwner(simulation.getSimulationOwner());
         TempSimulationJob tempSimulationJob = new TempSimulationJob(tempSimulation, 0, null);
@@ -55,7 +61,7 @@ public class SBMLSolver {
             throw new RuntimeException("Solver results are not compatible with CSV format. ");
         }
 
-        return SBMLResults.fromOdeSolverResultSet(odeSolverResultSet, sbmlSimulationSpec);
+        return SBMLResults.fromOdeSolverResultSet(odeSolverResultSet, sbmlSimulationSpec, simulationContext);
     }
 
 }
