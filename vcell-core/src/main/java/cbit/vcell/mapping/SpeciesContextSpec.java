@@ -977,16 +977,6 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
 				issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
 			}
 
-			for(Map.Entry<MolecularComponentPattern, SiteAttributesSpec> entry : getSiteAttributesMap().entrySet()) {
-				MolecularComponentPattern key = entry.getKey();
-				SiteAttributesSpec sas = entry.getValue();
-				if(sas.getLocation() instanceof Membrane) {
-					String msg = "Location is a Membrane.";		// TODO: remove this, useful just for early testing
-					String tip = msg;
-					issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
-					break;
-				}
-			}
 			// if the species context is on membrane it must have a site named Anchor on the membrane
 			Structure struct = sc.getStructure();
 			MolecularComponentPattern mcpAnchor = null;
