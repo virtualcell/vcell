@@ -17,6 +17,7 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.vcell.sbml.vcell.SBMLImporter;
+import org.vcell.sbml.vcell.SBMLSymbolMapping;
 import org.vcell.test.SBML_IT;
 
 import java.io.InputStream;
@@ -500,6 +501,7 @@ public class SBMLTestSuiteTest {
 		SBMLImporter importer = new SBMLImporter(testFileInputStream, vcl, bValidateSBML);
 		try {
 			BioModel bioModel = importer.getBioModel();
+			SBMLSymbolMapping sbmlSymbolMapping = importer.getSymbolMapping();
 			//
 			// check math generation, checks for BioModel error issues.
 			//
@@ -530,7 +532,7 @@ public class SBMLTestSuiteTest {
 			sim.getSolverTaskDescription().setErrorTolerance(new ErrorTolerance(1e-12, 1e-9));
 			SBMLSolver solver = new SBMLSolver();
 			Path workingDir = Files.createTempDirectory("sbml-test-suite-working-dir-");
-			SBMLResults computedResults = solver.simulate(workingDir.toFile(), sim, simSpec, simContext);
+			SBMLResults computedResults = solver.simulate(workingDir.toFile(), sim, simSpec, simContext, sbmlSymbolMapping);
 			boolean bEquiv = SBMLResults.compareEquivalent(expectedCSV, computedResults, simSpec);
 			if (!bEquiv){
 				System.err.println(SBMLResults.toCSV(expectedCSV,computedResults));

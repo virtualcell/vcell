@@ -12,6 +12,7 @@ import cbit.vcell.solver.server.SolverStatus;
 import cbit.vcell.solver.stoch.GibsonSolver;
 import cbit.vcell.solver.stoch.HybridSolver;
 import cbit.vcell.solvers.AbstractCompiledSolver;
+import org.vcell.sbml.vcell.SBMLSymbolMapping;
 
 import java.io.File;
 
@@ -35,7 +36,8 @@ public class SBMLSolver {
     public SBMLResults simulate(File workingDir,
                                 Simulation simulation,
                                 SBMLSimulationSpec sbmlSimulationSpec,
-                                SimulationContext simulationContext
+                                SimulationContext simulationContext,
+                                SBMLSymbolMapping sbmlSymbolMapping
     ) throws SolverException, ExpressionException {
 
         TempSimulation tempSimulation = new TempSimulation(simulation,false);
@@ -61,7 +63,7 @@ public class SBMLSolver {
             throw new RuntimeException("Solver results are not compatible with CSV format. ");
         }
 
-        return SBMLResults.fromOdeSolverResultSet(odeSolverResultSet, sbmlSimulationSpec, simulationContext);
+        return SBMLResults.fromOdeSolverResultSet(odeSolverResultSet, sbmlSimulationSpec, simulationContext, sbmlSymbolMapping);
     }
 
 }

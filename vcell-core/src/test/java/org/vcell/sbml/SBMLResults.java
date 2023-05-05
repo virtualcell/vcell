@@ -15,6 +15,8 @@ import cbit.vcell.solver.ode.ODESolverResultSet;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
 import com.opencsv.exceptions.CsvException;
+import org.vcell.sbml.vcell.SBMLSymbolMapping;
+import org.vcell.sbml.vcell.SymbolContext;
 import org.vcell.util.Compare;
 
 import java.io.IOException;
@@ -66,7 +68,8 @@ public class SBMLResults {
     public static SBMLResults fromOdeSolverResultSet(
             ODESolverResultSet odeSolverResultSet,
             SBMLSimulationSpec sbmlSimulationSpec,
-            SimulationContext simulationContext
+            SimulationContext simulationContext,
+            SBMLSymbolMapping sbmlSymbolMapping
     ) throws ExpressionException {
         List<String> columnNames = new ArrayList<>(Arrays.asList(sbmlSimulationSpec.variables));
         columnNames.add(0, "time");
@@ -76,7 +79,19 @@ public class SBMLResults {
             String var = columnNames.get(col);
             int varIndex = odeSolverResultSet.findColumn(var);
             if (varIndex<0){
-                throw new RuntimeException("couldn't find var '"+var+"' in vcell sim results");
+                SymbolTableEntry ste = sbmlSymbolMapping.getSte(sbmlSymbolMapping.getMappedSBase(var), SymbolContext.RUNTIME);
+                if (ste==null){
+                    ste = sbmlSymbolMapping.getSte(sbmlSymbolMapping.getMappedSBase(var), SymbolContext.INITIAL);
+                }
+                MathDescription mathDescription = simulationContext.getMathDescription();
+                SourceSymbolMapping sourceSymbolMapping = mathDescription.getSourceSymbolMapping();
+                Variable mathVar = sourceSymbolMapping.getVariable(ste);
+                if (mathVar!=null) {
+                    varIndex = odeSolverResultSet.findColumn(mathVar.getName());
+                }
+                if (varIndex<0) {
+                    throw new RuntimeException("couldn't find var '" + var + "' in vcell sim results");
+                }
             }
             double[] rawSolution = odeSolverResultSet.extractColumn(varIndex);
             if (Arrays.asList(sbmlSimulationSpec.concentrationVars).contains(var)){
