@@ -39,12 +39,18 @@ public class SBMLTestSuiteImportTest {
 		faults.put(48, FAULT.COMPARTMENT_0D);
 		faults.put(49, FAULT.COMPARTMENT_0D);
 		faults.put(50, FAULT.COMPARTMENT_0D);
+		faults.put(51, FAULT.STRUCTURE_SIZE_IN_RATE_RULE);
+		faults.put(52, FAULT.STRUCTURE_SIZE_IN_RATE_RULE);
+		faults.put(53, FAULT.STRUCTURE_SIZE_IN_RATE_RULE);
 		faults.put(96, FAULT.COMPARTMENT_1D);
 		faults.put(97, FAULT.COMPARTMENT_0D);
 		faults.put(99, FAULT.COMPARTMENT_1D);
 		faults.put(100, FAULT.COMPARTMENT_0D);
 		faults.put(102, FAULT.COMPARTMENT_1D);
 		faults.put(103, FAULT.COMPARTMENT_0D);
+		faults.put(104, FAULT.STRUCTURE_SIZE_IN_RATE_RULE);
+		faults.put(105, FAULT.STRUCTURE_SIZE_IN_RATE_RULE);
+		faults.put(106, FAULT.STRUCTURE_SIZE_IN_RATE_RULE);
 		faults.put(153, FAULT.COMPARTMENT_1D);
 		faults.put(154, FAULT.COMPARTMENT_1D);
 		faults.put(155, FAULT.COMPARTMENT_0D);
@@ -200,13 +206,27 @@ public class SBMLTestSuiteImportTest {
 		faults.put(780, FAULT.ALGEBRAIC_RULES);
 		faults.put(844, FAULT.ALGEBRAIC_RULES);
 		faults.put(876, FAULT.ALGEBRAIC_RULES);
+		faults.put(901, FAULT.STRUCTURE_SIZE_IN_RATE_RULE);
+		faults.put(902, FAULT.STRUCTURE_SIZE_IN_RATE_RULE);
+		faults.put(903, FAULT.STRUCTURE_SIZE_IN_RATE_RULE);
+		faults.put(904, FAULT.STRUCTURE_SIZE_IN_RATE_RULE);
 		faults.put(905, FAULT.COMPARTMENT_1D);
+		faults.put(906, FAULT.STRUCTURE_SIZE_IN_RATE_RULE);
 		faults.put(907, FAULT.COMPARTMENT_1D);
+		faults.put(908, FAULT.STRUCTURE_SIZE_IN_RATE_RULE);
 		faults.put(909, FAULT.COMPARTMENT_1D);
 		faults.put(910, FAULT.COMPARTMENT_1D);
+		faults.put(911, FAULT.STRUCTURE_SIZE_IN_RATE_RULE);
+		faults.put(912, FAULT.STRUCTURE_SIZE_IN_RATE_RULE);
+		faults.put(913, FAULT.STRUCTURE_SIZE_IN_RATE_RULE);
+		faults.put(914, FAULT.STRUCTURE_SIZE_IN_RATE_RULE);
 		faults.put(915, FAULT.COMPARTMENT_1D);
+		faults.put(916, FAULT.STRUCTURE_SIZE_IN_RATE_RULE);
 		faults.put(917, FAULT.COMPARTMENT_1D);
+		faults.put(918, FAULT.STRUCTURE_SIZE_IN_RATE_RULE);
 		faults.put(919, FAULT.COMPARTMENT_1D);
+		faults.put(926, FAULT.STRUCTURE_SIZE_IN_RATE_RULE);
+		faults.put(927, FAULT.STRUCTURE_SIZE_IN_RATE_RULE);
 		faults.put(937, FAULT.DELAY);
 		faults.put(938, FAULT.DELAY);
 		faults.put(939, FAULT.DELAY);
@@ -214,6 +234,8 @@ public class SBMLTestSuiteImportTest {
 		faults.put(941, FAULT.DELAY);
 		faults.put(942, FAULT.DELAY);
 		faults.put(943, FAULT.DELAY);
+		faults.put(945, FAULT.STRUCTURE_SIZE_IN_ASSIGNMENT_RULE);
+		faults.put(947, FAULT.STRUCTURE_SIZE_IN_ASSIGNMENT_RULE);
 		faults.put(950, FAULT.VALUE_NAN_INF_OR_MISSING);
 		faults.put(951, FAULT.VALUE_NAN_INF_OR_MISSING);
 		faults.put(957, FAULT.XOR_MISSING);
@@ -221,17 +243,26 @@ public class SBMLTestSuiteImportTest {
 		faults.put(959, FAULT.INCONSISTENT_UNIT_SYSTEM);
 		faults.put(960, FAULT.AVOGADRO);
 		faults.put(961, FAULT.AVOGADRO);
+		faults.put(972, FAULT.STOICHIOMETRY_IN_EXPRESSION);
 		faults.put(974, FAULT.RUNTIME_ERROR); // dummy stoichiometry STE used in expression in rate rule - not supported.
 		faults.put(981, FAULT.DELAY);
 		faults.put(982, FAULT.DELAY);
 		faults.put(983, FAULT.DELAY);
 		faults.put(984, FAULT.DELAY);
 		faults.put(985, FAULT.DELAY);
+		faults.put(987, FAULT.FAST_SYSTEM_INCOMPATIBILITY);
+		faults.put(988, FAULT.FAST_SYSTEM_INCOMPATIBILITY);
 		faults.put(993, FAULT.ALGEBRAIC_RULES);
+		faults.put(999, FAULT.STRUCTURE_SIZE_IN_RATE_RULE);
 		faults.put(1000, FAULT.AVOGADRO);
 		faults.put(1011, FAULT.COMPARTMENT_1D);
 		faults.put(1012, FAULT.COMPARTMENT_1D);
 		faults.put(1013, FAULT.COMPARTMENT_1D);
+		faults.put(1117, FAULT.STRUCTURE_SIZE_IN_RATE_RULE);
+		faults.put(1118, FAULT.STRUCTURE_SIZE_IN_RATE_RULE);
+		faults.put(1120, FAULT.STRUCTURE_SIZE_IN_RATE_RULE);
+		faults.put(1122, FAULT.STRUCTURE_SIZE_IN_RATE_RULE);
+		faults.put(1123, FAULT.STRUCTURE_SIZE_IN_RATE_RULE);
 		faults.put(1044, FAULT.ALGEBRAIC_RULES);
 		faults.put(1051, FAULT.JSBML_ERROR); // The order of subelements within <reaction> ... with id 'slowerReaction1' does not comply.
 		faults.put(1052, FAULT.JSBML_ERROR); // The order of subelements within <reaction> ... with id 'slowerReaction1' does not comply.
@@ -241,6 +272,7 @@ public class SBMLTestSuiteImportTest {
 		faults.put(1084, FAULT.ALGEBRAIC_RULES);
 		faults.put(1085, FAULT.ALGEBRAIC_RULES);
 		faults.put(1086, FAULT.ALGEBRAIC_RULES);
+		faults.put(1198, FAULT.STRUCTURE_SIZE_IN_RATE_RULE);
 		faults.put(1103, FAULT.OVERDETERMINED_SYSTEM);
 		faults.put(1108, FAULT.ALGEBRAIC_RULES);
 		faults.put(1112, FAULT.XOR_MISSING);
@@ -347,7 +379,12 @@ public class SBMLTestSuiteImportTest {
 		XOR_MISSING,
 		JSBML_ERROR,
 		REACTANT_AND_MODIFIER,
-		UNCATEGORIZED
+		UNCATEGORIZED,
+		STRUCTURE_SIZE_IN_RATE_RULE,
+		STRUCTURE_SIZE_IN_ASSIGNMENT_RULE,
+//		STRUCTURE_SIZE_IN_BIOEVENT,
+		STOICHIOMETRY_IN_EXPRESSION,
+		FAST_SYSTEM_INCOMPATIBILITY
 	};
 
 
@@ -363,6 +400,7 @@ public class SBMLTestSuiteImportTest {
 		SBMLImporter importer = new SBMLImporter(testFileInputStream, vcl, bValidateSBML);
 		try {
 			BioModel bioModel = importer.getBioModel();
+			bioModel.updateAll(false);
 		}catch (Exception e){
 			System.err.println("unexpected exception in test case "+testCase);
 			throw e;
