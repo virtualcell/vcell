@@ -249,6 +249,10 @@ public class SBMLImporter {
 			for (int i = 0; i < sbmlModel.getNumCompartments(); i++) {
 				org.sbml.jsbml.Compartment compartment = listofCompartments.get(i);
 				String compartmentSid = compartment.getId();
+				if (compartment.isSetConstant() && !compartment.isConstant()) {
+					String msg = "compartment '"+compartment.getId()+"' has constant attribute set to False, not currently supported.";
+					vcLogger.sendMessage(VCLogger.Priority.HighPriority, VCLogger.ErrorType.CompartmentError, msg);
+				}
 				if (!compartment.isSetSpatialDimensions() || compartment.getSpatialDimensions() == 3) {
 					Feature feature = new Feature(compartmentSid);
 					sbmlSymbolMapping.putStructure(compartment, feature);
