@@ -1135,7 +1135,7 @@ public class SBMLImporter {
 				String msg = "This is a SBML level 3 model, stoichiometry is not set for the reactant" +
 						" '" + sbmlReactantSpId + "' and no default value should be assumed, but assuming 1.";
 				logger.warn(msg);
-				vcLogger.sendMessage(VCLogger.Priority.MediumPriority, VCLogger.ErrorType.UnsupportedConstruct, msg);
+				vcLogger.sendMessage(VCLogger.Priority.HighPriority, VCLogger.ErrorType.UnsupportedConstruct, msg);
 				stoichiometry = 1;
 			}
 			//
@@ -1221,7 +1221,7 @@ public class SBMLImporter {
 				String msg = "This is a SBML level 3 model, stoichiometry is not set for the product" +
 						" '" + sbmlProductSpId + "' and no default value should be assumed, but assuming 1.";
 				logger.warn(msg);
-				vcLogger.sendMessage(VCLogger.Priority.MediumPriority, VCLogger.ErrorType.UnsupportedConstruct, msg);
+				vcLogger.sendMessage(VCLogger.Priority.HighPriority, VCLogger.ErrorType.UnsupportedConstruct, msg);
 				stoichiometry = 1;
 			}
 			//
