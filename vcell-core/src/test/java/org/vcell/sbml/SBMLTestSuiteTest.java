@@ -1,8 +1,14 @@
 package org.vcell.sbml;
 
-import cbit.util.xml.VCLogger;
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.resource.PropertyLoader;
+import cbit.vcell.solver.ErrorTolerance;
+import cbit.vcell.solver.ExplicitOutputTimeSpec;
+import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.TimeBounds;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -10,9 +16,9 @@ import org.junit.runners.Parameterized;
 import org.vcell.sbml.vcell.SBMLImporter;
 import org.vcell.test.SBML_IT;
 
-import javax.xml.stream.XMLStreamException;
-import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -20,11 +26,16 @@ import java.util.stream.Collectors;
 
 @Category(SBML_IT.class)
 @RunWith(Parameterized.class)
-public class SBMLTestSuiteImportTest {
+public class SBMLTestSuiteTest {
 	private Integer testCase;
 
-	public SBMLTestSuiteImportTest(Integer testCase) {
+	public SBMLTestSuiteTest(Integer testCase) {
 		this.testCase = testCase;
+	}
+
+	@BeforeClass
+	public static void before() {
+		System.setProperty(PropertyLoader.installationRoot,"..");
 	}
 
 	@Parameterized.Parameters
@@ -400,7 +411,26 @@ public class SBMLTestSuiteImportTest {
 		SBMLImporter importer = new SBMLImporter(testFileInputStream, vcl, bValidateSBML);
 		try {
 			BioModel bioModel = importer.getBioModel();
+			//
+			// check math generation, checks for BioModel error issues.
+			//
 			bioModel.updateAll(false);
+			//
+			// run simulations and compare with known results from SBML Test Suite.
+			//
+			SimulationContext simContext = bioModel.getSimulationContext(0);
+			SBMLResults expectedCSV = SBMLResults.fromCSV(SbmlTestSuiteFiles.getSbmlTestCaseResultsAsCSV(testCase));
+			SBMLSimulationSpec simSpec = SBMLSimulationSpec.fromSpecFile(
+					SbmlTestSuiteFiles.getSbmlTestCaseSettingsAsText(testCase));
+			Simulation sim = new Simulation(simContext.getMathDescription(), simContext);
+			sim.getSolverTaskDescription().setTimeBounds(new TimeBounds(0.0, simSpec.start + simSpec.duration));
+			sim.getSolverTaskDescription().setOutputTimeSpec(new ExplicitOutputTimeSpec(expectedCSV.values.get(0)));
+			sim.getSolverTaskDescription().setErrorTolerance(new ErrorTolerance(1e-12, 1e-9));
+			SBMLSolver solver = new SBMLSolver();
+			Path workingDir = Files.createTempDirectory("sbml-test-suite-working-dir-");
+			SBMLResults computedResults = solver.simulate(workingDir.toFile(), sim, simSpec);
+			boolean bEquiv = SBMLResults.compareEquivalent(expectedCSV, computedResults, simSpec);
+			Assert.assertTrue("testCase "+testCase+" not within tolerance", bEquiv);
 		}catch (Exception e){
 			System.err.println("unexpected exception in test case "+testCase);
 			throw e;

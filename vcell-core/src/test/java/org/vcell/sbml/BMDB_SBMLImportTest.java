@@ -91,118 +91,118 @@ public class BMDB_SBMLImportTest {
 		return slowModels;
 	}
 
-	public static Map<Integer, SBMLTestSuiteImportTest.FAULT> knownFaults() {
-		HashMap<Integer,SBMLTestSuiteImportTest.FAULT> faults = new HashMap();
-		faults.put(15, SBMLTestSuiteImportTest.FAULT.UNCATEGORIZED);  // cause:  cannot use reserved symbol 'x' as a Reaction name
-		faults.put(24, SBMLTestSuiteImportTest.FAULT.DELAY);  // cause:  UnsupportedConstruct: unsupported SBML element 'delay' in expression ' <math><apply><times/><ci> compartment_0000004 </ci><ci> rP </ci><apply><power/><apply><csymbol encoding="tex
-		faults.put(25, SBMLTestSuiteImportTest.FAULT.DELAY);  // cause:  UnsupportedConstruct: unsupported SBML element 'delay' in expression ' <math><piecewise><piece><cn> 0 </cn><apply><lt/><apply><minus/><apply><csymbol encoding="text" definitionURL
-		faults.put(34, SBMLTestSuiteImportTest.FAULT.DELAY);  // cause:  UnsupportedConstruct: unsupported SBML element 'delay' in expression ' <math><apply><times/><ci> compartment_0000001 </ci><apply><csymbol encoding="text" definitionURL="http://www
-		faults.put(39, SBMLTestSuiteImportTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('0.25' for reactant 'CaER' in reaction 'v1') or stoichiometryMath not handled in VCell at this time.
-		faults.put(59, SBMLTestSuiteImportTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('0.01' for reactant 'Ca_cyt' in reaction 'Calcium_cyt_Jerp') or stoichiometryMath not handled in VCell at this time.
-		faults.put(63, SBMLTestSuiteImportTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('0.5' for reactant 'FDP' in reaction 'Vgol') or stoichiometryMath not handled in VCell at this time.
-		faults.put(81, SBMLTestSuiteImportTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('9.967E-4' for reactant 'ATP_C' in reaction 'PIP5kinase') or stoichiometryMath not handled in VCell at this time.
-		faults.put(112, SBMLTestSuiteImportTest.FAULT.UNCATEGORIZED);  // cause:  null
-		faults.put(145, SBMLTestSuiteImportTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('0.001' for reactant 'Ca_ER' in reaction 'R9') or stoichiometryMath not handled in VCell at this time.
-		faults.put(151, SBMLTestSuiteImportTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('0.5' for product 'x13' in reaction 'R23') or stoichiometryMath not handled in VCell at this time.
-		faults.put(154, SBMLTestSuiteImportTest.FAULT.DELAY);  // cause:  UnsupportedConstruct: unsupported SBML element 'delay' in expression ' <math><apply><times/><ci> compartment </ci><ci> beta_y </ci><ci> psi </ci><apply><csymbol encoding="text" de
-		faults.put(155, SBMLTestSuiteImportTest.FAULT.DELAY);  // cause:  UnsupportedConstruct: unsupported SBML element 'delay' in expression ' <math><apply><times/><ci> compartment </ci><ci> beta_y </ci><ci> psi </ci><apply><csymbol encoding="text" de
-		faults.put(196, SBMLTestSuiteImportTest.FAULT.DELAY);  // cause:  UnsupportedConstruct: unsupported SBML element 'delay' in expression ' <math><apply><times/><ci> vM4 </ci><apply><divide/><apply><times/><apply><plus/><cn> 1 </cn><apply><divide/>
-		faults.put(199, SBMLTestSuiteImportTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('0.5' for reactant 'NADPH' in reaction 'r4') or stoichiometryMath not handled in VCell at this time.
-		faults.put(206, SBMLTestSuiteImportTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('0.1' for product 's6o' in reaction 'v10') or stoichiometryMath not handled in VCell at this time.
-		faults.put(232, SBMLTestSuiteImportTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('0.5' for reactant 'O2' in reaction 'vresp') or stoichiometryMath not handled in VCell at this time.
-		faults.put(244, SBMLTestSuiteImportTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('0.5' for reactant 'FBP' in reaction 'e_Emp') or stoichiometryMath not handled in VCell at this time.
-		faults.put(245, SBMLTestSuiteImportTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('0.978' for product 's_pyr' in reaction 'r1') or stoichiometryMath not handled in VCell at this time.
-		faults.put(246, SBMLTestSuiteImportTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('0.001' for product 'Ca_in' in reaction 'vo') or stoichiometryMath not handled in VCell at this time.
-		faults.put(248, SBMLTestSuiteImportTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Unable to create and add rate rule to VC model : 'Capillary.Capillary' is either not found in your model or is not allowed to be used in the current context. Check that you have p
-		faults.put(256, SBMLTestSuiteImportTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'XIAP_ini' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context. Check that you hav
-		faults.put(305, SBMLTestSuiteImportTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'V' to model: 'Fw_1st_step' is either not found in your model or is not allowed to be used in the current context. Check that you have provided the
-		faults.put(319, SBMLTestSuiteImportTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('0.02' for product 'gamma' in reaction 'r3') or stoichiometryMath not handled in VCell at this time.
-		faults.put(340, SBMLTestSuiteImportTest.FAULT.MATHML_PARSING);  // cause:  UnsupportedConstruct: error parsing expression ' <math><apply><gt/><piecewise><piece><apply><minus/><csymbol encoding="text" definitionURL="http://www.sbml.org/sbml/symbols/time">
-		faults.put(342, SBMLTestSuiteImportTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'TGF_beta_dose_mol_per_cell' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context.
-		faults.put(353, SBMLTestSuiteImportTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('12345.7' for reactant 'cpd_C00369Glc_CS' in reaction 'rn_R02112CS_G2') or stoichiometryMath not handled in VCell at this time.
-		faults.put(383, SBMLTestSuiteImportTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('1.5' for product 'PGA' in reaction 'PGA_prod_Vo') or stoichiometryMath not handled in VCell at this time.
-		faults.put(384, SBMLTestSuiteImportTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('1.5' for product 'PGA' in reaction 'PGA_prod_Vo') or stoichiometryMath not handled in VCell at this time.
-		faults.put(385, SBMLTestSuiteImportTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('1.5' for product 'PGA' in reaction 'PGA_prod_Vo') or stoichiometryMath not handled in VCell at this time.
-		faults.put(386, SBMLTestSuiteImportTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('1.5' for product 'PGA' in reaction 'PGA_prod_Vo') or stoichiometryMath not handled in VCell at this time.
-		faults.put(387, SBMLTestSuiteImportTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('1.5' for product 'PGA' in reaction 'PGA_prod_Vo') or stoichiometryMath not handled in VCell at this time.
-		faults.put(388, SBMLTestSuiteImportTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('0.6' for product 'Ru5P' in reaction 'GAP2Ru5P') or stoichiometryMath not handled in VCell at this time.
-		faults.put(392, SBMLTestSuiteImportTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('0.5' for reactant 'ATP' in reaction 'RuBisCO_6_O2') or stoichiometryMath not handled in VCell at this time.
-		faults.put(415, SBMLTestSuiteImportTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('0.574' for product 'species_7' in reaction 'reaction_1') or stoichiometryMath not handled in VCell at this time.
-		faults.put(426, SBMLTestSuiteImportTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('0.08' for reactant 'species_31' in reaction 'reaction_28') or stoichiometryMath not handled in VCell at this time.
-		faults.put(429, SBMLTestSuiteImportTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'parameter_18' to model: 'UNRESOLVED.Size' is either not found in your model or is not allowed to be used in the current context. Check that you hav
-		faults.put(457, SBMLTestSuiteImportTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'parameter_1' to model: 'UNRESOLVED.Size' is either not found in your model or is not allowed to be used in the current context. Check that you have
-		faults.put(463, SBMLTestSuiteImportTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('8.5' for reactant 'species_14' in reaction 'reaction_11') or stoichiometryMath not handled in VCell at this time.
-		faults.put(468, SBMLTestSuiteImportTest.FAULT.UNCATEGORIZED);  // cause:  found more than one SBase match for sid=unitime, matched [org.vcell.sbml.vcell.SBMLSymbolMapping$SBaseWrapper@2c4d648b, org.vcell.sbml.vcell.SBMLSymbolMapping$SBaseWrapper@7d7dd2b
-		faults.put(469, SBMLTestSuiteImportTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('1.5' for reactant 's_1372' in reaction 'r_1230') or stoichiometryMath not handled in VCell at this time.
-		faults.put(470, SBMLTestSuiteImportTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('1.5' for reactant 's_1372' in reaction 'r_1230') or stoichiometryMath not handled in VCell at this time.
-		faults.put(471, SBMLTestSuiteImportTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('4.33333333333333' for reactant 's_0056' in reaction 'r_1052') or stoichiometryMath not handled in VCell at this time.
-		faults.put(472, SBMLTestSuiteImportTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('4.33333333333333' for reactant 's_0056' in reaction 'r_1052') or stoichiometryMath not handled in VCell at this time.
-		faults.put(473, SBMLTestSuiteImportTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('1.8' for reactant 's_0595' in reaction 'r_1014') or stoichiometryMath not handled in VCell at this time.
-		faults.put(474, SBMLTestSuiteImportTest.FAULT.UNCATEGORIZED);  // cause:  found more than one SBase match for sid=v, matched [org.vcell.sbml.vcell.SBMLSymbolMapping$SBaseWrapper@5d2c4564, org.vcell.sbml.vcell.SBMLSymbolMapping$SBaseWrapper@4f269c94]
-		faults.put(496, SBMLTestSuiteImportTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('1.1358' for reactant 's_0001' in reaction 'r_1812') or stoichiometryMath not handled in VCell at this time.
-		faults.put(497, SBMLTestSuiteImportTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('1.1358' for reactant 's_0001' in reaction 'r_1812') or stoichiometryMath not handled in VCell at this time.
-		faults.put(499, SBMLTestSuiteImportTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Metabolite_9' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context. Check that you
-		faults.put(520, SBMLTestSuiteImportTest.FAULT.UNCATEGORIZED);  // cause:  OverallWarning: missing or unexpected value attribute 'NaN' for SBML object id T
-		faults.put(534, SBMLTestSuiteImportTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Metabolite_6' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context. Check that you
-		faults.put(535, SBMLTestSuiteImportTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Metabolite_3' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context. Check that you
-		faults.put(536, SBMLTestSuiteImportTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Metabolite_80' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context. Check that yo
-		faults.put(537, SBMLTestSuiteImportTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Metabolite_40' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context. Check that yo
-		faults.put(542, SBMLTestSuiteImportTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Unable to create and add rate rule to VC model : 'r77' is either not found in your model or is not allowed to be used in the current context. Check that you have provided the corr
-		faults.put(547, SBMLTestSuiteImportTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Compartment_3' to model: 'UNRESOLVED.Size' is either not found in your model or is not allowed to be used in the current context. Check that you ha
-		faults.put(556, SBMLTestSuiteImportTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Unable to create and add rate rule to VC model : 'r0' is either not found in your model or is not allowed to be used in the current context. Check that you have provided the corre
-		faults.put(562, SBMLTestSuiteImportTest.FAULT.QUAL_PACKAGE);  // cause: Unable to import the SBML file. The model includes elements of SBML extension 'qual', which is required for simulating the model but is not supported.
-		faults.put(570, SBMLTestSuiteImportTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Unable to create and add rate rule to VC model : 'reaction_4' is either not found in your model or is not allowed to be used in the current context. Check that you have provided t
-		faults.put(575, SBMLTestSuiteImportTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Unable to create and add rate rule to VC model : 'J21' is either not found in your model or is not allowed to be used in the current context. Check that you have provided the corr
-		faults.put(577, SBMLTestSuiteImportTest.FAULT.MATHML_PARSING);  // cause:  UnsupportedConstruct: error parsing expression ' <math><piecewise><piece><cn> 1 </cn><apply><lt/><csymbol encoding="text" definitionURL="http://www.sbml.org/sbml/symbols/time"> ti
-		faults.put(578, SBMLTestSuiteImportTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Unable to create and add rate rule to VC model : 'v_r33' is either not found in your model or is not allowed to be used in the current context. Check that you have provided the co
-		faults.put(589, SBMLTestSuiteImportTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Metabolite_17' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context. Check that yo
-		faults.put(592, SBMLTestSuiteImportTest.FAULT.QUAL_PACKAGE);  // cause: Unable to import the SBML file. The model includes elements of SBML extension 'qual', which is required for simulating the model but is not supported.
-		faults.put(593, SBMLTestSuiteImportTest.FAULT.QUAL_PACKAGE);  // cause: Unable to import the SBML file. The model includes elements of SBML extension 'qual', which is required for simulating the model but is not supported.
-		faults.put(599, SBMLTestSuiteImportTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Metabolite_1' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context. Check that you
-		faults.put(608, SBMLTestSuiteImportTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('0.5' for reactant 'x_18' in reaction 'R_18') or stoichiometryMath not handled in VCell at this time.
-		faults.put(613, SBMLTestSuiteImportTest.FAULT.COMP_PACKAGE);  // cause: Unable to import the SBML file. The model includes elements of SBML extension 'comp', which is required for simulating the model but is not supported.
-		faults.put(627, SBMLTestSuiteImportTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Metabolite_123' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context. Check that y
-		faults.put(628, SBMLTestSuiteImportTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Metabolite_8' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context. Check that you
-		faults.put(632, SBMLTestSuiteImportTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'k4b' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context. Check that you have pro
-		faults.put(696, SBMLTestSuiteImportTest.FAULT.MATHML_PARSING);  // cause:  Error adding Lambda function UnsupportedConstruct: error parsing expression ' <math><notanumber/></math>': node type 'notanumber' not supported yet
-		faults.put(705, SBMLTestSuiteImportTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Metabolite_21' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context. Check that yo
-		faults.put(706, SBMLTestSuiteImportTest.FAULT.UNCATEGORIZED);  // cause:  found more than one SBase match for sid=v, matched [org.vcell.sbml.vcell.SBMLSymbolMapping$SBaseWrapper@67cc48df, org.vcell.sbml.vcell.SBMLSymbolMapping$SBaseWrapper@483ac21f]
-		faults.put(710, SBMLTestSuiteImportTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Metabolite_0_0' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context. Check that y
-		faults.put(731, SBMLTestSuiteImportTest.FAULT.UNCATEGORIZED);  // cause:  OverallWarning: missing or unexpected value attribute '-Infinity' for SBML object id log_Treg
-		faults.put(739, SBMLTestSuiteImportTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Metabolite_19' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context. Check that yo
-		faults.put(764, SBMLTestSuiteImportTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Metabolite_3' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context. Check that you
-		faults.put(775, SBMLTestSuiteImportTest.FAULT.MATHML_PARSING);  // cause:  Error adding Lambda function UnsupportedConstruct: error parsing expression ' <math><notanumber/></math>': node type 'notanumber' not supported yet
-		faults.put(804, SBMLTestSuiteImportTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Metabolite_1' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context. Check that you
-		faults.put(808, SBMLTestSuiteImportTest.FAULT.MATHML_PARSING);  // cause:  UnsupportedConstruct: error parsing expression ' <math><piecewise><piece><apply><divide/><ci> ModelValue_28 </ci><ci> ModelValue_30 </ci></apply><apply><and/><apply><and/><apply><
-		faults.put(814, SBMLTestSuiteImportTest.FAULT.MATHML_PARSING);  // cause:  UnsupportedConstruct: error parsing expression ' <math><apply><and/><apply><and/><apply><eq/><piecewise><piece><apply><minus/><csymbol encoding="text" definitionURL="http://www.sb
-		faults.put(822, SBMLTestSuiteImportTest.FAULT.MATHML_PARSING);  // cause:  UnsupportedConstruct: error parsing expression ' <math><apply><and/><apply><geq/><csymbol encoding="text" definitionURL="http://www.sbml.org/sbml/symbols/time"> time </csymbol><cn
-		faults.put(828, SBMLTestSuiteImportTest.FAULT.MATHML_PARSING);  // cause:  UnsupportedConstruct: error parsing expression ' <math><apply><eq/><piecewise><piece><apply><minus/><csymbol encoding="text" definitionURL="http://www.sbml.org/sbml/symbols/time">
-		faults.put(829, SBMLTestSuiteImportTest.FAULT.MATHML_PARSING);  // cause:  UnsupportedConstruct: error parsing expression ' <math><apply><eq/><piecewise><piece><apply><minus/><csymbol encoding="text" definitionURL="http://www.sbml.org/sbml/symbols/time">
-		faults.put(832, SBMLTestSuiteImportTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Metabolite_4' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context. Check that you
-		faults.put(841, SBMLTestSuiteImportTest.FAULT.DELAY);  // cause:  UnsupportedConstruct: unsupported SBML element 'delay' in expression ' <math><apply><times/><ci> compartment </ci><apply><ci> Function_for_miRNA_Activation_Transcription_Factor </
-		faults.put(858, SBMLTestSuiteImportTest.FAULT.MATHML_PARSING);  // cause:  UnsupportedConstruct: error parsing expression ' <math><apply><minus/><piecewise><piece><apply><minus/><csymbol encoding="text" definitionURL="http://www.sbml.org/sbml/symbols/tim
-		faults.put(859, SBMLTestSuiteImportTest.FAULT.MATHML_PARSING);  // cause:  UnsupportedConstruct: error parsing expression ' <math><apply><minus/><piecewise><piece><apply><minus/><csymbol encoding="text" definitionURL="http://www.sbml.org/sbml/symbols/tim
-		faults.put(867, SBMLTestSuiteImportTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Metabolite_9' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context. Check that you
-		faults.put(872, SBMLTestSuiteImportTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'beta' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context. Check that you have pr
-		faults.put(908, SBMLTestSuiteImportTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Metabolite_2' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context. Check that you
-		faults.put(925, SBMLTestSuiteImportTest.FAULT.UNCATEGORIZED);  // cause:  OverallWarning: missing or unexpected value attribute '-Infinity' for SBML object id log_time
-		faults.put(952, SBMLTestSuiteImportTest.FAULT.MATHML_PARSING);  // cause:  Error adding Lambda function UnsupportedConstruct: error parsing expression ' <math><notanumber/></math>': node type 'notanumber' not supported yet
-		faults.put(956, SBMLTestSuiteImportTest.FAULT.MATHML_PARSING);  // cause:  Error adding Lambda function UnsupportedConstruct: error parsing expression ' <math><notanumber/></math>': node type 'notanumber' not supported yet
-		faults.put(961, SBMLTestSuiteImportTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'rateOf_re15' to model: 're15' is either not found in your model or is not allowed to be used in the current context. Check that you have provided t
-		faults.put(969, SBMLTestSuiteImportTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Metabolite_11' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context. Check that yo
-		faults.put(1005, SBMLTestSuiteImportTest.FAULT.MATHML_PARSING);  // cause:  UnsupportedConstruct: error parsing expression ' <math><piecewise><piece><cn> 1 </cn><apply><and/><apply><geq/><piecewise><piece><apply><minus/><csymbol encoding="text" definition
-		faults.put(1021, SBMLTestSuiteImportTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Metabolite_0' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context. Check that you
-		faults.put(1026, SBMLTestSuiteImportTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Summary_flux_to_RBC' to model: 'Vin' is either not found in your model or is not allowed to be used in the current context. Check that you have pro
-		faults.put(1027, SBMLTestSuiteImportTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Compartment_10' to model: 'UNRESOLVED.Size' is either not found in your model or is not allowed to be used in the current context. Check that you h
-		faults.put(1028, SBMLTestSuiteImportTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Compartment_10' to model: 'UNRESOLVED.Size' is either not found in your model or is not allowed to be used in the current context. Check that you h
-		faults.put(1029, SBMLTestSuiteImportTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Compartment_10' to model: 'UNRESOLVED.Size' is either not found in your model or is not allowed to be used in the current context. Check that you h
-		faults.put(1039, SBMLTestSuiteImportTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Compartment_10' to model: 'UNRESOLVED.Size' is either not found in your model or is not allowed to be used in the current context. Check that you h
-		faults.put(1040, SBMLTestSuiteImportTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Summary_flux_to_RBC' to model: 'Vin' is either not found in your model or is not allowed to be used in the current context. Check that you have pro
-		faults.put(1046, SBMLTestSuiteImportTest.FAULT.FBC_PACKAGE);  // cause: Unable to import the SBML file. The model includes elements of SBML extension 'fbc', which is required for simulating the model but is not supported.
-		faults.put(1061, SBMLTestSuiteImportTest.FAULT.FBC_PACKAGE);  // cause: Unable to import the SBML file. The model includes elements of SBML extension 'fbc', which is required for simulating the model but is not supported.
-		faults.put(1062, SBMLTestSuiteImportTest.FAULT.FBC_PACKAGE);  // cause: Unable to import the SBML file. The model includes elements of SBML extension 'fbc', which is required for simulating the model but is not supported.
-		faults.put(1063, SBMLTestSuiteImportTest.FAULT.FBC_PACKAGE);  // cause: Unable to import the SBML file. The model includes elements of SBML extension 'fbc', which is required for simulating the model but is not supported.
-		faults.put(1064, SBMLTestSuiteImportTest.FAULT.FBC_PACKAGE);  // cause: Unable to import the SBML file. The model includes elements of SBML extension 'fbc', which is required for simulating the model but is not supported.
+	public static Map<Integer, SBMLTestSuiteTest.FAULT> knownFaults() {
+		HashMap<Integer, SBMLTestSuiteTest.FAULT> faults = new HashMap();
+		faults.put(15, SBMLTestSuiteTest.FAULT.UNCATEGORIZED);  // cause:  cannot use reserved symbol 'x' as a Reaction name
+		faults.put(24, SBMLTestSuiteTest.FAULT.DELAY);  // cause:  UnsupportedConstruct: unsupported SBML element 'delay' in expression ' <math><apply><times/><ci> compartment_0000004 </ci><ci> rP </ci><apply><power/><apply><csymbol encoding="tex
+		faults.put(25, SBMLTestSuiteTest.FAULT.DELAY);  // cause:  UnsupportedConstruct: unsupported SBML element 'delay' in expression ' <math><piecewise><piece><cn> 0 </cn><apply><lt/><apply><minus/><apply><csymbol encoding="text" definitionURL
+		faults.put(34, SBMLTestSuiteTest.FAULT.DELAY);  // cause:  UnsupportedConstruct: unsupported SBML element 'delay' in expression ' <math><apply><times/><ci> compartment_0000001 </ci><apply><csymbol encoding="text" definitionURL="http://www
+		faults.put(39, SBMLTestSuiteTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('0.25' for reactant 'CaER' in reaction 'v1') or stoichiometryMath not handled in VCell at this time.
+		faults.put(59, SBMLTestSuiteTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('0.01' for reactant 'Ca_cyt' in reaction 'Calcium_cyt_Jerp') or stoichiometryMath not handled in VCell at this time.
+		faults.put(63, SBMLTestSuiteTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('0.5' for reactant 'FDP' in reaction 'Vgol') or stoichiometryMath not handled in VCell at this time.
+		faults.put(81, SBMLTestSuiteTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('9.967E-4' for reactant 'ATP_C' in reaction 'PIP5kinase') or stoichiometryMath not handled in VCell at this time.
+		faults.put(112, SBMLTestSuiteTest.FAULT.UNCATEGORIZED);  // cause:  null
+		faults.put(145, SBMLTestSuiteTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('0.001' for reactant 'Ca_ER' in reaction 'R9') or stoichiometryMath not handled in VCell at this time.
+		faults.put(151, SBMLTestSuiteTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('0.5' for product 'x13' in reaction 'R23') or stoichiometryMath not handled in VCell at this time.
+		faults.put(154, SBMLTestSuiteTest.FAULT.DELAY);  // cause:  UnsupportedConstruct: unsupported SBML element 'delay' in expression ' <math><apply><times/><ci> compartment </ci><ci> beta_y </ci><ci> psi </ci><apply><csymbol encoding="text" de
+		faults.put(155, SBMLTestSuiteTest.FAULT.DELAY);  // cause:  UnsupportedConstruct: unsupported SBML element 'delay' in expression ' <math><apply><times/><ci> compartment </ci><ci> beta_y </ci><ci> psi </ci><apply><csymbol encoding="text" de
+		faults.put(196, SBMLTestSuiteTest.FAULT.DELAY);  // cause:  UnsupportedConstruct: unsupported SBML element 'delay' in expression ' <math><apply><times/><ci> vM4 </ci><apply><divide/><apply><times/><apply><plus/><cn> 1 </cn><apply><divide/>
+		faults.put(199, SBMLTestSuiteTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('0.5' for reactant 'NADPH' in reaction 'r4') or stoichiometryMath not handled in VCell at this time.
+		faults.put(206, SBMLTestSuiteTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('0.1' for product 's6o' in reaction 'v10') or stoichiometryMath not handled in VCell at this time.
+		faults.put(232, SBMLTestSuiteTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('0.5' for reactant 'O2' in reaction 'vresp') or stoichiometryMath not handled in VCell at this time.
+		faults.put(244, SBMLTestSuiteTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('0.5' for reactant 'FBP' in reaction 'e_Emp') or stoichiometryMath not handled in VCell at this time.
+		faults.put(245, SBMLTestSuiteTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('0.978' for product 's_pyr' in reaction 'r1') or stoichiometryMath not handled in VCell at this time.
+		faults.put(246, SBMLTestSuiteTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('0.001' for product 'Ca_in' in reaction 'vo') or stoichiometryMath not handled in VCell at this time.
+		faults.put(248, SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Unable to create and add rate rule to VC model : 'Capillary.Capillary' is either not found in your model or is not allowed to be used in the current context. Check that you have p
+		faults.put(256, SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'XIAP_ini' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context. Check that you hav
+		faults.put(305, SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'V' to model: 'Fw_1st_step' is either not found in your model or is not allowed to be used in the current context. Check that you have provided the
+		faults.put(319, SBMLTestSuiteTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('0.02' for product 'gamma' in reaction 'r3') or stoichiometryMath not handled in VCell at this time.
+		faults.put(340, SBMLTestSuiteTest.FAULT.MATHML_PARSING);  // cause:  UnsupportedConstruct: error parsing expression ' <math><apply><gt/><piecewise><piece><apply><minus/><csymbol encoding="text" definitionURL="http://www.sbml.org/sbml/symbols/time">
+		faults.put(342, SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'TGF_beta_dose_mol_per_cell' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context.
+		faults.put(353, SBMLTestSuiteTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('12345.7' for reactant 'cpd_C00369Glc_CS' in reaction 'rn_R02112CS_G2') or stoichiometryMath not handled in VCell at this time.
+		faults.put(383, SBMLTestSuiteTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('1.5' for product 'PGA' in reaction 'PGA_prod_Vo') or stoichiometryMath not handled in VCell at this time.
+		faults.put(384, SBMLTestSuiteTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('1.5' for product 'PGA' in reaction 'PGA_prod_Vo') or stoichiometryMath not handled in VCell at this time.
+		faults.put(385, SBMLTestSuiteTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('1.5' for product 'PGA' in reaction 'PGA_prod_Vo') or stoichiometryMath not handled in VCell at this time.
+		faults.put(386, SBMLTestSuiteTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('1.5' for product 'PGA' in reaction 'PGA_prod_Vo') or stoichiometryMath not handled in VCell at this time.
+		faults.put(387, SBMLTestSuiteTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('1.5' for product 'PGA' in reaction 'PGA_prod_Vo') or stoichiometryMath not handled in VCell at this time.
+		faults.put(388, SBMLTestSuiteTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('0.6' for product 'Ru5P' in reaction 'GAP2Ru5P') or stoichiometryMath not handled in VCell at this time.
+		faults.put(392, SBMLTestSuiteTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('0.5' for reactant 'ATP' in reaction 'RuBisCO_6_O2') or stoichiometryMath not handled in VCell at this time.
+		faults.put(415, SBMLTestSuiteTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('0.574' for product 'species_7' in reaction 'reaction_1') or stoichiometryMath not handled in VCell at this time.
+		faults.put(426, SBMLTestSuiteTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('0.08' for reactant 'species_31' in reaction 'reaction_28') or stoichiometryMath not handled in VCell at this time.
+		faults.put(429, SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'parameter_18' to model: 'UNRESOLVED.Size' is either not found in your model or is not allowed to be used in the current context. Check that you hav
+		faults.put(457, SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'parameter_1' to model: 'UNRESOLVED.Size' is either not found in your model or is not allowed to be used in the current context. Check that you have
+		faults.put(463, SBMLTestSuiteTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('8.5' for reactant 'species_14' in reaction 'reaction_11') or stoichiometryMath not handled in VCell at this time.
+		faults.put(468, SBMLTestSuiteTest.FAULT.UNCATEGORIZED);  // cause:  found more than one SBase match for sid=unitime, matched [org.vcell.sbml.vcell.SBMLSymbolMapping$SBaseWrapper@2c4d648b, org.vcell.sbml.vcell.SBMLSymbolMapping$SBaseWrapper@7d7dd2b
+		faults.put(469, SBMLTestSuiteTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('1.5' for reactant 's_1372' in reaction 'r_1230') or stoichiometryMath not handled in VCell at this time.
+		faults.put(470, SBMLTestSuiteTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('1.5' for reactant 's_1372' in reaction 'r_1230') or stoichiometryMath not handled in VCell at this time.
+		faults.put(471, SBMLTestSuiteTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('4.33333333333333' for reactant 's_0056' in reaction 'r_1052') or stoichiometryMath not handled in VCell at this time.
+		faults.put(472, SBMLTestSuiteTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('4.33333333333333' for reactant 's_0056' in reaction 'r_1052') or stoichiometryMath not handled in VCell at this time.
+		faults.put(473, SBMLTestSuiteTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('1.8' for reactant 's_0595' in reaction 'r_1014') or stoichiometryMath not handled in VCell at this time.
+		faults.put(474, SBMLTestSuiteTest.FAULT.UNCATEGORIZED);  // cause:  found more than one SBase match for sid=v, matched [org.vcell.sbml.vcell.SBMLSymbolMapping$SBaseWrapper@5d2c4564, org.vcell.sbml.vcell.SBMLSymbolMapping$SBaseWrapper@4f269c94]
+		faults.put(496, SBMLTestSuiteTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('1.1358' for reactant 's_0001' in reaction 'r_1812') or stoichiometryMath not handled in VCell at this time.
+		faults.put(497, SBMLTestSuiteTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('1.1358' for reactant 's_0001' in reaction 'r_1812') or stoichiometryMath not handled in VCell at this time.
+		faults.put(499, SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Metabolite_9' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context. Check that you
+		faults.put(520, SBMLTestSuiteTest.FAULT.UNCATEGORIZED);  // cause:  OverallWarning: missing or unexpected value attribute 'NaN' for SBML object id T
+		faults.put(534, SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Metabolite_6' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context. Check that you
+		faults.put(535, SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Metabolite_3' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context. Check that you
+		faults.put(536, SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Metabolite_80' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context. Check that yo
+		faults.put(537, SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Metabolite_40' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context. Check that yo
+		faults.put(542, SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Unable to create and add rate rule to VC model : 'r77' is either not found in your model or is not allowed to be used in the current context. Check that you have provided the corr
+		faults.put(547, SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Compartment_3' to model: 'UNRESOLVED.Size' is either not found in your model or is not allowed to be used in the current context. Check that you ha
+		faults.put(556, SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Unable to create and add rate rule to VC model : 'r0' is either not found in your model or is not allowed to be used in the current context. Check that you have provided the corre
+		faults.put(562, SBMLTestSuiteTest.FAULT.QUAL_PACKAGE);  // cause: Unable to import the SBML file. The model includes elements of SBML extension 'qual', which is required for simulating the model but is not supported.
+		faults.put(570, SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Unable to create and add rate rule to VC model : 'reaction_4' is either not found in your model or is not allowed to be used in the current context. Check that you have provided t
+		faults.put(575, SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Unable to create and add rate rule to VC model : 'J21' is either not found in your model or is not allowed to be used in the current context. Check that you have provided the corr
+		faults.put(577, SBMLTestSuiteTest.FAULT.MATHML_PARSING);  // cause:  UnsupportedConstruct: error parsing expression ' <math><piecewise><piece><cn> 1 </cn><apply><lt/><csymbol encoding="text" definitionURL="http://www.sbml.org/sbml/symbols/time"> ti
+		faults.put(578, SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Unable to create and add rate rule to VC model : 'v_r33' is either not found in your model or is not allowed to be used in the current context. Check that you have provided the co
+		faults.put(589, SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Metabolite_17' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context. Check that yo
+		faults.put(592, SBMLTestSuiteTest.FAULT.QUAL_PACKAGE);  // cause: Unable to import the SBML file. The model includes elements of SBML extension 'qual', which is required for simulating the model but is not supported.
+		faults.put(593, SBMLTestSuiteTest.FAULT.QUAL_PACKAGE);  // cause: Unable to import the SBML file. The model includes elements of SBML extension 'qual', which is required for simulating the model but is not supported.
+		faults.put(599, SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Metabolite_1' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context. Check that you
+		faults.put(608, SBMLTestSuiteTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('0.5' for reactant 'x_18' in reaction 'R_18') or stoichiometryMath not handled in VCell at this time.
+		faults.put(613, SBMLTestSuiteTest.FAULT.COMP_PACKAGE);  // cause: Unable to import the SBML file. The model includes elements of SBML extension 'comp', which is required for simulating the model but is not supported.
+		faults.put(627, SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Metabolite_123' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context. Check that y
+		faults.put(628, SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Metabolite_8' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context. Check that you
+		faults.put(632, SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'k4b' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context. Check that you have pro
+		faults.put(696, SBMLTestSuiteTest.FAULT.MATHML_PARSING);  // cause:  Error adding Lambda function UnsupportedConstruct: error parsing expression ' <math><notanumber/></math>': node type 'notanumber' not supported yet
+		faults.put(705, SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Metabolite_21' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context. Check that yo
+		faults.put(706, SBMLTestSuiteTest.FAULT.UNCATEGORIZED);  // cause:  found more than one SBase match for sid=v, matched [org.vcell.sbml.vcell.SBMLSymbolMapping$SBaseWrapper@67cc48df, org.vcell.sbml.vcell.SBMLSymbolMapping$SBaseWrapper@483ac21f]
+		faults.put(710, SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Metabolite_0_0' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context. Check that y
+		faults.put(731, SBMLTestSuiteTest.FAULT.UNCATEGORIZED);  // cause:  OverallWarning: missing or unexpected value attribute '-Infinity' for SBML object id log_Treg
+		faults.put(739, SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Metabolite_19' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context. Check that yo
+		faults.put(764, SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Metabolite_3' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context. Check that you
+		faults.put(775, SBMLTestSuiteTest.FAULT.MATHML_PARSING);  // cause:  Error adding Lambda function UnsupportedConstruct: error parsing expression ' <math><notanumber/></math>': node type 'notanumber' not supported yet
+		faults.put(804, SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Metabolite_1' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context. Check that you
+		faults.put(808, SBMLTestSuiteTest.FAULT.MATHML_PARSING);  // cause:  UnsupportedConstruct: error parsing expression ' <math><piecewise><piece><apply><divide/><ci> ModelValue_28 </ci><ci> ModelValue_30 </ci></apply><apply><and/><apply><and/><apply><
+		faults.put(814, SBMLTestSuiteTest.FAULT.MATHML_PARSING);  // cause:  UnsupportedConstruct: error parsing expression ' <math><apply><and/><apply><and/><apply><eq/><piecewise><piece><apply><minus/><csymbol encoding="text" definitionURL="http://www.sb
+		faults.put(822, SBMLTestSuiteTest.FAULT.MATHML_PARSING);  // cause:  UnsupportedConstruct: error parsing expression ' <math><apply><and/><apply><geq/><csymbol encoding="text" definitionURL="http://www.sbml.org/sbml/symbols/time"> time </csymbol><cn
+		faults.put(828, SBMLTestSuiteTest.FAULT.MATHML_PARSING);  // cause:  UnsupportedConstruct: error parsing expression ' <math><apply><eq/><piecewise><piece><apply><minus/><csymbol encoding="text" definitionURL="http://www.sbml.org/sbml/symbols/time">
+		faults.put(829, SBMLTestSuiteTest.FAULT.MATHML_PARSING);  // cause:  UnsupportedConstruct: error parsing expression ' <math><apply><eq/><piecewise><piece><apply><minus/><csymbol encoding="text" definitionURL="http://www.sbml.org/sbml/symbols/time">
+		faults.put(832, SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Metabolite_4' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context. Check that you
+		faults.put(841, SBMLTestSuiteTest.FAULT.DELAY);  // cause:  UnsupportedConstruct: unsupported SBML element 'delay' in expression ' <math><apply><times/><ci> compartment </ci><apply><ci> Function_for_miRNA_Activation_Transcription_Factor </
+		faults.put(858, SBMLTestSuiteTest.FAULT.MATHML_PARSING);  // cause:  UnsupportedConstruct: error parsing expression ' <math><apply><minus/><piecewise><piece><apply><minus/><csymbol encoding="text" definitionURL="http://www.sbml.org/sbml/symbols/tim
+		faults.put(859, SBMLTestSuiteTest.FAULT.MATHML_PARSING);  // cause:  UnsupportedConstruct: error parsing expression ' <math><apply><minus/><piecewise><piece><apply><minus/><csymbol encoding="text" definitionURL="http://www.sbml.org/sbml/symbols/tim
+		faults.put(867, SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Metabolite_9' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context. Check that you
+		faults.put(872, SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'beta' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context. Check that you have pr
+		faults.put(908, SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Metabolite_2' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context. Check that you
+		faults.put(925, SBMLTestSuiteTest.FAULT.UNCATEGORIZED);  // cause:  OverallWarning: missing or unexpected value attribute '-Infinity' for SBML object id log_time
+		faults.put(952, SBMLTestSuiteTest.FAULT.MATHML_PARSING);  // cause:  Error adding Lambda function UnsupportedConstruct: error parsing expression ' <math><notanumber/></math>': node type 'notanumber' not supported yet
+		faults.put(956, SBMLTestSuiteTest.FAULT.MATHML_PARSING);  // cause:  Error adding Lambda function UnsupportedConstruct: error parsing expression ' <math><notanumber/></math>': node type 'notanumber' not supported yet
+		faults.put(961, SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'rateOf_re15' to model: 're15' is either not found in your model or is not allowed to be used in the current context. Check that you have provided t
+		faults.put(969, SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Metabolite_11' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context. Check that yo
+		faults.put(1005, SBMLTestSuiteTest.FAULT.MATHML_PARSING);  // cause:  UnsupportedConstruct: error parsing expression ' <math><piecewise><piece><cn> 1 </cn><apply><and/><apply><geq/><piecewise><piece><apply><minus/><csymbol encoding="text" definition
+		faults.put(1021, SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Metabolite_0' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context. Check that you
+		faults.put(1026, SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Summary_flux_to_RBC' to model: 'Vin' is either not found in your model or is not allowed to be used in the current context. Check that you have pro
+		faults.put(1027, SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Compartment_10' to model: 'UNRESOLVED.Size' is either not found in your model or is not allowed to be used in the current context. Check that you h
+		faults.put(1028, SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Compartment_10' to model: 'UNRESOLVED.Size' is either not found in your model or is not allowed to be used in the current context. Check that you h
+		faults.put(1029, SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Compartment_10' to model: 'UNRESOLVED.Size' is either not found in your model or is not allowed to be used in the current context. Check that you h
+		faults.put(1039, SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Compartment_10' to model: 'UNRESOLVED.Size' is either not found in your model or is not allowed to be used in the current context. Check that you h
+		faults.put(1040, SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Summary_flux_to_RBC' to model: 'Vin' is either not found in your model or is not allowed to be used in the current context. Check that you have pro
+		faults.put(1046, SBMLTestSuiteTest.FAULT.FBC_PACKAGE);  // cause: Unable to import the SBML file. The model includes elements of SBML extension 'fbc', which is required for simulating the model but is not supported.
+		faults.put(1061, SBMLTestSuiteTest.FAULT.FBC_PACKAGE);  // cause: Unable to import the SBML file. The model includes elements of SBML extension 'fbc', which is required for simulating the model but is not supported.
+		faults.put(1062, SBMLTestSuiteTest.FAULT.FBC_PACKAGE);  // cause: Unable to import the SBML file. The model includes elements of SBML extension 'fbc', which is required for simulating the model but is not supported.
+		faults.put(1063, SBMLTestSuiteTest.FAULT.FBC_PACKAGE);  // cause: Unable to import the SBML file. The model includes elements of SBML extension 'fbc', which is required for simulating the model but is not supported.
+		faults.put(1064, SBMLTestSuiteTest.FAULT.FBC_PACKAGE);  // cause: Unable to import the SBML file. The model includes elements of SBML extension 'fbc', which is required for simulating the model but is not supported.
 		return faults;
 	}
 
@@ -215,13 +215,13 @@ public class BMDB_SBMLImportTest {
 	@Test
 	public void testSbmlTestSuiteImport() throws Exception{
 		System.out.println("testing Biomodels DB model "+biomodelsDbModelNumber);
-		//if (knownFaults().get(biomodelsDbModelNumber) != SBMLTestSuiteImportTest.FAULT.REACTANT_AND_MODIFIER) { System.out.println("skipping"); return; }
+		//if (knownFaults().get(biomodelsDbModelNumber) != SBMLTestSuiteTest.FAULT.REACTANT_AND_MODIFIER) { System.out.println("skipping"); return; }
 		InputStream testFileInputStream = BMDB_SBML_Files.getBiomodelsDbCuratedModel(biomodelsDbModelNumber);
 		TestVCLogger vcl = new TestVCLogger();
 		boolean bValidateSBML = true;
 		SBMLImporter importer = new SBMLImporter(testFileInputStream, vcl, bValidateSBML);
 		boolean bFailed = false;
-		SBMLTestSuiteImportTest.FAULT knownFault = knownFaults().get(biomodelsDbModelNumber);
+		SBMLTestSuiteTest.FAULT knownFault = knownFaults().get(biomodelsDbModelNumber);
 		Exception exception = null;
 		try {
 			BioModel bioModel = importer.getBioModel();
@@ -250,30 +250,30 @@ public class BMDB_SBMLImportTest {
 			cause = cause.replaceAll("\\s+", " ");
 			cause = cause.replaceAll("> <","><");
 			cause = cause.substring(0, Math.min(cause.length(), 180));
-			SBMLTestSuiteImportTest.FAULT fault = SBMLTestSuiteImportTest.FAULT.UNCATEGORIZED;
+			SBMLTestSuiteTest.FAULT fault = SBMLTestSuiteTest.FAULT.UNCATEGORIZED;
 			if (cause.contains("already defined as a Reactant or a Catalyst of the reaction") ||
 				cause.contains("already defined as a Product or a Catalyst of the reaction")){
-				fault = SBMLTestSuiteImportTest.FAULT.REACTANT_AND_MODIFIER;
+				fault = SBMLTestSuiteTest.FAULT.REACTANT_AND_MODIFIER;
 			}else if (cause.contains("unsupported SBML element 'delay'")){
-				fault = SBMLTestSuiteImportTest.FAULT.DELAY;
+				fault = SBMLTestSuiteTest.FAULT.DELAY;
 			}else if (cause.contains("Non-integer stoichiometry")){
-				fault = SBMLTestSuiteImportTest.FAULT.NONINTEGER_STOICH;
+				fault = SBMLTestSuiteTest.FAULT.NONINTEGER_STOICH;
 			}else if (cause.contains("is either not found in your model")){
-				fault = SBMLTestSuiteImportTest.FAULT.EXPRESSION_BINDING_EXCEPTION;
+				fault = SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION;
 			}else if (cause.contains("SBML extension 'qual'")){
-				fault = SBMLTestSuiteImportTest.FAULT.QUAL_PACKAGE;
+				fault = SBMLTestSuiteTest.FAULT.QUAL_PACKAGE;
 			}else if (cause.contains("SBML extension 'comp'")){
-				fault = SBMLTestSuiteImportTest.FAULT.COMP_PACKAGE;
+				fault = SBMLTestSuiteTest.FAULT.COMP_PACKAGE;
 			}else if (cause.contains("SBML extension 'fbc'")){
-				fault = SBMLTestSuiteImportTest.FAULT.FBC_PACKAGE;
+				fault = SBMLTestSuiteTest.FAULT.FBC_PACKAGE;
 			}else if (cause.contains("error parsing expression")){
-				fault = SBMLTestSuiteImportTest.FAULT.MATHML_PARSING;
+				fault = SBMLTestSuiteTest.FAULT.MATHML_PARSING;
 			}
 			try (BufferedWriter codeProblemFileWriter = new BufferedWriter(new FileWriter(codeKnownProblemFile, true));
 				 BufferedWriter csvProblemFileWriter = new BufferedWriter(new FileWriter(csvKnownProblemFile, true));
 			) {
 				codeProblemFileWriter.write("faults.put(" + biomodelsDbModelNumber +
-						", SBMLTestSuiteImportTest.FAULT."+fault.name()+");  // cause: " + cause + "\n");
+						", SBMLTestSuiteTest.FAULT."+fault.name()+");  // cause: " + cause + "\n");
 				csvProblemFileWriter.write(biomodelsDbModelNumber+"|"+cause+"\n");
 			}
 			if (knownFault == null) {
@@ -301,7 +301,7 @@ public class BMDB_SBMLImportTest {
 			for (int model_id : BMDB_SBML_Files.allCuratedModels) {
 				Element row = new Element("BioModelInfo");
 				row.setAttribute("ID",String.format("BIOMD%010d", model_id));
-				SBMLTestSuiteImportTest.FAULT fault = knownFaults().get(model_id);
+				SBMLTestSuiteTest.FAULT fault = knownFaults().get(model_id);
 				row.setAttribute("Supported", (fault == null) ? "true" : "false");
 				if (slowModelSet().contains(model_id)){
 					row.setAttribute("Slow", "true");
