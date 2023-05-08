@@ -206,7 +206,7 @@ public class LangevinLngvWriter {
 	private static void writeTransitionReactions(StringBuilder sb) {
 		for(Map.Entry<LangevinParticleJumpProcess, SubDomain> entry : particleJumpProcessMap.entrySet()) {
 			LangevinParticleJumpProcess lpjp = entry.getKey();
-			SubDomain subDomain = entry.getValue();
+//			SubDomain subDomain = entry.getValue();
 			Subtype subtype = lpjp.getSubtype();
 			if(Subtype.TRANSITION == subtype) {
 				ParticleSpeciesPattern pspReactant = null;
@@ -228,22 +228,27 @@ public class LangevinLngvWriter {
 					}
 				}
 				
+				Expression kOn = null;
+				try {
+					kOn = lpjp.getExpressions()[0];	// TODO: identify the right expression
+				} catch(Exception e) {
+					throw new RuntimeException("Reaction Rate is wrong");
+				}
 				// TODO: some of these we won't need, get rid of them at the end 
-				ParticleMolecularTypePattern pmtpTransitionReactant = null;
-				ParticleMolecularType pmtTransitionReactant = null;
+				ParticleMolecularTypePattern pmtpTransitionReactant = null;			// transition reactant molecule
 				ParticleMolecularTypePattern pmtpTransitionProduct = null;
-				ParticleMolecularType pmtTransitionProduct = null;
-				ParticleMolecularTypePattern pmtpConditionReactant = null;
-				ParticleMolecularType pmtConditionReactant = null;
+				ParticleMolecularTypePattern pmtpConditionReactant = null;			// condition reactant molecule
+				ParticleMolecularComponentPattern pmcpTransitionReactant = null;	// transition reactant site
+				ParticleComponentStateDefinition pcsdTransitionReactant = null;		// begin transition state
+				ParticleComponentStateDefinition pcsdTransitionProduct = null;		// end transition state
+				ParticleMolecularComponentPattern pmcpConditionReactant = null;		// condition reactant site
+				ParticleComponentStateDefinition pcsdConditionReactant = null;		// condition state
+
 				TransitionCondition transitionCondition = lpjp.getTransitionCondition();
 				if(TransitionCondition.BOUND == transitionCondition) {
 					if(pspReactant.getParticleMolecularTypePatterns().size() == 1) {
-						// illegal at this point, but we may change our mind
+						// illegal, bound transitions must have separate condition and transition molecules by convention
 						throw new RuntimeException("Bound conditional transition reactant size must be 2");
-//						pmtpReactant = pspReactant.getParticleMolecularTypePatterns().get(0);
-//						pmtReactant = pmtpReactant.getMolecularType();
-//						pmtpProduct = pspProduct.getParticleMolecularTypePatterns().get(0);
-//						pmtProduct = pmtpProduct.getMolecularType();
 					} else if(pspReactant.getParticleMolecularTypePatterns().size() == 2) {
 						ParticleMolecularTypePattern pmtpReactant0 = pspReactant.getParticleMolecularTypePatterns().get(0);
 						ParticleMolecularType pmtReactant0 = pmtpReactant0.getMolecularType();
@@ -260,53 +265,76 @@ public class LangevinLngvWriter {
 							pmtpProduct1 = pspProduct.getParticleMolecularTypePatterns().get(0);
 							pmtProduct1 = pmtpProduct1.getMolecularType();
 						}
-						if(pmtpReactant0.compareEqual(pmtpProduct0)) {			// this is the condition molecule
-							pmtpTransitionReactant = pmtpReactant1;				// this is the transitioning molecule
-							pmtTransitionReactant = pmtReactant1;
+						if(pmtpReactant0.compareEqual(pmtpProduct0)) {
+							pmtpTransitionReactant = pmtpReactant1;				// transition reactant molecule
+							pmtpTransitionProduct = pmtpProduct1;				// transition product molecule
 							pmtpConditionReactant = pmtpReactant0;				// this is the condition molecule
-							pmtConditionReactant = pmtReactant0;
-						} else if(pmtpReactant1.compareEqual(pmtpProduct1)) {	// this is the condition molecule
-							pmtpTransitionReactant = pmtpReactant0;				// this is the transitioning molecule
-							pmtTransitionReactant = pmtReactant0;
+						} else if(pmtpReactant1.compareEqual(pmtpProduct1)) {
+							pmtpTransitionReactant = pmtpReactant0;				// transition reactant molecule
+							pmtpTransitionProduct = pmtpProduct0;				// transition product molecule
 							pmtpConditionReactant = pmtpReactant1;				// this is the condition molecule
-							pmtConditionReactant = pmtReactant1;
 						} else {
 							throw new RuntimeException("No matching condition found for bound conditional transition");
 						}
 					} else {
 						throw new RuntimeException("Bound conditional transition reactant size must be 2");
 					}
-					// TODO: now that we know which molecule is the transitional and which is the binding condition,
-					// extract the site and the state for both
-					
-					System.out.println("here");
+					// identify the binding condition site and state 
+					for(ParticleMolecularComponentPattern pmcp : pmtpConditionReactant.getMolecularComponentPatternList()) {
+						if(pmcp.getComponentStatePattern().isAny()) {
+							continue;
+						}
+						ParticleComponentStatePattern pcsp = pmcp.getComponentStatePattern();
+						pmcpConditionReactant = pmcp;
+						pcsdConditionReactant = pcsp.getParticleComponentStateDefinition();
+						break;		// found the one and only condition
+					}
 				} else if(TransitionCondition.NONE == transitionCondition) {
 					pmtpTransitionReactant = pspReactant.getParticleMolecularTypePatterns().get(0);
-					pmtTransitionReactant = pmtpTransitionReactant.getMolecularType();
 					pmtpTransitionProduct = pspProduct.getParticleMolecularTypePatterns().get(0);
-					pmtTransitionProduct = pmtpTransitionProduct.getMolecularType();
-					// TODO: extract the transition site and state
-					
-					System.out.println("here");
 				} else if(TransitionCondition.FREE == transitionCondition) {
 					pmtpTransitionReactant = pspReactant.getParticleMolecularTypePatterns().get(0);
-					pmtTransitionReactant = pmtpTransitionReactant.getMolecularType();
 					pmtpTransitionProduct = pspProduct.getParticleMolecularTypePatterns().get(0);
-					pmtTransitionProduct = pmtpTransitionProduct.getMolecularType();
-					// TODO: extract the transition site and state
-					
-					System.out.println("here");
 				} else {
 					throw new RuntimeException("Unexpected transition condition");
 				}
 				
+				// identify the transition site and the starting and ending state 
+				for(ParticleMolecularComponentPattern pmcp : pmtpTransitionReactant.getMolecularComponentPatternList()) {
+					if(pmcp.getComponentStatePattern().isAny()) {
+						continue;
+					}
+					ParticleComponentStatePattern pcsp = pmcp.getComponentStatePattern();
+					pmcpTransitionReactant = pmcp;
+					pcsdTransitionReactant = pcsp.getParticleComponentStateDefinition();
+					break;		// found the one and only transition
+				}
+				for(ParticleMolecularComponentPattern pmcp : pmtpTransitionProduct.getMolecularComponentPatternList()) {
+					if(pmcp.getComponentStatePattern().isAny()) {
+						continue;
+					}
+					ParticleComponentStatePattern pcsp = pmcp.getComponentStatePattern();
+					pcsdTransitionProduct = pcsp.getParticleComponentStateDefinition();
+					break;		// found the one and only transition
+				}
 
-
-				
-				
-			}
+				// finally build the transition block
+				sb.append("'").append(lpjp.getName()).append("' ::     ");
+				sb.append("'").append(pmtpTransitionReactant.getMolecularType().getName()).append("' : '")
+					.append(pmcpTransitionReactant.getMolecularComponent().getName()).append("' : '")
+					.append(pcsdTransitionReactant.getName());
+				sb.append("' --> '");
+				sb.append(pcsdTransitionProduct.getName());
+				sb.append("'  Rate ").append(kOn.infix());
+				sb.append("  Condition ").append(transitionCondition.columnName);
+				if(TransitionCondition.BOUND == transitionCondition) {
+					sb.append(" '").append(pmtpConditionReactant.getMolecularType().getName()).append("' : '")
+					.append(pmcpConditionReactant.getMolecularComponent().getName()).append("' : '")
+					.append(pcsdConditionReactant);
+				}
+				sb.append("\n");
+			}						// end if Subtype.TRANSITION
 		}
-		
 		String ret = sb.toString();
 		System.out.println(ret);
 		return;
@@ -322,7 +350,7 @@ public class LangevinLngvWriter {
 		}
 		for(Map.Entry<LangevinParticleJumpProcess, SubDomain> entry : particleJumpProcessMap.entrySet()) {
 			LangevinParticleJumpProcess lpjp = entry.getKey();
-			SubDomain subDomain = entry.getValue();
+//			SubDomain subDomain = entry.getValue();
 			Subtype subtype = lpjp.getSubtype();
 			if(Subtype.CREATION == subtype) {
 				for(Action action : lpjp.getActions()) {
@@ -331,7 +359,7 @@ public class LangevinLngvWriter {
 						Variable var = action.getVar();
 						Expression kCreate = null;
 						try {
-							kCreate = lpjp.getExpressions()[0];
+							kCreate = lpjp.getExpressions()[0];	// TODO: identify the right expression
 						} catch(Exception e) {
 							throw new RuntimeException("Reaction Rate is wrong");
 						}
@@ -354,7 +382,7 @@ public class LangevinLngvWriter {
 						Variable var = action.getVar();
 						Expression kDecay = null;
 						try {
-							kDecay = lpjp.getExpressions()[0];
+							kDecay = lpjp.getExpressions()[0];	// TODO: identify the right expression
 						} catch(Exception e) {
 							throw new RuntimeException("Reaction Rate is wrong");
 						}
