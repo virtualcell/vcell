@@ -11,6 +11,7 @@
 package cbit.vcell.export.server;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.List;
 
 import org.vcell.api.common.events.ExportVariableSpecs;
@@ -23,7 +24,6 @@ public class VariableSpecs implements Serializable {
 /**
  * This method was created in VisualAge.
  * @param variableNames java.lang.String[]
- * @param scaleSettings cbit.image.Range[]
  */
 public VariableSpecs(String[] variableNames, int modeID) {
 	this.variableNames = variableNames;
@@ -41,34 +41,31 @@ public VariableSpecs (List<String> variableNames, int modeID){
  * @param object java.lang.Object
  */
 public boolean equals(Object object) {
-	if (object instanceof VariableSpecs) {
-		VariableSpecs variableSpecs = (VariableSpecs)object;
-		if (modeID == variableSpecs.getModeID()) {
-			if (variableNames.length == variableSpecs.getVariableNames().length) {
-				for (int i = 0; i < variableNames.length; i++){
-					if (! variableNames[i].equals(variableSpecs.getVariableNames()[i])) {
-						return false;
-					}
-				}
-				return true;
-			}
-		}
-	}
-	return false;
+	if (!(object instanceof VariableSpecs)) return false;
+	VariableSpecs variableSpecs = (VariableSpecs)object;
+	return (
+			this.modeID == variableSpecs.getModeID()
+			&& this.getNumVariableNames() == variableSpecs.getNumVariableNames()
+			&& Arrays.equals(this.variableNames, variableSpecs.getVariableNames())
+	);
 }
 /**
  * This method was created in VisualAge.
  * @return int
  */
 public int getModeID() {
-	return modeID;
+	return this.modeID;
 }
 /**
  * This method was created in VisualAge.
  * @return java.lang.String[]
  */
 public String[] getVariableNames() {
-	return variableNames;
+	return this.variableNames;
+}
+
+public int getNumVariableNames(){
+	return this.variableNames.length;
 }
 /**
  * Insert the method's description here.

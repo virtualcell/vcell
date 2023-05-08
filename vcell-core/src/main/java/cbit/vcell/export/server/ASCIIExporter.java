@@ -439,29 +439,33 @@ private class PointsCurvesSlices {
  * This method was created in VisualAge.
  * @throws IOException 
  */
-private List<ExportOutput> exportPDEData(OutputContext outputContext,long jobID, User user, DataServerImpl dataServerImpl,
+private List<ExportOutput> exportPDEData(OutputContext outputContext, long jobID, User user, DataServerImpl dataServerImpl,
 		final VCDataIdentifier orig_vcdID, VariableSpecs variableSpecs, TimeSpecs timeSpecs, 
 		GeometrySpecs geometrySpecs, ASCIISpecs asciiSpecs,String contextName,FileDataContainerManager fileDataContainerManager) 
 						throws DataAccessException, IOException {
-						
-	
+	final int NUM_SIMS, NUM_PARAMETER_SCANS, END_TIME_INDEX, START_TIME_INDEX, TIME_RANGE;
+	double numTotalExportOperations, minGeometricOperations, progressCounter = 0;
 	ExportSpecs.SimNameSimDataID[] simNameSimDataIDs = asciiSpecs.getSimNameSimDataIDs();
-	Vector<ExportOutput[]> exportOutputV = new Vector<ExportOutput[]>();
-	double progressCounter = 0;
-	final int SIM_COUNT = simNameSimDataIDs.length;
-	final int PARAMSCAN_COUNT = (asciiSpecs.getExportMultipleParamScans() != null?asciiSpecs.getExportMultipleParamScans().length:1);
-	final int endTimeIndex = timeSpecs.getEndTimeIndex();
-	final int beginTimeIndex = timeSpecs.getBeginTimeIndex();
-	final int TIME_COUNT = endTimeIndex - beginTimeIndex + 1;
+	List<ExportOutput[]> exportOutputV = new Vector<>(); // if no need for synchronization, consider changing to ArrayList
 
-	double TOTAL_EXPORTS_OPS = 0;
+	END_TIME_INDEX = timeSpecs.getEndTimeIndex();
+	START_TIME_INDEX = timeSpecs.getBeginTimeIndex();
+	TIME_RANGE = END_TIME_INDEX - START_TIME_INDEX + 1;
+	NUM_SIMS = simNameSimDataIDs.length;
+	NUM_PARAMETER_SCANS = (asciiSpecs.getExportMultipleParamScans() == null ? 1 :
+			asciiSpecs.getExportMultipleParamScans().length );
+
+	minGeometricOperations = NUM_SIMS * NUM_PARAMETER_SCANS * variableSpecs.getNumVariableNames();
 	switch (geometrySpecs.getModeID()) {
 		case GEOMETRY_SELECTIONS:
-			TOTAL_EXPORTS_OPS = SIM_COUNT*PARAMSCAN_COUNT*variableSpecs.getVariableNames().length*(geometrySpecs.getCurves().length+(geometrySpecs.getPointCount() > 0?1:0));
+			int pointCount = geometrySpecs.getPointCount() > 0 ? 1 : 0;
+			numTotalExportOperations = minGeometricOperations * (geometrySpecs.getCurves().length + pointCount);
 			break;
 		case GEOMETRY_SLICE:
-			TOTAL_EXPORTS_OPS = SIM_COUNT*PARAMSCAN_COUNT*variableSpecs.getVariableNames().length*TIME_COUNT;
+			numTotalExportOperations = minGeometricOperations * variableSpecs.getVariableNames().length*TIME_RANGE;
 			break;
+		default:
+			numTotalExportOperations = 0;
 	}
 	File hdf5TempFile = null;
 	if(asciiSpecs.getCSVRoiLayout() == ASCIISpecs.CsvRoiLayout.time_sim_var){
@@ -475,28 +479,28 @@ private List<ExportOutput> exportPDEData(OutputContext outputContext,long jobID,
 			hdf5FileID = H5.H5Fcreate(hdf5TempFile.getAbsolutePath(), HDF5Constants.H5F_ACC_TRUNC,HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
 		}
 //		TreeMap<VCDataIdentifier,TreeMap<String,PointsCurvesSlices>> simsVarnamesDataMap = new TreeMap<VCDataIdentifier,TreeMap<String,PointsCurvesSlices>>();
-		PointsCurvesSlices[][] pointsCurvesSlices = new PointsCurvesSlices[SIM_COUNT][variableSpecs.getVariableNames().length];
+		PointsCurvesSlices[][] pointsCurvesSlices = new PointsCurvesSlices[NUM_SIMS][variableSpecs.getVariableNames().length];
 		for(int i=0;i< pointsCurvesSlices.length;i++) {
 			for(int j=0;j< pointsCurvesSlices[i].length;j++) {
 				pointsCurvesSlices[i][j] = new PointsCurvesSlices();
 			}
 		}
-		for (int v = 0; v < SIM_COUNT; v++) {
+		for (int v = 0; v < NUM_SIMS; v++) {
 			int simJobIndex = simNameSimDataIDs[v].getDefaultJobIndex();
 			VCDataIdentifier vcdID = simNameSimDataIDs[v].getVCDataIdentifier(simJobIndex);
 			//3 states for parameter scan
 			//1. simNameSimDataIDs[v].getExportParamScanInfo() == null, not a parameter scan
 			//2. simNameSimDataIDs[v].getExportParamScanInfo() != null and asciiSpecs.getExportMultipleParamScans() == null, parameter scan use simNameSimDataIDs[v].getDefaultVCDataIdentifier()
 			//3. simNameSimDataIDs[v].getExportParamScanInfo() != null and asciiSpecs.getExportMultipleParamScans() != null, parameter scan use simNameSimDataIDs[v].getExportParamScanInfo().getParamScanJobIndexes() loop through
-			for (int ps = 0; ps < PARAMSCAN_COUNT; ps++) {
+			for (int ps = 0; ps < NUM_PARAMETER_SCANS; ps++) {
 				if(asciiSpecs.getExportMultipleParamScans() != null){
 					simJobIndex = simNameSimDataIDs[v].getExportParamScanInfo().getParamScanJobIndexes()[asciiSpecs.getExportMultipleParamScans()[ps]];
 					vcdID = simNameSimDataIDs[v].getVCDataIdentifier(simJobIndex);
 				}
 				//Get times for each sim{paramscan} because they may be different
 				final double[] allTimes = dataServerImpl.getDataSetTimes(user, vcdID);
-				if(allTimes.length<= beginTimeIndex || allTimes.length<= endTimeIndex){
-					throw new DataAccessException("Sim '"+simNameSimDataIDs[v].getSimulationName()+"' id="+vcdID.getID()+" simJob="+simJobIndex+", time array length="+allTimes.length+" has no endTimeIndex="+endTimeIndex);
+				if(allTimes.length<= START_TIME_INDEX || allTimes.length<= END_TIME_INDEX){
+					throw new DataAccessException("Sim '"+simNameSimDataIDs[v].getSimulationName()+"' id="+vcdID.getID()+" simJob="+simJobIndex+", time array length="+allTimes.length+" has no END_TIME_INDEX="+END_TIME_INDEX);
 				}
 				String paramScanInfo = "";
 				if(simNameSimDataIDs[v].getExportParamScanInfo() != null){
@@ -518,12 +522,12 @@ private List<ExportOutput> exportPDEData(OutputContext outputContext,long jobID,
 				CartesianMesh mesh = dataServerImpl.getMesh(user, vcdID);
 
 				if(hdf5GroupID != -1) {
-					double[] subTimes = new double[endTimeIndex-beginTimeIndex+1];
-					for(int st=beginTimeIndex;st<=endTimeIndex;st++) {
-						subTimes[st-beginTimeIndex] = allTimes[st];
+					double[] subTimes = new double[TIME_RANGE];
+					for(int st=START_TIME_INDEX;st<=END_TIME_INDEX;st++) {
+						subTimes[st-START_TIME_INDEX] = allTimes[st];
 					}
 					Hdf5Utils.insertDoubles(hdf5GroupID, PCS.TIMES.name(), new long[] {subTimes.length}, subTimes);//Hdf5Utils.writeHDF5Dataset(hdf5GroupID, PCS.TIMES.name(), new long[] {subTimes.length}, subTimes,false);
-					Hdf5Utils.insertInts(hdf5GroupID, PCS.TIMEBOUNDS.name(), new long[] {2}, new int[] {beginTimeIndex,endTimeIndex});//Hdf5Utils.writeHDF5Dataset(hdf5GroupID, PCS.TIMEBOUNDS.name(), new long[] {2}, new int[] {beginTimeIndex,endTimeIndex},false);
+					Hdf5Utils.insertInts(hdf5GroupID, PCS.TIMEBOUNDS.name(), new long[] {2}, new int[] {START_TIME_INDEX,END_TIME_INDEX});//Hdf5Utils.writeHDF5Dataset(hdf5GroupID, PCS.TIMEBOUNDS.name(), new long[] {2}, new int[] {START_TIME_INDEX,END_TIME_INDEX},false);
 				}
 
 				switch (geometrySpecs.getModeID()) {
@@ -557,7 +561,7 @@ private List<ExportOutput> exportPDEData(OutputContext outputContext,long jobID,
 
 						Vector<ExportOutput> outputV = new Vector<ExportOutput>();
 						if (geometrySpecs.getPointCount() > 0) {//assemble single point data together (uses more compact formatting)
-							String dataID = "_Points_vars("+geometrySpecs.getPointCount()+")_times("+( endTimeIndex-beginTimeIndex+1)+")";
+							String dataID = "_Points_vars("+geometrySpecs.getPointCount()+")_times("+( END_TIME_INDEX-START_TIME_INDEX+1)+")";
 							//StringBuilder data1 = new StringBuilder(data.toString());
 							ExportOutput exportOutput1 = new ExportOutput(true, dataType, simID, dataID/* + variableSpecs.getVariableNames()[i]*/, fileDataContainerManager);
 							fileDataContainerManager.append(exportOutput1.getFileDataContainerID(), fileDataContainerID_header);
@@ -571,10 +575,10 @@ private List<ExportOutput> exportPDEData(OutputContext outputContext,long jobID,
 									hdf5GroupVarID = H5.H5Gcreate(hdf5GroupPointID, variableSpecs.getVariableNames()[varNameIndx],HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
 								}
 								fileDataContainerManager.append(exportOutput1.getFileDataContainerID(),
-									getPointsTimeSeries(pointsCurvesSlices[v][varNameIndx],hdf5GroupVarID,outputContext,user, dataServerImpl, vcdID, variableSpecs.getVariableNames()[varNameIndx], geometrySpecs, allTimes, beginTimeIndex, endTimeIndex, asciiSpecs.getSwitchRowsColumns(),fileDataContainerManager));
+									getPointsTimeSeries(pointsCurvesSlices[v][varNameIndx],hdf5GroupVarID,outputContext,user, dataServerImpl, vcdID, variableSpecs.getVariableNames()[varNameIndx], geometrySpecs, allTimes, START_TIME_INDEX, END_TIME_INDEX, asciiSpecs.getSwitchRowsColumns(),fileDataContainerManager));
 								fileDataContainerManager.append(exportOutput1.getFileDataContainerID(),"\n");
 								progressCounter++;
-								exportServiceImpl.fireExportProgress(jobID, orig_vcdID, "CSV", progressCounter/TOTAL_EXPORTS_OPS);
+								exportServiceImpl.fireExportProgress(jobID, orig_vcdID, "CSV", progressCounter/numTotalExportOperations);
 								if(hdf5GroupVarID != -1) {
 									H5.H5Gclose(hdf5GroupVarID);
 								}
@@ -586,7 +590,7 @@ private List<ExportOutput> exportPDEData(OutputContext outputContext,long jobID,
 
 						}
 						if(geometrySpecs.getCurves().length != 0){//assemble curve (non-single point) data together
-							String dataID = "_Curves_vars("+(geometrySpecs.getCurves().length)+")_times("+( endTimeIndex-beginTimeIndex+1)+")";
+							String dataID = "_Curves_vars("+(geometrySpecs.getCurves().length)+")_times("+( END_TIME_INDEX-START_TIME_INDEX+1)+")";
 							//StringBuilder data1 = new StringBuilder(data.toString());
 							ExportOutput exportOutput1 = new ExportOutput(true, dataType, simID, dataID/* + variableSpecs.getVariableNames()[i]*/, fileDataContainerManager);
 							fileDataContainerManager.append(exportOutput1.getFileDataContainerID(), fileDataContainerID_header);
@@ -603,10 +607,10 @@ private List<ExportOutput> exportPDEData(OutputContext outputContext,long jobID,
 								pointsCurvesSlices[v][varNameIndx].data.put(PCS.CURVES, new TreeMap<String,TreeMap<PCS,Object>>());
 								for (int s = 0; s < geometrySpecs.getCurves().length; s++) {
 									if(!GeometrySpecs.isSinglePoint(geometrySpecs.getCurves()[s])){
-										fileDataContainerManager.append(exportOutput1.getFileDataContainerID(),getCurveTimeSeries(hdf5GroupVarID,pointsCurvesSlices[v][varNameIndx],outputContext,user, dataServerImpl, vcdID, variableSpecs.getVariableNames()[varNameIndx], geometrySpecs.getCurves()[s], allTimes, beginTimeIndex, endTimeIndex, asciiSpecs.getSwitchRowsColumns(),fileDataContainerManager));
+										fileDataContainerManager.append(exportOutput1.getFileDataContainerID(),getCurveTimeSeries(hdf5GroupVarID,pointsCurvesSlices[v][varNameIndx],outputContext,user, dataServerImpl, vcdID, variableSpecs.getVariableNames()[varNameIndx], geometrySpecs.getCurves()[s], allTimes, START_TIME_INDEX, END_TIME_INDEX, asciiSpecs.getSwitchRowsColumns(),fileDataContainerManager));
 										fileDataContainerManager.append(exportOutput1.getFileDataContainerID(),"\n");
 										progressCounter++;
-										exportServiceImpl.fireExportProgress(jobID, orig_vcdID, "CSV", progressCounter/TOTAL_EXPORTS_OPS);
+										exportServiceImpl.fireExportProgress(jobID, orig_vcdID, "CSV", progressCounter/numTotalExportOperations);
 									}
 								}
 								if(hdf5GroupVarID != -1) {
@@ -629,12 +633,12 @@ private List<ExportOutput> exportPDEData(OutputContext outputContext,long jobID,
 							sliceNumber = -1;
 						}
 						String dataID = "_Slice_" + Coordinate.getNormalAxisPlaneName(geometrySpecs.getAxis()) + "_" + sliceNumber + "_";
-						ExportOutput[] output = new ExportOutput[variableSpecs.getVariableNames().length * TIME_COUNT];
-						SliceHelper sliceHelper = new SliceHelper(TIME_COUNT,(hdf5GroupID != -1),Coordinate.getNormalAxisPlaneName(geometrySpecs.getAxis()), sliceNumber, asciiSpecs.getSwitchRowsColumns(), mesh);
+						ExportOutput[] output = new ExportOutput[variableSpecs.getVariableNames().length * TIME_RANGE];
+						SliceHelper sliceHelper = new SliceHelper(TIME_RANGE,(hdf5GroupID != -1),Coordinate.getNormalAxisPlaneName(geometrySpecs.getAxis()), sliceNumber, asciiSpecs.getSwitchRowsColumns(), mesh);
 						for (int j=0;j<variableSpecs.getVariableNames().length;j++) {
 							sliceHelper.setHDF5GroupVarID(hdf5GroupID,variableSpecs.getVariableNames()[j]);
-							for (int i=0;i<TIME_COUNT;i++) {
-								StringBuilder inset = new StringBuilder(Integer.toString(i + beginTimeIndex));
+							for (int i=0;i<TIME_RANGE;i++) {
+								StringBuilder inset = new StringBuilder(Integer.toString(i + START_TIME_INDEX));
 									inset.reverse();
 									inset.append("000");
 									inset.setLength(4);
@@ -644,8 +648,8 @@ private List<ExportOutput> exportPDEData(OutputContext outputContext,long jobID,
 								ExportOutput exportOutput1 = new ExportOutput(true, dataType, simID, dataID1/* + variableSpecs.getVariableNames()[i]*/, fileDataContainerManager);
 								fileDataContainerManager.append(exportOutput1.getFileDataContainerID(), fileDataContainerID_header);
 								fileDataContainerManager.append(exportOutput1.getFileDataContainerID(),
-									getSlice(sliceHelper,mesh,allTimes,outputContext,user, dataServerImpl, vcdID, variableSpecs.getVariableNames()[j], i + beginTimeIndex, Coordinate.getNormalAxisPlaneName(geometrySpecs.getAxis()), sliceNumber, asciiSpecs.getSwitchRowsColumns(),fileDataContainerManager));
-								output[j * TIME_COUNT + i] = exportOutput1;
+									getSlice(sliceHelper,mesh,allTimes,outputContext,user, dataServerImpl, vcdID, variableSpecs.getVariableNames()[j], i + START_TIME_INDEX, Coordinate.getNormalAxisPlaneName(geometrySpecs.getAxis()), sliceNumber, asciiSpecs.getSwitchRowsColumns(),fileDataContainerManager));
+								output[j * TIME_RANGE + i] = exportOutput1;
 //								if(sliceHelper.hdf5GroupVarID != -1) {
 //									if(sliceHelper.isMembrane) {
 //										
@@ -658,7 +662,7 @@ private List<ExportOutput> exportPDEData(OutputContext outputContext,long jobID,
 //									}
 //								}
 								progressCounter++;
-								exportServiceImpl.fireExportProgress(jobID, orig_vcdID, "CSV", progressCounter/TOTAL_EXPORTS_OPS);
+								exportServiceImpl.fireExportProgress(jobID, orig_vcdID, "CSV", progressCounter/numTotalExportOperations);
 							}
 							sliceHelper.closeHDF5GroupAndValues();
 						}
