@@ -10,8 +10,10 @@
 
 package cbit.vcell.mapping;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.vcell.model.rbm.ComponentStateDefinition;
 import org.vcell.model.rbm.ComponentStatePattern;
@@ -537,20 +539,40 @@ private boolean isAllostericReaction(Map<String, Object> analysisResults) {
 	MolecularTypePattern mtpProduct = mtpProductList.get(0);
 	int reactantExplicitStates = 0;
 	int productExplicitStates = 0;
+	
+	Set<ComponentStateDefinition> explicitReactantStatesSet = new LinkedHashSet<> ();
 	List<MolecularComponentPattern> mcpReactantList = mtpReactant.getComponentPatternList();
 	List<MolecularComponentPattern> mcpProductList = mtpProduct.getComponentPatternList();
+	for(MolecularComponentPattern mcp : mcpReactantList) {
+		if(mcp.getBondType() != BondType.Possible) {
+			return false;	// by convention, all bonds must be set to "Possible"
+		}
+	}
 	for(MolecularComponentPattern mcp : mcpReactantList) {
 		if(mcp.getComponentStatePattern() == null) {
 			return false;		// all sites must have at least one state
 		}
 		if(!mcp.getComponentStatePattern().isAny()) {
+			explicitReactantStatesSet.add(mcp.getComponentStatePattern().getComponentStateDefinition());
 			reactantExplicitStates++;
 		}
 	}
+	int matchedStates = 0;
+	int unmatchedStates = 0;
 	for(MolecularComponentPattern mcp : mcpProductList) {
 		if(!mcp.getComponentStatePattern().isAny()) {
+			ComponentStateDefinition csdProductExplicit = mcp.getComponentStatePattern().getComponentStateDefinition();
+			if(explicitReactantStatesSet.contains(csdProductExplicit)) {
+				matchedStates++;
+			} else {
+				unmatchedStates++;
+			}
 			productExplicitStates++;
 		}
+	}
+	if(matchedStates != 1 || unmatchedStates != 1) {
+		// the reactant condition state must match the product, the transition state must not match, so one of each
+		return false;
 	}
 	if(reactantExplicitStates == 2 && productExplicitStates == 2) {
 		return true;	// we need 2 explicit states: one that is transitioning and one for the allosteric condition
