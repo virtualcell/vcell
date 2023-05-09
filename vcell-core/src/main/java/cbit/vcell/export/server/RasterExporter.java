@@ -290,18 +290,17 @@ private NrrdInfo[] exportPDEData(OutputContext outputContext,long jobID, User us
 	CartesianMesh mesh = dataServerImpl.getMesh(user, vcdID);
 	DataProcessingOutputInfo dataProcessingOutputInfo = null;
 	//check if any of export variables are PostProcess and if so try to get PostProcessOutputInfo
-	exportServiceImpl.fireExportProgress(jobID, vcdID, "Check PostProcess",0.0);
+	this.exportServiceImpl.fireExportProgress(jobID, vcdID, "Check PostProcess",0.0);
 	DataIdentifier[] dataIdentifiers = dataServerImpl.getDataIdentifiers(outputContext, user, vcdID);
-	for (int i = 0; i < dataIdentifiers.length; i++) {
-		for(int j=0;j<variableSpecs.getVariableNames().length;j++){
-			if(variableSpecs.getVariableNames()[j].equals(dataIdentifiers[i].getName()) && VariableType.POSTPROCESSING.equals(dataIdentifiers[i].getVariableType())){
-				try{//we need PostProcessOutputInfo
-					exportServiceImpl.fireExportProgress(jobID, vcdID, "Read PostProcess",0.0);
-					dataProcessingOutputInfo = (DataProcessingOutputInfo)dataServerImpl.doDataOperation(user,new DataOperation.DataProcessingOutputInfoOP(vcdID,false,outputContext));
-					break;
-				}catch(Exception e){
-					throw new DataAccessException("Export variable '"+variableSpecs.getVariableNames()[j] + "' is PostProcessing type.  Error reading PostProcessing data: "+e.getClass().getName()+" "+e.getMessage());
-				}
+	for (DataIdentifier dataIdentifier : dataIdentifiers) {
+		for (String variableName : variableSpecs.getVariableNames()) {
+			if (!variableName.equals(dataIdentifier.getName()) || !VariableType.POSTPROCESSING.equals(dataIdentifier.getVariableType())) continue;
+			try {//we need PostProcessOutputInfo
+				this.exportServiceImpl.fireExportProgress(jobID, vcdID, "Read PostProcess", 0.0);
+				dataProcessingOutputInfo = (DataProcessingOutputInfo) dataServerImpl.doDataOperation(user, new DataOperation.DataProcessingOutputInfoOP(vcdID, false, outputContext));
+				break;
+			} catch (Exception e) {
+				throw new DataAccessException("Export variable '" + variableName + "' is PostProcessing type.  Error reading PostProcessing data: " + e.getClass().getName() + " " + e.getMessage());
 			}
 		}
 	}
@@ -309,153 +308,136 @@ private NrrdInfo[] exportPDEData(OutputContext outputContext,long jobID, User us
 	long lastUpdateTime = 0;
 	switch (rasterSpecs.getFormat()) {
 		case NRRD_SINGLE: {
-			switch (geometrySpecs.getModeID()) {
-				case GEOMETRY_FULL:{
-					NrrdInfo nrrdInfo =
+			if (geometrySpecs instanceof GeometryFullSpecs){
+				NrrdInfo nrrdInfo =
 						NRRDHelper.getSizeCheckedNrrdHelper(variableSpecs, mesh.getISize(),mesh.getExtent(), dataProcessingOutputInfo).
-							createSingleFullNrrdInfo(fileDataContainerManager, vcdID, variableSpecs, rasterSpecs, timeSpecs2);
-					int progressIndex = 1;
-					int progressEnd = variableSpecs.getVariableNames().length*(timeSpecs2.getEndTimeIndex()-timeSpecs2.getBeginTimeIndex()+1);
-					for (int i = 0; i < variableSpecs.getVariableNames().length; i++){
-						for (int j = timeSpecs2.getBeginTimeIndex(); j <= timeSpecs2.getEndTimeIndex(); j++){
-							lastUpdateTime = fireThrottledProgress(exportServiceImpl, lastUpdateTime, "NRRD-snglfull",jobID, vcdID, progressIndex,progressEnd);
-							progressIndex++;
-							double[] data = dataServerImpl.getSimDataBlock(outputContext,user, vcdID, variableSpecs.getVariableNames()[i], timeSpecs2.getAllTimes()[j]).getData();
-							NRRDHelper.appendDoubleData(nrrdInfo, fileDataContainerManager, data, variableSpecs.getVariableNames()[i]);
-						}
+								createSingleFullNrrdInfo(fileDataContainerManager, vcdID, variableSpecs, rasterSpecs, timeSpecs2);
+				int progressIndex = 1;
+				int progressEnd = variableSpecs.getVariableNames().length*(timeSpecs2.getEndTimeIndex()-timeSpecs2.getBeginTimeIndex()+1);
+				for (int i = 0; i < variableSpecs.getVariableNames().length; i++){
+					for (int j = timeSpecs2.getBeginTimeIndex(); j <= timeSpecs2.getEndTimeIndex(); j++){
+						lastUpdateTime = fireThrottledProgress(this.exportServiceImpl, lastUpdateTime, "NRRD-snglfull",jobID, vcdID, progressIndex,progressEnd);
+						progressIndex++;
+						double[] data = dataServerImpl.getSimDataBlock(outputContext,user, vcdID, variableSpecs.getVariableNames()[i], timeSpecs2.getAllTimes()[j]).getData();
+						NRRDHelper.appendDoubleData(nrrdInfo, fileDataContainerManager, data, variableSpecs.getVariableNames()[i]);
 					}
-					nrrdInfo = NrrdWriter.writeNRRD(nrrdInfo,fileDataContainerManager);
-					return new NrrdInfo[] {nrrdInfo};
 				}
-				case GEOMETRY_SLICE: {
-					NrrdInfo sliceNrrdInfo =
-						createSliceNrrdHelper(mesh, dataProcessingOutputInfo, vcdID, variableSpecs,
-							timeSpecs2, geometrySpecs, rasterSpecs, fileDataContainerManager).createSingleFullNrrdInfo(fileDataContainerManager, vcdID, variableSpecs, rasterSpecs, timeSpecs2);
-					int progressIndex = 1;
-					int progressEnd = variableSpecs.getVariableNames().length*(timeSpecs2.getEndTimeIndex()-timeSpecs2.getBeginTimeIndex()+1);
-					for (int i = 0; i < variableSpecs.getVariableNames().length; i++){
-						for (int j = timeSpecs2.getBeginTimeIndex(); j <= timeSpecs2.getEndTimeIndex(); j++){
-							lastUpdateTime = fireThrottledProgress(exportServiceImpl, lastUpdateTime, "NRRD-snglslice",jobID, vcdID, progressIndex,progressEnd);
-							progressIndex++;
-							double[] data = dataServerImpl.getSimDataBlock(outputContext,user, vcdID, variableSpecs.getVariableNames()[i], timeSpecs2.getAllTimes()[j]).getData();
-							appendSlice(variableSpecs.getVariableNames()[i], data, sliceNrrdInfo, mesh, geometrySpecs, fileDataContainerManager);
-						}
+				nrrdInfo = NrrdWriter.writeNRRD(nrrdInfo,fileDataContainerManager);
+				return new NrrdInfo[] {nrrdInfo};
+			} else if (geometrySpecs instanceof GeometrySliceSpecs){
+				NrrdInfo sliceNrrdInfo =
+						this.createSliceNrrdHelper(mesh, dataProcessingOutputInfo, vcdID, variableSpecs,
+								timeSpecs2, geometrySpecs, rasterSpecs, fileDataContainerManager).createSingleFullNrrdInfo(fileDataContainerManager, vcdID, variableSpecs, rasterSpecs, timeSpecs2);
+				int progressIndex = 1;
+				int progressEnd = variableSpecs.getVariableNames().length*(timeSpecs2.getEndTimeIndex()-timeSpecs2.getBeginTimeIndex()+1);
+				for (int i = 0; i < variableSpecs.getVariableNames().length; i++){
+					for (int j = timeSpecs2.getBeginTimeIndex(); j <= timeSpecs2.getEndTimeIndex(); j++){
+						lastUpdateTime = fireThrottledProgress(exportServiceImpl, lastUpdateTime, "NRRD-snglslice",jobID, vcdID, progressIndex,progressEnd);
+						progressIndex++;
+						double[] data = dataServerImpl.getSimDataBlock(outputContext,user, vcdID, variableSpecs.getVariableNames()[i], timeSpecs2.getAllTimes()[j]).getData();
+						this.appendSlice(variableSpecs.getVariableNames()[i], data, sliceNrrdInfo, mesh, geometrySpecs, fileDataContainerManager);
 					}
-					sliceNrrdInfo = NrrdWriter.writeNRRD(sliceNrrdInfo,fileDataContainerManager);
-					return new NrrdInfo[] {sliceNrrdInfo};
 				}
-				default: {
-					throw new DataAccessException("NRRD export from slice not yet supported");
-				}
-			}			
+				sliceNrrdInfo = NrrdWriter.writeNRRD(sliceNrrdInfo,fileDataContainerManager);
+				return new NrrdInfo[] {sliceNrrdInfo};
+			} else {
+				throw new DataAccessException("NRRD export from slice not yet supported");
+			}
 		}
 		case NRRD_BY_TIME: {
-			switch (geometrySpecs.getModeID()) {
-				case GEOMETRY_FULL: {
-					NRRDHelper nrrdHelper = NRRDHelper.getSizeCheckedNrrdHelper(variableSpecs, mesh.getISize(),mesh.getExtent(), dataProcessingOutputInfo);
-					Vector<NrrdInfo> nrrdinfoV = new Vector<NrrdInfo>();
-					int progressIndex = 1;
-					int progressEnd = (timeSpecs2.getEndTimeIndex()-timeSpecs2.getBeginTimeIndex()+1);
-					for (int j = timeSpecs2.getBeginTimeIndex(); j <= timeSpecs2.getEndTimeIndex(); j++){
-						lastUpdateTime = fireThrottledProgress(exportServiceImpl, lastUpdateTime, "NRRD-timefull",jobID, vcdID, progressIndex,progressEnd);
-						progressIndex++;
-						NrrdInfo nrrdInfo = nrrdHelper.createTimeFullNrrdInfo(fileDataContainerManager, vcdID, variableSpecs, timeSpecs2.getAllTimes()[j], rasterSpecs);
-						nrrdinfoV.add(nrrdInfo);
-						for (int i = 0; i < variableSpecs.getVariableNames().length; i++){
-							double[] data = dataServerImpl.getSimDataBlock(outputContext,user, vcdID, variableSpecs.getVariableNames()[i], timeSpecs2.getAllTimes()[j]).getData();
-							NRRDHelper.appendDoubleData(nrrdInfo, fileDataContainerManager, data, variableSpecs.getVariableNames()[i]);
-						}
-						NrrdWriter.writeNRRD(nrrdInfo,fileDataContainerManager);
+			if (geometrySpecs instanceof GeometryFullSpecs){
+				NRRDHelper nrrdHelper = NRRDHelper.getSizeCheckedNrrdHelper(variableSpecs, mesh.getISize(),mesh.getExtent(), dataProcessingOutputInfo);
+				Vector<NrrdInfo> nrrdinfoV = new Vector<>();
+				int progressIndex = 1;
+				int progressEnd = (timeSpecs2.getEndTimeIndex()-timeSpecs2.getBeginTimeIndex()+1);
+				for (int j = timeSpecs2.getBeginTimeIndex(); j <= timeSpecs2.getEndTimeIndex(); j++){
+					lastUpdateTime = fireThrottledProgress(this.exportServiceImpl, lastUpdateTime, "NRRD-timefull",jobID, vcdID, progressIndex,progressEnd);
+					progressIndex++;
+					NrrdInfo nrrdInfo = nrrdHelper.createTimeFullNrrdInfo(fileDataContainerManager, vcdID, variableSpecs, timeSpecs2.getAllTimes()[j], rasterSpecs);
+					nrrdinfoV.add(nrrdInfo);
+					for (int i = 0; i < variableSpecs.getVariableNames().length; i++){
+						double[] data = dataServerImpl.getSimDataBlock(outputContext,user, vcdID, variableSpecs.getVariableNames()[i], timeSpecs2.getAllTimes()[j]).getData();
+						NRRDHelper.appendDoubleData(nrrdInfo, fileDataContainerManager, data, variableSpecs.getVariableNames()[i]);
 					}
-					if(nrrdinfoV.size() > 0){
-						NrrdInfo[] nrrdinfoArr = new NrrdInfo[nrrdinfoV.size()];
-						nrrdinfoV.copyInto(nrrdinfoArr);
-						return nrrdinfoArr;
-					}
-					return null;
+					NrrdWriter.writeNRRD(nrrdInfo,fileDataContainerManager);
 				}
-				case GEOMETRY_SLICE: {
-					Vector<NrrdInfo> nrrdinfoV = new Vector<NrrdInfo>();
-					int progressIndex = 1;
-					int progressEnd = (timeSpecs2.getEndTimeIndex()-timeSpecs2.getBeginTimeIndex()+1);
-					for (int j = timeSpecs2.getBeginTimeIndex(); j <= timeSpecs2.getEndTimeIndex(); j++){
-						lastUpdateTime = fireThrottledProgress(exportServiceImpl, lastUpdateTime, "NRRD-timeslice",jobID, vcdID, progressIndex,progressEnd);
-						progressIndex++;
-						NrrdInfo sliceNrrdInfo =
-							createSliceNrrdHelper(mesh, dataProcessingOutputInfo, vcdID, variableSpecs, timeSpecs2, geometrySpecs, rasterSpecs, fileDataContainerManager).
-								createTimeFullNrrdInfo(fileDataContainerManager, vcdID, variableSpecs, timeSpecs2.getAllTimes()[j], rasterSpecs);
-						nrrdinfoV.add(sliceNrrdInfo);
-						for (int i = 0; i < variableSpecs.getVariableNames().length; i++){
-							double[] data = dataServerImpl.getSimDataBlock(outputContext,user, vcdID, variableSpecs.getVariableNames()[i], timeSpecs2.getAllTimes()[j]).getData();
-							appendSlice(variableSpecs.getVariableNames()[i], data, sliceNrrdInfo, mesh, geometrySpecs, fileDataContainerManager);
-						}
-						NrrdWriter.writeNRRD(sliceNrrdInfo,fileDataContainerManager);
+				if(nrrdinfoV.isEmpty()) return null;
+				NrrdInfo[] nrrdinfoArr = new NrrdInfo[nrrdinfoV.size()];
+				nrrdinfoV.copyInto(nrrdinfoArr);
+				return nrrdinfoArr;
+			} else if (geometrySpecs instanceof GeometrySliceSpecs){
+				Vector<NrrdInfo> nrrdinfoV = new Vector<>();
+				int progressIndex = 1;
+				int progressEnd = (timeSpecs2.getEndTimeIndex()-timeSpecs2.getBeginTimeIndex()+1);
+				for (int j = timeSpecs2.getBeginTimeIndex(); j <= timeSpecs2.getEndTimeIndex(); j++){
+					lastUpdateTime = fireThrottledProgress(this.exportServiceImpl, lastUpdateTime, "NRRD-timeslice",jobID, vcdID, progressIndex,progressEnd);
+					progressIndex++;
+					NrrdInfo sliceNrrdInfo =
+							this.createSliceNrrdHelper(mesh, dataProcessingOutputInfo, vcdID, variableSpecs, timeSpecs2, geometrySpecs, rasterSpecs, fileDataContainerManager).
+									createTimeFullNrrdInfo(fileDataContainerManager, vcdID, variableSpecs, timeSpecs2.getAllTimes()[j], rasterSpecs);
+					nrrdinfoV.add(sliceNrrdInfo);
+					for (int i = 0; i < variableSpecs.getVariableNames().length; i++){
+						double[] data = dataServerImpl.getSimDataBlock(outputContext,user, vcdID, variableSpecs.getVariableNames()[i], timeSpecs2.getAllTimes()[j]).getData();
+						this.appendSlice(variableSpecs.getVariableNames()[i], data, sliceNrrdInfo, mesh, geometrySpecs, fileDataContainerManager);
 					}
-					if(nrrdinfoV.size() > 0){
-						NrrdInfo[] nrrdinfoArr = new NrrdInfo[nrrdinfoV.size()];
-						nrrdinfoV.copyInto(nrrdinfoArr);
-						return nrrdinfoArr;
-					}
-					return null;
+					NrrdWriter.writeNRRD(sliceNrrdInfo,fileDataContainerManager);
 				}
-				default: {
-					throw new DataAccessException("NRRD export from slice not yet supported");
-				}
-			}			
+				if(nrrdinfoV.isEmpty()) return null;
+				NrrdInfo[] nrrdinfoArr = new NrrdInfo[nrrdinfoV.size()];
+				nrrdinfoV.copyInto(nrrdinfoArr);
+				return nrrdinfoArr;
+			} else {
+				throw new DataAccessException("NRRD export from slice not yet supported");
+			}
+
 		}
 		case NRRD_BY_VARIABLE : {
-			switch (geometrySpecs.getModeID()) {
-				case GEOMETRY_FULL: {
-					Vector<NrrdInfo> nrrdinfoV = new Vector<NrrdInfo>();
-					int progressIndex = 1;
-					int progressEnd = variableSpecs.getVariableNames().length*(timeSpecs2.getEndTimeIndex()-timeSpecs2.getBeginTimeIndex()+1);
-					for (int i = 0; i < variableSpecs.getVariableNames().length; i++){
-						NRRDHelper nrrdhelHelper = new NRRDHelper(variableSpecs.getVariableNames()[i], mesh.getISize(),mesh.getExtent(), dataProcessingOutputInfo);
-						NrrdInfo nrrdInfo = nrrdhelHelper.createVariableFullNrrdInfo(fileDataContainerManager, vcdID, variableSpecs.getVariableNames()[i], timeSpecs2, rasterSpecs);
-						nrrdinfoV.add(nrrdInfo);		
-						for (int j = timeSpecs2.getBeginTimeIndex(); j <= timeSpecs2.getEndTimeIndex(); j++){
-							lastUpdateTime = fireThrottledProgress(exportServiceImpl, lastUpdateTime, "NRRD-varsfull",jobID, vcdID, progressIndex,progressEnd);
-							progressIndex++;
-							double[] data = dataServerImpl.getSimDataBlock(outputContext,user, vcdID, variableSpecs.getVariableNames()[i], timeSpecs2.getAllTimes()[j]).getData();
-							NRRDHelper.appendDoubleData(nrrdInfo, fileDataContainerManager, data, variableSpecs.getVariableNames()[i]);
-						}
-						nrrdInfo = NrrdWriter.writeNRRD(nrrdInfo,fileDataContainerManager);
+			if (geometrySpecs instanceof GeometryFullSpecs){
+				Vector<NrrdInfo> nrrdinfoV = new Vector<>();
+				int progressIndex = 1;
+				int progressEnd = variableSpecs.getVariableNames().length*(timeSpecs2.getEndTimeIndex()-timeSpecs2.getBeginTimeIndex()+1);
+				for (int i = 0; i < variableSpecs.getVariableNames().length; i++){
+					NRRDHelper nrrdhelHelper = new NRRDHelper(variableSpecs.getVariableNames()[i], mesh.getISize(),mesh.getExtent(), dataProcessingOutputInfo);
+					NrrdInfo nrrdInfo = nrrdhelHelper.createVariableFullNrrdInfo(fileDataContainerManager, vcdID, variableSpecs.getVariableNames()[i], timeSpecs2, rasterSpecs);
+					nrrdinfoV.add(nrrdInfo);
+					for (int j = timeSpecs2.getBeginTimeIndex(); j <= timeSpecs2.getEndTimeIndex(); j++){
+						lastUpdateTime = fireThrottledProgress(this.exportServiceImpl, lastUpdateTime, "NRRD-varsfull",jobID, vcdID, progressIndex,progressEnd);
+						progressIndex++;
+						double[] data = dataServerImpl.getSimDataBlock(outputContext,user, vcdID, variableSpecs.getVariableNames()[i], timeSpecs2.getAllTimes()[j]).getData();
+						NRRDHelper.appendDoubleData(nrrdInfo, fileDataContainerManager, data, variableSpecs.getVariableNames()[i]);
 					}
-					if(nrrdinfoV.size() > 0){
-						NrrdInfo[] nrrdinfoArr = new NrrdInfo[nrrdinfoV.size()];
-						nrrdinfoV.copyInto(nrrdinfoArr);
-						return nrrdinfoArr;
-					}
-					return null;
+					nrrdInfo = NrrdWriter.writeNRRD(nrrdInfo,fileDataContainerManager);
 				}
-				case GEOMETRY_SLICE: {
-					Vector<NrrdInfo> nrrdinfoV = new Vector<NrrdInfo>();
-					int progressIndex = 1;
-					int progressEnd = variableSpecs.getVariableNames().length*(timeSpecs2.getEndTimeIndex()-timeSpecs2.getBeginTimeIndex()+1);
-					for (int i = 0; i < variableSpecs.getVariableNames().length; i++){
-						NrrdInfo sliceNrrdInfo =
-								createSliceNrrdHelper(mesh, dataProcessingOutputInfo, vcdID, variableSpecs, timeSpecs2, geometrySpecs, rasterSpecs, fileDataContainerManager).
+				if(nrrdinfoV.isEmpty()) return null;
+				NrrdInfo[] nrrdinfoArr = new NrrdInfo[nrrdinfoV.size()];
+				nrrdinfoV.copyInto(nrrdinfoArr);
+				return nrrdinfoArr;
+
+
+			} else if (geometrySpecs instanceof GeometrySliceSpecs){
+				Vector<NrrdInfo> nrrdinfoV = new Vector<>();
+				int progressIndex = 1;
+				int progressEnd = variableSpecs.getVariableNames().length*(timeSpecs2.getEndTimeIndex()-timeSpecs2.getBeginTimeIndex()+1);
+				for (int i = 0; i < variableSpecs.getVariableNames().length; i++){
+					NrrdInfo sliceNrrdInfo =
+							this.createSliceNrrdHelper(mesh, dataProcessingOutputInfo, vcdID, variableSpecs, timeSpecs2, geometrySpecs, rasterSpecs, fileDataContainerManager).
 									createVariableFullNrrdInfo(fileDataContainerManager, vcdID, variableSpecs.getVariableNames()[i], timeSpecs2, rasterSpecs);
-						nrrdinfoV.add(sliceNrrdInfo);		
-						for (int j = timeSpecs2.getBeginTimeIndex(); j <= timeSpecs2.getEndTimeIndex(); j++){
-							lastUpdateTime = fireThrottledProgress(exportServiceImpl, lastUpdateTime, "NRRD-varsfull",jobID, vcdID, progressIndex,progressEnd);
-							progressIndex++;
-							double[] data = dataServerImpl.getSimDataBlock(outputContext,user, vcdID, variableSpecs.getVariableNames()[i], timeSpecs2.getAllTimes()[j]).getData();
-							appendSlice(variableSpecs.getVariableNames()[i], data, sliceNrrdInfo, mesh, geometrySpecs, fileDataContainerManager);
-						}
-						NrrdWriter.writeNRRD(sliceNrrdInfo,fileDataContainerManager);
+					nrrdinfoV.add(sliceNrrdInfo);
+					for (int j = timeSpecs2.getBeginTimeIndex(); j <= timeSpecs2.getEndTimeIndex(); j++){
+						lastUpdateTime = fireThrottledProgress(this.exportServiceImpl, lastUpdateTime, "NRRD-varsfull",jobID, vcdID, progressIndex,progressEnd);
+						progressIndex++;
+						double[] data = dataServerImpl.getSimDataBlock(outputContext,user, vcdID, variableSpecs.getVariableNames()[i], timeSpecs2.getAllTimes()[j]).getData();
+						this.appendSlice(variableSpecs.getVariableNames()[i], data, sliceNrrdInfo, mesh, geometrySpecs, fileDataContainerManager);
 					}
-					if(nrrdinfoV.size() > 0){
-						NrrdInfo[] nrrdinfoArr = new NrrdInfo[nrrdinfoV.size()];
-						nrrdinfoV.copyInto(nrrdinfoArr);
-						return nrrdinfoArr;
-					}
-					return null;
+					NrrdWriter.writeNRRD(sliceNrrdInfo,fileDataContainerManager);
 				}
-				default: {
-					throw new DataAccessException("NRRD export from slice not yet supported");
-				}
-			}			
+				if(nrrdinfoV.isEmpty()) return null;
+				NrrdInfo[] nrrdinfoArr = new NrrdInfo[nrrdinfoV.size()];
+				nrrdinfoV.copyInto(nrrdinfoArr);
+				return nrrdinfoArr;
+			} else {
+				throw new DataAccessException("NRRD export for" + geometrySpecs.getClass().toString() + " not yet supported");
+			}
 		}
 		default: {
 			throw new DataAccessException("Multiple NRRD file export not yet supported");

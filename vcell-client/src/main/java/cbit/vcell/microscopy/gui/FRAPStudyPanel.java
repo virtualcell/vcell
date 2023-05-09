@@ -47,6 +47,7 @@ import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoableEdit;
 import javax.swing.undo.UndoableEditSupport;
 
+import cbit.vcell.export.server.*;
 import org.vcell.optimization.ProfileData;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.Compare;
@@ -77,14 +78,6 @@ import cbit.vcell.client.data.PDEDataViewer;
 import cbit.vcell.client.data.SimulationWorkspaceModelInfo;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.vcell.export.server.ExportConstants;
-import cbit.vcell.export.server.ExportFormat;
-import cbit.vcell.export.server.ExportSpecs;
-import cbit.vcell.export.server.FormatSpecificSpecs;
-import cbit.vcell.export.server.GeometrySpecs;
-import cbit.vcell.export.server.MovieSpecs;
-import cbit.vcell.export.server.TimeSpecs;
-import cbit.vcell.export.server.VariableSpecs;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldUtilities;
@@ -1373,8 +1366,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 //				int endTimeIndex = (int)Math.round(sim.getSolverTaskDescription().getTimeBounds().getEndingTime()/((UniformOutputTimeSpec)sim.getSolverTaskDescription().getOutputTimeSpec()).getOutputTimeStep());
 				int endTimeIndex = getFRAPSimDataViewerPanel().getOriginalDataViewer().getPdeDataContext().getTimePoints().length - 1;
 				TimeSpecs timeSpecs = new TimeSpecs(0, endTimeIndex, pdeDataContext.getTimePoints(), ExportConstants.TIME_RANGE);
-				int geoMode = ExportConstants.GEOMETRY_SLICE;
-				GeometrySpecs geometrySpecs = new GeometrySpecs(null, Coordinate.Z_AXIS, 0, geoMode);
+				GeometrySpecs geometrySpecs = new GeometrySliceSpecs(null, Coordinate.Z_AXIS, 0);
 				
 				double duration = 10000; //10s
 				DisplayPreferences pref1 = new DisplayPreferences("BlueRed", new Range(0.01,1.1),DisplayAdapterService.createBlueRedSpecialColors(),true,false);

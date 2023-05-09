@@ -130,7 +130,7 @@ public static void main(String [] args) throws Exception{
 	double[] allTimes = dataSetControllerImpl.getDataSetTimes(vcdID);
 	TimeSpecs timeSpecs = new TimeSpecs(beginTimeIndex, endTimeIndex, allTimes, ExportConstants.TIME_RANGE);
 	VariableSpecs variableSpecs = new VariableSpecs(varNames, ExportConstants.VARIABLE_MULTI);
-	GeometrySpecs geometrySpecs = new GeometrySpecs(null, 0, 0, ExportConstants.GEOMETRY_SLICE);
+	GeometrySpecs geometrySpecs = new GeometrySliceSpecs(null, 0, 0);
 	DisplayPreferences displayPreferences =
 		new DisplayPreferences(DisplayAdapterService.BLUERED, new Range(0,1), DisplayAdapterService.createBlueRedSpecialColors(),true,false);
 	MovieSpecs movieSpecs = new MovieSpecs(
@@ -385,7 +385,8 @@ private static ExportOutput[] makeMedia(ExportServiceImpl exportServiceImpl,
 	boolean bOverLay = false;
 	int sliceIndicator = 0;
 	if(particleInfo == null){
-		sliceIndicator = (exportSpecs.getGeometrySpecs().getModeID() == ExportConstants.GEOMETRY_FULL?FULL_MODE_ALL_SLICES:exportSpecs.getGeometrySpecs().getSliceNumber());
+		sliceIndicator = (exportSpecs.getGeometrySpecs() instanceof GeometryFullSpecs ?
+				FULL_MODE_ALL_SLICES : exportSpecs.getGeometrySpecs().getSliceNumber());
 	}
 	int imageScale = 0;
 	int meshMode = 0;

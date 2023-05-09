@@ -74,6 +74,8 @@ import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.export.server.ExportSpecs.SimNameSimDataID;
 import cbit.vcell.export.server.FormatSpecificSpecs;
 import cbit.vcell.export.server.GeometrySpecs;
+import cbit.vcell.export.server.GeometrySliceSpecs;
+import cbit.vcell.export.server.GeometryFullSpecs;
 import cbit.vcell.export.server.ImageSpecs;
 import cbit.vcell.export.server.MovieSpecs;
 import cbit.vcell.export.server.PLYSpecs;
@@ -738,10 +740,6 @@ private void connEtoM3() {
 	}
 }
 
-/**
- * connEtoM4:  (JButtonAdd.action.actionPerformed(java.awt.event.ActionEvent) --> DefaultListModelCivilizedSelections.addNewElement(Ljava.lang.Object;)V)
- * @param arg1 java.awt.event.ActionEvent
- */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void updateChoiceROI() {
 	try {
@@ -1071,18 +1069,21 @@ private ExportSpecs getExportSpecs() {
 	}
 	VariableSpecs variableSpecs = new VariableSpecs(variableNames, ExportConstants.VARIABLE_MULTI);
 	TimeSpecs timeSpecs = new TimeSpecs(getJSlider1().getValue(), getJSlider2().getValue(), getPdeDataContext().getTimePoints(), ExportConstants.TIME_RANGE);
-	int geoMode = ExportConstants.GEOMETRY_SELECTIONS;
-	if (getJRadioButtonSlice().isSelected()) {
-		geoMode = ExportConstants.GEOMETRY_SLICE;
-	} else if (getJRadioButtonFull().isSelected()) {
-		geoMode = ExportConstants.GEOMETRY_FULL;
-	}
+
 	Object[] selectionsArr = getROISelections().getSelectedValuesList().toArray();
 	SpatialSelection[] selections = new SpatialSelection[selectionsArr.length];
 	for (int i = 0; i < selections.length; i++) {
 		selections[i] = (SpatialSelection)selectionsArr[i];
 	}
-	GeometrySpecs geometrySpecs = new GeometrySpecs(selections, getNormalAxis(), getSlice(), geoMode);
+	GeometrySpecs geometrySpecs;
+	if (this.getJRadioButtonSlice().isSelected()) {
+		geometrySpecs = new GeometrySliceSpecs(selections, this.getNormalAxis(), this.getSlice());
+	} else if (this.getJRadioButtonFull().isSelected()) {
+		geometrySpecs = new GeometryFullSpecs(selections, this.getNormalAxis(), this.getSlice());
+	} else {
+		throw new RuntimeException("Invalid Geometry Specs provided.");
+	}
+
 	return new ExportSpecs(
 		getPdeDataContext().getVCDataIdentifier(),
 		getExportSettings1().getSelectedFormat(),

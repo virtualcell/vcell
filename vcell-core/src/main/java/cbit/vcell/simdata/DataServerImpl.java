@@ -53,7 +53,6 @@ public DataServerImpl (DataSetControllerImpl dsControllerImpl, ExportServiceImpl
 /**
  * Insert the method's description here.
  * Creation date: (8/5/2001 10:29:59 PM)
- * @param simInfo cbit.vcell.solver.SimulationInfo
  */
 private void checkReadAccess(User user, VCDataIdentifier vcdID) throws PermissionException {
 //	//
@@ -74,7 +73,6 @@ private void checkReadAccess(User user, VCDataIdentifier vcdID) throws Permissio
 /**
  * Insert the method's description here.
  * Creation date: (8/5/2001 10:29:59 PM)
- * @param simInfo cbit.vcell.solver.SimulationInfo
  */
 private void checkWriteAccess(User user, VCDataIdentifier vcdID) throws PermissionException {
 	//
@@ -135,7 +133,6 @@ public double[] getDataSetTimes(User user, VCDataIdentifier vcdID) throws DataAc
 /**
  * Insert the method's description here.
  * Creation date: (10/11/00 1:11:04 PM)
- * @param function cbit.vcell.math.Function
  * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
@@ -154,7 +151,6 @@ public AnnotatedFunction[] getFunctions(OutputContext outputContext,User user, V
 /**
  * This method was created by a SmartGuide.
  * @return cbit.plot.PlotData
- * @param variable java.lang.String
  * @param time double
  * @param spatialSelection cbit.vcell.simdata.gui.SpatialSelection
  * @exception java.rmi.RemoteException The exception description.
@@ -225,7 +221,6 @@ public ParticleDataBlock getParticleDataBlock(User user, VCDataIdentifier vcdID,
 /**
  * This method was created by a SmartGuide.
  * @return cbit.vcell.server.DataSet
- * @param time double
  */
 public DataOperationResults doDataOperation(User user, DataOperation dataOperation) throws DataAccessException {
 	checkReadAccess(user, dataOperation.getVCDataIdentifier());
@@ -275,10 +270,6 @@ public SimDataBlock getSimDataBlock(OutputContext outputContext, User user, VCDa
 /**
  * This method was created by a SmartGuide.
  * @return double[]
- * @param varName java.lang.String
- * @param x int
- * @param y int
- * @param z int
  */
 public org.vcell.util.document.TimeSeriesJobResults getTimeSeriesValues(OutputContext outputContext, User user, VCDataIdentifier vcdID, org.vcell.util.document.TimeSeriesJobSpec timeSeriesJobSpec) throws DataAccessException {
 	checkReadAccess(user, vcdID);
@@ -300,7 +291,7 @@ public org.vcell.util.document.TimeSeriesJobResults getTimeSeriesValues(OutputCo
 public ExportEvent makeRemoteFile(OutputContext outputContext,User user, cbit.vcell.export.server.ExportSpecs exportSpecs) throws org.vcell.util.DataAccessException {
 	if (lg.isTraceEnabled()) lg.trace("DataServerImpl.makeRemoteFile(" + exportSpecs.getVCDataIdentifier() + ")");
 	try {
-		ExportEvent exportEvent = exportServiceImpl.makeRemoteFile(outputContext,user, this, exportSpecs);
+		ExportEvent exportEvent = this.exportServiceImpl.makeRemoteFile(outputContext,user, this, exportSpecs);
 		return exportEvent;
 	} catch (Throwable e) {
 		lg.error(e.getMessage(), e);

@@ -448,19 +448,19 @@ public class RunUtils {
         // TODO: Add SED-ML name as base dirPath to avoid zipping all available CSV, PDF
         // Map for naming to extension
         Map<String, String> extensionListMap = new HashMap<String, String>() {{
-            put("csv", "reports.zip");
-            put("pdf", "plots.zip");
+            this.put("csv", "reports.zip");
+            this.put("pdf", "plots.zip");
         }};
 
         for (String ext : extensionListMap.keySet()) {
             srcFiles = listFilesForFolder(dirPath, ext);
 
-            if (srcFiles.size() == 0) {
+            if (srcFiles.isEmpty()) {
                 logger.error("No " + ext.toUpperCase() + " files found, skipping archiving `" + extensionListMap.get(ext) + "` files");
             } else {
                 fileOutputStream = new FileOutputStream(Paths.get(dirPath.toString(), extensionListMap.get(ext)).toFile());
                 zipOutputStream = new ZipOutputStream(fileOutputStream);
-                if (srcFiles.size() != 0) logger.info("Archiving resultant " + ext.toUpperCase() + " files to `" + extensionListMap.get(ext) + "`.");
+                if (!srcFiles.isEmpty()) logger.info("Archiving resultant " + ext.toUpperCase() + " files to `" + extensionListMap.get(ext) + "`.");
                 for (File srcFile : srcFiles) {
 
                     fileInputstream = new FileInputStream(srcFile);
@@ -506,28 +506,23 @@ public class RunUtils {
 
 
     public static boolean removeAndMakeDirs(File f) {
-        boolean removalSuccess = true;
-        if (f.exists()) {
-            boolean isRemoved = CLIUtils.removeDirs(f);
-            if (!isRemoved)
-                removalSuccess = false;
-                // we don't throw an exception up the stack here for two reasons:
-                // 1) deletion of files differs on different OS. Punishing users for their OS or their understanding thereof seems wrong.
-                // 2) the user may be using software that is necessarily holding resources; by blocking on failed deletion, we are
-                //      denying the potential use cases of VCell.
-                try{
-                    throw new Exception("File '" + f.getCanonicalPath() + "' could not be deleted!");
-                } catch (Exception e){
-                    logger.error(e);
-                }
+        if (!f.exists() || CLIUtils.removeDirs(f)) return f.mkdirs(); // Short-circuiting makes this safe
+        // we don't throw an exception up the stack here for two reasons:
+        // 1) deletion of files differs on different OS. Punishing users for their OS or their understanding thereof seems wrong.
+        // 2) the user may be using software that is necessarily holding resources; by blocking on failed deletion, we are
+        //      denying the potential use cases of VCell.
+        try{
+            throw new Exception("File '" + f.getCanonicalPath() + "' could not be deleted!");
+        } catch (Exception e){
+            logger.error(e);
         }
-        return f.mkdirs() && removalSuccess;
+        if (!f.mkdirs()) logger.error("Remaking the directory failed as well!");
+        return false;
     }
 
     public static void createCSVFromODEResultSet(ODESolverResultSet resultSet, File f) throws ExpressionException {
         ColumnDescription[] descriptions = resultSet.getColumnDescriptions();
         StringBuilder sb = new StringBuilder();
-
 
         int numberOfColumns = descriptions.length;
         int numberOfRows = resultSet.getRowCount();
@@ -557,15 +552,11 @@ public class RunUtils {
             sb.append("\n");
         }
 
-        PrintWriter out = null;
-        try {
-            out = new PrintWriter(f);
-            out.print(sb.toString());
+        try (PrintWriter out = new PrintWriter(f)) {
+            out.print(sb);
             out.flush();
         } catch (FileNotFoundException e) {
             logger.error("Unable to find path, failed with err: " + e.getMessage(), e);
-        } finally {
-            if (out != null) out.close();
         }
 
     }
@@ -580,19 +571,6 @@ public class RunUtils {
                 f.delete();
             }
         }
-    }
-
-    public static boolean containsExtension(String folder, String ext) {
-        GenericExtensionFilter filter = new GenericExtensionFilter(ext);
-        File dir = new File(folder);
-        if (dir.isDirectory() == false) {
-            return false;
-        }
-        String[] list = dir.list(filter);
-        if (list.length > 0) {
-            return true;
-        }
-        return false;
     }
 
     public static void saveTimeSeriesMultitrialDataAsCSV(TimeSeriesMultitrialData data, File outDir) {
@@ -704,7 +682,7 @@ public class RunUtils {
 
         double[] dataSetTimes = dsControllerImpl.getDataSetTimes(vcId);
         TimeSpecs timeSpecs = new TimeSpecs(0,dataSetTimes.length-1, dataSetTimes, ExportConstants.TIME_RANGE);
-        GeometrySpecs geometrySpecs = new GeometrySpecs(null, 2, 0, ExportConstants.GEOMETRY_FULL);
+        GeometrySpecs geometrySpecs = new GeometryFullSpecs(null, 2, 0);
 
         // String simulationName,VCSimulationIdentifier vcSimulationIdentifier,ExportParamScanInfo exportParamScanInfo
         ExportSpecs.ExportParamScanInfo exportParamScanInfo = SimResultsViewer.getParamScanInfo(vcellSim,jobIndex);

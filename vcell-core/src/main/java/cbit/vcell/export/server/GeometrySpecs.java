@@ -11,7 +11,6 @@
 package cbit.vcell.export.server;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -43,9 +42,9 @@ public abstract class GeometrySpecs implements Serializable {
 	public GeometrySpecs(SpatialSelection[] selections, int axis, int sliceNumber) {
 		if (selections != null) {
 			try {
-				serializedSelections = new byte[selections.length][];
+				this.serializedSelections = new byte[selections.length][];
 				for (int i = 0; i < selections.length; i++){
-					serializedSelections[i] = BeanUtils.toSerialized(selections[i]);
+					this.serializedSelections[i] = BeanUtils.toSerialized(selections[i]);
 				}
 			} catch (IOException exc) {
 				lg.error(exc);
@@ -119,64 +118,10 @@ public abstract class GeometrySpecs implements Serializable {
 	 * Creation date: (3/2/2001 9:38:49 PM)
 	 * @return cbit.vcell.geometry.CoordinateIndex[]
 	 */
-	public abstract int[] getPointIndexes() {
-		final String EXEC_MSG = "GeometrySpecs.getPointIndexes() shouldn't be called for %smodeID = %s";
-		int modeID = this.getModeID();
+	public abstract int[] getPointIndexes() ;
+	public abstract int getPointCount();
+	public abstract SpatialSelection[] getPointSpatialSelections();
 
-		if (modeID == ExportConstants.GEOMETRY_SELECTIONS) {
-			List<Integer> points = new ArrayList<>();
-			for (SpatialSelection selection : this.getSelections()) {
-				if (!isSinglePoint(selection)) continue;
-				points.add(selection.getIndex(0));
-			}
-			return points.stream().mapToInt(Integer::intValue).toArray();
-		}
-		String isUnknownString = ExportConstants.GEOMETRY_SLICE == modeID ? "" : "unknown ";
-		throw new RuntimeException(String.format(EXEC_MSG, isUnknownString , modeID));
-	}
-	public abstract int getPointCount(){
-		final String EXEC_MSG = "GeometrySpecs.getPointCount() shouldn't be called for %smodeID = %s";
-		int modeID = this.getModeID();
-
-		if (modeID == ExportConstants.GEOMETRY_SELECTIONS) {
-			int count = 0;
-			for (SpatialSelection selection : this.getSelections()) {
-				if (!isSinglePoint(selection)) continue;
-				count++;
-			}
-			return count;
-		}
-		String isUnknownString = ExportConstants.GEOMETRY_SLICE == modeID ? "" : "unknown ";
-		throw new RuntimeException(String.format(EXEC_MSG, isUnknownString , modeID));
-	}
-	public abstract SpatialSelection[] getPointSpatialSelections(){
-		switch (this.getModeID()){
-			case ExportConstants.GEOMETRY_SLICE: {
-				throw new RuntimeException("GeometrySpecs.getPoints() shouldn't be called for modeID = GEOMTRY_SLICE");
-			}
-			case ExportConstants.GEOMETRY_SELECTIONS: {
-				int count = 0;
-				for (int i=0;i<getSelections().length;i++) {
-					if (isSinglePoint(getSelections()[i])) {
-						count++;
-					}
-				}
-				SpatialSelection[] pointSpatialSelections = new SpatialSelection[count];
-				count = 0;
-				for (int i = 0; i < getSelections().length; i++){
-					if (isSinglePoint(getSelections()[i])) {
-						pointSpatialSelections[count] = getSelections()[i];
-						count++;
-					}
-				}
-				return pointSpatialSelections;
-			}
-			default: {
-				throw new RuntimeException("GeometrySpecs.getPoints() shouldn't be called for unknown modeID = "+this.getModeID());
-			}
-		}
-
-	}
 	public static boolean isSinglePoint(SpatialSelection spatialSelection){
 		return
 				spatialSelection.isPoint() ||
@@ -210,7 +155,7 @@ public abstract class GeometrySpecs implements Serializable {
 	 * @return int
 	 */
 	public int getSliceNumber() {
-		return sliceNumber;
+		return this.sliceNumber;
 	}
 
 
@@ -220,7 +165,7 @@ public abstract class GeometrySpecs implements Serializable {
 	 * @return int
 	 */
 	public int hashCode() {
-		return toString().hashCode();
+		return this.toString().hashCode();
 	}
 
 
@@ -230,23 +175,17 @@ public abstract class GeometrySpecs implements Serializable {
 	 * @return java.lang.String
 	 */
 	public String toString() {
-		StringBuffer buf = new StringBuffer();
+		StringBuilder buf = new StringBuilder();
 		buf.append("GeometrySpecs [");
 		buf.append("axis: ").append(this.axis).append(", ");
 		buf.append("sliceNumber: ").append(this.sliceNumber).append(", ");
 		buf.append("spatialSelections: ");
-		if (serializedSelections != null) {
-			buf.append("{");
-			SpatialSelection[] selections = getSelections();
-			for (int i = 0; i < selections.length; i++){
-				buf.append(selections);
-				if (i < selections.length - 1) buf.append(",");
-			}
-			buf.append("}");
-		} else {
-			buf.append("null");
+		if (this.serializedSelections == null) return buf.append("null").append("]").toString();
+
+		List<String> stringSelections = new LinkedList<>();
+		for (SpatialSelection selection : this.getSelections()){
+			stringSelections.add(selection.toString());
 		}
-		buf.append("]");
-		return buf.toString();
+		return buf.append("{").append(String.join(", ", stringSelections)).append("}").append("]").toString();
 	}
 }
