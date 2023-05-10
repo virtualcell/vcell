@@ -190,10 +190,16 @@ public class LangevinLngvWriter {
 		sb.append("*** " + TRANSITION_REACTIONS + " ***");
 		sb.append("\n");
 		sb.append("\n");
-
 		writeTransitionReactions(sb);
-
 		sb.append("\n");
+
+		/* ******* WRITE THE ALLOSTERIC REACTIONS **********/
+		sb.append("*** " + ALLOSTERIC_REACTIONS + " ***");
+		sb.append("\n");
+		sb.append("\n");
+		writeAllostericReactions(sb);
+		sb.append("\n");
+
 
 		
 			
@@ -202,6 +208,94 @@ public class LangevinLngvWriter {
 		
 		return ret;
 	}
+	
+	
+	private static void writeAllostericReactions(StringBuilder sb) {
+		for(Map.Entry<LangevinParticleJumpProcess, SubDomain> entry : particleJumpProcessMap.entrySet()) {
+			LangevinParticleJumpProcess lpjp = entry.getKey();
+//			SubDomain subDomain = entry.getValue();
+			Subtype subtype = lpjp.getSubtype();
+			if(Subtype.ALLOSTERIC == subtype) {
+				ParticleSpeciesPattern pspReactant = null;
+				ParticleSpeciesPattern pspProduct = null;
+				for(Action action : lpjp.getActions()) {
+					String operation = action.getOperation();
+					if(Action.ACTION_CREATE.equals(operation)) {
+						Variable var =action.getVar();
+						if(!(var instanceof ParticleSpeciesPattern)) {
+							throw new RuntimeException("Allosteric product variable must be ParticleSpeciesPattern");
+						}
+						pspProduct = (ParticleSpeciesPattern)var;
+					} else if(Action.ACTION_DESTROY.equals(operation)) {
+						Variable var = action.getVar();
+						if(!(var instanceof ParticleSpeciesPattern)) {
+							throw new RuntimeException("Allosteric reactant variable must be ParticleSpeciesPattern");
+						}
+						pspReactant = (ParticleSpeciesPattern)var;
+					}
+				}
+				
+				Expression kOn = null;
+				try {
+					kOn = lpjp.getExpressions()[0];	// TODO: identify the right expression
+				} catch(Exception e) {
+					throw new RuntimeException("Reaction Rate is wrong");
+				}
+				// allosteric is a type of conditional transition
+				ParticleMolecularTypePattern pmtpReactant = null;			// allosteric reactant molecule
+				ParticleMolecularTypePattern pmtpProduct = null;
+				ParticleMolecularComponentPattern pmcpTransitionReactant = null;	// transition reactant site
+				ParticleComponentStateDefinition pcsdTransitionReactant = null;		// begin transition state
+				ParticleComponentStateDefinition pcsdTransitionProduct = null;		// end transition state
+				ParticleMolecularComponentPattern pmcpConditionReactant = null;		// condition reactant site
+				ParticleComponentStateDefinition pcsdConditionReactant = null;		// condition state
+
+				if(pspReactant.getParticleMolecularTypePatterns().size() == 1) {
+					pmtpReactant = pspReactant.getParticleMolecularTypePatterns().get(0);
+					pmtpProduct = pspProduct.getParticleMolecularTypePatterns().get(0);
+				} else {
+					throw new RuntimeException("Bound conditional transition reactant size must be 2");
+				}
+
+				// now identify the alosteric condition and transition
+				for(ParticleMolecularComponentPattern pmcpReactant : pmtpReactant.getMolecularComponentPatternList()) {
+					ParticleComponentStatePattern pcspReactant = pmcpReactant.getComponentStatePattern();
+					if(pcspReactant.isAny()) {
+						continue;
+					}
+					ParticleComponentStateDefinition pcsdReactant = pcspReactant.getParticleComponentStateDefinition();
+					ParticleMolecularComponentPattern pmcpProduct = pmtpProduct.getMolecularComponentPattern(pmcpReactant.getMolecularComponent());
+					ParticleComponentStateDefinition pcsdProduct = pmcpProduct.getComponentStatePattern().getParticleComponentStateDefinition();
+					if(pcsdReactant.getName().equals(pcsdProduct.getName())) {		// allosteric condition
+						pmcpConditionReactant = pmcpReactant;
+						pcsdConditionReactant = pcsdReactant;
+					} else {														// allosteric transition
+						pmcpTransitionReactant = pmcpReactant;
+						pcsdTransitionReactant = pcsdReactant;
+						pcsdTransitionProduct = pcsdProduct;
+					}
+				}
+				
+				int transitionIndex = pmtpReactant.getMolecularType().getComponentList().indexOf(pmcpTransitionReactant.getMolecularComponent());
+				int conditionIndex = pmtpReactant.getMolecularType().getComponentList().indexOf(pmcpConditionReactant.getMolecularComponent());
+				// finally build the transition block
+				sb.append("'").append(lpjp.getName()).append("' ::     ");
+				sb.append("'").append(pmtpReactant.getMolecularType().getName()).append("' : ")
+					.append("Site ").append(transitionIndex).append(" : '")
+					.append(pcsdTransitionReactant.getName());
+				sb.append("' --> '");
+				sb.append(pcsdTransitionProduct.getName());
+				sb.append("'  Rate ").append(kOn.infix());
+				sb.append(" Allosteric_Site ").append(conditionIndex);
+				sb.append(" State '").append(pcsdConditionReactant.getName()).append("'");
+				sb.append("\n");
+			}
+		}
+		String ret = sb.toString();
+		System.out.println(ret);
+		return;
+	}
+	
 	
 	private static void writeTransitionReactions(StringBuilder sb) {
 		for(Map.Entry<LangevinParticleJumpProcess, SubDomain> entry : particleJumpProcessMap.entrySet()) {
@@ -234,7 +328,6 @@ public class LangevinLngvWriter {
 				} catch(Exception e) {
 					throw new RuntimeException("Reaction Rate is wrong");
 				}
-				// TODO: some of these we won't need, get rid of them at the end 
 				ParticleMolecularTypePattern pmtpTransitionReactant = null;			// transition reactant molecule
 				ParticleMolecularTypePattern pmtpTransitionProduct = null;
 				ParticleMolecularTypePattern pmtpConditionReactant = null;			// condition reactant molecule
@@ -466,7 +559,7 @@ public class LangevinLngvWriter {
 					" Number " + pic.getCount().infix() + 
 					// number of site types and number of sites is the same for the vcell implementation of springsalad
 					" Site_Types " + lpmt.getComponentList().size() + " Total"  + "_Sites " + lpmt.getComponentList().size() + 
-					" Total_Links " + lpmt.getInternalLinkSpec().size() + " is2D " + (dimension == 2 ? true : false));
+					" Total_Links " + lpmt.getInternalLinkSpec().size() + " is2D " + (dimension == 2 ? true : false));	// TODO: is2D must mean if the molecule is "flat" on YZ axis projection
 			sb.append("\n");
 			sb.append("{");
 			sb.append("\n");
