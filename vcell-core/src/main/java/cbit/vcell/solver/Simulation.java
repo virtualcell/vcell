@@ -228,13 +228,12 @@ public class Simulation implements Versionable, Matchable, java.beans.VetoableCh
 				List<MolecularComponent> mcList = mt.getComponentList();
 				for(MolecularComponent mc : mcList) {
 					sb.append("'").append(mt.getName()).append("' : ")
-						.append("SITE " + (mc.getIndex()-1)).append(" : ")
+						.append("Site " + (mc.getIndex()-1)).append(" : ")
 						.append("Track Properties true");
 					sb.append("\n");
 				}
 			}
 		}
-		
 	}
 	
 private Simulation( ) {

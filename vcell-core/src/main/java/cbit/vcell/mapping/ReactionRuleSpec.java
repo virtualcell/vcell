@@ -716,7 +716,7 @@ private void writeTransitionData(StringBuilder sb, Subtype subtype, Map<String, 
 	if(TransitionCondition.BOUND == transitionCondition) {
 		sb.append(" '").append(mtpConditionReactant.getMolecularType().getName()).append("' : '")
 		.append(mcpConditionReactant.getMolecularComponent().getName()).append("' : '")
-		.append(stateConditionReactant);
+		.append(stateConditionReactant).append("'");
 	}
 	sb.append("\n");
 }
@@ -730,10 +730,10 @@ private void writeAllostericData(StringBuilder sb, Subtype subtype, Map<String, 
 	MolecularComponentPattern mcpTransitionProduct = (MolecularComponentPattern)analysisResults.get(McpProductState + "1");
 	ComponentStatePattern cspTransitionReactant = mcpTransitionReactant.getComponentStatePattern();
 	ComponentStatePattern cspTransitionProduct = mcpTransitionProduct.getComponentStatePattern();
-	int mcpAllostericReactantIndex = -1;
+	int conditionIndex = -1;		// allosteric site index
 	MolecularComponentPattern mcpAllostericReactant = null;
 	for(MolecularComponentPattern mcp : mtpTransitionReactant.getComponentPatternList()) {
-		mcpAllostericReactantIndex++;
+		conditionIndex++;
 		if(mcpTransitionReactant == mcp) {
 			continue;		// found the allosteric site index
 		}
@@ -750,15 +750,16 @@ private void writeAllostericData(StringBuilder sb, Subtype subtype, Map<String, 
 	
 	RbmKineticLaw kineticLaw = reactionRule.getKineticLaw();
 	Expression kon = kineticLaw.getLocalParameterValue(RbmKineticLaw.RbmKineticLawParameterType.MassActionForwardRate);
+	int transitionIndex = mtpTransitionReactant.getMolecularType().getComponentList().indexOf(mcpTransitionReactant.getMolecularComponent());
 
 	sb.append("'").append(reactionRule.getName()).append("' ::     ");
-	sb.append("'").append(mtpTransitionReactant.getMolecularType().getName()).append("' : '")
-		.append(mcpTransitionReactant.getMolecularComponent().getName()).append("' : '")
+	sb.append("'").append(mtpTransitionReactant.getMolecularType().getName()).append("' : ")
+		.append("Site ").append(transitionIndex).append(" : '")
 		.append(cspTransitionReactant.getComponentStateDefinition().getName());
 	sb.append("' --> '");
 	sb.append(cspTransitionProduct.getComponentStateDefinition().getName());
 	sb.append("'  Rate ").append(kon.infix());
-	sb.append(" Allosteric_Site ").append(mcpAllostericReactantIndex);
+	sb.append(" Allosteric_Site ").append(conditionIndex);
 	sb.append(" State '").append(cspAllostericReactant.getComponentStateDefinition().getName()).append("'");
 	sb.append("\n");
 }
