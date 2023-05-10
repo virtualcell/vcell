@@ -251,19 +251,13 @@ public class LangevinLngvWriter {
 						throw new RuntimeException("Bound conditional transition reactant size must be 2");
 					} else if(pspReactant.getParticleMolecularTypePatterns().size() == 2) {
 						ParticleMolecularTypePattern pmtpReactant0 = pspReactant.getParticleMolecularTypePatterns().get(0);
-						ParticleMolecularType pmtReactant0 = pmtpReactant0.getMolecularType();
 						ParticleMolecularTypePattern pmtpProduct0 = pspProduct.getParticleMolecularTypePatterns().get(0);
-						ParticleMolecularType pmtProduct0 = pmtpProduct0.getMolecularType();
 						ParticleMolecularTypePattern pmtpReactant1 = pspReactant.getParticleMolecularTypePatterns().get(1);
-						ParticleMolecularType pmtReactant1 = pmtpReactant1.getMolecularType();
 						ParticleMolecularTypePattern pmtpProduct1 = pspProduct.getParticleMolecularTypePatterns().get(1);
-						ParticleMolecularType pmtProduct1 = pmtpProduct1.getMolecularType();
-						if(pmtReactant0 != pmtProduct0) {
+						if(pmtpReactant0.getMolecularType() != pmtpProduct0.getMolecularType()) {
 							// if the order of molecules in the reactant and product are inverted, match them properly
 							pmtpProduct0 = pspProduct.getParticleMolecularTypePatterns().get(1);
-							pmtProduct0 = pmtpProduct0.getMolecularType();
 							pmtpProduct1 = pspProduct.getParticleMolecularTypePatterns().get(0);
-							pmtProduct1 = pmtpProduct1.getMolecularType();
 						}
 						if(pmtpReactant0.compareEqual(pmtpProduct0)) {
 							pmtpTransitionReactant = pmtpReactant1;				// transition reactant molecule
