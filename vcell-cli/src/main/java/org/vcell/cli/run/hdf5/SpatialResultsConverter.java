@@ -1,21 +1,12 @@
 package org.vcell.cli.run.hdf5;
 
+import cbit.vcell.modelopt.MathSystemHash;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.TempSimulation;
 import ncsa.hdf.hdf5lib.exceptions.HDF5Exception;
 
-import org.jlibsedml.SedML;
-import org.jlibsedml.AbstractTask;
-import org.jlibsedml.Output;
-import org.jlibsedml.Report;
-import org.jlibsedml.Variable;
-import org.jlibsedml.DataGenerator;
-import org.jlibsedml.RepeatedTask;
-import org.jlibsedml.Task;
-import org.jlibsedml.SubTask;
-import org.jlibsedml.UniformTimeCourse;
-import org.jlibsedml.DataSet;
+import org.jlibsedml.*;
 import org.jlibsedml.execution.IXPathToVariableIDResolver;
 import org.jlibsedml.modelsupport.SBMLSupport;
 import org.vcell.cli.run.TaskJob;
@@ -135,12 +126,15 @@ public class SpatialResultsConverter {
 
             hdf5DatasetWrapper.dataSource = hdf5DataSourceSpatial;
             for (Hdf5DataSourceSpatialVarDataItem job : hdf5DataSourceSpatial.varDataItems){
+                String dimensionLabelString = "[" + "XYZ".substring(0, job.spaceTimeDimensions.length - 1) + "T]";
+                VariableSymbol symbol = job.sedmlVariable.getSymbol();
+                if (symbol != null && "TIME".equals(symbol.name())) continue; // Skip time, no need for n-dimensional duplicated time-centric hdf5 dataset for spatial.
                 DataSet dataSet = job.sedmlDataset;
                 hdf5DatasetWrapper.datasetMetadata.sedmlDataSetDataTypes.add("float64");
                 hdf5DatasetWrapper.datasetMetadata.sedmlDataSetIds.add(
                     SpatialResultsConverter.removeVCellPrefixes(dataSet.getId(), hdf5DatasetWrapper.datasetMetadata.sedmlId));
-                hdf5DatasetWrapper.datasetMetadata.sedmlDataSetLabels.add(dataSet.getLabel());
-                hdf5DatasetWrapper.datasetMetadata.sedmlDataSetNames.add(dataSet.getName());
+                hdf5DatasetWrapper.datasetMetadata.sedmlDataSetLabels.add(dataSet.getLabel() + dimensionLabelString);
+                hdf5DatasetWrapper.datasetMetadata.sedmlDataSetNames.add(dataSet.getName() + dimensionLabelString);
                 List<Integer> shapes = new LinkedList<>();
                 if (hdf5DataSourceSpatial.scanBounds.length > 0)
                     shapes.add(hdf5DataSourceSpatial.scanBounds[hdf5DataSourceSpatial.scanBounds.length - 1]);

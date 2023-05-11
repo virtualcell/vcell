@@ -112,42 +112,42 @@ protected void executeProcess(int[] expectedReturnCodes) throws org.vcell.util.e
 	if (logger.isTraceEnabled()) logger.trace("Executable.executeProcess(" + getCommand() + ") starting...");
 	try {
 		try {
-			active.set(true);
-			runThread = Thread.currentThread(); //record for interruption via #stop
+			this.active.set(true);
+			this.runThread = Thread.currentThread(); //record for interruption via #stop
 			// reset just in case
-			setOutputString("");
-			setErrorString("");
-			setExitValue(null);
-			ProcessBuilder pb = new ProcessBuilder(Arrays.asList(command));
-			if(addedEnvironmentVariables != null){
-				pb.environment().putAll(addedEnvironmentVariables);
+			this.setOutputString("");
+			this.setErrorString("");
+			this.setExitValue(null);
+			ProcessBuilder pb = new ProcessBuilder(Arrays.asList(this.command));
+			if(this.addedEnvironmentVariables != null){
+				pb.environment().putAll(this.addedEnvironmentVariables);
 			}
 			ResourceUtil.setEnvForOperatingSystem(pb.environment());
-			pb.directory(workingDir);
+			pb.directory(this.workingDir);
 			// start the process
 			Process p = pb.start();
-			setProcess(p);
+			this.setProcess(p);
 
 			// monitor the process; blocking call
 			// will update the fields from StdOut and StdErr
 			// will return the exit code once the process terminates
-			int exitCode = monitorProcess(getProcess().getInputStream(), getProcess().getErrorStream(), 10);
+			int exitCode = this.monitorProcess(this.getProcess().getInputStream(), this.getProcess().getErrorStream(), 10);
 			Thread.interrupted(); //clear interrupted status
-			setExitValue(Integer.valueOf(exitCode));
+			this.setExitValue(exitCode);
 		} catch (Exception e) {
-			String processName = (command.length > 0) ? '"' +command[0] + '"' : "<unknown>";
+			String processName = (this.command.length > 0) ? '"' + this.command[0] + '"' : "<unknown>";
 			logger.error(String.format("Process %s ecountered a problem: ", processName), e);
 		} finally {
-			active.set(false);
+			this.active.set(false);
 		}
 		// log what happened and update status
-		if (getStatus().equals(org.vcell.util.exe.ExecutableStatus.STOPPED)) {
-			if (logger.isWarnEnabled()) logger.warn("\nExecutable.executeProcess(" + getCommand() + ") STOPPED\n");
+		if (this.getStatus().equals(org.vcell.util.exe.ExecutableStatus.STOPPED)) {
+			if (logger.isWarnEnabled()) logger.warn("\nExecutable.executeProcess(" + this.getCommand() + ") STOPPED\n");
 		} else {
-			if (logger.isTraceEnabled()) logger.trace("\nExecutable.executeProcess(" + getCommand() + ") executable returned with returncode = " + getExitValue() + "\n");
+			if (logger.isTraceEnabled()) logger.trace("\nExecutable.executeProcess(" + this.getCommand() + ") executable returned with returncode = " + this.getExitValue() + "\n");
 			boolean bExpectedReturnCode = false;
 			for (int expectedReturnCode : expectedReturnCodes){
-				if (expectedReturnCode == getExitValue()){
+				if (expectedReturnCode == this.getExitValue()){
 					bExpectedReturnCode = true;
 				}
 			}
