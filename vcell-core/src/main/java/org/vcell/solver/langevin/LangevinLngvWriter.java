@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -19,11 +20,14 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.math.Action;
+import cbit.vcell.math.JumpProcessRateDefinition;
 import cbit.vcell.math.LangevinParticleJumpProcess;
 import cbit.vcell.math.LangevinParticleMolecularComponent;
 import cbit.vcell.math.LangevinParticleMolecularType;
+import cbit.vcell.math.MacroscopicRateConstant;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
+import cbit.vcell.math.MathUtilities;
 import cbit.vcell.math.ParticleComponentStateDefinition;
 import cbit.vcell.math.ParticleComponentStatePattern;
 import cbit.vcell.math.ParticleJumpProcess;
@@ -85,7 +89,9 @@ public class LangevinLngvWriter {
 	private static Map<ParticleProperties, SubDomain> particlePropertiesMap = new LinkedHashMap<> ();			// initial conditions for seed species
 	private static Map<LangevinParticleJumpProcess, SubDomain> particleJumpProcessMap = new LinkedHashMap<> ();	// list of reactions
 	private static Set<LangevinParticleMolecularType> particleMolecularTytpeSet = new LinkedHashSet<> ();		// molecular types
+	
 	private static GeometryContext geometryContext = null;
+	private static MathDescription mathDescription = null;
 	
 //	static ArrayList<MappingOfReactionParticipants> currentMappingOfReactionParticipants = new ArrayList<MappingOfReactionParticipants>();
 //	static HashSet<BondSites> reactionReactantBondSites = new HashSet<BondSites>();
@@ -102,7 +108,7 @@ public class LangevinLngvWriter {
 		SimulationOwner so = simulation.getSimulationOwner();
 		if(so instanceof MathModel) {
 			MathModel mm = (MathModel)so;	// TODO: must make this code compatible to math model too
-			// how do I get GeometryContext for a math model?
+			// TODO: how do I get GeometryContext for a math model?
 		}
 		Geometry geometry = so.getGeometry();
 		GeometrySpec geometrySpec = geometry.getGeometrySpec();
@@ -124,12 +130,12 @@ public class LangevinLngvWriter {
 //		StructureMapping sm = simContext.getGeometryContext().getStructureMapping(struct);
 //		GeometryClass reactionStepGeometryClass = sm.getGeometryClass();
 		
-		MathDescription mathDesc = simulation.getMathDescription();
+		mathDescription = simulation.getMathDescription();
 		particlePropertiesMap.clear();
 		particleJumpProcessMap.clear();
 		particleMolecularTytpeSet.clear();
 		
-		Enumeration<SubDomain> subDomainEnum = mathDesc.getSubDomains();
+		Enumeration<SubDomain> subDomainEnum = mathDescription.getSubDomains();
 		while (subDomainEnum.hasMoreElements()) {
 			SubDomain subDomain = subDomainEnum.nextElement();
 			for(ParticleProperties pp : subDomain.getParticleProperties()) {
@@ -145,7 +151,7 @@ public class LangevinLngvWriter {
 			}
 		}
 			
-		for(ParticleMolecularType pmt : mathDesc.getParticleMolecularTypes()) {
+		for(ParticleMolecularType pmt : mathDescription.getParticleMolecularTypes()) {
 			if(!(pmt instanceof LangevinParticleMolecularType)) {
 				throw new RuntimeException("LangevinParticleMolecularType expected.");
 			}
@@ -200,7 +206,14 @@ public class LangevinLngvWriter {
 		writeAllostericReactions(sb);
 		sb.append("\n");
 
+		/* ******* WRITE THE BINDING REACTIONS ************/
+		sb.append("*** " + BINDING_REACTIONS + " ***");
+		sb.append("\n");
+		sb.append("\n");
+		writeBindingReactions(sb);
+		sb.append("\n");
 
+		
 		
 			
 		String ret = sb.toString();
@@ -210,10 +223,73 @@ public class LangevinLngvWriter {
 	}
 	
 	
+	private static void writeBindingReactions(StringBuilder sb) {
+		Map<String, LangevinParticleJumpProcess> nameToProcessDirect = new LinkedHashMap<> ();
+		Map<String, LangevinParticleJumpProcess> nameToProcessReverse = new LinkedHashMap<> ();		// need this only for reverse rate
+		for(Map.Entry<LangevinParticleJumpProcess, SubDomain> entry : particleJumpProcessMap.entrySet()) {
+			LangevinParticleJumpProcess lpjp = entry.getKey();
+			Subtype subtype = lpjp.getSubtype();
+			if(Subtype.BINDING == subtype) {
+				if(!lpjp.getName().endsWith("_reverse")) {
+					String lpjpName = lpjp.getName();
+					nameToProcessDirect.put(lpjpName, lpjp);
+				} else {
+					String lpjpName = lpjp.getName().substring(0, lpjp.getName().lastIndexOf("_reverse"));
+					nameToProcessReverse.put(lpjpName, lpjp);
+				}
+			}
+		}
+
+		for(Map.Entry<String, LangevinParticleJumpProcess> entry : nameToProcessDirect.entrySet()) {
+			Set<ParticleMolecularTypePattern> pmtpReactantSet = new LinkedHashSet<> ();
+//			Set<ParticleMolecularTypePattern> pmtpProductSet = new LinkedHashSet<> ();
+			String name = entry.getKey();
+			LangevinParticleJumpProcess lpjp = entry.getValue();
+			
+			for(Action action : lpjp.getActions()) {
+				String operation = action.getOperation();
+				if(Action.ACTION_CREATE.equals(operation)) {
+//					Variable var =action.getVar();
+//					if(!(var instanceof ParticleSpeciesPattern)) {
+//						throw new RuntimeException("Binding reaction product variable must be ParticleSpeciesPattern");
+//					}
+//					ParticleSpeciesPattern pspProduct = (ParticleSpeciesPattern)var;
+//					if(pspProduct.getParticleMolecularTypePatterns().size() != 2) {
+//						throw new RuntimeException("The product of a binding reaction must have exactly 2 molecules");
+//					}
+//					pmtpProductSet.add(pspProduct.getParticleMolecularTypePatterns().get(0));
+//					pmtpProductSet.add(pspProduct.getParticleMolecularTypePatterns().get(1));
+				} else if(Action.ACTION_DESTROY.equals(operation)) {
+					Variable var = action.getVar();
+					if(!(var instanceof ParticleSpeciesPattern)) {
+						throw new RuntimeException("Binding reaction reactant variable must be ParticleSpeciesPattern");
+					}
+					ParticleSpeciesPattern pspReactant = (ParticleSpeciesPattern)var;
+					if(pspReactant.getParticleMolecularTypePatterns().size() != 1) {
+						throw new RuntimeException("Each reactant of a binding reaction must have exactly 1 molecule");
+					}
+					pmtpReactantSet.add(pspReactant.getParticleMolecularTypePatterns().get(0));
+				}
+			}
+			if(pmtpReactantSet.size() != 2) {
+				throw new RuntimeException("A binding reaction must have exactly 2 single molecule participants");
+			}
+			
+			// we really only care about the reactants, each must have one single unbound site
+			// which is the one that will create the bond with the other reactant's unbound site
+			// TODO: ...
+				
+		}
+		
+		
+		String ret = sb.toString();
+		System.out.println(ret);
+		return;
+	}
+	
 	private static void writeAllostericReactions(StringBuilder sb) {
 		for(Map.Entry<LangevinParticleJumpProcess, SubDomain> entry : particleJumpProcessMap.entrySet()) {
 			LangevinParticleJumpProcess lpjp = entry.getKey();
-//			SubDomain subDomain = entry.getValue();
 			Subtype subtype = lpjp.getSubtype();
 			if(Subtype.ALLOSTERIC == subtype) {
 				ParticleSpeciesPattern pspReactant = null;
@@ -235,12 +311,34 @@ public class LangevinLngvWriter {
 					}
 				}
 				
+				// calculate onRate as string
 				Expression kOn = null;
-				try {
-					kOn = lpjp.getExpressions()[0];	// TODO: identify the right expression
-				} catch(Exception e) {
-					throw new RuntimeException("Reaction Rate is wrong");
+				MacroscopicRateConstant mrc = null;
+				JumpProcessRateDefinition particleRateDefinition = lpjp.getParticleRateDefinition();
+				if(particleRateDefinition instanceof MacroscopicRateConstant) {
+					mrc = (MacroscopicRateConstant)particleRateDefinition;
+				} else {
+					throw new RuntimeException("Rate definition must be MacroscopicRateConstant");
 				}
+				try {
+					kOn = mrc.getExpression();
+				} catch(Exception e) {
+					throw new RuntimeException("Reaction Rate expression is wrong");
+				}
+				Expression exp = null;
+				String onRate = null;
+				try {
+					exp = MathUtilities.substituteFunctions(kOn, mathDescription, false);
+				} catch (ExpressionException e) {
+					throw new RuntimeException("kOn substitution failed, " + e.getMessage());
+				}
+				try {
+					double rate = exp.evaluateConstant();
+					onRate = Double.toString(rate);
+				} catch (Exception e) {
+					throw new RuntimeException("rate must be a number");
+				}
+				
 				// allosteric is a type of conditional transition
 				ParticleMolecularTypePattern pmtpReactant = null;			// allosteric reactant molecule
 				ParticleMolecularTypePattern pmtpProduct = null;
@@ -285,7 +383,7 @@ public class LangevinLngvWriter {
 					.append(pcsdTransitionReactant.getName());
 				sb.append("' --> '");
 				sb.append(pcsdTransitionProduct.getName());
-				sb.append("'  Rate ").append(kOn.infix());
+				sb.append("'  Rate ").append(onRate);
 				sb.append(" Allosteric_Site ").append(conditionIndex);
 				sb.append(" State '").append(pcsdConditionReactant.getName()).append("'");
 				sb.append("\n");
@@ -323,11 +421,32 @@ public class LangevinLngvWriter {
 				}
 				
 				Expression kOn = null;
-				try {
-					kOn = lpjp.getExpressions()[0];	// TODO: identify the right expression
-				} catch(Exception e) {
-					throw new RuntimeException("Reaction Rate is wrong");
+				MacroscopicRateConstant mrc = null;
+				JumpProcessRateDefinition particleRateDefinition = lpjp.getParticleRateDefinition();
+				if(particleRateDefinition instanceof MacroscopicRateConstant) {
+					mrc = (MacroscopicRateConstant)particleRateDefinition;
+				} else {
+					throw new RuntimeException("Rate definition must be MacroscopicRateConstant");
 				}
+				try {
+					kOn = mrc.getExpression();
+				} catch(Exception e) {
+					throw new RuntimeException("Reaction Rate expression is wrong");
+				}
+				Expression exp = null;
+				String onRate = null;
+				try {
+					exp = MathUtilities.substituteFunctions(kOn, mathDescription, false);
+				} catch (ExpressionException e) {
+					throw new RuntimeException("kOn substitution failed, " + e.getMessage());
+				}
+				try {
+					double rate = exp.evaluateConstant();
+					onRate = Double.toString(rate);
+				} catch (Exception e) {
+					throw new RuntimeException("rate must be a number");
+				}
+				
 				ParticleMolecularTypePattern pmtpTransitionReactant = null;			// transition reactant molecule
 				ParticleMolecularTypePattern pmtpTransitionProduct = null;
 				ParticleMolecularTypePattern pmtpConditionReactant = null;			// condition reactant molecule
@@ -412,7 +531,7 @@ public class LangevinLngvWriter {
 					.append(pcsdTransitionReactant.getName());
 				sb.append("' --> '");
 				sb.append(pcsdTransitionProduct.getName());
-				sb.append("'  Rate ").append(kOn.infix());
+				sb.append("'  Rate ").append(onRate);
 				sb.append("  Condition ").append(transitionCondition.columnName);
 				if(TransitionCondition.BOUND == transitionCondition) {
 					sb.append(" '").append(pmtpConditionReactant.getMolecularType().getName()).append("' : '")
@@ -437,25 +556,44 @@ public class LangevinLngvWriter {
 		}
 		for(Map.Entry<LangevinParticleJumpProcess, SubDomain> entry : particleJumpProcessMap.entrySet()) {
 			LangevinParticleJumpProcess lpjp = entry.getKey();
-//			SubDomain subDomain = entry.getValue();
 			Subtype subtype = lpjp.getSubtype();
 			if(Subtype.CREATION == subtype) {
 				for(Action action : lpjp.getActions()) {
 					if(Action.ACTION_CREATE.equals(action.getOperation())) {	// species being created
 						Pair<String, String> rates = null;
 						Variable var = action.getVar();
+						MacroscopicRateConstant mrc = null;
+						JumpProcessRateDefinition particleRateDefinition = lpjp.getParticleRateDefinition();
+						if(particleRateDefinition instanceof MacroscopicRateConstant) {
+							mrc = (MacroscopicRateConstant)particleRateDefinition;
+						} else {
+							throw new RuntimeException("Rate definition must be MacroscopicRateConstant");
+						}
 						Expression kCreate = null;
 						try {
-							kCreate = lpjp.getExpressions()[0];	// TODO: identify the right expression
+							kCreate = mrc.getExpression();
 						} catch(Exception e) {
-							throw new RuntimeException("Reaction Rate is wrong");
+							throw new RuntimeException("Reaction Rate expression is wrong");
 						}
 						if(creationDecayVariableMap.containsKey(var)) {
 							rates = creationDecayVariableMap.get(var);
 							if(!rates.one.equals("0")) {
 								throw new RuntimeException("Cannot have multiple creation reactions for the same Variable");
 							}
-							rates = new Pair<> (kCreate.infix(), rates.two);
+							Expression exp = null;
+							String creationRate = null;
+							try {
+								exp = MathUtilities.substituteFunctions(kCreate, mathDescription, false);
+							} catch (ExpressionException e) {
+								throw new RuntimeException("kCreate substitution failed, " + e.getMessage());
+							}
+							try {
+								double rate = exp.evaluateConstant();
+								creationRate = Double.toString(rate);
+							} catch (Exception e) {
+								throw new RuntimeException("rate must be a number");
+							}
+							rates = new Pair<> (creationRate, rates.two);
 						} else {
 							throw new RuntimeException("Variable missing in the variables map");
 						}
@@ -467,18 +605,38 @@ public class LangevinLngvWriter {
 					if(Action.ACTION_DESTROY.equals(action.getOperation())) {	// species being destroyed
 						Pair<String, String> rates = null;
 						Variable var = action.getVar();
+						MacroscopicRateConstant mrc = null;
+						JumpProcessRateDefinition particleRateDefinition = lpjp.getParticleRateDefinition();
+						if(particleRateDefinition instanceof MacroscopicRateConstant) {
+							mrc = (MacroscopicRateConstant)particleRateDefinition;
+						} else {
+							throw new RuntimeException("Rate definition must be MacroscopicRateConstant");
+						}
 						Expression kDecay = null;
 						try {
-							kDecay = lpjp.getExpressions()[0];	// TODO: identify the right expression
+							kDecay = mrc.getExpression();
 						} catch(Exception e) {
-							throw new RuntimeException("Reaction Rate is wrong");
+							throw new RuntimeException("Reaction Rate expression is wrong");
 						}
 						if(creationDecayVariableMap.containsKey(var)) {
 							rates = creationDecayVariableMap.get(var);
 							if(!rates.two.equals("0")) {
 								throw new RuntimeException("Cannot have multiple decay reactions for the same Variable");
 							}
-							rates = new Pair<> (rates.one, kDecay.infix());
+							Expression exp = null;
+							String decayRate = null;
+							try {
+								exp = MathUtilities.substituteFunctions(kDecay, mathDescription, false);
+							} catch (ExpressionException e) {
+								throw new RuntimeException("kDecay substitution failed, " + e.getMessage());
+							}
+							try {
+								double rate = exp.evaluateConstant();
+								decayRate = Double.toString(rate);
+							} catch (Exception e) {
+								throw new RuntimeException("rate must be a number");
+							}
+							rates = new Pair<> (rates.one, decayRate);
 						} else {
 							throw new RuntimeException("Variable missing in the variables map");
 						}
