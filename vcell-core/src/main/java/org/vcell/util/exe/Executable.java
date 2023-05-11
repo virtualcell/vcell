@@ -133,10 +133,7 @@ protected void executeProcess(int[] expectedReturnCodes) throws org.vcell.util.e
 			// will return the exit code once the process terminates
 			int exitCode = this.monitorProcess(this.getProcess().getInputStream(), this.getProcess().getErrorStream(), 10);
 			Thread.interrupted(); //clear interrupted status
-			this.setExitValue(exitCode);
-		} catch (Exception e) {
-			String processName = (this.command.length > 0) ? '"' + this.command[0] + '"' : "<unknown>";
-			logger.error(String.format("Process %s ecountered a problem: ", processName), e);
+			setExitValue(Integer.valueOf(exitCode));
 		} finally {
 			this.active.set(false);
 		}
@@ -163,15 +160,16 @@ protected void executeProcess(int[] expectedReturnCodes) throws org.vcell.util.e
 		if (getStatus().isError()) {
 			throw new Exception(getErrorString());
 		}
-	} catch (Throwable e) {
-		logger.error(e.getMessage(),e);
+	} catch (Exception e) {
+		String processName = (command != null && command.length > 0) ? '"' +command[0] + '"' : "<unknown>";
+		logger.error(String.format("Command %s ecountered a problem: ", processName)+": "+e.getMessage(), e);
 		if (getStatus().isError()) {
 			// process failed and we relay the exception thrown on error status finish above
-			throw new ExecutableException(e.getMessage() + "\n\n(" + getCommand() + ")");
+			throw new ExecutableException(e.getMessage() + "\n\n(" + getCommand() + ")", e);
 		} else {
 			//something really unexpected happened, update status and log it before relaying...
 			setStatus(ExecutableStatus.getError("error running executable " + e.getMessage()));
-			throw new ExecutableException("Unexpected error: " + e.getMessage() + "\n\n(" + getCommand() + ")");
+			throw new ExecutableException("Unexpected error: " + e.getMessage() + "\n\n(" + getCommand() + ")", e);
 		}			
 	} finally {
 		close();
