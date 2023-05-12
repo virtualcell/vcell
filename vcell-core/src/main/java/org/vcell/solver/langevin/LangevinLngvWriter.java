@@ -241,12 +241,11 @@ public class LangevinLngvWriter {
 		}
 
 		for(Map.Entry<String, LangevinParticleJumpProcess> entry : nameToProcessDirect.entrySet()) {
-			Set<ParticleMolecularTypePattern> pmtpReactantSet = new LinkedHashSet<> ();
-//			Set<ParticleMolecularTypePattern> pmtpProductSet = new LinkedHashSet<> ();
+			Map<ParticleMolecularTypePattern, ParticleMolecularComponentPattern> pmtpReactantBondMap = new LinkedHashMap<> ();
 			String name = entry.getKey();
-			LangevinParticleJumpProcess lpjp = entry.getValue();
+			LangevinParticleJumpProcess lpjpDirect = entry.getValue();
 			
-			for(Action action : lpjp.getActions()) {
+			for(Action action : lpjpDirect.getActions()) {
 				String operation = action.getOperation();
 				if(Action.ACTION_CREATE.equals(operation)) {
 //					Variable var =action.getVar();
@@ -268,17 +267,111 @@ public class LangevinLngvWriter {
 					if(pspReactant.getParticleMolecularTypePatterns().size() != 1) {
 						throw new RuntimeException("Each reactant of a binding reaction must have exactly 1 molecule");
 					}
-					pmtpReactantSet.add(pspReactant.getParticleMolecularTypePatterns().get(0));
+					// we don't know yet which site will bind, so we initialize with null
+					pmtpReactantBondMap.put(pspReactant.getParticleMolecularTypePatterns().get(0), null);
 				}
 			}
-			if(pmtpReactantSet.size() != 2) {
+			if(pmtpReactantBondMap.size() != 2) {
 				throw new RuntimeException("A binding reaction must have exactly 2 single molecule participants");
 			}
 			
 			// we really only care about the reactants, each must have one single unbound site
 			// which is the one that will create the bond with the other reactant's unbound site
-			// TODO: ...
-				
+			for(Map.Entry<ParticleMolecularTypePattern, ParticleMolecularComponentPattern> entry1 : pmtpReactantBondMap.entrySet()) {
+				ParticleMolecularTypePattern pmtp = entry1.getKey();
+				int numNonTrivialBonds = 0;
+				for(ParticleMolecularComponentPattern pmcp : pmtp.getMolecularComponentPatternList()) {
+					if(ParticleMolecularComponentPattern.ParticleBondType.Possible != pmcp.getBondType()) {
+						if(ParticleMolecularComponentPattern.ParticleBondType.None != pmcp.getBondType()) {
+							throw new RuntimeException("Each reactant of a binding reaction cannot have any 'Exists' or 'Specified' bond");
+						}
+						pmtpReactantBondMap.put(pmtp, pmcp);
+						numNonTrivialBonds++;
+					}
+				}
+				if(numNonTrivialBonds != 1) {
+					throw new RuntimeException("Each reactant of a binding reaction must have exactly one non-trivial bond");
+				}
+			}
+			
+			// calculate onRate as string, from lpjpDirect
+			String onRate = null;
+			Expression kOn = null;
+			MacroscopicRateConstant mrc = null;
+			JumpProcessRateDefinition particleRateDefinition = lpjpDirect.getParticleRateDefinition();
+			if(particleRateDefinition instanceof MacroscopicRateConstant) {
+				mrc = (MacroscopicRateConstant)particleRateDefinition;
+			} else {
+				throw new RuntimeException("Rate definition must be MacroscopicRateConstant");
+			}
+			try {
+				kOn = mrc.getExpression();
+			} catch(Exception e) {
+				throw new RuntimeException("Reaction Rate expression is wrong");
+			}
+			Expression exp = null;
+			try {
+				exp = MathUtilities.substituteFunctions(kOn, mathDescription, false);
+			} catch (ExpressionException e) {
+				throw new RuntimeException("kOn substitution failed, " + e.getMessage());
+			}
+			try {
+				double rate = exp.evaluateConstant();
+				onRate = Double.toString(rate);
+			} catch (Exception e) {
+				throw new RuntimeException("rate must be a number");
+			}
+			
+			// calculate offRate as string, from lpjpReverse
+			String offRate = null;
+			LangevinParticleJumpProcess lpjpReverse = nameToProcessReverse.get(name);
+			Expression kOff = null;
+			mrc = null;
+			particleRateDefinition = lpjpReverse.getParticleRateDefinition();
+			if(particleRateDefinition instanceof MacroscopicRateConstant) {
+				mrc = (MacroscopicRateConstant)particleRateDefinition;
+			} else {
+				throw new RuntimeException("Rate definition must be MacroscopicRateConstant");
+			}
+			try {
+				kOff = mrc.getExpression();
+			} catch(Exception e) {
+				throw new RuntimeException("Reaction Rate expression is wrong");
+			}
+			exp = null;
+			try {
+				exp = MathUtilities.substituteFunctions(kOff, mathDescription, false);
+			} catch (ExpressionException e) {
+				throw new RuntimeException("kOff substitution failed, " + e.getMessage());
+			}
+			try {
+				double rate = exp.evaluateConstant();
+				offRate = Double.toString(rate);
+			} catch (Exception e) {
+				throw new RuntimeException("rate must be a number");
+			}
+
+			Set<Map.Entry<ParticleMolecularTypePattern, ParticleMolecularComponentPattern>> mapSet = pmtpReactantBondMap.entrySet();
+			Map.Entry<ParticleMolecularTypePattern, ParticleMolecularComponentPattern> elementOne = 
+					(new ArrayList<Map.Entry<ParticleMolecularTypePattern, ParticleMolecularComponentPattern>>(mapSet)).get(0);
+			Map.Entry<ParticleMolecularTypePattern, ParticleMolecularComponentPattern> elementTwo = 
+					(new ArrayList<Map.Entry<ParticleMolecularTypePattern, ParticleMolecularComponentPattern>>(mapSet)).get(1);
+			
+			// finally write the BINDING_REACTIONS block for each binding reaction
+			sb.append("'").append(lpjpDirect.getName()).append("'       ");
+			sb.append("'").append(elementOne.getKey().getMolecularType().getName()).append("' : '")
+				.append(elementOne.getValue().getMolecularComponent().getName()).append("' : '")
+				.append(elementOne.getValue().getComponentStatePattern().getParticleComponentStateDefinition().getName());
+				sb.append("'  +  '");
+			sb.append(elementTwo.getKey().getMolecularType().getName()).append("' : '")
+				.append(elementTwo.getValue().getMolecularComponent().getName()).append("' : '")
+				.append(elementTwo.getValue().getComponentStatePattern().getParticleComponentStateDefinition().getName());
+			
+			sb.append("'  kon  ").append(onRate);
+			sb.append("  koff ").append(offRate);
+			sb.append("  Bond_Length ").append(Double.toString(lpjpDirect.getBondLength()));
+			sb.append("\n");
+
 		}
 		
 		
