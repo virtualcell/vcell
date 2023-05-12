@@ -54,5 +54,4 @@ public class ExecuteImplTest {
             CLIPythonManager.getInstance().closePythonProcess();
         }
     }
-
 }

@@ -45,7 +45,8 @@ public class Hdf5DataExtractor {
      * @param nonSpatialResults the nonspatial results set of a sedml execution
      * @param spatialResults the spatial results set of a sedml execution
      * @return a wrapper for hdf5 relevant data
-     * @see collectNonspatialDatasets, collectSpatialDatasets
+     * @see NonspatialResultsConverter::convertNonspatialResultsToSedmlFormat
+     * @see SpatialResultsConverter::collectSpatialDatasets
      */
     public Hdf5DataContainer extractHdf5RelevantData(Map<TaskJob, ODESolverResultSet> nonSpatialResults, Map<TaskJob, File> spatialResults) {
         List<Hdf5SedmlResults> wrappers = new LinkedList<>();
@@ -66,10 +67,10 @@ public class Hdf5DataExtractor {
             spatialException = e;
         }
 
-        if (nonSpatialException != null && nonSpatialException != null){
+        if (nonSpatialException != null && spatialException != null){
             throw new RuntimeException("Encountered complete dataset collection failure;\nNonSpatial Reported:\n" + nonSpatialException.getMessage()
                 + "\nSpatial Reported:\n" + spatialException.getMessage());
-        } else if (nonSpatialException != null || nonSpatialException != null){
+        } else if (nonSpatialException != null || spatialException != null){
             Exception exception = nonSpatialException == null ? spatialException : nonSpatialException;
             throw new RuntimeException("Encountered " + (nonSpatialException == null ? "spatial " : "nonspatial") 
                 + "dataset collection failure.", exception);

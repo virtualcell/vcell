@@ -11,6 +11,7 @@
 package cbit.vcell.export.server;
 
 import java.io.Serializable;
+import java.util.List;
 
 import org.vcell.api.common.events.ExportVariableSpecs;
 /**
@@ -28,6 +29,11 @@ public VariableSpecs(String[] variableNames, int modeID) {
 	this.variableNames = variableNames;
 	this.modeID = modeID;
 }
+
+public VariableSpecs (List<String> variableNames, int modeID){
+	this(variableNames.toArray(new String[0]), modeID);
+}
+
 /**
  * Insert the method's description here.
  * Creation date: (4/2/2001 12:04:55 AM)

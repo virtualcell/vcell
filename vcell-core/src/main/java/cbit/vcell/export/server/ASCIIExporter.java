@@ -464,7 +464,7 @@ private List<ExportOutput> exportPDEData(OutputContext outputContext,long jobID,
 			break;
 	}
 	File hdf5TempFile = null;
-	if(asciiSpecs.getCSVRoiLayout() == ASCIISpecs.csvRoiLayout.time_sim_var){
+	if(asciiSpecs.getCSVRoiLayout() == ASCIISpecs.CsvRoiLayout.time_sim_var){
 		exportOutputV.add(new ExportOutput[] {sofyaFormat(outputContext, jobID, user, dataServerImpl, orig_vcdID, variableSpecs, timeSpecs, geometrySpecs, asciiSpecs, contextName, fileDataContainerManager)});
 	}else{
 		try {

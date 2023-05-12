@@ -327,7 +327,7 @@ public class Hdf5File {
      * Inserts a HDF5 attribute into a HDF5 group (including datasets) with a fixed length string of data
      *  
      * @param hdf5GroupID the id of the group to place the attribute in
-     * @param attributeName the name of the attribute to insert
+     * @param dataspaceName the name of the attribute to insert
      * @param data the attribute data / value list to apply
      * @throws HDF5Exception if HDF5 encountered a problem
      */
@@ -378,7 +378,7 @@ public class Hdf5File {
     }
 
     public int close() throws HDF5Exception {
-        if (this.isOpen == false) return 0;
+        if (!this.isOpen) return 0;
         //this.fileId = HDF5Constants.H5I_INVALID_HID;
         this.isOpen = false;
 

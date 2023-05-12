@@ -3,6 +3,7 @@ package org.vcell.cli.run;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 
+import ncsa.hdf.hdf5lib.exceptions.HDF5Exception;
 import org.vcell.cli.CLIRecordable;
 import org.vcell.cli.PythonStreamException;
 import org.vcell.cli.vcml.VCMLHandler;
@@ -158,7 +159,7 @@ public class ExecuteImpl {
 
     private static void singleExecOmex(File inputFile, File rootOutputDir, CLIRecordable cliRecorder,
             boolean bKeepTempFiles, boolean bExactMatchOnly, boolean bEncapsulateOutput, boolean bSmallMeshOverride) 
-            throws ExecutionException, PythonStreamException, IOException, InterruptedException {
+            throws ExecutionException, PythonStreamException, IOException, InterruptedException, HDF5Exception {
         ExecutionJob requestedExecution = new ExecutionJob(inputFile, rootOutputDir, cliRecorder, 
             bKeepTempFiles, bExactMatchOnly, bEncapsulateOutput, bSmallMeshOverride);
         requestedExecution.preprocessArchive();
