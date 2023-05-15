@@ -213,8 +213,83 @@ public class LangevinLngvWriter {
 		writeBindingReactions(sb);
 		sb.append("\n");
 
-		
-		
+		/* ****** WRITE THE MOLECULE COUNTERS **********/
+		sb.append("*** " + MOLECULE_COUNTERS + " ***");
+		sb.append("\n");
+		sb.append("\n");
+//		for(Molecule molecule: molecules) {
+//			molecule.getMoleculeCounter().writeMoleculeCounter(sb);
+//		}
+		Simulation.Counters.writeMoleculeCounters(simulation, sb);	// everything here is initialized with default
+		sb.append("\n");
+
+		/* ******  WRITE THE STATE COUNTERS *************/
+		sb.append("*** " + STATE_COUNTERS + " ***");
+		sb.append("\n");
+		sb.append("\n");
+//		for(Molecule molecule : molecules) {
+//			for(SiteType type : molecule.getTypeArray()) {
+//				for(State state : type.getStates()) {
+//					state.getStateCounter().writeStateCounter(sb);
+//				}
+//			}
+//		}
+		Simulation.Counters.writeStateCounters(simulation, sb);	// everything here is initialized with default
+		sb.append("\n");
+
+		// what follows is mainly placeholders for result statistics, obviously there's none before running the simulation
+		/* ***** WRITE THE BOND COUNTERS ***************/
+		sb.append("*** " + BOND_COUNTERS + " ***");
+		sb.append("\n");
+		sb.append("\n");
+//		for(BindingReaction reaction: bindingReactions) {
+//			reaction.getBondCounter().writeBondCounter(sb);
+//		}
+		Simulation.Counters.writeBondCounters(simulation, sb);	// everything here is initialized with default
+		sb.append("\n");
+
+		/* ********  WRITE THE SITE PROPERTY COUNTERS ************/
+		sb.append("*** " + SITE_PROPERTY_COUNTERS + " ***");
+		sb.append("\n");
+		sb.append("\n");
+//		for(Molecule molecule : molecules) {
+//			ArrayList<Site> sites = molecule.getSiteArray();
+//			for(Site site : sites) {
+//				site.getPropertyCounter().writeSitePropertyCounter(sb);
+//			}
+//		}
+		Simulation.Counters.writeSitePropertyCounters(simulation, sb);	// everything here is initialized with default
+		sb.append("\n");
+
+		/* *************** WRITE THE TRACK CLUSTERS BOOLEAN ***********/
+		sb.append("*** " + CLUSTER_COUNTERS + " ***");
+		sb.append("\n");
+		sb.append("\n");
+		sb.append("Track_Clusters: " + SpeciesContextSpec.TrackClusters);
+		sb.append("\n");
+		sb.append("\n");
+
+		// TODO: I'm not sure what's the point of using annotations here
+		/* ****** WRITE THE SYSTEM ANNOTATION ********************/
+		sb.append("*** " + SYSTEM_ANNOTATION + " ***");
+		sb.append("\n");
+		sb.append("\n");
+//		systemAnnotation.printAnnotation(sb);
+		sb.append("\n");
+
+		/* ****** WRITE THE MOLECULE ANNOTATIONS *****************/
+		sb.append("*** " + MOLECULE_ANNOTATIONS + " ***");
+		sb.append("\n");
+		sb.append("\n");
+//		writeMoleculeAnnotations(sb);
+		sb.append("\n");
+
+		/* ****** WRITE THE REACTION ANNOTATIONS *****************/
+		sb.append("*** " + REACTION_ANNOTATIONS + " ***");
+		sb.append("\n");
+		sb.append("\n");
+//		writeReactionAnnotations(sb);
+		sb.append("\n");
 			
 		String ret = sb.toString();
 		System.out.println(ret);
@@ -248,16 +323,7 @@ public class LangevinLngvWriter {
 			for(Action action : lpjpDirect.getActions()) {
 				String operation = action.getOperation();
 				if(Action.ACTION_CREATE.equals(operation)) {
-//					Variable var =action.getVar();
-//					if(!(var instanceof ParticleSpeciesPattern)) {
-//						throw new RuntimeException("Binding reaction product variable must be ParticleSpeciesPattern");
-//					}
-//					ParticleSpeciesPattern pspProduct = (ParticleSpeciesPattern)var;
-//					if(pspProduct.getParticleMolecularTypePatterns().size() != 2) {
-//						throw new RuntimeException("The product of a binding reaction must have exactly 2 molecules");
-//					}
-//					pmtpProductSet.add(pspProduct.getParticleMolecularTypePatterns().get(0));
-//					pmtpProductSet.add(pspProduct.getParticleMolecularTypePatterns().get(1));
+					; // don't need any product info
 				} else if(Action.ACTION_DESTROY.equals(operation)) {
 					Variable var = action.getVar();
 					if(!(var instanceof ParticleSpeciesPattern)) {
@@ -371,10 +437,7 @@ public class LangevinLngvWriter {
 			sb.append("  koff ").append(offRate);
 			sb.append("  Bond_Length ").append(Double.toString(lpjpDirect.getBondLength()));
 			sb.append("\n");
-
 		}
-		
-		
 		String ret = sb.toString();
 		System.out.println(ret);
 		return;
