@@ -6,7 +6,7 @@ import java.util.List;
 /**
  * Struct-class for holding dataset meta-data
  */
-public class Hdf5DatasetMetadata {
+public class Hdf5SedmlMetadata {
     // comments are example values
     public String _type; // SedPlot2D
     public List<String> sedmlDataSetDataTypes = new ArrayList<>(); // float64, float64, float64

@@ -22,13 +22,17 @@ import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.vcell.cli.CLIPythonManager;
 import org.vcell.cli.CLIRecordable;
+import org.vcell.cli.PythonStreamException;
+import org.vcell.test.BSTS_IT;
 import org.vcell.util.VCellUtilityHub;
 
 @RunWith(Parameterized.class)
+@Category(BSTS_IT.class)
 public class BSTSBasedOmexExecTest {
 	private final String testCaseFilename;
 
@@ -37,7 +41,7 @@ public class BSTSBasedOmexExecTest {
 	}
 
 	@BeforeClass
-	public static void setup() throws IOException {
+	public static void setup() throws PythonStreamException, IOException {
 		System.setProperty(PropertyLoader.installationRoot, new File("..").getAbsolutePath());
 		NativeLib.HDF5.load();
 		NativeLib.combinej.load();

@@ -20,9 +20,12 @@ import cbit.vcell.message.jms.VCMessageJms;
 import cbit.vcell.message.jms.activeMQ.VCMessagingServiceActiveMQ;
 import cbit.vcell.mongodb.VCMongoDbDriver;
 import cbit.vcell.resource.PropertyLoader;
+import org.junit.experimental.categories.Category;
+import org.vcell.test.Fast;
 
 @Ignore
-public class TestBlobMessages {
+@Category(Fast.class)
+public class BlobMessageTest {
 
 	private static final int NUM_PRODUCERS = 2;
     private static final int NUM_COMSUMERS = 3;

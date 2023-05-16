@@ -1,10 +1,17 @@
 package org.vcell.util.exe;
 
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.vcell.test.Fast;
+
 import java.io.File;
 
+@Ignore
+@Category(Fast.class)
 public class Executable2Test {
 	
-	//@Test
+	@Test
 	public void test( ) throws ExecutableException {
 		IExecutable e2 = new Executable2("cmd", "/c", "dir");
 		e2.start();
@@ -13,7 +20,7 @@ public class Executable2Test {
 		System.err.println(e2.getStderrString());
 	}
 	
-	//@Test
+	@Test
 	public void test2( ) throws ExecutableException {
 		IExecutable e2 = new Executable2("C:/cygwin/bin/bash.exe","--verbose");
 		System.out.println(e2.getStatus());

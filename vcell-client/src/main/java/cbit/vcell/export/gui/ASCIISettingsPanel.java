@@ -242,9 +242,13 @@ protected void fireJButtonOKAction_actionPerformed(java.util.EventObject newEven
  * @return The asciiSpecs property value.
  */
 public ASCIISpecs getAsciiSpecs() {
-	return new ASCIISpecs(ExportFormat.CSV, getExportDataType(), getSwitchRowsColumns(),
-			(simulationSelector==null?null:simulationSelector.getSelectedSimDataInfo()),(simulationSelector==null?null:simulationSelector.getselectedParamScanIndexes()),
-			(isCSVExport && getTimeSimVarChkBox().isSelected()?ASCIISpecs.csvRoiLayout.time_sim_var:ASCIISpecs.csvRoiLayout.var_time_val),ivjJCheckBoxHDF5.isSelected());
+	ExportSpecs.SimNameSimDataID[] simDataID = simulationSelector == null ? null : simulationSelector.getSelectedSimDataInfo();
+	int[] paramScanIndexes = simulationSelector == null ? null : simulationSelector.getselectedParamScanIndexes();
+	ASCIISpecs.CsvRoiLayout roiLayout = isCSVExport && getTimeSimVarChkBox().isSelected() ?
+			ASCIISpecs.CsvRoiLayout.time_sim_var: ASCIISpecs.CsvRoiLayout.var_time_val;
+
+	return new ASCIISpecs(simDataID, getExportDataType(), ExportFormat.CSV, paramScanIndexes, roiLayout,
+			ivjJCheckBoxHDF5.isSelected(), getSwitchRowsColumns());
 }
 /**
  * Return the ButtonGroup1 property value.
@@ -650,7 +654,7 @@ private void setExportDataType(DataType odeVariableData) {
 public void setSimDataType(int simDataType) {
 	int oldValue = fieldSimDataType;
 	fieldSimDataType = simDataType;
-	firePropertyChange("simDataType", new Integer(oldValue), new Integer(simDataType));
+	firePropertyChange("simDataType", Integer.valueOf(oldValue), Integer.valueOf(simDataType));
 }
 /**
  * Sets the switchRowsColumns property (boolean) value.
@@ -660,8 +664,9 @@ public void setSimDataType(int simDataType) {
 private void setSwitchRowsColumns(boolean switchRowsColumns) {
 	boolean oldValue = fieldSwitchRowsColumns;
 	fieldSwitchRowsColumns = switchRowsColumns;
-	firePropertyChange("switchRowsColumns", new Boolean(oldValue), new Boolean(switchRowsColumns));
+	firePropertyChange("switchRowsColumns", Boolean.valueOf(oldValue), Boolean.valueOf(switchRowsColumns));
 }
+
 
 private boolean isCSVExport = false;
 public void setIsCSVExport(boolean isCSVExport){

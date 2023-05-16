@@ -180,17 +180,6 @@ public Simulation(MathDescription mathDescription, SimulationOwner simulationOwn
 	this( );
 	addVetoableChangeListener(this);
 
-	// Give temporary fieldSimulationVersion (needed for linuxSharedLibs())
-	fieldSimulationVersion = SimulationVersion.createTempSimulationVersion();
-	
-	fieldName = fieldSimulationVersion.getName();
-	fieldDescription = fieldSimulationVersion.getAnnot();
-	if (fieldSimulationVersion.getParentSimulationReference()!=null){
-		fieldSimulationIdentifier = null;
-	}else{
-		fieldSimulationIdentifier = createSimulationID(fieldSimulationVersion.getVersionKey());
-	}
-
 	try {
 		setMathDescription(mathDescription);
 	} catch (java.beans.PropertyVetoException e) {
@@ -245,6 +234,8 @@ public Simulation(Simulation simulation, boolean bCloneMath) {
 	fieldMathOverrides = new MathOverrides (this, simulation.getMathOverrides());
 	fieldSolverTaskDescription = new SolverTaskDescription(this, simulation.getSolverTaskDescription());
 	dataProcessingInstructions = simulation.dataProcessingInstructions;
+	fieldImportedTaskID = simulation.fieldImportedTaskID;
+
 	refreshDependencies();
 }
 

@@ -36,6 +36,7 @@ public class Hdf5File {
     final private int H5T_VARIABLE = HDF5Constants.H5T_VARIABLE;
     final private int H5T_STR_NULLTERM = HDF5Constants.H5T_STR_NULLTERM;
     final private int H5T_CSET_UTF8 = HDF5Constants.H5T_CSET_UTF8;
+    final private int H5E_DEFAULT_ERROR_STACK = HDF5Constants.H5E_DEFAULT;
 
     private File javaFileTarget;
     private int fileId;
@@ -75,6 +76,17 @@ public class Hdf5File {
      */
     public Hdf5File(File parentDir, boolean allowExceptions){
         this(parentDir, "reports.h5", allowExceptions);
+    }
+
+
+    public void printErrorStack() {
+        try {
+            H5.H5Eprint2(H5E_DEFAULT_ERROR_STACK, null);
+        } catch (HDF5LibraryException e){
+            String message = "Catatrophic HDF5 error reporting failure detected; Something big just happened...";
+            logger.error(message, e);
+            throw new RuntimeException(message, e);
+        }
     }
 
     /**
@@ -315,7 +327,7 @@ public class Hdf5File {
      * Inserts a HDF5 attribute into a HDF5 group (including datasets) with a fixed length string of data
      *  
      * @param hdf5GroupID the id of the group to place the attribute in
-     * @param attributeName the name of the attribute to insert
+     * @param dataspaceName the name of the attribute to insert
      * @param data the attribute data / value list to apply
      * @throws HDF5Exception if HDF5 encountered a problem
      */
@@ -366,7 +378,7 @@ public class Hdf5File {
     }
 
     public int close() throws HDF5Exception {
-        if (this.isOpen == false) return 0;
+        if (!this.isOpen) return 0;
         //this.fileId = HDF5Constants.H5I_INVALID_HID;
         this.isOpen = false;
 

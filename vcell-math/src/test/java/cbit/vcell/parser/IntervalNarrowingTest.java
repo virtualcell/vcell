@@ -7,13 +7,16 @@ import java.util.Random;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import net.sourceforge.interval.ia_math.IAException;
 import net.sourceforge.interval.ia_math.RealInterval;
+import org.vcell.test.Fast;
 
 @Ignore
+@Category(Fast.class)
 @RunWith(Parameterized.class)
 public class IntervalNarrowingTest {
 	private Expression constraint;

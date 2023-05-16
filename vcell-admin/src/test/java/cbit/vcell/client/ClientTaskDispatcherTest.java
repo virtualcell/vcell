@@ -14,8 +14,11 @@ import org.junit.Test;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.AsynchClientTaskFunction;
 import cbit.vcell.client.task.ClientTaskDispatcher;
+import org.junit.experimental.categories.Category;
+import org.vcell.test.Fast;
 
 @Ignore
+@Category(Fast.class)
 public class ClientTaskDispatcherTest {
 	private Hashtable<String,Object> ht  = new Hashtable<>(); 
 	private  Component cmpt = new Label() ;

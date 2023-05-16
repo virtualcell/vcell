@@ -786,7 +786,7 @@ long start = System.currentTimeMillis();
 				throw new DataAccessException("Stored model has been changed or removed, please use 'Save As..'");
 			}
 		}
-		if (lg.isInfoEnabled()){
+		if (lg.isInfoEnabled() && origBioModel!=null){
 			KeyValue key = (origBioModel.getVersion()!=null) ? origBioModel.getVersion().getVersionKey() : null;
 			List<BioModel.VersionableInfo> versionableInfos = origBioModel.gatherChildVersionableInfos();
 			lg.info("Cached Biomodel("+key+"): "+versionableInfos);

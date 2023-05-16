@@ -86,8 +86,7 @@ public class Libsedml {
         } catch (IOException e) {
             throw new XMLException("Couldn't read file " + file.getName(), e);
         }
-        SEDMLDocument sedmlDoc = readDocumentFromString(fileContents);
-        return sedmlDoc;
+        return readDocumentFromString(fileContents);
     }
     
     /**

@@ -7,13 +7,16 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.vcell.test.Fast;
 
 @Ignore
+@Category(Fast.class)
 public class VCMongoDbDriverTest {
 	VCMongoDbDriver mongoDriver = null;
 
 	@Before
-	public void setUp() throws Exception {
+	public void setUp() {
 		System.getProperties().put("vcell.mongodb.host","localhost");
 		System.getProperties().put("vcell.mongodb.port","27017");
 		System.getProperties().put("vcell.mongodb.database","test");
