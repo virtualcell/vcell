@@ -77,8 +77,7 @@ public class SpringSaLaDExtensionFilter extends SelectorExtensionFilter {
 	}
 	
 	public void doSpecificWork(SpringSaLaDExporter ssldExporter, String resultString, String sPath, String sFile) throws Exception {
-		String ssldFileName = Paths.get(sPath, sFile + ".ssld").toString();
-		ssldExporter.writeDocumentStringToFile(resultString, ssldFileName, true);
+		ssldExporter.writeDocumentStringToFile(resultString, sPath, sFile);
 //		sedmlExporter.addSedmlFileToList(sFile + ".sedml");
 	}
 	

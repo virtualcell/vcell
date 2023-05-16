@@ -10,10 +10,16 @@
 
 package cbit.vcell.export;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.SpeciesPattern;
@@ -333,11 +339,102 @@ public class SpringSaLaDExporter {
 		return null;
 	}
 
-	public void writeDocumentStringToFile(String resultString, String ssldFileName, boolean b) {
+	public void writeDocumentStringToFile(String resultString, String parent, String name) {
 		// make directory for the whole project if needed
 		// save just the biomodel string as main project file
 		// MainGUI.java  saveItemActionPerformed()
+		String ssldFileName = Paths.get(parent, name + ".ssld").toString();
+        String child = name + ".ssld";			// alttest.txt
+        JPanel myPanel = new JPanel();
+    	myPanel.add(new JLabel("Do you want to create a project folder?\n(Press no if saving an already existing model)"));
+        int n = JOptionPane.showConfirmDialog(null, myPanel, "Create Folder Option", JOptionPane.YES_NO_OPTION);
+    	if(n == JOptionPane.YES_OPTION){	
+
+    	} else {
+    		File f = new File(parent + File.separator + child);
+    	}
+		
+		
+		System.out.println("begin writing file");
 		
 	}
+/*
+    private void saveItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveItemActionPerformed
+        // <editor-fold defaultstate="collapsed" desc="Method Code">
+        // Check to see if each molecule is fully connected
+        if(g.moleculesFullyConnected() && g.bindingReactionsWellDefined()
+                && g.transitionReactionsWellDefined()
+                && g.membraneMoleculesHaveAnchors()){
+            // Check to see if we've set the file yet
+            if(g.getFile() == null){
+                JFileChooser jfc = new JFileChooser(g.getDefaultFolder());		// ex: folder c:\TEMP\ss2vcell-test\dantest
+                int ret = jfc.showSaveDialog(null);								// shows content of dantest folder
+                if(ret == JFileChooser.APPROVE_OPTION){
+                	File named = IOHelp.setFileType(jfc.getSelectedFile(), "txt");		// C:\TEMP\ss2vcell-test\dantest\alttest.txt
+                	
+                    String child = named.getName();			// alttest.txt
+                    String parent = named.getParent();		// C:\TEMP\ss2vcell-test\dantest
+                  
+                    JPanel myPanel = new JPanel();
+                	myPanel.add(new JLabel("Do you want to create a project folder?\n(Press no if saving an already existing model)"));
+                    int n = JOptionPane.showConfirmDialog(null, myPanel, "Create Folder Option", JOptionPane.YES_NO_OPTION);
+                	if(n == JOptionPane.YES_OPTION){	
+                		parent = parent + File.separator + child.substring(0, child.length() - 4);	// C:\TEMP\ss2vcell-test\dantest\alttest
+                       	new File(parent).mkdir();
+                       	File f = new File(parent + File.separator + child);							// C:\TEMP\ss2vcell-test\dantest\alttest\alttest.txt
+                        g.setFile(f);
+                        
+                        File targetDir = new File(parent + File.separator + "structure_files");		// C:\TEMP\ss2vcell-test\dantest\alttest\structure_files
+                        if (!targetDir.exists() || !targetDir.isDirectory()) {
+            				targetDir.mkdir();
+            			}
+                       	g.copyPDBtoNewLocation();
+                	} else {
+                		File f = new File(parent + File.separator + child);
+                        g.setFile(f);
+                	}
+                                                        
+                    g.setDefaultFolder(new File(parent));
+                    g.writeFile();
+                    this.setTitle(g.getSystemName());
+                    treePane.setTitle(g.getSystemName());
+                }
+            } else {
+            	File targetDir = new File(g.getFile().getParent() + File.separator + "structure_files");
+                if (targetDir.exists() && targetDir.isDirectory()) {
+    				g.copyPDBtoNewLocation();
+    			}
+                g.writeFile();
+            }
+        }
+        // </editor-fold>
+    }//GEN-LAST:event_saveItemActionPerformed
+    public void copyPDBtoNewLocation(){
+    	for (Molecule m: molecules) {
+    		if(m.getFilename() != null) {
+    			File source = new File(m.getFilename());
+    			String name = source.getName();
+    			File targetDir = new File(file.getParent() + File.separator + "structure_files");
+    			File target = new File(file.getParent() + File.separator + "structure_files" + File.separator + name);
+   			
+    			if (targetDir.exists() && targetDir.isDirectory() && !target.exists() && !target.isDirectory()) {
+    				//if target does not exist, open writer
+    				try(PrintWriter p = new PrintWriter(new FileWriter(target), true)){
+    					//open reader of source
+    					try (BufferedReader br = new BufferedReader(new FileReader(source))) {
+    					    String line;
+    					    while ((line = br.readLine()) != null) {
+    					       p.println(line);
+    					    }
+    					}
 
+    					m.setFile(target.toString());
+    				}catch(IOException ioe){
+    		            ioe.printStackTrace(System.out);
+    		        }
+    			}
+    		}
+    	}
+    }
+*/
 }
