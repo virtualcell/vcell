@@ -357,7 +357,7 @@ public class SedmlJob {
             if (tempH5File == null) continue;
             tempH5File.deleteOnExit();
             if (!SystemUtils.IS_OS_WINDOWS) continue;
-            String message = "VCell can not delete intermediate file '%' on Windows OS " +
+            String message = "VCell can not delete intermediate file '%s' on Windows OS " +
                     "(this is due to the JHDF library suffering from JDK-4715154?).";
             logger.warn(String.format(message, tempH5File.getName()));
         }
