@@ -66,7 +66,7 @@ public class BatchSchedulerTest {
 		
 		
 		SchedulerDecisions schedulerDecisions = BatchScheduler.schedule(activeJobs, partitionStatistics, userQuotaOde, userQuotaPde, systemID,null);
-		schedulerDecisions.show();
+		schedulerDecisions.show(null,null);
 		
 		//
 		// enhance BatchScheduler to give reason why not to run each job that is not run.
