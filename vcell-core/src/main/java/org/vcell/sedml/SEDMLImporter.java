@@ -752,11 +752,13 @@ public class SEDMLImporter {
 						+ "_" + SEDMLUtil.getName(repeatedTask));
 			} else {
 				targetId = baseTask.getId();
-				vcSimulations.remove(baseTask.getId());
 				simContext.getBioModel().removeSimulation(vcSimulations.get(baseTask.getId()));
+				vcSimulations.remove(baseTask.getId());
 			}
+			this.createOverrides(simulation, functions);
 			vcSimulations.put(targetId, simulation);
 			simContext.getBioModel().addSimulation(simulation); // since we cloned, we don't need another sim context
+
 
 		} // end for loop
 	}
