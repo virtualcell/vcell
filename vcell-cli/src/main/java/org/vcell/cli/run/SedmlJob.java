@@ -3,6 +3,7 @@ package org.vcell.cli.run;
 import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.xml.ExternalDocInfo;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang.SystemUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jlibsedml.*;
@@ -354,11 +355,11 @@ public class SedmlJob {
 
         for (File tempH5File : solverHandler.spatialResults.values()) {
             if (tempH5File == null) continue;
-            try {
-                Files.delete(tempH5File.toPath());
-            } catch (AccessDeniedException e) {
-                logger.error("Unable to delete intermediate file (due to JHDF suffering from JDK-4715154?).", e);
-            }
+            tempH5File.deleteOnExit();
+            if (!SystemUtils.IS_OS_WINDOWS) continue;
+            String message = "VCell can not delete intermediate file '%' on Windows OS " +
+                    "(this is due to the JHDF library suffering from JDK-4715154?).";
+            logger.warn(String.format(message, tempH5File.getName()));
         }
     }
 
