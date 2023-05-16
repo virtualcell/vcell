@@ -4,10 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 
-import cbit.vcell.server.HtcJobID;
-import cbit.vcell.server.SimulationExecutionStatus;
-import cbit.vcell.server.SimulationJobStatus;
-import cbit.vcell.server.SimulationQueueEntryStatus;
+import cbit.vcell.server.*;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.server.SimulationMessage;
 import org.junit.After;
@@ -38,17 +35,16 @@ public class BatchSchedulerTest {
 	long age2 = 2;
 	long age3 = 3;  // newest
 
-	ActiveJob job1 = new ActiveJob(makeStatus(relSite,owner1,1), owner1, SchedulerStatus.WAITING, age1, relSite, pde);
-	ActiveJob job2 = new ActiveJob(makeStatus(otherSite,owner1,2), owner1, SchedulerStatus.WAITING, age1, otherSite, pde);
-	ActiveJob job3 = new ActiveJob(makeStatus(otherSite,owner1,3), owner1, SchedulerStatus.RUNNING, age2, otherSite, ode);
-	ActiveJob job4 = new ActiveJob(makeStatus(relSite,owner1,4), owner1, SchedulerStatus.WAITING, age2, relSite, ode);
-	ActiveJob job5 = new ActiveJob(makeStatus(relSite,owner1,5), owner1, SchedulerStatus.WAITING, age1, relSite, pde);
-	ActiveJob job6 = new ActiveJob(makeStatus(relSite,owner2,6), owner2, SchedulerStatus.WAITING, age2, relSite, pde);
-	ActiveJob job7 = new ActiveJob(makeStatus(relSite,owner2,7), owner2, SchedulerStatus.DISPATCHED, age3, relSite, pde);
-	ActiveJob job8 = new ActiveJob(makeStatus(relSite,owner2,8), owner2, SchedulerStatus.WAITING, age3, relSite, ode);
-	ActiveJob job9 = new ActiveJob(makeStatus(otherSite,owner2,9), owner2, SchedulerStatus.RUNNING, age2, otherSite, ode);
-	ActiveJob job10 = new ActiveJob(makeStatus(relSite,owner2,10), owner2, SchedulerStatus.WAITING, age2, relSite, pde);
-
+	ActiveJob job1 = makeJob(relSite, owner1,1, SchedulerStatus.WAITING, age1, pde);
+	ActiveJob job2 = makeJob(otherSite, owner1,2, SchedulerStatus.WAITING, age1, pde);
+	ActiveJob job3 = makeJob(otherSite, owner1,3, SchedulerStatus.RUNNING, age2, ode);
+	ActiveJob job4 = makeJob(relSite, owner1, 4, SchedulerStatus.WAITING, age2, ode);
+	ActiveJob job5 = makeJob(relSite, owner1, 5, SchedulerStatus.WAITING, age1, pde);
+	ActiveJob job6 = makeJob(relSite, owner2, 6, SchedulerStatus.WAITING, age2, pde);
+	ActiveJob job7 = makeJob(relSite, owner2, 7, SchedulerStatus.DISPATCHED, age3, pde);
+	ActiveJob job8 = makeJob(relSite, owner2, 8, SchedulerStatus.WAITING, age3, ode);
+	ActiveJob job9 = makeJob(otherSite, owner2, 9, SchedulerStatus.RUNNING, age2, ode);
+	ActiveJob job10 = makeJob(relSite, owner2, 10, SchedulerStatus.WAITING, age2, pde);
 	
 	@Before
 	public void setUp() throws Exception {
@@ -107,6 +103,12 @@ public class BatchSchedulerTest {
 
 		Assert.assertEquals(schedulerDecisions.getDecisionType(job10), BatchScheduler.SchedulerDecisionType.HELD_USER_QUOTA_PDE);
 		Assert.assertEquals(schedulerDecisions.getOrdinal(job10), new Integer(6));
+	}
+
+	private static ActiveJob makeJob(VCellServerID serverID, User owner, int key,
+									 SchedulerStatus schedulerStatus, long timestamp, boolean bPde) {
+		SimulationJobStatus jobStatus = makeStatus(serverID, owner, key);
+		return new ActiveJob(jobStatus,owner, schedulerStatus, timestamp, serverID, bPde);
 	}
 
 	private static SimulationJobStatus makeStatus(VCellServerID serverID, User owner, int key) {
