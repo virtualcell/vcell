@@ -68,6 +68,8 @@ ENTRYPOINT java \
 	-Dvcell.htc.logdir.internal=/htclogs \
 	-Dvcell.server.id="${serverid}" \
 	-Dvcell.htc.user="${batchuser}" \
+	-Dvcell.htc.hosts="${batchhost}" \
+	-Dvcell.htc.userkeyfile="${batchuserkeyfile}" \
 	-Dvcell.htc.nodelist="${htcnodelist}" \
 	-Dvcell.slurm.partition="${slurm_partition}" \
 	-Dvcell.slurm.reservation="${slurm_reservation}" \
@@ -94,5 +96,4 @@ ENTRYPOINT java \
 	-Dvcell.server.maxPdeJobsPerUser=${maxPdeJobsPerUser} \
 	-Dvcell.ssh.cmd.cmdtimeout=${vcell_ssh_cmd_cmdtimeout} \
 	-Dvcell.ssh.cmd.restoretimeout=${vcell_ssh_cmd_restoretimeout} \
-	-cp "./lib/*" cbit.vcell.message.server.dispatcher.SimulationDispatcher \
-	"${batchhost}" "${batchuser}" "${batchuserkeyfile}"
+	-cp "./lib/*" cbit.vcell.message.server.dispatcher.SimulationDispatcher

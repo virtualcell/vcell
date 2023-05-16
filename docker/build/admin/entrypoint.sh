@@ -31,6 +31,12 @@ java \
 	-Dvcell.server.dbDriverName="$VCELL_DB_DRIVER" \
 	-Dvcell.server.dbUserid="$VCELL_DB_USER" \
 	-Dvcell.db.pswdfile=/run/secrets/dbpswd.txt \
+	-Dvcell.htc.user="$VCELL_BATCH_USER" \
+	-Dvcell.htc.hosts="$VCELL_BATCH_HOST" \
+	-Dvcell.htc.userkeyfile=/run/secrets/batchuserkeyfile \
+	-Dvcell.slurm.partition="$VCELL_SLURM_PARTITION" \
+	-Dvcell.server.maxOdeJobsPerUser="$VCELL_MAX_ODE_JOBS_PER_USER" \
+	-Dvcell.server.maxPdeJobsPerUser="$VCELL_MAX_PDE_JOBS_PER_USER" \
 	-cp	'./lib/*' \
 	org.vcell.admin.cli.AdminCLI $arguments
 

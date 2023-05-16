@@ -698,14 +698,14 @@ public class SimulationDispatcher extends ServiceProvider {
 	public static void main(java.lang.String[] args) {
 		OperatingSystemInfo.getInstance();
 
-		if (args.length != 3 && args.length != 0) {
-			System.out.println("Missing arguments: " + SimulationDispatcher.class.getName() + " [sshHost sshUser sshKeyFile] ");
+		if (args.length != 0) {
+			System.out.println("No arguments expected: " + SimulationDispatcher.class.getName());
 			System.exit(1);
 		}
 
 		try {
 			PropertyLoader.loadProperties(REQUIRED_SERVICE_PROPERTIES);
-			HtcProxy htcProxy = SlurmProxy.creatCommandService(args);
+			HtcProxy htcProxy = SlurmProxy.createRemoteProxy();
 
 			int serviceOrdinal = 99;
 			VCMongoMessage.serviceStartup(ServiceName.dispatch, new Integer(serviceOrdinal), args);

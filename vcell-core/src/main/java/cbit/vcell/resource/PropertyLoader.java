@@ -55,6 +55,8 @@ public class PropertyLoader {
 	public static final String htcLogDirExternal				= record("vcell.htc.logdir.external",ValueType.GEN);
 	public static final String htcLogDirInternal				= record("vcell.htc.logdir.internal",ValueType.GEN);
 	public static final String htcUser						= record("vcell.htc.user",ValueType.GEN);
+	public static final String htcUserKeyFile				= record("vcell.htc.userkeyfile",ValueType.GEN);
+	public static final String htcHosts						= record("vcell.htc.hosts",ValueType.GEN);
 	public static final String htcPbsHome		 			= record("vcell.htc.pbs.home",ValueType.GEN);
 	public static final String htcSgeHome		 			= record("vcell.htc.sge.home",ValueType.GEN);
 	public static final String htcNodeList                   = record("vcell.htc.nodelist",ValueType.GEN);
