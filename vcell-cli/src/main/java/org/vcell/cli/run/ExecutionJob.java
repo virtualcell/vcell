@@ -142,6 +142,7 @@ public class ExecutionJob {
                 else logger.error("Processing of SedML has failed.\n" + stats.toString());
             }
             Hdf5Writer.writeHdf5(masterHdf5File, new File(this.outputDir));
+            
         } catch(PythonStreamException e){
             logger.error("Python-processing encountered fatal error. Execution is unable to properly continue.", e);
             throw e;
