@@ -1,0 +1,8 @@
+start: 0
+duration: 1.0
+steps: 10
+variables: P1,P2,P3,P4,P5,P6,P7,P8,P9,P10,P11,P13,P14,P15,P16,P18,P19,P20,P22,P24,P25,P26,P29,P31,P32,P34,P35,P37,P38,P39,P40,P41,P42,P43,P44
+absolute: 0.0001
+relative: 0.0001
+amount:
+concentration:

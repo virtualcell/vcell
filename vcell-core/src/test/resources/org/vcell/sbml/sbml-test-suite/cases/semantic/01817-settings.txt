@@ -1,0 +1,8 @@
+start: 0
+duration: 10
+steps: 10
+variables: false, False, FALSE, a, b, c
+absolute: 0.0001
+relative: 0.0001
+amount:
+concentration: 

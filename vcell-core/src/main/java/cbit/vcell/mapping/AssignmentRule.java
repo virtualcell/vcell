@@ -198,7 +198,7 @@ public class AssignmentRule implements Matchable, Serializable, IssueSource, Sim
 			return;
 		}
 		if(assignmentRuleVar instanceof Structure.StructureSize) {
-			String msg = Structure.StructureSize.typeName + " Variable is not supported at this time";
+			String msg = Structure.StructureSize.typeName + " Variable is not supported at this time for AssignmentRules";
 			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.ERROR));
 			return;
 		}

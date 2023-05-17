@@ -213,7 +213,7 @@ public class RateRule implements Matchable, Serializable, IssueSource, Simulatio
 			return;
 		}
 		if(rateRuleVar instanceof Structure.StructureSize) {
-			String msg = Structure.StructureSize.typeName + " Variable is not supported at this time";
+			String msg = Structure.StructureSize.typeName + " Variable is not supported at this time for RateRules";
 			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.ERROR));
 			return;
 		}

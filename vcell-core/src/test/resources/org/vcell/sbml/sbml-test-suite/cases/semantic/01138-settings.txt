@@ -1,0 +1,8 @@
+start: 0
+duration: 1
+steps: 10
+variables: p8, sub1__prel
+absolute: 0.0001
+relative: 0.0001
+amount: 
+concentration:

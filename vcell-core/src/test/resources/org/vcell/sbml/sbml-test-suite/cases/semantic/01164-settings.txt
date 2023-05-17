@@ -1,0 +1,8 @@
+start: 0
+duration: 1
+steps: 10
+variables: submod1__S, submod1__E, submod1__D, submod1__ES, submod2__S, submod2__E, submod2__D, submod2__ES
+absolute: 0.0001
+relative: 0.0001
+amount: submod1__S, submod1__E, submod1__D, submod1__ES, submod2__S, submod2__E, submod2__D, submod2__ES
+concentration: 

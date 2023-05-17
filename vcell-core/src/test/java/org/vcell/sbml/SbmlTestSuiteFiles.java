@@ -5,12 +5,12 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.vcell.test.Fast;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.function.IntPredicate;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 
@@ -21,7 +21,8 @@ public class SbmlTestSuiteFiles {
     private final static String SbmlTestSuiteFilenameFormatPattern_l3v2 = "sbml-test-suite/cases/semantic/%05d-sbml-l3v2.xml";
     private final static String SbmlTestSuiteFilenameFormatPattern_l3v1 = "sbml-test-suite/cases/semantic/%05d-sbml-l3v1.xml";
     private final static String SbmlTestSuiteFilenameFormatPattern_l2v5 = "sbml-test-suite/cases/semantic/%05d-sbml-l2v5.xml";
-    private final static String BiomodelsFilenameFormatPattern = "BIO%010d_urn.xml";
+    private final static String SbmlTestSuiteResultsCSVPattern = "sbml-test-suite/cases/semantic/%05d-results.csv";
+    private final static String SbmlTestSuiteSettingsPattern = "sbml-test-suite/cases/semantic/%05d-settings.txt";
 
     public static int[] getSbmlTestSuiteCases() {
         IntPredicate testFilter = t -> (t >= 0) && (t < 1200);
@@ -53,7 +54,26 @@ public class SbmlTestSuiteFiles {
         }
     }
 
-     private static InputStream getFileFromResourceAsStream(String fileName) throws FileNotFoundException {
+    public static String getSbmlTestCaseSettingsAsText(int testCaseNumber) throws FileNotFoundException {
+        return getFileContentsAsString(testCaseNumber, SbmlTestSuiteSettingsPattern);
+    }
+
+    public static String getSbmlTestCaseResultsAsCSV(int testCaseNumber) throws FileNotFoundException {
+        return getFileContentsAsString(testCaseNumber, SbmlTestSuiteResultsCSVPattern);
+    }
+
+    private static String getFileContentsAsString(int testCaseNumber, String filePattern) throws FileNotFoundException {
+        int[] testCases = getSbmlTestSuiteCases();
+        if (!Arrays.stream(testCases).anyMatch(i -> i == testCaseNumber)) {
+            throw new RuntimeException("test case not found for SBML Test Suite test "+testCaseNumber);
+        }
+        InputStream is = getFileFromResourceAsStream(String.format(filePattern, testCaseNumber));
+        String textContent = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))
+                            .lines().collect(Collectors.joining("\n"));
+        return textContent;
+    }
+
+    private static InputStream getFileFromResourceAsStream(String fileName) throws FileNotFoundException {
         InputStream inputStream = SbmlTestSuiteFiles.class.getResourceAsStream(fileName);
         if (inputStream == null) {
             throw new FileNotFoundException("file not found! " + fileName);
@@ -71,6 +91,18 @@ public class SbmlTestSuiteFiles {
     public void test_read_sbmlFile() throws URISyntaxException {
         InputStream inputStream = getSbmlTestCase(getSbmlTestSuiteCases()[0]);
         Assert.assertTrue(inputStream != null);
+    }
+
+    @Test
+    public void test_read_settings() throws FileNotFoundException {
+        String textContent = getSbmlTestCaseSettingsAsText(getSbmlTestSuiteCases()[0]);
+        Assert.assertTrue(textContent != null);
+    }
+
+    @Test
+    public void test_read_results() throws FileNotFoundException {
+        String textContent = getSbmlTestCaseResultsAsCSV(getSbmlTestSuiteCases()[0]);
+        Assert.assertTrue(textContent != null);
     }
 
 

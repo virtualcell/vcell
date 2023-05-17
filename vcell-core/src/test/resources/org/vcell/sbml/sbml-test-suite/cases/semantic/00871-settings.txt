@@ -1,0 +1,8 @@
+start: 0
+duration: 3
+steps: 50
+variables: A1, A2, A3, A4
+absolute: 1.000000e-002
+relative: 0.0001
+amount: A1, A2, A3, A4
+concentration:
