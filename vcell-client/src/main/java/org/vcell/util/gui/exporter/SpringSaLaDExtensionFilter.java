@@ -41,7 +41,7 @@ public class SpringSaLaDExtensionFilter extends SelectorExtensionFilter {
 			return;
 		}
 		BioModel bioModel = c.chosenContext.getBioModel();
-		JFrame currentWindow = c.currentWindow;
+		parentComponent = c.currentWindow;	// will need it later, hack to center another window in ssldExporter.writeDocumentStringToFile()
 		if(bioModel != null) {
 			for(SimulationContext candidate : bioModel.getSimulationContexts()) {
 				if(candidate.getApplicationType() == Application.SPRINGSALAD) {
@@ -77,7 +77,7 @@ public class SpringSaLaDExtensionFilter extends SelectorExtensionFilter {
 	}
 	
 	public void doSpecificWork(SpringSaLaDExporter ssldExporter, String resultString, String sPath, String sFile) throws Exception {
-		ssldExporter.writeDocumentStringToFile(resultString, sPath, sFile);
+		ssldExporter.writeDocumentStringToFile(resultString, sPath, sFile, parentComponent);
 //		sedmlExporter.addSedmlFileToList(sFile + ".sedml");
 	}
 	

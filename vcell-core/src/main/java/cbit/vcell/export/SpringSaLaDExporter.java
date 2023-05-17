@@ -10,8 +10,11 @@
 
 package cbit.vcell.export;
 
+import java.awt.Component;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.nio.file.Paths;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -339,76 +342,47 @@ public class SpringSaLaDExporter {
 		return null;
 	}
 
-	public void writeDocumentStringToFile(String resultString, String parent, String name) {
+	public void writeDocumentStringToFile(String resultString, String parent, String name, Component parentComponent) throws IOException {
 		// make directory for the whole project if needed
 		// save just the biomodel string as main project file
 		// MainGUI.java  saveItemActionPerformed()
-		String ssldFileName = Paths.get(parent, name + ".ssld").toString();
-        String child = name + ".ssld";			// alttest.txt
-        JPanel myPanel = new JPanel();
-    	myPanel.add(new JLabel("Do you want to create a project folder?\n(Press no if saving an already existing model)"));
-        int n = JOptionPane.showConfirmDialog(null, myPanel, "Create Folder Option", JOptionPane.YES_NO_OPTION);
-    	if(n == JOptionPane.YES_OPTION){	
+		String child = name + ".ssld";			// alttest.ssld
+		JPanel myPanel = new JPanel();
 
-    	} else {
-    		File f = new File(parent + File.separator + child);
-    	}
-		
-		
-		System.out.println("begin writing file");
-		
+		// TODO: we don't need a project folder when exporting since all project data will be in the vcell database
+		// we only keep this code for historic reasons while implementing the springsalad app as part of vcell
+		myPanel.add(new JLabel("Do you want to create a project folder?\n(Press no if saving an already existing model)"));
+		int n = JOptionPane.showConfirmDialog(parentComponent, myPanel, "Create Folder Option", JOptionPane.YES_NO_OPTION);
+		if(n == JOptionPane.YES_OPTION) {
+			parent = parent + File.separator + name;	// C:\TEMP\ss2vcell-test\dantest\alttest
+			new File(parent).mkdir();
+//			File f = new File(parent + File.separator + child);							// C:\TEMP\ss2vcell-test\dantest\alttest\alttest.txt
+//			g.setFile(f);
+
+			File targetDir = new File(parent + File.separator + "structure_files");		// C:\TEMP\ss2vcell-test\dantest\alttest\structure_files
+			if (!targetDir.exists() || !targetDir.isDirectory()) {
+				targetDir.mkdir();
+			}
+		}
+		String fileName = parent + File.separator + child;
+		writeStringToFile(resultString, fileName, false);
+		System.out.println("finished exporting to ssld");
 	}
+
+	private static void writeStringToFile(String string, String filename, boolean bUseUTF8) throws IOException {
+		File outputFile = new File(filename);
+		OutputStreamWriter fileOSWriter = null;
+		if (bUseUTF8) {
+			fileOSWriter = new OutputStreamWriter(new FileOutputStream(outputFile),"UTF-8");
+		} else {
+			fileOSWriter = new OutputStreamWriter(new FileOutputStream(outputFile));
+		}
+		fileOSWriter.write(string);
+		fileOSWriter.flush();
+		fileOSWriter.close();
+	}
+
 /*
-    private void saveItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveItemActionPerformed
-        // <editor-fold defaultstate="collapsed" desc="Method Code">
-        // Check to see if each molecule is fully connected
-        if(g.moleculesFullyConnected() && g.bindingReactionsWellDefined()
-                && g.transitionReactionsWellDefined()
-                && g.membraneMoleculesHaveAnchors()){
-            // Check to see if we've set the file yet
-            if(g.getFile() == null){
-                JFileChooser jfc = new JFileChooser(g.getDefaultFolder());		// ex: folder c:\TEMP\ss2vcell-test\dantest
-                int ret = jfc.showSaveDialog(null);								// shows content of dantest folder
-                if(ret == JFileChooser.APPROVE_OPTION){
-                	File named = IOHelp.setFileType(jfc.getSelectedFile(), "txt");		// C:\TEMP\ss2vcell-test\dantest\alttest.txt
-                	
-                    String child = named.getName();			// alttest.txt
-                    String parent = named.getParent();		// C:\TEMP\ss2vcell-test\dantest
-                  
-                    JPanel myPanel = new JPanel();
-                	myPanel.add(new JLabel("Do you want to create a project folder?\n(Press no if saving an already existing model)"));
-                    int n = JOptionPane.showConfirmDialog(null, myPanel, "Create Folder Option", JOptionPane.YES_NO_OPTION);
-                	if(n == JOptionPane.YES_OPTION){	
-                		parent = parent + File.separator + child.substring(0, child.length() - 4);	// C:\TEMP\ss2vcell-test\dantest\alttest
-                       	new File(parent).mkdir();
-                       	File f = new File(parent + File.separator + child);							// C:\TEMP\ss2vcell-test\dantest\alttest\alttest.txt
-                        g.setFile(f);
-                        
-                        File targetDir = new File(parent + File.separator + "structure_files");		// C:\TEMP\ss2vcell-test\dantest\alttest\structure_files
-                        if (!targetDir.exists() || !targetDir.isDirectory()) {
-            				targetDir.mkdir();
-            			}
-                       	g.copyPDBtoNewLocation();
-                	} else {
-                		File f = new File(parent + File.separator + child);
-                        g.setFile(f);
-                	}
-                                                        
-                    g.setDefaultFolder(new File(parent));
-                    g.writeFile();
-                    this.setTitle(g.getSystemName());
-                    treePane.setTitle(g.getSystemName());
-                }
-            } else {
-            	File targetDir = new File(g.getFile().getParent() + File.separator + "structure_files");
-                if (targetDir.exists() && targetDir.isDirectory()) {
-    				g.copyPDBtoNewLocation();
-    			}
-                g.writeFile();
-            }
-        }
-        // </editor-fold>
-    }//GEN-LAST:event_saveItemActionPerformed
     public void copyPDBtoNewLocation(){
     	for (Molecule m: molecules) {
     		if(m.getFilename() != null) {
