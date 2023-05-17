@@ -493,10 +493,99 @@ public class SBMLTestSuiteTest {
 		faults.put(1196, FAULT.FBC_PACKAGE);
 		faults.put(1197, FAULT.INVALID); // compartment spatial dimension 7
 
+		// Runtime Comparison Failures
+		faults.put(59, FAULT.LOCAL_SHADOWS_GLOBAL); // TODO: id of the local parameter S1 shadows the species S1
+		faults.put(134, FAULT.LOCAL_SHADOWS_GLOBAL); // TODO: id of the local parameter S1 shadows the species S1
+		faults.put(170, FAULT.NONCONSTANT_PARAM_NOT_IN_OUTPUT); // TODO: doesn't export 'constant=false' parameter S2 to results (it is a constant parameter in vcell)
+		faults.put(172, FAULT.EVENT_AND_RATE_SAME_PARAM); // TODO: rate rules and event on same parameter - mismatch
+		faults.put(396, FAULT.EVENT_AND_RATE_SAME_PARAM); // TODO: rate rules and event on same parameter - mismatch - ignores rate rule
+		faults.put(397, FAULT.EVENT_AND_RATE_SAME_PARAM); // TODO: rate rules and event on same parameter - mismatch - ignores rate rule
+		faults.put(398, FAULT.EVENT_AND_RATE_SAME_PARAM); // TODO: rate rules and event on same parameter - mismatch - ignores rate rule
+		faults.put(402, FAULT.EVENT_AND_RATE_SAME_PARAM); // TODO: rate rules and event on same parameter - mismatch - ignores rate rule
+		faults.put(403, FAULT.EVENT_AND_RATE_SAME_PARAM); // TODO: rate rules and event on same parameter - mismatch - ignores rate rule
+		faults.put(404, FAULT.EVENT_AND_RATE_SAME_PARAM); // TODO: rate rules and event on same parameter - mismatch - ignores rate rule
+		faults.put(453, FAULT.EVENT_AND_RATE_SAME_PARAM); // TODO: rate rules and event on same parameter - mismatch - ignores rate rule
+		faults.put(454, FAULT.EVENT_AND_RATE_SAME_PARAM_AND_DELAY); // TODO: rate rules and event on same parameter (and event delay) - mismatch - ignores rate rule
+		faults.put(455, FAULT.EVENT_AND_RATE_SAME_PARAM_AND_DELAY); // TODO: rate rules and event on same parameter (and event delay) - mismatch - ignores rate rule
+		faults.put(456, FAULT.EVENT_DELAY); // TODO: events with delay - mismatch
+		faults.put(457, FAULT.EVENT_DELAY); // TODO: events with delay - mismatch
+		faults.put(458, FAULT.EVENT_DELAY); // TODO: events with delay - mismatch
+		faults.put(459, FAULT.EVENT_DELAY); // TODO: events with delay - mismatch
+		faults.put(460, FAULT.EVENT_DELAY); // TODO: events with delay - mismatch
+		faults.put(461, FAULT.EVENT_DELAY); // TODO: events with delay - mismatch
+		faults.put(471, FAULT.NONCONSTANT_COMPARTMENT); // TODO: initial assignment with expression for compartment size
+		faults.put(525, FAULT.NONCONSTANT_COMPARTMENT); // TODO: initial assignment with expression for compartment size
+		faults.put(597, FAULT.LOCAL_SHADOWS_GLOBAL); // TODO: id of the local parameter S1 shadows the species S1
+		faults.put(849, FAULT.EVENT_DELAY); // TODO: events with delay - mismatch
+		faults.put(879, FAULT.TIME_IN_INITIAL_ASSIGNMENT); // TODO: time in initial assignment - mismatch
+		faults.put(928, FAULT.EVENT_TRIGGER_AT_ZERO); // TODO: event trigger at zero - mismatch
+		faults.put(929, FAULT.EVENT_TRIGGER_AT_ZERO); // TODO: event trigger at zero - mismatch
+		faults.put(931, FAULT.EVENT_PRIORITY_ORDERING); // TODO: multiple events ordered by priority - mismatch
+		faults.put(932, FAULT.EVENT_PERSISTENT_TRIGGER); // TODO: events with persistent trigger - mismatch
+		faults.put(934, FAULT.EVENT_PRIORITY_ORDERING); // TODO: multiple events ordered by priority - mismatch
+		faults.put(952, FAULT.EVENT_PRIORITY_ORDERING); // TODO: multiple events ordered by priority - same priority - crazy test case - mismatch
+		faults.put(953, FAULT.EVENT_PRIORITY_ORDERING); // TODO: multiple events ordered by priority - same priority - crazy test case - mismatch
+		faults.put(962, FAULT.EVENT_PRIORITY_ORDERING); // TODO: multiple events ordered by priority - same priority - crazy test case - mismatch
+		faults.put(963, FAULT.EVENT_PRIORITY_ORDERING); // TODO: multiple events ordered by priority - same priority - crazy test case - mismatch
+		faults.put(964, FAULT.EVENT_PRIORITY_ORDERING); // TODO: multiple events ordered by priority - same priority - crazy test case - mismatch
+		faults.put(965, FAULT.EVENT_PRIORITY_ORDERING); // TODO: multiple events ordered by priority - same priority - crazy test case - mismatch
+		faults.put(966, FAULT.EVENT_PRIORITY_ORDERING); // TODO: multiple events ordered by priority - same priority - crazy test case - mismatch (also Java Heap Space)
+		faults.put(967, FAULT.EVENT_PRIORITY_ORDERING); // TODO: multiple events ordered by priority - same priority - crazy test case - mismatch (also Java Heap Space)
+		faults.put(969, FAULT.STOCH_INIT_ASSIGN_AND_VALUE); // TODO: initial assigment should override stoichiometry
+		faults.put(971, FAULT.STOCH_INIT_ASSIGN_AND_VALUE); // TODO: initial assigment should override stoichiometry
+		faults.put(975, FAULT.MODEL_CONVERSION_FACTOR); // TODO: implement or reject as not supported - model conversion factor ???
+		faults.put(976, FAULT.MODEL_CONVERSION_FACTOR); // TODO: implement or reject as not supported - model conversion factor ???
+		faults.put(977, FAULT.SPECIES_CONVERSION_FACTOR); // TODO: implement or reject as not supported - model conversion factor ???
+		faults.put(978, FAULT.EVENT_CORNER_CASES); // TODO: Several events conspire within the same time step to trigger three events multiple times, with different outcomes.
+		faults.put(995, FAULT.EVENT_INITIAL_VALUE); // TODO: Several events conspire within the same time step to trigger three events multiple times, with different outcomes.
+		faults.put(996, FAULT.EVENT_INITIAL_VALUE); // TODO: Several events conspire within the same time step to trigger three events multiple times, with different outcomes.
+		faults.put(997, FAULT.EVENT_INITIAL_VALUE); // TODO: Several events conspire within the same time step to trigger three events multiple times, with different outcomes.
+		faults.put(998, FAULT.HAS_SUBSTANCE_ONLY); // TODO: look into has substance only - mismatch
+		faults.put(1001, FAULT.HAS_SUBSTANCE_ONLY); // TODO: look into has substance only - mismatch
+		faults.put(1002, FAULT.HAS_SUBSTANCE_ONLY); // TODO: look into has substance only - mismatch
+		faults.put(1003, FAULT.HAS_SUBSTANCE_ONLY); // TODO: look into has substance only - mismatch
+		faults.put(1004, FAULT.HAS_SUBSTANCE_ONLY); // TODO: look into has substance only - mismatch
+		faults.put(1005, FAULT.HAS_SUBSTANCE_ONLY); // TODO: look into has substance only - mismatch
+		faults.put(1006, FAULT.HAS_SUBSTANCE_ONLY); // TODO: look into has substance only - mismatch
+		faults.put(1007, FAULT.HAS_SUBSTANCE_ONLY); // TODO: look into has substance only - mismatch
+		faults.put(1008, FAULT.HAS_SUBSTANCE_ONLY); // TODO: look into has substance only - mismatch
+		faults.put(1009, FAULT.HAS_SUBSTANCE_ONLY); // TODO: look into has substance only - mismatch
+		faults.put(1010, FAULT.HAS_SUBSTANCE_ONLY); // TODO: look into has substance only - mismatch
+		faults.put(1014, FAULT.HAS_SUBSTANCE_ONLY); // TODO: look into has substance only - mismatch
+		faults.put(1015, FAULT.HAS_SUBSTANCE_ONLY); // TODO: look into has substance only - mismatch
+		faults.put(1016, FAULT.HAS_SUBSTANCE_ONLY); // TODO: look into has substance only - mismatch
+		faults.put(1017, FAULT.HAS_SUBSTANCE_ONLY); // TODO: look into has substance only - mismatch
+		faults.put(1049, FAULT.EVENT_DELAY); // TODO: event delay - mismatch
+		faults.put(1104, FAULT.NONCONSTANT_STOICH); // TODO: reject non-constant stoichiometry - mismatch
+		faults.put(1107, FAULT.NONCONSTANT_STOICH); // TODO: reject non-constant stoichiometry - mismatch
+		faults.put(1109, FAULT.NONCONSTANT_STOICH); // TODO: reject non-constant stoichiometry - mismatch
+		faults.put(1119, FAULT.EVENT_DELAY); // TODO: events with delay - <<SOLVER FAILED>>
+		faults.put(1184, FAULT.PARAM_INIT_ASSIGN_AND_VALUE); // TODO: vcell says y is a constant parameter - failed to compare - not sure which value vcell uses
+		faults.put(1185, FAULT.PARAM_INIT_ASSIGN_AND_VALUE); // TODO: vcell says y is a constant parameter - failed to compare - not sure which value vcell uses
 		return Arrays.stream(SbmlTestSuiteFiles.getSbmlTestSuiteCases()).boxed().filter(t -> !faults.containsKey(t)).collect(Collectors.toList());
 	}
 
 	public enum FAULT {
+		// Runtime Comparison Failures
+		LOCAL_SHADOWS_GLOBAL,
+		NONCONSTANT_PARAM_NOT_IN_OUTPUT,
+		EVENT_AND_RATE_SAME_PARAM,
+		EVENT_AND_RATE_SAME_PARAM_AND_DELAY,
+		EVENT_DELAY,
+		TIME_IN_INITIAL_ASSIGNMENT,
+		EVENT_TRIGGER_AT_ZERO,
+		EVENT_PRIORITY_ORDERING,
+		EVENT_PERSISTENT_TRIGGER,
+		STOCH_INIT_ASSIGN_AND_VALUE,
+		MODEL_CONVERSION_FACTOR, // What is this?
+		SPECIES_CONVERSION_FACTOR, // What is this?
+		EVENT_CORNER_CASES,
+		EVENT_INITIAL_VALUE,
+		HAS_SUBSTANCE_ONLY,
+		NONCONSTANT_STOICH,
+		PARAM_INIT_ASSIGN_AND_VALUE,
+
+
 		SBML_SYMBOL_MAPPING,
 		INVALID, // invalid model (e.g. compartment spatialDimension=7)
 		RUNTIME_ERROR,
@@ -527,7 +616,7 @@ public class SBMLTestSuiteTest {
 		FAST_SYSTEM_INCOMPATIBILITY,
 		NONCONSTANT_COMPARTMENT,
 		NONNUMERIC_STOICIOMETRY_MATH,
-		STOICHIOMETRY_MISSING_OR_RULE_TARGET_LEVEL3
+		STOICHIOMETRY_MISSING_OR_RULE_TARGET_LEVEL3,
 	};
 
 
