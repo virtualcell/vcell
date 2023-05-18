@@ -139,9 +139,10 @@ public class NonspatialResultsConverter {
                 for (int jobNum = 0; jobNum < numJobs; jobNum++){
                     double[] synthesizedDataset = new double[maxLengthOfData];
                     for (int datumIndex = 0; datumIndex < synthesizedDataset.length; datumIndex++){
+
                         for (Variable var : resultsByVariable.keySet()){
                             //if (processedDataSet == null) processedDataSet = new NonspatialValueHolder(sedml.getTaskWithId(var.getReference()));
-                            if (jobNum >= resultsByVariable.size()) continue;
+                            if (jobNum >= resultsByVariable.get(var).getNumSets()) continue;
                             NonspatialValueHolder results = resultsByVariable.get(var);
                             double[] specficJobDataSet = results.listOfResultSets.get(jobNum);
                             double datum = datumIndex >= specficJobDataSet.length ? Double.NaN : specficJobDataSet[datumIndex];

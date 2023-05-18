@@ -51,6 +51,11 @@ public class SubTask {
         + "]";
     }
 
+    @Override
+    public int hashCode(){
+        return this.taskId.hashCode();
+    }
+
     public String getTaskId() {
         return taskId;
     }

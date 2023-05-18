@@ -118,7 +118,7 @@ public class SEDMLImporter {
 	 * Get the list of biomodels from the sedml initialized at construction time.
 	 */
 	public List<BioModel> getBioModels() {
-		List<BioModel> bioModelList = new ArrayList<>();
+		List<BioModel> bioModelList = new LinkedList<>();
 		List<org.jlibsedml.Model> modelList;
 		List<org.jlibsedml.Simulation> simulationList;
 		List<AbstractTask> abstractTaskList;
@@ -131,7 +131,7 @@ public class SEDMLImporter {
 		try {
 	        // iterate through all the elements and show them at the console
 	        modelList = this.sedml.getModels();
-	        if (modelList.isEmpty()) return bioModelList; // nothing to import
+	        if (modelList.isEmpty()) return new LinkedList<>(); // nothing to import
 	        simulationList = this.sedml.getSimulations();
 	        abstractTaskList = this.sedml.getTasks();
 	        dataGeneratorList = this.sedml.getDataGenerators();
@@ -141,7 +141,7 @@ public class SEDMLImporter {
 	        
 			// NB: We don't know how many BioModels we'll end up with as some model changes may be translatable as simulations with overrides
 			bioModelMap = this.createBioModels(modelList);
-			bioModelList = new LinkedList<>(new HashSet<>(bioModelMap.values()));
+			Set<BioModel> uniqueBioModels = new HashSet<>(bioModelMap.values());
 			
 			// Creating one VCell Simulation for each SED-ML actual Task (RepeatedTasks get added as parameter scan overrides)
 			for (AbstractTask selectedTask : abstractTaskList) {
@@ -303,10 +303,14 @@ public class SEDMLImporter {
 				}
 				
 			}
+
 			// now process repeated tasks, if any
 			this.addRepeatedTasks(abstractTaskList, vcSimulations);
+
+			// we may have added simulations in addRepeatedTasks() {method above}, so let's make sure we add them.
+
 			// finally try to pretty up simulation names
-			for (BioModel bm : bioModelList) {
+			for (BioModel bm : uniqueBioModels) {
 				Simulation[] sims = bm.getSimulations();
 				for (Simulation sim : sims) {
 					String taskId = sim.getImportedTaskID();
@@ -325,16 +329,16 @@ public class SEDMLImporter {
 				}
 			}
 			// purge unused biomodels and applications
-			Iterator<BioModel> bioModelIterator = bioModelList.iterator();
-			while (bioModelIterator.hasNext()) {
-				BioModel doc = bioModelIterator.next();
+
+
+			for (BioModel doc : uniqueBioModels){
 				for (int i = 0; i < doc.getSimulationContexts().length; i++) {
 					if (doc.getSimulationContext(i).getName().startsWith("original_imported_")) {
 						doc.removeSimulationContext(doc.getSimulationContext(i));
 						i--;
 					}
 				}
-				if (doc.getSimulationContexts().length == 0) bioModelIterator.remove();
+				if (doc.getSimulationContexts().length > 0) bioModelList.add(doc);
 			}
 
 			// try to consolidate SimContexts into fewer (possibly just one) BioModels
@@ -591,147 +595,173 @@ public class SEDMLImporter {
 		}
 	}
 
-	private void addRepeatedTasks(List<AbstractTask> ttt, Map<String, Simulation> vcSimulations) throws ExpressionException {
-		for (AbstractTask selectedTask : ttt) {
-			if (selectedTask instanceof RepeatedTask) {
-				RepeatedTask rt = (RepeatedTask)selectedTask;
-				if (!rt.getResetModel() || rt.getSubTasks().size() != 1) { // if removed, see RunUtils.prepareNonspatialHdf5()
-					logger.error("sequential RepeatedTask not yet supported, task "+SEDMLUtil.getName(selectedTask)+" is being skipped");
-					continue;
-				}
-				AbstractTask referredTask;
-				// find the actual Task, which can be directly referred or indirectly through a chain of RepeatedTasks (in case of multiple parameter scans)
-				do {
-					SubTask st = rt.getSubTasks().entrySet().iterator().next().getValue(); // single subtask
-					String taskId = st.getTaskId();
-					referredTask = this.sedml.getTaskWithId(taskId);
-					if (referredTask == null) throw new RuntimeException("Unexpected null-Task");
-					if (referredTask instanceof RepeatedTask) rt = (RepeatedTask)referredTask;
-				} while (referredTask instanceof RepeatedTask);
-				rt = (RepeatedTask)selectedTask; // need to reset if we had a chain above
-				Task actualTask = (Task)referredTask;
-				Simulation simulation = vcSimulations.get(actualTask.getId());
-				SimulationContext importedSimcontext; SimulationContext convertedSimcontext;
-				SimulationContext currentSC = (SimulationContext)simulation.getSimulationOwner();
-				if (((SimulationContext)simulation.getSimulationOwner()).getApplicationType() == Application.NETWORK_STOCHASTIC) {
-					importedSimcontext = currentSC.getBioModel().getSimulationContext(0);
-					convertedSimcontext = (SimulationContext)simulation.getSimulationOwner();
-				} else {
-					importedSimcontext = (SimulationContext)simulation.getSimulationOwner();
-					convertedSimcontext = null;
-				}
-				List<SetValue> changes = rt.getChanges();
-				List<Change> functions = new ArrayList<>();
-				for (SetValue change : changes) {
-					Range range = rt.getRange(change.getRangeReference());
-					ASTNode math = change.getMath();
-					Expression exp = new ExpressionMathMLParser(null).fromMathML(math, "t");
-					if (exp.infix().equals(range.getId())) {
-						// add a parameter scan to the simulation referred by the actual task
-						ConstantArraySpec scanSpec;
-						String targetID = this.sbmlSupport
-								.getIdFromXPathIdentifer(change.getTargetXPath().getTargetAsString());
-						String constant = this.resolveConstant(importedSimcontext, convertedSimcontext, targetID);
-						if (range instanceof UniformRange) {
-							UniformRange ur = (UniformRange)range;
-							scanSpec = ConstantArraySpec.createIntervalSpec(constant,
-									""+Math.min(ur.getStart(), ur.getEnd()), ""+Math.max(ur.getStart(), ur.getEnd()),
-									ur.getNumberOfPoints(), ur.getType().equals(UniformType.LOG));
-						} else if (range instanceof VectorRange) {
-							VectorRange vr = (VectorRange)range;
+	private void addRepeatedTasks(List<AbstractTask> listOfTasks, Map<String, Simulation> vcSimulations) throws ExpressionException, PropertyVetoException {
+		for (AbstractTask abstractedRepeatedTask : listOfTasks) {
+			if (!(abstractedRepeatedTask instanceof RepeatedTask)) continue;
+
+			RepeatedTask repeatedTask = (RepeatedTask)abstractedRepeatedTask;
+			if (!repeatedTask.getResetModel() || repeatedTask.getSubTasks().size() != 1) { // if removed, see RunUtils.prepareNonspatialHdf5()
+				logger.error("sequential RepeatedTask not yet supported, task "+SEDMLUtil.getName(abstractedRepeatedTask)+" is being skipped");
+				continue;
+			}
+
+			Task baseTask = this.getBaseTask(repeatedTask);
+			Simulation simulation = new Simulation(vcSimulations.get(baseTask.getId())); // make a copy of the original simulation
+			SimulationContext importedSimcontext,convertedSimcontext;
+			SimulationContext currentSC = (SimulationContext)simulation.getSimulationOwner();
+			if (((SimulationContext)simulation.getSimulationOwner()).getApplicationType() == Application.NETWORK_STOCHASTIC) {
+				importedSimcontext = currentSC.getBioModel().getSimulationContext(0);
+				convertedSimcontext = (SimulationContext)simulation.getSimulationOwner();
+			} else {
+				importedSimcontext = (SimulationContext)simulation.getSimulationOwner();
+				convertedSimcontext = null;
+			}
+
+			List<SetValue> changes = repeatedTask.getChanges();
+			List<Change> functions = new ArrayList<>();
+			for (SetValue change : changes) {
+				Range range = repeatedTask.getRange(change.getRangeReference());
+				ASTNode math = change.getMath();
+				Expression exp = new ExpressionMathMLParser(null).fromMathML(math, "t");
+				if (exp.infix().equals(range.getId())) {
+					// add a parameter scan to the simulation referred by the actual task
+					ConstantArraySpec scanSpec;
+					String targetID = this.sbmlSupport
+							.getIdFromXPathIdentifer(change.getTargetXPath().getTargetAsString());
+					String constant = this.resolveConstant(importedSimcontext, convertedSimcontext, targetID);
+					if (range instanceof UniformRange) {
+						UniformRange ur = (UniformRange)range;
+						scanSpec = ConstantArraySpec.createIntervalSpec(constant,
+								""+Math.min(ur.getStart(), ur.getEnd()), ""+Math.max(ur.getStart(), ur.getEnd()),
+								ur.getNumberOfPoints(), ur.getType().equals(UniformType.LOG));
+					} else if (range instanceof VectorRange) {
+						VectorRange vr = (VectorRange)range;
+						String[] values = new String[vr.getNumElements()];
+						for (int i = 0; i < values.length; i++) {
+							values[i] = Double.toString(vr.getElementAt(i));
+						}
+						scanSpec = ConstantArraySpec.createListSpec(constant, values);
+					} else if (range instanceof FunctionalRange){
+						FunctionalRange fr = (FunctionalRange)range;
+						Range index = repeatedTask.getRange(fr.getRange());
+						if (index instanceof UniformRange) {
+							UniformRange ur = (UniformRange)index;
+							ASTNode frMath = fr.getMath();
+							Expression frExpMin = new ExpressionMathMLParser(null).fromMathML(frMath, "t");
+							Expression frExpMax = new ExpressionMathMLParser(null).fromMathML(frMath, "t");
+
+							// Substitute Range values
+							frExpMin.substituteInPlace(new Expression(ur.getId()), new Expression(ur.getStart()));
+							frExpMax.substituteInPlace(new Expression(ur.getId()), new Expression(ur.getEnd()));
+
+							// Substitute SED-ML parameters
+							Map<String, AbstractIdentifiableElement> params = fr.getParameters();
+							System.out.println(params);
+							for (String paramId : params.keySet()) {
+								frExpMin.substituteInPlace(new Expression(params.get(paramId).getId()), new Expression(((Parameter)params.get(paramId)).getValue()));
+								frExpMax.substituteInPlace(new Expression(params.get(paramId).getId()), new Expression(((Parameter)params.get(paramId)).getValue()));
+							}
+
+							// Substitute SED-ML variables (which reference SBML entities)
+							Map<String, AbstractIdentifiableElement> vars = fr.getVariables();
+							System.out.println(vars);
+							for (String varId : vars.keySet()) {
+								String sbmlID = this.sbmlSupport.getIdFromXPathIdentifer(((org.jlibsedml.Variable)vars.get(varId)).getTarget());
+								String vcmlName = this.resolveConstant(importedSimcontext, convertedSimcontext, sbmlID);
+								frExpMin.substituteInPlace(new Expression(varId), new Expression(vcmlName));
+								frExpMax.substituteInPlace(new Expression(varId), new Expression(vcmlName));
+							}
+							frExpMin = this.scaleIfChanged(frExpMin, targetID, importedSimcontext, convertedSimcontext);
+							frExpMax = this.scaleIfChanged(frExpMax, targetID, importedSimcontext, convertedSimcontext);
+							frExpMin = frExpMin.simplifyJSCL();
+							frExpMax = frExpMax.simplifyJSCL();
+							String minValueExpStr = frExpMin.infix();
+							String maxValueExpStr = frExpMax.infix();
+							scanSpec = ConstantArraySpec.createIntervalSpec(constant, minValueExpStr, maxValueExpStr, ur.getNumberOfPoints(), ur.getType().equals(UniformType.LOG));
+						} else if (index instanceof VectorRange) {
+							VectorRange vr = (VectorRange)index;
+							ASTNode frMath = fr.getMath();
+							Expression expFact = new ExpressionMathMLParser(null).fromMathML(frMath, "t");
+							// Substitute SED-ML parameters
+							Map<String, AbstractIdentifiableElement> params = fr.getParameters();
+							System.out.println(params);
+							for (String paramId : params.keySet()) {
+								expFact.substituteInPlace(new Expression(params.get(paramId).getId()), new Expression(((Parameter)params.get(paramId)).getValue()));
+							}
+							// Substitute SED-ML variables (which reference SBML entities)
+							Map<String, AbstractIdentifiableElement> vars = fr.getVariables();
+							System.out.println(vars);
+							for (String varId : vars.keySet()) {
+								String sbmlID = this.sbmlSupport.getIdFromXPathIdentifer(((org.jlibsedml.Variable)vars.get(varId)).getTarget());
+								String vcmlName = this.resolveConstant(importedSimcontext, convertedSimcontext, sbmlID);
+								expFact.substituteInPlace(new Expression(varId), new Expression(vcmlName));
+							}
+							expFact = expFact.simplifyJSCL();
 							String[] values = new String[vr.getNumElements()];
 							for (int i = 0; i < values.length; i++) {
-								values[i] = Double.toString(vr.getElementAt(i));
+								Expression expFinal = new Expression(expFact);
+								// Substitute Range values
+								expFinal.substituteInPlace(new Expression(vr.getId()), new Expression(vr.getElementAt(i)));
+								expFinal = this.scaleIfChanged(expFinal, targetID, importedSimcontext, convertedSimcontext);
+								expFinal = expFinal.simplifyJSCL();
+								values[i] = expFinal.infix();
 							}
 							scanSpec = ConstantArraySpec.createListSpec(constant, values);
-						} else if (range instanceof FunctionalRange){
-							FunctionalRange fr = (FunctionalRange)range;
-							Range index = rt.getRange(fr.getRange());
-							if (index instanceof UniformRange) {
-								UniformRange ur = (UniformRange)index;
-								ASTNode frMath = fr.getMath();
-								Expression frExpMin = new ExpressionMathMLParser(null).fromMathML(frMath, "t");
-								Expression frExpMax = new ExpressionMathMLParser(null).fromMathML(frMath, "t");
-
-								// Substitute Range values
-								frExpMin.substituteInPlace(new Expression(ur.getId()), new Expression(ur.getStart()));
-								frExpMax.substituteInPlace(new Expression(ur.getId()), new Expression(ur.getEnd()));
-
-								// Substitute SED-ML parameters
-								Map<String, AbstractIdentifiableElement> params = fr.getParameters();
-								System.out.println(params);
-								for (String paramId : params.keySet()) {
-									frExpMin.substituteInPlace(new Expression(params.get(paramId).getId()), new Expression(((Parameter)params.get(paramId)).getValue()));
-									frExpMax.substituteInPlace(new Expression(params.get(paramId).getId()), new Expression(((Parameter)params.get(paramId)).getValue()));
-								}
-								
-								// Substitute SED-ML variables (which reference SBML entities)
-								Map<String, AbstractIdentifiableElement> vars = fr.getVariables();
-								System.out.println(vars);
-								for (String varId : vars.keySet()) {
-									String sbmlID = this.sbmlSupport.getIdFromXPathIdentifer(((org.jlibsedml.Variable)vars.get(varId)).getTarget());
-									String vcmlName = this.resolveConstant(importedSimcontext, convertedSimcontext, sbmlID);
-									frExpMin.substituteInPlace(new Expression(varId), new Expression(vcmlName));
-									frExpMax.substituteInPlace(new Expression(varId), new Expression(vcmlName));
-								}
-								frExpMin = this.scaleIfChanged(frExpMin, targetID, importedSimcontext, convertedSimcontext);
-								frExpMax = this.scaleIfChanged(frExpMax, targetID, importedSimcontext, convertedSimcontext);
-								frExpMin = frExpMin.simplifyJSCL();
-								frExpMax = frExpMax.simplifyJSCL();
-								String minValueExpStr = frExpMin.infix();
-								String maxValueExpStr = frExpMax.infix();
-								scanSpec = ConstantArraySpec.createIntervalSpec(constant, minValueExpStr, maxValueExpStr, ur.getNumberOfPoints(), ur.getType().equals(UniformType.LOG));
-							} else if (index instanceof VectorRange) {
-								VectorRange vr = (VectorRange)index;
-								ASTNode frMath = fr.getMath();
-								Expression expFact = new ExpressionMathMLParser(null).fromMathML(frMath, "t");
-								// Substitute SED-ML parameters
-								Map<String, AbstractIdentifiableElement> params = fr.getParameters();
-								System.out.println(params);
-								for (String paramId : params.keySet()) {
-									expFact.substituteInPlace(new Expression(params.get(paramId).getId()), new Expression(((Parameter)params.get(paramId)).getValue()));
-								}
-								// Substitute SED-ML variables (which reference SBML entities)
-								Map<String, AbstractIdentifiableElement> vars = fr.getVariables();
-								System.out.println(vars);
-								for (String varId : vars.keySet()) {
-									String sbmlID = this.sbmlSupport.getIdFromXPathIdentifer(((org.jlibsedml.Variable)vars.get(varId)).getTarget());
-									String vcmlName = this.resolveConstant(importedSimcontext, convertedSimcontext, sbmlID);
-									expFact.substituteInPlace(new Expression(varId), new Expression(vcmlName));
-								}
-								expFact = expFact.simplifyJSCL();
-								String[] values = new String[vr.getNumElements()];
-								for (int i = 0; i < values.length; i++) {
-									Expression expFinal = new Expression(expFact);
-									// Substitute Range values
-									expFinal.substituteInPlace(new Expression(vr.getId()), new Expression(vr.getElementAt(i)));
-									expFinal = this.scaleIfChanged(expFinal, targetID, importedSimcontext, convertedSimcontext);
-									expFinal = expFinal.simplifyJSCL();
-									values[i] = expFinal.infix();
-								}
-								scanSpec = ConstantArraySpec.createListSpec(constant, values);
-							} else {
-								// we only support FunctionalRange with intervals and lists
-								logger.error("FunctionalRange does not reference UniformRange or VectorRange, task " + SEDMLUtil.getName(selectedTask)
-								+ " is being skipped");
-								continue;								
-							}
 						} else {
-							logger.error("unsupported Range class found, task " + SEDMLUtil.getName(selectedTask)
-									+ " is being skipped");
+							// we only support FunctionalRange with intervals and lists
+							logger.error("FunctionalRange does not reference UniformRange or VectorRange, task " + SEDMLUtil.getName(abstractedRepeatedTask)
+							+ " is being skipped");
 							continue;
 						}
-						MathOverrides mo = simulation.getMathOverrides();
-						mo.putConstantArraySpec(scanSpec);
 					} else {
-						functions.add(change);
+						logger.error("unsupported Range class found, task " + SEDMLUtil.getName(abstractedRepeatedTask)
+								+ " is being skipped");
+						continue;
 					}
+					MathOverrides mo = simulation.getMathOverrides();
+					mo.putConstantArraySpec(scanSpec);
+				} else {
+					functions.add(change);
 				}
-				this.createOverrides(simulation, functions);
-				// we didn't bomb out, so update the simulation
-				simulation.setImportedTaskID(selectedTask.getId());
 			}
-		}
+			/*
+			this.createOverrides(simulation, functions);
+			// we didn't bomb out, so update the simulation
+			simulation.setImportedTaskID(abstractedRepeatedTask.getId());
+			simulation.setName(SEDMLUtil.getName(this.sedml.getSimulation(baseTask.getSimulationReference()))
+					+ "_" + SEDMLUtil.getName(repeatedTask));
+			SimulationOwner simOwner = vcSimulations.get(baseTask.getId()).getSimulationOwner();
+			if (!(simOwner instanceof SimulationContext)) throw new RuntimeException("Unexpected sim owner");
+			SimulationContext simContext = (SimulationContext) simOwner;
+			vcSimulations.put(repeatedTask.getId(), simulation);
+			simContext.getBioModel().addSimulation(simulation); // since we cloned, we don't need another sim context
+
+			 */
+
+			simulation.setImportedTaskID(abstractedRepeatedTask.getId());
+
+			//TODO: Need version info on new sim!!!
+			String targetId;
+			SimulationOwner simOwner = vcSimulations.get(baseTask.getId()).getSimulationOwner();
+			if (!(simOwner instanceof SimulationContext)) throw new RuntimeException("Unexpected sim owner");
+			SimulationContext simContext = (SimulationContext) simOwner;
+			// We need to determine if the 'base simulation' is needed for an output
+			// if we don't we should remove the entry in the map.
+			if (this.simulationIsNeededAsOutput(vcSimulations.get(baseTask.getId()))){
+				targetId = repeatedTask.getId();
+				simulation.setName(SEDMLUtil.getName(this.sedml.getSimulation(baseTask.getSimulationReference()))
+						+ "_" + SEDMLUtil.getName(repeatedTask));
+			} else {
+				targetId = baseTask.getId();
+				simContext.getBioModel().removeSimulation(vcSimulations.get(baseTask.getId()));
+				vcSimulations.remove(baseTask.getId());
+			}
+			this.createOverrides(simulation, functions);
+			vcSimulations.put(targetId, simulation);
+			simContext.getBioModel().addSimulation(simulation); // since we cloned, we don't need another sim context
+
+
+		} // end for loop
 	}
 
 	// We need to process biomodels that may depend on other biomodels, either with changes or with references!
@@ -1017,6 +1047,54 @@ public class SEDMLImporter {
 			}
 		}
 		simTaskDesc.setErrorTolerance(errorTolerance);
+	}
+
+	private Task getBaseTask(RepeatedTask repeatedTask){
+		// Can we not have multiple base Tasks? If we have multiple sub-tasks,
+		// then couldn't there be more than one base Task?
+		AbstractTask referredTask;
+		SubTask st = repeatedTask.getSubTasks().entrySet().iterator().next().getValue(); // single subtask
+		String taskId = st.getTaskId();
+
+		// find the base-task, by recursively checking the task being referenced until it's not a repeated task
+		referredTask = this.sedml.getTaskWithId(taskId);
+		if (referredTask == null) throw new RuntimeException("Unexpected null-Task");
+		if (referredTask instanceof RepeatedTask) return this.getBaseTask((RepeatedTask) referredTask);
+		return (Task) referredTask;
+	}
+
+	private boolean simulationIsNeededAsOutput(Simulation sim){
+		// We need to do a bit of digging to get to the bottom of this: if our simulation isn't connected to an output
+		// we do not need it for output purposes. This is important in the import step, as we get all types of models.
+
+		List<Report> reportList = new LinkedList<>();
+		for (Output output : this.sedml.getOutputs()){
+			if (!(output instanceof Report)) continue;
+			reportList.add((Report)output);
+		}
+
+		for (Report report : reportList){
+			Set<String> neededTaskReferences = new HashSet<>();
+			for (DataSet ds : report.getListOfDataSets()){
+				for (DataGenerator dataGenerator : this.sedml.getDataGenerators()){
+					if (ds.getDataReference().equals(dataGenerator.getId())){
+						for (org.jlibsedml.Variable var : dataGenerator.getListOfVariables()){
+							neededTaskReferences.add(var.getReference());
+						}
+					}
+				}
+			}
+
+			for (AbstractTask task : this.sedml.getTasks()){
+				if (
+						neededTaskReferences.contains(task.getId()) &&
+						task.getId().equals(sim.getImportedTaskID())
+				) return true;
+			}
+
+		}
+		// We couldn't find the imported sim ID in the list of needed reports. VCell probably doesn't need it directly.
+		return false;
 	}
 
 	private enum ADVANCED_MODEL_TYPES {

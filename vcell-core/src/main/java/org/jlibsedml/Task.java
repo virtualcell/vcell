@@ -15,7 +15,7 @@ public class Task extends AbstractTask {
 	}
 	
 	 @Override
-		public String getElementName() {
+	 public String getElementName() {
 			return SEDMLTags.TASK_TAG;
 		}
 
@@ -31,7 +31,7 @@ public class Task extends AbstractTask {
 	 * @param simulationReference
 	 * @throws IllegalArgumentException if any argument except name is null or empty string.
 	 */
-	public Task(String id, String name, String modelReference, String simulationReference ) {
+	public Task(String id, String name, String modelReference, String simulationReference) {
 		super(id,name);
 		if(SEDMLElementFactory.getInstance().isStrictCreation()){
 		Assert.checkNoNullArgs(modelReference, simulationReference);
