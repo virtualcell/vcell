@@ -141,6 +141,7 @@ public class SEDMLImporter {
 	        
 			// NB: We don't know how many BioModels we'll end up with as some model changes may be translatable as simulations with overrides
 			bioModelMap = this.createBioModels(modelList);
+			Set<BioModel> uniqueBioModels = new HashSet<>(bioModelMap.values());
 			
 			// Creating one VCell Simulation for each SED-ML actual Task (RepeatedTasks get added as parameter scan overrides)
 			for (AbstractTask selectedTask : abstractTaskList) {
@@ -309,7 +310,7 @@ public class SEDMLImporter {
 			// we may have added simulations in addRepeatedTasks() {method above}, so let's make sure we add them.
 
 			// finally try to pretty up simulation names
-			for (BioModel bm : bioModelMap.values()) {
+			for (BioModel bm : uniqueBioModels) {
 				Simulation[] sims = bm.getSimulations();
 				for (Simulation sim : sims) {
 					String taskId = sim.getImportedTaskID();
@@ -330,7 +331,7 @@ public class SEDMLImporter {
 			// purge unused biomodels and applications
 
 
-			for (BioModel doc : bioModelMap.values()){
+			for (BioModel doc : uniqueBioModels){
 				for (int i = 0; i < doc.getSimulationContexts().length; i++) {
 					if (doc.getSimulationContext(i).getName().startsWith("original_imported_")) {
 						doc.removeSimulationContext(doc.getSimulationContext(i));

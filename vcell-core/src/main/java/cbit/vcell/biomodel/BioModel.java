@@ -15,7 +15,6 @@ import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.beans.VetoableChangeSupport;
 import java.util.*;
-import java.util.Map.Entry;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -60,7 +59,8 @@ import cbit.vcell.solver.Simulation;
  */
 @SuppressWarnings("serial")
 public class BioModel implements VCDocument, Matchable, VetoableChangeListener, PropertyChangeListener,
-		Identifiable, IdentifiableProvider, IssueSource, Displayable, VCellSbmlName {
+		Identifiable, IdentifiableProvider, IssueSource, Displayable, VCellSbmlName
+{
 	public static final String PROPERTY_NAME_SIMULATION_CONTEXTS = "simulationContexts";
 	public final static String SIMULATION_CONTEXT_DISPLAY_NAME = "Application";
 	public final static String SIMULATION_DISPLAY_NAME = "Simulation";
@@ -74,7 +74,7 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
 	private Model fieldModel = null;
 	private SimulationContext[] fieldSimulationContexts = new SimulationContext[0];
 	private Simulation[] fieldSimulations = new Simulation[0];
-	private String fieldDescription;
+	private String fieldDescription = new String();
 	private VCMetaData vcMetaData = null;
 
 	private final PathwayModel pathwayModel = new PathwayModel();
@@ -94,7 +94,6 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
 			throw new RuntimeException(e.getMessage(), e);
 		}
 	}
-
 	/**
 	 * BioModel constructor comment.
 	 */
@@ -448,11 +447,11 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
 		}
 		if (lg.isInfoEnabled()) {
 			long end_time = System.currentTimeMillis();
-	//		lg.info("Time spent on Issue detection: " + (end_time - start_time));
+//		lg.info("Time spent on Issue detection: " + (end_time - start_time));
 		}
-	//	for (Simulation simulation : fieldSimulations) {
-	//		simulation.gatherIssues(issueContext,issueList);
-	//	}
+//	for (Simulation simulation : fieldSimulations) {
+//		simulation.gatherIssues(issueContext,issueList);
+//	}
 	}
 
 
@@ -675,11 +674,11 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
 	}
 
 
-		/**
-		 * This method gets called when a bound property is changed.
-		 * @param evt A PropertyChangeEvent object describing the event source
-		 *   	and the property that has changed.
-		 */
+	/**
+	 * This method gets called when a bound property is changed.
+	 * @param evt A PropertyChangeEvent object describing the event source
+	 *   	and the property that has changed.
+	 */
 	public void propertyChange(java.beans.PropertyChangeEvent evt) {
 
 		//
@@ -943,15 +942,15 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
 		SimulationContext[] oldValue = fieldSimulationContexts;
 		fireVetoableChange(PROPERTY_NAME_SIMULATION_CONTEXTS, oldValue, simulationContexts);
 		for (int i = 0; oldValue!=null && i < oldValue.length; i++){
-	//		oldValue[i].removePropertyChangeListener(this);
-	//		oldValue[i].removeVetoableChangeListener(this);
+//		oldValue[i].removePropertyChangeListener(this);
+//		oldValue[i].removeVetoableChangeListener(this);
 			oldValue[i].setBioModel(null);
 		}
 		fieldSimulationContexts = simulationContexts;
 		for (int i = 0; simulationContexts!=null && i < simulationContexts.length; i++){
-	//This is done in PropertyChange, not needed here and causes duplication in PropertyChange listener list
-	//		simulationContexts[i].addPropertyChangeListener(this);
-	//		simulationContexts[i].addVetoableChangeListener(this);
+//This is done in PropertyChange, not needed here and causes duplication in PropertyChange listener list
+//		simulationContexts[i].addPropertyChangeListener(this);
+//		simulationContexts[i].addVetoableChangeListener(this);
 			simulationContexts[i].setBioModel(this);
 		}
 		updateSimulationOwners();
@@ -1022,74 +1021,133 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
 	/**
 	 * This method gets called when a constrained property is changed.
 	 *
-	 * @param     event a <code>PropertyChangeEvent</code> object describing the
+	 * @param     evt a <code>PropertyChangeEvent</code> object describing the
 	 *   	      event source and the property that has changed.
 	 * @exception PropertyVetoException if the recipient wishes the property
 	 *              change to be rolled back.
 	 */
-	public void vetoableChange(java.beans.PropertyChangeEvent event) throws java.beans.PropertyVetoException {
-		String nameOfPropertyToChange = event.getPropertyName();
-		Object objectMakingTheRequest = event.getSource();
-		Object replacementValueToApply = event.getNewValue();
-
-
-		if (nameOfPropertyToChange.equals("mathDescription")){
-			if (objectMakingTheRequest instanceof SimulationContext && replacementValueToApply == null && this.fieldSimulations != null){
-				// don't let SimulationContext's MathDescription be set to null if any Simulations depend on it, can't recover from this
-				for (Simulation sim : this.fieldSimulations){
-					if (sim.getMathDescription() != event.getOldValue()) continue;
-					String vetoExceptionMessage = String.format("error: simulation '%s' will be orphaned, MathDescription set to null for Application '%s'",
-							sim.getName(), ((SimulationContext)objectMakingTheRequest).getName());
-					throw new PropertyVetoException(vetoExceptionMessage, event);
-
+	public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans.PropertyVetoException {
+		//
+		// don't let SimulationContext's MathDescription be set to null if any Simulations depend on it, can't recover from this
+		//
+		if (evt.getSource() instanceof SimulationContext && evt.getPropertyName().equals("mathDescription") && evt.getNewValue()==null){
+			if (fieldSimulations!=null){
+				for (int i=0;i<fieldSimulations.length;i++){
+					if (fieldSimulations[i].getMathDescription() == evt.getOldValue()){
+						throw new PropertyVetoException("error: simulation "+fieldSimulations[i].getName()+" will be orphaned, MathDescription set to null for Application "+((SimulationContext)evt.getSource()).getName(),evt);
+					}
 				}
-			} else if (objectMakingTheRequest instanceof Simulation){
-				if (replacementValueToApply == null){
-					// don't let a Simulation's MathDescription be set to null, can't recover from this
-					String vetoExceptionMessage = String.format("error: Simulation '%s' will be orphaned (MathDescription set to null)",
-							((Simulation)objectMakingTheRequest).getName());
-					throw new PropertyVetoException(vetoExceptionMessage, event);
-				}
-
-				if (this.fieldSimulationContexts != null){
-					// don't let a Simulation change it's MathDescription unless that MathDescription is from an Application.
-					// note that SimulationContext's MathDescription is changed first, then Simulation's MathDescription is updated
-					// this is ALWAYS the order of events.
-					MathDescription newMathDescription = (MathDescription)event.getNewValue();
-					boolean bMathFound = false;
-
-					for (SimulationContext simulationContext : this.fieldSimulationContexts){
-						if (simulationContext.getMathDescription() != newMathDescription) continue; // Keep looking...
+			}
+		}
+		//
+		// don't let a Simulation's MathDescription be set to null, can't recover from this
+		//
+		if (evt.getSource() instanceof Simulation && evt.getPropertyName().equals("mathDescription") && evt.getNewValue()==null){
+			throw new PropertyVetoException("error: Simulation "+((Simulation)evt.getSource()).getName()+" will be orphaned (MathDescription set to null)",evt);
+		}
+		//
+		// don't let a Simulation change it's MathDescription unless that MathDescription is from an Application.
+		// note that SimulationContext's MathDescription is changed first, then Simulation's MathDescription is updated
+		// this is ALWAYS the order of events.
+		//
+		if (evt.getSource() instanceof Simulation && evt.getPropertyName().equals("mathDescription")){
+			MathDescription newMathDescription = (MathDescription)evt.getNewValue();
+			if (fieldSimulationContexts!=null){
+				boolean bMathFound = false;
+				for (int i=0;i<fieldSimulationContexts.length;i++){
+					if (fieldSimulationContexts[i].getMathDescription() == newMathDescription){
 						bMathFound = true;
-						break;
 					}
-					if (!bMathFound){
-						String vetoExceptionMessage = String.format("error: Simulation '%s' will be orphaned (MathDescription doesn't belong to any Application)",
-								((Simulation)event.getSource()).getName());
-						throw new PropertyVetoException(vetoExceptionMessage, event);
+				}
+				if (!bMathFound){
+					throw new PropertyVetoException("error: simulation "+((Simulation)evt.getSource()).getName()+" will be orphaned (MathDescription doesn't belong to any Application",evt);
+				}
+			}
+		}
+		if (evt.getSource() == this && evt.getPropertyName().equals(PropertyConstants.PROPERTY_NAME_SIMULATIONS) && evt.getNewValue()!=null){
+			//
+			// check for name duplication
+			//
+			Simulation simulations[] = (Simulation[])evt.getNewValue();
+			for (int i=0;i<simulations.length-1;i++){
+				for (int j=i+1;j<simulations.length;j++){
+					if (simulations[i].getName().equals(simulations[j].getName())){
+						throw new PropertyVetoException(VCellNames.getName(simulations[i])+" with name "+simulations[i].getName()+" already exists",evt);
 					}
 				}
 			}
-		} else if (nameOfPropertyToChange.equals("name") && replacementValueToApply != null){
-			if (objectMakingTheRequest instanceof Simulation || objectMakingTheRequest instanceof SimulationContext){
-				this.checkForDuplicateNames(event);
+			//
+			// check for Simulations that don't map to any SimulationContext
+			//
+			for (int i=0;simulations!=null && i<simulations.length;i++){
+				boolean bFound = false;
+				for (int j=0;fieldSimulationContexts!=null && j<fieldSimulationContexts.length;j++){
+					if (simulations[i].getMathDescription() == fieldSimulationContexts[j].getMathDescription()){
+						bFound = true;
+					}
+				}
+				if (!bFound){
+					throw new PropertyVetoException("Setting Simulations, Simulation \""+simulations[i].getName()+"\" has no corresponding MathDescription (so no Application)",evt);
+				}
 			}
-		} else if (objectMakingTheRequest == this){
-			if (nameOfPropertyToChange.equals(PropertyConstants.PROPERTY_NAME_SIMULATIONS) && replacementValueToApply != null){
-				this.checkForDuplicateNames(event);
-				this.checkSimulationsHaveAssociatedSimContext(event, (Simulation[])event.getNewValue(), this.fieldSimulationContexts);
-			} else if (nameOfPropertyToChange.equals(PROPERTY_NAME_SIMULATION_CONTEXTS) && replacementValueToApply != null){
-				this.checkForDuplicateNames(event);
-				this.checkSimulationsHaveAssociatedSimContext(event, this.fieldSimulations, (SimulationContext[])event.getNewValue());
-			} else if (nameOfPropertyToChange.equals("sbmlId")){
-				// not editable, we use what we get from the importer
-				// do nothing?
-			} else if (nameOfPropertyToChange.equals("sbmlName")){
+		}
+		if (evt.getSource() instanceof Simulation && evt.getPropertyName().equals("name") && evt.getNewValue()!=null){
+			//
+			// check for name duplication
+			//
+			String simulationName = (String)evt.getNewValue();
+			for (int i=0;i<fieldSimulations.length;i++){
+				if (fieldSimulations[i].getName().equals(simulationName)){
+					throw new PropertyVetoException(VCellNames.getName(fieldSimulations[i])+" with name "+simulationName+" already exists",evt);
+				}
+			}
+		}
+		if (evt.getSource() == this && evt.getPropertyName().equals(PROPERTY_NAME_SIMULATION_CONTEXTS) && evt.getNewValue()!=null){
+			//
+			// check for name duplication
+			//
+			SimulationContext simulationContexts[] = (SimulationContext[])evt.getNewValue();
+			for (int i=0;i<simulationContexts.length-1;i++){
+				for (int j=i+1;j<simulationContexts.length;j++){
+					if (simulationContexts[i].getName().equals(simulationContexts[j].getName())){
+						throw new PropertyVetoException(VCellNames.getName(simulationContexts[i])+" with name "+simulationContexts[i].getName()+" already exists",evt);
+					}
+				}
+			}
+			//
+			// check for Simulations that don't map to any SimulationContext
+			//
+			for (int i=0;fieldSimulations!=null && i<fieldSimulations.length;i++){
+				boolean bFound = false;
+				for (int j=0;simulationContexts!=null && j<simulationContexts.length;j++){
+					if (fieldSimulations[i].getMathDescription() == simulationContexts[j].getMathDescription()){
+						bFound = true;
+					}
+				}
+				if (!bFound){
+					throw new PropertyVetoException("Setting SimulationContexts, Simulation \""+fieldSimulations[i].getName()+"\" has no corresponding MathDescription (so no Application)",evt);
+				}
+			}
+		} else if(evt.getSource() == this && evt.getPropertyName().equals("sbmlId")) {
+			;		// not editable, we use what we get from the importer
+		} else if(evt.getSource() == this && evt.getPropertyName().equals("sbmlName")) {
+			String newName = (String)evt.getNewValue();
+			if(newName == null) {
 				return;
 			}
 		}
-
-		TokenMangler.checkNameProperty(this, "BioModel", event);
+		if (evt.getSource() instanceof SimulationContext && evt.getPropertyName().equals("name") && evt.getNewValue()!=null){
+			//
+			// check for name duplication
+			//
+			String simulationContextName = (String)evt.getNewValue();
+			for (int i=0;i<fieldSimulationContexts.length;i++){
+				if (fieldSimulationContexts[i].getName().equals(simulationContextName)){
+					throw new PropertyVetoException(VCellNames.getName(fieldSimulationContexts[i])+" with name "+simulationContextName+" already exists",evt);
+				}
+			}
+		}
+		TokenMangler.checkNameProperty(this, "BioModel", evt);
 	}
 
 	public VCMetaData getVCMetaData() {
@@ -1432,84 +1490,5 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
 		for (SimulationContext simulationContext : getSimulationContexts()){
 			simulationContext.updateAll(bForceUpgrade);
 		}
-	}
-
-	private void checkForDuplicateNames(java.beans.PropertyChangeEvent event) throws PropertyVetoException {
-		try{
-			if (event.getSource() == this){
-				Versionable[] targets = (Versionable[])event.getNewValue();
-				if (targets == null) return; // maybe just check if event.getNewValue() == null?
-				this._checkForDuplicateNames_fromThisClass(Arrays.asList(targets));
-			} else {
-				Iterable<Versionable> itr = (event.getSource() instanceof Simulation) ?
-						Arrays.asList(this.fieldSimulations) : 			// event source == simulation
-						Arrays.asList(this.fieldSimulationContexts); 	// event source == simContext
-				this._checkForDuplicateNames_fromOutside((String)event.getNewValue(), itr);
-			}
-		} catch (RuntimeException e){
-			throw new PropertyVetoException(e.getMessage(), event);
-		}
-	}
-
-	private <T extends Versionable> void _checkForDuplicateNames_fromThisClass(List<T> elements){
-		boolean dupeFound = false;
-		Map<String, List<T>> duplicationCheckMap = new HashMap<>();
-		for (T target : elements){
-			if (duplicationCheckMap.containsKey(target.getName())){
-				dupeFound = true;
-			} else {
-				duplicationCheckMap.put(target.getName(), new LinkedList<>());
-			}
-			duplicationCheckMap.get(target.getName()).add(target);
-		}
-
-		if (dupeFound){
-			StringBuilder vetoExceptionMessageBuilder = new StringBuilder("Duplicate SimContext names detected:\n");
-			for (Entry<String, List<T>> entryItem : duplicationCheckMap.entrySet()){
-				if (entryItem.getValue().size() == 1) continue;
-				String dupeString = String.format("SimContexts with name '%s': ", entryItem.getKey());
-				vetoExceptionMessageBuilder.append(dupeString);
-				for (T target : entryItem.getValue()){
-					vetoExceptionMessageBuilder.append(VCellNames.getName(target)).append(", ");
-				}
-				vetoExceptionMessageBuilder.delete(vetoExceptionMessageBuilder.length()-2,
-						vetoExceptionMessageBuilder.length()).append('\n');
-			}
-			String vetoExceptionMessage = vetoExceptionMessageBuilder.deleteCharAt(
-					vetoExceptionMessageBuilder.length() -1).toString();
-			throw new RuntimeException(vetoExceptionMessage);
-		}
-	}
-
-	private void _checkForDuplicateNames_fromOutside(String name, Iterable<Versionable> itr){
-		for (Versionable simContext : itr){
-			if (!simContext.getName().equals(name)) continue;
-			String vetoExceptionMessage = String.format("%s with name '%s' already exists",
-					VCellNames.getName(simContext), name);
-			throw new RuntimeException(vetoExceptionMessage);
-		}
-	}
-
-	private void checkSimulationsHaveAssociatedSimContext(java.beans.PropertyChangeEvent event, Simulation[] sims,
-														  SimulationContext[] simContexts) throws PropertyVetoException {
-		if (sims == null || simContexts == null) return;
-		for (Simulation sim : sims){
-			boolean bFound = false;
-			for (SimulationContext simContext : simContexts){
-				if (sim.getMathDescription() != simContext.getMathDescription()) continue;
-				bFound = true;
-				break;
-			}
-			if (!bFound){
-				String vetoExceptionMessage = String.format("" +
-						"Simulation '%s' has no mapping to a SimulationContext", sim.getName());
-				throw new PropertyVetoException(vetoExceptionMessage, event);
-				// old message: "Setting SimulationContexts, Simulation '%s' has no corresponding MathDescription (so no Application)"
-			}
-		}
-	}
-
-	private void checkForNullMathDescription(){
-
 	}
 }
