@@ -692,12 +692,12 @@ public class SBMLTestSuiteTest {
 		SBMLImporter importer = new SBMLImporter(testFileInputStream, vcl, bValidateSBML);
 		BioModel bioModel = importer.getBioModel();
 		bioModel.updateAll(false);
-		{
-			boolean bRoundTripValidation = false;
-			SBMLExporter sbmlExporter = new SBMLExporter(bioModel.getSimulationContext(0), 3, 1, bRoundTripValidation);
-			String sbmlString = sbmlExporter.getSBMLString();
-			System.out.println(sbmlString);
-		}
+//		{
+//			boolean bRoundTripValidation = false;
+//			SBMLExporter sbmlExporter = new SBMLExporter(bioModel.getSimulationContext(0), 3, 1, bRoundTripValidation);
+//			String sbmlString = sbmlExporter.getSBMLString();
+//			System.out.println(sbmlString);
+//		}
 		{
 			boolean bRoundTripValidation = true;
 			SBMLExporter sbmlExporter = new SBMLExporter(bioModel.getSimulationContext(0), 3, 1, bRoundTripValidation);
