@@ -1829,8 +1829,9 @@ private void roundTripValidation() throws SBMLValidationException {
 		SBMLDocument sbmlDocument = new SBMLDocument(sbmlLevel,sbmlVersion);
 		// mark it as originating from VCell
 		// TO DO expand to formally label version and build
-		sbmlDocument.setNotes("Exported by VCell 7.3");
-		
+		VCellSoftwareVersion swVersion = VCellSoftwareVersion.fromSystemProperty();
+		sbmlDocument.setNotes("Exported by VCell "+swVersion.getDescription(true));
+
 		String modelName = vcBioModel.getName() + "_" + getSelectedSimContext().getName();
 	sbmlModel = sbmlDocument.createModel(TokenMangler.mangleToSName(modelName));	// it's enough to mangle, there can be no conflict at this point
 		sbmlModel.setName(modelName);

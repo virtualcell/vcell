@@ -117,8 +117,12 @@ public class VCellSoftwareVersion implements Serializable {
 	public String getSoftwareVersionString(){
 		return softwareVersionString;
 	}
-	
-	public String getDescription(){
+
+	public String getDescription() {
+		return getDescription(true);
+	}
+
+	public String getDescription(boolean bShort){
 		if (getSite().equals(VCellSite.unknown)){
 			if (softwareVersionString==null){
 				return "unknown VCell version";
@@ -126,7 +130,11 @@ public class VCellSoftwareVersion implements Serializable {
 				return softwareVersionString;
 			}
 		}
-		return "VCell "+getSite().name()+" version "+versionNumber+" build "+buildNumber;
+		if (!bShort) {
+			return "VCell " + getSite().name() + " version " + versionNumber + " build " + buildNumber;
+		} else {
+			return versionNumber + "." + buildNumber;
+		}
 	}
 
 	@NoLogging
