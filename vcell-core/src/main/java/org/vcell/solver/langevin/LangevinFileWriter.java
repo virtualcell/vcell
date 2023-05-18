@@ -58,7 +58,8 @@ public void write(String[] parameterNames) throws Exception {
 	LangevinSimulationOptions langevinSimulationOptions = simTask.getSimulation().getSolverTaskDescription().getLangevinSimulationOptions();
 	String langevinLngvString = LangevinLngvWriter.writeLangevinLngv(simTask, randomSeed, langevinSimulationOptions);
 	
-	// TODO: write file
+	printWriter.write(langevinLngvString);
+	printWriter.flush();
 }
 
 public static void main(String[] args) {
