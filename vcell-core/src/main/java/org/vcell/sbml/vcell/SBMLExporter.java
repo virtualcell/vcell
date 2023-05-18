@@ -1133,38 +1133,35 @@ private void addSpecies() throws XMLStreamException, SbmlException {
 		}
 		Expression initConcExp = initialConcentrationParameter.getExpression();
 
-		Double initiConcConstantValue = null;
+		Double initConcConstantValue = null;
 		try {
-			initiConcConstantValue = initConcExp.evaluateConstantSafe();
+			initConcConstantValue = initConcExp.evaluateConstantSafe();
 		} catch (ExpressionException e) {
 		}
 
 		cbit.vcell.mapping.AssignmentRule vcAssignmentRule = getSelectedSimContext().getAssignmentRule(vcSpeciesContext);
+		cbit.vcell.mapping.RateRule vcRateRule = getSelectedSimContext().getRateRule(vcSpeciesContext);
 
-		if (!vcSpeciesContextsSpec.isClamped() && vcAssignmentRule==null) {
+		if (!vcSpeciesContextsSpec.isClamped() || vcRateRule != null) {
 			// species is not clamped nor assigned, we need an initial condition
-			if (initiConcConstantValue != null) {
+			if (initConcConstantValue != null) {
 //				sbmlSpecies.setConstant(true);
-				sbmlSpecies.setInitialConcentration(initiConcConstantValue);
+				sbmlSpecies.setInitialConcentration(initConcConstantValue);
 			}else {
 				//sbmlSpecies.setConstant(false);
 				InitialAssignment initAssignment = sbmlModel.createInitialAssignment();
 				initAssignment.setVariable(sbmlSpecies.getId());
 				sbmlExportSymbolMapping.initialAssignmentToVcmlExpressionMap.put(initAssignment, initConcExp);
 			}
-		} else {
+		} else if (vcAssignmentRule == null){  // vcAssignmentRule's are handled elsewhere.
 			Expression vcSpeciesExpr = initConcExp;
-			if (vcAssignmentRule!=null){
-				// assignment rules take precedence over initial expression.
-				vcSpeciesExpr = vcAssignmentRule.getAssignmentRuleExpression();
-			}
 			AssignmentRule sbmlAssignmentRule = sbmlModel.createAssignmentRule();
 			sbmlAssignmentRule.setVariable(sbmlSpeciesId);
 			sbmlExportSymbolMapping.assignmentRuleToVcmlExpressionMap.put(sbmlAssignmentRule, vcSpeciesExpr);    // expression will be post-processed
 		}
 
 		// Get (and set) the boundary condition value
-		boolean bBoundaryCondition = vcSpeciesContextsSpec.isClamped() || vcAssignmentRule!=null;
+		boolean bBoundaryCondition = vcSpeciesContextsSpec.isClamped();
 		sbmlSpecies.setBoundaryCondition(bBoundaryCondition);
 
 		// set species substance units as 'molecules' - same as defined in the model; irrespective of it is in surface or volume.
