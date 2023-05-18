@@ -1574,7 +1574,6 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 			return;
 		}
 		
-		
 		// ending time is editable, starting time is non-editable, always 0
 		double totalTime = getTimeBounds().getEndingTime() - getTimeBounds().getStartingTime();
 		sb.append("Total time: " + totalTime);		// TODO: for langevin, initialize to 1.00E-2
@@ -1591,15 +1590,6 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 		double outputInterval = uots.getOutputTimeStep();
 		sb.append("dt_data: " + outputInterval);	// TODO: initialize to 1.00E-4
 		sb.append("\n");
-		
-		// TODO: dt spring and dt image must be obtained from LangevinSimulationOptions
-		LangevinSimulationOptions lso = getLangevinSimulationOptions();
-
-		sb.append("dt_spring: 1.00E-9");
-		sb.append("\n");
-		sb.append("dt_image: 1.00E-4");
-		sb.append("\n");
-		return;
 	}
 
 	//double calculateBindingRadius(ParticleJumpProcess pjp, SubDomain subDomain) throws Exception
