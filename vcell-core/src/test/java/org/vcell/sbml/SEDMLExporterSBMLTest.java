@@ -63,7 +63,6 @@ public class SEDMLExporterSBMLTest extends SEDMLExporterCommon {
 		faults.put("biomodel_124562627.vcml", FAULT.NULL_POINTER_EXCEPTION); // CSG/analytic geometry issue
 		faults.put("biomodel_156134818.vcml", FAULT.UNKNOWN_IDENTIFIER);  // species named 'I' conflicts with membrane parameter I
 		faults.put("biomodel_220138948.vcml", FAULT.MATHOVERRIDES_INVALID); // Kf_Uptake invalid override.
-		faults.put("biomodel_61680876.vcml", FAULT.EQUATION_REMOVED); // only one mathDescription had equation for 'Compartment::Ca'
 		faults.put("biomodel_84982474.vcml", FAULT.UNSUPPORTED_NONSPATIAL_STOCH_HISTOGRAM); // not supported nonspatial histogram
 		return faults;
 	}
@@ -72,7 +71,6 @@ public class SEDMLExporterSBMLTest extends SEDMLExporterCommon {
 	Map<String, SEDMLExporterCommon.SEDML_FAULT> knownSEDMLFaults() {
 		HashMap<String, SEDML_FAULT> faults = new HashMap<>();
 		faults.put("__export_adv_test.vcml", SEDML_FAULT.SIMULATION_NOT_FOUND_BY_NAME);  // round-tripped simulation not found with name 'spatialnoscan'
-		faults.put("biomodel_61680876.vcml", SEDML_FAULT.SIMCONTEXT_NOT_FOUND_BY_NAME);  // roundtripped simulationContext not found with name ' Ca buffered,pulses'
 		faults.put("biomodel_100596964.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_100961371.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_113655498.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
