@@ -45,6 +45,7 @@ import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.solver.LangevinSimulationOptions;
 import cbit.vcell.solver.Simulation;
 
 public class SpringSaLaDExporter {
@@ -92,7 +93,7 @@ public class SpringSaLaDExporter {
 		if(simContext.getSimulations() == null || simContext.getSimulations().length == 0) {
 			throw new RuntimeException("Exporting to SpringSaLaD file format needs at least one Langevin Simulation");
 		}
-		Simulation simulation = simContext.getSimulations(0);
+		Simulation simulation = simContext.getSimulations(0);	// TODO: get the right one
 		Geometry geometry = simContext.getGeometry();
 		GeometryContext geometryContext = simContext.getGeometryContext();
 		GeometrySpec geometrySpec = geometry.getGeometrySpec();
@@ -182,7 +183,7 @@ public class SpringSaLaDExporter {
 			/* ********* BEGIN BY WRITING THE TIMES *********/
 			sb.append("*** " + TIME_INFORMATION + " ***");
 			sb.append("\n");
-			simulation.getSolverTaskDescription().writeData(sb);	// TODO: need proper sim
+			writeTimeInformation(sb, simulation);
 			sb.append("\n");
 
 			/* ********* WRITE THE SPATIAL INFORMATION **********/
@@ -340,6 +341,18 @@ public class SpringSaLaDExporter {
 			ex.printStackTrace(System.out);
 		}
 		return null;
+	}
+
+	private static void writeTimeInformation(StringBuilder sb, Simulation simulation) {
+		// general stuff is in solver task description
+		simulation.getSolverTaskDescription().writeData(sb);	// TODO: need proper sim
+		
+		LangevinSimulationOptions lso = simulation.getSolverTaskDescription().getLangevinSimulationOptions();
+		sb.append("dt_spring: " + lso.getIntervalSpring());		// 1.00E-9 default
+		sb.append("\n");
+		sb.append("dt_image: " + lso.getIntervalImage());		// 1.00E-4 default
+		sb.append("\n");
+
 	}
 
 	public void writeDocumentStringToFile(String resultString, String parent, String name, Component parentComponent) throws IOException {

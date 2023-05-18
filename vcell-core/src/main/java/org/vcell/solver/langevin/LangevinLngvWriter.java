@@ -163,7 +163,7 @@ public class LangevinLngvWriter {
 		/* ********* BEGIN BY WRITING THE TIMES *********/
 		sb.append("*** " + TIME_INFORMATION + " ***");
 		sb.append("\n");
-		simulation.getSolverTaskDescription().writeData(sb);	// TODO: need proper sim
+		writeTimeInformation(sb, simulation);
 		sb.append("\n");
 
 		/* ********* WRITE THE SPATIAL INFORMATION **********/
@@ -297,6 +297,17 @@ public class LangevinLngvWriter {
 		return ret;
 	}
 	
+	private static void writeTimeInformation(StringBuilder sb, Simulation simulation) {
+		// general stuff is in solver task description
+		simulation.getSolverTaskDescription().writeData(sb);	// TODO: need proper sim
+		
+		LangevinSimulationOptions lso = simulation.getSolverTaskDescription().getLangevinSimulationOptions();
+		sb.append("dt_spring: " + lso.getIntervalSpring());		// 1.00E-9 default
+		sb.append("\n");
+		sb.append("dt_image: " + lso.getIntervalImage());		// 1.00E-4 default
+		sb.append("\n");
+
+	}
 	
 	private static void writeBindingReactions(StringBuilder sb) {
 		Map<String, LangevinParticleJumpProcess> nameToProcessDirect = new LinkedHashMap<> ();

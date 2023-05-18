@@ -28,6 +28,10 @@ import cbit.vcell.math.VCML;
 public class LangevinSimulationOptions implements Serializable, Matchable, VetoableChangeListener {
 
 
+	protected int numOfTrials = 1;				// single trajectory if 1 (default), multiple trajectories if >1
+	protected double intervalSpring = 1.00E-9;	// default: dt_spring: 1.00E-9	- from advanced
+	protected double intervalImage = 1.00E-4;	// default: dt_image: 1.00E-4	- from advanced
+
 	protected transient PropertyChangeSupport propertyChange;
 	protected transient VetoableChangeSupport vetoChange;
 	
@@ -51,11 +55,29 @@ public class LangevinSimulationOptions implements Serializable, Matchable, Vetoa
 		}
 		LangevinSimulationOptions nfsimSimulationOptions = (LangevinSimulationOptions)obj;
 
+		// TODO: finish this
 		return true;
 	}
 // -----------------------------------------------------------------------------------
 
-	
+	public int getNumOfTrials() {
+		return numOfTrials;
+	}
+	public double getIntervalSpring() {
+		return intervalSpring;
+	}
+	public double getIntervalImage() {
+		return intervalImage;
+	}
+	public final void setNumOfTrials(int newValue) {
+		this.numOfTrials = newValue;
+	}
+	public final void setIntervalI(double newValue) {
+		this.intervalSpring = newValue;
+	}
+	public final void setIntervalImage(double newValue) {
+		this.intervalImage = newValue;
+	}
 
 	public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
 		getPropertyChange().addPropertyChangeListener(listener);
