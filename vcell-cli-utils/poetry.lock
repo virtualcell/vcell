@@ -51,14 +51,14 @@ numpy = "*"
 
 [[package]]
 name = "biosimulators-utils"
-version = "0.1.177"
+version = "0.1.178"
 description = "Command-line program and library for reading, writing, validating and executing modeling projects (COMBINE/OMEX archives with SED-ML files)."
 category = "main"
 optional = false
 python-versions = "*"
 files = [
-    {file = "biosimulators_utils-0.1.177-py2.py3-none-any.whl", hash = "sha256:e0c22184c472646593727d30fe2de50eb0b3de1631f55dc7db247d5a7a71f679"},
-    {file = "biosimulators_utils-0.1.177.tar.gz", hash = "sha256:02506c84dcb35a2e59ab6d5b585e0a6496171c9b88d31f3d692e7690255fd515"},
+    {file = "biosimulators_utils-0.1.178-py2.py3-none-any.whl", hash = "sha256:77af26dccc96af0a1880ef37465bf78158a49584468e61c935440723b1be4bc7"},
+    {file = "biosimulators_utils-0.1.178.tar.gz", hash = "sha256:8dae4a608e63790f897798fce907754acb3057ffc9269092d84604acd3b1dcf2"},
 ]
 
 [package.dependencies]
@@ -1458,7 +1458,6 @@ category = "main"
 optional = false
 python-versions = "*"
 files = [
-    {file = "python-libsedml-2.0.32.tar.gz", hash = "sha256:7ea5f3b9625ec1513ea119ad00bc9eda42d3ea6b8f78bf57dbd201c690d44727"},
     {file = "python_libsedml-2.0.32-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:7d3e0dd299eea0d2e6925a5e55354e0ff45890195925a7c0a1bcd65f2c93c722"},
     {file = "python_libsedml-2.0.32-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:47e7e76e836c6e4b55b080e0fa6f9df2645abfcf79fe089f9b4339f703501304"},
     {file = "python_libsedml-2.0.32-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:aead410b40c033c79df039317b8829bd2dc1c011c06fb94b0d990a87b0ba13e6"},
@@ -2145,4 +2144,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "d9d1b16ec97be52dbdeabd3d3dbdf6bf51e24868a571da172cafd45a91c85316"
+content-hash = "efde1417ca5bc9019d3291e2727fffd14ea34e30dea3de8f05215a89705bde5b"
