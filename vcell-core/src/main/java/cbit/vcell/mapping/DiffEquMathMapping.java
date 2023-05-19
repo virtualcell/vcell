@@ -127,9 +127,9 @@ public class DiffEquMathMapping extends AbstractMathMapping {
 	public static final int PARAMETER_ROLE_EVENTASSIGN_OR_RATERULE_INITCONDN = 7;
 	public static final int PARAMETER_ROLE_RATERULE_RATE = 8;
 	private Vector<StructureAnalyzer> structureAnalyzerList = new Vector<StructureAnalyzer>();
-	
-protected DiffEquMathMapping(SimulationContext simContext, MathMappingCallback callback, NetworkGenerationRequirements networkGenerationRequirements) {
-	super(simContext,callback,networkGenerationRequirements);
+
+	protected DiffEquMathMapping(SimulationContext simContext, MathMappingCallback callback, NetworkGenerationRequirements networkGenerationRequirements) {
+		super(simContext,callback,networkGenerationRequirements);
 }
 
 private EventAssignmentOrRateRuleInitParameter addEventAssignmentOrRateRuleInitParameter(SymbolTableEntry targetName, Expression expr, int role, VCUnitDefinition unitDefn) throws PropertyVetoException {
@@ -213,7 +213,7 @@ private VolumeStructureAnalyzer getVolumeStructureAnalyzer(SubVolume subVolume) 
 protected void refresh(MathMappingCallback callback) throws MappingException, ExpressionException, MatrixException, MathException, ModelException {
 //	System.out.println("MathMapping.refresh Start");
 	VCellThreadChecker.checkCpuIntensiveInvocation();
-	
+
 	localIssueList.clear();
 //	refreshKFluxParameters();
 	refreshSpeciesContextMappings();
@@ -225,8 +225,8 @@ protected void refresh(MathMappingCallback callback) throws MappingException, Ex
 	refreshVariables();
 	refreshLocalNameCount();
 	resolveMathSymbolConflicts();
-	refreshMathDescription();		// we create math based on the transformed sim context
-	reconcileWithOriginalModel();	// we relate the symbols in the math to the symbols in the original sim context
+	refreshMathDescription();        // we create math based on the transformed sim context
+	reconcileWithOriginalModel();    // we relate the symbols in the math to the symbols in the original sim context
 //	System.out.println("MathMapping.refresh End");
 }
 
@@ -250,8 +250,9 @@ private static class MembraneSubdomainContext {
 	final SubVolume innerSubvolume;
 	final SubVolume outerSubvolume;
 	final SurfaceRegionObject[] surfaceRegionObjects;
+
 	private MembraneSubdomainContext(MembraneSubDomain membraneSubdomain, Domain domain, SurfaceClass surfaceClass,
-			SubVolume innerSubvolume, SubVolume outerSubvolume, SurfaceRegionObject[] surfaceRegionObjects) {
+									 SubVolume innerSubvolume, SubVolume outerSubvolume, SurfaceRegionObject[] surfaceRegionObjects) {
 		super();
 		this.membraneSubdomain = membraneSubdomain;
 		this.domain = domain;
@@ -265,13 +266,13 @@ private static class CompartmentSubdomainContext {
 	final CompartmentSubDomain compartmentSubdomain;
 	final SubVolume subvolume;
 	final Domain domain;
-	
+
 	private CompartmentSubdomainContext(CompartmentSubDomain compartmentSubdomain, SubVolume subvolume, Domain domain) {
 		super();
 		this.compartmentSubdomain = compartmentSubdomain;
 		this.subvolume = subvolume;
 		this.domain = domain;
-	}	
+	}
 }
 
 /**
@@ -282,18 +283,18 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 
 	//All sizes must be set for new ODE models and ratios must be set for old ones.
 	simContext.checkValidity();
-	
+
 	//
 	// temporarily place all variables in a hashtable (before binding) and discarding duplicates (check for equality)
 	//
 	VariableHash varHash = new VariableHash();
 	StructureMapping structureMappings[] = simContext.getGeometryContext().getStructureMappings();
-	
+
 	//
 	// verify that all structures are mapped to subvolumes and all subvolumes are mapped to a structure
 	//
-	//Structure structures[] = 
-			simContext.getGeometryContext().getModel().getStructures();
+	//Structure structures[] =
+	simContext.getGeometryContext().getModel().getStructures();
 //	for (int i = 0; i < structures.length; i++){
 //		StructureMapping sm = simContext.getGeometryContext().getStructureMapping(structures[i]);
 //		if (sm==null || (sm.getGeometryClass() == null)){
@@ -336,7 +337,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 				}
 			}
 		}
-		
+
 		RateRule[] rrs = simContext.getRateRules();
 		if (rrs != null && rrs.length > 0) {
 			for (RateRule rr : rrs) {
@@ -355,7 +356,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 				}
 			}
 		}
-		
+
 		for (int j=0;j<modelParameters.length;j++){
 			Expression modelParamExpr = modelParameters[j].getExpression();
 			GeometryClass geometryClass = getDefaultGeometryClass(modelParamExpr);
@@ -369,14 +370,14 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 				} catch (PropertyVetoException e) {
 					throw new MappingException(e.getMessage(), e);
 				}
-				
+
 				if(geometryClass == null) {
 					GeometryClass[] geometryClasses = simContext.getGeometryContext().getGeometry().getGeometryClasses();
 					geometryClass = geometryClasses[0];
 				}
 				Domain domain = null;
 				if(geometryClass != null) {
-					domain = new Domain(geometryClass);	// the volume variable will look like Compartment::g0 rather than just g0
+					domain = new Domain(geometryClass);    // the volume variable will look like Compartment::g0 rather than just g0
 				}
 				VolVariable volVar = new VolVariable(modelParameters[j].getName(), domain);
 				varHash.addVariable(volVar);
@@ -398,7 +399,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 			varHash.addVariable(newFunctionOrConstant(getMathSymbol(modelParameters[j], geometryClass), modelParamExpr,geometryClass));
 		}
 	}
-	
+
 	//
 	// add application parameters
 	//
@@ -407,7 +408,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 		GeometryClass gc = getDefaultGeometryClass(scParameterExpression);
 		varHash.addVariable(newFunctionOrConstant(getMathSymbol(scParameter, gc), getIdentifierSubstitutions(scParameter.getExpression(), scParameter.getUnitDefinition(), gc), gc));
 	}
-	
+
 	//
 	// add functions for field data symbols
 	//
@@ -452,7 +453,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 			throw new MappingException("In Application '" + simContext.getName() + "', " + reactionSteps[i].getDisplayType()+" '"+reactionSteps[i].getName()+"' contains unresolved identifier(s): "+buffer);
 		}
 	}
-	
+
 	//
 	// create new MathDescription (based on simContext's previous MathDescription if possible)
 	//
@@ -512,16 +513,16 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 			varHash.addVariable(scm.getVariable());
 		}
 	}
-	
+
 	//
 	// add compartment and membrane subdomains
 	//
 	ArrayList<CompartmentSubdomainContext> compartmentSubdomainContexts = new ArrayList<CompartmentSubdomainContext>();
 	ArrayList<MembraneSubdomainContext> membraneSubdomainContexts = new ArrayList<MembraneSubdomainContext>();
 	addSubdomains(model, compartmentSubdomainContexts, membraneSubdomainContexts);
-	
+
 	addSpatialProcesses(varHash, compartmentSubdomainContexts, membraneSubdomainContexts); // membrane velocities set on MembraneSubdomains later.
-	
+
 	varHash.addVariable(new Constant(getMathSymbol(model.getPI_CONSTANT(),null),getIdentifierSubstitutions(model.getPI_CONSTANT().getExpression(),model.getPI_CONSTANT().getUnitDefinition(),null)));
 	varHash.addVariable(new Constant(getMathSymbol(model.getFARADAY_CONSTANT(),null),getIdentifierSubstitutions(model.getFARADAY_CONSTANT().getExpression(),model.getFARADAY_CONSTANT().getUnitDefinition(),null)));
 	varHash.addVariable(new Constant(getMathSymbol(model.getFARADAY_CONSTANT_NMOLE(),null),getIdentifierSubstitutions(model.getFARADAY_CONSTANT_NMOLE().getExpression(),model.getFARADAY_CONSTANT_NMOLE().getUnitDefinition(),null)));
@@ -548,7 +549,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 		//
 		ElectricalDevice devices[] = potentialMapping.getElectricalDevices();
 		for (int j = 0; j < devices.length; j++){
-			
+
 			if (devices[j] instanceof MembraneElectricalDevice){
 				MembraneElectricalDevice membraneElectricalDevice = (MembraneElectricalDevice)devices[j];
 				MembraneMapping memMapping = membraneElectricalDevice.getMembraneMapping();
@@ -564,41 +565,41 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 				if (totalCurrentParm!=null && /* totalCurrentDensityParm.getExpression()!=null && */ memMapping.getCalculateVoltage()){
 					Expression totalCurrentDensityExp = (totalCurrentParm.getExpression()!=null)?(totalCurrentParm.getExpression()):(new Expression(0.0));
 					varHash.addVariable(newFunctionOrConstant(getMathSymbol(totalCurrentParm,geometryClass),
-													getIdentifierSubstitutions(totalCurrentDensityExp,totalCurrentParm.getUnitDefinition(),geometryClass),
-													geometryClass));
+							getIdentifierSubstitutions(totalCurrentDensityExp,totalCurrentParm.getUnitDefinition(),geometryClass),
+							geometryClass));
 				}
 				if (transmembraneCurrentParm!=null && transmembraneCurrentParm.getExpression()!=null && memMapping.getCalculateVoltage()){
 					varHash.addVariable(newFunctionOrConstant(getMathSymbol(transmembraneCurrentParm,geometryClass),
-													getIdentifierSubstitutions(transmembraneCurrentParm.getExpression(),transmembraneCurrentParm.getUnitDefinition(),geometryClass),
-													geometryClass));
+							getIdentifierSubstitutions(transmembraneCurrentParm.getExpression(),transmembraneCurrentParm.getUnitDefinition(),geometryClass),
+							geometryClass));
 				}
 				if (capacitanceParm!=null && capacitanceParm.getExpression()!=null && memMapping.getCalculateVoltage()){
 					StructureMappingParameter sizeParameter = membraneElectricalDevice.getMembraneMapping().getSizeParameter();
 					if (simContext.getGeometry().getDimension() == 0 && (sizeParameter.getExpression() == null || sizeParameter.getExpression().isZero())) {
-					varHash.addVariable(newFunctionOrConstant(getMathSymbol(capacitanceParm,geometryClass),
-							getIdentifierSubstitutions(Expression.mult(memMapping.getNullSizeParameterValue(), specificCapacitanceParm.getExpression()),capacitanceParm.getUnitDefinition(),geometryClass),geometryClass));						
+						varHash.addVariable(newFunctionOrConstant(getMathSymbol(capacitanceParm,geometryClass),
+								getIdentifierSubstitutions(Expression.mult(memMapping.getNullSizeParameterValue(), specificCapacitanceParm.getExpression()),capacitanceParm.getUnitDefinition(),geometryClass),geometryClass));
 					} else {
 						varHash.addVariable(newFunctionOrConstant(getMathSymbol(capacitanceParm,geometryClass),
-							getIdentifierSubstitutions(capacitanceParm.getExpression(),capacitanceParm.getUnitDefinition(),geometryClass),geometryClass));
+								getIdentifierSubstitutions(capacitanceParm.getExpression(),capacitanceParm.getUnitDefinition(),geometryClass),geometryClass));
 					}
 				}
-				//		
+				//
 				//
 				// membrane ode
 				//
 				if (membraneElectricalDevice.getDependentVoltageExpression()==null){  // is Voltage Independent?
 					StructureMapping.StructureMappingParameter initialVoltageParm = memMapping.getInitialVoltageParameter();
 					varHash.addVariable(newFunctionOrConstant(getMathSymbol(initialVoltageParm,memMapping.getGeometryClass()),
-													getIdentifierSubstitutions(initialVoltageParm.getExpression(),initialVoltageParm.getUnitDefinition(),memMapping.getGeometryClass()),
-													memMapping.getGeometryClass()));
+							getIdentifierSubstitutions(initialVoltageParm.getExpression(),initialVoltageParm.getUnitDefinition(),memMapping.getGeometryClass()),
+							memMapping.getGeometryClass()));
 				}
 				//
 				// membrane forced potential
 				//
 				else {
 					varHash.addVariable(newFunctionOrConstant(getMathSymbol(memMapping.getMembrane().getMembraneVoltage(),memMapping.getGeometryClass()),
-													getIdentifierSubstitutions(membraneElectricalDevice.getDependentVoltageExpression(),memMapping.getMembrane().getMembraneVoltage().getUnitDefinition(),memMapping.getGeometryClass()),
-													memMapping.getGeometryClass()));
+							getIdentifierSubstitutions(membraneElectricalDevice.getDependentVoltageExpression(),memMapping.getMembrane().getMembraneVoltage().getUnitDefinition(),memMapping.getGeometryClass()),
+							memMapping.getGeometryClass()));
 				}
 			}else if (devices[j] instanceof CurrentClampElectricalDevice){
 				CurrentClampElectricalDevice currentClampDevice = (CurrentClampElectricalDevice)devices[j];
@@ -612,9 +613,9 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 				GeometryClass geometryClass = null;
 				if (membrane!=null){
 					StructureMapping membraneStructureMapping = simContext.getGeometryContext().getStructureMapping(membrane);
-					geometryClass = membraneStructureMapping.getGeometryClass(); 
+					geometryClass = membraneStructureMapping.getGeometryClass();
 				}
-				
+
 				varHash.addVariable(newFunctionOrConstant(getMathSymbol(totalCurrentParm,geometryClass),getIdentifierSubstitutions(totalCurrentParm.getExpression(),totalCurrentParm.getUnitDefinition(),geometryClass),geometryClass));
 				varHash.addVariable(newFunctionOrConstant(getMathSymbol(currentParm,geometryClass),getIdentifierSubstitutions(currentParm.getExpression(),currentParm.getUnitDefinition(),geometryClass),geometryClass));
 				//varHash.addVariable(newFunctionOrConstant(getMathSymbol(dependentVoltage,null),getIdentifierSubstitutions(currentClampDevice.getDependentVoltageExpression(),dependentVoltage.getUnitDefinition(),null)));
@@ -636,7 +637,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 				GeometryClass geometryClass = null;
 				if (membrane!=null){
 					StructureMapping membraneStructureMapping = simContext.getGeometryContext().getStructureMapping(membrane);
-					geometryClass = membraneStructureMapping.getGeometryClass(); 
+					geometryClass = membraneStructureMapping.getGeometryClass();
 				}
 				// total current = current source (no capacitance)
 				Parameter totalCurrent = voltageClampDevice.getParameterFromRole(VoltageClampElectricalDevice.ROLE_TotalCurrent);
@@ -669,7 +670,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 			}
 		}
 	}
-		
+
 	//
 	// add constants for R,F,T and Initial Voltages
 	//
@@ -689,7 +690,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 					if (membraneMapping.getCalculateVoltage() && bCalculatePotential){
 						if (geometryClass instanceof SurfaceClass){
 							//
-							// spatially resolved membrane, and must solve for potential .... 
+							// spatially resolved membrane, and must solve for potential ....
 							//   make single MembraneRegionVariable for all resolved potentials
 							//
 							if (varHash.getVariable(Membrane.MEMBRANE_VOLTAGE_REGION_NAME)==null){
@@ -742,17 +743,17 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 			}
 		}
 	}
-	
+
 	//
 	// initial conditions (either function or constant) for rate rule variables that are model parameters
 	//
-	Map<ModelParameter, Variable> initModelParameterHashTmp = new HashMap<> ();		// the init variables with expressions still containing variables
-	Map<EventAssignmentOrRateRuleInitParameter, ModelParameter> rateRuleInitToModelParamMapping = new HashMap<> ();		// here we store the init parameter of the model parameter
-	Map<ModelParameter, EventAssignmentOrRateRuleInitParameter> modelParamTorateRuleInitMapping = new HashMap<> ();		// here we store the init parameter of the model parameter
-	for(ModelParameter mp : modelParameters) {		// initial assignment for global parameter used as rate rule variable
+	Map<ModelParameter, Variable> initModelParameterHashTmp = new HashMap<> ();        // the init variables with expressions still containing variables
+	Map<EventAssignmentOrRateRuleInitParameter, ModelParameter> rateRuleInitToModelParamMapping = new HashMap<> ();        // here we store the init parameter of the model parameter
+	Map<ModelParameter, EventAssignmentOrRateRuleInitParameter> modelParamTorateRuleInitMapping = new HashMap<> ();        // here we store the init parameter of the model parameter
+	for(ModelParameter mp : modelParameters) {        // initial assignment for global parameter used as rate rule variable
 		RateRule rr = simContext.getRateRule(mp);
 		if(rr == null) {
-			continue;		// we only care about global parameters that are rate rule variables
+			continue;        // we only care about global parameters that are rate rule variables
 		}
 		Variable var = varHash.getVariable(mp.getName());
 		if(var != null) {
@@ -771,7 +772,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 		if (mp.getUnitDefinition() != null && !mp.getUnitDefinition().equals(modelUnitSystem.getInstance_TBD())) {
 			paramUnit = mp.getUnitDefinition();
 		}
-		
+
 		// TODO: is this really needed? or could I directly use modelParamExpr in addEventAssignmentOrRateRuleInitParameter()
 		Expression mpInitExpr = getIdentifierSubstitutions(modelParamExpr, paramUnit, gc);
 		EventAssignmentOrRateRuleInitParameter mpInitParam;
@@ -783,7 +784,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 		rateRuleInitToModelParamMapping.put(mpInitParam, mp);
 		modelParamTorateRuleInitMapping.put(mp, mpInitParam);
 	}
-				
+
 	//
 	// conserved constants  (e.g. K = A + B + C) and init functions for transformed global parameters (event of rate rule targets)
 	//
@@ -867,15 +868,15 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 						// need to get init condn expression, but can't get it from getMathSymbol() (mapping between bio and math), hence get it as below.
 						Expression scsInitExpr = new Expression(spCInitParm, getNameScope());
 						initConcExpr.substituteInPlace(new Expression(spC.getName()), scsInitExpr);
-					} 
+					}
 				} else if (ste instanceof ModelParameter) {
 					ModelParameter mpArg = (ModelParameter)ste;
 					System.out.println(mpArg.getName());
 					if(simContext.getRateRule(mpArg) == null) {
-						continue;		// only globals that are RateRule variables need to be replaced with their _init variable
+						continue;        // only globals that are RateRule variables need to be replaced with their _init variable
 					}
 					EventAssignmentOrRateRuleInitParameter mpInitParam = modelParamTorateRuleInitMapping.get(mpArg);
-					if(mpInitParam != null) {		// we already made it, we only need to use it
+					if(mpInitParam != null) {        // we already made it, we only need to use it
 						Expression mpArgInitExpr = new Expression(mpInitParam, getNameScope());
 						initConcExpr.substituteInPlace(new Expression(ste.getName()), mpArgInitExpr);
 					}
@@ -889,7 +890,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 			varHash.addVariable(newFunctionOrConstant(getMathSymbol(initConcParm,sm.getGeometryClass()),getIdentifierSubstitutions(initConcExpr,initConcParm.getUnitDefinition(),sm.getGeometryClass()),sm.getGeometryClass()));
 		}
 	}
-	
+
 	//
 	// diffusion constants (either function or constant)
 	//
@@ -932,8 +933,8 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 			varHash.addVariable(newFunctionOrConstant(getMathSymbol(bc_zp,sm.getGeometryClass()),getIdentifierSubstitutions(bc_zp.getExpression(),bc_zp.getUnitDefinition(),sm.getGeometryClass()),sm.getGeometryClass()));
 		}
 	}
-	
-	
+
+
 	//
 	// advection terms (either function or constant)
 	//
@@ -953,7 +954,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 			varHash.addVariable(newFunctionOrConstant(getMathSymbol(advection_velZ,geometryClass),getIdentifierSubstitutions(advection_velZ.getExpression(),advection_velZ.getUnitDefinition(),geometryClass),geometryClass));
 		}
 	}
-	
+
 	//
 	// constant species (either function or constant)
 	//
@@ -1055,7 +1056,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 			if (simContext.getRateRule(scm.getSpeciesContext()) == null) {
 				StructureMapping sm = simContext.getGeometryContext().getStructureMapping(scm.getSpeciesContext().getStructure());
 				if (sm.getGeometryClass() == null) {
-					Structure s = sm.getStructure(); 
+					Structure s = sm.getStructure();
 					if (s != null) {
 						throw new RuntimeException("unmapped structure " + s.getName());
 					}
@@ -1073,7 +1074,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 			// transform the bioEvent trigger/delay to math Event
 			for (LocalParameter p : be.getEventParameters()) {
 				if (p.getExpression() != null) {
-					String name = getMathSymbol(p,null);	// ex: eventName.delay and eventName.triggerFunction
+					String name = getMathSymbol(p,null);    // ex: eventName.delay and eventName.triggerFunction
 					Expression exp = getIdentifierSubstitutions(p.getExpression(), p.getUnitDefinition(), null);
 					Variable var = newFunctionOrConstant(name, exp, null);
 					varHash.addVariable(var);
@@ -1089,7 +1090,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 			}
 		}
 	}
-	
+
 	//
 	// substitute init functions for event assignment variables
 	//
@@ -1143,14 +1144,14 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 //		Variable varInit = newFunctionOrConstant(argName, exp, gc);
 //		varHash.addVariable(varInit);
 //	}
-	
+
 	//
 	// deal with rate rules
 	//
 	// first, substitute the init functions for rate rule variables that are model parameters
 	// we'll need this init variable (function or constant) for the ODE Equation
 	//
-	Map<ModelParameter, Variable> initModelParameterHash = new HashMap<> ();	// here we store the init variable with the final substitutions within their expressions
+	Map<ModelParameter, Variable> initModelParameterHash = new HashMap<> ();    // here we store the init variable with the final substitutions within their expressions
 	Map<String, SymbolTableEntry> entryMap = new HashMap<String, SymbolTableEntry>();
 	simContext.getEntries(entryMap);
 	for (Map.Entry<ModelParameter, Variable> entry : initModelParameterHashTmp.entrySet()) {
@@ -1194,10 +1195,10 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 				ModelParameter mpArg = (ModelParameter)ste;
 				System.out.println(mpArg.getName());
 				if(simContext.getRateRule(mpArg) == null) {
-					continue;		// only globals that are RateRule variables need to be replaced with their _init variable
+					continue;        // only globals that are RateRule variables need to be replaced with their _init variable
 				}
 				EventAssignmentOrRateRuleInitParameter mpInitParam = modelParamTorateRuleInitMapping.get(mpArg);
-				if(mpInitParam != null) {		// we already made it, we only need to use it
+				if(mpInitParam != null) {        // we already made it, we only need to use it
 					Expression mpArgInitExpr = new Expression(mpInitParam, getNameScope());
 					mpInitExpr.substituteInPlace(new Expression(ste.getName()), mpArgInitExpr);
 				}
@@ -1222,7 +1223,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 	// create the Variable (function or constant) for its rate (need it for the ODE Equation)
 	//
 	enum1 = getSpeciesContextMappings();
-	while(enum1.hasMoreElements()) {				// species context used as rate rule variable
+	while(enum1.hasMoreElements()) {                // species context used as rate rule variable
 		SpeciesContextMapping scm = (SpeciesContextMapping)enum1.nextElement();
 		Variable var = scm.getVariable();
 		Expression exp = scm.getDependencyExpression();
@@ -1232,7 +1233,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 				SpeciesContext sc = scm.getSpeciesContext();
 				StructureMapping sm = simContext.getGeometryContext().getStructureMapping(sc.getStructure());
 				if (sm.getGeometryClass() == null) {
-					Structure s = sm.getStructure(); 
+					Structure s = sm.getStructure();
 					if (s != null) {
 						throw new RuntimeException("unmapped structure " + s.getName());
 					}
@@ -1252,11 +1253,11 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 					scm.setVariable(new VolVariable(scm.getSpeciesContext().getName(), domain));
 				}
 				Variable oldVariablre = varHash.getVariable(name);
-				if(oldVariablre != null) {			// should always be null
+				if(oldVariablre != null) {            // should always be null
 					varHash.removeVariable(name);
 				}
 				varHash.addVariable(scm.getVariable());
-				
+
 //				// create the rate parameter
 				SpeciesContextSpec scs = simContext.getReactionContext().getSpeciesContextSpec(sc);
 				SpeciesContextSpecParameter scsInitParam = scs.getInitialConditionParameter();
@@ -1276,14 +1277,14 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 				} catch (PropertyVetoException e) {
 					throw new MappingException(e.getMessage(), e);
 				}
-				rateRuleRateParamHash.put(scm.getVariable(), rateParam);	// we generate the ODE equation elsewhere (later)
+				rateRuleRateParamHash.put(scm.getVariable(), rateParam);    // we generate the ODE equation elsewhere (later)
 			}
 		} else if(var != null && exp == null) {
 			// could be an event variable AND a rate rule variable - in which case we need a rate parameter for the event ODE equation
 			SpeciesContext sc = scm.getSpeciesContext();
 			boolean isRateRuleVar = rateRuleVarTargets.contains(sc);
 			boolean isEventAssignVar = eventAssignTargets.contains(sc);
-			if(isRateRuleVar && isEventAssignVar) {		// is both, so we make a rate parameter, like above
+			if(isRateRuleVar && isEventAssignVar) {        // is both, so we make a rate parameter, like above
 				SpeciesContextSpec scs = simContext.getReactionContext().getSpeciesContextSpec(sc);
 				SpeciesContextSpecParameter scsInitParam = scs.getInitialConditionParameter();
 				VCUnitDefinition scsInitParamUnit = scsInitParam.getUnitDefinition();
@@ -1304,7 +1305,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 				} catch (PropertyVetoException e) {
 					throw new MappingException(e.getMessage(), e);
 				}
-				rateRuleRateParamHash.put(var, rateParam);		// we generate the ODE equation elsewhere (later)
+				rateRuleRateParamHash.put(var, rateParam);        // we generate the ODE equation elsewhere (later)
 			}
 		}
 	}
@@ -1313,11 +1314,11 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 	// create the Variable (function or constant) for its rate (need it for the ODE Equation)
 	// create the ODE Equation
 	//
-	for(ModelParameter mp : modelParameters) {		// global parameter used as rate rule variable
+	for(ModelParameter mp : modelParameters) {        // global parameter used as rate rule variable
 		Variable var = varHash.getVariable(mp.getName());
 		RateRule rr = simContext.getRateRule(mp);
 		Expression modelParamExpr = mp.getExpression();
-		if(var == null && rr != null) {		// at this point var should be a constant 
+		if(var == null && rr != null) {        // at this point var should be a constant
 			// we're under the assumption that it's non-spatial
 			GeometryClass[] geometryClasses = simContext.getGeometryContext().getGeometry().getGeometryClasses();
 			GeometryClass gc = geometryClasses[0];
@@ -1352,36 +1353,36 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 			// no need to put it in the hash, we make the ODE Equation right here
 			//rateRuleRateParamHash.put(variable, rateParam);
 
-			SubDomain subDomain = mathDesc.getSubDomains().nextElement();	// we know it's non-spatial
+			SubDomain subDomain = mathDesc.getSubDomains().nextElement();    // we know it's non-spatial
 			Equation equation = null;
 			// TODO: replace the expression with the variable  ex: "g0_protocol_init" computed above
 			Expression initial = new Expression(mp.getExpression());
-			Variable mpInitVariable = initModelParameterHash.get(mp);	// TODO: can it be null? should check and maybe try mp.getConstantValue() too ???
+			Variable mpInitVariable = initModelParameterHash.get(mp);    // TODO: can it be null? should check and maybe try mp.getConstantValue() too ???
 			if(mpInitVariable != null) {
 				initial = new Expression(mpInitVariable.getName());
 			}
 			Expression rateExpr = new Expression(0.0);
 			//RateRuleRateParameter rateParam = rateRuleRateParamHash.get(variable);
-			if (rateParam != null) {		// ex: g0_rate
-				rateExpr = new Expression(getMathSymbol(rateParam, gc)); 
+			if (rateParam != null) {        // ex: g0_rate
+				rateExpr = new Expression(getMathSymbol(rateParam, gc));
 			}
-			equation = new OdeEquation(variable, initial, rateExpr);	// ODE Equation for rate rule variable being a global parameter
+			equation = new OdeEquation(variable, initial, rateExpr);    // ODE Equation for rate rule variable being a global parameter
 			subDomain.addEquation(equation);
 		}
 	}
-	
+
 	//
 	// deal with assignment rules
 	//
 	enum1 = getSpeciesContextMappings();
-	while(enum1.hasMoreElements()) {			// species context used as assignment rule variable
+	while(enum1.hasMoreElements()) {            // species context used as assignment rule variable
 		SpeciesContextMapping scm = (SpeciesContextMapping)enum1.nextElement();
 		if (scm.getVariable()==null && scm.getDependencyExpression()!=null) {
 			AssignmentRule ar = simContext.getAssignmentRule(scm.getSpeciesContext());
-			if (ar != null && (ar.getAssignmentRuleVar() instanceof SpeciesContext)) {		// TODO: we limit assignment rules to SpeciesContext for now
+			if (ar != null && (ar.getAssignmentRuleVar() instanceof SpeciesContext)) {        // TODO: we limit assignment rules to SpeciesContext for now
 				StructureMapping sm = simContext.getGeometryContext().getStructureMapping(scm.getSpeciesContext().getStructure());
 				if (sm.getGeometryClass() == null) {
-					Structure s = sm.getStructure(); 
+					Structure s = sm.getStructure();
 					if (s != null) {
 						throw new RuntimeException("unmapped structure " + s.getName());
 					}
@@ -1398,16 +1399,16 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 			}
 		}
 	}
-	for(ModelParameter mp : modelParameters) {		// global parameter used as assignment rule variable
+	for(ModelParameter mp : modelParameters) {        // global parameter used as assignment rule variable
 		Variable var = varHash.getVariable(mp.getName());
 		AssignmentRule ar = simContext.getAssignmentRule(mp);
 		Expression modelParamExpr = mp.getExpression();
-		if(var == null && ar != null) {		// at this point var (global parameter used as assignment rule variable) should be null
+		if(var == null && ar != null) {        // at this point var (global parameter used as assignment rule variable) should be null
 			// we're under the assumption that it's non-spatial
 			GeometryClass[] geometryClasses = simContext.getGeometryContext().getGeometry().getGeometryClasses();
 			GeometryClass gc = geometryClasses[0];
 			SubDomain subDomain = mathDesc.getSubDomains().nextElement();
-			
+
 			Expression origExp = ar.getAssignmentRuleExpression();
 			VCUnitDefinition rateUnit = modelUnitSystem.getInstance_TBD();
 			if (mp.getUnitDefinition() != null && !mp.getUnitDefinition().equals(modelUnitSystem.getInstance_TBD())) {
@@ -1511,7 +1512,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 						((PdeEquation)equation).setBoundaryYp((scs.getBoundaryYpParameter().getExpression()==null)?(null):new Expression(getMathSymbol(scs.getBoundaryYpParameter(),sm.getGeometryClass())));
 						((PdeEquation)equation).setBoundaryZm((scs.getBoundaryZmParameter().getExpression()==null)?(null):new Expression(getMathSymbol(scs.getBoundaryZmParameter(),sm.getGeometryClass())));
 						((PdeEquation)equation).setBoundaryZp((scs.getBoundaryZpParameter().getExpression()==null)?(null):new Expression(getMathSymbol(scs.getBoundaryZpParameter(),sm.getGeometryClass())));
-						
+
 						if (simContext.getGeometry().getDimension()>=1){
 							Expression velXExp = null;
 							if (scs.getVelocityXParameter().getExpression()!=null){
@@ -1529,7 +1530,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 							}
 							((PdeEquation)equation).setVelocityX(velXExp);
 						}
-						
+
 						if (simContext.getGeometry().getDimension()>=2){
 							Expression velYExp = null;
 							if (scs.getVelocityYParameter().getExpression()!=null){
@@ -1547,7 +1548,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 							}
 							((PdeEquation)equation).setVelocityY(velYExp);
 						}
-						
+
 						if (simContext.getGeometry().getDimension()==3){
 							Expression velZExp = null;
 							if (scs.getVelocityZParameter().getExpression()!=null){
@@ -1565,27 +1566,40 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 							}
 							((PdeEquation)equation).setVelocityZ(velZExp);
 						}
-						
+
 						subDomain.replaceEquation(equation);
 					} else {
 						//
 						// ODE - species context belongs to this subDomain
 						//
 						Expression initial = new Expression(getMathSymbol(initConcParameter,null));
-						Expression rate = (scm.getRate()==null) ? new Expression(0.0) : getIdentifierSubstitutions(scm.getRate(),scm.getSpeciesContext().getUnitDefinition().divideBy(timeUnit),simContext.getGeometryContext().getStructureMapping(sc.getStructure()).getGeometryClass());
+						GeometryClass geometryClass = simContext.getGeometryContext().getStructureMapping(sc.getStructure()).getGeometryClass();
+						if (simContext.getAssignmentRule(sc) != null){
+							initial = getIdentifierSubstitutions(
+									simContext.getAssignmentRule(sc).getAssignmentRuleExpression(),
+									initConcParameter.getUnitDefinition(),
+									geometryClass);
+						}
+						Expression rate = new Expression(0);
+						if (scm.getRate() != null){
+							rate = getIdentifierSubstitutions(
+									scm.getRate(),
+									scm.getSpeciesContext().getUnitDefinition().divideBy(timeUnit),
+									geometryClass);
+						}
 						//
 						// if it's an event assignment variable AND a rate rule variable
 						// we replace the event rate computed above (which should be zero) with the RateRuleParameter expression
 						//
 						RateRuleRateParameter rateParam = rateRuleRateParamHash.get(variable);
 						if (rateParam != null) {
-							rate = new Expression(getMathSymbol(rateParam, null)); 
+							rate = new Expression(getMathSymbol(rateParam, null));
 						}
 						equation = new OdeEquation(variable, initial, rate);
 						subDomain.replaceEquation(equation);
 					}
 				}
-			} else if(scm.getVariable() instanceof VolVariable && scm.getDependencyExpression() != null) {	// rate rule variables are like this
+			} else if(scm.getVariable() instanceof VolVariable && scm.getDependencyExpression() != null) {    // rate rule variables are like this
 				RateRule rr = simContext.getRateRule(scm.getSpeciesContext());
 				if (rr != null && (rr.getRateRuleVar() instanceof SpeciesContext)) {
 					//
@@ -1599,7 +1613,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 						Expression rateExpr = new Expression(0.0);
 						RateRuleRateParameter rateParam = rateRuleRateParamHash.get(variable);
 						if (rateParam != null) {
-							rateExpr = new Expression(getMathSymbol(rateParam, null)); 
+							rateExpr = new Expression(getMathSymbol(rateParam, null));
 						}
 						equation = new OdeEquation(variable, initial, rateExpr);
 						subDomain.addEquation(equation);
@@ -1607,7 +1621,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 				}
 			}
 		}
-		
+
 		//
 		// create fast system (if neccessary)
 		//
@@ -1664,7 +1678,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 	for (MembraneSubdomainContext memSubdomainContext : membraneSubdomainContexts){
 		MembraneSubDomain memSubDomain = memSubdomainContext.membraneSubdomain;
 		SurfaceClass surfaceClass = memSubdomainContext.surfaceClass;
-		
+
 		for (SurfaceRegionObject surfaceRegionObject : memSubdomainContext.surfaceRegionObjects){
 			if (surfaceRegionObject.isQuantityCategoryEnabled(QuantityCategory.SurfaceVelocity)){
 				int dim = simContext.getGeometry().getDimension();
@@ -1729,7 +1743,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 						//
 						// PDE
 						//
-					
+
 						//
 						// species context belongs to this subDomain
 						//
@@ -1746,7 +1760,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 						memSubDomain.replaceEquation(equation);
 					} else {
 						//
-						// ODE					
+						// ODE
 						//
 						//
 						// species context belongs to this subDomain
@@ -1766,9 +1780,9 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 				//Species species = scm.getSpeciesContext().getSpecies();
 				Variable var = scm.getVariable();
 				final Domain dm = var.getDomain( );
-				if (dm != null) { 
+				if (dm != null) {
 					final String domainName = dm.getName();
-					if (sameName(domainName, memSubDomain.getInsideCompartment()) ||sameName(domainName, memSubDomain.getOutsideCompartment())) { 
+					if (sameName(domainName, memSubDomain.getInsideCompartment()) ||sameName(domainName, memSubDomain.getOutsideCompartment())) {
 						JumpCondition jc = memSubDomain.getJumpCondition(var);
 						if (jc==null){
 							//System.out.println("MathMapping.refreshMathDescription(), adding jump condition for diffusing variable "+var.getName()+" on membrane "+membraneStructureAnalyzer.getMembrane().getName());
@@ -1776,8 +1790,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 								jc = new JumpCondition((VolVariable)var);
 							}else if (var instanceof VolumeRegionVariable){
 								jc = new JumpCondition((VolumeRegionVariable)var);
-							}
-							else {
+							} else {
 								throw new RuntimeException("unexpected Variable type " + var.getClass().getName());
 							}
 
@@ -1908,14 +1921,14 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 				if(ste instanceof VolVariable || ste instanceof MemVariable){
 					throw new MathException("Variables are not allowed in Event assignment initial condition.\nEvent assignment target: " + volVar.getName()  + " has variable (" +symbol+ ") in its expression.");
 				}
-					
+
 			}
 		}
 		Expression rateExpr = new Expression(0.0);
 		RateRuleRateParameter rateParam = rateRuleRateParamHash.get(volVar);
 		if (rateParam != null) {
 			// this is a rate rule, get its expression.
-			rateExpr = new Expression(getMathSymbol(rateParam, null)); 
+			rateExpr = new Expression(getMathSymbol(rateParam, null));
 		}
 		Equation equation = new OdeEquation(volVar, new Expression(getMathSymbol(initParam, null)), rateExpr);
 		subDomain.addEquation(equation);
@@ -1927,7 +1940,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 			// transform the bioEvent trigger/delay to math Event
 			LocalParameter genTriggerParam = be.getParameter(BioEventParameterType.GeneralTriggerFunction);
 			Expression mathTriggerExpr = getIdentifierSubstitutions(new Expression(genTriggerParam,be.getNameScope()), modelUnitSystem.getInstance_DIMENSIONLESS(), null);
-			
+
 			Delay mathDelay = null;
 			LocalParameter delayParam = be.getParameter(BioEventParameterType.TriggerDelay);
 			if (delayParam != null && delayParam.getExpression() != null && !delayParam.getExpression().compareEqual(new Expression(0.0))){
@@ -1935,8 +1948,8 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 				Expression mathDelayExpr = getIdentifierSubstitutions(new Expression(delayParam, be.getNameScope()), timeUnit, null);
 				mathDelay = new Delay(bUseValsFromTriggerTime, mathDelayExpr);
 			}
-			
-			// now deal with (bio)event Assignment translation to math EventAssignment 
+
+			// now deal with (bio)event Assignment translation to math EventAssignment
 			ArrayList<EventAssignment> eventAssignments = be.getEventAssignments();
 			ArrayList<Event.EventAssignment> mathEventAssignmentsList = new ArrayList<Event.EventAssignment>();
 			if(eventAssignments != null){
@@ -1956,7 +1969,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 			mathDesc.addEvent(mathEvent);
 		}
 	}
-	
+
 	if (simContext.getMicroscopeMeasurement()!=null && simContext.getMicroscopeMeasurement().getFluorescentSpecies().size()>0){
 		MicroscopeMeasurement measurement = simContext.getMicroscopeMeasurement();
 		Expression volumeConcExp = new Expression(0.0);
@@ -1993,18 +2006,18 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 			if (psfDataSymbol instanceof FieldDataSymbol){
 				FieldDataSymbol fieldDataSymbol = (FieldDataSymbol)psfDataSymbol;
 				String fieldDataName = ((FieldDataSymbol) psfDataSymbol).getExternalDataIdentifier().getName();
-				
+
 				Expression psfExp = Expression.function(
-						FieldFunctionDefinition.FUNCTION_name, 
-						new Expression("'"+fieldDataName+"'"), 
-						new Expression("'"+fieldDataSymbol.getFieldDataVarName()+"'"), 
-						new Expression(fieldDataSymbol.getFieldDataVarTime()), 
+						FieldFunctionDefinition.FUNCTION_name,
+						new Expression("'"+fieldDataName+"'"),
+						new Expression("'"+fieldDataSymbol.getFieldDataVarName()+"'"),
+						new Expression(fieldDataSymbol.getFieldDataVarTime()),
 						new Expression("'"+fieldDataSymbol.getFieldDataVarType()+"'"));
 				varHash.addVariable(new Function("__PSF__",psfExp,null));
 			}
 			Expression convExp = Expression.function(ConvFunctionDefinition.FUNCTION_name,volumeConcExp,new Expression("__PSF__"));
 			varHash.addVariable(newFunctionOrConstant(measurement.getName(),convExp,null));
-			
+
 		} else if (kernel instanceof GaussianConvolutionKernel) {
 			GaussianConvolutionKernel gaussianConvolutionKernel = (GaussianConvolutionKernel) kernel;
 			GaussianConvolutionDataGeneratorKernel mathKernel = new GaussianConvolutionDataGeneratorKernel(gaussianConvolutionKernel.getSigmaXY_um(), gaussianConvolutionKernel.getSigmaZ_um());
@@ -2021,9 +2034,9 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 				throw new MappingException("Z Projection is only supported in 3D spatial applications.");
 			}
 		}
-		
+
 	}
-	
+
 	//
 	// add any missing unit conversion factors (they don't depend on anyone else ... can do it at the end)
 	//
@@ -2156,7 +2169,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 
 //determine membrane inside and outside subvolume
 public static Pair<SubVolume,SubVolume> computeBoundaryConditionSource(Model model, SimulationContext simContext, SurfaceClass surfaceClass) {
-	
+
 	SubVolume outerSubVolume = null;
 	SubVolume innerSubVolume = null;
 	Structure[] mappedStructures = simContext.getGeometryContext().getStructuresFromGeometryClass(surfaceClass);
@@ -2199,7 +2212,7 @@ public static Pair<SubVolume,SubVolume> computeBoundaryConditionSource(Model mod
 }
 
 private void addSubdomains(Model model, ArrayList<CompartmentSubdomainContext> compartmentSubdomainContexts,
-		ArrayList<MembraneSubdomainContext> membraneSubdomainContexts) throws MathException {
+						   ArrayList<MembraneSubdomainContext> membraneSubdomainContexts) throws MathException {
 	{
 		SubVolume[] subVolumes = simContext.getGeometryContext().getGeometry().getGeometrySpec().getSubVolumes();
 		for (int j=0;j<subVolumes.length;j++){
@@ -2222,12 +2235,12 @@ private void addSubdomains(Model model, ArrayList<CompartmentSubdomainContext> c
 			compartmentSubdomainContexts.add(new CompartmentSubdomainContext(subDomain, subVolume, domain));
 		}
 		GeometryClass[] geometryClasses = simContext.getGeometryContext().getGeometry().getGeometryClasses();
-	
+
 		for (int k=0;k<geometryClasses.length;k++){
 			if (!(geometryClasses[k] instanceof SurfaceClass)){
 				continue;
 			}
-			
+
 			SurfaceClass surfaceClass = (SurfaceClass)geometryClasses[k];
 			// determine membrane inside and outside subvolume
 			// this preserves backward compatibility so that membrane subdomain
@@ -2244,20 +2257,20 @@ private void addSubdomains(Model model, ArrayList<CompartmentSubdomainContext> c
 				if (spatialObject instanceof SurfaceRegionObject) {
 					SurfaceRegionObject surfaceRegionObject = (SurfaceRegionObject) spatialObject;
 					if (surfaceRegionObject.isQuantityCategoryEnabled(QuantityCategory.SurfaceVelocity) &&
-						(((surfaceRegionObject.getInsideSubVolume() == innerSubVolume) && (surfaceRegionObject.getOutsideSubVolume() == outerSubVolume)) ||
-						 ((surfaceRegionObject.getInsideSubVolume() == outerSubVolume) && (surfaceRegionObject.getOutsideSubVolume() == innerSubVolume)))){
+							(((surfaceRegionObject.getInsideSubVolume() == innerSubVolume) && (surfaceRegionObject.getOutsideSubVolume() == outerSubVolume)) ||
+									((surfaceRegionObject.getInsideSubVolume() == outerSubVolume) && (surfaceRegionObject.getOutsideSubVolume() == innerSubVolume)))){
 						surfaceRegionObjects.add(surfaceRegionObject);
 					}
 				}
 			}
-			
+
 			//
 			// create subDomain
 			//
 			CompartmentSubDomain outerCompartment = mathDesc.getCompartmentSubDomain(outerSubVolume.getName());
 			CompartmentSubDomain innerCompartment = mathDesc.getCompartmentSubDomain(innerSubVolume.getName());
-			
-	
+
+
 			MembraneSubDomain memSubDomain = new MembraneSubDomain(innerCompartment,outerCompartment,surfaceClass.getName());
 			mathDesc.addSubDomain(memSubDomain);
 			membraneSubdomainContexts.add(new MembraneSubdomainContext(memSubDomain, new Domain(memSubDomain), surfaceClass, innerSubVolume, outerSubVolume, surfaceRegionObjects.toArray(new SurfaceRegionObject[0])));
@@ -2266,10 +2279,10 @@ private void addSubdomains(Model model, ArrayList<CompartmentSubdomainContext> c
 }
 
 private void addSpatialProcesses(
-		VariableHash varHash, 
-		ArrayList<CompartmentSubdomainContext> compartmentSubdomainContexts, 
+		VariableHash varHash,
+		ArrayList<CompartmentSubdomainContext> compartmentSubdomainContexts,
 		ArrayList<MembraneSubdomainContext> membraneSubdomainContexts) throws MathException, MappingException, ExpressionException {
-	
+
 	if (simContext.getGeometry().getDimension()==0){
 		return;
 	}
@@ -2286,7 +2299,7 @@ private void addSpatialProcesses(
 			boolean bVelocity = pointObject.isQuantityCategoryEnabled(QuantityCategory.PointVelocity);
 			boolean bDirection = pointObject.isQuantityCategoryEnabled(QuantityCategory.DirectionToPoint);
 			boolean bDistance = pointObject.isQuantityCategoryEnabled(QuantityCategory.PointDistanceMap);
-			
+
 			//
 			// either make a point subdomain, or just define functions.
 			//
@@ -2308,13 +2321,13 @@ private void addSpatialProcesses(
 						SpatialQuantity posXQuantity = pointObject.getSpatialQuantity(QuantityCategory.PointPosition,QuantityComponent.X);
 						LocalParameter posXParam = pointLocation.getParameter(SpatialProcessParameterType.PointPositionX);
 						varHash.addVariable(newFunctionOrConstant(
-								getMathSymbol(posXParam, gc), 
-								getIdentifierSubstitutions(posXParam.getExpression(), posXParam.getUnitDefinition(), gc), 
+								getMathSymbol(posXParam, gc),
+								getIdentifierSubstitutions(posXParam.getExpression(), posXParam.getUnitDefinition(), gc),
 								gc));
 						Expression posXExp = new Expression(posXParam,pointLocation.getNameScope());
 						Expression xExp = new Expression(simContext.getModel().getReservedSymbolByRole(ReservedSymbolRole.X),simContext.getModel().getNameScope());
 						varHash.addVariable(newFunctionOrConstant(
-								getMathSymbol(posXQuantity, gc), 
+								getMathSymbol(posXQuantity, gc),
 								getIdentifierSubstitutions(posXExp,posXQuantity.getUnitDefinition(),gc),
 								gc));
 						Expression posX_minus_X = Expression.add(posXExp,Expression.negate(xExp));
@@ -2322,7 +2335,7 @@ private void addSpatialProcesses(
 						if (bDirection){
 							SpatialQuantity dirXQuantity = pointObject.getSpatialQuantity(QuantityCategory.DirectionToPoint,QuantityComponent.X);
 							varHash.addVariable(newFunctionOrConstant(
-									getMathSymbol(dirXQuantity, gc), 
+									getMathSymbol(dirXQuantity, gc),
 									getIdentifierSubstitutions(signum_posX_minus_X,dirXQuantity.getUnitDefinition(),gc),
 									gc));
 						}
@@ -2330,34 +2343,34 @@ private void addSpatialProcesses(
 							Expression abs_X_minux_posX = Expression.function(FunctionType.ABS, posX_minus_X);
 							SpatialQuantity distanceQuantity = pointObject.getSpatialQuantity(QuantityCategory.PointDistanceMap,QuantityComponent.Scalar);
 							varHash.addVariable(newFunctionOrConstant(
-									getMathSymbol(distanceQuantity, gc), 
+									getMathSymbol(distanceQuantity, gc),
 									getIdentifierSubstitutions(abs_X_minux_posX,distanceQuantity.getUnitDefinition(),gc),
 									gc));
 						}
-					}		
+					}
 					if (simContext.getGeometry().getDimension()==2){
 						SpatialQuantity posXQuantity = pointObject.getSpatialQuantity(QuantityCategory.PointPosition,QuantityComponent.X);
 						LocalParameter posXParam = pointLocation.getParameter(SpatialProcessParameterType.PointPositionX);
 						varHash.addVariable(newFunctionOrConstant(
-								getMathSymbol(posXParam, gc), 
-								getIdentifierSubstitutions(posXParam.getExpression(), posXParam.getUnitDefinition(), gc), 
+								getMathSymbol(posXParam, gc),
+								getIdentifierSubstitutions(posXParam.getExpression(), posXParam.getUnitDefinition(), gc),
 								gc));
 						Expression posXExp = new Expression(posXParam,pointLocation.getNameScope());
 						Expression xExp = new Expression(simContext.getModel().getReservedSymbolByRole(ReservedSymbolRole.X),simContext.getModel().getNameScope());
 						varHash.addVariable(newFunctionOrConstant(
-								getMathSymbol(posXQuantity, gc), 
+								getMathSymbol(posXQuantity, gc),
 								getIdentifierSubstitutions(new Expression(posXParam,pointLocation.getNameScope()),posXQuantity.getUnitDefinition(),gc),
 								gc));
 						SpatialQuantity posYQuantity = pointObject.getSpatialQuantity(QuantityCategory.PointPosition,QuantityComponent.Y);
 						LocalParameter posYParam = pointLocation.getParameter(SpatialProcessParameterType.PointPositionY);
 						varHash.addVariable(newFunctionOrConstant(
-								getMathSymbol(posYParam, gc), 
-								getIdentifierSubstitutions(posYParam.getExpression(), posYParam.getUnitDefinition(), gc), 
+								getMathSymbol(posYParam, gc),
+								getIdentifierSubstitutions(posYParam.getExpression(), posYParam.getUnitDefinition(), gc),
 								gc));
 						Expression posYExp = new Expression(posYParam,pointLocation.getNameScope());
 						Expression yExp = new Expression(simContext.getModel().getReservedSymbolByRole(ReservedSymbolRole.Y),simContext.getModel().getNameScope());
 						varHash.addVariable(newFunctionOrConstant(
-								getMathSymbol(posYQuantity, gc), 
+								getMathSymbol(posYQuantity, gc),
 								getIdentifierSubstitutions(new Expression(posYParam,pointLocation.getNameScope()),posYQuantity.getUnitDefinition(),gc),
 								gc));
 						Expression posX_minux_X = Expression.add(posXExp,Expression.negate(xExp));
@@ -2370,58 +2383,58 @@ private void addSpatialProcesses(
 						if (bDirection){
 							SpatialQuantity dirXQuantity = pointObject.getSpatialQuantity(QuantityCategory.DirectionToPoint,QuantityComponent.X);
 							varHash.addVariable(newFunctionOrConstant(
-									getMathSymbol(dirXQuantity, gc), 
+									getMathSymbol(dirXQuantity, gc),
 									getIdentifierSubstitutions(dirX,dirXQuantity.getUnitDefinition(),gc),
 									gc));
 							SpatialQuantity dirYQuantity = pointObject.getSpatialQuantity(QuantityCategory.DirectionToPoint,QuantityComponent.Y);
 							varHash.addVariable(newFunctionOrConstant(
-									getMathSymbol(dirYQuantity, gc), 
+									getMathSymbol(dirYQuantity, gc),
 									getIdentifierSubstitutions(dirY,dirYQuantity.getUnitDefinition(),gc),
 									gc));
 						}
 						if (bDistance){
 							SpatialQuantity distanceQuantity = pointObject.getSpatialQuantity(QuantityCategory.PointDistanceMap,QuantityComponent.Scalar);
 							varHash.addVariable(newFunctionOrConstant(
-									getMathSymbol(distanceQuantity, gc), 
+									getMathSymbol(distanceQuantity, gc),
 									getIdentifierSubstitutions(sqrt_DX2_DY2,distanceQuantity.getUnitDefinition(),gc),
 									gc));
 						}
-					}		
+					}
 					if (simContext.getGeometry().getDimension()==3){
 						SpatialQuantity posXQuantity = pointObject.getSpatialQuantity(QuantityCategory.PointPosition,QuantityComponent.X);
 						LocalParameter posXParam = pointLocation.getParameter(SpatialProcessParameterType.PointPositionX);
 						varHash.addVariable(newFunctionOrConstant(
-								getMathSymbol(posXParam, gc), 
-								getIdentifierSubstitutions(posXParam.getExpression(), posXParam.getUnitDefinition(), gc), 
+								getMathSymbol(posXParam, gc),
+								getIdentifierSubstitutions(posXParam.getExpression(), posXParam.getUnitDefinition(), gc),
 								gc));
 						Expression posXExp = new Expression(posXParam,pointLocation.getNameScope());
 						Expression xExp = new Expression(simContext.getModel().getReservedSymbolByRole(ReservedSymbolRole.X),simContext.getModel().getNameScope());
 						varHash.addVariable(newFunctionOrConstant(
-								getMathSymbol(posXQuantity, gc), 
+								getMathSymbol(posXQuantity, gc),
 								getIdentifierSubstitutions(new Expression(posXParam,pointLocation.getNameScope()),posXQuantity.getUnitDefinition(),gc),
 								gc));
 						SpatialQuantity posYQuantity = pointObject.getSpatialQuantity(QuantityCategory.PointPosition,QuantityComponent.Y);
 						LocalParameter posYParam = pointLocation.getParameter(SpatialProcessParameterType.PointPositionY);
 						varHash.addVariable(newFunctionOrConstant(
-								getMathSymbol(posYParam, gc), 
-								getIdentifierSubstitutions(posYParam.getExpression(), posYParam.getUnitDefinition(), gc), 
+								getMathSymbol(posYParam, gc),
+								getIdentifierSubstitutions(posYParam.getExpression(), posYParam.getUnitDefinition(), gc),
 								gc));
 						Expression posYExp = new Expression(posYParam,pointLocation.getNameScope());
 						Expression yExp = new Expression(simContext.getModel().getReservedSymbolByRole(ReservedSymbolRole.Y),simContext.getModel().getNameScope());
 						varHash.addVariable(newFunctionOrConstant(
-								getMathSymbol(posYQuantity, gc), 
+								getMathSymbol(posYQuantity, gc),
 								getIdentifierSubstitutions(new Expression(posYParam,pointLocation.getNameScope()),posYQuantity.getUnitDefinition(),gc),
 								gc));
 						SpatialQuantity posZQuantity = pointObject.getSpatialQuantity(QuantityCategory.PointPosition,QuantityComponent.Z);
 						LocalParameter posZParam = pointLocation.getParameter(SpatialProcessParameterType.PointPositionZ);
 						varHash.addVariable(newFunctionOrConstant(
-								getMathSymbol(posZParam, gc), 
-								getIdentifierSubstitutions(posZParam.getExpression(), posZParam.getUnitDefinition(), gc), 
+								getMathSymbol(posZParam, gc),
+								getIdentifierSubstitutions(posZParam.getExpression(), posZParam.getUnitDefinition(), gc),
 								gc));
 						Expression posZExp = new Expression(posZParam,pointLocation.getNameScope());
 						Expression zExp = new Expression(simContext.getModel().getReservedSymbolByRole(ReservedSymbolRole.Z),simContext.getModel().getNameScope());
 						varHash.addVariable(newFunctionOrConstant(
-								getMathSymbol(posZQuantity, gc), 
+								getMathSymbol(posZQuantity, gc),
 								getIdentifierSubstitutions(new Expression(posZParam,pointLocation.getNameScope()),posZQuantity.getUnitDefinition(),gc),
 								gc));
 						Expression posX_minux_X = Expression.add(posXExp,Expression.negate(xExp));
@@ -2437,28 +2450,28 @@ private void addSpatialProcesses(
 						if (bDirection){
 							SpatialQuantity dirXQuantity = pointObject.getSpatialQuantity(QuantityCategory.DirectionToPoint,QuantityComponent.X);
 							varHash.addVariable(newFunctionOrConstant(
-									getMathSymbol(dirXQuantity, gc), 
+									getMathSymbol(dirXQuantity, gc),
 									getIdentifierSubstitutions(dirX,dirXQuantity.getUnitDefinition(),gc),
 									gc));
 							SpatialQuantity dirYQuantity = pointObject.getSpatialQuantity(QuantityCategory.DirectionToPoint,QuantityComponent.Y);
 							varHash.addVariable(newFunctionOrConstant(
-									getMathSymbol(dirYQuantity, gc), 
+									getMathSymbol(dirYQuantity, gc),
 									getIdentifierSubstitutions(dirY,dirYQuantity.getUnitDefinition(),gc),
 									gc));
 							SpatialQuantity dirZQuantity = pointObject.getSpatialQuantity(QuantityCategory.DirectionToPoint,QuantityComponent.Z);
 							varHash.addVariable(newFunctionOrConstant(
-									getMathSymbol(dirZQuantity, gc), 
+									getMathSymbol(dirZQuantity, gc),
 									getIdentifierSubstitutions(dirZ,dirZQuantity.getUnitDefinition(),gc),
 									gc));
 						}
 						if (bDistance){
 							SpatialQuantity distanceQuantity = pointObject.getSpatialQuantity(QuantityCategory.PointDistanceMap,QuantityComponent.Scalar);
 							varHash.addVariable(newFunctionOrConstant(
-									getMathSymbol(distanceQuantity, gc), 
+									getMathSymbol(distanceQuantity, gc),
 									getIdentifierSubstitutions(sqrt_DX2_DY2_DZ2,distanceQuantity.getUnitDefinition(),gc),
 									gc));
 						}
-					}		
+					}
 				}else{
 					throw new MappingException("PointLocation process defined for pointObject '"+pointObject.getName()+"' but Position not enabled");
 				}
@@ -2473,7 +2486,7 @@ private void addSpatialProcesses(
 					Expression posXExp = new Expression(posXQuantity,simContext.getNameScope());
 					Expression xExp = new Expression(simContext.getModel().getReservedSymbolByRole(ReservedSymbolRole.X),simContext.getModel().getNameScope());
 					Expression posX_minux_X = Expression.add(posXExp,Expression.negate(xExp));
-					
+
 					LocalParameter velYParam = pointKinematics.getParameter(SpatialProcessParameterType.PointVelocityY);
 					LocalParameter iniPosYParam = pointKinematics.getParameter(SpatialProcessParameterType.PointInitialPositionY);
 					SpatialQuantity posYQuantity = pointObject.getSpatialQuantity(QuantityCategory.PointPosition, QuantityComponent.Y);
@@ -2494,7 +2507,7 @@ private void addSpatialProcesses(
 					Domain domain = new Domain(pointSubdomainName);
 					PointSubDomain pointSubdomain = new PointSubDomain(pointSubdomainName);
 					mathDesc.addSubDomain(pointSubdomain);
-					
+
 					if (simContext.getGeometry().getDimension()>=1){
 						PointVariable posXVar = new PointVariable(getMathSymbol(posXQuantity, gc), domain);
 						varHash.addVariable(posXVar);
@@ -2503,15 +2516,15 @@ private void addSpatialProcesses(
 						OdeEquation odeX = new OdeEquation(posXVar, initXExp, rateXExp);
 						pointSubdomain.addEquation(odeX);
 						varHash.addVariable(newFunctionOrConstant(
-								getMathSymbol(iniPosXParam, gc), 
+								getMathSymbol(iniPosXParam, gc),
 								getIdentifierSubstitutions(new Expression(iniPosXParam.getExpression()), iniPosXParam.getUnitDefinition(), gc),
 								gc));
 						varHash.addVariable(newFunctionOrConstant(
-								getMathSymbol(velXParam, gc), 
+								getMathSymbol(velXParam, gc),
 								getIdentifierSubstitutions(new Expression(velXParam.getExpression()), velXParam.getUnitDefinition(), gc),
 								gc));
 						varHash.addVariable(newFunctionOrConstant(
-								getMathSymbol(velXQuantity, gc), 
+								getMathSymbol(velXQuantity, gc),
 								getIdentifierSubstitutions(new Expression(velXParam,pointKinematics.getNameScope()), velXQuantity.getUnitDefinition(), gc),
 								gc));
 						pointSubdomain.setPositionX(getIdentifierSubstitutions(new Expression(posXQuantity,simContext.getNameScope()), posXQuantity.getUnitDefinition(), gc));
@@ -2524,15 +2537,15 @@ private void addSpatialProcesses(
 						OdeEquation odeY = new OdeEquation(posYVar, initYExp, rateYExp);
 						pointSubdomain.addEquation(odeY);
 						varHash.addVariable(newFunctionOrConstant(
-								getMathSymbol(iniPosYParam, gc), 
+								getMathSymbol(iniPosYParam, gc),
 								getIdentifierSubstitutions(new Expression(iniPosYParam.getExpression()), iniPosYParam.getUnitDefinition(), gc),
 								gc));
 						varHash.addVariable(newFunctionOrConstant(
-								getMathSymbol(velYParam, gc), 
+								getMathSymbol(velYParam, gc),
 								getIdentifierSubstitutions(new Expression(velYParam.getExpression()), velYParam.getUnitDefinition(), gc),
 								gc));
 						varHash.addVariable(newFunctionOrConstant(
-								getMathSymbol(velYQuantity, gc), 
+								getMathSymbol(velYQuantity, gc),
 								getIdentifierSubstitutions(new Expression(velYParam,pointKinematics.getNameScope()), velYQuantity.getUnitDefinition(), gc),
 								gc));
 						pointSubdomain.setPositionY(getIdentifierSubstitutions(new Expression(posYQuantity,simContext.getNameScope()), posYQuantity.getUnitDefinition(), gc));
@@ -2545,15 +2558,15 @@ private void addSpatialProcesses(
 						OdeEquation odeZ = new OdeEquation(posZVar, initZExp, rateZExp);
 						pointSubdomain.addEquation(odeZ);
 						varHash.addVariable(newFunctionOrConstant(
-								getMathSymbol(iniPosZParam, gc), 
+								getMathSymbol(iniPosZParam, gc),
 								getIdentifierSubstitutions(new Expression(iniPosZParam.getExpression()), iniPosZParam.getUnitDefinition(), gc),
 								gc));
 						varHash.addVariable(newFunctionOrConstant(
-								getMathSymbol(velZParam, gc), 
+								getMathSymbol(velZParam, gc),
 								getIdentifierSubstitutions(new Expression(velZParam.getExpression()), velZParam.getUnitDefinition(), gc),
 								gc));
 						varHash.addVariable(newFunctionOrConstant(
-								getMathSymbol(velZQuantity, gc), 
+								getMathSymbol(velZQuantity, gc),
 								getIdentifierSubstitutions(new Expression(velZParam,pointKinematics.getNameScope()), velZQuantity.getUnitDefinition(), gc),
 								gc));
 						pointSubdomain.setPositionZ(getIdentifierSubstitutions(new Expression(posZQuantity,simContext.getNameScope()), posZQuantity.getUnitDefinition(), gc));
@@ -2563,7 +2576,7 @@ private void addSpatialProcesses(
 						if (bDirection){
 							SpatialQuantity dirXQuantity = pointObject.getSpatialQuantity(QuantityCategory.DirectionToPoint,QuantityComponent.X);
 							varHash.addVariable(newFunctionOrConstant(
-									getMathSymbol(dirXQuantity, gc), 
+									getMathSymbol(dirXQuantity, gc),
 									getIdentifierSubstitutions(signum_posX_minus_X,dirXQuantity.getUnitDefinition(),gc),
 									gc));
 						}
@@ -2571,7 +2584,7 @@ private void addSpatialProcesses(
 							Expression abs_X_minux_posX = Expression.function(FunctionType.ABS, posX_minux_X);
 							SpatialQuantity distanceQuantity = pointObject.getSpatialQuantity(QuantityCategory.PointDistanceMap,QuantityComponent.Scalar);
 							varHash.addVariable(newFunctionOrConstant(
-									getMathSymbol(distanceQuantity, gc), 
+									getMathSymbol(distanceQuantity, gc),
 									getIdentifierSubstitutions(abs_X_minux_posX,distanceQuantity.getUnitDefinition(),gc),
 									gc));
 						}
@@ -2585,19 +2598,19 @@ private void addSpatialProcesses(
 						if (bDirection){
 							SpatialQuantity dirXQuantity = pointObject.getSpatialQuantity(QuantityCategory.DirectionToPoint,QuantityComponent.X);
 							varHash.addVariable(newFunctionOrConstant(
-									getMathSymbol(dirXQuantity, gc), 
+									getMathSymbol(dirXQuantity, gc),
 									getIdentifierSubstitutions(dirX,dirXQuantity.getUnitDefinition(),gc),
 									gc));
 							SpatialQuantity dirYQuantity = pointObject.getSpatialQuantity(QuantityCategory.DirectionToPoint,QuantityComponent.Y);
 							varHash.addVariable(newFunctionOrConstant(
-									getMathSymbol(dirYQuantity, gc), 
+									getMathSymbol(dirYQuantity, gc),
 									getIdentifierSubstitutions(dirY,dirYQuantity.getUnitDefinition(),gc),
 									gc));
 						}
 						if (bDistance){
 							SpatialQuantity distanceQuantity = pointObject.getSpatialQuantity(QuantityCategory.PointDistanceMap,QuantityComponent.Scalar);
 							varHash.addVariable(newFunctionOrConstant(
-									getMathSymbol(distanceQuantity, gc), 
+									getMathSymbol(distanceQuantity, gc),
 									getIdentifierSubstitutions(sqrt_DX2_DY2,distanceQuantity.getUnitDefinition(),gc),
 									gc));
 						}
@@ -2614,27 +2627,27 @@ private void addSpatialProcesses(
 						if (bDirection){
 							SpatialQuantity dirXQuantity = pointObject.getSpatialQuantity(QuantityCategory.DirectionToPoint,QuantityComponent.X);
 							varHash.addVariable(newFunctionOrConstant(
-									getMathSymbol(dirXQuantity, gc), 
+									getMathSymbol(dirXQuantity, gc),
 									getIdentifierSubstitutions(dirX,dirXQuantity.getUnitDefinition(),gc),
 									gc));
 							SpatialQuantity dirYQuantity = pointObject.getSpatialQuantity(QuantityCategory.DirectionToPoint,QuantityComponent.Y);
 							varHash.addVariable(newFunctionOrConstant(
-									getMathSymbol(dirYQuantity, gc), 
+									getMathSymbol(dirYQuantity, gc),
 									getIdentifierSubstitutions(dirY,dirYQuantity.getUnitDefinition(),gc),
 									gc));
 							SpatialQuantity dirZQuantity = pointObject.getSpatialQuantity(QuantityCategory.DirectionToPoint,QuantityComponent.Z);
 							varHash.addVariable(newFunctionOrConstant(
-									getMathSymbol(dirZQuantity, gc), 
+									getMathSymbol(dirZQuantity, gc),
 									getIdentifierSubstitutions(dirZ,dirZQuantity.getUnitDefinition(),gc),
 									gc));
 						}
 						if (bDistance){
 							SpatialQuantity distanceQuantity = pointObject.getSpatialQuantity(QuantityCategory.PointDistanceMap,QuantityComponent.Scalar);
 							varHash.addVariable(newFunctionOrConstant(
-									getMathSymbol(distanceQuantity, gc), 
+									getMathSymbol(distanceQuantity, gc),
 									getIdentifierSubstitutions(sqrt_DX2_DY2_DZ2,distanceQuantity.getUnitDefinition(),gc),
 									gc));
-						}						
+						}
 					}
 				}else{
 					throw new MappingException(pointKinematics.getDescription()+" process defined for pointObject '"+pointObject.getName()+"' but Position and Velocity not enabled");
@@ -2662,7 +2675,7 @@ private void addSpatialProcesses(
 			boolean bDistance = surfaceRegionObject.isQuantityCategoryEnabled(QuantityCategory.SurfaceDistanceMap);
 			boolean bDirection = surfaceRegionObject.isQuantityCategoryEnabled(QuantityCategory.DirectionToSurface);
 			boolean bSize = surfaceRegionObject.isQuantityCategoryEnabled(QuantityCategory.SurfaceSize);
-			
+
 			if (bVelocity){
 				ArrayList<SurfaceKinematics> surfaceKinematicsList = new ArrayList<SurfaceKinematics>();
 				for (SpatialProcess spatialProcess : simContext.getSpatialProcesses()){
@@ -2676,19 +2689,19 @@ private void addSpatialProcesses(
 						SpatialQuantity velXQuantity = surfaceRegionObject.getSpatialQuantity(QuantityCategory.SurfaceVelocity,QuantityComponent.X);
 						LocalParameter velXParam = surfaceKinematics.getParameter(SpatialProcessParameterType.SurfaceVelocityX);
 						varHash.addVariable(newFunctionOrConstant(
-								getMathSymbol(velXParam, surfaceClass), 
-								getIdentifierSubstitutions(velXParam.getExpression(), velXParam.getUnitDefinition(), surfaceClass), 
+								getMathSymbol(velXParam, surfaceClass),
+								getIdentifierSubstitutions(velXParam.getExpression(), velXParam.getUnitDefinition(), surfaceClass),
 								surfaceClass));
 						Expression velXExp = new Expression(velXParam,surfaceKinematics.getNameScope());
 						varHash.addVariable(newFunctionOrConstant(
-								getMathSymbol(velXQuantity, surfaceClass), 
+								getMathSymbol(velXQuantity, surfaceClass),
 								getIdentifierSubstitutions(velXExp,velXQuantity.getUnitDefinition(),surfaceClass),
 								surfaceClass));
 						if (bNormal){
 							SpatialQuantity normXQuantity = surfaceRegionObject.getSpatialQuantity(QuantityCategory.Normal,QuantityComponent.X);
 							Expression normXExp = new Expression(MathFunctionDefinitions.FUNCTION_normalX);
 							varHash.addVariable(newFunctionOrConstant(
-									getMathSymbol(normXQuantity, surfaceClass), 
+									getMathSymbol(normXQuantity, surfaceClass),
 									getIdentifierSubstitutions(normXExp,normXQuantity.getUnitDefinition(),surfaceClass),
 									surfaceClass));
 						}
@@ -2697,19 +2710,19 @@ private void addSpatialProcesses(
 						SpatialQuantity velYQuantity = surfaceRegionObject.getSpatialQuantity(QuantityCategory.SurfaceVelocity,QuantityComponent.Y);
 						LocalParameter velYParam = surfaceKinematics.getParameter(SpatialProcessParameterType.SurfaceVelocityY);
 						varHash.addVariable(newFunctionOrConstant(
-								getMathSymbol(velYParam, surfaceClass), 
-								getIdentifierSubstitutions(velYParam.getExpression(), velYParam.getUnitDefinition(), surfaceClass), 
+								getMathSymbol(velYParam, surfaceClass),
+								getIdentifierSubstitutions(velYParam.getExpression(), velYParam.getUnitDefinition(), surfaceClass),
 								surfaceClass));
 						Expression velYExp = new Expression(velYParam,surfaceKinematics.getNameScope());
 						varHash.addVariable(newFunctionOrConstant(
-								getMathSymbol(velYQuantity, surfaceClass), 
+								getMathSymbol(velYQuantity, surfaceClass),
 								getIdentifierSubstitutions(velYExp,velYQuantity.getUnitDefinition(),surfaceClass),
 								surfaceClass));
 						if (bNormal){
 							SpatialQuantity normYQuantity = surfaceRegionObject.getSpatialQuantity(QuantityCategory.Normal,QuantityComponent.Y);
 							Expression normYExp = new Expression(MathFunctionDefinitions.FUNCTION_normalY);
 							varHash.addVariable(newFunctionOrConstant(
-									getMathSymbol(normYQuantity, surfaceClass), 
+									getMathSymbol(normYQuantity, surfaceClass),
 									getIdentifierSubstitutions(normYExp,normYQuantity.getUnitDefinition(),surfaceClass),
 									surfaceClass));
 						}
@@ -2718,19 +2731,19 @@ private void addSpatialProcesses(
 						SpatialQuantity velZQuantity = surfaceRegionObject.getSpatialQuantity(QuantityCategory.SurfaceVelocity,QuantityComponent.Z);
 						LocalParameter velZParam = surfaceKinematics.getParameter(SpatialProcessParameterType.SurfaceVelocityZ);
 						varHash.addVariable(newFunctionOrConstant(
-								getMathSymbol(velZParam, surfaceClass), 
-								getIdentifierSubstitutions(velZParam.getExpression(), velZParam.getUnitDefinition(), surfaceClass), 
+								getMathSymbol(velZParam, surfaceClass),
+								getIdentifierSubstitutions(velZParam.getExpression(), velZParam.getUnitDefinition(), surfaceClass),
 								surfaceClass));
 						Expression velYExp = new Expression(velZParam,surfaceKinematics.getNameScope());
 						varHash.addVariable(newFunctionOrConstant(
-								getMathSymbol(velZQuantity, surfaceClass), 
+								getMathSymbol(velZQuantity, surfaceClass),
 								getIdentifierSubstitutions(velYExp,velZQuantity.getUnitDefinition(),surfaceClass),
 								surfaceClass));
 						if (bNormal){
 							SpatialQuantity normZQuantity = surfaceRegionObject.getSpatialQuantity(QuantityCategory.Normal,QuantityComponent.Z);
 							Expression normZExp = new Expression("normalZ_not_implemented()"); // MathFunctionDefinitions.FUNCTION_normalZ);
 							varHash.addVariable(newFunctionOrConstant(
-									getMathSymbol(normZQuantity, surfaceClass), 
+									getMathSymbol(normZQuantity, surfaceClass),
 									getIdentifierSubstitutions(normZExp,normZQuantity.getUnitDefinition(),surfaceClass),
 									surfaceClass));
 						}
@@ -2744,7 +2757,7 @@ private void addSpatialProcesses(
 				String funcName = MathFunctionDefinitions.Function_regionArea_current.getFunctionName();
 				Expression sizeExp = Expression.function(funcName, new Expression[] {new Expression("'"+surfaceClass.getName()+"'")} );
 				varHash.addVariable(newFunctionOrConstant(
-						getMathSymbol(sizeQuantity, surfaceClass), 
+						getMathSymbol(sizeQuantity, surfaceClass),
 						getIdentifierSubstitutions(sizeExp,sizeQuantity.getUnitDefinition(),surfaceClass),
 						surfaceClass));
 			}
@@ -2802,7 +2815,7 @@ private void addSpatialProcesses(
 		}else if (spatialObject instanceof VolumeRegionObject){
 			VolumeRegionObject volumeRegionObject = (VolumeRegionObject)spatialObject;
 			SubVolume subvolume = volumeRegionObject.getSubVolume();
-			
+
 			boolean bCentroid = volumeRegionObject.isQuantityCategoryEnabled(QuantityCategory.DirectionToSurface);
 			boolean bSize = volumeRegionObject.isQuantityCategoryEnabled(QuantityCategory.VolumeSize);
 			boolean bVelocity = volumeRegionObject.isQuantityCategoryEnabled(QuantityCategory.InteriorVelocity);
@@ -2820,12 +2833,12 @@ private void addSpatialProcesses(
 						SpatialQuantity velXQuantity = volumeRegionObject.getSpatialQuantity(QuantityCategory.InteriorVelocity,QuantityComponent.X);
 						LocalParameter velXParam = volumeKinematics.getParameter(SpatialProcessParameterType.InternalVelocityX);
 						varHash.addVariable(newFunctionOrConstant(
-								getMathSymbol(velXParam, subvolume), 
-								getIdentifierSubstitutions(velXParam.getExpression(), velXParam.getUnitDefinition(), subvolume), 
+								getMathSymbol(velXParam, subvolume),
+								getIdentifierSubstitutions(velXParam.getExpression(), velXParam.getUnitDefinition(), subvolume),
 								subvolume));
 						Expression velXExp = new Expression(velXParam,volumeKinematics.getNameScope());
 						varHash.addVariable(newFunctionOrConstant(
-								getMathSymbol(velXQuantity, subvolume), 
+								getMathSymbol(velXQuantity, subvolume),
 								getIdentifierSubstitutions(velXExp,velXQuantity.getUnitDefinition(),subvolume),
 								subvolume));
 					}
@@ -2833,12 +2846,12 @@ private void addSpatialProcesses(
 						SpatialQuantity velYQuantity = volumeRegionObject.getSpatialQuantity(QuantityCategory.InteriorVelocity,QuantityComponent.Y);
 						LocalParameter velYParam = volumeKinematics.getParameter(SpatialProcessParameterType.InternalVelocityY);
 						varHash.addVariable(newFunctionOrConstant(
-								getMathSymbol(velYParam, subvolume), 
-								getIdentifierSubstitutions(velYParam.getExpression(), velYParam.getUnitDefinition(), subvolume), 
+								getMathSymbol(velYParam, subvolume),
+								getIdentifierSubstitutions(velYParam.getExpression(), velYParam.getUnitDefinition(), subvolume),
 								subvolume));
 						Expression velYExp = new Expression(velYParam,volumeKinematics.getNameScope());
 						varHash.addVariable(newFunctionOrConstant(
-								getMathSymbol(velYQuantity, subvolume), 
+								getMathSymbol(velYQuantity, subvolume),
 								getIdentifierSubstitutions(velYExp,velYQuantity.getUnitDefinition(),subvolume),
 								subvolume));
 					}
@@ -2846,12 +2859,12 @@ private void addSpatialProcesses(
 						SpatialQuantity velZQuantity = volumeRegionObject.getSpatialQuantity(QuantityCategory.InteriorVelocity,QuantityComponent.Z);
 						LocalParameter velZParam = volumeKinematics.getParameter(SpatialProcessParameterType.InternalVelocityZ);
 						varHash.addVariable(newFunctionOrConstant(
-								getMathSymbol(velZParam, subvolume), 
-								getIdentifierSubstitutions(velZParam.getExpression(), velZParam.getUnitDefinition(), subvolume), 
+								getMathSymbol(velZParam, subvolume),
+								getIdentifierSubstitutions(velZParam.getExpression(), velZParam.getUnitDefinition(), subvolume),
 								subvolume));
 						Expression velZExp = new Expression(velZParam,volumeKinematics.getNameScope());
 						varHash.addVariable(newFunctionOrConstant(
-								getMathSymbol(velZQuantity, subvolume), 
+								getMathSymbol(velZQuantity, subvolume),
 								getIdentifierSubstitutions(velZExp,velZQuantity.getUnitDefinition(),subvolume),
 								subvolume));
 					}
@@ -2866,7 +2879,7 @@ private void addSpatialProcesses(
 				String funcName = MathFunctionDefinitions.Function_regionVolume_current.getFunctionName();
 				Expression sizeExp = Expression.function(funcName, new Expression[] {new Expression("'"+subvolume.getName()+"'")} );
 				varHash.addVariable(newFunctionOrConstant(
-						getMathSymbol(sizeQuantity, subvolume), 
+						getMathSymbol(sizeQuantity, subvolume),
 						getIdentifierSubstitutions(sizeExp,sizeQuantity.getUnitDefinition(),subvolume),
 						subvolume));
 			}
@@ -2881,7 +2894,7 @@ private void addSpatialProcesses(
  * This method was created in VisualAge.
  */
 private void refreshSpeciesContextMappings() throws ExpressionException, MappingException, MathException {
-	
+
 	//
 	// create a SpeciesContextMapping for each speciesContextSpec.
 	//
@@ -2890,7 +2903,7 @@ private void refreshSpeciesContextMappings() throws ExpressionException, Mapping
 	// set variable (only if "Constant" or "Function", else leave it as null)
 	//
 	speciesContextMappingList.removeAllElements();
-	
+
 	SpeciesContextSpec speciesContextSpecs[] = simContext.getReactionContext().getSpeciesContextSpecs();
 	for (int i=0;i<speciesContextSpecs.length;i++){
 		SpeciesContextSpec scs = speciesContextSpecs[i];
@@ -2907,20 +2920,27 @@ private void refreshSpeciesContextMappings() throws ExpressionException, Mapping
 		}
 //		scm.setDiffusing(isDiffusionRequired(scs.getSpeciesContext()));
 //		scm.setAdvecting(isAdvectionRequired(scs.getSpeciesContext()));
-		if (scs.isConstant()){
-			Expression initCond = scs.getInitialConditionParameter() == null? null : new Expression(scs.getInitialConditionParameter(),getNameScope());
-			scm.setDependencyExpression(initCond);
+		if (scs.isClamped()){
+			Expression clampedExpression = null;
+			if (scs.getInitialConditionParameter() != null) {
+				clampedExpression = new Expression(scs.getInitialConditionParameter(), getNameScope());
+			}
+			AssignmentRule assignmentRule = simContext.getAssignmentRule(scs.getSpeciesContext());
+			if (assignmentRule != null){
+				clampedExpression = new Expression(assignmentRule.getAssignmentRuleExpression());
+			}
+			scm.setDependencyExpression(clampedExpression);
 			////
 			//// determine if a Function is necessary
 			////
 			//boolean bNeedFunction = false;
 			//if (initCond.getSymbols()!=null){
-				//bNeedFunction = true;
+			//bNeedFunction = true;
 			//}
 			//if (bNeedFunction){
-				//scm.setVariable(new Function(scm.getSpeciesContext().getName(),initCond));
+			//scm.setVariable(new Function(scm.getSpeciesContext().getName(),initCond));
 			//}else{
-				//scm.setVariable(new Constant(scm.getSpeciesContext().getName(),initCond));
+			//scm.setVariable(new Constant(scm.getSpeciesContext().getName(),initCond));
 			//}
 		}
 		//
@@ -2951,7 +2971,7 @@ private void refreshSpeciesContextMappings() throws ExpressionException, Mapping
 private void refreshStructureAnalyzers() {
 
 	structureAnalyzerList.removeAllElements();
-	
+
 	//
 	// update structureAnalyzer list if any subVolumes were added
 	//
@@ -2966,7 +2986,7 @@ private void refreshStructureAnalyzers() {
 			SurfaceClass surfaceClass = (SurfaceClass)geometryClasses[j];
 			if (getMembraneStructureAnalyzer(surfaceClass)==null){
 				structureAnalyzerList.addElement(new MembraneStructureAnalyzer(this,surfaceClass));
-			}		
+			}
 		}
 	}
 
@@ -3004,7 +3024,7 @@ private void refreshVariables() throws MappingException {
 			scm.setDependencyExpression(null);
 		}
 	}
-	
+
 	//
 	// non-constant independent variables require either a membrane or volume variable
 	//

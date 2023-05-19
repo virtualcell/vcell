@@ -1,25 +1,30 @@
 package org.vcell.sbml;
 
+import cbit.util.xml.VCLoggerException;
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathDescription;
-import cbit.vcell.math.Variable;
 import cbit.vcell.math.VolVariable;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.solver.ErrorTolerance;
 import cbit.vcell.solver.ExplicitOutputTimeSpec;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.TimeBounds;
+import org.apache.log4j.ConsoleAppender;
+import org.apache.log4j.Logger;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.vcell.sbml.vcell.SBMLExporter;
 import org.vcell.sbml.vcell.SBMLImporter;
 import org.vcell.sbml.vcell.SBMLSymbolMapping;
 import org.vcell.test.SBML_IT;
 
+import javax.xml.stream.XMLStreamException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -41,6 +46,7 @@ public class SBMLTestSuiteTest {
 	@BeforeClass
 	public static void before() {
 		System.setProperty(PropertyLoader.installationRoot,"..");
+		Logger.getLogger(SBMLExporter.class).addAppender(new ConsoleAppender());
 	}
 
 	@Parameterized.Parameters
@@ -675,5 +681,27 @@ public class SBMLTestSuiteTest {
 			throw e;
 		}
 		Assert.assertArrayEquals("testCase "+testCase+" failed", new String[0], vcl.highPriority.toArray());
+	}
+
+	@Test
+	public void roundTripVerify() throws XMLStreamException, SbmlException, VCLoggerException, MappingException {
+		System.out.println("testCase "+testCase);
+		InputStream testFileInputStream = SbmlTestSuiteFiles.getSbmlTestCase(testCase);
+		boolean bValidateSBML = true;
+		TLogger vcl = new TLogger();
+		SBMLImporter importer = new SBMLImporter(testFileInputStream, vcl, bValidateSBML);
+		BioModel bioModel = importer.getBioModel();
+		bioModel.updateAll(false);
+//		{
+//			boolean bRoundTripValidation = false;
+//			SBMLExporter sbmlExporter = new SBMLExporter(bioModel.getSimulationContext(0), 3, 1, bRoundTripValidation);
+//			String sbmlString = sbmlExporter.getSBMLString();
+//			System.out.println(sbmlString);
+//		}
+		{
+			boolean bRoundTripValidation = true;
+			SBMLExporter sbmlExporter = new SBMLExporter(bioModel.getSimulationContext(0), 3, 1, bRoundTripValidation);
+			sbmlExporter.getSBMLString();
+		}
 	}
 }

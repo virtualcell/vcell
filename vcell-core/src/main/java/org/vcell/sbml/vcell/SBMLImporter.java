@@ -136,6 +136,7 @@ public class SBMLImporter {
 		if (sbmlModel == null) throw new NullPointerException("Model must not be null");
 		this.sbmlModel = sbmlModel;
 	}
+
 	public SBMLImporter(String argSbmlFileName, VCLogger argVCLogger, boolean bValidateSBML) {
 		super();
 		this.sbmlInputStream = null;
@@ -196,7 +197,7 @@ public class SBMLImporter {
 					return flattenUnbound(newExpression, simContext, entryMap, depth);
 				}
 			}
-			throw new ExpressionException("Expressions identical.");	// some symbols can't be replaced with numbers, it means they're variables
+			throw new ExpressionException("Expressions identical.");    // some symbols can't be replaced with numbers, it means they're variables
 		}
 	}
 
@@ -210,11 +211,11 @@ public class SBMLImporter {
 			Structure struct = sbmlSymbolMapping.getStructure(compartment);
 			StructureMapping.StructureMappingParameter mappingParam = gc.getStructureMapping(struct).getSizeParameter();
 			Expression origSizeExpr = mappingParam.getExpression();
-			
+
 			// the only chance to evaluate the structure size expression (set by an initial assignment) as a constant
 			// if we fail here, it may be a species variable involved in the expression, or who knows what else, which we don't have yet
 			try {
-				Expression sizeExpr = flattenUnbound(origSizeExpr, simContext, entryMap, 0);	// if we were succesful, it should be a number
+				Expression sizeExpr = flattenUnbound(origSizeExpr, simContext, entryMap, 0);    // if we were succesful, it should be a number
 				double constant = sizeExpr.evaluateConstant();
 				mappingParam.setExpression(new Expression(constant));
 				String msg = "Initial assignment for Structure '" + struct.getName() + "' from expression '" + origSizeExpr.infix() + "' was succesfully converted to a number.";
@@ -1625,7 +1626,10 @@ public class SBMLImporter {
 				SpeciesContextSpec speciesContextSpec = rc.getSpeciesContextSpec(vcSpeciesContext);
 
 				sbmlSymbolMapping.putInitial(sbmlSpecies, speciesContextSpec.getInitialConcentrationParameter());
-				speciesContextSpec.setConstant(sbmlSpecies.getBoundaryCondition() || sbmlSpecies.getConstant());
+				speciesContextSpec.setClamped(
+						sbmlSpecies.getBoundaryCondition()
+						|| sbmlModel.getAssignmentRuleByVariable(sbmlSpecies.getId()) != null
+						|| sbmlModel.getRateRuleByVariable(sbmlSpecies.getId()) != null);
 
 				// set wellmixed attribute (if present from vcell-specific annotation)
 				XMLNode speciesNonRdfAnnotation = sbmlSpecies.getAnnotation().getNonRDFannotation();
@@ -1676,7 +1680,7 @@ public class SBMLImporter {
 	 * VCLogger.ErrorType.UnitError,
 	 * "Unable to interpret Kinetic rate for reaction : " + rxnName +
 	 * " Cannot interpret non-linear function of compartment size"); }
-	 * 
+	 *
 	 * Expression expr1 = rateExpr.getSubstitutedExpression(new
 	 * Expression(compartmentSizeParamName), new Expression(1.0)).flatten(); if
 	 * (!expr1.compareEqual(diffExpr) &&
@@ -1685,14 +1689,14 @@ public class SBMLImporter {
 	 * VCLogger.ErrorType.UnitError,
 	 * "Unable to interpret Kinetic rate for reaction : " + rxnName +
 	 * " Cannot interpret non-linear function of compartment size"); }
-	 * 
+	 *
 	 * Expression expr0 = rateExpr.getSubstitutedExpression(new
 	 * Expression(compartmentSizeParamName), new Expression(0.0)).flatten(); if
 	 * (!expr0.isZero()) { logger.sendMessage(VCLogger.Priority.HighPriority,
 	 * VCLogger.ErrorType.UnitError,
 	 * "Unable to interpret Kinetic rate for reaction : " + rxnName +
 	 * " Cannot interpret non-linear function of compartment size"); }
-	 * 
+	 *
 	 * return expr1; }
 	 */
 
@@ -3053,7 +3057,7 @@ public class SBMLImporter {
 		for(SpeciesContextSpec scs : scss) {
 			SpeciesContext sc = scs.getSpeciesContext();
 			if(simContext.getAssignmentRule(sc) != null || simContext.getRateRule(sc) != null) {
-				scs.setConstant(true); // TODO JCS: this doesn't look right - what about reactions.
+				scs.setClamped(true);
 			}
 		}
 	}

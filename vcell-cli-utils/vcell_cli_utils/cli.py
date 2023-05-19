@@ -1,31 +1,77 @@
-from biosimulators_utils.log.data_model import Status, CombineArchiveLog, SedDocumentLog  # noqa: F401
-#from biosimulators_utils.plot.data_model import PlotFormat  # noqa: F401
-from biosimulators_utils.report.data_model import DataSetResults, ReportResults, ReportFormat  # noqa: F401
-from biosimulators_utils.report.io import ReportWriter, ReportReader
-from biosimulators_utils.sedml.io import SedmlSimulationReader, SedmlSimulationWriter
-from biosimulators_utils.combine.utils import get_sedml_contents
-from biosimulators_utils.combine.io import CombineArchiveReader
-from biosimulators_utils.sedml.data_model import Output, Report, Plot2D, Plot3D, DataSet
-from biosimulators_utils.config import Config
-import fire
 import glob
+import json
 import os
-import pandas as pd
 import shutil
-import tempfile
-import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
-import libsedml as lsed
-from libsedml import SedReport, SedPlot2D
-import sys
 import stat
-from pathlib import Path
+import sys
+import tempfile
+from dataclasses import dataclass
+from typing import List
+
+import fire
+import libsedml as lsed
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import seaborn as sns
+from biosimulators_utils.combine.data_model import CombineArchive
+from biosimulators_utils.combine.io import CombineArchiveReader
+from biosimulators_utils.combine.utils import get_sedml_contents
+from biosimulators_utils.config import Config
+from biosimulators_utils.log.data_model import Status, CombineArchiveLog, SedDocumentLog  # noqa: F401
+from biosimulators_utils.combine.validation import validate
+from biosimulators_utils.combine.data_model import CombineArchiveContentFormat
+
+# from biosimulators_utils.plot.data_model import PlotFormat  # noqa: F401
+from biosimulators_utils.report.data_model import DataSetResults, ReportResults, ReportFormat  # noqa: F401
+from biosimulators_utils.report.io import ReportWriter
+from biosimulators_utils.sedml.data_model import Report, Plot2D, Plot3D, DataSet
+from biosimulators_utils.sedml.io import SedmlSimulationReader, SedmlSimulationWriter
 from deprecated import deprecated
+from libsedml import SedReport, SedPlot2D
 
 # Move status PY code here
 # Create temp directory
 tmp_dir = tempfile.mkdtemp()
+
+
+def validate_omex(omex_file_path: str, temp_dir_path: str, omex_json_report_path: str) -> None:
+    if not os.path.exists(temp_dir_path):
+        os.mkdir(temp_dir_path, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
+
+    # defining archive
+    config = Config(
+        VALIDATE_OMEX_MANIFESTS=True,
+        VALIDATE_SEDML=True,
+        VALIDATE_SEDML_MODELS=True,
+        VALIDATE_IMPORTED_MODEL_FILES=True,
+        VALIDATE_OMEX_METADATA=True,
+        VALIDATE_IMAGES=True,
+        VALIDATE_RESULTS=True
+    )
+
+    reader = CombineArchiveReader()
+    archive: CombineArchive = reader.run(in_file=omex_file_path, out_dir=temp_dir_path, config=config)
+    print("errors: "+str(reader.errors)+"\n"+"warnings: "+str(reader.warnings))
+
+    validator_errors: List[str] = []
+    validator_warnings: List[str] = []
+    if len(reader.errors) == 0:
+        validator_errors, validator_warnings = validate(
+            archive,
+            temp_dir_path,
+            formats_to_validate=list(CombineArchiveContentFormat.__members__.values()),
+            config=config
+        )
+
+    with open(omex_json_report_path, "w") as file:
+        file.write(json.dumps(
+            {
+                "parse_errors": reader.errors,
+                "parse_warnings": reader.warnings,
+                "validator_errors": validator_errors,
+                "validator_warnings": validator_warnings
+            }, indent=2))
 
 
 def gen_sedml_2d_3d(omex_file_path, base_out_path):
@@ -345,6 +391,7 @@ def gen_plots_for_sed2d_only(sedml_path, result_out_dir):
                 ax.set_ylabel('')
                 shouldLabel = False
             plt.savefig(os.path.join(result_out_dir, plot_id + '.pdf'), dpi=300)
+
 
 if __name__ == "__main__":
     fire.Fire({

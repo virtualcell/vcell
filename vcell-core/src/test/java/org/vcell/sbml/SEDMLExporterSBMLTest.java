@@ -156,6 +156,22 @@ public class SEDMLExporterSBMLTest extends SEDMLExporterCommon {
 		faults.put("biomodel_98296160.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_98730962.vcml", SEDML_FAULT.SIMCONTEXT_NOT_FOUND_BY_NAME); // round-tripped simulationContext not found with name 'Application0'
 		faults.put("biomodel_165181964.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
+
+		// SEDML Validator Errors
+		faults.put("biomodel_82065439.vcml", SEDML_FAULT.OMEX_VALIDATION_ERRORS);  //  NON_UNIQUE_IDS:    Each identified SED object must have a unique id. Multiple objects have the following ids:",[["compartmental"]]
+		faults.put("biomodel_220138948.vcml",SEDML_FAULT.OMEX_VALIDATION_ERRORS);  //  XPATH_BAD:   XPath `/sbml:sbml/sbml:model/sbml:listOfSpecies/sbml:species[@id='OAT1']/@initialConcentration` does not match any elements of model `_0D`.
+		faults.put("biomodel_31523791.vcml", SEDML_FAULT.OMEX_VALIDATION_ERRORS);  //  XPATH_BAD:   XPath `/sbml:sbml/sbml:model/sbml:listOfSpecies/sbml:species[@id='cAMP_Intracellular']/@initialConcentration` does not match any elements of model `_10_spines`.
+		faults.put("biomodel_34855932.vcml", SEDML_FAULT.OMEX_VALIDATION_ERRORS);  //  XPATH_BAD:   XPath `/sbml:sbml/sbml:model/sbml:listOfParameters/sbml:parameter[@id='Kf_GPCR_to_ICSC']/@value` does not match any elements of model `cell5`
+		faults.put("biomodel_40882931.vcml", SEDML_FAULT.OMEX_VALIDATION_ERRORS);  //  XPATH_BAD:  XPath `/sbml:sbml/sbml:model/sbml:listOfSpecies/sbml:species[@id='ZO1staticF_PM']/@initialConcentration` does not match any elements of model `_3d_image`
+		faults.put("biomodel_40883509.vcml", SEDML_FAULT.OMEX_VALIDATION_ERRORS);  //  XPATH_BAD:  XPath `/sbml:sbml/sbml:model/sbml:listOfSpecies/sbml:species[@id='PIK_PM']/@initialConcentration` does not match any elements of model `_3d_image`
+		faults.put("biomodel_65311813.vcml", SEDML_FAULT.OMEX_VALIDATION_ERRORS);  //  XPATH_BAD:  XPath `/sbml:sbml/sbml:model/sbml:listOfParameters/sbml:parameter[@id='Ran_nuc_diff']/@value` does not match any elements of model `_3d_image_0`
+		faults.put("biomodel_18894555.vcml", SEDML_FAULT.OMEX_VALIDATION_ERRORS);  //  USUB_NOT_ALLOWED:  FunctionalRange `fr_range_0_18_Vmax_RasGM_basal_GAP` is invalid.",[["The mathematical expression `1e-05 * 0.001 * range_0_18_Vmax_RasGM_basal_GAP_KMOLE + (1e-05 * 10 * range_0_18_Vmax_RasGM_basal_GAP_KMOLE - 1e-05 * 0.001 * range_0_18_Vmax_RasGM_basal_GAP_KMOLE) * (range_0_18_Vmax_RasGM_basal_GAP + -1)` uses forbidden operations.",[["Operation type USub is not allowed"
+		faults.put("biomodel_62849940.vcml", SEDML_FAULT.OMEX_VALIDATION_ERRORS);  //  USUB_NOT_ALLOWED:  FunctionalRange `fr_range_0_1_preTarget_plasma_membrane_init_umol_dm_2` is invalid.",[["The mathematical expression `1e-05 * 10 * range_0_1_preTarget_plasma_membrane_init_umol_dm_2_KMOLE + (1e-05 * 10000 * range_0_1_preTarget_plasma_membrane_init_umol_dm_2_KMOLE - 1e-05 * 10 * range_0_1_preTarget_plasma_membrane_init_umol_dm_2_KMOLE) * (range_0_1_preTarget_plasma_membrane_init_umol_dm_2 + -1)` uses forbidden operations.",[["Operation type USub is not allowed"]]
+		faults.put("biomodel_81992349.vcml", SEDML_FAULT.OMEX_VALIDATION_ERRORS);  //  USUB_NOT_ALLOWED:  FunctionalRange `fr_range_0_6_Rap1_GDP_GM_init_umol_dm_2` is invalid.",[["The mathematical expression `0 * 1e-05 * range_0_6_Rap1_GDP_GM_init_umol_dm_2_KMOLE + (1e-05 * 100 * range_0_6_Rap1_GDP_GM_init_umol_dm_2_KMOLE - 0 * 1e-05 * range_0_6_Rap1_GDP_GM_init_umol_dm_2_KMOLE) * (range_0_6_Rap1_GDP_GM_init_umol_dm_2 + -1)` uses forbidden operations.",[["Operation type USub is not allowed"]]
+		faults.put("biomodel_83446023.vcml", SEDML_FAULT.OMEX_VALIDATION_ERRORS);  //  USUB_NOT_ALLOWED:  FunctionalRange `fr_range_1_4_EGFR_cyto_mem_init_umol_dm_2` is invalid.",[["The mathematical expression `1e-05 * 100 * range_1_4_EGFR_cyto_mem_init_umol_dm_2_KMOLE + (1e-05 * 400 * range_1_4_EGFR_cyto_mem_init_umol_dm_2_KMOLE - 1e-05 * 100 * range_1_4_EGFR_cyto_mem_init_umol_dm_2_KMOLE) * (range_1_4_EGFR_cyto_mem_init_umol_dm_2 + -1)` uses forbidden operations.",[["Operation type USub is not allowed"]]
+		faults.put("biomodel_83932776.vcml", SEDML_FAULT.OMEX_VALIDATION_ERRORS);  //  USUB_NOT_ALLOWED:  FunctionalRange `fr_range_0_0_Emm` is invalid.",[["The mathematical expression `range_0_0_Emm * -160` uses forbidden operations.",[["Operation type USub is not allowed"]]
+		faults.put("biomodel_83932806.vcml", SEDML_FAULT.OMEX_VALIDATION_ERRORS);  //  USUB_NOT_ALLOWED:  FunctionalRange `fr_range_0_0_logKow_n_flux_ac` is invalid.",[["The mathematical expression `range_0_0_logKow_n_flux_ac * -2` uses forbidden operations.",[["Operation type USub is not allowed"]]
+		faults.put("biomodel_94538871.vcml", SEDML_FAULT.OMEX_VALIDATION_ERRORS);  //  USUB_NOT_ALLOWED:  FunctionalRange `fr_range_0_1_Emm` is invalid.",[["The mathematical expression `range_0_1_Emm * -160` uses forbidden operations.",[["Operation type USub is not allowed"]]
 		return faults;
 	}
 
@@ -169,10 +185,10 @@ public class SEDMLExporterSBMLTest extends SEDMLExporterCommon {
 
 	@Test
 	public void test_sedml_roundtrip_SBML() throws Exception {
-		if (knownSEDMLFaults().get(testCase.filename) != SEDML_FAULT.MATH_OVERRIDE_NOT_EQUIVALENT
-				&& knownSEDMLFaults().get(testCase.filename) != SEDML_FAULT.MATH_OVERRIDE_NAMES_DIFFERENT){
-			return;
-		}
+//		if (knownSEDMLFaults().get(testCase.filename) != SEDML_FAULT.MATH_OVERRIDE_NOT_EQUIVALENT
+//				&& knownSEDMLFaults().get(testCase.filename) != SEDML_FAULT.MATH_OVERRIDE_NAMES_DIFFERENT){
+//			return;
+//		}
 		sedml_roundtrip_common();
 	}
 
