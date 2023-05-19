@@ -508,9 +508,9 @@ private void setSbmlParameterValueAndUnit(Parameter vcParam, org.sbml.jsbml.Para
 			}
 		}
 	}
-//	if (!sbmlParam.isSetConstant()){
-//		sbmlParam.setConstant(isMappedToMathDescriptionConstantOrConstantFunction(vcParam));
-//	}
+	if (!sbmlParam.isSetConstant()){
+		sbmlParam.setConstant(isMappedToMathDescriptionConstantOrConstantFunction(vcParam));
+	}
 }
 
 private void addParameters() throws ExpressionException, SbmlException, XMLStreamException {
@@ -594,7 +594,7 @@ private void addParameters() throws ExpressionException, SbmlException, XMLStrea
 		}
 		ASTNode paramFormulaNode = getFormulaFromExpression(paramExpr);
 		AssignmentRule sbmlParamAssignmentRule = sbmlModel.createAssignmentRule();
-		sbmlParamAssignmentRule.setVariable(of.getName());
+		sbmlParamAssignmentRule.setVariable(sbmlParam.getId());
 		sbmlParamAssignmentRule.setMath(paramFormulaNode);
 		Element outputFunctionElement = new Element(XMLTags.SBML_VCELL_OutputFunctionTag, sbml_vcml_ns);
 		outputFunctionElement.setAttribute(XMLTags.SBML_VCELL_OutputFunctionTag_varTypeAttr, of.getFunctionType().getTypeName(), sbml_vcml_ns);
@@ -908,10 +908,11 @@ private void addReactions() throws SbmlException, XMLStreamException {
 					sbmlParamAssignmentRule.setMath(paramFormulaNode);
 					org.sbml.jsbml.Parameter sbmlKinParam = sbmlModel.createParameter();
 					sbmlKinParam.setId(paramName);
+					sbmlKinParam.setConstant(false); // because target of an assignment rule
 					if (!vcKineticsParams[j].getUnitDefinition().isTBD()) {
 						sbmlKinParam.setUnits(getOrCreateSBMLUnit(vcKineticsParams[j].getUnitDefinition()));
 					}
-					sbmlKinParam.setConstant(isMappedToMathDescriptionConstantOrConstantFunction(vcKineticsParams[j]));
+//					sbmlKinParam.setConstant(isMappedToMathDescriptionConstantOrConstantFunction(vcKineticsParams[j]));
 				}
 			} // end for (j) - fifth pass
 
@@ -1105,8 +1106,8 @@ private void addSpecies() throws XMLStreamException, SbmlException {
 		}
 		sbmlSpecies.setId(sbmlSpeciesId);
 
-//		boolean bSbmlConstantAttribute = isMappedToMathDescriptionConstant(vcSpeciesContext);
-//		sbmlSpecies.setConstant(bSbmlConstantAttribute);
+		boolean bSbmlConstantAttribute = isMappedToMathDescriptionConstantOrConstantFunction(vcSpeciesContext);
+		sbmlSpecies.setConstant(bSbmlConstantAttribute);
 
 		sbmlExportSymbolMapping.putSteToSidMapping(vcSpeciesContext, sbmlSpeciesId);
 		if(vcSpeciesContext.getSbmlName() != null) {
@@ -1183,6 +1184,7 @@ private void addSpecies() throws XMLStreamException, SbmlException {
 				AssignmentRule sbmlAssignmentRule = sbmlModel.createAssignmentRule();
 				sbmlAssignmentRule.setVariable(sbmlSpeciesId);
 				sbmlExportSymbolMapping.assignmentRuleToVcmlExpressionMap.put(sbmlAssignmentRule, vcSpeciesExpr);    // expression will be post-processed
+				sbmlSpecies.setConstant(false);
 			}
 		}
 
@@ -1635,6 +1637,7 @@ private void addAssignmentRules()  {
 			org.sbml.jsbml.AssignmentRule sbmlRule = sbmlModel.createAssignmentRule();
 			String sid = sbmlExportSymbolMapping.getSid(vcRule.getAssignmentRuleVar());
 			sbmlRule.setVariable(sid);
+			sbmlRule.getVariableInstance().setConstant(false);
 			sbmlExportSymbolMapping.assignmentRuleToVcmlExpressionMap.put(sbmlRule, vcRuleExpression);    // expression will be post-processed
 //			ASTNode math = getFormulaFromExpression(vcRuleExpression);
 //			sbmlRule.setMath(math);
@@ -2754,6 +2757,7 @@ private void postProcessExpressions() {
 		Expression sbmlExpression = substituteSteWithSid(vcmlExpression);
 		ASTNode math = getFormulaFromExpression(sbmlExpression);
 		ar.setMath(math);
+		ar.getVariableInstance().setConstant(false);
 	}
 	// RateRule
 	for (Map.Entry<org.sbml.jsbml.RateRule, Expression> entry : sbmlExportSymbolMapping.rateRuleToVcmlExpressionMap.entrySet()) {
