@@ -51,13 +51,9 @@ public class SEDMLExporterVCMLTest extends SEDMLExporterCommon {
 	@Override
 	public Map<String, SEDML_FAULT> knownSEDMLFaults() {
 		HashMap<String, SEDML_FAULT> faults = new HashMap();
-		faults.put("biomodel_116930032.vcml", SEDML_FAULT.OMEX_VALIDATION_ERRORS); //  USUB_NOT_ALLOWED:  FunctionalRange `fr_range_0_5_V0_P` is invalid.",[["The mathematical expression `range_0_5_V0_P * -250` uses forbidden operations.",[["Operation type USub is not allowed"
 		faults.put("biomodel_28625786.vcml", SEDML_FAULT.OMEX_VALIDATION_ERRORS);  //  NON_UNIQUE_IDS:    Each identified SED object must have a unique id. Multiple objects have the following ids:",[["compartmental"]]
 		faults.put("biomodel_60203358.vcml", SEDML_FAULT.OMEX_VALIDATION_ERRORS);  //  NON_UNIQUE_IDS:    Each identified SED object must have a unique id. Multiple objects have the following ids:",[["IKsum"]]
 		faults.put("biomodel_82065439.vcml", SEDML_FAULT.OMEX_VALIDATION_ERRORS);  //  NON_UNIQUE_IDS:    Each identified SED object must have a unique id. Multiple objects have the following ids:",[["compartmental"]]
-		faults.put("biomodel_83932776.vcml", SEDML_FAULT.OMEX_VALIDATION_ERRORS);  //  USUB_NOT_ALLOWED:  FunctionalRange `fr_range_0_0_Emm` is invalid.",[["The mathematical expression `range_0_0_Emm * -160` uses forbidden operations.",[["Operation type USub is not allowed"]]
-		faults.put("biomodel_83932806.vcml", SEDML_FAULT.OMEX_VALIDATION_ERRORS);  //  USUB_NOT_ALLOWED:  FunctionalRange `fr_range_0_0_logKow_n_flux_ac` is invalid.",[["The mathematical expression `range_0_0_logKow_n_flux_ac * -2` uses forbidden operations.",[["Operation type USub is not allowed"]]
-		faults.put("biomodel_94538871.vcml", SEDML_FAULT.OMEX_VALIDATION_ERRORS);  //  USUB_NOT_ALLOWED:  FunctionalRange `fr_range_0_1_Emm` is invalid.",[["The mathematical expression `range_0_1_Emm * -160` uses forbidden operations.",[["Operation type USub is not allowed"]]
 //		faults.put("biomodel_165181964.vcml", SEDML_FAULT.OMEX_VALIDATION_ERRORS); //  EXCEPTION IN VALIDATOR: ValueError: 'KISAO' is not an id for a KiSAO term.
 		return faults;
 	}
