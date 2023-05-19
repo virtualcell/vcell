@@ -11,6 +11,8 @@ testdata = [
      "Aavani2019_BIOMD0000000876_vcell_7.5.0.27.report.json"),
     ("VerySimple_vcell_7.5.0.27.omex",
      "VerySimple_vcell_7.5.0.27.report.json"),
+    ("eungdamrong_and_Iyengar_BiophysJ_vcell_7.5.0.30.omex",
+     "eungdamrong_and_Iyengar_BiophysJ_vcell_7.5.0.30.report.json")
 ]
 
 

@@ -13,6 +13,10 @@ else:
 
 def validateOmex(omexFilePath: str, tempDirPath: str, reportJsonFilePath: str) -> None:
     temp_path: Path = Path(tempDirPath) / "temp"
+    files = glob.glob(str(temp_path) + "/*", recursive=False)
+    for f in files:
+        os.remove(f)
+
     cli.validate_omex(omex_file_path=omexFilePath, temp_dir_path=str(temp_path), omex_json_report_path=reportJsonFilePath)
 
     files = glob.glob(str(temp_path) + "/*", recursive=False)

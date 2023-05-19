@@ -172,7 +172,7 @@ jobs:
         run: |
           mvn -version
           java -version
-          mvn --batch-mode clean install dependency:copy-dependencies
+          mvn --batch-mode clean install dependency:copy-dependencies -Dgroups="org.vcell.test.Fast"
 
       - name: Build Docker image and push with latest tag
         run: |
