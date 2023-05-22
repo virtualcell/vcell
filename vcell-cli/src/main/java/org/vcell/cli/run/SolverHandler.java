@@ -44,6 +44,7 @@ import org.jmathml.ASTNode;
 import org.vcell.cli.CLIRecordable;
 import org.vcell.sbml.vcell.SBMLImportException;
 import org.vcell.sbml.vcell.SBMLImporter;
+import org.vcell.sbml.vcell.SBMLSymbolMapping;
 import org.vcell.sedml.SEDMLImporter;
 import org.vcell.util.ISize;
 import org.vcell.util.document.VCDocument;
@@ -556,9 +557,11 @@ public class SolverHandler {
 						spatialResults.put(new TaskJob(task.getId(), tempSimulationJob.getJobIndex()), null);
 					}
 				} else {
+					MathSymbolMapping mathMapping = (MathSymbolMapping) simTask.getSimulation().getMathDescription().getSourceSymbolMapping();
+					SBMLSymbolMapping sbmlMapping = this.sedmlImporter.getSBMLSymbolMapping(bioModel);
+
 					TaskJob taskJob = new TaskJob(task.getId(), tempSimulationJob.getJobIndex());
-					SourceSymbolMapping mathMapping = simTask.getSimulation().getMathDescription().getSourceSymbolMapping();
-					SBMLNonspatialSimResults nonspatialSimResults = new SBMLNonspatialSimResults(odeSolverResultSet, this.sedmlImporter.getSBMLSymbolMapping(bioModel), mathMapping);
+					SBMLNonspatialSimResults nonspatialSimResults = new SBMLNonspatialSimResults(odeSolverResultSet, sbmlMapping, mathMapping);
 					this.nonSpatialResults.put(taskJob, nonspatialSimResults);
                 }
 

@@ -3300,6 +3300,8 @@ public class SBMLImporter {
 					if (logger.isDebugEnabled()) {
 						logger.debug("Setting " + kp.getName() + ":  " + vcRateExpression.infix());
 					}
+
+					sbmlSymbolMapping.putRuntime(sbmlReaction, kp);
 					kinetics.setParameterValue(kp, vcRateExpression);
 
 					// If there are any global parameters used in the kinetics, and if they have species,

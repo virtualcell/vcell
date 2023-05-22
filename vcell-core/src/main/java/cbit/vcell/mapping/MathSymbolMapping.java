@@ -141,35 +141,37 @@ public void reconcileVarNames(MathDescription mathDesc) {
 	}
 }
 
-
-public void transform(SimContextTransformation transformation) {
-	if (transformation == null || transformation.modelEntityMappings == null){
-		return;
-	}
-	for (ModelEntityMapping mapping : transformation.modelEntityMappings){
-		Variable var = biologicalToMathHash.remove(mapping.newModelObj);
-		if (var!=null){
-			biologicalToMathHash.put(mapping.origModelObj, var);
+	public void transform(SimContextTransformation transformation) {
+		if (transformation == null || transformation.modelEntityMappings == null){
+			return;
 		}
-		String varName = biologicalToMathSymbolNameHash.remove(mapping.newModelObj);
-		if (varName!=null){
-			biologicalToMathSymbolNameHash.put(mapping.origModelObj, varName);
-		}
-	}
-	for (Map.Entry<Variable,SymbolTableEntry[]> entry : mathToBiologicalHash.entrySet()){
-		Variable key = entry.getKey();
-		SymbolTableEntry[] newBiologicalSymbols = entry.getValue();
-		ArrayList<SymbolTableEntry> origStes = new ArrayList<SymbolTableEntry>();
-		for (SymbolTableEntry newBiologicalSymbol : newBiologicalSymbols){
-			// replace all array entries with those from the original model
-			for (ModelEntityMapping mapping : transformation.modelEntityMappings){
-				if (newBiologicalSymbol == mapping.newModelObj){
-					origStes.add(mapping.origModelObj);
-				}
+		for (ModelEntityMapping mapping : transformation.modelEntityMappings){
+			Variable var = biologicalToMathHash.remove(mapping.newModelObj);
+			if (var!=null){
+				biologicalToMathHash.put(mapping.origModelObj, var);
+			}
+			String varName = biologicalToMathSymbolNameHash.remove(mapping.newModelObj);
+			if (varName!=null){
+				biologicalToMathSymbolNameHash.put(mapping.origModelObj, varName);
 			}
 		}
-		entry.setValue(origStes.toArray(new SymbolTableEntry[0]));
+		for (Map.Entry<Variable,SymbolTableEntry[]> entry : mathToBiologicalHash.entrySet()){
+			Variable key = entry.getKey();
+			SymbolTableEntry[] newBiologicalSymbols = entry.getValue();
+			ArrayList<SymbolTableEntry> origStes = new ArrayList<SymbolTableEntry>();
+			for (SymbolTableEntry newBiologicalSymbol : newBiologicalSymbols){
+				// replace all array entries with those from the original model
+				for (ModelEntityMapping mapping : transformation.modelEntityMappings){
+					if (newBiologicalSymbol == mapping.newModelObj){
+						origStes.add(mapping.origModelObj);
+					}
+				}
+			}
+			entry.setValue(origStes.toArray(new SymbolTableEntry[0]));
+		}
 	}
-	
-}
+
+	public Set<SymbolTableEntry> getMappedBiologicalSymbols(){
+		return this.biologicalToMathSymbolNameHash.keySet();
+	}
 }

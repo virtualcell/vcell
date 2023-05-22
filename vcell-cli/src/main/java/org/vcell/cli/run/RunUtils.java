@@ -387,8 +387,7 @@ public class RunUtils {
                     logger.info("no csv file for report " + oo.getId());
                 }
             } catch (Exception e) {
-                logger.error("Encountered exception: " + e.getMessage(), e);
-                reportsHash.put(oo.getId(), null);
+                throw new RuntimeException("CSV generation failed: " + e.getMessage(), e);
             }
         }
         return reportsHash;
