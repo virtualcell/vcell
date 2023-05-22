@@ -4,11 +4,10 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.data.SimResultsViewer;
 import cbit.vcell.export.server.*;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.math.MathDescription;
+import cbit.vcell.math.SourceSymbolMapping;
 import cbit.vcell.math.VariableType;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.SimpleSymbolTable;
-import cbit.vcell.parser.SymbolTable;
+import cbit.vcell.parser.*;
 import cbit.vcell.simdata.*;
 import cbit.vcell.solver.*;
 import cbit.vcell.solver.ode.ODESolverResultSet;
@@ -22,6 +21,8 @@ import org.jlibsedml.Simulation;
 import org.jlibsedml.execution.IXPathToVariableIDResolver;
 import org.jlibsedml.modelsupport.SBMLSupport;
 import org.vcell.cli.CLIUtils;
+import org.vcell.sbml.vcell.SBMLSymbolMapping;
+import org.vcell.sbml.vcell.SymbolContext;
 import org.vcell.stochtest.TimeSeriesMultitrialData;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.GenericExtensionFilter;
@@ -186,8 +187,9 @@ public class RunUtils {
         RunUtils.exportDocument(exportServiceImpl, dataServerImpl, outputContext, exportSpecs, vcId, outputFilePointer);
     }
 
-    public static HashMap<String, File> generateReportsAsCSV(SedML sedml, Map<TaskJob, ODESolverResultSet> resultsHash, File outDirForCurrentSedml, String outDir, String sedmlLocation) throws DataAccessException, IOException {
+    public static HashMap<String, File> generateReportsAsCSV(SedML sedml, SolverHandler solverHandler, File outDirForCurrentSedml, String outDir, String sedmlLocation) throws DataAccessException, IOException {
         // finally, the real work
+        Map<TaskJob, SBMLNonspatialSimResults> resultsHash = solverHandler.nonSpatialResults;
         HashMap<String, File> reportsHash = new HashMap<>();
         List<Output> ooo = sedml.getOutputs();
         for (Output oo : ooo) {
@@ -269,9 +271,9 @@ public class RunUtils {
 
                         // Get task job(s)
                         List<TaskJob> taskJobs = new ArrayList<>();
-                        for (Map.Entry<TaskJob, ODESolverResultSet> entry : resultsHash.entrySet()) {
+                        for (Map.Entry<TaskJob, SBMLNonspatialSimResults> entry : resultsHash.entrySet()) {
                             TaskJob taskJob = entry.getKey();
-                            ODESolverResultSet value = entry.getValue();
+                            SBMLNonspatialSimResults value = entry.getValue();
                             if(value != null && taskJob.getTaskId().equals(task.getId())) {
                                 taskJobs.add(taskJob);
                                 if (!(task instanceof RepeatedTask)) break; // Only have one entry for non-repeated tasks
@@ -289,20 +291,9 @@ public class RunUtils {
                         for (TaskJob taskJob : taskJobs){
                             // key format in resultsHash is taskId + "_" + simJobId
                             // ex: task_0_0_0 where the last 0 is the simJobId (always 0 when no parameter scan)
-                            double[] data;
-                            ODESolverResultSet results = resultsHash.get(taskJob); // hence the added "_0"
+                            SBMLNonspatialSimResults results = resultsHash.get(taskJob); // hence the added "_0"
                             if (results==null) continue;
-                            int column = results.findColumn(sbmlVarId);
-
-                            if (outputStartTime > 0){
-                                data = new double[outputNumberOfPoints+1];
-                                double[] tmpData = results.extractColumn(column);
-                                for(int i=tmpData.length-outputNumberOfPoints-1, j=0; i<tmpData.length; i++, j++) {
-                                    data[j] = tmpData[i];
-                                }
-                            } else {
-                                data = results.extractColumn(column);
-                            }
+                            double[] data = results.getDataForSBMLVar(sbmlVarId, outputStartTime, outputNumberOfPoints);
 
                             mxlen = Integer.max(mxlen, data.length);
                             if(!values.containsKey(var)) {		// this is the first double[]

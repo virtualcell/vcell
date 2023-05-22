@@ -322,7 +322,7 @@ public class SedmlJob {
         logger.info("Generating CSV file... ");
 
         // csvReports is never null (?)
-        csvReports = RunUtils.generateReportsAsCSV(this.sedml, solverHandler.nonSpatialResults, this.OUTPUT_DIRECTORY_FOR_CURRENT_SEDML, this.RESULTS_DIRECTORY_PATH, this.SEDML_LOCATION);
+        csvReports = RunUtils.generateReportsAsCSV(this.sedml, solverHandler, this.OUTPUT_DIRECTORY_FOR_CURRENT_SEDML, this.RESULTS_DIRECTORY_PATH, this.SEDML_LOCATION);
         File[] plotFilesToRename = this.OUTPUT_DIRECTORY_FOR_CURRENT_SEDML.listFiles(f -> f.getName().startsWith("__plot__"));
         plotFilesToRename = plotFilesToRename == null ? new File[0] : plotFilesToRename;
         for (File plotFileToRename : plotFilesToRename){
