@@ -27,59 +27,59 @@ import cbit.vcell.solvers.MathExecutable;
  */
 public class CVodeSolverStandalone extends SundialsSolver {
 
-public CVodeSolverStandalone(SimulationTask simTask, java.io.File directory, boolean bMessaging) throws SolverException {
-	super(simTask, directory, bMessaging);
-}
-/**
- *  This method takes the place of the old runUnsteady()...
- */
-protected void initialize() throws SolverException {
-	
-	fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_INIT);
-	super.initialize();
+	public CVodeSolverStandalone(SimulationTask simTask, java.io.File directory, boolean bMessaging) throws SolverException {
+		super(simTask, directory, bMessaging);
+	}
+	/**
+	 *  This method takes the place of the old runUnsteady()...
+	 */
+	protected void initialize() throws SolverException {
 
-	String inputFilename = getInputFilename();
+		fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_INIT);
+		super.initialize();
 
-	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, SimulationMessage.MESSAGE_SOLVER_RUNNING_INPUT_FILE));
-	fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_INPUT_FILE);
+		String inputFilename = getInputFilename();
 
-	PrintWriter pw = null;
-	try {
-		pw = new java.io.PrintWriter(inputFilename);
-		CVodeFileWriter cvodeFileWriter = new CVodeFileWriter(pw, simTask, bMessaging);
-		cvodeFileWriter.write();
-	} catch (Exception e) {
-		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, SimulationMessage.solverAborted("CVODE solver could not generate input file: " + e.getMessage())));
-		throw new SolverException("CVODE solver could not generate input file: " + e.getMessage(), e);
-	} finally {
-		if (pw != null) {
-			pw.close();
+		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, SimulationMessage.MESSAGE_SOLVER_RUNNING_INPUT_FILE));
+		fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_INPUT_FILE);
+
+		PrintWriter pw = null;
+		try {
+			pw = new java.io.PrintWriter(inputFilename);
+			CVodeFileWriter cvodeFileWriter = new CVodeFileWriter(pw, simTask, bMessaging);
+			cvodeFileWriter.write();
+		} catch (Exception e) {
+			setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, SimulationMessage.solverAborted("CVODE solver could not generate input file: " + e.getMessage())));
+			throw new SolverException("CVODE solver could not generate input file: " + e.getMessage(), e);
+		} finally {
+			if (pw != null) {
+				pw.close();
+			}
 		}
+
+		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING,SimulationMessage.MESSAGE_SOLVER_RUNNING_START));
+
+		setMathExecutable(new MathExecutable(getMathExecutableCommand(),getSaveDirectory()));
 	}
 
-	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING,SimulationMessage.MESSAGE_SOLVER_RUNNING_START));	
-	
-	setMathExecutable(new MathExecutable(getMathExecutableCommand(),getSaveDirectory()));
-}
-
-private String getInputFilename(){
-	return getBaseName() + CVODEINPUT_DATA_EXTENSION;
-}
-
-private String getOutputFilename(){
-	return getBaseName() + IDA_DATA_EXTENSION;
-}
-
-@Override
-protected String[] getMathExecutableCommand() {
-	String executableName = null;
-	try {
-		executableName = SolverUtilities.getExes(SolverDescription.CVODE)[0].getAbsolutePath();
-	}catch (IOException e){
-		throw new RuntimeException("failed to get executable for solver "+SolverDescription.CVODE.getDisplayLabel()+": "+e.getMessage(),e);
+	private String getInputFilename(){
+		return getBaseName() + CVODEINPUT_DATA_EXTENSION;
 	}
-	String inputFilename = getInputFilename();
-	String outputFilename = getOutputFilename();
-	return new String[] { executableName, inputFilename, outputFilename };
-}
+
+	private String getOutputFilename(){
+		return getBaseName() + IDA_DATA_EXTENSION;
+	}
+
+	@Override
+	protected String[] getMathExecutableCommand() {
+		String executableName = null;
+		try {
+			executableName = SolverUtilities.getExes(SolverDescription.CVODE)[0].getAbsolutePath();
+		}catch (IOException e){
+			throw new RuntimeException("failed to get executable for solver "+SolverDescription.CVODE.getDisplayLabel()+": "+e.getMessage(),e);
+		}
+		String inputFilename = getInputFilename();
+		String outputFilename = getOutputFilename();
+		return new String[] { executableName, inputFilename, outputFilename };
+	}
 }

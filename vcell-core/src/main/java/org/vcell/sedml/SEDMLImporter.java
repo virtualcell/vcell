@@ -84,7 +84,7 @@ public class SEDMLImporter {
 	 * @throws FileNotFoundException if the sedml archive can not be found
 	 * @throws XMLException if the sedml has invalid xml.
 	 */
-	public  SEDMLImporter(VCLogger transLogger, ExternalDocInfo externalDocInfo, SedML sedml, boolean exactMatchOnly)
+	public SEDMLImporter(VCLogger transLogger, ExternalDocInfo externalDocInfo, SedML sedml, boolean exactMatchOnly)
 			throws XMLException, IOException {
 		this.transLogger = transLogger;
 		this.externalDocInfo = externalDocInfo;
@@ -136,14 +136,16 @@ public class SEDMLImporter {
 	        abstractTaskList = this.sedml.getTasks();
 	        dataGeneratorList = this.sedml.getDataGenerators();
 	        outputList = this.sedml.getOutputs();
-	        
+
 			this.printSEDMLSummary(modelList, simulationList, abstractTaskList, dataGeneratorList, outputList);
-	        
-			// NB: We don't know how many BioModels we'll end up with as some model changes may be translatable as simulations with overrides
+
+			// NB: We don't know how many BioModels we'll end up with,
+			// 		as some model changes may be translatable as simulations with overrides
 			bioModelMap = this.createBioModels(modelList);
 			Set<BioModel> uniqueBioModels = new HashSet<>(bioModelMap.values());
-			
-			// Creating one VCell Simulation for each SED-ML actual Task (RepeatedTasks get added as parameter scan overrides)
+
+			// Creating one VCell Simulation for each SED-ML actual Task
+			// 		(RepeatedTasks get added either on top of or separately as parameter scan overrides)
 			for (AbstractTask selectedTask : abstractTaskList) {
 				org.jlibsedml.Simulation sedmlSimulation;	// this will become the vCell simulation
 				org.jlibsedml.Model sedmlModel;				// the "original" model referred to by the task
@@ -162,7 +164,7 @@ public class SEDMLImporter {
 				} else if (selectedTask instanceof RepeatedTask) {
 					continue; // Repeated tasks refer to regular tasks, so first we need to create simulations for all regular tasks 
 				} else {
-					throw new RuntimeException("Unexpected task " + selectedTask);
+					throw new RuntimeException("Unsupported task " + selectedTask);
 				}
 				
 				if(!(sedmlSimulation instanceof UniformTimeCourse)) { // only UTC sims supported
@@ -548,16 +550,15 @@ public class SEDMLImporter {
 		if (rs != null) return SBMLTargetID;
 		
 		// now check mapping from importer
-		MathSymbolMapping msm = (MathSymbolMapping)importedSimContext.getMathDescription().getSourceSymbolMapping();
-		SBMLImporter sbmlImporter = this.importMap.get(importedSimContext.getBioModel());
-		SBMLSymbolMapping sbmlMap = sbmlImporter.getSymbolMapping();
+		MathSymbolMapping mathSymbolMapping = (MathSymbolMapping)importedSimContext.getMathDescription().getSourceSymbolMapping();
+		SBMLSymbolMapping sbmlMap = this.getSBMLSymbolMapping(importedSimContext.getBioModel());
 		SBase targetSBase = sbmlMap.getMappedSBase(SBMLTargetID);
 		if (targetSBase == null){
 			logger.error("couldn't find SBase with sid="+SBMLTargetID+" in SBMLSymbolMapping");
 			return null;
 		}
-		SymbolTableEntry ste =sbmlMap.getSte(targetSBase, SymbolContext.INITIAL);
-		Variable var = msm.getVariable(ste);
+		SymbolTableEntry biologicalSymbolTableEntry = sbmlMap.getSte(targetSBase, SymbolContext.INITIAL);
+		Variable var = mathSymbolMapping.getVariable(biologicalSymbolTableEntry);
 		boolean varIsConstant = (var instanceof Constant);
 		if (var instanceof cbit.vcell.math.Function){
 			try {
@@ -570,8 +571,8 @@ public class SEDMLImporter {
 		if (varIsConstant) {
 			String constantName = var.getName();
 			// if simcontext was converted to stochastic then species init constants use different names
-			if (convertedSimContext != null && ste instanceof SpeciesContextSpecParameter) {
-				SpeciesContextSpecParameter speciesContextSpecParameter = (SpeciesContextSpecParameter)ste;
+			if (convertedSimContext != null && biologicalSymbolTableEntry instanceof SpeciesContextSpecParameter) {
+				SpeciesContextSpecParameter speciesContextSpecParameter = (SpeciesContextSpecParameter)biologicalSymbolTableEntry;
 				if (speciesContextSpecParameter.getRole() == SpeciesContextSpec.ROLE_InitialConcentration
 						|| speciesContextSpecParameter.getRole() == SpeciesContextSpec.ROLE_InitialCount) {
 					String spcName = speciesContextSpecParameter.getSpeciesContext().getName();
@@ -590,8 +591,8 @@ public class SEDMLImporter {
 			}
 			return constantName; 
 		} else {
-			logger.error("couldn't find Constant target with sid="+SBMLTargetID+" in symbol mapping, var = "+var);
-			return null;
+			String exceptionMessage = String.format("couldn't find Constant target with sid='%s' in symbol mapping, var = '%s'", SBMLTargetID, var);
+			throw new RuntimeException(exceptionMessage);
 		}
 	}
 
@@ -607,9 +608,9 @@ public class SEDMLImporter {
 
 			Task baseTask = this.getBaseTask(repeatedTask);
 			Simulation simulation = new Simulation(vcSimulations.get(baseTask.getId())); // make a copy of the original simulation
-			SimulationContext importedSimcontext,convertedSimcontext;
+			SimulationContext importedSimcontext, convertedSimcontext;
 			SimulationContext currentSC = (SimulationContext)simulation.getSimulationOwner();
-			if (((SimulationContext)simulation.getSimulationOwner()).getApplicationType() == Application.NETWORK_STOCHASTIC) {
+			if (currentSC.getApplicationType() == Application.NETWORK_STOCHASTIC) {
 				importedSimcontext = currentSC.getBioModel().getSimulationContext(0);
 				convertedSimcontext = (SimulationContext)simulation.getSimulationOwner();
 			} else {
@@ -1095,6 +1096,11 @@ public class SEDMLImporter {
 		}
 		// We couldn't find the imported sim ID in the list of needed reports. VCell probably doesn't need it directly.
 		return false;
+	}
+
+	public SBMLSymbolMapping getSBMLSymbolMapping(BioModel bioModel){
+		SBMLImporter sbmlImporter = this.importMap.get(bioModel);
+		return sbmlImporter.getSymbolMapping();
 	}
 
 	private enum ADVANCED_MODEL_TYPES {

@@ -6,6 +6,7 @@ import cbit.vcell.solver.ode.ODESolverResultSet;
 
 import org.jlibsedml.SedML;
 import org.jlibsedml.AbstractTask;
+import org.vcell.cli.run.SBMLNonspatialSimResults;
 import org.vcell.cli.run.TaskJob;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -48,7 +49,7 @@ public class Hdf5DataExtractor {
      * @see NonspatialResultsConverter::convertNonspatialResultsToSedmlFormat
      * @see SpatialResultsConverter::collectSpatialDatasets
      */
-    public Hdf5DataContainer extractHdf5RelevantData(Map<TaskJob, ODESolverResultSet> nonSpatialResults, Map<TaskJob, File> spatialResults) {
+    public Hdf5DataContainer extractHdf5RelevantData(Map<TaskJob, SBMLNonspatialSimResults> nonSpatialResults, Map<TaskJob, File> spatialResults) {
         List<Hdf5SedmlResults> wrappers = new LinkedList<>();
         Hdf5DataContainer hdf5FileWrapper = new Hdf5DataContainer();
         Exception nonSpatialException = null, spatialException = null;
