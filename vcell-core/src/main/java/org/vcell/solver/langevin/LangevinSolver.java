@@ -134,7 +134,9 @@ public class LangevinSolver extends SimpleCompiledSolver {
 		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING,
 				SimulationMessage.MESSAGE_SOLVER_RUNNING_START));
 		// get executable path+name.
-		setMathExecutable(new MathExecutable(getMathExecutableCommand(),getSaveDirectory()));
+		File saveDirectory = getSaveDirectory();
+		String[] mathExecutableCommand = getMathExecutableCommand();
+		setMathExecutable(new MathExecutable(mathExecutableCommand, saveDirectory));
 		// setMathExecutable(new
 		// cbit.vcell.solvers.MathExecutable(executableName + " gibson " +
 		// getBaseName() + ".stochInput" + " " + getBaseName() + ".stoch"));
@@ -158,33 +160,26 @@ public class LangevinSolver extends SimpleCompiledSolver {
 	@Override
 	protected String[] getMathExecutableCommand() {
 		String executableName = null;
-		String[] cmds = null;
 		try {
-			executableName = SolverUtilities.getExes(SolverDescription.NFSim)[0].getAbsolutePath();
+			executableName = SolverUtilities.getExes(SolverDescription.Langevin)[0].getAbsolutePath();
 		}catch (IOException e){
 			throw new RuntimeException("failed to get executable for solver "+SolverDescription.Langevin.getDisplayLabel()+": "+e.getMessage(),e);
 		}
 		String inputFilename = getInputFilename();
 		String outputFilename = getOutputFilename();
 		String speciesOutputFilename = getSpeciesOutputFilename();
+		String logFilename = getLogFilename();
 		
-		LangevinSimulationOptions nfsso = simTask.getSimulation().getSolverTaskDescription().getLangevinSimulationOptions();
-		ArrayList<String> adv = new ArrayList<String>();
+		LangevinSimulationOptions lso = simTask.getSimulation().getSolverTaskDescription().getLangevinSimulationOptions();
+		int numOfTrials = lso.getNumOfTrials();
 		
-//		TimeBounds tb = getSimulationJob().getSimulation().getSolverTaskDescription().getTimeBounds();
-//		double dtime = tb.getEndingTime() - tb.getStartingTime();
-//		
-//		
-//		String baseCommands[] = { "-xml", inputFilename, "-o", outputFilename, "-sim", Double.toString(dtime), "-ss", speciesOutputFilename };
-//		ArrayList<String> cmds = new ArrayList<String>();
-//		cmds.add(executableName);
-//		
-//		
-//		cmds.add("-vcell");
-//		
-//		cmds.addAll(new ArrayList<String>(Arrays.asList(baseCommands)));
-
-		return cmds;
+		ArrayList<String> cmds = new ArrayList<String>();
+		cmds.add(executableName);	// executable
+		cmds.add(inputFilename);	// first argument
+		cmds.add(numOfTrials + "");	// second argument
+		cmds.add(logFilename);		// used for solver to send status info to client (3rd argument);
+		
+		return cmds.toArray(new String[cmds.size()]);
 	}
 	
 	@Override
@@ -194,8 +189,6 @@ public class LangevinSolver extends SimpleCompiledSolver {
 		
 		return simulationMessage;
 	}
-
-
 
 	public void propertyChange(java.beans.PropertyChangeEvent event) {
 		super.propertyChange(event);

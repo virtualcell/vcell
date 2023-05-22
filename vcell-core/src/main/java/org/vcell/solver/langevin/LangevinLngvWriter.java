@@ -299,7 +299,7 @@ public class LangevinLngvWriter {
 	
 	private static void writeTimeInformation(StringBuilder sb, Simulation simulation) {
 		// general stuff is in solver task description
-		simulation.getSolverTaskDescription().writeData(sb);	// TODO: need proper sim
+		simulation.getSolverTaskDescription().writeData(sb);
 		
 		LangevinSimulationOptions lso = simulation.getSolverTaskDescription().getLangevinSimulationOptions();
 		sb.append("dt_spring: " + lso.getIntervalSpring());		// 1.00E-9 default
