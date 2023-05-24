@@ -33,11 +33,11 @@ services:
     ports:
       - "${VCELL_API_PORT_EXTERNAL}:8080"
       - "${VCELL_DEBUG_PORT_VCELL_API}:8000" # java remote debugging
-    healthcheck:
-      test: ["CMD", "curl", "-f", "--insecure", "https://localhost:8080/health?check=login"]
-      interval: 600s
-      timeout: 30s
-      retries: 2
+#    healthcheck:
+#      test: ["CMD", "curl", "-f", "--insecure", "https://localhost:8080/health?check=login"]
+#      interval: 600s
+#      timeout: 30s
+#      retries: 2
     secrets:
       - keystorefile_20220105
       - keystorepswd
@@ -96,11 +96,11 @@ services:
       - mongodb_database=test
     ports:
       - "${VCELL_DEBUG_PORT_VCELL_SCHED}:8000" # java remote debugging
-    healthcheck:
-      test: ["CMD", "curl", "-f", "--insecure", "https://api:8080/health?check=sim"]
-      interval: 600s
-      timeout: 30s
-      retries: 2
+#    healthcheck:
+#      test: ["CMD", "curl", "-f", "--insecure", "https://api:8080/health?check=sim"]
+#      interval: 600s
+#      timeout: 30s
+#      retries: 2
     volumes:
       - "${VCELL_SIMDATADIR_HOST}:/simdata"
       - "${VCELL_SIMDATADIR_ARCHIVE_HOST}:${VCELL_SIMDATADIR_ARCHIVE_INTERNAL}"
