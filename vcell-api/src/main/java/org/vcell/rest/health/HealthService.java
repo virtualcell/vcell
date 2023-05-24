@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicLong;
 
+import cbit.vcell.solver.VCSimulationDataIdentifier;
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -290,11 +291,14 @@ public class HealthService {
 					}
 				}
 				runningSimId = null;
-				
+
 				if (!simStatus.isCompleted()) {
 					throw new RuntimeException("failed: "+simStatus.getDetails());
 				}
-				
+
+				// before declaring success, retrieve some data (time array is sufficient)
+				vcellConnection.getDataSetController().getDataSetTimes(new VCSimulationDataIdentifier(runningSimId, 0));
+
 				simSuccess(id);
 				
 			}catch (Throwable e) {
