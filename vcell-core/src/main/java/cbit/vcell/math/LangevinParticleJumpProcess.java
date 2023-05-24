@@ -73,7 +73,7 @@ public String getVCML()
 	buffer.append("\t"+VCML.ParticleJumpProcess+"\t"+getName()+" "+VCML.BeginBlock+"\n");
 	buffer.append("\t\t" + VCML.Subtype + "\t\t\t" + subtype.columnName+"\n");
 	if(Subtype.TRANSITION == subtype) {
-		buffer.append("\t\t" + VCML.TransitionCondition + "\t\t" + transitionCondition.columnName + "\n");
+		buffer.append("\t\t" + VCML.TransitionCondition + "\t\t" + transitionCondition.vcellName + "\n");
 	} else {
 		buffer.append("\t\t" + VCML.TransitionCondition + "\t\t" + " - " + "\n");
 	}

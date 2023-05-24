@@ -699,7 +699,7 @@ public class LangevinLngvWriter {
 				sb.append("' --> '");
 				sb.append(pcsdTransitionProduct.getName());
 				sb.append("'  Rate ").append(onRate);
-				sb.append("  Condition ").append(transitionCondition.columnName);
+				sb.append("  Condition ").append(transitionCondition.lngvName);
 				if(TransitionCondition.BOUND == transitionCondition) {
 					sb.append(" '").append(pmtpConditionReactant.getMolecularType().getName()).append("' : '")
 					.append(pmcpConditionReactant.getMolecularComponent().getName()).append("' : '")

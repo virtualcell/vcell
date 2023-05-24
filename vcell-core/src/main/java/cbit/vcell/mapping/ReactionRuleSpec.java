@@ -85,14 +85,16 @@ public class ReactionRuleSpec implements ModelProcessSpec, IssueSource {
 			this.columnName = columnName;
 		}
 	}
-	public enum TransitionCondition {
-		NONE("None"),
-		FREE("Free"),
-		BOUND("Bound");
+	public enum TransitionCondition {	// everywhere internally in vcell we use RBM bond type naming conventions
+		NONE("Unbound", "None"),		// MolecularComponentPattern.BondType.None		(-)
+		FREE("Any", "Free"),			// MolecularComponentPattern.BondType.Possible	(?)
+		BOUND("Bound", "Bound");		// MolecularComponentPattern.BondType.Exists	(+)
 		
-		final public String columnName;
-		private TransitionCondition(String columnName) {
-			this.columnName = columnName;
+		final public String vcellName;
+		final public String lngvName;
+		private TransitionCondition(String vcellName, String lngvName) {
+			this.vcellName = vcellName;
+			this.lngvName = lngvName;
 		}
 	}
 
@@ -712,7 +714,7 @@ private void writeTransitionData(StringBuilder sb, Subtype subtype, Map<String, 
 	sb.append("' --> '");
 	sb.append(cspTransitionProduct.getComponentStateDefinition().getName());
 	sb.append("'  Rate ").append(kon.infix());
-	sb.append("  Condition ").append(transitionCondition.columnName);
+	sb.append("  Condition ").append(transitionCondition.lngvName);
 	if(TransitionCondition.BOUND == transitionCondition) {
 		sb.append(" '").append(mtpConditionReactant.getMolecularType().getName()).append("' : '")
 		.append(mcpConditionReactant.getMolecularComponent().getName()).append("' : '")

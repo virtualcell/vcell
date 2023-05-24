@@ -439,7 +439,7 @@ public static String getTransitionCondition(ModelProcessSpec modelProcessSpec) {
 		rrs.analizeReaction(analysisResults);
 		ReactionRuleSpec.TransitionCondition tc = rrs.getTransitionCondition(analysisResults);
 		if(tc != null) {
-			return tc.columnName;
+			return tc.vcellName;
 		}
 	}
 	return null;
