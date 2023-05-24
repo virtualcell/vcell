@@ -297,7 +297,7 @@ public class HealthService {
 				}
 
 				// before declaring success, retrieve some data (time array is sufficient)
-				vcellConnection.getDataSetController().getDataSetTimes(new VCSimulationDataIdentifier(runningSimId, 0));
+				vcellConnection.getDataSetController().getDataSetTimes(new VCSimulationDataIdentifier(vcSimId, 0));
 
 				simSuccess(id);
 				
