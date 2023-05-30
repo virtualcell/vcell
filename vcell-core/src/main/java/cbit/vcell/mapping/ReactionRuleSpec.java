@@ -33,11 +33,15 @@ import org.vcell.util.Matchable;
 import org.vcell.util.Pair;
 
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
+import cbit.vcell.mapping.SimulationContext.SimulationContextParameter;
+import cbit.vcell.model.Feature;
 import cbit.vcell.model.ProductPattern;
 import cbit.vcell.model.RbmKineticLaw;
 import cbit.vcell.model.ReactantPattern;
 import cbit.vcell.model.ReactionRule;
+import cbit.vcell.model.ReactionRuleParticipant;
 import cbit.vcell.model.SpeciesContext;
+import cbit.vcell.model.Structure;
 import cbit.vcell.parser.Expression;
 
 public class ReactionRuleSpec implements ModelProcessSpec, IssueSource {
@@ -943,6 +947,63 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList, React
 			}
 			break;
 		case BINDING:
+			// we cannot have trans-membrane bonds - and there is no cross-membrane transport support in springsalad
+			// we make sure the 2 sites bonding are in the same structure, we raise issue if not
+			MolecularTypePattern mtpOursOne = (MolecularTypePattern)analysisResults.get(MtpReactantBond + "1");
+			MolecularComponentPattern mcpOursOne = (MolecularComponentPattern)analysisResults.get(McpReactantBond + "1");
+			MolecularTypePattern mtpOursTwo = (MolecularTypePattern)analysisResults.get(MtpReactantBond + "2");
+			MolecularComponentPattern mcpOursTwo = (MolecularComponentPattern)analysisResults.get(McpReactantBond + "2");
+			MolecularType mtOursOne = mtpOursOne.getMolecularType();
+			MolecularType mtOursTwo = mtpOursTwo.getMolecularType();
+			MolecularComponent mcOursOne = mcpOursOne.getMolecularComponent();
+			MolecularComponent mcOursTwo = mcpOursTwo.getMolecularComponent();
+			
+			Map<MolecularComponentPattern, SiteAttributesSpec> siteAttributesMapOne = null;
+			Map<MolecularComponentPattern, SiteAttributesSpec> siteAttributesMapTwo = null;
+			SpeciesContextSpec[] speciesContextSpecs = rc.getSpeciesContextSpecs();
+			for(SpeciesContextSpec scs : speciesContextSpecs) {
+				SpeciesContext scCandidate = scs.getSpeciesContext();
+				SpeciesPattern spCandidate = scCandidate.getSpeciesPattern();
+				MolecularTypePattern mtpCandidate = spCandidate.getMolecularTypePatterns().get(0);
+				MolecularType mtCandidate = mtpCandidate.getMolecularType();
+				if(mtOursOne == mtCandidate) {
+					siteAttributesMapOne = scs.getSiteAttributesMap();
+				} else if(mtOursTwo == mtCandidate) {
+					siteAttributesMapTwo = scs.getSiteAttributesMap();
+				}
+			}
+			SiteAttributesSpec sasOne = null;
+			SiteAttributesSpec sasTwo = null;
+			for(Map.Entry<MolecularComponentPattern, SiteAttributesSpec> entry : siteAttributesMapOne.entrySet()) {
+				MolecularComponentPattern mcpCandidate = entry.getKey();
+				if(MolecularComponentPattern.BondType.None != mcpCandidate.getBondType()) {
+					continue;
+				}
+				MolecularComponent mcCandidate = mcpCandidate.getMolecularComponent();
+				if(mcOursOne == mcCandidate) {
+					sasOne = entry.getValue();
+				} else if(mcOursTwo == mcCandidate) {
+					sasTwo = entry.getValue();
+				}
+			}
+			for(Map.Entry<MolecularComponentPattern, SiteAttributesSpec> entry : siteAttributesMapTwo.entrySet()) {
+				MolecularComponentPattern mcpCandidate = entry.getKey();
+				if(MolecularComponentPattern.BondType.None != mcpCandidate.getBondType()) {
+					continue;
+				}
+				MolecularComponent mcCandidate = mcpCandidate.getMolecularComponent();
+				if(mcOursOne == mcCandidate) {
+					sasOne = entry.getValue();
+				} else if(mcOursTwo == mcCandidate) {
+					sasTwo = entry.getValue();
+				}
+			}
+			if(sasOne.getLocation() != sasTwo.getLocation()) {
+				String msg = "Transmembrane binding not supported";
+				String tip = "Both binding reactant Sites need to be in the same compartment.";
+				issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
+				return;
+			}
 			if(!reactionRule.isReversible()) {
 				String msg = subtype.columnName + " reactions must be reversible. Make the reaction reversible and keep Kr at 0.";
 				String tip = "Make this reaction reversible or disable it in this table.";
