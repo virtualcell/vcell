@@ -183,7 +183,7 @@ def update_dataset_status(sedml: str, report: str, dataset: str, status: str, ou
                             if dataset_list['id'] == dataset:
                                 dataset_list['status'] = status
                                 if status == 'QUEUED' or status == 'SUCCEEDED':
-                                    outputList['status']= 'SUCCEEDED'
+                                    outputList['status'] = 'SUCCEEDED'
                                 else:
                                     outputList['status'] = 'FAILED'
             except KeyError:
@@ -207,6 +207,42 @@ def update_dataset_status(sedml: str, report: str, dataset: str, status: str, ou
     # Convert json to yaml # Save new yaml
     dump_yaml_dict(status_yaml_path, yaml_dict=yaml_dict, out_dir=out_dir)
 
+
+def update_plot_status(sedml: str, plot_id: str, status: str, out_dir: str) -> None:
+    yaml_dict = get_yaml_as_str(os.path.join(out_dir, "log.yml"))
+    for sedml_list in yaml_dict['sedDocuments']:
+        if sedml.endswith(sedml_list["location"]):
+            sedml_name_nested = sedml_list["location"]
+            # Update task status
+            try:
+                for output in sedml_list['outputs']:
+                    if output['id'] == plot_id:
+                        for curve in output['curves']:
+                            curve['status'] = status
+                            if status == 'QUEUED' or status == 'SUCCEEDED':
+                                output['status'] = 'SUCCEEDED'
+                            else:
+                                output['status'] = 'FAILED'
+            except KeyError:
+                pass
+
+    # update individual dataSets status
+    '''
+    for key in yaml_dict['sedDocuments'][sedml_name_nested]['outputs'].keys():
+        try:
+            for dataset_key in yaml_dict['sedDocuments'][sedml_name_nested]['outputs'][key]['dataSets'].keys():
+                if yaml_dict['sedDocuments'][sedml_name_nested]['outputs'][key]['dataSets'][dataset_key] == 'QUEUED' or yaml_dict['sedDocuments'][sedml_name_nested]['outputs'][key]['dataSets'][dataset_key] == 'SUCCEEDED':
+                    yaml_dict['sedDocuments'][sedml_name_nested]['outputs'][key]['status'] = 'SUCCEEDED'
+                else:
+                    yaml_dict['sedDocuments'][sedml_name_nested]['outputs'][key]['status'] = 'FAILED'
+        except KeyError:
+            continue
+    '''
+
+    status_yaml_path = os.path.join(out_dir, "log.yml")
+
+    # Convert json to yaml # Save new yaml
+    dump_yaml_dict(status_yaml_path, yaml_dict=yaml_dict, out_dir=out_dir)
 
 #
 # sedmlAbsolutePath - full path to location of the actual sedml file (document) used as input
@@ -277,6 +313,7 @@ if __name__ == "__main__":
         'updateSedmlDocStatus': update_sedml_doc_status,
         'updateOmexStatus': update_omex_status,
         'updateDataSetStatus': update_dataset_status,
-        'setOutputMessage' : set_output_message,
-        'setExceptionMessage' : set_exception_message,
+        'updatePlotStatus': update_plot_status,
+        'setOutputMessage': set_output_message,
+        'setExceptionMessage': set_exception_message,
     })

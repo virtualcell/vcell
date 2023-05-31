@@ -60,6 +60,9 @@ def updateOmexStatus(statusVar: str, outDir: str, duration: str) -> None:
 def updateDataSetStatus(sedml: str, report: str, dataset: str, statusVar: str, outDir: str) -> None:
     status.update_dataset_status(sedml, report, dataset, statusVar, outDir)
 
+def updatePlotStatus(sedml: str, plot_id: str, statusVar: str, out_dir: str) -> None:
+    status.update_plot_status(sedml, plot_id, statusVar, out_dir)
+
 def setOutputMessage(sedmlAbsolutePath:str, entityId:str, outDir:str, entityType:str , message:str) -> None:
     status.set_output_message(sedmlAbsolutePath, entityId, outDir, entityType, message)
 

@@ -148,6 +148,13 @@ public class PythonCalls {
         cliPythonManager.parsePythonReturn(results);
     }
 
+    public static void updatePlotStatusYml(String sedmlName, String var, Status simStatus, String outDir) throws PythonStreamException {
+        logger.trace("Dialing Python function updatePlotStatus");
+        CLIPythonManager cliPythonManager = CLIPythonManager.getInstance();
+        String results = cliPythonManager.callPython("updatePlotStatus", sedmlName, var, simStatus.toString(), outDir);
+        cliPythonManager.parsePythonReturn(results);
+    }
+
     // Due to what appears to be a leaky python function call, this method will continue using execShellCommand until the unerlying python is fixed
     public static void genPlotsPseudoSedml(String sedmlPath, String resultOutDir) throws PythonStreamException, InterruptedException, IOException {
         logger.trace("Dialing Python function genPlotsPseudoSedml");
