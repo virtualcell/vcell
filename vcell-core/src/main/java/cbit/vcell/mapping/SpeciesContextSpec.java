@@ -977,7 +977,7 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
 				issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
 			}
 
-			// if the species context is on membrane it must have a site named Anchor on the membrane
+			// if the species context is on membrane it must have a site named Anchor on the membrane, the other sites must NOT be on membrane
 			Structure struct = sc.getStructure();
 			MolecularComponentPattern mcpAnchor = null;
 			if(struct instanceof Membrane) {
@@ -992,8 +992,16 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
 							String msg = "The reserved Site 'Anchor' must be located on a Membrane.";
 							String tip = msg;
 							issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+							return;
 						}
-						return;
+					} else {	// all the other sites of a membrane species must not be on the membrane
+						SiteAttributesSpec sas = getSiteAttributesMap().get(mcp);
+						if(sas.getLocation() instanceof Membrane) {
+							String msg = "All the Sites of a Membrane species, other than the 'Anchor', must NOT be located on a Membrane.";
+							String tip = msg;
+							issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+							return;
+						}
 					}
 				}
 				if(anchorExists == false) {
