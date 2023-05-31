@@ -986,23 +986,25 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList, React
 					sasTwo = entry.getValue();
 				}
 			}
-			for(Map.Entry<MolecularComponentPattern, SiteAttributesSpec> entry : siteAttributesMapTwo.entrySet()) {
-				MolecularComponentPattern mcpCandidate = entry.getKey();
-				if(MolecularComponentPattern.BondType.None != mcpCandidate.getBondType()) {
-					continue;
+			if(sasOne != null && sasTwo != null) {
+				for(Map.Entry<MolecularComponentPattern, SiteAttributesSpec> entry : siteAttributesMapTwo.entrySet()) {
+					MolecularComponentPattern mcpCandidate = entry.getKey();
+					if(MolecularComponentPattern.BondType.None != mcpCandidate.getBondType()) {
+						continue;
+					}
+					MolecularComponent mcCandidate = mcpCandidate.getMolecularComponent();
+					if(mcOursOne == mcCandidate) {
+						sasOne = entry.getValue();
+					} else if(mcOursTwo == mcCandidate) {
+						sasTwo = entry.getValue();
+					}
 				}
-				MolecularComponent mcCandidate = mcpCandidate.getMolecularComponent();
-				if(mcOursOne == mcCandidate) {
-					sasOne = entry.getValue();
-				} else if(mcOursTwo == mcCandidate) {
-					sasTwo = entry.getValue();
+				if(sasOne.getLocation() != sasTwo.getLocation()) {
+					String msg = "Transmembrane binding not supported";
+					String tip = "Both binding reactant Sites need to be in the same compartment.";
+					issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
+					return;
 				}
-			}
-			if(sasOne.getLocation() != sasTwo.getLocation()) {
-				String msg = "Transmembrane binding not supported";
-				String tip = "Both binding reactant Sites need to be in the same compartment.";
-				issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
-				return;
 			}
 			if(!reactionRule.isReversible()) {
 				String msg = subtype.columnName + " reactions must be reversible. Make the reaction reversible and keep Kr at 0.";
