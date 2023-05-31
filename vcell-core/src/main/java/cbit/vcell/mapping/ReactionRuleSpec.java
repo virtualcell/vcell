@@ -42,6 +42,7 @@ import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionRuleParticipant;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
+import cbit.vcell.model.Structure.SpringStructureEnum;
 import cbit.vcell.parser.Expression;
 
 public class ReactionRuleSpec implements ModelProcessSpec, IssueSource {
@@ -934,6 +935,34 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList, React
 			String tip = GenericTip;
 			issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
 		}
+		
+		// reactions cannot be on the membrane
+		if(SpringStructureEnum.Membrane.columnName.equals(reactionRule.getStructure().getName())) {
+			String msg = "SpringSaLaD reactions cannot be located on the Membrane.";
+			String tip = GenericTip;
+			issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+			return;
+		}
+		
+		// the reserved site 'Anchor' must not be part of any reaction
+		List<ReactantPattern> rpList = reactionRule.getReactantPatterns();
+		for(ReactantPattern rp : rpList) {
+			if(!SpringStructureEnum.Membrane.columnName.equals(rp.getStructure().getName())) {
+				continue;
+			}
+			SpeciesPattern spReactant = rp.getSpeciesPattern();
+			List<MolecularTypePattern> mtpReactantList = spReactant.getMolecularTypePatterns();
+			for(MolecularTypePattern mtpReactant : mtpReactantList) {
+				List<MolecularComponentPattern> mcpReactantList = mtpReactant.getComponentPatternList();
+				for(MolecularComponentPattern mcpReactant : mcpReactantList) {
+					
+					
+					
+				}
+			}
+		}
+		
+		
 		switch(subtype) {
 		case CREATION:
 		case DECAY:
