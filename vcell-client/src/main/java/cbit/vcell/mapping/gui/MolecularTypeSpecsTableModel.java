@@ -212,6 +212,11 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 	
 	@Override
 	public boolean isCellEditable(int row, int col) {
+		String siteName = (String)getValueAt(row, 0);
+		if(SpeciesContextSpec.AnchorSiteString.equals(siteName)) {
+			// TODO: X, Y, Z, Color must also be non-editable
+			return false;	// row of reserved "Anchor" site is non-editable
+		}
 		ColumnType columnType = columns.get(col);
 		switch (columnType) {
 		case COLUMN_SITE:

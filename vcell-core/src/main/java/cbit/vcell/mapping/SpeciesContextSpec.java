@@ -79,8 +79,8 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
 	private static final String InitialLocationSetString = "Set";
 	public static final String SourceMoleculeString = "Source";	// molecule used in creation reaction subtype (reserved name)
 	public static final String SinkMoleculeString = "Sink";		// molecule used in decay reaction subtype (reserved name)
-	private static final String AnchorSiteString = "Anchor";		// required name for reserved special Site of membrane species
-	private static final String AnchorStateString = "Anchor";		// required name for reserved special State of the Anchor site
+	public static final String AnchorSiteString = "Anchor";		// required name for reserved special Site of membrane species
+	public static final String AnchorStateString = "Anchor";		// required name for reserved special State of the Anchor site
 
 
 	public class SpeciesContextSpecNameScope extends BioNameScope {
