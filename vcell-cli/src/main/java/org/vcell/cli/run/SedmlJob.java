@@ -342,6 +342,12 @@ public class SedmlJob {
     private void generatePlots() throws PythonStreamException, InterruptedException, IOException {
         logger.info("Generating Plots... ");
         PythonCalls.genPlotsPseudoSedml(this.SEDML_LOCATION, this.OUTPUT_DIRECTORY_FOR_CURRENT_SEDML.toString());    // generate the plots
+        // We assume if no exception is returned that the plots pass
+        for (Output output : this.sedml.getOutputs()){
+            if (!(output instanceof Plot2D)) continue;
+            Plot2D plot = (Plot2D) output;
+            PythonCalls.updatePlotStatusYml(this.SEDML_LOCATION, plot.getId(), Status.SUCCEEDED, this.RESULTS_DIRECTORY_PATH);
+        }
     }
 
     private void generateHDF5(SolverHandler solverHandler, Hdf5DataContainer masterHdf5File) throws IOException {
