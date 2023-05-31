@@ -1,0 +1,308 @@
+name: Nightly BioModel DataBase CLI Test
+on:
+  schedule: 
+    - cron: "0 7 * * *"
+  workflow_dispatch:
+
+env:
+  python-version: "3.9"
+  poetry-version: "1.2.1"
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout Our Code
+        uses: actions/checkout@v3
+        with: 
+          ref: '${{ github.ref }}'
+          
+      - name: Get GH Reference
+        run: echo '${{ github.ref }}' >> ~/github.ref
+        
+      - name: Upload Ref
+        uses: actions/upload-artifact@v3
+        with:
+          name: github_hash
+          path: ~/github.ref
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.python-version }}
+          
+      - name: Install poetry
+        run: python3 -m pip install poetry==${{ env.poetry-version }}
+        
+      - name: Install other python dependencies
+        run: python3 -m pip install -r requirements.txt
+
+      - name: build vcell-cli-utils package
+        run: |
+          cd vcell-cli-utils
+          poetry install
+      
+      - name: build vcell-admin package
+        run: |
+          cd docker/swarm/vcell-admin
+          poetry install
+          
+      - name: build vcell-opt package
+        run: |
+          cd pythonProject/vcell-opt
+          poetry install
+      
+      - name: Setup Java for Build
+        uses: actions/setup-java@v2
+        with: 
+          java-version: '8'
+          distribution: 'adopt'
+          cache: 'maven'
+          
+      - name: Build VCell Jars
+        run: mvn clean install dependency:copy-dependencies
+        
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+        
+      - name: Build and Export
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          file: ./Dockerfile
+          outputs: type=docker,dest=/tmp/image.tar
+          build-args: | # Max ram for Ubuntu GitHub workflow is 7GB (as of 12/9/22), using MB for precision (0.8 of 7gb)
+            MAX_JAVA_MEM=5734
+          
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: docker-image
+          path: /tmp/image.tar
+      
+      # Report a Problem to Slack
+      - name: Report Problem to Slack
+        if: ${{ failure() }}
+        run: curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="Uh-Oh! The *Build Step* of Nightly Testing Action on GitHub Failed ( ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} )! This may need attention..." https://slack.com/api/chat.postMessage
+
+      # Tmate just in case
+      - name: Setup tmate session 3
+        uses: mxschmitt/action-tmate@v3
+        if: ${{ failure() }}
+  export:
+    runs-on: ubuntu-20.04
+    needs: build
+    steps:
+      - name: Create Docker Image Dir
+        run: mkdir /tmp/docker
+        
+      - name: Download Docker Image from `build` Job
+        uses: actions/download-artifact@v3
+        with:
+          name: docker-image
+          path: /tmp/docker
+
+      - name: Load Downloaded Docker Image
+        run: docker load --input /tmp/docker/$(ls /tmp/docker)
+        
+        # Get files from VCDB
+      - name: Checkout Input Files
+        uses: actions/checkout@v3
+        with: 
+          repository: virtualcell/vcdb
+      
+        # Do the conversion
+      - name: Begin Conversion
+        #$(docker image ls | grep "<none>" | awk '{print $3;}')  to get image id
+        run: docker run -v $GITHUB_WORKSPACE/public/biomodel/vcml:/root $(docker image ls | grep "<none>" | awk '{print $3;}') export-omex-batch -i "/root" -o "/root/output" -m SBML --offline # grabs image and runs
+
+      # Parse the results
+      - name: Parse Results
+        run: |
+          cd $GITHUB_WORKSPACE/public/biomodel/vcml/output
+          /bin/echo "biomodels processed $(cat jobLog.txt | grep START | wc -l)" >> ../export_results.txt
+          /bin/echo "biomodels succeeded $(cat jobLog.txt | grep MODEL,SUCC | wc -l)" >> ../export_results.txt
+          /bin/echo "simcontexts total $(cat jobLog.txt | grep TEXT | wc -l)" >> ../export_results.txt
+          /bin/echo "simcontexts failed $(cat jobLog.txt | grep TEXT,FAIL | wc -l)" >> ../import_results.txt 
+          /bin/echo "simcontexts supported that failed $(cat jobLog.txt | grep TEXT,FAIL | grep -v supp | wc -l)" >> ../export_results.txt
+          /bin/echo "simcontexts math not equivalent $(cat jobLog.txt | grep TEXT,FAIL | grep -v supp | grep equiv | wc -l)" >> ../export_results.txt
+          /bin/echo "simcontexts divide by zero $(cat jobLog.txt | grep TEXT,FAIL | grep -v supp | grep divide | wc -l)" >> ../export_results.txt
+          /bin/echo "simcontexts duplicate IDs $(cat jobLog.txt | grep TEXT,FAIL | grep -v supp | grep duplicate | wc -l)" >> ../export_results.txt
+          /bin/echo "simcontexts null pointer $(cat jobLog.txt | grep TEXT,FAIL | grep -v supp | grep null | wc -l)" >> ../export_results.txt
+          /bin/echo "simcontexts structure mapping $(cat jobLog.txt | grep TEXT,FAIL | grep -v supp | grep struct | wc -l)" >> ../export_results.txt
+          /bin/echo "simcontexts other failure $(cat jobLog.txt | grep TEXT,FAIL | grep -v supp | grep -v struct | grep -v null | grep -v duplicate | grep -v divide | grep -v equiv | wc -l)" >> ../export_results.txt
+          /bin/echo "simulations total $(cat jobLog.txt | grep TION | wc -l)" >> ../export_results.txt
+          /bin/echo "simulations failed $(cat jobLog.txt | grep TION,FAIL | wc -l)" >> ../export_results.txt
+          /bin/echo "simulations supported that failed $(cat jobLog.txt | grep TION,FAIL | grep -v supp | wc -l)" >> ../export_results.txt
+          /bin/echo "simulations orphan overrides $(cat jobLog.txt | grep TION,FAIL | grep -v supp | grep Over | wc -l)" >> ../export_results.txt
+          /bin/echo "simulations unbound identifier $(cat jobLog.txt | grep TION,FAIL | grep -v supp | grep unbound | wc -l)" >> ../export_results.txt
+          /bin/echo "simulations other failure $(cat jobLog.txt | grep TION,FAIL | grep -v supp | grep -v Over | grep -v unbound | wc -l)" >> ../export_results.txt
+        
+        # Create tar of converted files
+      - name: Compress Converted Files
+        run: cd $GITHUB_WORKSPACE/public/biomodel/vcml/output && sudo tar cf omexes.tar --wildcards *.omex    
+        
+        # Upload Converted Files
+      - name: Upload Converted Files
+        uses: actions/upload-artifact@v3
+        with:
+          name: omexes.tar
+          path: ~/work/vcell/vcell/public/biomodel/vcml/output/omexes.tar # Action only has basic ~ based expansion, env variables dont appear to work
+        
+        # Upload Results
+      - name: Upload results of round-trip
+        uses: actions/upload-artifact@v3
+        with:
+          name: export_results.txt
+          path: ~/work/vcell/vcell/public/biomodel/vcml/export_results.txt
+      
+      - name: Upload original log of export
+        uses: actions/upload-artifact@v3
+        with:
+          name: export_log_original
+          path: ~/work/vcell/vcell/public/biomodel/vcml/output/jobLog.txt
+          
+      # Report a Problem to Slack
+      - name: Report Problem to Slack
+        if: ${{ failure() }}
+        run: curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="Uh-Oh! The *Export Step* of Nightly Testing Action on GitHub Failed ( ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} )! This may need attention..." https://slack.com/api/chat.postMessage  
+
+     # Tmate just in case
+      - name: Setup tmate session 3
+        uses: mxschmitt/action-tmate@v3
+        if: ${{ failure() }}
+  import:
+    runs-on: ubuntu-20.04
+    needs: export
+    steps:
+      - name: Create working directory
+        run: mkdir ~/wrk
+        
+      - name: Download Docker Image from `build` Job
+        uses: actions/download-artifact@v3
+        with:
+          name: docker-image
+          path: ~/wrk
+
+      - name: Load Downloaded Docker Image
+        run: docker load --input ~/wrk/$(ls ~/wrk)
+      
+      # Make Input Directory
+      - name: Make Input and Output Directory
+        run: mkdir -p ~/input_files/output
+      
+      # Get the coverted omexes from before
+      - name: Download Converted COMBINE Archives
+        uses: actions/download-artifact@v3
+        with:
+          name: omexes.tar
+          path: ~/input_files
+      
+      - name: Unpack Input Files
+        run: cd ~/input_files && sudo tar xvf $(ls *.tar) && rm $(ls *.tar)
+      
+      # Do the round trip
+      - name: Begin Round-Trip Import
+        #$(docker image ls | grep "<none>" | awk '{print $3;}')  to get image id
+        run: docker run -v ~/input_files:/root $(docker image ls | grep "<none>" | awk '{print $3;}') import-omex-batch -d -i "/root" -o "/root/output"
+        
+      # Parse the results
+      - name: Parse Results
+        run: |
+          cd ~/input_files/output  
+          /bin/echo "Biomodels processed $(cat jobLog.txt | grep '.omex,SUCC\|.omex,FAIL' | wc -l)" >> ~/import_results.txt
+          /bin/echo "Biomodels succeeded $(cat jobLog.txt | grep SUCC | wc -l)" >> ~/import_results.txt
+          /bin/echo "Biomodels that didn't converge $(cat jobLog.txt | grep SUCC | grep -v ',1' | wc -l)" >> ~/import_results.txt  
+      
+      # Upload results
+      - name: Upload Results of Round-Trip
+        uses: actions/upload-artifact@v3
+        with:
+          name: import_results.txt
+          path: ~/import_results.txt
+          
+      - name: Upload Results of Round-Trip
+        uses: actions/upload-artifact@v3
+        with:
+          name: import_log_original
+          path: ~/input_files/output/jobLog.txt
+      
+      # Report a Problem to Slack
+      - name: Report Problem to Slack
+        if: ${{ failure() }}
+        run: curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="Uh-Oh! The *Import Step* of Nightly Testing Action on GitHub Failed ( ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} )! This may need attention..." https://slack.com/api/chat.postMessage
+
+      # Tmate just in case
+      - name: Setup tmate session 3
+        uses: mxschmitt/action-tmate@v3
+        if: ${{ failure() }}
+        
+  execute:
+    runs-on: ubuntu-20.04
+    needs: import
+    steps:
+      - name: Create Docker Image Dir
+        run: mkdir /tmp/docker
+        
+      - name: Download Docker Image from `build` Job
+        uses: actions/download-artifact@v3
+        with:
+          name: docker-image
+          path: /tmp/docker
+
+      - name: Load Downloaded Docker Image
+        run: docker load --input /tmp/docker/$(ls /tmp/docker)
+        
+        # Get files from BMDB
+      - name: Checkout Input Files
+        uses: actions/checkout@v3
+        with: 
+          repository: sys-bio/temp-biomodels
+        
+        # Do the execution
+      - name: Begin Execution
+        #$(docker image ls | grep "<none>" | awk '{print $3;}')  to get image id
+        run: docker run -v $GITHUB_WORKSPACE/omex_files:/root $(docker image ls | grep "<none>" | awk '{print $3;}') execute -i "/root" -o "/root/output" - # grabs image and runs
+  
+  summarize:
+    runs-on: ubuntu-20.04
+    needs: execute
+    steps: 
+      - name: Make Results Directory
+        run: mkdir -p ~/results && cd ~/results
+
+      - name: Download Export Results
+        uses: actions/download-artifact@v3
+        with:
+          name: export_results.txt
+          path: ~/results
+      
+      - name: Download Import Results
+        uses: actions/download-artifact@v3
+        with:
+          name: import_results.txt
+          path: ~/results
+          
+      - name: Compile Results
+        run: |
+          if [ $() -gt 50000] && [ $() -lt 120000 ]; then echo -n 'Good Morning! ' >> ~/results/summary.txt; fi 
+          echo 'Here are the results of the Nightly Testing. Have a great day!' >> ~/results/summary.txt
+          echo '' >> ~/results/summary.txt
+          echo '-------- Export Results --------' >> ~/results/summary.txt
+          cat ~/results/export_results.txt >> ~/results/summary.txt
+          echo '-------- Import Results --------' >> ~/results/summary.txt
+          cat ~/results/import_results.txt >> ~/results/summary.txt
+          echo '' >> ~/results/summary.txt
+      
+      # Report a Success
+      - name: Report Results to Slack
+        run: curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="$(cat ~/results/summary.txt)" https://slack.com/api/chat.postMessage    
+
+      # Report a Problem to Slack
+      - name: Report Problem to Slack
+        if: ${{ failure() }}
+        run: curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="Oops! The *Summary Step* of Nightly Testing Action on GitHub Failed ( ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} ). Go see what happened!" https://slack.com/api/chat.postMessage
+
+      - name: Setup tmate session 3
+        uses: mxschmitt/action-tmate@v3
+        if: ${{ failure() }}
