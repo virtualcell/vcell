@@ -939,30 +939,60 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList, React
 		// reactions cannot be on the membrane
 		if(SpringStructureEnum.Membrane.columnName.equals(reactionRule.getStructure().getName())) {
 			String msg = "SpringSaLaD reactions cannot be located on the Membrane.";
-			String tip = GenericTip;
-			issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+			String tip = msg;
+			issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
 			return;
 		}
 		
-		// the reserved site 'Anchor' must not be part of any reaction
+		// the reserved site 'Anchor' must be not present in any reactant pattern that is not situated on a membrane
+		// note that we do a similar check for seed species, but this is also needed 
+		// (we can have a bad reactant pattern even though the seed species may be missing)
 		List<ReactantPattern> rpList = reactionRule.getReactantPatterns();
 		for(ReactantPattern rp : rpList) {
 			if(!SpringStructureEnum.Membrane.columnName.equals(rp.getStructure().getName())) {
-				continue;
+				SpeciesPattern spReactant = rp.getSpeciesPattern();
+				List<MolecularTypePattern> mtpReactantList = spReactant.getMolecularTypePatterns();
+				for(MolecularTypePattern mtpReactant : mtpReactantList) {
+					List<MolecularComponentPattern> mcpReactantList = mtpReactant.getComponentPatternList();
+					for(MolecularComponentPattern mcpReactant : mcpReactantList) {
+						MolecularComponent mcReactant = mcpReactant.getMolecularComponent();
+						if(SpeciesContextSpec.AnchorSiteString.equals(mcReactant.getName())) {
+							String msg = "The reserved site 'Anchor' cannot be part of a non-membrane reactant pattern.";
+							String tip = msg;
+							issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
+							return;
+						}
+					}
+				}
+			}
+		}
+		
+		// the reserved site 'Anchor' must not be part of any reaction
+		rpList = reactionRule.getReactantPatterns();
+		for(ReactantPattern rp : rpList) {
+			if(!SpringStructureEnum.Membrane.columnName.equals(rp.getStructure().getName())) {
+				continue;	// we don't have anchors if it's not a membrane molecule
 			}
 			SpeciesPattern spReactant = rp.getSpeciesPattern();
 			List<MolecularTypePattern> mtpReactantList = spReactant.getMolecularTypePatterns();
 			for(MolecularTypePattern mtpReactant : mtpReactantList) {
 				List<MolecularComponentPattern> mcpReactantList = mtpReactant.getComponentPatternList();
 				for(MolecularComponentPattern mcpReactant : mcpReactantList) {
-					
-					
-					
+					MolecularComponent mcReactant = mcpReactant.getMolecularComponent();
+					if(!SpeciesContextSpec.AnchorSiteString.equals(mcReactant.getName())) {
+						continue;
+					}
+					if(BondType.Possible != mcpReactant.getBondType() || !mcpReactant.getComponentStatePattern().isAny()) {
+						String msg = "The reserved site 'Anchor' cannot be the target of any SpringSaLaD reaction.";
+						String tip = msg;
+						issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
+						return;
+					}
 				}
 			}
 		}
 		
-		
+		// these reactions cannot be reversible
 		switch(subtype) {
 		case CREATION:
 		case DECAY:
@@ -1035,6 +1065,7 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList, React
 					return;
 				}
 			}
+			// binding reactions must be reversible
 			if(!reactionRule.isReversible()) {
 				String msg = subtype.columnName + " reactions must be reversible. Make the reaction reversible and keep Kr at 0.";
 				String tip = "Make this reaction reversible or disable it in this table.";
