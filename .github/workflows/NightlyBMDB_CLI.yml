@@ -115,7 +115,7 @@ jobs:
         # Do the execution
       - name: Begin Execution
         #$(docker image ls | grep "<none>" | awk '{print $3;}')  to get image id
-        run: docker run -v $GITHUB_WORKSPACE/omex_files:/root $(docker image ls | grep "<none>" | awk '{print $3;}') execute -i "/root" -o "/root/output" - # grabs image and runs
+        run: docker run -v $GITHUB_WORKSPACE/omex_files:/root $(docker image ls | grep "<none>" | awk '{print $3;}') execute -i "/root" -o "/root/output" # grabs image and runs
   
       - name: Check For Failure
         run: |
