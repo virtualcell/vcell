@@ -1,4 +1,4 @@
-name: Nightly BioModel DataBase CLI Test
+name: Nightly CLI Execution Tests (Published + BMDB)
 on:
   schedule: 
     - cron: "0 7 * * *"
@@ -83,14 +83,62 @@ jobs:
       # Report a Problem to Slack
       - name: Report Problem to Slack
         if: ${{ failure() }}
-        run: curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="Uh-Oh! The *Build Step* of Nightly Testing Action on GitHub Failed ( ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} )! This may need attention..." https://slack.com/api/chat.postMessage
+        run: curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="Uh-Oh! The *Build Step* of Nightly Execution Testing Action on GitHub Failed ( ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} )! This may need attention..." https://slack.com/api/chat.postMessage
 
       # Tmate just in case
       - name: Setup tmate session 3
         uses: mxschmitt/action-tmate@v3
         if: ${{ failure() }}
+  published:
+    runs-on: ubuntu-20.04
+    needs: build
+    steps:
+      - name: Create Docker Image Dir
+        run: mkdir /tmp/docker
         
-  execute:
+      - name: Download Docker Image from `build` Job
+        uses: actions/download-artifact@v3
+        with:
+          name: docker-image
+          path: /tmp/docker
+
+      - name: Load Downloaded Docker Image
+        run: docker load --input /tmp/docker/$(ls /tmp/docker)
+        
+        # Get files from BMDB
+      - name: Checkout Input Files
+        uses: actions/checkout@v3
+        with: 
+          repository: virtualcell/vcdb
+        
+        # Do the execution
+      - name: Begin Execution
+        #$(docker image ls | grep "<none>" | awk '{print $3;}')  to get image id
+        run: docker run -v $GITHUB_WORKSPACE/published/biomodel/omex/sbml:/root $(docker image ls | grep "<none>" | awk '{print $3;}') execute -i "/root" -o "/root/output" # grabs image and runs
+  
+      - name: Check For Failure
+        run: |
+          errorSearch=$(find ${GITHUB_WORKSPACE}/omex_files -name detailedErrorLog.txt)
+          if [ $(find ${GITHUB_WORKSPACE}/published/biomodel/omex/sbml -name detailedErrorLog.txt | wc -l) -gt 0 ]
+          then 
+            errorMessage="Errors were enocuntered processing published VCell projects, see the following error files:\n $errorSearch"
+            curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text=${errorMessage} https://slack.com/api/chat.postMessage
+            exit 20
+          fi
+      
+      - name: Report Results to Slack
+        run: curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="It appears all **published** models have succeeded from vcdb!" https://slack.com/api/chat.postMessage    
+
+      # Report a Problem to Slack
+      - name: Report Problem to Slack
+        if: ${{ failure() }}
+        run: curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="Oops! The *Published Step* of Nightly **Execution** Testing Action on GitHub Failed ( ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} ). Go see what happened!" https://slack.com/api/chat.postMessage
+
+      - name: Setup tmate session 3
+        uses: mxschmitt/action-tmate@v3
+        if: ${{ failure() }}
+        
+  bmdb:
     runs-on: ubuntu-20.04
     needs: build
     steps:
@@ -122,7 +170,7 @@ jobs:
           errorSearch=$(find ${GITHUB_WORKSPACE}/omex_files -name detailedErrorLog.txt)
           if [ $(find ${GITHUB_WORKSPACE}/omex_files -name detailedErrorLog.txt | wc -l) -gt 0 ]
           then 
-            errorMessage="Errors were enocuntered, see the following error files:\n $errorSearch"
+            errorMessage="Errors were enocuntered porcessing BMDB projects, see the following error files:\n $errorSearch"
             curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text=${errorMessage} https://slack.com/api/chat.postMessage
             exit 10
           fi
@@ -133,7 +181,7 @@ jobs:
       # Report a Problem to Slack
       - name: Report Problem to Slack
         if: ${{ failure() }}
-        run: curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="Oops! The *Execute Step* of Nightly **BMDB** Testing Action on GitHub Failed ( ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} ). Go see what happened!" https://slack.com/api/chat.postMessage
+        run: curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="Oops! The *BMDB Step* of Nightly **Execution** Testing Action on GitHub Failed ( ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} ). Go see what happened!" https://slack.com/api/chat.postMessage
 
       - name: Setup tmate session 3
         uses: mxschmitt/action-tmate@v3
