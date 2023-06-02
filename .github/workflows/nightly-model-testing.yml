@@ -1,4 +1,4 @@
-name: Nightly Tests on Branch `master`
+name: Nightly Round-Trip Tests (Public)
 
 on:
   schedule: 
