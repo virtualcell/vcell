@@ -97,6 +97,22 @@ public class LangevinSolver extends SimpleCompiledSolver {
 		fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_INIT);
 		writeFunctionsFile();
 
+		
+		// TODO: make the input file and the results folder the way langevin wants them
+		// results folder:	Simulation0_SIM_FOLDER
+		// input file:		Simulation0_SIM.txt
+		String saveDirectory = getSaveDirectory().getPath();
+		String simulationJobID = simTask.getSimulationJob().getSimulationJobID();
+		String baseName = getBaseName();
+		String resultsFolder = baseName + "SIM_FOLDER";
+		String inputFile = baseName + "SIM.txt";
+		
+		// aici
+		
+		
+		
+		
+		
 		String inputFilename = getInputFilename();
 		if (lg.isTraceEnabled()) lg.trace("LangevinSolver.initialize() inputFilename = " + getInputFilename()); 
 
@@ -130,16 +146,25 @@ public class LangevinSolver extends SimpleCompiledSolver {
 				lg.close();
 			}
 		}
+		
+		/*
+		what solver gets from springsalad ui
+		C:\TEMP\ssld-eclipse\ssld-eclipse_SIMULATIONS\Simulation0_SIM.txt 
+		1 
+		C:\TEMP\ssld-eclipse\ssld-eclipse_SIMULATIONS\Simulations0_OutStream_0.txt
+		
+		what we give the solver
+		C:\Users\Vasilescu\.vcell\simdata\temp\SimID_1504782733_0_.langevinInput
+		1
+		C:\Users\Vasilescu\.vcell\simdata\temp\SimID_1504782733_0_.log
+		*/
 
 		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING,
 				SimulationMessage.MESSAGE_SOLVER_RUNNING_START));
 		// get executable path+name.
-		File saveDirectory = getSaveDirectory();
 		String[] mathExecutableCommand = getMathExecutableCommand();
-		setMathExecutable(new MathExecutable(mathExecutableCommand, saveDirectory));
-		// setMathExecutable(new
-		// cbit.vcell.solvers.MathExecutable(executableName + " gibson " +
-		// getBaseName() + ".stochInput" + " " + getBaseName() + ".stoch"));
+		MathExecutable me = new MathExecutable(mathExecutableCommand, getSaveDirectory());
+		setMathExecutable(me);
 	}
 
 	private String getInputFilename() {
