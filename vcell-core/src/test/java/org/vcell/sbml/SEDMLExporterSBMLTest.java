@@ -139,7 +139,7 @@ public class SEDMLExporterSBMLTest extends SEDMLExporterCommon {
 		faults.put("biomodel_7803976.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_81284732.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_82250339.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
-		faults.put("biomodel_83446023.vcml", SEDML_FAULT.MATH_OVERRIDE_NOT_EQUIVALENT); // simulation 'Simulation0' in simContext 'compartmental'
+		faults.put("biomodel_83446023.vcml", SEDML_FAULT.MATH_OVERRIDE_NAMES_DIFFERENT); // can't find math override for Kf_dimerization
 		faults.put("biomodel_83462243.vcml", SEDML_FAULT.SIMCONTEXT_NOT_FOUND_BY_NAME); // round-tripped simulationContext not found with name 'spatial-hybrid'
 		faults.put("biomodel_83651737.vcml", SEDML_FAULT.SIMCONTEXT_NOT_FOUND_BY_NAME);
 		faults.put("biomodel_84982474.vcml", SEDML_FAULT.DIFF_NUMBER_OF_BIOMODELS); // not supported non-spatial histogram
@@ -176,7 +176,7 @@ public class SEDMLExporterSBMLTest extends SEDMLExporterCommon {
 				!slowTestSet().contains(t);
 		Stream<TestCase> sbml_test_cases = Arrays.stream(VcmlTestSuiteFiles.getVcmlTestCases()).filter(skipFilter_SBML).map(fName -> new TestCase(fName, ModelFormat.SBML));
 		return sbml_test_cases.collect(Collectors.toList());
-		//return Arrays.asList(new TestCase("biomodel_101981216.vcml", ModelFormat.VCML));
+		//return Arrays.asList(new TestCase("biomodel_83446023.vcml", ModelFormat.SBML));
 	}
 
 	@Test
