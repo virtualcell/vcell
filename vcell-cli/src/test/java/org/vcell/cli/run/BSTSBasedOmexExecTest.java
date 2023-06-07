@@ -116,6 +116,14 @@ public class BSTSBasedOmexExecTest {
 		blacklistSet.add("synths/sedml/SimulatorSupportsRepeatedTasksWithMultipleSubTasks/1.execution-should-succeed.omex");
 		blacklistSet.add("synths/sedml/SimulatorSupportsUniformTimeCoursesWithNonZeroInitialTimes/1.execution-should-succeed.omex");
 		blacklistSet.add("sbml-core/Vilar-PNAS-2002-minimal-circardian-clock.omex");
+
+		// We don't support the following tests because they require a model change for SBML Level
+		blacklistSet.add("synths/sedml/SimulatorSupportsRepeatedTasksWithChanges/2.execution-should-succeed.omex");
+		blacklistSet.add("synths/sedml/SimulatorSupportsComputeModelChanges/1.execute-should-fail.omex");
+		blacklistSet.add("synths/sedml/SimulatorSupportsComputeModelChanges/2.execution-should-succeed.omex");
+		blacklistSet.add("synths/sedml/SimulatorSupportsModelAttributeChanges/2.execution-should-succeed.omex");
+		blacklistSet.add("synths/sedml/SimulatorSupportsRepeatedTasksWithFunctionalRangeVariables/1.execute-should-fail.omex");
+		blacklistSet.add("synths/sedml/SimulatorSupportsRepeatedTasksWithFunctionalRangeVariables/2.execution-should-succeed.omex");
 		return blacklistSet;
 	}
 
