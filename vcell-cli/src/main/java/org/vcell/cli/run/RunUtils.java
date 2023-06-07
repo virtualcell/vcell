@@ -1,11 +1,8 @@
 package org.vcell.cli.run;
 
-import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.data.SimResultsViewer;
 import cbit.vcell.export.server.*;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.math.MathDescription;
-import cbit.vcell.math.SourceSymbolMapping;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.parser.*;
 import cbit.vcell.simdata.*;
@@ -21,8 +18,7 @@ import org.jlibsedml.Simulation;
 import org.jlibsedml.execution.IXPathToVariableIDResolver;
 import org.jlibsedml.modelsupport.SBMLSupport;
 import org.vcell.cli.CLIUtils;
-import org.vcell.sbml.vcell.SBMLSymbolMapping;
-import org.vcell.sbml.vcell.SymbolContext;
+import org.vcell.sbml.vcell.SBMLNonspatialSimResults;
 import org.vcell.stochtest.TimeSeriesMultitrialData;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.GenericExtensionFilter;

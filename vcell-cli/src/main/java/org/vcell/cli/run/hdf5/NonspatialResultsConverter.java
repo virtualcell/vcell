@@ -3,7 +3,6 @@ package org.vcell.cli.run.hdf5;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.TempSimulation;
-import cbit.vcell.solver.ode.ODESolverResultSet;
 import ncsa.hdf.hdf5lib.exceptions.HDF5Exception;
 
 import org.jlibsedml.SedML;
@@ -19,7 +18,7 @@ import org.jlibsedml.UniformTimeCourse;
 import org.jlibsedml.DataSet;
 import org.jlibsedml.execution.IXPathToVariableIDResolver;
 import org.jlibsedml.modelsupport.SBMLSupport;
-import org.vcell.cli.run.SBMLNonspatialSimResults;
+import org.vcell.sbml.vcell.SBMLNonspatialSimResults;
 import org.vcell.cli.run.TaskJob;
 import org.vcell.util.DataAccessException;
 import org.apache.logging.log4j.LogManager;

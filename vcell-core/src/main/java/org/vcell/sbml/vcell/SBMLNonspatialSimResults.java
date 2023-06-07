@@ -1,19 +1,13 @@
-package org.vcell.cli.run;
+package org.vcell.sbml.vcell;
 
 import cbit.vcell.mapping.MathSymbolMapping;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.math.Constant;
-import cbit.vcell.math.Function;
-import cbit.vcell.math.MathDescription;
-import cbit.vcell.math.SourceSymbolMapping;
 import cbit.vcell.model.Structure;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.solver.ode.ODESolverResultSet;
-import org.jlibsedml.Variable;
 import org.sbml.jsbml.SBase;
-import org.vcell.sbml.vcell.SBMLSymbolMapping;
-import org.vcell.sbml.vcell.SymbolContext;
 
 import java.util.Arrays;
 

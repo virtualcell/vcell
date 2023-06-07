@@ -1,12 +1,10 @@
 package org.vcell.cli.run.hdf5;
 
-import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.TempSimulation;
-import cbit.vcell.solver.ode.ODESolverResultSet;
 
 import org.jlibsedml.SedML;
 import org.jlibsedml.AbstractTask;
-import org.vcell.cli.run.SBMLNonspatialSimResults;
+import org.vcell.sbml.vcell.SBMLNonspatialSimResults;
 import org.vcell.cli.run.TaskJob;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
