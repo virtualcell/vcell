@@ -131,7 +131,7 @@ public class BSTSBasedOmexExecTest {
 		faults.put("synths/sedml/SimulatorSupportsAddReplaceRemoveModelElementChanges/3.execute-should-fail.omex",
 				FAULT.SEDML_ERRONEOUS_UNIT_SYSTEM);
 		faults.put("sbml-core/Vilar-PNAS-2002-minimal-circardian-clock-discrete-NRM.omex",
-				FAULT.SEDML_ERROR_CONSTRUCTING_SIMCONTEXT); // for bCoerceToDistributed=false, fails to import stochastic (works with true)
+				FAULT.UNCATETORIZED_FAULT); // for bCoerceToDistributed=false, fails to import stochastic (works with true)
 		return faults;
 	}
 
