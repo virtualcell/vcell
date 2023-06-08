@@ -29,45 +29,57 @@ public class SBMLNonspatialSimResults {
         int column = this.resultSet.findColumn(sbmlId) ;
         double[] data = null;
 
-        if (column < 0){
+        if (column < 0) {
             SBase sBase = this.sbmlMapping.getMappedSBase(sbmlId);
-            if (sBase == null){
-                throw new RuntimeException();
+            if (sBase == null) {
+                throw new RuntimeException("failed to find VCell symbol for sbml id: "+sbmlId);
             }
             SymbolTableEntry ste = this.sbmlMapping.getSte(sBase, SymbolContext.RUNTIME);
-            if (ste==null){
+            if (ste == null) {
                 ste = this.sbmlMapping.getSte(this.sbmlMapping.getMappedSBase(sbmlId), SymbolContext.INITIAL);
             }
 
-            if (ste instanceof Structure.StructureSize){
-                for (SymbolTableEntry bioSte : this.mathMapping.getMappedBiologicalSymbols()){
+            if (ste instanceof Structure.StructureSize) {
+                StructureMapping.StructureMappingParameter sizeParam = null;
+                for (SymbolTableEntry bioSte : this.mathMapping.getMappedBiologicalSymbols()) {
                     if (!(bioSte instanceof StructureMapping.StructureMappingParameter)) continue;
                     StructureMapping.StructureMappingParameter param = (StructureMapping.StructureMappingParameter) bioSte;
                     if (param.getRole() == StructureMapping.ROLE_Size &&
-                            param.getStructure().getStructureSize() == ste){
-                        ste = param;
+                            param.getStructure().getStructureSize() == ste) {
+                        sizeParam = param;
+                        break;
                     }
-
+                }
+                if (sizeParam != null){
+                    ste = sizeParam;
+                }else {
+                    throw new RuntimeException("failed to find VCell structure size parameter for sbml compartment size: " + sbmlId);
                 }
             }
 
             cbit.vcell.math.Variable mathVar = this.mathMapping.getVariable(ste);
-            if (mathVar == null) throw new RuntimeException("Math mapping couldn't find mathVar with ste: " + ste.getName());
-            
+            if (mathVar == null) {
+                throw new RuntimeException("Math mapping couldn't find mathVar with ste: " + ste.getName());
+            }
+
             int varIndex = this.resultSet.findColumn(mathVar.getName());
-            if (varIndex<0) {
-                if (mathVar instanceof Constant){
+            if (varIndex < 0) {
+                if (mathVar instanceof Constant) {
                     double value = mathVar.getExpression().evaluateConstant();
                     data = new double[this.resultSet.getRowCount()];
                     Arrays.fill(data, value);
-                } else {
-                    throw new RuntimeException("couldn't find var '" + sbmlId + "' in vcell sim results");
                 }
+            } else {
+                data = this.resultSet.extractColumn(varIndex);
             }
+
+            if (data == null) {
+                throw new RuntimeException("couldn't find var '" + sbmlId + "' in vcell sim results");
+            }
+        } else { // found column
+            data = this.resultSet.extractColumn(column);
         }
 
-        if (data == null)
-            data = this.resultSet.extractColumn(column);
         if (outputStartTime == 0)
             return data;
 

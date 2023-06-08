@@ -39,6 +39,12 @@ public class ModelCommand implements Callable<Integer> {
     @Option(names = { "-v", "--validate"}, defaultValue = "false", description = "perform round-trip validation for math equivalence")
     private boolean roundTripValidation = false;
 
+    @Option(names = { "--coerceToDistributed" }, defaultValue = "true", description = "(VCML only) import SBML lumped reactions as VCell distributed reactions if possible")
+    private boolean bCoerceToDistributed = true;
+
+    @Option(names = { "--transformUnits" }, defaultValue = "true", description = "(VCML only) transform to default VCell unit system")
+    private boolean bTransformUnits = true;
+
     @Option(names = {"-f", "--format"}, defaultValue = "SBML", description = "output format (SBML or VCML)")
     private ModelFormat format = ModelFormat.SBML;
 
@@ -58,7 +64,7 @@ public class ModelCommand implements Callable<Integer> {
                 MemoryLogger logger = new MemoryLogger();
                 boolean bValidateSBML = true;
                 SBMLImporter importer = new SBMLImporter(sbmlInputFile.getAbsolutePath(), logger, bValidateSBML);
-                BioModel bioModel = importer.getBioModel();
+                BioModel bioModel = importer.getBioModel(bCoerceToDistributed, bTransformUnits);
                 Files.write(outputFile.toPath(), XmlHelper.bioModelToXML(bioModel, false).getBytes(StandardCharsets.UTF_8));
             } else {
                 BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(inputFile));
