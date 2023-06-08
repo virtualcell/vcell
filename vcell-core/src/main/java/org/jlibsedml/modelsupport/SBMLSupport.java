@@ -117,6 +117,9 @@ public class SBMLSupport implements IXPathToVariableIDResolver {
      *         this method will also return <code>null</code>.
      */
     public String getIdFromXPathIdentifer(String Xpath) {
+        if (Xpath.equals("/sbml:sbml[1]/@level")){
+            throw new RuntimeException("Xpath for SBML Level ("+Xpath+") not supported for vcell SEDML import");
+        }
         Matcher m = XPATH_ID_RESOLVER.matcher(Xpath);
         if (m.find()) {
             return m.group(1);

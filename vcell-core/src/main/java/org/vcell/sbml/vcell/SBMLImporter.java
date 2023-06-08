@@ -3204,9 +3204,11 @@ public class SBMLImporter {
 						throw new SBMLImportException("Flux reaction on " + reactionStructure.getClass().getSimpleName() + ", not a membrane.");
 					}
 					vcReaction = new FluxReaction(vcModel, (Membrane) reactionStructure, null, sbmlReaction.getId(), bReversible);
+					sbmlSymbolMapping.putReactionMapping(sbmlReaction, vcReaction);
 					vcReaction.setModel(vcModel);
 				} else {
 					vcReaction = new SimpleReaction(vcModel, reactionStructure, sbmlReaction.getId(), bReversible);
+					sbmlSymbolMapping.putReactionMapping(sbmlReaction, vcReaction);
 				}
 
 				if(rxnSbmlName != null && !rxnSbmlName.isEmpty()) {
@@ -3300,6 +3302,8 @@ public class SBMLImporter {
 					if (logger.isDebugEnabled()) {
 						logger.debug("Setting " + kp.getName() + ":  " + vcRateExpression.infix());
 					}
+
+					sbmlSymbolMapping.putRuntime(sbmlReaction, kp);
 					kinetics.setParameterValue(kp, vcRateExpression);
 
 					// If there are any global parameters used in the kinetics, and if they have species,

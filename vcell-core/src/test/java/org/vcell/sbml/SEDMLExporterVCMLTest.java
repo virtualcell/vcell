@@ -74,7 +74,8 @@ public class SEDMLExporterVCMLTest extends SEDMLExporterCommon {
 
 	@Test
 	public void test_sedml_roundtrip() throws Exception {
-		sedml_roundtrip_common();
+		boolean bCoerceToDistributed = true; // don't care for VCML
+		sedml_roundtrip_common(bCoerceToDistributed);
 	}
 
 }

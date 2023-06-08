@@ -4,6 +4,7 @@ import cbit.util.xml.VCLogger;
 import cbit.util.xml.VCLoggerException;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.field.FieldDataIdentifierSpec;
+import cbit.vcell.mapping.MathSymbolMapping;
 import cbit.vcell.math.FunctionColumnDescription;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.parser.Expression;
@@ -20,7 +21,6 @@ import cbit.vcell.solver.stoch.GibsonSolver;
 import cbit.vcell.solver.stoch.HybridSolver;
 import cbit.vcell.solvers.AbstractCompiledSolver;
 import cbit.vcell.xml.ExternalDocInfo;
-import cbit.vcell.xml.XmlHelper;
 
 import org.jlibsedml.AbstractTask;
 import org.jlibsedml.DataGenerator;
@@ -41,6 +41,9 @@ import org.jmathml.ASTNode;
 import org.vcell.cli.CLIRecordable;
 import org.vcell.sbml.vcell.SBMLImportException;
 import org.vcell.sbml.vcell.SBMLImporter;
+import org.vcell.sbml.vcell.SBMLNonspatialSimResults;
+import org.vcell.sbml.vcell.SBMLSymbolMapping;
+import org.vcell.sedml.SEDMLImporter;
 import org.vcell.util.ISize;
 import org.vcell.util.document.VCDocument;
 import org.apache.commons.lang.NotImplementedException;
@@ -58,7 +61,8 @@ public class SolverHandler {
 	public int countBioModels = 0;        // number of biomodels in this sedml file
 	public int countSuccessfulSimulationRuns = 0;    // number of simulations that we ran successfully for this sedml file
 
-	Map<TaskJob, ODESolverResultSet> nonSpatialResults = new LinkedHashMap<TaskJob, ODESolverResultSet>();
+	private SEDMLImporter sedmlImporter;
+	Map<TaskJob, SBMLNonspatialSimResults> nonSpatialResults = new LinkedHashMap<>();
     Map<TaskJob, File> spatialResults = new LinkedHashMap<TaskJob, File>();
 
     Map<TempSimulation, AbstractTask> tempSimulationToTaskMap = new LinkedHashMap<> ();    // key = vcell simulation, value = sedml topmost task (the imported task id)
@@ -308,7 +312,8 @@ public class SolverHandler {
 
     public void simulateAllTasks(ExternalDocInfo externalDocInfo, SedML sedml, CLIRecordable cliLogger,
                                  File outputDirForSedml, String outDir, String outputBaseDir, String sedmlLocation,
-                                 boolean keepTempFiles, boolean exactMatchOnly, boolean bSmallMeshOverride) throws Exception {
+                                 boolean keepTempFiles, boolean exactMatchOnly, boolean bSmallMeshOverride,
+								 boolean bCoerceToDistributed) throws Exception {
         // create the VCDocument(s) (bioModel(s) + application(s) + simulation(s)), do sanity checks
         cbit.util.xml.VCLogger sedmlImportLogger = new LocalLogger();
         String inputFile = externalDocInfo.getFile().getAbsolutePath();
@@ -318,8 +323,9 @@ public class SolverHandler {
         String docName = null;
         List<TempSimulation> tempSims = null;
         //String outDirRoot = outputDirForSedml.toString().substring(0, outputDirForSedml.toString().lastIndexOf(System.getProperty("file.separator")));
+		this.sedmlImporter = new SEDMLImporter(sedmlImportLogger, externalDocInfo, sedml, exactMatchOnly);
         try {
-            bioModelList = XmlHelper.importSEDML(sedmlImportLogger, externalDocInfo, sedml, exactMatchOnly);
+			bioModelList = this.sedmlImporter.getBioModels(bCoerceToDistributed);
         } catch (Exception e) {
             logger.error("Unable to Parse SED-ML into Bio-Model, failed with err: " + e.getMessage(), e);
             throw e;
@@ -392,6 +398,7 @@ public class SolverHandler {
 				int solverStatus = SolverStatus.SOLVER_READY;
 
 				Simulation sim = tempSimulationJob.getSimulation();
+				simTask = new SimulationTask(tempSimulationJob, 0);
 				try {
 					SimulationOwner so = sim.getSimulationOwner();
 					sim = new TempSimulation(sim, false);
@@ -403,7 +410,7 @@ public class SolverHandler {
 					if(kisao == null) {
 						throw new RuntimeException("KISAO is null.");
 					}
-					simTask = new SimulationTask(tempSimulationJob, 0);
+
 					Solver solver = SolverFactory.createSolver(outputDirForSedml, simTask, false);
 					logTaskMessage += "done. Starting simulation... ";
 
@@ -549,7 +556,12 @@ public class SolverHandler {
 						spatialResults.put(new TaskJob(task.getId(), tempSimulationJob.getJobIndex()), null);
 					}
 				} else {
-                    nonSpatialResults.put(new TaskJob(task.getId(), tempSimulationJob.getJobIndex()), odeSolverResultSet);
+					MathSymbolMapping mathMapping = (MathSymbolMapping) simTask.getSimulation().getMathDescription().getSourceSymbolMapping();
+					SBMLSymbolMapping sbmlMapping = this.sedmlImporter.getSBMLSymbolMapping(bioModel);
+
+					TaskJob taskJob = new TaskJob(task.getId(), tempSimulationJob.getJobIndex());
+					SBMLNonspatialSimResults nonspatialSimResults = new SBMLNonspatialSimResults(odeSolverResultSet, sbmlMapping, mathMapping);
+					this.nonSpatialResults.put(taskJob, nonspatialSimResults);
                 }
 
                 if(keepTempFiles == false) {
