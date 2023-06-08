@@ -185,7 +185,8 @@ public class SEDMLExporterSBMLTest extends SEDMLExporterCommon {
 //				&& knownSEDMLFaults().get(testCase.filename) != SEDML_FAULT.MATH_OVERRIDE_NAMES_DIFFERENT){
 //			return;
 //		}
-		sedml_roundtrip_common();
+		boolean bCoerceToDistributed = true;
+		sedml_roundtrip_common(bCoerceToDistributed);
 	}
 
 }

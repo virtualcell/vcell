@@ -324,7 +324,8 @@ public class SolverHandler {
         //String outDirRoot = outputDirForSedml.toString().substring(0, outputDirForSedml.toString().lastIndexOf(System.getProperty("file.separator")));
 		this.sedmlImporter = new SEDMLImporter(sedmlImportLogger, externalDocInfo, sedml, exactMatchOnly);
         try {
-			bioModelList = this.sedmlImporter.getBioModels();
+			boolean bCoerceToDistributed = false;
+			bioModelList = this.sedmlImporter.getBioModels(bCoerceToDistributed);
         } catch (Exception e) {
             logger.error("Unable to Parse SED-ML into Bio-Model, failed with err: " + e.getMessage(), e);
             throw e;

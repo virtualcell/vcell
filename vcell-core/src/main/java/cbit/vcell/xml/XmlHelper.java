@@ -468,7 +468,7 @@ public class XmlHelper {
 		return simString;
 	}
 
-	public static List<BioModel> readOmex(File omexFile, VCLogger vcLogger) throws Exception {
+	public static List<BioModel> readOmex(File omexFile, VCLogger vcLogger, boolean bCoerceToDistributed) throws Exception {
 		List<BioModel> docs = new ArrayList<>();
 		// iterate through one or more SEDML objects
 		ArchiveComponents ac = null;
@@ -490,7 +490,7 @@ public class XmlHelper {
 		for (SedML sedml : sedmls) {
 			// default to import all tasks
 			ExternalDocInfo externalDocInfo = new ExternalDocInfo(omexFile,true);
-			List<BioModel> biomodels = importSEDML(vcLogger, externalDocInfo, sedml, false);
+			List<BioModel> biomodels = importSEDML(vcLogger, externalDocInfo, sedml, false, bCoerceToDistributed);
 			for (BioModel biomodel : biomodels) {
 				docs.add(biomodel);
 			}
@@ -500,10 +500,10 @@ public class XmlHelper {
 
 
 	public static List<BioModel> importSEDML(VCLogger transLogger, ExternalDocInfo externalDocInfo,
-	   SedML sedml, boolean exactMatchOnly) throws Exception {
+	   SedML sedml, boolean exactMatchOnly, boolean bCoerceToDistributed) throws Exception {
 		SEDMLImporter sedmlImporter = new SEDMLImporter(transLogger, externalDocInfo,
 				sedml, exactMatchOnly);
-		return sedmlImporter.getBioModels();
+		return sedmlImporter.getBioModels(bCoerceToDistributed);
 	}
 
 	public static BioModel XMLToBioModel(XMLSource xmlSource) throws XmlParseException {

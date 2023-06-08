@@ -129,7 +129,7 @@ public abstract class SEDMLExporterCommon {
 	abstract Map<String, SEDML_FAULT> knownSEDMLFaults();
 
 
-	void sedml_roundtrip_common() throws Exception {
+	void sedml_roundtrip_common(boolean bCoerceToDistributed) throws Exception {
 		String test_case_name = testCase.modelFormat+"."+testCase.filename;
 		InputStream testFileInputStream = VcmlTestSuiteFiles.getVcmlTestCase(testCase.filename);
 		String vcmlStr = new BufferedReader(new InputStreamReader(testFileInputStream))
@@ -214,7 +214,7 @@ public abstract class SEDMLExporterCommon {
 				System.err.println("skipping re-importing SEDML for this test case, not yet supported for VCML");
 				return;
 			}
-			List<BioModel> bioModels = XmlHelper.readOmex(omexFile, memoryVCLogger);
+			List<BioModel> bioModels = XmlHelper.readOmex(omexFile, memoryVCLogger, bCoerceToDistributed);
 			Assert.assertTrue(memoryVCLogger.highPriority.size() == 0);
 
 			File tempDir = Files.createTempDir();
