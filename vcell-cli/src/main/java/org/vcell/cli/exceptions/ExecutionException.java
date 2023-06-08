@@ -1,4 +1,4 @@
-package org.vcell.cli.run;
+package org.vcell.cli.exceptions;
 
 public class ExecutionException extends Exception {
     public ExecutionException(String message){

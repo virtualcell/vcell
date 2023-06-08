@@ -6,6 +6,7 @@ import cbit.vcell.solver.ode.ODESolverResultSet;
 import ncsa.hdf.hdf5lib.exceptions.HDF5Exception;
 import org.vcell.cli.CLIRecordable;
 import org.vcell.cli.PythonStreamException;
+import org.vcell.cli.exceptions.ExecutionException;
 import org.vcell.cli.vcml.VCMLHandler;
 import org.vcell.util.FileUtils;
 
@@ -18,6 +19,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 
 public class ExecuteImpl {
     
@@ -28,6 +31,7 @@ public class ExecuteImpl {
                                 ) throws IOException {
         FilenameFilter filter = (f, name) -> name.endsWith(".omex") || name.endsWith(".vcml");
         File[] inputFiles = dirOfArchivesToProcess.listFiles(filter);
+        List<String> failedFiles = new LinkedList<>();
         if (inputFiles == null) throw new RuntimeException("Error trying to retrieve files from input directory.");
 
         // Build statuses
@@ -48,29 +52,37 @@ public class ExecuteImpl {
                 throw new RuntimeException("Python call did not process correctly:", e);
             }
         }
-
-        for (File inputFile : inputFiles) {
-            String inputFileName = inputFile.getName();
-            logger.info("Processing " + inputFileName + "(" + inputFile + ")");
-            try {
-                if (inputFileName.endsWith("omex")) {
-                    String bioModelBaseName = inputFileName.substring(0, inputFileName.indexOf(".")); // ".omex"??
-                    Files.createDirectories(Paths.get(outputDir.getAbsolutePath() + File.separator + bioModelBaseName)); // make output subdir
-                    final boolean bEncapsulateOutput = true;
-                    singleExecOmex(inputFile, outputDir, cliLogger,
-                            bKeepTempFiles, bExactMatchOnly, bEncapsulateOutput, bSmallMeshOverride);
+        try {
+            for (File inputFile : inputFiles) {
+                String inputFileName = inputFile.getName();
+                logger.info("Processing " + inputFileName + "(" + inputFile + ")");
+                try {
+                    if (inputFileName.endsWith("vcml"))
+                        singleExecVcml(inputFile, outputDir, cliLogger);
+                    if (inputFileName.endsWith("omex"))
+                        runSingleExecOmex(inputFile, outputDir, cliLogger, bKeepTempFiles, bExactMatchOnly, bSmallMeshOverride);
+                } catch (ExecutionException | RuntimeException e){
+                    logger.error("Error caught executing batch mode", e);
+                    failedFiles.add(inputFileName);
+                } catch (Exception e){
+                    failedFiles.add(inputFileName);
+                    throw e;
                 }
-
-                if (inputFileName.endsWith("vcml")) {
-                    singleExecVcml(inputFile, outputDir, cliLogger);
-                }
-            } catch (ExecutionException e){
-                logger.error("Error caught executing batch mode", e);
-            } catch (Exception e) {
-                logger.fatal("Fatal error caught executing batch mode (ending execution)", e);
-                throw new RuntimeException("Fatal error caught executing batch mode", e);
             }
+        } catch (Exception e) {
+            logger.fatal("Fatal error caught executing batch mode (ending execution)", e);
+            throw new RuntimeException("Fatal error caught executing batch mode", e);
         }
+    }
+
+    private static void runSingleExecOmex(File inputFile, File outputDir, CLIRecordable cliLogger,
+                                          boolean bKeepTempFiles, boolean bExactMatchOnly, boolean bSmallMeshOverride)
+            throws IOException, ExecutionException, PythonStreamException, HDF5Exception, InterruptedException {
+        String bioModelBaseName = inputFile.getName().substring(0, inputFile.getName().indexOf(".")); // ".omex"??
+        Files.createDirectories(Paths.get(outputDir.getAbsolutePath() + File.separator + bioModelBaseName)); // make output subdir
+        final boolean bEncapsulateOutput = true;
+
+        singleExecOmex(inputFile, outputDir, cliLogger, bKeepTempFiles, bExactMatchOnly, bEncapsulateOutput, bSmallMeshOverride);
     }
 
     public static void singleMode(File inputFile, File rootOutputDir, CLIRecordable cliLogger,
