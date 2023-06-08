@@ -200,7 +200,7 @@ public class SedmlJob {
      * @throws PythonStreamException if calls to the python-shell instance are not working correctly
      * @throws IOException if there are system I/O issues
      */
-    public boolean simulateSedml(Hdf5DataContainer masterHdf5File) throws InterruptedException, PythonStreamException, IOException {
+    public boolean simulateSedml(Hdf5DataContainer masterHdf5File, boolean bCoerceToDistributed) throws InterruptedException, PythonStreamException, IOException {
         /*  temp code to test plot name correctness
         String idNamePlotsMap = utils.generateIdNamePlotsMap(sedml, outDirForCurrentSedml);
         utils.execPlotOutputSedDoc(inputFile, idNamePlotsMap, this.resultsDirPath);
@@ -214,7 +214,7 @@ public class SedmlJob {
         SolverHandler solverHandler = new SolverHandler();
         ExternalDocInfo externalDocInfo = new ExternalDocInfo(this.MASTER_OMEX_ARCHIVE, true);
 
-        this.runSimulations(solverHandler, externalDocInfo);
+        this.runSimulations(solverHandler, externalDocInfo, bCoerceToDistributed);
         this.recordRunDetails(solverHandler);
         try {
             this.processOutputs(solverHandler, masterHdf5File);
@@ -224,7 +224,7 @@ public class SedmlJob {
         return this.evaluateResults();
     }
 
-    private void runSimulations(SolverHandler solverHandler, ExternalDocInfo externalDocInfo) throws IOException {
+    private void runSimulations(SolverHandler solverHandler, ExternalDocInfo externalDocInfo, boolean bCoerceToDistributed) throws IOException {
         /*
          * - Run solvers and make reports; all failures/exceptions are being caught
          * - we send both the whole OMEX file and the extracted SEDML file path
@@ -235,7 +235,7 @@ public class SedmlJob {
             logger.info(str);
             this.logDocumentMessage += str;
             solverHandler.simulateAllTasks(externalDocInfo, this.sedml, this.CLI_RECORDER, this.OUTPUT_DIRECTORY_FOR_CURRENT_SEDML, this.RESULTS_DIRECTORY_PATH,
-                    this.ROOT_OUTPUT_DIR.getAbsolutePath(), this.SEDML_LOCATION, this.SHOULD_KEEP_TEMP_FILES, this.ACCEPT_EXACT_MATCH_ONLY, this.SHOULD_OVERRIDE_FOR_SMALL_MESH);
+                    this.ROOT_OUTPUT_DIR.getAbsolutePath(), this.SEDML_LOCATION, this.SHOULD_KEEP_TEMP_FILES, this.ACCEPT_EXACT_MATCH_ONLY, this.SHOULD_OVERRIDE_FOR_SMALL_MESH, bCoerceToDistributed);
         } catch (Exception e) {
             Throwable currentTierOfException = e;
             StringBuilder errorMessage = new StringBuilder();

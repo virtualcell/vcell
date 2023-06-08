@@ -197,7 +197,9 @@ public class BSTSBasedOmexExecTest {
 			InputStream omexInputStream = BSTSBasedTestSuiteFiles.getBSTSTestCase(this.testCaseFilename);
 			Path omexFile = Files.createTempFile("BSTS_OmexFile_", "omex");
 			FileUtils.copyInputStreamToFile(omexInputStream, omexFile.toFile());
-			ExecuteImpl.singleMode(omexFile.toFile(), outdirPath.toFile(), cliRecorder);
+
+			boolean bCoerceToDistributed = false;
+			ExecuteImpl.singleMode(omexFile.toFile(), outdirPath.toFile(), cliRecorder, bCoerceToDistributed);
 			String errMessage = (errorMessage[0] != null) ? errorMessage[0].replace("\n", " | ") : "";
 			Assert.assertFalse("failure: '" + errMessage + "'", bFailed[0]);
 			if (knownFault != null){
