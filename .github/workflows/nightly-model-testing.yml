@@ -61,7 +61,7 @@ jobs:
           cache: 'maven'
           
       - name: Build VCell Jars
-        run: mvn clean install dependency:copy-dependencies
+        run: mvn clean install dependency:copy-dependencies -DskipTests=True
         
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
