@@ -733,7 +733,7 @@ public class VcmlOmexConverter {
 		}
 	}
 
-	public static void importOmexFiles(File inputDirectory, File outputDirectory, CLIRecorder cliLogger, boolean bForceLogFiles) throws IOException {
+	public static void importOmexFiles(File inputDirectory, File outputDirectory, CLIRecorder cliLogger, boolean bForceLogFiles, boolean bCoerceToDistributed) throws IOException {
 		// TODO: make use of CLIRecorder
 		if (inputDirectory == null || !inputDirectory.isDirectory()) {
 			throw new RuntimeException("expecting inputFilePath to be an existing directory");
@@ -748,11 +748,11 @@ public class VcmlOmexConverter {
 		writeFileEntry(outputDirectory.getAbsolutePath(), "inputDirectory is " + inputDirectory.getAbsolutePath(), jobConfigFile, bForceLogFiles);
 		for (String inputFileName : inputFiles) {
 			File inputFile = Paths.get(inputDirectory.getAbsolutePath()).resolve(inputFileName).toFile();
-			importOneOmexFile(inputFile, outputDirectory, bForceLogFiles);
+			importOneOmexFile(inputFile, outputDirectory, bForceLogFiles, bCoerceToDistributed);
 		}
 	}
 
-	public static void importOneOmexFile(File inputFile, File outputDirectory, boolean bForceLogFiles) throws IOException {
+	public static void importOneOmexFile(File inputFile, File outputDirectory, boolean bForceLogFiles, boolean bCoerceToDistributed) throws IOException {
 		logger.debug("Beginning import of `" + inputFile.getName() +"`");
 		try {
 	        cbit.util.xml.VCLogger logger = new cbit.util.xml.VCLogger() {
@@ -769,7 +769,7 @@ public class VcmlOmexConverter {
 	                return false;
 	            }
 	        };
-	        List<BioModel> biomodels = XmlHelper.readOmex(inputFile, logger);
+	        List<BioModel> biomodels = XmlHelper.readOmex(inputFile, logger, bCoerceToDistributed);
 			int i = 0;
 			for (BioModel bm : biomodels) {
 				String vcmlString = XmlHelper.bioModelToXML(bm);

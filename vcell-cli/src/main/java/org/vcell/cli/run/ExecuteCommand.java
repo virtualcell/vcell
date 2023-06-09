@@ -43,6 +43,9 @@ public class ExecuteCommand implements Callable<Integer> {
     @Option(names = "--small-mesh", defaultValue = "false", description = "force spatial simulations to have a very small mesh to make execution faster")
     private boolean bSmallMeshOverride = false;
 
+    @Option(names = { "--coerceToDistributed" }, defaultValue = "false", description = "import SBML lumped reactions as VCell distributed reactions if possible")
+    private boolean bCoerceToDistributed = false;
+
     @Option(names = {"--encapsulateOutput"}, defaultValue = "true", description =
         "VCell will encapsulate output results in a sub directory when executing with a single input archive; has no effect when providing an input directory")
     private boolean bEncapsulateOutput;
@@ -104,7 +107,8 @@ public class ExecuteCommand implements Callable<Integer> {
             logger.info("Beginning execution");
             if (inputFilePath.isDirectory()) {
                 logger.debug("Batch mode requested");
-                ExecuteImpl.batchMode(inputFilePath, outputFilePath, cliLogger, bKeepTempFiles, bExactMatchOnly, bSmallMeshOverride);
+                ExecuteImpl.batchMode(inputFilePath, outputFilePath, cliLogger, bKeepTempFiles, bExactMatchOnly,
+                        bSmallMeshOverride, bCoerceToDistributed);
             } else {
                 logger.debug("Single mode requested");
                 File archiveToProcess = inputFilePath;
@@ -112,7 +116,8 @@ public class ExecuteCommand implements Callable<Integer> {
                 if (archiveToProcess.getName().endsWith("vcml")) {
                     ExecuteImpl.singleExecVcml(archiveToProcess, outputFilePath, cliLogger);
                 } else { // archiveToProcess.getName().endsWith("omex")
-                    ExecuteImpl.singleMode(archiveToProcess, outputFilePath, cliLogger, bKeepTempFiles, bExactMatchOnly, bEncapsulateOutput, bSmallMeshOverride);
+                    ExecuteImpl.singleMode(archiveToProcess, outputFilePath, cliLogger, bKeepTempFiles, bExactMatchOnly,
+                            bEncapsulateOutput, bSmallMeshOverride, bCoerceToDistributed);
                 }
             }
 

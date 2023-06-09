@@ -12,7 +12,6 @@ import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.Variable;
-import cbit.vcell.model.Model.ReservedSymbol;
 //import cbit.vcell.model.*; Care, don't want namespace conflict with libsedml's Model class
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.ReactionParticipant;
@@ -42,6 +41,7 @@ import org.jlibsedml.modelsupport.SBMLSupport;
 import org.jlibsedml.modelsupport.SUPPORTED_LANGUAGE;
 import org.jmathml.ASTNode;
 import org.sbml.jsbml.SBase;
+import org.vcell.sbml.vcell.SBMLImportException;
 import org.vcell.sbml.vcell.SBMLImporter;
 import org.vcell.sbml.vcell.SBMLSymbolMapping;
 import org.vcell.sbml.vcell.SymbolContext;
@@ -84,7 +84,7 @@ public class SEDMLImporter {
 	 * @throws FileNotFoundException if the sedml archive can not be found
 	 * @throws XMLException if the sedml has invalid xml.
 	 */
-	public  SEDMLImporter(VCLogger transLogger, ExternalDocInfo externalDocInfo, SedML sedml, boolean exactMatchOnly)
+	public SEDMLImporter(VCLogger transLogger, ExternalDocInfo externalDocInfo, SedML sedml, boolean exactMatchOnly)
 			throws XMLException, IOException {
 		this.transLogger = transLogger;
 		this.externalDocInfo = externalDocInfo;
@@ -117,7 +117,7 @@ public class SEDMLImporter {
 	/**
 	 * Get the list of biomodels from the sedml initialized at construction time.
 	 */
-	public List<BioModel> getBioModels() {
+	public List<BioModel> getBioModels(boolean bCoerceToDistributed) {
 		List<BioModel> bioModelList = new LinkedList<>();
 		List<org.jlibsedml.Model> modelList;
 		List<org.jlibsedml.Simulation> simulationList;
@@ -136,14 +136,16 @@ public class SEDMLImporter {
 	        abstractTaskList = this.sedml.getTasks();
 	        dataGeneratorList = this.sedml.getDataGenerators();
 	        outputList = this.sedml.getOutputs();
-	        
+
 			this.printSEDMLSummary(modelList, simulationList, abstractTaskList, dataGeneratorList, outputList);
-	        
-			// NB: We don't know how many BioModels we'll end up with as some model changes may be translatable as simulations with overrides
-			bioModelMap = this.createBioModels(modelList);
+
+			// NB: We don't know how many BioModels we'll end up with,
+			// 		as some model changes may be translatable as simulations with overrides
+			bioModelMap = this.createBioModels(modelList, bCoerceToDistributed);
 			Set<BioModel> uniqueBioModels = new HashSet<>(bioModelMap.values());
-			
-			// Creating one VCell Simulation for each SED-ML actual Task (RepeatedTasks get added as parameter scan overrides)
+
+			// Creating one VCell Simulation for each SED-ML actual Task
+			// 		(RepeatedTasks get added either on top of or separately as parameter scan overrides)
 			for (AbstractTask selectedTask : abstractTaskList) {
 				org.jlibsedml.Simulation sedmlSimulation;	// this will become the vCell simulation
 				org.jlibsedml.Model sedmlModel;				// the "original" model referred to by the task
@@ -162,7 +164,7 @@ public class SEDMLImporter {
 				} else if (selectedTask instanceof RepeatedTask) {
 					continue; // Repeated tasks refer to regular tasks, so first we need to create simulations for all regular tasks 
 				} else {
-					throw new RuntimeException("Unexpected task " + selectedTask);
+					throw new RuntimeException("Unsupported task " + selectedTask);
 				}
 				
 				if(!(sedmlSimulation instanceof UniformTimeCourse)) { // only UTC sims supported
@@ -457,7 +459,7 @@ public class SEDMLImporter {
 		// TODO more work here if we want to generalize
 	}
 
-	private void createOverrides(Simulation newSimulation, List<Change> changes) {
+	private void createOverrides(Simulation newSimulation, List<Change> changes) throws SEDMLImportException {
 		for (Change change : changes) {
 			String targetID = this.sbmlSupport.getIdFromXPathIdentifer(change.getTargetXPath().getTargetAsString());
 			SimulationContext importedSimcontext; SimulationContext convertedSimcontext;
@@ -470,8 +472,8 @@ public class SEDMLImporter {
 				importedSimcontext = (SimulationContext)newSimulation.getSimulationOwner();
 				convertedSimcontext = null;
 			}
-			String vcConstantName = this.resolveConstant(importedSimcontext, convertedSimcontext, targetID);
-			if (vcConstantName == null) {
+			Variable vcVar = this.resolveMathVariable(importedSimcontext, convertedSimcontext, targetID);
+			if (!this.isMathVariableConstantValued(vcVar)) {
 				logger.error("target in change "+change+" could not be resolved to Constant, overrides not applied");
 				continue;
 			}
@@ -496,8 +498,11 @@ public class SEDMLImporter {
 					System.out.println(vars);
 					for (org.jlibsedml.Variable var : vars) {
 						String sbmlID = this.sbmlSupport.getIdFromXPathIdentifer(var.getTarget());
-						String vcmlName = this.resolveConstant(importedSimcontext, convertedSimcontext, sbmlID);
-						exp.substituteInPlace(new Expression(var.getId()), new Expression(vcmlName));
+						vcVar = this.resolveMathVariable(importedSimcontext, convertedSimcontext, sbmlID);
+						if (!isMathVariableConstantValued(vcVar)){
+							throw new SEDMLImportException("could not evaluate var '"+vcVar.getName()+" as a constant");
+						}
+						exp.substituteInPlace(new Expression(var.getId()), new Expression(vcVar.getName()));
 					}
 				} else {
 					logger.error("unsupported change "+change+" encountered, overrides not applied");
@@ -505,7 +510,7 @@ public class SEDMLImporter {
 				}
 				exp = this.scaleIfChanged(exp, targetID, importedSimcontext, convertedSimcontext);
 				exp = exp.simplifyJSCL();
-				Constant constant = new Constant(vcConstantName,exp);
+				Constant constant = new Constant(vcVar.getName(),exp);
 				newSimulation.getMathOverrides().putConstant(constant);
 			} catch (ExpressionException e) {
 				String message = "expression in change %s could not be resolved to Constant, overrides not applied";
@@ -514,7 +519,7 @@ public class SEDMLImporter {
 		}
 	}
 
-	private Expression scaleIfChanged (Expression exp, String targetID, SimulationContext importedSC, SimulationContext convertedSC) throws ExpressionException {
+	private Expression scaleIfChanged (Expression exp, String targetID, SimulationContext importedSC, SimulationContext convertedSC) throws ExpressionException, SEDMLImportException {
 		SBMLImporter sbmlImporter = this.importMap.get(importedSC.getBioModel());
 		SBMLSymbolMapping sbmlMap = sbmlImporter.getSymbolMapping();
 		SBase targetSBase = sbmlMap.getMappedSBase(targetID);
@@ -525,8 +530,11 @@ public class SEDMLImporter {
 			String[] symbols = factor.getSymbols();
 			if (symbols != null) {
 				for (String sbString : symbols) {
-					String vcString = this.resolveConstant(importedSC, convertedSC, sbString);
-					factor.substituteInPlace(new Expression(sbString), new Expression(vcString));
+					Variable vcVar = this.resolveMathVariable(importedSC, convertedSC, sbString);
+					if (!isMathVariableConstantValued(vcVar)){
+						throw new SEDMLImportException("cannot solve for constant valued scale factor, '"+vcVar+"' is not constant");
+					}
+					factor.substituteInPlace(new Expression(sbString), new Expression(vcVar.getName()));
 				}
 			}
 			if (!factor.isOne()) {
@@ -536,28 +544,33 @@ public class SEDMLImporter {
 
 		return exp;
 	}
-	
-	private String resolveConstant(SimulationContext importedSimContext, SimulationContext convertedSimContext,
-								   String SBMLTargetID) {
+
+	private boolean isMathVariableConstantValued(Variable var) {
+		boolean varIsConstant = (var instanceof Constant);
+		if (var instanceof cbit.vcell.math.Function) {
+			try {
+				var.getExpression().evaluateConstantWithSubstitution();
+				varIsConstant = true;
+			} catch (Exception e) {
+				logger.warn("Substituted constant evaluation failed", e);
+			}
+		}
+		return varIsConstant;
+	}
+
+	private Variable resolveMathVariable(SimulationContext importedSimContext, SimulationContext convertedSimContext,
+										 String SBMLTargetID) throws SEDMLImportException  {
 		// finds name of math-side Constant corresponding to SBML entity, if there is one
 		// returns null if there isn't
 
-		// check ReservedSymbols first
-		// TODO this is crude implementation
-		ReservedSymbol rs = importedSimContext.getModel().getReservedSymbolByName(SBMLTargetID);
-		if (rs != null) return SBMLTargetID;
-		
-		// now check mapping from importer
-		MathSymbolMapping msm = (MathSymbolMapping)importedSimContext.getMathDescription().getSourceSymbolMapping();
-		SBMLImporter sbmlImporter = this.importMap.get(importedSimContext.getBioModel());
-		SBMLSymbolMapping sbmlMap = sbmlImporter.getSymbolMapping();
+		MathSymbolMapping mathSymbolMapping = (MathSymbolMapping)importedSimContext.getMathDescription().getSourceSymbolMapping();
+		SBMLSymbolMapping sbmlMap = this.getSBMLSymbolMapping(importedSimContext.getBioModel());
 		SBase targetSBase = sbmlMap.getMappedSBase(SBMLTargetID);
 		if (targetSBase == null){
-			logger.error("couldn't find SBase with sid="+SBMLTargetID+" in SBMLSymbolMapping");
-			return null;
+			throw new SBMLImportException("couldn't find SBase with sid="+SBMLTargetID+" in SBMLSymbolMapping");
 		}
-		SymbolTableEntry ste =sbmlMap.getSte(targetSBase, SymbolContext.INITIAL);
-		Variable var = msm.getVariable(ste);
+		SymbolTableEntry biologicalSymbolTableEntry = sbmlMap.getSte(targetSBase, SymbolContext.INITIAL);
+		Variable var = mathSymbolMapping.getVariable(biologicalSymbolTableEntry);
 		boolean varIsConstant = (var instanceof Constant);
 		if (var instanceof cbit.vcell.math.Function){
 			try {
@@ -567,35 +580,29 @@ public class SEDMLImporter {
 				logger.warn("Substituted constant evaluation failed", e);
 			}
 		}
-		if (varIsConstant) {
-			String constantName = var.getName();
-			// if simcontext was converted to stochastic then species init constants use different names
-			if (convertedSimContext != null && ste instanceof SpeciesContextSpecParameter) {
-				SpeciesContextSpecParameter speciesContextSpecParameter = (SpeciesContextSpecParameter)ste;
-				if (speciesContextSpecParameter.getRole() == SpeciesContextSpec.ROLE_InitialConcentration
-						|| speciesContextSpecParameter.getRole() == SpeciesContextSpec.ROLE_InitialCount) {
-					String spcName = speciesContextSpecParameter.getSpeciesContext().getName();
-					SpeciesContextSpec scs = null;
-					for (int i = 0; i < convertedSimContext.getReactionContext().getSpeciesContextSpecs().length; i++) {
-						scs = convertedSimContext.getReactionContext().getSpeciesContextSpecs()[i];
-						if (scs.getSpeciesContext().getName().equals(spcName)) {
-							break;
-						}
+		// if simcontext was converted to stochastic then species init constants use different names
+		if (convertedSimContext != null && biologicalSymbolTableEntry instanceof SpeciesContextSpecParameter) {
+			SpeciesContextSpecParameter speciesContextSpecParameter = (SpeciesContextSpecParameter)biologicalSymbolTableEntry;
+			if (speciesContextSpecParameter.getRole() == SpeciesContextSpec.ROLE_InitialConcentration
+					|| speciesContextSpecParameter.getRole() == SpeciesContextSpec.ROLE_InitialCount) {
+				String spcName = speciesContextSpecParameter.getSpeciesContext().getName();
+				SpeciesContextSpec scs = null;
+				for (int i = 0; i < convertedSimContext.getReactionContext().getSpeciesContextSpecs().length; i++) {
+					scs = convertedSimContext.getReactionContext().getSpeciesContextSpecs()[i];
+					if (scs.getSpeciesContext().getName().equals(spcName)) {
+						break;
 					}
-					if (scs == null) throw new RuntimeException("SpeciesContextSpec is unexpectedly null");
-					SpeciesContextSpecParameter convertedSCSP = scs.getInitialConditionParameter();
-					var = (convertedSimContext.getMathDescription().getSourceSymbolMapping()).getVariable(convertedSCSP);
-					return var.getName();
 				}
+				if (scs == null) throw new RuntimeException("SpeciesContextSpec is unexpectedly null");
+				SpeciesContextSpecParameter convertedSCSP = scs.getInitialConditionParameter();
+				var = (convertedSimContext.getMathDescription().getSourceSymbolMapping()).getVariable(convertedSCSP);
+				return var;
 			}
-			return constantName; 
-		} else {
-			logger.error("couldn't find Constant target with sid="+SBMLTargetID+" in symbol mapping, var = "+var);
-			return null;
 		}
+		return var;
 	}
 
-	private void addRepeatedTasks(List<AbstractTask> listOfTasks, Map<String, Simulation> vcSimulations) throws ExpressionException, PropertyVetoException {
+	private void addRepeatedTasks(List<AbstractTask> listOfTasks, Map<String, Simulation> vcSimulations) throws ExpressionException, PropertyVetoException, SEDMLImportException {
 		for (AbstractTask abstractedRepeatedTask : listOfTasks) {
 			if (!(abstractedRepeatedTask instanceof RepeatedTask)) continue;
 
@@ -607,9 +614,9 @@ public class SEDMLImporter {
 
 			Task baseTask = this.getBaseTask(repeatedTask);
 			Simulation simulation = new Simulation(vcSimulations.get(baseTask.getId())); // make a copy of the original simulation
-			SimulationContext importedSimcontext,convertedSimcontext;
+			SimulationContext importedSimcontext, convertedSimcontext;
 			SimulationContext currentSC = (SimulationContext)simulation.getSimulationOwner();
-			if (((SimulationContext)simulation.getSimulationOwner()).getApplicationType() == Application.NETWORK_STOCHASTIC) {
+			if (currentSC.getApplicationType() == Application.NETWORK_STOCHASTIC) {
 				importedSimcontext = currentSC.getBioModel().getSimulationContext(0);
 				convertedSimcontext = (SimulationContext)simulation.getSimulationOwner();
 			} else {
@@ -628,10 +635,14 @@ public class SEDMLImporter {
 					ConstantArraySpec scanSpec;
 					String targetID = this.sbmlSupport
 							.getIdFromXPathIdentifer(change.getTargetXPath().getTargetAsString());
-					String constant = this.resolveConstant(importedSimcontext, convertedSimcontext, targetID);
+					Variable constantValuedVar = this.resolveMathVariable(importedSimcontext, convertedSimcontext, targetID);
+					if (!isMathVariableConstantValued(constantValuedVar)){
+						throw new SEDMLImportException("expecting vcell var '"+constantValuedVar.getName()+"' " +
+								"mapped to SBML target '"+targetID+"' to be constant valued");
+					}
 					if (range instanceof UniformRange) {
 						UniformRange ur = (UniformRange)range;
-						scanSpec = ConstantArraySpec.createIntervalSpec(constant,
+						scanSpec = ConstantArraySpec.createIntervalSpec(constantValuedVar.getName(),
 								""+Math.min(ur.getStart(), ur.getEnd()), ""+Math.max(ur.getStart(), ur.getEnd()),
 								ur.getNumberOfPoints(), ur.getType().equals(UniformType.LOG));
 					} else if (range instanceof VectorRange) {
@@ -640,7 +651,7 @@ public class SEDMLImporter {
 						for (int i = 0; i < values.length; i++) {
 							values[i] = Double.toString(vr.getElementAt(i));
 						}
-						scanSpec = ConstantArraySpec.createListSpec(constant, values);
+						scanSpec = ConstantArraySpec.createListSpec(constantValuedVar.getName(), values);
 					} else if (range instanceof FunctionalRange){
 						FunctionalRange fr = (FunctionalRange)range;
 						Range index = repeatedTask.getRange(fr.getRange());
@@ -667,9 +678,13 @@ public class SEDMLImporter {
 							System.out.println(vars);
 							for (String varId : vars.keySet()) {
 								String sbmlID = this.sbmlSupport.getIdFromXPathIdentifer(((org.jlibsedml.Variable)vars.get(varId)).getTarget());
-								String vcmlName = this.resolveConstant(importedSimcontext, convertedSimcontext, sbmlID);
-								frExpMin.substituteInPlace(new Expression(varId), new Expression(vcmlName));
-								frExpMax.substituteInPlace(new Expression(varId), new Expression(vcmlName));
+								Variable vcVar = this.resolveMathVariable(importedSimcontext, convertedSimcontext, sbmlID);
+								if (!isMathVariableConstantValued(vcVar)){
+									throw new SEDMLImportException("expecting vcell var '"+constantValuedVar.getName()+"' " +
+											"mapped to SBML target '"+sbmlID+"' to be constant valued");
+								}
+								frExpMin.substituteInPlace(new Expression(varId), new Expression(vcVar.getName()));
+								frExpMax.substituteInPlace(new Expression(varId), new Expression(vcVar.getName()));
 							}
 							frExpMin = this.scaleIfChanged(frExpMin, targetID, importedSimcontext, convertedSimcontext);
 							frExpMax = this.scaleIfChanged(frExpMax, targetID, importedSimcontext, convertedSimcontext);
@@ -677,7 +692,7 @@ public class SEDMLImporter {
 							frExpMax = frExpMax.simplifyJSCL();
 							String minValueExpStr = frExpMin.infix();
 							String maxValueExpStr = frExpMax.infix();
-							scanSpec = ConstantArraySpec.createIntervalSpec(constant, minValueExpStr, maxValueExpStr, ur.getNumberOfPoints(), ur.getType().equals(UniformType.LOG));
+							scanSpec = ConstantArraySpec.createIntervalSpec(constantValuedVar.getName(), minValueExpStr, maxValueExpStr, ur.getNumberOfPoints(), ur.getType().equals(UniformType.LOG));
 						} else if (index instanceof VectorRange) {
 							VectorRange vr = (VectorRange)index;
 							ASTNode frMath = fr.getMath();
@@ -693,8 +708,12 @@ public class SEDMLImporter {
 							System.out.println(vars);
 							for (String varId : vars.keySet()) {
 								String sbmlID = this.sbmlSupport.getIdFromXPathIdentifer(((org.jlibsedml.Variable)vars.get(varId)).getTarget());
-								String vcmlName = this.resolveConstant(importedSimcontext, convertedSimcontext, sbmlID);
-								expFact.substituteInPlace(new Expression(varId), new Expression(vcmlName));
+								Variable vcVar = this.resolveMathVariable(importedSimcontext, convertedSimcontext, sbmlID);
+								if (!isMathVariableConstantValued(vcVar)){
+									throw new SEDMLImportException("expecting vcell var '"+constantValuedVar.getName()+"' " +
+											"mapped to SBML target '"+sbmlID+"' to be constant valued");
+								}
+								expFact.substituteInPlace(new Expression(varId), new Expression(vcVar.getName()));
 							}
 							expFact = expFact.simplifyJSCL();
 							String[] values = new String[vr.getNumElements()];
@@ -706,7 +725,7 @@ public class SEDMLImporter {
 								expFinal = expFinal.simplifyJSCL();
 								values[i] = expFinal.infix();
 							}
-							scanSpec = ConstantArraySpec.createListSpec(constant, values);
+							scanSpec = ConstantArraySpec.createListSpec(constantValuedVar.getName(), values);
 						} else {
 							// we only support FunctionalRange with intervals and lists
 							logger.error("FunctionalRange does not reference UniformRange or VectorRange, task " + SEDMLUtil.getName(abstractedRepeatedTask)
@@ -765,7 +784,7 @@ public class SEDMLImporter {
 	}
 
 	// We need to process biomodels that may depend on other biomodels, either with changes or with references!
-	private Map<String, BioModel> createBioModels(List<Model> models) {
+	private Map<String, BioModel> createBioModels(List<Model> models, boolean bCoerceToDistributed) throws SEDMLImportException {
 		final String MODEL_RESOLUTION_ERROR = "Unresolvable Model(s) encountered. Either there is incompatible " +
 				"/ unsupported SED-ML features, or there are unresolvable references.";
 
@@ -773,7 +792,6 @@ public class SEDMLImporter {
 		Map<String, BioModel> idToBiomodelMap = new HashMap<>();
 		List<Model> basicModels = new LinkedList<>(); // No overrides, no references. These come first!
 		LinkedList<Queue<Model>> advancedModelsList = new LinkedList<>(); // works as both queue and list!
-		StringBuilder errorsReported = new StringBuilder();
 
 		// Initialize the advanced models list (effectively a "2D-Array")
 		for (ADVANCED_MODEL_TYPES amt : ADVANCED_MODEL_TYPES.values()){
@@ -801,14 +819,14 @@ public class SEDMLImporter {
 		// Process basic models
 		for (Model model : basicModels){
 			String referenceId = this.getReferenceId(model);
-			idToBiomodelMap.put(model.getId(), this.getModelReference(referenceId, model, idToBiomodelMap));
+			idToBiomodelMap.put(model.getId(), this.getModelReference(referenceId, model, idToBiomodelMap, bCoerceToDistributed));
 		}
 
 		// Process advanced models
 		while(!advancedModelsList.isEmpty()){
 			int count = 0;
 			Queue<Model> advancedModels = advancedModelsList.remove();
-			
+			StringBuilder errorsReported = new StringBuilder();
 			while (!advancedModels.isEmpty()){
 				// If we're unable to resolve the current set of models, put them into the next set.
 				if (count >= advancedModels.size()){
@@ -827,7 +845,7 @@ public class SEDMLImporter {
 				String referenceId = this.getReferenceId(nextModel);
 				BioModel bioModel;
 				try {
-					bioModel = this.getModelReference(referenceId, nextModel, idToBiomodelMap);
+					bioModel = this.getModelReference(referenceId, nextModel, idToBiomodelMap, bCoerceToDistributed);
 					idToBiomodelMap.put(nextModel.getId(), bioModel);
 					count = 0;
 				} catch (RuntimeException e){
@@ -846,7 +864,7 @@ public class SEDMLImporter {
 		return referenceId.startsWith("#") ? referenceId.substring(1) : referenceId;
 	}
 
-	private BioModel getModelReference(String referenceId, Model model, Map<String, BioModel> idToBiomodelMap){
+	private BioModel getModelReference(String referenceId, Model model, Map<String, BioModel> idToBiomodelMap, boolean bCoerceToDistributed) throws SEDMLImportException {
 		// Were we given a reference ID? We need to check if the parent was processed yet.
 		if (referenceId != null && !model.getSource().equals(referenceId)){
 			boolean canTranslate;
@@ -859,10 +877,10 @@ public class SEDMLImporter {
 			if (canTranslate)
 				return parentBiomodel;
 		}
-			return this.importModel(model);
+		return this.importModel(model, bCoerceToDistributed);
 	}
 
-	private boolean canTranslateToOverrides(BioModel refBM, Model mm) {
+	private boolean canTranslateToOverrides(BioModel refBM, Model mm) throws SEDMLImportException {
 		List<Change> changes = mm.getListOfChanges();
 		// XML changes can't be translated to math overrides, only attribute changes and compute changes can
 		for (Change change : changes) {
@@ -872,16 +890,16 @@ public class SEDMLImporter {
 		for (Change change : changes) {
 			String sbmlID = this.sbmlSupport.getIdFromXPathIdentifer(change.getTargetXPath().toString());
 			SimulationContext simulationContext = refBM.getSimulationContext(0);
-			String constantName = this.resolveConstant(simulationContext, null, sbmlID);
-			if (constantName == null) {
-				logger.warn("could not map changeAttribute for ID "+sbmlID+" to a VCell Constant");
+			Variable vcVar = this.resolveMathVariable(simulationContext, null, sbmlID);
+			if (!isMathVariableConstantValued(vcVar)) {
+				logger.warn("mapped changeAttribute for SBML ID "+sbmlID+" mapped to non-constant VCell variable '"+vcVar.getName()+"'");
 				return false;
 			}
 		}
 		return true;
 	}
 
-	private BioModel importModel(Model mm) {
+	private BioModel importModel(Model mm, boolean bCoerceToDistributed) {
 		BioModel bioModel;
 		String sedmlOriginalModelName = mm.getId();
 		String sedmlOriginalModelLanguage = mm.getLanguage();
@@ -904,7 +922,6 @@ public class SEDMLImporter {
 				InputStream sbmlSource = IOUtils.toInputStream(modelXML, Charset.defaultCharset());
 				boolean bValidateSBML = false;
 				SBMLImporter sbmlImporter = new SBMLImporter(sbmlSource, this.transLogger, bValidateSBML);
-				boolean bCoerceToDistributed = true;
 				boolean bTransformUnits = false;
 				bioModel = sbmlImporter.getBioModel(bCoerceToDistributed, bTransformUnits);
 				bioModel.setName(bioModelName);
@@ -1095,6 +1112,11 @@ public class SEDMLImporter {
 		}
 		// We couldn't find the imported sim ID in the list of needed reports. VCell probably doesn't need it directly.
 		return false;
+	}
+
+	public SBMLSymbolMapping getSBMLSymbolMapping(BioModel bioModel){
+		SBMLImporter sbmlImporter = this.importMap.get(bioModel);
+		return sbmlImporter.getSymbolMapping();
 	}
 
 	private enum ADVANCED_MODEL_TYPES {

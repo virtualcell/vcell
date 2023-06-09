@@ -122,7 +122,7 @@ public class ExecutionJob {
      * @throws IOException if there are system I/O issues
      * @throws ExecutionException if an execution specfic error occurs
      */
-    public void executeArchive() throws HDF5Exception, PythonStreamException, ExecutionException {
+    public void executeArchive(boolean bCoerceToDistributed) throws HDF5Exception, PythonStreamException, ExecutionException {
         try {
             Hdf5DataContainer masterHdf5File = new Hdf5DataContainer();
             this.queueAllSedml();
@@ -136,7 +136,7 @@ public class ExecutionJob {
                     this.anySedmlDocumentHasFailed = true;
                 }
                 SedmlStatistics stats = job.getDocStatistics();
-                boolean hasSucceeded = job.simulateSedml(masterHdf5File);
+                boolean hasSucceeded = job.simulateSedml(masterHdf5File, bCoerceToDistributed);
                 this.anySedmlDocumentHasSucceeded |= hasSucceeded;
                 this.anySedmlDocumentHasFailed &= hasSucceeded;
                 if (hasSucceeded) logger.info("Processing of SedML succeeded.\n" + stats.toString());

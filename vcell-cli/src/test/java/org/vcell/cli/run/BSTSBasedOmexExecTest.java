@@ -109,26 +109,29 @@ public class BSTSBasedOmexExecTest {
 	static Set<String> blacklistedModels(){
 		HashSet<String> blacklistSet = new HashSet<>();
 		// We don't support the following tests yet
-		blacklistSet.add("synths/sedml/SimulatorSupportsRepeatedTasksWithSubTasksOfMixedTypes/1.execution-should-succeed.omex");
-		blacklistSet.add("synths/sedml/SimulatorSupportsRepeatedTasksWithSubTasksOfMixedTypes/2.execution-should-succeed.omex");
-		blacklistSet.add("synths/sedml/SimulatorSupportsDataGeneratorsWithDifferentShapes/1.execution-should-succeed.omex");
-		blacklistSet.add("synths/sedml/SimulatorSupportsDataSetsWithDifferentShapes/1.execution-should-succeed.omex");
-		blacklistSet.add("synths/sedml/SimulatorSupportsRepeatedTasksWithMultipleSubTasks/1.execution-should-succeed.omex");
-		blacklistSet.add("synths/sedml/SimulatorSupportsUniformTimeCoursesWithNonZeroInitialTimes/1.execution-should-succeed.omex");
 		blacklistSet.add("sbml-core/Vilar-PNAS-2002-minimal-circardian-clock.omex");
+
+		// We don't support the following tests because they require a model change for SBML Level
+		blacklistSet.add("synths/sedml/SimulatorSupportsRepeatedTasksWithChanges/2.execution-should-succeed.omex");
+		blacklistSet.add("synths/sedml/SimulatorSupportsComputeModelChanges/1.execute-should-fail.omex");
+		blacklistSet.add("synths/sedml/SimulatorSupportsComputeModelChanges/2.execution-should-succeed.omex");
+		blacklistSet.add("synths/sedml/SimulatorSupportsModelAttributeChanges/2.execution-should-succeed.omex");
+		blacklistSet.add("synths/sedml/SimulatorSupportsRepeatedTasksWithFunctionalRangeVariables/1.execute-should-fail.omex");
+		blacklistSet.add("synths/sedml/SimulatorSupportsRepeatedTasksWithFunctionalRangeVariables/2.execution-should-succeed.omex");
+		blacklistSet.add("synths/sedml/SimulatorSupportsRepeatedTasksWithChanges/1.execute-should-fail.omex");
 		return blacklistSet;
 	}
 
 	static Map<String, FAULT> knownFaults() {
 		HashMap<String, FAULT> faults = new HashMap<>();
-		faults.put("synths/sedml/SimulatorSupportsDataSetsWithDifferentShapes/1.execution-should-succeed.omex",
-				FAULT.ARRAY_INDEX_OUT_OF_BOUNDS);
 		faults.put("synths/sedml/SimulatorSupportsModelAttributeChanges/1.execute-should-fail.omex",
 				FAULT.SEDML_ERRONEOUS_UNIT_SYSTEM);
 		faults.put("synths/sedml/SimulatorSupportsAddReplaceRemoveModelElementChanges/1.execute-should-fail.omex",
 				FAULT.SEDML_ERRONEOUS_UNIT_SYSTEM);
 		faults.put("synths/sedml/SimulatorSupportsAddReplaceRemoveModelElementChanges/3.execute-should-fail.omex",
 				FAULT.SEDML_ERRONEOUS_UNIT_SYSTEM);
+		faults.put("sbml-core/Vilar-PNAS-2002-minimal-circardian-clock-discrete-NRM.omex",
+				FAULT.UNCATETORIZED_FAULT); // for bCoerceToDistributed=false, fails to import stochastic (works with true)
 		return faults;
 	}
 
@@ -188,7 +191,9 @@ public class BSTSBasedOmexExecTest {
 			InputStream omexInputStream = BSTSBasedTestSuiteFiles.getBSTSTestCase(this.testCaseFilename);
 			Path omexFile = Files.createTempFile("BSTS_OmexFile_", "omex");
 			FileUtils.copyInputStreamToFile(omexInputStream, omexFile.toFile());
-			ExecuteImpl.singleMode(omexFile.toFile(), outdirPath.toFile(), cliRecorder);
+
+			boolean bCoerceToDistributed = false;
+			ExecuteImpl.singleMode(omexFile.toFile(), outdirPath.toFile(), cliRecorder, bCoerceToDistributed);
 			String errMessage = (errorMessage[0] != null) ? errorMessage[0].replace("\n", " | ") : "";
 			Assert.assertFalse("failure: '" + errMessage + "'", bFailed[0]);
 			if (knownFault != null){

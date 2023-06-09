@@ -3,7 +3,6 @@ package org.vcell.cli.run.hdf5;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.TempSimulation;
-import cbit.vcell.solver.ode.ODESolverResultSet;
 import ncsa.hdf.hdf5lib.exceptions.HDF5Exception;
 
 import org.jlibsedml.SedML;
@@ -19,6 +18,7 @@ import org.jlibsedml.UniformTimeCourse;
 import org.jlibsedml.DataSet;
 import org.jlibsedml.execution.IXPathToVariableIDResolver;
 import org.jlibsedml.modelsupport.SBMLSupport;
+import org.vcell.sbml.vcell.SBMLNonspatialSimResults;
 import org.vcell.cli.run.TaskJob;
 import org.vcell.util.DataAccessException;
 import org.apache.logging.log4j.LogManager;
@@ -31,7 +31,7 @@ public class NonspatialResultsConverter {
     private final static Logger logger = LogManager.getLogger(NonspatialResultsConverter.class);
 
 
-    public static List<Hdf5SedmlResults> convertNonspatialResultsToSedmlFormat(SedML sedml, Map<TaskJob, ODESolverResultSet> nonspatialResultsHash, Map<AbstractTask, TempSimulation> taskToSimulationMap, String sedmlLocation) throws DataAccessException, IOException, HDF5Exception, ExpressionException {
+    public static List<Hdf5SedmlResults> convertNonspatialResultsToSedmlFormat(SedML sedml, Map<TaskJob, SBMLNonspatialSimResults> nonspatialResultsHash, Map<AbstractTask, TempSimulation> taskToSimulationMap, String sedmlLocation) throws DataAccessException, IOException, HDF5Exception, ExpressionException {
         List<Hdf5SedmlResults> datasetWrappers = new ArrayList<>();
 
         for (Report report : NonspatialResultsConverter.getReports(sedml.getOutputs())){
@@ -74,7 +74,7 @@ public class NonspatialResultsConverter {
                     
                     ArrayList<TaskJob> taskJobs = new ArrayList<>();
 
-                    for (Map.Entry<TaskJob, ODESolverResultSet> entry : nonspatialResultsHash.entrySet()) {
+                    for (Map.Entry<TaskJob, SBMLNonspatialSimResults> entry : nonspatialResultsHash.entrySet()) {
                         TaskJob taskJob = entry.getKey();
                         if (entry.getValue() != null && taskJob.getTaskId().equals(topLevelTask.getId())) {
                             taskJobs.add(taskJob);
@@ -93,17 +93,8 @@ public class NonspatialResultsConverter {
                     NonspatialValueHolder resultsHolder;
 
                     for (TaskJob taskJob : taskJobs) {
-                        ODESolverResultSet results = nonspatialResultsHash.get(taskJob);
-                        int column = results.findColumn(vcellVarId);
-                        double[] data = results.extractColumn(column);
-                        
-                        if (outputStartTime > 0){
-                            double[] correctiveData = new double[outputNumberOfPoints + 1];
-                            for (int i = data.length - outputNumberOfPoints - 1, j = 0; i < data.length; i++, j++) {
-                                correctiveData[j] = data[i];
-                            }
-                            data = correctiveData;
-                        }
+                        SBMLNonspatialSimResults results = nonspatialResultsHash.get(taskJob);
+                        double[] data = results.getDataForSBMLVar(vcellVarId, outputStartTime, outputNumberOfPoints);
 
                         maxLengthOfAllData = Integer.max(maxLengthOfAllData, data.length);
                         if (topLevelTask instanceof RepeatedTask && resultsByVariable.containsKey(var)) { // double[] exists

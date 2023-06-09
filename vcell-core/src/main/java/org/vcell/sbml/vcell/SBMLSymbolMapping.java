@@ -57,6 +57,8 @@ public class SBMLSymbolMapping {
     private final Map<SBaseWrapper<SBase>, Expression> sbase_to_rateRuleSbmlExpression_map = new LinkedHashMap<>();
     private final Map<SBaseWrapper<SBase>, Double> sbase_to_sbmlValue_map = new LinkedHashMap<>();
 
+    private final Map<SBaseWrapper<Reaction>, ReactionStep> sbmlReaction_to_vcellReactionStep_map = new LinkedHashMap<>();
+
     //
     // only used locally in SBMLImporter, could replace with a local map.
     // Or, could add an SBML Species to VCell SpeciesContext map for use in SEDML processing?
@@ -65,6 +67,21 @@ public class SBMLSymbolMapping {
 
     SBMLSymbolMapping() {
         super();
+    }
+
+    public void putReactionMapping(Reaction sbmlReaction, ReactionStep vcReaction) {
+        sbmlReaction_to_vcellReactionStep_map.put(new SBaseWrapper<>(sbmlReaction), vcReaction);
+    }
+
+    public void getVCellReactionStep(Reaction _sbmlReaction) {
+        SBaseWrapper<SBase> sbaseWrapper = new SBaseWrapper<>(_sbmlReaction);
+        sbmlReaction_to_vcellReactionStep_map.get(sbaseWrapper);
+    }
+
+    public List<Reaction> getMappedSbmlReactions(){
+        return sbmlReaction_to_vcellReactionStep_map.keySet().stream()
+                .map(reactionSBaseWrapper -> (Reaction)reactionSBaseWrapper.internalSBase)
+                .collect(Collectors.toList());
     }
 
     EditableSymbolTableEntry getInitialSte(SBase _sbase) {

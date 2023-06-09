@@ -27,7 +27,8 @@ public class ExecuteImpl {
     private final static Logger logger = LogManager.getLogger(ExecuteImpl.class);
 
     public static void batchMode(File dirOfArchivesToProcess, File outputDir, CLIRecordable cliLogger,
-                                 boolean bKeepTempFiles, boolean bExactMatchOnly, boolean bSmallMeshOverride
+                                 boolean bKeepTempFiles, boolean bExactMatchOnly, boolean bSmallMeshOverride,
+                                 boolean bCoerceToDistributed
                                 ) throws IOException {
         FilenameFilter filter = (f, name) -> name.endsWith(".omex") || name.endsWith(".vcml");
         File[] inputFiles = dirOfArchivesToProcess.listFiles(filter);
@@ -86,7 +87,8 @@ public class ExecuteImpl {
     }
 
     public static void singleMode(File inputFile, File rootOutputDir, CLIRecordable cliLogger,
-            boolean bKeepTempFiles, boolean bExactMatchOnly, boolean bEncapsulateOutput, boolean bSmallMeshOverride) throws Exception {
+            boolean bKeepTempFiles, boolean bExactMatchOnly, boolean bEncapsulateOutput, boolean bSmallMeshOverride,
+            boolean bCoerceToDistributed) throws Exception {
         // Build statuses
         String bioModelBaseName = FileUtils.getBaseName(inputFile.getName()); // bioModelBaseName = input file without the path
         String outputBaseDir = rootOutputDir.getAbsolutePath(); 
@@ -101,16 +103,18 @@ public class ExecuteImpl {
 
         PythonCalls.generateStatusYaml(inputFile.getAbsolutePath(), targetOutputDir);    // generate Status YAML
 
-        ExecuteImpl.singleExecOmex(inputFile, rootOutputDir, cliLogger, bKeepTempFiles, bExactMatchOnly, bEncapsulateOutput, bSmallMeshOverride);
+        ExecuteImpl.singleExecOmex(inputFile, rootOutputDir, cliLogger, bKeepTempFiles, bExactMatchOnly,
+                bEncapsulateOutput, bSmallMeshOverride, bCoerceToDistributed);
     }
 
-    public static void singleMode(File inputFile, File outputDir, CLIRecordable cliLogger) throws Exception {
+    public static void singleMode(File inputFile, File outputDir, CLIRecordable cliLogger, boolean bCoerceToDistributed) throws Exception {
         final boolean bKeepTempFiles = false;
         final boolean bExactMatchOnly = false;
         final boolean bEncapsulateOutput = false;
         final boolean bSmallMeshOverride = false;
 
-        ExecuteImpl.singleMode(inputFile, outputDir, cliLogger, bKeepTempFiles, bExactMatchOnly, bEncapsulateOutput, bSmallMeshOverride);
+        ExecuteImpl.singleMode(inputFile, outputDir, cliLogger, bKeepTempFiles, bExactMatchOnly,
+                bEncapsulateOutput, bSmallMeshOverride, bCoerceToDistributed);
     }
 
     @Deprecated
@@ -170,12 +174,13 @@ public class ExecuteImpl {
     }
 
     private static void singleExecOmex(File inputFile, File rootOutputDir, CLIRecordable cliRecorder,
-            boolean bKeepTempFiles, boolean bExactMatchOnly, boolean bEncapsulateOutput, boolean bSmallMeshOverride) 
+            boolean bKeepTempFiles, boolean bExactMatchOnly, boolean bEncapsulateOutput, boolean bSmallMeshOverride,
+            boolean bCoerceToDistributed)
             throws ExecutionException, PythonStreamException, IOException, InterruptedException, HDF5Exception {
         ExecutionJob requestedExecution = new ExecutionJob(inputFile, rootOutputDir, cliRecorder, 
             bKeepTempFiles, bExactMatchOnly, bEncapsulateOutput, bSmallMeshOverride);
         requestedExecution.preprocessArchive();
-        requestedExecution.executeArchive();
+        requestedExecution.executeArchive(bCoerceToDistributed);
         requestedExecution.postProcessessArchive();
     }
 
