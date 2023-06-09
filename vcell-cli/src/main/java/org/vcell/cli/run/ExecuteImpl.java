@@ -61,7 +61,8 @@ public class ExecuteImpl {
                     if (inputFileName.endsWith("vcml"))
                         singleExecVcml(inputFile, outputDir, cliLogger);
                     if (inputFileName.endsWith("omex"))
-                        runSingleExecOmex(inputFile, outputDir, cliLogger, bKeepTempFiles, bExactMatchOnly, bSmallMeshOverride);
+                        runSingleExecOmex(inputFile, outputDir, cliLogger,
+                                bKeepTempFiles, bExactMatchOnly, bSmallMeshOverride, bCoerceToDistributed);
                 } catch (ExecutionException | RuntimeException e){
                     logger.error("Error caught executing batch mode", e);
                     failedFiles.add(inputFileName);
@@ -76,14 +77,15 @@ public class ExecuteImpl {
         }
     }
 
-    private static void runSingleExecOmex(File inputFile, File outputDir, CLIRecordable cliLogger,
-                                          boolean bKeepTempFiles, boolean bExactMatchOnly, boolean bSmallMeshOverride)
+    private static void runSingleExecOmex(File inputFile, File outputDir, CLIRecordable cliLogger, boolean bKeepTempFiles,
+                                          boolean bExactMatchOnly, boolean bSmallMeshOverride, boolean bCoerceToDistributed)
             throws IOException, ExecutionException, PythonStreamException, HDF5Exception, InterruptedException {
         String bioModelBaseName = inputFile.getName().substring(0, inputFile.getName().indexOf(".")); // ".omex"??
         Files.createDirectories(Paths.get(outputDir.getAbsolutePath() + File.separator + bioModelBaseName)); // make output subdir
         final boolean bEncapsulateOutput = true;
 
-        singleExecOmex(inputFile, outputDir, cliLogger, bKeepTempFiles, bExactMatchOnly, bEncapsulateOutput, bSmallMeshOverride);
+        singleExecOmex(inputFile, outputDir, cliLogger,
+                bKeepTempFiles, bExactMatchOnly, bEncapsulateOutput, bSmallMeshOverride, bCoerceToDistributed);
     }
 
     public static void singleMode(File inputFile, File rootOutputDir, CLIRecordable cliLogger,
