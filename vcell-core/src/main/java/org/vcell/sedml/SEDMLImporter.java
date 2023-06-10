@@ -1025,7 +1025,11 @@ public class SEDMLImporter {
 				errorTolerance.setRelativeErrorTolerance(value);
 			} else if(apKisaoID.contentEquals(TimeStep.TimeStepDescription.Default.getKisao())) {
 				double value = Double.parseDouble(apValue);
-				timeStep.setDefaultTimeStep(value);
+				if (simTaskDesc.getSolverDescription() == SolverDescription.ForwardEuler) {
+					timeStep.setDefaultTimeStep(value/10);
+				}else{
+					timeStep.setDefaultTimeStep(value);
+				}
 			} else if(apKisaoID.contentEquals(TimeStep.TimeStepDescription.Maximum.getKisao())) {
 				double value = Double.parseDouble(apValue);
 				timeStep.setMaximumTimeStep(value);
@@ -1116,7 +1120,11 @@ public class SEDMLImporter {
 
 	public SBMLSymbolMapping getSBMLSymbolMapping(BioModel bioModel){
 		SBMLImporter sbmlImporter = this.importMap.get(bioModel);
-		return sbmlImporter.getSymbolMapping();
+		if (sbmlImporter != null) {
+			return sbmlImporter.getSymbolMapping();
+		} else {
+			return null;
+		}
 	}
 
 	private enum ADVANCED_MODEL_TYPES {
