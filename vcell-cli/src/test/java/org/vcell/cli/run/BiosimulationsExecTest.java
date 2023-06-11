@@ -15,6 +15,7 @@ import org.vcell.cli.CLIRecordable;
 import org.vcell.cli.PythonStreamException;
 import org.vcell.test.BSTS_IT;
 import org.vcell.util.VCellUtilityHub;
+import org.vcell.util.exe.Executable;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,17 +23,20 @@ import java.io.InputStream;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @RunWith(Parameterized.class)
 @Category(BSTS_IT.class)
 public class BiosimulationsExecTest {
-	private final String testCaseFilename;
+	private final String testCaseProjectID;
 
-	public BiosimulationsExecTest(String testCase){
-		this.testCaseFilename = testCase;
+	public BiosimulationsExecTest(String testCaseProjectID){
+		this.testCaseProjectID = testCaseProjectID;
 	}
 
 	@BeforeClass
@@ -90,116 +94,106 @@ public class BiosimulationsExecTest {
 	}
 
 	@SuppressWarnings("unused")
-	static Set<String> needToCurateModels(){
-		// These models are skipped by BSTS, and we need to look to see if that was because we don't have a KISAO exact match
-		HashSet<String> skippedModels = new HashSet<>();
-		skippedModels.add("sbml-core/Edelstein-Biol-Cybern-1996-Nicotinic-excitation.omex");
-		skippedModels.add("sbml-core/Szymanska-J-Theor-Biol-2009-HSP-synthesis.omex");
-		skippedModels.add("sbml-core/Tomida-EMBO-J-2003-NFAT-translocation.omex");
-		skippedModels.add("sbml-core/Varusai-Sci-Rep-2018-mTOR-signaling-LSODA-LSODAR-SBML.omex");
-		skippedModels.add("sbml-core/Vilar-PNAS-2002-minimal-circardian-clock-discrete-SSA.omex");
-		return skippedModels;
-	}
-
-	static Set<String> blacklistedModels(){
-		HashSet<String> blacklistSet = new HashSet<>();
-		// We don't support the following tests yet
-		blacklistSet.add("synths/sedml/SimulatorSupportsRepeatedTasksWithSubTasksOfMixedTypes/1.execution-should-succeed.omex");
-		blacklistSet.add("synths/sedml/SimulatorSupportsRepeatedTasksWithSubTasksOfMixedTypes/2.execution-should-succeed.omex");
-		blacklistSet.add("synths/sedml/SimulatorSupportsDataGeneratorsWithDifferentShapes/1.execution-should-succeed.omex");
-		blacklistSet.add("synths/sedml/SimulatorSupportsDataSetsWithDifferentShapes/1.execution-should-succeed.omex");
-		blacklistSet.add("synths/sedml/SimulatorSupportsRepeatedTasksWithMultipleSubTasks/1.execution-should-succeed.omex");
-		blacklistSet.add("synths/sedml/SimulatorSupportsUniformTimeCoursesWithNonZeroInitialTimes/1.execution-should-succeed.omex");
-		blacklistSet.add("sbml-core/Vilar-PNAS-2002-minimal-circardian-clock.omex");
-		return blacklistSet;
-	}
-
 	static Map<String, FAULT> knownFaults() {
 		HashMap<String, FAULT> faults = new HashMap<>();
-		faults.put("synths/sedml/SimulatorSupportsDataSetsWithDifferentShapes/1.execution-should-succeed.omex",
-				FAULT.ARRAY_INDEX_OUT_OF_BOUNDS);
-		faults.put("synths/sedml/SimulatorSupportsModelAttributeChanges/1.execute-should-fail.omex",
-				FAULT.SEDML_ERRONEOUS_UNIT_SYSTEM);
-		faults.put("synths/sedml/SimulatorSupportsAddReplaceRemoveModelElementChanges/1.execute-should-fail.omex",
-				FAULT.SEDML_ERRONEOUS_UNIT_SYSTEM);
-		faults.put("synths/sedml/SimulatorSupportsAddReplaceRemoveModelElementChanges/3.execute-should-fail.omex",
-				FAULT.SEDML_ERRONEOUS_UNIT_SYSTEM);
 		return faults;
 	}
 
 	@Parameterized.Parameters
 	public static Collection<String> testCases() {
-		Set<String> modelsToFilter = new HashSet<>();
-		Predicate<String> filter;
-
-		modelsToFilter.addAll(needToCurateModels()); // Comment out if checking that current version will satisfy BSTS
-		modelsToFilter.addAll(blacklistedModels());
-		filter = (t) -> !modelsToFilter.contains(t);
-
-		return Arrays.stream(BSTSBasedTestSuiteFiles.getBSTSTestCases()).filter(filter).collect(Collectors.toList());
+		Predicate<String> projectFilter;
+		projectFilter = (t) -> true; // don't skip any for now.
+		return Arrays.stream(BiosimulationsFiles.getProjectIDs()).filter(projectFilter).collect(Collectors.toList());
 	}
 
-	@Test
-	public void testBSTSBasedOmex() throws Exception {
-		FAULT knownFault = knownFaults().get(this.testCaseFilename);
-		try {
-			System.out.println("running test " + this.testCaseFilename);
-			final boolean[] bFailed = new boolean[1];
-			final String[] errorMessage = new String[1];
+    static class TestRecorder implements CLIRecordable {
+        public boolean bFailed = false;
+        public String errorMessage = "";
 
-			Path outdirPath = Files.createTempDirectory("BSTS_OmexExecTest");
-			CLIRecordable cliRecorder = new CLIRecordable() {
-				@Override
-				public void writeDetailedErrorList(String message) {
-					System.err.println("writeDetailedErrorList(): " + message);
-					bFailed[0] = true;
-					errorMessage[0] = message;
-				}
-				@Override
-				public void writeFullSuccessList(String message) {
-					System.out.println("writeFullSuccessList(): " + message);
-				}
-				@Override
-				public void writeErrorList(String message) {
-					System.err.println("writeErrorList(): " + message);
-					bFailed[0] = true;
-					errorMessage[0] = message;
-				}
-				@Override
-				public void writeDetailedResultList(String message) {
-					System.out.println("writeDetailedResultList(): " + message);
-				}
-				@Override
-				public void writeSpatialList(String message) {
-					System.out.println("writeSpatialList(): " + message);
-				}
-				@Override
-				public void writeImportErrorList(String message) {
-					System.err.println("writeImportErrorList(): " + message);
-					bFailed[0] = true;
-					errorMessage[0] = message;
-				}
-			};
-			InputStream omexInputStream = BSTSBasedTestSuiteFiles.getBSTSTestCase(this.testCaseFilename);
-			Path omexFile = Files.createTempFile("BSTS_OmexFile_", "omex");
+        @Override
+        public void writeDetailedErrorList(String message) {
+            System.err.println("writeDetailedErrorList(): " + message);
+            bFailed = true;
+            errorMessage = message;
+        }
+        @Override
+        public void writeFullSuccessList(String message) {
+            System.out.println("writeFullSuccessList(): " + message);
+        }
+        @Override
+        public void writeErrorList(String message) {
+            System.err.println("writeErrorList(): " + message);
+            bFailed = true;
+            errorMessage = message;
+        }
+        @Override
+        public void writeDetailedResultList(String message) {
+            System.out.println("writeDetailedResultList(): " + message);
+        }
+        @Override
+        public void writeSpatialList(String message) {
+            System.out.println("writeSpatialList(): " + message);
+        }
+        @Override
+        public void writeImportErrorList(String message) {
+            System.err.println("writeImportErrorList(): " + message);
+            bFailed = true;
+            errorMessage = message;
+        }
+    }
+
+	@Test
+	public void testBiosimulationsProject() throws Exception {
+		FAULT knownFault = knownFaults().get(this.testCaseProjectID);
+		try {
+			System.out.println("running test " + this.testCaseProjectID);
+
+			Path outdirPath = Files.createTempDirectory("BiosimulationsExecTest");
+			InputStream omexInputStream = BiosimulationsFiles.getOmex(testCaseProjectID);
+            Path omexFile = Files.createTempFile("BiosimulationsExec_", "omex");
 			FileUtils.copyInputStreamToFile(omexInputStream, omexFile.toFile());
-			ExecuteImpl.singleMode(omexFile.toFile(), outdirPath.toFile(), cliRecorder);
-			String errMessage = (errorMessage[0] != null) ? errorMessage[0].replace("\n", " | ") : "";
-			Assert.assertFalse("failure: '" + errMessage + "'", bFailed[0]);
+
+            boolean bCoerceToDistributed = true;
+			TestRecorder cliRecorder = new TestRecorder();
+			ExecuteImpl.singleMode(omexFile.toFile(), outdirPath.toFile(), cliRecorder, bCoerceToDistributed);
+			Path computedH5File = outdirPath.resolve("report.h5");
+
+			String errMessage = cliRecorder.errorMessage.replace("\n", " | ");
+			Assert.assertFalse("failure: '" + errMessage + "'", cliRecorder.bFailed);
 			if (knownFault != null){
 				throw new RuntimeException("test case passed, but expected " + knownFault.name() + ", remove "
-						+ this.testCaseFilename + " from known faults");
+						+ this.testCaseProjectID + " from known faults");
 			}
+
+//			// verify log file has status of 'SUCCEEDED'
+//			Gson gson = new Gson();
+//			try (Reader jsonReader = new )
+//			}
+//			gson.newJsonReader(new )
+
+			// compare hdf5 files to within absolute tolerance of 1e-9
+			double absTolerance = 1e-9;
+			InputStream h5fileStream = BiosimulationsFiles.getH5(testCaseProjectID);
+			Path expectedH5File = Files.createTempFile("BiosimulationsExec_", "h5");
+			FileUtils.copyInputStreamToFile(h5fileStream, expectedH5File.toFile());
+			Executable command = new Executable(new String[]{ "sh", "-c", "h5diff", "-r", "--delta", Double.toString(absTolerance),
+					expectedH5File.toAbsolutePath().toString(),
+					computedH5File.toAbsolutePath().toString()
+			});
+			command.start(new int[] { 0, 1 });
+			Assert.assertFalse("H5 files have significant differences: "+
+					command.getStdoutString().substring(0,300),
+					command.getStdoutString().contains("position"));
 
 		} catch (Exception | AssertionError e){
 			FAULT fault = this.determineFault(e);
 			if (knownFault == fault) {
 				System.err.println("Expected error: " + e.getMessage());
 				return;
-			} 
-		
-			System.err.println("add FAULT." + fault.name() + " to " + this.testCaseFilename);
-			throw new Exception("Test error: " + this.testCaseFilename + " failed improperly", e);
+			}
+
+			System.err.println("add FAULT." + fault.name() + " to " + this.testCaseProjectID);
+			throw new Exception("Test error: " + this.testCaseProjectID + " failed improperly", e);
 		}
 	}
 
