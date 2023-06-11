@@ -43,8 +43,8 @@ public class ExecuteCommand implements Callable<Integer> {
     @Option(names = "--small-mesh", defaultValue = "false", description = "force spatial simulations to have a very small mesh to make execution faster")
     private boolean bSmallMeshOverride = false;
 
-    @Option(names = { "--coerceToDistributed" }, defaultValue = "false", description = "import SBML lumped reactions as VCell distributed reactions if possible")
-    private boolean bCoerceToDistributed = false;
+    @Option(names = { "--coerceToDistributed" }, defaultValue = "true", description = "import SBML lumped reactions as VCell distributed reactions if possible")
+    private boolean bCoerceToDistributed = true;
 
     @Option(names = {"--encapsulateOutput"}, defaultValue = "true", description =
         "VCell will encapsulate output results in a sub directory when executing with a single input archive; has no effect when providing an input directory")

@@ -108,9 +108,6 @@ public class BSTSBasedOmexExecTest {
 
 	static Set<String> blacklistedModels(){
 		HashSet<String> blacklistSet = new HashSet<>();
-		// We don't support the following tests yet
-		blacklistSet.add("sbml-core/Vilar-PNAS-2002-minimal-circardian-clock.omex");
-
 		// We don't support the following tests because they require a model change for SBML Level
 		blacklistSet.add("synths/sedml/SimulatorSupportsRepeatedTasksWithChanges/2.execution-should-succeed.omex");
 		blacklistSet.add("synths/sedml/SimulatorSupportsComputeModelChanges/1.execute-should-fail.omex");
@@ -130,8 +127,6 @@ public class BSTSBasedOmexExecTest {
 				FAULT.SEDML_ERRONEOUS_UNIT_SYSTEM);
 		faults.put("synths/sedml/SimulatorSupportsAddReplaceRemoveModelElementChanges/3.execute-should-fail.omex",
 				FAULT.SEDML_ERRONEOUS_UNIT_SYSTEM);
-		faults.put("sbml-core/Vilar-PNAS-2002-minimal-circardian-clock-discrete-NRM.omex",
-				FAULT.UNCATETORIZED_FAULT); // for bCoerceToDistributed=false, fails to import stochastic (works with true)
 		return faults;
 	}
 
@@ -192,7 +187,7 @@ public class BSTSBasedOmexExecTest {
 			Path omexFile = Files.createTempFile("BSTS_OmexFile_", "omex");
 			FileUtils.copyInputStreamToFile(omexInputStream, omexFile.toFile());
 
-			boolean bCoerceToDistributed = false;
+			boolean bCoerceToDistributed = true;
 			ExecuteImpl.singleMode(omexFile.toFile(), outdirPath.toFile(), cliRecorder, bCoerceToDistributed);
 			String errMessage = (errorMessage[0] != null) ? errorMessage[0].replace("\n", " | ") : "";
 			Assert.assertFalse("failure: '" + errMessage + "'", bFailed[0]);

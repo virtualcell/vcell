@@ -43,7 +43,7 @@ public class ExecuteImplTest {
             boolean bExactMatchOnly = false;
             boolean bEncapsulateOutput = true;
             boolean bSmallMeshOverride = false;
-            boolean bCoerceToDistributed = false;
+            boolean bCoerceToDistributed = true;
             ExecuteImpl.singleMode(
                     tempOmexFile, tempOutputDir, cliRecorder,
                     bKeepTempFiles, bExactMatchOnly, bEncapsulateOutput, bSmallMeshOverride, bCoerceToDistributed);

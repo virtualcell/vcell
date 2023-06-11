@@ -98,7 +98,7 @@ public class BiosimulationsCommand implements Callable<Integer> {
             logger.info("Beginning execution");
             try {
                 CLIPythonManager.getInstance().instantiatePythonProcess();
-                boolean bCoerceToDistributed = false;
+                boolean bCoerceToDistributed = true;
                 ExecuteImpl.singleMode(ARCHIVE, OUT_DIR, cliRecorder, bCoerceToDistributed);
                 return 0; // Does this prevent finally?
             } finally {

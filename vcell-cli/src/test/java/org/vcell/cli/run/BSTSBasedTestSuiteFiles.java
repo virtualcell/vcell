@@ -16,6 +16,7 @@ public class BSTSBasedTestSuiteFiles {
 
     private final static String[] allTestFiles = new String[]{
         "misc-projects/BIOMD0000000005.omex",
+        "vcml/Powers-Pflugers-Arch-2016-Drosophila-synaptic-strength.omex",
         "sbml-core/Caravagna-J-Theor-Biol-2010-tumor-suppressive-oscillations.omex",
         "sbml-core/Parmar-BMC-Syst-Biol-2017-iron-distribution.omex",
         "sbml-core/Vilar-PNAS-2002-minimal-circardian-clock-discrete-NRM.omex",

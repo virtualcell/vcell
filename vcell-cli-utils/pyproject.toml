@@ -31,6 +31,7 @@ seaborn = "^0.11.2"
 python-libsbml-experimental = "^5.19.5"
 Deprecated = "^1.2.13"
 dataclasses-json = "^0.5.7"
+requests = "^2.31.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.2.0"
@@ -39,6 +40,7 @@ mypy = "^1.2.0"
 [tool.poetry.group.dev.dependencies]
 types-deprecated = "1.2.9.2"
 types-PyYAML = "6.0.12.9"
+types-requests = "^2.31.0.1"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

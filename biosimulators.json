@@ -34,7 +34,7 @@
     },
     {
       "firstName": "Jim",
-      "lastName": "Scaff",
+      "lastName": "Schaff",
       "identifiers": []
     },
     {
@@ -108,7 +108,7 @@
       },
       {
         "title": "Spatial modeling of cell signaling networks",
-        "authors": "Ann E. Cowan, Ion I. Moraru, James C. Scaff, Boris M. Slepchenko & Leslie M. Loew",
+        "authors": "Ann E. Cowan, Ion I. Moraru, James C. Schaff, Boris M. Slepchenko & Leslie M. Loew",
         "journal": "Methods in Cell Biology",
         "volume": "110",
         "pages": "195-221",
@@ -123,7 +123,7 @@
       },
       {
         "title": "The Virtual Cell modeling and simulation software environment",
-        "authors": "Ion I. Moraru, James C. Scaff, Boris M. Slepchenko, Michael L. Blinov, Frank Morgan, Anuradha Lakshminaryana, Fei Gao, Ye Li & Leslie M. Loew",
+        "authors": "Ion I. Moraru, James C. Schaff, Boris M. Slepchenko, Michael L. Blinov, Frank Morgan, Anuradha Lakshminaryana, Fei Gao, Ye Li & Leslie M. Loew",
         "journal": "IET Systems Biology",
         "volume": "2",
         "pages": "352-362",
@@ -138,7 +138,7 @@
       },
       {
         "title": "Compartmental and spatial rule-based modeling with Virtual Cell",
-        "authors": "Michael L. Blinov, James C. Scaff, Dan Vasilescu, Ion I. Moraru, Judy E. Bloom & Leslie M. Loew",
+        "authors": "Michael L. Blinov, James C. Schaff, Dan Vasilescu, Ion I. Moraru, Judy E. Bloom & Leslie M. Loew",
         "journal": "Biophysical Journal",
         "volume": "113",
         "pages": "1365-1372",
