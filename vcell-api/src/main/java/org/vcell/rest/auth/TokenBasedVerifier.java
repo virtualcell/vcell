@@ -8,6 +8,7 @@ import org.restlet.Response;
 import org.restlet.data.ChallengeResponse;
 import org.restlet.security.Verifier;
 import org.vcell.auth.JWTUtils;
+import org.vcell.rest.VCellApiApplication;
 
 import java.util.Arrays;
 import java.util.List;
@@ -20,10 +21,11 @@ public class TokenBasedVerifier implements Verifier {
     @Override
     public int verify(Request request, Response response) {
         List<String> noAuthPaths = Arrays.asList(
-                "/access_token",
-                "/swversion",
-                "/newuser",
-                "/lostpassword");
+                "/"+VCellApiApplication.ACCESSTOKENRESOURCE,
+                "/"+VCellApiApplication.SWVERSION,
+                "/"+VCellApiApplication.NEWUSER,
+                "/"+VCellApiApplication.LOSTPASSWORD,
+                "/"+ VCellApiApplication.LOGINFORM);
         if (noAuthPaths.contains(request.getResourceRef().getPath())){
             return Verifier.RESULT_VALID;
         }
