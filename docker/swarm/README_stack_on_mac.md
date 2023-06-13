@@ -8,6 +8,11 @@ popd
 pushd ../../pythonProject/vcell-opt
 poetry install
 popd
+
+pushd ../../vcell-cli-utils
+poetry install
+popd
+
 ```
 
 2. Build and push Docker and Singularity containers (without building clients)
