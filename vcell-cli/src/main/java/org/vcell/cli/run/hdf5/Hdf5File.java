@@ -83,7 +83,7 @@ public class Hdf5File {
         try {
             H5.H5Eprint2(H5E_DEFAULT_ERROR_STACK, null);
         } catch (HDF5LibraryException e){
-            String message = "Catatrophic HDF5 error reporting failure detected; Something big just happened...";
+            String message = "Catastrophic HDF5 error reporting failure detected; Something big just happened...";
             logger.error(message, e);
             throw new RuntimeException(message, e);
         }
@@ -92,9 +92,9 @@ public class Hdf5File {
     /**
      * Complete constructor of `Hdf5File`
      * 
-     * @param parentDir the directory to put the Hdf5 file inside of.
+     * @param parentDir the directory to put the Hdf5 file inside.
      * @param filename name of the h5 file to write.
-     * @param allowExceptions Whether to interperate C-style error codes as exceptions or let the user handle them.
+     * @param allowExceptions Whether to interpret C-style error codes as exceptions or let the user handle them.
      *                        Hdf5 Library-produced exceptions will still be generated regardless.
      */
     public Hdf5File(File parentDir, String filename, boolean allowExceptions){
@@ -109,7 +109,7 @@ public class Hdf5File {
      * @throws HDF5LibraryException
      * @throws IOException
      */
-    public void open() throws HDF5LibraryException, IOException {
+    public void open() throws HDF5Exception, IOException {
         this.open(true);
     }
 
@@ -121,13 +121,13 @@ public class Hdf5File {
      * @throws HDF5LibraryException
      * @throws IOException
      */
-    public int open(boolean overwrite) throws HDF5LibraryException, IOException {
+    public int open(boolean overwrite) throws HDF5Exception, IOException {
         String path = this.javaFileTarget.getCanonicalPath();
         int accessMod = overwrite ? H5F_ACC_TRUNC: H5F_ACC_EXCL;
         this.fileId = H5.H5Fcreate(path, accessMod, H5P_DEFAULT, H5P_DEFAULT);
         if (this.fileId < 0){
             String message = "HDF5 File could not be created [H5Fcreate]; HDF5 files can not be generated.";
-            RuntimeException e = new RuntimeException(message); // nvestigate if Hdf5Exception would be more appropriate
+            HDF5Exception e = new HDF5Exception(message); // nvestigate if Hdf5Exception would be more appropriate
             logger.warn("Hdf5 error occured", e);
             if (this.allowExceptions) throw e;
         }
@@ -142,14 +142,14 @@ public class Hdf5File {
      *                  while hdf5 does allow with relative pathing from other groups, VCell does not support that at this time.
      * @return the group ID
      */
-    public int addGroup(String groupPath) throws HDF5LibraryException {
+    public int addGroup(String groupPath) throws HDF5Exception {
         if (!this.isOpen){
-            if (this.allowExceptions) throw new RuntimeException("Hdf5 file is not open.");
+            if (this.allowExceptions) throw new HDF5Exception("Hdf5 file is not open.");
             return -1;
         }
 
         if (groupPath == null || groupPath.charAt(0) != '/'){
-            if (this.allowExceptions) throw new RuntimeException("groupPath is not formatted correctly, or null");
+            if (this.allowExceptions) throw new HDF5Exception("groupPath is not formatted correctly, or null");
             return -1;
         }
 
@@ -157,7 +157,7 @@ public class Hdf5File {
 
         if (groupId < 0){
             String message = "HDF5 File could not be created [H5Fcreate]; HDF5 files can not be generated.";
-            RuntimeException e = new RuntimeException(message); // investigate if Hdf5Exception would be more appropriate
+            HDF5Exception e = new HDF5Exception(message); // investigate if Hdf5Exception would be more appropriate
             logger.warn("Hdf5 error occured", e);
             if (this.allowExceptions) throw e;
         }

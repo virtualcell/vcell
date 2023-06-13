@@ -73,7 +73,8 @@ public class CLIPythonManager {
      * @throws IOException if there was a system IO failure
      */
 
-    public static void callNonSharedPython(String cliCommand, String sedmlPath, String resultOutDir) throws InterruptedException, IOException {
+    public static void callNonSharedPython(String cliCommand, String sedmlPath, String resultOutDir)
+            throws InterruptedException, IOException, PythonStreamException {
         lg.warn("Using old style python invocation!");
         Path cliWorkingDir = Paths.get(PropertyLoader.getRequiredProperty(PropertyLoader.cliWorkingDir));
         ProcessBuilder pb = new ProcessBuilder("poetry", "run", "python", "-m", "vcell_cli_utils.cli",
@@ -229,7 +230,8 @@ public class CLIPythonManager {
     }
 
     @SuppressWarnings("UnstableApiUsage")
-    public static void runAndPrintProcessStreams(ProcessBuilder pb, String outString, String errString) throws InterruptedException, IOException {
+    public static void runAndPrintProcessStreams(ProcessBuilder pb, String outString, String errString)
+            throws InterruptedException, IOException, PythonStreamException {
         // Process printing code goes here
         File of = File.createTempFile("temp-", ".out", CURRENT_WORKING_DIR.toFile());
         File ef = File.createTempFile("temp-", ".err", CURRENT_WORKING_DIR.toFile());
@@ -250,7 +252,7 @@ public class CLIPythonManager {
         if (process.exitValue() != 0) {
             lg.error(errString);
             // don't print here, send the error down to caller who is responsible for dealing with it
-            throw new RuntimeException(es);
+            throw new PythonStreamException(es);
         } else {
             if (!outString.equals("")) lg.info(outString);
             if (!os.equals("")) lg.info(os);

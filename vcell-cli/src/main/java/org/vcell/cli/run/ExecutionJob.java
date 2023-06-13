@@ -2,6 +2,7 @@ package org.vcell.cli.run;
 
 import org.vcell.cli.CLIRecordable;
 import org.vcell.cli.PythonStreamException;
+import org.vcell.cli.exceptions.ExecutionException;
 import org.vcell.cli.run.hdf5.Hdf5DataContainer;
 import org.vcell.util.FileUtils;
 
