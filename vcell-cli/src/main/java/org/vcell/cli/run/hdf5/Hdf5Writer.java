@@ -76,9 +76,14 @@ public class Hdf5Writer {
                     masterHdf5.insertFixedStringAttributes(currentDatasetId, "sedmlDataSetDataTypes", data.datasetMetadata.sedmlDataSetDataTypes);
                     masterHdf5.insertFixedStringAttributes(currentDatasetId, "sedmlDataSetIds", data.datasetMetadata.sedmlDataSetIds);
                     
-                    if (data.datasetMetadata.sedmlDataSetNames.get(0) != null) {
-                        masterHdf5.insertFixedStringAttributes(currentDatasetId, "sedmlDataSetNames", data.datasetMetadata.sedmlDataSetNames);
+                    if (data.datasetMetadata.sedmlDataSetNames.contains(null)) {
+                        for (int i = 0; i < data.datasetMetadata.sedmlDataSetNames.size(); i++){
+                            String oldValue = data.datasetMetadata.sedmlDataSetNames.get(i);
+                            String newValue = oldValue == null ? "" : oldValue;
+                            data.datasetMetadata.sedmlDataSetNames.set(i, newValue);
+                        }
                     }
+                    masterHdf5.insertFixedStringAttributes(currentDatasetId, "sedmlDataSetNames", data.datasetMetadata.sedmlDataSetNames);
                     masterHdf5.insertFixedStringAttributes(currentDatasetId, "sedmlDataSetLabels", data.datasetMetadata.sedmlDataSetLabels);
                     masterHdf5.insertFixedStringAttributes(currentDatasetId, "sedmlDataSetShapes", data.datasetMetadata.sedmlDataSetShapes);
                     masterHdf5.insertFixedStringAttribute(currentDatasetId, "sedmlId", data.datasetMetadata.sedmlId);
