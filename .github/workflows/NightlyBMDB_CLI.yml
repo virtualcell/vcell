@@ -92,6 +92,9 @@ jobs:
   published:
     runs-on: ubuntu-20.04
     needs: build
+    strategy:
+      matrix:
+        sets: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
     steps:
       - name: Create Docker Image Dir
         run: mkdir /tmp/docker
@@ -111,6 +114,11 @@ jobs:
         with: 
           repository: virtualcell/vcdb
         
+      - name: Prepare sub directory
+        run: |
+          mkdir $GITHUB_WORKSPACE/set_${{ matrix.sets }}
+          cp $(ls $GITHUB_WORKSPACE/omex_files | grep "*${{ matrix.sets }}.omex") $GITHUB_WORKSPACE/set_${{ matrix.sets }}
+        
         # Do the execution
       - name: Begin Execution
         #$(docker image ls | grep "<none>" | awk '{print $3;}')  to get image id
@@ -118,8 +126,8 @@ jobs:
   
       - name: Check For Failure
         run: |
-          errorSearch=$(find ${GITHUB_WORKSPACE}/omex_files -name detailedErrorLog.txt)
-          if [ $(find ${GITHUB_WORKSPACE}/published/biomodel/omex/sbml -name detailedErrorLog.txt | wc -l) -gt 0 ]
+          errorSearch=$(find $GITHUB_WORKSPACE/set_${{ matrix.sets }} -name detailedErrorLog.txt)
+          if [ $(find $GITHUB_WORKSPACE/set_${{ matrix.sets }} -name detailedErrorLog.txt | wc -l) -gt 0 ]
           then 
             errorMessage="Errors were enocuntered processing published VCell projects, see the following error files:\n $errorSearch"
             curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text=${errorMessage} https://slack.com/api/chat.postMessage
@@ -141,6 +149,9 @@ jobs:
   bmdb:
     runs-on: ubuntu-20.04
     needs: build
+    strategy:
+      matrix:
+        sets: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
     steps:
       - name: Create Docker Image Dir
         run: mkdir /tmp/docker
@@ -160,15 +171,20 @@ jobs:
         with: 
           repository: sys-bio/temp-biomodels
         
+      - name: Prepare sub directory
+        run: |
+          mkdir $GITHUB_WORKSPACE/set_${{ matrix.sets }}
+          cp $(ls $GITHUB_WORKSPACE/omex_files | grep "*${{ matrix.sets }}.omex") $GITHUB_WORKSPACE/set_${{ matrix.sets }}
+
         # Do the execution
       - name: Begin Execution
         #$(docker image ls | grep "<none>" | awk '{print $3;}')  to get image id
-        run: docker run -v $GITHUB_WORKSPACE/omex_files:/root $(docker image ls | grep "<none>" | awk '{print $3;}') execute -i "/root" -o "/root/output" # grabs image and runs
+        run: docker run -v $GITHUB_WORKSPACE/set_${{ matrix.sets }}:/root $(docker image ls | grep "<none>" | awk '{print $3;}') execute -i "/root" -o "/root/output" # grabs image and runs
   
       - name: Check For Failure
         run: |
-          errorSearch=$(find ${GITHUB_WORKSPACE}/omex_files -name detailedErrorLog.txt)
-          if [ $(find ${GITHUB_WORKSPACE}/omex_files -name detailedErrorLog.txt | wc -l) -gt 0 ]
+          errorSearch=$(find $GITHUB_WORKSPACE/set_${{ matrix.sets }} -name detailedErrorLog.txt)
+          if [ $(find $GITHUB_WORKSPACE/set_${{ matrix.sets }} -name detailedErrorLog.txt | wc -l) -gt 0 ]
           then 
             errorMessage="Errors were enocuntered porcessing BMDB projects, see the following error files:\n $errorSearch"
             curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text=${errorMessage} https://slack.com/api/chat.postMessage
