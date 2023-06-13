@@ -117,7 +117,7 @@ jobs:
       - name: Prepare sub directory
         run: |
           mkdir $GITHUB_WORKSPACE/set_${{ matrix.sets }}
-          cp $(ls $GITHUB_WORKSPACE/omex_files | grep "*${{ matrix.sets }}.omex") $GITHUB_WORKSPACE/set_${{ matrix.sets }}
+          cp $(ls $GITHUB_WORKSPACE/omex_files | grep "${{ matrix.sets }}.omex") $GITHUB_WORKSPACE/set_${{ matrix.sets }}
         
         # Do the execution
       - name: Begin Execution
@@ -174,7 +174,7 @@ jobs:
       - name: Prepare sub directory
         run: |
           mkdir $GITHUB_WORKSPACE/set_${{ matrix.sets }}
-          cp $(ls $GITHUB_WORKSPACE/omex_files | grep "*${{ matrix.sets }}.omex") $GITHUB_WORKSPACE/set_${{ matrix.sets }}
+          cp $(ls $GITHUB_WORKSPACE/omex_files | grep "${{ matrix.sets }}.omex") $GITHUB_WORKSPACE/set_${{ matrix.sets }}
 
         # Do the execution
       - name: Begin Execution
