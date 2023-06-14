@@ -173,15 +173,18 @@ jobs:
         
       - name: Prepare sub directory
         run: |
-          SOURCE_DIR=$GITHUB_WORKSPACE/omex_files
-          TARGET_DIR=$GITHUB_WORKSPACE/set_${{ matrix.sets }}
+          SOURCE_DIR="$GITHUB_WORKSPACE/omex_files"
+          TARGET_DIR="$GITHUB_WORKSPACE/set_${{ matrix.sets }}"
           MOD_VALUE=${{ matrix.sets }}
           file_index=0
+          
+          # make target dir
+          mnkdir $TARGET_DIR
           # loop through files in directory, increment indexing and separating files
           for file in $SOURCE_DIR/*; do
               file_index=$((file_index+1))
               if [ $((file_index%${{ strategy.job-total }})) -eq $((MOD_VALUE + 0)) ]; then
-                  cp ${file} $TARGET_DIR
+                  cp ${file} $TARGET_DIR/
               fi
           done
 
