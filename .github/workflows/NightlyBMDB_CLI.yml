@@ -179,7 +179,7 @@ jobs:
           file_index=0
           
           # make target dir
-          mnkdir $TARGET_DIR
+          mkdir $TARGET_DIR
           # loop through files in directory, increment indexing and separating files
           for file in $SOURCE_DIR/*; do
               file_index=$((file_index+1))
