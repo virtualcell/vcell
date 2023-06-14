@@ -176,7 +176,7 @@ jobs:
           SOURCE_DIR="$GITHUB_WORKSPACE/omex_files"
           TARGET_DIR="$GITHUB_WORKSPACE/set_${{ matrix.sets }}"
           MOD_VALUE=${{ matrix.sets }}
-          file_index=1
+          file_index=0
           
           # make target dir
           mkdir $TARGET_DIR
