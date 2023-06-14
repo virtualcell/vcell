@@ -204,7 +204,10 @@ jobs:
           fi
       
       - name: Report Results to Slack
-        run: curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="It appears all models have succeeded from BMDB!" https://slack.com/api/chat.postMessage    
+        run: curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="It appears all models have succeeded from BMDB (in set ${{ matrix.sets }})!" https://slack.com/api/chat.postMessage    
+
+      - name: Setup tmate session 3
+        uses: mxschmitt/action-tmate@v3
 
       # Report a Problem to Slack
       - name: Report Problem to Slack
