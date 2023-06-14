@@ -18,6 +18,7 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.rmi.server.ExportException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -71,8 +72,27 @@ public class ExecuteImpl {
                     throw e;
                 }
             }
+            if (failedFiles.isEmpty()){
+                logger.info("Execution finished with no failures");
+                return;
+            }
+            // We had failures.
+            StringBuilder failedFileString = new StringBuilder();
+            for (String f : failedFiles){
+                failedFileString.append(String.format("\t- %s\n", f));
+            }
+            String errString = "Execution finished, but the following file(s) failed:\n" + failedFileString;
+            logger.error(errString);
+            throw new ExecutionException(errString);
+
         } catch (Exception e) {
+            StringBuilder failedFileString = new StringBuilder();
             logger.fatal("Fatal error caught executing batch mode (ending execution)", e);
+            for (String f : failedFiles){
+                failedFileString.append(String.format("\t- %s\n", f));
+            }
+            logger.fatal("Here's the list of all known failing models:\n" + failedFileString);
+
             throw new RuntimeException("Fatal error caught executing batch mode", e);
         }
     }
