@@ -67,7 +67,6 @@ public class ExecuteCommand implements Callable<Integer> {
     public Integer call() {
         CLIRecorder cliLogger = null;
         try {
-            cliLogger = new CLIRecorder(outputFilePath); // CLILogger will throw an execption if our output dir isn't valid.
 
             Level logLevel = logger.getLevel();
             if (!bQuiet && bDebug) {
@@ -75,6 +74,10 @@ public class ExecuteCommand implements Callable<Integer> {
             } else if (bQuiet) {
                 logLevel = Level.OFF;
             }
+
+            // CLILogger will throw an exception if our output dir isn't valid.
+            boolean shouldFlush = this.bKeepFlushingLogs || (this.bForceLogFiles && this.bDebug);
+            cliLogger = new CLIRecorder(this.outputFilePath, this.bForceLogFiles, shouldFlush);
             
             LoggerContext config = (LoggerContext)(LogManager.getContext(false));
             config.getConfiguration().getLoggerConfig(LogManager.getLogger("org.vcell").getName()).setLevel(logLevel);
@@ -122,7 +125,8 @@ public class ExecuteCommand implements Callable<Integer> {
             }
 
             
-            CLIPythonManager.getInstance().closePythonProcess(); // WARNING: Python will need reinstantiation after this is called
+            CLIPythonManager.getInstance().closePythonProcess();
+            // WARNING: Python needs re-instantiation once the above line is called!
             return 0;
         } catch (Exception e) { ///TODO: Break apart into specific exceptions to maximize logging.
             org.apache.logging.log4j.LogManager.getLogger(this.getClass()).error(e.getMessage(), e);
