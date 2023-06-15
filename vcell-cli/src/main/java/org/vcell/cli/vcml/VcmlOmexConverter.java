@@ -7,16 +7,18 @@ import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.publish.ITextWriter;
 import cbit.vcell.resource.NativeLib;
 import cbit.vcell.server.SimulationJobStatusPersistent;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SolverDescription;
-//import cbit.vcell.util.NativeLoader;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jlibsedml.SEDMLDocument;
 import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
@@ -32,17 +34,24 @@ import org.sbpax.schemas.util.DefaultNameSpaces;
 import org.sbpax.schemas.util.OntUtil;
 import org.sbpax.util.SesameRioUtil;
 import org.vcell.admin.cli.CLIDatabaseService;
-import org.vcell.cli.*;
+import org.vcell.cli.CLIRecorder;
+import org.vcell.cli.CLIUtils;
 import org.vcell.sedml.ModelFormat;
 import org.vcell.sedml.PubMet;
 import org.vcell.sedml.SEDMLExporter;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.*;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.beans.PropertyVetoException;
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FilenameFilter;
+import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.sql.SQLException;
@@ -50,9 +59,6 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class VcmlOmexConverter {
 	private static final Logger logger = LogManager.getLogger(VcmlOmexConverter.class);
@@ -290,9 +296,7 @@ public class VcmlOmexConverter {
 			bioModel.refreshDependencies();
 			writeFileEntry(outputBaseDir, vcmlName + ",VCML,SUCCEEDED\n", jobLogFile, bForceLogFiles);
 		} catch (XmlParseException | MappingException e1) {
-//		} catch (XmlParseException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
+			logger.error(vcmlName + " VCML failed to parse and generate math: "+e1.getMessage(), e1);
 			writeFileEntry(outputBaseDir, vcmlName + ",VCML,FAILED"+e1.getMessage() + "\n", jobLogFile, bForceLogFiles);
 			return false;
 		}
@@ -310,29 +314,16 @@ public class VcmlOmexConverter {
 			}
 		}
 
-		String destinationPath = Paths.get(outputDir, "diagram.png").toString();
-		File destination = new File(destinationPath);
-		if (!bOffline) {
-			Version version = bioModel.getVersion();
-			String versionKey = version.getVersionKey().toString();
-			String sourcePath = "https://vcellapi-beta.cam.uchc.edu:8080/biomodel/" + versionKey + "/diagram";
-			try {
-				URL source = new URL(sourcePath);
-				int connectionTimeout = 10000;
-				int readTimeout = 20000;
-				FileUtils.copyURLToFile(source, destination, connectionTimeout, readTimeout);        // diagram
-			} catch (IOException e) {
-				logger.error("Diagram not present in source=" + sourcePath + ": " + e.getMessage(), e);
-			}
-		}
+		Path diagramPath = Paths.get(outputDir, "diagram.png");
+		writeModelDiagram(bioModel, diagramPath.toFile());
 
-        SEDMLExporter sedmlExporter = new SEDMLExporter(vcmlName, bioModel, sedmlLevel, sedmlVersion, simsToExport, jsonFullyQualifiedName);
+		SEDMLExporter sedmlExporter = new SEDMLExporter(vcmlName, bioModel, sedmlLevel, sedmlVersion, simsToExport, jsonFullyQualifiedName);
 
         SEDMLDocument sedmlDocument = sedmlExporter.getSEDMLDocument(outputDir, vcmlName,
 				modelFormat, true, bValidate);
-        
+
 		writeFileEntry(outputBaseDir, sedmlExporter.getSedmlLogger().getRecordsAsCSV(), jobLogFile, bForceLogFiles);
-        
+
         if (sedmlExporter.getSedmlLogger().hasErrors()) {
             File dir = new File(outputDir);
             String[] files = dir.list();
@@ -349,10 +340,10 @@ public class VcmlOmexConverter {
         	}
         	int numModels = sedmlDocument.getSedMLModel().getModels().size();
         	int numTasks = sedmlDocument.getSedMLModel().getTasks().size();
-        	String summary = vcmlName+",EXPORTED,hasSpatial="+hasSpatial+",numModels="+numModels+",numTasks="+numTasks+"\n"; 
-    		writeFileEntry(outputBaseDir, summary, jobLogFile, bForceLogFiles);        	
+        	String summary = vcmlName+",EXPORTED,hasSpatial="+hasSpatial+",numModels="+numModels+",numTasks="+numTasks+"\n";
+    		writeFileEntry(outputBaseDir, summary, jobLogFile, bForceLogFiles);
         }
-        
+
         String sedmlString = sedmlDocument.writeDocumentToString();
         XmlUtil.writeXMLStringToFile(sedmlString, String.valueOf(Paths.get(outputDir, vcmlName + ".sedml")), true);
 
@@ -438,7 +429,7 @@ public class VcmlOmexConverter {
                     "http://purl.org/NET/mediatypes/application/vcml+xml",
                     false
             );
-            
+
             // writing into combine archive
             String omexPath = Paths.get(outputDir, vcmlName + ".omex").toString();
             File omexFile = new File(omexPath);
@@ -448,7 +439,7 @@ public class VcmlOmexConverter {
                 omexFile.delete();
             }
             isCreated = archive.writeToFile(omexPath);
-            
+
 			if (bValidate){
 				logger.warn("skipping VcmlOmexConverter.validation until verify math override round-trip (relying on SBMLExporter.bRoundTripSBMLValidation)");
 			}
@@ -463,8 +454,23 @@ public class VcmlOmexConverter {
         }
         return isCreated;
     }
-    
-    private static void removeOtherFiles(String outputDir, String[] files) {
+
+	private static void writeModelDiagram(BioModel bioModel, File destination) throws IOException {
+		Integer imageWidthInPixels = 1000;
+		try {
+			BufferedImage bufferedImage = ITextWriter.generateDocReactionsImage(bioModel.getModel(), imageWidthInPixels);
+			FileOutputStream imageOutputStream = new FileOutputStream(destination);
+			ImageIO.write(bufferedImage, "png", imageOutputStream);
+		} catch (IOException e) {
+			logger.error("Failed to generate diagram image for BioModel "+bioModel.getName(), e);
+			throw e;
+		} catch (Exception e) {
+			logger.error("Failed to generate diagram image for BioModel "+bioModel.getName(), e);
+			throw new RuntimeException("Failed to generate diagram image for BioModel "+bioModel.getName(), e);
+		}
+	}
+
+	private static void removeOtherFiles(String outputDir, String[] files) {
     	boolean isDeleted = false;
         for (String sd : files) {
             if (sd.endsWith(".sedml") || sd.endsWith(".sbml") || sd.endsWith("xml") || sd.endsWith("vcml") || sd.endsWith("rdf") || sd.endsWith("png")) {
