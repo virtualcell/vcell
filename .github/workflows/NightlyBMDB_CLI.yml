@@ -122,7 +122,7 @@ jobs:
         # Do the execution
       - name: Begin Execution
         #$(docker image ls | grep "<none>" | awk '{print $3;}')  to get image id
-        run: docker run -v $GITHUB_WORKSPACE/set_${{ matrix.sets }}:/root $(docker image ls | grep "<none>" | awk '{print $3;}') execute -d -i "/root" -o "/root/output" -forceLogFiles # grabs image and runs
+        run: docker run -v $GITHUB_WORKSPACE/set_${{ matrix.sets }}:/root $(docker image ls | grep "<none>" | awk '{print $3;}') execute -d -i "/root" -o "/root/output" --forceLogFiles # grabs image and runs
   
       - name: Check For Failure
         run: |
@@ -194,7 +194,7 @@ jobs:
         # Do the execution
       - name: Begin Execution
         #$(docker image ls | grep "<none>" | awk '{print $3;}')  to get image id
-        run: docker run -v $GITHUB_WORKSPACE/set_${{ matrix.sets }}:/root $(docker image ls | grep "<none>" | awk '{print $3;}') execute -d -i "/root" -o "/root/output" -forceLogFiles # grabs image and runs
+        run: docker run -v $GITHUB_WORKSPACE/set_${{ matrix.sets }}:/root $(docker image ls | grep "<none>" | awk '{print $3;}') execute -d -i "/root" -o "/root/output" --forceLogFiles # grabs image and runs
   
       - name: Check For Failure
         run: |
