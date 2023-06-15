@@ -7,12 +7,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.restlet.Request;
 import org.restlet.Response;
-import org.restlet.data.ChallengeResponse;
-import org.restlet.data.Cookie;
-import org.restlet.data.Form;
-import org.restlet.data.Parameter;
-import org.restlet.data.Reference;
-import org.restlet.data.Status;
+import org.restlet.data.*;
 import org.restlet.ext.crypto.CookieAuthenticator;
 import org.restlet.representation.Representation;
 import org.vcell.rest.auth.CustomAuthHelper;
@@ -57,7 +52,9 @@ public class VCellCookieAuthenticator extends CookieAuthenticator {
 	        request.setChallengeResponse(cr);
 	        
 	        
-	        getCredentialsCookie(request, response).setMaxAge(0);
+	        CookieSetting crendentialCookie = getCredentialsCookie(request, response);
+			crendentialCookie.setMaxAge(0);
+			crendentialCookie.setValue(accessToken.getToken());
 
 	        getLogger().log(Level.INFO,"MyCookieAuthenticator.login(request,response) - created new accessToken '"+accessToken.getToken()+"' and assignd to ChallengeResponse, redirectURL='"+redirectURL.getValue()+"'");
 
@@ -90,6 +87,12 @@ public class VCellCookieAuthenticator extends CookieAuthenticator {
 		}
 		
 		return super.logout(request, response);
+	}
+
+	@Override
+	public ChallengeResponse parseCredentials(String cookieValue) {
+		// increase visibility of this method
+		return super.parseCredentials(cookieValue);
 	}
 
 };
