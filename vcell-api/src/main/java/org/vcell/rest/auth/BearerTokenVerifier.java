@@ -34,7 +34,7 @@ public class BearerTokenVerifier implements Verifier {
             if (userService.getApiAccessToken(token) != null) {
                 return RESULT_VALID;
             } else {
-                lg.info("token invalid from Bearer Token Scheme", e);
+                lg.info("token invalid from Bearer Token Scheme");
                 return RESULT_INVALID;
             }
         } catch (SQLException | DataAccessException e) {

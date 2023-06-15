@@ -362,7 +362,7 @@ public class VCellApiApplication extends WadlApplication {
 		return this.templateConfiguration;
 	}
 	
-	public UserService getUserVerifier(){
+	public UserService getUserService(){
 		return userService;
 	}
 
