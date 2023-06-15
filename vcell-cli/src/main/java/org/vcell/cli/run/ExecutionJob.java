@@ -27,7 +27,7 @@ public class ExecutionJob {
     private final static Logger logger = LogManager.getLogger(ExecutionJob.class);
 
     private long startTime, endTime; 
-    private boolean bExactMatchOnly, bSmallMeshOverride, bKeepTempFiles;
+    private boolean bCoerceToDistributed, bExactMatchOnly, bSmallMeshOverride, bKeepTempFiles;
     private StringBuilder logOmexMessage;
     private String inputFilePath, bioModelBaseName, outputBaseDir, outputDir;
     private boolean anySedmlDocumentHasSucceeded = false;    // set to true if at least one sedml document run is successful
@@ -51,7 +51,7 @@ public class ExecutionJob {
      * @param bEncapsulateOutput whether to provide a sub-folder for outputs (needed for batch jobs)
      * @param bSmallMeshOverride whether to use small meshes or standard meshes.
      */
-    public ExecutionJob(File inputFile, File rootOutputDir, CLIRecordable cliRecorder,
+    public ExecutionJob(File inputFile, File rootOutputDir, CLIRecordable cliRecorder, boolean bCoerceToDistributed,
             boolean bKeepTempFiles, boolean bExactMatchOnly, boolean bEncapsulateOutput, boolean bSmallMeshOverride){
         this();
         this.inputFile = inputFile;
@@ -61,6 +61,7 @@ public class ExecutionJob {
         this.bioModelBaseName = FileUtils.getBaseName(inputFile.getName()); // input file without the path
         this.outputBaseDir = rootOutputDir.getAbsolutePath();
         this.outputDir = bEncapsulateOutput ? Paths.get(outputBaseDir, bioModelBaseName).toString() : outputBaseDir;
+        this.bCoerceToDistributed = bCoerceToDistributed;
         this.bKeepTempFiles = bKeepTempFiles;
         this.bExactMatchOnly = bExactMatchOnly;
         this.bSmallMeshOverride = bSmallMeshOverride;
@@ -122,21 +123,22 @@ public class ExecutionJob {
      * @throws IOException if there are system I/O issues
      * @throws ExecutionException if an execution specfic error occurs
      */
-    public void executeArchive(boolean bCoerceToDistributed) throws HDF5Exception, PythonStreamException, ExecutionException {
+    public void executeArchive() throws HDF5Exception, PythonStreamException, ExecutionException {
         try {
             Hdf5DataContainer masterHdf5File = new Hdf5DataContainer();
             this.queueAllSedml();
 
             for (String sedmlLocation : this.sedmlLocations){
-                SedmlJob job = new SedmlJob(sedmlLocation, this.omexHandler, this.inputFile, new File(this.outputBaseDir), this.outputDir, this.sedmlPath2d3d.toString(), 
-                    this.cliRecorder, this.bKeepTempFiles, this.bExactMatchOnly, this.bSmallMeshOverride, this.logOmexMessage);
+                SedmlJob job = new SedmlJob(sedmlLocation, this.omexHandler, this.inputFile, new File(this.outputBaseDir),
+                        this.outputDir, this.sedmlPath2d3d.toString(), this.cliRecorder, this.bCoerceToDistributed,
+                        this.bKeepTempFiles, this.bExactMatchOnly, this.bSmallMeshOverride, this.logOmexMessage);
                 if (!job.preProcessDoc()){
                     SedmlStatistics stats = job.getDocStatistics(); // Must process document first
                     logger.error("Statistics of failed SedML:\n" + stats.toString());
                     this.anySedmlDocumentHasFailed = true;
                 }
                 SedmlStatistics stats = job.getDocStatistics();
-                boolean hasSucceeded = job.simulateSedml(masterHdf5File, bCoerceToDistributed);
+                boolean hasSucceeded = job.simulateSedml(masterHdf5File);
                 this.anySedmlDocumentHasSucceeded |= hasSucceeded;
                 this.anySedmlDocumentHasFailed &= hasSucceeded;
                 if (hasSucceeded) logger.info("Processing of SedML succeeded.\n" + stats.toString());

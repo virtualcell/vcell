@@ -76,15 +76,6 @@ public class ExecuteImpl {
                 logger.info("Execution finished with no failures");
                 return;
             }
-            // We had failures.
-            StringBuilder failedFileString = new StringBuilder();
-            for (String f : failedFiles){
-                failedFileString.append(String.format("\t- %s\n", f));
-            }
-            String errString = "Execution finished, but the following file(s) failed:\n" + failedFileString;
-            logger.error(errString);
-            throw new ExecutionException(errString);
-
         } catch (Exception e) {
             StringBuilder failedFileString = new StringBuilder();
             logger.fatal("Fatal error caught executing batch mode (ending execution)", e);
@@ -95,6 +86,14 @@ public class ExecuteImpl {
 
             throw new RuntimeException("Fatal error caught executing batch mode", e);
         }
+
+        // We had failures.
+        StringBuilder failedFileString = new StringBuilder();
+        for (String f : failedFiles){
+            failedFileString.append(String.format("\t- %s\n", f));
+        }
+        String errString = "Execution finished, but the following file(s) failed:\n" + failedFileString;
+        logger.error(errString);
     }
 
     private static void runSingleExecOmex(File inputFile, File outputDir, CLIRecordable cliLogger, boolean bKeepTempFiles,
@@ -199,10 +198,11 @@ public class ExecuteImpl {
             boolean bKeepTempFiles, boolean bExactMatchOnly, boolean bEncapsulateOutput, boolean bSmallMeshOverride,
             boolean bCoerceToDistributed)
             throws ExecutionException, PythonStreamException, IOException, InterruptedException, HDF5Exception {
-        ExecutionJob requestedExecution = new ExecutionJob(inputFile, rootOutputDir, cliRecorder, 
+
+        ExecutionJob requestedExecution = new ExecutionJob(inputFile, rootOutputDir, cliRecorder, bCoerceToDistributed,
             bKeepTempFiles, bExactMatchOnly, bEncapsulateOutput, bSmallMeshOverride);
         requestedExecution.preprocessArchive();
-        requestedExecution.executeArchive(bCoerceToDistributed);
+        requestedExecution.executeArchive();
         requestedExecution.postProcessessArchive();
     }
 
