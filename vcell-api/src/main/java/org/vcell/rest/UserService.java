@@ -1,21 +1,12 @@
 package org.vcell.rest;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.logging.Level;
-
+import cbit.vcell.modeldb.AdminDBTopLevel;
+import cbit.vcell.modeldb.ApiAccessToken;
+import cbit.vcell.modeldb.ApiAccessToken.AccessTokenStatus;
+import cbit.vcell.modeldb.ApiClient;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jose4j.jwt.MalformedClaimException;
-import org.restlet.Context;
-import org.restlet.Request;
-import org.restlet.Response;
-import org.restlet.data.ChallengeResponse;
-import org.restlet.data.ChallengeScheme;
-import org.restlet.ext.crypto.CookieAuthenticator;
-import org.restlet.security.Verifier;
 import org.vcell.auth.JWTUtils;
 import org.vcell.rest.users.UnverifiedUser;
 import org.vcell.util.DataAccessException;
@@ -25,14 +16,14 @@ import org.vcell.util.document.User;
 import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.UserLoginInfo.DigestedPassword;
 
-import cbit.vcell.modeldb.AdminDBTopLevel;
-import cbit.vcell.modeldb.ApiAccessToken;
-import cbit.vcell.modeldb.ApiAccessToken.AccessTokenStatus;
-import cbit.vcell.modeldb.ApiClient;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
 
 
-public class UserVerifier implements Verifier {
-	private final static Logger lg = LogManager.getLogger(UserVerifier.class);
+public class UserService {
+	private final static Logger lg = LogManager.getLogger(UserService.class);
 
 	private static class AuthenticationInfo {
 		final User user;
@@ -56,7 +47,7 @@ public class UserVerifier implements Verifier {
 	private long lastQueryTimestampMS = 0;
 	private final static long MIN_QUERY_TIME_MS = 1000*5; // 5 seconds
 	
-	public UserVerifier(AdminDBTopLevel adminDbTopLevel){
+	public UserService(AdminDBTopLevel adminDbTopLevel){
 		this.adminDbTopLevel = adminDbTopLevel;
 	}
 
@@ -92,12 +83,22 @@ public class UserVerifier implements Verifier {
 		return adminDbTopLevel.generateApiAccessToken(apiClientKey, user, getNewExpireDate(), true);
 	}
 
-	public ApiAccessToken getApiAccessToken(String accessToken) throws SQLException, DataAccessException{
-		ApiAccessToken apiAccessToken = this.accessTokenMap.get(accessToken);
+	public ApiAccessToken getApiAccessToken(String jwtToken) throws SQLException, DataAccessException{
+		try {
+			if (!JWTUtils.verifyJWS(jwtToken)){
+				lg.warn("token was not valid");
+				return null;
+			}
+		} catch (MalformedClaimException e) {
+			lg.error("token was not valid", e);
+			return null;
+		}
+
+		ApiAccessToken apiAccessToken = this.accessTokenMap.get(jwtToken);
 		if (apiAccessToken==null){
-			apiAccessToken = adminDbTopLevel.getApiAccessToken(accessToken, true);
+			apiAccessToken = adminDbTopLevel.getApiAccessToken(jwtToken, true);
 			if (apiAccessToken!=null){
-				accessTokenMap.put(accessToken, apiAccessToken);
+				accessTokenMap.put(jwtToken, apiAccessToken);
 			}
 		}
 		return apiAccessToken;
@@ -128,73 +129,6 @@ public class UserVerifier implements Verifier {
 		throw new RuntimeException("invalid client");
 	}
 
-	@Override
-	public int verify(Request request, Response response) {
-		ChallengeResponse challengeResponse = request.getChallengeResponse();
-		AuthenticationStatus result = verify(challengeResponse);
-		
-		Context.getCurrent().getLogger().log(Level.FINE,"UserVerifier.verify(request,response) - returning "+result+", request='"+request+"'");
-		
-		switch (result){
-			case invalid:{
-				request.getCookies().removeAll("org.vcell.auth");
-				response.getCookieSettings().removeAll("org.vcell.auth");
-				return RESULT_INVALID;
-			}
-			case stale:{
-				request.getCookies().removeAll("org.vcell.auth");
-				response.getCookieSettings().removeAll("org.vcell.auth");
-				return RESULT_STALE;
-			}
-			case missing:{
-				return RESULT_MISSING;
-			}
-			case valid:{
-				return RESULT_VALID;
-			}
-			default: {
-				return RESULT_UNKNOWN;
-			}
-		}
-	}
-
-	public AuthenticationStatus verify(ChallengeResponse challengeResponse) {
-		if (challengeResponse != null && challengeResponse.getScheme().equals(ChallengeScheme.HTTP_OAUTH_BEARER) && challengeResponse.getRawValue() != null) {
-			try {
-				ApiAccessToken accessToken = getApiAccessToken(challengeResponse.getRawValue());
-				if (accessToken == null) {
-					return AuthenticationStatus.invalid;
-				} else if (accessToken.isExpired()) {
-					return AuthenticationStatus.stale;
-				} else if (accessToken.getStatus() == AccessTokenStatus.invalidated) {
-					return AuthenticationStatus.invalid;
-				} else {
-					return AuthenticationStatus.valid;
-				}
-			} catch (Exception e) {
-				lg.error(e.getMessage(), e);
-				return AuthenticationStatus.invalid;
-			}
-		} else if (challengeResponse != null && challengeResponse.getScheme().equals(ChallengeScheme.HTTP_COOKIE) && challengeResponse.getSecret() != null) {
-			String token = new String(challengeResponse.getSecret());
-			try {
-				boolean valid = JWTUtils.verifyJWS(token);
-				if (valid) {
-					return AuthenticationStatus.valid;
-				} else {
-					return AuthenticationStatus.invalid;
-				}
-			} catch (MalformedClaimException e) {
-				lg.error("token was not valid", e);
-				return AuthenticationStatus.invalid;
-			}
-		} else if (challengeResponse == null) {
-			return AuthenticationStatus.missing;
-		} else {
-			return AuthenticationStatus.invalid;
-		}
-	}
-	
 	public void addUnverifiedUser(UnverifiedUser unverifiedUser){
 		String userid = unverifiedUser.submittedUserInfo.userid;
 		

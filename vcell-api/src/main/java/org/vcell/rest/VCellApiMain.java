@@ -131,7 +131,7 @@ public class VCellApiMain {
 			RestEventService restEventService = new RestEventService(vcMessagingService_int);
 			
 			lg.trace("use verifier (next)");
-			UserVerifier userVerifier = new UserVerifier(adminDbTopLevel);
+			UserService userService = new UserService(adminDbTopLevel);
 
 			lg.trace("mongo (next)");
 			VCMongoMessage.enabled=true;
@@ -232,7 +232,7 @@ public class VCellApiMain {
 					testUserInfo.userid, testUserInfo.digestedPassword0);
 			AdminService adminService = new AdminService(adminDbTopLevel, databaseServerImpl);
 			RpcService rpcService = new RpcService(vcMessagingService_int);
-			WadlApplication app = new VCellApiApplication(restDatabaseService, userVerifier, rpcService, restEventService, adminService, templateConfiguration, healthService, javascriptDir);
+			WadlApplication app = new VCellApiApplication(restDatabaseService, userService, rpcService, restEventService, adminService, templateConfiguration, healthService, javascriptDir);
 			lg.trace("attach app");
 			component.getDefaultHost().attach(app);  
 
