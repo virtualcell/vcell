@@ -8,12 +8,15 @@ import java.util.logging.Level;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jose4j.jwt.MalformedClaimException;
 import org.restlet.Context;
 import org.restlet.Request;
 import org.restlet.Response;
 import org.restlet.data.ChallengeResponse;
 import org.restlet.data.ChallengeScheme;
+import org.restlet.ext.crypto.CookieAuthenticator;
 import org.restlet.security.Verifier;
+import org.vcell.auth.JWTUtils;
 import org.vcell.rest.users.UnverifiedUser;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
@@ -156,24 +159,39 @@ public class UserVerifier implements Verifier {
 	}
 
 	public AuthenticationStatus verify(ChallengeResponse challengeResponse) {
-		if (challengeResponse != null && challengeResponse.getScheme().equals(ChallengeScheme.HTTP_OAUTH_BEARER) && challengeResponse.getRawValue()!=null){
+		if (challengeResponse != null && challengeResponse.getScheme().equals(ChallengeScheme.HTTP_OAUTH_BEARER) && challengeResponse.getRawValue() != null) {
 			try {
 				ApiAccessToken accessToken = getApiAccessToken(challengeResponse.getRawValue());
-				if (accessToken==null){
+				if (accessToken == null) {
 					return AuthenticationStatus.invalid;
-				}else if (accessToken.isExpired()){
+				} else if (accessToken.isExpired()) {
 					return AuthenticationStatus.stale;
-				}else if (accessToken.getStatus()==AccessTokenStatus.invalidated){
+				} else if (accessToken.getStatus() == AccessTokenStatus.invalidated) {
 					return AuthenticationStatus.invalid;
-				}else{
+				} else {
 					return AuthenticationStatus.valid;
 				}
-			}catch (Exception e){
+			} catch (Exception e) {
 				lg.error(e.getMessage(), e);
 				return AuthenticationStatus.invalid;
 			}
-		}else{
+		} else if (challengeResponse != null && challengeResponse.getScheme().equals(ChallengeScheme.HTTP_COOKIE) && challengeResponse.getSecret() != null) {
+			String token = new String(challengeResponse.getSecret());
+			try {
+				boolean valid = JWTUtils.verifyJWS(token);
+				if (valid) {
+					return AuthenticationStatus.valid;
+				} else {
+					return AuthenticationStatus.invalid;
+				}
+			} catch (MalformedClaimException e) {
+				lg.error("token was not valid", e);
+				return AuthenticationStatus.invalid;
+			}
+		} else if (challengeResponse == null) {
 			return AuthenticationStatus.missing;
+		} else {
+			return AuthenticationStatus.invalid;
 		}
 	}
 	

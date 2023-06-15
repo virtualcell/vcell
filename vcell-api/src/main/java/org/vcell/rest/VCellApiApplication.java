@@ -252,16 +252,7 @@ public class VCellApiApplication extends WadlApplication {
 		 * :"38442201","mathModelBranchId"
 		 * :"38442202","mathModelName":"tempMath77"}}]
 		 */	    
-	    
-	
-		// Attach a guard to secure access to user parts of the api 
 
-		boolean bAuthOptional = true;
-		ChallengeAuthenticator guard = new ChallengeAuthenticator(
-				getContext(), bAuthOptional, ChallengeScheme.HTTP_OAUTH_BEARER, "testRealm");
-		TokenBasedVerifier verifier = new TokenBasedVerifier();
-		guard.setVerifier(verifier);
-        
         String ROOT_URI = javascriptDir.toURI().toString();
         String WEBAPP_URI = new File(javascriptDir.getParentFile(),"webapp").toURI().toString();
         System.out.println("using uri="+ROOT_URI+" for scripts directory");
@@ -333,10 +324,33 @@ public class VCellApiApplication extends WadlApplication {
 			}
 			
 		});
-		
-        guard.setNext(rootRouter);
-     	    	 
-    	return guard;
+
+		// Attach an auth bearer guard to secure access to user parts of the api via
+		boolean bAuthOptional = true;
+		ChallengeAuthenticator bearerTokenGuard = new ChallengeAuthenticator(
+				getContext(), bAuthOptional, ChallengeScheme.HTTP_OAUTH_BEARER, "testRealm");
+		TokenBasedVerifier verifier = new TokenBasedVerifier();
+		bearerTokenGuard.setMultiAuthenticating(false); // if it is already authenticated via cookies, then don't authenticate again
+		bearerTokenGuard.setVerifier(verifier);
+
+		// Attach a cookie based Basic auth guard to secure access to browser access.
+		boolean bCookieOptional = true;
+		final VCellCookieAuthenticator cookieAuthenticator = new VCellCookieAuthenticator(
+				this, bCookieOptional, "My cookie realm", "MyExtraSecretKey".getBytes());
+		cookieAuthenticator.setMultiAuthenticating(false);
+		cookieAuthenticator.setLoginPath("/"+LOGIN);
+		cookieAuthenticator.setLogoutPath("/"+LOGOUT);
+		cookieAuthenticator.setCookieName("org.vcell.auth");
+		cookieAuthenticator.setLoginFormPath("/"+LOGINFORM);
+		cookieAuthenticator.setIdentifierFormName(IDENTIFIER_FORMNAME);
+		cookieAuthenticator.setSecretFormName(SECRET_FORMNAME);
+		cookieAuthenticator.setRedirectQueryName(REDIRECTURL_FORMNAME);
+		cookieAuthenticator.setVerifier(userVerifier);
+		cookieAuthenticator.setMaxCookieAge(15*60); // 15 minutes (in units of seconds).
+
+		bearerTokenGuard.setNext(rootRouter);
+		cookieAuthenticator.setNext(bearerTokenGuard);
+    	return cookieAuthenticator;
     }  
 	
    public RestDatabaseService getRestDatabaseService() {
@@ -405,12 +419,16 @@ public class VCellApiApplication extends WadlApplication {
 		if (response==null){
 			getLogger().log(Level.INFO,"VCellApiApplication.getApiAccessToken(response) - response was null");
 			return null;
-		}else if (response.getRawValue()==null){
-			getLogger().log(Level.INFO,"VCellApiApplication.getApiAccessToken(response) - response.getRawValue() was null");
+		}else if (response.getSecret() != null) {
+			ApiAccessToken accessToken = userVerifier.getApiAccessToken(new String(response.getSecret()));
+			return accessToken;
+		}else if (response.getRawValue() != null) {
+			ApiAccessToken accessToken = userVerifier.getApiAccessToken(new String(response.getRawValue()));
+			return accessToken;
+		}else{
+			getLogger().log(Level.INFO,"VCellApiApplication.getApiAccessToken(response) - response.getSecret() and response.getRawValue() were both null");
 			return null;
 		}
-		ApiAccessToken accessToken = userVerifier.getApiAccessToken(new String(response.getRawValue()));
-		return accessToken;
 	}
 
 }
