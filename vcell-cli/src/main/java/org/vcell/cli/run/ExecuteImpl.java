@@ -57,6 +57,7 @@ public class ExecuteImpl {
         try {
             for (File inputFile : inputFiles) {
                 String inputFileName = inputFile.getName();
+                System.out.println("\n\n");
                 logger.info("Processing " + inputFileName + "(" + inputFile + ")");
                 try {
                     if (inputFileName.endsWith("vcml"))
