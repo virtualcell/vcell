@@ -32,7 +32,7 @@ public final class EmailTokenVerifyRestlet extends Restlet {
 			Form form = request.getResourceRef().getQueryAsForm();
 			String emailverify_token = form.getFirstValue(VCellApiApplication.EMAILVERIFYTOKEN_FORMNAME);
 			VCellApiApplication vcellApiApplication = (VCellApiApplication)getApplication();
-			UnverifiedUser unverifiedUser = vcellApiApplication.getUserVerifier().getUnverifiedUser(emailverify_token);
+			UnverifiedUser unverifiedUser = vcellApiApplication.getUserService().getUnverifiedUser(emailverify_token);
 			if (unverifiedUser!=null){
 				if (unverifiedUser.verificationTimeoutDate.after(new Date())){
 					// add user to database

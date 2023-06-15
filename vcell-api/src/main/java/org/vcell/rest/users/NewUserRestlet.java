@@ -6,7 +6,6 @@ import java.util.Date;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.h2.util.New;
 import org.restlet.Context;
 import org.restlet.Request;
 import org.restlet.Response;
@@ -97,7 +96,7 @@ public final class NewUserRestlet extends Restlet {
 			
 			// add Unverified UserInfo and send email
 			VCellApiApplication vcellApiApplication = (VCellApiApplication)getApplication();
-			vcellApiApplication.getUserVerifier().addUnverifiedUser(unverifiedUser);
+			vcellApiApplication.getUserService().addUnverifiedUser(unverifiedUser);
 			
 			try {
 				//Send new password to user
@@ -211,7 +210,7 @@ public final class NewUserRestlet extends Restlet {
 			
 			// add Unverified UserInfo and send email
 			VCellApiApplication vcellApiApplication = (VCellApiApplication)getApplication();
-			vcellApiApplication.getUserVerifier().addUnverifiedUser(unverifiedUser);
+			vcellApiApplication.getUserService().addUnverifiedUser(unverifiedUser);
 			
 			try {
 				//Send new password to user

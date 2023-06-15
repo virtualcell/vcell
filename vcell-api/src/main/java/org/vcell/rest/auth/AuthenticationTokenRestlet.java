@@ -55,7 +55,7 @@ public class AuthenticationTokenRestlet extends Restlet {
 				if (userPassword==null) {
 					throw new RuntimeException("expecting "+PARAM_USER_PASSWORD+" query parameter");
 				}
-				ApiClient apiClient = application.getUserVerifier().getApiClient(clientId);
+				ApiClient apiClient = application.getUserService().getApiClient(clientId);
 				if (apiClient==null){
 					if (lg.isWarnEnabled()) lg.warn("client not found");
 					response.setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
@@ -63,7 +63,7 @@ public class AuthenticationTokenRestlet extends Restlet {
 					return;
 				}
 				
-				User authenticatedUser = application.getUserVerifier().authenticateUser(userId, userPassword.toCharArray());
+				User authenticatedUser = application.getUserService().authenticateUser(userId, userPassword.toCharArray());
 				
 				if (authenticatedUser == null){
 					if (lg.isWarnEnabled()) lg.warn("unable to authenticate user");
@@ -72,7 +72,7 @@ public class AuthenticationTokenRestlet extends Restlet {
 					return;
 				}
 				
-				ApiAccessToken apiAccessToken = application.getUserVerifier().generateApiAccessToken(apiClient.getKey(), authenticatedUser);
+				ApiAccessToken apiAccessToken = application.getUserService().generateApiAccessToken(apiClient.getKey(), authenticatedUser);
 		
 				AccessTokenRepresentation tokenRep = new AccessTokenRepresentation(apiAccessToken);
 				
