@@ -1808,16 +1808,6 @@ public class SBMLImporter {
 	}
 
 	public BioModel getBioModel() throws VCLoggerException {
-		boolean bCoerceToDistributed = true;
-		boolean bTransformUnits = true;
-		return getBioModel(bCoerceToDistributed, bTransformUnits);
-	}
-
-	/**
-	 * parse SBML file into biomodel logs errors to log4j if present in source document
-	 */
-	public BioModel getBioModel(boolean bCoerceToDistributed, boolean bTransformUnits) throws IllegalStateException, SBMLImportException, VCLoggerException {
-
 		if (sbmlFileName == null && sbmlModel == null && sbmlInputStream == null) {
 			throw new IllegalStateException("Expected non-null SBML model");
 		}
@@ -1900,7 +1890,7 @@ public class SBMLImporter {
 		// translate read SBML model and import contents into VCell BioModel
 		//
 		try {
-			translateSBMLModel(sbmlModel, vcBioModel, sbmlAnnotationUtil, sbmlUnitIdentifierHash, sbmlSymbolMapping, vcLogger, bCoerceToDistributed);
+			translateSBMLModel(sbmlModel, vcBioModel, sbmlAnnotationUtil, sbmlUnitIdentifierHash, sbmlSymbolMapping, vcLogger);
 		} catch(Exception e) {
 			throw new SBMLImportException("Failed to translate SBML model into BioModel: "+e.getMessage(), e);
 		}
@@ -2707,8 +2697,7 @@ public class SBMLImporter {
 	private static void translateSBMLModel(org.sbml.jsbml.Model sbmlModel, BioModel vcBioModel,
 										   SBMLAnnotationUtil sbmlAnnotationUtil,
 										   Map<String, VCUnitDefinition> sbmlUnitIdentifierHash,
-										   SBMLSymbolMapping sbmlSymbolMapping, VCLogger vcLogger,
-										   boolean bCoerceToDistributed) throws Exception {
+										   SBMLSymbolMapping sbmlSymbolMapping, VCLogger vcLogger) throws Exception {
 
 		final Vector<Issue> localIssueList = new Vector<>();
 		final IssueContext issueContext = new IssueContext();
@@ -2871,6 +2860,7 @@ public class SBMLImporter {
 		//
 		// for imported lumped reactions kinetics, attempt to switch to the corresponding distributed kinetics
 		//
+		boolean bCoerceToDistributed = true;
 		if (bCoerceToDistributed) {
 //			vcBioModel.transformLumpedToDistributed();
 			try {

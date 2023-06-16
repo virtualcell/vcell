@@ -43,10 +43,9 @@ public class ExecuteImplTest {
             boolean bExactMatchOnly = false;
             boolean bEncapsulateOutput = true;
             boolean bSmallMeshOverride = false;
-            boolean bCoerceToDistributed = true;
             ExecuteImpl.singleMode(
                     tempOmexFile, tempOutputDir, cliRecorder,
-                    bKeepTempFiles, bExactMatchOnly, bEncapsulateOutput, bSmallMeshOverride, bCoerceToDistributed);
+                    bKeepTempFiles, bExactMatchOnly, bEncapsulateOutput, bSmallMeshOverride);
 
             org.apache.commons.io.FileUtils.forceDeleteOnExit(tempOutputDir);
             tempOmexFile.delete();

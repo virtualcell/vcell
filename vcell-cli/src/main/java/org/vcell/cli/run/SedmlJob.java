@@ -30,7 +30,7 @@ import java.util.List;
  */
 public class SedmlJob {
 
-    private final boolean SHOULD_COERCE_TO_DISTRUBTED, SHOULD_KEEP_TEMP_FILES,
+    private final boolean SHOULD_KEEP_TEMP_FILES,
             ACCEPT_EXACT_MATCH_ONLY, SHOULD_OVERRIDE_FOR_SMALL_MESH;
     private final String SEDML_LOCATION, BIOMODEL_BASE_NAME, RESULTS_DIRECTORY_PATH;
     private final StringBuilder LOG_OMEX_MESSAGE;
@@ -62,7 +62,7 @@ public class SedmlJob {
      */
     public SedmlJob(String sedmlLocation, OmexHandler omexHandler, File masterOmexArchive, File rootOutputDir,
                     String resultsDirPath, String sedmlPath2d3dString, CLIRecordable cliRecorder,
-                    boolean bCoerceToDistributed, boolean bKeepTempFiles, boolean bExactMatchOnly, boolean bSmallMeshOverride,
+                    boolean bKeepTempFiles, boolean bExactMatchOnly, boolean bSmallMeshOverride,
                     StringBuilder logOmexMessage){
         this.MASTER_OMEX_ARCHIVE = masterOmexArchive;
         this.SEDML_LOCATION = sedmlLocation;
@@ -74,7 +74,6 @@ public class SedmlJob {
         this.LOG_OMEX_MESSAGE = logOmexMessage;
         this.PLOTS_DIRECTORY = new File(sedmlPath2d3dString);
         this.CLI_RECORDER = cliRecorder;
-        this.SHOULD_COERCE_TO_DISTRUBTED = bCoerceToDistributed;
         this.SHOULD_KEEP_TEMP_FILES = bKeepTempFiles;
         this.ACCEPT_EXACT_MATCH_ONLY = bExactMatchOnly;
         this.SHOULD_OVERRIDE_FOR_SMALL_MESH = bSmallMeshOverride;
@@ -241,7 +240,7 @@ public class SedmlJob {
             solverHandler.simulateAllTasks(externalDocInfo, this.sedml, this.CLI_RECORDER,
                     this.OUTPUT_DIRECTORY_FOR_CURRENT_SEDML, this.RESULTS_DIRECTORY_PATH,
                     this.ROOT_OUTPUT_DIR.getAbsolutePath(), this.SEDML_LOCATION, this.SHOULD_KEEP_TEMP_FILES,
-                    this.ACCEPT_EXACT_MATCH_ONLY, this.SHOULD_OVERRIDE_FOR_SMALL_MESH, this.SHOULD_COERCE_TO_DISTRUBTED);
+                    this.ACCEPT_EXACT_MATCH_ONLY, this.SHOULD_OVERRIDE_FOR_SMALL_MESH);
         } catch (Exception e) {
             Throwable currentTierOfException = e;
             StringBuilder errorMessage = new StringBuilder();

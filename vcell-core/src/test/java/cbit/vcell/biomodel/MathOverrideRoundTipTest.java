@@ -90,8 +90,7 @@ public class MathOverrideRoundTipTest {
         SEDMLExporter.writeBioModel(bioModel, omexFile, ModelFormat.SBML, bFromCLI, bRoundTripSBMLValidation, bWriteOmexArchive);
 
         SBMLExporter.MemoryVCLogger memoryVCLogger = new SBMLExporter.MemoryVCLogger();
-        boolean bCoerceToDistributed = true;
-        List<BioModel> bioModels = XmlHelper.readOmex(omexFile, memoryVCLogger, bCoerceToDistributed);
+        List<BioModel> bioModels = XmlHelper.readOmex(omexFile, memoryVCLogger);
 
         Assert.assertTrue(memoryVCLogger.highPriority.size() == 0);
 

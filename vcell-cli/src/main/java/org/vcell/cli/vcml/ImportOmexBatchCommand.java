@@ -25,9 +25,6 @@ public class ImportOmexBatchCommand implements Callable<Integer> {
     @Option(names = { "-o", "--outputFilePath" }, description = "full path to output directory", required = true)
     private File outputFilePath;
 
-    @Option(names = { "--coerceToDistributed" }, defaultValue = "true", description = "import SBML lumped reactions as VCell distributed reactions if possible")
-    private boolean bCoerceToDistributed = true;
-
     @Option(names = {"-d", "--debug"}, description = "full application debug mode")
     private boolean bDebug = false;
 
@@ -54,7 +51,7 @@ public class ImportOmexBatchCommand implements Callable<Integer> {
                 throw new RuntimeException("outputFilePath '"+outputFilePath+"' should be a directory");
             }
             logger.debug("Beginning batch import");
-            VcmlOmexConverter.importOmexFiles(inputFilePath, outputFilePath, cliLogger, true, bCoerceToDistributed);
+            VcmlOmexConverter.importOmexFiles(inputFilePath, outputFilePath);
             return 0;
         } catch (Exception e) {
             e.printStackTrace(System.err);
