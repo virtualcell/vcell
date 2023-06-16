@@ -11,12 +11,12 @@ import cbit.vcell.xml.XmlHelper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.cli.CLIRecorder;
-import org.vcell.cli.CLIUtils;
 
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 
@@ -38,8 +38,8 @@ public class VcmlValidator {
             throw new RuntimeException("No VCML files found in the directory `" + inputDirectory + "`");
         }
 
-        final boolean bForceLogFiles = true;
-        writeFileEntry(outputDirectory.getAbsolutePath(), "inputDirectory is " + inputDirectory.getAbsolutePath(), jobConfigFile, bForceLogFiles);
+        final boolean bWriteLogFiles = true;
+        writeFileEntry(outputDirectory.getAbsolutePath(), "inputDirectory is " + inputDirectory.getAbsolutePath(), jobConfigFile, bWriteLogFiles);
         for (String inputFileName : inputFiles) {
             File inputFile = Paths.get(inputDirectory.getAbsolutePath()).resolve(inputFileName).toFile();
             validateOneVcmlFile(inputFile, outputDirectory, bTransformKMOLE, bTransformVariables);
@@ -48,7 +48,7 @@ public class VcmlValidator {
 
     public static void validateOneVcmlFile(File inputFile, File outputDirectory, boolean bTransformKMOLE, boolean bTransformVariables) throws IOException {
         logger.debug("Beginning import of `" + inputFile.getName() + "`");
-        final boolean bForceLogFiles = true;
+        final boolean bWriteLogFiles = true;
         try {
             BioModel orig_biomodel = XmlHelper.XMLToBioModel(new XMLSource(inputFile));
             orig_biomodel.refreshDependencies();
@@ -77,7 +77,7 @@ public class VcmlValidator {
                     results = MathDescription.testEquivalency(SimulationSymbolTable.createMathSymbolTableFactory(), originalMath, newMath);
                 }
                 if (results.isEquivalent()) {
-                    writeFileEntry(outputDirectory.getAbsolutePath(), inputFile.getName() + "," + orig_simContext.getName() + ",SUCCEEDED," + i, jobLogFile, bForceLogFiles);
+                    writeFileEntry(outputDirectory.getAbsolutePath(), inputFile.getName() + "," + orig_simContext.getName() + ",SUCCEEDED," + i, jobLogFile, bWriteLogFiles);
                     number_succeeded++;
                 } else {
                 	// try again using non-reduced math
@@ -86,16 +86,16 @@ public class VcmlValidator {
    	                newMath = new_simContext.getMathDescription();
    	                MathCompareResults results2 = MathDescription.testEquivalency(SimulationSymbolTable.createMathSymbolTableFactory(), originalMath, newMath);
    	                if (results2.isEquivalent()) {
-   	                    writeFileEntry(outputDirectory.getAbsolutePath(), inputFile.getName() + "," + orig_simContext.getName() + ",SUCCEEDED," + i, jobLogFile, bForceLogFiles);
+   	                    writeFileEntry(outputDirectory.getAbsolutePath(), inputFile.getName() + "," + orig_simContext.getName() + ",SUCCEEDED," + i, jobLogFile, bWriteLogFiles);
    	                    number_succeeded++;
    	                } else {
-   	                	writeFileEntry(outputDirectory.getAbsolutePath(), inputFile.getName() + "," + orig_simContext.getName() + ",FAILED," + 111 + "," + results.toDatabaseStatus(), jobLogFile, bForceLogFiles);
-   	                	writeFileEntry(outputDirectory.getAbsolutePath(), inputFile.getName() + "," + orig_simContext.getName() + ",FAILED," + 222 + "," + results2.toDatabaseStatus(), jobLogFile, bForceLogFiles);
+   	                	writeFileEntry(outputDirectory.getAbsolutePath(), inputFile.getName() + "," + orig_simContext.getName() + ",FAILED," + 111 + "," + results.toDatabaseStatus(), jobLogFile, bWriteLogFiles);
+   	                	writeFileEntry(outputDirectory.getAbsolutePath(), inputFile.getName() + "," + orig_simContext.getName() + ",FAILED," + 222 + "," + results2.toDatabaseStatus(), jobLogFile, bWriteLogFiles);
    	                }
                 }
                 i++;
             }
-            writeFileEntry(outputDirectory.getAbsolutePath(), inputFile.getName() + ",SUCCEEDED," + number_succeeded, jobLogFile, bForceLogFiles);
+            writeFileEntry(outputDirectory.getAbsolutePath(), inputFile.getName() + ",SUCCEEDED," + number_succeeded, jobLogFile, bWriteLogFiles);
         } catch (Exception e) {
             String loggedString = inputFile.getName() + ",FAILED,";
             if (e.getCause() != null) {
@@ -104,18 +104,23 @@ public class VcmlValidator {
                 loggedString += e;
             }
             logger.error(loggedString, e);
-            writeFileEntry(outputDirectory.getAbsolutePath(), loggedString, jobLogFile, bForceLogFiles);
+            writeFileEntry(outputDirectory.getAbsolutePath(), loggedString, jobLogFile, bWriteLogFiles);
         } finally {
             logger.debug("Import of `" + inputFile.getName() + "` completed");
         }
     }
 
-    public static void writeFileEntry(String outputBaseDir, String entry, String fileName, boolean bForceLogFiles) throws IOException {
-        if (CLIUtils.isBatchExecution(outputBaseDir, bForceLogFiles)) {
-            String dest = outputBaseDir + File.separator + fileName;
-            Files.write(Paths.get(dest), (entry + "\n").getBytes(),
-                    StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+
+    private static void writeFileEntry(String outputBaseDir, String entry, String fileName, boolean bWriteLogFiles) throws IOException {
+        if (!bWriteLogFiles){
+            return;
         }
+        Path path = Paths.get(outputBaseDir);
+        if (!Files.isDirectory(path)){
+            throw new RuntimeException("outputBaseDir '"+outputBaseDir+"' is not a directory, cannot write log file here");
+        }
+        String dest = outputBaseDir + File.separator + fileName;
+        Files.write(Paths.get(dest), (entry + "\n").getBytes(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
     }
 
 }

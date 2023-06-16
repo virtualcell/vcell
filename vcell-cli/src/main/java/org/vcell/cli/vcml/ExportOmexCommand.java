@@ -35,10 +35,7 @@ public class ExportOmexCommand implements Callable<Integer> {
     @Option(names = "--validate")
     boolean bValidateOmex;
 
-    @Option(names = "--offline")
-    boolean bOffline=false;
-
-    public Integer call() { 
+    public Integer call() {
         Level logLevel = bDebug ? Level.DEBUG : logger.getLevel(); 
         
         LoggerContext config = (LoggerContext)(LogManager.getContext(false));
@@ -48,12 +45,10 @@ public class ExportOmexCommand implements Callable<Integer> {
 
         try {
             PropertyLoader.loadProperties();
-            boolean bForceLogFiles = true; // TODO find out what this means and simplify
 
             try {
                 logger.debug("Beginning export");
-                VcmlOmexConverter.convertOneFile(inputFilePath, outputFilePath,
-                        outputModelFormat, bForceLogFiles, bValidateOmex, bOffline);
+                VcmlOmexConverter.convertOneFile(inputFilePath, outputFilePath, outputModelFormat, bValidateOmex);
             } catch (IOException e) {
                 e.printStackTrace(System.err);
             }

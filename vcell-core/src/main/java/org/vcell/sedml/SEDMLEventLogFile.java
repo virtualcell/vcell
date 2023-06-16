@@ -13,8 +13,12 @@ public class SEDMLEventLogFile implements SEDMLEventLog {
     }
 
     @Override
-    public void writeEntry(String entry) throws IOException {
-        Files.write(logFile.toPath(), (entry + "\n").getBytes(),
-                StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+    public void writeEntry(String entry) {
+        try {
+            Files.write(logFile.toPath(), (entry + "\n").getBytes(),
+                    StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+        }catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
