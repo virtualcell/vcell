@@ -17,12 +17,13 @@ import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.Model.ReservedSymbol;
 import cbit.vcell.model.Structure.StructureSize;
 import cbit.vcell.parser.*;
+import cbit.vcell.publish.ITextWriter;
+import cbit.vcell.resource.NativeLib;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.*;
 import cbit.vcell.solver.MathOverridesResolver.SymbolReplacement;
-import cbit.vcell.xml.VCMLSupport;
-import cbit.vcell.xml.XMLTags;
-import cbit.vcell.xml.XmlHelper;
+import cbit.vcell.xml.*;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jdom.Element;
@@ -36,6 +37,13 @@ import org.jlibsedml.modelsupport.SBMLSupport.ParameterAttribute;
 import org.jlibsedml.modelsupport.SBMLSupport.SpeciesAttribute;
 import org.jlibsedml.modelsupport.SUPPORTED_LANGUAGE;
 import org.jmathml.ASTNode;
+import org.openrdf.model.Graph;
+import org.openrdf.model.Literal;
+import org.openrdf.model.URI;
+import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.vocabulary.RDF;
+import org.openrdf.rio.RDFFormat;
+import org.openrdf.rio.RDFHandlerException;
 import org.sbml.jsbml.Annotation;
 import org.sbml.jsbml.Parameter;
 import org.sbml.jsbml.SBMLDocument;
@@ -43,6 +51,10 @@ import org.sbml.jsbml.SBMLReader;
 import org.sbml.jsbml.xml.XMLNode;
 import org.sbml.libcombine.CombineArchive;
 import org.sbml.libcombine.KnownFormats;
+import org.sbpax.impl.HashGraph;
+import org.sbpax.schemas.util.DefaultNameSpaces;
+import org.sbpax.schemas.util.OntUtil;
+import org.sbpax.util.SesameRioUtil;
 import org.vcell.sbml.SbmlException;
 import org.vcell.sbml.SimSpec;
 import org.vcell.sbml.vcell.SBMLExporter;
@@ -51,13 +63,19 @@ import org.vcell.util.ISize;
 import org.vcell.util.Pair;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.BioModelInfo;
+import org.vcell.util.document.PublicationInfo;
+import org.vcell.util.document.Version;
 
+import javax.imageio.ImageIO;
 import javax.xml.stream.XMLStreamException;
+import java.awt.image.BufferedImage;
 import java.beans.PropertyVetoException;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -82,7 +100,11 @@ public class SEDMLExporter {
 	private String vcmlLanguageURN = SUPPORTED_LANGUAGE.VCELL_GENERIC.getURN();
 	
 	private SEDMLRecorder sedmlRecorder = null;
-	
+	private int simCount;
+	private int overrideCount;
+
+	private SBMLSupport sbmlSupport = new SBMLSupport();
+
 
 	public SEDMLExporter(String argJobId, BioModel argBiomodel, int argLevel, int argVersion, List<Simulation> argSimsToExport) {
 		this(argJobId, argBiomodel, argLevel, argVersion, argSimsToExport, null);
@@ -108,7 +130,7 @@ public class SEDMLExporter {
 		}
 	}
 
-	public SEDMLDocument getSEDMLDocument(String sPath, String sBaseFileName, ModelFormat modelFormat, 
+	public SEDMLDocument getSEDMLDocument(String sPath, String sBaseFileName, ModelFormat modelFormat,
 				boolean bFromCLI, boolean bRoundTripSBMLValidation) {
 		
 		double start = System.currentTimeMillis();
@@ -1344,8 +1366,14 @@ public class SEDMLExporter {
         }
     }
 
+	public static List<SEDMLTaskRecord> writeBioModel(BioModel bioModel,
+													  File exportFileOrDirectory,
+													  ModelFormat modelFormat,
+													  boolean bFromCLI,
+													  boolean bRoundTripSBMLValidation,
+													  boolean bCreateOmexArchive
+	) throws Exception {
 
-	public static List<SEDMLTaskRecord> writeBioModel(BioModel bioModel, File exportFileOrDirectory, ModelFormat modelFormat, boolean bFromCLI, boolean bRoundTripSBMLValidation, boolean bCreateOmexArchive) throws Exception {
 		String resultString;
 		// export the entire biomodel to a SEDML file (all supported applications)
 		int sedmlLevel = 1;
@@ -1399,21 +1427,373 @@ public class SEDMLExporter {
 		} else {
 			XmlUtil.writeXMLStringToFile(resultString, exportFileOrDirectory.getAbsolutePath(), true);
 		}
-		return sedmlExporter.getSedmlLogger().getRecords();
+		return sedmlExporter.sedmlRecorder.getRecords();
 	}
-
-	// we know exactly which files we need to archive: those in sbmlFilePathStrAbsoluteList
-	// each file is deleted after being added to archive
-	private final int BUFFER = 2048;
-
-	private int simCount;
-
-	private int overrideCount;
-
-	private SBMLSupport sbmlSupport = new SBMLSupport();
 
 	public SEDMLRecorder getSedmlLogger() {
 		return sedmlRecorder;
+	}
+
+	public static boolean vcmlToOmexConversion(String inputFilePath,
+											   BioModelInfo bioModelInfo,
+											   String outputBaseDir,
+											   String outputDir,
+											   Predicate<Simulation> simulationExportFilter,
+											   ModelFormat modelFormat,
+											   SEDMLEventLog eventLogWriter,
+											   boolean bValidate
+	) throws IOException {
+
+		int sedmlLevel = 1;
+		int sedmlVersion = 2;
+
+		String inputVcmlFile = inputFilePath;
+
+		// get VCML name from VCML path
+		String vcmlName = FilenameUtils.getBaseName(inputVcmlFile);		// platform independent, strips extension too
+		String jsonFullyQualifiedName = Paths.get(outputBaseDir, "json_reports" ,vcmlName + ".json").toString();
+
+		File vcmlFilePath = new File(inputVcmlFile);
+		eventLogWriter.writeEntry(vcmlName);
+
+		// Create biomodel
+		BioModel bioModel = null;
+		try {
+			bioModel = XmlHelper.XMLToBioModel(new XMLSource(vcmlFilePath));
+			bioModel.updateAll(false);
+			bioModel.refreshDependencies();
+			eventLogWriter.writeEntry(vcmlName + ",VCML,SUCCEEDED\n");
+		} catch (XmlParseException | MappingException e1) {
+			logger.error(vcmlName + " VCML failed to parse and generate math: "+e1.getMessage(), e1);
+			eventLogWriter.writeEntry(vcmlName + ",VCML,FAILED"+e1.getMessage() + "\n");
+			return false;
+		}
+
+		List<Simulation> simsToExport = Arrays.stream(bioModel.getSimulations()).filter(simulationExportFilter).collect(Collectors.toList());
+
+		// we replace the obsolete solver with the fully supported equivalent
+		for (Simulation simulation : simsToExport) {
+			if (simulation.getSolverTaskDescription().getSolverDescription().equals(SolverDescription.FiniteVolume)) {
+				try {
+					simulation.getSolverTaskDescription().setSolverDescription(SolverDescription.SundialsPDE);
+				} catch (PropertyVetoException e) {
+					logger.error("Failed to replace obsolete solver", e);
+				}
+			}
+		}
+
+		Path diagramPath = Paths.get(outputDir, "diagram.png");
+		writeModelDiagram(bioModel, diagramPath.toFile());
+
+		SEDMLExporter sedmlExporter = new SEDMLExporter(vcmlName, bioModel, sedmlLevel, sedmlVersion, simsToExport, jsonFullyQualifiedName);
+
+		SEDMLDocument sedmlDocument = sedmlExporter.getSEDMLDocument(outputDir, vcmlName,
+				modelFormat, true, bValidate);
+
+		eventLogWriter.writeEntry(sedmlExporter.sedmlRecorder.getRecordsAsCSV());
+
+		if (sedmlExporter.sedmlRecorder.hasErrors()) {
+			File dir = new File(outputDir);
+			String[] files = dir.list();
+			removeOtherFiles(outputDir, files);
+			return false;
+		} else {
+			// write summary of successful export
+			boolean hasSpatial = false;
+			for (SimulationContext sc : bioModel.getSimulationContexts()) {
+				if (sc.getGeometry().getDimension() > 0) {
+					hasSpatial = true;
+					break;
+				}
+			}
+			int numModels = sedmlDocument.getSedMLModel().getModels().size();
+			int numTasks = sedmlDocument.getSedMLModel().getTasks().size();
+			String summary = vcmlName+",EXPORTED,hasSpatial="+hasSpatial+",numModels="+numModels+",numTasks="+numTasks+"\n";
+			eventLogWriter.writeEntry(summary);
+		}
+
+		String sedmlString = sedmlDocument.writeDocumentToString();
+		XmlUtil.writeXMLStringToFile(sedmlString, String.valueOf(Paths.get(outputDir, vcmlName + ".sedml")), true);
+
+		String rdfString = getMetadata(vcmlName, bioModel, diagramPath.toFile(), bioModelInfo);
+		XmlUtil.writeXMLStringToFile(rdfString, String.valueOf(Paths.get(outputDir, "metadata.rdf")), true);
+		try {
+			NativeLib.combinej.load();
+		} catch (UnsatisfiedLinkError ex) {
+			logger.error("Unable to link to native 'libCombine' lib, check native lib: " + ex.getMessage());
+			throw ex;
+		} catch (Exception ex) {
+			String msg = "Error occurred while importing libCombine: " + ex.getMessage();
+			logger.error(msg, ex);
+			throw new RuntimeException(msg, ex);
+		}
+
+		boolean isCreated;
+		String failureMessage = null;
+		try {
+			CombineArchive archive = new CombineArchive();
+
+			String[] files;
+
+			// TODO: try-catch if no files
+			File dir = new File(outputDir);
+			files = dir.list();
+
+			for (String sd : files) {
+				if (sd.endsWith(".sedml")) {
+					archive.addFile(
+							Paths.get(outputDir, sd).toString(),
+							"./" + sd, // target file name
+							KnownFormats.lookupFormat("sedml"),
+							true // mark file as master
+					);
+				} else if (sd.endsWith(".sbml") || sd.endsWith(".xml")) {
+					archive.addFile(
+							Paths.get(outputDir, sd).toString(),
+							"./" + sd,
+							KnownFormats.lookupFormat("sbml"),
+							false
+					);
+				} else if (sd.endsWith(".rdf")) {
+					archive.addFile(
+							Paths.get(outputDir, sd).toString(),
+							"./" + sd,
+							"http://identifiers.org/combine.specifications/omex-metadata",
+//                            KnownFormats.lookupFormat("xml"),
+							false
+					);
+				} else if(sd.endsWith(".png")) {
+					archive.addFile(
+							Paths.get(outputDir, sd).toString(),
+							"./" + sd,
+							"http://purl.org/NET/mediatypes/image/png",		// was "https://www.iana.org/assignments/media-types/image/png"
+							false
+					);
+				}
+			}
+
+			archive.addFile(
+					Paths.get(String.valueOf(vcmlFilePath)).toString(),
+					"./" + vcmlName + ".vcml",
+					"http://purl.org/NET/mediatypes/application/vcml+xml",
+					false
+			);
+
+			// writing into combine archive
+			String omexPath = Paths.get(outputDir, vcmlName + ".omex").toString();
+			File omexFile = new File(omexPath);
+
+			// Deleting file if already exists with same name
+			if(omexFile.exists()) {
+				omexFile.delete();
+			}
+			isCreated = archive.writeToFile(omexPath);
+
+			if (bValidate){
+				logger.warn("skipping VcmlOmexConverter.validation until verify math override round-trip (relying on SBMLExporter.bRoundTripSBMLValidation)");
+			}
+			// Removing all other files(like SEDML, XML, SBML) after archiving
+			removeOtherFiles(outputDir, files);
+
+			if (failureMessage != null){
+				throw new RuntimeException(failureMessage);
+			}
+		} catch (Exception e) {
+			throw new RuntimeException("createZipArchive threw exception: " + e.getMessage(), e);
+		}
+		return isCreated;
+	}
+
+	private static void writeModelDiagram(BioModel bioModel, File destination) {
+		Integer imageWidthInPixels = 1000;
+		try {
+			BufferedImage bufferedImage = ITextWriter.generateDocReactionsImage(bioModel.getModel(), imageWidthInPixels);
+			FileOutputStream imageOutputStream = new FileOutputStream(destination);
+			ImageIO.write(bufferedImage, "png", imageOutputStream);
+		} catch (Exception e) {
+			logger.error("Failed to generate diagram image for BioModel "+bioModel.getName(), e);
+			throw new RuntimeException("Failed to generate diagram image for BioModel "+bioModel.getName(), e);
+		}
+	}
+
+	private static void removeOtherFiles(String outputDir, String[] files) {
+		boolean isDeleted = false;
+		for (String sd : files) {
+			if (sd.endsWith(".sedml") || sd.endsWith(".sbml") || sd.endsWith("xml") || sd.endsWith("vcml") || sd.endsWith("rdf") || sd.endsWith("png")) {
+				isDeleted = Paths.get(outputDir, sd).toFile().delete();
+			}
+		}
+		if (isDeleted) logger.trace("Removed intermediary files in "+outputDir);
+	}
+
+
+	private static String getMetadata(String vcmlName, BioModel bioModel, File diagram, BioModelInfo bioModelInfo) {
+		String ret = "";
+		String ns = DefaultNameSpaces.EX.uri;
+
+		Graph graph = new HashGraph();
+		Graph schema = new HashGraph();
+
+		if(bioModelInfo == null) {								// perhaps it's not public, in which case is not in the map
+			ret = XmlRdfUtil.getMetadata(vcmlName);
+			return ret;
+		}
+		PublicationInfo[] publicationInfos = bioModelInfo.getPublicationInfos();
+		if(publicationInfos == null || publicationInfos.length == 0) {				// we may not have PublicationInfo
+			ret = XmlRdfUtil.getMetadata(vcmlName);
+			return ret;
+		}
+
+		PublicationInfo publicationInfo = publicationInfos[0];
+		String bioModelName = bioModel.getName();
+		Version version = bioModelInfo.getVersion();
+		String[] creators = publicationInfo.getAuthors();
+		String citation = publicationInfo.getCitation();
+		String doi = publicationInfo.getDoi();
+		Date pubDate = publicationInfo.getPubDate();
+		String pubmedid = publicationInfo.getPubmedid();
+		String sTitle = publicationInfo.getTitle();
+		String url = publicationInfo.getUrl();
+		List<String> contributors = new ArrayList<>();
+		contributors.add("Dan Vasilescu");
+		contributors.add("Michael Blinov");
+		contributors.add("Ion Moraru");
+
+		String description = "http://omex-library.org/" + vcmlName + ".omex";	// "http://omex-library.org/biomodel_12345678.omex";
+		URI descriptionURI = ValueFactoryImpl.getInstance().createURI(description);
+		Literal descTitle = OntUtil.createTypedString(schema, sTitle);
+		graph.add(descriptionURI, RDF.TYPE, PubMet.Description);		// <rdf:Description rdf:about='http://omex-library.org/Monkeyflower_pigmentation_v2.omex'>
+		graph.add(descriptionURI, PubMet.Title, descTitle);
+
+		try {
+			Map<String, String> nsMap = DefaultNameSpaces.defaultMap.convertToMap();
+			ret = SesameRioUtil.writeRDFToString(graph, nsMap, RDFFormat.RDFXML);
+//			SesameRioUtil.writeRDFToStream(System.out, graph, nsMap, RDFFormat.RDFXML);
+		} catch (RDFHandlerException e) {
+			logger.error(e.getMessage(), e);
+		}
+
+		String end = "\n\n" + ret.substring(ret.indexOf(PubMet.EndDescription0));
+		ret = ret.substring(0, ret.indexOf(PubMet.EndDescription0));
+
+		// https://vcellapi-beta.cam.uchc.edu:8080/biomodel/200301683/diagram
+		// <collex:thumbnail rdf:resource="http://omex-library.org/Monkeyflower_pigmentation_v2.omex/Figure1.png"/>
+		if(diagram.exists()) {
+			ret += PubMet.StartDiagram;
+			ret += description;
+			ret += "/diagram.png";
+			ret += PubMet.EndDiagram;
+		}
+
+		ret += PubMet.CommentTaxon;
+
+		ret += PubMet.CommentOther;
+		ret += PubMet.StartIs;
+		ret += PubMet.StartDescription;
+		ret += PubMet.StartIdentifier;
+		ret += PubMet.ResourceIdentifier;
+		String isLabel = "vcell:" + version.getVersionKey();
+		ret += isLabel;
+		ret += PubMet.EndIdentifier;
+		ret += PubMet.StartLabel;
+		ret += isLabel;
+		ret += PubMet.EndLabel;
+		ret += PubMet.EndDescription;
+		ret += PubMet.EndIs;
+
+		ret += PubMet.StartIsDescribedBy;
+		ret += PubMet.StartDescription;
+		ret += PubMet.StartIdentifier;
+		ret += PubMet.ResourceIdentifier;
+		String pubmed = "pubmed:" + pubmedid;
+		ret += pubmed;
+		ret += PubMet.EndIdentifier;
+		ret += PubMet.StartLabel;
+		ret += pubmed;
+		ret += PubMet.EndLabel;
+		ret += PubMet.EndDescription;
+		ret += PubMet.EndIsDescribedBy;
+
+		ret += PubMet.CommentCreator;
+		for(String creator : creators) {
+			ret += PubMet.StartCreator;
+			ret += PubMet.StartDescription;
+			ret += PubMet.StartName;
+			ret += creator;
+			ret += PubMet.EndName;
+			ret += PubMet.StartLabel;
+			ret += creator;
+			ret += PubMet.EndLabel;
+			ret += PubMet.EndDescription;
+			ret += PubMet.EndCreator;
+		}
+
+		ret += PubMet.CommentContributor;
+		for(String contributor : contributors) {
+			ret += PubMet.StartContributor;
+			ret += PubMet.StartDescription;
+			ret += PubMet.StartName;
+			ret += contributor;
+			ret += PubMet.EndName;
+			ret += PubMet.StartLabel;
+			ret += contributor;
+			ret += PubMet.EndLabel;
+			ret += PubMet.EndDescription;
+			ret += PubMet.EndContributor;
+		}
+
+		ret += PubMet.CommentCitations;
+		ret += PubMet.StartIsDescribedBy;
+		ret += PubMet.StartDescription;
+		ret += PubMet.StartIdentifier;
+		ret += PubMet.ResourceIdentifier;
+		String sdoi = "doi:" + doi;
+		ret += sdoi;
+		ret += PubMet.EndIdentifier;
+		ret += PubMet.StartLabel;
+		ret += citation;
+		ret += PubMet.EndLabel;
+		ret += PubMet.EndDescription;
+		ret += PubMet.EndIsDescribedBy;
+
+//		ret += PubMet.CommentLicense;
+//		ret += PubMet.StartLicense;
+//		ret += PubMet.StartDescription;
+//		ret += PubMet.StartIdentifier;
+//		ret += PubMet.ResourceIdentifier;
+//		String lic = "spdx:" + "CC0-1.0";
+//		ret += lic;
+//		ret += PubMet.EndIdentifier;
+//		ret += PubMet.StartLabel;
+//		ret += "CC0-1.0";
+//		ret += PubMet.EndLabel;
+//		ret += PubMet.EndDescription;
+//		ret+= PubMet.EndLicense;
+
+		String sPubDate = new SimpleDateFormat("yyyy-MM-dd").format(pubDate);
+		ret += PubMet.CommentCreated;
+		ret += PubMet.StartCreated;
+		ret += PubMet.StartDescription;
+		ret += PubMet.PrefixCreated;
+		ret += new SimpleDateFormat("yyyy-MM-dd").format(pubDate);
+		ret += PubMet.SuffixCreated;
+		ret += PubMet.EndDescription;
+		ret += PubMet.EndCreated;
+
+		Calendar calendar = Calendar.getInstance();
+		Date today = calendar.getTime();
+		ret += PubMet.CommentModified;
+		ret += PubMet.StartModified;
+		ret += PubMet.StartDescription;
+		ret += PubMet.PrefixModified;
+		ret += new SimpleDateFormat("yyyy-MM-dd").format(today);
+		ret += PubMet.SuffixModified;
+		ret += PubMet.EndDescription;
+		ret += PubMet.EndModified;
+
+		ret += end;
+		logger.trace(ret);
+		return(ret);
 	}
 
 }
