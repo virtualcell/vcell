@@ -130,10 +130,10 @@ jobs:
           if [ $(find $GITHUB_WORKSPACE/set_${{ matrix.sets }} -name errorLog.txt | wc -l) -eq 0 ]
           then 
             exit 0
+          else
+            # Copy error log to github workspace
+            cp $(find $GITHUB_WORKSPACE/set_${{ matrix.sets }} -name errorLog.txt) ${{ github.workspace }}/errors.report
           fi
-
-      - name: Copy error log to github workspace
-        run: cp $(find $GITHUB_WORKSPACE/set_${{ matrix.sets }} -name errorLog.txt) ${{ github.workspace }}/errors.report
 
       - name: Upload failures
         uses: actions/upload-artifact@v2
@@ -206,10 +206,10 @@ jobs:
           if [ $(find $GITHUB_WORKSPACE/set_${{ matrix.sets }} -name errorLog.txt | wc -l) -eq 0 ]
           then
             exit 0
+          else
+            # Copy error log to github workspace
+            cp $(find $GITHUB_WORKSPACE/set_${{ matrix.sets }} -name errorLog.txt) ${{ github.workspace }}/errors.report
           fi
-
-      - name: Copy error log to github workspace
-        run: cp $(find $GITHUB_WORKSPACE/set_${{ matrix.sets }} -name errorLog.txt) ${{ github.workspace }}/errors.report
 
       - name: Upload failures
         uses: actions/upload-artifact@v2
