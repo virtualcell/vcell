@@ -9,6 +9,7 @@
  */
 
 package cbit.util.xml;
+import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -30,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import javax.imageio.ImageIO;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
@@ -66,15 +68,20 @@ import org.vcell.util.document.PublicationInfo;
 import org.vcell.util.document.Version;
 
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.publish.ITextWriter;
 
 /**
  * General Xml Rdf utility methods.
  */
 public class XmlRdfUtil {
+	
+	public static final String diagramBaseName = "diagram";
+	public static final String diagramExtension = ".png";
+	
 	private static final Logger logger = LogManager.getLogger(XmlRdfUtil.class);
 
 	
-    public static String getMetadata(String vcmlName) {
+    public static String getMetadata(String vcmlName, File diagram) {
     	String ret = "";
         String ns = DefaultNameSpaces.EX.uri;
 
@@ -96,6 +103,13 @@ public class XmlRdfUtil {
    			int index = ret.indexOf(PubMet.EndDescription0);
    			String end = ret.substring(index);
    			ret = ret.substring(0, ret.indexOf(end));
+
+   			if(diagram.exists()) {
+   				ret += PubMet.StartDiagram;
+   				ret += description;
+   				ret += "/diagram.png";
+   				ret += PubMet.EndDiagram;
+   			}
 
    			Calendar calendar = Calendar.getInstance();
    			Date today = calendar.getTime();
@@ -127,12 +141,12 @@ public class XmlRdfUtil {
 		Graph schema = new HashGraph();
 
         if(bioModelInfo == null) {								// perhaps it's not public, in which case is not in the map
-        	ret = XmlRdfUtil.getMetadata(vcmlName);
+        	ret = XmlRdfUtil.getMetadata(vcmlName, diagram);
         	return ret;
         }
         PublicationInfo[] publicationInfos = bioModelInfo.getPublicationInfos();
         if(publicationInfos == null || publicationInfos.length == 0) {				// we may not have PublicationInfo
-        	ret = XmlRdfUtil.getMetadata(vcmlName);
+        	ret = XmlRdfUtil.getMetadata(vcmlName, diagram);
     		return ret;
         }
         
@@ -287,5 +301,30 @@ public class XmlRdfUtil {
 		logger.trace(ret);
 		return(ret);
     }
+
+	public static void writeModelDiagram(BioModel bioModel, File destination) throws IOException {
+		Integer imageWidthInPixels = 1000;
+		OutputStream imageOutputStream = null;
+		try {
+			BufferedImage bufferedImage = ITextWriter.generateDocReactionsImage(bioModel.getModel(), imageWidthInPixels);
+			imageOutputStream = new FileOutputStream(destination);
+			ImageIO.write(bufferedImage, "png", imageOutputStream);
+		} catch (IOException e) {
+			logger.error("Failed to generate diagram image for BioModel "+bioModel.getName(), e);
+			throw e;
+		} catch (Exception e) {
+			logger.error("Failed to generate diagram image for BioModel "+bioModel.getName(), e);
+			throw new RuntimeException("Failed to generate diagram image for BioModel "+bioModel.getName(), e);
+		} finally {
+            if(imageOutputStream != null){
+                try{
+                	imageOutputStream.flush();
+                	imageOutputStream.close();
+                } catch(IOException ioe2){
+                    ioe2.printStackTrace(System.out);
+                }
+            }
+		}
+	}
 
 }
