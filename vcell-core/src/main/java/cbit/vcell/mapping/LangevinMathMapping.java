@@ -928,6 +928,7 @@ protected LangevinMathMapping(SimulationContext simContext, MathMappingCallback 
 			e.printStackTrace();
 		}
 		
+		// TODO: we need the right expression here, one that would transform user selected units to what the solver expects (standard vcell units)
 //		Expression forward_rateExp = Expression.mult(getUnitFactor(forward_substanceConversionUnit), new Expression(forward_rateParameter, getNameScope()),forward_sizeFactor).simplifyJSCL();
 		Expression forward_rateExp = new Expression(forward_rateParameter, getNameScope()).simplifyJSCL();
 		VCUnitDefinition forward_rateUnit = forward_rateParameter.getUnitDefinition().multiplyBy(forward_sizeFactorUnit).multiplyBy(forward_substanceConversionUnit);
