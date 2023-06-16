@@ -51,7 +51,7 @@ public class ExecutionJob {
      * @param bEncapsulateOutput whether to provide a sub-folder for outputs (needed for batch jobs)
      * @param bSmallMeshOverride whether to use small meshes or standard meshes.
      */
-    public ExecutionJob(File inputFile, File rootOutputDir, CLIRecordable cliRecorder, boolean bCoerceToDistributed,
+    public ExecutionJob(File inputFile, File rootOutputDir, CLIRecordable cliRecorder,
             boolean bKeepTempFiles, boolean bExactMatchOnly, boolean bEncapsulateOutput, boolean bSmallMeshOverride){
         this();
         this.inputFile = inputFile;

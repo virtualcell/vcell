@@ -23,11 +23,14 @@ public class ExportOmexCommand implements Callable<Integer> {
     @Option(names = { "-m", "--outputModelFormat" }, defaultValue = "SBML", description = "expecting SBML or VCML")
     private ModelFormat outputModelFormat = ModelFormat.SBML;
 
-    @Option(names = { "-i", "--inputFilePath" }, description = "full path to .vcml file to export to .omex")
+    @Option(names = { "-i", "--inputFilePath" }, required = true, description = "full path to .vcml file to export to .omex")
     private File inputFilePath;
 
-    @Option(names = { "-o", "--outputFilePath" })
+    @Option(names = { "-o", "--outputFilePath" }, required = true, description = "full path to .omex file to create")
     private File outputFilePath;
+
+    @Option(names = { "--writeLogFiles" }, defaultValue = "false")
+    private boolean bWriteLogFiles;
 
     @Option(names = {"-d", "--debug"}, description = "full application debug mode")
     private boolean bDebug = false;
@@ -48,7 +51,7 @@ public class ExportOmexCommand implements Callable<Integer> {
 
             try {
                 logger.debug("Beginning export");
-                VcmlOmexConverter.convertOneFile(inputFilePath, outputFilePath, outputModelFormat, bValidateOmex);
+                VcmlOmexConverter.convertOneFile(inputFilePath, outputFilePath, outputModelFormat, bWriteLogFiles, bValidateOmex);
             } catch (IOException e) {
                 e.printStackTrace(System.err);
             }
