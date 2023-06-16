@@ -132,11 +132,14 @@ jobs:
             exit 0
           fi
 
+      - name: Copy error log to github workspace
+        run: cp $(find $GITHUB_WORKSPACE/set_${{ matrix.sets }} -name errorLog.txt) ${{ github.workspace }}/errors.report
+
       - name: Upload failures
         uses: actions/upload-artifact@v2
         with:
           name: set_${{ matrix.sets }}.report
-          path: $(find $GITHUB_WORKSPACE/set_${{ matrix.sets }} -name errorLog.txt)
+          path: ${{ github.workspace }}/errors.report
 
       # Report a Problem to Slack
       - name: Report Problem to Slack
@@ -205,11 +208,14 @@ jobs:
             exit 0
           fi
 
+      - name: Copy error log to github workspace
+        run: cp $(find $GITHUB_WORKSPACE/set_${{ matrix.sets }} -name errorLog.txt) ${{ github.workspace }}/errors.report
+
       - name: Upload failures
         uses: actions/upload-artifact@v2
         with:
           name: set_${{ matrix.sets }}.report
-          path: $(find $GITHUB_WORKSPACE/set_${{ matrix.sets }} -name errorLog.txt)
+          path: ${{ github.workspace }}/errors.report
 
       # Report a Problem to Slack
       - name: Report Problem to Slack
