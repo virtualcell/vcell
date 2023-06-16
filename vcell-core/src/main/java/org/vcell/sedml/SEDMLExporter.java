@@ -50,11 +50,13 @@ import org.vcell.util.FileUtils;
 import org.vcell.util.ISize;
 import org.vcell.util.Pair;
 import org.vcell.util.TokenMangler;
+import org.vcell.util.document.BioModelInfo;
 
 import javax.xml.stream.XMLStreamException;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.function.Predicate;
@@ -1311,30 +1313,37 @@ public class SEDMLExporter {
         				"http://identifiers.org/combine.specifications/omex-metadata",
         				false
         		);
+            } else if(sd.endsWith(".png")) {
+                archive.addFile(
+                        Paths.get(srcFolder, sd).toString(),
+                        "./" + sd,
+                        "http://purl.org/NET/mediatypes/image/png",
+                        false
+                );
         	}
         }
 
 		archive.writeToFile(Paths.get(srcFolder, sFileName + ".omex").toString());
-
-		// Removing files after archiving
-		for (String sd : modelFilePathStrAbsoluteList) {
-			Paths.get(srcFolder, sd).toFile().delete();
-		}
-		for (String sd : sedmlFilePathStrAbsoluteList) {
-			Paths.get(srcFolder, sd).toFile().delete();
-		}
-		Paths.get(srcFolder, sFileName + ".vcml").toFile().delete();
-        for(String sd : files) {
-        	if (sd.endsWith(".rdf")) {
-        		Paths.get(srcFolder, sd).toFile().delete();
-        	}
-        }
+        removeOtherFiles(srcFolder, files);
 
     } catch (Exception e) {
     	throw new RuntimeException("createZipArchive threw exception: " + e.getMessage());        
     }
     return true;
 }
+    
+	private static void removeOtherFiles(String outputDir, String[] files) {
+    	boolean isDeleted = false;
+        for (String sd : files) {
+            if (sd.endsWith(".sedml") || sd.endsWith(".sbml") || sd.endsWith("xml") || sd.endsWith("vcml") || sd.endsWith("rdf") || sd.endsWith("png")) {
+                isDeleted = Paths.get(outputDir, sd).toFile().delete();
+                if (!isDeleted) {
+                	throw new RuntimeException("Unable to remove intermediate file '" + sd + "'.");        
+               }
+            }
+        }
+    }
+
 
 	public static List<SEDMLTaskRecord> writeBioModel(BioModel bioModel, File exportFileOrDirectory, ModelFormat modelFormat, boolean bFromCLI, boolean bRoundTripSBMLValidation, boolean bCreateOmexArchive) throws Exception {
 		String resultString;
@@ -1376,7 +1385,14 @@ public class SEDMLExporter {
 			XmlUtil.writeXMLStringToFile(resultString, sedmlFileName, true);
 			sedmlExporter.addSedmlFileToList(sFile + ".sedml");
 
-			String rdfString = XmlRdfUtil.getMetadata(sFile);
+			String diagramName = XmlRdfUtil.diagramBaseName + XmlRdfUtil.diagramExtension;
+			String destinationPath = Paths.get(sPath, diagramName).toString();
+			File diagramFile = new File(destinationPath);
+			Path diagramPath = Paths.get(sPath, diagramName);
+			XmlRdfUtil.writeModelDiagram(bioModel, diagramPath.toFile());
+			
+			BioModelInfo bioModelInfo = null;
+			String rdfString = XmlRdfUtil.getMetadata(sFile, bioModel, diagramFile, bioModelInfo);
 			XmlUtil.writeXMLStringToFile(rdfString, String.valueOf(Paths.get(sPath, "metadata.rdf")), true);
 
 			sedmlExporter.createOmexArchive(sPath, sFile);
