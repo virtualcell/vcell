@@ -120,6 +120,7 @@ public class LangevinSolver extends SimpleCompiledSolver {
 		fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_INPUT_FILE);
 
 		try (PrintWriter pw = new PrintWriter(inputFilename)) {
+			// here we create the langevin input file (and any other file / directory that may be needed)
 			LangevinFileWriter stFileWriter = new LangevinFileWriter(pw, simTask, bMessaging);
 			stFileWriter.write();
 		} catch (Exception e) {
@@ -163,7 +164,13 @@ public class LangevinSolver extends SimpleCompiledSolver {
 				SimulationMessage.MESSAGE_SOLVER_RUNNING_START));
 		// get executable path+name.
 		String[] mathExecutableCommand = getMathExecutableCommand();
-		MathExecutable me = new MathExecutable(mathExecutableCommand, getSaveDirectory());
+		File saveDirectoryFile = getSaveDirectory();	// working directory (not needed?)
+		
+		mathExecutableCommand[1] = "C:\\TEMP\\test\\ssld-eclipse_SIMULATIONS\\Simulation0_SIM.txt";
+		mathExecutableCommand[3] = "C:\\TEMP\\test\\ssld-eclipse_SIMULATIONS\\Simulations0_OutStream_0.txt";
+		
+		
+		MathExecutable me = new MathExecutable(mathExecutableCommand, saveDirectoryFile);
 		setMathExecutable(me);
 	}
 

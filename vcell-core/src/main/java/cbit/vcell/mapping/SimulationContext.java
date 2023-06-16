@@ -29,6 +29,7 @@ import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.Issue.Severity;
 import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.document.BioModelChildSummary.MathType;
+import org.vcell.util.exe.ExecutableStatus;
 import org.vcell.util.document.DocumentValidUtil;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.Identifiable;
@@ -63,6 +64,7 @@ import cbit.vcell.mapping.MicroscopeMeasurement.ExperimentalPSF;
 import cbit.vcell.mapping.MicroscopeMeasurement.GaussianConvolutionKernel;
 import cbit.vcell.mapping.MicroscopeMeasurement.ProjectionZKernel;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
+import cbit.vcell.mapping.RulebasedTransformer.ReactionRuleAnalysisReport;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.mapping.spatial.CurveObject;
 import cbit.vcell.mapping.spatial.PointObject;
@@ -3140,6 +3142,20 @@ public DataContext getDataContext() {
 public SimContextTransformer createNewTransformer(){
 	switch (applicationType) {
 	case SPRINGSALAD:
+		//
+		//
+		// TODO: can't use RulebasedTransformer !!!
+		// because the new LangevinMathMapping(this, callback, networkGenReq); call below will invoke the transformer,
+		// and the transformer will call generateNetwork(), which will call executeBNG(), with the wrong expectedReturnCodes parameter,
+		// which will do a setStatus(ExecutableStatus.COMPLETE); right from the start
+		//
+		// TODO: can't use null either, we must get specific transformer, that's a simplified RulebasedTransformer
+		// because in LangevinMathMapping.addStrictMassActionParticleJumpProcess() at
+		// line 945 we do ReactionRuleAnalysisReport rrarBiomodelForward = ruleBasedTransformation.getRulesForwardMap().get(reactionRule);
+		// In other words, we need the transformation for the forward map and the reverse map
+		//
+		//
+//		return null;
 	case RULE_BASED_STOCHASTIC:
 		return new RulebasedTransformer();
 	case NETWORK_DETERMINISTIC:
