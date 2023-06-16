@@ -50,6 +50,7 @@ import org.vcell.util.FileUtils;
 import org.vcell.util.ISize;
 import org.vcell.util.Pair;
 import org.vcell.util.TokenMangler;
+import org.vcell.util.document.BioModelInfo;
 
 import javax.xml.stream.XMLStreamException;
 import java.beans.PropertyVetoException;
@@ -1376,7 +1377,13 @@ public class SEDMLExporter {
 			XmlUtil.writeXMLStringToFile(resultString, sedmlFileName, true);
 			sedmlExporter.addSedmlFileToList(sFile + ".sedml");
 
-			String rdfString = XmlRdfUtil.getMetadata(sFile);
+			String destinationPath = Paths.get(sPath, "diagram.png").toString();
+			File diagramFile = new File(destinationPath);
+			// TODO: add diagram here
+			
+			
+			BioModelInfo bioModelInfo = null;
+			String rdfString = XmlRdfUtil.getMetadata(sFile, bioModel, diagramFile, bioModelInfo);
 			XmlUtil.writeXMLStringToFile(rdfString, String.valueOf(Paths.get(sPath, "metadata.rdf")), true);
 
 			sedmlExporter.createOmexArchive(sPath, sFile);
