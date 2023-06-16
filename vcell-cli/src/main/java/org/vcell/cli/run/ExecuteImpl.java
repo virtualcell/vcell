@@ -65,7 +65,7 @@ public class ExecuteImpl {
                     if (inputFileName.endsWith("omex"))
                         runSingleExecOmex(inputFile, outputDir, cliLogger,
                                 bKeepTempFiles, bExactMatchOnly, bSmallMeshOverride, bCoerceToDistributed);
-                } catch (ExecutionException | RuntimeException e){
+                } catch (ExecutionException | RuntimeException | HDF5Exception e){
                     logger.error("Error caught executing batch mode", e);
                     failedFiles.add(inputFileName);
                 } catch (Exception e){
