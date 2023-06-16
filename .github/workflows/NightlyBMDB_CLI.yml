@@ -188,6 +188,8 @@ jobs:
           for file in $SOURCE_DIR/*; do
               file_index=$((file_index+1))
               if [ $((file_index + 0)) -eq 1008 ]; then
+                  echo -n 'skipping '
+                  echo $file
                   continue
               fi
               if [ $((file_index%${{ strategy.job-total }})) -eq $((MOD_VALUE + 0)) ]; then
