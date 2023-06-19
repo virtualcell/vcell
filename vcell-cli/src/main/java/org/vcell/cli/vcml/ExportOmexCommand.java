@@ -49,12 +49,8 @@ public class ExportOmexCommand implements Callable<Integer> {
         try {
             PropertyLoader.loadProperties();
 
-            try {
-                logger.debug("Beginning export");
-                VcmlOmexConverter.convertOneFile(inputFilePath, outputFilePath, outputModelFormat, bWriteLogFiles, bValidateOmex);
-            } catch (IOException e) {
-                e.printStackTrace(System.err);
-            }
+            logger.debug("Beginning export");
+            VcmlOmexConverter.convertOneFile(inputFilePath, outputFilePath, outputModelFormat, bWriteLogFiles, bValidateOmex);
             return 0;
         } catch (Exception e) {
             e.printStackTrace();

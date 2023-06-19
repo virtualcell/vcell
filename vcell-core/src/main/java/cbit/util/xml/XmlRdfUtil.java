@@ -24,12 +24,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.net.URL;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 import javax.imageio.ImageIO;
 import javax.xml.transform.OutputKeys;
@@ -133,26 +128,23 @@ public class XmlRdfUtil {
    		return ret;
    	}
 	
-    public static String getMetadata(String vcmlName, BioModel bioModel, File diagram, BioModelInfo bioModelInfo) {
+    public static String getMetadata(String vcmlName, File diagram,
+									 Optional<Version> bioModelVersion,
+									 Optional<PublicationInfo> pubInfo) {
     	String ret = "";
         String ns = DefaultNameSpaces.EX.uri;
 
 		Graph graph = new HashGraph();
 		Graph schema = new HashGraph();
 
-        if(bioModelInfo == null) {								// perhaps it's not public, in which case is not in the map
+        if(!bioModelVersion.isPresent() || !pubInfo.isPresent()) {
         	ret = XmlRdfUtil.getMetadata(vcmlName, diagram);
         	return ret;
         }
-        PublicationInfo[] publicationInfos = bioModelInfo.getPublicationInfos();
-        if(publicationInfos == null || publicationInfos.length == 0) {				// we may not have PublicationInfo
-        	ret = XmlRdfUtil.getMetadata(vcmlName, diagram);
-    		return ret;
-        }
-        
-        PublicationInfo publicationInfo = publicationInfos[0];
-        String bioModelName = bioModel.getName();
-        Version version = bioModelInfo.getVersion();
+
+		PublicationInfo publicationInfo = pubInfo.get();
+		Version version = bioModelVersion.get();
+
         String[] creators = publicationInfo.getAuthors();
         String citation = publicationInfo.getCitation();
         String doi = publicationInfo.getDoi();
@@ -162,6 +154,8 @@ public class XmlRdfUtil {
         String url = publicationInfo.getUrl();
         List<String> contributors = new ArrayList<>();
         contributors.add("Dan Vasilescu");
+		contributors.add("Logan Drescher");
+		contributors.add("Jim Schaff");
         contributors.add("Michael Blinov");
         contributors.add("Ion Moraru");
         

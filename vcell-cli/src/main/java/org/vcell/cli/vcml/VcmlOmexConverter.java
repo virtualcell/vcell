@@ -12,12 +12,8 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.admin.cli.CLIDatabaseService;
-import org.vcell.cli.CLIRecorder;
-import org.vcell.cli.CLIUtils;
-import org.vcell.sedml.ModelFormat;
-import org.vcell.sedml.SEDMLEventLog;
-import org.vcell.sedml.SEDMLEventLogFile;
-import org.vcell.sedml.SEDMLExporter;
+import org.vcell.sbml.OmexPythonUtils;
+import org.vcell.sedml.*;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.KeyValue;
@@ -34,6 +30,7 @@ import java.nio.file.StandardOpenOption;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 public class VcmlOmexConverter {
 	private static final Logger logger = LogManager.getLogger(VcmlOmexConverter.class);
@@ -46,7 +43,7 @@ public class VcmlOmexConverter {
 									  ModelFormat modelFormat,
 									  boolean bWriteLogFiles,
 									  boolean bValidateOmex)
-			throws IOException {
+			throws SEDMLExporter.SEDMLExportException, OmexPythonUtils.OmexValidationException, IOException {
 
 		if (input == null || !input.isFile() || !input.toString().endsWith(".vcml")) {
 			throw new RuntimeException("expecting inputFilePath '"+input+"' to be an existing .vcml file");
@@ -60,26 +57,31 @@ public class VcmlOmexConverter {
 		} else {
 			sedmlEventLog = (String entry) -> {};
 		}
-		boolean isCreated = SEDMLExporter.vcmlToOmexConversion(
-				input.getAbsolutePath(),
+		boolean bHasPython = true;
+		List<SEDMLTaskRecord> sedmlTaskRecords = SEDMLExporter.writeBioModel(
+				input,
 				bioModelInfo,
-				outputDir.getAbsolutePath(),
-				outputDir.getAbsolutePath(),
+				outputDir,
 				simulationExportFilter,
 				modelFormat,
 				sedmlEventLog,
+				bHasPython,
 				bValidateOmex);
-		if (isCreated) {
+		if (!sedmlTaskRecords.stream().anyMatch((SEDMLTaskRecord r) -> r.getTaskResult() == TaskResult.FAILED)) {
 			logger.info("Combine archive created for `" + input + "`");
 		} else {
-			String msg = "Failed converting VCML to OMEX archive for `" + input + "`";
+			List<String> errorList = sedmlTaskRecords.stream()
+					.filter((SEDMLTaskRecord r) -> r.getTaskResult() == TaskResult.FAILED)
+					.map((SEDMLTaskRecord r) -> r.getCSV())
+					.collect(Collectors.toList());
+			String msg = "Failed converting VCML to OMEX archive for `" + input + "`, errors: "+errorList;
 			logger.error(msg);
 			throw new RuntimeException(msg);
 		}
 	}
 
 	public static void convertFiles(CLIDatabaseService cliDatabaseService,
-									File input,
+									File inputDir,
 									File outputDir,
 									ModelFormat modelFormat,
 									boolean bHasDataOnly,
@@ -96,17 +98,17 @@ public class VcmlOmexConverter {
 			sedmlEventLog = (String entry) -> {};
 		}
 
-		if (input == null || !input.isDirectory()) {
+		if (inputDir == null || !inputDir.isDirectory()) {
 			throw new RuntimeException("expecting inputFilePath to be an existing directory");
 		}
 
 		FilenameFilter filterVcmlFiles = (f, name) -> name.endsWith(".vcml");
-		String[] inputFiles = input.list(filterVcmlFiles);		// jusr a list of vcml names, like biomodel-185577495.vcml, ...
-		if (inputFiles == null || inputFiles.length == 0) {
-			throw new RuntimeException("No VCML files found in the directory `" + input + "`");
+		String[] inputFileNames = inputDir.list(filterVcmlFiles);		// jusr a list of vcml names, like biomodel-185577495.vcml, ...
+		if (inputFileNames == null || inputFileNames.length == 0) {
+			throw new RuntimeException("No VCML files found in the directory `" + inputDir + "`");
 		}
 		
-		logger.debug("Beginning conversion of `" + input + "`");
+		logger.debug("Beginning conversion of `" + inputDir + "`");
 
 		writeFileEntry(outputDir.getAbsolutePath(), "bForceVCML is " + modelFormat.equals(ModelFormat.VCML), jobConfigFile, bWriteLogFiles);
 		writeFileEntry(outputDir.getAbsolutePath(), "bForceSBML is " + modelFormat.equals(ModelFormat.SBML), jobConfigFile, bWriteLogFiles);
@@ -116,38 +118,49 @@ public class VcmlOmexConverter {
 
 		// get the bioModelInfos from database
 		List<BioModelInfo> publicBioModelInfos = cliDatabaseService.queryPublicBioModels();
-		for (String inputFile : inputFiles) {
-			File file = new File(input, inputFile);
-			logger.info(" ============== start: " + inputFile);
-			if (inputFile.endsWith(".vcml")) {
+		for (String inputFileName : inputFileNames) {
+			File inputFile = new File(inputDir, inputFileName);
+			logger.info(" ============== start: " + inputFileName);
+			if (inputFileName.endsWith(".vcml")) {
 				Predicate<Simulation> simulationExportFilter = simulation -> keepSimulation(simulation, bHasDataOnly, bNonSpatialOnly, cliDatabaseService);
 				BioModelInfo bioModelInfo = null;
-				String vcmlName = FilenameUtils.getBaseName(inputFile);
+				String vcmlName = FilenameUtils.getBaseName(inputFileName);
 				for (BioModelInfo bmi : publicBioModelInfos){
 					if (vcmlName.equals("biomodel_"+bmi.getVersion().getVersionKey()) || vcmlName.equals(bmi.getVersion().getName())){
 						bioModelInfo = bmi;
 					}
 				}
 				if (bioModelInfo == null) {
-					logger.error("No BioModelInfo found for `" + inputFile + "`");
+					logger.error("No BioModelInfo found for `" + inputFileName + "`");
 					continue;
 				}
-				boolean isCreated = SEDMLExporter.vcmlToOmexConversion(
-						file.toString(),
-						bioModelInfo,
-						outputDir.getAbsolutePath(),
-						outputDir.getAbsolutePath(),
-						simulationExportFilter,
-						modelFormat,
-						sedmlEventLog,
-						bValidateOmex);
-				if (isCreated) {
-					logger.info("Combine archive created for file(s) `" + inputFile + "`");
-				} else {
-					logger.error("Failed converting VCML to OMEX archive for `" + inputFile + "`");
+				try {
+					boolean bHasPython = true;
+					List<SEDMLTaskRecord> sedmlTaskRecords = SEDMLExporter.writeBioModel(
+							inputFile,
+							bioModelInfo,
+							outputDir,
+							simulationExportFilter,
+							modelFormat,
+							sedmlEventLog,
+							bHasPython,
+							bValidateOmex);
+					if (!sedmlTaskRecords.stream().anyMatch((SEDMLTaskRecord r) -> r.getTaskResult() == TaskResult.FAILED)) {
+						logger.info("Combine archive created for `" + inputFileName + "`");
+					} else {
+						List<String> errorList = sedmlTaskRecords.stream()
+								.filter((SEDMLTaskRecord r) -> r.getTaskResult() == TaskResult.FAILED)
+								.map((SEDMLTaskRecord r) -> r.getCSV())
+								.collect(Collectors.toList());
+						String msg = "Failed converting VCML to OMEX archive for `" + inputFileName + "`, errors: " + errorList;
+						logger.error(msg);
+						throw new RuntimeException(msg);
+					}
+				} catch (SEDMLExporter.SEDMLExportException | OmexPythonUtils.OmexValidationException e) {
+					logger.error("Failed converting VCML to OMEX archive for `" + inputFileName + "`", e);
 				}
 			} else {
-				logger.error("No VCML files found in the directory `" + input + "`");
+				logger.error("No VCML files found in the directory `" + inputDir + "`");
 			}
 		}
 	}
@@ -163,27 +176,41 @@ public class VcmlOmexConverter {
 			sedmlEventLog = (String entry) -> {};
 		}
 		FilenameFilter filterVcmlFiles = (f, name) -> name.endsWith(".vcml");
-		String[] inputFiles = inputDir.list(filterVcmlFiles);		// jusr a list of vcml names, like biomodel-185577495.vcml, ...
-		if (inputFiles == null) throw new RuntimeException("No VCML files found in the directory `" + inputDir + "`");
+		String[] inputFileNames = inputDir.list(filterVcmlFiles);		// jusr a list of vcml names, like biomodel-185577495.vcml, ...
+		if (inputFileNames == null) throw new RuntimeException("No VCML files found in the directory `" + inputDir + "`");
 		
 		logger.debug("Beginning conversion of files in `" + inputDir + "`");
-		for (String inputFile : inputFiles) {
-			logger.debug("Beginning conversion of `" + inputFile + "`");
-			File file = new File(inputDir, inputFile);
-			logger.info(" ============== start: " + inputFile);
+		for (String inputFileName : inputFileNames) {
+			logger.debug("Beginning conversion of `" + inputFileName + "`");
+			File inputFile = new File(inputDir, inputFileName);
+			logger.info(" ============== start: " + inputFileName);
 				Predicate<Simulation> simulationExportFilter = simulation -> true;
 				BioModelInfo bioModelInfo = null;
-				boolean isCreated = SEDMLExporter.vcmlToOmexConversion(
-						file.toString(),
+			try {
+				boolean bHasPython = true;
+				List<SEDMLTaskRecord> sedmlTaskRecords = SEDMLExporter.writeBioModel(
+						inputFile,
 						bioModelInfo,
-						outputDir.getAbsolutePath(),
-						outputDir.getAbsolutePath(),
+						outputDir,
 						simulationExportFilter,
 						modelFormat,
 						sedmlEventLog,
+						bHasPython,
 						bValidateOmex);
-				if (isCreated) logger.info("Combine archive created for file(s) `" + inputFile + "`");
-				else logger.error("Failed converting VCML to OMEX archive for `" + inputFile + "`");
+				if (!sedmlTaskRecords.stream().anyMatch((SEDMLTaskRecord r) -> r.getTaskResult() == TaskResult.FAILED)) {
+					logger.info("Combine archive created for `" + inputFileName + "`");
+				} else {
+					List<String> errorList = sedmlTaskRecords.stream()
+							.filter((SEDMLTaskRecord r) -> r.getTaskResult() == TaskResult.FAILED)
+							.map((SEDMLTaskRecord r) -> r.getCSV())
+							.collect(Collectors.toList());
+					String msg = "Failed converting VCML to OMEX archive for `" + inputFileName + "`, errors: " + errorList;
+					logger.error(msg);
+					throw new RuntimeException(msg);
+				}
+			} catch (SEDMLExporter.SEDMLExportException | OmexPythonUtils.OmexValidationException e) {
+				logger.error("Failed converting VCML to OMEX archive for `" + inputFileName + "`", e);
+			}
 		}
 		logger.debug("Completed conversion of files in `" + inputDir + "`");
 	}

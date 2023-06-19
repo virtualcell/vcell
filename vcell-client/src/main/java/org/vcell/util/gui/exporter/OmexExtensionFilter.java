@@ -4,10 +4,7 @@ import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 import javax.swing.JOptionPane;
 
@@ -52,8 +49,15 @@ public class OmexExtensionFilter extends SedmlExtensionFilter {
 				bCreateOmexArchive = true;
 			}
 			boolean bRoundTripSBMLValidation = true;
-			boolean bFromCLI = false;
-			SEDMLExporter.writeBioModel(bioModel, exportFile, modelFormat, bFromCLI, bRoundTripSBMLValidation, bCreateOmexArchive);
+			boolean bHasPython = false;
+			Optional<PublicationInfo> publicationInfo = Optional.empty();
+			if (bioModel.getVersion()!=null && bioModel.getVersion().getVersionKey()!=null){
+				BioModelInfo bioModelInfo = _documentManager.getBioModelInfo(bioModel.getVersion().getVersionKey());
+				if (bioModelInfo != null && bioModelInfo.getPublicationInfos()!=null && bioModelInfo.getPublicationInfos().length>0){
+					publicationInfo = Optional.of(bioModelInfo.getPublicationInfos()[0]);
+				}
+			}
+			SEDMLExporter.writeBioModel(bioModel, publicationInfo, exportFile, modelFormat, bHasPython, bRoundTripSBMLValidation, bCreateOmexArchive);
 		}
 	}
 }

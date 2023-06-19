@@ -36,7 +36,6 @@ import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecNameScope;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.mapping.StructureMapping.StructureMappingParameter;
 import cbit.vcell.math.BoundaryConditionType;
-import cbit.vcell.math.Variable;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.model.*;
 import cbit.vcell.model.Kinetics.KineticsParameter;
