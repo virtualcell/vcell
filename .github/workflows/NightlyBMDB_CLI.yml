@@ -187,7 +187,7 @@ jobs:
           # loop through files in directory, increment indexing and separating files
           for file in $SOURCE_DIR/*; do
               file_index=$((file_index+1))
-              if [ $((file_index + 0)) -eq 1008 ]; then
+              if [[ $file == *1008* ]]; then
                   echo -n 'skipping '
                   echo $file
                   continue
