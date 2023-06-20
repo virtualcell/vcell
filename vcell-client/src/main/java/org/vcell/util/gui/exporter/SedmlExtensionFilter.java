@@ -1,22 +1,21 @@
 package org.vcell.util.gui.exporter;
 
-import java.awt.Component;
-import java.io.File;
-import java.nio.file.Paths;
-import java.util.Objects;
-
-import javax.swing.JOptionPane;
-
-import org.vcell.sedml.ModelFormat;
-import org.vcell.sedml.SEDMLExporter;
-import org.vcell.util.FileUtils;
-import org.vcell.util.UserCancelException;
-import org.vcell.util.gui.exporter.ExtensionFilter.ChooseContext;
-
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.mapping.SimulationContext;
+import org.vcell.sedml.ModelFormat;
+import org.vcell.sedml.SEDMLExporter;
+import org.vcell.util.FileUtils;
+import org.vcell.util.UserCancelException;
+
+import javax.swing.*;
+import java.awt.*;
+import java.io.File;
+import java.nio.file.Paths;
+import java.util.Map;
+import java.util.Objects;
+import java.util.function.Predicate;
 
 @SuppressWarnings("serial")
 public class SedmlExtensionFilter extends SelectorExtensionFilter {
@@ -62,7 +61,10 @@ public class SedmlExtensionFilter extends SelectorExtensionFilter {
 		if (bioModel != null) {
 			sedmlExporter = new SEDMLExporter(sFile, bioModel, sedmlLevel, sedmlVersion, null);
 			boolean bRoundTripSBMLValidation = true;
-			resultString = sedmlExporter.getSEDMLDocument(sPath, sFile, modelFormat, bRoundTripSBMLValidation).writeDocumentToString();
+			Map<String, String> unsupportedApplications = SEDMLExporter.getUnsupportedApplicationMap(bioModel, modelFormat);
+			Predicate<SimulationContext> simContextFilter = (SimulationContext sc) -> !unsupportedApplications.containsKey(sc.getName());
+			resultString = sedmlExporter.getSEDMLDocument(sPath, sFile, modelFormat, bRoundTripSBMLValidation, simContextFilter).writeDocumentToString();
+			// gather unsupported applications with messages
 		} else {
 			throw new RuntimeException("unsupported Document Type " + Objects.requireNonNull(bioModel).getClass().getName() + " for SedML export");
 		}

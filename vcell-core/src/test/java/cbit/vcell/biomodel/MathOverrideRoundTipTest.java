@@ -1,6 +1,7 @@
 package cbit.vcell.biomodel;
 
 import cbit.util.xml.XmlUtil;
+import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.resource.NativeLib;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
@@ -28,6 +29,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 @Category(Fast.class)
 @RunWith(Parameterized.class)
@@ -89,7 +91,8 @@ public class MathOverrideRoundTipTest {
         boolean bRoundTripSBMLValidation = true;
         boolean bWriteOmexArchive = true;
         Optional<PublicationInfo> publicationInfo = Optional.empty();
-        SEDMLExporter.writeBioModel(bioModel, publicationInfo, omexFile, ModelFormat.SBML, bHasPython, bRoundTripSBMLValidation, bWriteOmexArchive);
+        Predicate<SimulationContext> simContextFilter = (sc) -> true;
+        SEDMLExporter.writeBioModel(bioModel, publicationInfo, omexFile, ModelFormat.SBML, simContextFilter, bHasPython, bRoundTripSBMLValidation, bWriteOmexArchive);
 
         SBMLExporter.MemoryVCLogger memoryVCLogger = new SBMLExporter.MemoryVCLogger();
         List<BioModel> bioModels = XmlHelper.readOmex(omexFile, memoryVCLogger);

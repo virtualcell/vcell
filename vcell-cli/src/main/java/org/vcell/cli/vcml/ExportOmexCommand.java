@@ -29,6 +29,9 @@ public class ExportOmexCommand implements Callable<Integer> {
     @Option(names = { "-o", "--outputFilePath" }, required = true, description = "full path to .omex file to create")
     private File outputFilePath;
 
+    @Option(names = { "--skipUnsupportedApps" }, defaultValue = "false", description = "skip unsupported applications (e.g. electrical in SBML)")
+    private boolean bSkipUnsupportedApps = false;
+
     @Option(names = { "--writeLogFiles" }, defaultValue = "false")
     private boolean bWriteLogFiles;
 
@@ -50,7 +53,8 @@ public class ExportOmexCommand implements Callable<Integer> {
             PropertyLoader.loadProperties();
 
             logger.debug("Beginning export");
-            VcmlOmexConverter.convertOneFile(inputFilePath, outputFilePath, outputModelFormat, bWriteLogFiles, bValidateOmex);
+            VcmlOmexConverter.convertOneFile(
+                    inputFilePath, outputFilePath, outputModelFormat, bWriteLogFiles, bValidateOmex, bSkipUnsupportedApps);
             return 0;
         } catch (Exception e) {
             e.printStackTrace();

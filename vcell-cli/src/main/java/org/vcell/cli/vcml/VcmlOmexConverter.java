@@ -4,6 +4,7 @@ import cbit.util.xml.VCLogger;
 import cbit.util.xml.VCLoggerException;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.server.SimulationJobStatusPersistent;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SolverDescription;
@@ -42,7 +43,8 @@ public class VcmlOmexConverter {
 									  File outputDir,
 									  ModelFormat modelFormat,
 									  boolean bWriteLogFiles,
-									  boolean bValidateOmex)
+									  boolean bValidateOmex,
+									  boolean bSkipUnsupportedApps)
 			throws SEDMLExporter.SEDMLExportException, OmexPythonUtils.OmexValidationException, IOException {
 
 		if (input == null || !input.isFile() || !input.toString().endsWith(".vcml")) {
@@ -65,6 +67,7 @@ public class VcmlOmexConverter {
 				simulationExportFilter,
 				modelFormat,
 				sedmlEventLog,
+				bSkipUnsupportedApps,
 				bHasPython,
 				bValidateOmex);
 		if (!sedmlTaskRecords.stream().anyMatch((SEDMLTaskRecord r) -> r.getTaskResult() == TaskResult.FAILED)) {
@@ -88,7 +91,8 @@ public class VcmlOmexConverter {
 									boolean bMakeLogsOnly,
 									boolean bNonSpatialOnly,
 									boolean bWriteLogFiles,
-									boolean bValidateOmex)
+									boolean bValidateOmex,
+									boolean bSkipUnsupportedApps)
 			throws IOException, SQLException, DataAccessException {
 
 		final SEDMLEventLog sedmlEventLog;
@@ -143,6 +147,7 @@ public class VcmlOmexConverter {
 							simulationExportFilter,
 							modelFormat,
 							sedmlEventLog,
+							bSkipUnsupportedApps,
 							bHasPython,
 							bValidateOmex);
 					if (!sedmlTaskRecords.stream().anyMatch((SEDMLTaskRecord r) -> r.getTaskResult() == TaskResult.FAILED)) {
@@ -166,7 +171,8 @@ public class VcmlOmexConverter {
 	}
 
 	public static void convertFilesNoDatabase(File inputDir, File outputDir, ModelFormat modelFormat,
-											  boolean bWriteLogFiles, boolean bValidateOmex) throws IOException {
+											  boolean bWriteLogFiles, boolean bValidateOmex, boolean bSkipUnsupportedApps)
+			throws IOException {
 		// Start
 		if (inputDir == null || !inputDir.isDirectory()) throw new RuntimeException("expecting inputFilePath to be an existing directory");
 		final SEDMLEventLog sedmlEventLog;
@@ -195,6 +201,7 @@ public class VcmlOmexConverter {
 						simulationExportFilter,
 						modelFormat,
 						sedmlEventLog,
+						bSkipUnsupportedApps,
 						bHasPython,
 						bValidateOmex);
 				if (!sedmlTaskRecords.stream().anyMatch((SEDMLTaskRecord r) -> r.getTaskResult() == TaskResult.FAILED)) {

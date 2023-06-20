@@ -13,8 +13,6 @@ import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 import com.google.common.io.Files;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -23,12 +21,9 @@ import org.vcell.sedml.ModelFormat;
 import org.vcell.sedml.SEDMLExporter;
 import org.vcell.sedml.SEDMLTaskRecord;
 import org.vcell.sedml.TaskResult;
-import org.vcell.util.FileUtils;
 import org.vcell.util.document.PublicationInfo;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -156,52 +151,51 @@ public abstract class SEDMLExporterCommon {
 		boolean bWriteOmexArchive = true;
 		File omexFile = new File(outputDir, test_case_name + ".omex");
 		Optional<PublicationInfo> publicationInfo = Optional.empty();
-		List<SEDMLTaskRecord> sedmlTaskRecords = SEDMLExporter.writeBioModel(
-				bioModel, publicationInfo, omexFile, testCase.modelFormat, bHasPython, bRoundTripSBMLValidation, bWriteOmexArchive);
-
-		boolean bAnyFailures = false;
-		for (SEDMLTaskRecord sedmlTaskRecord : sedmlTaskRecords) {
-			boolean bFailed = false;
-			switch (sedmlTaskRecord.getTaskType()) {
-				case BIOMODEL: {
-					break;
-				}
-				case SIMCONTEXT: {
-					bFailed = sedmlTaskRecord.getTaskResult() == TaskResult.FAILED &&
-							(sedmlTaskRecord.getException() == null || !sedmlTaskRecord.getException().getClass().equals(UnsupportedSbmlExportException.class));
-					break;
-				}
-				case UNITS:
-				case SIMULATION: {
-					bFailed = sedmlTaskRecord.getTaskResult() == TaskResult.FAILED;
-					break;
-				}
-			}
-			bAnyFailures |= bFailed;
-			if (!knownFaults().containsKey(testCase.filename)) {
-				// skip assert if the model is known to have a problem
-				Assert.assertFalse(sedmlTaskRecord.getCSV(), bFailed);
-			}
-		}
-		FAULT knownFault = knownFaults().get(testCase.filename);
-		if (knownFault != null){
-			// if in the knownFaults list, the model should fail
-			// this is how we can keep track of our list of known problems
-			// if we fix a model without removing it from the knownFaults map, then this test will fail
-			Assert.assertTrue(
-					"expecting fault "+knownFault.name()+" in "+test_case_name+" but it passed, Please remove from SEDMLExporterTest.knownFaults()",
-					bAnyFailures);
-		}
-		SBMLExporter.MemoryVCLogger memoryVCLogger = new SBMLExporter.MemoryVCLogger();
-
+		Map<String, String> unsupportedApplications = SEDMLExporter.getUnsupportedApplicationMap(bioModel, testCase.modelFormat);
+		Predicate<SimulationContext> simContextFilter = (SimulationContext sc) -> !unsupportedApplications.containsKey(sc.getName());
 		try {
-			// validate that the omex file is valid
-			OmexPythonUtils.validateOmex(omexFile.toPath());
+			List<SEDMLTaskRecord> sedmlTaskRecords = SEDMLExporter.writeBioModel(
+					bioModel, publicationInfo, omexFile, testCase.modelFormat, simContextFilter, bHasPython, bRoundTripSBMLValidation, bWriteOmexArchive);
+
+			boolean bAnyFailures = false;
+			for (SEDMLTaskRecord sedmlTaskRecord : sedmlTaskRecords) {
+				boolean bFailed = false;
+				switch (sedmlTaskRecord.getTaskType()) {
+					case BIOMODEL: {
+						break;
+					}
+					case SIMCONTEXT: {
+						bFailed = sedmlTaskRecord.getTaskResult() == TaskResult.FAILED &&
+								(sedmlTaskRecord.getException() == null || !sedmlTaskRecord.getException().getClass().equals(UnsupportedSbmlExportException.class));
+						break;
+					}
+					case UNITS:
+					case SIMULATION: {
+						bFailed = sedmlTaskRecord.getTaskResult() == TaskResult.FAILED;
+						break;
+					}
+				}
+				bAnyFailures |= bFailed;
+				if (!knownFaults().containsKey(testCase.filename)) {
+					// skip assert if the model is known to have a problem
+					Assert.assertFalse(sedmlTaskRecord.getCSV(), bFailed);
+				}
+			}
+			FAULT knownFault = knownFaults().get(testCase.filename);
+			if (knownFault != null){
+				// if in the knownFaults list, the model should fail
+				// this is how we can keep track of our list of known problems
+				// if we fix a model without removing it from the knownFaults map, then this test will fail
+				Assert.assertTrue(
+						"expecting fault "+knownFault.name()+" in "+test_case_name+" but it passed, Please remove from SEDMLExporterTest.knownFaults()",
+						bAnyFailures);
+			}
 
 			if (testCase.modelFormat == ModelFormat.VCML){
 				System.err.println("skipping re-importing SEDML for this test case, not yet supported for VCML");
 				return;
 			}
+			SBMLExporter.MemoryVCLogger memoryVCLogger = new SBMLExporter.MemoryVCLogger();
 			List<BioModel> bioModels = XmlHelper.readOmex(omexFile, memoryVCLogger);
 			Assert.assertTrue(memoryVCLogger.highPriority.size() == 0);
 
