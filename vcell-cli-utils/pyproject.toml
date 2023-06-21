@@ -21,7 +21,7 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = "^3.9"
-biosimulators_utils = "0.1.178"
+biosimulators_utils = "^0.1.180"
 python-libcombine = "0.2.19"
 fire = "^0.4.0"
 PyYAML = "^6.0"
