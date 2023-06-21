@@ -25,27 +25,20 @@ public class ImportOmexBatchCommand implements Callable<Integer> {
     @Option(names = { "-o", "--outputFilePath" }, description = "full path to output directory", required = true)
     private File outputFilePath;
 
-    @Option(names = { "--coerceToDistributed" }, defaultValue = "true", description = "import SBML lumped reactions as VCell distributed reactions if possible")
-    private boolean bCoerceToDistributed = true;
+    @Option(names = {"--writeLogFiles"}, defaultValue = "true", description = "write log files")
+    private boolean bWriteLogFiles = true;
 
     @Option(names = {"-d", "--debug"}, description = "full application debug mode")
     private boolean bDebug = false;
 
-    // TODO: add forceLogFile option to command and pass down
-    
     public Integer call() {
-        CLIRecorder cliLogger = null;
-        
-        Level logLevel = bDebug ? Level.DEBUG : logger.getLevel(); 
+        Level logLevel = bDebug ? Level.DEBUG : logger.getLevel();
         LoggerContext config = (LoggerContext)(LogManager.getContext(false));
         config.getConfiguration().getLoggerConfig(LogManager.getLogger("org.vcell").getName()).setLevel(logLevel);
         config.getConfiguration().getLoggerConfig(LogManager.getLogger("cbit").getName()).setLevel(logLevel);
         config.updateLoggers();
 
         try {
-            boolean bForceLogFiles = true;
-            boolean bKeepFlushingLogs = true;
-            cliLogger = new CLIRecorder(outputFilePath, bForceLogFiles, bKeepFlushingLogs);
             PropertyLoader.loadProperties();
             if (!inputFilePath.exists() || !inputFilePath.isDirectory()){
                 throw new RuntimeException("inputFilePath '"+inputFilePath+"' should be a directory");
@@ -54,7 +47,7 @@ public class ImportOmexBatchCommand implements Callable<Integer> {
                 throw new RuntimeException("outputFilePath '"+outputFilePath+"' should be a directory");
             }
             logger.debug("Beginning batch import");
-            VcmlOmexConverter.importOmexFiles(inputFilePath, outputFilePath, cliLogger, true, bCoerceToDistributed);
+            VcmlOmexConverter.importOmexFiles(inputFilePath, outputFilePath, bWriteLogFiles);
             return 0;
         } catch (Exception e) {
             e.printStackTrace(System.err);

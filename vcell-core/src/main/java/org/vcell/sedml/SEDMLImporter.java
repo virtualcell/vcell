@@ -117,7 +117,7 @@ public class SEDMLImporter {
 	/**
 	 * Get the list of biomodels from the sedml initialized at construction time.
 	 */
-	public List<BioModel> getBioModels(boolean bCoerceToDistributed) {
+	public List<BioModel> getBioModels() {
 		List<BioModel> bioModelList = new LinkedList<>();
 		List<org.jlibsedml.Model> modelList;
 		List<org.jlibsedml.Simulation> simulationList;
@@ -141,7 +141,7 @@ public class SEDMLImporter {
 
 			// NB: We don't know how many BioModels we'll end up with,
 			// 		as some model changes may be translatable as simulations with overrides
-			bioModelMap = this.createBioModels(modelList, bCoerceToDistributed);
+			bioModelMap = this.createBioModels(modelList);
 			Set<BioModel> uniqueBioModels = new HashSet<>(bioModelMap.values());
 
 			// Creating one VCell Simulation for each SED-ML actual Task
@@ -784,7 +784,7 @@ public class SEDMLImporter {
 	}
 
 	// We need to process biomodels that may depend on other biomodels, either with changes or with references!
-	private Map<String, BioModel> createBioModels(List<Model> models, boolean bCoerceToDistributed) throws SEDMLImportException {
+	private Map<String, BioModel> createBioModels(List<Model> models) throws SEDMLImportException {
 		final String MODEL_RESOLUTION_ERROR = "Unresolvable Model(s) encountered. Either there is incompatible " +
 				"/ unsupported SED-ML features, or there are unresolvable references.";
 
@@ -819,7 +819,7 @@ public class SEDMLImporter {
 		// Process basic models
 		for (Model model : basicModels){
 			String referenceId = this.getReferenceId(model);
-			idToBiomodelMap.put(model.getId(), this.getModelReference(referenceId, model, idToBiomodelMap, bCoerceToDistributed));
+			idToBiomodelMap.put(model.getId(), this.getModelReference(referenceId, model, idToBiomodelMap));
 		}
 
 		// Process advanced models
@@ -845,7 +845,7 @@ public class SEDMLImporter {
 				String referenceId = this.getReferenceId(nextModel);
 				BioModel bioModel;
 				try {
-					bioModel = this.getModelReference(referenceId, nextModel, idToBiomodelMap, bCoerceToDistributed);
+					bioModel = this.getModelReference(referenceId, nextModel, idToBiomodelMap);
 					idToBiomodelMap.put(nextModel.getId(), bioModel);
 					count = 0;
 				} catch (RuntimeException e){
@@ -864,7 +864,7 @@ public class SEDMLImporter {
 		return referenceId.startsWith("#") ? referenceId.substring(1) : referenceId;
 	}
 
-	private BioModel getModelReference(String referenceId, Model model, Map<String, BioModel> idToBiomodelMap, boolean bCoerceToDistributed) throws SEDMLImportException {
+	private BioModel getModelReference(String referenceId, Model model, Map<String, BioModel> idToBiomodelMap) throws SEDMLImportException {
 		// Were we given a reference ID? We need to check if the parent was processed yet.
 		if (referenceId != null && !model.getSource().equals(referenceId)){
 			boolean canTranslate;
@@ -877,7 +877,7 @@ public class SEDMLImporter {
 			if (canTranslate)
 				return parentBiomodel;
 		}
-		return this.importModel(model, bCoerceToDistributed);
+		return this.importModel(model);
 	}
 
 	private boolean canTranslateToOverrides(BioModel refBM, Model mm) throws SEDMLImportException {
@@ -899,7 +899,7 @@ public class SEDMLImporter {
 		return true;
 	}
 
-	private BioModel importModel(Model mm, boolean bCoerceToDistributed) {
+	private BioModel importModel(Model mm) {
 		BioModel bioModel;
 		String sedmlOriginalModelName = mm.getId();
 		String sedmlOriginalModelLanguage = mm.getLanguage();
@@ -922,8 +922,7 @@ public class SEDMLImporter {
 				InputStream sbmlSource = IOUtils.toInputStream(modelXML, Charset.defaultCharset());
 				boolean bValidateSBML = false;
 				SBMLImporter sbmlImporter = new SBMLImporter(sbmlSource, this.transLogger, bValidateSBML);
-				boolean bTransformUnits = false;
-				bioModel = sbmlImporter.getBioModel(bCoerceToDistributed, bTransformUnits);
+				bioModel = sbmlImporter.getBioModel();
 				bioModel.setName(bioModelName);
 				bioModel.getSimulationContext(0).setName(mm.getName() != null? mm.getName() : mm.getId());
 				bioModel.updateAll(false);

@@ -153,9 +153,8 @@ public class BiosimulationsExecTest {
             Path omexFile = Files.createTempFile("BiosimulationsExec_", "omex");
 			FileUtils.copyInputStreamToFile(omexInputStream, omexFile.toFile());
 
-            boolean bCoerceToDistributed = true;
 			TestRecorder cliRecorder = new TestRecorder();
-			ExecuteImpl.singleMode(omexFile.toFile(), outdirPath.toFile(), cliRecorder, bCoerceToDistributed);
+			ExecuteImpl.singleMode(omexFile.toFile(), outdirPath.toFile(), cliRecorder);
 			Path computedH5File = outdirPath.resolve("report.h5");
 
 			String errMessage = cliRecorder.errorMessage.replace("\n", " | ");

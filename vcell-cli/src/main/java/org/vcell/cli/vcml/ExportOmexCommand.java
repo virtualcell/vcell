@@ -23,11 +23,17 @@ public class ExportOmexCommand implements Callable<Integer> {
     @Option(names = { "-m", "--outputModelFormat" }, defaultValue = "SBML", description = "expecting SBML or VCML")
     private ModelFormat outputModelFormat = ModelFormat.SBML;
 
-    @Option(names = { "-i", "--inputFilePath" }, description = "full path to .vcml file to export to .omex")
+    @Option(names = { "-i", "--inputFilePath" }, required = true, description = "full path to .vcml file to export to .omex")
     private File inputFilePath;
 
-    @Option(names = { "-o", "--outputFilePath" })
+    @Option(names = { "-o", "--outputFilePath" }, required = true, description = "full path to .omex file to create")
     private File outputFilePath;
+
+    @Option(names = { "--skipUnsupportedApps" }, defaultValue = "false", description = "skip unsupported applications (e.g. electrical in SBML)")
+    private boolean bSkipUnsupportedApps = false;
+
+    @Option(names = { "--writeLogFiles" }, defaultValue = "false")
+    private boolean bWriteLogFiles;
 
     @Option(names = {"-d", "--debug"}, description = "full application debug mode")
     private boolean bDebug = false;
@@ -35,10 +41,7 @@ public class ExportOmexCommand implements Callable<Integer> {
     @Option(names = "--validate")
     boolean bValidateOmex;
 
-    @Option(names = "--offline")
-    boolean bOffline=false;
-
-    public Integer call() { 
+    public Integer call() {
         Level logLevel = bDebug ? Level.DEBUG : logger.getLevel(); 
         
         LoggerContext config = (LoggerContext)(LogManager.getContext(false));
@@ -48,15 +51,10 @@ public class ExportOmexCommand implements Callable<Integer> {
 
         try {
             PropertyLoader.loadProperties();
-            boolean bForceLogFiles = true; // TODO find out what this means and simplify
 
-            try {
-                logger.debug("Beginning export");
-                VcmlOmexConverter.convertOneFile(inputFilePath, outputFilePath,
-                        outputModelFormat, bForceLogFiles, bValidateOmex, bOffline);
-            } catch (IOException e) {
-                e.printStackTrace(System.err);
-            }
+            logger.debug("Beginning export");
+            VcmlOmexConverter.convertOneFile(
+                    inputFilePath, outputFilePath, outputModelFormat, bWriteLogFiles, bValidateOmex, bSkipUnsupportedApps);
             return 0;
         } catch (Exception e) {
             e.printStackTrace();

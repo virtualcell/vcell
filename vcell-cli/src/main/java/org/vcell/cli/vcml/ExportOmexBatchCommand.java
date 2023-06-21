@@ -27,10 +27,10 @@ public class ExportOmexBatchCommand implements Callable<Integer> {
     @Option(names = { "-m", "--outputModelFormat" }, defaultValue = "SBML", description = "expecting SBML or VCML")
     private ModelFormat outputModelFormat = ModelFormat.SBML;
 
-    @Option(names = { "-i", "--inputFilePath" }, description = "directory of .vcml files")
+    @Option(names = { "-i", "--inputFilePath" }, required = true, description = "directory of .vcml files")
     private File inputFilePath;
 
-    @Option(names = { "-o", "--outputFilePath" })
+    @Option(names = { "-o", "--outputFilePath" }, required = true, description = "directory to create .omex files")
     private File outputFilePath;
 
     @Option(names = {"-d", "--debug"}, description = "full application debug mode")
@@ -48,8 +48,11 @@ public class ExportOmexBatchCommand implements Callable<Integer> {
     @Option(names = "--validate")
     boolean bValidateOmex;
 
-    @Option(names = "--forceLogFiles")
-    boolean bForceLogFiles;
+    @Option(names = "--writeLogFiles", defaultValue = "false")
+    boolean bWriteLogFiles = false;
+
+    @Option(names = { "--skipUnsupportedApps" }, defaultValue = "false", description = "skip unsupported applications (e.g. electrical in SBML)")
+    private boolean bSkipUnsupportedApps = false;
 
     @Option(names = "--keepFlushingLogs")
     boolean bKeepFlushingLogs;
@@ -61,9 +64,7 @@ public class ExportOmexBatchCommand implements Callable<Integer> {
     private boolean help;
 
     public Integer call() {
-        CLIRecorder cliRecorder = null;
-
-        Level logLevel = bDebug ? Level.DEBUG : logger.getLevel(); 
+        Level logLevel = bDebug ? Level.DEBUG : logger.getLevel();
         
         LoggerContext config = (LoggerContext)(LogManager.getContext(false));
         config.getConfiguration().getLoggerConfig(LogManager.getLogger("org.vcell").getName()).setLevel(logLevel);
@@ -75,15 +76,13 @@ public class ExportOmexBatchCommand implements Callable<Integer> {
             logger.debug("Batch export of omex files requested");
             PropertyLoader.loadProperties();
             if (inputFilePath == null || !inputFilePath.exists() || !inputFilePath.isDirectory())
-                throw new RuntimeException("inputFilePath '" + inputFilePath == null ? "" : inputFilePath + "' is not a 'valid directory'");
+                throw new RuntimeException("inputFilePath '" + (inputFilePath == null ? "" : inputFilePath) + "' is not a 'valid directory'");
             
-            if (outputFilePath == null)
-                throw new RuntimeException("outputFilePath '" + outputFilePath == null ? "" : outputFilePath + "' is not a 'valid directory'");
-            
-            cliRecorder = new CLIRecorder(outputFilePath); // CLILogger will throw an execption if our output dir isn't valid.
+            if (outputFilePath.exists() && !outputFilePath.isDirectory())
+                throw new RuntimeException("outputFilePath '" + outputFilePath + "' is not a 'valid directory'");
 
-            if (bOffline) this.runInOfflineMode(cliRecorder);
-            else this.run(cliRecorder);
+            if (bOffline) this.runInOfflineMode();
+            else this.run();
             
             return 0;
         } catch (Exception e) {
@@ -94,18 +93,19 @@ public class ExportOmexBatchCommand implements Callable<Integer> {
         }
     }
 
-    private void runInOfflineMode(CLIRecorder cliRecorder) throws IOException {
+    private void runInOfflineMode() throws IOException {
         logger.info("Offline mode selected.");
-        VcmlOmexConverter.convertFilesNoDatabse(inputFilePath, outputFilePath, outputModelFormat, cliRecorder, bForceLogFiles, bValidateOmex, bOffline);
+        VcmlOmexConverter.convertFilesNoDatabase(
+                inputFilePath, outputFilePath, outputModelFormat, bWriteLogFiles, bValidateOmex, bSkipUnsupportedApps);
     }
 
-    private void run(CLIRecorder cliRecorder) throws IOException {
+    private void run() {
         logger.info("Online mode selected");
         try (CLIDatabaseService cliDatabaseService = new CLIDatabaseService()) {
-            VcmlOmexConverter.queryVCellDbPublishedModels(cliDatabaseService, outputFilePath, bForceLogFiles);
+            VcmlOmexConverter.queryVCellDbPublishedModels(cliDatabaseService, outputFilePath, bWriteLogFiles);
 
             VcmlOmexConverter.convertFiles(cliDatabaseService, inputFilePath, outputFilePath,
-                    outputModelFormat, cliRecorder, bHasDataOnly, bMakeLogsOnly, bNonSpatialOnly, bForceLogFiles, bValidateOmex, bOffline);
+                    outputModelFormat, bHasDataOnly, bMakeLogsOnly, bNonSpatialOnly, bWriteLogFiles, bValidateOmex, bSkipUnsupportedApps);
         } catch (IOException | SQLException | DataAccessException e) {
             e.printStackTrace(System.err);
         }

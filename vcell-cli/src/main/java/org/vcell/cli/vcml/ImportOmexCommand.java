@@ -25,8 +25,8 @@ public class ImportOmexCommand implements Callable<Integer> {
     @Option(names = { "-o", "--outputFilePath" }, description = "full path to output directory", required = true)
     private File outputFilePath;
 
-    @Option(names = { "--coerceToDistributed" }, defaultValue = "true", description = "import SBML lumped reactions as VCell distributed reactions if possible")
-    private boolean bCoerceToDistributed = true;
+    @Option(names = {"--writeLogFiles"}, defaultValue = "false", description = "write log files")
+    private boolean bWriteLogFiles;
 
     @Option(names = {"-d", "--debug"}, description = "full application debug mode")
     private boolean bDebug = false;
@@ -48,7 +48,7 @@ public class ImportOmexCommand implements Callable<Integer> {
                 throw new RuntimeException("expecting outputFilePath to be an existing directory: "+inputFilePath.getAbsolutePath());
             }
             logger.debug("Beginning import");
-            VcmlOmexConverter.importOneOmexFile(inputFilePath, outputFilePath, false, bCoerceToDistributed);
+            VcmlOmexConverter.importOneOmexFile(inputFilePath, outputFilePath, bWriteLogFiles);
 
             return 0;
         } catch (Exception e) {

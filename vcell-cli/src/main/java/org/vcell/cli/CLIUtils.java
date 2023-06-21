@@ -57,19 +57,6 @@ public class CLIUtils {
     }
 
     /**
-     * Determines whether a single file or a batch of files were submitted for processing in VCell CLI (or should be treated as a batch execution); 
-     * 
-     * @param outputBaseDir output dir of the execution
-     * @param bForceKeepLogs whether VCell has been asked to force keeping logs
-     * @return whether or not the exxecution should be treated as a batch execution
-     */
-    public static boolean isBatchExecution(String outputBaseDir, boolean bForceKeepLogs) {
-        Path path = Paths.get(outputBaseDir);
-        boolean isDirectory = Files.isDirectory(path);
-        return isDirectory || bForceKeepLogs;
-    }
-
-    /**
      * Since VCell operates on Java 8, this is a string strip utility.
      * 
      * @param str String to Strip whitespace from

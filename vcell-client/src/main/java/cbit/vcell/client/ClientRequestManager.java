@@ -3401,9 +3401,7 @@ public class ClientRequestManager
 						List<SedML> sedmls = (List<SedML>) hashTable.get(SEDML_MODELS);
 						for (SedML sedml : sedmls) {
 							// default to import all tasks
-							boolean bCoerceToDistributed = true;
-							List<BioModel> vcdocs = XmlHelper.importSEDML(transLogger, externalDocInfo,
-									sedml, false, bCoerceToDistributed);
+							List<BioModel> vcdocs = XmlHelper.importSEDML(transLogger, externalDocInfo, sedml, false);
 							for (VCDocument vcdoc : vcdocs) {
 								docs.add(vcdoc);
 							}
@@ -3546,9 +3544,7 @@ public class ClientRequestManager
 								hashTable.put(SEDML_MODELS, sedmls);
 								
 								// default to import all tasks
-								boolean bCoerceToDistributed = true;
-								List<BioModel> vcdocs = XmlHelper.importSEDML(transLogger, externalDocInfo,
-										sedml, false, bCoerceToDistributed);
+								List<BioModel> vcdocs = XmlHelper.importSEDML(transLogger, externalDocInfo, sedml, false);
 								for (VCDocument vcdoc : vcdocs) {
 									docs.add(vcdoc);
 								}
