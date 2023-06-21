@@ -49,13 +49,13 @@ numpy = "*"
 
 [[package]]
 name = "biosimulators-utils"
-version = "0.1.178"
+version = "0.1.180"
 description = "Command-line program and library for reading, writing, validating and executing modeling projects (COMBINE/OMEX archives with SED-ML files)."
 optional = false
 python-versions = "*"
 files = [
-    {file = "biosimulators_utils-0.1.178-py2.py3-none-any.whl", hash = "sha256:77af26dccc96af0a1880ef37465bf78158a49584468e61c935440723b1be4bc7"},
-    {file = "biosimulators_utils-0.1.178.tar.gz", hash = "sha256:8dae4a608e63790f897798fce907754acb3057ffc9269092d84604acd3b1dcf2"},
+    {file = "biosimulators_utils-0.1.180-py2.py3-none-any.whl", hash = "sha256:0950e6fca1174e8448a2007630e1caba11971a7bda0ba63ad73f9d611a74c92b"},
+    {file = "biosimulators_utils-0.1.180.tar.gz", hash = "sha256:231ac45877262cefde29ad46e71242635b35fc0c44084ef002086149e5687cf0"},
 ]
 
 [package.dependencies]
@@ -64,7 +64,7 @@ biopython = "*"
 cement = "*"
 evalidate = "*"
 h5py = "*"
-kisao = ">=2.29"
+kisao = ">=2.32"
 lxml = "*"
 matplotlib = "*"
 mpmath = "*"
@@ -591,13 +591,13 @@ six = "*"
 
 [[package]]
 name = "kisao"
-version = "2.30"
+version = "2.32"
 description = "Utilities for working with the Kinetic Simulation Algorithm Ontology (KiSAO)"
 optional = false
 python-versions = "*"
 files = [
-    {file = "kisao-2.30-py2.py3-none-any.whl", hash = "sha256:62bd00e37113c2fd4128f0503f41d8315e92c5c65183b420cb687fd7e19506a2"},
-    {file = "kisao-2.30.tar.gz", hash = "sha256:e94e1aef646c5db476a4d49559458f2e336ff02afdb04f1ede96959fadf838fb"},
+    {file = "kisao-2.32-py2.py3-none-any.whl", hash = "sha256:c08e095bc3631d0a3a55a6edf07c50b29c1387659ce0029bed6fcb9fa205dd58"},
+    {file = "kisao-2.32.tar.gz", hash = "sha256:1e8d82a268e319cf73b753b98d29b2ac17a8463cd26f268aa9d47557c880383f"},
 ]
 
 [package.dependencies]
@@ -2098,4 +2098,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "4883c0c0ca8f6bb001745d666cba3c9c8ec6e51f7d60d1cb5f30eacf2e99433e"
+content-hash = "b86408fca9b4b2520ec793e4160bed8358954d0ab2a48f26df1f91052eda20b9"
