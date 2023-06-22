@@ -115,13 +115,17 @@ jobs:
         set +e
         cd installers
         export MAC_INSTALLER=`ls *dmg`
-        xcrun altool --notarize-app --primary-bundle-id "edu.uchc.vcell.alpha" -u "${{ secrets.MACID }}" -p "${{ secrets.MACPW }}" --file $MAC_INSTALLER > altool_output
-        cat altool_output | grep UUID | cut -d " " -f3 > UUID
+        xcrun notarytool submit --output-format normal --no-progress --no-wait --team-id "${{ secrets.MACTEAMID }}" --apple-id "${{ secrets.MACID }}" --password "${{ secrets.MACPW }}" $MAC_INSTALLER > submit_output
+        echo "output returned by notarytool submit:"
+        cat submit_output
+        cat submit_output | grep UUID | cut -d " " -f3 > UUID
         for minutes in {1..5}
         do
           sleep 60
-          xcrun altool --notarization-info `cat UUID` -u "${{ secrets.MACID }}" -p "${{ secrets.MACPW }}" > status
-          grep -q success status
+          xcrun notarytool info --output-format normal --no-progress --team-id "${{ secrets.MACTEAMID }}" --apple-id "${{ secrets.MACID }}" --password "${{ secrets.MACPW }}" `cat UUID` > info_output
+          echo "output returned by notarytool info:"
+          cat info_output
+          grep -q success info_output
           if [[ $? == 0 ]]; then
             echo "notarized succesfully"
             break
@@ -129,7 +133,7 @@ jobs:
             echo "wait another minute and check again"
           fi
         done
-        grep -q success status
+        grep -q success info_output
         if [[ $? == 0 ]]; then
           xcrun stapler staple $MAC_INSTALLER
         else
