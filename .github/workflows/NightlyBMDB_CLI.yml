@@ -254,7 +254,7 @@ jobs:
         run: cat $(find $GITHUB_WORKSPACE/published-results -name 'errors.report') > $GITHUB_WORKSPACE/combined.txt
 
       - name: Post results to slack part 1
-        run: curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="Here're the published models that didn't pass:" https://slack.com/api/chat.postMessage
+        run: curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="Here're the $(cat ${GITHUB_WORKSPACE}/combined.txt | wc -l) published models that didn't pass:" https://slack.com/api/chat.postMessage
 
       - name: Post results to slack part 2
         run: curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="$(cat ${GITHUB_WORKSPACE}/combined.txt)" https://slack.com/api/chat.postMessage
