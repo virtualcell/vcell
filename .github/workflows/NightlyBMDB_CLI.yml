@@ -94,7 +94,7 @@ jobs:
     needs: build
     strategy:
       matrix:
-        sets: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
+        sets: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19"]
     steps:
       - name: Create Docker Image Dir
         run: mkdir /tmp/docker
@@ -116,8 +116,20 @@ jobs:
 
       - name: Prepare sub directory
         run: |
-          mkdir $GITHUB_WORKSPACE/set_${{ matrix.sets }}
-          cp $(ls -d $GITHUB_WORKSPACE/published/biomodel/omex/sbml/* | grep "${{ matrix.sets }}.omex") $GITHUB_WORKSPACE/set_${{ matrix.sets }}
+          SOURCE_DIR="$GITHUB_WORKSPACE/published/biomodel/omex/sbml"
+          TARGET_DIR="$GITHUB_WORKSPACE/set_${{ matrix.sets }}"
+          MOD_VALUE=${{ matrix.sets }}
+          file_index=0
+          
+          # make target dir
+          mkdir $TARGET_DIR
+          # loop through files in directory, increment indexing and separating files
+          for file in $SOURCE_DIR/*; do
+              file_index=$((file_index+1))
+              if [ $((file_index%${{ strategy.job-total }})) -eq $((MOD_VALUE + 0)) ]; then
+                  cp ${file} $TARGET_DIR/
+              fi
+          done
         
         # Do the execution
       - name: Begin Execution
@@ -242,7 +254,7 @@ jobs:
         run: cat $(find $GITHUB_WORKSPACE/published-results -name 'errors.report') > $GITHUB_WORKSPACE/combined.txt
 
       - name: Post results to slack part 1
-        run: curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="Here're the published models that didn't pass:" https://slack.com/api/chat.postMessage
+        run: curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="Here're the $(cat ${GITHUB_WORKSPACE}/combined.txt | wc -l) published models that didn't pass:" https://slack.com/api/chat.postMessage
 
       - name: Post results to slack part 2
         run: curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="$(cat ${GITHUB_WORKSPACE}/combined.txt)" https://slack.com/api/chat.postMessage
