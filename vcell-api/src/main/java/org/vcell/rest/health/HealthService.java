@@ -34,7 +34,7 @@ public class HealthService {
 	
 	private static final long LOGIN_TIME_WARNING = 10*1000;
 	private static final long LOGIN_TIME_ERROR = 30*1000;
-	private static final long SIMULATION_TIME_WARNING = 25*1000;
+	private static final long SIMULATION_TIME_WARNING = 45*1000;
 	private static final long SIMULATION_TIMEOUT = 8*60*1000;
 	private static final long LOGIN_LOOP_START_DELAY = 40*1000;
 	private static final long LOGIN_LOOP_SLEEP = 3*60*1000;
