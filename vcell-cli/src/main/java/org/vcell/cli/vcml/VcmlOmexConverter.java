@@ -268,7 +268,12 @@ public class VcmlOmexConverter {
 	public static void queryVCellDbPublishedModels(CLIDatabaseService cliDatabaseService, File outputDir, boolean bWriteLogFiles) throws SQLException, DataAccessException, IOException {
 		VCInfoContainer vcic;
 		Map<String, List<String>> publicationToModelMap = new LinkedHashMap<>();
+		Map<String, List<String>> modelToPublicationMap = new LinkedHashMap<>();
 		int count = 0;		// number of biomodels with publication info
+//
+//		TODO: call one of the other 2 following functions to bet the published / public biomodel lists
+//
+//		List<BioModelInfo> bioModelInfos = cliDatabaseService.queryPublishedBioModels();
 		List<BioModelInfo> bioModelInfos = cliDatabaseService.queryPublicBioModels();
 		logger.info("Found " + bioModelInfos.size() + " public BioNodelInfo objects");
 
@@ -292,6 +297,15 @@ public class VcmlOmexConverter {
 						biomodelIds.add(biomodelId);
 						publicationToModelMap.put(pi.getTitle(), biomodelIds);
 					}
+					if(modelToPublicationMap.containsKey(biomodelId)) {
+						List<String> biomodelPiTitles = modelToPublicationMap.get(biomodelId);
+						biomodelPiTitles.add(pi.getTitle());
+						modelToPublicationMap.put(biomodelId, biomodelPiTitles);
+					} else {
+						List<String> biomodelPiTitles = new ArrayList<> ();
+						biomodelPiTitles.add(pi.getTitle());
+						modelToPublicationMap.put(biomodelId, biomodelPiTitles);
+					}
 				}
 			}
 		}
@@ -305,10 +319,24 @@ public class VcmlOmexConverter {
 				String row = "";
 				row += pubTitle;
 				for(String model : models) {
-					row += (", " + model);
+					row += ("; " + model);
 				}
 				writeFileEntry(outputDir.getAbsolutePath(), row, fileName, bWriteLogFiles);
 				logger.trace("publication :"+row);
+			}
+		}
+		for( Map.Entry<String,List<String>> entry : modelToPublicationMap.entrySet()) {
+			String fileName = "multiPublicationModels.txt";
+			String model = entry.getKey();
+			List<String> publications = entry.getValue();
+			if(publications.size() > 1) {
+				String row = "";
+				row += model;
+				for(String publication : publications) {
+					row += ("; " + publication);
+				}
+				writeFileEntry(outputDir.getAbsolutePath(), row, fileName, bWriteLogFiles);
+				logger.trace("model :"+row);
 			}
 		}
 	}
