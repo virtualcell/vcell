@@ -105,7 +105,7 @@ public class BiomodelsServerResource extends AbstractServerResource implements B
 	@Override
     public BiomodelRepresentation[] get_json() {
 		VCellApiApplication application = ((VCellApiApplication)getApplication());
-		User vcellUser = application.getVCellUser(getChallengeResponse(),AuthenticationPolicy.prohibitInvalidCredentials);
+		User vcellUser = application.getVCellUser(getChallengeResponse(),AuthenticationPolicy.ignoreInvalidCredentials);
 		
 		BiomodelRepresentation[] bmReps = new BiomodelRepresentation[0];
 		try {

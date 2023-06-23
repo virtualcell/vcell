@@ -78,7 +78,7 @@ public class SimDataValuesServerResource extends AbstractServerResource implemen
 	@Override
     public SimDataValuesRepresentation get_json() {
 		VCellApiApplication application = ((VCellApiApplication)getApplication());
-		User vcellUser = application.getVCellUser(getChallengeResponse(),AuthenticationPolicy.prohibitInvalidCredentials);
+		User vcellUser = application.getVCellUser(getChallengeResponse(),AuthenticationPolicy.ignoreInvalidCredentials);
 		
         return getSimDataValuesRepresentation(vcellUser);
     }
