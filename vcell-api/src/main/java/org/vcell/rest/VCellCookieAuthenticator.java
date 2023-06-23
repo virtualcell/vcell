@@ -58,7 +58,6 @@ public class VCellCookieAuthenticator extends CookieAuthenticator {
 	        
 	        CookieSetting crendentialCookie = getCredentialsCookie(request, response);
 			crendentialCookie.setMaxAge(0);
-			crendentialCookie.setValue(accessToken.getToken());
 
 	        getLogger().log(Level.INFO,"MyCookieAuthenticator.login(request,response) - created new accessToken '"+accessToken.getToken()+"' and assignd to ChallengeResponse, redirectURL='"+redirectURL.getValue()+"'");
 

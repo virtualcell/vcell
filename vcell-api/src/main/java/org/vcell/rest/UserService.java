@@ -83,9 +83,13 @@ public class UserService {
 		return adminDbTopLevel.generateApiAccessToken(apiClientKey, user, getNewExpireDate(), true);
 	}
 
-	public ApiAccessToken getApiAccessToken(String jwtToken) throws SQLException, DataAccessException{
+	public ApiAccessToken getApiAccessToken(String jwtToken) throws SQLException, DataAccessException {
+		return getApiAccessToken(jwtToken, true);
+	}
+
+	public ApiAccessToken getApiAccessToken(String jwtToken, boolean bValidateJWT) throws SQLException, DataAccessException{
 		try {
-			if (!JWTUtils.verifyJWS(jwtToken)){
+			if (bValidateJWT && !JWTUtils.verifyJWS(jwtToken)){
 				lg.warn("token was not valid");
 				return null;
 			}

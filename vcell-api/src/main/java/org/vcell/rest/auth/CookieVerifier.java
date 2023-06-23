@@ -28,7 +28,7 @@ public class CookieVerifier implements Verifier {
         if (challengeResponse != null && challengeResponse.getScheme().equals(ChallengeScheme.HTTP_COOKIE) && challengeResponse.getSecret() != null) {
             String token = new String(challengeResponse.getSecret());
             try {
-                if (userService.getApiAccessToken(token) != null) {
+                if (userService.getApiAccessToken(token, false) != null) {
                     return RESULT_VALID;
                 } else {
                     lg.info("invalid token from Cookie Scheme");
@@ -52,7 +52,7 @@ public class CookieVerifier implements Verifier {
             lg.trace("challenge response was null");
             return null;
         }else if (response.getSecret() != null && response.getScheme().equals(ChallengeScheme.HTTP_COOKIE)) {
-            ApiAccessToken accessToken = userService.getApiAccessToken(new String(response.getSecret()));
+            ApiAccessToken accessToken = userService.getApiAccessToken(new String(response.getSecret()), false);
             return accessToken;
         }else{
             lg.trace("response response was preset, but secret was missing or not Cookie Scheme");
