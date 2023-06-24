@@ -6,6 +6,7 @@
 <#assign diagramlink="/biomodel/${biomodel.bmKey}/diagram">
 <#assign vcmllink="/biomodel/${biomodel.bmKey}/biomodel.vcml">
 <#assign sbmllink="/biomodel/${biomodel.bmKey}/biomodel.sbml">
+<#assign omexlink="/biomodel/${biomodel.bmKey}/biomodel.omex">
 <#assign simstatuslink="/simstatus?submitLow=&submitHigh=&startRow=1&maxRows=10&hasData=all&active=on&running=on&completed=on&stopped=on&failed=on">
 <#assign simtasklink="/simtask?submitLow=&submitHigh=&startRow=1&maxRows=10&hasData=all&waiting=on&queued=on&dispatched=on&running=on&completed=on&failed=on&stopped=on">
 <center><h2><a href="/publication">Publications</a>&nbsp;&nbsp;&nbsp;<a href="/biomodel">BioModels</a>&nbsp;&nbsp;&nbsp;<a href="${simstatuslink}">Simulation Status</a>&nbsp;&nbsp;&nbsp;<a href="${simtasklink}">Simulation Tasks</a>&nbsp;&nbsp;&nbsp;<#if userid?? >(user: ${userid} <a href='${logouturl}'>Log out</a>)<#else>(not logged in <a href='${loginurl}'>sign in</a>)</#if></h2></center><br/><center>
@@ -16,6 +17,7 @@
 <br>saved: ${biomodel.savedDate?number_to_date!""}</br>
 <br><a href="${vcmllink}" type="application/vcml+xml" download="Biomodel_${biomodel.bmKey}.vcml">download vcml</a></br>
 <br><a href="${sbmllink}" type="application/sbml+xml" download="Biomodel_${biomodel.bmKey}.sbml">download sbml</a></br>
+<br><a href="${omexlink}" type="application/omex+zip" download="Biomodel_${biomodel.bmKey}.omex">download omex</a></br>
 <br><img src="${diagramlink}" type="image/png"/></br>
 
 <br/><h3>Applications</h3>

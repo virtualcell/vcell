@@ -1,41 +1,5 @@
 package org.vcell.rest.server;
 
-import java.beans.PropertyVetoException;
-import java.sql.SQLException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Random;
-import java.util.TreeMap;
-import java.util.concurrent.ConcurrentHashMap;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.vcell.rest.VCellApiApplication;
-import org.vcell.rest.common.OverrideRepresentation;
-import org.vcell.rest.common.PublicationRepresentation;
-import org.vcell.rest.common.SimulationRepresentation;
-import org.vcell.rest.common.SimulationStatusRepresentation;
-import org.vcell.rest.rpc.RpcDataServerProxy;
-import org.vcell.rest.rpc.RpcSimServerProxy;
-import org.vcell.util.BigString;
-import org.vcell.util.DataAccessException;
-import org.vcell.util.ObjectNotFoundException;
-import org.vcell.util.PermissionException;
-import org.vcell.util.UseridIDExistsException;
-import org.vcell.util.document.GroupAccess;
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.User;
-import org.vcell.util.document.UserInfo;
-import org.vcell.util.document.UserLoginInfo;
-import org.vcell.util.document.VCDataIdentifier;
-import org.vcell.util.document.VCInfoContainer;
-
 import cbit.sql.QueryHashtable;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.mapping.MappingException;
@@ -46,18 +10,8 @@ import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.message.server.dispatcher.SimulationDatabaseDirect;
 import cbit.vcell.model.ModelException;
-import cbit.vcell.modeldb.AdminDBTopLevel;
-import cbit.vcell.modeldb.BioModelRep;
-import cbit.vcell.modeldb.BioModelTable;
-import cbit.vcell.modeldb.DatabaseServerImpl;
+import cbit.vcell.modeldb.*;
 import cbit.vcell.modeldb.DatabaseServerImpl.OrderBy;
-import cbit.vcell.modeldb.LocalAdminDbServer;
-import cbit.vcell.modeldb.PublicationRep;
-import cbit.vcell.modeldb.PublicationTable;
-import cbit.vcell.modeldb.ServerDocumentManager;
-import cbit.vcell.modeldb.SimContextRep;
-import cbit.vcell.modeldb.SimulationRep;
-import cbit.vcell.modeldb.UserTable;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.server.SimpleJobStatus;
@@ -73,10 +27,37 @@ import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.restlet.representation.ByteArrayRepresentation;
+import org.restlet.representation.FileRepresentation;
+import org.vcell.rest.VCellApiApplication;
+import org.vcell.rest.common.BiomodelOMEXResource;
+import org.vcell.rest.common.OverrideRepresentation;
+import org.vcell.rest.common.SimulationRepresentation;
+import org.vcell.rest.common.SimulationStatusRepresentation;
+import org.vcell.rest.rpc.RpcDataServerProxy;
+import org.vcell.rest.rpc.RpcSimServerProxy;
+import org.vcell.sbml.OmexPythonUtils;
+import org.vcell.sedml.ModelFormat;
+import org.vcell.sedml.SEDMLExporter;
+import org.vcell.util.*;
+import org.vcell.util.document.*;
+
+import java.beans.PropertyVetoException;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.sql.SQLException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Predicate;
 
 public class RestDatabaseService {
 	private final static Logger lg = LogManager.getLogger(RestDatabaseService.class);
-	
+
 	private DatabaseServerImpl databaseServerImpl = null;
 	private LocalAdminDbServer localAdminDbServer = null;
 	ConcurrentHashMap<KeyValue, SimContextRep> scMap = new ConcurrentHashMap<KeyValue, SimContextRep>();
@@ -91,36 +72,45 @@ public class RestDatabaseService {
 		this.simulationDatabaseDirect = new SimulationDatabaseDirect(databaseServerImpl.getAdminDBTopLevel(), databaseServerImpl, false);
 
 	}
-	
+
 	public static class SimulationSaveResponse {
 		public final BioModel newBioModel;
 		public final Simulation newSimulation;
+
 		public SimulationSaveResponse(BioModel newBioModel, Simulation newSimulation){
 			this.newBioModel = newBioModel;
 			this.newSimulation = newSimulation;
 		}
 	}
+
 	public VCInfoContainer getVCInfoContainer(User vcellUser) throws DataAccessException{
 		return databaseServerImpl.getVCInfoContainer(vcellUser);
 	}
+
 	public BigString getBioModelXML(KeyValue bmKey,User vcellUser) throws DataAccessException{
 		return databaseServerImpl.getBioModelXML(vcellUser, bmKey);
 	}
+
 	public BigString getMathModelXML(KeyValue mmKey,User vcellUser) throws DataAccessException{
 		return databaseServerImpl.getMathModelXML(vcellUser, mmKey);
 	}
+
 	public SimulationStatus[] getSimulationStatus(KeyValue[] simulationKeys,User vcellUser) throws DataAccessException{
 		return simulationDatabaseDirect.getSimulationStatus(simulationKeys);
 	}
+
 	public SimulationStatus getSimulationStatus(KeyValue simulationKey,User vcellUser) throws DataAccessException{
 		return simulationDatabaseDirect.getSimulationStatus(simulationKey);
 	}
+
 	public String getBasicStatistics() throws SQLException, DataAccessException{
 		return databaseServerImpl.getAdminDBTopLevel().getBasicStatistics();
 	}
+
 	public TreeMap<User.SPECIAL_CLAIM,TreeMap<User,String>> getSpecialUsers(User user) throws DataAccessException{
 		return databaseServerImpl.getSpecialUsers(user);
 	}
+
 	public SimulationSaveResponse saveSimulation(BiomodelSimulationSaveServerResource resource, User vcellUser, List<OverrideRepresentation> overrideRepresentations) throws PermissionException, ObjectNotFoundException, DataAccessException, SQLException, XmlParseException, PropertyVetoException, MappingException, ExpressionException{
 		String simId = resource.getAttribute(VCellApiApplication.SIMULATIONID);
 		KeyValue simKey = new KeyValue(simId);
@@ -144,10 +134,10 @@ public class RestDatabaseService {
 		if (origSimulation==null){
 			throw new RuntimeException("cannot find original Simulation");
 		}
-		
+
 		SimulationContext simContext = bioModel.getSimulationContext(origSimulation);
 		Simulation newUnsavedSimulation = simContext.copySimulation(origSimulation);
-		
+
 		// make appropriate changes
 		// MATH OVERRIDES
 		MathOverrides mathOverrides = new MathOverrides(newUnsavedSimulation);
@@ -155,7 +145,7 @@ public class RestDatabaseService {
 			overrideRep.applyMathOverrides(mathOverrides);
 		}
 		newUnsavedSimulation.setMathOverrides(mathOverrides);
-		
+
 		// save bioModel
 		String editedBioModelXML = XmlHelper.bioModelToXML(bioModel);
 		ServerDocumentManager serverDocumentManager = new ServerDocumentManager(this.databaseServerImpl);
@@ -287,7 +277,7 @@ public class RestDatabaseService {
 		}
 	}
 
-	public BioModelRep[] query(BiomodelsServerResource resource, User vcellUser) throws SQLException, DataAccessException, ParseException {			
+	public BioModelRep[] query(BiomodelsServerResource resource, User vcellUser) throws SQLException, DataAccessException, ParseException {
 		if (vcellUser==null){
 			vcellUser = VCellApiApplication.DUMMY_USER;
 		}
@@ -309,17 +299,17 @@ public class RestDatabaseService {
 			maxRows = maxRowsParam.intValue();
 		}
 		ArrayList<String> conditions = new ArrayList<String>();
-		
+
 		//java.text.SimpleDateFormat df = new java.text.SimpleDateFormat("MM/dd/yyyy HH:mm:ss", java.util.Locale.US);
 		SimpleDateFormat df = new SimpleDateFormat("yyyy/MM/dd",Locale.US);
-		
+
 		if (savedLow != null && savedLow.length()>0){
 			df.parse(savedLow);
-			conditions.add("(" + BioModelTable.table.versionDate.getQualifiedColName() + " >= to_date('" + savedLow + "', 'yyyy/mm/dd'))");		
+			conditions.add("(" + BioModelTable.table.versionDate.getQualifiedColName() + " >= to_date('" + savedLow + "', 'yyyy/mm/dd'))");
 		}
 		if (savedHigh != null && savedHigh.length()>0){
 			df.parse(savedHigh);
-			conditions.add("(" + BioModelTable.table.versionDate.getQualifiedColName() + " <= to_date('" + savedHigh + "', 'yyyy/mm/dd'))");		
+			conditions.add("(" + BioModelTable.table.versionDate.getQualifiedColName() + " <= to_date('" + savedHigh + "', 'yyyy/mm/dd'))");
 		}
 		if (bioModelName != null && bioModelName.trim().length()>0){
 			String pattern = bioModelName.trim();
@@ -331,10 +321,10 @@ public class RestDatabaseService {
 			pattern = pattern.replace("*","%");
 			pattern = "%"+pattern+"%";
 			pattern = pattern.replace("%%","%");
-			conditions.add("(" + "lower("+BioModelTable.table.name.getQualifiedColName()+")" + " like " + "lower('"+pattern+"')" + ")");		
+			conditions.add("(" + "lower("+BioModelTable.table.name.getQualifiedColName()+")" + " like " + "lower('"+pattern+"')" + ")");
 		}
 		if (bioModelID != null){
-			conditions.add("(" + BioModelTable.table.id.getQualifiedColName() + " = " + bioModelID + ")");		
+			conditions.add("(" + BioModelTable.table.id.getQualifiedColName() + " = " + bioModelID + ")");
 		}
 		//
 		// if ownerParam and categoryParam are both not specified, then return all models that we have permission for.
@@ -364,7 +354,7 @@ public class RestDatabaseService {
 			// return all models owned by me (none if not authenticated).
 			//
 			conditions.add("(" + UserTable.table.userid.getQualifiedColName() + " = '" + vcellUser.getName() + "')");
-			
+
 		}else if (categoryParam.equals(VCellApiApplication.CATEGORY_PUBLIC)){
 			//
 			// public models that aren't "Tutorial" or "Education"
@@ -373,7 +363,7 @@ public class RestDatabaseService {
 			//
 			conditions.add("(" + BioModelTable.table.privacy.getQualifiedColName() + " = " + GroupAccess.GROUPACCESS_ALL + ")");
 			if (ownerParam!=null && ownerParam.trim().length()>0){
-				conditions.add("(" + UserTable.table.userid.getQualifiedColName() + " = '" + ownerParam + "')");		
+				conditions.add("(" + UserTable.table.userid.getQualifiedColName() + " = '" + ownerParam + "')");
 			}
 			conditions.add("(" + UserTable.table.userid.getQualifiedColName() + " != '" + VCellApiApplication.USERNAME_TUTORIAL + "')");
 			conditions.add("(" + UserTable.table.userid.getQualifiedColName() + " != '" + VCellApiApplication.USERNAME_EDUCATION + "')");
@@ -399,7 +389,7 @@ public class RestDatabaseService {
 				conditions.add("(" + UserTable.table.userid.getQualifiedColName() + " != '" + vcellUser.getName() + "')");
 			}
 			if (ownerParam!=null && ownerParam.trim().length()>0){
-				conditions.add("(" + UserTable.table.userid.getQualifiedColName() + " = '" + ownerParam + "')");		
+				conditions.add("(" + UserTable.table.userid.getQualifiedColName() + " = '" + ownerParam + "')");
 			}
 			conditions.add("(" + BioModelTable.table.privacy.getQualifiedColName() + " != " + GroupAccess.GROUPACCESS_ALL + ")");
 			conditions.add("(" + BioModelTable.table.privacy.getQualifiedColName() + " != " + GroupAccess.GROUPACCESS_NONE + ")");
@@ -411,7 +401,7 @@ public class RestDatabaseService {
 				conditions.add("(" + UserTable.table.userid.getQualifiedColName() + " = '" + ownerParam + "')");
 			}
 		}
-	
+
 		StringBuffer conditionsBuffer = new StringBuffer();
 		for (String condition : conditions) {
 			if (conditionsBuffer.length() > 0) {
@@ -447,12 +437,12 @@ public class RestDatabaseService {
 					bioModelRep.addSimulationRep(simulationRep);
 				}
 			}
-			
+
 		}
-	   	return bioModelReps;
+		return bioModelReps;
 	}
-	
-	public String query(BiomodelVCMLServerResource resource, User vcellUser) throws SQLException, DataAccessException {			
+
+	public String query(BiomodelVCMLServerResource resource, User vcellUser) throws SQLException, DataAccessException {
 		if (vcellUser==null){
 			vcellUser = VCellApiApplication.DUMMY_USER;
 		}
@@ -461,8 +451,41 @@ public class RestDatabaseService {
 		BigString vcmlBigString = databaseServerImpl.getBioModelXML(vcellUser, bioModelKey);
 		return vcmlBigString.toString();
 	}
-	
-	public String query(BiomodelDiagramServerResource resource, User vcellUser) throws SQLException, DataAccessException {			
+
+	public ByteArrayRepresentation query(BiomodelOMEXServerResource resource, User vcellUser, boolean bSkipUnsupported) throws SQLException, DataAccessException, XmlParseException, IOException, SEDMLExporter.SEDMLExportException, OmexPythonUtils.OmexValidationException {
+		if (vcellUser==null){
+			vcellUser = VCellApiApplication.DUMMY_USER;
+		}
+		String bioModelID = (String)resource.getRequestAttributes().get(VCellApiApplication.BIOMODELID);
+		KeyValue bioModelKey = new KeyValue(bioModelID);
+		BigString vcmlBigString = databaseServerImpl.getBioModelXML(vcellUser, bioModelKey);
+		BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(vcmlBigString.toString()));
+		BioModelInfo bioModelInfo = databaseServerImpl.getBioModelInfo(vcellUser,bioModelKey);
+
+		boolean bRoundTripSBMLValidation = true;
+		boolean bHasPython = true;
+		ModelFormat modelFormat = ModelFormat.SBML;
+
+		Optional<PublicationInfo> publicationInfo = Optional.empty();
+		if (bioModelInfo.getPublicationInfos()!=null && bioModelInfo.getPublicationInfos().length>0){
+			publicationInfo = Optional.of(bioModelInfo.getPublicationInfos()[0]);
+		}
+
+		Predicate<SimulationContext> simContextFilter = (SimulationContext sc) -> true;
+		if (bSkipUnsupported) {
+			Map<String, String> unsupportedApplications = SEDMLExporter.getUnsupportedApplicationMap(bioModel, modelFormat);
+			simContextFilter = (SimulationContext sc) -> !unsupportedApplications.containsKey(sc.getName());
+		}
+
+		File exportOmexFile = Files.createTempFile("biomodel_"+bioModelID,".omex").toFile();
+		boolean bCreateOmexArchive = true;
+		SEDMLExporter.writeBioModel(bioModel, publicationInfo, exportOmexFile, modelFormat, simContextFilter,
+				bHasPython, bRoundTripSBMLValidation, bCreateOmexArchive);
+		byte[] omexFileBytes = Files.readAllBytes(exportOmexFile.toPath());
+		return new ByteArrayRepresentation(omexFileBytes, BiomodelOMEXResource.OMEX_MEDIATYPE);
+	}
+
+	public String query(BiomodelDiagramServerResource resource, User vcellUser) throws SQLException, DataAccessException {
 		if (vcellUser==null){
 			vcellUser = VCellApiApplication.DUMMY_USER;
 		}
@@ -471,15 +494,15 @@ public class RestDatabaseService {
 		BigString vcmlBigString = databaseServerImpl.getBioModelXML(vcellUser, bioModelKey);
 		return vcmlBigString.toString();
 	}
-	
-	public BioModelRep query(BiomodelServerResource resource, User vcellUser) throws SQLException, ObjectNotFoundException, DataAccessException {	
+
+	public BioModelRep query(BiomodelServerResource resource, User vcellUser) throws SQLException, ObjectNotFoundException, DataAccessException {
 		if (vcellUser==null){
 			vcellUser = VCellApiApplication.DUMMY_USER;
 		}
 		String bioModelID = (String)resource.getRequestAttributes().get(VCellApiApplication.BIOMODELID);
 		return getBioModelRep(new KeyValue(bioModelID), vcellUser);
 	}
-	
+
 //	public PublicationRep query(PublicationServerResource resource, User vcellUser) throws NumberFormatException, ObjectNotFoundException, SQLException, DataAccessException {
 //		if (vcellUser==null){
 //			vcellUser = VCellApiApplication.DUMMY_USER;
@@ -489,18 +512,17 @@ public class RestDatabaseService {
 //	}
 
 
-	
-	public BioModelRep getBioModelRep(KeyValue bmKey, User vcellUser) throws SQLException, ObjectNotFoundException, DataAccessException {	
+	public BioModelRep getBioModelRep(KeyValue bmKey, User vcellUser) throws SQLException, ObjectNotFoundException, DataAccessException {
 		if (vcellUser==null){
 			vcellUser = VCellApiApplication.DUMMY_USER;
 		}
 		ArrayList<String> conditions = new ArrayList<String>();
 		if (bmKey != null){
-			conditions.add("(" + BioModelTable.table.id.getQualifiedColName() + " = " + bmKey.toString() + ")");		
+			conditions.add("(" + BioModelTable.table.id.getQualifiedColName() + " = " + bmKey.toString() + ")");
 		}else{
 			throw new RuntimeException("bioModelID not specified");
 		}
-	
+
 		StringBuffer conditionsBuffer = new StringBuffer();
 		for (String condition : conditions) {
 			if (conditionsBuffer.length() > 0) {
@@ -526,33 +548,33 @@ public class RestDatabaseService {
 					bioModelRep.addSimulationRep(simulationRep);
 				}
 			}
-			
+
 		}
 		if (bioModelReps==null || bioModelReps.length!=1){
 			throw new ObjectNotFoundException("failed to get biomodel");
 		}
 		return bioModelReps[0];
 	}
-	
+
 	public void publishDirectly(KeyValue[] publishTheseBiomodels,KeyValue[] publishTheseMathmodels, User user) throws SQLException, DataAccessException {
 		databaseServerImpl.publishDirectly(publishTheseBiomodels, publishTheseMathmodels, user);
 	}
-	
+
 	public KeyValue savePublicationRep(PublicationRep publicationRep,User vcellUser) throws SQLException, DataAccessException{
 		return databaseServerImpl.savePublicationRep(publicationRep,vcellUser);
 	}
-	
-	public PublicationRep getPublicationRep(KeyValue pubKey, User vcellUser) throws SQLException, ObjectNotFoundException, DataAccessException {	
+
+	public PublicationRep getPublicationRep(KeyValue pubKey, User vcellUser) throws SQLException, ObjectNotFoundException, DataAccessException {
 		if (vcellUser==null){
 			vcellUser = VCellApiApplication.DUMMY_USER;
 		}
 		ArrayList<String> conditions = new ArrayList<String>();
 		if (pubKey != null){
-			conditions.add("(" + PublicationTable.table.id.getQualifiedColName() + " = " + pubKey.toString() + ")");		
+			conditions.add("(" + PublicationTable.table.id.getQualifiedColName() + " = " + pubKey.toString() + ")");
 		}else{
 			throw new RuntimeException("bioModelID not specified");
 		}
-	
+
 		StringBuffer conditionsBuffer = new StringBuffer();
 		for (String condition : conditions) {
 			if (conditionsBuffer.length() > 0) {
@@ -566,19 +588,19 @@ public class RestDatabaseService {
 		}
 		return publicationReps[0];
 	}
-	
-	public SimulationRepresentation query(BiomodelSimulationServerResource resource, User vcellUser) throws SQLException, DataAccessException, ExpressionException, XmlParseException, MappingException, MathException, MatrixException, ModelException {	
+
+	public SimulationRepresentation query(BiomodelSimulationServerResource resource, User vcellUser) throws SQLException, DataAccessException, ExpressionException, XmlParseException, MappingException, MathException, MatrixException, ModelException {
 		if (vcellUser==null){
 			vcellUser = VCellApiApplication.DUMMY_USER;
 		}
 		ArrayList<String> conditions = new ArrayList<String>();
 		String bioModelID = (String)resource.getRequestAttributes().get(VCellApiApplication.BIOMODELID);
 		if (bioModelID != null){
-			conditions.add("(" + BioModelTable.table.id.getQualifiedColName() + " = " + bioModelID + ")");		
+			conditions.add("(" + BioModelTable.table.id.getQualifiedColName() + " = " + bioModelID + ")");
 		}else{
 			throw new RuntimeException(VCellApiApplication.BIOMODELID+" not specified");
 		}
-	
+
 		StringBuffer conditionsBuffer = new StringBuffer();
 		for (String condition : conditions) {
 			if (conditionsBuffer.length() > 0) {
@@ -604,7 +626,7 @@ public class RestDatabaseService {
 					bioModelRep.addSimulationRep(simulationRep);
 				}
 			}
-			
+
 		}
 		if (bioModelReps==null || bioModelReps.length!=1){
 			//
@@ -618,7 +640,7 @@ public class RestDatabaseService {
 				throw new RuntimeException("failed to get biomodel");
 			}
 		}
-		
+
 		String simulationId = (String)resource.getRequestAttributes().get(VCellApiApplication.SIMULATIONID);
 		if (simulationId == null){
 			throw new RuntimeException(VCellApiApplication.SIMULATIONID+" not specified");
@@ -628,7 +650,7 @@ public class RestDatabaseService {
 		BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(bioModelXML.toString()));
 		return new SimulationRepresentation(simRep, bioModel);
 	}
-	
+
 	public SimContextRep getSimContextRep(KeyValue key) throws DataAccessException, SQLException{
 		SimContextRep simContextRep = scMap.get(key);
 		if (simContextRep!=null){
@@ -645,8 +667,8 @@ public class RestDatabaseService {
 			return simContextRep;
 		}
 	}
-	
-	
+
+
 	public SimulationRep getSimulationRep(KeyValue key) throws DataAccessException, SQLException{
 		SimulationRep simulationRep = simMap.get(key);
 		if (simulationRep!=null){
@@ -664,7 +686,7 @@ public class RestDatabaseService {
 		}
 	}
 
-    public SimpleJobStatus[] query(SimulationTasksServerResource resource, User vcellUser) throws SQLException, DataAccessException {	
+    public SimpleJobStatus[] query(SimulationTasksServerResource resource, User vcellUser) throws SQLException, DataAccessException {
 		if (vcellUser==null){
 			vcellUser = VCellApiApplication.DUMMY_USER;
 		}
@@ -724,7 +746,7 @@ public class RestDatabaseService {
 		}
     }
 
-    public SimulationStatusRepresentation[] query(SimulationStatusServerResource resource, User vcellUser) throws SQLException, DataAccessException {	
+    public SimulationStatusRepresentation[] query(SimulationStatusServerResource resource, User vcellUser) throws SQLException, DataAccessException {
 		if (vcellUser==null){
 			vcellUser = VCellApiApplication.DUMMY_USER;
 		}
@@ -796,7 +818,7 @@ public class RestDatabaseService {
 		}finally{
 			rpcSession.close();
 		}
-		
+
 		ArrayList<SimulationStatusRepresentation> simStatusReps = new ArrayList<SimulationStatusRepresentation>();
 		for (int i=0; simStatuses!=null && i<simStatuses.length; i++){
 			KeyValue simulationKey = simStatuses[i].getVCSimulationIdentifier().getSimulationKey();
@@ -822,14 +844,14 @@ public class RestDatabaseService {
 		Long pubID = resource.getLongQueryValue(PublicationsServerResource.PARAM_PUB_ID);
 		String orderByParam = resource.getQueryValue(PublicationsServerResource.PARAM_ORDERBY); // it is ok if the orderBy is null;
 		ArrayList<String> conditions = new ArrayList<String>();
-		
+
 		java.text.SimpleDateFormat df = new java.text.SimpleDateFormat("MM/dd/yyyy HH:mm:ss", java.util.Locale.US);
-		
+
 		if (pubID != null){
-			conditions.add("(" + PublicationTable.table.id.getQualifiedColName() + " = " + pubID + ")");		
+			conditions.add("(" + PublicationTable.table.id.getQualifiedColName() + " = " + pubID + ")");
 		}
 
-	
+
 		StringBuffer conditionsBuffer = new StringBuffer();
 		for (String condition : conditions) {
 			if (conditionsBuffer.length() > 0) {
@@ -850,7 +872,7 @@ public class RestDatabaseService {
 			}
 		}
 		PublicationRep[] publicationReps = databaseServerImpl.getPublicationReps(vcellUser, conditionsBuffer.toString(), orderBy);
-	   	return publicationReps;
+		return publicationReps;
 	}
 
 	public void sendLostPassword(String userid) throws DataAccessException {
