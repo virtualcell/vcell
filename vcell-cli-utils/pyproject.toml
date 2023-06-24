@@ -23,19 +23,20 @@ classifiers = [
 python = "^3.9"
 biosimulators_utils = "^0.1.180"
 python-libcombine = "0.2.19"
-fire = "^0.4.0"
+fire = "^0.5.0"
 PyYAML = "^6.0"
-pandas = "^1.4.3"
+pandas = "^1.5.3"
 matplotlib = "^3.5.2"
-seaborn = "^0.11.2"
-python-libsbml-experimental = "^5.19.5"
+seaborn = "^0.12.2"
+python-libsbml-experimental = "^5.20.1"
 Deprecated = "^1.2.13"
-dataclasses-json = "^0.5.7"
+dataclasses-json = "^0.5.8"
 requests = "^2.31.0"
+pydantic = "^1.10.9"
 
 [tool.poetry.dev-dependencies]
-pytest = "^7.2.0"
-mypy = "^1.2.0"
+pytest = "^7.4.0"
+mypy = "^1.4.0"
 
 [tool.poetry.group.dev.dependencies]
 types-deprecated = "1.2.9.2"
