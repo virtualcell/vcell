@@ -28,17 +28,17 @@ def download_file(url: str, out_file: Path) -> bool:
     :returns: True if success, False if return code is not HTTP 200
     :raises requests.exceptions.HTTPError: if the download fails
     """
-    session = requests.Session()
-    response = session.get(url, verify=False, stream=True)
-    response.raise_for_status()
-    if response.status_code == 200:
-        with open(out_file, "wb") as f:
-            for chunk in response.iter_content(chunk_size=10000):
-                if chunk:  # filter out keep-alive new chunks
-                    f.write(chunk)
-            return True
-    else:
-        return False
+    with requests.Session() as session:
+        response = session.get(url, verify=False, stream=True)
+        response.raise_for_status()
+        if response.status_code == 200:
+            with open(out_file, "wb") as f:
+                for chunk in response.iter_content(chunk_size=10000):
+                    if chunk:  # filter out keep-alive new chunks
+                        f.write(chunk)
+                return True
+        else:
+            return False
 
 
 def download_published_omex(api_base_url: str, out_dir: Path) -> None:
