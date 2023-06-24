@@ -1345,7 +1345,7 @@ public class SEDMLExporter {
 	private static void removeOtherFiles(String outputDir, String[] files) {
     	boolean isDeleted = false;
         for (String sd : files) {
-            if (sd.endsWith(".sedml") || sd.endsWith(".sbml") || sd.endsWith("xml") || sd.endsWith("vcml") || sd.endsWith("rdf") || sd.endsWith("png")) {
+            if (sd.endsWith(".sedml") || sd.endsWith(".sbml") || sd.endsWith("xml") || sd.endsWith(".vcml") || sd.endsWith(".rdf") || sd.endsWith(".png")) {
                 isDeleted = Paths.get(outputDir, sd).toFile().delete();
                 if (!isDeleted) {
                 	throw new RuntimeException("Unable to remove intermediate file '" + sd + "'.");        

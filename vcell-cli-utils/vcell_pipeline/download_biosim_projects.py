@@ -1,6 +1,7 @@
-import requests
 import os
 from zipfile import ZipFile
+
+import requests
 
 
 def download_reference_projects():
@@ -40,6 +41,7 @@ def download_reference_projects():
                     with open(f'{project_id}.pdf', 'wb') as f:
                         f.write(zip_ref.read(zipInfo))
         os.remove(f'{project_id}.results.zip')
+
 
 if __name__ == "__main__":
     download_reference_projects()

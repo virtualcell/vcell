@@ -14,6 +14,6 @@ public interface BiomodelSBMLResource {
 	 */
 
 	@Get(APPLICATION_SBML_XML)
-	public StringRepresentation get_xml();
+	public StringRepresentation get_sbml();
 	
 }

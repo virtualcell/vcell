@@ -8,8 +8,6 @@ services:
 
       - ssl_ignoreHostMismatch=${VCELL_SSL_IGNORE_HOST_MISMATCH}
       - ssl_ignoreCertProblems=${VCELL_SSL_IGNORE_CERT_PROBLEMS}
-
-      - publicationHost=${VCELL_API_PUBLICATION_HOST}
       
       - dburl=${VCELL_DB_URL}
       - dbdriver=${VCELL_DB_DRIVER}

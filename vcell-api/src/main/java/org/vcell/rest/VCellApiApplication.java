@@ -104,6 +104,7 @@ public class VCellApiApplication extends WadlApplication {
 	
 	public static final String VCML_DOWNLOAD = "biomodel.vcml";
 	public static final String SBML_DOWNLOAD = "biomodel.sbml";
+	public static final String OMEX_DOWNLOAD = "biomodel.omex";
 	public static final String BNGL_DOWNLOAD = "biomodel.bngl";
 	public static final String DIAGRAM_DOWNLOAD = "diagram";
 	public static final String SIMULATION = "simulation";
@@ -272,9 +273,10 @@ public class VCellApiApplication extends WadlApplication {
 	    rootRouter.attach("/"+PUBLICATION+"/{"+PUBLICATIONID+"}", PublicationServerResource.class);
 		rootRouter.attach("/"+BIOMODEL, BiomodelsServerResource.class);  
 		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}", BiomodelServerResource.class);  
-		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}/"+VCML_DOWNLOAD, BiomodelVCMLServerResource.class);  
-		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}/"+SBML_DOWNLOAD, BiomodelSBMLServerResource.class); 
-		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}/"+BNGL_DOWNLOAD, BiomodelBNGLServerResource.class);  
+		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}/"+VCML_DOWNLOAD, BiomodelVCMLServerResource.class);
+		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}/"+SBML_DOWNLOAD, BiomodelSBMLServerResource.class);
+		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}/"+OMEX_DOWNLOAD, BiomodelOMEXServerResource.class);
+		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}/"+BNGL_DOWNLOAD, BiomodelBNGLServerResource.class);
 		rootRouter.attach("/"+MODELBRICK, BiomodelVCMLModelInfoResource.class);//Expects queryparameters
 		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}/"+DIAGRAM_DOWNLOAD, BiomodelDiagramServerResource.class);  
 		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}/"+SIMULATION+"/{"+SIMULATIONID+"}", BiomodelSimulationServerResource.class);  

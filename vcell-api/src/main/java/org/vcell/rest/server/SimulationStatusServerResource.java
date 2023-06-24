@@ -102,7 +102,7 @@ public class SimulationStatusServerResource extends AbstractServerResource imple
 	@Override
     public SimulationStatusRepresentation[] get_json() {
 		VCellApiApplication application = ((VCellApiApplication)getApplication());
-		User vcellUser = application.getVCellUser(getChallengeResponse(),AuthenticationPolicy.prohibitInvalidCredentials);
+		User vcellUser = application.getVCellUser(getChallengeResponse(),AuthenticationPolicy.ignoreInvalidCredentials);
 		
         return getSimulationStatusRepresentations(vcellUser);
     }
