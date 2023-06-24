@@ -20,10 +20,22 @@ def write_log(entry: ExportStatus, log_path: Path) -> None:
 
 
 def download_file(url: str, out_file: Path) -> bool:
-    response = requests.get(url, verify=False)
+    """
+    download file using streaming to support large files
+
+    :param str url: the url to download from
+    :param Path out_file: the file to write the downloaded contents to
+    :returns: True if success, False if return code is not HTTP 200
+    :raises requests.exceptions.HTTPError: if the download fails
+    """
+    session = requests.Session()
+    response = session.get(url, verify=False, stream=True)
+    response.raise_for_status()
     if response.status_code == 200:
         with open(out_file, "wb") as f:
-            f.write(response.content)
+            for chunk in response.iter_content(chunk_size=10000):
+                if chunk:  # filter out keep-alive new chunks
+                    f.write(chunk)
             return True
     else:
         return False
