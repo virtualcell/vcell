@@ -92,7 +92,7 @@ public class BiomodelOMEXServerResource extends AbstractServerResource implement
 			lg.error(e);
 			throw new ResourceException(Status.CLIENT_ERROR_NOT_FOUND, "biomodel not found");
 		} catch (Exception e){
-			throw new ResourceException(Status.SERVER_ERROR_INTERNAL, e.getMessage());
+			throw new ResourceException(Status.SERVER_ERROR_INTERNAL, e.toString());
 		}
 	}
 
