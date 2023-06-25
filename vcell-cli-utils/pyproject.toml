@@ -33,6 +33,7 @@ Deprecated = "^1.2.13"
 dataclasses-json = "^0.5.8"
 requests = "^2.31.0"
 pydantic = "^1.10.9"
+python-dotenv = "^1.0.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.4.0"
