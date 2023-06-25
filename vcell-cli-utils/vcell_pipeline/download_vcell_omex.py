@@ -69,8 +69,12 @@ def download_published_omex(api_base_url: str, out_dir: Path) -> None:
             exportStatus.wrote_omex = True
 
         except requests.exceptions.HTTPError as e:
-            print(str(e))
-            exportStatus.exception = str(e)
+            error_msg = str(e)
+            error_response: requests.Response = e.response
+            if error_response.status_code == 500:
+                error_msg += " "+error_response.text
+            print(error_msg)
+            exportStatus.exception = error_msg
 
         write_log(exportStatus, log_path)
 
