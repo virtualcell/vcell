@@ -186,7 +186,7 @@ public class VcmlOmexConverter {
 		String[] inputFileNames = inputDir.list(filterVcmlFiles);		// just a list of vcml names, like biomodel-185577495.vcml, ...
 		if (inputFileNames == null) throw new RuntimeException("No VCML files found in the directory `" + inputDir + "`");
 
-		int numFailureOccurred = 0;
+		int numFailedConversions = 0;
 		logger.debug("Beginning conversion of files in `" + inputDir + "`");
 		for (String inputFileName : inputFileNames) {
 			logger.debug("Beginning conversion of `" + inputFileName + "`");
@@ -208,37 +208,42 @@ public class VcmlOmexConverter {
 							bSkipUnsupportedApps,
 							bHasPython,
 							bValidateOmex);
-					if (!sedmlTaskRecords.stream().anyMatch((SEDMLTaskRecord r) -> r.getTaskResult() == TaskResult.FAILED)) {
+					Predicate<SEDMLTaskRecord> checkForFailure = (SEDMLTaskRecord r) -> r.getTaskResult() == TaskResult.FAILED;
+					if (sedmlTaskRecords.stream().noneMatch(checkForFailure)) {
 						logger.info("Combine archive created for `" + inputFileName + "`");
 					} else {
-						throw new ExportException("Some tasks failed");
+						StringBuilder failureMessage = new StringBuilder("The following tasks did not succeed:\n");
+						for (SEDMLTaskRecord failedTask : sedmlTaskRecords.stream().filter(checkForFailure).toArray(SEDMLTaskRecord[]::new)){
+							failureMessage.append("\t- ").append(failedTask.getTaskName());
+						}
+						throw new ExportException(failureMessage.toString());
 					}
 				} catch (RuntimeException e){
 					String msg = "Premature failure converting VCML to OMEX archive for `"
 							+ inputFileName + "`, errors: " + e.getMessage();
-					logger.error(new RuntimeException(msg));
-					numFailureOccurred++;
+					logger.error(msg, e);
+					numFailedConversions++;
 				} catch (ExportException e){
 					List<String> errorList = sedmlTaskRecords.stream()
 							.filter((SEDMLTaskRecord r) -> r.getTaskResult() == TaskResult.FAILED)
 							.map(SEDMLTaskRecord::getCSV)
 							.collect(Collectors.toList());
 					String msg = "Failed converting VCML to OMEX archive for `" + inputFileName + "`, errors: " + errorList;
-					logger.error(new RuntimeException(msg));
-					numFailureOccurred++;
+					logger.error(msg, e);
+					numFailedConversions++;
 				}
 			} catch (SEDMLExporter.SEDMLExportException | OmexPythonUtils.OmexValidationException e) {
 				logger.error("Failed converting VCML to OMEX archive for `" + inputFileName + "`", e);
 			} finally {
-				logger.info(" ============== end: " + inputFileName + "\n");
+				logger.info(" ============== end: " + inputFileName + "\n\n\n");
 			}
 		}
 		logger.debug("Completed conversion of files in `" + inputDir + "`");
 
-		if (numFailureOccurred > 0) {
+		if (numFailedConversions > 0) {
 			String formatStr = "%d file%s in `%s` failed to convert";
-			String sChar = numFailureOccurred == 1 ? "" : "s";
-			logger.error(String.format(formatStr, numFailureOccurred, sChar, inputDir));
+			String sChar = numFailedConversions == 1 ? "" : "s";
+			logger.error(String.format(formatStr, numFailedConversions, sChar, inputDir));
 		}
 	}
 
