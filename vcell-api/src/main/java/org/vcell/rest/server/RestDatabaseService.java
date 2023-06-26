@@ -40,6 +40,7 @@ import org.vcell.rest.rpc.RpcDataServerProxy;
 import org.vcell.rest.rpc.RpcSimServerProxy;
 import org.vcell.sbml.OmexPythonUtils;
 import org.vcell.sedml.ModelFormat;
+import org.vcell.sedml.PublicationMetadata;
 import org.vcell.sedml.SEDMLExporter;
 import org.vcell.util.*;
 import org.vcell.util.document.*;
@@ -452,23 +453,23 @@ public class RestDatabaseService {
 		return vcmlBigString.toString();
 	}
 
-	public ByteArrayRepresentation query(BiomodelOMEXServerResource resource, User vcellUser, boolean bSkipUnsupported) throws SQLException, DataAccessException, XmlParseException, IOException, SEDMLExporter.SEDMLExportException, OmexPythonUtils.OmexValidationException {
-		if (vcellUser==null){
+	public ByteArrayRepresentation query(BiomodelOMEXServerResource resource, User vcellUser, boolean bSkipUnsupported, StringBuffer suggestedProjectName) throws SQLException, DataAccessException, XmlParseException, IOException, SEDMLExporter.SEDMLExportException, OmexPythonUtils.OmexValidationException {
+		if (vcellUser == null) {
 			vcellUser = VCellApiApplication.DUMMY_USER;
 		}
-		String bioModelID = (String)resource.getRequestAttributes().get(VCellApiApplication.BIOMODELID);
+		String bioModelID = (String) resource.getRequestAttributes().get(VCellApiApplication.BIOMODELID);
 		KeyValue bioModelKey = new KeyValue(bioModelID);
 		BigString vcmlBigString = databaseServerImpl.getBioModelXML(vcellUser, bioModelKey);
 		BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(vcmlBigString.toString()));
-		BioModelInfo bioModelInfo = databaseServerImpl.getBioModelInfo(vcellUser,bioModelKey);
+		BioModelInfo bioModelInfo = databaseServerImpl.getBioModelInfo(vcellUser, bioModelKey);
 
 		boolean bRoundTripSBMLValidation = true;
 		boolean bHasPython = true;
 		ModelFormat modelFormat = ModelFormat.SBML;
 
-		Optional<PublicationInfo> publicationInfo = Optional.empty();
-		if (bioModelInfo.getPublicationInfos()!=null && bioModelInfo.getPublicationInfos().length>0){
-			publicationInfo = Optional.of(bioModelInfo.getPublicationInfos()[0]);
+		Optional<PublicationMetadata> publicationMetadata = Optional.empty();
+		if (bioModelInfo.getPublicationInfos() != null && bioModelInfo.getPublicationInfos().length > 0) {
+			publicationMetadata = Optional.of(PublicationMetadata.fromPublicationInfoAndWeb(bioModelInfo.getPublicationInfos()[0]));
 		}
 
 		Predicate<SimulationContext> simContextFilter = (SimulationContext sc) -> true;
@@ -476,13 +477,25 @@ public class RestDatabaseService {
 			Map<String, String> unsupportedApplications = SEDMLExporter.getUnsupportedApplicationMap(bioModel, modelFormat);
 			simContextFilter = (SimulationContext sc) -> !unsupportedApplications.containsKey(sc.getName());
 		}
-
-		File exportOmexFile = Files.createTempFile("biomodel_"+bioModelID,".omex").toFile();
-		boolean bCreateOmexArchive = true;
-		SEDMLExporter.writeBioModel(bioModel, publicationInfo, exportOmexFile, modelFormat, simContextFilter,
-				bHasPython, bRoundTripSBMLValidation, bCreateOmexArchive);
-		byte[] omexFileBytes = Files.readAllBytes(exportOmexFile.toPath());
-		return new ByteArrayRepresentation(omexFileBytes, BiomodelOMEXResource.OMEX_MEDIATYPE);
+		String filenamePrefix = "VCDB_"+bioModelKey;
+		if (publicationMetadata.isPresent()){
+			filenamePrefix = publicationMetadata.get().getSuggestedProjectName(bioModelKey);
+		}
+		File exportOmexFile = Files.createTempFile(filenamePrefix, ".omex").toFile();
+		suggestedProjectName.append(filenamePrefix);
+		try {
+			boolean bCreateOmexArchive = true;
+			SEDMLExporter.writeBioModel(bioModel, publicationMetadata, exportOmexFile, modelFormat, simContextFilter,
+					bHasPython, bRoundTripSBMLValidation, bCreateOmexArchive);
+			byte[] omexFileBytes = Files.readAllBytes(exportOmexFile.toPath());
+			return new ByteArrayRepresentation(omexFileBytes, BiomodelOMEXResource.OMEX_MEDIATYPE);
+		} finally {
+			try {
+				exportOmexFile.delete();
+			} catch (Exception e) {
+				//ignore
+			}
+		}
 	}
 
 	public String query(BiomodelDiagramServerResource resource, User vcellUser) throws SQLException, DataAccessException {

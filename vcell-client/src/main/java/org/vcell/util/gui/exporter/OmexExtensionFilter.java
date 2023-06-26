@@ -3,6 +3,7 @@ package org.vcell.util.gui.exporter;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.mapping.SimulationContext;
+import org.vcell.sedml.PublicationMetadata;
 import org.vcell.sedml.SEDMLExporter;
 import org.vcell.util.FileUtils;
 import org.vcell.util.document.BioModelInfo;
@@ -31,11 +32,16 @@ public class OmexExtensionFilter extends SedmlExtensionFilter {
 			}
 			boolean bRoundTripSBMLValidation = true;
 			boolean bHasPython = false;
-			Optional<PublicationInfo> publicationInfo = Optional.empty();
+			Optional<PublicationMetadata> publicationInfo = Optional.empty();
 			if (bioModel.getVersion()!=null && bioModel.getVersion().getVersionKey()!=null){
 				BioModelInfo bioModelInfo = _documentManager.getBioModelInfo(bioModel.getVersion().getVersionKey());
 				if (bioModelInfo != null && bioModelInfo.getPublicationInfos()!=null && bioModelInfo.getPublicationInfos().length>0){
-					publicationInfo = Optional.of(bioModelInfo.getPublicationInfos()[0]);
+					try {
+						publicationInfo = Optional.of(PublicationMetadata.fromPublicationInfoAndWeb(bioModelInfo.getPublicationInfos()[0]));
+					}catch (Exception e){
+						e.printStackTrace();
+						publicationInfo = Optional.of(PublicationMetadata.fromPublicationInfo(bioModelInfo.getPublicationInfos()[0]));
+					}
 				}
 			}
 			Map<String, String> unsupportedApplications = SEDMLExporter.getUnsupportedApplicationMap(bioModel, modelFormat);

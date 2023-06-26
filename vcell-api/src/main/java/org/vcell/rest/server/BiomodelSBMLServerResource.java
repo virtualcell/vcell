@@ -121,7 +121,7 @@ public class BiomodelSBMLServerResource extends AbstractServerResource implement
 			lg.error(e);
 			throw new ResourceException(Status.CLIENT_ERROR_UNAUTHORIZED, "permission denied to requested resource");
 		} catch (Exception e){
-			throw new ResourceException(Status.SERVER_ERROR_INTERNAL, e.getMessage());
+			throw new ResourceException(Status.SERVER_ERROR_INTERNAL, e.toString());
 		}
 	}
 

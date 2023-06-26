@@ -24,6 +24,7 @@ public class PubMet {
 	public static final URI Creator = OntUtil.createObjectProperty(schema, DefaultNameSpaces.DUBLIN_CORE.uri + "creator");
 	public static final URI Contributor = OntUtil.createObjectProperty(schema, DefaultNameSpaces.DUBLIN_CORE.uri + "contributor");
 	public static final URI Title = OntUtil.createObjectProperty(schema, DefaultNameSpaces.DC_TERMS.uri + "title");
+	public static final URI Abstract = OntUtil.createObjectProperty(schema, DefaultNameSpaces.DC_TERMS.uri + "abstract");
 	public static final URI name = OntUtil.createObjectProperty(schema, DefaultNameSpaces.FOAF.uri + "name");
 	public static final URI label = OntUtil.createObjectProperty(schema, DefaultNameSpaces.RDFS.uri + "label");
 
@@ -51,10 +52,10 @@ public class PubMet {
 	public static final String StartIdentifier = "\n\t\t\t<dc:identifier rdf:resource=\"";
 	public static final String EndIdentifier = "\"/>";
 	public static final String ResourceIdentifier = "http://identifiers.org/";
-	
+
 	public static final String StartDiagram = "\n\t<collex:thumbnail rdf:resource=\"";
 	public static final String EndDiagram = "\"/>";
-	
+
 	public static final String StartIs = "\n\t<bqmodel:is>";
 	public static final String EndIs = "\n\t</bqmodel:is>";
 	public static final String StartIsDescribedBy = "\n\t<bqmodel:isDescribedBy>";
