@@ -40,6 +40,7 @@ import org.vcell.rest.rpc.RpcDataServerProxy;
 import org.vcell.rest.rpc.RpcSimServerProxy;
 import org.vcell.sbml.OmexPythonUtils;
 import org.vcell.sedml.ModelFormat;
+import org.vcell.sedml.PublicationMetadata;
 import org.vcell.sedml.SEDMLExporter;
 import org.vcell.util.*;
 import org.vcell.util.document.*;
@@ -452,7 +453,7 @@ public class RestDatabaseService {
 		return vcmlBigString.toString();
 	}
 
-	public ByteArrayRepresentation query(BiomodelOMEXServerResource resource, User vcellUser, boolean bSkipUnsupported) throws SQLException, DataAccessException, XmlParseException, IOException, SEDMLExporter.SEDMLExportException, OmexPythonUtils.OmexValidationException {
+	public ByteArrayRepresentation query(BiomodelOMEXServerResource resource, User vcellUser, boolean bSkipUnsupported, StringBuffer suggestedProjectName) throws SQLException, DataAccessException, XmlParseException, IOException, SEDMLExporter.SEDMLExportException, OmexPythonUtils.OmexValidationException {
 		if (vcellUser == null) {
 			vcellUser = VCellApiApplication.DUMMY_USER;
 		}
@@ -466,9 +467,9 @@ public class RestDatabaseService {
 		boolean bHasPython = true;
 		ModelFormat modelFormat = ModelFormat.SBML;
 
-		Optional<PublicationInfo> publicationInfo = Optional.empty();
+		Optional<PublicationMetadata> publicationMetadata = Optional.empty();
 		if (bioModelInfo.getPublicationInfos() != null && bioModelInfo.getPublicationInfos().length > 0) {
-			publicationInfo = Optional.of(bioModelInfo.getPublicationInfos()[0]);
+			publicationMetadata = Optional.of(PublicationMetadata.fromPublicationInfoAndWeb(bioModelInfo.getPublicationInfos()[0]));
 		}
 
 		Predicate<SimulationContext> simContextFilter = (SimulationContext sc) -> true;
@@ -476,11 +477,15 @@ public class RestDatabaseService {
 			Map<String, String> unsupportedApplications = SEDMLExporter.getUnsupportedApplicationMap(bioModel, modelFormat);
 			simContextFilter = (SimulationContext sc) -> !unsupportedApplications.containsKey(sc.getName());
 		}
-
-		File exportOmexFile = Files.createTempFile("biomodel_" + bioModelID, ".omex").toFile();
+		String filenamePrefix = "VCDB_"+bioModelKey;
+		if (publicationMetadata.isPresent()){
+			filenamePrefix = publicationMetadata.get().getSuggestedProjectName(bioModelKey);
+		}
+		File exportOmexFile = Files.createTempFile(filenamePrefix, ".omex").toFile();
+		suggestedProjectName.append(filenamePrefix);
 		try {
 			boolean bCreateOmexArchive = true;
-			SEDMLExporter.writeBioModel(bioModel, publicationInfo, exportOmexFile, modelFormat, simContextFilter,
+			SEDMLExporter.writeBioModel(bioModel, publicationMetadata, exportOmexFile, modelFormat, simContextFilter,
 					bHasPython, bRoundTripSBMLValidation, bCreateOmexArchive);
 			byte[] omexFileBytes = Files.readAllBytes(exportOmexFile.toPath());
 			return new ByteArrayRepresentation(omexFileBytes, BiomodelOMEXResource.OMEX_MEDIATYPE);
@@ -520,371 +525,371 @@ public class RestDatabaseService {
 //	}
 
 
-		public BioModelRep getBioModelRep(KeyValue bmKey, User vcellUser) throws SQLException, ObjectNotFoundException, DataAccessException {
-			if (vcellUser==null){
-				vcellUser = VCellApiApplication.DUMMY_USER;
+	public BioModelRep getBioModelRep(KeyValue bmKey, User vcellUser) throws SQLException, ObjectNotFoundException, DataAccessException {
+		if (vcellUser==null){
+			vcellUser = VCellApiApplication.DUMMY_USER;
+		}
+		ArrayList<String> conditions = new ArrayList<String>();
+		if (bmKey != null){
+			conditions.add("(" + BioModelTable.table.id.getQualifiedColName() + " = " + bmKey.toString() + ")");
+		}else{
+			throw new RuntimeException("bioModelID not specified");
+		}
+
+		StringBuffer conditionsBuffer = new StringBuffer();
+		for (String condition : conditions) {
+			if (conditionsBuffer.length() > 0) {
+				conditionsBuffer.append(" AND ");
 			}
-			ArrayList<String> conditions = new ArrayList<String>();
-			if (bmKey != null){
-				conditions.add("(" + BioModelTable.table.id.getQualifiedColName() + " = " + bmKey.toString() + ")");
+			conditionsBuffer.append(condition);
+		}
+		int startRow = 1;
+		int maxRows = 1;
+		BioModelRep[] bioModelReps = databaseServerImpl.getBioModelReps(vcellUser, conditionsBuffer.toString(), null, startRow, maxRows);
+		for (BioModelRep bioModelRep : bioModelReps) {
+			KeyValue[] simContextKeys = bioModelRep.getSimContextKeyList();
+			for (KeyValue scKey : simContextKeys) {
+				SimContextRep scRep = getSimContextRep(scKey);
+				if (scRep != null){
+					bioModelRep.addSimContextRep(scRep);
+				}
+			}
+			KeyValue[] simulationKeys = bioModelRep.getSimKeyList();
+			for (KeyValue simKey : simulationKeys) {
+				SimulationRep simulationRep = getSimulationRep(simKey);
+				if (simulationRep != null){
+					bioModelRep.addSimulationRep(simulationRep);
+				}
+			}
+
+		}
+		if (bioModelReps==null || bioModelReps.length!=1){
+			throw new ObjectNotFoundException("failed to get biomodel");
+		}
+		return bioModelReps[0];
+	}
+
+	public void publishDirectly(KeyValue[] publishTheseBiomodels,KeyValue[] publishTheseMathmodels, User user) throws SQLException, DataAccessException {
+		databaseServerImpl.publishDirectly(publishTheseBiomodels, publishTheseMathmodels, user);
+	}
+
+	public KeyValue savePublicationRep(PublicationRep publicationRep,User vcellUser) throws SQLException, DataAccessException{
+		return databaseServerImpl.savePublicationRep(publicationRep,vcellUser);
+	}
+
+	public PublicationRep getPublicationRep(KeyValue pubKey, User vcellUser) throws SQLException, ObjectNotFoundException, DataAccessException {
+		if (vcellUser==null){
+			vcellUser = VCellApiApplication.DUMMY_USER;
+		}
+		ArrayList<String> conditions = new ArrayList<String>();
+		if (pubKey != null){
+			conditions.add("(" + PublicationTable.table.id.getQualifiedColName() + " = " + pubKey.toString() + ")");
+		}else{
+			throw new RuntimeException("bioModelID not specified");
+		}
+
+		StringBuffer conditionsBuffer = new StringBuffer();
+		for (String condition : conditions) {
+			if (conditionsBuffer.length() > 0) {
+				conditionsBuffer.append(" AND ");
+			}
+			conditionsBuffer.append(condition);
+		}
+		PublicationRep[] publicationReps = databaseServerImpl.getPublicationReps(vcellUser, conditionsBuffer.toString(), null);
+		if (publicationReps==null || publicationReps.length!=1){
+			throw new ObjectNotFoundException("failed to get publication");
+		}
+		return publicationReps[0];
+	}
+
+	public SimulationRepresentation query(BiomodelSimulationServerResource resource, User vcellUser) throws SQLException, DataAccessException, ExpressionException, XmlParseException, MappingException, MathException, MatrixException, ModelException {
+		if (vcellUser==null){
+			vcellUser = VCellApiApplication.DUMMY_USER;
+		}
+		ArrayList<String> conditions = new ArrayList<String>();
+		String bioModelID = (String)resource.getRequestAttributes().get(VCellApiApplication.BIOMODELID);
+		if (bioModelID != null){
+			conditions.add("(" + BioModelTable.table.id.getQualifiedColName() + " = " + bioModelID + ")");
+		}else{
+			throw new RuntimeException(VCellApiApplication.BIOMODELID+" not specified");
+		}
+
+		StringBuffer conditionsBuffer = new StringBuffer();
+		for (String condition : conditions) {
+			if (conditionsBuffer.length() > 0) {
+				conditionsBuffer.append(" AND ");
+			}
+			conditionsBuffer.append(condition);
+		}
+		int startRow = 1;
+		int maxRows = 1;
+		BioModelRep[] bioModelReps = databaseServerImpl.getBioModelReps(vcellUser, conditionsBuffer.toString(), null, startRow, maxRows);
+		for (BioModelRep bioModelRep : bioModelReps) {
+			KeyValue[] simContextKeys = bioModelRep.getSimContextKeyList();
+			for (KeyValue scKey : simContextKeys) {
+				SimContextRep scRep = getSimContextRep(scKey);
+				if (scRep != null){
+					bioModelRep.addSimContextRep(scRep);
+				}
+			}
+			KeyValue[] simulationKeys = bioModelRep.getSimKeyList();
+			for (KeyValue simKey : simulationKeys) {
+				SimulationRep simulationRep = getSimulationRep(simKey);
+				if (simulationRep != null){
+					bioModelRep.addSimulationRep(simulationRep);
+				}
+			}
+
+		}
+		if (bioModelReps==null || bioModelReps.length!=1){
+			//
+			// try to determine if the current credentials are insufficient, try to fetch BioModel again with administrator privilege.
+			//
+			User adminUser = new User(PropertyLoader.ADMINISTRATOR_ACCOUNT,new KeyValue(PropertyLoader.ADMINISTRATOR_ID));
+			BioModelRep[] allBioModelReps = databaseServerImpl.getBioModelReps(adminUser, conditionsBuffer.toString(), null, startRow, 1);
+			if (allBioModelReps!=null && allBioModelReps.length>=0){
+				throw new PermissionException("insufficient privilege to retrive BioModel "+bioModelID);
 			}else{
-				throw new RuntimeException("bioModelID not specified");
+				throw new RuntimeException("failed to get biomodel");
 			}
-
-			StringBuffer conditionsBuffer = new StringBuffer();
-			for (String condition : conditions) {
-				if (conditionsBuffer.length() > 0) {
-					conditionsBuffer.append(" AND ");
-				}
-				conditionsBuffer.append(condition);
-			}
-			int startRow = 1;
-			int maxRows = 1;
-			BioModelRep[] bioModelReps = databaseServerImpl.getBioModelReps(vcellUser, conditionsBuffer.toString(), null, startRow, maxRows);
-			for (BioModelRep bioModelRep : bioModelReps) {
-				KeyValue[] simContextKeys = bioModelRep.getSimContextKeyList();
-				for (KeyValue scKey : simContextKeys) {
-					SimContextRep scRep = getSimContextRep(scKey);
-					if (scRep != null){
-						bioModelRep.addSimContextRep(scRep);
-					}
-				}
-				KeyValue[] simulationKeys = bioModelRep.getSimKeyList();
-				for (KeyValue simKey : simulationKeys) {
-					SimulationRep simulationRep = getSimulationRep(simKey);
-					if (simulationRep != null){
-						bioModelRep.addSimulationRep(simulationRep);
-					}
-				}
-
-			}
-			if (bioModelReps==null || bioModelReps.length!=1){
-				throw new ObjectNotFoundException("failed to get biomodel");
-			}
-			return bioModelReps[0];
 		}
 
-		public void publishDirectly(KeyValue[] publishTheseBiomodels,KeyValue[] publishTheseMathmodels, User user) throws SQLException, DataAccessException {
-			databaseServerImpl.publishDirectly(publishTheseBiomodels, publishTheseMathmodels, user);
+		String simulationId = (String)resource.getRequestAttributes().get(VCellApiApplication.SIMULATIONID);
+		if (simulationId == null){
+			throw new RuntimeException(VCellApiApplication.SIMULATIONID+" not specified");
 		}
+		SimulationRep simRep = getSimulationRep(new KeyValue(simulationId));
+		BigString bioModelXML = databaseServerImpl.getBioModelXML(vcellUser, bioModelReps[0].getBmKey());
+		BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(bioModelXML.toString()));
+		return new SimulationRepresentation(simRep, bioModel);
+	}
 
-		public KeyValue savePublicationRep(PublicationRep publicationRep,User vcellUser) throws SQLException, DataAccessException{
-			return databaseServerImpl.savePublicationRep(publicationRep,vcellUser);
-		}
-
-		public PublicationRep getPublicationRep(KeyValue pubKey, User vcellUser) throws SQLException, ObjectNotFoundException, DataAccessException {
-			if (vcellUser==null){
-				vcellUser = VCellApiApplication.DUMMY_USER;
-			}
-			ArrayList<String> conditions = new ArrayList<String>();
-			if (pubKey != null){
-				conditions.add("(" + PublicationTable.table.id.getQualifiedColName() + " = " + pubKey.toString() + ")");
-			}else{
-				throw new RuntimeException("bioModelID not specified");
-			}
-
-			StringBuffer conditionsBuffer = new StringBuffer();
-			for (String condition : conditions) {
-				if (conditionsBuffer.length() > 0) {
-					conditionsBuffer.append(" AND ");
-				}
-				conditionsBuffer.append(condition);
-			}
-			PublicationRep[] publicationReps = databaseServerImpl.getPublicationReps(vcellUser, conditionsBuffer.toString(), null);
-			if (publicationReps==null || publicationReps.length!=1){
-				throw new ObjectNotFoundException("failed to get publication");
-			}
-			return publicationReps[0];
-		}
-
-		public SimulationRepresentation query(BiomodelSimulationServerResource resource, User vcellUser) throws SQLException, DataAccessException, ExpressionException, XmlParseException, MappingException, MathException, MatrixException, ModelException {
-			if (vcellUser==null){
-				vcellUser = VCellApiApplication.DUMMY_USER;
-			}
-			ArrayList<String> conditions = new ArrayList<String>();
-			String bioModelID = (String)resource.getRequestAttributes().get(VCellApiApplication.BIOMODELID);
-			if (bioModelID != null){
-				conditions.add("(" + BioModelTable.table.id.getQualifiedColName() + " = " + bioModelID + ")");
-			}else{
-				throw new RuntimeException(VCellApiApplication.BIOMODELID+" not specified");
-			}
-
-			StringBuffer conditionsBuffer = new StringBuffer();
-			for (String condition : conditions) {
-				if (conditionsBuffer.length() > 0) {
-					conditionsBuffer.append(" AND ");
-				}
-				conditionsBuffer.append(condition);
-			}
-			int startRow = 1;
-			int maxRows = 1;
-			BioModelRep[] bioModelReps = databaseServerImpl.getBioModelReps(vcellUser, conditionsBuffer.toString(), null, startRow, maxRows);
-			for (BioModelRep bioModelRep : bioModelReps) {
-				KeyValue[] simContextKeys = bioModelRep.getSimContextKeyList();
-				for (KeyValue scKey : simContextKeys) {
-					SimContextRep scRep = getSimContextRep(scKey);
-					if (scRep != null){
-						bioModelRep.addSimContextRep(scRep);
-					}
-				}
-				KeyValue[] simulationKeys = bioModelRep.getSimKeyList();
-				for (KeyValue simKey : simulationKeys) {
-					SimulationRep simulationRep = getSimulationRep(simKey);
-					if (simulationRep != null){
-						bioModelRep.addSimulationRep(simulationRep);
-					}
-				}
-
-			}
-			if (bioModelReps==null || bioModelReps.length!=1){
-				//
-				// try to determine if the current credentials are insufficient, try to fetch BioModel again with administrator privilege.
-				//
-				User adminUser = new User(PropertyLoader.ADMINISTRATOR_ACCOUNT,new KeyValue(PropertyLoader.ADMINISTRATOR_ID));
-				BioModelRep[] allBioModelReps = databaseServerImpl.getBioModelReps(adminUser, conditionsBuffer.toString(), null, startRow, 1);
-				if (allBioModelReps!=null && allBioModelReps.length>=0){
-					throw new PermissionException("insufficient privilege to retrive BioModel "+bioModelID);
-				}else{
-					throw new RuntimeException("failed to get biomodel");
-				}
-			}
-
-			String simulationId = (String)resource.getRequestAttributes().get(VCellApiApplication.SIMULATIONID);
-			if (simulationId == null){
-				throw new RuntimeException(VCellApiApplication.SIMULATIONID+" not specified");
-			}
-			SimulationRep simRep = getSimulationRep(new KeyValue(simulationId));
-			BigString bioModelXML = databaseServerImpl.getBioModelXML(vcellUser, bioModelReps[0].getBmKey());
-			BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(bioModelXML.toString()));
-			return new SimulationRepresentation(simRep, bioModel);
-		}
-
-		public SimContextRep getSimContextRep(KeyValue key) throws DataAccessException, SQLException{
-			SimContextRep simContextRep = scMap.get(key);
+	public SimContextRep getSimContextRep(KeyValue key) throws DataAccessException, SQLException{
+		SimContextRep simContextRep = scMap.get(key);
+		if (simContextRep!=null){
+			return simContextRep;
+		}else{
+			lg.info("getting simulation context rep for scKey = "+key);
+			simContextRep = databaseServerImpl.getSimContextRep(key);
 			if (simContextRep!=null){
-				return simContextRep;
+				lg.info("found simulation context key = " + key + " number of cached simContexts is " + simMap.size());
+				scMap.put(key, simContextRep);
 			}else{
-				lg.info("getting simulation context rep for scKey = "+key);
-				simContextRep = databaseServerImpl.getSimContextRep(key);
-				if (simContextRep!=null){
-					lg.info("found simulation context key = " + key + " number of cached simContexts is " + simMap.size());
-					scMap.put(key, simContextRep);
-				}else{
-					lg.info("couldn't find simulation key = " + key);
-				}
-				return simContextRep;
+				lg.info("couldn't find simulation key = " + key);
 			}
+			return simContextRep;
 		}
+	}
 
 
-		public SimulationRep getSimulationRep(KeyValue key) throws DataAccessException, SQLException{
-			SimulationRep simulationRep = simMap.get(key);
+	public SimulationRep getSimulationRep(KeyValue key) throws DataAccessException, SQLException{
+		SimulationRep simulationRep = simMap.get(key);
+		if (simulationRep!=null){
+			return simulationRep;
+		}else{
+			lg.info("getting simulation rep for simKey = "+key);
+			simulationRep = databaseServerImpl.getSimulationRep(key);
 			if (simulationRep!=null){
-				return simulationRep;
+				lg.info("found simulation key = " + key + " number of cached simulations is " + simMap.size());
+				simMap.put(key, simulationRep);
 			}else{
-				lg.info("getting simulation rep for simKey = "+key);
-				simulationRep = databaseServerImpl.getSimulationRep(key);
-				if (simulationRep!=null){
-					lg.info("found simulation key = " + key + " number of cached simulations is " + simMap.size());
-					simMap.put(key, simulationRep);
-				}else{
-					lg.info("couldn't find simulation key = " + key);
-				}
-				return simulationRep;
+				lg.info("couldn't find simulation key = " + key);
 			}
+			return simulationRep;
 		}
+	}
 
     public SimpleJobStatus[] query(SimulationTasksServerResource resource, User vcellUser) throws SQLException, DataAccessException {
-			if (vcellUser==null){
-				vcellUser = VCellApiApplication.DUMMY_USER;
-			}
-			String userID = vcellUser.getName();
-			SimpleJobStatusQuerySpec simQuerySpec = new SimpleJobStatusQuerySpec();
-			simQuerySpec.userid = userID;
-			simQuerySpec.simId = resource.getLongQueryValue(SimulationTasksServerResource.PARAM_SIM_ID);
-			simQuerySpec.jobId = resource.getLongQueryValue(SimulationTasksServerResource.PARAM_JOB_ID);
-			simQuerySpec.taskId = resource.getLongQueryValue(SimulationTasksServerResource.PARAM_TASK_ID);
-			simQuerySpec.computeHost = resource.getQueryValue(SimulationTasksServerResource.PARAM_COMPUTE_HOST);
-			simQuerySpec.serverId = resource.getQueryValue(SimulationTasksServerResource.PARAM_SERVER_ID);
-			String hasData = resource.getQueryValue(SimulationTasksServerResource.PARAM_HAS_DATA);
-			if (hasData!=null && hasData.equals("yes")){
-				simQuerySpec.hasData = true;
-			}else if (hasData!=null && hasData.equals("no")){
-				simQuerySpec.hasData = false;
-			}else{
-				simQuerySpec.hasData = null;
-			}
-			simQuerySpec.waiting = resource.getBooleanQueryValue(SimulationTasksServerResource.PARAM_STATUS_WAITING,false);
-			simQuerySpec.queued = resource.getBooleanQueryValue(SimulationTasksServerResource.PARAM_STATUS_QUEUED,false);
-			simQuerySpec.dispatched = resource.getBooleanQueryValue(SimulationTasksServerResource.PARAM_STATUS_DISPATCHED,false);
-			simQuerySpec.running = resource.getBooleanQueryValue(SimulationTasksServerResource.PARAM_STATUS_RUNNING,false);
-			simQuerySpec.completed = resource.getBooleanQueryValue(SimulationTasksServerResource.PARAM_STATUS_COMPLETED,false);
-			simQuerySpec.failed = resource.getBooleanQueryValue(SimulationTasksServerResource.PARAM_STATUS_FAILED,false);
-			simQuerySpec.stopped = resource.getBooleanQueryValue(SimulationTasksServerResource.PARAM_STATUS_STOPPED,false);
-			simQuerySpec.submitLowMS = resource.getLongQueryValue(SimulationTasksServerResource.PARAM_SUBMIT_LOW);
-			simQuerySpec.submitHighMS = resource.getLongQueryValue(SimulationTasksServerResource.PARAM_SUBMIT_HIGH);
-			simQuerySpec.startLowMS = resource.getLongQueryValue(SimulationTasksServerResource.PARAM_START_LOW);
-			simQuerySpec.startHighMS = resource.getLongQueryValue(SimulationTasksServerResource.PARAM_START_HIGH);
-			simQuerySpec.endLowMS = resource.getLongQueryValue(SimulationTasksServerResource.PARAM_END_LOW);
-			simQuerySpec.endHighMS = resource.getLongQueryValue(SimulationTasksServerResource.PARAM_END_HIGH);
-			Long startRowParam = resource.getLongQueryValue(SimulationTasksServerResource.PARAM_START_ROW);
-			simQuerySpec.startRow = 1; // default
-			if (startRowParam!=null){
-				simQuerySpec.startRow = startRowParam.intValue();
-			}
-			Long maxRowsParam = resource.getLongQueryValue(SimulationTasksServerResource.PARAM_MAX_ROWS);
-			simQuerySpec.maxRows = 10; // default
-			if (maxRowsParam!=null){
-				simQuerySpec.maxRows = maxRowsParam.intValue();
-			}
-			VCMessageSession rpcSession = vcMessagingService.createProducerSession();
+		if (vcellUser==null){
+			vcellUser = VCellApiApplication.DUMMY_USER;
+		}
+		String userID = vcellUser.getName();
+		SimpleJobStatusQuerySpec simQuerySpec = new SimpleJobStatusQuerySpec();
+		simQuerySpec.userid = userID;
+		simQuerySpec.simId = resource.getLongQueryValue(SimulationTasksServerResource.PARAM_SIM_ID);
+		simQuerySpec.jobId = resource.getLongQueryValue(SimulationTasksServerResource.PARAM_JOB_ID);
+		simQuerySpec.taskId = resource.getLongQueryValue(SimulationTasksServerResource.PARAM_TASK_ID);
+		simQuerySpec.computeHost = resource.getQueryValue(SimulationTasksServerResource.PARAM_COMPUTE_HOST);
+		simQuerySpec.serverId = resource.getQueryValue(SimulationTasksServerResource.PARAM_SERVER_ID);
+		String hasData = resource.getQueryValue(SimulationTasksServerResource.PARAM_HAS_DATA);
+		if (hasData!=null && hasData.equals("yes")){
+			simQuerySpec.hasData = true;
+		}else if (hasData!=null && hasData.equals("no")){
+			simQuerySpec.hasData = false;
+		}else{
+			simQuerySpec.hasData = null;
+		}
+		simQuerySpec.waiting = resource.getBooleanQueryValue(SimulationTasksServerResource.PARAM_STATUS_WAITING,false);
+		simQuerySpec.queued = resource.getBooleanQueryValue(SimulationTasksServerResource.PARAM_STATUS_QUEUED,false);
+		simQuerySpec.dispatched = resource.getBooleanQueryValue(SimulationTasksServerResource.PARAM_STATUS_DISPATCHED,false);
+		simQuerySpec.running = resource.getBooleanQueryValue(SimulationTasksServerResource.PARAM_STATUS_RUNNING,false);
+		simQuerySpec.completed = resource.getBooleanQueryValue(SimulationTasksServerResource.PARAM_STATUS_COMPLETED,false);
+		simQuerySpec.failed = resource.getBooleanQueryValue(SimulationTasksServerResource.PARAM_STATUS_FAILED,false);
+		simQuerySpec.stopped = resource.getBooleanQueryValue(SimulationTasksServerResource.PARAM_STATUS_STOPPED,false);
+		simQuerySpec.submitLowMS = resource.getLongQueryValue(SimulationTasksServerResource.PARAM_SUBMIT_LOW);
+		simQuerySpec.submitHighMS = resource.getLongQueryValue(SimulationTasksServerResource.PARAM_SUBMIT_HIGH);
+		simQuerySpec.startLowMS = resource.getLongQueryValue(SimulationTasksServerResource.PARAM_START_LOW);
+		simQuerySpec.startHighMS = resource.getLongQueryValue(SimulationTasksServerResource.PARAM_START_HIGH);
+		simQuerySpec.endLowMS = resource.getLongQueryValue(SimulationTasksServerResource.PARAM_END_LOW);
+		simQuerySpec.endHighMS = resource.getLongQueryValue(SimulationTasksServerResource.PARAM_END_HIGH);
+		Long startRowParam = resource.getLongQueryValue(SimulationTasksServerResource.PARAM_START_ROW);
+		simQuerySpec.startRow = 1; // default
+		if (startRowParam!=null){
+			simQuerySpec.startRow = startRowParam.intValue();
+		}
+		Long maxRowsParam = resource.getLongQueryValue(SimulationTasksServerResource.PARAM_MAX_ROWS);
+		simQuerySpec.maxRows = 10; // default
+		if (maxRowsParam!=null){
+			simQuerySpec.maxRows = maxRowsParam.intValue();
+		}
+		VCMessageSession rpcSession = vcMessagingService.createProducerSession();
+		try {
+			UserLoginInfo userLoginInfo = new UserLoginInfo(vcellUser.getName(),null);
 			try {
-				UserLoginInfo userLoginInfo = new UserLoginInfo(vcellUser.getName(),null);
-				try {
-					userLoginInfo.setUser(vcellUser);
-				} catch (Exception e) {
-					lg.error(e.getMessage(), e);
-					throw new DataAccessException(e.getMessage());
-				}
-				RpcSimServerProxy rpcSimServerProxy = new RpcSimServerProxy(userLoginInfo, rpcSession);
-				SimpleJobStatus[] simpleJobStatusArray = rpcSimServerProxy.getSimpleJobStatus(vcellUser, simQuerySpec);
-				return simpleJobStatusArray;
-			}finally{
-				rpcSession.close();
+				userLoginInfo.setUser(vcellUser);
+			} catch (Exception e) {
+				lg.error(e.getMessage(), e);
+				throw new DataAccessException(e.getMessage());
 			}
+			RpcSimServerProxy rpcSimServerProxy = new RpcSimServerProxy(userLoginInfo, rpcSession);
+			SimpleJobStatus[] simpleJobStatusArray = rpcSimServerProxy.getSimpleJobStatus(vcellUser, simQuerySpec);
+			return simpleJobStatusArray;
+		}finally{
+			rpcSession.close();
+		}
     }
 
     public SimulationStatusRepresentation[] query(SimulationStatusServerResource resource, User vcellUser) throws SQLException, DataAccessException {
-			if (vcellUser==null){
-				vcellUser = VCellApiApplication.DUMMY_USER;
-			}
-			String userID = vcellUser.getName();
-			SimpleJobStatusQuerySpec simQuerySpec = new SimpleJobStatusQuerySpec();
-			simQuerySpec.userid = userID;
-			simQuerySpec.simId = resource.getLongQueryValue(SimulationStatusServerResource.PARAM_SIM_ID);
-			String hasData = resource.getQueryValue(SimulationStatusServerResource.PARAM_HAS_DATA);
-			if (hasData!=null && hasData.equals("yes")){
-				simQuerySpec.hasData = true;
-			}else if (hasData!=null && hasData.equals("no")){
-				simQuerySpec.hasData = false;
-			}else{
-				simQuerySpec.hasData = null;
-			}
-			simQuerySpec.waiting = resource.getBooleanQueryValue(SimulationStatusServerResource.PARAM_STATUS_ACTIVE,false);
-			simQuerySpec.queued = resource.getBooleanQueryValue(SimulationStatusServerResource.PARAM_STATUS_ACTIVE,false);
-			simQuerySpec.dispatched = resource.getBooleanQueryValue(SimulationStatusServerResource.PARAM_STATUS_ACTIVE,false);
-			simQuerySpec.running = resource.getBooleanQueryValue(SimulationStatusServerResource.PARAM_STATUS_ACTIVE,false);
-			simQuerySpec.completed = resource.getBooleanQueryValue(SimulationStatusServerResource.PARAM_STATUS_COMPLETED,false);
-			simQuerySpec.failed = resource.getBooleanQueryValue(SimulationStatusServerResource.PARAM_STATUS_FAILED,false);
-			simQuerySpec.stopped = resource.getBooleanQueryValue(SimulationStatusServerResource.PARAM_STATUS_STOPPED,false);
-			simQuerySpec.submitLowMS = resource.getLongQueryValue(SimulationStatusServerResource.PARAM_SUBMIT_LOW);
-			simQuerySpec.submitHighMS = resource.getLongQueryValue(SimulationStatusServerResource.PARAM_SUBMIT_HIGH);
-			simQuerySpec.startLowMS = resource.getLongQueryValue(SimulationStatusServerResource.PARAM_START_LOW);
-			simQuerySpec.startHighMS = resource.getLongQueryValue(SimulationStatusServerResource.PARAM_START_HIGH);
-			simQuerySpec.endLowMS = resource.getLongQueryValue(SimulationStatusServerResource.PARAM_END_LOW);
-			simQuerySpec.endHighMS = resource.getLongQueryValue(SimulationStatusServerResource.PARAM_END_HIGH);
-			Long startRowParam = resource.getLongQueryValue(SimulationStatusServerResource.PARAM_START_ROW);
-			simQuerySpec.startRow = 1; // default
-			if (startRowParam!=null){
-				simQuerySpec.startRow = startRowParam.intValue();
-			}
-			Long maxRowsParam = resource.getLongQueryValue(SimulationTasksServerResource.PARAM_MAX_ROWS);
-			simQuerySpec.maxRows = 10; // default
-			if (maxRowsParam!=null){
-				simQuerySpec.maxRows = maxRowsParam.intValue();
-			}
+		if (vcellUser==null){
+			vcellUser = VCellApiApplication.DUMMY_USER;
+		}
+		String userID = vcellUser.getName();
+		SimpleJobStatusQuerySpec simQuerySpec = new SimpleJobStatusQuerySpec();
+		simQuerySpec.userid = userID;
+		simQuerySpec.simId = resource.getLongQueryValue(SimulationStatusServerResource.PARAM_SIM_ID);
+		String hasData = resource.getQueryValue(SimulationStatusServerResource.PARAM_HAS_DATA);
+		if (hasData!=null && hasData.equals("yes")){
+			simQuerySpec.hasData = true;
+		}else if (hasData!=null && hasData.equals("no")){
+			simQuerySpec.hasData = false;
+		}else{
+			simQuerySpec.hasData = null;
+		}
+		simQuerySpec.waiting = resource.getBooleanQueryValue(SimulationStatusServerResource.PARAM_STATUS_ACTIVE,false);
+		simQuerySpec.queued = resource.getBooleanQueryValue(SimulationStatusServerResource.PARAM_STATUS_ACTIVE,false);
+		simQuerySpec.dispatched = resource.getBooleanQueryValue(SimulationStatusServerResource.PARAM_STATUS_ACTIVE,false);
+		simQuerySpec.running = resource.getBooleanQueryValue(SimulationStatusServerResource.PARAM_STATUS_ACTIVE,false);
+		simQuerySpec.completed = resource.getBooleanQueryValue(SimulationStatusServerResource.PARAM_STATUS_COMPLETED,false);
+		simQuerySpec.failed = resource.getBooleanQueryValue(SimulationStatusServerResource.PARAM_STATUS_FAILED,false);
+		simQuerySpec.stopped = resource.getBooleanQueryValue(SimulationStatusServerResource.PARAM_STATUS_STOPPED,false);
+		simQuerySpec.submitLowMS = resource.getLongQueryValue(SimulationStatusServerResource.PARAM_SUBMIT_LOW);
+		simQuerySpec.submitHighMS = resource.getLongQueryValue(SimulationStatusServerResource.PARAM_SUBMIT_HIGH);
+		simQuerySpec.startLowMS = resource.getLongQueryValue(SimulationStatusServerResource.PARAM_START_LOW);
+		simQuerySpec.startHighMS = resource.getLongQueryValue(SimulationStatusServerResource.PARAM_START_HIGH);
+		simQuerySpec.endLowMS = resource.getLongQueryValue(SimulationStatusServerResource.PARAM_END_LOW);
+		simQuerySpec.endHighMS = resource.getLongQueryValue(SimulationStatusServerResource.PARAM_END_HIGH);
+		Long startRowParam = resource.getLongQueryValue(SimulationStatusServerResource.PARAM_START_ROW);
+		simQuerySpec.startRow = 1; // default
+		if (startRowParam!=null){
+			simQuerySpec.startRow = startRowParam.intValue();
+		}
+		Long maxRowsParam = resource.getLongQueryValue(SimulationTasksServerResource.PARAM_MAX_ROWS);
+		simQuerySpec.maxRows = 10; // default
+		if (maxRowsParam!=null){
+			simQuerySpec.maxRows = maxRowsParam.intValue();
+		}
 
-			SimulationStatus[] simStatuses = null;
-			HashMap<KeyValue,SimulationDocumentLink> simDocLinks = new HashMap<KeyValue,SimulationDocumentLink>();
+		SimulationStatus[] simStatuses = null;
+		HashMap<KeyValue,SimulationDocumentLink> simDocLinks = new HashMap<KeyValue,SimulationDocumentLink>();
 
-			//
-			// ask server for simJobStatuses with above query spec.
-			// find set of simulation IDs from the result set of simJobStatus
-			// ask server for simulationStatuses from list of sim IDs.
-			//
-			VCMessageSession rpcSession = vcMessagingService.createProducerSession();
+		//
+		// ask server for simJobStatuses with above query spec.
+		// find set of simulation IDs from the result set of simJobStatus
+		// ask server for simulationStatuses from list of sim IDs.
+		//
+		VCMessageSession rpcSession = vcMessagingService.createProducerSession();
+		try {
+			UserLoginInfo userLoginInfo = new UserLoginInfo(vcellUser.getName(),null);
 			try {
-				UserLoginInfo userLoginInfo = new UserLoginInfo(vcellUser.getName(),null);
-				try {
-					userLoginInfo.setUser(vcellUser);
-				} catch (Exception e) {
-					lg.error(e.getMessage(), e);
-					throw new DataAccessException(e.getMessage());
-				}
-				RpcSimServerProxy rpcSimServerProxy = new RpcSimServerProxy(userLoginInfo, rpcSession);
-				SimpleJobStatus[] simpleJobStatusArray = rpcSimServerProxy.getSimpleJobStatus(vcellUser, simQuerySpec);
-				// gather unique simIDs and go back and ask server for SimulationStatuses
-				for (SimpleJobStatus simpleJobStatus : simpleJobStatusArray){
-					KeyValue simulationKey = simpleJobStatus.jobStatus.getVCSimulationIdentifier().getSimulationKey();
-					SimulationDocumentLink simulationDocumentLink = simpleJobStatus.simulationDocumentLink;
-					simDocLinks.put(simulationKey,simulationDocumentLink);
-				}
-				KeyValue[] simKeys = simDocLinks.keySet().toArray(new KeyValue[0]);
-				if (simKeys.length>0){
-					simStatuses = rpcSimServerProxy.getSimulationStatus(vcellUser, simKeys);
-				}
-			}finally{
-				rpcSession.close();
+				userLoginInfo.setUser(vcellUser);
+			} catch (Exception e) {
+				lg.error(e.getMessage(), e);
+				throw new DataAccessException(e.getMessage());
 			}
+			RpcSimServerProxy rpcSimServerProxy = new RpcSimServerProxy(userLoginInfo, rpcSession);
+			SimpleJobStatus[] simpleJobStatusArray = rpcSimServerProxy.getSimpleJobStatus(vcellUser, simQuerySpec);
+			// gather unique simIDs and go back and ask server for SimulationStatuses
+			for (SimpleJobStatus simpleJobStatus : simpleJobStatusArray){
+				KeyValue simulationKey = simpleJobStatus.jobStatus.getVCSimulationIdentifier().getSimulationKey();
+				SimulationDocumentLink simulationDocumentLink = simpleJobStatus.simulationDocumentLink;
+				simDocLinks.put(simulationKey,simulationDocumentLink);
+			}
+			KeyValue[] simKeys = simDocLinks.keySet().toArray(new KeyValue[0]);
+			if (simKeys.length>0){
+				simStatuses = rpcSimServerProxy.getSimulationStatus(vcellUser, simKeys);
+			}
+		}finally{
+			rpcSession.close();
+		}
 
-			ArrayList<SimulationStatusRepresentation> simStatusReps = new ArrayList<SimulationStatusRepresentation>();
-			for (int i=0; simStatuses!=null && i<simStatuses.length; i++){
-				KeyValue simulationKey = simStatuses[i].getVCSimulationIdentifier().getSimulationKey();
-				SimulationRep simRep = getSimulationRep(simulationKey);
-				try {
-					SimulationRepresentation simRepresentation = new SimulationRepresentation(simRep, simDocLinks.get(simulationKey));
-					simStatusReps.add(new SimulationStatusRepresentation(simRepresentation,simStatuses[i]));
-				}catch (ExpressionException e){
-					lg.error(e);
-				}
+		ArrayList<SimulationStatusRepresentation> simStatusReps = new ArrayList<SimulationStatusRepresentation>();
+		for (int i=0; simStatuses!=null && i<simStatuses.length; i++){
+			KeyValue simulationKey = simStatuses[i].getVCSimulationIdentifier().getSimulationKey();
+			SimulationRep simRep = getSimulationRep(simulationKey);
+			try {
+				SimulationRepresentation simRepresentation = new SimulationRepresentation(simRep, simDocLinks.get(simulationKey));
+				simStatusReps.add(new SimulationStatusRepresentation(simRepresentation,simStatuses[i]));
+			}catch (ExpressionException e){
+				lg.error(e);
 			}
-			return simStatusReps.toArray(new SimulationStatusRepresentation[0]);
+		}
+		return simStatusReps.toArray(new SimulationStatusRepresentation[0]);
     }
 
-		public UserInfo addUser(UserInfo newUserInfo) throws SQLException, ObjectNotFoundException, DataAccessException, UseridIDExistsException {
-			return localAdminDbServer.insertUserInfo(newUserInfo);
+	public UserInfo addUser(UserInfo newUserInfo) throws SQLException, ObjectNotFoundException, DataAccessException, UseridIDExistsException {
+		return localAdminDbServer.insertUserInfo(newUserInfo);
+	}
+
+	public PublicationRep[] query(PublicationsServerResource resource, User vcellUser) throws SQLException, DataAccessException {
+		if (vcellUser==null){
+			vcellUser = VCellApiApplication.DUMMY_USER;
+		}
+		Long pubID = resource.getLongQueryValue(PublicationsServerResource.PARAM_PUB_ID);
+		String orderByParam = resource.getQueryValue(PublicationsServerResource.PARAM_ORDERBY); // it is ok if the orderBy is null;
+		ArrayList<String> conditions = new ArrayList<String>();
+
+		java.text.SimpleDateFormat df = new java.text.SimpleDateFormat("MM/dd/yyyy HH:mm:ss", java.util.Locale.US);
+
+		if (pubID != null){
+			conditions.add("(" + PublicationTable.table.id.getQualifiedColName() + " = " + pubID + ")");
 		}
 
-		public PublicationRep[] query(PublicationsServerResource resource, User vcellUser) throws SQLException, DataAccessException {
-			if (vcellUser==null){
-				vcellUser = VCellApiApplication.DUMMY_USER;
-			}
-			Long pubID = resource.getLongQueryValue(PublicationsServerResource.PARAM_PUB_ID);
-			String orderByParam = resource.getQueryValue(PublicationsServerResource.PARAM_ORDERBY); // it is ok if the orderBy is null;
-			ArrayList<String> conditions = new ArrayList<String>();
 
-			java.text.SimpleDateFormat df = new java.text.SimpleDateFormat("MM/dd/yyyy HH:mm:ss", java.util.Locale.US);
-
-			if (pubID != null){
-				conditions.add("(" + PublicationTable.table.id.getQualifiedColName() + " = " + pubID + ")");
+		StringBuffer conditionsBuffer = new StringBuffer();
+		for (String condition : conditions) {
+			if (conditionsBuffer.length() > 0) {
+				conditionsBuffer.append(" AND ");
 			}
-
-
-			StringBuffer conditionsBuffer = new StringBuffer();
-			for (String condition : conditions) {
-				if (conditionsBuffer.length() > 0) {
-					conditionsBuffer.append(" AND ");
-				}
-				conditionsBuffer.append(condition);
-			}
-			OrderBy orderBy = OrderBy.year_desc; // default
-			if (orderByParam!=null){
-				if (orderByParam.equals(BiomodelsServerResource.PARAM_ORDERBY_YEAR_ASC)){
-					orderBy = OrderBy.year_asc;
-				}else if (orderByParam.equals(BiomodelsServerResource.PARAM_ORDERBY_YEAR_DESC)){
-					orderBy = OrderBy.year_desc;
-				}else if (orderByParam.equals(BiomodelsServerResource.PARAM_ORDERBY_NAME_ASC)){
-					orderBy = OrderBy.name_asc;
-				}else if (orderByParam.equals(BiomodelsServerResource.PARAM_ORDERBY_NAME_DESC)){
-					orderBy = OrderBy.name_desc;
-				}
-			}
-			PublicationRep[] publicationReps = databaseServerImpl.getPublicationReps(vcellUser, conditionsBuffer.toString(), orderBy);
-			return publicationReps;
+			conditionsBuffer.append(condition);
 		}
-
-		public void sendLostPassword(String userid) throws DataAccessException {
-			localAdminDbServer.sendLostPassword(userid);
+		OrderBy orderBy = OrderBy.year_desc; // default
+		if (orderByParam!=null){
+			if (orderByParam.equals(BiomodelsServerResource.PARAM_ORDERBY_YEAR_ASC)){
+				orderBy = OrderBy.year_asc;
+			}else if (orderByParam.equals(BiomodelsServerResource.PARAM_ORDERBY_YEAR_DESC)){
+				orderBy = OrderBy.year_desc;
+			}else if (orderByParam.equals(BiomodelsServerResource.PARAM_ORDERBY_NAME_ASC)){
+				orderBy = OrderBy.name_asc;
+			}else if (orderByParam.equals(BiomodelsServerResource.PARAM_ORDERBY_NAME_DESC)){
+				orderBy = OrderBy.name_desc;
+			}
 		}
+		PublicationRep[] publicationReps = databaseServerImpl.getPublicationReps(vcellUser, conditionsBuffer.toString(), orderBy);
+		return publicationReps;
+	}
+
+	public void sendLostPassword(String userid) throws DataAccessException {
+		localAdminDbServer.sendLostPassword(userid);
+	}
 
 }

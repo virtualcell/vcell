@@ -9,41 +9,11 @@
  */
 
 package cbit.util.xml;
-import java.awt.image.BufferedImage;
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Reader;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.io.Writer;
-import java.net.URL;
-import java.text.SimpleDateFormat;
-import java.util.*;
 
-import javax.imageio.ImageIO;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.TransformerFactoryConfigurationError;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.transform.stream.StreamSource;
-
+import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.publish.ITextWriter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jdom.Document;
-import org.jdom.Element;
-import org.jdom.JDOMException;
-import org.jdom.input.SAXBuilder;
-import org.jdom.output.Format;
-import org.jdom.output.XMLOutputter;
 import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
@@ -56,14 +26,17 @@ import org.sbpax.schemas.util.DefaultNameSpaces;
 import org.sbpax.schemas.util.OntUtil;
 import org.sbpax.util.SesameRioUtil;
 import org.vcell.sedml.PubMet;
-import org.vcell.util.BeanUtils;
-import org.vcell.util.ClientTaskStatusSupport;
-import org.vcell.util.document.BioModelInfo;
-import org.vcell.util.document.PublicationInfo;
+import org.vcell.sedml.PublicationMetadata;
 import org.vcell.util.document.Version;
 
-import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.publish.ITextWriter;
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * General Xml Rdf utility methods.
@@ -130,28 +103,29 @@ public class XmlRdfUtil {
 	
     public static String getMetadata(String vcmlName, File diagram,
 									 Optional<Version> bioModelVersion,
-									 Optional<PublicationInfo> pubInfo) {
+									 Optional<PublicationMetadata> publicationMetadata) {
     	String ret = "";
         String ns = DefaultNameSpaces.EX.uri;
 
 		Graph graph = new HashGraph();
 		Graph schema = new HashGraph();
 
-        if(!bioModelVersion.isPresent() || !pubInfo.isPresent()) {
+        if(!bioModelVersion.isPresent() || !publicationMetadata.isPresent()) {
         	ret = XmlRdfUtil.getMetadata(vcmlName, diagram);
         	return ret;
         }
 
-		PublicationInfo publicationInfo = pubInfo.get();
+		PublicationMetadata pubMetadata = publicationMetadata.get();
 		Version version = bioModelVersion.get();
 
-        String[] creators = publicationInfo.getAuthors();
-        String citation = publicationInfo.getCitation();
-        String doi = publicationInfo.getDoi();
-        Date pubDate = publicationInfo.getPubDate();
-        String pubmedid = publicationInfo.getPubmedid();
-        String sTitle = publicationInfo.getTitle();
-        String url = publicationInfo.getUrl();
+        String[] creators = pubMetadata.publicationInfo.getAuthors();
+        String citation = pubMetadata.publicationInfo.getCitation();
+        String doi = pubMetadata.publicationInfo.getDoi();
+        Date pubDate = pubMetadata.publicationInfo.getPubDate();
+        String pubmedid = pubMetadata.publicationInfo.getPubmedid();
+        String sTitle = pubMetadata.publicationInfo.getTitle();
+        String url = pubMetadata.publicationInfo.getUrl();
+		String sAbstract = pubMetadata.abstractText;
         List<String> contributors = new ArrayList<>();
         contributors.add("Dan Vasilescu");
 		contributors.add("Logan Drescher");
@@ -162,9 +136,11 @@ public class XmlRdfUtil {
 		String description = "http://omex-library.org/" + vcmlName + ".omex";	// "http://omex-library.org/biomodel_12345678.omex";
 		URI descriptionURI = ValueFactoryImpl.getInstance().createURI(description);
 		Literal descTitle = OntUtil.createTypedString(schema, sTitle);
+		Literal descAbstract = OntUtil.createTypedString(schema, sAbstract);
 		graph.add(descriptionURI, RDF.TYPE, PubMet.Description);		// <rdf:Description rdf:about='http://omex-library.org/Monkeyflower_pigmentation_v2.omex'>
 		graph.add(descriptionURI, PubMet.Title, descTitle);
-		
+		graph.add(descriptionURI, PubMet.Abstract, descAbstract);
+
 		try {
 			Map<String, String> nsMap = DefaultNameSpaces.defaultMap.convertToMap();
 			ret = SesameRioUtil.writeRDFToString(graph, nsMap, RDFFormat.RDFXML);

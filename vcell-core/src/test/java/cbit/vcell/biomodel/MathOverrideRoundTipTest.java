@@ -17,9 +17,9 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.vcell.sbml.vcell.SBMLExporter;
 import org.vcell.sedml.ModelFormat;
+import org.vcell.sedml.PublicationMetadata;
 import org.vcell.sedml.SEDMLExporter;
 import org.vcell.test.Fast;
-import org.vcell.util.document.PublicationInfo;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -90,9 +90,9 @@ public class MathOverrideRoundTipTest {
         boolean bHasPython = true;
         boolean bRoundTripSBMLValidation = true;
         boolean bWriteOmexArchive = true;
-        Optional<PublicationInfo> publicationInfo = Optional.empty();
+        Optional<PublicationMetadata> publicationMetadata = Optional.empty();
         Predicate<SimulationContext> simContextFilter = (sc) -> true;
-        SEDMLExporter.writeBioModel(bioModel, publicationInfo, omexFile, ModelFormat.SBML, simContextFilter, bHasPython, bRoundTripSBMLValidation, bWriteOmexArchive);
+        SEDMLExporter.writeBioModel(bioModel, publicationMetadata, omexFile, ModelFormat.SBML, simContextFilter, bHasPython, bRoundTripSBMLValidation, bWriteOmexArchive);
 
         SBMLExporter.MemoryVCLogger memoryVCLogger = new SBMLExporter.MemoryVCLogger();
         List<BioModel> bioModels = XmlHelper.readOmex(omexFile, memoryVCLogger);

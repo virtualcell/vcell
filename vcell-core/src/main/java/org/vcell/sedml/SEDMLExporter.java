@@ -53,7 +53,6 @@ import org.vcell.util.ISize;
 import org.vcell.util.Pair;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.BioModelInfo;
-import org.vcell.util.document.PublicationInfo;
 import org.vcell.util.document.Version;
 
 import javax.xml.stream.XMLStreamException;
@@ -1378,7 +1377,7 @@ public class SEDMLExporter {
 	}
 
 	public static List<SEDMLTaskRecord> writeBioModel(BioModel bioModel,
-													  Optional<PublicationInfo> publicationInfo,
+													  Optional<PublicationMetadata> publicationMetadata,
 													  File exportFileOrDirectory,
 													  ModelFormat modelFormat,
 													  Predicate<SimulationContext> simContextExportFilter,
@@ -1390,7 +1389,7 @@ public class SEDMLExporter {
 		SEDMLEventLog sedmlEventLog = (String entry) -> {};
 		Optional<File> jsonReportFile = Optional.empty();
 		return writeBioModel(
-				bioModel, publicationInfo, jsonReportFile, exportFileOrDirectory, simulationExportFilter, simContextExportFilter,
+				bioModel, publicationMetadata, jsonReportFile, exportFileOrDirectory, simulationExportFilter, simContextExportFilter,
 				modelFormat, sedmlEventLog, bHasPython, bValidation, bCreateOmexArchive);
 	}
 
@@ -1432,19 +1431,19 @@ public class SEDMLExporter {
 			simContextExportFilter = (SimulationContext sc) -> !unsupportedApplications.containsKey(sc.getName());
 		}
 
-		Optional<PublicationInfo> publicationInfo = Optional.empty();
+		Optional<PublicationMetadata> publicationMetadata = Optional.empty();
 		if (bioModelInfo!=null && bioModelInfo.getPublicationInfos()!=null && bioModelInfo.getPublicationInfos().length>0) {
-			publicationInfo = Optional.of(bioModelInfo.getPublicationInfos()[0]);
+			publicationMetadata = Optional.of(PublicationMetadata.fromPublicationInfo(bioModelInfo.getPublicationInfos()[0]));
 		}
 
 		boolean bCreateOmexArchive = true;
 		return writeBioModel(
-				bioModel, publicationInfo, jsonReportFile, outputDir, simulationExportFilter, simContextExportFilter,
+				bioModel, publicationMetadata, jsonReportFile, outputDir, simulationExportFilter, simContextExportFilter,
 				modelFormat, eventLogWriter, bHasPython, bValidate, bCreateOmexArchive);
 	}
 
 	private static List<SEDMLTaskRecord> writeBioModel(BioModel bioModel,
-													  Optional<PublicationInfo> publicationInfo,
+													  Optional<PublicationMetadata> publicationMetadata,
 													  Optional<File> jsonReportFile,
 													  File exportFileOrDirectory,
 													  Predicate<Simulation> simulationExportFilter,
@@ -1510,7 +1509,7 @@ public class SEDMLExporter {
 				XmlRdfUtil.writeModelDiagram(bioModel, diagramPath.toFile());
 
 				Optional<Version> bioModelVersion = Optional.ofNullable(bioModel.getVersion());
-				String rdfString = XmlRdfUtil.getMetadata(sBaseFileName, diagramPath.toFile(), bioModelVersion, publicationInfo);
+				String rdfString = XmlRdfUtil.getMetadata(sBaseFileName, diagramPath.toFile(), bioModelVersion, publicationMetadata);
 				XmlUtil.writeXMLStringToFile(rdfString, String.valueOf(Paths.get(sOutputDirPath, "metadata.rdf")), true);
 
 				sedmlExporter.createOmexArchive(sOutputDirPath, sBaseFileName);

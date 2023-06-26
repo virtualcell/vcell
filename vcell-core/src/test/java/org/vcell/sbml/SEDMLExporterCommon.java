@@ -17,11 +17,7 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.vcell.sbml.vcell.SBMLExporter;
-import org.vcell.sedml.ModelFormat;
-import org.vcell.sedml.SEDMLExporter;
-import org.vcell.sedml.SEDMLTaskRecord;
-import org.vcell.sedml.TaskResult;
-import org.vcell.util.document.PublicationInfo;
+import org.vcell.sedml.*;
 
 import java.io.*;
 import java.util.*;
@@ -150,12 +146,12 @@ public abstract class SEDMLExporterCommon {
 		boolean bRoundTripSBMLValidation = true;
 		boolean bWriteOmexArchive = true;
 		File omexFile = new File(outputDir, test_case_name + ".omex");
-		Optional<PublicationInfo> publicationInfo = Optional.empty();
+		Optional<PublicationMetadata> publicationMetadata = Optional.empty();
 		Map<String, String> unsupportedApplications = SEDMLExporter.getUnsupportedApplicationMap(bioModel, testCase.modelFormat);
 		Predicate<SimulationContext> simContextFilter = (SimulationContext sc) -> !unsupportedApplications.containsKey(sc.getName());
 		try {
 			List<SEDMLTaskRecord> sedmlTaskRecords = SEDMLExporter.writeBioModel(
-					bioModel, publicationInfo, omexFile, testCase.modelFormat, simContextFilter, bHasPython, bRoundTripSBMLValidation, bWriteOmexArchive);
+					bioModel, publicationMetadata, omexFile, testCase.modelFormat, simContextFilter, bHasPython, bRoundTripSBMLValidation, bWriteOmexArchive);
 
 			boolean bAnyFailures = false;
 			for (SEDMLTaskRecord sedmlTaskRecord : sedmlTaskRecords) {
