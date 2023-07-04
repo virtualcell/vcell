@@ -30,14 +30,15 @@ matplotlib = "^3.5.2"
 seaborn = "^0.12.2"
 python-libsbml-experimental = "^5.20.1"
 Deprecated = "^1.2.13"
-dataclasses-json = "^0.5.8"
+dataclasses-json = "^0.5.9"
 requests = "^2.31.0"
-pydantic = "^1.10.9"
+pydantic = "^2.0.0"
 python-dotenv = "^1.0.0"
+typer = "^0.9.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.4.0"
-mypy = "^1.4.0"
+mypy = "^1.4.1"
 
 [tool.poetry.group.dev.dependencies]
 types-deprecated = "1.2.9.2"
