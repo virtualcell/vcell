@@ -3,7 +3,9 @@ from pathlib import Path
 import requests
 from pydantic import BaseModel
 
-from vcell_datamodels import Publication
+from citation import getCitation, CitationInfo, getSuggestedProjectName
+from vcell_common.api_utils import download_file
+from vcell_pipeline.vcell_datamodels import Publication
 
 
 class ExportStatus(BaseModel):
@@ -20,24 +22,6 @@ def write_log(entry: ExportStatus, log_path: Path) -> None:
         f.flush()
 
 
-def download_file(url: str, out_file: Path) -> None:
-    """
-    download file using streaming to support large files
-
-    :param str url: the url to download from
-    :param Path out_file: the file to write the downloaded contents to
-    :raises requests.exceptions.HTTPError: if the download fails
-    """
-    with requests.Session() as session:
-        response = session.get(url, verify=False, stream=True)
-        response.raise_for_status()
-        assert response.status_code == 200  # raise_for_status should throw if not 200
-        with open(out_file, "wb") as f:
-            for chunk in response.iter_content(chunk_size=10000):
-                if chunk:  # filter out keep-alive new chunks
-                    f.write(chunk)
-
-
 def download_published_omex(api_base_url: str, out_dir: Path) -> None:
     log_path = Path(out_dir, "export.log")
 
@@ -50,22 +34,30 @@ def download_published_omex(api_base_url: str, out_dir: Path) -> None:
             continue
 
         bmKey = pub.biomodelReferences[0].bmKey
+        pubmedId: str | None = pub.pubmedid
+        citationInfo: CitationInfo | None = None
+        try:
+            citationInfo = getCitation(pubmedId)
+        except Exception as e:
+            print(f"Error getting citation for {pubmedId}: {e}")
+
+        suggestedProjectName = getSuggestedProjectName(bm_key=bmKey, pub_info=pub, citation_info=citationInfo)
         exportStatus = ExportStatus(bmKey=bmKey)
 
         try:
             vcml_url = f"{api_base_url}/biomodel/{bmKey}/biomodel.vcml"
-            vcml_file = Path(out_dir, f"biomodel_{bmKey}.vcml")
-            download_file(vcml_url, vcml_file)
+            vcml_file = Path(out_dir, f"{suggestedProjectName}.vcml")
+            download_file(url=vcml_url, out_file=vcml_file)
             exportStatus.wrote_vcml = True
 
             sbml_url = f"{api_base_url}/biomodel/{bmKey}/biomodel.sbml"
-            sbml_file = Path(out_dir, f"biomodel_{bmKey}.sbml")
-            download_file(sbml_url, sbml_file)
+            sbml_file = Path(out_dir, f"{suggestedProjectName}.sbml")
+            download_file(url=sbml_url, out_file=sbml_file)
             exportStatus.wrote_sbml = True
 
             omex_url = f"{api_base_url}/biomodel/{bmKey}/biomodel.omex"
-            omex_file = Path(out_dir, f"biomodel_{bmKey}.omex")
-            download_file(omex_url, omex_file)
+            omex_file = Path(out_dir, f"{suggestedProjectName}.omex")
+            download_file(url=omex_url, out_file=omex_file)
             exportStatus.wrote_omex = True
 
         except requests.exceptions.HTTPError as e:
@@ -81,6 +73,7 @@ def download_published_omex(api_base_url: str, out_dir: Path) -> None:
 
 if __name__ == "__main__":
     download_published_omex(
+        # api_base_url="https://vcellapi-beta.cam.uchc.edu:8080",
         api_base_url="https://localhost:8083",
-        out_dir=Path("/Users/schaff/Documents/workspace/vcell/export")
+        out_dir=Path("/Users/schaff/Documents/workspace/vcell/export4")
     )
