@@ -2,11 +2,14 @@ package cbit.vcell.biomodel;
 
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SpeciesContextSpec;
+import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.math.MathCompareResults;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.model.ModelException;
+import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationSymbolTable;
@@ -28,19 +31,33 @@ import java.nio.charset.StandardCharsets;
 @Category(Fast.class)
 public class ModelCountAndConcentrationTest {
 
-    @Test
-    public void test_spatial_concentration_to_count() throws IOException, XmlParseException, PropertyVetoException, MappingException, MatrixException, ModelException, MathException, ExpressionException {
-        BioModel bioModel_stoch_init_concentration = getBioModelFromResource("Stoch_spatial_conc.vcml");
-        SimulationContext stoch_app = bioModel_stoch_init_concentration.getSimulationContext("stoch_spat_conc");
-        stoch_app.setUsingConcentration(false, true);
-    }
+	@Test
+	public void test_spatial_concentration_to_count() throws IOException, XmlParseException, PropertyVetoException, MappingException, MatrixException, ModelException, MathException, ExpressionException {
+		BioModel bioModel_stoch_init_concentration = getBioModelFromResource("Stoch_spatial_conc.vcml");
+		SimulationContext stoch_app = bioModel_stoch_init_concentration.getSimulationContext("stoch_spat_conc");
+		stoch_app.setUsingConcentration(false, true);
+		SpeciesContextSpec speciesContextSpecs[] = stoch_app.getReactionContext().getSpeciesContextSpecs();
+		SpeciesContextSpec anySpeciesContextSpec = speciesContextSpecs[0];
+		SpeciesContextSpecParameter initParmConc = anySpeciesContextSpec.getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration);
+		SpeciesContextSpecParameter initParmCount = anySpeciesContextSpec.getParameterFromRole(SpeciesContextSpec.ROLE_InitialCount);
+		Assert.assertTrue("expecting non-null initial condition parameters", (initParmConc != null && initParmCount != null) ? true : false);
+		Assert.assertTrue("expecting null expression for concentration initial condition parameter", initParmConc.getExpression() == null ? true : false);
+		Assert.assertTrue("expecting non-null expression for count initial condition parameter", initParmCount.getExpression() != null ? true : false);
+	}
     
-    @Test
-    public void test_spatial_count_to_concentration() throws IOException, XmlParseException, PropertyVetoException, MappingException, MatrixException, ModelException, MathException, ExpressionException {
-        BioModel bioModel_stoch_init_count = getBioModelFromResource("Stoch_spatial_count.vcml");
-        SimulationContext stoch_app = bioModel_stoch_init_count.getSimulationContext("stoch_spat_count");
-       	stoch_app.setUsingConcentration(true, true);
-    }
+	@Test
+	public void test_spatial_count_to_concentration() throws IOException, XmlParseException, PropertyVetoException, MappingException, MatrixException, ModelException, MathException, ExpressionException {
+		BioModel bioModel_stoch_init_count = getBioModelFromResource("Stoch_spatial_count.vcml");
+		SimulationContext stoch_app = bioModel_stoch_init_count.getSimulationContext("stoch_spat_count");
+		stoch_app.setUsingConcentration(true, true);
+		SpeciesContextSpec speciesContextSpecs[] = stoch_app.getReactionContext().getSpeciesContextSpecs();
+		SpeciesContextSpec anySpeciesContextSpec = speciesContextSpecs[0];
+		SpeciesContextSpecParameter initParmConc = anySpeciesContextSpec.getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration);
+		SpeciesContextSpecParameter initParmCount = anySpeciesContextSpec.getParameterFromRole(SpeciesContextSpec.ROLE_InitialCount);
+		Assert.assertTrue("expecting non-null initial condition parameters", (initParmConc != null && initParmCount != null) ? true : false);
+		Assert.assertTrue("expecting non-null expression for concentration initial condition parameter", initParmConc.getExpression() != null ? true : false);
+		Assert.assertTrue("expecting null expression for count initial condition parameter", initParmCount.getExpression() == null ? true : false);
+	}
     
     @Test
     public void test_concentration_to_count() throws IOException, XmlParseException, PropertyVetoException, MappingException, MatrixException, ModelException, MathException, ExpressionException {
