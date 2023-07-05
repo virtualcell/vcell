@@ -32,24 +32,14 @@ public class ModelCountAndConcentrationTest {
     public void test_spatial_concentration_to_count() throws IOException, XmlParseException, PropertyVetoException, MappingException, MatrixException, ModelException, MathException, ExpressionException {
         BioModel bioModel_stoch_init_concentration = getBioModelFromResource("Stoch_spatial_conc.vcml");
         SimulationContext stoch_app = bioModel_stoch_init_concentration.getSimulationContext("stoch_spat_conc");
-        try {
-        	stoch_app.setUsingConcentration(false, true);
-        } catch(Exception e) {
-        	System.out.println(e.getMessage());
-        }
-    	System.out.println("Done");
+        stoch_app.setUsingConcentration(false, true);
     }
     
     @Test
     public void test_spatial_count_to_concentration() throws IOException, XmlParseException, PropertyVetoException, MappingException, MatrixException, ModelException, MathException, ExpressionException {
         BioModel bioModel_stoch_init_count = getBioModelFromResource("Stoch_spatial_count.vcml");
         SimulationContext stoch_app = bioModel_stoch_init_count.getSimulationContext("stoch_spat_count");
-        try {
-        	stoch_app.setUsingConcentration(true, true);
-        } catch(Exception e) {
-        	System.out.println(e.getMessage());
-        }
-    	System.out.println("Done");
+       	stoch_app.setUsingConcentration(true, true);
     }
     
     @Test
