@@ -2919,11 +2919,11 @@ public void setUsingConcentration(boolean bUseConcentration, boolean bTransformI
 	if(applicationType == Application.NETWORK_STOCHASTIC || applicationType == Application.RULE_BASED_STOCHASTIC)
 	{
 		boolean oldValue = bConcentration;
-		bConcentration = bUseConcentration;
 		if (bUseConcentration != oldValue && bTransformIfNeeded){
 			MathMapping mathMapping = createNewMathMapping();
 			setMathDescription(mathMapping.getMathDescription());
 		}
+		bConcentration = bUseConcentration;
 		firePropertyChange(PROPERTY_NAME_USE_CONCENTRATION, oldValue, bConcentration);
 		if (bUseConcentration != oldValue && bTransformIfNeeded){
 			convertSpeciesIniCondition(bUseConcentration);

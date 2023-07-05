@@ -296,7 +296,9 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 //			}
 		} else {
 			initParm = speciesContextSpecs[i].getParameterFromRole(SpeciesContextSpec.ROLE_InitialCount);
-			initExpr = new Expression(initParm.getExpression());
+			if(initParm.getExpression() != null) {
+				initExpr = new Expression(initParm.getExpression());
+			}
 		}
 		if (initExpr != null) {
 			StructureMapping sm = getSimulationContext().getGeometryContext().getStructureMapping(speciesContextSpecs[i].getSpeciesContext().getStructure());
