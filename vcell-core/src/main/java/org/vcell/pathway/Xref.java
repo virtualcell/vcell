@@ -17,6 +17,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashMap;
@@ -27,6 +29,8 @@ import java.util.StringTokenizer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
+
+import cbit.util.kisao.KisaoTermParser;
 
 public class Xref extends BioPaxObjectImpl implements UtilityClass {
 	private final static Logger lg = LogManager.getLogger(Xref.class);
@@ -90,7 +94,8 @@ public class Xref extends BioPaxObjectImpl implements UtilityClass {
 	
 	// the reactome web site uses a new format for the entities ID, while we're using the old
 	// need to use the old-new map below to translate
-	private String translateReactomeId(String from_id) {
+	@Deprecated
+	private String translateReactomeIdOld(String from_id) {
 //		String fileName = "G:\\dan\\projects\\svn\\vcell_6.1\\resources\\reactome\\reactome_oldnew_idmap.txt";
 //		File file = new File(fileName);
 		String path = "reactome_oldnew_idmap.txt";
@@ -109,7 +114,7 @@ public class Xref extends BioPaxObjectImpl implements UtilityClass {
 				}
 			}
 		} catch(IOException e) {
-			throw new RuntimeException("Unable to translate Reactome ID: " + from_id);
+			lg.error("Unable to translate Reactome ID: " + from_id);
 		} finally {
 			try {
 				if (buffReader != null) {
@@ -120,7 +125,44 @@ public class Xref extends BioPaxObjectImpl implements UtilityClass {
 			}
 		}
 		return from_id;	// we don't make a fuss, the browser will probably display a 404 error
-	}	public void setDb(String db) {
+	}
+	// the reactome web site uses a new format for the entities ID, while we're using the old
+	// need to use the old-new map below to translate
+	// same as above really, just getting the resource as stream instead of file
+	private String translateReactomeId(String from_id) {
+		String spath = "reactome_oldnew_idmap.txt";
+		InputStream is = Xref.class.getClassLoader().getResourceAsStream(spath);
+		if(is == null) {
+			lg.error("Unable to open the old to new reactome id translation map: " + spath);
+			// we log the problem but we won't make a fuss, it's just a bad id annotation link
+			// the browser will probably display a 404 error
+			return(from_id);
+		}
+		BufferedReader buffReader = new BufferedReader(new InputStreamReader(is));
+		try {
+			String line;	// ex: REACT_277613	R-CEL-445072
+			while((line = buffReader.readLine()) != null) {
+				StringTokenizer tokens = new StringTokenizer(line, " \t");
+				String from_candidate = tokens.nextToken();		// old ID
+				String to_candidate = tokens.nextToken();		// new ID
+				if(from_id.equals("REACT_" + from_candidate)) {
+					return to_candidate;
+				}
+			}
+		} catch(IOException e) {
+			lg.error("Unable to translate Reactome ID: " + from_id);
+		} finally {
+			try {
+				if (buffReader != null) {
+					buffReader.close();
+				}
+			} catch (Exception ex) {
+				lg.error(ex.getMessage(), ex);
+			}
+		}
+		return from_id;	// see comment above, we don't make a fuss
+	}	
+	public void setDb(String db) {
 		this.db = db;
 	}
 	public void setDbVersion(String dbVersion) {
