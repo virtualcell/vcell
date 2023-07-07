@@ -149,7 +149,6 @@ public class Xref extends BioPaxObjectImpl implements UtilityClass {
 					return to_candidate;
 				}
 			}
-			lg.error("Unable to find new version of Reactome ID: " + from_id);
 		} catch(IOException e) {
 			lg.error("Unable to translate Reactome ID: " + from_id);
 		} finally {
