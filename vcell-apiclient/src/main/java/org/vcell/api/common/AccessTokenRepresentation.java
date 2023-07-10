@@ -10,7 +10,10 @@ public class AccessTokenRepresentation {
 	public long expireDateSeconds;
 	public String userId;
 	public String userKey;
-		
+
+	public AccessTokenRepresentation(){
+	}
+
 	public AccessTokenRepresentation(String token) {
 		this.token = token;
 	}
