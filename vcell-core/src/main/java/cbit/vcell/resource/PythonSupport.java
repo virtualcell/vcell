@@ -14,11 +14,8 @@ import org.vcell.util.exe.IExecutable;
 public class PythonSupport {
 		
 	public static enum PythonPackage {
-		COPASI	("COPASI python binding",	"python-copasi",		"fbergmann",			"COPASI"),
 		THRIFT	("apache thrift",			"thrift",			"conda-forge",		"thrift"),
-		VTK		("Visualization Toolkit",	"vtk",				"conda-forge",		"vtk"),
-		LIBSBML	("libSBML for python",		"python-libsbml",	"sbmlteam",			"libsbml");
-		
+		VTK		("Visualization Toolkit",	"vtk",				"conda-forge",		"vtk");
 		public final String description;
 		public final String condaName;
 		public final String condaRepo;
