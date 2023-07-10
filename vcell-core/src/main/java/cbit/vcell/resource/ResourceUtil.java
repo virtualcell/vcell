@@ -43,9 +43,8 @@ public class ResourceUtil {
 	private static final String VCELL_VTK_DIR = "VCell_VTK";
 	private static final String MANIFEST_FILE_NAME = ".versionManifest.txt";
 
-	public static enum JavaVersion  {
-		SEVEN("1.7"),
-		EIGHT("1.8");
+	public enum JavaVersion  {
+		SEVENTEEN("17");
 		final String versionIdentifier;
 
 		private JavaVersion(String versionIdentifier) {

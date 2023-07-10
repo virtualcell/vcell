@@ -49,7 +49,7 @@ public static void main(java.lang.String[] args) {
 						} else {
 							throw new RuntimeException("Improper argument for VersionableType " + versionableTypeS);
 						}
-		Class.forName("oracle.jdbc.driver.OracleDriver");
+		Class.forName("oracle.jdbc.OracleDriver");
 		String url = "jdbc:oracle:thin:@nrcamdb.uchc.edu:1521:orc0";
 		con = java.sql.DriverManager.getConnection(url, "nrcamdbdev", "bogus");
 		System.out.println("Search for References to " + rootType.toString() + " id=" + rootKey.toString());

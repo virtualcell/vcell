@@ -3,14 +3,13 @@ package org.vcell.db.oracle;
 import java.sql.SQLException;
 
 import org.vcell.db.ConnectionFactory;
-import org.vcell.db.KeyFactory;
-import org.vcell.db.spi.Database;
+import org.vcell.db.Database;
 
 import oracle.ucp.UniversalConnectionPoolException;
 
 public class OraclePoolingConnectionFactoryProvider implements Database {
 
-	public static final String ORACLE_DRIVER_NAME = "oracle.jdbc.driver.OracleDriver";
+	public static final String ORACLE_DRIVER_NAME = "oracle.jdbc.OracleDriver";
 	@Override
 	public ConnectionFactory createConnctionFactory(String argDriverName, String argConnectURL, String argUserid, String argPassword) {
 		try {

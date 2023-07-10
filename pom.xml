@@ -82,7 +82,6 @@
 		<module>vcell-core</module>
 	<!-- 	<module>vcell-imagej</module>  -->
 		<module>vcell-math</module>
-		<module>vcell-oracle</module>
 		<module>vcell-server</module>
 		<module>vcell-util</module>
 		<module>vcell-vmicro</module>

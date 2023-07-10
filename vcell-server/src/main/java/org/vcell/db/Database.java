@@ -1,4 +1,4 @@
-package org.vcell.db.spi;
+package org.vcell.db;
 
 import org.vcell.db.ConnectionFactory;
 

@@ -31,7 +31,7 @@ public class ServerModule extends AbstractModule {
 //        mapBinder.addBinding(POSTGRESQL_DRIVER_NAME).to(PostgresConnectionFactoryProvider.class);
 //        try {
 //            Class<Database> oracleFactoryProviderClass = (Class<Database>) getClass().getClassLoader().loadClass("org.vcell.db.oracle.OraclePoolingConnectionFactoryProvider");
-//            mapBinder.addBinding("oracle.jdbc.driver.OracleDriver").to(oracleFactoryProviderClass);
+//            mapBinder.addBinding("oracle.jdbc.OracleDriver").to(oracleFactoryProviderClass);
 //        } catch (ClassNotFoundException e) {
 //            throw new RuntimeException(e);
 //        }

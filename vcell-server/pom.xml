@@ -81,7 +81,7 @@
 			<dependency>
 				<groupId>com.oracle.database.jdbc</groupId>
 				<artifactId>ojdbc-bom</artifactId>
-				<version>${ojdbc-bom.version}</version>
+				<version>23.2.0.0</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
@@ -91,7 +91,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.oracle.database.jdbc</groupId>
-			<artifactId>ojdbc8</artifactId>
+			<artifactId>ojdbc11</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>com.oracle.database.jdbc</groupId>
@@ -120,7 +120,6 @@
 			<artifactId>vcell-util</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-
 
 		<dependency>
 			<groupId>org.apache.activemq</groupId>

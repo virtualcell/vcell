@@ -98,7 +98,7 @@ public class IonItems {
 			BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 	        System.out.print("Enter VCell Password: ");
 	        String password = br.readLine();
-			Class.forName("oracle.jdbc.driver.OracleDriver");
+			Class.forName("oracle.jdbc.OracleDriver");
 			con = java.sql.DriverManager.getConnection(connectionStr, "vcell",password);
 			con.setAutoCommit(false);
 			con.setReadOnly(true);
