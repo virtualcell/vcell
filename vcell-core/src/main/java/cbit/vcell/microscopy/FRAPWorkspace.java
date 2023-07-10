@@ -13,10 +13,8 @@ package cbit.vcell.microscopy;
 import java.io.File;
 import java.util.ArrayList;
 
-import org.vcell.service.VCellServiceHelper;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.document.KeyValue;
-import org.vcell.vcellij.ImageDatasetReader;
 import org.vcell.vcellij.ImageDatasetReaderService;
 
 import cbit.image.SourceDataInfo;

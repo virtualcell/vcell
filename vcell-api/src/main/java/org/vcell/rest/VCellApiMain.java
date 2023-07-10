@@ -30,7 +30,6 @@ import org.vcell.rest.events.RestEventService;
 import org.vcell.rest.health.HealthService;
 import org.vcell.rest.rpc.RpcService;
 import org.vcell.rest.server.RestDatabaseService;
-import org.vcell.service.VCellServiceHelper;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserInfo;
 import org.vcell.util.document.UserLoginInfo;

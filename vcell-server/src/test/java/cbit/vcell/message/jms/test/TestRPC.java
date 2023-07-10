@@ -1,7 +1,6 @@
 package cbit.vcell.message.jms.test;
 
 import cbit.vcell.message.jms.activeMQ.VCMessagingServiceEmbedded;
-import org.vcell.service.VCellServiceHelper;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
