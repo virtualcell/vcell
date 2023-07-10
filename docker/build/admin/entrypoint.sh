@@ -19,7 +19,7 @@ arguments=$*
 # -Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=n
 
 java \
-	-XX:MaxRAMPercentage=100 \
+	-XX:MaxRAMPercentage=100 -XX:+PrintFlagsFinal -XshowSettings:vm \
 	-Dvcell.softwareVersion="$VCELL_VERSION" \
 	-Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager \
 	-Dlog4j.configurationFile=/usr/local/app/vcell-admin.log4j.xml \

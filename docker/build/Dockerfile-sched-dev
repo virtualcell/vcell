@@ -2,7 +2,7 @@ FROM eclipse-temurin:17 as jre-build
 
 # Create a custom Java runtime
 RUN $JAVA_HOME/bin/jlink \
-         --add-modules java.base \
+         --add-modules java.base,java.instrument,java.logging,java.management,java.desktop,java.naming,java.sql,java.transaction.xa,java.xml,jdk.jdwp.agent \
          --strip-debug \
          --no-man-pages \
          --no-header-files \
@@ -71,8 +71,8 @@ VOLUME /simdata
 VOLUME /htclogs
 
 ENTRYPOINT java \
-	-Xdebug -Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=n \
-	-XX:MaxRAMPercentage=100 \
+    -Xdebug -agentlib:jdwp=transport=dt_socket,address=*:8000,server=y,suspend=n \
+	-XX:MaxRAMPercentage=100 -XX:+PrintFlagsFinal -XshowSettings:vm \
     -Djava.awt.headless=true \
 	-Dvcell.softwareVersion="${softwareVersion}" \
 	-Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager \
