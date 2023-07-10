@@ -28,7 +28,7 @@ public class MigrateDbManager {
 		ConnectionFactory conFactory_Postgres = null;
 		try {
 
-			String driverName_Oracle = "oracle.jdbc.driver.OracleDriver";
+			String driverName_Oracle = "oracle.jdbc.OracleDriver";
 			String connectionURL_Oracle = "jdbc:oracle:thin:@VCELL-DB.cam.uchc.edu:1521/vcelldborcl.cam.uchc.edu";
 			String userid_Oracle = "vcell";
 			String password_Oracle = null;

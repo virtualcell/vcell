@@ -1,7 +1,7 @@
 package org.vcell.db.postgres;
 
 import org.vcell.db.ConnectionFactory;
-import org.vcell.db.spi.Database;
+import org.vcell.db.Database;
 
 public class PostgresConnectionFactoryProvider implements Database {
 

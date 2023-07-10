@@ -11,14 +11,13 @@
 package org.vcell.db;
 
 import java.sql.SQLException;
-import java.util.ServiceConfigurationError;
-import java.util.ServiceLoader;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.vcell.db.spi.Database;
 
 import cbit.vcell.resource.PropertyLoader;
+import org.vcell.db.oracle.OraclePoolingConnectionFactoryProvider;
+import org.vcell.db.postgres.PostgresConnectionFactoryProvider;
 
 /**
  * Service for database connection factory
@@ -48,17 +47,17 @@ public class DatabaseService {
 	}
 	
 	public ConnectionFactory createConnectionFactory(String argDriverName, String argConnectURL, String argUserid, String argPassword) throws SQLException {
-		try {
-			ServiceLoader<Database> databases = ServiceLoader.load(Database.class);
-			for (Database database : databases){
-				if (database.getDriverClassName().equals(argDriverName)){
-					return database.createConnctionFactory(argDriverName, argConnectURL, argUserid, argPassword);
-				}
+		switch (argDriverName) {
+			case OraclePoolingConnectionFactoryProvider.ORACLE_DRIVER_NAME: {
+				Database database = new OraclePoolingConnectionFactoryProvider();
+				return database.createConnctionFactory(argDriverName, argConnectURL, argUserid, argPassword);
 			}
-			throw new SQLException("no database provider found");
-		} catch (ServiceConfigurationError serviceError){
-			lg.error(serviceError);
-			throw new SQLException("database provider configuration error: "+serviceError.getMessage(),serviceError);
+			case PostgresConnectionFactoryProvider.POSTGRESQL_DRIVER_NAME: {
+				Database database = new PostgresConnectionFactoryProvider();
+				return database.createConnctionFactory(argDriverName, argConnectURL, argUserid, argPassword);
+			}
+			default:
+				throw new SQLException("no database provider found");
 		}
 	}
 	
