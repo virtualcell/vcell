@@ -14,8 +14,6 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.transform.stream.StreamSource;
 
-import org.scijava.plugin.Plugin;
-import org.scijava.service.AbstractService;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.ISize;
 import org.vcell.vcellij.ImageDatasetReader;
@@ -23,8 +21,7 @@ import org.vcell.vcellij.ImageDatasetReader;
 import cbit.image.ImageSizeInfo;
 import cbit.vcell.resource.ResourceUtil;
 
-@Plugin(type = ImageDatasetReader.class)
-public class BioformatsImageDatasetReader extends AbstractService implements ImageDatasetReader {
+public class BioformatsImageDatasetReader implements ImageDatasetReader {
 	
 	public static final String IMAGEDATAMULTI = "imagedatamulti";
 	public static final String IMAGEDATACHAN = "imagedatachan";

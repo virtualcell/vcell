@@ -15,7 +15,6 @@ import cbit.vcell.message.jms.activeMQ.VCMessagingServiceActiveMQ;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
 import org.vcell.db.KeyFactory;
-import org.vcell.service.VCellServiceHelper;
 import org.vcell.util.document.VCellServerID;
 
 import cbit.vcell.message.VCMessageSession;

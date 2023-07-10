@@ -24,7 +24,6 @@ import java.util.zip.ZipOutputStream;
 
 import javax.media.jai.operator.FileStoreDescriptor;
 
-import org.vcell.service.VCellServiceHelper;
 import org.vcell.util.Extent;
 import org.vcell.util.FileUtils;
 import org.vcell.vcellij.ImageDatasetReader;

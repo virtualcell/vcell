@@ -2,14 +2,13 @@ package org.vcell.vcellij;
 
 import java.io.File;
 
-import org.scijava.plugin.SciJavaPlugin;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.ISize;
 
 import cbit.image.ImageSizeInfo;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 
-public interface ImageDatasetReader extends SciJavaPlugin {
+public interface ImageDatasetReader {
 
 	public abstract ImageSizeInfo getImageSizeInfoForceZ(
 			String fileName, Integer forceZSize) throws Exception;

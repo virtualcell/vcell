@@ -11,12 +11,11 @@
 package org.vcell.db;
 
 import java.sql.SQLException;
-import java.util.List;
 import java.util.ServiceConfigurationError;
+import java.util.ServiceLoader;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.scijava.SciJava;
 import org.vcell.db.spi.Database;
 
 import cbit.vcell.resource.PropertyLoader;
@@ -28,10 +27,9 @@ public class DatabaseService {
 	private static final Logger lg = LogManager.getLogger(DatabaseService.class);
 	
 	private static DatabaseService service;
-	private SciJava scijava;
-	
+
 	private DatabaseService() {
-		scijava = new SciJava();
+
 	}
 	
 	public static synchronized DatabaseService getInstance(){
@@ -51,7 +49,7 @@ public class DatabaseService {
 	
 	public ConnectionFactory createConnectionFactory(String argDriverName, String argConnectURL, String argUserid, String argPassword) throws SQLException {
 		try {
-			List<Database> databases = scijava.plugin().createInstancesOfType(Database.class);
+			ServiceLoader<Database> databases = ServiceLoader.load(Database.class);
 			for (Database database : databases){
 				if (database.getDriverClassName().equals(argDriverName)){
 					return database.createConnctionFactory(argDriverName, argConnectURL, argUserid, argPassword);
