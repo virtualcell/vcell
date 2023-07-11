@@ -116,7 +116,8 @@ public class SEDMLExporter {
 	}
 
 	public SEDMLDocument getSEDMLDocument(String sPath, String sBaseFileName, ModelFormat modelFormat,
-				boolean bRoundTripSBMLValidation, Predicate<SimulationContext> simContextExportFilter) {
+				boolean bRoundTripSBMLValidation, Predicate<SimulationContext> simContextExportFilter) throws
+			SEDMLExportException{
 		
 		double start = System.currentTimeMillis();
 
@@ -151,7 +152,12 @@ public class SEDMLExporter {
 		sedmlModel = sedmlDocument.getSedMLModel();
 		sedmlModel.setAdditionalNamespaces(nsList);
 		
-		this.translateBioModelToSedML(sPath, sBaseFileName, modelFormat, bRoundTripSBMLValidation, simContextExportFilter);
+		try {
+			this.translateBioModelToSedML(sPath, sBaseFileName, modelFormat, bRoundTripSBMLValidation, simContextExportFilter);
+		} catch (UnsupportedSbmlExportException e){
+			String message = "Unable to export to SED-ML:\n\t" + e.getMessage().replace("\n", "\n\t");
+			throw new SEDMLExporter.SEDMLExportException(message, e);
+		}
 		
 		double stop = System.currentTimeMillis();
 		Exception timer = new Exception(Double.toString((stop-start)/1000)+" seconds");
@@ -171,7 +177,8 @@ public class SEDMLExporter {
 	}
 
 	private void translateBioModelToSedML(String savePath, String sBaseFileName, ModelFormat modelFormat,
-				boolean bRoundTripSBMLValidation, Predicate<SimulationContext> simContextExportFilter) {
+				boolean bRoundTripSBMLValidation, Predicate<SimulationContext> simContextExportFilter)
+			throws UnsupportedSbmlExportException {
 		modelFilePathStrAbsoluteList.clear();
 		try {
 
@@ -244,7 +251,11 @@ public class SEDMLExporter {
 							exportSimulations(simContextCnt, simContext, sbmlString, l2gMap, sbmlLanguageURN);
 						} else {
 							System.err.println(sedmlRecorder.getRecordsAsCSV());
-							throw new Exception ("SimContext '"+simContext.getName()+"' could not be exported to SBML :" +simContextException.getMessage(), simContextException);
+							String message = "SimContext '"+simContext.getName()+"' could not be exported to SBML :" +simContextException.getMessage();
+							if (simContextException instanceof UnsupportedSbmlExportException){
+								throw new UnsupportedSbmlExportException(message, simContextException);
+							}
+							throw new Exception (message, simContextException);
 						}			
 						simContextCnt++;
 					}
@@ -260,6 +271,10 @@ public class SEDMLExporter {
 	       	}
 		} catch (Exception e) {
 			// this only happens if not from CLI, we need to pass this down the calling thread
+			String message = "Error adding model to SEDML document : " + e.getMessage();
+			if (e instanceof UnsupportedSbmlExportException){
+				throw new UnsupportedSbmlExportException(message, e);
+			}
 			throw new RuntimeException("Error adding model to SEDML document : " + e.getMessage(), e);
 		}
 	}
@@ -1384,7 +1399,7 @@ public class SEDMLExporter {
 													  boolean bHasPython,
 													  boolean bValidation,
 													  boolean bCreateOmexArchive
-	) throws SEDMLExportException, OmexPythonUtils.OmexValidationException, IOException {
+	) throws SEDMLExportException, OmexPythonUtils.OmexValidationException, IOException, UnsupportedSbmlExportException {
 		Predicate<Simulation> simulationExportFilter = s -> true;
 		SEDMLEventLog sedmlEventLog = (String entry) -> {};
 		Optional<File> jsonReportFile = Optional.empty();
@@ -1470,14 +1485,14 @@ public class SEDMLExporter {
 						// try to replace with the fully supported equivalent (do we need to reset solver parameters?)
 						simulation.getSolverTaskDescription().setSolverDescription(SolverDescription.SundialsPDE);
 					} catch (PropertyVetoException e) {
-						String msg1 = "Failed to replace obsolete PDE solver '"+SolverDescription.FiniteVolume.name()+"' " +
-								"with fully supported equivalent PDE solver '"+SolverDescription.SundialsPDE.name()+"'";
-						logger.error(msg1,e);
+						String msg1 = "Failed to replace obsolete PDE solver '" + SolverDescription.FiniteVolume.name() + "' " +
+								"with fully supported equivalent PDE solver '" + SolverDescription.SundialsPDE.name() + "'";
+						logger.error(msg1, e);
 						try {
 							simulation.getSolverTaskDescription().setSolverDescription(SolverDescription.FiniteVolumeStandalone);
 						} catch (PropertyVetoException e1) {
-							String msg2 = "Failed to replace obsolete PDE solver '"+SolverDescription.FiniteVolume.name()+"' " +
-									"with equivalent PDE solver '"+SolverDescription.FiniteVolumeStandalone.name()+"'";
+							String msg2 = "Failed to replace obsolete PDE solver '" + SolverDescription.FiniteVolume.name() + "' " +
+									"with equivalent PDE solver '" + SolverDescription.FiniteVolumeStandalone.name() + "'";
 							logger.error(msg2, e1);
 							throw new RuntimeException(msg2, e1);
 						}
@@ -1492,7 +1507,7 @@ public class SEDMLExporter {
 			XmlUtil.writeXMLStringToFile(vcmlString, vcmlFile.getAbsolutePath(), true);
 
 			String jsonReportPath = null;
-			if (jsonReportFile.isPresent()){
+			if (jsonReportFile.isPresent()) {
 				jsonReportPath = jsonReportFile.get().getAbsolutePath();
 			}
 			SEDMLExporter sedmlExporter = new SEDMLExporter(sBaseFileName, bioModel, sedmlLevel, sedmlVersion, simsToExport, jsonReportPath);
