@@ -111,16 +111,19 @@ jobs:
         uses: actions/checkout@v3
         with: 
           repository: virtualcell/vcdb
+          
+      - name: Prepare Output Directory
+        run: mkdir -p $GITHUB_WORKSPACE/export_conversion/output
       
         # Do the conversion
       - name: Begin Conversion
         #$(docker image ls | grep "<none>" | awk '{print $3;}')  to get image id
-        run: docker run -v $GITHUB_WORKSPACE/public/biomodel/vcml:/root $(docker image ls | grep "<none>" | awk '{print $3;}') export-omex-batch -i "/root" -o "/root/output" -m SBML --offline # grabs image and runs
+        run: docker run -v $GITHUB_WORKSPACE:/root $(docker image ls | grep "<none>" | awk '{print $3;}') export-omex-batch -i "/root/public/biomodel/vcml" -o "/root/export_conversion/output" -m SBML --offline # grabs image and runs
 
       # Parse the results
       - name: Parse Results
         run: |
-          cd $GITHUB_WORKSPACE/public/biomodel/vcml/output
+          cd $GITHUB_WORKSPACE/export_conversion/output
           /bin/echo "biomodels processed $(cat jobLog.txt | grep START | wc -l)" >> ../export_results.txt
           /bin/echo "biomodels succeeded $(cat jobLog.txt | grep MODEL,SUCC | wc -l)" >> ../export_results.txt
           /bin/echo "simcontexts total $(cat jobLog.txt | grep TEXT | wc -l)" >> ../export_results.txt
@@ -141,27 +144,27 @@ jobs:
         
         # Create tar of converted files
       - name: Compress Converted Files
-        run: cd $GITHUB_WORKSPACE/public/biomodel/vcml/output && sudo tar cf omexes.tar --wildcards *.omex    
+        run: cd $GITHUB_WORKSPACE/export_conversion/output && sudo tar cf omexes.tar --wildcards *.omex    
         
         # Upload Converted Files
       - name: Upload Converted Files
         uses: actions/upload-artifact@v3
         with:
           name: omexes.tar
-          path: ~/work/vcell/vcell/public/biomodel/vcml/output/omexes.tar # Action only has basic ~ based expansion, env variables dont appear to work
+          path: ~/work/vcell/vcell/export_conversion/output/omexes.tar # Action only has basic ~ based expansion, env variables dont appear to work
         
         # Upload Results
       - name: Upload results of round-trip
         uses: actions/upload-artifact@v3
         with:
           name: export_results.txt
-          path: ~/work/vcell/vcell/public/biomodel/vcml/export_results.txt
+          path: ~/work/vcell/vcell/export_conversion/output/export_results.txt
       
       - name: Upload original log of export
         uses: actions/upload-artifact@v3
         with:
           name: export_log_original
-          path: ~/work/vcell/vcell/public/biomodel/vcml/output/jobLog.txt
+          path: ~/work/vcell/vcell/export_conversion/output/jobLog.txt
           
       # Report a Problem to Slack
       - name: Report Problem to Slack
@@ -190,22 +193,25 @@ jobs:
       
       # Make Input Directory
       - name: Make Input and Output Directory
-        run: mkdir -p ~/input_files/output
+        run: mkdir -p ~/input_files/output && mkdir ~/input_files/input
       
       # Get the coverted omexes from before
       - name: Download Converted COMBINE Archives
         uses: actions/download-artifact@v3
         with:
           name: omexes.tar
-          path: ~/input_files
+          path: ~/input_files/input
       
       - name: Unpack Input Files
-        run: cd ~/input_files && sudo tar xvf $(ls *.tar) && rm $(ls *.tar)
+        run: cd ~/input_files/input && sudo tar xvf $(ls *.tar) && rm $(ls *.tar)
+        
+      - name: Prepare Output Directory
+        run: mkdir ~/input_files/input
       
       # Do the round trip
       - name: Begin Round-Trip Import
         #$(docker image ls | grep "<none>" | awk '{print $3;}')  to get image id
-        run: docker run -v ~/input_files:/root $(docker image ls | grep "<none>" | awk '{print $3;}') import-omex-batch -d -i "/root" -o "/root/output"
+        run: docker run -v ~/input_files:/root $(docker image ls | grep "<none>" | awk '{print $3;}') import-omex-batch -d -i "/root/input" -o "/root/output"
         
       # Parse the results
       - name: Parse Results
@@ -238,16 +244,9 @@ jobs:
         uses: mxschmitt/action-tmate@v3
         if: ${{ failure() }}
         
-  execute:
-    runs-on: ubuntu-20.04
-    needs: import
-    steps:
-      - name: to be implemented
-        run: echo 'This is not yet implemented' 
-        
   summarize:
     runs-on: ubuntu-20.04
-    needs: execute
+    needs: import
     steps: 
       - name: Make Results Directory
         run: mkdir -p ~/results && cd ~/results
