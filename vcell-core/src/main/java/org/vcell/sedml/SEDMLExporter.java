@@ -117,7 +117,7 @@ public class SEDMLExporter {
 
 	public SEDMLDocument getSEDMLDocument(String sPath, String sBaseFileName, ModelFormat modelFormat,
 				boolean bRoundTripSBMLValidation, Predicate<SimulationContext> simContextExportFilter) throws
-			SEDMLExportException{
+			SEDMLExportException {
 		
 		double start = System.currentTimeMillis();
 
@@ -1399,7 +1399,7 @@ public class SEDMLExporter {
 													  boolean bHasPython,
 													  boolean bValidation,
 													  boolean bCreateOmexArchive
-	) throws SEDMLExportException, OmexPythonUtils.OmexValidationException, IOException, UnsupportedSbmlExportException {
+	) throws SEDMLExportException, OmexPythonUtils.OmexValidationException, IOException {
 		Predicate<Simulation> simulationExportFilter = s -> true;
 		SEDMLEventLog sedmlEventLog = (String entry) -> {};
 		Optional<File> jsonReportFile = Optional.empty();
