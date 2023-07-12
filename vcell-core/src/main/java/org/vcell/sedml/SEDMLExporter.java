@@ -154,11 +154,11 @@ public class SEDMLExporter {
 		
 		try {
 			this.translateBioModelToSedML(sPath, sBaseFileName, modelFormat, bRoundTripSBMLValidation, simContextExportFilter);
-		} catch (UnsupportedSbmlExportException e){
+		} catch (UnsupportedSbmlExportException | SEDMLExportException e){
 			String message = "Unable to export to SED-ML:\n\t" + e.getMessage().replace("\n", "\n\t");
 			throw new SEDMLExporter.SEDMLExportException(message, e);
 		}
-		
+
 		double stop = System.currentTimeMillis();
 		Exception timer = new Exception(Double.toString((stop-start)/1000)+" seconds");
 		// update overall status
@@ -178,7 +178,7 @@ public class SEDMLExporter {
 
 	private void translateBioModelToSedML(String savePath, String sBaseFileName, ModelFormat modelFormat,
 				boolean bRoundTripSBMLValidation, Predicate<SimulationContext> simContextExportFilter)
-			throws UnsupportedSbmlExportException {
+			throws UnsupportedSbmlExportException, SEDMLExportException {
 		modelFilePathStrAbsoluteList.clear();
 		try {
 
@@ -272,9 +272,8 @@ public class SEDMLExporter {
 		} catch (Exception e) {
 			// this only happens if not from CLI, we need to pass this down the calling thread
 			String message = "Error adding model to SEDML document : " + e.getMessage();
-			if (e instanceof UnsupportedSbmlExportException){
-				throw new UnsupportedSbmlExportException(message, e);
-			}
+			if (e instanceof UnsupportedSbmlExportException) throw new UnsupportedSbmlExportException(message, e);
+			if (e instanceof SEDMLExportException) throw new SEDMLExportException(message, e);
 			throw new RuntimeException("Error adding model to SEDML document : " + e.getMessage(), e);
 		}
 	}
