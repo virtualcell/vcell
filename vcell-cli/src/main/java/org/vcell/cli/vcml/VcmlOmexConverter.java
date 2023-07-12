@@ -214,9 +214,9 @@ public class VcmlOmexConverter {
 							.collect(Collectors.toList());
 					String msg = "Failed converting VCML to OMEX archive for `" + inputFileName + "`, errors: " + errorList;
 					logger.error(msg);
-					throw new RuntimeException(msg);
+					throw new VCMLConversionException(msg);
 				}
-			} catch (SEDMLExporter.SEDMLExportException | OmexPythonUtils.OmexValidationException e) {
+			} catch (SEDMLExporter.SEDMLExportException | OmexPythonUtils.OmexValidationException | VCMLConversionException e) {
 				logger.error("Failed converting VCML to OMEX archive for `" + inputFileName + "`", e);
 			} catch (Exception e){
 				logger.error("Unexpected Exception occurred while converting VCML:\n\t", e);
