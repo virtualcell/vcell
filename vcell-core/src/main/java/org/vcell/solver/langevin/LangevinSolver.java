@@ -48,6 +48,8 @@ import cbit.vcell.solvers.SimpleCompiledSolver;
  */
 public class LangevinSolver extends SimpleCompiledSolver {
 
+	private String logFileString = null;	// logfile name as it appears in argument list
+	
 	public LangevinSolver(SimulationTask simTask, java.io.File directory,
 			boolean bMsging) throws SolverException {
 		super(simTask, directory, bMsging);
@@ -169,7 +171,7 @@ public class LangevinSolver extends SimpleCompiledSolver {
 		mathExecutableCommand[1] = "C:\\TEMP\\test\\ssld-eclipse_SIMULATIONS\\Simulation0_SIM.txt";
 		mathExecutableCommand[3] = "C:\\TEMP\\test\\ssld-eclipse_SIMULATIONS\\Simulations0_OutStream_0.txt";
 		
-		
+		setLogFileString(mathExecutableCommand[3]);
 		MathExecutable me = new MathExecutable(mathExecutableCommand, saveDirectoryFile);
 		setMathExecutable(me);
 	}
@@ -249,6 +251,14 @@ public class LangevinSolver extends SimpleCompiledSolver {
 		} finally {
 
 		}
+	}
+
+	public String getLogFileString() {
+		return logFileString;
+	}
+
+	public void setLogFileString(String logFileString) {
+		this.logFileString = logFileString;
 	}
 }
 
