@@ -64,7 +64,7 @@ public class SimulationDatabaseDirect implements SimulationDatabase {
 	private AdminDBTopLevel adminDbTopLevel = null;
 	private DatabaseServerImpl databaseServerImpl = null;
 	private Map<KeyValue, FieldDataIdentifierSpec[]> simFieldDataIDMap = Collections.synchronizedMap(new HashMap<KeyValue, FieldDataIdentifierSpec[]>());
-	private Map<String, User> userMap = Collections.synchronizedMap(new HashMap<String, User>());
+	private Map<String, User.SpecialUser> userMap = Collections.synchronizedMap(new HashMap<>());
 	private SimpleJobStatusCache cache = null;
 	
 	public static class SimJobStatusKey {
@@ -327,11 +327,11 @@ public class SimulationDatabaseDirect implements SimulationDatabase {
 	}
 
 	@Override
-	public User getUser(String username) throws DataAccessException, SQLException {
-		User user = null;
+	public User.SpecialUser getUser(String username) throws DataAccessException, SQLException {
+		User.SpecialUser user = null;
 
 		synchronized(userMap) {
-			user = (User)userMap.get(username);
+			user = userMap.get(username);
 			if (user!=null){
 				return user;
 			}

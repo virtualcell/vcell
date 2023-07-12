@@ -54,7 +54,7 @@ public interface SimulationDatabase {
 	
 	public Set<KeyValue> getUnreferencedSimulations() throws SQLException;
 
-	public User getUser(String username) throws DataAccessException, SQLException;
+	public User.SpecialUser getUser(String username) throws DataAccessException, SQLException;
 
 	public TreeMap<User.SPECIAL_CLAIM,TreeMap<User,String>> getSpecialUsers() throws DataAccessException, SQLException;
 

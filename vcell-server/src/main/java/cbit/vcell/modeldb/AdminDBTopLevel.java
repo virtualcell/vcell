@@ -722,7 +722,7 @@ public ApiClient getApiClient(String clientId, boolean bEnableRetry) throws SQLE
 
 
 
-public User getUser(String userid, boolean bEnableRetry) throws DataAccessException, java.sql.SQLException {
+public User.SpecialUser getUser(String userid, boolean bEnableRetry) throws DataAccessException, java.sql.SQLException {
 
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
