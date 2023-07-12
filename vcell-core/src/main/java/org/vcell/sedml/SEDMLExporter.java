@@ -308,7 +308,7 @@ public class SEDMLExporter {
 					long numOfTrials = simTaskDesc.getStochOpt().getNumOfTrials();
 					if (numOfTrials > 1) {
 						String msg = simContextName + " ( " + vcSimulation.getName() + " ) : export of non-spatial stochastic simulation with histogram option to SEDML not supported at this time.";
-						throw new Exception(msg);
+						throw new SEDMLExportException(msg);
 					}
 				}
 				
