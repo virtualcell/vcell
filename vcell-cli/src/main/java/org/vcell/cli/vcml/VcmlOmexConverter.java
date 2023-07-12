@@ -205,12 +205,12 @@ public class VcmlOmexConverter {
 						bSkipUnsupportedApps,
 						bHasPython,
 						bValidateOmex);
-				if (!sedmlTaskRecords.stream().anyMatch((SEDMLTaskRecord r) -> r.getTaskResult() == TaskResult.FAILED)) {
+				if (sedmlTaskRecords.stream().noneMatch((SEDMLTaskRecord r) -> r.getTaskResult() == TaskResult.FAILED)) {
 					logger.info("Combine archive created for `" + inputFileName + "`");
 				} else {
 					List<String> errorList = sedmlTaskRecords.stream()
 							.filter((SEDMLTaskRecord r) -> r.getTaskResult() == TaskResult.FAILED)
-							.map((SEDMLTaskRecord r) -> r.getCSV())
+							.map(SEDMLTaskRecord::getCSV)
 							.collect(Collectors.toList());
 					String msg = "Failed converting VCML to OMEX archive for `" + inputFileName + "`, errors: " + errorList;
 					logger.error(msg);
@@ -218,6 +218,9 @@ public class VcmlOmexConverter {
 				}
 			} catch (SEDMLExporter.SEDMLExportException | OmexPythonUtils.OmexValidationException e) {
 				logger.error("Failed converting VCML to OMEX archive for `" + inputFileName + "`", e);
+			} catch (Exception e){
+				logger.error("Unexpected Exception occurred while converting VCML:\n\t", e);
+				throw e;
 			}
 		}
 		logger.debug("Completed conversion of files in `" + inputDir + "`");
