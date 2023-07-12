@@ -18,6 +18,7 @@ import org.restlet.routing.Router;
 import org.restlet.security.ChallengeAuthenticator;
 import org.vcell.rest.admin.AdminJobsRestlet;
 import org.vcell.rest.admin.AdminService;
+import org.vcell.rest.admin.AdminStatsRestlet;
 import org.vcell.rest.auth.AuthenticationTokenRestlet;
 import org.vcell.rest.auth.BearerTokenVerifier;
 import org.vcell.rest.auth.CookieVerifier;
@@ -29,6 +30,7 @@ import org.vcell.rest.rpc.RpcRestlet;
 import org.vcell.rest.rpc.RpcService;
 import org.vcell.rest.server.*;
 import org.vcell.rest.users.*;
+import org.vcell.util.DataAccessException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
@@ -127,7 +129,8 @@ public class VCellApiApplication extends WadlApplication {
 	
 	public static final String ADMIN = "admin";
 	public static final String 	ADMIN_JOBS = "jobs";
-	
+	public static final String 	ADMIN_STATS = "stats";
+
 	public static final String JOBINDEX = "jobindex";
 	
 	public static final String SAVESIMULATION = "save";
@@ -309,7 +312,8 @@ public class VCellApiApplication extends WadlApplication {
 
 	    rootRouter.attach("/"+HEALTH, new HealthRestlet(getContext()));
 
-	    rootRouter.attach("/"+ADMIN+"/"+ADMIN_JOBS, new AdminJobsRestlet(getContext()));
+		rootRouter.attach("/"+ADMIN+"/"+ADMIN_JOBS, new AdminJobsRestlet(getContext()));
+		rootRouter.attach("/"+ADMIN+"/"+ADMIN_STATS, new AdminStatsRestlet(getContext(), restDatabaseService));
 
 	    rootRouter.attach("/auth/user", new Restlet(getContext()){
 
@@ -372,7 +376,21 @@ public class VCellApiApplication extends WadlApplication {
 		return this.adminService;
 	}
 
+	public User.SPECIAL_CLAIM[] getSpecialClaims(ApiAccessToken apiAccessToken) throws DataAccessException {
+		User user = apiAccessToken.getUser();
+		return restDatabaseService.getSpecialClaims(user);
+	}
+
 	public User getVCellUser(ChallengeResponse response, AuthenticationPolicy authPolicy) throws ResourceException {
+		ApiAccessToken apiAccessToken = getApiAccessToken(response, authPolicy);
+		if (apiAccessToken != null){
+			return apiAccessToken.getUser();
+		} else {
+			return null;
+		}
+	}
+
+	public ApiAccessToken getApiAccessToken(ChallengeResponse response, AuthenticationPolicy authPolicy) throws ResourceException {
 		try {
 			ApiAccessToken accessToken = bearerTokenVerifier.getApiAccessToken(response);
 			if (accessToken == null){
@@ -395,7 +413,7 @@ public class VCellApiApplication extends WadlApplication {
 					}
 				}else{
 					getLogger().log(Level.FINE,"VCellApiApplication.getVCellUser(response) - ApiAccessToken is valid ... returning user = "+accessToken.getUser().getName());
-					return accessToken.getUser();
+					return accessToken;
 				}
 			}else{ // accessToken is null
 				if (authPolicy == AuthenticationPolicy.ignoreInvalidCredentials){
