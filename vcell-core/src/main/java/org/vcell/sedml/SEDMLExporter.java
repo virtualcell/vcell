@@ -228,11 +228,11 @@ public class SEDMLExporter {
 						// Export the application itself to SBML, with default values (overrides will become model changes or repeated tasks)
 						String sbmlString = null;
 						Map<Pair <String, String>, String> l2gMap = null;		// local to global translation map
-						boolean sbmlExportFailed = false;
+						boolean noContextExportFailures = true;
 						Exception simContextException = null;
 						try {
 							SBMLExporter.validateSimulationContextSupport(simContext);
-							boolean isSpatial = simContext.getGeometry().getDimension() > 0 ? true : false;
+							boolean isSpatial = simContext.getGeometry().getDimension() > 0;
 							Pair <String, Map<Pair <String, String>, String>> pair = XmlHelper.exportSBMLwithMap(vcBioModel, 3, 2, 0, isSpatial, simContext, bRoundTripSBMLValidation);
 							sbmlString = pair.one;
 							l2gMap = pair.two;
@@ -241,13 +241,13 @@ public class SEDMLExporter {
 						} catch (Exception e) {
 							String msg = "SBML export failed for simContext '"+simContext.getName()+"': " + e.getMessage();
 							logger.error(msg, e);
-							sbmlExportFailed = true;
+							noContextExportFailures = false;
 							simContextException = e;
 							sedmlRecorder.addTaskRecord(simContext.getName(), TaskType.SIMCONTEXT, TaskResult.FAILED, e);
 						}
 	
-						if (!sbmlExportFailed) {
-							// simContext was exported succesfully, now we try to export its simulations
+						if (noContextExportFailures) {
+							// simContext was exported successfully, now we try to export its simulations
 							exportSimulations(simContextCnt, simContext, sbmlString, l2gMap, sbmlLanguageURN);
 						} else {
 							System.err.println(sedmlRecorder.getRecordsAsCSV());
