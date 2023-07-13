@@ -154,7 +154,7 @@ public class SEDMLExporter {
 		
 		try {
 			this.translateBioModelToSedML(sPath, sBaseFileName, modelFormat, bRoundTripSBMLValidation, simContextExportFilter);
-		} catch (UnsupportedSbmlExportException | SEDMLExportException e){
+		} catch (UnsupportedSbmlExportException | SEDMLExportException | MappingException e){
 			String message = "Unable to export to SED-ML:\n\t" + e.getMessage().replace("\n", "\n\t");
 			throw new SEDMLExporter.SEDMLExportException(message, e);
 		}
@@ -178,7 +178,7 @@ public class SEDMLExporter {
 
 	private void translateBioModelToSedML(String savePath, String sBaseFileName, ModelFormat modelFormat,
 				boolean bRoundTripSBMLValidation, Predicate<SimulationContext> simContextExportFilter)
-			throws UnsupportedSbmlExportException, SEDMLExportException {
+			throws UnsupportedSbmlExportException, SEDMLExportException, MappingException {
 		modelFilePathStrAbsoluteList.clear();
 		try {
 
@@ -274,6 +274,7 @@ public class SEDMLExporter {
 			String message = "Error adding model to SEDML document : " + e.getMessage();
 			if (e instanceof UnsupportedSbmlExportException) throw new UnsupportedSbmlExportException(message, e);
 			if (e instanceof SEDMLExportException) throw new SEDMLExportException(message, e);
+			if (e instanceof MappingException) throw new MappingException(message, e);
 			throw new RuntimeException("Error adding model to SEDML document : " + e.getMessage(), e);
 		}
 	}
