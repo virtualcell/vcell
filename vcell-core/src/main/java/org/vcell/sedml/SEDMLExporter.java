@@ -154,7 +154,7 @@ public class SEDMLExporter {
 		
 		try {
 			this.translateBioModelToSedML(sPath, sBaseFileName, modelFormat, bRoundTripSBMLValidation, simContextExportFilter);
-		} catch (UnsupportedSbmlExportException | SEDMLExportException | MappingException e){
+		} catch (UnsupportedSbmlExportException | SEDMLExportException | MappingException | XmlParseException e){
 			String message = "Unable to export to SED-ML:\n\t" + e.getMessage().replace("\n", "\n\t");
 			throw new SEDMLExporter.SEDMLExportException(message, e);
 		}
@@ -178,7 +178,7 @@ public class SEDMLExporter {
 
 	private void translateBioModelToSedML(String savePath, String sBaseFileName, ModelFormat modelFormat,
 				boolean bRoundTripSBMLValidation, Predicate<SimulationContext> simContextExportFilter)
-			throws UnsupportedSbmlExportException, SEDMLExportException, MappingException {
+			throws UnsupportedSbmlExportException, SEDMLExportException, MappingException, XmlParseException {
 		modelFilePathStrAbsoluteList.clear();
 		try {
 
@@ -275,6 +275,7 @@ public class SEDMLExporter {
 			if (e instanceof UnsupportedSbmlExportException) throw new UnsupportedSbmlExportException(message, e);
 			if (e instanceof SEDMLExportException) throw new SEDMLExportException(message, e);
 			if (e instanceof MappingException) throw new MappingException(message, e);
+			if (e instanceof cbit.vcell.xml.XmlParseException) throw new XmlParseException(message, e);
 			throw new RuntimeException("Error adding model to SEDML document : " + e.getMessage(), e);
 		}
 	}
