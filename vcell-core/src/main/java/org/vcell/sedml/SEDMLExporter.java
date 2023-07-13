@@ -671,7 +671,7 @@ public class SEDMLExporter {
 	private void createSEDMLtasks(int simContextCnt, Map<Pair<String, String>, String> l2gMap, String simContextName,
 			String simContextId, Simulation vcSimulation, UniformTimeCourse utcSim,
 			Set<String> dataGeneratorTasksSet, MathOverrides mathOverrides, String languageURN)
-			throws ExpressionBindingException, ExpressionException, DivideByZeroException, MappingException {
+			throws ExpressionBindingException, ExpressionException, DivideByZeroException, MappingException, UnsupportedSbmlExportException {
 		if(mathOverrides != null && mathOverrides.hasOverrides()) {
 			String[] overridenConstantNames = mathOverrides.getOverridenConstantNames();
 			String[] scannedConstantsNames = mathOverrides.getScannedConstantNames();
@@ -942,7 +942,7 @@ public class SEDMLExporter {
 	private RepeatedTask createSEDMLreptask(String rangeId, Map<Pair<String, String>, String> l2gMap,
 			SimulationContext simContext, Set<String> dataGeneratorTasksSet,
 			MathOverrides mathOverrides, String ownerTaskId, String scannedConstName, String repeatedTaskId, String modelReferenceId)
-			throws ExpressionException, DivideByZeroException, MappingException {
+			throws ExpressionException, DivideByZeroException, MappingException, UnsupportedSbmlExportException {
 		RepeatedTask rt = new RepeatedTask(repeatedTaskId, mathOverrides.getSimulation().getName(), true, rangeId);
 		dataGeneratorTasksSet.add(rt.getId());
 		SubTask subTask = new SubTask("0", ownerTaskId);
@@ -964,7 +964,7 @@ public class SEDMLExporter {
 	}
 
 	private Range createSEDMLrange(String rangeId, RepeatedTask rt, ConstantArraySpec constantArraySpec, String scannedConstantName, SimulationContext simContext, Map<Pair<String, String>, String> l2gMap, String modelReferenceId, Simulation vcSim)
-			throws ExpressionException, DivideByZeroException, MappingException {
+			throws ExpressionException, DivideByZeroException, MappingException, UnsupportedSbmlExportException {
 		Range r = null;
 		SimulationContext sc = (SimulationContext)vcSim.getSimulationOwner();
 		SymbolReplacement sr = sc.getMathOverridesResolver().getSymbolReplacement(scannedConstantName, true);
@@ -1027,7 +1027,7 @@ public class SEDMLExporter {
 	}
 
 	private void createFunctionalRangeElements(FunctionalRange fr, Expression func, SimulationContext simContext,
-			Map<Pair<String, String>, String> l2gMap, String modelReferenceId) throws ExpressionException, MappingException {
+			Map<Pair<String, String>, String> l2gMap, String modelReferenceId) throws ExpressionException, MappingException, UnsupportedSbmlExportException {
 		String[] symbols = func.getSymbols();
 		MathSymbolMapping msm = (MathSymbolMapping)simContext.getMathDescription().getSourceSymbolMapping();
 		for(String symbol : symbols) {
@@ -1113,7 +1113,7 @@ public class SEDMLExporter {
 		}
 	}
 
-	private XPathTarget getTargetAttributeXPath(SymbolTableEntry ste, Map<Pair <String, String>, String> l2gMap, SimulationContext simContext) {
+	private XPathTarget getTargetAttributeXPath(SymbolTableEntry ste, Map<Pair <String, String>, String> l2gMap, SimulationContext simContext) throws UnsupportedSbmlExportException {
 		// VCML model format
 		if (l2gMap == null) return getVCMLTargetXPath(ste, simContext);
 		// SBML model format
@@ -1146,7 +1146,7 @@ public class SEDMLExporter {
 			} else if (speciesAttr.equalsIgnoreCase("diff")) {
 				targetXpath = new XPathTarget(sbmlSupport.getXPathForGlobalParameter(speciesId + "_" + speciesAttr, ParameterAttribute.value));
 			} else {
-				throw new RuntimeException("Unknown species attribute '" + speciesAttr + "'; cannot get xpath target for species '" + speciesId + "'.");
+				throw new UnsupportedSbmlExportException("can not get xpath target for species '" + speciesId + "':\n\t", new RuntimeException("Unknown species attribute '" + speciesAttr));
 			}
 
 		} else if (ste instanceof ModelParameter || ste instanceof ReservedSymbol) {
@@ -1188,7 +1188,7 @@ public class SEDMLExporter {
 			KineticsParameter kp = (KineticsParameter)ste;
 			String reactionID = kp.getKinetics().getReactionStep().getName();
 			String parameterID = kp.getName();
-			Pair<String, String> key = new Pair(reactionID, parameterID);
+			Pair<String, String> key = new Pair<>(reactionID, parameterID);
 			String value = l2gMap.get(key);
 			if(value == null) {
 				// stays as local parameter
@@ -1202,7 +1202,7 @@ public class SEDMLExporter {
 			targetXpath = new XPathTarget(sbmlSupport.getXPathForGlobalParameter(TokenMangler.mangleToSName(ste.getName()), ParameterAttribute.value));
 		} else {
 			logger.error("redundant error log: "+"Entity should be SpeciesContext, Structure, ModelParameter, ReserverdSymbol, KineticsParameter, or MembraneVoltage : " + ste.getClass());
-			throw new RuntimeException("Unsupported entity in SBML model export: "+ste.getClass());
+			throw new UnsupportedSbmlExportException("Unsupported entity in SBML model export: "+ste.getClass());
 		}
 		return targetXpath;
 	}
