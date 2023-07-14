@@ -130,7 +130,7 @@ client local run  alpha
 -Dvcell.secondarySimdatadir.internal=\\cfs05\vcell\users  
 -Dvcell.server.dbPassword=  
 -Dvcell.server.dbUserid=vcell  
--Dvcell.server.dbDriverName=oracle.jdbc.driver.OracleDriver  
+-Dvcell.server.dbDriverName=oracle.jdbc.OracleDriver  
 -Dvcell.server.dbConnectURL=jdbc:oracle:thin:@vcell-db.cam.uchc.edu:1521:vcelldborcl  
 -Dvcell.server.id=alpha\_7.0.0\_51  
 -Dvcell.mongodb.database=TEST  

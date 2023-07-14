@@ -141,21 +141,7 @@
             <artifactId>vcell-vmicro</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <!--        <dependency>-->
-        <!--            <groupId>org.vcell</groupId>-->
-        <!--            <artifactId>vcell-admin</artifactId>-->
-        <!--            <scope>${project.version}</scope>-->
-        <!--        </dependency>-->
 
-        <!-- NB: For testing via main methods in IDEs. -->
-        <!-- Don't comment this out, it'll break the standalone (local with oracle connection) version of vcell -->
-        <dependency>
-            <groupId>org.vcell</groupId>
-            <artifactId>vcell-oracle</artifactId>
-            <version>${project.version}</version>
-            <scope>runtime</scope>
-            <optional>true</optional>
-        </dependency>
         <dependency>
             <groupId>com.konghq</groupId>
             <artifactId>unirest-java</artifactId>

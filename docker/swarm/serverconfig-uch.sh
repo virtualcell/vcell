@@ -99,7 +99,7 @@ case $VCELL_SITE in
 esac
 
 VCELL_DB_URL="jdbc:oracle:thin:@VCELL-DB.cam.uchc.edu:1521/vcelldborcl.cam.uchc.edu"
-VCELL_DB_DRIVER="oracle.jdbc.driver.OracleDriver"
+VCELL_DB_DRIVER="oracle.jdbc.OracleDriver"
 VCELL_DB_USER="vcell"
 VCELL_DEBUG_PORT_BASE=5000
 VCELL_JMS_SIM_HOST_EXTERNAL=$VCELL_API_HOST_EXTERNAL

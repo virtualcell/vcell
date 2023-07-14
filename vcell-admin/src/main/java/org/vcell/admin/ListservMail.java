@@ -162,7 +162,7 @@ public class ListservMail {
 	}
 	
 	public static ArrayList<String> queryEmails(String dbPassword) throws Exception{
-		String driverName = "oracle.jdbc.driver.OracleDriver";
+		String driverName = "oracle.jdbc.OracleDriver";
 		String host = "vcell-db.cam.uchc.edu";
 		String db = "vcelldborcl";
 		String connectURL = "jdbc:oracle:thin:@" + host + ":1521:" + db;
