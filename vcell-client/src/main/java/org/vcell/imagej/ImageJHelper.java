@@ -1,93 +1,10 @@
 package org.vcell.imagej;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.StringWriter;
-import java.net.BindException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.BitSet;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.StringTokenizer;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlInlineBinaryData;
-import javax.xml.bind.annotation.XmlRootElement;
-
-import org.apache.http.NameValuePair;
-import org.apache.http.client.utils.URLEncodedUtils;
-import org.eclipse.jetty.server.Handler;
-import org.eclipse.jetty.server.Request;
-import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.handler.AbstractHandler;
-import org.eclipse.jetty.server.handler.ContextHandler;
-import org.eclipse.jetty.server.handler.ContextHandlerCollection;
-import org.jdom.Namespace;
-import org.vcell.imagej.ImageJHelper.ApiSolverHandler.IJGeom;
-import org.vcell.util.BeanUtils;
-import org.vcell.util.Extent;
-import org.vcell.util.FileUtils;
-import org.vcell.util.Hex;
-import org.vcell.util.ISize;
-import org.vcell.util.Origin;
-import org.vcell.util.Range;
-import org.vcell.util.UserCancelException;
-import org.vcell.util.document.BioModelChildSummary;
-import org.vcell.util.document.BioModelChildSummary.MathType;
-import org.vcell.util.document.BioModelInfo;
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.MathModelInfo;
-import org.vcell.util.document.TSJobResultsNoStats;
-import org.vcell.util.document.TSJobResultsSpaceStats;
-import org.vcell.util.document.TimeSeriesJobResults;
-import org.vcell.util.document.TimeSeriesJobSpec;
-import org.vcell.util.document.User;
-import org.vcell.util.document.VCDataJobID;
-import org.vcell.util.document.VCDocument;
-import org.vcell.util.document.VCDocument.VCDocumentType;
-import org.vcell.util.document.Version;
-
 import cbit.image.DisplayAdapterService;
 import cbit.image.VCImageUncompressed;
 import cbit.image.VCPixelClass;
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.client.BioModelWindowManager;
-import cbit.vcell.client.ChildWindowManager;
-import cbit.vcell.client.ClientRequestManager;
-import cbit.vcell.client.ClientSimManager;
-import cbit.vcell.client.ClientTaskManager;
-import cbit.vcell.client.DocumentWindowManager;
-import cbit.vcell.client.FieldDataWindowManager;
-import cbit.vcell.client.MathModelWindowManager;
-import cbit.vcell.client.RequestManager;
-import cbit.vcell.client.TopLevelWindowManager;
-import cbit.vcell.client.TranslationLogger;
-import cbit.vcell.client.VCellClient;
+import cbit.vcell.client.*;
 import cbit.vcell.client.data.DataProcessingResultsPanel;
 import cbit.vcell.client.data.PDEDataViewerPostProcess;
 import cbit.vcell.client.data.PDEDataViewerPostProcess.PostProcessDataPDEDataContext;
@@ -96,8 +13,6 @@ import cbit.vcell.client.desktop.simulation.SimulationWindow;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.client.task.FinishSave;
-import cbit.vcell.client.task.SaveDocument;
-import cbit.vcell.client.test.VCellClientTest;
 import cbit.vcell.field.gui.FieldDataGUIPanel;
 import cbit.vcell.field.io.FieldDataFileOperationSpec;
 import cbit.vcell.geometry.Geometry;
@@ -116,33 +31,10 @@ import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.server.SimulationStatus;
-import cbit.vcell.simdata.ClientPDEDataContext;
-import cbit.vcell.simdata.DataIdentifier;
-import cbit.vcell.simdata.DataInfoProvider;
+import cbit.vcell.simdata.*;
 import cbit.vcell.simdata.DataOperationResults.DataProcessingOutputInfo;
-import cbit.vcell.simdata.DataServerImpl;
-import cbit.vcell.simdata.DataSetControllerImpl;
-import cbit.vcell.simdata.ODEDataBlock;
-import cbit.vcell.simdata.OutputContext;
-import cbit.vcell.simdata.PDEDataContext;
-import cbit.vcell.simdata.PDEDataManager;
-import cbit.vcell.simdata.ServerPDEDataContext;
-import cbit.vcell.simdata.SimDataBlock;
-import cbit.vcell.simdata.SimDataConstants;
-import cbit.vcell.simdata.VCDataManager;
 import cbit.vcell.simdata.gui.PDEDataContextPanel.RecodeDataForDomainInfo;
-import cbit.vcell.solver.AnnotatedFunction;
-import cbit.vcell.solver.ConstantArraySpec;
-import cbit.vcell.solver.MathOverrides;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationJob;
-import cbit.vcell.solver.SimulationModelInfo;
-import cbit.vcell.solver.SimulationOwner;
-import cbit.vcell.solver.SolverDescription;
-import cbit.vcell.solver.SolverUtilities;
-import cbit.vcell.solver.TempSimulation;
-import cbit.vcell.solver.VCSimulationDataIdentifier;
-import cbit.vcell.solver.VCSimulationIdentifier;
+import cbit.vcell.solver.*;
 import cbit.vcell.solver.ode.ODESimData;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.server.Solver;
@@ -153,6 +45,41 @@ import cbit.vcell.xml.ExternalDocInfo;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XMLTags;
 import cbit.vcell.xml.XmlHelper;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.utils.URLEncodedUtils;
+import org.eclipse.jetty.server.Handler;
+import org.eclipse.jetty.server.Request;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.handler.AbstractHandler;
+import org.eclipse.jetty.server.handler.ContextHandler;
+import org.eclipse.jetty.server.handler.ContextHandlerCollection;
+import org.jdom.Namespace;
+import org.vcell.imagej.ImageJHelper.ApiSolverHandler.IJGeom;
+import org.vcell.util.*;
+import org.vcell.util.document.*;
+import org.vcell.util.document.BioModelChildSummary.MathType;
+import org.vcell.util.document.VCDocument.VCDocumentType;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlInlineBinaryData;
+import javax.xml.bind.annotation.XmlRootElement;
+import java.io.*;
+import java.net.BindException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import java.util.Map.Entry;
 
 public class ImageJHelper {
 //	public static final String USER_ABORT = "userAbort";
@@ -934,14 +861,14 @@ public class ImageJHelper {
 			}
 	        
 //	        try {
-//				if(VCellClientTest.getVCellClient() != null){
+//				if(VCellClient.getInstance() != null){
 ////					TreeMap<String, double[]> mapObsTpData = new TreeMap<>();
 //					double[] times = null;
-//					BioModelInfo[] bioModelInfos = VCellClientTest.getVCellClient().getRequestManager().getDocumentManager().getBioModelInfos();
+//					BioModelInfo[] bioModelInfos = VCellClient.getInstance().getRequestManager().getDocumentManager().getBioModelInfos();
 //					for (int i = 0; i < bioModelInfos.length; i++) {
 //						if(bioModelInfos[i].getVersion().getName().equals("EGFR Full_Model_Compart_v3")) {
 //							System.out.println(bioModelInfos[i]);
-//							BioModel bioModel = VCellClientTest.getVCellClient().getRequestManager().getDocumentManager().getBioModel(bioModelInfos[i]);
+//							BioModel bioModel = VCellClient.getInstance().getRequestManager().getDocumentManager().getBioModel(bioModelInfos[i]);
 //							SimulationContext[] simulationContexts = bioModel.getSimulationContexts();
 //							for (int j = 0; j < simulationContexts.length; j++) {
 //								if(simulationContexts[j].getName().toLowerCase().contains("nfsim")) {
@@ -950,7 +877,7 @@ public class ImageJHelper {
 //									Simulation[] sims = simulationContext.getSimulations();
 //									for (int k = 0; k < sims.length; k++) {
 //										VCSimulationDataIdentifier vcSimulationDataIdentifier = new VCSimulationDataIdentifier(sims[k].getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), 0);
-//										ODESimData odeSimData = VCellClientTest.getVCellClient().getClientServerManager().getVCDataManager().getODEData(vcSimulationDataIdentifier);
+//										ODESimData odeSimData = VCellClient.getInstance().getClientServerManager().getVCDataManager().getODEData(vcSimulationDataIdentifier);
 //										for (int l = 0; l < odeSimData.getRowCount(); l++) {
 //											ColumnDescription columnDescription = odeSimData.getColumnDescriptions(l);
 ////											System.out.println(columnDescription.getName()+"\n-----");
@@ -977,10 +904,10 @@ public class ImageJHelper {
 //											}
 ////											System.out.println();
 //										}
-////										DataIdentifier[] dataIdentifiers = VCellClientTest.getVCellClient().getClientServerManager().getVCDataManager().getDataIdentifiers(null, vcSimulationDataIdentifier);
+////										DataIdentifier[] dataIdentifiers = VCellClient.getInstance().getClientServerManager().getVCDataManager().getDataIdentifiers(null, vcSimulationDataIdentifier);
 ////										for (int l = 0; l < dataIdentifiers.length; l++) {
 ////											if(dataIdentifiers[l].getName().toLowerCase().endsWith("_count")){
-////												VCellClientTest.getVCellClient().getClientServerManager().getVCDataManager().getODEData(dataIdentifiers[l]);
+////												VCellClient.getInstance().getClientServerManager().getVCDataManager().getODEData(dataIdentifiers[l]);
 ////											}
 ////										}
 //									}
@@ -997,7 +924,7 @@ public class ImageJHelper {
 //							}
 //						}
 //					}
-////	        	VCellClientTest.getVCellClient().getClientServerManager().getVCDataManager().
+////	        	VCellClient.getInstance().getClientServerManager().getVCDataManager().
 //				}
 //			} catch (Exception e) {
 //				// TODO Auto-generated catch block
@@ -1159,12 +1086,12 @@ public class ImageJHelper {
     								if(!ijSimInfo.isDB) {
     									KeyValue simKey = new KeyValue(ijSimInfo.simId.substring("SimId_".length()));
     									ijDataResponder = IJDataResponder.create(simKey, ResourceUtil.getLocalRootDir(), jobid);
-    								}else if(VCellClientTest.getVCellClient() != null) {
-    									ijDataResponder = IJDataResponder.create(VCellClientTest.getVCellClient(), new KeyValue(ijModelInfo.modelkey) , ijContextInfo.name, ijSimInfo.name, jobid);
+    								}else if(VCellClient.getInstance() != null) {
+    									ijDataResponder = IJDataResponder.create(VCellClient.getInstance(), new KeyValue(ijModelInfo.modelkey) , ijContextInfo.name, ijSimInfo.name, jobid);
 //    									if(ijContextInfo.name == null) {//mathmodel
-//    										KeyValue simKey = VCellClientTest.getVCellClient().getRequestManager().getDocumentManager().getMathModel(new KeyValue(ijModelInfo.modelkey)).getSimulation(ijSimInfo.name).getSimulationVersion().getVersionKey();
+//    										KeyValue simKey = VCellClient.getInstance().getRequestManager().getDocumentManager().getMathModel(new KeyValue(ijModelInfo.modelkey)).getSimulation(ijSimInfo.name).getSimulationVersion().getVersionKey();
 //    									}else {
-//    										KeyValue simKey = VCellClientTest.getVCellClient().getRequestManager().getDocumentManager().getBioModel(new KeyValue(ijModelInfo.modelkey)).getSimulationContext(ijContextInfo.name).getSimulation(ijSimInfo.name).getSimulationVersion().getVersionKey();
+//    										KeyValue simKey = VCellClient.getInstance().getRequestManager().getDocumentManager().getBioModel(new KeyValue(ijModelInfo.modelkey)).getSimulationContext(ijContextInfo.name).getSimulation(ijSimInfo.name).getSimulationVersion().getVersionKey();
 //    									}
     								}
     								break outerloop;
@@ -1413,10 +1340,10 @@ public class ImageJHelper {
 		ijContextInfos.add(new IJContextInfo(contextName,mathType,geomDim,geomName, ijSimInfos));	
 	}
 	private static void populateDesktopIJModelInfos(IJDocType docType,ArrayList<KeyValue> openVCDocumentVersionKeys,ArrayList<IJModelInfo> modelInfos) {
-		if(VCellClientTest.getVCellClient() == null) {
+		if(VCellClient.getInstance() == null) {
 			return;
 		}
-		Collection<TopLevelWindowManager> windowManagers = VCellClientTest.getVCellClient().getMdiManager().getWindowManagers();
+		Collection<TopLevelWindowManager> windowManagers = VCellClient.getInstance().getMdiManager().getWindowManagers();
 		for(TopLevelWindowManager topLevelWindowManager:windowManagers) {
 	    	if(topLevelWindowManager instanceof DocumentWindowManager) {
 	    		DocumentWindowManager documentWindowManager = (DocumentWindowManager)topLevelWindowManager;
@@ -1443,11 +1370,11 @@ public class ImageJHelper {
 	}
 	
 	private static SimulationWorkspaceModelInfo getOpenSimulationWorkspaceModelInfo(VCSimulationIdentifier quickrunKey) {
-		if(VCellClientTest.getVCellClient() == null) {
+		if(VCellClient.getInstance() == null) {
 			return null;
 		}
 //		ArrayList<SimulationWorkspaceModelInfo> result = new ArrayList<>();
-		Collection<TopLevelWindowManager> windowManagers = VCellClientTest.getVCellClient().getMdiManager().getWindowManagers();
+		Collection<TopLevelWindowManager> windowManagers = VCellClient.getInstance().getMdiManager().getWindowManagers();
 		for(TopLevelWindowManager topLevelWindowManager:windowManagers) {
 	    	if(topLevelWindowManager instanceof DocumentWindowManager) {
 	    		DocumentWindowManager documentWindowManager = (DocumentWindowManager)topLevelWindowManager;
@@ -1608,8 +1535,8 @@ public class ImageJHelper {
 							IJDocType docType = IJDocType.quick;
 							boolean bOpenOnDesktop = false;
 							//Match a local file SimID with an open model if possible
-							if(VCellClientTest.getVCellClient() != null) {
-					    		Collection<TopLevelWindowManager> windowManagers = VCellClientTest.getVCellClient().getMdiManager().getWindowManagers();
+							if(VCellClient.getInstance() != null) {
+					    		Collection<TopLevelWindowManager> windowManagers = VCellClient.getInstance().getMdiManager().getWindowManagers();
 					    		for(TopLevelWindowManager topLevelWindowManager:windowManagers) {
 					    			if(topLevelWindowManager.getComponent() != null && topLevelWindowManager instanceof DocumentWindowManager) {//can be null for databseWinManger or FieldDataWindowMangr if they are not showing
 					    				DocumentWindowManager documentWindowManager = (DocumentWindowManager)topLevelWindowManager;
@@ -1648,8 +1575,8 @@ public class ImageJHelper {
 			    }
 				
 			}
-			if(VCellClientTest.getVCellClient() != null) {
-			    RequestManager requestManager = VCellClientTest.getVCellClient().getRequestManager();
+			if(VCellClient.getInstance() != null) {
+			    RequestManager requestManager = VCellClient.getInstance().getRequestManager();
 			    if(ijDocType == null || ijDocType == IJDocType.bm) {
 			        BioModelInfo[] bioModelInfos = requestManager.getDocumentManager().getBioModelInfos();
 			        for(BioModelInfo bioModelInfo:bioModelInfos) {
@@ -2457,7 +2384,7 @@ public class ImageJHelper {
 				        							    		baseRequest.setHandled(true);
 				        							    		return;
 				        									}
-				        									ijDataResponder = IJDataResponder.create(VCellClientTest.getVCellClient(), new KeyValue(ijModelInfo.modelkey), ijContextInfo.name/*null for mathmodel*/, ijSimInfo.name, jobIndex);
+				        									ijDataResponder = IJDataResponder.create(VCellClient.getInstance(), new KeyValue(ijModelInfo.modelkey), ijContextInfo.name/*null for mathmodel*/, ijSimInfo.name, jobIndex);
 				        								}
 			        								if(ijDataResponder != null) {
 		        										if(decodedVarNames!=null/* && timepoint != null*/){
@@ -2505,7 +2432,7 @@ public class ImageJHelper {
     		response.setContentType("text/plain; charset=utf-8");
     		response.setStatus(HttpServletResponse.SC_OK);
     		response.getWriter().write("VCellApi");
-    		//response.getWriter().write("VCellApi:"+VCellClientTest.getVCellClient().getRequestManager().getDocumentManager().getUser().getName());
+    		//response.getWriter().write("VCellApi:"+VCellClient.getInstance().getRequestManager().getDocumentManager().getUser().getName());
     		baseRequest.setHandled(true);
 
 		}
@@ -2660,7 +2587,7 @@ public class ImageJHelper {
 		    					solverCache.remove(vcSimIds[0]);
 		    				}
 	    				}else if(solver != null & solver instanceof KeyValue) {//remote run, Assume vcSimID is token put in solver cache
-	    					SimulationStatus[] updatedSimStatus = VCellClientTest.getVCellClient().getClientServerManager().getSimulationController().getSimulationStatus(new KeyValue[] {((KeyValue)solver)});
+	    					SimulationStatus[] updatedSimStatus = VCellClient.getInstance().getClientServerManager().getSimulationController().getSimulationStatus(new KeyValue[] {((KeyValue)solver)});
 	    					if(updatedSimStatus != null && updatedSimStatus.length>0) {
 		    					ArrayList<IJSimStatus> jobsArr = new ArrayList<>();
 		    					for (int i = 0; i < updatedSimStatus.length; i++) {
@@ -2673,7 +2600,7 @@ public class ImageJHelper {
 	    				} else {//running sim not started by an external script, Assume vcSimID is the actual simulation key
 	    					try {
 	    						final KeyValue keyValue = new KeyValue(vcSimIds[0]);
-	    						SimulationStatus[] updatedSimStatus = VCellClientTest.getVCellClient().getClientServerManager().getSimulationController().getSimulationStatus(new KeyValue[] {keyValue});
+	    						SimulationStatus[] updatedSimStatus = VCellClient.getInstance().getClientServerManager().getSimulationController().getSimulationStatus(new KeyValue[] {keyValue});
 		    					if(updatedSimStatus != null && updatedSimStatus.length>0) {
 			    					ArrayList<IJSimStatus> jobsArr = new ArrayList<>();
 			    					for(int i=0;i<1000;i++) {
@@ -2697,11 +2624,11 @@ public class ImageJHelper {
 					//save FieldData
 					if("POST".equals(request.getMethod())){//Geometry being sent
 						IJFieldData ijFieldData = (IJFieldData)jaxbContext.createUnmarshaller().unmarshal(request.getInputStream());
-						FieldDataWindowManager fieldDataWindowManager = VCellClientTest.getVCellClient().getMdiManager().getFieldDataWindowManager();
+						FieldDataWindowManager fieldDataWindowManager = VCellClient.getInstance().getMdiManager().getFieldDataWindowManager();
 						fieldDataWindowManager.getFieldDataGUIPanel().checkFieldDataName(ijFieldData.fdName);
-						AsynchClientTask[] tasks = FieldDataGUIPanel.addNewExternalData(VCellClientTest.getVCellClient().getMdiManager().getFocusedWindowManager().getComponent(), fieldDataWindowManager.getFieldDataGUIPanel(), false);
+						AsynchClientTask[] tasks = FieldDataGUIPanel.addNewExternalData(VCellClient.getInstance().getMdiManager().getFocusedWindowManager().getComponent(), fieldDataWindowManager.getFieldDataGUIPanel(), false);
 						FieldDataFileOperationSpec fdos = new FieldDataFileOperationSpec();
-						fdos.owner = VCellClientTest.getVCellClient().getRequestManager().getDocumentManager().getUser();
+						fdos.owner = VCellClient.getInstance().getRequestManager().getDocumentManager().getUser();
 						fdos.opType = FieldDataFileOperationSpec.FDOS_ADD;
 						fdos.variableTypes = new VariableType[] {VariableType.VOLUME};
 						fdos.varNames = ijFieldData.varNames;
@@ -2721,7 +2648,7 @@ public class ImageJHelper {
 						return;
 					}
 	    		}else if(target.startsWith("/bycachekey")) {//vcDocument = (simContextName != null?vCellClient.getRequestManager().getDocumentManager().getBioModel(modelKey):vCellClient.getRequestManager().getDocumentManager().getMathModel(modelKey));
-	    			if(VCellClientTest.getVCellClient() == null) {
+	    			if(VCellClient.getInstance() == null) {
 	    				generalResponse(bResponseHolder,baseRequest,response, HttpServletResponse.SC_BAD_REQUEST,TYPE_TEXT_PLAIN_UTF8, "Must be logged in to start solver");
 	    			}else {
 		    			String[] cachekeys = request.getParameterValues("cachekey");
@@ -2746,10 +2673,10 @@ public class ImageJHelper {
     			    						for(IJSimInfo ijSimInfo:ijContextInfo.ijSimId) {
     			    							if(ijSimInfo.cacheKey == cachekey) {
 			    									if(ijContextInfo.name == null) {//mathmodel
-			    										MathModel mathModel = (MathModel)getVCDocument(new KeyValue(ijModelInfo.modelkey));//VCellClientTest.getVCellClient().getRequestManager().getDocumentManager().getMathModel(new KeyValue(ijModelInfo.modelkey));
+			    										MathModel mathModel = (MathModel)getVCDocument(new KeyValue(ijModelInfo.modelkey));//VCellClient.getInstance().getRequestManager().getDocumentManager().getMathModel(new KeyValue(ijModelInfo.modelkey));
 														newsim = mathModel.getSimulation(ijSimInfo.name);
 			    									}else {
-			    										BioModel bioModel = (BioModel)getVCDocument(new KeyValue(ijModelInfo.modelkey));//VCellClientTest.getVCellClient().getRequestManager().getDocumentManager().getBioModel(new KeyValue(ijModelInfo.modelkey));
+			    										BioModel bioModel = (BioModel)getVCDocument(new KeyValue(ijModelInfo.modelkey));//VCellClient.getInstance().getRequestManager().getDocumentManager().getBioModel(new KeyValue(ijModelInfo.modelkey));
 														newsim = bioModel.getSimulationContext(ijContextInfo.name).getSimulation(ijSimInfo.name);
 			    									}
     			    								break modelInfoCacheLoop;
@@ -2765,11 +2692,11 @@ public class ImageJHelper {
 	    					return;
 	    				}
 	    				
-//		    			BioModelInfo[] bioModelInfos = VCellClientTest.getVCellClient().getRequestManager().getDocumentManager().getBioModelInfos();
+//		    			BioModelInfo[] bioModelInfos = VCellClient.getInstance().getRequestManager().getDocumentManager().getBioModelInfos();
 //		    			getout: //label this loop to jump out
 //		    			for (BioModelInfo bioModelInfo : bioModelInfos) {
 //							if(bioModelInfo.getVersion().getOwner().getName().equals("frm") && bioModelInfo.getVersion().getName().equals("Tutorial_FRAP")) {
-//								BioModel frapBioModel = VCellClientTest.getVCellClient().getRequestManager().getDocumentManager().getBioModel(bioModelInfo);
+//								BioModel frapBioModel = VCellClient.getInstance().getRequestManager().getDocumentManager().getBioModel(bioModelInfo);
 //								Simulation[] simulations = frapBioModel.getSimulations();
 //								for (Simulation simulation : simulations) {
 //									if(simulation.getName().equals("FRAP")) {
@@ -2880,7 +2807,7 @@ public class ImageJHelper {
 					if (xmlType.equals(XMLTags.SbmlRootNodeTag)) {
 						Namespace namespace = rootElement.getNamespace(XMLTags.SBML_SPATIAL_NS_PREFIX);
 						boolean bIsSpatial = (namespace==null) ? false : true;
-						TranslationLogger translationLogger = new TranslationLogger((VCellClientTest.getVCellClient() == null?null:VCellClientTest.getVCellClient().getMdiManager().getFocusedWindowManager()));
+						TranslationLogger translationLogger = new TranslationLogger((VCellClient.getInstance() == null?null: VCellClient.getInstance().getMdiManager().getFocusedWindowManager()));
 						VCDocument vcDoc = XmlHelper.importSBML(translationLogger, xmlSource, bIsSpatial);
 				    	if(vcDoc instanceof BioModel){
 					    	SimulationContext simContext = ((BioModel)vcDoc).getSimulationContext(0);
@@ -2925,7 +2852,7 @@ public class ImageJHelper {
 		}
 
 		private VCDocument getVCDocument(KeyValue vcDocumentKey) {
-			Collection<TopLevelWindowManager> windowManagers = VCellClientTest.getVCellClient().getMdiManager().getWindowManagers();
+			Collection<TopLevelWindowManager> windowManagers = VCellClient.getInstance().getMdiManager().getWindowManagers();
 			for(TopLevelWindowManager topLevelWindowManager:windowManagers) {
 		    	if(topLevelWindowManager instanceof DocumentWindowManager) {
 		    		DocumentWindowManager documentWindowManager = (DocumentWindowManager)topLevelWindowManager;
@@ -2940,7 +2867,7 @@ public class ImageJHelper {
 		}
 		
 		private IJSimStatus runRemote(Simulation newsim,boolean bSaveOnly) throws Exception{
-			Collection<TopLevelWindowManager> windowManagers = VCellClientTest.getVCellClient().getMdiManager().getWindowManagers();
+			Collection<TopLevelWindowManager> windowManagers = VCellClient.getInstance().getMdiManager().getWindowManagers();
 			for(TopLevelWindowManager topLevelWindowManager:windowManagers) {
 		    	if(topLevelWindowManager instanceof DocumentWindowManager) {
 		    		DocumentWindowManager documentWindowManager = (DocumentWindowManager)topLevelWindowManager;
@@ -3025,7 +2952,7 @@ public class ImageJHelper {
 //							Simulation[] tempSims = ((BioModel)documentWindowManager.getVCDocument()).getSimulations();
 //							for (int i = 0; i < tempSims.length; i++) {
 //								if(tempSims[i].getName().equals(newsim.getName()) && tempSims[i].getSimulationOwner().getName().equals(newsim.getSimulationOwner().getName())) {
-//									updatedSimStatus = VCellClientTest.getVCellClient().getClientServerManager().getSimulationController().getSimulationStatus(tempSims[i].getVersion().getVersionKey());
+//									updatedSimStatus = VCellClient.getInstance().getClientServerManager().getSimulationController().getSimulationStatus(tempSims[i].getVersion().getVersionKey());
 //									break;
 //								}
 //							}
