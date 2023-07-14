@@ -10,19 +10,24 @@
 
 package cbit.vcell.client.desktop.simulation;
 
-import java.awt.Component;
-import java.awt.Dimension;
-import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.Hashtable;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
-
-import javax.swing.JScrollPane;
-
+import cbit.vcell.client.*;
+import cbit.vcell.client.ClientSimManager.ViewerType;
+import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.geometry.ChomboInvalidGeometryException;
+import cbit.vcell.geometry.Geometry;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
+import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
+import cbit.vcell.math.*;
+import cbit.vcell.mathmodel.MathModel;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionBindingException;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.server.SimulationStatus;
+import cbit.vcell.simdata.OutputContext;
+import cbit.vcell.solver.*;
+import edu.uchc.connjur.spectrumtranslator.CodeUtil;
 import org.vcell.chombo.ChomboMeshValidator;
 import org.vcell.chombo.ChomboMeshValidator.ChomboMeshRecommendation;
 import org.vcell.util.PropertyChangeListenerProxyVCell;
@@ -31,47 +36,11 @@ import org.vcell.util.document.User;
 import org.vcell.util.document.User.SPECIAL_CLAIM;
 import org.vcell.util.gui.DialogUtils;
 
-import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.client.ClientSimManager;
-import cbit.vcell.client.ClientSimManager.ViewerType;
-import cbit.vcell.client.test.VCellClientTest;
-import cbit.vcell.client.DocumentWindowManager;
-import cbit.vcell.client.PopupGenerator;
-import cbit.vcell.client.UserMessage;
-import cbit.vcell.client.task.AsynchClientTask;
-import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.vcell.geometry.ChomboInvalidGeometryException;
-import cbit.vcell.geometry.Geometry;
-import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
-import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
-import cbit.vcell.math.Constant;
-import cbit.vcell.math.Function;
-import cbit.vcell.math.JumpProcess;
-import cbit.vcell.math.MathException;
-import cbit.vcell.math.SubDomain;
-import cbit.vcell.math.VarIniCondition;
-import cbit.vcell.math.Variable;
-import cbit.vcell.math.VolVariable;
-import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionBindingException;
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.server.SimulationStatus;
-import cbit.vcell.simdata.OutputContext;
-import cbit.vcell.solver.AnnotatedFunction;
-import cbit.vcell.solver.DefaultOutputTimeSpec;
-import cbit.vcell.solver.MathOverrides;
-import cbit.vcell.solver.MeshSpecification;
-import cbit.vcell.solver.OutputTimeSpec;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationOwner;
-import cbit.vcell.solver.SimulationSymbolTable;
-import cbit.vcell.solver.SolverDescription;
-import cbit.vcell.solver.SolverTaskDescription;
-import cbit.vcell.solver.TimeBounds;
-import cbit.vcell.solver.UniformOutputTimeSpec;
-import edu.uchc.connjur.spectrumtranslator.CodeUtil;
+import javax.swing.*;
+import java.awt.*;
+import java.beans.PropertyChangeListener;
+import java.util.List;
+import java.util.*;
 
 public class SimulationWorkspace implements java.beans.PropertyChangeListener {
 	public static final String PROPERTY_NAME_SIMULATION_STATUS = "status";
@@ -821,8 +790,8 @@ void runSimulations(Simulation[] sims, Component parent) {
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			boolean bCheckLimits = true;
 			try {
-				User loginUser = VCellClientTest.getVCellClient().getClientServerManager().getUser();
-				TreeMap<SPECIAL_CLAIM, TreeMap<User, String>> specialUsers = VCellClientTest.getVCellClient().getClientServerManager().getUserMetaDbServer().getSpecialUsers();
+				User loginUser = VCellClient.getInstance().getClientServerManager().getUser();
+				TreeMap<SPECIAL_CLAIM, TreeMap<User, String>> specialUsers = VCellClient.getInstance().getClientServerManager().getUserMetaDbServer().getSpecialUsers();
 				TreeMap<User, String> powerUsers = specialUsers.get(SPECIAL_CLAIM.powerUsers);
 				if(powerUsers != null && powerUsers.containsKey(loginUser)) {
 					bCheckLimits = false;
@@ -831,7 +800,7 @@ void runSimulations(Simulation[] sims, Component parent) {
 				e.printStackTrace();
 				return;
 			}
-			hashTable.put("CHECKLIMITS", new Boolean(bCheckLimits));
+			hashTable.put("CHECKLIMITS", bCheckLimits);
 		}
 	};
 	

@@ -12,9 +12,9 @@
 package cbit.vcell.solver.ode.gui;
 
 import cbit.vcell.client.ClientTaskManager;
+import cbit.vcell.client.VCellClient;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.vcell.client.test.VCellClientTest;
 import cbit.vcell.geometry.ChomboInvalidGeometryException;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.math.Constant;
@@ -139,14 +139,11 @@ public class SolverTaskDescriptionAdvancedPanel extends javax.swing.JPanel {
 				if (e.getStateChange() == ItemEvent.SELECTED) {
 					connEtoM6(e);
 				}
-			}
-			else if (e.getSource() == serialParameterScanCheckBox) {
+			} else if (e.getSource() == serialParameterScanCheckBox) {
 				getSolverTaskDescription().setSerialParameterScan(serialParameterScanCheckBox.isSelected());
-			}
-			else if (e.getSource() == timeoutDisabledCheckBox) {
+			} else if (e.getSource() == timeoutDisabledCheckBox) {
 				getSolverTaskDescription().setTimeoutDisabled(timeoutDisabledCheckBox.isSelected());
-			}
-			else if (e.getSource() == borderExtrapolationDisabledChkBox) {
+			} else if (e.getSource() == borderExtrapolationDisabledChkBox) {
 				getSolverTaskDescription().setBorderExtrapolationDisabled(borderExtrapolationDisabledChkBox.isSelected());
 			}
 
@@ -682,25 +679,25 @@ private ChomboTimeBoundsPanel getChomboTimeBoundsPanel()
 private JPanel getGeneralAndDeverloperToolsPanel()
 {
 	JPanel panel = new JPanel(new GridBagLayout());
-	
+
 	GridBagConstraints gbc = new java.awt.GridBagConstraints();
-	gbc.gridx = 0; 
+	gbc.gridx = 0;
 	gbc.gridy = 0;
 	gbc.fill = java.awt.GridBagConstraints.BOTH;
 	gbc.weightx = 1.0;
 	gbc.weighty = 1.0;
 	gbc.insets = new java.awt.Insets(4, 4, 4, 4);
 	panel.add(getGeneralOptionsPanel(), gbc);
-	
+
 	gbc = new java.awt.GridBagConstraints();
-	gbc.gridx = 1; 
+	gbc.gridx = 1;
 	gbc.gridy = 0;
 	gbc.fill = java.awt.GridBagConstraints.BOTH;
 	gbc.weightx = 1.0;
 	gbc.weighty = 1.0;
 	gbc.insets = new java.awt.Insets(4, 4, 4, 4);
 	panel.add(getChomboDeveloperToolsPanel(), gbc);
-	
+
 	return panel;
 }
 
@@ -726,7 +723,7 @@ private CollapsiblePanel getGeneralOptionsPanel() {
 		gbc.anchor = GridBagConstraints.WEST;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		generalOptionsPanel.getContentPanel().add(timeoutDisabledCheckBox, gbc);
-		
+
 		timeoutDisabledHelpButton = new JButton("<html><b>&nbsp;&nbsp;?&nbsp;&nbsp;</b></html>");
 		Font font = timeoutDisabledHelpButton.getFont().deriveFont(Font.BOLD);
 		Border border = BorderFactory.createEmptyBorder(1, 1, 1, 1);
@@ -739,7 +736,7 @@ private CollapsiblePanel getGeneralOptionsPanel() {
 		gbc_1.weightx = 0;
 		gbc_1.insets = new java.awt.Insets(3, 5, 6, 6);
 		generalOptionsPanel.getContentPanel().add(timeoutDisabledHelpButton, gbc_1);
-		
+
 		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 2;
 		gbc.gridy = 1;
@@ -747,7 +744,7 @@ private CollapsiblePanel getGeneralOptionsPanel() {
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.insets = new java.awt.Insets(3, 0, 6, 6);
 		generalOptionsPanel.getContentPanel().add(new JLabel(""), gbc);
-		
+
 		int gridx = 3;
 		java.awt.GridBagConstraints constraintsTimeStepPanel = new java.awt.GridBagConstraints();
 		constraintsTimeStepPanel.gridx = gridx;
@@ -858,7 +855,7 @@ private void initialize() {
 		gbc1.weightx = 1.0;
 		gbc1.insets = new java.awt.Insets(3, 4, 3, 4);
 		add(getGeneralAndDeverloperToolsPanel(), gbc1);
-		
+
 		gridy ++;
 		GridBagConstraints gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 0;
@@ -930,7 +927,7 @@ private void initialize() {
 		gbc.weightx = 1.0;
 		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getSmoldynSimulationOptionsPanel(), gbc);
-		
+
 		gridy ++;
 		movingBoundarySolverOptionsPanel = new MovingBoundarySolverOptionsPanel();
 		gbc = new java.awt.GridBagConstraints();
@@ -1103,7 +1100,7 @@ private void refresh() {
 	} else {
 		serialParameterScanCheckBox.setVisible(false);
 	}
-	
+
 	boolean bBorderExtrapolationVisible = !ivjTornOffSolverTaskDescription.getSolverDescription().isNFSimSolver();
 	borderExtrapolationDisabledChkBox.setVisible(bBorderExtrapolationVisible);
 	boolean bBorderExtrapolationDisabled = ivjTornOffSolverTaskDescription.isBorderExtrapolationDisabled();
@@ -1119,22 +1116,22 @@ private void refresh() {
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			try {
-				User loginUser = VCellClientTest.getVCellClient().getClientServerManager().getUser();
-				TreeMap<User.SPECIAL_CLAIM, TreeMap<User, String>> specialUsers = VCellClientTest.getVCellClient().getClientServerManager().getUserMetaDbServer().getSpecialUsers();
+				User loginUser = VCellClient.getInstance().getClientServerManager().getUser();
+				TreeMap<User.SPECIAL_CLAIM, TreeMap<User, String>> specialUsers = VCellClient.getInstance().getClientServerManager().getUserMetaDbServer().getSpecialUsers();
 				TreeMap<User, String> powerUsers = specialUsers.get(User.SPECIAL_CLAIM.powerUsers);
 				if(powerUsers != null && powerUsers.containsKey(loginUser)) {
-					hashTable.put(TIMEOUT_DISABLE, new Boolean(true));
+					hashTable.put(TIMEOUT_DISABLE, true);
 				}
 			} catch (Exception e) {
-				e.printStackTrace();	// we don't want to make a fuss if it happens
+				e.printStackTrace();    // we don't want to make a fuss if it happens
 			}
 		}
 	};
 	AsynchClientTask checkboxSetTask = new AsynchClientTask("checkboxSetTask",AsynchClientTask.TASKTYPE_SWING_BLOCKING,false) {
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			if(hashTable.get(TIMEOUT_DISABLE) != null && hashTable.get(TIMEOUT_DISABLE) instanceof Boolean && ((Boolean)hashTable.get(TIMEOUT_DISABLE)).booleanValue()) {	
-				timeoutDisabledCheckBox.setEnabled(true);		
+			if(hashTable.get(TIMEOUT_DISABLE) != null && hashTable.get(TIMEOUT_DISABLE) instanceof Boolean && ((Boolean)hashTable.get(TIMEOUT_DISABLE)).booleanValue()) {
+				timeoutDisabledCheckBox.setEnabled(true);
 			}
 		}
 	};
@@ -1144,15 +1141,12 @@ private void refresh() {
 	getMiscPanel().setVisible(supportedFeatures.contains(SolverFeature.Feature_SerialParameterScans)
 			|| supportedFeatures.contains(SolverFeature.Feature_StopAtSpatiallyUniform)
 			|| supportedFeatures.contains(SolverFeature.Feature_DataProcessingInstructions));
-	if (getSolverTaskDescription().getSolverDescription().isChomboSolver())
-	{
+	if (getSolverTaskDescription().getSolverDescription().isChomboSolver()) {
 		getTimeBoundsPanel().setVisible(false);
 		getTimeStepPanel().setVisible(false);
 		getChomboTimeBoundsPanel().setVisible(true);
 		getChomboDeveloperToolsPanel().setVisible(true);
-	}
-	else
-	{
+	} else {
 		getTimeBoundsPanel().setVisible(true);
 		getTimeStepPanel().setVisible(true);
 		getChomboTimeBoundsPanel().setVisible(false);
@@ -1249,15 +1243,15 @@ private void updateSensitivityAnalysisComboBox() {
 
 				//Sort Constants, ignore case
 				TreeSet<String> sortedConstants = new TreeSet<String>(
-					new Comparator<String>(){
-						public int compare(String o1, String o2){
-							int ignoreCaseB = o1.compareToIgnoreCase(o2);
-							if (ignoreCaseB == 0){
-								return o1.compareTo(o2);
+						new Comparator<String>(){
+							public int compare(String o1, String o2){
+								int ignoreCaseB = o1.compareToIgnoreCase(o2);
+								if (ignoreCaseB == 0){
+									return o1.compareTo(o2);
+								}
+								return ignoreCaseB;
 							}
-							return ignoreCaseB;
 						}
-					}
 				);
 				while (enum1.hasMoreElements()) {
 					Constant constant = (Constant) enum1.nextElement();
@@ -1305,8 +1299,8 @@ private void updateSensitivityParameterDisplay(Constant sensParam) {
 
 private Constant getSelectedSensitivityParameter(String constantName) {
 	if (getSolverTaskDescription()!=null &&
-		getSolverTaskDescription().getSimulation()!=null &&
-		getSolverTaskDescription().getSimulation().getMathDescription()!=null){
+			getSolverTaskDescription().getSimulation()!=null &&
+			getSolverTaskDescription().getSimulation().getMathDescription()!=null){
 
 		if (constantName != null){
 			Enumeration<Constant> enum1 = getSolverTaskDescription().getSimulation().getMathDescription().getConstants();
@@ -1368,21 +1362,20 @@ private ChomboDeveloperToolsPanel getChomboDeveloperToolsPanel() {
 		if (solverDescription != null && solverDescription.isChomboSolver()) {
 			Simulation sim = fieldSolverTaskDescription.getSimulation();
 			Geometry geometry = sim.getMathDescription().getGeometry();
-			ChomboMeshValidator meshValidator = fieldSolverTaskDescription.getChomboSolverSpec() == null 
+			ChomboMeshValidator meshValidator = fieldSolverTaskDescription.getChomboSolverSpec() == null
 					? new ChomboMeshValidator(geometry.getDimension(), geometry.getExtent(), ChomboSolverSpec.DEFAULT_BLOCK_FACTOR)
-					: new ChomboMeshValidator(geometry, fieldSolverTaskDescription.getChomboSolverSpec()); 
+					: new ChomboMeshValidator(geometry, fieldSolverTaskDescription.getChomboSolverSpec());
 			ChomboMeshRecommendation chomboMeshRecommendation = meshValidator.computeMeshSpecs();
-			if (!chomboMeshRecommendation.validate())
-			{
+			if (!chomboMeshRecommendation.validate()) {
 				String option = DialogUtils.showWarningDialog(this, "Warning", chomboMeshRecommendation.getErrorMessage(), chomboMeshRecommendation.getDialogOptions(), ChomboMeshRecommendation.optionClose);
-				if (ChomboMeshRecommendation.optionSuggestions.equals(option))
-				{
+				if (ChomboMeshRecommendation.optionSuggestions.equals(option)) {
 					DialogUtils.showInfoDialog(this, ChomboMeshRecommendation.optionSuggestions, chomboMeshRecommendation.getMeshSuggestions());
 				}
 				throw new ChomboInvalidGeometryException(chomboMeshRecommendation);
 			}
 		}
 	}
+
 	private JCheckBox getBorderExtrapolationDisabledChkBox() {
 		if (borderExtrapolationDisabledChkBox == null) {
 			borderExtrapolationDisabledChkBox = new JCheckBox("Disable Border Extrapolation");

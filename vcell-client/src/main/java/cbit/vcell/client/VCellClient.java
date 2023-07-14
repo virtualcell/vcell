@@ -53,6 +53,15 @@ public class VCellClient {
 	private StatusUpdater statusUpdater = null;
 	private RequestManager requestManager = null;
 	private MDIManager mdiManager = null;
+
+	private static VCellClient instance = null;
+
+	public static void setInstance(VCellClient instance) {
+		VCellClient.instance = instance;
+	}
+	public static VCellClient getInstance() {
+		return instance;
+	}
 	
 	public static class CheckThreadViolationRepaintManager extends RepaintManager {
 	    // it is recommended to pass the complete check  
@@ -216,12 +225,6 @@ private void setStatusUpdater(StatusUpdater newStatusUpdater) {
 	statusUpdater = newStatusUpdater;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (5/5/2004 3:51:06 PM)
- * @param bioModel cbit.vcell.biomodel.BioModel
- */
 public static VCellClient startClient(final VCDocument startupDoc, final ClientServerInfo clientServerInfo) {
 	/* Set Look and Feel */
 	VCellLookAndFeel.setVCellLookAndFeel();

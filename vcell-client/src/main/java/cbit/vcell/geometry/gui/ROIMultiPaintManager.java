@@ -10,22 +10,54 @@
 
 package cbit.vcell.geometry.gui;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.Toolkit;
+import cbit.image.*;
+import cbit.vcell.VirtualMicroscopy.Image.ImageStatistics;
+import cbit.vcell.VirtualMicroscopy.ImageDataset;
+import cbit.vcell.VirtualMicroscopy.ROI;
+import cbit.vcell.VirtualMicroscopy.UShortImage;
+import cbit.vcell.client.ClientRequestManager;
+import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.VCellClient;
+import cbit.vcell.client.desktop.DocumentWindow;
+import cbit.vcell.client.server.UserPreferences;
+import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.clientdb.DocumentManager;
+import cbit.vcell.field.FieldDataDBOperationResults;
+import cbit.vcell.field.FieldDataDBOperationSpec;
+import cbit.vcell.field.io.FieldDataFileOperationResults;
+import cbit.vcell.field.io.FieldDataFileOperationSpec;
+import cbit.vcell.geometry.AnalyticSubVolume;
+import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.RegionImage;
+import cbit.vcell.geometry.RegionImage.RegionInfo;
+import cbit.vcell.geometry.surface.Polygon;
+import cbit.vcell.geometry.surface.*;
+import cbit.vcell.mapping.SpeciesContextSpec;
+import cbit.vcell.mapping.gui.InitialConditionsPanel;
+import cbit.vcell.math.VariableType;
+import cbit.vcell.render.Vect3d;
+import cbit.vcell.resource.OperatingSystemInfo;
+import cbit.vcell.simdata.SimDataBlock;
+import cbit.vcell.solvers.CartesianMesh;
+import org.apache.commons.io.FilenameUtils;
+import org.vcell.util.*;
+import org.vcell.util.document.ExternalDataIdentifier;
+import org.vcell.util.document.VCDocument;
+import org.vcell.util.document.VCDocument.VCDocumentType;
+import org.vcell.util.gui.AsynchProgressPopup;
+import org.vcell.util.gui.DialogUtils;
+
+import javax.imageio.ImageIO;
+import javax.media.jai.InterpolationNearest;
+import javax.media.jai.PlanarImage;
+import javax.media.jai.operator.BorderDescriptor;
+import javax.media.jai.operator.ScaleDescriptor;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.awt.image.DataBufferUShort;
@@ -36,93 +68,8 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.BitSet;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.TreeMap;
-import java.util.TreeSet;
-import java.util.Vector;
-
-import javax.imageio.ImageIO;
-import javax.media.jai.InterpolationNearest;
-import javax.media.jai.PlanarImage;
-import javax.media.jai.operator.BorderDescriptor;
-import javax.media.jai.operator.ScaleDescriptor;
-import javax.swing.DefaultListSelectionModel;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JFileChooser;
-import javax.swing.JList;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.ListSelectionModel;
-import javax.swing.SwingUtilities;
-import javax.swing.WindowConstants;
-
-import org.apache.commons.io.FilenameUtils;
-import org.vcell.util.BeanUtils;
-import org.vcell.util.ClientTaskStatusSupport;
-import org.vcell.util.Coordinate;
-import org.vcell.util.CoordinateIndex;
-import org.vcell.util.Extent;
-import org.vcell.util.ISize;
-import org.vcell.util.Origin;
-import org.vcell.util.ProgressDialogListener;
-import org.vcell.util.Range;
-import org.vcell.util.TokenMangler;
-import org.vcell.util.UserCancelException;
-import org.vcell.util.UtilCancelException;
-import org.vcell.util.document.ExternalDataIdentifier;
-import org.vcell.util.document.VCDocument;
-import org.vcell.util.document.VCDocument.VCDocumentType;
-import org.vcell.util.gui.AsynchProgressPopup;
-import org.vcell.util.gui.DialogUtils;
-
-import cbit.image.ImageException;
-import cbit.image.ImageSizeInfo;
-import cbit.image.VCImage;
-import cbit.image.VCImageUncompressed;
-import cbit.image.VCPixelClass;
-import cbit.vcell.VirtualMicroscopy.Image.ImageStatistics;
-import cbit.vcell.VirtualMicroscopy.ImageDataset;
-import cbit.vcell.VirtualMicroscopy.ROI;
-import cbit.vcell.VirtualMicroscopy.UShortImage;
-import cbit.vcell.client.ClientRequestManager;
-import cbit.vcell.client.PopupGenerator;
-import cbit.vcell.client.desktop.DocumentWindow;
-import cbit.vcell.client.server.UserPreferences;
-import cbit.vcell.client.task.AsynchClientTask;
-import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.vcell.client.test.VCellClientTest;
-import cbit.vcell.clientdb.DocumentManager;
-import cbit.vcell.field.FieldDataDBOperationResults;
-import cbit.vcell.field.FieldDataDBOperationSpec;
-import cbit.vcell.field.io.FieldDataFileOperationResults;
-import cbit.vcell.field.io.FieldDataFileOperationSpec;
-import cbit.vcell.geometry.AnalyticSubVolume;
-import cbit.vcell.geometry.Geometry;
-import cbit.vcell.geometry.RegionImage;
-import cbit.vcell.geometry.RegionImage.RegionInfo;
-import cbit.vcell.geometry.surface.BoundingBox;
-import cbit.vcell.geometry.surface.Node;
-import cbit.vcell.geometry.surface.OrigSurface;
-import cbit.vcell.geometry.surface.Polygon;
-import cbit.vcell.geometry.surface.Surface;
-import cbit.vcell.geometry.surface.SurfaceCollection;
-import cbit.vcell.mapping.SpeciesContextSpec;
-import cbit.vcell.mapping.gui.InitialConditionsPanel;
-import cbit.vcell.math.VariableType;
-import cbit.vcell.render.Vect3d;
-import cbit.vcell.resource.OperatingSystemInfo;
-import cbit.vcell.simdata.SimDataBlock;
-import cbit.vcell.solvers.CartesianMesh;
+import java.util.*;
 
 public class ROIMultiPaintManager implements PropertyChangeListener{
 
@@ -130,7 +77,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 
 	private static final String RESERVED_NAME_BACKGROUND = "background";
 	private static final boolean B_DISPLAY_ZERO_INDEX_Z = false;
-	
+
 	private OverlayEditorPanelJAI overlayEditorPanelJAI;
 	private BufferedImage[] roiComposite;
 	private static IndexColorModel indexColorModel;
@@ -146,18 +93,19 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 	private GeometryAttributes editedGeometryAttributes;
 	private OverlayEditorPanelJAI.AllPixelValuesRange[] allPixelValuesRangeChannels;
 	private TreeMap<Integer, Integer>[] condensedBinsMapChannels;
-	
+
 	private static final Extent DEFAULT_EXTENT = new Extent(1,1,1);
 	private static final Origin DEFAULT_ORIGIN = new Origin(0,0,0);
 
 	private AsynchProgressPopup progressWaitPopup;
-	
+
 	public static class SelectImgInfo{
 		private MouseEvent mouseEvent;
 //		private double zoom;
-		private JList resolvedList;
+private JList resolvedList;
 		private Rectangle selectionRectangle;
 		boolean bIgnoreIfSelected;
+
 		public SelectImgInfo(MouseEvent mouseEvent,/*MouseEvent mouseEvent, double zoom,*/JList resolvedList,Rectangle selectionRectangle,boolean bIgnoreIfSelected) {
 			super();
 			this.mouseEvent = mouseEvent;
@@ -166,22 +114,26 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			this.selectionRectangle = selectionRectangle;
 			this.bIgnoreIfSelected = bIgnoreIfSelected;
 		}
+
 		public MouseEvent getMouseEvent() {
 			return mouseEvent;
 		}
 //		public double getZoom() {
 //			return zoom;
 //		}
-		public JList getResolvedList(){
-			return resolvedList;
-		}
+public JList getResolvedList(){
+	return resolvedList;
+}
+
 		public Rectangle getRectangle(){
 			return selectionRectangle;
 		}
+
 		public boolean isIgnoreIfSelected(){
 			return bIgnoreIfSelected;
 		}
 	}
+
 	public static class BoxBlurFilter{
 		//This code originated from
 		//http://www.jhlabs.com/ip/blurring.html
@@ -196,69 +148,74 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 //	        }
 //	        return divide;
 //		}
-	    public static void blur( short[] ins, short[] outs, int width, int height, int radius/*,int[] divideTable*/) {
-	    	int divisor = (2*radius+1);
-	        int widthMinus1 = width-1;
+public static void blur( short[] ins, short[] outs, int width, int height, int radius/*,int[] divideTable*/) {
+	int divisor = (2*radius+1);
+	int widthMinus1 = width-1;
 
-	        int inIndex = 0;
-	        
-	        for ( int y = 0; y < height; y++ ) {
-	            int outIndex = y;
+	int inIndex = 0;
 
-	            int shortSum = 0;
-	            for ( int i = -radius; i <= radius; i++ ) {
-	            	shortSum+= ins[inIndex + clamp(i, 0, width-1)]&0x0000FFFF;
-	            }
+	for ( int y = 0; y < height; y++ ) {
+		int outIndex = y;
 
-	            for ( int x = 0; x < width; x++ ) {
-	                outs[ outIndex ] = (short)(shortSum/divisor);//(short)divideTable[shortSum];
+		int shortSum = 0;
+		for ( int i = -radius; i <= radius; i++ ) {
+			shortSum+= ins[inIndex + clamp(i, 0, width-1)]&0x0000FFFF;
+		}
 
-	                int i1 = x+radius+1;
-	                if ( i1 > widthMinus1 )
-	                    i1 = widthMinus1;
-	                int i2 = x-radius;
-	                if ( i2 < 0 )
-	                    i2 = 0;
-	                int val1 = ins[inIndex+i1]&0x0000FFFF;
-	                int val2 = ins[inIndex+i2]&0x0000FFFF;
-	                
-	                shortSum+= (val1-val2);
-	                outIndex += height;
-	            }
-	            inIndex += width;
-	        }
-	    }
+		for ( int x = 0; x < width; x++ ) {
+			outs[ outIndex ] = (short)(shortSum/divisor);//(short)divideTable[shortSum];
+
+			int i1 = x+radius+1;
+			if ( i1 > widthMinus1 )
+				i1 = widthMinus1;
+			int i2 = x-radius;
+			if ( i2 < 0 )
+				i2 = 0;
+			int val1 = ins[inIndex+i1]&0x0000FFFF;
+			int val2 = ins[inIndex+i2]&0x0000FFFF;
+
+			shortSum+= (val1-val2);
+			outIndex += height;
+		}
+		inIndex += width;
+	}
+}
 	}
 
-	
-	
-	
+
 	public static class ComboboxROIName {
 		private String roiName;
 		private boolean bNameEdit;
 		private boolean bDeleteable;
 		private int contrastColorIndex;
+
 		public ComboboxROIName(String roiName,boolean bNameEdit,boolean bDeleteable,int contrastColorIndex){
 			this.roiName = roiName;
 			this.bNameEdit = bNameEdit;
 			this.bDeleteable = bDeleteable;
 			this.contrastColorIndex = contrastColorIndex;
 		}
+
 		public String getROIName(){
 			return roiName;
 		}
+
 		public boolean isNameEditable(){
 			return bNameEdit;
 		}
+
 		public Color getHighlightColor(){
 			return OverlayEditorPanelJAI.CONTRAST_COLORS[contrastColorIndex];
 		}
+
 		public boolean isDeleteable(){
 			return bDeleteable;
 		}
+
 		public String toString(){
 			return getROIName();
 		}
+
 		public int getContrastColorIndex(){
 			return contrastColorIndex;
 		}
@@ -267,7 +224,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 	public ROIMultiPaintManager(){
 		super();
 	}
-	
+
 	public static class EdgeIndexInfo {
 		public static final byte XM_EDGE = 1;//00000001
 		public static final byte XP_EDGE = 2;//00000010
@@ -275,38 +232,46 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		public static final byte YP_EDGE = 8;//00001000
 		public static final byte ZM_EDGE = 16;//0010000
 		public static final byte ZP_EDGE = 32;//0100000
-		
+
 		public int[] allEdgeIndexes;
 		public byte[] edgeFlag;
 		public int xSize;
 		public int ySize;
 		public int zSize;
-		
+
 		public boolean isZM(int index){
 			return (edgeFlag[index] & ZM_EDGE) != 0;
 		}
+
 		public boolean isZP(int index){
 			return (edgeFlag[index] & ZP_EDGE) != 0;
 		}
+
 		public boolean isYM(int index){
 			return (edgeFlag[index] & YM_EDGE) != 0;
 		}
+
 		public boolean isYP(int index){
 			return (edgeFlag[index] & YP_EDGE) != 0;
 		}
+
 		public boolean isXM(int index){
 			return (edgeFlag[index] & XM_EDGE) != 0;
 		}
+
 		public boolean isXP(int index){
 			return (edgeFlag[index] & XP_EDGE) != 0;
 		}
+
 		public boolean isZ(int index){
 			return isZM(index) || isZP(index);
 		}
+
 		public boolean isXY(int index){
 			return isXM(index) || isXP(index) || isYM(index) || isYP(index);
 		}
 	}
+
 	public static EdgeIndexInfo calculateEdgeIndexes(int xSize,int ySize,int zSize){
 		if((xSize!=1 && xSize<3) || (ySize!=1 && ySize<3) ||(zSize!=1 && zSize<3)){
 			throw new IllegalArgumentException("Sizes CANNOT be negative or 0 or 2");
@@ -330,15 +295,15 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 						int edgeIndex = x+(y*xSize)+(z*XYSIZE);
 						edgeIndexes[index] = edgeIndex;
 						edgeFlag[index] =
-							(byte)(
-								(bZM?ROIMultiPaintManager.EdgeIndexInfo.ZM_EDGE:(byte)0) |
-								(bZP?ROIMultiPaintManager.EdgeIndexInfo.ZP_EDGE:(byte)0) |
-								(bYM?ROIMultiPaintManager.EdgeIndexInfo.YM_EDGE:(byte)0) |
-								(bYP?ROIMultiPaintManager.EdgeIndexInfo.YP_EDGE:(byte)0) |
-								(x==0?ROIMultiPaintManager.EdgeIndexInfo.XM_EDGE:(byte)0) |
-								((x==xSize-1)?ROIMultiPaintManager.EdgeIndexInfo.XP_EDGE:(byte)0)
-							);
-							
+								(byte)(
+										(bZM?ROIMultiPaintManager.EdgeIndexInfo.ZM_EDGE:(byte)0) |
+												(bZP?ROIMultiPaintManager.EdgeIndexInfo.ZP_EDGE:(byte)0) |
+												(bYM?ROIMultiPaintManager.EdgeIndexInfo.YM_EDGE:(byte)0) |
+												(bYP?ROIMultiPaintManager.EdgeIndexInfo.YP_EDGE:(byte)0) |
+												(x==0?ROIMultiPaintManager.EdgeIndexInfo.XM_EDGE:(byte)0) |
+												((x==xSize-1)?ROIMultiPaintManager.EdgeIndexInfo.XP_EDGE:(byte)0)
+								);
+
 						index++;
 					}
 				}
@@ -347,7 +312,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 				throw new RuntimeException("final count not match calculated");
 			}
 		}
-		
+
 		EdgeIndexInfo edgeIndexInfo = new EdgeIndexInfo();
 		edgeIndexInfo.allEdgeIndexes = edgeIndexes;
 		edgeIndexInfo.edgeFlag = edgeFlag;
@@ -356,6 +321,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		edgeIndexInfo.zSize = zSize;
 		return edgeIndexInfo;
 	}
+
 	public static VCImage createVCImageFromBufferedImages(Extent extent,BufferedImage[] bufferedImages) throws Exception{
 		//collect z-sections into 1 array for VCImage
 		ISize isize = new ISize(bufferedImages[0].getWidth(), bufferedImages[0].getHeight(), bufferedImages.length);
@@ -369,11 +335,11 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 					sizeXY);
 			index+= sizeXY;
 		}
-		
+
 		return new VCImageUncompressed(null,segmentedData, extent,isize.getX(),isize.getY(),isize.getZ());
 
 	}
-	
+
 	private void askInitialize(boolean bForceAddDistinct){
 
 		final TreeSet<Integer> sortedPixVal = new TreeSet<Integer>();
@@ -396,32 +362,32 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		final String cancel = "Cancel";
 		String result = null;
 		String distinctDescr =
-			"The current image contains "+uniquePixelBS.cardinality()+" distinct non-zero pixel values.";
+				"The current image contains "+uniquePixelBS.cardinality()+" distinct non-zero pixel values.";
 		if(!bForceAddDistinct){
 			result = DialogUtils.showWarningDialog(overlayEditorPanelJAI, "Image Editor",
-				distinctDescr+
-				"  Segmenting an image begins with defining Domain(s) manually or automatically."+
-				"  Editing tools are used to create/edit more Domains.  Choose an action:\n"+
-				"1. Add an 'empty' Domain to begin segmenting manually."+
-				(bNotAddDomains?"":"\n2. Pre-Segmented (add Domains for every distinct pixel value)."),
-				(bNotAddDomains?new String[] {addROIManual,cancel}:new String[] {addROIManual,addAllDistinct,cancel}),
-				cancel);
-		
+					distinctDescr+
+							"  Segmenting an image begins with defining Domain(s) manually or automatically."+
+							"  Editing tools are used to create/edit more Domains.  Choose an action:\n"+
+							"1. Add an 'empty' Domain to begin segmenting manually."+
+							(bNotAddDomains?"":"\n2. Pre-Segmented (add Domains for every distinct pixel value)."),
+					(bNotAddDomains?new String[] {addROIManual,cancel}:new String[] {addROIManual,addAllDistinct,cancel}),
+					cancel);
+
 			if(result.equals(cancel)){
 				return;//throw UserCancelException.CANCEL_GENERIC;
 			}
 		}else{
 			if(uniquePixelBS.cardinality() == 0){
-				DialogUtils.showWarningDialog(overlayEditorPanelJAI, 
+				DialogUtils.showWarningDialog(overlayEditorPanelJAI,
 						"Underlay contains no non-zero pixel values available for Domain assignment.");
 				return;
 			}
 			boolean bHasExistingROIs =
-				overlayEditorPanelJAI.getAllCompositeROINamesAndColors() != null &&
-				overlayEditorPanelJAI.getAllCompositeROINamesAndColors().length > 0;
+					overlayEditorPanelJAI.getAllCompositeROINamesAndColors() != null &&
+							overlayEditorPanelJAI.getAllCompositeROINamesAndColors().length > 0;
 			result = DialogUtils.showWarningDialog(overlayEditorPanelJAI,
 					(bHasExistingROIs?"Warning: Existing Domains may be overwritten.  ":"")+
-					distinctDescr,
+							distinctDescr,
 					new String[] {addAllDistinct,cancel}, addAllDistinct);
 
 			if(result.equals(cancel)){
@@ -439,7 +405,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 						Arrays.fill(lookup, -1);
 						for (int i = 0; i < uniquePivValArr.length; i++) {
 							lookup[uniquePivValArr[i]] = i+1;
-							overlayEditorPanelJAI.addROIName("roi_"+uniquePivValArr[i], false, "roi_"+uniquePivValArr[0], true, i+1);					
+							overlayEditorPanelJAI.addROIName("roi_"+uniquePivValArr[i], false, "roi_"+uniquePivValArr[0], true, i+1);
 						}
 						hashTable.put(LOOKUP_KEY, lookup);
 					}
@@ -497,12 +463,14 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			//do nothing
 		}
 	}
+
 	private ImageDataset getImageDataSetChannel(){
 		if(enhancedImageDatasetChannels != null){
 			return enhancedImageDatasetChannels[imageDatasetChannel];
 		}
 		return initImageDataSetChannels[imageDatasetChannel];
 	}
+
 	private ImageDataset[] getImageDataset(){
 		if(enhancedImageDatasetChannels != null){
 			return enhancedImageDatasetChannels;
@@ -512,7 +480,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 
 	private static OverlayEditorPanelJAI.AllPixelValuesRange[] calculateAllPixelValuesRangeChannels0(ImageDataset[] sourceImageDatasetChannels){
 		OverlayEditorPanelJAI.AllPixelValuesRange[] pixelValuesRangeChannels =
-			new OverlayEditorPanelJAI.AllPixelValuesRange[sourceImageDatasetChannels.length];
+				new OverlayEditorPanelJAI.AllPixelValuesRange[sourceImageDatasetChannels.length];
 		for (int c = 0; c < sourceImageDatasetChannels.length; c++) {
 			UShortImage[] allImages = sourceImageDatasetChannels[c].getAllImages();
 			double min = 0;
@@ -526,28 +494,30 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		}
 		return pixelValuesRangeChannels;
 	}
+
 	public void initROIAndUnderlay(FieldDataFileOperationSpec importedDataContainer) throws Exception{
 		initUnderlayData(importedDataContainer);
 		initROIComposite();
 	}
+
 	public void initUnderlayData(FieldDataFileOperationSpec importedDataContainer) throws Exception{
 
 		originalExtent = importedDataContainer.extent;
 		originalOrigin = importedDataContainer.origin;
 		originalISize = importedDataContainer.isize;
 		bHasOriginalData = importedDataContainer.shortSpecData != null;
-		
+
 		enhancedImageDatasetChannels = null;
 		enhanceImageAmount = ROIMultiPaintManager.ENHANCE_NONE;
 		//
 		//previouslyEditedVCImage and previousCrop3D can be null if this is the first time this method
-		//has been called in an editing session. 
+		//has been called in an editing session.
 		//
 		initImageDataSet((!bHasOriginalData?null:importedDataContainer.shortSpecData[0]),originalISize);
 
 		allPixelValuesRangeChannels = calculateAllPixelValuesRangeChannels0(getImageDataset());
 	}
-	
+
 	private class GeometryAttributes {
 		public String annotation;
 		public Extent extent;
@@ -561,13 +531,13 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 ////		mesh.setOrigin(orig);
 ////		mesh.setExtent(extent);
 ////		mesh.setSize(size.getX(), size.getY(), size.getZ());
-////		
-////		mesh.meshRegionInfo = new MeshRegionInfo();	
+////
+////		mesh.meshRegionInfo = new MeshRegionInfo();
 ////		byte[] compressRegionBytes = BeanUtils.compress(regionImage.getShortEncodedRegionIndexImage());
 ////		mesh.meshRegionInfo.setCompressedVolumeElementMapVolumeRegion(compressRegionBytes, mesh.getNumVolumeElements());
 ////		RegionInfo[] regionInfos = regionImage.getRegionInfos();
 ////		for (int i = 0; i < regionInfos.length; i++) {
-////			mesh.meshRegionInfo.mapVolumeRegionToSubvolume(regionInfos[i].getRegionIndex(), regionInfos[i].getPixelValue(), regionInfos[i].getNumPixels());		
+////			mesh.meshRegionInfo.mapVolumeRegionToSubvolume(regionInfos[i].getRegionIndex(), regionInfos[i].getPixelValue(), regionInfos[i].getNumPixels());
 ////		}
 //
 //		try{
@@ -582,7 +552,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 //			if(progressWaitPopup.isInterrupted()){
 //				throw UserCancelException.CANCEL_GENERIC;
 //			}
-//			
+//
 ////			ISize croppedISize = new ISize(mergedCrop3D.width, mergedCrop3D.height, mergedCrop3D.depth);
 ////			//Surfaces
 ////			CartesianMesh cartesianMesh =
@@ -648,27 +618,28 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 				(prevExtent.getY()/prevISize.getY())*cropISize.getY(),
 				(prevExtent.getZ()/prevISize.getZ())*cropISize.getZ());
 	}
+
 	private GeometryAttributes showEditGeometryAttributes(Component parentComponent,GeometryAttributes currentGeometryAttributes) throws UserCancelException{
 		final GeometryAttributes[] finalGeometryAttributesHolder = new GeometryAttributes[1];
 		final boolean[] cancelHolder = new boolean[] {false};
 
 		final CopyOfImageAttributePanel copyOfImageAttributePanel =
-			new CopyOfImageAttributePanel();
+				new CopyOfImageAttributePanel();
 		if(currentGeometryAttributes == null){
 			copyOfImageAttributePanel.init(originalOrigin, createResizeExtent(originalExtent,originalISize,getImageDataSetChannel().getISize()),
-					getImageDataSetChannel().getISize(), originalAnnotation);			
+					getImageDataSetChannel().getISize(), originalAnnotation);
 		}else{
 			copyOfImageAttributePanel.init(currentGeometryAttributes.origin, currentGeometryAttributes.extent,
 					getImageDataSetChannel().getISize(), currentGeometryAttributes.annotation);
 		}
-		
+
 		final JDialog jDialog = new JDialog(JOptionPane.getFrameForComponent(parentComponent));
 		if(OperatingSystemInfo.getInstance().isMac()) {
 			jDialog.setAlwaysOnTop(true);
 		}
 		jDialog.setTitle("Edit Geometry Attributes");
 		jDialog.setModal(true);
-		
+
 		JPanel okCancelJPanel = new JPanel(new FlowLayout());
 		JButton okJButton = new JButton("OK");
 		okJButton.addActionListener(new ActionListener() {
@@ -678,10 +649,10 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 					finalGeometryAttributesHolder[0].annotation = copyOfImageAttributePanel.getEditedAnnotation();
 					finalGeometryAttributesHolder[0].origin = copyOfImageAttributePanel.getEditedOrigin();
 					finalGeometryAttributesHolder[0].extent = copyOfImageAttributePanel.getEditedExtent();
-					
+
 					jDialog.dispose();
 				}catch(UserCancelException uce){
-					
+
 				}catch(Exception exc){
 					DialogUtils.showErrorDialog(overlayEditorPanelJAI,
 							"Error validating Geometry attributes.\n"+exc.getMessage(), exc);
@@ -707,6 +678,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		}
 		return finalGeometryAttributesHolder[0];
 	}
+
 	private void applyPixelClasses(VCPixelClass[] vcPixelClasses,Component parentComponent){
 		if(vcPixelClasses != null){
 			int backgroundIndex = -1;
@@ -720,7 +692,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 					//choose background automatically
 					backgroundIndex = i;
 				}
-			}				
+			}
 			//Create ROIs from VCPixelclasses
 			int roiCount = 1;//start 1 after background index color
 			int[] pixelClassIndexMaproiIndex = new int[vcPixelClasses.length];
@@ -733,7 +705,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 				pixelClassIndexMaproiIndex[i] = roiCount;
 				roiCount++;
 			}
-			
+
 			//fill in rois using pixel value and VCPixelClass mappings
 			for (int zindex = 0; zindex < roiComposite.length; zindex++) {
 				byte[] zdata = ((DataBufferByte)roiComposite[zindex].getRaster().getDataBuffer()).getData();
@@ -745,7 +717,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			}
 		}
 	}
-	
+
 	public Geometry showGUI(
 			final String okButtonText,
 			final String sourceDataName,
@@ -757,7 +729,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 
 		originalAnnotation = initalAnnotation;
 		final Geometry[] finalGeometryHolder = new Geometry[1];
-		
+
 		if(overlayEditorPanelJAI == null){
 			overlayEditorPanelJAI = new OverlayEditorPanelJAI();
 			overlayEditorPanelJAI.setCalcCoords(new CalcCoords());
@@ -767,15 +739,15 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			overlayEditorPanelJAI.addPropertyChangeListener(ROIMultiPaintManager.this);
 		}
 		overlayEditorPanelJAI.deleteROIName(null);//delete all names
-		
+
 		applyPixelClasses(vcPixelClasses, parentComponent);//when user selects image "from DB" or "from current geometry"
-		
+
 		if(getImageDataset().length > 1){
 			String[] channelNames = new String[getImageDataset().length];
 			for (int i = 0; i < channelNames.length; i++) {
 				channelNames[i] = "channel "+i;
 			}
-			overlayEditorPanelJAI.setChannelNames(channelNames);		
+			overlayEditorPanelJAI.setChannelNames(channelNames);
 		}else{
 			overlayEditorPanelJAI.setChannelNames(null);
 		}
@@ -786,7 +758,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		jDialog.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 		jDialog.setTitle("Geometry Editor ("+sourceDataName+")");
 		jDialog.setModal(true);
-		
+
 		final JButton cancelJButton = new JButton("Cancel");
 		cancelJButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -798,29 +770,29 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			}
 		});
 		jDialog.addWindowListener(
-			new WindowAdapter() {
-				@Override
-				public void windowOpened(WindowEvent e) {
-					super.windowOpened(e);
-					if(bHasOriginalData){
-						calculateHistogram();
+				new WindowAdapter() {
+					@Override
+					public void windowOpened(WindowEvent e) {
+						super.windowOpened(e);
+						if(bHasOriginalData){
+							calculateHistogram();
+						}
+						updateUndoAfter(false);
+						if(vcPixelClasses == null){
+							askInitialize(false);
+						}
 					}
-					updateUndoAfter(false);
-					if(vcPixelClasses == null){
-						askInitialize(false);
-					}
-				}
 
-				@Override
-				public void windowClosing(WindowEvent e) {
-					// TODO Auto-generated method stub
-					super.windowClosing(e);
-					cancelJButton.doClick();
+					@Override
+					public void windowClosing(WindowEvent e) {
+						// TODO Auto-generated method stub
+						super.windowClosing(e);
+						cancelJButton.doClick();
+					}
+
 				}
-				
-			}
 		);
-		
+
 		final JPanel okCancelJPanel = new JPanel(new FlowLayout());
 		JButton okJButton = new JButton(okButtonText);
 		okJButton.addActionListener(new ActionListener() {
@@ -828,14 +800,14 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 				try{
 					VCImage finalImage = checkAll();
 					finalImage.setDescription((editedGeometryAttributes!=null?editedGeometryAttributes.annotation:originalAnnotation));
-					finalGeometryHolder[0] = 
-						new Geometry((String)null, finalImage);
+					finalGeometryHolder[0] =
+							new Geometry((String)null, finalImage);
 					finalGeometryHolder[0].getGeometrySpec().setOrigin((editedGeometryAttributes!=null?editedGeometryAttributes.origin:originalOrigin));
 					finalGeometryHolder[0].getGeometrySpec().setExtent((editedGeometryAttributes!=null?editedGeometryAttributes.extent:originalExtent));
 					finalGeometryHolder[0].setDescription((editedGeometryAttributes!=null?editedGeometryAttributes.annotation:originalAnnotation));
 					jDialog.dispose();
 				}catch(UserCancelException uce){
-					
+
 				}catch(Exception exc){
 					DialogUtils.showErrorDialog(overlayEditorPanelJAI,
 							"Error validating compartments.\n"+exc.getMessage(), exc);
@@ -847,7 +819,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			public void actionPerformed(ActionEvent e) {
 				try{
 					editedGeometryAttributes =
-						showEditGeometryAttributes(jDialog,editedGeometryAttributes);
+							showEditGeometryAttributes(jDialog,editedGeometryAttributes);
 				}catch(UserCancelException uce){
 					//ignore
 				}
@@ -859,7 +831,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 //				showDataValueSurfaceViewer(geomAttr);
 //			}
 //		});
-		
+
 		JButton fieldDataJButton = null;
 		if(bFieldData) {
 			fieldDataJButton = new JButton("FieldData...");
@@ -883,9 +855,9 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 									}
 								}
 								int[] select = DialogUtils.showComponentOKCancelTableList(overlayEditorPanelJAI,
-									"Select species to add InitialCondition Field Data, App:'"+initialConditionsPanel.getSimulationContext().getName()+"'", new String[] {"speciesContext"}, objs, ListSelectionModel.SINGLE_SELECTION);
+										"Select species to add InitialCondition Field Data, App:'"+initialConditionsPanel.getSimulationContext().getName()+"'", new String[] {"speciesContext"}, objs, ListSelectionModel.SINGLE_SELECTION);
 								if(select != null && select.length>0) {
-	//								try {
+									//								try {
 									String scName = speciesContextSpecs[select[0]].getSpeciesContext().getName();
 									Origin orig = (editedGeometryAttributes!=null?editedGeometryAttributes.origin:originalOrigin);
 									Extent extent = (editedGeometryAttributes!=null?editedGeometryAttributes.extent:originalExtent);
@@ -907,26 +879,26 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 											}
 											throw e1;
 										}
-										
+
 									}while(!bDone);
-										initialConditionsPanel.setGeneratedFieldData(scName,"vcField('"+fieldDataName+"','"+scName+"',0.0,'Volume')");
-		//								if(true) {
-		//									return;
-		//								}
-										//ISize iSize = initImageDataSetChannels[0].getISize();
-										//Extent extent = initImageDataSetChannels[0].getExtent();
-	//									Origin orig = (editedGeometryAttributes!=null?editedGeometryAttributes.origin:originalOrigin);
-	//									Extent extent = (editedGeometryAttributes!=null?editedGeometryAttributes.extent:originalExtent);
-	//									createFD(false, fieldDataName, ROIMultiPaintManager.this.importSourceName, extent, orig, new String[] {scName}, new double[] {0.0},initImageDataSetChannels[0].getISize());
-										//export();
-										//ORA-00001
-	//								} catch (Exception e1) {
-	//									if(e1 instanceof UserCancelException) {
-	//										return;
-	//									}
-	//									e1.printStackTrace();
-	//									DialogUtils.showErrorDialog(overlayEditorPanelJAI, e1.getMessage());
-	//								}
+									initialConditionsPanel.setGeneratedFieldData(scName,"vcField('"+fieldDataName+"','"+scName+"',0.0,'Volume')");
+									//								if(true) {
+									//									return;
+									//								}
+									//ISize iSize = initImageDataSetChannels[0].getISize();
+									//Extent extent = initImageDataSetChannels[0].getExtent();
+									//									Origin orig = (editedGeometryAttributes!=null?editedGeometryAttributes.origin:originalOrigin);
+									//									Extent extent = (editedGeometryAttributes!=null?editedGeometryAttributes.extent:originalExtent);
+									//									createFD(false, fieldDataName, ROIMultiPaintManager.this.importSourceName, extent, orig, new String[] {scName}, new double[] {0.0},initImageDataSetChannels[0].getISize());
+									//export();
+									//ORA-00001
+									//								} catch (Exception e1) {
+									//									if(e1 instanceof UserCancelException) {
+									//										return;
+									//									}
+									//									e1.printStackTrace();
+									//									DialogUtils.showErrorDialog(overlayEditorPanelJAI, e1.getMessage());
+									//								}
 								}
 							}
 						}while((c = c.getParent()) != null);
@@ -937,16 +909,16 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 						}
 						DialogUtils.showErrorDialog(ROIMultiPaintManager.this.overlayEditorPanelJAI, e2.getMessage());
 					}
-			}});
+				}});
 		}
-		
+
 		JButton exportJButton = new JButton("Export...");
 		exportJButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				export();
 			}
 		});
-		
+
 		JButton importJButton = new JButton("Import stl...");
 		importJButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -980,12 +952,12 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		this.overlayEditorPanelJAI.scaleToolButton.setVisible(bFieldData);
 
 		okCancelJPanel.add(cancelJButton);
-		
+
 		jDialog.getContentPane().add(overlayEditorPanelJAI,BorderLayout.CENTER);
 		jDialog.getContentPane().add(okCancelJPanel,BorderLayout.SOUTH);
 		jDialog.setSize(700,600);
 		DialogUtils.showModalJDialogOnTop(jDialog,parentComponent);
-		
+
 		if(finalGeometryHolder[0] == null){
 			throw UserCancelException.CANCEL_GENERIC;
 		}
@@ -993,42 +965,42 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 	}
 
 //	private File lastImportDir;
-	private ArrayList<AsynchClientTask> getImportSTLtasks(File[] selectedFiles,Vect3d primarySampleSizes,Vect3d subSampleOffset){
+private ArrayList<AsynchClientTask> getImportSTLtasks(File[] selectedFiles,Vect3d primarySampleSizes,Vect3d subSampleOffset){
 //		try {
-		final RegionImage currRegionImage = regionImage;
-		final TreeMap<Integer,String> newROIindexes = new TreeMap<>();
-		final TreeMap<BoundingBox,Object[]> regionBounds = new TreeMap<>(new Comparator<BoundingBox>() {
-			@Override
-			public int compare(BoundingBox arg0, BoundingBox arg1) {
-				if(arg1 == arg0){
-					return 0;
-				}
-				if(arg0.getLoX() == arg1.getLoX() &&
-						arg0.getLoY() == arg1.getLoY() &&
-						arg0.getLoZ() == arg1.getLoZ() &&
-						arg0.getHiX() == arg1.getHiX() &&
-						arg0.getHiY() == arg1.getHiY() &&
-						arg0.getHiZ() == arg1.getHiZ()){
-					return 0;
-				}
-				return (arg0.getLoX() >= arg1.getLoX() &&
-						arg0.getLoY() >= arg1.getLoY() &&
-						arg0.getLoZ() >= arg1.getLoZ() &&
-						arg0.getHiX() <= arg1.getHiX() &&
-						arg0.getHiY() <= arg1.getHiY() &&
-						arg0.getHiZ() <= arg1.getHiZ()?-1:+1);
+	final RegionImage currRegionImage = regionImage;
+	final TreeMap<Integer,String> newROIindexes = new TreeMap<>();
+	final TreeMap<BoundingBox,Object[]> regionBounds = new TreeMap<>(new Comparator<BoundingBox>() {
+		@Override
+		public int compare(BoundingBox arg0, BoundingBox arg1) {
+			if(arg1 == arg0){
+				return 0;
 			}
-		});
-		
-		
-		AsynchClientTask sampleSTLtask = new AsynchClientTask("importSTLtask",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-			@Override
-			public void run(Hashtable<String, Object> hashTable) throws Exception {
-					StatsHelper statsHelper = calcMinMax(selectedFiles);
-					
-					Vect3d worldOrigin = new Vect3d(statsHelper.xmin, statsHelper.ymin, statsHelper.zmin);
-					Vect3d worldCollapsedBoundingBox = new Vect3d(statsHelper.xmax-statsHelper.xmin, statsHelper.ymax-statsHelper.ymin, statsHelper.zmax-statsHelper.zmin);
-					Vect3d scale = new Vect3d(worldCollapsedBoundingBox.getX()/(2.0*primarySampleSizes.getX()), worldCollapsedBoundingBox.getY()/(2.0*primarySampleSizes.getY()), worldCollapsedBoundingBox.getZ()/(2.0*primarySampleSizes.getZ()));
+			if(arg0.getLoX() == arg1.getLoX() &&
+					arg0.getLoY() == arg1.getLoY() &&
+					arg0.getLoZ() == arg1.getLoZ() &&
+					arg0.getHiX() == arg1.getHiX() &&
+					arg0.getHiY() == arg1.getHiY() &&
+					arg0.getHiZ() == arg1.getHiZ()){
+				return 0;
+			}
+			return (arg0.getLoX() >= arg1.getLoX() &&
+					arg0.getLoY() >= arg1.getLoY() &&
+					arg0.getLoZ() >= arg1.getLoZ() &&
+					arg0.getHiX() <= arg1.getHiX() &&
+					arg0.getHiY() <= arg1.getHiY() &&
+					arg0.getHiZ() <= arg1.getHiZ()?-1:+1);
+		}
+	});
+
+
+	AsynchClientTask sampleSTLtask = new AsynchClientTask("importSTLtask",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			StatsHelper statsHelper = calcMinMax(selectedFiles);
+
+			Vect3d worldOrigin = new Vect3d(statsHelper.xmin, statsHelper.ymin, statsHelper.zmin);
+			Vect3d worldCollapsedBoundingBox = new Vect3d(statsHelper.xmax-statsHelper.xmin, statsHelper.ymax-statsHelper.ymin, statsHelper.zmax-statsHelper.zmin);
+			Vect3d scale = new Vect3d(worldCollapsedBoundingBox.getX()/(2.0*primarySampleSizes.getX()), worldCollapsedBoundingBox.getY()/(2.0*primarySampleSizes.getY()), worldCollapsedBoundingBox.getZ()/(2.0*primarySampleSizes.getZ()));
 //					if(scale.getX() !=0 && scale.getX() >= (scale.getY()==0?scale.getX():scale.getY()) && scale.getX() >= (scale.getZ()==0?scale.getX():scale.getZ())){
 //						scale = new Vect3d(scale.getX(), scale.getX(), scale.getX());
 //					}else if(scale.getY() !=0 && scale.getY() >= (scale.getX()==0?scale.getY():scale.getX()) && scale.getY() >= (scale.getZ()==0?scale.getY():scale.getZ())){
@@ -1036,30 +1008,30 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 //					}else if(scale.getZ() !=0 && scale.getZ() >= (scale.getY()==0?scale.getZ():scale.getY()) && scale.getZ() >= (scale.getX()==0?scale.getZ():scale.getX())){
 //						scale = new Vect3d(scale.getZ(), scale.getZ(), scale.getZ());
 //					}
-					if(scale.getX() !=0 && scale.getX() <= (scale.getY()==0?scale.getX():scale.getY()) && scale.getX() <= (scale.getZ()==0?scale.getX():scale.getZ())){
-						scale = new Vect3d(scale.getX(), scale.getX(), scale.getX());
-					}else if(scale.getY() !=0 && scale.getY() <= (scale.getX()==0?scale.getY():scale.getX()) && scale.getY() <= (scale.getZ()==0?scale.getY():scale.getZ())){
-						scale = new Vect3d(scale.getY(), scale.getY(), scale.getY());
-					}else if(scale.getZ() !=0 && scale.getZ() <= (scale.getY()==0?scale.getZ():scale.getY()) && scale.getZ() <= (scale.getX()==0?scale.getZ():scale.getX())){
-						scale = new Vect3d(scale.getZ(), scale.getZ(), scale.getZ());
-					}
-					for (int j = 0; j < selectedFiles.length; j++) {
-						SurfaceCollection surfaceCollection = statsHelper.recalSurfs.get(j);//ClientRequestManager.createSurfaceCollectionFromSurfaceFile(selectedFile);
-						for (int i = 0; i < surfaceCollection.getSurfaceCount(); i++) {
-							Surface surface = surfaceCollection.getSurfaces(i);
+			if(scale.getX() !=0 && scale.getX() <= (scale.getY()==0?scale.getX():scale.getY()) && scale.getX() <= (scale.getZ()==0?scale.getX():scale.getZ())){
+				scale = new Vect3d(scale.getX(), scale.getX(), scale.getX());
+			}else if(scale.getY() !=0 && scale.getY() <= (scale.getX()==0?scale.getY():scale.getX()) && scale.getY() <= (scale.getZ()==0?scale.getY():scale.getZ())){
+				scale = new Vect3d(scale.getY(), scale.getY(), scale.getY());
+			}else if(scale.getZ() !=0 && scale.getZ() <= (scale.getY()==0?scale.getZ():scale.getY()) && scale.getZ() <= (scale.getX()==0?scale.getZ():scale.getX())){
+				scale = new Vect3d(scale.getZ(), scale.getZ(), scale.getZ());
+			}
+			for (int j = 0; j < selectedFiles.length; j++) {
+				SurfaceCollection surfaceCollection = statsHelper.recalSurfs.get(j);//ClientRequestManager.createSurfaceCollectionFromSurfaceFile(selectedFile);
+				for (int i = 0; i < surfaceCollection.getSurfaceCount(); i++) {
+					Surface surface = surfaceCollection.getSurfaces(i);
 //							System.out.println("surface "+i);
 //							Vect3d xyzLow = new Vect3d(surface.getPolygons(0).getNodes(0).getX(),surface.getPolygons(0).getNodes(1).getX(),surface.getPolygons(0).getNodes(2).getX());
 //							Vect3d xyzHigh = new Vect3d(xyzLow);
-							ComboboxROIName[] existingRoiNames = overlayEditorPanelJAI.getAllCompositeROINamesAndColors();
-							int newIndex = getUnusedROIColorIndex(existingRoiNames,newROIindexes.keySet());
-							newROIindexes.put(newIndex, selectedFiles[j].getName());
-							byte value = (byte)newIndex;
+					ComboboxROIName[] existingRoiNames = overlayEditorPanelJAI.getAllCompositeROINamesAndColors();
+					int newIndex = getUnusedROIColorIndex(existingRoiNames,newROIindexes.keySet());
+					newROIindexes.put(newIndex, selectedFiles[j].getName());
+					byte value = (byte)newIndex;
 //							String roiName = FilenameUtils.getBaseName(selectedFiles[j].getName());
 //							roiName = TokenMangler.fixTokenStrict(roiName, 6);
 //							roiName+= "_"+i;
 //							overlayEditorPanelJAI.addROIName(roiName, true, roiName, true, value);
-							for (int k = 0; k < surface.getPolygonCount(); k++){
-								Polygon polygon = surface.getPolygons(k);
+					for (int k = 0; k < surface.getPolygonCount(); k++){
+						Polygon polygon = surface.getPolygons(k);
 //								for (Node pnode:polygon.getNodes()) {
 //									xyzLow.set(Math.min(xyzLow.getX(), pnode.getX()),Math.min(xyzLow.getY(), pnode.getY()),Math.min(xyzLow.getZ(), pnode.getZ()));
 //									xyzHigh.set(Math.max(xyzHigh.getX(), pnode.getX()),Math.max(xyzHigh.getY(), pnode.getY()),Math.max(xyzHigh.getZ(), pnode.getZ()));
@@ -1068,92 +1040,92 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 //									System.out.println("progress= file "+(j+1)+" of "+selectedFiles.length+" "+((k*100)/surface.getPolygonCount())+"%");
 //								}
 //								System.out.println("  polygon "+j+" "+polygon.getNodes(0)+" "+polygon.getNodes(1)+" "+polygon.getNodes(2));
-								Vect3d line1 = new Vect3d(polygon.getNodes(0));
-								Vect3d end1 = new Vect3d(polygon.getNodes(2));
-								Vect3d incr1 = Vect3d.sub(end1,line1);
-								incr1.unit();
-								incr1.set(incr1.getX()*scale.getX(), incr1.getY()*scale.getY(), incr1.getZ()*scale.getZ());
-								Vect3d line2 = new Vect3d(line1);
-								Vect3d end2 = new Vect3d(polygon.getNodes(1));
-								Vect3d incr2 = Vect3d.sub(end2,line2);
-								incr2.unit();
-								incr2.set(incr2.getX()*scale.getX(), incr2.getY()*scale.getY(), incr2.getZ()*scale.getZ());
-								while(true){
-									Vect3d line3 = new Vect3d(line1);
-									Vect3d end3 = new Vect3d(line2);
-									Vect3d incr3 = Vect3d.sub(end3,line3);
-									if(incr3.length() != 0){
-										incr3.unit();
-										incr3.set(incr3.getX()*scale.getX(), incr3.getY()*scale.getY(), incr3.getZ()*scale.getZ());
-									}
-									while(true){
-										calcXYZ(line3, worldOrigin, worldCollapsedBoundingBox, primarySampleSizes,subSampleOffset,value);
-										line3.add(incr3);
-										Vect3d check =  Vect3d.sub(end3, line3);
-										if((check.length()==0) || Math.signum(check.getX()) != Math.signum(incr3.getX()) || Math.signum(check.getY()) != Math.signum(incr3.getY()) || Math.signum(check.getZ()) != Math.signum(incr3.getZ())){
-											calcXYZ(end3, worldOrigin, worldCollapsedBoundingBox, primarySampleSizes,subSampleOffset,value);
-											break;
-										}
-									}
-									if(line1.equals(end1) && line2.equals(end2)){
-										break;
-									}
-									
-									line1.add(incr1);
-									Vect3d check =  Vect3d.sub(end1, line1);
-									if(check.length()==0 || Math.signum(check.getX()) != Math.signum(incr1.getX()) || Math.signum(check.getY()) != Math.signum(incr1.getY()) || Math.signum(check.getZ()) != Math.signum(incr1.getZ())){
-										line1 = new Vect3d(end1);
-									}
-									line2.add(incr2);
-									check =  Vect3d.sub(end2, line2);
-									if(check.length()==0 || Math.signum(check.getX()) != Math.signum(incr2.getX()) || Math.signum(check.getY()) != Math.signum(incr2.getY()) || Math.signum(check.getZ()) != Math.signum(incr2.getZ())){
-										line2 = new Vect3d(end2);
-									}
+						Vect3d line1 = new Vect3d(polygon.getNodes(0));
+						Vect3d end1 = new Vect3d(polygon.getNodes(2));
+						Vect3d incr1 = Vect3d.sub(end1,line1);
+						incr1.unit();
+						incr1.set(incr1.getX()*scale.getX(), incr1.getY()*scale.getY(), incr1.getZ()*scale.getZ());
+						Vect3d line2 = new Vect3d(line1);
+						Vect3d end2 = new Vect3d(polygon.getNodes(1));
+						Vect3d incr2 = Vect3d.sub(end2,line2);
+						incr2.unit();
+						incr2.set(incr2.getX()*scale.getX(), incr2.getY()*scale.getY(), incr2.getZ()*scale.getZ());
+						while(true){
+							Vect3d line3 = new Vect3d(line1);
+							Vect3d end3 = new Vect3d(line2);
+							Vect3d incr3 = Vect3d.sub(end3,line3);
+							if(incr3.length() != 0){
+								incr3.unit();
+								incr3.set(incr3.getX()*scale.getX(), incr3.getY()*scale.getY(), incr3.getZ()*scale.getZ());
+							}
+							while(true){
+								calcXYZ(line3, worldOrigin, worldCollapsedBoundingBox, primarySampleSizes,subSampleOffset,value);
+								line3.add(incr3);
+								Vect3d check =  Vect3d.sub(end3, line3);
+								if((check.length()==0) || Math.signum(check.getX()) != Math.signum(incr3.getX()) || Math.signum(check.getY()) != Math.signum(incr3.getY()) || Math.signum(check.getZ()) != Math.signum(incr3.getZ())){
+									calcXYZ(end3, worldOrigin, worldCollapsedBoundingBox, primarySampleSizes,subSampleOffset,value);
+									break;
 								}
 							}
-//							regionBounds.put(new BoundingBox(xyzLow.getX(), xyzHigh.getX(),xyzLow.getY(), xyzHigh.getY(),xyzLow.getZ(), xyzHigh.getZ()),new Object[] {new int[] {j,i},roiName});
+							if(line1.equals(end1) && line2.equals(end2)){
+								break;
+							}
+
+							line1.add(incr1);
+							Vect3d check =  Vect3d.sub(end1, line1);
+							if(check.length()==0 || Math.signum(check.getX()) != Math.signum(incr1.getX()) || Math.signum(check.getY()) != Math.signum(incr1.getY()) || Math.signum(check.getZ()) != Math.signum(incr1.getZ())){
+								line1 = new Vect3d(end1);
+							}
+							line2.add(incr2);
+							check =  Vect3d.sub(end2, line2);
+							if(check.length()==0 || Math.signum(check.getX()) != Math.signum(incr2.getX()) || Math.signum(check.getY()) != Math.signum(incr2.getY()) || Math.signum(check.getZ()) != Math.signum(incr2.getZ())){
+								line2 = new Vect3d(end2);
+							}
 						}
 					}
+//							regionBounds.put(new BoundingBox(xyzLow.getX(), xyzHigh.getX(),xyzLow.getY(), xyzHigh.getY(),xyzLow.getZ(), xyzHigh.getZ()),new Object[] {new int[] {j,i},roiName});
+				}
+			}
 //					for(BoundingBox bb:regionBounds.keySet()){
 //						System.out.println(((int[])regionBounds.get(bb)[0])[0]+","+((int[])regionBounds.get(bb)[0])[1]+" name="+((String)regionBounds.get(bb)[1])+" bound="+bb.getLoX()+","+bb.getHiX()+" "+bb.getLoY()+","+bb.getHiY()+" "+bb.getLoZ()+","+bb.getHiZ());
 //					}
-					updateAuxiliaryInfo(originalISize, getClientTaskStatusSupport());
+			updateAuxiliaryInfo(originalISize, getClientTaskStatusSupport());
 //				}
+		}
+	};
+	final int[] checkHolder = new int[1];
+	final String[] cleanupHolder= new String[1];
+	final String YES = "Yes";
+	final ComboboxROIName[] cbxHolder = new ComboboxROIName[1];
+	final String CHECK= "check";
+	AsynchClientTask addROInamesTask = new AsynchClientTask("Add new ROI names...",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			int i = 0;
+			for(Integer newIndex:newROIindexes.keySet()){
+				String roiName = FilenameUtils.getBaseName(newROIindexes.get(newIndex));
+				roiName = TokenMangler.fixTokenStrict(roiName, 6);
+				roiName+= "_" + i++;
+				overlayEditorPanelJAI.addROIName(roiName, true, roiName, true, newIndex);
 			}
-		};
-		final int[] checkHolder = new int[1];
-		final String[] cleanupHolder= new String[1];
-		final String YES = "Yes";
-		final ComboboxROIName[] cbxHolder = new ComboboxROIName[1];
-		final String CHECK= "check";
-		AsynchClientTask addROInamesTask = new AsynchClientTask("Add new ROI names...",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-			
-			@Override
-			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				int i = 0;
-				for(Integer newIndex:newROIindexes.keySet()){
-					String roiName = FilenameUtils.getBaseName(newROIindexes.get(newIndex));
-					roiName = TokenMangler.fixTokenStrict(roiName, 6);
-					roiName+= "_" + i++;
-					overlayEditorPanelJAI.addROIName(roiName, true, roiName, true, newIndex);
-				}
-				cleanupHolder[0] = DialogUtils.showWarningDialog(overlayEditorPanelJAI, "Cleanup imported geometry?", new String[] {YES,"No"}, YES);
-				if(!YES.equals(cleanupHolder[0])){
-					return;
-				}
-				checkHolder[0] = getUnusedROIColorIndex(overlayEditorPanelJAI.getAllCompositeROINamesAndColors(), null);
-				overlayEditorPanelJAI.addROIName(CHECK, true,CHECK, true, checkHolder[0]);
-				ComboboxROIName[] temp = overlayEditorPanelJAI.getAllCompositeROINamesAndColors();
-				for(ComboboxROIName cbx:temp){
-					if(cbx.getROIName().equals(CHECK)){
-						cbxHolder[0] = cbx;
-						break;
-					}
+			cleanupHolder[0] = DialogUtils.showWarningDialog(overlayEditorPanelJAI, "Cleanup imported geometry?", new String[] {YES,"No"}, YES);
+			if(!YES.equals(cleanupHolder[0])){
+				return;
+			}
+			checkHolder[0] = getUnusedROIColorIndex(overlayEditorPanelJAI.getAllCompositeROINamesAndColors(), null);
+			overlayEditorPanelJAI.addROIName(CHECK, true,CHECK, true, checkHolder[0]);
+			ComboboxROIName[] temp = overlayEditorPanelJAI.getAllCompositeROINamesAndColors();
+			for(ComboboxROIName cbx:temp){
+				if(cbx.getROIName().equals(CHECK)){
+					cbxHolder[0] = cbx;
+					break;
 				}
 			}
-		};
+		}
+	};
 //		AsynchClientTask removeCheckROI = new AsynchClientTask("Remove check...",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-//			
+//
 //			@Override
 //			public void run(Hashtable<String, Object> hashTable) throws Exception {
 //				ComboboxROIName[] regNames = overlayEditorPanelJAI.getAllCompositeROINamesAndColors();
@@ -1162,12 +1134,12 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 //				}
 //			}
 //		};
-		final AsynchClientTask mergeBackgroundRegions = new AsynchClientTask("Merge background regions...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-			@Override
-			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				if(!YES.equals(cleanupHolder[0])){
-					return;
-				}
+	final AsynchClientTask mergeBackgroundRegions = new AsynchClientTask("Merge background regions...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			if(!YES.equals(cleanupHolder[0])){
+				return;
+			}
 
 //				long start = System.currentTimeMillis();
 //				while(currRegionImage == regionImage){
@@ -1178,17 +1150,17 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 //					System.out.println("trying..."+dur);
 //					Thread.sleep(1000);
 //				}
-				final TreeMap<RegionInfo, Vect3d[]> regTobb = new TreeMap<>(new Comparator<RegionInfo>() {
-					@Override
-					public int compare(RegionInfo arg0, RegionInfo arg1) {
-						return arg0.getRegionIndex()-arg1.getRegionIndex();
-					}
-				});
-				
-				Hashtable<String, Object> newRegionImgHolder = new Hashtable<>();
-				createRegionImageTask.run(newRegionImgHolder);
-				RegionImage newRegionImage = (RegionImage)newRegionImgHolder.get(LOCAL_REGION_IMAGE);
-				
+			final TreeMap<RegionInfo, Vect3d[]> regTobb = new TreeMap<>(new Comparator<RegionInfo>() {
+				@Override
+				public int compare(RegionInfo arg0, RegionInfo arg1) {
+					return arg0.getRegionIndex()-arg1.getRegionIndex();
+				}
+			});
+
+			Hashtable<String, Object> newRegionImgHolder = new Hashtable<>();
+			createRegionImageTask.run(newRegionImgHolder);
+			RegionImage newRegionImage = (RegionImage)newRegionImgHolder.get(LOCAL_REGION_IMAGE);
+
 //				ArrayList<RegionInfo> remainingRegionInfos = new ArrayList<>(Arrays.asList(newRegionImage.getRegionInfos()));
 //				BoundingBox bb = new BoundingBox(0, newRegionImage.getNumX()-1, 0, newRegionImage.getNumY()-1, 0, newRegionImage.getNumZ()-1);
 //				int currIndex = 0;
@@ -1209,43 +1181,43 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 //										remainingRegionInfos.remove(reg);
 //										break;
 //									}
-//								}								
+//								}
 //							}
 //							currIndex++;
 //						}
 //					}
 //				}
-				
-				//Remove unfilled regions (background) that touch the whole region border
-				int allPixCnt = 0;
-				ArrayList<RegionInfo> excluded = new ArrayList<>();
-				for (int z = 0; z < newRegionImage.getNumZ(); z++) {
-					for (int y = 0; y < newRegionImage.getNumY(); y++) {
-						for (int x = 0; x < newRegionImage.getNumX(); x++) {
-							RegionInfo regInfo = newRegionImage.getRegionInfoFromOffset(allPixCnt);
-							allPixCnt+=1;
-							if(excluded.contains(regInfo)){
-								continue;
-							}
-							if(regInfo.getPixelValue() == 0 && (x==0 || x == newRegionImage.getNumX()-1 || y==0 || y == newRegionImage.getNumY()-1 || z==0 || z == newRegionImage.getNumZ()-1)){
-								excluded.add(regInfo);
-								if(regTobb.containsKey(regInfo)){
-									regTobb.remove(regInfo);
-								}
-								continue;
-							}
-							Vect3d[] bounds = regTobb.get(regInfo);
-							if(bounds == null){
-								bounds = new Vect3d[] {new Vect3d(Double.POSITIVE_INFINITY,Double.POSITIVE_INFINITY,Double.POSITIVE_INFINITY),new Vect3d(Double.NEGATIVE_INFINITY,Double.NEGATIVE_INFINITY,Double.NEGATIVE_INFINITY)};
-								regTobb.put(regInfo, bounds);
-							}
-							bounds[0].set(Math.min(bounds[0].getX(), x),Math.min(bounds[0].getY(), y),Math.min(bounds[0].getZ(), z));
-							bounds[1].set(Math.max(bounds[1].getX(), x),Math.max(bounds[1].getY(), y),Math.max(bounds[1].getZ(), z));
 
+			//Remove unfilled regions (background) that touch the whole region border
+			int allPixCnt = 0;
+			ArrayList<RegionInfo> excluded = new ArrayList<>();
+			for (int z = 0; z < newRegionImage.getNumZ(); z++) {
+				for (int y = 0; y < newRegionImage.getNumY(); y++) {
+					for (int x = 0; x < newRegionImage.getNumX(); x++) {
+						RegionInfo regInfo = newRegionImage.getRegionInfoFromOffset(allPixCnt);
+						allPixCnt+=1;
+						if(excluded.contains(regInfo)){
+							continue;
 						}
+						if(regInfo.getPixelValue() == 0 && (x==0 || x == newRegionImage.getNumX()-1 || y==0 || y == newRegionImage.getNumY()-1 || z==0 || z == newRegionImage.getNumZ()-1)){
+							excluded.add(regInfo);
+							if(regTobb.containsKey(regInfo)){
+								regTobb.remove(regInfo);
+							}
+							continue;
+						}
+						Vect3d[] bounds = regTobb.get(regInfo);
+						if(bounds == null){
+							bounds = new Vect3d[] {new Vect3d(Double.POSITIVE_INFINITY,Double.POSITIVE_INFINITY,Double.POSITIVE_INFINITY),new Vect3d(Double.NEGATIVE_INFINITY,Double.NEGATIVE_INFINITY,Double.NEGATIVE_INFINITY)};
+							regTobb.put(regInfo, bounds);
+						}
+						bounds[0].set(Math.min(bounds[0].getX(), x),Math.min(bounds[0].getY(), y),Math.min(bounds[0].getZ(), z));
+						bounds[1].set(Math.max(bounds[1].getX(), x),Math.max(bounds[1].getY(), y),Math.max(bounds[1].getZ(), z));
+
 					}
 				}
-				
+			}
+
 //				ArrayList<Object[]> tree = new ArrayList<>();//arraylist<object[]>,regionInfo
 //				ArrayList<RegionInfo> bucket = new ArrayList<>(regTobb.keySet());
 //				tree.add(new Object[] {null,regTobb.firstKey()});
@@ -1261,74 +1233,74 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 //									Vect3d[] o1v = (Vect3d[])regTobb.get(objArr[1]);
 //									if(	o1v[0].getX() >= o2v[0].getX() && o1v[0].getX() <= o2v[1].getX() &&
 //											o1v[0].getY() >= o2v[0].getY() && o1v[0].getY() <= o2v[1].getY() &&
-//											o1v[0].getZ() >= o2v[0].getZ() && o1v[0].getZ() <= o2v[1].getZ() 
+//											o1v[0].getZ() >= o2v[0].getZ() && o1v[0].getZ() <= o2v[1].getZ()
 //											){
-//										
+//
 //									}
 ////								}
 ////						}
 //					}
 //				}
-				//Sort filled/unfilled regions by boundingbox
-				ArrayList<RegionInfo> sortedRegionInfos = new ArrayList<>(Arrays.asList(regTobb.keySet().toArray(new RegionInfo[0])/*newRegionImage.getRegionInfos()*/));
-				Collections.sort(sortedRegionInfos,new Comparator<RegionInfo>() {
-					@Override
-					public int compare(RegionInfo o1, RegionInfo o2) {
-						
-						Vect3d[] o1v = (Vect3d[])regTobb.get(o1);
-						Vect3d[] o2v = (Vect3d[])regTobb.get(o2);
+			//Sort filled/unfilled regions by boundingbox
+			ArrayList<RegionInfo> sortedRegionInfos = new ArrayList<>(Arrays.asList(regTobb.keySet().toArray(new RegionInfo[0])/*newRegionImage.getRegionInfos()*/));
+			Collections.sort(sortedRegionInfos,new Comparator<RegionInfo>() {
+				@Override
+				public int compare(RegionInfo o1, RegionInfo o2) {
+
+					Vect3d[] o1v = (Vect3d[])regTobb.get(o1);
+					Vect3d[] o2v = (Vect3d[])regTobb.get(o2);
 //						if(o1.getRegionIndex() == 3/*(o1.getRegionIndex() == 3 || o2.getRegionIndex() == 5) && (o1.getRegionIndex() == 5 || o2.getRegionIndex() == 3)*/){
 //							System.out.println("here");
 //						}
-						if(o1v[0].getX() == o2v[0].getX() && o1v[1].getX() == o2v[1].getX() &&
-								o1v[0].getY() == o2v[0].getY() && o1v[1].getY() == o2v[1].getY() &&
-								o1v[0].getZ() >= o2v[0].getZ() && o1v[1].getZ() == o2v[1].getZ()){
-							System.out.println(o1.getRegionIndex()+" == "+o2.getRegionIndex());
-								return 0;
-						}else if(	o1v[0].getX() >= o2v[0].getX() && o1v[0].getX() <= o2v[1].getX() &&
+					if(o1v[0].getX() == o2v[0].getX() && o1v[1].getX() == o2v[1].getX() &&
+							o1v[0].getY() == o2v[0].getY() && o1v[1].getY() == o2v[1].getY() &&
+							o1v[0].getZ() >= o2v[0].getZ() && o1v[1].getZ() == o2v[1].getZ()){
+						System.out.println(o1.getRegionIndex()+" == "+o2.getRegionIndex());
+						return 0;
+					}else if(o1v[0].getX() >= o2v[0].getX() && o1v[0].getX() <= o2v[1].getX() &&
 //									o1v[1].getX() >= o2v[0].getX() && o1v[1].getX() <= o2v[1].getX() &&
-									o1v[0].getY() >= o2v[0].getY() && o1v[0].getY() <= o2v[1].getY() &&
+							o1v[0].getY() >= o2v[0].getY() && o1v[0].getY() <= o2v[1].getY() &&
 //									o1v[1].getY() >= o2v[0].getY() && o1v[1].getY() <= o2v[1].getY() &&
-									o1v[0].getZ() >= o2v[0].getZ() && o1v[0].getZ() <= o2v[1].getZ() 
+							o1v[0].getZ() >= o2v[0].getZ() && o1v[0].getZ() <= o2v[1].getZ()
 //									&& o1v[1].getZ() >= o2v[0].getZ() && o1v[1].getZ() <= o2v[1].getZ()
-									){
-							System.out.println(o1.getRegionIndex()+" > "+o2.getRegionIndex());
-							return 1;
-						}else if(	o1v[0].getX() <= o2v[0].getX() && o1v[1].getX() >= o2v[1].getX() &&
-									o1v[0].getY() <= o2v[0].getY() && o1v[1].getY() >= o2v[1].getY() &&
-									o1v[0].getZ() <= o2v[0].getZ() && o1v[1].getZ() >= o2v[1].getZ()
+					){
+						System.out.println(o1.getRegionIndex()+" > "+o2.getRegionIndex());
+						return 1;
+					}else if(o1v[0].getX() <= o2v[0].getX() && o1v[1].getX() >= o2v[1].getX() &&
+							o1v[0].getY() <= o2v[0].getY() && o1v[1].getY() >= o2v[1].getY() &&
+							o1v[0].getZ() <= o2v[0].getZ() && o1v[1].getZ() >= o2v[1].getZ()
 //								(o1v[0].getX() < o2v[0].getX() && o1v[1].getX() < o2v[0].getX()) ||
 //									(o1v[0].getX() > o2v[1].getX() && o1v[1].getX() > o2v[1].getX()) ||
-//									
+//
 //									(o1v[0].getY() < o2v[0].getY() && o1v[1].getY() < o2v[0].getY()) ||
 //									(o1v[0].getY() > o2v[1].getY() && o1v[1].getY() > o2v[1].getY()) ||
-//									
+//
 //									(o1v[0].getZ() < o2v[0].getZ() && o1v[1].getZ() < o2v[0].getZ()) ||
 //									(o1v[0].getZ() > o2v[1].getZ() && o1v[1].getZ() > o2v[1].getZ())
-//									
+//
 //								/*	(o1v[0].getX() < o2v[0].getX() && o1v[0].getX() > o2v[1].getX() &&
 //									o1v[1].getX() < o2v[0].getX() && o1v[1].getX() > o2v[1].getX()) ||
 //									(o1v[0].getY() < o2v[0].getY() && o1v[0].getY() > o2v[1].getY() &&
 //									o1v[1].getY() < o2v[0].getY() && o1v[1].getY() > o2v[1].getY()) ||
-//									(o1v[0].getZ() < o2v[0].getZ() && o1v[0].getZ() > o2v[1].getZ() && 
+//									(o1v[0].getZ() < o2v[0].getZ() && o1v[0].getZ() > o2v[1].getZ() &&
 //									o1v[1].getZ() < o2v[0].getZ() && o1v[1].getZ() > o2v[1].getZ())*/
-							){
-							System.out.println(o1.getRegionIndex()+" <a "+o2.getRegionIndex());
+					){
+						System.out.println(o1.getRegionIndex()+" <a "+o2.getRegionIndex());
 						return -1;
 					}else if ((o1v[0].getX() < o2v[0].getX() && o1v[1].getX() < o2v[0].getX()) ||
 							(o1v[0].getX() > o2v[1].getX() && o1v[1].getX() > o2v[1].getX()) ||
-							
+
 							(o1v[0].getY() < o2v[0].getY() && o1v[1].getY() < o2v[0].getY()) ||
 							(o1v[0].getY() > o2v[1].getY() && o1v[1].getY() > o2v[1].getY()) ||
-							
+
 							(o1v[0].getZ() < o2v[0].getZ() && o1v[1].getZ() < o2v[0].getZ()) ||
 							(o1v[0].getZ() > o2v[1].getZ() && o1v[1].getZ() > o2v[1].getZ())){
 						System.out.println(o1.getRegionIndex()+" <b "+o2.getRegionIndex());
 						return -1;
-						
+
 					}
-						System.out.println("inconclusive "+o1.getRegionIndex()+" == "+o2.getRegionIndex());
-						return 0;
+					System.out.println("inconclusive "+o1.getRegionIndex()+" == "+o2.getRegionIndex());
+					return 0;
 //						System.out.println("inconclusive "+o1.getRegionIndex()+" "+(o1.getNumPixels() - o2.getNumPixels()<0?"<":(o1.getNumPixels() - o2.getNumPixels()>0?">":"=="))+" "+o2.getRegionIndex());
 //						return o1.getNumPixels() - o2.getNumPixels();
 //						System.out.println("inconclusive "+o1.getRegionIndex()+" "+(o1.getRegionIndex()-o2.getRegionIndex()<0?"<":(o1.getRegionIndex()-o2.getRegionIndex()>0?">":"=="))+" "+o2.getRegionIndex());
@@ -1341,37 +1313,37 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 //							return (int)(o1v[0].getX() - o2v[0].getX());
 //						}else
 //						return 0;
-					}
-				});
-				
-				//Convert unfilled regions into parent regions
-				int currColorIndex = -1;
+				}
+			});
+
+			//Convert unfilled regions into parent regions
+			int currColorIndex = -1;
 //				for (int i = sortedRegionInfos.size()-1; i >= 0; i--) {
-				for (int i = 0; i< sortedRegionInfos.size(); i++) {
-					RegionInfo regInfo = sortedRegionInfos.get(i);
-					Vect3d[] o1v = (Vect3d[])regTobb.get(regInfo);
-					ComboboxROIName cbxroiName = overlayEditorPanelJAI.getComboboxROIName(regInfo);
+			for (int i = 0; i< sortedRegionInfos.size(); i++) {
+				RegionInfo regInfo = sortedRegionInfos.get(i);
+				Vect3d[] o1v = (Vect3d[])regTobb.get(regInfo);
+				ComboboxROIName cbxroiName = overlayEditorPanelJAI.getComboboxROIName(regInfo);
 //					System.out.println(cbxroiName+" colorIndex="+regInfo.getPixelValue()+" regIndex="+regInfo.getRegionIndex()+" pixels="+regInfo.getNumPixels()+" "+o1v[0]+" "+o1v[1]);
-					if(cbxroiName != null){
-						currColorIndex = cbxroiName.getContrastColorIndex();
-						continue;
-					}
-					allPixCnt = 0;
-					for (int z = 0; z < newRegionImage.getNumZ(); z++) {
-						for (int y = 0; y < newRegionImage.getNumY(); y++) {
-							for (int x = 0; x < newRegionImage.getNumX(); x++) {
-								if(regInfo.isIndexInRegion(allPixCnt)){
-									BufferedImage plane = roiComposite[z];
-									byte[] data = ((DataBufferByte)plane.getRaster().getDataBuffer()).getData();
-									data[x + (plane.getWidth()*y)] = (byte)currColorIndex;
-								}
-								allPixCnt++;
+				if(cbxroiName != null){
+					currColorIndex = cbxroiName.getContrastColorIndex();
+					continue;
+				}
+				allPixCnt = 0;
+				for (int z = 0; z < newRegionImage.getNumZ(); z++) {
+					for (int y = 0; y < newRegionImage.getNumY(); y++) {
+						for (int x = 0; x < newRegionImage.getNumX(); x++) {
+							if(regInfo.isIndexInRegion(allPixCnt)){
+								BufferedImage plane = roiComposite[z];
+								byte[] data = ((DataBufferByte)plane.getRaster().getDataBuffer()).getData();
+								data[x + (plane.getWidth()*y)] = (byte)currColorIndex;
 							}
+							allPixCnt++;
 						}
 					}
-					
 				}
-				
+
+			}
+
 //				for(RegionInfo regInfo:regTobb.keySet()){
 //					Vect3d[] varr = regTobb.get(regInfo);
 //					ComboboxROIName cbxroiName = overlayEditorPanelJAI.getComboboxROIName(regInfo);
@@ -1382,59 +1354,59 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 //					System.out.println(cbxroiName+" bound="+bb.getLoX()+","+bb.getHiX()+" "+bb.getLoY()+","+bb.getHiY()+" "+bb.getLoZ()+","+bb.getHiZ());
 //
 //				}
-				
-				//Make sure every pixel has only 1 kind of neighbor
-				
+
+			//Make sure every pixel has only 1 kind of neighbor
+
 //				createRegionImageTask.run(newRegionImgHolder);
 //				newRegionImage = (RegionImage)newRegionImgHolder.get(LOCAL_REGION_IMAGE);
-				boolean bHasCheck = false;
-				VCImage checkImage = ROIMultiPaintManager.createVCImageFromBufferedImages(ROIMultiPaintManager.DEFAULT_EXTENT, roiComposite);
-				newRegionImage =
+			boolean bHasCheck = false;
+			VCImage checkImage = ROIMultiPaintManager.createVCImageFromBufferedImages(ROIMultiPaintManager.DEFAULT_EXTENT, roiComposite);
+			newRegionImage =
 					new RegionImage(checkImage, 0 /*0 means generate no surfacecollection*/,
 							checkImage.getExtent(),ROIMultiPaintManager.DEFAULT_ORIGIN, RegionImage.NO_SMOOTHING,
 							null);
 
-				TreeSet<Integer> diffNeighbors = new TreeSet<>();
-				int[][] offsets = new int[][] {{-1,0,0},{1,0,0},{0,-1,0},{0,1,0},{0,0,-1},{0,0,1}};
-				for (int z = 0; z < newRegionImage.getNumZ(); z++) {
-					BufferedImage plane = roiComposite[z];
-					byte[] data = ((DataBufferByte)plane.getRaster().getDataBuffer()).getData();
-					allPixCnt = 0;
-					for (int y = 0; y < newRegionImage.getNumY(); y++) {
-						for (int x = 0; x < newRegionImage.getNumX(); x++) {
-							diffNeighbors.clear();
-							RegionInfo regInfo = newRegionImage.getRegionInfoFromOffset(allPixCnt);
-							if(regInfo.getPixelValue() == 0){
-								allPixCnt++;
+			TreeSet<Integer> diffNeighbors = new TreeSet<>();
+			int[][] offsets = new int[][] {{-1,0,0},{1,0,0},{0,-1,0},{0,1,0},{0,0,-1},{0,0,1}};
+			for (int z = 0; z < newRegionImage.getNumZ(); z++) {
+				BufferedImage plane = roiComposite[z];
+				byte[] data = ((DataBufferByte)plane.getRaster().getDataBuffer()).getData();
+				allPixCnt = 0;
+				for (int y = 0; y < newRegionImage.getNumY(); y++) {
+					for (int x = 0; x < newRegionImage.getNumX(); x++) {
+						diffNeighbors.clear();
+						RegionInfo regInfo = newRegionImage.getRegionInfoFromOffset(allPixCnt);
+						if(regInfo.getPixelValue() == 0){
+							allPixCnt++;
+							continue;
+						}
+						if(x==19 && y==15){
+							System.out.println("here");
+						}
+
+						for (int i = 0; i < offsets.length; i++) {
+							int tmpx = offsets[i][0]+x;
+							if(tmpx < 0 || tmpx >= newRegionImage.getNumX()){
 								continue;
 							}
-							if(x==19 && y==15){
-								System.out.println("here");
+							int tmpy = offsets[i][1]+y;
+							if(tmpy < 0 || tmpy >= newRegionImage.getNumY()){
+								continue;
 							}
-							
-							for (int i = 0; i < offsets.length; i++) {
-								int tmpx = offsets[i][0]+x;
-								if(tmpx < 0 || tmpx >= newRegionImage.getNumX()){
-									continue;
-								}
-								int tmpy = offsets[i][1]+y;
-								if(tmpy < 0 || tmpy >= newRegionImage.getNumY()){
-									continue;
-								}
-								int tmpz = offsets[i][2]+z;
-								if(tmpz < 0 || tmpz >= newRegionImage.getNumZ()){
-									continue;
-								}
-								BufferedImage plane0 = roiComposite[tmpz];
-								byte[] data0 = ((DataBufferByte)plane.getRaster().getDataBuffer()).getData();
-								byte shiftb = data0[tmpx+(tmpy*newRegionImage.getNumX())];
-								if(shiftb != regInfo.getPixelValue()){
-									diffNeighbors.add(0x000000FF&shiftb);
-								}
+							int tmpz = offsets[i][2]+z;
+							if(tmpz < 0 || tmpz >= newRegionImage.getNumZ()){
+								continue;
+							}
+							BufferedImage plane0 = roiComposite[tmpz];
+							byte[] data0 = ((DataBufferByte)plane.getRaster().getDataBuffer()).getData();
+							byte shiftb = data0[tmpx+(tmpy*newRegionImage.getNumX())];
+							if(shiftb != regInfo.getPixelValue()){
+								diffNeighbors.add(0x000000FF&shiftb);
+							}
 
-							}
-							
-							
+						}
+
+
 //							for (int z0 = -1; z0 <= 1; z0+=2) {
 //								int tmpz = z+z0;
 //								if(tmpz < 0 || tmpz >= newRegionImage.getNumZ()){
@@ -1462,26 +1434,26 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 //									}
 //								}
 //							}
-							allPixCnt++;
-							if(diffNeighbors.size() > 1){
-								bHasCheck = true;
-								data[x+y*newRegionImage.getNumX()] = (byte)checkHolder[0];
-							}
+						allPixCnt++;
+						if(diffNeighbors.size() > 1){
+							bHasCheck = true;
+							data[x+y*newRegionImage.getNumX()] = (byte)checkHolder[0];
 						}
 					}
 				}
-				if(!bHasCheck && cbxHolder[0] != null){
-					SwingUtilities.invokeAndWait(new Runnable() {
-						@Override
-						public void run() {
-							overlayEditorPanelJAI.deleteROIName(cbxHolder[0]);
-						}
-					});
-				}
 			}
-		};
+			if(!bHasCheck && cbxHolder[0] != null){
+				SwingUtilities.invokeAndWait(new Runnable() {
+					@Override
+					public void run() {
+						overlayEditorPanelJAI.deleteROIName(cbxHolder[0]);
+					}
+				});
+			}
+		}
+	};
 //		new Thread(new Runnable() {
-//			
+//
 //			@Override
 //			public void run() {
 //				try {
@@ -1492,8 +1464,8 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 //				}
 //			}
 //		}).start();
-		return new ArrayList<>(Arrays.asList(new AsynchClientTask[] {sampleSTLtask,addROInamesTask,mergeBackgroundRegions,getUpdateDisplayAfterCropTask()}));
-		
+	return new ArrayList<>(Arrays.asList(new AsynchClientTask[] {sampleSTLtask,addROInamesTask,mergeBackgroundRegions,getUpdateDisplayAfterCropTask()}));
+
 //			JFileChooser importJFC = new JFileChooser(ClientRequestManager.getPreferredPath(UserPreferences.getLastUserPreferences()));
 //			importJFC.setDialogTitle("Choose .stl file to import");
 //			importJFC.setMultiSelectionEnabled(true);
@@ -1504,7 +1476,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 //					statsHelper = calcMinMax(selectedFiles);
 //				}
 //				ClientRequestManager.setPreferredPath(UserPreferences.getLastUserPreferences(), selectedFiles[0]);
-//				
+//
 //				Vect3d worldOrigin = new Vect3d(statsHelper.xmin, statsHelper.ymin, statsHelper.zmin);
 //				Vect3d worldCollapsedBoundingBox = new Vect3d(statsHelper.xmax-statsHelper.xmin, statsHelper.ymax-statsHelper.ymin, statsHelper.zmax-statsHelper.zmin);
 //				Vect3d scale = new Vect3d(worldCollapsedBoundingBox.getX()/(2.0*primarySampleSizes.getX()), worldCollapsedBoundingBox.getY()/(2.0*primarySampleSizes.getY()), worldCollapsedBoundingBox.getZ()/(2.0*primarySampleSizes.getZ()));
@@ -1597,7 +1569,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 //								if(line1.equals(end1) && line2.equals(end2)){
 //									break;
 //								}
-//								
+//
 //								line1.add(incr1);
 //								Vect3d check =  Vect3d.sub(end1, line1);
 //								if(check.length()==0 || Math.signum(check.getX()) != Math.signum(incr1.getX()) || Math.signum(check.getY()) != Math.signum(incr1.getY()) || Math.signum(check.getZ()) != Math.signum(incr1.getZ())){
@@ -1670,8 +1642,8 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 //			e.printStackTrace();
 //			DialogUtils.showErrorDialog(overlayEditorPanelJAI, e.getMessage());
 //		}
-	}
-	
+}
+
 	private void calcXYZ(Vect3d line3,Vect3d worldOrigin,Vect3d worldCollapsedBoundingBox,Vect3d primarySampleSizes,Vect3d subSampleOffset,byte value)throws Exception{
 		double x = (((line3.getX()-worldOrigin.getX())/worldCollapsedBoundingBox.getX())*(primarySampleSizes.getX()-1));
 		double y = (((line3.getY()-worldOrigin.getY())/worldCollapsedBoundingBox.getY())*(primarySampleSizes.getY()-1));
@@ -1689,9 +1661,9 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 //		}
 
 		if(subX >= 0 && subX < roiComposite[0].getWidth() &&
-			subY >= 0 && subY < roiComposite[0].getHeight() &&
-			subZ >= 0 && subZ < roiComposite.length){
-			
+				subY >= 0 && subY < roiComposite[0].getHeight() &&
+				subZ >= 0 && subZ < roiComposite.length){
+
 			BufferedImage plane = roiComposite[subZ];
 			byte[] data = ((DataBufferByte)plane.getRaster().getDataBuffer()).getData();
 			data[subX + (plane.getWidth()*subY)] = value;
@@ -1701,9 +1673,9 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 //			System.out.println(subX+","+subY+","+subZ);
 //			System.out.println("?");
 //		}
-		
+
 	}
-	
+
 	private static class StatsHelper{
 		public double xmin;
 		public double ymin;
@@ -1715,7 +1687,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 	}
 
 	private static StatsHelper calcMinMax(File[] selectedFiles) throws Exception{
-		
+
 		ArrayList<SurfaceCollection> allSurfCollections = new ArrayList<>();
 		TreeMap<String, TreeMap<Integer, ArrayList<TreeMap<Integer, TreeSet<Integer>>>>> fileMapSurfMapSubsurf = new TreeMap<>();
 		for (int j = 0; j < selectedFiles.length; j++) {
@@ -1788,7 +1760,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 						while(polyIter.hasNext()){
 							Polygon poly = surfaceCollection.getSurfaces(origSurfIndex).getPolygons(polyIter.next());
 							os.addPolygon(poly);
-						}						
+						}
 						newSurfCollection.addSurface(os);
 					}
 				}
@@ -1799,10 +1771,8 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 //			fileMapSurfMapSubsurf.get(selectedfiFile.getAbsolutePath()).get(i).add(treeMap);
 
 		}
-		
-		
-		
-		
+
+
 		StatsHelper statsHelper = new StatsHelper();
 		statsHelper.recalSurfs = allSurfCollections;
 		for (int j = 0; j < statsHelper.recalSurfs.size(); j++) {
@@ -1830,9 +1800,11 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 	}
 
 	private DocumentManager documentManager;
+
 	public void setDocumentManager(DocumentManager documentManager) {
 		this.documentManager = documentManager;
 	}
+
 	private void createFD(boolean isFromSimulation,String fieldName,String annotation,Extent extent,Origin origin, String[] varNames,double[] times,ISize isize) throws Exception{
 		FieldDataFileOperationSpec fdos = null;
 		try{
@@ -1873,14 +1845,14 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 				//Subvolumes and Regions NOT implemented now
 				//
 				fdos.cartesianMesh = CartesianMesh.createSimpleCartesianMesh(fdos.origin, fdos.extent, fdos.isize,
-					new RegionImage(new VCImageUncompressed(null, new byte[fdos.isize.getXYZ()],//empty regions
-						fdos.extent, fdos.isize.getX(),fdos.isize.getY(),fdos.isize.getZ()),
-						0,null,null,RegionImage.NO_SMOOTHING));
+						new RegionImage(new VCImageUncompressed(null, new byte[fdos.isize.getXYZ()],//empty regions
+								fdos.extent, fdos.isize.getX(),fdos.isize.getY(),fdos.isize.getZ()),
+								0,null,null,RegionImage.NO_SMOOTHING));
 			}
-			
+
 			//Add to Server Disk
 			documentManager.fieldDataFileOperation(fdos);
-			
+
 //			//Update FieldData window
 //			Window[] windows = Window.getWindows();
 //			for(int i=0;i<windows.length;i++) {
@@ -1897,13 +1869,13 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 				}
 			}catch(Exception e2){
 				e2.printStackTrace();
-			} 
+			}
 			throw e;
 		}
 
 	}
-	
-	
+
+
 	private void export(){
 		final String PNG_FILETYPE = "png";
 		try{
@@ -1928,8 +1900,8 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 						if(checkFile.exists()){
 							DialogUtils.showWarningDialog(overlayEditorPanelJAI, "Export slice file "+checkFile.getAbsolutePath()+" already exists, choose another basename.");
 							bExists = true;
-							break;					
-							
+							break;
+
 						}
 					}
 					if(bExists){
@@ -1948,10 +1920,11 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			DialogUtils.showErrorDialog(overlayEditorPanelJAI, e.getMessage());
 		}
 	}
+
 	private String makeNumberedName(String baseName,int indexNumber,String suffix){
 		return baseName+"_"+(indexNumber<10?"0":"")+(indexNumber<100?"0":"")+(indexNumber<1000?"0":"")+indexNumber+"."+suffix;
 	}
-	
+
 	private VCImage checkAll() throws Exception{
 		if(!overlayEditorPanelJAI.isHistogramSelectionEmpty()/*overlayEditorPanelJAI.getHighliteInfo() != null*/){
 			final String highlightDiscard = "discard, continue";
@@ -1959,14 +1932,14 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			String result = DialogUtils.showWarningDialog(
 					overlayEditorPanelJAI,
 					"Warning: Selections from the 'Histogram Tool' are present.  Choose an action:\n"+
-					"1.  Discard selection without applying.\n"+
-					"2.  Cancel, go back to Geometry Editor. (hint: Use 'Histogram Tool' apply)",
+							"1.  Discard selection without applying.\n"+
+							"2.  Cancel, go back to Geometry Editor. (hint: Use 'Histogram Tool' apply)",
 					new String[] {highlightDiscard,cancelAssign}, highlightDiscard);
 			if(result.equals(highlightDiscard)){
 				overlayEditorPanelJAI.setHighliteInfo(null, OverlayEditorPanelJAI.FRAP_DATA_END_PROPERTY);
 			}else{
 				throw UserCancelException.CANCEL_GENERIC;
-			}	
+			}
 		}
 		ComboboxROIName[] roiNamesAndColors = overlayEditorPanelJAI.getAllCompositeROINamesAndColors();
 		//Check for unassigned "background" pixels
@@ -1992,9 +1965,9 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			String result = DialogUtils.showWarningDialog(
 					overlayEditorPanelJAI,
 					"Warning: some areas of image segmentation have not been assigned to a Domain.  "+
-					"Choose an action:\n"+
-					"1.  Leave as is, unassigned areas should be treated as 'background'.\n"+
-					"2.  Cancel, back to Geometry Editor. (hint: look at 'Domain Regions' list for 'bkgrnd' entries)",
+							"Choose an action:\n"+
+							"1.  Leave as is, unassigned areas should be treated as 'background'.\n"+
+							"2.  Cancel, back to Geometry Editor. (hint: look at 'Domain Regions' list for 'bkgrnd' entries)",
 					new String[] {assignToBackground,/*assignToNeighbors,*/cancelAssign}, assignToBackground);
 			if(result.equals(assignToBackground)){
 				bForceAssignBackground = true;
@@ -2003,19 +1976,19 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			}
 			if(bForceAssignBackground){
 				vcPixelClassesFromROINames = new VCPixelClass[roiNamesAndColors.length+1];
-				vcPixelClassesFromROINames[0] = new VCPixelClass(null, RESERVED_NAME_BACKGROUND, 0);					
+				vcPixelClassesFromROINames[0] = new VCPixelClass(null, RESERVED_NAME_BACKGROUND, 0);
 			}
 		}else{
 			vcPixelClassesFromROINames = new VCPixelClass[roiNamesAndColors.length];
 		}
-		
+
 
 		//find pixel indexes corresponding to colors for ROIs
 		int index = (bForceAssignBackground?1:0);
 		for (int j = 0; j < roiNamesAndColors.length; j++) {
 			String roiNameString = roiNamesAndColors[j].getROIName();
 			vcPixelClassesFromROINames[index] =
-				new VCPixelClass(null, roiNameString, roiNamesAndColors[j].getContrastColorIndex());
+					new VCPixelClass(null, roiNameString, roiNamesAndColors[j].getContrastColorIndex());
 			index++;
 		}
 
@@ -2057,7 +2030,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			final String removeROI = "Remove Domain"+(missingDomainVCPixelClasses.size()>1?"s":"")+" and continue";
 			final String backtoSegment = "Return to segmentation";
 			String result = DialogUtils.showWarningDialog(
-					overlayEditorPanelJAI, 
+					overlayEditorPanelJAI,
 					"Domain"+(missingDomainVCPixelClasses.size()>1?"s":"")+" named "+missingROISB.toString()+" have no pixels defined",
 					new String[] {removeROI,backtoSegment}, removeROI);
 			if(result.equals(removeROI)){
@@ -2071,7 +2044,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		if(temp != null){
 			initImage = temp;
 		}
-		
+
 		//Check if we added a border and don't have a VCPixelClass for background
 		boolean bHasBackgroundVCPixel = false;
 		for (int j = 0; j < vcPixelClassesFromROINames.length; j++) {
@@ -2096,17 +2069,18 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		updateExtent(initImage,originalExtent,originalISize);
 		return initImage;
 	}
-		
+
 	public static final String ROI_AND_CROP = "ROI_AND_CROP";
 	public static final String SHOW_ROI_PANEL_TASK_NAME = "Show Domain display";
-	
+
 	private static class BorderInfo {
 		public boolean bXYTouch = false;
 		public boolean bZTouch = false;
 	}
+
 	private BorderInfo checkBorderInfo(VCImage checkThisVCImage) throws Exception{
 		EdgeIndexInfo edgeIndexInfo =
-			ROIMultiPaintManager.calculateEdgeIndexes(checkThisVCImage.getNumX(), checkThisVCImage.getNumY(), checkThisVCImage.getNumZ());
+				ROIMultiPaintManager.calculateEdgeIndexes(checkThisVCImage.getNumX(), checkThisVCImage.getNumY(), checkThisVCImage.getNumZ());
 		BorderInfo borderInfo = new BorderInfo();
 		for (int i = 0; i < edgeIndexInfo.allEdgeIndexes.length; i++) {
 			if(checkThisVCImage.getPixels()[edgeIndexInfo.allEdgeIndexes[i]] != 0){
@@ -2120,10 +2094,11 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		borderInfo.bZTouch = borderInfo.bZTouch && checkThisVCImage.getNumZ()>1;
 		return borderInfo;
 	}
+
 	private VCImage checkBorders(VCImage checkThisVCImage) throws Exception{
 		boolean bAddBorder = false;
 		BorderInfo borderInfo = checkBorderInfo(checkThisVCImage);
-		
+
 		if(borderInfo.bXYTouch || borderInfo.bZTouch){
 			boolean b3DTouch = borderInfo.bXYTouch && borderInfo.bZTouch;
 			String edgeDescrFrag = "on the "+(b3DTouch?"XY and Z":(borderInfo.bXYTouch?"XY":"Z"))+" border.";
@@ -2132,9 +2107,9 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			final String cancel = "Cancel";
 			String result = DialogUtils.showWarningDialog(overlayEditorPanelJAI,
 					"One or more Domain Regions touches the outer boundary "+edgeDescrFrag+"\n"+
-					"Choose an option:\n"+
-					"1. Keep as is, do not change.\n"+
-					"2. Add empty 'background' border around outer boundary so no Domain Region touches an outer edge.",
+							"Choose an option:\n"+
+							"1. Keep as is, do not change.\n"+
+							"2. Add empty 'background' border around outer boundary so no Domain Region touches an outer edge.",
 					new String[] {keep,addBorder,cancel}, keep);
 			if(result.equals(cancel)){
 				throw UserCancelException.CANCEL_GENERIC;
@@ -2151,18 +2126,19 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		ROIMultiPaintManager.PaddedInfo paddedInfo = copyToPadded(
 				checkThisVCImage.getPixels(),checkThisVCImageISize,null,checkThisVCImage.getExtent(),
 				new ISize((bxy?1:0), (bxy?1:0), (bz?1:0)),new ISize((bxy?1:0), (bxy?1:0), (bz?1:0)));
-		
+
 		VCImage newVCImage = new VCImageUncompressed(
 				null,
 				(byte[])paddedInfo.paddedArray, DEFAULT_EXTENT/*paddedInfo.paddedExtent*/,
 				paddedInfo.paddedISize.getX(),paddedInfo.paddedISize.getY(),paddedInfo.paddedISize.getZ());
 		return newVCImage;
 	}
+
 	private void initImageDataSet(short[][] dataToSegmentChannels,
-			ISize uncroppedISize) throws Exception{
-		
+								  ISize uncroppedISize) throws Exception{
+
 		initImageDataSetChannels = new ImageDataset[(dataToSegmentChannels != null?dataToSegmentChannels.length:1)];
-		for (int c = 0; c < initImageDataSetChannels.length; c++) {	
+		for (int c = 0; c < initImageDataSetChannels.length; c++) {
 			UShortImage[] zImageSet = new UShortImage[uncroppedISize.getZ()];
 			for (int i = 0; i < zImageSet.length; i++) {
 				short[] shortData = new short[uncroppedISize.getX()*uncroppedISize.getY()];
@@ -2175,6 +2151,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		}
 
 	}
+
 	public static IndexColorModel getContrastIndexColorModel(){
 		if(indexColorModel == null){
 			int[] cmap = new int[256];
@@ -2185,25 +2162,28 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 				}
 			}
 			indexColorModel =
-				new java.awt.image.IndexColorModel(
-					8, cmap.length,cmap,0,
-					false /*false means NOT USE alpha*/   ,
-					-1/*NO transparent single pixel*/,
-					java.awt.image.DataBuffer.TYPE_BYTE);
+					new java.awt.image.IndexColorModel(
+							8, cmap.length,cmap,0,
+							false /*false means NOT USE alpha*/   ,
+							-1/*NO transparent single pixel*/,
+							java.awt.image.DataBuffer.TYPE_BYTE);
 
 		}
 		return indexColorModel;
 	}
+
 	private void initROIComposite(){
 
 		roiComposite = new BufferedImage[getImageDataSetChannel().getISize().getZ()];
 		for (int i = 0; i < roiComposite.length; i++) {
-			roiComposite[i] = 
-				new BufferedImage(getImageDataSetChannel().getISize().getX(), getImageDataSetChannel().getISize().getY(),
-						BufferedImage.TYPE_BYTE_INDEXED, getContrastIndexColorModel());
+			roiComposite[i] =
+					new BufferedImage(getImageDataSetChannel().getISize().getX(), getImageDataSetChannel().getISize().getY(),
+							BufferedImage.TYPE_BYTE_INDEXED, getContrastIndexColorModel());
 		}
 	}
+
 	private static final String RESOLVED_WAIT_MESSG = "Updating...";
+
 	public void propertyChange(PropertyChangeEvent evt) {
 		if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_CROP_PROPERTY)){
 			try{
@@ -2218,7 +2198,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_FIELDDATA_PROPERTY)){
 			fdTSR(evt);
 		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_CURRENTROI_PROPERTY)){
-			
+
 		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_DELETEROI_PROPERTY)){
 			try {
 				deleteROI((ComboboxROIName)evt.getOldValue());
@@ -2335,13 +2315,14 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			updateUndoAfter(true);
 		}
 	}
-	
+
 	private FieldDataFileOperationSpec fdShort;
 	private double[] fdDelta = new double[] {0,0,0};
 	private double[] fdDeltaLast = new double[] {0,0,0};
 	private double currScale = 1.0;
 	private double currScaleLast = 1.0;
 	private Range currScalePoint = new Range(0,0);
+
 	private void xlt() throws ImageException{
 		final int importedX = fdShort.isize.getX();
 		final int importedY = fdShort.isize.getY();
@@ -2390,8 +2371,8 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			}
 		}//z
 	}
-	
-	
+
+
 //	private static short[] myshorts = new short[20*1000*1000];
 //	static {
 //		try {
@@ -2416,7 +2397,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 //			public void run() {
 //				try {
 //					PropertyChangeEvent evt = fdBusy[0];
-//					
+//
 //					if(evt.getNewValue() instanceof Boolean) {
 //						fdDeltaLast = fdDelta.clone();
 //					}else if(evt.getOldValue() instanceof MouseEvent) {
@@ -2431,7 +2412,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 //						}
 ////					if((int)oldFD[0] == (int)fdDelta[0] && (int)oldFD[1] == (int)fdDelta[1] && (int)oldFD[2] == (int)fdDelta[2]) {
 ////						throw UserCancelException.CANCEL_GENERIC;
-////					}					
+////					}
 //					}else if(evt.getNewValue() == null) {
 //						if(fdShort == null) {
 //							VCDocument.DocumentCreationInfo documentCreationInfo = new VCDocument.DocumentCreationInfo(VCDocumentType.GEOMETRY_DOC, VCDocument.GEOM_OPTION_FILE);
@@ -2466,7 +2447,8 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 //
 //			}}).start();
 //	}
-	private String importSourceName;
+private String importSourceName;
+
 	private void fdTSR(PropertyChangeEvent evt) {
 		if(!(evt.getNewValue() instanceof OverlayEditorPanelJAI.GUIHelperFD)) {
 			return;
@@ -2495,7 +2477,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 					}
 //					if((int)oldFD[0] == (int)fdDelta[0] && (int)oldFD[1] == (int)fdDelta[1] && (int)oldFD[2] == (int)fdDelta[2]) {
 //						throw UserCancelException.CANCEL_GENERIC;
-//					}					
+//					}
 				}else if(guiHelperFD.action.equals("scaleDelta")) {
 					MouseEvent mouseEvt = (MouseEvent)guiHelperFD.awtEvent;
 					Point p = (Point)guiHelperFD.data;
@@ -2524,7 +2506,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 					}else {
 //						DataBufferUShort dataBuffer = new DataBufferUShort(fdShort.shortSpecData[0][0], fdShort.shortSpecData[0][0].length);
 //						WritableRaster myRaster = Raster.createPackedRaster(dataBuffer, fdShort.isize.getX(), fdShort.isize.getY()*fdShort.isize.getZ(), 16,new Point(0,15*fdShort.isize.getX()*fdShort.isize.getY()));
-//						
+//
 //						UShortImage myImage = initImageDataSetChannels[0].getImage(15, /*c*/ 0, 0/*t*/);
 //						DataBufferUShort dataBuffer2 = new DataBufferUShort(myImage.getPixels(),myImage.getPixels().length);
 //						WritableRaster myRaster2 = Raster.createPackedRaster(dataBuffer2, myImage.getNumX(), myImage.getNumY(), 16,null);
@@ -2532,7 +2514,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 //						final AffineTransform at = AffineTransform.getScaleInstance(1.5, 1.5);
 //						final AffineTransformOp ato = new AffineTransformOp(at, AffineTransformOp.TYPE_BICUBIC);
 //						ato.filter(myRaster, myRaster2);
-//						
+//
 ////						final int w = image.getWidth();
 ////						final int h = image.getHeight();
 ////						BufferedImage scaledImage = new BufferedImage((w * 2),(h * 2), BufferedImage.TYPE_INT_ARGB);
@@ -2568,11 +2550,11 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 //				System.out.println("update="+((System.currentTimeMillis()-starttime)/1000.0));
 			}
 		};
-		
+
 		ClientTaskDispatcher.dispatch(overlayEditorPanelJAI, new Hashtable(), new AsynchClientTask[] {tsrTask,tsrUpdateTask});
 	}
-	
-	
+
+
 	private void loadFD(Hashtable<String, Object> hashTable) throws Exception{
 		final Exception[] excHolder = new Exception[] {null};
 		final JDialog jDialog = new JDialog(JOptionPane.getFrameForComponent(this.overlayEditorPanelJAI));
@@ -2612,7 +2594,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			}
 
 });
-		
+
 		JButton fdJButton = new JButton("from FieldData...");
 		fdJButton.addActionListener(new ActionListener() {
 			@Override
@@ -2646,14 +2628,14 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 							VCImageUncompressed vcImageUnc = new VCImageUncompressed(null, new byte[iSize.getXYZ()], fieldDataFileOperationResults.extent,iSize.getX(),iSize.getY(),iSize.getZ());
 							int dimension = 1 + (iSize.getY()>1?1:0) + (iSize.getZ()>1?1:0);
 							CartesianMesh simpleMesh = CartesianMesh.createSimpleCartesianMesh(
-								fieldDataFileOperationResults.origin, 
-								fieldDataFileOperationResults.extent,
-								iSize,
-								new RegionImage(vcImageUnc, dimension, fieldDataFileOperationResults.extent, fieldDataFileOperationResults.origin, RegionImage.NO_SMOOTHING));
+									fieldDataFileOperationResults.origin,
+									fieldDataFileOperationResults.extent,
+									iSize,
+									new RegionImage(vcImageUnc, dimension, fieldDataFileOperationResults.extent, fieldDataFileOperationResults.origin, RegionImage.NO_SMOOTHING));
 							meshes.add(simpleMesh);
 						} catch (Exception e2) {
 							e2.printStackTrace();
-						}			
+						}
 					}
 					if(allRows.size() > 0) {
 						Object[][] rowData = allRows.toArray(new Object[0][]);
@@ -2665,7 +2647,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 
 						if(selections != null && selections.length == 1) {
 							FieldDataFileOperationResults fdfor =  documentManager.fieldDataFileOperation(FieldDataFileOperationSpec.createInfoFieldDataFileOperationSpec(okEDI.get(selections[0]).getSimulationKey(), okEDI.get(selections[0]).getOwner(), okEDI.get(selections[0]).getJobIndex()));
-							SimDataBlock simDataBlock = VCellClientTest.getVCellClient().getClientServerManager().getDataSetController().getSimDataBlock(null, okEDI.get(selections[0]), fdfor.dataIdentifierArr[0].getName(), 0.0);
+							SimDataBlock simDataBlock = VCellClient.getInstance().getClientServerManager().getDataSetController().getSimDataBlock(null, okEDI.get(selections[0]), fdfor.dataIdentifierArr[0].getName(), 0.0);
 							FieldDataFileOperationSpec fieldDataFileOperationSpec = new FieldDataFileOperationSpec();
 							fieldDataFileOperationSpec.isize = meshes.get(selections[0]).getISize();
 							fieldDataFileOperationSpec.shortSpecData = new short[][][] {{new short[fieldDataFileOperationSpec.isize.getXYZ()]}};
@@ -2684,17 +2666,17 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 //						       (outMax-outMin)(inVal - inMin)
 //						       ------------------------------ + outMin
 //						                 inMax - inMin
-							
+
 							//externalDataIdentifierArr[selections[0]].
 ////						ImageSizeInfo imagesizeInfo = new ImageSizeInfo("internal",meshes.get(selections[0]).getISize(),1,new double[] {0},0);
 //						ImageSizeInfo imagesizeInfo = new ImageSizeInfo("internal",iSizes.get(selections[0]),1,new double[] {0},0);
 //						hashTable.put(ClientRequestManager.NEW_IMAGE_SIZE_INFO, imagesizeInfo);
-//						
+//
 //						VCImage image = sourceGeom.getGeometrySpec().getImage();
 //						ISize samplingSize = new ISize(image.getNumX(),image.getNumY(),image.getNumZ());//
 //						VCImageUncompressed vcImageUnc = new VCImageUncompressed(null, new byte[samplingSize.getXYZ()], sourceGeom.getExtent(), samplingSize.getX(), samplingSize.getY(), samplingSize.getZ());
 //						CartesianMesh sourceMesh = CartesianMesh.createSimpleCartesianMesh(
-//							sourceGeom.getOrigin(), 
+//							sourceGeom.getOrigin(),
 //							sourceGeom.getExtent(),
 //							samplingSize,
 //							new RegionImage(vcImageUnc, sourceGeom.getDimension(), sourceGeom.getExtent(), sourceGeom.getOrigin(), RegionImage.NO_SMOOTHING));
@@ -2713,47 +2695,47 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 				}
 
 			}});
-		
+
 		JButton clipbboardJButton = new JButton("from Clipboard");
 		clipbboardJButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				Transferable contents = Toolkit.getDefaultToolkit().getSystemClipboard().getContents(null);
-					try {
-						Object transferData = contents.getTransferData(DataFlavor.stringFlavor);
-						if(transferData instanceof String) {
-							StringTokenizer st = new StringTokenizer(((String)transferData).toString(),",");
-							String varName = st.nextToken();
-							String vcDataIdentifer = st.nextToken();
-							double timePoint = Double.parseDouble(st.nextToken());
-							ISize isize = new ISize(Integer.parseInt(st.nextToken()),Integer.parseInt(st.nextToken()),Integer.parseInt(st.nextToken()));
-							Range inRange = new Range(Double.parseDouble(st.nextToken()),Double.parseDouble(st.nextToken()));
-							String simDataFile = st.nextToken();
-							DataInputStream dis = new DataInputStream(new FileInputStream(simDataFile));
-							FieldDataFileOperationSpec fieldDataFileOperationSpec = new FieldDataFileOperationSpec();
-							fieldDataFileOperationSpec.isize = isize;
-							fieldDataFileOperationSpec.shortSpecData = new short[][][] {{new short[fieldDataFileOperationSpec.isize.getXYZ()]}};
-							double outMax = 65535;
-							double outMin = 0;
-							double scale = (outMax-outMin)/(inRange.getMax()-inRange.getMin());
-							for(int i=0;i<isize.getXYZ();i++) {
-								double val = dis.readDouble();
-								fieldDataFileOperationSpec.shortSpecData[0][0][i] = (short)(scale*(val-inRange.getMin()) + outMin);
-							}
-							hashTable.put(ClientRequestManager.FDFOS,fieldDataFileOperationSpec);
-							hashTable.put(ClientRequestManager.IMPORT_SOURCE_NAME, "SimData="+vcDataIdentifer+" varName="+varName+" time="+timePoint);
-							saveFDUnderlay(hashTable);
-							ROIMultiPaintManager.this.overlayEditorPanelJAI.setFDScale(new double[] {scale,inRange.getMin(),outMin});
+				try {
+					Object transferData = contents.getTransferData(DataFlavor.stringFlavor);
+					if(transferData instanceof String) {
+						StringTokenizer st = new StringTokenizer(((String)transferData).toString(),",");
+						String varName = st.nextToken();
+						String vcDataIdentifer = st.nextToken();
+						double timePoint = Double.parseDouble(st.nextToken());
+						ISize isize = new ISize(Integer.parseInt(st.nextToken()),Integer.parseInt(st.nextToken()),Integer.parseInt(st.nextToken()));
+						Range inRange = new Range(Double.parseDouble(st.nextToken()),Double.parseDouble(st.nextToken()));
+						String simDataFile = st.nextToken();
+						DataInputStream dis = new DataInputStream(new FileInputStream(simDataFile));
+						FieldDataFileOperationSpec fieldDataFileOperationSpec = new FieldDataFileOperationSpec();
+						fieldDataFileOperationSpec.isize = isize;
+						fieldDataFileOperationSpec.shortSpecData = new short[][][] {{new short[fieldDataFileOperationSpec.isize.getXYZ()]}};
+						double outMax = 65535;
+						double outMin = 0;
+						double scale = (outMax-outMin)/(inRange.getMax()-inRange.getMin());
+						for(int i=0;i<isize.getXYZ();i++) {
+							double val = dis.readDouble();
+							fieldDataFileOperationSpec.shortSpecData[0][0][i] = (short)(scale*(val-inRange.getMin()) + outMin);
 						}
-					} catch (Exception e1) {
-						excHolder[0] = e1;
+						hashTable.put(ClientRequestManager.FDFOS,fieldDataFileOperationSpec);
+						hashTable.put(ClientRequestManager.IMPORT_SOURCE_NAME, "SimData="+vcDataIdentifer+" varName="+varName+" time="+timePoint);
+						saveFDUnderlay(hashTable);
+						ROIMultiPaintManager.this.overlayEditorPanelJAI.setFDScale(new double[] {scale,inRange.getMin(),outMin});
+					}
+				} catch (Exception e1) {
+					excHolder[0] = e1;
 //						e1.printStackTrace();
 //						DialogUtils.showErrorDialog(ROIMultiPaintManager.this.overlayEditorPanelJAI, e1.getMessage());
-					}finally {
-						jDialog.dispose();
-					}
+				}finally {
+					jDialog.dispose();
+				}
 			}});
-		
+
 		final boolean[] bCanelHolder = new boolean[] {false};
 		JButton cancelJButton = new JButton("Cancel");
 		cancelJButton.addActionListener(new ActionListener() {
@@ -2762,12 +2744,12 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 				jDialog.dispose();
 				bCanelHolder[0] = true;
 			}});
-		
+
 		okCancelJPanel.add(okJButton);
 		okCancelJPanel.add(fdJButton);
 		okCancelJPanel.add(clipbboardJButton);
 		okCancelJPanel.add(cancelJButton);
-		
+
 
 		jDialog.getContentPane().add(okCancelJPanel,BorderLayout.SOUTH);
 		jDialog.pack();
@@ -2782,11 +2764,11 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		}
 	}
 
-	
+
 	private void saveFDUnderlay(Hashtable<String, Object> hashTable) throws ImageException {
 		ROIMultiPaintManager.this.fdShort = (FieldDataFileOperationSpec)hashTable.get(ClientRequestManager.FDFOS);
 		ROIMultiPaintManager.this.importSourceName = (String)hashTable.get(ClientRequestManager.IMPORT_SOURCE_NAME);
-		
+
 		//Calculate Info for large underlay
 		ImageDataset[] idsa = new ImageDataset[1];
 		UShortImage[] argImages = new UShortImage[fdShort.isize.getZ()];
@@ -2798,7 +2780,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		condensedBinsMapChannels = calculateCondensedBinsChannels0(idsa);
 		allPixelValuesRangeChannels = calculateAllPixelValuesRangeChannels0(idsa);
 	}
-	
+
 	private void sampleAnalyticIntoImage(OverlayEditorPanelJAI.ImgSubVolHelper imgSubVolHelper) {
 		try{
 			Extent extent = (editedGeometryAttributes==null?originalExtent:editedGeometryAttributes.extent);
@@ -2806,7 +2788,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			int numX = roiComposite[0].getWidth();
 			int numY = roiComposite[0].getHeight();
 			int numZ = roiComposite.length;
-			
+
 			int dim = (roiComposite.length>1?1:0) + (roiComposite[0].getHeight()>1?1:0) + 1;
 			double cX = calcCoord(imgSubVolHelper.getMousePoint().x, numX, orig.getX(), extent.getX());
 			double cY = calcCoord(imgSubVolHelper.getMousePoint().y, numY, orig.getY(), extent.getY());
@@ -2832,44 +2814,55 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			DialogUtils.showErrorDialog(overlayEditorPanelJAI, e.getClass().getName()+" "+e.getMessage());
 		}
 	}
-	
+
 	public class CalcCoords {
 		public CalcCoords(){
-			
+
 		}
+
 		public double calcX(int xIndex){
 			return calcCoord(xIndex, roiComposite[0].getWidth(), (editedGeometryAttributes==null?originalOrigin:editedGeometryAttributes.origin).getX(), (editedGeometryAttributes==null?originalExtent:editedGeometryAttributes.extent).getX());
 		}
+
 		public double extentX(){
 			return (editedGeometryAttributes==null?originalExtent:editedGeometryAttributes.extent).getX();
 		}
+
 		public double calcY(int yIndex){
 			return calcCoord(yIndex, roiComposite[0].getHeight(), (editedGeometryAttributes==null?originalOrigin:editedGeometryAttributes.origin).getY(), (editedGeometryAttributes==null?originalExtent:editedGeometryAttributes.extent).getY());
 		}
+
 		public double extentY(){
 			return (editedGeometryAttributes==null?originalExtent:editedGeometryAttributes.extent).getY();
 		}
+
 		public double calcZ(int zIndex){
 			return calcCoord(zIndex, roiComposite.length, (editedGeometryAttributes==null?originalOrigin:editedGeometryAttributes.origin).getZ(), (editedGeometryAttributes==null?originalExtent:editedGeometryAttributes.extent).getZ());
 		}
+
 		public double extentZ(){
 			return (editedGeometryAttributes==null?originalExtent:editedGeometryAttributes.extent).getZ();
 		}
 	}
+
 	private static double calcCoord(int index,int total,double origin,double extent){
 		double unit = (total>1) ? ((double)index)/(total-1):0.5;
 		double coord = (total>1) ? origin + extent * unit : 0;
 		return coord;
 	}
+
 	private class NeighborLocation{
 		public int zslice;
 		public int xyIndex;
+
 		public NeighborLocation(int zslice, int xyIndex) {
 			this.zslice = zslice;
 			this.xyIndex = xyIndex;
 		}
 	}
+
 	enum NEIGHBORS {ZM,ZP,YM,YP,XM,XP};
+
 	private void separateDomains(){
 //		ROI highlight = overlayEditorPanelJAI.getHighliteInfo();
 //		if(highlight == null){
@@ -2900,6 +2893,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			}
 		}
 	}
+
 	private NeighborLocation getNeighborIndex(int x,int y, int z,NEIGHBORS neighbor){
 		int width = roiComposite[0].getWidth();
 		int height = roiComposite[0].getHeight();
@@ -2931,6 +2925,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		}
 		return neighborLocation;
 	}
+
 	private void convertDomain(int convertToContrastIndex,RegionInfo[] selectedRegionInfos){
 		if(selectedRegionInfos == null || selectedRegionInfos.length == 0){
 			return;
@@ -2955,6 +2950,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		}
 		updateUndoAfter(true);
 	}
+
 	public static enum SELECT_FUNC{
 		REMOVE,
 		ADD,
@@ -2965,6 +2961,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			return o1.getRegionIndex()-o2.getRegionIndex();
 		}
 	};
+
 	private void pickImgROI(SelectImgInfo selectImgInfo){
 		int[] mapOrigToSort = new int[sortedRegionInfos.length];
 		for (int i = 0; i < mapOrigToSort.length; i++) {
@@ -2976,7 +2973,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		int z = overlayEditorPanelJAI.getZ();//(B_DISPLAY_ZERO_INDEX_Z?overlayEditorPanelJAI.getZ():overlayEditorPanelJAI.getZ()-1);
 //		RegionInfo[] regionInfoSortedByRegionIndex = regionImage.getRegionInfos();
 		for (int height = 0; height <= selectImgInfo.getRectangle().height; height++) {
-			int y = selectImgInfo.getRectangle().y+height;//(int)(selectImgInfo.getMouseEvent().getPoint().getY()/selectImgInfo.getZoom());				
+			int y = selectImgInfo.getRectangle().y+height;//(int)(selectImgInfo.getMouseEvent().getPoint().getY()/selectImgInfo.getZoom());
 			for (int width = 0; width <= selectImgInfo.getRectangle().width; width++) {
 				int x = selectImgInfo.getRectangle().x+width;//(int)(selectImgInfo.getMouseEvent().getPoint().getX()/selectImgInfo.getZoom());
 				if(x<0 || x >= roiComposite[0].getWidth() || y<0 || y>=roiComposite[0].getHeight()){
@@ -2990,49 +2987,59 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 					return;
 				}
 //				if(SwingUtilities.isLeftMouseButton(selectImgInfo.getMouseEvent())){
-					if(selectImgInfo.getMouseEvent().isControlDown()){
-						if(isAlreadySelected){
-							overlayEditorPanelJAI.resolvedSelectionChange(SELECT_FUNC.REMOVE, mapOrigToSort[foundRegion.getRegionIndex()]);
-						}else{
-							overlayEditorPanelJAI.resolvedSelectionChange(SELECT_FUNC.ADD, mapOrigToSort[foundRegion.getRegionIndex()]);
-						}
+				if(selectImgInfo.getMouseEvent().isControlDown()){
+					if(isAlreadySelected){
+						overlayEditorPanelJAI.resolvedSelectionChange(SELECT_FUNC.REMOVE, mapOrigToSort[foundRegion.getRegionIndex()]);
 					}else{
-						overlayEditorPanelJAI.resolvedSelectionChange(SELECT_FUNC.REPLACE, mapOrigToSort[foundRegion.getRegionIndex()]);
+						overlayEditorPanelJAI.resolvedSelectionChange(SELECT_FUNC.ADD, mapOrigToSort[foundRegion.getRegionIndex()]);
 					}
+				}else{
+					overlayEditorPanelJAI.resolvedSelectionChange(SELECT_FUNC.REPLACE, mapOrigToSort[foundRegion.getRegionIndex()]);
+				}
 //				}
 			}
 		}
 	}
-	
+
 	private static class InterruptCalc implements ClientTaskStatusSupport{
 		private boolean bInterrupt = false;
 		private Thread thread;
+
 		public InterruptCalc(Thread thread) {
 			this.thread = thread;
 		}
+
 		public void interrupt(){
 			bInterrupt = true;
 		}
+
 		public void setMessage(String message) {
 		}
+
 		public void setProgress(int progress) {
 		}
+
 		public int getProgress() {
 			return 0;
 		}
+
 		public boolean isInterrupted() {
 			return bInterrupt;
 		}
+
 		public void addProgressDialogListener(
 				ProgressDialogListener progressDialogListener) {
 		}
+
 		public Thread getThread(){
 			return thread;
 		}
 	}
+
 	private InterruptCalc[] lastInterruptRegionCalculation = new InterruptCalc[1];
 	private RegionImage regionImage;
 	private RegionImage.RegionInfo[] sortedRegionInfos;
+
 	private synchronized InterruptCalc getInterruptCalc(InterruptCalc[] checkThisInterruptCalc) throws Exception{
 		if(checkThisInterruptCalc[0] != null){
 			//interrupt incoming InterruptCalc and wait for it to die
@@ -3045,9 +3052,11 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		checkThisInterruptCalc[0] =  new InterruptCalc(Thread.currentThread());
 		return checkThisInterruptCalc[0];
 	}
+
 	private void refreshObjects(){
 		ClientTaskDispatcher.dispatch(overlayEditorPanelJAI, new Hashtable<String, Object>(), getRefreshObjectsTasks());
 	}
+
 	private static final String LOCAL_REGION_IMAGE = "LOCAL_REGION_IMAGE";
 	private AsynchClientTask createRegionImageTask = new AsynchClientTask("create RegionImage",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 		@Override
@@ -3055,14 +3064,14 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			InterruptCalc localInterruptCalc = getInterruptCalc(lastInterruptRegionCalculation);
 			VCImage checkImage = ROIMultiPaintManager.createVCImageFromBufferedImages(ROIMultiPaintManager.DEFAULT_EXTENT, roiComposite);
 			RegionImage localRegionImage =
-				new RegionImage(checkImage, 0 /*0 means generate no surfacecollection*/,
-						checkImage.getExtent(),ROIMultiPaintManager.DEFAULT_ORIGIN, RegionImage.NO_SMOOTHING,
-						localInterruptCalc);
+					new RegionImage(checkImage, 0 /*0 means generate no surfacecollection*/,
+							checkImage.getExtent(),ROIMultiPaintManager.DEFAULT_ORIGIN, RegionImage.NO_SMOOTHING,
+							localInterruptCalc);
 			if(localInterruptCalc.isInterrupted()){
 				throw UserCancelException.CANCEL_GENERIC;
 			}
 			hashTable.put(LOCAL_REGION_IMAGE, localRegionImage);
-		}		
+		}
 	};
 	private AsynchClientTask saveSortRegionImageTask = new AsynchClientTask("create RegionImage",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 		@Override
@@ -3090,9 +3099,12 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 	private AsynchClientTask[] getRefreshObjectsTasks(){
 		return new AsynchClientTask[] {createRegionImageTask,saveSortRegionImageTask,updateList};
 	}
+
 	//-----UNDO methods-------------------------
 	private BufferedImage[] undoROIComposite;
+
 	private enum UNDO_INIT {ALLZ,ONEZ};
+
 	private void updateUndoAfterPrivate(Boolean bUndoable,boolean bRefresh){
 		if(bUndoable != null && !bUndoable){
 			//Remove undo because caller of this method did something that CANNOT be undone
@@ -3107,17 +3119,19 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			refreshObjects();
 		}
 	}
+
 	private void updateUndoAfter(Boolean bUndoable){
-		updateUndoAfterPrivate(bUndoable,true);	
+		updateUndoAfterPrivate(bUndoable,true);
 	}
+
 	private void updateUndo(UNDO_INIT initType){
 		//Caller of this method is going to do something that CAN be undone so save undo info
 		if(initType == UNDO_INIT.ALLZ){
 			undoROIComposite = new BufferedImage[roiComposite.length];
 			for (int i = 0; i < roiComposite.length; i++) {
 				undoROIComposite[i] =
-					new BufferedImage(roiComposite[0].getWidth(),roiComposite[0].getHeight(),
-							BufferedImage.TYPE_BYTE_INDEXED, getContrastIndexColorModel());
+						new BufferedImage(roiComposite[0].getWidth(),roiComposite[0].getHeight(),
+								BufferedImage.TYPE_BYTE_INDEXED, getContrastIndexColorModel());
 				System.arraycopy((byte[])((DataBufferByte)roiComposite[i].getRaster().getDataBuffer()).getData(), 0,
 						(byte[])((DataBufferByte)undoROIComposite[i].getRaster().getDataBuffer()).getData(), 0,
 						roiComposite[0].getWidth()*roiComposite[0].getHeight());
@@ -3132,13 +3146,14 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 								BufferedImage.TYPE_BYTE_INDEXED, getContrastIndexColorModel());
 			}
 			System.arraycopy((byte[])((DataBufferByte)roiComposite[overlayEditorPanelJAI.getZ()].getRaster().getDataBuffer()).getData(), 0,
-				(byte[])((DataBufferByte)undoROIComposite[overlayEditorPanelJAI.getZ()].getRaster().getDataBuffer()).getData(), 0,
-				roiComposite[0].getWidth()*roiComposite[0].getHeight());
+					(byte[])((DataBufferByte)undoROIComposite[overlayEditorPanelJAI.getZ()].getRaster().getDataBuffer()).getData(), 0,
+					roiComposite[0].getWidth()*roiComposite[0].getHeight());
 		}
 	}
+
 	private void recoverUndo(){
 		try {
-			if(roiComposite == null || undoROIComposite == null || 
+			if(roiComposite == null || undoROIComposite == null ||
 					roiComposite.length != undoROIComposite.length){
 				throw new Exception("Undo operation has wrong undo information");
 			}else{
@@ -3146,12 +3161,12 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 				for (int i = 0; i < roiComposite.length; i++) {
 					if(undoROIComposite[i] != null){
 						if(roiComposite[i].getWidth() != undoROIComposite[i].getWidth() ||
-							roiComposite[i].getHeight() != undoROIComposite[i].getHeight()){
+								roiComposite[i].getHeight() != undoROIComposite[i].getHeight()){
 							throw new Exception("Undo operation z-slice size not match");
 						}
-						System.arraycopy((byte[])((DataBufferByte)undoROIComposite[i].getRaster().getDataBuffer()).getData(), 0,
-							(byte[])((DataBufferByte)roiComposite[i].getRaster().getDataBuffer()).getData(), 0,
-							roiComposite[0].getWidth()*roiComposite[0].getHeight());
+						System.arraycopy(((DataBufferByte)undoROIComposite[i].getRaster().getDataBuffer()).getData(), 0,
+								((DataBufferByte)roiComposite[i].getRaster().getDataBuffer()).getData(), 0,
+								roiComposite[0].getWidth()*roiComposite[0].getHeight());
 					}
 				}
 				undoROIComposite = null;
@@ -3168,7 +3183,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		updateUndoAfter(false);
 	}
 	//-----End UNDO methods-------------------------
-	
+
 	private void findROI(final RegionInfo findRegionInfo){
 		if(findRegionInfo == null){
 			return;
@@ -3187,7 +3202,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 						int y = (i%regionImage.getNumXY())/regionImage.getNumX();
 						int x = i%regionImage.getNumX();
 						CoordinateIndex coordinateIndex =
-							new CoordinateIndex(x, y, (B_DISPLAY_ZERO_INDEX_Z?z:z+1));
+								new CoordinateIndex(x, y, (B_DISPLAY_ZERO_INDEX_Z?z:z+1));
 						hashTable.put(COORDINDEX, coordinateIndex);
 						break;
 					}
@@ -3219,6 +3234,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		ClientTaskDispatcher.dispatch(overlayEditorPanelJAI,new Hashtable<String, Object>(), new AsynchClientTask[] {findCoordTask,drawStartTask,waitTask,clearStarTask});
 
 	}
+
 	private void duplicateROIDataAsk(){
 		String extraInfo = null;
 		while(true){
@@ -3237,7 +3253,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			}
 		}
 	}
-	
+
 	public static double getProperScale(int newSize,int oldSize){
 		double fac = (double)newSize/(double)oldSize;
 		int newSize2 = ((int)((double)oldSize*fac));
@@ -3250,27 +3266,30 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		}
 		return fac;
 	}
+
 	public static class ResizeInfo{
 		public short[][][] underlayC;
 		public BufferedImage[] roiComposite;
-		
+
 		private ISize origISize;
 		private ISize newISize;
 		private CoordinateIndex lowPadCrop;
 		private CoordinateIndex highPadCrop;
+
 		private ResizeInfo(ISize origISize, ISize newISize, CoordinateIndex lowPadCrop,CoordinateIndex highPadCrop) {
 			if((newISize == null && (lowPadCrop==null || highPadCrop==null)) ||
-				(newISize != null && (lowPadCrop!=null || highPadCrop!=null)) ||
-				(lowPadCrop==null && highPadCrop!= null) || (lowPadCrop!= null && highPadCrop==null)){
+					(newISize != null && (lowPadCrop!=null || highPadCrop!=null)) ||
+					(lowPadCrop==null && highPadCrop!= null) || (lowPadCrop!= null && highPadCrop==null)){
 				throw new IllegalArgumentException("Unexpected args for "+ResizeInfo.class.getName());
 			}
 			this.origISize = origISize;
 			this.newISize = newISize;
 			this.lowPadCrop = lowPadCrop;
 			this.highPadCrop = highPadCrop;
-			
+
 			check();
 		}
+
 		private void check(){
 			//check
 			ISize isize = getNewSize();
@@ -3282,39 +3301,48 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			}
 
 		}
+
 		public static ResizeInfo createScaleResizeInfo(ISize origISize, ISize newISize){
 			return new ResizeInfo(origISize, newISize, null,null);
 		}
+
 		public static ResizeInfo createPadCropResizeInfo(ISize origISize,CoordinateIndex lowPadCrop,CoordinateIndex highPadCrop){
 			return new ResizeInfo(origISize, null, lowPadCrop,highPadCrop);
 		}
+
 		public boolean isScaling(){
 			return newISize != null;
 		}
+
 		public boolean isPadCrop(){
 			return lowPadCrop!=null && highPadCrop!=null;
 		}
+
 		public ISize getOriginalSize(){
 			return origISize;
 		}
+
 		public ISize getNewSize(){
 			if(isScaling()){
 				return newISize;
 			}
 			return new ISize(origISize.getX()+lowPadCrop.x+highPadCrop.x,origISize.getY()+lowPadCrop.y+highPadCrop.y,origISize.getZ()+lowPadCrop.z+highPadCrop.z);
 		}
+
 		public CoordinateIndex getLowPadCrop(){
 			return lowPadCrop;
 		}
+
 		public CoordinateIndex getHighPadCrop(){
 			return highPadCrop;
 		}
+
 		public void setResizedData(short[][][] underlayC,BufferedImage[] roiComposite){
 			this.underlayC = underlayC;
 			this.roiComposite = roiComposite;
 		}
 	}
-	
+
 	public static void resizeImpl0(ResizeInfo resizeInfo,ImageDataset[] originalData,BufferedImage[] roiComposite){
 		ISize newISize = resizeInfo.getNewSize();
 		ISize oldISize = resizeInfo.getOriginalSize();
@@ -3411,11 +3439,12 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		}else{
 			throw new RuntimeException("Unexpected "+ResizeInfo.class.getName()+" state.");
 		}
-		
+
 		resizeInfo.setResizedData(newUnderlayZ,newROIZ);
 
 	}
-	private void resizeImpl(ResizeInfo resizeInfo,ClientTaskStatusSupport clientTaskStatusSupport) throws Exception{		
+
+	private void resizeImpl(ResizeInfo resizeInfo,ClientTaskStatusSupport clientTaskStatusSupport) throws Exception{
 		resizeImpl0(resizeInfo, (bHasOriginalData?initImageDataSetChannels:null), roiComposite);
 		ISize newISize = resizeInfo.getNewSize();
 		ISize oldISize = resizeInfo.getOriginalSize();
@@ -3432,23 +3461,24 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		}else{
 			initImageDataSet(null, newISize);
 		}
-		
+
 		roiComposite = resizeInfo.roiComposite;
 
 		updateAuxiliaryInfo(originalISize,clientTaskStatusSupport);
 
 	}
-	private void resizeDataset(){				
+
+	private void resizeDataset(){
 		final ISize currentISize = new ISize(roiComposite[0].getWidth(), roiComposite[0].getHeight(), roiComposite.length);
 		ImageSizeInfo origImageSizeInfo = new ImageSizeInfo(null, currentISize, 0, new double[] {0}, 0);
 		ImageSizeInfo newImageSizeInfo = null;
-		
+
 		try{
 			newImageSizeInfo = ClientRequestManager.queryImageResize(overlayEditorPanelJAI, origImageSizeInfo, false);
 		}catch(UserCancelException e){
 			return;
 		}
-		
+
 		final ISize newImageSize = newImageSizeInfo.getiSize();
 		AsynchClientTask resizeTask = new AsynchClientTask("Resizing...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			@Override
@@ -3461,8 +3491,8 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 				new AsynchClientTask[] {resizeTask,updatePanelTask},false,false,null,true);
 
 	}
-	
-//	private void scaleZ(ISize currentISize,float scale){
+
+	//	private void scaleZ(ISize currentISize,float scale){
 //		if(scale == 1.0f){
 //			return;
 //		}
@@ -3495,6 +3525,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			return;
 		}
 	}
+
 	private void fillFromPoint(Point fillPoint){
 		ROI.fillAtPoint(fillPoint.x,fillPoint.y,
 				roiComposite[overlayEditorPanelJAI.getZ()],
@@ -3502,26 +3533,31 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		overlayEditorPanelJAI.setAllROICompositeImage(roiComposite,OverlayEditorPanelJAI.FRAP_DATA_FILL_PROPERTY);
 		overlayEditorPanelJAI.setHighliteInfo(null, OverlayEditorPanelJAI.FRAP_DATA_FILL_PROPERTY);
 	}
+
 	private void smoothUnderlay(){
 		AsynchClientTask smoothTask = new AsynchClientTask("Processing Image...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				ClientTaskStatusSupport localClientTaskStatusSupport = 
-					new ClientTaskStatusSupport() {
-						public void setProgress(int progress) {
-							if(getClientTaskStatusSupport() != null){
-								getClientTaskStatusSupport().setProgress((int)(.9*progress));
+				ClientTaskStatusSupport localClientTaskStatusSupport =
+						new ClientTaskStatusSupport() {
+							public void setProgress(int progress) {
+								if(getClientTaskStatusSupport() != null){
+									getClientTaskStatusSupport().setProgress((int)(.9*progress));
+								}
 							}
-						}
-						public void setMessage(String message) {}
-						public boolean isInterrupted() {
-							return (getClientTaskStatusSupport()==null?false:getClientTaskStatusSupport().isInterrupted());
-						}
-						public int getProgress() {return 0;}
-						public void addProgressDialogListener(ProgressDialogListener progressDialogListener) {
-							throw new RuntimeException("not yet implemented");
-						}
-					};
+
+							public void setMessage(String message) {}
+
+							public boolean isInterrupted() {
+								return (getClientTaskStatusSupport()==null?false:getClientTaskStatusSupport().isInterrupted());
+							}
+
+							public int getProgress() {return 0;}
+
+							public void addProgressDialogListener(ProgressDialogListener progressDialogListener) {
+								throw new RuntimeException("not yet implemented");
+							}
+						};
 				enhancedImageDatasetChannels = smoothImageDataset(initImageDataSetChannels,enhanceImageAmount,localClientTaskStatusSupport);
 				if(localClientTaskStatusSupport.isInterrupted()){
 					throw UserCancelException.CANCEL_GENERIC;
@@ -3544,13 +3580,14 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			ClientTaskDispatcher.dispatch(overlayEditorPanelJAI, new Hashtable<String, Object>(),
 					new AsynchClientTask[] {smoothTask,updateDisplayTask},
 					true, true, null, true);
-			
+
 		}else{
 			ClientTaskDispatcher.dispatch(overlayEditorPanelJAI, new Hashtable<String, Object>(),
 					new AsynchClientTask[] {smoothTask,updateDisplayTask});
 
 		}
 	}
+
 	private int calculateCurrentSize(){
 		int size = 0;
 		for (int i = 0; i < roiComposite.length; i++) {
@@ -3558,6 +3595,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		}
 		return size;
 	}
+
 	private void updateUnderlayHistogramDisplay(){
 		overlayEditorPanelJAI.setImages(getImageDataSetChannel(),
 				OverlayEditorPanelJAI.DEFAULT_SCALE_FACTOR, OverlayEditorPanelJAI.DEFAULT_OFFSET_FACTOR,
@@ -3567,6 +3605,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		}
 		overlayEditorPanelJAI.setUnderlayState(!bHasOriginalData);
 	}
+
 	private ImageDataset[] smoothImageDataset(ImageDataset[] origImageDatasetChannels,int enhanceImageAmount,ClientTaskStatusSupport clientTaskStatusSupport) throws Exception{
 		if(enhanceImageAmount == ROIMultiPaintManager.ENHANCE_NONE){
 			return null;
@@ -3581,12 +3620,12 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			short[] intermediateArr = new short[origImageDatasetChannels[c].getAllImages()[0].getPixels().length];
 			for (int z = 0; z < origImageDatasetChannels[c].getAllImages().length; z++) {
 				smoothedZSections[z] =
-					new UShortImage(new short[origImageDatasetChannels[c].getISize().getX()*origImageDatasetChannels[c].getISize().getY()],
-							ROIMultiPaintManager.DEFAULT_ORIGIN,ROIMultiPaintManager.DEFAULT_EXTENT,
-							origImageDatasetChannels[c].getISize().getX(),origImageDatasetChannels[c].getISize().getY(),1);
+						new UShortImage(new short[origImageDatasetChannels[c].getISize().getX()*origImageDatasetChannels[c].getISize().getY()],
+								ROIMultiPaintManager.DEFAULT_ORIGIN,ROIMultiPaintManager.DEFAULT_EXTENT,
+								origImageDatasetChannels[c].getISize().getX(),origImageDatasetChannels[c].getISize().getY(),1);
 				short[] enhancedData = smoothedZSections[z].getPixels();
 				short[] roiSourceData = origImageDatasetChannels[c].getAllImages()[z].getPixels();
-				
+
 				BoxBlurFilter.blur(roiSourceData, intermediateArr, origImageDatasetChannels[c].getISize().getX(), origImageDatasetChannels[c].getISize().getY(), radius/*,divideTable*/);
 				BoxBlurFilter.blur(intermediateArr, enhancedData, origImageDatasetChannels[c].getISize().getY(), origImageDatasetChannels[c].getISize().getX(), radius/*,divideTable*/);
 				if(clientTaskStatusSupport != null){
@@ -3598,29 +3637,30 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 				}
 			}
 			ImageDataset smoothedImageDataset =
-				new ImageDataset(smoothedZSections, new double[]{0}, origImageDatasetChannels[c].getISize().getZ());
+					new ImageDataset(smoothedZSections, new double[]{0}, origImageDatasetChannels[c].getISize().getZ());
 			smoothedImageDatasetChannels[c] = smoothedImageDataset;
 		}
 
 		return smoothedImageDatasetChannels;
 
 	}
+
 	private void updateROIWithHighlight(){
 		if(overlayEditorPanelJAI.getHighliteInfo() != null){
 			final String applyROI = "Update Domain";
 			final String createROI = "Create Domain";
 			final String cancel = "Cancel";
 			String result = null;
-			
+
 			if(overlayEditorPanelJAI.getCurrentROIInfo() != null){
 				result = DialogUtils.showWarningDialog(overlayEditorPanelJAI,
-					"Apply histogram highlighted regions. Choose an action:\n"+
-					"1. Update the current Domain '"+overlayEditorPanelJAI.getCurrentROIInfo().getROIName()+"' using the histogram highlight.\n"+
-					"2. Create a new Domain with the histogram highlight.\n",
-					new String[]{applyROI,createROI,cancel},
-					applyROI);
+						"Apply histogram highlighted regions. Choose an action:\n"+
+								"1. Update the current Domain '"+overlayEditorPanelJAI.getCurrentROIInfo().getROIName()+"' using the histogram highlight.\n"+
+								"2. Create a new Domain with the histogram highlight.\n",
+						new String[]{applyROI,createROI,cancel},
+						applyROI);
 			}else{
-				result = createROI;	
+				result = createROI;
 			}
 			if(result.equals(cancel)){
 				throw UserCancelException.CANCEL_GENERIC;
@@ -3652,6 +3692,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		}
 
 	}
+
 	private void highlightHistogramPixels(final DefaultListSelectionModel histSelection){
 		final String HISTO_HIGHLIGHT = "HISTO_HIGHLIGHT";
 		AsynchClientTask histoROITask = new AsynchClientTask("Calculating histogram highlight...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
@@ -3666,7 +3707,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 					for (int j = 0; j < pixels.length; j++) {
 						int currPixelVal = getImageDataSetChannel().getAllImages()[i].getPixels()[j]&0x0000FFFF;
 						if(histSelection != null && histSelection.isSelectedIndex(currPixelVal)){
-							pixels[j] = (short)0xFFFF;							
+							pixels[j] = (short)0xFFFF;
 						}else{
 							pixels[j] = 0;
 						}
@@ -3681,22 +3722,22 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 				overlayEditorPanelJAI.setHighliteInfo((ROI)hashTable.get(HISTO_HIGHLIGHT),OverlayEditorPanelJAI.FRAP_DATA_HISTOUPDATEHIGHLIGHT_PROPERTY);
 			}
 		};
-		
+
 		ClientTaskDispatcher.dispatch(overlayEditorPanelJAI, new Hashtable<String, Object>(),
 				new AsynchClientTask[] {histoROITask,updatedisplayTask}/*,false,false,null,true*/);
 	}
-	
+
 	private void autoCropQuestion(){
 		final String useUnderlying = "Use Underlying...";
 		final String useROI = "Use all Domain Regions...";
 		final String cancel = "Cancel";
 		String result = useUnderlying;
 		if(overlayEditorPanelJAI.getAllCompositeROINamesAndColors().length!= 0){
-			result = DialogUtils.showWarningDialog(overlayEditorPanelJAI, 
+			result = DialogUtils.showWarningDialog(overlayEditorPanelJAI,
 					"Auto-crop will find the smallest box that encloses all non-background data values and allow you to 'crop' your data to that size. Choose an action:\n"+
-					"1. Use the 'underlying' image to calculate an auto-cropping boundary.\n"+
-					"2. Use all the user Domain Regions to calculate an auto-cropping boundary.",
-					new String[] {useUnderlying,useROI,cancel}, useUnderlying);				
+							"1. Use the 'underlying' image to calculate an auto-cropping boundary.\n"+
+							"2. Use all the user Domain Regions to calculate an auto-cropping boundary.",
+					new String[] {useUnderlying,useROI,cancel}, useUnderlying);
 		}
 		if(result.equals(cancel)){
 			throw UserCancelException.CANCEL_GENERIC;
@@ -3706,6 +3747,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			autoCrop(true);
 		}
 	}
+
 	private void calculateHistogram(){
 		AsynchClientTask calcBinsTask = new AsynchClientTask("Calulating Histogram",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			@Override
@@ -3723,11 +3765,12 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		ClientTaskDispatcher.dispatch(overlayEditorPanelJAI, new Hashtable<String, Object>(),
 				new AsynchClientTask[] {calcBinsTask,updatePanelTask},false,false,null,true);
 	}
+
 	private ROIMultiPaintManager.Crop3D getNonZeroBoundingBox(boolean bUseROI){
 		Rectangle bounding2D = null;
 		int lowZ = Integer.MAX_VALUE;
 		int highZ = -1;
-		
+
 		if(bUseROI){
 			int lowX = Integer.MAX_VALUE;
 			int lowY = Integer.MAX_VALUE;
@@ -3779,17 +3822,17 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 	private void autoCrop(boolean bUseROI){
 		ROIMultiPaintManager.Crop3D nonZeroBoundingBox3D = getNonZeroBoundingBox(bUseROI);
 		if(nonZeroBoundingBox3D != null){
-			boolean isAutoCroppable3D = 
-				!(nonZeroBoundingBox3D.low.z == 0 && 
-						nonZeroBoundingBox3D.depth == getImageDataSetChannel().getISize().getZ());
-			boolean isAutoCroppable2D = 
-				!(nonZeroBoundingBox3D.low.x == 0 && 
-						nonZeroBoundingBox3D.low.y == 0 && 
-						nonZeroBoundingBox3D.width == getImageDataSetChannel().getISize().getX() &&
-						nonZeroBoundingBox3D.height == getImageDataSetChannel().getISize().getY());
-	
+			boolean isAutoCroppable3D =
+					!(nonZeroBoundingBox3D.low.z == 0 &&
+							nonZeroBoundingBox3D.depth == getImageDataSetChannel().getISize().getZ());
+			boolean isAutoCroppable2D =
+					!(nonZeroBoundingBox3D.low.x == 0 &&
+							nonZeroBoundingBox3D.low.y == 0 &&
+							nonZeroBoundingBox3D.width == getImageDataSetChannel().getISize().getX() &&
+							nonZeroBoundingBox3D.height == getImageDataSetChannel().getISize().getY());
+
 			if(isAutoCroppable3D || isAutoCroppable2D){
-				
+
 				boolean bIncludeZ = true;
 				boolean bIncludeXY = true;
 				if(isAutoCroppable3D){
@@ -3805,30 +3848,30 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 					}
 					int lowZlower = (nonZeroBoundingBox3D.low.z != 0
 							?(B_DISPLAY_ZERO_INDEX_Z
-								?0
-								:1)
+							?0
+							:1)
 							:-1);
 					int lowZupper = (nonZeroBoundingBox3D.low.z != 0
 							?(B_DISPLAY_ZERO_INDEX_Z
-								?nonZeroBoundingBox3D.low.z-1
-								:nonZeroBoundingBox3D.low.z-1+1)
+							?nonZeroBoundingBox3D.low.z-1
+							:nonZeroBoundingBox3D.low.z-1+1)
 							:-1);
 					int highZlower = ((nonZeroBoundingBox3D.low.z+nonZeroBoundingBox3D.depth) != getImageDataSetChannel().getISize().getZ()
 							?(B_DISPLAY_ZERO_INDEX_Z
-								?(nonZeroBoundingBox3D.low.z+nonZeroBoundingBox3D.depth)
-								:nonZeroBoundingBox3D.low.z+nonZeroBoundingBox3D.depth+1):
+							?(nonZeroBoundingBox3D.low.z+nonZeroBoundingBox3D.depth)
+							:nonZeroBoundingBox3D.low.z+nonZeroBoundingBox3D.depth+1):
 							-1);
 					int highZupper = ((nonZeroBoundingBox3D.low.z+nonZeroBoundingBox3D.depth) != getImageDataSetChannel().getISize().getZ()
 							?(B_DISPLAY_ZERO_INDEX_Z
-								?(getImageDataSetChannel().getISize().getZ()-1)
-								:getImageDataSetChannel().getISize().getZ()-1+1)
+							?(getImageDataSetChannel().getISize().getZ()-1)
+							:getImageDataSetChannel().getISize().getZ()-1+1)
 							:-1);
-					String result = DialogUtils.showWarningDialog(overlayEditorPanelJAI, 
+					String result = DialogUtils.showWarningDialog(overlayEditorPanelJAI,
 							"Auto-crop using "+(bUseROI?"ROIs":"underlying image")+" has detected empty Z Sections from"+
-							(lowZlower != -1?" "+lowZlower+" to "+lowZupper:"")+
-							(highZlower != -1?(lowZlower != -1?" and ":" ")+highZlower+" to "+highZupper:"")+
-							(defaultOption == cropOnlyZ?"\nThere are no empty XY border pixels.":"")+
-							"\nDo you want to include the empty Z-sections in the crop?",
+									(lowZlower != -1?" "+lowZlower+" to "+lowZupper:"")+
+									(highZlower != -1?(lowZlower != -1?" and ":" ")+highZlower+" to "+highZupper:"")+
+									(defaultOption == cropOnlyZ?"\nThere are no empty XY border pixels.":"")+
+									"\nDo you want to include the empty Z-sections in the crop?",
 							options, defaultOption);
 					if(result.equals(cancel)){
 						throw UserCancelException.CANCEL_GENERIC;
@@ -3863,18 +3906,20 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			return;
 		}
 	}
+
 	public static class PaddedInfo {
 		public Object paddedArray;
 		public ISize paddedISize;
 	}
+
 	public static PaddedInfo copyToPadded(
 			Object origArr,ISize origISize,Origin origOrigin,Extent origExtent,
 			ISize padMinus,ISize padPlus){
-		
+
 		int newSizeX = origISize.getX()+(padMinus.getX()+padPlus.getX());
 		int newSizeY = (origISize.getY()>1?origISize.getY()+(padMinus.getY()+padPlus.getY()):origISize.getY());
 		int newSizeZ =  (origISize.getZ()>1?origISize.getZ()+(padMinus.getZ()+padPlus.getZ()):origISize.getZ());
-		
+
 		Object newArr = Array.newInstance(origArr.getClass().getComponentType(), newSizeX*newSizeY*newSizeZ);
 		Object allZSections = origArr;
 		int origXYSize =  origISize.getX()*origISize.getY();
@@ -3896,12 +3941,13 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 				System.arraycopy(paddedCurrZSection, 0, newArr, z0*newSizeX*newSizeY, newSizeX*newSizeY);
 			}
 		}
-		
+
 		ROIMultiPaintManager.PaddedInfo paddedInfo = new ROIMultiPaintManager.PaddedInfo();
 		paddedInfo.paddedArray = newArr;
 		paddedInfo.paddedISize = new ISize(newSizeX, newSizeY, newSizeZ);
 		return paddedInfo;
 	}
+
 	public static byte[] padXYByte(byte[] byteArr,int numX,int numY,int left,int right,int top,int bottom){
 		BufferedImage bufferedImage = new BufferedImage(numX, numY, BufferedImage.TYPE_BYTE_GRAY);
 		byte[] byteData = ((DataBufferByte)bufferedImage.getRaster().getDataBuffer()).getData();
@@ -3909,6 +3955,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		PlanarImage planarImage = BorderDescriptor.create(bufferedImage,left,right,top,bottom,null, null).getRendering();
 		return ((DataBufferByte)planarImage.getData().getDataBuffer()).getData();
 	}
+
 	public static short[] padXYUShort(short[] shortArr,int numX,int numY,int left,int right,int top,int bottom){
 		BufferedImage bufferedImage = new BufferedImage(numX, numY, BufferedImage.TYPE_USHORT_GRAY);
 		short[] shortData = ((DataBufferUShort)bufferedImage.getRaster().getDataBuffer()).getData();
@@ -3916,7 +3963,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		PlanarImage planarImage = BorderDescriptor.create(bufferedImage,left,right,top,bottom,null, null).getRendering();
 		return ((DataBufferUShort)planarImage.getData().getDataBuffer()).getData();
 	}
-	
+
 	public static PlanarImage resizeXYByte(byte[] byteArr,int numX,int numY,Float scaleX,Float scaleY){
 		BufferedImage bufferedImage = new BufferedImage(numX, numY, BufferedImage.TYPE_BYTE_INDEXED, getContrastIndexColorModel());
 		byte[] byteData = ((DataBufferByte)bufferedImage.getRaster().getDataBuffer()).getData();
@@ -3928,6 +3975,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 //		paddedInfo.paddedISize = new ISize(planarImage.getWidth(), planarImage.getHeight(), 1);
 //		return paddedInfo;
 	}
+
 	public static PlanarImage resizeXYUShort(short[] shortArr,int numX,int numY,Float scaleX,Float scaleY){
 		BufferedImage bufferedImage = new BufferedImage(numX, numY, BufferedImage.TYPE_USHORT_GRAY);
 		short[] shortData = ((DataBufferUShort)bufferedImage.getRaster().getDataBuffer()).getData();
@@ -3945,10 +3993,12 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		public String toString() {
 			return (low==null?super.toString():low.x+","+low.y+","+low.z+" ["+width+" "+height+" "+depth+"]");
 		}
+
 		public CoordinateIndex low  = new CoordinateIndex();
 		public int width;
 		public int height;
 		public int depth;
+
 		public void setBounds(ROIMultiPaintManager.Crop3D crop3D){
 			low.x = crop3D.low.x;
 			low.y = crop3D.low.y;
@@ -3966,30 +4016,35 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			this.height = height;
 			this.depth = depth;
 		}
+
 		public boolean bXYBigger(int origWidth,int origHeight){
 			return
-			(low.x < 0 ||
-			low.y < 0 ||
-			(low.x+width) > origWidth ||
-			(low.y+height) > origHeight);
+					(low.x < 0 ||
+							low.y < 0 ||
+							(low.x+width) > origWidth ||
+							(low.y+height) > origHeight);
 		}
+
 		public boolean bZBigger(int origDepth){
 			return
-			(low.z < 0 || (low.z+depth) > origDepth);
+					(low.z < 0 || (low.z+depth) > origDepth);
 		}
+
 		public boolean bXYSmaller(int origWidth,int origHeight){
 			return
-			(low.x > 0 ||
-			low.y > 0 ||
-			(low.x+width) < origWidth ||
-			(low.y+height) < origHeight);
+					(low.x > 0 ||
+							low.y > 0 ||
+							(low.x+width) < origWidth ||
+							(low.y+height) < origHeight);
 		}
+
 		public boolean bZSmaller(int origDepth){
 			return
-			(low.z > 0 || (low.z+depth) < origDepth);
+					(low.z > 0 || (low.z+depth) < origDepth);
 		}
 
 	}
+
 	private void duplicateROIData(final int newZSize){
 		final AsynchClientTask extrudeTask = new AsynchClientTask("Extruding...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			@Override
@@ -4000,21 +4055,21 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 				}
 				UShortImage[][] newUnderLayImageArr = new UShortImage[initImageDataSetChannels.length][newZSize];
 				BufferedImage[] newROICompositeArr =  new BufferedImage[newZSize];
-				
+
 				for (int i = 0; i < newZSize; i++) {
 					for (int c = 0; c < initImageDataSetChannels.length; c++) {
 //						short[] zslice = new short[initImageDataSetChannels[c].getAllImages()[0].getPixels().length];
 //						System.arraycopy(initImageDataSetChannels[c].getAllImages()[0].getPixels(), 0, zslice, 0, zslice.length);
 						newUnderLayImageArr[c][i] =
-							new UShortImage(
-								initImageDataSetChannels[c].getAllImages()[0].getPixels().clone(),//	zslice,
-								DEFAULT_ORIGIN, DEFAULT_EXTENT,
-								initImageDataSetChannels[c].getAllImages()[0].getNumX(),
-								initImageDataSetChannels[c].getAllImages()[0].getNumY(),1);
+								new UShortImage(
+										initImageDataSetChannels[c].getAllImages()[0].getPixels().clone(),//	zslice,
+										DEFAULT_ORIGIN, DEFAULT_EXTENT,
+										initImageDataSetChannels[c].getAllImages()[0].getNumX(),
+										initImageDataSetChannels[c].getAllImages()[0].getNumY(),1);
 					}
 					newROICompositeArr[i] =
-						new BufferedImage(roiComposite[0].getWidth(),roiComposite[0].getHeight(),
-							BufferedImage.TYPE_BYTE_INDEXED, getContrastIndexColorModel());
+							new BufferedImage(roiComposite[0].getWidth(),roiComposite[0].getHeight(),
+									BufferedImage.TYPE_BYTE_INDEXED, getContrastIndexColorModel());
 					System.arraycopy((byte[])((DataBufferByte)roiComposite[0].getRaster().getDataBuffer()).getData(), 0,
 							(byte[])((DataBufferByte)newROICompositeArr[i].getRaster().getDataBuffer()).getData(), 0,
 							origSize.getX()*origSize.getY());
@@ -4024,7 +4079,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 					initImageDataSetChannels[c] = new ImageDataset(newUnderLayImageArr[c], null, newZSize);
 				}
 				roiComposite = newROICompositeArr;
-		
+
 				if(!(enhanceImageAmount == ROIMultiPaintManager.ENHANCE_NONE)){
 					getClientTaskStatusSupport().setMessage("smoothing...");
 				}
@@ -4036,7 +4091,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 				new AsynchClientTask[] {extrudeTask,updatePanelTask},false,false,null,true);
 
 	}
-	
+
 	private void padCropDataset(){
 		int xm = 0;
 		int ym = 0;
@@ -4072,10 +4127,10 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 
 		final CoordinateIndex low = new CoordinateIndex(xm,ym,zm);
 		final CoordinateIndex high = new CoordinateIndex(xp,yp,zp);
-		
+
 		final AsynchClientTask padTask = new AsynchClientTask("Changeing borders...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			@Override
-			public void run(Hashtable<String, Object> hashTable) throws Exception {				
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				resizeImpl(ResizeInfo.createPadCropResizeInfo(getImageDataSetChannel().getISize(),low,high),getClientTaskStatusSupport());
 			}
 		};
@@ -4083,6 +4138,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		ClientTaskDispatcher.dispatch(overlayEditorPanelJAI,new Hashtable<String, Object>(),
 				new AsynchClientTask[] {padTask,updatePanelTask},false,false,null,true);
 	}
+
 	private void cropROIData(final Crop3D cropRectangle3D/*,boolean bThread*/){
 		final AsynchClientTask cropTask = new AsynchClientTask("Cropping...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			@Override
@@ -4090,9 +4146,9 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 				ISize origISize = getImageDataSetChannel().getISize();
 				CoordinateIndex cropLow = new CoordinateIndex(-cropRectangle3D.low.x,-cropRectangle3D.low.y,-cropRectangle3D.low.z);
 				CoordinateIndex cropHigh =
-					new CoordinateIndex(cropRectangle3D.low.x+cropRectangle3D.width-origISize.getX(),
-						cropRectangle3D.low.y+cropRectangle3D.height-origISize.getY(),
-						cropRectangle3D.low.z+cropRectangle3D.depth-origISize.getZ());
+						new CoordinateIndex(cropRectangle3D.low.x+cropRectangle3D.width-origISize.getX(),
+								cropRectangle3D.low.y+cropRectangle3D.height-origISize.getY(),
+								cropRectangle3D.low.z+cropRectangle3D.depth-origISize.getZ());
 				resizeImpl(ResizeInfo.createPadCropResizeInfo(origISize, cropLow, cropHigh), getClientTaskStatusSupport());
 				updateAuxiliaryInfo(origISize,getClientTaskStatusSupport());
 			}
@@ -4127,8 +4183,9 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 //				}
 //			}).run();
 //		}
-			
+
 	}
+
 	private AsynchClientTask getUpdateDisplayAfterCropTask(){
 		return new AsynchClientTask("Updating display...",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 			@Override
@@ -4147,6 +4204,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		};
 
 	}
+
 	private void updateAuxiliaryInfo(ISize origSize,ClientTaskStatusSupport clientTaskStatusSupport) throws Exception{
 		if(clientTaskStatusSupport != null){clientTaskStatusSupport.setMessage("Smothing...");}
 		enhancedImageDatasetChannels = smoothImageDataset(initImageDataSetChannels, enhanceImageAmount,null);
@@ -4163,13 +4221,14 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		}
 
 	}
+
 	private void deleteROI(ComboboxROIName currentComboboxROIName){
 		final String deleteCurrentROI = "Delete only current Domain";
 		final String deleteAllROI = "Delete all Domains";
 		final String cancel = "Cancel";
 		String result =
-			DialogUtils.showWarningDialog(overlayEditorPanelJAI, "Choose delete option.",
-					new String[] {deleteCurrentROI,deleteAllROI,cancel}, deleteCurrentROI);
+				DialogUtils.showWarningDialog(overlayEditorPanelJAI, "Choose delete option.",
+						new String[] {deleteCurrentROI,deleteAllROI,cancel}, deleteCurrentROI);
 		if(result.equals(cancel)){
 			throw UserCancelException.CANCEL_GENERIC;
 		}
@@ -4190,8 +4249,9 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			wantBlendSetToEnhance();
 		}
 
-		
+
 	}
+
 	private void addNewROI(ROIMultiPaintManager.ComboboxROIName[] comboboxROINameArr,String specialMessage) throws Exception{
 		try{
 			int unUsedColorIndex = getUnusedROIColorIndex(comboboxROINameArr,null);
@@ -4269,6 +4329,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			throw UserCancelException.CANCEL_GENERIC;
 		}
 	}
+
 	private boolean isROINameUsed(ROIMultiPaintManager.ComboboxROIName[] comboboxROINameArr,String roiName){
 		for (int i = 0; i < comboboxROINameArr.length; i++) {
 			if(comboboxROINameArr[i].getROIName().equals(roiName)){
@@ -4277,9 +4338,10 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		}
 		return false;
 	}
+
 	private int getUnusedROIColorIndex(ROIMultiPaintManager.ComboboxROIName[] comboboxROINameArr,Set<Integer> exclude) throws Exception{
-	//		JColorChooser jColorChooser = new JColorChooser();
-	//		DialogUtils.showComponentOKCancelDialog(overlayEditorPanelJAI, jColorChooser, "Select ROI Color");
+		//		JColorChooser jColorChooser = new JColorChooser();
+		//		DialogUtils.showComponentOKCancelDialog(overlayEditorPanelJAI, jColorChooser, "Select ROI Color");
 		for (int i = 1; i < getContrastIndexColorModel().getMapSize(); i++) {
 			boolean bColorUsed = false;
 			if(exclude != null && exclude.contains(i)){
@@ -4297,6 +4359,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		}
 		throw new Exception("No more unused colors");
 	}
+
 	private boolean askApplyHighlightToROI(){
 		UShortImage[] roiZ = overlayEditorPanelJAI.getHighliteInfo().getRoiImages();
 		boolean bOverWrite = true;
@@ -4331,6 +4394,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		return bOverWrite;
 
 	}
+
 	private void applyHighlightToROI(ROIMultiPaintManager.ComboboxROIName currentComboboxROIName,boolean bOverWrite){
 		UShortImage[] roiZ = overlayEditorPanelJAI.getHighliteInfo().getRoiImages();
 		//Update composite ROI
@@ -4341,17 +4405,18 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			for (int j = 0; j < pixels.length; j++) {
 				if(pixels[j] != 0){
 					compositePixels[j] =
-						(bOverWrite?
-						(byte)roiColorIndex:
-							(compositePixels[j] == 0?(byte)roiColorIndex:compositePixels[j]));
+							(bOverWrite?
+									(byte)roiColorIndex:
+									(compositePixels[j] == 0?(byte)roiColorIndex:compositePixels[j]));
 				}
 			}
 		}
 		overlayEditorPanelJAI.setAllROICompositeImage(roiComposite,OverlayEditorPanelJAI.FRAP_DATA_UPDATEROI_WITHHIGHLIGHT_PROPERTY);
 		overlayEditorPanelJAI.setHighliteInfo(null,OverlayEditorPanelJAI.FRAP_DATA_UPDATEROI_WITHHIGHLIGHT_PROPERTY);
 	}
-	
+
 	private enum FLAG_CLEAR_ROI {CLEARALL,CLEARCURRENT,CLEARUNDERHILITE,CONVERT};
+
 	private FLAG_CLEAR_ROI askClearROI(){
 		FLAG_CLEAR_ROI flag = null;
 		int roiCount = overlayEditorPanelJAI.getAllCompositeROINamesAndColors().length;
@@ -4375,7 +4440,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		String result = DialogUtils.showWarningDialog(
 				overlayEditorPanelJAI,
 				"Choose action:\n"+
-				sb.toString(),
+						sb.toString(),
 				optionListV.toArray(new String[0]),
 				clearCurrentOnly);
 		if(result.equals(clearAll)){
@@ -4389,6 +4454,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		}
 		return flag;
 	}
+
 	private void clearROI(FLAG_CLEAR_ROI flag,int contrastColorIndex,String action){
 
 		if(flag.equals(FLAG_CLEAR_ROI.CLEARALL)){
@@ -4416,10 +4482,12 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		overlayEditorPanelJAI.setHighliteInfo(null,action);
 
 	}
+
 	private InterruptCalc[] lastResolveHighlightInterruptCalc = new InterruptCalc[1];
+
 	private void highliteImageWithResolvedSelections(final RegionInfo[] selectedRegionInfos){
 		if(selectedRegionInfos == null || selectedRegionInfos.length == 0){
-			overlayEditorPanelJAI.setHighliteInfo(null, OverlayEditorPanelJAI.FRAP_DATA_RESOLVEDHIGHLIGHT_PROPERTY);				
+			overlayEditorPanelJAI.setHighliteInfo(null, OverlayEditorPanelJAI.FRAP_DATA_RESOLVEDHIGHLIGHT_PROPERTY);
 			return;
 		}
 		final String RESOLVE_HIGHLIGHT_INFO = "RESOLVE_HIGHLIGHT_INFO";
@@ -4446,6 +4514,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		};
 		ClientTaskDispatcher.dispatch(overlayEditorPanelJAI, new Hashtable<String, Object>(), new AsynchClientTask[] {hilightCalcTask,udpateDisplayTask});
 	}
+
 	private void mergeResolvedSelections(final RegionInfo[] selectedRegionInfos) throws Exception{
 		if(selectedRegionInfos == null || selectedRegionInfos.length == 0){
 			return;
@@ -4500,9 +4569,9 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 				//get new regionImage and new selectedRegionInfos
 				VCImage tempImage = ROIMultiPaintManager.createVCImageFromBufferedImages(ROIMultiPaintManager.DEFAULT_EXTENT, tempROI);
 				RegionImage tempRegionImage =
-					new RegionImage(tempImage, 0 /*0 means generate no surfacecollection*/,
-							tempImage.getExtent(),ROIMultiPaintManager.DEFAULT_ORIGIN, RegionImage.NO_SMOOTHING,
-							null);
+						new RegionImage(tempImage, 0 /*0 means generate no surfacecollection*/,
+								tempImage.getExtent(),ROIMultiPaintManager.DEFAULT_ORIGIN, RegionImage.NO_SMOOTHING,
+								null);
 				tempImage = null;//release memory
 				RegionInfo[] tempRegionInfos = tempRegionImage.getRegionInfos();
 				if(tempRegionInfos.length == 1){
@@ -4510,44 +4579,44 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 				}
 				if(getClientTaskStatusSupport()!=null){getClientTaskStatusSupport().setProgress(20);}
 				Vector<RegionImage.RegionInfo> tempSelectedRegionInfos = new Vector<RegionImage.RegionInfo>();
-				 HighlightROIInfo highlightROIInfo =
-							generateHighlightROIInfo((byte)-1,tempROI,tempRegionImage,
-									RegionAction.createCheckNeighborsOnlyRegionAction(tempRegionInfos),
-									null);
-					boolean bHasSelectionWithMoreThanOneNeighbor = false;
-					for (int i = 0; i < tempRegionInfos.length; i++) {
-						if (tempRegionInfos[i].getPixelValue() == unusedROIPixelValue) {
-							tempSelectedRegionInfos.add(tempRegionInfos[i]);
+				HighlightROIInfo highlightROIInfo =
+						generateHighlightROIInfo((byte)-1,tempROI,tempRegionImage,
+								RegionAction.createCheckNeighborsOnlyRegionAction(tempRegionInfos),
+								null);
+				boolean bHasSelectionWithMoreThanOneNeighbor = false;
+				for (int i = 0; i < tempRegionInfos.length; i++) {
+					if (tempRegionInfos[i].getPixelValue() == unusedROIPixelValue) {
+						tempSelectedRegionInfos.add(tempRegionInfos[i]);
 //							if (highlightROIInfo.neighborsForRegionsMap.get(tempRegionInfos[i]).size() > 1) {
 //								hashTable.put(UNUSED_ROI_PIXVAL, new Integer(unusedROIPixelValue));
 //								bHasSelectionWithMoreThanOneNeighbor = true;
 //							} else {
 //								tempSelectedRegionInfos.add(tempRegionInfos[i]);
 //							}
-						}
 					}
-					if(getClientTaskStatusSupport()!=null){getClientTaskStatusSupport().setProgress(50);}
-					//final merge
-					updateUndo(UNDO_INIT.ALLZ);
-					generateHighlightROIInfo((byte)unusedROIPixelValue,tempROI,tempRegionImage,
+				}
+				if(getClientTaskStatusSupport()!=null){getClientTaskStatusSupport().setProgress(50);}
+				//final merge
+				updateUndo(UNDO_INIT.ALLZ);
+				generateHighlightROIInfo((byte)unusedROIPixelValue,tempROI,tempRegionImage,
 						RegionAction.createMergeSelectedWithNeighborsRegionAction(
 								tempRegionInfos,
 								tempSelectedRegionInfos,
 								highlightROIInfo.neighborsForRegionsMap/*,
 								true*/),
 						null);
-					//copy merged bytes back to ROI
-					for (int i = 0; i < tempROI.length; i++) {
-						byte[] roiBytes = ((DataBufferByte)roiComposite[i].getRaster().getDataBuffer()).getData();
-						byte[] sliceBytes = ((DataBufferByte)tempROI[i].getRaster().getDataBuffer()).getData();
+				//copy merged bytes back to ROI
+				for (int i = 0; i < tempROI.length; i++) {
+					byte[] roiBytes = ((DataBufferByte)roiComposite[i].getRaster().getDataBuffer()).getData();
+					byte[] sliceBytes = ((DataBufferByte)tempROI[i].getRaster().getDataBuffer()).getData();
 //						for (int j = 0; j < sliceBytes.length; j++) {
 //							if(sliceBytes[j] == (byte)unusedROIPixelValue){
 //								System.out.println("Bad");
 //							}
 //						}
-						System.arraycopy(sliceBytes, 0, roiBytes, 0, roiBytes.length);
-					}
-					if(getClientTaskStatusSupport()!=null){getClientTaskStatusSupport().setProgress(90);}
+					System.arraycopy(sliceBytes, 0, roiBytes, 0, roiBytes.length);
+				}
+				if(getClientTaskStatusSupport()!=null){getClientTaskStatusSupport().setProgress(90);}
 			}
 		};
 		AsynchClientTask updateGUITask = new AsynchClientTask("Updating display...",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
@@ -4567,15 +4636,17 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		asynchClientTaskV.add(updateGUITask);
 		asynchClientTaskV.addAll(Arrays.asList(getRefreshObjectsTasks()));
 		ClientTaskDispatcher.dispatch(overlayEditorPanelJAI, new Hashtable<String, Object>(), asynchClientTaskV.toArray(new AsynchClientTask[0]),
-					true, false, null, true);
+				true, false, null, true);
 	}
-	
+
 	private static final int BLEND_ENHANCE_THRESHOLD = 70;
+
 	private void wantBlendSetToEnhance(){
 		if(overlayEditorPanelJAI.getBlendPercent() > BLEND_ENHANCE_THRESHOLD){
 			overlayEditorPanelJAI.setBlendPercent(BLEND_ENHANCE_THRESHOLD);
 		}
 	}
+
 	private int compareCoordinateIndex(CoordinateIndex o1CI,CoordinateIndex o2CI){
 		if(o1CI.z != o2CI.z){
 			return o1CI.z - o2CI.z;
@@ -4586,6 +4657,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		}
 
 	}
+
 	private String getRoiNameFromPixelValue(int pixelValue){
 		if(pixelValue == 0){
 			return RESERVED_NAME_BACKGROUND;
@@ -4598,32 +4670,37 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		}
 		throw new RuntimeException("No color found for pixelvalue="+pixelValue);
 	}
-	
+
 	private static class RegionAction{
 		public static final int REGION_ACTION_HIGHLIGHT = 0;
 		public static final int REGION_ACTION_CHECKNEIGHBORSONLY = 1;
 		public static final int REGION_ACTION_MERGESELECTEDWITHNEIGHBORS = 2;
-		
+
 		private RegionInfo[] actionAllRegionInfos;
 		private Hashtable<RegionImage.RegionInfo,TreeSet<Integer>> neighborsForRegionsMap;
 		private List<RegionImage.RegionInfo> selectedRegionsV;
 		private int action;
 //		private boolean bLeaveMultiNeighborUnchanged = true;
-		private RegionAction(){
-			
-		}
+private RegionAction(){
+
+}
+
 		public int getAction(){
 			return action;
 		}
+
 		public RegionInfo[] getAllRegionInfos(){
 			return actionAllRegionInfos;
 		}
+
 		public List<RegionImage.RegionInfo> getSelectedRegionInfos(){
 			return selectedRegionsV;
 		}
+
 		public Hashtable<RegionImage.RegionInfo,TreeSet<Integer>> getNeighborsForRegionMap(){
 			return neighborsForRegionsMap;
 		}
+
 		public static RegionAction createHighlightRegionAction(RegionImage.RegionInfo[] allRegionInfos,List<RegionImage.RegionInfo> selectedRegionsV){
 			RegionAction regionAction = new RegionAction();
 			regionAction.actionAllRegionInfos = allRegionInfos;
@@ -4631,6 +4708,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			regionAction.action = REGION_ACTION_HIGHLIGHT;
 			return regionAction;
 		}
+
 		public static RegionAction createCheckNeighborsOnlyRegionAction(RegionImage.RegionInfo[] allRegionInfos){
 			RegionAction regionAction = new RegionAction();
 			regionAction.actionAllRegionInfos = allRegionInfos;
@@ -4638,6 +4716,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			regionAction.action = REGION_ACTION_CHECKNEIGHBORSONLY;
 			return regionAction;
 		}
+
 		public static RegionAction createMergeSelectedWithNeighborsRegionAction(
 				RegionImage.RegionInfo[] allRegionInfos,
 				List<RegionImage.RegionInfo> selectedRegionsV,
@@ -4653,15 +4732,17 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		}
 
 	}
+
 	private static class HighlightROIInfo{
 		public ROI highlightROI;
 		public Hashtable<RegionImage.RegionInfo,TreeSet<Integer>> neighborsForRegionsMap =
-			new Hashtable<RegionInfo, TreeSet<Integer>>();
+				new Hashtable<RegionInfo, TreeSet<Integer>>();
 		public Hashtable<RegionImage.RegionInfo,CoordinateIndex> coordIndexForRegionsMap =
-			new Hashtable<RegionInfo, CoordinateIndex>();
+				new Hashtable<RegionInfo, CoordinateIndex>();
 	}
+
 	private static HighlightROIInfo generateHighlightROIInfo(byte debugValue,BufferedImage[] roiArr,RegionImage regionImage,RegionAction regionAction,ClientTaskStatusSupport clientTaskStatusSupport) throws Exception{
-		
+
 		HighlightROIInfo highlightROIInfo = new HighlightROIInfo();
 
 		//Create lookup map to speedup highlighting operation for large dataset
@@ -4672,11 +4753,11 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			selectedRegionMap[nextRegion.getRegionIndex()] = nextRegion;
 		}
 		byte[] shortEncodedRegionIndexes = regionImage.getShortEncodedRegionIndexImage();
-		
+
 		final int XSIZE = roiArr[0].getWidth();
 
 		if(regionAction.getAction() == RegionAction.REGION_ACTION_HIGHLIGHT){
-			highlightROIInfo.highlightROI = createEmptyROI(new ISize(roiArr[0].getWidth(),roiArr[0].getHeight(),roiArr.length));			
+			highlightROIInfo.highlightROI = createEmptyROI(new ISize(roiArr[0].getWidth(),roiArr[0].getHeight(),roiArr.length));
 		}
 
 		int allIndex = 0;
@@ -4692,8 +4773,8 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			for (int y = 0; y < roiArr[0].getHeight(); y++) {
 				for (int x = 0; x < XSIZE; x++) {
 					int regionIndex =
-						(shortEncodedRegionIndexes[allIndex]&0x000000FF) |
-						(shortEncodedRegionIndexes[allIndex+1]&0x000000FF)<<8;
+							(shortEncodedRegionIndexes[allIndex]&0x000000FF) |
+									(shortEncodedRegionIndexes[allIndex+1]&0x000000FF)<<8;
 					if(selectedRegionMap[regionIndex] != null){
 						RegionInfo currentRegionInfo = selectedRegionMap[regionIndex];
 						if(regionAction.getAction() == RegionAction.REGION_ACTION_CHECKNEIGHBORSONLY){
@@ -4764,19 +4845,19 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		}
 		return highlightROIInfo;
 	}
-	
+
 	private static ROI createEmptyROI(ISize iSize){
 		//Highlight selected regions
 		try{
 			UShortImage[] ushortRegionHighlightArr = new UShortImage[iSize.getZ()];
 			for (int i = 0; i < ushortRegionHighlightArr.length; i++) {
 				ushortRegionHighlightArr[i] =
-					new UShortImage(
-							new short[iSize.getX()*iSize.getY()],
-							DEFAULT_ORIGIN,DEFAULT_EXTENT,
-							iSize.getX(),
-							iSize.getY(),
-							1);
+						new UShortImage(
+								new short[iSize.getX()*iSize.getY()],
+								DEFAULT_ORIGIN,DEFAULT_EXTENT,
+								iSize.getX(),
+								iSize.getY(),
+								1);
 			}
 			return new ROI(ushortRegionHighlightArr,"roi");
 		}catch(Exception e){
@@ -4784,7 +4865,9 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			return null;
 		}
 	}
+
 	private static final String STOP_PROGRESS = "STOP_PROGRESS";
+
 	private void progressWait(String title,String message,boolean bCancelable){
 		if(STOP_PROGRESS.equals(title) || STOP_PROGRESS.equals(message)){
 			if(progressWaitPopup != null){
@@ -4796,8 +4879,8 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		if(progressWaitPopup == null){
 			if(bCancelable){
 				progressWaitPopup = new AsynchProgressPopup(overlayEditorPanelJAI,
-					(title==null?"Wait...":title), message, new Thread(), true, false,
-					true,null);
+						(title==null?"Wait...":title), message, new Thread(), true, false,
+						true,null);
 			}else{
 				progressWaitPopup = new AsynchProgressPopup(overlayEditorPanelJAI,
 						(title==null?"Wait...":title), message, null, true, false);
@@ -4806,14 +4889,16 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		}
 		progressWaitPopup.setMessage(message);
 	}
+
 	private void updateExtent(VCImage updateThisVCImage,Extent origExtent,ISize origIsISize){
 		updateThisVCImage.setExtent(
-			new Extent(
-				updateThisVCImage.getNumX()*origExtent.getX()/origIsISize.getX(),
-				updateThisVCImage.getNumY()*origExtent.getY()/origIsISize.getY(),
-				updateThisVCImage.getNumZ()*origExtent.getZ()/origIsISize.getZ())
+				new Extent(
+						updateThisVCImage.getNumX()*origExtent.getX()/origIsISize.getX(),
+						updateThisVCImage.getNumY()*origExtent.getY()/origIsISize.getY(),
+						updateThisVCImage.getNumZ()*origExtent.getZ()/origIsISize.getZ())
 		);
 	}
+
 	private boolean fillVoids(BufferedImage[] roiPixels,boolean bCheckOnly) throws Exception{
 		if(true){throw new IllegalArgumentException("Not yet implemented fully");}
 		boolean bHadAnyInternalVoids = false;
@@ -4824,9 +4909,9 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		boolean bUseZ = roiPixels.length>1;
 		VCImage checkImage = ROIMultiPaintManager.createVCImageFromBufferedImages(getImageDataSetChannel().getExtent(), roiComposite);
 		RegionImage regionImage =
-			new RegionImage(checkImage, 0 /*0 means generate no surfacecollection*/,
-					checkImage.getExtent(),getImageDataSetChannel().getAllImages()[0].getOrigin(), RegionImage.NO_SMOOTHING,
-					progressWaitPopup);
+				new RegionImage(checkImage, 0 /*0 means generate no surfacecollection*/,
+						checkImage.getExtent(),getImageDataSetChannel().getAllImages()[0].getOrigin(), RegionImage.NO_SMOOTHING,
+						progressWaitPopup);
 		RegionInfo[] newRegionInfos = regionImage.getRegionInfos();
 		for (int i = 0; i < newRegionInfos.length; i++) {
 			if(newRegionInfos[i].getPixelValue() == 0){
@@ -4839,9 +4924,9 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 						for (int x = 0; x < xSize; x++) {
 							if(newRegionInfos[i].isIndexInRegion(zyOffset+x)){
 								if(x==0 || y==0 | (bUseZ && z==0) |
-									x==(xSize-1) ||
-									y==(ySize-1) ||
-									(bUseZ && z==(zSize-1))){
+										x==(xSize-1) ||
+										y==(ySize-1) ||
+										(bUseZ && z==(zSize-1))){
 									bInternalVoid = false;
 									break;
 								}
@@ -4857,8 +4942,8 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 						return bHadAnyInternalVoids;
 					}
 					for (int z = 0; z < zSize; z++) {
-						byte[] roiPixelsBytes = 
-							((DataBufferByte)roiPixels[z].getRaster().getDataBuffer()).getData();
+						byte[] roiPixelsBytes =
+								((DataBufferByte)roiPixels[z].getRaster().getDataBuffer()).getData();
 						for (int xy = 0; xy < XYSIZE; xy++) {
 //							if(newRegionInfos[i].isIndexInRegion(j)){
 //								fillvoidPixels[j]|= 0xFFFF;
@@ -4897,7 +4982,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 //					boolean bSet = isSet(zPixels[xy], MAX_SCALE, tempLookup,true,false);
 //					bins[index]+= (bSet?1:0);
 //					binTotal+= (bSet?1:0);
-//	
+//
 //				}
 //			}
 //			TreeMap<Integer, Integer> condensedBinsMap = new TreeMap<Integer, Integer>();
@@ -4911,37 +4996,37 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 //
 //		return condensedBinsMapChannels;
 //	}
-	private static TreeMap<Integer, Integer>[] calculateCondensedBinsChannels0(ImageDataset[] sourceImageDatasetChannels){
-		final int MAX_SCALE = 0x0000FFFF;
-		int[] tempLookup = new int[MAX_SCALE+1];
-		for (int i = 0; i < tempLookup.length; i++) {
-			tempLookup[i] = i;
-		}
-		TreeMap<Integer, Integer>[] condensedBinsMapChannels = new TreeMap[sourceImageDatasetChannels.length];
-		for (int c = 0; c < sourceImageDatasetChannels.length; c++) {
-			int[] bins = new int[MAX_SCALE+1];
-			int binTotal = 0;
-			for (int z = 0; z < sourceImageDatasetChannels[c].getSizeZ(); z++) {
-				short[] zPixels = sourceImageDatasetChannels[c].getAllImages()[z].getPixels();
-				for (int xy = 0; xy < zPixels.length; xy++) {
-					int index = (int)(zPixels[xy]&0x0000FFFF);
-					boolean bSet = isSet(zPixels[xy], MAX_SCALE, tempLookup,true,false);
-					bins[index]+= (bSet?1:0);
-					binTotal+= (bSet?1:0);
-	
-				}
-			}
-			TreeMap<Integer, Integer> condensedBinsMap = new TreeMap<Integer, Integer>();
-			for (int i = 0; i < bins.length; i++) {
-				if(bins[i] != 0){
-					condensedBinsMap.put(i, bins[i]);
-				}
-			}
-			condensedBinsMapChannels[c] = condensedBinsMap;
-		}
-
-		return condensedBinsMapChannels;
+private static TreeMap<Integer, Integer>[] calculateCondensedBinsChannels0(ImageDataset[] sourceImageDatasetChannels){
+	final int MAX_SCALE = 0x0000FFFF;
+	int[] tempLookup = new int[MAX_SCALE+1];
+	for (int i = 0; i < tempLookup.length; i++) {
+		tempLookup[i] = i;
 	}
+	TreeMap<Integer, Integer>[] condensedBinsMapChannels = new TreeMap[sourceImageDatasetChannels.length];
+	for (int c = 0; c < sourceImageDatasetChannels.length; c++) {
+		int[] bins = new int[MAX_SCALE+1];
+		int binTotal = 0;
+		for (int z = 0; z < sourceImageDatasetChannels[c].getSizeZ(); z++) {
+			short[] zPixels = sourceImageDatasetChannels[c].getAllImages()[z].getPixels();
+			for (int xy = 0; xy < zPixels.length; xy++) {
+				int index = (int)(zPixels[xy]&0x0000FFFF);
+				boolean bSet = isSet(zPixels[xy], MAX_SCALE, tempLookup,true,false);
+				bins[index]+= (bSet?1:0);
+				binTotal+= (bSet?1:0);
+
+			}
+		}
+		TreeMap<Integer, Integer> condensedBinsMap = new TreeMap<Integer, Integer>();
+		for (int i = 0; i < bins.length; i++) {
+			if(bins[i] != 0){
+				condensedBinsMap.put(i, bins[i]);
+			}
+		}
+		condensedBinsMapChannels[c] = condensedBinsMap;
+	}
+
+	return condensedBinsMapChannels;
+}
 
 	public static boolean isSet(short roiSourceDataUnsignedShort,int thresholdIndex,int[] thresholdLookupArr,boolean maskArrState,boolean bInvertThreshold){
 		if(bInvertThreshold){
