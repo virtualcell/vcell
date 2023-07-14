@@ -73,8 +73,6 @@ COPY ./vcell-client/target/vcell-client-0.0.1-SNAPSHOT.jar \
      ./vcell-server/target/maven-jars/*.jar \
  	 ./vcell-vmicro/target/vcell-vmicro-0.0.1-SNAPSHOT.jar \
      ./vcell-vmicro/target/maven-jars/*.jar \
- 	 ./vcell-oracle/target/vcell-oracle-0.0.1-SNAPSHOT.jar \
-     ./vcell-oracle/target/maven-jars/*.jar \
      ./vcell-admin/target/vcell-admin-0.0.1-SNAPSHOT.jar \
      ./vcell-admin/target/maven-jars/*.jar \
      ./vcell-cli/target/vcell-cli-0.0.1-SNAPSHOT.jar \
