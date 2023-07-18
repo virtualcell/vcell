@@ -77,7 +77,7 @@ public class OmexPythonUtils {
     }
 
     private static int callCLIPython(String command, Path omexFile, Path tempDir, Path reportJsonFile) throws InterruptedException, IOException {
-        File cliPythonDir = PropertyLoader.getRequiredDirectory(PropertyLoader.cliWorkingDir);
+        File cliPythonDir = PropertyLoader.getRequiredDirectory(PropertyLoader.cliWorkingDir).getCanonicalFile();
         ProcessBuilder pb = new ProcessBuilder(
                 "poetry", "run", "python",
                 "-m", "vcell_cli_utils.wrapper",
