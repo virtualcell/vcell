@@ -67,7 +67,7 @@ public class MathOverrideRoundTipTest {
         previousInstalldirPropertyValue = System.getProperty("vcell.installDir");
         previousCliWorkDirPropertyValue = System.getProperty("cli.workingDir");
         System.setProperty("vcell.installDir", "..");
-        System.setProperty("cli.workingDir", System.getProperty("vcell.installDir") + "/python/vcell_cli_utils");
+        System.setProperty("cli.workingDir", System.getProperty("vcell.installDir") + "/vcell_cli_utils");
         NativeLib.combinej.load();
         this.previousWriteDebugFiles = SBMLExporter.bWriteDebugFiles;
         SBMLExporter.bWriteDebugFiles = bDebug;
