@@ -877,11 +877,26 @@ public class LangevinLngvWriter {
 			}
 			ParticleInitialConditionCount pic = (ParticleInitialConditionCount)particleInitialConditions.get(0);
 			Expression count = pic.getCount();
+			String scount = count.infix();
+			
+			scount = "100";
+//			try {
+//
+//				String symbol = count.getSymbols()[0];
+//				
+//
+//				double rate = count.evaluateConstantWithSubstitution();
+//				double rate1 = count.evaluateConstant();
+//				
+//			} catch (Exception e) {
+//				throw new RuntimeException("rate must be a number");
+//			}
+//				exp = MathUtilities.substituteFunctions(count, mathDescription, false);
 			
 			int dimension = geometryContext.getGeometry().getDimension();
 
 			sb.append("MOLECULE: \"" + lpmt.getName() + "\" " + subDomain.getName() + 
-					" Number " + pic.getCount().infix() + 
+					" Number " + scount + 
 					// number of site types and number of sites is the same for the vcell implementation of springsalad
 					" Site_Types " + lpmt.getComponentList().size() + " Total"  + "_Sites " + lpmt.getComponentList().size() + 
 					" Total_Links " + lpmt.getInternalLinkSpec().size() + " is2D " + (dimension == 2 ? true : false));	// TODO: is2D must mean if the molecule is "flat" on YZ axis projection

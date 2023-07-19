@@ -142,7 +142,7 @@ public class Simulation implements Versionable, Matchable, java.beans.VetoableCh
 				}
 				// Each MolecularType can be used for only one SpeciesContext
 				MolecularType mt = sp.getMolecularTypePatterns().get(0).getMolecularType();
-				sb.append("'").append(mt.getName()).append("' : '")
+				sb.append("'").append(mt.getName()).append("' : ")
 					.append("Measure Total Free Bound");
 				sb.append("\n");
 			}
@@ -170,9 +170,9 @@ public class Simulation implements Versionable, Matchable, java.beans.VetoableCh
 				for(MolecularComponent mc : mcList) {
 					List<ComponentStateDefinition> csdList = mc.getComponentStateDefinitions();
 					for(ComponentStateDefinition csd : csdList) {
-						sb.append("'").append(mt.getName()).append("' : '")
-							.append("'").append(mc.getName()).append("' : '")
-							.append("'").append(csd.getName()).append("' : '")
+						sb.append("'").append(mt.getName()).append("' : ")
+							.append("'").append(mc.getName()).append("' : ")
+							.append("'").append(csd.getName()).append("' : ")
 							.append("Measure Total Free Bound");
 						sb.append("\n");
 					}
@@ -227,7 +227,7 @@ public class Simulation implements Versionable, Matchable, java.beans.VetoableCh
 				MolecularType mt = sp.getMolecularTypePatterns().get(0).getMolecularType();
 				List<MolecularComponent> mcList = mt.getComponentList();
 				for(MolecularComponent mc : mcList) {
-					sb.append("'").append(mt.getName()).append("' : ")
+					sb.append("'").append(mt.getName()).append("' ")
 						.append("Site " + (mc.getIndex()-1)).append(" : ")
 						.append("Track Properties true");
 					sb.append("\n");
