@@ -301,6 +301,10 @@ public class LangevinLngvWriter {
 		// general stuff is in solver task description
 		simulation.getSolverTaskDescription().writeData(sb);
 		
+		// for fast simulation for a simple transition state model, select the following time simulation options: 
+		// - ending:				0.01	(langevin: total time)
+		// - time step (default):	1E-7 	(langevin: dt)
+		// - output interval:		1E-4	(langevin: dt_data)
 		LangevinSimulationOptions lso = simulation.getSolverTaskDescription().getLangevinSimulationOptions();
 		sb.append("dt_spring: " + lso.getIntervalSpring());		// 1.00E-9 default
 		sb.append("\n");
@@ -877,21 +881,19 @@ public class LangevinLngvWriter {
 			}
 			ParticleInitialConditionCount pic = (ParticleInitialConditionCount)particleInitialConditions.get(0);
 			Expression count = pic.getCount();
-			String scount = count.infix();
-			
-			scount = "100";
-//			try {
-//
-//				String symbol = count.getSymbols()[0];
-//				
-//
-//				double rate = count.evaluateConstantWithSubstitution();
-//				double rate1 = count.evaluateConstant();
-//				
-//			} catch (Exception e) {
-//				throw new RuntimeException("rate must be a number");
-//			}
-//				exp = MathUtilities.substituteFunctions(count, mathDescription, false);
+			try {
+				
+				Expression exp = MathUtilities.substituteFunctions(count, mathDescription, true);
+				exp = exp.flatten();
+				double ddd = exp.evaluateConstant();
+			} catch (Exception e) {
+				throw new RuntimeException("rate must be a number");
+			}
+
+			//
+			// TODO: put the correct number here, for now we hardcode for 100 molecules
+			//
+			String scount = "100";
 			
 			int dimension = geometryContext.getGeometry().getDimension();
 

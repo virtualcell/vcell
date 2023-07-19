@@ -912,6 +912,9 @@ public void runQuickSimulation(final Simulation originalSimulation, ViewerType v
 								}
 								sc.close();
 								if(lastLine != null) {
+									if(!lastLine.startsWith("Simulation")) {
+										continue;
+									}
 									lineScanner = new Scanner(lastLine);
 									// Skip "Simulation"
 									lineScanner.next();

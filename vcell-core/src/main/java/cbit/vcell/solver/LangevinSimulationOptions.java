@@ -28,7 +28,8 @@ import cbit.vcell.math.VCML;
 public class LangevinSimulationOptions implements Serializable, Matchable, VetoableChangeListener {
 
 
-	protected int numOfTrials = 1;				// single trajectory if 1 (default), multiple trajectories if >1
+	protected int numOfTrials = 1;
+	protected int runIndex = 0;				// run index, will result in Run0 (fillowed by Run1, 2,...)
 	protected double intervalSpring = 1.00E-9;	// default: dt_spring: 1.00E-9	- from advanced
 	protected double intervalImage = 1.00E-4;	// default: dt_image: 1.00E-4	- from advanced
 
@@ -41,12 +42,12 @@ public class LangevinSimulationOptions implements Serializable, Matchable, Vetoa
 	}
 	
 	public LangevinSimulationOptions(LangevinSimulationOptions smoldynSimulationOptions) {
-		this();
+		this();				// TODO: properly implement copy constructor
 	}
 
 	public LangevinSimulationOptions(CommentStringTokenizer tokens) throws DataAccessException {
 		this();
-		readVCML(tokens);
+		readVCML(tokens);	// TODO: implement read
 	}
 	
 	public boolean compareEqual(Matchable obj) {
@@ -60,6 +61,9 @@ public class LangevinSimulationOptions implements Serializable, Matchable, Vetoa
 	}
 // -----------------------------------------------------------------------------------
 
+	public int getRunIndex() {
+		return runIndex;
+	}
 	public int getNumOfTrials() {
 		return numOfTrials;
 	}
@@ -68,6 +72,9 @@ public class LangevinSimulationOptions implements Serializable, Matchable, Vetoa
 	}
 	public double getIntervalImage() {
 		return intervalImage;
+	}
+	public final void setRunIndex(int newValue) {
+		this.runIndex = newValue;
 	}
 	public final void setNumOfTrials(int newValue) {
 		this.numOfTrials = newValue;

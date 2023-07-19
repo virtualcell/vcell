@@ -49,6 +49,7 @@ import cbit.vcell.solvers.SimpleCompiledSolver;
 public class LangevinSolver extends SimpleCompiledSolver {
 
 	private String logFileString = null;	// logfile name as it appears in argument list
+											// it is the value of getLogFilename(), but it's set late
 	
 	public LangevinSolver(SimulationTask simTask, java.io.File directory,
 			boolean bMsging) throws SolverException {
@@ -168,12 +169,15 @@ public class LangevinSolver extends SimpleCompiledSolver {
 		String[] mathExecutableCommand = getMathExecutableCommand();
 		File saveDirectoryFile = getSaveDirectory();	// working directory (not needed?)
 		
-		mathExecutableCommand[1] = "C:\\TEMP\\test\\ssld-eclipse_SIMULATIONS\\Simulation0_SIM.txt";
-		mathExecutableCommand[3] = "C:\\TEMP\\test\\ssld-eclipse_SIMULATIONS\\Simulations0_OutStream_0.txt";
+//		mathExecutableCommand[2] = "--output-log=C:\\TEMP\\test\\ssld-eclipse_SIMULATIONS\\Simulations0_OutStream_0.txt";
+//		mathExecutableCommand[3] = "C:\\TEMP\\test\\ssld-eclipse_SIMULATIONS\\Simulation0_SIM.txt";
 		
-		setLogFileString(mathExecutableCommand[3]);
+
 		MathExecutable me = new MathExecutable(mathExecutableCommand, saveDirectoryFile);
 		setMathExecutable(me);
+		
+//		setLogFileString("C:\\TEMP\\test\\ssld-eclipse_SIMULATIONS\\Simulations0_OutStream_0.txt");
+		setLogFileString(getLogFilename());		// variable is set "late"  TODO: may be not needed
 	}
 
 	private String getInputFilename() {
@@ -203,15 +207,17 @@ public class LangevinSolver extends SimpleCompiledSolver {
 		String outputFilename = getOutputFilename();
 		String speciesOutputFilename = getSpeciesOutputFilename();
 		String logFilename = getLogFilename();
+		String logFileOption = "--output-log=" + logFilename;
 		
 		LangevinSimulationOptions lso = simTask.getSimulation().getSolverTaskDescription().getLangevinSimulationOptions();
-		int numOfTrials = lso.getNumOfTrials();
+		int runIndex = lso.getRunIndex();		// run index
 		
 		ArrayList<String> cmds = new ArrayList<String>();
 		cmds.add(executableName);	// executable
+		cmds.add("simulate");		// the new langevin solver made by jim wants this argument
+		cmds.add(logFileOption);	// used for solver to send status info to client (3rd argument);
 		cmds.add(inputFilename);	// first argument
-		cmds.add(numOfTrials + "");	// second argument
-		cmds.add(logFilename);		// used for solver to send status info to client (3rd argument);
+		cmds.add(runIndex + "");	// second argument
 		
 		return cmds.toArray(new String[cmds.size()]);
 	}
