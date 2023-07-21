@@ -1479,14 +1479,17 @@ public class SEDMLExporter {
 			int sedmlVersion = 2;
 			String sOutputDirPath;
 			String sBaseFileName;
-			if (exportFileOrDirectory.isDirectory()){
+			/* if (exportFileOrDirectory.isDirectory()){
 				String strPath = exportFileOrDirectory.toPath().toString();
 				sOutputDirPath = Paths.get(FileUtils.getFullPath(strPath), exportFileOrDirectory.getName()).toString();
 				sBaseFileName = bioModel.getName();
 			} else {
 				sOutputDirPath = FileUtils.getFullPathNoEndSeparator(exportFileOrDirectory.getAbsolutePath());
 				sBaseFileName = FileUtils.getBaseName(exportFileOrDirectory.getAbsolutePath());
-			}
+			}*/
+
+			sOutputDirPath = FileUtils.getFullPathNoEndSeparator(exportFileOrDirectory.getAbsolutePath());
+			sBaseFileName = FileUtils.getBaseName(exportFileOrDirectory.getAbsolutePath());
 
 			List<Simulation> simsToExport = Arrays.stream(bioModel.getSimulations()).filter(simulationExportFilter).collect(Collectors.toList());
 

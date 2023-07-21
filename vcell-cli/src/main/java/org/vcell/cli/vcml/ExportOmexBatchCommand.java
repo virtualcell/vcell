@@ -69,7 +69,7 @@ public class ExportOmexBatchCommand implements Callable<Integer> {
     private boolean help;
 
     public Integer call() {
-        Level logLevel = this.bDebug ? Level.DEBUG : this.logger.getLevel();
+        Level logLevel = this.bDebug ? Level.DEBUG : logger.getLevel();
         
         LoggerContext config = (LoggerContext)(LogManager.getContext(false));
         config.getConfiguration().getLoggerConfig(LogManager.getLogger("org.vcell").getName()).setLevel(logLevel);
@@ -77,7 +77,7 @@ public class ExportOmexBatchCommand implements Callable<Integer> {
         config.updateLoggers();
 
         try {
-            this.logger.debug("Batch export of omex files requested");
+            logger.debug("Batch export of omex files requested");
             PropertyLoader.loadProperties();
             File parentDir = new File(outputFilePath.getParent()).getCanonicalFile();
             if (this.inputFilePath == null || !this.inputFilePath.exists() || !this.inputFilePath.isDirectory())
@@ -97,7 +97,7 @@ public class ExportOmexBatchCommand implements Callable<Integer> {
         try {
             PropertyLoader.loadProperties();
 
-            this.logger.debug("Batch export of omex files requested");
+            logger.debug("Batch export of omex files requested");
             int numSuccessfulExports = 0, numTotalFiles = 0;
             Path inputDirPath = this.inputFilePath.getCanonicalFile().toPath();
             try (DirectoryStream<Path> dirStream = Files.newDirectoryStream(inputDirPath)){
@@ -118,7 +118,7 @@ public class ExportOmexBatchCommand implements Callable<Integer> {
                         String outputFileName = childFileFullName.substring(0, childFileFullName.length() - 5);
                         targetOutputFile = Paths.get(this.outputFilePath.getCanonicalPath(), outputFileName).toFile();
                     } catch (IOException e){
-                        this.logger.error("Error setting up '" + child.getFileName() + "':\n\t", e);
+                        logger.error("Error setting up '" + child.getFileName() + "':\n\t", e);
                         continue;
                     }
 
@@ -126,20 +126,20 @@ public class ExportOmexBatchCommand implements Callable<Integer> {
                     try {
                         ExportOmexCommand.exportVCMLFile(childFile, targetOutputFile, this.outputModelFormat,
                                 this.bWriteLogFiles, this.bValidateOmex, this.bSkipUnsupportedApps);
-                        this.logger.info("Conversion from '" + child.getFileName()
+                        logger.info("Conversion from '" + child.getFileName()
                                 + "' to '" + targetOutputFile.getName() + "' succeeded");
                         numSuccessfulExports++;
                     } catch (Exception e){
-                        this.logger.error("Conversion for '" + child.getFileName() + "' failed:\n\t", e);
+                        logger.error("Conversion for '" + child.getFileName() + "' failed:\n\t", e);
                     }
-                    this.logger.error("Continuing to next file to convert.\n\n");
+                    logger.error("Continuing to next file to convert.\n\n");
                 }
-                this.logger.info(String.format("Batch mode complete.\n\t"
+                logger.info(String.format("Batch mode complete.\n\t"
                         + " %d/%d exports were successful.", numSuccessfulExports, numTotalFiles));
             }
 
         } catch (Exception e){
-            this.logger.error("Unexpected IO Error occurred, ending batch conversion");
+            logger.error("Unexpected IO Error occurred, ending batch conversion");
             throw new RuntimeException("Unexpected IO error occurred:\n\t", e);
         }
         return 0;
