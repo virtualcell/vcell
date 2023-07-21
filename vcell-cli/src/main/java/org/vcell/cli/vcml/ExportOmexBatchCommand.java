@@ -1,5 +1,6 @@
 package org.vcell.cli.vcml;
 
+import org.vcell.cli.vcml.ExportOmexCommand;
 import cbit.vcell.resource.PropertyLoader;
 
 import org.apache.logging.log4j.Level;
@@ -16,6 +17,10 @@ import picocli.CommandLine.Option;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.concurrent.Callable;
 
@@ -64,7 +69,7 @@ public class ExportOmexBatchCommand implements Callable<Integer> {
     private boolean help;
 
     public Integer call() {
-        Level logLevel = bDebug ? Level.DEBUG : logger.getLevel();
+        Level logLevel = this.bDebug ? Level.DEBUG : this.logger.getLevel();
         
         LoggerContext config = (LoggerContext)(LogManager.getContext(false));
         config.getConfiguration().getLoggerConfig(LogManager.getLogger("org.vcell").getName()).setLevel(logLevel);
@@ -72,15 +77,73 @@ public class ExportOmexBatchCommand implements Callable<Integer> {
         config.updateLoggers();
 
         try {
-            
-            logger.debug("Batch export of omex files requested");
+            this.logger.debug("Batch export of omex files requested");
             PropertyLoader.loadProperties();
-            if (inputFilePath == null || !inputFilePath.exists() || !inputFilePath.isDirectory())
-                throw new RuntimeException("inputFilePath '" + (inputFilePath == null ? "" : inputFilePath) + "' is not a 'valid directory'");
-            
-            if (outputFilePath.exists() && !outputFilePath.isDirectory())
-                throw new RuntimeException("outputFilePath '" + outputFilePath + "' is not a 'valid directory'");
+            File parentDir = new File(outputFilePath.getParent()).getCanonicalFile();
+            if (this.inputFilePath == null || !this.inputFilePath.exists() || !this.inputFilePath.isDirectory())
+                throw new RuntimeException("inputFilePath '" + (this.inputFilePath == null ? "" : this.inputFilePath) + "' is not a valid VCML archive");
+            if (this.outputFilePath == null || !this.outputFilePath.isDirectory())
+                throw new RuntimeException("outputFilePath '" + (this.outputFilePath == null ? "" : this.outputFilePath) + "' is not a valid target for OMEX archive");
+            if (parentDir.exists() && !parentDir.isDirectory()) {
+                throw new RuntimeException("directory for output '" + parentDir.getCanonicalPath() + "' is not a valid directory for OMEX archive");
+            }
+            if (!parentDir.exists())
+                if (!parentDir.mkdirs())
+                    throw new RuntimeException("Output dir doesn't exist and could not be made!");
+        } catch (IOException e){
+            throw new RuntimeException("Error in setting up batch execution:\n\t", e);
+        }
 
+        try {
+            PropertyLoader.loadProperties();
+
+            this.logger.debug("Batch export of omex files requested");
+            int numSuccessfulExports = 0, numTotalFiles = 0;
+            Path inputDirPath = this.inputFilePath.getCanonicalFile().toPath();
+            try (DirectoryStream<Path> dirStream = Files.newDirectoryStream(inputDirPath)){
+                for (Path child : dirStream){
+                    // Begin Setup
+                    File childFile, targetOutputFile;
+                    try {
+                        childFile = child.toFile();
+                        if (childFile.isDirectory()){
+                            continue;
+                        }
+                        if (!child.toString().endsWith(".vcml")){
+                            continue;
+                        }
+                        numTotalFiles++;
+
+                        String childFileFullName = childFile.getName();
+                        String outputFileName = childFileFullName.substring(0, childFileFullName.length() - 5);
+                        targetOutputFile = Paths.get(this.outputFilePath.getCanonicalPath(), outputFileName).toFile();
+                    } catch (IOException e){
+                        this.logger.error("Error setting up '" + child.getFileName() + "':\n\t", e);
+                        continue;
+                    }
+
+                    // Setup Complete, Begin Conversion.
+                    try {
+                        ExportOmexCommand.exportVCMLFile(childFile, targetOutputFile, this.outputModelFormat,
+                                this.bWriteLogFiles, this.bValidateOmex, this.bSkipUnsupportedApps);
+                        this.logger.info("Conversion from '" + child.getFileName()
+                                + "' to '" + targetOutputFile.getName() + "' succeeded");
+                        numSuccessfulExports++;
+                    } catch (Exception e){
+                        this.logger.error("Conversion for '" + child.getFileName() + "' failed:\n\t", e);
+                    }
+                    this.logger.error("Continuing to next file to convert.\n\n");
+                }
+                this.logger.info(String.format("Batch mode complete.\n\t"
+                        + " %d/%d exports were successful.", numSuccessfulExports, numTotalFiles));
+            }
+
+        } catch (Exception e){
+            this.logger.error("Unexpected IO Error occurred, ending batch conversion");
+            throw new RuntimeException("Unexpected IO error occurred:\n\t", e);
+        }
+        return 0;
+        /* old methodology
             if (bOffline) this.runInOfflineMode();
             else this.run();
             
@@ -91,6 +154,7 @@ public class ExportOmexBatchCommand implements Callable<Integer> {
         } finally {
             logger.debug("Batch export completed");
         }
+        */
     }
 
     private void runInOfflineMode() throws IOException {

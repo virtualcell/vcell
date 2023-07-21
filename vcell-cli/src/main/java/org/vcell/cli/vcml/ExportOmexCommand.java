@@ -42,8 +42,8 @@ public class ExportOmexCommand implements Callable<Integer> {
     boolean bValidateOmex;
 
     public Integer call() {
-        Level logLevel = bDebug ? Level.DEBUG : logger.getLevel(); 
-        
+        Level logLevel = bDebug ? Level.DEBUG : logger.getLevel();
+
         LoggerContext config = (LoggerContext)(LogManager.getContext(false));
         config.getConfiguration().getLoggerConfig(LogManager.getLogger("org.vcell").getName()).setLevel(logLevel);
         config.getConfiguration().getLoggerConfig(LogManager.getLogger("cbit").getName()).setLevel(logLevel);
@@ -52,15 +52,35 @@ public class ExportOmexCommand implements Callable<Integer> {
         try {
             PropertyLoader.loadProperties();
 
-            logger.debug("Beginning export");
-            VcmlOmexConverter.convertOneFile(
-                    inputFilePath, outputFilePath, outputModelFormat, bWriteLogFiles, bValidateOmex, bSkipUnsupportedApps);
-            return 0;
+            if (inputFilePath == null || !inputFilePath.exists() || !inputFilePath.isDirectory())
+                throw new RuntimeException("inputFilePath '" + (inputFilePath == null ? "" : inputFilePath) + "' is not a valid VCML archive");
+
+            if (outputFilePath == null || outputFilePath.isDirectory())
+                throw new RuntimeException("outputFilePath '" + (outputFilePath == null ? "" : outputFilePath) + "' is not a valid target for OMEX archive");
+
+            if (outputFilePath.exists())
+                this.logger.warn(String.format("File '%s' already exists."));
+
+            return ExportOmexCommand.exportVCMLFile(this.inputFilePath, this.outputFilePath,
+                    this.outputModelFormat, this.bWriteLogFiles, this.bValidateOmex, this.bSkipUnsupportedApps);
+
         } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException(e.getMessage());
-        } finally {
-            logger.debug("Completed all exports");
+            throw new RuntimeException("Export failed with message:\n\t" + e.getMessage(), e);
         }
+    }
+
+    public static int exportVCMLFile(File inputFilePath, File outputFilePath, ModelFormat outputModelFormat,
+                                     boolean bWriteLogFiles, boolean bValidateOmex, boolean bSkipUnsupportedApps)
+            throws Exception {
+        try {
+            logger.debug(String.format("Beginning export of '%s'", inputFilePath.getName()));
+            VcmlOmexConverter.convertOneFile(inputFilePath, outputFilePath, outputModelFormat,
+                    bWriteLogFiles, bValidateOmex, bSkipUnsupportedApps);
+            logger.debug(String.format("Finished export of '%s'", inputFilePath.getName()));
+        } catch (Exception e){
+            logger.error(String.format("Error while exporting '%s'", inputFilePath.getName())); // We throw, no need to print error here
+            throw e;
+        }
+        return 0;
     }
 }

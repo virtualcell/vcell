@@ -1477,8 +1477,16 @@ public class SEDMLExporter {
 			// export the entire biomodel to a SEDML file (all supported applications)
 			int sedmlLevel = 1;
 			int sedmlVersion = 2;
-			String sOutputDirPath = FileUtils.getFullPathNoEndSeparator(exportFileOrDirectory.getAbsolutePath());
-			String sBaseFileName = FileUtils.getBaseName(exportFileOrDirectory.getAbsolutePath());
+			String sOutputDirPath;
+			String sBaseFileName;
+			if (exportFileOrDirectory.isDirectory()){
+				String strPath = exportFileOrDirectory.toPath().toString();
+				sOutputDirPath = Paths.get(FileUtils.getFullPath(strPath), exportFileOrDirectory.getName()).toString();
+				sBaseFileName = bioModel.getName();
+			} else {
+				sOutputDirPath = FileUtils.getFullPathNoEndSeparator(exportFileOrDirectory.getAbsolutePath());
+				sBaseFileName = FileUtils.getBaseName(exportFileOrDirectory.getAbsolutePath());
+			}
 
 			List<Simulation> simsToExport = Arrays.stream(bioModel.getSimulations()).filter(simulationExportFilter).collect(Collectors.toList());
 
