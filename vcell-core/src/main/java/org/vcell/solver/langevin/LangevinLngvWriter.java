@@ -881,20 +881,16 @@ public class LangevinLngvWriter {
 			}
 			ParticleInitialConditionCount pic = (ParticleInitialConditionCount)particleInitialConditions.get(0);
 			Expression count = pic.getCount();
+			String scount;
 			try {
-				
 				Expression exp = MathUtilities.substituteFunctions(count, mathDescription, true);
 				exp = exp.flatten();
 				double ddd = exp.evaluateConstant();
+				scount = Integer.toString((int)ddd);
 			} catch (Exception e) {
-				throw new RuntimeException("rate must be a number");
+				throw new RuntimeException("Initial concentration must be a number");
 			}
 
-			//
-			// TODO: put the correct number here, for now we hardcode for 100 molecules
-			//
-			String scount = "100";
-			
 			int dimension = geometryContext.getGeometry().getDimension();
 
 			sb.append("MOLECULE: \"" + lpmt.getName() + "\" " + subDomain.getName() + 
