@@ -1,9 +1,13 @@
 package org.vcell.sbml;
 
+import cbit.vcell.resource.NativeLib;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.vcell.sbml.vcell.SBMLExporter;
 import org.vcell.sedml.ModelFormat;
 import org.vcell.test.SEDML_SBML_IT;
 
@@ -15,6 +19,9 @@ import java.util.stream.Stream;
 @RunWith(Parameterized.class)
 @Category({SEDML_SBML_IT.class})
 public class SEDMLExporterSBMLTest extends SEDMLExporterCommon {
+
+	private String previousInstallDirPropertyValue;
+	private String previousCliWorkDirPropertyValue;
 
 	public SEDMLExporterSBMLTest(TestCase testCase){
 		super(testCase);
@@ -170,8 +177,7 @@ public class SEDMLExporterSBMLTest extends SEDMLExporterCommon {
 		faults.put("biomodel_65311813.vcml", SEDML_FAULT.OMEX_PARSER_ERRORS);  //  XPATH_BAD:  XPath `/sbml:sbml/sbml:model/sbml:listOfParameters/sbml:parameter[@id='Ran_nuc_diff']/@value` does not match any elements of model `_3d_image_0`
 		return faults;
 	}
-
-	@Parameterized.Parameters
+		@Parameterized.Parameters
 	public static Collection<TestCase> testCases() {
 		Predicate<String> skipFilter_SBML = (t) ->
 				!outOfMemorySet().contains(t) &&

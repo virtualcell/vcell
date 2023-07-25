@@ -44,7 +44,8 @@ public abstract class SEDMLExporterCommon {
 	//
 	// save state for zero side-effect
 	//
-	private static String previousInstalldirPropertyValue;
+	private static String previousInstallDirPropertyValue;
+	private static String previousCliWorkDirPropertyValue;
 	private static boolean previousWriteDebugFiles;
 
 	public SEDMLExporterCommon(TestCase testCase){
@@ -85,8 +86,10 @@ public abstract class SEDMLExporterCommon {
 
 	@BeforeClass
 	public static void setup(){
-		previousInstalldirPropertyValue = System.getProperty("vcell.installDir");
+		previousInstallDirPropertyValue = System.getProperty("vcell.installDir");
+		previousCliWorkDirPropertyValue = System.getProperty("cli.workingDir");
 		System.setProperty("vcell.installDir", "..");
+		System.setProperty("cli.workingDir", System.getProperty("vcell.installDir") + "/vcell-cli-utils");
 		NativeLib.combinej.load();
 		previousWriteDebugFiles = SBMLExporter.bWriteDebugFiles;
 		SBMLExporter.bWriteDebugFiles = bDebug;
@@ -94,8 +97,11 @@ public abstract class SEDMLExporterCommon {
 
 	@AfterClass
 	public static void teardown() throws IOException {
-		if (previousInstalldirPropertyValue!=null) {
-			System.setProperty("vcell.installDir", previousInstalldirPropertyValue);
+		if (previousInstallDirPropertyValue !=null) {
+			System.setProperty("vcell.installDir", previousInstallDirPropertyValue);
+		}
+		if (previousCliWorkDirPropertyValue != null){
+			System.setProperty("cli.workingDir", previousCliWorkDirPropertyValue);
 		}
 		SBMLExporter.bWriteDebugFiles = previousWriteDebugFiles;
 	}
