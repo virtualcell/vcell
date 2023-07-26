@@ -1,0 +1,68 @@
+# Simulation Parameters
+SIMULATION_PARAM_BEGIN
+SOLVER SUNDIALS_PDE_SOLVER 1.0E-7 1.0E-9 0.1
+DISCONTINUITY_TIMES 1 0.1
+BASE_FILE_NAME /Users/schaff/.vcell/simdata/temp/SimID_956955326_0_
+ENDING_TIME 0.5
+TIME_STEP 0.1
+KEEP_EVERY 1
+SIMULATION_PARAM_END
+
+# Model description: FEATURE name handle boundary_conditions
+MODEL_BEGIN
+FEATURE subdomain1 1 flux flux flux flux flux flux 
+FEATURE subdomain0 0 flux flux flux flux flux flux 
+MEMBRANE subdomain0_subdomain1_membrane subdomain1 subdomain0 flux flux flux flux flux flux 
+MODEL_END
+
+# Mesh file
+MESH_BEGIN
+VCG_FILE /Users/schaff/.vcell/simdata/temp/SimID_956955326_0_.vcg
+MESH_END
+
+# Variables : type name domain time_dependent_flag advection_flag grad_flag solve_whole_mesh_flag solve_regions
+VARIABLE_BEGIN
+MEMBRANE_PDE r_PM subdomain0_subdomain1_membrane false
+MEMBRANE_PDE rf_PM subdomain0_subdomain1_membrane false
+VARIABLE_END
+
+POST_PROCESSING_BLOCK_BEGIN
+POST_PROCESSING_BLOCK_END
+
+COMPARTMENT_BEGIN subdomain1
+
+COMPARTMENT_END
+
+COMPARTMENT_BEGIN subdomain0
+
+COMPARTMENT_END
+
+
+MEMBRANE_BEGIN subdomain0_subdomain1_membrane subdomain1 subdomain0
+
+EQUATION_BEGIN r_PM
+INITIAL 5.0;
+RATE (50.0 * rf_PM * ((t < 0.1) && (x > 5.0)));
+DIFFUSION 10.0;
+BOUNDARY_XM 0.0;
+BOUNDARY_XP 0.0;
+BOUNDARY_YM 0.0;
+BOUNDARY_YP 0.0;
+BOUNDARY_ZM 0.0;
+BOUNDARY_ZP 0.0;
+EQUATION_END
+
+EQUATION_BEGIN rf_PM
+INITIAL 5.0;
+RATE  - (50.0 * rf_PM * ((t < 0.1) && (x > 5.0)));
+DIFFUSION 10.0;
+BOUNDARY_XM 0.0;
+BOUNDARY_XP 0.0;
+BOUNDARY_YM 0.0;
+BOUNDARY_YP 0.0;
+BOUNDARY_ZM 0.0;
+BOUNDARY_ZP 0.0;
+EQUATION_END
+
+MEMBRANE_END
+

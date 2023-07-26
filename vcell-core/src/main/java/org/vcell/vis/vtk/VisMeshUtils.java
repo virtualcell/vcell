@@ -1,18 +1,12 @@
 package org.vcell.vis.vtk;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.util.List;
 
-import javax.xml.bind.DatatypeConverter;
-
+import cbit.util.xml.XmlUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.thrift.TDeserializer;
 import org.apache.thrift.TException;
 import org.apache.thrift.TSerializer;
 import org.apache.thrift.protocol.TBinaryProtocol;
+import org.apache.thrift.transport.TTransportException;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.output.Format;
@@ -22,50 +16,55 @@ import org.vcell.vis.vismesh.thrift.FiniteVolumeIndexData;
 import org.vcell.vis.vismesh.thrift.MovingBoundaryIndexData;
 import org.vcell.vis.vismesh.thrift.VisMesh;
 
-import cbit.util.xml.XmlUtil;
-import cbit.vcell.client.pyvcellproxy.SimulationDataSetRef;
+import javax.xml.bind.DatatypeConverter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.util.List;
 
 public class VisMeshUtils {
 
 	public static ChomboIndexData readChomboIndexData(File chomboIndexDataFile) throws IOException {
-		TDeserializer deserializer = new TDeserializer(new TBinaryProtocol.Factory());
-		byte[] blob = FileUtils.readFileToByteArray(chomboIndexDataFile);
-		ChomboIndexData chomboIndexData = new ChomboIndexData();
 		try {
+			TDeserializer deserializer = new TDeserializer(new TBinaryProtocol.Factory());
+			byte[] blob = FileUtils.readFileToByteArray(chomboIndexDataFile);
+			ChomboIndexData chomboIndexData = new ChomboIndexData();
 			deserializer.deserialize(chomboIndexData, blob);
+			return chomboIndexData;
 		} catch (TException e) {
 			throw new IOException("error reading ChomboIndexData from file "+chomboIndexDataFile.getPath()+": "+e.getMessage(),e);
 		}
-		return chomboIndexData;
 	}
 
 	public static MovingBoundaryIndexData readMovingBoundaryIndexData(File movingBoundaryIndexDataFile) throws IOException {
-		TDeserializer deserializer = new TDeserializer(new TBinaryProtocol.Factory());
-		byte[] blob = FileUtils.readFileToByteArray(movingBoundaryIndexDataFile);
-		MovingBoundaryIndexData movingBoundaryIndexData = new MovingBoundaryIndexData();
 		try {
+			TDeserializer deserializer = new TDeserializer(new TBinaryProtocol.Factory());
+			byte[] blob = FileUtils.readFileToByteArray(movingBoundaryIndexDataFile);
+			MovingBoundaryIndexData movingBoundaryIndexData = new MovingBoundaryIndexData();
 			deserializer.deserialize(movingBoundaryIndexData, blob);
+			return movingBoundaryIndexData;
 		} catch (TException e) {
 			throw new IOException("error reading MovingBoundaryIndexData from file "+movingBoundaryIndexDataFile.getPath()+": "+e.getMessage(),e);
 		}
-		return movingBoundaryIndexData;
 	}
 
 	public static FiniteVolumeIndexData readFiniteVolumeIndexData(File finiteVolumeIndexFile) throws IOException {
-		TDeserializer deserializer = new TDeserializer(new TBinaryProtocol.Factory());
-		byte[] blob = FileUtils.readFileToByteArray(finiteVolumeIndexFile);
-		FiniteVolumeIndexData finiteVolumeIndexData = new FiniteVolumeIndexData();
 		try {
+			TDeserializer deserializer = new TDeserializer(new TBinaryProtocol.Factory());
+			byte[] blob = FileUtils.readFileToByteArray(finiteVolumeIndexFile);
+			FiniteVolumeIndexData finiteVolumeIndexData = new FiniteVolumeIndexData();
 			deserializer.deserialize(finiteVolumeIndexData, blob);
+			return finiteVolumeIndexData;
 		} catch (TException e) {
 			throw new IOException("error reading FiniteVolumeIndexData from file "+finiteVolumeIndexFile.getPath()+": "+e.getMessage(),e);
 		}
-		return finiteVolumeIndexData;
 	}
 
 	static void writeChomboIndexData(File chomboIndexFile, ChomboIndexData chomboIndexData) throws IOException {
-		TSerializer serializer = new TSerializer(new TBinaryProtocol.Factory());
 		try {
+			TSerializer serializer = new TSerializer(new TBinaryProtocol.Factory());
 			byte[] blob = serializer.serialize(chomboIndexData);
 			FileUtils.writeByteArrayToFile(chomboIndexFile, blob);
 		} catch (TException e) {
@@ -73,19 +72,9 @@ public class VisMeshUtils {
 		}
 	}
 
-	public static void writeSimulationDataSetRef(File simDataSetRefFile, SimulationDataSetRef simDataSetRef) throws IOException {
-		TSerializer serializer = new TSerializer(new TBinaryProtocol.Factory());
+	static void writeVisMesh(File visMeshFile, VisMesh visMesh) throws IOException  {
 		try {
-			byte[] blob = serializer.serialize(simDataSetRef);
-			FileUtils.writeByteArrayToFile(simDataSetRefFile, blob);
-		} catch (TException e) {
-			throw new IOException("error writing SimulationDataSetRef to file "+simDataSetRefFile.getPath()+": "+e.getMessage(),e);
-		}
-	}
-
-	static void writeVisMesh(File visMeshFile, VisMesh visMesh) throws IOException {
-		TSerializer serializer = new TSerializer(new TBinaryProtocol.Factory());
-		try {
+			TSerializer serializer = new TSerializer(new TBinaryProtocol.Factory());
 			byte[] blob = serializer.serialize(visMesh);
 			FileUtils.writeByteArrayToFile(visMeshFile, blob);
 		} catch (TException e) {
@@ -93,9 +82,9 @@ public class VisMeshUtils {
 		}
 	}
 
-	static void writeFiniteVolumeIndexData(File finiteVolumeIndexFile, FiniteVolumeIndexData finiteVolumeIndexData) throws IOException {
-		TSerializer serializer = new TSerializer(new TBinaryProtocol.Factory());
+	static void writeFiniteVolumeIndexData(File finiteVolumeIndexFile, FiniteVolumeIndexData finiteVolumeIndexData) throws IOException, TTransportException {
 		try {
+			TSerializer serializer = new TSerializer(new TBinaryProtocol.Factory());
 			byte[] blob = serializer.serialize(finiteVolumeIndexData);
 			FileUtils.writeByteArrayToFile(finiteVolumeIndexFile, blob);
 		} catch (TException e) {

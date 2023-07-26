@@ -188,8 +188,8 @@ build_admin() {
 
 build_opt() {
 	echo "building $repo/vcell-opt:$tag"
-	echo "$SUDO_CMD docker build -f ../../pythonProject/Dockerfile --tag $repo/vcell-opt:$tag ../../pythonProject"
-	$SUDO_CMD docker build -f ../../pythonProject/Dockerfile --tag $repo/vcell-opt:$tag ../../pythonProject
+	echo "$SUDO_CMD docker build -f ../../pythonCopasiOpt/Dockerfile --tag $repo/vcell-opt:$tag ../../pythonCopasiOpt"
+	$SUDO_CMD docker build -f ../../pythonCopasiOpt/Dockerfile --tag $repo/vcell-opt:$tag ../../pythonCopasiOpt
 	if [[ $? -ne 0 ]]; then echo "docker build failed"; exit 1; fi
 	if [ "$skip_push" == "false" ]; then
 		$SUDO_CMD docker push $repo/vcell-opt:$tag

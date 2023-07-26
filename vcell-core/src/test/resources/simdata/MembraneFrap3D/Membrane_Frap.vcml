@@ -1,0 +1,313 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--This biomodel was generated in VCML Version Alpha_Version_7.5.0_build_46-->
+<vcml xmlns="http://sourceforge.net/projects/vcell/vcml" Version="Alpha_Version_7.5.0_build_46">
+  <BioModel Name="Membrane Frap">
+    <Annotation>cloned from 'Membrane Frap' owned by user schaff
+cloned from 'Membrane Frap' owned by user frm</Annotation>
+    <Model Name="unnamed">
+      <Annotation>cloned from 'unnamed' owned by user schaff
+cloned from 'unnamed' owned by user frm
+cloned from 'unnamed' owned by user tutorial
+cloned from 'unnamed' owned by user susan</Annotation>
+      <Compound Name="r">
+        <Annotation>RAN</Annotation>
+      </Compound>
+      <Compound Name="rf">
+        <Annotation>RAN-FITC</Annotation>
+      </Compound>
+      <Compound Name="Laser">
+        <Annotation>Light</Annotation>
+      </Compound>
+      <Feature Name="cyt" KeyValue="233640359" />
+      <Feature Name="ec" KeyValue="233640363" />
+      <Membrane InsideFeature="cyt" OutsideFeature="ec" PositiveFeature="cyt" NegativeFeature="ec" MembraneVoltage="Voltage_PM" Name="PM" KeyValue="233640365" />
+      <LocalizedCompound Name="r_PM" CompoundRef="r" Structure="PM" OverrideName="true" KeyValue="233640369" />
+      <LocalizedCompound Name="rf_PM" CompoundRef="rf" Structure="PM" OverrideName="true" KeyValue="233640370" />
+      <LocalizedCompound Name="Laser_PM" CompoundRef="Laser" Structure="PM" OverrideName="true" KeyValue="233640371" />
+      <SimpleReaction Structure="PM" Name="bleaching1 mem" Reversible="true" FluxOption="MolecularOnly" KeyValue="233640372">
+        <Reactant LocalizedCompoundRef="rf_PM" Stoichiometry="1" KeyValue="233640373" />
+        <Product LocalizedCompoundRef="r_PM" Stoichiometry="1" KeyValue="233640374" />
+        <Modifier LocalizedCompoundRef="Laser_PM" />
+        <Kinetics KineticsType="GeneralKinetics">
+          <Parameter Name="J" Role="reaction rate" Unit="molecules.um-2.s-1">(Vmax * rf_PM * Laser_PM)</Parameter>
+          <Parameter Name="I" Role="inward current density" Unit="pA.um-2">0.0</Parameter>
+          <Parameter Name="netValence" Role="net charge valence" Unit="1">1.0</Parameter>
+          <Parameter Name="Vmax" Role="user defined" Unit="s-1">50.0</Parameter>
+        </Kinetics>
+      </SimpleReaction>
+      <Diagram Name="unnamed" Structure="ec" />
+      <Diagram Name="Membrane0" Structure="PM">
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="r_PM" LocationX="255" LocationY="140" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="rf_PM" LocationX="36" LocationY="168" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="Laser_PM" LocationX="138" LocationY="83" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="bleaching1 mem" LocationX="137" LocationY="145" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="r_PM" LocationX="255" LocationY="140" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="rf_PM" LocationX="36" LocationY="168" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="Laser_PM" LocationX="138" LocationY="83" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="molecule" SimpleReactionRef="bleaching1 mem" LocationX="137" LocationY="145" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="r_PM" LocationX="255" LocationY="140" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="rf_PM" LocationX="36" LocationY="168" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="Laser_PM" LocationX="138" LocationY="83" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="rule" SimpleReactionRef="bleaching1 mem" LocationX="137" LocationY="145" />
+      </Diagram>
+      <Diagram Name="Feature0" Structure="cyt">
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="r_cyt" LocationX="75" LocationY="100" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="rf_cyt" LocationX="32" LocationY="247" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="rB_cyt" LocationX="363" LocationY="107" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="BS_cyt" LocationX="210" LocationY="164" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="rfB_cyt" LocationX="301" LocationY="246" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="Laser_cyt" LocationX="219" LocationY="43" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="bleaching2" LocationX="301" LocationY="153" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="bleaching1" LocationX="29" LocationY="161" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="RAN-FITC binding" LocationX="193" LocationY="237" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="RAN binding" LocationX="193" LocationY="104" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="r_cyt" LocationX="75" LocationY="100" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="rf_cyt" LocationX="32" LocationY="247" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="rB_cyt" LocationX="363" LocationY="107" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="BS_cyt" LocationX="210" LocationY="164" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="rfB_cyt" LocationX="301" LocationY="246" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="Laser_cyt" LocationX="219" LocationY="43" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="molecule" SimpleReactionRef="bleaching2" LocationX="301" LocationY="153" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="molecule" SimpleReactionRef="bleaching1" LocationX="29" LocationY="161" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="molecule" SimpleReactionRef="RAN-FITC binding" LocationX="193" LocationY="237" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="molecule" SimpleReactionRef="RAN binding" LocationX="193" LocationY="104" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="r_cyt" LocationX="75" LocationY="100" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="rf_cyt" LocationX="32" LocationY="247" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="rB_cyt" LocationX="363" LocationY="107" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="BS_cyt" LocationX="210" LocationY="164" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="rfB_cyt" LocationX="301" LocationY="246" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="Laser_cyt" LocationX="219" LocationY="43" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="rule" SimpleReactionRef="bleaching2" LocationX="301" LocationY="153" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="rule" SimpleReactionRef="bleaching1" LocationX="29" LocationY="161" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="rule" SimpleReactionRef="RAN-FITC binding" LocationX="193" LocationY="237" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="rule" SimpleReactionRef="RAN binding" LocationX="193" LocationY="104" />
+      </Diagram>
+      <Version Name="unnamed" KeyValue="233640354" BranchId="14297795" Archived="0" Date="22-May-2022 16:37:36" FromVersionable="false">
+        <Owner Name="tutorial" Identifier="2088465" />
+        <GroupAccess Type="1" />
+        <Annotation>cloned from 'unnamed' owned by user schaff
+cloned from 'unnamed' owned by user frm
+cloned from 'unnamed' owned by user tutorial
+cloned from 'unnamed' owned by user susan</Annotation>
+      </Version>
+      <ModelUnitSystem VolumeSubstanceUnit="uM.um3" MembraneSubstanceUnit="molecules" LumpedReactionSubstanceUnit="molecules" VolumeUnit="um3" AreaUnit="um2" LengthUnit="um" TimeUnit="s" />
+    </Model>
+    <SimulationSpec Name="3d image" Stochastic="false" UseConcentration="true" RuleBased="false" MassConservationModelReduction="true" InsufficientIterations="false" InsufficientMaxMolecules="false" CharacteristicSize="0.04561394691467284">
+      <NetworkConstraints RbmMaxIteration="1" RbmMaxMoleculesPerSpecies="10" RbmSpeciesLimit="800" RbmReactionsLimit="2500" />
+      <Annotation>cloned from '3d image' owned by user schaff
+cloned from '3d image' owned by user frm
+(copied from Spatial) cloned from 'Spatial' owned by user tutorial
+cloned from 'Spatial' owned by user susan</Annotation>
+      <Geometry Name="Geometry4" Dimension="3">
+        <Extent X="10.0" Y="10.0" Z="10.0" />
+        <Origin X="0.0" Y="0.0" Z="0.0" />
+        <SubVolume Name="subdomain1" Handle="1" Type="Analytical">
+          <AnalyticExpression>((((x - 5.0) ^ 2.0) + ((y - 5.0) ^ 2.0) + ((z - 5.0) ^ 2.0)) &lt; (4.0 ^ 2.0))</AnalyticExpression>
+        </SubVolume>
+        <SubVolume Name="subdomain0" Handle="0" Type="Analytical">
+          <AnalyticExpression>1.0</AnalyticExpression>
+        </SubVolume>
+        <SurfaceClass Name="subdomain0_subdomain1_membrane" SubVolume1Ref="subdomain0" SubVolume2Ref="subdomain1" />
+        <SurfaceDescription NumSamplesX="101" NumSamplesY="101" NumSamplesZ="101" CutoffFrequency="0.3">
+          <VolumeRegion Name="subdomain00" RegionID="0" SubVolume="subdomain0" Size="732.257" Unit="um3" />
+          <VolumeRegion Name="subdomain11" RegionID="1" SubVolume="subdomain1" Size="267.743" Unit="um3" />
+          <MembraneRegion Name="membrane_subdomain00_subdomain11" VolumeRegion1="subdomain11" VolumeRegion2="subdomain00" Size="200.75261731312597" Unit="um2" />
+        </SurfaceDescription>
+      </Geometry>
+      <GeometryContext>
+        <FeatureMapping Feature="cyt" GeometryClass="subdomain1" SubVolume="subdomain1" Size="50000.0" VolumePerUnitVolume="1.0">
+          <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
+        </FeatureMapping>
+        <FeatureMapping Feature="ec" GeometryClass="subdomain0" SubVolume="subdomain0" Size="50000.0" VolumePerUnitVolume="1.0">
+          <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
+        </FeatureMapping>
+        <MembraneMapping Membrane="PM" Size="6563.0" AreaPerUnitArea="1.0" CalculateVoltage="false" SpecificCapacitance="1.0" InitialVoltage="0.0" GeometryClass="subdomain0_subdomain1_membrane">
+          <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
+        </MembraneMapping>
+      </GeometryContext>
+      <ReactionContext>
+        <LocalizedCompoundSpec LocalizedCompoundRef="r_PM" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>5.0</InitialConcentration>
+          <Diffusion>10.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="rf_PM" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>5.0</InitialConcentration>
+          <Diffusion>10.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="Laser_PM" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>((t &lt; 0.1) &amp;&amp; (x &gt; 5.0))</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <ReactionSpec ReactionStepRef="bleaching1 mem" ReactionMapping="included" />
+      </ReactionContext>
+      <MathDescription Name="3d image_generated">
+        <Annotation>cloned from '3d image_generated' owned by user schaff
+cloned from '3d image_generated' owned by user frm</Annotation>
+        <Constant Name="_F_">96485.3321</Constant>
+        <Constant Name="_F_nmol_">9.64853321E-5</Constant>
+        <Constant Name="_K_GHK_">1.0E-9</Constant>
+        <Constant Name="_N_pmol_">6.02214179E11</Constant>
+        <Constant Name="_PI_">3.141592653589793</Constant>
+        <Constant Name="_R_">8314.46261815</Constant>
+        <Constant Name="_T_">300.0</Constant>
+        <Constant Name="AreaPerUnitArea_PM">1.0</Constant>
+        <Constant Name="K_millivolts_per_volt">1000.0</Constant>
+        <Constant Name="KMOLE">0.001660538783162726</Constant>
+        <Constant Name="netValence">1.0</Constant>
+        <Constant Name="r_PM_diffusionRate">10.0</Constant>
+        <Constant Name="r_PM_init_molecules_um_2">5.0</Constant>
+        <Constant Name="rf_PM_diffusionRate">10.0</Constant>
+        <Constant Name="rf_PM_init_molecules_um_2">5.0</Constant>
+        <Constant Name="Vmax">50.0</Constant>
+        <Constant Name="Voltage_PM">0.0</Constant>
+        <Constant Name="VolumePerUnitVolume_cyt">1.0</Constant>
+        <Constant Name="VolumePerUnitVolume_ec">1.0</Constant>
+        <MembraneVariable Name="r_PM" Domain="subdomain0_subdomain1_membrane" />
+        <MembraneVariable Name="rf_PM" Domain="subdomain0_subdomain1_membrane" />
+        <Function Name="J_bleaching1_mem" Domain="subdomain0_subdomain1_membrane">(Vmax * rf_PM * Laser_PM)</Function>
+        <Function Name="K_Laser_PM_total" Domain="subdomain0_subdomain1_membrane">(AreaPerUnitArea_PM * Laser_PM_init_molecules_um_2)</Function>
+        <Function Name="Laser_PM" Domain="subdomain0_subdomain1_membrane">(K_Laser_PM_total / AreaPerUnitArea_PM)</Function>
+        <Function Name="Laser_PM_init_molecules_um_2" Domain="subdomain0_subdomain1_membrane">((t &lt; 0.1) &amp;&amp; (x &gt; 5.0))</Function>
+        <Function Name="Size_cyt" Domain="subdomain1">(VolumePerUnitVolume_cyt * vcRegionVolume('subdomain1'))</Function>
+        <Function Name="Size_ec" Domain="subdomain0">(VolumePerUnitVolume_ec * vcRegionVolume('subdomain0'))</Function>
+        <Function Name="Size_PM" Domain="subdomain0_subdomain1_membrane">(AreaPerUnitArea_PM * vcRegionArea('subdomain0_subdomain1_membrane'))</Function>
+        <Function Name="sobj_subdomain11_subdomain00_size" Domain="subdomain0_subdomain1_membrane">vcRegionArea('subdomain0_subdomain1_membrane')</Function>
+        <Function Name="vobj_subdomain00_size" Domain="subdomain0">vcRegionVolume('subdomain0')</Function>
+        <Function Name="vobj_subdomain11_size" Domain="subdomain1">vcRegionVolume('subdomain1')</Function>
+        <CompartmentSubDomain Name="subdomain1">
+          <BoundaryType Boundary="Xm" Type="Flux" />
+          <BoundaryType Boundary="Xp" Type="Flux" />
+          <BoundaryType Boundary="Ym" Type="Flux" />
+          <BoundaryType Boundary="Yp" Type="Flux" />
+          <BoundaryType Boundary="Zm" Type="Flux" />
+          <BoundaryType Boundary="Zp" Type="Flux" />
+        </CompartmentSubDomain>
+        <CompartmentSubDomain Name="subdomain0">
+          <BoundaryType Boundary="Xm" Type="Flux" />
+          <BoundaryType Boundary="Xp" Type="Flux" />
+          <BoundaryType Boundary="Ym" Type="Flux" />
+          <BoundaryType Boundary="Yp" Type="Flux" />
+          <BoundaryType Boundary="Zm" Type="Flux" />
+          <BoundaryType Boundary="Zp" Type="Flux" />
+        </CompartmentSubDomain>
+        <MembraneSubDomain Name="subdomain0_subdomain1_membrane" InsideCompartment="subdomain1" OutsideCompartment="subdomain0">
+          <BoundaryType Boundary="Xm" Type="Value" />
+          <BoundaryType Boundary="Xp" Type="Value" />
+          <BoundaryType Boundary="Ym" Type="Value" />
+          <BoundaryType Boundary="Yp" Type="Value" />
+          <BoundaryType Boundary="Zm" Type="Value" />
+          <BoundaryType Boundary="Zp" Type="Value" />
+          <PdeEquation Name="r_PM" SolutionType="Unknown">
+            <Rate>J_bleaching1_mem</Rate>
+            <Diffusion>r_PM_diffusionRate</Diffusion>
+            <Initial>r_PM_init_molecules_um_2</Initial>
+          </PdeEquation>
+          <PdeEquation Name="rf_PM" SolutionType="Unknown">
+            <Rate>- J_bleaching1_mem</Rate>
+            <Diffusion>rf_PM_diffusionRate</Diffusion>
+            <Initial>rf_PM_init_molecules_um_2</Initial>
+          </PdeEquation>
+        </MembraneSubDomain>
+        <Version Name="3d image_generated" KeyValue="233640405" BranchId="14297792" Archived="0" Date="22-May-2022 16:39:40" FromVersionable="false">
+          <Owner Name="tutorial" Identifier="2088465" />
+          <GroupAccess Type="1" />
+          <Annotation>cloned from '3d image_generated' owned by user schaff
+cloned from '3d image_generated' owned by user frm</Annotation>
+        </Version>
+      </MathDescription>
+      <Simulation Name="Simulation 21x21x21">
+        <Annotation>mesh 101x101x36 elements
+timestep 0.01 seconds</Annotation>
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Sundials Stiff PDE Solver (Variable Time Step)">
+          <TimeBound StartTime="0.0" EndTime="0.5" />
+          <TimeStep DefaultTime="0.1" MinTime="0.0" MaxTime="0.1" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-7" />
+          <OutputOptions OutputTimeStep="0.1" />
+          <SundialsSolverOptions>
+            <maxOrderAdvection>2</maxOrderAdvection>
+          </SundialsSolverOptions>
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides />
+        <MeshSpecification>
+          <Size X="21" Y="21" Z="21" />
+        </MeshSpecification>
+        <Version Name="Simulation 101x101x36" KeyValue="233640418" BranchId="14297835" Archived="0" Date="22-May-2022 16:39:40" FromVersionable="false">
+          <Owner Name="tutorial" Identifier="2088465" />
+          <GroupAccess Type="1" />
+          <Annotation>mesh 101x101x36 elements
+timestep 0.01 seconds</Annotation>
+          <ParentSimRef KeyValue="233640392" />
+        </Version>
+      </Simulation>
+      <SpatialObjects>
+        <SpatialObject Name="vobj_subdomain00" Type="Volume" subVolume="subdomain0" regionId="0">
+          <QuantityCategoryList>
+            <QuantityCategory Name="VolumeCentroid" Enabled="false" />
+            <QuantityCategory Name="InteriorVelocity" Enabled="false" />
+            <QuantityCategory Name="VolumeRegionSize" Enabled="true" />
+          </QuantityCategoryList>
+        </SpatialObject>
+        <SpatialObject Name="vobj_subdomain11" Type="Volume" subVolume="subdomain1" regionId="1">
+          <QuantityCategoryList>
+            <QuantityCategory Name="VolumeCentroid" Enabled="false" />
+            <QuantityCategory Name="InteriorVelocity" Enabled="false" />
+            <QuantityCategory Name="VolumeRegionSize" Enabled="true" />
+          </QuantityCategoryList>
+        </SpatialObject>
+        <SpatialObject Name="sobj_subdomain11_subdomain00" Type="Surface" subVolumeInside="subdomain1" regionIdInside="1" subVolumeOutside="subdomain0" regionIdOutside="0">
+          <QuantityCategoryList>
+            <QuantityCategory Name="SurfaceNormal" Enabled="false" />
+            <QuantityCategory Name="SurfaceVelocity" Enabled="false" />
+            <QuantityCategory Name="DistanceToSurface" Enabled="false" />
+            <QuantityCategory Name="DirectionToSurface" Enabled="false" />
+            <QuantityCategory Name="SurfaceSize" Enabled="true" />
+          </QuantityCategoryList>
+        </SpatialObject>
+      </SpatialObjects>
+      <Version Name="3d image" KeyValue="233640407" BranchId="14297823" Archived="0" Date="22-May-2022 16:39:40" FromVersionable="false">
+        <Owner Name="tutorial" Identifier="2088465" />
+        <GroupAccess Type="1" />
+        <Annotation>cloned from '3d image' owned by user schaff
+cloned from '3d image' owned by user frm
+(copied from Spatial) cloned from 'Spatial' owned by user tutorial
+cloned from 'Spatial' owned by user susan</Annotation>
+      </Version>
+      <MicroscopeMeasurement Name="fluor">
+        <ConvolutionKernel Type="ProjectionZKernel" />
+      </MicroscopeMeasurement>
+    </SimulationSpec>
+    <Version Name="Membrane Frap" KeyValue="233640420" BranchId="14297838" Archived="0" Date="22-May-2022 16:39:40" FromVersionable="false">
+      <Owner Name="tutorial" Identifier="2088465" />
+      <GroupAccess Type="0" />
+      <Annotation>cloned from 'Membrane Frap' owned by user schaff
+cloned from 'Membrane Frap' owned by user frm</Annotation>
+    </Version>
+    <pathwayModel>
+      <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bp="http://www.biopax.org/release/biopax-level3.owl#" version="3.0" />
+    </pathwayModel>
+    <relationshipModel>
+      <RMNS version="3.0" />
+    </relationshipModel>
+    <vcmetadata>
+      <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" />
+      <nonrdfAnnotationList>
+        <nonrdfAnnotation vcid="Species(r)">
+          <freetext>RAN</freetext>
+        </nonrdfAnnotation>
+        <nonrdfAnnotation vcid="Species(rf)">
+          <freetext>RAN-FITC</freetext>
+        </nonrdfAnnotation>
+        <nonrdfAnnotation vcid="Species(Laser)">
+          <freetext>Light</freetext>
+        </nonrdfAnnotation>
+        <nonrdfAnnotation vcid="BioModel(Membrane Frap)">
+          <freetext>cloned from 'Membrane Frap' owned by user schaff
+cloned from 'Membrane Frap' owned by user frm</freetext>
+        </nonrdfAnnotation>
+      </nonrdfAnnotationList>
+      <uriBindingList />
+    </vcmetadata>
+  </BioModel>
+</vcml>
+

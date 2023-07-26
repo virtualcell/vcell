@@ -96,7 +96,7 @@ COPY ./docker/build/batch/JavaPreprocessor64 \
      ./docker/build/batch/JavaPostprocessor64 \
      ./docker/build/batch/JavaSimExe64 \
      ./docker/build/batch/entrypoint.sh \
-     ./pythonScripts \
+     ./pythonVtk \
      /vcellscripts/
 
 ENV PATH=/vcellscripts:$PATH \

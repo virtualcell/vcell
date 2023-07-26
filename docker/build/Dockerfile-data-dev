@@ -75,7 +75,8 @@ RUN mkdir -p /usr/local/app && \
 	apt-get -y update && \
 	apt-get -y install openssh-client screen
 
-RUN pip install vtk
+RUN python3 -m pip install poetry &&  poetry config cache-dir "/poetry/.cache"
+ENV PATH="/root/.poetry/bin:/root/.local/bin:$PATH"
 
 WORKDIR /usr/local/app
 
@@ -83,8 +84,12 @@ COPY ./vcell-server/target/vcell-server-0.0.1-SNAPSHOT.jar \
      ./vcell-server/target/maven-jars/*.jar \
      ./lib/
 
+# Copy and install pythonVtk
+COPY ./pythonVtk/ /usr/local/app/pythonVtk/
+RUN  cd /usr/local/app/pythonVtk && \
+     poetry config cache-dir "/poetry/.cache" --local && \
+     poetry install
 
-COPY ./pythonScripts ./pythonScripts
 COPY ./nativelibs/linux64 ./nativelibs/linux64
 COPY ./docker/build/vcell-data.log4j.xml .
 

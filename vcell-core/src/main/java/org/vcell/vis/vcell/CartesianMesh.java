@@ -16,7 +16,7 @@ public class CartesianMesh {
 	private final SubdomainInfo subdomainInfo;
 	private final MembraneElement[] membraneElements;
 	private final ContourElement[] contourElements;
-	private final MeshRegionInfo meshRegionInfo;
+	public final MeshRegionInfo meshRegionInfo;
 	private final ISize size;
 	private final Vect3D extent;
 	private final Vect3D origin;

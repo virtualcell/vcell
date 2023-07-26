@@ -5,7 +5,15 @@ pushd ../../
 mvn clean install dependency:copy-dependencies -DskipTests=true
 popd
 
-pushd ../../pythonProject/vcell-opt
+pushd ../../pythonCopasiOpt/vcell-opt
+poetry install
+popd
+
+pushd vcell-admin
+poetry install
+popd
+
+pushd ../../pythonVtk
 poetry install
 popd
 
@@ -28,7 +36,7 @@ on cluster (e.g. xanadu-76) as user vcell build vcell-opt singularity container
 export docker_image=ghcr.io/virtualcell/vcell-opt:dev
 export singularity_file=ghcr.io_virtualcell_vcell-opt_dev.img
 module load singularity
-#singularity remote login -u <github_user> -p <github_token> docker://ghcr.io
+# singularity remote login -u <github_user> -p <github_token> docker://ghcr.io
 singularity build --force ${singularity_file} docker://${docker_image}
 cp ${singularity_file} /state/partition1/singularityImages/
 cp ${singularity_file} /share/apps/vcell3/singularityImages/

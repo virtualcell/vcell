@@ -18,7 +18,6 @@
       <variable name="vcell5SplashScreenPngFilePath" value="${compiler:mavenRootDir}/vcellSplash.png" />
       <variable name="vcellLocalSolversDirPath" value="${compiler:mavenRootDir}/localsolvers" />
       <variable name="vcellLicenseFilePath" value="${compiler:mavenRootDir}/thirdpartylicenses.txt" />
-      <variable name="vcellPythonPath" value="${compiler:mavenRootDir}/pythonScripts" />
       <variable name="vcellbngPerlPath" value="${compiler:mavenRootDir}/bionetgen" />
       <variable name="macJrePath" value="NO-MAC-JRE-PATH" />
       <variable name="win32JrePath" value="NO-WIN32-JRE-PATH" />
@@ -61,7 +60,6 @@
       <mountPoint id="719" location="lib" />
       <mountPoint id="1473" location="resources" />
       <mountPoint id="1474" location="localsolvers" />
-      <mountPoint id="1748" location="pythonScripts" />
       <mountPoint id="1750" location="bionetgen" />
       <mountPoint id="1348" root="1114" location="nativelibs" />
       <mountPoint id="1349" root="1114" location="nativelibs/mac64" />
@@ -90,7 +88,6 @@
     <entries>
       <dirEntry mountPoint="719" file="${compiler:vcellLibSourcePath}" subDirectory="maven-jars" />
       <fileEntry mountPoint="1473" file="${compiler:vcellLicenseFilePath}" />
-      <dirEntry mountPoint="1748" file="${compiler:vcellPythonPath}" />
       <dirEntry mountPoint="1750" file="${compiler:vcellbngPerlPath}" />
       <dirEntry mountPoint="1349" file="${compiler:vcellNativeLibsDirSourcePath}/mac64" />
       <dirEntry mountPoint="1353" file="${compiler:vcellLocalSolversDirPath}/mac64" fileMode="755" overrideFileMode="true" />

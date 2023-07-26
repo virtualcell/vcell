@@ -50,7 +50,7 @@ jobs:
           
       - name: build vcell-opt package
         run: |
-          cd pythonProject/vcell-opt
+          cd pythonCopasiOpt/vcell-opt
           poetry install
 
       - name: setup java 17 with maven cache

@@ -23,8 +23,7 @@ COPY ./vcell-web/target/vcell-web-0.0.1-SNAPSHOT.jar \
      ./vcell-web/target/maven-jars/*.jar \
      ./lib/
 
-
-COPY ./pythonScripts ./pythonScripts
+COPY ./pythonVtk ./pythonVtk
 COPY ./nativelibs/linux64 ./nativelibs/linux64
 COPY ./docker/build/vcell-web.log4j.xml .
 
