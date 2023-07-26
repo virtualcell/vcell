@@ -11,15 +11,9 @@
 package cbit.vcell.client.data;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Container;
 import java.awt.FlowLayout;
-import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowStateListener;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Hashtable;
@@ -42,7 +36,6 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.VCDataIdentifier;
-import org.vcell.util.gui.DialogUtils;
 
 import com.google.common.io.Files;
 
@@ -56,14 +49,12 @@ import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.Constant;
 import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.simdata.ClientPDEDataContext;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.DataManager;
 import cbit.vcell.simdata.ODEDataManager;
 import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.simdata.PDEDataManager;
-import cbit.vcell.simdata.SimulationData;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.ode.ODESimData;
@@ -405,7 +396,7 @@ private void initialize() throws DataAccessException {
 				}
 			});
 		} else {
-			pdeDataViewer.setSimNameSimDataID(new ExportSpecs.SimNameSimDataID(getSimulation().getName(), getSimulation().getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), SimResultsViewer.getParamScanInfo(getSimulation(), getSelectedParamScanJobIndex())));
+			pdeDataViewer.setSimNameSimDataID(new ExportSpecs.SimNameSimDataID(getSimulation().getName(), getSimulation().getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), ExportSpecs.getParamScanInfo(getSimulation(), getSelectedParamScanJobIndex())));
 		}
 		
 		setParamChoicesPanel(panel);
@@ -577,7 +568,7 @@ private void updateScanParamChoices(final String message,ListReset listReset){
 				if (hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR) == null) {
 					ClientPDEDataContext newPDEDC = (ClientPDEDataContext)hashTable.get("newPDEDC");
 					pdeDataViewer.setPdeDataContext(newPDEDC);
-					pdeDataViewer.setSimNameSimDataID(new ExportSpecs.SimNameSimDataID(getSimulation().getName(), getSimulation().getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), SimResultsViewer.getParamScanInfo(getSimulation(), vcdid.getJobIndex())));
+					pdeDataViewer.setSimNameSimDataID(new ExportSpecs.SimNameSimDataID(getSimulation().getName(), getSimulation().getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), ExportSpecs.getParamScanInfo(getSimulation(), vcdid.getJobIndex())));
 				}else{
 					if(listReset != null && pdeDataViewer != null && pdeDataViewer.getPdeDataContext() != null && pdeDataViewer.getPdeDataContext().getVCDataIdentifier() != null){
 						listReset.reset(pdeDataViewer.getPdeDataContext().getVCDataIdentifier());
@@ -597,26 +588,6 @@ private void updateScanParamChoices(final String message,ListReset listReset){
 //		};
 		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] {task1,task2/*,refreshTask*/});
 	}
-}
-
-public static ExportSpecs.ExportParamScanInfo getParamScanInfo(Simulation simulation,int selectedParamScanJobIndex){
-	int scanCount = simulation.getScanCount();
-	if(scanCount == 1){//no parameter scan
-		return null;
-	}
-	String[] scanConstantNames = simulation.getMathOverrides().getScannedConstantNames();
-	Arrays.sort(scanConstantNames);
-	int[] paramScanJobIndexes = new int[scanCount];
-	String[][] scanConstValues = new String[scanCount][scanConstantNames.length];
-	for (int i = 0; i < scanCount; i++) {
-		paramScanJobIndexes[i] = i;
-		for (int j = 0; j < scanConstantNames.length; j++) {
-			String paramScanValue = simulation.getMathOverrides().getActualExpression(scanConstantNames[j], i).infix();
-//			System.out.println("ScanIndex="+i+" ScanConstName='"+scanConstantNames[j]+"' paramScanValue="+paramScanValue);
-			scanConstValues[i][j] = paramScanValue;
-		}
-	}
-	return new ExportSpecs.ExportParamScanInfo(paramScanJobIndexes, selectedParamScanJobIndex, scanConstantNames, scanConstValues);
 }
 
 }

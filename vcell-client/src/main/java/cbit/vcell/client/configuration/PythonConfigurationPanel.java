@@ -1,35 +1,18 @@
 package cbit.vcell.client.configuration;
 
-import java.awt.BorderLayout;
-import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.io.File;
-import java.io.FileFilter;
-
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JFileChooser;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.border.Border;
-import javax.swing.border.CompoundBorder;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.EtchedBorder;
-import javax.swing.border.TitledBorder;
-
-import org.vcell.util.gui.VCFileChooser;
-import org.vcell.util.gui.exporter.FileFilters;
-
-import cbit.vcell.resource.PythonSupport;
 import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.resource.VCellConfiguration;
+import org.vcell.util.gui.VCFileChooser;
+import org.vcell.util.gui.exporter.FileFilters;
+
+import javax.swing.*;
+import javax.swing.border.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.io.File;
+import java.io.FileFilter;
 
 // http://commons.apache.org/proper/commons-io/javadocs/api-2.4/org/apache/commons/io
 

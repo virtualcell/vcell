@@ -159,7 +159,7 @@ public String toString() {
 			break;
 		}
 		case SERVER_REMOTE: {
-			details = "SERVER_REMOTE, host: " + apihost + "port: " + apiport + ", user:" + getUsername();
+			details = "SERVER_REMOTE, host: " + apihost + ", port: " + apiport + ", user:" + getUsername();
 			break;
 		}
 		case SERVER_FILE: {
