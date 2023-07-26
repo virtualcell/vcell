@@ -265,7 +265,7 @@ public class SpringSaLaDExporter {
 //			for(Molecule molecule: molecules) {
 //				molecule.getMoleculeCounter().writeMoleculeCounter(sb);
 //			}
-			Simulation.Counters.writeMoleculeCounters(simulation, sb);	// everything here is initialized with default
+			Simulation.Counters.writeMoleculeCounters(simContext, sb);	// everything here is initialized with default
 			sb.append("\n");
 
 			/* ******  WRITE THE STATE COUNTERS *************/
@@ -279,7 +279,7 @@ public class SpringSaLaDExporter {
 //					}
 //				}
 //			}
-			Simulation.Counters.writeStateCounters(simulation, sb);	// everything here is initialized with default
+			Simulation.Counters.writeStateCounters(simContext, sb);	// everything here is initialized with default
 			sb.append("\n");
 
 			/* ***** WRITE THE BOND COUNTERS ***************/
@@ -289,7 +289,7 @@ public class SpringSaLaDExporter {
 //			for(BindingReaction reaction: bindingReactions) {
 //				reaction.getBondCounter().writeBondCounter(sb);
 //			}
-			Simulation.Counters.writeBondCounters(simulation, sb);	// everything here is initialized with default
+			Simulation.Counters.writeBondCounters(simContext, sb);	// everything here is initialized with default
 			sb.append("\n");
 
 			/* ********  WRITE THE SITE PROPERTY COUNTERS ************/
@@ -302,7 +302,7 @@ public class SpringSaLaDExporter {
 //					site.getPropertyCounter().writeSitePropertyCounter(sb);
 //				}
 //			}
-			Simulation.Counters.writeSitePropertyCounters(simulation, sb);	// everything here is initialized with default
+			Simulation.Counters.writeSitePropertyCounters(simContext, sb);	// everything here is initialized with default
 			sb.append("\n");
 
 			/* *************** WRITE THE TRACK CLUSTERS BOOLEAN ***********/

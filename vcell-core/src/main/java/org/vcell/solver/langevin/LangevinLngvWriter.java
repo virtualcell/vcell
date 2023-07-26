@@ -220,7 +220,7 @@ public class LangevinLngvWriter {
 //		for(Molecule molecule: molecules) {
 //			molecule.getMoleculeCounter().writeMoleculeCounter(sb);
 //		}
-		Simulation.Counters.writeMoleculeCounters(simulation, sb);	// everything here is initialized with default
+		Simulation.Counters.writeMoleculeCounters(simContext, sb);	// everything here is initialized with default
 		sb.append("\n");
 
 		/* ******  WRITE THE STATE COUNTERS *************/
@@ -234,7 +234,7 @@ public class LangevinLngvWriter {
 //				}
 //			}
 //		}
-		Simulation.Counters.writeStateCounters(simulation, sb);	// everything here is initialized with default
+		Simulation.Counters.writeStateCounters(simContext, sb);	// everything here is initialized with default
 		sb.append("\n");
 
 		// what follows is mainly placeholders for result statistics, obviously there's none before running the simulation
@@ -245,7 +245,7 @@ public class LangevinLngvWriter {
 //		for(BindingReaction reaction: bindingReactions) {
 //			reaction.getBondCounter().writeBondCounter(sb);
 //		}
-		Simulation.Counters.writeBondCounters(simulation, sb);	// everything here is initialized with default
+		Simulation.Counters.writeBondCounters(simContext, sb);	// everything here is initialized with default
 		sb.append("\n");
 
 		/* ********  WRITE THE SITE PROPERTY COUNTERS ************/
@@ -258,7 +258,7 @@ public class LangevinLngvWriter {
 //				site.getPropertyCounter().writeSitePropertyCounter(sb);
 //			}
 //		}
-		Simulation.Counters.writeSitePropertyCounters(simulation, sb);	// everything here is initialized with default
+		Simulation.Counters.writeSitePropertyCounters(simContext, sb);	// everything here is initialized with default
 		sb.append("\n");
 
 		/* *************** WRITE THE TRACK CLUSTERS BOOLEAN ***********/

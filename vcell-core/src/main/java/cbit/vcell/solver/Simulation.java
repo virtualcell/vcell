@@ -120,12 +120,11 @@ public class Simulation implements Versionable, Matchable, java.beans.VetoableCh
 
 	public static class Counters {		// SpringSaLaD post processing counters, structure to be determined, will be moved appropriately
 		
-		public static void writeMoleculeCounters(Simulation simulation, StringBuilder sb) {
-			if(!(simulation.getSimulationOwner() instanceof SimulationContext)) {
+		public static void writeMoleculeCounters(SimulationContext simContext, StringBuilder sb) {
+			if(simContext == null) {
 				sb.append("\n");
 				return;
 			}
-			SimulationContext simContext = (SimulationContext)simulation.getSimulationOwner();
 			if(simContext.getApplicationType() != Application.SPRINGSALAD) {
 				sb.append("\n");
 				return;
@@ -148,12 +147,11 @@ public class Simulation implements Versionable, Matchable, java.beans.VetoableCh
 			}
 		}
 		
-		public static void writeStateCounters(Simulation simulation, StringBuilder sb) {
-			if(!(simulation.getSimulationOwner() instanceof SimulationContext)) {
+		public static void writeStateCounters(SimulationContext simContext, StringBuilder sb) {
+			if(simContext == null) {
 				sb.append("\n");
 				return;
 			}
-			SimulationContext simContext = (SimulationContext)simulation.getSimulationOwner();
 			if(simContext.getApplicationType() != Application.SPRINGSALAD) {
 				sb.append("\n");
 				return;
@@ -180,12 +178,11 @@ public class Simulation implements Versionable, Matchable, java.beans.VetoableCh
 			}
 		}
 		
-		public static void writeBondCounters(Simulation simulation, StringBuilder sb) {
-			if(!(simulation.getSimulationOwner() instanceof SimulationContext)) {
+		public static void writeBondCounters(SimulationContext simContext, StringBuilder sb) {
+			if(simContext == null) {
 				sb.append("\n");
 				return;
 			}
-			SimulationContext simContext = (SimulationContext)simulation.getSimulationOwner();
 			if(simContext.getApplicationType() != Application.SPRINGSALAD) {
 				sb.append("\n");
 				return;
@@ -207,12 +204,11 @@ public class Simulation implements Versionable, Matchable, java.beans.VetoableCh
 			}
 		}
 		
-		public static void writeSitePropertyCounters(Simulation simulation, StringBuilder sb) {
-			if(!(simulation.getSimulationOwner() instanceof SimulationContext)) {
+		public static void writeSitePropertyCounters(SimulationContext simContext, StringBuilder sb) {
+			if(simContext == null) {
 				sb.append("\n");
 				return;
 			}
-			SimulationContext simContext = (SimulationContext)simulation.getSimulationOwner();
 			if(simContext.getApplicationType() != Application.SPRINGSALAD) {
 				sb.append("\n");
 				return;

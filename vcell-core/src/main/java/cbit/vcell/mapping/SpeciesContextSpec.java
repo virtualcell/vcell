@@ -2041,7 +2041,7 @@ public void writeData(StringBuilder sb) {				// SpringSaLaD exporting the specie
 	sb.append("MOLECULE: \"" + getSpeciesContext().getName() + "\" " + getSpeciesContext().getStructure().getName() + 
 			" Number " + initialCountParameter.getExpression().infix() + 
 			" Site_Types " + componentList.size() + " Total"  + "_Sites " + siteAttributesMap.size() + 
-			" Total_Links " + internalLinkSet.size() + " is2D " + (dimension == 2 ? true : false));
+			" Total_Links " + internalLinkSet.size() + " is2D " + (dimension == 2 ? true : false));	// TODO: molecule is flat, unrelated to geometry
 	sb.append("\n");
 	sb.append("{");
 	sb.append("\n");
