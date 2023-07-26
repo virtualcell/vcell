@@ -52,7 +52,8 @@ ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
     webDataPort="webDataPort-not-set" \
 	ssl_ignoreHostMismatch=true \
 	ssl_ignoreCertProblems=false \
-	submit_service_host="submit"
+	submit_service_host="submit" \
+	userTimezone="-05:00"
 
 ENV dbpswdfile=/run/secrets/dbpswd \
     jmspswdfile=/run/secrets/jmspswd \
@@ -74,6 +75,7 @@ ENTRYPOINT java \
 	-Dvcell.server.dbDriverName="${dbdriver}" \
 	-Dvcell.server.dbUserid="${dbuser}" \
 	-Dvcell.db.pswdfile="${dbpswdfile}" \
+	-Duser.timezone="${userTimezone}" \
 	-Dvcell.jms.int.host.internal="${jmshost_int_internal}" \
 	-Dvcell.jms.int.port.internal="${jmsport_int_internal}" \
 	-Dvcell.jms.blobMessageUseMongo=true \

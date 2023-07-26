@@ -41,7 +41,8 @@ ENV VCELL_VERSION="vcell-version-not-set" \
     VCELL_DB_DRIVER="vcell-db-driver-not-set" \
     VCELL_DB_USER="vcell-db-user-not-set" \
     VCELL_SIMDATADIR_SECONDARY_HOST="vcell-simdatadir-secondary-host-not-set" \
-    VCELL_SIMDATADIR_EXTERNAL="vcell-simdatadir-external-not-set"
+    VCELL_SIMDATADIR_EXTERNAL="vcell-simdatadir-external-not-set" \
+    userTimezone="-05:00"
 
 ENV dbpswdfile=/run/secrets/dbpswd.txt \
     jmspswdfile=/run/secrets/jmspswd.txt \
