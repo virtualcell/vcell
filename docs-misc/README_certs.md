@@ -12,7 +12,7 @@ ENV dbpswdfile=/run/secrets/dbpswd \
     keystorepswdfile=/run/secrets/keystorepswd  
 ```
 
-Look in [docker\swarm\docker-compose.yml](./docker/swarm/docker-compose.yml)  
+Look in [docker\swarm\docker-compose.yml](../docker/swarm/docker-compose.yml)  
 --look in services->api->secrets to find which secrets are used (matches values defined above)  
 
 ```

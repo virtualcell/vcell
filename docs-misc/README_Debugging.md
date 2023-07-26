@@ -121,10 +121,10 @@ File->Settings...->Build,Execution,Deployment->CMake->panelGUI
 -----Run->Edit Configurations...
 -----Choose executable to debug from the list, 
 
-Service configuration info including **java class** [detailed instructions](docker/README_serviceInfo.md)
+Service configuration info including **java class** [detailed instructions](../docker/README_serviceInfo.md)
 
 **Definition of required properties**  
-[script that creates server environment variables file](docker/swarm/serverconfig-uch.sh)  
+[script that creates server environment variables file](../docker/swarm/serverconfig-uch.sh)  
 client local run  alpha  
 -Dvcell.primarySimdatadir.internal=\\cfs05\vcell\users  
 -Dvcell.secondarySimdatadir.internal=\\cfs05\vcell\users  
