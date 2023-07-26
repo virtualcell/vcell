@@ -10,7 +10,9 @@
 
 package cbit.vcell.export.server;
 import java.io.Serializable;
+import java.util.Arrays;
 
+import cbit.vcell.solver.Simulation;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
@@ -34,6 +36,26 @@ public class ExportSpecs implements Serializable {
 	private FormatSpecificSpecs formatSpecificSpecs;
 	private String simulatioName;
 	private String contextName;
+
+	public static ExportParamScanInfo getParamScanInfo(Simulation simulation, int selectedParamScanJobIndex){
+		int scanCount = simulation.getScanCount();
+		if(scanCount == 1){//no parameter scan
+			return null;
+		}
+		String[] scanConstantNames = simulation.getMathOverrides().getScannedConstantNames();
+		Arrays.sort(scanConstantNames);
+		int[] paramScanJobIndexes = new int[scanCount];
+		String[][] scanConstValues = new String[scanCount][scanConstantNames.length];
+		for (int i = 0; i < scanCount; i++) {
+			paramScanJobIndexes[i] = i;
+			for (int j = 0; j < scanConstantNames.length; j++) {
+				String paramScanValue = simulation.getMathOverrides().getActualExpression(scanConstantNames[j], i).infix();
+	//			System.out.println("ScanIndex="+i+" ScanConstName='"+scanConstantNames[j]+"' paramScanValue="+paramScanValue);
+				scanConstValues[i][j] = paramScanValue;
+			}
+		}
+		return new ExportParamScanInfo(paramScanJobIndexes, selectedParamScanJobIndex, scanConstantNames, scanConstValues);
+	}
 
 	public interface SimulationSelector{
 		public void selectSimulations();
