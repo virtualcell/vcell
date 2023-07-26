@@ -79,11 +79,10 @@ ENTRYPOINT java \
 	-Dvcell.server.dbDriverName="${dbdriver}" \
 	-Dvcell.server.dbUserid="${dbuser}" \
 	-Dvcell.db.pswdfile="${dbpswdfile}" \
-	-Dvcell.n5DataDir.internal=/n5DataDir \
 	-Dvcell.primarySimdatadir.internal=/simdata \
+	-Dvcell.n5DataDir.internal=/n5DataDir \
   -Dvcell.secondarySimdatadir.internal=/simdata_secondary \
   -Dvcell.simdataCacheSize="${simdataCacheSize}" \
-	-Duser.timezone="${userTimezone}" \
 	-Dvcell.jms.int.host.internal="${jmshost_int_internal}" \
 	-Dvcell.jms.int.port.internal="${jmsport_int_internal}" \
 	-Dvcell.jms.blobMessageUseMongo=true \

@@ -115,7 +115,8 @@ ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
     simdatadir_external=/path/to/external/simdata/ \
     simdataCacheSize="simdataCacheSize-not-set" \
     webDataPort="webDataPort-not-set" \
-    servertype="servertype-not-set"
+    servertype="servertype-not-set" \
+    userTimezone="-05:00"
 
 ENV dbpswdfile=/run/secrets/dbpswd \
     jmspswdfile=/run/secrets/jmspswd \
@@ -141,6 +142,7 @@ ENTRYPOINT java \
 	-Dvcell.server.dbDriverName="${dbdriver}" \
 	-Dvcell.server.dbUserid="${dbuser}" \
 	-Dvcell.db.pswdfile="${dbpswdfile}" \
+	-Duser.timezone="${userTimezone}" \
 	-Dvcell.python.executable=/usr/local/bin/python \
 	-Dvcell.primarySimdatadir.internal=/simdata \
 	-Dvcell.secondarySimdatadir.internal=/simdata_secondary \

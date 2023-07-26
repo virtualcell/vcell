@@ -39,7 +39,8 @@ ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
     export_baseurl="export-baseurl-not-set" \
     simdatadir_external=/path/to/external/simdata/ \
     simdataCacheSize="simdataCacheSize-not-set" \
-    webDataPort="webDataPort-not-set"
+    webDataPort="webDataPort-not-set" \
+    userTimezone="-05:00"
 
 ENV dbpswdfile=/run/secrets/dbpswd \
     keystore=/run/secrets/keystorefile_20220105 \
@@ -64,6 +65,7 @@ ENTRYPOINT java \
 	-Dvcell.server.dbDriverName="${dbdriver}" \
 	-Dvcell.server.dbUserid="${dbuser}" \
 	-Dvcell.db.pswdfile="${dbpswdfile}" \
+	-Duser.timezone="${userTimezone}" \
 	-Dvcell.python.executable=/usr/bin/python \
 	-Dvcell.primarySimdatadir.internal=/simdata \
 	-Dvcell.secondarySimdatadir.internal=/simdata_secondary \
