@@ -60,33 +60,17 @@
 		</mailingList>
 	</mailingLists>
 
-<!--	<dependencies>-->
-
-<!--		<dependency>-->
-<!--			<groupId>libcombine</groupId>-->
-<!--			<artifactId>libcombine</artifactId>-->
-<!--			<scope>system</scope>-->
-<!--			<version>0.0.1</version>-->
-<!--			<systemPath>${user.dir}/libcombine_java/linux64/libcombine.jar</systemPath>-->
-<!--		</dependency>-->
-<!--	</dependencies>-->
-
 	<modules>
-		<!--	<module>ojdbc6</module>  -->
-		<!--	<module>ucp</module>  -->
 		<module>vcell-admin</module>
-	<!--	<module>vcell-opt</module>  -->
 		<module>vcell-api</module>
 		<module>vcell-apiclient</module>
 		<module>vcell-client</module>
 		<module>vcell-core</module>
-	<!-- 	<module>vcell-imagej</module>  -->
 		<module>vcell-math</module>
 		<module>vcell-server</module>
 		<module>vcell-util</module>
 		<module>vcell-vmicro</module>
 		<module>vcell-cli</module>
-		<module>vcell-imagej-helper</module>
 		<module>vcell-web</module>
 	</modules>
 
@@ -97,12 +81,12 @@
 		<url>https://github.com/virtualcell/vcell</url>
 	</scm>
 	<issueManagement>
-		<system>Bugzilla</system>
-		<url>http://code3.cam.uchc.edu/bugzilla/</url>
+		<system>GitHub Issues</system>
+		<url>https://github.com/virtualcell/vcell/issues</url>
 	</issueManagement>
 	<ciManagement>
-		<system>Travis CI</system>
-		<url>https://travis-ci.org/virtualcell/vcell</url>
+		<system>GitHub Actions</system>
+		<url>https://github.com/virtualcell/vcell/actions</url>
 	</ciManagement>
 
 	<properties>
