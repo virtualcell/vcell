@@ -2,23 +2,19 @@ package org.vcell.cli.run;
 
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.ode.ODESolverResultSet;
-
 import ncsa.hdf.hdf5lib.exceptions.HDF5Exception;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.cli.CLIRecordable;
 import org.vcell.cli.PythonStreamException;
 import org.vcell.cli.exceptions.ExecutionException;
-import org.vcell.cli.vcml.VCMLHandler;
 import org.vcell.util.FileUtils;
-
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
 
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.rmi.server.ExportException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -141,7 +137,6 @@ public class ExecuteImpl {
     @Deprecated
     public static void singleExecVcml(File vcmlFile, File outputDir, CLIRecordable cliLogger) {
         logger.warn("Using deprecated function to execute vcml");
-        VCMLHandler.outputDir = outputDir.getAbsolutePath();
         logger.debug("Executing VCML file " + vcmlFile);
 
         // from here on, we need to collect errors, since some subtasks may succeed while other do not

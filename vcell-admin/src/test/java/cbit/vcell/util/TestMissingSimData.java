@@ -404,10 +404,6 @@ public class TestMissingSimData {
 		}
 	}
 	
-	
-	
-	
-	
 	private static Hashtable<KeyValue, UserLoginInfo> doQuery(String connectURL,String dbSchemaUser, String dbPassword) throws Exception{
 //		String itemSelectSQL = " select vc_userinfo.userid,vc_userinfo.id userkey,vc_userinfo.digestpw,vc_simulation.id simjobsimref,vc_softwareversion.softwareversion ";
 		String itemSelectSQL = " select vc_userinfo.userid,vc_userinfo.id userkey,vc_userinfo.digestpw,vc_simulation.id simjobsimref ";
@@ -1082,31 +1078,6 @@ public class TestMissingSimData {
 			}else{
 				completedSimIDs.add(simIDAndJobID.simID.toString());
 			}
-		}
-	}
-	
-	private static void startClient(VCSimulationIdentifier vcSimulationIdentifier,UserLoginInfo userLoginInfo) throws Exception{
-		ClientServerInfo clientServerInfo = ClientServerInfo.createRemoteServerInfo("vcellapi.cam.uchc.edu", 443, userLoginInfo.getUserName(), userLoginInfo.getDigestedPassword());
-		VCellClient vCellClient = VCellClient.startClient(null, clientServerInfo);
-		while(vCellClient.getClientServerManager() == null || vCellClient.getClientServerManager().getConnectionStatus() == null || vCellClient.getClientServerManager().getConnectionStatus().getStatus() != ConnectionStatus.CONNECTED){
-			Thread.sleep(1000);
-			System.out.println("trying connect");
-		}
-		BigString simXML = vCellClient.getClientServerManager().getUserMetaDbServer().getSimulationXML(vcSimulationIdentifier.getSimulationKey());
-		Simulation sim = XmlHelper.XMLToSim(simXML.toString());
-		vCellClient.getClientServerManager().getJobManager().startSimulation(vcSimulationIdentifier, sim.getScanCount());
-		SimulationStatusPersistent simulationStatus = null;
-		while(true){
-			simulationStatus = vCellClient.getClientServerManager().getUserMetaDbServer().getSimulationStatus(vcSimulationIdentifier.getSimulationKey());
-			System.out.println(simulationStatus);
-			if(simulationStatus.isCompleted() || simulationStatus.isFailed()){
-				break;
-			}
-			Thread.sleep(1000);
-//			MessageEvent[] messageEvents = vcellConnection.getMessageEvents();
-//			for (int i = 0; messageEvents != null && i < messageEvents.length; i++) {
-//				System.out.println(messageEvents[i]);
-//			}
 		}
 	}
 }

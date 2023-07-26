@@ -1,22 +1,15 @@
 package org.vcell.cli.vcml;
 
 import cbit.vcell.resource.PropertyLoader;
-
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
-
-import org.vcell.admin.cli.CLIDatabaseService;
-import org.vcell.cli.CLIRecorder;
 import org.vcell.sedml.ModelFormat;
-import org.vcell.util.DataAccessException;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
 import java.io.File;
-import java.io.IOException;
-import java.sql.SQLException;
 import java.util.concurrent.Callable;
 
 @Command(name = "export-omex-batch", description = "convert directory of VCML documents to COMBINE archives (.omex)")
@@ -57,33 +50,37 @@ public class ExportOmexBatchCommand implements Callable<Integer> {
     @Option(names = "--keepFlushingLogs")
     boolean bKeepFlushingLogs;
 
-    @Option(names = "--offline")
-    boolean bOffline=false;
+    @Option(names = "--offline", hidden = true, defaultValue = "true", description = "offline parameter is not used anymore, database access is removed")
+    boolean bOffline=true;
 
     @Option(names = {"-h", "--help"}, description = "show this help message and exit", usageHelp = true)
     private boolean help;
 
     public Integer call() {
         Level logLevel = bDebug ? Level.DEBUG : logger.getLevel();
-        
+
         LoggerContext config = (LoggerContext)(LogManager.getContext(false));
         config.getConfiguration().getLoggerConfig(LogManager.getLogger("org.vcell").getName()).setLevel(logLevel);
         config.getConfiguration().getLoggerConfig(LogManager.getLogger("cbit").getName()).setLevel(logLevel);
         config.updateLoggers();
 
+        if (!bOffline){
+            throw new RuntimeException("offline parameter is not used anymore, database access has been removed");
+        }
+
         try {
-            
+
             logger.debug("Batch export of omex files requested");
             PropertyLoader.loadProperties();
             if (inputFilePath == null || !inputFilePath.exists() || !inputFilePath.isDirectory())
                 throw new RuntimeException("inputFilePath '" + (inputFilePath == null ? "" : inputFilePath) + "' is not a 'valid directory'");
-            
+
             if (outputFilePath.exists() && !outputFilePath.isDirectory())
                 throw new RuntimeException("outputFilePath '" + outputFilePath + "' is not a 'valid directory'");
 
-            if (bOffline) this.runInOfflineMode();
-            else this.run();
-            
+            VcmlOmexConverter.convertFilesNoDatabase(
+                    inputFilePath, outputFilePath, outputModelFormat, bWriteLogFiles, bValidateOmex, bSkipUnsupportedApps);
+
             return 0;
         } catch (Exception e) {
             e.printStackTrace();
@@ -93,21 +90,4 @@ public class ExportOmexBatchCommand implements Callable<Integer> {
         }
     }
 
-    private void runInOfflineMode() throws IOException {
-        logger.info("Offline mode selected.");
-        VcmlOmexConverter.convertFilesNoDatabase(
-                inputFilePath, outputFilePath, outputModelFormat, bWriteLogFiles, bValidateOmex, bSkipUnsupportedApps);
-    }
-
-    private void run() {
-        logger.info("Online mode selected");
-        try (CLIDatabaseService cliDatabaseService = new CLIDatabaseService()) {
-            VcmlOmexConverter.queryVCellDbPublishedModels(cliDatabaseService, outputFilePath, bWriteLogFiles);
-
-            VcmlOmexConverter.convertFiles(cliDatabaseService, inputFilePath, outputFilePath,
-                    outputModelFormat, bHasDataOnly, bMakeLogsOnly, bNonSpatialOnly, bWriteLogFiles, bValidateOmex, bSkipUnsupportedApps);
-        } catch (IOException | SQLException | DataAccessException e) {
-            e.printStackTrace(System.err);
-        }
-    }
 }

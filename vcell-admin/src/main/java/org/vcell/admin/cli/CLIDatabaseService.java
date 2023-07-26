@@ -82,17 +82,6 @@ public class CLIDatabaseService implements AutoCloseable {
         return biomodelXML;
     }
 
-    public String getBioModelVCML(BioModelInfo bioModelInfo, boolean bWithXMLCache) throws SQLException, DataAccessException, XmlParseException {
-        DatabaseServerImpl databaseServerImpl = getDatabaseServer();
-        KeyValue versionKey = bioModelInfo.getVersion().getVersionKey();
-        if (bWithXMLCache) {
-            return databaseServerImpl.getBioModelXML(User.tempUser, versionKey).toString();
-        }else{
-            return databaseServerImpl.getServerDocumentManager().getBioModelUnresolved(
-                    new QueryHashtable(), User.tempUser, versionKey);
-        }
-     }
-
     public SimulationJobStatusPersistent[] querySimulationJobStatus(KeyValue simKey) throws SQLException, DataAccessException {
         AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(conFactory);
         SimulationJobStatusPersistent[] statuses = adminDbTopLevel.getSimulationJobStatusArray(simKey, false);
