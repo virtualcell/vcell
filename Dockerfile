@@ -2,7 +2,7 @@ FROM eclipse-temurin:17 as jre-build
 
 # Create a custom Java runtime
 RUN $JAVA_HOME/bin/jlink \
-         --add-modules java.base \
+         --add-modules ALL-MODULE-PATH \
          --strip-debug \
          --no-man-pages \
          --no-header-files \
@@ -60,17 +60,7 @@ RUN python3 -m pip install poetry &&  poetry config cache-dir "/poetry/.cache"
 ENV PATH="/root/.poetry/bin:/root/.local/bin:$PATH"
 
 # Copy JAR files
-COPY ./vcell-client/target/vcell-client-0.0.1-SNAPSHOT.jar \
-     ./vcell-client/target/maven-jars/*.jar \
- 	 ./vcell-core/target/vcell-core-0.0.1-SNAPSHOT.jar \
-     ./vcell-core/target/maven-jars/*.jar \
- 	 ./vcell-server/target/vcell-server-0.0.1-SNAPSHOT.jar \
-     ./vcell-server/target/maven-jars/*.jar \
- 	 ./vcell-vmicro/target/vcell-vmicro-0.0.1-SNAPSHOT.jar \
-     ./vcell-vmicro/target/maven-jars/*.jar \
-     ./vcell-admin/target/vcell-admin-0.0.1-SNAPSHOT.jar \
-     ./vcell-admin/target/maven-jars/*.jar \
-     ./vcell-cli/target/vcell-cli-0.0.1-SNAPSHOT.jar \
+COPY ./vcell-cli/target/vcell-cli-0.0.1-SNAPSHOT.jar \
      ./vcell-cli/target/maven-jars/*.jar \
      ./non-maven-java-libs/org/sbml/libcombine/libCombineLinux64/0.2.7/libCombineLinux64-0.2.7.jar \
      /usr/local/app/vcell/lib/

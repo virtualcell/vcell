@@ -38,29 +38,10 @@ import ncsa.hdf.object.FileFormat;
 public class LocalVCellConnectionFactory implements VCellConnectionFactory {
 	public static final Logger lg = LogManager.getLogger(LocalVCellConnectionFactory.class);
 	
-	private UserLoginInfo userLoginInfo;
 	private ConnectionFactory connectionFactory = null;
 
-/**
- * LocalVCellConnectionFactory constructor comment.
- */
-public LocalVCellConnectionFactory(UserLoginInfo userLoginInfo) {
-	this.userLoginInfo = userLoginInfo;
-}
-/**
- * Insert the method's description here.
- * Creation date: (8/9/2001 12:08:06 PM)
- * @param userID java.lang.String
- * @param password java.lang.String
- */
-public void changeUser(UserLoginInfo userLoginInfo) {
-	this.userLoginInfo = userLoginInfo;
-}
-/**
- * This method was created in VisualAge.
- * @return cbit.vcell.server.VCellConnection
- */
-public VCellConnection createVCellConnection() throws AuthenticationException, ConnectionException {
+@Override
+public VCellConnection createVCellConnection(UserLoginInfo userLoginInfo) throws AuthenticationException, ConnectionException {
 	try {
 		if (connectionFactory == null) {
 			connectionFactory = DatabaseService.getInstance().createConnectionFactory();
@@ -91,15 +72,6 @@ public VCellConnection createVCellConnection() throws AuthenticationException, C
 		lg.error(exc.getMessage(), exc);
 		throw new ConnectionException(exc.getMessage());
 	}
-}
-
-/**
- * Insert the method's description here.
- * Creation date: (8/9/2001 12:34:14 PM)
- * @param newConFactory cbit.sql.ConnectionFactory
- */
-public void setConnectionFactory(ConnectionFactory newConnectionFactory) {
-	connectionFactory = newConnectionFactory;
 }
 
 /**

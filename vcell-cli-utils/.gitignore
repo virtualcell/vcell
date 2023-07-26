@@ -112,8 +112,6 @@ venv.bak/
 # Mac related ignores
 .DS_Store
 
-/sample_model/out/
-
 # Temp directory
 temp/
 tests/results/

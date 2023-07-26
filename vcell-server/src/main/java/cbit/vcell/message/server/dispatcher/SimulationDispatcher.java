@@ -10,58 +10,13 @@
 
 package cbit.vcell.message.server.dispatcher;
 
-import java.sql.SQLException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.concurrent.RejectedExecutionHandler;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.vcell.db.ConnectionFactory;
-import org.vcell.db.DatabaseService;
-import org.vcell.db.KeyFactory;
-import org.vcell.util.DataAccessException;
-import org.vcell.util.PermissionException;
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.User;
-import org.vcell.util.document.VCellServerID;
-import org.vcell.util.exe.ExecutableException;
-
-import com.google.gson.Gson;
-
 import cbit.rmi.event.WorkerEvent;
-import cbit.vcell.message.RollbackException;
-import cbit.vcell.message.VCMessage;
-import cbit.vcell.message.VCMessageSelector;
-import cbit.vcell.message.VCMessageSession;
-import cbit.vcell.message.VCMessagingConstants;
-import cbit.vcell.message.VCMessagingException;
-import cbit.vcell.message.VCMessagingService;
-import cbit.vcell.message.VCQueueConsumer;
+import cbit.vcell.message.*;
 import cbit.vcell.message.VCQueueConsumer.QueueListener;
-import cbit.vcell.message.VCRpcMessageHandler;
-import cbit.vcell.message.VCellQueue;
 import cbit.vcell.message.jms.activeMQ.VCMessagingServiceActiveMQ;
 import cbit.vcell.message.messages.MessageConstants;
 import cbit.vcell.message.messages.WorkerEventMessage;
-import cbit.vcell.message.server.ManageUtils;
 import cbit.vcell.message.server.ServerMessagingDelegate;
-import cbit.vcell.message.server.ServiceInstanceStatus;
-import cbit.vcell.message.server.ServiceProvider;
-import cbit.vcell.message.server.bootstrap.ServiceType;
 import cbit.vcell.message.server.dispatcher.BatchScheduler.ActiveJob;
 import cbit.vcell.message.server.dispatcher.BatchScheduler.SchedulerDecisions;
 import cbit.vcell.message.server.htc.HtcException;
@@ -74,25 +29,39 @@ import cbit.vcell.messaging.db.SimulationRequirements;
 import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.mongodb.VCMongoMessage;
-import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
 import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.resource.PropertyLoader;
-import cbit.vcell.server.HtcJobID;
-import cbit.vcell.server.SimpleJobStatus;
-import cbit.vcell.server.SimpleJobStatusQuerySpec;
-import cbit.vcell.server.SimulationJobStatus;
+import cbit.vcell.server.*;
 import cbit.vcell.server.SimulationJobStatus.SchedulerStatus;
-import cbit.vcell.server.SimulationService;
-import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.VCSimulationIdentifier;
+import com.google.gson.Gson;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.vcell.db.ConnectionFactory;
+import org.vcell.db.DatabaseService;
+import org.vcell.db.KeyFactory;
+import org.vcell.dependency.server.VCellServerModule;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.PermissionException;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+import org.vcell.util.document.VCellServerID;
+import org.vcell.util.exe.ExecutableException;
+
+import java.sql.SQLException;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.concurrent.*;
 
 /**
  * Insert the type's description here.
  * Creation date: (10/18/2001 4:31:11 PM)
  * @author: Jim Schaff
  */
-public class SimulationDispatcher extends ServiceProvider {
+public class SimulationDispatcher {
 	public static final String METHOD_NAME_STARTSIMULATION = "startSimulation";
 	public static final String METHOD_NAME_STOPSIMULATION = "stopSimulation";
 	/**
@@ -112,24 +81,23 @@ public class SimulationDispatcher extends ServiceProvider {
 	 */
 	public static final long QUEUE_FLUSH_WAITIME = MessageConstants.MINUTE_IN_MS*5;
 
-	private SimulationDatabase simulationDatabase = null;
-	private VCQueueConsumer workerEventConsumer_sim = null;
-	private VCQueueConsumer simRequestConsumer_int = null;
-	private VCRpcMessageHandler rpcMessageHandler_int = null;
+	private final VCMessagingService vcMessagingService_int;
+	private final VCMessagingService vcMessagingService_sim;
 
-	private SimulationDispatcherEngine simDispatcherEngine = new SimulationDispatcherEngine();
+	private final SimulationDatabase simulationDatabase;
+	private final VCQueueConsumer workerEventConsumer_sim;
+	private final VCQueueConsumer simRequestConsumer_int;
+	private final VCRpcMessageHandler rpcMessageHandler_int;
 
-	private DispatchThread dispatchThread = null;
-	private SimulationMonitor simMonitor = null;
-	private VCMessageSession dispatcherQueueSession_int = null;
-	private VCMessageSession clientStatusTopicSession_int = null;
-	private VCMessageSession simMonitorThreadSession_sim = null;
+	private final SimulationDispatcherEngine simDispatcherEngine = new SimulationDispatcherEngine();
 
-	private HtcProxy htcProxy = null;
-	/**
-	 * format for logging. Lazily created on {@link #getDateFormat()}
-	 */
-	private DateFormat dateFormat = null;
+	private final DispatchThread dispatchThread;
+	private final SimulationMonitor simMonitor;
+	private final VCMessageSession dispatcherQueueSession_int;
+	private final VCMessageSession clientStatusTopicSession_int;
+	private final VCMessageSession simMonitorThreadSession_sim;
+
+	private final HtcProxy htcProxy;
 	public static Logger lg = LogManager.getLogger(SimulationDispatcher.class);
 
 	public class SimulationServiceImpl implements SimulationService {
@@ -482,7 +450,7 @@ public class SimulationDispatcher extends ServiceProvider {
 			}
 			
 			private void flushWorkerEventQueue() throws VCMessagingException{
-				VCMessage message = simMonitorThreadSession_sim.createObjectMessage(new Long(VCMongoMessage.getServiceStartupTime()));
+				VCMessage message = simMonitorThreadSession_sim.createObjectMessage(VCMongoMessage.getServiceStartupTime());
 				message.setStringProperty(VCMessagingConstants.MESSAGE_TYPE_PROPERTY,MessageConstants.MESSAGE_TYPE_FLUSH_VALUE);
 				synchronized (notifyObject) {
 					simMonitorThreadSession_sim.sendQueueMessage(VCellQueue.WorkerEventQueue, message, false, MessageConstants.MINUTE_IN_MS*5L);
@@ -579,18 +547,22 @@ public class SimulationDispatcher extends ServiceProvider {
 	/**
 	 * Scheduler constructor comment.
 	 */
-	public SimulationDispatcher(HtcProxy htcProxy, VCMessagingService vcMessagingService_int, VCMessagingService vcMessagingService_sim, ServiceInstanceStatus serviceInstanceStatus, SimulationDatabase simulationDatabase, boolean bSlaveMode) throws Exception {
-		super(vcMessagingService_int, vcMessagingService_sim,serviceInstanceStatus,bSlaveMode);
-		this.simulationDatabase = simulationDatabase;
-		this.htcProxy = htcProxy;
-	}
+	public SimulationDispatcher() throws Exception {
+		ConnectionFactory conFactory = DatabaseService.getInstance().createConnectionFactory();
+		KeyFactory keyFactory = conFactory.getKeyFactory();
+		DatabaseServerImpl databaseServerImpl = new DatabaseServerImpl(conFactory, keyFactory);
+		AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(conFactory);
+		this.simulationDatabase = new SimulationDatabaseDirect(adminDbTopLevel, databaseServerImpl, true);
 
+		this.vcMessagingService_int = new VCMessagingServiceActiveMQ();
+		String jmshost_int = PropertyLoader.getRequiredProperty(PropertyLoader.jmsIntHostInternal);
+		int jmsport_int = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.jmsIntPortInternal));
+		this.vcMessagingService_int.setConfiguration(new ServerMessagingDelegate(), jmshost_int, jmsport_int);
 
-	public void init(){
-
-		//
-		// set up consumer for WorkerEvent messages
-		//
+		this.vcMessagingService_sim = new VCMessagingServiceActiveMQ();
+		String jmshost_sim = PropertyLoader.getRequiredProperty(PropertyLoader.jmsSimHostInternal);
+		int jmsport_sim = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.jmsSimPortInternal));
+		this.vcMessagingService_sim.setConfiguration(new ServerMessagingDelegate(), jmshost_sim, jmsport_sim);
 		QueueListener workerEventListener = new QueueListener() {
 			public void onQueueMessage(VCMessage vcMessage, VCMessageSession session) throws RollbackException {
 				onWorkerEventMessage(vcMessage, session);
@@ -599,7 +571,7 @@ public class SimulationDispatcher extends ServiceProvider {
 		VCMessageSelector workerEventSelector = null;
 		String threadName = "Worker Event Consumer";
 		workerEventConsumer_sim = new VCQueueConsumer(VCellQueue.WorkerEventQueue, workerEventListener, workerEventSelector, threadName, MessageConstants.PREFETCH_LIMIT_WORKER_EVENT);
-		vcMessagingService_sim.addMessageConsumer(workerEventConsumer_sim);
+		this.vcMessagingService_sim.addMessageConsumer(workerEventConsumer_sim);
 
 		//
 		// set up consumer for Simulation Request (non-blocking RPC) messages
@@ -611,16 +583,22 @@ public class SimulationDispatcher extends ServiceProvider {
 		this.rpcMessageHandler_int = new VCRpcMessageHandler(simServiceImpl, VCellQueue.SimReqQueue);
 
 		simRequestConsumer_int = new VCQueueConsumer(VCellQueue.SimReqQueue, rpcMessageHandler_int, simRequestSelector, threadName, MessageConstants.PREFETCH_LIMIT_SIM_REQUEST);
-		vcMessagingService_int.addMessageConsumer(simRequestConsumer_int);
+		this.vcMessagingService_int.addMessageConsumer(simRequestConsumer_int);
 
-		this.dispatcherQueueSession_int = vcMessagingService_int.createProducerSession();
-		this.clientStatusTopicSession_int = vcMessagingService_int.createProducerSession();
+		this.dispatcherQueueSession_int = this.vcMessagingService_int.createProducerSession();
+		this.clientStatusTopicSession_int = this.vcMessagingService_int.createProducerSession();
 
 		this.dispatchThread = new DispatchThread();
 		this.dispatchThread.start();
 
-		this.simMonitorThreadSession_sim = vcMessagingService_sim.createProducerSession();
+		this.simMonitorThreadSession_sim = this.vcMessagingService_sim.createProducerSession();
 		this.simMonitor = new SimulationMonitor();
+		this.htcProxy = SlurmProxy.createRemoteProxy();
+	}
+
+
+	public void init() {
+
 	}
 
 
@@ -673,22 +651,8 @@ public class SimulationDispatcher extends ServiceProvider {
 	private void traceThread(Object source) {
 		if (lg.isDebugEnabled()) {
 			lg.debug(source.getClass( ).getName() + " thread id "  + Thread.currentThread().getId( ) + 
-				" commencing run cycle at " +  getDateFormat( ).format(new Date( )) );
+				" commencing run cycle at " +  new SimpleDateFormat("k:m:s").format(new Date( )) );
 		}
-	}
-	
-	/**
-	 * @return new or existing date format
-	 */
-	private DateFormat getDateFormat( ) {
-		if (dateFormat == null) {
-			dateFormat = new SimpleDateFormat("k:m:s");
-		}
-		return dateFormat;
-	}
-
-
-	public void stopService() {
 	}
 	
 	/**
@@ -696,7 +660,6 @@ public class SimulationDispatcher extends ServiceProvider {
 	 * @param args an array of command-line arguments
 	 */
 	public static void main(java.lang.String[] args) {
-		OperatingSystemInfo.getInstance();
 
 		if (args.length != 0) {
 			System.out.println("No arguments expected: " + SimulationDispatcher.class.getName());
@@ -704,34 +667,14 @@ public class SimulationDispatcher extends ServiceProvider {
 		}
 
 		try {
+			OperatingSystemInfo.getInstance();
 			PropertyLoader.loadProperties(REQUIRED_SERVICE_PROPERTIES);
-			HtcProxy htcProxy = SlurmProxy.createRemoteProxy();
 
-			int serviceOrdinal = 99;
-			VCMongoMessage.serviceStartup(ServiceName.dispatch, new Integer(serviceOrdinal), args);
+			Injector injector = Guice.createInjector(new VCellServerModule());
 
-			ServiceInstanceStatus serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(),
-					ServiceType.DISPATCH, serviceOrdinal, ManageUtils.getHostName(), new Date(), true);
-
-			ConnectionFactory conFactory = DatabaseService.getInstance().createConnectionFactory();
-			KeyFactory keyFactory = conFactory.getKeyFactory();
-			DatabaseServerImpl databaseServerImpl = new DatabaseServerImpl(conFactory, keyFactory);
-			AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(conFactory);
-			SimulationDatabase simulationDatabase = new SimulationDatabaseDirect(adminDbTopLevel, databaseServerImpl, true);
-
-			VCMessagingService vcMessagingService_int = new VCMessagingServiceActiveMQ();
-    		String jmshost_int = PropertyLoader.getRequiredProperty(PropertyLoader.jmsIntHostInternal);
-    		int jmsport_int = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.jmsIntPortInternal));
-			vcMessagingService_int.setConfiguration(new ServerMessagingDelegate(), jmshost_int, jmsport_int);
-			
-			VCMessagingService vcMessagingService_sim = new VCMessagingServiceActiveMQ();
-			String jmshost_sim = PropertyLoader.getRequiredProperty(PropertyLoader.jmsSimHostInternal);
-    		int jmsport_sim = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.jmsSimPortInternal));
-			vcMessagingService_sim.setConfiguration(new ServerMessagingDelegate(), jmshost_sim, jmsport_sim);
-
-			SimulationDispatcher simulationDispatcher = new SimulationDispatcher(htcProxy, vcMessagingService_int, vcMessagingService_sim, serviceInstanceStatus, simulationDatabase, false);
-
+			SimulationDispatcher simulationDispatcher = injector.getInstance(SimulationDispatcher.class);
 			simulationDispatcher.init();
+
 		} catch (Throwable e) {
 			lg.error("uncaught exception initializing SimulationDispatcher: "+e.getLocalizedMessage(), e);
 			System.exit(1);
@@ -746,6 +689,7 @@ public class SimulationDispatcher extends ServiceProvider {
 			PropertyLoader.dbDriverName,
 			PropertyLoader.dbUserid,
 			PropertyLoader.dbPasswordFile,
+			PropertyLoader.userTimezone,
 			PropertyLoader.mongodbHostInternal,
 			PropertyLoader.mongodbPortInternal,
 			PropertyLoader.mongodbDatabase,

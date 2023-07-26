@@ -56,6 +56,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import cbit.vcell.client.VCellClient;
+import cbit.vcell.client.VCellClientMain;
 import org.vcell.client.logicalwindow.LWContainerHandle;
 import org.vcell.client.logicalwindow.LWDialog;
 import org.vcell.client.logicalwindow.LWNamespace;
@@ -792,9 +793,9 @@ public class DialogUtils {
 
 	public static String collectRecordedUserEvents(){
 		String content = "";
-		if(VCellClientTest.recordedUserEvents != null && VCellClientTest.recordedUserEvents.size() > 0){
+		if(VCellClientMain.recordedUserEvents != null && VCellClientMain.recordedUserEvents.size() > 0){
 			content+= "-----Recorded User Events-----"+BeanUtils.PLAINTEXT_EMAIL_NEWLINE;
-			Iterator<String> iter = VCellClientTest.recordedUserEvents.iterator();
+			Iterator<String> iter = VCellClientMain.recordedUserEvents.iterator();
 			while(iter.hasNext()){
 				content+= iter.next()+BeanUtils.PLAINTEXT_EMAIL_NEWLINE;
 			}

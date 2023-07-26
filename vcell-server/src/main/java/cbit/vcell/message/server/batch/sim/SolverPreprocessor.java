@@ -32,8 +32,6 @@ import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.message.jms.activeMQ.VCMessagingServiceActiveMQ;
 import cbit.vcell.message.messages.WorkerEventMessage;
 import cbit.vcell.message.server.ServerMessagingDelegate;
-import cbit.vcell.message.server.jmx.VCellServiceMXBean;
-import cbit.vcell.message.server.jmx.VCellServiceMXBeanImpl;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
@@ -117,12 +115,6 @@ public class SolverPreprocessor  {
 
 			VCMongoMessage.serviceStartup(ServiceName.solverPreprocessor, Integer.valueOf(simTask.getSimKey().toString()), args);
 
-			//
-			// JMX registration
-			//
-			MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
-			mbs.registerMBean(new VCellServiceMXBeanImpl(), new ObjectName(VCellServiceMXBean.jmxObjectName));
-			
  	        final HTCSolver htcSolver = new HTCSolver(simTask, userDirectory,parallelDirectory) {
 				public void startSolver() {
 					try {

@@ -234,10 +234,13 @@ import cbit.xml.merge.gui.TMLPanel;
 public class ClientRequestManager
 		implements RequestManager, PropertyChangeListener, ExportListener, VCellMessageEventListener {
 	private VCellClient vcellClient = null;
+	private final UserRegistrationManager userRegistrationManager;
+
 	private boolean bOpening = false;
 	private boolean bExiting = false;
 
-	public ClientRequestManager(VCellClient vcellClient) {
+	public ClientRequestManager(VCellClient vcellClient, UserRegistrationManager userRegistrationManager) {
+		this.userRegistrationManager = userRegistrationManager;
 		setVcellClient(vcellClient);
 		// listen to connectionStatus events
 		getClientServerManager().addPropertyChangeListener(this);
@@ -372,7 +375,7 @@ public class ClientRequestManager
 	}
 
 	public static void continueAfterMathModelGeomChangeWarning(MathModelWindowManager mathModelWindowManager,
-			Geometry newGeometry) throws UserCancelException {
+															   Geometry newGeometry) throws UserCancelException {
 
 		MathModel mathModel = mathModelWindowManager.getMathModel();
 		if (mathModel != null && mathModel.getMathDescription() != null) {
@@ -407,11 +410,11 @@ public class ClientRequestManager
 					"After changing MathModel geometry please note:\n"
 							+ "  1.  Check Geometry subvolume names match MathModel compartment names."
 							+ (bHasSims && bMeshResolutionChange ? "\n"
-									+ "  2.  All existing simulations mesh sizes will be reset"
-									+ " because the new Geometry spatial dimension(" + newGeometry.getDimension() + "D)"
-									+ " does not equal the current Geometry spatial dimension("
-									+ oldGeometry.getDimension() + "D)" + "\n" + meshResolutionChangeSB.toString()
-									: ""),
+							+ "  2.  All existing simulations mesh sizes will be reset"
+							+ " because the new Geometry spatial dimension(" + newGeometry.getDimension() + "D)"
+							+ " does not equal the current Geometry spatial dimension("
+							+ oldGeometry.getDimension() + "D)" + "\n" + meshResolutionChangeSB.toString()
+							: ""),
 					new String[] { "Continue", "Cancel" }, "Continue");
 			if (result != null && result.equals("Continue")) {
 				return;
@@ -426,7 +429,7 @@ public class ClientRequestManager
 	enum CloseOption {
 		SAVE_AND_CLOSE, CLOSE_IN_ANY_CASE, CANCEL_CLOSE,
 	}
-	
+
 	public enum CallAction {
 		EXPORT, RUN, SAVE, SAVEASNEW,
 	}
@@ -633,7 +636,7 @@ public class ClientRequestManager
 	}
 
 	private XmlTreeDiff compareDocuments(final VCDocument doc1, final VCDocument doc2,
-			DiffConfiguration comparisonSetting) throws Exception {
+										 DiffConfiguration comparisonSetting) throws Exception {
 
 		VCellThreadChecker.checkCpuIntensiveInvocation();
 
@@ -647,21 +650,21 @@ public class ClientRequestManager
 		String doc1XML = null;
 		String doc2XML = null;
 		switch (doc1.getDocumentType()) {
-		case BIOMODEL_DOC: {
-			doc1XML = XmlHelper.bioModelToXML((BioModel) doc1);
-			doc2XML = XmlHelper.bioModelToXML((BioModel) doc2);
-			break;
-		}
-		case MATHMODEL_DOC: {
-			doc1XML = XmlHelper.mathModelToXML((MathModel) doc1);
-			doc2XML = XmlHelper.mathModelToXML((MathModel) doc2);
-			break;
-		}
-		case GEOMETRY_DOC: {
-			doc1XML = XmlHelper.geometryToXML((Geometry) doc1);
-			doc2XML = XmlHelper.geometryToXML((Geometry) doc2);
-			break;
-		}
+			case BIOMODEL_DOC: {
+				doc1XML = XmlHelper.bioModelToXML((BioModel) doc1);
+				doc2XML = XmlHelper.bioModelToXML((BioModel) doc2);
+				break;
+			}
+			case MATHMODEL_DOC: {
+				doc1XML = XmlHelper.mathModelToXML((MathModel) doc1);
+				doc2XML = XmlHelper.mathModelToXML((MathModel) doc2);
+				break;
+			}
+			case GEOMETRY_DOC: {
+				doc1XML = XmlHelper.geometryToXML((Geometry) doc1);
+				doc2XML = XmlHelper.geometryToXML((Geometry) doc2);
+				break;
+			}
 		}
 		final XmlTreeDiff diffTree = XmlHelper.compareMerge(doc1XML, doc2XML, comparisonSetting, true);
 		return diffTree;
@@ -701,21 +704,21 @@ public class ClientRequestManager
 			}
 			// make the info and get saved version
 			switch (document.getDocumentType()) {
-			case BIOMODEL_DOC: {
-				BioModel bioModel = (BioModel) document;
-				savedVersion = getDocumentManager().getBioModel(bioModel.getVersion().getVersionKey());
-				break;
-			}
-			case MATHMODEL_DOC: {
-				MathModel mathModel = (MathModel) document;
-				savedVersion = getDocumentManager().getMathModel(mathModel.getVersion().getVersionKey());
-				break;
-			}
-			case GEOMETRY_DOC: {
-				Geometry geometry = (Geometry) document;
-				savedVersion = getDocumentManager().getGeometry(geometry.getKey());
-				break;
-			}
+				case BIOMODEL_DOC: {
+					BioModel bioModel = (BioModel) document;
+					savedVersion = getDocumentManager().getBioModel(bioModel.getVersion().getVersionKey());
+					break;
+				}
+				case MATHMODEL_DOC: {
+					MathModel mathModel = (MathModel) document;
+					savedVersion = getDocumentManager().getMathModel(mathModel.getVersion().getVersionKey());
+					break;
+				}
+				case GEOMETRY_DOC: {
+					Geometry geometry = (Geometry) document;
+					savedVersion = getDocumentManager().getGeometry(geometry.getKey());
+					break;
+				}
 			}
 			return compareDocuments(savedVersion, document, DiffConfiguration.COMPARE_DOCS_SAVED);
 		} catch (Exception e) {
@@ -750,7 +753,7 @@ public class ClientRequestManager
 	}
 
 	public void connectAs(final String user, final DigestedPassword digestedPassword,
-			final TopLevelWindowManager requester) {
+						  final TopLevelWindowManager requester) {
 		JDialog dialog = new JDialog();
 		dialog.setAlwaysOnTop(true);
 		int confirm = JOptionPane.showOptionDialog(dialog, UserMessage.warn_changeUser.getMessage(null),
@@ -848,16 +851,16 @@ public class ClientRequestManager
 		VCDocument defaultDocument = null;
 		try {
 			switch (docType) {
-			case BIOMODEL_DOC: {
-				// blank
-				return createDefaultBioModelDocument(null);
-			}
-			case MATHMODEL_DOC: {
-				return createDefaultMathModelDocument();
-			}
-			default: {
-				throw new RuntimeException("default document can only be BioModel or MathModel");
-			}
+				case BIOMODEL_DOC: {
+					// blank
+					return createDefaultBioModelDocument(null);
+				}
+				case MATHMODEL_DOC: {
+					return createDefaultMathModelDocument();
+				}
+				default: {
+					throw new RuntimeException("default document can only be BioModel or MathModel");
+				}
 			}
 		} catch (Exception e) {
 			e.printStackTrace(System.out);
@@ -925,7 +928,7 @@ public class ClientRequestManager
 	}
 
 	public void createMathModelFromApplication(final BioModelWindowManager requester, final String name,
-			final SimulationContext simContext) {
+											   final SimulationContext simContext) {
 		if (simContext == null) {
 			PopupGenerator.showErrorDialog(requester,
 					"Selected Application is null, cannot generate corresponding math model");
@@ -933,10 +936,10 @@ public class ClientRequestManager
 		}
 
 		switch (simContext.getApplicationType()) {
-		case NETWORK_STOCHASTIC:
-			break;
-		case RULE_BASED_STOCHASTIC:
-		case NETWORK_DETERMINISTIC:
+			case NETWORK_STOCHASTIC:
+				break;
+			case RULE_BASED_STOCHASTIC:
+			case NETWORK_DETERMINISTIC:
 		}
 
 		AsynchClientTask task1 = new AsynchClientTask("Creating MathModel from BioModel Application",
@@ -991,7 +994,7 @@ public class ClientRequestManager
 	}
 
 	public void createBioModelFromApplication(final BioModelWindowManager requester, final String name,
-			final SimulationContext simContext) {
+											  final SimulationContext simContext) {
 		if (simContext == null) {
 			PopupGenerator.showErrorDialog(requester,
 					"Selected Application is null, cannot generate corresponding bio model");
@@ -1050,7 +1053,7 @@ public class ClientRequestManager
 	}
 
 	public void createRuleBasedBioModelFromApplication(final BioModelWindowManager requester, final String name,
-			final SimulationContext simContext) {
+													   final SimulationContext simContext) {
 		if (simContext == null) {
 			PopupGenerator.showErrorDialog(requester,
 					"Selected Application is null, cannot generate corresponding bio model");
@@ -1121,21 +1124,21 @@ public class ClientRequestManager
 //	};
 //	ClientTaskDispatcher.dispatch(requester.getComponent(), new Hashtable<String, Object>(),  new AsynchClientTask[]{task1, task2}, false);
 //}
-	private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) throws Exception {
-		BioModel bioModel = new BioModel(null);
-		bioModel.setName("BioModel" + (getMdiManager().getNumCreatedDocumentWindows() + 1));
+private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) throws Exception {
+	BioModel bioModel = new BioModel(null);
+	bioModel.setName("BioModel" + (getMdiManager().getNumCreatedDocumentWindows() + 1));
 
-		Model model;
-		if (bngUnitSystem == null) {
-			model = new Model("model");
-		} else {
-			model = new Model("model", bngUnitSystem.createModelUnitSystem());
-		}
-		bioModel.setModel(model);
-
-		model.createFeature();
-		return bioModel;
+	Model model;
+	if (bngUnitSystem == null) {
+		model = new Model("model");
+	} else {
+		model = new Model("model", bngUnitSystem.createModelUnitSystem());
 	}
+	bioModel.setModel(model);
+
+	model.createFeature();
+	return bioModel;
+}
 
 	private MathModel createDefaultMathModelDocument() throws Exception {
 		Geometry geometry = new Geometry("Untitled", 0);
@@ -1150,7 +1153,7 @@ public class ClientRequestManager
 	}
 
 	public Geometry getGeometryFromDocumentSelection(Component parentComponent, VCDocumentInfo vcDocumentInfo,
-			boolean bClearVersion) throws Exception, UserCancelException {
+													 boolean bClearVersion) throws Exception, UserCancelException {
 		Geometry geom = null;
 		if (vcDocumentInfo.getVersionType()
 				.equals(VersionableType.BioModelMetaData)/* documentType == VCDocument.BIOMODEL_DOC */) {
@@ -1243,7 +1246,7 @@ public class ClientRequestManager
 				|| documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FROM_WORKSPACE_IMAGE
 //	|| documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FIJI_IMAGEJ ||
 //	documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_BLENDER
-		;
+				;
 	}
 
 	private static void throwImportWholeDirectoryException(File invalidFile, String extraInfo) throws Exception {
@@ -1396,29 +1399,29 @@ public class ClientRequestManager
 
 	public static AsynchClientTask getParseImageTask(final Component requesterComp,final VCDocument.DocumentCreationInfo documentCreationInfo,final MDIManager mdiManager) {
 		AsynchClientTask parseImageTask = new AsynchClientTask("read and parse image file",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-		@Override
-		public void run(final Hashtable<String, Object> hashTable) throws Exception {
-	
+			@Override
+			public void run(final Hashtable<String, Object> hashTable) throws Exception {
+
 				final Component guiParent = (Component) hashTable.get(ClientRequestManager.GUI_PARENT);
 				try {
 					FieldDataFileOperationSpec fdfos = null;
-	//			if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FIJI_IMAGEJ){
-	//				hashTable.put("imageFile",ImageJHelper.vcellWantImage(getClientTaskStatusSupport(),"Image for new VCell geometry"));
-	//			}
-	//			if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_BLENDER){
-	//				hashTable.put("imageFile",ImageJHelper.vcellWantSurface(getClientTaskStatusSupport(),"Image for new VCell geometry"));
-	//			}
+					//			if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FIJI_IMAGEJ){
+					//				hashTable.put("imageFile",ImageJHelper.vcellWantImage(getClientTaskStatusSupport(),"Image for new VCell geometry"));
+					//			}
+					//			if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_BLENDER){
+					//				hashTable.put("imageFile",ImageJHelper.vcellWantSurface(getClientTaskStatusSupport(),"Image for new VCell geometry"));
+					//			}
 					if (documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FILE
-	//				|| documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FIJI_IMAGEJ ||
-	//				documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_BLENDER
+						//				|| documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FIJI_IMAGEJ ||
+						//				documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_BLENDER
 					) {
-	
+
 						File imageFile = (File) hashTable.get(IMAGE_FILE);
 						if (imageFile == null) {
 							throw new Exception("No file selected");
 						}
 						if (ExtensionFilter.isMatchingExtension(imageFile, ".nrrd")) {
-	
+
 							DataInputStream dis = null;
 							try {
 								dis = new DataInputStream(new BufferedInputStream(new FileInputStream(imageFile)));
@@ -1440,7 +1443,7 @@ public class ClientRequestManager
 									}
 									StringTokenizer stringTokenizer = new StringTokenizer(line, ": ");
 									String headerParam = stringTokenizer.nextToken();
-	//							System.out.println(headerParam);
+									//							System.out.println(headerParam);
 									if (headerParam.equals("sizes")) {
 										if (dimension != -1) {
 											xsize = Integer.parseInt(stringTokenizer.nextToken());
@@ -1535,7 +1538,7 @@ public class ClientRequestManager
 									} else {
 										throw new Exception("Unexpected data type=" + type.toString());
 									}
-	
+
 									minValue = Math.min(minValue, data[i]);
 									maxValue = Math.max(maxValue, data[i]);
 								}
@@ -1544,7 +1547,7 @@ public class ClientRequestManager
 									getClientTaskStatusSupport()
 											.setMessage("Scaling " + encoding + " " + type + " NRRD data.");
 								}
-	
+
 								short[] dataToSegment = new short[data.length];
 								double scaleShort = Math.pow(2, Short.SIZE) - 1;
 								for (int i = 0; i < data.length; i++) {
@@ -1603,7 +1606,7 @@ public class ClientRequestManager
 										}
 										break;
 									}
-	
+
 								}
 								hashTable.put(IMPORT_SOURCE_NAME, "Directory: " + imageFile.getAbsolutePath());
 								origImageSizeInfo = imageDatasetReader
@@ -1656,7 +1659,7 @@ public class ClientRequestManager
 						fdfos.extent = mesh.getExtent();
 						fdfos.isize = meshISize;
 						fdfos.shortSpecData = new short[][][] { { dataToSegment } };
-	
+
 					} else if (documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FROM_SCRATCH) {
 						ISize isize = getISizeFromUser(guiParent, new ISize(256, 256, 8),
 								"Enter # of pixels for  x,y,z (e.g. 3D{256,256,8}, 2D{256,256,1}, 1D{256,1,1})");
@@ -1665,10 +1668,10 @@ public class ClientRequestManager
 						fdfos.extent = new Extent(1, 1, 1);
 						fdfos.isize = isize;
 						hashTable.put(IMPORT_SOURCE_NAME, "Scratch: New Geometry");
-	//				final int SCRATCH_SIZE_LIMIT = 512*512*20;
-	//				if(isize.getXYZ() > (SCRATCH_SIZE_LIMIT)){
-	//					throw new Exception("Total pixels (x*y*z) cannot be >"+SCRATCH_SIZE_LIMIT+".");
-	//				}
+						//				final int SCRATCH_SIZE_LIMIT = 512*512*20;
+						//				if(isize.getXYZ() > (SCRATCH_SIZE_LIMIT)){
+						//					throw new Exception("Total pixels (x*y*z) cannot be >"+SCRATCH_SIZE_LIMIT+".");
+						//				}
 					} else if (documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FROM_WORKSPACE_ANALYTIC) {
 						if (hashTable.get(ClientRequestManager.GEOM_FROM_WORKSPACE) != null) {
 							Geometry workspaceGeom = (Geometry) hashTable.get(ClientRequestManager.GEOM_FROM_WORKSPACE);
@@ -1749,7 +1752,7 @@ public class ClientRequestManager
 		};
 		return selectImageFileTask;
 	}
-	
+
 	public static AsynchClientTask getImportFileImageTask(final VCDocument.DocumentCreationInfo documentCreationInfo) {
 		AsynchClientTask importFileImageTask = new AsynchClientTask("Importing Image from File...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			@Override
@@ -1839,7 +1842,7 @@ public class ClientRequestManager
 		};
 		return importFileImageTask;
 	}
-	
+
 	public static AsynchClientTask getResizeImageTask(final VCDocument.DocumentCreationInfo documentCreationInfo) {
 		AsynchClientTask resizeImageTask = new AsynchClientTask("Resizing Image...",
 				AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
@@ -1857,7 +1860,7 @@ public class ClientRequestManager
 		};
 		return resizeImageTask;
 	}
-	
+
 	private static void resize0(Hashtable hashTable/*ImageSizeInfo sourceSize,ImageSizeInfo newSize*/) {
 //		OrigOrigin = new Origin
 //		CartesianMesh origMesh = CartesianMesh.createSimpleCartesianMesh(orig, extent, size, regionImage);
@@ -1889,11 +1892,11 @@ public class ClientRequestManager
 		}
 		double[] newData = null;
 		if(origMesh.getSizeY() == 1 && origMesh.getSizeZ() == 1){
-			newData = MathTestingUtilities.resample1DSpatialSimple(origData, origMesh, resampleMesh);						
+			newData = MathTestingUtilities.resample1DSpatialSimple(origData, origMesh, resampleMesh);
 		}else if(origMesh.getSizeZ() == 1){
-			newData = MathTestingUtilities.resample2DSpatialSimple(origData, origMesh, resampleMesh);						
+			newData = MathTestingUtilities.resample2DSpatialSimple(origData, origMesh, resampleMesh);
 		}else{
-			newData = MathTestingUtilities.resample3DSpatialSimple(origData, origMesh, resampleMesh);						
+			newData = MathTestingUtilities.resample3DSpatialSimple(origData, origMesh, resampleMesh);
 		}
 		short[][][] newShort = new short[1][1][resampleMesh.getISize().getXYZ()];
 		for(int i=0;i<newShort[0][0].length;i++) {
@@ -1905,10 +1908,10 @@ public class ClientRequestManager
 		fdfos.shortSpecData = newShort;
 //		hashTable.put(VCPIXELCLASSES, newPixelClasses);
 	}
-	
+
 	public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager requester,
-			final VCDocument.DocumentCreationInfo documentCreationInfo, final AsynchClientTask[] afterTasks,
-			final String okButtonText) {
+													 final VCDocument.DocumentCreationInfo documentCreationInfo, final AsynchClientTask[] afterTasks,
+													 final String okButtonText) {
 
 		if (!isImportGeometryType(documentCreationInfo)) {
 			throw new IllegalArgumentException("Analytic geometry not implemented.");
@@ -1916,13 +1919,13 @@ public class ClientRequestManager
 		}
 
 		AsynchClientTask selectImageFileTask = getSelectImageFileTask(requester.getComponent(),getUserPreferences());
-		
+
 		final String INITIAL_ANNOTATION = "INITIAL_ANNOTATION";
 		final String NEW_IMAGE_SIZE_INFO = "NEW_IMAGE_SIZE_INFO";
 		final String FD_TIMEPOINTS = "FD_TIMEPOINTS";
-		
+
 		AsynchClientTask parseImageTask = getParseImageTask(requester.getComponent(),documentCreationInfo,getMdiManager());
-		
+
 		AsynchClientTask getFieldDataImageParams = new AsynchClientTask("Getting DB Image parameters...",
 				AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			@Override
@@ -1964,11 +1967,11 @@ public class ClientRequestManager
 				}
 			}
 		};
-		
+
 		AsynchClientTask importFileImageTask = getImportFileImageTask(documentCreationInfo);
-		
+
 		AsynchClientTask resizeImageTask = getResizeImageTask(documentCreationInfo);
-		
+
 		AsynchClientTask finishTask = new AsynchClientTask("Finishing...",
 				AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			@Override
@@ -2087,7 +2090,7 @@ public class ClientRequestManager
 	}
 
 	public static ImageSizeInfo queryImageResize(final Component requester, final ImageSizeInfo origImageSizeInfo,
-			boolean bFullMode) {
+												 boolean bFullMode) {
 		ImageResizePanel imageResizePanel = new ImageResizePanel();
 		imageResizePanel.init(origImageSizeInfo, bFullMode);
 		imageResizePanel.setPreferredSize(new Dimension(400, 200));
@@ -2116,7 +2119,7 @@ public class ClientRequestManager
 			double scaleFactor = (double) newImagesISize.getX() / (double) fdfos.isize.getX();
 			if (xsize != fdfos.isize.getX() || ysize != fdfos.isize.getY()) {
 				int numChannels = fdfos.shortSpecData[0].length;// this normally contains different variables but is
-																// used for channels here
+				// used for channels here
 				// resize each z section to xsize,ysize
 				AffineTransform scaleAffineTransform = AffineTransform.getScaleInstance(scaleFactor, scaleFactor);
 				AffineTransformOp scaleAffineTransformOp = new AffineTransformOp(scaleAffineTransform,
@@ -2146,199 +2149,199 @@ public class ClientRequestManager
 	}
 
 	public AsynchClientTask[] createNewDocument(final TopLevelWindowManager requester,
-			final VCDocument.DocumentCreationInfo documentCreationInfo) {// throws UserCancelException, Exception {
+												final VCDocument.DocumentCreationInfo documentCreationInfo) {// throws UserCancelException, Exception {
 		/* asynchronous and not blocking any window */
 		AsynchClientTask[] taskArray = null;
 
 		final int createOption = documentCreationInfo.getOption();
 		switch (documentCreationInfo.getDocumentType()) {
-		case BIOMODEL_DOC: {
-			AsynchClientTask task1 = new AsynchClientTask("creating biomodel",
-					AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-				@Override
-				public void run(Hashtable<String, Object> hashTable) throws Exception {
-					BioModel bioModel = createDefaultBioModelDocument(null);
-					hashTable.put("doc", bioModel);
-				}
-			};
-			taskArray = new AsynchClientTask[] { task1 };
-			break;
-		}
-		case MATHMODEL_DOC: {
-			if ((createOption == VCDocument.MATH_OPTION_NONSPATIAL)
-					|| (createOption == VCDocument.MATH_OPTION_SPATIAL_EXISTS)) {
-				AsynchClientTask task2 = new AsynchClientTask("creating mathmodel",
+			case BIOMODEL_DOC: {
+				AsynchClientTask task1 = new AsynchClientTask("creating biomodel",
 						AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 					@Override
 					public void run(Hashtable<String, Object> hashTable) throws Exception {
-						Geometry geometry = null;
-						if (createOption == VCDocument.MATH_OPTION_NONSPATIAL) {
-							geometry = new Geometry("Untitled", 0);
-						} else {
-							geometry = (Geometry) hashTable.get(GEOMETRY_KEY);
-						}
-						MathModel mathModel = createMathModel("Untitled", geometry);
-						mathModel.setName("MathModel" + (getMdiManager().getNumCreatedDocumentWindows() + 1));
-						hashTable.put("doc", mathModel);
-					}
-				};
-				if (createOption == VCDocument.MATH_OPTION_SPATIAL_EXISTS) {
-					AsynchClientTask task1 = createSelectDocTask(requester);
-					AsynchClientTask task1b = createSelectLoadGeomTask(requester);
-					taskArray = new AsynchClientTask[] { task1, task1b, task2 };
-				} else {
-					taskArray = new AsynchClientTask[] { task2 };
-				}
-				break;
-			} else if (createOption == VCDocument.MATH_OPTION_FROMBIOMODELAPP) {
-
-				AsynchClientTask task1 = new AsynchClientTask("select biomodel application",
-						AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-					@Override
-					public void run(Hashtable<String, Object> hashTable) throws Exception {
-						// spatial or non-spatial
-						BioModelInfo bioModelInfo = (BioModelInfo) DialogUtils.getDBTreePanelSelection(
-								requester.getComponent(),
-								getMdiManager().getDatabaseWindowManager().getBioModelDbTreePanel(), "Open",
-								"Select BioModel");
-						if (bioModelInfo != null) { // may throw UserCancelException
-							hashTable.put("bioModelInfo", bioModelInfo);
-						}
-					}
-				};
-				AsynchClientTask task2 = new AsynchClientTask("find sim contexts in biomodel application",
-						AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-					@Override
-					public void run(Hashtable<String, Object> hashTable) throws Exception {
-						// spatial or non-spatial
-						// Get the simContexts in the corresponding BioModel
-						BioModelInfo bioModelInfo = (BioModelInfo) hashTable.get("bioModelInfo");
-						SimulationContext[] simContexts = getDocumentManager().getBioModel(bioModelInfo)
-								.getSimulationContexts();
-						if (simContexts != null) { // may throw UserCancelException
-							hashTable.put("simContexts", simContexts);
-						}
-					}
-				};
-				AsynchClientTask task3 = new AsynchClientTask("create math model from biomodel application",
-						AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-					@Override
-					public void run(Hashtable<String, Object> hashTable) throws Exception {
-						SimulationContext[] simContexts = (SimulationContext[]) hashTable.get("simContexts");
-						String[] simContextNames = new String[simContexts.length];
-
-						if (simContextNames.length == 0) {
-							throw new RuntimeException("no application is available");
-						} else {
-							for (int i = 0; i < simContexts.length; i++) {
-								simContextNames[i] = simContexts[i].getName();
-							}
-							Component component = requester.getComponent();
-							// Get the simContext names, so that user can choose which simContext math to
-							// import
-							String simContextChoice = (String) PopupGenerator.showListDialog(component, simContextNames,
-									"Please select Application");
-							if (simContextChoice == null) {
-								throw UserCancelException.CANCEL_DB_SELECTION;
-							}
-							SimulationContext chosenSimContext = null;
-							for (int i = 0; i < simContexts.length; i++) {
-								if (simContexts[i].getName().equals(simContextChoice)) {
-									chosenSimContext = simContexts[i];
-									break;
-								}
-							}
-							Objects.requireNonNull(chosenSimContext);
-
-							BioModelInfo bioModelInfo = (BioModelInfo) hashTable.get("bioModelInfo");
-							// Get corresponding mathDesc to create new mathModel and return.
-							String newName = bioModelInfo.getVersion().getName() + "_" + chosenSimContext.getName();
-							MathDescription bioMathDesc = chosenSimContext.getMathDescription();
-							MathDescription newMathDesc = null;
-							newMathDesc = new MathDescription(newName + "_" + (new Random()).nextInt());
-
-							newMathDesc.setGeometry(bioMathDesc.getGeometry());
-							newMathDesc.read_database(new CommentStringTokenizer(bioMathDesc.getVCML_database()));
-							newMathDesc.isValid();
-
-							MathModel newMathModel = new MathModel(null);
-							newMathModel.setName(newName);
-							newMathModel.setMathDescription(newMathDesc);
-							hashTable.put("doc", newMathModel);
-						}
-					}
-				};
-				taskArray = new AsynchClientTask[] { task1, task2, task3 };
-				break;
-			} else {
-				throw new RuntimeException(
-						"Unknown MathModel Document creation option value=" + documentCreationInfo.getOption());
-			}
-		}
-		case GEOMETRY_DOC: {
-			if (createOption == VCDocument.GEOM_OPTION_1D || createOption == VCDocument.GEOM_OPTION_2D
-					|| createOption == VCDocument.GEOM_OPTION_3D) {
-				// analytic
-				AsynchClientTask task1 = new AsynchClientTask("creating analytic geometry",
-						AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-					@Override
-					public void run(Hashtable<String, Object> hashTable) throws Exception {
-						Geometry geometry = new Geometry(
-								"Geometry" + (getMdiManager().getNumCreatedDocumentWindows() + 1),
-								documentCreationInfo.getOption());
-						geometry.getGeometrySpec()
-								.addSubVolume(new AnalyticSubVolume("subdomain0", new Expression(1.0)));
-						geometry.precomputeAll(new GeometryThumbnailImageFactoryAWT());
-						hashTable.put("doc", geometry);
+						BioModel bioModel = createDefaultBioModelDocument(null);
+						hashTable.put("doc", bioModel);
 					}
 				};
 				taskArray = new AsynchClientTask[] { task1 };
 				break;
 			}
-			if (createOption == VCDocument.GEOM_OPTION_CSGEOMETRY_3D) {
-				// constructed solid geometry
-				AsynchClientTask task1 = new AsynchClientTask("creating constructed solid geometry",
-						AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-					@Override
-					public void run(Hashtable<String, Object> hashTable) throws Exception {
-						Geometry geometry = new Geometry(
-								"Geometry" + (getMdiManager().getNumCreatedDocumentWindows() + 1), 3);
-						Extent extent = geometry.getExtent();
-						if (extent != null) {
-							// create a CSGPrimitive of type cube and scale it to the 'extent' components.
-							// Use this as the default or background CSGObject (subdomain).
-							// This can be considered as the equivalent of subdomain (with expression) 1.0
-							// for analyticSubvolume.
-							// basic cube
-							CSGPrimitive cube = new CSGPrimitive("cube", CSGPrimitive.PrimitiveType.CUBE);
-							// scaled cube
-							double x = extent.getX();
-							double y = extent.getY();
-							double z = extent.getZ();
-							CSGScale scaledCube = new CSGScale("scale", new Vect3d(x / 2.0, y / 2.0, z / 2.0));
-							scaledCube.setChild(cube);
-							// translated scaled cube
-							CSGTranslation translatedScaledCube = new CSGTranslation("translation",
-									new Vect3d(x / 2, y / 2, z / 2));
-							translatedScaledCube.setChild(scaledCube);
-							CSGObject csgObject = new CSGObject(null, "subdomain0", 0);
-							csgObject.setRoot(translatedScaledCube);
-							geometry.getGeometrySpec().addSubVolume(csgObject, false);
+			case MATHMODEL_DOC: {
+				if ((createOption == VCDocument.MATH_OPTION_NONSPATIAL)
+						|| (createOption == VCDocument.MATH_OPTION_SPATIAL_EXISTS)) {
+					AsynchClientTask task2 = new AsynchClientTask("creating mathmodel",
+							AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+						@Override
+						public void run(Hashtable<String, Object> hashTable) throws Exception {
+							Geometry geometry = null;
+							if (createOption == VCDocument.MATH_OPTION_NONSPATIAL) {
+								geometry = new Geometry("Untitled", 0);
+							} else {
+								geometry = (Geometry) hashTable.get(GEOMETRY_KEY);
+							}
+							MathModel mathModel = createMathModel("Untitled", geometry);
+							mathModel.setName("MathModel" + (getMdiManager().getNumCreatedDocumentWindows() + 1));
+							hashTable.put("doc", mathModel);
+						}
+					};
+					if (createOption == VCDocument.MATH_OPTION_SPATIAL_EXISTS) {
+						AsynchClientTask task1 = createSelectDocTask(requester);
+						AsynchClientTask task1b = createSelectLoadGeomTask(requester);
+						taskArray = new AsynchClientTask[] { task1, task1b, task2 };
+					} else {
+						taskArray = new AsynchClientTask[] { task2 };
+					}
+					break;
+				} else if (createOption == VCDocument.MATH_OPTION_FROMBIOMODELAPP) {
+
+					AsynchClientTask task1 = new AsynchClientTask("select biomodel application",
+							AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+						@Override
+						public void run(Hashtable<String, Object> hashTable) throws Exception {
+							// spatial or non-spatial
+							BioModelInfo bioModelInfo = (BioModelInfo) DialogUtils.getDBTreePanelSelection(
+									requester.getComponent(),
+									getMdiManager().getDatabaseWindowManager().getBioModelDbTreePanel(), "Open",
+									"Select BioModel");
+							if (bioModelInfo != null) { // may throw UserCancelException
+								hashTable.put("bioModelInfo", bioModelInfo);
+							}
+						}
+					};
+					AsynchClientTask task2 = new AsynchClientTask("find sim contexts in biomodel application",
+							AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+						@Override
+						public void run(Hashtable<String, Object> hashTable) throws Exception {
+							// spatial or non-spatial
+							// Get the simContexts in the corresponding BioModel
+							BioModelInfo bioModelInfo = (BioModelInfo) hashTable.get("bioModelInfo");
+							SimulationContext[] simContexts = getDocumentManager().getBioModel(bioModelInfo)
+									.getSimulationContexts();
+							if (simContexts != null) { // may throw UserCancelException
+								hashTable.put("simContexts", simContexts);
+							}
+						}
+					};
+					AsynchClientTask task3 = new AsynchClientTask("create math model from biomodel application",
+							AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+						@Override
+						public void run(Hashtable<String, Object> hashTable) throws Exception {
+							SimulationContext[] simContexts = (SimulationContext[]) hashTable.get("simContexts");
+							String[] simContextNames = new String[simContexts.length];
+
+							if (simContextNames.length == 0) {
+								throw new RuntimeException("no application is available");
+							} else {
+								for (int i = 0; i < simContexts.length; i++) {
+									simContextNames[i] = simContexts[i].getName();
+								}
+								Component component = requester.getComponent();
+								// Get the simContext names, so that user can choose which simContext math to
+								// import
+								String simContextChoice = (String) PopupGenerator.showListDialog(component, simContextNames,
+										"Please select Application");
+								if (simContextChoice == null) {
+									throw UserCancelException.CANCEL_DB_SELECTION;
+								}
+								SimulationContext chosenSimContext = null;
+								for (int i = 0; i < simContexts.length; i++) {
+									if (simContexts[i].getName().equals(simContextChoice)) {
+										chosenSimContext = simContexts[i];
+										break;
+									}
+								}
+								Objects.requireNonNull(chosenSimContext);
+
+								BioModelInfo bioModelInfo = (BioModelInfo) hashTable.get("bioModelInfo");
+								// Get corresponding mathDesc to create new mathModel and return.
+								String newName = bioModelInfo.getVersion().getName() + "_" + chosenSimContext.getName();
+								MathDescription bioMathDesc = chosenSimContext.getMathDescription();
+								MathDescription newMathDesc = null;
+								newMathDesc = new MathDescription(newName + "_" + (new Random()).nextInt());
+
+								newMathDesc.setGeometry(bioMathDesc.getGeometry());
+								newMathDesc.read_database(new CommentStringTokenizer(bioMathDesc.getVCML_database()));
+								newMathDesc.isValid();
+
+								MathModel newMathModel = new MathModel(null);
+								newMathModel.setName(newName);
+								newMathModel.setMathDescription(newMathDesc);
+								hashTable.put("doc", newMathModel);
+							}
+						}
+					};
+					taskArray = new AsynchClientTask[] { task1, task2, task3 };
+					break;
+				} else {
+					throw new RuntimeException(
+							"Unknown MathModel Document creation option value=" + documentCreationInfo.getOption());
+				}
+			}
+			case GEOMETRY_DOC: {
+				if (createOption == VCDocument.GEOM_OPTION_1D || createOption == VCDocument.GEOM_OPTION_2D
+						|| createOption == VCDocument.GEOM_OPTION_3D) {
+					// analytic
+					AsynchClientTask task1 = new AsynchClientTask("creating analytic geometry",
+							AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+						@Override
+						public void run(Hashtable<String, Object> hashTable) throws Exception {
+							Geometry geometry = new Geometry(
+									"Geometry" + (getMdiManager().getNumCreatedDocumentWindows() + 1),
+									documentCreationInfo.getOption());
+							geometry.getGeometrySpec()
+									.addSubVolume(new AnalyticSubVolume("subdomain0", new Expression(1.0)));
 							geometry.precomputeAll(new GeometryThumbnailImageFactoryAWT());
 							hashTable.put("doc", geometry);
 						}
-					}
-				};
-				taskArray = new AsynchClientTask[] { task1 };
-				break;
-			} else {
-				throw new RuntimeException(
-						"Unknown Geometry Document creation option value=" + documentCreationInfo.getOption());
+					};
+					taskArray = new AsynchClientTask[] { task1 };
+					break;
+				}
+				if (createOption == VCDocument.GEOM_OPTION_CSGEOMETRY_3D) {
+					// constructed solid geometry
+					AsynchClientTask task1 = new AsynchClientTask("creating constructed solid geometry",
+							AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+						@Override
+						public void run(Hashtable<String, Object> hashTable) throws Exception {
+							Geometry geometry = new Geometry(
+									"Geometry" + (getMdiManager().getNumCreatedDocumentWindows() + 1), 3);
+							Extent extent = geometry.getExtent();
+							if (extent != null) {
+								// create a CSGPrimitive of type cube and scale it to the 'extent' components.
+								// Use this as the default or background CSGObject (subdomain).
+								// This can be considered as the equivalent of subdomain (with expression) 1.0
+								// for analyticSubvolume.
+								// basic cube
+								CSGPrimitive cube = new CSGPrimitive("cube", CSGPrimitive.PrimitiveType.CUBE);
+								// scaled cube
+								double x = extent.getX();
+								double y = extent.getY();
+								double z = extent.getZ();
+								CSGScale scaledCube = new CSGScale("scale", new Vect3d(x / 2.0, y / 2.0, z / 2.0));
+								scaledCube.setChild(cube);
+								// translated scaled cube
+								CSGTranslation translatedScaledCube = new CSGTranslation("translation",
+										new Vect3d(x / 2, y / 2, z / 2));
+								translatedScaledCube.setChild(scaledCube);
+								CSGObject csgObject = new CSGObject(null, "subdomain0", 0);
+								csgObject.setRoot(translatedScaledCube);
+								geometry.getGeometrySpec().addSubVolume(csgObject, false);
+								geometry.precomputeAll(new GeometryThumbnailImageFactoryAWT());
+								hashTable.put("doc", geometry);
+							}
+						}
+					};
+					taskArray = new AsynchClientTask[] { task1 };
+					break;
+				} else {
+					throw new RuntimeException(
+							"Unknown Geometry Document creation option value=" + documentCreationInfo.getOption());
+				}
 			}
-		}
-		default: {
-			throw new RuntimeException("Unknown default document type: " + documentCreationInfo.getDocumentType());
-		}
+			default: {
+				throw new RuntimeException("Unknown default document type: " + documentCreationInfo.getDocumentType());
+			}
 		}
 		return taskArray;
 	}
@@ -2346,7 +2349,7 @@ public class ClientRequestManager
 	private static final int MAX_NUMBER_OF_COLORS_IMPORTED_FILE = 256;
 
 	public static VCImage createVCImageFromUnsignedShorts(short[] dataToSegment, Extent extent, ISize isize,
-			BitSet uniquePixelBS) throws Exception {
+														  BitSet uniquePixelBS) throws Exception {
 		// auto segment
 
 		int minVal = dataToSegment[0] & 0x0000FFFF;
@@ -2390,7 +2393,7 @@ public class ClientRequestManager
 	}
 
 	public void curateDocument(final VCDocumentInfo documentInfo, final int curateType,
-			final TopLevelWindowManager requester) {
+							   final TopLevelWindowManager requester) {
 
 		if (documentInfo != null) {
 			// see if we have this open
@@ -2408,8 +2411,8 @@ public class ClientRequestManager
 								+ CurateSpec.CURATE_TYPE_STATES[curateType]
 								+ " versions of documents cannot be deleted without VCELL administrative assistance.\n"
 								+ (curateType == CurateSpec.PUBLISH ? CurateSpec.CURATE_TYPE_STATES[curateType]
-										+ " versions of documents MUST remain publically accessible to other VCELL users.\n"
-										: "")
+								+ " versions of documents MUST remain publically accessible to other VCELL users.\n"
+								: "")
 								+ "Do you want to " + CurateSpec.CURATE_TYPE_NAMES[curateType] + " document '"
 								+ documentInfo.getVersion().getName() + "'" + "\nwith version date '"
 								+ documentInfo.getVersion().getDate().toString() + "'?"),
@@ -2447,7 +2450,8 @@ public class ClientRequestManager
 
 	public void updateUserRegistration(final DocumentWindowManager currWindowManager, final boolean bNewUser) {
 		try {
-			UserRegistrationManager.registrationOperationGUI(this, currWindowManager,
+
+			userRegistrationManager.registrationOperationGUI(this, currWindowManager,
 					getClientServerManager().getClientServerInfo(),
 					(bNewUser ? LoginManager.USERACTION_REGISTER : LoginManager.USERACTION_EDITINFO),
 					(bNewUser ? null : getClientServerManager()));
@@ -2463,8 +2467,8 @@ public class ClientRequestManager
 
 	public void sendLostPassword(final DocumentWindowManager currWindowManager, final String userid) {
 		try {
-			UserRegistrationManager.registrationOperationGUI(this, currWindowManager,
-					VCellClient.createClientServerInfo(getClientServerManager().getClientServerInfo(), userid, null),
+			userRegistrationManager.registrationOperationGUI(this, currWindowManager,
+					VCellClient.getInstance().createClientServerInfo(getClientServerManager().getClientServerInfo(), userid, null),
 					LoginManager.USERACTION_LOSTPASSWORD, null);
 		} catch (UserCancelException e) {
 			return;
@@ -2479,7 +2483,7 @@ public class ClientRequestManager
 	}
 
 	public void deleteDocument(final VCDocumentInfo documentInfo, final TopLevelWindowManager requester,
-			boolean bDontAsk) {
+							   boolean bDontAsk) {
 		if (documentInfo != null) {
 			// see if we have this open
 			String documentID = documentInfo.getVersion().getVersionKey().toString();
@@ -2538,7 +2542,7 @@ public class ClientRequestManager
 	 * Comment
 	 */
 	public static void downloadExportedData(final Component requester, final UserPreferences userPrefs,
-			final ExportEvent evt) {
+											final ExportEvent evt) {
 		TreeSet<String> exportsRecord = getExportsRecord();
 		if (exportsRecord.contains(evt.getJobID() + "")) {
 			return;
@@ -2613,7 +2617,7 @@ public class ClientRequestManager
 				// Wait for download to 1-finish, 2-fail or 3-be cancelled by user
 				while (!bFlagArr[0]) {
 					if (getClientTaskStatusSupport() != null && getClientTaskStatusSupport().isInterrupted()) {// user
-																												// cancelled
+						// cancelled
 						if (httpGetArr[0] != null) {
 							httpGetArr[0].abort();
 						}
@@ -2861,7 +2865,7 @@ public class ClientRequestManager
 		if (forceFilefilter != null) {
 			hash.put(ChooseFile.FORCE_FILE_FILTER, forceFilefilter);
 		}
-		
+
 		hash.put("CallAction", CallAction.EXPORT);
 		hash.put(CommonTask.DOCUMENT_WINDOW_MANAGER.name, manager);
 		hash.put("currentDocumentWindow", currentWindow);
@@ -2936,7 +2940,7 @@ public class ClientRequestManager
 	}
 
 	public MergedDatasetViewerController getMergedDatasetViewerController(OutputContext outputContext,
-			VCDataIdentifier vcdId, boolean expectODEData) throws DataAccessException {
+																		  VCDataIdentifier vcdId, boolean expectODEData) throws DataAccessException {
 		if (vcdId instanceof MergedDataInfo) {
 			DataManager dataManager = getDataManager(outputContext, vcdId, !expectODEData);
 			return new MergedDatasetViewerController(dataManager);
@@ -2946,7 +2950,7 @@ public class ClientRequestManager
 	}
 
 	public DataViewerController getDataViewerController(OutputContext outputContext, Simulation simulation,
-			int jobIndex) throws DataAccessException {
+														int jobIndex) throws DataAccessException {
 		VCSimulationIdentifier vcSimulationIdentifier = simulation.getSimulationInfo()
 				.getAuthoritativeVCSimulationIdentifier();
 		final VCDataIdentifier vcdataIdentifier = new VCSimulationDataIdentifier(vcSimulationIdentifier, jobIndex);
@@ -2960,24 +2964,24 @@ public class ClientRequestManager
 		VCDocumentInfo vcDocInfo = null;
 
 		switch (vcDoc.getDocumentType()) {
-		case BIOMODEL_DOC: {
-			BioModel bm = ((BioModel) vcDoc);
-			vcDocInfo = getDocumentManager().getBioModelInfo(bm.getVersion().getVersionKey());
-			break;
-		}
-		case MATHMODEL_DOC: {
-			MathModel mm = ((MathModel) vcDoc);
-			vcDocInfo = getDocumentManager().getMathModelInfo(mm.getVersion().getVersionKey());
-			break;
-		}
-		case GEOMETRY_DOC: {
-			Geometry geom = ((Geometry) vcDoc);
-			vcDocInfo = getDocumentManager().getGeometryInfo(geom.getKey());
-			break;
-		}
-		default: {
-			throw new IllegalArgumentException("Invalid VC document: " + vcDoc.getDocumentType());
-		}
+			case BIOMODEL_DOC: {
+				BioModel bm = ((BioModel) vcDoc);
+				vcDocInfo = getDocumentManager().getBioModelInfo(bm.getVersion().getVersionKey());
+				break;
+			}
+			case MATHMODEL_DOC: {
+				MathModel mm = ((MathModel) vcDoc);
+				vcDocInfo = getDocumentManager().getMathModelInfo(mm.getVersion().getVersionKey());
+				break;
+			}
+			case GEOMETRY_DOC: {
+				Geometry geom = ((Geometry) vcDoc);
+				vcDocInfo = getDocumentManager().getGeometryInfo(geom.getKey());
+				break;
+			}
+			default: {
+				throw new IllegalArgumentException("Invalid VC document: " + vcDoc.getDocumentType());
+			}
 		}
 
 		return vcDocInfo;
@@ -3028,7 +3032,7 @@ public class ClientRequestManager
 	}
 
 	public AsynchClientTask[] newDocument(TopLevelWindowManager requester,
-			final VCDocument.DocumentCreationInfo documentCreationInfo) {
+										  final VCDocument.DocumentCreationInfo documentCreationInfo) {
 		// gcwtodo
 
 		AsynchClientTask createNewDocumentTask = new AsynchClientTask("Creating New Document",
@@ -3208,7 +3212,7 @@ public class ClientRequestManager
 	private final static String WIN_MGR_KEY = "WIN_MGR_KY";
 
 	private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindowManager requester,
-			final boolean inNewWindow) {
+								   final boolean inNewWindow) {
 
 		final String DOCUMENT_INFO = "documentInfo";
 		final String SEDML_TASK = "SedMLTask";
@@ -3346,7 +3350,7 @@ public class ClientRequestManager
 					}
 					List<SedML> sedmls = new ArrayList<>();
 					for (SEDMLDocument doc : docs) {
-						SedML sedml =doc.getSedMLModel();						
+						SedML sedml =doc.getSedMLModel();
 						if (sedml == null) {
 							throw new RuntimeException("Failed importing " + file.getName());
 						}
@@ -3504,7 +3508,7 @@ public class ClientRequestManager
 								@SuppressWarnings("unchecked")
 								List<Element> childElementList = rootElement.getChildren();
 								Element modelElement = childElementList.get(0); // assuming first child is the biomodel,
-																				// mathmodel or geometry.
+								// mathmodel or geometry.
 								modelXmlType = modelElement.getName();
 							}
 							if (xmlType.equals(XMLTags.BioModelTag) || (xmlType.equals(XMLTags.VcmlRootNodeTag)
@@ -3542,13 +3546,13 @@ public class ClientRequestManager
 								List<SedML> sedmls = new ArrayList<>();
 								sedmls.add(sedml);
 								hashTable.put(SEDML_MODELS, sedmls);
-								
+
 								// default to import all tasks
 								List<BioModel> vcdocs = XmlHelper.importSEDML(transLogger, externalDocInfo, sedml, false);
 								for (VCDocument vcdoc : vcdocs) {
 									docs.add(vcdoc);
 								}
-								
+
 								isSEDML = true;
 							} else { // unknown XML format
 								throw new RuntimeException(
@@ -3604,7 +3608,7 @@ public class ClientRequestManager
 								windowManagers.add(windowManager);
 							}
 							hashTable.put("managers", windowManagers);
-							hashTable.put("docs", docs);							
+							hashTable.put("docs", docs);
 						} else {
 							VCDocument doc = (VCDocument) hashTable.get("doc");
 							DocumentWindowManager windowManager = null;
@@ -3780,36 +3784,36 @@ public class ClientRequestManager
 			}
 			entitiesToRename.put(id, name);
 		}
-	for(Structure struct : vcBioModel.getModel().getStructures()) {
-		String id = struct.getName();
-		String name = struct.getSbmlName();
-		if(name == null || name.isEmpty()) {
-			continue;
+		for(Structure struct : vcBioModel.getModel().getStructures()) {
+			String id = struct.getName();
+			String name = struct.getSbmlName();
+			if(name == null || name.isEmpty()) {
+				continue;
+			}
+			if(id.equals(name)) {
+				continue;
+			}
+			if(isRestrictedXYZT(name, vcBioModel)) {
+				continue;
+			}
+			name = TokenMangler.fixTokenStrict(name, 60);
+			while (true) {
+				if (cbit.vcell.model.Model.isNameUnused(name, vcBioModel.getModel())) {
+					break;
+				}
+				name = TokenMangler.getNextEnumeratedToken(name);
+			}
+			if(id.equals(name)) {
+				continue;
+			}
+			try {
+				System.out.println(name + " <-- " + id);
+				struct.setName(name, true);
+			} catch(PropertyVetoException e) {
+				e.printStackTrace();
+			}
+			entitiesToRename.put(id, name);
 		}
-		if(id.equals(name)) {
-			continue;
-		}
-		if(isRestrictedXYZT(name, vcBioModel)) {
-			continue;
-		}
-		name = TokenMangler.fixTokenStrict(name, 60);
-		while (true) {
-			if (cbit.vcell.model.Model.isNameUnused(name, vcBioModel.getModel())) {
-				break;
-			}	
-			name = TokenMangler.getNextEnumeratedToken(name);
-		}
-		if(id.equals(name)) {
-			continue;
-		}
-		try {
-			System.out.println(name + " <-- " + id);
-			struct.setName(name, true);
-		} catch(PropertyVetoException e) {
-			e.printStackTrace();
-		}
-		entitiesToRename.put(id, name);
-	}
 		vcBioModel.getSimulationContext(0).substituteChangedNamesInExpressions(entitiesToRename);
 
 		for (ReactionStep rs : vcBioModel.getModel().getReactionSteps()) {
@@ -3846,7 +3850,7 @@ public class ClientRequestManager
 
 	/**
 	 * raise issue tab if error is present
-	 * 
+	 *
 	 * @param hashTable
 	 * @throws Exception
 	 */
@@ -3900,8 +3904,8 @@ public class ClientRequestManager
 		}
 		String documentID = null;
 		if (documentInfo.getVersion() != null && documentInfo.getVersion().getVersionKey() != null) { // CLEAN UP BOGUS
-																										// VERSION in
-																										// XmlInfo !!!
+			// VERSION in
+			// XmlInfo !!!
 			documentID = documentInfo.getVersion().getVersionKey().toString();
 		}
 
@@ -4014,7 +4018,7 @@ public class ClientRequestManager
 
 	/**
 	 * This method gets called when a bound property is changed.
-	 * 
+	 *
 	 * @param evt A PropertyChangeEvent object describing the event source and the
 	 *            property that has changed.
 	 */
@@ -4066,18 +4070,18 @@ public class ClientRequestManager
 		try {
 			KeyValue versionKey = document.getVersion().getVersionKey();
 			switch (document.getDocumentType()) {
-			case BIOMODEL_DOC: {
-				info = getDocumentManager().getBioModelInfo(versionKey);
-				break;
-			}
-			case MATHMODEL_DOC: {
-				info = getDocumentManager().getMathModelInfo(versionKey);
-				break;
-			}
-			case GEOMETRY_DOC: {
-				info = getDocumentManager().getGeometryInfo(versionKey);
-				break;
-			}
+				case BIOMODEL_DOC: {
+					info = getDocumentManager().getBioModelInfo(versionKey);
+					break;
+				}
+				case MATHMODEL_DOC: {
+					info = getDocumentManager().getMathModelInfo(versionKey);
+					break;
+				}
+				case GEOMETRY_DOC: {
+					info = getDocumentManager().getGeometryInfo(versionKey);
+					break;
+				}
 			}
 		} catch (DataAccessException e) {
 			e.printStackTrace(System.out);
@@ -4098,6 +4102,7 @@ public class ClientRequestManager
 	public void runSimulations(final ClientSimManager clientSimManager, final Simulation[] simulations) {
 		runSimulations(clientSimManager, simulations, null);
 	}
+
 	public void runSimulations(final ClientSimManager clientSimManager, final Simulation[] simulations,AsynchClientTask[] endTasks) {
 		DocumentWindowManager documentWindowManager = clientSimManager.getDocumentWindowManager();
 		if (documentWindowManager.getUser() == null || User.isGuest(documentWindowManager.getUser().getName())) {
@@ -4240,7 +4245,7 @@ public class ClientRequestManager
 	}
 
 	public void saveDocument(final DocumentWindowManager documentWindowManager, boolean replace,
-			AsynchClientTask closeWindowTask) {
+							 AsynchClientTask closeWindowTask) {
 		if (documentWindowManager.getUser() == null || User.isGuest(documentWindowManager.getUser().getName())) {
 			DialogUtils.showErrorDialog(documentWindowManager.getComponent(),
 					User.createGuestErrorMessage("saveDocument"));
@@ -4591,7 +4596,7 @@ public class ClientRequestManager
 	}
 
 	public void showComparisonResults(TopLevelWindowManager requester, XmlTreeDiff diffTree, String baselineDesc,
-			String modifiedDesc) {
+									  String modifiedDesc) {
 		TMLPanel comparePanel = new TMLPanel();
 		comparePanel.setXmlTreeDiff(diffTree);
 		comparePanel.setBaselineVersionDescription(baselineDesc);
@@ -4652,7 +4657,7 @@ public class ClientRequestManager
 //}
 
 	public static FieldDataFileOperationSpec createFDOSFromImageFile(File imageFile, boolean bCropOutBlack,
-			Integer saveOnlyThisTimePointIndex) throws DataFormatException, ImageException {
+																	 Integer saveOnlyThisTimePointIndex) throws DataFormatException, ImageException {
 		try {
 			ImageDatasetReader imageDatasetReader = ImageDatasetReaderService.getInstance().getImageDatasetReader();
 			ImageDataset[] imagedataSets = imageDatasetReader.readImageDatasetChannels(imageFile.getAbsolutePath(),
@@ -4673,7 +4678,7 @@ public class ClientRequestManager
 	}
 
 	public static FieldDataFileOperationSpec createFDOSWithChannels(ImageDataset[] imagedataSets,
-			Integer saveOnlyThisTimePointIndex) {
+																	Integer saveOnlyThisTimePointIndex) {
 		final FieldDataFileOperationSpec fdos = new FieldDataFileOperationSpec();
 
 		// [time][var][data]
@@ -4722,75 +4727,76 @@ public class ClientRequestManager
 	public void accessPermissions(Component requester, VCDocument vcDoc) {
 		VersionInfo selectedVersionInfo = null;
 		switch (vcDoc.getDocumentType()) {
-		case BIOMODEL_DOC:
-			BioModelInfo[] bioModelInfos = getDocumentManager().getBioModelInfos();
-			for (BioModelInfo bioModelInfo : bioModelInfos) {
-				if (bioModelInfo.getVersion().getVersionKey().equals(vcDoc.getVersion().getVersionKey())) {
-					selectedVersionInfo = bioModelInfo;
-					break;
+			case BIOMODEL_DOC:
+				BioModelInfo[] bioModelInfos = getDocumentManager().getBioModelInfos();
+				for (BioModelInfo bioModelInfo : bioModelInfos) {
+					if (bioModelInfo.getVersion().getVersionKey().equals(vcDoc.getVersion().getVersionKey())) {
+						selectedVersionInfo = bioModelInfo;
+						break;
+					}
 				}
-			}
-			break;
-		case MATHMODEL_DOC:
-			MathModelInfo[] mathModelInfos = getDocumentManager().getMathModelInfos();
-			for (MathModelInfo mathModelInfo : mathModelInfos) {
-				if (mathModelInfo.getVersion().getVersionKey().equals(vcDoc.getVersion().getVersionKey())) {
-					selectedVersionInfo = mathModelInfo;
-					break;
+				break;
+			case MATHMODEL_DOC:
+				MathModelInfo[] mathModelInfos = getDocumentManager().getMathModelInfos();
+				for (MathModelInfo mathModelInfo : mathModelInfos) {
+					if (mathModelInfo.getVersion().getVersionKey().equals(vcDoc.getVersion().getVersionKey())) {
+						selectedVersionInfo = mathModelInfo;
+						break;
+					}
 				}
-			}
-			break;
-		case GEOMETRY_DOC:
-			GeometryInfo[] geoInfos = getDocumentManager().getGeometryInfos();
-			for (GeometryInfo geoInfo : geoInfos) {
-				if (geoInfo.getVersion().getVersionKey().equals(vcDoc.getVersion().getVersionKey())) {
-					selectedVersionInfo = geoInfo;
-					break;
+				break;
+			case GEOMETRY_DOC:
+				GeometryInfo[] geoInfos = getDocumentManager().getGeometryInfos();
+				for (GeometryInfo geoInfo : geoInfos) {
+					if (geoInfo.getVersion().getVersionKey().equals(vcDoc.getVersion().getVersionKey())) {
+						selectedVersionInfo = geoInfo;
+						break;
+					}
 				}
-			}
-			break;
+				break;
 		}
 		getMdiManager().getDatabaseWindowManager().accessPermissions(requester, selectedVersionInfo, false);
 
 	}
+
 	public void accessPermissionsEx(Component requester, VCDocument vcDoc, boolean bGrantSupportPermissions) {
 		VersionInfo selectedVersionInfo = null;
 		switch (vcDoc.getDocumentType()) {
-		case BIOMODEL_DOC:
-			BioModelInfo[] bioModelInfos = getDocumentManager().getBioModelInfos();
-			for (BioModelInfo bioModelInfo : bioModelInfos) {
-				if (bioModelInfo.getVersion().getVersionKey().equals(vcDoc.getVersion().getVersionKey())) {
-					selectedVersionInfo = bioModelInfo;
-					break;
+			case BIOMODEL_DOC:
+				BioModelInfo[] bioModelInfos = getDocumentManager().getBioModelInfos();
+				for (BioModelInfo bioModelInfo : bioModelInfos) {
+					if (bioModelInfo.getVersion().getVersionKey().equals(vcDoc.getVersion().getVersionKey())) {
+						selectedVersionInfo = bioModelInfo;
+						break;
+					}
 				}
-			}
-			break;
-		case MATHMODEL_DOC:
-			MathModelInfo[] mathModelInfos = getDocumentManager().getMathModelInfos();
-			for (MathModelInfo mathModelInfo : mathModelInfos) {
-				if (mathModelInfo.getVersion().getVersionKey().equals(vcDoc.getVersion().getVersionKey())) {
-					selectedVersionInfo = mathModelInfo;
-					break;
+				break;
+			case MATHMODEL_DOC:
+				MathModelInfo[] mathModelInfos = getDocumentManager().getMathModelInfos();
+				for (MathModelInfo mathModelInfo : mathModelInfos) {
+					if (mathModelInfo.getVersion().getVersionKey().equals(vcDoc.getVersion().getVersionKey())) {
+						selectedVersionInfo = mathModelInfo;
+						break;
+					}
 				}
-			}
-			break;
-		case GEOMETRY_DOC:
-			GeometryInfo[] geoInfos = getDocumentManager().getGeometryInfos();
-			for (GeometryInfo geoInfo : geoInfos) {
-				if (geoInfo.getVersion().getVersionKey().equals(vcDoc.getVersion().getVersionKey())) {
-					selectedVersionInfo = geoInfo;
-					break;
+				break;
+			case GEOMETRY_DOC:
+				GeometryInfo[] geoInfos = getDocumentManager().getGeometryInfos();
+				for (GeometryInfo geoInfo : geoInfos) {
+					if (geoInfo.getVersion().getVersionKey().equals(vcDoc.getVersion().getVersionKey())) {
+						selectedVersionInfo = geoInfo;
+						break;
+					}
 				}
-			}
-			break;
+				break;
 		}
 		getMdiManager().getDatabaseWindowManager().accessPermissions(requester, selectedVersionInfo, true);
 
 	}
 
 	public static Collection<AsynchClientTask> updateMath(final Component requester,
-			final SimulationContext simulationContext, final boolean bShowWarning,
-			final NetworkGenerationRequirements networkGenerationRequirements) {
+														  final SimulationContext simulationContext, final boolean bShowWarning,
+														  final NetworkGenerationRequirements networkGenerationRequirements) {
 		ArrayList<AsynchClientTask> rval = new ArrayList<>();
 		AsynchClientTask task1 = new AsynchClientTask("generating math", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 
