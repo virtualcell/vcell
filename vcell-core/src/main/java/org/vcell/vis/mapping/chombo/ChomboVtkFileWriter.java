@@ -315,7 +315,7 @@ public class ChomboVtkFileWriter {
 		return new File(directory,chomboFiles.getCannonicalFilePrefix(domainName)+".chomboindex");
 	}
 	
-	public VtuFileContainer getEmptyVtuMeshFiles(ChomboFiles chomboFiles, File destinationDirectory) throws IOException, MathException, DataAccessException {
+	public VtuFileContainer getEmptyVtuMeshFiles(ChomboFiles chomboFiles, File destinationDirectory) throws IOException, MathException, DataAccessException, InterruptedException {
 		//
 		// find mesh for each file at time 0
 		//
@@ -366,7 +366,7 @@ public class ChomboVtkFileWriter {
 		return vtuFileContainer;
 	}
 
-	public File[] writeEmptyMeshFiles(ChomboFiles chomboFiles, File destinationDirectory, ProgressListener progressListener) throws IOException, MathException, DataAccessException {
+	public File[] writeEmptyMeshFiles(ChomboFiles chomboFiles, File destinationDirectory, ProgressListener progressListener) throws IOException, MathException, DataAccessException, InterruptedException {
 		ArrayList<File> meshFiles = new ArrayList<File>();
 		int timeIndex = 0;
 		

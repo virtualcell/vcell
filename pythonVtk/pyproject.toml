@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "pythonvtk"
+version = "0.1.0"
+description = ""
+authors = ["Jim Schaff <schaff.jim@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+vtk = "^9.2.6"
+thrift = "^0.16.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+

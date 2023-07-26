@@ -14,7 +14,6 @@ COPY ./bionetgen      /vcellclient/bionetgen
 COPY ./exampleModels  /vcellclient/exampleModels
 COPY ./localsolvers   /vcellclient/localsolvers
 COPY ./nativelibs     /vcellclient/nativelibs
-COPY ./pythonScripts  /vcellclient/pythonScripts
 
 COPY ./vcell-client/target/vcell-client-0.0.1-SNAPSHOT.jar \
     ./vcell-client/target/maven-jars/*.jar \

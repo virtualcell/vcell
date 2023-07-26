@@ -116,7 +116,7 @@ public class CartesianMeshVtkFileWriter {
 	public double[] getVtuMeshData(VCellSimFiles vcellFiles,  OutputContext outputContext, SimDataBlock simDataBlock, File destinationDirectory, VtuVarInfo var, final double time) throws Exception {
 		//
 		// read the "empty" vtk mesh from a file (create the files if necessary)
-		// read the indicing arrays from this file to know how to reorder the data into the vtk cell data order.
+		// read the indexing arrays from this file to know how to reorder the data into the vtk cell data order.
 		// return the vtk cell data
 		//
 		File finiteVolumeIndexDataFile = getFiniteVolumeIndexDataFileName(vcellFiles, var.domainName);
@@ -164,7 +164,7 @@ public class CartesianMeshVtkFileWriter {
 		return vtkData;
 	}
 	
-	public VtuFileContainer getEmptyVtuMeshFiles(VCellSimFiles vcellFiles, File destinationDirectory) throws IOException, MathException, DataAccessException {
+	public VtuFileContainer getEmptyVtuMeshFiles(VCellSimFiles vcellFiles, File destinationDirectory) throws IOException, MathException, DataAccessException, InterruptedException {
 		//
 		// read the simplified cartesian mesh
 		//
@@ -200,7 +200,7 @@ public class CartesianMeshVtkFileWriter {
 		return vtuFileContainer;
 	}
 	
-	public File[] writeEmptyMeshFiles(VCellSimFiles vcellFiles, File destinationDirectory, ProgressListener progressListener) throws IOException, MathException {
+	public File[] writeEmptyMeshFiles(VCellSimFiles vcellFiles, File destinationDirectory, ProgressListener progressListener) throws IOException, MathException, InterruptedException {
 		if (destinationDirectory==null || !destinationDirectory.isDirectory()){
 			throw new RuntimeException("destinationDirectory '"+destinationDirectory+" not valid");
 		}

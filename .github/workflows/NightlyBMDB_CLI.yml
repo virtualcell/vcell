@@ -49,7 +49,7 @@ jobs:
 
       - name: build vcell-opt package
         run: |
-          cd pythonProject/vcell-opt
+          cd pythonCopasiOpt/vcell-opt
           poetry install
 
       - name: Setup Java for Build

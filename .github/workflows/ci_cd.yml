@@ -41,7 +41,7 @@ jobs:
 
       - name: build vcell-opt package
         run: |
-          cd pythonProject/vcell-opt
+          cd pythonCopasiOpt/vcell-opt
           poetry install
           poetry run python -m pytest
 
@@ -104,7 +104,7 @@ jobs:
 
       - name: build vcell-opt package
         run: |
-          cd pythonProject/vcell-opt
+          cd pythonCopasiOpt/vcell-opt
           poetry install
           poetry run python -m pytest
 
@@ -155,7 +155,7 @@ jobs:
 
       - name: build vcell-opt package
         run: |
-          cd pythonProject/vcell-opt
+          cd pythonCopasiOpt/vcell-opt
           poetry install
           poetry run python -m pytest
 

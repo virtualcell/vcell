@@ -23,6 +23,7 @@ import org.vcell.optimization.jtd.CopasiOptimizationMethod;
 import org.vcell.optimization.jtd.CopasiOptimizationParameter;
 import org.vcell.optimization.jtd.ParameterDescription;
 import org.vcell.sbml.vcell.MathModel_SBMLExporter;
+import org.vcell.util.PythonUtils;
 
 import javax.xml.stream.XMLStreamException;
 import java.io.*;
@@ -336,7 +337,7 @@ public class CopasiUtils {
     public static void callCopasiPython(Path optProblemFile, Path resultsFile, Path reportFile) throws InterruptedException, IOException {
         //final String pythonExe = pythonExeName;
         File installDir = PropertyLoader.getRequiredDirectory(PropertyLoader.installationRoot);
-        File optDir = Paths.get(installDir.getAbsolutePath(),"pythonProject", "vcell-opt").toAbsolutePath().toFile();
+        File optDir = Paths.get(installDir.getAbsolutePath(),"pythonCopasiOpt", "vcell-opt").toAbsolutePath().toFile();
 //        final String pythonExe = "/Users/schaff/Library/Caches/pypoetry/virtualenvs/vcell-opt-XIpjcTyI-py3.9/bin/python";
         ProcessBuilder pb = new ProcessBuilder(new String[]{
                 "poetry","run","python", "-m", "vcell_opt.optService",
@@ -345,35 +346,7 @@ public class CopasiUtils {
                 String.valueOf(reportFile.toAbsolutePath())});
         pb.directory(optDir);
         System.out.println(pb.command());
-        runAndPrintProcessStreams(pb, "", "");
-    }
-
-    private static void runAndPrintProcessStreams(ProcessBuilder pb, String outString, String errString) throws InterruptedException, IOException {
-        // Process printing code goes here
-        File of = File.createTempFile("temp-", ".out", currentWorkingDir.toFile());
-        File ef = File.createTempFile("temp-", ".err", currentWorkingDir.toFile());
-        pb.redirectError(ef);
-        pb.redirectOutput(of);
-        Process process = pb.start();
-        process.waitFor();
-        StringBuilder sberr = new StringBuilder();
-        StringBuilder sbout = new StringBuilder();
-        List<String> lines = com.google.common.io.Files.readLines(ef, StandardCharsets.UTF_8);
-        lines.forEach(line -> sberr.append(line).append("\n"));
-        String es = sberr.toString();
-        lines = Files.readLines(of, StandardCharsets.UTF_8);
-        lines.forEach(line -> sbout.append(line).append("\n"));
-        String os = sbout.toString();
-        of.delete();
-        ef.delete();
-        if (process.exitValue() != 0) {
-            lg.error(errString);
-            // don't print here, send the error down to caller who is responsible for dealing with it
-            throw new RuntimeException(es);
-        } else {
-            if (!outString.equals("")) lg.info(outString);
-            if (!os.equals("")) lg.info(os);
-        }
+        PythonUtils.runAndPrintProcessStreams(pb);
     }
 
     public static OptProgressReport readProgressReportFromCSV(File progressReportFile) throws IOException {
