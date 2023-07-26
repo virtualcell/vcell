@@ -2,7 +2,7 @@
 
 #Remote Login (client-server)
 Client-Side  
--cbit.vcell.client.test.VCellClientTest  
+-cbit.vcell.client.test.VCellClientMain  
 --cbit.vcell.client.VCellClient  
 ---cbit.vcell.client.server.ClientServerManager  
 ----cbit.vcell.message.server.bootstrap.client.RemoteProxyVCellConnectionFactory  
