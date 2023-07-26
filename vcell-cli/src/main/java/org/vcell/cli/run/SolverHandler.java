@@ -602,88 +602,9 @@ public class SolverHandler {
      */
     @Deprecated
     public HashMap<String, ODESolverResultSet> simulateAllVcmlTasks(File vcmlPath, File outputDir) throws Exception {
-
 		throw new NotImplementedException("Not Implemented");
+   }
 
-//        // create the VCDocument(s) (bioModel(s) + application(s) + simulation(s)), do sanity checks
-//        //List<VCDocument> docs = null;
-//        // Key String is SEDML Task ID
-//        HashMap<String, ODESolverResultSet> resultsHash = new LinkedHashMap<String, ODESolverResultSet>();
-//        String biomodelName = null;
-//        BioModel bioModel = null;
-//        TempSimulation[] sims = null;
-//        VCDocument singleDoc = null;
-//        try {
-//            singleDoc = VCMLHandler.convertVcmlToVcDocument(vcmlPath);
-//        } catch (Exception e) {
-//            logger.error("Unable to Parse SED-ML into Bio-Model, failed with err: " + e.getMessage(), e);
-//            throw e;
-//        }
-//        try {
-//            sanityCheck(singleDoc);
-//        } catch (Exception e) {
-//            logger.error("Exception encountered: " + e.getMessage(), e);
-//        }
-//        assert singleDoc != null;
-//        biomodelName = singleDoc.getName();
-//        bioModel = (BioModel) singleDoc;
-//        sims = bioModel.getSimulations();
-//        for (TempSimulation sim : sims) {
-//            sim = new TempSimulation(sim, false);
-//            SolverTaskDescription std = sim.getSolverTaskDescription();
-//            SolverDescription sd = std.getSolverDescription();
-//            String kisao = sd.getKisao();
-//            SimulationJob simJob = new SimulationJob(sim, 0, null);
-//            SimulationTask simTask = new SimulationTask(simJob, 0);
-//            Solver solver = SolverFactory.createSolver(outputDir, simTask, false);
-//            ODESolverResultSet odeSolverResultSet = null;
-//            try {
-//                if (solver instanceof AbstractCompiledSolver) {
-//                    ((AbstractCompiledSolver) solver).runSolver();
-//                    if (solver instanceof ODESolver) {
-//                        odeSolverResultSet = ((ODESolver) solver).getODESolverResultSet();
-//                    } else if (solver instanceof GibsonSolver) {
-//                        odeSolverResultSet = ((GibsonSolver) solver).getStochSolverResultSet();
-//                    } else if (solver instanceof HybridSolver) {
-//                        odeSolverResultSet = ((HybridSolver) solver).getHybridSolverResultSet();
-//                    } else {
-//                        logger.error("Solver results are not compatible with CSV format");
-//                    }
-//                    //TODO: Add support for JAVA solvers and implement interpolation
-//
-////                        odeSolverResultSet = CLIUtils.interpolate(odeSolverResultSet, (UniformTimeCourse) sedmlSim);
-//
-//                } else {
-//                    // this should actually never happen...
-//                    throw new Exception("Unexpected solver: " + kisao + " " + solver);
-//                }
-//                if (solver.getSolverStatus().getStatus() == SolverStatus.SOLVER_FINISHED) {
-//                    logger.info("Succesful execution: Model '" + biomodelName + "' Task '" + sim.getDescription() + "'.");
-//                } else {
-//                    logger.debug("Solver status: " + solver.getSolverStatus().getStatus());
-//                    logger.debug("Solver message: " + solver.getSolverStatus().getSimulationMessage().getDisplayMessage());
-//                    throw new RuntimeException();
-//                }
-//
-//            } catch (Exception e) {
-//                logger.error("Failed execution: Model '" + biomodelName + "' Task '" + sim.getDescription() + "'.");
-//                
-//                if (e.getMessage() != null) {
-//                    // something else than failure caught by solver instance during execution
-//                    logger.error(e.getMessage(), e);
-//                }
-//            }
-//            if(odeSolverResultSet != null) {
-//                resultsHash.put(sim.getName(), odeSolverResultSet);
-//            }
-//
-//            RunUtils.removeIntermediarySimFiles(outputDir);
-//
-//        }
-//        return resultsHash;
-    }
-
-    ;
 
     // TODO: Complete this logger and use it for whole CLI
     private static class LocalLogger extends VCLogger {

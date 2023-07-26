@@ -1,15 +1,11 @@
-package org.vcell.cli.vcml;
+package org.vcell.admin.cli.tools;
 
 import cbit.vcell.resource.PropertyLoader;
-import cbit.vcell.xml.XmlHelper;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.vcell.admin.cli.CLIDatabaseService;
-import org.vcell.cli.CLIRecorder;
-import org.vcell.sedml.ModelFormat;
-import org.vcell.util.DataAccessException;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
@@ -17,14 +13,10 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
-import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.Callable;
 
 @Command(name = "download-vcml", description = "download cached VCML documents directly from database")

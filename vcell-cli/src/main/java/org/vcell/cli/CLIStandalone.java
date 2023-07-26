@@ -1,6 +1,5 @@
 package org.vcell.cli;
 
-import org.vcell.admin.cli.AdminCLI;
 import org.vcell.cli.biosimulation.BiosimulationsCommand;
 import org.vcell.cli.run.ExecuteCommand;
 import org.vcell.cli.sbml.ModelCommand;
@@ -27,8 +26,7 @@ import picocli.CommandLine.Command;
         VersionCommand.class,
         ModelCommand.class,
         ValidateBatchCommand.class,
-        CommandLine.HelpCommand.class,
-        DatabaseCommand.class
+        CommandLine.HelpCommand.class
 })
 public class CLIStandalone {
     private final static Logger logger = LogManager.getLogger(CLIStandalone.class);

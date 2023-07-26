@@ -123,22 +123,7 @@
         </dependency>
         <dependency>
             <groupId>org.vcell</groupId>
-            <artifactId>vcell-client</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.vcell</groupId>
             <artifactId>vcell-core</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.vcell</groupId>
-            <artifactId>vcell-server</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.vcell</groupId>
-            <artifactId>vcell-vmicro</artifactId>
             <version>${project.version}</version>
         </dependency>
 
@@ -151,12 +136,6 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
             <version>2.13.4.1</version>
-        </dependency>
-        <dependency>
-            <groupId>org.vcell</groupId>
-            <artifactId>vcell-admin</artifactId>
-            <version>${project.version}</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.jsoup</groupId>

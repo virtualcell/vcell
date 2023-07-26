@@ -1,31 +1,33 @@
 package org.vcell.cli.run;
 
-import cbit.vcell.client.data.SimResultsViewer;
 import cbit.vcell.export.server.*;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.VariableType;
-import cbit.vcell.parser.*;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.SimpleSymbolTable;
+import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.simdata.*;
-import cbit.vcell.solver.*;
+import cbit.vcell.solver.AnnotatedFunction;
+import cbit.vcell.solver.SimulationJob;
+import cbit.vcell.solver.VCSimulationDataIdentifier;
+import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.util.ColumnDescription;
 import com.google.common.io.Files;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
-import org.jlibsedml.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jlibsedml.DataSet;
-import org.jlibsedml.Simulation;
+import org.jlibsedml.*;
 import org.jlibsedml.execution.IXPathToVariableIDResolver;
 import org.jlibsedml.modelsupport.SBMLSupport;
 import org.vcell.cli.CLIUtils;
 import org.vcell.sbml.vcell.SBMLNonspatialSimResults;
-import org.vcell.stochtest.TimeSeriesMultitrialData;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.GenericExtensionFilter;
 import org.vcell.util.document.User;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.io.*;
 import java.nio.file.Paths;
@@ -581,66 +583,6 @@ public class RunUtils {
         return false;
     }
 
-    public static void saveTimeSeriesMultitrialDataAsCSV(TimeSeriesMultitrialData data, File outDir) {
-        File outFile = Paths.get(outDir.toString(), data.datasetName + ".csv").toFile();
-        int numberOfRows = data.times.length;
-        int numberOfVariables = data.varNames.length;
-        // Headers for CSV
-        ArrayList<String> headersList = new ArrayList<>();
-        headersList.add("times");
-        Collections.addAll(headersList, data.varNames);
-
-        // Complete rows for CSV
-        ArrayList<ArrayList<Double>> allRows = new ArrayList<>();
-
-        for (int rowCounter = 0; rowCounter < numberOfRows; rowCounter++) {
-            ArrayList<Double> row = new ArrayList<>();
-            row.add(data.times[rowCounter]);
-
-            for (int varCounter = 0; varCounter < numberOfVariables; varCounter++) {
-                row.add(data.data[varCounter][rowCounter][0]);
-            }
-
-            allRows.add(row);
-
-        }
-
-        // Writing CSV in string buffer
-        StringBuilder headersBuilder = new StringBuilder();
-
-        for (String headerName : headersList) {
-            headersBuilder.append(headerName);
-            headersBuilder.append(",");
-        }
-
-
-        String headers = headersBuilder.replace(headersBuilder.length() - 1, headersBuilder.length(), "\n").toString();
-
-        StringBuilder allRowsBuilder = new StringBuilder(headers);
-
-        for (ArrayList<Double> rowValues : allRows) {
-            StringBuilder rowBuilder = new StringBuilder();
-            for (Double val : rowValues) {
-                rowBuilder.append(val);
-                rowBuilder.append(",");
-            }
-            allRowsBuilder.append(rowBuilder.replace(rowBuilder.length() - 1, rowBuilder.length(), "\n").toString());
-        }
-
-        String csvAsString = allRowsBuilder.toString();
-        PrintWriter out = null;
-        try {
-            out = new PrintWriter(outFile);
-            out.print(csvAsString);
-            out.flush();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } finally {
-            if (out != null) out.close();
-        }
-
-    }
-
     private static List<String> getListOfVariableNames(DataIdentifier... dataIDArr){
         List<String> variableNames = new ArrayList<>();
 
@@ -693,7 +635,7 @@ public class RunUtils {
         GeometrySpecs geometrySpecs = new GeometrySpecs(null, 2, 0, ExportConstants.GEOMETRY_FULL);
 
         // String simulationName,VCSimulationIdentifier vcSimulationIdentifier,ExportParamScanInfo exportParamScanInfo
-        ExportSpecs.ExportParamScanInfo exportParamScanInfo = SimResultsViewer.getParamScanInfo(vcellSim,jobIndex);
+        ExportSpecs.ExportParamScanInfo exportParamScanInfo = ExportSpecs.getParamScanInfo(vcellSim,jobIndex);
         ExportSpecs.SimNameSimDataID snsdi= new ExportSpecs.SimNameSimDataID(vcellSim.getName(), vcSimID, exportParamScanInfo);
         ExportSpecs.SimNameSimDataID[] simNameSimDataIDs = { snsdi };
 
