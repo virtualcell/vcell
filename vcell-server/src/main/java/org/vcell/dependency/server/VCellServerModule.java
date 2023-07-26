@@ -3,14 +3,16 @@ package org.vcell.dependency.server;
 import cbit.vcell.field.db.LocalExternalDataIdentifierServiceImpl;
 import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.message.jms.activeMQ.VCMessagingServiceActiveMQ;
+import cbit.vcell.message.server.bootstrap.LocalVCellConnectionFactory;
 import cbit.vcell.message.server.bootstrap.LocalVCellConnectionServiceImpl;
+import cbit.vcell.message.server.bootstrap.client.RemoteProxyVCellConnectionFactory;
 import cbit.vcell.server.LocalVCellConnectionService;
+import cbit.vcell.server.VCellConnectionFactory;
 import cbit.vcell.simdata.ExternalDataIdentifierService;
-import com.google.inject.AbstractModule;
 import org.vcell.service.registration.RegistrationService;
 import org.vcell.service.registration.localdb.LocaldbRegistrationService;
 
-public class ServerModule extends AbstractModule {
+public class VCellServerModule extends com.google.inject.AbstractModule {
     @Override
     protected void configure() {
         // only one implementation, to break compile-time cyclic dependency (vcell-core -> vcell-service)
@@ -18,6 +20,7 @@ public class ServerModule extends AbstractModule {
 
         // only one implementation, to break compile-time cyclic dependency (vcell-core -> vcell-service)
         bind(LocalVCellConnectionService.class).toInstance(new LocalVCellConnectionServiceImpl());
+        bind(VCellConnectionFactory.class).to(LocalVCellConnectionFactory.class).asEagerSingleton();
 
         // server-side implementation (talk directly to database)
         // RegistrationService interface is not clean - mixes new registration with updates - is there another way?

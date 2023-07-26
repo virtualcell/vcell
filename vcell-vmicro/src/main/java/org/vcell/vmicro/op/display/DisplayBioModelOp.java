@@ -12,7 +12,8 @@ public class DisplayBioModelOp {
 		new Thread() {
 			public void run(){
 				ClientServerInfo clientServerInfo = ClientServerInfo.createLocalServerInfo("schaff", new DigestedPassword("abc"));
-				VCellClient vcellClient = VCellClient.startClient(bioModel, clientServerInfo);
+				VCellClient vCellClient = new VCellClient(null, null);
+				vCellClient.startClient(bioModel, clientServerInfo);
 			}
 		}.start();
 	}

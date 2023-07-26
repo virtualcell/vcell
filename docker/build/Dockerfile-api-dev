@@ -1,10 +1,8 @@
 FROM eclipse-temurin:17 as jre-build
 
 # Create a custom Java runtime
-#   java.beans.PropertyChangeEvent requires java.desktop
-#   org.apache.logging.log4j.core.util.DefaultShutdownCallbackRegistry requires java.management (MBeanRegistrationException)
 RUN $JAVA_HOME/bin/jlink \
-         --add-modules java.base,java.instrument,java.logging,java.management,java.desktop,java.naming,java.sql,java.xml,jdk.jdwp.agent,jdk.httpserver \
+         --add-modules ALL-MODULE-PATH \
          --strip-debug \
          --no-man-pages \
          --no-header-files \
@@ -12,27 +10,40 @@ RUN $JAVA_HOME/bin/jlink \
          --output /javaruntime
 
 # Define base image and copy in jlink created minimal Java 17 environment
-FROM debian:buster-slim
+FROM python:3.9.7-slim
 ENV JAVA_HOME=/opt/java/openjdk
 ENV PATH "${JAVA_HOME}/bin:${PATH}"
 COPY --from=jre-build /javaruntime $JAVA_HOME
 
+# now we have Java 17 and Python 3.9
+
 RUN apt-get -y update && \
-    apt-get install -y curl dnsutils && \
+    apt-get install -y --no-install-recommends curl dnsutils && \
     mkdir -p /usr/local/app/lib 
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tzdata
 RUN unlink /etc/localtime || true
 RUN ln -s /usr/share/zoneinfo/America/New_York /etc/localtime
 
+
+RUN python3 -m pip install poetry &&  poetry config cache-dir "/poetry/.cache"
+ENV PATH="/root/.poetry/bin:/root/.local/bin:$PATH"
+
 WORKDIR /usr/local/app
 
-COPY ./vcell-server/target/vcell-server-0.0.1-SNAPSHOT.jar \
-     ./vcell-server/target/maven-jars/*.jar \
-     ./vcell-api/target/vcell-api-0.0.1-SNAPSHOT.jar \
+# Copy JAR files
+COPY ./vcell-api/target/vcell-api-0.0.1-SNAPSHOT.jar \
      ./vcell-api/target/maven-jars/*.jar \
      ./lib/
 
+# Copy and install vcell-cli-utils
+COPY ./vcell-cli-utils/ /usr/local/app/python/vcell_cli_utils/
+RUN cd /usr/local/app/python/vcell_cli_utils/ && \
+    poetry config cache-dir "/poetry/.cache" --local && \
+    chmod 755 poetry.toml && \
+    poetry install
+
+# copy API resources
 COPY ./vcell-api/docroot ./docroot
 COPY ./vcell-api/webapp ./webapp
 COPY ./vcell-api/keystore_macbook.jks .
@@ -57,7 +68,9 @@ ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
     webDataPort="webDataPort-not-set" \
 	ssl_ignoreHostMismatch=true \
 	ssl_ignoreCertProblems=false \
-	submit_service_host="submit"
+	submit_service_host="submit" \
+	workingDir="/usr/local/app" \
+	userTimezone="-05:00"
 
 ENV dbpswdfile=/run/secrets/dbpswd \
     jmspswdfile=/run/secrets/jmspswd \
@@ -75,6 +88,7 @@ ENTRYPOINT java \
 	-Dlog4j.configurationFile=/usr/local/app/vcell-api.log4j.xml \
 	-Dvcell.server.id="${serverid}" \
 	-Dvcell.installDir=/usr/local/app \
+	-Dcli.workingDir="${workingDir}" \
 	-Dvcell.server.dbConnectURL="${dburl}" \
 	-Dvcell.server.dbDriverName="${dbdriver}" \
 	-Dvcell.server.dbUserid="${dbuser}" \

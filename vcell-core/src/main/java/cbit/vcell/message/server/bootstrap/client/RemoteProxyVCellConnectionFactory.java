@@ -10,6 +10,28 @@
 
 package cbit.vcell.message.server.bootstrap.client;
 
+import cbit.rmi.event.*;
+import cbit.vcell.message.VCRpcRequest;
+import cbit.vcell.message.VCellQueue;
+import cbit.vcell.resource.PropertyLoader;
+import cbit.vcell.server.ConnectionException;
+import cbit.vcell.server.VCellConnection;
+import cbit.vcell.server.VCellConnectionFactory;
+import com.google.gson.Gson;
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.vcell.DependencyConstants;
+import org.vcell.api.client.VCellApiClient;
+import org.vcell.api.client.VCellApiClient.RpcDestination;
+import org.vcell.api.client.VCellApiRpcRequest;
+import org.vcell.api.common.AccessTokenRepresentation;
+import org.vcell.api.common.events.*;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+import org.vcell.util.document.UserLoginInfo;
+
 import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
@@ -19,38 +41,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
-
-import cbit.vcell.resource.PropertyLoader;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.vcell.api.client.VCellApiClient;
-import org.vcell.api.client.VCellApiClient.RpcDestination;
-import org.vcell.api.client.VCellApiRpcRequest;
-import org.vcell.api.common.AccessTokenRepresentation;
-import org.vcell.api.common.events.BroadcastEventRepresentation;
-import org.vcell.api.common.events.DataJobEventRepresentation;
-import org.vcell.api.common.events.EventWrapper;
-import org.vcell.api.common.events.ExportEventRepresentation;
-import org.vcell.api.common.events.SimulationJobStatusEventRepresentation;
-import org.vcell.util.AuthenticationException;
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.User;
-import org.vcell.util.document.UserLoginInfo;
-
-import com.google.gson.Gson;
-
-import cbit.rmi.event.DataJobEvent;
-import cbit.rmi.event.ExportEvent;
-import cbit.rmi.event.MessageData;
-import cbit.rmi.event.MessageEvent;
-import cbit.rmi.event.SimulationJobStatusEvent;
-import cbit.rmi.event.VCellMessageEvent;
-import cbit.vcell.message.VCRpcRequest;
-import cbit.vcell.message.VCellQueue;
-import cbit.vcell.server.ConnectionException;
-import cbit.vcell.server.VCellConnection;
-import cbit.vcell.server.VCellConnectionFactory;
 
 public class RemoteProxyVCellConnectionFactory implements VCellConnectionFactory {
 
@@ -75,7 +65,7 @@ public class RemoteProxyVCellConnectionFactory implements VCellConnectionFactory
 		Arrays.sort(temp);
 		vcellguestAllowed = Collections.unmodifiableList(Arrays.asList(temp));
 	}
-	private UserLoginInfo userLoginInfo;
+
 	private final String apihost;
 	private final Integer apiport;
 	private final VCellApiClient vcellApiClient;
@@ -171,28 +161,29 @@ public class RemoteProxyVCellConnectionFactory implements VCellConnectionFactory
 		
 	}
 
-public RemoteProxyVCellConnectionFactory(String apihost, Integer apiport, UserLoginInfo userLoginInfo) throws ClientProtocolException, IOException {
-	this.apihost = apihost;
-	this.apiport = apiport;
-	this.userLoginInfo = userLoginInfo;
-	boolean bIgnoreCertProblems = PropertyLoader.getBooleanProperty(PropertyLoader.sslIgnoreCertProblems,false);
-	boolean bIgnoreHostMismatch = PropertyLoader.getBooleanProperty(PropertyLoader.sslIgnoreHostMismatch,false);;
-	try {
-		this.vcellApiClient = new VCellApiClient(this.apihost, this.apiport, bIgnoreCertProblems, bIgnoreHostMismatch);
-	} catch (KeyManagementException | NoSuchAlgorithmException | KeyStoreException e) {
-		throw new RuntimeException("VCellApiClient configuration exception: "+e.getMessage(),e);
+	@Inject
+	public RemoteProxyVCellConnectionFactory(
+			@Named(DependencyConstants.VCELL_API_HOST) String apihost,
+			@Named(DependencyConstants.VCELL_API_PORT) Integer apiport) {
+		this.apihost = apihost;
+		this.apiport = apiport;
+		boolean bIgnoreCertProblems = PropertyLoader.getBooleanProperty(PropertyLoader.sslIgnoreCertProblems,false);
+		boolean bIgnoreHostMismatch = PropertyLoader.getBooleanProperty(PropertyLoader.sslIgnoreHostMismatch,false);;
+		try {
+			this.vcellApiClient = new VCellApiClient(this.apihost, this.apiport, bIgnoreCertProblems, bIgnoreHostMismatch);
+		} catch (KeyManagementException | NoSuchAlgorithmException | KeyStoreException e) {
+			throw new RuntimeException("VCellApiClient configuration exception: "+e.getMessage(),e);
+		}
 	}
-	
-	AccessTokenRepresentation accessTokenRep = this.vcellApiClient.authenticate(userLoginInfo.getUserName(), userLoginInfo.getDigestedPassword().getString(),true);
-	userLoginInfo.setUser(new User(accessTokenRep.userId, new KeyValue(accessTokenRep.getUserKey())));
-}
 
-public void changeUser(UserLoginInfo userLoginInfo) {
-	this.userLoginInfo = userLoginInfo;
-}
-
-public VCellConnection createVCellConnection() throws AuthenticationException, ConnectionException {
-	return new LocalVCellConnectionMessaging(userLoginInfo,rpcSender);
+public VCellConnection createVCellConnection(UserLoginInfo userLoginInfo) throws ConnectionException {
+	try {
+		AccessTokenRepresentation accessTokenRep = this.vcellApiClient.authenticate(userLoginInfo.getUserName(), userLoginInfo.getDigestedPassword().getString(),true);
+		userLoginInfo.setUser(new User(accessTokenRep.userId, new KeyValue(accessTokenRep.getUserKey())));
+		return new LocalVCellConnectionMessaging(userLoginInfo,rpcSender);
+	} catch (IOException e) {
+		throw new ConnectionException("failed to connect: "+e.getMessage(), e);
+	}
 }
 
 public static String getVCellSoftwareVersion(String apihost, Integer apiport) {

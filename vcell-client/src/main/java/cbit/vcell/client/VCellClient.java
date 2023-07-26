@@ -19,6 +19,8 @@ import javax.swing.JPanel;
 import javax.swing.RepaintManager;
 import javax.swing.SwingUtilities;
 
+import cbit.vcell.server.VCellConnectionFactory;
+import com.google.inject.Inject;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.UserLoginInfo.DigestedPassword;
@@ -49,6 +51,9 @@ import cbit.vcell.resource.ErrorUtils;
  * @author: Ion Moraru
  */
 public class VCellClient {
+	private final UserRegistrationManager userRegistrationManager; // injected in constructor
+	private final VCellConnectionFactory vcellConnectionFactory; // injected in constructor
+
 	private ClientServerManager clientServerManager = null;
 	private StatusUpdater statusUpdater = null;
 	private RequestManager requestManager = null;
@@ -64,16 +69,8 @@ public class VCellClient {
 	}
 	
 	public static class CheckThreadViolationRepaintManager extends RepaintManager {
-	    // it is recommended to pass the complete check  
-	    private boolean completeCheck = true;
-
-	    public boolean isCompleteCheck() {
-	        return completeCheck;
-	    }
-
-	    public void setCompleteCheck(boolean completeCheck) {
-	        this.completeCheck = completeCheck;
-	    }
+	    // it is recommended to pass the complete check
+	    private final boolean completeCheck = true;
 
 	    public synchronized void addInvalidComponent(JComponent component) {
 	        checkThreadViolations(component);
@@ -114,8 +111,10 @@ public class VCellClient {
  * Insert the method's description here.
  * Creation date: (5/5/2004 3:56:09 PM)
  */
-private VCellClient() {
-	// just so we don't create this elsewhere
+@Inject
+public VCellClient(UserRegistrationManager userRegistrationManager, VCellConnectionFactory vcellConnectionFactory) {
+	this.userRegistrationManager = userRegistrationManager;
+	this.vcellConnectionFactory = vcellConnectionFactory;
 }
 
 
@@ -147,106 +146,59 @@ private DocumentWindowManager createAndShowGUI(VCDocument startupDoc) {
 	return windowManager;
 }
 
-/**
- * Insert the method's description here.
- * Creation date: (5/12/2004 4:36:34 PM)
- * @return cbit.vcell.client.server.ClientServerManager
- */
 public ClientServerManager getClientServerManager() {
 	return clientServerManager;
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (5/24/2004 12:26:43 PM)
- * @return cbit.vcell.client.MDIManager
- */
 public MDIManager getMdiManager() {
 	return mdiManager;
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (5/24/2004 12:26:43 PM)
- * @return cbit.vcell.client.RequestManager
- */
 public RequestManager getRequestManager() {
 	return requestManager;
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (5/14/2004 2:59:53 PM)
- * @return cbit.vcell.client.StatusUpdater
- */
 StatusUpdater getStatusUpdater() {
 	return statusUpdater;
 }
 
-/**
- * Insert the method's description here.
- * Creation date: (5/12/2004 4:36:34 PM)
- * @param newClientServerManager cbit.vcell.client.server.ClientServerManager
- */
 private void setClientServerManager(ClientServerManager newClientServerManager) {
 	clientServerManager = newClientServerManager;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (5/24/2004 12:26:43 PM)
- * @param newMdiManager cbit.vcell.client.MDIManager
- */
 private void setMdiManager(MDIManager newMdiManager) {
 	mdiManager = newMdiManager;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (5/24/2004 12:26:43 PM)
- * @param newRequestManager cbit.vcell.client.RequestManager
- */
 private void setRequestManager(RequestManager newRequestManager) {
 	requestManager = newRequestManager;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (5/14/2004 2:59:53 PM)
- * @param newStatusUpdater cbit.vcell.client.StatusUpdater
- */
 private void setStatusUpdater(StatusUpdater newStatusUpdater) {
 	statusUpdater = newStatusUpdater;
 }
 
-public static VCellClient startClient(final VCDocument startupDoc, final ClientServerInfo clientServerInfo) {
-	/* Set Look and Feel */
+public void startClient(final VCDocument startupDoc, final ClientServerInfo clientServerInfo) {
 	VCellLookAndFeel.setVCellLookAndFeel();
 
-	// instantiate app
-	final VCellClient vcellClient = new VCellClient();
-	
 	Hashtable<String, Object> hash = new Hashtable<String, Object>();	
 	AsynchClientTask task1  = new AsynchClientTask("Starting Virtual Cell", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			// start management layer
 			InteractiveContextDefaultProvider defaultRequester = new VCellGuiInteractiveContextDefaultProvider();
-			vcellClient.setClientServerManager(new ClientServerManager(clientServerInfo, defaultRequester));
-			vcellClient.setRequestManager(new ClientRequestManager(vcellClient));
-			vcellClient.setMdiManager(new ClientMDIManager(vcellClient.getRequestManager()));
+			VCellClient.this.setClientServerManager(new ClientServerManager(vcellConnectionFactory, clientServerInfo, defaultRequester));
+			VCellClient.this.setRequestManager(new ClientRequestManager(VCellClient.this, VCellClient.this.userRegistrationManager));
+			VCellClient.this.setMdiManager(new ClientMDIManager(VCellClient.this.getRequestManager()));
 			// start auxilliary stuff
-			vcellClient.startStatusThreads();
+			VCellClient.this.startStatusThreads();
 			// make sure we have at least a blank document to start with
 			if (startupDoc != null) {
 				hashTable.put("startupDoc",startupDoc);
 			} else {
-				VCDocument newStartupDoc = ((ClientRequestManager)vcellClient.getRequestManager()).createDefaultDocument(VCDocumentType.BIOMODEL_DOC);
+				VCDocument newStartupDoc = ((ClientRequestManager)VCellClient.this.getRequestManager()).createDefaultDocument(VCDocumentType.BIOMODEL_DOC);
 				hashTable.put("startupDoc",newStartupDoc);
 			}
 			DocumentWindowAboutBox.parseVCellVersion();
@@ -260,7 +212,7 @@ public static VCellClient startClient(final VCDocument startupDoc, final ClientS
 			// needs to be set first, else throw away dirty/needs paint information stored in previous instance.
 			RepaintManager.setCurrentManager(new VCellClient.CheckThreadViolationRepaintManager());
 
-			DocumentWindowManager currWindowManager = vcellClient.createAndShowGUI(startupDoc);
+			DocumentWindowManager currWindowManager = VCellClient.this.createAndShowGUI(startupDoc);
 		    if (currWindowManager != null) {
 		    	hashTable.put("currWindowManager", currWindowManager);
 		    }
@@ -281,16 +233,19 @@ public static VCellClient startClient(final VCDocument startupDoc, final ClientS
 				//-----use following in BreakPoint conditional before ApplicationLauncher.launchApplication in eclipse
 //				System.setProperty("install4j.runtimeDir","/home/vcell/VCell_Test/.install4j");
 //				return false;
-				ApplicationLauncher.launchApplication("127", null, false, null/*new ApplicationLauncher.Callback() {
-			        public void exited(int exitValue) {
-			        	DialogUtils.showInfoDialog(windowForComponent, "ApplicationLauncher.launchApplication.exited(), exitValue="+exitValue);
-			        }
-			        
-			        public void prepareShutdown() {
-			        	DialogUtils.showInfoDialog(windowForComponent, "ApplicationLauncher.launchApplication.prepareShutdown()");
-			        }
-			    }*/
-			);
+
+//				ApplicationLauncher.Callback callback1 = new ApplicationLauncher.Callback() {
+//			        public void exited(int exitValue) {
+//			        	DialogUtils.showInfoDialog(windowForComponent, "ApplicationLauncher.launchApplication.exited(), exitValue="+exitValue);
+//			        }
+//			        public void prepareShutdown() {
+//			        	DialogUtils.showInfoDialog(windowForComponent, "ApplicationLauncher.launchApplication.prepareShutdown()");
+//			        }
+//			    }
+				String[] install4jArgs = null;
+				boolean blocking = false;
+				ApplicationLauncher.Callback callback = null;
+				ApplicationLauncher.launchApplication("127", install4jArgs, blocking, callback);
 
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -306,7 +261,7 @@ public static VCellClient startClient(final VCDocument startupDoc, final ClientS
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 		    if (clientServerInfo.getUsername() == null) {
 			    // we were not supplied login credentials; pop-up dialog
-		    	VCellClient.login(vcellClient.getRequestManager(), clientServerInfo, ((DocumentWindowManager)hashTable.get("currWindowManager")));
+				VCellClient.this.login(VCellClient.this.getRequestManager(), clientServerInfo, ((DocumentWindowManager)hashTable.get("currWindowManager")));
 		    }
 		}
 	};
@@ -317,17 +272,16 @@ public static VCellClient startClient(final VCDocument startupDoc, final ClientS
 		    if (clientServerInfo.getUsername() != null) {
 		    	DocumentWindowManager currWindowManager = (DocumentWindowManager)hashTable.get("currWindowManager");
 			    // we were not supplied login credentials; pop-up dialog
-		    	vcellClient.getRequestManager().connectToServer(currWindowManager, clientServerInfo);
+		    	VCellClient.this.getRequestManager().connectToServer(currWindowManager, clientServerInfo);
 		    }
 		}
 	}; 	
 
 	AsynchClientTask[] taskArray = new AsynchClientTask[] { task1, task2,  task2a, task2b, task3};
 	ClientTaskDispatcher.dispatch(null, hash, taskArray);
-	return vcellClient;
 }
 
-public static void login(final RequestManager requestManager, final ClientServerInfo clientServerInfo, final DocumentWindowManager currWindowManager){	
+public void login(final RequestManager requestManager, final ClientServerInfo clientServerInfo, final DocumentWindowManager currWindowManager){
 
 	final LoginManager loginManager = new LoginManager();
 	LoginDelegate loginDelegate = new LoginDelegate() {
@@ -350,7 +304,7 @@ public static void login(final RequestManager requestManager, final ClientServer
 					ConnectionStatus connectionStatus = requestManager.getConnectionStatus();
 					loginManager.close();
 					if(connectionStatus.getStatus() != ConnectionStatus.CONNECTED){
-						VCellClient.login(requestManager,clientServerInfo, currWindowManager);
+						VCellClient.this.login(requestManager,clientServerInfo, currWindowManager);
 					}
 					else {
 						ErrorUtils.setLoginInfo(clientServerInfo.getUserLoginInfo());
@@ -363,7 +317,7 @@ public static void login(final RequestManager requestManager, final ClientServer
 		public void registerRequest() {
 			loginManager.close();
 			try {
-				UserRegistrationManager.registrationOperationGUI(requestManager,	currWindowManager, clientServerInfo, LoginManager.USERACTION_REGISTER,null);
+				VCellClient.this.userRegistrationManager.registrationOperationGUI(requestManager,	currWindowManager, clientServerInfo, LoginManager.USERACTION_REGISTER,null);
 			} catch (UserCancelException e) {
 				//do nothing
 			} catch (Exception e) {
@@ -375,7 +329,7 @@ public static void login(final RequestManager requestManager, final ClientServer
 		public void lostPasswordRequest(String userid) {
 			try {
 				ClientServerInfo newClientServerInfo = createClientServerInfo(clientServerInfo,userid,null);
-				UserRegistrationManager.registrationOperationGUI(requestManager, currWindowManager, newClientServerInfo, LoginManager.USERACTION_LOSTPASSWORD,null);
+				VCellClient.this.userRegistrationManager.registrationOperationGUI(requestManager, currWindowManager, newClientServerInfo, LoginManager.USERACTION_LOSTPASSWORD,null);
 			} catch (UserCancelException e) {
 				//do nothing
 			} catch (Exception e) {
@@ -395,8 +349,7 @@ public static void login(final RequestManager requestManager, final ClientServer
 
 }
 
-
-public static ClientServerInfo createClientServerInfo(ClientServerInfo clientServerInfo,String userid,DigestedPassword digestedPassword){
+public ClientServerInfo createClientServerInfo(ClientServerInfo clientServerInfo,String userid,DigestedPassword digestedPassword){
 	switch (clientServerInfo.getServerType()) {
 		case SERVER_LOCAL: {
 			return ClientServerInfo.createLocalServerInfo(userid,digestedPassword);

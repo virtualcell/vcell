@@ -120,7 +120,7 @@
     <launcher name="VCell-${compiler:Site}-MacOSX" id="102" icnsFile="${compiler:vcellIcnsFile}">
       <executable name="VCell-${compiler:Site}" iconSet="true" failOnStderrOutput="false" executableMode="gui" checkConsoleParameter="true" dpiAware="false" />
       <splashScreen show="true" bitmapFile="${compiler:vcell5SplashScreenPngFilePath}" textOverlay="true" />
-      <java mainClass="cbit.vcell.client.test.VCellClientTest" vmParameters="&quot;-Dvcell.installDir=${launcher:sys.launcherDirectory}&quot;">
+      <java mainClass="cbit.vcell.client.VCellClientMain" vmParameters="&quot;-Dvcell.installDir=${launcher:sys.launcherDirectory}&quot;">
         <classPath>
           <scanDirectory location="lib" failOnError="false" />
         </classPath>
@@ -156,7 +156,7 @@
     <launcher name="VCell-${compiler:Site}-Windows64" id="345" icnsFile="${compiler:vcellIcnsFile}">
       <executable name="VCell-${compiler:Site}" iconSet="true" failOnStderrOutput="false" executableMode="gui" checkConsoleParameter="true" dpiAware="false" />
       <splashScreen show="true" bitmapFile="${compiler:vcell5SplashScreenPngFilePath}" textOverlay="true" />
-      <java mainClass="cbit.vcell.client.test.VCellClientTest" vmParameters="&quot;-Dvcell.installDir=${launcher:sys.launcherDirectory}&quot;">
+      <java mainClass="cbit.vcell.client.test.VCellClientMain" vmParameters="&quot;-Dvcell.installDir=${launcher:sys.launcherDirectory}&quot;">
         <classPath>
           <scanDirectory location="lib" failOnError="false" />
         </classPath>
@@ -186,7 +186,7 @@
     <launcher name="VCell-${compiler:Site}-Windows32" id="447" icnsFile="${compiler:vcellIcnsFile}">
       <executable name="VCell-${compiler:Site}" iconSet="true" failOnStderrOutput="false" executableMode="gui" checkConsoleParameter="true" dpiAware="false" />
       <splashScreen show="true" bitmapFile="${compiler:vcell5SplashScreenPngFilePath}" textOverlay="true" />
-      <java mainClass="cbit.vcell.client.test.VCellClientTest" vmParameters="&quot;-Dvcell.installDir=${launcher:sys.launcherDirectory}&quot;">
+      <java mainClass="cbit.vcell.client.test.VCellClientMain" vmParameters="&quot;-Dvcell.installDir=${launcher:sys.launcherDirectory}&quot;">
         <classPath>
           <scanDirectory location="lib" failOnError="false" />
         </classPath>
@@ -217,7 +217,7 @@
     <launcher name="VCell-${compiler:Site}-Linux32" id="534" icnsFile="${compiler:vcellIcnsFile}">
       <executable name="VCell-${compiler:Site}" failOnStderrOutput="false" executableMode="gui" checkConsoleParameter="true" dpiAware="false" />
       <splashScreen bitmapFile="${compiler:vcell5SplashScreenPngFilePath}" />
-      <java mainClass="cbit.vcell.client.test.VCellClientTest" vmParameters="&quot;-Dvcell.installDir=${launcher:sys.launcherDirectory}&quot;">
+      <java mainClass="cbit.vcell.client.test.VCellClientMain" vmParameters="&quot;-Dvcell.installDir=${launcher:sys.launcherDirectory}&quot;">
         <classPath>
           <scanDirectory location="lib" failOnError="false" />
         </classPath>
@@ -244,7 +244,7 @@
     <launcher name="VCell-${compiler:Site}-Linux64" id="627" icnsFile="${compiler:vcellIcnsFile}">
       <executable name="VCell-${compiler:Site}" failOnStderrOutput="false" executableMode="gui" checkConsoleParameter="true" dpiAware="false" />
       <splashScreen bitmapFile="${compiler:vcell5SplashScreenPngFilePath}" />
-      <java mainClass="cbit.vcell.client.test.VCellClientTest" vmParameters="&quot;-Dvcell.installDir=${launcher:sys.launcherDirectory}&quot;">
+      <java mainClass="cbit.vcell.client.test.VCellClientMain" vmParameters="&quot;-Dvcell.installDir=${launcher:sys.launcherDirectory}&quot;">
         <classPath>
           <scanDirectory location="lib" failOnError="false" />
         </classPath>

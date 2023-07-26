@@ -9,39 +9,36 @@
  */
 
 package cbit.vcell.message.server.db;
-import java.util.Date;
 
+import cbit.vcell.message.*;
 import cbit.vcell.message.jms.activeMQ.VCMessagingServiceActiveMQ;
+import cbit.vcell.message.messages.MessageConstants;
+import cbit.vcell.message.server.ServerMessagingDelegate;
+import cbit.vcell.modeldb.DatabaseServerImpl;
+import cbit.vcell.resource.OperatingSystemInfo;
+import cbit.vcell.resource.PropertyLoader;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
 import org.vcell.db.KeyFactory;
-import org.vcell.util.document.VCellServerID;
+import org.vcell.dependency.server.VCellServerModule;
+import org.vcell.util.DataAccessException;
 
-import cbit.vcell.message.VCMessageSession;
-import cbit.vcell.message.VCMessagingService;
-import cbit.vcell.message.VCPooledQueueConsumer;
-import cbit.vcell.message.VCQueueConsumer;
-import cbit.vcell.message.VCRpcMessageHandler;
-import cbit.vcell.message.VCellQueue;
-import cbit.vcell.message.messages.MessageConstants;
-import cbit.vcell.message.server.ManageUtils;
-import cbit.vcell.message.server.ServerMessagingDelegate;
-import cbit.vcell.message.server.ServiceInstanceStatus;
-import cbit.vcell.message.server.ServiceProvider;
-import cbit.vcell.message.server.bootstrap.ServiceType;
-import cbit.vcell.modeldb.DatabaseServerImpl;
-import cbit.vcell.mongodb.VCMongoMessage;
-import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
-import cbit.vcell.resource.OperatingSystemInfo;
-import cbit.vcell.resource.PropertyLoader;
+import java.sql.SQLException;
 
 /**
  * Insert the type's description here.
  * Creation date: (10/18/2001 4:31:11 PM)
  * @author: Jim Schaff
  */
-public class DatabaseServer extends ServiceProvider {
-	private DatabaseServerImpl databaseServerImpl = null;
+public class DatabaseServer {
+	public static final Logger lg = LogManager.getLogger(DatabaseServer.class);
+
+	private final VCMessagingService vcMessagingService_int;
+	private final DatabaseServerImpl databaseServerImpl;
 	private VCQueueConsumer rpcConsumer = null;	
 	private VCRpcMessageHandler rpcMessageHandler = null;
 	private VCPooledQueueConsumer pooledQueueConsumer = null;
@@ -49,14 +46,7 @@ public class DatabaseServer extends ServiceProvider {
 	
 	private DatabaseCleanupThread databaseCleanupThread = null;
 
-	
-	/**
-	 * Insert the method's description here.
-	 * Creation date: (1/26/2004 9:49:08 AM)
-	 */
 
-	
-	
 	public class DatabaseCleanupThread extends Thread {
 
 		Object notifyObject = new Object();
@@ -75,9 +65,9 @@ public class DatabaseServer extends ServiceProvider {
 
 				try {
 					if (lg.isDebugEnabled()) lg.debug("starting database cleanup");
-					
+
 					databaseServerImpl.cleanupDatabase();
-					
+
 					if (lg.isDebugEnabled()) lg.debug("done with database cleanup");
 				} catch (Exception ex) {
 					lg.error(ex.getMessage(), ex);
@@ -94,12 +84,15 @@ public class DatabaseServer extends ServiceProvider {
 	}
 	
 	
-/**
- * Scheduler constructor comment.
- */
-public DatabaseServer(ServiceInstanceStatus serviceInstanceStatus, DatabaseServerImpl databaseServerImpl, VCMessagingService vcMessagingService_int, boolean bSlaveMode) throws Exception {
-	super(vcMessagingService_int, null, serviceInstanceStatus,bSlaveMode);
-	this.databaseServerImpl = databaseServerImpl;
+public DatabaseServer() throws SQLException, DataAccessException {
+	ConnectionFactory conFactory = DatabaseService.getInstance().createConnectionFactory();
+	KeyFactory keyFactory = conFactory.getKeyFactory();
+	this.databaseServerImpl = new DatabaseServerImpl(conFactory, keyFactory);
+
+	this.vcMessagingService_int = new VCMessagingServiceActiveMQ();
+	String jmshost = PropertyLoader.getRequiredProperty(PropertyLoader.jmsIntHostInternal);
+	int jmsport = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.jmsIntPortInternal));
+	this.vcMessagingService_int.setConfiguration(new ServerMessagingDelegate(), jmshost, jmsport);
 }
 
 public void init() throws Exception {
@@ -117,13 +110,6 @@ public void init() throws Exception {
 }
 
 
-
-@Override
-public void stopService() {
-	this.pooledQueueConsumer.shutdownAndAwaitTermination();
-	super.stopService();
-}
-
 /**
  * Starts the application.
  * @param args an array of command-line arguments
@@ -137,35 +123,18 @@ public static void main(java.lang.String[] args) {
 	}
 	
 	try {
-		PropertyLoader.loadProperties(REQUIRED_SERVICE_PROPERTIES);		
+		PropertyLoader.loadProperties(REQUIRED_SERVICE_PROPERTIES);
 
-		int serviceOrdinal = 99;
-		VCMongoMessage.serviceStartup(ServiceName.database, new Integer(serviceOrdinal), args);
+		Injector injector = Guice.createInjector(new VCellServerModule());
 
-		//
-		// JMX registration
-		//
-//		MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
-//		mbs.registerMBean(new VCellServiceMXBeanImpl(), new ObjectName(VCellServiceMXBean.jmxObjectName));
- 				
-		ServiceInstanceStatus serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(), 
-				ServiceType.DB, serviceOrdinal, ManageUtils.getHostName(), new Date(), true);
-		
-		ConnectionFactory conFactory = DatabaseService.getInstance().createConnectionFactory();
-		KeyFactory keyFactory = conFactory.getKeyFactory();
-		DatabaseServerImpl databaseServerImpl = new DatabaseServerImpl(conFactory, keyFactory);
-		
-		VCMessagingService vcMessagingService = new VCMessagingServiceActiveMQ();
-		String jmshost = PropertyLoader.getRequiredProperty(PropertyLoader.jmsIntHostInternal);
-		int jmsport = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.jmsIntPortInternal));
-		vcMessagingService.setConfiguration(new ServerMessagingDelegate(), jmshost, jmsport);
-		
-		DatabaseServer databaseServer = new DatabaseServer(serviceInstanceStatus, databaseServerImpl, vcMessagingService, false);
+		DatabaseServer databaseServer = injector.getInstance(DatabaseServer.class);
         databaseServer.init();
     } catch (Throwable e) {
-	    lg.error(e);
+	    lg.error("DatabaseService failed", e);
+		System.exit(1);
     }
 }
+
 
 private static final String REQUIRED_SERVICE_PROPERTIES[] = {
 		PropertyLoader.vcellServerIDProperty,
@@ -173,6 +142,7 @@ private static final String REQUIRED_SERVICE_PROPERTIES[] = {
 		PropertyLoader.installationRoot,
 		PropertyLoader.dbConnectURL,
 		PropertyLoader.dbDriverName,
+		PropertyLoader.userTimezone,
 		PropertyLoader.dbUserid,
 		PropertyLoader.dbPasswordFile,
 		PropertyLoader.mongodbHostInternal,

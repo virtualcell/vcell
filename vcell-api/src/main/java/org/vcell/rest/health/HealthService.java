@@ -207,8 +207,8 @@ public class HealthService {
 			long id = loginStartEvent();
 			try {
 				UserLoginInfo userLoginInfo = new UserLoginInfo(testUserid, testPassword);
-				RemoteProxyVCellConnectionFactory vcellConnectionFactory = new RemoteProxyVCellConnectionFactory(host, port, userLoginInfo);
-				VCellConnection vcellConnection = vcellConnectionFactory.createVCellConnection();
+				RemoteProxyVCellConnectionFactory vcellConnectionFactory = new RemoteProxyVCellConnectionFactory(host, port);
+				VCellConnection vcellConnection = vcellConnectionFactory.createVCellConnection(userLoginInfo);
 				VCInfoContainer vcInfoContainer = vcellConnection.getUserMetaDbServer().getVCInfoContainer();
 				loginSuccess(id);
 			}catch (Throwable e) {
@@ -233,8 +233,8 @@ public class HealthService {
 			KeyValue savedBioModelKey = null;
 			VCSimulationIdentifier runningSimId = null;
 			try {
-				RemoteProxyVCellConnectionFactory vcellConnectionFactory = new RemoteProxyVCellConnectionFactory(host, port, userLoginInfo);
-				VCellConnection vcellConnection = vcellConnectionFactory.createVCellConnection();
+				RemoteProxyVCellConnectionFactory vcellConnectionFactory = new RemoteProxyVCellConnectionFactory(host, port);
+				VCellConnection vcellConnection = vcellConnectionFactory.createVCellConnection(userLoginInfo);
 				
 				String vcmlString = IOUtils.toString(getClass().getResourceAsStream("/TestTemplate.vcml"));
 				
@@ -308,8 +308,8 @@ public class HealthService {
 			}finally {
 				// cleanup
 				try {
-					RemoteProxyVCellConnectionFactory vcellConnectionFactory = new RemoteProxyVCellConnectionFactory(host, port, userLoginInfo);
-					VCellConnection vcellConnection = vcellConnectionFactory.createVCellConnection();
+					RemoteProxyVCellConnectionFactory vcellConnectionFactory = new RemoteProxyVCellConnectionFactory(host, port);
+					VCellConnection vcellConnection = vcellConnectionFactory.createVCellConnection(userLoginInfo);
 					if (runningSimId!=null) {
 						try {
 							vcellConnection.getSimulationController().stopSimulation(runningSimId);
