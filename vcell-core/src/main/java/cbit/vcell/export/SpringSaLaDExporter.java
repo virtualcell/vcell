@@ -90,10 +90,17 @@ public class SpringSaLaDExporter {
 		List<MolecularType> molecularTypeList = model.getRbmModelContainer().getMolecularTypeList();
 		List<ReactionRule> reactionRuleList = model.getRbmModelContainer().getReactionRuleList();
 		
-		if(simContext.getSimulations() == null || simContext.getSimulations().length == 0) {
-			throw new RuntimeException("Exporting to SpringSaLaD file format needs at least one Langevin Simulation");
+		if(simContext == null) {	// we just need an application, no simulations are needed
+			throw new RuntimeException("Exporting to SpringSaLaD file format needs at least one SpringSaLaD Application");
 		}
-		Simulation simulation = simContext.getSimulations(0);	// TODO: get the right one
+		if(simContext.getMathDescription() == null) {
+			throw new RuntimeException("Math Description not found, regenerate math first.");
+
+		}
+		// make a fake simulation, when exporting we just need some default simulation properties 
+		Simulation simulation = new Simulation(simContext.getMathDescription(), simContext);
+		
+		
 		Geometry geometry = simContext.getGeometry();
 		GeometryContext geometryContext = simContext.getGeometryContext();
 		GeometrySpec geometrySpec = geometry.getGeometrySpec();

@@ -2014,7 +2014,6 @@ public void writeData(StringBuilder sb) {				// SpringSaLaD exporting the specie
 //		MolecularComponentPattern key = entry.getKey();
 //		SiteAttributesSpec sas = entry.getValue();
 
-	Simulation simulation = getSimulationContext().getSimulations(0);
 	Geometry geometry = getSimulationContext().getGeometry();
 	GeometryContext geometryContext = getSimulationContext().getGeometryContext();
 	GeometrySpec geometrySpec = geometry.getGeometrySpec();
