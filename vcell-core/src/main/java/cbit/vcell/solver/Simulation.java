@@ -177,7 +177,7 @@ public class Simulation implements Versionable, Matchable, java.beans.VetoableCh
 				}
 			}
 		}
-		
+
 		public static void writeBondCounters(SimulationContext simContext, StringBuilder sb) {
 			if(simContext == null) {
 				sb.append("\n");
@@ -197,7 +197,7 @@ public class Simulation implements Versionable, Matchable, java.beans.VetoableCh
 				rrs.analizeReaction(analysisResults);
 				Subtype subtype = rrs.getSubtype(analysisResults);
 				if(subtype == ReactionRuleSpec.Subtype.BINDING) {
-					sb.append("'").append(rrs.getReactionRule().getName()).append("' : '")
+					sb.append("'").append(rrs.getReactionRule().getName()).append("' : ") // was ("' : '")
 						.append("Counted");
 					sb.append("\n");
 				}

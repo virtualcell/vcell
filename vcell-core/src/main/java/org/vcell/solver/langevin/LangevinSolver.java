@@ -139,7 +139,7 @@ public class LangevinSolver extends SimpleCompiledSolver {
 		try {
 			lg = new PrintWriter(logFilename);
 			String shortOutputFilename = outputFilename.substring(1 + outputFilename.lastIndexOf("\\"));
-			lg.println(NFSIM_DATA_IDENTIFIER + " " + shortOutputFilename);
+			lg.println(IDA_DATA_IDENTIFIER + "\n" + shortOutputFilename);
 		} catch (Exception e) {
 			setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED,
 					SimulationMessage.solverAborted("Could not generate log file: " + e.getMessage())));

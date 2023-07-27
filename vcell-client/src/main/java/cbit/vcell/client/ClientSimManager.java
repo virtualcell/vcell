@@ -499,7 +499,7 @@ private AsynchClientTask[] showSimulationResults0(final boolean isLocal, final V
 							File localSimDir = ResourceUtil.getLocalSimDir(User.tempUser.getName());
 							LocalVCDataIdentifier vcDataId = new LocalVCSimulationDataIdentifier(vcSimulationIdentifier, 0, localSimDir);
 							DataManager dataManager = null;
-							if (sim.isSpatial()) {
+							if (!sim.getSolverTaskDescription().getSolverDescription().isLangevinSolver() && sim.isSpatial()) {
 								dataManager = new PDEDataManager(outputContext,vcDataManager, vcDataId);
 							} else {
 								dataManager = new ODEDataManager(outputContext,vcDataManager, vcDataId);

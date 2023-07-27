@@ -96,7 +96,12 @@ public class SimResultsViewer extends DataViewer {
 public SimResultsViewer(Simulation simulation, DataManager arg_dataManager) throws DataAccessException {
 	super();
 	setSimulation(simulation);
-	this.isODEData = !simulation.isSpatial();
+	// If Langevin, ignore spatial so that it can be displayed as an ODE model
+	if (simulation.getSolverTaskDescription().getSolverDescription().isLangevinSolver()) {
+		this.isODEData = true;
+	} else {
+		this.isODEData = !simulation.isSpatial();
+	}
 	this.dataManager = arg_dataManager;
 	initialize();
 }

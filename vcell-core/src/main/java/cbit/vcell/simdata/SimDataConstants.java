@@ -82,7 +82,7 @@ public interface SimDataConstants {
 	public static final String NFSIM_OUTPUT_LOG_EXTENSION = ".log";
 
 	public static final String LANGEVIN_INPUT_FILE_EXTENSION = ".langevinInput";
-	public static final String LANGEVIN_OUTPUT_FILE_EXTENSION = ".gdat";
+	public static final String LANGEVIN_OUTPUT_FILE_EXTENSION = ".ida";
 	public static final String LANGEVIN_OUTPUT_LOG_EXTENSION = ".log";
 
 	public static final String SMOLDYN_INPUT_FILE_EXTENSION = ".smoldynInput";
