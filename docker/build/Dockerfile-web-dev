@@ -55,7 +55,8 @@ EXPOSE 8000
 
 ENTRYPOINT java \
     -Xdebug -agentlib:jdwp=transport=dt_socket,address=*:8000,server=y,suspend=n \
-	-XX:MaxRAMPercentage=100 -XX:+PrintFlagsFinal -XshowSettings:vm \
+	-XX:MaxRAMPercentage=100 \
+#	-XX:+PrintFlagsFinal -XshowSettings:vm \
     -Djava.awt.headless=true \
 	-Dvcell.softwareVersion="${softwareVersion}" \
 	-Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager \
