@@ -83,12 +83,12 @@ public class HtcSimulationWorker implements HtcProxy.HtcProxyFactory  {
 public HtcSimulationWorker() {
 	this.htcProxy = SlurmProxy.createRemoteProxy();
 
-	VCMessagingService vcMessagingService_int = new VCMessagingServiceActiveMQ();
+	this.vcMessagingService_int = new VCMessagingServiceActiveMQ();
 	String jmshost_int = PropertyLoader.getRequiredProperty(PropertyLoader.jmsIntHostInternal);
 	int jmsport_int = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.jmsIntPortInternal));
 	this.vcMessagingService_int.setConfiguration(new ServerMessagingDelegate(), jmshost_int, jmsport_int);
 
-	VCMessagingService vcMessagingService_sim = new VCMessagingServiceActiveMQ();
+	this.vcMessagingService_sim = new VCMessagingServiceActiveMQ();
 	String jmshost_sim = PropertyLoader.getRequiredProperty(PropertyLoader.jmsSimHostInternal);
 	int jmsport_sim = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.jmsSimPortInternal));
 	this.vcMessagingService_sim.setConfiguration(new ServerMessagingDelegate(), jmshost_sim, jmsport_sim);
@@ -629,7 +629,7 @@ public static void main(String[] args) throws IOException {
 
 		htcSimulationWorker.init();
 	} catch (Throwable e) {
-		lg.error(e);
+		lg.error("HtcSimulationWorker failed to start: "+e.getMessage(), e);
 	}
 }
 
