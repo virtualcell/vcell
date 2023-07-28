@@ -54,7 +54,8 @@ public class VCellClientMain implements Callable<Integer> {
     public static ArrayBlockingQueue<String> recordedUserEvents = new ArrayBlockingQueue<>(50, true);
     @Parameters(description = "optional vcell model file, accepts drag and drop install4j VCell launcher", arity = "0..1")
     private final File vcellModelFile = null;
-    @Option(names = {"--api-host"}, required = true, description = "VCell api server host[:port]")
+    @Option(names = {"--api-host"}, description = "VCell api server host[:port], " +
+            "defaults to -Dvcell.serverHost property, or vcellapi.cam.uchc.edu if not specified")
     private String host = System.getProperty(PropertyLoader.vcellServerHost, "vcellapi.cam.uchc.edu");
     @Option(names = {"--userid"}, hidden = true, description = "vcell userid")
     private String userid = null;
