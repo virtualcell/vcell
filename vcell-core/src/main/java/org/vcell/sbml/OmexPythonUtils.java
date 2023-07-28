@@ -60,7 +60,7 @@ public class OmexPythonUtils {
         try {
             callCLIPython("validateOmex", omexFile, omexTempDir.toPath(), reportJsonFile.toPath());
          }catch (Exception e){
-            throw new RuntimeException("OMEX VALIDATION FAILED");
+            throw new RuntimeException("OMEX VALIDATION FAILED", e);
         }
         String reportString = FileUtils.readFileToString(reportJsonFile);
         JsonObject reportRoot = JsonParser.parseString(reportString).getAsJsonObject();
