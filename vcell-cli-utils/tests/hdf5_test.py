@@ -3,8 +3,7 @@ from biosimulations_pipeline.hdf5_compare import get_results, compare_arrays, co
 
 
 def test_compare_arrays() -> None:
-    results_zip: Path = Path(
-        "/Users/schaff/Documents/workspace/vcell/vcell-cli-utils/tests/fixtures/modeldb-206365-outputs.zip")
+    results_zip: Path = Path("tests/fixtures/modeldb-206365-outputs.zip")
     results1 = get_results(results_zip_file=results_zip)
     results2 = get_results(results_zip_file=results_zip)
 
