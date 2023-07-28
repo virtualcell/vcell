@@ -1,34 +1,23 @@
 package cbit.image;
 
-import cbit.util.xml.VCLoggerException;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.BioModelTest;
 import cbit.vcell.biomodel.ModelUnitConverter;
-import cbit.vcell.geometry.Geometry;
-import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathCompareResults;
 import cbit.vcell.math.MathDescription;
-import cbit.vcell.math.MathSymbolTableFactory;
-import cbit.vcell.model.ModelTest;
 import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
-import com.google.common.io.Files;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.vcell.sbml.SbmlException;
 import org.vcell.sbml.vcell.SBMLExporter;
 import org.vcell.sbml.vcell.SBMLImporter;
 import org.vcell.test.Fast;
 import org.vcell.util.Extent;
 
-import javax.xml.stream.XMLStreamException;
-import java.beans.PropertyVetoException;
-import java.io.File;
 import java.io.StringBufferInputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.Random;
 
 @Category(Fast.class)

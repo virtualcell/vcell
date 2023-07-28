@@ -3,6 +3,7 @@ package cbit.vcell.biomodel;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.resource.NativeLib;
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
@@ -42,6 +43,7 @@ public class MathOverrideRoundTipTest {
     // save state for zero side-effect
     //
     private String previousInstalldirPropertyValue;
+    private String previousWorkingdirPropertyValue;
     private boolean previousWriteDebugFiles;
 
     public MathOverrideRoundTipTest(String filename) {
@@ -63,8 +65,10 @@ public class MathOverrideRoundTipTest {
 
     @Before
     public void setup() {
-        previousInstalldirPropertyValue = System.getProperty("vcell.installDir");
-        System.setProperty("vcell.installDir", "..");
+        previousWorkingdirPropertyValue = System.getProperty(PropertyLoader.cliWorkingDir);
+        System.setProperty(PropertyLoader.cliWorkingDir, "../vcell-cli-utils");
+        previousInstalldirPropertyValue = System.getProperty(PropertyLoader.installationRoot);
+        System.setProperty(PropertyLoader.installationRoot, "..");
         NativeLib.combinej.load();
         this.previousWriteDebugFiles = SBMLExporter.bWriteDebugFiles;
         SBMLExporter.bWriteDebugFiles = bDebug;
@@ -72,8 +76,11 @@ public class MathOverrideRoundTipTest {
 
     @After
     public void teardown() {
+        if (previousWorkingdirPropertyValue!=null) {
+            System.setProperty(PropertyLoader.cliWorkingDir, previousWorkingdirPropertyValue);
+        }
         if (previousInstalldirPropertyValue!=null) {
-            System.setProperty("vcell.installDir", previousInstalldirPropertyValue);
+            System.setProperty(PropertyLoader.installationRoot, previousInstalldirPropertyValue);
         }
         SBMLExporter.bWriteDebugFiles = previousWriteDebugFiles;
     }

@@ -33,15 +33,23 @@ jobs:
         run: |
           cd vcell-cli-utils
           poetry install
+          poetry run python -m pytest
 
       - name: build vcell-admin package
         run: |
           cd docker/swarm/vcell-admin
           poetry install
+          poetry run python -m pytest
 
-      - name: build vcell-opt package
+      - name: build pythonCopasiOpt package
         run: |
           cd pythonCopasiOpt/vcell-opt
+          poetry install
+          poetry run python -m pytest
+
+      - name: build pythonVtk package
+        run: |
+          cd pythonVtk
           poetry install
           poetry run python -m pytest
 
@@ -96,15 +104,23 @@ jobs:
         run: |
           cd vcell-cli-utils
           poetry install
+          poetry run python -m pytest
 
       - name: build vcell-admin package
         run: |
           cd docker/swarm/vcell-admin
           poetry install
+          poetry run python -m pytest
 
-      - name: build vcell-opt package
+      - name: build pythonCopasiOpt package
         run: |
           cd pythonCopasiOpt/vcell-opt
+          poetry install
+          poetry run python -m pytest
+
+      - name: build pythonVtk package
+        run: |
+          cd pythonVtk
           poetry install
           poetry run python -m pytest
 
@@ -147,15 +163,23 @@ jobs:
         run: |
           cd vcell-cli-utils
           poetry install
+          poetry run python -m pytest
 
       - name: build vcell-admin package
         run: |
           cd docker/swarm/vcell-admin
           poetry install
+          poetry run python -m pytest
 
-      - name: build vcell-opt package
+      - name: build pythonCopasiOpt package
         run: |
           cd pythonCopasiOpt/vcell-opt
+          poetry install
+          poetry run python -m pytest
+
+      - name: build pythonVtk package
+        run: |
+          cd pythonVtk
           poetry install
           poetry run python -m pytest
 
