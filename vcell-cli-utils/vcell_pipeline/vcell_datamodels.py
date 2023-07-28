@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import Optional
 
 
 class BiomodelReference(BaseModel):
@@ -22,12 +23,12 @@ class Publication(BaseModel):
     title: str
     authors: list[str]
     year: int
-    citation: str | None
-    pubmedid: str | None
-    doi: str | None
-    endnoteid: str | None
-    url: str | None
-    wittid: str | None
+    citation: Optional[str]
+    pubmedid: Optional[str]
+    doi: Optional[str]
+    endnoteid: Optional[str]
+    url: Optional[str]
+    wittid: Optional[str]
     biomodelReferences: list[BiomodelReference]
     mathmodelReferences: list[MathmodelReference]
     date: str

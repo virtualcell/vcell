@@ -1,8 +1,9 @@
+from typing import Optional
 from vcell_pipeline.citation import getCitation, CitationInfo, getSuggestedProjectName
 
 
 def test_citation() -> None:
-    citation: CitationInfo | None = getCitation(pubmedid="35367415")
+    citation: Optional[CitationInfo] = getCitation(pubmedid="35367415")
     assert citation is not None
     assert citation.author == "Nosbisch, Jamie L"
     assert citation.title == "A kinetic model of phospholipase C-γ1 linking structure-based insights to dynamics of enzyme autoinhibition and activation"
