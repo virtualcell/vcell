@@ -48,7 +48,6 @@ RUN rm /vcellclient/vcell-client/target/maven-jars/libCombine*
 
 WORKDIR /config
 
-VOLUME /jres
 VOLUME /outputdir
 VOLUME /buildsecrets
 
@@ -74,11 +73,6 @@ ENV compiler_updateSiteBaseUrl="update-site-not-set" \
     compiler_rmiHosts="apihost-not-set:api-port-not-set" \
     compiler_bioformatsJarFile=vcell-bioformats-0.0.9-jar-with-dependencies.jar \
     compiler_bioformatsJarDownloadURL=http://vcell.org/webstart/vcell-bioformats-0.0.9-jar-with-dependencies.jar \
-    compiler_applicationId="client-applicationId-not-set" \
-    macJre=macosx-amd64-1.8.0_141 \
-    win64Jre=windows-amd64-1.8.0_141 \
-    win32Jre=windows-x86-1.8.0_141 \
-    linux64Jre=linux-amd64-1.8.0_66 \
-    linux32Jre=linux-x86-1.8.0_66
+    compiler_applicationId="client-applicationId-not-set"
 
 ENTRYPOINT [ "/config/build_installers.sh" ]

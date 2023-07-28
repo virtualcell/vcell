@@ -19,11 +19,6 @@
       <variable name="vcellLocalSolversDirPath" value="${compiler:mavenRootDir}/localsolvers" />
       <variable name="vcellLicenseFilePath" value="${compiler:mavenRootDir}/thirdpartylicenses.txt" />
       <variable name="vcellbngPerlPath" value="${compiler:mavenRootDir}/bionetgen" />
-      <variable name="macJrePath" value="NO-MAC-JRE-PATH" />
-      <variable name="win32JrePath" value="NO-WIN32-JRE-PATH" />
-      <variable name="win64JrePath" value="NO-WIN64-JRE-PATH" />
-      <variable name="linux64JrePath" value="NO-LINUX64-JRE-PATH" />
-      <variable name="linux32JrePath" value="NO-LINUX32-JRE-PATH" />
     </variables>
     <codeSigning macEnabled="true" macPkcs12File="${compiler:macKeystore}" windowsEnabled="true" windowsPkcs12File="${compiler:winKeystore}">
       <macAdditionalBinaries>
@@ -1401,7 +1396,7 @@ if (context.isUnattended()) {
         <variable name="resourceJar" value="../src_macosx_64" />
         <variable name="resourceDir" value="resources" />
       </variables>
-      <jreBundle usePack200="false" includedJre="${compiler:macJrePath}" manualJreEntry="true" />
+      <jreBundle usePack200="false" />
     </macos>
     <windows name="Windows ${compiler:vcellVersion} ${compiler:Site} 64 Bit" id="349" mediaFileName="${compiler:sys.shortName}_${compiler:sys.platform}_${compiler:sys.version}_64bit" installDir="VCell_${compiler:Site}" downloadURL="${compiler:updateSiteBaseUrl}" architecture="64">
       <excludedLaunchers>
@@ -1425,7 +1420,7 @@ if (context.isUnattended()) {
       <variables>
         <variable name="resourceDir" value="resources" />
       </variables>
-      <jreBundle usePack200="false" includedJre="${compiler:win64JrePath}" manualJreEntry="true" />
+      <jreBundle usePack200="false" manualJreEntry="true" />
     </windows>
     <windows name="Windows ${compiler:vcellVersion} ${compiler:Site} 32 Bit" id="450" mediaFileName="${compiler:sys.shortName}_${compiler:sys.platform}_${compiler:sys.version}_32bit" installDir="VCell_${compiler:Site}" architecture="32">
       <excludedLaunchers>
@@ -1449,7 +1444,7 @@ if (context.isUnattended()) {
       <variables>
         <variable name="resourceDir" value="resources" />
       </variables>
-      <jreBundle usePack200="false" includedJre="${compiler:win32JrePath}" manualJreEntry="true" />
+      <jreBundle usePack200="false" />
     </windows>
     <unixInstaller name="Linux ${compiler:vcellVersion} ${compiler:Site} 64 Bit" id="652" mediaFileName="${compiler:sys.shortName}_${compiler:sys.platform}_${compiler:sys.version}_64bit" installDir="VCell_${compiler:Site}">
       <excludedLaunchers>
@@ -1473,7 +1468,7 @@ if (context.isUnattended()) {
       <variables>
         <variable name="resourceDir" value="resources" />
       </variables>
-      <jreBundle usePack200="false" includedJre="${compiler:linux64JrePath}" manualJreEntry="true" />
+      <jreBundle usePack200="false" />
     </unixInstaller>
     <unixInstaller name="Linux ${compiler:vcellVersion} ${compiler:Site} 32 Bit" id="547" mediaFileName="${compiler:sys.shortName}_${compiler:sys.platform}_${compiler:sys.version}_32bit" installDir="VCell_${compiler:Site}">
       <excludedLaunchers>
@@ -1497,7 +1492,7 @@ if (context.isUnattended()) {
       <variables>
         <variable name="resourceDir" value="resources" />
       </variables>
-      <jreBundle usePack200="false" includedJre="${compiler:linux32JrePath}" manualJreEntry="true" />
+      <jreBundle usePack200="false" />
     </unixInstaller>
   </mediaSets>
   <buildIds>

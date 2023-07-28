@@ -26,25 +26,6 @@ macCodeSignKeystore_pswd=`cat $macCodeSignKeystore_pswdfile`
 #
 $INSTALL4JC -L $Install4J_product_key
 
-#echo "jres found in /jres are `ls /jres`"
-#cp /jres/* /config
-#echo "jres found in /config are `ls /config`"
-# if [ -e /config/macosx-amd64-1.8.0_66.tar.gz ] ; then
-# 	echo
-# 	echo "found /config/macosx-amd64-1.8.0_66.tar.gz"
-# 	echo
-# else
-# 	echo
-# 	echo "could not find /config/macosx-amd64-1.8.0_66.tar.gz"
-# 	echo
-# fi	
-
-# cd /jres
-#       - macJre=macosx-amd64-1.8.0_141
-#       - win64Jre=windows-amd64-1.8.0_141
-#       - win32Jre=windows-x86-1.8.0_141
-
-
 #
 # run install4jc to create installers for VCell Client on supported platforms.
 #
@@ -59,11 +40,6 @@ $INSTALL4JC \
 vcellIcnsFile=/config/icons/vcell.icns,\
 outputDir=/outputdir,\
 mavenRootDir=/vcellclient,\
-macJrePath=/jres/$macJre,\
-win64JrePath=/jres/$win64Jre,\
-win32JrePath=/jres/$win32Jre,\
-linux64JrePath=/jres/$linux64Jre,\
-linux32JrePath=/jres/$linux32Jre,\
 macKeystore=$macCodeSignKeystore_p12,\
 winKeystore=$winCodeSignKeystore_pfx,\
 applicationId=$compiler_applicationId,\
@@ -88,11 +64,6 @@ $INSTALL4JC \
 vcellIcnsFile=/config/icons/vcell.icns,\
 outputDir=/outputdir,\
 mavenRootDir=/vcellclient,\
-macJrePath=/jres/$macJre,\
-win64JrePath=/jres/$win64Jre,\
-win32JrePath=/jres/$win32Jre,\
-linux64JrePath=/jres/$linux64Jre,\
-linux32JrePath=/jres/$linux32Jre,\
 macKeystore=$macCodeSignKeystore_p12,\
 winKeystore=$winCodeSignKeystore_pfx,\
 applicationId=$compiler_applicationId,\
@@ -117,11 +88,6 @@ $INSTALL4JC \
 vcellIcnsFile=/config/icons/vcell.icns,\
 outputDir=/outputdir,\
 mavenRootDir=/vcellclient,\
-macJrePath=/jres/$macJre,\
-win64JrePath=/jres/$win64Jre,\
-win32JrePath=/jres/$win32Jre,\
-linux64JrePath=/jres/$linux64Jre,\
-linux32JrePath=/jres/$linux32Jre,\
 macKeystore=$macCodeSignKeystore_p12,\
 winKeystore=$winCodeSignKeystore_pfx,\
 applicationId=$compiler_applicationId,\
@@ -146,11 +112,6 @@ $INSTALL4JC \
 vcellIcnsFile=/config/icons/vcell.icns,\
 outputDir=/outputdir,\
 mavenRootDir=/vcellclient,\
-macJrePath=/jres/$macJre,\
-win64JrePath=/jres/$win64Jre,\
-win32JrePath=/jres/$win32Jre,\
-linux64JrePath=/jres/$linux64Jre,\
-linux32JrePath=/jres/$linux32Jre,\
 macKeystore=$macCodeSignKeystore_p12,\
 winKeystore=$winCodeSignKeystore_pfx,\
 applicationId=$compiler_applicationId,\
@@ -176,11 +137,6 @@ $INSTALL4JC \
 vcellIcnsFile=/config/icons/vcell.icns,\
 outputDir=/outputdir,\
 mavenRootDir=/vcellclient,\
-macJrePath=/jres/$macJre,\
-win64JrePath=/jres/$win64Jre,\
-win32JrePath=/jres/$win32Jre,\
-linux64JrePath=/jres/$linux64Jre,\
-linux32JrePath=/jres/$linux32Jre,\
 macKeystore=$macCodeSignKeystore_p12,\
 winKeystore=$winCodeSignKeystore_pfx,\
 applicationId=$compiler_applicationId,\
