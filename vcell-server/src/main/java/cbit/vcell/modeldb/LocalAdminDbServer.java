@@ -120,7 +120,7 @@ public SimulationJobStatusPersistent[] getSimulationJobStatus(boolean bActiveOnl
 /**
  * getUser method comment.
  */
-public User getUser(String userid) throws DataAccessException {
+public User.SpecialUser getUser(String userid) throws DataAccessException {
 	try {
 		return adminDbTop.getUser(userid,true);
 	}catch (Throwable e){

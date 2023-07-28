@@ -88,11 +88,8 @@ public class SimulationDispatcherEngine {
 	public void onStartRequest(VCSimulationIdentifier vcSimID, User user, int simulationScanCount, SimulationDatabase simulationDatabase, VCMessageSession session, VCMessageSession dispatcherQueueSession) throws VCMessagingException, DataAccessException, SQLException {
 		KeyValue simKey = vcSimID.getSimulationKey();
 
-		boolean isAdmin = false;
-		User myUser = simulationDatabase.getUser(user.getName());
-		if(myUser instanceof User.SpecialUser) {
-			isAdmin = Arrays.asList(((User.SpecialUser)myUser).getMySpecials()).contains(User.SPECIAL_CLAIM.admins);
-		}
+		User.SpecialUser myUser = simulationDatabase.getUser(user.getName());
+		boolean isAdmin = Arrays.asList(myUser.getMySpecials()).contains(User.SPECIAL_CLAIM.admins);
 
 		SimulationInfo simulationInfo = null;
 		try {

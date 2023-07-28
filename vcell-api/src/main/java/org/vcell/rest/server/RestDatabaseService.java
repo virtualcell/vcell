@@ -74,6 +74,11 @@ public class RestDatabaseService {
 
 	}
 
+	public User.SPECIAL_CLAIM[] getSpecialClaims(User user) throws DataAccessException {
+		User.SpecialUser userWithClaims = localAdminDbServer.getUser(user.getName());
+		return userWithClaims.getMySpecials();
+	}
+
 	public static class SimulationSaveResponse {
 		public final BioModel newBioModel;
 		public final Simulation newSimulation;
