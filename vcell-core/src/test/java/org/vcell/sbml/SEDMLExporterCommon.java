@@ -7,6 +7,7 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathCompareResults;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.resource.NativeLib;
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.SolverDescription;
@@ -45,6 +46,7 @@ public abstract class SEDMLExporterCommon {
 	// save state for zero side-effect
 	//
 	private static String previousInstalldirPropertyValue;
+	private static String previousWorkingdirPropertyValue;
 	private static boolean previousWriteDebugFiles;
 
 	public SEDMLExporterCommon(TestCase testCase){
@@ -85,8 +87,10 @@ public abstract class SEDMLExporterCommon {
 
 	@BeforeClass
 	public static void setup(){
-		previousInstalldirPropertyValue = System.getProperty("vcell.installDir");
-		System.setProperty("vcell.installDir", "..");
+		previousInstalldirPropertyValue = System.getProperty(PropertyLoader.installationRoot);
+		System.setProperty(PropertyLoader.installationRoot, "..");
+		previousWorkingdirPropertyValue = System.getProperty(PropertyLoader.cliWorkingDir);
+		System.setProperty(PropertyLoader.cliWorkingDir, "../vcell-cli-utils");
 		NativeLib.combinej.load();
 		previousWriteDebugFiles = SBMLExporter.bWriteDebugFiles;
 		SBMLExporter.bWriteDebugFiles = bDebug;
@@ -95,7 +99,10 @@ public abstract class SEDMLExporterCommon {
 	@AfterClass
 	public static void teardown() throws IOException {
 		if (previousInstalldirPropertyValue!=null) {
-			System.setProperty("vcell.installDir", previousInstalldirPropertyValue);
+			System.setProperty(PropertyLoader.installationRoot, previousInstalldirPropertyValue);
+		}
+		if (previousWorkingdirPropertyValue!=null) {
+			System.setProperty(PropertyLoader.cliWorkingDir, previousWorkingdirPropertyValue);
 		}
 		SBMLExporter.bWriteDebugFiles = previousWriteDebugFiles;
 	}
