@@ -3,6 +3,11 @@ package org.vcell.util.gui.exporter;
 import java.awt.Component;
 import java.io.File;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 
 import javax.swing.JFrame;
@@ -12,10 +17,12 @@ import org.vcell.sedml.ModelFormat;
 import org.vcell.sedml.SEDMLExporter;
 import org.vcell.util.FileUtils;
 import org.vcell.util.UserCancelException;
+import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.exporter.ExtensionFilter.ChooseContext;
 
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.export.SpringSaLaDExporter;
 import cbit.vcell.mapping.SimulationContext;
@@ -42,15 +49,29 @@ public class SpringSaLaDExtensionFilter extends SelectorExtensionFilter {
 		}
 		BioModel bioModel = c.chosenContext.getBioModel();
 		parentComponent = c.currentWindow;	// will need it later, hack to center another window in ssldExporter.writeDocumentStringToFile()
+		LinkedHashMap<String, SimulationContext> springSaLaDApplications = new LinkedHashMap<> ();
 		if(bioModel != null) {
 			for(SimulationContext candidate : bioModel.getSimulationContexts()) {
 				if(candidate.getApplicationType() == Application.SPRINGSALAD) {
-					simContext = candidate;
-					break;		// for now we take the first
+					springSaLaDApplications.put(candidate.getName(), candidate);
 				}
 			}
+			if(springSaLaDApplications.size() == 0) {
+				;	// do nothing, simContext is null
+			} else if(springSaLaDApplications.size() == 1) {
+				Entry<String, SimulationContext> entry = springSaLaDApplications.entrySet().iterator().next();
+				simContext = entry.getValue();
+			} else {
+				Object[] namesArray = springSaLaDApplications.keySet().toArray();
+				Object choice = DialogUtils.showListDialog(c.currentWindow, namesArray, "Please select Application to export");
+				if(choice == null)
+				{
+					throw UserCancelException.CANCEL_FILE_SELECTION;
+				}
+				simContext = springSaLaDApplications.get((String)choice);
+			}
 		}
-		System.out.println(modelFormat);
+		System.out.println(simContext);
 	}
 	
 	@Override
