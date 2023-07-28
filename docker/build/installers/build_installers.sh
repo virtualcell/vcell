@@ -11,7 +11,8 @@ shopt -s -o nounset
 
 cd /config
 
-PATH=/installer/install4j8.0.5/bin:$PATH
+PATH=/installer/install4j10.0.5/bin:$PATH
+INSTALL4JC=/installer/install4j10.0.5/bin/install4jc
 
 #
 # retrieve text secrets from file (docker-compose 'secrets' mounts these files in memory at runtime)
@@ -23,7 +24,7 @@ macCodeSignKeystore_pswd=`cat $macCodeSignKeystore_pswdfile`
 #
 # install Install4J product key (only really needed first time when running this Docker container)
 #
-/installer/install4j8.0.5/bin/install4jc -L $Install4J_product_key
+$INSTALL4JC -L $Install4J_product_key
 
 #echo "jres found in /jres are `ls /jres`"
 #cp /jres/* /config
@@ -50,7 +51,7 @@ macCodeSignKeystore_pswd=`cat $macCodeSignKeystore_pswdfile`
 #Separate build of win, linux and mac installers to avoid random failure due to threading
 
 #Generate Windows 64bit installers
-/installer/install4j8.0.5/bin/install4jc \
+$INSTALL4JC \
 	-b 349 \
 	--win-keystore-password=$winCodeSignKeystore_pswd \
 	--mac-keystore-password=$macCodeSignKeystore_pswd \
@@ -79,7 +80,7 @@ bioformatsJarDownloadURL=$compiler_bioformatsJarDownloadURL\
 mv /outputdir/updates.xml /outputdir/updates_win64.xml
 
 #Generate Windows 32bit installers
-/installer/install4j8.0.5/bin/install4jc \
+$INSTALL4JC \
 	-b 450 \
 	--win-keystore-password=$winCodeSignKeystore_pswd \
 	--mac-keystore-password=$macCodeSignKeystore_pswd \
@@ -108,7 +109,7 @@ bioformatsJarDownloadURL=$compiler_bioformatsJarDownloadURL\
 mv /outputdir/updates.xml /outputdir/updates_win32.xml
 
 #Generate linux 64bit installers
-/installer/install4j8.0.5/bin/install4jc \
+$INSTALL4JC \
 	-b 652 \
 	--win-keystore-password=$winCodeSignKeystore_pswd \
 	--mac-keystore-password=$macCodeSignKeystore_pswd \
@@ -137,7 +138,7 @@ bioformatsJarDownloadURL=$compiler_bioformatsJarDownloadURL\
 mv /outputdir/updates.xml /outputdir/updates_linux64.xml
 
 #Generate linux 32bit installers
-/installer/install4j8.0.5/bin/install4jc \
+$INSTALL4JC \
 	-b 547 \
 	--win-keystore-password=$winCodeSignKeystore_pswd \
 	--mac-keystore-password=$macCodeSignKeystore_pswd \
@@ -167,7 +168,7 @@ mv /outputdir/updates.xml /outputdir/updates_linux32.xml
 
 
 #Generate mac 64bit installer
-/installer/install4j8.0.5/bin/install4jc \
+$INSTALL4JC \
 	-b 105 \
 	--win-keystore-password=$winCodeSignKeystore_pswd \
 	--mac-keystore-password=$macCodeSignKeystore_pswd \
