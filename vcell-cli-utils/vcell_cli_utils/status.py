@@ -8,7 +8,7 @@ import tempfile
 import zipfile
 import shutil
 import json
-from typing import  Dict, List
+from typing import  Dict, List, Union
 
 # Create temp directory
 tmp_dir = tempfile.mkdtemp()
@@ -85,7 +85,7 @@ def status_yml(omex_file: str, out_dir: str) -> None:
         sed_doc_dict.update(tasks_dict)
         yaml_dicts.append(sed_doc_dict)
     exc_dict = {'type': "", 'message': ""}
-    final_dict: Dict[str, List[Dict] | str | None] = {
+    final_dict: Dict[str, Union[List[Dict], str, None]] = {
         'sedDocuments': yaml_dicts,
         'status': "QUEUED",
         'exception': None,

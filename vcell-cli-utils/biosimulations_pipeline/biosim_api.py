@@ -1,7 +1,7 @@
 import http
 import json
 import os
-from typing import BinaryIO
+from typing import BinaryIO, Union
 
 import requests
 from pydantic import BaseModel
@@ -46,7 +46,7 @@ def run_project(
 
     print(source_omex.omex_file)
     with open(source_omex.omex_file, 'rb') as omex_file_handle:
-        multipart_form_data: dict[str, tuple[str, BinaryIO] | tuple[None, str]] = {
+        multipart_form_data: dict[str, Union[tuple[str, BinaryIO],  tuple[None, str]] = {
             'file': (source_omex.project_id + '.omex', omex_file_handle),
             'simulationRun': (None, simulation_run_request.json()),
         }

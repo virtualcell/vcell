@@ -12,7 +12,7 @@ class CitationInfo:
 
 
 def parse_RIS_entry(lines: str) -> dict[str, str]:
-    currentLabel: str | None = None
+    currentLabel: Optional[str] = None
     currentContent: str = ""
     citationFields = dict[str, str]()
     for line in lines.split("\n"):
@@ -33,7 +33,7 @@ def parse_RIS_entry(lines: str) -> dict[str, str]:
     return citationFields
 
 
-def getCitation(pubmedid: Optional[str]) -> CitationInfo | None:
+def getCitation(pubmedid: Optional[str]) -> Optional[CitationInfo]:
     """
     Get RIS citation for a pubmed id
     """
