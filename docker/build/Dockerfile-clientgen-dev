@@ -17,7 +17,7 @@ COPY --from=jre-build /javaruntime $JAVA_HOME
 
 RUN mkdir -p /usr/local/app && \
 	apt-get -y update && \
-    apt-get -y install wget
+    apt-get -y install wget libfreetype6 fontconfig fonts-dejavu
 
 RUN mkdir /installer && cd /installer && \
     wget --quiet -O install4j_unix_10_0_5.tar.gz \
