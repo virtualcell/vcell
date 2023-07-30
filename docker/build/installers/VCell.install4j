@@ -1420,7 +1420,7 @@ if (context.isUnattended()) {
       <variables>
         <variable name="resourceDir" value="resources" />
       </variables>
-      <jreBundle usePack200="false" manualJreEntry="true" />
+      <jreBundle usePack200="false" />
     </windows>
     <windows name="Windows ${compiler:vcellVersion} ${compiler:Site} 32 Bit" id="450" mediaFileName="${compiler:sys.shortName}_${compiler:sys.platform}_${compiler:sys.version}_32bit" installDir="VCell_${compiler:Site}" architecture="32">
       <excludedLaunchers>
