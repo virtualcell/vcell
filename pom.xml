@@ -136,6 +136,7 @@
 		<jhdf5-2-10.version>2.9</jhdf5-2-10.version>
 		<jmatio.version>1.0</jmatio.version>
 		<joda-time.version>2.3</joda-time.version>
+		<jai-core.version>1.1.3</jai-core.version>
 		<javax-mail.version>1.4</javax-mail.version>
 		<jsbml.version>1.6.1</jsbml.version>
 		<jung-api.version>2.1.1</jung-api.version>
@@ -248,7 +249,7 @@
 <!--									<message>Please consider using the maven-invoker-plugin (http://maven.apache.org/plugins/maven-invoker-plugin/)!</message>-->
 								</bannedPlugins>
 								<requireMavenVersion>
-									<version>3.9</version>
+									<version>3.8</version>
 								</requireMavenVersion>
 								<requireJavaVersion>
 									<version>17</version>
