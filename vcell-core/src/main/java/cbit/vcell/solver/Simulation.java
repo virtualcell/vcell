@@ -547,6 +547,9 @@ public boolean isSpatial() {
 //	}
 //}
 
+// this doesn't seem to be called anywhere, we deprecate it (also, it doesn't know about Feature_Springs)
+// jul 2023 danv
+@Deprecated
 public Set<SolverFeature> getRequiredFeatures() {
 	Set<SolverFeature> requiredFeatures = new HashSet<SolverFeature>();
 	final MathDescription md = getMathDescription();

@@ -1913,9 +1913,14 @@ public boolean isNonSpatialStoch() {
 }
 
 
+@Override
 public boolean isRuleBased(){
-	if (particleMolecularTypes.size()>0){
-		return true;
+	if (particleMolecularTypes.size() > 0) {
+		if(!isLangevin()) {	// in math description, isRuleBased() and isLangevin() are mutually exclusive
+			return true;
+		} else {
+			return false;
+		}
 	}
 	return false;
 }

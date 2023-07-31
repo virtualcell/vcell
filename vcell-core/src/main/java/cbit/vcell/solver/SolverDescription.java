@@ -254,7 +254,7 @@ public enum SolverDescription {
 	
 	public static final SolverFeatureSet LangevinFeatureSet = new SolverFeatureSet (
 		new SolverFeature[] { SolverFeature.Feature_Spatial, SolverFeature.Feature_Rulebased, SolverFeature.Feature_Springs },
-		new SupportedProblemRequirements() { public boolean supports(ProblemRequirements desc) { return (desc.isRuleBased() && desc.isLangevin()); }},
+		new SupportedProblemRequirements() { public boolean supports(ProblemRequirements desc) { return (desc.isLangevin()); }},
 		Langevin,200);
 
 	/*

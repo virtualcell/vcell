@@ -121,7 +121,9 @@ public abstract class VCDocumentDecorator {
 				return sfList;
 			case SPRINGSALAD:
 				sfList.add(SolverFeature.Feature_Springs);
-				return sfList;
+				sfList.add(SolverFeature.Feature_Rulebased);
+				sfList.add(SolverFeature.Feature_Stochastic);
+				return sfList;		// Feature_Spatial is already there
 			case NETWORK_STOCHASTIC:
 				//more analysis to determine whether hybrid or (pure) stochastic
 			}

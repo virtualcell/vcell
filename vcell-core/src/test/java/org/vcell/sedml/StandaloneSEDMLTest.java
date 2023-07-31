@@ -185,13 +185,19 @@ public class StandaloneSEDMLTest {
 			for(SolverDescription.SolverFeature sf : sfList) {
 				switch(sf) {
 				case Feature_Rulebased:
-					appType = Application.RULE_BASED_STOCHASTIC;
+					if(appType != Application.SPRINGSALAD) {
+						// springs(alad) type takes precedence
+						appType = Application.RULE_BASED_STOCHASTIC;
+					}
 					break;
 				case Feature_Stochastic:
 					appType = Application.NETWORK_STOCHASTIC;
 					break;
 				case Feature_Deterministic:
 					appType = Application.NETWORK_DETERMINISTIC;
+					break;
+				case Feature_Springs:
+					appType = Application.SPRINGSALAD;
 					break;
 				case Feature_Spatial:
 					bSpatial = true;
