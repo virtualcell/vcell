@@ -133,7 +133,11 @@ public enum SolverDescription {
 	   
 	   Langevin(TimeStep.CONSTANT, ErrorTol.NO, TimeSpecCreated.UNIFORM, "Langevin", "LangevinNoVis","Langevin",
 			      SolverLongDesc.LANGEVIN, 1,SupportedTimeSpec.UNIFORM,
-			      new SolverFeature[]{SolverFeature.Feature_Spatial, SolverFeature.Feature_Stochastic, SolverFeature.Feature_Rulebased, SolverFeature.Feature_Springs},
+			      new SolverFeature[]{
+			    		  SolverFeature.Feature_Spatial, 
+			    		  SolverFeature.Feature_Stochastic, 
+			    		  SolverFeature.Feature_Rulebased, 
+			    		  SolverFeature.Feature_Springs},
 			      SolverExecutable.LANGEVIN, "KISAO:0000263", false),		// TODO: find the right KISAO
 
 	   Comsol(TimeStep.VARIABLE,ErrorTol.NO,TimeSpecCreated.DEFAULT,"Comsol","Comsol Multiphysics","Comsol",
