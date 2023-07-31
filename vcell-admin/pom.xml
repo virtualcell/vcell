@@ -83,14 +83,6 @@
 			<version>${junit.version}</version>
 			<scope>test</scope>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/com.miglayout/miglayout -->
-		<dependency>
-			<groupId>com.miglayout</groupId>
-			<artifactId>miglayout</artifactId>
-			<version>3.5.5</version>
-			<scope>test</scope>
-		</dependency>
-
 		<dependency>
 			<groupId>org.vcell</groupId>
 			<artifactId>vcell-client</artifactId>
@@ -110,17 +102,6 @@
 			<groupId>org.vcell</groupId>
 			<artifactId>vcell-vmicro</artifactId>
 			<version>${project.version}</version>
-		</dependency>
-		
-		<dependency>
-			<groupId>com.konghq</groupId>
-			<artifactId>unirest-java</artifactId>
-			<version>3.4.03</version>
-		</dependency>
-		<dependency>
-		    <groupId>com.fasterxml.jackson.core</groupId>
-		    <artifactId>jackson-databind</artifactId>
-		    <version>2.13.4.1</version>
 		</dependency>
 		<dependency>
 			<groupId>info.picocli</groupId>

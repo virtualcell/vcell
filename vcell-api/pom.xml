@@ -74,7 +74,6 @@
 	<properties>
 		<license.licenseName>MIT</license.licenseName>
 		<license.copyrightOwners>UConn Health</license.copyrightOwners>
-		<restlet-version>2.4.3</restlet-version>
 	</properties>
 
 	<repositories>
@@ -150,14 +149,17 @@
 			<groupId>org.restlet.jse</groupId>
 			<artifactId>org.restlet.ext.gson</artifactId>
 			<version>${restlet-version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>com.google.code.gson</groupId>
+					<artifactId>gson</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
-
-		<!-- https://mvnrepository.com/artifact/org.dizitart/nitrite -->
-		<dependency>
-		    <groupId>org.dizitart</groupId>
-		    <artifactId>nitrite</artifactId>
-		    <version>2.1.0</version>
-		</dependency>
-		
+<!--		<dependency>-->
+<!--			<groupId>joda-time</groupId>-->
+<!--			<artifactId>joda-time</artifactId>-->
+<!--			<version>${joda-time.version}</version>-->
+<!--		</dependency>-->
 	</dependencies>
 </project>
