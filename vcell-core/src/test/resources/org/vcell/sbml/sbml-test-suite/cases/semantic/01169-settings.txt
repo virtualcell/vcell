@@ -1,0 +1,8 @@
+start: 0
+duration: 1
+steps: 10
+variables: A__S1, Q, R, cf, X, U1, U2, A__y, A__k1
+absolute: 0.0001
+relative: 0.0001
+amount: A__S1
+concentration: 

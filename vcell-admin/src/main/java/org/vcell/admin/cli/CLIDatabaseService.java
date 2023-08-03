@@ -7,6 +7,7 @@ import cbit.vcell.message.server.dispatcher.SimulationDatabaseDirect;
 import cbit.vcell.modeldb.*;
 import cbit.vcell.server.SimulationJobStatusPersistent;
 import cbit.vcell.xml.XmlParseException;
+import org.vcell.admin.cli.sim.JobAdmin;
 import org.vcell.admin.cli.sim.ResultSetCrawler;
 import org.vcell.admin.cli.sim.SimDataVerifier;
 import org.vcell.db.ConnectionFactory;
@@ -127,5 +128,12 @@ public class CLIDatabaseService implements AutoCloseable {
         DatabaseServerImpl dbServerImpl = new DatabaseServerImpl(conFactory, conFactory.getKeyFactory());
         SimulationDatabase simulationDatabase = new SimulationDatabaseDirect(adminDBTopLevel, dbServerImpl,false);
         return new SimDataVerifier(adminDBTopLevel, dbServerImpl, simulationDatabase);
+    }
+
+    public JobAdmin getJobAdmin() throws DataAccessException, SQLException {
+        AdminDBTopLevel adminDBTopLevel = new AdminDBTopLevel(conFactory);
+        DatabaseServerImpl dbServerImpl = new DatabaseServerImpl(conFactory, conFactory.getKeyFactory());
+        SimulationDatabase simulationDatabase = new SimulationDatabaseDirect(adminDBTopLevel, dbServerImpl,false);
+        return new JobAdmin(adminDBTopLevel, dbServerImpl, simulationDatabase);
     }
 }

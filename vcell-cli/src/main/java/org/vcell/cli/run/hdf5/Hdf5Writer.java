@@ -5,6 +5,7 @@ import ncsa.hdf.hdf5lib.H5;
 import ncsa.hdf.hdf5lib.exceptions.HDF5Exception;
 import ncsa.hdf.hdf5lib.exceptions.HDF5LibraryException;
 
+import org.apache.logging.log4j.Level;
 import org.vcell.cli.run.hdf5.Hdf5DataPreparer.Hdf5PreparedData;
 import java.util.*;
 import java.io.File;
@@ -23,7 +24,7 @@ public class Hdf5Writer {
     private Hdf5Writer(){} // Static class = no instances allowed
 
     /**
-     * Writes an Hdf5 formatted file given a hdf5FileWrapper and a destination to write the file to.
+     * Writes an HDF5 formatted file given a hdf5FileWrapper and a destination to write the file to.
      * 
      * @param hdf5DataWrapper the wrapper of hdf5 relevant data
      * @param outDirForCurrentSedml the directory to place the report file into, NOT the report file itself.
@@ -31,7 +32,8 @@ public class Hdf5Writer {
      * @throws IOException if the computer encounteres an unexepcted system IO problem
      */
     public static void writeHdf5(Hdf5DataContainer hdf5DataWrapper, File outDirForCurrentSedml) throws HDF5Exception, IOException {
-        Hdf5File masterHdf5 = null;
+        boolean didFail = false;
+        Hdf5File masterHdf5;
 
         // Boot Hdf5 Library
         NativeLib.HDF5.load();
@@ -74,9 +76,14 @@ public class Hdf5Writer {
                     masterHdf5.insertFixedStringAttributes(currentDatasetId, "sedmlDataSetDataTypes", data.datasetMetadata.sedmlDataSetDataTypes);
                     masterHdf5.insertFixedStringAttributes(currentDatasetId, "sedmlDataSetIds", data.datasetMetadata.sedmlDataSetIds);
                     
-                    if (data.datasetMetadata.sedmlDataSetNames.get(0) != null) {
-                        masterHdf5.insertFixedStringAttributes(currentDatasetId, "sedmlDataSetNames", data.datasetMetadata.sedmlDataSetNames);
+                    if (data.datasetMetadata.sedmlDataSetNames.contains(null)) {
+                        for (int i = 0; i < data.datasetMetadata.sedmlDataSetNames.size(); i++){
+                            String oldValue = data.datasetMetadata.sedmlDataSetNames.get(i);
+                            String newValue = oldValue == null ? "" : oldValue;
+                            data.datasetMetadata.sedmlDataSetNames.set(i, newValue);
+                        }
                     }
+                    masterHdf5.insertFixedStringAttributes(currentDatasetId, "sedmlDataSetNames", data.datasetMetadata.sedmlDataSetNames);
                     masterHdf5.insertFixedStringAttributes(currentDatasetId, "sedmlDataSetLabels", data.datasetMetadata.sedmlDataSetLabels);
                     masterHdf5.insertFixedStringAttributes(currentDatasetId, "sedmlDataSetShapes", data.datasetMetadata.sedmlDataSetShapes);
                     masterHdf5.insertFixedStringAttribute(currentDatasetId, "sedmlId", data.datasetMetadata.sedmlId);
@@ -86,13 +93,23 @@ public class Hdf5Writer {
                     masterHdf5.closeDataset(currentDatasetId);
                 }
             }
+        } catch (Exception e) { // Catch runtime exceptions
+            didFail = true;
+            logger.error("Error encountered while writing to BioSim-style HDF5.", e);
+            throw e;
         } finally {
             try {
+                final Level errorLevel = didFail ? Level.ERROR : Level.INFO;
+                final String message = didFail ?
+                        "HDF5 successfully closed, but there were errors preventing proper execution." :
+                        "HDF5 file successfully written to.";
+                // Close up the file; lets deliver what we can write and flush out.
                 masterHdf5.close();
-                logger.info("HDF5 file successfully written to.");
+                logger.log(errorLevel, message);
             } catch (HDF5LibraryException e){
                 masterHdf5.printErrorStack();
                 logger.error("HDF5 Library Exception encountered while writing out to HDF5 file; Check std::err for stack");
+                if (!didFail) throw e;
             } catch (Exception e) {
                 e.printStackTrace();
             }

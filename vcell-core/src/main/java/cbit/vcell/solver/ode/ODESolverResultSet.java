@@ -28,29 +28,29 @@ import cbit.vcell.util.ColumnDescription;
  */
 public class ODESolverResultSet extends RowColumnResultSet implements cbit.vcell.simdata.SimDataConstants, java.io.Serializable {
 	public static final String TIME_COLUMN = ReservedVariable.TIME.getName();
-/**
- * SimpleODEData constructor comment.
- *  JMW : THIS NEEDS TO BE FIXED...THIS CONSTRUCTOR SHOULD NOT
- *  BE DOING ANY COLUMN CONSTRUCTION AT ALL!
- */
-public ODESolverResultSet() {
-	super();
-}
-public ODESolverResultSet(ODESolverResultSet copyThisODESolverResultSet) {
-	super((RowColumnResultSet)copyThisODESolverResultSet);
-}
-public boolean isMultiTrialData()
-{
-	if(getColumnDescriptionsCount() > 0)
-	{
-		int totalcol = getColumnDescriptionsCount();
-		for(int i=0; i<totalcol; i++)
-		{
-			ColumnDescription cd = getColumnDescriptions(i);
-			if (cd.getName().equals("TrialNo"))
-				return true;
-		}
+	/**
+	 * SimpleODEData constructor comment.
+	 *  JMW : THIS NEEDS TO BE FIXED...THIS CONSTRUCTOR SHOULD NOT
+	 *  BE DOING ANY COLUMN CONSTRUCTION AT ALL!
+	 */
+	public ODESolverResultSet() {
+		super();
 	}
-	return false;
-}
+	public ODESolverResultSet(ODESolverResultSet copyThisODESolverResultSet) {
+		super((RowColumnResultSet)copyThisODESolverResultSet);
+	}
+	public boolean isMultiTrialData()
+	{
+		if(getColumnDescriptionsCount() > 0)
+		{
+			int totalcol = getColumnDescriptionsCount();
+			for(int i=0; i<totalcol; i++)
+			{
+				ColumnDescription cd = getColumnDescriptions(i);
+				if (cd.getName().equals("TrialNo"))
+					return true;
+			}
+		}
+		return false;
+	}
 }

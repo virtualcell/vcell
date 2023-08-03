@@ -18,20 +18,21 @@ import org.vcell.util.Compare;
  */
 @SuppressWarnings("serial")
 public class ASCIISpecs extends FormatSpecificSpecs implements Serializable {
+	public static enum CsvRoiLayout {var_time_val,time_sim_var}
+	private boolean switchRowsColumns;
 	private ExportFormat format;
 	private ExportConstants.DataType dataType;
-	private boolean switchRowsColumns;
 	private ExportSpecs.SimNameSimDataID[] simNameSimDataIDs;
 	private int[] exportMultipleParamScans;
-	public static enum csvRoiLayout {var_time_val,time_sim_var}
-	private csvRoiLayout csvLayout;
+	private CsvRoiLayout csvLayout;
 	private boolean isHDF5;
 /**
  * TextSpecs constructor comment.
  */
-public ASCIISpecs(ExportFormat format, ExportConstants.DataType dataType2, boolean switchRowsColumns,ExportSpecs.SimNameSimDataID[] simNameSimDataIDs,int[] exportMultipleParamScans,csvRoiLayout csvLayout,boolean isHDF5) {
+public ASCIISpecs(ExportSpecs.SimNameSimDataID[] simNameSimDataIDs, ExportConstants.DataType dataType, ExportFormat format,
+				   int[] exportMultipleParamScans, CsvRoiLayout csvLayout, boolean isHDF5, boolean switchRowsColumns) {
 	this.format = format;
-	this.dataType = dataType2;
+	this.dataType = dataType;
 	this.switchRowsColumns = switchRowsColumns;
 	this.simNameSimDataIDs = simNameSimDataIDs;
 	this.exportMultipleParamScans = exportMultipleParamScans;
@@ -39,10 +40,15 @@ public ASCIISpecs(ExportFormat format, ExportConstants.DataType dataType2, boole
 	this.isHDF5 = isHDF5;
 }
 
+public ASCIISpecs(ExportSpecs.SimNameSimDataID[] simNameSimDataIDs, ExportConstants.DataType dataType, ExportFormat format,
+				  CsvRoiLayout csvLayout, boolean isHDF5, boolean switchRowsColumns){
+	this(simNameSimDataIDs, dataType, format, null, csvLayout, isHDF5, switchRowsColumns);
+}
+
 public boolean isHDF5() {
 	return isHDF5;
 }
-public csvRoiLayout getCSVRoiLayout(){
+public CsvRoiLayout getCSVRoiLayout(){
 	return csvLayout;
 }
 /**

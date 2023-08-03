@@ -3,7 +3,6 @@ package org.vcell.cli.run.hdf5;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.TempSimulation;
-import cbit.vcell.solver.ode.ODESolverResultSet;
 import ncsa.hdf.hdf5lib.exceptions.HDF5Exception;
 
 import org.jlibsedml.SedML;
@@ -19,6 +18,7 @@ import org.jlibsedml.UniformTimeCourse;
 import org.jlibsedml.DataSet;
 import org.jlibsedml.execution.IXPathToVariableIDResolver;
 import org.jlibsedml.modelsupport.SBMLSupport;
+import org.vcell.sbml.vcell.SBMLNonspatialSimResults;
 import org.vcell.cli.run.TaskJob;
 import org.vcell.util.DataAccessException;
 import org.apache.logging.log4j.LogManager;
@@ -31,7 +31,7 @@ public class NonspatialResultsConverter {
     private final static Logger logger = LogManager.getLogger(NonspatialResultsConverter.class);
 
 
-    public static List<Hdf5SedmlResults> convertNonspatialResultsToSedmlFormat(SedML sedml, Map<TaskJob, ODESolverResultSet> nonspatialResultsHash, Map<AbstractTask, TempSimulation> taskToSimulationMap, String sedmlLocation) throws DataAccessException, IOException, HDF5Exception, ExpressionException {
+    public static List<Hdf5SedmlResults> convertNonspatialResultsToSedmlFormat(SedML sedml, Map<TaskJob, SBMLNonspatialSimResults> nonspatialResultsHash, Map<AbstractTask, TempSimulation> taskToSimulationMap, String sedmlLocation) throws DataAccessException, IOException, HDF5Exception, ExpressionException {
         List<Hdf5SedmlResults> datasetWrappers = new ArrayList<>();
 
         for (Report report : NonspatialResultsConverter.getReports(sedml.getOutputs())){
@@ -61,12 +61,12 @@ public class NonspatialResultsConverter {
                     }
                     
                     // must get variable ID from SBML model
-                    String vcellVarId = convertToVCellSymbol(var); // What's the point of this???
+                    String vcellVarId = convertToVCellSymbol(var);
 
                     // If the task isn't in our results hash, it's unwanted and skippable.
                     boolean bFoundTaskInNonspatial = nonspatialResultsHash.keySet().stream().anyMatch(taskJob -> taskJob.getTaskId().equals(topLevelTask.getId()));
                     if (!bFoundTaskInNonspatial){
-                        logger.warn("Was not able to find simutation data for task with ID: " + topLevelTask.getId());
+                        logger.warn("Was not able to find simulation data for task with ID: " + topLevelTask.getId());
                         break;
                     }
 
@@ -74,12 +74,12 @@ public class NonspatialResultsConverter {
                     
                     ArrayList<TaskJob> taskJobs = new ArrayList<>();
 
-                    for (Map.Entry<TaskJob, ODESolverResultSet> entry : nonspatialResultsHash.entrySet()) {
+                    for (Map.Entry<TaskJob, SBMLNonspatialSimResults> entry : nonspatialResultsHash.entrySet()) {
                         TaskJob taskJob = entry.getKey();
                         if (entry.getValue() != null && taskJob.getTaskId().equals(topLevelTask.getId())) {
                             taskJobs.add(taskJob);
                             if (!(topLevelTask instanceof RepeatedTask)) 
-                                break; // No need to keep looking if its not a repeated task
+                                break; // No need to keep looking if it's not a repeated task
                         }
                     }
 
@@ -93,17 +93,8 @@ public class NonspatialResultsConverter {
                     NonspatialValueHolder resultsHolder;
 
                     for (TaskJob taskJob : taskJobs) {
-                        ODESolverResultSet results = nonspatialResultsHash.get(taskJob);
-                        int column = results.findColumn(vcellVarId);
-                        double[] data = results.extractColumn(column);
-                        
-                        if (outputStartTime > 0){
-                            double[] correctiveData = new double[outputNumberOfPoints + 1];
-                            for (int i = data.length - outputNumberOfPoints - 1, j = 0; i < data.length; i++, j++) {
-                                correctiveData[j] = data[i];
-                            }
-                            data = correctiveData;
-                        }
+                        SBMLNonspatialSimResults results = nonspatialResultsHash.get(taskJob);
+                        double[] data = results.getDataForSBMLVar(vcellVarId, outputStartTime, outputNumberOfPoints);
 
                         maxLengthOfAllData = Integer.max(maxLengthOfAllData, data.length);
                         if (topLevelTask instanceof RepeatedTask && resultsByVariable.containsKey(var)) { // double[] exists
@@ -139,9 +130,10 @@ public class NonspatialResultsConverter {
                 for (int jobNum = 0; jobNum < numJobs; jobNum++){
                     double[] synthesizedDataset = new double[maxLengthOfData];
                     for (int datumIndex = 0; datumIndex < synthesizedDataset.length; datumIndex++){
+
                         for (Variable var : resultsByVariable.keySet()){
                             //if (processedDataSet == null) processedDataSet = new NonspatialValueHolder(sedml.getTaskWithId(var.getReference()));
-                            if (jobNum >= resultsByVariable.size()) continue;
+                            if (jobNum >= resultsByVariable.get(var).getNumSets()) continue;
                             NonspatialValueHolder results = resultsByVariable.get(var);
                             double[] specficJobDataSet = results.listOfResultSets.get(jobNum);
                             double datum = datumIndex >= specficJobDataSet.length ? Double.NaN : specficJobDataSet[datumIndex];
@@ -160,7 +152,11 @@ public class NonspatialResultsConverter {
 
             } // end of current dataset processing
 
-            if (dataSetValues.isEmpty()) continue;
+            if (dataSetValues.isEmpty()) {
+                logger.warn("We did not get any entries in the final data set. " +
+                        "This may mean a problem has been encountered.");
+                continue;
+            }
             List<String> shapes = new LinkedList<>();
             Hdf5SedmlResultsNonspatial dataSourceNonspatial = new Hdf5SedmlResultsNonspatial();
             Hdf5SedmlResults hdf5DatasetWrapper = new Hdf5SedmlResults();
@@ -178,10 +174,8 @@ public class NonspatialResultsConverter {
                 dataSourceNonspatial.allJobResults.put(dataSet, new LinkedList<>());
                 dataSourceNonspatial.scanBounds = dataSetValuesSource.vcSimulation.getMathOverrides().getScanBounds();
                 dataSourceNonspatial.scanParameterNames = dataSetValuesSource.vcSimulation.getMathOverrides().getScannedConstantNames();
-                for (int jobIndex = 0; jobIndex < dataSetValuesSource.getNumSets(); jobIndex++){
-                    double[] data = dataSetValuesSource.listOfResultSets.get(jobIndex);
-                    List<double[]> hdf5JobData = dataSourceNonspatial.allJobResults.get(dataSet);
-                    hdf5JobData.add(data);
+                for (double[] data : dataSetValuesSource.listOfResultSets) {
+                    dataSourceNonspatial.allJobResults.get(dataSet).add(data);
                     shapes.add(Integer.toString(data.length));
                 }
                 
@@ -247,10 +241,6 @@ public class NonspatialResultsConverter {
     private static class NonspatialValueHolder {
         List<double[]> listOfResultSets = new ArrayList<>();
         final Simulation vcSimulation;
-
-        public NonspatialValueHolder(){
-            this.vcSimulation = null;
-        }
 
         public NonspatialValueHolder(Simulation simulation) {
             this.vcSimulation = simulation;

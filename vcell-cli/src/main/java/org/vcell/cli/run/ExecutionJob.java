@@ -2,6 +2,7 @@ package org.vcell.cli.run;
 
 import org.vcell.cli.CLIRecordable;
 import org.vcell.cli.PythonStreamException;
+import org.vcell.cli.exceptions.ExecutionException;
 import org.vcell.cli.run.hdf5.Hdf5DataContainer;
 import org.vcell.util.FileUtils;
 
@@ -121,14 +122,15 @@ public class ExecutionJob {
      * @throws IOException if there are system I/O issues
      * @throws ExecutionException if an execution specfic error occurs
      */
-    public void executeArchive() throws InterruptedException, PythonStreamException, IOException, ExecutionException {
+    public void executeArchive() throws HDF5Exception, PythonStreamException, ExecutionException {
         try {
             Hdf5DataContainer masterHdf5File = new Hdf5DataContainer();
             this.queueAllSedml();
 
             for (String sedmlLocation : this.sedmlLocations){
-                SedmlJob job = new SedmlJob(sedmlLocation, this.omexHandler, this.inputFile, new File(this.outputBaseDir), this.outputDir, this.sedmlPath2d3d.toString(), 
-                    this.cliRecorder, this.bKeepTempFiles, this.bExactMatchOnly, this.bSmallMeshOverride, this.logOmexMessage);
+                SedmlJob job = new SedmlJob(sedmlLocation, this.omexHandler, this.inputFile, new File(this.outputBaseDir),
+                        this.outputDir, this.sedmlPath2d3d.toString(), this.cliRecorder,
+                        this.bKeepTempFiles, this.bExactMatchOnly, this.bSmallMeshOverride, this.logOmexMessage);
                 if (!job.preProcessDoc()){
                     SedmlStatistics stats = job.getDocStatistics(); // Must process document first
                     logger.error("Statistics of failed SedML:\n" + stats.toString());
@@ -142,14 +144,13 @@ public class ExecutionJob {
                 else logger.error("Processing of SedML has failed.\n" + stats.toString());
             }
             Hdf5Writer.writeHdf5(masterHdf5File, new File(this.outputDir));
+            
         } catch(PythonStreamException e){
             logger.error("Python-processing encountered fatal error. Execution is unable to properly continue.", e);
             throw e;
-        } catch(InterruptedException|IOException e){
+        } catch(InterruptedException | IOException e){
             logger.error("System IO encountered a fatal error");
             throw new ExecutionException(e);
-        } catch (HDF5Exception e){
-            logger.warn("There was an error generating the HDF5 File", e);
         }
     }
 

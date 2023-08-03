@@ -8,7 +8,6 @@ import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.restlet.Request;
-import org.restlet.data.Form;
 import org.restlet.data.Status;
 import org.restlet.ext.wadl.MethodInfo;
 import org.restlet.ext.wadl.ParameterInfo;
@@ -22,7 +21,6 @@ import org.restlet.resource.ResourceException;
 import org.vcell.rest.VCellApiApplication;
 import org.vcell.rest.VCellApiApplication.AuthenticationPolicy;
 import org.vcell.rest.common.BiomodelSBMLResource;
-import org.vcell.sbml.vcell.SBMLExporter;
 import org.vcell.util.PermissionException;
 import org.vcell.util.document.User;
 
@@ -77,15 +75,15 @@ public class BiomodelSBMLServerResource extends AbstractServerResource implement
 
 	@Override
 	@Get(BiomodelSBMLResource.APPLICATION_SBML_XML)
-	public StringRepresentation get_xml() {
+	public StringRepresentation get_sbml() {
 		VCellApiApplication application = ((VCellApiApplication)getApplication());
 		User vcellUser = application.getVCellUser(getChallengeResponse(),AuthenticationPolicy.ignoreInvalidCredentials);
-        String vcml = getBiomodelSBML(vcellUser);
+        String sbml = getBiomodelSBML(vcellUser);
         
-        if (vcml != null){
+        if (sbml != null){
         	String bioModelID = (String)getRequestAttributes().get(VCellApiApplication.BIOMODELID);
         	setAttribute("Content-Disposition", "attachment; filename=\"VCBioModel_"+bioModelID+".vcml\"");
-        	return new StringRepresentation(vcml, BiomodelSBMLResource.VCDOC_MEDIATYPE);
+        	return new StringRepresentation(sbml, BiomodelSBMLResource.VCDOC_MEDIATYPE);
         }
         throw new RuntimeException("biomodel not found");
 	}
@@ -123,7 +121,7 @@ public class BiomodelSBMLServerResource extends AbstractServerResource implement
 			lg.error(e);
 			throw new ResourceException(Status.CLIENT_ERROR_UNAUTHORIZED, "permission denied to requested resource");
 		} catch (Exception e){
-			throw new ResourceException(Status.SERVER_ERROR_INTERNAL, e.getMessage());
+			throw new ResourceException(Status.SERVER_ERROR_INTERNAL, e.toString());
 		}
 	}
 

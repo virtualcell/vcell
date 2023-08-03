@@ -231,22 +231,12 @@ import cbit.xml.merge.XmlTreeDiff;
 import cbit.xml.merge.XmlTreeDiff.DiffConfiguration;
 import cbit.xml.merge.gui.TMLPanel;
 
-/**
- * Insert the type's description here. Creation date: (5/21/2004 2:42:55 AM)
- * 
- * @author: Ion Moraru
- */
 public class ClientRequestManager
 		implements RequestManager, PropertyChangeListener, ExportListener, VCellMessageEventListener {
 	private VCellClient vcellClient = null;
 	private boolean bOpening = false;
 	private boolean bExiting = false;
 
-	/**
-	 * Insert the method's description here. Creation date: (5/21/2004 4:22:13 AM)
-	 * 
-	 * @param vcellClient cbit.vcell.client.VCellClient
-	 */
 	public ClientRequestManager(VCellClient vcellClient) {
 		setVcellClient(vcellClient);
 		// listen to connectionStatus events
@@ -441,11 +431,6 @@ public class ClientRequestManager
 		EXPORT, RUN, SAVE, SAVEASNEW,
 	}
 
-	/**
-	 * Insert the method's description here. Creation date: (5/21/2004 4:20:47 AM)
-	 * 
-	 * @param windowManager cbit.vcell.client.desktop.DocumentWindowManager
-	 */
 	private CloseOption checkBeforeClosing(DocumentWindowManager windowManager) {
 		getMdiManager().showWindow(windowManager.getManagerID());
 		// we need to check for changes and get user confirmation...
@@ -487,9 +472,6 @@ public class ClientRequestManager
 		return CloseOption.CLOSE_IN_ANY_CASE;
 	}
 
-	/**
-	 * Insert the method's description here. Creation date: (5/10/2004 3:48:16 PM)
-	 */
 	public boolean isDifferentFromBlank(VCDocumentType documentType, VCDocument vcDocument) {
 		// Handle Bio/Math models different from Geometry since createDefaultDoc for
 		// Geometry
@@ -537,9 +519,6 @@ public class ClientRequestManager
 		return getVcellClient().getClientServerManager().getClientServerInfo();
 	}
 
-	/**
-	 * Insert the method's description here. Creation date: (6/16/2004 11:17:18 AM)
-	 */
 	private boolean closeAllWindows(boolean duringExit) {
 		// create copy to avoid ConcurrentModification exception caused by closing
 		// window
@@ -554,11 +533,6 @@ public class ClientRequestManager
 		return true;
 	}
 
-	/**
-	 * Insert the method's description here. Creation date: (5/24/2005 1:48:09 PM)
-	 * 
-	 * @param windowID java.lang.String
-	 */
 	public boolean closeWindow(final java.lang.String windowID, final boolean exitIfLast) {
 		// called from DocumentWindow or from DatabaseWindow
 		final TopLevelWindowManager windowManager = getMdiManager().getWindowManager(windowID);
@@ -693,11 +667,6 @@ public class ClientRequestManager
 		return diffTree;
 	}
 
-	/**
-	 * Processes the model comparison request. Creation date: (6/9/2004 1:07:09 PM)
-	 * 
-	 * @param vcDocument cbit.vcell.document.VCDocument
-	 */
 	public XmlTreeDiff compareWithOther(final VCDocumentInfo docInfo1, final VCDocumentInfo docInfo2) {
 
 		VCDocument document1, document2;
@@ -723,12 +692,6 @@ public class ClientRequestManager
 		}
 	}
 
-	/**
-	 * Processes the comparison (XML based) of the loaded model with its saved
-	 * edition. Creation date: (6/9/2004 1:07:09 PM)
-	 * 
-	 * @param vcDocument cbit.vcell.document.VCDocument
-	 */
 	public XmlTreeDiff compareWithSaved(VCDocument document) {
 
 		VCDocument savedVersion = null;
@@ -786,11 +749,6 @@ public class ClientRequestManager
 		return compareDocuments(bioModel1, bioModel2, DiffConfiguration.COMPARE_DOCS_SAVED);
 	}
 
-	/**
-	 * Insert the method's description here. Creation date: (6/16/2004 11:07:33 AM)
-	 * 
-	 * @param clientServerInfo cbit.vcell.client.server.ClientServerInfo
-	 */
 	public void connectAs(final String user, final DigestedPassword digestedPassword,
 			final TopLevelWindowManager requester) {
 		JDialog dialog = new JDialog();
@@ -882,18 +840,10 @@ public class ClientRequestManager
 		}
 	}
 
-	/**
-	 * Insert the method's description here. Creation date: (5/27/2004 2:18:16 AM)
-	 * 
-	 * @param clientServerInfo cbit.vcell.client.server.ClientServerInfo
-	 */
 	public void connectToServer(TopLevelWindowManager requester, ClientServerInfo clientServerInfo) throws Exception {
 		getClientServerManager().connectNewServer(new VCellGuiInteractiveContext(requester), clientServerInfo);
 	}
 
-	/**
-	 * Insert the method's description here. Creation date: (5/10/2004 3:48:16 PM)
-	 */
 	VCDocument createDefaultDocument(VCDocumentType docType) {
 		VCDocument defaultDocument = null;
 		try {
@@ -915,11 +865,6 @@ public class ClientRequestManager
 		return defaultDocument;
 	}
 
-	/**
-	 * Insert the method's description here. Creation date: (5/24/2004 12:22:11 PM)
-	 * 
-	 * @param windowID java.lang.String
-	 */
 	private MathModel createMathModel(String name, Geometry geometry) {
 		MathModel mathModel = new MathModel(null);
 		MathDescription mathDesc = mathModel.getMathDescription();
@@ -979,11 +924,6 @@ public class ClientRequestManager
 		return mathModel;
 	}
 
-	/**
-	 * Insert the method's description here. Creation date: (5/24/2004 12:22:11 PM)
-	 * 
-	 * @param windowID java.lang.String
-	 */
 	public void createMathModelFromApplication(final BioModelWindowManager requester, final String name,
 			final SimulationContext simContext) {
 		if (simContext == null) {
@@ -2205,9 +2145,6 @@ public class ClientRequestManager
 		}
 	}
 
-	/**
-	 * Insert the method's description here. Creation date: (5/10/2004 3:48:16 PM)
-	 */
 	public AsynchClientTask[] createNewDocument(final TopLevelWindowManager requester,
 			final VCDocument.DocumentCreationInfo documentCreationInfo) {// throws UserCancelException, Exception {
 		/* asynchronous and not blocking any window */
@@ -2452,11 +2389,6 @@ public class ClientRequestManager
 
 	}
 
-	/**
-	 * Insert the method's description here. Creation date: (6/22/2004 10:50:34 PM)
-	 * 
-	 * @param documentInfo cbit.vcell.document.VCDocumentInfo
-	 */
 	public void curateDocument(final VCDocumentInfo documentInfo, final int curateType,
 			final TopLevelWindowManager requester) {
 
@@ -2546,11 +2478,6 @@ public class ClientRequestManager
 		deleteDocument(documentInfo, requester, false);
 	}
 
-	/**
-	 * Insert the method's description here. Creation date: (6/22/2004 10:50:34 PM)
-	 * 
-	 * @param documentInfo cbit.vcell.document.VCDocumentInfo
-	 */
 	public void deleteDocument(final VCDocumentInfo documentInfo, final TopLevelWindowManager requester,
 			boolean bDontAsk) {
 		if (documentInfo != null) {
@@ -2958,11 +2885,6 @@ public class ClientRequestManager
 		ClientTaskDispatcher.dispatch(currentWindow, hash, tasks, false);
 	}
 
-	/**
-	 * Insert the method's description here. Creation date: (1/18/2005 3:14:12 PM)
-	 * 
-	 * @param event cbit.rmi.event.ExportEvent
-	 */
 	public void exportMessage(ExportEvent event) {
 		if (event.getEventTypeID() == ExportEvent.EXPORT_COMPLETE) {
 			// try to download the thing
@@ -2970,18 +2892,10 @@ public class ClientRequestManager
 		}
 	}
 
-	/**
-	 * Insert the method's description here. Creation date: (6/9/2004 4:45:51 PM)
-	 * 
-	 * @return cbit.vcell.client.AsynchMessageManager
-	 */
 	public AsynchMessageManager getAsynchMessageManager() {
 		return getClientServerManager().getAsynchMessageManager();
 	}
 
-	/**
-	 * Insert the method's description here. Creation date: (5/21/2004 4:21:50 AM)
-	 */
 	private ClientServerManager getClientServerManager() {
 		// shorthand
 		return getVcellClient().getClientServerManager();
@@ -2991,12 +2905,6 @@ public class ClientRequestManager
 		return getClientServerManager().getConnectionStatus();
 	}
 
-	/**
-	 * Insert the method's description here. Creation date: (6/11/2004 10:53:47 AM)
-	 * 
-	 * @return cbit.vcell.desktop.controls.DataManager
-	 * @param vcDataIdentifier cbit.vcell.server.VCDataIdentifier
-	 */
 	public DataManager getDataManager(OutputContext outputContext, VCDataIdentifier vcDataId, boolean isSpatial)
 			throws DataAccessException {
 		//
@@ -3020,11 +2928,6 @@ public class ClientRequestManager
 		return new VtkManager(outputContext, vcDataManager, vcDataID);
 	}
 
-	/**
-	 * Insert the method's description here. Creation date: (5/21/2004 9:57:39 AM)
-	 * 
-	 * @return cbit.vcell.clientdb.DocumentManager
-	 */
 	public DocumentManager getDocumentManager() {
 		// this should not be exposed here, but needs many changes outside project in
 		// order to live without it...
@@ -3032,12 +2935,6 @@ public class ClientRequestManager
 		return getVcellClient().getClientServerManager().getDocumentManager();
 	}
 
-	/**
-	 * Insert the method's description here. Creation date: (6/11/2004 10:53:47 AM)
-	 * 
-	 * @return cbit.vcell.desktop.controls.DataManager
-	 * @param vcDataIdentifier cbit.vcell.server.VCDataIdentifier
-	 */
 	public MergedDatasetViewerController getMergedDatasetViewerController(OutputContext outputContext,
 			VCDataIdentifier vcdId, boolean expectODEData) throws DataAccessException {
 		if (vcdId instanceof MergedDataInfo) {
@@ -3048,12 +2945,6 @@ public class ClientRequestManager
 		}
 	}
 
-	/**
-	 * Insert the method's description here. Creation date: (6/11/2004 10:53:47 AM)
-	 * 
-	 * @return cbit.vcell.desktop.controls.DataManager
-	 * @param vcDataIdentifier cbit.vcell.server.VCDataIdentifier
-	 */
 	public DataViewerController getDataViewerController(OutputContext outputContext, Simulation simulation,
 			int jobIndex) throws DataAccessException {
 		VCSimulationIdentifier vcSimulationIdentifier = simulation.getSimulationInfo()
@@ -3092,20 +2983,11 @@ public class ClientRequestManager
 		return vcDocInfo;
 	}
 
-	/**
-	 * Insert the method's description here. Creation date: (5/21/2004 4:21:50 AM)
-	 */
 	private MDIManager getMdiManager() {
 		// shorthand
 		return getVcellClient().getMdiManager();
 	}
 
-	/**
-	 * Insert the method's description here. Creation date: (6/7/2004 1:27:25 PM)
-	 * 
-	 * @return cbit.vcell.solver.ode.gui.SimulationStatus
-	 * @param simulation cbit.vcell.solver.Simulation
-	 */
 	public SimulationStatus getServerSimulationStatus(SimulationInfo simInfo) {
 
 		SimulationStatus simStatus = null;
@@ -3122,18 +3004,10 @@ public class ClientRequestManager
 		return simStatus;
 	}
 
-	/**
-	 * Insert the method's description here. Creation date: (5/21/2004 4:21:50 AM)
-	 */
 	public UserPreferences getUserPreferences() {
 		return getVcellClient().getClientServerManager().getUserPreferences();
 	}
 
-	/**
-	 * Insert the method's description here. Creation date: (5/21/2004 4:21:50 AM)
-	 * 
-	 * @return cbit.vcell.client.VCellClient
-	 */
 	private VCellClient getVcellClient() {
 		return vcellClient;
 	}
@@ -3147,22 +3021,12 @@ public class ClientRequestManager
 		return false;
 	}
 
-	/**
-	 * Insert the method's description here. Creation date: (6/30/2004 12:30:51 PM)
-	 * 
-	 * @param documentInfo cbit.vcell.document.VCDocumentInfo
-	 */
 	public void managerIDchanged(java.lang.String oldID, java.lang.String newID) {
 		if (oldID != null) {
 			getMdiManager().updateDocumentID(oldID, newID);
 		}
 	}
 
-	/**
-	 * Insert the method's description here. Creation date: (5/21/2004 4:20:47 AM)
-	 * 
-	 * @param documentType int
-	 */
 	public AsynchClientTask[] newDocument(TopLevelWindowManager requester,
 			final VCDocument.DocumentCreationInfo documentCreationInfo) {
 		// gcwtodo
@@ -3537,8 +3401,7 @@ public class ClientRequestManager
 						List<SedML> sedmls = (List<SedML>) hashTable.get(SEDML_MODELS);
 						for (SedML sedml : sedmls) {
 							// default to import all tasks
-							List<BioModel> vcdocs = XmlHelper.importSEDML(transLogger, externalDocInfo,
-									sedml, false);
+							List<BioModel> vcdocs = XmlHelper.importSEDML(transLogger, externalDocInfo, sedml, false);
 							for (VCDocument vcdoc : vcdocs) {
 								docs.add(vcdoc);
 							}
@@ -3681,8 +3544,7 @@ public class ClientRequestManager
 								hashTable.put(SEDML_MODELS, sedmls);
 								
 								// default to import all tasks
-								List<BioModel> vcdocs = XmlHelper.importSEDML(transLogger, externalDocInfo,
-										sedml, false);
+								List<BioModel> vcdocs = XmlHelper.importSEDML(transLogger, externalDocInfo, sedml, false);
 								for (VCDocument vcdoc : vcdocs) {
 									docs.add(vcdoc);
 								}
@@ -4183,9 +4045,6 @@ public class ClientRequestManager
 		}
 	}
 
-	/**
-	 * Insert the method's description here. Creation date: (5/27/2004 2:18:16 AM)
-	 */
 	public void reconnect(final TopLevelWindowManager requester) {
 		// asynch & nothing to do on Swing queue (updates handled by events)
 		AsynchClientTask task1 = new AsynchClientTask("reconnect", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
@@ -4200,11 +4059,6 @@ public class ClientRequestManager
 				new AsynchClientTask[] { task1 });
 	}
 
-	/**
-	 * Insert the method's description here. Creation date: (6/9/2004 1:07:09 PM)
-	 * 
-	 * @param vcDocument cbit.vcell.document.VCDocument
-	 */
 	public void revertToSaved(DocumentWindowManager documentWindowManager) {
 		// make the info
 		VCDocument document = documentWindowManager.getVCDocument();
@@ -4385,12 +4239,6 @@ public class ClientRequestManager
 		saveDocument(documentWindowManager, replace, null);
 	}
 
-	/**
-	 * Insert the method's description here. Creation date: (5/27/2004 3:09:25 PM)
-	 * 
-	 * @param vcDocument cbit.vcell.document.VCDocument
-	 * @param replace    boolean
-	 */
 	public void saveDocument(final DocumentWindowManager documentWindowManager, boolean replace,
 			AsynchClientTask closeWindowTask) {
 		if (documentWindowManager.getUser() == null || User.isGuest(documentWindowManager.getUser().getName())) {
@@ -4486,11 +4334,6 @@ public class ClientRequestManager
 		saveDocumentAsNew(documentWindowManager, null);
 	}
 
-	/**
-	 * Insert the method's description here. Creation date: (5/27/2004 3:09:25 PM)
-	 * 
-	 * @param vcDocument cbit.vcell.document.VCDocument
-	 */
 	public void saveDocumentAsNew(DocumentWindowManager documentWindowManager, AsynchClientTask closeWindowTask) {
 		if (documentWindowManager.getUser() == null || User.isGuest(documentWindowManager.getUser().getName())) {
 			DialogUtils.showErrorDialog(documentWindowManager.getComponent(),
@@ -4532,11 +4375,6 @@ public class ClientRequestManager
 		ClientTaskDispatcher.dispatch(currentDocumentWindow, hash, tasks, false);
 	}
 
-	/**
-	 * Insert the method's description here. Creation date: (5/21/2004 4:20:47 AM)
-	 * 
-	 * @param windowManager cbit.vcell.client.desktop.DocumentWindowManager
-	 */
 	public BioModelInfo selectBioModelInfo(TopLevelWindowManager requester) {
 		VCDocumentInfo documentInfo = null;
 		try {
@@ -4552,11 +4390,6 @@ public class ClientRequestManager
 		return (BioModelInfo) documentInfo;
 	}
 
-	/**
-	 * Insert the method's description here. Creation date: (5/21/2004 4:20:47 AM)
-	 * 
-	 * @param windowManager cbit.vcell.client.desktop.DocumentWindowManager
-	 */
 	public MathModelInfo selectMathModelInfo(TopLevelWindowManager requester) {
 		VCDocumentInfo documentInfo = null;
 		try {
@@ -4572,31 +4405,13 @@ public class ClientRequestManager
 		return (MathModelInfo) documentInfo;
 	}
 
-	/**
-	 * Insert the method's description here. Creation date: (5/24/2005 2:02:23 PM)
-	 * 
-	 * @param newBExiting boolean
-	 */
 	private void setBExiting(boolean newBExiting) {
 		bExiting = newBExiting;
 	}
 
-	/**
-	 * Insert the method's description here. Creation date: (5/21/2004 4:21:50 AM)
-	 * 
-	 * @param newVcellClient cbit.vcell.client.VCellClient
-	 */
 	private void setVcellClient(VCellClient newVcellClient) {
 		vcellClient = newVcellClient;
 	}
-
-///**
-// * Insert the method's description here.
-// * Creation date: (5/21/2004 4:20:48 AM)
-// */
-//public void showBNGWindow() {
-//	getMdiManager().showWindow(ClientMDIManager.BIONETGEN_WINDOW_ID);
-//}
 
 	public void showFieldDataWindow(FieldDataWindowManager.DataSymbolCallBack dataSymbolCallBack) {
 		FieldDataWindowManager fdwm = (FieldDataWindowManager) getMdiManager()
@@ -4608,30 +4423,12 @@ public class ClientRequestManager
 		}
 		getMdiManager().showWindow(ClientMDIManager.FIELDDATA_WINDOW_ID);
 
-//	if(windowID.equals(ClientMDIManager.FIELDDATA_WINDOW_ID)){
-//	FieldDataWindow fdw = (FieldDataWindow)frame;
-//	FieldDataGUIPanel fdgp = (FieldDataGUIPanel)fdw.getContentPane().getComponent(0);
-//	if(fdgp.getDisplayMode() == FieldDataGUIPanel.DISPLAY_NORMAL){
-//		fdgp.setCreateDataSymbolCallBack(new FieldDataGUIPanel.DataSymbolCallBack(){
-//			public void createDataSymbol() {
-//			}});
-//	}else{
-//		fdgp.setCreateDataSymbolCallBack(null);
-//	}
-//}
-
 	}
 
-	/**
-	 * Insert the method's description here. Creation date: (5/21/2004 4:20:48 AM)
-	 */
 	public void showTestingFrameworkWindow() {
 		getMdiManager().showWindow(ClientMDIManager.TESTING_FRAMEWORK_WINDOW_ID);
 	}
 
-	/**
-	 * Insert the method's description here. Creation date: (6/15/2004 2:37:01 AM)
-	 */
 	public void startExport(final OutputContext outputContext, Component requester, final ExportSpecs exportSpecs) {
 		// start a thread to get it; not blocking any window/frame
 		AsynchClientTask task1 = new AsynchClientTask("starting exporting",
@@ -4707,9 +4504,6 @@ public class ClientRequestManager
 				new Hashtable<String, Object>(), new AsynchClientTask[] { task1, task2 });
 	}
 
-	/**
-	 * Insert the method's description here. Creation date: (5/24/2004 12:10:07 PM)
-	 */
 	public void updateStatusNow() {
 		// thread safe update of gui
 		AsynchClientTask task1 = new AsynchClientTask("updateStatusNow", AsynchClientTask.TASKTYPE_SWING_NONBLOCKING) {

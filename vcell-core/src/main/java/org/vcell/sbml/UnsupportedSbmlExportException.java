@@ -16,7 +16,7 @@ public class UnsupportedSbmlExportException extends SbmlException {
 	public UnsupportedSbmlExportException(String message){
 		super(message);
 	}
-	public UnsupportedSbmlExportException(String message, Throwable cause){
+	public UnsupportedSbmlExportException(String message, Exception cause){
 		super(message,cause);
 	}
 

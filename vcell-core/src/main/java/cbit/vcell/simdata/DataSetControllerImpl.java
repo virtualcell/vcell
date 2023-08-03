@@ -3306,7 +3306,7 @@ public SimDataBlock getSimDataBlock(OutputContext outputContext, VCDataIdentifie
 							cacheTable0.put(pdeDataInfo,simDataBlock);
 						} catch (CacheException e) {
 							// if can't cache the data, it is ok
-							lg.error(e);
+							lg.warn("couldn't cache simDataBlock("+vcdID+","+varName+","+time+") - skipping cache: "+e.getMessage(), e);
 						}
 					}
 				}

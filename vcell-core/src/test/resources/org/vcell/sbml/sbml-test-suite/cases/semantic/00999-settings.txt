@@ -1,0 +1,9 @@
+start: 0
+duration: 10
+steps: 10
+variables: S1, S2, S3, S4, S5, S6, S7, S8, p1, p2, p3, p4, p5, p6, p7, p8, comp1, comp2
+absolute: 0.0001
+relative: 0.0001
+amount: S1, S2, S3, S4, S5, S6, S7, S8
+concentration:
+

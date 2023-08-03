@@ -37,7 +37,6 @@ ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
 	smtp_port="smtp-port-not-set" \
 	smtp_emailaddress="smtp-emailaddress-not-set" \
     webDataPort="webDataPort-not-set" \
-	publicationHost="publicationHost_not_set" \
 	ssl_ignoreHostMismatch=true \
 	ssl_ignoreCertProblems=false \
 	submit_service_host="submit"
@@ -63,7 +62,6 @@ ENTRYPOINT java \
 	-Dvcell.server.dbDriverName="${dbdriver}" \
 	-Dvcell.server.dbUserid="${dbuser}" \
 	-Dvcell.db.pswdfile="${dbpswdfile}" \
-	-Dvcell.publication.host="${publicationHost}" \
 	-Dvcell.jms.int.host.internal="${jmshost_int_internal}" \
 	-Dvcell.jms.int.port.internal="${jmsport_int_internal}" \
 	-Dvcell.jms.blobMessageUseMongo=true \

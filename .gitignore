@@ -215,3 +215,7 @@ pythonProject/vcell-opt/dist/
 
 vcell-core/src/test/resources/org/vcell/sbml/local
 
+# Files generated during execution
+temp*.out
+temp*.err
+

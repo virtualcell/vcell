@@ -9,14 +9,6 @@ public class SEDMLTaskRecord {
     private TaskResult taskResult; 
     private Exception exception;
 
-    public SEDMLTaskRecord(){
-    	this.identifier = "";
-        this.taskName = "";
-        this.taskType = null;
-        this.taskResult = null;
-        this.exception = null;
-    }
-
     public SEDMLTaskRecord(String identifier, String taskName, TaskType taskType, TaskResult taskResult, Exception exception) {
         this.taskName = taskName;
         this.taskType = taskType;

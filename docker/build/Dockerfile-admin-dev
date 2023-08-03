@@ -32,7 +32,8 @@ ENV VCELL_VERSION="vcell-version-not-set" \
     VCELL_SIMDATADIR_EXTERNAL="vcell-simdatadir-external-not-set"
 
 ENV dbpswdfile=/run/secrets/dbpswd.txt \
-    jmspswdfile=/run/secrets/jmspswd.txt
+    jmspswdfile=/run/secrets/jmspswd.txt \
+    batchuserkeyfile=/run/secrets/batchuserkeyfile
 
 VOLUME /run/secrets
 

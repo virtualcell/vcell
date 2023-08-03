@@ -11,18 +11,18 @@ import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.mapping.StructureMapping.StructureMappingParameter;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.MathUtilities;
-import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.*;
+import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.Model.ReservedSymbol;
 import cbit.vcell.model.Structure.StructureSize;
 import cbit.vcell.parser.*;
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.resource.NativeLib;
 import cbit.vcell.solver.*;
+import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.MathOverridesResolver.SymbolReplacement;
-import cbit.vcell.xml.VCMLSupport;
-import cbit.vcell.xml.XMLTags;
-import cbit.vcell.xml.XmlHelper;
+import cbit.vcell.xml.*;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jdom.Element;
@@ -43,18 +43,23 @@ import org.sbml.jsbml.SBMLReader;
 import org.sbml.jsbml.xml.XMLNode;
 import org.sbml.libcombine.CombineArchive;
 import org.sbml.libcombine.KnownFormats;
+import org.vcell.sbml.OmexPythonUtils;
 import org.vcell.sbml.SbmlException;
 import org.vcell.sbml.SimSpec;
+import org.vcell.sbml.UnsupportedSbmlExportException;
 import org.vcell.sbml.vcell.SBMLExporter;
 import org.vcell.util.FileUtils;
 import org.vcell.util.ISize;
 import org.vcell.util.Pair;
 import org.vcell.util.TokenMangler;
+import org.vcell.util.document.BioModelInfo;
+import org.vcell.util.document.Version;
 
 import javax.xml.stream.XMLStreamException;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.function.Predicate;
@@ -80,7 +85,11 @@ public class SEDMLExporter {
 	private String vcmlLanguageURN = SUPPORTED_LANGUAGE.VCELL_GENERIC.getURN();
 	
 	private SEDMLRecorder sedmlRecorder = null;
-	
+	private int simCount;
+	private int overrideCount;
+
+	private SBMLSupport sbmlSupport = new SBMLSupport();
+
 
 	public SEDMLExporter(String argJobId, BioModel argBiomodel, int argLevel, int argVersion, List<Simulation> argSimsToExport) {
 		this(argJobId, argBiomodel, argLevel, argVersion, argSimsToExport, null);
@@ -106,8 +115,8 @@ public class SEDMLExporter {
 		}
 	}
 
-	public SEDMLDocument getSEDMLDocument(String sPath, String sBaseFileName, ModelFormat modelFormat, 
-				boolean bFromCLI, boolean bRoundTripSBMLValidation) {
+	public SEDMLDocument getSEDMLDocument(String sPath, String sBaseFileName, ModelFormat modelFormat,
+				boolean bRoundTripSBMLValidation, Predicate<SimulationContext> simContextExportFilter) {
 		
 		double start = System.currentTimeMillis();
 
@@ -123,7 +132,7 @@ public class SEDMLExporter {
 		ns = Namespace.getNamespace(VCML_NS_PREFIX, VCML_NS);
 		nsList.add(ns);
 
-		if (modelFormat.equals(ModelFormat.SBML) || modelFormat.equals(ModelFormat.SBML_VCML)) {
+		if (modelFormat.equals(ModelFormat.SBML)) {
 			final String SBML_NS = "http://www.sbml.org/sbml/level3/version2/core";
 			final String SBML_NS_PREFIX = "sbml";
 			final String SPATIAL_NS = "https://sbml.org/documents/specifications/level-3/version-1/spatial";
@@ -142,17 +151,15 @@ public class SEDMLExporter {
 		sedmlModel = sedmlDocument.getSedMLModel();
 		sedmlModel.setAdditionalNamespaces(nsList);
 		
-		this.translateBioModelToSedML(sPath, sBaseFileName, modelFormat, bFromCLI, bRoundTripSBMLValidation);
+		this.translateBioModelToSedML(sPath, sBaseFileName, modelFormat, bRoundTripSBMLValidation, simContextExportFilter);
 		
 		double stop = System.currentTimeMillis();
 		Exception timer = new Exception(Double.toString((stop-start)/1000)+" seconds");
 		// update overall status
-		if (bFromCLI) {
-			if (sedmlRecorder.hasErrors()) {
-				sedmlRecorder.addTaskRecord(vcBioModel.getName(), TaskType.BIOMODEL, TaskResult.FAILED, timer);
-			} else {
-				sedmlRecorder.addTaskRecord(vcBioModel.getName(), TaskType.BIOMODEL, TaskResult.SUCCEEDED, timer);
-			}
+		if (sedmlRecorder.hasErrors()) {
+			sedmlRecorder.addTaskRecord(vcBioModel.getName(), TaskType.BIOMODEL, TaskResult.FAILED, timer);
+		} else {
+			sedmlRecorder.addTaskRecord(vcBioModel.getName(), TaskType.BIOMODEL, TaskResult.SUCCEEDED, timer);
 		}
 		// should never bomb out just because we fail to export to json...
 		try {
@@ -164,14 +171,10 @@ public class SEDMLExporter {
 	}
 
 	private void translateBioModelToSedML(String savePath, String sBaseFileName, ModelFormat modelFormat,
-				boolean bFromCLI, boolean bRoundTripSBMLValidation) {		// true if invoked for omex export, false if for sedml
+				boolean bRoundTripSBMLValidation, Predicate<SimulationContext> simContextExportFilter) {
 		modelFilePathStrAbsoluteList.clear();
 		try {
 
-			if (modelFormat == ModelFormat.SBML_VCML) {
-				// TODO
-				throw new RuntimeException("Hybrid SBML_VCML export not yet implemented");
-			}
 			if (modelFormat == ModelFormat.VCML) {
 				BioModel prunedBM = XmlHelper.cloneBioModel(vcBioModel);
 				for (Simulation sim : prunedBM.getSimulations()) {
@@ -185,7 +188,7 @@ public class SEDMLExporter {
 				for (int i = 0; i < vcBioModel.getSimulationContexts().length; i++) {
 					writeModelVCML(modelFileNameRel, vcBioModel.getSimulationContext(i));
 					sedmlRecorder.addTaskRecord(vcBioModel.getSimulationContext(i).getName(), TaskType.SIMCONTEXT, TaskResult.SUCCEEDED, null);
-					exportSimulations(i, vcBioModel.getSimulationContext(i), null, null, bFromCLI, vcmlLanguageURN);
+					exportSimulations(i, vcBioModel.getSimulationContext(i), null, null, vcmlLanguageURN);
 				}
 			}
 			if (modelFormat == ModelFormat.SBML) {
@@ -205,13 +208,10 @@ public class SEDMLExporter {
 					String msg = "unit conversion failed for BioModel '"+vcBioModel.getName()+"': " + e1.getMessage();
 					logger.error(msg, e1);
 					sedmlRecorder.addTaskRecord(vcBioModel.getName(), TaskType.UNITS, TaskResult.FAILED, e1);
-					if (bFromCLI) {
-						return;
-					} else {
-						throw e1;
-					}
+					throw e1;
 				}
-				SimulationContext[] simContexts = vcBioModel.getSimulationContexts();
+				SimulationContext[] simContexts = Arrays.stream(vcBioModel.getSimulationContexts())
+						.filter(simContextExportFilter).toArray(SimulationContext[]::new);
 
 				if (simContexts.length == 0) {
 					sedmlRecorder.addTaskRecord(vcBioModel.getName(), TaskType.MODEL, TaskResult.FAILED, new Exception("Model has no Applications"));
@@ -241,14 +241,10 @@ public class SEDMLExporter {
 	
 						if (!sbmlExportFailed) {
 							// simContext was exported succesfully, now we try to export its simulations
-							exportSimulations(simContextCnt, simContext, sbmlString, l2gMap, bFromCLI, sbmlLanguageURN);
+							exportSimulations(simContextCnt, simContext, sbmlString, l2gMap, sbmlLanguageURN);
 						} else {
-							if (bFromCLI) {
-								continue;
-							} else {
-								System.err.println(sedmlRecorder.getRecordsAsCSV());
-								throw new Exception ("SimContext '"+simContext.getName()+"' could not be exported to SBML :" +simContextException.getMessage(), simContextException);
-							}
+							System.err.println(sedmlRecorder.getRecordsAsCSV());
+							throw new Exception ("SimContext '"+simContext.getName()+"' could not be exported to SBML :" +simContextException.getMessage(), simContextException);
 						}			
 						simContextCnt++;
 					}
@@ -275,7 +271,7 @@ public class SEDMLExporter {
 	}
 
 	private void exportSimulations(int simContextCnt, SimulationContext simContext,
-			String sbmlString, Map<Pair<String, String>, String> l2gMap, boolean bFromCLI, String languageURN) throws Exception {
+			String sbmlString, Map<Pair<String, String>, String> l2gMap, String languageURN) throws Exception {
 		// -------
 		// create sedml objects (simulation, task, datagenerators, report, plot) for each simulation in simcontext 
 		// -------	
@@ -328,16 +324,11 @@ public class SEDMLExporter {
 				String msg = "SEDML export failed for simulation '"+ vcSimulation.getName() + "': " + e.getMessage();
 				logger.error(msg, e);
 				sedmlRecorder.addTaskRecord(vcSimulation.getName(), TaskType.SIMULATION, TaskResult.FAILED, e);
-	        	if (bFromCLI) {
-	        		continue;
-	        	} else {
-					System.err.println(sedmlRecorder.getRecordsAsCSV());
-	        		throw e;
-	        	}
+				System.err.println(sedmlRecorder.getRecordsAsCSV());
+	       		throw e;
 			}
 			simCount++;
 		}
-		return;
 	}
 
 	private void createSEDMLoutputs(SimulationContext simContext, Simulation vcSimulation,
@@ -1271,7 +1262,17 @@ public class SEDMLExporter {
 
     public boolean createOmexArchive(String srcFolder, String sFileName) {
     try {
-		//System.loadLibrary("combinej");
+		try {
+			NativeLib.combinej.load();
+		} catch (UnsatisfiedLinkError ex) {
+			logger.error("Unable to link to native 'libCombine' lib, check native lib: " + ex.getMessage());
+			throw ex;
+		} catch (Exception ex) {
+			String msg = "Error occurred while importing libCombine: " + ex.getMessage();
+			logger.error(msg, ex);
+			throw new RuntimeException(msg, ex);
+		}
+
 		CombineArchive archive = new CombineArchive();
 
     	
@@ -1311,95 +1312,227 @@ public class SEDMLExporter {
         				"http://identifiers.org/combine.specifications/omex-metadata",
         				false
         		);
+            } else if(sd.endsWith(".png")) {
+                archive.addFile(
+                        Paths.get(srcFolder, sd).toString(),
+                        "./" + sd,
+                        "http://purl.org/NET/mediatypes/image/png",
+                        false
+                );
         	}
         }
 
-		archive.writeToFile(Paths.get(srcFolder, sFileName + ".omex").toString());
+		// writing into combine archive, deleting file if already exists with same name
+		String omexPath = Paths.get(srcFolder, sFileName + ".omex").toString();
+		File omexFile = new File(omexPath);
+		if(omexFile.exists()) {
+			omexFile.delete();
+		}
+		boolean isCreated = archive.writeToFile(omexPath);
+		if (!isCreated){
+			throw new RuntimeException("Unable to create omex archive '" + omexPath + "'.");
+		}
 
-		// Removing files after archiving
-		for (String sd : modelFilePathStrAbsoluteList) {
-			Paths.get(srcFolder, sd).toFile().delete();
-		}
-		for (String sd : sedmlFilePathStrAbsoluteList) {
-			Paths.get(srcFolder, sd).toFile().delete();
-		}
-		Paths.get(srcFolder, sFileName + ".vcml").toFile().delete();
-        for(String sd : files) {
-        	if (sd.endsWith(".rdf")) {
-        		Paths.get(srcFolder, sd).toFile().delete();
-        	}
-        }
+		removeOtherFiles(srcFolder, files);
 
     } catch (Exception e) {
     	throw new RuntimeException("createZipArchive threw exception: " + e.getMessage());        
     }
     return true;
 }
+    
+	private static void removeOtherFiles(String outputDir, String[] files) {
+    	boolean isDeleted = false;
+        for (String sd : files) {
+            if (sd.endsWith(".sedml") || sd.endsWith(".sbml") || sd.endsWith("xml") || sd.endsWith(".vcml") || sd.endsWith(".rdf") || sd.endsWith(".png")) {
+                isDeleted = Paths.get(outputDir, sd).toFile().delete();
+                if (!isDeleted) {
+                	throw new RuntimeException("Unable to remove intermediate file '" + sd + "'.");        
+               }
+            }
+        }
+    }
 
-	public static List<SEDMLTaskRecord> writeBioModel(BioModel bioModel, File exportFileOrDirectory, ModelFormat modelFormat, boolean bFromCLI, boolean bRoundTripSBMLValidation, boolean bCreateOmexArchive) throws Exception {
-		String resultString;
-		// export the entire biomodel to a SEDML file (all supported applications)
-		int sedmlLevel = 1;
-		int sedmlVersion = 2;
-		String sPath = FileUtils.getFullPathNoEndSeparator(exportFileOrDirectory.getAbsolutePath());
-		String sFile = FileUtils.getBaseName(exportFileOrDirectory.getAbsolutePath());
-
-		Predicate<Simulation> simulationExportFilter = s -> true;
-		List<Simulation> simsToExport = Arrays.stream(bioModel.getSimulations()).filter(simulationExportFilter).collect(Collectors.toList());
-
-		// we replace the obsolete solver with the fully supported equivalent
-		for (Simulation simulation : simsToExport) {
-			if (simulation.getSolverTaskDescription().getSolverDescription().equals(SolverDescription.FiniteVolume)) {
+	public static Map<String, String> getUnsupportedApplicationMap(BioModel bioModel, ModelFormat modelFormat) {
+		HashMap<String, String> unsupportedApplicationMap = new HashMap<>();
+		Arrays.stream(bioModel.getSimulationContexts()).forEach(simContext -> {
+			if (modelFormat == ModelFormat.SBML) {
 				try {
-					simulation.getSolverTaskDescription().setSolverDescription(SolverDescription.SundialsPDE);
-				} catch (PropertyVetoException e) {
-					logger.error("Failed to replace obsolete solver", e);
+					SBMLExporter.validateSimulationContextSupport(simContext);
+				} catch (UnsupportedSbmlExportException e) {
+					unsupportedApplicationMap.put(simContext.getName(), e.getMessage());
 				}
 			}
+		});
+		return unsupportedApplicationMap;
+	}
+
+	public static class SEDMLExportException extends Exception {
+		public SEDMLExportException(String message) {
+			super(message);
+		}
+		public SEDMLExportException(String message, Exception cause) {
+			super(message, cause);
+		}
+	}
+
+	public static List<SEDMLTaskRecord> writeBioModel(BioModel bioModel,
+													  Optional<PublicationMetadata> publicationMetadata,
+													  File exportFileOrDirectory,
+													  ModelFormat modelFormat,
+													  Predicate<SimulationContext> simContextExportFilter,
+													  boolean bHasPython,
+													  boolean bValidation,
+													  boolean bCreateOmexArchive
+	) throws SEDMLExportException, OmexPythonUtils.OmexValidationException, IOException {
+		Predicate<Simulation> simulationExportFilter = s -> true;
+		SEDMLEventLog sedmlEventLog = (String entry) -> {};
+		Optional<File> jsonReportFile = Optional.empty();
+		return writeBioModel(
+				bioModel, publicationMetadata, jsonReportFile, exportFileOrDirectory, simulationExportFilter, simContextExportFilter,
+				modelFormat, sedmlEventLog, bHasPython, bValidation, bCreateOmexArchive);
+	}
+
+	public static List<SEDMLTaskRecord> writeBioModel(File vcmlFilePath,
+													  BioModelInfo bioModelInfo,
+													  File outputDir,
+													  Predicate<Simulation> simulationExportFilter,
+													  ModelFormat modelFormat,
+													  SEDMLEventLog eventLogWriter,
+													  boolean bSkipUnsupportedApps,
+													  boolean bHasPython,
+													  boolean bValidate
+	) throws SEDMLExportException, OmexPythonUtils.OmexValidationException, IOException {
+
+		// get VCML name from VCML path
+		String vcmlName = FilenameUtils.getBaseName(vcmlFilePath.getName());		// platform independent, strips extension too
+		Optional<File> jsonReportFile = Optional.of(Paths.get(
+				outputDir.getAbsolutePath(), "json_reports" ,vcmlName + ".json").toFile());
+
+		eventLogWriter.writeEntry(vcmlName);
+
+		// Create biomodel
+		BioModel bioModel;
+		try {
+			bioModel = XmlHelper.XMLToBioModel(new XMLSource(vcmlFilePath));
+			bioModel.updateAll(false);
+			bioModel.refreshDependencies();
+			eventLogWriter.writeEntry(vcmlName + ",VCML,SUCCEEDED\n");
+		} catch (XmlParseException | MappingException e1) {
+			String msg = vcmlName + " VCML failed to parse and generate math: "+e1.getMessage();
+			logger.error(msg, e1);
+			eventLogWriter.writeEntry(vcmlName + ",VCML,FAILED"+e1.getMessage() + "\n");
+			throw new SEDMLExportException(msg, e1);
 		}
 
-		SEDMLExporter sedmlExporter;
-		if (bioModel != null) {
-			sedmlExporter = new SEDMLExporter(sFile, bioModel, sedmlLevel, sedmlVersion, simsToExport);
-			resultString = sedmlExporter.getSEDMLDocument(sPath, sFile, modelFormat, bFromCLI, bRoundTripSBMLValidation).writeDocumentToString();
+		Predicate<SimulationContext> simContextExportFilter = sc -> true;
+		if (bSkipUnsupportedApps){
+			Map<String, String> unsupportedApplications = SEDMLExporter.getUnsupportedApplicationMap(bioModel, modelFormat);
+			simContextExportFilter = (SimulationContext sc) -> !unsupportedApplications.containsKey(sc.getName());
+		}
+
+		Optional<PublicationMetadata> publicationMetadata = Optional.empty();
+		if (bioModelInfo!=null && bioModelInfo.getPublicationInfos()!=null && bioModelInfo.getPublicationInfos().length>0) {
+			publicationMetadata = Optional.of(PublicationMetadata.fromPublicationInfo(bioModelInfo.getPublicationInfos()[0]));
+		}
+
+		boolean bCreateOmexArchive = true;
+		return writeBioModel(
+				bioModel, publicationMetadata, jsonReportFile, outputDir, simulationExportFilter, simContextExportFilter,
+				modelFormat, eventLogWriter, bHasPython, bValidate, bCreateOmexArchive);
+	}
+
+	private static List<SEDMLTaskRecord> writeBioModel(BioModel bioModel,
+													  Optional<PublicationMetadata> publicationMetadata,
+													  Optional<File> jsonReportFile,
+													  File exportFileOrDirectory,
+													  Predicate<Simulation> simulationExportFilter,
+													  Predicate<SimulationContext> simContextExportFilter,
+													  ModelFormat modelFormat,
+													  SEDMLEventLog sedmlEventLog,
+													  boolean bHasPython,
+													  boolean bValidate,
+													  boolean bCreateOmexArchive
+	) throws SEDMLExportException, OmexPythonUtils.OmexValidationException, IOException {
+		try {
+			// export the entire biomodel to a SEDML file (all supported applications)
+			int sedmlLevel = 1;
+			int sedmlVersion = 2;
+			String sOutputDirPath = FileUtils.getFullPathNoEndSeparator(exportFileOrDirectory.getAbsolutePath());
+			String sBaseFileName = FileUtils.getBaseName(exportFileOrDirectory.getAbsolutePath());
+
+			List<Simulation> simsToExport = Arrays.stream(bioModel.getSimulations()).filter(simulationExportFilter).collect(Collectors.toList());
+
+			// we replace the obsolete solver with the fully supported equivalent
+			for (Simulation simulation : simsToExport) {
+				if (simulation.getSolverTaskDescription().getSolverDescription().equals(SolverDescription.FiniteVolume)) {
+					try {
+						// try to replace with the fully supported equivalent (do we need to reset solver parameters?)
+						simulation.getSolverTaskDescription().setSolverDescription(SolverDescription.SundialsPDE);
+					} catch (PropertyVetoException e) {
+						String msg1 = "Failed to replace obsolete PDE solver '"+SolverDescription.FiniteVolume.name()+"' " +
+								"with fully supported equivalent PDE solver '"+SolverDescription.SundialsPDE.name()+"'";
+						logger.error(msg1,e);
+						try {
+							simulation.getSolverTaskDescription().setSolverDescription(SolverDescription.FiniteVolumeStandalone);
+						} catch (PropertyVetoException e1) {
+							String msg2 = "Failed to replace obsolete PDE solver '"+SolverDescription.FiniteVolume.name()+"' " +
+									"with equivalent PDE solver '"+SolverDescription.FiniteVolumeStandalone.name()+"'";
+							logger.error(msg2, e1);
+							throw new RuntimeException(msg2, e1);
+						}
+					}
+				}
+			}
 
 			// convert biomodel to vcml and save to file.
 			String vcmlString = XmlHelper.bioModelToXML(bioModel);
-			String vcmlFileName = Paths.get(sPath, sFile + ".vcml").toString();
+			String vcmlFileName = Paths.get(sOutputDirPath, sBaseFileName + ".vcml").toString();
 			File vcmlFile = new File(vcmlFileName);
 			XmlUtil.writeXMLStringToFile(vcmlString, vcmlFile.getAbsolutePath(), true);
-		} else {
-			throw new RuntimeException("unsupported Document Type " + Objects.requireNonNull(bioModel).getClass().getName() + " for SedML export");
-		}
-		if (bCreateOmexArchive) {
-			String sedmlFileName = Paths.get(sPath, sFile + ".sedml").toString();
-			XmlUtil.writeXMLStringToFile(resultString, sedmlFileName, true);
-			sedmlExporter.addSedmlFileToList(sFile + ".sedml");
 
-			String rdfString = XmlRdfUtil.getMetadata(sFile);
-			XmlUtil.writeXMLStringToFile(rdfString, String.valueOf(Paths.get(sPath, "metadata.rdf")), true);
+			String jsonReportPath = null;
+			if (jsonReportFile.isPresent()){
+				jsonReportPath = jsonReportFile.get().getAbsolutePath();
+			}
+			SEDMLExporter sedmlExporter = new SEDMLExporter(sBaseFileName, bioModel, sedmlLevel, sedmlVersion, simsToExport, jsonReportPath);
+			String sedmlString = sedmlExporter.getSEDMLDocument(sOutputDirPath, sBaseFileName, modelFormat, bValidate, simContextExportFilter).writeDocumentToString();
 
-			sedmlExporter.createOmexArchive(sPath, sFile);
-		} else {
-			XmlUtil.writeXMLStringToFile(resultString, exportFileOrDirectory.getAbsolutePath(), true);
+			if (bCreateOmexArchive) {
+
+				String sedmlFileName = Paths.get(sOutputDirPath, sBaseFileName + ".sedml").toString();
+				XmlUtil.writeXMLStringToFile(sedmlString, sedmlFileName, true);
+				sedmlExporter.addSedmlFileToList(sBaseFileName + ".sedml");
+
+				String diagramName = XmlRdfUtil.diagramBaseName + XmlRdfUtil.diagramExtension;
+				Path diagramPath = Paths.get(sOutputDirPath, diagramName);
+				XmlRdfUtil.writeModelDiagram(bioModel, diagramPath.toFile());
+
+				Optional<Version> bioModelVersion = Optional.ofNullable(bioModel.getVersion());
+				String rdfString = XmlRdfUtil.getMetadata(sBaseFileName, diagramPath.toFile(), bioModelVersion, publicationMetadata);
+				XmlUtil.writeXMLStringToFile(rdfString, String.valueOf(Paths.get(sOutputDirPath, "metadata.rdf")), true);
+
+				sedmlExporter.createOmexArchive(sOutputDirPath, sBaseFileName);
+
+				if (bValidate && bHasPython) {
+					OmexPythonUtils.validateOmex(Paths.get(sOutputDirPath, sBaseFileName + ".omex"));
+				}
+			} else {
+				XmlUtil.writeXMLStringToFile(sedmlString, exportFileOrDirectory.getAbsolutePath(), true);
+			}
+			return sedmlExporter.sedmlRecorder.getRecords();
+		} catch (OmexPythonUtils.OmexValidationException e){
+			throw e;
+		} catch (IOException e){
+			throw e;
+		} catch (InterruptedException | XmlParseException e){
+			throw new SEDMLExportException("failed to export biomodel", e);
 		}
-		return sedmlExporter.getSedmlLogger().getRecords();
 	}
-
-	// we know exactly which files we need to archive: those in sbmlFilePathStrAbsoluteList
-	// each file is deleted after being added to archive
-	private final int BUFFER = 2048;
-
-	private int simCount;
-
-	private int overrideCount;
-
-	private SBMLSupport sbmlSupport = new SBMLSupport();
 
 	public SEDMLRecorder getSedmlLogger() {
 		return sedmlRecorder;
 	}
-
 }
 
 

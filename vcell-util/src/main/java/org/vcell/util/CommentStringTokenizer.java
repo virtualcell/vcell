@@ -236,11 +236,12 @@ private void refreshCurrTokenizer() {
 	//
 	// if tokenLinkedList is empty, fill with tokens from next non-empty line of text
 	//
+	lg.trace("Refreshing tokenizer...");
 	while (tokenLinkedList.size() == 0) { // read until there is something in the list
 		String nextLine = null;
 		try {
 			nextLine = reader.readLine();
-			lg.debug(nextLine);
+			lg.trace(nextLine);
 		} catch (IOException e) {			
 			e.printStackTrace();
 			throw new NoSuchElementException(e.getMessage());

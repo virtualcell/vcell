@@ -476,13 +476,9 @@ public class SimulationStateMachine {
 		//has checked the 'timeoutDisabledCheckBox' in SolverTaskDescriptionAdvancedPanel on the client-side GUI
 		boolean isPowerUser = simulation.getSolverTaskDescription().isTimeoutDisabled();//Set from GUI
 		if(isPowerUser) {//Check if user allowed to be power user for 'special1' long running sims (see User.SPECIALS and vc_specialusers table)
-			User myUser = simulationDatabase.getUser(simulation.getVersion().getOwner().getName());
-			if(myUser instanceof User.SpecialUser) {
-				//'special1' assigned to users by request to allow long running sims
-				isPowerUser = isPowerUser && Arrays.asList(((User.SpecialUser)myUser).getMySpecials()).contains(User.SPECIAL_CLAIM.powerUsers);
-			}else {
-				isPowerUser = false;
-			}
+			User.SpecialUser myUser = simulationDatabase.getUser(simulation.getVersion().getOwner().getName());
+			//'powerUsers' (previously called 'special1') assigned to users by request to allow long running sims
+			isPowerUser = isPowerUser && Arrays.asList(myUser.getMySpecials()).contains(User.SPECIAL_CLAIM.powerUsers);
 		}
 		SimulationTask simulationTask = new SimulationTask(new SimulationJob(simulation, jobIndex, fieldDataIdentifierSpecs), taskID,null,isPowerUser);
 

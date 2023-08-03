@@ -1,0 +1,8 @@
+start: 0
+duration: 1
+steps: 10
+variables: S1, sub1__S1, sub2__S1, sub3__S1, sub3__sub1__S1, sub3__sub2__S1
+absolute: 0.0001
+relative: 0.0001
+amount: 
+concentration: S1, sub1__S1, sub2__S1, sub3__S1, sub3__sub1__S1, sub3__sub2__S1

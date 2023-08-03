@@ -10,6 +10,7 @@ import org.jlibsedml.DataSet;
 import org.jlibsedml.Variable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jlibsedml.VariableSymbol;
 
 /**
  * Static data preparation class for Hdf5 files
@@ -26,69 +27,83 @@ public class Hdf5DataPreparer {
     /**
      * Spatial Data has a special attribute called "times". This function extracts that value
      * 
-     * @param datasetWrapper
+     * @param hdf5SedmlResults the results in a sedml friendly format
      * @return the times data
      */
-    public static double[] getSpatialHdf5Attribute_Times(Hdf5SedmlResults datasetWrapper){
-        return ((Hdf5SedmlResultsSpatial)datasetWrapper.dataSource).varDataItems.get(0).times;
+    public static double[] getSpatialHdf5Attribute_Times(Hdf5SedmlResults hdf5SedmlResults){
+        return ((Hdf5SedmlResultsSpatial)hdf5SedmlResults.dataSource).varDataItems.get(0).times;
     }
 
     /**
      * Reads a `Hdf5DatasetWrapper` contents and generates `Hdf5PreparedData` with spatial data for writing out to Hdf5 format via Hdf5Writer
      * 
-     * @param datasetWrapper the data relevant to an hdf5 output file
+     * @param datasetWrapper the data relevant to an HDF5 output file
      * @return the prepared spatial data
      */
     public static Hdf5PreparedData prepareSpatialData (Hdf5SedmlResults datasetWrapper){
-        Hdf5SedmlResultsSpatial dataSourceSpatial = (Hdf5SedmlResultsSpatial)datasetWrapper.dataSource; 
-        logger.debug(dataSourceSpatial);
-        Hdf5DataSourceSpatialVarDataItem firstVarDataItem = dataSourceSpatial.varDataItems.get(0);
-        int[] spaceTimeDimensions = firstVarDataItem.spaceTimeDimensions;
-        int[] spatialDimensions = Arrays.copyOf(spaceTimeDimensions, spaceTimeDimensions.length-1);
-        //int numSpatialPoints = Arrays.stream(spatialDimensions).sum();
-        //long numJobs = dataSourceSpatial.varDataItems.stream().map(varDataItem -> varDataItem.jobIndex).collect(Collectors.toSet()).size();
-        List<Variable> sedmlVars = new ArrayList<>(dataSourceSpatial.varDataItems.stream().map(varDataItem -> varDataItem.sedmlVariable).collect(Collectors.toSet()));
-        long numVars = sedmlVars.size();
-        long numTimes = firstVarDataItem.times.length;
-        List<Long> dataDimensionList = new ArrayList<>();
+        int totalDataVolume = 1;
         int numJobs = 1;
+        double[] bigDataBuffer;
+        List<Long> dataDimensionList = new ArrayList<>();
+        Hdf5DataSourceSpatialVarDataItem exampleVarDataItem = null;
+        Hdf5SedmlResultsSpatial spatialDataSource = (Hdf5SedmlResultsSpatial)datasetWrapper.dataSource;
+        Hdf5SedmlResultsSpatial spatialDataResults = new Hdf5SedmlResultsSpatial();
+        logger.debug(spatialDataResults);
 
-        if (numTimes != spaceTimeDimensions[spaceTimeDimensions.length-1]){
-            throw new RuntimeException("unexpected dimension " + spaceTimeDimensions + " for data, expected last dimension to be that of time: " + numTimes);
+        spatialDataResults.scanBounds = spatialDataSource.scanBounds;
+        spatialDataResults.scanParameterNames = spatialDataSource.scanParameterNames;
+        for (Hdf5DataSourceSpatialVarDataItem item : spatialDataSource.varDataItems){
+            VariableSymbol symbol = item.sedmlVariable.getSymbol();
+            if (symbol != null && "TIME".equals(symbol.name())) continue;
+            if (exampleVarDataItem == null) exampleVarDataItem = item;
+            spatialDataResults.varDataItems.add(item);
         }
-        
-        
-        for (int scanBound : dataSourceSpatial.scanBounds){
-            dataDimensionList.add((long)scanBound+1);
+
+        if (exampleVarDataItem == null)
+            throw new RuntimeException("We have no spatial datasets here somehow! This error shouldn't happen");
+
+        if (exampleVarDataItem.spaceTimeDimensions == null){
+            RuntimeException e = new RuntimeException("No space time dimensions could be found!");
+            logger.error(e);
+            throw e;
+        }
+
+        int[] spaceTimeDimensions = exampleVarDataItem.spaceTimeDimensions;
+        //int numSpatialPoints = Arrays.stream(spatialDimensions).sum();
+        //long numJobs = spatialDataResults.varDataItems.stream().map(varDataItem -> varDataItem.jobIndex).collect(Collectors.toSet()).size();
+        List<Variable> sedmlVars = new ArrayList<>(spatialDataResults.varDataItems.stream().map(varDataItem -> varDataItem.sedmlVariable).collect(Collectors.toSet()));
+        long numVars = sedmlVars.size();
+
+        if (exampleVarDataItem.times.length != spaceTimeDimensions[spaceTimeDimensions.length-1]){
+            throw new RuntimeException("unexpected dimension " + spaceTimeDimensions
+                    + " for data, expected last dimension to be that of time: " + exampleVarDataItem.times.length);
+        }
+
+        // Structure dimensionality
+        dataDimensionList.add(numVars);                         // ...first by dataSet
+        for (int scanBound : spatialDataResults.scanBounds){
+            dataDimensionList.add((long)scanBound + 1);         // ...then by scan bounds / "repeated task"
             numJobs *= (scanBound+1);
         }
-
-        dataDimensionList.add(numVars);
-        for (long dim : spatialDimensions){
+        for (long dim : spaceTimeDimensions){                   // ...finally by space-time dimensions
             dataDimensionList.add(dim);
         }
-        dataDimensionList.add(numTimes);
 
-        
-        long[] dataDimensions = dataDimensionList.stream().mapToLong(l -> l).toArray(); // What does this streaming do?
-        int totalDataSize = 1;
-        for (long dim : dataDimensions){
-            totalDataSize *= (int)dim;
+        for (long dim : dataDimensionList){
+            totalDataVolume *= (int)dim;
         }
 
         // Create buffer of contiguous data to hold everything.
-        double[] bigDataBuffer = new double[totalDataSize];
-//                    for (int i=0;i<totalDataSize;i++){
-//                        bigDataBuffer[i] = i;
-//                    }
+        bigDataBuffer = new double[totalDataVolume];
         int bufferOffset = 0;
         for (int jobIndex=0; jobIndex<numJobs; jobIndex++){
-            for (int varIndex = 0; varIndex < numVars; varIndex++) {
-                Variable var = sedmlVars.get(varIndex);
+            for (Variable var : sedmlVars) {
                 // find data for var and jobIndex
-                for (Hdf5DataSourceSpatialVarDataItem varDataItem : dataSourceSpatial.varDataItems) {
+                for (Hdf5DataSourceSpatialVarDataItem varDataItem : spatialDataResults.varDataItems) {
                     if (varDataItem.sedmlVariable.equals(var) && varDataItem.jobIndex == jobIndex){
-                        double[] dataArray = varDataItem.getSpatialData();
+                        String varName = varDataItem.sedmlVariable.getSymbol() == null ? null :
+                                varDataItem.sedmlVariable.getSymbol().name();
+                        double[] dataArray = "TIME".equals(varName) ? varDataItem.times: varDataItem.getSpatialData();
                         System.arraycopy(dataArray,0,bigDataBuffer,bufferOffset,dataArray.length);
                         bufferOffset += dataArray.length;
                         break;
@@ -99,7 +114,7 @@ public class Hdf5DataPreparer {
 
         Hdf5PreparedData preparedData = new Hdf5PreparedData();
         preparedData.sedmlId = datasetWrapper.datasetMetadata.sedmlId;
-        preparedData.dataDimensions = dataDimensions;
+        preparedData.dataDimensions = dataDimensionList.stream().mapToLong(l -> l).toArray();
         preparedData.flattenedDataBuffer = bigDataBuffer;
         return preparedData;
     }
@@ -133,6 +148,8 @@ public class Hdf5DataPreparer {
             dataDimensionList.add((long)scanBound + 1);         // ...then by scan bounds / "repeated task" dimensions
         }
         dataDimensionList.add(numTimePoints);                   // ...finally by max time points
+
+
         for (long dim : dataDimensionList){
             totalDataVolume *= (int)dim;
         }

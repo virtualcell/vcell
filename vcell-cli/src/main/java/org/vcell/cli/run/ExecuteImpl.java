@@ -3,8 +3,10 @@ package org.vcell.cli.run;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 
+import ncsa.hdf.hdf5lib.exceptions.HDF5Exception;
 import org.vcell.cli.CLIRecordable;
 import org.vcell.cli.PythonStreamException;
+import org.vcell.cli.exceptions.ExecutionException;
 import org.vcell.cli.vcml.VCMLHandler;
 import org.vcell.util.FileUtils;
 
@@ -16,7 +18,10 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.rmi.server.ExportException;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 
 public class ExecuteImpl {
     
@@ -27,6 +32,7 @@ public class ExecuteImpl {
                                 ) throws IOException {
         FilenameFilter filter = (f, name) -> name.endsWith(".omex") || name.endsWith(".vcml");
         File[] inputFiles = dirOfArchivesToProcess.listFiles(filter);
+        List<String> failedFiles = new LinkedList<>();
         if (inputFiles == null) throw new RuntimeException("Error trying to retrieve files from input directory.");
 
         // Build statuses
@@ -47,33 +53,63 @@ public class ExecuteImpl {
                 throw new RuntimeException("Python call did not process correctly:", e);
             }
         }
-
-        for (File inputFile : inputFiles) {
-            String inputFileName = inputFile.getName();
-            logger.info("Processing " + inputFileName + "(" + inputFile + ")");
-            try {
-                if (inputFileName.endsWith("omex")) {
-                    String bioModelBaseName = inputFileName.substring(0, inputFileName.indexOf(".")); // ".omex"??
-                    Files.createDirectories(Paths.get(outputDir.getAbsolutePath() + File.separator + bioModelBaseName)); // make output subdir
-                    final boolean bEncapsulateOutput = true;
-                    singleExecOmex(inputFile, outputDir, cliLogger,
-                            bKeepTempFiles, bExactMatchOnly, bEncapsulateOutput, bSmallMeshOverride);
+        try {
+            for (File inputFile : inputFiles) {
+                String inputFileName = inputFile.getName();
+                System.out.println("\n\n");
+                logger.info("Processing " + inputFileName + "(" + inputFile + ")");
+                try {
+                    if (inputFileName.endsWith("vcml"))
+                        singleExecVcml(inputFile, outputDir, cliLogger);
+                    if (inputFileName.endsWith("omex"))
+                        runSingleExecOmex(inputFile, outputDir, cliLogger,
+                                bKeepTempFiles, bExactMatchOnly, bSmallMeshOverride);
+                } catch (ExecutionException | RuntimeException | HDF5Exception e){
+                    logger.error("Error caught executing batch mode", e);
+                    failedFiles.add(inputFileName);
+                } catch (Exception e){
+                    failedFiles.add(inputFileName);
+                    throw e;
                 }
-
-                if (inputFileName.endsWith("vcml")) {
-                    singleExecVcml(inputFile, outputDir, cliLogger);
-                }
-            } catch (ExecutionException e){
-                logger.error("Error caught executing batch mode", e);
-            } catch (Exception e) {
-                logger.fatal("Fatal error caught executing batch mode (ending execution)", e);
-                throw new RuntimeException("Fatal error caught executing batch mode", e);
             }
+            if (failedFiles.isEmpty()){
+                logger.info("Execution finished with no failures");
+                return;
+            }
+        } catch (Exception e) {
+            StringBuilder failedFileString = new StringBuilder();
+            logger.fatal("Fatal error caught executing batch mode (ending execution)", e);
+            for (String f : failedFiles){
+                failedFileString.append(String.format("\t- %s\n", f));
+            }
+            logger.fatal("Here's the list of all known failing models:\n" + failedFileString);
+
+            throw new RuntimeException("Fatal error caught executing batch mode", e);
         }
+
+        // We had failures.
+        StringBuilder failedFileString = new StringBuilder();
+        for (String f : failedFiles){
+            failedFileString.append(String.format("\t- %s\n", f));
+        }
+        String errString = "Execution finished, but the following file(s) failed:\n" + failedFileString;
+        logger.error(errString);
+    }
+
+    private static void runSingleExecOmex(File inputFile, File outputDir, CLIRecordable cliLogger, boolean bKeepTempFiles,
+                                          boolean bExactMatchOnly, boolean bSmallMeshOverride)
+            throws IOException, ExecutionException, PythonStreamException, HDF5Exception, InterruptedException {
+        String bioModelBaseName = inputFile.getName().substring(0, inputFile.getName().indexOf(".")); // ".omex"??
+        Files.createDirectories(Paths.get(outputDir.getAbsolutePath() + File.separator + bioModelBaseName)); // make output subdir
+        final boolean bEncapsulateOutput = true;
+
+        singleExecOmex(inputFile, outputDir, cliLogger,
+                bKeepTempFiles, bExactMatchOnly, bEncapsulateOutput, bSmallMeshOverride);
     }
 
     public static void singleMode(File inputFile, File rootOutputDir, CLIRecordable cliLogger,
-            boolean bKeepTempFiles, boolean bExactMatchOnly, boolean bEncapsulateOutput, boolean bSmallMeshOverride) throws Exception {
+            boolean bKeepTempFiles, boolean bExactMatchOnly, boolean bEncapsulateOutput, boolean bSmallMeshOverride
+    ) throws Exception {
         // Build statuses
         String bioModelBaseName = FileUtils.getBaseName(inputFile.getName()); // bioModelBaseName = input file without the path
         String outputBaseDir = rootOutputDir.getAbsolutePath(); 
@@ -88,7 +124,8 @@ public class ExecuteImpl {
 
         PythonCalls.generateStatusYaml(inputFile.getAbsolutePath(), targetOutputDir);    // generate Status YAML
 
-        ExecuteImpl.singleExecOmex(inputFile, rootOutputDir, cliLogger, bKeepTempFiles, bExactMatchOnly, bEncapsulateOutput, bSmallMeshOverride);
+        ExecuteImpl.singleExecOmex(inputFile, rootOutputDir, cliLogger, bKeepTempFiles, bExactMatchOnly,
+                bEncapsulateOutput, bSmallMeshOverride);
     }
 
     public static void singleMode(File inputFile, File outputDir, CLIRecordable cliLogger) throws Exception {
@@ -97,7 +134,8 @@ public class ExecuteImpl {
         final boolean bEncapsulateOutput = false;
         final boolean bSmallMeshOverride = false;
 
-        ExecuteImpl.singleMode(inputFile, outputDir, cliLogger, bKeepTempFiles, bExactMatchOnly, bEncapsulateOutput, bSmallMeshOverride);
+        ExecuteImpl.singleMode(inputFile, outputDir, cliLogger, bKeepTempFiles, bExactMatchOnly,
+                bEncapsulateOutput, bSmallMeshOverride);
     }
 
     @Deprecated
@@ -157,9 +195,10 @@ public class ExecuteImpl {
     }
 
     private static void singleExecOmex(File inputFile, File rootOutputDir, CLIRecordable cliRecorder,
-            boolean bKeepTempFiles, boolean bExactMatchOnly, boolean bEncapsulateOutput, boolean bSmallMeshOverride) 
-            throws ExecutionException, PythonStreamException, IOException, InterruptedException {
-        ExecutionJob requestedExecution = new ExecutionJob(inputFile, rootOutputDir, cliRecorder, 
+            boolean bKeepTempFiles, boolean bExactMatchOnly, boolean bEncapsulateOutput, boolean bSmallMeshOverride)
+            throws ExecutionException, PythonStreamException, IOException, InterruptedException, HDF5Exception {
+
+        ExecutionJob requestedExecution = new ExecutionJob(inputFile, rootOutputDir, cliRecorder,
             bKeepTempFiles, bExactMatchOnly, bEncapsulateOutput, bSmallMeshOverride);
         requestedExecution.preprocessArchive();
         requestedExecution.executeArchive();

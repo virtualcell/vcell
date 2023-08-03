@@ -8,6 +8,7 @@ import org.vcell.admin.cli.db.DatabaseCompareSchemaCommand;
 import org.vcell.admin.cli.db.DatabaseDestroyAndRecreateCommand;
 import org.vcell.admin.cli.mathverifier.ModeldbLoadTestCommand;
 import org.vcell.admin.cli.mathverifier.ModeldbMathGenTestCommand;
+import org.vcell.admin.cli.sim.JobInfoCommand;
 import org.vcell.admin.cli.sim.ResultSetCrawlerCommand;
 import org.vcell.admin.cli.sim.SimDataVerifierCommand;
 import org.vcell.admin.cli.tools.UsageCommand;
@@ -24,6 +25,7 @@ import picocli.CommandLine.Command;
         UsageCommand.class,
         ResultSetCrawlerCommand.class,
         SimDataVerifierCommand.class,
+        JobInfoCommand.class,
         CommandLine.HelpCommand.class,
 })
 public class AdminCLI {

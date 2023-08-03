@@ -1,0 +1,8 @@
+start: 0
+duration: 10
+steps: 10
+variables: spec, Spec, sPeC, C, c, K, k
+absolute: 0.0001
+relative: 0.0001
+amount: spec, Spec, sPeC
+concentration: 

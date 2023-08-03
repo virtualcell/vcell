@@ -1,6 +1,7 @@
 package cbit.vcell.biomodel;
 
 import cbit.util.xml.XmlUtil;
+import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.resource.NativeLib;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
@@ -16,6 +17,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.vcell.sbml.vcell.SBMLExporter;
 import org.vcell.sedml.ModelFormat;
+import org.vcell.sedml.PublicationMetadata;
 import org.vcell.sedml.SEDMLExporter;
 import org.vcell.test.Fast;
 
@@ -26,6 +28,8 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Predicate;
 
 @Category(Fast.class)
 @RunWith(Parameterized.class)
@@ -83,11 +87,12 @@ public class MathOverrideRoundTipTest {
         File outputDir = Files.createTempDir();
         File omexFile = new File(outputDir, filename + ".omex");
 
-        boolean bFromCLI = true;
+        boolean bHasPython = true;
         boolean bRoundTripSBMLValidation = true;
         boolean bWriteOmexArchive = true;
-
-        SEDMLExporter.writeBioModel(bioModel, omexFile, ModelFormat.SBML, bFromCLI, bRoundTripSBMLValidation, bWriteOmexArchive);
+        Optional<PublicationMetadata> publicationMetadata = Optional.empty();
+        Predicate<SimulationContext> simContextFilter = (sc) -> true;
+        SEDMLExporter.writeBioModel(bioModel, publicationMetadata, omexFile, ModelFormat.SBML, simContextFilter, bHasPython, bRoundTripSBMLValidation, bWriteOmexArchive);
 
         SBMLExporter.MemoryVCLogger memoryVCLogger = new SBMLExporter.MemoryVCLogger();
         List<BioModel> bioModels = XmlHelper.readOmex(omexFile, memoryVCLogger);

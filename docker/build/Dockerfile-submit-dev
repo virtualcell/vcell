@@ -87,6 +87,8 @@ ENTRYPOINT java \
 	-Dvcell.parallelDatadir.external="${simdatadir_parallel_external}" \
 	-Dvcell.nativesolverdir.external="${nativesolverdir_external}" \
 	-Dvcell.htc.user="${batchuser}" \
+	-Dvcell.htc.hosts="${batchhost}" \
+	-Dvcell.htc.userkeyfile="${batchuserkeyfile}" \
 	-Dvcell.htc.logdir.internal=/htclogs \
 	-Dvcell.htc.logdir.external="${htclogdir_external}" \
 	-Dvcell.htc.nodelist="${htcnodelist}" \
@@ -131,5 +133,4 @@ ENTRYPOINT java \
 	-Dvcell.simdatadir.archive.external=${simdatadir_archive_external} \
 	-Dvcell.ssh.cmd.cmdtimeout=${vcell_ssh_cmd_cmdtimeout} \
 	-Dvcell.ssh.cmd.restoretimeout=${vcell_ssh_cmd_restoretimeout} \
-	-cp "./lib/*" cbit.vcell.message.server.batch.sim.HtcSimulationWorker \
-	"${batchhost}" "${batchuser}" "${batchuserkeyfile}"	
+	-cp "./lib/*" cbit.vcell.message.server.batch.sim.HtcSimulationWorker

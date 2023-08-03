@@ -79,7 +79,7 @@ public class PublicationsServerResource extends AbstractServerResource implement
 	@Override
     public PublicationRepresentation[] get_json() {
 		VCellApiApplication application = ((VCellApiApplication)getApplication());
-		User vcellUser = application.getVCellUser(getChallengeResponse(),AuthenticationPolicy.prohibitInvalidCredentials);
+		User vcellUser = application.getVCellUser(getChallengeResponse(),AuthenticationPolicy.ignoreInvalidCredentials);
 		
         return getPublicationRepresentations(vcellUser);
     }

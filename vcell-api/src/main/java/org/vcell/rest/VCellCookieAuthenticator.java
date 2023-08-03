@@ -1,36 +1,35 @@
 package org.vcell.rest;
 
-import java.sql.SQLException;
-import java.util.logging.Level;
-
+import cbit.vcell.modeldb.ApiAccessToken;
+import cbit.vcell.modeldb.ApiClient;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.restlet.Context;
 import org.restlet.Request;
 import org.restlet.Response;
-import org.restlet.data.ChallengeResponse;
-import org.restlet.data.Cookie;
-import org.restlet.data.Form;
-import org.restlet.data.Parameter;
-import org.restlet.data.Reference;
-import org.restlet.data.Status;
+import org.restlet.data.*;
 import org.restlet.ext.crypto.CookieAuthenticator;
 import org.restlet.representation.Representation;
+import org.vcell.rest.auth.CookieVerifier;
 import org.vcell.rest.auth.CustomAuthHelper;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserLoginInfo;
 
-import cbit.vcell.modeldb.ApiAccessToken;
-import cbit.vcell.modeldb.ApiClient;
+import java.sql.SQLException;
+import java.util.logging.Level;
 
 public class VCellCookieAuthenticator extends CookieAuthenticator {
 	private final static Logger lg = LogManager.getLogger(VCellCookieAuthenticator.class);
 	
-	private VCellApiApplication vcellApiApplication = null;
+	private UserService userService = null;
+	private CookieVerifier cookieVerifier = null;
 
-	public VCellCookieAuthenticator(VCellApiApplication vcellApiApplication, boolean optional, String realm, byte[] encryptSecretKey) {
-		super(vcellApiApplication.getContext(), optional, realm, encryptSecretKey);
-		this.vcellApiApplication = vcellApiApplication;
+	public VCellCookieAuthenticator(UserService userService, CookieVerifier cookieVerifier, Context context, boolean optional, String realm, byte[] encryptSecretKey) {
+		super(context, optional, realm, encryptSecretKey);
+		setVerifier(cookieVerifier);
+		this.cookieVerifier = cookieVerifier;
+		this.userService = userService;
 	}
 
 	@Override
@@ -44,20 +43,21 @@ public class VCellCookieAuthenticator extends CookieAuthenticator {
         
 		UserLoginInfo.DigestedPassword digestedPassword = new UserLoginInfo.DigestedPassword(secret.getValue());
 		try {
-			User user = vcellApiApplication.getUserVerifier().authenticateUser(identifier.getValue(), digestedPassword.getString().toCharArray());
+			User user = userService.authenticateUser(identifier.getValue(), digestedPassword.getString().toCharArray());
 			if (user == null){
 				response.setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
 				return;
 			}
-			ApiClient apiClient = vcellApiApplication.getUserVerifier().getApiClient(VCellApiApplication.BROWSER_CLIENTID);
-			ApiAccessToken accessToken = vcellApiApplication.getUserVerifier().generateApiAccessToken(apiClient.getKey(), user);
+			ApiClient apiClient = userService.getApiClient(VCellApiApplication.BROWSER_CLIENTID);
+			ApiAccessToken accessToken = userService.generateApiAccessToken(apiClient.getKey(), user);
 
 			// Set credentials
 	        ChallengeResponse cr = new ChallengeResponse(getScheme(), CustomAuthHelper.ACCESS_TOKEN, accessToken.getToken());
 	        request.setChallengeResponse(cr);
 	        
 	        
-	        getCredentialsCookie(request, response).setMaxAge(0);
+	        CookieSetting crendentialCookie = getCredentialsCookie(request, response);
+			crendentialCookie.setMaxAge(0);
 
 	        getLogger().log(Level.INFO,"MyCookieAuthenticator.login(request,response) - created new accessToken '"+accessToken.getToken()+"' and assignd to ChallengeResponse, redirectURL='"+redirectURL.getValue()+"'");
 
@@ -77,9 +77,9 @@ public class VCellCookieAuthenticator extends CookieAuthenticator {
 	        Cookie credentialsCookie = request.getCookies().getFirst(getCookieName());
 	        if (credentialsCookie != null) {
 	        	ChallengeResponse challengeResponse = parseCredentials(credentialsCookie.getValue());
-	        	ApiAccessToken apiAccessToken = vcellApiApplication.getApiAccessToken(challengeResponse);
+	        	ApiAccessToken apiAccessToken = cookieVerifier.getApiAccessToken(challengeResponse);
 	        	if (apiAccessToken!=null){
-	        		vcellApiApplication.getUserVerifier().invalidateApiAccessToken(apiAccessToken.getToken());
+	        		userService.invalidateApiAccessToken(apiAccessToken.getToken());
 	        		getLogger().log(Level.INFO,"MyCookieAuthenticator.login(request,response) - invalidated accessToken '"+apiAccessToken.getToken()+"'");
 	        	}
 	        }
@@ -90,6 +90,12 @@ public class VCellCookieAuthenticator extends CookieAuthenticator {
 		}
 		
 		return super.logout(request, response);
+	}
+
+	@Override
+	public ChallengeResponse parseCredentials(String cookieValue) {
+		// increase visibility of this method
+		return super.parseCredentials(cookieValue);
 	}
 
 };

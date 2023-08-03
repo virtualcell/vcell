@@ -1,0 +1,8 @@
+start: 0
+duration: 1
+steps: 100
+variables: pp9_mrna, p9, pp8_mrna, p8, pp7_mrna, p7, pp6_mrna, p6, pp5_mrna, p5, pp4_mrna, p4, pp3_mrna, p3, pp2_mrna, p2, pp1_mrna, p1, DefaultCompartment, pp8_mrna_degradation_rate, pp9_mrna_degradation_rate, p1_degradation_rate, p2_degradation_rate, p3_degradation_rate, p4_degradation_rate, p5_degradation_rate, p6_degradation_rate, p7_degradation_rate, p8_degradation_rate, p9_degradation_rate, v1_Kd, v1_h, v2_Kd, v2_h, v3_Kd, v3_h, v4_Kd, v4_h, v5_Kd, v5_h, v6_Kd, v6_h, v7_Kd, v7_h, v8_Kd, v8_h, v9_Kd, v9_h, pp1_mrna_degradation_rate, pp2_mrna_degradation_rate, pro1_strength, pro2_strength, pro3_strength, pro4_strength, pro5_strength, pro6_strength, pro7_strength, pro8_strength, pro9_strength, pp3_mrna_degradation_rate, v10_Kd, v10_h, v11_Kd, v11_h, v12_Kd, v12_h, v13_Kd, v13_h, pp4_mrna_degradation_rate, v14_Kd, v14_h, v15_Kd, v15_h, pp5_mrna_degradation_rate, rbs1_strength, rbs2_strength, rbs3_strength, rbs4_strength, rbs5_strength, rbs6_strength, rbs7_strength, rbs8_strength, rbs9_strength, pp6_mrna_degradation_rate, pp7_mrna_degradation_rate, as8, cod1, cod2, cod3, cod4, cod5, cod6, cod7, cod8, cod9, rs1, rs2, rs3, rs4, rs5, rs6, rs7, as1, as2, as3, as4, as5, as6, as7
+absolute: 0.0001
+relative: 0.0001
+amount: pp9_mrna, p9, pp8_mrna, p8, pp7_mrna, p7, pp6_mrna, p6, pp5_mrna, p5, pp4_mrna, p4, pp3_mrna, p3, pp2_mrna, p2, pp1_mrna, p1
+concentration: 

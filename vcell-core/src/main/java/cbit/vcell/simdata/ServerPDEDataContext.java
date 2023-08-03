@@ -29,13 +29,13 @@ public class ServerPDEDataContext extends PDEDataContext {
 	private User user = null;
 	private OutputContext outputContext = null;
 
-public ServerPDEDataContext(OutputContext outputContext,User user0, DataServerImpl dataServerImpl, VCDataIdentifier vcdID) throws Exception {
+public ServerPDEDataContext(OutputContext outputContext,User user0, DataServerImpl dataServerImpl, VCDataIdentifier vcdID) {
 	super();
 	user = user0;
-	setDataServerImpl(dataServerImpl);
-	setVCDataIdentifier(vcdID);
-	setOutputContext(outputContext);
-	initialize();
+	this.setDataServerImpl(dataServerImpl);
+	this.setVCDataIdentifier(vcdID);
+	this.setOutputContext(outputContext);
+	this.initialize();
 }
 
 

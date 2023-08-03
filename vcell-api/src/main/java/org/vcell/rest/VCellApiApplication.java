@@ -16,11 +16,12 @@ import org.restlet.resource.Directory;
 import org.restlet.resource.ResourceException;
 import org.restlet.routing.Router;
 import org.restlet.security.ChallengeAuthenticator;
-import org.vcell.rest.UserVerifier.AuthenticationStatus;
 import org.vcell.rest.admin.AdminJobsRestlet;
 import org.vcell.rest.admin.AdminService;
+import org.vcell.rest.admin.AdminStatsRestlet;
 import org.vcell.rest.auth.AuthenticationTokenRestlet;
-import org.vcell.rest.auth.TokenBasedVerifier;
+import org.vcell.rest.auth.BearerTokenVerifier;
+import org.vcell.rest.auth.CookieVerifier;
 import org.vcell.rest.events.EventsRestlet;
 import org.vcell.rest.events.RestEventService;
 import org.vcell.rest.health.HealthRestlet;
@@ -34,7 +35,6 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
 import java.io.File;
-import java.sql.SQLException;
 import java.util.logging.Level;
 
 public class VCellApiApplication extends WadlApplication {
@@ -106,6 +106,7 @@ public class VCellApiApplication extends WadlApplication {
 	
 	public static final String VCML_DOWNLOAD = "biomodel.vcml";
 	public static final String SBML_DOWNLOAD = "biomodel.sbml";
+	public static final String OMEX_DOWNLOAD = "biomodel.omex";
 	public static final String BNGL_DOWNLOAD = "biomodel.bngl";
 	public static final String DIAGRAM_DOWNLOAD = "diagram";
 	public static final String SIMULATION = "simulation";
@@ -128,7 +129,8 @@ public class VCellApiApplication extends WadlApplication {
 	
 	public static final String ADMIN = "admin";
 	public static final String 	ADMIN_JOBS = "jobs";
-	
+	public static final String 	ADMIN_STATS = "stats";
+
 	public static final String JOBINDEX = "jobindex";
 	
 	public static final String SAVESIMULATION = "save";
@@ -154,7 +156,10 @@ public class VCellApiApplication extends WadlApplication {
 	
 	
 	private RestDatabaseService restDatabaseService = null;
-	private UserVerifier userVerifier = null;
+	private UserService userService = null;
+
+	private BearerTokenVerifier bearerTokenVerifier = null;
+	private CookieVerifier cookieVerifier = null;
 	private Configuration templateConfiguration = null;
 	private File javascriptDir = null;
 	private RpcService rpcService = null;
@@ -186,7 +191,7 @@ public class VCellApiApplication extends WadlApplication {
 
 	public VCellApiApplication(
 			RestDatabaseService restDatabaseService, 
-			UserVerifier userVerifier, 
+			UserService userService,
 			RpcService rpcService, 
 			RestEventService restEventService, 
 			AdminService adminService,
@@ -202,7 +207,7 @@ public class VCellApiApplication extends WadlApplication {
 		this.javascriptDir = javascriptDir;
 		this.restDatabaseService = restDatabaseService;
 		this.adminService = adminService;
-		this.userVerifier = userVerifier;
+		this.userService = userService;
 		this.rpcService = rpcService;
 		this.restEventService = restEventService;
 		this.templateConfiguration = templateConfiguration;
@@ -252,16 +257,7 @@ public class VCellApiApplication extends WadlApplication {
 		 * :"38442201","mathModelBranchId"
 		 * :"38442202","mathModelName":"tempMath77"}}]
 		 */	    
-	    
-	
-		// Attach a guard to secure access to user parts of the api 
 
-		boolean bAuthOptional = true;
-		ChallengeAuthenticator guard = new ChallengeAuthenticator(
-				getContext(), bAuthOptional, ChallengeScheme.HTTP_OAUTH_BEARER, "testRealm");
-		TokenBasedVerifier verifier = new TokenBasedVerifier();
-		guard.setVerifier(verifier);
-        
         String ROOT_URI = javascriptDir.toURI().toString();
         String WEBAPP_URI = new File(javascriptDir.getParentFile(),"webapp").toURI().toString();
         System.out.println("using uri="+ROOT_URI+" for scripts directory");
@@ -280,9 +276,10 @@ public class VCellApiApplication extends WadlApplication {
 	    rootRouter.attach("/"+PUBLICATION+"/{"+PUBLICATIONID+"}", PublicationServerResource.class);
 		rootRouter.attach("/"+BIOMODEL, BiomodelsServerResource.class);  
 		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}", BiomodelServerResource.class);  
-		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}/"+VCML_DOWNLOAD, BiomodelVCMLServerResource.class);  
-		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}/"+SBML_DOWNLOAD, BiomodelSBMLServerResource.class); 
-		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}/"+BNGL_DOWNLOAD, BiomodelBNGLServerResource.class);  
+		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}/"+VCML_DOWNLOAD, BiomodelVCMLServerResource.class);
+		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}/"+SBML_DOWNLOAD, BiomodelSBMLServerResource.class);
+		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}/"+OMEX_DOWNLOAD, BiomodelOMEXServerResource.class);
+		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}/"+BNGL_DOWNLOAD, BiomodelBNGLServerResource.class);
 		rootRouter.attach("/"+MODELBRICK, BiomodelVCMLModelInfoResource.class);//Expects queryparameters
 		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}/"+DIAGRAM_DOWNLOAD, BiomodelDiagramServerResource.class);  
 		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}/"+SIMULATION+"/{"+SIMULATIONID+"}", BiomodelSimulationServerResource.class);  
@@ -315,7 +312,8 @@ public class VCellApiApplication extends WadlApplication {
 
 	    rootRouter.attach("/"+HEALTH, new HealthRestlet(getContext()));
 
-	    rootRouter.attach("/"+ADMIN+"/"+ADMIN_JOBS, new AdminJobsRestlet(getContext()));
+		rootRouter.attach("/"+ADMIN+"/"+ADMIN_JOBS, new AdminJobsRestlet(getContext()));
+		rootRouter.attach("/"+ADMIN+"/"+ADMIN_STATS, new AdminStatsRestlet(getContext(), restDatabaseService));
 
 	    rootRouter.attach("/auth/user", new Restlet(getContext()){
 
@@ -333,10 +331,33 @@ public class VCellApiApplication extends WadlApplication {
 			}
 			
 		});
-		
-        guard.setNext(rootRouter);
-     	    	 
-    	return guard;
+
+		// Attach an auth bearer guard to secure access to user parts of the api via
+		boolean bAuthOptional = true;
+		ChallengeAuthenticator bearerTokenAuthenticator = new ChallengeAuthenticator(
+				getContext(), bAuthOptional, ChallengeScheme.HTTP_OAUTH_BEARER, "testRealm");
+		bearerTokenVerifier = new BearerTokenVerifier(userService);
+		bearerTokenAuthenticator.setMultiAuthenticating(false); // if it is already authenticated via cookies, then don't authenticate again
+		bearerTokenAuthenticator.setVerifier(bearerTokenVerifier);
+
+		// Attach a cookie based Basic auth guard to secure access to browser access.
+		boolean bCookieOptional = true;
+		cookieVerifier = new CookieVerifier(userService);
+		final VCellCookieAuthenticator cookieAuthenticator = new VCellCookieAuthenticator(
+				userService, cookieVerifier, getContext(), bCookieOptional, "My cookie realm", "MyExtraSecretKey".getBytes());
+		cookieAuthenticator.setMultiAuthenticating(false);
+		cookieAuthenticator.setLoginPath("/"+LOGIN);
+		cookieAuthenticator.setLogoutPath("/"+LOGOUT);
+		cookieAuthenticator.setCookieName("org.vcell.auth");
+		cookieAuthenticator.setLoginFormPath("/"+LOGINFORM);
+		cookieAuthenticator.setIdentifierFormName(IDENTIFIER_FORMNAME);
+		cookieAuthenticator.setSecretFormName(SECRET_FORMNAME);
+		cookieAuthenticator.setRedirectQueryName(REDIRECTURL_FORMNAME);
+		cookieAuthenticator.setMaxCookieAge(15*60); // 15 minutes (in units of seconds).
+
+		bearerTokenAuthenticator.setNext(rootRouter);
+		cookieAuthenticator.setNext(bearerTokenAuthenticator);
+    	return cookieAuthenticator;
     }  
 	
    public RestDatabaseService getRestDatabaseService() {
@@ -347,17 +368,34 @@ public class VCellApiApplication extends WadlApplication {
 		return this.templateConfiguration;
 	}
 	
-	public UserVerifier getUserVerifier(){
-		return userVerifier;
+	public UserService getUserService(){
+		return userService;
 	}
 
 	public AdminService getAdminService() {
 		return this.adminService;
 	}
 
-	public User getVCellUser(ChallengeResponse response, AuthenticationPolicy authPolicy) {
+	public User.SPECIAL_CLAIM[] getSpecialClaims(ApiAccessToken apiAccessToken) throws DataAccessException {
+		User user = apiAccessToken.getUser();
+		return restDatabaseService.getSpecialClaims(user);
+	}
+
+	public User getVCellUser(ChallengeResponse response, AuthenticationPolicy authPolicy) throws ResourceException {
+		ApiAccessToken apiAccessToken = getApiAccessToken(response, authPolicy);
+		if (apiAccessToken != null){
+			return apiAccessToken.getUser();
+		} else {
+			return null;
+		}
+	}
+
+	public ApiAccessToken getApiAccessToken(ChallengeResponse response, AuthenticationPolicy authPolicy) throws ResourceException {
 		try {
-			ApiAccessToken accessToken = getApiAccessToken(response);
+			ApiAccessToken accessToken = bearerTokenVerifier.getApiAccessToken(response);
+			if (accessToken == null){
+				accessToken = cookieVerifier.getApiAccessToken(response);
+			}
 			if (accessToken!=null){
 				if (accessToken.isExpired()){
 					if (authPolicy == AuthenticationPolicy.ignoreInvalidCredentials){
@@ -375,20 +413,14 @@ public class VCellApiApplication extends WadlApplication {
 					}
 				}else{
 					getLogger().log(Level.FINE,"VCellApiApplication.getVCellUser(response) - ApiAccessToken is valid ... returning user = "+accessToken.getUser().getName());
-					return accessToken.getUser();
+					return accessToken;
 				}
 			}else{ // accessToken is null
-				AuthenticationStatus authStatus = userVerifier.verify(response);
-				if (authStatus==AuthenticationStatus.missing){
-					getLogger().log(Level.FINE,"VCellApiApplication.getVCellUser(response) - ApiAccessToken not provided ... returning user = null");
+				if (authPolicy == AuthenticationPolicy.ignoreInvalidCredentials){
+					getLogger().log(Level.INFO,"VCellApiApplication.getVCellUser(response) - ApiAccessToken not found in database ... returning user = null");
 					return null;
 				}else{
-					if (authPolicy == AuthenticationPolicy.ignoreInvalidCredentials){
-						getLogger().log(Level.INFO,"VCellApiApplication.getVCellUser(response) - ApiAccessToken not found in database ... returning user = null");
-						return null;
-					}else{
-						throw new ResourceException(Status.CLIENT_ERROR_UNAUTHORIZED, "access_token invalid");
-					}
+					throw new ResourceException(Status.CLIENT_ERROR_UNAUTHORIZED, "access_token invalid");
 				}
 			}
 		}catch (Exception e){
@@ -400,17 +432,4 @@ public class VCellApiApplication extends WadlApplication {
 			}
 		}
 	}
-	
-	ApiAccessToken getApiAccessToken(ChallengeResponse response) throws SQLException, DataAccessException{
-		if (response==null){
-			getLogger().log(Level.INFO,"VCellApiApplication.getApiAccessToken(response) - response was null");
-			return null;
-		}else if (response.getRawValue()==null){
-			getLogger().log(Level.INFO,"VCellApiApplication.getApiAccessToken(response) - response.getRawValue() was null");
-			return null;
-		}
-		ApiAccessToken accessToken = userVerifier.getApiAccessToken(new String(response.getRawValue()));
-		return accessToken;
-	}
-
 }

@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicLong;
 
+import cbit.vcell.solver.VCSimulationDataIdentifier;
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -33,7 +34,7 @@ public class HealthService {
 	
 	private static final long LOGIN_TIME_WARNING = 10*1000;
 	private static final long LOGIN_TIME_ERROR = 30*1000;
-	private static final long SIMULATION_TIME_WARNING = 25*1000;
+	private static final long SIMULATION_TIME_WARNING = 45*1000;
 	private static final long SIMULATION_TIMEOUT = 8*60*1000;
 	private static final long LOGIN_LOOP_START_DELAY = 40*1000;
 	private static final long LOGIN_LOOP_SLEEP = 3*60*1000;
@@ -290,11 +291,14 @@ public class HealthService {
 					}
 				}
 				runningSimId = null;
-				
+
 				if (!simStatus.isCompleted()) {
 					throw new RuntimeException("failed: "+simStatus.getDetails());
 				}
-				
+
+				// before declaring success, retrieve some data (time array is sufficient)
+				vcellConnection.getDataSetController().getDataSetTimes(new VCSimulationDataIdentifier(vcSimId, 0));
+
 				simSuccess(id);
 				
 			}catch (Throwable e) {

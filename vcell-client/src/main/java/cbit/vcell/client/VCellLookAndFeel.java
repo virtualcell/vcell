@@ -11,13 +11,18 @@
 package cbit.vcell.client;
 
 import java.awt.Font;
+import java.awt.Toolkit;
 
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import cbit.vcell.resource.OperatingSystemInfo;
 
 public class VCellLookAndFeel {
+	private final static Logger lg = LogManager.getLogger(VCellLookAndFeel.class);
 	
 	public static Font defaultFont = null;
 	public static void setVCellLookAndFeel() {
@@ -25,17 +30,11 @@ public class VCellLookAndFeel {
 //		if (!ResourceUtil.bLinux) {
 			//changed to see if SystemLookAndFeel on Linux works better than the default CrossPlatformLookAndFeel (aka Metal)
 			try {
-				System.out.println("Operating system:  " + osi.getOsType());
-				System.out.println("About to set the look and feel.  Before setting, we're using: "+UIManager.getLookAndFeel().getName());
+				lg.info("Operating system:  " + osi.getOsType());
+				lg.info("About to set the look and feel.  Before setting, we're using: " + UIManager.getLookAndFeel().getName());
 				UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-			} catch (ClassNotFoundException e) {
-				e.printStackTrace();
-			} catch (InstantiationException e) {
-				e.printStackTrace();
-			} catch (IllegalAccessException e) {
-				e.printStackTrace();
-			} catch (UnsupportedLookAndFeelException e) {
-				e.printStackTrace();
+			} catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e) {
+				lg.warn("Error while setting look and feel:", e);
 			}
 //		}
 		final boolean isMac = osi.isMac();
@@ -95,7 +94,7 @@ public class VCellLookAndFeel {
 	        UIManager.put("TabbedPane.useSmallLayout", Boolean.TRUE);
 	        
 //	        System.setProperty("apple.laf.useScreenMenuBar", "true");
-	        System.getProperties().put("swing.component.sizevariant", "small");
+	        System.getProperties().put("swing.component.sizevariant", "regular");
 		}
 		
 		System.out.println("After setting, we're using: "+UIManager.getLookAndFeel().getName());

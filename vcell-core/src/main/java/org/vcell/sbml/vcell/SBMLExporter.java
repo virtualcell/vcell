@@ -40,7 +40,6 @@ import cbit.vcell.mapping.spatial.SpatialObject.SpatialQuantity;
 import cbit.vcell.mapping.spatial.processes.SpatialProcess;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.*;
-import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.model.*;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Kinetics.KineticsParameter;
@@ -49,14 +48,18 @@ import cbit.vcell.model.Model.ReservedSymbol;
 import cbit.vcell.model.Model.ReservedSymbolRole;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.Model.StructureTopology;
-import cbit.vcell.parser.*;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.ExpressionMathMLPrinter;
 import cbit.vcell.parser.ExpressionMathMLPrinter.MathType;
-import cbit.vcell.solver.*;
+import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.solver.AnnotatedFunction;
+import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.xml.XMLTags;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -71,8 +74,8 @@ import org.vcell.sbml.SBMLUtils;
 import org.vcell.sbml.SbmlException;
 import org.vcell.sbml.UnsupportedSbmlExportException;
 import org.vcell.sbml.vcell.SBMLSymbolMapping.SBaseWrapper;
-import org.vcell.sedml.SEDMLExporter;
 import org.vcell.util.*;
+import org.vcell.util.document.VCellSoftwareVersion;
 
 import javax.xml.stream.XMLStreamException;
 import java.beans.PropertyVetoException;
@@ -109,7 +112,7 @@ public class SBMLExporter {
 
 	private final Map<String, UnitDefinition> vcUnitSymbolToSBMLUnit = new LinkedHashMap<>(); // to avoid repeated creation of
 
-	private final Map<Pair <String, String>, String> l2gMap = new HashMap<>();	// local to global translation map, used for reaction parameters
+	private final Map<Pair <String, String>, String> l2gMap = new HashMap<>();    // local to global translation map, used for reaction parameters
 
 	private final SBMLExportSymbolMapping sbmlExportSymbolMapping = new SBMLExportSymbolMapping();
 
@@ -120,20 +123,23 @@ public class SBMLExporter {
 	private SBMLAnnotationUtil sbmlAnnotationUtil = null;
 
 	private java.util.Hashtable<String, String> globalParamNamesHash = new java.util.Hashtable<String, String>();
-	
+
 	private SBMLExportSpec sbmlExportSpec = null;
 
 	public static class MemoryVCLogger extends VCLogger {
 		public final List<String> highPriority = new ArrayList<>();
 		public final List<String> medPriority = new ArrayList<>();
 		public final List<String> lowPriority = new ArrayList<>();
+
 		@Override
 		public boolean hasMessages() {
 			return false;
 		}
+
 		@Override
 		public void sendAllMessages() {
 		}
+
 		@Override
 		public void sendMessage(Priority p, ErrorType et, String message)
 				throws VCLoggerException {
@@ -179,24 +185,30 @@ public class SBMLExporter {
 			this.lengthUnits = argLUnits;
 			this.timeUnits = argTUnits;
 		}
+
 		public VCUnitDefinition getSubstanceUnits() {
-			return substanceUnits;			
+			return substanceUnits;
 		}
+
 		public VCUnitDefinition getVolumeUnits() {
-			return volUnits;		
+			return volUnits;
 		}
+
 		public VCUnitDefinition getAreaUnits() {
-			return areaUnits;			
+			return areaUnits;
 		}
+
 		public VCUnitDefinition getLengthUnits() {
-			return lengthUnits;		
+			return lengthUnits;
 		}
+
 		public VCUnitDefinition getTimeUnits() {
-			return timeUnits;			
+			return timeUnits;
 		}
+
 		public VCUnitDefinition getConcentrationUnit(int dimension) {
 			switch (dimension) {
-			case 1 : 
+				case 1 :
 					return getSubstanceUnits().divideBy(getLengthUnits());
 				case 2 :
 					return getSubstanceUnits().divideBy(getAreaUnits());
@@ -281,7 +293,7 @@ private void addCompartments() throws XMLStreamException, SbmlException {
 		throw new RuntimeException("Failed to solve for unit sizes for spatial application: "+e.getMessage(), e);
 	}
 	cbit.vcell.model.Structure[] vcStructures = vcModel.getStructures();
-	for (int i = 0; i < vcStructures.length; i++) {		// first we populate compartment vcell name to sbml id map
+	for (int i = 0; i < vcStructures.length; i++) {        // first we populate compartment vcell name to sbml id map
 		Compartment sbmlCompartment = sbmlModel.createCompartment();
 		String cName = vcStructures[i].getName();
 		String sid = TokenMangler.mangleToSName(cName);
@@ -358,16 +370,13 @@ private void addCompartments() throws XMLStreamException, SbmlException {
 			}
 		} catch (cbit.vcell.parser.ExpressionException e) {
 			// If it is in the catch block, it means that the compartment size was probably not a double, but an assignment.
-			// Check if the expression for the compartment size is not null and add it as an assignment rule.
+			// Check if the expression for the compartment size is not null and add it as an initialAssignment.
 			Expression sizeExpr = vcStructMapping.getSizeParameter().getExpression();
 			if (sizeExpr != null) {
 				ASTNode ruleFormulaNode = getFormulaFromExpression(sizeExpr);
-				AssignmentRule assignRule = sbmlModel.createAssignmentRule();
-				assignRule.setVariable(vcStructures[i].getName());
-				assignRule.setMath(ruleFormulaNode);
-				// If compartmentSize is specified by an assignment rule, the 'constant' field should be set to 'false' (default - true).
-				sbmlCompartment.setConstant(false);
-				sbmlModel.addRule(assignRule);
+				InitialAssignment initialAssignment = sbmlModel.createInitialAssignment();
+				initialAssignment.setVariable(vcStructures[i].getName());
+				initialAssignment.setMath(ruleFormulaNode);
 			}
 		}
 
@@ -457,6 +466,7 @@ private void setSbmlParameterValueAndUnit(Parameter vcParam, org.sbml.jsbml.Para
 	}
 
 	Expression paramExpr = new Expression(vcParam.getExpression());
+
 	if (getSelectedSimContext().getRateRule(vcParam) != null || bParamIsEventTarget) {
 		// parameter value is modified externally - need an initial condition
 		if (vcAssignmentRuleForParam != null) {
@@ -465,7 +475,7 @@ private void setSbmlParameterValueAndUnit(Parameter vcParam, org.sbml.jsbml.Para
 		sbmlParam.setConstant(false);
 		if (paramExpr.isNumeric()) {
 			sbmlParam.setValue(paramExpr.evaluateConstant());
-		}else {
+		} else {
 			InitialAssignment initAssignment = sbmlModel.createInitialAssignment();
 			initAssignment.setVariable(sbmlParam.getId());
 			sbmlExportSymbolMapping.initialAssignmentToVcmlExpressionMap.put(initAssignment, paramExpr);
@@ -482,13 +492,24 @@ private void setSbmlParameterValueAndUnit(Parameter vcParam, org.sbml.jsbml.Para
 			sbmlParam.setConstant(true);
 			sbmlParam.setValue(paramExpr.evaluateConstant());
 		} else {
-			// sbmlParam.setConstant(???); would have to
 			ASTNode paramFormulaNode = getFormulaFromExpression(paramExpr);
-			AssignmentRule sbmlParamAssignmentRule = sbmlModel.createAssignmentRule();
-			sbmlParamAssignmentRule.setVariable(sbmlParam.getId());    // freshly created above, guaranteed to be valid
-			sbmlParamAssignmentRule.setMath(paramFormulaNode);
-			sbmlExportSymbolMapping.assignmentRuleToVcmlExpressionMap.put(sbmlParamAssignmentRule, paramExpr);    // expression will be post-processed
+			if (isMappedToMathDescriptionConstantOrConstantFunction(vcParam) && (vcParam instanceof SpeciesContextSpecParameter)) {
+				sbmlParam.setConstant(true);
+				InitialAssignment sbmlParamInitialAssignment = sbmlModel.createInitialAssignment();
+				sbmlParamInitialAssignment.setVariable(sbmlParam.getId());    // freshly created above, guaranteed to be valid
+				sbmlParamInitialAssignment.setMath(paramFormulaNode);
+				sbmlExportSymbolMapping.initialAssignmentToVcmlExpressionMap.put(sbmlParamInitialAssignment, paramExpr);    // expression will be post-processed
+			}else{
+				sbmlParam.setConstant(false);
+				AssignmentRule sbmlParamAssignmentRule = sbmlModel.createAssignmentRule();
+				sbmlParamAssignmentRule.setVariable(sbmlParam.getId());    // freshly created above, guaranteed to be valid
+				sbmlParamAssignmentRule.setMath(paramFormulaNode);
+				sbmlExportSymbolMapping.assignmentRuleToVcmlExpressionMap.put(sbmlParamAssignmentRule, paramExpr);    // expression will be post-processed
+			}
 		}
+	}
+	if (!sbmlParam.isSetConstant()){
+		sbmlParam.setConstant(isMappedToMathDescriptionConstantOrConstantFunction(vcParam));
 	}
 }
 
@@ -504,24 +525,24 @@ private void addParameters() throws ExpressionException, SbmlException, XMLStrea
 			String sbmlParameterId;
 			String sbmlIdBase = TokenMangler.mangleToSName(vcParam.getName());
 			SBase used = sbmlModel.getSBaseById(sbmlIdBase);
-		if(used == null) {
-			sbmlParameterId = sbmlIdBase;
-		} else {			// the mangled vcell name may be already used as id by some other sbml entity
-			while(true) {	// make sure it's unique, otherwise setId will fail
-				sbmlParameterId = sbmlIdBase + idSuffixCounter;
-				if(sbmlModel.getSBaseById(sbmlParameterId) == null) {
-					break;
+			if(used == null) {
+				sbmlParameterId = sbmlIdBase;
+			} else {            // the mangled vcell name may be already used as id by some other sbml entity
+				while(true) {    // make sure it's unique, otherwise setId will fail
+					sbmlParameterId = sbmlIdBase + idSuffixCounter;
+					if(sbmlModel.getSBaseById(sbmlParameterId) == null) {
+						break;
+					}
+					idSuffixCounter++;
 				}
-				idSuffixCounter++;
 			}
-		}
-		sbmlParam.setId(sbmlParameterId);
-		sbmlExportSymbolMapping.putSteToSidMapping(vcParam, sbmlParameterId);
-		String sbmlName = vcParam.getSbmlName();
-		if(sbmlName != null && !sbmlName.isEmpty()) {
-			sbmlParam.setName(sbmlName);
-		} else {	// we give it vcParam name if sbml name is missing
-			sbmlParam.setName(vcParam.getName());
+			sbmlParam.setId(sbmlParameterId);
+			sbmlExportSymbolMapping.putSteToSidMapping(vcParam, sbmlParameterId);
+			String sbmlName = vcParam.getSbmlName();
+			if(sbmlName != null && !sbmlName.isEmpty()) {
+				sbmlParam.setName(sbmlName);
+			} else {    // we give it vcParam name if sbml name is missing
+				sbmlParam.setName(vcParam.getName());
 			}
 
 			setSbmlParameterValueAndUnit(vcParam, sbmlParam);
@@ -573,7 +594,7 @@ private void addParameters() throws ExpressionException, SbmlException, XMLStrea
 		}
 		ASTNode paramFormulaNode = getFormulaFromExpression(paramExpr);
 		AssignmentRule sbmlParamAssignmentRule = sbmlModel.createAssignmentRule();
-		sbmlParamAssignmentRule.setVariable(of.getName());
+		sbmlParamAssignmentRule.setVariable(sbmlParam.getId());
 		sbmlParamAssignmentRule.setMath(paramFormulaNode);
 		Element outputFunctionElement = new Element(XMLTags.SBML_VCELL_OutputFunctionTag, sbml_vcml_ns);
 		outputFunctionElement.setAttribute(XMLTags.SBML_VCELL_OutputFunctionTag_varTypeAttr, of.getFunctionType().getTypeName(), sbml_vcml_ns);
@@ -630,20 +651,20 @@ private void addParameters() throws ExpressionException, SbmlException, XMLStrea
 			}
 		} else {
 			Expression paramExpr = new Expression(reservedSymbolExpression);
-			boolean bParamIsNumeric = true;
+			boolean bConstant = true;
 			if (paramExpr.isNumeric()) {
 				sbmlParam.setValue(paramExpr.evaluateConstant());
 				if (getSelectedSimContext().getRateRule(vcParam) != null) {
-					bParamIsNumeric = false;
+					bConstant = false;
 				}
 			} else {
-				bParamIsNumeric = false;
+				bConstant = isMappedToMathDescriptionConstantOrConstantFunction(vcParam);
 				ASTNode paramFormulaNode = getFormulaFromExpression(paramExpr);
-				AssignmentRule sbmlParamAssignmentRule = sbmlModel.createAssignmentRule();
-				sbmlParamAssignmentRule.setVariable(vcParam.getName());
-				sbmlParamAssignmentRule.setMath(paramFormulaNode);
+				InitialAssignment sbmlParamInitialAssignment = sbmlModel.createInitialAssignment();
+				sbmlParamInitialAssignment.setVariable(vcParam.getName());
+				sbmlParamInitialAssignment.setMath(paramFormulaNode);
 			}
-			sbmlParam.setConstant(bParamIsNumeric);
+			sbmlParam.setConstant(bConstant);
 		}
 		VCUnitDefinition vcParamUnit = vcParam.getUnitDefinition();
 		if (!vcParamUnit.isTBD()) {
@@ -679,8 +700,8 @@ private void addReactions() throws SbmlException, XMLStreamException {
 		SBase used = sbmlModel.getSBaseById(sbmlIdBase);
 		if(used == null) {
 			sbmlReactionId = sbmlIdBase;
-		} else {			// the mangled vcell name may be already used as id by some other sbml entity
-			while(true) {	// make sure it's unique, otherwise setId will fail
+		} else {            // the mangled vcell name may be already used as id by some other sbml entity
+			while(true) {    // make sure it's unique, otherwise setId will fail
 				sbmlReactionId = sbmlIdBase + idSuffixCounter;
 				if(sbmlModel.getSBaseById(sbmlReactionId) == null) {
 					break;
@@ -743,7 +764,7 @@ private void addReactions() throws SbmlException, XMLStreamException {
 							(vcKParam.getRole() == Kinetics.ROLE_LumpedCurrent && (!vcKParam.getExpression().isZero())) ) {
 						throw new RuntimeException("Electric current not handled by SBML export; failed to export reaction \"" + vcReactionStep.getName() + "\" at this time");
 					}
-					if (!vcKParam.getExpression().isNumeric()) {		// NON_NUMERIC KINETIC PARAM
+					if (!vcKParam.getExpression().isNumeric()) {        // NON_NUMERIC KINETIC PARAM
 						// Create new name for kinetic parameter and store it in kinParamNames, store corresponding exprs in kinParamExprs
 						// Will be used later to add this param as global.
 						// since we already made sure that sbmlReactionId doesn't conflict with any other sid, we assume for now that
@@ -767,11 +788,11 @@ private void addReactions() throws SbmlException, XMLStreamException {
 							(vcKParam.getRole() == Kinetics.ROLE_LumpedCurrent && (!vcKParam.getExpression().isZero())) ) {
 						throw new RuntimeException("Electric current not handled by SBML export; failed to export reaction \"" + vcReactionStep.getName() + "\" at this time");
 					}
-					if (vcKParam.getExpression().isNumeric()) {		// NUMERIC KINETIC PARAM
+					if (vcKParam.getExpression().isNumeric()) {        // NUMERIC KINETIC PARAM
 						// check if it is used in other parameters that have expressions,
 						boolean bAddedParam = false;
 						String origParamName = vcKParam.getName();
-						String newParamName = TokenMangler.mangleToSName(origParamName + "_" + sbmlReactionId);		// same as in the for loop above
+						String newParamName = TokenMangler.mangleToSName(origParamName + "_" + sbmlReactionId);        // same as in the for loop above
 						VCUnitDefinition vcUnit = vcKParam.getUnitDefinition();
 						for (int k = 0; k < vcKineticsParams.length; k++){
 							if (kinParamExprs[k] != null) {
@@ -786,13 +807,13 @@ private void addReactions() throws SbmlException, XMLStreamException {
 										sbmlKinParam.setValue(vcKParam.getConstantValue());
 										final boolean constValue = vcKParam.isConstant();
 										sbmlKinParam.setConstant(true);
-										// Set SBML units for sbmlParam using VC units from vcParam  
+										// Set SBML units for sbmlParam using VC units from vcParam
 										if (!vcUnit.isTBD()) {
 											UnitDefinition unitDefn = getOrCreateSBMLUnit(vcUnit);
 											sbmlKinParam.setUnits(unitDefn);
 										}
 										Pair<String, String> origParam = new Pair<String, String> (rxnName, origParamName);
-										l2gMap.put(origParam, newParamName);	// key = vcell param name, value = sbml unique param id
+										l2gMap.put(origParam, newParamName);    // key = vcell param name, value = sbml unique param id
 										bAddedParam = true;
 									} else {
 										// need to get another name for param and need to change all its refereces in the other kinParam euqations.
@@ -800,8 +821,8 @@ private void addReactions() throws SbmlException, XMLStreamException {
 									// update the expression to contain new name, since the globalparam has new name
 									kinParamExprs[k].substituteInPlace(new Expression(origParamName), new Expression(newParamName));
 								}
-							} 
-						}	// end for - k
+							}
+						}    // end for - k
 						// If the param hasn't been added yet, it is definitely a local param. add it to kineticLaw now.
 						if (!bAddedParam) {
 							org.sbml.jsbml.LocalParameter sbmlKinParam = sbmlKLaw.createLocalParameter();
@@ -865,10 +886,10 @@ private void addReactions() throws SbmlException, XMLStreamException {
 								throw new RuntimeException("A parameter cannot refer to itself in its expression");
 							}
 						}
-					}	// end for - k
-				} 
-			}	// end for (j)  - third pass
-			
+					}    // end for - k
+				}
+			}    // end for (j)  - third pass
+
 			// In the fifth pass thro' the kinetic params, the non-numeric params are added to the global params of the model
 			for (int j = 0; j < vcKineticsParams.length; j++){
 				if (((vcKineticsParams[j].getRole() != Kinetics.ROLE_ReactionRate) && (vcKineticsParams[j].getRole() != Kinetics.ROLE_LumpedReactionRate)) && !(vcKineticsParams[j].getExpression().isNumeric())) {
@@ -880,18 +901,18 @@ private void addReactions() throws SbmlException, XMLStreamException {
 						// need to get another name for param and need to change all its refereces in the other kinParam euqations.
 					}
 					Pair<String, String> origParam = new Pair<String, String> (rxnName, vcKineticsParams[j].getName());
-					l2gMap.put(origParam, paramName);	// keeps its name but becomes a global (?)
+					l2gMap.put(origParam, paramName);    // keeps its name but becomes a global (?)
 					ASTNode paramFormulaNode = getFormulaFromExpression(kinParamExprs[j]);
 					AssignmentRule sbmlParamAssignmentRule = sbmlModel.createAssignmentRule();
 					sbmlParamAssignmentRule.setVariable(paramName);
 					sbmlParamAssignmentRule.setMath(paramFormulaNode);
 					org.sbml.jsbml.Parameter sbmlKinParam = sbmlModel.createParameter();
 					sbmlKinParam.setId(paramName);
+					sbmlKinParam.setConstant(false); // because target of an assignment rule
 					if (!vcKineticsParams[j].getUnitDefinition().isTBD()) {
 						sbmlKinParam.setUnits(getOrCreateSBMLUnit(vcKineticsParams[j].getUnitDefinition()));
 					}
-					// Since the parameter is being specified by a Rule, its 'constant' field shoud be set to 'false' (default - true).
-					sbmlKinParam.setConstant(false);
+//					sbmlKinParam.setConstant(isMappedToMathDescriptionConstantOrConstantFunction(vcKineticsParams[j]));
 				}
 			} // end for (j) - fifth pass
 
@@ -970,14 +991,14 @@ private void addReactions() throws SbmlException, XMLStreamException {
 			ReactionParticipant rxnParticpant = rxnParticipants[rpIndex];
 			SimpleSpeciesReference ssr = null;
 			SpeciesReference sr = null;
-			String rolePostfix = "";	// to get unique ID when the same species is both a reactant and a product
+			String rolePostfix = "";    // to get unique ID when the same species is both a reactant and a product
 			if (rxnParticpant instanceof cbit.vcell.model.Reactant) {
 				rolePostfix = "r";
 				ssr = sr = sbmlReaction.createReactant();
 			} else if (rxnParticpant instanceof cbit.vcell.model.Product) {
 				rolePostfix = "p";
 				ssr = sr  = sbmlReaction.createProduct();
-			} 
+			}
 			if (rxnParticpant instanceof cbit.vcell.model.Catalyst) {
 				rolePostfix = "c";
 				ssr = sbmlReaction.createModifier();
@@ -988,7 +1009,7 @@ private void addReactions() throws SbmlException, XMLStreamException {
 			if (sr != null) {
 				sr.setStoichiometry(stoichiometries[rpIndex]); // use stoichiometry computed above
 				String modelUniqueName = sbmlReactionId + '_'  + rxnParticpant.getName() + rolePostfix;
-				String mangledUniqueName = TokenMangler.mangleToSName(modelUniqueName);		// probably unique because of sbmlReactionId
+				String mangledUniqueName = TokenMangler.mangleToSName(modelUniqueName);        // probably unique because of sbmlReactionId
 				sr.setId(mangledUniqueName);
 				sr.setConstant(true); //SBML-REVIEW
 				//int rcode = sr.appendNotes("<
@@ -1046,8 +1067,8 @@ private UnitDefinition getOrCreateSBMLUnit(VCUnitDefinition vcUnit) throws SbmlE
 }
 
 private BoundaryConditionKind getBoundaryConditionKind(BoundaryConditionType vcellBoundaryConditionType){
-	if (vcellBoundaryConditionType.equals(BoundaryConditionType.DIRICHLET)){	// argument is vcell.math BoundaryConditionType
-		return BoundaryConditionKind.Dirichlet;									// ret value is sbml.jsbml BoundaryConditionKind
+	if (vcellBoundaryConditionType.equals(BoundaryConditionType.DIRICHLET)){    // argument is vcell.math BoundaryConditionType
+		return BoundaryConditionKind.Dirichlet;                                    // ret value is sbml.jsbml BoundaryConditionKind
 	}else if (vcellBoundaryConditionType.equals(BoundaryConditionType.NEUMANN)){
 		return BoundaryConditionKind.Neumann;
 	}else if (vcellBoundaryConditionType.equals(BoundaryConditionType.PERIODIC)){
@@ -1074,8 +1095,8 @@ private void addSpecies() throws XMLStreamException, SbmlException {
 		String sbmlIdBase = org.vcell.util.TokenMangler.mangleToSName(vcSpeciesContext.getName());
 		if(sbmlModel.getSBaseById(sbmlIdBase) == null) {
 			sbmlSpeciesId = sbmlIdBase;
-		} else {			// the mangled vcell name may be already used as id by some other sbml entity
-			while(true) {	// make sure it's unique, otherwise setId will fail
+		} else {            // the mangled vcell name may be already used as id by some other sbml entity
+			while(true) {    // make sure it's unique, otherwise setId will fail
 				sbmlSpeciesId = sbmlIdBase + idSuffixCounter;
 				if(sbmlModel.getSBaseById(sbmlSpeciesId) == null) {
 					break;
@@ -1084,6 +1105,10 @@ private void addSpecies() throws XMLStreamException, SbmlException {
 			}
 		}
 		sbmlSpecies.setId(sbmlSpeciesId);
+
+		boolean bSbmlConstantAttribute = isMappedToMathDescriptionConstantOrConstantFunction(vcSpeciesContext);
+		sbmlSpecies.setConstant(bSbmlConstantAttribute);
+
 		sbmlExportSymbolMapping.putSteToSidMapping(vcSpeciesContext, sbmlSpeciesId);
 		if(vcSpeciesContext.getSbmlName() != null) {
 			sbmlSpecies.setName(vcSpeciesContext.getSbmlName());
@@ -1128,38 +1153,43 @@ private void addSpecies() throws XMLStreamException, SbmlException {
 		}
 		Expression initConcExp = initialConcentrationParameter.getExpression();
 
-		Double initiConcConstantValue = null;
+		Double initConcConstantValue = null;
 		try {
-			initiConcConstantValue = initConcExp.evaluateConstantSafe();
+			initConcConstantValue = initConcExp.evaluateConstantSafe();
 		} catch (ExpressionException e) {
 		}
 
 		cbit.vcell.mapping.AssignmentRule vcAssignmentRule = getSelectedSimContext().getAssignmentRule(vcSpeciesContext);
+		cbit.vcell.mapping.RateRule vcRateRule = getSelectedSimContext().getRateRule(vcSpeciesContext);
 
-		if (!vcSpeciesContextsSpec.isClamped() && vcAssignmentRule==null) {
+		if (!vcSpeciesContextsSpec.isClamped() || vcRateRule != null) {
 			// species is not clamped nor assigned, we need an initial condition
-			if (initiConcConstantValue != null) {
+			if (initConcConstantValue != null) {
 //				sbmlSpecies.setConstant(true);
-				sbmlSpecies.setInitialConcentration(initiConcConstantValue);
+				sbmlSpecies.setInitialConcentration(initConcConstantValue);
 			}else {
 				//sbmlSpecies.setConstant(false);
 				InitialAssignment initAssignment = sbmlModel.createInitialAssignment();
 				initAssignment.setVariable(sbmlSpecies.getId());
 				sbmlExportSymbolMapping.initialAssignmentToVcmlExpressionMap.put(initAssignment, initConcExp);
 			}
-		} else {
-			Expression vcSpeciesExpr = initConcExp;
-			if (vcAssignmentRule!=null){
-				// assignment rules take precedence over initial expression.
-				vcSpeciesExpr = vcAssignmentRule.getAssignmentRuleExpression();
+		} else if (vcAssignmentRule == null){  // vcAssignmentRule's are handled elsewhere.
+			if (isMappedToMathDescriptionConstantOrConstantFunction(initialConcentrationParameter)) {
+				Expression vcSpeciesExpr = initConcExp;
+				InitialAssignment sbmlInitialAssignment = sbmlModel.createInitialAssignment();
+				sbmlInitialAssignment.setVariable(sbmlSpeciesId);
+				sbmlExportSymbolMapping.initialAssignmentToVcmlExpressionMap.put(sbmlInitialAssignment, vcSpeciesExpr);    // expression will be post-processed
+			} else {
+				Expression vcSpeciesExpr = initConcExp;
+				AssignmentRule sbmlAssignmentRule = sbmlModel.createAssignmentRule();
+				sbmlAssignmentRule.setVariable(sbmlSpeciesId);
+				sbmlExportSymbolMapping.assignmentRuleToVcmlExpressionMap.put(sbmlAssignmentRule, vcSpeciesExpr);    // expression will be post-processed
+				sbmlSpecies.setConstant(false);
 			}
-			AssignmentRule sbmlAssignmentRule = sbmlModel.createAssignmentRule();
-			sbmlAssignmentRule.setVariable(sbmlSpeciesId);
-			sbmlExportSymbolMapping.assignmentRuleToVcmlExpressionMap.put(sbmlAssignmentRule, vcSpeciesExpr);    // expression will be post-processed
 		}
 
 		// Get (and set) the boundary condition value
-		boolean bBoundaryCondition = vcSpeciesContextsSpec.isClamped() || vcAssignmentRule!=null;
+		boolean bBoundaryCondition = vcSpeciesContextsSpec.isClamped();
 		sbmlSpecies.setBoundaryCondition(bBoundaryCondition);
 
 		// set species substance units as 'molecules' - same as defined in the model; irrespective of it is in surface or volume.
@@ -1331,10 +1361,10 @@ private void addSpecies() throws XMLStreamException, SbmlException {
 								sbmlAdvCoeffZ.setCoordinate(CoordinateKind.cartesianZ);
 								spplugin.setParamType(sbmlAdvCoeffZ);
 							}
-						} 	// if sbmlParam != null
-					}	// if scsParams[j] != null
-				}	// end for scsParams
-			}	// end scsParams != null
+						}     // if sbmlParam != null
+					}    // if scsParams[j] != null
+				}    // end for scsParams
+			}    // end scsParams != null
 		} // end if (bSpatial)
 
 		// Add the common name of species to annotation, and add an annotation element to the species.
@@ -1352,7 +1382,28 @@ private void addSpecies() throws XMLStreamException, SbmlException {
 	}
 }
 
-/**
+	private boolean isMappedToMathDescriptionConstantOrConstantFunction(SymbolTableEntry ste) {
+		MathDescription mathDesc = vcSelectedSimContext.getMathDescription();
+		if (mathDesc !=null && mathDesc.getSourceSymbolMapping()!=null){
+			Variable var = mathDesc.getSourceSymbolMapping().getVariable(ste);
+			if (var instanceof Constant){
+				return true;
+			}
+			if (var instanceof Function){
+				try {
+					Expression flattenedExp = MathUtilities.substituteFunctions(var.getExpression(), mathDesc, true).flatten();
+					return flattenedExp.isNumeric();
+				}catch (ExpressionException e){
+					throw new RuntimeException("isMappedToMathDescriptionConstantOrConstantFunction(): flattening failed: "+e.getMessage());
+				}
+			}
+			return false;
+		} else {
+			throw new RuntimeException("need math description to export SBML correctly");
+		}
+	}
+
+	/**
  * createSBMLParamFromSpeciesParam : creates an SBML parameter for each speciesContextSpecParameter (diffusion coefficient, 
  * advection coeffs, boundary conditions (X,Y,Z).
  *  
@@ -1490,8 +1541,8 @@ private void addEvents() {
 			String sbmlIdBase = TokenMangler.mangleToSName(vcEvent.getName());
 			if(sbmlModel.getSBaseById(sbmlIdBase) == null) {
 				sbmlEventId = sbmlIdBase;
-			} else {			// the mangled vcell name may be already used as id by some other sbml entity
-				while(true) {	// make sure it's unique, otherwise setId will fail
+			} else {            // the mangled vcell name may be already used as id by some other sbml entity
+				while(true) {    // make sure it's unique, otherwise setId will fail
 					sbmlEventId = sbmlIdBase + idSuffixCounter;
 					if(sbmlModel.getSBaseById(sbmlEventId) == null) {
 						break;
@@ -1572,7 +1623,7 @@ private void addRateRules()  {
 
 			// set rate rule math/expression
 			Expression vcRuleExpression = vcRule.getRateRuleExpression();
-			sbmlExportSymbolMapping.rateRuleToVcmlExpressionMap.put(sbmlRule, vcRuleExpression);	// expression will be post-processed
+			sbmlExportSymbolMapping.rateRuleToVcmlExpressionMap.put(sbmlRule, vcRuleExpression);    // expression will be post-processed
 //			ASTNode math = getFormulaFromExpression(vcRuleExpression);
 //			sbmlRule.setMath(math);
 		}
@@ -1586,7 +1637,8 @@ private void addAssignmentRules()  {
 			org.sbml.jsbml.AssignmentRule sbmlRule = sbmlModel.createAssignmentRule();
 			String sid = sbmlExportSymbolMapping.getSid(vcRule.getAssignmentRuleVar());
 			sbmlRule.setVariable(sid);
-			sbmlExportSymbolMapping.assignmentRuleToVcmlExpressionMap.put(sbmlRule, vcRuleExpression);	// expression will be post-processed
+			sbmlRule.getVariableInstance().setConstant(false);
+			sbmlExportSymbolMapping.assignmentRuleToVcmlExpressionMap.put(sbmlRule, vcRuleExpression);    // expression will be post-processed
 //			ASTNode math = getFormulaFromExpression(vcRuleExpression);
 //			sbmlRule.setMath(math);
 		}
@@ -1657,6 +1709,7 @@ public static class SBMLValidationException extends RuntimeException {
 	public SBMLValidationException(String msg, Exception e){
 		super(msg, e);
 	}
+
 	public SBMLValidationException(String msg){
 		super(msg);
 	}
@@ -1790,11 +1843,12 @@ private void roundTripValidation() throws SBMLValidationException {
 		SBMLDocument sbmlDocument = new SBMLDocument(sbmlLevel,sbmlVersion);
 		// mark it as originating from VCell
 		// TO DO expand to formally label version and build
-		sbmlDocument.setNotes("Exported by VCell 7.3");
-		
-	String modelName = vcBioModel.getName() + "_" + getSelectedSimContext().getName();
-	sbmlModel = sbmlDocument.createModel(TokenMangler.mangleToSName(modelName));	// it's enough to mangle, there can be no conflict at this point
-	sbmlModel.setName(modelName);
+		VCellSoftwareVersion swVersion = VCellSoftwareVersion.fromSystemProperty();
+		sbmlDocument.setNotes("Exported by VCell "+swVersion.getDescription(true));
+
+		String modelName = vcBioModel.getName() + "_" + getSelectedSimContext().getName();
+		sbmlModel = sbmlDocument.createModel(TokenMangler.mangleToSName(modelName));    // it's enough to mangle, there can be no conflict at this point
+		sbmlModel.setName(modelName);
 
 		// needed?
 		sbmlLevel = (int)sbmlModel.getLevel();
@@ -2145,11 +2199,11 @@ private void addGeometry() throws SbmlException {
 									}
 								}
 								volIndx++;
-							}	// end - for x
-						}	// end - for y
-					}	// end - for z
-				}	// end if 
-			}	// end for regionInfos
+							}    // end - for x
+						}    // end - for y
+					}    // end - for z
+				}    // end if
+			}    // end for regionInfos
 			if (!bFound) {
 				throw new RuntimeException("Unable to find interior point for region '" + regionInfos[regInfoIndx].toString());
 			}
@@ -2221,7 +2275,7 @@ private void addGeometry() throws SbmlException {
 				sbmlCSGeomDefinition.addCSGObject(sbmlCSGObject);
 				sbmlCSGObject.setSpatialId(vcellCSGObject.getName());
 				sbmlCSGObject.setDomainType(DOMAIN_TYPE_PREFIX+vcellCSGObject.getName());
-				sbmlCSGObject.setOrdinal(numSubVols - (i+1));	// the ordinal should the the least for the default/background subVolume
+				sbmlCSGObject.setOrdinal(numSubVols - (i+1));    // the ordinal should the the least for the default/background subVolume
 				org.sbml.jsbml.ext.spatial.CSGNode sbmlcsgNode = getSBMLCSGNode(vcellCSGObject.getRoot());
 				sbmlCSGObject.setCSGNode(sbmlcsgNode);
 			}
@@ -2637,21 +2691,21 @@ private void translateBioModel(SBMLDocument sbmlDocument) throws SbmlException, 
 	// 'Parse' the Virtual cell model into an SBML model
 
 	addUnitDefinitions();
-	addCompartments();			// Add Features/Compartments
+	addCompartments();            // Add Features/Compartments
 	if (bSpatial) {
-		addGeometry();			// add Geometry, if present
+		addGeometry();            // add Geometry, if present
 	}
-	addSpecies(); 				// Add Species/SpeciesContexts
+	addSpecies();                 // Add Species/SpeciesContexts
 	try {
-		addParameters();		// Add Parameters
+		addParameters();        // Add Parameters
 	} catch (ExpressionException e) {
 		throw new RuntimeException(e.getMessage(), e);
 	}
-	addRateRules();				// Add Rules
+	addRateRules();                // Add Rules
 	addAssignmentRules();
-	addReactions();				// Add Reactions
-	addEvents();				// Add Events
-	
+	addReactions();                // Add Reactions
+	addEvents();                // Add Events
+
 	postProcessExpressions();
 	filterUnusedReservedSymbols(sbmlDocument);
 }
@@ -2680,7 +2734,7 @@ private void filterUnusedReservedSymbols(SBMLDocument sbmlDocument) throws SBMLE
 		int count = StringUtils.countMatches(sbmlStr, vcParam.getName());
 		if (count == 1 && !overriddenSymbols.contains(vcParam.getName())){
 			// remove if only found once (in declaration) and not overridden in any simulation
-			sbmlModel.removeParameter(vcParam.getName());	// we know for sure that the sbmlParam id is same as vcmlParam name
+			sbmlModel.removeParameter(vcParam.getName());    // we know for sure that the sbmlParam id is same as vcmlParam name
 		}
 	}
 }
@@ -2703,6 +2757,7 @@ private void postProcessExpressions() {
 		Expression sbmlExpression = substituteSteWithSid(vcmlExpression);
 		ASTNode math = getFormulaFromExpression(sbmlExpression);
 		ar.setMath(math);
+		ar.getVariableInstance().setConstant(false);
 	}
 	// RateRule
 	for (Map.Entry<org.sbml.jsbml.RateRule, Expression> entry : sbmlExportSymbolMapping.rateRuleToVcmlExpressionMap.entrySet()) {

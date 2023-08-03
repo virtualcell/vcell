@@ -88,7 +88,7 @@ public class BiomodelSimulationServerResource extends AbstractServerResource imp
 	@Override
 	public SimulationRepresentation get_json() {
 		VCellApiApplication application = ((VCellApiApplication)getApplication());
-		User vcellUser = application.getVCellUser(getChallengeResponse(),AuthenticationPolicy.prohibitInvalidCredentials);
+		User vcellUser = application.getVCellUser(getChallengeResponse(),AuthenticationPolicy.ignoreInvalidCredentials);
 		
         SimulationRepresentation simulationRep = getBiomodelSimulationRepresentation(vcellUser);
         

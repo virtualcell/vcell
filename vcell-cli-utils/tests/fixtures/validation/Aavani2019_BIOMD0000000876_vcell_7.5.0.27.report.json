@@ -1,0 +1,38 @@
+{
+  "parse_errors": [],
+  "parse_warnings": [
+    [
+      "The manifest does not include its parent COMBINE/OMEX archive. Manifests should include their parent COMBINE/OMEX archives."
+    ]
+  ],
+  "validator_errors": [
+    [
+      "The SED-ML file at location `./Aavani2019___The_role_of_CD4_T_cells_in_immune_system_activation_and_viral_reproduction_in_a_simple_model_for_HIV_infection.sedml` is invalid.",
+      [
+        [
+          "Model `Deterministic` is invalid.",
+          [
+            [
+              "The model file `Aavani2019___The_role_of_CD4_T_cells_in_immune_system_activation_and_viral_reproduction_in_a_simple_model_for_HIV_infection_Deterministic.xml` is invalid.",
+              [
+                [
+                  "SBML component consistency (20623) at line 249, column 6: A Species object must have the required attributes 'id', 'compartment', 'hasOnlySubstanceUnits', 'boundaryCondition' and 'constant', and may have the optional attributes 'metaid', 'sboTerm', 'name', 'initialAmount', 'initialConcentration', 'substanceUnits' and 'conversionFactor'. No other attributes from the SBML Level 3 Core namespace are permitted on a Species object.\nReference: L3V2 Section 4.6\n The required attribute 'constant' is missing from the <species> with the id 'C_Uninfected_CD4'.\n"
+                ],
+                [
+                  "SBML component consistency (20623) at line 272, column 6: A Species object must have the required attributes 'id', 'compartment', 'hasOnlySubstanceUnits', 'boundaryCondition' and 'constant', and may have the optional attributes 'metaid', 'sboTerm', 'name', 'initialAmount', 'initialConcentration', 'substanceUnits' and 'conversionFactor'. No other attributes from the SBML Level 3 Core namespace are permitted on a Species object.\nReference: L3V2 Section 4.6\n The required attribute 'constant' is missing from the <species> with the id 'I_Infected_CD4'.\n"
+                ],
+                [
+                  "SBML component consistency (20623) at line 297, column 6: A Species object must have the required attributes 'id', 'compartment', 'hasOnlySubstanceUnits', 'boundaryCondition' and 'constant', and may have the optional attributes 'metaid', 'sboTerm', 'name', 'initialAmount', 'initialConcentration', 'substanceUnits' and 'conversionFactor'. No other attributes from the SBML Level 3 Core namespace are permitted on a Species object.\nReference: L3V2 Section 4.6\n The required attribute 'constant' is missing from the <species> with the id 'F_CTL'.\n"
+                ],
+                [
+                  "SBML component consistency (20623) at line 313, column 6: A Species object must have the required attributes 'id', 'compartment', 'hasOnlySubstanceUnits', 'boundaryCondition' and 'constant', and may have the optional attributes 'metaid', 'sboTerm', 'name', 'initialAmount', 'initialConcentration', 'substanceUnits' and 'conversionFactor'. No other attributes from the SBML Level 3 Core namespace are permitted on a Species object.\nReference: L3V2 Section 4.6\n The required attribute 'constant' is missing from the <species> with the id 'V_Virus'.\n"
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "validator_warnings": []
+}

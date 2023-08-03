@@ -1,14 +1,10 @@
 package org.vcell.cli.run;
 
-import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.data.SimResultsViewer;
 import cbit.vcell.export.server.*;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.VariableType;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.SimpleSymbolTable;
-import cbit.vcell.parser.SymbolTable;
+import cbit.vcell.parser.*;
 import cbit.vcell.simdata.*;
 import cbit.vcell.solver.*;
 import cbit.vcell.solver.ode.ODESolverResultSet;
@@ -22,6 +18,7 @@ import org.jlibsedml.Simulation;
 import org.jlibsedml.execution.IXPathToVariableIDResolver;
 import org.jlibsedml.modelsupport.SBMLSupport;
 import org.vcell.cli.CLIUtils;
+import org.vcell.sbml.vcell.SBMLNonspatialSimResults;
 import org.vcell.stochtest.TimeSeriesMultitrialData;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.GenericExtensionFilter;
@@ -152,80 +149,43 @@ public class RunUtils {
         return yi;
     }
 
-    public static void exportPDE2HDF5(SimulationJob simJob, File userDir, File hdf5OutputFile) throws DataAccessException, IOException, Exception {
-
-        cbit.vcell.solver.Simulation sim = simJob.getSimulation();
-    	SimulationContext sc = (SimulationContext)sim.getSimulationOwner();
-        BioModel bm = sc.getBioModel();
-        int jobIndex = simJob.getJobIndex();
-
-
-//        VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(sim.getKey(), sim.getSimulationInfo().getVersion().getOwner());
+    /**
+     * Exports the data of a spatial simulation into hdf5 in a VCell-friendly organization.
+     * ...
+     * Note that this function is extremely dense and confusing. It mostly works in side effects and preparations,
+     * but the end result is correct (at least, that's what we believe)
+     * @param vcellSimJob The sim job to get the data from
+     * @param userDir directory to get the user info with
+     * @param outputFilePointer where to put the final hdf5 file.
+     * @throws DataAccessException if the necessary data could not be accessed.
+     * @throws IOException if the system encountered some trouble with file or system IO
+     */
+    public static void exportPDE2HDF5(SimulationJob vcellSimJob, File userDir, File outputFilePointer) throws DataAccessException, IOException {
+        // A ton of initialization
+        int jobIndex = vcellSimJob.getJobIndex();
         User user = new User(userDir.getName(), null);
-        VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(sim.getKey(), user);
+        cbit.vcell.solver.Simulation vcellSim = vcellSimJob.getSimulation();
+        ExportServiceImpl exportServiceImpl = new ExportServiceImpl();
 
+    	SimulationContext simContext = (SimulationContext)vcellSim.getSimulationOwner();
+        VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(vcellSim.getKey(), user);
+        DataSetControllerImpl dsControllerImpl = new DataSetControllerImpl(null, userDir.getParentFile(), null);
+
+        DataServerImpl dataServerImpl = new DataServerImpl(dsControllerImpl, exportServiceImpl);
+        OutputContext outputContext = new OutputContext(simContext.getOutputFunctionContext().getOutputFunctionsList().toArray(new AnnotatedFunction[0]));
         VCSimulationDataIdentifier vcId = new VCSimulationDataIdentifier(vcSimID, jobIndex);
 
-        DataSetControllerImpl dsControllerImpl = new DataSetControllerImpl(null, userDir.getParentFile(), null);
-        ExportServiceImpl exportServiceImpl = new ExportServiceImpl();
-        DataServerImpl dataServerImpl = new DataServerImpl(dsControllerImpl, exportServiceImpl);
-        OutputContext outputContext = new OutputContext(sc.getOutputFunctionContext().getOutputFunctionsList().toArray(new AnnotatedFunction[0]));
-        PDEDataContext pdedc = new ServerPDEDataContext(outputContext, user, dataServerImpl, vcId);
-        DataIdentifier[] dataIDArr = pdedc.getDataIdentifiers();
-        ArrayList<String> variableNames = new ArrayList<String>();
-        for(int i = 0; i<dataIDArr.length; i++) {
-        	if (dataIDArr[i].getVariableType().getType() == VariableType.VOLUME.getType()) variableNames.add(dataIDArr[i].getName());
-        }
-        VariableSpecs variableSpecs = new VariableSpecs(variableNames.toArray(new String[0]), ExportConstants.VARIABLE_MULTI);
+        // Create the export specifications, and prepare to export to a file
+        ExportSpecs exportSpecs = RunUtils.getExportSpecs(outputContext, user, dataServerImpl, vcId,
+                dsControllerImpl, vcellSim, jobIndex, vcSimID, simContext);
 
-        double[] dataSetTimes = dsControllerImpl.getDataSetTimes(vcId);
-        TimeSpecs timeSpecs = new TimeSpecs(0,dataSetTimes.length-1, dataSetTimes, ExportConstants.TIME_RANGE);
-
-        int geoMode = ExportConstants.GEOMETRY_FULL;
-        int axis = 2;
-        int sliceNumber = 0;
-        GeometrySpecs geometrySpecs = new GeometrySpecs(null, axis, sliceNumber, geoMode);
-
-        ExportConstants.DataType dataType = ExportConstants.DataType.PDE_VARIABLE_DATA;
-        boolean switchRowsColumns = false;
-
-        // String simulationName,VCSimulationIdentifier vcSimulationIdentifier,ExportParamScanInfo exportParamScanInfo
-        ExportSpecs.ExportParamScanInfo exportParamScanInfo = SimResultsViewer.getParamScanInfo(sim,jobIndex);
-        ExportSpecs.SimNameSimDataID snsdi= new ExportSpecs.SimNameSimDataID(sim.getName(), vcSimID, exportParamScanInfo);
-        ExportSpecs.SimNameSimDataID[] simNameSimDataIDs = { snsdi };
-        int[] exportMultipleParamScans = null;
-        boolean isHDF5 = true;
-        FormatSpecificSpecs formatSpecificSpecs = new ASCIISpecs(ExportFormat.CSV, dataType, switchRowsColumns, simNameSimDataIDs, exportMultipleParamScans, ASCIISpecs.csvRoiLayout.var_time_val, isHDF5);
-
-        ASCIIExporter ae = new ASCIIExporter(exportServiceImpl);
-        String contextName = bm.getName() + ":" + sc.getName();
-        ExportSpecs exportSpecs = new ExportSpecs(vcId, ExportFormat.HDF5, variableSpecs, timeSpecs, geometrySpecs, formatSpecificSpecs, sim.getName(), contextName);
-        FileDataContainerManager fileDataContainerManager = new FileDataContainerManager();
-
-        JobRequest jobRequest = JobRequest.createExportJobRequest(vcId.getOwner());
-
-        Collection<ExportOutput > eo;
-		try {
-			eo = ae.makeASCIIData(outputContext, jobRequest, vcId.getOwner(), dataServerImpl, exportSpecs,
-					fileDataContainerManager);
-		} catch (Exception e) {
-			throw e;
-		}
-        Iterator<ExportOutput> iterator = eo.iterator();
-        ExportOutput aaa = iterator.next();
-
-
-        if(((ASCIISpecs)exportSpecs.getFormatSpecificSpecs()).isHDF5()) {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            aaa.writeDataToOutputStream(baos, fileDataContainerManager);//Get location of temp HDF5 file
-            File tempHDF5File = new File(baos.toString());
-            Files.copy(tempHDF5File, hdf5OutputFile);
-            tempHDF5File.delete();
-        }
+        // Export to a temp file, then copy the file over to the correct location
+        RunUtils.exportDocument(exportServiceImpl, dataServerImpl, outputContext, exportSpecs, vcId, outputFilePointer);
     }
 
-    public static HashMap<String, File> generateReportsAsCSV(SedML sedml, Map<TaskJob, ODESolverResultSet> resultsHash, File outDirForCurrentSedml, String outDir, String sedmlLocation) throws DataAccessException, IOException {
+    public static HashMap<String, File> generateReportsAsCSV(SedML sedml, SolverHandler solverHandler, File outDirForCurrentSedml, String outDir, String sedmlLocation) throws DataAccessException, IOException {
         // finally, the real work
+        Map<TaskJob, SBMLNonspatialSimResults> resultsHash = solverHandler.nonSpatialResults;
         HashMap<String, File> reportsHash = new HashMap<>();
         List<Output> ooo = sedml.getOutputs();
         for (Output oo : ooo) {
@@ -307,9 +267,9 @@ public class RunUtils {
 
                         // Get task job(s)
                         List<TaskJob> taskJobs = new ArrayList<>();
-                        for (Map.Entry<TaskJob, ODESolverResultSet> entry : resultsHash.entrySet()) {
+                        for (Map.Entry<TaskJob, SBMLNonspatialSimResults> entry : resultsHash.entrySet()) {
                             TaskJob taskJob = entry.getKey();
-                            ODESolverResultSet value = entry.getValue();
+                            SBMLNonspatialSimResults value = entry.getValue();
                             if(value != null && taskJob.getTaskId().equals(task.getId())) {
                                 taskJobs.add(taskJob);
                                 if (!(task instanceof RepeatedTask)) break; // Only have one entry for non-repeated tasks
@@ -327,20 +287,9 @@ public class RunUtils {
                         for (TaskJob taskJob : taskJobs){
                             // key format in resultsHash is taskId + "_" + simJobId
                             // ex: task_0_0_0 where the last 0 is the simJobId (always 0 when no parameter scan)
-                            double[] data;
-                            ODESolverResultSet results = resultsHash.get(taskJob); // hence the added "_0"
+                            SBMLNonspatialSimResults results = resultsHash.get(taskJob); // hence the added "_0"
                             if (results==null) continue;
-                            int column = results.findColumn(sbmlVarId);
-
-                            if (outputStartTime > 0){
-                                data = new double[outputNumberOfPoints+1];
-                                double[] tmpData = results.extractColumn(column);
-                                for(int i=tmpData.length-outputNumberOfPoints-1, j=0; i<tmpData.length; i++, j++) {
-                                    data[j] = tmpData[i];
-                                }
-                            } else {
-                                data = results.extractColumn(column);
-                            }
+                            double[] data = results.getDataForSBMLVar(sbmlVarId, outputStartTime, outputNumberOfPoints);
 
                             mxlen = Integer.max(mxlen, data.length);
                             if(!values.containsKey(var)) {		// this is the first double[]
@@ -434,8 +383,7 @@ public class RunUtils {
                     logger.info("no csv file for report " + oo.getId());
                 }
             } catch (Exception e) {
-                logger.error("Encountered exception: " + e.getMessage(), e);
-                reportsHash.put(oo.getId(), null);
+                throw new RuntimeException("CSV generation failed: " + e.getMessage(), e);
             }
         }
         return reportsHash;
@@ -691,6 +639,69 @@ public class RunUtils {
             if (out != null) out.close();
         }
 
+    }
+
+    private static List<String> getListOfVariableNames(DataIdentifier... dataIDArr){
+        List<String> variableNames = new ArrayList<>();
+
+        for (DataIdentifier dataId : dataIDArr)
+            if (dataId.getVariableType().getType() == VariableType.VOLUME.getType()) // maybe convert to a .equals()??
+                variableNames.add(dataId.getName());
+
+        return variableNames;
+    }
+
+    private static void exportDocument(ExportServiceImpl exportServiceImpl, DataServerImpl dataServerImpl, OutputContext outputContext,
+                                       ExportSpecs exportSpecs, VCSimulationDataIdentifier vcId, File outputFilePointer)
+            throws DataAccessException, IOException {
+        Collection<ExportOutput > exportOutputs;
+
+        FileDataContainerManager fileDataContainerManager = new FileDataContainerManager();
+        ASCIIExporter asciiExporter = new ASCIIExporter(exportServiceImpl);
+        JobRequest jobRequest = JobRequest.createExportJobRequest(vcId.getOwner());
+
+        try {
+            exportOutputs = asciiExporter.makeASCIIData(outputContext, jobRequest, vcId.getOwner(), dataServerImpl, exportSpecs, fileDataContainerManager);
+        } catch (DataAccessException | IOException e) {
+            logger.error(e);
+            throw e;
+        }
+
+        Iterator<ExportOutput> iterator = exportOutputs.iterator();
+        ExportOutput exportOutput = iterator.next();
+
+        // Takes data in fileDataContainerManager and puts it to an HDF5 file?
+        if(((ASCIISpecs)exportSpecs.getFormatSpecificSpecs()).isHDF5()) {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            exportOutput.writeDataToOutputStream(baos, fileDataContainerManager);//Get location of temp HDF5 file
+            File tempHDF5File = new File(baos.toString());
+            Files.copy(tempHDF5File, outputFilePointer);
+            tempHDF5File.delete();
+        }
+    }
+
+    private static ExportSpecs getExportSpecs(OutputContext outputContext, User user, DataServerImpl dataServerImpl, VCSimulationDataIdentifier vcId,
+                                       DataSetControllerImpl dsControllerImpl, cbit.vcell.solver.Simulation vcellSim, int jobIndex,
+                                       VCSimulationIdentifier vcSimID, SimulationContext simContext) throws DataAccessException {
+
+        PDEDataContext pdeDataContext = new ServerPDEDataContext(outputContext, user, dataServerImpl, vcId);
+        List<String> variableNames = RunUtils.getListOfVariableNames(pdeDataContext.getDataIdentifiers());
+        VariableSpecs variableSpecs = new VariableSpecs(variableNames, ExportConstants.VARIABLE_MULTI);
+
+        double[] dataSetTimes = dsControllerImpl.getDataSetTimes(vcId);
+        TimeSpecs timeSpecs = new TimeSpecs(0,dataSetTimes.length-1, dataSetTimes, ExportConstants.TIME_RANGE);
+        GeometrySpecs geometrySpecs = new GeometrySpecs(null, 2, 0, ExportConstants.GEOMETRY_FULL);
+
+        // String simulationName,VCSimulationIdentifier vcSimulationIdentifier,ExportParamScanInfo exportParamScanInfo
+        ExportSpecs.ExportParamScanInfo exportParamScanInfo = SimResultsViewer.getParamScanInfo(vcellSim,jobIndex);
+        ExportSpecs.SimNameSimDataID snsdi= new ExportSpecs.SimNameSimDataID(vcellSim.getName(), vcSimID, exportParamScanInfo);
+        ExportSpecs.SimNameSimDataID[] simNameSimDataIDs = { snsdi };
+
+        FormatSpecificSpecs formatSpecificSpecs = new ASCIISpecs(simNameSimDataIDs, ExportConstants.DataType.PDE_VARIABLE_DATA,
+                ExportFormat.CSV, ASCIISpecs.CsvRoiLayout.var_time_val, true, false);
+
+        return new ExportSpecs(vcId, ExportFormat.HDF5, variableSpecs, timeSpecs, geometrySpecs,
+                formatSpecificSpecs, vcellSim.getName(), simContext.getBioModel().getName() + ":" + simContext.getName());
     }
 
 }

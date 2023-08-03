@@ -59,11 +59,13 @@ public class SEDMLExporterSBMLTest extends SEDMLExporterCommon {
 	@Override
 	Map<String, SEDMLExporterCommon.FAULT> knownFaults() {
 		HashMap<String, FAULT> faults = new HashMap<>();
-		faults.put("biomodel_123269393.vcml", FAULT.MATHOVERRIDES_INVALID); // Kf_r7 - biomodel needs fixing
-		faults.put("biomodel_124562627.vcml", FAULT.NULL_POINTER_EXCEPTION); // CSG/analytic geometry issue
-		faults.put("biomodel_156134818.vcml", FAULT.UNKNOWN_IDENTIFIER);  // species named 'I' conflicts with membrane parameter I
-		faults.put("biomodel_220138948.vcml", FAULT.MATHOVERRIDES_INVALID); // Kf_Uptake invalid override.
+		faults.put("biomodel_123269393.vcml", FAULT.MATHOVERRIDES_INVALID); // Kf_r7 - biomodel needs fixing - MathOverrides has entry for non-existent parameter Kf_r7
+		faults.put("biomodel_124562627.vcml", FAULT.NULL_POINTER_EXCEPTION); // CSG/analytic geometry issue - SBML model does not have any geometryDefinition. Cannot proceed with import
+		faults.put("biomodel_156134818.vcml", FAULT.UNKNOWN_IDENTIFIER);  // species named 'I' conflicts with membrane parameter I - Unable to sort, unknown identifier I_Gs_GDI_accel_deg_copy6
+		faults.put("biomodel_220138948.vcml", FAULT.MATHOVERRIDES_INVALID); // Kf_Uptake invalid override - MathOverrides has entry for non-existent parameter Kf_Uptake
 		faults.put("biomodel_84982474.vcml", FAULT.UNSUPPORTED_NONSPATIAL_STOCH_HISTOGRAM); // not supported nonspatial histogram
+
+
 		return faults;
 	}
 
@@ -139,7 +141,7 @@ public class SEDMLExporterSBMLTest extends SEDMLExporterCommon {
 		faults.put("biomodel_7803976.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_81284732.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_82250339.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
-		faults.put("biomodel_83446023.vcml", SEDML_FAULT.MATH_OVERRIDE_NOT_EQUIVALENT); // simulation 'Simulation0' in simContext 'compartmental'
+		faults.put("biomodel_83446023.vcml", SEDML_FAULT.MATH_OVERRIDE_NAMES_DIFFERENT); // can't find math override for Kf_dimerization
 		faults.put("biomodel_83462243.vcml", SEDML_FAULT.SIMCONTEXT_NOT_FOUND_BY_NAME); // round-tripped simulationContext not found with name 'spatial-hybrid'
 		faults.put("biomodel_83651737.vcml", SEDML_FAULT.SIMCONTEXT_NOT_FOUND_BY_NAME);
 		faults.put("biomodel_84982474.vcml", SEDML_FAULT.DIFF_NUMBER_OF_BIOMODELS); // not supported non-spatial histogram
@@ -156,23 +158,46 @@ public class SEDMLExporterSBMLTest extends SEDMLExporterCommon {
 		faults.put("biomodel_98296160.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_98730962.vcml", SEDML_FAULT.SIMCONTEXT_NOT_FOUND_BY_NAME); // round-tripped simulationContext not found with name 'Application0'
 		faults.put("biomodel_165181964.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
+
+
+		// SEDML Validator Errors
+		faults.put("biomodel_82065439.vcml", SEDML_FAULT.OMEX_PARSER_ERRORS);  //  NON_UNIQUE_IDS:    Each identified SED object must have a unique id. Multiple objects have the following ids:",[["compartmental"]]
+		faults.put("biomodel_220138948.vcml",SEDML_FAULT.OMEX_VALIDATION_ERRORS);  //  XPATH_BAD:  XPath `/sbml:sbml/sbml:model/sbml:listOfSpecies/sbml:species[@id='OAT1']/@initialConcentration` does not match any elements of model `_0D`.
+		faults.put("biomodel_31523791.vcml", SEDML_FAULT.OMEX_PARSER_ERRORS);      //  XPATH_BAD:  XPath `/sbml:sbml/sbml:model/sbml:listOfSpecies/sbml:species[@id='cAMP_Intracellular']/@initialConcentration` does not match any elements of model `Dose_response`.
+		faults.put("biomodel_34855932.vcml", SEDML_FAULT.OMEX_PARSER_ERRORS);      //  XPATH_BAD:  XPath `/sbml:sbml/sbml:model/sbml:listOfParameters/sbml:parameter[@id='Kf_GPCR_to_ICSC']/@value` does not match any elements of model `cell5`
+		faults.put("biomodel_40882931.vcml", SEDML_FAULT.OMEX_PARSER_ERRORS);  //  XPATH_BAD:  XPath `/sbml:sbml/sbml:model/sbml:listOfSpecies/sbml:species[@id='ZO1staticF_PM']/@initialConcentration` does not match any elements of model `_3d_image`
+		faults.put("biomodel_40883509.vcml", SEDML_FAULT.OMEX_PARSER_ERRORS);  //  XPATH_BAD:  XPath `/sbml:sbml/sbml:model/sbml:listOfSpecies/sbml:species[@id='PIK_PM']/@initialConcentration` does not match any elements of model `_3d_image`
+		faults.put("biomodel_65311813.vcml", SEDML_FAULT.OMEX_PARSER_ERRORS);  //  XPATH_BAD:  XPath `/sbml:sbml/sbml:model/sbml:listOfParameters/sbml:parameter[@id='Ran_nuc_diff']/@value` does not match any elements of model `_3d_image_0`
 		return faults;
 	}
 
 	@Parameterized.Parameters
 	public static Collection<TestCase> testCases() {
-		Predicate<String> skipFilter_SBML = (t) -> !outOfMemorySet().contains(t) && !largeFileSet().contains(t) && !slowTestSet().contains(t);
+		Predicate<String> skipFilter_SBML = (t) ->
+				!outOfMemorySet().contains(t) &&
+				!largeFileSet().contains(t) &&
+				!slowTestSet().contains(t);
 		Stream<TestCase> sbml_test_cases = Arrays.stream(VcmlTestSuiteFiles.getVcmlTestCases()).filter(skipFilter_SBML).map(fName -> new TestCase(fName, ModelFormat.SBML));
 		return sbml_test_cases.collect(Collectors.toList());
-		//return Arrays.asList(new TestCase("biomodel_101981216.vcml", ModelFormat.VCML));
+//		return Arrays.asList(
+//				new TestCase("biomodel_31523791.vcml", ModelFormat.SBML),
+//				new TestCase("biomodel_34855932.vcml", ModelFormat.SBML),
+//				new TestCase("biomodel_40882931.vcml", ModelFormat.SBML),
+//				new TestCase("biomodel_40883509.vcml", ModelFormat.SBML),
+//				new TestCase("biomodel_65311813.vcml", ModelFormat.SBML),
+//				new TestCase("biomodel_82065439.vcml", ModelFormat.SBML)
+//				);
 	}
 
 	@Test
 	public void test_sedml_roundtrip_SBML() throws Exception {
-		if (knownSEDMLFaults().get(testCase.filename) != SEDML_FAULT.MATH_OVERRIDE_NOT_EQUIVALENT
-				&& knownSEDMLFaults().get(testCase.filename) != SEDML_FAULT.MATH_OVERRIDE_NAMES_DIFFERENT){
-			return;
+		if (knownFaults().containsKey(testCase.filename)) {
+			return; // skip known faults
 		}
+//		if (knownSEDMLFaults().get(testCase.filename) != SEDML_FAULT.MATH_OVERRIDE_NOT_EQUIVALENT
+//				&& knownSEDMLFaults().get(testCase.filename) != SEDML_FAULT.MATH_OVERRIDE_NAMES_DIFFERENT){
+//			return;
+//		}
 		sedml_roundtrip_common();
 	}
 

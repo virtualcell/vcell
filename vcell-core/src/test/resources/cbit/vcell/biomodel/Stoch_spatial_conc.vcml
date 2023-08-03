@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--This biomodel was generated in VCML Version DanDev_Version_7.0_build_99-->
+<vcml xmlns="http://sourceforge.net/projects/vcell/vcml" Version="DanDev_Version_7.0_build_99">
+  <BioModel Name="stoch_spatial_conc">
+    <Model Name="model">
+      <Compound Name="s0" />
+      <Compound Name="s1" />
+      <Feature Name="c0" KeyValue="257845417" />
+      <Feature Name="c1" KeyValue="257845419" />
+      <Membrane MembraneVoltage="Voltage_m0" Name="m0" KeyValue="257845421" />
+      <LocalizedCompound Name="s0" CompoundRef="s0" Structure="c0" OverrideName="true" KeyValue="257845423" />
+      <LocalizedCompound Name="s1" CompoundRef="s1" Structure="c0" OverrideName="true" KeyValue="257845424" />
+      <SimpleReaction Structure="c0" Name="r0" Reversible="true" FluxOption="MolecularOnly" KeyValue="257845425">
+        <Reactant LocalizedCompoundRef="s0" Stoichiometry="1" KeyValue="257845426" />
+        <Product LocalizedCompoundRef="s1" Stoichiometry="1" KeyValue="257845427" />
+        <Kinetics KineticsType="MassAction">
+          <Parameter Name="J" Role="reaction rate" Unit="uM.s-1">((Kf * s0) - (Kr * s1))</Parameter>
+          <Parameter Name="Kf" Role="forward rate constant" Unit="s-1">1.0</Parameter>
+          <Parameter Name="Kr" Role="reverse rate constant" Unit="s-1">0.0</Parameter>
+        </Kinetics>
+      </SimpleReaction>
+      <Diagram Name="c1" Structure="c1" />
+      <Diagram Name="m0" Structure="m0" />
+      <Diagram Name="c0" Structure="c0">
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="s0" LocationX="71" LocationY="123" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="r0" LocationX="214" LocationY="101" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="s1" LocationX="358" LocationY="80" />
+      </Diagram>
+      <Version Name="model" KeyValue="257845412" BranchId="257845413" Archived="0" Date="28-Jun-2023 16:14:06" FromVersionable="false">
+        <Owner Name="danv" Identifier="26766043" />
+        <GroupAccess Type="1" />
+      </Version>
+      <ModelUnitSystem VolumeSubstanceUnit="uM.um3" MembraneSubstanceUnit="molecules" LumpedReactionSubstanceUnit="molecules" VolumeUnit="um3" AreaUnit="um2" LengthUnit="um" TimeUnit="s" />
+    </Model>
+    <SimulationSpec Name="stoch_spat_conc" Stochastic="true" UseConcentration="true" RuleBased="false" MassConservationModelReduction="false" InsufficientIterations="false" InsufficientMaxMolecules="false" CharacteristicSize="0.10403160765672961">
+      <NetworkConstraints RbmMaxIteration="1" RbmMaxMoleculesPerSpecies="10" RbmSpeciesLimit="800" RbmReactionsLimit="2500" />
+      <Annotation />
+      <Geometry Name="Geometry1523676766" Dimension="3">
+        <Extent X="10.0" Y="10.0" Z="10.0" />
+        <Origin X="0.0" Y="0.0" Z="0.0" />
+        <SubVolume Name="subdomain1" Handle="1" Type="Analytical" KeyValue="257845402">
+          <AnalyticExpression>(x &lt; 1.0)</AnalyticExpression>
+        </SubVolume>
+        <SubVolume Name="subdomain0" Handle="0" Type="Analytical" KeyValue="257845403">
+          <AnalyticExpression>1.0</AnalyticExpression>
+        </SubVolume>
+        <SurfaceClass Name="subdomain0_subdomain1_membrane" SubVolume1Ref="subdomain0" SubVolume2Ref="subdomain1" KeyValue="257845404" />
+        <SurfaceDescription NumSamplesX="101" NumSamplesY="101" NumSamplesZ="101" CutoffFrequency="0.3">
+          <VolumeRegion Name="subdomain10" RegionID="0" SubVolume="subdomain1" Size="95.0" Unit="um3" />
+          <VolumeRegion Name="subdomain01" RegionID="1" SubVolume="subdomain0" Size="905.0" Unit="um3" />
+          <MembraneRegion Name="membrane_subdomain10_subdomain01" VolumeRegion1="subdomain01" VolumeRegion2="subdomain10" Size="100.00000000001137" Unit="um2" />
+        </SurfaceDescription>
+        <Version Name="Geometry1523676766" KeyValue="257845398" BranchId="257845399" Archived="0" Date="28-Jun-2023 16:14:06" FromVersionable="false">
+          <Owner Name="danv" Identifier="26766043" />
+          <GroupAccess Type="1" />
+        </Version>
+      </Geometry>
+      <GeometryContext>
+        <FeatureMapping Feature="c0" GeometryClass="subdomain0" SubVolume="subdomain0" Size="50000.0" VolumePerUnitVolume="1.0">
+          <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
+        </FeatureMapping>
+        <FeatureMapping Feature="c1" GeometryClass="subdomain1" SubVolume="subdomain1" Size="50000.0" VolumePerUnitVolume="1.0">
+          <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
+        </FeatureMapping>
+        <MembraneMapping Membrane="m0" Size="6563.0" AreaPerUnitArea="1.0" CalculateVoltage="false" SpecificCapacitance="1.0" InitialVoltage="0.0" GeometryClass="subdomain0_subdomain1_membrane">
+          <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
+        </MembraneMapping>
+      </GeometryContext>
+      <ReactionContext>
+        <LocalizedCompoundSpec LocalizedCompoundRef="s0" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>1.0</InitialConcentration>
+          <Diffusion>10.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="s1" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>0.0</InitialConcentration>
+          <Diffusion>10.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <ReactionSpec ReactionStepRef="r0" ReactionMapping="included" />
+      </ReactionContext>
+      <MathDescription Name="Application1_generated">
+        <Constant Name="_F_">96485.3321</Constant>
+        <Constant Name="_F_nmol_">9.64853321E-5</Constant>
+        <Constant Name="_K_GHK_">1.0E-9</Constant>
+        <Constant Name="_N_pmol_">6.02214179E11</Constant>
+        <Constant Name="_PI_">3.141592653589793</Constant>
+        <Constant Name="_R_">8314.46261815</Constant>
+        <Constant Name="_T_">300.0</Constant>
+        <Constant Name="AreaPerUnitArea_m0">1.0</Constant>
+        <Constant Name="K_millivolts_per_volt">1000.0</Constant>
+        <Constant Name="Kf">1.0</Constant>
+        <Constant Name="KMOLE">0.001660538783162726</Constant>
+        <Constant Name="Kr">0.0</Constant>
+        <Constant Name="s0_diffusionRate">10.0</Constant>
+        <Constant Name="s0_init_uM">1.0</Constant>
+        <Constant Name="s1_diffusionRate">10.0</Constant>
+        <Constant Name="s1_init_uM">0.0</Constant>
+        <Constant Name="Size_c0">50000.0</Constant>
+        <Constant Name="Size_c1">50000.0</Constant>
+        <Constant Name="Size_m0">6563.0</Constant>
+        <Constant Name="UnitFactor_molecules_uM_neg_1_um_neg_3">(1.0 * pow(KMOLE, - 1.0))</Constant>
+        <Constant Name="Voltage_m0">0.0</Constant>
+        <Constant Name="VolumePerUnitVolume_c0">1.0</Constant>
+        <Constant Name="VolumePerUnitVolume_c1">1.0</Constant>
+        <VolumeParticleVariable Name="s0" Domain="subdomain0" />
+        <VolumeParticleVariable Name="s1" Domain="subdomain0" />
+        <CompartmentSubDomain Name="subdomain1">
+          <BoundaryType Boundary="Xm" Type="Flux" />
+          <BoundaryType Boundary="Xp" Type="Flux" />
+          <BoundaryType Boundary="Ym" Type="Flux" />
+          <BoundaryType Boundary="Yp" Type="Flux" />
+          <BoundaryType Boundary="Zm" Type="Flux" />
+          <BoundaryType Boundary="Zp" Type="Flux" />
+        </CompartmentSubDomain>
+        <CompartmentSubDomain Name="subdomain0">
+          <BoundaryType Boundary="Xm" Type="Flux" />
+          <BoundaryType Boundary="Xp" Type="Flux" />
+          <BoundaryType Boundary="Ym" Type="Flux" />
+          <BoundaryType Boundary="Yp" Type="Flux" />
+          <BoundaryType Boundary="Zm" Type="Flux" />
+          <BoundaryType Boundary="Zp" Type="Flux" />
+          <ParticleJumpProcess Name="r0">
+            <SelectedParticle Name="s0" />
+            <MacroscopicRateConstant>Kf</MacroscopicRateConstant>
+            <Effect VarName="s0" Operation="destroy" />
+            <Effect VarName="s1" Operation="create" />
+          </ParticleJumpProcess>
+          <ParticleJumpProcess Name="r0_reverse">
+            <SelectedParticle Name="s1" />
+            <MacroscopicRateConstant>Kr</MacroscopicRateConstant>
+            <Effect VarName="s0" Operation="create" />
+            <Effect VarName="s1" Operation="destroy" />
+          </ParticleJumpProcess>
+          <ParticleProperties Name="s0">
+            <ParticleInitialConcentration>
+              <ParticleDistribution>(UnitFactor_molecules_uM_neg_1_um_neg_3 * s0_init_uM)</ParticleDistribution>
+            </ParticleInitialConcentration>
+            <ParticleDiffusion>s0_diffusionRate</ParticleDiffusion>
+          </ParticleProperties>
+          <ParticleProperties Name="s1">
+            <ParticleInitialConcentration>
+              <ParticleDistribution>(UnitFactor_molecules_uM_neg_1_um_neg_3 * s1_init_uM)</ParticleDistribution>
+            </ParticleInitialConcentration>
+            <ParticleDiffusion>s1_diffusionRate</ParticleDiffusion>
+          </ParticleProperties>
+        </CompartmentSubDomain>
+        <MembraneSubDomain Name="subdomain0_subdomain1_membrane" InsideCompartment="subdomain0" OutsideCompartment="subdomain1">
+          <BoundaryType Boundary="Xm" Type="Value" />
+          <BoundaryType Boundary="Xp" Type="Value" />
+          <BoundaryType Boundary="Ym" Type="Value" />
+          <BoundaryType Boundary="Yp" Type="Value" />
+          <BoundaryType Boundary="Zm" Type="Value" />
+          <BoundaryType Boundary="Zp" Type="Value" />
+        </MembraneSubDomain>
+        <Version Name="Application1_generated" KeyValue="257845409" BranchId="257845410" Archived="0" Date="28-Jun-2023 16:14:06" FromVersionable="false">
+          <Owner Name="danv" Identifier="26766043" />
+          <GroupAccess Type="1" />
+        </Version>
+      </MathDescription>
+      <Simulation Name="Simulation1">
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Smoldyn (Spatial Stochastic Simulator)">
+          <TimeBound StartTime="0.0" EndTime="1.0" />
+          <TimeStep DefaultTime="1.0E-4" MinTime="1.0E-4" MaxTime="1.0E-4" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+          <OutputOptions OutputTimeStep="0.05" />
+          <SmoldynSimulationOptions>
+            <Accuracy>10.0</Accuracy>
+            <HighResolutionSample>true</HighResolutionSample>
+            <saveParticleFiles>false</saveParticleFiles>
+            <gaussianTableSize>4096</gaussianTableSize>
+            <SmoldynStepMultiplier>1</SmoldynStepMultiplier>
+          </SmoldynSimulationOptions>
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides />
+        <MeshSpecification>
+          <Size X="51" Y="51" Z="51" />
+        </MeshSpecification>
+        <Version Name="Simulation1" KeyValue="257845440" BranchId="257845441" Archived="0" Date="28-Jun-2023 16:14:07" FromVersionable="false">
+          <Owner Name="danv" Identifier="26766043" />
+          <GroupAccess Type="1" />
+        </Version>
+      </Simulation>
+      <SpatialObjects>
+        <SpatialObject Name="vobj_subdomain10" Type="Volume" subVolume="subdomain1" regionId="0">
+          <QuantityCategoryList>
+            <QuantityCategory Name="VolumeCentroid" Enabled="false" />
+            <QuantityCategory Name="InteriorVelocity" Enabled="false" />
+            <QuantityCategory Name="VolumeRegionSize" Enabled="true" />
+          </QuantityCategoryList>
+        </SpatialObject>
+        <SpatialObject Name="vobj_subdomain01" Type="Volume" subVolume="subdomain0" regionId="1">
+          <QuantityCategoryList>
+            <QuantityCategory Name="VolumeCentroid" Enabled="false" />
+            <QuantityCategory Name="InteriorVelocity" Enabled="false" />
+            <QuantityCategory Name="VolumeRegionSize" Enabled="true" />
+          </QuantityCategoryList>
+        </SpatialObject>
+        <SpatialObject Name="sobj_subdomain01_subdomain10" Type="Surface" subVolumeInside="subdomain0" regionIdInside="1" subVolumeOutside="subdomain1" regionIdOutside="0">
+          <QuantityCategoryList>
+            <QuantityCategory Name="SurfaceNormal" Enabled="false" />
+            <QuantityCategory Name="SurfaceVelocity" Enabled="false" />
+            <QuantityCategory Name="DistanceToSurface" Enabled="false" />
+            <QuantityCategory Name="DirectionToSurface" Enabled="false" />
+            <QuantityCategory Name="SurfaceSize" Enabled="true" />
+          </QuantityCategoryList>
+        </SpatialObject>
+      </SpatialObjects>
+      <Version Name="stoch_spat_conc" KeyValue="257845431" BranchId="257845432" Archived="0" Date="28-Jun-2023 16:14:06" FromVersionable="false">
+        <Owner Name="danv" Identifier="26766043" />
+        <GroupAccess Type="1" />
+      </Version>
+      <MicroscopeMeasurement Name="fluor">
+        <ConvolutionKernel Type="ProjectionZKernel" />
+      </MicroscopeMeasurement>
+    </SimulationSpec>
+    <Version Name="stoch_spatial_conc" KeyValue="257845443" BranchId="257845444" Archived="0" Date="28-Jun-2023 16:14:07" FromVersionable="false">
+      <Owner Name="danv" Identifier="26766043" />
+      <GroupAccess Type="1" />
+    </Version>
+    <pathwayModel>
+      <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bp="http://www.biopax.org/release/biopax-level3.owl#" version="3.0" />
+    </pathwayModel>
+    <relationshipModel>
+      <RMNS version="3.0" />
+    </relationshipModel>
+    <vcmetadata>
+      <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" />
+      <nonrdfAnnotationList />
+      <uriBindingList />
+    </vcmetadata>
+  </BioModel>
+</vcml>
+

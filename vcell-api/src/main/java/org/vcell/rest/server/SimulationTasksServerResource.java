@@ -115,7 +115,7 @@ public class SimulationTasksServerResource extends AbstractServerResource implem
 	@Override
     public SimulationTaskRepresentation[] get_json() {
 		VCellApiApplication application = ((VCellApiApplication)getApplication());
-		User vcellUser = application.getVCellUser(getChallengeResponse(),AuthenticationPolicy.prohibitInvalidCredentials);
+		User vcellUser = application.getVCellUser(getChallengeResponse(),AuthenticationPolicy.ignoreInvalidCredentials);
 		
         return getSimulationTaskRepresentations(vcellUser);
     }

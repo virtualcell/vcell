@@ -2,6 +2,8 @@ package org.vcell.cli;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import org.vcell.util.VCellUtilityHub;
@@ -65,7 +67,7 @@ public class CLIRecorder extends Recorder implements CLIRecordable {
      * @throws IOException if there is a system IO issue breaking execution.
      */
     public CLIRecorder(File outputDirectory, boolean forceLogFiles, boolean shouldFlushLogFiles) throws IOException {
-        this(CLIUtils.isBatchExecution(outputDirectory.getAbsolutePath(), forceLogFiles), shouldFlushLogFiles);
+        this(isBatchExecution(outputDirectory.getAbsolutePath(), forceLogFiles), shouldFlushLogFiles);
         if (!outputDirectory.exists() && !outputDirectory.mkdirs()) {
             String format = "Path: <%s> does not lead to an existing directory, nor could it be created.";
             String message = String.format(format, outputDirectory.getAbsolutePath());
@@ -89,6 +91,22 @@ public class CLIRecorder extends Recorder implements CLIRecordable {
         
         this.createHeader();
     }
+
+    /**
+     * Determines whether a single file or a batch of files were submitted for processing in VCell CLI (or should be treated as a batch execution);
+     *
+     * @param outputBaseDir output dir of the execution
+     * @param bForceKeepLogs whether VCell has been asked to force keeping logs
+     * @return whether the execution should be treated as a batch execution
+     * @Deprecated: this method should be removed,
+     */
+    private static boolean isBatchExecution(String outputBaseDir, boolean bForceKeepLogs) {
+        // TODO: remove this method
+        Path path = Paths.get(outputBaseDir);
+        boolean isDirectory = Files.isDirectory(path);
+        return isDirectory || bForceKeepLogs;
+    }
+
 
     // Logging file methods
 

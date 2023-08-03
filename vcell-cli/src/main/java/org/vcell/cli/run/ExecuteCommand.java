@@ -22,37 +22,37 @@ public class ExecuteCommand implements Callable<Integer> {
 
     private final static Logger logger = org.apache.logging.log4j.LogManager.getLogger(ExecuteCommand.class);
 
-    @Option(names = { "-i", "--inputFilePath" })
+    @Option(names = { "-i", "--inputFilePath" }, required = true)
     private File inputFilePath;
 
-    @Option(names = { "-o", "--outputFilePath"})
+    @Option(names = { "-o", "--outputFilePath"}, required = true)
     private File outputFilePath;
 
-    @Option(names = {"--forceLogFiles"})
-    private boolean bForceLogFiles;
+    @Option(names = {"--writeLogFiles"}, defaultValue = "false")
+    private boolean bWriteLogFiles = false;
 
-    @Option(names = {"--keepTempFiles"})
-    private boolean bKeepTempFiles;
+    @Option(names = {"--keepTempFiles"}, defaultValue = "false")
+    private boolean bKeepTempFiles = false;
 
-    @Option(names = {"--exactMatchOnly"})
-    private boolean bExactMatchOnly;
+    @Option(names = {"--exactMatchOnly"}, defaultValue = "false")
+    private boolean bExactMatchOnly = false;
 
-    @Option(names = "--keepFlushingLogs")
-    private boolean bKeepFlushingLogs;
+    @Option(names = "--keepFlushingLogs", defaultValue = "false")
+    private boolean bKeepFlushingLogs = false;
 
     @Option(names = "--small-mesh", defaultValue = "false", description = "force spatial simulations to have a very small mesh to make execution faster")
     private boolean bSmallMeshOverride = false;
 
     @Option(names = {"--encapsulateOutput"}, defaultValue = "true", description =
         "VCell will encapsulate output results in a sub directory when executing with a single input archive; has no effect when providing an input directory")
-    private boolean bEncapsulateOutput;
+    private boolean bEncapsulateOutput = true;
 
     @Option(names = {"--timeout_ms"}, defaultValue = "600000", description = "executable wall clock timeout in milliseconds")
-    // timeout for compiled solver running long jobs; default 12 hours
-    private long EXECUTABLE_MAX_WALLCLOCK_MILLIS;
+    // timeout for compiled solver running long jobs; default 10 minutes
+    private long EXECUTABLE_MAX_WALLCLOCK_MILLIS = 10 * 60 * 1000;
 
     @Option(names = {"-h", "--help"}, description = "show this help message and exit", usageHelp = true)
-    private boolean help;
+    private boolean help = false;
 
     @Option(names = {"-d", "--debug"}, description = "full application debug mode")
     private boolean bDebug = false;
@@ -64,7 +64,6 @@ public class ExecuteCommand implements Callable<Integer> {
     public Integer call() {
         CLIRecorder cliLogger = null;
         try {
-            cliLogger = new CLIRecorder(outputFilePath); // CLILogger will throw an execption if our output dir isn't valid.
 
             Level logLevel = logger.getLevel();
             if (!bQuiet && bDebug) {
@@ -72,6 +71,10 @@ public class ExecuteCommand implements Callable<Integer> {
             } else if (bQuiet) {
                 logLevel = Level.OFF;
             }
+
+            // CLILogger will throw an exception if our output dir isn't valid.
+            boolean shouldFlush = this.bKeepFlushingLogs || this.bDebug;
+            cliLogger = new CLIRecorder(this.outputFilePath, this.bWriteLogFiles, shouldFlush);
             
             LoggerContext config = (LoggerContext)(LogManager.getContext(false));
             config.getConfiguration().getLoggerConfig(LogManager.getLogger("org.vcell").getName()).setLevel(logLevel);
@@ -81,10 +84,10 @@ public class ExecuteCommand implements Callable<Integer> {
             logger.debug("Execution mode requested");
 
             String trace_args =  String.format(
-                "Arguments:\nInput\t: \"%s\"\nOutput\t: \"%s\"\nForceLogs\t: %b\n" +
+                "Arguments:\nInput\t: \"%s\"\nOutput\t: \"%s\"\nWriteLogs\t: %b\n" +
                     "KeepTemp\t: %b\nExactMatch\t: %b\nEncapOut\t: %b\nTimeout\t: %dms\n" + 
                     "Help\t: %b\nDebug\t: %b\nQuiet\t: %b",
-                inputFilePath.getAbsolutePath(), outputFilePath.getAbsolutePath(), bForceLogFiles, 
+                inputFilePath.getAbsolutePath(), outputFilePath.getAbsolutePath(), bWriteLogFiles,
                     bKeepTempFiles, bExactMatchOnly, bEncapsulateOutput, 
                     EXECUTABLE_MAX_WALLCLOCK_MILLIS, help, bDebug, bQuiet
             );
@@ -104,7 +107,8 @@ public class ExecuteCommand implements Callable<Integer> {
             logger.info("Beginning execution");
             if (inputFilePath.isDirectory()) {
                 logger.debug("Batch mode requested");
-                ExecuteImpl.batchMode(inputFilePath, outputFilePath, cliLogger, bKeepTempFiles, bExactMatchOnly, bSmallMeshOverride);
+                ExecuteImpl.batchMode(inputFilePath, outputFilePath, cliLogger, bKeepTempFiles, bExactMatchOnly,
+                        bSmallMeshOverride);
             } else {
                 logger.debug("Single mode requested");
                 File archiveToProcess = inputFilePath;
@@ -112,12 +116,14 @@ public class ExecuteCommand implements Callable<Integer> {
                 if (archiveToProcess.getName().endsWith("vcml")) {
                     ExecuteImpl.singleExecVcml(archiveToProcess, outputFilePath, cliLogger);
                 } else { // archiveToProcess.getName().endsWith("omex")
-                    ExecuteImpl.singleMode(archiveToProcess, outputFilePath, cliLogger, bKeepTempFiles, bExactMatchOnly, bEncapsulateOutput, bSmallMeshOverride);
+                    ExecuteImpl.singleMode(archiveToProcess, outputFilePath, cliLogger, bKeepTempFiles, bExactMatchOnly,
+                            bEncapsulateOutput, bSmallMeshOverride);
                 }
             }
 
             
-            CLIPythonManager.getInstance().closePythonProcess(); // WARNING: Python will need reinstantiation after this is called
+            CLIPythonManager.getInstance().closePythonProcess();
+            // WARNING: Python needs re-instantiation once the above line is called!
             return 0;
         } catch (Exception e) { ///TODO: Break apart into specific exceptions to maximize logging.
             org.apache.logging.log4j.LogManager.getLogger(this.getClass()).error(e.getMessage(), e);

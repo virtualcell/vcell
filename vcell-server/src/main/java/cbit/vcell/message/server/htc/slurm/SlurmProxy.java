@@ -4,19 +4,11 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.attribute.PosixFilePermission;
-import java.nio.file.attribute.PosixFilePermissions;
 import java.util.*;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.vcell.util.FileUtils;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.exe.ExecutableException;
-
-import com.google.common.io.Files;
 
 import cbit.vcell.message.server.cmd.CommandService;
 import cbit.vcell.message.server.cmd.CommandService.CommandOutput;
@@ -36,15 +28,6 @@ import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solvers.AbstractSolver;
 import cbit.vcell.solvers.ExecutableCommand;
 import edu.uchc.connjur.wb.LineStringBuilder;
-import org.vcell.util.FileUtils;
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.exe.ExecutableException;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.StringReader;
-import java.util.*;
 
 public class SlurmProxy extends HtcProxy {
 	
@@ -56,49 +39,43 @@ public class SlurmProxy extends HtcProxy {
 		super(commandService, htcUser);
 	}
 
-	public static HtcProxy creatCommandService(java.lang.String[] sshHostUserKeyfile) throws IOException {
-		CommandService commandService = null;
-		if (sshHostUserKeyfile != null && sshHostUserKeyfile.length==3){
-			ArrayList<String> htcDispatchHostNames = new ArrayList<String>();
-			StringTokenizer st = new StringTokenizer(sshHostUserKeyfile[0],", ");
-			while(st.hasMoreElements()) {
-				htcDispatchHostNames.add(st.nextToken());
-			}
-			//String sshHost = sshHostUserKeyfile[0];
-			String sshUser = sshHostUserKeyfile[1];
-			File sshKeyFile = new File(sshHostUserKeyfile[2]);
+	public static SlurmProxy createRemoteProxy(){
+		ArrayList<String> htcDispatchHostNames = new ArrayList<String>();
+		StringTokenizer st = new StringTokenizer(PropertyLoader.getRequiredProperty(PropertyLoader.htcHosts),", ");
+		while(st.hasMoreElements()) {
+			htcDispatchHostNames.add(st.nextToken());
+		}
+		String htcUser = PropertyLoader.getRequiredProperty(PropertyLoader.htcUser);
+		File sshKeyFile = new File(PropertyLoader.getRequiredProperty(PropertyLoader.htcUserKeyFile));
+
+		return createRemoteProxy(htcDispatchHostNames, htcUser,sshKeyFile);
+	}
+
+	public static SlurmProxy createRemoteProxy(List<String> htcDispatchHostNames, String sshUser, File sshKeyFile) {
+		CommandServiceSshNative commandService;
+		try {
+			commandService = new CommandServiceSshNative(htcDispatchHostNames.toArray(new String[0]),sshUser,sshKeyFile);
+			commandService.command(new String[] { "/usr/bin/env bash -c ls | head -5" });
+			LG.trace("SSH Connection test passed with installed keyfile, running ls as user "+sshUser);
+		} catch (Exception e) {
+			LG.warn(e);
 			try {
-				commandService = new CommandServiceSshNative(htcDispatchHostNames.toArray(new String[0]),sshUser,sshKeyFile);
-				commandService.command(new String[] { "/usr/bin/env bash -c ls | head -5" });
-//				lg.trace("SSH Connection test passed with installed keyfile, running ls as user "+sshUser+" on "+sshHost);
-			} catch (Exception e) {
-				LG.warn(e);
-				try {
-					commandService = new CommandServiceSshNative(htcDispatchHostNames.toArray(new String[0]),sshUser,sshKeyFile,new File("/root"));
-					CommandOutput commandOutput = commandService.command(new String[] { "/usr/bin/env bash -c ls | head -5" });
-//					lg.trace("SSH Connection test passed after installing keyfile, running ls as user "+sshUser+" on "+sshHost);
-				} catch (Exception e2) {
-					String msg = "failed to establish an ssh command connection to "+sshHostUserKeyfile[0]+" as user '"+sshUser+"' using key '"+sshKeyFile+"'";
-					LG.error(msg, e2);
-					throw new RuntimeException(msg, e2);
-				}
-			}
-			AbstractSolver.bMakeUserDirs = false; // can't make user directories, they are remote.
-		}else{
-			commandService = new CommandServiceLocal();
-		}
-		BatchSystemType batchSystemType = BatchSystemType.SLURM;
-		HtcProxy htcProxy = null;
-		switch(batchSystemType){
-			case SLURM:{
-				htcProxy = new SlurmProxy(commandService, PropertyLoader.getRequiredProperty(PropertyLoader.htcUser));
-				break;
-			}
-			default: {
-				throw new RuntimeException("unrecognized batch scheduling option :"+batchSystemType);
+				commandService = new CommandServiceSshNative(htcDispatchHostNames.toArray(new String[0]),sshUser,sshKeyFile,new File("/root"));
+				CommandOutput commandOutput = commandService.command(new String[] { "/usr/bin/env bash -c ls | head -5" });
+				LG.trace("SSH Connection test passed after installing keyfile, running ls as user "+sshUser);
+			} catch (Exception e2) {
+				String msg = "failed to establish an ssh command connection to "+htcDispatchHostNames+" as user '"+sshUser+"' using key '"+sshKeyFile+"'";
+				LG.error(msg, e2);
+				throw new RuntimeException(msg, e2);
 			}
 		}
-		return htcProxy;
+		AbstractSolver.bMakeUserDirs = false; // can't make user directories, they are remote.
+		return new SlurmProxy(commandService, PropertyLoader.getRequiredProperty(PropertyLoader.htcUser));
+	}
+
+	public static SlurmProxy createLocalProxy(List<String> htcDispatchHostNames, String sshUser, File sshKeyFile) {
+		CommandService commandService = new CommandServiceLocal();
+		return new SlurmProxy(commandService, PropertyLoader.getRequiredProperty(PropertyLoader.htcUser));
 	}
 
 	@Override

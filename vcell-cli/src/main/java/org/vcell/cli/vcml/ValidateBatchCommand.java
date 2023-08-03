@@ -44,9 +44,9 @@ public class ValidateBatchCommand implements Callable<Integer> {
         config.updateLoggers();
 
         try {
-            boolean bForceLogFiles = true;
+            boolean bWriteLogFiles = true;
             boolean bKeepFlushingLogs = true;
-            cliLogger = new CLIRecorder(outputFilePath, bForceLogFiles, bKeepFlushingLogs);
+            cliLogger = new CLIRecorder(outputFilePath, bWriteLogFiles, bKeepFlushingLogs);
             PropertyLoader.loadProperties();
             if (!inputFilePath.exists()){
                 throw new RuntimeException("inputFilePath '"+inputFilePath+"' should be a directory or single .vcml file");

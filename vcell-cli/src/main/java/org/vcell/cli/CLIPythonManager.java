@@ -29,7 +29,7 @@ public class CLIPythonManager {
      * to stop before we wait for eternity and break our program.
      */
 
-    private static final Logger logger = LogManager.getLogger(CLIPythonManager.class);
+    private static final Logger lg = LogManager.getLogger(CLIPythonManager.class);
 
     public static final Path CURRENT_WORKING_DIR = Paths.get("").toAbsolutePath();
     private static final String PYTHON_EXE_NAME = OperatingSystemInfo.getInstance().isWindows() ? "python" : "python3";
@@ -45,7 +45,7 @@ public class CLIPythonManager {
      * @return the manager
      */
     public static CLIPythonManager getInstance(){
-        logger.trace("Getting Python instance");
+        lg.trace("Getting Python instance");
         if (instance == null){
             instance = new CLIPythonManager();
         }
@@ -73,8 +73,9 @@ public class CLIPythonManager {
      * @throws IOException if there was a system IO failure
      */
 
-    public static void callNonSharedPython(String cliCommand, String sedmlPath, String resultOutDir) throws InterruptedException, IOException {
-        logger.warn("Using old style python invocation!");
+    public static void callNonSharedPython(String cliCommand, String sedmlPath, String resultOutDir)
+            throws InterruptedException, IOException, PythonStreamException {
+        lg.warn("Using old style python invocation!");
         Path cliWorkingDir = Paths.get(PropertyLoader.getRequiredProperty(PropertyLoader.cliWorkingDir));
         ProcessBuilder pb = new ProcessBuilder("poetry", "run", "python", "-m", "vcell_cli_utils.cli",
                 cliCommand, sedmlPath, resultOutDir);
@@ -89,7 +90,7 @@ public class CLIPythonManager {
      */
     public void closePythonProcess() throws IOException {
         // Exit the living Python Process
-        logger.debug("Closing Python Instance");
+        lg.debug("Closing Python Instance");
         if (this.pythonOSW != null && this.pythonISB != null) this.sendNewCommand("exit()"); // Sends kill command ("exit()") to python.exe instance;
         if (this.pythonProcess != null && this.pythonProcess.isAlive()) this.pythonProcess.destroyForcibly(); // Making sure it's quite dead
 
@@ -110,9 +111,9 @@ public class CLIPythonManager {
      * 
      * @throws IOException if there is a problem with System I/O
      */
-    public void instantiatePythonProcess() throws IOException {
+    public void instantiatePythonProcess() throws IOException, PythonStreamException {
         if (this.pythonProcess != null) return; // prevent override
-        logger.info("Initializing Python...");
+        lg.info("Initializing Python...");
         // Confirm we have python properly installed or kill this exe where it stands.
         this.checkPythonInstallation();
         // install virtual environment
@@ -123,7 +124,7 @@ public class CLIPythonManager {
         pb.redirectErrorStream(true);
         File cliWorkingDir = PropertyLoader.getRequiredDirectory(PropertyLoader.cliWorkingDir).getCanonicalFile();
         pb.directory(cliWorkingDir);
-        logger.debug("Loading poetry in directory: " + cliWorkingDir);
+        lg.debug("Loading poetry in directory: " + cliWorkingDir);
         this.pythonProcess = pb.start();
         this.pythonOSW = new OutputStreamWriter(this.pythonProcess.getOutputStream());
         this.pythonISB = new BufferedReader(new InputStreamReader(this.pythonProcess.getInputStream()));
@@ -132,9 +133,9 @@ public class CLIPythonManager {
         try {
             this.getResultsOfLastCommand(); // Clear Buffer of Python Interpreter
             this.executeThroughPython();
-            logger.info("Python initialization success!");
+            lg.info("Python initialization success!");
         } catch (IOException | TimeoutException | InterruptedException e){
-            logger.warn("Python instantiation Exception Thrown:\n" + e);
+            lg.warn("Python instantiation Exception Thrown:\n" + e);
             throw new PythonStreamException("Could not initialize Python. Problem is probably python-side.", e);
         }
     }
@@ -180,7 +181,7 @@ public class CLIPythonManager {
         // we can easily send the command, but we need to format it first.
 
         String command = String.format("%s\n", CLIPythonManager.stripStringForPython(cmd));
-        logger.trace("Sent cmd to Python: " + command);
+        lg.trace("Sent cmd to Python: " + command);
         this.pythonOSW.write(command);
         this.pythonOSW.flush();
     }
@@ -209,14 +210,14 @@ public class CLIPythonManager {
                     stringBuilder.append(stdOutLog);
                     // search string can be one or more... (potential python 2.7.X bug here?) Maybe use regex?
                     if (!stringBuilder.toString().toLowerCase().startsWith("python 3")) throw new PythonStreamException();
-                    logger.debug(String.format("Python initialized as version %s", stringBuilder.toString().split(" ")[1]));
+                    lg.debug(String.format("Python initialized as version %s", stringBuilder.toString().split(" ")[1]));
                 }
             }
         } catch (PythonStreamException e) {
-            logger.error("Please check your local Python and PIP Installation, install required packages and versions", e);
+            lg.error("Please check your local Python and PIP Installation, install required packages and versions", e);
             throw new MissingResourceException("Error validating Python installation:\n" + e.getMessage(), "Python 3.9+", "");
         } catch (IOException | InterruptedException e) {
-            logger.error("System produced " + e.getClass().getSimpleName() + " when trying to validate Python.", e);
+            lg.error("System produced " + e.getClass().getSimpleName() + " when trying to validate Python.", e);
         }
     }
 
@@ -229,7 +230,8 @@ public class CLIPythonManager {
     }
 
     @SuppressWarnings("UnstableApiUsage")
-    public static void runAndPrintProcessStreams(ProcessBuilder pb, String outString, String errString) throws InterruptedException, IOException {
+    public static void runAndPrintProcessStreams(ProcessBuilder pb, String outString, String errString)
+            throws InterruptedException, IOException, PythonStreamException {
         // Process printing code goes here
         File of = File.createTempFile("temp-", ".out", CURRENT_WORKING_DIR.toFile());
         File ef = File.createTempFile("temp-", ".err", CURRENT_WORKING_DIR.toFile());
@@ -245,15 +247,15 @@ public class CLIPythonManager {
         lines = Files.readLines(of, StandardCharsets.UTF_8);
         lines.forEach(line -> sbOut.append(line).append("\n"));
         String os = sbOut.toString();
-        if (of.delete()) logger.warn("Temp out file didn't delete properly");
-        if (ef.delete()) logger.warn("Temp error file didn't delete properly");
+        if (of.delete()) lg.warn("Temp out file didn't delete properly");
+        if (ef.delete()) lg.warn("Temp error file didn't delete properly");
         if (process.exitValue() != 0) {
-            logger.error(errString);
+            lg.error(errString);
             // don't print here, send the error down to caller who is responsible for dealing with it
-            throw new RuntimeException(es);
+            throw new PythonStreamException(es);
         } else {
-            if (!outString.equals("")) logger.info(outString);
-            if (!os.equals("")) logger.info(os);
+            if (!outString.equals("")) lg.info(outString);
+            if (!os.equals("")) lg.info(os);
         }
     }
 
@@ -262,7 +264,7 @@ public class CLIPythonManager {
     }
 
     public void parsePythonReturn(String returnedString, String outString, String errString) throws PythonStreamException {
-        boolean DEBUG_NORMAL_OUTPUT = logger.isTraceEnabled(); // Consider getting rid of this, currently redundant
+        boolean DEBUG_NORMAL_OUTPUT = lg.isTraceEnabled(); // Consider getting rid of this, currently redundant
         String ERROR_PHRASE1 = "Traceback", ERROR_PHRASE2 = "File \"<stdin>\"";
 
         // If nulls, set empty strings
@@ -271,7 +273,7 @@ public class CLIPythonManager {
 
         // Null or empty strings are considered passing results
         if(returnedString == null || (returnedString = CLIUtils.stripString(returnedString)).equals("")){
-            logger.trace("Python returned successfully.");
+            lg.trace("Python returned successfully.");
             return;
         }
 
@@ -287,7 +289,7 @@ public class CLIPythonManager {
             String resultString = outString.isEmpty() ? "" : String.format("Result: %s\n", outString);
             String message = "Python returned%s\nResult: %s\n";
             String debugTypeString = DEBUG_NORMAL_OUTPUT? String.format(": [%s]", returnedString) : " successfully.";
-            logger.trace(String.format(message, debugTypeString, resultString));
+            lg.trace(String.format(message, debugTypeString, resultString));
         }
     }
 
