@@ -43,6 +43,7 @@ public class VcmlOmexConverter {
 	public static void convertOneFile(File input,
 									  File outputDir,
 									  ModelFormat modelFormat,
+									  SEDMLEventLog passedInSedmlEventLog,
 									  boolean bWriteLogFiles,
 									  boolean bValidateOmex,
 									  boolean bSkipUnsupportedApps)
@@ -54,12 +55,15 @@ public class VcmlOmexConverter {
 		logger.debug("Beginning conversion of `" + input + "`");
 		Predicate<Simulation> simulationExportFilter = simulation -> true;
 		BioModelInfo bioModelInfo = null;
-		final SEDMLEventLog sedmlEventLog;
-		if (bWriteLogFiles) {
+		SEDMLEventLog sedmlEventLog;
+		if (passedInSedmlEventLog != null){
+			sedmlEventLog = passedInSedmlEventLog;
+		} else if (bWriteLogFiles) {
 			sedmlEventLog = new SEDMLEventLogFile(new File(outputDir, jobLogFileName));
 		} else {
 			sedmlEventLog = (String entry) -> {};
 		}
+
 		boolean bHasPython = true;
 		List<SEDMLTaskRecord> sedmlTaskRecords = SEDMLExporter.writeBioModel(
 				input,

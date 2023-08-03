@@ -7,6 +7,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.vcell.sedml.ModelFormat;
+import org.vcell.sedml.SEDMLEventLog;
 import org.vcell.util.DataAccessException;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -62,19 +63,19 @@ public class ExportOmexCommand implements Callable<Integer> {
                 this.logger.warn(String.format("File '%s' already exists."));
 
             return ExportOmexCommand.exportVCMLFile(this.inputFilePath, this.outputFilePath,
-                    this.outputModelFormat, this.bWriteLogFiles, this.bValidateOmex, this.bSkipUnsupportedApps);
+                    this.outputModelFormat, null, this.bWriteLogFiles, this.bValidateOmex, this.bSkipUnsupportedApps);
 
         } catch (Exception e) {
             throw new RuntimeException("Export failed with message:\n\t" + e.getMessage(), e);
         }
     }
 
-    public static int exportVCMLFile(File inputFilePath, File outputFilePath, ModelFormat outputModelFormat,
+    public static int exportVCMLFile(File inputFilePath, File outputFilePath, ModelFormat outputModelFormat, SEDMLEventLog sedmlEventLog,
                                      boolean bWriteLogFiles, boolean bValidateOmex, boolean bSkipUnsupportedApps)
             throws Exception {
         try {
             logger.debug(String.format("Beginning export of '%s'", inputFilePath.getName()));
-            VcmlOmexConverter.convertOneFile(inputFilePath, outputFilePath, outputModelFormat,
+            VcmlOmexConverter.convertOneFile(inputFilePath, outputFilePath, outputModelFormat, sedmlEventLog,
                     bWriteLogFiles, bValidateOmex, bSkipUnsupportedApps);
             logger.debug(String.format("Finished export of '%s'", inputFilePath.getName()));
         } catch (Exception e){

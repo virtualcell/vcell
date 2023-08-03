@@ -120,9 +120,6 @@ jobs:
         #$(docker image ls | grep "<none>" | awk '{print $3;}')  to get image id
         run: docker run -v $GITHUB_WORKSPACE:/root $(docker image ls | grep "<none>" | awk '{print $3;}') export-omex-batch -i "/root/public/biomodel/vcml" -o "/root/export_conversion/output" -m SBML --offline # grabs image and runs
 
-      - name: Setup tmate session 3
-        uses: mxschmitt/action-tmate@v3
-
       # Parse the results
       - name: Parse Results
         run: |

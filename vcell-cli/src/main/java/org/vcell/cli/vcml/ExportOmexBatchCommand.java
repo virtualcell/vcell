@@ -11,6 +11,8 @@ import org.apache.logging.log4j.core.LoggerContext;
 import org.vcell.admin.cli.CLIDatabaseService;
 import org.vcell.cli.CLIRecorder;
 import org.vcell.sedml.ModelFormat;
+import org.vcell.sedml.SEDMLEventLog;
+import org.vcell.sedml.SEDMLEventLogFile;
 import org.vcell.util.DataAccessException;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -75,7 +77,7 @@ public class ExportOmexBatchCommand implements Callable<Integer> {
         config.getConfiguration().getLoggerConfig(LogManager.getLogger("org.vcell").getName()).setLevel(logLevel);
         config.getConfiguration().getLoggerConfig(LogManager.getLogger("cbit").getName()).setLevel(logLevel);
         config.updateLoggers();
-
+        final SEDMLEventLog sedmlEventLog;
         try {
             logger.debug("Batch export of omex files requested");
             PropertyLoader.loadProperties();
@@ -90,6 +92,13 @@ public class ExportOmexBatchCommand implements Callable<Integer> {
             if (!parentDir.exists())
                 if (!parentDir.mkdirs())
                     throw new RuntimeException("Output dir doesn't exist and could not be made!");
+
+
+            if (bWriteLogFiles) {
+                sedmlEventLog = new SEDMLEventLogFile(new File(outputFilePath, "jobLog.txt"));
+            } else {
+                sedmlEventLog = (String entry) -> {};
+            }
         } catch (IOException e){
             throw new RuntimeException("Error in setting up batch execution:\n\t", e);
         }
@@ -124,7 +133,7 @@ public class ExportOmexBatchCommand implements Callable<Integer> {
 
                     // Setup Complete, Begin Conversion.
                     try {
-                        ExportOmexCommand.exportVCMLFile(childFile, targetOutputFile, this.outputModelFormat,
+                        ExportOmexCommand.exportVCMLFile(childFile, targetOutputFile, this.outputModelFormat, sedmlEventLog,
                                 this.bWriteLogFiles, this.bValidateOmex, this.bSkipUnsupportedApps);
                         logger.info("Conversion from '" + child.getFileName()
                                 + "' to '" + targetOutputFile.getName() + "' succeeded");
