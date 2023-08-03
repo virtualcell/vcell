@@ -17,20 +17,15 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Paint;
+import java.io.IOException;
 
-import javax.swing.BorderFactory;
-import javax.swing.ButtonModel;
-import javax.swing.Icon;
-import javax.swing.JCheckBox;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.border.Border;
+import javax.media.j3d.Canvas3D;
+import javax.media.j3d.View;
+import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.EtchedBorder;
-import javax.swing.border.LineBorder;
 
+import cbit.plot.gui.animation.viewers.ViewerGUI;
+import org.jmol.viewer.Viewer;
 import org.vcell.util.Range;
 import org.vcell.util.gui.ButtonGroupCivilized;
 import org.vcell.util.gui.EnhancedJLabel;
@@ -52,6 +47,7 @@ import cbit.vcell.units.VCUnitDefinition;
 public class PlotPane extends JPanel {
 
 class LineIcon implements Icon {
+
 		private Paint lineColor;
 		private LineIcon(Paint paint) {
 			lineColor = paint;
@@ -77,11 +73,14 @@ class LineIcon implements Icon {
 	private JPanel ivjJPanel1 = null;
 	private JPanel ivjJPanelData = null;
 	private JPanel ivjJPanelPlot = null;
+	private JPanel ivjJPanelAnimation = null;
 	private Plot2DDataPanel ivjPlot2DDataPanel1 = null;
 	private ButtonGroupCivilized ivjButtonGroupCivilized1 = null;
 	private CardLayout ivjCardLayout1 = null;
 	private JToolBarToggleButton ivjDataButton = null;
 	private JToolBarToggleButton ivjPlotButton = null;
+	private JToolBarToggleButton ivjAnimationButton = null;
+
 	private boolean ivjConnPtoP3Aligning = false;
 	private ButtonModel ivjselection1 = null;
 	private boolean fieldBCompact = false;
@@ -319,7 +318,19 @@ private void connEtoM5(javax.swing.ButtonModel value) {
 		handleException(ivjExc);
 	}
 }
-
+private void connEtoM6() {
+	try {
+		// user code begin {1}
+		// user code end
+		getButtonGroupCivilized1().add(getAnimationButton());
+		// user code begin {2}
+		// user code end
+	} catch (java.lang.Throwable ivjExc) {
+		// user code begin {3}
+		// user code end
+		handleException(ivjExc);
+	}
+}
 
 /**
  * connPtoP1SetTarget:  (JLabel3.this <--> Plot2DPanel1.statusLabel)
@@ -791,6 +802,7 @@ private javax.swing.JPanel getJPanel1() {
 			ivjJPanel1.setLayout(new java.awt.CardLayout());
 			getJPanel1().add(getJPanelPlot(), getJPanelPlot().getName());
 			getJPanel1().add(getJPanelData(), getJPanelData().getName());
+			getJPanel1().add(getJPanelAnimation(), getJPanelAnimation().getName());
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -831,6 +843,13 @@ private javax.swing.JPanel getJPanelBottom() {
 			constraintsDataButton.gridx = 3; constraintsDataButton.gridy = 0;
 			constraintsDataButton.insets = new java.awt.Insets(4, 4, 4, 4);
 			getJPanelBottom().add(getDataButton(), constraintsDataButton);
+			/**
+			 * TEST
+			 */
+			java.awt.GridBagConstraints constraintsAnimationButton = new java.awt.GridBagConstraints();
+			constraintsDataButton.gridx = 4; constraintsDataButton.gridy = 0;
+			constraintsDataButton.insets = new java.awt.Insets(4, 4, 4, 4);
+			getJPanelBottom().add(getAnimationButton(), constraintsAnimationButton);
 
 			java.awt.GridBagConstraints constraintsJCheckBox_stepLike = new java.awt.GridBagConstraints();
 			constraintsJCheckBox_stepLike.gridx = 0; constraintsJCheckBox_stepLike.gridy = 0;
@@ -922,6 +941,54 @@ private javax.swing.JPanel getJPanelPlot() {
 	return ivjJPanelPlot;
 }
 
+/**
+ * Return the JPanelAnimation property value.
+ * @return javax.swing.JPanel
+ */
+public Thread t;
+private javax.swing.JPanel getJPanelAnimation() {
+
+
+	if (ivjJPanelAnimation == null) {
+		try {
+			final ViewerGUI[] v = new ViewerGUI[1];
+			ivjJPanelAnimation = new javax.swing.JPanel();
+			ivjJPanelAnimation.setName("JPanelAnimation");
+			ivjJPanelAnimation.setLayout(new java.awt.BorderLayout());
+			//TODO: ADD ANIMATION HERE
+			if (t== null) {
+				t = new Thread(new Runnable() {
+					@Override
+					public void run() {
+						v[0] = new ViewerGUI("title");
+						v[0].setVisible(false);
+						try {
+							v[0].loadFile(0);
+						} catch (IOException ioe) {
+							ioe.printStackTrace(System.out);
+						}
+
+						getJPanelAnimation().add(v[0].getJMenuBar(), "North");
+						getJPanelAnimation().add(v[0].getViewPanel(),"Center");
+						getJPanelAnimation().add(v[0].getContentPane(), "South");
+
+					}
+
+					;
+				});
+				t.start();
+			}
+
+			// user code begin {1}
+			// user code end
+		} catch (java.lang.Throwable ivjExc) {
+			// user code begin {2}
+			// user code end
+			handleException(ivjExc);
+		}
+	}
+	return ivjJPanelAnimation;
+}
 
 /**
  * Return the JPanelPlotLegends property value.
@@ -1057,6 +1124,32 @@ private JToolBarToggleButton getPlotButton() {
 	return ivjPlotButton;
 }
 
+private JToolBarToggleButton getAnimationButton() {
+	if (ivjAnimationButton == null) {
+		try {
+			ivjAnimationButton = new JToolBarToggleButton();
+			ivjAnimationButton.setName("AnimationButton");
+			ivjAnimationButton.setToolTipText("View animation");
+			ivjAnimationButton.setText("");
+			ivjAnimationButton.setMaximumSize(new java.awt.Dimension(28, 28));
+			ivjAnimationButton.setActionCommand("JPanelAnimation");
+			ivjAnimationButton.setSelected(false);
+			ivjAnimationButton.setPreferredSize(new java.awt.Dimension(28, 28));
+			ivjAnimationButton.setIcon(VCellIcons.animationIcon);
+			ivjAnimationButton.setMinimumSize(new java.awt.Dimension(28, 28));
+			// user code begin {1}
+			// user code end
+		} catch (java.lang.Throwable ivjExc) {
+			// user code begin {2}
+			// user code end
+			handleException(ivjExc);
+		}
+	}
+	return ivjAnimationButton;
+}
+
+
+
 /**
  * Return the PlotLegendsScrollPane property value.
  * @return javax.swing.JScrollPane
@@ -1138,6 +1231,7 @@ private void initialize() {
 		add(getJPanelLegend(), "East");
 		setBackground(Color.white);
 		initConnections();
+		connEtoM6();
 		connEtoM4();
 		connEtoM3();
 	} catch (java.lang.Throwable ivjExc) {

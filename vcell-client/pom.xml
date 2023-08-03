@@ -82,6 +82,10 @@
            <id>ej-technologies</id>
            <url>https://maven.ej-technologies.com/repository</url>
         </repository>
+		<repository>
+			<id>clojars</id>
+			<url>https://clojars.org/repo/</url>
+		</repository>
 	</repositories>
 
 	<dependencies>
@@ -135,6 +139,136 @@
       <artifactId>jetty-server</artifactId>
      <!--  <version>${jettyVersion}</version> -->
     </dependency>
+		 <!-- https://mvnrepository.com/artifact/org.jogamp.gluegen/gluegen-rt-natives-linux-amd64 -->
+		 <dependency>
+		 <groupId>org.jogamp.gluegen</groupId>
+		 <artifactId>gluegen-rt-natives-linux-amd64</artifactId>
+		 <version>2.4.0-rc-20210111</version>
+		 </dependency>
+		 <!-- https://mvnrepository.com/artifact/org.jogamp.gluegen/gluegen-rt-natives-macosx-universal -->
+		 <dependency>
+		 <groupId>org.jogamp.gluegen</groupId>
+		 <artifactId>gluegen-rt-natives-macosx-universal</artifactId>
+		 <version>2.4.0-rc-20210111</version>
+		 </dependency>
+		 <!-- https://mvnrepository.com/artifact/org.jogamp.gluegen/gluegen-rt-natives-windows-amd64 -->
+		 <dependency>
+		 <groupId>org.jogamp.gluegen</groupId>
+		 <artifactId>gluegen-rt-natives-windows-amd64</artifactId>
+		 <version>2.4.0-rc-20210111</version>
+		 </dependency>
+		 <!-- https://mvnrepository.com/artifact/org.jogamp.gluegen/gluegen-rt-main -->
+		 <dependency>
+		 <groupId>org.jogamp.gluegen</groupId>
+		 <artifactId>gluegen-rt-main</artifactId>
+		 <version>2.3.2</version>
+		 </dependency>
+		 <!-- https://mvnrepository.com/artifact/org.jogamp.jogl/jogl-all-natives-macosx-universal -->
+		 <dependency>
+		 <groupId>org.jogamp.jogl</groupId>
+		 <artifactId>jogl-all-natives-macosx-universal</artifactId>
+		 <version>2.4.0-rc-20210111</version>
+		 </dependency>
+		 <!-- https://mvnrepository.com/artifact/org.jogamp.jogl/jogl-all-natives-linux-amd64 -->
+		 <dependency>
+		 <groupId>org.jogamp.jogl</groupId>
+		 <artifactId>jogl-all-natives-linux-amd64</artifactId>
+		 <version>2.4.0-rc-20210111</version>
+		 </dependency>
+		 <!-- https://mvnrepository.com/artifact/org.jogamp.jogl/jogl-all-natives-windows-amd64 -->
+		 <dependency>
+		 <groupId>org.jogamp.jogl</groupId>
+		 <artifactId>jogl-all-natives-windows-amd64</artifactId>
+		 <version>2.4.0-rc-20210111</version>
+		 </dependency>
+		 <!-- https://mvnrepository.com/artifact/org.jogamp.jogl/jogl-all-main -->
+		 <dependency>
+		 <groupId>org.jogamp.jogl</groupId>
+		 <artifactId>jogl-all-main</artifactId>
+		 <version>2.3.2</version>
+		 </dependency>
+
+		<!-- https://mvnrepository.com/artifact/com.pojosontheweb/monte-repack -->
+		<dependency>
+			<groupId>com.pojosontheweb</groupId>
+			<artifactId>monte-repack</artifactId>
+			<version>1.0</version>
+		</dependency>
+
+
+		<!-- https://mvnrepository.com/artifact/com.massisframework.j3d/vecmath -->
+		<dependency>
+			<groupId>com.massisframework.j3d</groupId>
+			<artifactId>vecmath</artifactId>
+			<version>1.6.0.1</version>
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/com.massisframework.j3d/java3d-core -->
+		<dependency>
+			<groupId>com.massisframework.j3d</groupId>
+			<artifactId>java3d-core</artifactId>
+			<version>1.6.0.1</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.jogamp.jogl</groupId>
+					<artifactId>jogl-all</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.jogamp.jogl</groupId>
+					<artifactId>jogl-all-main</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.jogamp.gluegen</groupId>
+					<artifactId>gluegen</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/org.jogamp.gluegen/gluegen-rt -->
+
+
+
+		<!-- https://mvnrepository.com/artifact/org.clojars.originalsurfmex.processing/gluegen-rt-natives-linux-amd64 -->
+
+		<!-- https://mvnrepository.com/artifact/org.clojars.originalsurfmex.processing/gluegen-rt-natives-macosx-universal -->
+
+		<!-- https://mvnrepository.com/artifact/org.clojars.originalsurfmex.processing/gluegen-rt-natives-linux-armv6hf -->
+
+		<!-- https://mvnrepository.com/artifact/org.clojars.originalsurfmex.processing/gluegen-rt-natives-windows-amd64 -->
+
+		<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-rng-core -->
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-rng-core</artifactId>
+			<version>1.0</version>
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-rng-client-api -->
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-rng-client-api</artifactId>
+			<version>1.0</version>
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/net.sourceforge.jmol/jmol -->
+		<dependency>
+			<groupId>net.sourceforge.jmol</groupId>
+			<artifactId>jmol</artifactId>
+			<version>14.15.2</version>
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-math3 -->
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-math3</artifactId>
+			<version>3.6.1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springsalad</groupId>
+			<artifactId>langevin</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+			<scope>compile</scope>
+		</dependency>
 
 	</dependencies>
 	<profiles>

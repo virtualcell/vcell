@@ -72,6 +72,7 @@ public abstract class VCellIcons {
 	
 	public final static Icon dataSetsIcon = makeIcon("/data_sets_20x20.gif");
 	public final static Icon dataExporterIcon = makeIcon("/data_exporter_20x20.gif");
+	public final static Icon animationIcon = makeIcon("/AnimationButton.gif");
 	
 	// Attachments, Links
 	public final static Icon bookmarkIcon = makeIcon("/icons/bookmark.png");
