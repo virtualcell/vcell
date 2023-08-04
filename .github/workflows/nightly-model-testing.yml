@@ -158,7 +158,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: export_results.txt
-          path: ~/work/vcell/vcell/export_conversion/output/export_results.txt
+          path: ~/work/vcell/vcell/export_conversion/export_results.txt
       
       - name: Upload original log of export
         uses: actions/upload-artifact@v3
