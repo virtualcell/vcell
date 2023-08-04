@@ -118,7 +118,7 @@ jobs:
         # Do the conversion
       - name: Begin Conversion
         #$(docker image ls | grep "<none>" | awk '{print $3;}')  to get image id
-        run: docker run -v $GITHUB_WORKSPACE:/root $(docker image ls | grep "<none>" | awk '{print $3;}') export-omex-batch -i "/root/public/biomodel/vcml" -o "/root/export_conversion/output" -m SBML --offline # grabs image and runs
+        run: docker run -v $GITHUB_WORKSPACE:/root $(docker image ls | grep "<none>" | awk '{print $3;}') export-omex-batch -i "/root/public/biomodel/vcml" -o "/root/export_conversion/output" -m SBML --writeLogFiles=true --validate # grabs image and runs
 
       # Parse the results
       - name: Parse Results
@@ -191,7 +191,7 @@ jobs:
       - name: Load Downloaded Docker Image
         run: docker load --input ~/wrk/$(ls ~/wrk)
       
-      # Make Input Directory
+      # Make Input and Output Directory
       - name: Make Input and Output Directory
         run: mkdir -p ~/input_files/output && mkdir ~/input_files/input
       
@@ -204,9 +204,6 @@ jobs:
       
       - name: Unpack Input Files
         run: cd ~/input_files/input && sudo tar xvf $(ls *.tar) && rm $(ls *.tar)
-        
-      - name: Prepare Output Directory
-        run: mkdir ~/input_files/input
       
       # Do the round trip
       - name: Begin Round-Trip Import
