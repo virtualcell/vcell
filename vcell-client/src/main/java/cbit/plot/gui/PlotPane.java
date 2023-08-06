@@ -25,6 +25,7 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
 import cbit.plot.gui.animation.viewers.ViewerGUI;
+import cbit.vcell.simdata.SimulationData;
 import org.jmol.viewer.Viewer;
 import org.vcell.util.Range;
 import org.vcell.util.gui.ButtonGroupCivilized;
@@ -80,7 +81,7 @@ class LineIcon implements Icon {
 	private JToolBarToggleButton ivjDataButton = null;
 	private JToolBarToggleButton ivjPlotButton = null;
 	private JToolBarToggleButton ivjAnimationButton = null;
-
+	private java.awt.GridBagConstraints constraintsAnimationButton;
 	private boolean ivjConnPtoP3Aligning = false;
 	private ButtonModel ivjselection1 = null;
 	private boolean fieldBCompact = false;
@@ -802,7 +803,7 @@ private javax.swing.JPanel getJPanel1() {
 			ivjJPanel1.setLayout(new java.awt.CardLayout());
 			getJPanel1().add(getJPanelPlot(), getJPanelPlot().getName());
 			getJPanel1().add(getJPanelData(), getJPanelData().getName());
-			getJPanel1().add(getJPanelAnimation(), getJPanelAnimation().getName());
+//			getJPanel1().add(getJPanelAnimation(), getJPanelAnimation().getName());
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -844,12 +845,12 @@ private javax.swing.JPanel getJPanelBottom() {
 			constraintsDataButton.insets = new java.awt.Insets(4, 4, 4, 4);
 			getJPanelBottom().add(getDataButton(), constraintsDataButton);
 			/**
-			 * TEST
+			 * Only add this in run_animation()
 			 */
-			java.awt.GridBagConstraints constraintsAnimationButton = new java.awt.GridBagConstraints();
+			constraintsAnimationButton = new java.awt.GridBagConstraints();
 			constraintsDataButton.gridx = 4; constraintsDataButton.gridy = 0;
 			constraintsDataButton.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanelBottom().add(getAnimationButton(), constraintsAnimationButton);
+
 
 			java.awt.GridBagConstraints constraintsJCheckBox_stepLike = new java.awt.GridBagConstraints();
 			constraintsJCheckBox_stepLike.gridx = 0; constraintsJCheckBox_stepLike.gridy = 0;
@@ -956,29 +957,6 @@ private javax.swing.JPanel getJPanelAnimation() {
 			ivjJPanelAnimation.setName("JPanelAnimation");
 			ivjJPanelAnimation.setLayout(new java.awt.BorderLayout());
 			//TODO: ADD ANIMATION HERE
-			if (t== null) {
-				t = new Thread(new Runnable() {
-					@Override
-					public void run() {
-						v[0] = new ViewerGUI("title");
-						v[0].setVisible(false);
-						try {
-							v[0].loadFile(0);
-						} catch (IOException ioe) {
-							ioe.printStackTrace(System.out);
-						}
-
-						getJPanelAnimation().add(v[0].getJMenuBar(), "North");
-						getJPanelAnimation().add(v[0].getViewPanel(),"Center");
-						getJPanelAnimation().add(v[0].getContentPane(), "South");
-
-					}
-
-					;
-				});
-				t.start();
-			}
-
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1012,6 +990,8 @@ private javax.swing.JPanel getJPanelPlotLegends() {
 	}
 	return ivjJPanelPlotLegends;
 }
+
+
 
 /**
  * Return the JPanelPlotLegendsBoxLayout property value.
@@ -1214,6 +1194,7 @@ private void initConnections() throws java.lang.Exception {
 	connPtoP2SetTarget();
 	connPtoP3SetTarget();
 	connPtoP4SetTarget();
+
 }
 
 /**
@@ -1231,7 +1212,7 @@ private void initialize() {
 		add(getJPanelLegend(), "East");
 		setBackground(Color.white);
 		initConnections();
-		connEtoM6();
+		//connEtoM6(); Initialize animation button later if Lnagevin solver
 		connEtoM4();
 		connEtoM3();
 	} catch (java.lang.Throwable ivjExc) {
@@ -1516,4 +1497,37 @@ public void setBackground(Color color)
 public void setSpecialityRenderer(SpecialtyTableRenderer str) {
 	getPlot2DDataPanel1().setSpecialityRenderer(str);
 }
+public void runAnimation(String animationTile, String viewerFilePath) {
+	getJPanelBottom().add(getAnimationButton(), constraintsAnimationButton);
+	connEtoM6();
+	getJPanel1().add(getJPanelAnimation(), getJPanelAnimation().getName());
+	if (t== null) {
+		t = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				ViewerGUI v = new ViewerGUI("title", viewerFilePath);
+				v.setVisible(false);
+				try {
+					v.loadFile(0);
+				} catch (IOException ioe) {
+					ioe.printStackTrace(System.out);
+				}
+
+				getJPanelAnimation().add(v.getJMenuBar(), "North");
+				getJPanelAnimation().add(v.getViewPanel(),"Center");
+				getJPanelAnimation().add(v.getContentPane(), "South");
+
+			}
+
+			;
+		});
+		t.start();
+	}
+
+
+
+
 }
+}
+
+

@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import cbit.vcell.solver.*;
 import org.vcell.util.Pair;
 
 import cbit.vcell.geometry.Geometry;
@@ -46,11 +47,6 @@ import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.solver.LangevinSimulationOptions;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationOwner;
-import cbit.vcell.solver.SimulationSymbolTable;
-import cbit.vcell.solver.SolverException;
 //import org.jdom.output.Format;
 
 public class LangevinLngvWriter {
@@ -306,7 +302,12 @@ public class LangevinLngvWriter {
 		// - time step (default):	1E-7 	(langevin: dt)
 		// - output interval:		1E-4	(langevin: dt_data)
 		LangevinSimulationOptions lso = simulation.getSolverTaskDescription().getLangevinSimulationOptions();
+		UniformOutputTimeSpec uots = (UniformOutputTimeSpec)simulation.getSolverTaskDescription().getOutputTimeSpec();
+		double outputInterval = uots.getOutputTimeStep();
+
 		sb.append("dt_spring: " + lso.getIntervalSpring());		// 1.00E-9 default
+		sb.append("\n");
+		sb.append("dt_data: " + outputInterval); // moved from SOlverTaskDescription, writeData()
 		sb.append("\n");
 		sb.append("dt_image: " + lso.getIntervalImage());		// 1.00E-4 default
 		sb.append("\n");

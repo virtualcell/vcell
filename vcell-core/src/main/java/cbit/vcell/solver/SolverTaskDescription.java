@@ -1588,8 +1588,9 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 		}
 		UniformOutputTimeSpec uots = (UniformOutputTimeSpec)getOutputTimeSpec();
 		double outputInterval = uots.getOutputTimeStep();
-		sb.append("dt_data: " + outputInterval);	// TODO: initialize to 1.00E-4
-		sb.append("\n");
+		LangevinSimulationOptions lso = getSimulation().getSolverTaskDescription().getLangevinSimulationOptions();
+//		sb.append("dt_data: " + outputInterval);	// TODO: initialize to 1.00E-4 // Moved to writeTimeInformation methods in LangevinLngvWriter and Exporter
+//		sb.append("\n");
 	}
 
 	//double calculateBindingRadius(ParticleJumpProcess pjp, SubDomain subDomain) throws Exception

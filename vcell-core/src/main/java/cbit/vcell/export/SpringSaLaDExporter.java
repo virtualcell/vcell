@@ -24,6 +24,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
+import cbit.vcell.solver.UniformOutputTimeSpec;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.Pair;
@@ -346,9 +347,13 @@ public class SpringSaLaDExporter {
 	private static void writeTimeInformation(StringBuilder sb, Simulation simulation) {
 		// general stuff is in solver task description
 		simulation.getSolverTaskDescription().writeData(sb);	// TODO: need proper sim
-		
+
 		LangevinSimulationOptions lso = simulation.getSolverTaskDescription().getLangevinSimulationOptions();
+		UniformOutputTimeSpec uots = (UniformOutputTimeSpec)simulation.getSolverTaskDescription().getOutputTimeSpec();
+		double outputInterval = uots.getOutputTimeStep();
 		sb.append("dt_spring: " + lso.getIntervalSpring());		// 1.00E-9 default
+		sb.append("\n");
+		sb.append("dt_data: " + outputInterval); // moved from SOlverTaskDescription, writeData()
 		sb.append("\n");
 		sb.append("dt_image: " + lso.getIntervalImage());		// 1.00E-4 default
 		sb.append("\n");

@@ -18,6 +18,10 @@ import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import cbit.vcell.client.DataViewerManager;
+import cbit.vcell.resource.ResourceUtil;
+import cbit.vcell.simdata.SimulationData;
+import org.vcell.solver.langevin.LangevinSolver;
 import org.vcell.solver.nfsim.NFSimMolecularConfigurations;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.util.gui.DialogUtils;
@@ -70,6 +74,12 @@ class IvjEventHandler implements java.beans.PropertyChangeListener {
 				if(getOdeSolverResultSet()!=null)
 				{
 					iniHistogramDisplay();
+				}
+				if (getSimulation().getSolverTaskDescription().getSolverDescription().isLangevinSolver()) {
+					ODESimData id = (ODESimData) fieldOdeSolverResultSet;
+					String s = id.getMathName();
+					String path = ResourceUtil.getLocalRootDir().getAbsolutePath() + "\\temp\\" + s + LangevinSolver.LANGEVIN_INPUT_FILE_EXTENSION;
+					getPlotPane1().runAnimation("Animation", path);
 				}
 			}
 			if (evt.getSource() == ODEDataViewer.this.getODESolverPlotSpecificationPanel1() && (evt.getPropertyName().equals("Plot2D"))) 

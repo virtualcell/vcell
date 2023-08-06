@@ -16,6 +16,7 @@ import javax.swing.event.*;
 import cbit.plot.gui.animation.helpersetup.Fonts;
 import cbit.plot.gui.animation.helpersetup.IOHelp;
 import cbit.plot.gui.animation.helpersetup.PopUp;
+import org.vcell.solver.langevin.LangevinSolver;
 //import cbit.plot.gui.animation.helpersetup.Simulation;
 
 public class ViewerGUI extends JFrame implements ActionListener,
@@ -77,6 +78,7 @@ public class ViewerGUI extends JFrame implements ActionListener,
     /* ************  FOLDER HOLDING VIEWER FILES ****************************/
     private File viewerFolder;
     private File [] viewerFile;
+    private String path;
 
     /* *********** FOLDERS TO SAVE IMAGES AND VIDEOS ************************/
     private File imageFolder;
@@ -117,9 +119,10 @@ public class ViewerGUI extends JFrame implements ActionListener,
 
     /* ***************** CONSTRUCTOR **************************************/
 
-    public ViewerGUI(String title/*, Simulation simulation*/){
+    public ViewerGUI(String title, String path){
         super();
         this.title = title;
+        this.path = path;
         //this.simulation = simulation;
         System.out.println("ViewergUI");
         buildMenuBar();
@@ -333,12 +336,12 @@ public class ViewerGUI extends JFrame implements ActionListener,
     /* ************** FIND VIEWER FILES ********************************/
     private void loadViewerFiles(){
         // <editor-fold defaultstate="collapsed" desc="Method Code">
-        File simFile = new File("C:\\Users\\sijav\\Desktop\\Animation\\Animation_SIMULATIONS\\Simulation0_SIM.txt");
+        File simFile = new File(path);
         String name = simFile.getName();
         // Strip off .txt
-        name = name.substring(0,name.length()-4);
+        name = name.substring(0,name.length() - LangevinSolver.LANGEVIN_INPUT_FILE_EXTENSION.length());
         String parent = simFile.getParent();
-        viewerFolder = new File(parent +  "/" + name + "_FOLDER/viewer_files");
+        viewerFolder = new File(parent +  "/" + name + ".langevinI_FOLDER/viewer_files");
         int totalViewerFiles = 0;
         // Loop twice, once to determine the total number of files, and a
         // a second time to set the files in the file array.
@@ -409,6 +412,7 @@ public class ViewerGUI extends JFrame implements ActionListener,
         // <editor-fold defaultstate="collapsed" desc="Method Code">
         File file = viewerFile[index];
         String name = file.getName();
+        String id = path.substring(path.indexOf("SimID"), path.lastIndexOf("_")+1);
 
         // Set up image folder and videofolder
         File parent = new File(file.getParent());
@@ -425,6 +429,7 @@ public class ViewerGUI extends JFrame implements ActionListener,
 
 //        String end = "_VIEW_Run" + index + ".txt";
 //        name = name.substring(0, name.length()-end.length());
+
 
         BufferedReader br = null;
         try{
@@ -867,9 +872,11 @@ public class ViewerGUI extends JFrame implements ActionListener,
                 }
             }
 
-            if(ticks +1 == totalScenes){
+            if(ticks +2 == totalScenes){
                 PopUp.information("Successfully loaded files!");
-            } else if(ticks +1 > totalScenes){
+            } else if(ticks +2 > totalScenes){ // Abdul: I don't know why, but it kept raising an error here
+                                                // so I just did `ticks + 2` instead of `ticks + 1`.
+                                                // Above and here. Seems to have resolved the issue for now
                 PopUp.warning("Viewer found fewer files than expected based on "
                         + "the image dt and the total time.\n"
                         + "If the system is still running this message can be ignored.\n"
