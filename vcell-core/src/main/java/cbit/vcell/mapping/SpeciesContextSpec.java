@@ -655,6 +655,40 @@ public void initializeForSpatial() {
 	}
 }
 
+public void initializeForSpringSaLaD() {
+	if(getSiteAttributesMap().isEmpty() && getSpeciesContext() != null) {
+		SpeciesPattern sp = getSpeciesContext().getSpeciesPattern();
+		if(sp == null) {
+			return;
+		}
+		// in SpringSaLaD all seed species are single molecule, we don't use complexes
+		MolecularTypePattern mtp = sp.getMolecularTypePatterns().get(0);
+		MolecularType mt = mtp.getMolecularType();
+		List<MolecularComponent> componentList = mt.getComponentList();
+		for(MolecularComponent mc : componentList) {
+			MolecularComponentPattern mcp = mtp.getMolecularComponentPattern(mc);
+			SiteAttributesSpec sas = siteAttributesMap.get(mcp);
+			if(sas == null || sas.getMolecularComponentPattern() == null) {
+				sas = new SiteAttributesSpec(this, mcp, getSpeciesContext().getStructure());
+				siteAttributesMap.put(mcp, sas);
+			}
+		}
+
+		if(getInternalLinkSet().isEmpty()) {
+			for(int i=0; i< componentList.size()-1; i++) {
+				MolecularComponent mcOne = componentList.get(i);
+				MolecularComponent mcTwo = componentList.get(i+1);
+				MolecularComponentPattern mcpOne = mtp.getMolecularComponentPattern(mcOne);
+				MolecularComponentPattern mcpTwo = mtp.getMolecularComponentPattern(mcTwo);
+				MolecularInternalLinkSpec link = new MolecularInternalLinkSpec(this, mcpOne, mcpTwo);
+				// TODO: set x,y,z instead, link will be computed
+//				link.setLinkLength(2.0);
+				internalLinkSet.add(link);
+			}
+		}
+	}
+}
+
 public VCUnitDefinition computeFluxUnit() {
 	return speciesContext.getUnitDefinition().multiplyBy(getLengthPerTimeUnit());
 }

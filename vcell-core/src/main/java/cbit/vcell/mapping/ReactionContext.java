@@ -26,6 +26,7 @@ import org.vcell.util.Issue;
 import org.vcell.util.IssueContext;
 import org.vcell.util.Matchable;
 
+import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
@@ -603,6 +604,11 @@ private void refreshSpeciesContextSpecs() throws MappingException {
 			setSpeciesContextSpecs(newSpeciesContextSpecs);
 		}catch (java.beans.PropertyVetoException e){
 			throw new MappingException(e.getMessage(), e);
+		}
+	}
+	if(Application.SPRINGSALAD == simContext.getApplicationType()) {
+		for(SpeciesContextSpec scs : fieldSpeciesContextSpecs) {
+			scs.initializeForSpringSaLaD();
 		}
 	}
 }
