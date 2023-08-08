@@ -414,7 +414,11 @@ class MolecularTypeTableModel extends BioModelEditorRightSideTableModel<Molecula
 					RbmUtils.addPropertyChangeListener(molecularType, this);
 				}
 			}
-			refreshData();
+			if(!evt.getPropertyName().equals(MolecularType.PROPERTY_NAME_COMPONENT_LIST)) {
+				// this is a redirected message that serves a very narrow role, we don't want
+				// it to interfere with any previous functionality
+				refreshData();
+			}
 //		} else if (evt.getSource() == getModel().getRbmModelContainer().getNetworkConstraints()) {
 //			if (evt.getPropertyName().equals(NetworkConstraints.PROPERTY_NAME_MAX_STOICHIOMETRY)) {
 //				fireTableRowsUpdated(0, getRowCount() - 1);

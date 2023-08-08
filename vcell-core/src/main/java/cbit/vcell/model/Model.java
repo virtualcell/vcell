@@ -3302,6 +3302,10 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		firePropertyChange(PROPERTY_NAME_MODEL_ENTITY_NAME, evt.getOldValue(), evt.getNewValue());
 	}
 	
+	if(evt.getSource() instanceof MolecularType && evt.getPropertyName().equals(MolecularType.PROPERTY_NAME_COMPONENT_LIST)) {
+		// redirected message that serves a very narrow role specifically for springsalad applications
+		firePropertyChange(MolecularType.PROPERTY_NAME_COMPONENT_LIST, evt.getSource(), evt.getNewValue());
+	}
 }
 
 

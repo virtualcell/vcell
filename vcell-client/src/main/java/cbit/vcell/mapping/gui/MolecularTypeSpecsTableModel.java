@@ -140,6 +140,9 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 			case COLUMN_MOLECULE:
 				return mtp.getMolecularType().getName();
 			case COLUMN_STRUCTURE:
+				if(sas == null) {
+					return null;
+				}
 				return sas.getLocation();
 			case COLUMN_STATE:
 				ComponentStatePattern csp = mcp.getComponentStatePattern();
@@ -152,8 +155,14 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 				String name = csp.getComponentStateDefinition().getName();
 				return name;
 			case COLUMN_RADIUS:
+				if(sas == null) {
+					return null;
+				}
 				return sas.getRadius();		// nm
 			case COLUMN_DIFFUSION:
+				if(sas == null) {
+					return null;
+				}
 				return sas.getDiffusionRate();		// um^2/s
 			default:
 				return null;

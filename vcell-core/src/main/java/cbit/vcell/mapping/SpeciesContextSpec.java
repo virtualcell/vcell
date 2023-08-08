@@ -655,8 +655,8 @@ public void initializeForSpatial() {
 	}
 }
 
-public void initializeForSpringSaLaD() {
-	if(getSiteAttributesMap().isEmpty() && getSpeciesContext() != null) {
+public void initializeForSpringSaLaD(MolecularType molecularType) {
+	if(getSpeciesContext() != null) {
 		SpeciesPattern sp = getSpeciesContext().getSpeciesPattern();
 		if(sp == null) {
 			return;
@@ -664,9 +664,18 @@ public void initializeForSpringSaLaD() {
 		// in SpringSaLaD all seed species are single molecule, we don't use complexes
 		MolecularTypePattern mtp = sp.getMolecularTypePatterns().get(0);
 		MolecularType mt = mtp.getMolecularType();
+		if(molecularType != null && molecularType != mt) {
+			return;		// this molecule is unchanged, nothing to do
+		}
+		// molecularType == null : full initialization
+		// molecularType != null and molecularType == mt : this molecule has a different 
+		//   number of components or a different component order
 		List<MolecularComponent> componentList = mt.getComponentList();
 		for(MolecularComponent mc : componentList) {
 			MolecularComponentPattern mcp = mtp.getMolecularComponentPattern(mc);
+			if(siteAttributesMap.containsKey(mcp)) {
+				continue;	// this is set, nothing to do
+			}
 			SiteAttributesSpec sas = siteAttributesMap.get(mcp);
 			if(sas == null || sas.getMolecularComponentPattern() == null) {
 				sas = new SiteAttributesSpec(this, mcp, getSpeciesContext().getStructure());
