@@ -3530,11 +3530,13 @@ public String toString() {
 
 public MathType getMathType()
 {
-	if (isNonSpatialStoch() || isSpatialStoch() || isSpatialHybrid()){
+	if(isNonSpatialStoch() || isSpatialStoch() || isSpatialHybrid()) {
 		return MathType.Stochastic;
-	} else if (isRuleBased()){
+	} else if(isRuleBased() && !isLangevin()) {
 		return MathType.RuleBased;
-	}else{
+	} else if(isLangevin()) {
+		return MathType.SpringSaLaD;
+	} else {
 		return MathType.Deterministic;
 	}
 }
