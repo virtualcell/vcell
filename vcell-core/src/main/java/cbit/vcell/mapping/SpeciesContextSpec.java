@@ -969,6 +969,14 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
 			}
 			MolecularTypePattern mtp = mtpList.get(0);
 			List<MolecularComponentPattern> mcpList = mtp.getComponentPatternList();
+			if(SourceMoleculeString.equals(sc.getName()) || SinkMoleculeString.equals(sc.getName())) {
+				if(mcpList.size() != 0) {
+					String msg = "SpringSaLaD reserved Molecules '" + SourceMoleculeString + "' and '" + SinkMoleculeString + "' must not have any sites defined";
+					String tip = msg;
+					issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+					return;
+				}
+			}
 			if(mcpList.size() == 0) {
 				String msg = "SpringSaLaD requires the MolecularType to have at least one Site.";
 				String tip = msg;
@@ -1087,6 +1095,10 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
 				SpeciesContext scCandidate = scsCandidate.getSpeciesContext();
 				if(sc == scCandidate) {
 					continue;			// skip self
+				}
+				if(scCandidate.getSpeciesPattern() == null) {
+					// invalid, we'll deal with it separately - skip for now since will generate a NPE
+					continue;
 				}
 				MolecularType mtCandidate = scCandidate.getSpeciesPattern().getMolecularTypePatterns().get(0).getMolecularType();
 				if(mtp.getMolecularType() == mtCandidate) {
