@@ -56,7 +56,7 @@ public LangevinFileWriter(PrintWriter pw, SimulationTask simTask, boolean bMessa
 @Override
 public void write(String[] parameterNames) throws Exception {	
 	LangevinSimulationOptions langevinSimulationOptions = simTask.getSimulation().getSolverTaskDescription().getLangevinSimulationOptions();
-	String langevinLngvString = LangevinLngvWriter.writeLangevinLngv(simTask, randomSeed, langevinSimulationOptions);
+	String langevinLngvString = LangevinLngvWriter.writeLangevinLngv(simTask.getSimulation(), randomSeed, langevinSimulationOptions);
 	
 	printWriter.write(langevinLngvString);
 	printWriter.flush();

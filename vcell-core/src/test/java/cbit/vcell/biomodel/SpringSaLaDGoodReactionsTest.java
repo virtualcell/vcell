@@ -18,13 +18,22 @@ import cbit.vcell.math.MathException;
 import cbit.vcell.math.ParticleJumpProcess;
 import cbit.vcell.math.ParticleMolecularType;
 import cbit.vcell.matrix.MatrixException;
+import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.model.ModelException;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.resource.ResourceUtil;
+import cbit.vcell.solver.LangevinSimulationOptions;
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SimulationSymbolTable;
+import cbit.vcell.solver.SolverDescription;
+import cbit.vcell.solver.SolverException;
+import cbit.vcell.solver.SolverUtilities;
+import cbit.vcell.solver.server.Solver;
+import cbit.vcell.solver.server.SolverFactory;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
@@ -32,13 +41,19 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.vcell.solver.langevin.LangevinLngvWriter;
+import org.vcell.solver.langevin.LangevinSolver;
+import org.vcell.solver.smoldyn.SmoldynSolver;
 import org.vcell.test.Fast;
 import org.vcell.util.Issue;
 import org.vcell.util.IssueContext;
 import org.vcell.util.Issue.Severity;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
 import org.vcell.util.document.BioModelChildSummary.MathType;
 
 import java.beans.PropertyVetoException;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -48,8 +63,11 @@ import java.util.Set;
 import java.util.Vector;
 
 public class SpringSaLaDGoodReactionsTest {
+	
+	private static final String reactionTestString = "'r0' ::     'MT0' : 'Site1' : 'state0' --> 'state1'  Rate 50.0  Condition Free";
 
-	/*
+
+	/* ---------------------------------------------------------------------------------------------------------------------------
 	 * This test will check the compatibility with springsalad requirements as follows:
 	 * - compartment number and name
 	 * - seed species and their molecules
@@ -67,7 +85,8 @@ public class SpringSaLaDGoodReactionsTest {
 		Application appType = simContext.getApplicationType();
 		Assert.assertTrue("expecting SPRINGSALAD application type", (appType != null && appType == Application.SPRINGSALAD) ? true : false);
 
-		// we want to delete its link and test that the right issue is triggered
+		// we want to delete the link between the sites of this species and test that the corresponding issue is triggered
+		// after this change we should have 8 warning issues (7 otherwise)
 		SpeciesContext scCandidate = simContext.getModel().getSpeciesContext("MT2");
 		SpeciesContextSpec scsCandidate = simContext.getReactionContext().getSpeciesContextSpec(scCandidate);
 		Set<MolecularInternalLinkSpec> internalLinkSet = scsCandidate.getInternalLinkSet();
@@ -95,16 +114,23 @@ public class SpringSaLaDGoodReactionsTest {
 		Sink:	SpringSaLaD reserved Molecules 'Source' and 'Sink' must not have any sites defined
 		s5:		There must be a biunivocal correspondence between the Species and the associated MolecularType.
 		s6:		There must be a biunivocal correspondence between the Species and the associated MolecularType.
+		
+			TODO: we may consider initializing all the issue string as static named variable and compare identity, but it will probably be overkill
 		*/
 
 		System.out.println("end springsalad test");
 	}
 
+	/* -------------------------------------------------------------------------------------------------------------------------
+	 * This test exercises a complete set of springsalad-compatible reactions and math generation
+	 * All the reactions in this example should be marked as valid, there should be no error or warning issues whatsoever.
+	 * Math generation should succeed.
+	 */
 	@Test
 	public void test_springsalad_good_reactions() throws IOException, XmlParseException, PropertyVetoException, ExpressionException, GeometryException, 
 			ImageException, IllegalMappingException, MappingException {
 		
-		System.out.println("start springsalad test for compatible reactions");
+		System.out.println("start springsalad test for all compatible reactions");
 		BioModel bioModel = getBioModelFromResource("Spring_reactions_good.vcml");
 		Assert.assertTrue("expecting non-null biomodel", bioModel != null ? true : false);
 		SimulationContext simContext = bioModel.addNewSimulationContext("Application", SimulationContext.Application.SPRINGSALAD);
@@ -114,7 +140,6 @@ public class SpringSaLaDGoodReactionsTest {
 		Assert.assertTrue("expecting SPRINGSALAD application type", (appType != null && appType == Application.SPRINGSALAD) ? true : false);
 		
 		Geometry geometry = simContext.getGeometry();
-		geometry.getDimension();
 		Assert.assertTrue("expecting 3D geometry", geometry.getDimension() == 3 ? true : false);
 
 		Vector<Issue> issueList = new Vector<Issue>();
@@ -146,25 +171,43 @@ public class SpringSaLaDGoodReactionsTest {
 		
 		MathType mathType = mathDescription.getMathType();
 		Assert.assertTrue("expecting SpringSaLaD math type", (mathType != null && mathType == MathType.SpringSaLaD) ? true : false);
-
+		
 		System.out.println("end springsalad test");
 	}
 	
+	/* ------------------------------------------------------------------------------------------------------------------------------
+	 * This will construct and initialize a simulation based on the langevin solver and create the input file for running the solver. 
+	 * At a later date we'd want to run the solver and compare the results against some expected result set.
+	 */
 	@Test
 	public void test_springsalad_simple_simulation() throws IOException, XmlParseException, PropertyVetoException, ExpressionException, GeometryException, 
 			ImageException, IllegalMappingException, MappingException {
 		
-		System.out.println("start springsalad test");
+		System.out.println("start springsalad test for the langevin solver");
 		BioModel bioModel = getBioModelFromResource("Spring_transition_free.vcml");
+		Assert.assertTrue("expecting non-null biomodel", bioModel != null ? true : false);
 		SimulationContext simContext = bioModel.addNewSimulationContext("Application", SimulationContext.Application.SPRINGSALAD);
-		// TODO: check for issues, confirm that there are none
+		Assert.assertTrue("expecting non-null simulation context", simContext != null ? true : false);
 		
+		Application appType = simContext.getApplicationType();
+		Assert.assertTrue("expecting SPRINGSALAD application type", (appType != null && appType == Application.SPRINGSALAD) ? true : false);
+		
+		Geometry geometry = simContext.getGeometry();
+		Assert.assertTrue("expecting 3D geometry", geometry.getDimension() == 3 ? true : false);
+
+		Vector<Issue> issueList = new Vector<Issue>();
+		IssueContext issueContext = new IssueContext();
+		simContext.getModel().gatherIssues(issueContext, issueList);
+		simContext.gatherIssues(issueContext, issueList, true);		// bIgnoreMathDescription == true
+		int numErrors = checkIssuesBySeverity(issueList, Issue.Severity.ERROR);
+		int numWarnings = checkIssuesBySeverity(issueList, Issue.Severity.WARNING);
+		Assert.assertTrue("expecting no Application error/warning issues", (numErrors == 0 && numWarnings == 0) ? true : false);
 		
 		// WARNING!! Debug configuration for this JUnit test required System property "vcell.installDir"
 		// ex: -Dvcell.installDir=C:\dan\jprojects\git\vcell
-		bioModel.updateAll(false);
+		bioModel.updateAll(false);		// this call generates math
 		MathDescription mathDescription = simContext.getMathDescription();
-		// TODO: validate LangevinParticleMoleculartype, LangevinParticleJumpProcess
+		Assert.assertTrue("expecting SpringSaLaD math type", (mathDescription.getMathType() != null && mathDescription.getMathType() == MathType.SpringSaLaD) ? true : false);
 
 		
 		// -------------------------------------------------------------------------------
@@ -174,10 +217,47 @@ public class SpringSaLaDGoodReactionsTest {
 		} catch (PropertyVetoException e) {
 			e.printStackTrace();
 		}
+		
+		File localSimDataDir = ResourceUtil.getLocalSimDir(User.tempUser.getName());	
 
+		SimulationJob simJob = new SimulationJob(simulation, 0, null);
+		SimulationTask simTask = new SimulationTask(simJob, 0);
+		
+		
+		SolverDescription solverDescription = simTask.getSimulation().getSolverTaskDescription().getSolverDescription();
+		if (solverDescription == null) {
+			throw new IllegalArgumentException("SolverDescription cannot be null");
+		}
+		
+		
+		// generate the input file for the solver and validate it
+		LangevinSimulationOptions langevinSimulationOptions = simTask.getSimulation().getSolverTaskDescription().getLangevinSimulationOptions();
+		int randomSeed = 0;
+		String langevinLngvString = null;
+		try {
+			langevinLngvString = LangevinLngvWriter.writeLangevinLngv(simTask.getSimulation(), randomSeed, langevinSimulationOptions);
+		} catch (SolverException | ExpressionException e1) {
+			e1.printStackTrace();
+		}
+		Assert.assertTrue("expecting non-null solver input string", (langevinLngvString != null) ? true : false);
+		Assert.assertTrue("expecting properly formatted transition reaction", (langevinLngvString.contains(reactionTestString)) ? true : false);
+		
+		
+		SolverUtilities.prepareSolverExecutable(solverDescription);	
+		// create solver from SolverFactory
+		Solver solver = null;
+		try {
+			solver = SolverFactory.createSolver(localSimDataDir, simTask, false);
+		} catch (SolverException e) {
+			e.printStackTrace();
+		}
+		Assert.assertTrue("expecting instanceof Langevin solver", (solver instanceof LangevinSolver) ? true : false);
+		
 		System.out.println("end springsalad test");
 	}
     
+	// ==========================================================================================================================
+	
     private static BioModel getBioModelFromResource(String fileName) throws IOException, XmlParseException {
         InputStream inputStream = SpringSaLaDGoodReactionsTest.class.getResourceAsStream(fileName);
         if (inputStream == null) {
