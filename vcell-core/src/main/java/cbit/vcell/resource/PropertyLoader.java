@@ -247,6 +247,8 @@ public class PropertyLoader {
 	public static final String cmdSrvcSshCmdRestoreTimeoutFactor = record("vcell.ssh.cmd.restoretimeout", ValueType.GEN);
 	
 	public static final String cliWorkingDir = record("cli.workingDir", ValueType.DIR);
+
+	public static final String vcellVcmlLocation = record("vcell.vcmlLocation", ValueType.DIR);
 	
 	public static final String enableSpringSaLaD = record("vcell.enableSpringSaLaD", ValueType.BOOL);
 	

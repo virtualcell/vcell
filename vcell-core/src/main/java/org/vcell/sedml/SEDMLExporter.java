@@ -1529,7 +1529,6 @@ public class SEDMLExporter {
 			String sedmlString = sedmlExporter.getSEDMLDocument(sOutputDirPath, sBaseFileName, modelFormat, bValidate, simContextExportFilter).writeDocumentToString();
 
 			if (bCreateOmexArchive) {
-
 				String sedmlFileName = Paths.get(sOutputDirPath, sBaseFileName + ".sedml").toString();
 				XmlUtil.writeXMLStringToFile(sedmlString, sedmlFileName, true);
 				sedmlExporter.addSedmlFileToList(sBaseFileName + ".sedml");

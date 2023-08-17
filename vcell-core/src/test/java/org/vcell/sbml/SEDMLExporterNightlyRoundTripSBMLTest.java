@@ -1,6 +1,7 @@
 package org.vcell.sbml;
 
 import cbit.vcell.resource.NativeLib;
+import cbit.vcell.resource.PropertyLoader;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -11,9 +12,9 @@ import org.vcell.sbml.vcell.SBMLExporter;
 import org.vcell.sedml.ModelFormat;
 import org.vcell.test.RoundTrip;
 
-import java.io.File;
-import java.io.FilenameFilter;
-import java.io.IOException;
+import java.io.*;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -23,13 +24,27 @@ import java.util.stream.Stream;
 @Category({RoundTrip.class})
 public class SEDMLExporterNightlyRoundTripSBMLTest extends SEDMLExporterNightlyRoundTrip {
 
+	private final static String RESULTS_FILE_NAME = "rawRoundTripResults.txt";
+	private static RoundTripStatistics resultsStatistics;
+
 	@BeforeClass
 	public static void setup(){
 		SEDMLExporterNightlyRoundTrip.setup();
+		SEDMLExporterNightlyRoundTripSBMLTest.resultsStatistics = new RoundTripStatistics();
 	}
 
 	@AfterClass
 	public static void teardown() throws IOException {
+		Path resultsPath = Paths.get(PropertyLoader.getProperty(
+				PropertyLoader.vcellVcmlLocation, System.getProperty("user.home")), "results" , RESULTS_FILE_NAME);
+		if (!(resultsPath.getParent().toFile().exists() && resultsPath.getParent().toFile().isDirectory())){
+			resultsPath.getParent().toFile().mkdirs();
+		}
+		try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(resultsPath.toString()))){
+			SEDMLExporterNightlyRoundTripSBMLTest.resultsStatistics.exportResultsToWriter(bufferedWriter);
+		} catch (IOException e){
+			throw new RuntimeException("Unable to open results file writer.", e);
+		}
 		SEDMLExporterNightlyRoundTrip.teardown();
 	}
 
@@ -155,30 +170,32 @@ public class SEDMLExporterNightlyRoundTripSBMLTest extends SEDMLExporterNightlyR
 	public static Collection<TestCase> testCases() {
 		File testResourceDir;
 
-		// Check that the env var for the input directory has been set.
-		if (SEDMLExporterNightlyRoundTrip.locationOfVcmlToTest == null){
-			// We'll try to get the value again.
-			Map<String, String> allEnv = System.getenv();
-			SEDMLExporterNightlyRoundTrip.locationOfVcmlToTest = System.getenv(SEDMLExporterNightlyRoundTrip.LOCATION_ENV_VAR);
+		try {
+			PropertyLoader.loadProperties(new String[]{PropertyLoader.vcellVcmlLocation});
+		} catch (IOException e){
+			throw new RuntimeException("Error loading properties", e);
 		}
+
+		// Check that the env var for the input directory has been set.
+		SEDMLExporterNightlyRoundTrip.locationOfVcmlToTest = PropertyLoader.getProperty(PropertyLoader.vcellVcmlLocation, null);
 		if (SEDMLExporterNightlyRoundTrip.locationOfVcmlToTest == null)
 			throw new RuntimeException(
-					String.format("Please set the `%s` environment variable with the path to the input file directory",
-							SEDMLExporterNightlyRoundTrip.LOCATION_ENV_VAR));
+					String.format("Please set the `%s` system property with the path to the input file directory",
+							PropertyLoader.vcellVcmlLocation));
 
-		// Input validate the env var's value
+		// Input validate the property's value
 		try {
 			testResourceDir = (new File(SEDMLExporterNightlyRoundTrip.locationOfVcmlToTest)).getCanonicalFile();
 		} catch (IOException e){
 			String message = String.format("Unable to determine the canonical path to provided directory `%s`.\n"
-					+ "\tPlease check that the `%s` environment variable has been set properly",
-						SEDMLExporterNightlyRoundTrip.locationOfVcmlToTest, SEDMLExporterNightlyRoundTrip.LOCATION_ENV_VAR);
+					+ "\tPlease check that the `%s` system property has been set properly",
+						SEDMLExporterNightlyRoundTrip.locationOfVcmlToTest, PropertyLoader.vcellVcmlLocation);
 			throw new RuntimeException(message, e);
 		}
 		// Validate the status of the input directory as a valid directory full of VCMLs
 		if (!testResourceDir.isDirectory()) throw new RuntimeException(
-				String.format("Path `%s` provided by `%s` is not a directory", testResourceDir.getPath(),
-						SEDMLExporterNightlyRoundTrip.LOCATION_ENV_VAR));
+				String.format("Path `%s` provided by property `%s` is not a directory", testResourceDir.getPath(),
+						PropertyLoader.vcellVcmlLocation));
 
 		// Prepare Filtering
 		FilenameFilter exemptFilesFilter = new NightlyRoundTripVCMLFilenameFilter();
@@ -210,7 +227,18 @@ public class SEDMLExporterNightlyRoundTripSBMLTest extends SEDMLExporterNightlyR
 //				&& knownSEDMLFaults().get(testCase.filename) != SEDML_FAULT.MATH_OVERRIDE_NAMES_DIFFERENT){
 //			return;
 //		}
-		sedml_roundtrip_common();
-	}
 
+		try {
+			sedml_roundtrip_common();
+			resultsStatistics.recordSuccessResult();
+		} catch (RoundTripException e){
+			resultsStatistics.recordFailureResult(e);
+			if (e.wasTheExpectedResult) return;
+			throw e;
+		} catch (Exception e){
+			RoundTripException curatedException = new RoundTripException(e, false, SEDML_FAULT.UNKNOWN_SEDML_FAULT_OCCURRED);
+			resultsStatistics.recordFailureResult(curatedException);
+			throw curatedException;
+		}
+	}
 }
