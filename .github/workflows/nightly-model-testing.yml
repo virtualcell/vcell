@@ -71,7 +71,7 @@ jobs:
         run: mkdir -p $HOME/test_dir && cp $GITHUB_WORKSPACE/filesToTest/public/biomodel/vcml/* $HOME/test_dir
           
       - name: Build VCell Jars && Run Roundtrip Test
-        run: mvn --batch-mode clean install dependency:copy-dependencies -DskipTests=True -Dgroups="org.vcell.test.Nightly" -Dvcell.vcmlLocation="$HOME/test_dir"
+        run: mvn --batch-mode clean install dependency:copy-dependencies -Dgroups="org.vcell.test.Nightly" -Dvcell.vcmlLocation="$HOME/test_dir"
 
        # Report a Success
       - name: Report Results to Slack
