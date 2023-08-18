@@ -937,17 +937,29 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList, React
 		}
 		
 		// reactions cannot be on the membrane
-		if(SpringStructureEnum.Membrane.columnName.equals(reactionRule.getStructure().getName())) {
+		String reactionStructure = reactionRule.getStructure().getName();
+		if(SpringStructureEnum.Membrane.columnName.equals(reactionStructure)) {
 			String msg = "SpringSaLaD reactions cannot be located on the Membrane.";
 			String tip = msg;
 			issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
 			return;
 		}
 		
+		// the reaction and its participants must all be in the same Structure.
+		List<ReactionRuleParticipant> reactionRuleParticipants = reactionRule.getReactionRuleParticipants();
+		for(ReactionRuleParticipant rrp : reactionRuleParticipants) {
+			if(!reactionStructure.equals(rrp.getStructure().getName())) {
+				String msg = "SpringSaLaD requires that each reaction and all its participants must be in the same Structure";
+				String tip = msg;
+				issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
+				return;
+			}
+		}
+		
+		List<ReactantPattern> rpList = reactionRule.getReactantPatterns();
 		// the reserved site 'Anchor' must be not present in any reactant pattern that is not situated on a membrane
 		// note that we do a similar check for seed species, but this is also needed 
 		// (we can have a bad reactant pattern even though the seed species may be missing)
-		List<ReactantPattern> rpList = reactionRule.getReactantPatterns();
 		for(ReactantPattern rp : rpList) {
 			if(!SpringStructureEnum.Membrane.columnName.equals(rp.getStructure().getName())) {
 				SpeciesPattern spReactant = rp.getSpeciesPattern();
@@ -968,7 +980,6 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList, React
 		}
 		
 		// the reserved site 'Anchor' must not be part of any reaction
-		rpList = reactionRule.getReactantPatterns();
 		for(ReactantPattern rp : rpList) {
 			if(!SpringStructureEnum.Membrane.columnName.equals(rp.getStructure().getName())) {
 				continue;	// we don't have anchors if it's not a membrane molecule
