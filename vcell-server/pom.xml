@@ -95,7 +95,7 @@
 		</dependency>
 		<dependency>
 			<groupId>com.oracle.database.jdbc</groupId>
-			<artifactId>ucp</artifactId>
+			<artifactId>ucp11</artifactId>
 		</dependency>
 
 		<dependency>
@@ -104,7 +104,6 @@
 			<version>${junit.version}</version>
 			<scope>test</scope>
 		</dependency>
-
 
 		<dependency>
 			<groupId>org.vcell</groupId>
