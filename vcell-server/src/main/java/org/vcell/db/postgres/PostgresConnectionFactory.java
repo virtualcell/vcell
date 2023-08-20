@@ -58,7 +58,6 @@ public synchronized Connection getConnection(Object lock) throws SQLException {
 	Connection conn = null;
 	try {
 		conn = poolDataSource.getConnection();
-		conn.setAutoCommit(false);
 	} catch (SQLException ex) {
 		// might be invalid or stale connection
 		if (lg.isTraceEnabled()) lg.trace("first time #getConnection( ) fail " + ex.getMessage() + ", state " + ex.getSQLState() + ", attempting refresh");
@@ -76,6 +75,7 @@ public synchronized Connection getConnection(Object lock) throws SQLException {
 				"2. there is a problem with database server.\n" +
 				"3. there is a problem with network.\n");
 	}
+	conn.setAutoCommit(false);
 	return conn;
 }
 

@@ -100,6 +100,7 @@ public synchronized Connection getConnection(Object lock) throws SQLException {
 				"3. there is a problem with network.\n" +
 				"details: "+detailedErrorMsg, exception);
 	}
+	conn.setAutoCommit(false);
 	return conn;
 }
 
