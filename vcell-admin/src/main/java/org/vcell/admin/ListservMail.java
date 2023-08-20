@@ -163,8 +163,8 @@ public class ListservMail {
 	
 	public static ArrayList<String> queryEmails(String dbPassword) throws Exception{
 		String driverName = "oracle.jdbc.driver.OracleDriver";
-		String host = "vcell-db.cam.uchc.edu";
-		String db = "vcelldborcl";
+		String host = "vcell-oracle.cam.uchc.edu";
+		String db = "ORCLPDB1";
 		String connectURL = "jdbc:oracle:thin:@" + host + ":1521:" + db;
 		
 		ArrayList<String> results = new ArrayList<>();

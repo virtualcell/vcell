@@ -90,6 +90,6 @@ java \
   -Dvcell.mongodb.host.internal="localhost" \
   -Dvcell.mongodb.port.internal=27017 \
   -Dvcell.server.dbDriverName=oracle.jdbc.driver.OracleDriver \
-  -Dvcell.server.dbConnectURL=jdbc:oracle:thin:@VCELL-DB.cam.uchc.edu:1521/vcelldborcl.cam.uchc.edu \
+  -Dvcell.server.dbConnectURL=jdbc:oracle:thin:@vcell-oracle.cam.uchc.edu:1521/ORCLPDB1 \
   -Dcli.workingDir=/usr/local/app/vcell/installDir/python/vcell_cli_utils/ $(if [ $MAX_JAVA_MEM_MB -gt 0 ]; then echo "-Xmx${MAX_JAVA_MEM_MB}m"; fi) \
   org.vcell.cli.CLIStandalone $command $arguments

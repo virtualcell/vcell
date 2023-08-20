@@ -107,7 +107,7 @@ nmym8qspowiu1d850ok9vwtk2     vcell-node4.cam.uchc.edu     Ready               A
 kn3y3t1rw8skyua80j841ohng     vcellapi-beta.cam.uchc.edu   Ready               Active              Reachable           18.03.0-ce
 ```
 
-## vcell-db.cam.uchc.edu, NOT Docker, (VCell database)  
+## vcell-oracle.cam.uchc.edu, NOT Docker, (VCell database)  
 Oracle database, has all models, sim status, all user data,  everything  
 
 ## vcell-docker.cam.uchc.edu, NOT Swarm node, (VCell docker registry) [details](build/README_Registry.md)

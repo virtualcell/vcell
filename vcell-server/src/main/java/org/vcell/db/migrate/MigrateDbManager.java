@@ -29,7 +29,7 @@ public class MigrateDbManager {
 		try {
 
 			String driverName_Oracle = "oracle.jdbc.driver.OracleDriver";
-			String connectionURL_Oracle = "jdbc:oracle:thin:@VCELL-DB.cam.uchc.edu:1521/vcelldborcl.cam.uchc.edu";
+			String connectionURL_Oracle = "jdbc:oracle:thin:@vcell-oracle.cam.uchc.edu:1521/ORCLPDB1";
 			String userid_Oracle = "vcell";
 			String password_Oracle = null;
 			conFactory_Oracle = DatabaseService.getInstance().createConnectionFactory(driverName_Oracle,connectionURL_Oracle,userid_Oracle,password_Oracle);

@@ -27,7 +27,7 @@ public class EmailList {
 	private static final String BOUNCE_QUERY = "Select email from vcell.mailbounce";
 	private static final String DEFAULT_FILE = "emails.csv";
 
-	static final String JDBC_URL = "jdbc:oracle:thin:@vcell-db.cam.uchc.edu:1521/vcelldborcl.cam.uchc.edu";
+	static final String JDBC_URL = "jdbc:oracle:thin:@vcell-oracle.cam.uchc.edu:1521/ORCLPDB1";
 	static final String USER_ID = "vcell";
 	private final String password;
 	private final String filename;
