@@ -408,7 +408,7 @@ public static void main(java.lang.String[] args) {
         KeyFactory keyFactory = null;
         new cbit.vcell.resource.PropertyLoader();
         if (args[0].equalsIgnoreCase(oracle)) {
-            String driverName = "oracle.jdbc.OracleDriver";
+            String driverName = "oracle.jdbc.driver.OracleDriver";
             conFactory = DatabaseService.getInstance().createConnectionFactory(
                     driverName,
                     connectURL,

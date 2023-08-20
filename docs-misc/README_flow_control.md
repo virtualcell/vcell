@@ -55,7 +55,7 @@ all solvers call vcell-solver/VCellMessaging/src/SimulationMessaging.cpp.setWork
 --SimulationDispatcherEngine.onworkerEvent(...)  
 ---SimulationStateMachine.onWorkerEvent(...)  
 ----SimulationDatabaseDirect.updateSimulationJobStatus(...)  
------AdminDBToplevel.updateSimulationJobStatus(...)  (**updates Oracle** real database host vcell-db.cam.uchc.edu, NOT vcell-db container)  
+-----AdminDBToplevel.updateSimulationJobStatus(...)  (**updates Oracle** real database host vcell-oracle.cam.uchc.edu, NOT vcell-db container)  
 ----StatusMessage.sendToClient(...) (sends to AMQint container clientStatus topic)  
 **activemqint container**  
 -recieves sim status message on the 'clientStatus' topic  

@@ -91,7 +91,7 @@ public class TestMissingSimData {
 //			startClient(new VCSimulationIdentifier(new KeyValue("84915441"), new User("frm",new KeyValue("227"))), new UserLoginInfo("frm", new DigestedPassword("frmfrm")));
 //			return;
 //		}
-		String driverName = "oracle.jdbc.OracleDriver";
+		String driverName = "oracle.jdbc.driver.OracleDriver";
 		String host = "dbs6.cam.uchc.edu";
 		String db = "orcl";
 		String connectURL = "jdbc:oracle:thin:@" + host + ":1521:" + db;
@@ -438,7 +438,7 @@ public class TestMissingSimData {
 		
 		Connection con = null;
 		try{
-			Class.forName("oracle.jdbc.OracleDriver");
+			Class.forName("oracle.jdbc.driver.OracleDriver");
 			con = java.sql.DriverManager.getConnection(connectURL, dbSchemaUser, dbPassword);
 			con.setAutoCommit(false);
 

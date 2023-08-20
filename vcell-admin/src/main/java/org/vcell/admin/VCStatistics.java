@@ -63,7 +63,7 @@ public class VCStatistics {
 		if(args.length != 5){
 			//e.g in your eclipse debug configuration put arguments: dbs6.cam.uchc.edu orcl ID password
 			System.out.println("Usage:VCStatistics dbDriverName connectUrl dbUserID dbPassword simDataDir");
-			System.out.println("Example: VCStatistics oracle.jdbc.OracleDriver \"jdbc:oracle:thin:@host:1521:db\" dbUserid dbPassword simDataDir");
+			System.out.println("Example: VCStatistics oracle.jdbc.driver.OracleDriver \"jdbc:oracle:thin:@host:1521:db\" dbUserid dbPassword simDataDir");
 
 			System.exit(1);
 		}

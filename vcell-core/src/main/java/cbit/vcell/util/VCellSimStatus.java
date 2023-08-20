@@ -125,7 +125,7 @@ public class VCellSimStatus {
 		try {
 			TreeMap<String, VCellSlurmAssoc> dbSlurmMap0= new TreeMap<>();
 			
-			Class.forName("oracle.jdbc.OracleDriver");
+			Class.forName("oracle.jdbc.driver.OracleDriver");
 			con = java.sql.DriverManager.getConnection("jdbc:oracle:thin:@"+dbHost+":1521:"+dbName, dbUser,dbPassword);
 			con.setAutoCommit(false);
 			con.setReadOnly(true);

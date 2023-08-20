@@ -146,7 +146,7 @@ public class DBBackupAndClean {
 		System.out.println(DBBackupAndClean.class.getName()+" "+OP_CLEAN_AND_BACKUP+" dbHostName vcellSchema password dbSrvcName workingDir exportDir {amplistorUser amplistorPasswd}");
 		System.out.println(DBBackupAndClean.class.getName()+" "+OP_IMPORT+" importServerName dumpFileHostPrefix vcellSchema password importSrvcName workingDir exportDir");
 		System.out.println(DBBackupAndClean.class.getName()+" "+OP_DELSIMSDISK2+     " dbHostName vcellSchema password/pwdfile dbSrvcName tmpDir usersDir {thisUserOnly}");
-		     System.out.println("     (exmpl: "+DBBackupAndClean.class.getName()+" "+OP_DELSIMSDISK2+" vcell-db vcell vcpassword/pwdfile vcelldborcl.cam.uchc.edu /tmp /share/apps/vcell3/users"+")");
+		     System.out.println("     (exmpl: "+DBBackupAndClean.class.getName()+" "+OP_DELSIMSDISK2+" vcell-oracle vcell vcpassword/pwdfile ORCLPDB1 /tmp /share/apps/vcell3/users"+")");
 		System.exit(1);
 	}
 	

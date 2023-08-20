@@ -212,7 +212,7 @@ public static void main(java.lang.String[] args) {
         DatabaseSyntax dbSyntax = null;
         if (args[0].equalsIgnoreCase(oracle)) {
         	dbSyntax = DatabaseSyntax.ORACLE;
-            String driverName = "oracle.jdbc.OracleDriver";
+            String driverName = "oracle.jdbc.driver.OracleDriver";
 			conFactory = DatabaseService.getInstance().createConnectionFactory(
                     driverName,
                     connectURL,

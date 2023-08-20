@@ -9,7 +9,7 @@ import oracle.ucp.UniversalConnectionPoolException;
 
 public class OraclePoolingConnectionFactoryProvider implements Database {
 
-	public static final String ORACLE_DRIVER_NAME = "oracle.jdbc.OracleDriver";
+	public static final String ORACLE_DRIVER_NAME = "oracle.jdbc.driver.OracleDriver";
 	@Override
 	public ConnectionFactory createConnctionFactory(String argDriverName, String argConnectURL, String argUserid, String argPassword) {
 		try {

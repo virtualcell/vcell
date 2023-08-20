@@ -86,7 +86,7 @@ public class MathVerifier {
         KeyFactory keyFactory;
         new cbit.vcell.resource.PropertyLoader();
 
-        String driverName = "oracle.jdbc.OracleDriver";
+        String driverName = "oracle.jdbc.driver.OracleDriver";
         String connectURL = "jdbc:oracle:thin:@" + dbHostName + ":1521:" + dbName;
 
         //
