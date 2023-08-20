@@ -112,6 +112,7 @@
 
 		<!-- NB: Disable javadoc doclint -->
 		<doclint>none</doclint>
+		<ojdbc-bom.version>19.20.0.0</ojdbc-bom.version>
 	</properties>
 
 

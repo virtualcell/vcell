@@ -79,21 +79,21 @@ vcellNagios.sh calls Rel web service https://vcellapi/health?check={login,sim}
 **DBBackupAndClean**  
 vcell-node1:/opt/build/frm/dbbackupclean  
 //Normal, without debug  
-java -cp ./maven-jars/*:./vcell-server-0.0.1-SNAPSHOT.jar:./ojdbc6-11.2.0.4.jar:./ucp-11.2.0.4.jar:./vcell-oracle-0.0.1-SNAPSHOT.jar -Dvcell.server.dbDriverName=oracle.jdbc.driver.OracleDriver cbit.vcell.modeldb.DBBackupAndClean delsimsdisk vcell-db vcell /opt/build/frm/dbpw.txt  vcelldborcl.cam.uchc.edu /tmp /share/apps/vcell3/users  
+java -cp ./maven-jars/*:./vcell-server-0.0.1-SNAPSHOT.jar:./ojdbc6-11.2.0.4.jar:./ucp-11.2.0.4.jar:./vcell-oracle-0.0.1-SNAPSHOT.jar -Dvcell.server.dbDriverName=oracle.jdbc.driver.OracleDriver cbit.vcell.modeldb.DBBackupAndClean delsimsdisk vcell-oracle vcell /opt/build/frm/dbpw.txt  ORCLPDB1 /tmp /share/apps/vcell3/users  
 
 //Normal, without debug, single user only  
-java -Xms200m -Xmx1500m -cp ./maven-jars/*:./vcell-server-0.0.1-SNAPSHOT.jar:./ojdbc6-11.2.0.4.jar:./ucp-11.2.0.4.jar:./vcell-oracle-0.0.1-SNAPSHOT.jar -Dvcell.server.dbDriverName=oracle.jdbc.driver.OracleDriver cbit.vcell.modeldb.DBBackupAndClean delsimsdisk2 vcell-db vcell /opt/build/frm/dbpw.txt  vcelldborcl.cam.uchc.edu /tmp /share/apps/vcell3/users Juliajessica  
+java -Xms200m -Xmx1500m -cp ./maven-jars/*:./vcell-server-0.0.1-SNAPSHOT.jar:./ojdbc6-11.2.0.4.jar:./ucp-11.2.0.4.jar:./vcell-oracle-0.0.1-SNAPSHOT.jar -Dvcell.server.dbDriverName=oracle.jdbc.driver.OracleDriver cbit.vcell.modeldb.DBBackupAndClean delsimsdisk2 vcell-oracle vcell /opt/build/frm/dbpw.txt  ORCLPDB1 /tmp /share/apps/vcell3/users Juliajessica  
 
 //With debug  (note: eclipse debug config: vcell-server,vcell-node1,30301)  
-java  -agentlib:jdwp=transport=dt_socket,server=y,address=30301,suspend=y  -cp ./maven-jars/*:./vcell-server-0.0.1-SNAPSHOT.jar:./ojdbc6-11.2.0.4.jar:./ucp-11.2.0.4.jar:./vcell-oracle-0.0.1-SNAPSHOT.jar -Dvcell.server.dbDriverName=oracle.jdbc.driver.OracleDriver cbit.vcell.modeldb.DBBackupAndClean delsimsdisk vcell-db vcell /opt/build/frm/dbpw.txt  vcelldborcl.cam.uchc.edu /tmp /share/apps/vcell3/users  
+java  -agentlib:jdwp=transport=dt_socket,server=y,address=30301,suspend=y  -cp ./maven-jars/*:./vcell-server-0.0.1-SNAPSHOT.jar:./ojdbc6-11.2.0.4.jar:./ucp-11.2.0.4.jar:./vcell-oracle-0.0.1-SNAPSHOT.jar -Dvcell.server.dbDriverName=oracle.jdbc.driver.OracleDriver cbit.vcell.modeldb.DBBackupAndClean delsimsdisk vcell-oracle vcell /opt/build/frm/dbpw.txt  ORCLPDB1 /tmp /share/apps/vcell3/users  
 
-//DBBackupAndClean Scheduled Task (vcell-db.cam.uchc.edu->'scheduled task'->'Task Scheduler Library'->cleanAndBackupDB->properties->Actions->'Edit...')
+//DBBackupAndClean Scheduled Task (vcell-oracle.cam.uchc.edu->'scheduled task'->'Task Scheduler Library'->cleanAndBackupDB->properties->Actions->'Edit...')
 Program/script: "C:\Program Files (x86)\Java\jre1.8.0_121\bin\java.exe"
-Add arguments: -jar DBBackupAndClean_Ampli.jar cleanandbackup vcell-db vcell cbittech vcelldborcl.cam.uchc.edu \\cfs05\vcell\temp \\cfs03\shared\archive\vcell\VCDBdumps
+Add arguments: -jar DBBackupAndClean_Ampli.jar cleanandbackup vcell-oracle vcell password ORCLPDB1 \\cfs05\vcell\temp \\cfs03\shared\archive\vcell\VCDBdumps
 Start in: C:\fromDBS3
 
 
-**Delete large listener.log file**  
+**Delete large listener.log file - obsolete - oracle now containerized running on vcell-oracle machine **  
 log in to vcell-db (a windows host) as admin user using 'Remote Desktop Connection'  
 start 'cmd' window as system administrator (start->'command prompt->'rt-click, 'run as administrator')  
 //make sure of path to listener log  
@@ -130,22 +130,22 @@ NOTE: enter following after 'java' for debug (-agentlib:jdwp=transport=dt_socket
 4a. Run to generate .csv report, expects vcellDB password to be enetered on console  
 
     java -cp ./dbbackupclean/ojdbc6-11.2.0.4.jar:./dbbackupclean/ucp-11.2.0.4.jar:./dbbackupclean/vcell-oracle-0.0.1-SNAPSHOT.jar:./cbit_vcell_tools_IonItems.jar  
-       cbit.vcell.tools.IonItems 'jdbc:oracle:thin:@vcell-db.cam.uchc.edu:1521:vcelldborcl' '/share/apps/vcell3/users' publicmodelwithsims false | tee ./pubModelsSimIdOnly.txt  
+       cbit.vcell.tools.IonItems 'jdbc:oracle:thin:@vcell-oracle.cam.uchc.edu:1521:ORCLPDB1' '/share/apps/vcell3/users' publicmodelwithsims false | tee ./pubModelsSimIdOnly.txt  
 
 4b. Run to save vcml of published modesl with sims that have no data or exceptions removed from vcml  
 
     java -cp ./dbbackupclean/ojdbc6-11.2.0.4.jar:./dbbackupclean/ucp-11.2.0.4.jar:./dbbackupclean/vcell-oracle-0.0.1-SNAPSHOT.jar:./cbit_vcell_tools_IonItems.jar:./maven-  jars/jhdf5_2.10-2.9.jar  
-      -Djava.library.path="./natlibs"  cbit.vcell.tools.IonItems "jdbc:oracle:thin:@vcell-db.cam.uchc.edu:1521:vcelldborcl" "/share/apps/vcell3/users" publishedmodelvcml   /share/apps/vcell3/users/ionvcml 0 0  
+      -Djava.library.path="./natlibs"  cbit.vcell.tools.IonItems "jdbc:oracle:thin:@vcell-oracle.cam.uchc.edu:1521:ORCLPDB1" "/share/apps/vcell3/users" publishedmodelvcml   /share/apps/vcell3/users/ionvcml 0 0  
 
 4c. Run to read vcml saved from 4b and compare to vcml from db and print the sims that had to be removed  
 
     java -cp ./dbbackupclean/ojdbc6-11.2.0.4.jar:./dbbackupclean/ucp-11.2.0.4.jar:./dbbackupclean/vcell-oracle-0.0.1-SNAPSHOT.jar:./cbit_vcell_tools_IonItems.jar:./maven-jars/jhdf5_2.10-2.9.jar  
-      -Djava.library.path="./natlibs"  cbit.vcell.tools.IonItems "jdbc:oracle:thin:@vcell-db.cam.uchc.edu:1521:vcelldborcl" /share/apps/vcell3/users/ionvcml publishedmodelvcmldiff  
+      -Djava.library.path="./natlibs"  cbit.vcell.tools.IonItems "jdbc:oracle:thin:@vcell-oracle.cam.uchc.edu:1521:ORCLPDB1" /share/apps/vcell3/users/ionvcml publishedmodelvcmldiff  
       
 4d.  Run to save vcml from TestSuit
 
     java  -cp ./dbbackupclean/ojdbc6-11.2.0.4.jar:./dbbackupclean/ucp-11.2.0.4.jar:./dbbackupclean/vcell-oracle-0.0.1-SNAPSHOT.jar:./cbit_vcell_tools_IonItems.jar:./maven-jars/jhdf5_2.10-2.9.jar  
-    -Djava.library.path="./natlibs"  cbit.vcell.tools.IonItems "jdbc:oracle:thin:@vcell-db.cam.uchc.edu:1521:vcelldborcl"  /share/apps/vcell3/users/ionts testsuitemodelvcml
+    -Djava.library.path="./natlibs"  cbit.vcell.tools.IonItems "jdbc:oracle:thin:@vcell-oracle.cam.uchc.edu:1521:ORCLPDB1"  /share/apps/vcell3/users/ionts testsuitemodelvcml
 
 ***----------------------------------------------------------------------------------------------------------***
 

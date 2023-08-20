@@ -5,4 +5,4 @@ metadata:
   namespace: prod
 spec:
   type: ExternalName
-  externalName: vcell-db.cam.uchc.edu
+  externalName: vcell-oracle.cam.uchc.edu

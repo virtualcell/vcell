@@ -3,7 +3,7 @@ If VCell client simulation list view says 'hasdata=no' but there is data
 -----Find sim id (click 'i' button when sim is selected) -> theSimID  
 -----log into vcell-node1 (or any node not in DMZ, not vcellapi or vcellapi-beta)  
 -----Check data exists, give cmd " ls /share/apps/vcell3/users/boris/SimID_theSimID* "  
------open oracle db tool (toad,sql,squirrel), log into vcell@vcell-db.cam.uchc.edu and do query " select * from vc_simulationjob where simref=theSimID; "  
+-----open oracle db tool (toad,sql,squirrel), log into vcell@vcell-oracle.cam.uchc.edu and do query " select * from vc_simulationjob where simref=theSimID; "  
 -----If the query column 'hasdata' is blank then do update " update vc_simulationJob set hasdata='Y' where simref=theSimID; "  and " commit; "  
 -----log into vcellapi(Rel) or vcellapi-beta(Alpha)  
 -----Restart VCell docker scheduler service  with cmd " sudo docker service update --force --detach=false vcell{rel,alpha}_sched "  
@@ -131,7 +131,7 @@ client local run  alpha
 -Dvcell.server.dbPassword=  
 -Dvcell.server.dbUserid=vcell  
 -Dvcell.server.dbDriverName=oracle.jdbc.driver.OracleDriver  
--Dvcell.server.dbConnectURL=jdbc:oracle:thin:@vcell-db.cam.uchc.edu:1521:vcelldborcl  
+-Dvcell.server.dbConnectURL=jdbc:oracle:thin:@vcell-oracle.cam.uchc.edu:1521:ORCLPDB1  
 -Dvcell.server.id=alpha\_7.0.0\_51  
 -Dvcell.mongodb.database=TEST  
 -Dvcell.mongodb.host.internal=vcellapi-beta.cam.uchc.edu  
