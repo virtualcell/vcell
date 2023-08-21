@@ -116,11 +116,39 @@ public class SpringSaLaDGoodReactionsTest {
 		s6:		There must be a biunivocal correspondence between the Species and the associated MolecularType.
 		
 			TODO: we may consider initializing all the issue string as static named variable and compare identity, but it will probably be overkill
+			TODO: add membrane molecules and test for Anchor; also test for Anchor missing in non-membrane molecules
 		*/
-
-		System.out.println("end springsalad test");
 	}
 
+	/* -------------------------------------------------------------------------------------------------------------------------
+	 * This test exercises a complete set of springsalad-incompatible reactions
+	 * All the reactions in this example should be marked as incompatible, either Error or Warning issues.
+	 */
+	@Test
+	public void test_springsalad_bad_reactions() throws IOException, XmlParseException, PropertyVetoException, ExpressionException, GeometryException, 
+			ImageException, IllegalMappingException, MappingException {
+		
+		System.out.println("start springsalad test for incompatible reactions");
+		BioModel bioModel = getBioModelFromResource("Spring_reactions_bad.vcml");
+		Assert.assertTrue("expecting non-null biomodel", bioModel != null ? true : false);
+		SimulationContext simContext = bioModel.addNewSimulationContext("Application", SimulationContext.Application.SPRINGSALAD);
+		Assert.assertTrue("expecting non-null simulation context", simContext != null ? true : false);
+		
+		Application appType = simContext.getApplicationType();
+		Assert.assertTrue("expecting SPRINGSALAD application type", (appType != null && appType == Application.SPRINGSALAD) ? true : false);
+		
+		Geometry geometry = simContext.getGeometry();
+		Assert.assertTrue("expecting 3D geometry", geometry.getDimension() == 3 ? true : false);
+
+		Vector<Issue> issueList = new Vector<Issue>();
+		IssueContext issueContext = new IssueContext();
+		simContext.getModel().gatherIssues(issueContext, issueList);
+		simContext.gatherIssues(issueContext, issueList, true);		// bIgnoreMathDescription == true
+		int numErrors = checkIssuesBySeverity(issueList, Issue.Severity.ERROR);
+		int numWarnings = checkIssuesBySeverity(issueList, Issue.Severity.WARNING);
+		Assert.assertTrue("expecting 2 errors and 14 warning issues", (numErrors == 2 && numWarnings == 14) ? true : false);
+	}
+	
 	/* -------------------------------------------------------------------------------------------------------------------------
 	 * This test exercises a complete set of springsalad-compatible reactions and math generation
 	 * All the reactions in this example should be marked as valid, there should be no error or warning issues whatsoever.
