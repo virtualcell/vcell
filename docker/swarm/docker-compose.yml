@@ -349,6 +349,56 @@ services:
       placement:
         constraints:
           - node.labels.zone == INTERNAL
+
+  s3proxy:
+    image: andrewgaul/s3proxy:latest
+    ports:
+      - "${VCELL_S3PROXY_PORT}:80"
+#      - "${VCELL_S3PROXY_PORT}:443"
+    environment:
+      - LOG_LEVEL="info"
+#      - S3PROXY_AUTHORIZATION="aws-v2-or-v4"
+#      - S3PROXY_ENDPOINT="http://0.0.0.0:80"
+#      - S3PROXY_IDENTITY="local-identity"
+#      - S3PROXY_CREDENTIAL="local-credential"
+#      - S3PROXY_VIRTUALHOST=""
+#      - S3PROXY_KEYSTORE_PATH="keystore.jks"
+#      - S3PROXY_KEYSTORE_PASSWORD="password"
+      - S3PROXY_CORS_ALLOW_ALL="true"
+#      - S3PROXY_CORS_ALLOW_ORIGINS=""
+#      - S3PROXY_CORS_ALLOW_METHODS=""
+#      - S3PROXY_CORS_ALLOW_HEADERS=""
+      - S3PROXY_IGNORE_UNKNOWN_HEADERS="true"
+#      - S3PROXY_ENCRYPTED_BLOBSTORE=""
+#      - S3PROXY_ENCRYPTED_BLOBSTORE_PASSWORD=""
+#      - S3PROXY_ENCRYPTED_BLOBSTORE_SALT=""
+      - JCLOUDS_PROVIDER="filesystem"
+#      - JCLOUDS_ENDPOINT=""
+#      - JCLOUDS_REGION=""
+#      - JCLOUDS_REGIONS="us-east-1"
+#      - JCLOUDS_IDENTITY="remote-identity"
+#      - JCLOUDS_CREDENTIAL="remote-credential"
+#      - JCLOUDS_KEYSTONE_VERSION=""
+#      - JCLOUDS_KEYSTONE_SCOPE=""
+#      - JCLOUDS_KEYSTONE_PROJECT_DOMAIN_NAME=""
+      - JCLOUDS_FILESYSTEM_BASEDIR="/data"
+    volumes:
+      - "${VCELL_S3PROXY_DIR}:/data"
+    networks:
+      - vcellnet
+    deploy:
+      mode: replicated
+      replicas: 1
+      resources:
+        limits:
+          memory: 2000M
+        reservations:
+          memory: 1000M
+      placement:
+        constraints:
+          - node.labels.zone == INTERNAL
+
+
   mongodb:
     image: "${VCELL_REPO_NAMESPACE}/vcell-mongo:${VCELL_TAG}"
     ports:
