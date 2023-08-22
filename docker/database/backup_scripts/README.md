@@ -1,0 +1,1 @@
+run ./archivedb.sh as root or with sudo to generate a dump in /data/backup
