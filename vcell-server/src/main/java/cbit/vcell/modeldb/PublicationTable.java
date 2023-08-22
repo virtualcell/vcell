@@ -87,8 +87,8 @@ public String getPreparedStatement_PublicationReps(String conditions, OrderBy or
 	PublicationTable pubTable = PublicationTable.table;
 	PublicationModelLinkTable pubModelTable = PublicationModelLinkTable.table;
 
-	String concat_function_name = (dbSyntax==DatabaseSyntax.ORACLE) ? "wm_concat" : "string_agg";
-	String concat_second_arg = (dbSyntax==DatabaseSyntax.ORACLE) ? "" : ", ','";
+	String concat_function_name = (dbSyntax==DatabaseSyntax.ORACLE) ? "listagg" : "string_agg";
+	String concat_second_arg = (dbSyntax==DatabaseSyntax.ORACLE) ? ", ','" : ", ','";
 	String string_cast = (dbSyntax==DatabaseSyntax.ORACLE) ? "" : "::varchar(255)";
 
 	String subquery = 			
