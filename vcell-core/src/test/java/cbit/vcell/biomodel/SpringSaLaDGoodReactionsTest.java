@@ -76,7 +76,7 @@ public class SpringSaLaDGoodReactionsTest {
 	public void test_springsalad_model_bad() throws IOException, XmlParseException, PropertyVetoException, ExpressionException, GeometryException, 
 			ImageException, IllegalMappingException, MappingException {
 		
-		System.out.println("start springsalad test for compartments, seed species and molecules");
+//		System.out.println("start springsalad test for compartments, seed species and molecules");
 		BioModel bioModel = getBioModelFromResource("Spring_model_bad.vcml");
 		Assert.assertTrue("expecting non-null biomodel", bioModel != null ? true : false);
 		SimulationContext simContext = bioModel.addNewSimulationContext("Application", SimulationContext.Application.SPRINGSALAD);
@@ -128,7 +128,7 @@ public class SpringSaLaDGoodReactionsTest {
 	public void test_springsalad_bad_reactions() throws IOException, XmlParseException, PropertyVetoException, ExpressionException, GeometryException, 
 			ImageException, IllegalMappingException, MappingException {
 		
-		System.out.println("start springsalad test for incompatible reactions");
+//		System.out.println("start springsalad test for incompatible reactions");
 		BioModel bioModel = getBioModelFromResource("Spring_reactions_bad.vcml");
 		Assert.assertTrue("expecting non-null biomodel", bioModel != null ? true : false);
 		SimulationContext simContext = bioModel.addNewSimulationContext("Application", SimulationContext.Application.SPRINGSALAD);
@@ -158,7 +158,7 @@ public class SpringSaLaDGoodReactionsTest {
 	public void test_springsalad_good_reactions() throws IOException, XmlParseException, PropertyVetoException, ExpressionException, GeometryException, 
 			ImageException, IllegalMappingException, MappingException {
 		
-		System.out.println("start springsalad test for all compatible reactions");
+//		System.out.println("start springsalad test for all compatible reactions");
 		BioModel bioModel = getBioModelFromResource("Spring_reactions_good.vcml");
 		Assert.assertTrue("expecting non-null biomodel", bioModel != null ? true : false);
 		SimulationContext simContext = bioModel.addNewSimulationContext("Application", SimulationContext.Application.SPRINGSALAD);
@@ -199,8 +199,6 @@ public class SpringSaLaDGoodReactionsTest {
 		
 		MathType mathType = mathDescription.getMathType();
 		Assert.assertTrue("expecting SpringSaLaD math type", (mathType != null && mathType == MathType.SpringSaLaD) ? true : false);
-		
-		System.out.println("end springsalad test");
 	}
 	
 	/* ------------------------------------------------------------------------------------------------------------------------------
@@ -209,9 +207,8 @@ public class SpringSaLaDGoodReactionsTest {
 	 */
 	@Test
 	public void test_springsalad_simple_simulation() throws IOException, XmlParseException, PropertyVetoException, ExpressionException, GeometryException, 
-			ImageException, IllegalMappingException, MappingException {
+			ImageException, IllegalMappingException, MappingException, SolverException {
 		
-		System.out.println("start springsalad test for the langevin solver");
 		BioModel bioModel = getBioModelFromResource("Spring_transition_free.vcml");
 		Assert.assertTrue("expecting non-null biomodel", bioModel != null ? true : false);
 		SimulationContext simContext = bioModel.addNewSimulationContext("Application", SimulationContext.Application.SPRINGSALAD);
@@ -253,20 +250,17 @@ public class SpringSaLaDGoodReactionsTest {
 		
 		
 		SolverDescription solverDescription = simTask.getSimulation().getSolverTaskDescription().getSolverDescription();
-		if (solverDescription == null) {
-			throw new IllegalArgumentException("SolverDescription cannot be null");
-		}
-		
+		Assert.assertTrue("expecting non-null SolverDescription", (solverDescription != null) ? true : false);
 		
 		// generate the input file for the solver and validate it
 		LangevinSimulationOptions langevinSimulationOptions = simTask.getSimulation().getSolverTaskDescription().getLangevinSimulationOptions();
 		int randomSeed = 0;
 		String langevinLngvString = null;
-		try {
-			langevinLngvString = LangevinLngvWriter.writeLangevinLngv(simTask.getSimulation(), randomSeed, langevinSimulationOptions);
-		} catch (SolverException | ExpressionException e1) {
-			e1.printStackTrace();
-		}
+//		try {
+		langevinLngvString = LangevinLngvWriter.writeLangevinLngv(simTask.getSimulation(), randomSeed, langevinSimulationOptions);
+//		} catch (SolverException | ExpressionException e1) {
+//			e1.printStackTrace();
+//		}
 		Assert.assertTrue("expecting non-null solver input string", (langevinLngvString != null) ? true : false);
 		Assert.assertTrue("expecting properly formatted transition reaction", (langevinLngvString.contains(reactionTestString)) ? true : false);
 		
@@ -280,8 +274,6 @@ public class SpringSaLaDGoodReactionsTest {
 			e.printStackTrace();
 		}
 		Assert.assertTrue("expecting instanceof Langevin solver", (solver instanceof LangevinSolver) ? true : false);
-		
-		System.out.println("end springsalad test");
 	}
     
 	// ==========================================================================================================================
