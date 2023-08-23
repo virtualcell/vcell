@@ -845,6 +845,21 @@ public SpeciesContext getDestroyedSpecies(SpeciesContextSpec[] speciesContextSpe
  * @param issueList java.util.Vector
  */
 private final static String GenericTip = "Please edit the reaction so that it matches a SpringSaLaD subtype or disable it in this table";
+private final static String SpringSaLaDMsgAtLeastOne = "At least one reactant and one product are required.";
+private final static String SpringSaLaDMsgReactionsCannotBe = "SpringSaLaD reactions cannot be located on the Membrane.";
+private final static String SpringSaLaDMsgEachReactionMust = "SpringSaLaD requires that each reaction and all its participants must be in the same Structure";
+private final static String SpringSaLaDMsgAnchorCannotBePart = "The reserved site 'Anchor' cannot be part of a non-membrane reactant pattern.";
+private final static String SpringSaLaDMsgAnchorCannotBeTarget = "The reserved site 'Anchor' cannot be the target of any SpringSaLaD reaction.";
+private final static String SpringSaLaDMsgOnlyAcceptsOneProduct = "SpringSaLaD only accepts one Product.";
+private final static String SpringSaLaDMsgOnlyAcceptsTwo = "SpringSaLaD only accepts 2 Reactants for the binding reactions and 1 Reactant for the other subtypes.";
+private final static String SpringSaLaDMsgOnlyAcceptsOneBinding = "SpringSaLaD only accepts one binding transition in any reaction.";
+private final static String SpringSaLaDMsgOnlyAcceptsOneTransition = "SpringSaLaD only accepts one state transition in any reaction.";
+private final static String SpringSaLaDMsgDoesNotAcceptCombination = "SpringSaLaD does not accept a combination of state and binding transitions in any reaction.";
+private final static String SpringSaLaDMsgIncompatibleWithAny = "Reaction incompatible with any SpringSaLaD reaction subtype.";
+private final static String SpringSaLaDMsgSubtypeMustBeIrreversible = "This reaction subtype must be irreversible. Make the reaction ireversible.";
+private final static String SpringSaLaDMsgTransmembraneBinding = "Transmembrane binding not supported";
+private final static String SpringSaLaDMsgSubtypeMustBeReversible = "This reaction subtype must be reversible. Make the reaction reversible and keep Kr at 0.";
+
 public void gatherIssues(IssueContext issueContext, List<Issue> issueList, ReactionContext rc) {
 	ReactionRuleCombo r = new ReactionRuleCombo(this, rc);
 	ReactionRule reactionRule = getReactionRule();
@@ -871,34 +886,109 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList, React
 //		}
 //	}
 	if(rc.getSimulationContext().getApplicationType() == SimulationContext.Application.SPRINGSALAD) {
+		
+		List<ReactantPattern> rpList = reactionRule.getReactantPatterns();
+		List<ProductPattern> ppList = reactionRule.getProductPatterns();
+		if(rpList == null || ppList == null) {
+			String msg = SpringSaLaDMsgAtLeastOne;
+			String tip = GenericTip;
+			issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
+			return;
+		}
+		int numReactants = rpList.size();
+		int numProducts = ppList.size();
+		if(numReactants == 0 || numProducts == 0) {
+			String msg = SpringSaLaDMsgAtLeastOne;
+			String tip = GenericTip;
+			issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+			return;
+		}
+
+		// no reaction can be on the membrane
+		String reactionStructure = reactionRule.getStructure().getName();
+		if(SpringStructureEnum.Membrane.columnName.equals(reactionStructure)) {
+			String msg = SpringSaLaDMsgReactionsCannotBe;
+			String tip = msg;
+			issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
+			return;
+		}
+		
+		// the reaction and its participants must all be in the same Structure.
+		// TODO: this has to be refined, actually reactants bound to a membrane may have sites in the right compartment
+		// Also, some conditional transition or allosteric reaction may have their condition molecule located in a different 
+		// compartment (can they? TODO check with springsalad !!!)
+//		List<ReactionRuleParticipant> reactionRuleParticipants = reactionRule.getReactionRuleParticipants();
+//		for(ReactionRuleParticipant rrp : reactionRuleParticipants) {
+//			if(!reactionStructure.equals(rrp.getStructure().getName())) {
+//				String msg = SpringSaLaDMsgEachReactionMust;
+//				String tip = msg;
+//				issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
+//				return;
+//			}
+//		}
+		
+		// the reserved site 'Anchor' must be not present in any reactant pattern that is not situated on a membrane
+		// note that we do a similar check for seed species, but this is also needed 
+		// (we can have a bad reactant pattern even though the seed species may be missing)
+		// TODO:we'll change the Anchor paradigm but this check should still be present some way or another
+//		for(ReactantPattern rp : rpList) {
+//			if(!SpringStructureEnum.Membrane.columnName.equals(rp.getStructure().getName())) {
+//				SpeciesPattern spReactant = rp.getSpeciesPattern();
+//				List<MolecularTypePattern> mtpReactantList = spReactant.getMolecularTypePatterns();
+//				for(MolecularTypePattern mtpReactant : mtpReactantList) {
+//					List<MolecularComponentPattern> mcpReactantList = mtpReactant.getComponentPatternList();
+//					for(MolecularComponentPattern mcpReactant : mcpReactantList) {
+//						MolecularComponent mcReactant = mcpReactant.getMolecularComponent();
+//						if(SpeciesContextSpec.AnchorSiteString.equals(mcReactant.getName())) {
+//							String msg = SpringSaLaDMsgAnchorCannotBePart;
+//							String tip = msg;
+//							issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
+//							return;
+//						}
+//					}
+//				}
+//			}
+//		}
+
+		// the reserved site 'Anchor' must not be part of any reaction
+		// TODO: deal with this once the Anchor is being refactored
+//		for(ReactantPattern rp : rpList) {
+//			if(!SpringStructureEnum.Membrane.columnName.equals(rp.getStructure().getName())) {
+//				continue;	// we don't have anchors if it's not a membrane molecule
+//			}
+//			SpeciesPattern spReactant = rp.getSpeciesPattern();
+//			List<MolecularTypePattern> mtpReactantList = spReactant.getMolecularTypePatterns();
+//			for(MolecularTypePattern mtpReactant : mtpReactantList) {
+//				List<MolecularComponentPattern> mcpReactantList = mtpReactant.getComponentPatternList();
+//				for(MolecularComponentPattern mcpReactant : mcpReactantList) {
+//					MolecularComponent mcReactant = mcpReactant.getMolecularComponent();
+//					if(!SpeciesContextSpec.AnchorSiteString.equals(mcReactant.getName())) {
+//						continue;
+//					}
+//					if(BondType.Possible != mcpReactant.getBondType() || !mcpReactant.getComponentStatePattern().isAny()) {
+//						String msg = SpringSaLaDMsgAnchorCannotBeTarget;
+//						String tip = msg;
+//						issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
+//						return;
+//					}
+//				}
+//			}
+//		}
+
+		// ------------------------------------------------------------------------------------------------------------------------
+
 		Map<String, Object> analysisResults = new LinkedHashMap<> ();
 		analizeReaction(analysisResults);
 		Subtype subtype = getSubtype(analysisResults);
 		if(Subtype.INCOMPATIBLE == subtype) {
-			List<ReactantPattern> rpList = reactionRule.getReactantPatterns();
-			List<ProductPattern> ppList = reactionRule.getProductPatterns();
-			if(rpList == null || ppList == null) {
-				String msg = "At least one reactant and one product are required.";
-				String tip = GenericTip;
-				issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
-				return;
-			}
-			int numReactants = rpList.size();
-			int numProducts = ppList.size();
-			if(numReactants == 0 || numProducts == 0) {
-				String msg = "At least one reactant and one product are required.";
-				String tip = GenericTip;
-				issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
-				return;
-			}
 			if(numProducts > 1) {
-				String msg = "SpringSaLaD only accepts one Product.";
+				String msg = SpringSaLaDMsgOnlyAcceptsOneProduct;
 				String tip = GenericTip;
 				issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
 				return;
 			}
 			if(numReactants > 2) {
-				String msg = "SpringSaLaD only accepts 2 Reactants for the binding reactions and 1 Reactant for the other subtypes.";
+				String msg = SpringSaLaDMsgOnlyAcceptsTwo;
 				String tip = GenericTip;
 				issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
 				return;
@@ -911,19 +1001,19 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList, React
 				int bondTransitionCounter = (int)bondObject;
 				int stateTransitionCounter = (int)stateObject;
 				if(bondTransitionCounter > 3) {		// a binding reaction produces 2 transitions
-					String msg = "SpringSaLaD only accepts one binding transition in any reaction.";
+					String msg = SpringSaLaDMsgOnlyAcceptsOneBinding;
 					String tip = GenericTip;
 					issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
 					return;
 				}
 				if(stateTransitionCounter > 1) {
-					String msg = "SpringSaLaD only accepts one state transition in any reaction.";
+					String msg = SpringSaLaDMsgOnlyAcceptsOneTransition;
 					String tip = GenericTip;
 					issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
 					return;
 				}
 				if(stateTransitionCounter > 0 && bondTransitionCounter > 0) {
-					String msg = "SpringSaLaD does not accept a combination of state and binding transitions in any reaction.";
+					String msg = SpringSaLaDMsgDoesNotAcceptCombination;
 					String tip = GenericTip;
 					issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
 					return;
@@ -931,76 +1021,9 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList, React
 			}
 		}
 		if(Subtype.INCOMPATIBLE == subtype) {
-			String msg = "Reaction incompatible with any SpringSaLaD reaction subtype.";
+			String msg = SpringSaLaDMsgIncompatibleWithAny;
 			String tip = GenericTip;
 			issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
-		}
-		
-		// reactions cannot be on the membrane
-		String reactionStructure = reactionRule.getStructure().getName();
-		if(SpringStructureEnum.Membrane.columnName.equals(reactionStructure)) {
-			String msg = "SpringSaLaD reactions cannot be located on the Membrane.";
-			String tip = msg;
-			issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
-			return;
-		}
-		
-		// the reaction and its participants must all be in the same Structure.
-		List<ReactionRuleParticipant> reactionRuleParticipants = reactionRule.getReactionRuleParticipants();
-		for(ReactionRuleParticipant rrp : reactionRuleParticipants) {
-			if(!reactionStructure.equals(rrp.getStructure().getName())) {
-				String msg = "SpringSaLaD requires that each reaction and all its participants must be in the same Structure";
-				String tip = msg;
-				issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
-				return;
-			}
-		}
-		
-		List<ReactantPattern> rpList = reactionRule.getReactantPatterns();
-		// the reserved site 'Anchor' must be not present in any reactant pattern that is not situated on a membrane
-		// note that we do a similar check for seed species, but this is also needed 
-		// (we can have a bad reactant pattern even though the seed species may be missing)
-		for(ReactantPattern rp : rpList) {
-			if(!SpringStructureEnum.Membrane.columnName.equals(rp.getStructure().getName())) {
-				SpeciesPattern spReactant = rp.getSpeciesPattern();
-				List<MolecularTypePattern> mtpReactantList = spReactant.getMolecularTypePatterns();
-				for(MolecularTypePattern mtpReactant : mtpReactantList) {
-					List<MolecularComponentPattern> mcpReactantList = mtpReactant.getComponentPatternList();
-					for(MolecularComponentPattern mcpReactant : mcpReactantList) {
-						MolecularComponent mcReactant = mcpReactant.getMolecularComponent();
-						if(SpeciesContextSpec.AnchorSiteString.equals(mcReactant.getName())) {
-							String msg = "The reserved site 'Anchor' cannot be part of a non-membrane reactant pattern.";
-							String tip = msg;
-							issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
-							return;
-						}
-					}
-				}
-			}
-		}
-		
-		// the reserved site 'Anchor' must not be part of any reaction
-		for(ReactantPattern rp : rpList) {
-			if(!SpringStructureEnum.Membrane.columnName.equals(rp.getStructure().getName())) {
-				continue;	// we don't have anchors if it's not a membrane molecule
-			}
-			SpeciesPattern spReactant = rp.getSpeciesPattern();
-			List<MolecularTypePattern> mtpReactantList = spReactant.getMolecularTypePatterns();
-			for(MolecularTypePattern mtpReactant : mtpReactantList) {
-				List<MolecularComponentPattern> mcpReactantList = mtpReactant.getComponentPatternList();
-				for(MolecularComponentPattern mcpReactant : mcpReactantList) {
-					MolecularComponent mcReactant = mcpReactant.getMolecularComponent();
-					if(!SpeciesContextSpec.AnchorSiteString.equals(mcReactant.getName())) {
-						continue;
-					}
-					if(BondType.Possible != mcpReactant.getBondType() || !mcpReactant.getComponentStatePattern().isAny()) {
-						String msg = "The reserved site 'Anchor' cannot be the target of any SpringSaLaD reaction.";
-						String tip = msg;
-						issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
-						return;
-					}
-				}
-			}
 		}
 		
 		// these reactions cannot be reversible
@@ -1010,7 +1033,7 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList, React
 		case TRANSITION:
 		case ALLOSTERIC:
 			if(reactionRule.isReversible()) {
-				String msg = subtype.columnName + " reactions must be irreversible. Make the reaction ireversible.";
+				String msg = SpringSaLaDMsgSubtypeMustBeIrreversible;
 				String tip = "Make this reaction irreversible or disable it in this table.";
 				issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
 				return;
@@ -1070,7 +1093,7 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList, React
 					}
 				}
 				if(sasOne.getLocation() != sasTwo.getLocation()) {
-					String msg = "Transmembrane binding not supported";
+					String msg = SpringSaLaDMsgTransmembraneBinding;
 					String tip = "Both binding reactant Sites need to be in the same compartment.";
 					issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
 					return;
@@ -1078,7 +1101,7 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList, React
 			}
 			// binding reactions must be reversible
 			if(!reactionRule.isReversible()) {
-				String msg = subtype.columnName + " reactions must be reversible. Make the reaction reversible and keep Kr at 0.";
+				String msg = SpringSaLaDMsgSubtypeMustBeReversible;
 				String tip = "Make this reaction reversible or disable it in this table.";
 				issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
 				return;
