@@ -139,5 +139,12 @@
 			<version>42.4.1</version>
 		</dependency>
 
+<!--		For S3Proxy package -->
+		<dependency>
+			<groupId>org.gaul</groupId>
+			<artifactId>s3proxy</artifactId>
+			<version>1.7.1</version>
+		</dependency>
+
 	</dependencies>
 </project>
