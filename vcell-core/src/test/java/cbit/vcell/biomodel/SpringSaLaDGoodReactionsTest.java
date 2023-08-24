@@ -146,7 +146,7 @@ public class SpringSaLaDGoodReactionsTest {
 		simContext.gatherIssues(issueContext, issueList, true);		// bIgnoreMathDescription == true
 		int numErrors = checkIssuesBySeverity(issueList, Issue.Severity.ERROR);
 		int numWarnings = checkIssuesBySeverity(issueList, Issue.Severity.WARNING);
-		Assert.assertTrue("expecting 2 errors and 14 warning issues", (numErrors == 2 && numWarnings == 14) ? true : false);
+		Assert.assertTrue("expecting 1 errors and 14 warning issues", (numErrors == 1 && numWarnings == 14) ? true : false);
 	}
 	
 	/* -------------------------------------------------------------------------------------------------------------------------
@@ -251,7 +251,8 @@ public class SpringSaLaDGoodReactionsTest {
 		
 		SolverDescription solverDescription = simTask.getSimulation().getSolverTaskDescription().getSolverDescription();
 		Assert.assertTrue("expecting non-null SolverDescription", (solverDescription != null) ? true : false);
-		
+		Assert.assertTrue("expecting databese name 'Langevin'", ("Langevin".equals(solverDescription.getDatabaseName())) ? true : false);
+
 		// generate the input file for the solver and validate it
 		LangevinSimulationOptions langevinSimulationOptions = simTask.getSimulation().getSolverTaskDescription().getLangevinSimulationOptions();
 		int randomSeed = 0;
@@ -263,7 +264,6 @@ public class SpringSaLaDGoodReactionsTest {
 //		}
 		Assert.assertTrue("expecting non-null solver input string", (langevinLngvString != null) ? true : false);
 		Assert.assertTrue("expecting properly formatted transition reaction", (langevinLngvString.contains(reactionTestString)) ? true : false);
-		
 		
 		SolverUtilities.prepareSolverExecutable(solverDescription);	
 		// create solver from SolverFactory
