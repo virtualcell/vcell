@@ -237,11 +237,7 @@ public class SpringSaLaDGoodReactionsTest {
 		
 		// -------------------------------------------------------------------------------
 		Simulation simulation = new Simulation(mathDescription, simContext);
-		try {
-			simContext.addSimulation(simulation);
-		} catch (PropertyVetoException e) {
-			e.printStackTrace();
-		}
+		simContext.addSimulation(simulation);
 		
 		File localSimDataDir = ResourceUtil.getLocalSimDir(User.tempUser.getName());	
 
@@ -257,22 +253,13 @@ public class SpringSaLaDGoodReactionsTest {
 		LangevinSimulationOptions langevinSimulationOptions = simTask.getSimulation().getSolverTaskDescription().getLangevinSimulationOptions();
 		int randomSeed = 0;
 		String langevinLngvString = null;
-//		try {
 		langevinLngvString = LangevinLngvWriter.writeLangevinLngv(simTask.getSimulation(), randomSeed, langevinSimulationOptions);
-//		} catch (SolverException | ExpressionException e1) {
-//			e1.printStackTrace();
-//		}
 		Assert.assertTrue("expecting non-null solver input string", (langevinLngvString != null) ? true : false);
 		Assert.assertTrue("expecting properly formatted transition reaction", (langevinLngvString.contains(reactionTestString)) ? true : false);
 		
 		SolverUtilities.prepareSolverExecutable(solverDescription);	
 		// create solver from SolverFactory
-		Solver solver = null;
-		try {
-			solver = SolverFactory.createSolver(localSimDataDir, simTask, false);
-		} catch (SolverException e) {
-			e.printStackTrace();
-		}
+		Solver solver = SolverFactory.createSolver(localSimDataDir, simTask, false);
 		Assert.assertTrue("expecting instanceof Langevin solver", (solver instanceof LangevinSolver) ? true : false);
 	}
     
