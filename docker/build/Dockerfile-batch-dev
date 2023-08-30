@@ -86,6 +86,10 @@ RUN apt-get -y update && \
 #	wget --no-check-certificate https://download.opensuse.org/repositories/home:/fbergman:/COPASI/xUbuntu_17.10/amd64/python-copasi_4.22.170-1_amd64.deb && \
 #	gdebi -n -q python-copasi_4.22.170-1_amd64.deb
 
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tzdata
+RUN unlink /etc/localtime || true
+RUN ln -s /usr/share/zoneinfo/America/New_York /etc/localtime
+
 RUN mkdir -p /usr/local/app/localsolvers && ln -s /vcellbin  /usr/local/app/localsolvers/linux64
 WORKDIR /usr/local/app
 
