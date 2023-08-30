@@ -72,6 +72,7 @@ public class SolverTaskDescriptionAdvancedPanel extends javax.swing.JPanel {
 	private OutputOptionsPanel ivjOutputOptionsPanel = null;
 	private StochSimOptionsPanel stochSimOptionsPanel = null;
 	private NFSimGeneralOptionsPanel nFSimGeneralOptionsPanel = null;
+	private LangevinOptionsPanel langevinOptionsPanel = null;
 	private SmoldynSimulationOptionsPanel smoldynSimulationOptionsPanel = null;
 	private NFSimSimulationOptionsPanel nfsimSimulationOptionsPanel = null;
 	private SundialsPdeSolverOptionsPanel sundialsPdeSolverOptionsPanel = null;
@@ -457,6 +458,17 @@ private NFSimSimulationOptionsPanel getNFSimSimulationOptionsPanel() {
 		}
 	}
 	return nfsimSimulationOptionsPanel;
+}
+
+private LangevinOptionsPanel getLangevinOptionsPanel() {
+	if (langevinOptionsPanel == null) {
+		try {
+			langevinOptionsPanel = new LangevinOptionsPanel();
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return langevinOptionsPanel;
 }
 
 private SmoldynSimulationOptionsPanel getSmoldynSimulationOptionsPanel() {
@@ -875,6 +887,15 @@ private void initialize() {
 		add(getNFSimGeneralOptionsPanel(), gbc);
 
 		gridy ++;
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = gridy;
+		gbc.fill = java.awt.GridBagConstraints.BOTH;
+		gbc.weightx = 1.0;
+		gbc.insets = new java.awt.Insets(1, 4, 2, 4);
+		add(getLangevinOptionsPanel(), gbc);
+
+		gridy ++;
 		java.awt.GridBagConstraints constraintsJPanel1 = new java.awt.GridBagConstraints();
 		constraintsJPanel1.gridx = 0;
 		constraintsJPanel1.gridy = gridy;
@@ -1027,6 +1048,7 @@ private void setTornOffSolverTaskDescription(SolverTaskDescription newValue) {
 			getStochSimOptionsPanel().setSolverTaskDescription(ivjTornOffSolverTaskDescription);
 			getNFSimGeneralOptionsPanel().setSolverTaskDescription(ivjTornOffSolverTaskDescription);
 			getNFSimSimulationOptionsPanel().setSolverTaskDescription(ivjTornOffSolverTaskDescription);
+			getLangevinOptionsPanel().setSolverTaskDescription(ivjTornOffSolverTaskDescription);
 			getSmoldynSimulationOptionsPanel().setSolverTaskDescription(ivjTornOffSolverTaskDescription);
 			getOutputOptionsPanel().setSolverTaskDescription(ivjTornOffSolverTaskDescription, unitInfo);
 			getSundialsPdeSolverOptionsPanel().setSolverTaskDescription(ivjTornOffSolverTaskDescription);

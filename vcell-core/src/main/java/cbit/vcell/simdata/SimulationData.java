@@ -14,15 +14,18 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.Vector;
@@ -108,7 +111,7 @@ public class SimulationData extends VCData {
 		MBSData,
 		COMSOL
 	}
-	
+
 	public static class AmplistorHelper{
 		private File userDirectory;
 		private VCDataIdentifier ahvcDataId;
@@ -117,7 +120,7 @@ public class SimulationData extends VCData {
 		private TreeSet<String> amplistorNotfoundSet = new TreeSet<String>();
 		boolean bNonSpatial = false;
 		private SolverDataType solverDataType = null;
-		
+
 		SimDataAmplistorInfo simDataAmplistorInfo;
 		public AmplistorHelper(VCDataIdentifier argVCDataID, File primaryUserDir, File secondaryUserDir,SimDataAmplistorInfo simDataAmplistorInfo) throws FileNotFoundException{
 			this.simDataAmplistorInfo = simDataAmplistorInfo;
@@ -353,6 +356,14 @@ public class SimulationData extends VCData {
 	private Vector<AnnotatedFunction> annotatedFunctionList = new Vector<AnnotatedFunction>();
 	private Vector<DataSetIdentifier> dataSetIdentifierList = new Vector<DataSetIdentifier>();
 
+	/**
+	 * LangevinNoVis01 output file names
+	 */
+	private final String full_count_header = "FullCountData.csv";
+	private final String full_state_count_header = "FullStateCountData.csv";
+	private final String full_bond_count_header = "FullBondData.csv";
+	private final String site_property_data_header = "SitePropertyData.csv";
+	private final String clusters_time_header = "Clusters_Time_.csv";
 	private long logFileLastModified = 0;
 	private long logFileLength = 0;
 	// we check first job functions file for user defined functions in the parameter scan,
@@ -893,9 +904,25 @@ private synchronized File getMeshFile() throws FileNotFoundException {
  * @return cbit.vcell.simdata.ODEDataBlock
  */
 public synchronized ODEDataBlock getODEDataBlock() throws DataAccessException, IOException {
-	File file = getODEDataFile();
-	long lastModified = file.lastModified();
 	ODESimData odeSimData = null;
+	File file = null;
+	//TODO: Implement conversion here
+
+	// Check if Langevin solver is being run by checking if correct log file exists
+	String[] localSimDirFiles = amplistorHelper.userDirectory.list();
+	String localSimDirPath = amplistorHelper.userDirectory.getPath();
+	if (localSimDirFiles != null) {
+		for (String f : localSimDirFiles) {
+			if (f.endsWith(LANGEVIN_INPUT_FILE_EXTENSION) && f.contains(vcDataId.getID())) {
+				writeIdaFile(localSimDirPath + "\\" + vcDataId.getID() + ".langevinI_FOLDER\\data\\Run0\\", localSimDirPath, vcDataId.getID());
+				break;
+			}
+		}
+	}
+
+	file = getODEDataFile();
+
+	long lastModified = file.lastModified();
 	try {
 
 		if (odeIdentifier.equals(ODE_DATA_IDENTIFIER)) {
@@ -940,6 +967,163 @@ public synchronized ODEDataBlock getODEDataBlock() throws DataAccessException, I
 	return new ODEDataBlock(odeDataInfo, odeSimData);
 }
 
+	/**
+	 * Converts Langevin's output to a singular .IDA file in dir
+	 * @param dataDir : The path to the folder which contains LangevinNoVis01's output files
+	 * @param localSimDir: The path to the temp folder which contains logs and outputs
+	 * @param vcDataId : The current simulation Job ID
+	 */
+	public void writeIdaFile (String dataDir, String localSimDir, String vcDataId) throws IOException {
+		int cluster_time = 0;
+		// Initialize .ida file
+		FileWriter writer = new FileWriter( localSimDir + "\\" + vcDataId + LANGEVIN_OUTPUT_FILE_EXTENSION, false);
+
+		// Create a list with all the paths of all wanted csv files
+		String[] paths = new String[]{dataDir + full_bond_count_header, dataDir + full_count_header,dataDir + full_state_count_header, dataDir + site_property_data_header, dataDir + clusters_time_header};
+		ArrayList<String> data = new ArrayList<>();
+
+		// ArrayList that stores an arrayList for each file in paths
+		ArrayList<ArrayList<String>> list = new ArrayList<ArrayList<String>>();
+
+		// Loop through the path list
+		for (int i = 0; i < paths.length; i++) {
+
+			data = readToArray(paths[i], i==0);
+
+			if (data.size() > 0) { // Only add to list if there is data in the file
+				list.add(data);
+			} else {
+				System.out.println("No data in file: " + paths[i]);
+			}
+		}
+		// Loop through the rows by using the length we found
+		for (int i = 0; i < list.get(0).size(); i++) {
+
+			// Loop through each array for that line and get the value at that row
+			for (ArrayList<String> arrays : list) {
+				writer.write(arrays.get(i));
+			}
+			writer.write("\n");
+		}
+		writer.close();
+	}
+
+	/**
+	 * @param path: path to the csv file that will be parsed and returned as an array of values
+	 * @param isFirst: Wether or not this is the first of many files you are going to parse using this method
+	 * @return Arraylist of Strings where each value corresponds with a row of data at a time step
+	 * @throws FileNotFoundException
+	 */
+	public ArrayList<String> readToArray(String path, boolean isFirst) throws FileNotFoundException {
+		boolean firstLine = true;
+		int lineNum = 0;
+		String headerLead = null;
+		ArrayList<String> list = new ArrayList<>();
+		boolean seq = false;
+
+		if (path.endsWith(clusters_time_header)) {
+			list = readClustersToArray(path);
+			return list;
+		}
+
+		try (Scanner scanner = new Scanner(new File(path))) {
+			while (scanner.hasNextLine()) {
+				// Returns one line with each column value being seperated by a ","
+				String line = scanner.nextLine();
+
+				// Special treatment for this file
+				if (path.endsWith(site_property_data_header)) {
+					// Get the headers from the first line of the file
+					if (firstLine) {
+						String[] words = line.split(",");
+						// The headerLead that will accompany the actual headers
+						headerLead = words[1] + "_Site" + words[3] + "_" + words[5] + "_";
+						firstLine = false;
+						continue; // Continue as you are not going to add this line on its own
+					}
+					lineNum++;
+
+					// Add the header leads to the actual headers (free, bound, etc)
+					if (lineNum == 1) {
+						// Index at , to ignore first column of data (time)
+						line = line.substring(line.indexOf(",")+1);
+						String[] items = line.split(",");
+						line = "";
+						for (String item : items) {
+							line += headerLead + item + ":"; // remove space befo and add : after
+						}
+					} else {
+						// Get rid of the time column by splitting the sentences and removing first word
+						line = line.substring(line.indexOf(",") + 1);
+					}
+					line = line.replace(" ", "").replace(",", "\t");
+					// If blank line, initiate seq mode which starts to append incoming lines onto already made list lines from index 0
+					if (line.equals("")) {
+						seq = true;
+						firstLine = true;
+						lineNum = 0;
+					} else if (seq) {
+						list.set(lineNum - 1, list.get(lineNum - 1) + line);
+					} else {
+						list.add(line);
+					}
+				} else {
+					lineNum += 1;
+					if (!isFirst) {
+						// Get rid of the time aspect on files that are no the isFirst
+						line = line.substring(line.indexOf(",") + 1);
+
+					} else if (lineNum==1){ //IsFirst and lineNum == 1
+						line = "t:" + line.substring(line.indexOf(",") + 1);
+					}
+					if (lineNum == 1) {
+						line = cleanString(line, true);
+					}
+					line = cleanString(line, false);
+					list.add(line);
+				}
+			}
+			return list;
+		}
+	}
+
+	public String cleanString(String line, boolean Num1) {
+		// clean differently based on if the line is part of a header or just numeric data
+		if (Num1) {
+			line = line.trim().replace(" : ", "_").replace(": ", ":").replace(" ", "_").replace(",", ":");
+		} else {
+			line = line.replace(",", "\t");
+		}
+		return line;
+	}
+
+	public ArrayList<String> readClustersToArray(String path) throws FileNotFoundException{
+		File dir = new File(path.substring(0, path.lastIndexOf("\\")));
+		ArrayList<String> array = new ArrayList<>();
+
+		String[] file_paths = dir.list();
+		for (String f: file_paths) {
+			if (f.contains("Clusters_Time_")) {
+				try(Scanner scanner = new Scanner(new File(dir + "\\" + f))) {
+					while (scanner.hasNextLine()) {
+						String line = scanner.nextLine();
+						line = line.replace(",",":");
+						int index = line.indexOf(":");
+						if (!(line.equals(""))) {
+							if (array.size() < 1) {
+								array.add(line.substring(0, index).replace(" ", "_")); //
+								array.add(line.substring(index + 1).trim());
+							} else {
+								array.add(line.substring(index + 1));
+								break;
+							}
+						}
+					}
+				}
+			}
+		}
+		return array;
+	}
 
 /**
  * This method was created in VisualAge.
@@ -951,7 +1135,10 @@ private synchronized File getODEDataFile() throws DataAccessException {
 		throw new DataAccessException("ODE data filename not read from logfile");
 	}
 	File odeFile = amplistorHelper.getFile(dataFilenames[0]);
-	if (odeFile.exists()) {
+
+	if (odeFile.getName().contains("complete. Elapsed time:")) { // Langevin's log file does not really function normally so just check if it is that case by seeing the contents of the log
+		return new File(amplistorHelper.userDirectory + "\\" + vcDataId.getID() + ".ida");
+	} else if (odeFile.exists()) {
 		return odeFile;
 	}
 	throw new DataAccessException("no results are available yet, please wait and try again...");
@@ -1423,7 +1610,7 @@ public synchronized DataIdentifier[] getVarAndFunctionDataIdentifiers(OutputCont
 			throw new DataAccessException(e.getMessage(), e);
 		}
 	}
-	
+
 	if (!isRulesData && !getIsODEData() && !bIsComsol && dataFilenames != null) {
 		// read variables only when I have never read the file since variables don't change
 		if (dataSetIdentifierList.size() == 0) {
@@ -1712,13 +1899,13 @@ private synchronized void readLog(File logFile) throws FileNotFoundException, Da
 		dataFilenames = new String[1];
 		dataFilenames[0] = xxx;
 	}
-	else if (logfileContent.startsWith(SolverDataType.MBSData.name())) 
+	else if (logfileContent.startsWith(SolverDataType.MBSData.name()))
 	{
 		StringTokenizer st = new StringTokenizer(logfileContent);
 		if (st.hasMoreTokens())
 		{
 			st.nextToken(); // skip the first line
-			
+
 			int numTimes = st.countTokens() / 3;
 			dataTimes = new double[numTimes];
 			dataFilenames = new String[numTimes];
@@ -1733,9 +1920,9 @@ private synchronized void readLog(File logFile) throws FileNotFoundException, Da
 				index++;
 			}
 		}
-		indexPDEdataTimes( );
+		indexPDEdataTimes();
 	}
-	else if (logfileContent.startsWith(SolverDataType.COMSOL.name())) 
+	else if (logfileContent.startsWith(SolverDataType.COMSOL.name()))
 	{
 		StringTokenizer st = new StringTokenizer(logfileContent);
 		if (st.hasMoreTokens())
@@ -1819,7 +2006,7 @@ private synchronized void readMesh(File meshFile,File membraneMeshMetricsFile) t
 			meshFileLastModified = lastModified;
 		}
 	}else{
-		throw new FileNotFoundException("mesh file "+meshFile.getPath()+" not found");
+		//throw new FileNotFoundException("mesh file "+meshFile.getPath()+" not found");
 	}
 
 	//

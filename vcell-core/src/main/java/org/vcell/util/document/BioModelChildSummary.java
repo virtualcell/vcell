@@ -43,6 +43,7 @@ public class BioModelChildSummary implements java.io.Serializable {
 		RuleBased("RuleBased"),
 		Stochastic("Stochastic"),
 		Deterministic("Deterministic"),
+		SpringSaLaD("SpringSaLaD"),
 		Unknown("Unknown");
 		
 		private String description = null;

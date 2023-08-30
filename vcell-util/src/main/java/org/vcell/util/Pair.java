@@ -13,8 +13,9 @@
  */
 package org.vcell.util;
 
+import java.io.Serializable;
 
-public class Pair <One, Two> {
+public class Pair <One, Two> implements Serializable {
 	public final One one;
 	public final Two two;
 	

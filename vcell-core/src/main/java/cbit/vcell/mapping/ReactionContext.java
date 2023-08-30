@@ -20,12 +20,14 @@ import java.util.Vector;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.vcell.model.rbm.MolecularType;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
 import org.vcell.util.IssueContext;
 import org.vcell.util.Matchable;
 
+import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
@@ -285,14 +287,25 @@ public synchronized boolean hasListeners(java.lang.String propertyName) {
 	 *   	and the property that has changed.
 	 */
 public void propertyChange(java.beans.PropertyChangeEvent evt) {
-	if (evt.getSource().equals(getModel()) && evt.getPropertyName().equals("reactionSteps")){
+	if (evt.getSource().equals(getModel()) && evt.getPropertyName().equals(Model.PROPERTY_NAME_REACTION_STEPS)) {
 		refreshAll();
 	}
 	if (evt.getSource().equals(getModel()) && evt.getPropertyName().equals(RbmModelContainer.PROPERTY_NAME_REACTION_RULE_LIST)){
 		refreshAll();
 	}
-	if (evt.getSource().equals(getModel()) && evt.getPropertyName().equals("speciesContexts")){
+	if (evt.getSource().equals(getModel()) && evt.getPropertyName().equals(RbmModelContainer.PROPERTY_NAME_MOLECULAR_TYPE_LIST)){
+		;	// do nothing
+	}
+	if (evt.getSource().equals(getModel()) && evt.getPropertyName().equals(Model.PROPERTY_NAME_SPECIES_CONTEXTS)){
 		refreshAll();
+	}
+	if (evt.getSource().equals(getModel()) && evt.getPropertyName().equals(MolecularType.PROPERTY_NAME_COMPONENT_LIST)) {
+		if(evt.getOldValue() instanceof MolecularType) {
+			refreshSpeciesContextSpecs((MolecularType)evt.getOldValue());
+		} else {
+			throw new RuntimeException("evt.getOldValue() must be a MolecularType");
+		}
+
 	}
 }
 
@@ -605,6 +618,19 @@ private void refreshSpeciesContextSpecs() throws MappingException {
 			throw new MappingException(e.getMessage(), e);
 		}
 	}
+	if(Application.SPRINGSALAD == simContext.getApplicationType()) {
+		for(SpeciesContextSpec scs : fieldSpeciesContextSpecs) {
+			scs.initializeForSpringSaLaD(null);
+		}
+	}
+}
+private void refreshSpeciesContextSpecs(MolecularType mt) {
+	if(Application.SPRINGSALAD == simContext.getApplicationType()) {
+		for(SpeciesContextSpec scs : fieldSpeciesContextSpecs) {
+			scs.initializeForSpringSaLaD(mt);
+		}
+	}
+
 }
 
 

@@ -132,7 +132,8 @@ public class XMLTags {
     public final static String VarNameAttrTag = "VarName"; //stoch
     public final static String OperationAttrTag = "Operation"; //stoch
     public final static String StochAttrTag = "Stochastic"; //stoch , used with simulationspec Tag as an attribute
-    public static final String RuleBasedAttrTag = "RuleBased"; //rule-based , used with simulationspec Tag as an attribute
+    public static final String RuleBasedAttrTag = "RuleBased";		// rule-based , used with simulationspec Tag as an attribute
+    public static final String SpringSaLaDAttrTag = "SpringSaLaD";	// springsalad application, used with simulationspec Tag as an attribute
     public final static String ConcentrationAttrTag = "UseConcentration"; //used for stochastic application. store initial condition by concentration or number of particles.
     public final static String RandomizeInitConditionTag = "RandomizeInitCondition"; //used for stochastic application. store boolean for randomizing initial condition
     public final static String InsufficientIterationsTag = "InsufficientIterations"; 		// used for flattening rule based reactions
@@ -849,4 +850,23 @@ public class XMLTags {
 	public final static String RedistributionFrequencyTag = "RedistributionFrequency";
 	public final static String ExtrapolationMethodTag = "ExtrapolationMethod";
 
+	// SpringSaLaD tags
+	public final static String SiteAttributesMapTag = "SiteAttributesMap";
+	public final static String SiteAttributesSpecTag = "SiteAttributesSpec";
+	public final static String SiteRefAttrTag = "SiteRef";
+	public final static String MoleculeRefAttrTag = "MoleculeRef";
+	public final static String SiteLocationRefAttrTag = "LocationRef";
+	public final static String SiteInitialStateRefAttrTag = "InitialStateRef";
+	public final static String SiteRadiusAttrTag = "Radius";
+	public final static String SiteDiffusionAttrTag = "Diffusion";
+	public final static String SiteColorAttrTag = "Color";
+	public final static String SiteLocationTag = "Location";
+	public final static String SiteXAttributeTag = "X";
+	public final static String SiteYAttributeTag = "Y";
+	public final static String SiteZAttributeTag = "Z";
+	public final static String BondLengthAttrTag = "BondLength";
+	public final static String SiteOneRefAttrTag = "SiteOneRef";
+	public final static String SiteTwoRefAttrTag = "SiteTwoRef";
+
+	
 }

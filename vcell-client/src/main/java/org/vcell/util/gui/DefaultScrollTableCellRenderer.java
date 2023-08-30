@@ -38,6 +38,7 @@ import cbit.vcell.client.desktop.biomodel.SelectionManager;
 import cbit.vcell.client.desktop.biomodel.SpatialObjectTableModel;
 import cbit.vcell.client.desktop.biomodel.SpatialProcessTableModel;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.mapping.gui.NetworkConstraintsTableModel;
 import cbit.vcell.mapping.spatial.PointObject;
 import cbit.vcell.mapping.spatial.SpatialObject;
@@ -163,6 +164,9 @@ public class DefaultScrollTableCellRenderer extends DefaultTableCellRenderer {
 					icon = VCellIcons.appStoSpatialIcon;
 		    		toolTipSuffix =  "Stochastic / Spatial";
 				}
+			} else if(simContext.getApplicationType() == Application.SPRINGSALAD) {
+				icon = VCellIcons.appSpringSaLaDSpatialIcon;
+				toolTipSuffix = "SpringSaLaD / Spatial";
 			} else {		// deterministic
 				if(simContext.getGeometry().getDimension() == 0) {
 					icon = VCellIcons.appDetNonspIcon;
@@ -260,6 +264,8 @@ public class DefaultScrollTableCellRenderer extends DefaultTableCellRenderer {
 	}
 	
 	public static void issueRenderer(JLabel renderer, String defaultToolTipText, JTable table, int row, int column, SortTableModel tableModel) {
+		// if the following lists are empty (when they shouldn't), check in tableModel.getIssues() 
+		// if the instanceof the class of the IssueSource is properly filtered in
 		List<Issue> issueListError = tableModel.getIssues(row, column, Issue.Severity.ERROR);
 		List<Issue> issueListWarning = tableModel.getIssues(row, column, Issue.Severity.WARNING);
 		Icon icon = null;

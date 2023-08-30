@@ -25,11 +25,11 @@ import cbit.vcell.parser.ExpressionException;
 
 public class ParticleJumpProcess implements org.vcell.util.Matchable,java.io.Serializable {
 	private String processName = null;
-	private List<ParticleVariable> particles = null;
+	protected List<ParticleVariable> particles = null;
 	private JumpProcessRateDefinition  rateDefinition = null;
-	private List<Action> actions = null;
+	protected List<Action> actions = null;
 //	private ArrayList<ProcessParticleMapping> processParticleMappings = null;
-	private ProcessSymmetryFactor processSymmetryFactor = null;
+	protected ProcessSymmetryFactor processSymmetryFactor = null;
 	
 public static class ProcessSymmetryFactor implements Matchable, Serializable {
 	double factor;

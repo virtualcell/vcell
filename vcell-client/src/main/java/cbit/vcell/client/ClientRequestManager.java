@@ -3273,7 +3273,7 @@ public class ClientRequestManager
 						if (astModel.hasCompartments()) {
 							Structure struct = bioModel.getModel().getStructure(0);
 							if (struct != null) {
-								bioModel.getModel().removeStructure(struct);
+								bioModel.getModel().removeStructure(struct, true);
 							}
 						}
 						BnglObjectConstructionVisitor constructionVisitor = null;
@@ -3437,7 +3437,7 @@ public class ClientRequestManager
 							if (astModel.hasCompartments()) {
 								Structure struct = bioModel.getModel().getStructure(0);
 								if (struct != null) {
-									bioModel.getModel().removeStructure(struct);
+									bioModel.getModel().removeStructure(struct, true);
 								}
 							}
 

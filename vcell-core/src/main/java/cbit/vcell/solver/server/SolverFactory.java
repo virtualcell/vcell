@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.vcell.solver.comsol.ComsolSolver;
+import org.vcell.solver.langevin.LangevinSolver;
 import org.vcell.solver.nfsim.NFSimSolver;
 import org.vcell.solver.smoldyn.SmoldynSolver;
 
@@ -90,6 +91,7 @@ public class SolverFactory {
 		FACTORY.put(SolverDescription.HybridMilAdaptive , (t,d,pwd,m) -> new HybridSolver(t, d,HybridSolver.AdaptiveMilsteinIntegrator,m) ); 
 		FACTORY.put(SolverDescription.Smoldyn, (t,d,pwd,m) -> new SmoldynSolver(t, d,m) ); 
 		FACTORY.put(SolverDescription.NFSim, (t,d,pwd,m) -> new NFSimSolver(t, d,m) ); 
+		FACTORY.put(SolverDescription.Langevin, (t,d,pwd,m) -> new LangevinSolver(t, d,m) ); 
 		FACTORY.put(SolverDescription.MovingBoundary, (t,d,pwd,m) -> new MovingBoundarySolver(t, d,m) ); 
 		FACTORY.put(SolverDescription.Comsol, (t,d,pwd,m) -> new ComsolSolver(t, d) ); 
 	}

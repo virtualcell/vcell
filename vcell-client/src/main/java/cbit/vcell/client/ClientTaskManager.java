@@ -37,7 +37,7 @@ public class ClientTaskManager {
 	
 	public static AsynchClientTask[] newApplication(JComponent tempRequester, final BioModel bioModel, final SimulationContext.Application simContextType) {		
 		
-		AsynchClientTask task0 = new AsynchClientTask("create application", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+		AsynchClientTask task0 = new AsynchClientTask("create application", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {

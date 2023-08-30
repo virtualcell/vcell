@@ -1,13 +1,20 @@
 package org.vcell.model.rbm;
 
+import java.awt.Color;
 import java.util.List;
 
 import org.vcell.model.rbm.SpeciesPattern.Bond;
 import org.vcell.util.Compare;
+import org.vcell.util.Coordinate;
 import org.vcell.util.Displayable;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
+import org.vcell.util.document.Identifiable;
+
+import cbit.vcell.model.Structure;
+import cbit.vcell.parser.Expression;
+
 import org.vcell.util.IssueContext;
 import org.vcell.util.Matchable;
 
@@ -229,5 +236,4 @@ public class MolecularComponentPattern extends RbmElementAbstract implements Mat
 	public String getDisplayType() {
 		return typeName;
 	}
-	
 }

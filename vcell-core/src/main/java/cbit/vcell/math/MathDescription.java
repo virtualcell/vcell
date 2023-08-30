@@ -1913,9 +1913,31 @@ public boolean isNonSpatialStoch() {
 }
 
 
+@Override
 public boolean isRuleBased(){
-	if (particleMolecularTypes.size()>0){
-		return true;
+	if (particleMolecularTypes.size() > 0) {
+		if(!isLangevin()) {	// in math description, isRuleBased() and isLangevin() are mutually exclusive
+			return true;
+		} else {
+			return false;
+		}
+	}
+	return false;
+}
+
+@Override
+public boolean isLangevin() {
+	Enumeration<SubDomain> enum1 = getSubDomains();
+	while (enum1.hasMoreElements()) {
+		SubDomain subDomain = enum1.nextElement();
+		List<ParticleJumpProcess> particleJumpProcesses = subDomain.getParticleJumpProcesses();
+		for(ParticleJumpProcess pjp : particleJumpProcesses) {
+			if(pjp instanceof LangevinParticleJumpProcess) {
+				return true;	// the first jump process instance is enough to decide one way or another
+			} else {
+				return false;
+			}
+		}
 	}
 	return false;
 }
@@ -3508,11 +3530,13 @@ public String toString() {
 
 public MathType getMathType()
 {
-	if (isNonSpatialStoch() || isSpatialStoch() || isSpatialHybrid()){
+	if(isNonSpatialStoch() || isSpatialStoch() || isSpatialHybrid()) {
 		return MathType.Stochastic;
-	} else if (isRuleBased()){
+	} else if(isRuleBased() && !isLangevin()) {
 		return MathType.RuleBased;
-	}else{
+	} else if(isLangevin()) {
+		return MathType.SpringSaLaD;
+	} else {
 		return MathType.Deterministic;
 	}
 }

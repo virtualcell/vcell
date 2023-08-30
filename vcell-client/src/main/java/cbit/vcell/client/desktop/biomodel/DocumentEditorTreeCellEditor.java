@@ -26,6 +26,7 @@ import org.vcell.util.gui.VCellIcons;
 
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SimulationContext.Application;
 
 public class DocumentEditorTreeCellEditor extends DefaultTreeCellEditor {
 
@@ -71,6 +72,10 @@ public class DocumentEditorTreeCellEditor extends DefaultTreeCellEditor {
 						renderer.setClosedIcon(VCellIcons.appStoSpatialIcon);
 						renderer.setLeafIcon(VCellIcons.appStoSpatialIcon);
 					}
+				} else if(sc.getApplicationType() == Application.SPRINGSALAD) {
+					renderer.setOpenIcon(VCellIcons.appSpringSaLaDSpatialIcon);
+					renderer.setClosedIcon(VCellIcons.appSpringSaLaDSpatialIcon);
+					renderer.setLeafIcon(VCellIcons.appSpringSaLaDSpatialIcon);
 				} else {		// deterministic
 					if(sc.getGeometry().getDimension() == 0) {
 						renderer.setOpenIcon(VCellIcons.appDetNonspIcon);

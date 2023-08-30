@@ -22,6 +22,8 @@ public interface ProblemRequirements {
 	
 	public abstract boolean isRuleBased();
 	
+	public abstract boolean isLangevin();
+	
 	public abstract boolean isMovingMembrane();
 
 	/**

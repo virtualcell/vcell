@@ -39,6 +39,7 @@ import org.vcell.util.gui.exporter.ExtensionFilter;
 import org.vcell.util.gui.exporter.FileFilters;
 import org.vcell.util.gui.exporter.SbmlExtensionFilter;
 import org.vcell.util.gui.exporter.SelectorExtensionFilter;
+import org.vcell.util.gui.exporter.SpringSaLaDExtensionFilter;
 import org.vcell.util.gui.exporter.SelectorExtensionFilter.Selector;
 
 import cbit.vcell.biomodel.BioModel;
@@ -223,6 +224,7 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 		*/
 		fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SEDML);
 		fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_OMEX);
+		fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SPRINGSALAD);
 
 	} else {
 		defaultFileFilter = forceFileFilter;
@@ -263,6 +265,15 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 	checkForOverwrites(selectedFile, topLevelWindowManager.getComponent(), userPreferences);
 	// put the filter in the hash so the export task knows what to do...
 	hashTable.put(FILE_FILTER, fileFilter);
+	if(fileFilter instanceof SpringSaLaDExtensionFilter && bioModel.getSimulationContexts().length > 0) {
+		if (fileFilter.requiresMoreChoices()) {
+			SimulationContext sc = bioModel.getSimulationContexts()[0];
+			ExtensionFilter.ChooseContext ctx = new ExtensionFilter.ChooseContext(hashTable,topLevelWindowManager,currentWindow,sc,selectedFile,selectedFileName);
+			fileFilter.askUser(ctx);
+		}
+		resetPreferredFilePath(selectedFile, userPreferences);
+		return selectedFile;
+	}
 	if (fileFilter.supports(SelectorExtensionFilter.Selector.FULL_MODEL)) {
 		// nothing more to do in this case
 		if (fileFilter.requiresMoreChoices()) {
