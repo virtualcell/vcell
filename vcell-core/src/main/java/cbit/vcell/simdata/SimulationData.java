@@ -20,6 +20,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -973,10 +974,11 @@ public synchronized ODEDataBlock getODEDataBlock() throws DataAccessException, I
 	 * @param localSimDir: The path to the temp folder which contains logs and outputs
 	 * @param vcDataId : The current simulation Job ID
 	 */
-	public void writeIdaFile (String dataDir, String localSimDir, String vcDataId) throws IOException {
-		int cluster_time = 0;
+	public void writeIdaFile(String dataDir, String localSimDir, String vcDataId) throws IOException {
+//		int cluster_time = 0;
 		// Initialize .ida file
-		FileWriter writer = new FileWriter( localSimDir + "\\" + vcDataId + LANGEVIN_OUTPUT_FILE_EXTENSION, false);
+		String path = Paths.get(localSimDir, vcDataId + LANGEVIN_OUTPUT_FILE_EXTENSION).toString();
+		FileWriter writer = new FileWriter(path, false);
 
 		// Create a list with all the paths of all wanted csv files
 		String[] paths = new String[]{dataDir + full_bond_count_header, dataDir + full_count_header,dataDir + full_state_count_header, dataDir + site_property_data_header, dataDir + clusters_time_header};
@@ -1097,14 +1099,16 @@ public synchronized ODEDataBlock getODEDataBlock() throws DataAccessException, I
 		return line;
 	}
 
-	public ArrayList<String> readClustersToArray(String path) throws FileNotFoundException{
-		File dir = new File(path.substring(0, path.lastIndexOf("\\")));
+	public ArrayList<String> readClustersToArray(String path) throws FileNotFoundException {
+		
+		File full = new File(path);
+		File dir = new File(full.getParent());
 		ArrayList<String> array = new ArrayList<>();
 
 		String[] file_paths = dir.list();
 		for (String f: file_paths) {
 			if (f.contains("Clusters_Time_")) {
-				try(Scanner scanner = new Scanner(new File(dir + "\\" + f))) {
+				try(Scanner scanner = new Scanner(new File(dir, f))) {
 					while (scanner.hasNextLine()) {
 						String line = scanner.nextLine();
 						line = line.replace(",",":");
@@ -1137,7 +1141,7 @@ private synchronized File getODEDataFile() throws DataAccessException {
 	File odeFile = amplistorHelper.getFile(dataFilenames[0]);
 
 	if (odeFile.getName().contains("complete. Elapsed time:")) { // Langevin's log file does not really function normally so just check if it is that case by seeing the contents of the log
-		return new File(amplistorHelper.userDirectory + "\\" + vcDataId.getID() + ".ida");
+		return new File(amplistorHelper.userDirectory, vcDataId.getID() + ".ida");
 	} else if (odeFile.exists()) {
 		return odeFile;
 	}
