@@ -22,6 +22,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.Vector;
 
 import org.apache.commons.lang3.mutable.Mutable;
@@ -121,6 +123,7 @@ import cbit.vcell.mapping.MicroscopeMeasurement;
 import cbit.vcell.mapping.MicroscopeMeasurement.ConvolutionKernel;
 import cbit.vcell.mapping.MicroscopeMeasurement.GaussianConvolutionKernel;
 import cbit.vcell.mapping.MicroscopeMeasurement.ProjectionZKernel;
+import cbit.vcell.mapping.MolecularInternalLinkSpec;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.mapping.ParameterContext.ParameterRoleEnum;
 import cbit.vcell.mapping.RateRule;
@@ -130,6 +133,7 @@ import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.mapping.SimulationContext.SimulationContextParameter;
+import cbit.vcell.mapping.SiteAttributesSpec;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.mapping.TotalCurrentClampStimulus;
@@ -1829,17 +1833,16 @@ private Element getXML(FieldDataSymbol fds, ModelUnitSystem modelUnitSystem) {
 	<LocalizedCompoundSpec LocalizedCompoundRef="MT0" ForceConstant="false" WellMixed="false" ForceContinuous="false">
 		<InitialConcentration>0.0</InitialConcentration>
 		<Diffusion>10.0</Diffusion>
-		<SiteAttributesMap>
-			<SiteAttributesSpec SiteRef="Site0" MoleculeRef="MT0" LocationRef="Intracellular" InitialStateRef="state0" Radius="1.0" Diffusion="1.0" Color="RED">
-				<Location X="2.0" Y="1.0" Z="1.0" />
-			</SiteAttributesSpec>
-			<SiteAttributesSpec SiteRef="Anchor" MoleculeRef="MT0" LocationRef="Membrane" InitialStateRef="anchor" Radius="1.0" Diffusion="1.0" Color="RED">
-				<Location X="1.0" Y="1.0" Z="1.0" />
-			</SiteAttributesSpec>
-		</SiteAttributesMap>
-		<InternalLinkSet>
-			<InternalLinkSpec MoleculeRef="MT0" SiteOneRef="Anchor" SiteTwoRef="Site0" />
-		<InternalLinkSet>
+
+		<SiteAttributesSpec SiteRef="Site0" MoleculeRef="MT0" LocationRef="Intracellular" InitialStateRef="state0" Radius="1.0" Diffusion="1.0" Color="RED">
+			<Location X="2.0" Y="1.0" Z="1.0" />
+		</SiteAttributesSpec>
+		<SiteAttributesSpec SiteRef="Anchor" MoleculeRef="MT0" LocationRef="Membrane" InitialStateRef="anchor" Radius="1.0" Diffusion="1.0" Color="RED">
+			<Location X="1.0" Y="1.0" Z="1.0" />
+		</SiteAttributesSpec>
+
+		<InternalLinkSpec MoleculeRef="MT0" SiteOneRef="Anchor" SiteTwoRef="Site0" />
+
 	</LocalizedCompoundSpec>
 	<ReactionRuleSpecs>
 		<ReactionRuleSpec ReactionRuleRef="r0" ReactionRuleMapping="included" BondLength="1.0" />
@@ -1882,6 +1885,50 @@ private Element getXML(SpeciesContextSpec param) {
 		diffusion.addContent(mangleExpression(diffRate));
 		speciesContextSpecElement.addContent(diffusion);
 	}
+	
+	// SpringSaLaD specific stuff
+	// the producer is dumb, we save whatever we have; the reader may be smart and check for consistency, maybe initialize what's missing with defaults?
+	if(param.getInternalLinkSet() != null && param.getInternalLinkSet().size() > 0 ) {
+		for(MolecularInternalLinkSpec mils : param.getInternalLinkSet()) {
+			SpeciesContext sc = param.getSpeciesContext();
+			SpeciesPattern sp = sc.getSpeciesPattern();
+			if(sp == null || sp.getMolecularTypePatterns().size() != 1) {
+				break;	// the species pattern must refer to exactly one molecule, links are intramollecular only
+				// throw new IllegalArgumentException("The species pattern must contain exactly one molecule.");
+			}
+			MolecularTypePattern mtp = sp.getMolecularTypePatterns().get(0);	// the one and only
+			MolecularType mt = mtp.getMolecularType();
+			
+			Element milsElement = new Element(XMLTags.InternalLinkSpecTag);
+			milsElement.setAttribute(XMLTags.MoleculeRefAttrTag, mt.getName());
+			milsElement.setAttribute(XMLTags.SiteOneRefAttrTag, mils.getMolecularComponentPatternOne().getMolecularComponent().getName());
+			milsElement.setAttribute(XMLTags.SiteTwoRefAttrTag, mils.getMolecularComponentPatternTwo().getMolecularComponent().getName());
+			speciesContextSpecElement.addContent(milsElement);
+		}
+	}
+	if(param.getSiteAttributesMap() != null && param.getSiteAttributesMap().size() > 0) {
+		for (Entry<MolecularComponentPattern, SiteAttributesSpec> entry : param.getSiteAttributesMap().entrySet()) {
+			SpeciesContext sc = param.getSpeciesContext();
+			SpeciesPattern sp = sc.getSpeciesPattern();
+			if(sp == null || sp.getMolecularTypePatterns().size() != 1) {
+				break;	// the species pattern must refer to exactly one molecule, links are intramollecular only
+				// throw new IllegalArgumentException("The species pattern must contain exactly one molecule.");
+			}
+			MolecularTypePattern mtp = sp.getMolecularTypePatterns().get(0);	// the one and only
+			MolecularType mt = mtp.getMolecularType();
+
+			MolecularComponentPattern mcp = entry.getKey();
+			SiteAttributesSpec sas = entry.getValue();
+			Element sasElement = new Element(XMLTags.SiteAttributesSpecTag);
+			sasElement.setAttribute(XMLTags.SiteRefAttrTag, mcp.getMolecularComponent().getName());
+			sasElement.setAttribute(XMLTags.MoleculeRefAttrTag, mt.getName());
+			// TODO: add more attributes
+			
+			speciesContextSpecElement.addContent(sasElement);
+		}
+	}
+	
+	
 	// write BoundaryConditions
 	cbit.vcell.parser.Expression exp;
 	Element boundaries = new Element(XMLTags.BoundariesTag);
