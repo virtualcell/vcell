@@ -856,14 +856,12 @@ public class XMLTags {
 	public final static String SiteRefAttrTag = "SiteRef";
 	public final static String MoleculeRefAttrTag = "MoleculeRef";
 	public final static String SiteLocationRefAttrTag = "SiteLocationRef";
-	public final static String SiteInitialStateRefAttrTag = "SiteInitialStateRef";
 	public final static String SiteRadiusAttrTag = "SiteRadius";
 	public final static String SiteDiffusionAttrTag = "SiteDiffusion";
 	public final static String SiteColorAttrTag = "SiteColor";
-	public final static String SiteLocationTag = "SiteLocation";
-	public final static String SiteXAttributeTag = "SiteX";
-	public final static String SiteYAttributeTag = "SiteY";
-	public final static String SiteZAttributeTag = "SiteZ";
+	public final static String SiteCoordXAttrTag = "SiteCoordX";
+	public final static String SiteCoordYAttrTag = "SiteCoordY";
+	public final static String SiteCoordZAttrTag = "SiteCoordZ";
 	public final static String BondLengthAttrTag = "BondLength";
 	
 	public final static String InternalLinkSpecTag = "internallinkSpec";

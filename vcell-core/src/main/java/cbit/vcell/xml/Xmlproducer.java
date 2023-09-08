@@ -33,6 +33,8 @@ import org.apache.logging.log4j.Logger;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.Namespace;
+import org.jdom.output.Format;
+import org.jdom.output.XMLOutputter;
 import org.sbpax.schemas.util.DefaultNameSpaces;
 import org.vcell.chombo.ChomboSolverSpec;
 import org.vcell.chombo.RefinementRoi;
@@ -1834,12 +1836,10 @@ private Element getXML(FieldDataSymbol fds, ModelUnitSystem modelUnitSystem) {
 		<InitialConcentration>0.0</InitialConcentration>
 		<Diffusion>10.0</Diffusion>
 
-		<SiteAttributesSpec SiteRef="Site0" MoleculeRef="MT0" LocationRef="Intracellular" InitialStateRef="state0" Radius="1.0" Diffusion="1.0" Color="RED">
-			<Location X="2.0" Y="1.0" Z="1.0" />
-		</SiteAttributesSpec>
-		<SiteAttributesSpec SiteRef="Anchor" MoleculeRef="MT0" LocationRef="Membrane" InitialStateRef="anchor" Radius="1.0" Diffusion="1.0" Color="RED">
-			<Location X="1.0" Y="1.0" Z="1.0" />
-		</SiteAttributesSpec>
+		<SiteAttributesSpec SiteRef="Site0" MoleculeRef="MT0" SiteLocationRefAttrTag="Intracellular" Radius="1.0" Diffusion="1.0" Color="RED"
+			SiteCoordX="1.0" SiteCoordZ="1.0" SiteCoordZ="1.0" />
+		<SiteAttributesSpec SiteRef="Anchor" MoleculeRef="MT0" SiteLocationRefAttrTag="Membrane" Radius="1.0" Diffusion="1.0" Color="RED"
+			SiteCoordX="1.0" SiteCoordZ="1.0" SiteCoordZ="1.0" />
 
 		<InternalLinkSpec MoleculeRef="MT0" SiteOneRef="Anchor" SiteTwoRef="Site0" />
 
@@ -1922,12 +1922,19 @@ private Element getXML(SpeciesContextSpec param) {
 			Element sasElement = new Element(XMLTags.SiteAttributesSpecTag);
 			sasElement.setAttribute(XMLTags.SiteRefAttrTag, mcp.getMolecularComponent().getName());
 			sasElement.setAttribute(XMLTags.MoleculeRefAttrTag, mt.getName());
-			// TODO: add more attributes
-			
+			sasElement.setAttribute(XMLTags.SiteLocationRefAttrTag, sas.getLocation().getName());
+			sasElement.setAttribute(XMLTags.SiteCoordXAttrTag, Double.toString(sas.getCoordinate().getX()));
+			sasElement.setAttribute(XMLTags.SiteCoordYAttrTag, Double.toString(sas.getCoordinate().getX()));
+			sasElement.setAttribute(XMLTags.SiteCoordZAttrTag, Double.toString(sas.getCoordinate().getX()));
+			sasElement.setAttribute(XMLTags.SiteRadiusAttrTag, Double.toString(sas.getRadius()));
+			sasElement.setAttribute(XMLTags.SiteDiffusionAttrTag, Double.toString(sas.getDiffusionRate()));
+			sasElement.setAttribute(XMLTags.SiteColorAttrTag, sas.getColor().getName());
 			speciesContextSpecElement.addContent(sasElement);
 		}
 	}
-	
+	XMLOutputter outp = new XMLOutputter(Format.getPrettyFormat());
+	String sout = outp.outputString(speciesContextSpecElement);
+	System.out.println(sout);
 	
 	// write BoundaryConditions
 	cbit.vcell.parser.Expression exp;
