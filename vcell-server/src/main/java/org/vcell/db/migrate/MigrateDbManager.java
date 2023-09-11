@@ -179,10 +179,14 @@ public class MigrateDbManager {
 							Object lob_object = rset_from.getObject(i+1);
 							if(!rset_from.wasNull()){
 								if (lob_object instanceof java.sql.Blob) {
-									java.sql.Blob blob_object = (java.sql.Blob) lob_object;
-									byte[] bytes = blob_object.getBytes((long) 1, (int) blob_object.length());
-									stmt_to.setBytes(i+1, bytes);
-									found = true;
+									try {
+										java.sql.Blob blob_object = (java.sql.Blob) lob_object;
+										byte[] bytes = blob_object.getBytes((long) 1, (int) blob_object.length());
+										stmt_to.setBytes(i + 1, bytes);
+										found = true;
+									} finally {
+										((java.sql.Blob) lob_object).free();
+									}
 								}
 							}
 							if (!found){
@@ -204,6 +208,8 @@ public class MigrateDbManager {
 										found = true;
 									} catch (IOException e) {
 										e.printStackTrace();
+									} finally {
+										clob_object.free();
 									}
 								}
 							}
