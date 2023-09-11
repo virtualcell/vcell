@@ -1,0 +1,23 @@
+##---------------------------------------------
+##  /home/zeke/.vcell/simdata/temp/SimID_1115478432_0_.functions
+##---------------------------------------------
+
+Cyt::J_IP3_PHGFP; ((10.0 * PH_GFP_Cyt * IP3_Cyt) - IP3_PHGFP_Cyt); ; Volume_VariableType; false
+Cyt_EC_membrane::J_PIP2_PH; ((0.12 * PH_GFP_Cyt * PIP2_PM) - (0.24 * PIP2_PHGFP_PM)); ; Membrane_VariableType; false
+Cyt::J_r2; ((t > 5.0) && (t < 6.0)); ; Volume_Region_VariableType; false
+Cyt_EC_membrane::KFlux_PM_Cyt; 1.0; ; Membrane_Region_VariableType; false
+Cyt::Kr_IP3_PHGFP; 1.0; ; Volume_Region_VariableType; false
+Cyt_EC_membrane::Kr_PIP2_PH; 0.24; ; Membrane_Region_VariableType; false
+Cyt::Size_Cyt; vcRegionVolume('Cyt'); ; Volume_Region_VariableType; false
+EC::Size_EC; vcRegionVolume('EC'); ; Volume_Region_VariableType; false
+Cyt_Nuc_membrane::Size_NM; vcRegionArea('Cyt_Nuc_membrane'); ; Membrane_Region_VariableType; false
+Nuc::Size_Nuc; vcRegionVolume('Nuc'); ; Volume_Region_VariableType; false
+Cyt_EC_membrane::Size_PM; vcRegionArea('Cyt_EC_membrane'); ; Membrane_Region_VariableType; false
+Cyt_EC_membrane::sobj_Cyt1_EC0_size; vcRegionArea('Cyt_EC_membrane'); ; Membrane_Region_VariableType; false
+Cyt_Nuc_membrane::sobj_Nuc2_Cyt1_size; vcRegionArea('Cyt_Nuc_membrane'); ; Membrane_Region_VariableType; false
+Cyt::Stim; ((t > 5.0) && (t < 6.0)); ; Volume_Region_VariableType; false
+Cyt::Stim_init_uM; ((t > 5.0) && (t < 6.0)); ; Volume_Region_VariableType; false
+Cyt::vobj_Cyt1_size; vcRegionVolume('Cyt'); ; Volume_Region_VariableType; false
+EC::vobj_EC0_size; vcRegionVolume('EC'); ; Volume_Region_VariableType; false
+Nuc::vobj_Nuc2_size; vcRegionVolume('Nuc'); ; Volume_Region_VariableType; false
+

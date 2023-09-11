@@ -15,6 +15,7 @@ import java.util.HashMap;
     https://github.com/saalfeldlab/n5-ij/wiki/N5-Metadata-Dialects
     Dataset has to already be made, then use the N5FSWriter to add attributes to it, using some sort of hash map with all of the required attributes
 
+    The units vary between different variables so need to ask someone about this??
 
 
     pixelWidth: number (float)
@@ -23,7 +24,7 @@ import java.util.HashMap;
  */
 public class N5MetaData {
     //https://github.com/saalfeldlab/n5-ij/wiki/TranslateMetadata#setscale2d
-    public static void imageJMetaData(N5FSWriter n5FSWriter, String datasetPath, VCData vcData) throws MathException, DataAccessException {
+    public static void imageJMetaData(N5FSWriter n5FSWriter, String datasetPath, VCData vcData, int numChannels) throws MathException, DataAccessException {
         HashMap<String, Object> metaData = new HashMap<>();
         metaData.put("name", "TestName");
         metaData.put("fps", 0.0);
@@ -34,10 +35,10 @@ public class N5MetaData {
         metaData.put("xOrigin", 0.0);
         metaData.put("yOrigin", 0.0);
         metaData.put("zOrigin", 0.0);
-        metaData.put("numChannels", 1); //
+        metaData.put("numChannels", numChannels); //
         metaData.put("numSlices", vcData.getMesh().getSizeZ());
         metaData.put("numFrames", vcData.getDataTimes().length);
-        metaData.put("type", 0); //https://imagej.nih.gov/ij/developer/api/ij/ij/ImagePlus.html#getType()
+        metaData.put("type", 2); //https://imagej.nih.gov/ij/developer/api/ij/ij/ImagePlus.html#getType() Grayscale with float types
         metaData.put("unit", "uM"); //https://imagej.nih.gov/ij/developer/api/ij/ij/measure/Calibration.html#getUnit()
         metaData.put("properties", new HashMap<>());
 

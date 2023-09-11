@@ -13,10 +13,6 @@ import com.google.gson.GsonBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.janelia.saalfeldlab.n5.*;
-import org.janelia.saalfeldlab.n5.hdf5.N5HDF5Reader;
-import org.janelia.saalfeldlab.n5.hdf5.N5HDF5Writer;
-import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.factory.Nd4j;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
@@ -61,12 +57,15 @@ public class N5Exporter implements ExportConstants {
         String twoDImage = "2132749480";
         String twoDDomain = "L";
         String threeDDomain = "IP3_Cyt";
-        new N5Exporter().exportToN5("/home/zeke/.vcell/simdata/temp", threeDImage, "/home/zeke/Downloads/fullTest.n5");
+        ArrayList<String> species = new ArrayList<>(Arrays.asList("IP3_Cyt"));
+        VCData vcData = N5Exporter.getVCData("/home/zeke/.vcell/simdata/temp", threeDImage);
+        N5Exporter.exportToN5(vcData, "/home/zeke/Downloads/fullTest.n5", species);
     }
 
-    public void exportToN5(String dataDir, String simKeyID, String outPutDir) throws MathException, DataAccessException, IOException {
-        VCData vcData = this.getVCData(dataDir, simKeyID);
+    //intake the variables people want, don't just take them all
+    public static void exportToN5(VCData vcData, String outPutDir, ArrayList<String> species) throws MathException, DataAccessException, IOException {
         double[] allTimes = vcData.getDataTimes();
+
 
         // output context expects a list of annotated functions, vcData seems to already have a set of annotated functions
 
@@ -81,18 +80,37 @@ public class N5Exporter implements ExportConstants {
         ArrayList<DataIdentifier> volumeDataIDs = new ArrayList<>();
         ArrayList<DataIdentifier> otherDataIDs = new ArrayList<>();
 
+        // need a better way to determine if the variable has simData that can be visually represented, all of these syscalls
+        // take a lot of time, also just need a more accurate metric for filtering the different data ID's
+        // I know N5 can handle unlimited channels, so the error being thrown must be for some reason
+
+        // Can be the variable just shouldn't be represented in the dataset and is a mistake
+        // Can be the way the data is chunked, it being too granular with time and channels, overwhelming N5 file reading
+
+        // All variables can be visually represented, its just that some have its data already computed, and others are derived
+        // from that data, so if we want to visualize that data we need to compute the results.
+
+
+        // according to Jim what should happen is that the VCdata should automatically derive the data for me since it knows everything
+        // and the only reason why this wouldn't work is due to some misconfiguration, but what is that misconfig
         for (DataIdentifier dataIdentifier : dataIdentifiers) {
-            try {
-                vcData.getSimDataBlock(outputContext, dataIdentifier.getName(), allTimes[0]);
-                if (dataIdentifier.getVariableType().equals(VariableType.VOLUME)) {
-                    volumeDataIDs.add(dataIdentifier);
-                } else {
-                    otherDataIDs.add(dataIdentifier);
-                }
+            if (species.contains(dataIdentifier.getName())){
+                AnnotatedFunction annotatedFunction;
+
+
+                volumeDataIDs.add(dataIdentifier);
             }
-            catch (Exception e){
+            else {
                 otherDataIDs.add(dataIdentifier);
             }
+//            try {
+//                vcData.getSimDataBlock(outputContext, dataIdentifier.getName(), allTimes[0]);
+//                volumeDataIDs.add(dataIdentifier);
+//
+//            }
+//            catch (Exception e){
+//                otherDataIDs.add(dataIdentifier);
+//            }
         }
 
 
@@ -103,7 +121,7 @@ public class N5Exporter implements ExportConstants {
         long[] dimensions = {vcData.getMesh().getSizeX(), vcData.getMesh().getSizeY(), numChannels, vcData.getMesh().getSizeZ(), numTimes};
         // 51X, 51Y, 1Z, 1C, 2T
         int[] blockSize = {vcData.getMesh().getSizeX(), vcData.getMesh().getSizeY(), 1, vcData.getMesh().getSizeZ(), 1};
-        String dataSet = "DataSet";
+        String dataSet = vcData.getResultsInfoObject().getDataKey().toString() + " 2 " + vcData.getResultsInfoObject().getID();
 
 
 
@@ -111,7 +129,7 @@ public class N5Exporter implements ExportConstants {
         RawCompression rawCompression = new RawCompression();
         DatasetAttributes datasetAttributes = new DatasetAttributes(dimensions, blockSize, org.janelia.saalfeldlab.n5.DataType.FLOAT64, rawCompression);
         n5FSWriter.createDataset(dataSet, datasetAttributes);
-        N5MetaData.imageJMetaData(n5FSWriter, dataSet, vcData);
+        N5MetaData.imageJMetaData(n5FSWriter, dataSet, vcData, numChannels);
 
 
 
@@ -125,7 +143,7 @@ public class N5Exporter implements ExportConstants {
 
     }
 
-    public VCData getVCData(String dataDir, String simKeyID) throws IOException, DataAccessException {
+    public static VCData getVCData(String dataDir, String simKeyID) throws IOException, DataAccessException {
         PropertyLoader.loadProperties();
 
         // tell where installation is
@@ -144,10 +162,17 @@ public class N5Exporter implements ExportConstants {
         // Point a data controller to the directory where the sim data is and use the vcdID to retrieve information regarding the sim
         Cachetable cachetable = new Cachetable(10 * Cachetable.minute, 1000000L);
         DataSetControllerImpl dataSetControllerImpl = new DataSetControllerImpl(cachetable, new File(dataDir), null);
-        double[] allTimes = dataSetControllerImpl.getDataSetTimes(vcdID);
 
         // get dataset identifier from the simulation
 
         return dataSetControllerImpl.getVCData(vcdID);
+    }
+
+    public Double dataDeriveration(){
+        return null;
+    }
+
+    public Double[] unitConversion(){
+        return null;
     }
 }
