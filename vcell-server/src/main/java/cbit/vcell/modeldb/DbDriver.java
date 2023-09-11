@@ -1101,6 +1101,8 @@ protected final static Object getLOB(ResultSet rset,Field column,DatabaseSyntax 
 				return blob_object.getBytes((long) 1, (int) blob_object.length());
 			}catch(Exception e){
 				throw new DataAccessException(e.toString());
+			}finally {
+				blob_object.free();
 			}
 		//If its a CLOB return a String
 		} else
@@ -1111,6 +1113,8 @@ protected final static Object getLOB(ResultSet rset,Field column,DatabaseSyntax 
 					clob_object.getAsciiStream().read(ins);
 				} catch (Exception e) {
 					throw new DataAccessException(e.toString());
+				}finally {
+					clob_object.free();
 				}
 				return new String(ins);
 			}
