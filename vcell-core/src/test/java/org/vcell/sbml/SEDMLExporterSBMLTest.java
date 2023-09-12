@@ -89,11 +89,11 @@ public class SEDMLExporterSBMLTest extends SEDMLExporterCommon {
 		faults.put("biomodel_145545992.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_148700996.vcml", SEDML_FAULT.MATH_OVERRIDE_NAMES_DIFFERENT); // simulation 'Full sim' in simContext 'Fast B Compartmental'
 		faults.put("biomodel_154961582.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
-		faults.put("biomodel_155016832.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
+//		faults.put("biomodel_155016832.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_156134818.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_16763273.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_16804037.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
-		faults.put("biomodel_168717401.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
+//		faults.put("biomodel_168717401.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_169993006.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_17098642.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_17257105.vcml", SEDML_FAULT.MATH_OVERRIDE_NAMES_DIFFERENT);  // simulation '1 uM iso' in simContext 'compartmental'
@@ -185,7 +185,7 @@ public class SEDMLExporterSBMLTest extends SEDMLExporterCommon {
 //				new TestCase("biomodel_40882931.vcml", ModelFormat.SBML),
 //				new TestCase("biomodel_40883509.vcml", ModelFormat.SBML),
 //				new TestCase("biomodel_65311813.vcml", ModelFormat.SBML),
-//				new TestCase("biomodel_82065439.vcml", ModelFormat.SBML)
+//				new TestCase("biomodel_155016832.vcml", ModelFormat.SBML)
 //				);
 	}
 
