@@ -95,9 +95,6 @@ public class N5Exporter implements ExportConstants {
         // and the only reason why this wouldn't work is due to some misconfiguration, but what is that misconfig
         for (DataIdentifier dataIdentifier : dataIdentifiers) {
             if (species.contains(dataIdentifier.getName())){
-                AnnotatedFunction annotatedFunction;
-
-
                 volumeDataIDs.add(dataIdentifier);
             }
             else {
@@ -118,10 +115,10 @@ public class N5Exporter implements ExportConstants {
 
         int numChannels = volumeDataIDs.size();
         int numTimes = allTimes.length;
-        long[] dimensions = {vcData.getMesh().getSizeX(), vcData.getMesh().getSizeY(), numChannels, vcData.getMesh().getSizeZ(), numTimes};
+        long[] dimensions = {vcData.getMesh().getSizeX(), vcData.getMesh().getSizeY(), numTimes, vcData.getMesh().getSizeZ(), numChannels};
         // 51X, 51Y, 1Z, 1C, 2T
         int[] blockSize = {vcData.getMesh().getSizeX(), vcData.getMesh().getSizeY(), 1, vcData.getMesh().getSizeZ(), 1};
-        String dataSet = vcData.getResultsInfoObject().getDataKey().toString() + " 2 " + vcData.getResultsInfoObject().getID();
+        String dataSet = vcData.getResultsInfoObject().getDataKey().toString() + vcData.getResultsInfoObject().getID();
 
 
 
