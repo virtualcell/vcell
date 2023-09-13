@@ -72,6 +72,7 @@ import cbit.vcell.desktop.GeometryMetaDataPanel;
 import cbit.vcell.desktop.MathModelMetaDataPanel;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mathmodel.MathModel;
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.xml.gui.MiriamTreeModel.LinkNode;
 /**
  * Insert the type's description here.
@@ -720,7 +721,10 @@ private void construcutPopupMenu() {
 			addNewAppMenu.add(addNewAppDeterministicMenuItem);
 			addNewAppMenu.add(addNewAppStochasticMenuItem);
 			addNewAppMenu.add(addNewAppRulebasedMenuItem);
-			addNewAppMenu.add(addNewAppSpringSaLaDMenuItem);
+			String enableSpringSaLaD = PropertyLoader.getProperty(PropertyLoader.enableSpringSaLaD, "false");
+			if("true".equals(enableSpringSaLaD)) {
+				addNewAppMenu.add(addNewAppSpringSaLaDMenuItem);
+			}
 		}
 		popupMenu.add(addNewAppMenu);
 	}
