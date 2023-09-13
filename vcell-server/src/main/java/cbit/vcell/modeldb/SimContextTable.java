@@ -315,7 +315,7 @@ public static String getAppComponentsForDatabase(SimulationContext simContext) {
 	// ReactionRuleSpecs
 	ReactionRuleSpec[] reactionRuleSpecs = simContext.getReactionContext().getReactionRuleSpecs();
 	if (reactionRuleSpecs != null && reactionRuleSpecs.length > 0){
-		Element reactionRuleSpecsElement = xmlProducer.getXML(reactionRuleSpecs);
+		Element reactionRuleSpecsElement = xmlProducer.getXML(reactionRuleSpecs, simContext);
 		appComponentsElement.addContent(reactionRuleSpecsElement);
 	}
 

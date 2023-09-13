@@ -855,18 +855,22 @@ public class XMLTags {
 	public final static String SiteAttributesSpecTag = "SiteAttributesSpec";
 	public final static String SiteRefAttrTag = "SiteRef";
 	public final static String MoleculeRefAttrTag = "MoleculeRef";
-	public final static String SiteLocationRefAttrTag = "LocationRef";
-	public final static String SiteInitialStateRefAttrTag = "InitialStateRef";
-	public final static String SiteRadiusAttrTag = "Radius";
-	public final static String SiteDiffusionAttrTag = "Diffusion";
-	public final static String SiteColorAttrTag = "Color";
-	public final static String SiteLocationTag = "Location";
-	public final static String SiteXAttributeTag = "X";
-	public final static String SiteYAttributeTag = "Y";
-	public final static String SiteZAttributeTag = "Z";
-	public final static String BondLengthAttrTag = "BondLength";
+	public final static String SiteLocationRefAttrTag = "SiteLocationRef";
+	public final static String SiteRadiusAttrTag = "SiteRadius";
+	public final static String SiteDiffusionAttrTag = "SiteDiffusion";
+	public final static String SiteColorAttrTag = "SiteColor";
+	public final static String SiteCoordXAttrTag = "SiteCoordX";
+	public final static String SiteCoordYAttrTag = "SiteCoordY";
+	public final static String SiteCoordZAttrTag = "SiteCoordZ";
+	
+	public final static String InternalLinkSpecTag = "InternalLinkSpec";
 	public final static String SiteOneRefAttrTag = "SiteOneRef";
 	public final static String SiteTwoRefAttrTag = "SiteTwoRef";
+
+	public final static String BondLengthAttrTag = "BondLength";
+	public final static String SubTypeAttrTag = "SubType";
+	public final static String TransitionConditionAttrTag = "TransitionCondition";
+	
 
 	
 }
