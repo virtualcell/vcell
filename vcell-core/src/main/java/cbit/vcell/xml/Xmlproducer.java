@@ -19,6 +19,7 @@ import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -128,6 +129,7 @@ import cbit.vcell.mapping.MicroscopeMeasurement.ProjectionZKernel;
 import cbit.vcell.mapping.MolecularInternalLinkSpec;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.mapping.ParameterContext.ParameterRoleEnum;
+import cbit.vcell.mapping.ReactionRuleSpec.TransitionCondition;
 import cbit.vcell.mapping.RateRule;
 import cbit.vcell.mapping.ReactionContext;
 import cbit.vcell.mapping.ReactionRuleSpec;
@@ -1498,8 +1500,8 @@ private Element getXML(ReactionContext param) {
 	}
 	//Add ReactionRuleSpecs
 	ReactionRuleSpec[] reactionRuleArray = param.getReactionRuleSpecs();
-	if (reactionRuleArray.length>0){
-		reactioncontext.addContent( getXML(reactionRuleArray) );
+	if (reactionRuleArray.length>0) {
+		reactioncontext.addContent( getXML(reactionRuleArray, param.getSimulationContext()) );
 	}
 	
 	return reactioncontext;
@@ -1523,13 +1525,28 @@ private Element getXML(ReactionSpec param) {
 }
 
 //For rateRules in SimulationContext
-public Element getXML(ReactionRuleSpec[] reactionRuleSpecs) {
+public Element getXML(ReactionRuleSpec[] reactionRuleSpecs, SimulationContext simContext) {
 	Element reactionRuleSpecsElement = new Element(XMLTags.ReactionRuleSpecsTag);
 	for (ReactionRuleSpec reactionRuleSpec : reactionRuleSpecs){
 		Element reactionRuleSpecElement = new Element(XMLTags.ReactionRuleSpecTag);
 		reactionRuleSpecElement.setAttribute(XMLTags.ReactionRuleRefAttrTag, mangle(reactionRuleSpec.getReactionRule().getName()));
 		reactionRuleSpecElement.setAttribute(XMLTags.ReactionRuleMappingAttrTag, mangle(reactionRuleSpec.getReactionRuleMapping().getDatabaseName()));
-
+		if(Application.SPRINGSALAD == simContext.getApplicationType()) {
+			reactionRuleSpecElement.setAttribute(XMLTags.BondLengthAttrTag, Double.toString(reactionRuleSpec.getFieldBondLength()));
+			//
+			// the next 2 attributes are sent only for debugging purposes, they are derived attributes and should be calculated at needed
+			//
+			Map<String, Object> analysisResults = new LinkedHashMap<> ();
+			reactionRuleSpec.analizeReaction(analysisResults);
+			ReactionRuleSpec.Subtype st = reactionRuleSpec.getSubtype(analysisResults);
+			reactionRuleSpecElement.setAttribute(XMLTags.SubTypeAttrTag, st.columnName);
+			if(ReactionRuleSpec.Subtype.TRANSITION == st) {
+				TransitionCondition tc = reactionRuleSpec.getTransitionCondition(analysisResults);
+				if(tc != null) {
+					reactionRuleSpecElement.setAttribute(XMLTags.TransitionConditionAttrTag, tc.vcellName);
+				}
+			}
+		}
 		reactionRuleSpecsElement.addContent(reactionRuleSpecElement);
 	}
 

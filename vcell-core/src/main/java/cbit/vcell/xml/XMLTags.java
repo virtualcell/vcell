@@ -862,11 +862,15 @@ public class XMLTags {
 	public final static String SiteCoordXAttrTag = "SiteCoordX";
 	public final static String SiteCoordYAttrTag = "SiteCoordY";
 	public final static String SiteCoordZAttrTag = "SiteCoordZ";
-	public final static String BondLengthAttrTag = "BondLength";
 	
 	public final static String InternalLinkSpecTag = "InternalLinkSpec";
 	public final static String SiteOneRefAttrTag = "SiteOneRef";
 	public final static String SiteTwoRefAttrTag = "SiteTwoRef";
+
+	public final static String BondLengthAttrTag = "BondLength";
+	public final static String SubTypeAttrTag = "SubType";
+	public final static String TransitionConditionAttrTag = "TransitionCondition";
+	
 
 	
 }
