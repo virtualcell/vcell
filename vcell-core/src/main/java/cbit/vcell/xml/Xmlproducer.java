@@ -1489,7 +1489,7 @@ private Element getXML(ReactionContext param) {
 	//Add SpeciesContextSpecs
 	SpeciesContextSpec[] array = param.getSpeciesContextSpecs();
 	for (int i =0; i<array.length ; i ++){
-		reactioncontext.addContent( getXML(array[i]) );
+		reactioncontext.addContent( getXML(array[i], param.getSimulationContext()) );
 	}
 	//Add ReactionSpecs
 	ReactionSpec[] reactionarray = param.getReactionSpecs();
@@ -1550,19 +1550,24 @@ public Element getXML(SimulationContext param, BioModel bioModel) throws XmlPars
 	String name = mangle(param.getName());
 	simulationcontext.setAttribute(XMLTags.NameAttrTag, name);
 	//set isStoch, isUsingConcentration attributes
-	if (applicationType == Application.NETWORK_STOCHASTIC)
-	{
+	if (applicationType == Application.NETWORK_STOCHASTIC) {
 		simulationcontext.setAttribute(XMLTags.StochAttrTag, "true");
 		setBooleanAttribute(simulationcontext, XMLTags.ConcentrationAttrTag, param.isUsingConcentration());
 		// write out 'randomizeInitConditin' flag only if non-spatial stochastic simContext
 		if(param.getGeometry().getDimension() == 0) {
 			setBooleanAttribute(simulationcontext, XMLTags.RandomizeInitConditionTag,param.isRandomizeInitCondition());
 		}
-	}
-	else
-	{
+		setBooleanAttribute(simulationcontext, XMLTags.SpringSaLaDAttrTag, false);
+	} else if(applicationType == Application.SPRINGSALAD) {
+		boolean isRandomizeInitCondition = param.isRandomizeInitCondition();
+		boolean isUsingConcentration = param.isUsingConcentration();
+		simulationcontext.setAttribute(XMLTags.StochAttrTag, "false");
+		setBooleanAttribute(simulationcontext, XMLTags.ConcentrationAttrTag, isUsingConcentration);
+		setBooleanAttribute(simulationcontext, XMLTags.SpringSaLaDAttrTag, true);
+	} else {
 		simulationcontext.setAttribute(XMLTags.StochAttrTag, "false");
 		simulationcontext.setAttribute(XMLTags.ConcentrationAttrTag, "true");
+		setBooleanAttribute(simulationcontext, XMLTags.SpringSaLaDAttrTag, false);
 	}
 	final boolean ruleBased = param.getApplicationType() == SimulationContext.Application.RULE_BASED_STOCHASTIC; 
 	setBooleanAttribute(simulationcontext,XMLTags.RuleBasedAttrTag, ruleBased);
@@ -1573,8 +1578,6 @@ public Element getXML(SimulationContext param, BioModel bioModel) throws XmlPars
 			setBooleanAttribute(simulationcontext, XMLTags.RandomizeInitConditionTag,param.isRandomizeInitCondition());
 		}
 	}
-	final boolean springSaLaD = param.getApplicationType() == SimulationContext.Application.SPRINGSALAD; 
-	setBooleanAttribute(simulationcontext, XMLTags.SpringSaLaDAttrTag, springSaLaD);
 
 	setBooleanAttribute(simulationcontext,XMLTags.MassConservationModelReductionTag, param.isUsingMassConservationModelReduction());
 	setBooleanAttribute(simulationcontext,XMLTags.InsufficientIterationsTag,param.isInsufficientIterations());
@@ -1849,7 +1852,7 @@ private Element getXML(FieldDataSymbol fds, ModelUnitSystem modelUnitSystem) {
 	</ReactionRuleSpecs>
 </ReactionContext>
 */
-private Element getXML(SpeciesContextSpec param) {
+private Element getXML(SpeciesContextSpec param, SimulationContext simContext) {
 	Element speciesContextSpecElement = new Element(XMLTags.SpeciesContextSpecTag);
 
 	//Add Attributes
@@ -1880,15 +1883,17 @@ private Element getXML(SpeciesContextSpec param) {
 	}
 	//Add diffusion
 	cbit.vcell.parser.Expression diffRate = param.getDiffusionParameter().getExpression();
-	if (diffRate!=null){
-		Element diffusion = new Element(XMLTags.DiffusionTag);
-		diffusion.addContent(mangleExpression(diffRate));
-		speciesContextSpecElement.addContent(diffusion);
+	if (diffRate!=null)	{
+		if(Application.SPRINGSALAD != simContext.getApplicationType()) {	// in SS diffusion only happens at the site level
+			Element diffusion = new Element(XMLTags.DiffusionTag);
+			diffusion.addContent(mangleExpression(diffRate));
+			speciesContextSpecElement.addContent(diffusion);
+		}
 	}
 	
 	// SpringSaLaD specific stuff
 	// the producer is dumb, we save whatever we have; the reader may be smart and check for consistency, maybe initialize what's missing with defaults?
-	if(param.getInternalLinkSet() != null && param.getInternalLinkSet().size() > 0 ) {
+	if(Application.SPRINGSALAD == simContext.getApplicationType() && param.getInternalLinkSet() != null && param.getInternalLinkSet().size() > 0 ) {
 		for(MolecularInternalLinkSpec mils : param.getInternalLinkSet()) {
 			SpeciesContext sc = param.getSpeciesContext();
 			SpeciesPattern sp = sc.getSpeciesPattern();
@@ -1906,7 +1911,7 @@ private Element getXML(SpeciesContextSpec param) {
 			speciesContextSpecElement.addContent(milsElement);
 		}
 	}
-	if(param.getSiteAttributesMap() != null && param.getSiteAttributesMap().size() > 0) {
+	if(Application.SPRINGSALAD == simContext.getApplicationType() && param.getSiteAttributesMap() != null && param.getSiteAttributesMap().size() > 0) {
 		for (Entry<MolecularComponentPattern, SiteAttributesSpec> entry : param.getSiteAttributesMap().entrySet()) {
 			SpeciesContext sc = param.getSpeciesContext();
 			SpeciesPattern sp = sc.getSpeciesPattern();

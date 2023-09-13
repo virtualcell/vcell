@@ -864,7 +864,7 @@ public class XMLTags {
 	public final static String SiteCoordZAttrTag = "SiteCoordZ";
 	public final static String BondLengthAttrTag = "BondLength";
 	
-	public final static String InternalLinkSpecTag = "internallinkSpec";
+	public final static String InternalLinkSpecTag = "InternalLinkSpec";
 	public final static String SiteOneRefAttrTag = "SiteOneRef";
 	public final static String SiteTwoRefAttrTag = "SiteTwoRef";
 
