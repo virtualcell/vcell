@@ -1,0 +1,1 @@
+{"numChannels":1,"frameInterval":0.0,"dataType":"float64","yOrigin":0.0,"fps":0.0,"xOrigin":0.0,"type":2,"blockSize":[51,51,1,1,1],"unit":"uM","pixelDepth":1.0,"numFrames":61,"name":"TestName","numSlices":1,"pixelHeight":1.0,"compression":{"type":"raw"},"pixelWidth":1.0,"zOrigin":0.0,"properties":{},"dimensions":[51,51,61,1,1]}

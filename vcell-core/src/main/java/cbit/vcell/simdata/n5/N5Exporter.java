@@ -13,6 +13,7 @@ import com.google.gson.GsonBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.janelia.saalfeldlab.n5.*;
+import org.nd4j.shade.errorprone.annotations.Var;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
@@ -20,8 +21,12 @@ import org.vcell.util.document.User;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Random;
 
 /*
     Variables can be considered channels, and each variable may not have a spatial representation, but for the ones that do
@@ -45,6 +50,22 @@ import java.util.Arrays;
 public class N5Exporter implements ExportConstants {
     private final static Logger lg = LogManager.getLogger(N5Exporter.class);
     private static OutputContext outputContext;
+    private DataSetControllerImpl dataSetController;
+
+    private VCSimulationDataIdentifier vcDataID;
+
+    private static final ArrayList<VariableType> unsupportedTypes = new ArrayList<>(Arrays.asList(
+            VariableType.MEMBRANE,
+            VariableType.VOLUME_REGION,
+            VariableType.MEMBRANE_REGION,
+            VariableType.UNKNOWN,
+            VariableType.POINT_VARIABLE,
+            VariableType.NONSPATIAL,
+            VariableType.CONTOUR,
+            VariableType.CONTOUR_REGION
+    ));
+
+    private VCData vcData;
 
     public N5Exporter() {
         // Have the HDF5 exporter export its data to a file, then read with N5HDF5 reader, then block by block write it into N5
@@ -57,13 +78,22 @@ public class N5Exporter implements ExportConstants {
         String twoDImage = "2132749480";
         String twoDDomain = "L";
         String threeDDomain = "IP3_Cyt";
-        ArrayList<String> species = new ArrayList<>(Arrays.asList("IP3_Cyt"));
-        VCData vcData = N5Exporter.getVCData("/home/zeke/.vcell/simdata/temp", threeDImage);
-        N5Exporter.exportToN5(vcData, "/home/zeke/Downloads/fullTest.n5", species);
+        ArrayList<String> species = new ArrayList<>(Arrays.asList("J_PIP2_PH"));
+        N5Exporter n5Exporter = new N5Exporter();
+
+        n5Exporter.initalizeDataControllers("/home/zeke/.vcell/simdata/temp", threeDImage, "/media/zeke/DiskDrive/App_Installations/VCell_Rel");
+
+
+        OutputContext outputContext = new OutputContext(new AnnotatedFunction[0]);
+        DataIdentifier[] dataIdentifiers = n5Exporter.getVCData().getVarAndFunctionDataIdentifiers(outputContext);
+
+
+
+//        n5Exporter.exportToN5("/home/zeke/Downloads/fullTest.n5", species);
     }
 
     //intake the variables people want, don't just take them all
-    public static void exportToN5(VCData vcData, String outPutDir, ArrayList<String> species) throws MathException, DataAccessException, IOException {
+    public void exportToN5(String outPutDir, ArrayList<DataIdentifier> species) throws MathException, DataAccessException, IOException {
         double[] allTimes = vcData.getDataTimes();
 
 
@@ -80,6 +110,8 @@ public class N5Exporter implements ExportConstants {
         ArrayList<DataIdentifier> volumeDataIDs = new ArrayList<>();
         ArrayList<DataIdentifier> otherDataIDs = new ArrayList<>();
 
+//        DataSetControllerImpl dataSetController = new DataSetControllerImpl();
+
         // need a better way to determine if the variable has simData that can be visually represented, all of these syscalls
         // take a lot of time, also just need a more accurate metric for filtering the different data ID's
         // I know N5 can handle unlimited channels, so the error being thrown must be for some reason
@@ -94,20 +126,16 @@ public class N5Exporter implements ExportConstants {
         // according to Jim what should happen is that the VCdata should automatically derive the data for me since it knows everything
         // and the only reason why this wouldn't work is due to some misconfiguration, but what is that misconfig
         for (DataIdentifier dataIdentifier : dataIdentifiers) {
-            if (species.contains(dataIdentifier.getName())){
+            if (species.contains(dataIdentifier) && unsupportedTypes.contains(dataIdentifier.getVariableType()))
+            {
+                return;
+            }
+            else if (species.contains(dataIdentifier)){
                 volumeDataIDs.add(dataIdentifier);
             }
             else {
                 otherDataIDs.add(dataIdentifier);
             }
-//            try {
-//                vcData.getSimDataBlock(outputContext, dataIdentifier.getName(), allTimes[0]);
-//                volumeDataIDs.add(dataIdentifier);
-//
-//            }
-//            catch (Exception e){
-//                otherDataIDs.add(dataIdentifier);
-//            }
         }
 
 
@@ -125,6 +153,9 @@ public class N5Exporter implements ExportConstants {
         N5FSWriter n5FSWriter = new N5FSWriter(outPutDir, new GsonBuilder());
         RawCompression rawCompression = new RawCompression();
         DatasetAttributes datasetAttributes = new DatasetAttributes(dimensions, blockSize, org.janelia.saalfeldlab.n5.DataType.FLOAT64, rawCompression);
+
+
+
         n5FSWriter.createDataset(dataSet, datasetAttributes);
         N5MetaData.imageJMetaData(n5FSWriter, dataSet, vcData, numChannels);
 
@@ -132,7 +163,9 @@ public class N5Exporter implements ExportConstants {
 
         for (int channelIndex=0; channelIndex < numChannels; channelIndex++){
             for (int timeIndex=0; timeIndex < numTimes; timeIndex++){
-                double [] data = vcData.getSimDataBlock(outputContext, volumeDataIDs.get(channelIndex).getName(), allTimes[timeIndex]).getData();
+                // data does get returned, but it does not seem to cover the entire region of space, but only returns regions where there is activity
+                double[] data = this.dataSetController.getSimDataBlock(outputContext, this.vcDataID, volumeDataIDs.get(channelIndex).getName(), allTimes[timeIndex]).getData();
+//                double [] data = vcData.getSimDataBlock(outputContext, volumeDataIDs.get(channelIndex).getName(), allTimes[timeIndex]).getData();
                 DoubleArrayDataBlock doubleArrayDataBlock = new DoubleArrayDataBlock(blockSize, new long[]{0, 0, channelIndex, 0, timeIndex}, data);
                 n5FSWriter.writeBlock(dataSet, datasetAttributes, doubleArrayDataBlock);
             }
@@ -140,11 +173,11 @@ public class N5Exporter implements ExportConstants {
 
     }
 
-    public static VCData getVCData(String dataDir, String simKeyID) throws IOException, DataAccessException {
+    public void initalizeDataControllers(String dataDir, String simKeyID, String vCellInstallPath) throws IOException, DataAccessException {
         PropertyLoader.loadProperties();
 
         // tell where installation is
-        System.setProperty(PropertyLoader.installationRoot,"/media/zeke/DiskDrive/App_Installations/VCell_Rel");
+        System.setProperty(PropertyLoader.installationRoot, vCellInstallPath);
 
         // Set my user ID associated with VC database
         // set simulation key
@@ -154,22 +187,59 @@ public class N5Exporter implements ExportConstants {
 
         KeyValue simKey = new KeyValue(simKeyID);
         VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(simKey, user);
-        VCSimulationDataIdentifier vcdID = new VCSimulationDataIdentifier(vcSimID, 0);
+        this.vcDataID = new VCSimulationDataIdentifier(vcSimID, 0);
 
         // Point a data controller to the directory where the sim data is and use the vcdID to retrieve information regarding the sim
         Cachetable cachetable = new Cachetable(10 * Cachetable.minute, 1000000L);
-        DataSetControllerImpl dataSetControllerImpl = new DataSetControllerImpl(cachetable, new File(dataDir), null);
+        this.dataSetController = new DataSetControllerImpl(cachetable, new File(dataDir), null);
 
         // get dataset identifier from the simulation
 
-        return dataSetControllerImpl.getVCData(vcdID);
+        this.vcData = this.dataSetController.getVCData(vcDataID);
     }
 
-    public Double dataDeriveration(){
-        return null;
+    public VCData getVCData(){
+        return vcData;
+    }
+
+    public DataSetControllerImpl getDataSetController() {
+        return dataSetController;
+    }
+
+    public VCSimulationDataIdentifier getVcDataID() {
+        return vcDataID;
+    }
+
+    public ArrayList<VariableType> getUnsupportedTypes() {
+        return unsupportedTypes;
     }
 
     public Double[] unitConversion(){
         return null;
     }
+
+
+
+    public DataIdentifier getRandomDI() throws IOException, DataAccessException {
+        ArrayList<DataIdentifier> list = new ArrayList<>(Arrays.asList(dataSetController.getDataIdentifiers(new OutputContext(new AnnotatedFunction[0]), vcDataID)));
+        Random random = new Random();
+        DataIdentifier df = list.remove(random.nextInt(list.size()));
+        while (unsupportedTypes.contains(df.getVariableType())){
+            df = list.remove(random.nextInt(list.size()));
+        }
+        return df;
+    }
+
+    public DataIdentifier getSpecificDI(String diName) throws IOException, DataAccessException {
+        ArrayList<DataIdentifier> list = new ArrayList<>(Arrays.asList(dataSetController.getDataIdentifiers(new OutputContext(new AnnotatedFunction[0]), vcDataID)));
+        for(DataIdentifier dataIdentifier: list){
+            if(dataIdentifier.getName().equals(diName)){
+                list.remove(dataIdentifier);
+                return dataIdentifier;
+            }
+        }
+        return null;
+    }
+
+
 }
