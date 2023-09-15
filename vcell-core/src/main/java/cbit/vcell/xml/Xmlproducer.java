@@ -62,6 +62,7 @@ import org.vcell.util.Extent;
 import org.vcell.util.Hex;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
+import org.vcell.util.Pair;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.GroupAccess;
 import org.vcell.util.document.GroupAccessAll;
@@ -129,6 +130,7 @@ import cbit.vcell.mapping.MicroscopeMeasurement.ProjectionZKernel;
 import cbit.vcell.mapping.MolecularInternalLinkSpec;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.mapping.ParameterContext.ParameterRoleEnum;
+import cbit.vcell.mapping.ReactionRuleSpec.Subtype;
 import cbit.vcell.mapping.ReactionRuleSpec.TransitionCondition;
 import cbit.vcell.mapping.RateRule;
 import cbit.vcell.mapping.ReactionContext;
@@ -180,6 +182,9 @@ import cbit.vcell.math.InteractionRadius;
 import cbit.vcell.math.JumpCondition;
 import cbit.vcell.math.JumpProcess;
 import cbit.vcell.math.JumpProcessRateDefinition;
+import cbit.vcell.math.LangevinParticleJumpProcess;
+import cbit.vcell.math.LangevinParticleMolecularComponent;
+import cbit.vcell.math.LangevinParticleMolecularType;
 import cbit.vcell.math.MacroscopicRateConstant;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MemVariable;
@@ -1946,8 +1951,8 @@ private Element getXML(SpeciesContextSpec param, SimulationContext simContext) {
 			sasElement.setAttribute(XMLTags.MoleculeRefAttrTag, mt.getName());
 			sasElement.setAttribute(XMLTags.SiteLocationRefAttrTag, sas.getLocation().getName());
 			sasElement.setAttribute(XMLTags.SiteCoordXAttrTag, Double.toString(sas.getCoordinate().getX()));
-			sasElement.setAttribute(XMLTags.SiteCoordYAttrTag, Double.toString(sas.getCoordinate().getX()));
-			sasElement.setAttribute(XMLTags.SiteCoordZAttrTag, Double.toString(sas.getCoordinate().getX()));
+			sasElement.setAttribute(XMLTags.SiteCoordYAttrTag, Double.toString(sas.getCoordinate().getY()));
+			sasElement.setAttribute(XMLTags.SiteCoordZAttrTag, Double.toString(sas.getCoordinate().getZ()));
 			sasElement.setAttribute(XMLTags.SiteRadiusAttrTag, Double.toString(sas.getRadius()));
 			sasElement.setAttribute(XMLTags.SiteDiffusionAttrTag, Double.toString(sas.getDiffusionRate()));
 			sasElement.setAttribute(XMLTags.SiteColorAttrTag, sas.getColor().getName());
@@ -2187,7 +2192,21 @@ private org.jdom.Element getXML(ParticleJumpProcess param) {
 	org.jdom.Element particleJumpProcessElement = new org.jdom.Element(XMLTags.ParticleJumpProcessTag);
 	//name
 	particleJumpProcessElement.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
-	if (param.getProcessSymmetryFactor()!=null){
+	
+	if(param instanceof LangevinParticleJumpProcess) {
+		LangevinParticleJumpProcess lParam = (LangevinParticleJumpProcess)param;
+		Subtype subtype = lParam.getSubtype();
+		particleJumpProcessElement.setAttribute(XMLTags.LangevinParticleJumpProcessSubtypeTag, subtype.columnName);
+		if(Subtype.BINDING == subtype) {
+			double bondLength = lParam.getBondLength();
+			particleJumpProcessElement.setAttribute(XMLTags.LangevinParticleJumpProcessBondLengthTag, Double.toString(bondLength));
+		} else if(Subtype.TRANSITION == subtype) {
+			TransitionCondition transitionCondition = lParam.getTransitionCondition();
+			particleJumpProcessElement.setAttribute(XMLTags.LangevinParticleJumpProcessTransitionConditionTag, transitionCondition.vcellName);
+		}
+	}
+	
+	if (param.getProcessSymmetryFactor() != null ) {
 		particleJumpProcessElement.setAttribute(XMLTags.ProcessSymmetryFactorAttrTag, Double.toString(param.getProcessSymmetryFactor().getFactor()));
 	}
 	// Selected Particle
@@ -2202,11 +2221,10 @@ private org.jdom.Element getXML(ParticleJumpProcess param) {
 	if (particleProbabilityRate instanceof MacroscopicRateConstant) {
 		prob = new Element(XMLTags.MacroscopicRateConstantTag);
 		prob.addContent(mangleExpression(((MacroscopicRateConstant)particleProbabilityRate).getExpression()));
-	}else if (particleProbabilityRate instanceof InteractionRadius) {
+	} else if (particleProbabilityRate instanceof InteractionRadius) {
 		prob = new Element(XMLTags.InteractionRadiusTag);
 		prob.addContent(mangleExpression(((InteractionRadius)particleProbabilityRate).getExpression()));
-	} 
-	else {
+	} else {
 		throw new RuntimeException("ParticleRateDefinition in XmlProducer not implemented");
 	}
 	particleJumpProcessElement.addContent(prob);
@@ -3243,6 +3261,17 @@ private Element getXML(ParticleComponentStateDefinition param) {
 private Element getXML(ParticleMolecularComponent param) {
 	Element e = new Element(XMLTags.ParticleMolecularComponentPatternTag);
 	e.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
+	
+	if(param instanceof LangevinParticleMolecularComponent) {
+		LangevinParticleMolecularComponent lParam = (LangevinParticleMolecularComponent)param;
+		e.setAttribute(XMLTags.ParticleMolecularComponentRadiusTag, Double.toString(lParam.getRadius()));
+		e.setAttribute(XMLTags.ParticleMolecularComponentDiffusionRateTag, Double.toString(lParam.getDiffusionRate()));
+		e.setAttribute(XMLTags.ParticleMolecularComponentLocationTag, lParam.getLocation().toString());
+		e.setAttribute(XMLTags.ParticleMolecularComponentCoordXAttrTag, Double.toString(lParam.getCoordinate().getX()));
+		e.setAttribute(XMLTags.ParticleMolecularComponentCoordYAttrTag, Double.toString(lParam.getCoordinate().getY()));
+		e.setAttribute(XMLTags.ParticleMolecularComponentCoordZAttrTag, Double.toString(lParam.getCoordinate().getZ()));
+		e.setAttribute(XMLTags.ParticleMolecularComponentColorTag, lParam.getColor().getName());
+	}
 	for (ParticleComponentStateDefinition pp : param.getComponentStateDefinitions()){
 		e.addContent(getXML(pp));
 	}
@@ -3251,7 +3280,17 @@ private Element getXML(ParticleMolecularComponent param) {
 private Element getXML(ParticleMolecularType param) {
 	Element e = new Element(XMLTags.ParticleMolecularTypeTag);
 	e.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
-	for (ParticleMolecularComponent pp : param.getComponentList()){
+	if(param instanceof LangevinParticleMolecularType) {
+		LangevinParticleMolecularType lParam = (LangevinParticleMolecularType)param;
+		Set<Pair<LangevinParticleMolecularComponent, LangevinParticleMolecularComponent>> internalLinkSpec = lParam.getInternalLinkSpec();
+		for(Pair<LangevinParticleMolecularComponent, LangevinParticleMolecularComponent> pair : internalLinkSpec) {
+			Element l = new Element(XMLTags.ParticleMolecularTypeLinksTag);
+			l.setAttribute(XMLTags.LangevinParticleMolecularComponentOneTag, pair.one.getName());
+			l.setAttribute(XMLTags.LangevinParticleMolecularComponentTwoTag, pair.two.getName());
+			e.addContent(l);
+		}
+	}
+	for (ParticleMolecularComponent pp : param.getComponentList()) {
 		e.addContent(getXML(pp));
 	}
 	for(String anchor : param.getAnchorList()) {

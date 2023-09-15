@@ -738,6 +738,22 @@ public class XMLTags {
 	public static final String ParticleMolecularTypeAnchorTag = "Anchor";
 	public static final String ParticleObservableSequenceTypeAttrTag = "SequenceType";
 	public static final String ParticleObservableSequenceLengthAttrTag = "SequenceLength";
+	
+	// langevin (springsalad) math (see VCML.java)
+	public final static String LangevinParticleJumpProcessSubtypeTag			 = "Subtype";
+	public final static String LangevinParticleJumpProcessTransitionConditionTag = "TransitionCondition";
+	public final static String LangevinParticleJumpProcessBondLengthTag			 = "BondLength";
+	public final static String ParticleMolecularTypeLinksTag			= "Link";
+	public final static String LangevinParticleMolecularComponentOneTag = "One";	// one (left) part of the link
+	public final static String LangevinParticleMolecularComponentTwoTag = "Two";	// two (right) part of the link
+	public final static String ParticleMolecularComponentRadiusTag		= "Radius";
+	public final static String ParticleMolecularComponentDiffusionRateTag	= "DiffusionRate";
+	public final static String ParticleMolecularComponentLocationTag	= "Location";
+	public final static String ParticleMolecularComponentCoordXAttrTag	= "SiteCoordX";
+	public final static String ParticleMolecularComponentCoordYAttrTag	= "SiteCoordY";
+	public final static String ParticleMolecularComponentCoordZAttrTag	= "SiteCoordZ";
+	public final static String ParticleMolecularComponentColorTag		= "NamedColor";
+
 	// Smoldyn
 	public final static String VolumeParticleVariableTag = "VolumeParticleVariable";
 	public final static String MembraneParticleVariableTag = "MembraneParticleVariable";
