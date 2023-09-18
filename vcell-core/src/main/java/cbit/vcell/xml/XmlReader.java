@@ -5817,6 +5817,7 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 	String name = unMangle(param.getAttributeValue(XMLTags.NameAttrTag)); //name
 	boolean bStoch = false;
 	boolean bRuleBased = false;
+	boolean bSpringSaLaD = false;
 	boolean bUseConcentration = true;
 	boolean bRandomizeInitCondition = false;
 	boolean bInsufficientIterations = false;
@@ -5866,6 +5867,10 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 			// we propagate the flag but we don't use it for now
 			bRandomizeInitCondition = true;
 		}
+	} else if((param.getAttributeValue(XMLTags.SpringSaLaDAttrTag) != null) && (param.getAttributeValue(XMLTags.SpringSaLaDAttrTag).equals(true))) {
+		bSpringSaLaD = true;
+		
+		
 	}
 	//Retrieve Geometry
 	Geometry newgeometry = null;
