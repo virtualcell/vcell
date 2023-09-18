@@ -713,7 +713,7 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 							setStochHybridOpt(new NonspatialStochHybridOptions());
 						}
 					}
-				} else if (solverDescription.isSpatialStochasticSolver()) {
+				} else if (solverDescription.isSpatialStochasticSolver() && !solverDescription.isLangevinSolver()) {
 					setTimeStep(TimeStep.getDefaultSmoldynTimeStep());
 					if (smoldynSimulationOptions == null) {
 						smoldynSimulationOptions = new SmoldynSimulationOptions();

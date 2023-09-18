@@ -29,7 +29,7 @@ public class LangevinSimulationOptions implements Serializable, Matchable, Vetoa
 
 
 	protected int numOfTrials = 1;
-	protected int runIndex = 0;				// run index, will result in Run0 (fillowed by Run1, 2,...)
+	protected int runIndex = 0;				// run index, will result in Run0 (followed by Run1, 2,...)
 	protected double intervalSpring = 1.00E-9;	// default: dt_spring: 1.00E-9	- from advanced
 	protected double intervalImage = 1.00E-4;	// default: dt_image: 1.00E-4	- from advanced
 
