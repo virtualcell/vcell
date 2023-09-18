@@ -13,13 +13,14 @@ import com.google.gson.GsonBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.janelia.saalfeldlab.n5.*;
-import org.nd4j.shade.errorprone.annotations.Var;
+
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
 import java.io.File;
 import java.io.IOException;
+
 import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
