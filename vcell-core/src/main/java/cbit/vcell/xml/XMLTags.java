@@ -774,6 +774,8 @@ public class XMLTags {
 	public final static String ParticleDriftXTag		= "ParticleDriftX"; // particle
 	public final static String ParticleDriftYTag		= "ParticleDriftY"; // particle
 	public final static String ParticleDriftZTag		= "ParticleDriftZ"; // particle
+	
+	// simulation options
 	public final static String SmoldynSimulationOptions	= "SmoldynSimulationOptions";
 	public final static String SmoldynSimulationOptions_randomSeed	= "RandomSeed";
 	public final static String SmoldynSimulationOptions_accuracy	= "Accuracy";
@@ -793,13 +795,18 @@ public class XMLTags {
 	public final static String NFSimSimulationOptions_matchComplexes	= "MatchComplexes";
 	public final static String NFSimSimulationOptions_numOfTrials	= "NumOfTrials";
 
+	public final static String LangevinSimulationOptions	= "LangevinSimulationOptions";
+	public final static String LangevinSO_numOfTrials		= "NumOfTrials";
+	public final static String LangevinSO_intervalSpring	= "IntervalSpring";
+	public final static String LangevinSO_intervalImage		= "IntervalImage";
+	
 	public final static String ParticleInitialConcentrationTag			= "ParticleInitialConcentration"; // particle
 	public final static String ParticleDistributionTag			= "ParticleDistribution"; // particle
 
 	public final static String SundialsSolverOptions	= "SundialsSolverOptions";
 	public final static String SundialsSolverOptions_maxOrderAdvection	= "maxOrderAdvection";
-	
 
+	// pathway stuff
 	public final static String PathwayModelTag	= "pathwayModel";
 	public final static String RelationshipModelTag	= "relationshipModel";
 	public static final String relationshipObjectTag = "RelationshipObject";

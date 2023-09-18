@@ -282,6 +282,7 @@ import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.ErrorTolerance;
 import cbit.vcell.solver.ExplicitOutputTimeSpec;
+import cbit.vcell.solver.LangevinSimulationOptions;
 import cbit.vcell.solver.MathOverrides;
 import cbit.vcell.solver.MeshSpecification;
 import cbit.vcell.solver.NFsimSimulationOptions;
@@ -4956,6 +4957,10 @@ private Element getXML(SolverTaskDescription param) {
 	if (nfsimSimulationOptions != null) {		
 		solvertask.addContent(getXML(nfsimSimulationOptions));
 	}
+	LangevinSimulationOptions langevinSimulationOptions = param.getLangevinSimulationOptions();
+	if(langevinSimulationOptions != null) {
+		solvertask.addContent(getXML(langevinSimulationOptions));
+	}
 	SundialsPdeSolverOptions sundialsPdeSolverOptions = param.getSundialsPdeSolverOptions();
 	if (sundialsPdeSolverOptions != null) {		
 		solvertask.addContent(getXML(sundialsPdeSolverOptions));
@@ -5018,6 +5023,29 @@ private Element getXML(NFsimSimulationOptions sso) {			// we know that sso is no
 	ssoe.addContent(e);
 	
 	return ssoe;
+}
+private Element getXML(LangevinSimulationOptions lso) {
+	Element e = null;
+	Element lsoe = new Element(XMLTags.LangevinSimulationOptions);
+
+	e = new Element(XMLTags.LangevinSO_numOfTrials);
+	e.setText(String.valueOf(lso.getNumOfTrials()));
+	lsoe.addContent(e);
+	
+	e = new Element(XMLTags.LangevinSO_intervalSpring);
+	e.setText(String.valueOf(lso.getIntervalSpring()));
+	lsoe.addContent(e);
+	
+	e = new Element(XMLTags.LangevinSO_intervalImage);
+	e.setText(String.valueOf(lso.getIntervalImage()));
+	lsoe.addContent(e);
+	
+//	if (lso.getSomethingOptional() != null) {
+//		e = new Element(XMLTags.NFSimSimulationOptions_moleculeDistance);
+//		e.setText(lso.getMoleculeDistance() + "");
+//		lsoe.addContent(e);			
+//	}
+	return lsoe;
 }
 private Element getXML(SmoldynSimulationOptions sso) {
 	Element ssoElement = null;
