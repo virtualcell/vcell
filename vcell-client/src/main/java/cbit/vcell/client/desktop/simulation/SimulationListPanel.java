@@ -254,14 +254,16 @@ private void createBatchSimulations() {
 	if(selections == null || selections.length != 1) {
 		throw new RuntimeException("Exactly one template Simulation is required for Batch Creation");
 	}
-	
 	Vector<Simulation> v = new Vector<Simulation>();
 	v.add((Simulation)(ivjSimulationListTableModel1.getValueAt(selections[0])));
 	Simulation[] toCopy = (Simulation[])BeanUtils.getArray(v, Simulation.class);
 	if(toCopy == null || toCopy.length != 1) {
 		throw new RuntimeException("Exactly one template Simulation is required for Batch Creation");
 	}
-
+	if(massConservationModelReductionCheckBox.isSelected()) {
+		PopupGenerator.showWarningDialog(this, "Batch simulations only work with the 'Variable Reduction' checkbox disabled");
+		return;
+	}
 	int index = -1;
 	UserPreferences up = getSimulationWorkspace().getClientSimManager().getUserPreferences();
 	Map<Integer, Map<String, String>> batchInputDataMap = new LinkedHashMap<>();
