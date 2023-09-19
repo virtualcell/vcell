@@ -329,7 +329,12 @@ public void getBatchSimulationsResults(OutputContext outputContext, Simulation s
 			LinkedHashMap<String, String> importsMap = new LinkedHashMap<>();
 			LinkedHashMap <String, Boolean> successMap = new LinkedHashMap<>();
 			String namePrefix = simulation.getName() + SimulationWorkspace.ReservedBatchExtensionString;
-			
+
+			if(allSims.length  == 1 && !allSims[0].getName().contains("_bat_")) {
+				PopupGenerator.showWarningDialog(ClientSimManager.this.getDocumentWindowManager().getComponent(), "No batch simulation results files found");
+				return;
+			}
+
 			for(Simulation simCandidate : allSims) {
 				if(simCandidate.getName().startsWith(namePrefix) && simCandidate.getName().contains("_bat_")) {
 					
