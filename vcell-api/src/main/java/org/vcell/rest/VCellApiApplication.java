@@ -25,6 +25,7 @@ import org.vcell.rest.auth.CookieVerifier;
 import org.vcell.rest.events.EventsRestlet;
 import org.vcell.rest.events.RestEventService;
 import org.vcell.rest.health.HealthRestlet;
+import org.vcell.rest.n5data.N5Restlet;
 import org.vcell.rest.health.HealthService;
 import org.vcell.rest.rpc.RpcRestlet;
 import org.vcell.rest.rpc.RpcService;
@@ -119,6 +120,9 @@ public class VCellApiApplication extends WadlApplication {
 	public static final String EVENTS_BEGINTIMESTAMP = "beginTimestamp";
 	
 	public static final String HEALTH = "health";
+
+	public static final String N5DATA = "n5data";
+
 	public static final String HEALTH_CHECK = "check";
 	public static final String 	HEALTH_CHECK_LOGIN = "login";
 	public static final String 	HEALTH_CHECK_SIM = "sim";
@@ -311,6 +315,8 @@ public class VCellApiApplication extends WadlApplication {
 	    rootRouter.attach("/"+EVENTS, new EventsRestlet(getContext()));
 
 	    rootRouter.attach("/"+HEALTH, new HealthRestlet(getContext()));
+
+		rootRouter.attach("/"+ N5DATA, new N5Restlet(getContext()));
 
 		rootRouter.attach("/"+ADMIN+"/"+ADMIN_JOBS, new AdminJobsRestlet(getContext()));
 		rootRouter.attach("/"+ADMIN+"/"+ADMIN_STATS, new AdminStatsRestlet(getContext(), restDatabaseService));
