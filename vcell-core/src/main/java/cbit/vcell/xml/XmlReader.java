@@ -48,6 +48,7 @@ import org.vcell.util.GenericUtils;
 import org.vcell.util.Hex;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
+import org.vcell.util.Pair;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.GroupAccess;
 import org.vcell.util.document.GroupAccessAll;
@@ -182,6 +183,8 @@ import cbit.vcell.math.InteractionRadius;
 import cbit.vcell.math.JumpCondition;
 import cbit.vcell.math.JumpProcess;
 import cbit.vcell.math.JumpProcessRateDefinition;
+import cbit.vcell.math.LangevinParticleMolecularComponent;
+import cbit.vcell.math.LangevinParticleMolecularType;
 import cbit.vcell.math.MacroscopicRateConstant;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
@@ -7696,9 +7699,12 @@ private VolumeParticleObservable getVolumeParticleObservable(Element param, Vari
 	return var;
 }
 
-private ParticleMolecularComponent getParticleMolecularComponent(String pmtName, Element param) {
+private ParticleMolecularComponent getParticleMolecularComponent(String pmtName, Element param, boolean isLangevin) {
 	String name = unMangle( param.getAttributeValue(XMLTags.NameAttrTag));
 	ParticleMolecularComponent var = new ParticleMolecularComponent(pmtName + "_" + name, name);
+	
+	// TODO: load the langevin part, if true 
+	
 	List<Element> componentStateList = param.getChildren(XMLTags.ParticleMolecularTypeAllowableStateTag, vcNamespace);
 	for (Element componentState : componentStateList) {
 		String componentStateName = unMangle( componentState.getAttributeValue(XMLTags.NameAttrTag));
@@ -7714,13 +7720,30 @@ private ParticleMolecularComponent getParticleMolecularComponent(String pmtName,
 }
 private ParticleMolecularType getParticleMolecularType(Element param) {
 	String name = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
-	ParticleMolecularType var = new ParticleMolecularType( name );
-	
+	ParticleMolecularType var;
+	boolean isLangevin;
+	if("true".equals(param.getAttributeValue(XMLTags.IsLangevinParticleMolecularTypeAttrTag))) {
+		isLangevin = true;
+		var = new LangevinParticleMolecularType(name);
+	} else {
+		isLangevin = false;
+		var = new ParticleMolecularType(name);
+	}
 	List<Element> molecularComponentList = param.getChildren(XMLTags.ParticleMolecularComponentPatternTag, vcNamespace);
 	for (Element molecularComponent : molecularComponentList) {
-		ParticleMolecularComponent p = getParticleMolecularComponent(name, molecularComponent);
+		ParticleMolecularComponent p = getParticleMolecularComponent(name, molecularComponent, isLangevin);
 		var.addMolecularComponent(p);
 	}
+
+	if(var instanceof LangevinParticleMolecularType) {
+		List<Element> molecularTypeLinkList = param.getChildren(XMLTags.ParticleMolecularTypeLinksTag, vcNamespace);
+		Set<Pair<LangevinParticleMolecularComponent, LangevinParticleMolecularComponent>> internalLinkSet = new LinkedHashSet<> ();
+		for (Element molecularTypeLink : molecularTypeLinkList) {
+			Pair<LangevinParticleMolecularComponent, LangevinParticleMolecularComponent> internalLink = getInternalLink((LangevinParticleMolecularType)var, molecularTypeLink);
+		}
+		((LangevinParticleMolecularType)var).setInternalLinkSpec(internalLinkSet);
+	}
+	
 	List<Element> anchorList = param.getChildren(XMLTags.ParticleMolecularTypeAnchorTag, vcNamespace);
 	for(Element anchorElement : anchorList) {
 		String anchor = unMangle( anchorElement.getAttributeValue(XMLTags.NameAttrTag));
@@ -7728,6 +7751,17 @@ private ParticleMolecularType getParticleMolecularType(Element param) {
 	}
 	return var;
 }
+private Pair<LangevinParticleMolecularComponent, LangevinParticleMolecularComponent> getInternalLink(LangevinParticleMolecularType var, Element param) {
+	String oneName = unMangle( param.getAttributeValue(XMLTags.LangevinParticleMolecularComponentOneTag));
+	String twoName = unMangle( param.getAttributeValue(XMLTags.LangevinParticleMolecularComponentTwoTag));
+	// by this time the molecullar components are the correct class LangevinParticleMolecularComponent and won't throw cast exception
+	LangevinParticleMolecularComponent one = (LangevinParticleMolecularComponent) var.getMolecularComponent(oneName);
+	LangevinParticleMolecularComponent two = (LangevinParticleMolecularComponent) var.getMolecularComponent(twoName);
+	Pair<LangevinParticleMolecularComponent, LangevinParticleMolecularComponent> pair = new Pair<> (one, two);
+	return pair;
+}
+
+
 
 private ParticleMolecularComponentPattern getParticleMolecularComponentPattern(Element param, ParticleMolecularType particleMolecularType)  throws XmlParseException {
 	String molecularComponentName = unMangle( param.getAttributeValue(XMLTags.NameAttrTag));

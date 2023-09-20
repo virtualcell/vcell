@@ -3282,6 +3282,7 @@ private Element getXML(ParticleMolecularType param) {
 	Element e = new Element(XMLTags.ParticleMolecularTypeTag);
 	e.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
 	if(param instanceof LangevinParticleMolecularType) {
+		e.setAttribute(XMLTags.IsLangevinParticleMolecularTypeAttrTag, "true");
 		LangevinParticleMolecularType lParam = (LangevinParticleMolecularType)param;
 		Set<Pair<LangevinParticleMolecularComponent, LangevinParticleMolecularComponent>> internalLinkSpec = lParam.getInternalLinkSpec();
 		for(Pair<LangevinParticleMolecularComponent, LangevinParticleMolecularComponent> pair : internalLinkSpec) {
