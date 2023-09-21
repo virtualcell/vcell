@@ -60,6 +60,8 @@ import org.vcell.util.document.User;
 import org.vcell.util.document.VCellSoftwareVersion;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionFlag;
+import org.vcell.util.springsalad.Colors;
+import org.vcell.util.springsalad.NamedColor;
 
 import cbit.image.ImageException;
 import cbit.image.VCImage;
@@ -134,8 +136,11 @@ import cbit.vcell.mapping.RateRule;
 import cbit.vcell.mapping.ReactionContext;
 import cbit.vcell.mapping.ReactionRuleSpec;
 import cbit.vcell.mapping.ReactionRuleSpec.ReactionRuleMappingType;
+import cbit.vcell.mapping.ReactionRuleSpec.Subtype;
+import cbit.vcell.mapping.ReactionRuleSpec.TransitionCondition;
 import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.mapping.SimulationContext.SimulationContextParameter;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.StructureMapping;
@@ -183,6 +188,7 @@ import cbit.vcell.math.InteractionRadius;
 import cbit.vcell.math.JumpCondition;
 import cbit.vcell.math.JumpProcess;
 import cbit.vcell.math.JumpProcessRateDefinition;
+import cbit.vcell.math.LangevinParticleJumpProcess;
 import cbit.vcell.math.LangevinParticleMolecularComponent;
 import cbit.vcell.math.LangevinParticleMolecularType;
 import cbit.vcell.math.MacroscopicRateConstant;
@@ -2441,6 +2447,29 @@ private ParticleJumpProcess getParticleJumpProcess(Element param, MathDescriptio
 {
 	//name
 	String name = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
+	
+	Subtype subtype = Subtype.INCOMPATIBLE;
+	boolean isLangevin = false;
+	if(param.getAttribute(XMLTags.LangevinParticleJumpProcessSubtypeTag) != null) {
+		isLangevin = true;
+		String stString = param.getAttributeValue(XMLTags.LangevinParticleJumpProcessSubtypeTag);
+		
+		
+		// TODO: here!!
+		
+		subtype = Subtype.valueOf(stString);
+//		subtype = Subtype.valueOf("TRANSITION");
+	}
+	TransitionCondition transitionCondition = null;
+	double bondLength = 0;
+	if(isLangevin && param.getAttribute(XMLTags.LangevinParticleJumpProcessBondLengthTag) != null) {
+		bondLength = Double.valueOf(param.getAttributeValue(XMLTags.LangevinParticleJumpProcessBondLengthTag));
+	}
+	if(isLangevin && param.getAttribute(XMLTags.LangevinParticleJumpProcessTransitionConditionTag) != null) {
+		String tcString = param.getAttributeValue(XMLTags.LangevinParticleJumpProcessBondLengthTag);
+		transitionCondition = TransitionCondition.valueOf("tcString");
+	}
+
 	ProcessSymmetryFactor processSymmetryFactor = null;
 	Attribute symmetryFactorAttr = param.getAttribute(XMLTags.ProcessSymmetryFactorAttrTag);
 	if (symmetryFactorAttr != null){
@@ -2499,8 +2528,18 @@ private ParticleJumpProcess getParticleJumpProcess(Element param, MathDescriptio
 		}
 	}
 	
-	ParticleJumpProcess jump = new ParticleJumpProcess(name, varList, jprd, actionList, processSymmetryFactor);
-	
+	ParticleJumpProcess jump;
+	if(isLangevin) {
+		jump = new LangevinParticleJumpProcess(name, varList, jprd, actionList, processSymmetryFactor);
+		((LangevinParticleJumpProcess)jump).setSubtype(subtype);
+		if(Subtype.TRANSITION == subtype) {
+			((LangevinParticleJumpProcess)jump).setTransitionCondition(transitionCondition);
+		} else if(Subtype.BINDING == subtype) {
+			((LangevinParticleJumpProcess)jump).setBondLength(bondLength);
+		}
+	} else {
+		jump = new ParticleJumpProcess(name, varList, jprd, actionList, processSymmetryFactor);
+	}
 	return jump;
 }
 
@@ -5870,11 +5909,10 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 			// we propagate the flag but we don't use it for now
 			bRandomizeInitCondition = true;
 		}
-	} else if((param.getAttributeValue(XMLTags.SpringSaLaDAttrTag) != null) && (param.getAttributeValue(XMLTags.SpringSaLaDAttrTag).equals(true))) {
+	} else if((param.getAttributeValue(XMLTags.SpringSaLaDAttrTag) != null) && (param.getAttributeValue(XMLTags.SpringSaLaDAttrTag).equals("true"))) {
 		bSpringSaLaD = true;
-		
-		
 	}
+
 	//Retrieve Geometry
 	Geometry newgeometry = null;
 	try {
@@ -5939,9 +5977,16 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 
 	//------ Create SimContext ------
 	SimulationContext newsimcontext = null;
-	
+	Application type = Application.NETWORK_DETERMINISTIC;
+	if(bSpringSaLaD) {
+		type = Application.SPRINGSALAD;
+	} else if(bRuleBased) {
+		type = Application.RULE_BASED_STOCHASTIC;
+	} else if(bStoch) {
+		type = Application.NETWORK_STOCHASTIC;
+	}
 	try {
-		newsimcontext = new SimulationContext(biomodel.getModel(), newgeometry, newmathdesc, version, bStoch, bRuleBased);
+		newsimcontext = new SimulationContext(biomodel.getModel(), newgeometry, newmathdesc, version, type);
 	} catch (java.beans.PropertyVetoException e) {
 		throw new XmlParseException("A propertyveto exception was generated when creating the new SimulationContext " + name, e);
 	}
@@ -7701,10 +7746,41 @@ private VolumeParticleObservable getVolumeParticleObservable(Element param, Vari
 
 private ParticleMolecularComponent getParticleMolecularComponent(String pmtName, Element param, boolean isLangevin) {
 	String name = unMangle( param.getAttributeValue(XMLTags.NameAttrTag));
-	ParticleMolecularComponent var = new ParticleMolecularComponent(pmtName + "_" + name, name);
-	
-	// TODO: load the langevin part, if true 
-	
+	ParticleMolecularComponent var;
+	if(isLangevin) {
+		var = new LangevinParticleMolecularComponent(pmtName + "_" + name, name);
+		if(param.getAttributeValue(XMLTags.ParticleMolecularComponentRadiusTag) != null) {
+			double radius = Double.parseDouble(param.getAttributeValue(XMLTags.ParticleMolecularComponentRadiusTag));
+			((LangevinParticleMolecularComponent)var).setRadius(radius);
+		}
+		if(param.getAttributeValue(XMLTags.ParticleMolecularComponentDiffusionRateTag) != null) {
+			double diff = Double.parseDouble(param.getAttributeValue(XMLTags.ParticleMolecularComponentDiffusionRateTag));
+			((LangevinParticleMolecularComponent)var).setDiffusionRate(diff);
+		}
+		if(param.getAttributeValue(XMLTags.ParticleMolecularComponentLocationTag) != null) {
+			String location = param.getAttributeValue(XMLTags.ParticleMolecularComponentLocationTag);
+			((LangevinParticleMolecularComponent)var).setLocation(location);
+		}
+		double x = 0;
+		double y = 0;
+		double z = 0;
+		if(param.getAttributeValue(XMLTags.ParticleMolecularComponentCoordXAttrTag) != null) {
+			x = Double.parseDouble(param.getAttributeValue(XMLTags.ParticleMolecularComponentCoordXAttrTag));
+		}
+		if(param.getAttributeValue(XMLTags.ParticleMolecularComponentCoordYAttrTag) != null) {
+			y = Double.parseDouble(param.getAttributeValue(XMLTags.ParticleMolecularComponentCoordYAttrTag));
+		}
+		if(param.getAttributeValue(XMLTags.ParticleMolecularComponentCoordZAttrTag) != null) {
+			z = Double.parseDouble(param.getAttributeValue(XMLTags.ParticleMolecularComponentCoordZAttrTag));
+		}
+		((LangevinParticleMolecularComponent)var).setCoordinate(new Coordinate(x, y, z));
+		if(param.getAttributeValue(XMLTags.ParticleMolecularComponentColorTag) != null) {
+			NamedColor color = Colors.getColorByName(param.getAttributeValue(XMLTags.ParticleMolecularComponentColorTag));
+			((LangevinParticleMolecularComponent)var).setColor(color);
+		}
+	} else {
+		var = new ParticleMolecularComponent(pmtName + "_" + name, name);
+	}
 	List<Element> componentStateList = param.getChildren(XMLTags.ParticleMolecularTypeAllowableStateTag, vcNamespace);
 	for (Element componentState : componentStateList) {
 		String componentStateName = unMangle( componentState.getAttributeValue(XMLTags.NameAttrTag));
