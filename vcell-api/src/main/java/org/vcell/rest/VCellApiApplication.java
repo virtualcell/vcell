@@ -118,10 +118,17 @@ public class VCellApiApplication extends WadlApplication {
 	
 	public static final String EVENTS = "events";
 	public static final String EVENTS_BEGINTIMESTAMP = "beginTimestamp";
-	
-	public static final String HEALTH = "health";
 
 	public static final String N5DATA = "n5data";
+	public static final String N5_EXPORT = "n5export";
+	public static final String N5_EXPORT_SPECIES = "species";
+	public static final String N5_SIMID = "simid";
+	public static final String N5_COMPRESSION = "compression_level";
+	public static final String N5_COMPRESSION_RAW = "raw";
+	public static final String N5_COMPRESSION_GZIP = "gzip";
+	public static final String N5_COMPRESSION_BZIP = "bzip";
+	
+	public static final String HEALTH = "health";
 
 	public static final String HEALTH_CHECK = "check";
 	public static final String 	HEALTH_CHECK_LOGIN = "login";

@@ -1,9 +1,10 @@
 package org.vcell.rest.n5data;
 
-import com.google.gson.Gson;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.janelia.saalfeldlab.n5.Bzip2Compression;
+import org.janelia.saalfeldlab.n5.GzipCompression;
+import org.janelia.saalfeldlab.n5.RawCompression;
 import org.restlet.Context;
 import org.restlet.Request;
 import org.restlet.Response;
@@ -13,23 +14,22 @@ import org.restlet.data.MediaType;
 import org.restlet.data.Method;
 import org.restlet.data.Status;
 import org.restlet.engine.adapter.HttpRequest;
-import org.restlet.ext.json.JsonRepresentation;
 import org.vcell.rest.VCellApiApplication;
-import org.vcell.rest.health.HealthService;
-import org.vcell.rest.health.HealthService.HealthEvent;
-import org.vcell.rest.health.HealthService.NagiosStatus;
+import org.vcell.util.document.User;
 
 /*
 Handling receiving data
+
+Logging, tracking
  */
 
 public final class N5Restlet extends Restlet {
 	private final static Logger lg = LogManager.getLogger(N5Restlet.class);
 
-	enum RequestType {
-		login,
-		sim,
-		all
+	public enum CompressionType {
+		raw,
+		gzip,
+		bzip2
 	};
 
 
@@ -42,81 +42,48 @@ public final class N5Restlet extends Restlet {
 		if (req.getMethod().equals(Method.GET)){
 			try {
 				VCellApiApplication application = ((VCellApiApplication)getApplication());
+				User user = application.getVCellUser(req.getChallengeResponse(), VCellApiApplication.AuthenticationPolicy.ignoreInvalidCredentials);
 				HttpRequest request = (HttpRequest)req;
 				Form form = request.getResourceRef().getQueryAsForm();
-				String requestTypeString = form.getFirstValue(VCellApiApplication.HEALTH_CHECK, true);
-				RequestType requestType = null;
-				if (requestTypeString!=null) {
-					if (requestTypeString.equalsIgnoreCase(VCellApiApplication.HEALTH_CHECK_LOGIN)) {
-						requestType = RequestType.login;
-					}else if (requestTypeString.equalsIgnoreCase(VCellApiApplication.HEALTH_CHECK_SIM)) {
-						requestType = RequestType.sim;
-					}else if (requestTypeString.equalsIgnoreCase(VCellApiApplication.HEALTH_CHECK_ALL)) {
-						requestType = RequestType.all;
+
+				String simID = form.getFirstValue(VCellApiApplication.N5_SIMID, true);
+
+				String compresionLevel = form.getFirstValue(VCellApiApplication.N5_COMPRESSION, true);
+				CompressionType compresionType = null;
+
+				String exporting = form.getFirstValue(VCellApiApplication.N5_COMPRESSION, true);
+
+				String[] species = form.getValuesArray(VCellApiApplication.N5_EXPORT_SPECIES, true);
+				System.out.println(simID);
+
+				N5Service n5Service = new N5Service();
+
+
+				if (compresionLevel != null){
+					if (compresionLevel.equalsIgnoreCase(VCellApiApplication.N5_COMPRESSION_RAW)){
+						compresionType = CompressionType.raw;
+					} else if (compresionLevel.equalsIgnoreCase(VCellApiApplication.N5_COMPRESSION_BZIP)) {
+						compresionType = CompressionType.gzip;
+					} else if (compresionLevel.equalsIgnoreCase(VCellApiApplication.N5_COMPRESSION_GZIP)) {
+						compresionType = CompressionType.bzip2;
 					}
 				}
-				if (requestType==null){
-					throw new RuntimeException("expecting /"+VCellApiApplication.HEALTH+"?"+VCellApiApplication.HEALTH_CHECK+"="+
-							"("+VCellApiApplication.HEALTH_CHECK_LOGIN+"|"+VCellApiApplication.HEALTH_CHECK_SIM+"|"+VCellApiApplication.HEALTH_CHECK_ALL+")"
-							+ "[&"+VCellApiApplication.HEALTH_CHECK_ALL_START_TIMESTAMP+"=<start_ms>]"
-							+ "[&"+VCellApiApplication.HEALTH_CHECK_ALL_END_TIMESTAMP+"=<end_ms>]"
-							+ "[&"+VCellApiApplication.HEALTH_CHECK_STATUS_TIMESTAMP+"=<status_ms>]");
-				}
-				
-				// defaults to current status
-				long status_timestamp = System.currentTimeMillis();
-				String statusTimestampString = form.getFirstValue(VCellApiApplication.HEALTH_CHECK_STATUS_TIMESTAMP, true);
-				if (statusTimestampString!=null) {
-					status_timestamp = Long.parseLong(statusTimestampString);
-				}
 
-				// defaults to returning logs (all option) starting two hours ago
-				long start_timestamp = System.currentTimeMillis() - (2*60*60*1000);
-				String startTimestampString = form.getFirstValue(VCellApiApplication.HEALTH_CHECK_ALL_START_TIMESTAMP, true);
-				if (startTimestampString!=null) {
-					start_timestamp = Long.parseLong(startTimestampString);
-				}
-
-				// defaults to returning logs (all option) up to present time
-				long end_timestamp = System.currentTimeMillis();
-				String endTimestampString = form.getFirstValue(VCellApiApplication.HEALTH_CHECK_ALL_END_TIMESTAMP, true);
-				if (endTimestampString!=null) {
-					end_timestamp = Long.parseLong(endTimestampString);
-				}
-
-				HealthService healthService = application.getHealthService();
-
-				switch (requestType) {
-					case all:{
-						HealthEvent[] events = healthService.query(start_timestamp, end_timestamp);
-						ArrayUtils.reverse(events);
-						Gson gson = new Gson();
-						String healthEventsJSON = gson.toJson(events);
-						response.setStatus(Status.SUCCESS_OK);
-						response.setEntity(new JsonRepresentation(healthEventsJSON));
-						break;
-					}
-					case login:{
-						NagiosStatus nagiosStatus = healthService.getLoginStatus(status_timestamp);
-						Gson gson = new Gson();
-						String statusJSON = gson.toJson(nagiosStatus);
-						response.setStatus(Status.SUCCESS_OK);
-						response.setEntity(new JsonRepresentation(statusJSON));
-						break;
-					}
-					case sim:{
-						NagiosStatus nagiosStatus = healthService.getRunsimStatus(status_timestamp);
-						Gson gson = new Gson();
-						String statusJSON = gson.toJson(nagiosStatus);
-						response.setStatus(Status.SUCCESS_OK);
-						response.setEntity(new JsonRepresentation(statusJSON));
-						break;
+				if (simID != null && species != null){
+					switch (compresionType) {
+						case raw:
+							n5Service.exportToN5(species, simID, new RawCompression(), user);
+						case gzip:
+							n5Service.exportToN5(species, simID, new GzipCompression(), user);
+						case bzip2:
+							n5Service.exportToN5(species, simID, new Bzip2Compression(), user);
 					}
 				}
+
 			} catch (Exception e) {
 				lg.error(e.getMessage(), e);
 				response.setStatus(Status.SERVER_ERROR_INTERNAL);
-				response.setEntity("failed to retrieve system health: "+e.getMessage(), MediaType.TEXT_PLAIN);
+				response.setEntity("failed to export sim data to N5 format: "+e.getMessage(), MediaType.TEXT_PLAIN);
 			}
 		}
 	}
