@@ -76,7 +76,7 @@ public class ReactionRuleSpec implements ModelProcessSpec, IssueSource {
 	}
 	
 	public static final String ANY_STATE = "Any_State";		// SpringSaLaD stuff
-	private double fieldBondLength = 1;
+	private double fieldBondLength = 1;		// only used for Subtype.BINDING reactions
 	public enum Subtype {
 		INCOMPATIBLE("Not Compatible"),
 		CREATION("Creation"),

@@ -221,21 +221,25 @@ public Object getValueAt(int row, int col) {
 			}
 		}
 		case COLUMN_ENABLED:{
-			return new Boolean(!modelProcessSpec.isExcluded());
+			return Boolean.valueOf(!modelProcessSpec.isExcluded());
 		}
 		case COLUMN_BOND_LENGTH:{
 			ModelProcess modelProcess = modelProcessSpec.getModelProcess();
 			if(getSimulationContext().getApplicationType() == Application.SPRINGSALAD) {
-				return getBondLength(modelProcessSpec);
+				if(ReactionRuleSpec.Subtype.BINDING.columnName.equals(getSubtype(modelProcessSpec))) {
+					return getBondLength(modelProcessSpec);
+				} else {
+					return null;
+				}
 			} else {
 				return null;
 			}
 		}
 		case COLUMN_FAST:{
 			if (!(modelProcessSpec.getModelProcess() instanceof SimpleReaction)){
-				return new Boolean(false);
+				return Boolean.valueOf(false);
 			}else{
-				return new Boolean(modelProcessSpec.isFast());
+				return Boolean.valueOf(modelProcessSpec.isFast());
 			}
 		}
 		default:{
@@ -255,8 +259,16 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 	ColumnType columnType = columns.get(columnIndex);
 	switch (columnType) {
 	case COLUMN_ENABLED:
-	case COLUMN_BOND_LENGTH:
 		return true;
+	case COLUMN_BOND_LENGTH:
+		ModelProcessSpec modelProcessSpec = getValueAt(rowIndex);
+		ModelProcess modelProcess = modelProcessSpec.getModelProcess();
+		if(getSimulationContext().getApplicationType() == Application.SPRINGSALAD) {
+			if(ReactionRuleSpec.Subtype.BINDING.columnName.equals(getSubtype(modelProcessSpec))) {
+				return true;
+			}
+		}
+		return false;
 	case COLUMN_FAST: {
 		if(getSimulationContext()!=null) {
 			ModelProcessSpec ModelProcessSpec = getValueAt(rowIndex);
