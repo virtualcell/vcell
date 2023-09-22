@@ -89,6 +89,14 @@ public class ReactionRuleSpec implements ModelProcessSpec, IssueSource {
 		private Subtype(String columnName) {
 			this.columnName = columnName;
 		}
+		public static Subtype fromName(String nameCandidate) {
+			for(Subtype st : Subtype.values()) {
+				if(st.columnName.equals(nameCandidate)) {
+					return st;
+				}
+			}
+			return null;
+		}
 	}
 	public enum TransitionCondition {	// everywhere internally in vcell we use RBM bond type naming conventions
 		NONE("Unbound", "None"),		// MolecularComponentPattern.BondType.None		(-)
@@ -100,6 +108,22 @@ public class ReactionRuleSpec implements ModelProcessSpec, IssueSource {
 		private TransitionCondition(String vcellName, String lngvName) {
 			this.vcellName = vcellName;
 			this.lngvName = lngvName;
+		}
+		public static TransitionCondition fromVcellName(String nameCandidate) {
+			for(TransitionCondition tc : TransitionCondition.values()) {
+				if(tc.vcellName.equals(nameCandidate)) {
+					return tc;
+				}
+			}
+			return null;
+		}
+		public static TransitionCondition fromLngvName(String nameCandidate) {
+			for(TransitionCondition tc : TransitionCondition.values()) {
+				if(tc.lngvName.equals(nameCandidate)) {
+					return tc;
+				}
+			}
+			return null;
 		}
 	}
 
