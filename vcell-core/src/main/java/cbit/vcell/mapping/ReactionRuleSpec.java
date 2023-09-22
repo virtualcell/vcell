@@ -1103,7 +1103,12 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList, React
 					sasTwo = entry.getValue();
 				}
 			}
-			if(sasOne != null && sasTwo != null) {
+			//
+			// TODO: check logic here, sometimes siteAttributesMapTwo is null
+			// temp fix, we check for non-null siteAttributesMapTwo
+			//
+			if(sasOne != null && sasTwo != null && siteAttributesMapTwo != null) {
+				
 				for(Map.Entry<MolecularComponentPattern, SiteAttributesSpec> entry : siteAttributesMapTwo.entrySet()) {
 					MolecularComponentPattern mcpCandidate = entry.getKey();
 					if(MolecularComponentPattern.BondType.None != mcpCandidate.getBondType()) {
