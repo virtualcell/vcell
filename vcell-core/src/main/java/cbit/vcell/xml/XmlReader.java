@@ -2453,21 +2453,16 @@ private ParticleJumpProcess getParticleJumpProcess(Element param, MathDescriptio
 	if(param.getAttribute(XMLTags.LangevinParticleJumpProcessSubtypeTag) != null) {
 		isLangevin = true;
 		String stString = param.getAttributeValue(XMLTags.LangevinParticleJumpProcessSubtypeTag);
-		
-		
-		// TODO: here!!
-		
-		subtype = Subtype.valueOf(stString);
-//		subtype = Subtype.valueOf("TRANSITION");
+		subtype = Subtype.fromName(stString);		
 	}
 	TransitionCondition transitionCondition = null;
-	double bondLength = 0;
+	double bondLength = 1;		// that's the default, even for non-binding rules (we hide it anyway for those)
 	if(isLangevin && param.getAttribute(XMLTags.LangevinParticleJumpProcessBondLengthTag) != null) {
 		bondLength = Double.valueOf(param.getAttributeValue(XMLTags.LangevinParticleJumpProcessBondLengthTag));
 	}
 	if(isLangevin && param.getAttribute(XMLTags.LangevinParticleJumpProcessTransitionConditionTag) != null) {
-		String tcString = param.getAttributeValue(XMLTags.LangevinParticleJumpProcessBondLengthTag);
-		transitionCondition = TransitionCondition.valueOf("tcString");
+		String tcString = param.getAttributeValue(XMLTags.LangevinParticleJumpProcessTransitionConditionTag);
+		transitionCondition = TransitionCondition.fromVcellName(tcString);
 	}
 
 	ProcessSymmetryFactor processSymmetryFactor = null;
@@ -7816,6 +7811,7 @@ private ParticleMolecularType getParticleMolecularType(Element param) {
 		Set<Pair<LangevinParticleMolecularComponent, LangevinParticleMolecularComponent>> internalLinkSet = new LinkedHashSet<> ();
 		for (Element molecularTypeLink : molecularTypeLinkList) {
 			Pair<LangevinParticleMolecularComponent, LangevinParticleMolecularComponent> internalLink = getInternalLink((LangevinParticleMolecularType)var, molecularTypeLink);
+			internalLinkSet.add(internalLink);
 		}
 		((LangevinParticleMolecularType)var).setInternalLinkSpec(internalLinkSet);
 	}

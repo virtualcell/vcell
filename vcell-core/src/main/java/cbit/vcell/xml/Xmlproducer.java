@@ -1538,18 +1538,21 @@ public Element getXML(ReactionRuleSpec[] reactionRuleSpecs, SimulationContext si
 		reactionRuleSpecElement.setAttribute(XMLTags.ReactionRuleRefAttrTag, mangle(reactionRuleSpec.getReactionRule().getName()));
 		reactionRuleSpecElement.setAttribute(XMLTags.ReactionRuleMappingAttrTag, mangle(reactionRuleSpec.getReactionRuleMapping().getDatabaseName()));
 		if(Application.SPRINGSALAD == simContext.getApplicationType()) {
-			reactionRuleSpecElement.setAttribute(XMLTags.BondLengthAttrTag, Double.toString(reactionRuleSpec.getFieldBondLength()));
 			//
-			// the next 2 attributes are sent only for debugging purposes, they are derived attributes and should be calculated at needed
+			// the next attributes are sent only for debugging purposes, they are derived attributes and should be calculated at needed
 			//
 			Map<String, Object> analysisResults = new LinkedHashMap<> ();
 			reactionRuleSpec.analizeReaction(analysisResults);
-			ReactionRuleSpec.Subtype st = reactionRuleSpec.getSubtype(analysisResults);
+			ReactionRuleSpec.Subtype st = reactionRuleSpec.getSubtype(analysisResults);		// for sanity check
 			reactionRuleSpecElement.setAttribute(XMLTags.SubTypeAttrTag, st.columnName);
+			if(ReactionRuleSpec.Subtype.BINDING == st) {
+				// this is mandatory, if it's a binding reaction
+				reactionRuleSpecElement.setAttribute(XMLTags.BondLengthAttrTag, Double.toString(reactionRuleSpec.getFieldBondLength()));
+			}
 			if(ReactionRuleSpec.Subtype.TRANSITION == st) {
 				TransitionCondition tc = reactionRuleSpec.getTransitionCondition(analysisResults);
 				if(tc != null) {
-					reactionRuleSpecElement.setAttribute(XMLTags.TransitionConditionAttrTag, tc.vcellName);
+					reactionRuleSpecElement.setAttribute(XMLTags.TransitionConditionAttrTag, tc.vcellName);	// for sanity check
 				}
 			}
 		}
