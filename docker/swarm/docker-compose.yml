@@ -6,6 +6,8 @@ services:
       - softwareVersion=${VCELL_VERSION}
       - serverid=${VCELL_SITE}
 
+      - simdataCacheSize=${VCELL_SIMDATA_CACHE_SIZE:-10000000}
+
       - ssl_ignoreHostMismatch=${VCELL_SSL_IGNORE_HOST_MISMATCH}
       - ssl_ignoreCertProblems=${VCELL_SSL_IGNORE_CERT_PROBLEMS}
       
@@ -36,6 +38,12 @@ services:
 #      interval: 600s
 #      timeout: 30s
 #      retries: 2
+    volumes:
+      - "${VCELL_N5_DATADIR_HOST}:/n5DataDir"
+      - "${VCELL_SIMDATADIR_HOST}:/simdata"
+      - "${VCELL_SIMDATADIR_ARCHIVE_HOST}:${VCELL_SIMDATADIR_ARCHIVE_INTERNAL}"
+      - "${VCELL_SIMDATADIR_SECONDARY_HOST}:/simdata_secondary"
+      - "${VCELL_EXPORTDIR_HOST}:/exportdir"
     secrets:
       - keystorefile_20220105
       - keystorepswd
@@ -405,6 +413,43 @@ services:
       placement:
         constraints:
           - node.labels.zone == INTERNAL
+
+  s3Proxy:
+    image: andrewgaul/s3proxy:sha-ba0fd6d
+    container_name: S3Proxy
+    ports:
+      - "${VCELL_S3PROXY_PORT_EXTERNAL}:80"
+    environment:
+      JCLOUDS_FILESYSTEM_BASEDIR: /data
+      JCLOUDS_PROVIDER: filesystem
+      JCLOUDS_REGIONS: site2-low
+      S3PROXY_AUTHORIZATION: none
+
+      LOG_LEVEL: info
+      S3PROXY_ENDPOINT: http://0.0.0.0:80
+      S3PROXY_VIRTUALHOST: ""
+      S3PROXY_KEYSTORE_PATH: keystore.jks
+      S3PROXY_KEYSTORE_PASSWORD: password
+      S3PROXY_CORS_ALLOW_ALL: false
+      S3PROXY_CORS_ALLOW_ORIGINS: ""
+      S3PROXY_CORS_ALLOW_METHODS: ""
+      S3PROXY_CORS_ALLOW_HEADERS: ""
+      S3PROXY_IGNORE_UNKNOWN_HEADERS: false
+      S3PROXY_ENCRYPTED_BLOBSTORE: ""
+      S3PROXY_ENCRYPTED_BLOBSTORE_PASSWORD: ""
+      S3PROXY_ENCRYPTED_BLOBSTORE_SALT: ""
+      S3PROXY_IDENTITY: "local-identity"
+      S3PROXY_CREDENTIAL: "local-credential"
+
+      JCLOUDS_ENDPOINT: ""
+      JCLOUDS_REGION: ""
+      JCLOUDS_IDENTITY: remote-identity
+      JCLOUDS_CREDENTIAL: remote-credential
+      JCLOUDS_KEYSTONE_VERSION: ""
+      JCLOUDS_KEYSTONE_SCOPE: ""
+      JCLOUDS_KEYSTONE_PROJECT_DOMAIN_NAME: ""
+    volumes:
+      - "${VCELL_N5_DATADIR_HOST}:/data"
 
 networks:
   vcellnet:

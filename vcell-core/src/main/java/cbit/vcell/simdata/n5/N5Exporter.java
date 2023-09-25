@@ -74,7 +74,7 @@ public class N5Exporter implements ExportConstants {
         // Get the simulated datablock output, then rewrite that as chunks within the N5 dataset, not having to
 
     //intake the variables people want, don't just take them all
-    public void exportToN5(String outPutDir, ArrayList<DataIdentifier> species) throws MathException, DataAccessException, IOException {
+    public void exportToN5(ArrayList<DataIdentifier> species) throws MathException, DataAccessException, IOException {
         double[] allTimes = vcData.getDataTimes();
 
 
@@ -106,8 +106,9 @@ public class N5Exporter implements ExportConstants {
         String dataSet = vcData.getResultsInfoObject().getDataKey().toString() + vcData.getResultsInfoObject().getID();
 
 
-
-        N5FSWriter n5FSWriter = new N5FSWriter(outPutDir, new GsonBuilder());
+        //TODO CHANGE THIS DIRECTORY
+        File outPutDir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.n5DataDir));
+        N5FSWriter n5FSWriter = new N5FSWriter(outPutDir.getAbsolutePath(), new GsonBuilder());
         RawCompression rawCompression = new RawCompression();
         DatasetAttributes datasetAttributes = new DatasetAttributes(dimensions, blockSize, org.janelia.saalfeldlab.n5.DataType.FLOAT64, rawCompression);
 
@@ -137,11 +138,8 @@ public class N5Exporter implements ExportConstants {
 
     }
 
-    public void initalizeDataControllers(String dataDir, String simKeyID, String vCellInstallPath, String userName, String userKey) throws IOException, DataAccessException {
+    public void initalizeDataControllers(String simKeyID, String userName, String userKey) throws IOException, DataAccessException {
         PropertyLoader.loadProperties();
-
-        // tell where installation is
-        System.setProperty(PropertyLoader.installationRoot, vCellInstallPath);
 
         // Set my user ID associated with VC database
         // set simulation key
@@ -155,7 +153,8 @@ public class N5Exporter implements ExportConstants {
 
         // Point a data controller to the directory where the sim data is and use the vcdID to retrieve information regarding the sim
         Cachetable cachetable = new Cachetable(10 * Cachetable.minute, 1000000L);
-        this.dataSetController = new DataSetControllerImpl(cachetable, new File(dataDir), null);
+        File primaryDir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirInternalProperty));
+        this.dataSetController = new DataSetControllerImpl(cachetable, primaryDir, null);
 
         // get dataset identifier from the simulation
 

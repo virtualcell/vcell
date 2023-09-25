@@ -262,6 +262,8 @@ public class VCellApiMain {
 			PropertyLoader.mongodbDatabase,
 			PropertyLoader.jmsIntHostInternal,
 			PropertyLoader.jmsIntPortInternal,
+			PropertyLoader.simdataCacheSizeProperty,
+			PropertyLoader.n5DataDir,
 //			PropertyLoader.jmsUser,
 //			PropertyLoader.jmsPasswordFile,
 			PropertyLoader.jmsBlobMessageUseMongo,

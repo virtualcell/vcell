@@ -14,16 +14,20 @@ package simdata.n5;
  */
 
 import cbit.vcell.math.MathException;
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.simdata.*;
 import cbit.vcell.simdata.n5.N5Exporter;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import org.janelia.saalfeldlab.n5.*;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.vcell.util.DataAccessException;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -42,22 +46,49 @@ public class N5ExporterTest {
             "5DModel" //PH-GFP Tutorial in VCell
     ));
 
+    private static String previousInstallRoot;
+    private static String previousPrimarySimDir;
+
+    private static String previousN5Path;
+
+    @Before
+    public void setUp() throws IOException {
+        previousInstallRoot = PropertyLoader.getProperty(PropertyLoader.installationRoot, null);
+        System.setProperty(PropertyLoader.installationRoot, new File("..").getAbsolutePath());
+
+        previousPrimarySimDir = PropertyLoader.getProperty(PropertyLoader.primarySimDataDirInternalProperty, null);
+        System.setProperty(PropertyLoader.primarySimDataDirInternalProperty, new File("src/test/resources/simdata/n5").getAbsolutePath());
+
+        previousN5Path = PropertyLoader.getProperty(PropertyLoader.n5DataDir, null);
+        System.setProperty(PropertyLoader.n5DataDir, new File("src/test/resources/simdata/n5/N5ExportData").getAbsolutePath());
+    }
+
+    @After
+    public void restore(){
+        if (previousInstallRoot != null) {
+            System.setProperty(PropertyLoader.installationRoot, previousInstallRoot);
+        }
+        if (previousPrimarySimDir != null){
+            System.setProperty(PropertyLoader.primarySimDataDirInternalProperty, previousPrimarySimDir);
+        }
+
+        if (previousN5Path != null){
+            System.setProperty(PropertyLoader.n5DataDir, previousN5Path);
+        }
+    }
+
     public void initalizeModel(String simKeyID) throws IOException, DataAccessException, MathException {
-        File n5File = new File("src/test/resources/simdata/n5/N5ExportData");
-//        File n5File = new File("/home/zeke/Downloads/fullTest.n5");
-        File vSimModel = new File("src/test/resources/simdata/n5");
-        String n5FilePath = n5File.getAbsolutePath();
         N5Exporter n5Exporter = new N5Exporter();
 
         if (simKeyID.equals("4DModel")){
             // the test model can only support one species at this time
-            n5Exporter.initalizeDataControllers(vSimModel.getAbsolutePath(), "123971881", "/media/zeke/DiskDrive/App_Installations/VCell_Rel", "ezequiel23", "258925427");
+            n5Exporter.initalizeDataControllers("123971881", "ezequiel23", "258925427");
             this.variables = new ArrayList<>(Arrays.asList(
                     n5Exporter.getRandomDI()
             ));
         }
         else if (simKeyID.equals("5DModel")){
-            n5Exporter.initalizeDataControllers(vSimModel.getAbsolutePath(), "1115478432", "/media/zeke/DiskDrive/App_Installations/VCell_Rel", "ezequiel23", "258925427");
+            n5Exporter.initalizeDataControllers("1115478432", "ezequiel23", "258925427");
             this.variables = new ArrayList<>(Arrays.asList(
                     n5Exporter.getRandomDI(),
                     n5Exporter.getRandomDI(),
@@ -69,8 +100,8 @@ public class N5ExporterTest {
         this.vcDataID = n5Exporter.getVcDataID();
         this.controlModelController = n5Exporter.getDataSetController();
 
-        n5Exporter.exportToN5(n5FilePath, variables);
-        this.n5Reader = new N5FSReader(n5FilePath);
+        n5Exporter.exportToN5(variables);
+        this.n5Reader = new N5FSReader(PropertyLoader.getRequiredProperty(PropertyLoader.n5DataDir));
         this.dataSetName = this.controlModel.getResultsInfoObject().getDataKey().toString() + this.controlModel.getResultsInfoObject().getID();
     }
 
