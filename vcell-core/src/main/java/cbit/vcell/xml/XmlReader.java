@@ -129,6 +129,7 @@ import cbit.vcell.mapping.MicroscopeMeasurement;
 import cbit.vcell.mapping.MicroscopeMeasurement.ConvolutionKernel;
 import cbit.vcell.mapping.MicroscopeMeasurement.GaussianConvolutionKernel;
 import cbit.vcell.mapping.MicroscopeMeasurement.ProjectionZKernel;
+import cbit.vcell.mapping.MolecularInternalLinkSpec;
 import cbit.vcell.mapping.ParameterContext;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.mapping.ParameterContext.ParameterRoleEnum;
@@ -140,6 +141,7 @@ import cbit.vcell.mapping.ReactionRuleSpec.Subtype;
 import cbit.vcell.mapping.ReactionRuleSpec.TransitionCondition;
 import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SiteAttributesSpec;
 import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.mapping.SimulationContext.SimulationContextParameter;
 import cbit.vcell.mapping.SpeciesContextSpec;
@@ -258,6 +260,7 @@ import cbit.vcell.modelopt.ParameterEstimationTaskXMLPersistence;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.ParserException;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.render.Vect3d;
 import cbit.vcell.solver.AnnotatedFunction.FunctionCategory;
@@ -2432,7 +2435,7 @@ private ParticleProperties getParticleProperties(Element param, MathDescription 
     Expression driftYExp = null;
     if (driftYString!=null && driftYString.length()>0) {
     	driftYExp = unMangleExpression(driftYString);        	
-    } 
+    }
 
 	String driftZString = param.getChildText(XMLTags.ParticleDriftZTag, vcNamespace);
     Expression driftZExp = null;
@@ -3595,9 +3598,29 @@ public ReactionRuleSpec[] getReactionRuleSpecs(SimulationContext simContext, Ele
 		ReactionRule reactionRule = simContext.getModel().getRbmModelContainer().getReactionRule(rrName);
 	    ReactionRuleSpec reactionRuleSpec = new ReactionRuleSpec(reactionRule);
 	    reactionRuleSpec.setReactionRuleMapping(rrMapping);
+		
+		if(SimulationContext.Application.SPRINGSALAD == simContext.getApplicationType()) {	// Springsalad
+			// only the bondLength is needed, the subtype and transitionCondition may be used for sanity check against the math (LangevinParticleJumpProcess)
+			Subtype subtype = Subtype.INCOMPATIBLE;
+			if(rrElement.getAttribute(XMLTags.SubTypeAttrTag) != null) {
+				String stString = rrElement.getAttributeValue(XMLTags.SubTypeAttrTag);
+				subtype = Subtype.fromName(stString);		
+			}
+			TransitionCondition transitionCondition = null;
+			double bondLength = 1;		// that's the default, even for non-binding rules (we hide it anyway for those)
+			if(rrElement.getAttribute(XMLTags.BondLengthAttrTag) != null) {
+				bondLength = Double.valueOf(rrElement.getAttributeValue(XMLTags.BondLengthAttrTag));
+				reactionRuleSpec.setFieldBondLength(bondLength);
+				
+			}
+			if(rrElement.getAttribute(XMLTags.TransitionConditionAttrTag) != null) {
+				String tcString = rrElement.getAttributeValue(XMLTags.TransitionConditionAttrTag);
+				transitionCondition = TransitionCondition.fromVcellName(tcString);
+			}
+			// TODO: (optional) verify consistency of subtype and transitionCondition against Math:CompartmentSubdomain:ParticleJumpProcess
+		}
 		reactionRuleSpecs.add(reactionRuleSpec);
 	}
-	
 	return reactionRuleSpecs.toArray(new ReactionRuleSpec[0]);
 }
 
@@ -6990,6 +7013,49 @@ private void getSpeciesContextSpecs(List<Element> scsChildren, ReactionContext r
 	        	throw new XmlParseException("Void Velocity element found under PDE for: " + specspec.getSpeciesContext().getName());
 	    	} 
 	    }
+	    
+	    // we could do extra validation to make sure that sc has a sp, which has exactly one mtp, aso
+	    // but probably it would be superfluous
+	    SpeciesContext sc = specspec.getSpeciesContext();
+	    SpeciesPattern sp = sc.getSpeciesPattern();
+	    MolecularTypePattern mtp = sp.getMolecularTypePatterns().get(0);
+	    
+	    // all SpeciesContextSpec objects now have an internalLinkSet, if the app is not Springsalad it will be empty
+		Set<MolecularInternalLinkSpec> internalLinkSet = new LinkedHashSet<> ();
+		List<Element> linkSpecs = scsElement.getChildren(XMLTags.InternalLinkSpecTag, vcNamespace);
+		for (Element linkSpec : linkSpecs) {	// should map to Math's ParticleMolecularType (n -> 1)
+			String oneName = unMangle( linkSpec.getAttributeValue(XMLTags.SiteOneRefAttrTag));
+			String twoName = unMangle( linkSpec.getAttributeValue(XMLTags.SiteTwoRefAttrTag));
+			MolecularComponentPattern one = mtp.getMolecularComponentPattern(oneName);
+			MolecularComponentPattern two = mtp.getMolecularComponentPattern(twoName);
+			MolecularInternalLinkSpec internalLink = new MolecularInternalLinkSpec(specspec, one, two);
+			internalLinkSet.add(internalLink);
+		}
+		specspec.setInternalLinkSet(internalLinkSet);
+
+	    // all SpeciesContextSpec objects now have a siteAttributesMap, if the app is not Springsalad it will be empty
+		Map<MolecularComponentPattern, SiteAttributesSpec> siteAttributesMap = new LinkedHashMap<> ();
+		List<Element> attributeSpecs = scsElement.getChildren(XMLTags.SiteAttributesSpecTag, vcNamespace);
+		for (Element attributeSpec : attributeSpecs) {	// should map to Math's ParticleJumpProcess (1 -> 1)
+			String siteRef = attributeSpec.getAttributeValue(XMLTags.SiteRefAttrTag);
+			String moleculeRef = attributeSpec.getAttributeValue(XMLTags.MoleculeRefAttrTag);
+			double radius = Double.parseDouble(attributeSpec.getAttributeValue(XMLTags.SiteRadiusAttrTag));
+			double diff = Double.parseDouble(attributeSpec.getAttributeValue(XMLTags.SiteDiffusionAttrTag));
+			String locationName = attributeSpec.getAttributeValue(XMLTags.SiteLocationRefAttrTag);
+			NamedColor color = Colors.getColorByName(attributeSpec.getAttributeValue(XMLTags.SiteColorAttrTag));
+			double x = Double.parseDouble(attributeSpec.getAttributeValue(XMLTags.SiteCoordXAttrTag));
+			double y = Double.parseDouble(attributeSpec.getAttributeValue(XMLTags.SiteCoordYAttrTag));
+			double z = Double.parseDouble(attributeSpec.getAttributeValue(XMLTags.SiteCoordZAttrTag));
+			Coordinate coordinate = new Coordinate(x, y, z);
+			MolecularComponentPattern mcp = mtp.getMolecularComponentPattern(siteRef);
+			if(!mtp.getMolecularType().getName().equals(moleculeRef)) {
+				throw new XmlParseException("Bad SiteAttributeSpec molecular type for " + specspec.getDisplayName());
+			}
+			Structure structure = model.getStructure(locationName);
+			SiteAttributesSpec sas = new SiteAttributesSpec(specspec, mcp, radius, diff, structure, coordinate, color);
+			siteAttributesMap.put(mcp, sas);
+		}
+		specspec.setSiteAttributesMap(siteAttributesMap);
 	}
 }
 

@@ -77,6 +77,7 @@ public class ReactionRuleSpec implements ModelProcessSpec, IssueSource {
 	
 	public static final String ANY_STATE = "Any_State";		// SpringSaLaD stuff
 	private double fieldBondLength = 1;		// only used for Subtype.BINDING reactions
+	
 	public enum Subtype {
 		INCOMPATIBLE("Not Compatible"),
 		CREATION("Creation"),
@@ -1104,8 +1105,10 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList, React
 				}
 			}
 			//
-			// TODO: check logic here, sometimes siteAttributesMapTwo is null
+			// TODO: check logic here, sometimes siteAttributesMapTwo is null (issue #977)
 			// temp fix, we check for non-null siteAttributesMapTwo
+			// hard to catch, it may be that the reactant or the product end up in an inconsistent state
+			// after using the reaction visual editor in the physiology (the state of a bonding site is possibly inconsistent)
 			//
 			if(sasOne != null && sasTwo != null && siteAttributesMapTwo != null) {
 				
