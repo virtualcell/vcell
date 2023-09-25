@@ -1,5 +1,6 @@
 package org.vcell.rest.n5data;
 
+import com.google.gson.Gson;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.janelia.saalfeldlab.n5.Bzip2Compression;
@@ -16,6 +17,8 @@ import org.restlet.data.Status;
 import org.restlet.engine.adapter.HttpRequest;
 import org.vcell.rest.VCellApiApplication;
 import org.vcell.util.document.User;
+
+import java.util.ArrayList;
 
 /*
 Handling receiving data
@@ -51,12 +54,19 @@ public final class N5Restlet extends Restlet {
 				String compresionLevel = form.getFirstValue(VCellApiApplication.N5_COMPRESSION, true);
 				CompressionType compresionType = null;
 
-				String exporting = form.getFirstValue(VCellApiApplication.N5_COMPRESSION, true);
-
 				String[] species = form.getValuesArray(VCellApiApplication.N5_EXPORT_SPECIES, true);
 				System.out.println(simID);
 
-				N5Service n5Service = new N5Service();
+				String supportedSpecies = form.getFirstValue(VCellApiApplication.N5_SUPPORTED_SPECIES, true);
+
+				N5Service n5Service = new N5Service(simID, user);
+
+				if(supportedSpecies != null){
+					ArrayList<String> listOfSupportedSpecies = n5Service.supportedSpecies();
+					Gson gson = new Gson();
+					response.setEntity(gson.toJson(listOfSupportedSpecies), MediaType.APPLICATION_JSON);
+					return;
+				}
 
 
 				if (compresionLevel != null){
@@ -72,11 +82,15 @@ public final class N5Restlet extends Restlet {
 				if (simID != null && species != null){
 					switch (compresionType) {
 						case raw:
-							n5Service.exportToN5(species, simID, new RawCompression(), user);
+							n5Service.exportToN5(species, new RawCompression());
 						case gzip:
-							n5Service.exportToN5(species, simID, new GzipCompression(), user);
+							n5Service.exportToN5(species, new GzipCompression());
 						case bzip2:
-							n5Service.exportToN5(species, simID, new Bzip2Compression(), user);
+							n5Service.exportToN5(species, new Bzip2Compression());
+						default:
+							lg.info("failed to specify compression type desired");
+							response.setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+							response.setEntity("failed to specify desired export type", MediaType.TEXT_PLAIN);
 					}
 				}
 

@@ -14,6 +14,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.janelia.saalfeldlab.n5.*;
 
+import org.jlibsedml.Output;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
@@ -118,7 +119,14 @@ public class N5Exporter implements ExportConstants {
 
 
         for (int variableIndex=0; variableIndex < numVariables; variableIndex++){
+
+            //place to add tracking, each variable can be measured in tracking
+
+
             for (int timeIndex=0; timeIndex < numTimes; timeIndex++){
+                //another place to add tracking, each time index can be used to determine how much has been exported
+
+
                 // data does get returned, but it does not seem to cover the entire region of space, but only returns regions where there is activity
                 double[] data = this.dataSetController.getSimDataBlock(outputContext, this.vcDataID, species.get(variableIndex).getName(), allTimes[timeIndex]).getData();
 //                double [] data = vcData.getSimDataBlock(outputContext, volumeDataIDs.get(channelIndex).getName(), allTimes[timeIndex]).getData();
@@ -193,5 +201,19 @@ public class N5Exporter implements ExportConstants {
         return null;
     }
 
+    public ArrayList<String> getSupportedSpecies() throws IOException, DataAccessException {
+        OutputContext outputContext = new OutputContext(new AnnotatedFunction[0]);
+        DataIdentifier[] dataSetIdentifiers = this.vcData.getVarAndFunctionDataIdentifiers(outputContext);
+
+        ArrayList<String> supportedSpecies = new ArrayList<>();
+
+        for(DataIdentifier specie: dataSetIdentifiers){
+            if(!unsupportedTypes.contains(specie.getVariableType())){
+                supportedSpecies.add(specie.getName());
+            }
+        }
+
+        return supportedSpecies;
+    }
 
 }

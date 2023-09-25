@@ -120,7 +120,7 @@ public class VCellApiApplication extends WadlApplication {
 	public static final String EVENTS_BEGINTIMESTAMP = "beginTimestamp";
 
 	public static final String N5DATA = "n5data";
-	public static final String N5_EXPORT = "n5export";
+	public static final String N5_SUPPORTED_SPECIES = "get_supported_species";
 	public static final String N5_EXPORT_SPECIES = "species";
 	public static final String N5_SIMID = "simid";
 	public static final String N5_COMPRESSION = "compression_level";

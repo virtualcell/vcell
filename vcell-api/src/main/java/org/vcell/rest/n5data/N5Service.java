@@ -25,16 +25,23 @@ public class N5Service {
 
     Logger lg = LogManager.getLogger(N5Service.class);
 
+    private User user;
+    private String simID;
 
-    public N5Service() {
+    private String locationOfSimData;
+    private String pathToVCellSolvers;
 
+
+    public N5Service(String simID, User user) {
+        this.simID = simID;
+        this.user = user;
+        this.locationOfSimData = "/media/zeke/DiskDrive/Home/Work/CCAM/Repos/vcell/vcell-core/src/test/resources/simdata/n5";
+        this.pathToVCellSolvers = "/media/zeke/DiskDrive/App_Installations/VCell_Rel";
     }
 
 
-    public boolean exportToN5(String[] species, String simID, Compression compression, User user) throws IOException, DataAccessException, MathException {
+    public boolean exportToN5(String[] species, Compression compression) throws IOException, DataAccessException, MathException {
         N5Exporter n5Exporter = new N5Exporter();
-        String locationOfSimData = "/media/zeke/DiskDrive/Home/Work/CCAM/Repos/vcell/vcell-core/src/test/resources/simdata/n5";
-        String pathToVCellSolvers = "/media/zeke/DiskDrive/App_Installations/VCell_Rel";
         n5Exporter.initalizeDataControllers(locationOfSimData, simID, pathToVCellSolvers, user.getName(), user.getID().toString());
         ArrayList<DataIdentifier> dataIdentifiers = new ArrayList<>();
         for(String specie: species){
@@ -42,6 +49,13 @@ public class N5Service {
         }
         n5Exporter.exportToN5("/home/zeke/Downloads/apiTest.n5", dataIdentifiers);
         return true;
+    }
+
+
+    public ArrayList<String> supportedSpecies() throws IOException, DataAccessException {
+        N5Exporter n5Exporter = new N5Exporter();
+        n5Exporter.initalizeDataControllers(locationOfSimData, simID, pathToVCellSolvers, user.getName(), user.getID().toString());
+        return n5Exporter.getSupportedSpecies();
     }
 
 
