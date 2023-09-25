@@ -7014,10 +7014,16 @@ private void getSpeciesContextSpecs(List<Element> scsChildren, ReactionContext r
 	    	} 
 	    }
 	    
+	    if(!(SimulationContext.Application.SPRINGSALAD == rxnContext.getSimulationContext().getApplicationType())) {
+	    	continue;
+	    }
 	    // we could do extra validation to make sure that sc has a sp, which has exactly one mtp, aso
 	    // but probably it would be superfluous
 	    SpeciesContext sc = specspec.getSpeciesContext();
 	    SpeciesPattern sp = sc.getSpeciesPattern();
+	    if(sp == null) {
+	    	throw new XmlParseException("Expected non-null SpeciesPattern for " + specspec.getDisplayName());
+	    }
 	    MolecularTypePattern mtp = sp.getMolecularTypePatterns().get(0);
 	    
 	    // all SpeciesContextSpec objects now have an internalLinkSet, if the app is not Springsalad it will be empty
