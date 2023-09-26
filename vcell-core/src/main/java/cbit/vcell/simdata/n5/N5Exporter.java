@@ -12,6 +12,8 @@ import cbit.vcell.solver.VCSimulationIdentifier;
 import com.google.gson.GsonBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.bouncycastle.jcajce.provider.digest.SHA3;
+import org.bouncycastle.util.encoders.Hex;
 import org.janelia.saalfeldlab.n5.*;
 
 import org.jlibsedml.Output;
@@ -23,6 +25,7 @@ import java.io.File;
 import java.io.IOException;
 
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -103,12 +106,10 @@ public class N5Exporter implements ExportConstants {
         long[] dimensions = {vcData.getMesh().getSizeX(), vcData.getMesh().getSizeY(), numVariables, vcData.getMesh().getSizeZ(), numTimes};
         // 51X, 51Y, 1Z, 1C, 2T
         int[] blockSize = {vcData.getMesh().getSizeX(), vcData.getMesh().getSizeY(), 1, vcData.getMesh().getSizeZ(), 1};
-        String dataSet = vcData.getResultsInfoObject().getDataKey().toString() + vcData.getResultsInfoObject().getID();
+        String dataSet = vcDataID.getID();
 
 
-        //TODO CHANGE THIS DIRECTORY
-        File outPutDir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.n5DataDir));
-        N5FSWriter n5FSWriter = new N5FSWriter(outPutDir.getAbsolutePath(), new GsonBuilder());
+        N5FSWriter n5FSWriter = new N5FSWriter(this.getN5FileAbsolutePath(), new GsonBuilder());
         RawCompression rawCompression = new RawCompression();
         DatasetAttributes datasetAttributes = new DatasetAttributes(dimensions, blockSize, org.janelia.saalfeldlab.n5.DataType.FLOAT64, rawCompression);
 
@@ -214,5 +215,31 @@ public class N5Exporter implements ExportConstants {
 
         return supportedSpecies;
     }
+
+    public String getN5FileAbsolutePath(){
+        File outPutDir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.n5DataDir) + "/" + this.n5FileNameHash() + ".n5");
+        return outPutDir.getAbsolutePath();
+    }
+
+    public String getN5DatasetName(){
+        return vcDataID.getID();
+    }
+
+    public String n5FileNameHash(){
+        return actualHash(vcDataID.getID(), String.valueOf(vcDataID.getJobIndex()));
+    }
+
+    public static String n5FileNameHash(String simID, String jobID){
+        return actualHash(simID, jobID);
+    }
+
+    private static String actualHash(String simID, String jobID){
+        SHA3.DigestSHA3 digestSHA3 = new SHA3.Digest256();
+        digestSHA3.update(simID.getBytes(StandardCharsets.UTF_8));
+        digestSHA3.update(jobID.getBytes(StandardCharsets.UTF_8));
+
+        return Hex.toHexString(digestSHA3.digest());
+    }
+
 
 }

@@ -101,8 +101,8 @@ public class N5ExporterTest {
         this.controlModelController = n5Exporter.getDataSetController();
 
         n5Exporter.exportToN5(variables);
-        this.n5Reader = new N5FSReader(PropertyLoader.getRequiredProperty(PropertyLoader.n5DataDir));
-        this.dataSetName = this.controlModel.getResultsInfoObject().getDataKey().toString() + this.controlModel.getResultsInfoObject().getID();
+        this.n5Reader = new N5FSReader(n5Exporter.getN5FileAbsolutePath());
+        this.dataSetName = n5Exporter.getN5DatasetName();
     }
 
 

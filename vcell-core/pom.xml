@@ -390,6 +390,14 @@
 			<version>2.5.1</version>
 		</dependency>
 
+		<!-- https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk18on -->
+		<dependency>
+			<groupId>org.bouncycastle</groupId>
+			<artifactId>bcprov-jdk18on</artifactId>
+			<version>1.76</version>
+		</dependency>
+
+
 	</dependencies>
 	
 	<profiles>
