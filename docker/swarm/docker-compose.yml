@@ -449,7 +449,7 @@ services:
       JCLOUDS_KEYSTONE_SCOPE: ""
       JCLOUDS_KEYSTONE_PROJECT_DOMAIN_NAME: ""
     volumes:
-      - "${VCELL_N5_DATADIR_HOST}:/data"
+      - "${VCELL_N5_DATADIR_HOST}:/data:ro"
 
 networks:
   vcellnet:
