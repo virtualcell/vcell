@@ -6515,6 +6515,11 @@ private SolverTaskDescription getSolverTaskDescription(Element param, Simulation
 			NFsimSimulationOptions nfsimSimulationOptions = getNFSimSimulationOptions(nfsimSimulationOptionsElement);
 			solverTaskDesc.setNFSimSimulationOptions(nfsimSimulationOptions);			
 		}
+		Element langevinSimulationOptionsElement = param.getChild(XMLTags.LangevinSimulationOptions, vcNamespace);
+		if(langevinSimulationOptionsElement != null) {
+			LangevinSimulationOptions langevinSimulationOptions = getLangevinSimulationOptions(langevinSimulationOptionsElement);
+			solverTaskDesc.setLangevinSimulationOptions(langevinSimulationOptions);
+		}
 		Element smoldySimulationOptionsElement = param.getChild(XMLTags.SmoldynSimulationOptions, vcNamespace);
 		if (smoldySimulationOptionsElement != null) {
 			SmoldynSimulationOptions smoldynSimulationOptions = getSmoldySimulationOptions(smoldySimulationOptionsElement);
@@ -6583,7 +6588,23 @@ private NFsimSimulationOptions getNFSimSimulationOptions(Element nfsimSimulation
 	}
 	return so;
 }
-
+private LangevinSimulationOptions getLangevinSimulationOptions(Element langevinSimulationOptionsElement) throws XmlParseException {
+	LangevinSimulationOptions lo = new LangevinSimulationOptions();
+	String temp = null;
+	temp = langevinSimulationOptionsElement.getChildText(XMLTags.LangevinSO_numOfTrials, vcNamespace);
+	if(temp != null) {
+		lo.setNumOfTrials(Integer.parseInt(temp));
+	}
+	temp = langevinSimulationOptionsElement.getChildText(XMLTags.LangevinSO_intervalSpring, vcNamespace);
+	if(temp != null) {
+		lo.setIntervalSpring(Double.parseDouble(temp));
+	}
+	temp = langevinSimulationOptionsElement.getChildText(XMLTags.LangevinSO_intervalImage, vcNamespace);
+	if(temp != null) {
+		lo.setIntervalImage(Double.parseDouble(temp));
+	}
+	return lo;
+}
 private SmoldynSimulationOptions getSmoldySimulationOptions(Element smoldySimulationOptionsElement) throws XmlParseException {
 	
 	SmoldynSimulationOptions sso = null;	

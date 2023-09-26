@@ -54,9 +54,19 @@ public class LangevinSimulationOptions implements Serializable, Matchable, Vetoa
 		if (!(obj instanceof LangevinSimulationOptions)) {
 			return false;
 		}
-		LangevinSimulationOptions nfsimSimulationOptions = (LangevinSimulationOptions)obj;
-
-		// TODO: finish this
+		LangevinSimulationOptions langevinSimulationOptions = (LangevinSimulationOptions)obj;
+		if(numOfTrials != langevinSimulationOptions.numOfTrials) {
+			return false;
+		}
+		if(runIndex != langevinSimulationOptions.runIndex) {
+			return false;
+		}
+		if(intervalSpring != langevinSimulationOptions.intervalSpring) {
+			return false;
+		}
+		if(intervalImage != langevinSimulationOptions.intervalImage) {
+			return false;
+		}
 		return true;
 	}
 // -----------------------------------------------------------------------------------
@@ -79,7 +89,7 @@ public class LangevinSimulationOptions implements Serializable, Matchable, Vetoa
 	public final void setNumOfTrials(int newValue) {
 		this.numOfTrials = newValue;
 	}
-	public final void setIntervalI(double newValue) {
+	public final void setIntervalSpring(double newValue) {
 		this.intervalSpring = newValue;
 	}
 	public final void setIntervalImage(double newValue) {

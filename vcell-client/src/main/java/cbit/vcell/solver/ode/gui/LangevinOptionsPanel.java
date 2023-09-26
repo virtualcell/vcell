@@ -290,7 +290,7 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 		}
 		return numOfTrialsLabel;
 	}
-	private Component getJTextFieldIntervalImage() {
+	private JTextField getJTextFieldIntervalImage() {
 		if (intervalImageTextField == null) {
 			try {
 				intervalImageTextField = new javax.swing.JTextField();
@@ -304,7 +304,7 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 		return intervalImageTextField;
 	}
 
-	private Component getJTextFieldIntervalSpring() {
+	private JTextField getJTextFieldIntervalSpring() {
 		if (intervalSpringTextField == null) {
 			try {
 				intervalSpringTextField = new javax.swing.JTextField();
@@ -361,10 +361,21 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 		setVisible(true);
 		
 		LangevinSimulationOptions lso = solverTaskDescription.getLangevinSimulationOptions();
-		
+		int numTrials = lso.getNumOfTrials();
+		if(numTrials == 1) {
+			getTrajectoryButton().setSelected(true);
+			getJTextFieldNumOfTrials().setEnabled(false);
+		} else {
+			getMultiRunButton().setSelected(true);
+			getJTextFieldNumOfTrials().setEnabled(true);
+			getJTextFieldNumOfTrials().setText(numTrials+"");
+		}
+		getJTextFieldIntervalImage().setText(lso.getIntervalImage()+"");
+		getJTextFieldIntervalSpring().setText(lso.getIntervalSpring()+"");
+
 		// TODO: temporarily disable the button
 		// UNDO THIS WHEN DEVELOPMENT IS COMPLETE
-		if(solverTaskDescription.getSolverDescription().isNFSimSolver()) {
+		if(solverTaskDescription.getSolverDescription().isLangevinSolver()) {
 			getMultiRunButton().setEnabled(false);
 			return;
 		}

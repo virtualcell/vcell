@@ -796,6 +796,7 @@ public class XMLTags {
 	public final static String NFSimSimulationOptions_matchComplexes	= "MatchComplexes";
 	public final static String NFSimSimulationOptions_numOfTrials	= "NumOfTrials";
 
+	// langevin (springsalad) solver simulation options
 	public final static String LangevinSimulationOptions	= "LangevinSimulationOptions";
 	public final static String LangevinSO_numOfTrials		= "NumOfTrials";
 	public final static String LangevinSO_intervalSpring	= "IntervalSpring";
