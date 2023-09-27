@@ -393,8 +393,8 @@
 		<!-- https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk18on -->
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
-			<artifactId>bcprov-jdk18on</artifactId>
-			<version>1.76</version>
+			<artifactId>bcpkix-jdk15on</artifactId>
+			<version>1.70</version>
 		</dependency>
 
 
