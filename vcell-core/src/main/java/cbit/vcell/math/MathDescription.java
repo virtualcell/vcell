@@ -3007,6 +3007,9 @@ public void read_database(CommentStringTokenizer tokens) throws MathException {
 			}
 			if (tokenStr.equalsIgnoreCase(VCML.ParticleMolecularType))
 			{
+				//
+				// TODO: need the isLangevin token !!!
+				//
 				tokenStr = tokens.nextToken();
 				String name = tokenStr;
 				ParticleMolecularType particleMolecularType = new ParticleMolecularType(name);
