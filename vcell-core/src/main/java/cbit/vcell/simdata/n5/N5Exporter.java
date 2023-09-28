@@ -10,10 +10,10 @@ import cbit.vcell.solver.SimulationOwner;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import com.google.gson.GsonBuilder;
+import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.bouncycastle.jcajce.provider.digest.SHA3;
-import org.bouncycastle.util.encoders.Hex;
 import org.janelia.saalfeldlab.n5.*;
 
 import org.jlibsedml.Output;
@@ -29,6 +29,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
@@ -233,12 +235,12 @@ public class N5Exporter implements ExportConstants {
         return actualHash(simID, jobID);
     }
 
-    private static String actualHash(String simID, String jobID){
-        SHA3.DigestSHA3 digestSHA3 = new SHA3.Digest256();
-        digestSHA3.update(simID.getBytes(StandardCharsets.UTF_8));
-        digestSHA3.update(jobID.getBytes(StandardCharsets.UTF_8));
+    private static String actualHash(String simID, String jobID) {
+        MessageDigest sha256 = DigestUtils.getSha256Digest();
+        sha256.update(simID.getBytes(StandardCharsets.UTF_8));
+        sha256.update(jobID.getBytes(StandardCharsets.UTF_8));
 
-        return Hex.toHexString(digestSHA3.digest());
+        return Hex.encodeHexString(sha256.digest());
     }
 
 
