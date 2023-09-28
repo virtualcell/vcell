@@ -33,6 +33,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Random;
 
 /*
@@ -79,7 +80,7 @@ public class N5Exporter implements ExportConstants {
         // Get the simulated datablock output, then rewrite that as chunks within the N5 dataset, not having to
 
     //intake the variables people want, don't just take them all
-    public void exportToN5(ArrayList<DataIdentifier> species) throws MathException, DataAccessException, IOException {
+    public void exportToN5(ArrayList<DataIdentifier> species, Compression compression) throws MathException, DataAccessException, IOException {
         double[] allTimes = vcData.getDataTimes();
 
 
@@ -112,13 +113,11 @@ public class N5Exporter implements ExportConstants {
 
 
         N5FSWriter n5FSWriter = new N5FSWriter(this.getN5FileAbsolutePath(), new GsonBuilder());
-        RawCompression rawCompression = new RawCompression();
-        DatasetAttributes datasetAttributes = new DatasetAttributes(dimensions, blockSize, org.janelia.saalfeldlab.n5.DataType.FLOAT64, rawCompression);
-
-
+        DatasetAttributes datasetAttributes = new DatasetAttributes(dimensions, blockSize, org.janelia.saalfeldlab.n5.DataType.FLOAT64, compression);
+        HashMap<String, Object> additionalMetaData = new HashMap<>();
 
         n5FSWriter.createDataset(dataSet, datasetAttributes);
-        N5MetaData.imageJMetaData(n5FSWriter, dataSet, vcData, numVariables);
+        N5MetaData.imageJMetaData(n5FSWriter, dataSet, vcData, numVariables, additionalMetaData);
 
 
 

@@ -30,6 +30,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Random;
 
 import org.junit.Assert;
 
@@ -77,7 +79,7 @@ public class N5ExporterTest {
         }
     }
 
-    public void initalizeModel(String simKeyID) throws IOException, DataAccessException, MathException {
+    public void initalizeModel(String simKeyID, Compression compression) throws IOException, DataAccessException, MathException {
         N5Exporter n5Exporter = new N5Exporter();
 
         if (simKeyID.equals("4DModel")){
@@ -100,7 +102,7 @@ public class N5ExporterTest {
         this.vcDataID = n5Exporter.getVcDataID();
         this.controlModelController = n5Exporter.getDataSetController();
 
-        n5Exporter.exportToN5(variables);
+        n5Exporter.exportToN5(variables, compression);
         this.n5Reader = new N5FSReader(n5Exporter.getN5FileAbsolutePath());
         this.dataSetName = n5Exporter.getN5DatasetName();
     }
@@ -110,7 +112,7 @@ public class N5ExporterTest {
     public void testMetaData() throws MathException, DataAccessException, IOException {
 
         for(String model: testModels){
-            this.initalizeModel(model);
+            this.initalizeModel(model, new RawCompression());
             //X, Y, T, Z, Channels
             long[] controlDimensions = {controlModel.getMesh().getSizeX(), controlModel.getMesh().getSizeY(), variables.size(), controlModel.getMesh().getSizeZ(), controlModel.getDataTimes().length};
             // tests the metadata, and the metadata may be accurate but the actual raw array of data may be wrong
@@ -135,7 +137,7 @@ public class N5ExporterTest {
         //each block is entire XYZ, broken in time and channels
 
         for(String model: testModels){
-            this.initalizeModel(model);
+            this.initalizeModel(model, new RawCompression());
             OutputContext outputContext = new OutputContext(new AnnotatedFunction[0]);
             double[] times = controlModel.getDataTimes();
 
@@ -152,6 +154,38 @@ public class N5ExporterTest {
                 }
             }
         }
+    }
+
+    // Test only one time slice for each compression type for data equivalence, the time slice is chosen randomly
+    // and random variable, this way it doesn't take forever to test
+    @Test
+    public void testDataCompressionEquivelance() throws MathException, IOException, DataAccessException {
+        ArrayList<Compression> compressions = new ArrayList<>(Arrays.asList(
+                new Bzip2Compression(),
+                new GzipCompression()
+        ));
+
+        for (Compression compression: compressions){
+            for(String model: testModels){
+                this.initalizeModel(model, compression);
+                OutputContext outputContext = new OutputContext(new AnnotatedFunction[0]);
+                double[] times = controlModel.getDataTimes();
+
+                int timeSlice = new Random().nextInt(times.length);
+                int chosenVariable = new Random().nextInt(variables.size());
+
+                DatasetAttributes datasetAttributes = n5Reader.getDatasetAttributes(dataSetName);
+                DataBlock<?> dataBlock = n5Reader.readBlock(dataSetName, datasetAttributes, new long[]{0, 0, chosenVariable, 0, timeSlice});
+
+                double[] exportedData = (double[]) dataBlock.getData();
+                Assert.assertArrayEquals("Equal data with " + compression.getType() + " compression",
+                        controlModelController.getSimDataBlock(outputContext, this.vcDataID, variables.get(chosenVariable).getName(), times[timeSlice]).getData(),
+                        exportedData,
+                        0);
+
+            }
+        }
+
     }
 
 

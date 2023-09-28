@@ -24,7 +24,7 @@ import java.util.HashMap;
  */
 public class N5MetaData {
     //https://github.com/saalfeldlab/n5-ij/wiki/TranslateMetadata#setscale2d
-    public static void imageJMetaData(N5FSWriter n5FSWriter, String datasetPath, VCData vcData, int numChannels) throws MathException, DataAccessException {
+    public static void imageJMetaData(N5FSWriter n5FSWriter, String datasetPath, VCData vcData, int numChannels, HashMap<String, Object> additionalMetData) throws MathException, DataAccessException {
         HashMap<String, Object> metaData = new HashMap<>();
         metaData.put("name", "TestName");
         metaData.put("fps", 0.0);
@@ -40,7 +40,7 @@ public class N5MetaData {
         metaData.put("numFrames", vcData.getDataTimes().length);
         metaData.put("type", 2); //https://imagej.nih.gov/ij/developer/api/ij/ij/ImagePlus.html#getType() Grayscale with float types
         metaData.put("unit", "uM"); //https://imagej.nih.gov/ij/developer/api/ij/ij/measure/Calibration.html#getUnit()
-        metaData.put("properties", new HashMap<>());
+        metaData.put("properties", additionalMetData);
 
         try {
             n5FSWriter.setAttributes(datasetPath, metaData);
