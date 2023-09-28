@@ -44,7 +44,7 @@ public class N5Service {
         for(String specie: species){
             dataIdentifiers.add(n5Exporter.getSpecificDI(specie));
         }
-        n5Exporter.exportToN5(dataIdentifiers);
+        n5Exporter.exportToN5(dataIdentifiers, compression);
     }
 
 
