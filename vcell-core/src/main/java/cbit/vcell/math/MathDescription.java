@@ -3007,12 +3007,21 @@ public void read_database(CommentStringTokenizer tokens) throws MathException {
 			}
 			if (tokenStr.equalsIgnoreCase(VCML.ParticleMolecularType))
 			{
-				//
-				// TODO: need the isLangevin token !!!
-				//
+				boolean isLangevin = false;
+				ParticleMolecularType particleMolecularType = null;
 				tokenStr = tokens.nextToken();
 				String name = tokenStr;
-				ParticleMolecularType particleMolecularType = new ParticleMolecularType(name);
+				tokenStr = tokens.nextToken();
+				if (tokenStr.equalsIgnoreCase(VCML.IsLangevinParticleMolecularType)) {
+					isLangevin = true;
+					particleMolecularType = new LangevinParticleMolecularType(name);
+					tokenStr = tokens.nextToken();
+				} else {
+					particleMolecularType = new ParticleMolecularType(name);
+				}
+				if (!tokenStr.equalsIgnoreCase(VCML.BeginBlock)){
+					throw new MathException("unexpected token "+tokenStr+" expecting "+VCML.BeginBlock);
+				}
 				particleMolecularType.read(tokens);
 				addParticleMolecularType(particleMolecularType);
 				continue;
