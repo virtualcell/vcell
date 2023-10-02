@@ -274,6 +274,11 @@ protected void parse(MathDescription mathDesc, String tokenString,
 		addParticleJumpProcess(particleJumpProcess);
 		return;
 	}			
+	if (tokenString.equalsIgnoreCase(VCML.LangevinParticleJumpProcess)){
+		ParticleJumpProcess particleJumpProcess = LangevinParticleJumpProcess.fromVCML(mathDesc, tokens);
+		addParticleJumpProcess(particleJumpProcess);
+		return;
+	}			
 	if (tokenString.equalsIgnoreCase(VCML.JumpCondition)){
 		tokenString = tokens.nextToken();
 		Variable var = mathDesc.getVariable(tokenString);

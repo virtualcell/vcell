@@ -3007,18 +3007,23 @@ public void read_database(CommentStringTokenizer tokens) throws MathException {
 			}
 			if (tokenStr.equalsIgnoreCase(VCML.ParticleMolecularType))
 			{
-				boolean isLangevin = false;
-				ParticleMolecularType particleMolecularType = null;
 				tokenStr = tokens.nextToken();
 				String name = tokenStr;
 				tokenStr = tokens.nextToken();
-				if (tokenStr.equalsIgnoreCase(VCML.IsLangevinParticleMolecularType)) {
-					isLangevin = true;
-					particleMolecularType = new LangevinParticleMolecularType(name);
-					tokenStr = tokens.nextToken();
-				} else {
-					particleMolecularType = new ParticleMolecularType(name);
+				ParticleMolecularType particleMolecularType = new ParticleMolecularType(name);
+				if (!tokenStr.equalsIgnoreCase(VCML.BeginBlock)) {
+					throw new MathException("unexpected token "+tokenStr+" expecting "+VCML.BeginBlock);
 				}
+				particleMolecularType.read(tokens);
+				addParticleMolecularType(particleMolecularType);
+				continue;
+			}
+			if (tokenStr.equalsIgnoreCase(VCML.LangevinParticleMolecularType))
+			{
+				tokenStr = tokens.nextToken();
+				String name = tokenStr;
+				tokenStr = tokens.nextToken();
+				ParticleMolecularType particleMolecularType = new LangevinParticleMolecularType(name);
 				if (!tokenStr.equalsIgnoreCase(VCML.BeginBlock)){
 					throw new MathException("unexpected token "+tokenStr+" expecting "+VCML.BeginBlock);
 				}

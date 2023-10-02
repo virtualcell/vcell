@@ -39,7 +39,8 @@ public class LangevinParticleMolecularType extends ParticleMolecularType {
 	
 	public String getVCML() {
 		StringBuffer buffer = new StringBuffer();
-		buffer.append(VCML.ParticleMolecularType + " " + getName() + " " + VCML.IsLangevinParticleMolecularType + " " + VCML.BeginBlock);
+//		buffer.append(VCML.ParticleMolecularType + " " + getName() + " " + VCML.IsLangevinParticleMolecularType + " " + VCML.BeginBlock);
+		buffer.append(VCML.LangevinParticleMolecularType + " " + getName() + " " + VCML.BeginBlock);
 		if (getComponentList().size() == 0 && getAnchorList().size() == 0) {
 			buffer.append(" "+VCML.EndBlock+"\n");
 		} else {
