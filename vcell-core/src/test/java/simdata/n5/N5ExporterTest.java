@@ -23,6 +23,8 @@ import org.janelia.saalfeldlab.n5.*;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.vcell.test.Fast;
 import org.vcell.util.DataAccessException;
 
 import java.io.File;
@@ -35,6 +37,7 @@ import java.util.Random;
 
 import org.junit.Assert;
 
+@Category(Fast.class)
 public class N5ExporterTest {
 
     private N5Reader n5Reader;
