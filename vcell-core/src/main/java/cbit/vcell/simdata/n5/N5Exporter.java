@@ -138,6 +138,7 @@ public class N5Exporter implements ExportConstants {
             }
         }
 
+        n5FSWriter.close();
     }
 
     public void initalizeDataControllers(String simKeyID, String userName, String userKey) throws IOException, DataAccessException {

@@ -20,22 +20,16 @@ import cbit.vcell.simdata.n5.N5Exporter;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import org.janelia.saalfeldlab.n5.*;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.TemporaryFolder;
 import org.vcell.test.Fast;
 import org.vcell.util.DataAccessException;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Random;
-
-import org.junit.Assert;
+import java.util.*;
 
 @Category(Fast.class)
 public class N5ExporterTest {
@@ -56,20 +50,31 @@ public class N5ExporterTest {
 
     private static String previousN5Path;
 
+    @Rule
+    public final TemporaryFolder temporaryFolder = new TemporaryFolder();
+
     @Before
     public void setUp() throws IOException {
+        // setup the resources folder as a temp dir
+
+        String n5dir = Objects.requireNonNull(N5ExporterTest.class.getResource("/simdata/n5")).getPath();
+        String n5ExportDir = Objects.requireNonNull(N5Exporter.class.getResource("/simdata/n5/N5ExportData")).getPath();
+
+
         previousInstallRoot = PropertyLoader.getProperty(PropertyLoader.installationRoot, null);
         System.setProperty(PropertyLoader.installationRoot, new File("..").getAbsolutePath());
 
         previousPrimarySimDir = PropertyLoader.getProperty(PropertyLoader.primarySimDataDirInternalProperty, null);
-        System.setProperty(PropertyLoader.primarySimDataDirInternalProperty, new File("src/test/resources/simdata/n5").getAbsolutePath());
+        System.setProperty(PropertyLoader.primarySimDataDirInternalProperty, n5dir);
 
         previousN5Path = PropertyLoader.getProperty(PropertyLoader.n5DataDir, null);
-        System.setProperty(PropertyLoader.n5DataDir, new File("src/test/resources/simdata/n5/N5ExportData").getAbsolutePath());
+        System.setProperty(PropertyLoader.n5DataDir, n5ExportDir);
     }
 
     @After
     public void restore(){
+        // tear down the temp dir
+
         if (previousInstallRoot != null) {
             System.setProperty(PropertyLoader.installationRoot, previousInstallRoot);
         }
@@ -106,6 +111,9 @@ public class N5ExporterTest {
         this.controlModelController = n5Exporter.getDataSetController();
 
         n5Exporter.exportToN5(variables, compression);
+        if(n5Reader != null){
+            n5Reader.close();
+        }
         this.n5Reader = new N5FSReader(n5Exporter.getN5FileAbsolutePath());
         this.dataSetName = n5Exporter.getN5DatasetName();
     }
