@@ -14,6 +14,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.admin.cli.CLIDatabaseService;
 import org.vcell.sbml.OmexPythonUtils;
+import org.vcell.sbml.UnsupportedSbmlExportException;
 import org.vcell.sedml.*;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.BioModelInfo;
@@ -42,6 +43,7 @@ public class VcmlOmexConverter {
 	public static void convertOneFile(File input,
 									  File outputDir,
 									  ModelFormat modelFormat,
+									  SEDMLEventLog passedInSedmlEventLog,
 									  boolean bWriteLogFiles,
 									  boolean bValidateOmex,
 									  boolean bSkipUnsupportedApps)
@@ -53,12 +55,15 @@ public class VcmlOmexConverter {
 		logger.debug("Beginning conversion of `" + input + "`");
 		Predicate<Simulation> simulationExportFilter = simulation -> true;
 		BioModelInfo bioModelInfo = null;
-		final SEDMLEventLog sedmlEventLog;
-		if (bWriteLogFiles) {
+		SEDMLEventLog sedmlEventLog;
+		if (passedInSedmlEventLog != null){
+			sedmlEventLog = passedInSedmlEventLog;
+		} else if (bWriteLogFiles) {
 			sedmlEventLog = new SEDMLEventLogFile(new File(outputDir, jobLogFileName));
 		} else {
 			sedmlEventLog = (String entry) -> {};
 		}
+
 		boolean bHasPython = true;
 		List<SEDMLTaskRecord> sedmlTaskRecords = SEDMLExporter.writeBioModel(
 				input,
@@ -204,19 +209,22 @@ public class VcmlOmexConverter {
 						bSkipUnsupportedApps,
 						bHasPython,
 						bValidateOmex);
-				if (!sedmlTaskRecords.stream().anyMatch((SEDMLTaskRecord r) -> r.getTaskResult() == TaskResult.FAILED)) {
+				if (sedmlTaskRecords.stream().noneMatch((SEDMLTaskRecord r) -> r.getTaskResult() == TaskResult.FAILED)) {
 					logger.info("Combine archive created for `" + inputFileName + "`");
 				} else {
 					List<String> errorList = sedmlTaskRecords.stream()
 							.filter((SEDMLTaskRecord r) -> r.getTaskResult() == TaskResult.FAILED)
-							.map((SEDMLTaskRecord r) -> r.getCSV())
+							.map(SEDMLTaskRecord::getCSV)
 							.collect(Collectors.toList());
 					String msg = "Failed converting VCML to OMEX archive for `" + inputFileName + "`, errors: " + errorList;
 					logger.error(msg);
-					throw new RuntimeException(msg);
+					throw new VCMLConversionException(msg);
 				}
-			} catch (SEDMLExporter.SEDMLExportException | OmexPythonUtils.OmexValidationException e) {
+			} catch (SEDMLExporter.SEDMLExportException | OmexPythonUtils.OmexValidationException | VCMLConversionException e) {
 				logger.error("Failed converting VCML to OMEX archive for `" + inputFileName + "`", e);
+			} catch (Exception e){
+				logger.error("Unexpected Exception occurred while converting VCML:\n\t", e);
+				throw e;
 			}
 		}
 		logger.debug("Completed conversion of files in `" + inputDir + "`");

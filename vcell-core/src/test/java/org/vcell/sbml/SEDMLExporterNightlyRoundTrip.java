@@ -24,31 +24,31 @@ import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-public abstract class SEDMLExporterCommon {
+public abstract class SEDMLExporterNightlyRoundTrip {
 
 	static class TestCase {
-		public final String filename;
+		public final File VCML;
 		public final ModelFormat modelFormat;
 
-		public TestCase(String filename, ModelFormat modelFormat){
-			this.filename = filename;
+		public TestCase(File VCML, ModelFormat modelFormat){
+			this.VCML = VCML;
 			this.modelFormat = modelFormat;
 		}
 	}
 
 
-	final TestCase testCase;
-
+	final protected TestCase testCase;
 	private static boolean bDebug = false;
 
 	//
-	// save state for zero side-effect
+	// save state for zero side effects
 	//
+	protected static String locationOfVcmlToTest;
 	private static String previousInstallDirPropertyValue;
 	private static String previousCliWorkDirPropertyValue;
 	private static boolean previousWriteDebugFiles;
 
-	public SEDMLExporterCommon(TestCase testCase){
+	public SEDMLExporterNightlyRoundTrip(TestCase testCase){
 		this.testCase = testCase;
 	}
 
@@ -68,7 +68,9 @@ public abstract class SEDMLExporterCommon {
 		SBML_IMPORT_FAILURE,
 		DIVIDE_BY_ZERO,
 		UNSUPPORTED_NONSPATIAL_STOCH_HISTOGRAM,
-		SEDML_UNSUPPORTED_ENTITY
+		SEDML_UNSUPPORTED_ENTITY,
+		UNKNOWN_FAULT_OCCURRED
+
 	};
 
 	public enum SEDML_FAULT {
@@ -81,7 +83,8 @@ public abstract class SEDMLExporterCommon {
 		MATH_OVERRIDE_NOT_EQUIVALENT,
 		MATH_OVERRIDE_NAMES_DIFFERENT,
 		SIMCONTEXT_NOT_FOUND_BY_NAME,
-		SIMULATION_NOT_FOUND_BY_NAME
+		SIMULATION_NOT_FOUND_BY_NAME,
+		UNKNOWN_SEDML_FAULT_OCCURRED
 	};
 
 	@BeforeClass
@@ -126,13 +129,13 @@ public abstract class SEDMLExporterCommon {
 
 
 	void sedml_roundtrip_common() throws Exception {
-		String test_case_name = testCase.modelFormat+"."+testCase.filename;
-		InputStream testFileInputStream = VcmlTestSuiteFiles.getVcmlTestCase(testCase.filename);
-		String vcmlStr = new BufferedReader(new InputStreamReader(testFileInputStream))
-				.lines().collect(Collectors.joining("\n"));
+		String test_case_name = testCase.modelFormat + "." + testCase.VCML.getName();
+		String vcmlStr;
+		try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(testCase.VCML)))){
+			vcmlStr = br.lines().collect(Collectors.joining("\n"));
+		}
 
 		BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(vcmlStr));
-
 		bioModel.updateAll(false);
 
 		Predicate<Simulation> simulationExportFilter = sim -> true;
@@ -178,12 +181,12 @@ public abstract class SEDMLExporterCommon {
 					}
 				}
 				bAnyFailures |= bFailed;
-				if (!knownFaults().containsKey(testCase.filename)) {
+				if (!knownFaults().containsKey(testCase.VCML.getName())) {
 					// skip assert if the model is known to have a problem
 					Assert.assertFalse(sedmlTaskRecord.getCSV(), bFailed);
 				}
 			}
-			FAULT knownFault = knownFaults().get(testCase.filename);
+			FAULT knownFault = knownFaults().get(testCase.VCML.getName());
 			if (knownFault != null){
 				// if in the knownFaults list, the model should fail
 				// this is how we can keep track of our list of known problems
@@ -257,95 +260,115 @@ public abstract class SEDMLExporterCommon {
 				Assert.assertTrue("math overrides not equivalent for simulation '"+simName+"' in simContext '"+simContextName+"'", mathOverrideEquiv);
 			}
 
-			Assert.assertNull("file "+test_case_name+" passed SEDML Round trip, but knownSEDMLFault was set", knownSEDMLFaults().get(testCase.filename));
-		}catch (Exception | AssertionError e){
+			Assert.assertNull("file "+test_case_name+" passed SEDML Round trip, but knownSEDMLFault was set", knownSEDMLFaults().get(testCase.VCML.getName()));
+		} catch (Exception | AssertionError e){
+			RoundTripException curatedException = new RoundTripException(false, SEDML_FAULT.UNKNOWN_SEDML_FAULT_OCCURRED);
 			if (e instanceof OmexPythonUtils.OmexValidationException){
 				OmexPythonUtils.OmexValidationException validationException = (OmexPythonUtils.OmexValidationException) e;
 				if (validationException.errors.stream()
 						.anyMatch(err -> err.type == OmexPythonUtils.OmexValidationErrorType.OMEX_PARSE_ERROR)){
-					if (knownSEDMLFaults().get(testCase.filename) == SEDML_FAULT.OMEX_PARSER_ERRORS) {
-						System.err.println("Expected error: "+e.getMessage());
-						return;
+					if (knownSEDMLFaults().get(testCase.VCML.getName()) == SEDML_FAULT.OMEX_PARSER_ERRORS) {
+						System.err.println("Expected error: " + e.getMessage());
+						curatedException = new RoundTripException(e, true, SEDML_FAULT.OMEX_PARSER_ERRORS);
 					}else{
-						System.err.println("add SEDML_FAULT.OMEX_PARSER_ERRORS to "+test_case_name+": "+e.getMessage());
+						String message = "add SEDML_FAULT.OMEX_PARSER_ERRORS to " + test_case_name + ": " + e.getMessage();
+						System.err.println(message);
+						curatedException = new RoundTripException(message, e, false, SEDML_FAULT.OMEX_PARSER_ERRORS);
 					}
 				}
 				if (validationException.errors.stream()
 						.anyMatch(err -> err.type == OmexPythonUtils.OmexValidationErrorType.OMEX_VALIDATION_ERROR)){
-					if (knownSEDMLFaults().get(testCase.filename) == SEDML_FAULT.OMEX_VALIDATION_ERRORS) {
-						System.err.println("Expected error: "+e.getMessage());
-						return;
+					if (knownSEDMLFaults().get(testCase.VCML.getName()) == SEDML_FAULT.OMEX_VALIDATION_ERRORS) {
+						System.err.println("Expected error: " + e.getMessage());
+						curatedException = new RoundTripException(e, true, SEDML_FAULT.OMEX_VALIDATION_ERRORS);
 					}else{
-						System.err.println("add SEDML_FAULT.OMEX_VALIDATION_ERRORS to "+test_case_name+": "+e.getMessage());
+						String message = "add SEDML_FAULT.OMEX_VALIDATION_ERRORS to " + test_case_name + ": " + e.getMessage();
+						System.err.println(message);
+						curatedException = new RoundTripException(message, e, false, SEDML_FAULT.OMEX_VALIDATION_ERRORS);
 					}
 				}
 			}
 			if (e.getMessage()!=null && e.getMessage().contains("There are no models in ")){
-				if (knownSEDMLFaults().get(testCase.filename) == SEDML_FAULT.NO_MODELS_IN_OMEX) {
-					System.err.println("Expected error: "+e.getMessage());
-					return;
+				if (knownSEDMLFaults().get(testCase.VCML.getName()) == SEDML_FAULT.NO_MODELS_IN_OMEX) {
+					System.err.println("Expected error: " + e.getMessage());
+					curatedException = new RoundTripException(e, true, SEDML_FAULT.NO_MODELS_IN_OMEX);
 				}else{
-					System.err.println("add SEDML_FAULT.NO_MODELS_IN_OMEX to "+test_case_name);
+					String message = "add SEDML_FAULT.NO_MODELS_IN_OMEX to " + test_case_name;
+					System.err.println(message);
+					curatedException = new RoundTripException(message, e, false, SEDML_FAULT.NO_MODELS_IN_OMEX);
 				}
 			}
 			if (e.getMessage()!=null && e.getMessage().contains("expecting 1 biomodel in round trip")){
-				if (knownSEDMLFaults().get(testCase.filename) == SEDML_FAULT.DIFF_NUMBER_OF_BIOMODELS) {
-					System.err.println("Expected error: "+e.getMessage());
-					return;
+				if (knownSEDMLFaults().get(testCase.VCML.getName()) == SEDML_FAULT.DIFF_NUMBER_OF_BIOMODELS) {
+					System.err.println("Expected error: " + e.getMessage());
+					curatedException = new RoundTripException(e, true, SEDML_FAULT.DIFF_NUMBER_OF_BIOMODELS);
 				}else{
-					System.err.println("add SEDML_FAULT.DIFF_NUMBER_OF_BIOMODELS to "+test_case_name);
+					String message = "add SEDML_FAULT.DIFF_NUMBER_OF_BIOMODELS to " + test_case_name;
+					System.err.println(message);
+					curatedException = new RoundTripException(message, e, false, SEDML_FAULT.DIFF_NUMBER_OF_BIOMODELS);
 				}
 			}
 			if (e.getMessage()!=null && e.getMessage().contains("Error constructing a new simulation context")) {
-				if (knownSEDMLFaults().get(testCase.filename) == SEDML_FAULT.ERROR_CONSTRUCTING_SIMCONTEXT) {
-					System.err.println("Expected error: "+e.getMessage());
-					return;
+				if (knownSEDMLFaults().get(testCase.VCML.getName()) == SEDML_FAULT.ERROR_CONSTRUCTING_SIMCONTEXT) {
+					System.err.println("Expected error: " + e.getMessage());
+					curatedException = new RoundTripException(e, true, SEDML_FAULT.ERROR_CONSTRUCTING_SIMCONTEXT);
 				} else {
-					System.err.println("add SEDML_FAULT.ERROR_CONSTRUCTING_SIMCONTEXT to " + test_case_name);
+					String message = "add SEDML_FAULT.ERROR_CONSTRUCTING_SIMCONTEXT to " + test_case_name;
+					System.err.println(message);
+					curatedException = new RoundTripException(message, e, false, SEDML_FAULT.ERROR_CONSTRUCTING_SIMCONTEXT);
 				}
 			}
 			if (e.getMessage()!=null && e.getMessage().contains("non-spatial stochastic simulation with histogram option to SEDML not supported")) {
-				if (knownSEDMLFaults().get(testCase.filename) == SEDML_FAULT.NONSPATIAL_STOCH_HISTOGRAM) {
-					System.err.println("Expected error: "+e.getMessage());
-					return;
+				if (knownSEDMLFaults().get(testCase.VCML.getName()) == SEDML_FAULT.NONSPATIAL_STOCH_HISTOGRAM) {
+					System.err.println("Expected error: " + e.getMessage());
+					curatedException = new RoundTripException(e, true, SEDML_FAULT.NONSPATIAL_STOCH_HISTOGRAM);
 				} else {
-					System.err.println("add SEDML_FAULT.NONSPATIAL_STOCH_HISTOGRAM to " + test_case_name);
+					String message = "add SEDML_FAULT.NONSPATIAL_STOCH_HISTOGRAM to " + test_case_name;
+					System.err.println(message);
+					curatedException = new RoundTripException(message, e, false, SEDML_FAULT.NONSPATIAL_STOCH_HISTOGRAM);
 				}
 			}
 			if (e.getMessage()!=null && e.getMessage().contains("math overrides not equivalent for simulation")) {
-				if (knownSEDMLFaults().get(testCase.filename) == SEDML_FAULT.MATH_OVERRIDE_NOT_EQUIVALENT) {
-					System.err.println("Expected error: "+e.getMessage());
-					return;
+				if (knownSEDMLFaults().get(testCase.VCML.getName()) == SEDML_FAULT.MATH_OVERRIDE_NOT_EQUIVALENT) {
+					System.err.println("Expected error: " + e.getMessage());
+					curatedException = new RoundTripException(e, true, SEDML_FAULT.MATH_OVERRIDE_NOT_EQUIVALENT);
 				} else {
-					System.err.println("add SEDML_FAULT.MATH_OVERRIDE_NOT_EQUIVALENT to " + test_case_name);
+					String message = "add SEDML_FAULT.MATH_OVERRIDE_NOT_EQUIVALENT to " + test_case_name;
+					System.err.println(message);
+					curatedException = new RoundTripException(message, e, false, SEDML_FAULT.MATH_OVERRIDE_NOT_EQUIVALENT);
 				}
 			}
 			if (e.getMessage()!=null && e.getMessage().contains("math overrides names not equivalent for simulation")) {
-				if (knownSEDMLFaults().get(testCase.filename) == SEDML_FAULT.MATH_OVERRIDE_NAMES_DIFFERENT) {
-					System.err.println("Expected error: "+e.getMessage());
-					return;
+				if (knownSEDMLFaults().get(testCase.VCML.getName()) == SEDML_FAULT.MATH_OVERRIDE_NAMES_DIFFERENT) {
+					System.err.println("Expected error: " + e.getMessage());
+					curatedException = new RoundTripException(e, true, SEDML_FAULT.MATH_OVERRIDE_NAMES_DIFFERENT);
 				} else {
-					System.err.println("add SEDML_FAULT.MATH_OVERRIDE_NAMES_DIFFERENT to " + test_case_name);
+					String message = "add SEDML_FAULT.MATH_OVERRIDE_NAMES_DIFFERENT to " + test_case_name;
+					System.err.println(message);
+					curatedException = new RoundTripException(message, e, false, SEDML_FAULT.MATH_OVERRIDE_NAMES_DIFFERENT);
 				}
 			}
 			if (e.getMessage()!=null && e.getMessage().contains("roundtripped simulationContext not found with name")) {
-				if (knownSEDMLFaults().get(testCase.filename) == SEDML_FAULT.SIMCONTEXT_NOT_FOUND_BY_NAME) {
-					System.err.println("Expected error: "+e.getMessage());
-					return;
+				if (knownSEDMLFaults().get(testCase.VCML.getName()) == SEDML_FAULT.SIMCONTEXT_NOT_FOUND_BY_NAME) {
+					System.err.println("Expected error: " + e.getMessage());
+					curatedException = new RoundTripException(e, true, SEDML_FAULT.SIMCONTEXT_NOT_FOUND_BY_NAME);
 				} else {
-					System.err.println("add SEDML_FAULT.SIMCONTEXT_NOT_FOUND_BY_NAME to " + test_case_name);
+					String message = "add SEDML_FAULT.SIMCONTEXT_NOT_FOUND_BY_NAME to " + test_case_name;
+					System.err.println(message);
+					curatedException = new RoundTripException(message, e, false, SEDML_FAULT.SIMCONTEXT_NOT_FOUND_BY_NAME);
 				}
 			}
 			if (e.getMessage()!=null && e.getMessage().contains("roundtripped simulation not found with name")) {
-				if (knownSEDMLFaults().get(testCase.filename) == SEDML_FAULT.SIMULATION_NOT_FOUND_BY_NAME) {
-					System.err.println("Expected error: "+e.getMessage());
-					return;
+				if (knownSEDMLFaults().get(testCase.VCML.getName()) == SEDML_FAULT.SIMULATION_NOT_FOUND_BY_NAME) {
+					System.err.println("Expected error: " + e.getMessage());
+					curatedException = new RoundTripException(e, true, SEDML_FAULT.SIMULATION_NOT_FOUND_BY_NAME);
 				} else {
-					System.err.println("add SEDML_FAULT.SIMULATION_NOT_FOUND_BY_NAME to " + test_case_name);
+					String message = "add SEDML_FAULT.SIMULATION_NOT_FOUND_BY_NAME to " + test_case_name;
+					System.err.println(message);
+					curatedException = new RoundTripException(message, e, false, SEDML_FAULT.SIMULATION_NOT_FOUND_BY_NAME);
 				}
 			}
-			throw e;
+			throw curatedException;
 		}
 	}
-
 }

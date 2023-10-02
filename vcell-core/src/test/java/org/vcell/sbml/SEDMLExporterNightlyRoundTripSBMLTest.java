@@ -1,70 +1,59 @@
 package org.vcell.sbml;
 
 import cbit.vcell.resource.NativeLib;
-import org.junit.After;
-import org.junit.Before;
+import cbit.vcell.resource.PropertyLoader;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.vcell.sbml.vcell.SBMLExporter;
 import org.vcell.sedml.ModelFormat;
-import org.vcell.test.SEDML_SBML_IT;
+import org.vcell.test.RoundTrip;
 
+import java.io.*;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @RunWith(Parameterized.class)
-@Category({SEDML_SBML_IT.class})
-public class SEDMLExporterSBMLTest extends SEDMLExporterCommon {
+@Category({RoundTrip.class})
+public class SEDMLExporterNightlyRoundTripSBMLTest extends SEDMLExporterNightlyRoundTrip {
 
-	private String previousInstallDirPropertyValue;
-	private String previousCliWorkDirPropertyValue;
+	private final static String RESULTS_FILE_NAME = "rawRoundTripResults.txt";
+	private static RoundTripStatistics resultsStatistics;
 
-	public SEDMLExporterSBMLTest(TestCase testCase){
+	@BeforeClass
+	public static void setup(){
+		SEDMLExporterNightlyRoundTrip.setup();
+		SEDMLExporterNightlyRoundTripSBMLTest.resultsStatistics = new RoundTripStatistics();
+	}
+
+	@AfterClass
+	public static void teardown() throws IOException {
+		Path resultsPath = Paths.get(PropertyLoader.getProperty(
+				PropertyLoader.vcellVcmlLocation, System.getProperty("user.home")), "results" , RESULTS_FILE_NAME);
+		if (!(resultsPath.getParent().toFile().exists() && resultsPath.getParent().toFile().isDirectory())){
+			resultsPath.getParent().toFile().mkdirs();
+		}
+		try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(resultsPath.toString()))){
+			SEDMLExporterNightlyRoundTripSBMLTest.resultsStatistics.exportResultsToWriter(bufferedWriter);
+		} catch (IOException e){
+			throw new RuntimeException("Unable to open results file writer.", e);
+		}
+		SEDMLExporterNightlyRoundTrip.teardown();
+	}
+
+	public SEDMLExporterNightlyRoundTripSBMLTest(TestCase testCase){
 		super(testCase);
 	}
 
-	/**
-	 * 	each file in the slowTestSet takes > 10s on disk and is not included in the unit test (move to integration testing)
-	 */
-	static Set<String> slowTestSet() {
-		Set<String> slowModels = new HashSet<>();
-		slowModels.add("biomodel_101981216.vcml");    // 29s
-		slowModels.add("biomodel_147699816.vcml");    // 23s
-		slowModels.add("biomodel_17326658.vcml");     // 24s
-		slowModels.add("biomodel_188880263.vcml");    // 89s
-		slowModels.add("biomodel_200301029.vcml");    // 124s (and fails with java.lang.OutOfMemoryError: GC overhead limit exceeded)
-		slowModels.add("biomodel_200301683.vcml");    // 37s
-		slowModels.add("biomodel_28625786.vcml");     // 57s
-		slowModels.add("biomodel_34826524.vcml");     // 129s
-		slowModels.add("biomodel_47429473.vcml");     // 194s
-		slowModels.add("biomodel_59361239.vcml");     // 116s
-		slowModels.add("biomodel_60799209.vcml");     // 41s
-		slowModels.add("biomodel_61699798.vcml");     // 69s
-		slowModels.add("biomodel_62467093.vcml");     // 23s
-		slowModels.add("biomodel_62477836.vcml");     // 30s
-		slowModels.add("biomodel_62585003.vcml");     // 24s
-		slowModels.add("biomodel_66264206.vcml");     // 45s
-		slowModels.add("biomodel_93313420.vcml");     // 137s
-		slowModels.add("biomodel_9590643.vcml");      // 40s
-		return slowModels;
-	}
-
-	static Set<String> outOfMemorySet() {
-		Set<String> outOfMemoryModels = new HashSet<>();
-		outOfMemoryModels.add("biomodel_101963252.vcml"); // FAULT.JAVA_HEAP_SPACE
-		outOfMemoryModels.add("biomodel_200301029.vcml"); // FAULT.OUT_OF_MEMORY - GC Overhead Limit Exceeded (and 124s)
-		outOfMemoryModels.add("biomodel_26455186.vcml");  // FAULT.OUT_OF_MEMORY - GC Overhead Limit Exceeded
-		outOfMemoryModels.add("biomodel_27192647.vcml");  // FAULT.OUT_OF_MEMORY - GC Overhead Limit Exceeded
-		outOfMemoryModels.add("biomodel_27192717.vcml");  // FAULT.OUT_OF_MEMORY) - Java heap space: failed reallocation of scalar replaced objects
-		return outOfMemoryModels;
-	}
-
 	@Override
-	Map<String, SEDMLExporterCommon.FAULT> knownFaults() {
+	Map<String, FAULT> knownFaults() {
 		HashMap<String, FAULT> faults = new HashMap<>();
 		faults.put("biomodel_123269393.vcml", FAULT.MATHOVERRIDES_INVALID); // Kf_r7 - biomodel needs fixing - MathOverrides has entry for non-existent parameter Kf_r7
 		faults.put("biomodel_124562627.vcml", FAULT.NULL_POINTER_EXCEPTION); // CSG/analytic geometry issue - SBML model does not have any geometryDefinition. Cannot proceed with import
@@ -77,7 +66,7 @@ public class SEDMLExporterSBMLTest extends SEDMLExporterCommon {
 	}
 
 	@Override
-	Map<String, SEDMLExporterCommon.SEDML_FAULT> knownSEDMLFaults() {
+	Map<String, SEDML_FAULT> knownSEDMLFaults() {
 		HashMap<String, SEDML_FAULT> faults = new HashMap<>();
 		faults.put("__export_adv_test.vcml", SEDML_FAULT.SIMULATION_NOT_FOUND_BY_NAME);  // round-tripped simulation not found with name 'spatialnoscan'
 		faults.put("biomodel_100596964.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
@@ -96,11 +85,11 @@ public class SEDMLExporterSBMLTest extends SEDMLExporterCommon {
 		faults.put("biomodel_145545992.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_148700996.vcml", SEDML_FAULT.MATH_OVERRIDE_NAMES_DIFFERENT); // simulation 'Full sim' in simContext 'Fast B Compartmental'
 		faults.put("biomodel_154961582.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
-//		faults.put("biomodel_155016832.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
+		faults.put("biomodel_155016832.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_156134818.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_16763273.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_16804037.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
-//		faults.put("biomodel_168717401.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
+		faults.put("biomodel_168717401.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_169993006.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_17098642.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_17257105.vcml", SEDML_FAULT.MATH_OVERRIDE_NAMES_DIFFERENT);  // simulation '1 uM iso' in simContext 'compartmental'
@@ -177,34 +166,79 @@ public class SEDMLExporterSBMLTest extends SEDMLExporterCommon {
 		faults.put("biomodel_65311813.vcml", SEDML_FAULT.OMEX_PARSER_ERRORS);  //  XPATH_BAD:  XPath `/sbml:sbml/sbml:model/sbml:listOfParameters/sbml:parameter[@id='Ran_nuc_diff']/@value` does not match any elements of model `_3d_image_0`
 		return faults;
 	}
-		@Parameterized.Parameters
+	@Parameterized.Parameters
 	public static Collection<TestCase> testCases() {
-		Predicate<String> skipFilter_SBML = (t) ->
-				!outOfMemorySet().contains(t) &&
-				!largeFileSet().contains(t) &&
-				!slowTestSet().contains(t);
-		Stream<TestCase> sbml_test_cases = Arrays.stream(VcmlTestSuiteFiles.getVcmlTestCases()).filter(skipFilter_SBML).map(fName -> new TestCase(fName, ModelFormat.SBML));
-		return sbml_test_cases.collect(Collectors.toList());
+		File testResourceDir;
+
+		try {
+			PropertyLoader.loadProperties(new String[]{PropertyLoader.vcellVcmlLocation});
+		} catch (IOException e){
+			throw new RuntimeException("Error loading properties", e);
+		}
+
+		// Check that the env var for the input directory has been set.
+		SEDMLExporterNightlyRoundTrip.locationOfVcmlToTest = PropertyLoader.getProperty(PropertyLoader.vcellVcmlLocation, null);
+		if (SEDMLExporterNightlyRoundTrip.locationOfVcmlToTest == null)
+			throw new RuntimeException(
+					String.format("Please set the `%s` system property with the path to the input file directory",
+							PropertyLoader.vcellVcmlLocation));
+
+		// Input validate the property's value
+		try {
+			testResourceDir = (new File(SEDMLExporterNightlyRoundTrip.locationOfVcmlToTest)).getCanonicalFile();
+		} catch (IOException e){
+			String message = String.format("Unable to determine the canonical path to provided directory `%s`.\n"
+					+ "\tPlease check that the `%s` system property has been set properly",
+						SEDMLExporterNightlyRoundTrip.locationOfVcmlToTest, PropertyLoader.vcellVcmlLocation);
+			throw new RuntimeException(message, e);
+		}
+		// Validate the status of the input directory as a valid directory full of VCMLs
+		if (!testResourceDir.isDirectory()) throw new RuntimeException(
+				String.format("Path `%s` provided by property `%s` is not a directory", testResourceDir.getPath(),
+						PropertyLoader.vcellVcmlLocation));
+
+		// Prepare Filtering
+		FilenameFilter exemptFilesFilter = new NightlyRoundTripVCMLFilenameFilter();
+		Predicate<String> skipFilter_VCML = (t) -> exemptFilesFilter.accept(testResourceDir, t);
+
+		// Collect Filenames to test with.
+		File[] filenamesToTest = testResourceDir.listFiles(exemptFilesFilter);
+		Stream<TestCase> vcmlTestCases = Arrays.stream(filenamesToTest).map(file -> new TestCase(file, ModelFormat.SBML));
+
+		//Stream<TestCase> sbml_test_cases = Arrays.stream(VcmlTestSuiteFiles.getVcmlTestCases()).filter(skipFilter_VCML).map(fName -> new TestCase(fName, ModelFormat.SBML));
+		//return sbml_test_cases.collect(Collectors.toList());
+		return vcmlTestCases.collect(Collectors.toList());
 //		return Arrays.asList(
 //				new TestCase("biomodel_31523791.vcml", ModelFormat.SBML),
 //				new TestCase("biomodel_34855932.vcml", ModelFormat.SBML),
 //				new TestCase("biomodel_40882931.vcml", ModelFormat.SBML),
 //				new TestCase("biomodel_40883509.vcml", ModelFormat.SBML),
 //				new TestCase("biomodel_65311813.vcml", ModelFormat.SBML),
-//				new TestCase("biomodel_155016832.vcml", ModelFormat.SBML)
+//				new TestCase("biomodel_82065439.vcml", ModelFormat.SBML)
 //				);
 	}
 
 	@Test
 	public void test_sedml_roundtrip_SBML() throws Exception {
-		if (knownFaults().containsKey(testCase.filename)) {
+		if (knownFaults().containsKey(testCase.VCML.getName())) {
 			return; // skip known faults
 		}
 //		if (knownSEDMLFaults().get(testCase.filename) != SEDML_FAULT.MATH_OVERRIDE_NOT_EQUIVALENT
 //				&& knownSEDMLFaults().get(testCase.filename) != SEDML_FAULT.MATH_OVERRIDE_NAMES_DIFFERENT){
 //			return;
 //		}
-		sedml_roundtrip_common();
-	}
 
+		try {
+			sedml_roundtrip_common();
+			resultsStatistics.recordSuccessResult();
+		} catch (RoundTripException e){
+			resultsStatistics.recordFailureResult(e);
+			if (e.wasTheExpectedResult) return;
+			throw e;
+		} catch (Exception e){
+			RoundTripException curatedException = new RoundTripException(e, false, SEDML_FAULT.UNKNOWN_SEDML_FAULT_OCCURRED);
+			resultsStatistics.recordFailureResult(curatedException);
+			throw curatedException;
+		}
+	}
 }

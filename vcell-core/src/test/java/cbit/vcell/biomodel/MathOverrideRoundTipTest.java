@@ -42,6 +42,7 @@ public class MathOverrideRoundTipTest {
     // save state for zero side-effect
     //
     private String previousInstalldirPropertyValue;
+    private String previousCliWorkDirPropertyValue;
     private boolean previousWriteDebugFiles;
 
     public MathOverrideRoundTipTest(String filename) {
@@ -64,7 +65,9 @@ public class MathOverrideRoundTipTest {
     @Before
     public void setup() {
         previousInstalldirPropertyValue = System.getProperty("vcell.installDir");
+        previousCliWorkDirPropertyValue = System.getProperty("cli.workingDir");
         System.setProperty("vcell.installDir", "..");
+        System.setProperty("cli.workingDir", System.getProperty("vcell.installDir") + "/vcell-cli-utils");
         NativeLib.combinej.load();
         this.previousWriteDebugFiles = SBMLExporter.bWriteDebugFiles;
         SBMLExporter.bWriteDebugFiles = bDebug;
@@ -72,8 +75,11 @@ public class MathOverrideRoundTipTest {
 
     @After
     public void teardown() {
-        if (previousInstalldirPropertyValue!=null) {
+        if (previousInstalldirPropertyValue != null) {
             System.setProperty("vcell.installDir", previousInstalldirPropertyValue);
+        }
+        if (previousCliWorkDirPropertyValue != null) {
+            System.setProperty("cli.workingDir", previousCliWorkDirPropertyValue);
         }
         SBMLExporter.bWriteDebugFiles = previousWriteDebugFiles;
     }

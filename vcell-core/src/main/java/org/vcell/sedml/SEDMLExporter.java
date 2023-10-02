@@ -116,7 +116,8 @@ public class SEDMLExporter {
 	}
 
 	public SEDMLDocument getSEDMLDocument(String sPath, String sBaseFileName, ModelFormat modelFormat,
-				boolean bRoundTripSBMLValidation, Predicate<SimulationContext> simContextExportFilter) {
+				boolean bRoundTripSBMLValidation, Predicate<SimulationContext> simContextExportFilter) throws
+			SEDMLExportException {
 		
 		double start = System.currentTimeMillis();
 
@@ -151,8 +152,14 @@ public class SEDMLExporter {
 		sedmlModel = sedmlDocument.getSedMLModel();
 		sedmlModel.setAdditionalNamespaces(nsList);
 		
-		this.translateBioModelToSedML(sPath, sBaseFileName, modelFormat, bRoundTripSBMLValidation, simContextExportFilter);
-		
+		try {
+			this.translateBioModelToSedML(sPath, sBaseFileName, modelFormat, bRoundTripSBMLValidation, simContextExportFilter);
+		} catch (UnsupportedSbmlExportException | SEDMLExportException |
+				 MappingException | XmlParseException | NumberFormatException e){
+			String message = "Unable to export to SED-ML:\n\t" + e.getMessage().replace("\n", "\n\t");
+			throw new SEDMLExporter.SEDMLExportException(message, e);
+		}
+
 		double stop = System.currentTimeMillis();
 		Exception timer = new Exception(Double.toString((stop-start)/1000)+" seconds");
 		// update overall status
@@ -171,7 +178,9 @@ public class SEDMLExporter {
 	}
 
 	private void translateBioModelToSedML(String savePath, String sBaseFileName, ModelFormat modelFormat,
-				boolean bRoundTripSBMLValidation, Predicate<SimulationContext> simContextExportFilter) {
+				boolean bRoundTripSBMLValidation, Predicate<SimulationContext> simContextExportFilter)
+			throws UnsupportedSbmlExportException, SEDMLExportException, MappingException,
+			XmlParseException, NumberFormatException {
 		modelFilePathStrAbsoluteList.clear();
 		try {
 
@@ -221,11 +230,11 @@ public class SEDMLExporter {
 						// Export the application itself to SBML, with default values (overrides will become model changes or repeated tasks)
 						String sbmlString = null;
 						Map<Pair <String, String>, String> l2gMap = null;		// local to global translation map
-						boolean sbmlExportFailed = false;
+						boolean noContextExportFailures = true;
 						Exception simContextException = null;
 						try {
 							SBMLExporter.validateSimulationContextSupport(simContext);
-							boolean isSpatial = simContext.getGeometry().getDimension() > 0 ? true : false;
+							boolean isSpatial = simContext.getGeometry().getDimension() > 0;
 							Pair <String, Map<Pair <String, String>, String>> pair = XmlHelper.exportSBMLwithMap(vcBioModel, 3, 2, 0, isSpatial, simContext, bRoundTripSBMLValidation);
 							sbmlString = pair.one;
 							l2gMap = pair.two;
@@ -234,17 +243,21 @@ public class SEDMLExporter {
 						} catch (Exception e) {
 							String msg = "SBML export failed for simContext '"+simContext.getName()+"': " + e.getMessage();
 							logger.error(msg, e);
-							sbmlExportFailed = true;
+							noContextExportFailures = false;
 							simContextException = e;
 							sedmlRecorder.addTaskRecord(simContext.getName(), TaskType.SIMCONTEXT, TaskResult.FAILED, e);
 						}
 	
-						if (!sbmlExportFailed) {
-							// simContext was exported succesfully, now we try to export its simulations
+						if (noContextExportFailures) {
+							// simContext was exported successfully, now we try to export its simulations
 							exportSimulations(simContextCnt, simContext, sbmlString, l2gMap, sbmlLanguageURN);
 						} else {
 							System.err.println(sedmlRecorder.getRecordsAsCSV());
-							throw new Exception ("SimContext '"+simContext.getName()+"' could not be exported to SBML :" +simContextException.getMessage(), simContextException);
+							String message = "SimContext '"+simContext.getName()+"' could not be exported to SBML :" +simContextException.getMessage();
+							if (simContextException instanceof UnsupportedSbmlExportException){
+								throw new UnsupportedSbmlExportException(message, simContextException);
+							}
+							throw new Exception (message, simContextException);
 						}			
 						simContextCnt++;
 					}
@@ -260,6 +273,12 @@ public class SEDMLExporter {
 	       	}
 		} catch (Exception e) {
 			// this only happens if not from CLI, we need to pass this down the calling thread
+			String message = "Error adding model to SEDML document : " + e.getMessage();
+			if (e instanceof UnsupportedSbmlExportException) throw new UnsupportedSbmlExportException(message, e);
+			if (e instanceof SEDMLExportException) throw new SEDMLExportException(message, e);
+			if (e instanceof MappingException) throw new MappingException(message, e);
+			if (e instanceof cbit.vcell.xml.XmlParseException) throw new XmlParseException(message, e);
+			if (e instanceof NumberFormatException) throw (NumberFormatException)e;
 			throw new RuntimeException("Error adding model to SEDML document : " + e.getMessage(), e);
 		}
 	}
@@ -293,7 +312,7 @@ public class SEDMLExporter {
 					long numOfTrials = simTaskDesc.getStochOpt().getNumOfTrials();
 					if (numOfTrials > 1) {
 						String msg = simContextName + " ( " + vcSimulation.getName() + " ) : export of non-spatial stochastic simulation with histogram option to SEDML not supported at this time.";
-						throw new Exception(msg);
+						throw new SEDMLExportException(msg);
 					}
 				}
 				
@@ -656,7 +675,7 @@ public class SEDMLExporter {
 	private void createSEDMLtasks(int simContextCnt, Map<Pair<String, String>, String> l2gMap, String simContextName,
 			String simContextId, Simulation vcSimulation, UniformTimeCourse utcSim,
 			Set<String> dataGeneratorTasksSet, MathOverrides mathOverrides, String languageURN)
-			throws ExpressionBindingException, ExpressionException, DivideByZeroException, MappingException {
+			throws ExpressionBindingException, ExpressionException, DivideByZeroException, MappingException, UnsupportedSbmlExportException {
 		if(mathOverrides != null && mathOverrides.hasOverrides()) {
 			String[] overridenConstantNames = mathOverrides.getOverridenConstantNames();
 			String[] scannedConstantsNames = mathOverrides.getScannedConstantNames();
@@ -927,7 +946,7 @@ public class SEDMLExporter {
 	private RepeatedTask createSEDMLreptask(String rangeId, Map<Pair<String, String>, String> l2gMap,
 			SimulationContext simContext, Set<String> dataGeneratorTasksSet,
 			MathOverrides mathOverrides, String ownerTaskId, String scannedConstName, String repeatedTaskId, String modelReferenceId)
-			throws ExpressionException, DivideByZeroException, MappingException {
+			throws ExpressionException, DivideByZeroException, MappingException, UnsupportedSbmlExportException {
 		RepeatedTask rt = new RepeatedTask(repeatedTaskId, mathOverrides.getSimulation().getName(), true, rangeId);
 		dataGeneratorTasksSet.add(rt.getId());
 		SubTask subTask = new SubTask("0", ownerTaskId);
@@ -949,7 +968,7 @@ public class SEDMLExporter {
 	}
 
 	private Range createSEDMLrange(String rangeId, RepeatedTask rt, ConstantArraySpec constantArraySpec, String scannedConstantName, SimulationContext simContext, Map<Pair<String, String>, String> l2gMap, String modelReferenceId, Simulation vcSim)
-			throws ExpressionException, DivideByZeroException, MappingException {
+			throws ExpressionException, DivideByZeroException, MappingException, UnsupportedSbmlExportException {
 		Range r = null;
 		SimulationContext sc = (SimulationContext)vcSim.getSimulationOwner();
 		SymbolReplacement sr = sc.getMathOverridesResolver().getSymbolReplacement(scannedConstantName, true);
@@ -1012,7 +1031,7 @@ public class SEDMLExporter {
 	}
 
 	private void createFunctionalRangeElements(FunctionalRange fr, Expression func, SimulationContext simContext,
-			Map<Pair<String, String>, String> l2gMap, String modelReferenceId) throws ExpressionException, MappingException {
+			Map<Pair<String, String>, String> l2gMap, String modelReferenceId) throws ExpressionException, MappingException, UnsupportedSbmlExportException {
 		String[] symbols = func.getSymbols();
 		MathSymbolMapping msm = (MathSymbolMapping)simContext.getMathDescription().getSourceSymbolMapping();
 		for(String symbol : symbols) {
@@ -1098,7 +1117,7 @@ public class SEDMLExporter {
 		}
 	}
 
-	private XPathTarget getTargetAttributeXPath(SymbolTableEntry ste, Map<Pair <String, String>, String> l2gMap, SimulationContext simContext) {
+	private XPathTarget getTargetAttributeXPath(SymbolTableEntry ste, Map<Pair <String, String>, String> l2gMap, SimulationContext simContext) throws UnsupportedSbmlExportException {
 		// VCML model format
 		if (l2gMap == null) return getVCMLTargetXPath(ste, simContext);
 		// SBML model format
@@ -1131,7 +1150,7 @@ public class SEDMLExporter {
 			} else if (speciesAttr.equalsIgnoreCase("diff")) {
 				targetXpath = new XPathTarget(sbmlSupport.getXPathForGlobalParameter(speciesId + "_" + speciesAttr, ParameterAttribute.value));
 			} else {
-				throw new RuntimeException("Unknown species attribute '" + speciesAttr + "'; cannot get xpath target for species '" + speciesId + "'.");
+				throw new UnsupportedSbmlExportException("can not get xpath target for species '" + speciesId + "':\n\t", new RuntimeException("Unknown species attribute '" + speciesAttr));
 			}
 
 		} else if (ste instanceof ModelParameter || ste instanceof ReservedSymbol) {
@@ -1173,7 +1192,7 @@ public class SEDMLExporter {
 			KineticsParameter kp = (KineticsParameter)ste;
 			String reactionID = kp.getKinetics().getReactionStep().getName();
 			String parameterID = kp.getName();
-			Pair<String, String> key = new Pair(reactionID, parameterID);
+			Pair<String, String> key = new Pair<>(reactionID, parameterID);
 			String value = l2gMap.get(key);
 			if(value == null) {
 				// stays as local parameter
@@ -1187,7 +1206,7 @@ public class SEDMLExporter {
 			targetXpath = new XPathTarget(sbmlSupport.getXPathForGlobalParameter(TokenMangler.mangleToSName(ste.getName()), ParameterAttribute.value));
 		} else {
 			logger.error("redundant error log: "+"Entity should be SpeciesContext, Structure, ModelParameter, ReserverdSymbol, KineticsParameter, or MembraneVoltage : " + ste.getClass());
-			throw new RuntimeException("Unsupported entity in SBML model export: "+ste.getClass());
+			throw new UnsupportedSbmlExportException("Unsupported entity in SBML model export: "+ste.getClass());
 		}
 		return targetXpath;
 	}
@@ -1458,8 +1477,19 @@ public class SEDMLExporter {
 			// export the entire biomodel to a SEDML file (all supported applications)
 			int sedmlLevel = 1;
 			int sedmlVersion = 2;
-			String sOutputDirPath = FileUtils.getFullPathNoEndSeparator(exportFileOrDirectory.getAbsolutePath());
-			String sBaseFileName = FileUtils.getBaseName(exportFileOrDirectory.getAbsolutePath());
+			String sOutputDirPath;
+			String sBaseFileName;
+			/* if (exportFileOrDirectory.isDirectory()){
+				String strPath = exportFileOrDirectory.toPath().toString();
+				sOutputDirPath = Paths.get(FileUtils.getFullPath(strPath), exportFileOrDirectory.getName()).toString();
+				sBaseFileName = bioModel.getName();
+			} else {
+				sOutputDirPath = FileUtils.getFullPathNoEndSeparator(exportFileOrDirectory.getAbsolutePath());
+				sBaseFileName = FileUtils.getBaseName(exportFileOrDirectory.getAbsolutePath());
+			}*/
+
+			sOutputDirPath = FileUtils.getFullPathNoEndSeparator(exportFileOrDirectory.getAbsolutePath());
+			sBaseFileName = FileUtils.getBaseName(exportFileOrDirectory.getAbsolutePath());
 
 			List<Simulation> simsToExport = Arrays.stream(bioModel.getSimulations()).filter(simulationExportFilter).collect(Collectors.toList());
 
@@ -1470,14 +1500,14 @@ public class SEDMLExporter {
 						// try to replace with the fully supported equivalent (do we need to reset solver parameters?)
 						simulation.getSolverTaskDescription().setSolverDescription(SolverDescription.SundialsPDE);
 					} catch (PropertyVetoException e) {
-						String msg1 = "Failed to replace obsolete PDE solver '"+SolverDescription.FiniteVolume.name()+"' " +
-								"with fully supported equivalent PDE solver '"+SolverDescription.SundialsPDE.name()+"'";
-						logger.error(msg1,e);
+						String msg1 = "Failed to replace obsolete PDE solver '" + SolverDescription.FiniteVolume.name() + "' " +
+								"with fully supported equivalent PDE solver '" + SolverDescription.SundialsPDE.name() + "'";
+						logger.error(msg1, e);
 						try {
 							simulation.getSolverTaskDescription().setSolverDescription(SolverDescription.FiniteVolumeStandalone);
 						} catch (PropertyVetoException e1) {
-							String msg2 = "Failed to replace obsolete PDE solver '"+SolverDescription.FiniteVolume.name()+"' " +
-									"with equivalent PDE solver '"+SolverDescription.FiniteVolumeStandalone.name()+"'";
+							String msg2 = "Failed to replace obsolete PDE solver '" + SolverDescription.FiniteVolume.name() + "' " +
+									"with equivalent PDE solver '" + SolverDescription.FiniteVolumeStandalone.name() + "'";
 							logger.error(msg2, e1);
 							throw new RuntimeException(msg2, e1);
 						}
@@ -1492,14 +1522,13 @@ public class SEDMLExporter {
 			XmlUtil.writeXMLStringToFile(vcmlString, vcmlFile.getAbsolutePath(), true);
 
 			String jsonReportPath = null;
-			if (jsonReportFile.isPresent()){
+			if (jsonReportFile.isPresent()) {
 				jsonReportPath = jsonReportFile.get().getAbsolutePath();
 			}
 			SEDMLExporter sedmlExporter = new SEDMLExporter(sBaseFileName, bioModel, sedmlLevel, sedmlVersion, simsToExport, jsonReportPath);
 			String sedmlString = sedmlExporter.getSEDMLDocument(sOutputDirPath, sBaseFileName, modelFormat, bValidate, simContextExportFilter).writeDocumentToString();
 
 			if (bCreateOmexArchive) {
-
 				String sedmlFileName = Paths.get(sOutputDirPath, sBaseFileName + ".sedml").toString();
 				XmlUtil.writeXMLStringToFile(sedmlString, sedmlFileName, true);
 				sedmlExporter.addSedmlFileToList(sBaseFileName + ".sedml");
