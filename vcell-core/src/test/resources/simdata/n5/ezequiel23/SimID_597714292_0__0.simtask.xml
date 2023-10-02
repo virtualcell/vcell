@@ -74,10 +74,10 @@ cloned from 'FRAP 1' owned by user Education
 cloned from 'FRAP 1' owned by user tutorial
 FRAP Simulation for tutorial.</Annotation>
     <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Sundials Stiff PDE Solver (Variable Time Step)">
-      <TimeBound StartTime="0.0" EndTime="3.0" />
+      <TimeBound StartTime="0.0" EndTime="2.0" />
       <TimeStep DefaultTime="0.1" MinTime="0.0" MaxTime="0.01" />
       <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-7" />
-      <OutputOptions OutputTimeStep="0.05" />
+      <OutputOptions OutputTimeStep="0.5" />
       <SundialsSolverOptions>
         <maxOrderAdvection>2</maxOrderAdvection>
       </SundialsSolverOptions>
@@ -85,9 +85,9 @@ FRAP Simulation for tutorial.</Annotation>
     </SolverTaskDescription>
     <MathOverrides />
     <MeshSpecification>
-      <Size X="51" Y="51" Z="1" />
+      <Size X="15" Y="15" Z="1" />
     </MeshSpecification>
-    <Version Name="temp simulation" KeyValue="123971881" BranchId="1" Archived="1" Date="14-Sep-2023 09:03:39" FromVersionable="false">
+    <Version Name="temp simulation" KeyValue="597714292" BranchId="1" Archived="1" Date="02-Oct-2023 10:43:49" FromVersionable="false">
       <Owner Name="temp" Identifier="123" />
       <GroupAccess Type="1" />
     </Version>

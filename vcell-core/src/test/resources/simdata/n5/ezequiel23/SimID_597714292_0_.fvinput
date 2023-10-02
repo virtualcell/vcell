@@ -1,9 +1,9 @@
 # Simulation Parameters
 SIMULATION_PARAM_BEGIN
 SOLVER SUNDIALS_PDE_SOLVER 1.0E-7 1.0E-9 0.01
-BASE_FILE_NAME /home/zeke/.vcell/simdata/temp/SimID_123971881_0_
-ENDING_TIME 3.0
-TIME_STEP 0.05
+BASE_FILE_NAME /home/zeke/.vcell/simdata/temp/SimID_597714292_0_
+ENDING_TIME 2.0
+TIME_STEP 0.5
 KEEP_EVERY 1
 SIMULATION_PARAM_END
 
@@ -16,7 +16,7 @@ MODEL_END
 
 # Mesh file
 MESH_BEGIN
-VCG_FILE /home/zeke/.vcell/simdata/temp/SimID_123971881_0_.vcg
+VCG_FILE /home/zeke/.vcell/simdata/temp/SimID_597714292_0_.vcg
 MESH_END
 
 # Variables : type name domain time_dependent_flag advection_flag grad_flag solve_whole_mesh_flag solve_regions

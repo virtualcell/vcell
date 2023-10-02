@@ -160,7 +160,7 @@
       <TimeBound StartTime="0.0" EndTime="20.0" />
       <TimeStep DefaultTime="0.1" MinTime="0.0" MaxTime="0.1" />
       <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-7" />
-      <OutputOptions OutputTimeStep="0.2" />
+      <OutputOptions OutputTimeStep="2.0" />
       <SundialsSolverOptions>
         <maxOrderAdvection>2</maxOrderAdvection>
       </SundialsSolverOptions>
@@ -168,9 +168,9 @@
     </SolverTaskDescription>
     <MathOverrides />
     <MeshSpecification>
-      <Size X="31" Y="31" Z="31" />
+      <Size X="15" Y="15" Z="15" />
     </MeshSpecification>
-    <Version Name="temp simulation" KeyValue="1115478432" BranchId="1" Archived="1" Date="30-Aug-2023 07:07:09" FromVersionable="false">
+    <Version Name="temp simulation" KeyValue="1107466895" BranchId="1" Archived="1" Date="02-Oct-2023 10:38:46" FromVersionable="false">
       <Owner Name="temp" Identifier="123" />
       <GroupAccess Type="1" />
     </Version>

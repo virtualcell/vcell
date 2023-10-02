@@ -84,13 +84,13 @@ public class N5ExporterTest {
 
         if (simKeyID.equals("4DModel")){
             // the test model can only support one species at this time
-            n5Exporter.initalizeDataControllers("123971881", "ezequiel23", "258925427");
+            n5Exporter.initalizeDataControllers("597714292", "ezequiel23", "258925427");
             this.variables = new ArrayList<>(Arrays.asList(
                     n5Exporter.getRandomDI()
             ));
         }
         else if (simKeyID.equals("5DModel")){
-            n5Exporter.initalizeDataControllers("1115478432", "ezequiel23", "258925427");
+            n5Exporter.initalizeDataControllers("1107466895", "ezequiel23", "258925427");
             this.variables = new ArrayList<>(Arrays.asList(
                     n5Exporter.getRandomDI(),
                     n5Exporter.getRandomDI(),
@@ -164,26 +164,26 @@ public class N5ExporterTest {
                 new Bzip2Compression(),
                 new GzipCompression()
         ));
+        Random random = new Random(5);
 
         for (Compression compression: compressions){
-            for(String model: testModels){
-                this.initalizeModel(model, compression);
-                OutputContext outputContext = new OutputContext(new AnnotatedFunction[0]);
-                double[] times = controlModel.getDataTimes();
+                for(String model: testModels){
+                    this.initalizeModel(model, compression);
+                    OutputContext outputContext = new OutputContext(new AnnotatedFunction[0]);
+                    double[] times = controlModel.getDataTimes();
+                    DatasetAttributes datasetAttributes = n5Reader.getDatasetAttributes(dataSetName);
+                    for(int j = 0; j< 8; j++){
+                        int timeSlice = random.nextInt(times.length);
+                        int chosenVariable = random.nextInt(variables.size());
+                        DataBlock<?> dataBlock = n5Reader.readBlock(dataSetName, datasetAttributes, new long[]{0, 0, chosenVariable, 0, timeSlice});
 
-                int timeSlice = new Random().nextInt(times.length);
-                int chosenVariable = new Random().nextInt(variables.size());
-
-                DatasetAttributes datasetAttributes = n5Reader.getDatasetAttributes(dataSetName);
-                DataBlock<?> dataBlock = n5Reader.readBlock(dataSetName, datasetAttributes, new long[]{0, 0, chosenVariable, 0, timeSlice});
-
-                double[] exportedData = (double[]) dataBlock.getData();
-                Assert.assertArrayEquals("Equal data with " + compression.getType() + " compression",
-                        controlModelController.getSimDataBlock(outputContext, this.vcDataID, variables.get(chosenVariable).getName(), times[timeSlice]).getData(),
-                        exportedData,
-                        0);
-
-            }
+                        double[] exportedData = (double[]) dataBlock.getData();
+                        Assert.assertArrayEquals("Equal data with " + compression.getType() + " compression",
+                                controlModelController.getSimDataBlock(outputContext, this.vcDataID, variables.get(chosenVariable).getName(), times[timeSlice]).getData(),
+                                exportedData,
+                                0);
+                    }
+                }
         }
 
     }
