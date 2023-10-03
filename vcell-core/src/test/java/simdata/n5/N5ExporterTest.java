@@ -30,6 +30,7 @@ import org.vcell.util.FileUtils;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.*;
 
@@ -42,9 +43,11 @@ public class N5ExporterTest {
     private DataSetControllerImpl controlModelController;
     private  VCSimulationDataIdentifier vcDataID;
     private ArrayList<DataIdentifier> variables;
+    private static final String fourDModelID = "597714292";
+    private static final String fiveDModelID = "1107466895";
     private final ArrayList<String> testModels = new ArrayList<>(Arrays.asList(
-            "4DModel", //FRAP Tutorial in VCell, has no Z axis
-            "5DModel" //PH-GFP Tutorial in VCell
+            fourDModelID, //FRAP Tutorial in VCell, has no Z axis
+            fiveDModelID //PH-GFP Tutorial in VCell
     ));
 
     private static String previousInstallRoot;
@@ -54,20 +57,39 @@ public class N5ExporterTest {
 
     public final File temporaryFolder = new File("/tmp/junitTest/N5Export");
 
+    private static final String simFileNameTemplate = "SimID_%s_0_%s";
+
+    private static final ArrayList<String> fileExtensions = new ArrayList<>(Arrays.asList(
+            ".functions",
+            ".fvinput",
+            ".hdf5",
+            ".log",
+            ".mesh",
+            ".meshmetrics",
+            ".subdomains",
+            ".vcg",
+            "00.zip",
+            "_0.simtask.xml"
+    ));
+
     @Before
     public void setUp() throws IOException {
         // setup the resources folder as a temp dir
 
         temporaryFolder.mkdirs();
-
         File tmpSimDataDir = new File(temporaryFolder.getAbsolutePath() + "/ezequiel23");
         tmpSimDataDir.mkdir();
         File n5ExportDir = new File(temporaryFolder.getAbsolutePath() + "/N5DataExporter");
         n5ExportDir.mkdir();
 
-        File artifactSimDataDir = new File(Objects.requireNonNull(N5ExporterTest.class.getResource("/simdata/n5/ezequiel23")).getPath());
-
-        FileUtils.copyDirectoryDeep(artifactSimDataDir, tmpSimDataDir);
+        for(String model: testModels){
+            for(String extension: fileExtensions){
+                String currentFileNameString = String.format(simFileNameTemplate, model, extension);
+                InputStream inputStream = Objects.requireNonNull(N5ExporterTest.class.getResourceAsStream("/simdata/n5/ezequiel23/" + currentFileNameString));
+                File currentFile = new File(tmpSimDataDir.getAbsolutePath() + "/" + currentFileNameString);
+                org.apache.commons.io.FileUtils.copyInputStreamToFile(inputStream, currentFile);
+            }
+        }
 
         previousInstallRoot = PropertyLoader.getProperty(PropertyLoader.installationRoot, null);
         System.setProperty(PropertyLoader.installationRoot, new File("..").getAbsolutePath());
@@ -100,15 +122,15 @@ public class N5ExporterTest {
     public void initalizeModel(String simKeyID, Compression compression) throws IOException, DataAccessException, MathException {
         N5Exporter n5Exporter = new N5Exporter();
 
-        if (simKeyID.equals("4DModel")){
+        if (simKeyID.equals(fourDModelID)){
             // the test model can only support one species at this time
-            n5Exporter.initalizeDataControllers("597714292", "ezequiel23", "258925427");
+            n5Exporter.initalizeDataControllers(fourDModelID, "ezequiel23", "258925427");
             this.variables = new ArrayList<>(Arrays.asList(
                     n5Exporter.getRandomDI()
             ));
         }
-        else if (simKeyID.equals("5DModel")){
-            n5Exporter.initalizeDataControllers("1107466895", "ezequiel23", "258925427");
+        else if (simKeyID.equals(fiveDModelID)){
+            n5Exporter.initalizeDataControllers(fiveDModelID, "ezequiel23", "258925427");
             this.variables = new ArrayList<>(Arrays.asList(
                     n5Exporter.getRandomDI(),
                     n5Exporter.getRandomDI(),
