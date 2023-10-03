@@ -118,6 +118,11 @@ public class N5ExporterTest {
         }
 
         org.apache.commons.io.FileUtils.deleteDirectory(temporaryFolder);
+
+        if (n5Reader != null){
+            n5Reader.close();
+        }
+
     }
 
     public void initalizeModel(String simKeyID, Compression compression) throws IOException, DataAccessException, MathException {
