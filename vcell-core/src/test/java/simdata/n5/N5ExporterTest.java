@@ -59,6 +59,7 @@ public class N5ExporterTest {
 
     private static final String simFileNameTemplate = "SimID_%s_0_%s";
 
+    // Had to add specific .zip and .log files for test to run
     private static final ArrayList<String> fileExtensions = new ArrayList<>(Arrays.asList(
             ".functions",
             ".fvinput",
