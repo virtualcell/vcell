@@ -1927,6 +1927,9 @@ public boolean isRuleBased(){
 
 @Override
 public boolean isLangevin() {
+	if(!isSpatial3D()) {
+		return false;
+	}
 	Enumeration<SubDomain> enum1 = getSubDomains();
 	while (enum1.hasMoreElements()) {
 		SubDomain subDomain = enum1.nextElement();
