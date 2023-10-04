@@ -55,7 +55,7 @@ public class N5ExporterTest {
 
     private static String previousN5Path;
 
-    public final File temporaryFolder = new File("/tmp/junitTest/N5Export");
+    public final File temporaryFolder = new File(System.getProperty("java.io.tmpdir"));
 
     private static final String simFileNameTemplate = "SimID_%s_0_%s";
 
@@ -77,7 +77,7 @@ public class N5ExporterTest {
     public void setUp() throws IOException {
         // setup the resources folder as a temp dir
 
-        temporaryFolder.mkdirs();
+
         File tmpSimDataDir = new File(temporaryFolder.getAbsolutePath() + "/ezequiel23");
         tmpSimDataDir.mkdir();
         File n5ExportDir = new File(temporaryFolder.getAbsolutePath() + "/N5DataExporter");
@@ -117,7 +117,6 @@ public class N5ExporterTest {
             System.setProperty(PropertyLoader.n5DataDir, previousN5Path);
         }
 
-        org.apache.commons.io.FileUtils.deleteDirectory(temporaryFolder);
 
         if (n5Reader != null){
             n5Reader.close();
