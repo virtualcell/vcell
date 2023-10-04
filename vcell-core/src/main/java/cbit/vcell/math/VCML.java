@@ -216,7 +216,6 @@ public class VCML {
 
 	public final static String LangevinParticleJumpProcess		= "LangevinParticleJumpProcess"; // Langevin particle
 	public final static String LangevinParticleMolecularType	= "LangevinParticleMolecularType";
-//	public final static String IsLangevinParticleMolecularType	= "IsLangevin";		// isLangevin
 	public final static String Subtype					= "Subtype"; // particle Langevin / SpringSaLaD
 	public final static String TransitionCondition		= "TransitionCondition"; // particle Langevin / SpringSaLaD
 	public final static String BondLength				= "BondLength"; // particle Langevin / SpringSaLaD

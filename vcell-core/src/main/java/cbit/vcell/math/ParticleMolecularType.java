@@ -128,10 +128,6 @@ public class ParticleMolecularType implements Serializable, Matchable {
 
 	public void read(CommentStringTokenizer tokens) throws MathFormatException {
 		String token = null;
-//		token = tokens.nextToken();
-//		if (!token.equalsIgnoreCase(VCML.BeginBlock)){
-//			throw new MathFormatException("unexpected token "+token+" expecting "+VCML.BeginBlock);
-//		}			
 		while (tokens.hasMoreTokens()){
 			token = tokens.nextToken();
 			if (token.equalsIgnoreCase(VCML.EndBlock)){

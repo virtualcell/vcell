@@ -745,7 +745,6 @@ public class XMLTags {
 	public final static String LangevinParticleJumpProcessSubtypeTag			 = "Subtype";
 	public final static String LangevinParticleJumpProcessTransitionConditionTag = "TransitionCondition";
 	public final static String LangevinParticleJumpProcessBondLengthTag			 = "BondLength";
-//	public final static String IsLangevinParticleMolecularTypeAttrTag	= "IsLangevin";
 	public final static String ParticleMolecularTypeLinksTag			= "Link";
 	public final static String LangevinParticleMolecularComponentOneTag = "One";	// one (left) part of the link
 	public final static String LangevinParticleMolecularComponentTwoTag = "Two";	// two (right) part of the link
