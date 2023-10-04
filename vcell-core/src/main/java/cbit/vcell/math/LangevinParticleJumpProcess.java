@@ -70,7 +70,7 @@ public String getVCML()
 {
 	StringBuffer buffer = new StringBuffer();
 	// the jump process will be written inside compartment brackets, therefore a "\t" is needed
-	buffer.append("\t"+VCML.ParticleJumpProcess+"\t"+getName()+" "+VCML.BeginBlock+"\n");
+	buffer.append("\t"+VCML.LangevinParticleJumpProcess+"\t"+getName()+" "+VCML.BeginBlock+"\n");
 	buffer.append("\t\t" + VCML.Subtype + "\t\t\t" + subtype.columnName+"\n");
 	if(Subtype.TRANSITION == subtype) {
 		buffer.append("\t\t" + VCML.TransitionCondition + "\t\t" + transitionCondition.vcellName + "\n");
@@ -130,7 +130,7 @@ public static LangevinParticleJumpProcess fromVCML(MathDescription mathDesc, Com
 		if(token.equals(VCML.Subtype)) {
 			token = tokens.nextToken();
 			String subtypeName = token;
-			subtype = Subtype.valueOf(subtypeName);
+			subtype = Subtype.fromName(subtypeName);
 			if(subtype == null) {
 				throw new IllegalArgumentException("Invalid Subtype: " + subtypeName);
 			}
@@ -138,7 +138,7 @@ public static LangevinParticleJumpProcess fromVCML(MathDescription mathDesc, Com
 			if(Subtype.TRANSITION == subtype) {
 				token = tokens.nextToken();
 				String transitionConditionName = token;
-				transitionCondition = TransitionCondition.valueOf(transitionConditionName);
+				transitionCondition = TransitionCondition.fromVcellName(transitionConditionName);
 				if(subtype == null) {
 					throw new IllegalArgumentException("Invalid TransitionCondition: " + transitionConditionName);
 				}
@@ -213,6 +213,13 @@ public void setBondLength(double bondLength) {
 }
 public double getBondLength() {
 	return bondLength;
+}
+
+public String toString() {
+	StringBuffer buffer = new StringBuffer();
+	buffer.append(VCML.LangevinParticleJumpProcess+"_"+getName());
+	
+	return buffer.toString();
 }
 
 }

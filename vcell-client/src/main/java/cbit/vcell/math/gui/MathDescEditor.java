@@ -501,6 +501,7 @@ private static Set<String> getAutoCompletionWords() {
 		autoCompletionWords.add(VCML.ParticleDistribution);
 		autoCompletionWords.add(VCML.VolumeParticleSpeciesPatterns);
 		autoCompletionWords.add(VCML.ParticleMolecularType);
+		autoCompletionWords.add(VCML.LangevinParticleMolecularType);
 		autoCompletionWords.add(VCML.ParticleMolecularTypeAnchor);
 		autoCompletionWords.add(VCML.ParticleMolecularComponent);
 		autoCompletionWords.add(VCML.ParticleMolecularTypePattern);
@@ -516,6 +517,7 @@ private static Set<String> getAutoCompletionWords() {
 		autoCompletionWords.add(VCML.MembraneParticleVariable);
 		
 		autoCompletionWords.add(VCML.ParticleJumpProcess);	
+		autoCompletionWords.add(VCML.LangevinParticleJumpProcess);	
 		autoCompletionWords.add(VCML.InteractionRadius);
 		autoCompletionWords.add(getTemplate_ParticleJumpProcess());
 		autoCompletionWords.add(VCML.DestroyParticle);
@@ -812,6 +814,7 @@ public static Set<String> getkeywords() {
 		keywords.add(VCML.ParticleDistribution);
 		keywords.add(VCML.VolumeParticleSpeciesPatterns);
 		keywords.add(VCML.ParticleMolecularType);
+		keywords.add(VCML.LangevinParticleMolecularType);
 		keywords.add(VCML.ParticleMolecularTypeAnchor);
 		keywords.add(VCML.ParticleMolecularComponent);
 		keywords.add(VCML.ParticleMolecularTypePattern);
@@ -826,6 +829,7 @@ public static Set<String> getkeywords() {
 		keywords.add(VCML.VolumeParticleVariable);
 		keywords.add(VCML.MembraneParticleVariable);
 		keywords.add(VCML.ParticleJumpProcess);
+		keywords.add(VCML.LangevinParticleJumpProcess);
 		keywords.add(VCML.MacroscopicRateConstant);
 		keywords.add(VCML.InteractionRadius);
 		keywords.add(VCML.DestroyParticle);
