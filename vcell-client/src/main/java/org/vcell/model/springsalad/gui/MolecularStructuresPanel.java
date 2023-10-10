@@ -14,6 +14,7 @@ import java.awt.event.FocusListener;
 import java.beans.PropertyChangeListener;
 
 import javax.swing.BorderFactory;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.DefaultListSelectionModel;
@@ -45,6 +46,8 @@ import org.vcell.util.gui.EditorScrollTable;
 import org.vcell.util.gui.VCellIcons;
 import org.vcell.util.gui.ScrollTable.ScrollTableBooleanCellRenderer;
 import org.vcell.util.gui.sorttable.SortTableModel;
+import org.vcell.util.springsalad.Colors;
+import org.vcell.util.springsalad.NamedColor;
 
 import cbit.gui.ScopedExpression;
 import cbit.vcell.client.ChildWindowManager;
@@ -71,6 +74,7 @@ import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.model.Model.RbmModelContainer;
+import cbit.vcell.model.RbmKineticLaw.RateLawType;
 import cbit.vcell.units.VCUnitDefinition;
 
 // we should use WindowBuilder Plugin (add it to Eclipse IDE) to speed up panel design
@@ -148,6 +152,8 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 			} else if(source == addLinkButton) {
 				addLinkActionPerformed();
 				refreshSiteLinksList();
+			} else if(source == getSiteColorComboBox()) {
+				updateSiteColor();
 			}
 		}
 		public void focusGained(FocusEvent e) {
@@ -227,6 +233,8 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		linkLengthField.addActionListener(eventHandler);
 		addLinkButton.addActionListener(eventHandler);
 		
+		getSiteColorComboBox().addActionListener(eventHandler);
+		
 		ListSelectionModel lsm = getSpeciesContextSpecsTable().getSelectionModel();
 		if(lsm instanceof DefaultListSelectionModel) {
 			DefaultListSelectionModel dlsm = (DefaultListSelectionModel)lsm;
@@ -248,7 +256,6 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 			siteXField = new JTextField("");
 			siteYField = new JTextField("");
 			siteZField = new JTextField("");
-			siteColorComboBox = new JComboBox<>();	// TODO: arg here should be combobox model
 			siteLinksList = new JList<MolecularInternalLinkSpec>(siteLinksListModel);
 			siteLinksList.setCellRenderer(siteLinksCellRenderer);
 			linkLengthField = new JTextField("");
@@ -599,7 +606,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.anchor = GridBagConstraints.SOUTH;
 		gbc.insets = new Insets(2, 2, 2, 2);
-		sitesPanel.add(siteColorComboBox, gbc);
+		sitesPanel.add(getSiteColorComboBox(), gbc);
 
 //		// --- links -----------------------------------------------
 		linksPanel.setLayout(new GridBagLayout());
@@ -677,6 +684,32 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 			}
 		}
 		return speciesContextSpecsTable;
+	}
+	
+	// siteColorComboBox
+	private JComboBox<String> getSiteColorComboBox() {
+		if (siteColorComboBox == null) {
+			siteColorComboBox = new JComboBox<String>();
+			siteColorComboBox.setName("JComboBox1");
+			
+			DefaultComboBoxModel<String> model = new DefaultComboBoxModel<>();
+			for(NamedColor namedColor : Colors.COLORARRAY) {
+				model.addElement(namedColor.getName());
+			}
+			siteColorComboBox.setModel(model);
+//			siteColorComboBox.setRenderer(new DefaultListCellRenderer() {
+// see ReactionRuleKineticsPropertiesPanel.getKineticsTypeComboBox() for complex renderer
+//			});
+		}
+		return siteColorComboBox;
+	}
+	private void updateSiteColor() {
+		String colorName = (String)getSiteColorComboBox().getSelectedItem();
+		NamedColor namedColor = Colors.getColorByName(colorName);
+		SiteAttributesSpec sas = fieldSpeciesContextSpec.getSiteAttributesMap().get(fieldMolecularComponentPattern);
+		if(namedColor != null && namedColor != sas.getColor()) {
+			sas.setColor(namedColor);
+		}
 	}
 
 	private void handleException(Throwable exception) {
@@ -769,6 +802,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 			siteXField.setText(sas.getCoordinate().getX()+"");
 			siteYField.setText(sas.getCoordinate().getY()+"");
 			siteZField.setText(sas.getCoordinate().getZ()+"");
+			getSiteColorComboBox().setSelectedItem(sas.getColor().getName());
 		} else {
 			siteXField.setEditable(false);
 			siteYField.setEditable(false);
