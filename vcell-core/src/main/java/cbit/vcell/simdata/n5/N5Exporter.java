@@ -70,7 +70,8 @@ public class N5Exporter implements ExportConstants {
             VariableType.POINT_VARIABLE,
             VariableType.NONSPATIAL,
             VariableType.CONTOUR,
-            VariableType.CONTOUR_REGION
+            VariableType.CONTOUR_REGION,
+            VariableType.POSTPROCESSING
     ));
 
     private VCData vcData;
