@@ -41,6 +41,7 @@ import org.apache.commons.lang3.StringEscapeUtils;
 import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.SpeciesPattern;
+import org.vcell.util.Coordinate;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.EditorScrollTable;
 import org.vcell.util.gui.VCellIcons;
@@ -76,6 +77,7 @@ import cbit.vcell.model.Structure;
 import cbit.vcell.model.Model.RbmModelContainer;
 import cbit.vcell.model.RbmKineticLaw.RateLawType;
 import cbit.vcell.units.VCUnitDefinition;
+import ucar.bufr.Index.coordinate;
 
 // we should use WindowBuilder Plugin (add it to Eclipse IDE) to speed up panel design
 // can choose absolute layout and place everything exactly as we see fit
@@ -146,7 +148,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		public void actionPerformed(ActionEvent e) {
 			Object source = e.getSource();
 			if (source == siteXField || source == siteYField || source == siteZField) {
-				changePosition();
+				changePosition((JTextField)source);
 			} else if(source == linkLengthField) {
 				changeLinkLength();
 			} else if(source == addLinkButton) {
@@ -161,7 +163,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		public void focusLost(FocusEvent e) {
 			Object source = e.getSource();
 			if (source == siteXField || source == siteYField || source == siteZField) {
-				changePosition();
+				changePosition((JTextField)source);
 			} else if(source == linkLengthField) {
 				// TODO: do NOT call here changeLinkLength(), it will modified the newly selected link instead the old one
 				// changeLinkLength();
@@ -253,9 +255,9 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 	private void initialize() {
 		try {
 		// labels / button / combos / lists initialization
-			siteXField = new JTextField("");
-			siteYField = new JTextField("");
-			siteZField = new JTextField("");
+			siteXField = new JTextField();
+			siteYField = new JTextField();
+			siteZField = new JTextField();
 			siteLinksList = new JList<MolecularInternalLinkSpec>(siteLinksListModel);
 			siteLinksList.setCellRenderer(siteLinksCellRenderer);
 			linkLengthField = new JTextField("");
@@ -705,6 +707,9 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 	}
 	private void updateSiteColor() {
 		String colorName = (String)getSiteColorComboBox().getSelectedItem();
+		if(colorName == null) {
+			return;
+		}
 		NamedColor namedColor = Colors.getColorByName(colorName);
 		SiteAttributesSpec sas = fieldSpeciesContextSpec.getSiteAttributesMap().get(fieldMolecularComponentPattern);
 		if(namedColor != null && namedColor != sas.getColor()) {
@@ -810,6 +815,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 			siteXField.setText(null);
 			siteYField.setText(null);
 			siteZField.setText(null);
+			getSiteColorComboBox().setSelectedItem(null);
 		}
 	}
 	
@@ -835,9 +841,30 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		
 	}
 
-	private void changePosition() {
+	private void changePosition(JTextField source) {
 		System.out.println("Site coordinates changed");
-		// TODO: save X,Y,Z in coordinate object
+		SiteAttributesSpec sas = fieldSpeciesContextSpec.getSiteAttributesMap().get(fieldMolecularComponentPattern);
+		String text = source.getText();
+		if(sas == null || text == null) {
+			return;
+		}
+		Coordinate c = sas.getCoordinate();
+		double res = 0.0;
+		try {
+			res = Double.parseDouble(text);
+		} catch(NumberFormatException e) {
+			return;
+		}
+
+		if(siteXField == source && c.getX() != res) {
+			c = new Coordinate(res, c.getY(), c.getZ());
+		} else if(siteYField == source && c.getY() != res) {
+			c = new Coordinate(c.getX(), res, c.getZ());
+		} else if(siteZField == source && c.getZ() != res) {
+			c = new Coordinate(c.getX(), c.getY(), res);
+		}
+		sas.setCoordinate(c);
+		
 		recalculateLinkLengths();
 	}
 	private void changeLinkLength() {
@@ -885,7 +912,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 			return;		// nothing selected
 		}
 		System.out.println("showLinkLength(): Selected row is '" + siteLinksList.getSelectedIndex() + "'");
-		linkLengthField.setEditable(true);
+		linkLengthField.setEditable(false);		// make it editable here, for now it's a derived value only
 		linkLengthField.setText(selectedValue.getLinkLength()+"");
 	};
 
