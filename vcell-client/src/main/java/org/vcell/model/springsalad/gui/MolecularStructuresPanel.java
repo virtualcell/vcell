@@ -868,16 +868,23 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		recalculateLinkLengths();
 	}
 	private void changeLinkLength() {
-		Double linkLength = Double.parseDouble(linkLengthField.getText());
-		MolecularInternalLinkSpec selectedValue = siteLinksList.getSelectedValue();
-		int selectedIndex = siteLinksList.getSelectedIndex();
-		System.out.println("changeLinkLength(): selected index '" + selectedIndex + "' being set to " + linkLength);
-		// TODO: set x,y,z for sites, link length will be always calculated from xyz
-//		selectedValue.setLinkLength(linkLength);
-		recalculatePositions();
+		throw new UnsupportedOperationException("At this time the LinkLength is an uneditable derived value.");
+//		Double linkLength = Double.parseDouble(linkLengthField.getText());
+//		MolecularInternalLinkSpec selectedValue = siteLinksList.getSelectedValue();
+//		int selectedIndex = siteLinksList.getSelectedIndex();
+//		System.out.println("changeLinkLength(): selected index '" + selectedIndex + "' being set to " + linkLength);
+//		// TODO: set x,y,z for sites, link length will be always calculated from xyz
+//		recalculatePositions();
 	}
 	
+	// we only display the link length in the UI as a courtesy, this field doesn't exist in MolecularInternalLinkSpec
+	// when we need it, we compute it
 	private void recalculateLinkLengths() {
+		
+		MolecularInternalLinkSpec mils = siteLinksList.getSelectedValue();
+		
+		
+		showLinkLength(mils);
 	}
 	private void recalculatePositions() {
 	}
