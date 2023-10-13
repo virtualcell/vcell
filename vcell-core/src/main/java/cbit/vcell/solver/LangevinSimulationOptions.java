@@ -41,8 +41,12 @@ public class LangevinSimulationOptions implements Serializable, Matchable, Vetoa
 		addVetoableChangeListener(this);
 	}
 	
-	public LangevinSimulationOptions(LangevinSimulationOptions smoldynSimulationOptions) {
+	public LangevinSimulationOptions(LangevinSimulationOptions langevinSimulationOptions) {
 		this();				// TODO: properly implement copy constructor
+		intervalSpring = langevinSimulationOptions.intervalSpring;
+		intervalImage = langevinSimulationOptions.intervalImage;
+		numOfTrials = langevinSimulationOptions.numOfTrials;
+		runIndex = langevinSimulationOptions.runIndex;
 	}
 
 	public LangevinSimulationOptions(CommentStringTokenizer tokens) throws DataAccessException {
@@ -128,78 +132,49 @@ public class LangevinSimulationOptions implements Serializable, Matchable, Vetoa
 	
 	public String getVCML() {		
 		StringBuffer buffer = new StringBuffer();
-//		buffer.append("\t" + VCML.NFSimSimulationOptions + " " + VCML.BeginBlock + "\n");
-//		buffer.append("\t\t" + VCML.NFSimSimulationOptions_observableComputationOff + " " + observableComputationOff + "\n");			
-//		buffer.append("\t\t" + VCML.NFSimSimulationOptions_preventIntraBonds + " " + preventIntraBonds + "\n");			
-//		buffer.append("\t\t" + VCML.NFSimSimulationOptions_aggregateBookkeeping + " " + aggregateBookkeeping + "\n");			
-//		buffer.append("\t\t" + VCML.NFSimSimulationOptions_matchComplexes + " " + matchComplexes + "\n");			
-//		if (moleculeDistance != null) {
-//			buffer.append("\t\t" + VCML.NFSimSimulationOptions_moleculeDistance + " " + moleculeDistance + "\n");			
-//		}
-//		if (maxMoleculesPerType != null) {
-//			buffer.append("\t\t" + VCML.NFSimSimulationOptions_maxMoleculesPerType + " " + maxMoleculesPerType + "\n");			
-//		}
-//		if (equilibrateTime != null) {
-//			buffer.append("\t\t" + VCML.NFSimSimulationOptions_equilibrateTime + " " + equilibrateTime + "\n");			
-//		}
-//		if (randomSeed != null) {
-//			buffer.append("\t\t" + VCML.NFSimSimulationOptions_randomSeed + " " + randomSeed + "\n");			
-//		}
-//		buffer.append("\t\t" + VCML.NFSimSimulationOptions_NumOfTrials + " " + numOfTrials + "\n");
-//
-//		buffer.append("\t" + VCML.EndBlock + "\n");
+		buffer.append("\t" + VCML.LangevinSimulationOptions + " " + VCML.BeginBlock + "\n");
+		buffer.append("\t\t" + VCML.LangevinSimulationOptions_numOfTrials + " " + numOfTrials + "\n");			
+		buffer.append("\t\t" + VCML.LangevinSimulationOptions_runIndex + " " + runIndex + "\n");			
+		buffer.append("\t\t" + VCML.LangevinSimulationOptions_intervalSpring + " " + intervalSpring + "\n");			
+		buffer.append("\t\t" + VCML.LangevinSimulationOptions_intervalImage + " " + intervalImage + "\n");			
+		buffer.append("\t" + VCML.EndBlock + "\n");
 		return buffer.toString();
 	}
 	
 	public void readVCML(CommentStringTokenizer tokens) throws DataAccessException {
-//		String token = tokens.nextToken();
-//		if (token.equalsIgnoreCase(VCML.SmoldynSimulationOptions)) {
-//			token = tokens.nextToken();
-//			if (!token.equalsIgnoreCase(VCML.BeginBlock)) {
-//				throw new DataAccessException("unexpected token " + token + " expecting " + VCML.BeginBlock); 
-//			}
-//		}
-//		while (tokens.hasMoreTokens()) {
-//			token = tokens.nextToken();
-//			if (token.equalsIgnoreCase(VCML.EndBlock)) {
-//				break;
-//			}
-//			if(token.equalsIgnoreCase(VCML.NFSimSimulationOptions_observableComputationOff)) {
-//				token = tokens.nextToken();
-//				observableComputationOff = Boolean.parseBoolean(token);
-//			} else if(token.equalsIgnoreCase(VCML.NFSimSimulationOptions_moleculeDistance)) {
-//				token = tokens.nextToken();
-//				moleculeDistance = new Integer(token);
-//			} else if(token.equalsIgnoreCase(VCML.NFSimSimulationOptions_aggregateBookkeeping)) {
-//				token = tokens.nextToken();
-//				aggregateBookkeeping = Boolean.parseBoolean(token);
-//			} else if(token.equalsIgnoreCase(VCML.NFSimSimulationOptions_maxMoleculesPerType)) {
-//				token = tokens.nextToken();
-//				maxMoleculesPerType = new Integer(token);
-//			} else if(token.equalsIgnoreCase(VCML.NFSimSimulationOptions_equilibrateTime)) {
-//				token = tokens.nextToken();
-//				equilibrateTime = new Integer(token);
-//			} else if(token.equalsIgnoreCase(VCML.NFSimSimulationOptions_randomSeed)) {
-//				token = tokens.nextToken();
-//				randomSeed = new Integer(token);
-//			} else if(token.equalsIgnoreCase(VCML.NFSimSimulationOptions_preventIntraBonds)) {
-//				token = tokens.nextToken();
-//				preventIntraBonds = Boolean.parseBoolean(token);
-//			} else if(token.equalsIgnoreCase(VCML.NFSimSimulationOptions_matchComplexes)) {
-//				token = tokens.nextToken();
-//				matchComplexes = Boolean.parseBoolean(token);
-//			} else if (token.equalsIgnoreCase(VCML.NFSimSimulationOptions_NumOfTrials)) {
-//				token = tokens.nextToken();
-//				int val2 = Integer.parseInt(token);
-//				if(val2 < 1 ) {
-//					throw new DataAccessException("unexpected token " + token + ", num of trials is requied to be at least 1. ");
-//				} else {
-//					numOfTrials = val2;
-//				}
-//			} else { 
-//				throw new DataAccessException("unexpected identifier " + token);
-//			}
-//		}
+		String token = tokens.nextToken();
+		if (token.equalsIgnoreCase(VCML.LangevinSimulationOptions)) {
+			token = tokens.nextToken();
+			if (!token.equalsIgnoreCase(VCML.BeginBlock)) {
+				throw new DataAccessException("unexpected token " + token + " expecting " + VCML.BeginBlock); 
+			}
+		}
+		while (tokens.hasMoreTokens()) {
+			token = tokens.nextToken();
+			if (token.equalsIgnoreCase(VCML.EndBlock)) {
+				break;
+			}
+			if(token.equalsIgnoreCase(VCML.LangevinSimulationOptions_runIndex)) {
+				token = tokens.nextToken();
+				runIndex = Integer.parseInt(token);
+			} else if(token.equalsIgnoreCase(VCML.LangevinSimulationOptions_intervalSpring)) {
+				token = tokens.nextToken();
+				intervalSpring = Double.parseDouble(token);
+			} else if(token.equalsIgnoreCase(VCML.LangevinSimulationOptions_intervalImage)) {
+				token = tokens.nextToken();
+				intervalImage = Double.parseDouble(token);
+			} else if (token.equalsIgnoreCase(VCML.LangevinSimulationOptions_numOfTrials)) {
+				token = tokens.nextToken();
+				int val2 = Integer.parseInt(token);
+				if(val2 < 1 ) {
+					throw new DataAccessException("unexpected token " + token + ", num of trials is requied to be at least 1. ");
+				} else {
+					numOfTrials = val2;
+				}
+			} else { 
+				throw new DataAccessException("unexpected identifier " + token);
+			}
+		}
 	}
 	
 	public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
