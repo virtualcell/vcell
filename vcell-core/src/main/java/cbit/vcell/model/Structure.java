@@ -14,8 +14,11 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.io.Serializable;
+import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.vcell.util.*;
 import org.vcell.util.Issue.IssueCategory;
@@ -34,6 +37,19 @@ public abstract class Structure implements Serializable, ScopedSymbolTable, Matc
 {
 	public final static String TYPE_NAME_FEATURE = "Compartment";
 	public final static String TYPE_NAME_MEMBRANE = "Membrane";
+	
+	public enum SpringStructureEnum {		// SpringSaLaD specific
+		Intracellular("Intracellular"),
+		Membrane("Membrane"),
+		Extracellular("Extracellular");
+		
+		final public String columnName;
+		private SpringStructureEnum(String columnName) {
+			this.columnName = columnName;
+		}
+	}
+	public final static LinkedHashSet<String> springStructureSet = new LinkedHashSet<> (Arrays.asList(
+			SpringStructureEnum.Intracellular.columnName, SpringStructureEnum.Membrane.columnName, SpringStructureEnum.Extracellular.columnName));
 	
 	private String fieldName = new String();
 	private String sbmlId = null;

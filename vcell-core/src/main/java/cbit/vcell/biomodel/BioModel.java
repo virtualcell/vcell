@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 
 import cbit.image.VCImage;
 import cbit.vcell.mapping.*;
+import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.model.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -43,12 +44,21 @@ import org.vcell.util.TokenMangler;
 import org.vcell.util.document.*;
 import org.vcell.util.document.BioModelChildSummary.MathType;
 
+import cbit.image.ImageException;
 import cbit.vcell.biomodel.meta.IdentifiableProvider;
 import cbit.vcell.biomodel.meta.VCID;
 import cbit.vcell.biomodel.meta.VCMetaData;
+import cbit.vcell.geometry.AnalyticSubVolume;
 import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.GeometryException;
+import cbit.vcell.geometry.GeometrySpec;
+import cbit.vcell.geometry.SubVolume;
+import cbit.vcell.geometry.SurfaceClass;
+import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.model.Model.RbmModelContainer;
+import cbit.vcell.model.Structure.SpringStructureEnum;
+import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.solver.Simulation;
@@ -127,11 +137,77 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
 		}
 	}
 
-	public SimulationContext addNewSimulationContext(String newSimulationContextName, SimulationContext.Application app) throws java.beans.PropertyVetoException {
-		SimulationContext simContext = new SimulationContext(getModel(),new Geometry("non-spatial",0), null,null,app);
-		simContext.setName(newSimulationContextName);
-		addSimulationContext(simContext);
-		return simContext;
+	public SimulationContext addNewSimulationContext(String newSimulationContextName, SimulationContext.Application app) throws java.beans.PropertyVetoException, ExpressionException, GeometryException, ImageException, IllegalMappingException, MappingException {
+		Geometry geometry;
+		if(Application.SPRINGSALAD == app) {
+			boolean compatibleCompartments = true;
+			if(getModel().getStructures().length != 3) {
+				compatibleCompartments = false;		// springsalad needs exactly 3 compartments
+			}
+			for(Structure struct : getModel().getStructures()) {
+				String name = struct.getName();
+				if(!Structure.springStructureSet.contains(name)) {
+					compatibleCompartments = false;	// names are hardcoded in SpringStructureEnum
+					break;
+				}
+			}
+			if(compatibleCompartments == false) {	// just make a minimal geometry, we'll complain elsewhere
+				geometry = new Geometry("non-spatial", 0);
+				SimulationContext simContext = new SimulationContext(getModel(), geometry, null, null, app);
+				simContext.setName(newSimulationContextName);
+				addSimulationContext(simContext);
+				return simContext;
+			}
+			
+			geometry = new Geometry("spatial", 3);
+			GeometrySpec geometrySpec = geometry.getGeometrySpec();
+			geometrySpec.setOrigin(new org.vcell.util.Origin(0,0,0));
+			geometrySpec.setExtent(new org.vcell.util.Extent(1.0,1.0,1.0));
+			geometrySpec.addSubVolume(new AnalyticSubVolume(SpringStructureEnum.Intracellular.columnName, new cbit.vcell.parser.Expression("z<0.9")));
+			geometrySpec.addSubVolume(new AnalyticSubVolume(SpringStructureEnum.Extracellular.columnName, new cbit.vcell.parser.Expression("1.0;")));
+			cbit.vcell.geometry.surface.GeometrySurfaceUtils.updateGeometricRegions(geometry.getGeometrySurfaceDescription());
+			
+			SimulationContext simContext = new SimulationContext(getModel(), geometry, null, null, app);
+			simContext.setName(newSimulationContextName);
+			addSimulationContext(simContext);
+			
+			Double charSize = simContext.getCharacteristicSize();
+			simContext.setCharacteristicSize(Double.valueOf(charSize.doubleValue()/2.0));
+			GeometryContext geoContext = simContext.getGeometryContext();
+			Model model = geoContext.getModel();
+			cbit.vcell.model.Structure structures[] = model.getStructures();
+			for (int i=0;i<structures.length;i++) {					// map the compartments
+				cbit.vcell.model.Structure structure = structures[i];
+				if (structure instanceof cbit.vcell.model.Feature) {
+					cbit.vcell.model.Feature feature = (cbit.vcell.model.Feature)structure;
+					if (feature.getName().equals(SpringStructureEnum.Extracellular.columnName)) {
+						geoContext.assignStructure(feature, geometrySpec.getSubVolume(SpringStructureEnum.Extracellular.columnName));
+					} else {
+						geoContext.assignStructure(feature, geometrySpec.getSubVolume(SpringStructureEnum.Intracellular.columnName));
+					}
+				}
+			}
+			GeometrySurfaceDescription geometrySurfaceDescription = geometry.getGeometrySurfaceDescription();
+			geometrySurfaceDescription.updateAll();
+			//SurfaceClass[] surfaceClasses = geometrySurfaceDescription.getSurfaceClasses();
+			for (int i=0;i<structures.length;i++) {					// map the membrane
+				cbit.vcell.model.Structure structure = structures[i];
+				if (structure instanceof cbit.vcell.model.Membrane) {
+					cbit.vcell.model.Membrane membrane = (cbit.vcell.model.Membrane)structure;
+					SubVolume svIntra = geometrySpec.getSubVolume(SpringStructureEnum.Intracellular.columnName);
+					SubVolume svExtra = geometrySpec.getSubVolume(SpringStructureEnum.Extracellular.columnName);
+					SurfaceClass surfaceClass = geometrySurfaceDescription.getSurfaceClass(svIntra, svExtra);
+					geoContext.assignStructure(membrane, surfaceClass);
+				}
+			}
+			return simContext;
+		} else {
+			geometry = new Geometry("non-spatial", 0);
+			SimulationContext simContext = new SimulationContext(getModel(), geometry, null, null, app);
+			simContext.setName(newSimulationContextName);
+			addSimulationContext(simContext);
+			return simContext;
+		}
 	}
 
 	public class VersionableInfo {

@@ -119,6 +119,11 @@ public abstract class VCDocumentDecorator {
 			case RULE_BASED_STOCHASTIC:
 				sfList.add(SolverFeature.Feature_Rulebased);
 				return sfList;
+			case SPRINGSALAD:
+				sfList.add(SolverFeature.Feature_Springs);
+				sfList.add(SolverFeature.Feature_Rulebased);
+				sfList.add(SolverFeature.Feature_Stochastic);
+				return sfList;		// Feature_Spatial is already there
 			case NETWORK_STOCHASTIC:
 				//more analysis to determine whether hybrid or (pure) stochastic
 			}
@@ -158,9 +163,14 @@ public abstract class VCDocumentDecorator {
 			Set<SolverFeature> missingFeatures = new HashSet<>(requiredFeatures);
 			missingFeatures.removeAll(supportedFeatures);
 
+			boolean first = true;
 			String text = "Solver " + solvDesc.getDatabaseName() + " does not support the following required features: \n";
 			for (SolverFeature sf : missingFeatures) {
-				text += sf.getName() + "\n";
+				if(!first) {
+					text += ", ";
+				}
+				first = false;
+				text += "\n" + sf.getName();
 			}
 
 			if (!missingFeatures.isEmpty()) {

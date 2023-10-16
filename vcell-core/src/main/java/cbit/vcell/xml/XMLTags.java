@@ -132,7 +132,8 @@ public class XMLTags {
     public final static String VarNameAttrTag = "VarName"; //stoch
     public final static String OperationAttrTag = "Operation"; //stoch
     public final static String StochAttrTag = "Stochastic"; //stoch , used with simulationspec Tag as an attribute
-    public static final String RuleBasedAttrTag = "RuleBased"; //rule-based , used with simulationspec Tag as an attribute
+    public static final String RuleBasedAttrTag = "RuleBased";		// rule-based , used with simulationspec Tag as an attribute
+    public static final String SpringSaLaDAttrTag = "SpringSaLaD";	// springsalad application, used with simulationspec Tag as an attribute
     public final static String ConcentrationAttrTag = "UseConcentration"; //used for stochastic application. store initial condition by concentration or number of particles.
     public final static String RandomizeInitConditionTag = "RandomizeInitCondition"; //used for stochastic application. store boolean for randomizing initial condition
     public final static String InsufficientIterationsTag = "InsufficientIterations"; 		// used for flattening rule based reactions
@@ -737,6 +738,24 @@ public class XMLTags {
 	public static final String ParticleMolecularTypeAnchorTag = "Anchor";
 	public static final String ParticleObservableSequenceTypeAttrTag = "SequenceType";
 	public static final String ParticleObservableSequenceLengthAttrTag = "SequenceLength";
+	
+	// langevin (springsalad) math (see VCML.java)
+	public static final String LangevinParticleMolecularTypeTag = "LangevinParticleMolecularType";
+	public final static String LangevinParticleJumpProcessTag = "LangevinParticleJumpProcess";
+	public final static String LangevinParticleJumpProcessSubtypeTag			 = "Subtype";
+	public final static String LangevinParticleJumpProcessTransitionConditionTag = "TransitionCondition";
+	public final static String LangevinParticleJumpProcessBondLengthTag			 = "BondLength";
+	public final static String ParticleMolecularTypeLinksTag			= "Link";
+	public final static String LangevinParticleMolecularComponentOneTag = "One";	// one (left) part of the link
+	public final static String LangevinParticleMolecularComponentTwoTag = "Two";	// two (right) part of the link
+	public final static String ParticleMolecularComponentRadiusTag		= "Radius";
+	public final static String ParticleMolecularComponentDiffusionRateTag	= "DiffusionRate";
+	public final static String ParticleMolecularComponentLocationTag	= "Location";
+	public final static String ParticleMolecularComponentCoordXAttrTag	= "SiteCoordX";
+	public final static String ParticleMolecularComponentCoordYAttrTag	= "SiteCoordY";
+	public final static String ParticleMolecularComponentCoordZAttrTag	= "SiteCoordZ";
+	public final static String ParticleMolecularComponentColorTag		= "NamedColor";
+
 	// Smoldyn
 	public final static String VolumeParticleVariableTag = "VolumeParticleVariable";
 	public final static String MembraneParticleVariableTag = "MembraneParticleVariable";
@@ -757,6 +776,8 @@ public class XMLTags {
 	public final static String ParticleDriftXTag		= "ParticleDriftX"; // particle
 	public final static String ParticleDriftYTag		= "ParticleDriftY"; // particle
 	public final static String ParticleDriftZTag		= "ParticleDriftZ"; // particle
+	
+	// simulation options
 	public final static String SmoldynSimulationOptions	= "SmoldynSimulationOptions";
 	public final static String SmoldynSimulationOptions_randomSeed	= "RandomSeed";
 	public final static String SmoldynSimulationOptions_accuracy	= "Accuracy";
@@ -776,13 +797,19 @@ public class XMLTags {
 	public final static String NFSimSimulationOptions_matchComplexes	= "MatchComplexes";
 	public final static String NFSimSimulationOptions_numOfTrials	= "NumOfTrials";
 
+	// langevin (springsalad) solver simulation options
+	public final static String LangevinSimulationOptions	= "LangevinSimulationOptions";
+	public final static String LangevinSO_numOfTrials		= "NumOfTrials";
+	public final static String LangevinSO_intervalSpring	= "IntervalSpring";
+	public final static String LangevinSO_intervalImage		= "IntervalImage";
+	
 	public final static String ParticleInitialConcentrationTag			= "ParticleInitialConcentration"; // particle
 	public final static String ParticleDistributionTag			= "ParticleDistribution"; // particle
 
 	public final static String SundialsSolverOptions	= "SundialsSolverOptions";
 	public final static String SundialsSolverOptions_maxOrderAdvection	= "maxOrderAdvection";
-	
 
+	// pathway stuff
 	public final static String PathwayModelTag	= "pathwayModel";
 	public final static String RelationshipModelTag	= "relationshipModel";
 	public static final String relationshipObjectTag = "RelationshipObject";
@@ -849,4 +876,27 @@ public class XMLTags {
 	public final static String RedistributionFrequencyTag = "RedistributionFrequency";
 	public final static String ExtrapolationMethodTag = "ExtrapolationMethod";
 
+	// SpringSaLaD tags
+	public final static String SiteAttributesMapTag = "SiteAttributesMap";
+	public final static String SiteAttributesSpecTag = "SiteAttributesSpec";
+	public final static String SiteRefAttrTag = "SiteRef";
+	public final static String MoleculeRefAttrTag = "MoleculeRef";
+	public final static String SiteLocationRefAttrTag = "SiteLocationRef";
+	public final static String SiteRadiusAttrTag = "SiteRadius";
+	public final static String SiteDiffusionAttrTag = "SiteDiffusion";
+	public final static String SiteColorAttrTag = "SiteColor";
+	public final static String SiteCoordXAttrTag = "SiteCoordX";
+	public final static String SiteCoordYAttrTag = "SiteCoordY";
+	public final static String SiteCoordZAttrTag = "SiteCoordZ";
+	
+	public final static String InternalLinkSpecTag = "InternalLinkSpec";
+	public final static String SiteOneRefAttrTag = "SiteOneRef";
+	public final static String SiteTwoRefAttrTag = "SiteTwoRef";
+
+	public final static String BondLengthAttrTag = "BondLength";
+	public final static String SubTypeAttrTag = "SubType";
+	public final static String TransitionConditionAttrTag = "TransitionCondition";
+	
+
+	
 }

@@ -2,7 +2,11 @@ FROM openjdk:8u151-jdk-alpine3.7
 
 RUN mkdir -p /usr/local/app && \
 	apk update && \
-    apk add screen
+    apk add screen tzdata
+
+ENV TZ=America/New_York
+RUN unlink /etc/localtime || true
+RUN ln -s /usr/share/zoneinfo/America/New_York /etc/localtime
 
 WORKDIR /usr/local/app
 

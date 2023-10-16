@@ -249,6 +249,8 @@ public class PropertyLoader {
 	
 	public static final String cliWorkingDir = record("cli.workingDir", ValueType.DIR);
 	
+	public static final String enableSpringSaLaD = record("vcell.enableSpringSaLaD", ValueType.BOOL);
+	
 	/**
 	 * native library directory, server side
 	 */

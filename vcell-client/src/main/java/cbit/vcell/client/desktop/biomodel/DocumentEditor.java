@@ -72,6 +72,7 @@ import cbit.vcell.desktop.GeometryMetaDataPanel;
 import cbit.vcell.desktop.MathModelMetaDataPanel;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mathmodel.MathModel;
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.xml.gui.MiriamTreeModel.LinkNode;
 /**
  * Insert the type's description here.
@@ -97,6 +98,7 @@ public abstract class DocumentEditor extends JPanel {
 		add_new_app_deterministic,
 		add_new_app_stochastic,
 		add_new_app_rulebased,
+		add_new_app_springsalad,
 		copy_app,
 		rename,
 		delete,
@@ -118,6 +120,7 @@ public abstract class DocumentEditor extends JPanel {
 	private JMenuItem addNewAppDeterministicMenuItem = null;
 	private JMenuItem addNewAppStochasticMenuItem = null;
 	private JMenuItem addNewAppRulebasedMenuItem = null;
+	private JMenuItem addNewAppSpringSaLaDMenuItem = null;
 	private JMenuItem expandAllMenuItem = null;
 	private JMenuItem collapseAllMenuItem = null;
 	private JMenuItem addNewMenuItem;
@@ -254,6 +257,8 @@ public abstract class DocumentEditor extends JPanel {
 				popupMenuActionPerformed(DocumentEditorPopupMenuAction.add_new_app_stochastic, e.getActionCommand());
 			} else if (e.getSource() == addNewAppRulebasedMenuItem) {
 				popupMenuActionPerformed(DocumentEditorPopupMenuAction.add_new_app_rulebased, e.getActionCommand());
+			} else if (e.getSource() == addNewAppSpringSaLaDMenuItem) {
+				popupMenuActionPerformed(DocumentEditorPopupMenuAction.add_new_app_springsalad, e.getActionCommand());
 			} else if (e.getSource() == menuItemAppCopy
 						|| e.getSource() == menuItemNonSpatialCopyStochastic
 						|| e.getSource() == menuItemNonSpatialCopyDeterministic
@@ -711,9 +716,15 @@ private void construcutPopupMenu() {
 			addNewAppStochasticMenuItem.addActionListener(eventHandler);
 			addNewAppRulebasedMenuItem = new JMenuItem(GuiConstants.MENU_TEXT_RULEBASED_APPLICATION);
 			addNewAppRulebasedMenuItem.addActionListener(eventHandler);
+			addNewAppSpringSaLaDMenuItem = new JMenuItem(GuiConstants.MENU_TEXT_SPRINGSALAD_APPLICATION);
+			addNewAppSpringSaLaDMenuItem.addActionListener(eventHandler);
 			addNewAppMenu.add(addNewAppDeterministicMenuItem);
 			addNewAppMenu.add(addNewAppStochasticMenuItem);
 			addNewAppMenu.add(addNewAppRulebasedMenuItem);
+			String enableSpringSaLaD = PropertyLoader.getProperty(PropertyLoader.enableSpringSaLaD, "false");
+			if("true".equals(enableSpringSaLaD)) {
+				addNewAppMenu.add(addNewAppSpringSaLaDMenuItem);
+			}
 		}
 		popupMenu.add(addNewAppMenu);
 	}

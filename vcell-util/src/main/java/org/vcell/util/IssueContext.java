@@ -30,6 +30,8 @@ public class IssueContext implements Serializable {
 		RbmObservable,
 		SpeciesContext,		// context for species pattern
 		MolecularType,
+		MolecularInternalLinkSpec,	// context for SpringSaLaD-specific objects
+		SiteAttributesSpec,
 	}
 
 	private final IssueContext.ContextType contextType;

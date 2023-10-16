@@ -2590,9 +2590,11 @@ public Map<Pair <String, String>, String> getLocalToGlobalTranslationMap() {
 
 public static void validateSimulationContextSupport(SimulationContext simulationContext) throws UnsupportedSbmlExportException {
 	String applicationTypeErrorMessage = null;
-	if (!simulationContext.getModel().getRbmModelContainer().isEmpty()) {
+	// relax the export restriction, we now may export fully flattened rule-based models (with no reaction rules)
+	// note that all the molecular type info will be lost; TODO: maybe, for later: save the bngl string as annotation where possible
+	if (!simulationContext.getModel().getRbmModelContainer().getReactionRuleList().isEmpty()) {
 		applicationTypeErrorMessage = "Application '" + simulationContext.getName() + "' has reaction rules, SBML Export is not supported";
-	}else {
+	} else {
 		switch (simulationContext.getApplicationType()) {
 			case NETWORK_DETERMINISTIC: {
 				break;

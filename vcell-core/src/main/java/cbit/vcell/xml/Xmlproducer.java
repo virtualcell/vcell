@@ -19,9 +19,12 @@ import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.Vector;
 
 import org.apache.commons.lang3.mutable.Mutable;
@@ -31,6 +34,8 @@ import org.apache.logging.log4j.Logger;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.Namespace;
+import org.jdom.output.Format;
+import org.jdom.output.XMLOutputter;
 import org.sbpax.schemas.util.DefaultNameSpaces;
 import org.vcell.chombo.ChomboSolverSpec;
 import org.vcell.chombo.RefinementRoi;
@@ -57,6 +62,7 @@ import org.vcell.util.Extent;
 import org.vcell.util.Hex;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
+import org.vcell.util.Pair;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.GroupAccess;
 import org.vcell.util.document.GroupAccessAll;
@@ -121,8 +127,11 @@ import cbit.vcell.mapping.MicroscopeMeasurement;
 import cbit.vcell.mapping.MicroscopeMeasurement.ConvolutionKernel;
 import cbit.vcell.mapping.MicroscopeMeasurement.GaussianConvolutionKernel;
 import cbit.vcell.mapping.MicroscopeMeasurement.ProjectionZKernel;
+import cbit.vcell.mapping.MolecularInternalLinkSpec;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.mapping.ParameterContext.ParameterRoleEnum;
+import cbit.vcell.mapping.ReactionRuleSpec.Subtype;
+import cbit.vcell.mapping.ReactionRuleSpec.TransitionCondition;
 import cbit.vcell.mapping.RateRule;
 import cbit.vcell.mapping.ReactionContext;
 import cbit.vcell.mapping.ReactionRuleSpec;
@@ -130,6 +139,7 @@ import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.mapping.SimulationContext.SimulationContextParameter;
+import cbit.vcell.mapping.SiteAttributesSpec;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.mapping.TotalCurrentClampStimulus;
@@ -172,6 +182,9 @@ import cbit.vcell.math.InteractionRadius;
 import cbit.vcell.math.JumpCondition;
 import cbit.vcell.math.JumpProcess;
 import cbit.vcell.math.JumpProcessRateDefinition;
+import cbit.vcell.math.LangevinParticleJumpProcess;
+import cbit.vcell.math.LangevinParticleMolecularComponent;
+import cbit.vcell.math.LangevinParticleMolecularType;
 import cbit.vcell.math.MacroscopicRateConstant;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MemVariable;
@@ -269,6 +282,7 @@ import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.ErrorTolerance;
 import cbit.vcell.solver.ExplicitOutputTimeSpec;
+import cbit.vcell.solver.LangevinSimulationOptions;
 import cbit.vcell.solver.MathOverrides;
 import cbit.vcell.solver.MeshSpecification;
 import cbit.vcell.solver.NFsimSimulationOptions;
@@ -1483,7 +1497,7 @@ private Element getXML(ReactionContext param) {
 	//Add SpeciesContextSpecs
 	SpeciesContextSpec[] array = param.getSpeciesContextSpecs();
 	for (int i =0; i<array.length ; i ++){
-		reactioncontext.addContent( getXML(array[i]) );
+		reactioncontext.addContent( getXML(array[i], param.getSimulationContext()) );
 	}
 	//Add ReactionSpecs
 	ReactionSpec[] reactionarray = param.getReactionSpecs();
@@ -1492,8 +1506,8 @@ private Element getXML(ReactionContext param) {
 	}
 	//Add ReactionRuleSpecs
 	ReactionRuleSpec[] reactionRuleArray = param.getReactionRuleSpecs();
-	if (reactionRuleArray.length>0){
-		reactioncontext.addContent( getXML(reactionRuleArray) );
+	if (reactionRuleArray.length>0) {
+		reactioncontext.addContent( getXML(reactionRuleArray, param.getSimulationContext()) );
 	}
 	
 	return reactioncontext;
@@ -1517,13 +1531,31 @@ private Element getXML(ReactionSpec param) {
 }
 
 //For rateRules in SimulationContext
-public Element getXML(ReactionRuleSpec[] reactionRuleSpecs) {
+public Element getXML(ReactionRuleSpec[] reactionRuleSpecs, SimulationContext simContext) {
 	Element reactionRuleSpecsElement = new Element(XMLTags.ReactionRuleSpecsTag);
 	for (ReactionRuleSpec reactionRuleSpec : reactionRuleSpecs){
 		Element reactionRuleSpecElement = new Element(XMLTags.ReactionRuleSpecTag);
 		reactionRuleSpecElement.setAttribute(XMLTags.ReactionRuleRefAttrTag, mangle(reactionRuleSpec.getReactionRule().getName()));
 		reactionRuleSpecElement.setAttribute(XMLTags.ReactionRuleMappingAttrTag, mangle(reactionRuleSpec.getReactionRuleMapping().getDatabaseName()));
-
+		if(Application.SPRINGSALAD == simContext.getApplicationType()) {
+			//
+			// the next attributes are sent only for debugging purposes, they are derived attributes and should be calculated at needed
+			//
+			Map<String, Object> analysisResults = new LinkedHashMap<> ();
+			reactionRuleSpec.analizeReaction(analysisResults);
+			ReactionRuleSpec.Subtype st = reactionRuleSpec.getSubtype(analysisResults);		// for sanity check
+			reactionRuleSpecElement.setAttribute(XMLTags.SubTypeAttrTag, st.columnName);
+			if(ReactionRuleSpec.Subtype.BINDING == st) {
+				// this is mandatory, if it's a binding reaction
+				reactionRuleSpecElement.setAttribute(XMLTags.BondLengthAttrTag, Double.toString(reactionRuleSpec.getFieldBondLength()));
+			}
+			if(ReactionRuleSpec.Subtype.TRANSITION == st) {
+				TransitionCondition tc = reactionRuleSpec.getTransitionCondition(analysisResults);
+				if(tc != null) {
+					reactionRuleSpecElement.setAttribute(XMLTags.TransitionConditionAttrTag, tc.vcellName);	// for sanity check
+				}
+			}
+		}
 		reactionRuleSpecsElement.addContent(reactionRuleSpecElement);
 	}
 
@@ -1544,19 +1576,24 @@ public Element getXML(SimulationContext param, BioModel bioModel) throws XmlPars
 	String name = mangle(param.getName());
 	simulationcontext.setAttribute(XMLTags.NameAttrTag, name);
 	//set isStoch, isUsingConcentration attributes
-	if (applicationType == Application.NETWORK_STOCHASTIC)
-	{
+	if (applicationType == Application.NETWORK_STOCHASTIC) {
 		simulationcontext.setAttribute(XMLTags.StochAttrTag, "true");
 		setBooleanAttribute(simulationcontext, XMLTags.ConcentrationAttrTag, param.isUsingConcentration());
 		// write out 'randomizeInitConditin' flag only if non-spatial stochastic simContext
 		if(param.getGeometry().getDimension() == 0) {
 			setBooleanAttribute(simulationcontext, XMLTags.RandomizeInitConditionTag,param.isRandomizeInitCondition());
 		}
-	}
-	else
-	{
+		setBooleanAttribute(simulationcontext, XMLTags.SpringSaLaDAttrTag, false);
+	} else if(applicationType == Application.SPRINGSALAD) {
+		boolean isRandomizeInitCondition = param.isRandomizeInitCondition();
+		boolean isUsingConcentration = param.isUsingConcentration();
+		simulationcontext.setAttribute(XMLTags.StochAttrTag, "false");
+		setBooleanAttribute(simulationcontext, XMLTags.ConcentrationAttrTag, isUsingConcentration);
+		setBooleanAttribute(simulationcontext, XMLTags.SpringSaLaDAttrTag, true);
+	} else {
 		simulationcontext.setAttribute(XMLTags.StochAttrTag, "false");
 		simulationcontext.setAttribute(XMLTags.ConcentrationAttrTag, "true");
+		setBooleanAttribute(simulationcontext, XMLTags.SpringSaLaDAttrTag, false);
 	}
 	final boolean ruleBased = param.getApplicationType() == SimulationContext.Application.RULE_BASED_STOCHASTIC; 
 	setBooleanAttribute(simulationcontext,XMLTags.RuleBasedAttrTag, ruleBased);
@@ -1567,6 +1604,7 @@ public Element getXML(SimulationContext param, BioModel bioModel) throws XmlPars
 			setBooleanAttribute(simulationcontext, XMLTags.RandomizeInitConditionTag,param.isRandomizeInitCondition());
 		}
 	}
+
 	setBooleanAttribute(simulationcontext,XMLTags.MassConservationModelReductionTag, param.isUsingMassConservationModelReduction());
 	setBooleanAttribute(simulationcontext,XMLTags.InsufficientIterationsTag,param.isInsufficientIterations());
 	setBooleanAttribute(simulationcontext,XMLTags.InsufficientMaxMoleculesTag,param.isInsufficientMaxMolecules());
@@ -1821,7 +1859,26 @@ private Element getXML(FieldDataSymbol fds, ModelUnitSystem modelUnitSystem) {
  * @return Element
  * @param param cbit.vcell.mapping.SpeciesContextSpec
  */
-private Element getXML(SpeciesContextSpec param) {
+/*
+<ReactionContext>
+	<LocalizedCompoundSpec LocalizedCompoundRef="MT0" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+		<InitialConcentration>0.0</InitialConcentration>
+		<Diffusion>10.0</Diffusion>
+
+		<SiteAttributesSpec SiteRef="Site0" MoleculeRef="MT0" SiteLocationRefAttrTag="Intracellular" Radius="1.0" Diffusion="1.0" Color="RED"
+			SiteCoordX="1.0" SiteCoordZ="1.0" SiteCoordZ="1.0" />
+		<SiteAttributesSpec SiteRef="Anchor" MoleculeRef="MT0" SiteLocationRefAttrTag="Membrane" Radius="1.0" Diffusion="1.0" Color="RED"
+			SiteCoordX="1.0" SiteCoordZ="1.0" SiteCoordZ="1.0" />
+
+		<InternalLinkSpec MoleculeRef="MT0" SiteOneRef="Anchor" SiteTwoRef="Site0" />
+
+	</LocalizedCompoundSpec>
+	<ReactionRuleSpecs>
+		<ReactionRuleSpec ReactionRuleRef="r0" ReactionRuleMapping="included" BondLength="1.0" />
+	</ReactionRuleSpecs>
+</ReactionContext>
+*/
+private Element getXML(SpeciesContextSpec param, SimulationContext simContext) {
 	Element speciesContextSpecElement = new Element(XMLTags.SpeciesContextSpecTag);
 
 	//Add Attributes
@@ -1852,11 +1909,64 @@ private Element getXML(SpeciesContextSpec param) {
 	}
 	//Add diffusion
 	cbit.vcell.parser.Expression diffRate = param.getDiffusionParameter().getExpression();
-	if (diffRate!=null){
-		Element diffusion = new Element(XMLTags.DiffusionTag);
-		diffusion.addContent(mangleExpression(diffRate));
-		speciesContextSpecElement.addContent(diffusion);
+	if (diffRate!=null)	{
+		if(Application.SPRINGSALAD != simContext.getApplicationType()) {	// in SS diffusion only happens at the site level
+			Element diffusion = new Element(XMLTags.DiffusionTag);
+			diffusion.addContent(mangleExpression(diffRate));
+			speciesContextSpecElement.addContent(diffusion);
+		}
 	}
+	
+	// SpringSaLaD specific stuff
+	// the producer is dumb, we save whatever we have; the reader may be smart and check for consistency, maybe initialize what's missing with defaults?
+	if(Application.SPRINGSALAD == simContext.getApplicationType() && param.getInternalLinkSet() != null && param.getInternalLinkSet().size() > 0 ) {
+		for(MolecularInternalLinkSpec mils : param.getInternalLinkSet()) {
+			SpeciesContext sc = param.getSpeciesContext();
+			SpeciesPattern sp = sc.getSpeciesPattern();
+			if(sp == null || sp.getMolecularTypePatterns().size() != 1) {
+				break;	// the species pattern must refer to exactly one molecule, links are intramollecular only
+				// throw new IllegalArgumentException("The species pattern must contain exactly one molecule.");
+			}
+			MolecularTypePattern mtp = sp.getMolecularTypePatterns().get(0);	// the one and only
+			MolecularType mt = mtp.getMolecularType();
+			
+			Element milsElement = new Element(XMLTags.InternalLinkSpecTag);
+			milsElement.setAttribute(XMLTags.MoleculeRefAttrTag, mt.getName());
+			milsElement.setAttribute(XMLTags.SiteOneRefAttrTag, mils.getMolecularComponentPatternOne().getMolecularComponent().getName());
+			milsElement.setAttribute(XMLTags.SiteTwoRefAttrTag, mils.getMolecularComponentPatternTwo().getMolecularComponent().getName());
+			speciesContextSpecElement.addContent(milsElement);
+		}
+	}
+	if(Application.SPRINGSALAD == simContext.getApplicationType() && param.getSiteAttributesMap() != null && param.getSiteAttributesMap().size() > 0) {
+		for (Entry<MolecularComponentPattern, SiteAttributesSpec> entry : param.getSiteAttributesMap().entrySet()) {
+			SpeciesContext sc = param.getSpeciesContext();
+			SpeciesPattern sp = sc.getSpeciesPattern();
+			if(sp == null || sp.getMolecularTypePatterns().size() != 1) {
+				break;	// the species pattern must refer to exactly one molecule, links are intramollecular only
+				// throw new IllegalArgumentException("The species pattern must contain exactly one molecule.");
+			}
+			MolecularTypePattern mtp = sp.getMolecularTypePatterns().get(0);	// the one and only
+			MolecularType mt = mtp.getMolecularType();
+
+			MolecularComponentPattern mcp = entry.getKey();
+			SiteAttributesSpec sas = entry.getValue();
+			Element sasElement = new Element(XMLTags.SiteAttributesSpecTag);
+			sasElement.setAttribute(XMLTags.SiteRefAttrTag, mcp.getMolecularComponent().getName());
+			sasElement.setAttribute(XMLTags.MoleculeRefAttrTag, mt.getName());
+			sasElement.setAttribute(XMLTags.SiteLocationRefAttrTag, sas.getLocation().getName());
+			sasElement.setAttribute(XMLTags.SiteCoordXAttrTag, Double.toString(sas.getCoordinate().getX()));
+			sasElement.setAttribute(XMLTags.SiteCoordYAttrTag, Double.toString(sas.getCoordinate().getY()));
+			sasElement.setAttribute(XMLTags.SiteCoordZAttrTag, Double.toString(sas.getCoordinate().getZ()));
+			sasElement.setAttribute(XMLTags.SiteRadiusAttrTag, Double.toString(sas.getRadius()));
+			sasElement.setAttribute(XMLTags.SiteDiffusionAttrTag, Double.toString(sas.getDiffusionRate()));
+			sasElement.setAttribute(XMLTags.SiteColorAttrTag, sas.getColor().getName());
+			speciesContextSpecElement.addContent(sasElement);
+		}
+	}
+	XMLOutputter outp = new XMLOutputter(Format.getPrettyFormat());
+	String sout = outp.outputString(speciesContextSpecElement);
+	System.out.println(sout);
+	
 	// write BoundaryConditions
 	cbit.vcell.parser.Expression exp;
 	Element boundaries = new Element(XMLTags.BoundariesTag);
@@ -2083,10 +2193,26 @@ private org.jdom.Element getXML(ParticleProperties param) throws XmlParseExcepti
 }
 
 private org.jdom.Element getXML(ParticleJumpProcess param) {
-	org.jdom.Element particleJumpProcessElement = new org.jdom.Element(XMLTags.ParticleJumpProcessTag);
-	//name
-	particleJumpProcessElement.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
-	if (param.getProcessSymmetryFactor()!=null){
+	Element particleJumpProcessElement = null;
+	if(param instanceof LangevinParticleJumpProcess) {
+		particleJumpProcessElement = new Element(XMLTags.LangevinParticleJumpProcessTag);
+		particleJumpProcessElement.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
+		LangevinParticleJumpProcess lParam = (LangevinParticleJumpProcess)param;
+		Subtype subtype = lParam.getSubtype();
+		particleJumpProcessElement.setAttribute(XMLTags.LangevinParticleJumpProcessSubtypeTag, subtype.columnName);
+		if(Subtype.BINDING == subtype) {
+			double bondLength = lParam.getBondLength();
+			particleJumpProcessElement.setAttribute(XMLTags.LangevinParticleJumpProcessBondLengthTag, Double.toString(bondLength));
+		} else if(Subtype.TRANSITION == subtype) {
+			TransitionCondition transitionCondition = lParam.getTransitionCondition();
+			particleJumpProcessElement.setAttribute(XMLTags.LangevinParticleJumpProcessTransitionConditionTag, transitionCondition.vcellName);
+		}
+	} else {
+		particleJumpProcessElement = new Element(XMLTags.ParticleJumpProcessTag);
+		particleJumpProcessElement.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
+	}
+	
+	if (param.getProcessSymmetryFactor() != null ) {
 		particleJumpProcessElement.setAttribute(XMLTags.ProcessSymmetryFactorAttrTag, Double.toString(param.getProcessSymmetryFactor().getFactor()));
 	}
 	// Selected Particle
@@ -2101,11 +2227,10 @@ private org.jdom.Element getXML(ParticleJumpProcess param) {
 	if (particleProbabilityRate instanceof MacroscopicRateConstant) {
 		prob = new Element(XMLTags.MacroscopicRateConstantTag);
 		prob.addContent(mangleExpression(((MacroscopicRateConstant)particleProbabilityRate).getExpression()));
-	}else if (particleProbabilityRate instanceof InteractionRadius) {
+	} else if (particleProbabilityRate instanceof InteractionRadius) {
 		prob = new Element(XMLTags.InteractionRadiusTag);
 		prob.addContent(mangleExpression(((InteractionRadius)particleProbabilityRate).getExpression()));
-	} 
-	else {
+	} else {
 		throw new RuntimeException("ParticleRateDefinition in XmlProducer not implemented");
 	}
 	particleJumpProcessElement.addContent(prob);
@@ -3142,15 +3267,40 @@ private Element getXML(ParticleComponentStateDefinition param) {
 private Element getXML(ParticleMolecularComponent param) {
 	Element e = new Element(XMLTags.ParticleMolecularComponentPatternTag);
 	e.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
+	
+	if(param instanceof LangevinParticleMolecularComponent) {
+		LangevinParticleMolecularComponent lParam = (LangevinParticleMolecularComponent)param;
+		e.setAttribute(XMLTags.ParticleMolecularComponentRadiusTag, Double.toString(lParam.getRadius()));
+		e.setAttribute(XMLTags.ParticleMolecularComponentDiffusionRateTag, Double.toString(lParam.getDiffusionRate()));
+		e.setAttribute(XMLTags.ParticleMolecularComponentLocationTag, lParam.getLocation().toString());
+		e.setAttribute(XMLTags.ParticleMolecularComponentCoordXAttrTag, Double.toString(lParam.getCoordinate().getX()));
+		e.setAttribute(XMLTags.ParticleMolecularComponentCoordYAttrTag, Double.toString(lParam.getCoordinate().getY()));
+		e.setAttribute(XMLTags.ParticleMolecularComponentCoordZAttrTag, Double.toString(lParam.getCoordinate().getZ()));
+		e.setAttribute(XMLTags.ParticleMolecularComponentColorTag, lParam.getColor().getName());
+	}
 	for (ParticleComponentStateDefinition pp : param.getComponentStateDefinitions()){
 		e.addContent(getXML(pp));
 	}
 	return e;
 }
 private Element getXML(ParticleMolecularType param) {
-	Element e = new Element(XMLTags.ParticleMolecularTypeTag);
-	e.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
-	for (ParticleMolecularComponent pp : param.getComponentList()){
+	Element e = null;
+	if(param instanceof LangevinParticleMolecularType) {
+		e = new Element(XMLTags.LangevinParticleMolecularTypeTag);
+		e.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
+		LangevinParticleMolecularType lParam = (LangevinParticleMolecularType)param;
+		Set<Pair<LangevinParticleMolecularComponent, LangevinParticleMolecularComponent>> internalLinkSpec = lParam.getInternalLinkSpec();
+		for(Pair<LangevinParticleMolecularComponent, LangevinParticleMolecularComponent> pair : internalLinkSpec) {
+			Element l = new Element(XMLTags.ParticleMolecularTypeLinksTag);
+			l.setAttribute(XMLTags.LangevinParticleMolecularComponentOneTag, pair.one.getName());
+			l.setAttribute(XMLTags.LangevinParticleMolecularComponentTwoTag, pair.two.getName());
+			e.addContent(l);
+		}
+	} else {
+		e = new Element(XMLTags.ParticleMolecularTypeTag);
+		e.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
+	}
+	for (ParticleMolecularComponent pp : param.getComponentList()) {
 		e.addContent(getXML(pp));
 	}
 	for(String anchor : param.getAnchorList()) {
@@ -4816,6 +4966,10 @@ private Element getXML(SolverTaskDescription param) {
 	if (nfsimSimulationOptions != null) {		
 		solvertask.addContent(getXML(nfsimSimulationOptions));
 	}
+	LangevinSimulationOptions langevinSimulationOptions = param.getLangevinSimulationOptions();
+	if(langevinSimulationOptions != null) {
+		solvertask.addContent(getXML(langevinSimulationOptions));
+	}
 	SundialsPdeSolverOptions sundialsPdeSolverOptions = param.getSundialsPdeSolverOptions();
 	if (sundialsPdeSolverOptions != null) {		
 		solvertask.addContent(getXML(sundialsPdeSolverOptions));
@@ -4878,6 +5032,29 @@ private Element getXML(NFsimSimulationOptions sso) {			// we know that sso is no
 	ssoe.addContent(e);
 	
 	return ssoe;
+}
+private Element getXML(LangevinSimulationOptions lso) {
+	Element e = null;
+	Element lsoe = new Element(XMLTags.LangevinSimulationOptions);
+
+	e = new Element(XMLTags.LangevinSO_numOfTrials);
+	e.setText(String.valueOf(lso.getNumOfTrials()));
+	lsoe.addContent(e);
+	
+	e = new Element(XMLTags.LangevinSO_intervalSpring);
+	e.setText(String.valueOf(lso.getIntervalSpring()));
+	lsoe.addContent(e);
+	
+	e = new Element(XMLTags.LangevinSO_intervalImage);
+	e.setText(String.valueOf(lso.getIntervalImage()));
+	lsoe.addContent(e);
+	
+//	if (lso.getSomethingOptional() != null) {
+//		e = new Element(XMLTags.NFSimSimulationOptions_moleculeDistance);
+//		e.setText(lso.getMoleculeDistance() + "");
+//		lsoe.addContent(e);			
+//	}
+	return lsoe;
 }
 private Element getXML(SmoldynSimulationOptions sso) {
 	Element ssoElement = null;

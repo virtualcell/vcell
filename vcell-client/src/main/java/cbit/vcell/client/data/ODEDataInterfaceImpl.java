@@ -249,11 +249,18 @@ class ODEDataInterfaceImpl implements ODEDataInterface {
 				if (dataSymbolMetadata!=null){
 					selectedFilterCategory = dataSymbolMetadata.filterCategory;
 				}
+
 				for (int j = 0; j < selectedFilters.length; j++) {
 					if(selectedFilters[j].equals(selectedFilterCategory)){
 						selectedColumnDescriptions.add(getOdeSolverResultSet().getColumnDescriptions()[i]);
 						break;
 					}
+					// Langevin values just shown as species
+					if(selectedFilters[j].getName().equals("Species") && selectedFilterCategory == null) {
+						selectedColumnDescriptions.add(getOdeSolverResultSet().getColumnDescriptions()[i]);
+						break;
+					}
+
 				}
 			}
 			return selectedColumnDescriptions.toArray(new ColumnDescription[0]);

@@ -79,6 +79,7 @@ public class FileFilters {
 	public static final FileFilter FILE_FILTER_SBML_32_SPATIAL = new SbmlExtensionFilter(3, 2, true);
 	public static final FileFilter FILE_FILTER_SEDML    = new SedmlExtensionFilter(); 
 	public static final FileFilter FILE_FILTER_OMEX     = new OmexExtensionFilter();
+	public static final FileFilter FILE_FILTER_SPRINGSALAD     = new SpringSaLaDExtensionFilter();
 	public static final FileFilter FILE_FILTER_CELLML	= new CellMLExtensionFilter(); 
 	public static final FileFilter FILE_FILTER_SMOLDYN_INPUT = new SmoldynExtensionFilter(); 
 	public static final FileFilter FILE_FILTER_NFSIM = new NfsimExtensionFilter(); 

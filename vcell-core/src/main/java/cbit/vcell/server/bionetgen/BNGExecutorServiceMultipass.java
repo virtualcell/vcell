@@ -32,6 +32,7 @@ import org.vcell.model.rbm.RbmUtils;
 import org.vcell.model.rbm.RbmUtils.BnglObjectConstructionVisitor;
 import org.vcell.util.Pair;
 
+import cbit.image.ImageException;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.bionetgen.BNGComplexSpecies;
 import cbit.vcell.bionetgen.BNGMultiStateSpecies;
@@ -40,7 +41,10 @@ import cbit.vcell.bionetgen.BNGOutputSpec;
 import cbit.vcell.bionetgen.BNGReaction;
 import cbit.vcell.bionetgen.BNGSpecies;
 import cbit.vcell.bionetgen.BNGSpeciesComponent;
+import cbit.vcell.geometry.GeometryException;
 import cbit.vcell.mapping.BioNetGenUpdaterCallback;
+import cbit.vcell.mapping.IllegalMappingException;
+import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.NetworkTransformer;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
@@ -54,6 +58,7 @@ import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.Structure;
 import cbit.vcell.parser.ExpressionBindingException;
+import cbit.vcell.parser.ExpressionException;
 
 public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGenUpdaterCallback {
 	private final static Logger lg = LogManager.getLogger(BNGExecutorServiceMultipass.class);
@@ -114,7 +119,7 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 	}
 
 	@Override
-	public BNGOutput executeBNG() throws BNGException, ParseException, PropertyVetoException, ExpressionBindingException {
+	public BNGOutput executeBNG() throws BNGException, ParseException, PropertyVetoException, ExpressionException, GeometryException, ImageException, IllegalMappingException, MappingException {
 		this.startTime = System.currentTimeMillis();
 		long eltDoWork = 0;		// elapsed time in doWork
 		long eltExecBng = 0;	// elapsed time executing bngl
@@ -871,7 +876,7 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 	// where each molecule has an extra Site with the compartments as possible States
 	// a reserved name will be used for this Site
 	//
-	private String preprocessInput(String cBngInputString) throws ParseException, PropertyVetoException, ExpressionBindingException {
+	private String preprocessInput(String cBngInputString) throws ParseException, PropertyVetoException, ExpressionException, GeometryException, ImageException, IllegalMappingException, MappingException {
 		
 		// take the cBNGL file (as string), parse it to recover the rules (we'll need them later)
 		// and create the bngl string with the extra, fake site for the compartments
@@ -895,7 +900,7 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 			Structure struct = model.getStructure(0);
 			if(struct != null) {
 				try {
-					model.removeStructure(struct);
+					model.removeStructure(struct, true);
 				} catch (PropertyVetoException e) {
 					lg.error(e);
 				}

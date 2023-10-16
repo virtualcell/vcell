@@ -13,8 +13,11 @@ package cbit.vcell.mapping.gui;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.gui.ScrollTable;
 
@@ -27,9 +30,12 @@ import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.model.ModelProcess;
+import cbit.vcell.model.ProductPattern;
+import cbit.vcell.model.ReactantPattern;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SimpleReaction;
+import cbit.vcell.parser.Expression;
 /**
  * Insert the type's description here.
  * Creation date: (2/23/01 10:52:36 PM)
@@ -41,8 +47,11 @@ public class ModelProcessSpecsTableModel extends VCellSortTableModel<ModelProces
 		COLUMN_NAME("Name"),
 		COLUMN_DEPICTION("Depiction"),
 		COLUMN_TYPE("Type"),
+		COLUMN_SUBTYPE("Subtype"),
+		COLUMN_CONDITION("Condition"),
 		COLUMN_ENABLED("Enabled"),
-		COLUMN_FAST("Fast");
+		COLUMN_FAST("Fast"),
+		COLUMN_BOND_LENGTH("Bond Length");
 		
 		public final String label;
 		private ColumnType(String label){
@@ -70,6 +79,9 @@ public String getColumnName(int columnIndex){
 private void refreshColumns(){
 	columns.clear();
 	columns.addAll(Arrays.asList(ColumnType.values())); // initialize to all columns
+	columns.remove(ColumnType.COLUMN_BOND_LENGTH);		// bond length, subtype and condition are springsalad-only
+	columns.remove(ColumnType.COLUMN_SUBTYPE);
+	columns.remove(ColumnType.COLUMN_CONDITION);
 	if(getSimulationContext() == null) {
 		return;
 	}
@@ -77,6 +89,12 @@ private void refreshColumns(){
 		columns.remove(ColumnType.COLUMN_FAST);
 	}
 	if (getSimulationContext().getApplicationType() == Application.NETWORK_STOCHASTIC){
+		columns.remove(ColumnType.COLUMN_FAST);
+	}
+	if(getSimulationContext().getApplicationType() == Application.SPRINGSALAD) {
+		columns.add(ColumnType.COLUMN_BOND_LENGTH);
+		columns.add(ColumnType.COLUMN_SUBTYPE);
+		columns.add(ColumnType.COLUMN_CONDITION);
 		columns.remove(ColumnType.COLUMN_FAST);
 	}
 }
@@ -136,8 +154,17 @@ public Class<?> getColumnClass(int column) {
 		case COLUMN_TYPE:{
 			return String.class;
 		}
+		case COLUMN_SUBTYPE:{
+			return String.class;
+		}
+		case COLUMN_CONDITION:{
+			return String.class;
+		}
 		case COLUMN_ENABLED:{
 			return Boolean.class;
+		}
+		case COLUMN_BOND_LENGTH:{
+			return Expression.class;
 		}
 		case COLUMN_FAST:{
 			return Boolean.class;
@@ -177,14 +204,42 @@ public Object getValueAt(int row, int col) {
 		case COLUMN_TYPE:{
 			return modelProcessSpec.getModelProcess().getDisplayType();
 		}
+		case COLUMN_SUBTYPE:{
+			ModelProcess modelProcess = modelProcessSpec.getModelProcess();
+			if(getSimulationContext().getApplicationType() == Application.SPRINGSALAD) {
+				return getSubtype(modelProcessSpec);
+			} else {
+				return null;
+			}
+		}
+		case COLUMN_CONDITION:{
+			ModelProcess modelProcess = modelProcessSpec.getModelProcess();
+			if(getSimulationContext().getApplicationType() == Application.SPRINGSALAD) {
+				return getTransitionCondition(modelProcessSpec);
+			} else {
+				return null;
+			}
+		}
 		case COLUMN_ENABLED:{
-			return new Boolean(!modelProcessSpec.isExcluded());
+			return Boolean.valueOf(!modelProcessSpec.isExcluded());
+		}
+		case COLUMN_BOND_LENGTH:{
+			ModelProcess modelProcess = modelProcessSpec.getModelProcess();
+			if(getSimulationContext().getApplicationType() == Application.SPRINGSALAD) {
+				if(ReactionRuleSpec.Subtype.BINDING.columnName.equals(getSubtype(modelProcessSpec))) {
+					return getBondLength(modelProcessSpec);
+				} else {
+					return null;
+				}
+			} else {
+				return null;
+			}
 		}
 		case COLUMN_FAST:{
 			if (!(modelProcessSpec.getModelProcess() instanceof SimpleReaction)){
-				return new Boolean(false);
+				return Boolean.valueOf(false);
 			}else{
-				return new Boolean(modelProcessSpec.isFast());
+				return Boolean.valueOf(modelProcessSpec.isFast());
 			}
 		}
 		default:{
@@ -202,11 +257,19 @@ public Object getValueAt(int row, int col) {
  */
 public boolean isCellEditable(int rowIndex, int columnIndex) {
 	ColumnType columnType = columns.get(columnIndex);
-	switch (columnType){
-	case COLUMN_ENABLED:{
+	switch (columnType) {
+	case COLUMN_ENABLED:
 		return true;
-	}
-	case COLUMN_FAST:{
+	case COLUMN_BOND_LENGTH:
+		ModelProcessSpec modelProcessSpec = getValueAt(rowIndex);
+		ModelProcess modelProcess = modelProcessSpec.getModelProcess();
+		if(getSimulationContext().getApplicationType() == Application.SPRINGSALAD) {
+			if(ReactionRuleSpec.Subtype.BINDING.columnName.equals(getSubtype(modelProcessSpec))) {
+				return true;
+			}
+		}
+		return false;
+	case COLUMN_FAST: {
 		if(getSimulationContext()!=null) {
 			ModelProcessSpec ModelProcessSpec = getValueAt(rowIndex);
 			//
@@ -216,7 +279,7 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 		}
 		return false;
 	}
-	default:{
+	default: {
 		return false;
 	}
 	}
@@ -340,6 +403,17 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 				fireTableRowsUpdated(rowIndex,rowIndex);
 				break;
 			}
+			case COLUMN_BOND_LENGTH: {
+				if(modelProcessSpec instanceof ReactionSpec) {
+					ReactionRuleSpec reactionRuleSpec = (ReactionRuleSpec)modelProcessSpec;
+					if (aValue instanceof String) {
+						String newExpressionString = (String)aValue;
+						double result = Double.parseDouble(newExpressionString);
+						reactionRuleSpec.setFieldBondLength(result);
+					}
+				}
+				break;
+			}
 			case COLUMN_FAST:{
 				boolean bFast = ((Boolean)aValue).booleanValue();
 				if (modelProcessSpec instanceof ReactionSpec){
@@ -357,6 +431,40 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 	}catch (java.beans.PropertyVetoException e){
 		e.printStackTrace(System.out);
 	}
+}
+
+public static String getSubtype(ModelProcessSpec modelProcessSpec) {
+	if(modelProcessSpec instanceof ReactionRuleSpec) {
+		ReactionRuleSpec rrs = (ReactionRuleSpec)modelProcessSpec;
+		Map<String, Object> analysisResults = new LinkedHashMap<> ();
+		rrs.analizeReaction(analysisResults);
+		ReactionRuleSpec.Subtype st = rrs.getSubtype(analysisResults);
+		return st.columnName;
+	} else {
+		return ReactionRuleSpec.Subtype.INCOMPATIBLE.columnName;
+	}
+}
+public static String getTransitionCondition(ModelProcessSpec modelProcessSpec) {
+	if(modelProcessSpec instanceof ReactionRuleSpec) {
+		ReactionRuleSpec rrs = (ReactionRuleSpec)modelProcessSpec;
+		Map<String, Object> analysisResults = new LinkedHashMap<> ();
+		rrs.analizeReaction(analysisResults);
+		ReactionRuleSpec.TransitionCondition tc = rrs.getTransitionCondition(analysisResults);
+		if(tc != null) {
+			return tc.vcellName;
+		}
+	}
+	return null;
+}
+public double getBondLength(ModelProcessSpec modelProcessSpec) {
+	if(modelProcessSpec instanceof ReactionRuleSpec) {
+		ReactionRuleSpec rrs = (ReactionRuleSpec)modelProcessSpec;
+		double bondLength = rrs.getFieldBondLength();
+		return bondLength;
+	} else {
+		return -1.0;
+	}
+ 
 }
 
 	public Comparator<ModelProcessSpec> getComparator(int col, boolean ascending) {

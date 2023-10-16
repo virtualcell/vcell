@@ -379,6 +379,11 @@ protected void parse(MathDescription mathDesc, String token, CommentStringTokeni
 		addParticleJumpProcess(particleJumpProcess);
 		return;
 	}			
+	if (token.equalsIgnoreCase(VCML.LangevinParticleJumpProcess)){
+		ParticleJumpProcess particleJumpProcess = LangevinParticleJumpProcess.fromVCML(mathDesc, tokens);
+		addParticleJumpProcess(particleJumpProcess);
+		return;
+	}			
 	if (token.equalsIgnoreCase(VCML.ParticleProperties)){
 		ParticleProperties pp = new ParticleProperties(mathDesc, tokens);
 		if(pp.getVariable().getDomain().getName().equals(this.getName())){

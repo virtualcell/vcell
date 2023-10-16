@@ -21,6 +21,7 @@ import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryException;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.mapping.FeatureMapping;
+import cbit.vcell.mapping.IllegalMappingException;
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.MicroscopeMeasurement.GaussianConvolutionKernel;
@@ -72,7 +73,7 @@ public abstract class Generate2DExpModelOpAbstract {
 			double secondaryFraction,
 			String extracellularName,
 			String cytosolName,
-			Context context) throws PropertyVetoException, ExpressionException, GeometryException, ImageException, ModelException, MappingException, MathException, MatrixException {
+			Context context) throws PropertyVetoException, ExpressionException, GeometryException, ImageException, ModelException, MappingException, MathException, MatrixException, IllegalMappingException {
 
 		double domainSize = 2.2*cellRadius;
 		Extent extent = new Extent(domainSize, domainSize, 1.0);

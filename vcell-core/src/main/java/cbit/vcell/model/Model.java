@@ -3302,6 +3302,10 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		firePropertyChange(PROPERTY_NAME_MODEL_ENTITY_NAME, evt.getOldValue(), evt.getNewValue());
 	}
 	
+	if(evt.getSource() instanceof MolecularType && evt.getPropertyName().equals(MolecularType.PROPERTY_NAME_COMPONENT_LIST)) {
+		// redirected message that serves a very narrow role specifically for springsalad applications
+		firePropertyChange(MolecularType.PROPERTY_NAME_COMPONENT_LIST, evt.getSource(), evt.getNewValue());
+	}
 }
 
 
@@ -3451,13 +3455,16 @@ private void refreshDiagrams() {
 }
 
 
-public void removeStructure(Structure removedStructure) throws PropertyVetoException {
+public void removeStructure(Structure removedStructure, boolean canRemoveLast) throws PropertyVetoException {
 
 	if (removedStructure == null){
 		throw new RuntimeException("structure is null");
 	}	
 	if (!contains(removedStructure)){
 		throw new RuntimeException("structure "+removedStructure.getName()+" not found");
+	}
+	if(fieldStructures.length == 1 && canRemoveLast == false) {
+		throw new RuntimeException("Remove model compartment Error. Cannot remove the last compartment.");
 	}
 	
 	//Check that the feature is empty
@@ -4635,7 +4642,7 @@ public String isValidForStochApp()
 }
 
 	public void removeObject(Object object) throws PropertyVetoException {
-		if(object instanceof Feature || object instanceof Membrane) { removeStructure((Structure) object); }
+		if(object instanceof Feature || object instanceof Membrane) { removeStructure((Structure) object, false); }
 		else if(object instanceof ModelParameter) { removeModelParameter((ModelParameter) object); }
 		else if(object instanceof ReactionStep) { removeReactionStep((ReactionStep) object); }
 		else if(object instanceof Species) { removeSpecies((Species) object); }

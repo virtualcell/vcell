@@ -3,7 +3,11 @@ FROM ubuntu:18.04
 RUN apt-get -y update && \
     apt-get install -y curl openjdk-8-jre dnsutils && \
     mkdir -p /usr/local/app/lib 
-	
+
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tzdata
+RUN unlink /etc/localtime || true
+RUN ln -s /usr/share/zoneinfo/America/New_York /etc/localtime
+
 WORKDIR /usr/local/app
 
 COPY ./vcell-server/target/vcell-server-0.0.1-SNAPSHOT.jar \
@@ -49,8 +53,8 @@ EXPOSE 8080
 EXPOSE 8000
 
 ENTRYPOINT java \
-    -Xdebug -Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=n \
-    -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:MaxRAMFraction=1 -Xms64M \
+  -Xdebug -Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=n \
+  -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:MaxRAMFraction=1 -Xms64M \
 	-Dvcell.softwareVersion="${softwareVersion}" \
 	-Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager \
 	-Dlog4j.configurationFile=/usr/local/app/vcell-api.log4j.xml \
@@ -63,8 +67,9 @@ ENTRYPOINT java \
 	-Dvcell.db.pswdfile="${dbpswdfile}" \
 	-Dvcell.n5DataDir.internal=/n5DataDir \
 	-Dvcell.primarySimdatadir.internal=/simdata \
-    -Dvcell.secondarySimdatadir.internal=/simdata_secondary \
-    -Dvcell.simdataCacheSize="${simdataCacheSize}" \
+  -Dvcell.secondarySimdatadir.internal=/simdata_secondary \
+  -Dvcell.simdataCacheSize="${simdataCacheSize}" \
+	-Duser.timezone="${userTimezone}" \
 	-Dvcell.jms.int.host.internal="${jmshost_int_internal}" \
 	-Dvcell.jms.int.port.internal="${jmsport_int_internal}" \
 	-Dvcell.jms.blobMessageUseMongo=true \
@@ -81,7 +86,7 @@ ENTRYPOINT java \
 	-Dvcelldata.web.server.port=${webDataPort} \
 	-Dvcell.smtp.emailAddress="${smtp_emailaddress}" \
 	-Dvcell.ssl.ignoreHostMismatch="${ssl_ignoreHostMismatch}" \
-    -Dvcell.ssl.ignoreCertProblems="${ssl_ignoreCertProblems}" \
-    -Dvcell.submit.service.host="${submit_service_host}" \
+  -Dvcell.ssl.ignoreCertProblems="${ssl_ignoreCertProblems}" \
+  -Dvcell.submit.service.host="${submit_service_host}" \
 	-cp "./lib/*" org.vcell.rest.VCellApiMain \
 	/usr/local/app/docroot 8080

@@ -350,7 +350,12 @@ public abstract class AbstractCompiledSolver extends AbstractSolver implements j
     public void writeFunctionsFile() {
         // ** Dumping the functions of a simulation into a '.functions' file.
         String functionFileName = getBaseName() + FUNCTIONFILE_EXTENSION;
-        Vector<AnnotatedFunction> funcList = createFunctionList();
+        Vector<AnnotatedFunction> funcList = null;
+
+        // Create an empty function file if using langeVinSolver
+        if (!simTask.getSimulation().getSolverTaskDescription().getSolverDescription().isLangevinSolver()) {
+             funcList = createFunctionList();
+         }
 
         //Try to save existing user defined functions
         FunctionFileGenerator functionFileGenerator = new FunctionFileGenerator(functionFileName, funcList);
