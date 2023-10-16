@@ -64,7 +64,6 @@ public class N5Exporter implements ExportConstants {
 
     public static final ArrayList<VariableType> unsupportedTypes = new ArrayList<>(Arrays.asList(
             VariableType.MEMBRANE,
-            VariableType.VOLUME_REGION,
             VariableType.MEMBRANE_REGION,
             VariableType.UNKNOWN,
             VariableType.POINT_VARIABLE,
@@ -73,6 +72,8 @@ public class N5Exporter implements ExportConstants {
             VariableType.CONTOUR_REGION,
             VariableType.POSTPROCESSING
     ));
+
+    // Supported VOLUME, VOLUME_REGION, POINT_VARIABLE
 
     private VCData vcData;
 
