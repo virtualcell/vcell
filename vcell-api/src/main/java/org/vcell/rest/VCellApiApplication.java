@@ -25,6 +25,8 @@ import org.vcell.rest.auth.CookieVerifier;
 import org.vcell.rest.events.EventsRestlet;
 import org.vcell.rest.events.RestEventService;
 import org.vcell.rest.health.HealthRestlet;
+import org.vcell.rest.n5data.N5GetInfoRestlet;
+import org.vcell.rest.n5data.N5ExportRestlet;
 import org.vcell.rest.health.HealthService;
 import org.vcell.rest.rpc.RpcRestlet;
 import org.vcell.rest.rpc.RpcService;
@@ -117,8 +119,21 @@ public class VCellApiApplication extends WadlApplication {
 	
 	public static final String EVENTS = "events";
 	public static final String EVENTS_BEGINTIMESTAMP = "beginTimestamp";
+
+	public static final String N5DATA = "n5data";
+	public static final String N5_INFO = "info";
+	public static final String N5_EXPORT = "export";
+	public static final String N5_INFO_TYPE = "typeOfInfo";
+	public static final String N5_INFO_SUPPORTED_SPECIES = "supported_species";
+	public static final String N5_EXPORT_SPECIES = "species";
+	public static final String N5_SIMID = "simid";
+	public static final String N5_COMPRESSION = "compression_level";
+	public static final String N5_EXPORT_COMPRESSION_RAW = "raw";
+	public static final String N5_EXPORT_COMPRESSION_GZIP = "gzip";
+	public static final String N5_EXPORT_COMPRESSION_BZIP = "bzip";
 	
 	public static final String HEALTH = "health";
+
 	public static final String HEALTH_CHECK = "check";
 	public static final String 	HEALTH_CHECK_LOGIN = "login";
 	public static final String 	HEALTH_CHECK_SIM = "sim";
@@ -311,6 +326,9 @@ public class VCellApiApplication extends WadlApplication {
 	    rootRouter.attach("/"+EVENTS, new EventsRestlet(getContext()));
 
 	    rootRouter.attach("/"+HEALTH, new HealthRestlet(getContext()));
+
+		rootRouter.attach("/"+ N5DATA + "/{" + N5_SIMID + "}/" + N5_EXPORT, new N5ExportRestlet(getContext()));
+		rootRouter.attach("/" + N5DATA + "/{" + N5_SIMID + "}/" + N5_INFO, new N5GetInfoRestlet(getContext()));
 
 		rootRouter.attach("/"+ADMIN+"/"+ADMIN_JOBS, new AdminJobsRestlet(getContext()));
 		rootRouter.attach("/"+ADMIN+"/"+ADMIN_STATS, new AdminStatsRestlet(getContext(), restDatabaseService));
