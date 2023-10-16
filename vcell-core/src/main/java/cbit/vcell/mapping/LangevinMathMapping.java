@@ -1170,6 +1170,7 @@ protected LangevinMathMapping(SimulationContext simContext, MathMappingCallback 
 					SiteAttributesSpec sas = siteAttributesMap.get(mcp);
 					particleMolecularComponent.setColor(sas.getColor());
 					particleMolecularComponent.setLocation(sas.getLocation().getName());
+					particleMolecularComponent.setCoordinate(sas.getCoordinate());
 					particleMolecularComponent.setRadius(sas.getRadius());
 					particleMolecularComponent.setDiffusionRate(sas.getDiffusionRate());
 					mcToLpmc.put(mcp, particleMolecularComponent);
