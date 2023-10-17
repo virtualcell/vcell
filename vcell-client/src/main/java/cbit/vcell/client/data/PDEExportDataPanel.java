@@ -2116,6 +2116,7 @@ private void setFormatChoices_0(/*boolean bMembrane*/){
 		cb.addItem(ExportFormat.ANIMATED_GIF);
 		cb.addItem(ExportFormat.FORMAT_JPEG);
 		cb.addItem(ExportFormat.NRRD);
+		cb.addItem(ExportFormat.N5);
 //		cb.addItem(ExportFormat.IMAGEJ);
 		cb.addItem(ExportFormat.UCD);
 		cb.addItem(ExportFormat.PLY);
@@ -2828,6 +2829,11 @@ private void updateInterface() {
 	case VTK_UNSTRUCT:
 		//no operation?
 		break;
+	case N5:
+		getJRadioButtonROI().setEnabled(false);
+		getJRadioButtonSlice().setEnabled(false);
+		getMembVarRadioButton().setEnabled(false);
+		getBothVarRadioButton().setEnabled(false);
 	default:
 		break;
 	}
