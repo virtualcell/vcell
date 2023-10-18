@@ -183,6 +183,9 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 			return;
 		case COLUMN_STRUCTURE:
 			if(aValue instanceof Structure) {
+				if(getSpeciesContextSpec() == null) {
+					return;
+				}
 				Structure structure = (Structure)aValue;
 				SiteAttributesSpec sas = getSpeciesContextSpec().getSiteAttributesMap().get(mcp);
 				if(sas == null) {

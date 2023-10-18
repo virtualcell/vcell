@@ -35,7 +35,7 @@ public class MolecularInternalLinkSpec implements Identifiable, IssueSource, Mat
 	private final SpeciesContextSpec fieldSpeciesContextSpec;
 	private MolecularComponentPattern fieldMolecularComponentPatternOne = null;
 	private MolecularComponentPattern fieldMolecularComponentPatternTwo = null;
-//	private double linkLength = 0;
+//	private double linkLength = 0;		// it's a derived value which we don't store, we just compute it at need
 
 	public MolecularInternalLinkSpec(SpeciesContextSpec scs, MolecularComponentPattern linkOne, MolecularComponentPattern linkTwo) throws IllegalArgumentException {
 		fieldSpeciesContextSpec = scs;
@@ -117,15 +117,15 @@ public class MolecularInternalLinkSpec implements Identifiable, IssueSource, Mat
 	}
 	public double getLinkLength() {
 		double dx = getX2() - getX1();
-		double dy = getX2() - getX1();
-		double dz = getX2() - getX1();
+		double dy = getY2() - getY1();
+		double dz = getZ2() - getZ1();
 		double linkLength = Math.sqrt(dx*dx + dy*dy + dz*dz);
 		return linkLength;
 	}
 	public double [] unitVector() {
 		double dx = getX2() - getX1();
-		double dy = getX2() - getX1();
-		double dz = getX2() - getX1();
+		double dy = getY2() - getY1();
+		double dz = getZ2() - getZ1();
 		double length = Math.sqrt(dx*dx + dy*dy + dz*dz);
 		return new double[]{dx/length, dy/length, dz/length};
 	}

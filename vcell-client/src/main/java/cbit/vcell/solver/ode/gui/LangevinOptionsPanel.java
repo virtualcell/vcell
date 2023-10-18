@@ -68,7 +68,9 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 			if (e.isTemporary()) {
 				return;
 			}
-			if (e.getSource() == getJTextFieldNumOfTrials()) { 
+			if (e.getSource() == getJTextFieldNumOfTrials() ||
+				e.getSource() == getJTextFieldIntervalImage() ||
+				e.getSource() == getJTextFieldIntervalSpring()) { 
 				setNewOptions();
 			}
 		}
@@ -296,7 +298,7 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 				intervalImageTextField = new javax.swing.JTextField();
 				intervalImageTextField.setName("IntervalImageTextField");
 				intervalImageTextField.setColumns(9);
-				intervalImageTextField.setText("1.00E-4");
+//				intervalImageTextField.setText("1.00E-4");
 			} catch (java.lang.Throwable ivjExc) {
 				handleException(ivjExc);
 			}
@@ -310,7 +312,7 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 				intervalSpringTextField = new javax.swing.JTextField();
 				intervalSpringTextField.setName("IntervalSpringTextField");
 				intervalSpringTextField.setColumns(9);
-				intervalSpringTextField.setText("1.00E-9");
+//				intervalSpringTextField.setText("1.00E-9");
 			} catch (java.lang.Throwable ivjExc) {
 				handleException(ivjExc);
 			}
@@ -345,9 +347,10 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 	private void initConnections() {		
 		getTrajectoryButton().addActionListener(ivjEventHandler);
 		getMultiRunButton().addActionListener(ivjEventHandler);
+		
 		getJTextFieldNumOfTrials().addFocusListener(ivjEventHandler);
-		
-		
+		getJTextFieldIntervalImage().addFocusListener(ivjEventHandler);
+		getJTextFieldIntervalSpring().addFocusListener(ivjEventHandler);
 	}
 	
 	private void refresh() {
@@ -390,14 +393,21 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 		try {
 			LangevinSimulationOptions sso = solverTaskDescription.getLangevinSimulationOptions();
 		int numTrials = 1;
+		double intervalImage = solverTaskDescription.getLangevinSimulationOptions().getIntervalImage();
+		double intervalSpring = solverTaskDescription.getLangevinSimulationOptions().getIntervalSpring();
 
 		if(getMultiRunButton().isSelected()) {
 			numTrials = Integer.parseInt(getJTextFieldNumOfTrials().getText());
+			sso.setNumOfTrials(numTrials);
 		}
-		sso.setNumOfTrials(numTrials);
+		
+		intervalImage = Double.parseDouble(getJTextFieldIntervalImage().getText());
+		intervalSpring = Double.parseDouble(getJTextFieldIntervalSpring().getText());
 		
 		// make a copy
 		LangevinSimulationOptions lso = new LangevinSimulationOptions(sso);
+		lso.setIntervalImage(intervalImage);
+		lso.setIntervalSpring(intervalSpring);
 		solverTaskDescription.setLangevinSimulationOptions(lso);
 		
 		} catch(Exception e) {
