@@ -16,15 +16,11 @@ import java.awt.event.ActionListener;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 
+import cbit.vcell.export.gui.*;
 import org.vcell.client.logicalwindow.transition.LWJDialogDecorator;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.VCAssert;
 
-import cbit.vcell.export.gui.ASCIISettingsPanel;
-import cbit.vcell.export.gui.ASCIISettingsPanelListener;
-import cbit.vcell.export.gui.MediaSettingsPanel;
-import cbit.vcell.export.gui.RasterSettingsPanel;
-import cbit.vcell.export.gui.RasterSettingsPanelListener;
 import cbit.vcell.export.server.ExportConstants;
 import cbit.vcell.export.server.ExportFormat;
 import cbit.vcell.export.server.ExportSpecs;
@@ -48,6 +44,9 @@ public class ExportSettings implements ASCIISettingsPanelListener, RasterSetting
 	private JPanel ivjJDialogContentPane3 = null;
 	private JDialog ivjJDialogRasterSettings = null;
 	private RasterSettingsPanel ivjRasterSettingsPanel1 = null;
+
+	private JDialog ivjJDialogN5Settings = null;
+	private N5SettingsPanel ivjJDialogN5Panel = null;
 
 /**
  * ExportSettings constructor comment.
@@ -245,6 +244,22 @@ private ASCIISettingsPanel getASCIISettingsPanel1() {
 	return ivjASCIISettingsPanel1;
 }
 
+private N5SettingsPanel getN5SettingsPanel(){
+	if (ivjJDialogN5Panel == null){
+		try {
+			ivjJDialogN5Panel = new cbit.vcell.export.gui.N5SettingsPanel();
+			ivjJDialogN5Panel.setName("N5SettingsPnael");
+			// user code begin {1}
+			// user code end
+		} catch (java.lang.Throwable ivjExc) {
+			// user code begin {2}
+			// user code end
+			handleException(ivjExc);
+		}
+	}
+	return ivjJDialogN5Panel;
+}
+
 /**
  * Gets the formatSpecificSpecs property (cbit.vcell.export.server.FormatSpecificSpecs) value.
  * @return The formatSpecificSpecs property value.
@@ -279,6 +294,32 @@ private javax.swing.JDialog getJDialogASCIISettings(Frame reference) {
 		}
 	}
 	return ivjJDialogASCIISettings;
+}
+
+/**
+ * Return the JDialog1 property value.
+ * @return javax.swing.JDialog
+ */
+/* WARNING: THIS METHOD WILL BE REGENERATED. */
+private javax.swing.JDialog getJDialogN5Settings(Frame reference){
+	if (ivjJDialogN5Settings == null){
+		try {
+			ivjJDialogN5Settings = new javax.swing.JDialog(reference);
+			ivjJDialogN5Settings.setName("JDialogN5Settings");
+			ivjJDialogN5Settings.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+			ivjJDialogN5Settings.setBounds(123, 502, 176, 183);
+			ivjJDialogN5Settings.setModal(true);
+			ivjJDialogN5Settings.setTitle("N5 Settings");
+			ivjJDialogN5Settings.add(getN5SettingsPanel());
+			// user code begin {1}
+			// user code end
+		} catch (java.lang.Throwable ivjExc) {
+			// user code begin {2}
+			// user code end
+			handleException(ivjExc);
+		}
+	}
+	return ivjJDialogN5Settings;
 }
 
 /**
@@ -660,6 +701,7 @@ public void setIsCSVExport(boolean isCSVExport){
 }
 /**
  * Comment
+ * Pop up dialog for data exported, specific to that format
  */
 @SuppressWarnings("incomplete-switch")
 public boolean showFormatSpecificDialog(Frame reference,boolean selectionHasVolumeVars,boolean selectionHasMembraneVars) {
@@ -691,6 +733,9 @@ public boolean showFormatSpecificDialog(Frame reference,boolean selectionHasVolu
 			break;
 		case NRRD:
 			dialogToShow = getJDialogRasterSettings(reference);
+			break;
+		case N5:
+			dialogToShow = getJDialogN5Settings(reference);
 			break;
 	}
 	dialogToShow.pack();
