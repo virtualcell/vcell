@@ -61,7 +61,6 @@ public class SpatialResultsConverter {
                     int[] scanBounds = new int[0];
                     String[] scanParamNames = new String[0];
 
-                    /*
                     if (topLevelTask instanceof RepeatedTask) {
                         for (Map.Entry<TaskJob, File> entry : spatialResultsHash.entrySet()) {
                             TaskJob taskJob = entry.getKey();
@@ -75,7 +74,7 @@ public class SpatialResultsConverter {
                         taskJobs.add(new TaskJob(baseTask.getId(), 0));
                         scanBounds = new int[0];
                         scanParamNames = new String[0];
-                    }*/
+                    }
 
                     for (Map.Entry<TaskJob, File> entry : spatialResultsHash.entrySet()) {
                         TaskJob taskJob = entry.getKey();

@@ -19,9 +19,6 @@ public class NativeLoader {
 
 	public final static int NUM_ATTEMPTS = 50; // maximum number of times to try loading libraries before giving up and throwing exeption
 	private final static String libPrefix = "lib"; //default for Mac and linux
-	//private final static String LINUX_REGEX = ".*so[.\\d]*$"; // regex for linux shared libraries
-	//private final static String WINDOWS_REGEX = ".*dll$"; // regex for Windows shared libraries
-	//private final static String MAC_REGEX = ".*[jni|dy]lib"; // regex for Mac OS X shared libraries
 	
 	public static void load(String libName){
 		String path = NativeLoader.generatePath(libName);
