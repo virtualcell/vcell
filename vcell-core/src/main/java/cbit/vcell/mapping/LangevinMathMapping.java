@@ -1168,8 +1168,10 @@ protected LangevinMathMapping(SimulationContext simContext, MathMappingCallback 
 					MolecularTypePattern mtp = scs.getSpeciesContext().getSpeciesPattern().getMolecularTypePatterns().get(0);	// we know it's valid, no null pointer possible
 					MolecularComponentPattern mcp = mtp.getMolecularComponentPattern(molecularComponent);
 					SiteAttributesSpec sas = siteAttributesMap.get(mcp);
+					// TODO: perhaps move this to constructor so that object will be complete from the start
 					particleMolecularComponent.setColor(sas.getColor());
 					particleMolecularComponent.setLocation(sas.getLocation().getName());
+					particleMolecularComponent.setCoordinate(sas.getCoordinate());
 					particleMolecularComponent.setRadius(sas.getRadius());
 					particleMolecularComponent.setDiffusionRate(sas.getDiffusionRate());
 					mcToLpmc.put(mcp, particleMolecularComponent);

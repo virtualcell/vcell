@@ -25,7 +25,7 @@ import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 
 public class LangevinParticleJumpProcess extends ParticleJumpProcess {
-	private ReactionRuleSpec rrr = null;
+//	private ReactionRuleSpec rrr = null;
 	private Subtype subtype = null;
 	private TransitionCondition transitionCondition = null;
 	private double bondLength = 0;

@@ -404,12 +404,15 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 				break;
 			}
 			case COLUMN_BOND_LENGTH: {
-				if(modelProcessSpec instanceof ReactionSpec) {
+				if(modelProcessSpec instanceof ReactionRuleSpec) {
 					ReactionRuleSpec reactionRuleSpec = (ReactionRuleSpec)modelProcessSpec;
-					if (aValue instanceof String) {
-						String newExpressionString = (String)aValue;
-						double result = Double.parseDouble(newExpressionString);
-						reactionRuleSpec.setFieldBondLength(result);
+					if (aValue instanceof Expression) {
+						String newExpressionString = ((Expression)aValue).infix();
+						try {
+							double result = Double.parseDouble(newExpressionString);
+							reactionRuleSpec.setFieldBondLength(result);
+						} catch(NumberFormatException e) {
+						}
 					}
 				}
 				break;

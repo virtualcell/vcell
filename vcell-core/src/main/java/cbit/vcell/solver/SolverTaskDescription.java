@@ -921,6 +921,10 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 					getNFSimSimulationOptions().readVCML(tokens);
 					continue;
 				}
+				if (token.equalsIgnoreCase(VCML.LangevinSimulationOptions)) {
+					getLangevinSimulationOptions().readVCML(tokens);
+					continue;
+				}
 				if (token.equalsIgnoreCase(VCML.StochSimOptions)) {
 					boolean useCustomSeed = false;
 					boolean bHistogram = false;
