@@ -18,7 +18,7 @@ public enum ExportFormat {
 	VTK_IMAGE("VTK Image (*.vtk)", false),
 	PLY("Stanford Poly Texture (*.ply)", false),
 //	IMAGEJ("ImageJ direct", false)
-	N5("Remote Storage Compatable with ImageJ", true),
+	N5("Remote Storage Compatable with ImageJ (*.N5)", true),
 	; 
 	ExportFormat(String label, boolean requiresFollowOn ) {
 		this.label = label;
