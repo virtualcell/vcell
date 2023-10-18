@@ -17,8 +17,8 @@ public enum NativeLib {
 	private static final Logger logger = LogManager.getLogger(NativeLib.class);
 
 	private final String libName;
+	public final boolean autoLoad;
 	private boolean loaded;
-	public boolean autoLoad;
 	private final String[] dependentLibNames;
 
 	private NativeLib(String libName, boolean autoLoad, String... dependentLibNames) {
@@ -31,7 +31,7 @@ public enum NativeLib {
 	public void load( ) {
 		if (this.loaded) return;
 		logger.info("Loading " + this.libName);
-		for (String name: dependentLibNames){
+		for (String name: this.dependentLibNames){
 			if (name == null) continue;
 			NativeLoader.load(name);
 		}
