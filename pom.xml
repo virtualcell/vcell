@@ -102,8 +102,8 @@
 		<biomodels-wslib.version>1.21</biomodels-wslib.version>
 		<colt.version>1.2.0</colt.version>
 		<commons-beanutils.version>1.9.4</commons-beanutils.version>
-		<commons-compress.version>1.21</commons-compress.version>
-		<commons-compress.version>1.21</commons-compress.version>
+		<commons-codec.version>1.11</commons-codec.version>
+		<commons-compress.version>1.20</commons-compress.version>
 		<commons-configuration2.version>2.9.0</commons-configuration2.version>
 		<commons-csv.version>1.7</commons-csv.version>
 		<commons-discovery.version>0.5</commons-discovery.version>
@@ -150,6 +150,7 @@
 		<log4j-core.version>2.17.1</log4j-core.version>
 		<log4j-jul.version>2.17.1</log4j-jul.version>
 		<log4j-layout-template-json.version>2.17.1</log4j-layout-template-json.version>
+		<lz4.version>1.8.0</lz4.version>
 		<mongo-java-driver.version>3.12.11</mongo-java-driver.version>
 		<netcdf.version>4.3.22</netcdf.version>
 		<netty.version>3.2.10.Final</netty.version>

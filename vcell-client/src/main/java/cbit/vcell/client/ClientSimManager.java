@@ -14,19 +14,10 @@ import java.awt.Dimension;
 import java.awt.Window;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.EventObject;
-import java.util.Hashtable;
-import java.util.LinkedHashMap;
-import java.util.Vector;
+import java.io.*;
+import java.util.*;
 
+import org.vcell.solver.langevin.LangevinSolver;
 import org.vcell.solver.smoldyn.SmoldynFileWriter;
 import org.vcell.solver.smoldyn.SmoldynSolver;
 import org.vcell.util.BeanUtils;
@@ -128,12 +119,6 @@ public static class LocalVCSimulationDataIdentifier extends VCSimulationDataIden
 	private final static String H_LOCAL_SIM = "showingLocal";
 	private final static String H_VIEWER_TYPE = "viewerType";
 
-/**
- * Insert the method's description here.
- * Creation date: (6/7/2004 10:48:50 AM)
- * @param documentWindowManager cbit.vcell.client.DocumentWindowManager
- * @param simulationOwner cbit.vcell.document.SimulationOwner
- */
 public ClientSimManager(DocumentWindowManager documentWindowManager, SimulationWorkspace simWorkspace) {
 	this.documentWindowManager = documentWindowManager;
 	this.simWorkspace = simWorkspace;
@@ -237,11 +222,6 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (6/2/2004 3:01:29 AM)
- * @param simulation cbit.vcell.solver.Simulation[]
- */
 public void runSimulations(Simulation[] simulations) {
 	runSimulations(simulations, null);
 }
@@ -637,34 +617,24 @@ void updateStatusFromServer(Simulation simulation) {
 	System.out.println("---ClientSimManager.updateStatusFromServer[newStatus=" + newStatus + "], simulation="+simulation.toString());
 	if (oldStatus!=newStatus){
 		int simIndex = getSimWorkspace().getSimulationIndex(simulation);
-		getSimWorkspace().firePropertyChange(SimulationWorkspace.PROPERTY_NAME_SIMULATION_STATUS, new Integer(-1), new Integer(simIndex));
+		getSimWorkspace().firePropertyChange(SimulationWorkspace.PROPERTY_NAME_SIMULATION_STATUS, -1, simIndex);
 	}
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (6/2/2004 3:01:29 AM)
- * @param simulations cbit.vcell.solver.Simulation[]
- */
 public void updateStatusFromStartRequest(final Simulation simulation, SimulationStatus newStatusFromServer) {
 	// asynchronous call - from start request worker thread
 	simHash.setSimulationStatus(simulation,newStatusFromServer);
 	int simIndex = getSimWorkspace().getSimulationIndex(simulation);
-	getSimWorkspace().firePropertyChange(SimulationWorkspace.PROPERTY_NAME_SIMULATION_STATUS, new Integer(-1), new Integer(simIndex));
+	getSimWorkspace().firePropertyChange(SimulationWorkspace.PROPERTY_NAME_SIMULATION_STATUS, -1, simIndex);
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (6/2/2004 3:01:29 AM)
- * @param simulations cbit.vcell.solver.Simulation[]
- */
 public void updateStatusFromStopRequest(final Simulation simulation, SimulationStatus newStatusFromServer) {
 	// asynchronous call - from stop request worker thread
 	simHash.setSimulationStatus(simulation,newStatusFromServer);
 	int simIndex = getSimWorkspace().getSimulationIndex(simulation);
-	getSimWorkspace().firePropertyChange(SimulationWorkspace.PROPERTY_NAME_SIMULATION_STATUS, new Integer(-1), new Integer(simIndex));
+	getSimWorkspace().firePropertyChange(SimulationWorkspace.PROPERTY_NAME_SIMULATION_STATUS, -1, simIndex);
 }
 
 public void runSmoldynParticleView(final Simulation originalSimulation) {
