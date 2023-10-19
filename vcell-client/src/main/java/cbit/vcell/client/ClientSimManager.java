@@ -14,7 +14,12 @@ import java.awt.Dimension;
 import java.awt.Window;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -25,8 +30,14 @@ import java.util.Enumeration;
 import java.util.EventObject;
 import java.util.Hashtable;
 import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Scanner;
 import java.util.Vector;
 
+import javax.swing.SwingUtilities;
+
+import org.vcell.solver.langevin.LangevinSolver;
 import org.vcell.solver.smoldyn.SmoldynFileWriter;
 import org.vcell.solver.smoldyn.SmoldynSolver;
 import org.vcell.util.BeanUtils;
@@ -476,7 +487,7 @@ private AsynchClientTask[] showSimulationResults0(final boolean isLocal, final V
 							File localSimDir = ResourceUtil.getLocalSimDir(User.tempUser.getName());
 							LocalVCDataIdentifier vcDataId = new LocalVCSimulationDataIdentifier(vcSimulationIdentifier, 0, localSimDir);
 							DataManager dataManager = null;
-							if (sim.isSpatial()) {
+							if (!sim.getSolverTaskDescription().getSolverDescription().isLangevinSolver() && sim.isSpatial()) {
 								dataManager = new PDEDataManager(outputContext,vcDataManager, vcDataId);
 							} else {
 								dataManager = new ODEDataManager(outputContext,vcDataManager, vcDataId);
@@ -820,9 +831,13 @@ public void runQuickSimulation(final Simulation originalSimulation, ViewerType v
 			});
 			solver.startSolver();
 
-			while (true){
-				try { 
-					Thread.sleep(500); 
+			int sleepInterval = 500;
+			if(solver instanceof LangevinSolver) {
+				sleepInterval = 2000;
+			}
+			while (true) {
+				try {
+					Thread.sleep(sleepInterval); 
 				} catch (InterruptedException e) {
 				}
 
@@ -835,6 +850,10 @@ public void runQuickSimulation(final Simulation originalSimulation, ViewerType v
 					if (solverStatus.getStatus() == SolverStatus.SOLVER_ABORTED) {
 						String simulationMessage = solverStatus.getSimulationMessage().getDisplayMessage();
 						String translatedMessage = solver.translateSimulationMessage(simulationMessage);
+						// uncomment the next 3 lines below to avoid a NPE when the message is null
+//						if(translatedMessage == null) {
+//							break;
+//						}
 						if(translatedMessage.startsWith(BeanUtils.FD_EXP_MESSG)) {
 							throw new RuntimeException("Sims with FieldData can only be run remotely (cannot use QuickRun).\n"+translatedMessage);
 						}else {
@@ -845,6 +864,58 @@ public void runQuickSimulation(final Simulation originalSimulation, ViewerType v
 						solverStatus.getStatus() != SolverStatus.SOLVER_READY &&
 						solverStatus.getStatus() != SolverStatus.SOLVER_RUNNING){
 						break;
+					}
+					if(solverStatus.getStatus() == SolverStatus.SOLVER_RUNNING) {
+						if(solver instanceof LangevinSolver) {
+							//
+							// TODO: it may (theoretically) be possible that a logfile exists from a previous run
+							// in which case there may be a brief interval where we display a Progress: 100% spurious result
+							// We should delete the log file for our run id early, right after initializing the solver
+							// in the call to createQuickRunSolver() above (or right after the call?)
+							//
+							getClientTaskStatusSupport().setMessage("Running... Progress: ");
+							LangevinSolver ls = (LangevinSolver)solver;
+							String logFileName = ls.getLogFileString();
+							if(logFileName == null) {
+								getClientTaskStatusSupport().setProgress(0);
+								continue;
+							}
+							File logFile = new File(logFileName);
+							if(!logFile.exists()) {
+								getClientTaskStatusSupport().setProgress(0);
+								continue;
+							}
+							BufferedReader br = null;
+							FileReader fr = null;
+							String lastLine = null;
+							Scanner lineScanner;
+							int percentComplete = 0;
+							try {
+								fr = new FileReader(logFile);
+								br = new BufferedReader(fr);
+								Scanner sc = new Scanner(br);
+								// Get to the last line
+								while(sc.hasNextLine()){
+									lastLine = sc.nextLine();
+								}
+								sc.close();
+								if(lastLine != null) {
+									if(!lastLine.startsWith("Simulation")) {
+										continue;
+									}
+									lineScanner = new Scanner(lastLine);
+									// Skip "Simulation"
+									lineScanner.next();
+									String percent = lineScanner.next();
+									percent = percent.substring(0,percent.length()-1);
+									percentComplete = Integer.parseInt(percent);
+									getClientTaskStatusSupport().setProgress(percentComplete);
+									lineScanner.close();
+								}
+							} catch(FileNotFoundException fne) {
+								fne.printStackTrace(System.out);
+							}
+						}
 					}
 				}		
 			}

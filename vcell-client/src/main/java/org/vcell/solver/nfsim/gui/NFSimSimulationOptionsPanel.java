@@ -577,6 +577,10 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 				setVisible(false);
 				return;
 			}
+			if(mathDescription.isLangevin()) {
+				setVisible(false);
+				return;
+			}
 		}
 		setVisible(true);
 		NFsimSimulationOptions nfsimSimulationOptions = solverTaskDescription.getNFSimSimulationOptions();

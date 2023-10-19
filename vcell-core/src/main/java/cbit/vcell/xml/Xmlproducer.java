@@ -1567,6 +1567,9 @@ public Element getXML(SimulationContext param, BioModel bioModel) throws XmlPars
 			setBooleanAttribute(simulationcontext, XMLTags.RandomizeInitConditionTag,param.isRandomizeInitCondition());
 		}
 	}
+	final boolean springSaLaD = param.getApplicationType() == SimulationContext.Application.SPRINGSALAD; 
+	setBooleanAttribute(simulationcontext, XMLTags.SpringSaLaDAttrTag, springSaLaD);
+
 	setBooleanAttribute(simulationcontext,XMLTags.MassConservationModelReductionTag, param.isUsingMassConservationModelReduction());
 	setBooleanAttribute(simulationcontext,XMLTags.InsufficientIterationsTag,param.isInsufficientIterations());
 	setBooleanAttribute(simulationcontext,XMLTags.InsufficientMaxMoleculesTag,param.isInsufficientMaxMolecules());
@@ -1821,6 +1824,28 @@ private Element getXML(FieldDataSymbol fds, ModelUnitSystem modelUnitSystem) {
  * @return Element
  * @param param cbit.vcell.mapping.SpeciesContextSpec
  */
+/*
+<ReactionContext>
+	<LocalizedCompoundSpec LocalizedCompoundRef="MT0" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+		<InitialConcentration>0.0</InitialConcentration>
+		<Diffusion>10.0</Diffusion>
+		<SiteAttributesMap>
+			<SiteAttributesSpec SiteRef="Site0" MoleculeRef="MT0" LocationRef="Intracellular" InitialStateRef="state0" Radius="1.0" Diffusion="1.0" Color="RED">
+				<Location X="2.0" Y="1.0" Z="1.0" />
+			</SiteAttributesSpec>
+			<SiteAttributesSpec SiteRef="Anchor" MoleculeRef="MT0" LocationRef="Membrane" InitialStateRef="anchor" Radius="1.0" Diffusion="1.0" Color="RED">
+				<Location X="1.0" Y="1.0" Z="1.0" />
+			</SiteAttributesSpec>
+		</SiteAttributesMap>
+		<InternalLinkSet>
+			<InternalLinkSpec MoleculeRef="MT0" SiteOneRef="Anchor" SiteTwoRef="Site0" />
+		<InternalLinkSet>
+	</LocalizedCompoundSpec>
+	<ReactionRuleSpecs>
+		<ReactionRuleSpec ReactionRuleRef="r0" ReactionRuleMapping="included" BondLength="1.0" />
+	</ReactionRuleSpecs>
+</ReactionContext>
+*/
 private Element getXML(SpeciesContextSpec param) {
 	Element speciesContextSpecElement = new Element(XMLTags.SpeciesContextSpecTag);
 

@@ -29,6 +29,7 @@ import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.Issue.Severity;
 import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.document.BioModelChildSummary.MathType;
+import org.vcell.util.exe.ExecutableStatus;
 import org.vcell.util.document.DocumentValidUtil;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.Identifiable;
@@ -42,6 +43,7 @@ import cbit.image.VCImage;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.bionetgen.BNGOutputSpec;
 import cbit.vcell.data.DataContext;
+import cbit.vcell.export.SpringSaLaDExporter;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldUtilities;
 import cbit.vcell.geometry.Geometry;
@@ -62,6 +64,7 @@ import cbit.vcell.mapping.MicroscopeMeasurement.ExperimentalPSF;
 import cbit.vcell.mapping.MicroscopeMeasurement.GaussianConvolutionKernel;
 import cbit.vcell.mapping.MicroscopeMeasurement.ProjectionZKernel;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
+import cbit.vcell.mapping.RulebasedTransformer.ReactionRuleAnalysisReport;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.mapping.spatial.CurveObject;
 import cbit.vcell.mapping.spatial.PointObject;
@@ -91,6 +94,7 @@ import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
+import cbit.vcell.model.Structure.SpringStructureEnum;
 import cbit.vcell.modelopt.AnalysisTask;
 import cbit.vcell.modelopt.ParameterEstimationTask;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
@@ -580,7 +584,8 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 	public enum Application {
 		NETWORK_DETERMINISTIC(MathType.Deterministic),
 		NETWORK_STOCHASTIC(MathType.Stochastic),
-		RULE_BASED_STOCHASTIC(MathType.RuleBased);
+		RULE_BASED_STOCHASTIC(MathType.RuleBased),
+		SPRINGSALAD(MathType.SpringSaLaD);
 		
 		final public MathType mathType;
 
@@ -1338,6 +1343,24 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueVector, boo
 			String name = struct.getName();
 			if (!name.equals(TokenMangler.fixTokenStrict(name))) {
 				String msg = "'" + name + "' not legal identifier for rule-based stochastic applications, try '"+TokenMangler.fixTokenStrict(name)+"'.";
+				issueVector.add(new Issue(struct, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.ERROR));
+			}
+		}
+	}
+	if(applicationType.equals(Application.SPRINGSALAD)) {
+		if(getModel().getStructures().length != 3) {
+			String msg = "SpringSaLaD requires exactly 3 Structures: one Membrane and two Features (Compartments)";
+			issueVector.add(new Issue(getModel().getStructures()[0], issueContext, IssueCategory.Identifiers, msg, Issue.Severity.ERROR));
+		}
+		for(Structure struct : getModel().getStructures()) {
+			String name = struct.getName();
+			if(!Structure.springStructureSet.contains(name)) {
+				String msg = "'" + name + "' not legal identifier for SpringSaLaD applications.";
+				if(struct instanceof Feature) {
+					msg += " Try using '" + SpringStructureEnum.Intracellular.columnName + "' or '" + SpringStructureEnum.Extracellular.columnName + "'.";
+				} else {	// Membrane
+					msg += " Try using '" + SpringStructureEnum.Membrane.columnName + "'.";
+				}
 				issueVector.add(new Issue(struct, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.ERROR));
 			}
 		}
@@ -3118,6 +3141,21 @@ public DataContext getDataContext() {
  */
 public SimContextTransformer createNewTransformer(){
 	switch (applicationType) {
+	case SPRINGSALAD:
+		//
+		//
+		// TODO: can't use RulebasedTransformer !!!
+		// because the new LangevinMathMapping(this, callback, networkGenReq); call below will invoke the transformer,
+		// and the transformer will call generateNetwork(), which will call executeBNG(), with the wrong expectedReturnCodes parameter,
+		// which will do a setStatus(ExecutableStatus.COMPLETE); right from the start
+		//
+		// TODO: can't use null either, we must get specific transformer, that's a simplified RulebasedTransformer
+		// because in LangevinMathMapping.addStrictMassActionParticleJumpProcess() at
+		// line 945 we do ReactionRuleAnalysisReport rrarBiomodelForward = ruleBasedTransformation.getRulesForwardMap().get(reactionRule);
+		// In other words, we need the transformation for the forward map and the reverse map
+		//
+		//
+//		return null;
 	case RULE_BASED_STOCHASTIC:
 		return new RulebasedTransformer();
 	case NETWORK_DETERMINISTIC:
@@ -3231,6 +3269,9 @@ public MathMapping createNewMathMapping(MathMappingCallback callback, NetworkGen
 		break;
 	case NETWORK_DETERMINISTIC: 
 		mostRecentlyCreatedMathMapping = new DiffEquMathMapping(this, callback, networkGenReq);
+		break;
+	case SPRINGSALAD:
+		mostRecentlyCreatedMathMapping = new LangevinMathMapping(this, callback, networkGenReq);
 		break;
 	}
 	VCAssert.assertFalse(mostRecentlyCreatedMathMapping == null, "math mapping not generated" );

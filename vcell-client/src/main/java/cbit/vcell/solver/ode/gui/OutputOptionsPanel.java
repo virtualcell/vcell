@@ -89,6 +89,9 @@ public class OutputOptionsPanel extends CollapsiblePanel {
 			if (evt.getSource() == solverTaskDescription && evt.getPropertyName().equals(SolverTaskDescription.PROPERTY_NFSIM_SIMULATION_OPTIONS)) {
 				refresh();
 			}
+			if (evt.getSource() == solverTaskDescription && evt.getPropertyName().equals(SolverTaskDescription.PROPERTY_LANGEVIN_SIMULATION_OPTIONS)) {
+				refresh();
+			}
 		}
 		
 		public void actionPerformed(java.awt.event.ActionEvent e) {			
@@ -640,7 +643,8 @@ public class OutputOptionsPanel extends CollapsiblePanel {
 		BeanUtils.enableComponents(getUniformOutputPanel(), false);
 		
 		if (solverTaskDescription.getSolverDescription().equals(SolverDescription.Smoldyn) ||
-				solverTaskDescription.getSolverDescription().equals(SolverDescription.NFSim) ) {
+				solverTaskDescription.getSolverDescription().equals(SolverDescription.NFSim) ||
+				solverTaskDescription.getSolverDescription().equals(SolverDescription.Langevin) ) {
 			getDefaultOutputPanel().setVisible(false);
 			getDefaultOutputRadioButton().setVisible(false);
 		} else if (solverTaskDescription.getSolverDescription().isChomboSolver()) {

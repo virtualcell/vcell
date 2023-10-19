@@ -76,6 +76,7 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 	private JMenuItem appNewStochApp = null;
 	private JMenuItem appNewDeterministicApp = null;
 	private JMenuItem appNewRulebasedApp = null;
+	private JMenuItem appNewSpringSaLaDApp = null;
 	private JMenuItem ivjJMenuItemAppCopy = null;	
 	
 	private EventHandler eventHandler = new EventHandler();
@@ -89,6 +90,7 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 			} else if (e.getSource() == appNewStochApp
 					|| e.getSource() == appNewDeterministicApp
 					|| e.getSource() == appNewRulebasedApp
+					|| e.getSource() == appNewSpringSaLaDApp
 					|| e.getSource() == getJMenuItemAppCopy()
 					|| e.getSource() == menuItemAppNonSpatialCopyStochastic
 					|| e.getSource() == menuItemNonSpatialCopyDeterministic
@@ -345,10 +347,15 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 				appNewRulebasedApp.setActionCommand(GuiConstants.ACTIONCMD_CREATE_RULEBASED_APPLICATION);
 				appNewRulebasedApp.addActionListener(eventHandler);
 
+				appNewSpringSaLaDApp = new javax.swing.JMenuItem(GuiConstants.MENU_TEXT_SPRINGSALAD_APPLICATION);
+				appNewSpringSaLaDApp.setActionCommand(GuiConstants.ACTIONCMD_CREATE_SPRINGSALAD_APPLICATION);
+				appNewSpringSaLaDApp.addActionListener(eventHandler);
+
 				//add menu items to menu
 				appsPopupMenu.add(appNewDeterministicApp);
 				appsPopupMenu.add(appNewStochApp);
 				appsPopupMenu.add(appNewRulebasedApp);
+				appsPopupMenu.add(appNewSpringSaLaDApp);
 				// user code begin {1}
 				// user code end
 			} catch (java.lang.Throwable ivjExc) {

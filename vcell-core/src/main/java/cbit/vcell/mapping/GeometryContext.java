@@ -37,6 +37,7 @@ import cbit.vcell.geometry.GeometryOwner;
 import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.SurfaceClass;
+import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.mapping.StructureMapping.StructureMappingParameter;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Membrane;
@@ -929,5 +930,28 @@ public void enforceHierarchicalBoundaryConditions(StructureTopology structureTop
 		}
 	}
 }
+
+public void writeData(StringBuilder sb) {				// SpringSaLaD exporting the time information
+	if(getSimulationContext().getApplicationType() != Application.SPRINGSALAD) {
+		sb.append("\n");
+		return;
+	}
+	sb.append("L_x: 0.1");
+	sb.append("\n");
+	sb.append("L_y: 0.1");
+	sb.append("\n");
+	sb.append("L_z_out: 0.01");
+	sb.append("\n");
+	sb.append("L_z_in: 0.09");
+	sb.append("\n");
+	sb.append("Partition Nx: 10");
+	sb.append("\n");
+	sb.append("Partition Ny: 10");
+	sb.append("\n");
+	sb.append("Partition Nz: 10");
+	sb.append("\n");
+	return;
+}
+
 
 }

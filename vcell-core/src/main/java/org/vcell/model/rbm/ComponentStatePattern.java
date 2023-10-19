@@ -14,6 +14,7 @@ public class ComponentStatePattern extends RbmElementAbstract implements Matchab
 	private final boolean bAny;
 	
 	public static final String strAny = "not specified";
+	public static final String strNone = "none";
 	
 	/* Example:
 

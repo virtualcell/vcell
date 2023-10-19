@@ -15,22 +15,34 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import cbit.vcell.model.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.vcell.model.rbm.ComponentStateDefinition;
+import org.vcell.model.rbm.MolecularComponent;
+import org.vcell.model.rbm.MolecularComponentPattern;
+import org.vcell.model.rbm.MolecularType;
+import org.vcell.model.rbm.MolecularTypePattern;
+import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.*;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.document.Identifiable;
 
+import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryClass;
+import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.SurfaceClass;
 import cbit.vcell.geometry.surface.GeometricRegion;
+import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.mapping.SimulationContext.Kind;
 import cbit.vcell.mapping.spatial.SpatialObject;
 import cbit.vcell.mapping.spatial.SpatialObject.QuantityCategory;
@@ -47,6 +59,7 @@ import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.parser.SymbolTableFunctionEntry;
+import cbit.vcell.solver.Simulation;
 import cbit.vcell.units.VCUnitDefinition;
 import net.sourceforge.interval.ia_math.RealInterval;
 
@@ -59,6 +72,15 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
 	public static final String PARAMETER_NAME_PROXY_PARAMETERS = "proxyParameters";
 	private static final String PROPERTY_NAME_WELL_MIXED = "wellMixed";
 	private static final String PROPERTY_NAME_FORCECONTINUOUS = "forceContinuous";
+
+	public static final boolean TrackClusters = true;			// SpringSaLaD specific
+	public static final boolean InitialLocationRandom = true;
+	private static final String InitialLocationRandomString = "Random";
+	private static final String InitialLocationSetString = "Set";
+	public static final String SourceMoleculeString = "Source";	// molecule used in creation reaction subtype (reserved name)
+	public static final String SinkMoleculeString = "Sink";		// molecule used in decay reaction subtype (reserved name)
+	public static final String AnchorSiteString = "Anchor";		// required name for reserved special Site of membrane species
+	public static final String AnchorStateString = "Anchor";		// required name for reserved special State of the Anchor site
 
 
 	public class SpeciesContextSpecNameScope extends BioNameScope {
@@ -406,9 +428,7 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
 				}
 			} 
 		} 
-		
 	}
-
 	
 	private SpeciesContext speciesContext = null;
 	private static final boolean DEFAULT_CLAMPED = false;
@@ -419,6 +439,10 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
 //	private boolean        bEnableDiffusing = DEFAULT_ENABLE_DIFFUSING;
 	private Boolean        bWellMixed = DEFAULT_WELL_MIXED;
 	private Boolean        bForceContinuous = DEFAULT_FORCECONTINUOUS;
+	
+	private Set<MolecularInternalLinkSpec> internalLinkSet = new LinkedHashSet<> ();			// SpringSaLaD
+	private Map<MolecularComponentPattern, SiteAttributesSpec> siteAttributesMap = new LinkedHashMap<> ();
+	
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
 	private SpeciesContextSpecParameter[] fieldParameters = null;
 	private SpeciesContextSpecProxyParameter[] fieldProxyParameters = new SpeciesContextSpecProxyParameter[0];
@@ -510,7 +534,7 @@ public SpeciesContextSpec(SpeciesContextSpec speciesContextSpec, SimulationConte
 		fieldParameters[i] = new SpeciesContextSpecParameter(otherParm.getName(),otherParmExp,otherParm.getRole(),otherParm.getUnitDefinition(),otherParm.getDescription());
 	}
 	refreshDependencies();
-}            
+}
 
 
 public SpeciesContextSpec(SpeciesContext speciesContext, SimulationContext argSimulationContext) {
@@ -606,7 +630,7 @@ private VCUnitDefinition getLengthPerTimeUnit() {
 	ModelUnitSystem modelUnitSystem = getSimulationContext().getModel().getUnitSystem();
 	VCUnitDefinition lengthPerTimeUnit = modelUnitSystem.getLengthUnit().divideBy(modelUnitSystem.getTimeUnit());
 	return lengthPerTimeUnit;
-}            
+}
 
 public void initializeForSpatial() {
 	if(getDiffusionParameter() != null && getDiffusionParameter().getExpression() != null && getDiffusionParameter().getExpression().isZero()) {
@@ -627,6 +651,49 @@ public void initializeForSpatial() {
 			getDiffusionParameter().setExpression(e);
 		} catch (ExpressionBindingException e1) {
 			throw new RuntimeException("Error while initializing diffusion rate, " + e1.getMessage(), e1);
+		}
+	}
+}
+
+public void initializeForSpringSaLaD(MolecularType molecularType) {
+	if(getSpeciesContext() != null) {
+		SpeciesPattern sp = getSpeciesContext().getSpeciesPattern();
+		if(sp == null) {
+			return;
+		}
+		// in SpringSaLaD all seed species are single molecule, we don't use complexes
+		MolecularTypePattern mtp = sp.getMolecularTypePatterns().get(0);
+		MolecularType mt = mtp.getMolecularType();
+		if(molecularType != null && molecularType != mt) {
+			return;		// this molecule is unchanged, nothing to do
+		}
+		// molecularType == null : full initialization
+		// molecularType != null and molecularType == mt : this molecule has a different 
+		//   number of components or a different component order
+		List<MolecularComponent> componentList = mt.getComponentList();
+		for(MolecularComponent mc : componentList) {
+			MolecularComponentPattern mcp = mtp.getMolecularComponentPattern(mc);
+			if(siteAttributesMap.containsKey(mcp)) {
+				continue;	// this is set, nothing to do
+			}
+			SiteAttributesSpec sas = siteAttributesMap.get(mcp);
+			if(sas == null || sas.getMolecularComponentPattern() == null) {
+				sas = new SiteAttributesSpec(this, mcp, getSpeciesContext().getStructure());
+				siteAttributesMap.put(mcp, sas);
+			}
+		}
+
+		if(getInternalLinkSet().isEmpty()) {
+			for(int i=0; i< componentList.size()-1; i++) {
+				MolecularComponent mcOne = componentList.get(i);
+				MolecularComponent mcTwo = componentList.get(i+1);
+				MolecularComponentPattern mcpOne = mtp.getMolecularComponentPattern(mcOne);
+				MolecularComponentPattern mcpTwo = mtp.getMolecularComponentPattern(mcTwo);
+				MolecularInternalLinkSpec link = new MolecularInternalLinkSpec(this, mcpOne, mcpTwo);
+				// TODO: set x,y,z instead, link will be computed
+//				link.setLinkLength(2.0);
+				internalLinkSet.add(link);
+			}
 		}
 	}
 }
@@ -886,6 +953,173 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
 					issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
 				}
 			}
+		}
+	}
+	
+	if(getSimulationContext().getApplicationType() == SimulationContext.Application.SPRINGSALAD) {
+		SpeciesContext sc = getSpeciesContext();
+		if(sc != null && sc.getSpeciesPattern() != null) {
+			SpeciesPattern sp = sc.getSpeciesPattern();
+			List<MolecularTypePattern> mtpList = sp.getMolecularTypePatterns();
+			if(mtpList.size() != 1) {
+				String msg = "SpringSaLaD requires all Species to be associated with exactly one MolecularType.";
+				String tip = msg;
+				issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+				return;
+			}
+			MolecularTypePattern mtp = mtpList.get(0);
+			List<MolecularComponentPattern> mcpList = mtp.getComponentPatternList();
+			if(SourceMoleculeString.equals(sc.getName()) || SinkMoleculeString.equals(sc.getName())) {
+				if(mcpList.size() != 0) {
+					String msg = "SpringSaLaD reserved Molecules '" + SourceMoleculeString + "' and '" + SinkMoleculeString + "' must not have any sites defined";
+					String tip = msg;
+					issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+					return;
+				}
+			}
+			if(mcpList.size() == 0) {
+				String msg = "SpringSaLaD requires the MolecularType to have at least one Site.";
+				String tip = msg;
+				issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+				return;
+			}
+			for(MolecularComponentPattern mcp : mcpList) {
+				MolecularComponent mc = mcp.getMolecularComponent();
+				List<ComponentStateDefinition> csd = mc.getComponentStateDefinitions();
+				if(csd.size() < 1) {
+					String msg = "Each Site must have at least one State.";
+					String tip = msg;
+					issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+					return;
+				}
+			}
+			for(MolecularInternalLinkSpec mils : getInternalLinkSet()) {
+				if(mils.getMolecularComponentPatternOne() == mils.getMolecularComponentPatternTwo()) {
+					String msg = "Both sites of the Link are identical.";
+					String tip = "A site cannot be linked to itself.";
+					issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+					return;
+				}
+			}
+			if(mcpList.size()>1 && mcpList.size() > getInternalLinkSet().size()+1) {
+				String msg = "Link chain within the molecule has at least one discontinuity.";
+				String tip = "One or more links are missing";
+				issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+				return;
+			}
+			for(MolecularInternalLinkSpec candidate : getInternalLinkSet()) {
+				for(MolecularInternalLinkSpec other : getInternalLinkSet()) {
+					if(candidate == other) {
+						continue;
+					}
+					if(candidate.compareEqual(other)) {
+						String one = candidate.getMolecularComponentPatternOne().getMolecularComponent().getName();
+						String two = candidate.getMolecularComponentPatternTwo().getMolecularComponent().getName();
+						String msg = "Duplicate link: " + one + " :: " + two;
+						String tip = msg;
+						issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+						return;
+					}
+				}
+			}
+			if(mcpList.size() == 1) {
+				String msg = "Internal Links are possible only when the Molecule has at least 2 sites.";
+				String tip = msg;
+				issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+			}
+
+			// if the species context is on membrane it must have a site named Anchor on the membrane, the other sites must NOT be on membrane
+			Structure struct = sc.getStructure();
+			MolecularComponentPattern mcpAnchor = null;
+			if(struct instanceof Membrane) {
+				boolean anchorExists = false;
+				for(MolecularComponentPattern mcp : mcpList) {
+					MolecularComponent mc = mcp.getMolecularComponent();
+					if(AnchorSiteString.equals(mc.getName())) {
+						anchorExists = true;
+						mcpAnchor = mcp;
+						SiteAttributesSpec sas = getSiteAttributesMap().get(mcp);
+						if(!(sas.getLocation() instanceof Membrane)) {
+							String msg = "The reserved Site 'Anchor' must be located on a Membrane.";
+							String tip = msg;
+							issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+							return;
+						}
+					} else {	// all the other sites of a membrane species must not be on the membrane
+						SiteAttributesSpec sas = getSiteAttributesMap().get(mcp);
+						if(sas.getLocation() instanceof Membrane) {
+							String msg = "All the Sites of a Membrane species, other than the 'Anchor', must NOT be located on a Membrane.";
+							String tip = msg;
+							issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+							return;
+						}
+					}
+				}
+				if(anchorExists == false) {
+					String msg = "Species localized on a membrane require a reserved site named 'Anchor'";
+					String tip = msg;
+					issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+					return;
+				} else {
+					// the anchor Site must have just one single State, also named Anchor
+					String msg = "The reserved Site 'Anchor' must have exactly one State named 'Anchor'.";
+					MolecularComponent mcAnchor = mcpAnchor.getMolecularComponent();
+					List<ComponentStateDefinition> csdAnchorList = mcAnchor.getComponentStateDefinitions();
+					if(csdAnchorList.size() != 1) {
+						String tip = msg;
+						issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+						return;
+					}
+					ComponentStateDefinition csdAnchor = csdAnchorList.get(0);
+					if(!AnchorStateString.equals(csdAnchor.getName())) {
+						String tip = msg;
+						issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+						return;
+					}
+				}
+			} else {		// a species inside a Feature must NOT have a site named Anchor
+				for(MolecularComponentPattern mcp : mcpList) {
+					MolecularComponent mc = mcp.getMolecularComponent();
+					if(AnchorSiteString.equals(mc.getName())) {
+						String msg = "The reserved Site 'Anchor' can be used only for a Species located on a Membrane.";
+						String tip = msg;
+						issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+						return;
+					}
+				}
+			}
+			
+			// each species context is associated with one and only one molecular type and viceversa (biunivocal correspondence)
+			SpeciesContextSpec[] scsArray = getSimulationContext().getReactionContext().getSpeciesContextSpecs();
+			for(SpeciesContextSpec scsCandidate : scsArray) {
+				SpeciesContext scCandidate = scsCandidate.getSpeciesContext();
+				if(sc == scCandidate) {
+					continue;			// skip self
+				}
+				if(scCandidate.getSpeciesPattern() == null) {
+					// invalid, we'll deal with it separately - skip for now since will generate a NPE
+					continue;
+				}
+				MolecularType mtCandidate = scCandidate.getSpeciesPattern().getMolecularTypePatterns().get(0).getMolecularType();
+				if(mtp.getMolecularType() == mtCandidate) {
+					String msg = "There must be a biunivocal correspondence between the Species and the associated MolecularType.";
+					String tip = "In SpringSaLaD, two Seed Species cannot share the same Molecular Type.";
+					issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+					return;
+				}
+			}
+			
+			// the species context and the molecular type must have the same name
+			if(!sc.getName().equals(mtp.getMolecularType().getName())) {
+				String msg = "The Species and the Molecular Type must share the same name.";
+				String tip = msg;
+				issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+				return;
+			}
+		} else {
+			String msg = "SpringSaLaD requires all Species to be associated with a MolecularType.";
+			String tip = "Associate a MolecularType to the Species in Physiology / Species panel.";
+			issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
 		}
 	}
 }
@@ -1791,6 +2025,21 @@ public List<SpeciesContextSpecParameter> computeApplicableParameterList() {
 	return speciesContextSpecParameterList;
 }
 
+public Set<MolecularInternalLinkSpec> getInternalLinkSet() {
+	return internalLinkSet;
+}
+public void setInternalLinkSet(Set<MolecularInternalLinkSpec> internalLinkSet) {
+	this.internalLinkSet = internalLinkSet;
+}
+
+
+public Map<MolecularComponentPattern, SiteAttributesSpec> getSiteAttributesMap() {
+	return siteAttributesMap;
+}
+public void setSiteAttributesMap(Map<MolecularComponentPattern, SiteAttributesSpec> siteAttributesMap) {
+	this.siteAttributesMap = siteAttributesMap;
+}
+
 public SpatialQuantity[] getVelocityQuantities(QuantityComponent component) {
 	ArrayList<SpatialQuantity> velocityQuantities = new ArrayList<SpatialQuantity>();
 	for (SpatialObject spatialObject : simulationContext.getSpatialObjects(speciesContext.getStructure())){
@@ -1803,11 +2052,95 @@ public SpatialQuantity[] getVelocityQuantities(QuantityComponent component) {
 	return velocityQuantities.toArray(new SpatialQuantity[0]);
 }
 
-
 @Override
 public Kind getSimulationContextKind() {
 	return SimulationContext.Kind.SPECIFICATIONS_KIND;
 }
+
+public void writeData(StringBuilder sb) {				// SpringSaLaD exporting the species / molecule information
+	if(getSimulationContext().getApplicationType() != Application.SPRINGSALAD) {
+		sb.append("\n");
+		return;
+	}
+	// ----------------------------------------------------------------------------------
+//	private Set<MolecularInternalLinkSpec> internalLinkSet = new LinkedHashSet<> ();			// SpringSaLaD
+//	private Map<MolecularComponentPattern, SiteAttributesSpec> siteAttributesMap = new LinkedHashMap<> ();
+//	for(Map.Entry<MolecularComponentPattern, SiteAttributesSpec> entry : getSiteAttributesMap().entrySet()) {
+//		MolecularComponentPattern key = entry.getKey();
+//		SiteAttributesSpec sas = entry.getValue();
+
+	Geometry geometry = getSimulationContext().getGeometry();
+	GeometryContext geometryContext = getSimulationContext().getGeometryContext();
+	GeometrySpec geometrySpec = geometry.getGeometrySpec();
+	ReactionContext reactionContext = getSimulationContext().getReactionContext();
+	SpeciesContextSpec[] speciesContextSpecs = reactionContext.getSpeciesContextSpecs();
+	ReactionSpec[] reactionSpecs = reactionContext.getReactionSpecs();
+	ReactionRuleSpec[] reactionRuleSpecs = reactionContext.getReactionRuleSpecs();
+	String name = getSpeciesContext().getName();
+	if(SourceMoleculeString.equals(name) || SinkMoleculeString.equals(name)) {
+		return;		// the solver doesn't need to know about Sink and Source
+	}
+	SpeciesContextSpecParameter initialCountParameter = getInitialCountParameter();
+	SpeciesPattern sp = getSpeciesContext().getSpeciesPattern();
+	if(sp == null || sp.getMolecularTypePatterns() == null || sp.getMolecularTypePatterns().isEmpty()) {
+		sb.append("MOLECULE: \"" + getSpeciesContext().getName() + "\" " + "ERROR");
+		sb.append("\n");
+		sb.append("\n");
+		return;
+	}
+	MolecularType mt = sp.getMolecularTypePatterns().get(0).getMolecularType();
+	List<MolecularComponent> componentList = mt.getComponentList();
+	int dimension = geometry.getDimension();
+
+	sb.append("MOLECULE: \"" + getSpeciesContext().getName() + "\" " + getSpeciesContext().getStructure().getName() + 
+			" Number " + initialCountParameter.getExpression().infix() + 
+			" Site_Types " + componentList.size() + " Total"  + "_Sites " + siteAttributesMap.size() + 
+			" Total_Links " + internalLinkSet.size() + " is2D " + (dimension == 2 ? true : false));	// TODO: molecule is flat, unrelated to geometry
+	sb.append("\n");
+	sb.append("{");
+	sb.append("\n");
+	
+	for(Map.Entry<MolecularComponentPattern, SiteAttributesSpec> entry : siteAttributesMap.entrySet()) {
+		SiteAttributesSpec sas = entry.getValue();
+		sb.append("     ");
+		sas.writeType(sb);		// writeMolecularComponent
+	}
+	sb.append("\n");
+	for(Map.Entry<MolecularComponentPattern, SiteAttributesSpec> entry : siteAttributesMap.entrySet()) {
+		SiteAttributesSpec sas = entry.getValue();
+		sb.append("     ");
+		sas.writeSite(sb);
+	}
+	sb.append("\n");
+	for(MolecularInternalLinkSpec mils : internalLinkSet) {
+		sb.append("     ");
+		mils.writeLink(sb);
+	}
+	
+	sb.append("\n");
+	sb.append("     Initial_Positions: ");
+	if(InitialLocationRandom) {
+		sb.append(InitialLocationRandomString);
+		sb.append("\n");
+//	} else {
+//		sb.append(InitialLocationSetString);
+//		sb.append("\n");
+//		sb.append("     x: " + IOHelp.printArrayList(initialCondition.getXIC(), 5));
+//		sb.append("\n");
+//		sb.append("     y: " + IOHelp.printArrayList(initialCondition.getYIC(), 5));
+//		sb.append("\n");
+//		sb.append("     z: " + IOHelp.printArrayList(initialCondition.getZIC(), 5));
+//		sb.append("\n");
+	}
+	sb.append("}");
+	sb.append("\n");
+	sb.append("\n");
+	return;
+}
+public String getFilename() {	// SpringSaLaD specific, external file with molecule information
+	return null;	// not implemented
+}
+
 
 public static final String typeName = "SpeciesContextSpec";
 @Override
@@ -1821,5 +2154,6 @@ public String getDisplayName() {
 public String getDisplayType() {
 	return typeName;
 }
+
 
 }

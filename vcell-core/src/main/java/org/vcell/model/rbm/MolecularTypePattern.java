@@ -5,8 +5,10 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.vcell.model.rbm.MolecularComponentPattern.BondType;
 import org.vcell.util.Compare;
@@ -14,18 +16,23 @@ import org.vcell.util.Displayable;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
+import org.vcell.util.document.Identifiable;
 import org.vcell.util.IssueContext;
 import org.vcell.util.Matchable;
 
+import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Model.RbmModelContainer;
 
 public class MolecularTypePattern extends RbmElementAbstract implements Matchable, PropertyChangeListener, IssueSource, Displayable {
+		
 	public static final String PROPERTY_NAME_COMPONENT_PATTERN_LIST = "componentPatternList";
 	public static final String TRIVIAL_MATCH = "*";
 	
 	private MolecularType molecularType;
 	private List<MolecularComponentPattern> componentPatternList = new ArrayList<MolecularComponentPattern>();
+	
 	private int index = 0; // purely for displaying purpose, since molecule can bind to itself
 	private String participantMatchLabel = TRIVIAL_MATCH;	// reactant-product match label, to avoid ambiguity
 	private Map<String,ArrayList<MolecularComponent>> processedMolecularComponentsMultiMap = new HashMap<String,ArrayList<MolecularComponent>>();
