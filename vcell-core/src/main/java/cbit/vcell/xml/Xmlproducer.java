@@ -1532,18 +1532,21 @@ public Element getXML(ReactionRuleSpec[] reactionRuleSpecs, SimulationContext si
 		reactionRuleSpecElement.setAttribute(XMLTags.ReactionRuleRefAttrTag, mangle(reactionRuleSpec.getReactionRule().getName()));
 		reactionRuleSpecElement.setAttribute(XMLTags.ReactionRuleMappingAttrTag, mangle(reactionRuleSpec.getReactionRuleMapping().getDatabaseName()));
 		if(Application.SPRINGSALAD == simContext.getApplicationType()) {
-			reactionRuleSpecElement.setAttribute(XMLTags.BondLengthAttrTag, Double.toString(reactionRuleSpec.getFieldBondLength()));
 			//
-			// the next 2 attributes are sent only for debugging purposes, they are derived attributes and should be calculated at needed
+			// the next attributes are sent only for debugging purposes, they are derived attributes and should be calculated at needed
 			//
 			Map<String, Object> analysisResults = new LinkedHashMap<> ();
 			reactionRuleSpec.analizeReaction(analysisResults);
-			ReactionRuleSpec.Subtype st = reactionRuleSpec.getSubtype(analysisResults);
+			ReactionRuleSpec.Subtype st = reactionRuleSpec.getSubtype(analysisResults);		// for sanity check
 			reactionRuleSpecElement.setAttribute(XMLTags.SubTypeAttrTag, st.columnName);
+			if(ReactionRuleSpec.Subtype.BINDING == st) {
+				// this is mandatory, if it's a binding reaction
+				reactionRuleSpecElement.setAttribute(XMLTags.BondLengthAttrTag, Double.toString(reactionRuleSpec.getFieldBondLength()));
+			}
 			if(ReactionRuleSpec.Subtype.TRANSITION == st) {
 				TransitionCondition tc = reactionRuleSpec.getTransitionCondition(analysisResults);
 				if(tc != null) {
-					reactionRuleSpecElement.setAttribute(XMLTags.TransitionConditionAttrTag, tc.vcellName);
+					reactionRuleSpecElement.setAttribute(XMLTags.TransitionConditionAttrTag, tc.vcellName);	// for sanity check
 				}
 			}
 		}
@@ -3251,7 +3254,18 @@ private Element getXML(ParticleMolecularComponent param) {
 private Element getXML(ParticleMolecularType param) {
 	Element e = new Element(XMLTags.ParticleMolecularTypeTag);
 	e.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
-	for (ParticleMolecularComponent pp : param.getComponentList()){
+	if(param instanceof LangevinParticleMolecularType) {
+		e.setAttribute(XMLTags.IsLangevinParticleMolecularTypeAttrTag, "true");
+		LangevinParticleMolecularType lParam = (LangevinParticleMolecularType)param;
+		Set<Pair<LangevinParticleMolecularComponent, LangevinParticleMolecularComponent>> internalLinkSpec = lParam.getInternalLinkSpec();
+		for(Pair<LangevinParticleMolecularComponent, LangevinParticleMolecularComponent> pair : internalLinkSpec) {
+			Element l = new Element(XMLTags.ParticleMolecularTypeLinksTag);
+			l.setAttribute(XMLTags.LangevinParticleMolecularComponentOneTag, pair.one.getName());
+			l.setAttribute(XMLTags.LangevinParticleMolecularComponentTwoTag, pair.two.getName());
+			e.addContent(l);
+		}
+	}
+	for (ParticleMolecularComponent pp : param.getComponentList()) {
 		e.addContent(getXML(pp));
 	}
 	for(String anchor : param.getAnchorList()) {

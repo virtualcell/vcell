@@ -76,7 +76,8 @@ public class ReactionRuleSpec implements ModelProcessSpec, IssueSource {
 	}
 	
 	public static final String ANY_STATE = "Any_State";		// SpringSaLaD stuff
-	private double fieldBondLength = 1;
+	private double fieldBondLength = 1;		// only used for Subtype.BINDING reactions
+	
 	public enum Subtype {
 		INCOMPATIBLE("Not Compatible"),
 		CREATION("Creation"),
@@ -89,6 +90,14 @@ public class ReactionRuleSpec implements ModelProcessSpec, IssueSource {
 		private Subtype(String columnName) {
 			this.columnName = columnName;
 		}
+		public static Subtype fromName(String nameCandidate) {
+			for(Subtype st : Subtype.values()) {
+				if(st.columnName.equals(nameCandidate)) {
+					return st;
+				}
+			}
+			return null;
+		}
 	}
 	public enum TransitionCondition {	// everywhere internally in vcell we use RBM bond type naming conventions
 		NONE("Unbound", "None"),		// MolecularComponentPattern.BondType.None		(-)
@@ -100,6 +109,22 @@ public class ReactionRuleSpec implements ModelProcessSpec, IssueSource {
 		private TransitionCondition(String vcellName, String lngvName) {
 			this.vcellName = vcellName;
 			this.lngvName = lngvName;
+		}
+		public static TransitionCondition fromVcellName(String nameCandidate) {
+			for(TransitionCondition tc : TransitionCondition.values()) {
+				if(tc.vcellName.equals(nameCandidate)) {
+					return tc;
+				}
+			}
+			return null;
+		}
+		public static TransitionCondition fromLngvName(String nameCandidate) {
+			for(TransitionCondition tc : TransitionCondition.values()) {
+				if(tc.lngvName.equals(nameCandidate)) {
+					return tc;
+				}
+			}
+			return null;
 		}
 	}
 
@@ -1079,7 +1104,14 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList, React
 					sasTwo = entry.getValue();
 				}
 			}
-			if(sasOne != null && sasTwo != null) {
+			//
+			// TODO: check logic here, sometimes siteAttributesMapTwo is null (issue #977)
+			// temp fix, we check for non-null siteAttributesMapTwo
+			// hard to catch, it may be that the reactant or the product end up in an inconsistent state
+			// after using the reaction visual editor in the physiology (the state of a bonding site is possibly inconsistent)
+			//
+			if(sasOne != null && sasTwo != null && siteAttributesMapTwo != null) {
+				
 				for(Map.Entry<MolecularComponentPattern, SiteAttributesSpec> entry : siteAttributesMapTwo.entrySet()) {
 					MolecularComponentPattern mcpCandidate = entry.getKey();
 					if(MolecularComponentPattern.BondType.None != mcpCandidate.getBondType()) {
