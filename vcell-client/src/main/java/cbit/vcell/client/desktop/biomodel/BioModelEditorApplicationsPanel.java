@@ -45,6 +45,7 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
@@ -355,7 +356,10 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 				appsPopupMenu.add(appNewDeterministicApp);
 				appsPopupMenu.add(appNewStochApp);
 				appsPopupMenu.add(appNewRulebasedApp);
-				appsPopupMenu.add(appNewSpringSaLaDApp);
+				String enableSpringSaLaD = PropertyLoader.getProperty(PropertyLoader.enableSpringSaLaD, "false");
+				if("true".equals(enableSpringSaLaD)) {
+					appsPopupMenu.add(appNewSpringSaLaDApp);
+				}
 				// user code begin {1}
 				// user code end
 			} catch (java.lang.Throwable ivjExc) {
