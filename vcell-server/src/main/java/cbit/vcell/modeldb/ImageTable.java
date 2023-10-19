@@ -9,6 +9,7 @@
  */
 
 package cbit.vcell.modeldb;
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -90,7 +91,10 @@ public VersionInfo getInfo(ResultSet rset, Connection con,DatabaseSyntax dbSynta
 		gifImage = new GIFImage(gifData);
 		//
 	}catch (GifParsingException e){
-		throw new DataAccessException("Error Parsing browseImage");
+		BigDecimal imageKeyValue = rset.getBigDecimal(BrowseImageDataTable.table.imageRef.getQualifiedColName());
+		String msg = "GifParsingException while parsing browseImage for vc_image(key="+imageKeyValue+"): "+e.getMessage();
+		lg.error(msg, e);
+		throw new DataAccessException(msg, e);
 	}
 	
 	java.math.BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
