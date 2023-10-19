@@ -17,6 +17,10 @@ COPY --from=jre-build /javaruntime $JAVA_HOME
 
 RUN apt-get -y update && apt-get install -y bash nano wget
 
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tzdata
+RUN unlink /etc/localtime || true
+RUN ln -s /usr/share/zoneinfo/America/New_York /etc/localtime
+
 WORKDIR /usr/local/app
 
 COPY ./vcell-web/target/vcell-web-0.0.1-SNAPSHOT.jar \

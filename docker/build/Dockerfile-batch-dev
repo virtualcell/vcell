@@ -84,6 +84,10 @@ RUN apt-get -y update && \
 	apt-get install -y wget gdebi-core && \
 	pip install thrift
 
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tzdata
+RUN unlink /etc/localtime || true
+RUN ln -s /usr/share/zoneinfo/America/New_York /etc/localtime
+
 RUN mkdir -p /usr/local/app/localsolvers && ln -s /vcellbin  /usr/local/app/localsolvers/linux64
 WORKDIR /usr/local/app
 
