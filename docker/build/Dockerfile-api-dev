@@ -64,6 +64,7 @@ ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
     smtp_hostname="smtp-host-not-set" \
 	smtp_port="smtp-port-not-set" \
 	smtp_emailaddress="smtp-emailaddress-not-set" \
+    simdataCacheSize="simdataCacheSize-not-set" \
     webDataPort="webDataPort-not-set" \
 	ssl_ignoreHostMismatch=true \
 	ssl_ignoreCertProblems=false \
@@ -93,6 +94,10 @@ ENTRYPOINT java \
 	-Dvcell.server.dbDriverName="${dbdriver}" \
 	-Dvcell.server.dbUserid="${dbuser}" \
 	-Dvcell.db.pswdfile="${dbpswdfile}" \
+	-Dvcell.n5DataDir.internal=/n5DataDir \
+	-Dvcell.primarySimdatadir.internal=/simdata \
+  -Dvcell.secondarySimdatadir.internal=/simdata_secondary \
+  -Dvcell.simdataCacheSize="${simdataCacheSize}" \
 	-Duser.timezone="${userTimezone}" \
 	-Dvcell.jms.int.host.internal="${jmshost_int_internal}" \
 	-Dvcell.jms.int.port.internal="${jmsport_int_internal}" \
@@ -110,7 +115,7 @@ ENTRYPOINT java \
 	-Dvcelldata.web.server.port=${webDataPort} \
 	-Dvcell.smtp.emailAddress="${smtp_emailaddress}" \
 	-Dvcell.ssl.ignoreHostMismatch="${ssl_ignoreHostMismatch}" \
-    -Dvcell.ssl.ignoreCertProblems="${ssl_ignoreCertProblems}" \
-    -Dvcell.submit.service.host="${submit_service_host}" \
+  -Dvcell.ssl.ignoreCertProblems="${ssl_ignoreCertProblems}" \
+  -Dvcell.submit.service.host="${submit_service_host}" \
 	-cp "./lib/*" org.vcell.rest.VCellApiMain \
 	/usr/local/app/docroot 8080
