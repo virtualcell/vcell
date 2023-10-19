@@ -9,7 +9,7 @@ pushd ../../pythonCopasiOpt/vcell-opt
 poetry install
 popd
 
-pushd vcell-admin
+pushd ../swarm/vcell-admin
 poetry install
 popd
 
