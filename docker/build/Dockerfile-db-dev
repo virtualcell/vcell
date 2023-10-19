@@ -16,8 +16,8 @@ ENV PATH "${JAVA_HOME}/bin:${PATH}"
 COPY --from=jre-build /javaruntime $JAVA_HOME
 
 RUN mkdir -p /usr/local/app && \
-	apk update && \
-    apk add screen tzdata
+	apt-get -y update && \
+    apt-get -y install screen tzdata
 
 ENV TZ=America/New_York
 RUN unlink /etc/localtime || true

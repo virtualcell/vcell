@@ -9,7 +9,7 @@ pushd ../../pythonCopasiOpt/vcell-opt
 poetry install
 popd
 
-pushd vcell-admin
+pushd ../swarm/vcell-admin
 poetry install
 popd
 
@@ -64,8 +64,8 @@ also, make sure vcell-batch container is current.
 3. Update local configuration to run locally (stored in <vcell>/docker_env.txt)
 
 ```bash
-./localconfig_realslurm_postgres.sh TEST ghcr.io/virtualcell dev 7.4.0 1234 ../../docker_env_postgres.txt
-./localconfig_realslurm_oracle.sh TEST ghcr.io/virtualcell dev 7.4.0 1234 ../../docker_env_oracle.txt
+./localconfig_realslurm_postgres.sh TEST ghcr.io/virtualcell dev 7.5.0 1234 ../../docker_env_postgres.txt
+./localconfig_realslurm_oracle.sh TEST ghcr.io/virtualcell dev 7.5.0 1234 ../../docker_env_oracle.txt
 ```
 
 5. run local middleware services

@@ -18,10 +18,8 @@ COPY --from=jre-build /javaruntime $JAVA_HOME
 # now we have Java 17 and Python 3.9
 
 RUN mkdir -p /usr/local/app && \
-	apk update && \
-	apk add --no-cache ttf-dejavu && \
-    apk add openssh-client && \
-    apk add screen tzdata
+	apt-get -y update && \
+    apt-get -y install openssh-client screen tzdata
 
 ENV TZ=America/New_York
 RUN unlink /etc/localtime || true

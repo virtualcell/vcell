@@ -17,10 +17,8 @@ COPY --from=jre-build /javaruntime $JAVA_HOME
 
 
 RUN mkdir -p /usr/local/app && \
-	apk update && \
-    apk add openssh-client && \
-    apk add curl && \
-    apk add screen tzdata
+	apt-get -y update && \
+    apt-get -y install openssh-client curl screen tzdata
 
 ENV TZ=America/New_York
 RUN unlink /etc/localtime || true
