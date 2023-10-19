@@ -112,13 +112,13 @@ public class LangevinParticleMolecularComponent extends ParticleMolecularCompone
 			if(token.equalsIgnoreCase(VCML.ParticleComponentCoordinate)) {
 				token = tokens.nextToken();
 				String x = token;
-				x = x.substring(x.indexOf("="), x.length());
+				x = x.substring(x.indexOf("=")+1, x.length());
 				token = tokens.nextToken();
 				String y = token;
-				y = y.substring(y.indexOf("="), y.length());
+				y = y.substring(y.indexOf("=")+1, y.length());
 				token = tokens.nextToken();
 				String z = token;
-				z = z.substring(z.indexOf("="), z.length());
+				z = z.substring(z.indexOf("=")+1, z.length());
 				Coordinate coordinate = new Coordinate(Double.parseDouble(x), Double.parseDouble(y), Double.parseDouble(z));
 				setCoordinate(coordinate);
 				continue;

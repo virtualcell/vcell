@@ -697,6 +697,15 @@ private CompartmentSubDomain getCompartmentSubDomain(Element param, MathDescript
 			throw new XmlParseException("A MathException was fired when adding a jump process to the compartmentSubDomain " + name, e);
 		} 
 	}
+	iterator = param.getChildren(XMLTags.LangevinParticleJumpProcessTag, vcNamespace).iterator();
+	while (iterator.hasNext()) {
+		Element tempelement = (Element)iterator.next();
+		try {
+			subDomain.addParticleJumpProcess(getParticleJumpProcess(tempelement, mathDesc) );
+		} catch (MathException e) {
+			throw new XmlParseException("A MathException was fired when adding a jump process to the compartmentSubDomain " + name, e);
+		} 
+	}
 	
 	iterator = param.getChildren(XMLTags.ParticlePropertiesTag, vcNamespace).iterator();
 	while (iterator.hasNext()) {
@@ -2951,7 +2960,12 @@ MathDescription getMathDescription(Element param, Geometry geometry) throws XmlP
 	iterator = param.getChildren(XMLTags.ParticleMolecularTypeTag, vcNamespace).iterator();
 	while ( iterator.hasNext() ){
 		tempelement = (Element)iterator.next();
-		mathdes.addParticleMolecularType(getParticleMolecularType(tempelement));
+		mathdes.addParticleMolecularType(getParticleMolecularType(tempelement, false));
+	}
+	iterator = param.getChildren(XMLTags.LangevinParticleMolecularTypeTag, vcNamespace).iterator();
+	while ( iterator.hasNext() ){
+		tempelement = (Element)iterator.next();
+		mathdes.addParticleMolecularType(getParticleMolecularType(tempelement, true));
 	}
 	// VolumeParticleSpeciesPatternTag
 	iterator = param.getChildren(XMLTags.VolumeParticleSpeciesPatternTag, vcNamespace).iterator();
@@ -7882,15 +7896,12 @@ private ParticleMolecularComponent getParticleMolecularComponent(String pmtName,
 	}
 	return var;
 }
-private ParticleMolecularType getParticleMolecularType(Element param) {
+private ParticleMolecularType getParticleMolecularType(Element param, boolean isLangevin) {
 	String name = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
 	ParticleMolecularType var;
-	boolean isLangevin;
-	if("true".equals(param.getAttributeValue(XMLTags.IsLangevinParticleMolecularTypeAttrTag))) {
-		isLangevin = true;
+	if(isLangevin) {
 		var = new LangevinParticleMolecularType(name);
 	} else {
-		isLangevin = false;
 		var = new ParticleMolecularType(name);
 	}
 	List<Element> molecularComponentList = param.getChildren(XMLTags.ParticleMolecularComponentPatternTag, vcNamespace);

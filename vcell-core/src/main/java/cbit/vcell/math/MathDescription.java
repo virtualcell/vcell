@@ -1927,6 +1927,9 @@ public boolean isRuleBased(){
 
 @Override
 public boolean isLangevin() {
+	if(!isSpatial3D()) {
+		return false;
+	}
 	Enumeration<SubDomain> enum1 = getSubDomains();
 	while (enum1.hasMoreElements()) {
 		SubDomain subDomain = enum1.nextElement();
@@ -3007,12 +3010,26 @@ public void read_database(CommentStringTokenizer tokens) throws MathException {
 			}
 			if (tokenStr.equalsIgnoreCase(VCML.ParticleMolecularType))
 			{
-				//
-				// TODO: need the isLangevin token !!!
-				//
 				tokenStr = tokens.nextToken();
 				String name = tokenStr;
+				tokenStr = tokens.nextToken();
 				ParticleMolecularType particleMolecularType = new ParticleMolecularType(name);
+				if (!tokenStr.equalsIgnoreCase(VCML.BeginBlock)) {
+					throw new MathException("unexpected token "+tokenStr+" expecting "+VCML.BeginBlock);
+				}
+				particleMolecularType.read(tokens);
+				addParticleMolecularType(particleMolecularType);
+				continue;
+			}
+			if (tokenStr.equalsIgnoreCase(VCML.LangevinParticleMolecularType))
+			{
+				tokenStr = tokens.nextToken();
+				String name = tokenStr;
+				tokenStr = tokens.nextToken();
+				ParticleMolecularType particleMolecularType = new LangevinParticleMolecularType(name);
+				if (!tokenStr.equalsIgnoreCase(VCML.BeginBlock)){
+					throw new MathException("unexpected token "+tokenStr+" expecting "+VCML.BeginBlock);
+				}
 				particleMolecularType.read(tokens);
 				addParticleMolecularType(particleMolecularType);
 				continue;

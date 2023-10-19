@@ -598,7 +598,10 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 		return microscopeMeasurement;
 	}
 
-private static Application legacyType(boolean arg_isStoch, boolean arg_isRuleBased) {
+private static Application legacyType(boolean arg_isStoch, boolean arg_isRuleBased, boolean arg_isLangevin) {
+	if (arg_isLangevin) {
+		return Application.SPRINGSALAD;
+	}
 	if (arg_isRuleBased) {
 		return Application.RULE_BASED_STOCHASTIC;
 	}
@@ -807,8 +810,8 @@ public SimulationContext(Model argModel, Geometry argGeometry) throws java.beans
  * @throws PropertyVetoException
  */
 @Deprecated
-public SimulationContext(Model model, Geometry geometry, MathDescription argMathDesc, Version argVersion, boolean bStoch, boolean bRuleBased) throws PropertyVetoException {
-	this(model,geometry,argMathDesc,argVersion,legacyType(bStoch, bRuleBased));
+public SimulationContext(Model model, Geometry geometry, MathDescription argMathDesc, Version argVersion, boolean bStoch, boolean bRuleBased, boolean bLangevin) throws PropertyVetoException {
+	this(model,geometry,argMathDesc,argVersion,legacyType(bStoch, bRuleBased, bLangevin));
 }
 /**
  * Preferred SimulationContext constructor.

@@ -2187,10 +2187,26 @@ private org.jdom.Element getXML(ParticleProperties param) throws XmlParseExcepti
 }
 
 private org.jdom.Element getXML(ParticleJumpProcess param) {
-	org.jdom.Element particleJumpProcessElement = new org.jdom.Element(XMLTags.ParticleJumpProcessTag);
-	//name
-	particleJumpProcessElement.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
-	if (param.getProcessSymmetryFactor()!=null){
+	Element particleJumpProcessElement = null;
+	if(param instanceof LangevinParticleJumpProcess) {
+		particleJumpProcessElement = new Element(XMLTags.LangevinParticleJumpProcessTag);
+		particleJumpProcessElement.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
+		LangevinParticleJumpProcess lParam = (LangevinParticleJumpProcess)param;
+		Subtype subtype = lParam.getSubtype();
+		particleJumpProcessElement.setAttribute(XMLTags.LangevinParticleJumpProcessSubtypeTag, subtype.columnName);
+		if(Subtype.BINDING == subtype) {
+			double bondLength = lParam.getBondLength();
+			particleJumpProcessElement.setAttribute(XMLTags.LangevinParticleJumpProcessBondLengthTag, Double.toString(bondLength));
+		} else if(Subtype.TRANSITION == subtype) {
+			TransitionCondition transitionCondition = lParam.getTransitionCondition();
+			particleJumpProcessElement.setAttribute(XMLTags.LangevinParticleJumpProcessTransitionConditionTag, transitionCondition.vcellName);
+		}
+	} else {
+		particleJumpProcessElement = new Element(XMLTags.ParticleJumpProcessTag);
+		particleJumpProcessElement.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
+	}
+	
+	if (param.getProcessSymmetryFactor() != null ) {
 		particleJumpProcessElement.setAttribute(XMLTags.ProcessSymmetryFactorAttrTag, Double.toString(param.getProcessSymmetryFactor().getFactor()));
 	}
 	// Selected Particle
@@ -3252,10 +3268,10 @@ private Element getXML(ParticleMolecularComponent param) {
 	return e;
 }
 private Element getXML(ParticleMolecularType param) {
-	Element e = new Element(XMLTags.ParticleMolecularTypeTag);
-	e.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
+	Element e = null;
 	if(param instanceof LangevinParticleMolecularType) {
-		e.setAttribute(XMLTags.IsLangevinParticleMolecularTypeAttrTag, "true");
+		e = new Element(XMLTags.LangevinParticleMolecularTypeTag);
+		e.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
 		LangevinParticleMolecularType lParam = (LangevinParticleMolecularType)param;
 		Set<Pair<LangevinParticleMolecularComponent, LangevinParticleMolecularComponent>> internalLinkSpec = lParam.getInternalLinkSpec();
 		for(Pair<LangevinParticleMolecularComponent, LangevinParticleMolecularComponent> pair : internalLinkSpec) {
@@ -3264,6 +3280,9 @@ private Element getXML(ParticleMolecularType param) {
 			l.setAttribute(XMLTags.LangevinParticleMolecularComponentTwoTag, pair.two.getName());
 			e.addContent(l);
 		}
+	} else {
+		e = new Element(XMLTags.ParticleMolecularTypeTag);
+		e.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
 	}
 	for (ParticleMolecularComponent pp : param.getComponentList()) {
 		e.addContent(getXML(pp));

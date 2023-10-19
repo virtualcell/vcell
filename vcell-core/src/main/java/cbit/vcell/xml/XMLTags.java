@@ -740,10 +740,11 @@ public class XMLTags {
 	public static final String ParticleObservableSequenceLengthAttrTag = "SequenceLength";
 	
 	// langevin (springsalad) math (see VCML.java)
+	public static final String LangevinParticleMolecularTypeTag = "LangevinParticleMolecularType";
+	public final static String LangevinParticleJumpProcessTag = "LangevinParticleJumpProcess";
 	public final static String LangevinParticleJumpProcessSubtypeTag			 = "Subtype";
 	public final static String LangevinParticleJumpProcessTransitionConditionTag = "TransitionCondition";
 	public final static String LangevinParticleJumpProcessBondLengthTag			 = "BondLength";
-	public final static String IsLangevinParticleMolecularTypeAttrTag	= "IsLangevin";
 	public final static String ParticleMolecularTypeLinksTag			= "Link";
 	public final static String LangevinParticleMolecularComponentOneTag = "One";	// one (left) part of the link
 	public final static String LangevinParticleMolecularComponentTwoTag = "Two";	// two (right) part of the link

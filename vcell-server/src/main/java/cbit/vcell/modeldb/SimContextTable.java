@@ -39,6 +39,7 @@ import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.RateRule;
 import cbit.vcell.mapping.ReactionRuleSpec;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.mapping.SimulationContext.SimulationContextParameter;
 import cbit.vcell.mapping.SimulationContextInfo;
 import cbit.vcell.mapping.spatial.SpatialObject;
@@ -159,7 +160,8 @@ public SimulationContext getSimContext(QueryHashtable dbc, Connection con,User u
 	}
 	boolean bStochastic = mathDesc.isNonSpatialStoch() || mathDesc.isSpatialStoch() || mathDesc.isSpatialHybrid();
 	boolean bRuleBased = mathDesc.isRuleBased();
-	SimulationContext simContext = new SimulationContext(model,geom,mathDesc,version, bStochastic, bRuleBased);
+	boolean bLangevin = mathDesc.isLangevin();
+	SimulationContext simContext = new SimulationContext(model,geom,mathDesc,version, bStochastic, bRuleBased, bLangevin);
 	if (characteristicSize!=null){
 		simContext.setCharacteristicSize(characteristicSize);
 	}
