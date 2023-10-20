@@ -255,9 +255,7 @@ public class PropertyLoader {
 
 	
 	public static final String enableSpringSaLaD = record("vcell.enableSpringSaLaD", ValueType.BOOL);
-	
-	public static final String enableSpringSaLaD = record("vcell.enableSpringSaLaD", ValueType.BOOL);
-	
+
 	/**
 	 * native library directory, server side
 	 */
