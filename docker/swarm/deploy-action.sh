@@ -209,14 +209,19 @@ if [ "$build_installers" == "true" ]; then
 		# version=7_0_0_19
 		version=$(echo "${vcell_version}_${vcell_build}" | tr '.' _)
 		if ! scp "./generated_installers/VCell_${vcell_siteCamel}_windows-x64_${version}_64bit.exe" \
-			"./generated_installers/VCell_${vcell_siteCamel}_windows-x64_${version}_64bit.dat"/* \
 			"./generated_installers/VCell_${vcell_siteCamel}_unix_${version}_32bit.sh" \
 			"./generated_installers/VCell_${vcell_siteCamel}_macos_${version}_64bit.dmg" \
 			"./generated_installers/VCell_${vcell_siteCamel}_windows-x32_${version}_32bit.exe" \
 			"./generated_installers/VCell_${vcell_siteCamel}_unix_${version}_64bit.sh" \
 			"./generated_installers/updates.xml" \
+			"./generated_installers/updates_linux32.xml" \
+			"./generated_installers/updates_linux64.xml" \
+			"./generated_installers/updates_mac64.xml" \
+			"./generated_installers/updates_win32.xml" \
+			"./generated_installers/updates_win64.xml" \
 			"./generated_installers/output.txt" \
 			"./generated_installers/md5sums" \
+			"./generated_installers/sha256sums" \
 				"$ssh_user@$manager_node:${installer_deploy_dir}";
 		then
 			echo "failed to copy installers"; 
