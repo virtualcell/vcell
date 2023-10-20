@@ -1,7 +1,7 @@
 echo off
 
 set CLASSPATH=.\vcell-client\target\maven-jars\*;.\vcell-client\target\*
-set MAIN_CLASS=cbit.vcell.client.test.VCellClientMain
+set MAIN_CLASS=cbit.vcell.client.VCellClientMain
 
 set props=-Dvcell.installDir=%~dp0
 set props=%props% -Dvcell.softwareVersion=standalone_VCell_7.0

@@ -69,7 +69,7 @@ Requirements:  Eclipse IDE for Java Developers and Java JDK 1.8 or later
      * Name: VCellClient
      * Main: 
          * Project: `vcell-client`
-         * Main Class: `cbit.vcell.client.test.VCellClientMain`
+         * Main Class: `cbit.vcell.client.VCellClientMain`
      * Arguments:
          * Program arguments: `vcellapi-beta.cam.uchc.edu:8080`
          * VM arguments are:
