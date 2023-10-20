@@ -1,66 +1,30 @@
-# VTK and OpenJDK n Alpine Linux
-#FROM alpine:3.7
-# Install some Alpine packages
-#RUN apk add --no-cache \
-#    bash \
-#    build-base \
-#    cmake \
-#    wget \
-#    mesa-dev \
-#    mesa-osmesa \
-#    python2-dev
-# Download and extract VTK source, then configure and build VTK
-#RUN wget -nv -O- http://www.vtk.org/files/release/7.1/VTK-7.1.0.tar.gz | \
-#    tar xz && \
-#    cd VTK-7.1.0 && \
-#    cmake \
-#    -D CMAKE_BUILD_TYPE:STRING=Release \
-#    -D CMAKE_INSTALL_PREFIX:STRING=/usr \
-#    -D BUILD_DOCUMENTATION:BOOL=OFF \
-#    -D BUILD_EXAMPLES:BOOL=OFF \
-#    -D BUILD_TESTING:BOOL=OFF \
-#    -D BUILD_SHARED_LIBS:BOOL=ON \
-#    -D VTK_USE_X:BOOL=OFF \
-#    -D VTK_OPENGL_HAS_OSMESA:BOOL=ON \
-#    -D OSMESA_LIBRARY=/usr/lib/libOSMesa.so.8 \
-#    -D OSMESA_INCLUDE_DIR=/usr/include/GL/ \
-#    -D VTK_RENDERING_BACKEND:STRING=OpenGL \
-#    -D VTK_Group_MPI:BOOL=OFF \
-#    -D VTK_Group_StandAlone:BOOL=OFF \
-#    -D VTK_Group_Rendering:BOOL=ON \
-#    -D VTK_WRAP_PYTHON=ON \
-#    -D VTK_PYTHON_VERSION:STRING=2 \
-#    . && \
-#    make -j 2 && \
-#    make install && \
-#    cd .. && rm -rf VTK-7.1.0
-# install thrift python package
-#RUN wget https://bootstrap.pypa.io/get-pip.py \
-#    && python get-pip.py \
-#    && pip install thrift
-#RUN apk update && apk upgrade && \
-#    apk add openjdk8 && \
-#    mkdir /tmp/tmprt && \
-#    cd /tmp/tmprt && \
-#    apk add zip && \
-#    unzip -q /usr/lib/jvm/default-jvm/jre/lib/rt.jar && \
-#    apk add zip && \
-#    zip -q -r /tmp/rt.zip . && \
-#    apk del zip && \
-#    cd /tmp && \
-#    mv rt.zip /usr/lib/jvm/default-jvm/jre/lib/rt.jar && \
-#    rm -rf /tmp/tmprt /var/cache/apk/* bin/jjs bin/keytool bin/orbd bin/pack200 bin/policytool \
-#    bin/rmid bin/rmiregistry bin/servertool bin/tnameserv bin/unpack200 
+FROM eclipse-temurin:17 as jre-build
 
-FROM schaff/vtk-openjdk-alpine:latest
+# Create a custom Java runtime
+RUN $JAVA_HOME/bin/jlink \
+         --add-modules ALL-MODULE-PATH \
+         --strip-debug \
+         --no-man-pages \
+         --no-header-files \
+         --compress=2 \
+         --output /javaruntime
 
-RUN mkdir -p /usr/local/app && \
-	apk update && \
-	apk add --no-cache ttf-dejavu && \
-    apk add openssh-client && \
-    apk add screen tzdata
+# Define base image and copy in jlink created minimal Java 17 environment
+FROM python:3.9.7-slim
+ENV JAVA_HOME=/opt/java/openjdk
+ENV PATH "${JAVA_HOME}/bin:${PATH}"
+COPY --from=jre-build /javaruntime $JAVA_HOME
 
-ENV TZ=America/New_York
+# now we have Java 17 and Python 3.9
+
+RUN apt-get -y update && \
+	apt-get -y install openssh-client screen && \
+    mkdir -p /usr/local/app
+
+RUN python3 -m pip install poetry &&  poetry config cache-dir "/poetry/.cache"
+ENV PATH="/root/.poetry/bin:/root/.local/bin:$PATH"
+
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tzdata
 RUN unlink /etc/localtime || true
 RUN ln -s /usr/share/zoneinfo/America/New_York /etc/localtime
 
@@ -68,12 +32,14 @@ WORKDIR /usr/local/app
 
 COPY ./vcell-server/target/vcell-server-0.0.1-SNAPSHOT.jar \
      ./vcell-server/target/maven-jars/*.jar \
-     ./vcell-oracle/target/vcell-oracle-0.0.1-SNAPSHOT.jar \
-     ./vcell-oracle/target/maven-jars/*.jar \
      ./lib/
 
+# Copy and install pythonVtk
+COPY ./pythonVtk/ /usr/local/app/pythonVtk/
+RUN  cd /usr/local/app/pythonVtk && \
+     poetry config cache-dir "/poetry/.cache" --local && \
+     poetry install
 
-COPY ./pythonScripts ./pythonScripts
 COPY ./nativelibs/linux64 ./nativelibs/linux64
 COPY ./docker/build/vcell-data.log4j.xml .
 
@@ -108,8 +74,9 @@ VOLUME /exportdir
 EXPOSE 8000
 
 ENTRYPOINT java \
-	-Xdebug -Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=n \
-	-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:MaxRAMFraction=1 -Xms64M \
+    -Xdebug -agentlib:jdwp=transport=dt_socket,address=*:8000,server=y,suspend=n \
+	-XX:MaxRAMPercentage=80 \
+#	-XX:+PrintFlagsFinal -XshowSettings:vm \
     -Djava.awt.headless=true \
 	-Dvcell.softwareVersion="${softwareVersion}" \
 	-Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager \
@@ -119,7 +86,7 @@ ENTRYPOINT java \
 	-Dvcell.server.dbDriverName="${dbdriver}" \
 	-Dvcell.server.dbUserid="${dbuser}" \
 	-Dvcell.db.pswdfile="${dbpswdfile}" \
-	-Dvcell.python.executable=/usr/bin/python \
+	-Dvcell.python.executable=/usr/local/bin/python \
 	-Dvcell.primarySimdatadir.internal=/simdata \
 	-Dvcell.secondarySimdatadir.internal=/simdata_secondary \
 	-Dvcell.primarySimdatadir.external="${simdatadir_external}" \
@@ -139,5 +106,5 @@ ENTRYPOINT java \
 	-Dvcell.mongodb.port.internal=${mongodb_port_internal} \
 	-Dvcell.mongodb.database=${mongodb_database} \
 	-Dvcelldata.web.server.port=${webDataPort} \
-	-cp "./lib/*" cbit.vcell.message.server.data.SimDataServer \
+	-cp "./lib/*" cbit.vcell.message.server.data.SimDataServerMain \
 	"${servertype}"

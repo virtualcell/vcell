@@ -89,13 +89,14 @@
 	    <dependency>
            <groupId>com.install4j</groupId>
            <artifactId>install4j-runtime</artifactId>
-           <version>8.0.5</version>
+           <version>10.0.5</version>
         </dependency>
 
 	
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
+			<version>${junit.version}</version>
 			<scope>test</scope>
 		</dependency>
 
@@ -129,11 +130,17 @@
 			<artifactId>javahelp</artifactId>
 			<version>2.0.05</version>
 		</dependency>
+
+		<dependency>
+			<groupId>info.picocli</groupId>
+			<artifactId>picocli</artifactId>
+			<version>${picocli.version}</version>
+		</dependency>
 		
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-server</artifactId>
-     <!--  <version>${jettyVersion}</version> -->
+		<version>${jetty.version}</version>
     </dependency>
 
 	</dependencies>

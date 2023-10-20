@@ -35,8 +35,6 @@ import org.vcell.util.document.VCInfoContainer;
 import org.vcell.util.document.VCellServerID;
 
 import cbit.vcell.field.FieldDataDBOperationSpec;
-import cbit.vcell.message.server.ServiceStatus;
-import cbit.vcell.messaging.db.ServiceStatusDbDriver;
 import cbit.vcell.messaging.db.SimulationJobDbDriver;
 import cbit.vcell.messaging.db.SimulationRequirements;
 import cbit.vcell.modeldb.ApiAccessToken.AccessTokenStatus;
@@ -54,7 +52,6 @@ public class AdminDBTopLevel extends AbstractDBTopLevel{
 	
 	private UserDbDriver userDB = null;
 	private SimulationJobDbDriver jobDB = null;
-	private ServiceStatusDbDriver serviceStatusDB = null; 
 	private static final int SQL_ERROR_CODE_BADCONNECTION = 1010; //??????????????????????????????????????
 
 /**
@@ -64,7 +61,6 @@ public AdminDBTopLevel(ConnectionFactory aConFactory) throws SQLException{
 	super(aConFactory);
 	userDB = new UserDbDriver();
 	jobDB = new SimulationJobDbDriver(aConFactory.getDatabaseSyntax()); 
-	serviceStatusDB = new ServiceStatusDbDriver();
 }
 
 
@@ -1014,163 +1010,4 @@ void updateUserStat(UserLoginInfo userLoginInfo,boolean bEnableRetry) throws SQL
 		}
     }
 
-
-public interface TransactionalServiceOperation {
-	ServiceStatus doOperation(ServiceStatus oldStatus) throws Exception;
-}
-
-public ServiceStatus insertServiceStatus(ServiceStatus serviceStatus, boolean bEnableRetry) throws SQLException, UpdateSynchronizationException {
-	Object lock = new Object();
-	Connection con = conFactory.getConnection(lock);
-	try {		
-		ServiceStatus currentServiceStatus = serviceStatusDB.getServiceStatus(con,serviceStatus.getServiceSpec().getServerID(), 
-				serviceStatus.getServiceSpec().getType(), serviceStatus.getServiceSpec().getOrdinal(), false);
-		if (currentServiceStatus != null){
-			throw new UpdateSynchronizationException("service already exists:" + currentServiceStatus);
-		}
-		serviceStatusDB.insertServiceStatus(con, serviceStatus, conFactory.getKeyFactory().getNewKey(con));
-		con.commit();
-		ServiceStatus newServiceStatus = serviceStatusDB.getServiceStatus(con,serviceStatus.getServiceSpec().getServerID(), 
-				serviceStatus.getServiceSpec().getType(), serviceStatus.getServiceSpec().getOrdinal(), false);		
-		return newServiceStatus;
-	}  catch (Throwable e) {
-		lg.error("failure in insertServiceStatus()",e);
-		try {
-			con.rollback();
-		}catch (Throwable rbe){
-			lg.error("exception during rollback, bEnableRetry = "+bEnableRetry, rbe);
-		}
-		if (bEnableRetry && isBadConnection(con)) {
-			conFactory.failed(con,lock);
-			return insertServiceStatus(serviceStatus, false);
-		}else{
-			handle_SQLException(e);
-			return null; // never gets here;
-		}
-	}finally{
-		conFactory.release(con,lock);
-	}
-}
-
-public void deleteServiceStatus(ServiceStatus serviceStatus, boolean bEnableRetry) throws SQLException, UpdateSynchronizationException {
-	Object lock = new Object();
-	Connection con = conFactory.getConnection(lock);
-	try {		
-		ServiceStatus currentServiceStatus = serviceStatusDB.getServiceStatus(con,serviceStatus.getServiceSpec().getServerID(), 
-				serviceStatus.getServiceSpec().getType(), serviceStatus.getServiceSpec().getOrdinal(), false);
-		if (currentServiceStatus == null){
-			throw new UpdateSynchronizationException("service doesn't exist:" + currentServiceStatus);
-		}
-		serviceStatusDB.deleteServiceStatus(con, serviceStatus, conFactory.getKeyFactory().getNewKey(con));
-		con.commit();
-	}  catch (Throwable e) {
-		lg.error("failure in deleteServiceStatus()",e);
-		try {
-			con.rollback();
-		}catch (Throwable rbe){
-			lg.error("exception during rollback, bEnableRetry = "+bEnableRetry, rbe);
-		}
-		if (bEnableRetry && isBadConnection(con)) {
-			conFactory.failed(con,lock);
-			deleteServiceStatus(serviceStatus, false);
-		}else{
-			handle_SQLException(e);
-		}
-	}finally{
-		conFactory.release(con,lock);
-	}
-}
-
-public ServiceStatus modifyServiceStatus(ServiceStatus oldServiceStatus, ServiceStatus newServiceStatus, boolean bEnableRetry) throws SQLException, UpdateSynchronizationException {
-	Object lock = new Object();
-	Connection con = conFactory.getConnection(lock);
-	try {		
-		ServiceStatus currentServiceStatus = serviceStatusDB.getServiceStatus(con,oldServiceStatus.getServiceSpec().getServerID(), 
-				oldServiceStatus.getServiceSpec().getType(), oldServiceStatus.getServiceSpec().getOrdinal(), false);
-		if (!currentServiceStatus.compareEqual(oldServiceStatus)){
-			throw new UpdateSynchronizationException("service doesn't exist:" + currentServiceStatus);
-		}
-		serviceStatusDB.updateServiceStatus(con,newServiceStatus);
-		con.commit();
-		ServiceStatus updatedServiceStatus = serviceStatusDB.getServiceStatus(con, oldServiceStatus.getServiceSpec().getServerID(), 
-				oldServiceStatus.getServiceSpec().getType(), oldServiceStatus.getServiceSpec().getOrdinal(), false);
-		return updatedServiceStatus;
-	}  catch (Throwable e) {
-		lg.error("failure in modifyServiceStatus()",e);
-		try {
-			con.rollback();
-		}catch (Throwable rbe){
-			lg.error("exception during rollback, bEnableRetry = "+bEnableRetry, rbe);
-		}
-		if (bEnableRetry && isBadConnection(con)) {
-			conFactory.failed(con,lock);
-			return modifyServiceStatus(oldServiceStatus, newServiceStatus, false);
-		}else{
-			handle_SQLException(e);
-			return null;
-		}
-	}finally{
-		conFactory.release(con,lock);
-	}
-}
-
-public ServiceStatus updateServiceStatus(ServiceStatus oldServiceStatus, TransactionalServiceOperation serviceOP, boolean bEnableRetry) throws SQLException, UpdateSynchronizationException {
-	Object lock = new Object();
-	Connection con = conFactory.getConnection(lock);
-	try {	
-		ServiceStatus currentServiceStatus = serviceStatusDB.getServiceStatus(con,oldServiceStatus.getServiceSpec().getServerID(), 
-				oldServiceStatus.getServiceSpec().getType(), oldServiceStatus.getServiceSpec().getOrdinal(), true);
-		if (!currentServiceStatus.compareEqual(oldServiceStatus)){			
-			throw new UpdateSynchronizationException("current service status " + currentServiceStatus + " doesn't match argument for "+ oldServiceStatus);
-		}
-		ServiceStatus newServiceStatus = null;
-		try {
-			newServiceStatus = serviceOP.doOperation(oldServiceStatus);
-		} catch (Exception ex) {
-			lg.error("failure in updateServiceStatus()",ex);
-			throw new RuntimeException("transactional operation failed for " + newServiceStatus + " : " + ex.getMessage());
-		}
-		serviceStatusDB.updateServiceStatus(con,newServiceStatus);
-		con.commit();
-		ServiceStatus updatedServiceStatus = serviceStatusDB.getServiceStatus(con, oldServiceStatus.getServiceSpec().getServerID(), 
-				oldServiceStatus.getServiceSpec().getType(), oldServiceStatus.getServiceSpec().getOrdinal(), false);
-		return updatedServiceStatus;
-	}  catch (Throwable e) {
-		lg.error("failure in updateServiceStatus()",e);
-		try {
-			con.rollback();
-		}catch (Throwable rbe){
-			lg.error("exception during rollback, bEnableRetry = "+bEnableRetry, rbe);
-		}
-		if (bEnableRetry && isBadConnection(con)) {
-			conFactory.failed(con,lock);
-			return updateServiceStatus(oldServiceStatus,serviceOP,false);
-		}else{
-			handle_SQLException(e);
-			return null; // never gets here;
-		}
-	}finally{
-		conFactory.release(con,lock);
-	}
-}
-
-public java.util.List<ServiceStatus> getAllServiceStatus(boolean bEnableRetry) throws java.sql.SQLException, org.vcell.util.DataAccessException {
-
-	Object lock = new Object();
-	Connection con = conFactory.getConnection(lock);
-	try {
-		return serviceStatusDB.getAllServiceStatus(con);
-	} catch (Throwable e) {
-		lg.error("failure in getAllServiceStatus()",e);
-		if (bEnableRetry && isBadConnection(con)) {
-			conFactory.failed(con,lock);
-			return getAllServiceStatus(false);
-		}else{
-			handle_SQLException(e);
-			return null; // never gets here;
-		}
-	} finally {
-		conFactory.release(con,lock);
-	}
-}
 }

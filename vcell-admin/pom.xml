@@ -80,16 +80,9 @@
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
+			<version>${junit.version}</version>
 			<scope>test</scope>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/com.miglayout/miglayout -->
-		<dependency>
-			<groupId>com.miglayout</groupId>
-			<artifactId>miglayout</artifactId>
-			<version>3.5.5</version>
-			<scope>test</scope>
-		</dependency>
-
 		<dependency>
 			<groupId>org.vcell</groupId>
 			<artifactId>vcell-client</artifactId>
@@ -110,30 +103,10 @@
 			<artifactId>vcell-vmicro</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		
-		<!-- NB: For testing via main methods in IDEs. -->
-		<!-- Don't comment this out, it'll break the standalone (local with oracle connection) version of vcell -->
-		<dependency>
-			<groupId>org.vcell</groupId>
-			<artifactId>vcell-oracle</artifactId>
-			<version>${project.version}</version>
-			<scope>runtime</scope>
-			<optional>true</optional>
- 		</dependency>
-		<dependency>
-			<groupId>com.konghq</groupId>
-			<artifactId>unirest-java</artifactId>
-			<version>3.4.03</version>
-		</dependency>
-		<dependency>
-		    <groupId>com.fasterxml.jackson.core</groupId>
-		    <artifactId>jackson-databind</artifactId>
-		    <version>2.13.4.1</version>
-		</dependency>
 		<dependency>
 			<groupId>info.picocli</groupId>
 			<artifactId>picocli</artifactId>
-			<version>4.6.3</version>
+			<version>${picocli.version}</version>
 		</dependency>
 	</dependencies>
 	

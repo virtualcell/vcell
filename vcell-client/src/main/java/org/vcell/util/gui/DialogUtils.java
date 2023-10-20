@@ -55,6 +55,8 @@ import javax.swing.UIManager;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import cbit.vcell.client.VCellClient;
+import cbit.vcell.client.VCellClientMain;
 import org.vcell.client.logicalwindow.LWContainerHandle;
 import org.vcell.client.logicalwindow.LWDialog;
 import org.vcell.client.logicalwindow.LWNamespace;
@@ -77,7 +79,6 @@ import com.centerkey.utils.BareBonesBrowserLaunch;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.client.server.UserPreferences;
-import cbit.vcell.client.test.VCellClientTest;
 import cbit.vcell.resource.OperatingSystemInfo;
 
 /**
@@ -197,15 +198,6 @@ public class DialogUtils {
 	}
 
 
-	/**
-	 * Insert the method's description here.
-	 * Creation date: (5/21/2004 3:23:18 AM)
-	 * @return int
-	 * @param owner java.awt.Component
-	 * @param message java.lang.String
-	 * @param preferences cbit.vcell.client.UserPreferences
-	 * @param preferenceName java.lang.String
-	 */
 	protected static String showDialog(final Component requester, final UserPreferences preferences, final UserMessage userMessage, final String replacementText, final int jOptionPaneMessageType) {
 		checkForNull(requester);
 		LWContainerHandle lwParent = LWNamespace.findLWOwner(requester);
@@ -364,12 +356,6 @@ public class DialogUtils {
 		return VCSwingFunction.execute( prod );
 	}
 
-	/**
-	 * Insert the method's description here.
-	 * Creation date: (5/21/2004 3:17:45 AM)
-	 * @param owner java.awt.Component
-	 * @param message java.lang.Object
-	 */
 	public static void showComponentCloseDialog(final Component requester,final Component stayOnTopComponent,final String title) {
 		checkForNull(requester);
 		LWContainerHandle lwParent = LWNamespace.findLWOwner(requester);
@@ -394,12 +380,6 @@ public class DialogUtils {
 		return showComponentOKCancelDialog(requester,stayOnTopComponent,title,null);
 	}
 
-	/**
-	 * Insert the method's description here.
-	 * Creation date: (5/21/2004 3:17:45 AM)
-	 * @param owner java.awt.Component
-	 * @param message java.lang.Object
-	 */
 	public static int showComponentOKCancelDialog(final Component requester,final Component stayOnTopComponent,final String title,final OKEnabler okEnabler) {
 		return showComponentOKCancelDialog(requester,stayOnTopComponent,title,okEnabler, true);
 	}
@@ -621,15 +601,6 @@ public class DialogUtils {
 	}
 
 
-	/**
-	 * Insert the method's description here.
-	 * Creation date: (5/21/2004 3:23:18 AM)
-	 * @return int
-	 * @param owner java.awt.Component
-	 * @param message java.lang.String
-	 * @param preferences cbit.vcell.client.UserPreferences
-	 * @param preferenceName java.lang.String
-	 */
 	private static String showDialog(final Component requester, String title, final SimpleUserMessage userMessage, final String replacementText, final int JOptionPaneMessageType) {
 		VCellThreadChecker.checkSwingInvocation();
 		checkForNull(requester);
@@ -748,13 +719,6 @@ public class DialogUtils {
 		}
 	}
 
-	/**
-	 * show error dialog in standard way. If modelInfo is not null user is prompted to allow sending of context information
-	 * @param requester parent Component, may be null
-	 * @param message message to display
-	 * @param exception exception to dialog and possibility email to VCellSupport; may be null
-	 * @param modelInfo information to include in email to VCellSupport; may be null 
-	 */
 	public static void showErrorDialog(final Component requester, final String message, final Throwable exception, final ErrorContext errorContext) {
 		checkForNull(requester);
 		LWContainerHandle lwParent = LWNamespace.findLWOwner(requester);
@@ -774,7 +738,7 @@ public class DialogUtils {
 				sendErrorReport = true;
 			}
 
-			final boolean goingToEmail = sendErrorReport && VCellClientTest.getVCellClient() != null;
+			final boolean goingToEmail = sendErrorReport && VCellClient.getInstance() != null;
 			DialogMessagePanel dialogMessagePanel;
 			if (goingToEmail) {
 				dialogMessagePanel = MessagePanelFactory.createExtended(errMsg, errorContext);
@@ -805,7 +769,7 @@ public class DialogUtils {
 						String extra = dialogMessagePanel.getSupplemental();
 						extra = BeanUtils.PLAINTEXT_EMAIL_NEWLINE+(extra==null?"":extra)+collectRecordedUserEvents();
 						throwableToSend = new RuntimeException(extra, exception);
-						VCellClientTest.getVCellClient().getClientServerManager().sendErrorReport(throwableToSend);
+						VCellClient.getInstance().getClientServerManager().sendErrorReport(throwableToSend);
 					}
 				}
 			} finally{
@@ -829,9 +793,9 @@ public class DialogUtils {
 
 	public static String collectRecordedUserEvents(){
 		String content = "";
-		if(VCellClientTest.recordedUserEvents != null && VCellClientTest.recordedUserEvents.size() > 0){
+		if(VCellClientMain.recordedUserEvents != null && VCellClientMain.recordedUserEvents.size() > 0){
 			content+= "-----Recorded User Events-----"+BeanUtils.PLAINTEXT_EMAIL_NEWLINE;
-			Iterator<String> iter = VCellClientTest.recordedUserEvents.iterator();
+			Iterator<String> iter = VCellClientMain.recordedUserEvents.iterator();
 			while(iter.hasNext()){
 				content+= iter.next()+BeanUtils.PLAINTEXT_EMAIL_NEWLINE;
 			}
@@ -862,12 +826,6 @@ public class DialogUtils {
 	}
 
 
-	/**
-	 * Insert the method's description here.
-	 * Creation date: (5/21/2004 3:17:45 AM)
-	 * @param owner java.awt.Component
-	 * @param message java.lang.Object
-	 */
 	public static void showInfoDialog(final Component requester, final String title, final String message) {
 		checkForNull(requester);
 		LWContainerHandle lwParent = LWNamespace.findLWOwner(requester);
@@ -902,27 +860,12 @@ public class DialogUtils {
 		VCSwingFunction.executeAsRuntimeException(doer);
 	}
 
-	/**
-	 * use showInfoDialog
-	 * @param requester
-	 * @param title
-	 * @param message
-	 */
 	@Deprecated
 	public static void showInfoDialogAndResize(final Component requester, final String title, final String message) {
 		showInfoDialog(requester,title,message);
 	}
 
 
-	/**
-	 * Insert the method's description here.
-	 * Creation date: (5/21/2004 3:23:18 AM)
-	 * @return int
-	 * @param owner java.awt.Component
-	 * @param message java.lang.String
-	 * @param preferences cbit.vcell.client.UserPreferences
-	 * @param preferenceName java.lang.String
-	 */
 	public static String showInputDialog0(final Component requester,final  String message,final  String initialValue) throws UtilCancelException{
 		//TODO: rename showInputDialog after trunk merge
 		checkForNull(requester);
@@ -982,15 +925,6 @@ public class DialogUtils {
 	}
 
 
-	/**
-	 * Insert the method's description here.
-	 * Creation date: (5/21/2004 3:23:18 AM)
-	 * @return int
-	 * @param owner java.awt.Component
-	 * @param message java.lang.String
-	 * @param preferences cbit.vcell.client.UserPreferences
-	 * @param preferenceName java.lang.String
-	 */
 	public static Object showListDialog(final Component requester, Object[] names, String dialogTitle) {
 		return showListDialog(requester,names,dialogTitle,null);
 	}
@@ -999,15 +933,6 @@ public class DialogUtils {
 		return showListDialog(requester, names, dialogTitle, listCellRenderer, null);
 	}
 
-	/**
-	 * Insert the method's description here.
-	 * Creation date: (5/21/2004 3:23:18 AM)
-	 * @return int
-	 * @param owner java.awt.Component
-	 * @param message java.lang.String
-	 * @param preferences cbit.vcell.client.UserPreferences
-	 * @param preferenceName java.lang.String
-	 */
 	public static Object showListDialog(final Component requester,final  Object[] names,final  String dialogTitle,final  ListCellRenderer<Object> listCellRenderer, String message) {
 		checkForNull(requester);
 		LWContainerHandle lwParent = LWNamespace.findLWOwner(requester);
@@ -1074,15 +999,6 @@ public class DialogUtils {
 	}
 
 
-	/**
-	 * Insert the method's description here.
-	 * Creation date: (5/21/2004 3:23:18 AM)
-	 * @return int
-	 * @param owner java.awt.Component
-	 * @param message java.lang.String
-	 * @param preferences cbit.vcell.client.UserPreferences
-	 * @param preferenceName java.lang.String
-	 */
 	protected static void showReportDialog(final Component requester, final String reportText) {
 		checkForNull(requester);
 		LWContainerHandle lwParent = LWNamespace.findLWOwner(requester);
@@ -1101,15 +1017,6 @@ public class DialogUtils {
 	}
 
 
-	/**
-	 * Insert the method's description here.
-	 * Creation date: (5/21/2004 3:23:18 AM)
-	 * @return int
-	 * @param owner java.awt.Component
-	 * @param message java.lang.String
-	 * @param preferences cbit.vcell.client.UserPreferences
-	 * @param preferenceName java.lang.String
-	 */
 	public static String showWarningDialog(final Component parentComponent,final  String message,final  String[] options,final  String defaultOption) {
 		return showWarningDialog(parentComponent, "", message, options, defaultOption);
 	}

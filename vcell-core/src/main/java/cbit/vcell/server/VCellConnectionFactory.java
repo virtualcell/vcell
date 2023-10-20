@@ -13,20 +13,8 @@ package cbit.vcell.server;
 import org.vcell.util.AuthenticationException;
 import org.vcell.util.document.UserLoginInfo;
 
-/**
- * This type was created in VisualAge.
- */
+import java.io.IOException;
+
 public interface VCellConnectionFactory {
-/**
- * Insert the method's description here.
- * Creation date: (8/9/2001 12:02:55 PM)
- * @param userID java.lang.String
- * @param password java.lang.String
- */
-void changeUser(UserLoginInfo userLoginInfo);
-/**
- * This method was created in VisualAge.
- * @return cbit.vcell.server.VCellConnection
- */
-VCellConnection createVCellConnection() throws ConnectionException, AuthenticationException;
+    VCellConnection createVCellConnection(UserLoginInfo userLoginInfo) throws ConnectionException, AuthenticationException, IOException;
 }

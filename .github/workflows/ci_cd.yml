@@ -33,23 +33,31 @@ jobs:
         run: |
           cd vcell-cli-utils
           poetry install
+          poetry run python -m pytest
 
       - name: build vcell-admin package
         run: |
           cd docker/swarm/vcell-admin
           poetry install
+          poetry run python -m pytest
 
-      - name: build vcell-opt package
+      - name: build pythonCopasiOpt package
         run: |
-          cd pythonProject/vcell-opt
+          cd pythonCopasiOpt/vcell-opt
           poetry install
           poetry run python -m pytest
 
-      - name: setup java 8 with maven cache
+      - name: build pythonVtk package
+        run: |
+          cd pythonVtk
+          poetry install
+          poetry run python -m pytest
+
+      - name: setup java 17 with maven cache
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: '8'
+          java-version: '17'
           cache: 'maven'
 
       - name: Add Linux dependencies
@@ -96,23 +104,31 @@ jobs:
         run: |
           cd vcell-cli-utils
           poetry install
+          poetry run python -m pytest
 
       - name: build vcell-admin package
         run: |
           cd docker/swarm/vcell-admin
           poetry install
+          poetry run python -m pytest
 
-      - name: build vcell-opt package
+      - name: build pythonCopasiOpt package
         run: |
-          cd pythonProject/vcell-opt
+          cd pythonCopasiOpt/vcell-opt
           poetry install
           poetry run python -m pytest
 
-      - name: setup java 8 with maven cache
+      - name: build pythonVtk package
+        run: |
+          cd pythonVtk
+          poetry install
+          poetry run python -m pytest
+
+      - name: setup java 17 with maven cache
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: '8'
+          java-version: '17'
           cache: 'maven'
 
       - name: Add Linux dependencies
@@ -147,23 +163,31 @@ jobs:
         run: |
           cd vcell-cli-utils
           poetry install
+          poetry run python -m pytest
 
       - name: build vcell-admin package
         run: |
           cd docker/swarm/vcell-admin
           poetry install
+          poetry run python -m pytest
 
-      - name: build vcell-opt package
+      - name: build pythonCopasiOpt package
         run: |
-          cd pythonProject/vcell-opt
+          cd pythonCopasiOpt/vcell-opt
           poetry install
           poetry run python -m pytest
 
-      - name: setup java 8 with maven cache
+      - name: build pythonVtk package
+        run: |
+          cd pythonVtk
+          poetry install
+          poetry run python -m pytest
+
+      - name: setup java 17 with maven cache
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: '8'
+          java-version: '17'
           cache: 'maven'
 
       - name: Get the VCell version from tags

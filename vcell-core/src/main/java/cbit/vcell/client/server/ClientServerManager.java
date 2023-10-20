@@ -27,7 +27,6 @@ import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpResponseException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.vcell.service.VCellServiceHelper;
 import org.vcell.service.registration.RegistrationService;
 import org.vcell.util.*;
 import org.vcell.util.document.User;
@@ -43,8 +42,8 @@ import java.io.IOException;
  */
 public class ClientServerManager implements SessionManager,DataSetControllerProvider {
 	private final static Logger lg = LogManager.getLogger(ClientServerManager.class);
+	private final VCellConnectionFactory vcellConnectionFactory;
 
-	
 	public interface InteractiveContext {
 		void showErrorDialog(String errorMessage);
 		
@@ -218,7 +217,8 @@ public synchronized void addPropertyChangeListener(java.beans.PropertyChangeList
 	getPropertyChange().addPropertyChangeListener(listener);
 }
 
-public ClientServerManager(ClientServerInfo clientServerInfo, InteractiveContextDefaultProvider defaultInteractiveContextProvider) {
+public ClientServerManager(VCellConnectionFactory vcellConnectionFactory, ClientServerInfo clientServerInfo, InteractiveContextDefaultProvider defaultInteractiveContextProvider) {
+	this.vcellConnectionFactory = vcellConnectionFactory;
 	this.clientServerInfo = clientServerInfo;
 	this.defaultInteractiveContextProvider = defaultInteractiveContextProvider;
 }
@@ -374,33 +374,13 @@ private VCellConnection connectToServer(InteractiveContext requester,boolean bSh
 	VCellThreadChecker.checkRemoteInvocation();
 
 	VCellConnection newVCellConnection = null;
-	VCellConnectionFactory vcConnFactory = null;
 	String badConnStr = "";
 	try {
 		try {
-			switch (getClientServerInfo().getServerType()) {
-				case SERVER_REMOTE: {
-					String apihost = getClientServerInfo().getApihost();
-					Integer apiport = getClientServerInfo().getApiport();
-					try {
-						badConnStr += apihost+":"+apiport;
-						vcConnFactory = new RemoteProxyVCellConnectionFactory(apihost, apiport, getClientServerInfo().getUserLoginInfo());
-						setConnectionStatus(new ClientConnectionStatus(getClientServerInfo().getUsername(), apihost, apiport, ConnectionStatus.INITIALIZING));
-						newVCellConnection = vcConnFactory.createVCellConnection();
-					} catch (AuthenticationException ex) {
-						throw ex;
-					}
-					break;
-				}
-				case SERVER_LOCAL: {
-					new PropertyLoader();
-					LocalVCellConnectionService localVCellConnectionService = VCellServiceHelper.getInstance().loadService(LocalVCellConnectionService.class);
-					vcConnFactory = localVCellConnectionService.getLocalVCellConnectionFactory(getClientServerInfo().getUserLoginInfo());
-					setConnectionStatus(new ClientConnectionStatus(getClientServerInfo().getUsername(), null, null, ConnectionStatus.INITIALIZING));
-					newVCellConnection = vcConnFactory.createVCellConnection();
-					break;
-				}
-			}
+			String apihost = getClientServerInfo().getApihost();
+			Integer apiport = getClientServerInfo().getApiport();
+			setConnectionStatus(new ClientConnectionStatus(getClientServerInfo().getUsername(), apihost, apiport, ConnectionStatus.INITIALIZING));
+			newVCellConnection = vcellConnectionFactory.createVCellConnection(getClientServerInfo().getUserLoginInfo());
 			requester.clearConnectWarning();
 			reconnectStat = ReconnectStatus.NOT;
 		}catch(Exception e) {

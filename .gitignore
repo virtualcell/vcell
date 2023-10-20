@@ -118,6 +118,9 @@ stdOut.txt
 *.tar.gz
 *.rar
 
+# need this file for testing
+!vcell-cli-utils/tests/fixtures/modeldb-206365-outputs.zip
+
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 
@@ -163,7 +166,6 @@ Temporary Items
 ### envFile and Output file ###
 # Ignore all local .env and generated output file
 .env
-sample_model/out
 
 ### Windows ###
 # Windows thumbnail cache files
@@ -193,11 +195,8 @@ $RECYCLE.BIN/
 !results/.gitkeep
 results/*
 
-/sample_omex_files/_00_omex_test_cvode.omex
-/sample_omex_files/_00_omex_test_cvode1.omex
-/sample_omex_files/_00_omex_test_cvode_IDA.omex
-/sample_omex_files/__bm35_test_stochastic.omex
 /status.yml
+.java-version
 
 
 Makefile
@@ -211,7 +210,7 @@ vcell-client/UserDocumentation/originalXML/helpSearchConfig.txt
 .vscode/launch.json
 .vscode/settings.json
 
-pythonProject/vcell-opt/dist/
+pythonCopasiOpt/vcell-opt/dist/
 
 vcell-core/src/test/resources/org/vcell/sbml/local
 

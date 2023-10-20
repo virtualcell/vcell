@@ -10,7 +10,6 @@
 
 package cbit.vcell.client;
 
-import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Window;
 import java.awt.event.WindowAdapter;
@@ -52,30 +51,23 @@ import org.vcell.util.UtilCancelException;
 import org.vcell.util.document.DocumentValidUtil;
 import org.vcell.util.document.LocalVCDataIdentifier;
 import org.vcell.util.document.User;
-import org.vcell.util.document.VCDocument;
-import org.vcell.util.document.Version;
 import org.vcell.util.gui.DialogUtils;
-import org.vcell.vis.io.VtuVarInfo;
 
-import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.data.DataViewer;
 import cbit.vcell.client.data.DataViewerController;
 import cbit.vcell.client.data.SimResultsViewer;
 import cbit.vcell.client.data.SimulationWorkspaceModelInfo;
-import cbit.vcell.client.data.VCellClientDataServiceImpl;
 import cbit.vcell.client.desktop.simulation.SimulationStatusDetails;
 import cbit.vcell.client.desktop.simulation.SimulationStatusDetailsPanel;
 import cbit.vcell.client.desktop.simulation.SimulationWindow;
 import cbit.vcell.client.desktop.simulation.SimulationWindow.LocalState;
 import cbit.vcell.client.desktop.simulation.SimulationWorkspace;
-import cbit.vcell.client.pyvcellproxy.SimulationDataSetRef;
 import cbit.vcell.client.server.ClientServerManager;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.AsynchClientTaskFunction;
 import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.vcell.client.test.VCellClientTest;
 import cbit.vcell.export.server.ExportServiceImpl;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.mapping.SimulationContext;
@@ -83,9 +75,7 @@ import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.message.server.bootstrap.client.RemoteProxyVCellConnectionFactory.RemoteProxyException;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.ResourceUtil;
-import cbit.vcell.resource.VCellConfiguration;
 import cbit.vcell.server.DataSetController;
 import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.simdata.DataManager;
@@ -95,7 +85,6 @@ import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.simdata.PDEDataManager;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.simdata.VCDataManager;
-import cbit.vcell.simdata.VtkManager;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.DataProcessingInstructions;
 import cbit.vcell.solver.Simulation;
@@ -109,7 +98,6 @@ import cbit.vcell.solver.TempSimulation;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.ode.ODESimData;
-import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.server.SimulationMessage;
 import cbit.vcell.solver.server.Solver;
 import cbit.vcell.solver.server.SolverEvent;
@@ -414,7 +402,7 @@ private ODESimData importBatchSimulation(OutputContext outputContext, Simulation
 	// sim.getScanCount()  number of jobs must be one, so job index is 0
 	VCSimulationDataIdentifier vcSimulationDataIdentifier = new VCSimulationDataIdentifier(asi, 0);
 
-	ClientServerManager csm = VCellClientTest.getVCellClient().getClientServerManager();
+	ClientServerManager csm = VCellClient.getInstance().getClientServerManager();
 	DataSetController dsc = csm.getDataSetController();
 	simData = dsc.getODEData(vcSimulationDataIdentifier);
 	

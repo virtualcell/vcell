@@ -5,10 +5,6 @@ import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 
-import org.scijava.Priority;
-import org.scijava.plugin.Plugin;
-import org.scijava.service.AbstractService;
-import org.scijava.service.Service;
 import org.vcell.api.client.VCellApiClient;
 import org.vcell.service.registration.RegistrationService;
 import org.vcell.util.DataAccessException;
@@ -19,11 +15,9 @@ import org.vcell.util.document.UserInfo;
 import cbit.vcell.message.server.bootstrap.client.RemoteProxyVCellConnectionFactory.RemoteProxyException;
 import cbit.vcell.resource.PropertyLoader;
 
-@Plugin(type = Service.class)
-public class RemoteRegistrationService extends AbstractService implements RegistrationService {
+public class RemoteRegistrationService implements RegistrationService {
 
 	public RemoteRegistrationService() {
-		setPriority(Priority.NORMAL_PRIORITY);
 	}
 		
 	@Override

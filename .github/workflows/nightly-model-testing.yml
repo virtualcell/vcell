@@ -42,26 +42,35 @@ jobs:
         run: |
           cd vcell-cli-utils
           poetry install
+          poetry run python -m pytest
       
       - name: build vcell-admin package
         run: |
           cd docker/swarm/vcell-admin
           poetry install
+          poetry run python -m pytest
           
-      - name: build vcell-opt package
+      - name: build pythonCopasiOpt package
         run: |
-          cd pythonProject/vcell-opt
+          cd pythonCopasiOpt/vcell-opt
           poetry install
-      
-      - name: Setup Java for Build
-        uses: actions/setup-java@v2
-        with: 
-          java-version: '8'
-          distribution: 'adopt'
+          poetry run python -m pytest
+
+      - name: build pythonVtk package
+        run: |
+          cd pythonVtk
+          poetry install
+          poetry run python -m pytest
+
+      - name: setup java 17 with maven cache
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
           cache: 'maven'
           
       - name: Build VCell Jars
-        run: mvn clean install dependency:copy-dependencies -DskipTests=True
+        run: mvn --batch-mode clean install dependency:copy-dependencies -DskipTests=True
         
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2

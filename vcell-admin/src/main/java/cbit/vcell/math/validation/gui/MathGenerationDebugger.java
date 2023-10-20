@@ -10,32 +10,20 @@
 
 package cbit.vcell.math.validation.gui;
 
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.GridLayout;
-import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.JTextPane;
-
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.UserLoginInfo;
-import org.vcell.util.gui.DialogUtils;
-
 import cbit.vcell.client.VCellClient;
 import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.math.gui.MathDebuggerPanel;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.modeldb.MathVerifier;
 import cbit.vcell.modeldb.MathVerifier.MathGenerationResults;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.UserLoginInfo;
+import org.vcell.util.gui.DialogUtils;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 public class MathGenerationDebugger extends JPanel {
 	private JTextField simContextTextField;
@@ -162,13 +150,14 @@ public class MathGenerationDebugger extends JPanel {
 			DialogUtils.showErrorDialog(this, e.getMessage(), e);
 		}
 	}
-	
+
 	private void showBioModel(){
 		try {
 			new Thread() {
 				public void run(){
+					VCellClient vcellClient = new VCellClient(null, null);
 					ClientServerInfo clientServerInfo = ClientServerInfo.createLocalServerInfo(vcellUserID,new UserLoginInfo.DigestedPassword(vcellUserPassword));
-					VCellClient.startClient(mathGenerationResults.bioModelFromDB, clientServerInfo);
+					vcellClient.startClient(mathGenerationResults.bioModelFromDB, clientServerInfo);
 				}
 			}.start();
 			

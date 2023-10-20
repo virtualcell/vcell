@@ -4,10 +4,6 @@ import java.sql.SQLException;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.scijava.Priority;
-import org.scijava.plugin.Plugin;
-import org.scijava.service.AbstractService;
-import org.scijava.service.Service;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
 import org.vcell.db.KeyFactory;
@@ -21,14 +17,13 @@ import cbit.vcell.message.server.bootstrap.client.RemoteProxyVCellConnectionFact
 import cbit.vcell.modeldb.LocalAdminDbServer;
 import cbit.vcell.server.AdminDatabaseServer;
 
-@Plugin(type = Service.class)
-public class LocaldbRegistrationService extends AbstractService implements RegistrationService {
+public class LocaldbRegistrationService implements RegistrationService {
 	private final static Logger lg = LogManager.getLogger(LocaldbRegistrationService.class);
 
 	private AdminDatabaseServer adminDbServer = null;
 	
 	public LocaldbRegistrationService() {
-		setPriority(Priority.LOW_PRIORITY);	
+
 	}
 	
 	private AdminDatabaseServer getAdminDbServer() throws DataAccessException {

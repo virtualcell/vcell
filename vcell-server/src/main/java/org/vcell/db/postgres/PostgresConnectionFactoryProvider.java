@@ -1,11 +1,8 @@
 package org.vcell.db.postgres;
 
-import org.scijava.plugin.Plugin;
 import org.vcell.db.ConnectionFactory;
-import org.vcell.db.KeyFactory;
-import org.vcell.db.spi.Database;
+import org.vcell.db.Database;
 
-@Plugin(type = Database.class)
 public class PostgresConnectionFactoryProvider implements Database {
 
 	public static final String POSTGRESQL_DRIVER_NAME = "org.postgresql.Driver";
@@ -17,11 +14,6 @@ public class PostgresConnectionFactoryProvider implements Database {
 		} catch (Exception e) {
 			throw new RuntimeException("failed to create OraclePoolingConnectionFactory: "+e.getMessage(),e);
 		}
-	}
-
-	@Override
-	public KeyFactory createKeyFactory() {
-		return new PostgresKeyFactory();
 	}
 
 	@Override

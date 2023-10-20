@@ -1,5 +1,6 @@
 from typing import Optional
 import requests
+import time
 from vcell_pipeline.vcell_datamodels import Publication
 
 
@@ -12,7 +13,7 @@ class CitationInfo:
 
 
 def parse_RIS_entry(lines: str) -> dict[str, str]:
-    currentLabel: str | None = None
+    currentLabel: Optional[str] = None
     currentContent: str = ""
     citationFields = dict[str, str]()
     for line in lines.split("\n"):
@@ -33,30 +34,32 @@ def parse_RIS_entry(lines: str) -> dict[str, str]:
     return citationFields
 
 
-def getCitation(pubmedid: Optional[str]) -> CitationInfo | None:
+def getCitation(pubmedid: Optional[str]) -> Optional[CitationInfo]:
+    time.sleep(0.5) # to rate limit the API calls (they will fail if > 3 per second)
     """
     Get RIS citation for a pubmed id
     """
     if not pubmedid:
         return None
-
-    payload_json = '{"fromIds": true, "input": "' + pubmedid + '", "targetFormat": "Ris"}'
-    url = "https://api.paperpile.com/api/public/convert"
+    """
+    https://api.ncbi.nlm.nih.gov/lit/ctxp/v1/pubmed/?format=ris&id=35367415
+    """
+    url = f"https://api.ncbi.nlm.nih.gov/lit/ctxp/v1/pubmed/?format=ris&id={pubmedid}"
     # post to url with payload and retrieve results
-    r = requests.post(url, data=payload_json, headers={'Content-Type': 'application/json'})
+    r = requests.get(url, headers={'Content-Type': 'text/plain'})
     # print results
-    result_json = r.json()
-    if (r.status_code != 201):
-        raise Exception(f"Error: {result_json['error']}")
+    if (r.status_code != 200):
+        raise Exception(f"Error: status code {r.status_code}")
 
-    RIS_text: str = result_json['output']
+    RIS_text: str = r.text
     entry = parse_RIS_entry(RIS_text)
     citationInfo = CitationInfo()
-    citationInfo.abstract = entry["AB"]
-    citationInfo.author = entry["AU"]
-    citationInfo.title = entry["TI"]
-    citationInfo.year = int(entry["PY"])
-    citationInfo.journal = entry["T2"]
+    citationInfo.abstract = entry["AB"].rstrip('\r\n')
+    citationInfo.author = entry["AU"].rstrip('\r\n')
+    citationInfo.title = entry["T1"].rstrip('\r\n')
+    year = entry["Y1"].rstrip('\r\n').split('/', 1)[0]
+    citationInfo.year = int(year)
+    citationInfo.journal = entry["J2"].rstrip('\r\n')
     return citationInfo
 
 

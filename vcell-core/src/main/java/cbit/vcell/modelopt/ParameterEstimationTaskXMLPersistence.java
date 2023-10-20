@@ -9,39 +9,35 @@
  */
 
 package cbit.vcell.modelopt;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Vector;
-
-import org.jdom.Element;
-import org.jdom.Namespace;
-import org.vcell.util.CommentStringTokenizer;
 
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathException;
 import cbit.vcell.model.Parameter;
-import cbit.vcell.opt.CopasiOptimizationMethod;
+import cbit.vcell.opt.*;
 import cbit.vcell.opt.CopasiOptimizationMethod.CopasiOptimizationMethodType;
-import cbit.vcell.opt.CopasiOptimizationParameter;
 import cbit.vcell.opt.CopasiOptimizationParameter.CopasiOptimizationParameterType;
-import cbit.vcell.opt.OptSolverResultSet;
 import cbit.vcell.opt.OptSolverResultSet.OptRunResultSet;
-import cbit.vcell.opt.OptXmlTags;
-import cbit.vcell.opt.OptimizationResultSet;
-import cbit.vcell.opt.OptimizationSolverSpec;
-import cbit.vcell.opt.ReferenceData;
-import cbit.vcell.opt.SimpleReferenceData;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.xml.XMLTags;
+import org.apache.log4j.Logger;
+import org.jdom.Element;
+import org.jdom.Namespace;
+import org.vcell.util.CommentStringTokenizer;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Vector;
 /**
  * Insert the type's description here.
  * Creation date: (5/5/2006 9:00:56 AM)
  * @author: Jim Schaff
  */
 public class ParameterEstimationTaskXMLPersistence {
-	
+
+	private final static Logger lg = Logger.getLogger(ParameterEstimationTaskXMLPersistence.class);
+
 	public final static String NameAttribute = XMLTags.NameAttrTag;
 	public final static String AnnotationTag = XMLTags.AnnotationTag;
 	public final static String ParameterMappingSpecListTag = "parameterMappingSpecList";
@@ -72,14 +68,7 @@ public class ParameterEstimationTaskXMLPersistence {
 	public final static String OptimizationParameterValueAttribute = "Value";
 	public final static String OptimizationSolverNumOfRunsAttribute = "NumOfRuns";
 
-/**
- * Insert the method's description here.
- * Creation date: (5/5/2006 4:50:36 PM)
- * @return cbit.vcell.modelopt.ParameterEstimationTask
- * @param element org.jdom.Element
- * @param simContext cbit.vcell.mapping.SimulationContext
- */
-public static ParameterEstimationTask getParameterEstimationTask(Element parameterEstimationTaskElement, SimulationContext simContext) 
+public static ParameterEstimationTask getParameterEstimationTask(Element parameterEstimationTaskElement, SimulationContext simContext)
 throws ExpressionException, MappingException, MathException, java.beans.PropertyVetoException {
 		
 	Namespace ns = parameterEstimationTaskElement.getNamespace();
@@ -125,7 +114,7 @@ throws ExpressionException, MappingException, MathException, java.beans.Property
 					}
 				} 
 			}else{
-				System.out.println("couldn't read parameterMappingSpec '"+parameterName+"', ste="+ste);
+				lg.warn("couldn't read parameterMappingSpec '"+parameterName+"', ste="+ste);
 			}	
 		}
 	}
@@ -326,13 +315,6 @@ private static CopasiOptimizationMethodType getCopasiOptimizationMethodTypeByNam
 	return null;
 }
 
-/**
- * Insert the method's description here.
- * Creation date: (5/6/2006 12:31:48 AM)
- * @return cbit.vcell.parser.SymbolTableEntry
- * @param simContext cbit.vcell.mapping.SimulationContext
- * @param symbol java.lang.String
- */
 private static SymbolTableEntry getSymbolTableEntry(SimulationContext simContext, String parameterName) {
 	SymbolTableEntry ste = simContext.getModel().getEntry(parameterName);
 	
@@ -343,12 +325,6 @@ private static SymbolTableEntry getSymbolTableEntry(SimulationContext simContext
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (5/5/2006 9:02:39 AM)
- * @return java.lang.String
- * @param parameterEstimationTask cbit.vcell.modelopt.ParameterEstimationTask
- */
 public static Element getXML(ParameterEstimationTask parameterEstimationTask) {
 
 	

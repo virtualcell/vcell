@@ -46,7 +46,7 @@ public class ComsolMeshReader {
 //		}
 //	}
 	
-	public static void read(VisMesh visMesh, File comsolFile) throws IOException{
+	public static void read(VisMesh visMesh, File comsolFile) throws IOException, InterruptedException {
 		ArrayList<Field> fields = new ArrayList<Field>();
 		try (BufferedReader br = new BufferedReader(new FileReader(comsolFile))) {
 			//

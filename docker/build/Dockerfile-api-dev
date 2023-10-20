@@ -1,23 +1,49 @@
-FROM ubuntu:18.04
+FROM eclipse-temurin:17 as jre-build
+
+# Create a custom Java runtime
+RUN $JAVA_HOME/bin/jlink \
+         --add-modules ALL-MODULE-PATH \
+         --strip-debug \
+         --no-man-pages \
+         --no-header-files \
+         --compress=2 \
+         --output /javaruntime
+
+# Define base image and copy in jlink created minimal Java 17 environment
+FROM python:3.9.7-slim
+ENV JAVA_HOME=/opt/java/openjdk
+ENV PATH "${JAVA_HOME}/bin:${PATH}"
+COPY --from=jre-build /javaruntime $JAVA_HOME
+
+# now we have Java 17 and Python 3.9
 
 RUN apt-get -y update && \
-    apt-get install -y curl openjdk-8-jre dnsutils && \
+    apt-get install -y --no-install-recommends curl dnsutils && \
     mkdir -p /usr/local/app/lib 
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tzdata
 RUN unlink /etc/localtime || true
 RUN ln -s /usr/share/zoneinfo/America/New_York /etc/localtime
 
+
+RUN python3 -m pip install poetry &&  poetry config cache-dir "/poetry/.cache"
+ENV PATH="/root/.poetry/bin:/root/.local/bin:$PATH"
+
 WORKDIR /usr/local/app
 
-COPY ./vcell-server/target/vcell-server-0.0.1-SNAPSHOT.jar \
-     ./vcell-server/target/maven-jars/*.jar \
-     ./vcell-oracle/target/vcell-oracle-0.0.1-SNAPSHOT.jar \
-     ./vcell-oracle/target/maven-jars/*.jar \
-     ./vcell-api/target/vcell-api-0.0.1-SNAPSHOT.jar \
+# Copy JAR files
+COPY ./vcell-api/target/vcell-api-0.0.1-SNAPSHOT.jar \
      ./vcell-api/target/maven-jars/*.jar \
      ./lib/
 
+# Copy and install vcell-cli-utils
+COPY ./vcell-cli-utils/ /usr/local/app/python/vcell_cli_utils/
+RUN cd /usr/local/app/python/vcell_cli_utils/ && \
+    poetry config cache-dir "/poetry/.cache" --local && \
+    chmod 755 poetry.toml && \
+    poetry install
+
+# copy API resources
 COPY ./vcell-api/docroot ./docroot
 COPY ./vcell-api/webapp ./webapp
 COPY ./vcell-api/keystore_macbook.jks .
@@ -42,7 +68,8 @@ ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
     webDataPort="webDataPort-not-set" \
 	ssl_ignoreHostMismatch=true \
 	ssl_ignoreCertProblems=false \
-	submit_service_host="submit"
+	submit_service_host="submit" \
+	workingDir="/usr/local/app"
 
 ENV dbpswdfile=/run/secrets/dbpswd \
     jmspswdfile=/run/secrets/jmspswd \
@@ -53,23 +80,23 @@ EXPOSE 8080
 EXPOSE 8000
 
 ENTRYPOINT java \
-  -Xdebug -Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=n \
-  -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:MaxRAMFraction=1 -Xms64M \
+    -Xdebug -agentlib:jdwp=transport=dt_socket,address=*:8000,server=y,suspend=n \
+    -XX:MaxRAMPercentage=100 \
+#    -XX:+PrintFlagsFinal -XshowSettings:vm \
 	-Dvcell.softwareVersion="${softwareVersion}" \
 	-Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager \
 	-Dlog4j.configurationFile=/usr/local/app/vcell-api.log4j.xml \
 	-Dvcell.server.id="${serverid}" \
-	-Dvcell.python.executable=/usr/bin/python \
 	-Dvcell.installDir=/usr/local/app \
+	-Dcli.workingDir="${workingDir}" \
 	-Dvcell.server.dbConnectURL="${dburl}" \
 	-Dvcell.server.dbDriverName="${dbdriver}" \
 	-Dvcell.server.dbUserid="${dbuser}" \
 	-Dvcell.db.pswdfile="${dbpswdfile}" \
 	-Dvcell.n5DataDir.internal=/n5DataDir \
 	-Dvcell.primarySimdatadir.internal=/simdata \
-  -Dvcell.secondarySimdatadir.internal=/simdata_secondary \
-  -Dvcell.simdataCacheSize="${simdataCacheSize}" \
-	-Duser.timezone="${userTimezone}" \
+	-Dvcell.secondarySimdatadir.internal=/simdata_secondary \
+	-Dvcell.simdataCacheSize="${simdataCacheSize}" \
 	-Dvcell.jms.int.host.internal="${jmshost_int_internal}" \
 	-Dvcell.jms.int.port.internal="${jmsport_int_internal}" \
 	-Dvcell.jms.blobMessageUseMongo=true \
@@ -86,7 +113,7 @@ ENTRYPOINT java \
 	-Dvcelldata.web.server.port=${webDataPort} \
 	-Dvcell.smtp.emailAddress="${smtp_emailaddress}" \
 	-Dvcell.ssl.ignoreHostMismatch="${ssl_ignoreHostMismatch}" \
-  -Dvcell.ssl.ignoreCertProblems="${ssl_ignoreCertProblems}" \
-  -Dvcell.submit.service.host="${submit_service_host}" \
+	-Dvcell.ssl.ignoreCertProblems="${ssl_ignoreCertProblems}" \
+	-Dvcell.submit.service.host="${submit_service_host}" \
 	-cp "./lib/*" org.vcell.rest.VCellApiMain \
 	/usr/local/app/docroot 8080

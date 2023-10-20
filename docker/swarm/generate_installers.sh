@@ -67,13 +67,6 @@ VCELL_BIOFORMATS_JAR_FILE=$(grep VCELL_BIOFORMATS_JAR_FILE "$local_config_file" 
 VCELL_BIOFORMATS_JAR_URL=$(grep VCELL_BIOFORMATS_JAR_URL "$local_config_file" | cut -d"=" -f2)
 VCELL_CLIENT_APPID=$(grep VCELL_CLIENT_APPID "$local_config_file" | cut -d"=" -f2)
 
-VCELL_INSTALLER_JRE_MAC=$(grep VCELL_INSTALLER_JRE_MAC "$local_config_file" | cut -d"=" -f2)
-VCELL_INSTALLER_JRE_WIN64=$(grep VCELL_INSTALLER_JRE_WIN64 "$local_config_file" | cut -d"=" -f2)
-VCELL_INSTALLER_JRE_WIN32=$(grep VCELL_INSTALLER_JRE_WIN32 "$local_config_file" | cut -d"=" -f2)
-VCELL_INSTALLER_JRE_LINUX64=$(grep VCELL_INSTALLER_JRE_LINUX64 "$local_config_file" | cut -d"=" -f2)
-VCELL_INSTALLER_JRE_LINUX32=$(grep VCELL_INSTALLER_JRE_LINUX32 "$local_config_file" | cut -d"=" -f2)
-VCELL_INSTALLER_JREDIR=$(grep VCELL_INSTALLER_JREDIR "$local_config_file" | cut -d"=" -f2)
-
 VCELL_REPO_NAMESPACE=$(grep VCELL_REPO_NAMESPACE "$local_config_file" | cut -d"=" -f2)
 VCELL_TAG=$(grep VCELL_TAG "$local_config_file" | cut -d"=" -f2)
 
@@ -91,17 +84,11 @@ echo "    -e compiler_rmiHosts=${VCELL_API_HOST_EXTERNAL}:$VCELL_API_PORT_EXTERN
 echo "    -e compiler_bioformatsJarFile=$VCELL_BIOFORMATS_JAR_FILE \\"
 echo "    -e compiler_bioformatsJarDownloadURL=$VCELL_BIOFORMATS_JAR_URL \\"
 echo "    -e compiler_applicationId=$VCELL_CLIENT_APPID \\"
-echo "    -e macJre=$VCELL_INSTALLER_JRE_MAC \\"
-echo "    -e win64Jre=$VCELL_INSTALLER_JRE_WIN64 \\"
-echo "    -e win32Jre=$VCELL_INSTALLER_JRE_WIN32 \\"
-echo "    -e linux64Jre=$VCELL_INSTALLER_JRE_LINUX64 \\"
-echo "    -e linux32Jre=$VCELL_INSTALLER_JRE_LINUX32 \\"
 echo "    -e winCodeSignKeystore_pfx=/buildsecrets/VCELL_UCONN_MS_2017.pfx \\"
 echo "    -e winCodeSignKeystore_pswdfile=/buildsecrets/VCELL_UCONN_MS_2017_pswd.txt \\"
 echo "    -e macCodeSignKeystore_p12=/buildsecrets/VCELL_APPLE_2015.p12 \\"
 echo "    -e macCodeSignKeystore_pswdfile=/buildsecrets/VCELL_APPLE_2015_pswd.txt \\"
-echo "    -e Install4J_product_key_file=/buildsecrets/Install4J_product_key.txt \\"
-echo "    -v $VCELL_INSTALLER_JREDIR:/jres \\"
+echo "    -e Install4J_product_key_file=/buildsecrets/Install4J_product_key_10.txt \\"
 echo "    -v $PWD/generated_installers:/outputdir \\"
 echo "    -v ${VCELL_DEPLOY_SECRETS_DIR}:/buildsecrets \\"
 echo "    ${VCELL_REPO_NAMESPACE}/vcell-clientgen:${VCELL_TAG}"
@@ -118,17 +105,11 @@ if ! sudo docker run --rm --cpus="1.0" \
     -e compiler_bioformatsJarFile="$VCELL_BIOFORMATS_JAR_FILE" \
     -e compiler_bioformatsJarDownloadURL="$VCELL_BIOFORMATS_JAR_URL" \
     -e compiler_applicationId="$VCELL_CLIENT_APPID" \
-    -e macJre="$VCELL_INSTALLER_JRE_MAC" \
-    -e win64Jre="$VCELL_INSTALLER_JRE_WIN64" \
-    -e win32Jre="$VCELL_INSTALLER_JRE_WIN32" \
-    -e linux64Jre="$VCELL_INSTALLER_JRE_LINUX64" \
-    -e linux32Jre="$VCELL_INSTALLER_JRE_LINUX32" \
     -e winCodeSignKeystore_pfx=/buildsecrets/VCELL_UCONN_MS_2017.pfx \
     -e winCodeSignKeystore_pswdfile=/buildsecrets/VCELL_UCONN_MS_2017_pswd.txt \
     -e macCodeSignKeystore_p12=/buildsecrets/VCELL_APPLE_2015.p12 \
     -e macCodeSignKeystore_pswdfile=/buildsecrets/VCELL_APPLE_2015_pswd.txt \
-    -e Install4J_product_key_file=/buildsecrets/Install4J_product_key.txt \
-    -v "$VCELL_INSTALLER_JREDIR":/jres \
+    -e Install4J_product_key_file=/buildsecrets/Install4J_product_key_10.txt \
     -v "$PWD"/generated_installers:/outputdir \
     -v "${VCELL_DEPLOY_SECRETS_DIR}":/buildsecrets \
     "${VCELL_REPO_NAMESPACE}/vcell-clientgen":"${VCELL_TAG}";

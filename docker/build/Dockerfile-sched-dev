@@ -1,12 +1,26 @@
-FROM openjdk:8u151-jdk-alpine3.7
+FROM eclipse-temurin:17 as jre-build
+
+# Create a custom Java runtime
+RUN $JAVA_HOME/bin/jlink \
+         --add-modules ALL-MODULE-PATH \
+         --strip-debug \
+         --no-man-pages \
+         --no-header-files \
+         --compress=2 \
+         --output /javaruntime
+
+# Define base image and copy in jlink created minimal Java 17 environment
+FROM debian:buster-slim
+ENV JAVA_HOME=/opt/java/openjdk
+ENV PATH "${JAVA_HOME}/bin:${PATH}"
+COPY --from=jre-build /javaruntime $JAVA_HOME
+
 
 RUN mkdir -p /usr/local/app && \
-	apk update && \
-    apk add openssh-client && \
-    apk add curl && \
-    apk add screen tzdata
+	apt-get -y update && \
+    apt-get -y install openssh-client curl screen
 
-ENV TZ=America/New_York
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tzdata
 RUN unlink /etc/localtime || true
 RUN ln -s /usr/share/zoneinfo/America/New_York /etc/localtime
 
@@ -14,8 +28,6 @@ WORKDIR /usr/local/app
 
 COPY ./vcell-server/target/vcell-server-0.0.1-SNAPSHOT.jar \
      ./vcell-server/target/maven-jars/*.jar \
-     ./vcell-oracle/target/vcell-oracle-0.0.1-SNAPSHOT.jar \
-     ./vcell-oracle/target/maven-jars/*.jar \
      ./lib/
 
 
@@ -59,8 +71,9 @@ VOLUME /simdata
 VOLUME /htclogs
 
 ENTRYPOINT java \
-	-Xdebug -Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=n \
-	-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:MaxRAMFraction=1 -Xms64M \
+    -Xdebug -agentlib:jdwp=transport=dt_socket,address=*:8000,server=y,suspend=n \
+	-XX:MaxRAMPercentage=100 \
+#	-XX:+PrintFlagsFinal -XshowSettings:vm \
     -Djava.awt.headless=true \
 	-Dvcell.softwareVersion="${softwareVersion}" \
 	-Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager \

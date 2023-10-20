@@ -27,6 +27,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Vector;
 
+import cbit.vcell.math.*;
 import org.apache.commons.lang3.mutable.Mutable;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.apache.logging.log4j.LogManager;
@@ -154,18 +155,8 @@ import cbit.vcell.mapping.spatial.processes.PointLocation;
 import cbit.vcell.mapping.spatial.processes.SpatialProcess;
 import cbit.vcell.mapping.spatial.processes.SurfaceKinematics;
 import cbit.vcell.mapping.spatial.processes.VolumeKinematics;
-import cbit.vcell.math.Action;
-import cbit.vcell.math.CompartmentSubDomain;
-import cbit.vcell.math.ComputeCentroidComponentEquation;
-import cbit.vcell.math.ComputeMembraneMetricEquation;
-import cbit.vcell.math.ComputeNormalComponentEquation;
-import cbit.vcell.math.Constant;
-import cbit.vcell.math.ConvolutionDataGenerator;
 import cbit.vcell.math.ConvolutionDataGenerator.ConvolutionDataGeneratorKernel;
 import cbit.vcell.math.ConvolutionDataGenerator.GaussianConvolutionDataGeneratorKernel;
-import cbit.vcell.math.DataGenerator;
-import cbit.vcell.math.Equation;
-import cbit.vcell.math.Event;
 import cbit.vcell.math.Event.Delay;
 import cbit.vcell.math.Event.EventAssignment;
 import cbit.vcell.math.ExplicitDataGenerator;
@@ -199,37 +190,12 @@ import cbit.vcell.math.ParticleJumpProcess;
 import cbit.vcell.math.ParticleMolecularComponent;
 import cbit.vcell.math.ParticleMolecularComponentPattern;
 import cbit.vcell.math.ParticleMolecularComponentPattern.ParticleBondType;
-import cbit.vcell.math.ParticleMolecularType;
-import cbit.vcell.math.ParticleMolecularTypePattern;
-import cbit.vcell.math.ParticleObservable;
 import cbit.vcell.math.ParticleObservable.Sequence;
-import cbit.vcell.math.ParticleProperties;
 import cbit.vcell.math.ParticleProperties.ParticleInitialCondition;
 import cbit.vcell.math.ParticleProperties.ParticleInitialConditionConcentration;
 import cbit.vcell.math.ParticleProperties.ParticleInitialConditionCount;
-import cbit.vcell.math.ParticleSpeciesPattern;
-import cbit.vcell.math.ParticleVariable;
-import cbit.vcell.math.PdeEquation;
 import cbit.vcell.math.PdeEquation.BoundaryConditionValue;
-import cbit.vcell.math.PointSubDomain;
-import cbit.vcell.math.PointVariable;
-import cbit.vcell.math.PostProcessingBlock;
-import cbit.vcell.math.ProjectionDataGenerator;
-import cbit.vcell.math.RandomVariable;
-import cbit.vcell.math.StochVolVariable;
-import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.SubDomain.BoundaryConditionSpec;
-import cbit.vcell.math.UniformDistribution;
-import cbit.vcell.math.VarIniCondition;
-import cbit.vcell.math.VarIniPoissonExpectedCount;
-import cbit.vcell.math.Variable;
-import cbit.vcell.math.VolVariable;
-import cbit.vcell.math.VolumeParticleObservable;
-import cbit.vcell.math.VolumeParticleSpeciesPattern;
-import cbit.vcell.math.VolumeParticleVariable;
-import cbit.vcell.math.VolumeRandomVariable;
-import cbit.vcell.math.VolumeRegionEquation;
-import cbit.vcell.math.VolumeRegionVariable;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.model.Catalyst;
 import cbit.vcell.model.DBFormalSpecies;
@@ -420,23 +386,11 @@ private Element getXML(VCPixelClass param) {
 }
 
 
-/**
- * This method returns a XML representation of a Version java object.
- * Creation date: (3/13/2001 6:00:59 PM)
- * @return Element
- * @param param cbit.sql.Version
- */
 private Element getXML(Version version, Versionable versionable) {
 	return getXML(version, versionable.getName(), versionable.getDescription());
 }
 
 
-/**
- * This method returns a XML representation of a Version java object.
- * Creation date: (3/13/2001 6:00:59 PM)
- * @return Element
- * @param param cbit.sql.Version
- */
 private Element getXML(Version version, String nameParam, String descriptionParam) {
 	//** Dump the content to the 'Version' object **
 	Element versionElement = new Element(XMLTags.VersionTag);
@@ -4560,12 +4514,6 @@ private Element getXML(SimpleReaction param) throws XmlParseException {
 }
 
 
-/**
- * This method returns a XML version of a Specie.
- * Creation date: (2/22/2001 2:37:45 PM)
- * @return Element
- * @param param cbit.vcell.model.Species
- */
 private Element getXML(Species species) throws XmlParseException {
 	Element speciesElement = new Element(XMLTags.SpeciesTag);
 
@@ -4619,13 +4567,6 @@ private Element getXML(SpeciesContext param) {
 	return speciecontext;
 }
 
-/**
- * This method identifies if the structure as a parameter is a Feature or a Membrane, and then calls the respective getXML method.
- * Creation date: (2/22/2001 6:31:04 PM)
- * @return Element
- * @param param cbit.vcell.model.Structure
- * @param model cbit.vcell.model.Model
- */
 private Element getXML(Structure structure, Model model) throws XmlParseException {
 	Element structureElement = null;
 	StructureTopology structTopology = model.getStructureTopology();
@@ -4823,12 +4764,6 @@ private Element getXML(OutputTimeSpec param) {
 	return outputOptions;
 }
 
-/**
- * This method returns a XML representation of a stochSimOption object.
- * Creation date: (5/2/2007 09:47:20 AM)
- * @return Element
- * @param param cbit.vcell.solver.StochSimOption
- */
 private Element getXML(NonspatialStochSimOptions stochOpts, NonspatialStochHybridOptions hybridOptions) {
 	Element stochSimOptions = new Element(XMLTags.StochSimOptionsTag);
 	if(stochOpts != null)

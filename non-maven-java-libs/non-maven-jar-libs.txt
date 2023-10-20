@@ -13,22 +13,6 @@ mvn deploy:deploy-file -Dfile=<path-to-file-to-be-installed-into-VCell-repo> -Dg
 </repositories>
 
 
-Examples for VCell ojdbc6 and ucp jars:
-(Do this only if necessary) -> in eclipse, rt-click on 'vcell' and create folder named 'non-maven-java-libs'
-in linux terminal, cd to {eclipse_workspace}/vcell/non-maven-java-libs
-
-mvn deploy:deploy-file -Dfile=../ojdbc6/src/ojdbc6.jar -DgroupId=com.oracle -DartifactId=ojdbc6 -Dversion=11.2.0.4 -Dpackaging=jar -Durl=file:./ -DrepositoryId=non-maven-java-libs -DupdateReleaseInfo=true
-mvn deploy:deploy-file -Dfile=../ucp/src/ucp.jar -DgroupId=com.oracle -DartifactId=ucp -Dversion=11.2.0.4 -Dpackaging=jar -Durl=file:./ -DrepositoryId=non-maven-java-libs -DupdateReleaseInfo=true
-
-
-Edit {eclipse_workspace}/vcell/vcell-oracle/pom.xml, add:
-	<repositories>
-	<repository> <id>project-repo</id> <url>file://${project.basedir}/../non-maven-java-libs</url> </repository>
-	</repositories>
-
-Then save the changes to github repository
-
-
 Example for VCell libCombine jars (different jars for same lib depending on OS (for JNI)):
 
 (Do this only if necessary) -> in eclipse, rt-click on 'vcell' and create folder named 'non-maven-java-libs'

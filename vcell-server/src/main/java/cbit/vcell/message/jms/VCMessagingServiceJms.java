@@ -17,7 +17,6 @@ import javax.jms.Session;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.scijava.service.AbstractService;
 
 import cbit.vcell.message.SimpleMessagingDelegate;
 import cbit.vcell.message.VCDestination;
@@ -29,7 +28,7 @@ import cbit.vcell.message.VCMessagingException;
 import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.resource.PropertyLoader;
 
-public abstract class VCMessagingServiceJms extends AbstractService implements VCMessagingService {
+public abstract class VCMessagingServiceJms implements VCMessagingService {
 	private final static Logger lg = LogManager.getLogger(VCMessagingServiceJms.class);
 	
 	private ArrayList<ConsumerContextJms> consumerContexts = new ArrayList<ConsumerContextJms>();

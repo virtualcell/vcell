@@ -32,9 +32,9 @@ jobs:
         sudo mkdir /usr/local/deploy
         sudo chmod 777 /usr/local/deploy
         cd /usr/local/deploy
-        scp ${{ secrets.CD_FULL_USER }}@${VCELL_MANAGER_NODE}:${VCELL_DEPLOY_REMOTE_DIR}/deploy_dir.tar .
+        scp ${{ secrets.CD_FULL_USER }}@${VCELL_MANAGER_NODE}:${VCELL_DEPLOY_REMOTE_DIR}/deploy_dir_2023_07_30.tar .
         cd ..
-        sudo tar -xvf deploy/deploy_dir.tar
+        sudo tar -xvf deploy/deploy_dir_2023_07_30.tar
         sudo chmod 777 -R deploy
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -49,24 +49,33 @@ jobs:
       run: |
         cd vcell-cli-utils
         poetry install
+        poetry run python -m pytest
 
     - name: build vcell-admin package
       run: |
         cd docker/swarm/vcell-admin
-        poetry install    
-
-    - name: build vcell-opt package
-      run: |
-        cd pythonProject/vcell-opt
         poetry install
         poetry run python -m pytest
 
-    - name: setup java 8 with maven cache
-      uses: actions/setup-java@v2
+    - name: build pythonCopasiOpt package
+      run: |
+        cd pythonCopasiOpt/vcell-opt
+        poetry install
+        poetry run python -m pytest
+
+    - name: build pythonVtk package
+      run: |
+        cd pythonVtk
+        poetry install
+        poetry run python -m pytest
+
+    - name: setup java 17 with maven cache
+      uses: actions/setup-java@v3
       with:
-        java-version: '8'
-        distribution: 'adopt'
+        distribution: 'temurin'
+        java-version: '17'
         cache: 'maven'
+
     - name: Install Singularity # to make singularity image for cluster
       uses: eWaterCycle/setup-singularity@v6
       with:

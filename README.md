@@ -69,7 +69,7 @@ Requirements:  Eclipse IDE for Java Developers and Java JDK 1.8 or later
      * Name: VCellClient
      * Main: 
          * Project: `vcell-client`
-         * Main Class: `cbit.vcell.client.test.VCellClientTest`
+         * Main Class: `cbit.vcell.client.test.VCellClientMain`
      * Arguments:
          * Program arguments: `vcellapi-beta.cam.uchc.edu:8080`
          * VM arguments are:
@@ -111,7 +111,7 @@ VCell Server Installation General Requirements
 
 
 ### Other Details
-1. Creating certs [details](README_certs.md)  
+1. Creating certs [details](docs-misc/README_certs.md)  
     1.1. (TLS/SSL website for (vcellapi.cam.uchc.edu,vcell-api.cam.uchc.edu)  
     1.2. Microsoft authenticode codesigning (to prevent install4j from being rejected on windows clients)  
     1.3. Apple codesigning for macos (prevents from mac refusing install4j install))  
@@ -122,9 +122,9 @@ VCell Server Installation General Requirements
 4. Building VCell Client/Server [Software detailed instructions](docker/build/README.md)  
     4.1.  Github/Travis/Appveyor/Dockerhub [Instructions](README_git_trav_appv_dhub.md)  
 5. Deploying VCell Client/Server software [detailed instructions](docker/swarm/README.md)  
-    5.1. VCell System [Flow-Control](README_flow_control.md)  
+    5.1. VCell System [Flow-Control](docs-misc/README_flow_control.md)  
 6. Server Administration [detailed instructions](docker/swarm/README_admin.md) (.e.g restarting VCell services)  
-7.  [Debugging detailed instructions](README_Debugging.md) (.e.g debug vcell client/server)  
+7.  [Debugging detailed instructions](docs-misc/README_Debugging.md) (.e.g debug vcell client/server)  
 8. serverconfig.sh file must be customized for your configuration (see vcell/docker/swarm/serverconfig-uch.sh).  
 
 

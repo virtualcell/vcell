@@ -1,143 +1,135 @@
 package org.vcell.vis.vtk;
 
 import java.io.File;
-import java.util.ArrayList;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
+import java.util.Arrays;
+import java.util.List;
 
+import cbit.vcell.resource.PropertyLoader;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.vcell.test.Fast;
 import org.vcell.util.document.KeyValue;
 import org.vcell.vis.io.CartesianMeshFileReader;
 import org.vcell.vis.io.VCellSimFiles;
+import org.vcell.vis.mapping.vcell.CartesianMeshMapping;
 import org.vcell.vis.mapping.vcell.CartesianMeshVtkFileWriter;
 import org.vcell.vis.vcell.CartesianMesh;
+import org.vcell.vis.vismesh.thrift.*;
 
+@Category(Fast.class)
 public class VCellDataTest {
 
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) {
-		try {
-			KeyValue simKey = new KeyValue("1661241954");
-			String pathPrefix = "C:\\Users\\schaff\\.vcell\\simdata\\user\\";
-			
-			File meshFile = new File(pathPrefix + "SimID_"+simKey+"_0_.mesh");
-			File meshMetricsFile = new File(pathPrefix + "SimID_"+simKey+"_0_.meshmetrics");
-			File subdomainFile = new File(pathPrefix + "SimID_"+simKey+"_0_.subdomains");
-			File logFile = new File(pathPrefix + "SimID_"+simKey+"_0_.log");
-			File zipFile = new File(pathPrefix + "SimID_"+simKey+"_0_00.zip");
-			File postprocessingFile = new File(pathPrefix + "SimID_"+simKey+"_0_.hdf5");
-			
-			VCellSimFiles vcellFiles = new VCellSimFiles(simKey,0,meshFile,meshMetricsFile,subdomainFile,logFile,postprocessingFile);
-			vcellFiles.addDataFileEntry(zipFile,new File("SimID_"+simKey+"_0_0000.sim"),0.0);
-//			vcellFiles.addDataFileEntry(zipFile,new File("SimID_"+simKey+"_0_0001.sim"),0.05);
-//			vcellFiles.addDataFileEntry(zipFile,new File("SimID_"+simKey+"_0_0002.sim"),0.10);
-//			vcellFiles.addDataFileEntry(zipFile,new File("SimID_"+simKey+"_0_0003.sim"),0.15);
-//			vcellFiles.addDataFileEntry(zipFile,new File("SimID_"+simKey+"_0_0004.sim"),0.20);
-//			vcellFiles.addDataFileEntry(zipFile,new File("SimID_"+simKey+"_0_0005.sim"),0.25);
-//			vcellFiles.addDataFileEntry(zipFile,new File("SimID_"+simKey+"_0_0006.sim"),0.30);
-//			vcellFiles.addDataFileEntry(zipFile,new File("SimID_"+simKey+"_0_0007.sim"),0.35);
-//			vcellFiles.addDataFileEntry(zipFile,new File("SimID_"+simKey+"_0_0008.sim"),0.40);
-//			vcellFiles.addDataFileEntry(zipFile,new File("SimID_"+simKey+"_0_0009.sim"),0.45);
-//			vcellFiles.addDataFileEntry(zipFile,new File("SimID_"+simKey+"_0_0010.sim"),0.50);
-//			vcellFiles.addDataFileEntry(zipFile,new File("SimID_"+simKey+"_0_0011.sim"),0.55);
-//			vcellFiles.addDataFileEntry(zipFile,new File("SimID_"+simKey+"_0_0012.sim"),0.60);
-//			vcellFiles.addDataFileEntry(zipFile,new File("SimID_"+simKey+"_0_0013.sim"),0.65);
-//			vcellFiles.addDataFileEntry(zipFile,new File("SimID_"+simKey+"_0_0014.sim"),0.70);
-//			vcellFiles.addDataFileEntry(zipFile,new File("SimID_"+simKey+"_0_0015.sim"),0.75);
-//			vcellFiles.addDataFileEntry(zipFile,new File("SimID_"+simKey+"_0_0016.sim"),0.80);
-//			vcellFiles.addDataFileEntry(zipFile,new File("SimID_"+simKey+"_0_0017.sim"),0.85);
-//			vcellFiles.addDataFileEntry(zipFile,new File("SimID_"+simKey+"_0_0018.sim"),0.90);
-//			vcellFiles.addDataFileEntry(zipFile,new File("SimID_"+simKey+"_0_0019.sim"),0.95);
-//			vcellFiles.addDataFileEntry(zipFile,new File("SimID_"+simKey+"_0_0020.sim"),1.0);
+	private String previousPythonDir = null;
 
-			
-			// process each domain separately (only have to process the mesh once for each one)
-			CartesianMeshVtkFileWriter cartesianMeshVtkFileWriter = new CartesianMeshVtkFileWriter();
-			File destinationDirectory = new File("C:\\Developer\\eclipse\\workspace\\VCell_5.3_visfull\\VtkData\\");
-			File[] generatedFiles = cartesianMeshVtkFileWriter.writeVtuExportFiles(vcellFiles, destinationDirectory, null);
+	@Before
+	public void setUp() {
+		this.previousPythonDir = System.getProperty(PropertyLoader.vtkPythonDir);
+		System.setProperty(PropertyLoader.vtkPythonDir, "../pythonVtk");
+	}
 
-			boolean bDisplay = true;
-			
-			if (bDisplay){
-				CartesianMeshFileReader reader = new CartesianMeshFileReader();
-				CartesianMesh mesh = reader.readFromFiles(vcellFiles);
-				ArrayList<String> allDomainNames = new ArrayList<String>();
-				allDomainNames.addAll(mesh.getVolumeDomainNames());
-				allDomainNames.addAll(mesh.getMembraneDomainNames());
-				for (String domain : allDomainNames){
-					for (int timeIndex=0;timeIndex<vcellFiles.getTimes().size();timeIndex++){
-//						String filename = new File(destinationDirectory,vcellFiles.getCannonicalFilePrefix(domain,timeIndex)+".vtu").getAbsolutePath();
-//						vtkUnstructuredGrid vtkgrid = vtkGridUtils.read(filename);
-//						vtkgrid.BuildLinks();
-//	
-//						String varName0 = vtkgrid.GetCellData().GetArrayName(0);
-//						String varName1 = vtkgrid.GetCellData().GetArrayName(1);
-//						SimpleVTKViewer simpleViewer = new SimpleVTKViewer();
-//						simpleViewer.showGrid(vtkgrid, varName0, varName1);
-						Thread.sleep(1000);
-					}
-				}
-			}
-
-//			CartesianMeshFileReader reader = new CartesianMeshFileReader();
-//			CartesianMesh mesh = reader.readFromFiles(vcellFiles);
-//			CartesianMeshMapping cartesianMeshMapping = new CartesianMeshMapping();
-//			
-//			//String domainName = mesh.meshRegionInfo.getVolumeDomainNames().get(1);
-//			String domainName = mesh.meshRegionInfo.getVolumeDomainNames().get(0);
-//			
-//			System.out.println("making visMesh for domain "+domainName+" of ["+mesh.meshRegionInfo.getVolumeDomainNames()+"]");
-//			VisMesh visMesh = cartesianMeshMapping.fromMeshData(mesh, domainName);
-//			final int numElements = visMesh.getPolyhedra().size();
-//			final double[] data1 = new double[numElements];
-//			final double[] data2 = new double[numElements];
-//			
-//			for (int i=0;i<numElements;i++){
-//				data1[i] = Math.sin(i/10000.0);
-//				data2[i] = Math.cos(i/10000.0);
-//			}
-//			VisMeshData visData = new VisMeshData() {
-//				private String[] names = new String[] { "data1", "data2" };
-//				
-//				@Override
-//				public String[] getVarNames() {
-//					return new String[] { "data1", "data2" };
-//				}
-//				
-//				@Override
-//				public double getTime() {
-//					return 0.0;
-//				}
-//				
-//				@Override
-//				public double[] getData(String var) {
-//					if (var.equals("data1")){
-//						return data1;
-//					}else if (var.equals("data2")){
-//						return data2;
-//					}else{
-//						throw new RuntimeException("var "+var+" not found");
-//					}
-//				}
-//			};
-//
-//			VisDomain visDomain = new VisDomain("domain1",visMesh,visData);
-//			VtkGridUtils vtkGridUtils = new VtkGridUtils();
-//			vtkUnstructuredGrid vtkgrid = vtkGridUtils.getVtkGrid(visDomain);
-//			vtkgrid = TestVTK.testWindowedSincPolyDataFilter(vtkgrid);
-//			String filenameBinary = "testBinary.vtu";
-//			vtkGridUtils.writeXML(vtkgrid, filenameBinary, false);
-//			vtkgrid = vtkGridUtils.read(filenameBinary);
-//			//vtkgrid.s
-//			vtkgrid.BuildLinks();
-//			SimpleVTKViewer simpleViewer = new SimpleVTKViewer();
-//			String[] varNames = visDomain.getVisMeshData().getVarNames();
-//			simpleViewer.showGrid(vtkgrid, varNames[0], varNames[1]);
-			
-			
-			System.out.println("ran");
-		} catch (Exception e) {
-			e.printStackTrace(System.out);
+	@After
+	public void tearDown() {
+		if (previousPythonDir!=null) {
+			System.setProperty(PropertyLoader.vtkPythonDir, previousPythonDir);
 		}
 	}
 
+	@Test
+	public void test_3D() throws Exception {
+		KeyValue simKey = new KeyValue("956955326");
+
+		File tempdir = Files.createTempDirectory("VCellDataTest_").toFile();
+		File meshFile = copyResourceToFile(tempdir, "SimID_" + simKey + "_0_.mesh");
+		File meshMetricsFile = copyResourceToFile(tempdir, "SimID_" + simKey + "_0_.meshmetrics");
+		File subdomainFile = copyResourceToFile(tempdir, "SimID_" + simKey + "_0_.subdomains");
+		File logFile = copyResourceToFile(tempdir, "SimID_" + simKey + "_0_.log");
+		File zipFile = copyResourceToFile(tempdir, "SimID_" + simKey + "_0_00.zip");
+		File postprocessingFile = copyResourceToFile(tempdir, "SimID_" + simKey + "_0_.hdf5");
+		File[] generatedFiles = null;
+		try {
+
+			VCellSimFiles vcellFiles = new VCellSimFiles(simKey, 0, meshFile, meshMetricsFile, subdomainFile, logFile, postprocessingFile);
+			vcellFiles.addDataFileEntry(zipFile, new File("SimID_" + simKey + "_0_0000.sim"), 0.0);
+
+			// process each domain separately (only have to process the mesh once for each one)
+			CartesianMeshVtkFileWriter cartesianMeshVtkFileWriter = new CartesianMeshVtkFileWriter();
+			File destinationDirectory = tempdir;
+			generatedFiles = cartesianMeshVtkFileWriter.writeEmptyMeshFiles(vcellFiles, destinationDirectory, null);
+			System.out.println("generatedFiles: " + Arrays.asList(generatedFiles));
+
+			CartesianMeshFileReader reader = new CartesianMeshFileReader();
+			CartesianMesh mesh = reader.readFromFiles(vcellFiles);
+			CartesianMeshMapping cartesianMeshMapping = new CartesianMeshMapping();
+
+			String domainName = mesh.meshRegionInfo.getVolumeDomainNames().get(0);
+
+			System.out.println("making visMesh for domain " + domainName + " of [" + mesh.meshRegionInfo.getVolumeDomainNames() + "]");
+			boolean bVolume = true;
+			VisMesh visMesh = cartesianMeshMapping.fromMeshData(mesh, domainName, bVolume);
+			System.out.println("visMesh: " + visMesh);
+		} finally {
+			meshFile.delete();
+			meshMetricsFile.delete();
+			subdomainFile.delete();
+			logFile.delete();
+			zipFile.delete();
+			postprocessingFile.delete();
+			if (generatedFiles!=null) {
+				Arrays.stream(generatedFiles).forEach(File::delete);
+			}
+			tempdir.delete();
+		}
+	}
+
+	private File copyResourceToFile(File tempdir, String fileName) throws IOException {
+		File meshFile = new File(tempdir, fileName);
+		try (InputStream instream = VCellDataTest.class.getResourceAsStream("/simdata/MembraneFrap3D/"+ fileName)) {
+			Files.copy(instream, meshFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+		}
+		return meshFile;
+	}
+
+	@Test
+	public void test_chombo_construction() {
+		try {
+			VisMesh visMesh = new VisMesh(3,new Vect3D(0,0,0),new Vect3D(3,1,1));
+			VisPoint[] points0 = new VisPoint[] {
+					new VisPoint(0, 0, 0),
+					new VisPoint(1, 0, 0),
+					new VisPoint(0, 1, 0),
+					new VisPoint(0, 0, 1)
+			};
+
+			visMesh.addToPoints(points0[0]);
+			visMesh.addToPoints(points0[1]);
+			visMesh.addToPoints(points0[2]);
+			visMesh.addToPoints(points0[3]);
+
+			List<PolyhedronFace> faces0 = Arrays.asList(
+					new PolyhedronFace(Arrays.asList( 0, 1, 3 )),
+					new PolyhedronFace(Arrays.asList( 0, 3, 2 )),
+					new PolyhedronFace(Arrays.asList( 0, 2, 1 )),
+					new PolyhedronFace(Arrays.asList( 1, 3, 2 ))
+			);
+
+			int level = 0;
+			int boxNumber = 0;
+			int boxIndex = 0;
+			int fraction = 0;
+
+			VisIrregularPolyhedron genPolyhedra0 = new VisIrregularPolyhedron(faces0);
+			genPolyhedra0.setChomboVolumeIndex(new ChomboVolumeIndex(level, boxNumber, boxIndex, fraction));
+
+			visMesh.addToIrregularPolyhedra(genPolyhedra0);
+
+		}catch (Exception e){
+			e.printStackTrace(System.out);
+		}
+	}
 }

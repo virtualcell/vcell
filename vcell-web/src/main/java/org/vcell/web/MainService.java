@@ -32,6 +32,8 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 import org.apache.commons.httpclient.URI;
 import org.apache.http.Header;
 import org.apache.http.HttpException;
@@ -51,6 +53,7 @@ import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
 import org.vcell.db.DatabaseSyntax;
 import org.vcell.db.KeyFactory;
+import org.vcell.dependency.server.VCellServerModule;
 import org.vcell.util.ConfigurationException;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
@@ -85,9 +88,6 @@ import ncsa.hdf.hdf5lib.exceptions.HDF5LibraryException;
 
 public class MainService {
 
-//	private DatabaseServerImpl databaseServerImpl;
-//	private AdminDBTopLevel adminDbTopLevel;
-//	private DataServerImpl dataServerImpl = null;
 	private HttpServer server;
 	private static HashMap<String,AuthenticationInfo> useridMap = new HashMap<String,AuthenticationInfo>();
 	private static ConnectionFactory conFactory;
@@ -103,7 +103,9 @@ public class MainService {
 
 	public static void main(String[] args) {
 		try {
-			new MainService();
+			Injector injector = Guice.createInjector(new VCellServerModule());
+			MainService mainService = injector.getInstance(MainService.class);
+			mainService.start();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -143,24 +145,6 @@ public class MainService {
 			server = ServerBootstrap.bootstrap().registerHandler("*", new HttpRequestHandler() {
 				@Override
 				public void handle(HttpRequest request, HttpResponse response, HttpContext context) throws HttpException, IOException {
-//					Connection con = null;
-//	            	try {
-//	            		synchronized (MainService.this) {
-//		            		if(availableConnections.size() == 0 && inUseConnections.size() == 3) {
-//	            				String errMesg = "<html><body>req='"+request.toString()+"' <br>All available connections in use, retry again.</br>"+"</body></html>";
-//	            				response.setStatusCode(HttpStatus.SC_SERVICE_UNAVAILABLE);
-//	            				StringEntity se = new StringEntity(errMesg);
-//	            				se.setContentType(ContentType.TEXT_HTML.getMimeType());
-//	            				response.setEntity(se);
-//	            				return;
-//		            		}else {
-//		            			if((availableConnections.size() + inUseConnections.size()) < 3) {
-//		            				con = new connection;
-//		            			}
-//		            			con = availableConnections.remove(0);
-//		            			inUseConnections.add(con);
-//		            		}
-//	            		}
 	            		if(request.getRequestLine().getMethod().toUpperCase().equals("GET")) {
 		            		URI uri = new URI(request.getRequestLine().getUri(),true);
 							final List<NameValuePair> parse = URLEncodedUtils.parse(uri.getQuery(),Charset.forName("utf-8"));
@@ -304,12 +288,14 @@ public class MainService {
 	            		}
 				}
 			}).setListenerPort(listenPort).setSslContext(sslContext).create();
-			server.start();
 			
 		}catch(Exception e) {
 			e.printStackTrace();
 		}
+	}
 
+	public void start() throws IOException {
+		this.server.start();
 	}
 	
 	private static File createInfosHdf5(User authuser,DatabaseServerImpl databaseServerImpl) throws IOException, HDF5LibraryException, HDF5Exception, DataAccessException {

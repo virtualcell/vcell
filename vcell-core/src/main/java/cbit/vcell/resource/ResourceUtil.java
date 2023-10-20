@@ -37,15 +37,9 @@ public class ResourceUtil {
 
 	public static final String LOCAL_SOLVER_LIB_LINK_SUFFIX = "_link";
 	private static final String LOCALSOLVERS_DIR = "localsolvers";
-	private static final String PYTHONSCRIPTS_DIR = "pythonScripts";
-	private static final String VCELL_OPT_DIR = "VCell_Opt";
-	private static final String VCELL_VISIT_DIR = "VCell_VisIt";
-	private static final String VCELL_VTK_DIR = "VCell_VTK";
-	private static final String MANIFEST_FILE_NAME = ".versionManifest.txt";
 
-	public static enum JavaVersion  {
-		SEVEN("1.7"),
-		EIGHT("1.8");
+	public enum JavaVersion  {
+		SEVENTEEN("17");
 		final String versionIdentifier;
 
 		private JavaVersion(String versionIdentifier) {
@@ -513,31 +507,6 @@ public class ResourceUtil {
 		return filePath.replace("C:","").replace("D:","").replace("\\","/");
 	}
 
-	private static File getPythonScriptsDir() {
-		return new File(getVCellInstall(),PYTHONSCRIPTS_DIR);
-	}
-
-	public static File getVCellOptPythonDir() {
-		return new File(getPythonScriptsDir(),VCELL_OPT_DIR);
-	}
-
-	public static File getVCellVTKPythonDir() {
-		return new File(getPythonScriptsDir(),VCELL_VTK_DIR);
-	}
-
-	public static File getOptimizationRootDir()
-	{
-		if(optimizationRootDir == null)
-		{
-			optimizationRootDir = new File(getVcellHome(), "optimization");
-			if (!optimizationRootDir.exists()) {
-				optimizationRootDir.mkdirs();
-			}
-		}
-
-		return optimizationRootDir;
-	}
-	
 	private static String getBioformatsJarDownloadURLString(){
 		return PropertyLoader.getRequiredProperty(PropertyLoader.bioformatsJarDownloadURL);
 	}

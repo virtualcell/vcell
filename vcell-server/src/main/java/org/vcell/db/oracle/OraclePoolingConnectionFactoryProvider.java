@@ -1,0 +1,29 @@
+package org.vcell.db.oracle;
+
+import java.sql.SQLException;
+
+import org.vcell.db.ConnectionFactory;
+import org.vcell.db.Database;
+
+import oracle.ucp.UniversalConnectionPoolException;
+
+public class OraclePoolingConnectionFactoryProvider implements Database {
+
+	public static final String ORACLE_DRIVER_NAME = "oracle.jdbc.driver.OracleDriver";
+	@Override
+	public ConnectionFactory createConnctionFactory(String argDriverName, String argConnectURL, String argUserid, String argPassword) {
+		try {
+			return new OraclePoolingConnectionFactory(argDriverName, argConnectURL, argUserid, argPassword);
+		} catch (ClassNotFoundException | IllegalAccessException | InstantiationException | SQLException 
+				| UniversalConnectionPoolException e) {
+			e.printStackTrace();
+			throw new RuntimeException("failed to create OraclePoolingConnectionFactory: "+e.getMessage(),e);
+		}
+	}
+
+	@Override
+	public String getDriverClassName() {
+		return ORACLE_DRIVER_NAME;
+	}
+
+}

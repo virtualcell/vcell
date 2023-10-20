@@ -10,21 +10,15 @@
 
 package org.vcell.vcellij;
 
-import java.util.List;
 import java.util.ServiceConfigurationError;
+import java.util.ServiceLoader;
 
-import org.scijava.SciJava;
 
-/**
- * Service for database connection factory
- */
 public class ImageDatasetReaderService {
 	
 	private static ImageDatasetReaderService service;
-	private SciJava scijava;
-	
+
 	private ImageDatasetReaderService() {
-		scijava = new SciJava();
 	}
 	
 	public static synchronized ImageDatasetReaderService getInstance(){
@@ -36,12 +30,11 @@ public class ImageDatasetReaderService {
 	
 	public ImageDatasetReader getImageDatasetReader() {
 		try {
-			List<ImageDatasetReader> imageDatasetReaders = scijava.plugin().createInstancesOfType(ImageDatasetReader.class);
-			if (imageDatasetReaders.size()>0){
-				return imageDatasetReaders.get(0);
-			}else{
-				return null;
+			ServiceLoader<ImageDatasetReader> imageDatasetReaders = ServiceLoader.load(ImageDatasetReader.class);
+			for (ImageDatasetReader imageDatasetReader : imageDatasetReaders){
+				return imageDatasetReader;
 			}
+			return null;
 		} catch (ServiceConfigurationError serviceError){
 			throw new RuntimeException("imageDatasetReader provider configuration error: "+serviceError.getMessage(),serviceError);
 		}

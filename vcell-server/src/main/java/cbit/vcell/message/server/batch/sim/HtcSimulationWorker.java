@@ -19,16 +19,11 @@ import cbit.vcell.message.messages.SimulationTaskMessage;
 import cbit.vcell.message.messages.WorkerEventMessage;
 import cbit.vcell.message.server.ManageUtils;
 import cbit.vcell.message.server.ServerMessagingDelegate;
-import cbit.vcell.message.server.ServiceInstanceStatus;
-import cbit.vcell.message.server.ServiceProvider;
 import cbit.vcell.message.server.batch.opt.OptimizationBatchServer;
-import cbit.vcell.message.server.bootstrap.ServiceType;
 import cbit.vcell.message.server.cmd.CommandService.CommandOutput;
 import cbit.vcell.message.server.htc.HtcProxy;
 import cbit.vcell.message.server.htc.slurm.SlurmProxy;
 import cbit.vcell.messaging.server.SimulationTask;
-import cbit.vcell.mongodb.VCMongoMessage;
-import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
 import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.ResourceUtil;
@@ -48,19 +43,18 @@ import cbit.vcell.solvers.AbstractSolver;
 import cbit.vcell.solvers.ExecutableCommand;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.vcell.util.DataAccessException;
+import org.vcell.dependency.server.VCellServerModule;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
-import org.vcell.util.document.VCellServerID;
 import org.vcell.util.exe.ExecutableException;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.*;
@@ -69,7 +63,12 @@ import java.util.*;
  * Creation date: (10/25/2001 4:14:09 PM)
  * @author: Jim Schaff
  */
-public class HtcSimulationWorker extends ServiceProvider implements HtcProxy.HtcProxyFactory  {
+public class HtcSimulationWorker implements HtcProxy.HtcProxyFactory  {
+
+	public static final Logger lg = LogManager.getLogger(HtcSimulationWorker.class);
+
+	private VCMessagingService vcMessagingService_int = null;
+	private VCMessagingService vcMessagingService_sim = null;
 
 	private HtcProxy htcProxy = null;
 
@@ -79,12 +78,21 @@ public class HtcSimulationWorker extends ServiceProvider implements HtcProxy.Htc
 	private VCMessageSession messageProducer_sim = null;
 	private VCMessageSession messageProducer_int = null;
 	private VCPooledQueueConsumer pooledQueueConsumer_int = null;
-	public static Logger lg = LogManager.getLogger(HtcSimulationWorker.class);
 
 
-public HtcSimulationWorker(HtcProxy htcProxy, VCMessagingService vcMessagingService_int, VCMessagingService vcMessagingService_sim, ServiceInstanceStatus serviceInstanceStatus, boolean bSlaveMode) throws DataAccessException, FileNotFoundException, UnknownHostException {
-	super(vcMessagingService_int, vcMessagingService_sim, serviceInstanceStatus, bSlaveMode);
-	this.htcProxy = htcProxy;
+public HtcSimulationWorker() {
+	this.htcProxy = SlurmProxy.createRemoteProxy();
+
+	this.vcMessagingService_int = new VCMessagingServiceActiveMQ();
+	String jmshost_int = PropertyLoader.getRequiredProperty(PropertyLoader.jmsIntHostInternal);
+	int jmsport_int = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.jmsIntPortInternal));
+	this.vcMessagingService_int.setConfiguration(new ServerMessagingDelegate(), jmshost_int, jmsport_int);
+
+	this.vcMessagingService_sim = new VCMessagingServiceActiveMQ();
+	String jmshost_sim = PropertyLoader.getRequiredProperty(PropertyLoader.jmsSimHostInternal);
+	int jmsport_sim = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.jmsSimPortInternal));
+	this.vcMessagingService_sim.setConfiguration(new ServerMessagingDelegate(), jmshost_sim, jmsport_sim);
+
 	this.optimizationBatchServer = new OptimizationBatchServer(this);
 }
 
@@ -602,93 +610,28 @@ private HtcJobID submit2PBS(SimulationTask simTask, HtcProxy clonedHtcProxy, Pos
 	return jobid;
 }
 
-@Override
-public void stopService(){
-	this.pooledQueueConsumer_int.shutdownAndAwaitTermination();
-	super.stopService();
-}
-
 /**
  * Starts the application.
  * @param args an array of command-line arguments
  */
-public static void main(java.lang.String[] args) {
-	OperatingSystemInfo.getInstance();
-
-	if (args.length != 0) {
-		System.out.println("No arguments expected: " + HtcSimulationWorker.class.getName());
-		System.exit(1);
-	}
-
+public static void main(String[] args) throws IOException {
 	try {
+		if (args.length != 0) {
+			System.out.println("No arguments expected: " + HtcSimulationWorker.class.getName());
+			System.exit(1);
+		}
+
+		OperatingSystemInfo.getInstance();
 		PropertyLoader.loadProperties(REQUIRED_SERVICE_PROPERTIES);
 
-		HtcProxy htcProxy = SlurmProxy.createRemoteProxy();
-
-		int serviceOrdinal = 0;
-		VCMongoMessage.serviceStartup(ServiceName.pbsWorker, new Integer(serviceOrdinal), args);
-
-		ServiceInstanceStatus serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(),
-				ServiceType.PBSCOMPUTE, serviceOrdinal, ManageUtils.getHostName(), new Date(), true);
-
-		VCMessagingService vcMessagingService_int = new VCMessagingServiceActiveMQ();
-		String jmshost_int = PropertyLoader.getRequiredProperty(PropertyLoader.jmsIntHostInternal);
-		int jmsport_int = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.jmsIntPortInternal));
-		vcMessagingService_int.setConfiguration(new ServerMessagingDelegate(), jmshost_int, jmsport_int);
-		
-		VCMessagingService vcMessagingService_sim = new VCMessagingServiceActiveMQ();
-		String jmshost_sim = PropertyLoader.getRequiredProperty(PropertyLoader.jmsSimHostInternal);
-		int jmsport_sim = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.jmsSimPortInternal));
-		vcMessagingService_sim.setConfiguration(new ServerMessagingDelegate(), jmshost_sim, jmsport_sim);
-
-		HtcSimulationWorker htcSimulationWorker = new HtcSimulationWorker(htcProxy, vcMessagingService_int, vcMessagingService_sim, serviceInstanceStatus, false);
+		Injector injector = Guice.createInjector(new VCellServerModule());
+		HtcSimulationWorker htcSimulationWorker = injector.getInstance(HtcSimulationWorker.class);
 
 		htcSimulationWorker.init();
 	} catch (Throwable e) {
-		lg.error(e);
+		lg.error("HtcSimulationWorker failed to start: "+e.getMessage(), e);
 	}
 }
-
-//private static HtcProxy creatCommandServiceSSH(java.lang.String[] args) throws IOException {
-//	PropertyLoader.loadProperties(REQUIRED_SERVICE_PROPERTIES);
-//
-//	CommandService commandService = null;
-//	if (args.length==3){
-//		String sshHost = args[0];
-//		String sshUser = args[1];
-//		File sshKeyFile = new File(args[2]);
-//		try {
-//			commandService = new CommandServiceSshNative(sshHost,sshUser,sshKeyFile);
-//			commandService.command(new String[] { "/usr/bin/env bash -c ls | head -5" });
-//			lg.trace("SSH Connection test passed with installed keyfile, running ls as user "+sshUser+" on "+sshHost);
-//		} catch (Exception e) {
-//			lg.error(e);
-//			try {
-//				commandService = new CommandServiceSshNative(sshHost,sshUser,sshKeyFile,new File("/root"));
-//				commandService.command(new String[] { "/usr/bin/env bash -c ls | head -5" });
-//				lg.trace("SSH Connection test passed after installing keyfile, running ls as user "+sshUser+" on "+sshHost);
-//			} catch (Exception e2) {
-//				lg.error(e2);
-//				throw new RuntimeException("failed to establish an ssh command connection to "+sshHost+" as user '"+sshUser+"' using key '"+sshKeyFile+"'",e);
-//			}
-//		}
-//		AbstractSolver.bMakeUserDirs = false; // can't make user directories, they are remote.
-//	}else{
-//		commandService = new CommandServiceLocal();
-//	}
-//	BatchSystemType batchSystemType = BatchSystemType.SLURM;
-//	HtcProxy htcProxy = null;
-//	switch(batchSystemType){
-//		case SLURM:{
-//			htcProxy = new SlurmProxy(commandService, PropertyLoader.getRequiredProperty(PropertyLoader.htcUser));
-//			break;
-//		}
-//		default: {
-//			throw new RuntimeException("unrecognized batch scheduling option :"+batchSystemType);
-//		}
-//	}
-//	return htcProxy;
-//}
 
 private static final String REQUIRED_SERVICE_PROPERTIES[] = {
 		PropertyLoader.vcellSoftwareVersion,

@@ -2,6 +2,7 @@ from pathlib import Path
 
 import requests
 from pydantic import BaseModel
+from typing import Optional
 
 from citation import getCitation, CitationInfo, getSuggestedProjectName
 from vcell_common.api_utils import download_file
@@ -13,7 +14,7 @@ class ExportStatus(BaseModel):
     wrote_vcml: bool = False
     wrote_sbml: bool = False
     wrote_omex: bool = False
-    exception: str | None = None
+    exception: Optional[str] = None
 
 
 def write_log(entry: ExportStatus, log_path: Path) -> None:
@@ -34,8 +35,8 @@ def download_published_omex(api_base_url: str, out_dir: Path) -> None:
             continue
 
         bmKey = pub.biomodelReferences[0].bmKey
-        pubmedId: str | None = pub.pubmedid
-        citationInfo: CitationInfo | None = None
+        pubmedId: Optional[str] = pub.pubmedid
+        citationInfo: Optional[CitationInfo] = None
         try:
             citationInfo = getCitation(pubmedId)
         except Exception as e:

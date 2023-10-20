@@ -8,12 +8,7 @@ import org.vcell.util.ISize;
 import org.vcell.vis.core.Box3D;
 import org.vcell.vis.vcell.CartesianMesh;
 import org.vcell.vis.vcell.MembraneElement;
-import org.vcell.vis.vismesh.thrift.FiniteVolumeIndex;
-import org.vcell.vis.vismesh.thrift.Vect3D;
-import org.vcell.vis.vismesh.thrift.VisMesh;
-import org.vcell.vis.vismesh.thrift.VisPoint;
-import org.vcell.vis.vismesh.thrift.VisPolygon;
-import org.vcell.vis.vismesh.thrift.VisVoxel;
+import org.vcell.vis.vismesh.thrift.*;
 
 public class CartesianMeshMapping {
 	
@@ -29,6 +24,8 @@ public class CartesianMeshMapping {
 			return fromMesh3DVolume(cartesianMesh, domainName);
 		}else if (dimension==3 && !bVolume){
 			return fromMesh3DMembrane(cartesianMesh, domainName);
+		}else if (dimension==2 && !bVolume) {
+			return fromMesh2DMembrane(cartesianMesh, domainName);
 		}else{
 			throw new RuntimeException("unsupported: mesh dimension = "+dimension+", volumeDomain ="+bVolume);
 		}
@@ -130,129 +127,210 @@ public class CartesianMeshMapping {
 	    return visMesh;
 	}
 
+	private VisMesh fromMesh2DMembrane(CartesianMesh cartesianMesh, String domainName){
+		ISize size = cartesianMesh.getSize();
+		int numX = size.getX();
+		int dimension = 2;
+
+		Vect3D origin = new Vect3D(cartesianMesh.getOrigin().x,cartesianMesh.getOrigin().y,cartesianMesh.getOrigin().z);
+		Vect3D extent = new Vect3D(cartesianMesh.getExtent().x,cartesianMesh.getExtent().y,cartesianMesh.getExtent().z);
+		VisMesh visMesh = new VisMesh(dimension, origin, extent); // invoke VisMesh() constructor
+		int currPointIndex = 0;
+		HashMap<String,Integer> pointDict = new HashMap<String,Integer>();
+		List<MembraneElement> membraneElements = cartesianMesh.getMembraneElements(domainName);
+
+		for (MembraneElement membraneElement : membraneElements){
+			// inside
+			int insideVolumeIndex = membraneElement.getInsideVolumeIndex();
+			int insideI = insideVolumeIndex % numX;
+			int insideJ = insideVolumeIndex / numX;
+			Box3D insideBox = cartesianMesh.getVolumeElementBox(insideI, insideJ, 0);
+			// outside
+			int outsideVolumeIndex = membraneElement.getOutsideVolumeIndex();
+			int outsideI = outsideVolumeIndex % numX;
+			int outsideJ = outsideVolumeIndex / numX;
+
+			VisPoint p1Coord;
+			VisPoint p2Coord;
+			double z = insideBox.z_lo;
+
+			if (insideI == outsideI + 1){
+				// x-   z cross y
+				double x = insideBox.x_lo;
+				p1Coord = new VisPoint(x,insideBox.y_lo,z);
+				p2Coord = new VisPoint(x,insideBox.y_hi,z);
+			}else if (outsideI == insideI + 1){
+				// x+   y cross z
+				double x = insideBox.x_hi;
+				p1Coord = new VisPoint(x,insideBox.y_hi,z);
+				p2Coord = new VisPoint(x,insideBox.y_lo,z);
+			}else if (insideJ == outsideJ + 1){
+				// y-   x cross z
+				double y = insideBox.y_lo;
+				p1Coord = new VisPoint(insideBox.x_lo,y,z);
+				p2Coord = new VisPoint(insideBox.x_hi,y,z);
+			}else if (outsideJ == insideJ + 1){
+				// y+   z cross x
+				double y = insideBox.y_hi;
+				p1Coord = new VisPoint(insideBox.x_hi,y,z);
+				p2Coord = new VisPoint(insideBox.x_lo,y,z);
+			}else{
+				throw new RuntimeException("inside/outside volume indices not reconciled in membraneElement "+membraneElement.getMembraneIndex()+" in domain "+domainName);
+			}
+
+			//
+			// make sure vertices are added to model without duplicates and get the assigned identifier.
+			//
+			String p1Key = toStringKey(p1Coord);
+			Integer i1 = pointDict.get(p1Key);
+			if (i1 == null){
+				pointDict.put(p1Key,currPointIndex);
+				i1 = currPointIndex;
+				visMesh.addToPoints(p1Coord);
+				currPointIndex++;
+			}
+
+			String p2Key = toStringKey(p2Coord);
+			Integer i2 = pointDict.get(p2Key);
+			if (i2 == null){
+				pointDict.put(p2Key,currPointIndex);
+				i2 = currPointIndex;
+				visMesh.addToPoints(p2Coord);
+				currPointIndex++;
+			}
+
+			VisLine lineSegment = new VisLine(i1, i2);
+			lineSegment.setFiniteVolumeIndex(new FiniteVolumeIndex(membraneElement.getMembraneIndex(),cartesianMesh.getMembraneRegionIndex(membraneElement.getMembraneIndex())));
+			//  print('adding a cell at level '+str(currLevel.getLevel())+" from "+str(p1Coord)+" to "+str(p3Coord))
+			visMesh.addToVisLines(lineSegment);
+
+		}
+		return visMesh;
+	}
+
 	private VisMesh fromMesh3DMembrane(CartesianMesh cartesianMesh, String domainName){
-	    ISize size = cartesianMesh.getSize();
-	    int numX = size.getX();
-	    int numY = size.getY();
-	    int dimension = 3;
-	   
-	    Vect3D origin = new Vect3D(cartesianMesh.getOrigin().x,cartesianMesh.getOrigin().y,cartesianMesh.getOrigin().z);
-	    Vect3D extent = new Vect3D(cartesianMesh.getExtent().x,cartesianMesh.getExtent().y,cartesianMesh.getExtent().z);
-	    VisMesh visMesh = new VisMesh(dimension, origin, extent); // invoke VisMesh() constructor
-	    int currPointIndex = 0;
-	    HashMap<String,Integer> pointDict = new HashMap<String,Integer>();
-	    List<MembraneElement> membraneElements = cartesianMesh.getMembraneElements(domainName);
-	    
-	    for (MembraneElement membraneElement : membraneElements){
-    		// inside
-    		int insideVolumeIndex = membraneElement.getInsideVolumeIndex();
+		ISize size = cartesianMesh.getSize();
+		int numX = size.getX();
+		int numY = size.getY();
+		int dimension = 3;
+
+		Vect3D origin = new Vect3D(cartesianMesh.getOrigin().x,cartesianMesh.getOrigin().y,cartesianMesh.getOrigin().z);
+		Vect3D extent = new Vect3D(cartesianMesh.getExtent().x,cartesianMesh.getExtent().y,cartesianMesh.getExtent().z);
+		VisMesh visMesh = new VisMesh(dimension, origin, extent); // invoke VisMesh() constructor
+		int currPointIndex = 0;
+		HashMap<String,Integer> pointDict = new HashMap<String,Integer>();
+		List<MembraneElement> membraneElements = cartesianMesh.getMembraneElements(domainName);
+
+		for (MembraneElement membraneElement : membraneElements){
+			// inside
+			int insideVolumeIndex = membraneElement.getInsideVolumeIndex();
 			int insideI = insideVolumeIndex % numX;
 			int insideJ = (insideVolumeIndex % (numX*numY))/numX;
-    		int insideK = insideVolumeIndex / (numX*numY);
-    		Box3D insideBox = cartesianMesh.getVolumeElementBox(insideI, insideJ, insideK);
-    		// outside
-    		int outsideVolumeIndex = membraneElement.getOutsideVolumeIndex();
+			int insideK = insideVolumeIndex / (numX*numY);
+			Box3D insideBox = cartesianMesh.getVolumeElementBox(insideI, insideJ, insideK);
+			// outside
+			int outsideVolumeIndex = membraneElement.getOutsideVolumeIndex();
 			int outsideI = outsideVolumeIndex % numX;
-    		int outsideJ = (outsideVolumeIndex % (numX*numY))/numX;
-    		int outsideK = outsideVolumeIndex / (numX*numY);
-    		
-            VisPoint p1Coord;
-            VisPoint p2Coord;
-            VisPoint p3Coord;
-            VisPoint p4Coord;
+			int outsideJ = (outsideVolumeIndex % (numX*numY))/numX;
+			int outsideK = outsideVolumeIndex / (numX*numY);
 
-            if (insideI == outsideI + 1){
-            	// x-   z cross y
-            	double x = insideBox.x_lo; 
-                p1Coord = new VisPoint(x,insideBox.y_lo,insideBox.z_lo);
-                p2Coord = new VisPoint(x,insideBox.y_lo,insideBox.z_hi);
-                p3Coord = new VisPoint(x,insideBox.y_hi,insideBox.z_hi);
-                p4Coord = new VisPoint(x,insideBox.y_hi,insideBox.z_lo);
-     		}else if (outsideI == insideI + 1){
-            	// x+   y cross z
-            	double x = insideBox.x_hi; 
-                p1Coord = new VisPoint(x,insideBox.y_lo,insideBox.z_lo);
-                p2Coord = new VisPoint(x,insideBox.y_hi,insideBox.z_lo);
-                p3Coord = new VisPoint(x,insideBox.y_hi,insideBox.z_hi);
-                p4Coord = new VisPoint(x,insideBox.y_lo,insideBox.z_hi);
-    		}else if (insideJ == outsideJ + 1){
-            	// y-   x cross z
-            	double y = insideBox.y_lo;
-                p1Coord = new VisPoint(insideBox.x_lo,y,insideBox.z_lo);
-                p2Coord = new VisPoint(insideBox.x_hi,y,insideBox.z_lo);
-                p3Coord = new VisPoint(insideBox.x_hi,y,insideBox.z_hi);
-                p4Coord = new VisPoint(insideBox.x_lo,y,insideBox.z_hi);
-    		}else if (outsideJ == insideJ + 1){
-            	// y+   z cross x
-            	double y = insideBox.y_hi; 
-                p1Coord = new VisPoint(insideBox.x_lo,y,insideBox.z_lo);
-                p2Coord = new VisPoint(insideBox.x_lo,y,insideBox.z_hi);
-                p3Coord = new VisPoint(insideBox.x_hi,y,insideBox.z_hi);
-                p4Coord = new VisPoint(insideBox.x_hi,y,insideBox.z_lo);
-    		}else if (insideK == outsideK + 1){
-            	// z-   y cross x
-            	double z = insideBox.z_lo; 
-                p1Coord = new VisPoint(insideBox.x_lo,insideBox.y_lo,z);
-                p2Coord = new VisPoint(insideBox.x_lo,insideBox.y_hi,z);
-                p3Coord = new VisPoint(insideBox.x_hi,insideBox.y_hi,z);
-                p4Coord = new VisPoint(insideBox.x_hi,insideBox.y_lo,z);    
-    		}else if (outsideK == insideK + 1){
-            	// z+   x cross y
-            	double z = insideBox.z_hi; 
-                p1Coord = new VisPoint(insideBox.x_lo,insideBox.y_lo,z);
-                p2Coord = new VisPoint(insideBox.x_hi,insideBox.y_lo,z);
-                p3Coord = new VisPoint(insideBox.x_hi,insideBox.y_hi,z);
-                p4Coord = new VisPoint(insideBox.x_lo,insideBox.y_hi,z);    
-    		}else{
-    			throw new RuntimeException("inside/outside volume indices not reconciled in membraneElement "+membraneElement.getMembraneIndex()+" in domain "+domainName);
-    		}
+			VisPoint p1Coord;
+			VisPoint p2Coord;
+			VisPoint p3Coord;
+			VisPoint p4Coord;
 
-            //
-            // make sure vertices are added to model without duplicates and get the assigned identifier.
-            //
-            String p1Key = toStringKey(p1Coord);
-            Integer i1 = pointDict.get(p1Key);
-            if (i1 == null){
-                pointDict.put(p1Key,currPointIndex);
-                i1 = currPointIndex;
-                visMesh.addToPoints(p1Coord);
-                currPointIndex++;
-            }
+			if (insideI == outsideI + 1){
+				// x-   z cross y
+				double x = insideBox.x_lo;
+				p1Coord = new VisPoint(x,insideBox.y_lo,insideBox.z_lo);
+				p2Coord = new VisPoint(x,insideBox.y_lo,insideBox.z_hi);
+				p3Coord = new VisPoint(x,insideBox.y_hi,insideBox.z_hi);
+				p4Coord = new VisPoint(x,insideBox.y_hi,insideBox.z_lo);
+			}else if (outsideI == insideI + 1){
+				// x+   y cross z
+				double x = insideBox.x_hi;
+				p1Coord = new VisPoint(x,insideBox.y_lo,insideBox.z_lo);
+				p2Coord = new VisPoint(x,insideBox.y_hi,insideBox.z_lo);
+				p3Coord = new VisPoint(x,insideBox.y_hi,insideBox.z_hi);
+				p4Coord = new VisPoint(x,insideBox.y_lo,insideBox.z_hi);
+			}else if (insideJ == outsideJ + 1){
+				// y-   x cross z
+				double y = insideBox.y_lo;
+				p1Coord = new VisPoint(insideBox.x_lo,y,insideBox.z_lo);
+				p2Coord = new VisPoint(insideBox.x_hi,y,insideBox.z_lo);
+				p3Coord = new VisPoint(insideBox.x_hi,y,insideBox.z_hi);
+				p4Coord = new VisPoint(insideBox.x_lo,y,insideBox.z_hi);
+			}else if (outsideJ == insideJ + 1){
+				// y+   z cross x
+				double y = insideBox.y_hi;
+				p1Coord = new VisPoint(insideBox.x_lo,y,insideBox.z_lo);
+				p2Coord = new VisPoint(insideBox.x_lo,y,insideBox.z_hi);
+				p3Coord = new VisPoint(insideBox.x_hi,y,insideBox.z_hi);
+				p4Coord = new VisPoint(insideBox.x_hi,y,insideBox.z_lo);
+			}else if (insideK == outsideK + 1){
+				// z-   y cross x
+				double z = insideBox.z_lo;
+				p1Coord = new VisPoint(insideBox.x_lo,insideBox.y_lo,z);
+				p2Coord = new VisPoint(insideBox.x_lo,insideBox.y_hi,z);
+				p3Coord = new VisPoint(insideBox.x_hi,insideBox.y_hi,z);
+				p4Coord = new VisPoint(insideBox.x_hi,insideBox.y_lo,z);
+			}else if (outsideK == insideK + 1){
+				// z+   x cross y
+				double z = insideBox.z_hi;
+				p1Coord = new VisPoint(insideBox.x_lo,insideBox.y_lo,z);
+				p2Coord = new VisPoint(insideBox.x_hi,insideBox.y_lo,z);
+				p3Coord = new VisPoint(insideBox.x_hi,insideBox.y_hi,z);
+				p4Coord = new VisPoint(insideBox.x_lo,insideBox.y_hi,z);
+			}else{
+				throw new RuntimeException("inside/outside volume indices not reconciled in membraneElement "+membraneElement.getMembraneIndex()+" in domain "+domainName);
+			}
 
-            String p2Key = toStringKey(p2Coord);
-            Integer i2 = pointDict.get(p2Key);
-            if (i2 == null){
-                pointDict.put(p2Key,currPointIndex);
-                i2 = currPointIndex;
-                visMesh.addToPoints(p2Coord);
-                currPointIndex++;
-            }
+			//
+			// make sure vertices are added to model without duplicates and get the assigned identifier.
+			//
+			String p1Key = toStringKey(p1Coord);
+			Integer i1 = pointDict.get(p1Key);
+			if (i1 == null){
+				pointDict.put(p1Key,currPointIndex);
+				i1 = currPointIndex;
+				visMesh.addToPoints(p1Coord);
+				currPointIndex++;
+			}
 
-            String p3Key = toStringKey(p3Coord);
-            Integer i3 = pointDict.get(p3Key);
-            if (i3 == null){
-                pointDict.put(p3Key, currPointIndex);
-                i3 = currPointIndex;
-                visMesh.addToPoints(p3Coord);
-                currPointIndex++;
-            }
+			String p2Key = toStringKey(p2Coord);
+			Integer i2 = pointDict.get(p2Key);
+			if (i2 == null){
+				pointDict.put(p2Key,currPointIndex);
+				i2 = currPointIndex;
+				visMesh.addToPoints(p2Coord);
+				currPointIndex++;
+			}
 
-            String p4Key = toStringKey(p4Coord);
-            Integer i4 = pointDict.get(p4Key);
-            if (i4 == null){
-                pointDict.put(p4Key,currPointIndex);
-                i4 = currPointIndex;
-                visMesh.addToPoints(p4Coord);
-                currPointIndex++;
-            }
+			String p3Key = toStringKey(p3Coord);
+			Integer i3 = pointDict.get(p3Key);
+			if (i3 == null){
+				pointDict.put(p3Key, currPointIndex);
+				i3 = currPointIndex;
+				visMesh.addToPoints(p3Coord);
+				currPointIndex++;
+			}
 
-            VisPolygon quad = new VisPolygon(Arrays.asList( new Integer[] { i1,i2,i3,i4 } ));
-            quad.setFiniteVolumeIndex(new FiniteVolumeIndex(membraneElement.getMembraneIndex(),cartesianMesh.getMembraneRegionIndex(membraneElement.getMembraneIndex())));
-          //  print('adding a cell at level '+str(currLevel.getLevel())+" from "+str(p1Coord)+" to "+str(p3Coord))
-            visMesh.addToPolygons(quad);
+			String p4Key = toStringKey(p4Coord);
+			Integer i4 = pointDict.get(p4Key);
+			if (i4 == null){
+				pointDict.put(p4Key,currPointIndex);
+				i4 = currPointIndex;
+				visMesh.addToPoints(p4Coord);
+				currPointIndex++;
+			}
 
-	    }
-	    return visMesh;
+			VisPolygon quad = new VisPolygon(Arrays.asList( new Integer[] { i1,i2,i3,i4 } ));
+			quad.setFiniteVolumeIndex(new FiniteVolumeIndex(membraneElement.getMembraneIndex(),cartesianMesh.getMembraneRegionIndex(membraneElement.getMembraneIndex())));
+			//  print('adding a cell at level '+str(currLevel.getLevel())+" from "+str(p1Coord)+" to "+str(p3Coord))
+			visMesh.addToPolygons(quad);
+
+		}
+		return visMesh;
 	}
 
 	private VisMesh fromMesh3DVolume(CartesianMesh cartesianMesh, String domainName){

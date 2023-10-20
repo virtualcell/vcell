@@ -11,7 +11,8 @@ shopt -s -o nounset
 
 cd /config
 
-PATH=/installer/install4j8.0.5/bin:$PATH
+PATH=/installer/install4j10.0.5/bin:$PATH
+INSTALL4JC=/installer/install4j10.0.5/bin/install4jc
 
 #
 # retrieve text secrets from file (docker-compose 'secrets' mounts these files in memory at runtime)
@@ -23,26 +24,7 @@ macCodeSignKeystore_pswd=`cat $macCodeSignKeystore_pswdfile`
 #
 # install Install4J product key (only really needed first time when running this Docker container)
 #
-/installer/install4j8.0.5/bin/install4jc -L $Install4J_product_key
-
-#echo "jres found in /jres are `ls /jres`"
-#cp /jres/* /config
-#echo "jres found in /config are `ls /config`"
-# if [ -e /config/macosx-amd64-1.8.0_66.tar.gz ] ; then
-# 	echo
-# 	echo "found /config/macosx-amd64-1.8.0_66.tar.gz"
-# 	echo
-# else
-# 	echo
-# 	echo "could not find /config/macosx-amd64-1.8.0_66.tar.gz"
-# 	echo
-# fi	
-
-# cd /jres
-#       - macJre=macosx-amd64-1.8.0_141
-#       - win64Jre=windows-amd64-1.8.0_141
-#       - win32Jre=windows-x86-1.8.0_141
-
+$INSTALL4JC -L $Install4J_product_key
 
 #
 # run install4jc to create installers for VCell Client on supported platforms.
@@ -50,7 +32,7 @@ macCodeSignKeystore_pswd=`cat $macCodeSignKeystore_pswdfile`
 #Separate build of win, linux and mac installers to avoid random failure due to threading
 
 #Generate Windows 64bit installers
-/installer/install4j8.0.5/bin/install4jc \
+$INSTALL4JC \
 	-b 349 \
 	--win-keystore-password=$winCodeSignKeystore_pswd \
 	--mac-keystore-password=$macCodeSignKeystore_pswd \
@@ -58,11 +40,6 @@ macCodeSignKeystore_pswd=`cat $macCodeSignKeystore_pswdfile`
 vcellIcnsFile=/config/icons/vcell.icns,\
 outputDir=/outputdir,\
 mavenRootDir=/vcellclient,\
-macJrePath=/jres/$macJre,\
-win64JrePath=/jres/$win64Jre,\
-win32JrePath=/jres/$win32Jre,\
-linux64JrePath=/jres/$linux64Jre,\
-linux32JrePath=/jres/$linux32Jre,\
 macKeystore=$macCodeSignKeystore_p12,\
 winKeystore=$winCodeSignKeystore_pfx,\
 applicationId=$compiler_applicationId,\
@@ -79,7 +56,7 @@ bioformatsJarDownloadURL=$compiler_bioformatsJarDownloadURL\
 mv /outputdir/updates.xml /outputdir/updates_win64.xml
 
 #Generate Windows 32bit installers
-/installer/install4j8.0.5/bin/install4jc \
+$INSTALL4JC \
 	-b 450 \
 	--win-keystore-password=$winCodeSignKeystore_pswd \
 	--mac-keystore-password=$macCodeSignKeystore_pswd \
@@ -87,11 +64,6 @@ mv /outputdir/updates.xml /outputdir/updates_win64.xml
 vcellIcnsFile=/config/icons/vcell.icns,\
 outputDir=/outputdir,\
 mavenRootDir=/vcellclient,\
-macJrePath=/jres/$macJre,\
-win64JrePath=/jres/$win64Jre,\
-win32JrePath=/jres/$win32Jre,\
-linux64JrePath=/jres/$linux64Jre,\
-linux32JrePath=/jres/$linux32Jre,\
 macKeystore=$macCodeSignKeystore_p12,\
 winKeystore=$winCodeSignKeystore_pfx,\
 applicationId=$compiler_applicationId,\
@@ -108,7 +80,7 @@ bioformatsJarDownloadURL=$compiler_bioformatsJarDownloadURL\
 mv /outputdir/updates.xml /outputdir/updates_win32.xml
 
 #Generate linux 64bit installers
-/installer/install4j8.0.5/bin/install4jc \
+$INSTALL4JC \
 	-b 652 \
 	--win-keystore-password=$winCodeSignKeystore_pswd \
 	--mac-keystore-password=$macCodeSignKeystore_pswd \
@@ -116,11 +88,6 @@ mv /outputdir/updates.xml /outputdir/updates_win32.xml
 vcellIcnsFile=/config/icons/vcell.icns,\
 outputDir=/outputdir,\
 mavenRootDir=/vcellclient,\
-macJrePath=/jres/$macJre,\
-win64JrePath=/jres/$win64Jre,\
-win32JrePath=/jres/$win32Jre,\
-linux64JrePath=/jres/$linux64Jre,\
-linux32JrePath=/jres/$linux32Jre,\
 macKeystore=$macCodeSignKeystore_p12,\
 winKeystore=$winCodeSignKeystore_pfx,\
 applicationId=$compiler_applicationId,\
@@ -137,7 +104,7 @@ bioformatsJarDownloadURL=$compiler_bioformatsJarDownloadURL\
 mv /outputdir/updates.xml /outputdir/updates_linux64.xml
 
 #Generate linux 32bit installers
-/installer/install4j8.0.5/bin/install4jc \
+$INSTALL4JC \
 	-b 547 \
 	--win-keystore-password=$winCodeSignKeystore_pswd \
 	--mac-keystore-password=$macCodeSignKeystore_pswd \
@@ -145,11 +112,6 @@ mv /outputdir/updates.xml /outputdir/updates_linux64.xml
 vcellIcnsFile=/config/icons/vcell.icns,\
 outputDir=/outputdir,\
 mavenRootDir=/vcellclient,\
-macJrePath=/jres/$macJre,\
-win64JrePath=/jres/$win64Jre,\
-win32JrePath=/jres/$win32Jre,\
-linux64JrePath=/jres/$linux64Jre,\
-linux32JrePath=/jres/$linux32Jre,\
 macKeystore=$macCodeSignKeystore_p12,\
 winKeystore=$winCodeSignKeystore_pfx,\
 applicationId=$compiler_applicationId,\
@@ -167,7 +129,7 @@ mv /outputdir/updates.xml /outputdir/updates_linux32.xml
 
 
 #Generate mac 64bit installer
-/installer/install4j8.0.5/bin/install4jc \
+$INSTALL4JC \
 	-b 105 \
 	--win-keystore-password=$winCodeSignKeystore_pswd \
 	--mac-keystore-password=$macCodeSignKeystore_pswd \
@@ -175,11 +137,6 @@ mv /outputdir/updates.xml /outputdir/updates_linux32.xml
 vcellIcnsFile=/config/icons/vcell.icns,\
 outputDir=/outputdir,\
 mavenRootDir=/vcellclient,\
-macJrePath=/jres/$macJre,\
-win64JrePath=/jres/$win64Jre,\
-win32JrePath=/jres/$win32Jre,\
-linux64JrePath=/jres/$linux64Jre,\
-linux32JrePath=/jres/$linux32Jre,\
 macKeystore=$macCodeSignKeystore_p12,\
 winKeystore=$winCodeSignKeystore_pfx,\
 applicationId=$compiler_applicationId,\

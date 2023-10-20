@@ -354,7 +354,6 @@ public static Table[] getVCellTables() {
 		cbit.vcell.modeldb.ExternalDataTable.table,
 		cbit.vcell.modeldb.MathDescExternalDataLinkTable.table,
 		cbit.vcell.modeldb.MIRIAMTable.table,
-		cbit.vcell.messaging.db.ServiceTable.table,
 		cbit.vcell.modeldb.ApiClientTable.table,
 		cbit.vcell.modeldb.ApiAccessTokenTable.table,
 		cbit.vcell.modeldb.PublicationTable.table,

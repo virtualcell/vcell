@@ -9,68 +9,6 @@
  */
 
 package cbit.vcell.simdata;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.Vector;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
-
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
-import org.apache.commons.compress.archivers.zip.ZipFile;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.vcell.service.VCellServiceHelper;
-import org.vcell.solver.nfsim.NFSimMolecularConfigurations;
-import org.vcell.util.CacheException;
-import org.vcell.util.Coordinate;
-import org.vcell.util.CoordinateIndex;
-import org.vcell.util.DataAccessException;
-import org.vcell.util.Extent;
-import org.vcell.util.FileUtils;
-import org.vcell.util.ISize;
-import org.vcell.util.NumberUtils;
-import org.vcell.util.ObjectNotFoundException;
-import org.vcell.util.Origin;
-import org.vcell.util.TokenMangler;
-import org.vcell.util.document.ExternalDataIdentifier;
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.SimResampleInfoProvider;
-import org.vcell.util.document.TSJobResultsNoStats;
-import org.vcell.util.document.TSJobResultsSpaceStats;
-import org.vcell.util.document.TSJobResultsTimeStats;
-import org.vcell.util.document.TimeSeriesJobResults;
-import org.vcell.util.document.TimeSeriesJobSpec;
-import org.vcell.util.document.User;
-import org.vcell.util.document.VCDataIdentifier;
-import org.vcell.util.document.VCDataJobID;
-import org.vcell.vis.io.ChomboFiles;
-import org.vcell.vis.io.ComsolSimFiles;
-import org.vcell.vis.io.MovingBoundarySimFiles;
-import org.vcell.vis.io.VCellSimFiles;
-import org.vcell.vis.io.VtuFileContainer;
-import org.vcell.vis.io.VtuVarInfo;
-import org.vcell.vis.io.VtuVarInfo.DataType;
-import org.vcell.vis.mapping.chombo.ChomboVtkFileWriter;
-import org.vcell.vis.mapping.comsol.ComsolVtkFileWriter;
-import org.vcell.vis.mapping.movingboundary.MovingBoundaryVtkFileWriter;
-import org.vcell.vis.mapping.vcell.CartesianMeshVtkFileWriter;
 
 import cbit.image.VCImageUncompressed;
 import cbit.plot.PlotData;
@@ -85,24 +23,12 @@ import cbit.vcell.field.FieldUtilities;
 import cbit.vcell.field.io.FieldDataFileOperationResults;
 import cbit.vcell.field.io.FieldDataFileOperationSpec;
 import cbit.vcell.geometry.RegionImage;
-import cbit.vcell.math.GradientFunctionDefinition;
-import cbit.vcell.math.InsideVariable;
-import cbit.vcell.math.MathException;
-import cbit.vcell.math.OutsideVariable;
-import cbit.vcell.math.ReservedVariable;
+import cbit.vcell.math.*;
 import cbit.vcell.math.Variable.Domain;
-import cbit.vcell.math.VariableType;
 import cbit.vcell.math.VariableType.VariableDomain;
 import cbit.vcell.message.messages.MessageConstants;
 import cbit.vcell.mongodb.VCMongoMessage;
-import cbit.vcell.parser.DivideByZeroException;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionBindingException;
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.FunctionInvocation;
-import cbit.vcell.parser.SimpleSymbolTable;
-import cbit.vcell.parser.SymbolTableEntry;
-import cbit.vcell.parser.VariableSymbolTable;
+import cbit.vcell.parser.*;
 import cbit.vcell.resource.NativeLib;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.simdata.DataOperation.DataProcessingOutputDataValuesOP.DataIndexHelper;
@@ -110,13 +36,8 @@ import cbit.vcell.simdata.DataOperation.DataProcessingOutputDataValuesOP.TimePoi
 import cbit.vcell.simdata.DataOperation.DataProcessingOutputInfoOP;
 import cbit.vcell.simdata.DataOperation.DataProcessingOutputTimeSeriesOP;
 import cbit.vcell.simdata.DataOperationResults.DataProcessingOutputDataValues;
-import cbit.vcell.solver.AnnotatedFunction;
+import cbit.vcell.solver.*;
 import cbit.vcell.solver.AnnotatedFunction.FunctionCategory;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SolverUtilities;
-import cbit.vcell.solver.VCSimulationDataIdentifier;
-import cbit.vcell.solver.VCSimulationDataIdentifierOldStyle;
-import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.test.MathTestingUtilities;
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.solvers.FVSolverStandalone;
@@ -125,14 +46,28 @@ import cbit.vcell.solvers.mb.MovingBoundaryReader;
 import cbit.vcell.util.AmplistorUtils;
 import cbit.vcell.util.EventRateLimiter;
 import cbit.vcell.xml.XmlParseException;
-import ncsa.hdf.object.Attribute;
-import ncsa.hdf.object.Dataset;
-import ncsa.hdf.object.Datatype;
-import ncsa.hdf.object.FileFormat;
-import ncsa.hdf.object.Group;
-import ncsa.hdf.object.HObject;
-import ncsa.hdf.object.Metadata;
+import com.google.inject.Inject;
+import ncsa.hdf.object.*;
 import ncsa.hdf.object.h5.H5ScalarDS;
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipFile;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.vcell.solver.nfsim.NFSimMolecularConfigurations;
+import org.vcell.util.*;
+import org.vcell.util.document.*;
+import org.vcell.vis.io.*;
+import org.vcell.vis.io.VtuVarInfo.DataType;
+import org.vcell.vis.mapping.chombo.ChomboVtkFileWriter;
+import org.vcell.vis.mapping.comsol.ComsolVtkFileWriter;
+import org.vcell.vis.mapping.movingboundary.MovingBoundaryVtkFileWriter;
+import org.vcell.vis.mapping.vcell.CartesianMeshVtkFileWriter;
+
+import java.io.*;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 /**
  * This interface was generated by a SmartGuide.
  * 
@@ -140,7 +75,10 @@ import ncsa.hdf.object.h5.H5ScalarDS;
 
 public class DataSetControllerImpl implements SimDataConstants,DataJobListenerHolder {
 	public static final Logger lg = LogManager.getLogger(DataSetControllerImpl.class);
-	
+
+	@Inject
+	private static ExternalDataIdentifierService extDataIDService;
+
 	private boolean bAllowOptimizedTimeDataRetrieval = true;
 	
 	private static final int TXYZ_OFFSET = 4;
@@ -479,7 +417,7 @@ private SpatialStatsInfo calcSpatialStatsInfo(OutputContext outputContext,TimeSe
 		    Boolean isVolume = null;
 		    for(int j=0;j<dataIDs.length;j+= 1){
 			    if(dataIDs[j].getName().equals(timeSeriesJobSpec.getVariableNames()[i])){
-				    isVolume = new Boolean(dataIDs[j].getVariableType().equals(VariableType.VOLUME) || dataIDs[j].getVariableType().equals(VariableType.VOLUME_REGION));
+				    isVolume = dataIDs[j].getVariableType().equals(VariableType.VOLUME) || dataIDs[j].getVariableType().equals(VariableType.VOLUME_REGION);
 				    break;
 			    }
 		    }
@@ -654,12 +592,12 @@ public DataOperationResults doDataOperation(DataOperation dataOperation) throws 
 		File dataProcessingOutputFileHDF5 = ((SimulationData)getVCData(dataOperation.getVCDataIdentifier())).getDataProcessingOutputSourceFileHDF5();
 		DataOperationResults dataOperationResults = getDataProcessingOutput(dataOperation,dataProcessingOutputFileHDF5);
 		if(vcDataJobID != null){
-			fireDataJobEventIfNecessary(vcDataJobID,MessageEvent.DATA_COMPLETE, dataOperation.getVCDataIdentifier(), new Double(0), ((DataOperationResults.DataProcessingOutputTimeSeriesValues)dataOperationResults).getTimeSeriesJobResults(),null);
+			fireDataJobEventIfNecessary(vcDataJobID,MessageEvent.DATA_COMPLETE, dataOperation.getVCDataIdentifier(), 0.0, ((DataOperationResults.DataProcessingOutputTimeSeriesValues)dataOperationResults).getTimeSeriesJobResults(),null);
 		}
 		return dataOperationResults;
 	}catch(Exception e){
 		if(vcDataJobID != null){
-			fireDataJobEventIfNecessary(vcDataJobID,MessageEvent.DATA_FAILURE, dataOperation.getVCDataIdentifier(), new Double(0), null,e);	
+			fireDataJobEventIfNecessary(vcDataJobID,MessageEvent.DATA_FAILURE, dataOperation.getVCDataIdentifier(), 0.0, null,e);
 		}
 		if(e instanceof DataAccessException){
 			throw (DataAccessException)e;
@@ -1566,15 +1504,6 @@ private VolumeIndexNearFar interpolateFindNearFarIndex(CartesianMesh mesh,int me
 	return new VolumeIndexNearFar(volIndexNear,volIndexFar);
 }
 
-/**
- * Insert the method's description here.
- * Creation date: (10/13/00 9:13:52 AM)
- * @return cbit.vcell.simdata.SimDataBlock
- * @param user cbit.vcell.server.User
- * @param simResults cbit.vcell.simdata.SimResults
- * @param function cbit.vcell.math.Function
- * @param time double
- */
 private SimDataBlock evaluateFunction(
 		OutputContext outputContext,
 	final VCDataIdentifier vcdID, 
@@ -2452,15 +2381,7 @@ private Vector<DataSetIdentifier> identifyDataDependencies(AnnotatedFunction fun
 	
 	return dependencyList;
 }
-/**
- * Insert the method's description here.
- * Creation date: (10/13/00 9:13:52 AM)
- * @return cbit.vcell.simdata.SimDataBlock
- * @param user cbit.vcell.server.User
- * @param simResults cbit.vcell.simdata.SimResults
- * @param function cbit.vcell.math.Function
- * @param time double
- */
+
 private FunctionIndexes[] findFunctionIndexes(VCDataIdentifier vcdID,AnnotatedFunction function,int[] dataIndexes,OutputContext outputContext)
 	throws ExpressionException, DataAccessException, IOException, MathException {
 
@@ -2903,7 +2824,7 @@ private FieldDataIdentifierSpec[] getFieldDataIdentifierSpecs(
 	return fieldDataIdentifierSpecs;
 }
 
-public static FieldDataIdentifierSpec[] getFieldDataIdentifierSpecs_private(
+private static FieldDataIdentifierSpec[] getFieldDataIdentifierSpecs_private(
 FieldFunctionArguments[] fieldFuncArgumentsArr,User user,boolean bForceUpdate, HashMap<User, Vector<ExternalDataIdentifier>> userExtDataIDH2) throws DataAccessException{
 
 	Vector<ExternalDataIdentifier> userExtDataIdentifiersV = userExtDataIDH2.get(user);
@@ -2911,7 +2832,6 @@ FieldFunctionArguments[] fieldFuncArgumentsArr,User user,boolean bForceUpdate, H
 		userExtDataIdentifiersV.size() < fieldFuncArgumentsArr.length ||
 		bForceUpdate){
 		//must refresh
-		ExternalDataIdentifierService extDataIDService = VCellServiceHelper.getInstance().loadService(ExternalDataIdentifierService.class);
 		userExtDataIDH2 = extDataIDService.getAllExternalDataIdentifiers();
 		userExtDataIdentifiersV = userExtDataIDH2.get(user);
 	}
@@ -2982,13 +2902,6 @@ private VariableType getVariableTypeForFieldFunction(OutputContext outputContext
 	return funcType;
 }
 
-/**
- * This method was created by a SmartGuide.
- * @return cbit.plot.PlotData
- * @param varName java.lang.String
- * @param begin cbit.vcell.math.CoordinateIndex
- * @param end cbit.vcell.math.CoordinateIndex
- */
 public PlotData getLineScan(OutputContext outputContext, VCDataIdentifier vcdID, String varName, double time, SpatialSelection spatialSelection) throws DataAccessException, MathException {
 	try {
 		if (spatialSelection == null){
@@ -3172,13 +3085,6 @@ public CartesianMesh getMesh(VCDataIdentifier vcdID) throws DataAccessException,
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (1/14/00 1:43:47 PM)
- * @return cbit.vcell.simdata.ODEDataBlock
- * @param user cbit.vcell.server.User
- * @param simID java.lang.String
- */
 public ODEDataBlock getODEDataBlock(VCDataIdentifier vcdID) throws DataAccessException {
 	
 	if (lg.isTraceEnabled()) lg.trace("DataSetControllerImpl.getODEDataBlock()");
@@ -3216,13 +3122,6 @@ public ODEDataBlock getODEDataBlock(VCDataIdentifier vcdID) throws DataAccessExc
 	}
 }
 
-
-/**
- * This method was created by a SmartGuide.
- * @return double[]
- * @param varName java.lang.String
- * @param time double
- */
 public ParticleDataBlock getParticleDataBlock(VCDataIdentifier vcdID, double time) throws DataAccessException {
 	if (lg.isTraceEnabled()) lg.trace("DataSetControllerImpl.getParticleDataBlock(" + time + ")");
 
@@ -3522,7 +3421,7 @@ private TimeSeriesJobResults getSpecialTimeSeriesValues(OutputContext outputCont
 								timeSeriesJobSpec.getVcDataJobID(),
 								MessageEvent.DATA_PROGRESS,
 								vcdID,
-								new Double(progressTime),
+								progressTime,
 								null,null
 							);
 				SimDataBlock simDatablock = getSimDataBlock(outputContext,vcdID, variableNames[varNameIndex], timeInfo.desiredTimeValues[timeIndex]);
@@ -3589,7 +3488,7 @@ private TimeSeriesJobResults getSpecialTimeSeriesValues(OutputContext outputCont
 								timeSeriesJobSpec.getVcDataJobID(),
 								MessageEvent.DATA_PROGRESS,
 								vcdID,
-								new Double(progressTime),
+								progressTime,
 								null,null
 							);
 				SimDataBlock simDatablock = getSimDataBlock(outputContext,vcdID, variableNames[varNameIndex], timeInfo.desiredTimeValues[timeIndex]);
@@ -3754,7 +3653,7 @@ private TimeSeriesJobResults getTimeSeriesValues_private(OutputContext outputCon
 								timeSeriesJobSpec.getVcDataJobID(),
 								MessageEvent.DATA_PROGRESS,
 								vcdID,
-								new Double(progress),
+								progress,
 								null,null
 							);
 					}
@@ -3776,7 +3675,7 @@ private TimeSeriesJobResults getTimeSeriesValues_private(OutputContext outputCon
 							timeSeriesJobSpec.getVcDataJobID(),
 							MessageEvent.DATA_PROGRESS,
 							vcdID,
-							new Double(NumberUtils.formatNumber(
+							Double.parseDouble(NumberUtils.formatNumber(
 								100.0*(double)(k*desiredTimeValues.length+i)/
 								(double)(timeSeriesJobSpec.getVariableNames().length*desiredTimeValues.length),3)),
 							null,null
@@ -3797,7 +3696,7 @@ private TimeSeriesJobResults getTimeSeriesValues_private(OutputContext outputCon
 							timeSeriesJobSpec.getVcDataJobID(),
 							MessageEvent.DATA_PROGRESS,
 							vcdID,
-							new Double(NumberUtils.formatNumber(
+							Double.parseDouble(NumberUtils.formatNumber(
 								100.0*(double)(k*desiredTimeValues.length+i)/
 								(double)(timeSeriesJobSpec.getVariableNames().length*desiredTimeValues.length),3)),
 							null,null
@@ -3888,14 +3787,14 @@ private TimeSeriesJobResults getTimeSeriesValues_private(OutputContext outputCon
 public TimeSeriesJobResults getTimeSeriesValues(OutputContext outputContext,final VCDataIdentifier vcdID,final TimeSeriesJobSpec timeSeriesJobSpec) throws DataAccessException {
 
 	fireDataJobEventIfNecessary(timeSeriesJobSpec.getVcDataJobID(), 
-		MessageEvent.DATA_START, vcdID,	new Double(0), null, null);
+		MessageEvent.DATA_START, vcdID,	0.0, null, null);
 
 	dataCachingEnabled = false;
 	Exception failException = null;
 	try{
 		TimeSeriesJobResults timeSeriesJobResults = getTimeSeriesValues_private(outputContext,vcdID,timeSeriesJobSpec);
 		fireDataJobEventIfNecessary(timeSeriesJobSpec.getVcDataJobID(),
-			MessageEvent.DATA_COMPLETE, vcdID, new Double(100), timeSeriesJobResults, null);
+			MessageEvent.DATA_COMPLETE, vcdID, 100.0, timeSeriesJobResults, null);
 		
 		return timeSeriesJobResults;		
 	}catch (Exception e) {
@@ -3910,7 +3809,7 @@ public TimeSeriesJobResults getTimeSeriesValues(OutputContext outputContext,fina
 		dataCachingEnabled = true;
 		if(failException != null){
 			fireDataJobEventIfNecessary(timeSeriesJobSpec.getVcDataJobID(),
-				MessageEvent.DATA_FAILURE, vcdID, new Double(0), null,failException);			
+				MessageEvent.DATA_FAILURE, vcdID, 0.0, null,failException);
 		}
 	}
 }
@@ -3954,12 +3853,6 @@ private File getSecondaryUserDir(User user) throws FileNotFoundException {
 	}
 }
 
-/**
- * This method was created in VisualAge.
- * @return cbit.vcell.simdata.SimResults
- * @param user User
- * @param simID java.lang.String
- */
 public VCData getVCData(VCDataIdentifier vcdID) throws DataAccessException, IOException {
 	VCMongoMessage.sendTrace("DataSetControllerImpl.getVCData("+vcdID.getID()+") ... <<ENTER>>");
 

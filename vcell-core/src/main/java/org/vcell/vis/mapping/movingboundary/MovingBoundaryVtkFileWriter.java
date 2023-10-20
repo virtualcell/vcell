@@ -139,7 +139,7 @@ public class MovingBoundaryVtkFileWriter {
 	}
 
 	
-	public VtuFileContainer getEmptyVtuMeshFiles(MovingBoundarySimFiles movingBoundaryFiles, int timeIndex, File destinationDirectory) throws IOException, MathException, DataAccessException {
+	public VtuFileContainer getEmptyVtuMeshFiles(MovingBoundarySimFiles movingBoundaryFiles, int timeIndex, File destinationDirectory) throws IOException, MathException, DataAccessException, InterruptedException {
 		//
 		// find mesh for each file at time 0
 		//
@@ -177,7 +177,7 @@ public class MovingBoundaryVtkFileWriter {
 		return vtuFileContainer;
 	}
 
-	public File[] writeEmptyMeshFiles(MovingBoundarySimFiles movingBoundaryFiles, int timeIndex, File destinationDirectory, ProgressListener progressListener) throws IOException, MathException, DataAccessException {
+	public File[] writeEmptyMeshFiles(MovingBoundarySimFiles movingBoundaryFiles, int timeIndex, File destinationDirectory, ProgressListener progressListener) throws IOException, MathException, DataAccessException, InterruptedException {
 		
 		HashMap<String, VisMesh> domainMeshMap = new HashMap<String, VisMesh>();
 		ArrayList<String> allDomainNames = new ArrayList<String>();

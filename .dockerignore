@@ -84,7 +84,7 @@ instance/
 .scrapy
 
 # Sphinx documentation
-docs/_build/
+docs-misc/_build/
 
 # PyBuilder
 .pybuilder/
@@ -277,7 +277,6 @@ out/
 
 # result dir
 results/
-sample_omex_files/
 
 # mpeltonen/sbt-idea plugin
 .idea_modules/

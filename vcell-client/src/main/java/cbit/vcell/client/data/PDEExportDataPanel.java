@@ -1147,7 +1147,7 @@ private ExportSpecs.SimulationSelector createSimulationSelector(){
 								new ExportSpecs.SimNameSimDataID(
 									simulations[choices[i]].getName(),
 									simulations[choices[i]].getSimulationInfo().getAuthoritativeVCSimulationIdentifier(),
-									SimResultsViewer.getParamScanInfo(simulations[choices[i]], (currentSimNameSimDataID==null?0:currentSimNameSimDataID.getDefaultJobIndex()))
+									ExportSpecs.getParamScanInfo(simulations[choices[i]], (currentSimNameSimDataID==null?0:currentSimNameSimDataID.getDefaultJobIndex()))
 								);
 						}
 					}

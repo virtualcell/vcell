@@ -172,6 +172,9 @@ public class PropertyLoader {
 	public static final String dbPasswordValue				= record("vcell.server.dbPassword",ValueType.GEN);
 	public static final String dbPasswordFile				= record("vcell.db.pswdfile",ValueType.GEN);
 
+	// e.g. user.timezone="-05:00" for EST - needed for oracle
+	public static final String userTimezone					= record("user.timezone",ValueType.GEN);
+
 	public static final String jmsIntHostInternal			= record("vcell.jms.int.host.internal",ValueType.GEN);
 	public static final String jmsIntPortInternal			= record("vcell.jms.int.port.internal",ValueType.GEN);
 	public static final String jmsSimHostInternal			= record("vcell.jms.sim.host.internal",ValueType.GEN);
@@ -248,6 +251,10 @@ public class PropertyLoader {
 	public static final String cmdSrvcSshCmdRestoreTimeoutFactor = record("vcell.ssh.cmd.restoretimeout", ValueType.GEN);
 	
 	public static final String cliWorkingDir = record("cli.workingDir", ValueType.DIR);
+	public static final String vtkPythonDir = record("vcell.vtk.pythonDir", ValueType.DIR);
+
+	
+	public static final String enableSpringSaLaD = record("vcell.enableSpringSaLaD", ValueType.BOOL);
 	
 	public static final String enableSpringSaLaD = record("vcell.enableSpringSaLaD", ValueType.BOOL);
 	
@@ -256,7 +263,7 @@ public class PropertyLoader {
 	 */
 	public static final String NATIVE_LIB_DIR = record("vcell.lib", ValueType.DIR);
 
-	private static File systemTemporaryDirectory = null;
+    private static File systemTemporaryDirectory = null;
 	private static Logger lg = LogManager.getLogger(PropertyLoader.class);
 
 	private enum ValueType {

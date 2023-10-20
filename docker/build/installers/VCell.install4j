@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<install4j version="8.0.5" transformSequenceNumber="8">
+<install4j version="10.0.6" transformSequenceNumber="10">
   <directoryPresets config="../target" />
-  <application name="The Virtual Cell ${compiler:Site}" applicationId="${compiler:applicationId}" mediaDir="${compiler:outputDir}" compression="9" lzmaCompression="true" shortName="VCell_${compiler:Site}" publisher="University of Connecticut Health Center" publisherWeb="http://vcell.org" version="${compiler:vcellVersion}.${compiler:vcellBuild}" allPathsRelative="true" backupOnSave="true" autoSave="true" macVolumeId="dcbbe26700a89e7f" javaMinVersion="1.8.0_66" allowBetaVM="true">
+  <application name="The Virtual Cell ${compiler:Site}" applicationId="${compiler:applicationId}" mediaDir="${compiler:outputDir}" compression="9" lzmaCompression="true" shortName="VCell_${compiler:Site}" publisher="University of Connecticut Health Center" publisherWeb="http://vcell.org" version="${compiler:vcellVersion}.${compiler:vcellBuild}" allPathsRelative="true" backupOnSave="true" autoSave="true" macVolumeId="dcbbe26700a89e7f" javaMinVersion="17" allowBetaVM="true">
     <variables>
       <variable name="updateSiteBaseUrl" value="NO-UPDATE-SITE" />
       <variable name="vcellIcnsFile" value="NO-ICNS-FILE" />
@@ -18,13 +18,7 @@
       <variable name="vcell5SplashScreenPngFilePath" value="${compiler:mavenRootDir}/vcellSplash.png" />
       <variable name="vcellLocalSolversDirPath" value="${compiler:mavenRootDir}/localsolvers" />
       <variable name="vcellLicenseFilePath" value="${compiler:mavenRootDir}/thirdpartylicenses.txt" />
-      <variable name="vcellPythonPath" value="${compiler:mavenRootDir}/pythonScripts" />
       <variable name="vcellbngPerlPath" value="${compiler:mavenRootDir}/bionetgen" />
-      <variable name="macJrePath" value="NO-MAC-JRE-PATH" />
-      <variable name="win32JrePath" value="NO-WIN32-JRE-PATH" />
-      <variable name="win64JrePath" value="NO-WIN64-JRE-PATH" />
-      <variable name="linux64JrePath" value="NO-LINUX64-JRE-PATH" />
-      <variable name="linux32JrePath" value="NO-LINUX32-JRE-PATH" />
     </variables>
     <codeSigning macEnabled="true" macPkcs12File="${compiler:macKeystore}" windowsEnabled="true" windowsPkcs12File="${compiler:winKeystore}">
       <macAdditionalBinaries>
@@ -40,6 +34,7 @@
         <entry>NFsim_x64</entry>
       </macAdditionalBinaries>
     </codeSigning>
+    <jreBundles jdkProviderId="JBR" release="17/17.0.7-b1000.6" />
   </application>
   <files keepModificationTimes="true" globalExcludeSuffixes=".svn,.DS_Store">
     <filesets>
@@ -60,7 +55,6 @@
       <mountPoint id="719" location="lib" />
       <mountPoint id="1473" location="resources" />
       <mountPoint id="1474" location="localsolvers" />
-      <mountPoint id="1748" location="pythonScripts" />
       <mountPoint id="1750" location="bionetgen" />
       <mountPoint id="1348" root="1114" location="nativelibs" />
       <mountPoint id="1349" root="1114" location="nativelibs/mac64" />
@@ -89,7 +83,6 @@
     <entries>
       <dirEntry mountPoint="719" file="${compiler:vcellLibSourcePath}" subDirectory="maven-jars" />
       <fileEntry mountPoint="1473" file="${compiler:vcellLicenseFilePath}" />
-      <dirEntry mountPoint="1748" file="${compiler:vcellPythonPath}" />
       <dirEntry mountPoint="1750" file="${compiler:vcellbngPerlPath}" />
       <dirEntry mountPoint="1349" file="${compiler:vcellNativeLibsDirSourcePath}/mac64" />
       <dirEntry mountPoint="1353" file="${compiler:vcellLocalSolversDirPath}/mac64" fileMode="755" overrideFileMode="true" />
@@ -122,7 +115,7 @@
     <launcher name="VCell-${compiler:Site}-MacOSX" id="102" icnsFile="${compiler:vcellIcnsFile}">
       <executable name="VCell-${compiler:Site}" iconSet="true" failOnStderrOutput="false" executableMode="gui" checkConsoleParameter="true" dpiAware="false" />
       <splashScreen show="true" bitmapFile="${compiler:vcell5SplashScreenPngFilePath}" textOverlay="true" />
-      <java mainClass="cbit.vcell.client.test.VCellClientTest" vmParameters="&quot;-Dvcell.installDir=${launcher:sys.launcherDirectory}&quot;">
+      <java mainClass="cbit.vcell.client.VCellClientMain" vmParameters="&quot;-Dvcell.installDir=${launcher:sys.launcherDirectory}&quot;">
         <classPath>
           <scanDirectory location="lib" failOnError="false" />
         </classPath>
@@ -130,7 +123,6 @@
           <directory name="nativelibs/mac64" />
         </nativeLibraryDirectories>
       </java>
-      <macStaticAssociationActions mode="selected" />
       <vmOptionsFile mode="content" overwriteMode="1">
         <content>-Dvcell.autoflushlog=true
 -Dvcell.thirdPartyLicense=thirdpartylicenses.txt
@@ -159,7 +151,7 @@
     <launcher name="VCell-${compiler:Site}-Windows64" id="345" icnsFile="${compiler:vcellIcnsFile}">
       <executable name="VCell-${compiler:Site}" iconSet="true" failOnStderrOutput="false" executableMode="gui" checkConsoleParameter="true" dpiAware="false" />
       <splashScreen show="true" bitmapFile="${compiler:vcell5SplashScreenPngFilePath}" textOverlay="true" />
-      <java mainClass="cbit.vcell.client.test.VCellClientTest" vmParameters="&quot;-Dvcell.installDir=${launcher:sys.launcherDirectory}&quot;">
+      <java mainClass="cbit.vcell.client.test.VCellClientMain" vmParameters="&quot;-Dvcell.installDir=${launcher:sys.launcherDirectory}&quot;">
         <classPath>
           <scanDirectory location="lib" failOnError="false" />
         </classPath>
@@ -167,7 +159,6 @@
           <directory name="nativelibs/win64" />
         </nativeLibraryDirectories>
       </java>
-      <macStaticAssociationActions mode="selected" />
       <vmOptionsFile mode="content" overwriteMode="1">
         <content>-Dvcell.autoflushlog=true
 -Dvcell.thirdPartyLicense=thirdpartylicenses.txt
@@ -190,7 +181,7 @@
     <launcher name="VCell-${compiler:Site}-Windows32" id="447" icnsFile="${compiler:vcellIcnsFile}">
       <executable name="VCell-${compiler:Site}" iconSet="true" failOnStderrOutput="false" executableMode="gui" checkConsoleParameter="true" dpiAware="false" />
       <splashScreen show="true" bitmapFile="${compiler:vcell5SplashScreenPngFilePath}" textOverlay="true" />
-      <java mainClass="cbit.vcell.client.test.VCellClientTest" vmParameters="&quot;-Dvcell.installDir=${launcher:sys.launcherDirectory}&quot;">
+      <java mainClass="cbit.vcell.client.test.VCellClientMain" vmParameters="&quot;-Dvcell.installDir=${launcher:sys.launcherDirectory}&quot;">
         <classPath>
           <scanDirectory location="lib" failOnError="false" />
         </classPath>
@@ -198,7 +189,6 @@
           <directory name="nativelibs/win32" />
         </nativeLibraryDirectories>
       </java>
-      <macStaticAssociationActions mode="selected" />
       <vmOptionsFile mode="content" overwriteMode="1">
         <content>-Dvcell.autoflushlog=true
 -Dvcell.thirdPartyLicense=thirdpartylicenses.txt
@@ -222,7 +212,7 @@
     <launcher name="VCell-${compiler:Site}-Linux32" id="534" icnsFile="${compiler:vcellIcnsFile}">
       <executable name="VCell-${compiler:Site}" failOnStderrOutput="false" executableMode="gui" checkConsoleParameter="true" dpiAware="false" />
       <splashScreen bitmapFile="${compiler:vcell5SplashScreenPngFilePath}" />
-      <java mainClass="cbit.vcell.client.test.VCellClientTest" vmParameters="&quot;-Dvcell.installDir=${launcher:sys.launcherDirectory}&quot;">
+      <java mainClass="cbit.vcell.client.test.VCellClientMain" vmParameters="&quot;-Dvcell.installDir=${launcher:sys.launcherDirectory}&quot;">
         <classPath>
           <scanDirectory location="lib" failOnError="false" />
         </classPath>
@@ -230,7 +220,6 @@
           <directory name="nativelibs/linux32" />
         </nativeLibraryDirectories>
       </java>
-      <macStaticAssociationActions mode="selected" />
       <vmOptionsFile mode="content" overwriteMode="1">
         <content>-Dvcell.autoflushlog=true
 -Dvcell.thirdPartyLicense=thirdpartylicenses.txt
@@ -250,7 +239,7 @@
     <launcher name="VCell-${compiler:Site}-Linux64" id="627" icnsFile="${compiler:vcellIcnsFile}">
       <executable name="VCell-${compiler:Site}" failOnStderrOutput="false" executableMode="gui" checkConsoleParameter="true" dpiAware="false" />
       <splashScreen bitmapFile="${compiler:vcell5SplashScreenPngFilePath}" />
-      <java mainClass="cbit.vcell.client.test.VCellClientTest" vmParameters="&quot;-Dvcell.installDir=${launcher:sys.launcherDirectory}&quot;">
+      <java mainClass="cbit.vcell.client.test.VCellClientMain" vmParameters="&quot;-Dvcell.installDir=${launcher:sys.launcherDirectory}&quot;">
         <classPath>
           <scanDirectory location="lib" failOnError="false" />
         </classPath>
@@ -258,7 +247,6 @@
           <directory name="nativelibs/linux64" />
         </nativeLibraryDirectories>
       </java>
-      <macStaticAssociationActions mode="selected" />
       <vmOptionsFile mode="content" overwriteMode="1">
         <content>-Dvcell.autoflushlog=true
 -Dvcell.thirdPartyLicense=thirdpartylicenses.txt
@@ -286,7 +274,6 @@
           <directory name="nativelibs/linux64" />
         </nativeLibraryDirectories>
       </java>
-      <macStaticAssociationActions mode="selected" />
       <vmOptionsFile mode="content" overwriteMode="1">
         <content>-Dvcell.autoflushlog=true
 -Dvcell.thirdPartyLicense=thirdpartylicenses.txt
@@ -537,7 +524,6 @@ return bngperlfile.exists();
                   <property name="description" type="string">.vcml file association</property>
                   <property name="extension" type="string">vcml</property>
                   <property name="launcherId" type="string">345</property>
-                  <property name="mac" type="boolean" value="false" />
                 </serializedBean>
                 <condition>Util.is64BitWindows()</condition>
               </action>
@@ -546,7 +532,6 @@ return bngperlfile.exists();
                   <property name="description" type="string">.vcml file association</property>
                   <property name="extension" type="string">vcml</property>
                   <property name="launcherId" type="string">447</property>
-                  <property name="mac" type="boolean" value="false" />
                 </serializedBean>
                 <condition>Util.isWindows() &amp;&amp; !Util.is64BitWindows()</condition>
               </action>
@@ -1192,11 +1177,19 @@ if (context.isUnattended()) {
           <group id="2350" beanClass="com.install4j.runtime.beans.groups.VerticalFormComponentGroup" useExternalParametrization="true" externalParametrizationName="Customize banner image" externalParametrizationMode="include">
             <serializedBean>
               <property name="backgroundColor">
-                <object class="java.awt.Color">
-                  <int>255</int>
-                  <int>255</int>
-                  <int>255</int>
-                  <int>255</int>
+                <object class="com.install4j.runtime.beans.LightOrDarkColor">
+                  <object class="java.awt.Color">
+                    <int>255</int>
+                    <int>255</int>
+                    <int>255</int>
+                    <int>255</int>
+                  </object>
+                  <object class="java.awt.Color">
+                    <int>49</int>
+                    <int>52</int>
+                    <int>53</int>
+                    <int>255</int>
+                  </object>
                 </object>
               </property>
               <property name="borderSides">
@@ -1205,11 +1198,19 @@ if (context.isUnattended()) {
                 </object>
               </property>
               <property name="imageEdgeBackgroundColor">
-                <object class="java.awt.Color">
-                  <int>25</int>
-                  <int>143</int>
-                  <int>220</int>
-                  <int>255</int>
+                <object class="com.install4j.runtime.beans.LightOrDarkColor">
+                  <object class="java.awt.Color">
+                    <int>25</int>
+                    <int>143</int>
+                    <int>220</int>
+                    <int>255</int>
+                  </object>
+                  <object class="java.awt.Color">
+                    <int>0</int>
+                    <int>74</int>
+                    <int>151</int>
+                    <int>255</int>
+                  </object>
                 </object>
               </property>
               <property name="imageEdgeBorder" type="boolean" value="true" />
@@ -1263,11 +1264,19 @@ if (context.isUnattended()) {
               <group id="2357" beanClass="com.install4j.runtime.beans.groups.VerticalFormComponentGroup" useExternalParametrization="true" externalParametrizationName="Customize title bar" externalParametrizationMode="include">
                 <serializedBean>
                   <property name="backgroundColor">
-                    <object class="java.awt.Color">
-                      <int>255</int>
-                      <int>255</int>
-                      <int>255</int>
-                      <int>255</int>
+                    <object class="com.install4j.runtime.beans.LightOrDarkColor">
+                      <object class="java.awt.Color">
+                        <int>255</int>
+                        <int>255</int>
+                        <int>255</int>
+                        <int>255</int>
+                      </object>
+                      <object class="java.awt.Color">
+                        <int>49</int>
+                        <int>52</int>
+                        <int>53</int>
+                        <int>255</int>
+                      </object>
                     </object>
                   </property>
                   <property name="borderSides">
@@ -1370,7 +1379,7 @@ if (context.isUnattended()) {
     </styles>
   </installerGui>
   <mediaSets>
-    <macos name="Mac OS X Single Bundle ${compiler:vcellVersion} ${compiler:Site}" id="105" mediaFileName="${compiler:sys.shortName}_${compiler:sys.platform}_${compiler:sys.version}_64bit" installDir="VCell_${compiler:Site}" launcherId="102">
+    <macos name="Mac OS X Single Bundle ${compiler:vcellVersion} ${compiler:Site}" id="105" mediaFileName="${compiler:sys.shortName}_${compiler:sys.platform}_${compiler:sys.version}_64bit" installDir="VCell_${compiler:Site}" architecture="universal" launcherId="102">
       <excludedBeans>
         <bean refId="1672" />
         <bean refId="1673" />
@@ -1387,9 +1396,9 @@ if (context.isUnattended()) {
         <variable name="resourceJar" value="../src_macosx_64" />
         <variable name="resourceDir" value="resources" />
       </variables>
-      <jreBundle jreBundleSource="preCreated" includedJre="${compiler:macJrePath}" manualJreEntry="true" />
+      <jreBundle usePack200="false" />
     </macos>
-    <windows name="Windows ${compiler:vcellVersion} ${compiler:Site} 64 Bit" id="349" mediaFileName="${compiler:sys.shortName}_${compiler:sys.platform}_${compiler:sys.version}_64bit" installDir="VCell_${compiler:Site}" downloadURL="${compiler:updateSiteBaseUrl}" contentFilesType="downloadable">
+    <windows name="Windows ${compiler:vcellVersion} ${compiler:Site} 64 Bit" id="349" mediaFileName="${compiler:sys.shortName}_${compiler:sys.platform}_${compiler:sys.version}_64bit" installDir="VCell_${compiler:Site}" downloadURL="${compiler:updateSiteBaseUrl}" architecture="64">
       <excludedLaunchers>
         <launcher id="102" />
         <launcher id="447" />
@@ -1411,9 +1420,9 @@ if (context.isUnattended()) {
       <variables>
         <variable name="resourceDir" value="resources" />
       </variables>
-      <jreBundle jreBundleSource="preCreated" includedJre="${compiler:win64JrePath}" manualJreEntry="true" />
+      <jreBundle usePack200="false" />
     </windows>
-    <windows name="Windows ${compiler:vcellVersion} ${compiler:Site} 32 Bit" id="450" mediaFileName="${compiler:sys.shortName}_${compiler:sys.platform}_${compiler:sys.version}_32bit" installDir="VCell_${compiler:Site}" jreBitType="32">
+    <windows name="Windows ${compiler:vcellVersion} ${compiler:Site} 32 Bit" id="450" mediaFileName="${compiler:sys.shortName}_${compiler:sys.platform}_${compiler:sys.version}_32bit" installDir="VCell_${compiler:Site}" architecture="32">
       <excludedLaunchers>
         <launcher id="102" />
         <launcher id="345" />
@@ -1435,7 +1444,7 @@ if (context.isUnattended()) {
       <variables>
         <variable name="resourceDir" value="resources" />
       </variables>
-      <jreBundle jreBundleSource="preCreated" includedJre="${compiler:win32JrePath}" manualJreEntry="true" />
+      <jreBundle usePack200="false" />
     </windows>
     <unixInstaller name="Linux ${compiler:vcellVersion} ${compiler:Site} 64 Bit" id="652" mediaFileName="${compiler:sys.shortName}_${compiler:sys.platform}_${compiler:sys.version}_64bit" installDir="VCell_${compiler:Site}">
       <excludedLaunchers>
@@ -1459,7 +1468,7 @@ if (context.isUnattended()) {
       <variables>
         <variable name="resourceDir" value="resources" />
       </variables>
-      <jreBundle jreBundleSource="preCreated" includedJre="${compiler:linux64JrePath}" manualJreEntry="true" />
+      <jreBundle usePack200="false" />
     </unixInstaller>
     <unixInstaller name="Linux ${compiler:vcellVersion} ${compiler:Site} 32 Bit" id="547" mediaFileName="${compiler:sys.shortName}_${compiler:sys.platform}_${compiler:sys.version}_32bit" installDir="VCell_${compiler:Site}">
       <excludedLaunchers>
@@ -1483,7 +1492,7 @@ if (context.isUnattended()) {
       <variables>
         <variable name="resourceDir" value="resources" />
       </variables>
-      <jreBundle jreBundleSource="preCreated" includedJre="${compiler:linux32JrePath}" manualJreEntry="true" />
+      <jreBundle usePack200="false" />
     </unixInstaller>
   </mediaSets>
   <buildIds>

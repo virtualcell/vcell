@@ -81,49 +81,44 @@
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-api</artifactId>
-            <version>2.17.1</version>
+            <version>${log4j-api.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>
-            <version>2.17.1</version>
+            <version>${log4j-core.version}</version>
         </dependency>
         <dependency>
             <groupId>io.jhdf</groupId>
             <artifactId>jhdf</artifactId>
-            <version>0.6.8</version>
+            <version>${jhdf5.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-slf4j-impl</artifactId>
-            <version>2.17.1</version>
+            <version>${log4j-slf4j-impl.version}</version>
         </dependency>
         <dependency>
             <groupId>info.picocli</groupId>
             <artifactId>picocli</artifactId>
-            <version>4.6.3</version>
+            <version>${picocli.version}</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/com.miglayout/miglayout -->
-        <dependency>
-            <groupId>com.miglayout</groupId>
-            <artifactId>miglayout</artifactId>
-            <version>3.5.5</version>
+            <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>commons-lang</groupId>
             <artifactId>commons-lang</artifactId>
-            <version>2.4</version>
-        </dependency>
-        <dependency>
-            <groupId>org.vcell</groupId>
-            <artifactId>vcell-client</artifactId>
-            <version>${project.version}</version>
+            <version>${commons-lang.version}</version>
         </dependency>
         <dependency>
             <groupId>org.vcell</groupId>
@@ -131,64 +126,15 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.vcell</groupId>
-            <artifactId>vcell-server</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.vcell</groupId>
-            <artifactId>vcell-vmicro</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <!--        <dependency>-->
-        <!--            <groupId>org.vcell</groupId>-->
-        <!--            <artifactId>vcell-admin</artifactId>-->
-        <!--            <scope>${project.version}</scope>-->
-        <!--        </dependency>-->
-
-        <!-- NB: For testing via main methods in IDEs. -->
-        <!-- Don't comment this out, it'll break the standalone (local with oracle connection) version of vcell -->
-        <dependency>
-            <groupId>org.vcell</groupId>
-            <artifactId>vcell-oracle</artifactId>
-            <version>${project.version}</version>
-            <scope>runtime</scope>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>com.konghq</groupId>
-            <artifactId>unirest-java</artifactId>
-            <version>3.4.03</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>2.13.4.1</version>
-        </dependency>
-        <dependency>
-            <groupId>org.vcell</groupId>
-            <artifactId>vcell-admin</artifactId>
-            <version>${project.version}</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
             <groupId>org.jsoup</groupId>
             <artifactId>jsoup</artifactId>
             <version>1.15.2</version>
         </dependency>
         <dependency>
-            <groupId>org.python</groupId>
-            <artifactId>jython-slim</artifactId>
-            <version>2.7.2</version>
-        </dependency>
-
-        <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>2.7</version>
+            <version>${commons-io.version}</version>
         </dependency>
-
-
     </dependencies>
     <profiles>
         <profile>
