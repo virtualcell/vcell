@@ -6,8 +6,14 @@
 
 shopt -s -o nounset
 
-# NOT_USED (replace with install4j 'scan dir' functionality in I4j launcher config) gather classpath (filenames only), Install4J will add the correct separator
-#compiler_vcellClasspathColonSep=`ls -m /vcellclient/vcell-client/target/maven-jars | tr -d '[:space:]' | tr ',' ':'`
+# gather classpath (filenames only), Install4J will add the correct separator
+# assumes platform-specific libCombine jars are placed in lib dir (see <fileEntry>'s in VCell.install4j)
+compiler_vcellClasspathColonSep=`ls -m /vcellclient/vcell-client/target/maven-jars | tr -d '[:space:]' | tr ',' ':'`
+compiler_vcellClasspathColonSep_Win64="${compiler_vcellClasspathColonSep}:libCombineWin64-0.2.7.jar"
+compiler_vcellClasspathColonSep_Win32="${compiler_vcellClasspathColonSep}"
+compiler_vcellClasspathColonSep_Linux64="${compiler_vcellClasspathColonSep}:libCombineLinux64-0.2.7.jar"
+compiler_vcellClasspathColonSep_Linux32="${compiler_vcellClasspathColonSep}"
+compiler_vcellClasspathColonSep_Mac64="${compiler_vcellClasspathColonSep}:libCombineOSX-0.2.7.jar"
 
 cd /config
 
@@ -50,7 +56,8 @@ vcellBuild=$compiler_vcellBuild,\
 updateSiteBaseUrl=$compiler_updateSiteBaseUrl,\
 rmiHosts=$compiler_rmiHosts,\
 bioformatsJarFile=$compiler_bioformatsJarFile,\
-bioformatsJarDownloadURL=$compiler_bioformatsJarDownloadURL\
+bioformatsJarDownloadURL=$compiler_bioformatsJarDownloadURL,\
+vcellClasspathColonSep=$compiler_vcellClasspathColonSep_Win64\
 	VCell.install4j
 	
 mv /outputdir/updates.xml /outputdir/updates_win64.xml
@@ -74,7 +81,8 @@ vcellBuild=$compiler_vcellBuild,\
 updateSiteBaseUrl=$compiler_updateSiteBaseUrl,\
 rmiHosts=$compiler_rmiHosts,\
 bioformatsJarFile=$compiler_bioformatsJarFile,\
-bioformatsJarDownloadURL=$compiler_bioformatsJarDownloadURL\
+bioformatsJarDownloadURL=$compiler_bioformatsJarDownloadURL,\
+vcellClasspathColonSep=$compiler_vcellClasspathColonSep_Win32\
 	VCell.install4j
 	
 mv /outputdir/updates.xml /outputdir/updates_win32.xml
@@ -98,7 +106,8 @@ vcellBuild=$compiler_vcellBuild,\
 updateSiteBaseUrl=$compiler_updateSiteBaseUrl,\
 rmiHosts=$compiler_rmiHosts,\
 bioformatsJarFile=$compiler_bioformatsJarFile,\
-bioformatsJarDownloadURL=$compiler_bioformatsJarDownloadURL\
+bioformatsJarDownloadURL=$compiler_bioformatsJarDownloadURL,\
+vcellClasspathColonSep=$compiler_vcellClasspathColonSep_Linux64\
 	VCell.install4j
 
 mv /outputdir/updates.xml /outputdir/updates_linux64.xml
@@ -122,7 +131,8 @@ vcellBuild=$compiler_vcellBuild,\
 updateSiteBaseUrl=$compiler_updateSiteBaseUrl,\
 rmiHosts=$compiler_rmiHosts,\
 bioformatsJarFile=$compiler_bioformatsJarFile,\
-bioformatsJarDownloadURL=$compiler_bioformatsJarDownloadURL\
+bioformatsJarDownloadURL=$compiler_bioformatsJarDownloadURL,\
+vcellClasspathColonSep=$compiler_vcellClasspathColonSep_Linux32\
 	VCell.install4j
 
 mv /outputdir/updates.xml /outputdir/updates_linux32.xml
@@ -147,7 +157,8 @@ vcellBuild=$compiler_vcellBuild,\
 updateSiteBaseUrl=$compiler_updateSiteBaseUrl,\
 rmiHosts=$compiler_rmiHosts,\
 bioformatsJarFile=$compiler_bioformatsJarFile,\
-bioformatsJarDownloadURL=$compiler_bioformatsJarDownloadURL\
+bioformatsJarDownloadURL=$compiler_bioformatsJarDownloadURL,\
+vcellClasspathColonSep=$compiler_vcellClasspathColonSep_Mac64\
 	VCell.install4j
 
 mv /outputdir/updates.xml /outputdir/updates_mac64.xml
