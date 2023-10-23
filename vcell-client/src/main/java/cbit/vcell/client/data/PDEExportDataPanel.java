@@ -175,27 +175,36 @@ public class PDEExportDataPanel extends JPanel implements ExportConstants {
 
 class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.FocusListener, java.awt.event.ItemListener, java.beans.PropertyChangeListener, javax.swing.event.ChangeListener, javax.swing.event.ListDataListener, javax.swing.event.ListSelectionListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
-			if (e.getSource() == PDEExportDataPanel.this.getJTextField1()) 
-				connEtoC5(e);
-			if (e.getSource() == PDEExportDataPanel.this.getJTextField2()) 
-				connEtoC6(e);
-			if (e.getSource() == PDEExportDataPanel.this.getJButtonExport()) 
-				connEtoM1(e);
-			if (e.getSource() == PDEExportDataPanel.this.getJButtonExport()) 
-				connEtoC9(e);
-//			if (e.getSource() == NewPDEExportPanel.this.getJButtonAdd()) 
+			try{
+				if (e.getSource() == PDEExportDataPanel.this.getJTextField1())
+						PDEExportDataPanel.this.setTimeFromTextField(getJTextField1(), getJSlider1());
+
+				if (e.getSource() == PDEExportDataPanel.this.getJTextField2())
+						PDEExportDataPanel.this.setTimeFromTextField(getJTextField2(), getJSlider2());
+
+				if (e.getSource() == PDEExportDataPanel.this.getJButtonExport())
+						getExportSettings1().setSimDataType(PDEExportDataPanel.this.dataType());
+
+				if (e.getSource() == PDEExportDataPanel.this.getJButtonExport())
+						PDEExportDataPanel.this.startExport();
+//			if (e.getSource() == NewPDEExportPanel.this.getJButtonAdd())
 //				connEtoM4(e);
-//			if (e.getSource() == NewPDEExportPanel.this.getJButtonRemove()) 
+//			if (e.getSource() == NewPDEExportPanel.this.getJButtonRemove())
 //				connEtoM5(e);
-			if (e.getSource() == PDEExportDataPanel.this.getVolVarRadioButton()){
-				vol_memb_both_change();
+				if (e.getSource() == PDEExportDataPanel.this.getVolVarRadioButton()){
+					vol_memb_both_change();
+				}
+				if (e.getSource() == PDEExportDataPanel.this.getMembVarRadioButton()){
+					vol_memb_both_change();
+				}
+				if (e.getSource() == PDEExportDataPanel.this.getBothVarRadioButton()){
+					vol_memb_both_change();
+				}
 			}
-			if (e.getSource() == PDEExportDataPanel.this.getMembVarRadioButton()){
-				vol_memb_both_change();
+			catch (Throwable ivjExc){
+				handleException(ivjExc);
 			}
-			if (e.getSource() == PDEExportDataPanel.this.getBothVarRadioButton()){
-				vol_memb_both_change();
-			}
+
 
 		};
 		public void contentsChanged(javax.swing.event.ListDataEvent e) {
@@ -204,10 +213,16 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.F
 		};
 		public void focusGained(java.awt.event.FocusEvent e) {};
 		public void focusLost(java.awt.event.FocusEvent e) {
-			if (e.getSource() == PDEExportDataPanel.this.getJTextField1()) 
-				connEtoC7(e);
-			if (e.getSource() == PDEExportDataPanel.this.getJTextField2()) 
-				connEtoC8(e);
+			try{
+				if (e.getSource() == PDEExportDataPanel.this.getJTextField1())
+						PDEExportDataPanel.this.setTimeFromTextField(getJTextField1(), getJSlider1());
+
+				if (e.getSource() == PDEExportDataPanel.this.getJTextField2())
+						PDEExportDataPanel.this.setTimeFromTextField(getJTextField2(), getJSlider2());
+			}
+			catch (Throwable ivjExc){
+				handleException(ivjExc);
+			}
 		};
 		public void intervalAdded(javax.swing.event.ListDataEvent e) {
 			if (e.getSource() == PDEExportDataPanel.this.getDefaultListModelCivilizedSelections()) 
@@ -219,7 +234,11 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.F
 		};
 		public void itemStateChanged(java.awt.event.ItemEvent e) {
 			if (e.getSource() == PDEExportDataPanel.this.getFormatComboBox()){
-				connEtoM6(e);
+				try {
+					getExportSettings1().setSelectedFormat(getSelectedFormat());
+				} catch (Throwable ivjExc) {
+					handleException(ivjExc);
+				}
 				updateChoiceVariableType(getPdeDataContext());
 				updateChoiceROI();
 				updateInterface();
@@ -228,34 +247,61 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.F
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 //			if (evt.getSource() == NewPDEExportPanel.this && (evt.getPropertyName().equals(PROP_SELECTEDREGION))) 
 //				connEtoC10(evt);
-			if (evt.getSource() == PDEExportDataPanel.this && (evt.getPropertyName().equals("slice"))) 
-				connEtoC11(evt);
-			if (evt.getSource() == PDEExportDataPanel.this && (evt.getPropertyName().equals("normalAxis"))) 
-				connEtoC12(evt);
-			if (evt.getSource() == PDEExportDataPanel.this.getExportSettings1() && (evt.getPropertyName().equals("selectedFormat"))) 
-				connEtoC13(evt);
-			if (evt.getSource() == PDEExportDataPanel.this && (evt.getPropertyName().equals(PDEDataContext.PROP_PDE_DATA_CONTEXT))) 
-				connPtoP3SetTarget();
-			if (evt.getSource() == PDEExportDataPanel.this.getpdeDataContext1() && (evt.getPropertyName().equals("timePoints"))) 
-				connEtoC14(evt);
-			if (evt.getSource() == PDEExportDataPanel.this.getButtonGroupCivilized1() && (evt.getPropertyName().equals("selection"))) 
-				connEtoC16(evt);
-			if (evt.getSource() == PDEExportDataPanel.this && (evt.getPropertyName().equals(PROP_SELECTEDREGION))) 
-				connEtoC18(evt);
-			if (evt.getSource() == PDEExportDataPanel.this.getpdeDataContext1() && (evt.getPropertyName().equals(SimDataConstants.PROPERTY_NAME_DATAIDENTIFIERS))) 
-				connEtoC20(evt);
+			try{
+				if (evt.getSource() == PDEExportDataPanel.this && (evt.getPropertyName().equals("slice")))
+						PDEExportDataPanel.this.updateSlice(PDEExportDataPanel.this.getSlice(), PDEExportDataPanel.this.getNormalAxis());
+
+				if (evt.getSource() == PDEExportDataPanel.this && (evt.getPropertyName().equals("normalAxis")))
+						PDEExportDataPanel.this.updateSlice(PDEExportDataPanel.this.getSlice(), PDEExportDataPanel.this.getNormalAxis());
+
+				if (evt.getSource() == PDEExportDataPanel.this.getExportSettings1() && (evt.getPropertyName().equals("selectedFormat")))
+						PDEExportDataPanel.this.updateExportFormat(getExportSettings1().getSelectedFormat());
+
+				if (evt.getSource() == PDEExportDataPanel.this && (evt.getPropertyName().equals(PDEDataContext.PROP_PDE_DATA_CONTEXT)))
+					connPtoP3SetTarget();
+
+				if (evt.getSource() == PDEExportDataPanel.this.getpdeDataContext1() && (evt.getPropertyName().equals("timePoints")))
+						PDEExportDataPanel.this.updateTimes(getpdeDataContext1().getTimePoints());
+
+				if (evt.getSource() == PDEExportDataPanel.this.getButtonGroupCivilized1() && (evt.getPropertyName().equals("selection")))
+						PDEExportDataPanel.this.updateInterface();
+
+				if (evt.getSource() == PDEExportDataPanel.this && (evt.getPropertyName().equals(PROP_SELECTEDREGION)))
+						PDEExportDataPanel.this.updateInterface();
+
+				if (evt.getSource() == PDEExportDataPanel.this.getpdeDataContext1() && (evt.getPropertyName().equals(SimDataConstants.PROPERTY_NAME_DATAIDENTIFIERS)))
+						if ((getpdeDataContext1() != null)) {
+							PDEExportDataPanel.this.updateAllChoices(getpdeDataContext1());
+						}
+			}
+			catch (Throwable ivjExc){
+				handleException(ivjExc);
+			}
+
 		};
 		public void stateChanged(javax.swing.event.ChangeEvent e) {
-			if (e.getSource() == PDEExportDataPanel.this.getJSlider1()) 
-				connEtoC3(e);
-			if (e.getSource() == PDEExportDataPanel.this.getJSlider2()) 
-				connEtoC4(e);
+			try {
+				if (e.getSource() == PDEExportDataPanel.this.getJSlider1())
+						PDEExportDataPanel.this.setTimeFromSlider(getJSlider1(), getJTextField1());
+				if (e.getSource() == PDEExportDataPanel.this.getJSlider2())
+						PDEExportDataPanel.this.setTimeFromSlider(getJSlider2(), getJTextField2());
+			}
+			catch (Throwable ivjExc){
+				handleException(ivjExc);
+			}
 		};
+
+
 		public void valueChanged(javax.swing.event.ListSelectionEvent e) {
-			if (e.getSource() == PDEExportDataPanel.this.getJListVariables()) 
-				connEtoC15(e);
-			if (e.getSource() == PDEExportDataPanel.this.getROISelections()) 
-				connEtoC19(e);
+			try{
+				if (e.getSource() == PDEExportDataPanel.this.getJListVariables())
+						PDEExportDataPanel.this.updateInterface();
+				if (e.getSource() == PDEExportDataPanel.this.getROISelections())
+						PDEExportDataPanel.this.updateInterface();
+			}
+			catch (Throwable ivjExc){
+				handleException(ivjExc);
+			}
 		};
 	};
 
@@ -282,26 +328,6 @@ public synchronized void addPropertyChangeListener(java.beans.PropertyChangeList
 	getPropertyChange().addPropertyChangeListener(listener);
 }
 
-
-/**
- * connEtoC1:  (pdeDataContext1.this --> PDEExportPanel.updateChoices(Lcbit.vcell.simdata.PDEDataContext;)V)
- * @param value cbit.vcell.simdata.PDEDataContext
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC1(PDEDataContext value) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.updateAllChoices(getpdeDataContext1());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
 ///**
 // * connEtoC10:  (NewPDEExportPanel.selectedRegion --> NewPDEExportPanel.updateCurrentSelection(Lcbit.vcell.simdata.gui.SpatialSelection;)V)
 // * @param arg1 java.beans.PropertyChangeEvent
@@ -322,127 +348,7 @@ private void connEtoC1(PDEDataContext value) {
 //}
 
 
-/**
- * connEtoC11:  (NewPDEExportPanel.slice --> NewPDEExportPanel.updateSlice(II)V)
- * @param arg1 java.beans.PropertyChangeEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC11(java.beans.PropertyChangeEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.updateSlice(this.getSlice(), this.getNormalAxis());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC12:  (NewPDEExportPanel.normalAxis --> NewPDEExportPanel.updateSlice(II)V)
- * @param arg1 java.beans.PropertyChangeEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC12(java.beans.PropertyChangeEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.updateSlice(this.getSlice(), this.getNormalAxis());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC13:  (ExportSettings1.selectedFormat --> PDEExportPanel.updateExportFormat(I)V)
- * @param arg1 java.beans.PropertyChangeEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC13(java.beans.PropertyChangeEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.updateExportFormat(getExportSettings1().getSelectedFormat());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC14:  (pdeDataContext1.timePoints --> NewPDEExportPanel.updateTimes([D)V)
- * @param arg1 java.beans.PropertyChangeEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC14(java.beans.PropertyChangeEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.updateTimes(getpdeDataContext1().getTimePoints());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC15:  (JListVariables.listSelection.valueChanged(javax.swing.event.ListSelectionEvent) --> PDEExportPanel.updateInterface()V)
- * @param arg1 javax.swing.event.ListSelectionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC15(javax.swing.event.ListSelectionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.updateInterface();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC16:  (ButtonGroupCivilized1.selection --> PDEExportPanel.updateInterface()V)
- * @param arg1 java.beans.PropertyChangeEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC16(java.beans.PropertyChangeEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.updateInterface();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
+	/**
  * connEtoC17:  (DefaultListModelCivilizedSelections.listData. --> PDEExportPanel.updateInterface()V)
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
@@ -460,285 +366,7 @@ private void connEtoC17() {
 	}
 }
 
-
-/**
- * connEtoC18:  (NewPDEExportPanel.selectedRegion --> NewPDEExportPanel.updateInterface()V)
- * @param arg1 java.beans.PropertyChangeEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC18(java.beans.PropertyChangeEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.updateInterface();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC19:  (JListSelections.listSelection.valueChanged(javax.swing.event.ListSelectionEvent) --> PDEExportPanel.updateInterface()V)
- * @param arg1 javax.swing.event.ListSelectionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC19(javax.swing.event.ListSelectionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.updateInterface();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC2:  (ODEExportPanel.initialize() --> ODEExportPanel.initFormatChoices()V)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC2() {
-	try {
-		// user code begin {1}
-		// user code end
-		this.setFormatChoices_0();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC20:  (pdeDataContext1.dataIdentifiers --> NewPDEExportPanel.updateAllChoices(Lcbit.vcell.simdata.PDEDataContext;)V)
- * @param arg1 java.beans.PropertyChangeEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC20(java.beans.PropertyChangeEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		if ((getpdeDataContext1() != null)) {
-			this.updateAllChoices(getpdeDataContext1());
-		}
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC3:  (JSlider1.change.stateChanged(javax.swing.event.ChangeEvent) --> PDEExportPanel.setTimeFromSlider(ILjavax.swing.JTextField;)V)
- * @param arg1 javax.swing.event.ChangeEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC3(javax.swing.event.ChangeEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.setTimeFromSlider(getJSlider1(), getJTextField1());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC4:  (JSlider2.change.stateChanged(javax.swing.event.ChangeEvent) --> PDEExportPanel.setTimeFromSlider(ILjavax.swing.JTextField;)V)
- * @param arg1 javax.swing.event.ChangeEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC4(javax.swing.event.ChangeEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.setTimeFromSlider(getJSlider2(), getJTextField2());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC5:  (JTextField1.action.actionPerformed(java.awt.event.ActionEvent) --> ODEExportPanel.setTimeFromTextField(Ljavax.swing.JTextField;Ljavax.swing.JSlider;)V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC5(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.setTimeFromTextField(getJTextField1(), getJSlider1());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC6:  (JTextField2.action.actionPerformed(java.awt.event.ActionEvent) --> ODEExportPanel.setTimeFromTextField(Ljavax.swing.JTextField;Ljavax.swing.JSlider;)V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC6(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.setTimeFromTextField(getJTextField2(), getJSlider2());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC7:  (JTextField1.focus.focusLost(java.awt.event.FocusEvent) --> ODEExportPanel.setTimeFromTextField(Ljavax.swing.JTextField;Ljavax.swing.JSlider;)V)
- * @param arg1 java.awt.event.FocusEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC7(java.awt.event.FocusEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.setTimeFromTextField(getJTextField1(), getJSlider1());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC8:  (JTextField2.focus.focusLost(java.awt.event.FocusEvent) --> ODEExportPanel.setTimeFromTextField(Ljavax.swing.JTextField;Ljavax.swing.JSlider;)V)
- * @param arg1 java.awt.event.FocusEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC8(java.awt.event.FocusEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.setTimeFromTextField(getJTextField2(), getJSlider2());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC9:  (JButtonExport.action.actionPerformed(java.awt.event.ActionEvent) --> ODEExportPanel.startExport()V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC9(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.startExport();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoM1:  (JButtonExport.action.actionPerformed(java.awt.event.ActionEvent) --> ExportSettings1.simDataType)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM1(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		getExportSettings1().setSimDataType(this.dataType());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoM2:  (PDEExportPanel.initialize() --> ButtonGroupCivilized1.add(Ljavax.swing.AbstractButton;)V)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM2() {
-	try {
-		// user code begin {1}
-		// user code end
-		getButtonGroupCivilized1().add(getJRadioButtonSlice());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connEtoM3:  (PDEExportPanel.initialize() --> ButtonGroupCivilized1.add(Ljavax.swing.AbstractButton;)V)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM3() {
-	try {
-		// user code begin {1}
-		// user code end
-		getButtonGroupCivilized1().add(getJRadioButtonROI());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
+	/**
  * connEtoM4:  (JButtonAdd.action.actionPerformed(java.awt.event.ActionEvent) --> DefaultListModelCivilizedSelections.addNewElement(Ljava.lang.Object;)V)
  * @param arg1 java.awt.event.ActionEvent
  */
@@ -797,26 +425,7 @@ private void updateChoiceROI() {
 //	}
 //}
 
-/**
- * connEtoM6:  (JComboBox1.item.itemStateChanged(java.awt.event.ItemEvent) --> ExportSettings1.selectedFormat)
- * @param arg1 java.awt.event.ItemEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM6(java.awt.event.ItemEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		getExportSettings1().setSelectedFormat(getSelectedFormat());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
+	/**
  * @return format selected in combobox
  */
 private ExportFormat getSelectedFormat( ) {
@@ -826,27 +435,7 @@ private ExportFormat getSelectedFormat( ) {
 }
 
 
-
-/**
- * connEtoM7:  (PDEExportPanel.initialize() --> ButtonGroupCivilized1.add(Ljavax.swing.AbstractButton;)V)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM7() {
-	try {
-		// user code begin {1}
-		// user code end
-		getButtonGroupCivilized1().add(getJRadioButtonFull());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
+	/**
  * connPtoP1SetTarget:  (DefaultListModel1.this <--> JList1.model)
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
@@ -920,8 +509,34 @@ private void connPtoP3SetTarget() {
 			// user code begin {1}
 			// user code end
 			ivjConnPtoP3Aligning = true;
-			setpdeDataContext1(this.getPdeDataContext());
-			// user code begin {2}
+			PDEDataContext newValue = this.getPdeDataContext();
+			if (ivjpdeDataContext1 != newValue) {
+				try {
+					PDEDataContext oldValue = getpdeDataContext1();
+					/* Stop listening for events from the current object */
+					if (ivjpdeDataContext1 != null) {
+						ivjpdeDataContext1.removePropertyChangeListener(ivjEventHandler);
+					}
+					ivjpdeDataContext1 = newValue;
+
+					/* Listen for events from the new object */
+					if (ivjpdeDataContext1 != null) {
+						ivjpdeDataContext1.addPropertyChangeListener(ivjEventHandler);
+					}
+					connPtoP3SetSource();
+					try {
+						this.updateAllChoices(getpdeDataContext1());
+					} catch (Throwable ivjExc) {
+						handleException(ivjExc);
+					}
+					firePropertyChange(PDEDataContext.PROP_PDE_DATA_CONTEXT, oldValue, newValue);
+				} catch (Throwable ivjExc) {
+					handleException(ivjExc);
+				}
+			};
+			// user code begin {3}
+			// user code end
+// user code begin {2}
 			// user code end
 			ivjConnPtoP3Aligning = false;
 		}
@@ -2188,10 +1803,14 @@ private void initialize() {
 		constraintsJPanelRegion.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getJPanelRegion(), constraintsJPanelRegion);
 		initConnections();
-		connEtoC2();
-		connEtoM2();
-		connEtoM7();
-		connEtoM3();
+		try {
+			this.setFormatChoices_0();
+			getButtonGroupCivilized1().add(getJRadioButtonSlice());
+			getButtonGroupCivilized1().add(getJRadioButtonFull());
+			getButtonGroupCivilized1().add(getJRadioButtonROI());
+		} catch (Throwable ivjExc) {
+			handleException(ivjExc);
+		}
 		getExportSettings1().setSelectedFormat(getSelectedFormat());
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
@@ -2288,39 +1907,7 @@ public void setPdeDataContext(PDEDataContext pdeDataContext,ExportSpecs.SimNameS
 }
 
 
-/**
- * Set the pdeDataContext1 to a new value.
- * @param newValue cbit.vcell.simdata.PDEDataContext
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setpdeDataContext1(PDEDataContext newValue) {
-	if (ivjpdeDataContext1 != newValue) {
-		try {
-			PDEDataContext oldValue = getpdeDataContext1();
-			/* Stop listening for events from the current object */
-			if (ivjpdeDataContext1 != null) {
-				ivjpdeDataContext1.removePropertyChangeListener(ivjEventHandler);
-			}
-			ivjpdeDataContext1 = newValue;
-
-			/* Listen for events from the new object */
-			if (ivjpdeDataContext1 != null) {
-				ivjpdeDataContext1.addPropertyChangeListener(ivjEventHandler);
-			}
-			connPtoP3SetSource();
-			connEtoC1(ivjpdeDataContext1);
-			firePropertyChange(PDEDataContext.PROP_PDE_DATA_CONTEXT, oldValue, newValue);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	};
-	// user code begin {3}
-	// user code end
-}
+	/* WARNING: THIS METHOD WILL BE REGENERATED. */
 
 ///**
 // * Sets the selectedRegion property (cbit.vcell.simdata.gui.SpatialSelection) value.
