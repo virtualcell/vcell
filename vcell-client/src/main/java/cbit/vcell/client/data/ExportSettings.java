@@ -81,124 +81,7 @@ private void closeOK(JDialog dialog) {
 	dialog.dispose();
 }
 
-/**
- * connEtoC10:  (ASCIISettingsPanel1.ASCIISettingsPanel.JButtonCancelAction_actionPerformed(java.util.EventObject) --> ExportSettings.closeCancel(Ljavax.swing.JDialog;)V)
- * @param arg1 java.util.EventObject
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC10(java.util.EventObject arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.closeCancel(ivjJDialogASCIISettings);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC11:  (RasterSettingsPanel1.rasterSettingsPanel.JButtonCancelAction_actionPerformed(java.util.EventObject) --> ExportSettings.closeCancel(Ljavax.swing.JDialog;)V)
- * @param arg1 java.util.EventObject
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC11(java.util.EventObject arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.closeCancel(ivjJDialogRasterSettings);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connEtoC6:  ( (ASCIISettingsPanel1,ASCIISettingsPanel.JButtonOKAction_actionPerformed(java.util.EventObject) --> ExportSettings,formatSpecificSpecs).normalResult --> ExportSettings.closeOK(Ljavax.swing.JDialog;)V)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC6() {
-	try {
-		// user code begin {1}
-		// user code end
-		this.closeOK(ivjJDialogASCIISettings);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC7:  ( (RasterSettingsPanel1,rasterSettingsPanel.JButtonOKAction_actionPerformed(java.util.EventObject) --> ExportSettings,formatSpecificSpecs).normalResult --> ExportSettings.closeOK(Ljavax.swing.JDialog;)V)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC7() {
-	try {
-		// user code begin {1}
-		// user code end
-		this.closeOK(ivjJDialogRasterSettings);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connEtoM1:  (RasterSettingsPanel1.rasterSettingsPanel.JButtonOKAction_actionPerformed(java.util.EventObject) --> ExportSettings.formatSpecificSpecs)
- * @param arg1 java.util.EventObject
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM1(java.util.EventObject arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.setFormatSpecificSpecs(getRasterSettingsPanel1().getRasterSpecs());
-		connEtoC7();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoM4:  (ASCIISettingsPanel1.ASCIISettingsPanel.JButtonOKAction_actionPerformed(java.util.EventObject) --> ExportSettings.formatSpecificSpecs)
- * @param arg1 java.util.EventObject
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM4(java.util.EventObject arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.setFormatSpecificSpecs(getASCIISettingsPanel1().getAsciiSpecs());
-		connEtoC6();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
+	/**
  * connPtoP7SetTarget:  (ExportSettings.simDataType <--> ASCIISettingsPanel1.simDataType)
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
@@ -562,14 +445,19 @@ private boolean isClosedOK() {
  * @param newEvent java.util.EventObject
  */
 public void JButtonCancelAction_actionPerformed(java.util.EventObject newEvent) {
-	// user code begin {1}
-	// user code end
-	if (newEvent.getSource() == getASCIISettingsPanel1()) 
-		connEtoC10(newEvent);
-	if (newEvent.getSource() == getRasterSettingsPanel1()) 
-		connEtoC11(newEvent);
-	// user code begin {2}
-	// user code end
+	if (newEvent.getSource() == getASCIISettingsPanel1())
+		try {
+			this.closeCancel(ivjJDialogASCIISettings);
+		} catch (Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+
+	if (newEvent.getSource() == getRasterSettingsPanel1())
+		try {
+			this.closeCancel(ivjJDialogRasterSettings);
+		} catch (Throwable ivjExc) {
+			handleException(ivjExc);
+		}
 }
 
 /**
@@ -580,10 +468,52 @@ public void JButtonCancelAction_actionPerformed(java.util.EventObject newEvent) 
 public void JButtonOKAction_actionPerformed(java.util.EventObject newEvent) {
 	// user code begin {1}
 	// user code end
-	if (newEvent.getSource() == getASCIISettingsPanel1()) 
-		connEtoM4(newEvent);
-	if (newEvent.getSource() == getRasterSettingsPanel1()) 
-		connEtoM1(newEvent);
+	if (newEvent.getSource() == getASCIISettingsPanel1())
+		try {
+			// user code begin {1}
+			// user code end
+			this.setFormatSpecificSpecs(getASCIISettingsPanel1().getAsciiSpecs());
+			try {
+				// user code begin {1}
+				// user code end
+				this.closeOK(ivjJDialogASCIISettings);
+				// user code begin {2}
+				// user code end
+			} catch (Throwable ivjExc) {
+				// user code begin {3}
+				// user code end
+				handleException(ivjExc);
+			}
+// user code begin {2}
+			// user code end
+		} catch (Throwable ivjExc) {
+			// user code begin {3}
+			// user code end
+			handleException(ivjExc);
+		}
+	if (newEvent.getSource() == getRasterSettingsPanel1())
+		try {
+			// user code begin {1}
+			// user code end
+			this.setFormatSpecificSpecs(getRasterSettingsPanel1().getRasterSpecs());
+			try {
+				// user code begin {1}
+				// user code end
+				this.closeOK(ivjJDialogRasterSettings);
+				// user code begin {2}
+				// user code end
+			} catch (Throwable ivjExc) {
+				// user code begin {3}
+				// user code end
+				handleException(ivjExc);
+			}
+	// user code begin {2}
+			// user code end
+		} catch (Throwable ivjExc) {
+			// user code begin {3}
+			// user code end
+			handleException(ivjExc);
+		}
 	// user code begin {2}
 	// user code end
 }
