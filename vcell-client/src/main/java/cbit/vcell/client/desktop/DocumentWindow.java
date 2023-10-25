@@ -141,7 +141,7 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
 	private JMenu ivjOpenMenuItem = null;
 	//private JMenu recentMenuItem = new JMenu("Open Recent...");
 	private JMenuItem ivjReconnectMenuItem = null;
-	private JMenuItem ivjImageJServiceMenuItem = null;
+//	private JMenuItem ivjImageJServiceMenuItem = null;
 	private JMenuItem ivjSave_AsMenuItem = null;
 	private JMenuItem ivjSave_AsLocalMenuItem = null;
 	private JMenuItem ivjSave_VersionMenuItem = null;
@@ -237,8 +237,8 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.I
 				setProxy();
 			if (e.getSource() == DocumentWindow.this.getReconnectMenuItem())
 				connEtoC19(e);
-			if (e.getSource() == DocumentWindow.this.getImageJServiceMenuItem())
-				startStopImageJService();
+//			if (e.getSource() == DocumentWindow.this.getImageJServiceMenuItem())
+//				startStopImageJService();
 			if (e.getSource() == DocumentWindow.this.getJMenuItemRevert())
 				connEtoC28(e);
 			if (e.getSource() == DocumentWindow.this.getJMenuItemCompare())
@@ -931,7 +931,7 @@ private JMenu getToolMenu() {
 			toolMenu.addMenuListener(new MenuListener() {
 				@Override
 				public void menuSelected(MenuEvent e) {
-					getImageJServiceMenuItem().setText(createImageJServiceMenuText());
+//					getImageJServiceMenuItem().setText(createImageJServiceMenuText());
 				}
 				@Override
 				public void menuDeselected(MenuEvent e) {
@@ -946,7 +946,7 @@ private JMenu getToolMenu() {
 //			toolMenu.add(getRunBNGMenuItem());
 			toolMenu.add(new JSeparator());
 			toolMenu.add(getRunVFrapItem());
-			toolMenu.add(getImageJServiceMenuItem());	// moved here from Tools
+//			toolMenu.add(getImageJServiceMenuItem());	// moved here from Tools
 		    toolMenu.add(new JSeparator());
 //			toolMenu.add(new JSeparator());
 			toolMenu.add(getTransMAMenuItem());
@@ -1806,22 +1806,22 @@ private static String createImageJServiceMenuText() {
 	}
 	return "Start FIJI (ImageJ) Service";
 }
-private javax.swing.JMenuItem getImageJServiceMenuItem() {
-	if (ivjImageJServiceMenuItem == null) {
-		try {
-			ivjImageJServiceMenuItem = new javax.swing.JMenuItem();
-			ivjImageJServiceMenuItem.setName("ivjImageJServiceMenuItem");
-			ivjImageJServiceMenuItem.setEnabled(true);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjImageJServiceMenuItem;
-}
+//private javax.swing.JMenuItem getImageJServiceMenuItem() {
+//	if (ivjImageJServiceMenuItem == null) {
+//		try {
+//			ivjImageJServiceMenuItem = new javax.swing.JMenuItem();
+//			ivjImageJServiceMenuItem.setName("ivjImageJServiceMenuItem");
+//			ivjImageJServiceMenuItem.setEnabled(true);
+//			// user code begin {1}
+//			// user code end
+//		} catch (java.lang.Throwable ivjExc) {
+//			// user code begin {2}
+//			// user code end
+//			handleException(ivjExc);
+//		}
+//	}
+//	return ivjImageJServiceMenuItem;
+//}
 
 private static final String IMAGEJ_PLUGIN_PATH = "IMAGEJ_PLUGIN_PATH";
 
@@ -2484,7 +2484,7 @@ private void initConnections() throws java.lang.Exception {
 	getChange_ProxyMenuItem().addActionListener(ivjEventHandler);
 	getUpdate_UserMenuItem().addActionListener(ivjEventHandler);
 	getReconnectMenuItem().addActionListener(ivjEventHandler);
-	getImageJServiceMenuItem().addActionListener(ivjEventHandler);
+//	getImageJServiceMenuItem().addActionListener(ivjEventHandler);
 	getJMenuItemRevert().addActionListener(ivjEventHandler);
 	getJMenuItemCompare().addActionListener(ivjEventHandler);
 	getNonSpatialMenuItem().addActionListener(ivjEventHandler);
