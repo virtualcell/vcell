@@ -18,10 +18,7 @@ import org.vcell.util.document.SimResampleInfoProvider;
  * Creation date: (8/24/2004 10:55:36 AM)
  * @author: Jim Schaff
  */
-public class VCSimulationDataIdentifier
-	implements
-		java.io.Serializable,
-		SimResampleInfoProvider{
+public class VCSimulationDataIdentifier implements java.io.Serializable, SimResampleInfoProvider {
 
 
 	private VCSimulationIdentifier vcSimID = null;

@@ -12,7 +12,7 @@ package org.vcell.util.document;
 
 
 
-public interface SimResampleInfoProvider extends VCDataIdentifier{
+public interface SimResampleInfoProvider extends VCDataIdentifier {
 
 	boolean isParameterScanType();
 	KeyValue getSimulationKey();
