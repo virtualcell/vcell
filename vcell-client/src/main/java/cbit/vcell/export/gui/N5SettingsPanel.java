@@ -1,12 +1,9 @@
 package cbit.vcell.export.gui;
 
 import cbit.vcell.export.server.ExportConstants;
-import cbit.vcell.export.server.ExportSpecs;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 public class N5SettingsPanel extends javax.swing.JPanel implements ExportConstants, java.awt.event.ActionListener, java.awt.event.ItemListener, java.beans.PropertyChangeListener, javax.swing.event.ChangeListener {
     private javax.swing.JButton ivjJButtonOK = null;
@@ -67,7 +64,17 @@ public class N5SettingsPanel extends javax.swing.JPanel implements ExportConstan
         if (e.getSource() == getJButtonOK())
             connEtoC1(e);
         if (e.getSource() == getCancelJButton())
-            connEtoC4(e);
+            try {
+                // user code begin {1}
+                // user code end
+                this.fireJButtonCancelAction_actionPerformed(new java.util.EventObject(this));
+                // user code begin {2}
+                // user code end
+            } catch (Throwable ivjExc) {
+                // user code begin {3}
+                // user code end
+                handleException(ivjExc);
+            }
         // user code begin {2}
         // user code end
     }
@@ -97,95 +104,15 @@ public class N5SettingsPanel extends javax.swing.JPanel implements ExportConstan
             handleException(ivjExc);
         }
     }
-    /**
-     * connEtoC2:  (JRadioButtonVariables.item.itemStateChanged(java.awt.event.ItemEvent) --> ASCIISettingsPanel.updateDataType()V)
-     * @param arg1 java.awt.event.ItemEvent
-     */
     /* WARNING: THIS METHOD WILL BE REGENERATED. */
-    private void connEtoC2(java.awt.event.ItemEvent arg1) {
-        try {
-            // user code begin {1}
-            // user code end
-            this.updateExportDataType();
-            // user code begin {2}
-            // user code end
-        } catch (java.lang.Throwable ivjExc) {
-            // user code begin {3}
-            // user code end
-            handleException(ivjExc);
-        }
-    }
-    /**
-     * connEtoC3:  (ASCIISettingsPanel.simDataType --> ASCIISettingsPanel.updateChoices(I)V)
-     * @param arg1 java.beans.PropertyChangeEvent
-     */
+
     /* WARNING: THIS METHOD WILL BE REGENERATED. */
-    private void connEtoC3(java.beans.PropertyChangeEvent arg1) {
-        try {
-            // user code begin {1}
-            // user code end
-//            this.updateChoices(this.getSimDataType());
-            return;
-            // user code begin {2}
-            // user code end
-        } catch (java.lang.Throwable ivjExc) {
-            // user code begin {3}
-            // user code end
-            handleException(ivjExc);
-        }
-    }
-    /**
-     * connEtoC4:  (CancelJButton.action.actionPerformed(java.awt.event.ActionEvent) --> ASCIISettingsPanel.fireJButtonCancelAction_actionPerformed(Ljava.util.EventObject;)V)
-     * @param arg1 java.awt.event.ActionEvent
-     */
+
     /* WARNING: THIS METHOD WILL BE REGENERATED. */
-    private void connEtoC4(java.awt.event.ActionEvent arg1) {
-        try {
-            // user code begin {1}
-            // user code end
-            this.fireJButtonCancelAction_actionPerformed(new java.util.EventObject(this));
-            // user code begin {2}
-            // user code end
-        } catch (java.lang.Throwable ivjExc) {
-            // user code begin {3}
-            // user code end
-            handleException(ivjExc);
-        }
-    }
-    /**
-     * connEtoM1:  (MovieSettingsPanel.initialize() --> ButtonGroup1.add(Ljavax.swing.AbstractButton;)V)
-     */
+
     /* WARNING: THIS METHOD WILL BE REGENERATED. */
-    private void connEtoM1() {
-        try {
-            // user code begin {1}
-            // user code end
-            getButtonGroup1().add(getJRadioButtonVariables());
-            // user code begin {2}
-            // user code end
-        } catch (java.lang.Throwable ivjExc) {
-            // user code begin {3}
-            // user code end
-            handleException(ivjExc);
-        }
-    }
-    /**
-     * connEtoM2:  (MovieSettingsPanel.initialize() --> ButtonGroup1.add(Ljavax.swing.AbstractButton;)V)
-     */
+
     /* WARNING: THIS METHOD WILL BE REGENERATED. */
-    private void connEtoM2() {
-        try {
-            // user code begin {1}
-            // user code end
-            getButtonGroup1().add(getJRadioButtonParticles());
-            // user code begin {2}
-            // user code end
-        } catch (java.lang.Throwable ivjExc) {
-            // user code begin {3}
-            // user code end
-            handleException(ivjExc);
-        }
-    }
 
     /**
      * Method to support listener events.
@@ -550,8 +477,28 @@ public class N5SettingsPanel extends javax.swing.JPanel implements ExportConstan
             constraintsJPanel1.gridx = 0; constraintsJPanel1.gridy = 12;
             add(getJPanel1(), constraintsJPanel1);
             initConnections();
-            connEtoM1();
-            connEtoM2();
+            try {
+                // user code begin {1}
+                // user code end
+                getButtonGroup1().add(getJRadioButtonVariables());
+                // user code begin {2}
+                // user code end
+            } catch (Throwable ivjExc) {
+                // user code begin {3}
+                // user code end
+                handleException(ivjExc);
+            }
+            try {
+                // user code begin {1}
+                // user code end
+                getButtonGroup1().add(getJRadioButtonParticles());
+                // user code begin {2}
+                // user code end
+            } catch (Throwable ivjExc) {
+                // user code begin {3}
+                // user code end
+                handleException(ivjExc);
+            }
         } catch (java.lang.Throwable ivjExc) {
             handleException(ivjExc);
         }
@@ -573,7 +520,17 @@ public class N5SettingsPanel extends javax.swing.JPanel implements ExportConstan
         // user code begin {1}
         // user code end
         if (e.getSource() == getJRadioButtonVariables())
-            connEtoC2(e);
+            try {
+                // user code begin {1}
+                // user code end
+                this.updateExportDataType();
+                // user code begin {2}
+                // user code end
+            } catch (Throwable ivjExc) {
+                // user code begin {3}
+                // user code end
+                handleException(ivjExc);
+            }
         // user code begin {2}
         // user code end
     }
@@ -587,7 +544,17 @@ public class N5SettingsPanel extends javax.swing.JPanel implements ExportConstan
         // user code begin {1}
         // user code end
         if (evt.getSource() == this && (evt.getPropertyName().equals("simDataType")))
-            connEtoC3(evt);
+            try {
+                // user code begin {1}
+                // user code end
+    //            this.updateChoices(this.getSimDataType());
+                // user code begin {2}
+                // user code end
+            } catch (Throwable ivjExc) {
+                // user code begin {3}
+                // user code end
+                handleException(ivjExc);
+            }
         // user code begin {2}
         // user code end
     }
