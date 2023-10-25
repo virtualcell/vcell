@@ -58,6 +58,8 @@ public class ExportServiceImpl implements ExportConstants, ExportService {
 	private IMGExporter imgExporter = new IMGExporter(this);
 	private RasterExporter rrExporter = new RasterExporter(this);
 
+	private N5Exporter n5Exporter = new N5Exporter(this);
+
 
 /**
  * Insert the method's description here.
@@ -223,6 +225,9 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataSer
 		case NRRD:
 			fileFormat = "NRRD";
 			break;
+		case N5:
+			fileFormat = "N5";
+			break;
 //		case IMAGEJ:
 //			fileFormat = "IMAGEJ";
 //			break;
@@ -233,6 +238,7 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataSer
 
 		String exportBaseURL = PropertyLoader.getRequiredProperty(PropertyLoader.exportBaseURLProperty);
 		String exportBaseDir = PropertyLoader.getRequiredProperty(PropertyLoader.exportBaseDirInternalProperty);
+		String exportN5Dir = PropertyLoader.getRequiredProperty(PropertyLoader.n5DataDir);
 
 		
 //		// see if we've done this before, and try to get it
@@ -305,6 +311,10 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataSer
 				case VTK_UNSTRUCT:
 					exportOutputs = rrExporter.makeVTKUnstructuredData(outputContext,newExportJob, user, dataServerImpl, exportSpecs,fileDataContainerManager);
 					return makeRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob,fileDataContainerManager);
+				case N5:
+					n5Exporter.initalizeDataControllers(exportSpecs.getVCDataIdentifier().getDataKey().toString() ,user.getName(), user.getID().toString(), newExportJob.getJobID());
+					ExportOutput exportOutput = n5Exporter.makeN5Data(outputContext, newExportJob, exportSpecs, fileDataContainerManager);
+					return makeRemoteN5File(fileFormat, exportN5Dir, "s3://", n5Exporter.n5FileNameHash(), exportOutput, exportSpecs, newExportJob, fileDataContainerManager);
 				default:
 					throw new DataAccessException("Unknown export format requested");
 			}
@@ -457,6 +467,34 @@ private ExportEvent makeRemoteFile_Unzipped(String fileFormat, String exportBase
 		if (lg.isTraceEnabled()) lg.trace("ExportServiceImpl.makeRemoteFile(): Successfully exported to file: " + fileNames);
 		URL url = new URL(exportBaseURL + fileNames);
 		return fireExportCompleted(newExportJob.getJobID(), exportSpecs.getVCDataIdentifier(), fileFormat, url.toString(),exportSpecs);
+	}
+	else {
+		throw new DataFormatException("Export Server could not produce valid data !");
+	}
+}
+
+
+private ExportEvent makeRemoteN5File(String fileFormat, String fileName, String exportBaseDir, String exportBaseURL, ExportOutput exportOutput, ExportSpecs exportSpecs, JobRequest newExportJob,FileDataContainerManager fileDataContainerManager) throws DataFormatException, IOException{
+	boolean exportValid = true;
+	String fileNames = "";
+	if(exportOutput.isValid())
+	{
+		//do the first file of exportOutputs separately (for VFRAP, there is only one export output)
+		String extStr = "." + fileFormat;
+		File file = new File(exportBaseDir + "/" + fileName + extStr);
+		FileOutputStream fileOut = new FileOutputStream(file);
+		BufferedOutputStream out= new BufferedOutputStream(fileOut);
+		exportOutput.writeDataToOutputStream(out,fileDataContainerManager);
+		out.close();
+	}
+	else
+	{
+		exportValid = false;
+	}
+	if (exportValid) {
+		completedExportRequests.put(exportSpecs, newExportJob);
+		if (lg.isTraceEnabled()) lg.trace("ExportServiceImpl.makeRemoteFile(): Successfully exported to file: " + fileName);
+		return fireExportCompleted(newExportJob.getJobID(), exportSpecs.getVCDataIdentifier(), fileFormat, exportBaseURL, exportSpecs);
 	}
 	else {
 		throw new DataFormatException("Export Server could not produce valid data !");
