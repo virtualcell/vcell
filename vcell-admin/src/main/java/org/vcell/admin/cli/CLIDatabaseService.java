@@ -125,4 +125,56 @@ public class CLIDatabaseService implements AutoCloseable {
         SimulationDatabase simulationDatabase = new SimulationDatabaseDirect(adminDBTopLevel, dbServerImpl,false);
         return new JobAdmin(adminDBTopLevel, dbServerImpl, simulationDatabase);
     }
+
+    public GroupAccess addGroupAccess(BioModelInfo bioModelInfo, User userToAdd) throws DataAccessException {
+        boolean bHidden = false;
+        VersionInfo newVersionInfo = getDatabaseServer().groupAddUser(
+                bioModelInfo.getVersion().getOwner(),
+                VersionableType.BioModelMetaData, bioModelInfo.getVersion().getVersionKey(),
+                userToAdd.getName(), bHidden);
+        return newVersionInfo.getVersion().getGroupAccess();
+    }
+
+    public GroupAccess removeGroupAccess(BioModelInfo bioModelInfo, User userToAdd) throws DataAccessException {
+        boolean bHidden = false;
+        VersionInfo newVersionInfo = getDatabaseServer().groupRemoveUser(
+                bioModelInfo.getVersion().getOwner(),
+                VersionableType.BioModelMetaData, bioModelInfo.getVersion().getVersionKey(),
+                userToAdd.getName(), bHidden);
+        return newVersionInfo.getVersion().getGroupAccess();
+    }
+
+    public GroupAccess addGroupAccess(MathModelInfo mathModelInfo, User userToAdd) throws DataAccessException {
+        boolean bHidden = false;
+        VersionInfo newVersionInfo = getDatabaseServer().groupAddUser(
+                mathModelInfo.getVersion().getOwner(),
+                VersionableType.MathModelMetaData, mathModelInfo.getVersion().getVersionKey(),
+                userToAdd.getName(), bHidden);
+        return newVersionInfo.getVersion().getGroupAccess();
+    }
+
+    public GroupAccess removeGroupAccess(MathModelInfo mathModelInfo, User userToAdd) throws DataAccessException {
+        boolean bHidden = false;
+        VersionInfo newVersionInfo = getDatabaseServer().groupRemoveUser(
+                mathModelInfo.getVersion().getOwner(),
+                VersionableType.MathModelMetaData, mathModelInfo.getVersion().getVersionKey(),
+                userToAdd.getName(), bHidden);
+        return newVersionInfo.getVersion().getGroupAccess();
+    }
+
+    public BioModelInfo queryBiomodelInfo(User owner, KeyValue biomodelId) throws DataAccessException {
+        return getDatabaseServer().getBioModelInfo(owner, biomodelId);
+    }
+
+    public MathModelInfo queryMathmodelInfo(User owner, KeyValue mathmodelId) throws DataAccessException {
+        return getDatabaseServer().getMathModelInfo(owner, mathmodelId);
+    }
+
+    public List<BioModelInfo> queryBiomodelsByOwner(User owner) throws DataAccessException {
+        return Arrays.asList(getDatabaseServer().getBioModelInfos(owner, false));
+    }
+
+    public List<MathModelInfo> queryMathmodelsByOwner(User owner) throws DataAccessException {
+        return Arrays.asList(getDatabaseServer().getMathModelInfos(owner, false));
+    }
 }

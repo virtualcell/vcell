@@ -223,7 +223,8 @@ public int hashCode() {
  * @return java.lang.String
  */
 public String toString() {
-	return "BioModelInfo(modelKey="+modelKey+",Version="+version+",softwareVersion="+softwareVersion+")";
+	String swVersion = (softwareVersion == null ? "null" : softwareVersion.getSoftwareVersionString());
+	return "BioModelInfo(modelKey="+modelKey+",Version="+version+",softwareVersion="+swVersion+")";
 }
 public VersionableType getVersionType() {	
 	return VersionableType.BioModelMetaData;
