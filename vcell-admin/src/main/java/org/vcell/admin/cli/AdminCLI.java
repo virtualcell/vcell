@@ -10,12 +10,14 @@ import org.vcell.admin.cli.db.DatabaseCompareSchemaCommand;
 import org.vcell.admin.cli.db.DatabaseDestroyAndRecreateCommand;
 import org.vcell.admin.cli.mathverifier.ModeldbLoadTestCommand;
 import org.vcell.admin.cli.mathverifier.ModeldbMathGenTestCommand;
+import org.vcell.admin.cli.models.ModelCommands;
 import org.vcell.admin.cli.sim.JobInfoCommand;
 import org.vcell.admin.cli.sim.ResultSetCrawlerCommand;
 import org.vcell.admin.cli.sim.SimDataVerifierCommand;
 import org.vcell.admin.cli.tools.UsageCommand;
 import org.vcell.dependency.server.VCellServerModule;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 
@@ -30,6 +32,7 @@ import picocli.CommandLine.Command;
         SimDataVerifierCommand.class,
         JobInfoCommand.class,
         CommandLine.HelpCommand.class,
+        ModelCommands.class
 })
 public class AdminCLI {
 
@@ -45,6 +48,7 @@ public class AdminCLI {
             AdminCLI adminCLI = injector.getInstance(AdminCLI.class);
             CommandLine commandLine = new CommandLine(adminCLI);
             commandLine.registerConverter(KeyValue.class, new KeyValueTypeConverter());
+            commandLine.registerConverter(User.class, new UserTypeConverter());
             commandLine.registerConverter(MathVerifier.DatabaseMode.class, new DatabaseModeTypeConverter());
             exitCode = commandLine.execute(args);
         } catch (Throwable t){
@@ -59,6 +63,13 @@ public class AdminCLI {
         @Override
         public KeyValue convert(String value) {
             return new KeyValue(value);
+        }
+    }
+
+    static class UserTypeConverter implements CommandLine.ITypeConverter<User> {
+        @Override
+        public User convert(String value) {
+            return new User(value.split(":")[0], new KeyValueTypeConverter().convert(value.split(":")[1]));
         }
     }
 
