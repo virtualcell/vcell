@@ -382,9 +382,13 @@
 			<artifactId>commons-codec</artifactId>
 			<version>${commons-codec.version}</version>
 		</dependency>
+        <dependency>
+            <groupId>org.janelia.saalfeldlab</groupId>
+            <artifactId>n5</artifactId>
+        </dependency>
 
 
-	</dependencies>
+    </dependencies>
 	
 	<profiles>
 		<profile>

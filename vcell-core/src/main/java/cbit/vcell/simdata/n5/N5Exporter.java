@@ -150,7 +150,8 @@ public class N5Exporter implements ExportConstants {
         // Point a data controller to the directory where the sim data is and use the vcdID to retrieve information regarding the sim
         Cachetable cachetable = new Cachetable(10 * Cachetable.minute, 1000000L);
         File primaryDir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirInternalProperty));
-        this.dataSetController = new DataSetControllerImpl(cachetable, primaryDir, null);
+        File secodaryDir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.secondarySimDataDirExternalProperty));
+        this.dataSetController = new DataSetControllerImpl(cachetable, primaryDir, secodaryDir);
 
         // get dataset identifier from the simulation
 

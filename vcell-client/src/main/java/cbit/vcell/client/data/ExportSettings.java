@@ -411,6 +411,8 @@ private void initConnections() throws java.lang.Exception {
 		}
 	});
 	getRasterSettingsPanel1().addRasterSettingsPanelListener(this);
+	getN5SettingsPanel().addN5SettingsPanelListener(this);
+
 	connPtoP7SetTarget();
 }
 
@@ -445,19 +447,19 @@ private boolean isClosedOK() {
  * @param newEvent java.util.EventObject
  */
 public void JButtonCancelAction_actionPerformed(java.util.EventObject newEvent) {
-	if (newEvent.getSource() == getASCIISettingsPanel1())
-		try {
+	try{
+		if (newEvent.getSource() == getASCIISettingsPanel1())
 			this.closeCancel(ivjJDialogASCIISettings);
-		} catch (Throwable ivjExc) {
-			handleException(ivjExc);
-		}
 
-	if (newEvent.getSource() == getRasterSettingsPanel1())
-		try {
-			this.closeCancel(ivjJDialogRasterSettings);
-		} catch (Throwable ivjExc) {
-			handleException(ivjExc);
-		}
+		if (newEvent.getSource() == getRasterSettingsPanel1())
+				this.closeCancel(ivjJDialogRasterSettings);
+
+		if (newEvent.getSource() == getN5SettingsPanel())
+			this.closeCancel(ivjJDialogN5Settings);
+	}
+	catch (Throwable ivjExc){
+		handleException(ivjExc);
+	}
 }
 
 /**
@@ -466,56 +468,26 @@ public void JButtonCancelAction_actionPerformed(java.util.EventObject newEvent) 
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
 public void JButtonOKAction_actionPerformed(java.util.EventObject newEvent) {
-	// user code begin {1}
-	// user code end
-	if (newEvent.getSource() == getASCIISettingsPanel1())
-		try {
-			// user code begin {1}
-			// user code end
+	try{
+		if (newEvent.getSource() == getASCIISettingsPanel1()){
 			this.setFormatSpecificSpecs(getASCIISettingsPanel1().getAsciiSpecs());
-			try {
-				// user code begin {1}
-				// user code end
-				this.closeOK(ivjJDialogASCIISettings);
-				// user code begin {2}
-				// user code end
-			} catch (Throwable ivjExc) {
-				// user code begin {3}
-				// user code end
-				handleException(ivjExc);
-			}
-// user code begin {2}
-			// user code end
-		} catch (Throwable ivjExc) {
-			// user code begin {3}
-			// user code end
-			handleException(ivjExc);
+			this.closeOK(ivjJDialogASCIISettings);
 		}
-	if (newEvent.getSource() == getRasterSettingsPanel1())
-		try {
-			// user code begin {1}
-			// user code end
+
+		if (newEvent.getSource() == getRasterSettingsPanel1())
+		{
 			this.setFormatSpecificSpecs(getRasterSettingsPanel1().getRasterSpecs());
-			try {
-				// user code begin {1}
-				// user code end
-				this.closeOK(ivjJDialogRasterSettings);
-				// user code begin {2}
-				// user code end
-			} catch (Throwable ivjExc) {
-				// user code begin {3}
-				// user code end
-				handleException(ivjExc);
-			}
-	// user code begin {2}
-			// user code end
-		} catch (Throwable ivjExc) {
-			// user code begin {3}
-			// user code end
-			handleException(ivjExc);
+			this.closeOK(ivjJDialogRasterSettings);
 		}
-	// user code begin {2}
-	// user code end
+
+		if (newEvent.getSource() == getN5SettingsPanel()){
+			this.setFormatSpecificSpecs(getN5SettingsPanel().getN5Specs());
+			this.closeOK(ivjJDialogN5Settings);
+		}
+	}
+	catch (Throwable ivjExc){
+		handleException(ivjExc);
+	}
 }
 
 /**

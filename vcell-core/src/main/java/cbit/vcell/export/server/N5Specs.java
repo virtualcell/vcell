@@ -12,7 +12,9 @@ package cbit.vcell.export.server;
 
 import cbit.vcell.math.MathException;
 import cbit.vcell.simdata.VCData;
+import org.janelia.saalfeldlab.n5.Bzip2Compression;
 import org.janelia.saalfeldlab.n5.Compression;
+import org.janelia.saalfeldlab.n5.GzipCompression;
 import org.janelia.saalfeldlab.n5.N5FSWriter;
 import org.vcell.util.Compare;
 import org.vcell.util.DataAccessException;
@@ -29,14 +31,22 @@ public class N5Specs extends FormatSpecificSpecs implements Serializable {
 	private ExportFormat format;
 	private ExportConstants.DataType dataType;
 	private ExportSpecs.SimNameSimDataID[] simNameSimDataIDs;
-	private Compression compression;
+	private CompressionLevel compression;
+
+	public static enum CompressionLevel{
+		RAW,
+		BZIP,
+		GZIP
+	}
+
 /**
  * TextSpecs constructor comment.
  */
-	public N5Specs(ExportSpecs.SimNameSimDataID[] simNameSimDataIDs, ExportConstants.DataType dataType, ExportFormat format) {
+	public N5Specs(ExportSpecs.SimNameSimDataID[] simNameSimDataIDs, ExportConstants.DataType dataType, ExportFormat format, CompressionLevel compressionLevel) {
 		this.format = format;
 		this.dataType = dataType;
 		this.simNameSimDataIDs = simNameSimDataIDs;
+		this.compression = compressionLevel;
 	}
 	public ExportSpecs.SimNameSimDataID[] getSimNameSimDataIDs(){
 		return simNameSimDataIDs;
@@ -57,7 +67,16 @@ public class N5Specs extends FormatSpecificSpecs implements Serializable {
 	}
 
 	public Compression getCompression(){
-		return compression;
+		switch (compression){
+			case RAW:
+				return null;
+			case BZIP:
+				return new Bzip2Compression();
+			case GZIP:
+				return new GzipCompression();
+			default:
+				return null;
+		}
 	}
 
 

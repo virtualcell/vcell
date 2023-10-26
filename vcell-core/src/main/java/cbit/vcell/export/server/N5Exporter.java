@@ -110,7 +110,7 @@ private ExportOutput exportToN5(OutputContext outputContext, long jobID, N5Specs
 	HashMap<String, Object> additionalMetaData = new HashMap<>();
 
 	n5FSWriter.createDataset(dataSet, datasetAttributes);
-	N5MetaData.imageJMetaData(n5FSWriter, dataSet, vcData, numVariables, additionalMetaData);
+	N5Specs.imageJMetaData(n5FSWriter, dataSet, vcData, numVariables, additionalMetaData);
 
 
 	for (int variableIndex=0; variableIndex < numVariables; variableIndex++){
@@ -121,7 +121,6 @@ private ExportOutput exportToN5(OutputContext outputContext, long jobID, N5Specs
 
 			// data does get returned, but it does not seem to cover the entire region of space, but only returns regions where there is activity
 			double[] data = this.dataSetController.getSimDataBlock(outputContext, this.vcDataID, species.get(variableIndex).getName(), allTimes[timeIndex]).getData();
-//                double [] data = vcData.getSimDataBlock(outputContext, volumeDataIDs.get(channelIndex).getName(), allTimes[timeIndex]).getData();
 			DoubleArrayDataBlock doubleArrayDataBlock = new DoubleArrayDataBlock(blockSize, new long[]{0, 0, variableIndex, 0, timeIndex}, data);
 			n5FSWriter.writeBlock(dataSet, datasetAttributes, doubleArrayDataBlock);
 		}
