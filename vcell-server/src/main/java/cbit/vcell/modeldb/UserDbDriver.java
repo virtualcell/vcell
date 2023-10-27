@@ -74,7 +74,7 @@ public User.SpecialUser getUserFromUserid(Connection con, String userid) throws 
 	ArrayList<User.SPECIAL_CLAIM> specials = new ArrayList<>();
 	try {
 		rset = stmt.executeQuery(sql);
-		if (rset.next()) {
+		while (rset.next()) {
 			BigDecimal bigDecimal = rset.getBigDecimal("userkey");
 			if(userKey == null) {
 				userKey = bigDecimal;
