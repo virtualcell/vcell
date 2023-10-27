@@ -12,7 +12,7 @@ package cbit.vcell.export.nrrd;
 import java.io.FileWriter;
 import java.io.IOException;
 
-import cbit.vcell.export.server.FileDataContainerManager;
+import cbit.vcell.export.server.AltFileDataContainerManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -72,7 +72,7 @@ private static String getArrayFieldString(String name, String[] data)  {
 }
 
 
-public static NrrdInfo writeNRRD(NrrdInfo nrrdInfo,FileDataContainerManager fileDataContainerManager) throws IOException{
+public static NrrdInfo writeNRRD(NrrdInfo nrrdInfo, AltFileDataContainerManager fileDataContainerManager) throws IOException{
 	// write header first
 	nrrdInfo.setHeaderFileID(fileDataContainerManager.getNewFileDataContainerID());
 	FileWriter headerFileWriter = null;

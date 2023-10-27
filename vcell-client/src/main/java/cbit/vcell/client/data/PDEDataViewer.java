@@ -124,10 +124,9 @@ import cbit.vcell.export.gloworm.quicktime.VideoMediaChunk;
 import cbit.vcell.export.gloworm.quicktime.VideoMediaSample;
 import cbit.vcell.export.gui.ExportMonitorPanel;
 import cbit.vcell.export.server.ExportSpecs;
-import cbit.vcell.export.server.FileDataContainerManager;
+import cbit.vcell.export.server.AltFileDataContainerManager;
 import cbit.vcell.export.server.FormatSpecificSpecs;
 import cbit.vcell.geometry.Curve;
-import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.SampledCurve;
 import cbit.vcell.geometry.SinglePoint;
 import cbit.vcell.geometry.gui.DataValueSurfaceViewer;
@@ -3043,7 +3042,7 @@ private void makeSurfaceMovie(final SurfaceCanvas surfaceCanvas,
 			DisplayAdapterService das = new DisplayAdapterService(movieDAS);
 			int[][] origSurfacesColors = surfaceCanvas.getSurfacesColors();
 			DataInfoProvider dataInfoProvider = getPDEDataContextPanel1().getDataInfoProvider();
-			FileDataContainerManager fileDataContainerManager = new FileDataContainerManager();
+			AltFileDataContainerManager fileDataContainerManager = new AltFileDataContainerManager();
 			try{
 				try {
 					for (int t = 0; t < tsJobResultsNoStats.getTimes().length; t++) {

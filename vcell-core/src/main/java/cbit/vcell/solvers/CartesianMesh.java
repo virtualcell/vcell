@@ -226,7 +226,7 @@ public class CartesianMesh implements Serializable, Matchable {
 		public void writeCellData(boolean bFill,
 				String[] volumeVariableNames,String[] volumeVariableUnits,double[][] volumeData,
 				String[] membraneVariableNames,String[] membraneVariableUnits,double[][] membraneData,
-				java.io.Writer writer) throws Exception{
+				java.io.Writer writer) throws IOException {
 			
 			if(volumeData != null && volumeData.length == 0){
 				volumeData = null;
@@ -235,10 +235,10 @@ public class CartesianMesh implements Serializable, Matchable {
 				membraneData = null;
 			}
 			if(volumeData != null && volumeData[0].length != getNumVolumeElements()){
-				throw new Exception("Volume data length does not match mesh info.");
+				throw new RuntimeException("Volume data length does not match mesh info.");
 			}
 			if(membraneData != null && membraneData[0].length != getNumMembraneElements()){
-				throw new Exception("Membrane data length does not match mesh info.");
+				throw new RuntimeException("Membrane data length does not match mesh info.");
 			}
 
 			int numCellData = (volumeData != null?volumeData.length:0) +(membraneData != null?membraneData.length:0);

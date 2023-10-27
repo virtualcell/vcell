@@ -17,6 +17,8 @@ import cbit.vcell.geometry.surface.Surface;
 import cbit.vcell.geometry.surface.SurfaceCollection;
 import cbit.vcell.solvers.CartesianMesh;
 
+import java.io.IOException;
+
 /**
  * Insert the type's description here.
  * Creation date: (7/19/2004 10:52:10 AM)
@@ -75,14 +77,14 @@ public class AVS_UCD_Exporter {
 	//-----
 	public static void writeUCDVolGeomAndData(CartesianMesh.UCDInfo ucdInfo,
 			String[] volumeVariableNames,String[] volumeVariableUnits,double[][] volumeData,
-			java.io.Writer writer) throws Exception{
+			java.io.Writer writer) throws IOException {
 		
 		if(volumeData != null && volumeData.length == 0){
 			volumeData = null;
 		}
 
 		if(volumeData != null && volumeData[0].length != ucdInfo.getNumVolumeCells()){
-			throw new Exception("Volume data length does not match mesh info.");
+			throw new RuntimeException("Volume data length does not match mesh info.");
 		}
 
 		writer.write(ucdInfo.getHeaderString((volumeData != null?volumeData.length:0),0));
@@ -97,14 +99,14 @@ public class AVS_UCD_Exporter {
 	//-----
 	public static void writeUCDMembGeomAndData(CartesianMesh.UCDInfo ucdInfo,
 			String[] membraneVariableNames,String[] membraneVariableUnits,double[][] membraneData,
-			java.io.Writer writer) throws Exception{
+			java.io.Writer writer) throws IOException {
 		
 		if(membraneData != null && membraneData.length == 0){
 			membraneData = null;
 		}
 
 		if(membraneData != null && membraneData[0].length != ucdInfo.getNumMembraneCells()){
-			throw new Exception("Membrane data length does not match UCD info.");
+			throw new RuntimeException("Membrane data length does not match UCD info.");
 		}
 		
 		writer.write(ucdInfo.getHeaderString(0, (membraneData != null?membraneData.length:0)));

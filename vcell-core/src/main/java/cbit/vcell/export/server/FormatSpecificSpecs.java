@@ -16,7 +16,9 @@ import java.awt.image.DataBufferByte;
 import java.awt.image.DataBufferInt;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
+import java.io.IOException;
 import java.io.Serializable;
+import java.util.zip.DataFormatException;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
@@ -42,8 +44,9 @@ public abstract class FormatSpecificSpecs implements Serializable {
 	public final static int CODEC_NONE = 0;
 	public final static int CODEC_JPEG = 1;
 
-	public static VideoMediaSample getVideoMediaSample(
-			int width,int height,int sampleDuration,boolean isGrayScale,int compressionType,float compressionQuality,int[] argbData) throws Exception{
+	public static VideoMediaSample getVideoMediaSample(int width, int height, int sampleDuration, boolean isGrayScale,
+													   int compressionType, float compressionQuality, int[] argbData)
+			throws DataFormatException, IOException {
 			
 			if(isGrayScale){
 				//convert 32bit to 8bit
@@ -76,7 +79,9 @@ public abstract class FormatSpecificSpecs implements Serializable {
 			}
 		}
 
-	public static VideoMediaSampleJPEG encodeJPEG(BufferedImage bufferedImage,float compressionQuality,int width,int height,int sampleDuration,int bitsPerPixel,boolean isGrayscale) throws Exception{
+	public static VideoMediaSampleJPEG encodeJPEG(BufferedImage bufferedImage, float compressionQuality,
+												  int width, int height, int sampleDuration, int bitsPerPixel,
+												  boolean isGrayscale) throws IOException, DataFormatException {
 		ImageWriter imageWriter = ImageIO.getImageWritersBySuffix("jpeg").next();
 		ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 		ImageOutputStream imageOutputStream = ImageIO.createImageOutputStream(byteArrayOutputStream);

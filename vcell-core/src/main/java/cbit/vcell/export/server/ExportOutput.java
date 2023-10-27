@@ -15,7 +15,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Serializable;
 
-import cbit.vcell.export.server.FileDataContainerManager.FileDataContainerID;
+import cbit.vcell.export.server.AltFileDataContainerManager.FileDataContainerID;
 
 /**
  * This type was created in VisualAge.
@@ -28,7 +28,7 @@ public class ExportOutput implements Serializable {
 	private FileDataContainerID fileDataContainerID;
 	
 
-public ExportOutput(boolean valid, String dataType, String simID, String dataID, FileDataContainerManager fileDataContainerManager) throws IOException {
+public ExportOutput(boolean valid, String dataType, String simID, String dataID, AltFileDataContainerManager fileDataContainerManager) throws IOException {
 	this.valid = valid;
 	this.dataType = dataType;
 	this.simID = simID;
@@ -38,7 +38,7 @@ public ExportOutput(boolean valid, String dataType, String simID, String dataID,
 	this.fileDataContainerID = fileDataContainerManager.getNewFileDataContainerID();
 }
 
-public void writeDataToOutputStream(OutputStream outputStream,FileDataContainerManager fileDataContainerManager) throws FileNotFoundException, IOException{
+public void writeDataToOutputStream(OutputStream outputStream, AltFileDataContainerManager fileDataContainerManager) throws FileNotFoundException, IOException {
 	fileDataContainerManager.writeAndFlush(fileDataContainerID, outputStream);
 }
 

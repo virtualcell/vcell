@@ -19,7 +19,7 @@ import java.util.zip.DataFormatException;
 import cbit.vcell.export.gloworm.atoms.AtomConstants;
 import cbit.vcell.export.gloworm.atoms.MediaData;
 import cbit.vcell.export.gloworm.atoms.SampleDescriptionEntry;
-import cbit.vcell.export.server.FileDataContainerManager;
+import cbit.vcell.export.server.AltFileDataContainerManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -98,12 +98,12 @@ private void writeChunks(byte[] dataBytes, boolean bInitializeFile) throws IOExc
 	}
 }
 
-public VideoMediaChunk(VideoMediaSample sample,FileDataContainerManager fileDataContainerManager) throws IOException{
+public VideoMediaChunk(VideoMediaSample sample, AltFileDataContainerManager fileDataContainerManager) throws IOException{
 	init(sample);
 	File tempMovieFile = File.createTempFile("VideoMediaChunk", "temp");
 	this.dataFile = tempMovieFile;
 			
-	FileDataContainerManager.FileDataContainerID fileDataContainerID =   fileDataContainerManager.getNewFileDataContainerID();
+	AltFileDataContainerManager.FileDataContainerID fileDataContainerID =   fileDataContainerManager.getNewFileDataContainerID();
 	fileDataContainerManager.manageExistingTempFile(fileDataContainerID, tempMovieFile);
 	boolean bInitializeFile = true;
 

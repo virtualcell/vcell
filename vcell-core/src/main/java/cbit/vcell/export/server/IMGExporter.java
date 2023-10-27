@@ -37,19 +37,14 @@ import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.Coordinate;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.FileUtils;
-import org.vcell.util.Range;
 import org.vcell.util.UserCancelException;
-import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
 
 import GIFUtils.GIFFormatException;
 import GIFUtils.GIFImage;
 import GIFUtils.GIFOutputStream;
-import cbit.image.DisplayAdapterService;
 import cbit.image.DisplayPreferences;
-import cbit.image.ImagePaneModel;
-import cbit.rmi.event.ExportEvent;
 import cbit.vcell.export.gloworm.atoms.UserDataEntry;
 import cbit.vcell.export.gloworm.quicktime.MediaMethods;
 import cbit.vcell.export.gloworm.quicktime.MediaMovie;
@@ -61,13 +56,9 @@ import cbit.vcell.export.gloworm.quicktime.VRWorld;
 import cbit.vcell.export.gloworm.quicktime.VideoMediaChunk;
 import cbit.vcell.export.gloworm.quicktime.VideoMediaSample;
 import cbit.vcell.resource.PropertyLoader;
-import cbit.vcell.simdata.Cachetable;
 import cbit.vcell.simdata.DataServerImpl;
-import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.simdata.SimulationData;
-import cbit.vcell.solver.VCSimulationDataIdentifier;
-import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.util.AmplistorUtils;
 /**
  * Insert the type's description here.
@@ -164,8 +155,8 @@ public class IMGExporter implements ExportConstants {
 	 * This method was created in VisualAge.
 	 */
 	public ExportOutput[] makeMediaData(
-			OutputContext outputContext,JobRequest jobRequest, User user, DataServerImpl dataServerImpl, ExportSpecs exportSpecs,ClientTaskStatusSupport clientTaskStatusSupport,FileDataContainerManager fileDataContainerManager)
-							throws IOException, GIFFormatException, DataAccessException, Exception {
+            OutputContext outputContext, JobRequest jobRequest, User user, DataServerImpl dataServerImpl, ExportSpecs exportSpecs, ClientTaskStatusSupport clientTaskStatusSupport, AltFileDataContainerManager fileDataContainerManager)
+							throws IOException, DataAccessException, DataFormatException {
 
 		int particleMode = FormatSpecificSpecs.PARTICLE_NONE;
 		if(exportSpecs.getFormatSpecificSpecs() instanceof ImageSpecs){
@@ -378,9 +369,9 @@ public class IMGExporter implements ExportConstants {
 	//}
 
 	private static ExportOutput[] makeMedia(ExportServiceImpl exportServiceImpl,
-			OutputContext outputContext,long jobID, User user, DataServerImpl dataServerImpl,
-			ExportSpecs exportSpecs,ClientTaskStatusSupport clientTaskStatusSupport,ParticleInfo particleInfo,FileDataContainerManager fileDataContainerManager)
-							throws RemoteException, IOException, GIFFormatException, DataAccessException, Exception {
+                                            OutputContext outputContext, long jobID, User user, DataServerImpl dataServerImpl,
+                                            ExportSpecs exportSpecs, ClientTaskStatusSupport clientTaskStatusSupport, ParticleInfo particleInfo, AltFileDataContainerManager fileDataContainerManager)
+							throws RemoteException, IOException, GIFFormatException, DataAccessException, DataFormatException {
 
 		boolean bOverLay = false;
 		int sliceIndicator = 0;
@@ -592,7 +583,7 @@ public class IMGExporter implements ExportConstants {
 					pdeOffscreenRenderer.setVarAndTimeAndDisplay(varName,timePoint, displayPreference);
 				}
 			}
-			public int[] getPixelsRGB(int imageScale,int membraneScaling,int meshMode,int volVarMembrOutlineThickness) throws Exception{
+			public int[] getPixelsRGB(int imageScale,int membraneScaling,int meshMode,int volVarMembrOutlineThickness) throws DataAccessException, IOException {
 				if(pdeOffscreenRenderer != null){
 					return pdeOffscreenRenderer.getPixelsRGB(imageScale,membraneScaling,meshMode,volVarMembrOutlineThickness);
 				}else{
@@ -649,7 +640,7 @@ public class IMGExporter implements ExportConstants {
 	private static MirrorInfo renderAndMirrorSliceTimePixels(
 			ExportRenderInfo exportRenderInfo,String varName,double timePoint,DisplayPreferences displayPreference,
 			int imageScale,int membraneScaling,int meshMode,int volVarMembrOutlineThickness,
-			int originalWidth,int originalHeight,int mirroringType) throws Exception{
+			int originalWidth,int originalHeight,int mirroringType) throws DataAccessException, DataFormatException, IOException {
 		exportRenderInfo.setVarAndTimeAndDisplay(varName,timePoint, displayPreference);
 		int[] pixels = exportRenderInfo.getPixelsRGB(imageScale,membraneScaling,meshMode,volVarMembrOutlineThickness);
 		pixels = ExportUtils.extendMirrorPixels(pixels,originalWidth,originalHeight, mirroringType);
@@ -701,10 +692,10 @@ public class IMGExporter implements ExportConstants {
 		}
 	 }
 
-	private static void createMedia(Vector<ExportOutput> exportOutputV,VCDataIdentifier vcdID,String dataID,
-			ExportSpecs exportSpecs,boolean bEndVars,boolean bEndSlice,
-			boolean bBeginTime,boolean bEndTime,boolean bSingleTimePoint,String[] varNameArr,DisplayPreferences[] displayPreferencesArr,
-			MovieHolder movieHolder,int[] pixels,int mirrorWidth,int mirrorHeight,FileDataContainerManager fileDataContainerManager) throws Exception{
+	private static void createMedia(Vector<ExportOutput> exportOutputV, VCDataIdentifier vcdID, String dataID,
+                                    ExportSpecs exportSpecs, boolean bEndVars, boolean bEndSlice,
+                                    boolean bBeginTime, boolean bEndTime, boolean bSingleTimePoint, String[] varNameArr, DisplayPreferences[] displayPreferencesArr,
+                                    MovieHolder movieHolder, int[] pixels, int mirrorWidth, int mirrorHeight, AltFileDataContainerManager fileDataContainerManager) throws GIFUtils.GIFFormatException, IOException, DataFormatException{
 
 		boolean isGrayScale = true;
 		for (int i = 0; i < displayPreferencesArr.length; i++) {

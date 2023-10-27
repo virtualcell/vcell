@@ -17,7 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import cbit.vcell.export.server.FileDataContainerManager.FileDataContainerID;
+import cbit.vcell.export.server.AltFileDataContainerManager.FileDataContainerID;
 
 /**
  * Insert the type's description here.

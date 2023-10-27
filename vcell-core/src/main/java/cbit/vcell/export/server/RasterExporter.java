@@ -37,6 +37,7 @@ import java.util.Vector;
 
 import javax.imageio.ImageIO;
 
+import cbit.image.*;
 import org.vcell.util.Coordinate;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Extent;
@@ -48,10 +49,6 @@ import org.vcell.vis.io.VCellSimFiles;
 import org.vcell.vis.mapping.chombo.ChomboVtkFileWriter;
 import org.vcell.vis.mapping.vcell.CartesianMeshVtkFileWriter;
 
-import cbit.image.DisplayAdapterService;
-import cbit.image.DisplayPreferences;
-import cbit.image.ImagePlaneManager;
-import cbit.image.SourceDataInfo;
 import cbit.vcell.export.AVS_UCD_Exporter;
 import cbit.vcell.export.nrrd.NrrdInfo;
 import cbit.vcell.export.nrrd.NrrdInfo.NRRDAxisNames;
@@ -144,7 +141,7 @@ private static class NRRDHelper {
 	public static int calculateNumTimes(TimeSpecs timeSpecs){
 		return timeSpecs.getEndTimeIndex()-timeSpecs.getBeginTimeIndex()+1;
 	}
-	public NrrdInfo createSingleFullNrrdInfo(FileDataContainerManager fileDataContainerManager,VCDataIdentifier vcdID,VariableSpecs variableSpecs,RasterSpecs rasterSpecs,TimeSpecs timeSpecs) throws IOException{
+	public NrrdInfo createSingleFullNrrdInfo(AltFileDataContainerManager fileDataContainerManager, VCDataIdentifier vcdID, VariableSpecs variableSpecs, RasterSpecs rasterSpecs, TimeSpecs timeSpecs) throws IOException{
 		String simID = vcdID.getID();
 		int NUM_TIMES = calculateNumTimes(timeSpecs);
 		NrrdInfo nrrdInfo = NrrdInfo.createBasicNrrdInfo(
@@ -180,7 +177,7 @@ private static class NRRDHelper {
 		nrrdInfo.setDataFileID(fileDataContainerManager.getNewFileDataContainerID());
 		return nrrdInfo;
 	}
-	public NrrdInfo createTimeFullNrrdInfo(FileDataContainerManager fileDataContainerManager,VCDataIdentifier vcdID,VariableSpecs variableSpecs,double time,RasterSpecs rasterSpecs) throws IOException{
+	public NrrdInfo createTimeFullNrrdInfo(AltFileDataContainerManager fileDataContainerManager, VCDataIdentifier vcdID, VariableSpecs variableSpecs, double time, RasterSpecs rasterSpecs) throws IOException{
 		String simID = vcdID.getID();
 		NrrdInfo nrrdInfo = NrrdInfo.createBasicNrrdInfo(
 			4,
@@ -201,7 +198,7 @@ private static class NRRDHelper {
 		nrrdInfo.setDataFileID(fileDataContainerManager.getNewFileDataContainerID());
 		return nrrdInfo;
 	}
-	public NrrdInfo createVariableFullNrrdInfo(FileDataContainerManager fileDataContainerManager,VCDataIdentifier vcdID,String variableName,TimeSpecs timeSpecs,RasterSpecs rasterSpecs) throws IOException{
+	public NrrdInfo createVariableFullNrrdInfo(AltFileDataContainerManager fileDataContainerManager, VCDataIdentifier vcdID, String variableName, TimeSpecs timeSpecs, RasterSpecs rasterSpecs) throws IOException{
 		String simID = vcdID.getID();
 		int NUM_TIMES = calculateNumTimes(timeSpecs);
 		NrrdInfo nrrdInfo = NrrdInfo.createBasicNrrdInfo(
@@ -235,7 +232,7 @@ private static class NRRDHelper {
 		}
 		return lastNRRDHelper;
 	}
-	public static void appendDoubleData(NrrdInfo nrrdInfo,FileDataContainerManager fileDataContainerManager,double[] data,String varName) throws DataAccessException,IOException{
+	public static void appendDoubleData(NrrdInfo nrrdInfo, AltFileDataContainerManager fileDataContainerManager, double[] data, String varName) throws DataAccessException,IOException{
 		int bufferSize = 8*nrrdInfo.getSizes()[0]*nrrdInfo.getSizes()[1]*nrrdInfo.getSizes()[2];
 		if(data.length != (bufferSize/8)){//doubles are 8 bytes
 			throw new DataAccessException("NRRD export Var: "+varName+" size != calculated size");
@@ -253,7 +250,7 @@ private static class NRRDHelper {
 
 private NRRDHelper createSliceNrrdHelper(CartesianMesh mesh,DataProcessingOutputInfo dataProcessingOutputInfo,VCDataIdentifier vcdID,
 		VariableSpecs variableSpecs, TimeSpecs timeSpecs2, GeometrySpecs geometrySpecs, RasterSpecs rasterSpecs,
-		FileDataContainerManager fileDataContainerManager) throws IOException,DataAccessException{
+		AltFileDataContainerManager fileDataContainerManager) throws IOException,DataAccessException{
 	ISize planeISize = Coordinate.convertAxisFromStandardXYZToNormal(mesh.getISize(), geometrySpecs.getAxis());
 	planeISize = new ISize(planeISize.getX(),planeISize.getY(),1);
 	Extent planeExtent = Coordinate.convertAxisFromStandardXYZToNormal(mesh.getExtent(), geometrySpecs.getAxis());
@@ -270,7 +267,7 @@ private ImagePlaneManager createSlicer(CartesianMesh mesh,double[] data,Geometry
 	return imagePlaneManager;
 }
 private void appendSlice(String varName,double[] unslicedData,NrrdInfo sliceNrrdInfo,CartesianMesh mesh,GeometrySpecs geometrySpecs,
-	FileDataContainerManager fileDataContainerManager) throws IOException,DataAccessException{
+	AltFileDataContainerManager fileDataContainerManager) throws IOException,DataAccessException{
 	//Setup manager to extract plane
 	double[] sliceData = new double[sliceNrrdInfo.getAxisSize(NRRDAxisNames.X)*sliceNrrdInfo.getAxisSize(NRRDAxisNames.Y)];
 	ImagePlaneManager imagePlaneManager = createSlicer(mesh, unslicedData, geometrySpecs);
@@ -285,7 +282,7 @@ private void appendSlice(String varName,double[] unslicedData,NrrdInfo sliceNrrd
 	NRRDHelper.appendDoubleData(sliceNrrdInfo, fileDataContainerManager,sliceData,varName);
 }
 private NrrdInfo[] exportPDEData(OutputContext outputContext,long jobID, User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID, VariableSpecs variableSpecs,
-	TimeSpecs timeSpecs2, GeometrySpecs geometrySpecs, RasterSpecs rasterSpecs, FileDataContainerManager fileDataContainerManager) throws RemoteException, DataAccessException, IOException {
+	TimeSpecs timeSpecs2, GeometrySpecs geometrySpecs, RasterSpecs rasterSpecs, AltFileDataContainerManager fileDataContainerManager) throws RemoteException, DataAccessException, IOException {
 	
 	CartesianMesh mesh = dataServerImpl.getMesh(user, vcdID);
 	DataProcessingOutputInfo dataProcessingOutputInfo = null;
@@ -474,7 +471,7 @@ private NrrdInfo[] exportPDEData(OutputContext outputContext,long jobID, User us
 /**
  * This method was created in VisualAge.
  */
-public NrrdInfo[] makeRasterData(OutputContext outputContext,JobRequest jobRequest, User user, DataServerImpl dataServerImpl, ExportSpecs exportSpecs, FileDataContainerManager fileDataContainerManager) 
+public NrrdInfo[] makeRasterData(OutputContext outputContext,JobRequest jobRequest, User user, DataServerImpl dataServerImpl, ExportSpecs exportSpecs, AltFileDataContainerManager fileDataContainerManager)
 						throws RemoteException, DataAccessException, IOException {
 	return exportPDEData(
 			outputContext,
@@ -490,8 +487,8 @@ public NrrdInfo[] makeRasterData(OutputContext outputContext,JobRequest jobReque
 	);
 }
 
-public ExportOutput[] makePLYWithTexData(OutputContext outputContext,JobRequest jobRequest, User user, DataServerImpl dataServerImpl,
-		ExportSpecs exportSpecs,FileDataContainerManager fileDataContainerManager) throws Exception{
+public ExportOutput[] makePLYWithTexData(OutputContext outputContext, JobRequest jobRequest, User user, DataServerImpl dataServerImpl,
+                                         ExportSpecs exportSpecs, AltFileDataContainerManager fileDataContainerManager) throws DataAccessException, ImageException, IOException, MathException {
 
 	String simID = exportSpecs.getVCDataIdentifier().getID();
 	VCDataIdentifier vcdID = exportSpecs.getVCDataIdentifier();
@@ -845,8 +842,10 @@ public static void findNeighborNeighborsWithNode(RegionImage regionImage,Membran
 	}
 }
 
-public ExportOutput[] makeUCDData(OutputContext outputContext,JobRequest jobRequest, User user, DataServerImpl dataServerImpl, ExportSpecs exportSpecs,FileDataContainerManager fileDataContainerManager)
-						throws Exception{
+public ExportOutput[] makeUCDData(OutputContext outputContext,JobRequest jobRequest, User user,
+								  DataServerImpl dataServerImpl, ExportSpecs exportSpecs,
+								  AltFileDataContainerManager fileDataContainerManager)
+		throws DataAccessException, IOException {
 	
 	String simID = exportSpecs.getVCDataIdentifier().getID();
 	VCDataIdentifier vcdID = exportSpecs.getVCDataIdentifier();
@@ -955,8 +954,8 @@ public ExportOutput[] makeUCDData(OutputContext outputContext,JobRequest jobRequ
 
 }
 
-public ExportOutput[] makeVTKImageData(OutputContext outputContext,JobRequest jobRequest, User user, DataServerImpl dataServerImpl,
-		ExportSpecs exportSpecs,FileDataContainerManager fileDataContainerManager) throws Exception{
+public ExportOutput[] makeVTKImageData(OutputContext outputContext, JobRequest jobRequest, User user, DataServerImpl dataServerImpl,
+                                       ExportSpecs exportSpecs, AltFileDataContainerManager fileDataContainerManager) throws DataAccessException, IOException {
 	
 	String simID = exportSpecs.getVCDataIdentifier().getID();
 	VCDataIdentifier vcdID = exportSpecs.getVCDataIdentifier();
@@ -1027,7 +1026,7 @@ public ExportOutput[] makeVTKImageData(OutputContext outputContext,JobRequest jo
 }
 
 public ExportOutput[] makeVTKUnstructuredData0(OutputContext outputContext,JobRequest jobRequest, User user,
-		DataServerImpl dataServerImpl, ExportSpecs exportSpecs, FileDataContainerManager fileDataContainerManager) throws Exception{
+		DataServerImpl dataServerImpl, ExportSpecs exportSpecs, AltFileDataContainerManager fileDataContainerManager) throws Exception{
 	VCDataIdentifier vcdID = exportSpecs.getVCDataIdentifier();
 	boolean bChombo = dataServerImpl.isChombo(user, vcdID);
 	final File tmpDir = PropertyLoader.getSystemTemporaryDirectory();
@@ -1040,7 +1039,7 @@ public ExportOutput[] makeVTKUnstructuredData0(OutputContext outputContext,JobRe
 
 
 public ExportOutput[] makeVTKUnstructuredData_Chombo(OutputContext outputContext,final JobRequest jobRequest, User user,
-		DataServerImpl dataServerImpl, ExportSpecs exportSpecs, File tmpDir, FileDataContainerManager fileDataContainerManager) throws Exception{
+		DataServerImpl dataServerImpl, ExportSpecs exportSpecs, File tmpDir, AltFileDataContainerManager fileDataContainerManager) throws Exception{
 	
 	String simID = exportSpecs.getVCDataIdentifier().getID();
 	final VCDataIdentifier vcdID = exportSpecs.getVCDataIdentifier();
@@ -1069,7 +1068,7 @@ public ExportOutput[] makeVTKUnstructuredData_Chombo(OutputContext outputContext
 
 
 public ExportOutput[] makeVTKUnstructuredData_VCell(OutputContext outputContext,final JobRequest jobRequest, User user,
-		DataServerImpl dataServerImpl, ExportSpecs exportSpecs, File tmpDir, FileDataContainerManager fileDataContainerManager) throws Exception{
+		DataServerImpl dataServerImpl, ExportSpecs exportSpecs, File tmpDir, AltFileDataContainerManager fileDataContainerManager) throws Exception{
 	
 	String simID = exportSpecs.getVCDataIdentifier().getID();
 	final VCDataIdentifier vcdID = exportSpecs.getVCDataIdentifier();
@@ -1096,8 +1095,9 @@ public ExportOutput[] makeVTKUnstructuredData_VCell(OutputContext outputContext,
 	return exportOutputArr;
 }
 
-public ExportOutput[] makeVTKUnstructuredData(OutputContext outputContext,JobRequest jobRequest, User user,
-			DataServerImpl dataServerImpl, ExportSpecs exportSpecs,FileDataContainerManager fileDataContainerManager) throws Exception{
+public ExportOutput[] makeVTKUnstructuredData(OutputContext outputContext, JobRequest jobRequest, User user,
+                                              DataServerImpl dataServerImpl, ExportSpecs exportSpecs, AltFileDataContainerManager fileDataContainerManager)
+		throws DataAccessException, IOException {
 
 	String simID = exportSpecs.getVCDataIdentifier().getID();
 	VCDataIdentifier vcdID = exportSpecs.getVCDataIdentifier();

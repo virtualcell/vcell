@@ -6,15 +6,23 @@ import cbit.vcell.export.server.TimeSpecs;
 import cbit.vcell.export.server.VariableSpecs;
 import org.vcell.util.document.*;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public class ExportEventCommander {
     private final javax.swing.event.EventListenerList listenerList = new javax.swing.event.EventListenerList();
+    private final Set<ExportListener> hashSet = new HashSet<>();
 
     public synchronized void addExportListener(ExportListener listener) {
+        if (hashSet.contains(listener)) return;
         this.listenerList.add(ExportListener.class, listener);
+        this.hashSet.add(listener);
     }
 
     public synchronized void removeExportListener(ExportListener listener) {
-        listenerList.remove(ExportListener.class, listener);
+        if (!hashSet.contains(listener)) return;
+        this.listenerList.remove(ExportListener.class, listener);
+        this.hashSet.remove(listener);
     }
 
     protected ExportEvent fireExportEvent(ExportEvent event) {
