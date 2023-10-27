@@ -416,9 +416,6 @@ services:
 
   s3Proxy:
     image: andrewgaul/s3proxy:sha-ba0fd6d
-    container_name: S3Proxy
-    ports:
-      - "${VCELL_S3PROXY_PORT_EXTERNAL}:80"
     environment:
       JCLOUDS_FILESYSTEM_BASEDIR: "/data"
       JCLOUDS_PROVIDER: "filesystem"
@@ -448,6 +445,8 @@ services:
       JCLOUDS_KEYSTONE_VERSION: ""
       JCLOUDS_KEYSTONE_SCOPE: ""
       JCLOUDS_KEYSTONE_PROJECT_DOMAIN_NAME: ""
+    ports:
+      - "${VCELL_S3PROXY_PORT_EXTERNAL}:80"
     volumes:
       - "${VCELL_N5_DATADIR_HOST}:/data:ro"
 
