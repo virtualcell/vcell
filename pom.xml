@@ -65,6 +65,7 @@
 		<module>vcell-vmicro</module>
 		<module>vcell-cli</module>
 		<module>vcell-web</module>
+		<module>vcell-rest</module>
 	</modules>
 
 	<scm>
