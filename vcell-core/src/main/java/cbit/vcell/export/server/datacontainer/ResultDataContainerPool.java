@@ -1,4 +1,7 @@
 package cbit.vcell.export.server.datacontainer;
 
-public interface ResultDataContainerPool {
+import java.util.Collection;
+
+public interface ResultDataContainerPool<T extends ResultDataContainer> extends Collection<T> {
+
 }
