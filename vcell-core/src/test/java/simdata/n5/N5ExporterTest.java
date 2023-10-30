@@ -57,6 +57,7 @@ public class N5ExporterTest {
 
     private static String previousInstallRoot;
     private static String previousPrimarySimDir;
+    private static String previousSecondarySimDir;
 
     private static String previousN5Path;
 
@@ -103,6 +104,9 @@ public class N5ExporterTest {
         previousPrimarySimDir = PropertyLoader.getProperty(PropertyLoader.primarySimDataDirInternalProperty, null);
         PropertyLoader.setProperty(PropertyLoader.primarySimDataDirInternalProperty, temporaryFolder.getAbsolutePath());
 
+        previousSecondarySimDir = PropertyLoader.getProperty(PropertyLoader.secondarySimDataDirExternalProperty, null);
+        System.setProperty(PropertyLoader.secondarySimDataDirExternalProperty, temporaryFolder.getAbsolutePath());
+
         previousN5Path = PropertyLoader.getProperty(PropertyLoader.n5DataDir, null);
         PropertyLoader.setProperty(PropertyLoader.n5DataDir, n5ExportDir.getAbsolutePath());
     }
@@ -122,6 +126,9 @@ public class N5ExporterTest {
             PropertyLoader.setProperty(PropertyLoader.n5DataDir, previousN5Path);
         }
 
+        if (previousSecondarySimDir != null){
+            System.setProperty(PropertyLoader.secondarySimDataDirExternalProperty, previousSecondarySimDir);
+        }
 
         if (n5Reader != null){
             n5Reader.close();
