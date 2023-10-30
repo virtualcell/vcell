@@ -6,7 +6,7 @@ import java.io.IOException;
 public class FileDataContainer implements ResultDataContainer {
 
     @Override
-    public void append(CharSequence csq) throws IOException {
+    public void append(String csq) throws IOException {
 
     }
 
@@ -26,7 +26,7 @@ public class FileDataContainer implements ResultDataContainer {
     }
 
     @Override
-    public long getDataSize() {
+    public int getDataSize() {
         return 0;
     }
 }

@@ -1,30 +1,36 @@
 package cbit.vcell.export.server.datacontainer;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 public class InMemoryDataContainer implements ResultDataContainer {
+    private byte[] bytes;
     @Override
-    public void append(CharSequence csq) throws IOException {
-
+    public void append(String str) throws IOException {
+        this.append(str.getBytes());
     }
 
     @Override
     public void append(ResultDataContainer container) throws IOException {
-
+        this.append(container.getDataBytes());
     }
 
     @Override
     public void append(byte[] bytesToAppend) throws IOException {
-
+        int totalLength = this.bytes.length + bytesToAppend.length;
+        byte[] fullBytes = Arrays.copyOf(this.bytes, totalLength);
+        for (int i = this.bytes.length, j = 0; i < totalLength; i++, j++)
+            fullBytes[i] = bytesToAppend[j];
+        this.bytes = fullBytes;
     }
 
     @Override
     public byte[] getDataBytes() {
-        return new byte[0];
+        return this.bytes;
     }
 
     @Override
-    public long getDataSize() {
-        return 0;
+    public int getDataSize() {
+        return this.bytes.length;
     }
 }

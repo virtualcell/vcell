@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.File;
 
 public interface ResultDataContainer {
-    void append(CharSequence csq) throws IOException;
+    void append(String csq) throws IOException;
 
     void append(ResultDataContainer container) throws IOException;
 
@@ -12,5 +12,5 @@ public interface ResultDataContainer {
 
     byte[] getDataBytes();
 
-    long getDataSize();
+    int getDataSize();
 }
