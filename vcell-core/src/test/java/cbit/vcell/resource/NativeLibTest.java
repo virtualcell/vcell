@@ -9,7 +9,7 @@ import org.vcell.test.Fast;
 public class NativeLibTest {
 	@Before
 	public void init( ) {
-		System.setProperty(PropertyLoader.installationRoot,"..");
+		PropertyLoader.setProperty(PropertyLoader.installationRoot, "..");
 		ResourceUtil.init();
 	}
 	

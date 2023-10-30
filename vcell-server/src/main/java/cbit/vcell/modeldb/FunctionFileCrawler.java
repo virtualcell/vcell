@@ -9,10 +9,11 @@
  */
 
 package cbit.vcell.modeldb;
-import java.io.File;
-import java.sql.SQLException;
-import java.util.Vector;
 
+import cbit.vcell.resource.PropertyLoader;
+import cbit.vcell.server.AdminDatabaseServer;
+import cbit.vcell.solver.AnnotatedFunction;
+import cbit.vcell.solvers.FunctionFileGenerator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.db.ConnectionFactory;
@@ -23,10 +24,9 @@ import org.vcell.util.TokenMangler;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserInfo;
 
-import cbit.vcell.resource.PropertyLoader;
-import cbit.vcell.server.AdminDatabaseServer;
-import cbit.vcell.solver.AnnotatedFunction;
-import cbit.vcell.solvers.FunctionFileGenerator;
+import java.io.File;
+import java.sql.SQLException;
+import java.util.Vector;
 
 /**
  * Insert the type's description here.
@@ -133,7 +133,6 @@ public static void main(String[] args) {
 			count ++;
 		}
 			
-		PropertyLoader.loadProperties();
 		conFactory = DatabaseService.getInstance().createConnectionFactory();
 		KeyFactory keyFactory = conFactory.getKeyFactory();
 		AdminDatabaseServer adminDbServer = new LocalAdminDbServer(conFactory,keyFactory);

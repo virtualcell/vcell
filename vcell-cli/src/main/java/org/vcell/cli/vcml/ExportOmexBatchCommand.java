@@ -1,6 +1,5 @@
 package org.vcell.cli.vcml;
 
-import cbit.vcell.resource.PropertyLoader;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -52,7 +51,6 @@ public class ExportOmexBatchCommand implements Callable<Integer> {
         try {
 
             logger.debug("Batch export of omex files requested");
-            PropertyLoader.loadProperties();
             if (inputFilePath == null || !inputFilePath.exists() || !inputFilePath.isDirectory())
                 throw new RuntimeException("inputFilePath '" + (inputFilePath == null ? "" : inputFilePath) + "' is not a 'valid directory'");
 

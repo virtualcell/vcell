@@ -41,11 +41,11 @@ public class SlurmProxyTest {
 		try {
 			Random r = new Random();
 			System.setProperty("log4j2.trace","true");
-			System.setProperty(PropertyLoader.vcellServerIDProperty, "Test2");
-			System.setProperty(PropertyLoader.htcLogDirExternal, "/Volumes/vcell/htclogs");
+			PropertyLoader.setProperty(PropertyLoader.vcellServerIDProperty, "Test2");
+			PropertyLoader.setProperty(PropertyLoader.htcLogDirExternal, "/Volumes/vcell/htclogs");
 			VCMongoMessage.enabled=false;
 			String partitions[] = new String[] { "vcell", "vcell2" };
-			System.setProperty(PropertyLoader.slurm_partition, partitions[1]);
+			PropertyLoader.setProperty(PropertyLoader.slurm_partition, partitions[1]);
 			
 			
 			cmd = new CommandServiceSshNative(new String[] {"vcell-service.cam.uchc.edu"}, "vcell", new File("/Users/schaff/.ssh/schaff_rsa"));
@@ -123,11 +123,11 @@ public class SlurmProxyTest {
 	@Test
 	public void testSLURM() throws IOException, ExecutableException {
 		System.setProperty("log4j2.trace","true");
-		System.setProperty(PropertyLoader.vcellServerIDProperty, "Test2");
-		System.setProperty(PropertyLoader.htcLogDirExternal, "/Volumes/vcell/htclogs");
+		PropertyLoader.setProperty(PropertyLoader.vcellServerIDProperty, "Test2");
+		PropertyLoader.setProperty(PropertyLoader.htcLogDirExternal, "/Volumes/vcell/htclogs");
 		VCMongoMessage.enabled=false;
 		String partitions[] = new String[] { "vcell", "vcell2" };
-		System.setProperty(PropertyLoader.slurm_partition, partitions[0]);
+		PropertyLoader.setProperty(PropertyLoader.slurm_partition, partitions[0]);
 		
 		CommandServiceSshNative cmd = null;
 		try {
@@ -139,7 +139,7 @@ public class SlurmProxyTest {
 				System.out.println("job "+jobInfo.getHtcJobID()+" "+jobInfo.getJobName()+", status="+jobStatus.toString());
 			}
 			for (String partition : partitions) {
-				System.setProperty(PropertyLoader.slurm_partition, partition);
+				PropertyLoader.setProperty(PropertyLoader.slurm_partition, partition);
 				PartitionStatistics partitionStatistics = slurmProxy.getPartitionStatistics();
 				System.out.println("partition statistics for partition "+partition+": "+partitionStatistics);
 				System.out.println("number of cpus allocated = "+partitionStatistics.numCpusAllocated);

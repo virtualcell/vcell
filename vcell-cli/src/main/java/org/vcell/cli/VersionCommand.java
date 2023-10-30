@@ -1,6 +1,5 @@
 package org.vcell.cli;
 
-import cbit.vcell.resource.PropertyLoader;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
@@ -17,8 +16,6 @@ class VersionCommand implements Callable<Integer> {
 
     public Integer call() {
         try {
-            PropertyLoader.loadProperties();
-
             String osName = getProperty("os.name");
             String osVersion = getProperty("os.version");
             String javaVersion = getProperty("java.version");

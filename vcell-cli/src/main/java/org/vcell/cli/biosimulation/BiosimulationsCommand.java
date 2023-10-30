@@ -1,16 +1,14 @@
 package org.vcell.cli.biosimulation;
 
 import cbit.vcell.resource.PropertyLoader;
-
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Level;
-import org.vcell.cli.CLIRecorder;
 import org.vcell.cli.CLIPythonManager;
+import org.vcell.cli.CLIRecorder;
 import org.vcell.cli.run.ExecuteImpl;
 import org.vcell.util.exe.Executable;
-
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
@@ -69,9 +67,6 @@ public class BiosimulationsCommand implements Callable<Integer> {
             );
 
             logger.trace(trace_args);
-
-            // Load properties before we need them below!
-            PropertyLoader.loadProperties();
 
             logger.trace("Validating input");
             if (ARCHIVE == null) {

@@ -10,33 +10,52 @@
 
 package cbit.vcell.resource;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.NoSuchElementException;
-import java.util.Properties;
-import java.util.StringTokenizer;
-
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.util.ConfigurationException;
 
-import cbit.vcell.mongodb.VCMongoMessage;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Set;
 
 public class PropertyLoader {
+
+	public interface VCellConfigProvider {
+		String getConfigValue(String propertyName);
+		Set<String> getConfigNames();
+		void setConfigValue(String propertyName, String value);
+	}
+
+	@Deprecated
+	private static class SystemPropertyConfigProvider implements VCellConfigProvider {
+		@Override
+		public Set<String> getConfigNames() {
+			return System.getProperties().stringPropertyNames();
+		}
+		@Override
+		public String getConfigValue(String propertyName) {
+			return System.getProperty(propertyName);
+		}
+		@Override
+		public void setConfigValue(String propertyName, String value) {
+			System.setProperty(propertyName, value);
+		}
+	}
+
+	private static VCellConfigProvider configProvider = new SystemPropertyConfigProvider();
+
+	public static void setConfigProvider(VCellConfigProvider configProvider) {
+		PropertyLoader.configProvider = configProvider;
+	}
 
 	//must come before uses of #record method
 	private static final HashMap<String, MetaProp> propMap = new HashMap<>( );
 	public static final String ADMINISTRATOR_ACCOUNT = "Administrator";
 	public static final String ADMINISTRATOR_ID = "2";
 	public static final String TESTACCOUNT_USERID = "vcellNagios";
-	public static final String propertyFileProperty			= "vcell.propertyfile";
 
 	public static final String vcellServerIDProperty        = record("vcell.server.id",ValueType.GEN);
 
@@ -311,35 +330,13 @@ public class PropertyLoader {
 		 * is property required?
 		 */
 		boolean required = false;
-		/**
-		 * was message sent to mongo?
-		 */
-		boolean sentToMongo = false;
-		/**
-		 * stored message for sending later
-		 */
-		String message = null;
 
 		MetaProp(ValueType valueType) {
 			this.valueType = valueType;
 		}
 
 	}
-	private static boolean errorsToMongo = false;
 	private static boolean checkRequired = false;
-
-	public static void sendErrorsToMongo( )  {
-		if (errorsToMongo == false) {
-			for (Entry<String, MetaProp> entry  : propMap.entrySet()) {
-				MetaProp mp = entry.getValue();
-				if (mp.message  != null && mp.sentToMongo == false) {
-					VCMongoMessage.sendInfo(mp.message);
-					mp.sentToMongo = true;
-				}
-			}
-			errorsToMongo = true;
-		}
-	}
 
 	/**
 	 * * record static String in {@link #propMap}
@@ -356,10 +353,6 @@ public class PropertyLoader {
 	}
 
 	public static final String USE_CURRENT_WORKING_DIRECTORY = "cwd";
-
-	public PropertyLoader() throws Exception {
-		loadProperties();
-	}
 
 	/**
 	 * get Java's system temporary directory. This will be either a JVM default, or
@@ -379,7 +372,7 @@ public class PropertyLoader {
 
 	public final static boolean getBooleanProperty(String propertyName, boolean defaultValue){
 		try {
-			String propertyValue = System.getProperty(propertyName);
+			String propertyValue = configProvider.getConfigValue(propertyName);
 			if (propertyValue==null){
 				return defaultValue;
 			}else{
@@ -392,7 +385,7 @@ public class PropertyLoader {
 
 	public final static int getIntProperty(String propertyName, int defaultValue) {
 		try {
-			String propertyValue = System.getProperty(propertyName);
+			String propertyValue = configProvider.getConfigValue(propertyName);
 			if (propertyValue==null){
 				return defaultValue;
 			}else{
@@ -405,7 +398,7 @@ public class PropertyLoader {
 
 	public final static long getLongProperty(String propertyName, long defaultValue) {
 		try {
-			String propertyValue = System.getProperty(propertyName);
+			String propertyValue = configProvider.getConfigValue(propertyName);
 			if (propertyValue==null){
 				return defaultValue;
 			}else{
@@ -425,7 +418,7 @@ public class PropertyLoader {
 	 */
 	public final static String getProperty(String propertyName, String defaultValue) {
 		try {
-			String propertyValue = System.getProperty(propertyName);
+			String propertyValue = configProvider.getConfigValue(propertyName);
 			if (propertyValue==null){
 				return defaultValue;
 			}else{
@@ -436,26 +429,8 @@ public class PropertyLoader {
 		}
 	}
 
-	/**
-	 * set to mongo if {@link #errorsToMongo} is true, or Standard out and save message for later
-	 * @param prop not null
-	 * @param message not null
-	 */
-	private static void report(MetaProp prop, String message) {
-		if (errorsToMongo) {
-			if (!prop.sentToMongo) {
-				VCMongoMessage.sendInfo(message);
-				prop.sentToMongo = true;
-			}
-			return;
-		}
-
-		//else
-
-		if (prop.message == null) {
-			prop.message = message;
-			lg.error(message);
-		}
+	public static void setProperty(String propertyName, String value) {
+		configProvider.setConfigValue(propertyName, value);
 	}
 
 	/**
@@ -499,18 +474,18 @@ public class PropertyLoader {
 		if (checkRequired) {
 			MetaProp mp = propMap.get(propertyName);
 			if (mp != null) {
-				if (!mp.sentToMongo && !mp.required) {
-					report(mp, "PROPERTY: " + propertyName + " not marked required");
+				if (!mp.required) {
+					lg.error("PROPERTY: " + propertyName + " not marked required");
 				}
 			}
 			else {
 				mp = new MetaProp(ValueType.GEN);
 				propMap.put(propertyName,mp);
-				report(mp, "PROPERTY: required property " + propertyName + " not mapped");
+				lg.error("PROPERTY: required property " + propertyName + " not mapped");
 			}
 		}
 		try {
-			String propertyValue = System.getProperty(propertyName);
+			String propertyValue = configProvider.getConfigValue(propertyName);
 			if (propertyValue==null){
 				throw new ConfigurationException("required System property \""+propertyName+"\" not defined");
 			}else{
@@ -521,134 +496,9 @@ public class PropertyLoader {
 		}
 	}
 	public final static void loadProperties(String[] required) throws java.io.IOException {
-		loadProperties();
 		validateSystemProperties(required);
 	}
 
-	@Deprecated
-	public final static void loadProperties(boolean throwException, boolean validate) throws java.io.IOException {
-		loadProperties();
-	}
-	/**
-	 * default; no validation of required
-	 * @throws java.io.IOException
-	 */
-	public final static void loadProperties() throws java.io.IOException {
-		lg.debug("Loading Properties");
-		File propertyFile = null;
-		//
-		// if vcell.propertyfile defined (on the command line via -Dvcell.propertyfile=/tmp/vcell.properties)
-		//
-		String customPropertyFileName = System.getProperty(propertyFileProperty);
-		String where = "";
-		if (customPropertyFileName != null){
-			propertyFile = new File(customPropertyFileName);
-			where = "command line";
-		}else{
-			String tail = System.getProperty("file.separator") + "vcell.properties";
-
-			// look in current working directory first
-			propertyFile = new File("." + tail);
-			where = "working directory"; //optimistic set
-			if (!propertyFile.canRead()) {
-				// then look in 'user.home' directory
-				propertyFile = new File( System.getProperty("user.home") + tail);
-				where = "users home directory"; //optimistic set
-				if (!propertyFile.canRead()) {
-					// then look in 'java.home' directory
-					propertyFile = new File(System.getProperty("java.home") + tail);
-					where = "java home directory"; //optimistic set
-				}
-			}
-		}
-		if (propertyFile.canRead()) {
-			java.util.Properties p = new Properties();
-			java.io.FileInputStream propFile = new java.io.FileInputStream(propertyFile);
-			p.load(propFile);
-			propFile.close();
-			lg.debug("loaded properties from " + propertyFile.getAbsolutePath() + " specifed by " + where);
-			for (Map.Entry<Object,Object> entry : p.entrySet() ) {
-				String key = entry.getKey().toString();
-				String value = entry.getValue().toString();
-				String existingValue = System.getProperty(key);
-				if (existingValue == null) {
-					System.setProperty(key, value);
-				}
-				else if (!existingValue.equals(value)){
-					lg.debug("Property " + key + " property value "  + value + " overridden by system value " + existingValue);
-				}
-			}
-			lookForMagic(propertyFile);
-		}
-		else {
-			if (lg.isInfoEnabled()) {
-				lg.info("Can't read propertyFile " + propertyFile.getAbsolutePath() + " specified by " + where);
-			}
-			
-		}
-		// display new properties
-		//System.getProperties().list(System.out);
-		lg.info("ServerID=" + getProperty(vcellServerIDProperty,"unknown")+", SoftwareVersion="+getProperty(vcellSoftwareVersion,"unknown"));
-	}
-
-	/**
-	 * keyword for property substitution
-	 */
-	private static final String MAGIC_KEYWORD = "magic";
-	private static void lookForMagic(File pfile) {
-		try {
-			List<String> lines = org.apache.commons.io.FileUtils.readLines(pfile);
-			for (String line: lines) {
-				if (line.indexOf('#') == 0 && StringUtils.containsIgnoreCase(line, MAGIC_KEYWORD) ) {
-					StringTokenizer st = new StringTokenizer(line);
-					while (st.hasMoreTokens()) {
-						String token = st.nextToken().toLowerCase();
-						if (!token.endsWith(MAGIC_KEYWORD)) {
-							continue;
-						}
-						try {
-							String os = st.nextToken();
-							String from = st.nextToken();
-							String to = st.nextToken();
-							executeSubstitution(ValueType.DIR, os, from, to);
-						} catch (NoSuchElementException e) {
-							lg.warn("Unable to parse magic line " + line,e);
-						}
-					}
-				}
-			}
-		} catch (Exception e) {
-			lg.warn("failure looking for magic",e);
-		}
-	}
-
-	private static void executeSubstitution(ValueType type, String os, String from, String to) {
-		OperatingSystemInfo osi = OperatingSystemInfo.getInstance();
-		if (os.contains( osi.getOsnamePrefix() ) ) {
-			for (Entry<String, MetaProp> es: propMap.entrySet()) {
-				MetaProp mp = es.getValue();
-				if (mp.valueType == type) {
-					String key = es.getKey();
-					String current = System.getProperty(key);
-					if (current!= null && current.contains(from)) {
-						String substitute = current.replace(from, to);
-						System.setProperty(key, substitute);
-						if (lg.isInfoEnabled()) {
-							lg.info("replaced " + key + " value " + current + " with " + substitute);
-						}
-
-					}
-				}
-			}
-		}
-	}
-
-	/**
-	 * This method was created in VisualAge.
-	 */
-	public final static void show() {
-		System.getProperties().list(System.out);
-	}
 
 	/***
 	 * check system properties against expected
@@ -656,9 +506,8 @@ public class PropertyLoader {
 	 */
 	private static void validateSystemProperties(String[] required) {
 		checkRequired = true;
-		Properties p = System.getProperties();
 
-		for (Object propName : p.keySet()) {
+		for (Object propName : configProvider.getConfigNames()) {
 			if (propMap.containsKey(propName)) {
 				propMap.get(propName).set = true;
 			}
@@ -724,7 +573,7 @@ public class PropertyLoader {
 			return;
 		}
 	    final boolean fileSet = meta.fileSet;
-		String value = System.getProperty(name);
+		String value = configProvider.getConfigValue(name);
 		switch (vt) {
 		case GEN:
 			assert false : "don't go here";

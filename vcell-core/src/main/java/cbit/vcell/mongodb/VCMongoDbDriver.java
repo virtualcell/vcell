@@ -319,7 +319,6 @@ public class VCMongoDbDriver {
 	public static void main(String[] args) {
 		MongoClient m = null;
 		try {
-			PropertyLoader.loadProperties();
 			VCMongoDbDriver mongoDbDriver = VCMongoDbDriver.getInstance();
 			Document doc = new Document();
 			doc.put(VCMongoMessage.MongoMessage_msgtype,  VCMongoMessage.MongoMessage_type_testing);

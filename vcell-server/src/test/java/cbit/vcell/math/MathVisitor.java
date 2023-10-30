@@ -1,10 +1,12 @@
 package cbit.vcell.math;
 
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.io.PrintWriter;
-
+import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.GeometryInfo;
+import cbit.vcell.mathmodel.MathModel;
+import cbit.vcell.modeldb.BadMathVisitor;
+import cbit.vcell.modeldb.BatchTester;
+import cbit.vcell.modeldb.VCDatabaseScanner;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -15,20 +17,12 @@ import org.junit.runner.Result;
 import org.junit.runner.manipulation.Filter;
 import org.junit.runner.notification.Failure;
 import org.vcell.test.Fast;
-import org.vcell.util.document.BioModelInfo;
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.MathModelInfo;
-import org.vcell.util.document.User;
-import org.vcell.util.document.VCellSoftwareVersion;
+import org.vcell.util.document.*;
 
-import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.geometry.Geometry;
-import cbit.vcell.geometry.GeometryInfo;
-import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.modeldb.BadMathVisitor;
-import cbit.vcell.modeldb.BatchTester;
-import cbit.vcell.modeldb.VCDatabaseScanner;
-import cbit.vcell.resource.PropertyLoader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.io.PrintWriter;
 
 @Category(Fast.class)
 public class MathVisitor implements BadMathVisitor {
@@ -57,7 +51,6 @@ public class MathVisitor implements BadMathVisitor {
 		try{
 		MathVisitor visitor = new MathVisitor();
 		boolean bAbortOnDataAccessException = false;
-			PropertyLoader.loadProperties();
 			VCDatabaseScanner scanner = VCDatabaseScanner.createDatabaseScanner();
 			User[] users = scanner.getAllUsers();
 			scanner.scanMathModels(visitor,System.err,users,null,null,null, bAbortOnDataAccessException);

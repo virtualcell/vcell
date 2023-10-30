@@ -1,6 +1,5 @@
 package org.vcell.admin.cli.sim;
 
-import cbit.vcell.resource.PropertyLoader;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -69,7 +68,6 @@ public class SimDataVerifierCommand implements Callable<Integer> {
         config.updateLoggers();
 
         try {
-            PropertyLoader.loadProperties();
             try (CLIDatabaseService cliDatabaseService = new CLIDatabaseService()) {
                 if (outputDir == null) {
                     outputDir = new File(".");

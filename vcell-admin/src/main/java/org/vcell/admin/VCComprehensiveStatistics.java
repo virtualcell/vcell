@@ -1,5 +1,28 @@
 package org.vcell.admin;
 
+import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mathmodel.MathModel;
+import cbit.vcell.modeldb.DatabasePolicySQL;
+import cbit.vcell.modeldb.DatabaseServerImpl;
+import cbit.vcell.modeldb.LocalAdminDbServer;
+import cbit.vcell.resource.PropertyLoader;
+import cbit.vcell.server.SimulationJobStatusPersistent;
+import cbit.vcell.server.SimulationJobStatusPersistent.SchedulerStatus;
+import cbit.vcell.server.SimulationStatusPersistent;
+import cbit.vcell.solver.Simulation;
+import cbit.vcell.xml.XMLSource;
+import cbit.vcell.xml.XmlHelper;
+import org.vcell.db.ConnectionFactory;
+import org.vcell.db.DatabaseService;
+import org.vcell.db.KeyFactory;
+import org.vcell.util.BigString;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.document.BioModelInfo;
+import org.vcell.util.document.MathModelInfo;
+import org.vcell.util.document.User;
+import org.vcell.util.document.UserInfo;
+
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.sql.Connection;
@@ -12,31 +35,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-
-import org.vcell.db.ConnectionFactory;
-import org.vcell.db.DatabaseService;
-import org.vcell.db.KeyFactory;
-import org.vcell.util.BigString;
-import org.vcell.util.DataAccessException;
-import org.vcell.util.document.BioModelInfo;
-import org.vcell.util.document.MathModelInfo;
-import org.vcell.util.document.User;
-import org.vcell.util.document.UserInfo;
-
-import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.modeldb.DatabasePolicySQL;
-import cbit.vcell.modeldb.DatabaseServerImpl;
-import cbit.vcell.modeldb.LocalAdminDbServer;
-import cbit.vcell.modeldb.VersionTable;
-import cbit.vcell.resource.PropertyLoader;
-import cbit.vcell.server.SimulationJobStatusPersistent;
-import cbit.vcell.server.SimulationJobStatusPersistent.SchedulerStatus;
-import cbit.vcell.server.SimulationStatusPersistent;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.xml.XMLSource;
-import cbit.vcell.xml.XmlHelper;
 
 public class VCComprehensiveStatistics {
 	private ConnectionFactory oracleConnection = null;
@@ -92,8 +90,6 @@ public class VCComprehensiveStatistics {
 	ModelStat[] mathModelStats = null;
 
 	VCComprehensiveStatistics() throws Exception {
-		new PropertyLoader();
-		
 		DatabasePolicySQL.bAllowAdministrativeAccess = true;
 		
 		ConnectionFactory conFactory = DatabaseService.getInstance().createConnectionFactory();

@@ -45,7 +45,7 @@ public class SBMLTestSuiteTest {
 
 	@BeforeClass
 	public static void before() {
-		System.setProperty(PropertyLoader.installationRoot,"..");
+		PropertyLoader.setProperty(PropertyLoader.installationRoot, "..");
 		Logger.getLogger(SBMLExporter.class).addAppender(new ConsoleAppender());
 	}
 

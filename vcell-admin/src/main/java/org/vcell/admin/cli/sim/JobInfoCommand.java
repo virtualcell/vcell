@@ -14,7 +14,6 @@ import org.vcell.util.document.VCellServerID;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
-import java.io.File;
 import java.util.concurrent.Callable;
 
 @Command(name = "job-info", description = "show job status and scheduler decisions for active jobs")
@@ -46,7 +45,6 @@ public class JobInfoCommand implements Callable<Integer> {
         config.updateLoggers();
 
         try {
-            PropertyLoader.loadProperties();
             try (CLIDatabaseService cliDatabaseService = new CLIDatabaseService()) {
 //                if (outputDir == null) {
 //                    outputDir = new File(".");

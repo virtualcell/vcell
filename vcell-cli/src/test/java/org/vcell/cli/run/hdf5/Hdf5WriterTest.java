@@ -92,7 +92,7 @@ public class Hdf5WriterTest {
 
     @Test
     public void test() throws HDF5Exception, IOException {
-        System.setProperty(PropertyLoader.installationRoot, new File("..").getAbsolutePath());
+        PropertyLoader.setProperty(PropertyLoader.installationRoot, new File("..").getAbsolutePath());
         VCellUtilityHub.startup(VCellUtilityHub.MODE.CLI);
         NativeLib.HDF5.load();
         Hdf5DataContainer exampleHdf5FileWrapper = Hdf5WriterTest.createExampleData();
