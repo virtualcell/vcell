@@ -37,7 +37,7 @@ public class CopasiOptimizationSolverTest {
 
     @BeforeClass
     public static void before(){
-        System.setProperty(PropertyLoader.installationRoot, new File("..").getAbsolutePath());
+        PropertyLoader.setProperty(PropertyLoader.installationRoot, new File("..").getAbsolutePath());
     }
 
     @Test

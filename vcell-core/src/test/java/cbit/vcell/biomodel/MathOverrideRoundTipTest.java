@@ -65,10 +65,10 @@ public class MathOverrideRoundTipTest {
 
     @Before
     public void setup() {
-        previousWorkingdirPropertyValue = System.getProperty(PropertyLoader.cliWorkingDir);
-        System.setProperty(PropertyLoader.cliWorkingDir, "../vcell-cli-utils");
-        previousInstalldirPropertyValue = System.getProperty(PropertyLoader.installationRoot);
-        System.setProperty(PropertyLoader.installationRoot, "..");
+        previousWorkingdirPropertyValue = PropertyLoader.getProperty(PropertyLoader.cliWorkingDir, null);
+        PropertyLoader.setProperty(PropertyLoader.cliWorkingDir, "../vcell-cli-utils");
+        previousInstalldirPropertyValue = PropertyLoader.getProperty(PropertyLoader.installationRoot, null);
+        PropertyLoader.setProperty(PropertyLoader.installationRoot, "..");
         NativeLib.combinej.load();
         this.previousWriteDebugFiles = SBMLExporter.bWriteDebugFiles;
         SBMLExporter.bWriteDebugFiles = bDebug;
@@ -77,10 +77,10 @@ public class MathOverrideRoundTipTest {
     @After
     public void teardown() {
         if (previousWorkingdirPropertyValue!=null) {
-            System.setProperty(PropertyLoader.cliWorkingDir, previousWorkingdirPropertyValue);
+            PropertyLoader.setProperty(PropertyLoader.cliWorkingDir, previousWorkingdirPropertyValue);
         }
         if (previousInstalldirPropertyValue!=null) {
-            System.setProperty(PropertyLoader.installationRoot, previousInstalldirPropertyValue);
+            PropertyLoader.setProperty(PropertyLoader.installationRoot, previousInstalldirPropertyValue);
         }
         SBMLExporter.bWriteDebugFiles = previousWriteDebugFiles;
     }

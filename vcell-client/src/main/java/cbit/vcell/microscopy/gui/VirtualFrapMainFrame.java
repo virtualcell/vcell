@@ -529,8 +529,8 @@ public class VirtualFrapMainFrame extends LWTopFrame implements DropTargetListen
 		);
 //		System.setProperty(PropertyLoader.primarySimDataDirProperty, localWorkspace.getDefaultWorkspaceDirectory());
 //		System.setProperty(PropertyLoader.secondarySimDataDirProperty, localWorkspace.getDefaultWorkspaceDirectory());
-		System.setProperty(PropertyLoader.exportBaseDirInternalProperty, localWorkspace.getDefaultSimDataDirectory());
-		System.setProperty(PropertyLoader.exportBaseURLProperty, "file://"+localWorkspace.getDefaultSimDataDirectory());
+		PropertyLoader.setProperty(PropertyLoader.exportBaseDirInternalProperty, localWorkspace.getDefaultSimDataDirectory());
+		PropertyLoader.setProperty(PropertyLoader.exportBaseURLProperty, "file://" + localWorkspace.getDefaultSimDataDirectory());
 
 		frapStudyPanel.setLocalWorkspace(localWorkspace);
 		frapStudyPanel.setFRAPWorkspace(frapWorkspace);

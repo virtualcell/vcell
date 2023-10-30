@@ -26,6 +26,7 @@ public class PropertyLoader {
 	public interface VCellConfigProvider {
 		String getConfigValue(String propertyName);
 		Set<String> getConfigNames();
+		void setConfigValue(String propertyName, String value);
 	}
 
 	@Deprecated
@@ -37,6 +38,10 @@ public class PropertyLoader {
 		@Override
 		public String getConfigValue(String propertyName) {
 			return System.getProperty(propertyName);
+		}
+		@Override
+		public void setConfigValue(String propertyName, String value) {
+			System.setProperty(propertyName, value);
 		}
 	}
 
@@ -422,6 +427,10 @@ public class PropertyLoader {
 		}catch (Exception e){
 			return defaultValue;
 		}
+	}
+
+	public static void setProperty(String propertyName, String value) {
+		configProvider.setConfigValue(propertyName, value);
 	}
 
 	/**

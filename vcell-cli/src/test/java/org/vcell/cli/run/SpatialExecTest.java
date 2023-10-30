@@ -37,12 +37,12 @@ public class SpatialExecTest {
 
     @BeforeClass
     public static void setup() throws PythonStreamException, IOException {
-        System.setProperty(PropertyLoader.installationRoot, new File("..").getAbsolutePath());
+        PropertyLoader.setProperty(PropertyLoader.installationRoot, new File("..").getAbsolutePath());
         NativeLib.HDF5.load();
         NativeLib.combinej.load();
         VCellUtilityHub.startup(VCellUtilityHub.MODE.CLI);
 
-        System.setProperty(PropertyLoader.cliWorkingDir, new File("../vcell-cli-utils").getAbsolutePath());
+        PropertyLoader.setProperty(PropertyLoader.cliWorkingDir, new File("../vcell-cli-utils").getAbsolutePath());
         VCMongoMessage.enabled = false;
 
         CLIPythonManager.getInstance().instantiatePythonProcess();

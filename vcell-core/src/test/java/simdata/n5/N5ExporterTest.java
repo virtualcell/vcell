@@ -98,13 +98,13 @@ public class N5ExporterTest {
         }
 
         previousInstallRoot = PropertyLoader.getProperty(PropertyLoader.installationRoot, null);
-        System.setProperty(PropertyLoader.installationRoot, new File("..").getAbsolutePath());
+        PropertyLoader.setProperty(PropertyLoader.installationRoot, new File("..").getAbsolutePath());
 
         previousPrimarySimDir = PropertyLoader.getProperty(PropertyLoader.primarySimDataDirInternalProperty, null);
-        System.setProperty(PropertyLoader.primarySimDataDirInternalProperty, temporaryFolder.getAbsolutePath());
+        PropertyLoader.setProperty(PropertyLoader.primarySimDataDirInternalProperty, temporaryFolder.getAbsolutePath());
 
         previousN5Path = PropertyLoader.getProperty(PropertyLoader.n5DataDir, null);
-        System.setProperty(PropertyLoader.n5DataDir, n5ExportDir.getAbsolutePath());
+        PropertyLoader.setProperty(PropertyLoader.n5DataDir, n5ExportDir.getAbsolutePath());
     }
 
     @After
@@ -112,14 +112,14 @@ public class N5ExporterTest {
         // tear down the temp dir
 
         if (previousInstallRoot != null) {
-            System.setProperty(PropertyLoader.installationRoot, previousInstallRoot);
+            PropertyLoader.setProperty(PropertyLoader.installationRoot, previousInstallRoot);
         }
         if (previousPrimarySimDir != null){
-            System.setProperty(PropertyLoader.primarySimDataDirInternalProperty, previousPrimarySimDir);
+            PropertyLoader.setProperty(PropertyLoader.primarySimDataDirInternalProperty, previousPrimarySimDir);
         }
 
         if (previousN5Path != null){
-            System.setProperty(PropertyLoader.n5DataDir, previousN5Path);
+            PropertyLoader.setProperty(PropertyLoader.n5DataDir, previousN5Path);
         }
 
 

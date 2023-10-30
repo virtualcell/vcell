@@ -87,10 +87,10 @@ public abstract class SEDMLExporterCommon {
 
 	@BeforeClass
 	public static void setup(){
-		previousInstalldirPropertyValue = System.getProperty(PropertyLoader.installationRoot);
-		System.setProperty(PropertyLoader.installationRoot, "..");
-		previousWorkingdirPropertyValue = System.getProperty(PropertyLoader.cliWorkingDir);
-		System.setProperty(PropertyLoader.cliWorkingDir, "../vcell-cli-utils");
+		previousInstalldirPropertyValue = PropertyLoader.getProperty(PropertyLoader.installationRoot, null);
+		PropertyLoader.setProperty(PropertyLoader.installationRoot, "..");
+		previousWorkingdirPropertyValue = PropertyLoader.getProperty(PropertyLoader.cliWorkingDir, null);
+		PropertyLoader.setProperty(PropertyLoader.cliWorkingDir, "../vcell-cli-utils");
 		NativeLib.combinej.load();
 		previousWriteDebugFiles = SBMLExporter.bWriteDebugFiles;
 		SBMLExporter.bWriteDebugFiles = bDebug;
@@ -99,10 +99,10 @@ public abstract class SEDMLExporterCommon {
 	@AfterClass
 	public static void teardown() throws IOException {
 		if (previousInstalldirPropertyValue!=null) {
-			System.setProperty(PropertyLoader.installationRoot, previousInstalldirPropertyValue);
+			PropertyLoader.setProperty(PropertyLoader.installationRoot, previousInstalldirPropertyValue);
 		}
 		if (previousWorkingdirPropertyValue!=null) {
-			System.setProperty(PropertyLoader.cliWorkingDir, previousWorkingdirPropertyValue);
+			PropertyLoader.setProperty(PropertyLoader.cliWorkingDir, previousWorkingdirPropertyValue);
 		}
 		SBMLExporter.bWriteDebugFiles = previousWriteDebugFiles;
 	}

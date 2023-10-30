@@ -21,7 +21,7 @@ public class H5Client {
 //	protected static String FILE = "fig43-10-1.h5";
 
 	public H5Client() {
-    	System.setProperty(PropertyLoader.installationRoot, ".");
+		PropertyLoader.setProperty(PropertyLoader.installationRoot, ".");
     	NativeLib.HDF5.load();
 	}
 
