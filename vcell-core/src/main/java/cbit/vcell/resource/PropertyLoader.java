@@ -10,24 +10,18 @@
 
 package cbit.vcell.resource;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.NoSuchElementException;
-import java.util.Properties;
-import java.util.StringTokenizer;
-
+import cbit.vcell.mongodb.VCMongoMessage;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.util.ConfigurationException;
 
-import cbit.vcell.mongodb.VCMongoMessage;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map.Entry;
+import java.util.Properties;
 
 public class PropertyLoader {
 
@@ -36,7 +30,6 @@ public class PropertyLoader {
 	public static final String ADMINISTRATOR_ACCOUNT = "Administrator";
 	public static final String ADMINISTRATOR_ID = "2";
 	public static final String TESTACCOUNT_USERID = "vcellNagios";
-	public static final String propertyFileProperty			= "vcell.propertyfile";
 
 	public static final String vcellServerIDProperty        = record("vcell.server.id",ValueType.GEN);
 
@@ -357,10 +350,6 @@ public class PropertyLoader {
 
 	public static final String USE_CURRENT_WORKING_DIRECTORY = "cwd";
 
-	public PropertyLoader() throws Exception {
-		loadProperties();
-	}
-
 	/**
 	 * get Java's system temporary directory. This will be either a JVM default, or
 	 * a directory specified by the "java.io.tmpdir" system property
@@ -521,127 +510,9 @@ public class PropertyLoader {
 		}
 	}
 	public final static void loadProperties(String[] required) throws java.io.IOException {
-		loadProperties();
 		validateSystemProperties(required);
 	}
 
-	@Deprecated
-	public final static void loadProperties(boolean throwException, boolean validate) throws java.io.IOException {
-		loadProperties();
-	}
-	/**
-	 * default; no validation of required
-	 * @throws java.io.IOException
-	 */
-	public final static void loadProperties() throws java.io.IOException {
-		lg.debug("Loading Properties");
-		File propertyFile = null;
-		//
-		// if vcell.propertyfile defined (on the command line via -Dvcell.propertyfile=/tmp/vcell.properties)
-		//
-		String customPropertyFileName = System.getProperty(propertyFileProperty);
-		String where = "";
-		if (customPropertyFileName != null){
-			propertyFile = new File(customPropertyFileName);
-			where = "command line";
-		}else{
-			String tail = System.getProperty("file.separator") + "vcell.properties";
-
-			// look in current working directory first
-			propertyFile = new File("." + tail);
-			where = "working directory"; //optimistic set
-			if (!propertyFile.canRead()) {
-				// then look in 'user.home' directory
-				propertyFile = new File( System.getProperty("user.home") + tail);
-				where = "users home directory"; //optimistic set
-				if (!propertyFile.canRead()) {
-					// then look in 'java.home' directory
-					propertyFile = new File(System.getProperty("java.home") + tail);
-					where = "java home directory"; //optimistic set
-				}
-			}
-		}
-		if (propertyFile.canRead()) {
-			java.util.Properties p = new Properties();
-			java.io.FileInputStream propFile = new java.io.FileInputStream(propertyFile);
-			p.load(propFile);
-			propFile.close();
-			lg.debug("loaded properties from " + propertyFile.getAbsolutePath() + " specifed by " + where);
-			for (Map.Entry<Object,Object> entry : p.entrySet() ) {
-				String key = entry.getKey().toString();
-				String value = entry.getValue().toString();
-				String existingValue = System.getProperty(key);
-				if (existingValue == null) {
-					System.setProperty(key, value);
-				}
-				else if (!existingValue.equals(value)){
-					lg.debug("Property " + key + " property value "  + value + " overridden by system value " + existingValue);
-				}
-			}
-			lookForMagic(propertyFile);
-		}
-		else {
-			if (lg.isInfoEnabled()) {
-				lg.info("Can't read propertyFile " + propertyFile.getAbsolutePath() + " specified by " + where);
-			}
-			
-		}
-		// display new properties
-		//System.getProperties().list(System.out);
-		lg.info("ServerID=" + getProperty(vcellServerIDProperty,"unknown")+", SoftwareVersion="+getProperty(vcellSoftwareVersion,"unknown"));
-	}
-
-	/**
-	 * keyword for property substitution
-	 */
-	private static final String MAGIC_KEYWORD = "magic";
-	private static void lookForMagic(File pfile) {
-		try {
-			List<String> lines = org.apache.commons.io.FileUtils.readLines(pfile);
-			for (String line: lines) {
-				if (line.indexOf('#') == 0 && StringUtils.containsIgnoreCase(line, MAGIC_KEYWORD) ) {
-					StringTokenizer st = new StringTokenizer(line);
-					while (st.hasMoreTokens()) {
-						String token = st.nextToken().toLowerCase();
-						if (!token.endsWith(MAGIC_KEYWORD)) {
-							continue;
-						}
-						try {
-							String os = st.nextToken();
-							String from = st.nextToken();
-							String to = st.nextToken();
-							executeSubstitution(ValueType.DIR, os, from, to);
-						} catch (NoSuchElementException e) {
-							lg.warn("Unable to parse magic line " + line,e);
-						}
-					}
-				}
-			}
-		} catch (Exception e) {
-			lg.warn("failure looking for magic",e);
-		}
-	}
-
-	private static void executeSubstitution(ValueType type, String os, String from, String to) {
-		OperatingSystemInfo osi = OperatingSystemInfo.getInstance();
-		if (os.contains( osi.getOsnamePrefix() ) ) {
-			for (Entry<String, MetaProp> es: propMap.entrySet()) {
-				MetaProp mp = es.getValue();
-				if (mp.valueType == type) {
-					String key = es.getKey();
-					String current = System.getProperty(key);
-					if (current!= null && current.contains(from)) {
-						String substitute = current.replace(from, to);
-						System.setProperty(key, substitute);
-						if (lg.isInfoEnabled()) {
-							lg.info("replaced " + key + " value " + current + " with " + substitute);
-						}
-
-					}
-				}
-			}
-		}
-	}
 
 	/**
 	 * This method was created in VisualAge.
