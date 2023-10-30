@@ -10,6 +10,11 @@
 
 package cbit.vcell.dictionary.db;
 
+import org.vcell.db.ConnectionFactory;
+import org.vcell.db.DatabaseService;
+import org.vcell.db.DatabaseSyntax;
+import org.vcell.db.KeyFactory;
+
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -17,11 +22,6 @@ import java.sql.Statement;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
-
-import org.vcell.db.ConnectionFactory;
-import org.vcell.db.DatabaseService;
-import org.vcell.db.DatabaseSyntax;
-import org.vcell.db.KeyFactory;
 /**
  * Insert the type's description here.
  * Creation date: (2/7/2003 11:59:47 PM)
@@ -745,7 +745,6 @@ public static void main(String[] args) {
         }
 
         ConnectionFactory conFactory = null;
-        new cbit.vcell.resource.PropertyLoader();
         if (args[0].equalsIgnoreCase(oracle)) {
             String driverName = "oracle.jdbc.driver.OracleDriver";
             conFactory = DatabaseService.getInstance().createConnectionFactory(

@@ -1,17 +1,17 @@
 package org.vcell.admin.cli.models;
 
-import cbit.vcell.resource.PropertyLoader;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.vcell.admin.cli.CLIDatabaseService;
-import org.vcell.util.document.*;
+import org.vcell.util.document.BioModelInfo;
+import org.vcell.util.document.MathModelInfo;
+import org.vcell.util.document.User;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.Callable;
 
 @Command(name = "ls", description = "list biomodels and mathmodels by user")
@@ -37,8 +37,6 @@ public class ModelListCommand implements Callable<Integer> {
         config.updateLoggers();
 
         try {
-            
-            PropertyLoader.loadProperties();
 
             try (CLIDatabaseService cliDatabaseService = new CLIDatabaseService()) {
 

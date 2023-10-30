@@ -10,18 +10,8 @@
 
 package cbit.vcell.modeldb;
 
-import java.awt.BorderLayout;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.UUID;
-
-import javax.swing.JCheckBox;
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-
+import cbit.sql.Field;
+import cbit.sql.Table;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.db.ConnectionFactory;
@@ -29,8 +19,13 @@ import org.vcell.db.DatabaseService;
 import org.vcell.db.DatabaseSyntax;
 import org.vcell.db.KeyFactory;
 
-import cbit.sql.Field;
-import cbit.sql.Table;
+import javax.swing.*;
+import java.awt.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.UUID;
 /**
  * This type was created in VisualAge.
  */
@@ -406,7 +401,6 @@ public static void main(java.lang.String[] args) {
 
         ConnectionFactory conFactory = null;
         KeyFactory keyFactory = null;
-        new cbit.vcell.resource.PropertyLoader();
         if (args[0].equalsIgnoreCase(oracle)) {
             String driverName = "oracle.jdbc.driver.OracleDriver";
             conFactory = DatabaseService.getInstance().createConnectionFactory(

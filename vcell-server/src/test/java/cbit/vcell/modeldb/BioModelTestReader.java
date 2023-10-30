@@ -1,11 +1,9 @@
 package cbit.vcell.modeldb;
 
-import java.io.IOException;
-import java.io.PrintStream;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.Iterator;
-
+import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.GeometryInfo;
+import cbit.vcell.mathmodel.MathModel;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.vcell.test.Fast;
@@ -13,11 +11,11 @@ import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.MathModelInfo;
 
-import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.geometry.Geometry;
-import cbit.vcell.geometry.GeometryInfo;
-import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.resource.PropertyLoader;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.Iterator;
 
 @Category(Fast.class)
 public class BioModelTestReader implements VCDatabaseVisitor {
@@ -90,7 +88,6 @@ public class BioModelTestReader implements VCDatabaseVisitor {
 	
 	@Test
 	public void tryit( ) throws IOException {
-		PropertyLoader.loadProperties();
 		String args[] = {USER_KEY,OUTPUT};
 		BioModelTestReader visitor = new BioModelTestReader();
 		boolean bAbortOnDataAccessException = false;

@@ -9,22 +9,6 @@
  */
 
 package cbit.vcell.message.server.batch.sim;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.lang.management.ManagementFactory;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.concurrent.TimeUnit;
-
-import javax.management.MBeanServer;
-import javax.management.ObjectName;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.vcell.util.ApplicationTerminator;
-import org.vcell.util.FileUtils;
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.User;
 
 import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.message.VCMessagingException;
@@ -45,6 +29,18 @@ import cbit.vcell.solver.server.SolverListener;
 import cbit.vcell.solvers.HTCSolver;
 import cbit.vcell.util.AmplistorUtils;
 import cbit.vcell.xml.XmlHelper;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.vcell.util.ApplicationTerminator;
+import org.vcell.util.FileUtils;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
 /**
  * Insert the type's description here.
  * Creation date: (10/25/2001 4:14:09 PM)
@@ -100,8 +96,6 @@ public class SolverPreprocessor  {
 			}
 		}
 		try {
-			
-			PropertyLoader.loadProperties();
 			
 			//
 			File simulationFile = new File(args[0]);

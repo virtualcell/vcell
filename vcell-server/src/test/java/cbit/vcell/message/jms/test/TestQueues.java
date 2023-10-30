@@ -1,16 +1,10 @@
 package cbit.vcell.message.jms.test;
 
-import java.util.ArrayList;
-
-import cbit.vcell.message.RollbackException;
-import cbit.vcell.message.SimpleMessagingDelegate;
-import cbit.vcell.message.VCMessage;
-import cbit.vcell.message.VCMessageSession;
-import cbit.vcell.message.VCMessagingService;
-import cbit.vcell.message.VCQueueConsumer;
+import cbit.vcell.message.*;
 import cbit.vcell.message.VCQueueConsumer.QueueListener;
 import cbit.vcell.message.jms.activeMQ.VCMessagingServiceEmbedded;
-import cbit.vcell.resource.PropertyLoader;
+
+import java.util.ArrayList;
 
 /**
  * Hello world!
@@ -34,8 +28,7 @@ public class TestQueues {
 
 	public static void main(String[] args) throws Exception {
 		try {
-	    	PropertyLoader.loadProperties();
-	    	
+
 	    	VCMessagingService messagingService = new VCMessagingServiceEmbedded();
 	    	messagingService.setConfiguration(new SimpleMessagingDelegate(),null,-1);
 	    	

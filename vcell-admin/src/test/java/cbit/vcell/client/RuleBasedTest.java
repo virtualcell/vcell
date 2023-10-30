@@ -1,17 +1,5 @@
 package cbit.vcell.client;
 
-import java.io.File;
-import java.io.PrintStream;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-
-import org.vcell.util.FileUtils;
-import org.vcell.util.TokenMangler;
-import org.vcell.util.document.BioModelInfo;
-import org.vcell.util.document.MathModelInfo;
-
-import com.google.gson.Gson;
-
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryInfo;
@@ -24,31 +12,30 @@ import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.modeldb.VCDatabaseScanner;
 import cbit.vcell.modeldb.VCDatabaseVisitor;
-import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.simdata.ODEDataBlock;
 import cbit.vcell.simdata.SimulationData;
-import cbit.vcell.solver.AnnotatedFunction;
-import cbit.vcell.solver.OutputTimeSpec;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationJob;
-import cbit.vcell.solver.TempSimulation;
-import cbit.vcell.solver.UniformOutputTimeSpec;
+import cbit.vcell.solver.*;
 import cbit.vcell.solver.ode.ODESimData;
 import cbit.vcell.solver.server.Solver;
 import cbit.vcell.solver.server.SolverStatus;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
+import com.google.gson.Gson;
+import org.vcell.util.FileUtils;
+import org.vcell.util.TokenMangler;
+import org.vcell.util.document.BioModelInfo;
+import org.vcell.util.document.MathModelInfo;
+
+import java.io.File;
+import java.io.PrintStream;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 
 
 public class RuleBasedTest {
 
 	public static void main(String[] args) {
-		try{
-			PropertyLoader.loadProperties();
-		}catch(Exception e){
-			e.printStackTrace();
-		}
-		
+
 		final int numTrials = 40;
 		
 		VCDatabaseVisitor vcDatabaseVisitor = new VCDatabaseVisitor() {

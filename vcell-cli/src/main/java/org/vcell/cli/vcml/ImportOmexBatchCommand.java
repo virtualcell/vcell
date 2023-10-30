@@ -1,13 +1,9 @@
 package org.vcell.cli.vcml;
 
-import cbit.vcell.resource.PropertyLoader;
-
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
-
-import org.vcell.cli.CLIRecorder;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
@@ -39,7 +35,6 @@ public class ImportOmexBatchCommand implements Callable<Integer> {
         config.updateLoggers();
 
         try {
-            PropertyLoader.loadProperties();
             if (!inputFilePath.exists() || !inputFilePath.isDirectory()){
                 throw new RuntimeException("inputFilePath '"+inputFilePath+"' should be a directory");
             }

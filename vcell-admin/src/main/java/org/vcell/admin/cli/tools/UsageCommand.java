@@ -1,6 +1,5 @@
 package org.vcell.admin.cli.tools;
 
-import cbit.vcell.resource.PropertyLoader;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -33,7 +32,6 @@ public class UsageCommand implements Callable<Integer> {
         config.updateLoggers();
 
         try {
-            PropertyLoader.loadProperties();
             try (CLIDatabaseService cliDatabaseService = new CLIDatabaseService()) {
                 String basicStatistics = cliDatabaseService.getBasicStatistics();
                 try (FileWriter fileWriter = new FileWriter(outputFilePath)){

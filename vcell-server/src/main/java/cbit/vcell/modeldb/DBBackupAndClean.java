@@ -9,43 +9,9 @@
  */
 
 package cbit.vcell.modeldb;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.math.BigDecimal;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.zip.CRC32;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
-import java.util.zip.ZipOutputStream;
 
+import cbit.vcell.resource.PropertyLoader;
+import cbit.vcell.util.AmplistorUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.db.ConnectionFactory;
@@ -54,8 +20,21 @@ import org.vcell.db.DatabaseSyntax;
 import org.vcell.util.NumberUtils;
 import org.vcell.util.document.KeyValue;
 
-import cbit.vcell.resource.PropertyLoader;
-import cbit.vcell.util.AmplistorUtils;
+import java.io.*;
+import java.math.BigDecimal;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.sql.*;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.zip.CRC32;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+import java.util.zip.ZipOutputStream;
 
 
 public class DBBackupAndClean {
@@ -106,13 +85,6 @@ public class DBBackupAndClean {
 	public static void main(String[] args){
 		if(args.length <= 1){
 			usageExit();
-		}
-		try {
-			PropertyLoader.loadProperties();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			lg.error(e);
-			System.exit(1);
 		}
 		String action = args[0];
 		String[] actionArgs = new String[args.length-1];

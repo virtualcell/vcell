@@ -1,6 +1,5 @@
 package org.vcell.admin.cli.tools;
 
-import cbit.vcell.resource.PropertyLoader;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -58,7 +57,6 @@ public class DatabaseCommand implements Callable<Integer> {
 
         try {
             
-            PropertyLoader.loadProperties();
             if (outputDir == null)
                 throw new RuntimeException("outputDir '" + (outputDir == null ? "" : outputDir) + "' is not a 'valid directory'");
 

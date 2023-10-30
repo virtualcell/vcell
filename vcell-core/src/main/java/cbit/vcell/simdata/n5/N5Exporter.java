@@ -6,7 +6,6 @@ import cbit.vcell.math.VariableType;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.simdata.*;
 import cbit.vcell.solver.AnnotatedFunction;
-import cbit.vcell.solver.SimulationOwner;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import com.google.gson.GsonBuilder;
@@ -14,23 +13,18 @@ import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.janelia.saalfeldlab.n5.*;
-
-import org.jlibsedml.Output;
+import org.janelia.saalfeldlab.n5.Compression;
+import org.janelia.saalfeldlab.n5.DatasetAttributes;
+import org.janelia.saalfeldlab.n5.DoubleArrayDataBlock;
+import org.janelia.saalfeldlab.n5.N5FSWriter;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
 import java.io.File;
 import java.io.IOException;
-
-import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -143,8 +137,6 @@ public class N5Exporter implements ExportConstants {
     }
 
     public void initalizeDataControllers(String simKeyID, String userName, String userKey) throws IOException, DataAccessException {
-        PropertyLoader.loadProperties();
-
         // Set my user ID associated with VC database
         // set simulation key
         // make an object that ties the user to that simulation key

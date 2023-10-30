@@ -1,20 +1,14 @@
 package org.vcell.rest.users;
 
-import java.io.IOException;
-import java.sql.SQLException;
-import java.util.Date;
-
+import cbit.vcell.resource.PropertyLoader;
+import com.google.gson.Gson;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.restlet.Context;
 import org.restlet.Request;
 import org.restlet.Response;
 import org.restlet.Restlet;
-import org.restlet.data.Form;
-import org.restlet.data.MediaType;
-import org.restlet.data.Method;
-import org.restlet.data.Reference;
-import org.restlet.data.Status;
+import org.restlet.data.*;
 import org.restlet.ext.json.JsonRepresentation;
 import org.restlet.representation.Representation;
 import org.vcell.rest.VCellApiApplication;
@@ -24,9 +18,9 @@ import org.vcell.util.UseridIDExistsException;
 import org.vcell.util.document.UserInfo;
 import org.vcell.util.document.UserLoginInfo.DigestedPassword;
 
-import com.google.gson.Gson;
-
-import cbit.vcell.resource.PropertyLoader;
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.Date;
 
 public final class NewUserRestlet extends Restlet {
 	private final static Logger lg = LogManager.getLogger(NewUserRestlet.class);
@@ -100,10 +94,9 @@ public final class NewUserRestlet extends Restlet {
 			
 			try {
 				//Send new password to user
-				PropertyLoader.loadProperties();
 				BeanUtils.sendSMTP(
 					PropertyLoader.getRequiredProperty(PropertyLoader.vcellSMTPHostName),
-					new Integer(PropertyLoader.getRequiredProperty(PropertyLoader.vcellSMTPPort)).intValue(),
+					Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.vcellSMTPPort)),
 					PropertyLoader.getRequiredProperty(PropertyLoader.vcellSMTPEmailAddress),
 					newUserInfo.email,
 					"new VCell account verification",
@@ -214,10 +207,9 @@ public final class NewUserRestlet extends Restlet {
 			
 			try {
 				//Send new password to user
-				PropertyLoader.loadProperties();
 				BeanUtils.sendSMTP(
 					PropertyLoader.getRequiredProperty(PropertyLoader.vcellSMTPHostName),
-					new Integer(PropertyLoader.getRequiredProperty(PropertyLoader.vcellSMTPPort)).intValue(),
+					Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.vcellSMTPPort)),
 					PropertyLoader.getRequiredProperty(PropertyLoader.vcellSMTPEmailAddress),
 					newUserInfo.email,
 					"new VCell account verification",

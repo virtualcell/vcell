@@ -1,26 +1,4 @@
 package cbit.vcell.modeldb;
-import java.io.File;
-import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.io.Writer;
-import java.rmi.RemoteException;
-import java.sql.SQLException;
-import java.util.HashSet;
-import java.util.StringTokenizer;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.vcell.db.ConnectionFactory;
-import org.vcell.db.DatabaseService;
-import org.vcell.db.KeyFactory;
-import org.vcell.util.BigString;
-import org.vcell.util.DataAccessException;
-import org.vcell.util.document.BioModelInfo;
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.MathModelInfo;
-import org.vcell.util.document.User;
-import org.vcell.util.document.UserInfo;
-import org.vcell.util.document.VersionableType;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.geometry.Geometry;
@@ -30,10 +8,26 @@ import cbit.vcell.math.MathCompareResults;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.model.BioModelVisitor;
-import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlParseException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.vcell.db.ConnectionFactory;
+import org.vcell.db.DatabaseService;
+import org.vcell.db.KeyFactory;
+import org.vcell.util.BigString;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.document.*;
+
+import java.io.File;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.Writer;
+import java.rmi.RemoteException;
+import java.sql.SQLException;
+import java.util.HashSet;
+import java.util.StringTokenizer;
 /**
  * Insert the type's description here.
  * Creation date: (2/2/01 2:57:33 PM)
@@ -61,8 +55,6 @@ public class VCDatabaseScanner {
  */
 public static VCDatabaseScanner createDatabaseScanner() throws Exception{
 	
-	new PropertyLoader();
-		
 	DatabasePolicySQL.bAllowAdministrativeAccess = true;
 	
 	ConnectionFactory conFactory = DatabaseService.getInstance().createConnectionFactory();

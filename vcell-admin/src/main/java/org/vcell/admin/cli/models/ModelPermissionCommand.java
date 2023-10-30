@@ -1,6 +1,5 @@
 package org.vcell.admin.cli.models;
 
-import cbit.vcell.resource.PropertyLoader;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -53,8 +52,6 @@ public class ModelPermissionCommand implements Callable<Integer> {
 
         try {
             
-            PropertyLoader.loadProperties();
-
             if (biomodelID!=null && mathmodelID!=null) {
                 throw new RuntimeException("cannot specify both --biomodel-id and --mathmodel-id");
             }
