@@ -1455,6 +1455,28 @@ public String getVCML() {
 	return buffer.toString();		
 }
 
+public String getSiteAttributesSQL() {
+	StringBuffer sb = new StringBuffer();
+	for(Map.Entry<MolecularComponentPattern, SiteAttributesSpec> entry : siteAttributesMap.entrySet()) {
+		SiteAttributesSpec sas = entry.getValue();
+		sb.append(sas.getMolecularComponentPattern().getMolecularComponent().getName() + ",");
+		sb.append(sas.getLocation().getName() + ",");
+		sb.append(sas.getMolecularComponentPattern().getComponentStatePattern().getComponentStateDefinition().getName() +",");
+		sb.append(sas.getRadius() + ",");
+		sb.append(sas.getDiffusionRate() +",");
+		sb.append(sas.getCoordinate().getX() + ",");
+		sb.append(sas.getCoordinate().getY() + ",");
+		sb.append(sas.getCoordinate().getZ() + ",");
+		sb.append(sas.getColor().getName());
+		sb.append(";");
+	}
+	return sb.toString();
+}
+	public String getInternalLinksSQL() {
+		StringBuffer sb = new StringBuffer();
+
+		return sb.toString();
+	}
 
 /**
  * Accessor for the vetoPropertyChange field.
@@ -1719,9 +1741,9 @@ public void setClamped(boolean isClamped) {
 	boolean oldDiffusing = isDiffusing();
 	boolean oldConstant = bClamped;
 	this.bClamped = isClamped;
-	firePropertyChange("constant",new Boolean(oldConstant), new Boolean(isClamped)); // to support legacy/deprecated usage
-	firePropertyChange("clamped",new Boolean(oldConstant), new Boolean(isClamped));
-	firePropertyChange("diffusing", new Boolean(oldDiffusing), new Boolean(isDiffusing()));
+	firePropertyChange("constant",Boolean.valueOf(oldConstant), Boolean.valueOf(isClamped)); // to support legacy/deprecated usage
+	firePropertyChange("clamped",Boolean.valueOf(oldConstant), Boolean.valueOf(isClamped));
+	firePropertyChange("diffusing", Boolean.valueOf(oldDiffusing), Boolean.valueOf(isDiffusing()));
 }
 
 ///**
