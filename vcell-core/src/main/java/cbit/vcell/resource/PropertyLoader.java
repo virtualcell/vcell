@@ -10,7 +10,6 @@
 
 package cbit.vcell.resource;
 
-import cbit.vcell.mongodb.VCMongoMessage;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -20,10 +19,32 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.HashMap;
-import java.util.Map.Entry;
-import java.util.Properties;
+import java.util.Set;
 
 public class PropertyLoader {
+
+	public interface VCellConfigProvider {
+		String getConfigValue(String propertyName);
+		Set<String> getConfigNames();
+	}
+
+	@Deprecated
+	private static class SystemPropertyConfigProvider implements VCellConfigProvider {
+		@Override
+		public Set<String> getConfigNames() {
+			return System.getProperties().stringPropertyNames();
+		}
+		@Override
+		public String getConfigValue(String propertyName) {
+			return System.getProperty(propertyName);
+		}
+	}
+
+	private static VCellConfigProvider configProvider = new SystemPropertyConfigProvider();
+
+	public static void setConfigProvider(VCellConfigProvider configProvider) {
+		PropertyLoader.configProvider = configProvider;
+	}
 
 	//must come before uses of #record method
 	private static final HashMap<String, MetaProp> propMap = new HashMap<>( );
@@ -304,35 +325,13 @@ public class PropertyLoader {
 		 * is property required?
 		 */
 		boolean required = false;
-		/**
-		 * was message sent to mongo?
-		 */
-		boolean sentToMongo = false;
-		/**
-		 * stored message for sending later
-		 */
-		String message = null;
 
 		MetaProp(ValueType valueType) {
 			this.valueType = valueType;
 		}
 
 	}
-	private static boolean errorsToMongo = false;
 	private static boolean checkRequired = false;
-
-	public static void sendErrorsToMongo( )  {
-		if (errorsToMongo == false) {
-			for (Entry<String, MetaProp> entry  : propMap.entrySet()) {
-				MetaProp mp = entry.getValue();
-				if (mp.message  != null && mp.sentToMongo == false) {
-					VCMongoMessage.sendInfo(mp.message);
-					mp.sentToMongo = true;
-				}
-			}
-			errorsToMongo = true;
-		}
-	}
 
 	/**
 	 * * record static String in {@link #propMap}
@@ -368,7 +367,7 @@ public class PropertyLoader {
 
 	public final static boolean getBooleanProperty(String propertyName, boolean defaultValue){
 		try {
-			String propertyValue = System.getProperty(propertyName);
+			String propertyValue = configProvider.getConfigValue(propertyName);
 			if (propertyValue==null){
 				return defaultValue;
 			}else{
@@ -381,7 +380,7 @@ public class PropertyLoader {
 
 	public final static int getIntProperty(String propertyName, int defaultValue) {
 		try {
-			String propertyValue = System.getProperty(propertyName);
+			String propertyValue = configProvider.getConfigValue(propertyName);
 			if (propertyValue==null){
 				return defaultValue;
 			}else{
@@ -394,7 +393,7 @@ public class PropertyLoader {
 
 	public final static long getLongProperty(String propertyName, long defaultValue) {
 		try {
-			String propertyValue = System.getProperty(propertyName);
+			String propertyValue = configProvider.getConfigValue(propertyName);
 			if (propertyValue==null){
 				return defaultValue;
 			}else{
@@ -414,7 +413,7 @@ public class PropertyLoader {
 	 */
 	public final static String getProperty(String propertyName, String defaultValue) {
 		try {
-			String propertyValue = System.getProperty(propertyName);
+			String propertyValue = configProvider.getConfigValue(propertyName);
 			if (propertyValue==null){
 				return defaultValue;
 			}else{
@@ -422,28 +421,6 @@ public class PropertyLoader {
 			}
 		}catch (Exception e){
 			return defaultValue;
-		}
-	}
-
-	/**
-	 * set to mongo if {@link #errorsToMongo} is true, or Standard out and save message for later
-	 * @param prop not null
-	 * @param message not null
-	 */
-	private static void report(MetaProp prop, String message) {
-		if (errorsToMongo) {
-			if (!prop.sentToMongo) {
-				VCMongoMessage.sendInfo(message);
-				prop.sentToMongo = true;
-			}
-			return;
-		}
-
-		//else
-
-		if (prop.message == null) {
-			prop.message = message;
-			lg.error(message);
 		}
 	}
 
@@ -488,18 +465,18 @@ public class PropertyLoader {
 		if (checkRequired) {
 			MetaProp mp = propMap.get(propertyName);
 			if (mp != null) {
-				if (!mp.sentToMongo && !mp.required) {
-					report(mp, "PROPERTY: " + propertyName + " not marked required");
+				if (!mp.required) {
+					lg.error("PROPERTY: " + propertyName + " not marked required");
 				}
 			}
 			else {
 				mp = new MetaProp(ValueType.GEN);
 				propMap.put(propertyName,mp);
-				report(mp, "PROPERTY: required property " + propertyName + " not mapped");
+				lg.error("PROPERTY: required property " + propertyName + " not mapped");
 			}
 		}
 		try {
-			String propertyValue = System.getProperty(propertyName);
+			String propertyValue = configProvider.getConfigValue(propertyName);
 			if (propertyValue==null){
 				throw new ConfigurationException("required System property \""+propertyName+"\" not defined");
 			}else{
@@ -514,22 +491,14 @@ public class PropertyLoader {
 	}
 
 
-	/**
-	 * This method was created in VisualAge.
-	 */
-	public final static void show() {
-		System.getProperties().list(System.out);
-	}
-
 	/***
 	 * check system properties against expected
 	 * @param required array of required properties
 	 */
 	private static void validateSystemProperties(String[] required) {
 		checkRequired = true;
-		Properties p = System.getProperties();
 
-		for (Object propName : p.keySet()) {
+		for (Object propName : configProvider.getConfigNames()) {
 			if (propMap.containsKey(propName)) {
 				propMap.get(propName).set = true;
 			}
@@ -595,7 +564,7 @@ public class PropertyLoader {
 			return;
 		}
 	    final boolean fileSet = meta.fileSet;
-		String value = System.getProperty(name);
+		String value = configProvider.getConfigValue(name);
 		switch (vt) {
 		case GEN:
 			assert false : "don't go here";
