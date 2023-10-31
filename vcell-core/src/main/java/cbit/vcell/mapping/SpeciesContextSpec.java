@@ -1474,7 +1474,12 @@ public String getSiteAttributesSQL() {
 }
 	public String getInternalLinksSQL() {
 		StringBuffer sb = new StringBuffer();
-
+		for( MolecularInternalLinkSpec mils : internalLinkSet) {
+			SiteAttributesSpec sas1 = mils.getSite1();
+			SiteAttributesSpec sas2 = mils.getSite2();
+			sb.append(sas1.getMolecularComponentPattern().getMolecularComponent().getName() + ",");
+			sb.append(sas2.getMolecularComponentPattern().getMolecularComponent().getName() + ";");
+		}
 		return sb.toString();
 	}
 

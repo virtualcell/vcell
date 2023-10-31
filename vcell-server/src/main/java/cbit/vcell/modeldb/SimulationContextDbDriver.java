@@ -81,8 +81,6 @@ public class SimulationContextDbDriver extends DbDriver {
 
 /**
  * SimContextDbDriver constructor comment.
- * @param connectionFactory cbit.sql.ConnectionFactory
- * @param sessionLog cbit.vcell.server.SessionLog
  */
 public SimulationContextDbDriver(GeomDbDriver argGeomDB,ModelDbDriver argModelDB,
 		MathDescriptionDbDriver argMathDescDB) {
@@ -701,7 +699,6 @@ private void deleteSimContextSQL(Connection con,User user, KeyValue simContextKe
  * This method was created in VisualAge.
  * @param user cbit.vcell.server.User
  * @param vType int
- * @param versionKey cbit.sql.KeyValue
  */
 public void deleteVersionable(Connection con, User user, VersionableType vType, KeyValue vKey) 
 				throws DependencyException, ObjectNotFoundException,
@@ -816,7 +813,6 @@ private SimulationContext getSimulationContextSQL(QueryHashtable dbc, Connection
  * This method was created in VisualAge.
  * @return cbit.sql.Versionable
  * @param user cbit.vcell.server.User
- * @param versionable cbit.sql.Versionable
  */
 public Versionable getVersionable(QueryHashtable dbc, Connection con, User user, VersionableType vType, KeyValue vKey) 
 			throws ObjectNotFoundException, SQLException, DataAccessException {
@@ -1039,7 +1035,7 @@ private void insertSpeciesContextSpecsSQL(Connection con, KeyValue simContextKey
 		KeyValue newSpeciesContextSpecKey = keyFactory.getNewKey(con);
 		//
 		sql = 	"INSERT INTO " + speciesContextSpecTable.getTableName() + " " + speciesContextSpecTable.getSQLColumnList() + 
-				" VALUES " + speciesContextSpecTable.getSQLValueList(newSpeciesContextSpecKey, simContextKey, speciesContextSpec, scKey);
+				" VALUES " + SpeciesContextSpecTable.getSQLValueList(newSpeciesContextSpecKey, simContextKey, speciesContextSpec, scKey);
 //lg.info(sql);
 		updateCleanSQL(con, sql);
 	}
@@ -1110,9 +1106,6 @@ private void insertStructureMappingsSQL(InsertHashtable hash, Connection con, Ke
 /**
  * This method was created in VisualAge.
  * @return cbit.sql.KeyValue
- * @param versionable cbit.sql.Versionable
- * @param pRef cbit.sql.KeyValue
- * @param bCommit boolean
  */
 public KeyValue insertVersionable(InsertHashtable hash, Connection con, User user, SimulationContext simContext, KeyValue updatedMathDescKey, Model updatedModel, KeyValue updatedGeometryKey, String name, boolean bVersion) 
 					throws DataAccessException, SQLException, RecordChangedException {
@@ -1132,7 +1125,6 @@ public KeyValue insertVersionable(InsertHashtable hash, Connection con, User use
  * This method was created in VisualAge.
  * @return cbit.image.VCImage
  * @param user cbit.vcell.server.User
- * @param image cbit.image.VCImage
  */
 public KeyValue updateVersionable(InsertHashtable hash,Connection con,User user,SimulationContext simContext,KeyValue updatedMathDescKey,Model updatedModel,KeyValue updatedGeometryKey,boolean bVersion)
     throws DataAccessException, SQLException, RecordChangedException {

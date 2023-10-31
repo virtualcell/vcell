@@ -240,8 +240,32 @@ public class SpringSaLaDGoodReactionsTest {
 		Solver solver = SolverFactory.createSolver(localSimDataDir, simTask, false);
 		Assert.assertTrue("expecting instanceof Langevin solver", (solver instanceof LangevinSolver) ? true : false);
 	}
-    
-	// ==========================================================================================================================
+
+	/* -------------------------------------------------------------------------------------------------
+	 * This test will exercise creation and parsing of a species context spec entry in the SQL table
+	 *
+	 */
+	@Test
+	public void test_springsalad_application() throws IOException, XmlParseException, PropertyVetoException, ExpressionException, GeometryException,
+			ImageException, IllegalMappingException, MappingException, SolverException {
+
+		BioModel bioModel = getBioModelFromResource("Spring_application.vcml");
+		SimulationContext simContext = bioModel.addNewSimulationContext("Application", SimulationContext.Application.SPRINGSALAD);
+
+		// WARNING!! Debug configuration for this JUnit test required System property "vcell.installDir"
+		// ex: -Dvcell.installDir=C:\dan\jprojects\git\vcell
+//		bioModel.updateAll(false);        // this call generates math
+//		MathDescription mathDescription = simContext.getMathDescription();
+//		Assert.assertTrue("expecting SpringSaLaD math type", (mathDescription.getMathType() != null && mathDescription.getMathType() == MathType.SpringSaLaD) ? true : false);
+
+		SpeciesContextSpec[] speciesContextSpecs = simContext.getReactionContext().getSpeciesContextSpecs();
+		SpeciesContextSpec scs = speciesContextSpecs[0];
+//		String result = SpeciesContextSpecTable.getSQLValueList();
+
+	}
+
+
+		// ==========================================================================================================================
 	
     private static BioModel getBioModelFromResource(String fileName) throws IOException, XmlParseException {
         InputStream inputStream = SpringSaLaDGoodReactionsTest.class.getResourceAsStream(fileName);

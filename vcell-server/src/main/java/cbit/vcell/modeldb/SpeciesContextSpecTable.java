@@ -68,7 +68,7 @@ private SpeciesContextSpecTable() {
  * @return java.lang.String
  * @param Key KeyValue
  */
-public String getSQLValueList(KeyValue Key, KeyValue simContextKey, SpeciesContextSpec speciesContextSpec, KeyValue scKey) {
+public static String getSQLValueList(KeyValue Key, KeyValue simContextKey, SpeciesContextSpec speciesContextSpec, KeyValue scKey) {
 
 	StringBuffer buffer = new StringBuffer();
 	buffer.append("(");
@@ -168,8 +168,7 @@ public String getSQLValueList(KeyValue Key, KeyValue simContextKey, SpeciesConte
 	if(!(speciesContextSpec.getSimulationContext().getApplicationType() == SimulationContext.Application.SPRINGSALAD)) {
 		buffer.append(" NULL " + ")");
 	} else {
-		buffer.append(" NULL " + ")");
-//		buffer.append("'" + speciesContextSpec.getInternalLinksSQL() + "'" + ")");
+		buffer.append("'" + speciesContextSpec.getInternalLinksSQL() + "'" + ")");
 	}
 
 	return buffer.toString();
