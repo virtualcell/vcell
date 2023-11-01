@@ -900,7 +900,9 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 							text += "Reaction Rule";
 							text += "</html>";
 							setText(text);
-						} else {					// plain reaction, check if reactants have species pattern
+						} else if(selectedObject instanceof ReactionRule && !(value instanceof ModelProcessEquation)) {
+							throw new RuntimeException("Unexpected 'value' class.");
+						} else if(selectedObject instanceof ReactionStep) {		// plain reaction, check if reactants have species pattern
 							ReactionStep rs = (ReactionStep)selectedObject;
 							String text = "<html>";
 							for(int i = 0; i<rs.getNumReactants(); i++) {
@@ -932,6 +934,8 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 							}								
 							text += "</html>";
 							setText(text);
+						} else {
+							throw new RuntimeException("Unexpected 'selectedObject' class");
 						}
 					}
 				}
