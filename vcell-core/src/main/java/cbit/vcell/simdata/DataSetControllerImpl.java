@@ -4072,7 +4072,7 @@ public void writeFieldFunctionData(
 		CartesianMesh newMesh,
 		SimResampleInfoProvider simResampleInfoProvider,
 		int simResampleMembraneDataLength,
-		int handleExistingResampleMode) throws FileNotFoundException, DataAccessException, IOException {
+		int handleExistingResampleMode) throws FileNotFoundException, DataAccessException, IOException, ExpressionException {
 	
 	if(	handleExistingResampleMode != FVSolverStandalone.HESM_KEEP_AND_CONTINUE &&
 		handleExistingResampleMode != FVSolverStandalone.HESM_OVERWRITE_AND_CONTINUE &&
