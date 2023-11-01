@@ -1762,7 +1762,7 @@ private void writeFieldData() throws FileNotFoundException, ExpressionException,
 				psfFieldIndex = index;
 			}
 			String fieldDataID = "_VCell_FieldData_" + index;
-			printWriter.println(index + " " + varType.getTypeName() + " " + fieldDataID + " " + ffa.getFieldName() + " " + ffa.getVariableName() + " " + ffa.getTime().infix() + " " + newResampledFieldDataFile);
+			printWriter.println(index + " " + varType.getTypeName() + " " + fieldDataID + " " + ffa.getFieldName() + " " + ffa.getVariableName() + " " + ffa.getTime().flatten().infix() + " " + newResampledFieldDataFile);
 			uniqueFieldDataNSet.add(
 				new FieldDataNumerics(
 					SimulationData.createCanonicalFieldFunctionSyntax(
