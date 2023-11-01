@@ -18,7 +18,7 @@ COPY --from=jre-build /javaruntime $JAVA_HOME
 # now we have Java 17 and Python 3.9
 
 RUN apt-get -y update && \
-    apt-get install -y --no-install-recommends curl dnsutils && \
+    apt-get install -y --no-install-recommends curl dnsutils apt-utils libfreetype6 fontconfig fonts-dejavu && \
     mkdir -p /usr/local/app/lib 
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tzdata
