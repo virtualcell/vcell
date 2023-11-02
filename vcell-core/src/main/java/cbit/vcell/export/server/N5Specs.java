@@ -28,10 +28,12 @@ import java.util.HashMap;
  */
 @SuppressWarnings("serial")
 public class N5Specs extends FormatSpecificSpecs implements Serializable {
-	private ExportFormat format;
-	private ExportConstants.DataType dataType;
-	private ExportSpecs.SimNameSimDataID[] simNameSimDataIDs;
-	private CompressionLevel compression;
+	private final ExportFormat format;
+	private final ExportConstants.DataType dataType;
+	private final ExportSpecs.SimNameSimDataID[] simNameSimDataIDs;
+	private final CompressionLevel compression;
+
+	public final String dataSetName;
 
 	public static enum CompressionLevel{
 		RAW,
@@ -42,11 +44,12 @@ public class N5Specs extends FormatSpecificSpecs implements Serializable {
 /**
  * TextSpecs constructor comment.
  */
-	public N5Specs(ExportSpecs.SimNameSimDataID[] simNameSimDataIDs, ExportConstants.DataType dataType, ExportFormat format, CompressionLevel compressionLevel) {
+	public N5Specs(ExportSpecs.SimNameSimDataID[] simNameSimDataIDs, ExportConstants.DataType dataType, ExportFormat format, CompressionLevel compressionLevel, String dataSetName) {
 		this.format = format;
 		this.dataType = dataType;
 		this.simNameSimDataIDs = simNameSimDataIDs;
 		this.compression = compressionLevel;
+		this.dataSetName = dataSetName;
 	}
 	public ExportSpecs.SimNameSimDataID[] getSimNameSimDataIDs(){
 		return simNameSimDataIDs;

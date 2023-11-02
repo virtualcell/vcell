@@ -22,6 +22,8 @@ public class N5SettingsPanel extends javax.swing.JPanel implements ExportConstan
     private JRadioButton ivjRadioButtonGZIP = null;
     private JRadioButton radioButtonRAW = null;
     private N5Specs.CompressionLevel compressionLevel = N5Specs.CompressionLevel.RAW;
+    private JLabel dataSetNameLabel = null;
+    private JTextField dataSetName = null;
     /**
      * Constructor
      */
@@ -104,7 +106,9 @@ public class N5SettingsPanel extends javax.swing.JPanel implements ExportConstan
      * @param newEvent java.util.EventObject
      */
     protected void fireJButtonOKAction_actionPerformed(java.util.EventObject newEvent) {
-        if (fieldASCIISettingsPanelListenerEventMulticaster == null) {
+        String dataSetName = getJTextFieldDataSetName().getText();
+        boolean textConditions = dataSetName.isEmpty() || !dataSetName.matches("^[a-zA-Z 0-9]*$"); //Regex expression only allows spaces, a-z, A-Z, and 0-9. If it has anything else there is no Regex match
+        if (fieldASCIISettingsPanelListenerEventMulticaster == null || textConditions) {
             return;
         };
         fieldASCIISettingsPanelListenerEventMulticaster.JButtonOKAction_actionPerformed(newEvent);
@@ -199,6 +203,24 @@ public class N5SettingsPanel extends javax.swing.JPanel implements ExportConstan
             }
         }
         return ivjJLabelDataType;
+    }
+
+    private javax.swing.JLabel getJLabelDatasetName() {
+        if (dataSetNameLabel == null) {
+            try {
+                dataSetNameLabel = new javax.swing.JLabel();
+                dataSetNameLabel.setName("JLabelDatasetName");
+                dataSetNameLabel.setPreferredSize(new java.awt.Dimension(108, 27));
+                dataSetNameLabel.setText("Dataset Name:");
+                // user code begin {1}
+                // user code end
+            } catch (java.lang.Throwable ivjExc) {
+                // user code begin {2}
+                // user code end
+                handleException(ivjExc);
+            }
+        }
+        return dataSetNameLabel;
     }
     /**
      * Return the JPanel1 property value.
@@ -332,6 +354,19 @@ public class N5SettingsPanel extends javax.swing.JPanel implements ExportConstan
         return ivjRadioButtonGZIP;
     }
 
+    private javax.swing.JTextField getJTextFieldDataSetName() {
+        if (dataSetName == null) {
+            try {
+                dataSetName = new javax.swing.JTextField();
+                dataSetName.setName("JTextFieldDataSetName");
+                dataSetName.setToolTipText("Only A-Z and 1-9");
+            } catch (java.lang.Throwable ivjExc) {
+                handleException(ivjExc);
+            }
+        }
+        return dataSetName;
+    }
+
     /**
      * Called whenever the part throws an exception.
      * @param exception java.lang.Throwable
@@ -373,7 +408,7 @@ public class N5SettingsPanel extends javax.swing.JPanel implements ExportConstan
             constraintsJLabelDataType.gridx = 0; constraintsJLabelDataType.gridy = 0;
             constraintsJLabelDataType.fill = java.awt.GridBagConstraints.HORIZONTAL;
             constraintsJLabelDataType.weightx = 1.0;
-            constraintsJLabelDataType.insets = new Insets(10, 5, 5, 0);
+            constraintsJLabelDataType.insets = new Insets(10, 5, 5, 5);
             add(getJLabelCompressionType(), constraintsJLabelDataType);
 
             java.awt.GridBagConstraints constraintsJRadioButtonVariables = new java.awt.GridBagConstraints();
@@ -381,7 +416,7 @@ public class N5SettingsPanel extends javax.swing.JPanel implements ExportConstan
             constraintsJRadioButtonVariables.gridx = 0; constraintsJRadioButtonVariables.gridy = 1;
             constraintsJRadioButtonVariables.fill = java.awt.GridBagConstraints.HORIZONTAL;
             constraintsJRadioButtonVariables.weightx = 1.0;
-            constraintsJRadioButtonVariables.insets = new Insets(0, 5, 5, 0);
+            constraintsJRadioButtonVariables.insets = new Insets(0, 5, 5, 5);
             add(getJRadioButtonBZIP(), constraintsJRadioButtonVariables);
 
             java.awt.GridBagConstraints constraintsJRadioButtonParticles = new java.awt.GridBagConstraints();
@@ -389,7 +424,7 @@ public class N5SettingsPanel extends javax.swing.JPanel implements ExportConstan
             constraintsJRadioButtonParticles.gridx = 0; constraintsJRadioButtonParticles.gridy = 2;
             constraintsJRadioButtonParticles.fill = java.awt.GridBagConstraints.HORIZONTAL;
             constraintsJRadioButtonParticles.weightx = 1.0;
-            constraintsJRadioButtonParticles.insets = new Insets(0, 5, 5, 0);
+            constraintsJRadioButtonParticles.insets = new Insets(0, 5, 5, 5);
             add(getJRadioButtonGZIP(), constraintsJRadioButtonParticles);
 
             java.awt.GridBagConstraints constraintsJRadioButtonRAW = new java.awt.GridBagConstraints();
@@ -397,8 +432,24 @@ public class N5SettingsPanel extends javax.swing.JPanel implements ExportConstan
             constraintsJRadioButtonRAW.gridx = 0; constraintsJRadioButtonRAW.gridy = 3;
             constraintsJRadioButtonRAW.fill = java.awt.GridBagConstraints.HORIZONTAL;
             constraintsJRadioButtonRAW.weightx = 1.0;
-            constraintsJRadioButtonRAW.insets = new Insets(0, 5, 5, 0);
+            constraintsJRadioButtonRAW.insets = new Insets(0, 5, 5, 5);
             add(getRadioButtonRAW(), constraintsJRadioButtonRAW);
+
+            java.awt.GridBagConstraints constraintsJLabelDataSetName = new java.awt.GridBagConstraints();
+            constraintsJLabelDataSetName.anchor = GridBagConstraints.WEST;
+            constraintsJLabelDataSetName.gridx = 0; constraintsJLabelDataSetName.gridy = 4;
+            constraintsJLabelDataSetName.fill = java.awt.GridBagConstraints.HORIZONTAL;
+            constraintsJLabelDataSetName.weightx = 1.0;
+            constraintsJLabelDataSetName.insets = new Insets(0, 5, 5, 5);
+            add(getJLabelDatasetName(), constraintsJLabelDataSetName);
+
+            java.awt.GridBagConstraints constraintsJTextFieldDataSetName = new java.awt.GridBagConstraints();
+            constraintsJTextFieldDataSetName.anchor = GridBagConstraints.WEST;
+            constraintsJTextFieldDataSetName.gridx = 0; constraintsJTextFieldDataSetName.gridy = 5;
+            constraintsJTextFieldDataSetName.fill = java.awt.GridBagConstraints.HORIZONTAL;
+            constraintsJTextFieldDataSetName.weightx = 1.0;
+            constraintsJTextFieldDataSetName.insets = new Insets(0, 5, 5, 5);
+            add(getJTextFieldDataSetName(), constraintsJTextFieldDataSetName);
 
             ButtonGroup compressionButtons = new ButtonGroup();
             compressionButtons.add(getJRadioButtonBZIP());
@@ -407,7 +458,7 @@ public class N5SettingsPanel extends javax.swing.JPanel implements ExportConstan
 
 
             java.awt.GridBagConstraints constraintsJPanel1 = new java.awt.GridBagConstraints();
-            constraintsJPanel1.gridx = 0; constraintsJPanel1.gridy = 4;
+            constraintsJPanel1.gridx = 0; constraintsJPanel1.gridy = 6;
             add(getMainPanel(), constraintsJPanel1);
             initConnections();
 
@@ -421,6 +472,11 @@ public class N5SettingsPanel extends javax.swing.JPanel implements ExportConstan
     public static void main(String[] args) {
         N5SettingsPanel n5SettingsPanel = new N5SettingsPanel();
         n5SettingsPanel.initialize();
+        JFrame jFrame = new JFrame();
+        jFrame.add(n5SettingsPanel.getMainPanel());
+        jFrame.setSize(400, 400);
+        jFrame.setVisible(true);
+        n5SettingsPanel.getMainPanel().show();
     }
 
     /**
@@ -453,8 +509,9 @@ public class N5SettingsPanel extends javax.swing.JPanel implements ExportConstan
     public N5Specs getN5Specs(){
         ExportSpecs.SimNameSimDataID[] simDataID = simulationSelector == null ? null : simulationSelector.getSelectedSimDataInfo();
         int[] paramScanIndexes = simulationSelector == null ? null : simulationSelector.getselectedParamScanIndexes();
+        String dataSetName = getJTextFieldDataSetName().getText();
 
-        return new N5Specs(simDataID, DataType.PDE_VARIABLE_DATA, ExportFormat.N5, compressionLevel);
+        return new N5Specs(simDataID, DataType.PDE_VARIABLE_DATA, ExportFormat.N5, compressionLevel, dataSetName);
     }
 
     private JLabel lblSeeVcellHelp;

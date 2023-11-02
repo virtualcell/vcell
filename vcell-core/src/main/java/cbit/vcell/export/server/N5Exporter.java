@@ -65,71 +65,70 @@ public class N5Exporter implements ExportConstants {
 	private VCData vcData;
 
 
-public N5Exporter(ExportServiceImpl exportServiceImpl) {
+	public N5Exporter(ExportServiceImpl exportServiceImpl) {
 	this.exportServiceImpl = exportServiceImpl;
 }
 
-private ExportOutput exportToN5(OutputContext outputContext, long jobID, N5Specs n5Specs, ExportSpecs exportSpecs, FileDataContainerManager fileDataContainerManager) throws MathException, DataAccessException, IOException {
-	double[] allTimes = vcData.getDataTimes();
-	// output context expects a list of annotated functions, vcData seems to already have a set of annotated functions
+	private ExportOutput exportToN5(OutputContext outputContext, long jobID, N5Specs n5Specs, ExportSpecs exportSpecs, FileDataContainerManager fileDataContainerManager) throws MathException, DataAccessException, IOException {
+		double[] allTimes = vcData.getDataTimes();
+		// output context expects a list of annotated functions, vcData seems to already have a set of annotated functions
 
-	// With Dex's dataset ID get the data block during the first time instance t
+		// With Dex's dataset ID get the data block during the first time instance t
 
-	// All variables can be visually represented, its just that some have its data already computed, and others are derived
-	// from that data, so if we want to visualize that data we need to compute the results.
+		// All variables can be visually represented, its just that some have its data already computed, and others are derived
+		// from that data, so if we want to visualize that data we need to compute the results.
 
-	// according to Jim what should happen is that the VCdata should automatically derive the data for me since it knows everything
-	// and the only reason why this wouldn't work is due to some misconfiguration, but what is that misconfig
+		// according to Jim what should happen is that the VCdata should automatically derive the data for me since it knows everything
+		// and the only reason why this wouldn't work is due to some misconfiguration, but what is that misconfig
 
-	Compression compression = n5Specs.getCompression();
-	File tmpFile = File.createTempFile("N5", "temp");
+		Compression compression = n5Specs.getCompression();
+		File tmpFile = File.createTempFile("N5", "temp");
 
-	ArrayList<DataIdentifier> species = new ArrayList<>();
-	for (String specie: exportSpecs.getVariableSpecs().getVariableNames()){
-		species.add(getSpecificDI(specie));
-	}
-
-
-	for (DataIdentifier specie: species) {
-		if (unsupportedTypes.contains(specie.getVariableType())) {
-			throw new RuntimeException("Tried to export a variable type that is not supported!");
+		ArrayList<DataIdentifier> species = new ArrayList<>();
+		for (String specie: exportSpecs.getVariableSpecs().getVariableNames()){
+			species.add(getSpecificDI(specie));
 		}
-	}
-//        DexDataIdentifier.getVariableType();
-
-	int numVariables = species.size();
-	int numTimes = allTimes.length;
-	long[] dimensions = {vcData.getMesh().getSizeX(), vcData.getMesh().getSizeY(), numVariables, vcData.getMesh().getSizeZ(), numTimes};
-	// 51X, 51Y, 1Z, 1C, 2T
-	int[] blockSize = {vcData.getMesh().getSizeX(), vcData.getMesh().getSizeY(), 1, vcData.getMesh().getSizeZ(), 1};
-	String dataSet = vcDataID.getID();
 
 
-	N5FSWriter n5FSWriter = new N5FSWriter(tmpFile.getPath(), new GsonBuilder());
-	DatasetAttributes datasetAttributes = new DatasetAttributes(dimensions, blockSize, org.janelia.saalfeldlab.n5.DataType.FLOAT64, compression);
-	HashMap<String, Object> additionalMetaData = new HashMap<>();
-
-	n5FSWriter.createDataset(dataSet, datasetAttributes);
-	N5Specs.imageJMetaData(n5FSWriter, dataSet, vcData, numVariables, additionalMetaData);
-
-
-	for (int variableIndex=0; variableIndex < numVariables; variableIndex++){
-		//place to add tracking, each variable can be measured in tracking
-		exportServiceImpl.fireExportProgress(jobID, vcDataID, "N5", ((double) variableIndex / numVariables));
-		for (int timeIndex=0; timeIndex < numTimes; timeIndex++){
-			//another place to add tracking, each time index can be used to determine how much has been exported
-
-			// data does get returned, but it does not seem to cover the entire region of space, but only returns regions where there is activity
-			double[] data = this.dataSetController.getSimDataBlock(outputContext, this.vcDataID, species.get(variableIndex).getName(), allTimes[timeIndex]).getData();
-			DoubleArrayDataBlock doubleArrayDataBlock = new DoubleArrayDataBlock(blockSize, new long[]{0, 0, variableIndex, 0, timeIndex}, data);
-			n5FSWriter.writeBlock(dataSet, datasetAttributes, doubleArrayDataBlock);
+		for (DataIdentifier specie: species) {
+			if (unsupportedTypes.contains(specie.getVariableType())) {
+				throw new RuntimeException("Tried to export a variable type that is not supported!");
+			}
 		}
+	//        DexDataIdentifier.getVariableType();
+
+		int numVariables = species.size();
+		int numTimes = allTimes.length;
+		long[] dimensions = {vcData.getMesh().getSizeX(), vcData.getMesh().getSizeY(), numVariables, vcData.getMesh().getSizeZ(), numTimes};
+		// 51X, 51Y, 1Z, 1C, 2T
+		int[] blockSize = {vcData.getMesh().getSizeX(), vcData.getMesh().getSizeY(), 1, vcData.getMesh().getSizeZ(), 1};
+
+
+		N5FSWriter n5FSWriter = new N5FSWriter(tmpFile.getPath(), new GsonBuilder());
+		DatasetAttributes datasetAttributes = new DatasetAttributes(dimensions, blockSize, org.janelia.saalfeldlab.n5.DataType.FLOAT64, compression);
+		HashMap<String, Object> additionalMetaData = new HashMap<>();
+
+		n5FSWriter.createDataset(n5Specs.dataSetName, datasetAttributes);
+		N5Specs.imageJMetaData(n5FSWriter, n5Specs.dataSetName, vcData, numVariables, additionalMetaData);
+
+
+		for (int variableIndex=0; variableIndex < numVariables; variableIndex++){
+			//place to add tracking, each variable can be measured in tracking
+			exportServiceImpl.fireExportProgress(jobID, vcDataID, "N5", ((double) variableIndex / numVariables));
+			for (int timeIndex=0; timeIndex < numTimes; timeIndex++){
+				//another place to add tracking, each time index can be used to determine how much has been exported
+
+				// data does get returned, but it does not seem to cover the entire region of space, but only returns regions where there is activity
+				double[] data = this.dataSetController.getSimDataBlock(outputContext, this.vcDataID, species.get(variableIndex).getName(), allTimes[timeIndex]).getData();
+				DoubleArrayDataBlock doubleArrayDataBlock = new DoubleArrayDataBlock(blockSize, new long[]{0, 0, variableIndex, 0, timeIndex}, data);
+				n5FSWriter.writeBlock(n5Specs.dataSetName, datasetAttributes, doubleArrayDataBlock);
+			}
+		}
+		n5FSWriter.close();
+		ExportOutput exportOutput = new ExportOutput(true, ".n5", vcDataID.getID(), n5FileNameHash(), fileDataContainerManager);
+		fileDataContainerManager.manageExistingTempFile(exportOutput.getFileDataContainerID(), tmpFile);
+		return exportOutput;
 	}
-	n5FSWriter.close();
-	ExportOutput exportOutput = new ExportOutput(true, ".n5", vcDataID.getID(), n5FileNameHash(), fileDataContainerManager);
-	fileDataContainerManager.manageExistingTempFile(exportOutput.getFileDataContainerID(), tmpFile);
-	return exportOutput;
-}
 
 	public void initalizeDataControllers(String simKeyID, String userName, String userKey, long jobIndex) throws IOException, DataAccessException {
 		// Set my user ID associated with VC database
@@ -233,21 +232,21 @@ private ExportOutput exportToN5(OutputContext outputContext, long jobID, N5Specs
  * This method was created in VisualAge.
  * @throws IOException
  */
-public ExportOutput makeN5Data(OutputContext outputContext, JobRequest jobRequest, ExportSpecs exportSpecs, FileDataContainerManager fileDataContainerManager)
-		throws DataAccessException, IOException, MathException {
-	FormatSpecificSpecs formatSpecs = exportSpecs.getFormatSpecificSpecs( );
-	N5Specs n5Specs = BeanUtils.downcast(N5Specs.class, formatSpecs);
-	if (n5Specs != null) {
-			return exportToN5(
-					outputContext,
-					jobRequest.getJobID(),
-					n5Specs,
-					exportSpecs,
-					fileDataContainerManager
-					);
+	public ExportOutput makeN5Data(OutputContext outputContext, JobRequest jobRequest, ExportSpecs exportSpecs, FileDataContainerManager fileDataContainerManager)
+			throws DataAccessException, IOException, MathException {
+		FormatSpecificSpecs formatSpecs = exportSpecs.getFormatSpecificSpecs( );
+		N5Specs n5Specs = BeanUtils.downcast(N5Specs.class, formatSpecs);
+		if (n5Specs != null) {
+				return exportToN5(
+						outputContext,
+						jobRequest.getJobID(),
+						n5Specs,
+						exportSpecs,
+						fileDataContainerManager
+						);
+		}
+		throw new IllegalArgumentException("Export spec "  + ExecutionTrace.justClassName(formatSpecs) + " not instance of " + ExecutionTrace.justClassName(ASCIISpecs.class) );
 	}
-	throw new IllegalArgumentException("Export spec "  + ExecutionTrace.justClassName(formatSpecs) + " not instance of " + ExecutionTrace.justClassName(ASCIISpecs.class) );
-}
 
 /**
  * manage sending progress percent info for {@link N5Exporter#exportParticleData(OutputContext, long, User, DataServerImpl, ExportSpecs, ASCIISpecs, FileDataContainerManager)
