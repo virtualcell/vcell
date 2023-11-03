@@ -21,6 +21,8 @@ import org.vcell.db.KeyFactory;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.IOException;
+import java.io.Writer;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -112,16 +114,22 @@ private static void createTables(Connection con, Table tables[], DatabaseSyntax 
 		//
 		// add fake DUAL table for ORACLE compatibility
 		//
-		String sql = "CREATE VIEW "+POSTGRES_DUAL_VIEW+" AS SELECT CAST('X' as varchar) AS dummy";
+		String sql = getCreateViewSql(dbSyntax);
 		System.out.println(sql);
 		PreparedStatement pps = con.prepareStatement(sql);
 		boolean status = pps.execute();
 		pps.close();
 	}
 
+	private static String getCreateViewSql(DatabaseSyntax dbSyntax) {
+		if (dbSyntax != DatabaseSyntax.POSTGRES){
+			return null;
+		}
+		return "CREATE VIEW " + POSTGRES_DUAL_VIEW + " AS SELECT CAST('X' as varchar) AS dummy";
+	}
 
 
-/**
+	/**
  * This method was created in VisualAge.
  */
 private static void destroyAndRecreateTables(ConnectionFactory conFactory, KeyFactory keyFactory, DatabaseSyntax dbSyntax) {
@@ -363,6 +371,24 @@ public static Table[] getVCellTables() {
 		};
 	return tables;
 }
+
+public static void writeScript(DatabaseSyntax dbSyntax, Writer scriptWriter) throws IOException {
+	Table[] tables = getVCellTables();
+	for (int i=0;i<tables.length;i++){
+		String sql = tables[i].getCreateSQL(dbSyntax);
+		scriptWriter.write(sql + "\n");
+	}
+	System.out.println();
+	String createViewSql = getCreateViewSql(dbSyntax);
+	if (createViewSql != null){
+		scriptWriter.write(createViewSql + "\n");
+	}
+	System.out.println();
+	if (dbSyntax == DatabaseSyntax.ORACLE || dbSyntax == DatabaseSyntax.POSTGRES) {
+		scriptWriter.write("CREATE SEQUENCE " + Table.SEQ + "\n");
+	}
+}
+
 /**
  * Starts the application.
  * @param args an array of command-line arguments
