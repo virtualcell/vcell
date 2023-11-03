@@ -52,11 +52,7 @@ import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoableEdit;
 import javax.swing.undo.UndoableEditSupport;
 
-import org.vcell.util.BeanUtils;
-import org.vcell.util.ISize;
-import org.vcell.util.NumberUtils;
-import org.vcell.util.Range;
-import org.vcell.util.UserCancelException;
+import org.vcell.util.*;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.vcellij.ImageDatasetReaderService;
 
@@ -226,8 +222,8 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel {
 		return true;
 	}
 	private void waitCursor(boolean bOn){
-		Container topLevelContainer = BeanUtils.findTypeParentOfComponent(this, JFrame.class);
-		BeanUtils.setCursorThroughout(topLevelContainer,
+		Container topLevelContainer = GeneralGuiUtils.findTypeParentOfComponent(this, JFrame.class);
+		GeneralGuiUtils.setCursorThroughout(topLevelContainer,
 				(bOn?Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR):Cursor.getDefaultCursor()));
 		if(!bOn){
 			updateROICursor();
@@ -427,8 +423,8 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel {
 		roiDrawButtonGroup.add(fillButton);
 		roiDrawButtonGroup.add(cropButton);
 		
-		BeanUtils.enableComponents(getRightPanel(), false);
-		BeanUtils.enableComponents(editROIPanel, false);
+		GeneralGuiUtils.enableComponents(getRightPanel(), false);
+		GeneralGuiUtils.enableComponents(editROIPanel, false);
 	}
 	
 	public void showROIAssist()
@@ -582,8 +578,8 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel {
 	
 	protected void setAllComponentsVisible()
 	{
-		BeanUtils.enableComponents(getRightPanel(), true);
-		BeanUtils.enableComponents(editROIPanel, true);
+		GeneralGuiUtils.enableComponents(getRightPanel(), true);
+		GeneralGuiUtils.enableComponents(editROIPanel, true);
 		//buttons
 		getCropButton().setVisible(true);
 		getAutoCropButton().setVisible(true);
@@ -778,9 +774,9 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel {
 			originalISize = (bNew?imageDataset.getISize():originalISize);
 			if(!timeSlider.isEnabled()) //if the component is already enabled, don't do anything
 			{
-				BeanUtils.enableComponents(rightPanel, true);
-				BeanUtils.enableComponents(editROITopPanel, true);
-				BeanUtils.enableComponents(editROIPanel, true);
+				GeneralGuiUtils.enableComponents(rightPanel, true);
+				GeneralGuiUtils.enableComponents(editROITopPanel, true);
+				GeneralGuiUtils.enableComponents(editROIPanel, true);
 			}
 			timeSlider.setVisible(imageDataset.getSizeT() > 1);
 			viewTLabel.setVisible(timeSlider.isVisible());
@@ -827,9 +823,9 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel {
 			zSlider.setMaximum(1);
 			zSlider.setLabelTable(null);
 			zSlider.setEnabled(false);
-			BeanUtils.enableComponents(rightPanel, false);
-			BeanUtils.enableComponents(editROITopPanel, false);
-			BeanUtils.enableComponents(editROIPanel, false);
+			GeneralGuiUtils.enableComponents(rightPanel, false);
+			GeneralGuiUtils.enableComponents(editROITopPanel, false);
+			GeneralGuiUtils.enableComponents(editROIPanel, false);
 			underlyingImage = null;
 			setROI(null);
 		}
@@ -1122,7 +1118,8 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel {
 	public int getZ() { return Math.max(0,Math.min(imageDataset.getSizeZ(),zSlider.getValue())) - 1; }
 	
 	/** Updates cursor probe label. * @param x int
-	 * @param y int
+	 * @param inx int
+	 * @param iny int
 	 */
 	protected void updateLabel(int inx, int iny) {
 		if (imageDataset == null) {
@@ -1578,7 +1575,7 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel {
 						}
 					}
 					if(bHasROI){
-						firePropertyChange(FRAP_DATA_TIMEPLOTROI_PROPERTY, null,new Boolean(true));
+						firePropertyChange(FRAP_DATA_TIMEPLOTROI_PROPERTY, null, true);
 					}else{
 						DialogUtils.showInfoDialog(VFrap_OverlayEditorPanelJAI.this, 
 							"ROI for "+roi.getROIName()+" is empty.\n"+

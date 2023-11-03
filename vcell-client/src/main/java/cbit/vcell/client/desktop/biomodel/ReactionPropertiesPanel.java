@@ -51,6 +51,7 @@ import org.vcell.relationship.RelationshipObject;
 import org.vcell.sybil.models.miriam.MIRIAMQualifier;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
+import org.vcell.util.GeneralGuiUtils;
 import org.vcell.util.document.Identifiable;
 import org.vcell.util.gui.CollapsiblePanel;
 import org.vcell.util.gui.DialogUtils;
@@ -793,7 +794,7 @@ protected void updateInterface() {
 	sbmlNameTextField.setEditable(bNonNullReactionStep);
 	getParameterTableModel().setEditable(bNonNullReactionStep);
 	kineticsTypeComboBox.setEnabled(bNonNullReactionStep);
-	BeanUtils.enableComponents(reactionElectricalPropertiesPanel, bNonNullReactionStep);
+	GeneralGuiUtils.enableComponents(reactionElectricalPropertiesPanel, bNonNullReactionStep);
 	jToggleButton.setEnabled(bNonNullReactionStep);
 	reversibleLabel.setVisible(true);
 	isReversibleCheckBox.setVisible(true);

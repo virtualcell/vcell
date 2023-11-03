@@ -68,12 +68,7 @@ import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.sybil.models.miriam.MIRIAMQualifier;
-import org.vcell.util.BeanUtils;
-import org.vcell.util.Compare;
-import org.vcell.util.Matchable;
-import org.vcell.util.SimpleFilenameFilter;
-import org.vcell.util.UserCancelException;
-import org.vcell.util.UtilCancelException;
+import org.vcell.util.*;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.DialogUtils.TableListResult;
 import org.vcell.util.gui.SimpleTransferable;
@@ -1210,9 +1205,9 @@ public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonToo
 	}
 
 	private static BioModel findBioModel(Component requester) throws Exception {
-		BioModelEditor bioModelEditor = (BioModelEditor)BeanUtils.findTypeParentOfComponent(requester, BioModelEditor.class);
+		BioModelEditor bioModelEditor = (BioModelEditor) GeneralGuiUtils.findTypeParentOfComponent(requester, BioModelEditor.class);
 		if(bioModelEditor == null){
-			DocumentWindow documentWindow = (DocumentWindow)BeanUtils.findTypeParentOfComponent(requester, DocumentWindow.class);
+			DocumentWindow documentWindow = (DocumentWindow)GeneralGuiUtils.findTypeParentOfComponent(requester, DocumentWindow.class);
 			if(documentWindow == null || !(documentWindow.getTopLevelWindowManager() instanceof BioModelWindowManager)) {
 				throw new Exception("Can't find BioModel from "+requester.getClass().getName());
 			}
@@ -1757,9 +1752,9 @@ public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonToo
 			}		
 			ArrayList<Structure> diagramStructures =  new ArrayList<Structure>(ReactionCartoonTool.this.getReactionCartoon().getStructureSuite().getStructures());
 			diagramStructures.remove(myStructure);
-			if(new Integer(RXContainerDropTargetInfo.INSERT_BEGINNING).equals(insertFlag)){
+			if(insertFlag.equals(RXContainerDropTargetInfo.INSERT_BEGINNING)){
 				diagramStructures.add(0, myStructure);
-			}else if(new Integer(RXContainerDropTargetInfo.INSERT_END).equals(insertFlag)){
+			}else if(insertFlag.equals(RXContainerDropTargetInfo.INSERT_END)){
 				diagramStructures.add(myStructure);
 			}else{
 				diagramStructures.add(diagramStructures.indexOf(selectedContainerDropTargetInfo.dropShape.getStructure()),myStructure);
@@ -3111,7 +3106,7 @@ public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonToo
 //	}
 	
 	public void showSimpleReactionPropertiesDialog(SimpleReactionShape simpleReactionShape) {
-//		JFrame parent = (JFrame) BeanUtils.findTypeParentOfComponent(
+//		JFrame parent = (JFrame) GeneralGuiUtils.findTypeParentOfComponent(
 //				getGraphPane(), JFrame.class);
 //		SimpleReactionPanelDialog simpleReactionDialog = new SimpleReactionPanelDialog(
 //				parent, true);

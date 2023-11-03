@@ -68,6 +68,7 @@ import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.resource.OperatingSystemInfo;
+import org.vcell.util.GeneralGuiUtils;
 
 @SuppressWarnings("serial")
 public class TextFieldAutoCompletion extends JTextField {
@@ -579,7 +580,7 @@ public class TextFieldAutoCompletion extends JTextField {
 			frame.getContentPane().add(panel);
 			frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 			frame.pack();
-			BeanUtils.centerOnScreen(frame);
+			GeneralGuiUtils.centerOnScreen(frame);
 			frame.setVisible(true);
 		} catch (Exception ex) {
 			ex.printStackTrace();

@@ -45,40 +45,6 @@ public class BeansUtilTest {
 		}
 		
 	}
-	
-	
-	
-	/**
-	 * expected behavior of {@link BeanUtils#findTypeParentOfComponent(Component, Class)} 
-	 * @param method not null
-	 */
-	private void aTest(BiFunction<Class<?>, Component, Container> method) {
-		JFrame jf = new JFrame( );
-		JPanel jp = new JPanel( );
-		jf.add(jp);
-		JButton btn = new JButton();
-		jf.add(btn);
-		assertTrue(method.apply(Frame.class, jf) == jf);
-		assertTrue(method.apply(Frame.class, jp) == jf);
-		assertTrue(method.apply(Window.class, jp) == jf);
-		assertTrue(method.apply(JDialog.class, jp) == null);
-		assertTrue(method.apply(Frame.class, null) == null);
-		assertTrue(method.apply(Frame.class, btn) == jf);
-		assertTrue(method.apply(Window.class, btn) == jf);
-		assertTrue(method.apply(JDialog.class, btn) == null);
-	}
-	
-	
-	/**
-	 * ensure  {@link BeanUtils#findTypeParentOfComponent(Component, Class)} has expected behavior
-	 */
-	@Ignore
-	@Test
-	public void ancestorTest( ) {
-		BiFunction<Class<?>, Component, Container> buMethod =  
-				(clzz, cmpt) -> { return BeanUtils.findTypeParentOfComponent(cmpt, clzz); };
-				aTest(buMethod);
-	}
 
 	@Test
 	public void lookupTest( ) {

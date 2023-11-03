@@ -48,6 +48,7 @@ import javax.swing.table.DefaultTableModel;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Extent;
+import org.vcell.util.GeneralGuiUtils;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.DialogUtils;
 
@@ -896,12 +897,12 @@ public class VFrap_ROIAssistPanel extends JPanel {
 	
 	private void waitCursor(final boolean bOn){
 		if(SwingUtilities.isEventDispatchThread()){
-			BeanUtils.setCursorThroughout(BeanUtils.findTypeParentOfComponent(VFrap_ROIAssistPanel.this, Window.class),
+			GeneralGuiUtils.setCursorThroughout(GeneralGuiUtils.findTypeParentOfComponent(VFrap_ROIAssistPanel.this, Window.class),
 					(bOn?Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR):Cursor.getDefaultCursor()));
 		}else{
 			try{
 				SwingUtilities.invokeAndWait(new Runnable(){public void run(){//}});
-					BeanUtils.setCursorThroughout(BeanUtils.findTypeParentOfComponent(VFrap_ROIAssistPanel.this, Window.class),
+					GeneralGuiUtils.setCursorThroughout(GeneralGuiUtils.findTypeParentOfComponent(VFrap_ROIAssistPanel.this, Window.class),
 							(bOn?Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR):Cursor.getDefaultCursor()));
 				}});
 			}catch(Exception e){

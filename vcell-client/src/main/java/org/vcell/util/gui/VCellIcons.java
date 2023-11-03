@@ -30,6 +30,7 @@ import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.GeneralGuiUtils;
 
 public abstract class VCellIcons {
 	public static HashMap<String,URL> imagePaths = new HashMap<String,URL>();
@@ -326,7 +327,7 @@ public abstract class VCellIcons {
 	}
 
 	// ---------------------------------------------------------------------------------------------------
-
+	// TODO: Make as test and remove
 	public static void main(java.lang.String[] args) {
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -340,7 +341,7 @@ public abstract class VCellIcons {
 				};
 			});
 			frame.setSize(200,200);
-			BeanUtils.centerOnScreen(frame);
+			GeneralGuiUtils.centerOnScreen(frame);
 			frame.setVisible(true);
 		} catch (Throwable exception) {
 			System.err.println("Exception occurred in main() of javax.swing.JPanel");

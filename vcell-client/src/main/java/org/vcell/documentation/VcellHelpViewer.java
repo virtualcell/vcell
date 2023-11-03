@@ -26,6 +26,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.GeneralGuiUtils;
 import org.vcell.util.document.VCellSoftwareVersion;
 
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
@@ -102,7 +103,7 @@ public class VcellHelpViewer extends JPanel
 			
 			setLayout(new BorderLayout());
 			add(jhelp);
-			BeanUtils.addCloseWindowKeyboardAction(this);
+			GeneralGuiUtils.addCloseWindowKeyboardAction(this);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return;
@@ -128,7 +129,7 @@ public class VcellHelpViewer extends JPanel
 			frame.setPreferredSize(new Dimension(VcellHelpViewer.DEFAULT_HELP_DIALOG_WIDTH,VcellHelpViewer.DEFAULT_HELP_DIALOG_HEIGHT));
 			frame.pack();
 			frame.getContentPane().add(helpViewer);
-			BeanUtils.centerOnScreen(frame);
+			GeneralGuiUtils.centerOnScreen(frame);
 			standaloneRef = new WeakReference<JFrame>(frame);
 		}
 		frame.setVisible(true);

@@ -17,6 +17,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.UIManager;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.GeneralGuiUtils;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.VCDocumentInfo;
@@ -604,7 +605,7 @@ public static void main(java.lang.String[] args) {
 		});
 		java.awt.Insets insets = frame.getInsets();
 		frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
-		BeanUtils.centerOnScreen(frame);
+		GeneralGuiUtils.centerOnScreen(frame);
 		frame.setVisible(true);
 	} catch (Throwable exception) {
 		System.err.println("Exception occurred in main() of javax.swing.JPanel");

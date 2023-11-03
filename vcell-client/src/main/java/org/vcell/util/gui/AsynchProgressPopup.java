@@ -21,6 +21,7 @@ import org.vcell.client.logicalwindow.LWContainerHandle;
 import org.vcell.client.logicalwindow.LWNamespace;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.ClientTaskStatusSupport;
+import org.vcell.util.GeneralGuiUtils;
 import org.vcell.util.ProgressDialogListener;
 
 /**
@@ -194,7 +195,7 @@ protected ProgressDialog getDialog() {
 			dialog.setCancelButtonVisible(false);
 		}
 		if(owner != null) {
-			BeanUtils.centerOnComponent(dialog, owner.getWindow());
+			GeneralGuiUtils.centerOnComponent(dialog, owner.getWindow());
 		}
 		dialog.setResizable(false);
 		if (title != null) {
@@ -271,7 +272,6 @@ public void setMessage(final String newMessage) {
 /**
  * Insert the method's description here.
  * Creation date: (5/19/2004 3:27:21 PM)
- * @param progress int
  */
 public void setProgress(final int argProgress) {
 	new SwingDispatcherAsync (){
@@ -282,7 +282,7 @@ public void setProgress(final int argProgress) {
 				if (argProgress > 100) {
 					localProgress = 100;
 				}
-				updateNow(new Integer(localProgress));
+				updateNow(localProgress);
 				AsynchProgressPopup.this.progress = localProgress;
 			}
 		}

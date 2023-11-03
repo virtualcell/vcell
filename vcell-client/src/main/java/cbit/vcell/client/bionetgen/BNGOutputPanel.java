@@ -19,6 +19,7 @@ import java.util.Vector;
 import javax.swing.JButton;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.GeneralGuiUtils;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.gui.MultiPurposeTextPanel;
@@ -2061,7 +2062,7 @@ private void initialize() {
 		initConnections();
 		connEtoC5();
 		connEtoC14();
-		BeanUtils.addCloseWindowKeyboardAction(this);
+		GeneralGuiUtils.addCloseWindowKeyboardAction(this);
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}

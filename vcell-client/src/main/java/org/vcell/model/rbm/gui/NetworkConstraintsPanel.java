@@ -40,6 +40,7 @@ import org.vcell.model.rbm.RbmNetworkGenerator;
 import org.vcell.model.rbm.common.MaxStoichiometryEntity;
 import org.vcell.model.rbm.gui.EditConstraintsPanel.ActionButtons;
 import org.vcell.util.BeanUtils;
+import org.vcell.util.GeneralGuiUtils;
 import org.vcell.util.ProgressDialogListener;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
@@ -560,18 +561,18 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 			testMaxStoichiometryMap.put(key, value);
 		}
 		if (panel.getButtonPushed() == ActionButtons.Run) {
-			maxIterations = new Integer( panel.maxIterationTextField.getText());
-			maxMolecules = new Integer( panel.maxMolTextField.getText());
-			speciesLimit = new Integer( panel.speciesLimitTextField.getText());
-			reactionsLimit = new Integer( panel.reactionsLimitTextField.getText());
+			maxIterations = Integer.parseInt(panel.maxIterationTextField.getText());
+			maxMolecules = Integer.parseInt(panel.maxMolTextField.getText());
+			speciesLimit = Integer.parseInt(panel.speciesLimitTextField.getText());
+			reactionsLimit = Integer.parseInt(panel.reactionsLimitTextField.getText());
 			fieldSimulationContext.getNetworkConstraints().setTestConstraints(maxIterations, maxMolecules, 
 					speciesLimit, reactionsLimit, testMaxStoichiometryMap);
 		} else if(panel.getButtonPushed() == ActionButtons.Apply) {
 			activateConsole();
-			maxIterations = new Integer( panel.maxIterationTextField.getText());
-			maxMolecules = new Integer( panel.maxMolTextField.getText());
-			speciesLimit = new Integer( panel.speciesLimitTextField.getText());
-			reactionsLimit = new Integer( panel.reactionsLimitTextField.getText());
+			maxIterations = Integer.parseInt(panel.maxIterationTextField.getText());
+			maxMolecules = Integer.parseInt(panel.maxMolTextField.getText());
+			speciesLimit = Integer.parseInt(panel.speciesLimitTextField.getText());
+			reactionsLimit = Integer.parseInt(panel.reactionsLimitTextField.getText());
 			fieldSimulationContext.getNetworkConstraints().setTestConstraints(maxIterations, maxMolecules, 
 					speciesLimit, reactionsLimit, testMaxStoichiometryMap);
 			fieldSimulationContext.getNetworkConstraints().updateConstraintsFromTest();
@@ -765,7 +766,7 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 			return;
 		}
 
-		DocumentWindow dw = (DocumentWindow)BeanUtils.findTypeParentOfComponent(this, DocumentWindow.class);
+		DocumentWindow dw = (DocumentWindow) GeneralGuiUtils.findTypeParentOfComponent(this, DocumentWindow.class);
 		BioModelWindowManager bmwm = (BioModelWindowManager)(dw.getTopLevelWindowManager());
 		RequestManager rm = dw.getTopLevelWindowManager().getRequestManager();
 			

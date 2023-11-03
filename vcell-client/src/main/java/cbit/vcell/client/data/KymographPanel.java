@@ -26,6 +26,7 @@ import javax.swing.JComboBox;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.GeneralGuiUtils;
 import org.vcell.util.Range;
 import org.vcell.util.document.TSJobResultsNoStats;
 import org.vcell.util.document.TimeSeriesJobSpec;
@@ -321,8 +322,6 @@ private MinMaxMeanHolder calcMMM(double[] data) {
 /**
  * Insert the method's description here.
  * Creation date: (12/28/2004 10:01:37 AM)
- * @param min double
- * @param max double
  */
 private void configureMinMax() {
 	
@@ -1918,8 +1917,6 @@ private void initConnections() throws java.lang.Exception {
 /**
  * Insert the method's description here.
  * Creation date: (12/14/2004 9:47:38 AM)
- * @param timeSeries double[][]
- * @param distances double[]
  */
 public void initDataManager(
 	DataIdentifier initVar,double initTime,int step,double endTime,
@@ -1996,7 +1993,7 @@ private boolean failMethod(final Throwable timeSeriesJobFailed,final DataIdentif
 		getJCheckBox1().setEnabled(false);
 		getJCheckBoxColor().setEnabled(false);
 		getCopyJButton().setEnabled(false);
-		BeanUtils.enableComponents(getCopyJPopupMenu(), false);	
+		GeneralGuiUtils.enableComponents(getCopyJPopupMenu(), false);
 		return true;
 	}else{
 		NONE_MESSAGE = NORMAL_MESSAGE;
@@ -2006,7 +2003,7 @@ private boolean failMethod(final Throwable timeSeriesJobFailed,final DataIdentif
 		getJCheckBoxColor().setEnabled(true);
 		getCopyJButton().setEnabled(true);
 		getCopyJPopupMenu().setEnabled(true);
-		BeanUtils.enableComponents(getCopyJPopupMenu(), true);
+		GeneralGuiUtils.enableComponents(getCopyJPopupMenu(), true);
 		return false;
 	}
 }
@@ -2015,14 +2012,15 @@ private BlockingTimer initVariableTimer;
 /**
  * Insert the method's description here.
  * Creation date: (12/14/2004 9:47:38 AM)
- * @param timeSeries double[][]
- * @param distances double[]
  */
 private void initDataManagerVariable(/*final DataIdentifier dataIdentifer,*//*boolean bFromGUI*/) {
 	final DataIdentifier dataIdentifer = (DataIdentifier)getVarNamesJComboBox().getSelectedItem();
-//	System.out.println("-----initDataManagerVariable-----"+dataIdentifer+" "+bFromGUI);
-//	Thread.dumpStack();
-	if((initVariableTimer = ClientTaskDispatcher.getBlockingTimer(this,multiTimePlotHelper.getPdeDatacontext(),null,initVariableTimer,new ActionListener() {@Override public void actionPerformed(ActionEvent e) {initDataManagerVariable();}},"KymographPanel get '"+dataIdentifer.getName()+"'"))!=null){
+	//	System.out.println("-----initDataManagerVariable-----"+dataIdentifer+" "+bFromGUI);
+	//	Thread.dumpStack();
+    assert dataIdentifer != null;
+    if((initVariableTimer = ClientTaskDispatcher.getBlockingTimer(this, multiTimePlotHelper.getPdeDatacontext(),
+			null, initVariableTimer ,
+            e -> initDataManagerVariable(),"KymographPanel get '"+dataIdentifer.getName()+"'"))!=null){
 		return;
 	}
 
@@ -2169,8 +2167,6 @@ private void initialize() {
 /**
  * Insert the method's description here.
  * Creation date: (12/14/2004 9:47:38 AM)
- * @param timeSeries double[][]
- * @param distances double[]
  */
 public void initStandAloneTimeSeries(double[][] timeSeries,double[] accumDistances,DataIdentifier dataIdentifier) throws DataAccessException{
 
@@ -2197,8 +2193,6 @@ public void initStandAloneTimeSeries(double[][] timeSeries,double[] accumDistanc
 /**
  * Insert the method's description here.
  * Creation date: (12/14/2004 9:47:38 AM)
- * @param timeSeries double[][]
- * @param distances double[]
  */
 private void initStandAloneTimeSeries_private(double[][] timeSeriesOrig,double[] accumDistancesOrig) throws DataAccessException {
 

@@ -18,6 +18,7 @@ import javax.swing.JPanel;
 
 import org.vcell.client.logicalwindow.transition.LWJDialogDecorator;
 import org.vcell.util.BeanUtils;
+import org.vcell.util.GeneralGuiUtils;
 import org.vcell.util.VCAssert;
 
 import cbit.vcell.export.gui.ASCIISettingsPanel;
@@ -598,7 +599,6 @@ private void setClosedOK(boolean newClosedOK) {
 /**
  * Sets the displayPreferences property (cbit.vcell.simdata.gui.DisplayPreferences[]) value.
  * @param displayPreferences The new value for the property.
- * @see #getDisplayPreferences
  */
 public void setDisplayPreferences(cbit.image.DisplayPreferences[] displayPreferences,String[] variableNames,int viewZoom) {
 	getMediaSettingsPanel1().setDisplayPreferences(displayPreferences, variableNames,viewZoom);
@@ -637,7 +637,7 @@ public void setSelectedFormat(ExportFormat selectedFormat) {
 public void setSimDataType(int simDataType) {
 	int oldValue = fieldSimDataType;
 	fieldSimDataType = simDataType;
-	firePropertyChange("simDataType", new Integer(oldValue), new Integer(simDataType));
+	firePropertyChange("simDataType", oldValue, simDataType);
 }
 
 public void setSliceCount(int sliceCount){
@@ -694,7 +694,7 @@ public boolean showFormatSpecificDialog(Frame reference,boolean selectionHasVolu
 			break;
 	}
 	dialogToShow.pack();
-	BeanUtils.centerOnComponent(dialogToShow, reference);
+	GeneralGuiUtils.centerOnComponent(dialogToShow, reference);
 	LWJDialogDecorator.decoratorFor(dialogToShow);
 	dialogToShow.setVisible(true);  // modal; blocks until OK'd or closed
 	return isClosedOK();

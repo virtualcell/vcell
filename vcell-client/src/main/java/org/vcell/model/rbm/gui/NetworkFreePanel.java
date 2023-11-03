@@ -47,6 +47,7 @@ import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solvers.ApplicationMessage;
+import org.vcell.util.GeneralGuiUtils;
 
 // we should use WindowBuilder Plugin (add it to Eclipse IDE) to speed up panel design
 // can choose absolute layout and place everything exactly as we see fit
@@ -650,7 +651,7 @@ public class NetworkFreePanel extends JPanel implements ApplicationSpecification
 	
 	private void createModel() {
 
-		DocumentWindow dw = (DocumentWindow)BeanUtils.findTypeParentOfComponent(this, DocumentWindow.class);
+		DocumentWindow dw = (DocumentWindow) GeneralGuiUtils.findTypeParentOfComponent(this, DocumentWindow.class);
 		BioModelWindowManager bmwm = (BioModelWindowManager)(dw.getTopLevelWindowManager());
 		RequestManager rm = dw.getTopLevelWindowManager().getRequestManager();
 			

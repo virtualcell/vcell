@@ -3983,7 +3983,7 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 				Thread waiter = new Thread() {
 					public void run() {
 						try {
-							BeanUtils.setCursorThroughout((Container) dataWinManager.getComponent(),
+							GeneralGuiUtils.setCursorThroughout((Container) dataWinManager.getComponent(),
 									Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 							while (bOpening) {
 								try {
@@ -3996,7 +3996,7 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 									.getMdiManager().getWindowManager(ID);
 							dwm.resetDocument(vcDoc);
 						} finally {
-							BeanUtils.setCursorThroughout((Container) dataWinManager.getComponent(),
+							GeneralGuiUtils.setCursorThroughout((Container) dataWinManager.getComponent(),
 									Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 						}
 					}
@@ -4422,7 +4422,7 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 		FieldDataWindowManager fdwm = (FieldDataWindowManager) getMdiManager()
 				.getWindowManager(ClientMDIManager.FIELDDATA_WINDOW_ID);
 		fdwm.getFieldDataGUIPanel().setCreateDataSymbolCallBack(dataSymbolCallBack);
-		Window win = (Window) BeanUtils.findTypeParentOfComponent(fdwm.getFieldDataGUIPanel(), Window.class);
+		Window win = (Window) GeneralGuiUtils.findTypeParentOfComponent(fdwm.getFieldDataGUIPanel(), Window.class);
 		if (win != null) {
 			win.setVisible(false);
 		}
@@ -4616,14 +4616,14 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 				DialogUtils.showErrorDialog(comparePanel,
 						"Please resolve all tagged elements/attributes before proceeding.");
 			} else {
-				BeanUtils.setCursorThroughout((Container) requester.getComponent(),
+				GeneralGuiUtils.setCursorThroughout((Container) requester.getComponent(),
 						Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 				try {
 					processComparisonResult(comparePanel, requester);
 				} catch (RuntimeException e) {
 					throw e;
 				} finally {
-					BeanUtils.setCursorThroughout((Container) requester.getComponent(),
+					GeneralGuiUtils.setCursorThroughout((Container) requester.getComponent(),
 							Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 				}
 			}

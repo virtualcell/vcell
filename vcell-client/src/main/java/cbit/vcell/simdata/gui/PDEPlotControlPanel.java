@@ -45,6 +45,7 @@ import javax.swing.ListCellRenderer;
 import javax.swing.Timer;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.GeneralGuiUtils;
 import org.vcell.util.NumberUtils;
 import org.vcell.util.gui.DefaultListModelCivilized;
 import org.vcell.util.gui.DialogUtils;
@@ -1013,11 +1014,11 @@ private void setTimePoints(double[] newTimePoints) {
 		getJLabelMax().setText((myTimePoints == null?"":myTimePoints[0]+""));
 		getJTextField1().setText((myTimePoints == null?"":myTimePoints[0]+""));
 		if(getJSliderTime().isEnabled()){
-			BeanUtils.enableComponents(getTimeSliderJPanel(),false);
+			GeneralGuiUtils.enableComponents(getTimeSliderJPanel(),false);
 		}
 	} else {
 		if(!getJSliderTime().isEnabled()){
-			BeanUtils.enableComponents(getTimeSliderJPanel(),true);
+			GeneralGuiUtils.enableComponents(getTimeSliderJPanel(),true);
 		}
 		int sValue = getJSliderTime().getValue();
 		getJSliderTime().setMinimum(0);

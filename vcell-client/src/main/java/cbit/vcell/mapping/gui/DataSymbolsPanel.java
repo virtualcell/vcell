@@ -40,11 +40,7 @@ import javax.swing.SwingConstants;
 import javax.swing.filechooser.FileFilter;
 
 import org.jdom.Element;
-import org.vcell.util.BeanUtils;
-import org.vcell.util.Extent;
-import org.vcell.util.ISize;
-import org.vcell.util.Origin;
-import org.vcell.util.UserCancelException;
+import org.vcell.util.*;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.User;
 import org.vcell.util.document.Version;
@@ -170,7 +166,7 @@ private AsynchClientTask ChooseVFrapFile() {
 }
 
 private void addAssociate() {
-	DocumentWindow documentWindow = (DocumentWindow)BeanUtils.findTypeParentOfComponent(this, DocumentWindow.class);
+	DocumentWindow documentWindow = (DocumentWindow) GeneralGuiUtils.findTypeParentOfComponent(this, DocumentWindow.class);
 	documentWindow.getTopLevelWindowManager().getRequestManager().showFieldDataWindow(new FieldDataWindowManager.DataSymbolCallBack() {
 		public void createDataSymbol(ExternalDataIdentifier dataSetID,
 				String fieldDataVarName, VariableType fieldDataVarType,
@@ -201,7 +197,7 @@ private void addVFrapOriginalImages() {		// add dataset (normal images) from vFr
 		
 			File vFrapFile = (File)hashTable.get("vFrapFile");
 			Component requesterComponent = DataSymbolsPanel.this;
-			DocumentWindow documentWindow = (DocumentWindow)BeanUtils.findTypeParentOfComponent(requesterComponent, DocumentWindow.class);
+			DocumentWindow documentWindow = (DocumentWindow)GeneralGuiUtils.findTypeParentOfComponent(requesterComponent, DocumentWindow.class);
 			DocumentManager documentManager = documentWindow.getTopLevelWindowManager().getRequestManager().getDocumentManager();
 			if(documentManager == null){
 				throw new RuntimeException("Not connected to server.");
@@ -235,7 +231,7 @@ private void addVFrapOriginalImages() {		// add dataset (normal images) from vFr
 			
 //				Calendar cal = Calendar.getInstance();
 //			    SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_hhmmss");
-//				DocumentWindow documentWindow = (DocumentWindow)BeanUtils.findTypeParentOfComponent(DataSymbolsPanel.this, DocumentWindow.class);
+//				DocumentWindow documentWindow = (DocumentWindow)GeneralGuiUtils.findTypeParentOfComponent(DataSymbolsPanel.this, DocumentWindow.class);
 //				DocumentManager documentManager = documentWindow.getTopLevelWindowManager().getRequestManager().getDocumentManager();
 //				VFrapXmlHelper vFrapXmlHelper = new VFrapXmlHelper();
 //				if(vFrapXmlHelper.isAlreadyImported(vFrapFileName, documentManager)) {
@@ -285,7 +281,7 @@ private void addVFrapOriginalImages() {		// add dataset (normal images) from vFr
 			AnnotatedImageDataset annotatedImages = (AnnotatedImageDataset)hashTable.get("annotatedImages");
 			String initialFieldDataName = (String)hashTable.get("initialFieldDataName");
 
-			DocumentWindow documentWindow = (DocumentWindow)BeanUtils.findTypeParentOfComponent(DataSymbolsPanel.this, DocumentWindow.class);
+			DocumentWindow documentWindow = (DocumentWindow)GeneralGuiUtils.findTypeParentOfComponent(DataSymbolsPanel.this, DocumentWindow.class);
 			DocumentManager dm = documentWindow.getTopLevelWindowManager().getRequestManager().getDocumentManager();
 			if(dm == null){
 				throw new RuntimeException("Not connected to server.");
@@ -414,7 +410,7 @@ private void addVFrapDerivedImages() {		// add special (computed) images from vF
 		
 			File vFrapFile = (File)hashTable.get("vFrapFile");
 			Component requesterComponent = DataSymbolsPanel.this;
-			DocumentWindow documentWindow = (DocumentWindow)BeanUtils.findTypeParentOfComponent(requesterComponent, DocumentWindow.class);
+			DocumentWindow documentWindow = (DocumentWindow)GeneralGuiUtils.findTypeParentOfComponent(requesterComponent, DocumentWindow.class);
 			DocumentManager documentManager = documentWindow.getTopLevelWindowManager().getRequestManager().getDocumentManager();
 			if(documentManager == null){
 				throw new RuntimeException("Not connected to server.");
@@ -490,7 +486,7 @@ private void addVFrapDerivedImages() {		// add special (computed) images from vF
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 
 			Component requesterComponent = DataSymbolsPanel.this;
-			DocumentWindow documentWindow = (DocumentWindow)BeanUtils.findTypeParentOfComponent(requesterComponent, DocumentWindow.class);
+			DocumentWindow documentWindow = (DocumentWindow)GeneralGuiUtils.findTypeParentOfComponent(requesterComponent, DocumentWindow.class);
 			DocumentManager documentManager = documentWindow.getTopLevelWindowManager().getRequestManager().getDocumentManager();
 			if(documentManager == null){
 				throw new RuntimeException("Not connected to server.");
@@ -520,7 +516,7 @@ private void addVFrapDerivedImages() {		// add special (computed) images from vF
 //			AnnotatedImageDataset annotatedImages = (AnnotatedImageDataset)hashTable.get("annotatedImages");
 //			String initialFieldDataName = (String)hashTable.get("initialFieldDataName");
 //
-//			DocumentWindow documentWindow = (DocumentWindow)BeanUtils.findTypeParentOfComponent(DataSymbolsPanel.this, DocumentWindow.class);
+//			DocumentWindow documentWindow = (DocumentWindow)GeneralGuiUtils.findTypeParentOfComponent(DataSymbolsPanel.this, DocumentWindow.class);
 //			DocumentManager dm = documentWindow.getTopLevelWindowManager().getRequestManager().getDocumentManager();
 //			if(dm == null){
 //				throw new RuntimeException("not connected to server");

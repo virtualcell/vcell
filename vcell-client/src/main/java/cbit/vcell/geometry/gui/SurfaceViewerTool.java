@@ -74,7 +74,7 @@ public class SurfaceViewerTool {
 	public final static int MANIPULATOR_ROTATE = 1;
 	public final static int MANIPULATOR_PAN = 2;
 	public final static int MANIPULATOR_ZOOM = 3;
-	private java.lang.Integer fieldDimension = new Integer(3);
+	private java.lang.Integer fieldDimension = 3;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private cbit.vcell.render.Vect3d fieldViewAngleRadians = null;
 	private int fieldCurrentManipulation = MANIPULATOR_NONE;
@@ -142,19 +142,19 @@ public void firePropertyChange(java.lang.String propertyName, boolean oldValue, 
 public void fullRepaint() {
 
 	if(canvasParentWindow == null){
-		canvasParentWindow = org.vcell.util.BeanUtils.findTypeParentOfComponent(getSurfaceCanvas(),java.awt.Window.class);
+		canvasParentWindow = org.vcell.util.GeneralGuiUtils.findTypeParentOfComponent(getSurfaceCanvas(),java.awt.Window.class);
 	}
 	
 	try{
 		if(canvasParentWindow != null){
-			org.vcell.util.BeanUtils.setCursorThroughout(canvasParentWindow,java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.WAIT_CURSOR));
+			org.vcell.util.GeneralGuiUtils.setCursorThroughout(canvasParentWindow,java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.WAIT_CURSOR));
 		}
 		getSurfaceCanvas().setBQuickRender(false);
 		//getSurfaceCanvas().invalidate();
 		getSurfaceCanvas().repaint();
 	}finally{
 		if(canvasParentWindow != null){
-			org.vcell.util.BeanUtils.setCursorThroughout(canvasParentWindow,java.awt.Cursor.getDefaultCursor());
+			org.vcell.util.GeneralGuiUtils.setCursorThroughout(canvasParentWindow,java.awt.Cursor.getDefaultCursor());
 		}
 	}
 	
@@ -186,16 +186,16 @@ public java.lang.Integer getDimension() {
  * Insert the method's description here.
  * Creation date: (9/24/2005 12:59:22 PM)
  * @return int
- * @param inputEvent java.awt.event.InputEvent
+ * @param mouseEvent java.awt.event.MouseEvent
  */
-public int getManipulationOPFromMouseButtons(java.awt.event.MouseEvent e) {
+public int getManipulationOPFromMouseButtons(java.awt.event.MouseEvent mouseEvent) {
 	
 	int manipOP = MANIPULATOR_NONE;
 
-	if((e.getModifiers() & ~(MouseEvent.BUTTON1_MASK|MouseEvent.BUTTON3_MASK)) == 0){
-		boolean bButton1 = (e.getModifiers() & MouseEvent.BUTTON1_MASK) == MouseEvent.BUTTON1_MASK;
-		boolean bButton3 = (e.getModifiers() & MouseEvent.BUTTON3_MASK) == MouseEvent.BUTTON3_MASK;
-		if(e.getID() == MouseEvent.MOUSE_DRAGGED){
+	if((mouseEvent.getModifiers() & ~(MouseEvent.BUTTON1_MASK|MouseEvent.BUTTON3_MASK)) == 0){
+		boolean bButton1 = (mouseEvent.getModifiers() & MouseEvent.BUTTON1_MASK) == MouseEvent.BUTTON1_MASK;
+		boolean bButton3 = (mouseEvent.getModifiers() & MouseEvent.BUTTON3_MASK) == MouseEvent.BUTTON3_MASK;
+		if(mouseEvent.getID() == MouseEvent.MOUSE_DRAGGED){
 			if (bButton1 && bButton3){
 				manipOP=MANIPULATOR_ZOOM;
 			}else if (bButton1){
@@ -203,9 +203,9 @@ public int getManipulationOPFromMouseButtons(java.awt.event.MouseEvent e) {
 			}else if (bButton3){
 				manipOP=MANIPULATOR_PAN;
 			}
-		}else if(e.getID() == MouseEvent.MOUSE_PRESSED){
+		}else if(mouseEvent.getID() == MouseEvent.MOUSE_PRESSED){
 			manipOP = (getCurrentManipulation() == MANIPULATOR_NONE?(bButton1?MANIPULATOR_ROTATE:MANIPULATOR_PAN):MANIPULATOR_ZOOM);
-		}else if(e.getID() == MouseEvent.MOUSE_RELEASED){
+		}else if(mouseEvent.getID() == MouseEvent.MOUSE_RELEASED){
 			manipOP =
 				(getCurrentManipulation() == MANIPULATOR_PAN || getCurrentManipulation() == MANIPULATOR_ROTATE?
 					MANIPULATOR_NONE
@@ -215,7 +215,7 @@ public int getManipulationOPFromMouseButtons(java.awt.event.MouseEvent e) {
 		}
 	}
 
-	//System.out.println(manipOP+" "+(e.getModifiers()&(MouseEvent.BUTTON1_MASK|MouseEvent.BUTTON3_MASK))+" "+e);
+	//System.out.println(manipOP+" "+(mouseEvent.getModifiers()&(MouseEvent.BUTTON1_MASK|MouseEvent.BUTTON3_MASK))+" "+mouseEvent);
 	return manipOP;
 }
 
@@ -472,7 +472,7 @@ public void resetView() {
 public void setCurrentManipulation(int currentManipulation) {
 	int oldValue = fieldCurrentManipulation;
 	fieldCurrentManipulation = currentManipulation;
-	firePropertyChange("currentManipulation", new Integer(oldValue), new Integer(currentManipulation));
+	firePropertyChange("currentManipulation", oldValue, currentManipulation);
 }
 
 

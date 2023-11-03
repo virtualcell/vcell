@@ -29,11 +29,7 @@ import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 
-import org.vcell.util.BeanUtils;
-import org.vcell.util.Extent;
-import org.vcell.util.Origin;
-import org.vcell.util.TokenMangler;
-import org.vcell.util.UserCancelException;
+import org.vcell.util.*;
 
 import cbit.vcell.client.PopupGenerator;
 
@@ -1405,8 +1401,8 @@ public void setSimulationMode(boolean bSim){
 	getJButtonSeqTimes().setEnabled(!bsimMode);
 	getJButtonEditTimes().setEnabled(!bsimMode);
 	getJButtonVarNameEdit().setEnabled(!bsimMode);
-	BeanUtils.enableComponents(getJPanelOrigin(), !bSim);
-	BeanUtils.enableComponents(getJPanelSize(), !bSim);
+	GeneralGuiUtils.enableComponents(getJPanelOrigin(), !bSim);
+	GeneralGuiUtils.enableComponents(getJPanelSize(), !bSim);
 }
 
 /**

@@ -214,7 +214,7 @@ private void calculateScaling(java.awt.Dimension ipmDimension) {
 	if(getBZeroView() != null && getBZeroView().booleanValue()){
 		getImagePaneScroller1().zeroView(false);
 	}
-	setBZeroView(new Boolean(false));
+	setBZeroView(false);
 	//
 }
 /**
@@ -603,7 +603,7 @@ private void connEtoM4(java.beans.PropertyChangeEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
-		setBZeroView(new java.lang.Boolean(true));
+		setBZeroView(true);
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -1358,7 +1358,7 @@ private void setimagePaneView1(ImagePaneView newValue) {
 public void setMode(int mode) {
 	int oldValue = fieldMode;
 	fieldMode = mode;
-	firePropertyChange("mode", new Integer(oldValue), new Integer(mode));
+	firePropertyChange("mode", oldValue, mode);
 }
 /**
  * Sets the sourceDataInfo property (cbit.image.SourceDataInfo) value.
@@ -1397,7 +1397,7 @@ private void setToolCursor() {
 			//cursor = Cursor.getPredefinedCursor(Cursor.SE_RESIZE_CURSOR);
 		}
 	}
-	org.vcell.util.BeanUtils.setCursorThroughout(getImagePaneScroller1(), cursor);
+	org.vcell.util.GeneralGuiUtils.setCursorThroughout(getImagePaneScroller1(), cursor);
 }
 /**
  * Comment

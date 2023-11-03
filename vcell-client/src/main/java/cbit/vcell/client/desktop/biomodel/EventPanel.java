@@ -52,6 +52,7 @@ import javax.swing.event.UndoableEditListener;
 
 import cbit.vcell.model.*;
 import org.vcell.util.BeanUtils;
+import org.vcell.util.GeneralGuiUtils;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.sorttable.JSortTable;
@@ -1027,7 +1028,7 @@ public class EventPanel extends DocumentEditorSubPanel {
 			getEventAssignmentsTableModel().setBioEvent(null);
 		}
 		super.setEnabled(enabled);
-		BeanUtils.enableComponents(this, enabled);
+		GeneralGuiUtils.enableComponents(this, enabled);
 	}
 
 	@Override

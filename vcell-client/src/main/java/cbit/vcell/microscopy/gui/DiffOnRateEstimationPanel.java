@@ -27,6 +27,7 @@ import javax.swing.JTextField;
 import javax.swing.border.LineBorder;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.GeneralGuiUtils;
 import org.vcell.util.NumberUtils;
 import org.vcell.util.gui.DialogUtils;
 
@@ -102,8 +103,8 @@ public class DiffOnRateEstimationPanel extends JPanel
 		chooseRadioButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) 
 			{
-				BeanUtils.enableComponents(calculationPanel, false);
-				BeanUtils.enableComponents(selectionPanel, true);
+				GeneralGuiUtils.enableComponents(calculationPanel, false);
+				GeneralGuiUtils.enableComponents(selectionPanel, true);
 				calculateRadioButton.setEnabled(true);
 			}
 		});
@@ -215,8 +216,8 @@ public class DiffOnRateEstimationPanel extends JPanel
 		calculateRadioButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) 
 			{
-				BeanUtils.enableComponents(selectionPanel, false);
-				BeanUtils.enableComponents(calculationPanel, true);
+				GeneralGuiUtils.enableComponents(selectionPanel, false);
+				GeneralGuiUtils.enableComponents(calculationPanel, true);
 				chooseRadioButton.setEnabled(true);
 			}
 		});
@@ -293,7 +294,7 @@ public class DiffOnRateEstimationPanel extends JPanel
 		bg1.add(calculateRadioButton);
 		bg1.add(chooseRadioButton);
 		chooseRadioButton.setSelected(true);
-		BeanUtils.enableComponents(calculationPanel, false);
+		GeneralGuiUtils.enableComponents(calculationPanel, false);
 		calculateRadioButton.setEnabled(true);
 		
 		ButtonGroup bg2 = new ButtonGroup();
@@ -356,31 +357,31 @@ public class DiffOnRateEstimationPanel extends JPanel
 		{
 			if(E6RadioButton.isSelected())
 			{
-				onRate = new Double("1E6");
+				onRate = Double.valueOf("1000000");
 			}
 			else if(E5RadioButton.isSelected())
 			{
-				onRate = new Double("1E5");
+				onRate = Double.valueOf("100000");
 			}
 			else if(E4RadioButton.isSelected())
 			{
-				onRate = new Double("1E4");
+				onRate = Double.valueOf("10000");
 			}
 			else if(E3RadioButton.isSelected())
 			{
-				onRate = new Double("1E3");
+				onRate = Double.valueOf("1000");
 			}
 			else if(E2RadioButton.isSelected())
 			{
-				onRate = new Double("1E2");
+				onRate = Double.valueOf("100");
 			}
 			else if (E1RadioButton.isSelected())
 			{
-				onRate = new Double("10");
+				onRate = Double.valueOf("10");
 			}
 			else if(E0RadioButton.isSelected())
 			{
-				onRate = new Double("1");
+				onRate = Double.valueOf("1");
 			}
 		}
 		else if(calculateRadioButton.isSelected())
@@ -388,7 +389,7 @@ public class DiffOnRateEstimationPanel extends JPanel
 			if(onRateValLabel.getText()!=null && !onRateValLabel.getText().equals(""))
 			{
 				try{
-					onRate = new Double(onRateValLabel.getText());
+					onRate = Double.valueOf(onRateValLabel.getText());
 				}catch(NumberFormatException e)
 				{
 					e.printStackTrace(System.out);

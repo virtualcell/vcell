@@ -31,10 +31,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-import org.vcell.util.BeanUtils;
-import org.vcell.util.DataAccessException;
-import org.vcell.util.UserCancelException;
-import org.vcell.util.UtilCancelException;
+import org.vcell.util.*;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.LineBorderBean;
@@ -3009,7 +3006,6 @@ private void setReactionSelectionModel(javax.swing.ListSelectionModel newValue) 
 /**
  * Sets the reactionStep property (cbit.vcell.model.ReactionStep) value.
  * @param reactionStep The new value for the property.
- * @see #getReactionStep
  */
 private void setReactionStep(ReactionStep reactionStep) {
 	ReactionStep oldValue = fieldReactionStep0;
@@ -3235,7 +3231,7 @@ private DBFormalSpecies showSpeciesBrowser() {
 	//}
 	sqd.setDocumentManager(getDocumentManager());
 	sqd.setSize(550,500);
-	BeanUtils.centerOnScreen(sqd);
+	GeneralGuiUtils.centerOnScreen(sqd);
 	DialogUtils.showModalJDialogOnTop(sqd,this);
 	//sqd.setVisible(true);
 

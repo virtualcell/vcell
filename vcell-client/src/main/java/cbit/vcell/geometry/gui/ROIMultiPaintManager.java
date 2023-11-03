@@ -844,8 +844,8 @@ public static void blur( short[] ins, short[] outs, int width, int height, int r
 							System.out.println(c.getClass().getName());
 							if(c instanceof DocumentWindow) {
 								//BeanUtils.printComponentInfo((Container)c);
-								ArrayList<Component> comps = new ArrayList<Component>();
-								BeanUtils.findComponent((Container)c, InitialConditionsPanel.class,comps);
+								ArrayList<Component> comps = new ArrayList<>();
+								GeneralGuiUtils.findComponent((Container)c, InitialConditionsPanel.class,comps);
 								InitialConditionsPanel initialConditionsPanel = (InitialConditionsPanel)comps.get(0);
 								SpeciesContextSpec[] speciesContextSpecs = initialConditionsPanel.getInitConditionVars();
 								Object[][] objs = new Object[speciesContextSpecs.length][1];

@@ -51,6 +51,7 @@ import javax.swing.undo.UndoableEdit;
 import org.vcell.client.logicalwindow.LWTopFrame;
 import org.vcell.documentation.VcellHelpViewer;
 import org.vcell.util.BeanUtils;
+import org.vcell.util.GeneralGuiUtils;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.client.ChildWindowManager;
@@ -129,7 +130,7 @@ public class VirtualFrapMainFrame extends LWTopFrame implements DropTargetListen
 	private static final JMenuItem menuOpen= new JMenuItem(OPEN_ACTION_COMMAND,'O');
 	private static final JMenuItem menuExit= new JMenuItem(EXIT_ACTION_COMMAND,'X');
 	private static final JMenuItem msave = new JMenuItem(SAVE_ACTION_COMMAND,'S');
-	private static final JMenuItem mclose = new JMenuItem(CLOSE_ACTION_COMMAND,BeanUtils.CLOSE_WINDOW_KEY_STROKE.getKeyChar());
+	private static final JMenuItem mclose = new JMenuItem(CLOSE_ACTION_COMMAND, GeneralGuiUtils.CLOSE_WINDOW_KEY_STROKE.getKeyChar());
 	private static final JMenuItem msaveas = new JMenuItem(SAVEAS_ACTION_COMMAND);
 	private static final JMenuItem msaveasMat = new JMenuItem(SAVEAS_MATLAB_COMMAND);
 	private static final JMenuItem mHelpTopics = new JMenuItem(HELPTOPICS_ACTION_COMMAND);
@@ -318,7 +319,7 @@ public class VirtualFrapMainFrame extends LWTopFrame implements DropTargetListen
 					{
 						VcellHelpViewer hviewer = new VcellHelpViewer(VcellHelpViewer.VFRAP_DOC_URL);
 						helpViewerWindow = getChildWindowManager().addChildWindow(hviewer,HELP_VIEWER_CONTEXT_OBJECT,"Virtual FRAP Help", false);
-						BeanUtils.addCloseWindowKeyboardAction(hviewer);
+						GeneralGuiUtils.addCloseWindowKeyboardAction(hviewer);
 						helpViewerWindow.setIsCenteredOnParent();
 						helpViewerWindow.setPreferredSize(new Dimension(VcellHelpViewer.DEFAULT_HELP_DIALOG_WIDTH,VcellHelpViewer.DEFAULT_HELP_DIALOG_HEIGHT));
 						helpViewerWindow.pack();
@@ -568,7 +569,7 @@ public class VirtualFrapMainFrame extends LWTopFrame implements DropTargetListen
 		
 		mclose.addActionListener(menuHandler);
 		fileMenu.add(mclose);
-		mclose.setAccelerator(BeanUtils.CLOSE_WINDOW_KEY_STROKE);
+		mclose.setAccelerator(GeneralGuiUtils.CLOSE_WINDOW_KEY_STROKE);
 
 		fileMenu.addSeparator();
 

@@ -21,11 +21,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.filechooser.FileFilter;
 
-import org.vcell.util.BeanUtils;
-import org.vcell.util.Extent;
-import org.vcell.util.ISize;
-import org.vcell.util.Origin;
-import org.vcell.util.UserCancelException;
+import org.vcell.util.*;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.vcellij.ImageDatasetReaderService;
 
@@ -104,7 +100,7 @@ public class PointSpreadFunctionManagement {
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				
 				Component requesterComponent = parentWindow;
-				DocumentWindow documentWindow = (DocumentWindow)BeanUtils.findTypeParentOfComponent(requesterComponent, DocumentWindow.class);
+				DocumentWindow documentWindow = (DocumentWindow) GeneralGuiUtils.findTypeParentOfComponent(requesterComponent, DocumentWindow.class);
 				DocumentManager documentManager = documentWindow.getTopLevelWindowManager().getRequestManager().getDocumentManager();
 				if(documentManager == null){
 					throw new RuntimeException("Not connected to server.");

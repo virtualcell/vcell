@@ -29,6 +29,7 @@ import org.vcell.client.logicalwindow.LWTitledDialog;
 import org.vcell.client.logicalwindow.LWTraits;
 import org.vcell.client.logicalwindow.LWTraits.InitialPosition;
 import org.vcell.util.BeanUtils;
+import org.vcell.util.GeneralGuiUtils;
 import org.vcell.util.ProgrammingException;
 import org.vcell.util.gui.GuiUtils;
 
@@ -417,7 +418,7 @@ public class ChildWindowManager {
 	public ChildWindowManager(JFrame parent){
 		this.parent = parent;
 		owner = LWNamespace.findLWOwner(parent);
-		BeanUtils.addCloseWindowKeyboardAction(this.parent.getRootPane());
+		GeneralGuiUtils.addCloseWindowKeyboardAction(this.parent.getRootPane());
 	}
 	
 	public ChildWindow addChildWindow(Container contentPane, Object contextObject, String title){

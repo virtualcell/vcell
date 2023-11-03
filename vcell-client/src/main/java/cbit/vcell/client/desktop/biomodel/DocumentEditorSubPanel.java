@@ -33,6 +33,7 @@ import cbit.vcell.client.desktop.biomodel.IssueManager.IssueEvent;
 import cbit.vcell.client.desktop.biomodel.IssueManager.IssueEventListener;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
 import cbit.vcell.geometry.gui.GeometryViewer;
+import org.vcell.util.GeneralGuiUtils;
 
 @SuppressWarnings("serial")
 public abstract class DocumentEditorSubPanel extends JPanel implements PropertyChangeListener, IssueEventListener {
@@ -123,7 +124,7 @@ public abstract class DocumentEditorSubPanel extends JPanel implements PropertyC
 			System.out.println(parent.getClass().getName());
 			if(parent instanceof TopLevelWindow) {
 				ArrayList<Component> comps = new ArrayList<Component>();
-				BeanUtils.findComponent((Container)parent, GeometryViewer.class, comps);
+				GeneralGuiUtils.findComponent((Container)parent, GeometryViewer.class, comps);
 				TopLevelWindowManager topLevelWindowManager = ((TopLevelWindow)parent).getTopLevelWindowManager();
 				if(topLevelWindowManager instanceof BioModelWindowManager) {
 					final BioModelWindowManager bmwm = ((BioModelWindowManager)topLevelWindowManager);

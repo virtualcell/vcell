@@ -22,6 +22,7 @@ import javax.swing.UIManager;
 
 import org.vcell.chombo.gui.ChomboOutputOptionsPanel;
 import org.vcell.util.BeanUtils;
+import org.vcell.util.GeneralGuiUtils;
 import org.vcell.util.NumberUtils;
 import org.vcell.util.Range;
 import org.vcell.util.gui.CollapsiblePanel;
@@ -640,7 +641,7 @@ public class OutputOptionsPanel extends CollapsiblePanel {
 		// Otherwise, that panel is disabled. 
 
 		getUniformOutputRadioButton().setEnabled(false);
-		BeanUtils.enableComponents(getUniformOutputPanel(), false);
+		GeneralGuiUtils.enableComponents(getUniformOutputPanel(), false);
 		
 		if (solverTaskDescription.getSolverDescription().equals(SolverDescription.Smoldyn) ||
 				solverTaskDescription.getSolverDescription().equals(SolverDescription.NFSim) ||
@@ -658,7 +659,7 @@ public class OutputOptionsPanel extends CollapsiblePanel {
 			getDefaultOutputRadioButton().setEnabled(false);
 			getUniformOutputPanel().setVisible(true);
 			getUniformOutputRadioButton().setVisible(true);
-			BeanUtils.enableComponents(getDefaultOutputPanel(), false);
+			GeneralGuiUtils.enableComponents(getDefaultOutputPanel(), false);
 		}
 		
 		if (solverTaskDescription.getSimulation().getMathDescription().getGeometry().getDimension() > 0
@@ -672,7 +673,7 @@ public class OutputOptionsPanel extends CollapsiblePanel {
 			getExplicitOutputPanel().setVisible(true);
 			getExplicitOutputRadioButton().setVisible(true);
 			getExplicitOutputRadioButton().setEnabled(false);
-			BeanUtils.enableComponents(getExplicitOutputPanel(), false);
+			GeneralGuiUtils.enableComponents(getExplicitOutputPanel(), false);
 		}
 
 		if (solverTaskDescription==null || solverTaskDescription.getSolverDescription()==null){
@@ -729,20 +730,20 @@ public class OutputOptionsPanel extends CollapsiblePanel {
 			if (!solverDesc.isSemiImplicitPdeSolver() || ots.isDefault()) {
 				getDefaultOutputRadioButton().setEnabled(true);
 				if (getDefaultOutputRadioButton().isSelected() || ots.isDefault()) {
-					BeanUtils.enableComponents(getDefaultOutputPanel(), true);
+					GeneralGuiUtils.enableComponents(getDefaultOutputPanel(), true);
 				}
 			}
 		}
 		if (solverDesc.supports(uots)) {
 			getUniformOutputRadioButton().setEnabled(true);
 			if (getUniformOutputRadioButton().isSelected() || ots.isUniform()) {
-				BeanUtils.enableComponents(getUniformOutputPanel(), true);
+				GeneralGuiUtils.enableComponents(getUniformOutputPanel(), true);
 			}
 		}
 		if (solverDesc.supports(eots)) {
 			getExplicitOutputRadioButton().setEnabled(true);
 			if (getExplicitOutputRadioButton().isSelected() || ots.isExplicit()) {
-				BeanUtils.enableComponents(getExplicitOutputPanel(), true);
+				GeneralGuiUtils.enableComponents(getExplicitOutputPanel(), true);
 			}
 		}
 		if (solverDesc.isSemiImplicitPdeSolver()){

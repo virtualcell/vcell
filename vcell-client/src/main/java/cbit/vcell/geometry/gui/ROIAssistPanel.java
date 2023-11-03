@@ -41,10 +41,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import org.vcell.util.BeanUtils;
-import org.vcell.util.Extent;
-import org.vcell.util.ISize;
-import org.vcell.util.UserCancelException;
+import org.vcell.util.*;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.image.VCImageUncompressed;
@@ -239,7 +236,7 @@ public class ROIAssistPanel extends JPanel {
 				if(disposableWindow != null){
 					disposableWindow.dispose();
 				}else{
-					BeanUtils.disposeParentWindow(ROIAssistPanel.this);
+					GeneralGuiUtils.disposeParentWindow(ROIAssistPanel.this);
 				}
 			}
 		});
@@ -259,7 +256,7 @@ public class ROIAssistPanel extends JPanel {
 				if(disposableWindow != null){
 					disposableWindow.dispose();
 				}else{
-					BeanUtils.disposeParentWindow(ROIAssistPanel.this);
+					GeneralGuiUtils.disposeParentWindow(ROIAssistPanel.this);
 				}
 			}
 		});

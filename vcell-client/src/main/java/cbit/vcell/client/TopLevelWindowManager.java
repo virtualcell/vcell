@@ -29,11 +29,7 @@ import javax.swing.filechooser.FileFilter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.client.logicalwindow.LWTopFrame;
-import org.vcell.util.BeanUtils;
-import org.vcell.util.DataAccessException;
-import org.vcell.util.ISize;
-import org.vcell.util.UserCancelException;
-import org.vcell.util.VCAssert;
+import org.vcell.util.*;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.VCDocument;
@@ -484,7 +480,7 @@ void createGeometry(final Geometry currentGeometry,final AsynchClientTask[] afte
 				public void run(Hashtable<String, Object> hashTable) throws Exception {
 					if(selectDialogTitle.equals(BioModelWindowManager.FIELD_DATA_FLAG)) {
 						addWorkspaceGeomSizeSelection(hash,currentGeometry);
-						hash.put(BioModelWindowManager.FIELD_DATA_FLAG, new Boolean(true));
+						hash.put(BioModelWindowManager.FIELD_DATA_FLAG, true);
 					}
 					final Vector<AsynchClientTask> runtimeTasksV = new Vector<AsynchClientTask>();
 					VCDocument.DocumentCreationInfo workspaceDocCreateInfo = null;
@@ -774,7 +770,7 @@ public static class FDSimBioModelInfo extends OpenModelInfoHolder{
 
 public static OpenModelInfoHolder selectOpenModelsFromDesktop(Container requester,RequestManager requestManager,boolean bIncludeSimulations,String title,boolean bExcludeCompartmental) throws UserCancelException,DataAccessException{
 	try {
-		BeanUtils.setCursorThroughout(requester, Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+		GeneralGuiUtils.setCursorThroughout(requester, Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		OpenModelInfoHolder[] simInfoHolders = requestManager.getOpenDesktopDocumentInfos(bIncludeSimulations);
 		if(simInfoHolders == null || simInfoHolders.length == 0){
 			return null;
@@ -833,7 +829,7 @@ public static OpenModelInfoHolder selectOpenModelsFromDesktop(Container requeste
 		}
 		String[][] rows = new String[rowsV.size()][];
 		rowsV.copyInto(rows);
-		BeanUtils.setCursorThroughout(requester, Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+		GeneralGuiUtils.setCursorThroughout(requester, Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 		int[] selectionIndexArr =  PopupGenerator.showComponentOKCancelTableList(
 				requester, title,
 				colNames, rows, ListSelectionModel.SINGLE_SELECTION);
@@ -842,7 +838,7 @@ public static OpenModelInfoHolder selectOpenModelsFromDesktop(Container requeste
 		}
 		throw UserCancelException.CANCEL_GENERIC;
 	} finally {
-		BeanUtils.setCursorThroughout(requester, Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+		GeneralGuiUtils.setCursorThroughout(requester, Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 	}
 }
 

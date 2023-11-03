@@ -33,6 +33,7 @@ import javax.swing.RootPaneContainer;
 
 import org.vcell.client.logicalwindow.LWTopFrame;
 import org.vcell.util.BeanUtils;
+import org.vcell.util.GeneralGuiUtils;
 import org.vcell.util.document.CurateSpec;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDocument;
@@ -81,7 +82,7 @@ public class ClientMDIManager implements MDIManager {
 /**
  * Insert the method's description here.
  * Creation date: (5/24/2004 10:59:51 AM)
- * @param vcellClient cbit.vcell.client.VCellClient
+ * @param requestManager cbit.vcell.client.RequestManager
  */
 public ClientMDIManager(RequestManager requestManager) {
 	setRequestManager(requestManager);
@@ -102,12 +103,11 @@ public JFrame blockWindow(final String windowID) {
 }
 
 public static Window blockWindow(Component component) {
-	Window window = (Window) BeanUtils.findTypeParentOfComponent(component, Window.class);
-	if (window instanceof RootPaneContainer) {
-		GlassPane glass = new GlassPane(true);
-		((RootPaneContainer)window).setGlassPane(glass);
-		glass.setVisible(true);
-	}
+	Window window = (Window) GeneralGuiUtils.findTypeParentOfComponent(component, Window.class);
+	if (!(window instanceof RootPaneContainer rpc)) return window;
+	GlassPane glass = new GlassPane(true);
+	rpc.setGlassPane(glass);
+	glass.setVisible(true);
 	return window;
 }
 
@@ -153,7 +153,8 @@ private long numberOfWindowsShowing( ) {
  * Insert the method's description here.
  * Creation date: (5/27/2006 4:10:10 PM)
  * @return java.lang.String
- * @param version cbit.sql.Version
+ * @param vcDocument org.vcell.util.document.VCDocument
+ * @param loginUser org.vcell.util.document.User
  */
 public static String createCanonicalTitle(VCDocument vcDocument, User loginUser) {
 
@@ -191,7 +192,7 @@ private DocumentWindow createDocumentWindow() {
 	DocumentWindow documentWindow = new DocumentWindow();
 	// stagger 90% screen size windows
 	documentWindow.setSize(JFRAME_SIZE);
-	BeanUtils.centerOnScreen(documentWindow);
+	GeneralGuiUtils.centerOnScreen(documentWindow);
 	Point p = documentWindow.getLocation();
 	int numDocWindow = Math.max(0, getWindowsHash().size() - 3);
 	Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
@@ -212,7 +213,7 @@ private DocumentWindow createDocumentWindow() {
 /**
  * Insert the method's description here.
  * Creation date: (5/24/2004 11:20:58 AM)
- * @param vcDocument cbit.vcell.document.VCDocument
+ * @param windowManager cbit.vcell.client.DocumentWindowManager
  */
 public DocumentWindow createNewDocumentWindow(final DocumentWindowManager windowManager) {
 	// used for opening new document windows
@@ -278,7 +279,7 @@ private void createTestingFramework( ) {
 		testingFrameworkWindow.setWorkArea(testingFrameworkWindowPanel);
 		testingFrameworkWindow.setSize(JFRAME_SIZE);
 		testingFrameworkWindow.setIconImage(VCellIcons.getJFrameImageIcon());
-		BeanUtils.centerOnScreen(testingFrameworkWindow);
+		GeneralGuiUtils.centerOnScreen(testingFrameworkWindow);
 		// make the manager
 		TestingFrameworkWindowManager windowManager = new TestingFrameworkWindowManager(testingFrameworkWindowPanel, getRequestManager());
 		// keep track of things
@@ -308,7 +309,7 @@ private void createTestingFramework( ) {
 //		bngWindow.setWorkArea(bngOutputPanel);
 //		bngWindow.setSize(JFRAME_SIZE);
 //		bngWindow.setIconImage(VCellIcons.getJFrameImageIcon());
-//		BeanUtils.centerOnScreen(bngWindow);
+//		GeneralGuiUtils.centerOnScreen(bngWindow);
 //		// make the manager
 //		BNGWindowManager windowManager = new BNGWindowManager(bngOutputPanel, getRequestManager());
 //		// keep track of things
@@ -334,7 +335,7 @@ private void createFieldData( ) {
 		fieldDataWindow.setWorkArea(fieldDataGUIPanel);
 		fieldDataWindow.pack();
 		fieldDataWindow.setIconImage(VCellIcons.getJFrameImageIcon());
-		BeanUtils.centerOnScreen(fieldDataWindow);
+		GeneralGuiUtils.centerOnScreen(fieldDataWindow);
 		// make the manager
 		FieldDataWindowManager fieldDataWindowManager =
 				new FieldDataWindowManager(fieldDataGUIPanel,getRequestManager());
@@ -581,7 +582,7 @@ public void unBlockWindow(final String windowID) {
 }
 
 public static void unBlockWindow(Component component) {
-	Window window = (Window) BeanUtils.findTypeParentOfComponent(component, Window.class);
+	Window window = (Window) GeneralGuiUtils.findTypeParentOfComponent(component, Window.class);
 	if (window instanceof RootPaneContainer) {
 		((RootPaneContainer)window).getGlassPane().setVisible(false);
 	}

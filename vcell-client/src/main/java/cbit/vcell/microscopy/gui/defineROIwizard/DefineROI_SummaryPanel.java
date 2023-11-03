@@ -24,6 +24,7 @@ import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.GeneralGuiUtils;
 import org.vcell.util.NumberUtils;
 
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
@@ -258,8 +259,8 @@ public class DefineROI_SummaryPanel extends JPanel
 		if(frapStudy!=null && frapStudy.getFrapData()!=null)
 		{
 			//enable components to change values
-			BeanUtils.enableComponents(getInfoPanel(), true);
-			BeanUtils.enableComponents(getIndexPanel(), true);
+			GeneralGuiUtils.enableComponents(getInfoPanel(), true);
+			GeneralGuiUtils.enableComponents(getIndexPanel(), true);
 			//set info panel
 			ImageDataset imgDataset = frapStudy.getFrapData().getImageDataset();
 			imgXTextField.setText(NumberUtils.formatNumber(imgDataset.getExtent().getX(), 15));
@@ -340,8 +341,8 @@ public class DefineROI_SummaryPanel extends JPanel
 			startIndexCombo.removeAllItems();
 			startIndexCombo.addItem("     N/A     ");
 			
-			BeanUtils.enableComponents(getInfoPanel(), false);
-			BeanUtils.enableComponents(getIndexPanel(), false);
+			GeneralGuiUtils.enableComponents(getInfoPanel(), false);
+			GeneralGuiUtils.enableComponents(getIndexPanel(), false);
 		}
 	}
 	

@@ -23,6 +23,7 @@ import org.vcell.client.logicalwindow.LWContainerHandle;
 import org.vcell.client.logicalwindow.LWNamespace;
 import org.vcell.client.logicalwindow.LWTitledDialog;
 import org.vcell.util.BeanUtils;
+import org.vcell.util.GeneralGuiUtils;
 import org.vcell.util.gui.DialogUtils;
 /**
  * Copyright 2008, 2010 Oracle and/or its affiliates. All rights reserved. Use is subject to license terms.
@@ -173,7 +174,7 @@ public class Wizard extends WindowAdapter implements PropertyChangeListener {
         {
         	wizardDialog.setSize(dim);
         }
-        BeanUtils.centerOnComponent(wizardDialog, wizardDialog.getParent());
+        GeneralGuiUtils.centerOnComponent(wizardDialog, wizardDialog.getParent());
         wizardDialog.setVisible(true);
         
         return returnCode;
@@ -278,42 +279,42 @@ public class Wizard extends WindowAdapter implements PropertyChangeListener {
      * Return if the back button is enabled.
      */  
     public boolean getBackButtonEnabled() {
-        return wizardModel.getBackButtonEnabled().booleanValue();
+        return wizardModel.getBackButtonEnabled();
     }
 
    /**
      * Set the enabled status of the back button.
      */ 
     public void setBackButtonEnabled(boolean newValue) {
-        wizardModel.setBackButtonEnabled(new Boolean(newValue));
+        wizardModel.setBackButtonEnabled(newValue);
     }
 
    /**
      * Return if the next button is enabled.
      */ 
     public boolean getNextFinishButtonEnabled() {
-        return wizardModel.getNextFinishButtonEnabled().booleanValue();
+        return wizardModel.getNextFinishButtonEnabled();
     }
 
    /**
      * Set the enabled status of the next button.
      */ 
     public void setNextFinishButtonEnabled(boolean newValue) {
-        wizardModel.setNextFinishButtonEnabled(new Boolean(newValue));
+        wizardModel.setNextFinishButtonEnabled(newValue);
     }
  
    /**
      * Return if the cancel button is enabled.
      */ 
     public boolean getCancelButtonEnabled() {
-        return wizardModel.getCancelButtonEnabled().booleanValue();
+        return wizardModel.getCancelButtonEnabled();
     }
 
     /**
      * Set the enabled status of the cancel button.
      */ 
     public void setCancelButtonEnabled(boolean newValue) {
-        wizardModel.setCancelButtonEnabled(new Boolean(newValue));
+        wizardModel.setCancelButtonEnabled(newValue);
     }
     
     /**

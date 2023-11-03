@@ -22,6 +22,8 @@ import javax.swing.event.ChangeListener;
 import org.vcell.util.Coordinate;
 
 import cbit.image.ImagePlaneManager;
+import org.vcell.util.GeneralGuiUtils;
+
 /**
  * Insert the type's description here.
  * Creation date: (10/11/00 3:05:12 PM)
@@ -618,7 +620,7 @@ private void initialize() {
  * Creation date: (10/11/00 4:02:12 PM)
  */
 private void initView() {
-	org.vcell.util.BeanUtils.enableComponents(this, getImagePlaneMananager() != null);
+	GeneralGuiUtils.enableComponents(this, getImagePlaneMananager() != null);
 	normalAxisChanged();
 	updateSliceLabel();
 }

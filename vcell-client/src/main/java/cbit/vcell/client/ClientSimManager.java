@@ -40,14 +40,7 @@ import javax.swing.SwingUtilities;
 import org.vcell.solver.langevin.LangevinSolver;
 import org.vcell.solver.smoldyn.SmoldynFileWriter;
 import org.vcell.solver.smoldyn.SmoldynSolver;
-import org.vcell.util.BeanUtils;
-import org.vcell.util.DataAccessException;
-import org.vcell.util.Issue;
-import org.vcell.util.IssueContext;
-import org.vcell.util.ProgressDialogListener;
-import org.vcell.util.TokenMangler;
-import org.vcell.util.UserCancelException;
-import org.vcell.util.UtilCancelException;
+import org.vcell.util.*;
 import org.vcell.util.document.DocumentValidUtil;
 import org.vcell.util.document.LocalVCDataIdentifier;
 import org.vcell.util.document.User;
@@ -143,7 +136,7 @@ public static class LocalVCSimulationDataIdentifier extends VCSimulationDataIden
  * Insert the method's description here.
  * Creation date: (6/7/2004 10:48:50 AM)
  * @param documentWindowManager cbit.vcell.client.DocumentWindowManager
- * @param simulationOwner cbit.vcell.document.SimulationOwner
+ * @param simWorkspace cbit.vcell.client.desktop.simulation.SimulationWorkspace
  */
 public ClientSimManager(DocumentWindowManager documentWindowManager, SimulationWorkspace simWorkspace) {
 	this.documentWindowManager = documentWindowManager;
@@ -251,7 +244,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 /**
  * Insert the method's description here.
  * Creation date: (6/2/2004 3:01:29 AM)
- * @param simulation cbit.vcell.solver.Simulation[]
+ * @param simulations cbit.vcell.solver.Simulation[]
  */
 public void runSimulations(Simulation[] simulations) {
 	runSimulations(simulations, null);
@@ -558,7 +551,7 @@ private AsynchClientTask[] showSimulationResults0(final boolean isLocal, final V
 						viewer.setDataViewerManager(documentWindowManager);
 						
 						SimulationWindow newWindow = new SimulationWindow(vcSimulationIdentifier, sim, getSimWorkspace().getSimulationOwner(), viewer);						
-						BeanUtils.addCloseWindowKeyboardAction(newWindow.getDataViewer());
+						GeneralGuiUtils.addCloseWindowKeyboardAction(newWindow.getDataViewer());
 						documentWindowManager.addResultsFrame(newWindow);
 						setFinalWindow(hashTable, viewer); 
 						newWindow.setLocalState(localState);
@@ -648,7 +641,7 @@ void updateStatusFromServer(Simulation simulation) {
 	System.out.println("---ClientSimManager.updateStatusFromServer[newStatus=" + newStatus + "], simulation="+simulation.toString());
 	if (oldStatus!=newStatus){
 		int simIndex = getSimWorkspace().getSimulationIndex(simulation);
-		getSimWorkspace().firePropertyChange(SimulationWorkspace.PROPERTY_NAME_SIMULATION_STATUS, new Integer(-1), new Integer(simIndex));
+		getSimWorkspace().firePropertyChange(SimulationWorkspace.PROPERTY_NAME_SIMULATION_STATUS, -1, simIndex);
 	}
 }
 
@@ -656,26 +649,26 @@ void updateStatusFromServer(Simulation simulation) {
 /**
  * Insert the method's description here.
  * Creation date: (6/2/2004 3:01:29 AM)
- * @param simulations cbit.vcell.solver.Simulation[]
+ * @param simulation cbit.vcell.solver.Simulation
  */
 public void updateStatusFromStartRequest(final Simulation simulation, SimulationStatus newStatusFromServer) {
 	// asynchronous call - from start request worker thread
 	simHash.setSimulationStatus(simulation,newStatusFromServer);
 	int simIndex = getSimWorkspace().getSimulationIndex(simulation);
-	getSimWorkspace().firePropertyChange(SimulationWorkspace.PROPERTY_NAME_SIMULATION_STATUS, new Integer(-1), new Integer(simIndex));
+	getSimWorkspace().firePropertyChange(SimulationWorkspace.PROPERTY_NAME_SIMULATION_STATUS, -1, simIndex);
 }
 
 
 /**
  * Insert the method's description here.
  * Creation date: (6/2/2004 3:01:29 AM)
- * @param simulations cbit.vcell.solver.Simulation[]
+ * @param simulation cbit.vcell.solver.Simulation
  */
 public void updateStatusFromStopRequest(final Simulation simulation, SimulationStatus newStatusFromServer) {
 	// asynchronous call - from stop request worker thread
 	simHash.setSimulationStatus(simulation,newStatusFromServer);
 	int simIndex = getSimWorkspace().getSimulationIndex(simulation);
-	getSimWorkspace().firePropertyChange(SimulationWorkspace.PROPERTY_NAME_SIMULATION_STATUS, new Integer(-1), new Integer(simIndex));
+	getSimWorkspace().firePropertyChange(SimulationWorkspace.PROPERTY_NAME_SIMULATION_STATUS, -1, simIndex);
 }
 
 public void runSmoldynParticleView(final Simulation originalSimulation) {
@@ -958,7 +951,7 @@ public void runQuickSimulation(final Simulation originalSimulation, ViewerType v
 						final boolean[] bWinCloseHolder = new boolean[] {false};
 						//Add close listener to dataviewer to end all scans and exit
 						final SimulationWindow haveSimulationWindow = getDocumentWindowManager().haveSimulationWindow(simulation.getSimulationInfo().getAuthoritativeVCSimulationIdentifier());
-						final Window window = (Window)BeanUtils.findTypeParentOfComponent(haveSimulationWindow.getDataViewer(), Window.class);
+						final Window window = (Window)GeneralGuiUtils.findTypeParentOfComponent(haveSimulationWindow.getDataViewer(), Window.class);
 						window.addWindowListener(new WindowAdapter() {
 							@Override
 							public void windowClosing(WindowEvent e) {

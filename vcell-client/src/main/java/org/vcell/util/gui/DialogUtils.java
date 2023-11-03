@@ -62,12 +62,7 @@ import org.vcell.client.logicalwindow.LWDialog;
 import org.vcell.client.logicalwindow.LWNamespace;
 import org.vcell.client.logicalwindow.LWTitledOptionPaneDialog;
 import org.vcell.client.logicalwindow.transition.LWJDialogDecorator;
-import org.vcell.util.BeanUtils;
-import org.vcell.util.ExceptionInterpreter;
-import org.vcell.util.UserCancelException;
-import org.vcell.util.UtilCancelException;
-import org.vcell.util.VCAssert;
-import org.vcell.util.VCellThreadChecker;
+import org.vcell.util.*;
 import org.vcell.util.document.VersionInfo;
 import org.vcell.util.gui.MessagePanelFactory.DialogMessagePanel;
 import org.vcell.util.gui.VCSwingFunction.Doer;
@@ -848,7 +843,7 @@ public class DialogUtils {
 				dialog.pack();
 				dialog.setAlwaysOnTop(true);
 				dialog.setResizable(true);
-				BeanUtils.centerOnComponent(dialog, requester);
+				GeneralGuiUtils.centerOnComponent(dialog, requester);
 				showOnce(dialog);
 			}else {
 				LWDialog dialog = new LWTitledOptionPaneDialog(lwParent,title,pane);
@@ -885,7 +880,7 @@ public class DialogUtils {
 				inputDialog.setInitialSelectionValue(initialValue);
 			}
 			final JDialog d = new LWTitledOptionPaneDialog(lwParent, "INPUT:", inputDialog);
-			BeanUtils.centerOnComponent(d, requester);
+			GeneralGuiUtils.centerOnComponent(d, requester);
 			if(OperatingSystemInfo.getInstance().isMac()) {
 				d.setAlwaysOnTop(true);
 			}

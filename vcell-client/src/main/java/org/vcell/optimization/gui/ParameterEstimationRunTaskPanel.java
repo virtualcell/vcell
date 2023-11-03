@@ -223,7 +223,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 
 			add(runStatusPanel, BorderLayout.CENTER);
 			pack();
-			BeanUtils.centerOnComponent(this, getParent());
+			GeneralGuiUtils.centerOnComponent(this, getParent());
 			
 			addProgressDialogListener(new ProgressDialogListener() {
 				public void cancelButton_actionPerformed(EventObject newEvent) {

@@ -11,7 +11,7 @@
 
 package org.vcell.util;
 
-import java.awt.Component;
+/*import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -29,6 +29,15 @@ import java.awt.event.WindowEvent;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.InputMap;
+import javax.swing.JComponent;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.KeyStroke; */
+
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -72,14 +81,6 @@ import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import javax.net.ssl.HttpsURLConnection;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.InputMap;
-import javax.swing.JComponent;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JMenu;
-import javax.swing.KeyStroke;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
@@ -220,177 +221,6 @@ public final class BeanUtils {
 		return false;
 	}
 
-	public static void attemptMaximize(Frame frame) {
-		// not supported on all platforms
-		// not supported by JRE's 1.3 and earlier
-		// when not supported, frame will stay unchanged
-		Class<? extends Frame> c = frame.getClass();
-		Method[] ms = c.getMethods();
-		Method m = null;
-		for (int i = 0; i < ms.length; i++){
-			if (ms[i].getName().equals("setExtendedState")) {
-				m = ms[i];
-				break;
-			}
-		}
-		Field[] fs = c.getFields();
-		Field f = null;
-		for (int i = 0; i < fs.length; i++){
-			if (fs[i].getName().equals("MAXIMIZED_BOTH")) {
-				f = fs[i];
-			}
-		}
-		if (m != null && f != null) {
-			try {
-				m.invoke(frame, new Object[] {f.get(frame)});
-			} catch (Exception e) {
-				lg.error(e.getMessage(), e);
-			}
-		}
-	}
-
-	public static void centerOnComponent(Window window, Component reference) {
-		if (window == null) {
-			return;
-		}
-		if (reference == null) {
-			if (lg.isWarnEnabled()) lg.warn("reference=null");
-			window.setLocation(0, 0);
-			return;
-		}
-		try{
-			Point pR = reference.getLocationOnScreen();
-			pR.x += Math.max((reference.getWidth() - window.getWidth()) / 2, 0);
-			pR.y += Math.max((reference.getHeight() - window.getHeight()) / 2, 0);
-			window.setLocation(pR);
-		}catch(Exception e){
-			centerOnScreen(window);
-		}
-	}
-
-	public static void centerOnScreen(Window window) {
-		if (window != null) {
-			GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-            final Rectangle maxBounds = ge.getMaximumWindowBounds();
-			Dimension screenSize = maxBounds.getSize();
-			Dimension size = window.getSize();
-			if (size.height > screenSize.height)
-				size.height = screenSize.height;
-			if (size.width > screenSize.width)
-				size.width = screenSize.width;
-			window.setLocation((screenSize.width - size.width) / 2, (screenSize.height - size.height) / 2);
-		}
-	}
-
-	public static Line2D clipLine(Line2D line, Rectangle2D rect) {
-		if (line != null && rect != null && line.intersects(rect)) {
-			Point2D p1 = line.getP1();
-			Point2D p2 = line.getP2();
-			Line2D[] borders = new Line2D[4]; // we'll do them clockwise
-			borders[0] = new Line2D.Double(rect.getMinX(), rect.getMinY(), rect.getMaxX(), rect.getMinY());
-			borders[1] = new Line2D.Double(rect.getMaxX(), rect.getMinY(), rect.getMaxX(), rect.getMaxY());
-			borders[2] = new Line2D.Double(rect.getMaxX(), rect.getMaxY(), rect.getMinX(), rect.getMaxY());
-			borders[3] = new Line2D.Double(rect.getMinX(), rect.getMaxY(), rect.getMinX(), rect.getMinY());
-			if (p1.getX() >= rect.getX() &&
-					p1.getY() >= rect.getY() &&
-					p1.getX() <= rect.getX() + rect.getWidth() &&
-					p1.getY() <= rect.getY() + rect.getHeight() &&
-					p2.getX() >= rect.getX() &&
-					p2.getY() >= rect.getY() &&
-					p2.getX() <= rect.getX() + rect.getWidth() &&
-					p2.getY() <= rect.getY() + rect.getHeight()) {
-				return line;
-			} else {
-				if (p1.getX() != p2.getX() && p1.getY() != p2.getY()) {
-					// lines parallel to the rectangle will get separate treatment
-					if (p1.getX() >= rect.getX() &&
-							p1.getY() >= rect.getY() &&
-							p1.getX() <= rect.getX() + rect.getWidth() &&
-							p1.getY() <= rect.getY() + rect.getHeight()) {
-						// clip from p1 to intersection with one border
-						for (int i=0;i<4;i++) {
-							if (line.intersectsLine(borders[i])) {
-								line.setLine(p1, BeanUtils.lineIntersection(line, borders[i]));
-							}
-						}
-						return line;
-					} else if (p2.getX() >= rect.getX() &&
-							p2.getY() >= rect.getY() &&
-							p2.getX() <= rect.getX() + rect.getWidth() &&
-							p2.getY() <= rect.getY() + rect.getHeight()) {
-						// do it again in reverse
-						line.setLine(p2, p1);
-						return BeanUtils.clipLine(line, rect);
-					} else {
-						// we must intersect at least 2 borders (3 or 4 if we go through corner(s))
-						Point2D p01 = null;
-						Point2D p02 = null;
-						for (int i=0;i<4;i++) {
-							if (line.intersectsLine(borders[i])) {
-								if (p01 == null) {
-									p01 = BeanUtils.lineIntersection(line, borders[i]);
-								} else if (p02 == null || p02.equals(p01)) {
-									// second one if not found yet (if non-null and non-equal, it's the one we want,
-									// so don't risk overwriting it again with p01 if we're just finding the first one again as a corner
-									p02 = BeanUtils.lineIntersection(line, borders[i]);
-								}
-							}
-						}
-						line.setLine(p01, p02);
-						return line;
-					}
-				} else if (p1.getX() == p2.getX() && p1.getY() == p2.getY()) {
-					// single point within or on border of rectangle
-					return line;
-				} else if (p1.getX() == p2.getX()) {
-					// vertical line with one point within rectangle
-					if (p1.getX() >= rect.getX() &&
-							p1.getY() >= rect.getY() &&
-							p1.getX() <= rect.getX() + rect.getWidth() &&
-							p1.getY() <= rect.getY() + rect.getHeight()) {
-						if (p2.getY() < rect.getMinY()) {
-							// p2 is above rectangle
-							p2.setLocation(p2.getX(), rect.getMinY());
-						} else {
-							// p2 is below rectangle
-							p2.setLocation(p2.getX(), rect.getMaxY());
-						}
-						line.setLine(p1, p2);
-						return line;
-					} else {
-						// must contain p2
-						// do it again in reverse
-						line.setLine(p2, p1);
-						return BeanUtils.clipLine(line, rect);
-					}
-				} else {
-					// horizontal line with one point within rectangle
-					if (p1.getX() >= rect.getX() &&
-							p1.getY() >= rect.getY() &&
-							p1.getX() <= rect.getX() + rect.getWidth() &&
-							p1.getY() <= rect.getY() + rect.getHeight()) {
-						if (p2.getX() < rect.getMinX()) {
-							// p2 is to the left of rectangle
-							p2.setLocation(rect.getMinX(), p2.getY());
-						} else {
-							// p2 is to the right of rectangle
-							p2.setLocation(rect.getMaxX(), p2.getY());
-						}
-						line.setLine(p1, p2);
-						return line;
-					} else {
-						// must contain p2
-						// do it again in reverse
-						line.setLine(p2, p1);
-						return BeanUtils.clipLine(line, rect);
-					}
-				}
-			}
-		} else {
-			return null;
-		}
-	}
-
 	public static Serializable cloneSerializable(Serializable obj) throws ClassNotFoundException, java.io.IOException {
 		Serializable clone = fromSerialized(toSerialized(obj));
 		return clone;
@@ -406,7 +236,7 @@ public final class BeanUtils {
 		return compressed;
 	}
 
-	public final static int coordinateToIndex(int[] coordinates, int[] bounds) {
+	public static int coordinateToIndex(int[] coordinates, int[] bounds) {
 		// computes linearized index of a position in an n-dimensional matrix
 		// see also related method indexToCoordinate()
 		if (coordinates.length != bounds.length) throw new RuntimeException("coordinates and bounds arrays have different lengths");
@@ -420,52 +250,6 @@ public final class BeanUtils {
 			index += coordinates[i] * offset;
 		}
 		return index;
-	}
-
-	/**
-	 * @deprecated should not have to do this
-	 * @param disposableChild
-	 */
-	public static void disposeParentWindow(Component disposableChild){
-		if(BeanUtils.findTypeParentOfComponent(disposableChild, JDialog.class) != null){
-			((JDialog)BeanUtils.findTypeParentOfComponent(disposableChild, JDialog.class)).dispose();
-		}else if(BeanUtils.findTypeParentOfComponent(disposableChild, JFrame.class) != null){
-			((JFrame)BeanUtils.findTypeParentOfComponent(disposableChild, JFrame.class)).dispose();
-		}else{
-			throw new IllegalArgumentException(BeanUtils.class.getName()+".dispose(...) only handles JFrame parents");
-		}
-	}
-
-	public static void enableComponents(Container container, boolean b) {
-		Component[] components;
-		if (container instanceof JMenu) {
-			components = ((JMenu)container).getMenuComponents();
-		} else {
-			components = container.getComponents();
-		}
-		for (int i=0;i<components.length;i++) {
-			components[i].setEnabled(b);
-			if (components[i] instanceof Container) {
-				BeanUtils.enableComponents((Container)components[i], b);
-			}
-		}
-	}
-
-	/**
-	 * return Container of specified type that is either the input component, or a AWT parent
-	 * of the input component
-	 * @param component, may be null
-	 * @param parentType not null
-	 * @return component, ancestor of component, or null
-	 */
-	public static Container findTypeParentOfComponent(Component component,Class<?> parentType) {
-		Container p = component == null || component instanceof Container ? (Container) component : component.getParent();
-		for (; p != null; p = p.getParent()) {
-			if(parentType.isAssignableFrom(p.getClass())) {
-				return p;
-			}
-		}
-		return null;
 	}
 
 	public static int firstIndexOf(double[] dd, double d) {
@@ -563,86 +347,7 @@ public final class BeanUtils {
 		return array;
 	}
 
-	public static Rectangle[] getTiledBounds(int numberOfTiles, int areaWidth, int areaHeight, boolean horizontal) {
-		int n = numberOfTiles; int w = areaWidth; int h = areaHeight;
-		if (n <= 0)
-			return null;
-		Rectangle[] rectangles = new Rectangle[n];
-		int a = (int) Math.sqrt(n);
-		int r1 = 0; int r2 = 0;
-		int x = 0; int x1 = 0;
-		int y = 0; int y1 = 0;
-		if (horizontal) {
-			if (n - a * a > a) {
-				r2 = n - a * a - a;
-				r1 = a + 1 - r2;
-				y = h / (a + 1);
-			} else {
-				r2 = n - a * a;
-				r1 = a - r2;
-				y = h / a;
-			}
-			x = w / a;
-			x1 = w / (a + 1);
-			for (int i=0;i<r2+r1;i++) {
-				if (i == r1 + r2)
-					y = h - y * (i - 1);
-				if (i < r2) {
-					for (int j=0;j<a+1;j++) {
-						if (j == a + 1) {
-							rectangles[i * (a + 1) + j] = new Rectangle(j * x, i * y, w - x * a, y);
-						} else {
-							rectangles[i * (a + 1) + j] = new Rectangle(j * x1, i * y, x1, y);
-						}
-					}
-				} else {
-					for (int j = 0;j<a;j++) {
-						if (j == a) {
-							rectangles[r2 * (a + 1) + (i - r2) * a + j] = new Rectangle(j * x, i * y, w - x * (a - 1), y);
-						} else {
-							rectangles[r2 * (a + 1) + (i - r2) * a + j] = new Rectangle(j * x, i * y, x, y);
-						}
-					}
-				}
-			}
-		} else {
-			if (n - a * a > a) {
-				r2 = n - a * a - a;
-				r1 = a + 1 - r2;
-				x = w / (a + 1);
-			} else {
-				r2 = n - a * a;
-				r1 = a - r2;
-				x = w / a;
-			}
-			y = h / a;
-			y1 = h / (a + 1);
-			for (int i=0;i<r1+r2;i++) {
-				if (i == r1 + r2)
-					x = w - x * (i - 1);
-				if (i < r2) {
-					for (int j=0;j<a+1;j++) {
-						if (j == a + 1) {
-							rectangles[i * (a + 1) + j] = new Rectangle(i * x, j * y, x, h - y * a);
-						} else {
-							rectangles[i * (a + 1) + j] = new Rectangle(i * x, j * y1, x, y1);
-						}
-					}
-				} else {
-					for (int j = 0;j<a;j++) {
-						if (j == a) {
-							rectangles[r2 * (a + 1) + (i - r2) * a + j] = new Rectangle(i * x, j * y, x, h - y * (a - 1));
-						} else {
-							rectangles[r2 * (a + 1) + (i - r2) * a + j] = new Rectangle(i * x, j * y, x, y);
-						}
-					}
-				}
-			}
-		}
-		return rectangles;
-	}
-
-	public final static int[] indexToCoordinate(int index, int[] bounds) {
+	public static int[] indexToCoordinate(int index, int[] bounds) {
 		// computes coordinates of a position in an n-dimensional matrix from linearized index
 		// see also related method coordinateToIndex()
 		if (index < 0) throw new RuntimeException("invalid index, negative number");
@@ -658,120 +363,6 @@ public final class BeanUtils {
 		}
 		return coordinates;
 	}
-
-	public static XYZ[] lineIntersect3D(XYZ p1,XYZ p2,XYZ p3,XYZ p4) {
-
-		/*
-	http://astronomy.swin.edu.au/~pbourke/geometry/lineline3d/
-
-	Calculate the line segment PaPb that is the shortest route between
-	   two lines P1P2 and P3P4. Calculate also the values of mua and mub where
-	      Pa = P1 + mua (P2 - P1)
-	      Pb = P3 + mub (P4 - P3)
-	   Return null if no solution exists.
-		 */
-
-		final double EPS = 1.0E-12; //epsilon
-
-		XYZ p13 = new XYZ();
-		XYZ p43 = new XYZ();
-		XYZ p21 = new XYZ();
-		double d1343,d4321,d1321,d4343,d2121;
-		double numer,denom;
-		double mua,mub;
-		XYZ pa,pb;
-
-		p13.x = p1.x - p3.x;
-		p13.y = p1.y - p3.y;
-		p13.z = p1.z - p3.z;
-		p43.x = p4.x - p3.x;
-		p43.y = p4.y - p3.y;
-		p43.z = p4.z - p3.z;
-		if (Math.abs(p43.x)  < EPS && Math.abs(p43.y)  < EPS && Math.abs(p43.z)  < EPS)
-			return(null);
-		p21.x = p2.x - p1.x;
-		p21.y = p2.y - p1.y;
-		p21.z = p2.z - p1.z;
-		if (Math.abs(p21.x)  < EPS && Math.abs(p21.y)  < EPS && Math.abs(p21.z)  < EPS)
-			return(null);
-
-		d1343 = p13.x * p43.x + p13.y * p43.y + p13.z * p43.z;
-		d4321 = p43.x * p21.x + p43.y * p21.y + p43.z * p21.z;
-		d1321 = p13.x * p21.x + p13.y * p21.y + p13.z * p21.z;
-		d4343 = p43.x * p43.x + p43.y * p43.y + p43.z * p43.z;
-		d2121 = p21.x * p21.x + p21.y * p21.y + p21.z * p21.z;
-
-		denom = d2121 * d4343 - d4321 * d4321;
-		if (Math.abs(denom) < EPS)
-			return(null);
-		numer = d1343 * d4321 - d1321 * d4343;
-
-		mua = numer / denom;
-		mub = (d1343 + d4321 * (mua)) / d4343;
-
-		pa = new XYZ(p1.x + mua * p21.x,p1.y + mua * p21.y,p1.z + mua * p21.z);
-		pb = new XYZ(p3.x + mub * p43.x,p3.y + mub * p43.y,p3.z + mub * p43.z);
-
-		return new XYZ[] {pa,pb};
-
-	}
-
-	public static Point2D lineIntersection(Line2D l1, Line2D l2) {
-		if (l1 != null && l2 != null && l1.intersectsLine(l2)) {
-			double a1 = (l1.getY2() - l1.getY1()) / (l1.getX2() - l1.getX1());
-			double b1 = (l1.getX2() * l1.getY1() - l1.getX1() * l1.getY2()) / (l1.getX2() - l1.getX1());
-			double a2 = (l2.getY2() - l2.getY1()) / (l2.getX2() - l2.getX1());
-			double b2 = (l2.getX2() * l2.getY1() - l2.getX1() * l2.getY2()) / (l2.getX2() - l2.getX1());
-			if (l1.getX1() == l1.getX2()) {
-				if (l2.getX1() == l2.getX2()) {
-					return new Point2D.Double(Double.NaN, Double.NaN);
-				} else {
-					return new Point2D.Double(l1.getX1(), a2 * l1.getX1() + b2);
-				}
-			} else if (l2.getX1() == l2.getX2()) {
-				return new Point2D.Double(l2.getX2(), a1 * l2.getX2() + b1);
-			} else {
-				return new Point2D.Double((b1 - b2) / (a2 - a1), a1 * (b1 - b2) / (a2 - a1) + b1);
-			}
-		} else {
-			return null;
-		}
-	}
-
-	public static void printComponentInfo(Container container) {
-		Component[] components;
-		if (container instanceof JMenu) {
-			components = ((JMenu)container).getMenuComponents();
-		} else {
-			components = container.getComponents();
-		}
-		for (int i=0;i<components.length;i++) {
-			System.out.println(components[i]);
-			System.out.println("     Preferred Size: " + components[i].getPreferredSize());
-			System.out.println("     Actual Size: " + components[i].getSize());
-			if (components[i] instanceof Container) {
-				BeanUtils.printComponentInfo((Container)components[i]);
-			}
-		}
-	}
-
-	public static void findComponent(Container start,Class findThis,ArrayList<Component> comps) {
-		Component[] components;
-		if (start instanceof JMenu) {
-			components = ((JMenu)start).getMenuComponents();
-		} else {
-			components = start.getComponents();
-		}
-		for (int i=0;i<components.length;i++) {
-			if(components[i].getClass() == findThis) {
-				comps.add(components[i]);
-			}
-			if (components[i] instanceof Container) {
-				BeanUtils.findComponent((Container)components[i],findThis,comps);
-			}
-		}
-	}
-
 
 	public static <T> T[] removeElement(T[] array, T o) {
 		int index = Arrays.asList(array).indexOf(o);
@@ -792,66 +383,6 @@ public final class BeanUtils {
 		else{
 			throw new RuntimeException("Error removing "+o.toString()+", not in object array");
 		}
-	}
-
-	public static Dimension scaleToFitProportional(Dimension viewport, Dimension toScale) {
-		double newWidth = viewport.getWidth();
-		double newHeight = viewport.getWidth() / toScale.getWidth() * toScale.getHeight();
-		if (newHeight > viewport.getHeight()) {
-			newHeight = viewport.getHeight();
-			newWidth = viewport.getHeight() / toScale.getHeight() * toScale.getWidth();
-		}
-		return new Dimension((int)newWidth, (int)newHeight);
-	}
-
-	public static void setCursorThroughout(final Container container, final Cursor cursor) {
-		if (container==null){
-			return;
-		}
-		container.setCursor(cursor);
-//		Component[] components = container.getComponents();
-//		for (int i=0;i<components.length;i++) {
-//			components[i].setCursor(cursor);
-//			if(components[i] instanceof JRootPane){
-//				BeanUtils.setCursorThroughout(((JRootPane)components[i]).getContentPane(), cursor);
-//			}else if (components[i] instanceof Container) {
-//				if (((Container)components[i]).getComponentCount() > 0) {
-//					BeanUtils.setCursorThroughout((Container)components[i], cursor);
-//				}
-//			}
-//		}
-	}
-
-	public static String[] stringArrayMerge(String[] array1, String[] array2) {
-		if (array1 == null && array2 == null){
-			return null;
-		}
-		if (array1 == null){
-			return array2;
-		}
-		if (array2 == null){
-			return array1;
-		}
-		Vector<String> newVector = new Vector<String>();
-		for (int i=0;i<array1.length;i++){
-			newVector.addElement(array1[i]);
-		}
-		for (int i=0;i<array2.length;i++){
-			boolean found = false;
-			for (int j=0;j<array1.length;j++){
-				if (array1[j].equals(array2[i])){
-					found = true;
-				}
-			}
-			if (!found){
-				newVector.addElement(array2[i]);
-			}
-		}
-		String newArray[] = new String[newVector.size()];
-		for (int i=0;i<newVector.size();i++){
-			newArray[i] = newVector.elementAt(i);
-		}
-		return newArray;
 	}
 
 	public static byte[] toCompressedSerialized(Serializable cacheObj) throws java.io.IOException {
@@ -901,7 +432,7 @@ public final class BeanUtils {
 	}
 
 	public static boolean triggersPropertyChangeEvent(Object a, Object b) {
-		return (a == null || b == null || !a.equals(b));
+		return (a == null || !a.equals(b));
 	}
 
 	public static byte[] uncompress(byte[] compressedBytes) throws java.io.IOException {
@@ -980,51 +511,6 @@ public final class BeanUtils {
 		Transport.send(msg);
 	}
 
-	public static final KeyStroke CLOSE_WINDOW_KEY_STROKE;
-	static { //allow initialization in headless environment
-		KeyStroke ks;
-		try {
-			ks  = KeyStroke.getKeyStroke(KeyEvent.VK_W, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
-		} catch (HeadlessException he) {
-			ks = KeyStroke.getKeyStroke(KeyEvent.VK_W,InputEvent.CTRL_DOWN_MASK);
-		}
-		CLOSE_WINDOW_KEY_STROKE = ks;
-	}
-	public static void addCloseWindowKeyboardAction(JComponent jComponent){
-		@SuppressWarnings("serial")
-		Action winCloseAction = new AbstractAction() {
-			@Override
-			public synchronized void actionPerformed(ActionEvent e) {
-				Window window = null;
-				if(e.getSource() != null){
-					if(e.getSource() instanceof Window){
-						window = (Window)e.getSource();
-					}else{
-						window = (Window)BeanUtils.findTypeParentOfComponent((Component)e.getSource(), Window.class);
-					}
-				}
-				if(window != null){
-					window.dispatchEvent(new WindowEvent(window,java.awt.event.WindowEvent.WINDOW_CLOSING));
-				}
-			}
-		};
-
-		final String winCloseInputMapAction = "winCloseAction";
-		InputMap inputMap = jComponent.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-		if(inputMap.get(CLOSE_WINDOW_KEY_STROKE) == null){
-			inputMap.put(CLOSE_WINDOW_KEY_STROKE, winCloseInputMapAction);
-			jComponent.getActionMap().put(winCloseInputMapAction, winCloseAction);
-		}
-	}
-
-	public static void setMessage(ClientTaskStatusSupport clientTaskStatusSupport,String message){
-		//convenience method in case clientTaskStatusSupport is null
-		if(clientTaskStatusSupport != null){
-			clientTaskStatusSupport.setMessage(message);
-		}
-	}
-	private static enum FLAG_STATE {START,FINISHED,INTERRUPTED,FAILED}
-
 	public static String readBytesFromFile(File file, ClientTaskStatusSupport clientTaskStatusSupport) throws IOException {
 		StringBuffer stringBuffer = new StringBuffer();
 		BufferedReader bufferedReader = null;
@@ -1045,6 +531,8 @@ public final class BeanUtils {
 		return stringBuffer.toString();
 	}
 
+
+	private enum FLAG_STATE {START,FINISHED,INTERRUPTED,FAILED}
 	/**
 	 * download bytes from URL; optionally provide progress reports; time out after 2 minutes. Note
 	 * returned string could be an error message from webserver
@@ -1234,28 +722,33 @@ public final class BeanUtils {
 
 	public static final String SQL_ESCAPE_CHARACTER = "/";
 	public static String convertToSQLSearchString(String searchString){
-		if(searchString == null || searchString.length() == 0){return searchString;}
-		String convertedLikeString = "";
-		StringBuffer sb = new StringBuffer(searchString);
-		for(int i=0;i<sb.length();i+= 1){
-			if(sb.charAt(i) == '*'){
-				convertedLikeString+= "%";//sql wildcard
-			}else if(sb.charAt(i) == '%'){
-				convertedLikeString+= SQL_ESCAPE_CHARACTER+"%";// "%" special in sql 'like'
-			}else if(sb.charAt(i) == '_'){
-				convertedLikeString+= SQL_ESCAPE_CHARACTER+"_";// "_" special in sql 'like'
-			}else {
-				convertedLikeString+= sb.charAt(i);
-			}
-		}
-		if(convertedLikeString.indexOf("%") == -1 && convertedLikeString.indexOf("_") == -1){
-			convertedLikeString = "%"+convertedLikeString+"%";
-		}
+		if(searchString == null || searchString.isEmpty()){return searchString;}
+		String convertedLikeString = getConvertedLikeString(searchString);
+		return convertedLikeString;
+	}
+
+	private static String getConvertedLikeString(String searchString) {
 		//The character "%" matches any string of zero or more characters except null.
 		//The character "_" matches any single character.
 		//A wildcard character is treated as a literal if preceded by the character designated as the escape character.
 		//Default ESCAPE character for VCell = '/' defined in DictionaryDbDriver.getDatabaseSpecies
-		return convertedLikeString;
+		StringBuilder convertedLikeString = new StringBuilder();
+		StringBuilder sb = new StringBuilder(searchString);
+		for(int i=0;i<sb.length();i+= 1){
+			if(sb.charAt(i) == '*'){
+				convertedLikeString.append("%");//sql wildcard
+			}else if(sb.charAt(i) == '%'){
+				convertedLikeString.append(SQL_ESCAPE_CHARACTER + "%");// "%" special in sql 'like'
+			}else if(sb.charAt(i) == '_'){
+				convertedLikeString.append(SQL_ESCAPE_CHARACTER + "_");// "_" special in sql 'like'
+			}else {
+				convertedLikeString.append(sb.charAt(i));
+			}
+		}
+		if(!convertedLikeString.toString().contains("%") && !convertedLikeString.toString().contains("_")){
+			convertedLikeString = new StringBuilder("%" + convertedLikeString + "%");
+		}
+		return convertedLikeString.toString();
 	}
 
 	/**
@@ -1429,7 +922,7 @@ public final class BeanUtils {
 	 * @param coll non null
 	 * @return list containing elements from coll of type clzz
 	 */
-	public static <T>  List<T> filterCollection(Class<T> clzz,Collection<?> coll) {
+	public static <T>  List<T> filterCollection(Class<T> clzz, Collection<?> coll) {
 		Objects.requireNonNull(clzz);
 		Objects.requireNonNull(coll);
 		return coll.stream( )
@@ -1469,6 +962,4 @@ public final class BeanUtils {
 	
 		return imageName;
 	}
-
-
 }

@@ -40,10 +40,7 @@ import javax.swing.border.Border;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.LineBorder;
 
-import org.vcell.util.BeanUtils;
-import org.vcell.util.ColorUtil;
-import org.vcell.util.NumberUtils;
-import org.vcell.util.Range;
+import org.vcell.util.*;
 
 import cbit.plot.Plot2D;
 import cbit.plot.Plot2DSettings;
@@ -1366,7 +1363,7 @@ private void drawLinePlot(PlotData plotData, int index, Graphics2D g, int render
 		if ((renderHints & Plot2D.RENDERHINT_DRAWLINE) == Plot2D.RENDERHINT_DRAWLINE){
 			for (int i=0;i<segments.length;i++){
 				if (segments[i].intersects(plotRectHolder)) {
-					Line2D line = BeanUtils.clipLine(segments[i], plotRectHolder);
+					Line2D line = GeneralGuiUtils.clipLine(segments[i], plotRectHolder);
 //					Line2D max = new Line2D(1,2,3,4);
 					g.draw(line);
 //					line.
@@ -1791,7 +1788,7 @@ public Paint getVisiblePlotPaint(int visiblePlotIndex) {
 	}
 	if (getAutoColor()) {
 		if(autoContrastColors == null || visiblePlotIndex >= autoContrastColors.length){
-			autoContrastColors = ColorUtil.generateAutoColor(getPlot2D().getNumberOfVisiblePlots(),getBackground(),new Integer(0));
+			autoContrastColors = ColorUtil.generateAutoColor(getPlot2D().getNumberOfVisiblePlots(),getBackground(), 0);
 		}
 		return autoContrastColors[visiblePlotIndex];
 	} else {
@@ -2363,7 +2360,7 @@ public void resetCrossHair() {
 public void setAutoColor(boolean autoColor) {
 	boolean oldValue = fieldAutoColor;
 	fieldAutoColor = autoColor;
-	firePropertyChange("autoColor", new Boolean(oldValue), new Boolean(autoColor));
+	firePropertyChange("autoColor", oldValue, autoColor);
 }
 
 
@@ -2377,7 +2374,7 @@ public void setBCompact(boolean bCompact) {
 	setTMargin((bCompact?0:10));
 	boolean oldValue = fieldBCompact;
 	fieldBCompact = bCompact;
-	firePropertyChange("bCompact", new Boolean(oldValue), new Boolean(bCompact));
+	firePropertyChange("bCompact", oldValue, bCompact);
 }
 
 
@@ -2399,7 +2396,7 @@ private void setBMargin(int newBMargin) {
 public void setBStepMode(boolean bStepMode) {
 	boolean oldValue = fieldBStepMode;
 	fieldBStepMode = bStepMode;
-	firePropertyChange("bStepMode", new Boolean(oldValue), new Boolean(bStepMode));
+	firePropertyChange("bStepMode", oldValue, bStepMode);
 }
 
 
@@ -2435,7 +2432,7 @@ public void setCurrentPlot(String plotName) {
 private void setCurrentPlotIndex(int currentPlotIndex) {
 	int oldValue = fieldCurrentPlotIndex;
 	fieldCurrentPlotIndex = currentPlotIndex;
-	firePropertyChange("currentPlotIndex", new Integer(oldValue), new Integer(currentPlotIndex));
+	firePropertyChange("currentPlotIndex", oldValue, currentPlotIndex);
 }
 
 
@@ -2589,7 +2586,7 @@ private void setRMargin(int newRMargin) {
 public void setShowCrosshair(boolean showCrosshair) {
 	boolean oldValue = fieldShowCrosshair;
 	fieldShowCrosshair = showCrosshair;
-	firePropertyChange("showCrosshair", new Boolean(oldValue), new Boolean(showCrosshair));
+	firePropertyChange("showCrosshair", oldValue, showCrosshair);
 }
 
 
@@ -2601,7 +2598,7 @@ public void setShowCrosshair(boolean showCrosshair) {
 public void setShowNodes(boolean showNodes) {
 	boolean oldValue = fieldShowNodes;
 	fieldShowNodes = showNodes;
-	firePropertyChange("showNodes", new Boolean(oldValue), new Boolean(showNodes));
+	firePropertyChange("showNodes", oldValue, showNodes);
 }
 
 
@@ -2613,7 +2610,7 @@ public void setShowNodes(boolean showNodes) {
 public void setSnapToNodes(boolean snapToNodes) {
 	boolean oldValue = fieldSnapToNodes;
 	fieldSnapToNodes = snapToNodes;
-	firePropertyChange("snapToNodes", new Boolean(oldValue), new Boolean(snapToNodes));
+	firePropertyChange("snapToNodes", oldValue, snapToNodes);
 }
 
 
@@ -2646,7 +2643,7 @@ private void setTMargin(int newTMargin) {
 public void setXAuto(boolean xAuto) {
 	boolean oldValue = fieldXAuto;
 	fieldXAuto = xAuto;
-	firePropertyChange("xAuto", new Boolean(oldValue), new Boolean(xAuto));
+	firePropertyChange("xAuto", oldValue, xAuto);
 }
 
 
@@ -2729,7 +2726,7 @@ private void setXMinorTicks(double[] xMinorTicks) {
 public void setXStretch(boolean xStretch) {
 	boolean oldValue = fieldXStretch;
 	fieldXStretch = xStretch;
-	firePropertyChange("xStretch", new Boolean(oldValue), new Boolean(xStretch));
+	firePropertyChange("xStretch", oldValue, xStretch);
 }
 
 
@@ -2741,7 +2738,7 @@ public void setXStretch(boolean xStretch) {
 public void setYAuto(boolean yAuto) {
 	boolean oldValue = fieldYAuto;
 	fieldYAuto = yAuto;
-	firePropertyChange("yAuto", new Boolean(oldValue), new Boolean(yAuto));
+	firePropertyChange("yAuto", oldValue, yAuto);
 }
 
 
@@ -2824,7 +2821,7 @@ private void setYMinorTicks(double[] yMinorTicks) {
 public void setYStretch(boolean yStretch) {
 	boolean oldValue = fieldYStretch;
 	fieldYStretch = yStretch;
-	firePropertyChange("yStretch", new Boolean(oldValue), new Boolean(yStretch));
+	firePropertyChange("yStretch", oldValue, yStretch);
 }
 
 

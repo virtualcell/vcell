@@ -17,6 +17,7 @@ import java.util.Vector;
 import javax.swing.JLabel;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.GeneralGuiUtils;
 import org.vcell.util.document.GroupAccess;
 import org.vcell.util.document.GroupAccessAll;
 import org.vcell.util.document.GroupAccessNone;
@@ -303,7 +304,6 @@ private javax.swing.JRadioButton getACLRadioButton() {
 /**
  * Insert the method's description here.
  * Creation date: (6/23/2004 5:15:41 PM)
- * @param aclState java.lang.Object
  */
 public ACLState getACLState() {
 	return fieldACLState;
@@ -632,14 +632,14 @@ private void updateInterface() {
 			getPrivateRadioButton().setSelected(true);
 		}
 		if(getGrantAccessJPanel().isEnabled()){
-			BeanUtils.enableComponents(getGrantAccessJPanel(),false);
+			GeneralGuiUtils.enableComponents(getGrantAccessJPanel(),false);
 		}
 	}else if(currentState.isAccessPublic()){
 		if(!getPublicRadioButton().isSelected()){
 			getPublicRadioButton().setSelected(true);
 		}
 		if(getGrantAccessJPanel().isEnabled()){
-			BeanUtils.enableComponents(getGrantAccessJPanel(),false);
+			GeneralGuiUtils.enableComponents(getGrantAccessJPanel(),false);
 		}
 	}else if(currentState != null){
 		String[] currentUserList = (currentState != null?currentState.getAccessList():new String[0]);
@@ -659,7 +659,7 @@ private void updateInterface() {
 			getACLRadioButton().setSelected(true);
 		}
 		if(!getJTextFieldACLUser().isEnabled()){
-			BeanUtils.enableComponents(getGrantAccessJPanel(),true);
+			GeneralGuiUtils.enableComponents(getGrantAccessJPanel(),true);
 		}
 	}
 }

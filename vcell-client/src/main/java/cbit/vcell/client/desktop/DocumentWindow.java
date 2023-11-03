@@ -66,10 +66,7 @@ import org.apache.commons.io.IOUtils;
 import org.vcell.client.logicalwindow.LWTopFrame;
 import org.vcell.documentation.VcellHelpViewer;
 import org.vcell.imagej.ImageJHelper;
-import org.vcell.util.BeanUtils;
-import org.vcell.util.ProgressDialogListener;
-import org.vcell.util.TokenMangler;
-import org.vcell.util.UtilCancelException;
+import org.vcell.util.*;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.VCDocument;
@@ -1069,7 +1066,7 @@ private javax.swing.JMenuItem getCloseMenuItem() {
 			ivjCloseMenuItem = new javax.swing.JMenuItem();
 			ivjCloseMenuItem.setName("CloseMenuItem");
 			ivjCloseMenuItem.setText("Close");
-			ivjCloseMenuItem.setAccelerator(BeanUtils.CLOSE_WINDOW_KEY_STROKE);
+			ivjCloseMenuItem.setAccelerator(GeneralGuiUtils.CLOSE_WINDOW_KEY_STROKE);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1892,7 +1889,7 @@ private void startStopImageJService() {
 		if(NEW_IJ_PLUGIN.equals(result) || CHANGE_IJ_PLUGIN.equals(result)) {
 			File selectedDir = null;
 			if(OperatingSystemInfo.getInstance().isMac()) {
-				Frame f = (Frame)BeanUtils.findTypeParentOfComponent(this, Frame.class);
+				Frame f = (Frame)GeneralGuiUtils.findTypeParentOfComponent(this, Frame.class);
 				System.setProperty("apple.awt.fileDialogForDirectories", "true");
 				FileDialog fdiag = new FileDialog(f);
 				fdiag.setMultipleMode(false);

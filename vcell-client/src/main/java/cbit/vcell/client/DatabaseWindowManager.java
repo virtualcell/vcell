@@ -49,11 +49,7 @@ import javax.swing.ToolTipManager;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.tree.TreePath;
 
-import org.vcell.util.BeanUtils;
-import org.vcell.util.Compare;
-import org.vcell.util.DataAccessException;
-import org.vcell.util.ObjectNotFoundException;
-import org.vcell.util.UserCancelException;
+import org.vcell.util.*;
 import org.vcell.util.document.BioModelChildSummary;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.CurateSpec;
@@ -148,7 +144,8 @@ public class DatabaseWindowManager extends TopLevelWindowManager{
 /**
  * Insert the method's description here.
  * Creation date: (5/17/2004 1:50:08 PM)
- * @param vcellClient cbit.vcell.client.VCellClient
+ * @param databaseWindowPanel cbit.vcell.client.desktop.DatabaseWindowPanel
+ * @param requestManager cbit.vcell.client.RequestManager
  */
 public DatabaseWindowManager(DatabaseWindowPanel databaseWindowPanel, RequestManager requestManager) {
 	super(requestManager);
@@ -1098,9 +1095,9 @@ private static class SelectGeomHover extends MouseMotionAdapter {
 					if(select != null &&  select.equals(SEL)) {
 						//Save geom selection, Click 'Open' button
 						setSelection(simulationOwner.getMathDescription().getGeometry());
-						Container myWindow = BeanUtils.findTypeParentOfComponent(myLocalVCDocDBTreePanel, Window.class);
+						Container myWindow = GeneralGuiUtils.findTypeParentOfComponent(myLocalVCDocDBTreePanel, Window.class);
 						ArrayList<Component> comps = new ArrayList<Component>();
-						BeanUtils.findComponent(myWindow, JButton.class, comps);
+						GeneralGuiUtils.findComponent(myWindow, JButton.class, comps);
 						for(int i=0;i<comps.size();i++) {
 							if(((JButton)comps.get(i)).getText().equals("Open")) {
 								((JButton)comps.get(i)).setEnabled(true);

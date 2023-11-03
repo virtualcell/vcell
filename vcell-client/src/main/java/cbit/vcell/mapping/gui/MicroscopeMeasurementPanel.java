@@ -44,6 +44,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.GeneralGuiUtils;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.client.constants.GuiConstants;
@@ -521,12 +522,12 @@ public class MicroscopeMeasurementPanel extends javax.swing.JPanel {
 		MicroscopeMeasurement microscopeMeasurement = simulationContext.getMicroscopeMeasurement();
 		if (rdbtnZprojection.isSelected()) {
 			microscopeMeasurement.setConvolutionKernel(new ProjectionZKernel());
-			BeanUtils.enableComponents(gaussianPsfPanel, false);
-//			BeanUtils.enableComponents(experimentalPsfPanel, false);
+			GeneralGuiUtils.enableComponents(gaussianPsfPanel, false);
+//			GeneralGuiUtils.enableComponents(experimentalPsfPanel, false);
 		} else if (radioButtonGaussian.isSelected()) {
 			microscopeMeasurement.setConvolutionKernel(new GaussianConvolutionKernel());
-			BeanUtils.enableComponents(gaussianPsfPanel, true);
-//			BeanUtils.enableComponents(experimentalPsfPanel, false);
+			GeneralGuiUtils.enableComponents(gaussianPsfPanel, true);
+//			GeneralGuiUtils.enableComponents(experimentalPsfPanel, false);
 //		} else if (rdbtnExperimental.isSelected()) {
 //			String psfName = (String)pointSpreadFunctionsComboBox.getSelectedItem();
 //			for (DataSymbol dataSymbol : simulationContext.getDataContext().getDataSymbols()){
@@ -535,8 +536,8 @@ public class MicroscopeMeasurementPanel extends javax.swing.JPanel {
 //					break;
 //				}
 //			}
-//			BeanUtils.enableComponents(gaussianPsfPanel, false);
-//			BeanUtils.enableComponents(experimentalPsfPanel, true);
+//			GeneralGuiUtils.enableComponents(gaussianPsfPanel, false);
+//			GeneralGuiUtils.enableComponents(experimentalPsfPanel, true);
 		}
 	}
 
@@ -554,18 +555,18 @@ public class MicroscopeMeasurementPanel extends javax.swing.JPanel {
 		ConvolutionKernel ck = microscopeMeasurement.getConvolutionKernel();
 		if (ck instanceof ProjectionZKernel) {
 			rdbtnZprojection.setSelected(true);
-			BeanUtils.enableComponents(gaussianPsfPanel, false);
-//			BeanUtils.enableComponents(experimentalPsfPanel, false);
+			GeneralGuiUtils.enableComponents(gaussianPsfPanel, false);
+//			GeneralGuiUtils.enableComponents(experimentalPsfPanel, false);
 		} else if (ck instanceof GaussianConvolutionKernel) {
 			radioButtonGaussian.setSelected(true);
-			BeanUtils.enableComponents(gaussianPsfPanel, true);
-//			BeanUtils.enableComponents(experimentalPsfPanel, false);
+			GeneralGuiUtils.enableComponents(gaussianPsfPanel, true);
+//			GeneralGuiUtils.enableComponents(experimentalPsfPanel, false);
 			sigmaXYTextField.setText(((GaussianConvolutionKernel) ck).getSigmaXY_um().infix());
 			sigmaZTextField.setText(((GaussianConvolutionKernel) ck).getSigmaZ_um().infix());
 //		} else if (ck instanceof ExperimentalPSF) {
 //			rdbtnExperimental.setSelected(true);
-//			BeanUtils.enableComponents(gaussianPsfPanel, false);
-//			BeanUtils.enableComponents(experimentalPsfPanel, true);			
+//			GeneralGuiUtils.enableComponents(gaussianPsfPanel, false);
+//			GeneralGuiUtils.enableComponents(experimentalPsfPanel, true);			
 		}
 		pointSpreadFunctionsComboModel.removeAllElements();
 		if (simulationContext.getDataContext() != null){
