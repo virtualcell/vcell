@@ -1035,7 +1035,7 @@ private void insertSpeciesContextSpecsSQL(Connection con, KeyValue simContextKey
 		KeyValue newSpeciesContextSpecKey = keyFactory.getNewKey(con);
 		//
 		sql = 	"INSERT INTO " + speciesContextSpecTable.getTableName() + " " + speciesContextSpecTable.getSQLColumnList() + 
-				" VALUES " + SpeciesContextSpecTable.getSQLValueList(newSpeciesContextSpecKey, simContextKey, speciesContextSpec, scKey);
+				" VALUES " + speciesContextSpecTable.getSQLValueList(newSpeciesContextSpecKey, simContextKey, speciesContextSpec, scKey);
 //lg.info(sql);
 		updateCleanSQL(con, sql);
 	}

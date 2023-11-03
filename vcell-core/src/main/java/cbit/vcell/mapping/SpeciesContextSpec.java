@@ -1472,6 +1472,11 @@ public String getSiteAttributesSQL() {
 	}
 	return sb.toString();
 }
+	public Map<MolecularComponentPattern, SiteAttributesSpec> readSiteAttributesSQL() {
+		Map<MolecularComponentPattern, SiteAttributesSpec> saMap = new LinkedHashMap<>();
+
+		return saMap;
+	}
 	public String getInternalLinksSQL() {
 		StringBuffer sb = new StringBuffer();
 		for( MolecularInternalLinkSpec mils : internalLinkSet) {
@@ -1481,6 +1486,11 @@ public String getSiteAttributesSQL() {
 			sb.append(sas2.getMolecularComponentPattern().getMolecularComponent().getName() + ";");
 		}
 		return sb.toString();
+	}
+	public Set<MolecularInternalLinkSpec> readInternalLinkSetSQL() {
+		Set<MolecularInternalLinkSpec> ilSet = new LinkedHashSet<>();
+
+		return ilSet;
 	}
 
 /**

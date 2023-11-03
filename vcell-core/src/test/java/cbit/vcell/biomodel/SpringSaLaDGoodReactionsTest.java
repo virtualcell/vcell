@@ -21,6 +21,7 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.solver.langevin.LangevinLngvWriter;
 import org.vcell.solver.langevin.LangevinSolver;
 import org.vcell.test.Fast;
@@ -36,6 +37,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
@@ -260,7 +262,10 @@ public class SpringSaLaDGoodReactionsTest {
 
 		SpeciesContextSpec[] speciesContextSpecs = simContext.getReactionContext().getSpeciesContextSpecs();
 		SpeciesContextSpec scs = speciesContextSpecs[0];
-//		String result = SpeciesContextSpecTable.getSQLValueList();
+		String internalLinkSetSQL = scs.getInternalLinksSQL();
+		String getSiteAttributesSQL = scs.getSiteAttributesSQL();
+		Set<MolecularInternalLinkSpec> internalLinkSet = scs.readInternalLinkSetSQL();
+		Map<MolecularComponentPattern, SiteAttributesSpec> siteAttributesMap = scs.readSiteAttributesSQL();
 
 	}
 

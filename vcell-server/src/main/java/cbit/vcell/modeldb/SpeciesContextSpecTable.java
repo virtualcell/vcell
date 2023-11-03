@@ -68,7 +68,7 @@ private SpeciesContextSpecTable() {
  * @return java.lang.String
  * @param Key KeyValue
  */
-public static String getSQLValueList(KeyValue Key, KeyValue simContextKey, SpeciesContextSpec speciesContextSpec, KeyValue scKey) {
+public String getSQLValueList(KeyValue Key, KeyValue simContextKey, SpeciesContextSpec speciesContextSpec, KeyValue scKey) {
 
 	StringBuffer buffer = new StringBuffer();
 	buffer.append("(");
@@ -158,19 +158,17 @@ public static String getSQLValueList(KeyValue Key, KeyValue simContextKey, Speci
 	}else{
 		buffer.append((speciesContextSpec.isForceContinuous() ? 1 : 0) + ",");
 	}
-
-	if(!(speciesContextSpec.getSimulationContext().getApplicationType() == SimulationContext.Application.SPRINGSALAD)) {
+	if(speciesContextSpec.getInternalLinkSet() == null || speciesContextSpec.getInternalLinkSet().size() == 0) {
 		buffer.append(" NULL " + ",");
 	} else {
-		buffer.append("'" + speciesContextSpec.getSiteAttributesSQL() + "'" + ",");
+		buffer.append("'" + speciesContextSpec.getInternalLinksSQL() + "'" + ",");
 	}
-
-	if(!(speciesContextSpec.getSimulationContext().getApplicationType() == SimulationContext.Application.SPRINGSALAD)) {
+	if(speciesContextSpec.getSiteAttributesMap() == null || speciesContextSpec.getSiteAttributesMap().size() == 0) {
 		buffer.append(" NULL " + ")");
 	} else {
-		buffer.append("'" + speciesContextSpec.getInternalLinksSQL() + "'" + ")");
+		buffer.append("'" + speciesContextSpec.getSiteAttributesSQL() + "'" + ")");
 	}
-
 	return buffer.toString();
 }
+
 }
