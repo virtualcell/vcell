@@ -98,7 +98,7 @@ public class N5Exporter implements ExportConstants {
 	//        DexDataIdentifier.getVariableType();
 
 		int numVariables = species.size();
-		int numTimes = allTimes.length;
+		int numTimes = exportSpecs.getTimeSpecs().getEndTimeIndex() - exportSpecs.getTimeSpecs().getBeginTimeIndex();
 		long[] dimensions = {vcData.getMesh().getSizeX(), vcData.getMesh().getSizeY(), numVariables, vcData.getMesh().getSizeZ(), numTimes};
 		// 51X, 51Y, 1Z, 1C, 2T
 		int[] blockSize = {vcData.getMesh().getSizeX(), vcData.getMesh().getSizeY(), 1, vcData.getMesh().getSizeZ(), 1};
@@ -115,7 +115,7 @@ public class N5Exporter implements ExportConstants {
 		for (int variableIndex=0; variableIndex < numVariables; variableIndex++){
 			//place to add tracking, each variable can be measured in tracking
 			exportServiceImpl.fireExportProgress(jobID, vcDataID, "N5", ((double) variableIndex / numVariables));
-			for (int timeIndex=0; timeIndex < numTimes; timeIndex++){
+			for (int timeIndex=exportSpecs.getTimeSpecs().getBeginTimeIndex(); timeIndex < exportSpecs.getTimeSpecs().getEndTimeIndex(); timeIndex++){
 				//another place to add tracking, each time index can be used to determine how much has been exported
 
 				// data does get returned, but it does not seem to cover the entire region of space, but only returns regions where there is activity
