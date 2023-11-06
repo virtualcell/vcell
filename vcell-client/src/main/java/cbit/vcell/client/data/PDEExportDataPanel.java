@@ -2422,11 +2422,12 @@ private void updateInterface() {
 		getMembVarRadioButton().setEnabled(false);
 		getBothVarRadioButton().setEnabled(false);
 
-		getJPanelTime().setEnabled(false);
-		getJSlider1().setEnabled(false);
-		getJSlider2().setEnabled(false);
-		getJTextField1().setEnabled(false);
-		getJTextField2().setEnabled(false);
+		// Time Section
+//		getJPanelTime().setEnabled(false);
+//		getJSlider1().setEnabled(false);
+//		getJSlider2().setEnabled(false);
+//		getJTextField1().setEnabled(false);
+//		getJTextField2().setEnabled(false);
 	default:
 		break;
 	}
