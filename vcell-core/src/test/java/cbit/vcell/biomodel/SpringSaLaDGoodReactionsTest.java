@@ -263,9 +263,9 @@ public class SpringSaLaDGoodReactionsTest {
 		SpeciesContextSpec[] speciesContextSpecs = simContext.getReactionContext().getSpeciesContextSpecs();
 		SpeciesContextSpec scs = speciesContextSpecs[0];
 		String internalLinkSetSQL = scs.getInternalLinksSQL();
-		String getSiteAttributesSQL = scs.getSiteAttributesSQL();
-		Set<MolecularInternalLinkSpec> internalLinkSet = scs.readInternalLinkSetSQL();
-		Map<MolecularComponentPattern, SiteAttributesSpec> siteAttributesMap = scs.readSiteAttributesSQL();
+		String siteAttributesMapSQL = scs.getSiteAttributesSQL();
+		Set<MolecularInternalLinkSpec> internalLinkSet = scs.readInternalLinkSetSQL(internalLinkSetSQL);
+		Map<MolecularComponentPattern, SiteAttributesSpec> siteAttributesMap = scs.readSiteAttributesSQL(siteAttributesMapSQL);
 
 	}
 

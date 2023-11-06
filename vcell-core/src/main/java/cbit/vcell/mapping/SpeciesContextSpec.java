@@ -1472,10 +1472,11 @@ public String getSiteAttributesSQL() {
 	}
 	return sb.toString();
 }
-	public Map<MolecularComponentPattern, SiteAttributesSpec> readSiteAttributesSQL() {
+	public Map<MolecularComponentPattern, SiteAttributesSpec> readSiteAttributesSQL(String siteAttributesMapString) {
 		Map<MolecularComponentPattern, SiteAttributesSpec> saMap = new LinkedHashMap<>();
+		// TODO: parse string here
 
-		return saMap;
+		return saMap;	// may be empty but not null
 	}
 	public String getInternalLinksSQL() {
 		StringBuffer sb = new StringBuffer();
@@ -1487,10 +1488,11 @@ public String getSiteAttributesSQL() {
 		}
 		return sb.toString();
 	}
-	public Set<MolecularInternalLinkSpec> readInternalLinkSetSQL() {
+	public Set<MolecularInternalLinkSpec> readInternalLinkSetSQL(String internalLinkSetString) {
 		Set<MolecularInternalLinkSpec> ilSet = new LinkedHashSet<>();
+		// TODO: parse string here
 
-		return ilSet;
+		return ilSet;	// may be empty but never null
 	}
 
 /**
