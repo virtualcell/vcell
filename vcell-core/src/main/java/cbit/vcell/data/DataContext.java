@@ -83,7 +83,7 @@ public class DataContext implements Matchable, Serializable {
 		if (!BeanUtils.arrayContains(dataSymbols,dataSymbol)){
 			throw new RuntimeException("data symbol doesn't exist");
 		}
-		DataSymbol[] newArray = (DataSymbol[])BeanUtils.removeElement(dataSymbols,dataSymbol);
+		DataSymbol[] newArray = (DataSymbol[])BeanUtils.removeFirstInstanceOfElement(dataSymbols,dataSymbol);
 		setDataSymbols(newArray);
 	}
 

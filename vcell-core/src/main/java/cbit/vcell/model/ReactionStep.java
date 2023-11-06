@@ -895,7 +895,7 @@ public void removeReactionParticipant(ReactionParticipant reactionParticipant) t
 		return;
 	}	
 	if (contains(reactionParticipant)){
-		ReactionParticipant newReactionParticipants[] = (ReactionParticipant[])BeanUtils.removeElement(fieldReactionParticipants, reactionParticipant);
+		ReactionParticipant newReactionParticipants[] = (ReactionParticipant[])BeanUtils.removeFirstInstanceOfElement(fieldReactionParticipants, reactionParticipant);
 		setReactionParticipants(newReactionParticipants);
 	}
 }            

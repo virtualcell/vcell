@@ -13,9 +13,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.util.Arrays;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import cbit.vcell.solver.*;
 import org.apache.logging.log4j.LogManager;
@@ -38,11 +36,8 @@ import cbit.vcell.biomodel.VCellNames;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryOwner;
 import cbit.vcell.geometry.GeometrySpec;
-import cbit.vcell.math.Constant;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.model.VCMODL;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
 
 /**
  * Insert the type's description here.
@@ -507,7 +502,7 @@ public void removeSimulation(Simulation simulation) throws java.beans.PropertyVe
 	if (!contains(simulation)){
 		throw new IllegalArgumentException("MathModel.removeSimulation() simulation not present in MathModel");
 	}
-	setSimulations((Simulation[])BeanUtils.removeElement(fieldSimulations,simulation));
+	setSimulations((Simulation[])BeanUtils.removeFirstInstanceOfElement(fieldSimulations,simulation));
 }
 
 

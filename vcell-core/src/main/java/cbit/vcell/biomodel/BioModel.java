@@ -924,7 +924,7 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
 		if (!contains(simulation)){
 			throw new IllegalArgumentException("BioModel.removeSimulation() simulation not present in BioModel");
 		}
-		setSimulations(BeanUtils.removeElement(fieldSimulations,simulation));
+		setSimulations(BeanUtils.removeFirstInstanceOfElement(fieldSimulations,simulation));
 	}
 
 
@@ -938,7 +938,7 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
 		if (!contains(simulationContext)){
 			throw new IllegalArgumentException("BioModel.removeSimulationContext() simulationContext not present in BioModel");
 		}
-		setSimulationContexts(BeanUtils.removeElement(fieldSimulationContexts,simulationContext));
+		setSimulationContexts(BeanUtils.removeFirstInstanceOfElement(fieldSimulationContexts,simulationContext));
 	}
 
 

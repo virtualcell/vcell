@@ -342,7 +342,7 @@ public String getBioModelUnresolved(QueryHashtable dbc, User user, KeyValue bioM
 			}
 			if (!bMathFound){
 				if (lg.isWarnEnabled()) lg.warn("<<<<WARNING>>>>> ClientDocumentManager.getBioModel(), Simulation "+simArray[i].getName()+" is orphaned, Math("+simArray[i].getMathDescription().getName()+") not found in Applications");
-				simArray = (Simulation[])BeanUtils.removeElement(simArray,simArray[i]);
+				simArray = (Simulation[])BeanUtils.removeFirstInstanceOfElement(simArray,simArray[i]);
 				i--;
 			}
 		}

@@ -143,7 +143,7 @@ private void accessAction(java.awt.event.ActionEvent actionEvent) {
 	}else if(actionEvent.getSource() == getJButtonRemoveACLUser() && getACLState() != null){
 		String removeUser = (String)getJListACL().getSelectedValue();
 		if(removeUser != null){
-			String[] newUserList = (String[])BeanUtils.removeElement(getACLState().getAccessList(),removeUser);
+			String[] newUserList = (String[])BeanUtils.removeFirstInstanceOfElement(getACLState().getAccessList(),removeUser);
 			ACLState newState = new ACLState(newUserList);
 			setACLState(newState);
 		}

@@ -10,7 +10,6 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
@@ -334,10 +333,10 @@ public class VCellSimStatus {
 	private static String f(Object obj, int size) {
 		if(obj == null || obj instanceof String) {
 			String s = (String)obj;
-			return BeanUtils.forceStringSize(s, size, " ", false);
+			return BeanUtils.forceStringLength(s, size, " ", false);
 		}else if(obj instanceof Timestamp) {
 			Timestamp ts = (Timestamp)obj;
-			return BeanUtils.forceStringSize(ts.toString(), size, " ", false);
+			return BeanUtils.forceStringLength(ts.toString(), size, " ", false);
 		}
 		throw new RuntimeException("Not Expecting Object type "+obj.getClass().getName());
 	}

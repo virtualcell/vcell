@@ -477,7 +477,7 @@ public void removeUncoupledParameters() {
 				}
 			}
 			if (!bHasStateVariables){
-				spanningTrees = (Tree[])BeanUtils.removeElement(spanningTrees,spanningTrees[i]);
+				spanningTrees = (Tree[])BeanUtils.removeFirstInstanceOfElement(spanningTrees,spanningTrees[i]);
 				i--;
 			}
 		}

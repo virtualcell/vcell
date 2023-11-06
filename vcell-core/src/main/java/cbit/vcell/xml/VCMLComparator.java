@@ -298,7 +298,7 @@ public class VCMLComparator {
 				if(attrNameVal.length() > PRINTSIZE){
 					attrNameVal = attrNameVal.substring(0,PRINTSIZE-PRINTSIZEWARN.length())+PRINTSIZEWARN;
 				}
-				sw.print(BeanUtils.forceStringSize(attrNameVal,PRINTSIZE, "", false)+(i==(attrArr.length-1)?"":" , "));
+				sw.print(BeanUtils.forceStringLength(attrNameVal,PRINTSIZE, "", false)+(i==(attrArr.length-1)?"":" , "));
 			}
 			sw.println();
 		}else{

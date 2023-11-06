@@ -580,7 +580,7 @@ private void refreshSpeciesContextSpecs() throws MappingException {
 		SpeciesContextSpec scs = newSpeciesContextSpecs[i];
 		SpeciesContext speciesContext = getModel().getSpeciesContext(scs.getSpeciesContext().getName());
 		if (speciesContext == null || !speciesContext.compareEqual(scs.getSpeciesContext())) {
-			newSpeciesContextSpecs = (SpeciesContextSpec[])BeanUtils.removeElement(newSpeciesContextSpecs,scs);
+			newSpeciesContextSpecs = (SpeciesContextSpec[])BeanUtils.removeFirstInstanceOfElement(newSpeciesContextSpecs,scs);
 			i--;
 			continue;
 		}else if (speciesContext != scs.getSpeciesContext()){
@@ -588,7 +588,7 @@ private void refreshSpeciesContextSpecs() throws MappingException {
 		}
 		Structure structure = getModel().getStructure(scs.getSpeciesContext().getStructure().getName());
 		if (structure == null || structure != scs.getSpeciesContext().getStructure()) {
-			newSpeciesContextSpecs = (SpeciesContextSpec[])BeanUtils.removeElement(newSpeciesContextSpecs,scs);
+			newSpeciesContextSpecs = (SpeciesContextSpec[])BeanUtils.removeFirstInstanceOfElement(newSpeciesContextSpecs,scs);
 			i--;
 			continue;
 		}

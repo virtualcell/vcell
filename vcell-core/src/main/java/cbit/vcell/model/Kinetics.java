@@ -1904,7 +1904,7 @@ void removeAllUnresolvedParameters() {
  * @exception java.lang.Exception The exception description.
  */
 protected void removeKineticsParameter(KineticsParameter parameter) throws PropertyVetoException {
-	KineticsParameter newKineticsParameters[] = (KineticsParameter[])BeanUtils.removeElement(fieldKineticsParameters,parameter);
+	KineticsParameter newKineticsParameters[] = (KineticsParameter[])BeanUtils.removeFirstInstanceOfElement(fieldKineticsParameters,parameter);
 	setKineticsParameters(newKineticsParameters);
 }
 
@@ -1940,7 +1940,7 @@ public synchronized void removePropertyChangeListener(java.beans.PropertyChangeL
 protected void removeUnresolvedParameter(UnresolvedParameter parameter) {
 	for (int i = 0; i < fieldUnresolvedParameters.length; i++){
 		if (fieldUnresolvedParameters[i] == parameter){
-			UnresolvedParameter newUnresolvedParameters[] = (UnresolvedParameter[])BeanUtils.removeElement(fieldUnresolvedParameters,parameter);
+			UnresolvedParameter newUnresolvedParameters[] = (UnresolvedParameter[])BeanUtils.removeFirstInstanceOfElement(fieldUnresolvedParameters,parameter);
 			setUnresolvedParameters(newUnresolvedParameters);
 			return;
 		}
@@ -1957,7 +1957,7 @@ protected void removeUnresolvedParameter(UnresolvedParameter parameter) {
 protected void removeProxyParameter(KineticsProxyParameter parameter) {
 	for (int i = 0; i < fieldProxyParameters.length; i++){
 		if (fieldProxyParameters[i] == parameter){
-			KineticsProxyParameter newProxyParameters[] = (KineticsProxyParameter[])BeanUtils.removeElement(fieldProxyParameters,parameter);
+			KineticsProxyParameter newProxyParameters[] = (KineticsProxyParameter[])BeanUtils.removeFirstInstanceOfElement(fieldProxyParameters,parameter);
 			setProxyParameters(newProxyParameters);
 			return;
 		}
@@ -1976,7 +1976,7 @@ void removeUnresolvedParameters(SymbolTable symbolTable) {
 	for (int i = 0; i < unresolvedParms.length; i++){
 		SymbolTableEntry ste = symbolTable.getEntry(unresolvedParms[i].getName());
 		if (ste != unresolvedParms[i]){
-			unresolvedParms = (Kinetics.UnresolvedParameter[])BeanUtils.removeElement(unresolvedParms,unresolvedParms[i]);
+			unresolvedParms = (Kinetics.UnresolvedParameter[])BeanUtils.removeFirstInstanceOfElement(unresolvedParms,unresolvedParms[i]);
 			i--;
 		}
 	}

@@ -300,7 +300,7 @@ public void removeGeneralConstraint(GeneralConstraint constraint) throws java.be
 	if (!org.vcell.util.BeanUtils.arrayContains(fieldGeneralConstraints,constraint)){
 		throw new RuntimeException(constraint+" not found");
 	}
-	GeneralConstraint newGeneralConstraint[] = (GeneralConstraint[])org.vcell.util.BeanUtils.removeElement(fieldGeneralConstraints,constraint);
+	GeneralConstraint newGeneralConstraint[] = (GeneralConstraint[])org.vcell.util.BeanUtils.removeFirstInstanceOfElement(fieldGeneralConstraints,constraint);
 	setGeneralConstraints(newGeneralConstraint);
 }
 
@@ -330,7 +330,7 @@ public void removeSimpleBound(SimpleBounds bounds) throws java.beans.PropertyVet
 	if (!org.vcell.util.BeanUtils.arrayContains(fieldSimpleBounds,bounds)){
 		throw new RuntimeException(bounds+" not found");
 	}
-	SimpleBounds newSimpleBounds[] = (SimpleBounds[])org.vcell.util.BeanUtils.removeElement(fieldSimpleBounds,bounds);
+	SimpleBounds newSimpleBounds[] = (SimpleBounds[])org.vcell.util.BeanUtils.removeFirstInstanceOfElement(fieldSimpleBounds,bounds);
 	setSimpleBounds(newSimpleBounds);
 }
 

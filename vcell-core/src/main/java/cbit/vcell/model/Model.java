@@ -3430,7 +3430,7 @@ private void refreshDiagrams() {
     for (int i = 0; i < fieldDiagrams.length; i++) {
         if (!contains(fieldDiagrams[i].getStructure())) {
             newDiagrams =
-                (Diagram[]) BeanUtils.removeElement(newDiagrams, fieldDiagrams[i]);
+                (Diagram[]) BeanUtils.removeFirstInstanceOfElement(newDiagrams, fieldDiagrams[i]);
             bChangedDiagrams = true;
         }
     }
@@ -3517,7 +3517,7 @@ public void removeStructure(Structure removedStructure, boolean canRemoveLast) t
 	// remove this structure
 	//
 	Structure newStructures[] = (Structure[])fieldStructures.clone();
-	newStructures = (Structure[])BeanUtils.removeElement(newStructures,removedStructure);
+	newStructures = (Structure[])BeanUtils.removeFirstInstanceOfElement(newStructures,removedStructure);
 	setStructures(newStructures);
 }            
 
@@ -3529,7 +3529,7 @@ public void removeModelParameter(Model.ModelParameter modelParameter) throws Pro
 		return;
 	}	
 	if (contains(modelParameter)){
-		Model.ModelParameter newModelParameters[] = (Model.ModelParameter[])BeanUtils.removeElement(fieldModelParameters,modelParameter);
+		Model.ModelParameter newModelParameters[] = (Model.ModelParameter[])BeanUtils.removeFirstInstanceOfElement(fieldModelParameters,modelParameter);
 		setModelParameters(newModelParameters);
 	}
 }         
@@ -3556,7 +3556,7 @@ public synchronized void removePropertyChangeListener(String propertyName, Prope
  */
 public void removeReactionStep(ReactionStep reactionStep) throws PropertyVetoException {
 	if (contains(reactionStep)){
-		setReactionSteps((ReactionStep[])BeanUtils.removeElement(fieldReactionSteps,reactionStep));
+		setReactionSteps((ReactionStep[])BeanUtils.removeFirstInstanceOfElement(fieldReactionSteps,reactionStep));
 	}
 }
 
@@ -3567,7 +3567,7 @@ public void removeSpecies(Species species) throws PropertyVetoException {
 		return;
 	}	
 	if (contains(species)){
-		Species newSpeciesArray[] = (Species[])BeanUtils.removeElement(fieldSpecies,species);
+		Species newSpeciesArray[] = (Species[])BeanUtils.removeFirstInstanceOfElement(fieldSpecies,species);
 		setSpecies(newSpeciesArray);
 	}
 }         
@@ -3575,7 +3575,7 @@ public void removeSpecies(Species species) throws PropertyVetoException {
 
 public void removeSpeciesContext(SpeciesContext speciesContext) throws PropertyVetoException {
 	if (contains(speciesContext)){
-		SpeciesContext newSpeciesContexts[] = (SpeciesContext[])BeanUtils.removeElement(fieldSpeciesContexts,speciesContext);
+		SpeciesContext newSpeciesContexts[] = (SpeciesContext[])BeanUtils.removeFirstInstanceOfElement(fieldSpeciesContexts,speciesContext);
 		setSpeciesContexts(newSpeciesContexts);
 	}
 }

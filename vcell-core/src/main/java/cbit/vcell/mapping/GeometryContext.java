@@ -647,7 +647,7 @@ public void refreshStructureMappings() throws MappingException, PropertyVetoExce
 		// delete this feature mapping if not referenced in both the model and the geometry
 		//
 		if (!(structureFound && geometryClassFound)){
-			newStructureMappings = (StructureMapping[])BeanUtils.removeElement(newStructureMappings,structureMapping);
+			newStructureMappings = (StructureMapping[])BeanUtils.removeFirstInstanceOfElement(newStructureMappings,structureMapping);
 			j--;
 //			//
 //			// delete accompanied membrane mapping if exists 

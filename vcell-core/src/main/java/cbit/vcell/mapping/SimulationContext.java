@@ -29,7 +29,6 @@ import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.Issue.Severity;
 import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.document.BioModelChildSummary.MathType;
-import org.vcell.util.exe.ExecutableStatus;
 import org.vcell.util.document.DocumentValidUtil;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.Identifiable;
@@ -43,7 +42,6 @@ import cbit.image.VCImage;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.bionetgen.BNGOutputSpec;
 import cbit.vcell.data.DataContext;
-import cbit.vcell.export.SpringSaLaDExporter;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldUtilities;
 import cbit.vcell.geometry.Geometry;
@@ -64,7 +62,6 @@ import cbit.vcell.mapping.MicroscopeMeasurement.ExperimentalPSF;
 import cbit.vcell.mapping.MicroscopeMeasurement.GaussianConvolutionKernel;
 import cbit.vcell.mapping.MicroscopeMeasurement.ProjectionZKernel;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
-import cbit.vcell.mapping.RulebasedTransformer.ReactionRuleAnalysisReport;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.mapping.spatial.CurveObject;
 import cbit.vcell.mapping.spatial.PointObject;
@@ -2279,7 +2276,7 @@ private void refreshElectrodes(){
 				lg.error(e);
 			}
 		}else{
-			newStimuli = (ElectricalStimulus[])BeanUtils.removeElement(newStimuli,stimulus);
+			newStimuli = (ElectricalStimulus[])BeanUtils.removeFirstInstanceOfElement(newStimuli,stimulus);
 			i--;
 		}
 	}
@@ -2335,7 +2332,7 @@ public void removeAnalysisTask(AnalysisTask analysisTask) throws PropertyVetoExc
 	if (!bFound){
 		throw new RuntimeException("analysis task not found");
 	}
-	AnalysisTask[] newAnalysisTasks = (AnalysisTask[])BeanUtils.removeElement(fieldAnalysisTasks,analysisTask);
+	AnalysisTask[] newAnalysisTasks = (AnalysisTask[])BeanUtils.removeFirstInstanceOfElement(fieldAnalysisTasks,analysisTask);
 	setAnalysisTasks(newAnalysisTasks);
 }
 
@@ -2350,7 +2347,7 @@ public void removeBioEvent(BioEvent bioEvent) throws PropertyVetoException {
 	if (!bFound){
 		throw new RuntimeException("event not found");
 	}
-	BioEvent[] newBioEvents = (BioEvent[])BeanUtils.removeElement(fieldBioEvents,bioEvent);
+	BioEvent[] newBioEvents = (BioEvent[])BeanUtils.removeFirstInstanceOfElement(fieldBioEvents,bioEvent);
 	setBioEvents(newBioEvents);
 }
 
@@ -2376,7 +2373,7 @@ public void removeSimulationContextParameter(SimulationContext.SimulationContext
 		return;
 	}	
 	if (contains(scParameter)){
-		SimulationContext.SimulationContextParameter newSCParameters[] = (SimulationContext.SimulationContextParameter[])BeanUtils.removeElement(fieldSimulationContextParameters,scParameter);
+		SimulationContext.SimulationContextParameter newSCParameters[] = (SimulationContext.SimulationContextParameter[])BeanUtils.removeFirstInstanceOfElement(fieldSimulationContextParameters,scParameter);
 		setSimulationContextParameters(newSCParameters);
 	}
 }         
@@ -3353,7 +3350,7 @@ public void removeRateRule(RateRule rateRule) throws PropertyVetoException {
 	if (!bFound){
 		throw new RuntimeException("rate rule '" + rateRule.getName() + "' not found.");
 	}
-	RateRule[] newRateRules = (RateRule[])BeanUtils.removeElement(fieldRateRules, rateRule);
+	RateRule[] newRateRules = (RateRule[])BeanUtils.removeFirstInstanceOfElement(fieldRateRules, rateRule);
 	setRateRules(newRateRules);
 }
 public RateRule[] getRateRules() {
@@ -3424,7 +3421,7 @@ public void removeAssignmentRule(AssignmentRule assignmentRule) throws PropertyV
 	if(!bFound) {
 		throw new RuntimeException("Assignment rule '" + assignmentRule.getName() + "' not found.");
 	}
-	AssignmentRule[] newAssignmentRules = (AssignmentRule[])BeanUtils.removeElement(fieldAssignmentRules, assignmentRule);
+	AssignmentRule[] newAssignmentRules = (AssignmentRule[])BeanUtils.removeFirstInstanceOfElement(fieldAssignmentRules, assignmentRule);
 	setAssignmentRules(newAssignmentRules);
 }
 public AssignmentRule[] getAssignmentRules() {
@@ -3565,7 +3562,7 @@ public void addSpatialObject(SpatialObject spatialObject) throws PropertyVetoExc
 }
 
 public void removeSpatialObject(SpatialObject spatialObject) throws PropertyVetoException{
-	setSpatialObjects(BeanUtils.removeElement(this.spatialObjects, spatialObject));
+	setSpatialObjects(BeanUtils.removeFirstInstanceOfElement(this.spatialObjects, spatialObject));
 }
 
 public void setSpatialObjects(SpatialObject[] spatialObjects) throws PropertyVetoException{
@@ -3623,7 +3620,7 @@ public void addSpatialProcess(SpatialProcess spatialProcess) throws PropertyVeto
 }
 
 public void removeSpatialProcess(SpatialProcess spatialProcess) throws PropertyVetoException{
-	setSpatialProcesses(BeanUtils.removeElement(this.spatialProcesses, spatialProcess));
+	setSpatialProcesses(BeanUtils.removeFirstInstanceOfElement(this.spatialProcesses, spatialProcess));
 }
 
 public void setSpatialProcesses(SpatialProcess[] spatialProcesses) throws PropertyVetoException{

@@ -11,33 +11,6 @@
 
 package org.vcell.util;
 
-/*import java.awt.Component;
-import java.awt.Container;
-import java.awt.Cursor;
-import java.awt.Dimension;
-import java.awt.Frame;
-import java.awt.GraphicsEnvironment;
-import java.awt.HeadlessException;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.Toolkit;
-import java.awt.Window;
-import java.awt.event.ActionEvent;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
-import java.awt.event.WindowEvent;
-import java.awt.geom.Line2D;
-import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.InputMap;
-import javax.swing.JComponent;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JMenu;
-import javax.swing.KeyStroke; */
-
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -50,24 +23,11 @@ import java.io.PrintWriter;
 import java.io.Serializable;
 import java.io.StringWriter;
 import java.lang.reflect.Array;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.net.InetSocketAddress;
 import java.net.URL;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.BitSet;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Objects;
-import java.util.TreeMap;
-import java.util.Vector;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 import java.util.zip.DeflaterOutputStream;
@@ -100,7 +60,6 @@ import edu.uchc.connjur.wb.ExecutionTrace;
 /**
  * Insert the type's description here.
  * Creation date: (8/18/2000 2:29:31 AM)
- * @author:
  */
 public final class BeanUtils {
 	private static final Logger lg = LogManager.getLogger(BeanUtils.class);
@@ -117,47 +76,53 @@ public final class BeanUtils {
 	
 	private static VCellDynamicProps vcellDynamicProps = new VCellDynamicProps(null);
 	public static class VCellDynamicProps {
-		private TreeMap<String, String> dynamicClientProperties = null;
+		private final Map<String, String> dynamicClientProperties;
 
-		private VCellDynamicProps(TreeMap<String, String> dynamicClientProperties) {
+		private VCellDynamicProps(Map<String, String> dynamicClientProperties) {
 			super();
 			this.dynamicClientProperties = dynamicClientProperties;
 		}
 		public String getProperty(String propertyName) {
-			return (dynamicClientProperties == null?null:dynamicClientProperties.get(propertyName));
+			return (this.dynamicClientProperties == null? null : this.dynamicClientProperties.get(propertyName));
 		}
 	}
 	public static synchronized VCellDynamicProps getDynamicClientProperties() {
 		return vcellDynamicProps;
 	}
 	public static synchronized void updateDynamicClientProperties() {
-		TreeMap<String, String> temp = new TreeMap<>();
+		Map<String, String> temp = new TreeMap<>();
+		HttpsURLConnection conn;
 		//"https://vcell.org/webstart/dynamicClientProperties.txt"
-		BufferedReader br = null;
-		try{			
+
+		try {
 			//HttpURLConnection conn = new HttpURLConnection(new GetMethod(), new URL("http://dockerbuild:8080"));
 			//https://vcell.org/webstart/vcell_dynamic_properties.csv
 //			HttpURLConnection conn = (HttpURLConnection)(new URL("http://dockerbuild:8080")).openConnection();
-			HttpsURLConnection conn = (HttpsURLConnection)(new URL("https://vcell.org/webstart/vcell_dynamic_properties.csv")).openConnection();
+			conn = (HttpsURLConnection)(new URL("https://vcell.org/webstart/vcell_dynamic_properties.csv")).openConnection();
 			conn.setRequestMethod("GET");
 			conn.setConnectTimeout(5000);
 			conn.setReadTimeout(5000);
-			br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-	        Iterable<CSVRecord> records = CSVFormat.DEFAULT
+
+			try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()))){
+				Iterable<CSVRecord> records = CSVFormat.DEFAULT
 //	          .withHeader(HEADERS)
 //	          .withFirstRecordAsHeader()
-	        	.withIgnoreSurroundingSpaces()
-	        	.withQuote('"')
-	        	.parse(br);
-	        for (CSVRecord record : records) {
-	        	temp.put(record.get(0),record.get(1));
-	        }
-	        vcellDynamicProps = new VCellDynamicProps(temp);
-		} catch (Exception e) {
-			e.printStackTrace();
-			//re-read failed, just return what we have may have been successful previously
-		}finally {
-			if(br != null) {try{br.close();}catch(Exception e) {e.printStackTrace();}}
+						.withIgnoreSurroundingSpaces()
+						.withQuote('"')
+						.parse(br);
+				for (CSVRecord record : records) {
+					temp.put(record.get(0),record.get(1));
+				}
+				vcellDynamicProps = new VCellDynamicProps(temp);
+			}
+		} catch (IOException e){
+			lg.error("Exception occurred while creating Connection of HTTPS: " + e.getMessage(), e);
+			// We don't support throwing an exception...yet!
+			//TODO: Allow this to throw exception!
+		} catch (Exception e){
+			lg.error("Unexpected error occurred while getting client properties: " + e.getMessage(), e);
+			// We don't support throwing an exception...yet!
+			//TODO: Allow this to throw exception!
 		}
 	}
 
@@ -175,9 +140,9 @@ public final class BeanUtils {
 			y = argY;
 			z = argZ;
 		}
-	};
+	}
 
-	public static Range selectRange(boolean bAuto,boolean bAllTimes,Range rangeFromClient,Range currentVarAndTimeValRange) {
+	public static Range selectRange(boolean bAuto, boolean bAllTimes, Range rangeFromClient, Range currentVarAndTimeValRange) {
 		if(bAuto && !bAllTimes) {// value range at each current time-point
 			return currentVarAndTimeValRange;
 		}
@@ -186,208 +151,80 @@ public final class BeanUtils {
 		return rangeFromClient;
 	}
 
-	public static <T> T[] addElement(T[] array, T element) {
-		@SuppressWarnings("unchecked")
-		T[] arrayNew =
-			(T[]) Array.newInstance(array.getClass().getComponentType(), array.length + 1);
-		System.arraycopy(array, 0, arrayNew, 0, array.length);
-		arrayNew[array.length] = element;
-		return arrayNew;
-	}
-
-	public static <T> T[] addElements(T[] array1, T[] array2) {
-		@SuppressWarnings("unchecked")
-		T[] array =
-			(T[]) Array.newInstance(array1.getClass().getComponentType(), array1.length + array2.length);
-		System.arraycopy(array1, 0, array, 0, array1.length);
-		System.arraycopy(array2, 0, array, array1.length, array2.length);
-		return array;
-	}
-
-	public static <T> boolean arrayContains(T[] objects, T object) {
-		if (object == null || objects == null) {
-			return false;
-		}
-		return Arrays.asList(objects).contains(object);
-	}
-
-	public static <T> boolean arrayEquals(T[] a1, T[] a2) {
-		if (a1 == a2) {
-			return true;
-		}
-		if (a1 != null && a2 != null) {
-			return Arrays.equals(a1, a2);
-		}
-		return false;
+	public static <T> T[] addElement(T[] originalArray, T element) {
+		T[] largerArray = Arrays.copyOf(originalArray, originalArray.length + 1);
+		largerArray[originalArray.length] = element;
+		return largerArray;
 	}
 
 	public static Serializable cloneSerializable(Serializable obj) throws ClassNotFoundException, java.io.IOException {
-		Serializable clone = fromSerialized(toSerialized(obj));
-		return clone;
+        return fromSerialized(toSerialized(obj));
 	}
 
 	public static byte[] compress(byte[] bytes) throws java.io.IOException {
+		try (ByteArrayOutputStream bos = new ByteArrayOutputStream()){
+			try (DeflaterOutputStream dos = new DeflaterOutputStream(bos)){
+				dos.write(bytes,0, bytes.length);
+			}
+			return bos.toByteArray();
+		}
+	}
+
+	public static byte[] uncompress(byte[] compressedBytes) throws java.io.IOException {
+		ByteArrayInputStream bis = new ByteArrayInputStream(compressedBytes);
+		InflaterInputStream iis = new InflaterInputStream(bis);
+		int temp;
+		byte buf[] = new byte[65536]; // 64 KiB
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		DeflaterOutputStream dos = new DeflaterOutputStream(bos);
-		dos.write(bytes,0,bytes.length);
-		dos.close();
-		byte[] compressed = bos.toByteArray();
-		bos.close();
-		return compressed;
-	}
-
-	public static int coordinateToIndex(int[] coordinates, int[] bounds) {
-		// computes linearized index of a position in an n-dimensional matrix
-		// see also related method indexToCoordinate()
-		if (coordinates.length != bounds.length) throw new RuntimeException("coordinates and bounds arrays have different lengths");
-		int index = 0;
-		for (int i = 0; i < bounds.length; i++){
-			if (coordinates[i] < 0 || bounds[i] < coordinates[i]) throw new RuntimeException("invalid coordinate");
-			int offset = 1;
-			for (int j = i + 1; j < bounds.length; j++){
-				offset *= bounds[j] + 1;
-			}
-			index += coordinates[i] * offset;
+		while((temp = iis.read(buf,0,buf.length)) != -1){
+			bos.write(buf,0,temp);
 		}
-		return index;
-	}
-
-	public static int firstIndexOf(double[] dd, double d) {
-		if (dd != null) {
-			for (int i = 0; i < dd.length; i++){
-				if (d == dd[i]) {
-					return i;
-				}
-			}
-		}
-		return -1;
-	}
-
-	public static String forceStringSize(String s, int size,String padChar,boolean bPrependPad) {
-		//
-		if(padChar == null || padChar.length()==0){
-			padChar = " ";
-		}
-		StringBuffer pad = new StringBuffer();
-		for(int c = 0;c < size;c+= 1){
-			pad.append(padChar);
-		}
-		if(size == 0){
-			return "";
-		}
-		if(s == null || s.length() == 0){
-			return pad.toString().substring(0,size);
-		}
-		if(size <= s.length()){
-			return s.substring(0,size);
-		}
-		if(bPrependPad){
-			return pad.toString().substring(0,size-s.length()) + s;
-		}
-		return s + pad.toString().substring(0,size-s.length());
+		iis.close();
+		bis.close();
+		return bos.toByteArray();
 	}
 
 	public static Serializable fromCompressedSerialized(byte[] objData) throws ClassNotFoundException, java.io.IOException {
-		long before = 0;
-		if (lg.isTraceEnabled()) {
-			before = System.currentTimeMillis();
+		long before = 0, after;
+		boolean traceIsEnabled = lg.isTraceEnabled();
+		if (traceIsEnabled) before = System.currentTimeMillis();
+
+		Serializable cacheClone;
+		try (java.io.ByteArrayInputStream bis = new java.io.ByteArrayInputStream(objData)){
+			try (InflaterInputStream iis = new InflaterInputStream(bis)){
+				try (java.io.ObjectInputStream ois = new java.io.ObjectInputStream(iis)){
+					cacheClone = (Serializable) ois.readObject();
+				}
+			}
 		}
 
-		java.io.ByteArrayInputStream bis = new java.io.ByteArrayInputStream(objData);
-		InflaterInputStream iis = new InflaterInputStream(bis);
-		java.io.ObjectInputStream ois = new java.io.ObjectInputStream(iis);
-		Serializable cacheClone = (Serializable) ois.readObject();
-		ois.close();
-		bis.close();
-
-		if (lg.isTraceEnabled()) {
-			long after = System.currentTimeMillis();
-			lg.trace("fromCompressedSerialized(): t="+(after-before)+" ms, ("+cacheClone+")");	
+		if (traceIsEnabled) {
+			after = System.currentTimeMillis();
+			lg.trace(String.format("fromCompressedSerialized(): t=%d ms, (%s)", after - before, cacheClone.toString()));
 		}
-
 		return cacheClone;
 	}
 
 	public static Serializable fromSerialized(byte[] objData) throws ClassNotFoundException, IOException {
-		long before = 0;
-		if (lg.isTraceEnabled()) {
-			before = System.currentTimeMillis();
+		long before = 0, after;
+		if (lg.isTraceEnabled()) before = System.currentTimeMillis();
+
+		Serializable cacheClone;
+		try (ByteArrayInputStream bis = new ByteArrayInputStream(objData)) {
+			try (ObjectInputStream ois = new ObjectInputStream(bis)) {
+				cacheClone = (Serializable) ois.readObject();
+			}
 		}
 
-		ByteArrayInputStream bis = new ByteArrayInputStream(objData);
-		ObjectInputStream ois = new ObjectInputStream(bis);
-		Serializable cacheClone = (Serializable) ois.readObject();
-		ois.close();
-		bis.close();
-
 		if (lg.isTraceEnabled()) {
-			long after = System.currentTimeMillis();
-			lg.trace("fromSerialized(): t="+(after-before)+" ms, ("+cacheClone+")");			
+			after = System.currentTimeMillis();
+			lg.trace("fromSerialized(): t="+(after-before)+" ms, ("+cacheClone+")");
 		}
-
 		return cacheClone;
-	}
-
-	public static <T> T[] getArray(Enumeration<? extends T> enumeration, Class<T> elementType) {
-		List<T> list = new ArrayList<T>();
-		while (enumeration.hasMoreElements()){
-			list.add(enumeration.nextElement());
-		}
-		@SuppressWarnings("unchecked")
-		T[] array = list.toArray((T[])Array.newInstance(elementType, list.size()));
-		return array;
-	}
-
-	/**
-	 * @return list.toArray()
-	 */
-	public static <T> T[] getArray(List<?> list, Class<T> elementType) {
-		@SuppressWarnings("unchecked")
-		T[] array = list.toArray((T[])Array.newInstance(elementType, list.size()));
-		return array;
-	}
-
-	public static int[] indexToCoordinate(int index, int[] bounds) {
-		// computes coordinates of a position in an n-dimensional matrix from linearized index
-		// see also related method coordinateToIndex()
-		if (index < 0) throw new RuntimeException("invalid index, negative number");
-		int[] coordinates = new int[bounds.length];
-		for (int i = 0; i < bounds.length; i++){
-			int offset = 1;
-			for (int j = i + 1; j < bounds.length; j++){
-				offset *= bounds[j] + 1;
-			}
-			coordinates[i] = index / offset;
-			if (coordinates[i] > bounds[i]) throw new RuntimeException("invalid index, number too large");
-			index -= offset * coordinates[i];
-		}
-		return coordinates;
-	}
-
-	public static <T> T[] removeElement(T[] array, T o) {
-		int index = Arrays.asList(array).indexOf(o);
-		if(index >= 0) {
-			int lengthNew = array.length - 1;
-			@SuppressWarnings("unchecked")
-			T[] arrayNew = (T[]) Array.newInstance(array.getClass().getComponentType(), lengthNew);
-			if(index >= 0) {
-				if(index > 0) {
-					System.arraycopy(array, 0, arrayNew, 0, index);
-				}
-				if(index < array.length - 1) {
-					System.arraycopy(array, index + 1, arrayNew, index, lengthNew - index);
-				}
-			}
-			return arrayNew;
-		}
-		else{
-			throw new RuntimeException("Error removing "+o.toString()+", not in object array");
-		}
 	}
 
 	public static byte[] toCompressedSerialized(Serializable cacheObj) throws java.io.IOException {
 		byte[] bytes = toSerialized(cacheObj);
-
 		long before = System.currentTimeMillis();
 
 		byte[] objData = null;
@@ -431,22 +268,123 @@ public final class BeanUtils {
 		return objData;
 	}
 
-	public static boolean triggersPropertyChangeEvent(Object a, Object b) {
-		return (a == null || !a.equals(b));
+	public static int coordinateToIndex(int[] coordinates, int[] bounds) {
+		// computes linearized index of a position in an n-dimensional matrix
+		// see also related method indexToCoordinate()
+		if (coordinates.length != bounds.length) throw new RuntimeException("coordinates and bounds arrays have different lengths");
+		int index = 0;
+		for (int i = 0; i < bounds.length; i++){
+			if (coordinates[i] < 0 || bounds[i] < coordinates[i]) throw new RuntimeException("invalid coordinate");
+			int offset = 1;
+			for (int j = i + 1; j < bounds.length; j++){
+				offset *= bounds[j] + 1;
+			}
+			index += coordinates[i] * offset;
+		}
+		return index;
 	}
 
-	public static byte[] uncompress(byte[] compressedBytes) throws java.io.IOException {
-		ByteArrayInputStream bis = new ByteArrayInputStream(compressedBytes);
-		InflaterInputStream iis = new InflaterInputStream(bis);
-		int temp;
-		byte buf[] = new byte[65536];
-		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		while((temp = iis.read(buf,0,buf.length)) != -1){
-			bos.write(buf,0,temp);
+	public static int[] indexToCoordinate(int index, int[] bounds) {
+		// computes coordinates of a position in an n-dimensional matrix from linearized index
+		// see also related method coordinateToIndex()
+		if (index < 0) throw new RuntimeException("invalid index, negative number");
+		int[] coordinates = new int[bounds.length];
+		for (int i = 0; i < bounds.length; i++){
+			int offset = 1;
+			for (int j = i + 1; j < bounds.length; j++){
+				offset *= bounds[j] + 1;
+			}
+			coordinates[i] = index / offset;
+			if (coordinates[i] > bounds[i]) throw new RuntimeException("invalid index, number too large");
+			index -= offset * coordinates[i];
 		}
-		iis.close();
-		bis.close();
-		return bos.toByteArray();
+		return coordinates;
+	}
+
+	public static int firstIndexOf(double[] dd, double d) {
+		if (dd == null) return -1;
+		for (int i = 0; i < dd.length; i++){
+			if (d == dd[i]) return i;
+		}
+		return -1;
+	}
+
+	public static String forceStringLength(String originalString, int targetLength, String pad, boolean shouldPrependPad) {
+		if (targetLength < 0) throw new IllegalArgumentException("Size can not be negative");
+		if(targetLength == 0) return "";
+
+		String padString = pad == null || pad.isEmpty() ? " " : pad;
+		StringBuilder fullPadding = new StringBuilder();
+
+        fullPadding.append(padString.repeat(targetLength));
+
+		// We just want a padding
+		if(originalString == null || originalString.isEmpty()) return fullPadding.substring(0,targetLength);
+
+		// We just want a substring
+		if(targetLength <= originalString.length()) return originalString.substring(0,targetLength);
+		// Todo: Add option to get end-substring using `shouldPrependPad = false`
+
+		if(shouldPrependPad) return fullPadding.substring(0,targetLength - originalString.length()) + originalString;
+
+		return originalString + fullPadding.substring(0,targetLength-originalString.length());
+	}
+
+	public static <T> T[] getArray(Enumeration<? extends T> enumeration, Class<T> elementType) {
+		List<T> list = new ArrayList<T>();
+		while (enumeration.hasMoreElements()){
+			list.add(enumeration.nextElement());
+		}
+		@SuppressWarnings("unchecked")
+		T[] array = list.toArray((T[])Array.newInstance(elementType, list.size()));
+		return array;
+	}
+
+	public static <T> T[] addElements(T[] firstArray, T[] appendingArray) {
+		T[] largerArray = Arrays.copyOf(firstArray, firstArray.length + appendingArray.length);
+		System.arraycopy(appendingArray, 0, largerArray, firstArray.length, appendingArray.length);
+		return largerArray;
+	}
+
+	public static <T> boolean arrayContains(T[] objects, T object) {
+		if (object == null || objects == null) return false;
+		for (T obj : objects) if (object.equals(obj)) return true;
+		return false;
+	}
+
+	public static <T> boolean arrayEquals(T[] a1, T[] a2) {
+		return a1 == a2 || (a1 != null && a2 != null && Arrays.equals(a1, a2));
+	}
+
+	/**
+	 * @return list.toArray()
+	 */
+	public static <T> T[] getArray(List<?> list, Class<T> elementType) {
+		@SuppressWarnings("unchecked")
+		T[] array = list.toArray((T[])Array.newInstance(elementType, list.size()));
+		return array;
+	}
+
+	public static <T> T[] removeFirstInstanceOfElement(T[] array, T element) {
+		@SuppressWarnings("unchecked")
+		T[] newArray = (T[])Array.newInstance(array.getClass().getComponentType(), array.length - 1);
+		try {
+			for (int i = 0, j = 0; i < array.length; i++, j++){
+				if (element.equals(array[i]) && i == j) { // i == j to prevent more than just first occurrence
+					j--;
+				} else {
+					newArray[j] = array[i];
+				}
+			}
+			return newArray;
+		} catch (IndexOutOfBoundsException e){
+			throw new RuntimeException("Error removing " + element + ": element not in object array");
+			// Todo: consider explicitly throwing IndexOutOfBoundsException instead of implicit runtime exception.
+		}
+	}
+
+	public static boolean triggersPropertyChangeEvent(Object a, Object b) {
+		return (a == null || !a.equals(b));
 	}
 
 	public static String getStackTrace(Throwable throwable) {
