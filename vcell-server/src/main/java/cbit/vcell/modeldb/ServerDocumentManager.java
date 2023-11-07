@@ -14,10 +14,7 @@ import java.util.*;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.vcell.util.BeanUtils;
-import org.vcell.util.DataAccessException;
-import org.vcell.util.ObjectNotFoundException;
-import org.vcell.util.TokenMangler;
+import org.vcell.util.*;
 import org.vcell.util.document.BioModelChildSummary;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
@@ -86,12 +83,6 @@ public ServerDocumentManager(DatabaseServerImpl argDbServerImpl) {
 	this.dbServer = argDbServerImpl;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (6/12/01 3:20:55 PM)
- * @param bioModel cbit.vcell.biomodel.BioModel
- */
 private void forceDeepDirtyIfForeign(User user,VCImage image) {
 	//
 	// ensures that saving a public "shared" geometry saves a deep clone as your own.
@@ -144,18 +135,12 @@ private void forceDeepDirtyIfForeign(User user,BioModel bioModel) {
 			}
 		}
 	}
-	Simulation simulations[] = bioModel.getSimulations();
+	Simulation[] simulations = bioModel.getSimulations();
 	for (int i = 0; simulations!=null && i < simulations.length; i++){
 		forceDirtyIfForeign(user,simulations[i]);
 	}
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (6/12/01 3:20:55 PM)
- * @param bioModel cbit.vcell.biomodel.BioModel
- */
 private void forceDeepDirtyIfForeign(User user,Geometry geometry) {
 	//
 	// ensures that saving a public "shared" geometry saves a deep clone as your own.
@@ -171,12 +156,6 @@ private void forceDeepDirtyIfForeign(User user,Geometry geometry) {
 	}
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (6/12/01 3:20:55 PM)
- * @param bioModel cbit.vcell.biomodel.BioModel
- */
 private void forceDeepDirtyIfForeign(User user, MathModel mathModel) {
 	//
 	// ensures that saving a public "shared" mathModel saves a deep clone as your own.
@@ -212,11 +191,6 @@ private void forceDeepDirtyIfForeign(User user, MathModel mathModel) {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (6/12/01 3:20:55 PM)
- * @param bioModel cbit.vcell.biomodel.BioModel
- */
 private void forceDeepDirtyIfForeign(User user, Simulation simulation) {
 	//
 	// ensures that saving a public "shared" mathModel saves a deep clone as your own.
@@ -240,11 +214,6 @@ private void forceDeepDirtyIfForeign(User user, Simulation simulation) {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (6/12/01 3:20:55 PM)
- * @param bioModel cbit.vcell.biomodel.BioModel
- */
 private void forceDirtyIfForeign(User user,Versionable versionable) {
 	try {
 		if (versionable.getVersion()!=null && !versionable.getVersion().getOwner().equals(user)){
@@ -259,12 +228,6 @@ private void forceDirtyIfForeign(User user,Versionable versionable) {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (11/14/00 4:02:44 PM)
- * @return cbit.vcell.biomodel.BioModel
- * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
- */
 //
 // this returns a BioModel that contains multiple instances of objects.
 // 
@@ -342,7 +305,7 @@ public String getBioModelUnresolved(QueryHashtable dbc, User user, KeyValue bioM
 			}
 			if (!bMathFound){
 				if (lg.isWarnEnabled()) lg.warn("<<<<WARNING>>>>> ClientDocumentManager.getBioModel(), Simulation "+simArray[i].getName()+" is orphaned, Math("+simArray[i].getMathDescription().getName()+") not found in Applications");
-				simArray = (Simulation[])BeanUtils.removeFirstInstanceOfElement(simArray,simArray[i]);
+				simArray = ArrayUtils.removeFirstInstanceOfElement(simArray,simArray[i]);
 				i--;
 			}
 		}
@@ -376,13 +339,6 @@ public String getBioModelUnresolved(QueryHashtable dbc, User user, KeyValue bioM
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (3/29/2004 4:04:16 PM)
- * @return java.lang.String
- * @param vType cbit.sql.VersionableType
- * @param vKey cbit.sql.KeyValue
- */
 public String getBioModelXML(QueryHashtable dbc, User user, KeyValue bioModelKey,boolean bRegenerateXML) throws DataAccessException {
 	String bioModelXML = null;
 	
@@ -442,14 +398,6 @@ private KeyValue[] getKeyArrayFromEnumeration(Enumeration enum1) {
 	temp.copyInto(keyArray);
 	return keyArray;
 }
-
-
-/**
- * Insert the method's description here.
- * Creation date: (11/14/00 4:02:44 PM)
- * @return cbit.vcell.biomodel.BioModel
- * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
- */
 
 //
 // this returns a MathModel that has duplicate instances of the same objects
@@ -519,14 +467,6 @@ public MathModel getMathModelUnresolved(QueryHashtable dbc, User user, KeyValue 
 	return newMathModel;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (3/29/2004 4:04:16 PM)
- * @return java.lang.String
- * @param vType cbit.sql.VersionableType
- * @param vKey cbit.sql.KeyValue
- */
 public String getMathModelXML(QueryHashtable dbc, User user, KeyValue mathModelKey,boolean bRegenerateXML) throws DataAccessException {
 	String mathModelXML = null;
 	
@@ -704,12 +644,6 @@ private boolean isChanged0(User user, org.vcell.util.document.Versionable versio
 	return false;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (11/28/00 5:43:44 PM)
- * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
- */
 private VersionInfo removeUserFromGroup0(User user, VersionInfo versionInfo, VersionableType vType, Hashtable vInfoHash, String userToAdd) throws DataAccessException {
 
 	//
@@ -2414,12 +2348,6 @@ public String saveVCImage(User user,String imageXML,String newName) throws DataA
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (11/14/00 2:26:59 PM)
- * @return cbit.sql.Versionable
- * @param versionable cbit.sql.Versionable
- */
 private KeyValue update(User user, VCImage image) throws DataAccessException, java.sql.SQLException {
 	//
 	// if saved previously and no name change and same user, then update, else insert
@@ -2431,13 +2359,6 @@ private KeyValue update(User user, VCImage image) throws DataAccessException, ja
 	}
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (11/14/00 2:26:59 PM)
- * @return cbit.sql.Versionable
- * @param versionable cbit.sql.Versionable
- */
 private KeyValue update(User user, BioModelMetaData bioModelMetaData,BioModelChildSummary bmcs) throws DataAccessException, java.sql.SQLException {
 	//
 	// update in database and get updated edition

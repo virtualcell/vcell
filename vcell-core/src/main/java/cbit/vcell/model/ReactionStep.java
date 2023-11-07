@@ -895,7 +895,7 @@ public void removeReactionParticipant(ReactionParticipant reactionParticipant) t
 		return;
 	}	
 	if (contains(reactionParticipant)){
-		ReactionParticipant newReactionParticipants[] = (ReactionParticipant[])BeanUtils.removeFirstInstanceOfElement(fieldReactionParticipants, reactionParticipant);
+		ReactionParticipant[] newReactionParticipants = ArrayUtils.removeFirstInstanceOfElement(fieldReactionParticipants, reactionParticipant);
 		setReactionParticipants(newReactionParticipants);
 	}
 }            
@@ -1026,9 +1026,9 @@ public void setPhysicsOptions(int physicsOptions) throws java.beans.PropertyVeto
 		return;
 	}
 	int oldValue = fieldPhysicsOptions;
-	fireVetoableChange("physicsOptions", new Integer(oldValue), new Integer(physicsOptions));
+	fireVetoableChange("physicsOptions", oldValue, physicsOptions);
 	fieldPhysicsOptions = physicsOptions;
-	firePropertyChange("physicsOptions", new Integer(oldValue), new Integer(physicsOptions));
+	firePropertyChange("physicsOptions", oldValue, physicsOptions);
 }
 
 public void setReversible(boolean argReversible) {
@@ -1037,7 +1037,7 @@ public void setReversible(boolean argReversible) {
 	}
 	boolean oldValue = this.bReversible;
 	this.bReversible = argReversible;
-	firePropertyChange("reversible", new Boolean(oldValue), new Boolean(this.bReversible));
+	firePropertyChange("reversible", oldValue, this.bReversible);
 }
 
 public abstract void setReactionParticipantsFromDatabase(Model model, ReactionParticipant[] reactionParticipants) throws PropertyVetoException, DataAccessException;

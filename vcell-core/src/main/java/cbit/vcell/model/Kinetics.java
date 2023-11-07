@@ -1508,7 +1508,6 @@ public KineticsProxyParameter getProxyParameter(String pName){
 /**
  * Gets the kineticsParameters index property (cbit.vcell.model.KineticsParameter) value.
  * @return The kineticsParameters property value.
- * @param index The index value into the property array.
  * @see #setKineticsParameters
  */
 public KineticsParameter getKineticsParameterFromRole(int role) {
@@ -1836,7 +1835,7 @@ public void propertyChange(PropertyChangeEvent event) {
 /**
  * Insert the method's description here.
  * Creation date: (5/11/2004 6:19:00 PM)
- * @param bReading boolean
+ * @param argReading boolean
  */
 public void reading(boolean argReading) {
 	if (argReading == bReading){
@@ -1888,33 +1887,20 @@ public void refreshDependencies() {
 protected abstract void refreshUnits();
 
 
-/**
- * Insert the method's description here.
- * Creation date: (9/22/2003 9:51:49 AM)
- * @param parameterName java.lang.String
- */
 void removeAllUnresolvedParameters() {
 	setUnresolvedParameters(new UnresolvedParameter[0]);
 }
 
 
-/**
- * This method was created by a SmartGuide.
- * @param name java.lang.String
- * @exception java.lang.Exception The exception description.
- */
 protected void removeKineticsParameter(KineticsParameter parameter) throws PropertyVetoException {
-	KineticsParameter newKineticsParameters[] = (KineticsParameter[])BeanUtils.removeFirstInstanceOfElement(fieldKineticsParameters,parameter);
+	KineticsParameter newKineticsParameters[] = (KineticsParameter[])ArrayUtils.removeFirstInstanceOfElement(fieldKineticsParameters,parameter);
 	setKineticsParameters(newKineticsParameters);
 }
 
 /**
  * removeUserDefinedKineticParam : wrapper for 'removeKineticsParameter' to be able to remove user-defined kinetics parameter
  * 		from ModelParameterPanel.
- * @param parameter
- * @throws PropertyVetoException
  */
-
 public void removeUserDefinedKineticParam(Parameter parameter) throws PropertyVetoException {
 	if (parameter instanceof KineticsParameter && ((KineticsParameter)parameter).getRole() == ROLE_UserDefined) {
 		removeKineticsParameter((KineticsParameter)parameter);
@@ -1935,12 +1921,12 @@ public synchronized void removePropertyChangeListener(java.beans.PropertyChangeL
 /**
  * Insert the method's description here.
  * Creation date: (9/22/2003 9:51:49 AM)
- * @param parameterName java.lang.String
+ * @param parameter cbit.vcell.model.UnsolvedParameter
  */
 protected void removeUnresolvedParameter(UnresolvedParameter parameter) {
 	for (int i = 0; i < fieldUnresolvedParameters.length; i++){
 		if (fieldUnresolvedParameters[i] == parameter){
-			UnresolvedParameter newUnresolvedParameters[] = (UnresolvedParameter[])BeanUtils.removeFirstInstanceOfElement(fieldUnresolvedParameters,parameter);
+			UnresolvedParameter newUnresolvedParameters[] = (UnresolvedParameter[])ArrayUtils.removeFirstInstanceOfElement(fieldUnresolvedParameters,parameter);
 			setUnresolvedParameters(newUnresolvedParameters);
 			return;
 		}
@@ -1949,15 +1935,11 @@ protected void removeUnresolvedParameter(UnresolvedParameter parameter) {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (9/22/2003 9:51:49 AM)
- * @param parameterName java.lang.String
- */
+
 protected void removeProxyParameter(KineticsProxyParameter parameter) {
 	for (int i = 0; i < fieldProxyParameters.length; i++){
 		if (fieldProxyParameters[i] == parameter){
-			KineticsProxyParameter newProxyParameters[] = (KineticsProxyParameter[])BeanUtils.removeFirstInstanceOfElement(fieldProxyParameters,parameter);
+			KineticsProxyParameter newProxyParameters[] = (KineticsProxyParameter[])ArrayUtils.removeFirstInstanceOfElement(fieldProxyParameters,parameter);
 			setProxyParameters(newProxyParameters);
 			return;
 		}
@@ -1966,17 +1948,12 @@ protected void removeProxyParameter(KineticsProxyParameter parameter) {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (9/22/2003 9:51:49 AM)
- * @param parameterName java.lang.String
- */
 void removeUnresolvedParameters(SymbolTable symbolTable) {
 	Kinetics.UnresolvedParameter unresolvedParms[] = (Kinetics.UnresolvedParameter[])fieldUnresolvedParameters.clone();
 	for (int i = 0; i < unresolvedParms.length; i++){
 		SymbolTableEntry ste = symbolTable.getEntry(unresolvedParms[i].getName());
 		if (ste != unresolvedParms[i]){
-			unresolvedParms = (Kinetics.UnresolvedParameter[])BeanUtils.removeFirstInstanceOfElement(unresolvedParms,unresolvedParms[i]);
+			unresolvedParms = (Kinetics.UnresolvedParameter[])ArrayUtils.removeFirstInstanceOfElement(unresolvedParms,unresolvedParms[i]);
 			i--;
 		}
 	}
@@ -2167,11 +2144,6 @@ void setName(String name) {
 }
 
 
-/**
- * This method was created by a SmartGuide.
- * @param expressionString java.lang.String
- * @exception java.lang.Exception The exception description.
- */
 public void setParameterValue(KineticsParameter parm, Expression exp) throws ExpressionException, PropertyVetoException {
 	Parameter p = getKineticsParameter(parm.getName());
 	if (p != parm){
@@ -2219,12 +2191,6 @@ private void setUnresolvedParameters(UnresolvedParameter[] unresolvedParameters)
 	firePropertyChange("unresolvedParameters", oldValue, unresolvedParameters);
 }
 
-
-/**
- * Sets the unresolvedParameters property (cbit.vcell.model.UnresolvedParameter[]) value.
- * @param unresolvedParameters The new value for the property.
- * @see #getUnresolvedParameters
- */
 private void setProxyParameters(KineticsProxyParameter[] proxyParameters) {
 	KineticsProxyParameter[] oldValue = fieldProxyParameters;
 	fieldProxyParameters = proxyParameters;
@@ -2257,11 +2223,6 @@ public void vetoableChange(PropertyChangeEvent e) throws PropertyVetoException {
 }
 
 
-/**
- * This method was created by a SmartGuide.
- * @param ps java.io.PrintStream
- * @exception java.lang.Exception The exception description.
- */
 public final void writeTokens(java.io.PrintWriter pw) {
 	//
 	//  old format (version 1) (still supported for reading)
@@ -2331,12 +2292,6 @@ public final void writeTokens(java.io.PrintWriter pw) {
 	pw.println("\t\t"+VCMODL.EndBlock+" ");
 }
 
-/**
- * writeTokensWithReplacingProxyParams : same functionality as writeTokens, but it replaces original proxyParameters with 
- * corresponding new proxyparameters.
- * 
- * @param pw
- */
 public final String writeTokensWithReplacingProxyParams(Hashtable<String, Expression> parmExprHash) {
 	//
 	//  old format (version 1) (still supported for reading)

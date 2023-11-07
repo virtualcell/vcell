@@ -1644,7 +1644,7 @@ private void removeParameter(SpeciesContextSpec.SpeciesContextSpecParameter para
 protected void removeProxyParameter(SpeciesContextSpecProxyParameter parameter) {
 	for (int i = 0; i < fieldProxyParameters.length; i++){
 		if (fieldProxyParameters[i] == parameter){
-			SpeciesContextSpecProxyParameter newProxyParameters[] = (SpeciesContextSpecProxyParameter[])BeanUtils.removeFirstInstanceOfElement(fieldProxyParameters,parameter);
+			SpeciesContextSpecProxyParameter[] newProxyParameters = ArrayUtils.removeFirstInstanceOfElement(fieldProxyParameters,parameter);
 			setProxyParameters(newProxyParameters);
 			return;
 		}
@@ -1718,9 +1718,9 @@ public void setClamped(boolean isClamped) {
 	boolean oldDiffusing = isDiffusing();
 	boolean oldConstant = bClamped;
 	this.bClamped = isClamped;
-	firePropertyChange("constant",new Boolean(oldConstant), new Boolean(isClamped)); // to support legacy/deprecated usage
-	firePropertyChange("clamped",new Boolean(oldConstant), new Boolean(isClamped));
-	firePropertyChange("diffusing", new Boolean(oldDiffusing), new Boolean(isDiffusing()));
+	firePropertyChange("constant", oldConstant, isClamped); // to support legacy/deprecated usage
+	firePropertyChange("clamped", oldConstant, isClamped);
+	firePropertyChange("diffusing", oldDiffusing, isDiffusing());
 }
 
 ///**

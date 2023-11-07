@@ -32,38 +32,37 @@ public class UserPreferenceTable extends cbit.sql.Table {
 	public final Field userRef 			= new Field("userRef",		SQLDataType.integer,		"NOT NULL "+UserTable.REF_TYPE+" ON DELETE CASCADE");
 	public final Field userPrefKey 		= new Field("userPrefKey",	SQLDataType.varchar_128,	"NOT NULL");
 	public final Field userPrefValue	= new Field("userPrefValue",SQLDataType.varchar_4000,	"NOT NULL");
-	
 
-	private final Field fields[] = {userRef,userPrefKey,userPrefValue};
-	
+
 	public static final UserPreferenceTable table = new UserPreferenceTable();
 
-/**
- * ModelTable constructor comment.
- */
-private UserPreferenceTable() {
-	super(TABLE_NAME);
-	addFields(fields);
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (6/10/2004 4:12:51 PM)
- * @return java.util.Dictionary
- * @param rset java.sql.ResultSet
- */
-public Preference[] getUserPreferences(ResultSet rset) throws SQLException{
-
-	Vector<Preference> preferenceList = new Vector<Preference>();
-	while (rset.next()){
-		String propKey = rset.getString(UserPreferenceTable.table.userPrefKey.getUnqualifiedColName());
-		String propValue = rset.getString(UserPreferenceTable.table.userPrefValue.getUnqualifiedColName());
-		preferenceList.add(
-			new Preference(
-				TokenMangler.getSQLRestoredString(propKey),TokenMangler.getSQLRestoredString(propValue)));
+	/**
+	 * ModelTable constructor comment.
+	 */
+	private UserPreferenceTable() {
+		super(TABLE_NAME);
+		Field[] fields = {userRef, userPrefKey, userPrefValue};
+		addFields(fields);
 	}
 
-	return (Preference[])BeanUtils.getArray(preferenceList,Preference.class);
-}
+
+	/**
+	 * Insert the method's description here.
+	 * Creation date: (6/10/2004 4:12:51 PM)
+	 * @return java.util.Dictionary
+	 * @param rset java.sql.ResultSet
+	 */
+	public Preference[] getUserPreferences(ResultSet rset) throws SQLException{
+
+		Vector<Preference> preferenceList = new Vector<>();
+		while (rset.next()){
+			String propKey = rset.getString(UserPreferenceTable.table.userPrefKey.getUnqualifiedColName());
+			String propValue = rset.getString(UserPreferenceTable.table.userPrefValue.getUnqualifiedColName());
+			preferenceList.add(
+				new Preference(
+					TokenMangler.getSQLRestoredString(propKey),TokenMangler.getSQLRestoredString(propValue)));
+		}
+
+		return preferenceList.toArray(Preference[]::new);
+	}
 }

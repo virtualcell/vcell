@@ -194,8 +194,7 @@ MathSymbolMapping computeOptimizationSpec() throws MathException, MappingExcepti
 			//
 			// replace constant values with "initial guess"
 			//
-			if (mathVariable instanceof Constant){
-				Constant origConstant = (Constant)mathVariable;
+			if (mathVariable instanceof Constant origConstant){
 				for (int j = 0; j < allVars.length; j++){
 					if (allVars[j].equals(origConstant)){
 						if (parameterMappingSpecs[i].isSelected()) {
@@ -215,7 +214,7 @@ MathSymbolMapping computeOptimizationSpec() throws MathException, MappingExcepti
 			}
 		}
 	}
-	parameterMappings = (ParameterMapping[])BeanUtils.getArray(parameterMappingList,ParameterMapping.class);
+	parameterMappings = parameterMappingList.toArray(ParameterMapping[]::new);
 	try {
 		origMathDesc.setAllVariables(allVars);
 	}catch (ExpressionBindingException e){
@@ -225,9 +224,9 @@ MathSymbolMapping computeOptimizationSpec() throws MathException, MappingExcepti
 	//
 	// set optimization parameters
 	//
-	for (int i = 0; i < parameterMappings.length; i++){
-		optSpec.addParameter(parameterMappings[i].getOptParameter());
-	}
+    for (ParameterMapping parameterMapping : parameterMappings) {
+        optSpec.addParameter(parameterMapping.getOptParameter());
+    }
 
 	Vector<Issue> issueList = new Vector<Issue>();
 	IssueContext issueContext = new IssueContext();

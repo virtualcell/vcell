@@ -40,7 +40,7 @@ public void addVariableComparisonSummary(VariableComparisonSummary varComparison
  * @param varName java.lang.String
  */
 public double getAbsoluteError(String varName) {
-	return getVariableComparisonSummary(varName).getAbsoluteError().doubleValue();
+	return getVariableComparisonSummary(varName).getAbsoluteError();
 }
 /**
  * Insert the method's description here.
@@ -55,7 +55,7 @@ public VariableComparisonSummary[] getFailingVariableComparisonSummaries(double 
 			varComparisonSummaryList.add(varComparisonSummary);
 		}
 	}
-	return (VariableComparisonSummary[])org.vcell.util.BeanUtils.getArray(varComparisonSummaryList,VariableComparisonSummary.class);
+	return varComparisonSummaryList.toArray(VariableComparisonSummary[]::new);
 }
 /**
  * Insert the method's description here.
@@ -66,7 +66,7 @@ public double getMaxAbsoluteError() {
 	double maxAbsoluteError = Double.NEGATIVE_INFINITY;
 	for (int i = 0; i < variableComparisonSummaryList.size(); i++){
 		VariableComparisonSummary varComparisonSummary = (VariableComparisonSummary)variableComparisonSummaryList.elementAt(i);
-		maxAbsoluteError = Math.max(maxAbsoluteError,varComparisonSummary.getAbsoluteError().doubleValue());
+		maxAbsoluteError = Math.max(maxAbsoluteError, varComparisonSummary.getAbsoluteError());
 	}
 	return maxAbsoluteError;
 }
@@ -89,7 +89,7 @@ public double getMaxRelativeError() {
  * @param varName java.lang.String
  */
 public double getRelativeError(String varName) {
-	return getVariableComparisonSummary(varName).getRelativeError().doubleValue();
+	return getVariableComparisonSummary(varName).getRelativeError();
 }
 /**
  * Insert the method's description here.
@@ -97,7 +97,7 @@ public double getRelativeError(String varName) {
  * @return cbit.vcell.solver.test.VariableComparisonSummary[]
  */
 public VariableComparisonSummary[] getVariableComparisonSummaries() {
-	return (VariableComparisonSummary[])org.vcell.util.BeanUtils.getArray(variableComparisonSummaryList,VariableComparisonSummary.class);
+	return variableComparisonSummaryList.toArray(VariableComparisonSummary[]::new);
 }
 /**
  * Insert the method's description here.

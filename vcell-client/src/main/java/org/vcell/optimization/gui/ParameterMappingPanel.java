@@ -30,6 +30,7 @@ import javax.swing.JToolBar;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import org.vcell.util.ArrayUtils;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.DefaultScrollTableActionManager;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
@@ -238,7 +239,6 @@ private static class SelectParameterTableModel extends VCellSortTableModel<Param
 	 * Insert the method's description here.
 	 * Creation date: (9/23/2003 1:24:52 PM)
 	 * @return cbit.vcell.model.Parameter
-	 * @param row int
 	 */
 	private void refreshData() {
 		ArrayList<ParameterMappingSpec> list = new ArrayList<ParameterMappingSpec>();
@@ -576,23 +576,21 @@ private void jMenuItemCopy_ActionPerformed(java.awt.event.ActionEvent actionEven
 					resolvedValue = getParameterEstimationTask().getCurrentSolution(pms);
 				}
 				if (resolvedValue == null){
-					resolvedValue = new Double(pms.getCurrent());
+					resolvedValue = pms.getCurrent();
 				}
-				resolvedValuesV.add(new Expression(resolvedValue.doubleValue()));
-				sb.append(
-					"\""+parameterMappingSpecs[i].getModelParameter().getName()+"\"\t"+resolvedValue+"\n"
-				);
+				resolvedValuesV.add(new Expression(resolvedValue));
+				sb.append("\"").append(parameterMappingSpecs[i].getModelParameter().getName()).append("\"\t").append(resolvedValue).append("\n");
 			}
 			
 			//
 			//Send to clipboard
 			//
 			VCellTransferable.ResolvedValuesSelection rvs =
-				new VCellTransferable.ResolvedValuesSelection(
-					(SymbolTableEntry[])BeanUtils.getArray(primarySymbolTableEntriesV,SymbolTableEntry.class),
-					(SymbolTableEntry[])BeanUtils.getArray(alternateSymbolTableEntriesV,SymbolTableEntry.class),
-					(Expression[])BeanUtils.getArray(resolvedValuesV,Expression.class),
-					sb.toString());
+					new VCellTransferable.ResolvedValuesSelection(
+							primarySymbolTableEntriesV.toArray(SymbolTableEntry[]::new),
+							alternateSymbolTableEntriesV.toArray(SymbolTableEntry[]::new),
+							resolvedValuesV.toArray(Expression[]::new),
+							sb.toString());
 
 			VCellTransferable.sendToClipboard(rvs);
 		}catch(Throwable e){

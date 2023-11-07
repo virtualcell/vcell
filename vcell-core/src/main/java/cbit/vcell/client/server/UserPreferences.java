@@ -17,6 +17,7 @@ import java.util.Vector;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.vcell.util.ArrayUtils;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Preference;
 
@@ -201,7 +202,7 @@ private Preference[] getUserChoices() {
 	// other choices
 	// ...
 	// done, return array (may be empty)
-	return (Preference[])BeanUtils.getArray(userChoices, Preference.class);
+	return userChoices.toArray(Preference[]::new);
 }
 
 

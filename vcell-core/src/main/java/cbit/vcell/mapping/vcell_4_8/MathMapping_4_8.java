@@ -11,14 +11,7 @@
 package cbit.vcell.mapping.vcell_4_8;
 
 import java.beans.PropertyVetoException;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-import java.util.Vector;
+import java.util.*;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -658,12 +651,12 @@ private Expression getInsideFluxCorrectionExpression(MembraneMapping membraneMap
  * @return cbit.util.Issue
  */
 public Issue[] getIssues(IssueContext issueContext) {	
-	Vector<Issue> issueList = new Vector<Issue>();
+	List<Issue> issueList = new Vector<>();
 	boolean bIgnoreMathDescription = false;
 	getSimulationContext().gatherIssues(issueContext, issueList, bIgnoreMathDescription);
 	getSimulationContext().getModel().gatherIssues(issueContext, issueList);
 	issueList.addAll(localIssueList);
-	return (Issue[])BeanUtils.getArray(issueList,Issue.class);
+	return issueList.toArray(Issue[]::new);
 }
 
 
@@ -1407,7 +1400,7 @@ private void refreshKFluxParameters() throws ExpressionException {
 	//
 	for (int i = 0; i < newMathMappingParameters.length; i++){
 		if (newMathMappingParameters[i].getRole() == PARAMETER_ROLE_KFLUX){
-			newMathMappingParameters = (MathMappingParameter[])BeanUtils.removeFirstInstanceOfElement(newMathMappingParameters,newMathMappingParameters[i]);
+			newMathMappingParameters = ArrayUtils.removeFirstInstanceOfElement(newMathMappingParameters,newMathMappingParameters[i]);
 		}		
 	}
 	
@@ -2832,7 +2825,7 @@ private void refreshVariables() throws MappingException {
  * @param mathMappingParameter cbit.vcell.mapping.MathMapping.MathMappingParameter
  */
 void removeMathMappingParameter(MathMapping_4_8.MathMappingParameter mathMappingParameter) throws java.beans.PropertyVetoException {
-	MathMappingParameter newMathMappingParameters[] = (MathMappingParameter[])BeanUtils.removeFirstInstanceOfElement(fieldMathMappingParameters,mathMappingParameter);
+	MathMappingParameter[] newMathMappingParameters = ArrayUtils.removeFirstInstanceOfElement(fieldMathMappingParameters,mathMappingParameter);
 	setMathMapppingParameters(newMathMappingParameters);
 }
 

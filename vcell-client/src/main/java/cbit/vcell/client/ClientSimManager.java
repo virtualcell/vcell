@@ -264,13 +264,13 @@ public void showSimulationResults(OutputContext outputContext, Simulation[] simu
 		return;
 	}
 	
-	Vector<Simulation> v = new Vector<Simulation>();
-	for (int i = 0; i < simulations.length; i++){
-		if (simulations[i].getSimulationInfo() != null && getSimulationStatus(simulations[i]).getHasData()) {
-			v.add(simulations[i]);
-		}
-	}
-	final Simulation[] simsToShow = (Simulation[])BeanUtils.getArray(v, Simulation.class);
+	Vector<Simulation> v = new Vector<>();
+    for (Simulation simulation : simulations) {
+        if (simulation.getSimulationInfo() != null && getSimulationStatus(simulation).getHasData()) {
+            v.add(simulation);
+        }
+    }
+	final Simulation[] simsToShow = v.toArray(Simulation[]::new);
 	Hashtable<String, Object> hashTable = new Hashtable<String, Object>();
 	hashTable.put("outputContext", outputContext);
 	hashTable.put("simsArray", simsToShow);

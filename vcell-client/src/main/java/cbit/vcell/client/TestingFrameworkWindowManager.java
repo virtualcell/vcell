@@ -16,18 +16,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.Set;
-import java.util.Vector;
 
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -43,16 +33,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.client.logicalwindow.LWNamespace;
 import org.vcell.sbml.vcell.StructureSizeSolver;
-import org.vcell.util.BeanUtils;
-import org.vcell.util.ClientTaskStatusSupport;
-import org.vcell.util.DataAccessException;
-import org.vcell.util.Issue;
+import org.vcell.util.*;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.Severity;
-import org.vcell.util.IssueContext;
-import org.vcell.util.ObjectNotFoundException;
-import org.vcell.util.UserCancelException;
-import org.vcell.util.VCellThreadChecker;
 import org.vcell.util.VCellThreadChecker.SuppressRemote;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.KeyValue;
@@ -223,17 +206,9 @@ public TestingFrameworkWindowManager(TestingFrameworkWindowPanel testingFramewor
 }
 
 
-/**
- * Add a cbit.vcell.desktop.controls.DataListener.
- */
+
 public void addDataListener(DataListener newListener) {}
 
-
-/**
- * Insert the method's description here.
- * Creation date: (4/10/2003 11:27:32 AM)
- * @param testCase cbit.vcell.numericstestingframework.TestCase
- */
 
 public void addNewTestSuiteToTF() throws Exception {
 
@@ -244,11 +219,7 @@ public void addNewTestSuiteToTF() throws Exception {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (4/10/2003 11:27:32 AM)
- * @param testCase cbit.vcell.numericstestingframework.TestCase
- */
+
 public String addTestCases(final TestSuiteInfoNew tsInfo, final TestCaseNew[] testCaseArray,int regrRefFlag,ClientTaskStatusSupport pp){
 
 	if (tsInfo == null) {
@@ -455,8 +426,8 @@ public String addTestCases(final TestSuiteInfoNew tsInfo, final TestCaseNew[] te
 							new AddTestCriteriaOPBioModel(testCase.getTCKey(),
 								newSimulations[j].getVersion().getVersionKey(),
 								regressionBioModelKey,regressionBioModelSimKey,
-								(tcritOrigForSimName != null?tcritOrigForSimName.getMaxAbsError():new Double(1e-16)),
-								(tcritOrigForSimName != null?tcritOrigForSimName.getMaxRelError():new Double(1e-9)),
+								(tcritOrigForSimName != null?tcritOrigForSimName.getMaxAbsError():1e-16),
+								(tcritOrigForSimName != null?tcritOrigForSimName.getMaxRelError():1e-9),
 								null);
 
 					}
@@ -538,8 +509,8 @@ public String addTestCases(final TestSuiteInfoNew tsInfo, final TestCaseNew[] te
 							testCase.getTCKey(),
 							newSimulations[j].getVersion().getVersionKey(),
 							regressionMathModelKey,regressionMathModelSimKey,
-							(tcritOrigForSimName != null?tcritOrigForSimName.getMaxAbsError():new Double(1e-16)),
-							(tcritOrigForSimName != null?tcritOrigForSimName.getMaxRelError():new Double(1e-9)),
+							(tcritOrigForSimName != null?tcritOrigForSimName.getMaxAbsError():1e-16),
+							(tcritOrigForSimName != null?tcritOrigForSimName.getMaxRelError():1e-9),
 							null);
 					}
 
@@ -583,12 +554,6 @@ private boolean hasDuplicateIdentifiers(BioModel bioModel) {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (4/10/2003 11:27:32 AM)
- * @param testCase cbit.vcell.numericstestingframework.TestCase
- */
-
 public void checkNewTestSuiteInfo(TestSuiteInfoNew newTestSuiteInfo) throws DataAccessException{
 
 	if(newTestSuiteInfo == null){
@@ -609,13 +574,6 @@ public void checkNewTestSuiteInfo(TestSuiteInfoNew newTestSuiteInfo) throws Data
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (1/20/2003 11:52:18 AM)
- * @return boolean
- * @param mathDesc cbit.vcell.math.MathDescription
- *
- */
 public void compare(final TestCriteriaNew testCriteria,final SimulationInfo userDefinedRegrSimInfo){
 	final String KEY_MERGEDDATAINFO	 = "KEY_MERGEDDATAINFO";
 	final String KEY_MERGEDDATASETVIEWERCNTRLR = "KEY_MERGEDDATASETVIEWERCNTRLR";
@@ -714,8 +672,8 @@ public void compare(final TestCriteriaNew testCriteria,final SimulationInfo user
 			}
 
 			OutputContext outputContext = null;
-			if (functionList.size()>0){
-				AnnotatedFunction[] newDiffFunctions = (AnnotatedFunction[])BeanUtils.getArray(functionList,AnnotatedFunction.class);
+			if (!functionList.isEmpty()){
+				AnnotatedFunction[] newDiffFunctions = functionList.toArray(AnnotatedFunction[]::new);
 				outputContext = new OutputContext(newDiffFunctions);
 			}
 			MergedDatasetViewerController mergedDatasetViewerCtr = getRequestManager().getMergedDatasetViewerController(outputContext,mergedDataInfo, !isSpatial);
@@ -758,11 +716,6 @@ public void dataJobMessage(DataJobEvent event) {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (4/10/2003 11:27:32 AM)
- * @param testCase cbit.vcell.numericstestingframework.TestCase
- */
 
 public String duplicateTestSuite(
 		final TestSuiteInfoNew testSuiteInfo_Original,
@@ -1652,12 +1605,6 @@ public String getManagerID() {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (4/10/2003 11:27:32 AM)
- * @param testCase cbit.vcell.numericstestingframework.TestCase
- */
-
 // Used to obtain the testCriteria (from the testCriterias array) matching the simulation passed as argument.
 
 private TestCriteriaNew getMatchingTestCriteria(Simulation sim, TestCriteriaNew[] tcriterias){
@@ -1670,11 +1617,6 @@ private TestCriteriaNew getMatchingTestCriteria(Simulation sim, TestCriteriaNew[
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (4/10/2003 11:27:32 AM)
- * @param testCase cbit.vcell.numericstestingframework.TestCase
- */
 public TestCaseNew[] getNewTestCaseArr() throws UserCancelException{
 	// invoke the testCaseAddPanel to define testCaseInfo parameters.
 	// This is where we invoke the TestCaseAddPanel to define a testCase for the test suite ...
@@ -1739,12 +1681,6 @@ public TestCriteriaNew getNewTestCriteriaFromUser(String solutionType, TestCrite
 	}
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (4/10/2003 11:27:32 AM)
- * @param testCase cbit.vcell.numericstestingframework.TestCase
- */
 
 public NewTestSuiteUserInformation getNewTestSuiteInfoFromUser(String tsAnnotation,String duplicateTestSuiteName) throws Exception{
 
@@ -1922,13 +1858,6 @@ public static class VariablePair{
 //	return (String[])hashSet.toArray(new String[hashSet.size()]);
 //}
 
-/**
- * Insert the method's description here.
- * Creation date: (11/23/2004 1:53:11 PM)
- * @return java.lang.String[]
- * @param sim1 cbit.vcell.solver.Simulation
- * @param sim2 cbit.vcell.solver.Simulation
- */
 private String[] getVariableNamesToCompare(SimulationSymbolTable simSymbolTable1, SimulationSymbolTable simSymbolTable2) {
 	java.util.HashSet<String> hashSet = new java.util.HashSet<String>();
 
@@ -2378,10 +2307,10 @@ public void queryTCritCrossRef(final TestSuiteInfoNew tsin,final TestCriteriaNew
 						for (int j = 0; j < changeTCritV.size(); j++) {
 							relErrorLimitArr[j] = (relativeErrorLimit != null?relativeErrorLimit.doubleValue():changeTCritV.elementAt(j).maxRelErorr);
 							absErrorLimitArr[j] = (absoluteErrorLimit != null?absoluteErrorLimit.doubleValue():changeTCritV.elementAt(j).maxAbsErorr);
-							rows[j][2] = new Double(relErrorLimitArr[j]);
-							rows[j][4] = new Double(absErrorLimitArr[j]);
-							rows[j][1] = new Double(changeTCritV.elementAt(j).maxRelErorr);
-							rows[j][3] = new Double(changeTCritV.elementAt(j).maxAbsErorr);
+							rows[j][2] = relErrorLimitArr[j];
+							rows[j][4] = absErrorLimitArr[j];
+							rows[j][1] = changeTCritV.elementAt(j).maxRelErorr;
+							rows[j][3] = changeTCritV.elementAt(j).maxAbsErorr;
 							rows[j][0] = changeTCritV.elementAt(j).tsVersion;
 						}
 						try{
@@ -2576,23 +2505,12 @@ public LoadTestInfoOpResults getLoadTestDetails(Integer slowLoadThreshold,String
 	}
 	throw new IllegalArgumentException("getLoadTestDetails Expecting LoadTestInfoOpResults");
 }
-/**
- * Insert the method's description here.
- * Creation date: (4/10/2003 11:27:32 AM)
- * @param testCase cbit.vcell.numericstestingframework.TestCase
- */
 
 public void removeTestSuite(TestSuiteInfoNew tsInfo) throws DataAccessException{
 
 	getRequestManager().getDocumentManager().doTestSuiteOP(new RemoveTestSuiteOP(tsInfo.getTSKey()));
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (4/10/2003 11:27:32 AM)
- * @param testCase cbit.vcell.numericstestingframework.TestCase
- */
 
 public void saveNewTestSuiteInfo(TestSuiteInfoNew newTestSuiteInfo) throws DataAccessException{
 
@@ -2610,31 +2528,16 @@ public void saveNewTestSuiteInfo(TestSuiteInfoNew newTestSuiteInfo) throws DataA
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (7/15/2004 4:48:36 PM)
- * @param newTestingFrameworkWindowPanel cbit.vcell.client.desktop.TestingFrameworkWindowPanel
- */
 public BioModelInfo selectBioModelInfo() {
 	return getRequestManager().selectBioModelInfo(this);
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (7/15/2004 4:48:36 PM)
- * @param newTestingFrameworkWindowPanel cbit.vcell.client.desktop.TestingFrameworkWindowPanel
- */
 public MathModelInfo selectMathModelInfo() {
 	return getRequestManager().selectMathModelInfo(this);
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (7/15/2004 4:48:36 PM)
- * @param newTestingFrameworkWindowPanel cbit.vcell.client.desktop.TestingFrameworkWindowPanel
- */
 public Object[] selectRefSimInfo(BioModelInfo bmInfo,String appName) throws DataAccessException {
 	if (bmInfo == null || appName == null || appName.length() == 0) {
 		PopupGenerator.showErrorDialog(TestingFrameworkWindowManager.this, "Selected Reference BioModel is null, choose a reference BioModel before choosing simulation!");
@@ -2663,11 +2566,6 @@ public Object[] selectRefSimInfo(BioModelInfo bmInfo,String appName) throws Data
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (7/15/2004 4:48:36 PM)
- * @param newTestingFrameworkWindowPanel cbit.vcell.client.desktop.TestingFrameworkWindowPanel
- */
 public SimulationInfo selectRefSimInfo(MathModelInfo mmInfo) {
 	if (mmInfo == null) {
 		PopupGenerator.showErrorDialog(TestingFrameworkWindowManager.this, "Selected Reference MathModel is null, choose a reference MathModel before choosing simulation!");
@@ -2806,13 +2704,6 @@ private Object showEditTestCriteriaDialog(JComponent editTCrPanel, Component req
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (11/18/2004 4:44:45 PM)
- * @param newJobStatus cbit.vcell.messaging.db.SimulationJobStatus
- * @param progress java.lang.Double
- * @param timePoint java.lang.Double
- */
 public void simStatusChanged(SimStatusEvent simStatusEvent) {
 
 	//KeyValue simKey = simStatusEvent.getVCSimulationIdentifier().getSimulationKey();
@@ -2883,12 +2774,6 @@ public void startExport(Component requester,OutputContext outputContext,ExportSp
 	getRequestManager().startExport(outputContext, requester, exportSpecs);
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (11/16/2004 6:38:33 AM)
- * @param simInfos cbit.vcell.solver.SimulationInfo[]
- */
 public String startSimulations(TestCriteriaNew[] tcrits,ClientTaskStatusSupport pp) {
 
 	if(tcrits == null || tcrits.length == 0){
@@ -2923,12 +2808,6 @@ public String startSimulations(TestCriteriaNew[] tcrits,ClientTaskStatusSupport 
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (1/20/2003 11:52:18 AM)
- * @return boolean
- * @param mathDesc cbit.vcell.math.MathDescription
- */
 public String startTestSuiteSimulations(TestSuiteInfoNew testSuiteInfo,ClientTaskStatusSupport pp){
 
 	StringBuffer errors = new StringBuffer();
@@ -2941,27 +2820,25 @@ public String startTestSuiteSimulations(TestSuiteInfoNew testSuiteInfo,ClientTas
 		Vector<TestCriteriaNew> tcritVector = new Vector<TestCriteriaNew>();
 		TestCaseNew[] testCases = testSuite.getTestCases();
 		if(testCases != null){
-			for (int i = 0; i < testCases.length; i++){
-				TestCriteriaNew[] tCriteria = testCases[i].getTestCriterias();
-				if(tCriteria != null){
-					for (int j = 0; j < tCriteria.length; j++) {
-						tcritVector.add(tCriteria[j]);
-					}
-				}
-			}
-			if(tcritVector.size() > 0){
-				TestCriteriaNew[] tcritArray = (TestCriteriaNew[])BeanUtils.getArray(tcritVector, TestCriteriaNew.class);
+            for (TestCaseNew testCase : testCases) {
+                TestCriteriaNew[] tCriteria = testCase.getTestCriterias();
+                if (tCriteria != null) {
+                    Collections.addAll(tcritVector, tCriteria);
+                }
+            }
+			if(!tcritVector.isEmpty()){
+				TestCriteriaNew[] tcritArray = tcritVector.toArray(TestCriteriaNew[]::new);
 				String errorString = startSimulations(tcritArray,pp);
 				if(errorString != null){
-					errors.append(errorString+"\n");
+					errors.append(errorString).append("\n");
 				}
 			}
 		}
 	}catch(Throwable e){
-		errors.append(e.getClass().getName()+" "+e.getMessage());
+		errors.append(e.getClass().getName()).append(" ").append(e.getMessage());
 	}
 
-	if(errors.length() > 0){
+	if(!errors.isEmpty()){
 		errors.insert(0,"Error starting TestSuite simulations\n");
 		return errors.toString();
 	}
@@ -3056,13 +2933,6 @@ public String updateSimRunningStatus(ClientTaskStatusSupport pp,TestSuiteInfoNew
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (11/23/2004 6:13:58 AM)
- * @param tcrit cbit.vcell.numericstest.TestCriteriaNew
- * @param status java.lang.String
- * @param statusmessage java.lang.String
- */
 private void updateTCritStatus(TestCriteriaNew tcrit, String status, String statusMessage)throws DataAccessException{
 
 	//try{
@@ -3120,13 +2990,6 @@ public void updateTestCriteria(TestCriteriaNew origTestCriteria,TestCriteriaNew 
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (1/20/2003 11:52:18 AM)
- * @return boolean
- * @param mathDesc cbit.vcell.math.MathDescription
- *
- */
 public void viewResults(TestCriteriaNew testCriteria) {
 
 	VCDataIdentifier vcdID = new VCSimulationDataIdentifier(testCriteria.getSimInfo().getAuthoritativeVCSimulationIdentifier(), 0);

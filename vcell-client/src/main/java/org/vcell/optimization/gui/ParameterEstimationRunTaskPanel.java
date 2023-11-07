@@ -473,7 +473,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 					try {
 						
 						Parameter modelParameter = paramEstTask.getModelParameterByMathName(optimizationResultSet.getOptSolverResultSet().getParameterNames()[i]);
-						modelValue = new Double(modelParameter.getConstantValue());
+						modelValue = modelParameter.getConstantValue();
 						
 					} catch (ExpressionException e) {
 						// TODO Auto-generated catch block
@@ -1211,7 +1211,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 					}
 				}
 			}
-			DataSource[] dataSources = (DataSource[])BeanUtils.getArray(dataSourceList,DataSource.class);
+			DataSource[] dataSources = dataSourceList.toArray(DataSource[]::new);
 			MultisourcePlotPane multisourcePlotPane = new MultisourcePlotPane();
 			multisourcePlotPane.setGroupingListSorter(new Comparator<SortDataReferenceHelper>() {
 				@Override
@@ -1220,10 +1220,11 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 					DataSource ds02 = o2.dataReference.getDataSource();
 //					System.out.println(ds01.getClass().getSimpleName()+" "+o1.dataReference.getIdentifier()+" "+ds02.getClass().getSimpleName()+" "+o2.dataReference.getIdentifier());
 					if(ds01 instanceof DataSource.DataSourceReferenceData){
-						if(ds02 instanceof DataSource.DataSourceReferenceData){//both reference data, sort names
-							ReferenceDataMappingSpec mspec01 = null;
-							ReferenceDataMappingSpec mspec02 = null;
-							for(ReferenceDataMappingSpec rdMappingSpec:mappingSpecs){
+                        ReferenceDataMappingSpec mspec01 = null;
+                        ReferenceDataMappingSpec mspec02 = null;
+                        if(ds02 instanceof DataSource.DataSourceReferenceData){//both reference data, sort names
+                            assert mappingSpecs != null;
+                            for(ReferenceDataMappingSpec rdMappingSpec:mappingSpecs){
 //								Variable var = parameterEstimationTask.getMathSymbolMapping().getVariable(rdMappingSpec.getModelObject());
 								if(rdMappingSpec.getModelObject() instanceof ReservedSymbol){
 									continue;
@@ -1246,9 +1247,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 								return 1;
 							}
 						}else{//compare ref to ode
-							ReferenceDataMappingSpec mspec01 = null;
-							ReferenceDataMappingSpec mspec02 = null;
-							for(ReferenceDataMappingSpec rdMappingSpec:mappingSpecs){
+                            for(ReferenceDataMappingSpec rdMappingSpec:mappingSpecs){
 								Variable var = parameterEstimationTask.getMathSymbolMapping().getVariable(rdMappingSpec.getModelObject());
 								if(rdMappingSpec.getModelObject() instanceof ReservedSymbol){
 									continue;
@@ -1339,8 +1338,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 			});
 			multisourcePlotPane.setDataSources(dataSources);	
 	
-			String[] nameArray = new String[nameVector.size()];
-			nameArray = (String[])BeanUtils.getArray(nameVector, String.class);
+			String[] nameArray = nameVector.toArray(String[]::new);
 			multisourcePlotPane.select(nameArray);
 	
 			DialogUtils.showComponentCloseDialog(JOptionPane.getFrameForComponent(this), multisourcePlotPane, "Data Plot");

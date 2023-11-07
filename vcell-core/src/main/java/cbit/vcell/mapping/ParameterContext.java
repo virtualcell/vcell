@@ -775,7 +775,7 @@ public void resolveUndefinedUnits() {
 private void removeParameter(ParameterContext.LocalParameter parameter) {
 	for (int i = 0; i < fieldParameters.length; i++){
 		if (fieldParameters[i] == parameter){
-			LocalParameter newParameters[] = (LocalParameter[])BeanUtils.removeFirstInstanceOfElement(fieldParameters,parameter);
+			LocalParameter newParameters[] = (LocalParameter[])ArrayUtils.removeFirstInstanceOfElement(fieldParameters,parameter);
 			try {
 				setLocalParameters(newParameters);
 			} catch (PropertyVetoException | ExpressionBindingException e) {
@@ -790,7 +790,7 @@ private void removeParameter(ParameterContext.LocalParameter parameter) {
 protected void removeProxyParameter(LocalProxyParameter parameter) {
 	for (int i = 0; i < fieldProxyParameters.length; i++){
 		if (fieldProxyParameters[i] == parameter){
-			LocalProxyParameter newProxyParameters[] = (LocalProxyParameter[])BeanUtils.removeFirstInstanceOfElement(fieldProxyParameters,parameter);
+			LocalProxyParameter newProxyParameters[] = (LocalProxyParameter[])ArrayUtils.removeFirstInstanceOfElement(fieldProxyParameters,parameter);
 			setProxyParameters(newProxyParameters);
 			return;
 		}
@@ -819,7 +819,7 @@ void removeUnresolvedParameters(SymbolTable symbolTable) {
 	for (int i = 0; i < unresolvedParms.length; i++){
 		SymbolTableEntry ste = symbolTable.getEntry(unresolvedParms[i].getName());
 		if (ste != unresolvedParms[i]){
-			unresolvedParms = (UnresolvedParameter[])BeanUtils.removeFirstInstanceOfElement(unresolvedParms,unresolvedParms[i]);
+			unresolvedParms = (UnresolvedParameter[])ArrayUtils.removeFirstInstanceOfElement(unresolvedParms,unresolvedParms[i]);
 			i--;
 		}
 	}

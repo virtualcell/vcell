@@ -15,6 +15,7 @@ import java.util.Vector;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.vcell.util.ArrayUtils;
 import org.vcell.util.BeanUtils;
 
 import cbit.vcell.math.CompartmentSubDomain;
@@ -113,27 +114,26 @@ public void write_V6_MFile(java.io.PrintWriter pw, String functionName,OutputFun
 	//
 	// collect "functions" (Functions and Constants with identifiers)
 	//
-	Vector<Constant> constantList = new Vector<Constant>();
-	Vector<VolVariable> volVarList = new Vector<VolVariable>();
-	Vector<Variable> functionList = new Vector<Variable>();
-	for (int i = 0; i < variables.length; i++){
-		if (variables[i] instanceof Constant){
-			Constant constant = (Constant)variables[i];
-			String[] symbols = constant.getExpression().getSymbols();
-			if (symbols==null || symbols.length==0){
-				constantList.addElement(constant);
-			} else {
-				functionList.add(constant);
-			}
-		} else if (variables[i] instanceof VolVariable){
-			volVarList.addElement((VolVariable)variables[i]);
-		} else if (variables[i] instanceof Function){
-			functionList.addElement(variables[i]);
-		}
-	}
-	Constant constants[] = (Constant[])BeanUtils.getArray(constantList,Constant.class);
-	VolVariable volVars[] = (VolVariable[])BeanUtils.getArray(volVarList,VolVariable.class);
-	Variable functions[] = (Variable[])BeanUtils.getArray(functionList,Variable.class);
+	Vector<Constant> constantList = new Vector<>();
+	Vector<VolVariable> volVarList = new Vector<>();
+	Vector<Variable> functionList = new Vector<>();
+    for (Variable variable : variables) {
+        if (variable instanceof Constant constant) {
+            String[] symbols = constant.getExpression().getSymbols();
+            if (symbols == null || symbols.length == 0) {
+                constantList.addElement(constant);
+            } else {
+                functionList.add(constant);
+            }
+        } else if (variable instanceof VolVariable volVar) {
+            volVarList.addElement(volVar);
+        } else if (variable instanceof Function funVar) {
+            functionList.addElement(funVar);
+        }
+    }
+	Constant[] constants = constantList.toArray(Constant[]::new);
+	VolVariable[] volVars = volVarList.toArray(VolVariable[]::new);
+	Variable[] functions = functionList.toArray(Variable[]::new);
 
 	int numVars = volVarList.size() + functionList.size();
 	String varNamesForStringArray = "";

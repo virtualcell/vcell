@@ -12,6 +12,7 @@ package cbit.vcell.export.gloworm.quicktime;
 
 import java.util.Vector;
 
+import org.vcell.util.ArrayUtils;
 import org.vcell.util.BeanUtils;
 
 import cbit.vcell.export.gloworm.atoms.VRAtom;
@@ -34,11 +35,11 @@ import cbit.vcell.export.gloworm.atoms.VRWorldHeaderAtom;
 public class VRWorld {
 	private Node[] nodes = new Node[0];
 	private int duration;
-	private abstract class Node {
+	private abstract static class Node {
 		abstract String getNodeType();
 	};
 	private class ObjectNode extends Node {
-		private VRObjectSampleAtom nodeSampleAtom;
+		private final VRObjectSampleAtom nodeSampleAtom;
 		private ObjectNode(int columns, int rows, float defaultViewCenterH, float defaultViewCenterV) {
 			nodeSampleAtom = new VRObjectSampleAtom(columns, rows, getDuration(), defaultViewCenterH, defaultViewCenterV);
 		}
@@ -99,16 +100,16 @@ public int getNumberOfNodes() {
  * @return int[]
  */
 public int[] getObjectNodeIndices() {
-	Vector v = new Vector<Integer>();
+	Vector<Integer> v = new Vector<>();
 	for (int i = 0; i < nodes.length; i++){
 		if (nodes[i] instanceof ObjectNode) {
-			v.add(new Integer(i));
+			v.add(i);
 		}
 	}
-	Integer[] ints = (Integer[])BeanUtils.getArray(v, Integer.class);
+	Integer[] ints = v.toArray(Integer[]::new);
 	int[] indices = new int[ints.length];
 	for (int i = 0; i < indices.length; i++){
-		indices[i] = ints[i].intValue();
+		indices[i] = ints[i];
 	}
 	return indices;
 }

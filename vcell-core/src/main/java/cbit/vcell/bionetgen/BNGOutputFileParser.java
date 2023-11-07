@@ -22,6 +22,8 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 
 import org.vcell.model.rbm.RbmUtils;
+import org.vcell.util.ArrayUtils;
+import org.vcell.util.BeanUtils;
 import org.vcell.util.Pair;
 
 import cbit.vcell.model.RbmKineticLaw;
@@ -435,11 +437,11 @@ public static BNGOutputSpec createBngOutputSpec(String inputString) {
 						}
 						// Get the species index from token and extract the corresponding species from speciesVector as a reactant
 						specNo = Integer.parseInt(token3);
-						if (speciesVector.size() > 0) {
+						if (!speciesVector.isEmpty()) {
 							reactantVector.addElement(getSpecies(specNo, speciesVector));
 						}
 					}
-					reactantsArray = (BNGSpecies[])org.vcell.util.BeanUtils.getArray(reactantVector, BNGSpecies.class);
+					reactantsArray = reactantVector.toArray(BNGSpecies[]::new);
 				} else if (i == 2) {
 					// This string is a list of numbers (species indices) separated by commas, representing the product(s)
 					productsSubkey = token2;
@@ -454,11 +456,11 @@ public static BNGOutputSpec createBngOutputSpec(String inputString) {
 						}
 						// Get the species index from token and extract the corresponding species from speciesVector as a product
 						specNo = Integer.parseInt(token3);
-						if (speciesVector.size() > 0) {
+						if (!speciesVector.isEmpty()) {
 							productVector.addElement(getSpecies(specNo, speciesVector));
 						}
 					}
-					productsArray = (BNGSpecies[])org.vcell.util.BeanUtils.getArray(productVector, BNGSpecies.class);
+					productsArray = productVector.toArray(BNGSpecies[]::new);
 				} else if (i == 3) {
 					//
 					// This string is a list of parameters (rate consts) for the reaction; some of them could have coefficients.
@@ -592,7 +594,7 @@ public static BNGOutputSpec createBngOutputSpec(String inputString) {
 							//
 							int ii = token3.indexOf("*");
 							String indx = token3.substring(0, ii);
-							Integer obsSpeciesIndx = new Integer(indx);
+							Integer obsSpeciesIndx = Integer.parseInt(indx);
 							obsMultiplicityVector.addElement(obsSpeciesIndx);
 							String specNoStr = token3.substring(ii+1);
 							BNGSpecies species = getSpecies(Integer.parseInt(specNoStr), speciesVector);
@@ -607,19 +609,19 @@ public static BNGOutputSpec createBngOutputSpec(String inputString) {
 							int specIndx = Integer.parseInt(token3);
 							BNGSpecies species = getSpecies(specIndx, speciesVector);
 							obsSpeciesVector.addElement(species);
-							obsMultiplicityVector.addElement(new Integer(1));
+							obsMultiplicityVector.addElement(1);
 						}
 					}
 				}
 				i++;
 			}
 			// After parsing observable group from the line, create a new ObservableGroup and add it to observable group vector.
-			if (observableName != null && obsMultiplicityVector.size() > 0 && obsSpeciesVector.size() > 0) {
-				BNGSpecies[] obsSpeciesArray = (BNGSpecies[])org.vcell.util.BeanUtils.getArray(obsSpeciesVector, BNGSpecies.class);
-				Integer[] obsMultiplicityArray = (Integer[])org.vcell.util.BeanUtils.getArray(obsMultiplicityVector, Integer.class);
+			if (observableName != null && !obsMultiplicityVector.isEmpty() && !obsSpeciesVector.isEmpty()) {
+				BNGSpecies[] obsSpeciesArray = obsSpeciesVector.toArray(BNGSpecies[]::new);
+				Integer[] obsMultiplicityArray = obsMultiplicityVector.toArray(Integer[]::new);
 				int[] obsMultiplicityFactors = new int[obsMultiplicityArray.length];
 				for (int k = 0; k < obsMultiplicityFactors.length; k++){
-					obsMultiplicityFactors[k] = obsMultiplicityArray[k].intValue();
+					obsMultiplicityFactors[k] = obsMultiplicityArray[k];
 				}
 				ObservableGroup newObsGroup = new ObservableGroup(observableName, obsSpeciesArray, obsMultiplicityFactors);
 				obsGroupsVector.addElement(newObsGroup);
@@ -628,14 +630,13 @@ public static BNGOutputSpec createBngOutputSpec(String inputString) {
 	}
 
 	// Create the BNGOutputSpec from the parsed BNG .net (output) file and return.
-	BNGParameter[] paramsArray = (BNGParameter[])org.vcell.util.BeanUtils.getArray(paramVector, BNGParameter.class);
-	BNGMolecule[] moleculesArray = (BNGMolecule[])org.vcell.util.BeanUtils.getArray(moleculesVector, BNGMolecule.class);
-	BNGSpecies[] speciesArray = (BNGSpecies[])org.vcell.util.BeanUtils.getArray(speciesVector, BNGSpecies.class);
-	BNGReaction[] rxnsArray = (BNGReaction[])org.vcell.util.BeanUtils.getArray(rxnVector, BNGReaction.class);
-	ObservableGroup[] observableGpsArray = (ObservableGroup[])org.vcell.util.BeanUtils.getArray(obsGroupsVector, ObservableGroup.class);
-	
-	BNGOutputSpec bngOutput = new BNGOutputSpec(paramsArray, moleculesArray, speciesArray, null, rxnsArray, observableGpsArray);
-	return bngOutput;
+	BNGParameter[] paramsArray = paramVector.toArray(BNGParameter[]::new);
+	BNGMolecule[] moleculesArray = moleculesVector.toArray(BNGMolecule[]::new);
+	BNGSpecies[] speciesArray = speciesVector.toArray(BNGSpecies[]::new);
+	BNGReaction[] rxnsArray = rxnVector.toArray(BNGReaction[]::new);
+	ObservableGroup[] observableGpsArray = obsGroupsVector.toArray(ObservableGroup[]::new);
+
+    return new BNGOutputSpec(paramsArray, moleculesArray, speciesArray, null, rxnsArray, observableGpsArray);
 }
 
 public static BNGSpecies getSpecies(int speciesIndx, Vector<BNGSpecies> speciesVector) {

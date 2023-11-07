@@ -19,14 +19,10 @@ import java.util.Vector;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.vcell.util.BeanUtils;
-import org.vcell.util.Compare;
-import org.vcell.util.Issue;
+import org.vcell.util.*;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
-import org.vcell.util.IssueContext;
 import org.vcell.util.IssueContext.ContextType;
-import org.vcell.util.Matchable;
 
 import cbit.util.graph.Edge;
 import cbit.util.graph.Graph;
@@ -434,22 +430,21 @@ private Parameter[] getModelParameters() {
 	// get structure parameters
 	//
 	StructureMapping[] structureMappings = getSimulationContext().getGeometryContext().getStructureMappings();
-	for (int i = 0; i < structureMappings.length; i++){
-		StructureMapping.StructureMappingParameter[] parameters = structureMappings[i].getParameters();
-		for (int j = 0; j < parameters.length; j++){
-			if (parameters[j].getRole() == StructureMapping.ROLE_SpecificCapacitance &&
-				structureMappings[i] instanceof MembraneMapping &&
-				!((MembraneMapping)structureMappings[i]).getCalculateVoltage()){
-				continue;
-			}
-			if (parameters[j].getExpression() != null && parameters[j].getExpression().isNumeric()) {
-				modelParameterList.add(parameters[j]);
-			}
-		}
-	}
-	
-	Parameter[] modelParameters = (Parameter[])BeanUtils.getArray(modelParameterList,Parameter.class);
-	return modelParameters;
+    for (StructureMapping structureMapping : structureMappings) {
+        StructureMapping.StructureMappingParameter[] parameters = structureMapping.getParameters();
+        for (StructureMapping.StructureMappingParameter parameter : parameters) {
+            if (parameter.getRole() == StructureMapping.ROLE_SpecificCapacitance &&
+                    structureMapping instanceof MembraneMapping &&
+                    !((MembraneMapping) structureMapping).getCalculateVoltage()) {
+                continue;
+            }
+            if (parameter.getExpression() != null && parameter.getExpression().isNumeric()) {
+                modelParameterList.add(parameter);
+            }
+        }
+    }
+
+	return modelParameterList.toArray(Parameter[]::new);
 }
 
 
@@ -477,7 +472,7 @@ public void removeUncoupledParameters() {
 				}
 			}
 			if (!bHasStateVariables){
-				spanningTrees = (Tree[])BeanUtils.removeFirstInstanceOfElement(spanningTrees,spanningTrees[i]);
+				spanningTrees = ArrayUtils.removeFirstInstanceOfElement(spanningTrees,spanningTrees[i]);
 				i--;
 			}
 		}

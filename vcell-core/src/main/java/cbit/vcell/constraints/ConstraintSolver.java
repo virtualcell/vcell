@@ -16,6 +16,7 @@ import java.util.Vector;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.vcell.util.ArrayUtils;
 import org.vcell.util.BeanUtils;
 
 import cbit.vcell.parser.ConstraintSymbolTableEntry;
@@ -232,7 +233,7 @@ public java.lang.String getSymbols(int index) {
  * @return cbit.vcell.parser.SymbolTableEntry
  */
 public SymbolTableEntry[] getSymbolTableEntries() {
-	return (ConstraintSolver.Symbol[])BeanUtils.getArray(symbolList,ConstraintSolver.Symbol.class);
+	return this.symbolList.toArray(ConstraintSolver.Symbol[]::new);
 }
 
 

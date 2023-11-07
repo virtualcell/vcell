@@ -306,20 +306,20 @@ public static AugmentedObjectiveFunction getAugmentedObjectiveFunction(Optimizat
 	DynamicVectorFunction equalityConstraints = null;
 	DynamicVectorFunction inequalityConstraints = null;
 	
-	Constraint constraints[] = optSpec.getConstraints();
-	Vector equExpList = new Vector();
-	Vector inequExpList = new Vector();
+	Constraint[] constraints = optSpec.getConstraints();
+	Vector<Expression> equExpList = new Vector<>();
+	Vector<Expression> inequExpList = new Vector<>();
 	//
 	// add constraints from OptimizationSpec's linear and nonlinear general constraints
 	//
-	for (int i = 0; i < constraints.length; i++){
-		ConstraintType type = constraints[i].getConstraintType();
-		if (type.equals(ConstraintType.LinearEquality) || type.equals(ConstraintType.NonlinearEquality)){
-			equExpList.add(constraints[i].getExpression());
-		}else{
-			inequExpList.add(constraints[i].getExpression());
-		}
-	}
+    for (Constraint constraint : constraints) {
+        ConstraintType type = constraint.getConstraintType();
+        if (type.equals(ConstraintType.LinearEquality) || type.equals(ConstraintType.NonlinearEquality)) {
+            equExpList.add(constraint.getExpression());
+        } else {
+            inequExpList.add(constraint.getExpression());
+        }
+    }
 	//
 	// add constraints from OptimizationSpec's variable bounds
 	//
@@ -331,18 +331,16 @@ public static AugmentedObjectiveFunction getAugmentedObjectiveFunction(Optimizat
 			inequExpList.add(new Expression("("+parameters[i].getName()+" - "+parameters[i].getUpperBound()+")/"+scaleFactors[i]));
 		}			
 	}
-	if (equExpList.size()>0){
-		Expression exps[] = (Expression[])org.vcell.util.BeanUtils.getArray(equExpList,Expression.class);
+	if (!equExpList.isEmpty()){
+		Expression[] exps = equExpList.toArray(Expression[]::new);
 		equalityConstraints = new DynamicVectorFunction(exps,origSymbols);
 	}
-	if (inequExpList.size()>0){
-		Expression exps[] = (Expression[])org.vcell.util.BeanUtils.getArray(inequExpList,Expression.class);
+	if (!inequExpList.isEmpty()){
+		Expression[] exps = inequExpList.toArray(Expression[]::new);
 		inequalityConstraints = new DynamicVectorFunction(exps,origSymbols);
 	}
-	
-	AugmentedObjectiveFunction augmentedObjFunc = new AugmentedObjectiveFunction(objFunction,equalityConstraints,inequalityConstraints,power,mu,optSolverCallbacks);
-		
-	return augmentedObjFunc;
+
+    return new AugmentedObjectiveFunction(objFunction,equalityConstraints,inequalityConstraints,power,mu,optSolverCallbacks);
 }
 
 

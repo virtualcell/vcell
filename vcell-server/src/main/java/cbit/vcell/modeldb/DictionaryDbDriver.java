@@ -84,9 +84,7 @@ public DictionaryDbDriver(KeyFactory keyFactory, DatabaseSyntax dbSyntax) {
 
 /**
  * Creates the SQL String that inserts info for a protein into the DB
- * @param protein Protein
  * @param con Connection
- * @exception SQLException.
  */
 public int countTableEntries(Connection con, String tableName)
     throws java.sql.SQLException {
@@ -258,7 +256,6 @@ public FormalCompound getCompoundFromCasID(Connection con, String casID) throws 
  * Returns the compound referenced by the keggID
  * @return Compound
  * @param con Connection
- * @param dbLink DBLink
  */
 public FormalCompound getCompoundFromKeggID(Connection con, String keggID) throws SQLException {
 
@@ -818,10 +815,10 @@ public ReactionStepInfo[] getReactionStepInfos(Connection con,User user,KeyValue
     } finally {
         stmt.close(); // Release resources include resultset
     }
-    if(reactionStepInfoList.size() == 0){
+    if(reactionStepInfoList.isEmpty()){
 	    return null;
     }
-	return (ReactionStepInfo[])BeanUtils.getArray(reactionStepInfoList,ReactionStepInfo.class);
+	return reactionStepInfoList.toArray(ReactionStepInfo[]::new);
 }
 
 
@@ -834,15 +831,11 @@ public ReactionDescription[] getUserReactionDescriptions(Connection con,User use
 	String sql = ReactStepTable.table.getSQLUserReactionListQuery(reactionQuerySpec,user,dbSyntax);
 
 	ReactionDescription[] rxArr = null;
-	
-	Statement stmt = con.createStatement();
-    try {
+
+    try (Statement stmt = con.createStatement()) {
         ResultSet rset = stmt.executeQuery(sql);
         rxArr = ReactStepTable.table.getUserReactionList(rset);
-    } finally {
-        stmt.close(); // Release resources include resultset
     }
-    //
     return rxArr;
 }
 
@@ -866,7 +859,6 @@ public KeyValue insertCompound(Connection con, CompoundInfo compound)
  * Creates the SQL String that inserts info for a compound into the DB
  * @param compound Compound
  * @param con Connection
- * @exception SQLException.
  */
 private void insertCompoundSQL(Connection con, KeyValue key, CompoundInfo compound)
     throws SQLException {
@@ -929,7 +921,6 @@ public KeyValue insertEnzyme(Connection con, EnzymeInfo enzyme)
  * Creates the SQL String that inserts info for an Ezymeinto the DB
  * @param enzyme Enzyme
  * @param con Connection
- * @exception SQLException.
  */
 private void insertEnzymeSQL(Connection con, KeyValue key, EnzymeInfo enzyme)
     throws SQLException {
@@ -992,7 +983,6 @@ public KeyValue insertProtein(Connection con, ProteinInfo protein)
  * Creates the SQL String that inserts info for a protein into the DB
  * @param protein Protein
  * @param con Connection
- * @exception SQLException.
  */
 private void insertProteinSQL(Connection con, KeyValue key, ProteinInfo protein)
     throws SQLException {
@@ -1552,7 +1542,6 @@ public void updateCompound(Connection con, CompoundInfo compound)
  * Creates the SQL String to update a compound in the DB
  * @param con Connection
  * @param compound Compound
- * @exception SQLException.
  */
 private void updateCompoundSQL(Connection con, CompoundInfo compound)
     throws SQLException {
@@ -1591,7 +1580,6 @@ public void updateEnzyme(Connection con, EnzymeInfo enzyme) throws SQLException 
  * Creates the SQL String to update an enzyme in the DB
  * @param con Connection
  * @param enzyme Enzyme
- * @exception SQLException.
  */
 private void updateEnzymeSQL(Connection con, EnzymeInfo enzyme)
     throws SQLException {
@@ -1632,7 +1620,6 @@ public void updateProtein(Connection con, ProteinInfo protein)
  * Creates the SQL String to update a protein in the DB
  * @param con Connection
  * @param protein Protein
- * @exception SQLException.
  */
 private void updateProteinSQL(Connection con, ProteinInfo protein)
     throws SQLException {

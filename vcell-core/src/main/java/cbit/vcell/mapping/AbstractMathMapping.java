@@ -609,7 +609,7 @@ public SymbolTableEntry getEntry(java.lang.String identifierString) {
  * @return cbit.util.Issue
  */
 public Issue[] getIssues() {	
-	Vector<Issue> issueList = new Vector<Issue>();
+	List<Issue> issueList = new Vector<>();
 	boolean bIgnoreMathDescription = false;
 	getSimulationContext().gatherIssues(issueContext,issueList,bIgnoreMathDescription);
 	getSimulationContext().getModel().gatherIssues(issueContext,issueList);
@@ -618,7 +618,7 @@ public Issue[] getIssues() {
 	for(Simulation sim : sims) {
 		sim.gatherIssues(issueContext, issueList);
 	}
-	return (Issue[])BeanUtils.getArray(issueList,Issue.class);
+	return issueList.toArray(Issue[]::new);
 }
 
 /**

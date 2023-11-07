@@ -2104,15 +2104,15 @@ private void refreshCharacteristicSize() throws PropertyVetoException {
 			double pixelSizeZ = extent.getZ()/image.getNumZ();
 			switch (dimension){
 				case 1:{
-					setCharacteristicSize(new Double(pixelSizeX));
+					setCharacteristicSize(pixelSizeX);
 					break;
 				}
 				case 2:{
-					setCharacteristicSize(new Double(Math.min(pixelSizeX,pixelSizeY)));
+					setCharacteristicSize(Math.min(pixelSizeX,pixelSizeY));
 					break;
 				}
 				case 3:{
-					setCharacteristicSize(new Double(Math.min(pixelSizeX,Math.min(pixelSizeY,pixelSizeZ))));
+					setCharacteristicSize(Math.min(pixelSizeX,Math.min(pixelSizeY,pixelSizeZ)));
 					break;
 				}
 				default:{
@@ -2160,7 +2160,7 @@ private void refreshCharacteristicSize() throws PropertyVetoException {
 					elementLength *= 1.125;
 				}
 			}	
-			setCharacteristicSize(new Double(elementLength));
+			setCharacteristicSize(elementLength);
 		}
 	}
 }
@@ -2276,7 +2276,7 @@ private void refreshElectrodes(){
 				lg.error(e);
 			}
 		}else{
-			newStimuli = (ElectricalStimulus[])BeanUtils.removeFirstInstanceOfElement(newStimuli,stimulus);
+			newStimuli = (ElectricalStimulus[])ArrayUtils.removeFirstInstanceOfElement(newStimuli,stimulus);
 			i--;
 		}
 	}
@@ -2332,7 +2332,7 @@ public void removeAnalysisTask(AnalysisTask analysisTask) throws PropertyVetoExc
 	if (!bFound){
 		throw new RuntimeException("analysis task not found");
 	}
-	AnalysisTask[] newAnalysisTasks = (AnalysisTask[])BeanUtils.removeFirstInstanceOfElement(fieldAnalysisTasks,analysisTask);
+	AnalysisTask[] newAnalysisTasks = (AnalysisTask[])ArrayUtils.removeFirstInstanceOfElement(fieldAnalysisTasks,analysisTask);
 	setAnalysisTasks(newAnalysisTasks);
 }
 
@@ -2347,7 +2347,7 @@ public void removeBioEvent(BioEvent bioEvent) throws PropertyVetoException {
 	if (!bFound){
 		throw new RuntimeException("event not found");
 	}
-	BioEvent[] newBioEvents = (BioEvent[])BeanUtils.removeFirstInstanceOfElement(fieldBioEvents,bioEvent);
+	BioEvent[] newBioEvents = (BioEvent[])ArrayUtils.removeFirstInstanceOfElement(fieldBioEvents,bioEvent);
 	setBioEvents(newBioEvents);
 }
 
@@ -2373,7 +2373,7 @@ public void removeSimulationContextParameter(SimulationContext.SimulationContext
 		return;
 	}	
 	if (contains(scParameter)){
-		SimulationContext.SimulationContextParameter newSCParameters[] = (SimulationContext.SimulationContextParameter[])BeanUtils.removeFirstInstanceOfElement(fieldSimulationContextParameters,scParameter);
+		SimulationContext.SimulationContextParameter newSCParameters[] = (SimulationContext.SimulationContextParameter[])ArrayUtils.removeFirstInstanceOfElement(fieldSimulationContextParameters,scParameter);
 		setSimulationContextParameters(newSCParameters);
 	}
 }         
@@ -2784,9 +2784,9 @@ public void setSimulationContextParameters(SimulationContext.SimulationContextPa
  */
 public void setTemperatureKelvin(double temperatureKelvin) throws java.beans.PropertyVetoException {
 	double oldValue = fieldTemperatureKelvin;
-	fireVetoableChange("temperatureKelvin", new Double(oldValue), new Double(temperatureKelvin));
+	fireVetoableChange("temperatureKelvin", oldValue, temperatureKelvin);
 	fieldTemperatureKelvin = temperatureKelvin;
-	firePropertyChange("temperatureKelvin", new Double(oldValue), new Double(temperatureKelvin));
+	firePropertyChange("temperatureKelvin", oldValue, temperatureKelvin);
 }
 
 /**
@@ -2810,8 +2810,8 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 	TokenMangler.checkNameProperty(this, "application", evt);
 	
 	if (evt.getSource() == getBioModel() && evt.getPropertyName().equals("simulations")){
-		Simulation oldSimulations[] = extractLocalSimulations((Simulation[])evt.getOldValue());
-		Simulation newSimulations[] = extractLocalSimulations((Simulation[])evt.getNewValue());
+		Simulation[] oldSimulations = extractLocalSimulations((Simulation[])evt.getOldValue());
+		Simulation[] newSimulations = extractLocalSimulations((Simulation[])evt.getNewValue());
 		fireVetoableChange("simulations",oldSimulations,newSimulations);
 	}
 	
@@ -2824,16 +2824,16 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 		// check that names are not duplicated and that no names are ReservedSymbols
 		//
 		HashSet<String> nameSet = new HashSet<String>();
-		for (int i=0;i<newBioevents.length;i++){
-			String name = newBioevents[i].getName();
-			if (nameSet.contains(name)){
-				throw new PropertyVetoException("multiple bioevents with same name '"+name+"' defined",evt);
-			}
-			if (getEntry(name)!=null){
-				throw new PropertyVetoException("cannot use existing symbol '"+name+"' as a bioevent name",evt);
-			}
-			nameSet.add(name);
-		}
+        for (BioEvent newBioevent : newBioevents) {
+            String name = newBioevent.getName();
+            if (nameSet.contains(name)) {
+                throw new PropertyVetoException("multiple bioevents with same name '" + name + "' defined", evt);
+            }
+            if (getEntry(name) != null) {
+                throw new PropertyVetoException("cannot use existing symbol '" + name + "' as a bioevent name", evt);
+            }
+            nameSet.add(name);
+        }
 	}
 }
 
@@ -3350,7 +3350,7 @@ public void removeRateRule(RateRule rateRule) throws PropertyVetoException {
 	if (!bFound){
 		throw new RuntimeException("rate rule '" + rateRule.getName() + "' not found.");
 	}
-	RateRule[] newRateRules = (RateRule[])BeanUtils.removeFirstInstanceOfElement(fieldRateRules, rateRule);
+	RateRule[] newRateRules = (RateRule[])ArrayUtils.removeFirstInstanceOfElement(fieldRateRules, rateRule);
 	setRateRules(newRateRules);
 }
 public RateRule[] getRateRules() {
@@ -3421,7 +3421,7 @@ public void removeAssignmentRule(AssignmentRule assignmentRule) throws PropertyV
 	if(!bFound) {
 		throw new RuntimeException("Assignment rule '" + assignmentRule.getName() + "' not found.");
 	}
-	AssignmentRule[] newAssignmentRules = (AssignmentRule[])BeanUtils.removeFirstInstanceOfElement(fieldAssignmentRules, assignmentRule);
+	AssignmentRule[] newAssignmentRules = (AssignmentRule[])ArrayUtils.removeFirstInstanceOfElement(fieldAssignmentRules, assignmentRule);
 	setAssignmentRules(newAssignmentRules);
 }
 public AssignmentRule[] getAssignmentRules() {
@@ -3562,7 +3562,7 @@ public void addSpatialObject(SpatialObject spatialObject) throws PropertyVetoExc
 }
 
 public void removeSpatialObject(SpatialObject spatialObject) throws PropertyVetoException{
-	setSpatialObjects(BeanUtils.removeFirstInstanceOfElement(this.spatialObjects, spatialObject));
+	setSpatialObjects(ArrayUtils.removeFirstInstanceOfElement(this.spatialObjects, spatialObject));
 }
 
 public void setSpatialObjects(SpatialObject[] spatialObjects) throws PropertyVetoException{
@@ -3620,7 +3620,7 @@ public void addSpatialProcess(SpatialProcess spatialProcess) throws PropertyVeto
 }
 
 public void removeSpatialProcess(SpatialProcess spatialProcess) throws PropertyVetoException{
-	setSpatialProcesses(BeanUtils.removeFirstInstanceOfElement(this.spatialProcesses, spatialProcess));
+	setSpatialProcesses(ArrayUtils.removeFirstInstanceOfElement(this.spatialProcesses, spatialProcess));
 }
 
 public void setSpatialProcesses(SpatialProcess[] spatialProcesses) throws PropertyVetoException{

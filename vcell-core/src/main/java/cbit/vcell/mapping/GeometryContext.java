@@ -20,15 +20,10 @@ import java.util.Vector;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.vcell.util.BeanUtils;
-import org.vcell.util.Compare;
-import org.vcell.util.Issue;
+import org.vcell.util.*;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
-import org.vcell.util.IssueContext;
 import org.vcell.util.IssueContext.ContextType;
-import org.vcell.util.Matchable;
-import org.vcell.util.PropertyChangeListenerProxyVCell;
 
 import cbit.vcell.geometry.CompartmentSubVolume;
 import cbit.vcell.geometry.Geometry;
@@ -647,7 +642,7 @@ public void refreshStructureMappings() throws MappingException, PropertyVetoExce
 		// delete this feature mapping if not referenced in both the model and the geometry
 		//
 		if (!(structureFound && geometryClassFound)){
-			newStructureMappings = (StructureMapping[])BeanUtils.removeFirstInstanceOfElement(newStructureMappings,structureMapping);
+			newStructureMappings = ArrayUtils.removeFirstInstanceOfElement(newStructureMappings,structureMapping);
 			j--;
 //			//
 //			// delete accompanied membrane mapping if exists 

@@ -2110,7 +2110,7 @@ public Geometry getGeometry(Element param) throws XmlParseException {
 		try {
 			ISize isize = new ISize(Integer.parseInt(xDim), Integer.parseInt(yDim), Integer.parseInt(zDim));
 			gsd.setVolumeSampleSize(isize);
-			gsd.setFilterCutoffFrequency(new Double(cutoffStr));
+			gsd.setFilterCutoffFrequency(Double.parseDouble(cutoffStr));
 
 			//these lists are allowed to be empty.
 		    ArrayList<Element> memRegions = new ArrayList<Element>(param.getChildren(XMLTags.MembraneRegionTag, vcNamespace));
@@ -3418,8 +3418,8 @@ public BioEvent[] getBioEvents(SimulationContext simContext, Element bioEventsEl
 		}
 		bioEventsVector.add(newBioEvent);
 	}
-	
-	return ((BioEvent[])BeanUtils.getArray(bioEventsVector, BioEvent.class));
+
+	return bioEventsVector.toArray(BioEvent[]::new);
 }
 
 public SpatialObject[] getSpatialObjects(SimulationContext simContext, Element spatialObjectsElement) throws XmlParseException  {
@@ -3431,55 +3431,54 @@ public SpatialObject[] getSpatialObjects(SimulationContext simContext, Element s
 		SpatialObject spatialObject = null;
 		String name = unMangle(spatialObjectElement.getAttributeValue(XMLTags.NameAttrTag));
 		String type = unMangle(spatialObjectElement.getAttributeValue(XMLTags.SpatialObjectTypeAttrTag));
-		if (type.equals(XMLTags.SpatialObjectTypeAttrValue_Point)){
-			PointObject pointObject = new PointObject(name,simContext);
-			spatialObject = pointObject;
-		}else if (type.equals(XMLTags.SpatialObjectTypeAttrValue_Surface)){
-			String insideSubvolumeName = unMangle(spatialObjectElement.getAttributeValue(XMLTags.SpatialObjectSubVolumeInsideAttrTag));
-			String insideRegionIDString = spatialObjectElement.getAttributeValue(XMLTags.SpatialObjectRegionIdInsideAttrTag);
-			String outsideSubvolumeName = unMangle(spatialObjectElement.getAttributeValue(XMLTags.SpatialObjectSubVolumeOutsideAttrTag));
-			String outsideRegionIDString = spatialObjectElement.getAttributeValue(XMLTags.SpatialObjectRegionIdOutsideAttrTag);
-			
-			SubVolume insideSubvolume = null;
-			if (insideSubvolumeName!=null){
-				insideSubvolume = simContext.getGeometry().getGeometrySpec().getSubVolume(insideSubvolumeName);
-			}
-			Integer insideRegionID = null;
-			if (insideRegionIDString!=null){
-				insideRegionID = Integer.parseUnsignedInt(insideRegionIDString);
-			}
-			SubVolume outsideSubvolume = null;
-			if (outsideSubvolumeName!=null){
-				outsideSubvolume = simContext.getGeometry().getGeometrySpec().getSubVolume(outsideSubvolumeName);
-			}
-			Integer outsideRegionID = null;
-			if (outsideRegionIDString!=null){
-				outsideRegionID = Integer.parseUnsignedInt(outsideRegionIDString);
-			}
-			SurfaceRegionObject surfaceRegionObject = new SurfaceRegionObject(name,insideSubvolume,insideRegionID,outsideSubvolume,outsideRegionID,simContext);
-			spatialObject = surfaceRegionObject;
-		}else if (type.equals(XMLTags.SpatialObjectTypeAttrValue_Volume)){
-			String subvolumeName = unMangle(spatialObjectElement.getAttributeValue(XMLTags.SpatialObjectSubVolumeAttrTag));
-			String regionIDString = spatialObjectElement.getAttributeValue(XMLTags.SpatialObjectRegionIdAttrTag);
-			
-			SubVolume subvolume = null;
-			if (subvolumeName!=null){
-				subvolume = simContext.getGeometry().getGeometrySpec().getSubVolume(subvolumeName);
-			}
-			Integer regionID = null;
-			if (regionIDString!=null){
-				regionID = Integer.parseUnsignedInt(regionIDString);
-			}
-			VolumeRegionObject volumeRegionObject = new VolumeRegionObject(name,subvolume,regionID,simContext);
-			spatialObject = volumeRegionObject;
-		}
+        switch (type) {
+            case XMLTags.SpatialObjectTypeAttrValue_Point -> {
+                spatialObject = new PointObject(name, simContext);
+            }
+            case XMLTags.SpatialObjectTypeAttrValue_Surface -> {
+                String insideSubvolumeName = unMangle(spatialObjectElement.getAttributeValue(XMLTags.SpatialObjectSubVolumeInsideAttrTag));
+                String insideRegionIDString = spatialObjectElement.getAttributeValue(XMLTags.SpatialObjectRegionIdInsideAttrTag);
+                String outsideSubvolumeName = unMangle(spatialObjectElement.getAttributeValue(XMLTags.SpatialObjectSubVolumeOutsideAttrTag));
+                String outsideRegionIDString = spatialObjectElement.getAttributeValue(XMLTags.SpatialObjectRegionIdOutsideAttrTag);
+                SubVolume insideSubvolume = null;
+                if (insideSubvolumeName != null) {
+                    insideSubvolume = simContext.getGeometry().getGeometrySpec().getSubVolume(insideSubvolumeName);
+                }
+                Integer insideRegionID = null;
+                if (insideRegionIDString != null) {
+                    insideRegionID = Integer.parseUnsignedInt(insideRegionIDString);
+                }
+                SubVolume outsideSubvolume = null;
+                if (outsideSubvolumeName != null) {
+                    outsideSubvolume = simContext.getGeometry().getGeometrySpec().getSubVolume(outsideSubvolumeName);
+                }
+                Integer outsideRegionID = null;
+                if (outsideRegionIDString != null) {
+                    outsideRegionID = Integer.parseUnsignedInt(outsideRegionIDString);
+                }
+                spatialObject = new SurfaceRegionObject(name, insideSubvolume, insideRegionID, outsideSubvolume, outsideRegionID, simContext);
+            }
+            case XMLTags.SpatialObjectTypeAttrValue_Volume -> {
+                String subvolumeName = unMangle(spatialObjectElement.getAttributeValue(XMLTags.SpatialObjectSubVolumeAttrTag));
+                String regionIDString = spatialObjectElement.getAttributeValue(XMLTags.SpatialObjectRegionIdAttrTag);
+                SubVolume subvolume = null;
+                if (subvolumeName != null) {
+                    subvolume = simContext.getGeometry().getGeometrySpec().getSubVolume(subvolumeName);
+                }
+                Integer regionID = null;
+                if (regionIDString != null) {
+                    regionID = Integer.parseUnsignedInt(regionIDString);
+                }
+                spatialObject = new VolumeRegionObject(name, subvolume, regionID, simContext);
+            }
+        }
 		
 		// set Quantity enables
 		Element quantityCategoryListElement = spatialObjectElement.getChild(XMLTags.QuantityCategoryListTag, vcNamespace);
 		List<Element> quantityCategoryElements = quantityCategoryListElement.getChildren(XMLTags.QuantityCategoryTag, vcNamespace);
 		for (Element quantityCategoryElement : quantityCategoryElements){
 			String quantityCategoryName = unMangle(quantityCategoryElement.getAttributeValue(XMLTags.QuantityCategoryNameAttrTag));
-			Boolean enabled = Boolean.parseBoolean(quantityCategoryElement.getAttributeValue(XMLTags.QuantityCategoryEnabledAttrTag));
+			boolean enabled = Boolean.parseBoolean(quantityCategoryElement.getAttributeValue(XMLTags.QuantityCategoryEnabledAttrTag));
 			QuantityCategory category = QuantityCategory.fromXMLName(quantityCategoryName);
 			spatialObject.setQuantityCategoryEnabled(category, enabled);
 		}
@@ -3571,11 +3570,9 @@ public RateRule[] getRateRules(SimulationContext simContext, Element rateRulesEl
 		} catch (ExpressionBindingException e) {
 			throw new XmlParseException(e.getMessage());
 		}
-		if (newRateRule != null) {
-			rateRulesVector.add(newRateRule);
-		}
-	}
-	return ((RateRule[])BeanUtils.getArray(rateRulesVector, RateRule.class));
+        rateRulesVector.add(newRateRule);
+    }
+	return rateRulesVector.toArray(RateRule[]::new);
 }
 public AssignmentRule[] getAssignmentRules(SimulationContext simContext, Element assignmentRulesElement) throws XmlParseException  {
 	Iterator<Element> assignmentRulesIterator = assignmentRulesElement.getChildren(XMLTags.AssignmentRuleTag, vcNamespace).iterator();
@@ -3598,7 +3595,7 @@ public AssignmentRule[] getAssignmentRules(SimulationContext simContext, Element
 			assignmentRulesVector.add(newAssignmentRule);
 		}
 	}
-	return ((AssignmentRule[])BeanUtils.getArray(assignmentRulesVector, AssignmentRule.class));
+	return assignmentRulesVector.toArray(AssignmentRule[]::new);
 }
 
 
@@ -3764,27 +3761,27 @@ public MathModel getMathModel(Element param) throws XmlParseException{
  */
 private MathOverrides getMathOverrides(Element param, Simulation simulation) throws XmlParseException{
 
-	MathOverrides mathOverrides = null;
+	MathOverrides mathOverrides;
 	try {
 		//Get the constants
 		Object[] elements = param.getChildren().toArray();
-		Vector<ConstantArraySpec> v1 = new Vector<ConstantArraySpec>();
-		Vector<Constant> v2 = new Vector<Constant>();
-		for (int i = 0; i < elements.length; i++){
-			Element e = (Element)elements[i];
-			Attribute array = e.getAttribute(XMLTags.ConstantArraySpec);
-			if (array != null) {
-				// collect scan overrides
-				String name = e.getAttributeValue(XMLTags.NameAttrTag);
-				int type = array.getIntValue();
-				v1.add(ConstantArraySpec.createFromString(name, e.getText(), type));
-			} else {
-				// collect regular overrides
-				v2.add(getConstant(e));
-			}
-		}
-		Constant[] constants = (Constant[])BeanUtils.getArray(v2, Constant.class);
-		ConstantArraySpec[] specs = (ConstantArraySpec[])BeanUtils.getArray(v1, ConstantArraySpec.class);
+		Vector<ConstantArraySpec> v1 = new Vector<>();
+		Vector<Constant> v2 = new Vector<>();
+        for (Object element : elements) {
+            Element e = (Element) element;
+            Attribute array = e.getAttribute(XMLTags.ConstantArraySpec);
+            if (array != null) {
+                // collect scan overrides
+                String name = e.getAttributeValue(XMLTags.NameAttrTag);
+                int type = array.getIntValue();
+                v1.add(ConstantArraySpec.createFromString(name, e.getText(), type));
+            } else {
+                // collect regular overrides
+                v2.add(getConstant(e));
+            }
+        }
+		Constant[] constants = v2.toArray(Constant[]::new);
+		ConstantArraySpec[] specs = v1.toArray(ConstantArraySpec[]::new);
 		//create new MathOverrides object
 		mathOverrides = new MathOverrides(simulation, constants, specs);
 	} catch (ExpressionException | DataConversionException e) {
@@ -6258,8 +6255,7 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 				}
 			}
 			try {
-				AnalysisTask[] analysisTasks = (AnalysisTask[])BeanUtils.getArray(analysisTaskList,AnalysisTask.class);
-				newsimcontext.setAnalysisTasks(analysisTasks);
+                newsimcontext.setAnalysisTasks(analysisTaskList.toArray(AnalysisTask[]::new));
 			} catch (java.beans.PropertyVetoException e) {
 				throw new XmlParseException("A PropertyVetoException occurred when setting the AnalysisTasks of the SimContext " + name, e);
 			}
@@ -6440,7 +6436,7 @@ private SolverTaskDescription getSolverTaskDescription(Element param, Simulation
 		keepEvery = Integer.parseInt( param.getAttributeValue(XMLTags.KeepEveryTag) );
 		keepAtMost= Integer.parseInt( param.getAttributeValue(XMLTags.KeepAtMostTag) );
 	}
-	boolean useSymJacob = new Boolean(param.getAttributeValue(XMLTags.UseSymbolicJacobianAttrTag)).booleanValue();
+	boolean useSymJacob = Boolean.parseBoolean(param.getAttributeValue(XMLTags.UseSymbolicJacobianAttrTag));
 	String solverName = param.getAttributeValue(XMLTags.SolverNameTag);
 	//get sentivity parameter
 	Element sensparamElement = param.getChild(XMLTags.ConstantTag, vcNamespace);
@@ -6513,15 +6509,15 @@ private SolverTaskDescription getSolverTaskDescription(Element param, Simulation
 		
 		String runParameterScanSeriallyAttributeValue = param.getAttributeValue(XMLTags.RunParameterScanSerially);
 		if (runParameterScanSeriallyAttributeValue != null) {
-			solverTaskDesc.setSerialParameterScan(new Boolean(runParameterScanSeriallyAttributeValue).booleanValue());
+			solverTaskDesc.setSerialParameterScan(Boolean.parseBoolean(runParameterScanSeriallyAttributeValue));
 		}
 		String timeoutDisabledAttributeValue = param.getAttributeValue(XMLTags.TimeoutSimulationDisabled);
 		if (timeoutDisabledAttributeValue != null) {
-			solverTaskDesc.setTimeoutDisabled(new Boolean(timeoutDisabledAttributeValue).booleanValue());
+			solverTaskDesc.setTimeoutDisabled(Boolean.parseBoolean(timeoutDisabledAttributeValue));
 		}
 		String borderExtrapolationDisabled = param.getAttributeValue(XMLTags.BorderExtrapolationDisabled);
 		if (borderExtrapolationDisabled != null) {
-			solverTaskDesc.setBorderExtrapolationDisabled(new Boolean(borderExtrapolationDisabled).booleanValue());
+			solverTaskDesc.setBorderExtrapolationDisabled(Boolean.parseBoolean(borderExtrapolationDisabled));
 		}
 
 		Element nfsimSimulationOptionsElement = param.getChild(XMLTags.NFSimSimulationOptions, vcNamespace);
@@ -6566,39 +6562,39 @@ private NFsimSimulationOptions getNFSimSimulationOptions(Element nfsimSimulation
 	
 	temp = nfsimSimulationOptionsElement.getChildText(XMLTags.NFSimSimulationOptions_observableComputationOff, vcNamespace);
 	if(temp != null) {
-		so.setObservableComputationOff(new Boolean(temp));
+		so.setObservableComputationOff(Boolean.parseBoolean(temp));
 	}
 	temp = nfsimSimulationOptionsElement.getChildText(XMLTags.NFSimSimulationOptions_moleculeDistance, vcNamespace);
 	if(temp != null) {
-		so.setMoleculeDistance(new Integer(temp));
+		so.setMoleculeDistance(Integer.parseInt(temp));
 	}
 	temp = nfsimSimulationOptionsElement.getChildText(XMLTags.NFSimSimulationOptions_aggregateBookkeeping, vcNamespace);
 	if(temp != null) {
-		so.setAggregateBookkeeping(new Boolean(temp));
+		so.setAggregateBookkeeping(Boolean.parseBoolean(temp));
 	}
 	temp = nfsimSimulationOptionsElement.getChildText(XMLTags.NFSimSimulationOptions_maxMoleculesPerType, vcNamespace);
 	if(temp != null) {
-		so.setMaxMoleculesPerType(new Integer(temp));
+		so.setMaxMoleculesPerType(Integer.parseInt(temp));
 	}
 	temp = nfsimSimulationOptionsElement.getChildText(XMLTags.NFSimSimulationOptions_equilibrateTime, vcNamespace);
 	if(temp != null) {
-		so.setEquilibrateTime(new Integer(temp));
+		so.setEquilibrateTime(Integer.parseInt(temp));
 	}
 	temp = nfsimSimulationOptionsElement.getChildText(XMLTags.NFSimSimulationOptions_randomSeed, vcNamespace);
 	if(temp != null) {
-		so.setRandomSeed(new Integer(temp));
+		so.setRandomSeed(Integer.parseInt(temp));
 	}
 	temp = nfsimSimulationOptionsElement.getChildText(XMLTags.NFSimSimulationOptions_preventIntraBonds, vcNamespace);
 	if(temp != null) {
-		so.setPreventIntraBonds(new Boolean(temp));
+		so.setPreventIntraBonds(Boolean.parseBoolean(temp));
 	}
 	temp = nfsimSimulationOptionsElement.getChildText(XMLTags.NFSimSimulationOptions_matchComplexes, vcNamespace);
 	if(temp != null) {
-		so.setMatchComplexes(new Boolean(temp));
+		so.setMatchComplexes(Boolean.parseBoolean(temp));
 	}
 	temp = nfsimSimulationOptionsElement.getChildText(XMLTags.NFSimSimulationOptions_numOfTrials, vcNamespace);
 	if(temp != null) {
-		so.setNumOfTrials(new Integer(temp));
+		so.setNumOfTrials(Integer.parseInt(temp));
 	}
 	return so;
 }
@@ -6630,7 +6626,7 @@ private SmoldynSimulationOptions getSmoldySimulationOptions(Element smoldySimula
 		}
 		temp = smoldySimulationOptionsElement.getChildText(XMLTags.SmoldynSimulationOptions_randomSeed, vcNamespace);
 		if (temp != null) {
-			sso.setRandomSeed(new Integer(temp));
+			sso.setRandomSeed(Integer.parseInt(temp));
 		}
 		temp = smoldySimulationOptionsElement.getChildText(XMLTags.SmoldynSimulationOptions_gaussianTableSize, vcNamespace);
 		if (temp != null) {
@@ -6642,11 +6638,11 @@ private SmoldynSimulationOptions getSmoldySimulationOptions(Element smoldySimula
 		}
 		temp = smoldySimulationOptionsElement.getChildText(XMLTags.SmoldynSimulationOptions_high_res, vcNamespace);
 		if (temp != null) {
-			sso.setUseHighResolutionSample(new Boolean(temp));
+			sso.setUseHighResolutionSample(Boolean.parseBoolean(temp));
 		}
 		temp = smoldySimulationOptionsElement.getChildText(XMLTags.SmoldynSimulationOptions_saveParticleFiles, vcNamespace);
 		if (temp != null) {
-			sso.setSaveParticleLocations(new Boolean(temp));
+			sso.setSaveParticleLocations(Boolean.parseBoolean(temp));
 		}
 		temp = smoldySimulationOptionsElement.getChildText(XMLTags.SmoldynSimulationOptions_stepMultiplier, vcNamespace);
 		if (temp != null) {
@@ -6675,7 +6671,7 @@ public ModelParameter[] getModelParams(Element globalParams, Model model) throws
 		org.jdom.Element paramElement = (Element) globalsIterator.next();
 		modelParamsVector.add(getModelParameter(paramElement, model));
 	}
-	return ((ModelParameter[])BeanUtils.getArray(modelParamsVector, ModelParameter.class));
+	return modelParamsVector.toArray(ModelParameter[]::new);
 }
 
 

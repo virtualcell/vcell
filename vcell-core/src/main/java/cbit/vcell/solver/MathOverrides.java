@@ -359,7 +359,7 @@ public int[] getScanBounds() {
 
 public String[] getAllConstantNames() {
 	Enumeration<Constant> en = getSimulation().getMathDescription().getConstants();
-	java.util.Vector<String> v = new java.util.Vector<String>();
+	Vector<String> v = new Vector<>();
 	while (en.hasMoreElements()) {
 		v.add((en.nextElement()).getName());
 	}
@@ -372,7 +372,7 @@ public String[] getAllConstantNames() {
 		}
 	}
 
-	return (String[])BeanUtils.getArray(v, String.class);
+	return v.toArray(String[]::new);
 }
 
 
@@ -465,20 +465,20 @@ public java.util.Enumeration<String> getOverridesHashKeys() {
 public int getScanCount() {
 	int num = 1;
 	String[] scannedParams = getScannedConstantNames();
-	for (int i = 0; i < scannedParams.length; i++){
-		num *= getConstantArraySpec(scannedParams[i]).getNumValues();
-	}
+    for (String scannedParam : scannedParams) {
+        num *= getConstantArraySpec(scannedParam).getNumValues();
+    }
 	return num;
 }
 
 
 public String[] getScannedConstantNames() {
 	String[] overrides = getOverridenConstantNames();
-	java.util.Vector<String> v = new java.util.Vector<String>();
-	for (int i = 0; i < overrides.length; i++){
-		if (isScan(overrides[i])) v.add(overrides[i]);
-	}
-	return (String[])BeanUtils.getArray(v, String.class);
+	Vector<String> v = new Vector<>();
+    for (String override : overrides) {
+        if (isScan(override)) v.add(override);
+    }
+	return v.toArray(String[]::new);
 }
 
 
@@ -799,8 +799,8 @@ void setSimulation(Simulation newSimulation) {
 }
 
 
-private static java.util.Vector<Element> toVector (java.util.Enumeration<Element> enumeration) {
-	java.util.Vector<Element> vector = new java.util.Vector<Element>();
+private static Vector<Element> toVector (java.util.Enumeration<Element> enumeration) {
+	Vector<Element> vector = new Vector<Element>();
 	while (enumeration.hasMoreElements()) {
 		vector.add(enumeration.nextElement());
 	}

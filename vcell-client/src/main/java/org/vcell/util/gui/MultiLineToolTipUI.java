@@ -10,6 +10,9 @@
 
 package org.vcell.util.gui;
 
+import org.vcell.util.ArrayUtils;
+import org.vcell.util.BeanUtils;
+
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -59,7 +62,7 @@ public String[] getLinesInTipText(String tiptext) {
 
 	String newLineDelimiters = "\n\r";
 	StringTokenizer lineTokenizer = new StringTokenizer(stringBuffer.toString(),newLineDelimiters);
-	String token = new String("");
+	String token;
 	Vector<String> linesVector = new Vector<String>();
 	int j=0;
 
@@ -72,9 +75,7 @@ public String[] getLinesInTipText(String tiptext) {
 		j++;
 	}
 
-	String[] linesArray = (String[])org.vcell.util.BeanUtils.getArray(linesVector, String.class);
-
-	return linesArray;
+	return linesVector.toArray(String[]::new);
 }
 	public Dimension getMaximumSize(JComponent c) {
 	    return getPreferredSize(c);

@@ -196,26 +196,23 @@ private ODESolverResultSet createODESolverResultSet() throws ExpressionException
 			FunctionColumnDescription fcd = new FunctionColumnDescription(new Expression(getSensitivityParameter().getConstantValue()), getSensitivityParameter().getName(), null, getSensitivityParameter().getName(), false);
 			odeSolverResultSet.addFunctionColumn(fcd);
 		}
-		StateVariable stateVars[] = (StateVariable[])org.vcell.util.BeanUtils.getArray(fieldStateVariables,StateVariable.class);
-		for (int i = 0; i < variables.length; i++){
-			if (variables[i] instanceof Function && SimulationSymbolTable.isFunctionSaved((Function)variables[i])){
-				Function depSensFunction = (Function)variables[i];
+		StateVariable[] stateVars = this.fieldStateVariables.toArray(StateVariable[]::new);
+        for (Variable variable : variables) {
+            if (variable instanceof Function depSensFunction && SimulationSymbolTable.isFunctionSaved((Function) variable)) {
 				Expression depSensFnExpr = new Expression(depSensFunction.getExpression());
-				try {
-					depSensFnExpr = simSymbolTable.substituteFunctions(depSensFnExpr);
-				} catch (MathException e) {
-					throw new RuntimeException("Substitute function failed on function "+depSensFunction.getName()+" "+e.getMessage(), e);
-				}
-				depSensFnExpr = getFunctionSensitivity(depSensFnExpr, getSensitivityParameter(), stateVars);
-				// depSensFnExpr = depSensFnExpr.flatten(); 	// already bound and flattened in getFunctionSensitivity, no need here ...
-				
-				String depSensFnName = new String("sens_"+depSensFunction.getName()+"_wrt_"+getSensitivityParameter().getName());
-				if (depSensFunction != null) {
-					FunctionColumnDescription cd = new FunctionColumnDescription(depSensFnExpr.flatten(),depSensFnName,getSensitivityParameter().getName(),depSensFnName, false);
-					odeSolverResultSet.addFunctionColumn(cd);
-				}
-			}
-		}
+                try {
+                    depSensFnExpr = simSymbolTable.substituteFunctions(depSensFnExpr);
+                } catch (MathException e) {
+                    throw new RuntimeException("Substitute function failed on function " + depSensFunction.getName() + " " + e.getMessage(), e);
+                }
+                depSensFnExpr = getFunctionSensitivity(depSensFnExpr, getSensitivityParameter(), stateVars);
+                // depSensFnExpr = depSensFnExpr.flatten(); 	// already bound and flattened in getFunctionSensitivity, no need here ...
+
+                String depSensFnName = "sens_" + depSensFunction.getName() + "_wrt_" + getSensitivityParameter().getName();
+                FunctionColumnDescription cd = new FunctionColumnDescription(depSensFnExpr.flatten(), depSensFnName, getSensitivityParameter().getName(), depSensFnName, false);
+                odeSolverResultSet.addFunctionColumn(cd);
+            }
+        }
 	}
 	return (odeSolverResultSet);
 }

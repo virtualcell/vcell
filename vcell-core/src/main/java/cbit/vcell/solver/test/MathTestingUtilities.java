@@ -14,10 +14,7 @@ import java.util.Enumeration;
 import java.util.Vector;
 
 import cbit.vcell.solver.SimulationOwner;
-import org.vcell.util.BeanUtils;
-import org.vcell.util.Coordinate;
-import org.vcell.util.CoordinateIndex;
-import org.vcell.util.DataAccessException;
+import org.vcell.util.*;
 import org.vcell.util.document.VCDocument;
 
 import cbit.vcell.biomodel.BioModel;
@@ -1215,11 +1212,11 @@ public static MathDescription constructOdesForSensitivity(MathDescription mathDe
 		// Substitute the rate expressions for the newly added ODEs in equnsVector.
 		//
 
-		Variable vars[] = (Variable[])BeanUtils.getArray(varsVector, Variable.class);		
-		Variable var_1s[] = (Variable[])BeanUtils.getArray(var1s, Variable.class);
-		Variable var_2s[] = (Variable[])BeanUtils.getArray(var2s, Variable.class);
+		Variable[] vars = varsVector.toArray(Variable[]::new);
+		Variable[] var_1s = var1s.toArray(Variable[]::new);
+		Variable[] var_2s = var2s.toArray(Variable[]::new);
 
-		Vector<Equation> newEqunsVector = new Vector<Equation>();
+		Vector<Equation> newEqunsVector = new Vector<>();
 		for (int i = 0; i < equnsVector.size(); i++) {
 			Equation equn = equnsVector.elementAt(i);
 			Expression initEx = equn.getInitialExpression();
@@ -1240,7 +1237,7 @@ public static MathDescription constructOdesForSensitivity(MathDescription mathDe
 		// Add all the extra ODEs created for each original ODE variable to the equations in the subdomain
 		//
 		for (int i = 0; i < newEqunsVector.size(); i++){
-			mathDesc.getSubDomain(subDomain.getName()).addEquation((Equation)newEqunsVector.elementAt(i))	;
+			mathDesc.getSubDomain(subDomain.getName()).addEquation(newEqunsVector.elementAt(i))	;
 		}
 
 		//
@@ -1455,7 +1452,7 @@ public static Expression[] getInsideOutsideFunctions(Expression analyticSubDomai
 			throw new ExpressionException("expression '"+exp+"' is neither relational nor logical, bad analytic geometry");
 		}
 	}
-	return (Expression[])BeanUtils.getArray(expList,Expression.class);
+	return expList.toArray(Expression[]::new);
 }
 
 
@@ -1493,9 +1490,9 @@ public static Function[] getOutwardNormal(Expression analyticSubVolume, String b
 	varHash.addVariable(new Function(baseName+"_Nz",new Expression(normalBufferZ.toString()),null));
 
 	
-	Variable vars[] = varHash.getAlphabeticallyOrderedVariables();
-	java.util.Vector<Variable> varList = new java.util.Vector<Variable>(java.util.Arrays.asList(vars));
-	return (Function[])BeanUtils.getArray(varList,Function.class);
+	Variable[] vars = varHash.getAlphabeticallyOrderedVariables();
+	java.util.Vector<Variable> varList = new java.util.Vector<>(java.util.Arrays.asList(vars));
+	return varList.toArray(Function[]::new);
 }
 
 
@@ -1538,7 +1535,7 @@ public static Function[] getOutwardNormalFromInsideOutsideFunction(Expression in
 	varList.add(new Function(normalZName,normalZ,domain));
 	varList.add(new Function(distanceToSurfaceName,distanceToSurface,domain));
 
-	return (Function[])BeanUtils.getArray(varList,Function.class);
+	return varList.toArray(Function[]::new);
 }
 
 
@@ -1546,11 +1543,11 @@ private static Variable getSimVar(SimulationSymbolTable refSimSymbolTable, Strin
 
 	Variable[] refSimVars = refSimSymbolTable.getVariables();
 
-	for (int i = 0; i < refSimVars.length; i++) {
-		if (refSimVars[i].getName().equals(testSimVarName)) {
-			return refSimVars[i];
-		}
-	}
+    for (Variable refSimVar : refSimVars) {
+        if (refSimVar.getName().equals(testSimVarName)) {
+            return refSimVar;
+        }
+    }
 	return null;
 }
 

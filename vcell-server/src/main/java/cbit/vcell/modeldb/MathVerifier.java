@@ -1388,7 +1388,7 @@ public class MathVerifier {
             String sql = "SELECT " + bmscTable.bioModelRef.getQualifiedColName() +
                     " FROM " + bmscTable.getTableName() +
                     " WHERE " + bmscTable.simContextRef.getQualifiedColName() + " = " + simContextKey;
-            Vector keys = new Vector();
+            Vector<KeyValue> keys = new Vector<>();
             stmt = con.createStatement();
             try {
                 ResultSet rset = stmt.executeQuery(sql);
@@ -1403,7 +1403,7 @@ public class MathVerifier {
                 con.close();
             }
 
-            KeyValue[] bmKeys = (KeyValue[]) org.vcell.util.BeanUtils.getArray(keys, KeyValue.class);
+            KeyValue[] bmKeys = keys.toArray(KeyValue[]::new);
             try {
                 // use the first biomodel...
                 BioModelInfo bioModelInfo = dbServerImpl.getBioModelInfo(user, bmKeys[0]);

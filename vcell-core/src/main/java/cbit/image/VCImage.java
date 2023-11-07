@@ -20,6 +20,7 @@ import java.util.zip.*;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.vcell.util.BeanUtils;
 import org.vcell.util.Hex;
 import org.vcell.util.Matchable;
 import org.vcell.util.document.KeyValue;
@@ -479,15 +480,7 @@ private static byte[] deflate0(byte[] uncompressed) throws IOException {
 }
 
 public static byte[] inflate(byte[] compressed) throws IOException {
-	ByteArrayInputStream bis = new ByteArrayInputStream(compressed);
-	InflaterInputStream iis = new InflaterInputStream(bis);
-	int temp;
-	byte buf[] = new byte[65536];
-	ByteArrayOutputStream bos = new ByteArrayOutputStream();
-	while((temp = iis.read(buf,0,buf.length)) != -1){
-		bos.write(buf,0,temp);
-	}
-	byte[] uncompressed = bos.toByteArray();
+	byte[] uncompressed = BeanUtils.uncompress(compressed);
 	if (lg.isTraceEnabled()) {
 		try {
 			MessageDigest digest = MessageDigest.getInstance("SHA-256");
@@ -495,7 +488,9 @@ public static byte[] inflate(byte[] compressed) throws IOException {
 			String hashCompressed = Hex.toString(digest.digest(compressed));
 			lg.trace("Inflating using InflaterInputStream: compressed pixels(" + compressed.length + "): hash=" + hashCompressed.substring(0, 6) +
 					", uncompressed pixels(" + uncompressed.length + "): hash=" + hashUncompressed.substring(0, 6));
-		} catch (Exception e) {}
+		} catch (Exception e) {
+			lg.warn("Unexpected Exception occurred while parsing inflation results: " + e.getMessage(), e);
+		}
 	}
 	return uncompressed;
 }

@@ -49,7 +49,6 @@ public class VCDatabaseScanner {
 
 /**
  * create database scanner with specified log
- * @param log
  * @return new scanner 
  * @throws Exception
  */
@@ -176,7 +175,6 @@ public void scanBioModels(VCDatabaseVisitor databaseVisitor, PrintStream logFile
 
 /**
  * generate new math description, compare with old, log status
- * @param biomodel
  */
 protected boolean verifyMathDescriptionsUnchanged(BioModel bioModel, PrintWriter printWriter)  {
 	SimulationContext[] simContexts = bioModel.getSimulationContexts();
@@ -446,12 +444,12 @@ private static void scanDbObjects(VersionableType versionableType, final java.la
 		//
 		java.util.Vector<User> userList = new java.util.Vector<User>();
 		User[] allUsers = databaseScanner.getAllUsers();
-		for (int i=0;i<allUsers.length;i++){
-			if (args[0].equals(ALL_USERS) || allUsers[i].getName().equals(args[0])){
-				userList.add(allUsers[i]);
-			}
-		}
-		User users[] = (User[])org.vcell.util.BeanUtils.getArray(userList,User.class);
+        for (User allUser : allUsers) {
+            if (args[0].equals(ALL_USERS) || allUser.getName().equals(args[0])) {
+                userList.add(allUser);
+            }
+        }
+		User[] users = userList.toArray(User[]::new);
 
 		//
 		// Redirect output to the logfile (append if exists)
@@ -471,7 +469,7 @@ private static void scanDbObjects(VersionableType versionableType, final java.la
 				System.out.println("using key file '"+args[3]+"'");
 				try (java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.FileReader(keyFile))) {
 					int sizeIncludeFile = (int)keyFile.length();
-					char keyFileBuffer[] = new char[sizeIncludeFile];
+					char[] keyFileBuffer = new char[sizeIncludeFile];
 					int count = reader.read(keyFileBuffer);
 					String keyBuffer = new String(keyFileBuffer,0,count);
 					StringTokenizer tokens = new StringTokenizer(keyBuffer);

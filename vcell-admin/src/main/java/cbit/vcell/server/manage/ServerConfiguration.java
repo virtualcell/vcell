@@ -10,6 +10,8 @@
 
 package cbit.vcell.server.manage;
 
+import org.vcell.util.ArrayUtils;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -31,7 +33,7 @@ public class ServerConfiguration {
  */
 public ServerConfiguration(File configurationFile) throws IOException, FileNotFoundException {
 	LineNumberReader reader = new LineNumberReader(new FileReader(configurationFile));
-	Vector hosts = new Vector();
+	Vector<VCellHost> hosts = new Vector<>();
 	VCellHost host = null;
 	String line = reader.readLine();
 	while (line != null) {
@@ -39,17 +41,13 @@ public ServerConfiguration(File configurationFile) throws IOException, FileNotFo
 			if(line.startsWith("hosttype=")) {
 				if (host != null) hosts.add(host);
 				String type = line.substring(line.indexOf("=") + 1);
-				if (type.equals("vcell")) {
-					host = new VCellHost(VCellHost.VCELL_SERVER);
-				} else if (type.equals("data")) {
-					host = new VCellHost(VCellHost.DATA_SERVER);
-				} else if (type.equals("database")) {
-					host = new VCellHost(VCellHost.DATABASE_SERVER);
-				} else if (type.equals("compute")) {
-					host = new VCellHost(VCellHost.COMPUTE_SERVER);
-				} else {
-					host = null;
-				}
+                host = switch (type) {
+                    case "vcell" -> new VCellHost(VCellHost.VCELL_SERVER);
+                    case "data" -> new VCellHost(VCellHost.DATA_SERVER);
+                    case "database" -> new VCellHost(VCellHost.DATABASE_SERVER);
+                    case "compute" -> new VCellHost(VCellHost.COMPUTE_SERVER);
+                    default -> null;
+                };
 			} else if (line.startsWith("name=")) {
 				if (host != null) host.setName(line.substring(line.indexOf("=") + 1));
 			} else if (line.startsWith("port=")) {
@@ -61,13 +59,14 @@ public ServerConfiguration(File configurationFile) throws IOException, FileNotFo
 			} else if (line.startsWith("logfile=")) {
 				if (host != null) host.setLogFile(new File(line.substring(line.indexOf("=") + 1)));
 			} else if (line.startsWith("restart=")) {
-				if (host != null) host.setRestartIfDead(Boolean.valueOf(line.substring(line.indexOf("=") + 1)).booleanValue());
+				if (host != null) host.setRestartIfDead(Boolean.parseBoolean(line.substring(line.indexOf("=") + 1)));
 			}
 		}
 		line = reader.readLine();
 	}
 	if (host != null) hosts.add(host);
-	allHosts = ((VCellHost[])org.vcell.util.BeanUtils.getArray(hosts, VCellHost.class));
+
+	this.allHosts = hosts.toArray(VCellHost[]::new);
 }
 /**
  * Insert the method's description here.

@@ -17,6 +17,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.util.Enumeration;
+import java.util.Vector;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -27,6 +28,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
 
+import org.vcell.util.ArrayUtils;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.ScrollTable;
 
@@ -468,21 +470,20 @@ private synchronized void copyCells(String actionCommand) {
 
 		//Copy SimulationParameterSelection to clipboard along with "original style" formatted string
 		if(r > 0){
-			java.util.Vector<SymbolTableEntry> primarySymbolTableEntriesV = new java.util.Vector<SymbolTableEntry>();
-			java.util.Vector<Expression> resolvedValuesV = new java.util.Vector<Expression>();
-			//java.util.Vector selectedNamesV = new java.util.Vector();
-			for(int i=0;i<rows.length;i+= 1){
-				String rowName = (String)getJTableFixed().getValueAt(rows[i],MathOverridesTableModel.COLUMN_PARAMETER);
-				primarySymbolTableEntriesV.add(getMathOverrides().getConstant(rowName));
-				resolvedValuesV.add(getMathOverrides().getActualExpression(rowName,0));
-				
-			}
+			Vector<SymbolTableEntry> primarySymbolTableEntriesV = new Vector<>();
+			Vector<Expression> resolvedValuesV = new Vector<>();
+            for (int row : rows) {
+                String rowName = (String) getJTableFixed().getValueAt(row, MathOverridesTableModel.COLUMN_PARAMETER);
+                primarySymbolTableEntriesV.add(getMathOverrides().getConstant(rowName));
+                resolvedValuesV.add(getMathOverrides().getActualExpression(rowName, 0));
+
+            }
 			VCellTransferable.ResolvedValuesSelection rvs =
-				new VCellTransferable.ResolvedValuesSelection(
-					(SymbolTableEntry[])BeanUtils.getArray(primarySymbolTableEntriesV,SymbolTableEntry.class),
-					null,
-					(Expression[])BeanUtils.getArray(resolvedValuesV,Expression.class),
-					buffer.toString());
+					new VCellTransferable.ResolvedValuesSelection(
+							primarySymbolTableEntriesV.toArray(SymbolTableEntry[]::new),
+							null,
+							resolvedValuesV.toArray(Expression[]::new),
+							buffer.toString());
 
 			VCellTransferable.sendToClipboard(rvs);
 		}else{
@@ -813,9 +814,9 @@ private void initialize() {
 private void jMenuItemPaste_ActionPerformed(java.awt.event.ActionEvent actionEvent) {
 
 
-	java.util.Vector<String> pasteDescriptionsV = new java.util.Vector<String>();
-	java.util.Vector<Expression> newConstantsV = new java.util.Vector<Expression>();
-	java.util.Vector<String> changedParameterNamesV = new java.util.Vector<String>();
+	Vector<String> pasteDescriptionsV = new Vector<String>();
+	Vector<Expression> newConstantsV = new Vector<Expression>();
+	Vector<String> changedParameterNamesV = new Vector<String>();
 	try{
 
 		if(actionEvent.getSource().equals(getJMenuItemPaste()) || actionEvent.getSource().equals(getJMenuItemPasteAll())){
@@ -960,7 +961,7 @@ public static void main(java.lang.String[] args) {
 public void setEditable(boolean editable) {
 	boolean oldValue = fieldEditable;
 	fieldEditable = editable;
-	firePropertyChange("editable", new Boolean(oldValue), new Boolean(editable));
+	firePropertyChange("editable", oldValue, editable);
 }
 
 

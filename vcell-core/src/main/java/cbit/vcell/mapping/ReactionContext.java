@@ -21,11 +21,7 @@ import java.util.Vector;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.model.rbm.MolecularType;
-import org.vcell.util.BeanUtils;
-import org.vcell.util.Compare;
-import org.vcell.util.Issue;
-import org.vcell.util.IssueContext;
-import org.vcell.util.Matchable;
+import org.vcell.util.*;
 
 import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
@@ -580,7 +576,7 @@ private void refreshSpeciesContextSpecs() throws MappingException {
 		SpeciesContextSpec scs = newSpeciesContextSpecs[i];
 		SpeciesContext speciesContext = getModel().getSpeciesContext(scs.getSpeciesContext().getName());
 		if (speciesContext == null || !speciesContext.compareEqual(scs.getSpeciesContext())) {
-			newSpeciesContextSpecs = (SpeciesContextSpec[])BeanUtils.removeFirstInstanceOfElement(newSpeciesContextSpecs,scs);
+			newSpeciesContextSpecs = ArrayUtils.removeFirstInstanceOfElement(newSpeciesContextSpecs,scs);
 			i--;
 			continue;
 		}else if (speciesContext != scs.getSpeciesContext()){
@@ -588,7 +584,7 @@ private void refreshSpeciesContextSpecs() throws MappingException {
 		}
 		Structure structure = getModel().getStructure(scs.getSpeciesContext().getStructure().getName());
 		if (structure == null || structure != scs.getSpeciesContext().getStructure()) {
-			newSpeciesContextSpecs = (SpeciesContextSpec[])BeanUtils.removeFirstInstanceOfElement(newSpeciesContextSpecs,scs);
+			newSpeciesContextSpecs = ArrayUtils.removeFirstInstanceOfElement(newSpeciesContextSpecs,scs);
 			i--;
 			continue;
 		}

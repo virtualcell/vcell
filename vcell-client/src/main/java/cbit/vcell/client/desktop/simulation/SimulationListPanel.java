@@ -24,15 +24,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Hashtable;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Objects;
-import java.util.StringTokenizer;
-import java.util.Vector;
+import java.util.*;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -54,6 +46,7 @@ import javax.swing.border.Border;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.TableCellEditor;
 
+import org.vcell.util.ArrayUtils;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.NumberUtils;
 import org.vcell.util.document.User;
@@ -254,10 +247,10 @@ private void createBatchSimulations() {
 	if(selections == null || selections.length != 1) {
 		throw new RuntimeException("Exactly one template Simulation is required for Batch Creation");
 	}
-	Vector<Simulation> v = new Vector<Simulation>();
-	v.add((Simulation)(ivjSimulationListTableModel1.getValueAt(selections[0])));
-	Simulation[] toCopy = (Simulation[])BeanUtils.getArray(v, Simulation.class);
-	if(toCopy == null || toCopy.length != 1) {
+	Vector<Simulation> v = new Vector<>();
+	v.add((ivjSimulationListTableModel1.getValueAt(selections[0])));
+	Simulation[] toCopy = v.toArray(Simulation[]::new);
+	if(toCopy.length != 1) {
 		throw new RuntimeException("Exactly one template Simulation is required for Batch Creation");
 	}
 	if(massConservationModelReductionCheckBox.isSelected()) {
@@ -290,9 +283,9 @@ private void getBatchSimulationsResults() {
 		throw new RuntimeException("Exactly one template Simulation is required for Batch results Import");
 	}
 	
-	Vector<Simulation> v = new Vector<Simulation>();
-	v.add((Simulation)(ivjSimulationListTableModel1.getValueAt(selections[0])));
-	Simulation[] toImport = (Simulation[])BeanUtils.getArray(v, Simulation.class);
+	Vector<Simulation> v = new Vector<>();
+	v.add(ivjSimulationListTableModel1.getValueAt(selections[0]));
+	Simulation[] toImport = v.toArray(Simulation[]::new);
 	int index = -1;
 	
 	// one way to choose dir for results
@@ -315,16 +308,11 @@ private void getBatchSimulationsResults() {
 	getScrollPaneTable().scrollRectToVisible(getScrollPaneTable().getCellRect(index, 0, true));
 }
 
-private File chooseBatchOutputDirectory(UserPreferences userPreferences) {
-	File batchOutputDirectory = null;
-	
-	return batchOutputDirectory;
-}
 private File parseBatchInputFile(UserPreferences userPreferences, Map<Integer, Map<String, String>> batchInputDataMap) {
 	
-	StringBuffer stringBuffer = new StringBuffer();
-	long batchInputFileLength = 0;
-	File batchInputFile = null;
+	StringBuilder stringBuffer = new StringBuilder();
+	long batchInputFileLength;
+	File batchInputFile;
 	
 	// TODO: for path use something else rather than getCurrentDialogPath, for example a combination of
 	// biomodelName + application name + simulation template name, located in the username/.vcell/batchdata folder
@@ -409,10 +397,10 @@ private File parseBatchInputFile(UserPreferences userPreferences, Map<Integer, M
 private void copySimulations() {
 	int[] selections = getScrollPaneTable().getSelectedRows();
 	Vector<Simulation> v = new Vector<Simulation>();
-	for (int i = 0; i < selections.length; i++){
-		v.add((Simulation)(ivjSimulationListTableModel1.getValueAt(selections[i])));
-	}
-	Simulation[] toCopy = (Simulation[])BeanUtils.getArray(v, Simulation.class);
+    for (int selection : selections) {
+        v.add(ivjSimulationListTableModel1.getValueAt(selection));
+    }
+	Simulation[] toCopy = v.toArray(Simulation[]::new);
 	int index = -1;
 	try {
 		index = getSimulationWorkspace().copySimulations(toCopy, this);
@@ -431,17 +419,17 @@ private void copySimulations() {
 private void deleteSimulations() {
 	int[] selections = getScrollPaneTable().getSelectedRows();
 	StringBuilder simulationNames = new StringBuilder();
-	ArrayList<Simulation> simList = new ArrayList<Simulation>();
+	List<Simulation> simList = new ArrayList<>();
 //	Simulation[] allSims = getSimulationWorkspace().getSimulations();
-	for (int i = 0; i < selections.length; i++){
-		Simulation sim = (Simulation)(ivjSimulationListTableModel1.getValueAt(selections[i]));
-		SimulationStatus simStatus = getSimulationWorkspace().getSimulationStatus(sim);
-		if (!simStatus.isRunning()){
-			simList.add(sim);
-			simulationNames.append(sim.getName() + "\n");
-		}
-	}
-	if (simList.size() == 0) {
+    for (int selection : selections) {
+        Simulation sim = ivjSimulationListTableModel1.getValueAt(selection);
+        SimulationStatus simStatus = getSimulationWorkspace().getSimulationStatus(sim);
+        if (!simStatus.isRunning()) {
+            simList.add(sim);
+            simulationNames.append(sim.getName()).append("\n");
+        }
+    }
+	if (simList.isEmpty()) {
 		return;
 	}
 
@@ -449,7 +437,7 @@ private void deleteSimulations() {
 	if (confirm.equals(UserMessage.OPTION_CANCEL)) {
 		return;
 	}
-	Simulation[] toDelete = (Simulation[])BeanUtils.getArray(simList, Simulation.class);
+	Simulation[] toDelete = simList.toArray(Simulation[]::new);
 	try {
 		getSimulationWorkspace().deleteSimulations(toDelete);
 	} catch (Throwable exc) {
@@ -1066,7 +1054,6 @@ private void newSimulation(final NetworkGenerationRequirements networkGeneration
 
 /**
  * can this task run locally?
- * sets {@link #quickRunButton} tool tip
  * @param taskDesc
  * @return true if it can
  */
@@ -1290,7 +1277,6 @@ public void scrollPaneTable_FocusLost(java.awt.event.FocusEvent focusEvent) {
 
 /**
  * Sets the simulationWorkspace property (cbit.vcell.client.desktop.simulation.SimulationWorkspace) value.
- * @param simulationWorkspace The new value for the property.
  * @see #getSimulationWorkspace
  */
 public void setSimulationWorkspace(SimulationWorkspace newValue) {
@@ -1322,10 +1308,10 @@ public void setSimulationWorkspace(SimulationWorkspace newValue) {
 private void showSimulationResults(ViewerType viewerType) {
 	int[] selections = getScrollPaneTable().getSelectedRows();
 	Vector<Simulation> v = new Vector<Simulation>();
-	for (int i = 0; i < selections.length; i++){
-		v.add((Simulation)(ivjSimulationListTableModel1.getValueAt(selections[i])));
-	}
-	Simulation[] toShow = (Simulation[])BeanUtils.getArray(v, Simulation.class);
+    for (int selection : selections) {
+        v.add(ivjSimulationListTableModel1.getValueAt(selection));
+    }
+	Simulation[] toShow = v.toArray(Simulation[]::new);
 	getSimulationWorkspace().showSimulationResults(toShow, viewerType);
 }
 
@@ -1335,11 +1321,11 @@ private void showSimulationResults(ViewerType viewerType) {
  */
 private void showSimulationStatusDetails() {
 	int[] selections = getScrollPaneTable().getSelectedRows();
-	Vector<Simulation> v = new Vector<Simulation>();
-	for (int i = 0; i < selections.length; i++){
-		v.add((Simulation)(ivjSimulationListTableModel1.getValueAt(selections[i])));
-	}
-	Simulation[] sims = (Simulation[])BeanUtils.getArray(v, Simulation.class);
+	Vector<Simulation> v = new Vector<>();
+    for (int selection : selections) {
+        v.add(ivjSimulationListTableModel1.getValueAt(selection));
+    }
+	Simulation[] sims = v.toArray(Simulation[]::new);
 	getSimulationWorkspace().showSimulationStatusDetails(sims);
 }
 
@@ -1349,11 +1335,11 @@ private void showSimulationStatusDetails() {
  */
 private void stopSimulations() {
 	int[] selections = getScrollPaneTable().getSelectedRows();
-	Vector<Simulation> v = new Vector<Simulation>();
-	for (int i = 0; i < selections.length; i++){
-		v.add((Simulation)(ivjSimulationListTableModel1.getValueAt(selections[i])));
-	}
-	Simulation[] toStop = (Simulation[])BeanUtils.getArray(v, Simulation.class);
+	Vector<Simulation> v = new Vector<>();
+    for (int selection : selections) {
+        v.add(ivjSimulationListTableModel1.getValueAt(selection));
+    }
+	Simulation[] toStop = v.toArray(Simulation[]::new);
 	getSimulationWorkspace().stopSimulations(toStop);
 }
 

@@ -535,15 +535,15 @@ SimulationStatusPersistent[] getSimulationStatus(KeyValue simulationKeys[], bool
 		SimulationStatusPersistent[] simStatuses = new SimulationStatusPersistent[simulationKeys.length];
 		for (int i = 0; i < simulationKeys.length; i++){
 			Vector<SimulationJobStatusPersistent> v = new Vector<SimulationJobStatusPersistent>();
-			for (int j = 0; j < jobStatuses.length; j++){
-				if(jobStatuses[j].getVCSimulationIdentifier().getSimulationKey().equals(simulationKeys[i])) {
-					v.add(jobStatuses[j]);
-				}
-			}
+            for (SimulationJobStatusPersistent jobStatus : jobStatuses) {
+                if (jobStatus.getVCSimulationIdentifier().getSimulationKey().equals(simulationKeys[i])) {
+                    v.add(jobStatus);
+                }
+            }
 			if (v.isEmpty()) {
 				simStatuses[i] = null;
 			} else {
-				simStatuses[i] = new SimulationStatusPersistent((SimulationJobStatusPersistent[])org.vcell.util.BeanUtils.getArray(v, SimulationJobStatusPersistent.class));
+				simStatuses[i] = new SimulationStatusPersistent(v.toArray(SimulationJobStatusPersistent[]::new));
 			}
 		}
 		return simStatuses;

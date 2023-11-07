@@ -10,12 +10,7 @@
 
 package cbit.vcell.math;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Vector;
+import java.util.*;
 
 import com.lowagie.text.Row;
 import org.apache.logging.log4j.LogManager;
@@ -44,8 +39,8 @@ import cbit.vcell.util.ColumnDescription;
  */
 @SuppressWarnings("serial")
 public class RowColumnResultSet implements java.io.Serializable {
-	private Vector<ColumnDescription> fieldDataColumnDescriptions = new Vector<ColumnDescription>();
-	private Vector<ColumnDescription> fieldFunctionColumnDescriptions = new Vector<ColumnDescription>();
+	private Vector<ColumnDescription> fieldDataColumnDescriptions = new Vector<>();
+	private Vector<FunctionColumnDescription> fieldFunctionColumnDescriptions = new Vector<>();
 	private ArrayList<double[]> fieldValues = new ArrayList<double[]> ();  // vector of rows (each row is a double[])
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private ColumnDescription[] fieldColumnDescriptions = null;
@@ -60,8 +55,8 @@ public class RowColumnResultSet implements java.io.Serializable {
 public RowColumnResultSet() {
 }
 public RowColumnResultSet(RowColumnResultSet copyThisRowColumnResultSet) {
-	this.fieldDataColumnDescriptions = new Vector<ColumnDescription>(copyThisRowColumnResultSet.fieldDataColumnDescriptions);
-	this.fieldFunctionColumnDescriptions = new Vector<ColumnDescription>(copyThisRowColumnResultSet.fieldFunctionColumnDescriptions);
+	this.fieldDataColumnDescriptions = new Vector<>(copyThisRowColumnResultSet.fieldDataColumnDescriptions);
+	this.fieldFunctionColumnDescriptions = new Vector<>(copyThisRowColumnResultSet.fieldFunctionColumnDescriptions);
 	this.fieldValues = new ArrayList<double[]>(copyThisRowColumnResultSet.fieldValues);
 }
 
@@ -369,7 +364,7 @@ public int getDataColumnCount() {
  * getVariableNames method comment.
  */
 public ColumnDescription[] getDataColumnDescriptions() {
-	return (ColumnDescription[])BeanUtils.getArray(fieldDataColumnDescriptions,ColumnDescription.class);
+	return fieldDataColumnDescriptions.toArray(ColumnDescription[]::new);
 }
 
 
@@ -387,7 +382,7 @@ public int getFunctionColumnCount() {
  * getVariableNames method comment.
  */
 public FunctionColumnDescription[] getFunctionColumnDescriptions() {
-	return (FunctionColumnDescription[])BeanUtils.getArray(fieldFunctionColumnDescriptions,FunctionColumnDescription.class);
+	return this.fieldFunctionColumnDescriptions.toArray(FunctionColumnDescription[]::new);
 }
 
 

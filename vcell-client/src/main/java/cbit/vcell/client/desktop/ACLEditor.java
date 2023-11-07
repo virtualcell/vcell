@@ -16,6 +16,7 @@ import java.util.Vector;
 
 import javax.swing.JLabel;
 
+import org.vcell.util.ArrayUtils;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.GeneralGuiUtils;
 import org.vcell.util.document.GroupAccess;
@@ -128,7 +129,7 @@ public ACLEditor() {
  */
 private void accessAction(java.awt.event.ActionEvent actionEvent) {
 	if(actionEvent.getSource() == getJButtonAddACLUser()){
-		if(getJTextFieldACLUser().getText().length() > 0){
+		if(!getJTextFieldACLUser().getText().isEmpty()){
 			String[] oldAccessList = getACLState().getAccessList();
 			if(oldAccessList != null && oldAccessList.length > 0){
 				if(BeanUtils.arrayContains(oldAccessList,getJTextFieldACLUser().getText())){
@@ -143,7 +144,7 @@ private void accessAction(java.awt.event.ActionEvent actionEvent) {
 	}else if(actionEvent.getSource() == getJButtonRemoveACLUser() && getACLState() != null){
 		String removeUser = (String)getJListACL().getSelectedValue();
 		if(removeUser != null){
-			String[] newUserList = (String[])BeanUtils.removeFirstInstanceOfElement(getACLState().getAccessList(),removeUser);
+			String[] newUserList = ArrayUtils.removeFirstInstanceOfElement(getACLState().getAccessList(),removeUser);
 			ACLState newState = new ACLState(newUserList);
 			setACLState(newState);
 		}

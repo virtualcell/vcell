@@ -10,15 +10,11 @@
 
 package cbit.vcell.data;
 
-/**
- * Creation date: (5/25/2010 11:12:01 AM)
- * @author dan
- * @version $Revision: 1.0 $
- */
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.Serializable;
 
+import org.vcell.util.ArrayUtils;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
@@ -60,14 +56,14 @@ public class DataContext implements Matchable, Serializable {
 		if(contains(dataSymbol)) {		// data symbol name must be unique
 			throw new RuntimeException("data symbol already exists");
 		}
-		DataSymbol[] newArray = (DataSymbol[])BeanUtils.addElement(dataSymbols,dataSymbol);
+		DataSymbol[] newArray = BeanUtils.addElement(dataSymbols,dataSymbol);
 		setDataSymbols(newArray);
 	}
 	
 	public void setDataSymbols(DataSymbol[] newDataSymbols) {
 		DataSymbol[] oldValue = this.dataSymbols;
 		this.dataSymbols = newDataSymbols;
-		firePropertyChange("dataSymbols", oldValue, dataSymbols);
+		firePropertyChange(oldValue, dataSymbols);
 	}
 	
 	public DataSymbol getDataSymbol(String dataRef) {
@@ -83,7 +79,7 @@ public class DataContext implements Matchable, Serializable {
 		if (!BeanUtils.arrayContains(dataSymbols,dataSymbol)){
 			throw new RuntimeException("data symbol doesn't exist");
 		}
-		DataSymbol[] newArray = (DataSymbol[])BeanUtils.removeFirstInstanceOfElement(dataSymbols,dataSymbol);
+		DataSymbol[] newArray = ArrayUtils.removeFirstInstanceOfElement(dataSymbols,dataSymbol);
 		setDataSymbols(newArray);
 	}
 
@@ -103,8 +99,8 @@ public class DataContext implements Matchable, Serializable {
 		return propertyChangeSupport;
 	}
 	
-	private void firePropertyChange(String propertyName, Object oldValue, Object newValue){
-		getPropertyChangeSupport().firePropertyChange(propertyName, oldValue, newValue);
+	private void firePropertyChange(Object oldValue, Object newValue){
+		getPropertyChangeSupport().firePropertyChange("dataSymbols", oldValue, newValue);
 	}
 	
 	public void removePropertyChangeListener(PropertyChangeListener listener) {
@@ -116,15 +112,12 @@ public class DataContext implements Matchable, Serializable {
 	}
 
 	public boolean compareEqual(Matchable obj) {
-		DataContext dataContext = null;
+		DataContext dataContext;
 		if (!(obj instanceof DataContext)){
 			return false;
 		}else{
 			dataContext = (DataContext)obj;
 		}
-		if(!Compare.isEqualOrNull(dataSymbols, dataContext.dataSymbols)){
-			return false;
-		}
-		return true;
-	}
+        return Compare.isEqualOrNull(dataSymbols, dataContext.dataSymbols);
+    }
 }

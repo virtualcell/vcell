@@ -12,12 +12,11 @@ package cbit.vcell.geometry;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.geom.Point2D;
-import java.util.Enumeration;
-import java.util.Hashtable;
-import java.util.Vector;
+import java.util.*;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.vcell.util.ArrayUtils;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Coordinate;
 import org.vcell.util.DrawPaneModel;
@@ -447,12 +446,7 @@ public void firePropertyChange(java.lang.String propertyName, boolean oldValue, 
  * @return cbit.vcell.geometry.Curve[]
  */
 public Curve[] getAllCurves() {
-	Enumeration<Curve> en = curveTable.keys();
-	Vector<Curve> v = new Vector<Curve>();
-	while (en.hasMoreElements()) {
-		v.add(en.nextElement());
-	}
-	return (Curve[])BeanUtils.getArray(v, Curve.class);
+	return Collections.list(curveTable.keys()).toArray(Curve[]::new);
 }
 
 
@@ -463,15 +457,15 @@ public Curve[] getAllCurves() {
  */
 public Curve[] getAllUserCurves() {
 	Enumeration<Curve> en = curveTable.keys();
-	Vector<Curve> v = new Vector<Curve>();
+	List<Curve> v = new Vector<>();
 	while (en.hasMoreElements()) {
-		Curve curve = (Curve)en.nextElement();
-		CurveRendererCurveInfo crci = (CurveRendererCurveInfo)curveTable.get(curve);
+		Curve curve = en.nextElement();
+		CurveRendererCurveInfo crci = curveTable.get(curve);
 		if (crci.isEditable()) {
 			v.add(curve);
 		}
 	}
-	return (Curve[])BeanUtils.getArray(v, Curve.class);
+	return v.toArray(Curve[]::new);
 }
 
 
@@ -492,7 +486,7 @@ public boolean getAntialias() {
  * @param pickPoint cbit.vcell.geometry.Coordinate
  */
 public CurveSelectionInfo[] getCloseCurveSelectionInfos(Coordinate pickPoint) {
-	if (curveTable.size() == 0) {
+	if (curveTable.isEmpty()) {
 		return null;
 	}
 	//
@@ -512,18 +506,18 @@ public CurveSelectionInfo[] getCloseCurveSelectionInfos(Coordinate pickPoint) {
 		double distance = distanceToProjectedCurve(pickPoint2D, crci);
 		double minPickDistance = getMinPickDistance(curve);//
 		if (distance <= minPickDistance) {
-			if(closestCSIV.size() == 0){
+			if(closestCSIV.isEmpty()){
 				closestCSIV.add(new CurveSelectionInfo(curve));
-				closestDistanceV.add(new Double(distance));
+				closestDistanceV.add(distance);
 			}else{
 				for(int i = 0;i < closestCSIV.size();i+= 1){
-					if(distance < (((Double)(closestDistanceV.get(i))).doubleValue())){
+					if(distance < ((Double) (closestDistanceV.get(i)))){
 						closestCSIV.add(i,new CurveSelectionInfo(curve));
-						closestDistanceV.add(i,new Double(distance));
+						closestDistanceV.add(i, distance);
 						break;
 					}else if(i == (closestCSIV.size()-1)){
 						closestCSIV.add(new CurveSelectionInfo(curve));
-						closestDistanceV.add(new Double(distance));
+						closestDistanceV.add(distance);
 						break;
 					}
 				}
@@ -532,7 +526,7 @@ public CurveSelectionInfo[] getCloseCurveSelectionInfos(Coordinate pickPoint) {
 	}
 	//
 	CurveSelectionInfo[] csiArr = null;
-	if (closestCSIV.size() > 0) {
+	if (!closestCSIV.isEmpty()) {
 		csiArr = new CurveSelectionInfo[closestCSIV.size()];
 		closestCSIV.copyInto(csiArr);
 	}
@@ -1191,7 +1185,7 @@ public void selectNothing() {
 public void setAntialias(boolean antialias) {
 	boolean oldValue = fieldAntialias;
 	fieldAntialias = antialias;
-	firePropertyChange("antialias", new Boolean(oldValue), new Boolean(antialias));
+	firePropertyChange("antialias", oldValue, antialias);
 }
 
 
@@ -1215,7 +1209,7 @@ public void setCurveChecker(cbit.vcell.geometry.CurveChecker curveChecker) {
 public void setDefaultLineWidthMultiplier(double defaultLineWidthMultiplier) {
 	double oldValue = fieldDefaultLineWidthMultiplier;
 	fieldDefaultLineWidthMultiplier = defaultLineWidthMultiplier;
-	firePropertyChange("defaultLineWidthMultiplier", new Double(oldValue), new Double(defaultLineWidthMultiplier));
+	firePropertyChange("defaultLineWidthMultiplier", oldValue, defaultLineWidthMultiplier);
 }
 
 
@@ -1298,7 +1292,7 @@ public void setSelection(cbit.vcell.geometry.CurveSelectionInfo selection) {
 private void setSelectionValid(boolean selectionValid) {
 	boolean oldValue = fieldSelectionValid;
 	fieldSelectionValid = selectionValid;
-	firePropertyChange("selectionValid", new Boolean(oldValue), new Boolean(selectionValid));
+	firePropertyChange("selectionValid", oldValue, selectionValid);
 }
 
 public void setWorldDelta(org.vcell.util.Coordinate wd) {

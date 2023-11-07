@@ -425,7 +425,7 @@ public static StructureAnalyzer.Dependency[] refreshTotalDependancies(RationalMa
 	//System.out.println("there are "+nullSpaceMatrix.getNumRows()+" dependencies, " + nullSpaceMatrix.getNumCols() + " columns.");
 	long startTime = System.currentTimeMillis();
 
-	Vector<Dependency> dependencyList = new Vector<Dependency>();
+	Vector<Dependency> dependencyList = new Vector<>();
 	
 	for (int i=0;i<nullSpaceMatrix.getNumRows();i++){
 		//
@@ -539,8 +539,8 @@ public static StructureAnalyzer.Dependency[] refreshTotalDependancies(RationalMa
 	long endTime = System.currentTimeMillis();
 	long elapsedTime = endTime - startTime;
 //	System.out.println("     " + elapsedTime + " milliseconds");
-	
-	return (StructureAnalyzer.Dependency[])BeanUtils.getArray(dependencyList,StructureAnalyzer.Dependency.class);
+
+	return dependencyList.toArray(StructureAnalyzer.Dependency[]::new);
 }
 
 

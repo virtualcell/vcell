@@ -30,17 +30,10 @@ import org.vcell.pathway.PathwayModel;
 import org.vcell.relationship.RelationshipModel;
 import org.vcell.relationship.RelationshipObject;
 import org.vcell.sbml.vcell.SBMLImportException;
-import org.vcell.util.BeanUtils;
-import org.vcell.util.Compare;
-import org.vcell.util.Displayable;
-import org.vcell.util.Issue;
+import org.vcell.util.*;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
-import org.vcell.util.IssueContext;
 import org.vcell.util.IssueContext.ContextType;
-import org.vcell.util.Matchable;
-import org.vcell.util.ObjectNotFoundException;
-import org.vcell.util.TokenMangler;
 import org.vcell.util.document.*;
 import org.vcell.util.document.BioModelChildSummary.MathType;
 
@@ -924,7 +917,7 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
 		if (!contains(simulation)){
 			throw new IllegalArgumentException("BioModel.removeSimulation() simulation not present in BioModel");
 		}
-		setSimulations(BeanUtils.removeFirstInstanceOfElement(fieldSimulations,simulation));
+		setSimulations(ArrayUtils.removeFirstInstanceOfElement(fieldSimulations,simulation));
 	}
 
 
@@ -938,7 +931,7 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
 		if (!contains(simulationContext)){
 			throw new IllegalArgumentException("BioModel.removeSimulationContext() simulationContext not present in BioModel");
 		}
-		setSimulationContexts(BeanUtils.removeFirstInstanceOfElement(fieldSimulationContexts,simulationContext));
+		setSimulationContexts(ArrayUtils.removeFirstInstanceOfElement(fieldSimulationContexts,simulationContext));
 	}
 
 

@@ -10,16 +10,7 @@
 
 package cbit.vcell.geometry;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.BitSet;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.TreeSet;
-import java.util.Vector;
+import java.util.*;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -435,7 +426,7 @@ public static void sortSurfaceCollection(SurfaceCollection surfCollection){
 	Object[] nodeObjArr = new Object[surfCollection.getNodes().length];
 	for (int i = 0; i < nodeObjArr.length; i++) {
 		Object[] temp = new Object[2];
-		temp[0] = new Integer(i);
+		temp[0] = i;
 		temp[1] = surfCollection.getNodes()[i];
 		nodeObjArr[i] = temp;
 	}
@@ -1665,7 +1656,7 @@ private void updateEdgeMap(cbit.vcell.geometry.surface.Node[] polygonNodes,int s
 
 private static RegionMask[] calculateRegions3D(byte[] imageArray, int sliceOffset, int numX, int numY) {
 	
-	Vector regionMaskList = new Vector();
+	List<RegionMask> regionMaskList = new Vector<>();
 	//
 	// initialize all regions to region "NOT_VISITED" (not yet visited)
 	//
@@ -1730,13 +1721,13 @@ private static RegionMask[] calculateRegions3D(byte[] imageArray, int sliceOffse
 		}
 	}
 			
-	return (RegionMask[])org.vcell.util.BeanUtils.getArray(regionMaskList,RegionImage.RegionMask.class);
+	return regionMaskList.toArray(RegionMask[]::new);
 }
 
 
 private static RegionMask[] calculateRegions3Dfaster(byte[] imageArray, int sliceOffset, int numX, int numY) {
 	
-	Vector regionMaskList = new Vector();
+	List<RegionMask> regionMaskList = new Vector<>();
 	//
 	// initialize all regions to region "NOT_VISITED" (not yet visited)
 	//
@@ -1773,7 +1764,7 @@ private static RegionMask[] calculateRegions3Dfaster(byte[] imageArray, int slic
 		}
 	}
 			
-	return (RegionMask[])org.vcell.util.BeanUtils.getArray(regionMaskList,RegionImage.RegionMask.class);
+	return regionMaskList.toArray(RegionMask[]::new);
 }
 
 

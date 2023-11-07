@@ -178,19 +178,19 @@ public void applyOverrides(MathDescription newMath) throws ExpressionException, 
  */
 public Function[] getFunctions() {
 	
-	Vector<Function> functList = new Vector<Function>();
+	Vector<Function> functList = new Vector<>();
 	
 	//
 	// get all variables from MathDescription, but replace MathOverrides
 	//
-	Variable variables[] = getVariables();
-	for (int i = 0; i < variables.length; i++){
-		if (variables[i] instanceof Function){
-			functList.addElement((Function)variables[i]);
-		}
-	}
+	Variable[] variables = getVariables();
+    for (Variable variable : variables) {
+        if (variable instanceof Function var) {
+            functList.addElement(var);
+        }
+    }
 
-	return (Function[])BeanUtils.getArray(functList,Function.class);
+	return functList.toArray(Function[]::new);
 }
 
 
@@ -199,9 +199,8 @@ public Constant getLocalConstant(Constant referenceConstant) throws ExpressionEx
 		localVariableHash = new HashMap<String, Variable>();
 	}
 	Variable var = localVariableHash.get(referenceConstant.getName());
-	if (var instanceof Constant) {
-		Constant localConstant = (Constant)var;
-	
+	if (var instanceof Constant localConstant) {
+
 		//
 		// make sure expression for localConstant is still up to date with MathOverrides table
 		//
@@ -318,9 +317,7 @@ public Variable[] getVariables() {
 		}
 	}
 
-	Variable variables[] = (Variable[])BeanUtils.getArray(varList,Variable.class);
-
-	return variables;
+    return varList.toArray(Variable[]::new);
 }
 
 

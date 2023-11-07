@@ -515,7 +515,7 @@ static StructureAnalyzer.Dependency[] refreshTotalDependancies(RationalMatrix nu
 			dependencyList.add(dependency);
 		}
 	}
-	return (StructureAnalyzer.Dependency[])BeanUtils.getArray(dependencyList,StructureAnalyzer.Dependency.class);
+	return dependencyList.toArray(StructureAnalyzer.Dependency[]::new);
 }
 
 

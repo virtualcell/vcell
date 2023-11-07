@@ -15,6 +15,8 @@ package cbit.vcell.constraints;
  * @author: Jim Schaff
  */
 import net.sourceforge.interval.ia_math.RealInterval;
+import org.vcell.util.ArrayUtils;
+import org.vcell.util.BeanUtils;
 
 public class ConstraintContainerImpl {
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
@@ -46,10 +48,10 @@ public ConstraintContainerImpl() {
  * @param constraint cbit.vcell.constraints.AbstractConstraint
  */
 public void addGeneralConstraint(GeneralConstraint constraint) throws java.beans.PropertyVetoException {
-	if (org.vcell.util.BeanUtils.arrayContains(fieldGeneralConstraints,constraint)){
+	if (BeanUtils.arrayContains(fieldGeneralConstraints,constraint)){
 		throw new RuntimeException(constraint+" already exists");
 	}
-	GeneralConstraint newGeneralConstraint[] = (GeneralConstraint[])org.vcell.util.BeanUtils.addElement(fieldGeneralConstraints,constraint);
+	GeneralConstraint newGeneralConstraint[] = (GeneralConstraint[])BeanUtils.addElement(fieldGeneralConstraints,constraint);
 	setGeneralConstraints(newGeneralConstraint);
 }
 
@@ -70,16 +72,11 @@ public synchronized void addPropertyChangeListener(java.lang.String propertyName
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (6/25/01 4:41:49 PM)
- * @param constraint cbit.vcell.constraints.AbstractConstraint
- */
 public void addSimpleBound(SimpleBounds bounds) throws java.beans.PropertyVetoException {
-	if (org.vcell.util.BeanUtils.arrayContains(fieldSimpleBounds,bounds)){
+	if (BeanUtils.arrayContains(fieldSimpleBounds,bounds)){
 		throw new RuntimeException(bounds+" already exists");
 	}
-	SimpleBounds newSimpleBounds[] = (SimpleBounds[])org.vcell.util.BeanUtils.addElement(fieldSimpleBounds,bounds);
+	SimpleBounds newSimpleBounds[] = (SimpleBounds[])BeanUtils.addElement(fieldSimpleBounds,bounds);
 	setSimpleBounds(newSimpleBounds);
 }
 
@@ -297,10 +294,10 @@ public synchronized boolean hasListeners(java.lang.String propertyName) {
  * @param constraint cbit.vcell.constraints.AbstractConstraint
  */
 public void removeGeneralConstraint(GeneralConstraint constraint) throws java.beans.PropertyVetoException {
-	if (!org.vcell.util.BeanUtils.arrayContains(fieldGeneralConstraints,constraint)){
+	if (!BeanUtils.arrayContains(fieldGeneralConstraints,constraint)){
 		throw new RuntimeException(constraint+" not found");
 	}
-	GeneralConstraint newGeneralConstraint[] = (GeneralConstraint[])org.vcell.util.BeanUtils.removeFirstInstanceOfElement(fieldGeneralConstraints,constraint);
+	GeneralConstraint[] newGeneralConstraint = ArrayUtils.removeFirstInstanceOfElement(fieldGeneralConstraints,constraint);
 	setGeneralConstraints(newGeneralConstraint);
 }
 
@@ -321,16 +318,11 @@ public synchronized void removePropertyChangeListener(java.lang.String propertyN
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (6/25/01 4:41:49 PM)
- * @param constraint cbit.vcell.constraints.AbstractConstraint
- */
 public void removeSimpleBound(SimpleBounds bounds) throws java.beans.PropertyVetoException {
-	if (!org.vcell.util.BeanUtils.arrayContains(fieldSimpleBounds,bounds)){
+	if (!BeanUtils.arrayContains(fieldSimpleBounds,bounds)){
 		throw new RuntimeException(bounds+" not found");
 	}
-	SimpleBounds newSimpleBounds[] = (SimpleBounds[])org.vcell.util.BeanUtils.removeFirstInstanceOfElement(fieldSimpleBounds,bounds);
+	SimpleBounds[] newSimpleBounds = ArrayUtils.removeFirstInstanceOfElement(fieldSimpleBounds,bounds);
 	setSimpleBounds(newSimpleBounds);
 }
 

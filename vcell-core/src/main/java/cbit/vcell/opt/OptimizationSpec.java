@@ -57,7 +57,6 @@ public OptimizationSpec(String vcml) {
 /**
  * Insert the method's description here.
  * Creation date: (3/3/00 12:36:57 AM)
- * @param constant cbit.vcell.math.Constant
  */
 public void addConstraint(Constraint constraint) throws ExpressionBindingException {
 	if (!constraintList.contains(constraint)){
@@ -71,7 +70,6 @@ public void addConstraint(Constraint constraint) throws ExpressionBindingExcepti
 /**
  * Insert the method's description here.
  * Creation date: (3/3/00 12:36:57 AM)
- * @param constant cbit.vcell.math.Constant
  */
 public void addParameter(Parameter optVar) {
 	if (!parameterList.contains(optVar)){
@@ -126,7 +124,7 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
  * @return java.util.Enumeration
  */
 public Constraint[] getConstraints() {
-	return (Constraint[])BeanUtils.getArray(constraintList,Constraint.class);
+	return this.constraintList.toArray(Constraint[]::new);
 }
 
 
@@ -137,14 +135,14 @@ public Constraint[] getConstraints() {
  * @param constraintType cbit.vcell.opt.ConstraintType
  */
 public Constraint[] getConstraints(ConstraintType constraintType) {
-	Vector<Constraint> typedConstraintList = new Vector<Constraint>();
+	Vector<Constraint> typedConstraintList = new Vector<>();
 	for (int i=0;i<this.constraintList.size();i++){
-		Constraint constraint = (Constraint)this.constraintList.elementAt(i);
+		Constraint constraint = this.constraintList.elementAt(i);
 		if (constraint.getConstraintType().equals(constraintType)){
 			typedConstraintList.add(constraint);
 		}
 	}
-	return (Constraint[])BeanUtils.getArray(typedConstraintList,Constraint.class);
+	return typedConstraintList.toArray(Constraint[]::new);
 }
 
 
@@ -152,7 +150,6 @@ public Constraint[] getConstraints(ConstraintType constraintType) {
  * Insert the method's description here.
  * Creation date: (3/3/00 1:08:49 PM)
  * @return int
- * @param constraintType cbit.vcell.opt.ConstraintType
  */
 public int getNumConstraints() {
 	return constraintList.size();
@@ -217,7 +214,7 @@ public String[] getParameterNames() {
  * @return java.util.Enumeration
  */
 public Parameter[] getParameters() {
-	return (Parameter[])BeanUtils.getArray(parameterList,Parameter.class);
+	return this.parameterList.toArray(Parameter[]::new);
 }
 
 
@@ -229,7 +226,7 @@ public Parameter[] getParameters() {
 public String[] getScaledParameterNames() {
 	String[] parameterNames = new String[parameterList.size()];
 	for (int i = 0; i < parameterNames.length; i++){
-		parameterNames[i] = ((Parameter)parameterList.elementAt(i)).getName()+SCALED_VARIABLE_SUFFIX;
+		parameterNames[i] = (parameterList.elementAt(i)).getName()+SCALED_VARIABLE_SUFFIX;
 	}
 	return parameterNames;
 }
@@ -290,7 +287,6 @@ public String getVCML() {
  * Insert the method's description here.
  * Creation date: (3/3/00 3:59:31 PM)
  * @return cbit.vcell.opt.OptimizationSpec
- * @param vcmlString java.lang.String
  */
 public void read(CommentStringTokenizer tokens) {
 	try {

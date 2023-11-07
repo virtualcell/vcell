@@ -43,9 +43,7 @@ public void addFastInvariant(FastInvariant fastInvariant) throws MathException {
 	}
 	fastInvariantList.addElement(fastInvariant);
 }
-/**
- * @param fastInvariant cbit.vcell.math.FastRate
- */
+
 public void addFastRate(FastRate fastRate) throws MathException {
 	if (fastRateList.contains(fastRate)){
 		throw new MathException("fastRate "+fastRate+" already exists");
@@ -183,7 +181,6 @@ public MathDescription getMathDesc() {
 /**
  * Insert the method's description here.
  * Creation date: (10/10/2002 11:15:31 AM)
- * @param sim cbit.vcell.solver.Simulation
  */
 void flatten(MathSymbolTable simSymbolTable, boolean bRoundCoefficients) throws ExpressionException, MathException {
 	//
@@ -219,7 +216,7 @@ final Enumeration<Expression> getFastRateExpressions() {
  * @return cbit.vcell.parser.Expression[]
  */
 public final Expression[] getExpressions() {
-	Vector<Expression> expList = new Vector<Expression>();
+	Vector<Expression> expList = new Vector<>();
 	for (int i = 0; i < fastInvariantList.size(); i++) {
 		FastInvariant fi = fastInvariantList.elementAt(i);
 		expList.add(fi.getFunction());
@@ -228,8 +225,8 @@ public final Expression[] getExpressions() {
 		FastRate fr = fastRateList.elementAt(i);
 		expList.add(fr.getFunction());
 	}
-	
-	return (Expression[])BeanUtils.getArray(expList,Expression.class);
+
+	return expList.toArray(Expression[]::new);
 }
 /**
  * Insert the method's description here.

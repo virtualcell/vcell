@@ -95,9 +95,8 @@ private final static MediaInformation makeMediaInformation(MediaTrack track) thr
  * This method was created in VisualAge.
  * @return TrackAtom
  * @param movie Movie
- * @param track Track
  */
-private final static TrackAtom makeTrackAtom(MediaMovie movie, int trackIndex) throws DataFormatException {
+private static TrackAtom makeTrackAtom(MediaMovie movie, int trackIndex) throws DataFormatException {
 	if ((0 <= trackIndex) && (trackIndex < movie.getTracks().length)) {
 		MediaTrack track = movie.getTracks()[trackIndex];
 		MediaInformation minf = MediaMethods.makeMediaInformation(track);
@@ -127,13 +126,10 @@ private final static TrackAtom makeTrackAtom(MediaMovie movie, int trackIndex) t
 	} else
 		throw new DataFormatException("Track index out of bounds !");
 }
-/**
- * This method was created in VisualAge.
- * @param out OutputStream
- */
-public final static void writeMovie(DataOutputStream dataOutputStream, MediaMovie movie) throws DataFormatException {
+
+public static void writeMovie(DataOutputStream dataOutputStream, MediaMovie movie) throws DataFormatException {
 	// create and write out data atom
-	MediaChunk[] chunksToBeWritten = movie.getSelfreferencedChunks();
+	MediaChunk[] chunksToBeWritten = movie.getSelfReferencedChunks();
 	MediaData mdat = new MediaData(chunksToBeWritten);
 	mdat.writeData(dataOutputStream);
 	// create and write out movie atom
@@ -144,13 +140,10 @@ public final static void writeMovie(DataOutputStream dataOutputStream, MediaMovi
 	MovieAtom moov = new MovieAtom(mvhd, traks, userData);
 	moov.writeData(dataOutputStream);
 }
-/**
- * This method was created in VisualAge.
- * @param out OutputStream
- */
-public final static void writeMovie(File file, MediaMovie movie, boolean isDataFile) throws DataFormatException, IOException {
+
+public static void writeMovie(File file, MediaMovie movie, boolean isDataFile) throws DataFormatException, IOException {
 	// create and write out data atom
-	MediaChunk[] chunksToBeWritten = movie.getSelfreferencedChunks();
+	MediaChunk[] chunksToBeWritten = movie.getSelfReferencedChunks();
 	MediaData mdat = new MediaData(chunksToBeWritten);
 	mdat.writeData(file, isDataFile);
 	// create and write out movie atom

@@ -264,7 +264,7 @@ private static String parseWittid(String wittid) throws DataAccessException{
 		return "-1";
 	}
 	try {
-		return new Long(wittid).toString();
+		return String.valueOf(Long.parseLong(wittid));
 	} catch (NumberFormatException e) {
 		lg.error(e);
 		throw new DataAccessException("Error parsing wittid='"+wittid+"', expecting integer.");
@@ -935,7 +935,7 @@ protected static KeyValue[] getChildrenFromLinkTable(java.sql.Connection con, Ta
 	} finally {
 		stmt.close();
 	}
-	return (KeyValue[])BeanUtils.getArray(keyList,KeyValue.class);
+	return keyList.toArray(KeyValue[]::new);
 }
 
 
@@ -1068,7 +1068,7 @@ public static GroupAccess getGroupAccessFromGroupID(java.sql.Connection con,BigD
 						User user = new User(rset.getString(userTable.userid.toString()),new KeyValue(rset.getBigDecimal(groupTable.userRef.toString())));
 						groupMembers.add(user);
 						boolean bHidden = (rset.getInt(groupTable.isHiddenFromOwner.toString())) == 1;
-						hiddenFromOwner.add(new Boolean(bHidden));
+						hiddenFromOwner.add(bHidden);
 					} else {
 						break;
 					}
@@ -2666,11 +2666,11 @@ public static TestSuiteNew testSuiteGet(BigDecimal getThisTS,Connection con,User
 			Double maxRelError = null;
 			double dtemp = rset.getDouble(TFTestCriteriaTable.table.maxRelError.getUnqualifiedColName());
 			if(rset.wasNull()){maxRelError = null;}
-			else{maxRelError = new Double(dtemp);}
+			else{maxRelError = dtemp;}
 			Double maxAbsError = null;
 			dtemp = rset.getDouble(TFTestCriteriaTable.table.maxAbsError.getUnqualifiedColName());
 			if(rset.wasNull()){maxAbsError = null;}
-			else{maxAbsError = new Double(dtemp);}
+			else{maxAbsError = dtemp;}
 			String reportStatus = rset.getString(TFTestCriteriaTable.table.reportStatus.getUnqualifiedColName());
 			if(rset.wasNull()){
 				reportStatus = TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT;
@@ -2790,11 +2790,11 @@ public static TestSuiteNew testSuiteGet(BigDecimal getThisTS,Connection con,User
 			Double maxRelError = null;
 			double dtemp = rset.getDouble(TFTestCriteriaTable.table.maxRelError.getUnqualifiedColName());
 			if(rset.wasNull()){maxRelError = null;}
-			else{maxRelError = new Double(dtemp);}
+			else{maxRelError = dtemp;}
 			Double maxAbsError = null;
 			dtemp = rset.getDouble(TFTestCriteriaTable.table.maxAbsError.getUnqualifiedColName());
 			if(rset.wasNull()){maxAbsError = null;}
-			else{maxAbsError = new Double(dtemp);}
+			else{maxAbsError = dtemp;}
 			String reportStatus = rset.getString(TFTestCriteriaTable.table.reportStatus.getUnqualifiedColName());
 			if(rset.wasNull()){
 				reportStatus = TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT;

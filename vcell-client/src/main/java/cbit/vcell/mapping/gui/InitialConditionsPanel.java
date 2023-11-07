@@ -30,6 +30,7 @@ import javax.swing.table.TableModel;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.vcell.model.rbm.SpeciesPattern;
+import org.vcell.util.ArrayUtils;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.gui.DefaultScrollTableActionManager;
@@ -717,11 +718,11 @@ private void jMenuItemCopy_ActionPerformed(java.awt.event.ActionEvent actionEven
 			//Send to clipboard
 			//
 			VCellTransferable.ResolvedValuesSelection rvs =
-				new VCellTransferable.ResolvedValuesSelection(
-					(SymbolTableEntry[])BeanUtils.getArray(primarySymbolTableEntriesV,SymbolTableEntry.class),
-					(SymbolTableEntry[])BeanUtils.getArray(alternateSymbolTableEntriesV,SymbolTableEntry.class),
-					(Expression[])BeanUtils.getArray(resolvedValuesV,Expression.class),
-					sb.toString());
+					new VCellTransferable.ResolvedValuesSelection(
+							primarySymbolTableEntriesV.toArray(SymbolTableEntry[]::new),
+							alternateSymbolTableEntriesV.toArray(SymbolTableEntry[]::new),
+							resolvedValuesV.toArray(Expression[]::new),
+							sb.toString());
 
 			VCellTransferable.sendToClipboard(rvs);
 		}catch(Throwable e){
@@ -888,11 +889,6 @@ private void jMenuItemPaste_ActionPerformed(final java.awt.event.ActionEvent act
 }
 
 
-/**
- * Sets the simulationContext property (cbit.vcell.mapping.SimulationContext) value.
- * @param simulationContext The new value for the property.
- * @see #getSimulationContext
- */
 public void setSimulationContext(SimulationContext newValue) {
 	SimulationContext oldValue = fieldSimulationContext;
 	if (oldValue != null) {

@@ -21,6 +21,9 @@ import cbit.vcell.geometry.GeometryUnitSystem;
 import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.units.VCUnitDefinition;
 
+import java.util.List;
+import java.util.Vector;
+
 /**
  * Insert the type's description here.
  * Creation date: (6/28/2004 2:52:23 PM)
@@ -76,7 +79,7 @@ public static GeometricRegion[] getUpdatedGeometricRegions(GeometrySurfaceDescri
 	int numZ = regionImage.getNumZ();
 	int numXY = numX*numY;
 	
-	java.util.Vector<GeometricRegion> regionList = new java.util.Vector<GeometricRegion>();
+	Vector<GeometricRegion> regionList = new Vector<>();
 	cbit.vcell.geometry.RegionImage.RegionInfo regionInfos[] = regionImage.getRegionInfos();
 	for (int i = 0; i < regionInfos.length; i++){
 		cbit.vcell.geometry.RegionImage.RegionInfo regionInfo = regionInfos[i];
@@ -268,7 +271,7 @@ public static GeometricRegion[] getUpdatedGeometricRegions(GeometrySurfaceDescri
 		}
 	}
 	
-	return org.vcell.util.BeanUtils.getArray(regionList,GeometricRegion.class);
+	return regionList.toArray(GeometricRegion[]::new);
 }
 
 

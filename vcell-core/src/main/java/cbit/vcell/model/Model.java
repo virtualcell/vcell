@@ -2952,17 +2952,15 @@ public Species getSpecies(int index) {
 
 
 public Species[] getSpecies(DBSpecies dbSpecies) {
-	if (dbSpecies == null){
-		throw new IllegalArgumentException("DBSpecies was null");
-	}
-	Vector<Species> speciesList = new Vector<Species>();
-	for (int i = 0; i < fieldSpecies.length; i++){
-		if (fieldSpecies[i].getDBSpecies()!=null && fieldSpecies[i].getDBSpecies().compareEqual(dbSpecies)){
-			speciesList.add(fieldSpecies[i]);
-		}
-	}
-	Species speciesArray[] = (Species[])BeanUtils.getArray(speciesList,Species.class);
-	return speciesArray;
+	if (dbSpecies == null) throw new IllegalArgumentException("DBSpecies was null");
+
+	Vector<Species> speciesList = new Vector<>();
+    for (Species fieldSpecies : fieldSpecies) {
+        if (fieldSpecies.getDBSpecies() != null && fieldSpecies.getDBSpecies().compareEqual(dbSpecies)) {
+            speciesList.add(fieldSpecies);
+        }
+    }
+	return speciesList.toArray(Species[]::new);
 }
 
 
@@ -2970,12 +2968,12 @@ public Species getSpecies(String speciesName)
 {
 	if (speciesName == null){
 		return null;
-	}	
-	for (int i=0;i<fieldSpecies.length;i++){
-		if (speciesName.equals(fieldSpecies[i].getCommonName())){
-			return fieldSpecies[i];
-		}
 	}
+    for (Species fieldSpecy : fieldSpecies) {
+        if (speciesName.equals(fieldSpecy.getCommonName())) {
+            return fieldSpecy;
+        }
+    }
 	return null;
 }      
 
@@ -3430,16 +3428,16 @@ private void refreshDiagrams() {
     for (int i = 0; i < fieldDiagrams.length; i++) {
         if (!contains(fieldDiagrams[i].getStructure())) {
             newDiagrams =
-                (Diagram[]) BeanUtils.removeFirstInstanceOfElement(newDiagrams, fieldDiagrams[i]);
+                ArrayUtils.removeFirstInstanceOfElement(newDiagrams, fieldDiagrams[i]);
             bChangedDiagrams = true;
         }
     }
     //
     // add new diagrams for new structures
     //
-    for (int i = 0; i < fieldStructures.length; i++) {
-        if (getDiagram(fieldStructures[i]) == null) {
-            newDiagrams = (Diagram[]) BeanUtils.addElement(newDiagrams,new Diagram(fieldStructures[i], fieldStructures[i].getName()));
+    for (Structure fieldStructure : fieldStructures) {
+        if (getDiagram(fieldStructure) == null) {
+            newDiagrams = ArrayUtils.addElement(newDiagrams, new Diagram(fieldStructure, fieldStructure.getName()));
             bChangedDiagrams = true;
         }
     }
@@ -3517,7 +3515,7 @@ public void removeStructure(Structure removedStructure, boolean canRemoveLast) t
 	// remove this structure
 	//
 	Structure newStructures[] = (Structure[])fieldStructures.clone();
-	newStructures = (Structure[])BeanUtils.removeFirstInstanceOfElement(newStructures,removedStructure);
+	newStructures = (Structure[])ArrayUtils.removeFirstInstanceOfElement(newStructures,removedStructure);
 	setStructures(newStructures);
 }            
 
@@ -3529,7 +3527,7 @@ public void removeModelParameter(Model.ModelParameter modelParameter) throws Pro
 		return;
 	}	
 	if (contains(modelParameter)){
-		Model.ModelParameter newModelParameters[] = (Model.ModelParameter[])BeanUtils.removeFirstInstanceOfElement(fieldModelParameters,modelParameter);
+		Model.ModelParameter newModelParameters[] = (Model.ModelParameter[])ArrayUtils.removeFirstInstanceOfElement(fieldModelParameters,modelParameter);
 		setModelParameters(newModelParameters);
 	}
 }         
@@ -3556,7 +3554,7 @@ public synchronized void removePropertyChangeListener(String propertyName, Prope
  */
 public void removeReactionStep(ReactionStep reactionStep) throws PropertyVetoException {
 	if (contains(reactionStep)){
-		setReactionSteps((ReactionStep[])BeanUtils.removeFirstInstanceOfElement(fieldReactionSteps,reactionStep));
+		setReactionSteps((ReactionStep[])ArrayUtils.removeFirstInstanceOfElement(fieldReactionSteps,reactionStep));
 	}
 }
 
@@ -3567,7 +3565,7 @@ public void removeSpecies(Species species) throws PropertyVetoException {
 		return;
 	}	
 	if (contains(species)){
-		Species newSpeciesArray[] = (Species[])BeanUtils.removeFirstInstanceOfElement(fieldSpecies,species);
+		Species newSpeciesArray[] = (Species[])ArrayUtils.removeFirstInstanceOfElement(fieldSpecies,species);
 		setSpecies(newSpeciesArray);
 	}
 }         
@@ -3575,7 +3573,7 @@ public void removeSpecies(Species species) throws PropertyVetoException {
 
 public void removeSpeciesContext(SpeciesContext speciesContext) throws PropertyVetoException {
 	if (contains(speciesContext)){
-		SpeciesContext newSpeciesContexts[] = (SpeciesContext[])BeanUtils.removeFirstInstanceOfElement(fieldSpeciesContexts,speciesContext);
+		SpeciesContext newSpeciesContexts[] = (SpeciesContext[])ArrayUtils.removeFirstInstanceOfElement(fieldSpeciesContexts,speciesContext);
 		setSpeciesContexts(newSpeciesContexts);
 	}
 }

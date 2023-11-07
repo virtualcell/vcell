@@ -143,7 +143,6 @@ private void deleteVCImageSQL(Connection con, User user, KeyValue imageKey) thro
  * This method was created in VisualAge.
  * @param user cbit.vcell.server.User
  * @param vType int
- * @param versionKey cbit.sql.KeyValue
  */
 public void deleteVersionable(Connection con, User user, VersionableType vType, KeyValue vKey) 
 				throws DependencyException, ObjectNotFoundException,
@@ -469,7 +468,7 @@ private void getImageRegionsForVCImage(QueryHashtable dbc, Connection con, VCIma
 			VCPixelClass vcpc = (VCPixelClass) dbc.get(vcpcKey);
 			if (vcpc == null) {
 				String vcpcName = rset.getString(imageRegionTable.regionName.toString());
-				int vcpcPixVal = new Integer(rset.getInt(imageRegionTable.pixelValue.toString())).intValue();
+				int vcpcPixVal = rset.getInt(imageRegionTable.pixelValue.toString());
 				vcpc = new VCPixelClass(vcpcKey, vcpcName, vcpcPixVal);
 				//
 				// put the ImageRegion in the object cache
@@ -478,7 +477,7 @@ private void getImageRegionsForVCImage(QueryHashtable dbc, Connection con, VCIma
 			}
 			vcpcVector.addElement(vcpc);
 		}
-		VCPixelClass vcPixelClasses[] = (VCPixelClass[])BeanUtils.getArray(vcpcVector,VCPixelClass.class);
+		VCPixelClass[] vcPixelClasses = vcpcVector.toArray(VCPixelClass[]::new);
 		vcImage.setPixelClasses(vcPixelClasses);
 		if(vcImage instanceof VCImageCompressed){
 			//Fix out of memory error when a BioModel has many apps with large geometries
@@ -495,7 +494,6 @@ private void getImageRegionsForVCImage(QueryHashtable dbc, Connection con, VCIma
 
 /**
  * This method was created in VisualAge.
- * @param vcImage cbit.image.VCImage
  */
 private VCPixelClass getPixelClass(QueryHashtable dbc, Connection con, KeyValue imageRegionKey) throws SQLException, DataAccessException {
 
@@ -741,12 +739,14 @@ private void getSurfaceDescription(Connection con, Geometry geom) throws SQLExce
 				" AND " + geoRegionTable.type + " = " + GeometricRegionTable.TYPE_VOLUME;
 		if (lg.isTraceEnabled()) lg.trace(sql);
 		rset = stmt.executeQuery(sql);
-		Vector<GeometricRegion> regionList = new Vector<GeometricRegion>();
+		Vector<VolumeGeometricRegion> volRegionList = new Vector<>();
+
 		while (rset.next()){
 			VolumeGeometricRegion volumeRegion = geoRegionTable.getVolumeRegion(rset,geom);
-			regionList.add(volumeRegion);
+			volRegionList.add(volumeRegion);
 		}
-		VolumeGeometricRegion volumeRegions[] = (VolumeGeometricRegion[])BeanUtils.getArray(regionList,VolumeGeometricRegion.class);
+		VolumeGeometricRegion[] volumeRegions = volRegionList.toArray(VolumeGeometricRegion[]::new);
+		Vector<GeometricRegion> regionList = new Vector<>(volRegionList);
 		
 		//
 		// read surface regions from GeometricRegionTable
@@ -773,7 +773,7 @@ private void getSurfaceDescription(Connection con, Geometry geom) throws SQLExce
 		//
 		// set regions onto the geometrySurfaceDescription
 		//
-		GeometricRegion regions[] = (GeometricRegion[])BeanUtils.getArray(regionList,GeometricRegion.class);
+		GeometricRegion[] regions = regionList.toArray(GeometricRegion[]::new);
 		geom.getGeometrySurfaceDescription().setGeometricRegions(regions);
 		
 		
@@ -824,12 +824,7 @@ private VCImage getVCImage(QueryHashtable dbc, Connection con, User user, KeyVal
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return cbit.sql.Versionable
- * @param user cbit.vcell.server.User
- * @param versionable cbit.sql.Versionable
- */
+
 public Versionable getVersionable(QueryHashtable dbc, Connection con, User user, VersionableType vType, KeyValue vKey, boolean bCheckPermission) 
 					throws ObjectNotFoundException, SQLException, DataAccessException {
 						
@@ -850,12 +845,6 @@ public Versionable getVersionable(QueryHashtable dbc, Connection con, User user,
 }
 
 
-/**
- * This method was created in VisualAge.
- * @param vcimage cbit.image.VCImage
- * @param userid java.lang.String
- * @exception java.rmi.RemoteException The exception description.
- */
 private void insertBrowseImageDataSQL(Connection con, KeyValue key, KeyValue imageKey, VCImage image) 
 				throws SQLException, DataAccessException,ImageException,GifParsingException{
 
@@ -907,12 +896,6 @@ private void insertBrowseImageDataSQL(Connection con, KeyValue key, KeyValue ima
 }
 
 
-/**
- * This method was created in VisualAge.
- * @param vcimage cbit.image.VCImage
- * @param userid java.lang.String
- * @exception java.rmi.RemoteException The exception description.
- */
 private void insertExtentSQL(Connection con, KeyValue key, double extentX, double extentY, double extentZ) throws SQLException  {
 	String sql;
 	sql = "INSERT INTO " + extentTable.getTableName() + " " + 
@@ -923,13 +906,6 @@ private void insertExtentSQL(Connection con, KeyValue key, double extentX, doubl
 	updateCleanSQL(con,sql);
 }
 
-
-/**
- * This method was created in VisualAge.
- * @param vcimage cbit.image.VCImage
- * @param userid java.lang.String
- * @exception java.rmi.RemoteException The exception description.
- */
 private void insertFilamentsSQL(Connection con, Geometry geom, KeyValue geomKey) throws SQLException, DataAccessException {
 	String sql;
 	Filament[] filaments = geom.getGeometrySpec().getFilamentGroup().getFilaments();
@@ -1070,12 +1046,6 @@ private void insertGeometrySQL(Connection con, Geometry geom, KeyValue imageKey,
 }
 
 
-/**
- * This method was created in VisualAge.
- * @param vcimage cbit.image.VCImage
- * @param userid java.lang.String
- * @exception java.rmi.RemoteException The exception description.
- */
  //default access for this method, to allow retrofitting surfaces to geometries.
  void insertGeometrySurfaceDescriptionSQL(InsertHashtable hash, Connection con, Geometry geom,KeyValue geomKey) throws SQLException, cbit.image.ImageException, DataAccessException, ObjectNotFoundException {
 	String sql;
@@ -1143,12 +1113,6 @@ private void insertGeometrySQL(Connection con, Geometry geom, KeyValue imageKey,
 }
 
 
-/**
- * This method was created in VisualAge.
- * @param vcimage cbit.image.VCImage
- * @param userid java.lang.String
- * @exception java.rmi.RemoteException The exception description.
- */
 private void insertImageDataSQL(Connection con, KeyValue key, KeyValue imageKey, VCImage image) throws SQLException, DataAccessException,ImageException {
 	String sql;
 	sql = "INSERT INTO " + imageDataTable.getTableName() + " " + imageDataTable.getSQLColumnList() + " VALUES " + 
@@ -1173,13 +1137,6 @@ private void insertImageDataSQL(Connection con, KeyValue key, KeyValue imageKey,
 	}
 }
 
-
-/**
- * This method was created in VisualAge.
- * @param vcimage cbit.image.VCImage
- * @param userid java.lang.String
- * @exception java.rmi.RemoteException The exception description.
- */
 private void insertImageSQL(Connection con, VCImage image, KeyValue keySizeRef,Version version,User user) 
 					throws SQLException, cbit.image.ImageException,DataAccessException {
 
@@ -1191,13 +1148,6 @@ private void insertImageSQL(Connection con, VCImage image, KeyValue keySizeRef,V
 	updateCleanSQL(con,sql);
 }
 
-
-/**
- * This method was created in VisualAge.
- * @param vcimage cbit.image.VCImage
- * @param userid java.lang.String
- * @exception java.rmi.RemoteException The exception description.
- */
 private void insertPixelClassSQL(Connection con, KeyValue key, KeyValue imageKey, VCPixelClass pc) throws SQLException, cbit.image.ImageException {
 	String sql;
 	sql = "INSERT INTO " + imageRegionTable.getTableName() + " " +
@@ -1209,12 +1159,6 @@ private void insertPixelClassSQL(Connection con, KeyValue key, KeyValue imageKey
 }
 
 
-/**
- * This method was created in VisualAge.
- * @param vcimage cbit.image.VCImage
- * @param userid java.lang.String
- * @exception java.rmi.RemoteException The exception description.
- */
 private void insertSubVolumesSQL(InsertHashtable hash, Connection con, Geometry geom,KeyValue geomKey) throws SQLException, cbit.image.ImageException, DataAccessException, ObjectNotFoundException {
 	String sql;
 	SubVolume subVolumes[] = geom.getGeometrySpec().getSubVolumes();
@@ -1267,13 +1211,6 @@ private void insertVCImage(InsertHashtable hash, Connection con, User user,VCIma
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return cbit.sql.KeyValue
- * @param versionable cbit.sql.Versionable
- * @param pRef cbit.sql.KeyValue
- * @param bCommit boolean
- */
 public KeyValue insertVersionable(InsertHashtable hash, Connection con, User user, VCImage vcImage, String name, boolean bVersion) 
 					throws DataAccessException, SQLException, RecordChangedException {
 						
@@ -1288,13 +1225,6 @@ public KeyValue insertVersionable(InsertHashtable hash, Connection con, User use
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return cbit.sql.KeyValue
- * @param versionable cbit.sql.Versionable
- * @param pRef cbit.sql.KeyValue
- * @param bCommit boolean
- */
 public KeyValue insertVersionable(InsertHashtable hash, QueryHashtable dbc, Connection con, User user, Geometry geometry, KeyValue updatedImageKey, String name, boolean bVersion) 
 					throws DataAccessException, SQLException, RecordChangedException {
 						
@@ -1309,12 +1239,6 @@ public KeyValue insertVersionable(InsertHashtable hash, QueryHashtable dbc, Conn
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return cbit.image.VCImage
- * @param user cbit.vcell.server.User
- * @param image cbit.image.VCImage
- */
 public KeyValue updateVersionable(InsertHashtable hash, Connection con, User user, VCImage vcImage, boolean bVersion) 
 			throws DataAccessException, SQLException, RecordChangedException{
 				
@@ -1329,13 +1253,6 @@ public KeyValue updateVersionable(InsertHashtable hash, Connection con, User use
 	return newVersion.getVersionKey();
 }
 
-
-/**
- * This method was created in VisualAge.
- * @return cbit.image.VCImage
- * @param user cbit.vcell.server.User
- * @param image cbit.image.VCImage
- */
 public KeyValue updateVersionable(InsertHashtable hash, QueryHashtable dbc, Connection con, User user, Geometry geometry, KeyValue updatedImageKey, boolean bVersion) 
 			throws DataAccessException, SQLException, RecordChangedException{
 				

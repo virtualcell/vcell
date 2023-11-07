@@ -18,14 +18,9 @@ import java.util.List;
 import cbit.vcell.solver.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.vcell.util.BeanUtils;
-import org.vcell.util.Compare;
-import org.vcell.util.Issue;
+import org.vcell.util.*;
 import org.vcell.util.Issue.IssueSource;
-import org.vcell.util.IssueContext;
 import org.vcell.util.IssueContext.ContextType;
-import org.vcell.util.Matchable;
-import org.vcell.util.TokenMangler;
 import org.vcell.util.document.BioModelChildSummary.MathType;
 import org.vcell.util.document.MathModelChildSummary;
 import org.vcell.util.document.PropertyConstants;
@@ -502,7 +497,7 @@ public void removeSimulation(Simulation simulation) throws java.beans.PropertyVe
 	if (!contains(simulation)){
 		throw new IllegalArgumentException("MathModel.removeSimulation() simulation not present in MathModel");
 	}
-	setSimulations((Simulation[])BeanUtils.removeFirstInstanceOfElement(fieldSimulations,simulation));
+	setSimulations(ArrayUtils.removeFirstInstanceOfElement(fieldSimulations,simulation));
 }
 
 
