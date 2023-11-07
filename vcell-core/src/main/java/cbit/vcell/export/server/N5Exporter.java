@@ -14,7 +14,6 @@ import cbit.vcell.math.MathException;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.simdata.*;
-import cbit.vcell.simdata.n5.N5MetaData;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
@@ -22,15 +21,11 @@ import com.google.gson.GsonBuilder;
 import edu.uchc.connjur.wb.ExecutionTrace;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.janelia.saalfeldlab.n5.Compression;
 import org.janelia.saalfeldlab.n5.DatasetAttributes;
 import org.janelia.saalfeldlab.n5.DoubleArrayDataBlock;
 import org.janelia.saalfeldlab.n5.N5FSWriter;
-import org.vcell.solver.smoldyn.SmoldynVCellMapper;
-import org.vcell.solver.smoldyn.SmoldynVCellMapper.SmoldynKeyword;
 import org.vcell.util.*;
 import org.vcell.util.document.*;
 
@@ -81,8 +76,7 @@ public class N5Exporter implements ExportConstants {
 		// according to Jim what should happen is that the VCdata should automatically derive the data for me since it knows everything
 		// and the only reason why this wouldn't work is due to some misconfiguration, but what is that misconfig
 
-		Compression compression = n5Specs.getCompression();
-		File tmpFile = File.createTempFile("N5", "temp");
+		File tmpDir = new File(System.getProperty("java.io.tmpdir"));
 
 		ArrayList<DataIdentifier> species = new ArrayList<>();
 		for (String specie: exportSpecs.getVariableSpecs().getVariableNames()){
@@ -104,8 +98,9 @@ public class N5Exporter implements ExportConstants {
 		int[] blockSize = {vcData.getMesh().getSizeX(), vcData.getMesh().getSizeY(), 1, vcData.getMesh().getSizeZ(), 1};
 
 
-		N5FSWriter n5FSWriter = new N5FSWriter(tmpFile.getPath(), new GsonBuilder());
-		DatasetAttributes datasetAttributes = new DatasetAttributes(dimensions, blockSize, org.janelia.saalfeldlab.n5.DataType.FLOAT64, compression);
+		// rewrite so that it still results in a tmp file does not raise File already exists error
+		N5FSWriter n5FSWriter = new N5FSWriter(getN5FileAbsolutePath(), new GsonBuilder());
+		DatasetAttributes datasetAttributes = new DatasetAttributes(dimensions, blockSize, org.janelia.saalfeldlab.n5.DataType.FLOAT64, n5Specs.getCompression());
 		HashMap<String, Object> additionalMetaData = new HashMap<>();
 
 		n5FSWriter.createDataset(n5Specs.dataSetName, datasetAttributes);
@@ -124,8 +119,9 @@ public class N5Exporter implements ExportConstants {
 				n5FSWriter.writeBlock(n5Specs.dataSetName, datasetAttributes, doubleArrayDataBlock);
 			}
 		}
+		File tmpFile = new File(n5FSWriter.getBasePath());
 		n5FSWriter.close();
-		ExportOutput exportOutput = new ExportOutput(true, ".n5", vcDataID.getID(), n5FileNameHash(), fileDataContainerManager);
+		ExportOutput exportOutput = new ExportOutput(true, ".n5", vcDataID.getID(), getN5FileNameHash(), fileDataContainerManager);
 		fileDataContainerManager.manageExistingTempFile(exportOutput.getFileDataContainerID(), tmpFile);
 		return exportOutput;
 	}
@@ -159,6 +155,8 @@ public class N5Exporter implements ExportConstants {
 	public VCData getVCData(){
 		return vcData;
 	}
+
+	public VCSimulationDataIdentifier getVcDataID(){return vcDataID;}
 
 	public DataSetControllerImpl getDataSetController() {
 		return dataSetController;
@@ -203,19 +201,15 @@ public class N5Exporter implements ExportConstants {
 	}
 
 	public String getN5FileAbsolutePath(){
-		File outPutDir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.n5DataDir) + "/" + this.n5FileNameHash() + ".n5");
+		File outPutDir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.n5DataDir) + "/" + this.getN5FileNameHash() + ".n5");
 		return outPutDir.getAbsolutePath();
 	}
 
-	public String getN5DatasetName(){
-		return vcDataID.getID();
-	}
-
-	public String n5FileNameHash(){
+	public String getN5FileNameHash(){
 		return actualHash(vcDataID.getID(), String.valueOf(vcDataID.getJobIndex()));
 	}
 
-	public static String n5FileNameHash(String simID, String jobID){
+	public static String getN5FileNameHash(String simID, String jobID){
 		return actualHash(simID, jobID);
 	}
 
@@ -244,6 +238,22 @@ public class N5Exporter implements ExportConstants {
 						exportSpecs,
 						fileDataContainerManager
 						);
+		}
+		throw new IllegalArgumentException("Export spec "  + ExecutionTrace.justClassName(formatSpecs) + " not instance of " + ExecutionTrace.justClassName(ASCIISpecs.class) );
+	}
+
+	public ExportOutput makeN5Data(OutputContext outputContext, long jobID, ExportSpecs exportSpecs, FileDataContainerManager fileDataContainerManager)
+			throws DataAccessException, IOException, MathException {
+		FormatSpecificSpecs formatSpecs = exportSpecs.getFormatSpecificSpecs( );
+		N5Specs n5Specs = BeanUtils.downcast(N5Specs.class, formatSpecs);
+		if (n5Specs != null) {
+			return exportToN5(
+					outputContext,
+					jobID,
+					n5Specs,
+					exportSpecs,
+					fileDataContainerManager
+			);
 		}
 		throw new IllegalArgumentException("Export spec "  + ExecutionTrace.justClassName(formatSpecs) + " not instance of " + ExecutionTrace.justClassName(ASCIISpecs.class) );
 	}
