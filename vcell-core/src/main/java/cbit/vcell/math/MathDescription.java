@@ -342,11 +342,7 @@ public boolean compareEqual(Matchable object) {
 		return false;
 	}
 
-	if (!Compare.isEqualOrNull(postProcessingBlock, mathDesc.postProcessingBlock)) {
-		return false;
-	}
-
-	return true;
+    return Compare.isEqualOrNull(postProcessingBlock, mathDesc.postProcessingBlock);
 }
 
 
@@ -361,10 +357,13 @@ private MathCompareResults compareEquivalentCanonicalMath(MathDescription newMat
 				logMathTexts(this, newMathDesc, Decision.MathDifferent_DIFFERENT_PostProcessingBlock,"");
 				return new MathCompareResults(Decision.MathDifferent_DIFFERENT_PostProcessingBlock,"Post processing block does not match");
 			}
-			Variable oldVars[] = (Variable[])BeanUtils.getArray(oldMathDesc.getVariables(),Variable.class);
-			Variable newVars[] = (Variable[])BeanUtils.getArray(newMathDesc.getVariables(),Variable.class);
-			Arrays.sort(oldVars,(v1,v2) -> v1.getName().compareTo(v2.getName()));
-			Arrays.sort(newVars,(v1,v2) -> v1.getName().compareTo(v2.getName()));
+			List<Variable> oldVarList = Collections.list(oldMathDesc.getVariables());
+			List<Variable> newVarList = Collections.list(newMathDesc.getVariables());
+			oldVarList.sort(Comparator.comparing(Variable::getName));
+			newVarList.sort(Comparator.comparing(Variable::getName));
+			Variable[] oldVars = oldVarList.toArray(Variable[]::new);
+			Variable[] newVars = newVarList.toArray(Variable[]::new);
+
 			
 			if (oldVars.length != newVars.length){
 				//
@@ -417,8 +416,8 @@ private MathCompareResults compareEquivalentCanonicalMath(MathDescription newMat
 			//
 			// go through the list of SubDomains, and compare equations one by one and "correct" new one if possible
 			//
-			ArrayList<SubDomain> subDomainsOld = new ArrayList<SubDomain>(Arrays.asList((SubDomain[])BeanUtils.getArray(oldMathDesc.getSubDomains(),SubDomain.class)));
-			ArrayList<SubDomain> subDomainsNew = new ArrayList<SubDomain>(Arrays.asList((SubDomain[])BeanUtils.getArray(newMathDesc.getSubDomains(),SubDomain.class)));
+			List<SubDomain> subDomainsOld = Collections.list(oldMathDesc.getSubDomains());
+			List<SubDomain> subDomainsNew = Collections.list(newMathDesc.getSubDomains());
 			Collections.sort(subDomainsOld);
 			Collections.sort(subDomainsNew);
 			
@@ -430,9 +429,7 @@ private MathCompareResults compareEquivalentCanonicalMath(MathDescription newMat
 			for (int i = 0; i < subDomainsOld.size(); i++){
 				// compare boundary type
 				if (getGeometry().getDimension() > 0) {
-					if (subDomainsOld.get(i) instanceof CompartmentSubDomain && subDomainsNew.get(i) instanceof CompartmentSubDomain) {
-						CompartmentSubDomain csdOld = (CompartmentSubDomain)subDomainsOld.get(i);
-						CompartmentSubDomain csdNew = (CompartmentSubDomain)subDomainsNew.get(i);
+					if (subDomainsOld.get(i) instanceof CompartmentSubDomain csdOld && subDomainsNew.get(i) instanceof CompartmentSubDomain csdNew) {
 						if (!Compare.isEqualOrNull(csdOld.getBoundaryConditionXm(), csdNew.getBoundaryConditionXm())
 								|| !Compare.isEqualOrNull(csdOld.getBoundaryConditionXp(), csdNew.getBoundaryConditionXp())
 								|| !Compare.isEqualOrNull(csdOld.getBoundaryConditionYm(), csdNew.getBoundaryConditionYm())
@@ -443,9 +440,7 @@ private MathCompareResults compareEquivalentCanonicalMath(MathDescription newMat
 							logMathTexts(this, newMathDesc, Decision.MathDifferent_DIFFERENT_BC_TYPE, "");
 							return new MathCompareResults(Decision.MathDifferent_DIFFERENT_BC_TYPE);
 						}					
-					} else if (subDomainsOld.get(i) instanceof MembraneSubDomain && subDomainsNew.get(i) instanceof MembraneSubDomain) {
-						MembraneSubDomain msdOld = (MembraneSubDomain)subDomainsOld.get(i);
-						MembraneSubDomain msdNew = (MembraneSubDomain)subDomainsNew.get(i);
+					} else if (subDomainsOld.get(i) instanceof MembraneSubDomain msdOld && subDomainsNew.get(i) instanceof MembraneSubDomain msdNew) {
 						if (!Compare.isEqualOrNull(msdOld.getBoundaryConditionXm(), msdNew.getBoundaryConditionXm())
 								|| !Compare.isEqualOrNull(msdOld.getBoundaryConditionXp(), msdNew.getBoundaryConditionXp())
 								|| !Compare.isEqualOrNull(msdOld.getBoundaryConditionYm(), msdNew.getBoundaryConditionYm())
@@ -698,17 +693,15 @@ private MathCompareResults compareEquivalentCanonicalMath(MathDescription newMat
 					}
 					Enumeration<Expression> oldFastInvExpEnum = oldFastSystem.getFastInvariantExpressions();
 					Enumeration<Expression> newFastInvExpEnum = newFastSystem.getFastInvariantExpressions();
-					Expression[] oldFastInvariantExps = BeanUtils.getArray(oldFastInvExpEnum, Expression.class);
-					Expression[] newFastInvariantExps = BeanUtils.getArray(newFastInvExpEnum, Expression.class);
+					List<Expression> oldFastInvariantExpsList = Collections.list(oldFastInvExpEnum);
+					List<Expression> newFastInvariantExpsList = Collections.list(newFastInvExpEnum);
 
 					// remove the trivial fast invariant expressions (those with less than 2 variables in them)
-					oldFastInvariantExps = Arrays.asList(oldFastInvariantExps).stream()
-							.filter(fiExp -> fiExp.getSymbols()!=null && fiExp.getSymbols().length>1).toArray(Expression[]::new);
+					Expression[] oldFastInvariantExps = oldFastInvariantExpsList.stream().filter(fiExp -> fiExp.getSymbols()!=null && fiExp.getSymbols().length>1).toArray(Expression[]::new);
 					if (oldFastInvariantExps.length != oldFastSystem.getNumFastInvariants()) {
 						bFoundDifference = true;
 					}
-					newFastInvariantExps = Arrays.asList(newFastInvariantExps).stream()
-							.filter(fiExp -> fiExp.getSymbols()!=null && fiExp.getSymbols().length>1).toArray(Expression[]::new);
+					Expression[] newFastInvariantExps = newFastInvariantExpsList.stream().filter(fiExp -> fiExp.getSymbols()!=null && fiExp.getSymbols().length>1).toArray(Expression[]::new);
 					if (newFastInvariantExps.length != newFastSystem.getNumFastInvariants()) {
 						bFoundDifference = true;
 					}
@@ -728,23 +721,23 @@ private MathCompareResults compareEquivalentCanonicalMath(MathDescription newMat
 						// check all fast invariant expressions because they may be out of order
 						//
 						boolean bFoundMatch = false;
-						for (int jj = 0; jj < newFastInvariantExps.length; jj++) {
-							if (oldFastInvariantExps[kk].compareEqual(newFastInvariantExps[jj])) {
-								bFoundMatch = true;
-								break;
-							}else{
-								bFoundDifference = true;
-								if (ExpressionUtils.functionallyEquivalent(oldFastInvariantExps[kk], newFastInvariantExps[jj])) {
-									bFoundMatch = true;
-									break;
-								}else{
-									if (MathUtilities.compareEquivalent(new FastInvariant(oldFastInvariantExps[kk]),new FastInvariant(newFastInvariantExps[jj]))){
-										bFoundMatch = true;
-										break;
-									}
-								}
-							}
-						}
+                        for (Expression newFastInvariantExp : newFastInvariantExps) {
+                            if (oldFastInvariantExps[kk].compareEqual(newFastInvariantExp)) {
+                                bFoundMatch = true;
+                                break;
+                            } else {
+                                bFoundDifference = true;
+                                if (ExpressionUtils.functionallyEquivalent(oldFastInvariantExps[kk], newFastInvariantExp)) {
+                                    bFoundMatch = true;
+                                    break;
+                                } else {
+                                    if (MathUtilities.compareEquivalent(new FastInvariant(oldFastInvariantExps[kk]), new FastInvariant(newFastInvariantExp))) {
+                                        bFoundMatch = true;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
 						if (!bFoundMatch){
 							String msg = "could not find a match for fast invariant expression'"+oldFastInvariantExps[kk]+"'";
 							logMathTexts(this, newMathDesc, Decision.MathDifferent_DIFFERENT_FASTINV_EXPRESSION, msg);
@@ -753,8 +746,8 @@ private MathCompareResults compareEquivalentCanonicalMath(MathDescription newMat
 					}
 					Enumeration<Expression> oldFastRateExpEnum = oldFastSystem.getFastRateExpressions();
 					Enumeration<Expression> newFastRateExpEnum = newFastSystem.getFastRateExpressions();
-					Expression[] oldFastRateExps = (Expression[])BeanUtils.getArray(oldFastRateExpEnum, Expression.class);
-					Expression[] newFastRateExps = (Expression[])BeanUtils.getArray(newFastRateExpEnum, Expression.class);
+					Expression[] oldFastRateExps = Collections.list(oldFastRateExpEnum).toArray(Expression[]::new);
+					Expression[] newFastRateExps = Collections.list(newFastRateExpEnum).toArray(Expression[]::new);
 					if (oldFastRateExps.length != newFastRateExps.length){
 						String msg = "fast rates have different number of expressions";
 						logMathTexts(this, newMathDesc, Decision.MathDifferent_DIFFERENT_NUMBER_OF_EXPRESSIONS, msg);
@@ -796,16 +789,16 @@ private MathCompareResults compareEquivalentCanonicalMath(MathDescription newMat
 				// 2) filter out 'no-op' PJPs (e.g. those only with trivial Actions such as open->open)
 				// 3) add trivial Symmetry factor (1.0) if missing
 				//
-				List<ParticleJumpProcess> oldPjpList = subDomainsOld.get(i).getParticleJumpProcesses().stream().filter(pjp -> !pjp.actionsNoop()).collect(Collectors.toList());
-				List<ParticleJumpProcess> newPjpList = subDomainsNew.get(i).getParticleJumpProcesses().stream().filter(pjp -> !pjp.actionsNoop()).collect(Collectors.toList());;
+				List<ParticleJumpProcess> oldPjpList = subDomainsOld.get(i).getParticleJumpProcesses().stream().filter(pjp -> !pjp.actionsNoop()).toList();
+				List<ParticleJumpProcess> newPjpList = subDomainsNew.get(i).getParticleJumpProcesses().stream().filter(pjp -> !pjp.actionsNoop()).toList();;
 				for (ParticleJumpProcess oldPjp : oldPjpList)
 					if (oldPjp.getProcessSymmetryFactor() == null) oldPjp.setProcessSymmetryFactor(new ParticleJumpProcess.ProcessSymmetryFactor(1.0));
 				for (ParticleJumpProcess newPjp : newPjpList)
 					if (newPjp.getProcessSymmetryFactor() == null) newPjp.setProcessSymmetryFactor(new ParticleJumpProcess.ProcessSymmetryFactor(1.0));
 
 				if (oldPjpList.size() != newPjpList.size()) {
-					Set<String> oldPjpNameSet = oldPjpList.stream().map(pjp->pjp.getName()).collect(Collectors.toSet());
-					Set<String> newPjpNameSet = newPjpList.stream().map(pjp->pjp.getName()).collect(Collectors.toSet());
+					Set<String> oldPjpNameSet = oldPjpList.stream().map(ParticleJumpProcess::getName).collect(Collectors.toSet());
+					Set<String> newPjpNameSet = newPjpList.stream().map(ParticleJumpProcess::getName).collect(Collectors.toSet());
 					Set<String> removedPjpNames = new LinkedHashSet<>(oldPjpNameSet);
 					removedPjpNames.removeAll(newPjpNameSet);
 					Set<String> addedPjpNames = new LinkedHashSet<>(newPjpNameSet);

@@ -325,16 +325,6 @@ public final class BeanUtils {
 		return originalString + fullPadding.substring(0,targetLength-originalString.length());
 	}
 
-	public static <T> T[] getArray(Enumeration<? extends T> enumeration, Class<T> elementType) {
-		List<T> list = new ArrayList<T>();
-		while (enumeration.hasMoreElements()){
-			list.add(enumeration.nextElement());
-		}
-		@SuppressWarnings("unchecked")
-		T[] array = list.toArray((T[])Array.newInstance(elementType, list.size()));
-		return array;
-	}
-
 	public static <T> T[] addElement(T[] originalArray, T element) {
 		T[] largerArray = Arrays.copyOf(originalArray, originalArray.length + 1);
 		largerArray[originalArray.length] = element;

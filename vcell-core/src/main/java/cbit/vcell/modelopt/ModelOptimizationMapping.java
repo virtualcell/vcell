@@ -9,6 +9,8 @@
  */
 
 package cbit.vcell.modelopt;
+import java.util.Collections;
+import java.util.List;
 import java.util.Vector;
 
 import org.vcell.util.BeanUtils;
@@ -143,80 +145,78 @@ MathSymbolMapping computeOptimizationSpec() throws MathException, MappingExcepti
 	// get parameter mappings
 	//
 	ParameterMappingSpec[] parameterMappingSpecs = modelOptimizationSpec.getParameterMappingSpecs();
-	Vector<ParameterMapping> parameterMappingList = new Vector<ParameterMapping>();
-	Variable allVars[] = (Variable[])BeanUtils.getArray(origMathDesc.getVariables(),Variable.class);
-	for (int i = 0; i < parameterMappingSpecs.length; i++){
-		cbit.vcell.model.Parameter modelParameter = parameterMappingSpecs[i].getModelParameter();
-		String mathSymbol = null;
-		Variable mathVariable = null;
-		if (mathSymbolMapping!=null){
-			Variable variable = mathSymbolMapping.getVariable(modelParameter);
-			if (variable!=null){
-				mathSymbol = variable.getName();
-			}
-			if (mathSymbol!=null){
-				mathVariable = origMathDesc.getVariable(mathSymbol);
-			}
-		}
-		if(mathVariable != null)
-		{
-			if (parameterMappingSpecs[i].isSelected()) {
-				if (parameterMappingSpecs[i].getHigh() < parameterMappingSpecs[i].getLow()) {
-					throw new MathException("The lower bound for Parameter '" + parameterMappingSpecs[i].getModelParameter().getName() + "' is greater than its upper bound.");
-				}
-				if (parameterMappingSpecs[i].getCurrent() < parameterMappingSpecs[i].getLow()){
-					throw new MathException("The initial guess of '" + parameterMappingSpecs[i].getModelParameter().getName() + "' is smaller than its lower bound.");
-				}
-				if (parameterMappingSpecs[i].getCurrent() > parameterMappingSpecs[i].getHigh()){
-					throw new MathException("The initial guess of '" + parameterMappingSpecs[i].getModelParameter().getName() + "' is greater than its upper bound.");
-				}
-				if (parameterMappingSpecs[i].getLow() < 0) {
-					throw new MathException("The lower bound for Parameter '" + parameterMappingSpecs[i].getModelParameter().getName() + "' is negative. All lower bounds must not be negative.");
-				}
-				if (Double.isInfinite(parameterMappingSpecs[i].getLow())) {
-					throw new MathException("The lower bound for Parameter '" + parameterMappingSpecs[i].getModelParameter().getName() + "' is infinity. Lower bounds must not be infinity.");
-				}
-				if (parameterMappingSpecs[i].getHigh() <= 0) {
-					throw new MathException("The upper bound for Parameter '" + parameterMappingSpecs[i].getModelParameter().getName() + "' is negative. All upper bounds must be positive.");
-				}
-				if (Double.isInfinite(parameterMappingSpecs[i].getHigh())) {
-					throw new MathException("The upper bound for Parameter '" + parameterMappingSpecs[i].getModelParameter().getName() + "' is infinity. Upper bounds must not be infinity.");
-				}
-			}
-			double low = parameterMappingSpecs[i].isSelected() && parameterMappingSpecs[i].getLow() == 0 ? 1e-8 : parameterMappingSpecs[i].getLow();
-			double high = parameterMappingSpecs[i].getHigh();
-			double scale = Math.abs(parameterMappingSpecs[i].getCurrent()) < 1.0E-10 ? 1.0 : Math.abs(parameterMappingSpecs[i].getCurrent());
-			double current = parameterMappingSpecs[i].getCurrent();
-			low = Math.min(low,current);
-			high = Math.max(high,current);
-			Parameter optParameter = new Parameter(mathSymbol, low, high, scale, current);
-			ParameterMapping parameterMapping = new ParameterMapping(modelParameter,optParameter,mathVariable);
-			//
-			// replace constant values with "initial guess"
-			//
-			if (mathVariable instanceof Constant origConstant){
-				for (int j = 0; j < allVars.length; j++){
-					if (allVars[j].equals(origConstant)){
-						if (parameterMappingSpecs[i].isSelected()) {
-							allVars[j] = new ParameterVariable(origConstant.getName());
-						} else {
-							allVars[j] = new Constant(origConstant.getName(),new Expression(optParameter.getInitialGuess()));
-						}
-						break;
+	Vector<ParameterMapping> parameterMappingList = new Vector<>();
+	List<Variable> allVars = Collections.list(origMathDesc.getVariables());
+    for (ParameterMappingSpec parameterMappingSpec : parameterMappingSpecs) {
+        cbit.vcell.model.Parameter modelParameter = parameterMappingSpec.getModelParameter();
+        String mathSymbol = null;
+        Variable mathVariable = null;
+        if (mathSymbolMapping != null) {
+            Variable variable = mathSymbolMapping.getVariable(modelParameter);
+            if (variable != null) {
+                mathSymbol = variable.getName();
+            }
+            if (mathSymbol != null) {
+                mathVariable = origMathDesc.getVariable(mathSymbol);
+            }
+        }
+        if (mathVariable != null) {
+            if (parameterMappingSpec.isSelected()) {
+                if (parameterMappingSpec.getHigh() < parameterMappingSpec.getLow()) {
+                    throw new MathException("The lower bound for Parameter '" + parameterMappingSpec.getModelParameter().getName() + "' is greater than its upper bound.");
+                }
+                if (parameterMappingSpec.getCurrent() < parameterMappingSpec.getLow()) {
+                    throw new MathException("The initial guess of '" + parameterMappingSpec.getModelParameter().getName() + "' is smaller than its lower bound.");
+                }
+                if (parameterMappingSpec.getCurrent() > parameterMappingSpec.getHigh()) {
+                    throw new MathException("The initial guess of '" + parameterMappingSpec.getModelParameter().getName() + "' is greater than its upper bound.");
+                }
+                if (parameterMappingSpec.getLow() < 0) {
+                    throw new MathException("The lower bound for Parameter '" + parameterMappingSpec.getModelParameter().getName() + "' is negative. All lower bounds must not be negative.");
+                }
+                if (Double.isInfinite(parameterMappingSpec.getLow())) {
+                    throw new MathException("The lower bound for Parameter '" + parameterMappingSpec.getModelParameter().getName() + "' is infinity. Lower bounds must not be infinity.");
+                }
+                if (parameterMappingSpec.getHigh() <= 0) {
+                    throw new MathException("The upper bound for Parameter '" + parameterMappingSpec.getModelParameter().getName() + "' is negative. All upper bounds must be positive.");
+                }
+                if (Double.isInfinite(parameterMappingSpec.getHigh())) {
+                    throw new MathException("The upper bound for Parameter '" + parameterMappingSpec.getModelParameter().getName() + "' is infinity. Upper bounds must not be infinity.");
+                }
+            }
+            double low = parameterMappingSpec.isSelected() && parameterMappingSpec.getLow() == 0 ? 1e-8 : parameterMappingSpec.getLow();
+            double high = parameterMappingSpec.getHigh();
+            double scale = Math.abs(parameterMappingSpec.getCurrent()) < 1.0E-10 ? 1.0 : Math.abs(parameterMappingSpec.getCurrent());
+            double current = parameterMappingSpec.getCurrent();
+            low = Math.min(low, current);
+            high = Math.max(high, current);
+            Parameter optParameter = new Parameter(mathSymbol, low, high, scale, current);
+            ParameterMapping parameterMapping = new ParameterMapping(modelParameter, optParameter, mathVariable);
+            //
+            // replace constant values with "initial guess"
+            //
+            if (mathVariable instanceof Constant origConstant) {
+                for (int j = 0; j < allVars.size(); j++) {
+                    if (!allVars.get(j).equals(origConstant)) continue;
+					if (parameterMappingSpec.isSelected()) {
+						allVars.set(j, new ParameterVariable(origConstant.getName()));
+					} else {
+						allVars.set(j, new Constant(origConstant.getName(), new Expression(optParameter.getInitialGuess())));
 					}
-				}
-			}
-			//
-			// add to list if "selected" for optimization.
-			//
-			if (parameterMappingSpecs[i].isSelected()){
-				parameterMappingList.add(parameterMapping);
-			}
-		}
-	}
+					break;
+                }
+            }
+            //
+            // add to list if "selected" for optimization.
+            //
+            if (parameterMappingSpec.isSelected()) {
+                parameterMappingList.add(parameterMapping);
+            }
+        }
+    }
 	parameterMappings = parameterMappingList.toArray(ParameterMapping[]::new);
 	try {
-		origMathDesc.setAllVariables(allVars);
+		origMathDesc.setAllVariables(allVars.toArray(Variable[]::new));
 	}catch (ExpressionBindingException e){
 		throw new MathException(e.getMessage(), e);
 	}

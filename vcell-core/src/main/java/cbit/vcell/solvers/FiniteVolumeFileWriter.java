@@ -17,17 +17,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.Vector;
+import java.util.*;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -339,27 +329,25 @@ public void write(String[] parameterNames) throws Exception {
 	else
 	{
 		if (simTask.getSimulation().isSerialParameterScan()) {
-			originalVars = (Variable[])BeanUtils.getArray(mathDesc.getVariables(),Variable.class);
-			Variable allVars[] = (Variable[])BeanUtils.getArray(mathDesc.getVariables(),Variable.class);
+			originalVars = Collections.list(mathDesc.getVariables()).toArray(Variable[]::new);
+			Variable[] allVars = Collections.list(mathDesc.getVariables()).toArray(Variable[]::new);
 			MathOverrides mathOverrides = simulation.getMathOverrides();
 			
 			String[] scanParameters = mathOverrides.getOverridenConstantNames();
-			for (int i = 0; i < scanParameters.length; i++){
-				String scanParameter = scanParameters[i];
-				Variable mathVariable = mathDesc.getVariable(scanParameter);
-				//
-				// replace constant values with "Parameter"
-				//
-				if (mathVariable instanceof Constant){
-					Constant origConstant = (Constant)mathVariable;
-					for (int j = 0; j < allVars.length; j++){
-						if (allVars[j].equals(origConstant)){
-							allVars[j] = new ParameterVariable(origConstant.getName());
-							break;
-						}
-					}
-				}
-			}
+            for (String scanParameter : scanParameters) {
+                Variable mathVariable = mathDesc.getVariable(scanParameter);
+                //
+                // replace constant values with "Parameter"
+                //
+                if (mathVariable instanceof Constant origConstant) {
+					for (int j = 0; j < allVars.length; j++) {
+                        if (allVars[j].equals(origConstant)) {
+                            allVars[j] = new ParameterVariable(origConstant.getName());
+                            break;
+                        }
+                    }
+                }
+            }
 			mathDesc.setAllVariables(allVars);
 		}
 		

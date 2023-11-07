@@ -9,13 +9,7 @@
  */
 
 package cbit.vcell.solver;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.Vector;
+import java.util.*;
 
 import cbit.vcell.mapping.SimulationContext;
 import org.apache.logging.log4j.LogManager;
@@ -136,21 +130,19 @@ public SymbolTableEntry getEntry(java.lang.String identifierString) {
 	// use MathDescription as the primary SymbolTable, just replace the Constants with the overrides.
 	//
 	SymbolTableEntry ste = simulation.getMathDescription().getEntry(identifierString);
-	if (ste instanceof Constant){
+	if (ste instanceof Constant cons){
 		try {
-			Constant constant = getLocalConstant((Constant)ste);
-			return constant;
-		}catch (ExpressionException e){
+            return getLocalConstant(cons);
+		} catch (ExpressionException e){
 			throw new RuntimeException("Simulation.getEntry(), error getting local Constant (math override)"+identifierString, e);
 		}
-	}else if (ste instanceof Function){
+	}else if (ste instanceof Function func){
 		try {
-			Function function = getLocalFunction((Function)ste);
-			return function;
-		}catch (ExpressionException e){
+            return getLocalFunction(func);
+		} catch (ExpressionException e){
 			throw new RuntimeException("Simulation.getEntry(), error getting local Function "+identifierString+", "+e.getMessage(), e);
 		}
-	}else{
+	} else {
 		return ste;
 	}
 }
@@ -160,13 +152,11 @@ public void applyOverrides(MathDescription newMath) throws ExpressionException, 
 	//
 	// replace original constants with "Simulation" constants
 	//
-	Variable newVarArray[] = (Variable[])BeanUtils.getArray(newMath.getVariables(),Variable.class);
+	Variable[] newVarArray = Collections.list(newMath.getVariables()).toArray(Variable[]::new);
 	for (int i = 0; i < newVarArray.length; i++){
-		if (newVarArray[i] instanceof Constant){
-			Constant origConstant = (Constant)newVarArray[i];
-			Constant simConstant = getLocalConstant(origConstant);
-			newVarArray[i] = new Constant(origConstant.getName(),new Expression(simConstant.getExpression()));
-		}
+		if (!(newVarArray[i] instanceof Constant constant)) continue;
+		Constant simConstant = getLocalConstant(constant);
+		newVarArray[i] = new Constant(constant.getName(),new Expression(simConstant.getExpression()));
 	}
 	newMath.setAllVariables(newVarArray);
 }

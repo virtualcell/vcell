@@ -12,10 +12,7 @@ package cbit.vcell.modelopt;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Vector;
+import java.util.*;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -832,13 +829,13 @@ private void updateListenersList(Model model, boolean bAdd) {
 	ModelParameter[] modelParams = model.getModelParameters();
 	if (!bAdd) {
 		model.removePropertyChangeListener(this);
-		for (int i = 0; i < modelParams.length; i++) {
-			modelParams[i].removePropertyChangeListener(this);
-		}
+        for (ModelParameter modelParam : modelParams) {
+            modelParam.removePropertyChangeListener(this);
+        }
 		// since only spContextSpec initCondition Param is being added to paramMappingSpecs, only remove/add listener for initCondnParam?
-		for (int i = 0; i < scsArray.length; i++) {
-			scsArray[i].getInitialConditionParameter().removePropertyChangeListener(this);
-		}
+        for (SpeciesContextSpec speciesContextSpec : scsArray) {
+            speciesContextSpec.getInitialConditionParameter().removePropertyChangeListener(this);
+        }
 		for (int i = 0; reactionSteps != null && i < reactionSteps.length; i++) {
 			reactionSteps[i].removePropertyChangeListener(this);
 			reactionSteps[i].getKinetics().removePropertyChangeListener(this);
@@ -854,24 +851,24 @@ private void updateListenersList(Model model, boolean bAdd) {
 	} else {
 	// add listeners - simContext, mathDesc, model, spContextSpecs, reactionSteps & kinetics & its params
 		model.addPropertyChangeListener(this);
-		for (int i = 0; i < modelParams.length; i++) {
-			modelParams[i].addPropertyChangeListener(this);
-		}
-		for (int i = 0; i < scsArray.length; i++) {
-			scsArray[i].getInitialConditionParameter().addPropertyChangeListener(this);
-		}
-		for (int i = 0; i < reactionSteps.length; i++) {
-			reactionSteps[i].addPropertyChangeListener(this);
-			reactionSteps[i].getKinetics().addPropertyChangeListener(this);
-			KineticsParameter[] kps = reactionSteps[i].getKinetics().getKineticsParameters();
-			for (int j = 0; j < kps.length; j++) {
-				kps[j].addPropertyChangeListener(this);
-			}
-			KineticsProxyParameter[] kpps = reactionSteps[i].getKinetics().getProxyParameters();
-			for (int j = 0; j < kpps.length; j++) {
-				kpps[j].addPropertyChangeListener(this);
-			}
-		}
+        for (ModelParameter modelParam : modelParams) {
+            modelParam.addPropertyChangeListener(this);
+        }
+        for (SpeciesContextSpec speciesContextSpec : scsArray) {
+            speciesContextSpec.getInitialConditionParameter().addPropertyChangeListener(this);
+        }
+        for (ReactionStep reactionStep : reactionSteps) {
+            reactionStep.addPropertyChangeListener(this);
+            reactionStep.getKinetics().addPropertyChangeListener(this);
+            KineticsParameter[] kps = reactionStep.getKinetics().getKineticsParameters();
+            for (KineticsParameter kp : kps) {
+                kp.addPropertyChangeListener(this);
+            }
+            KineticsProxyParameter[] kpps = reactionStep.getKinetics().getProxyParameters();
+            for (KineticsProxyParameter kpp : kpps) {
+                kpp.addPropertyChangeListener(this);
+            }
+        }
 	}
 }
 
@@ -899,41 +896,36 @@ private static MathSystemHash fromMath(cbit.vcell.math.MathDescription mathDesc)
 	hash.addSymbol(new MathSystemHash.IndependentVariable("y"));
 	hash.addSymbol(new MathSystemHash.IndependentVariable("z"));
 
-	Variable vars[] = (Variable[])BeanUtils.getArray(mathDesc.getVariables(),Variable.class);
-	for (int i = 0; i < vars.length; i++){
-		hash.addSymbol(new MathSystemHash.Variable(vars[i].getName(),vars[i].getExpression()));
-	}
+    for (Variable variable : Collections.list(mathDesc.getVariables())) {
+        hash.addSymbol(new MathSystemHash.Variable(variable.getName(), variable.getExpression()));
+    }
 
-	SubDomain subDomains[] = (SubDomain[])BeanUtils.getArray(mathDesc.getSubDomains(),SubDomain.class);
-	for (int i = 0; i < subDomains.length; i++){
+    for (SubDomain subDomain : Collections.list(mathDesc.getSubDomains())) {
+        for (Equation equation : Collections.list(subDomain.getEquations())) {
+            MathSystemHash.Variable var = (MathSystemHash.Variable) hash.getSymbol(equation.getVariable().getName());
+            hash.addSymbol(new MathSystemHash.VariableInitial(var, equation.getInitialExpression()));
+            if (equation instanceof PdeEquation pde) {
+                //cbit.vcell.math.PdeEquation pde = (cbit.vcell.math.PdeEquation)equations[j];
+                //hash.addSymbol(new MathSystemHash.VariableDerivative(var,pde.getRateExpression()));
+                throw new RuntimeException("MathSystemHash doesn't yet support spatial models");
+            } else if (equation instanceof VolumeRegionEquation vr) {
+                //cbit.vcell.math.VolumeRegionEquation vre = (cbit.vcell.math.VolumeRegionEquation)equations[j];
+                //hash.addSymbol(new MathSystemHash.VariableDerivative(var,vre.getRateExpression()));
+                throw new RuntimeException("MathSystemHash doesn't yet support spatial models");
+            } else if (equation instanceof MembraneRegionEquation mr) {
+                //cbit.vcell.math.MembraneRegionEquation mre = (cbit.vcell.math.MembraneRegionEquation)equations[j];
+                //hash.addSymbol(new MathSystemHash.VariableDerivative(var,mre.getRateExpression()));
+                throw new RuntimeException("MathSystemHash doesn't yet support spatial models");
+            } else if (equation instanceof FilamentRegionEquation fr) {
+                //cbit.vcell.math.FilamentRegionEquation fre = (cbit.vcell.math.FilamentRegionEquation)equations[j];
+                //hash.addSymbol(new MathSystemHash.VariableDerivative(var,fre.getRateExpression()));
+                throw new RuntimeException("MathSystemHash doesn't yet support spatial models");
 
-		Equation[] equations = (Equation[])BeanUtils.getArray(subDomains[i].getEquations(),Equation.class);
-		for (int j = 0; j < equations.length; j++){
-			MathSystemHash.Variable var = (MathSystemHash.Variable)hash.getSymbol(equations[j].getVariable().getName());
-			hash.addSymbol(new MathSystemHash.VariableInitial(var,equations[j].getInitialExpression()));
-			if (equations[j] instanceof PdeEquation){
-				//cbit.vcell.math.PdeEquation pde = (cbit.vcell.math.PdeEquation)equations[j];
-				//hash.addSymbol(new MathSystemHash.VariableDerivative(var,pde.getRateExpression()));
-				throw new RuntimeException("MathSystemHash doesn't yet support spatial models");
-			}else if (equations[j] instanceof VolumeRegionEquation){
-				//cbit.vcell.math.VolumeRegionEquation vre = (cbit.vcell.math.VolumeRegionEquation)equations[j];
-				//hash.addSymbol(new MathSystemHash.VariableDerivative(var,vre.getRateExpression()));
-				throw new RuntimeException("MathSystemHash doesn't yet support spatial models");
-			}else if (equations[j] instanceof MembraneRegionEquation){
-				//cbit.vcell.math.MembraneRegionEquation mre = (cbit.vcell.math.MembraneRegionEquation)equations[j];
-				//hash.addSymbol(new MathSystemHash.VariableDerivative(var,mre.getRateExpression()));
-				throw new RuntimeException("MathSystemHash doesn't yet support spatial models");
-			}else if (equations[j] instanceof FilamentRegionEquation){
-				//cbit.vcell.math.FilamentRegionEquation fre = (cbit.vcell.math.FilamentRegionEquation)equations[j];
-				//hash.addSymbol(new MathSystemHash.VariableDerivative(var,fre.getRateExpression()));
-				throw new RuntimeException("MathSystemHash doesn't yet support spatial models");
-				
-			}else if (equations[j] instanceof OdeEquation){
-				OdeEquation ode = (OdeEquation)equations[j];
-				hash.addSymbol(new MathSystemHash.VariableDerivative(var,ode.getRateExpression()));
-			}
-		}
-	}
+            } else if (equation instanceof OdeEquation ode) {
+				hash.addSymbol(new MathSystemHash.VariableDerivative(var, ode.getRateExpression()));
+            }
+        }
+    }
 	return hash;
 }
 
@@ -943,16 +935,9 @@ public final ParameterEstimationTask getParameterEstimationTask() {
 
 public boolean isEmpty()
 {
-	if((fieldParameterMappingSpecs == null || getNumberSelectedParameters() ==0)  && 
-		(fieldReferenceData == null || (fieldReferenceData.getNumDataColumns() == 0 && fieldReferenceData.getNumDataRows() == 0)) && 
-		(fieldReferenceDataMappingSpecs == null || fieldReferenceDataMappingSpecs.length == 0))
-	{
-		return true;
-	}
-	else
-	{
-		return false;
-	}
+    return (fieldParameterMappingSpecs == null || getNumberSelectedParameters() == 0) &&
+            (fieldReferenceData == null || (fieldReferenceData.getNumDataColumns() == 0 && fieldReferenceData.getNumDataRows() == 0)) &&
+            (fieldReferenceDataMappingSpecs == null || fieldReferenceDataMappingSpecs.length == 0);
 }
 
 public int getNumberSelectedParameters()

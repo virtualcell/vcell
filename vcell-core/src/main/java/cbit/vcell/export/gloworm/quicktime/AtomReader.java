@@ -354,7 +354,7 @@ public class AtomReader {
 	 * Creation date: (11/5/2005 12:07:18 PM)
 	 */
 	public void readSampleDetails() throws java.io.IOException {
-		AtomInfo[] infos = ArrayUtils.getArray(nodeHash.keys(), AtomInfo.class);
+		AtomInfo[] infos = Collections.list(nodeHash.keys()).toArray(AtomInfo[]::new);
 		Comparator<AtomInfo> infoComp = Comparator.comparingInt(o -> o.offset);
 		Arrays.sort(infos, infoComp);
         for (AtomInfo info : infos) {

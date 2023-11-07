@@ -94,7 +94,7 @@ public void clearSelection() {
 
 
 /**
- * connEtoC1:  (selectionModel1.listSelection.valueChanged(javax.swing.event.ListSelectionEvent) --> MultisourcePlotPane.selectionModel1_ValueChanged(Ljavax.swing.event.ListSelectionEvent;)V)
+ * connEtoC1:  selectionModel1.listSelection.valueChanged(javax.swing.event.ListSelectionEvent) --> MultisourcePlotPane.selectionModel1_ValueChanged(Ljavax.swing.event.ListSelectionEvent;)V)
  * @param arg1 javax.swing.event.ListSelectionEvent
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */

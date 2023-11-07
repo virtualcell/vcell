@@ -10,6 +10,9 @@
 
 package cbit.matlab;
 
+import java.util.Collections;
+import java.util.Hashtable;
+
 /**
  * Insert the type's description here.
  * Creation date: (8/9/2005 2:18:06 PM)
@@ -17,7 +20,7 @@ package cbit.matlab;
  */
 public class MatlabFunctionResults {
 	private String stdout = null;
-	private java.util.Hashtable varHash = new java.util.Hashtable();
+	private Hashtable<String, double[][]> varHash = new Hashtable<>();
 /**
  * MatlabFunctionResults constructor comment.
  */
@@ -62,13 +65,9 @@ public double[][] getValue(String varName) {
  * @return java.lang.String[]
  */
 public String[] getVariableNames() {
-	return (String[])org.vcell.util.BeanUtils.getArray(varHash.keys(),String.class);
+	return Collections.list(varHash.keys()).toArray(String[]::new);
 }
-/**
- * Insert the method's description here.
- * Creation date: (8/9/2005 2:20:36 PM)
- * @param stdout java.lang.String
- */
+
 void setStdout(String argStdout) {
 	this.stdout = argStdout;
 }

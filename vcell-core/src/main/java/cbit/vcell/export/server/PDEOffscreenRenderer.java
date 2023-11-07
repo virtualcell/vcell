@@ -18,6 +18,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.Collections;
 import java.util.Hashtable;
 
 import org.vcell.util.BeanUtils;
@@ -169,12 +170,11 @@ public int[] getPixelsRGB(int imageScale,int membrScale,int meshMode,int volVarM
 			curveRenderer.setWorldDelta(new org.vcell.util.Coordinate(pixeldelta.getX(),pixeldelta.getY(),pixeldelta.getZ()));
 			Hashtable<SampledCurve, int[]> curvesAndMembraneIndexes = meshDisplayAdapter.getCurvesAndMembraneIndexes(getNormalAxis(),getSlice());
 			if (curvesAndMembraneIndexes!=null){
-				Curve curves[] = (Curve[])org.vcell.util.BeanUtils.getArray(curvesAndMembraneIndexes.keys(),Curve.class);
-				for (int i=0;curves!=null && i<curves.length;i++){
-					curveRenderer.addCurve(curves[i]);
-					curveRenderer.renderPropertySegmentColors(curves[i],null/*getCurveColors(curvesAndMembraneIndexes,curves[i],meshDisplayAdapter)*/);
-					curveRenderer.renderPropertyLineWidthMultiplier(curves[i],volVarMembrOutlineThickness);
-				}
+                for (Curve curve : Collections.list(curvesAndMembraneIndexes.keys())) {
+                    curveRenderer.addCurve(curve);
+                    curveRenderer.renderPropertySegmentColors(curve, null/*getCurveColors(curvesAndMembraneIndexes,curves[i],meshDisplayAdapter)*/);
+                    curveRenderer.renderPropertyLineWidthMultiplier(curve, volVarMembrOutlineThickness);
+                }
 				Graphics2D g = (Graphics2D)bufferedImage.getGraphics();
 				curveRenderer.setAntialias(false);//must be false or could get more than 256 colors
 				curveRenderer.draw(g);
@@ -199,12 +199,11 @@ public int[] getPixelsRGB(int imageScale,int membrScale,int meshMode,int volVarM
 		curveRenderer.setWorldDelta(new org.vcell.util.Coordinate(pixeldelta.getX(),pixeldelta.getY(),pixeldelta.getZ()));
 		Hashtable<SampledCurve, int[]> curvesAndMembraneIndexes = meshDisplayAdapter.getCurvesAndMembraneIndexes(getNormalAxis(),getSlice());
 		if (curvesAndMembraneIndexes!=null){
-			Curve curves[] = (Curve[])org.vcell.util.BeanUtils.getArray(curvesAndMembraneIndexes.keys(),Curve.class);
-			for (int i=0;curves!=null && i<curves.length;i++){
-				curveRenderer.addCurve(curves[i]);
-				curveRenderer.renderPropertySegmentColors(curves[i],getCurveColors(curvesAndMembraneIndexes,curves[i],meshDisplayAdapter));
-				curveRenderer.renderPropertyLineWidthMultiplier(curves[i],membrScale);
-			}
+            for (Curve curve : Collections.list(curvesAndMembraneIndexes.keys())) {
+                curveRenderer.addCurve(curve);
+                curveRenderer.renderPropertySegmentColors(curve, getCurveColors(curvesAndMembraneIndexes, curve, meshDisplayAdapter));
+                curveRenderer.renderPropertyLineWidthMultiplier(curve, membrScale);
+            }
 			Graphics2D g = (Graphics2D)bufferedImage.getGraphics();
 			curveRenderer.setAntialias(false);
 			curveRenderer.draw(g);
@@ -275,12 +274,7 @@ public void setVarAndTimeAndDisplay(String varName,double timepoint,DisplayPrefe
 	ExportSpecs.setupDisplayAdapterService(displayPreferences,getDisplayAdapterService(),valueDomain);
 	
 }
-/**
- * Insert the method's description here.
- * Creation date: (3/2/2001 1:08:22 AM)
- * @param dataSetController cbit.vcell.server.DataSetController
- * @param simulationIdentifier java.lang.String
- */
+
 public PDEOffscreenRenderer(OutputContext outputContext,User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID) throws Exception {
 	setServerPDEDataContext(new ServerPDEDataContext(outputContext,user, dataServerImpl, vcdID));
 	getDisplayAdapterService().addColorModelForValues(DisplayAdapterService.createGrayColorModel(), DisplayAdapterService.createGraySpecialColors(), DisplayAdapterService.GRAY);
