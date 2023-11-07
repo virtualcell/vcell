@@ -12,10 +12,7 @@ package cbit.vcell.export.server;
 
 import cbit.vcell.math.MathException;
 import cbit.vcell.simdata.VCData;
-import org.janelia.saalfeldlab.n5.Bzip2Compression;
-import org.janelia.saalfeldlab.n5.Compression;
-import org.janelia.saalfeldlab.n5.GzipCompression;
-import org.janelia.saalfeldlab.n5.N5FSWriter;
+import org.janelia.saalfeldlab.n5.*;
 import org.vcell.util.Compare;
 import org.vcell.util.DataAccessException;
 
@@ -30,7 +27,6 @@ import java.util.HashMap;
 public class N5Specs extends FormatSpecificSpecs implements Serializable {
 	private final ExportFormat format;
 	private final ExportConstants.DataType dataType;
-	private final ExportSpecs.SimNameSimDataID[] simNameSimDataIDs;
 	private final CompressionLevel compression;
 
 	public final String dataSetName;
@@ -44,15 +40,11 @@ public class N5Specs extends FormatSpecificSpecs implements Serializable {
 /**
  * TextSpecs constructor comment.
  */
-	public N5Specs(ExportSpecs.SimNameSimDataID[] simNameSimDataIDs, ExportConstants.DataType dataType, ExportFormat format, CompressionLevel compressionLevel, String dataSetName) {
+	public N5Specs(ExportConstants.DataType dataType, ExportFormat format, CompressionLevel compressionLevel, String dataSetName) {
 		this.format = format;
 		this.dataType = dataType;
-		this.simNameSimDataIDs = simNameSimDataIDs;
 		this.compression = compressionLevel;
 		this.dataSetName = dataSetName;
-	}
-	public ExportSpecs.SimNameSimDataID[] getSimNameSimDataIDs(){
-		return simNameSimDataIDs;
 	}
 	/**
 	 * This method was created in VisualAge.
@@ -72,13 +64,13 @@ public class N5Specs extends FormatSpecificSpecs implements Serializable {
 	public Compression getCompression(){
 		switch (compression){
 			case RAW:
-				return null;
+				return new RawCompression();
 			case BZIP:
 				return new Bzip2Compression();
 			case GZIP:
 				return new GzipCompression();
 			default:
-				return null;
+				return new RawCompression();
 		}
 	}
 
