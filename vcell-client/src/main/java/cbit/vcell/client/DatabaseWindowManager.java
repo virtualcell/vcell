@@ -24,11 +24,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.beans.PropertyVetoException;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Hashtable;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Vector;
+import java.util.*;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -104,12 +100,18 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.SimulationOwner;
 import cbit.vcell.xml.ExternalDocInfo;
 import cbit.xml.merge.XmlTreeDiff;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import scala.util.parsing.combinator.testing.Str;
+
 /**
  * Insert the type's description here.
  * Creation date: (5/14/2004 5:06:46 PM)
  * @author: Ion Moraru
  */
 public class DatabaseWindowManager extends TopLevelWindowManager{
+	private static Logger lg = LogManager.getLogger(DatabaseWindowManager.class);
 
 	class  DoubleClickListener implements java.awt.event.ActionListener {
 		private JDialog theJDialog = null;
@@ -204,111 +206,103 @@ public void accessPermissions(final Component requester, final VersionInfo selec
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			Object choice = hashTable.get("choice");
-			if (choice != null && choice.equals("OK")) {
-				ACLEditor.ACLState aclState = getAclEditor().getACLState();
-				if (aclState != null) {
-					if (aclState.isAccessPrivate() || (aclState.getAccessList() != null && aclState.getAccessList().length == 0)) {						
-						VersionInfo vInfo = null;
-						if(selectedVersionInfo instanceof BioModelInfo){
-							vInfo = docManager.setGroupPrivate((BioModelInfo)selectedVersionInfo);
-						}else if(selectedVersionInfo instanceof MathModelInfo){
-							vInfo = docManager.setGroupPrivate((MathModelInfo)selectedVersionInfo);
-						}else if(selectedVersionInfo instanceof GeometryInfo){
-							vInfo = docManager.setGroupPrivate((GeometryInfo)selectedVersionInfo);
-						}else if(selectedVersionInfo instanceof VCImageInfo){
-							vInfo = docManager.setGroupPrivate((VCImageInfo)selectedVersionInfo);
-						}
-					} else if (aclState.isAccessPublic()) {
-						VersionInfo vInfo = null;
-						if(selectedVersionInfo instanceof BioModelInfo){
-							vInfo = docManager.setGroupPublic((BioModelInfo)selectedVersionInfo);
-						}else if(selectedVersionInfo instanceof MathModelInfo){
-							vInfo = docManager.setGroupPublic((MathModelInfo)selectedVersionInfo);
-						}else if(selectedVersionInfo instanceof GeometryInfo){
-							vInfo = docManager.setGroupPublic((GeometryInfo)selectedVersionInfo);
-						}else if(selectedVersionInfo instanceof VCImageInfo){
-							vInfo = docManager.setGroupPublic((VCImageInfo)selectedVersionInfo);
-						}
-					} else {
-						String[] aclUserNames = aclState.getAccessList();
-						String[] originalGroupAccesNames = new String[0];
-						//Turn User[] into String[]
-						if (groupAccess instanceof GroupAccessSome){
-							GroupAccessSome gas = (GroupAccessSome)groupAccess;
-							User[] originalUsers = gas.getNormalGroupMembers();
-							for(int i=0;i<originalUsers.length;i+= 1){
-								originalGroupAccesNames = (String[])BeanUtils.addElement(originalGroupAccesNames,originalUsers[i].getName());
-							}
-						}
-						//Determine users needing adding
-						String[] needToAddUsers = new String[0];
-						for(int i=0;i<aclUserNames.length;i+= 1){
-							if(!BeanUtils.arrayContains(originalGroupAccesNames,aclUserNames[i])){
-								System.out.println("Added user="+aclUserNames[i]);
-								needToAddUsers = (String[])BeanUtils.addElement(needToAddUsers,aclUserNames[i]);
-							}
-						}
-						//Determine users needing removing
-						String[] needToRemoveUsers = new String[0];
-						for(int i=0;i<originalGroupAccesNames.length;i+= 1){
-							if(!BeanUtils.arrayContains(aclUserNames,originalGroupAccesNames[i])){
-								System.out.println("Removed user="+originalGroupAccesNames[i]);
-								needToRemoveUsers = (String[])BeanUtils.addElement(needToRemoveUsers,originalGroupAccesNames[i]);
-							}
-						}
-						
-						VersionInfo vInfo = null;
-						String errorNames = "";
-						//Add Users to Group Access List
-						for (int i = 0; i < needToAddUsers.length; i++) {
-							try {
-								if(selectedVersionInfo instanceof BioModelInfo){
-									vInfo = docManager.addUserToGroup((BioModelInfo)selectedVersionInfo, needToAddUsers[i]);
-								}else if(selectedVersionInfo instanceof MathModelInfo){
-									vInfo = docManager.addUserToGroup((MathModelInfo)selectedVersionInfo, needToAddUsers[i]);
-								}else if(selectedVersionInfo instanceof GeometryInfo){
-									vInfo = docManager.addUserToGroup((GeometryInfo)selectedVersionInfo, needToAddUsers[i]);
-								}else if(selectedVersionInfo instanceof VCImageInfo){
-									vInfo = docManager.addUserToGroup((VCImageInfo)selectedVersionInfo, needToAddUsers[i]);
-								}
-							} catch (ObjectNotFoundException e) {
-								errorNames += "Error changing permissions.\n" + selectedVersionInfo.getVersionType().getTypeName() 
-									+ " \"" + selectedVersionInfo.getVersion().getName() + "\" edition (" + selectedVersionInfo.getVersion().getDate() + ")\nnot found, " 
-									+ "your model list may be out of date, please go to menu Server->Reconnect to refresh the model list" +"\n";
-								break;
-							} catch (DataAccessException e) {
-								errorNames += "Error adding user '"+needToAddUsers[i]+"' : "+e.getMessage()+"\n";
-							}
-						}
-						// Remove users from Group Access List
-						for (int i = 0; i < needToRemoveUsers.length; i++) {
-							try {
-								if(selectedVersionInfo instanceof BioModelInfo){
-									vInfo = docManager.removeUserFromGroup((BioModelInfo)selectedVersionInfo, needToRemoveUsers[i]);
-								}else if(selectedVersionInfo instanceof MathModelInfo){
-									vInfo = docManager.removeUserFromGroup((MathModelInfo)selectedVersionInfo, needToRemoveUsers[i]);
-								}else if(selectedVersionInfo instanceof GeometryInfo){
-									vInfo = docManager.removeUserFromGroup((GeometryInfo)selectedVersionInfo, needToRemoveUsers[i]);
-								}else if(selectedVersionInfo instanceof VCImageInfo){
-									vInfo = docManager.removeUserFromGroup((VCImageInfo)selectedVersionInfo, needToRemoveUsers[i]);
-								}
-							} catch (DataAccessException e) {
-								errorNames += "Error Removing user '"+needToRemoveUsers[i]+"'\n  -----"+e.getMessage()+"\n";
-							}
-						}
-						if (errorNames.length() > 0) {
-							if(DatabaseWindowManager.this.getComponent() != null){
-								PopupGenerator.showErrorDialog(DatabaseWindowManager.this, errorNames);
-							}else{
-								DialogUtils.showErrorDialog(requester, errorNames);
-							}
-							accessPermissions(requester, selectedVersionInfo, false);
-						}
+			if (choice == null || !choice.equals("OK")) return;
+			ACLEditor.ACLState aclState = getAclEditor().getACLState();
+			if (aclState == null) return;
+			if (aclState.isAccessPrivate() || (aclState.getAccessList() != null && aclState.getAccessList().length == 0)) {
+				VersionInfo vInfo;
+				if(selectedVersionInfo instanceof BioModelInfo bmi){
+					vInfo = docManager.setGroupPrivate(bmi);
+				}else if(selectedVersionInfo instanceof MathModelInfo mmi){
+					vInfo = docManager.setGroupPrivate(mmi);
+				}else if(selectedVersionInfo instanceof GeometryInfo gi){
+					vInfo = docManager.setGroupPrivate(gi);
+				}else if(selectedVersionInfo instanceof VCImageInfo vcii){
+					vInfo = docManager.setGroupPrivate(vcii);
+				}
+			} else if (aclState.isAccessPublic()) {
+				VersionInfo vInfo = null;
+				if(selectedVersionInfo instanceof BioModelInfo bmi){
+					vInfo = docManager.setGroupPublic(bmi);
+				}else if(selectedVersionInfo instanceof MathModelInfo mmi){
+					vInfo = docManager.setGroupPublic(mmi);
+				}else if(selectedVersionInfo instanceof GeometryInfo gi){
+					vInfo = docManager.setGroupPublic(gi);
+				}else if(selectedVersionInfo instanceof VCImageInfo vcii){
+					vInfo = docManager.setGroupPublic(vcii);
+				}
+			} else {
+				List<String> newGroupAccessNameList = Arrays.asList(aclState.getAccessList());
+				List<String> originalGroupAccessNameList = new ArrayList<>();
+				//Turn User[] into String[]
+				if (groupAccess instanceof GroupAccessSome gas){
+					for (User originalUser : gas.getNormalGroupMembers()) {
+						originalGroupAccessNameList.add(originalUser.getName());
 					}
-		
+				}
+				//Determine users needing adding
+				List<String> needToAddUserList = new ArrayList<>();
+				for (String aclUserName : newGroupAccessNameList) {
+					if (originalGroupAccessNameList.contains(aclUserName)) continue;
+					lg.info("Added user: \"" + aclUserName + "\"");
+					needToAddUserList.add(aclUserName);
+
+				}
+				//Determine users needing removing
+				List<String> needtoRemoveUserList = new ArrayList<>();
+				for (String originalGroupAccessName : originalGroupAccessNameList) {
+					if (newGroupAccessNameList.contains(originalGroupAccessName)) continue;
+					lg.info("Removed user: \"" + originalGroupAccessName + "\"");
+					needtoRemoveUserList.add(originalGroupAccessName);
+				}
+
+				VersionInfo vInfo = null;
+				StringBuilder errorNames = new StringBuilder();
+				//Add Users to Group Access List
+				for (String needToAddUser : needToAddUserList) {
+					try {
+						if (selectedVersionInfo instanceof BioModelInfo bmi) {
+							vInfo = docManager.addUserToGroup(bmi, needToAddUser);
+						} else if (selectedVersionInfo instanceof MathModelInfo mmi) {
+							vInfo = docManager.addUserToGroup(mmi, needToAddUser);
+						} else if (selectedVersionInfo instanceof GeometryInfo gi) {
+							vInfo = docManager.addUserToGroup(gi, needToAddUser);
+						} else if (selectedVersionInfo instanceof VCImageInfo vcii) {
+							vInfo = docManager.addUserToGroup(vcii, needToAddUser);
+						}
+					} catch (ObjectNotFoundException e) {
+						errorNames.append("Error changing permissions.\n").append(selectedVersionInfo.getVersionType().getTypeName()).append(" \"").append(selectedVersionInfo.getVersion().getName()).append("\" edition (").append(selectedVersionInfo.getVersion().getDate()).append(")\nnot found, ").append("your model list may be out of date, please go to menu Server->Reconnect to refresh the model list").append("\n");
+						break;
+					} catch (DataAccessException e) {
+						errorNames.append("Error adding user '").append(needToAddUser).append("' : ").append(e.getMessage()).append("\n");
+					}
+				}
+				// Remove users from Group Access List
+				for (String needToRemoveUser : needtoRemoveUserList) {
+					try {
+						if (selectedVersionInfo instanceof BioModelInfo) {
+							vInfo = docManager.removeUserFromGroup((BioModelInfo) selectedVersionInfo, needToRemoveUser);
+						} else if (selectedVersionInfo instanceof MathModelInfo) {
+							vInfo = docManager.removeUserFromGroup((MathModelInfo) selectedVersionInfo, needToRemoveUser);
+						} else if (selectedVersionInfo instanceof GeometryInfo) {
+							vInfo = docManager.removeUserFromGroup((GeometryInfo) selectedVersionInfo, needToRemoveUser);
+						} else if (selectedVersionInfo instanceof VCImageInfo) {
+							vInfo = docManager.removeUserFromGroup((VCImageInfo) selectedVersionInfo, needToRemoveUser);
+						}
+					} catch (DataAccessException e) {
+						errorNames.append("Error Removing user '").append(needToRemoveUser).append("'\n  -----").append(e.getMessage()).append("\n");
+					}
+				}
+				if (!errorNames.isEmpty()) {
+					if(DatabaseWindowManager.this.getComponent() != null){
+						PopupGenerator.showErrorDialog(DatabaseWindowManager.this, errorNames.toString());
+					}else{
+						DialogUtils.showErrorDialog(requester, errorNames.toString());
+					}
+					accessPermissions(requester, selectedVersionInfo, false);
 				}
 			}
-		}
+		} // func end
 	};
 	
 	ClientTaskDispatcher.dispatch(requester, new Hashtable<String, Object>(), new AsynchClientTask[] { task1, task2});
