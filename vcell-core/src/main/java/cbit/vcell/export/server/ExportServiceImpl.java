@@ -226,7 +226,7 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataSer
 			fileFormat = "NRRD";
 			break;
 		case N5:
-			fileFormat = "N5";
+			fileFormat = "n5";
 			break;
 //		case IMAGEJ:
 //			fileFormat = "IMAGEJ";
@@ -314,7 +314,7 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataSer
 				case N5:
 					n5Exporter.initalizeDataControllers(exportSpecs.getVCDataIdentifier().getDataKey().toString() ,user.getName(), user.getID().toString(), newExportJob.getJobID());
 					ExportOutput exportOutput = n5Exporter.makeN5Data(outputContext, newExportJob, exportSpecs, fileDataContainerManager);
-					return makeRemoteN5File(fileFormat, n5Exporter.n5FileNameHash(), exportN5Dir, "s3://", exportOutput, exportSpecs, newExportJob, fileDataContainerManager);
+					return makeRemoteN5File(fileFormat, n5Exporter.getN5FileNameHash(), exportN5Dir, "s3://", exportOutput, exportSpecs, newExportJob, fileDataContainerManager);
 				default:
 					throw new DataAccessException("Unknown export format requested");
 			}

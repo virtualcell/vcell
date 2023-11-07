@@ -511,7 +511,7 @@ public class N5SettingsPanel extends javax.swing.JPanel implements ExportConstan
         int[] paramScanIndexes = simulationSelector == null ? null : simulationSelector.getselectedParamScanIndexes();
         String dataSetName = getJTextFieldDataSetName().getText();
 
-        return new N5Specs(simDataID, DataType.PDE_VARIABLE_DATA, ExportFormat.N5, compressionLevel, dataSetName);
+        return new N5Specs(DataType.PDE_VARIABLE_DATA, ExportFormat.N5, compressionLevel, dataSetName);
     }
 
     private JLabel lblSeeVcellHelp;
