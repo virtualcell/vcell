@@ -12,6 +12,7 @@ package cbit.vcell.simdata;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.Arrays;
 import java.util.Comparator;
 
 import org.apache.logging.log4j.LogManager;
@@ -310,7 +311,7 @@ public synchronized void waitWhileBusy(){
  * Insert the method's description here.
  * Creation date: (10/3/00 5:03:43 PM)
  */
-private synchronized void refreshData(DataIdentifier selectedDataIdentifier, double timePoint,boolean bForce) throws DataAccessException{
+private synchronized void refreshData(DataIdentifier selectedDataIdentifier, double timePoint, boolean bForce) throws DataAccessException{
 	try{
 		bBusy = true;
 //		System.out.println("Setting bBusy="+bBusy);
@@ -336,7 +337,7 @@ private synchronized void refreshData(DataIdentifier selectedDataIdentifier, dou
 		if (! ArrayUtils.arrayContains(dataIdentifiers, selectedDataIdentifier)) {
 			throw new DataAccessException("Requested variable not found");
 		}
-		if (ArrayUtils.firstIndexOf(getTimePoints(), timePoint) == -1) {
+		if (ArrayUtils.firstIndexOf(Arrays.stream(getTimePoints()).boxed().toArray(Double[]::new), timePoint) == -1) {
 			if (getTimePoints() == null || getTimePoints().length == 0) {
 				throw new DataAccessException("No timepoints available");
 			} else {

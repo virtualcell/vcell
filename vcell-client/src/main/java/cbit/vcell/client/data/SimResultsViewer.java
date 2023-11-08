@@ -552,7 +552,8 @@ private void updateScanParamChoices(final String message,ListReset listReset){
 					DataIdentifier setDid = (newPDEDC.getDataIdentifier()==null?newPDEDC.getDataIdentifiers()[0]:newPDEDC.getDataIdentifier());
 					if(Arrays.asList(newPDEDC.getDataIdentifiers()).contains(oldPDEDC.getDataIdentifier())){
 						setDid = oldPDEDC.getDataIdentifier();
-						newPDEDC.setVariableAndTime(setDid,newPDEDC.getTimePoints()[ArrayUtils.firstIndexOf(oldPDEDC.getTimePoints(), oldPDEDC.getTimePoint())]);
+						int newTimePointIndex = ArrayUtils.firstIndexOf(Arrays.stream(oldPDEDC.getTimePoints()).boxed().toArray(Double[]::new), oldPDEDC.getTimePoint());
+						newPDEDC.setVariableAndTime(setDid,newPDEDC.getTimePoints()[newTimePointIndex]);
 					}
 				}
 			}

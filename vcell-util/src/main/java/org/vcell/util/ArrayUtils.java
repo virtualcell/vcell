@@ -35,14 +35,6 @@ public class ArrayUtils {
         return -1;
     }
 
-    public static int firstIndexOf(double[] dd, double d) {
-        if (dd == null) return -1;
-        for (int i = 0; i < dd.length; i++){
-            if (d == dd[i]) return i;
-        }
-        return -1;
-    }
-
     public static <T> boolean arrayEquals(T[] a1, T[] a2) {
         return a1 == a2 || (a1 != null && a2 != null && Arrays.equals(a1, a2));
     }
