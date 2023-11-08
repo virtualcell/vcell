@@ -4,7 +4,7 @@ import javax.swing.JOptionPane;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.vcell.util.BeanUtils;
+import org.vcell.util.StackTraceUtils;
 
 /**
  * Start and monitor Monitor library loading in thread, show error message when done
@@ -47,7 +47,7 @@ public class LibraryLoaderThread extends Thread {
 				}
 				sb.append(librarySet);
 				sb.append(":  ");
-				sb.append(BeanUtils.getMessageRecursive(e));
+				sb.append(StackTraceUtils.getMessageRecursive(e));
 				sb.append(newline);
 				if (isGui){
 					ErrorUtils.sendErrorReport(e, sb.toString());

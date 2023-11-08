@@ -16,7 +16,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.vcell.util.BeanUtils;
+import org.vcell.util.StackTraceUtils;
 import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.VCellSoftwareVersion;
 
@@ -71,7 +71,7 @@ public class ErrorUtils {
 	public static void sendErrorReport(Throwable exception, String message) throws RuntimeException {
 		String softwareVersion = PropertyLoader.getRequiredProperty(PropertyLoader.vcellSoftwareVersion);
 		String exceptionMessage = exception!=null ? exception.getMessage() : "null";
-		String stackTrace = exception!=null ? BeanUtils.getStackTrace(exception) : "null";
+		String stackTrace = exception!=null ? StackTraceUtils.getStackTrace(exception) : "null";
 		String platform = "Running under Java "+(System.getProperty("java.version"))+
 			", published by "+(System.getProperty("java.vendor"))+", on the "+ (System.getProperty("os.arch"))+" architecture running version "+(System.getProperty("os.version"))+
 			" of the "+(System.getProperty("os.name"))+" operating system";

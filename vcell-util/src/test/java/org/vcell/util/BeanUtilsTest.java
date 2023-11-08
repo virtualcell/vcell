@@ -2,15 +2,11 @@ package org.vcell.util;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.concurrent.TimeUnit;
 
-import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.vcell.test.Fast;
-
-import static org.junit.Assert.*;
 
 @Category(Fast.class)
 public class BeanUtilsTest {
@@ -22,7 +18,7 @@ public class BeanUtilsTest {
 	private void miney() {mo();}
 	
 	private void mo( ) {
-		System.out.println(BeanUtils.getStackTrace());
+		System.out.println(StackTraceUtils.getStackTrace());
 	}
 	
 	@Ignore

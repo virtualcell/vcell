@@ -16,9 +16,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.io.Serializable;
-import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.net.InetSocketAddress;
 import java.net.URL;
@@ -30,7 +28,6 @@ import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Session;
 import javax.mail.Transport;
-import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import javax.net.ssl.HttpsURLConnection;
@@ -49,7 +46,6 @@ import org.jboss.netty.handler.codec.http.HttpMethod;
 import org.jboss.netty.handler.codec.http.HttpRequest;
 import org.jboss.netty.handler.codec.http.HttpVersion;
 
-import edu.uchc.connjur.wb.ExecutionTrace;
 /**
  * Insert the type's description here.
  * Creation date: (8/18/2000 2:29:31 AM)
@@ -204,47 +200,6 @@ public final class BeanUtils {
 
 	public static boolean triggersPropertyChangeEvent(Object a, Object b) {
 		return (a == null || !a.equals(b));
-	}
-
-	public static String getStackTrace(Throwable throwable) {
-		StringWriter out = new StringWriter();
-		PrintWriter pw = new PrintWriter(out);
-		Throwable t = throwable;
-		while (t != null) {
-			t.printStackTrace(pw);
-			t = t.getCause( );
-		}
-		pw.close();
-		return out.getBuffer().toString();
-	}
-
-	/**
-	 * @return String for current stack trace
-	 */
-	public static String getStackTrace() {
-		StackTraceElement[] stackTraceArray = Thread.currentThread().getStackTrace();
-		StringBuilder sb = new StringBuilder();
-		//0 and 1 are "getStackTrace" -- start with callers invocation
-		for (int i = 2; i < stackTraceArray.length; i++) {
-			sb.append(stackTraceArray[i]);
-			sb.append('\n');
-		}
-		return sb.toString();
-	}
-	/**
-	 * recursive assemble exception message
-	 * @param throwable exception / error to recursively get the message from
-	 * @return {@link Throwable#getMessage()}, recursively
-	 */
-	public static String getMessageRecursive(Throwable throwable) {
-		StringBuilder rval = new StringBuilder(throwable.getMessage());
-		Throwable cause = throwable.getCause();
-		while (cause != null) {
-			rval.append(" caused by ").append(cause.getMessage());
-			cause = cause.getCause();
-		}
-
-		return rval.toString();
 	}
 
 
