@@ -14,6 +14,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import org.vcell.db.DatabaseSyntax;
+import org.vcell.util.ArrayUtils;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.KeyValue;
@@ -73,8 +74,8 @@ public String getInfoSQL(User user,String extraConditions,String special,Databas
 	String sql;
 	//Field[] f = {userTable.userid,new cbit.sql.StarField(vTable)};
 	Field[] f = new Field[] {vTable.id,userTable.userid,swvTable.softwareVersion};
-	f = (Field[])org.vcell.util.BeanUtils.addElements(f,vTable.versionFields);
-	f = (Field[])org.vcell.util.BeanUtils.addElement(f,vTable.geometryRef);
+	f = ArrayUtils.addElements(f,vTable.versionFields);
+	f = ArrayUtils.addElement(f,vTable.geometryRef);
 	
 	Table[] t = {vTable,userTable,swvTable};
 	
@@ -82,7 +83,7 @@ public String getInfoSQL(User user,String extraConditions,String special,Databas
 	case ORACLE:
 	case POSTGRES:{
 		String condition = userTable.id.getQualifiedColName() + " = " + vTable.ownerRef.getQualifiedColName() +  " ";// links in the userTable
-		if (extraConditions != null && extraConditions.trim().length()>0){
+		if (extraConditions != null && !extraConditions.trim().isEmpty()){
 			condition += " AND "+extraConditions;
 		}
 		LeftOuterJoin outerJoin = new LeftOuterJoin(vTable, swvTable, vTable.id, swvTable.versionableRef);

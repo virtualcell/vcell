@@ -19,11 +19,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 import org.vcell.db.DatabaseSyntax;
-import org.vcell.util.BeanUtils;
-import org.vcell.util.CommentStringTokenizer;
-import org.vcell.util.DataAccessException;
-import org.vcell.util.ISize;
-import org.vcell.util.TokenMangler;
+import org.vcell.util.*;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.SimulationVersion;
 import org.vcell.util.document.User;
@@ -96,8 +92,8 @@ public String getInfoSQL(User user,String extraConditions,String special,Databas
 	String sql;
 	//Field[] f = {userTable.userid,new cbit.sql.StarField(vTable)};
 	Field[] f = new Field[] {vTable.id,userTable.userid,swvTable.softwareVersion};
-	f = (Field[])BeanUtils.addElements(f,vTable.versionFields);
-	f = (Field[])BeanUtils.addElement(f,vTable.mathRef);
+	f = ArrayUtils.addElements(f,vTable.versionFields);
+	f = ArrayUtils.addElement(f,vTable.mathRef);
 
 	Table[] t = {vTable,userTable,swvTable};
 
@@ -105,7 +101,7 @@ public String getInfoSQL(User user,String extraConditions,String special,Databas
 	case ORACLE:
 	case POSTGRES:{
 		String condition = userTable.id.getQualifiedColName() + " = " + vTable.ownerRef.getQualifiedColName() + " "; // links in the userTable
-		if (extraConditions != null && extraConditions.trim().length()>0){
+		if (extraConditions != null && !extraConditions.trim().isEmpty()){
 			condition += " AND "+extraConditions;
 		}
 		LeftOuterJoin outerJoin = new LeftOuterJoin( vTable, swvTable, vTable.id, swvTable.versionableRef);
