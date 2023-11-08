@@ -9,12 +9,8 @@ public class CastingUtils {
      * @return obj as T or null if obj is null or not of type T
      */
     public static <T> T downcast(Class<? extends T> clzz, Object obj) {
-        if (obj != null && clzz.isAssignableFrom(obj.getClass())) {
-            @SuppressWarnings("unchecked")
-            T rval = (T) obj;
-            return rval;
-        }
-        return null;
+        if (clzz == null || !clzz.isInstance(obj)) return null;
+        return clzz.cast(obj);
     }
 
     /**
@@ -24,16 +20,12 @@ public class CastingUtils {
      * @return CastInfo<T> object describing results
      */
     public static <T> CastInfo<T> attemptCast(Class<T> clzz, Object obj) {
-        final String rname = clzz.getName();
-        if (obj != null) {
-            final String aname = obj.getClass().getName();
-            T result = downcast(clzz, obj);
-            if (result == null) {
-                return new FailInfo<>(rname, aname);
-            }
-            return new SucceedInfo<>(rname,aname,result);
-        }
-        return new FailInfo<>(rname, "null");
+        final String requiredTypeName = clzz.getName();
+        if (obj == null) return new FailInfo<>(requiredTypeName, "null");
+        final String actualTypeName = obj.getClass().getName();
+        T result = CastingUtils.downcast(clzz, obj);
+        if (result == null) return new FailInfo<>(requiredTypeName, actualTypeName);
+        return new SucceedInfo<>(requiredTypeName,actualTypeName,result);
     }
 
     public interface CastInfo <T> {
@@ -63,23 +55,23 @@ public class CastingUtils {
     }
 
     private abstract static class CiBase<T> implements CastInfo<T> {
-        final String rname;
-        final String aname;
-        protected CiBase(String rname, String aname) {
-            this.rname = rname;
-            this.aname = aname;
+        final String requiredTypeName;
+        final String actualTypeName;
+        protected CiBase(String requiredTypeName, String actualTypeName) {
+            this.requiredTypeName = requiredTypeName;
+            this.actualTypeName = actualTypeName;
         }
-        public String requiredName() { return rname; }
-        public String actualName() { return aname; }
+        public String requiredName() { return requiredTypeName; }
+        public String actualName() { return actualTypeName; }
         public String castMessage( ) {
-            return "cast from " + aname + " to " + rname;
+            return "cast from " + actualTypeName + " to " + requiredTypeName;
         }
     }
 
     private static class FailInfo<T> extends CiBase<T> {
 
-        FailInfo(String rname, String aname) {
-            super(rname,aname);
+        FailInfo(String requiredTypeName, String actualTypeName) {
+            super(requiredTypeName,actualTypeName);
         }
         public boolean isGood() {
             return false;
@@ -93,8 +85,8 @@ public class CastingUtils {
     private static class SucceedInfo<T> extends CiBase<T> {
         final T obj;
 
-        SucceedInfo(String rname,String aname, T obj) {
-            super(rname,aname);
+        SucceedInfo(String requiredTypeName,String actualTypeName, T obj) {
+            super(requiredTypeName,actualTypeName);
             this.obj = obj;
         }
         public boolean isGood() {
