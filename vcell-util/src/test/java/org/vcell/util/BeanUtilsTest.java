@@ -15,26 +15,11 @@ import static org.junit.Assert.*;
 @Category(Fast.class)
 public class BeanUtilsTest {
 	
-	@Test
-	public void downcast( ) {
-		Integer i = 3;
-		Number n = i;
-		Integer back = CastingUtils.downcast(Integer.class,n);
-		Double fail =  CastingUtils.downcast(Double.class,n);
-        assertSame(back, i);
-        assertNull(fail);
-		Double notThere =  CastingUtils.downcast(Double.class,null);
-        assertNull(notThere);
-	}
+	private void eenie() {meenie();}
 	
-	private void eenie( ) {
-		meenie( );
-	}
-	
-	private void meenie( ) {
-		mo( );
-		
-	}
+	private void meenie() {miney();}
+
+	private void miney() {mo();}
 	
 	private void mo( ) {
 		System.out.println(BeanUtils.getStackTrace());

@@ -8,7 +8,7 @@ public class CastingUtils {
      * @param obj may be null
      * @return obj as T or null if obj is null or not of type T
      */
-    public static <T> T downcast(Class<T> clzz, Object obj) {
+    public static <T> T downcast(Class<? extends T> clzz, Object obj) {
         if (obj != null && clzz.isAssignableFrom(obj.getClass())) {
             @SuppressWarnings("unchecked")
             T rval = (T) obj;
