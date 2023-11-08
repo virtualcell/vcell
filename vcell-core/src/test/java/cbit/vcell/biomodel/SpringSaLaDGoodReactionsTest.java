@@ -256,17 +256,18 @@ public class SpringSaLaDGoodReactionsTest {
 
 		// WARNING!! Debug configuration for this JUnit test required System property "vcell.installDir"
 		// ex: -Dvcell.installDir=C:\dan\jprojects\git\vcell
-//		bioModel.updateAll(false);        // this call generates math
-//		MathDescription mathDescription = simContext.getMathDescription();
-//		Assert.assertTrue("expecting SpringSaLaD math type", (mathDescription.getMathType() != null && mathDescription.getMathType() == MathType.SpringSaLaD) ? true : false);
+		bioModel.updateAll(false);        // this call generates math
+		MathDescription mathDescription = simContext.getMathDescription();
+		Assert.assertTrue("expecting SpringSaLaD math type", (mathDescription.getMathType() != null && mathDescription.getMathType() == MathType.SpringSaLaD) ? true : false);
 
 		SpeciesContextSpec[] speciesContextSpecs = simContext.getReactionContext().getSpeciesContextSpecs();
 		SpeciesContextSpec scs = speciesContextSpecs[0];
 		String internalLinkSetSQL = scs.getInternalLinksSQL();
 		String siteAttributesMapSQL = scs.getSiteAttributesSQL();
-		Set<MolecularInternalLinkSpec> internalLinkSet = scs.readInternalLinkSetSQL(internalLinkSetSQL);
+		Set<MolecularInternalLinkSpec> internalLinkSet = scs.readInternalLinksSQL(internalLinkSetSQL);
 		Map<MolecularComponentPattern, SiteAttributesSpec> siteAttributesMap = scs.readSiteAttributesSQL(siteAttributesMapSQL);
 
+		System.out.println("done");
 	}
 
 

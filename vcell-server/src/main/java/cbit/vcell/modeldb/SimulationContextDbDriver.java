@@ -21,11 +21,8 @@ import java.util.Map;
 import java.util.Set;
 
 import cbit.vcell.mapping.*;
-import cbit.vcell.matrix.MatrixException;
-import cbit.vcell.model.ModelException;
 import org.vcell.db.DatabaseSyntax;
 import org.vcell.model.rbm.MolecularComponentPattern;
-import org.vcell.sbml.vcell.StructureSizeSolver;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.DependencyException;
 import org.vcell.util.ObjectNotFoundException;
@@ -339,7 +336,7 @@ private void assignSpeciesContextSpecsSQL(Connection con,KeyValue simContextKey,
 							scs.setForceContinuous(bForceContinuous);
 						}
 						if (internalLinkSetString != null) {
-							Set<MolecularInternalLinkSpec> internalLinkSpecSet = scs.readInternalLinkSetSQL(internalLinkSetString);
+							Set<MolecularInternalLinkSpec> internalLinkSpecSet = scs.readInternalLinksSQL(internalLinkSetString);
 							if(!internalLinkSpecSet.isEmpty()) {	// all scs already created with an empty InternalLinkSpecSet
 								scs.setInternalLinkSet(internalLinkSpecSet);
 							}
