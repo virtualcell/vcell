@@ -26,7 +26,7 @@ import javax.swing.SwingConstants;
 import javax.swing.Timer;
 
 import org.vcell.client.logicalwindow.LWContainerHandle;
-import org.vcell.util.BeanUtils;
+import org.vcell.util.CastingUtils;
 
 @SuppressWarnings("serial")
 
@@ -251,7 +251,7 @@ public class LinearDefiniteProgressDialog extends ProgressDialog implements Acti
 		private boolean isModelDialogPresent( ) {
 			for (Window w: Window.getWindows()) {
 				if (w.isShowing()) {
-					Dialog d = BeanUtils.downcast(Dialog.class, w);
+					Dialog d = CastingUtils.downcast(Dialog.class, w);
 					if (d != null && d != LinearDefiniteProgressDialog.this) {
 						switch (d.getModalityType()) {
 						case MODELESS:

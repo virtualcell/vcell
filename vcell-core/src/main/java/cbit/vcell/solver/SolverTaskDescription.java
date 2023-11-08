@@ -17,11 +17,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.chombo.ChomboSolverSpec;
 import org.vcell.chombo.TimeInterval;
-import org.vcell.util.BeanUtils;
-import org.vcell.util.CommentStringTokenizer;
-import org.vcell.util.Compare;
-import org.vcell.util.DataAccessException;
-import org.vcell.util.Matchable;
+import org.vcell.util.*;
 
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.Application;
@@ -428,12 +424,6 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 		return fieldSensitivityParameter;
 	}
 
-
-	/**
-	 * Gets the endingTime property (double) value.
-	 * @return The endingTime property value.
-	 * @see #setEndingTime
-	 */
 	public Simulation getSimulation() {
 		return fieldSimulation;
 	}
@@ -894,7 +884,7 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 				}
 				if (token.equalsIgnoreCase(VCML.UseSymbolicJacobian)) {
 					token = tokens.nextToken();
-					setUseSymbolicJacobian((new Boolean(token)).booleanValue());
+					setUseSymbolicJacobian(Boolean.parseBoolean(token));
 					continue;
 				}
 				//  JMW 01/25/2001 We have removed the maxTime property
@@ -1136,7 +1126,7 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 					stopAtSpatiallyUniformErrorTolerance.readVCML(tokens);
 				} else if (token.equalsIgnoreCase(VCML.RunParameterScanSerially)) {
 					token = tokens.nextToken();
-					setSerialParameterScan((new Boolean(token)).booleanValue());
+					setSerialParameterScan(Boolean.parseBoolean(token));
 				} else if (token.equalsIgnoreCase(VCML.SmoldynSimulationOptions)) {
 					setSmoldynSimulationOptions(new SmoldynSimulationOptions(tokens));
 				} else if (token.equalsIgnoreCase(VCML.SundialsSolverOptions)) {
@@ -1152,10 +1142,10 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 				else if (token.equalsIgnoreCase(VCML.TimeoutSimulationDisabled))
 				{
 					token = tokens.nextToken();
-					setTimeoutDisabled((new Boolean(token)).booleanValue());
+					setTimeoutDisabled(Boolean.parseBoolean(token));
 				}else if (token.equalsIgnoreCase(VCML.BorderExtrapolationDisabled)){
 					token = tokens.nextToken();
-					setBorderExtrapolationDisabled((new Boolean(token)).booleanValue());
+					setBorderExtrapolationDisabled(Boolean.parseBoolean(token));
 				}
 
 				else if (token.equalsIgnoreCase(VCML.MovingBoundarySolverOptions))
@@ -1255,13 +1245,6 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 		}
 	}
 
-
-	/**
-	 * Gets the endingTime property (double) value.
-	 * @return The endingTime property value.
-	 * @throws PropertyVetoException
-	 * @see #setEndingTime
-	 */
 	private void setSimulation(Simulation simulation) {
 		if (getSimulation() != null) {
 			getSimulation().removePropertyChangeListener(this);
@@ -1301,12 +1284,6 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 		}
 	}
 
-
-	/**
-	 * Insert the method's description here.
-	 * Creation date: (12/6/2006 6:16:42 PM)
-	 * @param newFieldStochOpt cbit.vcell.solver.StochSimOptions
-	 */
 	public void setStochOpt(NonspatialStochSimOptions newStochOpt) {
 		if (lg.isDebugEnabled()) {
 			lg.debug("setStochOption " + Objects.hashCode(newStochOpt) +  ' ' + Objects.toString(newStochOpt));
@@ -1319,11 +1296,6 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 		}
 	}
 
-	/**
-	 * Insert the method's description here.
-	 * Creation date: (12/6/2006 6:16:42 PM)
-	 * @param newFieldStochOpt cbit.vcell.solver.StochSimOptions
-	 */
 	public void setStochHybridOpt(NonspatialStochHybridOptions newStochHybridOpt) {
 		if (lg.isDebugEnabled()) {
 			lg.debug("setStochOption " + Objects.hashCode(newStochHybridOpt) +  ' ' + Objects.toString(newStochHybridOpt));
@@ -1344,9 +1316,9 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 	public void setTaskType(int taskType) throws java.beans.PropertyVetoException {
 		if (fieldTaskType != taskType) {
 			int oldValue = fieldTaskType;
-			fireVetoableChange("taskType", new Integer(oldValue), new Integer(taskType));
+			fireVetoableChange("taskType", oldValue, taskType);
 			fieldTaskType = taskType;
-			firePropertyChange("taskType", new Integer(oldValue), new Integer(taskType));
+			firePropertyChange("taskType", oldValue, taskType);
 		}
 	}
 
@@ -1393,7 +1365,7 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 	 */
 	public void setDefaultTimeStep(TimeStep timeStep) throws java.beans.PropertyVetoException {
 		TimeStep adjusted = timeStep;
-		UniformOutputTimeSpec uots = BeanUtils.downcast(UniformOutputTimeSpec.class, fieldOutputTimeSpec);
+		UniformOutputTimeSpec uots = CastingUtils.downcast(UniformOutputTimeSpec.class, fieldOutputTimeSpec);
 		if (uots != null && timeStep.getDefaultTimeStep() > uots.getOutputTimeStep()) {
 			adjusted = timeStep.withDefault(uots.getOutputTimeStep());
 		}
@@ -1409,7 +1381,7 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 		if (useSymbolicJacobian != fieldUseSymbolicJacobian) {
 			boolean oldValue = fieldUseSymbolicJacobian;
 			fieldUseSymbolicJacobian = useSymbolicJacobian;
-			firePropertyChange(PROPERTY_USE_SYMBOLIC_JACOBIAN, new Boolean(oldValue), new Boolean(useSymbolicJacobian));
+			firePropertyChange(PROPERTY_USE_SYMBOLIC_JACOBIAN, oldValue, useSymbolicJacobian);
 		}
 	}
 

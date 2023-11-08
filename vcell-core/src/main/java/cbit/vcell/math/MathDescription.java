@@ -3665,7 +3665,7 @@ public boolean hasSpeciesObservable() {
 @Override
 public boolean isMovingMembrane( ) {
 	Predicate<SubDomain> movingMembrane = s ->  {
-		MembraneSubDomain m = BeanUtils.downcast(MembraneSubDomain.class, s);
+		MembraneSubDomain m = CastingUtils.downcast(MembraneSubDomain.class, s);
 		return m != null && m.isMoving();
 	};
 	return subDomainList.stream().filter(movingMembrane).findAny().isPresent();

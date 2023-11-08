@@ -17,7 +17,6 @@ package cbit.vcell.solvers.mb;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.vcell.test.Fast;
-import org.vcell.util.BeanUtils;
 
 import ncsa.hdf.object.Dataset;
 import ncsa.hdf.object.Datatype;
@@ -25,6 +24,7 @@ import ncsa.hdf.object.FileFormat;
 import ncsa.hdf.object.Group;
 import ncsa.hdf.object.HObject;
 import ncsa.hdf.object.h5.H5File;
+import org.vcell.util.CastingUtils;
 
 /**
  * <p>
@@ -113,7 +113,7 @@ public class H5FileStructure extends H5Client {
             if (obj instanceof Group) {
                 printGroup((Group) obj, indent);
             }
-            Dataset ds = BeanUtils.downcast(Dataset.class, obj);
+            Dataset ds = CastingUtils.downcast(Dataset.class, obj);
             if (ds != null && ds.getName().equals("elements")) {
 //            if (ds != null && ds.getName().equals("boundaries")) {
             	VH5Dataset vds = new VH5Dataset(ds);
@@ -123,13 +123,6 @@ public class H5FileStructure extends H5Client {
         }
     }
 
-    /**
-     * create the file and add groups and dataset into the file, which is the
-     * same as javaExample.H5DatasetCreate
-     *
-     * @see javaExample.HDF5DatasetCreate
-     * @throws Exception
-     */
     private static void createFile() throws Exception {
         // retrieve an instance of H5File
         FileFormat fileFormat = FileFormat.getFileFormat(FileFormat.FILE_TYPE_HDF5);

@@ -2,7 +2,7 @@ package cbit.vcell.solvers.mb;
 
 import java.util.Objects;
 
-import org.vcell.util.BeanUtils;
+import org.vcell.util.CastingUtils;
 import org.vcell.util.VCAssert;
 
 import ncsa.hdf.object.Group;
@@ -32,7 +32,7 @@ public class VH5TypedPath<T> extends VH5Path {
 			Objects.requireNonNull(target);
 			Class<? extends Object> tclass = target.getClass();
 			if (!clzz.isAssignableFrom(tclass)){
-				H5ScalarDS sds = BeanUtils.downcast(H5ScalarDS.class, target);
+				H5ScalarDS sds = CastingUtils.downcast(H5ScalarDS.class, target);
 				if (sds != null) {
 					convert(sds,clzz,names);
 					return;

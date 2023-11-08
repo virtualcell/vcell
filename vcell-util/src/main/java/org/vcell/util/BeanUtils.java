@@ -237,19 +237,19 @@ public final class BeanUtils {
 	 * @return {@link Throwable#getMessage()}, recursively
 	 */
 	public static String getMessageRecursive(Throwable throwable) {
-		String rval = throwable.getMessage();
+		StringBuilder rval = new StringBuilder(throwable.getMessage());
 		Throwable cause = throwable.getCause();
 		while (cause != null) {
-			rval += " caused by " + cause.getMessage();
+			rval.append(" caused by ").append(cause.getMessage());
 			cause = cause.getCause();
 		}
 
-		return rval;
+		return rval.toString();
 	}
 
 
 	public static void sendSMTP(String smtpHost, int smtpPort,String from, String to,String subject, String content)
-	throws AddressException, MessagingException {
+			throws MessagingException {
 
 		// Create a mail session
 		java.util.Properties props = new java.util.Properties();
@@ -269,22 +269,16 @@ public final class BeanUtils {
 	}
 
 	public static String readBytesFromFile(File file, ClientTaskStatusSupport clientTaskStatusSupport) throws IOException {
-		StringBuffer stringBuffer = new StringBuffer();
-		BufferedReader bufferedReader = null;
-		try {
-			bufferedReader = new BufferedReader(new FileReader(file));
-			String line = new String();
-			while((line = bufferedReader.readLine()) != null) {
-				stringBuffer.append(line + "\n");
-				if (clientTaskStatusSupport!=null && clientTaskStatusSupport.isInterrupted()){
-					break;
-				}
-			}
-		}finally{
-			if (bufferedReader != null){
-				bufferedReader.close();
-			}
-		}
+		StringBuilder stringBuffer = new StringBuilder();
+        try (BufferedReader bufferedReader = new BufferedReader(new FileReader(file))) {
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                stringBuffer.append(line).append("\n");
+                if (clientTaskStatusSupport != null && clientTaskStatusSupport.isInterrupted()) {
+                    break;
+                }
+            }
+        }
 		return stringBuffer.toString();
 	}
 
@@ -296,7 +290,7 @@ public final class BeanUtils {
 	 * @param url not null
 	 * @param clientTaskStatusSupport could be null, in which case default status messages printed
 	 * @return downloadedString
-	 * @throws RuntimeException
+	 * @throws RuntimeException somehow
 	 */
 	public static String downloadBytes(final URL url,final ClientTaskStatusSupport clientTaskStatusSupport){
 		final ChannelFuture[] connectFuture = new ChannelFuture[1];
@@ -341,9 +335,8 @@ public final class BeanUtils {
 						}else{
 							throw new RuntimeException(exceptionMessage(connectFuture[0].getCause()));
 						}
-					} else {
-						// Connection established successfully
-					}
+					} // else: Connection established successfully
+
 
 					// Prepare the HTTP request.
 					HttpRequest request = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, url.toURI().toASCIIString());
@@ -371,16 +364,14 @@ public final class BeanUtils {
 						}else{
 							throw new RuntimeException(exceptionMessage(closeFuture[0].getCause()));
 						}
-					} else {
-						// Connection established successfully
-					}
+					} // else Connection established successfully
 
 					bFlag[0] = FLAG_STATE.FINISHED;
 
 				} catch (Exception e) {
 					lg.error("Error while downloading bytes from server: " + e.getMessage(), e);
 					bFlag[0] = FLAG_STATE.FAILED;
-					exception[0] = new RuntimeException("contacting outside server " + url.toString() + " failed.\n" + exceptionMessage(e));
+					exception[0] = new RuntimeException("contacting outside server " + url + " failed.\n" + exceptionMessage(e));
 				} finally {
 					if (bootstrap != null) {
 						// Shut down executor threads to exit.
@@ -397,7 +388,7 @@ public final class BeanUtils {
 		while(true){
 			try {
 				Thread.sleep(100);
-			} catch (Exception e) { }
+			} catch (Exception e) { if (lg.isInfoEnabled()) lg.info(e.getMessage(), e); }
 			long elapsedTime_ms = System.currentTimeMillis()-startTime_ms;
 			if(clientTaskStatusSupport != null && clientTaskStatusSupport.isInterrupted()){
 				bFlag[0] = FLAG_STATE.INTERRUPTED;
@@ -480,8 +471,7 @@ public final class BeanUtils {
 	public static final String SQL_ESCAPE_CHARACTER = "/";
 	public static String convertToSQLSearchString(String searchString){
 		if(searchString == null || searchString.isEmpty()){return searchString;}
-		String convertedLikeString = getConvertedLikeString(searchString);
-		return convertedLikeString;
+        return getConvertedLikeString(searchString);
 	}
 
 	private static String getConvertedLikeString(String searchString) {
@@ -509,7 +499,7 @@ public final class BeanUtils {
 	}
 
 	/**
-	 * @param clzz
+	 * @param clzz class to get leaf from
 	 * @return class name without package info
 	 * @throws NullPointerException if clzz null
 	 */
@@ -523,166 +513,17 @@ public final class BeanUtils {
 	}
 
 	/**
-	 * customize error message for null pointers
-	 * @param clzz type of obj
-	 * @param obj to check for null
-	 * @return obj (not null)
-	 * @throws NullPointerException if obj is null
-	 */
-	public static <T> T notNull(Class<T> clzz, T obj) {
-		if (obj != null) {
-			return obj;
-		}
-		throw new NullPointerException("unexpected " + clzz.getName() + " null pointer");
-	}
-
-	/**
 	 * see if numerator / divisor is integer using decimal (base 10) arithmetic instead of
 	 * floating point (base 2)
-	 * @param numerator
-	 * @param divisor
+	 * @param numerator the numerator
+	 * @param divisor the divisor
 	 * @return true if decimal numerator / decimal divisor is integer
 	 */
-	public static boolean isIntegerMultiple(double numerator, double divisor) {
+	public static boolean isNotAnIntegerMultiple(double numerator, double divisor) {
 		BigDecimal n = BigDecimal.valueOf(numerator);
 		BigDecimal d = BigDecimal.valueOf(divisor);
 		BigDecimal remainder = n.remainder(d);
-		return remainder.compareTo(BigDecimal.ZERO) == 0;
-	}
-
-	/**
-	 * convert ordinal to Enum
-	 * @param clzz may not be null
-	 * @param ordinal
-	 * @return e with e.ordinal( ) == ordinal
-	 * @throws IllegalArgumentException if ordinal out of range
-	 */
-	public static <E extends Enum<E> > E lookupEnum(Class<E> clzz, int ordinal) {
-		EnumSet<E> set = EnumSet.allOf(clzz);
-		if (ordinal < set.size()) {
-			Iterator<E> iter = set.iterator();
-			for (int i = 0; i < ordinal; i++) {
-				iter.next();
-			}
-			E rval = iter.next();
-			assert(rval.ordinal() == ordinal);
-			return rval;
-		}
-		throw new IllegalArgumentException("Invalid value " + ordinal + " for " + ExecutionTrace.justClassName(clzz) + ", must be < " + set.size());
-	}
-
-	/**
-	 * downcast to object or return null
-	 * @param clzz return type, not null
-	 * @param obj may be null
-	 * @return obj as T or null if obj is null or not of type T
-	 */
-	public static <T> T downcast(Class<T> clzz, Object obj) {
-		if (obj != null && clzz.isAssignableFrom(obj.getClass())) {
-			@SuppressWarnings("unchecked")
-			T rval = (T) obj;
-			return rval;
-		}
-		return null;
-	}
-
-	public interface CastInfo <T> {
-		/**
-		 * was cast successful?
-		 */
-		boolean isGood( );
-		/**
-		 * return type converted object
-		 * @return non null pointer
-		 * @throws ProgrammingException if {@link #isGood()} returns false
-		 */
-		T get( );
-		/**
-		 * @return name of desired class if {@link #isGood()} returns false
-		 */
-		String requiredName( );
-		/**
-		 * @return name of provided object if {@link #isGood()} returns false
-		 */
-		String actualName( );
-
-		/**
-		 * @return message explaining cast
-		 */
-		String castMessage( );
-	}
-
-	/**
-	 * attempt to class object to specified type
-	 * @param clzz desired type, not null
-	 * @param obj object to cast; if null returns !isGood( ) CastInfo<T>
-	 * @return CastInfo<T> object describing results
-	 */
-	public static <T> CastInfo<T> attemptCast(Class<T> clzz, Object obj) {
-		final String rname = clzz.getName();
-		if (obj != null) {
-			final String aname = obj.getClass().getName();
-			T result = downcast(clzz, obj);
-			if (result == null) {
-				return new FailInfo<>(rname, aname);
-			}
-			return new SucceedInfo<>(rname,aname,result);
-		}
-		return new FailInfo<>(rname, "null");
-	}
-
-	private abstract static class CiBase<T> implements CastInfo<T> {
-		final String rname;
-		final String aname;
-		protected CiBase(String rname, String aname) {
-			this.rname = rname;
-			this.aname = aname;
-		}
-		public String requiredName() { return rname; }
-		public String actualName() { return aname; }
-		public String castMessage( ) {
-			return "cast from " + aname + " to " + rname;
-		}
-	}
-	private static class FailInfo<T> extends CiBase<T> {
-
-		FailInfo(String rname, String aname) {
-			super(rname,aname);
-		}
-		public boolean isGood() {
-			return false;
-		}
-		public T get() {
-			String msg = "Programming exception, " + castMessage() + " failed";
-			throw new ProgrammingException(msg);
-		}
-	}
-
-	private static class SucceedInfo<T> extends CiBase<T> {
-		final T obj;
-
-		SucceedInfo(String rname,String aname, T obj) {
-			super(rname,aname);
-			this.obj = obj;
-		}
-		public boolean isGood() {
-			return true;
-		}
-		public T get() {
-			return obj;
-		}
-	}
-
-	public static Range calculateValueDomain(double[] values,BitSet domainValid){
-		double min=Double.POSITIVE_INFINITY;
-		double max=Double.NEGATIVE_INFINITY;
-		for (int i = 0; i < values.length; i++) {
-			if((domainValid == null || domainValid.get(i) || domainValid.isEmpty()) && !Double.isNaN(values[i]) && !Double.isInfinite(values[i])){
-			if(values[i] < min){min = values[i];}
-			if(values[i] > max){max = values[i];}
-			}
-		}
-		return new Range(min,max);
+		return remainder.compareTo(BigDecimal.ZERO) != 0;
 	}
 
 	public static String generateDateTimeString(){
@@ -691,17 +532,8 @@ public final class BeanUtils {
 		int month = calendar.get(Calendar.MONTH)+1;
 		int day = calendar.get(Calendar.DAY_OF_MONTH);
 		int hour = calendar.get(Calendar.HOUR_OF_DAY);
-		int min = calendar.get(Calendar.MINUTE);
-		int sec = calendar.get(Calendar.SECOND);
-		String imageName =
-		year+""+
-		(month < 10?"0"+month:month)+""+
-		(day < 10?"0"+day:day)+
-		"_"+
-		(hour < 10?"0"+hour:hour)+""+
-		(min < 10?"0"+min:min)+""+
-		(sec < 10?"0"+sec:sec);
-	
-		return imageName;
+		int minute = calendar.get(Calendar.MINUTE);
+		int second = calendar.get(Calendar.SECOND);
+		return String.format("%d%02d%02d_%02d%02d%02d", year, month, day, hour, minute, second);
 	}
 }

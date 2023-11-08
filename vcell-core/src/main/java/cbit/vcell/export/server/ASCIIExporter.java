@@ -25,11 +25,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.solver.smoldyn.SmoldynVCellMapper;
 import org.vcell.solver.smoldyn.SmoldynVCellMapper.SmoldynKeyword;
-import org.vcell.util.BeanUtils;
-import org.vcell.util.Coordinate;
-import org.vcell.util.DataAccessException;
-import org.vcell.util.NumberUtils;
-import org.vcell.util.VCAssert;
+import org.vcell.util.*;
 import org.vcell.util.document.TSJobResultsNoStats;
 import org.vcell.util.document.TimeSeriesJobSpec;
 import org.vcell.util.document.User;
@@ -1248,7 +1244,7 @@ private FileDataContainerID getSlice(SliceHelper sliceHelper, CartesianMesh mesh
 public Collection<ExportOutput >makeASCIIData(OutputContext outputContext,JobRequest jobRequest, User user, DataServerImpl dataServerImpl, ExportSpecs exportSpecs,FileDataContainerManager fileDataContainerManager) 
 		throws DataAccessException, IOException {
 	FormatSpecificSpecs formatSpecs = exportSpecs.getFormatSpecificSpecs( );
-	ASCIISpecs asciiSpecs = BeanUtils.downcast(ASCIISpecs.class, formatSpecs);
+	ASCIISpecs asciiSpecs = CastingUtils.downcast(ASCIISpecs.class, formatSpecs);
 	if (asciiSpecs != null) {
 		switch (asciiSpecs.getDataType()) {
 		case PDE_VARIABLE_DATA:

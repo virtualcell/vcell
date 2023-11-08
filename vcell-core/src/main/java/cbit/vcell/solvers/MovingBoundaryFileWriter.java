@@ -16,7 +16,7 @@ import java.util.Objects;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.vcell.movingboundary.MovingBoundarySolverSpec;
-import org.vcell.util.BeanUtils;
+import org.vcell.util.CastingUtils;
 import org.vcell.util.ISize;
 import org.vcell.util.Matchable;
 
@@ -124,7 +124,7 @@ private int subdomainsSanityCheck() {
 			}
 			continue;
 		}
-		MembraneSubDomain msd = BeanUtils.downcast(MembraneSubDomain.class, sd);
+		MembraneSubDomain msd = CastingUtils.downcast(MembraneSubDomain.class, sd);
 		if (msd != null) {
 			if (theMembrane != null) {
 				throw new IllegalArgumentException("only one membrane currently supported");
@@ -429,7 +429,6 @@ private void manageCompartment(Element e, SubDomain sd) {
  * set and annotate expression value; optionally include even if null. If ex is null and always == false, does nothing
  * @param dest element to set
  * @param ex to evaluate, could be null
- * @param always if true, set element even if expression null
  * @throws ExpressionException
  * @throws MathException
  */

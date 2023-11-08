@@ -2,10 +2,7 @@ package org.vcell.movingboundary;
 
 import java.io.Serializable;
 
-import org.vcell.util.BeanUtils;
-import org.vcell.util.CommentStringTokenizer;
-import org.vcell.util.DataAccessException;
-import org.vcell.util.Matchable;
+import org.vcell.util.*;
 
 import cbit.vcell.math.VCML;
 
@@ -43,7 +40,7 @@ public class MovingBoundarySolverSpec implements Matchable, Serializable {
 		if (this == object) {
 			return (true);
 		}
-		MovingBoundarySolverSpec other = BeanUtils.downcast(MovingBoundarySolverSpec.class, object);
+		MovingBoundarySolverSpec other = CastingUtils.downcast(MovingBoundarySolverSpec.class, object);
 		if (other == null) {
 			return false;
 		}

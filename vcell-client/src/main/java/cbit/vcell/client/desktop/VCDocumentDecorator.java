@@ -9,11 +9,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-import org.vcell.util.BeanUtils;
-import org.vcell.util.Issue;
+import org.vcell.util.*;
 import org.vcell.util.Issue.IssueCategory;
-import org.vcell.util.IssueContext;
-import org.vcell.util.ProgrammingException;
 import org.vcell.util.document.VCDocument;
 
 import cbit.vcell.biomodel.BioModel;
@@ -277,7 +274,7 @@ public abstract class VCDocumentDecorator {
 
 		@Override
 		public void activateView(SelectionManager selectionManager) {
-			SimulationContext sc = BeanUtils.downcast(SimulationContext.class, simulation.getSimulationOwner());
+			SimulationContext sc = CastingUtils.downcast(SimulationContext.class, simulation.getSimulationOwner());
 			Window activated = null;
 			if (sc != null ) {
 				ActiveView av = new ActiveView(sc, DocumentEditorTreeFolderClass.SIMULATIONS_NODE, ActiveViewID.simulations);

@@ -35,16 +35,7 @@ import org.apache.commons.math3.random.RandomDataGenerator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.solver.smoldyn.SmoldynVCellMapper.SmoldynKeyword;
-import org.vcell.util.BeanUtils;
-import org.vcell.util.ColorUtil;
-import org.vcell.util.Coordinate;
-import org.vcell.util.DataAccessException;
-import org.vcell.util.Extent;
-import org.vcell.util.Hex;
-import org.vcell.util.ISize;
-import org.vcell.util.Origin;
-import org.vcell.util.ProgrammingException;
-import org.vcell.util.VCAssert;
+import org.vcell.util.*;
 
 import cbit.image.ImageException;
 import cbit.image.VCImage;
@@ -284,7 +275,7 @@ private void init() throws SolverException {
 	if (!bGraphicOpenGL) {
 		writeMeshFile();
 	}
-	colors = ColorUtil.generateAutoColor(particleVariableList.size() + resampledGeometry.getGeometrySurfaceDescription().getSurfaceClasses().length, bg, new Integer(5));
+	colors = ColorUtil.generateAutoColor(particleVariableList.size() + resampledGeometry.getGeometrySurfaceDescription().getSurfaceClasses().length, bg, 5);
 }
 
 
@@ -343,12 +334,12 @@ private ArrayList<ClosestTriangle> getClosestTriangle( ) {
 private void setupMolecules() throws ExpressionException, MathException{
 	// write molecules
 	for ( SubDomain sd : mathDesc.getSubDomainCollection()) {
-		MembraneSubDomain msd = BeanUtils.downcast(MembraneSubDomain.class, sd);
+		MembraneSubDomain msd = CastingUtils.downcast(MembraneSubDomain.class, sd);
 		if (msd != null) {
 			for (ParticleProperties particleProperties :msd.getParticleProperties() ) {
 				ArrayList<ParticleInitialCondition> particleInitialConditions = particleProperties.getParticleInitialConditions();
 				for (ParticleInitialCondition pic : particleInitialConditions) {
-					ParticleInitialConditionCount picc = BeanUtils.downcast(ParticleInitialConditionCount.class, pic);
+					ParticleInitialConditionCount picc = CastingUtils.downcast(ParticleInitialConditionCount.class, pic);
 					if (picc != null && !picc.isUniform()) {
 						Variable var = particleProperties.getVariable();
 						try {

@@ -75,7 +75,7 @@ import org.vcell.sbml.SBMLHelper;
 import org.vcell.sbml.SBMLUtils;
 import org.vcell.sbml.vcell.SBMLImportException.Category;
 import org.vcell.util.*;
-import org.vcell.util.BeanUtils.CastInfo;
+import org.vcell.util.CastingUtils.CastInfo;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.document.BioModelChildSummary;
 
@@ -3952,7 +3952,7 @@ public class SBMLImporter {
 					// set its expr using analyticVol's math.
 
 					SubVolume vcSubvolume = vcGeometrySpec .getSubVolume(analyticVol.getDomainType());
-					CastInfo<AnalyticSubVolume> ci = BeanUtils.attemptCast(AnalyticSubVolume.class, vcSubvolume);
+					CastInfo<AnalyticSubVolume> ci = CastingUtils.attemptCast(AnalyticSubVolume.class, vcSubvolume);
 					if (!ci.isGood()) {
 						throw new RuntimeException("analytic volume '"
 								+ analyticVol.getId()
@@ -3982,7 +3982,7 @@ public class SBMLImporter {
 				readGeometrySamplingAnnotation(analyticGeometryDefinition, vcGsd);
 			}
 
-			SampledFieldGeometry sfg = BeanUtils.downcast(SampledFieldGeometry.class, selectedGeometryDefinition);
+			SampledFieldGeometry sfg = CastingUtils.downcast(SampledFieldGeometry.class, selectedGeometryDefinition);
 			if (sfg != null) {
 				ListOf<SampledVolume> sampledVolumes = sfg.getListOfSampledVolumes();
 
@@ -4214,7 +4214,7 @@ public class SBMLImporter {
 						Structure struct = ci.get();
 						String domainType = compMapping.getDomainType();
 						GeometryClass geometryClass = vcGeometry.getGeometryClass(domainType);
-						Feature feat = BeanUtils.downcast(Feature.class,struct);
+						Feature feat = CastingUtils.downcast(Feature.class,struct);
 						if (feat != null) {
 							FeatureMapping featureMapping = new FeatureMapping(feat, vcBioModel.getSimulationContext(0), vcModelUnitSystem);
 							featureMapping.setGeometryClass(geometryClass);

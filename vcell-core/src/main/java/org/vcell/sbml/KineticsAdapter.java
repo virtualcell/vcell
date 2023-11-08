@@ -1,11 +1,10 @@
 package org.vcell.sbml;
 
-import org.vcell.util.BeanUtils;
-
 import cbit.vcell.model.DistributedKinetics;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.LumpedKinetics;
 import cbit.vcell.parser.Expression;
+import org.vcell.util.CastingUtils;
 
 /**
  * adapt {@link Kinetics} class hiearchy for SBML
@@ -24,12 +23,12 @@ public abstract class KineticsAdapter {
 	 * @throws {@link NullPointerException} if k null
 	 */
 	public static KineticsAdapter create(Kinetics k) throws SbmlException {
-		DistributedKinetics dk = BeanUtils.downcast(DistributedKinetics.class,k);
+		DistributedKinetics dk = CastingUtils.downcast(DistributedKinetics.class,k);
 		if (dk != null) {
 			return new Distributed(dk);
 		}
 		
-		LumpedKinetics lk = BeanUtils.downcast(LumpedKinetics.class, k);
+		LumpedKinetics lk = CastingUtils.downcast(LumpedKinetics.class, k);
 		if (lk != null) {
 			return new Lumped(lk);
 		}

@@ -438,7 +438,7 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 				}
 				if (lg.isInfoEnabled()) {
 					Object obj = hash.get(STACK_TRACE_ARRAY);
-					StackTraceElement ste[] = BeanUtils.downcast(StackTraceElement[].class, obj);
+					StackTraceElement ste[] = CastingUtils.downcast(StackTraceElement[].class, obj);
 					if (ste != null) {
 						String stackTraceString = StringUtils.join(ste,'\n');
 						lg.info(stackTraceString,(Throwable)hash.get(TASK_ABORTED_BY_ERROR));
@@ -641,7 +641,7 @@ private static void runTask(AsynchClientTask currentTask, Hashtable<String, Obje
 		String msg = "Thread " + Thread.currentThread().getName() + " calling task " + currentTask.getTaskName();
 		if (lg.isDebugEnabled()) {
 			Object obj = hash.get(STACK_TRACE_ARRAY);
-			StackTraceElement ste[] = BeanUtils.downcast(StackTraceElement[].class, obj);
+			StackTraceElement ste[] = CastingUtils.downcast(StackTraceElement[].class, obj);
 			if (ste != null) {
 				msg += '\n' + StringUtils.join(ste,'\n');
 			}

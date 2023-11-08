@@ -7,7 +7,7 @@ import java.util.Vector;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.vcell.util.BeanUtils;
+import org.vcell.util.CastingUtils;
 import org.vcell.util.VCAssert;
 
 import ncsa.hdf.hdf5lib.exceptions.HDF5Exception;
@@ -131,7 +131,7 @@ public class VH5Path {
 	private static Object walk(Object hobj, String[] steps, int index) throws Exception {
 		final boolean isLastIndex = lastIndex(index,steps);
 		final String finding = steps[index];
-		Group g = BeanUtils.downcast(Group.class, hobj);
+		Group g = CastingUtils.downcast(Group.class, hobj);
 		if (g != null) {
 			List<HObject> ml = g.getMemberList();
 			for (HObject sub : ml) {
@@ -146,7 +146,7 @@ public class VH5Path {
 				}
 			}
 		}
-		H5CompoundDS cds = BeanUtils.downcast(H5CompoundDS.class, hobj);
+		H5CompoundDS cds = CastingUtils.downcast(H5CompoundDS.class, hobj);
 		if (cds != null) {
 			cds.read();
 			String[] mn = cds.getMemberNames();
@@ -154,7 +154,7 @@ public class VH5Path {
 			for (int i = 0; i < mn.length ; i++) {
 				if (finding.equals(mn[i]) ) {
 					Object c = cds.read();
-					Vector<?> vec = BeanUtils.downcast(Vector.class, c);
+					Vector<?> vec = CastingUtils.downcast(Vector.class, c);
 					if (vec != null) {
 						VCAssert.assertTrue(i < vec.size( ), "Disconnect between H5CompoundDS.getMemberNames( )  and returned Vector");
 						Object child = vec.get(i);
@@ -170,13 +170,13 @@ public class VH5Path {
 
 		}
 		if (isLastIndex) {
-			DataFormat df= BeanUtils.downcast(DataFormat.class, hobj);
+			DataFormat df= CastingUtils.downcast(DataFormat.class, hobj);
 			if (df != null  && df.hasAttribute()) {
 				try {
 					@SuppressWarnings("unchecked")
 					List<Object> meta = df.getMetadata();
 					for (Object o : meta) {
-						Attribute a = BeanUtils.downcast(Attribute.class, o);
+						Attribute a = CastingUtils.downcast(Attribute.class, o);
 						if (a != null) {
 							if (finding.equals(a.getName())) {
 								return a.getValue();

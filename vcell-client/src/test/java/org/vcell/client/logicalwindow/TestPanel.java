@@ -7,7 +7,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
-import org.vcell.util.BeanUtils;
+import org.vcell.util.CastingUtils;
 import org.vcell.util.gui.DialogUtils;
 
 @SuppressWarnings("serial")
@@ -95,7 +95,7 @@ public class TestPanel extends JPanel {
 		//		int r = JOptionPane.showConfirmDialog(this, "What say ye?","A question", JOptionPane.YES_NO_OPTION);
 		Object v = jop.getValue(); 
 		System.out.println(v);
-		Integer rval = BeanUtils.downcast(Integer.class, v);
+		Integer rval = CastingUtils.downcast(Integer.class, v);
 		if (rval != null) {
 			int r = rval;
 			switch (r) {

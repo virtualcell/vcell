@@ -9,7 +9,7 @@
  */
 
 package cbit.vcell.solvers;
-import static org.vcell.util.BeanUtils.notNull;
+import org.vcell.util.BeanUtils;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -82,366 +82,373 @@ public class FVSolverStandalone extends AbstractCompiledSolver {
 		this(simTask, userDir, userDir, bMsging);
 	}
 
-public FVSolverStandalone (SimulationTask simTask, File userDir, File destinationDirectory, boolean bMsging) throws SolverException {
-	super(simTask, userDir, bMsging);
-	this.destinationDirectory = destinationDirectory;
-	if (! simTask.getSimulation().isSpatial()) {
-		throw new SolverException("Cannot use FVSolver on non-spatial simulation");
+	public FVSolverStandalone (SimulationTask simTask, File userDir, File destinationDirectory, boolean bMsging) throws SolverException {
+		super(simTask, userDir, bMsging);
+		String nullMessageFormat = "`%s` value is unexpectedly null";
+		SolverDescription sd = FVSolverStandalone.getSolverDescription(simTask, nullMessageFormat);
+		if (sd == null ) throw new NullPointerException(String.format(nullMessageFormat, SolverDescription.class.getName()));
+
+		this.destinationDirectory = destinationDirectory;
+		this.simResampleInfoProvider = simTask.getSimulationJob().getVCDataIdentifier();
+		this.baseName = new File(getBaseName()).getName();
+		this.primaryCommand = null;
+		this.isChombo = sd.isChomboSolver();
+		this.isPETSc = sd.isPETSc();
+
 	}
-	this.simResampleInfoProvider = (VCSimulationDataIdentifier)simTask.getSimulationJob().getVCDataIdentifier();
-	baseName = new File(getBaseName()).getName();
-	primaryCommand = null;
-	
-	notNull(SimulationTask.class,simTask);
-	Simulation s = notNull(Simulation.class,simTask.getSimulation());
-	SolverTaskDescription sts = notNull(SolverTaskDescription.class, s.getSolverTaskDescription());
-	SolverDescription sd = notNull(SolverDescription.class,sts.getSolverDescription());
-	isChombo = sd.isChomboSolver(); 
-	isPETSc = sd.isPETSc();
-}
 
-
-@Override
-public void setUnixMode() {
-	unixMode = true;
-}
-
-
-
-/**
- * no-op
- */
-public void cleanup() {
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (6/27/01 3:25:11 PM)
- * @return cbit.vcell.solvers.ApplicationMessage
- * @param message java.lang.String
- */
-protected ApplicationMessage getApplicationMessage(String message) {
-	//
-	// "data:iteration:time"  .... sent every time data written for FVSolver
-	// "progress:xx.x%"        .... sent every 1% for FVSolver
-	//
-	//
-	if (message.startsWith(DATA_PREFIX)){
-		double timepoint = Double.parseDouble(message.substring(message.lastIndexOf(SEPARATOR)+1));
-		setCurrentTime(timepoint);
-		return new ApplicationMessage(ApplicationMessage.DATA_MESSAGE,getProgress(),timepoint,null,message);
-	}else if (message.startsWith(PROGRESS_PREFIX)){
-		String progressString = message.substring(message.lastIndexOf(SEPARATOR)+1,message.indexOf("%"));
-		double progress = Double.parseDouble(progressString)/100.0;
-		double startTime = simTask.getSimulation().getSolverTaskDescription().getTimeBounds().getStartingTime();
-		double endTime = simTask.getSimulation().getSolverTaskDescription().getTimeBounds().getEndingTime();
-		setCurrentTime(startTime + (endTime-startTime)*progress);
-		return new ApplicationMessage(ApplicationMessage.PROGRESS_MESSAGE,progress,-1,null,message);
-	}else{
-		throw new RuntimeException("unrecognized message");
+	private static SolverDescription getSolverDescription(SimulationTask simTask, String nullMessageFormat) throws SolverException {
+		if (simTask == null) throw new NullPointerException(String.format(nullMessageFormat, SimulationTask.class.getName()));
+		Simulation sim = simTask.getSimulation();
+		if (sim == null) throw new NullPointerException(String.format(nullMessageFormat, Simulation.class.getName()));
+		if (!sim.isSpatial()) {
+			throw new SolverException("Cannot use FVSolver on non-spatial simulation");
+		}
+		SolverTaskDescription solverTaskDescription = sim.getSolverTaskDescription();
+		if (solverTaskDescription == null) throw new NullPointerException(String.format(nullMessageFormat, SolverTaskDescription.class.getName()));
+        return solverTaskDescription.getSolverDescription();
 	}
-}
 
-public Geometry getResampledGeometry() throws SolverException {
-	if (resampledGeometry == null) {
-		// clone and resample geometry
-		try {
-			resampledGeometry = (Geometry) BeanUtils.cloneSerializable(simTask.getSimulation().getMathDescription().getGeometry());
-			GeometrySurfaceDescription geoSurfaceDesc = resampledGeometry.getGeometrySurfaceDescription();
-			ISize newSize = simTask.getSimulation().getMeshSpecification().getSamplingSize();
-			geoSurfaceDesc.setVolumeSampleSize(newSize);
-			geoSurfaceDesc.updateAll();		
-		} catch (Exception e) {
-			throw new SolverException(e.getMessage(), e);
+
+		@Override
+	public void setUnixMode() {
+		unixMode = true;
+	}
+
+
+
+	/**
+	 * no-op
+	 */
+	public void cleanup() {
+	}
+
+
+	/**
+	 * Insert the method's description here.
+	 * Creation date: (6/27/01 3:25:11 PM)
+	 * @return cbit.vcell.solvers.ApplicationMessage
+	 * @param message java.lang.String
+	 */
+	protected ApplicationMessage getApplicationMessage(String message) {
+		//
+		// "data:iteration:time"  .... sent every time data written for FVSolver
+		// "progress:xx.x%"        .... sent every 1% for FVSolver
+		//
+		//
+		if (message.startsWith(DATA_PREFIX)){
+			double timepoint = Double.parseDouble(message.substring(message.lastIndexOf(SEPARATOR)+1));
+			setCurrentTime(timepoint);
+			return new ApplicationMessage(ApplicationMessage.DATA_MESSAGE,getProgress(),timepoint,null,message);
+		}else if (message.startsWith(PROGRESS_PREFIX)){
+			String progressString = message.substring(message.lastIndexOf(SEPARATOR)+1,message.indexOf("%"));
+			double progress = Double.parseDouble(progressString)/100.0;
+			double startTime = simTask.getSimulation().getSolverTaskDescription().getTimeBounds().getStartingTime();
+			double endTime = simTask.getSimulation().getSolverTaskDescription().getTimeBounds().getEndingTime();
+			setCurrentTime(startTime + (endTime-startTime)*progress);
+			return new ApplicationMessage(ApplicationMessage.PROGRESS_MESSAGE,progress,-1,null,message);
+		}else{
+			throw new RuntimeException("unrecognized message");
 		}
 	}
-	return resampledGeometry;
-}
-		
-protected void writeVCGAndResampleFieldData() throws SolverException {
-	fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_PROC_GEOM);
-	
-	try {
-		// write subdomains file
-		SubdomainInfo.write(new File(getSaveDirectory(), baseName + SimDataConstants.SUBDOMAINS_FILE_SUFFIX), simTask.getSimulation().getMathDescription());
-		
-		PrintWriter pw = new PrintWriter(new FileWriter(new File(getSaveDirectory(), baseName+SimDataConstants.VCG_FILE_EXTENSION)));
-		GeometryFileWriter.write(pw, getResampledGeometry());
-		pw.close();
-				
-		FieldDataIdentifierSpec[] argFieldDataIDSpecs = simTask.getSimulationJob().getFieldDataIdentifierSpecs();
-		if(argFieldDataIDSpecs != null && argFieldDataIDSpecs.length > 0){
-			fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_RESAMPLE_FD);
-			
-			FieldFunctionArguments psfFieldFunc = null;
-			Variable var = simTask.getSimulationJob().getSimulationSymbolTable().getVariable(Simulation.PSF_FUNCTION_NAME);
-			if (var != null) {
-				FieldFunctionArguments[] ffas = FieldUtilities.getFieldFunctionArguments(var.getExpression());
-				if (ffas == null || ffas.length == 0) {
-					throw new DataAccessException("Point Spread Function " + Simulation.PSF_FUNCTION_NAME + " can only be a single field function.");
-				} else {				
-					Expression newexp;
-					try {
-						newexp = new Expression(ffas[0].infix());
-						if (!var.getExpression().compareEqual(newexp)) {
-							throw new DataAccessException("Point Spread Function " + Simulation.PSF_FUNCTION_NAME + " can only be a single field function.");
+
+	public Geometry getResampledGeometry() throws SolverException {
+		if (resampledGeometry == null) {
+			// clone and resample geometry
+			try {
+				resampledGeometry = (Geometry) BeanUtils.cloneSerializable(simTask.getSimulation().getMathDescription().getGeometry());
+				GeometrySurfaceDescription geoSurfaceDesc = resampledGeometry.getGeometrySurfaceDescription();
+				ISize newSize = simTask.getSimulation().getMeshSpecification().getSamplingSize();
+				geoSurfaceDesc.setVolumeSampleSize(newSize);
+				geoSurfaceDesc.updateAll();
+			} catch (Exception e) {
+				throw new SolverException(e.getMessage(), e);
+			}
+		}
+		return resampledGeometry;
+	}
+
+	protected void writeVCGAndResampleFieldData() throws SolverException {
+		fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_PROC_GEOM);
+
+		try {
+			// write subdomains file
+			SubdomainInfo.write(new File(getSaveDirectory(), baseName + SimDataConstants.SUBDOMAINS_FILE_SUFFIX), simTask.getSimulation().getMathDescription());
+
+			PrintWriter pw = new PrintWriter(new FileWriter(new File(getSaveDirectory(), baseName+SimDataConstants.VCG_FILE_EXTENSION)));
+			GeometryFileWriter.write(pw, getResampledGeometry());
+			pw.close();
+
+			FieldDataIdentifierSpec[] argFieldDataIDSpecs = simTask.getSimulationJob().getFieldDataIdentifierSpecs();
+			if(argFieldDataIDSpecs != null && argFieldDataIDSpecs.length > 0){
+				fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_RESAMPLE_FD);
+
+				FieldFunctionArguments psfFieldFunc = null;
+				Variable var = simTask.getSimulationJob().getSimulationSymbolTable().getVariable(Simulation.PSF_FUNCTION_NAME);
+				if (var != null) {
+					FieldFunctionArguments[] ffas = FieldUtilities.getFieldFunctionArguments(var.getExpression());
+					if (ffas == null || ffas.length == 0) {
+						throw new DataAccessException("Point Spread Function " + Simulation.PSF_FUNCTION_NAME + " can only be a single field function.");
+					} else {
+						Expression newexp;
+						try {
+							newexp = new Expression(ffas[0].infix());
+							if (!var.getExpression().compareEqual(newexp)) {
+								throw new DataAccessException("Point Spread Function " + Simulation.PSF_FUNCTION_NAME + " can only be a single field function.");
+							}
+							psfFieldFunc = ffas[0];
+						} catch (ExpressionException e) {
+							throw new DataAccessException(e.getMessage(), e);
 						}
-						psfFieldFunc = ffas[0];
-					} catch (ExpressionException e) {
-						throw new DataAccessException(e.getMessage(), e);
 					}
 				}
-			}			
-			
-			boolean bResample[] = new boolean[argFieldDataIDSpecs.length];
-			Arrays.fill(bResample, true);
-			for (int i = 0; i < argFieldDataIDSpecs.length; i++) {
-				argFieldDataIDSpecs[i].getFieldFuncArgs().getTime().bindExpression(simTask.getSimulationJob().getSimulationSymbolTable());
-				if (argFieldDataIDSpecs[i].getFieldFuncArgs().equals(psfFieldFunc)) {
-					bResample[i] = false;
+
+				boolean bResample[] = new boolean[argFieldDataIDSpecs.length];
+				Arrays.fill(bResample, true);
+				for (int i = 0; i < argFieldDataIDSpecs.length; i++) {
+					argFieldDataIDSpecs[i].getFieldFuncArgs().getTime().bindExpression(simTask.getSimulationJob().getSimulationSymbolTable());
+					if (argFieldDataIDSpecs[i].getFieldFuncArgs().equals(psfFieldFunc)) {
+						bResample[i] = false;
+					}
 				}
+
+				int numMembraneElements = getResampledGeometry().getGeometrySurfaceDescription().getSurfaceCollection().getTotalPolygonCount();
+				CartesianMesh simpleMesh = CartesianMesh.createSimpleCartesianMesh(getResampledGeometry().getOrigin(),
+						getResampledGeometry().getExtent(),
+						simTask.getSimulation().getMeshSpecification().getSamplingSize(),
+						getResampledGeometry().getGeometrySurfaceDescription().getRegionImage());
+				String secondarySimDataDir = PropertyLoader.getProperty(PropertyLoader.secondarySimDataDirInternalProperty, null);
+				DataSetControllerImpl dsci = new DataSetControllerImpl(null, getSaveDirectory().getParentFile(),
+						secondarySimDataDir == null ? null : new File(secondarySimDataDir));
+				dsci.writeFieldFunctionData(null,argFieldDataIDSpecs, bResample, simpleMesh, simResampleInfoProvider,
+						numMembraneElements, HESM_OVERWRITE_AND_CONTINUE);
 			}
-			
-			int numMembraneElements = getResampledGeometry().getGeometrySurfaceDescription().getSurfaceCollection().getTotalPolygonCount();
-			CartesianMesh simpleMesh = CartesianMesh.createSimpleCartesianMesh(getResampledGeometry().getOrigin(), 
-					getResampledGeometry().getExtent(),
-					simTask.getSimulation().getMeshSpecification().getSamplingSize(),
-					getResampledGeometry().getGeometrySurfaceDescription().getRegionImage());
-			String secondarySimDataDir = PropertyLoader.getProperty(PropertyLoader.secondarySimDataDirInternalProperty, null);			
-			DataSetControllerImpl dsci = new DataSetControllerImpl(null, getSaveDirectory().getParentFile(),
-					secondarySimDataDir == null ? null : new File(secondarySimDataDir));
-			dsci.writeFieldFunctionData(null,argFieldDataIDSpecs, bResample, simpleMesh, simResampleInfoProvider, 
-					numMembraneElements, HESM_OVERWRITE_AND_CONTINUE);
+		} catch(Exception e){
+			throw new SolverException(e.getMessage());
 		}
-	} catch(Exception e){
-		throw new SolverException(e.getMessage());
 	}
-}
-//
-//
-///**
-// * Insert the method's description here.
-// * Creation date: (6/27/2001 2:33:03 PM)
-// */
-//public void propertyChange(java.beans.PropertyChangeEvent event) {
-//	super.propertyChange(event);
-//	
-//	if (event.getSource() == getMathExecutable() && event.getPropertyName().equals("applicationMessage")) {
-//		String messageString = (String)event.getNewValue();
-//		if (messageString==null || messageString.length()==0){
-//			return;
-//		}
-//		ApplicationMessage appMessage = getApplicationMessage(messageString);
-//		if (appMessage!=null && appMessage.getMessageType() == ApplicationMessage.DATA_MESSAGE) {
-//			fireSolverPrinted(appMessage.getTimepoint());
-//		}
-//	}
-//}
+	//
+	//
+	///**
+	// * Insert the method's description here.
+	// * Creation date: (6/27/2001 2:33:03 PM)
+	// */
+	//public void propertyChange(java.beans.PropertyChangeEvent event) {
+	//	super.propertyChange(event);
+	//
+	//	if (event.getSource() == getMathExecutable() && event.getPropertyName().equals("applicationMessage")) {
+	//		String messageString = (String)event.getNewValue();
+	//		if (messageString==null || messageString.length()==0){
+	//			return;
+	//		}
+	//		ApplicationMessage appMessage = getApplicationMessage(messageString);
+	//		if (appMessage!=null && appMessage.getMessageType() == ApplicationMessage.DATA_MESSAGE) {
+	//			fireSolverPrinted(appMessage.getTimepoint());
+	//		}
+	//	}
+	//}
 
 
-/**
- * This method was created by a SmartGuide.
- */
-protected void initialize() throws SolverException {
-	try {
-		Simulation sim = simTask.getSimulation();
-		if (sim.isSerialParameterScan()) {
-			//write functions file for all the simulations in the scan
-			for (int scan = 0; scan < sim.getScanCount(); scan ++) {
-				SimulationJob simJob = new SimulationJob(sim, scan, simTask.getSimulationJob().getFieldDataIdentifierSpecs());
-				// ** Dumping the functions of a simulation into a '.functions' file.
-				String basename = new File(getSaveDirectory(), simJob.getSimulationJobID()).getPath();
-				String functionFileName = basename + FUNCTIONFILE_EXTENSION;
-				
-				Vector<AnnotatedFunction> funcList = simJob.getSimulationSymbolTable().createAnnotatedFunctionsList(simTask.getSimulation().getMathDescription());				
-				//Try to save existing user defined functions	
-				try{
-					File existingFunctionFile = new File(functionFileName);
-					if (existingFunctionFile.exists()){
-						Vector<AnnotatedFunction> oldFuncList = FunctionFileGenerator.readFunctionsFile(existingFunctionFile, simTask.getSimulationJobID());
-						for(AnnotatedFunction func : oldFuncList){
-							if(func.isOldUserDefined()){
-								funcList.add(func);
+	/**
+	 * This method was created by a SmartGuide.
+	 */
+	protected void initialize() throws SolverException {
+		try {
+			Simulation sim = simTask.getSimulation();
+			if (sim.isSerialParameterScan()) {
+				//write functions file for all the simulations in the scan
+				for (int scan = 0; scan < sim.getScanCount(); scan ++) {
+					SimulationJob simJob = new SimulationJob(sim, scan, simTask.getSimulationJob().getFieldDataIdentifierSpecs());
+					// ** Dumping the functions of a simulation into a '.functions' file.
+					String basename = new File(getSaveDirectory(), simJob.getSimulationJobID()).getPath();
+					String functionFileName = basename + FUNCTIONFILE_EXTENSION;
+
+					Vector<AnnotatedFunction> funcList = simJob.getSimulationSymbolTable().createAnnotatedFunctionsList(simTask.getSimulation().getMathDescription());
+					//Try to save existing user defined functions
+					try{
+						File existingFunctionFile = new File(functionFileName);
+						if (existingFunctionFile.exists()){
+							Vector<AnnotatedFunction> oldFuncList = FunctionFileGenerator.readFunctionsFile(existingFunctionFile, simTask.getSimulationJobID());
+							for(AnnotatedFunction func : oldFuncList){
+								if(func.isOldUserDefined()){
+									funcList.add(func);
+								}
 							}
 						}
+					}catch(Exception e){
+						lg.error(e.getMessage(), e);
+						//ignore
 					}
-				}catch(Exception e){
-					lg.error(e.getMessage(), e);
-					//ignore
-				}
-				
-				//Try to save existing user defined functions
-				FunctionFileGenerator functionFileGenerator = new FunctionFileGenerator(functionFileName, funcList);
 
-				try {
-					functionFileGenerator.generateFunctionFile();
-				}catch (Exception e){
-					throw new RuntimeException("Error creating .function file for "+functionFileGenerator.getBasefileName()+e.getMessage(), e);
+					//Try to save existing user defined functions
+					FunctionFileGenerator functionFileGenerator = new FunctionFileGenerator(functionFileName, funcList);
+
+					try {
+						functionFileGenerator.generateFunctionFile();
+					}catch (Exception e){
+						throw new RuntimeException("Error creating .function file for "+functionFileGenerator.getBasefileName()+e.getMessage(), e);
+					}
+				}
+
+			} else {
+				writeFunctionsFile();
+			}
+
+			// not for Chombo solver
+			if (!isChombo) {
+				writeVCGAndResampleFieldData();
+			}
+
+			setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, SimulationMessage.MESSAGE_SOLVER_RUNNING_INIT));
+			fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_INIT);
+
+			setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, SimulationMessage.MESSAGE_SOLVER_RUNNING_INPUT_FILE));
+
+			File fvinputFile = new File(getInputFilename());
+			PrintWriter pw = null;
+			try {
+				pw = new PrintWriter(new FileWriter(fvinputFile));
+				new FiniteVolumeFileWriter(pw, simTask, getResampledGeometry(), getSaveDirectory(), destinationDirectory, bMessaging).write();
+			} finally {
+				if (pw != null) {
+					pw.close();
 				}
 			}
-			
-		} else {
-			writeFunctionsFile();
+		} catch (Exception ex) {
+			throw new SolverException(ex.getMessage(), ex);
 		}
-		
-		// not for Chombo solver
-		if (!isChombo) {
-			writeVCGAndResampleFieldData();
-		}
-	
-		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, SimulationMessage.MESSAGE_SOLVER_RUNNING_INIT));
-		fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_INIT);
-	
-		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, SimulationMessage.MESSAGE_SOLVER_RUNNING_INPUT_FILE));
-			
-		File fvinputFile = new File(getInputFilename());
-		PrintWriter pw = null;
-		try {
-			pw = new PrintWriter(new FileWriter(fvinputFile));
-			new FiniteVolumeFileWriter(pw, simTask, getResampledGeometry(), getSaveDirectory(), destinationDirectory, bMessaging).write();
-		} finally {
-			if (pw != null) {
-				pw.close();
-			}
-		}
-	} catch (Exception ex) {
-		throw new SolverException(ex.getMessage(), ex);
 	}
-}
 
 
-/**
- * @return full path of baseName + ".fvinput" 
- */
-private String getInputFilename() {
-	String ipf =  new File(getSaveDirectory(),baseName + ".fvinput").getAbsolutePath();
-	if (!unixMode) {
-		return ipf;
+	/**
+	 * @return full path of baseName + ".fvinput"
+	 */
+	private String getInputFilename() {
+		String ipf =  new File(getSaveDirectory(),baseName + ".fvinput").getAbsolutePath();
+		if (!unixMode) {
+			return ipf;
+		}
+		return ResourceUtil.forceUnixPath(ipf);
 	}
-	return ResourceUtil.forceUnixPath(ipf);
-}
 
-@Override
-public MathExecutable getMathExecutable() {
-	if (isChombo) {
-		//throw new UnsupportedOperationException("Chombo does not support Quick Run");
-	}
-	MathExecutable me = super.getMathExecutable();
-	if (me != null) {
+	@Override
+	public MathExecutable getMathExecutable() {
+		if (isChombo) {
+			//throw new UnsupportedOperationException("Chombo does not support Quick Run");
+		}
+		MathExecutable me = super.getMathExecutable();
+		if (me != null) {
+			return me;
+		}
+
+		if (primaryCommand == null) {
+			getCommands(); //sets primaryCommand as sideEffect
+		}
+		assert(primaryCommand != null);
+		String[] carray = primaryCommand.getCommands().toArray(new String[0]);
+		File workingDir = getSaveDirectory();
+		setMathExecutable(new MathExecutable(carray, workingDir));
+		me= super.getMathExecutable();
+		assert(me != null);
 		return me;
 	}
-	
-	if (primaryCommand == null) {
-		getCommands(); //sets primaryCommand as sideEffect
-	}
-	assert(primaryCommand != null);
-	String[] carray = primaryCommand.getCommands().toArray(new String[0]);
-	File workingDir = getSaveDirectory();
-	setMathExecutable(new MathExecutable(carray, workingDir));
-	me= super.getMathExecutable();
-	assert(me != null);
-	return me;
-}
 
 
-@Override
-public Collection<ExecutableCommand> getCommands() {
-	if (isChombo) {
-		return getChomboCommands( );
-	}else if (isPETSc) {
-		return getPETScCommands();
+	@Override
+	public Collection<ExecutableCommand> getCommands() {
+		if (isChombo) {
+			return getChomboCommands( );
+		}else if (isPETSc) {
+			return getPETScCommands();
+		}
+		return getFVCommands();
 	}
-	return getFVCommands();
-}
 
-private Collection<ExecutableCommand> getFVCommands() {
-	assert (!isChombo && !isPETSc);
-	Simulation simulation = getSimulationJob().getSimulation();
-	final boolean isParallel = simulation.getSolverTaskDescription().isParallel();
-	String executableName = null;
-	try {
-		executableName = SolverUtilities.getExes(SolverDescription.FiniteVolumeStandalone)[0].getAbsolutePath();
-	}catch (IOException e){
-		throw new RuntimeException("failed to get executable for solver "+SolverDescription.FiniteVolumeStandalone.getDisplayLabel()+": "+e.getMessage(),e);
-	}
-	if (isParallel) {
-		throw new UnsupportedOperationException(executableName + " does not support parallel");
-	}
-	String inputFilename = getInputFilename();
-	primaryCommand = new ExecutableCommand(new ExecutableCommand.LibraryPath(ResourceUtil.getLocalSolversDirectory().getAbsolutePath()), true, false, executableName, inputFilename );
-	return Arrays.asList(primaryCommand);
-}
-
-private Collection<ExecutableCommand> getPETScCommands() {
-	assert (!isChombo);
-	Simulation simulation = getSimulationJob().getSimulation();
-	final boolean isParallel = simulation.getSolverTaskDescription().isParallel();
-	String executableName = null;
-	try {
-		executableName = SolverUtilities.getExes(SolverDescription.VCellPetsc)[0].getAbsolutePath();
-	}catch (IOException e){
-		throw new RuntimeException("failed to get executable for solver "+SolverDescription.FiniteVolumeStandalone.getDisplayLabel()+": "+e.getMessage(),e);
-	}
-	if (isParallel) {
-		throw new UnsupportedOperationException(executableName + " does not support parallel");
-	}
-	String inputFilename = getInputFilename();
-	primaryCommand = new ExecutableCommand(new ExecutableCommand.LibraryPath(ResourceUtil.getLocalSolversDirectory().getAbsolutePath()), true, false, executableName, inputFilename );
-	return Arrays.asList(primaryCommand);
-}
-
-private Collection<ExecutableCommand> getChomboCommands() {
-	assert (isChombo);
-	ArrayList<ExecutableCommand> commands = new ArrayList<ExecutableCommand>(2);
-	String inputFilename = getInputFilename();
-
-	String executableName = null;
-	Simulation simulation = getSimulationJob().getSimulation();
-	SolverTaskDescription sTaskDesc = simulation.getSolverTaskDescription();
-	final boolean isParallel = sTaskDesc.isParallel();
-	int dimension = simulation.getMeshSpecification().getGeometry().getDimension();
-	switch (dimension) {
-	case 2:
+	private Collection<ExecutableCommand> getFVCommands() {
+		assert (!isChombo && !isPETSc);
+		Simulation simulation = getSimulationJob().getSimulation();
+		final boolean isParallel = simulation.getSolverTaskDescription().isParallel();
+		String executableName = null;
 		try {
-			executableName = SolverUtilities.getExes(SolverDescription.Chombo)[0].getAbsolutePath();
+			executableName = SolverUtilities.getExes(SolverDescription.FiniteVolumeStandalone)[0].getAbsolutePath();
 		}catch (IOException e){
-			throw new RuntimeException("failed to get executable for 2D solver "+SolverDescription.Chombo.getDisplayLabel()+": "+e.getMessage(),e);
+			throw new RuntimeException("failed to get executable for solver "+SolverDescription.FiniteVolumeStandalone.getDisplayLabel()+": "+e.getMessage(),e);
 		}
-		break;
-	case 3:
+		if (isParallel) {
+			throw new UnsupportedOperationException(executableName + " does not support parallel");
+		}
+		String inputFilename = getInputFilename();
+		primaryCommand = new ExecutableCommand(new ExecutableCommand.LibraryPath(ResourceUtil.getLocalSolversDirectory().getAbsolutePath()), true, false, executableName, inputFilename );
+		return Arrays.asList(primaryCommand);
+	}
+
+	private Collection<ExecutableCommand> getPETScCommands() {
+		assert (!isChombo);
+		Simulation simulation = getSimulationJob().getSimulation();
+		final boolean isParallel = simulation.getSolverTaskDescription().isParallel();
+		String executableName = null;
 		try {
-			executableName = SolverUtilities.getExes(SolverDescription.Chombo)[1].getAbsolutePath();
+			executableName = SolverUtilities.getExes(SolverDescription.VCellPetsc)[0].getAbsolutePath();
 		}catch (IOException e){
-			throw new RuntimeException("failed to get executable for 3D solver "+SolverDescription.Chombo.getDisplayLabel()+": "+e.getMessage(),e);
+			throw new RuntimeException("failed to get executable for solver "+SolverDescription.FiniteVolumeStandalone.getDisplayLabel()+": "+e.getMessage(),e);
 		}
-		break;
-	default:
-		throw new IllegalArgumentException("VCell Chombo solver does not support " + dimension + "problems");
-	}
-	
-	if (isParallel) {
-		String parallelName = executableName + "parallel";
-		ExecutableCommand solve = new ExecutableCommand(new ExecutableCommand.LibraryPath(ResourceUtil.getLocalSolversDirectory().getAbsolutePath()), 
-														true, true, parallelName, inputFilename );
-		commands.add(solve);
-		ChomboSolverSpec css = sTaskDesc.getChomboSolverSpec();
-		Objects.requireNonNull(css);
-		if (css.isSaveVCellOutput()) {
-			ExecutableCommand convertChomboData = new ExecutableCommand(new ExecutableCommand.LibraryPath(ResourceUtil.getLocalSolversDirectory().getAbsolutePath()), 
-																		true, false,executableName, "-ccd", inputFilename );
-			commands.add(convertChomboData);
+		if (isParallel) {
+			throw new UnsupportedOperationException(executableName + " does not support parallel");
 		}
+		String inputFilename = getInputFilename();
+		primaryCommand = new ExecutableCommand(new ExecutableCommand.LibraryPath(ResourceUtil.getLocalSolversDirectory().getAbsolutePath()), true, false, executableName, inputFilename );
+		return Arrays.asList(primaryCommand);
 	}
-	else {
-		ExecutableCommand ec = new ExecutableCommand(new ExecutableCommand.LibraryPath(ResourceUtil.getLocalSolversDirectory().getAbsolutePath()),
-													true, false, executableName, inputFilename );
-		commands.add(ec);
-		primaryCommand = ec;
+
+	private Collection<ExecutableCommand> getChomboCommands() {
+		assert (isChombo);
+		ArrayList<ExecutableCommand> commands = new ArrayList<ExecutableCommand>(2);
+		String inputFilename = getInputFilename();
+
+		String executableName = null;
+		Simulation simulation = getSimulationJob().getSimulation();
+		SolverTaskDescription sTaskDesc = simulation.getSolverTaskDescription();
+		final boolean isParallel = sTaskDesc.isParallel();
+		int dimension = simulation.getMeshSpecification().getGeometry().getDimension();
+		switch (dimension) {
+		case 2:
+			try {
+				executableName = SolverUtilities.getExes(SolverDescription.Chombo)[0].getAbsolutePath();
+			}catch (IOException e){
+				throw new RuntimeException("failed to get executable for 2D solver "+SolverDescription.Chombo.getDisplayLabel()+": "+e.getMessage(),e);
+			}
+			break;
+		case 3:
+			try {
+				executableName = SolverUtilities.getExes(SolverDescription.Chombo)[1].getAbsolutePath();
+			}catch (IOException e){
+				throw new RuntimeException("failed to get executable for 3D solver "+SolverDescription.Chombo.getDisplayLabel()+": "+e.getMessage(),e);
+			}
+			break;
+		default:
+			throw new IllegalArgumentException("VCell Chombo solver does not support " + dimension + "problems");
+		}
+
+		if (isParallel) {
+			String parallelName = executableName + "parallel";
+			ExecutableCommand solve = new ExecutableCommand(new ExecutableCommand.LibraryPath(ResourceUtil.getLocalSolversDirectory().getAbsolutePath()),
+															true, true, parallelName, inputFilename );
+			commands.add(solve);
+			ChomboSolverSpec css = sTaskDesc.getChomboSolverSpec();
+			Objects.requireNonNull(css);
+			if (css.isSaveVCellOutput()) {
+				ExecutableCommand convertChomboData = new ExecutableCommand(new ExecutableCommand.LibraryPath(ResourceUtil.getLocalSolversDirectory().getAbsolutePath()),
+																			true, false,executableName, "-ccd", inputFilename );
+				commands.add(convertChomboData);
+			}
+		}
+		else {
+			ExecutableCommand ec = new ExecutableCommand(new ExecutableCommand.LibraryPath(ResourceUtil.getLocalSolversDirectory().getAbsolutePath()),
+														true, false, executableName, inputFilename );
+			commands.add(ec);
+			primaryCommand = ec;
+		}
+
+		return commands;
 	}
-	
-	return commands; 
-}
-
-
 }

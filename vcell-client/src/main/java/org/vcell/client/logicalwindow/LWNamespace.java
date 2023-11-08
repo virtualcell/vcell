@@ -18,9 +18,9 @@ import javax.swing.JMenuBar;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.client.logicalwindow.LWHandle.LWModality;
-import org.vcell.util.BeanUtils;
 
 import edu.uchc.connjur.wb.ExecutionTrace;
+import org.vcell.util.CastingUtils;
 
 /**
  * utility methods for package
@@ -111,7 +111,7 @@ public interface LWNamespace {
 	 */
 	public static <T> T findOwnerOfType(Class<? extends T> clzz,Component swingParent) {
 		final Logger lg = LGHolder.LG; 
-		T t = BeanUtils.downcast(clzz, swingParent);
+		T t = CastingUtils.downcast(clzz, swingParent);
 		if (t != null) {
 			return t;
 		}

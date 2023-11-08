@@ -7,7 +7,7 @@ import java.util.Vector;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.vcell.util.BeanUtils;
+import org.vcell.util.CastingUtils;
 import org.vcell.util.VCAssert;
 
 import edu.uchc.connjur.wb.ExecutionTrace;
@@ -29,11 +29,11 @@ public class VH5Dataset {
 		try {
 		System.out.println(dataset.getName());
 		System.out.println(dataset.getFullName());
-		H5ScalarDS sds = BeanUtils.downcast(H5ScalarDS.class,dataset);
+		H5ScalarDS sds = CastingUtils.downcast(H5ScalarDS.class,dataset);
 		if (sds != null) {
 			info(sds);
 		}
-		H5CompoundDS cds = BeanUtils.downcast(H5CompoundDS.class,dataset);
+		H5CompoundDS cds = CastingUtils.downcast(H5CompoundDS.class,dataset);
 		int rank = dataset.getRank();
 		long[] d = dataset.getDims( );
 		long[] s = dataset.getSelectedDims();
@@ -103,7 +103,7 @@ public class VH5Dataset {
 		 System.out.println(dt.getFullName());
 		 System.out.println(dt.getDatatypeDescription());
 		 Object obj = ds.read();
-		 Collection<?> coll = BeanUtils.downcast(Collection.class, obj);
+		 Collection<?> coll = CastingUtils.downcast(Collection.class, obj);
 		 VCAssert.assertTrue(coll.size() == mn.length, "collection matches names");
 		 int i  = 0;
 		 for (Object o : coll) {
@@ -127,7 +127,7 @@ public class VH5Dataset {
 
 	private void analyze(Object o) {
 		Objects.requireNonNull(o);
-		Vector<?> v = BeanUtils.downcast(Vector.class, o);
+		Vector<?> v = CastingUtils.downcast(Vector.class, o);
 		if (v != null) {
 			analyzeVector(v);
 			return;

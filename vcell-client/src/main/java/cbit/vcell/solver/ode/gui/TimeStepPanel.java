@@ -94,7 +94,7 @@ public void correctUniformOutputTimeStep() {
 			if (outputTime < timeStep) {
 				suggestedInterval = timeStep;
 				bValid = false;
-			} else if (!BeanUtils.isIntegerMultiple(outputTime, timeStep)){
+			} else if (BeanUtils.isNotAnIntegerMultiple(outputTime, timeStep)){
 				double n = outputTime/timeStep;
 				int intn = (int)Math.round(n);
 				if (intn != n) {
@@ -120,9 +120,9 @@ public void correctUniformOutputTimeStep() {
 public void setNewTimeStep() {
 	try {
 		TimeStep oldTimeStep = solverTaskDescription.getTimeStep();
-		double defaultTimeStep = !getDefaultTimeStepTextField().isEnabled() ? oldTimeStep.getDefaultTimeStep() : new Double(getDefaultTimeStepTextField().getText()).doubleValue();
-		double minTimeStep = !getMinimumTimeStepTextField().isEnabled() ? oldTimeStep.getMinimumTimeStep() : new Double(getMinimumTimeStepTextField().getText()).doubleValue();
-		double maxTimeStep = !getMaximumTimeStepTextField().isEnabled() ? oldTimeStep.getMaximumTimeStep() : new Double(getMaximumTimeStepTextField().getText()).doubleValue();
+		double defaultTimeStep = !getDefaultTimeStepTextField().isEnabled() ? oldTimeStep.getDefaultTimeStep() : Double.parseDouble(getDefaultTimeStepTextField().getText());
+		double minTimeStep = !getMinimumTimeStepTextField().isEnabled() ? oldTimeStep.getMinimumTimeStep() : Double.parseDouble(getMinimumTimeStepTextField().getText());
+		double maxTimeStep = !getMaximumTimeStepTextField().isEnabled() ? oldTimeStep.getMaximumTimeStep() : Double.parseDouble(getMaximumTimeStepTextField().getText());
 		TimeStep newTimeStep = new TimeStep(minTimeStep, defaultTimeStep, maxTimeStep);
 		solverTaskDescription.setTimeStep(newTimeStep);
 	} catch (java.lang.Throwable ivjExc) {
@@ -383,12 +383,6 @@ public static void main(java.lang.String[] args) {
 	}
 }
 
-/**
- * Sets the timeStep property (cbit.vcell.solver.TimeStep) value.
- * @param timeStep The new value for the property.
- * @exception java.beans.PropertyVetoException The exception description.
- * @see #getTimeStep
- */
 public void setSolverTaskDescription(SolverTaskDescription newValue) throws java.beans.PropertyVetoException {
 	SolverTaskDescription oldValue = solverTaskDescription;
 	/* Stop listening for events from the current object */

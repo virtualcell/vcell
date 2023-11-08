@@ -300,10 +300,10 @@ public class DialogUtils {
 	private static void setInternalNotCancelEnabled(final JOptionPane jop,final  boolean bEnabled, boolean bClickOK) {
 		VCAssert.assertTrue(!bClickOK || bEnabled, "bEnabled must be true if bClickOK is true");
 	  	for(Component topLevel : jop.getComponents() ) {
-	  		Container cntr = BeanUtils.downcast(Container.class, topLevel); 
+	  		Container cntr = CastingUtils.downcast(Container.class, topLevel);
 	  		if (cntr != null) {
 	  			for (Component cmpt : cntr.getComponents()) {
-	  				JButton btn = BeanUtils.downcast(JButton.class, cmpt); 
+	  				JButton btn = CastingUtils.downcast(JButton.class, cmpt);
 	  				if (btn != null && !btn.getText().equalsIgnoreCase(getCancelText())) {
 				  		btn.setEnabled(bEnabled);
 					  	if(bEnabled && bClickOK) {
@@ -757,7 +757,7 @@ public class DialogUtils {
 				dialog.setVisible(true);
 				if (goingToEmail ) {
 					Object ro = pane.getValue( );
-					Integer reply = BeanUtils.downcast(Integer.class, ro);
+					Integer reply = CastingUtils.downcast(Integer.class, ro);
 					boolean userSaidYes = reply != null ? reply == JOptionPane.YES_OPTION : false;
 					if (userSaidYes) {
 						Throwable throwableToSend = exception; 

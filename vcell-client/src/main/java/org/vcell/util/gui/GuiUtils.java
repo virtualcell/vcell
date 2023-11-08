@@ -33,7 +33,7 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
 import org.apache.commons.lang3.StringUtils;
-import org.vcell.util.BeanUtils;
+import org.vcell.util.CastingUtils;
 import org.vcell.util.ISize;
 
 import cbit.vcell.desktop.BioModelNode;
@@ -219,7 +219,7 @@ public class GuiUtils {
 		Dimension dim = cmpnt.getPreferredSize();
 		destination.append(StringUtils.repeat(' ', level) + ExecutionTrace.justClassName(cmpnt) + " prefers " + dim);
 		destination.append('\n');
-		Container container = BeanUtils.downcast(Container.class, cmpnt);
+		Container container = CastingUtils.downcast(Container.class, cmpnt);
 		if (container != null) {
 			for ( Component c : container.getComponents()) {
 				prefSize(destination, level + 1, c);
@@ -246,11 +246,11 @@ public class GuiUtils {
 	public static String describe(Window w) {
 		if (w != null) {
 			String className = ExecutionTrace.justClassName(w) + " ";
-			Frame f = BeanUtils.downcast(Frame.class, w);
+			Frame f = CastingUtils.downcast(Frame.class, w);
 			if (f != null) {
 				return className + f.getTitle();
 			}
-			Dialog d = BeanUtils.downcast(Dialog.class, w);
+			Dialog d = CastingUtils.downcast(Dialog.class, w);
 			if (d != null) {
 				return className + d.getTitle();
 			}

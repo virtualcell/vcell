@@ -694,9 +694,9 @@ public static boolean isEqualFields(Matchable lhs, Matchable rhs) {
 		}
 		for ( Field f : lClass.getDeclaredFields()) {
 			f.setAccessible(true);
-			Matchable lMatch = BeanUtils.downcast(Matchable.class, f.get(lhs)  );
+			Matchable lMatch = CastingUtils.downcast(Matchable.class, f.get(lhs)  );
 			if (lMatch != null) {
-				Matchable rMatch = BeanUtils.downcast(Matchable.class, f.get(rhs) );
+				Matchable rMatch = CastingUtils.downcast(Matchable.class, f.get(rhs) );
 				if (!isEqual(lMatch, rMatch)) {
 					return false;
 				}

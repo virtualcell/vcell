@@ -4,7 +4,7 @@ import java.beans.PropertyVetoException;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.vcell.util.BeanUtils;
+import org.vcell.util.CastingUtils;
 import org.vcell.util.ProgrammingException;
 import org.vcell.util.VCAssert;
 
@@ -35,11 +35,11 @@ public abstract class VCReactionProxy {
 	 */
 	public static VCReactionProxy factory(ReactionStep reaction) {
 		VCAssert.assertValid(reaction);
-		SimpleReaction sr = BeanUtils.downcast(SimpleReaction.class,reaction);
+		SimpleReaction sr = CastingUtils.downcast(SimpleReaction.class,reaction);
 		if (sr != null) {
 			return new Simple(sr);
 		}
-		FluxReaction fr = BeanUtils.downcast(FluxReaction.class,reaction);
+		FluxReaction fr = CastingUtils.downcast(FluxReaction.class,reaction);
 		if (fr != null) {
 			return new Flux(fr);
 		}

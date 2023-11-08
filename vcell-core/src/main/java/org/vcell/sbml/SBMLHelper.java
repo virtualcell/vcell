@@ -3,7 +3,7 @@ package org.vcell.sbml;
 import javax.xml.stream.XMLStreamException;
 
 import org.sbml.jsbml.SBase;
-import org.vcell.util.BeanUtils;
+import org.vcell.util.CastingUtils;
 import org.vcell.util.VCAssert;
 
 import cbit.vcell.model.Model;
@@ -135,7 +135,7 @@ public class SBMLHelper {
 	 * @param name not null
 	 * @return desired structure or null
 	 */
-	public static <T extends Structure> BeanUtils.CastInfo<T> getTypedStructure(Class<T> type,Model source, String name) {
+	public static <T extends Structure> CastingUtils.CastInfo<T> getTypedStructure(Class<T> type, Model source, String name) {
 		VCAssert.assertValid(type);
 		VCAssert.assertValid(source);
 		VCAssert.assertValid(name);
@@ -154,7 +154,7 @@ public class SBMLHelper {
 				}
 			}
 		}
-		return BeanUtils.attemptCast(type, strct);
+		return CastingUtils.attemptCast(type, strct);
 	}
 
 }
