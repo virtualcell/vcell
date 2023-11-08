@@ -746,7 +746,7 @@ public UnresolvedParameter addUnresolvedParameter(String parameterName) {
 		throw new RuntimeException("unresolved parameter '"+parameterName+"' already exists");
 	}
 	UnresolvedParameter newParameter = new UnresolvedParameter(parameterName);
-	UnresolvedParameter newUnresolvedParameters[] = (UnresolvedParameter[])BeanUtils.addElement(fieldUnresolvedParameters,newParameter);
+	UnresolvedParameter newUnresolvedParameters[] = (UnresolvedParameter[]) ArrayUtils.addElement(fieldUnresolvedParameters,newParameter);
 	setUnresolvedParameters(newUnresolvedParameters);
 	
 	return newParameter;
@@ -764,7 +764,7 @@ public KineticsProxyParameter addProxyParameter(SymbolTableEntry symbolTableEntr
 		removeUnresolvedParameter(getUnresolvedParameter(symbolTableEntry.getName()));
 	}
 	KineticsProxyParameter newProxyParameter = new KineticsProxyParameter(symbolTableEntry);
-	KineticsProxyParameter newProxyParameters[] = (KineticsProxyParameter[])BeanUtils.addElement(fieldProxyParameters,newProxyParameter);
+	KineticsProxyParameter newProxyParameters[] = (KineticsProxyParameter[]) ArrayUtils.addElement(fieldProxyParameters,newProxyParameter);
 	setProxyParameters(newProxyParameters);
 	return newProxyParameter;
 }
@@ -786,7 +786,7 @@ public KineticsParameter addUserDefinedKineticsParameter(String parameterName, E
 		removeProxyParameter(getProxyParameter(parameterName));
 	}
 	KineticsParameter newKineticsParameter = new KineticsParameter(parameterName,expression,ROLE_UserDefined, unit);
-	KineticsParameter newKineticsParameters[] = BeanUtils.addElement(fieldKineticsParameters,newKineticsParameter);
+	KineticsParameter newKineticsParameters[] = ArrayUtils.addElement(fieldKineticsParameters,newKineticsParameter);
 	setKineticsParameters(newKineticsParameters);
 	return newKineticsParameter;
 }
@@ -2159,7 +2159,7 @@ public void setParameterValue(KineticsParameter parm, Expression exp) throws Exp
 		for (int i = 0; symbols!=null && i < symbols.length; i++){
 			SymbolTableEntry ste = reactionStep.getEntry(symbols[i]);
 			if (ste==null){
-				newKineticsParameters = (KineticsParameter[])BeanUtils.addElement(newKineticsParameters,new KineticsParameter(symbols[i],new Expression(0.0),ROLE_UserDefined, modelUnitSystem.getInstance_TBD()));
+				newKineticsParameters = (KineticsParameter[]) ArrayUtils.addElement(newKineticsParameters,new KineticsParameter(symbols[i],new Expression(0.0),ROLE_UserDefined, modelUnitSystem.getInstance_TBD()));
 			}
 		}
 		parm.setExpression(exp);

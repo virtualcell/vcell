@@ -725,7 +725,7 @@ public SpeciesContextSpecProxyParameter addProxyParameter(SymbolTableEntry symbo
 		throw new RuntimeException("referenced external symbol '"+symbolTableEntry.getName()+"' already exists");
 	}
 	SpeciesContextSpecProxyParameter newProxyParameter = new SpeciesContextSpecProxyParameter(symbolTableEntry);
-	SpeciesContextSpecProxyParameter newProxyParameters[] = (SpeciesContextSpecProxyParameter[])BeanUtils.addElement(fieldProxyParameters,newProxyParameter);
+	SpeciesContextSpecProxyParameter newProxyParameters[] = (SpeciesContextSpecProxyParameter[]) ArrayUtils.addElement(fieldProxyParameters,newProxyParameter);
 	setProxyParameters(newProxyParameters);
 	return newProxyParameter;
 }

@@ -10,6 +10,8 @@
 
 package cbit.vcell.geometry.surface;
 import cbit.vcell.units.VCUnitDefinition;
+import org.vcell.util.ArrayUtils;
+
 /**
  * Insert the type's description here.
  * Creation date: (5/27/2004 11:31:42 AM)
@@ -38,16 +40,9 @@ public GeometricRegion(String argName, double argSize, VCUnitDefinition argSizeU
  * @param adjacentRegion cbit.vcell.geometry.surface.GeometricRegion
  */
 public void addAdjacentGeometricRegion(GeometricRegion adjacentRegion) {
-	setAdjacentGeometricRegions((GeometricRegion[])org.vcell.util.BeanUtils.addElement(fieldAdjacentGeometricRegions,adjacentRegion));
+	setAdjacentGeometricRegions((GeometricRegion[]) ArrayUtils.addElement(fieldAdjacentGeometricRegions,adjacentRegion));
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (5/27/2004 11:43:14 AM)
- * @return boolean
- * @param obj cbit.util.Matchable
- */
 protected boolean compareEqual0(GeometricRegion geometricRegion) {
 	if (!org.vcell.util.Compare.isEqual(getName(),geometricRegion.getName())){
 		return false;
@@ -68,10 +63,7 @@ protected boolean compareEqual0(GeometricRegion geometricRegion) {
 	if (fieldSize != geometricRegion.fieldSize){
 		return false;
 	}
-	if (!org.vcell.util.Compare.isEqual(getSizeUnit(),geometricRegion.getSizeUnit())){
-		return false;
-	}
-	return true;
+    return org.vcell.util.Compare.isEqual(getSizeUnit(), geometricRegion.getSizeUnit());
 }
 
 
@@ -95,21 +87,11 @@ public java.lang.String getName() {
 }
 
 
-/**
- * Gets the size property (java.lang.Double) value.
- * @return The size property value.
- * @see #setSize
- */
 public double getSize() {
 	return fieldSize;
 }
 
 
-/**
- * Gets the sizeUnit property (cbit.vcell.units.VCUnitDefinition) value.
- * @return The sizeUnit property value.
- * @see #setSizeUnit
- */
 public cbit.vcell.units.VCUnitDefinition getSizeUnit() {
 	return fieldSizeUnit;
 }

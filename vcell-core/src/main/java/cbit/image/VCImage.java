@@ -9,7 +9,6 @@
  */
 
 package cbit.image;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
@@ -20,7 +19,7 @@ import java.util.zip.*;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.vcell.util.BeanUtils;
+import org.vcell.util.CompressionUtils;
 import org.vcell.util.Hex;
 import org.vcell.util.Matchable;
 import org.vcell.util.document.KeyValue;
@@ -480,7 +479,7 @@ private static byte[] deflate0(byte[] uncompressed) throws IOException {
 }
 
 public static byte[] inflate(byte[] compressed) throws IOException {
-	byte[] uncompressed = BeanUtils.uncompress(compressed);
+	byte[] uncompressed = CompressionUtils.uncompress(compressed);
 	if (lg.isTraceEnabled()) {
 		try {
 			MessageDigest digest = MessageDigest.getInstance("SHA-256");

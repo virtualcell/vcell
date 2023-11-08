@@ -15,7 +15,6 @@ import java.beans.PropertyChangeSupport;
 import java.io.Serializable;
 
 import org.vcell.util.ArrayUtils;
-import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 
@@ -56,7 +55,7 @@ public class DataContext implements Matchable, Serializable {
 		if(contains(dataSymbol)) {		// data symbol name must be unique
 			throw new RuntimeException("data symbol already exists");
 		}
-		DataSymbol[] newArray = BeanUtils.addElement(dataSymbols,dataSymbol);
+		DataSymbol[] newArray = ArrayUtils.addElement(dataSymbols,dataSymbol);
 		setDataSymbols(newArray);
 	}
 	
@@ -76,7 +75,7 @@ public class DataContext implements Matchable, Serializable {
 	}
 	
 	public void removeDataSymbol(DataSymbol dataSymbol) {
-		if (!BeanUtils.arrayContains(dataSymbols,dataSymbol)){
+		if (!ArrayUtils.arrayContains(dataSymbols,dataSymbol)){
 			throw new RuntimeException("data symbol doesn't exist");
 		}
 		DataSymbol[] newArray = ArrayUtils.removeFirstInstanceOfElement(dataSymbols,dataSymbol);

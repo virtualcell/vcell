@@ -12,7 +12,7 @@ package cbit.vcell.mapping;
 import java.beans.PropertyVetoException;
 import java.util.*;
 
-import org.vcell.util.BeanUtils;
+import org.vcell.util.ArrayUtils;
 import org.vcell.util.Pair;
 import org.vcell.util.VCellThreadChecker;
 
@@ -144,7 +144,7 @@ private EventAssignmentOrRateRuleInitParameter addEventAssignmentOrRateRuleInitP
 		}
 		return (EventAssignmentOrRateRuleInitParameter)previousParameter;
 	}
-	MathMappingParameter newParameters[] = (MathMappingParameter[])BeanUtils.addElement(fieldMathMappingParameters, newParameter);
+	MathMappingParameter newParameters[] = (MathMappingParameter[]) ArrayUtils.addElement(fieldMathMappingParameters, newParameter);
 	setMathMapppingParameters(newParameters);
 	return newParameter;
 }
@@ -161,7 +161,7 @@ private RateRuleRateParameter addRateRuleRateParameter(SymbolTableEntry target, 
 		}
 		return (RateRuleRateParameter)previousParameter;
 	}
-	MathMappingParameter newParameters[] = (MathMappingParameter[])BeanUtils.addElement(fieldMathMappingParameters, newParameter);
+	MathMappingParameter newParameters[] = (MathMappingParameter[]) ArrayUtils.addElement(fieldMathMappingParameters, newParameter);
 	setMathMapppingParameters(newParameters);
 	return newParameter;
 }

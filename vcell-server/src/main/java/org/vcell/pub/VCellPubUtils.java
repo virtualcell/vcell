@@ -15,7 +15,7 @@ import org.jdom.Document;
 import org.jdom.Element;
 import org.vcell.db.KeyFactory;
 import org.vcell.db.postgres.PostgresKeyFactory;
-import org.vcell.util.BeanUtils;
+import org.vcell.util.ArrayUtils;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 
@@ -57,7 +57,7 @@ public class VCellPubUtils {
 			if (pubModels==null){
 				pubModels = new PublishedModels(pub, new KeyValue[] { new KeyValue(r.modelKey) }, new KeyValue[0] );
 			}else{
-				pubModels = new PublishedModels(pub, BeanUtils.addElement(pubModels.bioModelKeys, new KeyValue(r.modelKey)), pubModels.mathModelKeys );
+				pubModels = new PublishedModels(pub, ArrayUtils.addElement(pubModels.bioModelKeys, new KeyValue(r.modelKey)), pubModels.mathModelKeys );
 			}
 			publishedModels.put(pub, pubModels);  // add or replace (new model reference).
 			countModels++;

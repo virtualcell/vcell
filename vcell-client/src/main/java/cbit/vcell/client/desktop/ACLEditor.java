@@ -17,7 +17,6 @@ import java.util.Vector;
 import javax.swing.JLabel;
 
 import org.vcell.util.ArrayUtils;
-import org.vcell.util.BeanUtils;
 import org.vcell.util.GeneralGuiUtils;
 import org.vcell.util.document.GroupAccess;
 import org.vcell.util.document.GroupAccessAll;
@@ -132,12 +131,12 @@ private void accessAction(java.awt.event.ActionEvent actionEvent) {
 		if(!getJTextFieldACLUser().getText().isEmpty()){
 			String[] oldAccessList = getACLState().getAccessList();
 			if(oldAccessList != null && oldAccessList.length > 0){
-				if(BeanUtils.arrayContains(oldAccessList,getJTextFieldACLUser().getText())){
+				if(ArrayUtils.arrayContains(oldAccessList,getJTextFieldACLUser().getText())){
 					PopupGenerator.showErrorDialog(this, "User "+getJTextFieldACLUser().getText()+" already in list");
 					return;
 				}
 			}
-			ACLState newState =	new ACLState((String[])BeanUtils.addElement(
+			ACLState newState =	new ACLState((String[]) ArrayUtils.addElement(
 						(getACLState() != null?getACLState().getAccessList():new String[0]),getJTextFieldACLUser().getText()));
 			setACLState(newState);
 		}

@@ -14,8 +14,9 @@ import java.io.IOException;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.vcell.util.BeanUtils;
 import org.vcell.util.Cacheable;
+import org.vcell.util.CompressionUtils;
+
 /**
  * This type was created in VisualAge.
  */
@@ -42,7 +43,7 @@ public DbObjectWrapper(Cacheable aWorkingObject, byte[] serializedCopy) {
 	try {
 		this.workingObject = aWorkingObject;
 		this.serializedObject = serializedCopy; // BeanUtils.toSerialized(aWorkingObject);
-		this.referenceObject = (Cacheable)BeanUtils.fromSerialized(this.serializedObject);
+		this.referenceObject = (Cacheable) CompressionUtils.fromSerialized(this.serializedObject);
 	}catch (IOException e){
 		lg.error(e);
 		throw new RuntimeException(e.getMessage());
@@ -60,7 +61,7 @@ public Cacheable getClonedCopy() {
 		throw new RuntimeException("immutable object "+workingObject+" shouldn't be cloned");
 	}
 	try {
-		return (Cacheable)BeanUtils.fromSerialized(serializedObject);
+		return (Cacheable) CompressionUtils.fromSerialized(serializedObject);
 	}catch (IOException e){
 		lg.error(e);
 		throw new RuntimeException(e.getMessage());
@@ -77,7 +78,7 @@ public Cacheable getWorkingCopy() {
 	try {
 		if (!isUnchanged()){
 			System.out.println("WARNING DbObjectWrapper.getWorkingCopy(), object "+workingObject+" has changed");
-			workingObject = (Cacheable)BeanUtils.fromSerialized(serializedObject);
+			workingObject = (Cacheable) CompressionUtils.fromSerialized(serializedObject);
 		}
 		return workingObject;
 	}catch (IOException e){

@@ -16,6 +16,7 @@ import java.io.ObjectOutputStream;
 import cbit.vcell.math.VariableType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.vcell.util.CompressionUtils;
 
 /**
  * This type was created in VisualAge.
@@ -101,7 +102,7 @@ private void inflate() {
 
 	try {
 		//Object objArray[] =  { varType, info, data};
-		Object objArray[] = (Object[])org.vcell.util.BeanUtils.fromCompressedSerialized(compressedBytes);
+		Object objArray[] = (Object[]) CompressionUtils.fromCompressedSerialized(compressedBytes);
 		varType = (VariableType)objArray[0];
 		info = (PDEDataInfo)objArray[1];
 		data = (double[])objArray[2];
@@ -125,7 +126,7 @@ private void writeObject(ObjectOutputStream s) throws IOException {
 	Object objArray[] =  { varType, info, data};
 
 	if (compressedBytes == null) {
-		compressedBytes = org.vcell.util.BeanUtils.toCompressedSerialized(objArray);
+		compressedBytes = CompressionUtils.toCompressedSerialized(objArray);
 	}
 	s.writeInt(compressedBytes.length);
 	s.write(compressedBytes);

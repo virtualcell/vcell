@@ -15,6 +15,7 @@ import java.io.ObjectOutputStream;
 
 import cbit.image.VCImageInfo;
 import cbit.vcell.geometry.GeometryInfo;
+import org.vcell.util.CompressionUtils;
 
 /**
  * Insert the type's description here.
@@ -118,7 +119,7 @@ private void inflate() {
 
 	try {
 		//Object objArray[] =  { user, bioModelInfos, mathModelInfos, geometryInfos, vcImageInfos};
-		Object objArray[] = (Object[])org.vcell.util.BeanUtils.fromCompressedSerialized(compressedBytes);
+		Object objArray[] = (Object[]) CompressionUtils.fromCompressedSerialized(compressedBytes);
 		user = (User)objArray[0];
 		bioModelInfos = (BioModelInfo[])objArray[1];
 		mathModelInfos = (MathModelInfo[])objArray[2];	
@@ -142,7 +143,7 @@ private void writeObject(ObjectOutputStream s) throws IOException {
 	Object objArray[] =  { user, bioModelInfos, mathModelInfos, geometryInfos, vcImageInfos};
 
 	if (compressedBytes == null) {
-		compressedBytes = org.vcell.util.BeanUtils.toCompressedSerialized(objArray);
+		compressedBytes = CompressionUtils.toCompressedSerialized(objArray);
 	}
 	s.writeInt(compressedBytes.length);
 	s.write(compressedBytes);

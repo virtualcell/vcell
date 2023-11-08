@@ -22,7 +22,7 @@ import javax.jms.TemporaryQueue;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bson.types.ObjectId;
-import org.vcell.util.BeanUtils;
+import org.vcell.util.CompressionUtils;
 import org.vcell.util.document.UserLoginInfo;
 
 import cbit.vcell.message.VCMessage;
@@ -251,7 +251,7 @@ public class MessageProducerSessionJms implements VCMessageSession {
 				byte[] serializedBytes = null;
 
 				if (object!=null){
-					serializedBytes = BeanUtils.toSerialized(object);
+					serializedBytes = CompressionUtils.toSerialized(object);
 				}
 
 				long blobMessageSizeThreshold = Long.parseLong(PropertyLoader.getProperty(PropertyLoader.jmsBlobMessageMinSize, "100000"));

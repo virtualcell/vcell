@@ -136,7 +136,7 @@ public void addSimulation(Simulation simulation) throws java.beans.PropertyVetoE
 	if (getNumSimulations()==0){
 		setSimulations(new Simulation[] { simulation });
 	}else{
-		setSimulations((Simulation[])BeanUtils.addElement(fieldSimulations,simulation));
+		setSimulations((Simulation[]) ArrayUtils.addElement(fieldSimulations,simulation));
 	}
 
 }

@@ -17,13 +17,7 @@ import java.util.Hashtable;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.vcell.util.CacheException;
-import org.vcell.util.CacheStatus;
-import org.vcell.util.Cacheable;
-import org.vcell.util.Immutable;
-import org.vcell.util.Ping;
-import org.vcell.util.Pingable;
-import org.vcell.util.TimeWrapper;
+import org.vcell.util.*;
 import org.vcell.util.document.KeyValue;
 
 import cbit.vcell.resource.PropertyLoader;
@@ -48,17 +42,10 @@ public class DBCacheTable implements Pingable {
 	private long maxMemSize = 0;
 	private double cleanupFraction = 0.8;
 
-/**
- * This method was created in VisualAge.
- * @param expireTime long
- */
 public DBCacheTable(long expireTimeMillisec) {
 	this(expireTimeMillisec,0);
 }
-/**
- * This method was created in VisualAge.
- * @param expireTime long
- */
+
 public DBCacheTable(long expireTimeMillisec, long maxMemSize) {
 	//
 	// if max size not specified, use half of memory
@@ -217,7 +204,7 @@ public void putProtected(KeyValue key, Cacheable cacheable) throws CacheExceptio
 	long dataSize = 1000;
 	byte[] objData = null;
 	try {
-		objData = org.vcell.util.BeanUtils.toSerialized(cacheable);
+		objData = CompressionUtils.toSerialized(cacheable);
 		//
 		// dataSize is length*3 because three copies are stored in DbObjectWrapper (reference/bytes/working).
 		//
@@ -262,7 +249,7 @@ public void putUnprotected(KeyValue key, Cacheable cacheable) throws CacheExcept
 	}
 	long dataSize = 1000;
 	try {
-		byte[] objData = org.vcell.util.BeanUtils.toSerialized(cacheable);
+		byte[] objData = CompressionUtils.toSerialized(cacheable);
 		dataSize = objData.length;
 	}catch (IOException e){
 		throw new CacheException(e.getMessage(), e);

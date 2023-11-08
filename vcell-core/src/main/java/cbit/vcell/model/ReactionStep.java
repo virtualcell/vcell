@@ -193,7 +193,7 @@ public synchronized void addPropertyChangeListener(java.beans.PropertyChangeList
 public void addReactionParticipant(ReactionParticipant reactionParticipant) throws PropertyVetoException {
 	if (!contains(reactionParticipant)){
 		try{
-			ReactionParticipant newReactionParticipants[] = (ReactionParticipant[])BeanUtils.addElement(fieldReactionParticipants, reactionParticipant);
+			ReactionParticipant newReactionParticipants[] = (ReactionParticipant[]) ArrayUtils.addElement(fieldReactionParticipants, reactionParticipant);
 			setReactionParticipants(newReactionParticipants);
 		}catch (Exception e){
 			lg.warn("exception: error adding reactionParticipant to reactionStep ..."+e.getMessage(), e);

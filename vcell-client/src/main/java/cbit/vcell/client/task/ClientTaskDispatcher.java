@@ -33,10 +33,7 @@ import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-import org.vcell.util.BeanUtils;
-import org.vcell.util.ProgrammingException;
-import org.vcell.util.ProgressDialogListener;
-import org.vcell.util.UserCancelException;
+import org.vcell.util.*;
 import org.vcell.util.gui.AsynchProgressPopup;
 import org.vcell.util.gui.GuiUtils;
 import org.vcell.util.gui.ProgressDialog;
@@ -362,7 +359,7 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 					}
 					if (hash.containsKey(TASKS_TO_BE_SKIPPED)) {
 						String[] toSkip = (String[])hash.get(TASKS_TO_BE_SKIPPED);
-						if (BeanUtils.arrayContains(toSkip, currentTask.getClass().getName())) {
+						if (ArrayUtils.arrayContains(toSkip, currentTask.getClass().getName())) {
 							shouldRun = false;
 						}
 					}

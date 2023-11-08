@@ -9,6 +9,7 @@
  */
 
 package cbit.vcell.simdata;
+import org.vcell.util.ArrayUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.TimeSeriesJobSpec;
 import org.vcell.util.document.User;
@@ -142,7 +143,7 @@ public void makeRemoteFile(ExportSpecs exportSpecs) throws DataAccessException {
 public void refreshIdentifiers() {
 	try {
 		setDataIdentifiers(getDataServerImpl().getDataIdentifiers(getOutputContext(),user, getVCDataIdentifier()));
-		if ( getVariableName() != null && !org.vcell.util.BeanUtils.arrayContains(getVariableNames(), getVariableName()) )  {
+		if ( getVariableName() != null && !ArrayUtils.arrayContains(getVariableNames(), getVariableName()) )  {
 			// This condition occurs if a function has been removed from the dataset (esp. MergedDataset->compare).
 			if (getDataIdentifiers() != null && getDataIdentifiers().length > 0) {
 				setVariableName(getDataIdentifiers()[0].getName());

@@ -603,7 +603,7 @@ private void refreshSpeciesContextSpecs() throws MappingException {
 		for (int j=0;j<speciesContexts.length;j++){
 			SpeciesContext sc = speciesContexts[j];
 			if (getSpeciesContextSpec(sc) == null) {
-				newSpeciesContextSpecs = (SpeciesContextSpec[])BeanUtils.addElement(newSpeciesContextSpecs,new SpeciesContextSpec(sc,getSimulationContext()));
+				newSpeciesContextSpecs = (SpeciesContextSpec[]) ArrayUtils.addElement(newSpeciesContextSpecs,new SpeciesContextSpec(sc,getSimulationContext()));
 			}
 		}
 	}
@@ -758,7 +758,7 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 		ModelParameter[] oldModelParams = (ModelParameter[])evt.getOldValue();
 		ModelParameter modelParam = null;
 		for (int i = 0; i < oldModelParams.length; i++) {
-			if (!BeanUtils.arrayContains(newModelParams, oldModelParams[i])) {
+			if (!ArrayUtils.arrayContains(newModelParams, oldModelParams[i])) {
 				modelParam = oldModelParams[i];
 			}
 		}

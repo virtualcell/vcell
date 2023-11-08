@@ -28,16 +28,7 @@ import java.util.Vector;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.vcell.util.BeanUtils;
-import org.vcell.util.CommentStringTokenizer;
-import org.vcell.util.Compare;
-import org.vcell.util.Coordinate;
-import org.vcell.util.CoordinateIndex;
-import org.vcell.util.Extent;
-import org.vcell.util.Hex;
-import org.vcell.util.ISize;
-import org.vcell.util.Matchable;
-import org.vcell.util.Origin;
+import org.vcell.util.*;
 
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.RegionImage;
@@ -658,7 +649,7 @@ public static CartesianMesh createSimpleCartesianMesh(Origin orig, Extent extent
 	mesh.setSize(size.getX(), size.getY(), size.getZ());
 	
 	mesh.meshRegionInfo = new MeshRegionInfo();	
-	byte[] compressRegionBytes = BeanUtils.compress(regionImage.getShortEncodedRegionIndexImage());
+	byte[] compressRegionBytes = CompressionUtils.compress(regionImage.getShortEncodedRegionIndexImage());
 	mesh.meshRegionInfo.setCompressedVolumeElementMapVolumeRegion(compressRegionBytes, mesh.getNumVolumeElements());
 	if(bCreateSubvolumeMap){
 		for (int i = 0; i < regionImage.getNumRegions(); i++) {
@@ -1199,7 +1190,7 @@ protected void inflate() {
 
 	try {
 		//Object objArray[] =  { version, size, origin, extent, meshRegionInfo, membraneElements, contourElements};
-		Object objArray[] = (Object[])BeanUtils.fromCompressedSerialized(compressedBytes);
+		Object objArray[] = (Object[]) CompressionUtils.fromCompressedSerialized(compressedBytes);
 		version = (String)objArray[0];
 		size = (ISize)objArray[1];
 		origin = (Origin)objArray[2];
@@ -1824,7 +1815,7 @@ protected Object[] getOutputFields() throws IOException
 
 private void writeObject(ObjectOutputStream s) throws IOException {
 	if (compressedBytes == null) {
-		compressedBytes = BeanUtils.toCompressedSerialized(getOutputFields());
+		compressedBytes = CompressionUtils.toCompressedSerialized(getOutputFields());
 	}
 	s.writeInt(compressedBytes.length);
 	s.write(compressedBytes);

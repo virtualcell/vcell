@@ -18,6 +18,8 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.units.VCUnitDefinition;
+import org.vcell.util.ArrayUtils;
+
 /**
  * Insert the type's description here.
  * Creation date: (4/7/2004 11:00:15 AM)
@@ -62,7 +64,7 @@ VoltageClampElectricalDevice(VoltageClampStimulus argVoltageClampStimulus, MathM
 	for (int i = 0;stimulusParameters!=null && i <stimulusParameters.length; i++){
 		if (stimulusParameters[i].getRole() == ElectricalStimulus.ElectricalStimulusParameterType.UserDefined){
 			ElectricalDeviceParameter newParam = new ElectricalDeviceParameter(stimulusParameters[i].getName(),new Expression(stimulusParameters[i].getExpression()),ROLE_UserDefined,stimulusParameters[i].getUnitDefinition());
-			parameters = (ElectricalDeviceParameter[])org.vcell.util.BeanUtils.addElement(parameters,newParam);
+			parameters = (ElectricalDeviceParameter[]) ArrayUtils.addElement(parameters,newParam);
 		}
 	}
 	

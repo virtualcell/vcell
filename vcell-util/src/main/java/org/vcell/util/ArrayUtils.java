@@ -1,5 +1,7 @@
 package org.vcell.util;
 
+import com.sun.istack.NotNull;
+
 import java.lang.reflect.Array;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -18,10 +20,27 @@ public class ArrayUtils {
         return largerArray;
     }
 
-    public static <T> boolean arrayContains(T[] objects, T object) {
-        if (object == null || objects == null) return false;
-        for (T obj : objects) if (object.equals(obj)) return true;
+    public static <T> boolean arrayContains(T[] subjectArray, T wantedElement) {
+        if (wantedElement == null || subjectArray == null) return false;
+        for (T element : subjectArray) if (wantedElement.equals(element)) return true;
         return false;
+    }
+
+    public static <T> int firstIndexOf(T[] subjectArray, T wantedElement){
+        if (subjectArray == null) return -1;
+        for (int i = 0; i < subjectArray.length; i++){
+            if (wantedElement.equals(subjectArray[i]))
+                return i;
+        }
+        return -1;
+    }
+
+    public static int firstIndexOf(double[] dd, double d) {
+        if (dd == null) return -1;
+        for (int i = 0; i < dd.length; i++){
+            if (d == dd[i]) return i;
+        }
+        return -1;
     }
 
     public static <T> boolean arrayEquals(T[] a1, T[] a2) {

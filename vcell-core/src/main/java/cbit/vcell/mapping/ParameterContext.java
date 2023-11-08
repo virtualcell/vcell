@@ -454,7 +454,7 @@ public LocalProxyParameter addProxyParameter(SymbolTableEntry symbolTableEntry) 
 		throw new RuntimeException("referenced external symbol '"+symbolTableEntry.getName()+"' already exists");
 	}
 	LocalProxyParameter newProxyParameter = new LocalProxyParameter(symbolTableEntry);
-	LocalProxyParameter newProxyParameters[] = (LocalProxyParameter[])BeanUtils.addElement(fieldProxyParameters,newProxyParameter);
+	LocalProxyParameter newProxyParameters[] = (LocalProxyParameter[]) ArrayUtils.addElement(fieldProxyParameters,newProxyParameter);
 	setProxyParameters(newProxyParameters);
 	return newProxyParameter;
 }
@@ -467,7 +467,7 @@ public UnresolvedParameter addUnresolvedParameter(String name){
 		throw new RuntimeException("referenced external symbol '"+name+"' already exists");
 	}
 	UnresolvedParameter newUnresolvedParameter = new UnresolvedParameter(name);
-	UnresolvedParameter newUnresolvedParameters[] = (UnresolvedParameter[])BeanUtils.addElement(fieldUnresolvedParameters,newUnresolvedParameter);
+	UnresolvedParameter newUnresolvedParameters[] = (UnresolvedParameter[]) ArrayUtils.addElement(fieldUnresolvedParameters,newUnresolvedParameter);
 	setUnresolvedParameters(newUnresolvedParameters);
 	return newUnresolvedParameter;
 }
@@ -916,7 +916,7 @@ public LocalParameter addLocalParameter(String name, Expression exp, ParameterRo
 		throw new RuntimeException("referenced external symbol '"+name+"' already exists");
 	}
 	LocalParameter newLocalParameter = new LocalParameter(name,exp,role,unit,description);
-	LocalParameter newParameters[] = (LocalParameter[])BeanUtils.addElement(fieldParameters,newLocalParameter);
+	LocalParameter newParameters[] = (LocalParameter[]) ArrayUtils.addElement(fieldParameters,newLocalParameter);
 	setLocalParameters(newParameters);
 	return newLocalParameter;
 }
@@ -1026,7 +1026,7 @@ public void setParameterValue(LocalParameter parm, Expression exp, boolean autoc
 			for (int i = 0; symbols!=null && i < symbols.length; i++){
 				SymbolTableEntry ste = getEntry(symbols[i]);
 				if (ste==null){
-					newLocalParameters = (LocalParameter[])BeanUtils.addElement(newLocalParameters,new LocalParameter(symbols[i],new Expression(0.0),RbmKineticLaw.RbmKineticLawParameterType.UserDefined, modelUnitSystem.getInstance_TBD(),RbmKineticLaw.RbmKineticLawParameterType.UserDefined.getDescription()));
+					newLocalParameters = (LocalParameter[]) ArrayUtils.addElement(newLocalParameters,new LocalParameter(symbols[i],new Expression(0.0),RbmKineticLaw.RbmKineticLawParameterType.UserDefined, modelUnitSystem.getInstance_TBD(),RbmKineticLaw.RbmKineticLawParameterType.UserDefined.getDescription()));
 				}
 			}
 			setLocalParameters(newLocalParameters);

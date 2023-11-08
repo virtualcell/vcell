@@ -772,7 +772,7 @@ public Expression getUnitFactor(VCUnitDefinition unitFactor) {
 	Expression factor = ModelUnitConverter.getDimensionlessScaleFactor(unitFactor, model.getUnitSystem().getInstance_DIMENSIONLESS(), model.getKMOLE());
 	String name = PARAMETER_K_UNITFACTOR_PREFIX + TokenMangler.fixTokenStrict(unitFactor.getSymbol().replace("-","_neg_"));
 	UnitFactorParameter unitFactorParameter = new UnitFactorParameter(name, new Expression(factor), unitFactor);
-	MathMappingParameter[] newMathMappingParameters = BeanUtils.addElement(this.fieldMathMappingParameters,unitFactorParameter);
+	MathMappingParameter[] newMathMappingParameters = ArrayUtils.addElement(this.fieldMathMappingParameters,unitFactorParameter);
 	try {
 		setMathMapppingParameters(newMathMappingParameters);
 	}catch (java.beans.PropertyVetoException e){
@@ -800,7 +800,7 @@ public RationalExp getUnitFactorAsRationalExp(VCUnitDefinition unitFactor) {
 	RationalExp factorRationalExp = ModelUnitConverter.getDimensionlessScaleFactorAsRationalExp(unitFactor, model.getUnitSystem().getInstance_DIMENSIONLESS(), model.getKMOLE());
 	String name = PARAMETER_K_UNITFACTOR_PREFIX + TokenMangler.fixTokenStrict(unitFactor.getSymbol().replace("-","_neg_"));
 	UnitFactorParameter unitFactorParameter = new UnitFactorParameter(name, new Expression(factorExp), unitFactor);
-	MathMappingParameter[] newMathMappingParameters = BeanUtils.addElement(this.fieldMathMappingParameters,unitFactorParameter);
+	MathMappingParameter[] newMathMappingParameters = ArrayUtils.addElement(this.fieldMathMappingParameters,unitFactorParameter);
 	try {
 		setMathMapppingParameters(newMathMappingParameters);
 	}catch (java.beans.PropertyVetoException e){
@@ -1615,7 +1615,7 @@ final LocalizedDistanceToMembraneQuantity addLocalizedDistanceToMembraneQuantity
 		}
 		return (LocalizedDistanceToMembraneQuantity)previousQuantity;
 	}
-	MathMappingQuantity newQuantities[] = (MathMappingQuantity[])BeanUtils.addElement(fieldMathMappingQuantities,newQuantity);
+	MathMappingQuantity newQuantities[] = (MathMappingQuantity[]) ArrayUtils.addElement(fieldMathMappingQuantities,newQuantity);
 	setMathMapppingQuantities(newQuantities);
 	return newQuantity;
 }
@@ -1630,7 +1630,7 @@ final LocalizedDirectionToMembraneQuantity addLocalizedDirectionToMembraneQuanti
 		}
 		return (LocalizedDirectionToMembraneQuantity)previousQuantity;
 	}
-	MathMappingQuantity newQuantities[] = (MathMappingQuantity[])BeanUtils.addElement(fieldMathMappingQuantities,newQuantity);
+	MathMappingQuantity newQuantities[] = (MathMappingQuantity[]) ArrayUtils.addElement(fieldMathMappingQuantities,newQuantity);
 	setMathMapppingQuantities(newQuantities);
 	return newQuantity;
 }
@@ -1649,7 +1649,7 @@ final ObservableConcentrationParameter addObservableConcentrationParameter(Strin
 				return (ObservableConcentrationParameter)previousParameter;
 			}
 			//expression.bindExpression(this);
-			MathMappingParameter newParameters[] = (MathMappingParameter[])BeanUtils.addElement(fieldMathMappingParameters,newParameter);
+			MathMappingParameter newParameters[] = (MathMappingParameter[]) ArrayUtils.addElement(fieldMathMappingParameters,newParameter);
 			setMathMapppingParameters(newParameters);
 			return newParameter;
 		}
@@ -1670,7 +1670,7 @@ final ObservableCountParameter addObservableCountParameter(String name, Expressi
 				return (ObservableCountParameter)previousParameter;
 			}
 			//expression.bindExpression(this);
-			MathMappingParameter newParameters[] = (MathMappingParameter[])BeanUtils.addElement(fieldMathMappingParameters,newParameter);
+			MathMappingParameter newParameters[] = (MathMappingParameter[]) ArrayUtils.addElement(fieldMathMappingParameters,newParameter);
 			setMathMapppingParameters(newParameters);
 			return newParameter;
 		}
@@ -1689,7 +1689,7 @@ final SpeciesConcentrationParameter addSpeciesConcentrationParameter(String name
 				return (SpeciesConcentrationParameter)previousParameter;
 			}
 			//expression.bindExpression(this);
-			MathMappingParameter newParameters[] = (MathMappingParameter[])BeanUtils.addElement(fieldMathMappingParameters,newParameter);
+			MathMappingParameter newParameters[] = (MathMappingParameter[]) ArrayUtils.addElement(fieldMathMappingParameters,newParameter);
 			setMathMapppingParameters(newParameters);
 			return newParameter;
 		}
@@ -1707,7 +1707,7 @@ protected final SpeciesCountParameter addSpeciesCountParameter(String name, Expr
 		return (SpeciesCountParameter)previousParameter;
 	}
 	//expression.bindExpression(this);
-	MathMappingParameter newParameters[] = (MathMappingParameter[])BeanUtils.addElement(fieldMathMappingParameters,newParameter);
+	MathMappingParameter newParameters[] = (MathMappingParameter[]) ArrayUtils.addElement(fieldMathMappingParameters,newParameter);
 	setMathMapppingParameters(newParameters);
 	return newParameter;
 }
@@ -1738,7 +1738,7 @@ final ProbabilityParameter addProbabilityParameter(String name, Expression expre
 				return (ProbabilityParameter)previousParameter;
 			}
 			//expression.bindExpression(this);
-			MathMappingParameter newParameters[] = (MathMappingParameter[])BeanUtils.addElement(fieldMathMappingParameters,newParameter);
+			MathMappingParameter newParameters[] = (MathMappingParameter[]) ArrayUtils.addElement(fieldMathMappingParameters,newParameter);
 			setMathMapppingParameters(newParameters);
 			return newParameter;
 		}
@@ -1807,7 +1807,7 @@ public KFluxParameter getFluxCorrectionParameter(StructureMapping sourceStructur
 			fluxCorrectionExp.bindExpression(this);
 			String parameterName = PARAMETER_K_FLUX_PREFIX+sourceName+"_"+targetName;
 			KFluxParameter kFluxParameter = new KFluxParameter(parameterName,fluxCorrectionExp, unit, sourceStructureMapping,targetStructureMapping);
-			MathMappingParameter[] newMathMappingParameters = (MathMappingParameter[])BeanUtils.addElement(this.fieldMathMappingParameters,kFluxParameter);
+			MathMappingParameter[] newMathMappingParameters = (MathMappingParameter[]) ArrayUtils.addElement(this.fieldMathMappingParameters,kFluxParameter);
 			try {
 				setMathMapppingParameters(newMathMappingParameters);
 			}catch (java.beans.PropertyVetoException e){
@@ -1838,7 +1838,7 @@ final MathMappingParameter addMathMappingParameter(String name, Expression expre
 				return previousParameter;
 			}
 			expression.bindExpression(this);
-			MathMappingParameter newParameters[] = (MathMappingParameter[])BeanUtils.addElement(fieldMathMappingParameters,newParameter);
+			MathMappingParameter newParameters[] = (MathMappingParameter[]) ArrayUtils.addElement(fieldMathMappingParameters,newParameter);
 			setMathMapppingParameters(newParameters);
 			return newParameter;
 		}

@@ -12,7 +12,7 @@ package cbit.vcell.server;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import org.vcell.util.BeanUtils;
+import org.vcell.util.ArrayUtils;
 
 import cbit.rmi.event.SimulationJobStatusEvent;
 import cbit.vcell.solver.VCSimulationIdentifier;
@@ -61,14 +61,7 @@ public class SimulationStatus implements java.io.Serializable {
 	public static final int TASKID_RETRYCOUNTER_MASK	= 0x0000000F;
 	public static final int TASKID_USERINCREMENT	    = 0x00000010;
 
-/**
- * Insert the method's description here.
- * Creation date: (6/22/2001 1:28:48 PM)
- * @param status int
- * @param progress double
- * @param details java.lang.String
- * @param hasData boolean
- */
+
 public SimulationStatus(SimulationJobStatus[] jobStatuses0) {
 	//
 	// list of jobStatus passed in contain status
@@ -90,14 +83,6 @@ public SimulationStatus(SimulationJobStatus[] jobStatuses0) {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (6/22/2001 1:28:48 PM)
- * @param status int
- * @param progress double
- * @param details java.lang.String
- * @param hasData boolean
- */
 private SimulationStatus(int status, boolean hasData, int jobCount) {
 	this.status = status;
 	this.hasData = hasData;
@@ -203,7 +188,7 @@ public Double getProgress() {
 				Double jobProgress = progressHash.get(jobStatuses[i].getJobIndex());
 				if (jobProgress != null) {
 					bAllNullProgress = false;
-					progress += jobProgress.doubleValue();
+					progress += jobProgress;
 				}
 			}
 		}
@@ -211,7 +196,7 @@ public Double getProgress() {
 	if (bAllNullProgress) {
 		return null;
 	}
-	return new Double(progress);
+	return progress;
 }
 
 
@@ -249,21 +234,15 @@ public VCSimulationIdentifier getVCSimulationIdentifier() {
 	}
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (2/10/2004 11:25:17 AM)
- * @param newStatus int
- */
 private void initStatus() {
 	
 	boolean allNull = true;
-	for (int i = 0; i < jobStatuses.length; i++){
-		if (jobStatuses[i] != null) {
-			allNull = false;
-			break;
-		}
-	}
+    for (SimulationJobStatus jobStatus : jobStatuses) {
+        if (jobStatus != null) {
+            allNull = false;
+            break;
+        }
+    }
 	if (allNull) {
 		status = UNKNOWN;
 		return;
@@ -427,47 +406,23 @@ public boolean isUnknown() {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (2/10/2004 12:45:40 PM)
- * @return cbit.vcell.solver.ode.gui.SimulationStatus
- * @param jobStatus0 cbit.vcell.messaging.db.SimulationJobStatus
- * @param progress java.lang.Double
- */
 public static SimulationStatus newNeverRan(int jobCount) {
-	SimulationStatus newStatus = new SimulationStatus(NEVER_RAN, false, jobCount);
-//	System.out.println("##  ##  ##  ##  ##  ##  ##  ##  >>>> NEW NEVER RAN <<<<< ######################   newstatus=" + newStatus);
-	return newStatus;
+    //	System.out.println("##  ##  ##  ##  ##  ##  ##  ##  >>>> NEW NEVER RAN <<<<< ######################   newstatus=" + newStatus);
+	return new SimulationStatus(NEVER_RAN, false, jobCount);
 }
 
 public static SimulationStatus newNotSaved(int jobCount) {
-	SimulationStatus newStatus = new SimulationStatus(NOT_SAVED, false, jobCount);
-//	System.out.println("##  ##  ##  ##  ##  ##  ##  ##  >>>> NEW NOT SAVED <<<<< ######################   newstatus=" + newStatus);
-	return newStatus;
+    //	System.out.println("##  ##  ##  ##  ##  ##  ##  ##  >>>> NEW NOT SAVED <<<<< ######################   newstatus=" + newStatus);
+	return new SimulationStatus(NOT_SAVED, false, jobCount);
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (2/10/2004 12:45:40 PM)
- * @return cbit.vcell.solver.ode.gui.SimulationStatus
- * @param jobStatus0 cbit.vcell.messaging.db.SimulationJobStatus
- * @param progress java.lang.Double
- */
 public static SimulationStatus newStartRequest(int jobCount) {
-	SimulationStatus newStatus = new SimulationStatus(START_REQUESTED, false, jobCount);
-//	System.out.println("##  ##  ##  ##  ##  ##  ##  ##  >>>> NEW START REQUEST <<<<< ######################   newstatus=" + newStatus);
-	return newStatus;
+    //	System.out.println("##  ##  ##  ##  ##  ##  ##  ##  >>>> NEW START REQUEST <<<<< ######################   newstatus=" + newStatus);
+	return new SimulationStatus(START_REQUESTED, false, jobCount);
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (2/10/2004 12:45:40 PM)
- * @return cbit.vcell.solver.ode.gui.SimulationStatus
- * @param jobStatus0 cbit.vcell.messaging.db.SimulationJobStatus
- * @param progress java.lang.Double
- */
 public static SimulationStatus newStartRequestFailure(String failMsg, int jobCount) {
 	SimulationStatus newStatus = new SimulationStatus(FAILED, false, jobCount);
 	newStatus.details = failMsg;
@@ -475,14 +430,6 @@ public static SimulationStatus newStartRequestFailure(String failMsg, int jobCou
 	return newStatus;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (2/10/2004 12:45:40 PM)
- * @return cbit.vcell.solver.ode.gui.SimulationStatus
- * @param jobStatus0 cbit.vcell.messaging.db.SimulationJobStatus
- * @param progress java.lang.Double
- */
 public static SimulationStatus newStopRequest(SimulationStatus currentStatus) {
 	SimulationStatus newStatus = new SimulationStatus(currentStatus);
 	newStatus.status = STOP_REQUESTED;
@@ -492,13 +439,6 @@ public static SimulationStatus newStopRequest(SimulationStatus currentStatus) {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (2/10/2004 12:45:40 PM)
- * @return cbit.vcell.solver.ode.gui.SimulationStatus
- * @param jobStatus0 cbit.vcell.messaging.db.SimulationJobStatus
- * @param progress java.lang.Double
- */
 public static SimulationStatus newUnknown(int jobCount) {
 	SimulationStatus newStatus = new SimulationStatus(UNKNOWN, false, jobCount);
 	return newStatus;
@@ -598,7 +538,7 @@ private static SimulationStatus updateFromJobEvent0(SimulationStatus oldStatus, 
 	}
 	if (oldJobStatus == null) {
 		// we have nothing for this job, update
-		SimulationJobStatus[] newJobStatuses = (SimulationJobStatus[])BeanUtils.addElement(oldStatus.getJobStatuses(), newJobStatus);
+		SimulationJobStatus[] newJobStatuses = (SimulationJobStatus[]) ArrayUtils.addElement(oldStatus.getJobStatuses(), newJobStatus);
 		newSimStatus = new SimulationStatus(newJobStatuses);
 		newSimStatus.progressHash.putAll(oldStatus.progressHash);
 		newSimStatus.progressHash.put(newJobStatus.getJobIndex(), newProgress);

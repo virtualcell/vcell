@@ -682,14 +682,14 @@ public void refreshStructureMappings() throws MappingException, PropertyVetoExce
 			if (structure instanceof Feature){
 				FeatureMapping fm = new FeatureMapping((Feature)structure,fieldSimulationContext, getModel().getUnitSystem());
 				fm.setSimulationContext(this.fieldSimulationContext);
-				newStructureMappings = (StructureMapping[])BeanUtils.addElement(newStructureMappings,fm);
+				newStructureMappings = (StructureMapping[]) ArrayUtils.addElement(newStructureMappings,fm);
 				if (getGeometry().getDimension()==0){
 					fm.setGeometryClass((CompartmentSubVolume)getGeometry().getGeometrySpec().getSubVolumes()[0]);
 				}
 			}else if (structure instanceof Membrane){
 				MembraneMapping mm = new MembraneMapping((Membrane)structure,fieldSimulationContext, getModel().getUnitSystem());
 				mm.setSimulationContext(fieldSimulationContext);
-				newStructureMappings = (StructureMapping[])BeanUtils.addElement(newStructureMappings,mm);
+				newStructureMappings = (StructureMapping[]) ArrayUtils.addElement(newStructureMappings,mm);
 				if (getGeometry().getDimension()==0){
 					mm.setGeometryClass((CompartmentSubVolume)getGeometry().getGeometrySpec().getSubVolumes()[0]);
 				}

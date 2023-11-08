@@ -13,7 +13,6 @@ package cbit.vcell.constraints;
 import cbit.vcell.parser.SymbolUtils;
 import net.sourceforge.interval.ia_math.RealInterval;
 import org.vcell.util.ArrayUtils;
-import org.vcell.util.BeanUtils;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -55,10 +54,10 @@ public class ConstraintContainerImpl {
 	 * @param constraint cbit.vcell.constraints.AbstractConstraint
 	 */
 	public void addGeneralConstraint(GeneralConstraint constraint) throws PropertyVetoException {
-		if (BeanUtils.arrayContains(this.generalConstraints, constraint)){
+		if (ArrayUtils.arrayContains(this.generalConstraints, constraint)){
 			throw new RuntimeException(constraint + " already exists");
 		}
-		GeneralConstraint[] newGeneralConstraint = (GeneralConstraint[])BeanUtils.addElement(this.generalConstraints,constraint);
+		GeneralConstraint[] newGeneralConstraint = (GeneralConstraint[]) ArrayUtils.addElement(this.generalConstraints,constraint);
 		setGeneralConstraints(newGeneralConstraint);
 	}
 
@@ -80,10 +79,10 @@ public class ConstraintContainerImpl {
 
 
 	public void addSimpleBound(SimpleBounds bounds) throws PropertyVetoException {
-		if (BeanUtils.arrayContains(this.simpleBounds,bounds)){
+		if (ArrayUtils.arrayContains(this.simpleBounds,bounds)){
 			throw new RuntimeException(bounds+" already exists");
 		}
-		SimpleBounds[] newSimpleBounds = (SimpleBounds[])BeanUtils.addElement(this.simpleBounds,bounds);
+		SimpleBounds[] newSimpleBounds = (SimpleBounds[]) ArrayUtils.addElement(this.simpleBounds,bounds);
 		setSimpleBounds(newSimpleBounds);
 	}
 
@@ -301,7 +300,7 @@ public class ConstraintContainerImpl {
 	 * @param constraint cbit.vcell.constraints.AbstractConstraint
 	 */
 	public void removeGeneralConstraint(GeneralConstraint constraint) throws PropertyVetoException {
-		if (!BeanUtils.arrayContains(this.generalConstraints,constraint)){
+		if (!ArrayUtils.arrayContains(this.generalConstraints,constraint)){
 			throw new RuntimeException(constraint+" not found");
 		}
 		GeneralConstraint[] newGeneralConstraint = ArrayUtils.removeFirstInstanceOfElement(this.generalConstraints,constraint);
@@ -326,7 +325,7 @@ public class ConstraintContainerImpl {
 
 
 	public void removeSimpleBound(SimpleBounds bounds) throws PropertyVetoException {
-		if (!BeanUtils.arrayContains(this.simpleBounds,bounds)){
+		if (!ArrayUtils.arrayContains(this.simpleBounds,bounds)){
 			throw new RuntimeException(bounds+" not found");
 		}
 		SimpleBounds[] newSimpleBounds = ArrayUtils.removeFirstInstanceOfElement(this.simpleBounds,bounds);

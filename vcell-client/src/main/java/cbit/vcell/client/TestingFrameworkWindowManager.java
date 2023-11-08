@@ -32,7 +32,6 @@ import javax.swing.table.DefaultTableCellRenderer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.client.logicalwindow.LWNamespace;
-import org.vcell.sbml.vcell.StructureSizeSolver;
 import org.vcell.util.*;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.Severity;
@@ -70,10 +69,6 @@ import cbit.vcell.client.task.TFUpdateRunningStatus;
 import cbit.vcell.clientdb.ClientDocumentManager;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.export.server.ExportSpecs;
-import cbit.vcell.geometry.surface.GeometricRegion;
-import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
-import cbit.vcell.mapping.GeometryContext;
-import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.FilamentRegionVariable;
@@ -1278,7 +1273,7 @@ private String generateTestCriteriaReport(TestCaseNew testCase,TestCriteriaNew t
 						reportTCBuffer.append("\t\tPassed Variables : \n");
 						// Check if varSummary exists in failed summaries list. If not, simulation passed.
 						for (int m = 0; m < allVarSummaries.length; m++) {
-							if (!BeanUtils.arrayContains(failVarSummaries, allVarSummaries[m])) {
+							if (!ArrayUtils.arrayContains(failVarSummaries, allVarSummaries[m])) {
 								reportTCBuffer.append("\t\t\t"+allVarSummaries[m].toShortString()+"\n");
 							}
 						}
@@ -1304,7 +1299,7 @@ private String generateTestCriteriaReport(TestCaseNew testCase,TestCriteriaNew t
 						reportTCBuffer.append("\t\tPassed Variables : \n");
 						// Check if varSummary exists in failed summaries list. If not, simulation passed.
 						for (int m = 0; m < allVarSummaries.length; m++) {
-							if (!BeanUtils.arrayContains(failVarSummaries, allVarSummaries[m])) {
+							if (!ArrayUtils.arrayContains(failVarSummaries, allVarSummaries[m])) {
 								reportTCBuffer.append("\t\t\t"+allVarSummaries[m].toShortString()+"\n");
 							}
 						}
@@ -1342,7 +1337,7 @@ private String generateTestCriteriaReport(TestCaseNew testCase,TestCriteriaNew t
 						reportTCBuffer.append("\t\tPassed Variables : \n");
 						// Check if varSummary exists in failed summaries list. If not, simulation passed.
 						for (int m = 0; m < allVarSummaries.length; m++) {
-							if (!BeanUtils.arrayContains(failVarSummaries, allVarSummaries[m])) {
+							if (!ArrayUtils.arrayContains(failVarSummaries, allVarSummaries[m])) {
 								reportTCBuffer.append("\t\t\t"+allVarSummaries[m].toShortString()+"\n");
 							}
 						}
@@ -1375,7 +1370,7 @@ private String generateTestCriteriaReport(TestCaseNew testCase,TestCriteriaNew t
 						reportTCBuffer.append("\t\tPassed Variables : \n");
 						// Check if varSummary exists in failed summaries list. If not, simulation passed.
 						for (int m = 0; m < allVarSummaries.length; m++) {
-							if (!BeanUtils.arrayContains(failVarSummaries, allVarSummaries[m])) {
+							if (!ArrayUtils.arrayContains(failVarSummaries, allVarSummaries[m])) {
 								reportTCBuffer.append("\t\t\t"+allVarSummaries[m].toShortString()+"\n");
 							}
 						}
@@ -1404,7 +1399,7 @@ private String generateTestCriteriaReport(TestCaseNew testCase,TestCriteriaNew t
 						reportTCBuffer.append("\t\tPassed Variables : \n");
 						// Check if varSummary exists in failed summaries list. If not, simulation passed.
 						for (int m = 0; m < allVarSummaries.length; m++) {
-							if (!BeanUtils.arrayContains(failVarSummaries, allVarSummaries[m])) {
+							if (!ArrayUtils.arrayContains(failVarSummaries, allVarSummaries[m])) {
 								reportTCBuffer.append("\t\t\t"+allVarSummaries[m].toShortString()+"\n");
 							}
 						}
@@ -1449,7 +1444,7 @@ private String generateTestCriteriaReport(TestCaseNew testCase,TestCriteriaNew t
 						reportTCBuffer.append("\t\tPassed Variables : \n");
 						// Check if varSummary exists in failed summaries list. If not, simulation passed.
 						for (int m = 0; m < allVarSummaries.length; m++) {
-							if (!BeanUtils.arrayContains(failVarSummaries, allVarSummaries[m])) {
+							if (!ArrayUtils.arrayContains(failVarSummaries, allVarSummaries[m])) {
 								reportTCBuffer.append("\t\t\t"+allVarSummaries[m].toShortString()+"\n");
 							}
 						}

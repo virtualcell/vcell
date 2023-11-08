@@ -13,7 +13,6 @@ package cbit.vcell.export.gloworm.quicktime;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.util.ArrayUtils;
-import org.vcell.util.BeanUtils;
 
 import cbit.vcell.export.gloworm.atoms.MediaData;
 import cbit.vcell.export.gloworm.atoms.SampleSize;
@@ -195,7 +194,7 @@ public class AtomReader {
 	 * @param atomType java.lang.String
 	 */
 	public boolean isContainerAtom(String atomType) {
-		return BeanUtils.arrayContains(containerAtoms, atomType);
+		return ArrayUtils.arrayContains(containerAtoms, atomType);
 	}
 
 
@@ -306,7 +305,7 @@ public class AtomReader {
 			AtomInfo info = readOneAtomSig(offset);
 			din.skipBytes(info.size - 8);
 			offset += info.size;
-			childAtoms = (AtomInfo[])BeanUtils.addElement(childAtoms, info);
+			childAtoms = (AtomInfo[]) ArrayUtils.addElement(childAtoms, info);
 		}
 		din.close();
 		return childAtoms;
@@ -342,7 +341,7 @@ public class AtomReader {
 			AtomInfo info = readOneAtomSig(offset);
 			din.skipBytes(info.size - 8);
 			offset += info.size;
-			rootAtoms = (AtomInfo[])BeanUtils.addElement(rootAtoms, info);
+			rootAtoms = (AtomInfo[]) ArrayUtils.addElement(rootAtoms, info);
 		}
 		din.close();
 		return rootAtoms;

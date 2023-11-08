@@ -13,7 +13,7 @@ package cbit.vcell.mapping;
 import java.util.*;
 
 import cbit.vcell.math.*;
-import org.vcell.util.BeanUtils;
+import org.vcell.util.ArrayUtils;
 
 import cbit.vcell.mapping.SimContextTransformer.ModelEntityMapping;
 import cbit.vcell.mapping.SimContextTransformer.SimContextTransformation;
@@ -80,12 +80,6 @@ public Variable getVariable(SymbolTableEntry biologicalSymbol) {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (5/3/2006 3:48:47 PM)
- * @param ste cbit.vcell.parser.SymbolTableEntry
- * @param var cbit.vcell.math.Variable
- */
 public void put(SymbolTableEntry biologicalSymbol, String varName) {
 	if (biologicalSymbol instanceof ProxyParameter){
 		biologicalSymbol = ((ProxyParameter) biologicalSymbol).getTarget();
@@ -134,7 +128,7 @@ public void reconcileVarNames(MathDescription mathDesc) {
 				(SymbolTableEntry[])mathToBiologicalHash.put(var,new SymbolTableEntry[] {biologicalSymbol});
 			if(previousBiologicalSymbolArr != null){
 				SymbolTableEntry[] steArr =
-					(SymbolTableEntry[])BeanUtils.addElement(previousBiologicalSymbolArr,biologicalSymbol);
+					(SymbolTableEntry[]) ArrayUtils.addElement(previousBiologicalSymbolArr,biologicalSymbol);
 				mathToBiologicalHash.put(var,steArr);
 			}
 		}

@@ -885,7 +885,7 @@ public void addAnalysisTask(AnalysisTask analysisTask) throws PropertyVetoExcept
 	if (fieldAnalysisTasks==null){
 		setAnalysisTasks(new AnalysisTask[] { analysisTask });
 	}else{
-		AnalysisTask[] newAnalysisTasks = (AnalysisTask[])BeanUtils.addElement(fieldAnalysisTasks,analysisTask);
+		AnalysisTask[] newAnalysisTasks = (AnalysisTask[]) ArrayUtils.addElement(fieldAnalysisTasks,analysisTask);
 		setAnalysisTasks(newAnalysisTasks);
 	}
 }
@@ -901,7 +901,7 @@ public BioEvent addBioEvent(BioEvent bioEvent) throws PropertyVetoException {
 	if (fieldBioEvents == null){
 		setBioEvents(new BioEvent[] { bioEvent });
 	}else{
-		BioEvent[] newBioEvents = (BioEvent[])BeanUtils.addElement(fieldBioEvents, bioEvent);
+		BioEvent[] newBioEvents = (BioEvent[]) ArrayUtils.addElement(fieldBioEvents, bioEvent);
 		setBioEvents(newBioEvents);
 	}
 	return bioEvent;
@@ -1007,7 +1007,7 @@ public void addSimulation(Simulation newSimulation) throws java.beans.PropertyVe
 
 public void addSimulationContextParameter(SimulationContextParameter scParameter) throws PropertyVetoException {
 	if (!contains(scParameter)){
-		SimulationContextParameter newSCParameters[] = (SimulationContextParameter[])BeanUtils.addElement(fieldSimulationContextParameters,scParameter);
+		SimulationContextParameter newSCParameters[] = (SimulationContextParameter[]) ArrayUtils.addElement(fieldSimulationContextParameters,scParameter);
 		setSimulationContextParameters(newSCParameters);
 	}	
 }   
@@ -3334,7 +3334,7 @@ public RateRule addRateRule(RateRule rateRule) throws PropertyVetoException {
 	if (fieldRateRules == null){
 		setRateRules(new RateRule[] { rateRule });
 	}else{
-		RateRule[] newRateRules = (RateRule[])BeanUtils.addElement(fieldRateRules, rateRule);
+		RateRule[] newRateRules = (RateRule[]) ArrayUtils.addElement(fieldRateRules, rateRule);
 		setRateRules(newRateRules);
 	}
 	return rateRule;
@@ -3405,7 +3405,7 @@ public AssignmentRule addAssignmentRule(AssignmentRule assignmentRule) throws Pr
 	if (fieldAssignmentRules == null){
 		setAssignmentRules(new AssignmentRule[] { assignmentRule });
 	} else {
-		AssignmentRule[] newAssignmentRules = (AssignmentRule[])BeanUtils.addElement(fieldAssignmentRules, assignmentRule);
+		AssignmentRule[] newAssignmentRules = (AssignmentRule[]) ArrayUtils.addElement(fieldAssignmentRules, assignmentRule);
 		setAssignmentRules(newAssignmentRules);
 	}
 	return assignmentRule;
@@ -3558,7 +3558,7 @@ public SpatialObject[] getSpatialObjects(){
 }
 
 public void addSpatialObject(SpatialObject spatialObject) throws PropertyVetoException{
-	setSpatialObjects(BeanUtils.addElement(this.spatialObjects, spatialObject));
+	setSpatialObjects(ArrayUtils.addElement(this.spatialObjects, spatialObject));
 }
 
 public void removeSpatialObject(SpatialObject spatialObject) throws PropertyVetoException{
@@ -3616,7 +3616,7 @@ public SpatialProcess[] getSpatialProcesses(){
 }
 
 public void addSpatialProcess(SpatialProcess spatialProcess) throws PropertyVetoException{
-	setSpatialProcesses(BeanUtils.addElement(this.spatialProcesses, spatialProcess));
+	setSpatialProcesses(ArrayUtils.addElement(this.spatialProcesses, spatialProcess));
 }
 
 public void removeSpatialProcess(SpatialProcess spatialProcess) throws PropertyVetoException{

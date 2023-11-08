@@ -9,12 +9,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.vcell.util.BeanUtils;
-import org.vcell.util.Coordinate;
-import org.vcell.util.CoordinateIndex;
-import org.vcell.util.Extent;
-import org.vcell.util.ISize;
-import org.vcell.util.Origin;
+import org.vcell.util.*;
 
 import ncsa.hdf.hdf5lib.H5;
 import ncsa.hdf.object.Dataset;
@@ -161,7 +156,7 @@ public class CartesianMeshMovingBoundary extends CartesianMesh
 		}
 
 		try {
-			Object objArray[] = (Object[])BeanUtils.fromCompressedSerialized(compressedBytes);
+			Object objArray[] = (Object[]) CompressionUtils.fromCompressedSerialized(compressedBytes);
 			int index = 0;
 			dimension = (Integer)objArray[index];
 			size = (ISize)objArray[++ index];

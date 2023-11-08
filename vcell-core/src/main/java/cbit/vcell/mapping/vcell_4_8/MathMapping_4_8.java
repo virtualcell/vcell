@@ -395,7 +395,7 @@ MathMapping_4_8.MathMappingParameter addMathMappingParameter(String name, Expres
 		return previousParameter;
 	}
 	expression.bindExpression(this);
-	MathMapping_4_8.MathMappingParameter newParameters[] = (MathMapping_4_8.MathMappingParameter[])BeanUtils.addElement(fieldMathMappingParameters,newParameter);
+	MathMapping_4_8.MathMappingParameter newParameters[] = (MathMapping_4_8.MathMappingParameter[]) ArrayUtils.addElement(fieldMathMappingParameters,newParameter);
 	setMathMapppingParameters(newParameters);
 	return newParameter;
 }
@@ -421,7 +421,7 @@ MathMapping_4_8.ProbabilityParameter addProbabilityParameter(String name, Expres
 		return (MathMapping_4_8.ProbabilityParameter)previousParameter;
 	}
 	//expression.bindExpression(this);
-	MathMapping_4_8.MathMappingParameter newParameters[] = (MathMapping_4_8.MathMappingParameter[])BeanUtils.addElement(fieldMathMappingParameters,newParameter);
+	MathMapping_4_8.MathMappingParameter newParameters[] = (MathMapping_4_8.MathMappingParameter[]) ArrayUtils.addElement(fieldMathMappingParameters,newParameter);
 	setMathMapppingParameters(newParameters);
 	return newParameter;
 }
@@ -438,7 +438,7 @@ MathMapping_4_8.SpeciesConcentrationParameter addSpeciesConcentrationParameter(S
 		return (MathMapping_4_8.SpeciesConcentrationParameter)previousParameter;
 	}
 	//expression.bindExpression(this);
-	MathMapping_4_8.MathMappingParameter newParameters[] = (MathMapping_4_8.MathMappingParameter[])BeanUtils.addElement(fieldMathMappingParameters,newParameter);
+	MathMapping_4_8.MathMappingParameter newParameters[] = (MathMapping_4_8.MathMappingParameter[]) ArrayUtils.addElement(fieldMathMappingParameters,newParameter);
 	setMathMapppingParameters(newParameters);
 	return newParameter;
 }
@@ -455,7 +455,7 @@ MathMapping_4_8.SpeciesCountParameter addSpeciesCountParameter(String name, Expr
 		return (MathMapping_4_8.SpeciesCountParameter)previousParameter;
 	}
 	//expression.bindExpression(this);
-	MathMapping_4_8.MathMappingParameter newParameters[] = (MathMapping_4_8.MathMappingParameter[])BeanUtils.addElement(fieldMathMappingParameters,newParameter);
+	MathMapping_4_8.MathMappingParameter newParameters[] = (MathMapping_4_8.MathMappingParameter[]) ArrayUtils.addElement(fieldMathMappingParameters,newParameter);
 	setMathMapppingParameters(newParameters);
 	return newParameter;
 }
@@ -471,7 +471,7 @@ MathMapping_4_8.EventAssignmentInitParameter addEventAssignmentInitParameter(Str
 		}
 		return (MathMapping_4_8.EventAssignmentInitParameter)previousParameter;
 	}
-	MathMapping_4_8.MathMappingParameter newParameters[] = (MathMapping_4_8.MathMappingParameter[])BeanUtils.addElement(fieldMathMappingParameters,newParameter);
+	MathMapping_4_8.MathMappingParameter newParameters[] = (MathMapping_4_8.MathMappingParameter[]) ArrayUtils.addElement(fieldMathMappingParameters,newParameter);
 	setMathMapppingParameters(newParameters);
 	return newParameter;
 }
@@ -1424,7 +1424,7 @@ private void refreshKFluxParameters() throws ExpressionException {
 			String membraneNameWithScope = membraneMapping.getNameScope().getName();
 			String insideName = "KFlux_"+membraneNameWithScope+"_"+insideFeature.getNameScope().getName();
 			KFluxParameter insideKFluxParameter = new KFluxParameter(insideName,insideCorrectionExp,lengthInverseUnit,membraneMapping,insideFeature);
-			newMathMappingParameters = (MathMappingParameter[])BeanUtils.addElement(newMathMappingParameters,insideKFluxParameter);
+			newMathMappingParameters = (MathMappingParameter[]) ArrayUtils.addElement(newMathMappingParameters,insideKFluxParameter);
 
 			//
 			// add "outside" flux correction
@@ -1434,7 +1434,7 @@ private void refreshKFluxParameters() throws ExpressionException {
 			Feature outsideFeature = structTopology.getOutsideFeature(memMappingMembrane);
 			String outsideName = "KFlux_"+membraneNameWithScope+"_"+outsideFeature.getNameScope().getName();
 			KFluxParameter outsideKFluxParameter = new KFluxParameter(outsideName,outsideCorrectionExp,lengthInverseUnit,membraneMapping,outsideFeature);
-			newMathMappingParameters = (MathMappingParameter[])BeanUtils.addElement(newMathMappingParameters,outsideKFluxParameter);
+			newMathMappingParameters = (MathMappingParameter[]) ArrayUtils.addElement(newMathMappingParameters,outsideKFluxParameter);
 		}
 	}
 	try {

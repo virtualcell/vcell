@@ -297,7 +297,7 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
 		if (getNumSimulations()==0){
 			setSimulations(new Simulation[] { simulation });
 		}else{
-			setSimulations(BeanUtils.addElement(fieldSimulations,simulation));
+			setSimulations(ArrayUtils.addElement(fieldSimulations,simulation));
 		}
 
 	}
@@ -316,7 +316,7 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
 		if (getNumSimulationContexts()==0){
 			setSimulationContexts(new SimulationContext[] { simulationContext });
 		}else{
-			setSimulationContexts(BeanUtils.addElement(fieldSimulationContexts,simulationContext));
+			setSimulationContexts(ArrayUtils.addElement(fieldSimulationContexts,simulationContext));
 		}
 	}
 

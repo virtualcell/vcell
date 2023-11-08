@@ -12,26 +12,19 @@
 package org.vcell.util;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.ObjectInputStream;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.io.StringWriter;
-import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.net.InetSocketAddress;
 import java.net.URL;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.Executors;
-import java.util.stream.Collectors;
-import java.util.zip.DeflaterOutputStream;
-import java.util.zip.InflaterInputStream;
 
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -152,115 +145,7 @@ public final class BeanUtils {
 	}
 
 	public static Serializable cloneSerializable(Serializable obj) throws ClassNotFoundException, java.io.IOException {
-        return fromSerialized(toSerialized(obj));
-	}
-
-	public static byte[] compress(byte[] bytes) throws java.io.IOException {
-		try (ByteArrayOutputStream bos = new ByteArrayOutputStream()){
-			try (DeflaterOutputStream dos = new DeflaterOutputStream(bos)){
-				dos.write(bytes,0, bytes.length);
-			}
-			return bos.toByteArray();
-		}
-	}
-
-	public static byte[] uncompress(byte[] compressedBytes) throws java.io.IOException {
-		try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
-			try (ByteArrayInputStream bis = new ByteArrayInputStream(compressedBytes)) {
-				try (InflaterInputStream iis = new InflaterInputStream(bis)) {
-					int temp;
-					byte[] buf = new byte[65536]; // 64 KiB
-					while((temp = iis.read(buf,0,buf.length)) != -1){
-						bos.write(buf,0,temp);
-					}
-				}
-			}
-			return bos.toByteArray();
-		}
-	}
-
-	public static Serializable fromCompressedSerialized(byte[] objData) throws ClassNotFoundException, java.io.IOException {
-		long before = 0, after;
-		boolean traceIsEnabled = lg.isTraceEnabled();
-		if (traceIsEnabled) before = System.currentTimeMillis();
-
-		Serializable cacheClone;
-		try (java.io.ByteArrayInputStream bis = new java.io.ByteArrayInputStream(objData)){
-			try (InflaterInputStream iis = new InflaterInputStream(bis)){
-				try (java.io.ObjectInputStream ois = new java.io.ObjectInputStream(iis)){
-					cacheClone = (Serializable) ois.readObject();
-				}
-			}
-		}
-
-		if (traceIsEnabled) {
-			after = System.currentTimeMillis();
-			lg.trace(String.format("fromCompressedSerialized(): t=%d ms, (%s)", after - before, cacheClone.toString()));
-		}
-		return cacheClone;
-	}
-
-	public static Serializable fromSerialized(byte[] objData) throws ClassNotFoundException, IOException {
-		long before = 0, after;
-		if (lg.isTraceEnabled()) before = System.currentTimeMillis();
-
-		Serializable cacheClone;
-		try (ByteArrayInputStream bis = new ByteArrayInputStream(objData)) {
-			try (ObjectInputStream ois = new ObjectInputStream(bis)) {
-				cacheClone = (Serializable) ois.readObject();
-			}
-		}
-
-		if (lg.isTraceEnabled()) {
-			after = System.currentTimeMillis();
-			lg.trace("fromSerialized(): t="+(after-before)+" ms, ("+cacheClone+")");
-		}
-		return cacheClone;
-	}
-
-	public static byte[] toCompressedSerialized(Serializable cacheObj) throws java.io.IOException {
-		byte[] bytes = toSerialized(cacheObj);
-		long before = System.currentTimeMillis();
-
-		byte[] objData = null;
-		java.io.ByteArrayOutputStream bos = new java.io.ByteArrayOutputStream();
-		DeflaterOutputStream dos = new DeflaterOutputStream(bos);
-		java.io.ObjectOutputStream oos = new java.io.ObjectOutputStream(dos);
-		oos.writeObject(cacheObj);
-		oos.flush();
-		dos.close();
-		bos.flush();
-		objData = bos.toByteArray();
-		oos.close();
-		bos.close();
-
-		long after = System.currentTimeMillis();
-		if (lg.isTraceEnabled()) lg.trace("toSerialized(), t="+(after-before)+" ms, ("+cacheObj+") ratio=" + objData.length + "/" + bytes.length);
-
-		return objData;
-	}
-
-	public static byte[] toSerialized(Serializable cacheObj) throws java.io.IOException {
-		long before = 0;
-		if (lg.isTraceEnabled()) {
-			before = System.currentTimeMillis();
-		}
-
-		byte[] objData = null;
-		java.io.ByteArrayOutputStream bos = new java.io.ByteArrayOutputStream();
-		java.io.ObjectOutputStream oos = new java.io.ObjectOutputStream(bos);
-		oos.writeObject(cacheObj);
-		oos.flush();
-		objData = bos.toByteArray();
-		oos.close();
-		bos.close();
-
-		if (lg.isTraceEnabled()) {
-			long after = System.currentTimeMillis();
-			lg.trace("toSerialized, t="+(after-before)+" ms, ("+cacheObj+")");
-		}
-
-		return objData;
+        return CompressionUtils.fromSerialized(CompressionUtils.toSerialized(obj));
 	}
 
 	public static int coordinateToIndex(int[] coordinates, int[] bounds) {
@@ -296,14 +181,6 @@ public final class BeanUtils {
 		return coordinates;
 	}
 
-	public static int firstIndexOf(double[] dd, double d) {
-		if (dd == null) return -1;
-		for (int i = 0; i < dd.length; i++){
-			if (d == dd[i]) return i;
-		}
-		return -1;
-	}
-
 	public static String forceStringLength(String originalString, int targetLength, String pad, boolean shouldPrependPad) {
 		if (targetLength < 0) throw new IllegalArgumentException("Size can not be negative");
 		if(targetLength == 0) return "";
@@ -323,28 +200,6 @@ public final class BeanUtils {
 		if(shouldPrependPad) return fullPadding.substring(0,targetLength - originalString.length()) + originalString;
 
 		return originalString + fullPadding.substring(0,targetLength-originalString.length());
-	}
-
-	public static <T> T[] addElement(T[] originalArray, T element) {
-		T[] largerArray = Arrays.copyOf(originalArray, originalArray.length + 1);
-		largerArray[originalArray.length] = element;
-		return largerArray;
-	}
-
-	public static <T> T[] addElements(T[] firstArray, T[] appendingArray) {
-		T[] largerArray = Arrays.copyOf(firstArray, firstArray.length + appendingArray.length);
-		System.arraycopy(appendingArray, 0, largerArray, firstArray.length, appendingArray.length);
-		return largerArray;
-	}
-
-	public static <T> boolean arrayContains(T[] objects, T object) {
-		if (object == null || objects == null) return false;
-		for (T obj : objects) if (object.equals(obj)) return true;
-		return false;
-	}
-
-	public static <T> boolean arrayEquals(T[] a1, T[] a2) {
-		return a1 == a2 || (a1 != null && a2 != null && Arrays.equals(a1, a2));
 	}
 
 	public static boolean triggersPropertyChangeEvent(Object a, Object b) {

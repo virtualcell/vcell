@@ -18,15 +18,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 
-import cbit.vcell.matrix.MatrixException;
-import cbit.vcell.model.ModelException;
 import org.vcell.db.DatabaseSyntax;
-import org.vcell.sbml.vcell.StructureSizeSolver;
-import org.vcell.util.DataAccessException;
-import org.vcell.util.DependencyException;
-import org.vcell.util.ObjectNotFoundException;
-import org.vcell.util.PermissionException;
-import org.vcell.util.TokenMangler;
+import org.vcell.util.*;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.Version;
@@ -79,11 +72,6 @@ public class SimulationContextDbDriver extends DbDriver {
 	private ModelDbDriver modelDB = null;
 	private MathDescriptionDbDriver mathDescDB = null;
 
-/**
- * SimContextDbDriver constructor comment.
- * @param connectionFactory cbit.sql.ConnectionFactory
- * @param sessionLog cbit.vcell.server.SessionLog
- */
 public SimulationContextDbDriver(GeomDbDriver argGeomDB,ModelDbDriver argModelDB,
 		MathDescriptionDbDriver argMathDescDB) {
 	super(argGeomDB.dbSyntax, argGeomDB.keyFactory);
@@ -425,19 +413,19 @@ private void assignStimuliSQL(Connection con,KeyValue simContextKey, SimulationC
 					Electrode electrode = new Electrode((Feature)theStructure,new org.vcell.util.Coordinate(posX,posY,posZ));
 					TotalCurrentClampStimulus stimulus = new TotalCurrentClampStimulus(electrode,name,exp,simContext);
 					stimulus.parameterVCMLSet(paramsCST);
-					ElectricalStimulus newStimuli[] = (ElectricalStimulus[])org.vcell.util.BeanUtils.addElement(simContext.getElectricalStimuli(),stimulus);
+					ElectricalStimulus newStimuli[] = (ElectricalStimulus[]) ArrayUtils.addElement(simContext.getElectricalStimuli(),stimulus);
 					simContext.setElectricalStimuli(newStimuli);
 				}else if (stimulusType == StimulusTable.CURRENTDENSITY_CLAMP_STIMULUS){
 					Electrode electrode = new Electrode((Feature)theStructure,new org.vcell.util.Coordinate(posX,posY,posZ));
 					CurrentDensityClampStimulus stimulus = new CurrentDensityClampStimulus(electrode,name,exp,simContext);
 					stimulus.parameterVCMLSet(paramsCST);
-					ElectricalStimulus newStimuli[] = (ElectricalStimulus[])org.vcell.util.BeanUtils.addElement(simContext.getElectricalStimuli(),stimulus);
+					ElectricalStimulus newStimuli[] = (ElectricalStimulus[]) ArrayUtils.addElement(simContext.getElectricalStimuli(),stimulus);
 					simContext.setElectricalStimuli(newStimuli);
 				}else if (stimulusType == StimulusTable.VOLTAGE_CLAMP_STIMULUS){
 					Electrode electrode = new Electrode((Feature)theStructure,new org.vcell.util.Coordinate(posX,posY,posZ));
 					VoltageClampStimulus stimulus = new VoltageClampStimulus(electrode,name,exp,simContext);
 					stimulus.parameterVCMLSet(paramsCST);
-					ElectricalStimulus newStimuli[] = (ElectricalStimulus[])org.vcell.util.BeanUtils.addElement(simContext.getElectricalStimuli(),stimulus);
+					ElectricalStimulus newStimuli[] = (ElectricalStimulus[]) ArrayUtils.addElement(simContext.getElectricalStimuli(),stimulus);
 					simContext.setElectricalStimuli(newStimuli);
 				}else{
 					throw new DataAccessException("unknown stimulusType <"+stimulusType+">");
@@ -697,12 +685,6 @@ private void deleteSimContextSQL(Connection con,User user, KeyValue simContextKe
 }
 
 
-/**
- * This method was created in VisualAge.
- * @param user cbit.vcell.server.User
- * @param vType int
- * @param versionKey cbit.sql.KeyValue
- */
 public void deleteVersionable(Connection con, User user, VersionableType vType, KeyValue vKey) 
 				throws DependencyException, ObjectNotFoundException,
 						SQLException,DataAccessException,PermissionException {
@@ -812,12 +794,6 @@ private SimulationContext getSimulationContextSQL(QueryHashtable dbc, Connection
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return cbit.sql.Versionable
- * @param user cbit.vcell.server.User
- * @param versionable cbit.sql.Versionable
- */
 public Versionable getVersionable(QueryHashtable dbc, Connection con, User user, VersionableType vType, KeyValue vKey) 
 			throws ObjectNotFoundException, SQLException, DataAccessException {
 				
@@ -1107,13 +1083,6 @@ private void insertStructureMappingsSQL(InsertHashtable hash, Connection con, Ke
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return cbit.sql.KeyValue
- * @param versionable cbit.sql.Versionable
- * @param pRef cbit.sql.KeyValue
- * @param bCommit boolean
- */
 public KeyValue insertVersionable(InsertHashtable hash, Connection con, User user, SimulationContext simContext, KeyValue updatedMathDescKey, Model updatedModel, KeyValue updatedGeometryKey, String name, boolean bVersion) 
 					throws DataAccessException, SQLException, RecordChangedException {
 						
@@ -1128,16 +1097,10 @@ public KeyValue insertVersionable(InsertHashtable hash, Connection con, User use
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return cbit.image.VCImage
- * @param user cbit.vcell.server.User
- * @param image cbit.image.VCImage
- */
 public KeyValue updateVersionable(InsertHashtable hash,Connection con,User user,SimulationContext simContext,KeyValue updatedMathDescKey,Model updatedModel,KeyValue updatedGeometryKey,boolean bVersion)
     throws DataAccessException, SQLException, RecordChangedException {
 
-    Version newVersion = null;
+    Version newVersion;
     try {
         newVersion = updateVersionableInit(hash, con, user, simContext, bVersion);
         insertSimulationContext(hash,con,user,simContext,updatedMathDescKey,updatedModel,updatedGeometryKey,newVersion,bVersion);

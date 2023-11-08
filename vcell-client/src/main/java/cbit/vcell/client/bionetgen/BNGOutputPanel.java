@@ -797,7 +797,7 @@ private ReactionStep[] getCollapsedReactionSteps(ReactionStep[] reactionSteps) {
 			SpeciesContext[] revProducts = revProductsVector.toArray(SpeciesContext[]::new);
 
             // Check if reactants of reaction in outer 'for' loop match products in inner 'for' loop and vice versa.
-            if (BeanUtils.arrayEquals(fwdReactants, revProducts) && BeanUtils.arrayEquals(fwdProducts, revReactants)) {
+            if (ArrayUtils.arrayEquals(fwdReactants, revProducts) && ArrayUtils.arrayEquals(fwdProducts, revReactants)) {
                 // Set the reverse kinetic rate expression for the reaction in outer loop with the forward rate from reactionStep in inner loop
                 MassActionKinetics revMAKinetics = (MassActionKinetics) revRStep.getKinetics(); // inner 'for' loop
                 MassActionKinetics fwdMAKinetics = (MassActionKinetics) fwdRStep.getKinetics();  // outer 'for' loop

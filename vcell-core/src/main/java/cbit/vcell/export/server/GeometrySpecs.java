@@ -14,11 +14,12 @@ import java.io.Serializable;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.vcell.util.BeanUtils;
 
 import cbit.vcell.geometry.SinglePoint;
 import cbit.vcell.simdata.SpatialSelection;
 import cbit.vcell.simdata.SpatialSelectionMembrane;
+import org.vcell.util.CompressionUtils;
+
 /**
  * This type was created in VisualAge.
  */
@@ -44,7 +45,7 @@ public GeometrySpecs(SpatialSelection[] selections, int axis, int sliceNumber, i
 		try {
 			serializedSelections = new byte[selections.length][];
 			for (int i = 0; i < selections.length; i++){
-				serializedSelections[i] = BeanUtils.toSerialized(selections[i]);
+				serializedSelections[i] = CompressionUtils.toSerialized(selections[i]);
 			}
 		} catch (IOException exc) {
 			lg.error(exc);
@@ -224,7 +225,7 @@ public SpatialSelection[] getSelections() {
 		if (serializedSelections != null && spatialSelections == null) {
 			spatialSelections = new SpatialSelection[serializedSelections.length];
 			for (int i = 0; i < serializedSelections.length; i++){
-				spatialSelections[i] = (SpatialSelection)BeanUtils.fromSerialized(serializedSelections[i]);
+				spatialSelections[i] = (SpatialSelection) CompressionUtils.fromSerialized(serializedSelections[i]);
 			}
 		}
 		return spatialSelections;

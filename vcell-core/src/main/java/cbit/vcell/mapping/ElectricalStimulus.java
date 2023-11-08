@@ -17,12 +17,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Vector;
 
-import org.vcell.util.BeanUtils;
-import org.vcell.util.CommentStringTokenizer;
-import org.vcell.util.Compare;
+import org.vcell.util.*;
 import org.vcell.util.Issue.IssueSource;
-import org.vcell.util.Matchable;
-import org.vcell.util.TokenMangler;
 
 import cbit.vcell.mapping.ParameterContext.GlobalParameterContext;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
@@ -588,7 +584,7 @@ public void setParameterValue(LocalParameter parm, Expression exp) throws Expres
 		}
 		ModelUnitSystem modelUnitSystem = simulationContext.getModel().getUnitSystem();
 		for (int i = 0; i < symbolsToAdd.size(); i++){
-			newLocalParameters = (LocalParameter[])BeanUtils.addElement(newLocalParameters,
+			newLocalParameters = (LocalParameter[]) ArrayUtils.addElement(newLocalParameters,
 				parameterContext.new LocalParameter(symbolsToAdd.elementAt(i),new Expression(0.0),ElectricalStimulusParameterType.UserDefined, modelUnitSystem.getInstance_TBD(),ElectricalStimulusParameterType.UserDefined.databaseRoleTag));
 		}
 		parameterContext.setLocalParameters(newLocalParameters);

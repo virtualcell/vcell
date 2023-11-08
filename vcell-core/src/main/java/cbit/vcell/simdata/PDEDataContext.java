@@ -16,7 +16,7 @@ import java.util.Comparator;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.vcell.util.BeanUtils;
+import org.vcell.util.ArrayUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.PropertyChangeListenerProxyVCell;
 import org.vcell.util.document.TimeSeriesJobResults;
@@ -333,10 +333,10 @@ private synchronized void refreshData(DataIdentifier selectedDataIdentifier, dou
 			timePoint = fieldTimePoints[0];
 		}
 		
-		if (! BeanUtils.arrayContains(dataIdentifiers, selectedDataIdentifier)) {
+		if (! ArrayUtils.arrayContains(dataIdentifiers, selectedDataIdentifier)) {
 			throw new DataAccessException("Requested variable not found");
 		}
-		if (BeanUtils.firstIndexOf(getTimePoints(), timePoint) == -1) {
+		if (ArrayUtils.firstIndexOf(getTimePoints(), timePoint) == -1) {
 			if (getTimePoints() == null || getTimePoints().length == 0) {
 				throw new DataAccessException("No timepoints available");
 			} else {
@@ -379,7 +379,7 @@ private synchronized void refreshData(DataIdentifier selectedDataIdentifier, dou
 			firePropertyChange(PROPERTY_NAME_VARIABLE, oldDataiDataIdentifier, fieldDataIdentifier);
 		}
 		if(bTimePointChanged){
-			firePropertyChange(PROPERTY_NAME_TIME_POINT, new Double(oldTimePoint), new Double(getTimePoint()));
+			firePropertyChange(PROPERTY_NAME_TIME_POINT, oldTimePoint, getTimePoint());
 		}
 	}finally{
 		bBusy = false;

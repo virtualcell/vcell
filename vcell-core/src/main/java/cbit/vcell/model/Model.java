@@ -2008,7 +2008,7 @@ private ReservedSymbol[] createReservedSymbols() {
 
 public ModelParameter addModelParameter(Model.ModelParameter modelParameter) throws PropertyVetoException {
 //	if (!contains(modelParameter)){
-		Model.ModelParameter newModelParameters[] = (Model.ModelParameter[])BeanUtils.addElement(fieldModelParameters,modelParameter);
+		Model.ModelParameter newModelParameters[] = (Model.ModelParameter[]) ArrayUtils.addElement(fieldModelParameters,modelParameter);
 		setModelParameters(newModelParameters);
 //	}	
 	return modelParameter;
@@ -2016,7 +2016,7 @@ public ModelParameter addModelParameter(Model.ModelParameter modelParameter) thr
 
 public ModelFunction addModelFunction(Model.ModelFunction modelFunction) throws PropertyVetoException {
 //	if (!contains(modelParameter)){
-		Model.ModelFunction newModelFunctions[] = (Model.ModelFunction[])BeanUtils.addElement(fieldModelFunctions,modelFunction);
+		Model.ModelFunction newModelFunctions[] = (Model.ModelFunction[]) ArrayUtils.addElement(fieldModelFunctions,modelFunction);
 		setModelFunctions(newModelFunctions);
 //	}	
 	return modelFunction;
@@ -2044,7 +2044,7 @@ public Feature addFeature(String featureName) throws ModelException, PropertyVet
 		throw new ModelException("adding feature '"+featureName+"', structure already exists with that name");
 	}
 	Feature newFeature = new Feature(featureName);
-	Structure newStructures[] = (Structure[])BeanUtils.addElement(fieldStructures,newFeature);
+	Structure newStructures[] = (Structure[]) ArrayUtils.addElement(fieldStructures,newFeature);
 	setStructures(newStructures);
 	return newFeature;
 }
@@ -2055,7 +2055,7 @@ public Membrane addMembrane(String membraneName) throws ModelException, Property
 		throw new ModelException("adding membrane '"+membraneName+"', structure already exists with that name");
 	}
 	Membrane newMembrane = new Membrane(membraneName);
-	Structure newStructures[] = (Structure[])BeanUtils.addElement(fieldStructures,newMembrane);
+	Structure newStructures[] = (Structure[]) ArrayUtils.addElement(fieldStructures,newMembrane);
 	setStructures(newStructures);
 	return newMembrane;
 }
@@ -2064,7 +2064,7 @@ public Membrane addMembrane(String membraneName) throws ModelException, Property
 
 public ReactionStep addReactionStep(ReactionStep reactionStep) throws PropertyVetoException {
 	if (!contains(reactionStep)) {
-		setReactionSteps((ReactionStep[])BeanUtils.addElement(fieldReactionSteps,reactionStep));
+		setReactionSteps((ReactionStep[]) ArrayUtils.addElement(fieldReactionSteps,reactionStep));
 	}
 	return reactionStep;
 }
@@ -2072,7 +2072,7 @@ public ReactionStep addReactionStep(ReactionStep reactionStep) throws PropertyVe
 
 public Species addSpecies(Species species) throws PropertyVetoException {
 	if (!contains(species)){
-		Species newSpecies[] = (Species[])BeanUtils.addElement(fieldSpecies,species);
+		Species newSpecies[] = (Species[]) ArrayUtils.addElement(fieldSpecies,species);
 		setSpecies(newSpecies);
 	}
 	return species;
@@ -2110,7 +2110,7 @@ public SpeciesContext addSpeciesContext(SpeciesContext speciesContext) throws Pr
 		throw new RuntimeException("speciesContext for "+speciesContext.getSpecies().getCommonName()+" within "+speciesContext.getStructure().getName()+" already defined");
 	}
 	if (!contains(speciesContext)){
-		SpeciesContext[] newArray = (SpeciesContext[])BeanUtils.addElement(fieldSpeciesContexts,speciesContext);
+		SpeciesContext[] newArray = (SpeciesContext[]) ArrayUtils.addElement(fieldSpeciesContexts,speciesContext);
 		speciesContext.setModel(this);
 		setSpeciesContexts(newArray);
 	}
@@ -4184,7 +4184,7 @@ public void vetoableChange(PropertyChangeEvent e) throws ModelPropertyVetoExcept
 			// if 'newModelParameter' is smaller than 'oldModelParameter', one of the modelParams has been removed, find the missing one
 			ModelParameter missingMP = null;
 			for (int i = 0; i < oldModelParameters.length; i++) {
-				if (!BeanUtils.arrayContains(newModelParams, oldModelParameters[i])) {
+				if (!ArrayUtils.arrayContains(newModelParams, oldModelParameters[i])) {
 					missingMP = oldModelParameters[i];
 				}
 			}

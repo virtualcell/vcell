@@ -9,7 +9,7 @@
  */
 
 package cbit.vcell.mapping.potential;
-import org.vcell.util.BeanUtils;
+import org.vcell.util.ArrayUtils;
 
 import cbit.vcell.mapping.AbstractMathMapping;
 import cbit.vcell.mapping.CurrentDensityClampStimulus;
@@ -126,7 +126,7 @@ private void initializeParameters() throws ExpressionException {
 	for (int i = 0;stimulusParameters!=null && i <stimulusParameters.length; i++){
 		if (stimulusParameters[i].getRole() == ElectricalStimulus.ElectricalStimulusParameterType.UserDefined){
 			ElectricalDeviceParameter newParam = new ElectricalDeviceParameter(stimulusParameters[i].getName(),new Expression(stimulusParameters[i].getExpression()),ROLE_UserDefined,stimulusParameters[i].getUnitDefinition());
-			parameters = (ElectricalDeviceParameter[])BeanUtils.addElement(parameters,newParam);
+			parameters = (ElectricalDeviceParameter[]) ArrayUtils.addElement(parameters,newParam);
 		}
 	}
 	setParameters(parameters);
