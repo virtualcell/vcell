@@ -1457,7 +1457,6 @@ public String getSiteAttributesSQL() {
 		SiteAttributesSpec sas = entry.getValue();
 		sb.append(sas.getMolecularComponentPattern().getMolecularComponent().getName() + ",");
 		sb.append(sas.getLocation().getName() + ",");
-//		sb.append(sas.getMolecularComponentPattern().getComponentStatePattern().getComponentStateDefinition().getName() +",");
 		sb.append(sas.getRadius() + ",");
 		sb.append(sas.getDiffusionRate() +",");
 		sb.append(sas.getCoordinate().getX() + ",");
@@ -1497,13 +1496,6 @@ public String getSiteAttributesSQL() {
 				MolecularComponentPattern mcp = mtp.getMolecularComponentPattern(attribute);
 				attribute = tokenizer.nextToken();
 				Structure structure = simulationContext.getModel().getStructure(attribute);
-
-//				attribute = tokenizer.nextToken();
-//				ComponentStateDefinition csd1 = mcp.getMolecularComponent().getComponentStateDefinition(attribute);
-//				ComponentStateDefinition csd2 = mcp.getComponentStatePattern().getComponentStateDefinition();
-//				if(!(csd1.compareEqual(csd2))) {
-//					throw new RuntimeException("Implicit and explicit ComponentStateDefinition expected to match");
-//				}
 				attribute = tokenizer.nextToken();
 				double radius = Double.parseDouble(attribute);
 				attribute = tokenizer.nextToken();

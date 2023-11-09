@@ -261,13 +261,30 @@ public class SpringSaLaDGoodReactionsTest {
 		Assert.assertTrue("expecting SpringSaLaD math type", (mathDescription.getMathType() != null && mathDescription.getMathType() == MathType.SpringSaLaD) ? true : false);
 
 		SpeciesContextSpec[] speciesContextSpecs = simContext.getReactionContext().getSpeciesContextSpecs();
-		SpeciesContextSpec scs = speciesContextSpecs[0];
+		SpeciesContextSpec scs = speciesContextSpecs[0];		// we test roundtrip for just one SpeciesContextSpec
 		String internalLinkSetSQL = scs.getInternalLinksSQL();
 		String siteAttributesMapSQL = scs.getSiteAttributesSQL();
 		Set<MolecularInternalLinkSpec> internalLinkSet = scs.readInternalLinksSQL(internalLinkSetSQL);
 		Map<MolecularComponentPattern, SiteAttributesSpec> siteAttributesMap = scs.readSiteAttributesSQL(siteAttributesMapSQL);
 
-		System.out.println("done");
+		// verify roundtrip for internalLinkSet (through sampling)
+		Assert.assertTrue("internalLinkSet size different after roundtrip", internalLinkSet.size() == scs.getInternalLinkSet().size() ? true : false);
+		MolecularInternalLinkSpec milsThis = internalLinkSet.iterator().next();
+		boolean found = false;
+		for(MolecularInternalLinkSpec milsThat : scs.getInternalLinkSet()) {
+			if(milsThis.compareEqual(milsThat)) {
+				found = true;
+				break;
+			}
+		}
+		Assert.assertTrue("MolecularInternalLinkSpec element not found after roundtrip", found ? true : false);
+
+		// verify roundtrip for siteAttributesMap (through sampling)
+		Assert.assertTrue("siteAttributesMap size different after roundtrip", siteAttributesMap.size() == scs.getSiteAttributesMap().size() ? true : false);
+		MolecularComponentPattern mcpThis = siteAttributesMap.keySet().iterator().next();
+		SiteAttributesSpec sasThis = siteAttributesMap.get(mcpThis);
+		SiteAttributesSpec sasThat = scs.getSiteAttributesMap().get(mcpThis);
+		Assert.assertTrue("SiteAttributesSpec element not found in siteAttributesMap after roundtrip", sasThis.compareEqual(sasThat) ? true : false);
 	}
 
 
