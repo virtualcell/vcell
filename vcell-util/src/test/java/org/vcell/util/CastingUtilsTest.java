@@ -16,6 +16,7 @@ public class CastingUtilsTest {
         assertSame(str, backStr);
         Integer backInt = CastingUtils.downcast(Integer.class, objStr);
         assertNull(backInt);
+        assertNull(CastingUtils.downcast(Integer.class, null));
     }
 
     @Test
@@ -35,8 +36,16 @@ public class CastingUtilsTest {
         CastInfo<Integer> badCast = CastingUtils.attemptCast(Integer.class, notInteger);
         assertFalse(badCast.isGood());
         assertEquals("java.lang.Integer", badCast.requiredName());
-        assertNotEquals("java.lang.Integer", badCast.actualName());
-        assertNotEquals("cast from java.lang.Integer to java.lang.Integer", badCast.castMessage());
+        assertEquals("java.lang.Double", badCast.actualName());
+        assertEquals("cast from java.lang.Double to java.lang.Integer", badCast.castMessage());
         assertThrows(ProgrammingException.class, () -> badCast.get().toString());
+
+        // Null Cast (bad cast)
+        CastInfo<Integer> nullCast = CastingUtils.attemptCast(Integer.class, null);
+        assertFalse(nullCast.isGood());
+        assertEquals("java.lang.Integer", nullCast.requiredName());
+        assertEquals("null", nullCast.actualName());
+        assertEquals("cast from null to java.lang.Integer", nullCast.castMessage());
+        assertThrows(ProgrammingException.class, () -> nullCast.get().toString());
     }
 }
