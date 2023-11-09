@@ -35,14 +35,14 @@ public class StackTraceUtils {
      * @param throwable exception / error to recursively get the message from
      * @return {@link Throwable#getMessage()}, recursively
      */
-    public static String getMessageRecursive(Throwable throwable) {
-        StringBuilder rval = new StringBuilder(throwable.getMessage());
+    public static String getCausalChain(Throwable throwable) {
+        StringBuilder realValue = new StringBuilder(throwable.getMessage());
         Throwable cause = throwable.getCause();
         while (cause != null) {
-            rval.append(" caused by ").append(cause.getMessage());
+            realValue.append(" caused by ").append(cause.getMessage());
             cause = cause.getCause();
         }
 
-        return rval.toString();
+        return realValue.toString();
     }
 }

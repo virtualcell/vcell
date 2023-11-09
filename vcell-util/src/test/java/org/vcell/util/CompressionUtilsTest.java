@@ -1,14 +1,13 @@
 package org.vcell.util;
 
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.vcell.test.Fast;
-
 import javax.management.StringValueExp;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.StreamCorruptedException;
 
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.vcell.test.Fast;
 import static org.junit.Assert.*;
 
 @Category(Fast.class)

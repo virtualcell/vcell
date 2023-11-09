@@ -11,22 +11,6 @@ import org.vcell.test.Fast;
 @Category(Fast.class)
 public class BeanUtilsTest {
 	
-	private void eenie() {meenie();}
-	
-	private void meenie() {miney();}
-
-	private void miney() {mo();}
-	
-	private void mo( ) {
-		System.out.println(StackTraceUtils.getStackTrace());
-	}
-	
-	@Ignore
-	@Test
-	public void stackTrace( ) {
-		eenie( );
-	}
-	
 	public void downloadString(ClientTaskStatusSupport taskSupport ) throws MalformedURLException {
 		URL url = new URL("http://code3.cam.uchc.edu/slowdownload.php");
 		System.out.println("starting download ...");

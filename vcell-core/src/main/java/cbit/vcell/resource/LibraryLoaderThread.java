@@ -47,7 +47,7 @@ public class LibraryLoaderThread extends Thread {
 				}
 				sb.append(librarySet);
 				sb.append(":  ");
-				sb.append(StackTraceUtils.getMessageRecursive(e));
+				sb.append(StackTraceUtils.getCausalChain(e));
 				sb.append(newline);
 				if (isGui){
 					ErrorUtils.sendErrorReport(e, sb.toString());
