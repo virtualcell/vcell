@@ -1,9 +1,11 @@
 package org.vcell.util;
 
 import org.junit.Test;
-
+import org.junit.experimental.categories.Category;
+import org.vcell.test.Fast;
 import static org.junit.Assert.*;
 
+@Category(Fast.class)
 public class ArrayUtilsTest {
 
     @Test

@@ -16,7 +16,7 @@ import java.util.zip.InflaterInputStream;
 public class CompressionUtils {
     private static final Logger lg = LogManager.getLogger(CompressionUtils.class);
 
-    public static byte[] compress(byte[] bytes) throws java.io.IOException {
+    public static byte[] compress(byte[] bytes) throws IOException {
         try (ByteArrayOutputStream bos = new ByteArrayOutputStream()){
             try (DeflaterOutputStream dos = new DeflaterOutputStream(bos)){
                 dos.write(bytes,0, bytes.length);
@@ -25,7 +25,7 @@ public class CompressionUtils {
         }
     }
 
-    public static byte[] uncompress(byte[] compressedBytes) throws java.io.IOException {
+    public static byte[] uncompress(byte[] compressedBytes) throws IOException {
         try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
             try (ByteArrayInputStream bis = new ByteArrayInputStream(compressedBytes)) {
                 try (InflaterInputStream iis = new InflaterInputStream(bis)) {
@@ -41,9 +41,8 @@ public class CompressionUtils {
     }
 
     public static byte[] toCompressedSerialized(Serializable cacheObj) throws IOException {
-        byte[] bytes = CompressionUtils.toSerialized(cacheObj); // TODO: Determine why this is here.
         long before = System.currentTimeMillis();
-        byte[] objData;
+        byte[] compressedSerialization;
         try (ByteArrayOutputStream bos = new ByteArrayOutputStream()){
             try (DeflaterOutputStream dos = new DeflaterOutputStream(bos)){
                 try (ObjectOutputStream oos = new ObjectOutputStream(dos)){
@@ -53,14 +52,17 @@ public class CompressionUtils {
                 dos.flush();
             }
             bos.flush();
-            objData = bos.toByteArray();
+            compressedSerialization = bos.toByteArray();
         }
 
         long after = System.currentTimeMillis();
-        if (lg.isTraceEnabled()) lg.trace(String.format("toCompressedSerialized(), t=%d ms, (%s) ratio=%d/%d",
-                (after-before), cacheObj.toString(), objData.length, bytes.length));
+        if (lg.isTraceEnabled()) {
+            byte[] normalSerialization = CompressionUtils.toSerialized(cacheObj);
+            lg.trace(String.format("toCompressedSerialized(), t=%d ms, (%s) ratio=%d/%d",
+                    (after-before), cacheObj.toString(), compressedSerialization.length, normalSerialization.length));
+        }
 
-        return objData;
+        return compressedSerialization;
     }
 
     public static Serializable fromCompressedSerialized(byte[] objData) throws ClassNotFoundException, IOException {
