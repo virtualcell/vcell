@@ -271,7 +271,7 @@ public class GeneralGuiUtils {
 
     /**
      * @deprecated should not have to do this
-     * @param disposableChild
+     * @param disposableChild the child of the parent to dispose of.
      */
     public static void disposeParentWindow(Component disposableChild){
         Container container;

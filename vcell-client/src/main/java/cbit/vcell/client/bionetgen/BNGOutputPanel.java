@@ -12,6 +12,7 @@ package cbit.vcell.client.bionetgen;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.Vector;
@@ -797,7 +798,7 @@ private ReactionStep[] getCollapsedReactionSteps(ReactionStep[] reactionSteps) {
 			SpeciesContext[] revProducts = revProductsVector.toArray(SpeciesContext[]::new);
 
             // Check if reactants of reaction in outer 'for' loop match products in inner 'for' loop and vice versa.
-            if (ArrayUtils.arrayEquals(fwdReactants, revProducts) && ArrayUtils.arrayEquals(fwdProducts, revReactants)) {
+            if (Arrays.equals(fwdReactants, revProducts) && Arrays.equals(fwdProducts, revReactants)) {
                 // Set the reverse kinetic rate expression for the reaction in outer loop with the forward rate from reactionStep in inner loop
                 MassActionKinetics revMAKinetics = (MassActionKinetics) revRStep.getKinetics(); // inner 'for' loop
                 MassActionKinetics fwdMAKinetics = (MassActionKinetics) fwdRStep.getKinetics();  // outer 'for' loop
