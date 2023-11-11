@@ -27,7 +27,7 @@ vcelladmin = "vcell_admin.cli:main"
 python = ">=3.7,<4.0"
 pymongo = "<4.0"
 paramiko = "^2.11.0"
-requests = "^2.27"
+requests = "^2.31"
 tabulate = ">=0.8.0"
 typer = "^0.6.1"
 
