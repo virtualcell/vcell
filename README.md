@@ -32,30 +32,69 @@ Simulation capabilities include ODEs, Reaction-Diffusion equations within cellul
 ### Download VCell
 - [VCell](http://vcell.org) which hosts a free VCell Server for cluster computing and shared database.  
 - Prebuilt installers for vcell-client are available for [Windows](https://vcell.org/webstart/Rel/VCell_Rel_windows-x64_latest_64bit.exe), [Mac](https://vcell.org/webstart/Rel/VCell_Rel_macos_latest_64bit.dmg) and [Linux](https://vcell.org/webstart/Rel/VCell_Rel_unix_latest_64bit.sh).  
-- [WebStart](http://vcell.org/webstart) location of VCell clients web page links to   
-- Public installers path naming scheme= {Alpha,Beta,Rel}/VCell_{Alpha,Beta,Rel}_{macos,unix,windows-x64,windows}_latest_{64,32}bit.{dmg,sh.exe}  
-- Install4J updates.xml (read remotely by VCell client when starting to determine if a newer version of VCell has been deployed)  
 - BioFormats jar (used by running VCell clients when importing image data, can't be shipped directly with VCell, license issue)
 
-### Building VCell
-This VCell github project includes all Java/Python source code required to build both the VCell client and the VCell Server.  
-The simulation solver source code is available as a separate project as [vcell-solvers](https://github.com/virtualcell/vcell-solvers).
-
-### Building and Running VCell Client as a standalone tool
-Requirements:  Git, Maven, and Java JDK 1.8 or later
-
 ```
-# to build vcell client
 git clone https://github.com/virtualcell/vcell
 cd vcell
-mvn clean install dependency:copy-dependencies
-# to run vcell client quickly
+```
+
+### Build/test/run VCell on command line
+- This VCell github project includes all Java/Python source code required to build both the VCell client and the VCell Server.  
+- The simulation solver source code is available as a separate project as [vcell-solvers](https://github.com/virtualcell/vcell-solvers).
+- Requirements:  Git, Maven, Poetry, Python 3.10, Java 17
+
+#### Build Java and Python
+```bash
+mvn clean install -DskipTests
+
+INSTALL_DIR=$(pwd)
+cd ${INSTALL_DIR}/pythonCopasiOpt/vcell-opt
+poetry env use 3.10
+poetry install
+
+cd ${INSTALL_DIR}/docker/swarm/vcell-admin
+poetry env use 3.10
+poetry install
+
+cd ${INSTALL_DIR}/pythonVtk
+poetry env use 3.10
+poetry install
+
+cd ${INSTALL_DIR}/vcell-cli-utils
+poetry env use 3.10
+poetry install
+```
+
+#### Test Java and Python
+```bash
+mvn test -Dgroups=org.vcell.test.Fast
+
+INSTALL_DIR=$(pwd)
+cd ${INSTALL_DIR}/pythonCopasiOpt/vcell-opt
+poetry run python -m pytest
+
+cd ${INSTALL_DIR}/docker/swarm/vcell-admin
+poetry run python -m pytest
+
+cd ${INSTALL_DIR}/pythonVtk
+poetry run python -m pytest
+
+cd ${INSTALL_DIR}/vcell-cli-utils
+poetry run python -m pytest
+
+cd ${INSTALL_DIR}
+```
+
+#### Run the VCell client (connects to the VCell servers)
+```bash
 ./vcell.sh
 ```
 
-### VCell client Eclipse setup for Windows and Mac
-Requirements:  Eclipse IDE for Java Developers and Java JDK 1.8 or later
+### VCell client Eclipse setup for Windows and Mac command line instructions first)
+Requirements:  Eclipse IDE for Java Developers and Java 17, Python 3.10 and poetry
 
+  * Follow instructions above for building python packages with poetry
   * Start Eclipse
   * In Eclipse: Project Explorer -> Import -> Git -> Projects from Git (with smart import) -> Next -> Clone URI -> Paste under URI `https://github.com/virtualcell/vcell.git` -> Next -> Deselect all, Select `master` -> Next -> Next.
       * Alternative way of installing: If git is installed, you can install VCell client from a local repository:
@@ -81,7 +120,7 @@ Requirements:  Eclipse IDE for Java Developers and Java JDK 1.8 or later
                WINDOWS
                ```
                -Dvcell.installDir=G:\dan\jprojects\git\vcell 
-               -Dvcell.imagej.plugin.url=http:\vcell.org\webstart\
+               -Dvcell.imagej.plugin.url=http://vcell.org/webstart/
                -Dvcell.softwareVersion=DanDev_Version_7.0_build_99
                ```
                MAC:
@@ -90,7 +129,7 @@ Requirements:  Eclipse IDE for Java Developers and Java JDK 1.8 or later
                -Dvcell.imagej.plugin.url=http://vcell.org/webstart/
                -Dvcell.softwareVersion=MikeDev_Version_7.0_build_99           
                ```
-      * Make sure JRE is 1.8 or newer (build-in Eclipse JRE may case problems)
+      * Make sure JRE is 17 or newer (build-in Eclipse JRE may case problems)
 
 ### Building and Running VCell Server
 1. Service has 1 image and configuration, manages 1 or more containers, container is a running image  
@@ -98,7 +137,7 @@ Requirements:  Eclipse IDE for Java Developers and Java JDK 1.8 or later
 
 VCell Server Installation General Requirements
   * Linux
-  * Git, Maven, and Java JDK 1.8 or later to build vcell-client and vcell-server
+  * Git, Maven, and Java JDK 17 or later to build vcell-client and vcell-server
   * Docker (swarm mode)
   * Singularity (Linux) or Singularity in a Virtual Machine (Macos needs VirtualBox and Vagrant)
   * PostgreSQL or Oracle database
@@ -106,8 +145,7 @@ VCell Server Installation General Requirements
   * Obtain an Install4J license if creating client installers
   
 ### VCell CLI Requirements
-1. Make sure to update the submodules `git submodule update --init --recursive`
-2. VCell-CLI module requires python>3.6 and <=3.8.0
+1. VCell-CLI module requires python 3.10 and poetry
 
 
 ### Other Details
