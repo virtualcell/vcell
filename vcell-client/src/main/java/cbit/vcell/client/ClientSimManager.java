@@ -15,11 +15,9 @@ import java.awt.Window;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -30,12 +28,8 @@ import java.util.Enumeration;
 import java.util.EventObject;
 import java.util.Hashtable;
 import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Scanner;
 import java.util.Vector;
-
-import javax.swing.SwingUtilities;
 
 import org.vcell.solver.langevin.LangevinSolver;
 import org.vcell.solver.smoldyn.SmoldynFileWriter;
@@ -132,12 +126,6 @@ public static class LocalVCSimulationDataIdentifier extends VCSimulationDataIden
 	private final static String H_LOCAL_SIM = "showingLocal";
 	private final static String H_VIEWER_TYPE = "viewerType";
 
-/**
- * Insert the method's description here.
- * Creation date: (6/7/2004 10:48:50 AM)
- * @param documentWindowManager cbit.vcell.client.DocumentWindowManager
- * @param simWorkspace cbit.vcell.client.desktop.simulation.SimulationWorkspace
- */
 public ClientSimManager(DocumentWindowManager documentWindowManager, SimulationWorkspace simWorkspace) {
 	this.documentWindowManager = documentWindowManager;
 	this.simWorkspace = simWorkspace;
@@ -148,11 +136,7 @@ public ClientSimManager(DocumentWindowManager documentWindowManager, SimulationW
 public User getLoggedInUser() {
 	return getDocumentWindowManager().getUser();
 }
-/**
- * Insert the method's description here.
- * Creation date: (6/7/2004 12:50:45 PM)
- * @return cbit.vcell.client.DocumentWindowManager
- */
+
 DocumentWindowManager getDocumentWindowManager() {
 	return documentWindowManager;
 }
@@ -162,13 +146,6 @@ public UserPreferences getUserPreferences() {
 	return up;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (6/7/2004 10:31:36 AM)
- * @return cbit.vcell.solver.ode.gui.SimulationStatus
- * @param simulation cbit.vcell.solver.Simulation
- */
 public SimulationStatus getSimulationStatus(Simulation simulation) {
 	SimulationStatus cachedSimStatus = simHash.getSimulationStatus(simulation);
 	if (cachedSimStatus!=null){
@@ -188,12 +165,6 @@ public SimulationStatus getSimulationStatus(Simulation simulation) {
 	}
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (6/8/2004 1:17:36 PM)
- * @return cbit.vcell.client.desktop.simulation.SimulationWorkspace
- */
 public SimulationWorkspace getSimWorkspace() {
 	return simWorkspace;
 }
@@ -202,11 +173,6 @@ public void preloadSimulationStatus(Simulation[] simulations) {
 	initHash(simulations);
 }
 
-/**
- * Insert the method's description here.
- * Creation date: (6/7/2004 12:55:18 PM)
- * @param simulations cbit.vcell.solver.Simulation[]
- */
 private void initHash(Simulation[] simulations) {
 	simHash.changeSimulationInstances(simulations);
 	if (simulations != null) {
@@ -241,11 +207,6 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (6/2/2004 3:01:29 AM)
- * @param simulations cbit.vcell.solver.Simulation[]
- */
 public void runSimulations(Simulation[] simulations) {
 	runSimulations(simulations, null);
 }
@@ -253,12 +214,6 @@ public void runSimulations(Simulation[] simulations,AsynchClientTask[] endTasks)
 	getDocumentWindowManager().getRequestManager().runSimulations(this, simulations,endTasks);
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (6/7/2004 10:31:36 AM)
- * @param simulations cbit.vcell.solver.Simulation[]
- */
 public void showSimulationResults(OutputContext outputContext, Simulation[] simulations, ViewerType viewerType) {
 	if (simulations == null) {
 		return;
@@ -586,39 +541,21 @@ private AsynchClientTask[] showSimulationResults0(final boolean isLocal, final V
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (6/7/2004 10:31:36 AM)
- * @param simulations cbit.vcell.solver.Simulation[]
- */
 public void showSimulationStatusDetails(Simulation[] simulations) {
-	if (simulations != null) {
-		final Simulation[] simsToShow = simulations; //(Simulation[])cbit.util.BeanUtils.getArray(v, Simulation.class);
-		for (int i = 0; i < simsToShow.length; i ++) {
-			SimulationStatusDetailsPanel ssdp = new SimulationStatusDetailsPanel();
-			ssdp.setPreferredSize(new Dimension(800, 350));
-			ssdp.setSimulationStatusDetails(new SimulationStatusDetails(getSimWorkspace(), simsToShow[i]));
-			DialogUtils.showComponentCloseDialog(getDocumentWindowManager().getComponent(), ssdp, "Simulation Status Details");			
-			ssdp.setSimulationStatusDetails(null);
-		}
+	if (simulations == null) return;
+	for (Simulation simulation : simulations) {
+		SimulationStatusDetailsPanel ssdp = new SimulationStatusDetailsPanel();
+		ssdp.setPreferredSize(new Dimension(800, 350));
+		ssdp.setSimulationStatusDetails(new SimulationStatusDetails(getSimWorkspace(), simulation));
+		DialogUtils.showComponentCloseDialog(getDocumentWindowManager().getComponent(), ssdp, "Simulation Status Details");
+		ssdp.setSimulationStatusDetails(null);
 	}
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (6/2/2004 3:01:29 AM)
- * @param simulations cbit.vcell.solver.Simulation[]
- */
 public void stopSimulations(Simulation[] simulations) {
 	getDocumentWindowManager().getRequestManager().stopSimulations(this, simulations);
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (6/9/2004 3:04:12 PM)
- */
 void updateStatusFromServer(Simulation simulation) {
 	// 
 	// get cached status
@@ -646,11 +583,7 @@ void updateStatusFromServer(Simulation simulation) {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (6/2/2004 3:01:29 AM)
- * @param simulation cbit.vcell.solver.Simulation
- */
+
 public void updateStatusFromStartRequest(final Simulation simulation, SimulationStatus newStatusFromServer) {
 	// asynchronous call - from start request worker thread
 	simHash.setSimulationStatus(simulation,newStatusFromServer);
@@ -658,12 +591,6 @@ public void updateStatusFromStartRequest(final Simulation simulation, Simulation
 	getSimWorkspace().firePropertyChange(SimulationWorkspace.PROPERTY_NAME_SIMULATION_STATUS, -1, simIndex);
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (6/2/2004 3:01:29 AM)
- * @param simulation cbit.vcell.solver.Simulation
- */
 public void updateStatusFromStopRequest(final Simulation simulation, SimulationStatus newStatusFromServer) {
 	// asynchronous call - from stop request worker thread
 	simHash.setSimulationStatus(simulation,newStatusFromServer);

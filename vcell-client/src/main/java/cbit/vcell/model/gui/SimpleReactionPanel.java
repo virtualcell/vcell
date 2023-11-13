@@ -19,8 +19,6 @@ import javax.swing.JLabel;
 import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
 
-import org.vcell.util.BeanUtils;
-
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.ReactionCanvas;

@@ -32,7 +32,6 @@ import javax.swing.JFrame;
 import javax.swing.RootPaneContainer;
 
 import org.vcell.client.logicalwindow.LWTopFrame;
-import org.vcell.util.BeanUtils;
 import org.vcell.util.GeneralGuiUtils;
 import org.vcell.util.document.CurateSpec;
 import org.vcell.util.document.User;

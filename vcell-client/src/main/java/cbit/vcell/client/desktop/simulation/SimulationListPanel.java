@@ -396,7 +396,7 @@ private File parseBatchInputFile(UserPreferences userPreferences, Map<Integer, M
 
 private void copySimulations() {
 	int[] selections = getScrollPaneTable().getSelectedRows();
-	Vector<Simulation> v = new Vector<Simulation>();
+	Vector<Simulation> v = new Vector<>();
     for (int selection : selections) {
         v.add(ivjSimulationListTableModel1.getValueAt(selection));
     }

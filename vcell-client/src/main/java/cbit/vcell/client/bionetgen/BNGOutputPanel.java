@@ -759,16 +759,16 @@ private ReactionStep[] getCollapsedReactionSteps(ReactionStep[] reactionSteps) {
 	Vector<ReactionStep> collapsedRxnStepsVector = new Vector<ReactionStep>();
 
 	Vector<ReactionStep> rxnStepsVector = new Vector<ReactionStep>();
-	for (int i = 0; i < reactionSteps.length; i++){
-		rxnStepsVector.addElement(reactionSteps[i]);
-	}
+    for (ReactionStep reactionStep : reactionSteps) {
+        rxnStepsVector.addElement(reactionStep);
+    }
 	
 	for (int i = 0; i < rxnStepsVector.size(); i++){
 		ReactionStep fwdRStep = rxnStepsVector.elementAt(i);
 		// Get the reactionParticipants and the corresponding reactants and products in an array
 		ReactionParticipant[] rps = fwdRStep.getReactionParticipants();
-		Vector<SpeciesContext> fwdReactantsVector = new Vector<SpeciesContext>();
-		Vector<SpeciesContext> fwdProductsVector = new Vector<SpeciesContext>();
+		Vector<SpeciesContext> fwdReactantsVector = new Vector<>();
+		Vector<SpeciesContext> fwdProductsVector = new Vector<>();
         for (ReactionParticipant rp : rps) {
             if (rp instanceof Reactant) {
                 fwdReactantsVector.addElement(rp.getSpeciesContext());

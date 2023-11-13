@@ -136,17 +136,17 @@ private void accessAction(java.awt.event.ActionEvent actionEvent) {
 					return;
 				}
 			}
-			ACLState newState =	new ACLState((String[]) ArrayUtils.addElement(
-						(getACLState() != null?getACLState().getAccessList():new String[0]),getJTextFieldACLUser().getText()));
+			String[] argList = (getACLState() != null ? getACLState().getAccessList():new String[0]);
+			ACLState newState =	new ACLState(ArrayUtils.addElement(argList, getJTextFieldACLUser().getText()));
 			setACLState(newState);
 		}
-	}else if(actionEvent.getSource() == getJButtonRemoveACLUser() && getACLState() != null){
+	} else if(actionEvent.getSource() == getJButtonRemoveACLUser() && getACLState() != null){
 		String removeUser = (String)getJListACL().getSelectedValue();
-		if(removeUser != null){
-			String[] newUserList = ArrayUtils.removeFirstInstanceOfElement(getACLState().getAccessList(),removeUser);
-			ACLState newState = new ACLState(newUserList);
-			setACLState(newState);
-		}
+		if(removeUser == null) return;
+		String[] newUserList = ArrayUtils.removeFirstInstanceOfElement(getACLState().getAccessList(), removeUser);
+		ACLState newState = new ACLState(newUserList);
+		setACLState(newState);
+
 	}
 }
 /**

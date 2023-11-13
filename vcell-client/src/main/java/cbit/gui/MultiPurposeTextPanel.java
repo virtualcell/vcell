@@ -745,12 +745,6 @@ public class MultiPurposeTextPanel extends JPanel {
 		frame.setVisible(true);
 	}
 
-	/**
-	 * Insert the method's description here. Creation date: (10/10/2006 2:19:21
-	 * PM)
-	 * 
-	 * @param position int
-	 */
 	public void setCaretPosition(int position) {
 		textPane.setCaretPosition(position);
 	}

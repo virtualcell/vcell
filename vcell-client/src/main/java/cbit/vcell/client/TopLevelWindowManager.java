@@ -472,7 +472,7 @@ void createGeometry(final Geometry currentGeometry,final AsynchClientTask[] afte
 						geometrySelectionInfo.getDocumentCreationInfo())));
 				createGeomTaskV.addAll(Arrays.asList(afterTasks));
 			}
-			hash.put("guiParent", (Component)getComponent());
+			hash.put("guiParent", getComponent());
 			hash.put("requestManager", getRequestManager());
 		}else{//Copy from WorkSpace
 			createGeomTaskV.add(new AsynchClientTask("loading Geometry", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
@@ -482,8 +482,8 @@ void createGeometry(final Geometry currentGeometry,final AsynchClientTask[] afte
 						addWorkspaceGeomSizeSelection(hash,currentGeometry);
 						hash.put(BioModelWindowManager.FIELD_DATA_FLAG, true);
 					}
-					final Vector<AsynchClientTask> runtimeTasksV = new Vector<AsynchClientTask>();
-					VCDocument.DocumentCreationInfo workspaceDocCreateInfo = null;
+					final Vector<AsynchClientTask> runtimeTasksV = new Vector<>();
+					VCDocument.DocumentCreationInfo workspaceDocCreateInfo;
 					if(currentGeometry.getGeometrySpec().getNumAnalyticOrCSGSubVolumes() > 0 && currentGeometry.getGeometrySpec().getImage() == null){
 						workspaceDocCreateInfo = new VCDocument.DocumentCreationInfo(VCDocumentType.GEOMETRY_DOC,VCDocument.GEOM_OPTION_FROM_WORKSPACE_ANALYTIC);
 					}else if(currentGeometry.getGeometrySpec().getImage() != null && currentGeometry.getGeometrySpec().getNumAnalyticOrCSGSubVolumes() == 0){
@@ -495,29 +495,23 @@ void createGeometry(final Geometry currentGeometry,final AsynchClientTask[] afte
 							workspaceDocCreateInfo,
 							afterTasks,
 							applyGeometryButtonText)));
-					hashTable.put("guiParent", (Component)getComponent());
+					hashTable.put("guiParent", getComponent());
 					hashTable.put("requestManager", getRequestManager());
 					hashTable.put(ClientRequestManager.GEOM_FROM_WORKSPACE, currentGeometry);
 					new Thread(
-						new Runnable() {
-							public void run() {
-								ClientTaskDispatcher.dispatch(getComponent(),hash,runtimeTasksV.toArray(new AsynchClientTask[0]), false,false,null,true);
-							}
-						}
-					).start();
+                            () -> ClientTaskDispatcher.dispatch(getComponent(),hash,runtimeTasksV.toArray(new AsynchClientTask[0]), false,false,null,true)
+                    ).start();
 				}
 
 			});
 		}
 		ClientTaskDispatcher.dispatch(getComponent(), hash, createGeomTaskV.toArray(new AsynchClientTask[0]), false,bCancellable,null,true);
 
-	} catch (UserCancelException e1) {
-		return;
-	} catch (Exception e1) {
+	} catch (UserCancelException ignored) {
+    } catch (Exception e1) {
 		e1.printStackTrace();
 		DialogUtils.showErrorDialog(getComponent(), e1.getMessage(), e1);
 	}
-
 }
 
 private void addWorkspaceGeomSizeSelection(final Hashtable<String, Object> hash,Geometry sourceGeom) throws Exception{

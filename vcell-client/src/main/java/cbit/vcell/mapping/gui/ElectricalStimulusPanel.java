@@ -30,7 +30,6 @@ import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.border.TitledBorder;
 
-import org.vcell.util.BeanUtils;
 import org.vcell.util.Coordinate;
 import org.vcell.util.GeneralGuiUtils;
 import org.vcell.util.gui.DialogUtils;

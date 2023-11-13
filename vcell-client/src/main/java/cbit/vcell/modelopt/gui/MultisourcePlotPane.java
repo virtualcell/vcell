@@ -22,8 +22,6 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
 
-import org.vcell.util.ArrayUtils;
-import org.vcell.util.BeanUtils;
 import org.vcell.util.ColorUtil;
 import org.vcell.util.Range;
 import org.vcell.util.gui.DefaultListSelectionModelFixed;

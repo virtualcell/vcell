@@ -69,10 +69,6 @@ public class VCellTransferable extends SimpleTransferable {
 		}
 	}
 
-		/**
-	 * Insert the method's description here.
-	 * Creation date: (5/8/2003 2:48:54 PM)
-	 */
 	private VCellTransferable(Object obj) {
 		super(obj);
 	}
@@ -85,15 +81,15 @@ public class VCellTransferable extends SimpleTransferable {
 		 * @return an array of data flavors in which this data can be transferred
 		 */
 	public java.awt.datatransfer.DataFlavor[] getTransferDataFlavors() {
-		DataFlavor flavors[] = super.getTransferDataFlavors();
+		DataFlavor[] flavors = super.getTransferDataFlavors();
 
-		// add custom flavors if availlable
+		// add custom flavors if available
 		if(getDataObjectClass().equals(ReactionSpeciesCopy.class)){
-			flavors = (DataFlavor[]) ArrayUtils.addElement(flavors,REACTION_SPECIES_ARRAY_FLAVOR);
+			flavors = ArrayUtils.addElement(flavors, REACTION_SPECIES_ARRAY_FLAVOR);
 		}
 
 		if (getDataObjectClass().equals(VCellTransferable.ResolvedValuesSelection.class)){
-			flavors = (DataFlavor[]) ArrayUtils.addElement(flavors,RESOLVED_VALUES_FLAVOR);
+			flavors = ArrayUtils.addElement(flavors, RESOLVED_VALUES_FLAVOR);
 		}
 
 
@@ -101,12 +97,6 @@ public class VCellTransferable extends SimpleTransferable {
 	}
 
 
-	/**
-	 * Insert the method's description here.
-	 * Creation date: (9/9/2004 1:17:52 PM)
-	 * @return boolean
-	 * @param dataFlavor java.awt.datatransfer.DataFlavor
-	 */
 	protected boolean isSupportedObjectFlavor(DataFlavor dataFlavor) {
 
 		if (super.isSupportedObjectFlavor(dataFlavor)){

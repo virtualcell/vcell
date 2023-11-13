@@ -131,7 +131,6 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 			}
 			Vector<Simulation> v = new Vector<>();
 			for (int i = 0; i < simulations.length; i++){
-                assert allSims != null;
                 for (Simulation allSim : allSims) {
                     if (allSims[i].getSimulationOwner() instanceof SimulationContext) {
                         if (simulations[i].getName().equals(allSim.getName()) && Compare.isEqualOrNull(allSim.getSimulationOwner().getName(), (simulations[i].getSimulationOwner() != null ? simulations[i].getSimulationOwner().getName() : null))) {

@@ -148,7 +148,7 @@ private void checkValidSimulationDataViewerFrames() {
     }
     for (SimulationWindow simWindow : simWindows) {
         if (hash.containsKey(simWindow.getVcSimulationIdentifier())) {
-            simWindow.resetSimulation((Simulation) hash.get(simWindow.getVcSimulationIdentifier()));
+            simWindow.resetSimulation(hash.get(simWindow.getVcSimulationIdentifier()));
         } else {
             ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(getJPanel());
             ChildWindow childWindow = childWindowManager.getChildWindowFromContext(simWindow);

@@ -2577,17 +2577,15 @@ public class OverlayEditorPanelJAI extends JPanel{
 		}
 	}
 	public void setResolvedList(final Object[] allRegionInfos){
-		SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-				resolvedList.setListData(allRegionInfos);
-				if(allRegionInfos.length == 1){
-					domainRegionLabel.setText(DOMAIN_LIST_TEXT);
-				}else{
-					domainRegionLabel.setText(allRegionInfos.length+" "+DOMAIN_LIST_TEXT);
-				}
-				resolvedListSelection(false);
-			}
-		});
+		SwingUtilities.invokeLater(() -> {
+            resolvedList.setListData(allRegionInfos);
+            if(allRegionInfos.length == 1){
+                domainRegionLabel.setText(DOMAIN_LIST_TEXT);
+            }else{
+                domainRegionLabel.setText(allRegionInfos.length+" "+DOMAIN_LIST_TEXT);
+            }
+            resolvedListSelection(false);
+        });
 	}
 	public void setUserPreferences(UserPreferences userPreferences){
 		histogramPanel.setUserPreferences(userPreferences);

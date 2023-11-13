@@ -24,7 +24,6 @@ import javax.swing.JTextField;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 
-import org.vcell.util.BeanUtils;
 import org.vcell.util.GeneralGuiUtils;
 import org.vcell.util.NumberUtils;
 

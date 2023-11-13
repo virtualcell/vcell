@@ -21,81 +21,82 @@ import java.util.Hashtable;
 public class MatlabFunctionResults {
 	private String stdout = null;
 	private Hashtable<String, double[][]> varHash = new Hashtable<>();
-/**
- * MatlabFunctionResults constructor comment.
- */
-MatlabFunctionResults() {
-	super();
-}
-/**
- * Insert the method's description here.
- * Creation date: (8/9/2005 2:20:20 PM)
- * @param varName java.lang.String
- * @param value double[][]
- */
-void addVariable(String varName, double[][] value) {
-	if (varHash.get(varName) != null){
-		throw new RuntimeException("varName = '"+varName+"' already added to Matlab result set");
-	}
-	if (value==null){
-		throw new RuntimeException("value for \""+varName+"\" cannot be null for Matlab function result set");
-	}
-	varHash.put(varName,value);
-}
-/**
- * Insert the method's description here.
- * Creation date: (8/9/2005 2:20:46 PM)
- * @return java.lang.String
- */
-public String getStdout() {
-	return stdout;
-}
-/**
- * Insert the method's description here.
- * Creation date: (8/9/2005 2:21:05 PM)
- * @return double[][]
- * @param varName java.lang.String
- */
-public double[][] getValue(String varName) {
-	return (double[][])varHash.get(varName);
-}
-/**
- * Insert the method's description here.
- * Creation date: (8/9/2005 2:21:25 PM)
- * @return java.lang.String[]
- */
-public String[] getVariableNames() {
-	return Collections.list(varHash.keys()).toArray(String[]::new);
-}
 
-void setStdout(String argStdout) {
-	this.stdout = argStdout;
-}
-/**
- * Insert the method's description here.
- * Creation date: (10/7/2005 1:47:45 PM)
- */
-public void show() {
-
-	if (stdout != null) {
-		System.out.println("StdOut = \""+ stdout+"\"");
-	} else {
-		System.out.println("StdOut = null");
+	/**
+	 * MatlabFunctionResults constructor comment.
+	 */
+	MatlabFunctionResults() {
+		super();
 	}
-	for (int i = 0; i < getVariableNames().length; i++){
-		double[][] values = getValue(getVariableNames()[i]);
-		System.out.print(getVariableNames()[i]+"\t = [");
-		for (int j = 0; j < values.length; j ++) {
-			if (j > 0) {
-				System.out.print("; ");
-			}
-			for (int k = 0; k < values[j].length; k++) {
-				System.out.print(values[j][k]+"  ");
-			}
+	/**
+	 * Insert the method's description here.
+	 * Creation date: (8/9/2005 2:20:20 PM)
+	 * @param varName java.lang.String
+	 * @param value double[][]
+	 */
+	void addVariable(String varName, double[][] value) {
+		if (varHash.get(varName) != null){
+			throw new RuntimeException("varName = '"+varName+"' already added to Matlab result set");
 		}
-		System.out.println("]");
-		 
+		if (value==null){
+			throw new RuntimeException("value for \""+varName+"\" cannot be null for Matlab function result set");
+		}
+		varHash.put(varName,value);
 	}
-	System.out.println();
-}
+	/**
+	 * Insert the method's description here.
+	 * Creation date: (8/9/2005 2:20:46 PM)
+	 * @return java.lang.String
+	 */
+	public String getStdout() {
+		return stdout;
+	}
+	/**
+	 * Insert the method's description here.
+	 * Creation date: (8/9/2005 2:21:05 PM)
+	 * @return double[][]
+	 * @param varName java.lang.String
+	 */
+	public double[][] getValue(String varName) {
+		return varHash.get(varName);
+	}
+	/**
+	 * Insert the method's description here.
+	 * Creation date: (8/9/2005 2:21:25 PM)
+	 * @return java.lang.String[]
+	 */
+	public String[] getVariableNames() {
+		return Collections.list(varHash.keys()).toArray(String[]::new);
+	}
+
+	void setStdout(String argStdout) {
+		this.stdout = argStdout;
+	}
+	/**
+	 * Insert the method's description here.
+	 * Creation date: (10/7/2005 1:47:45 PM)
+	 */
+	public void show() {
+
+		if (stdout != null) {
+			System.out.println("StdOut = \""+ stdout+"\"");
+		} else {
+			System.out.println("StdOut = null");
+		}
+		for (int i = 0; i < getVariableNames().length; i++){
+			double[][] values = getValue(getVariableNames()[i]);
+			System.out.print(getVariableNames()[i]+"\t = [");
+			for (int j = 0; j < values.length; j ++) {
+				if (j > 0) {
+					System.out.print("; ");
+				}
+				for (int k = 0; k < values[j].length; k++) {
+					System.out.print(values[j][k]+"  ");
+				}
+			}
+			System.out.println("]");
+
+		}
+		System.out.println();
+	}
 }

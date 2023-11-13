@@ -16,7 +16,7 @@ public class ArrayUtilsTest {
         Integer[] testArray2 = ArrayUtils.addElement(testArray, 4);
         assertSame(testArray.length, 1);
         assertSame(testArray2.length, 2);
-        assertNull(ArrayUtils.addElement(null, 2));
+        assertThrows(NullPointerException.class, () -> ArrayUtils.addElement(null, 2));
     }
 
     @Test
@@ -24,8 +24,9 @@ public class ArrayUtilsTest {
         Integer[] testArray = new Integer[0];
         Integer[] staticArray = new Integer[]{1,2,3,4};
         testArray = ArrayUtils.addElements(testArray, staticArray);
-        assertNull(ArrayUtils.addElements(null, staticArray));
-        assertSame(ArrayUtils.addElements(testArray, null), testArray);
+        assertThrows(NullPointerException.class, () -> ArrayUtils.addElements(null, staticArray));
+        Integer[] finalizedTestArray = testArray;
+        assertThrows(NullPointerException.class, () -> ArrayUtils.addElements(finalizedTestArray, null));
     }
 
     @Test

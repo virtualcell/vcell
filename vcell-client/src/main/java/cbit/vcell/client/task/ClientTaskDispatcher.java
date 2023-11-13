@@ -429,7 +429,7 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 				StringBuffer allCausesErrorMessageSB = new StringBuffer();
 				Throwable causeError = (Throwable)hash.get(TASK_ABORTED_BY_ERROR);
 				do{
-					allCausesErrorMessageSB.append(causeError.getClass().getSimpleName()+"-"+(causeError.getMessage()==null || causeError.getMessage().length()==0?"":causeError.getMessage()));
+					allCausesErrorMessageSB.append(causeError.getClass().getSimpleName()).append("-").append(causeError.getMessage() == null || causeError.getMessage().length() == 0 ? "" : causeError.getMessage());
 					allCausesErrorMessageSB.append("\n");
 				}while((causeError = causeError.getCause()) != null);
 				if (requester == null) {
@@ -438,7 +438,7 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 				}
 				if (lg.isInfoEnabled()) {
 					Object obj = hash.get(STACK_TRACE_ARRAY);
-					StackTraceElement ste[] = CastingUtils.downcast(StackTraceElement[].class, obj);
+					StackTraceElement[] ste = CastingUtils.downcast(StackTraceElement[].class, obj);
 					if (ste != null) {
 						String stackTraceString = StringUtils.join(ste,'\n');
 						lg.info(stackTraceString,(Throwable)hash.get(TASK_ABORTED_BY_ERROR));
@@ -641,7 +641,7 @@ private static void runTask(AsynchClientTask currentTask, Hashtable<String, Obje
 		String msg = "Thread " + Thread.currentThread().getName() + " calling task " + currentTask.getTaskName();
 		if (lg.isDebugEnabled()) {
 			Object obj = hash.get(STACK_TRACE_ARRAY);
-			StackTraceElement ste[] = CastingUtils.downcast(StackTraceElement[].class, obj);
+			StackTraceElement[] ste = CastingUtils.downcast(StackTraceElement[].class, obj);
 			if (ste != null) {
 				msg += '\n' + StringUtils.join(ste,'\n');
 			}
@@ -657,13 +657,13 @@ private static void runTask(AsynchClientTask currentTask, Hashtable<String, Obje
 		Object obj = hash.get(requiredKey.name);
 		if (obj == null) {
 			if (sb == null) sb = initStringBuilder(currentTask) ;
-			sb.append("Missing required key  " + requiredKey.name + '\n');
+			sb.append("Missing required key  ").append(requiredKey.name).append('\n');
 			continue;
 		}
 		Class<?> foundClass = obj.getClass();
 		if (!requiredKey.clzz.isAssignableFrom(foundClass)) {
 			if (sb == null) sb = initStringBuilder(currentTask) ;
-			sb.append("key " + requiredKey.name + " type " + foundClass.getName() + " not of required type " + requiredKey.clzz.getName());
+			sb.append("key ").append(requiredKey.name).append(" type ").append(foundClass.getName()).append(" not of required type ").append(requiredKey.clzz.getName());
 			sb.append('\n');
 		}
 	}
@@ -678,7 +678,7 @@ private static void runTask(AsynchClientTask currentTask, Hashtable<String, Obje
 		if (pt == currentTask) {
 			break;
 		}
-		sb.append('\t' + pt.getTaskName() + '\n');
+		sb.append('\t').append(pt.getTaskName()).append('\n');
 	}
 	hash.put(HASH_DATA_ERROR,HASH_DATA_ERROR);
 	throw new ProgrammingException(sb.toString());
