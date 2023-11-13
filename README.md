@@ -1,11 +1,11 @@
 <p align="center" width="100%">
  <a href="https://vcell.org">
-    <img width="10%" src="https://github.com/biosimulations/Biosimulations/blob/dev/biosimulations/libs/shared/assets/src/assets/images/about/partners/vcell.svg">
+    <img width="10%" src="https://github.com/biosimulations/biosimulations/blob/dev/docs/src/assets/images/about/partners/vcell.svg">
  </a>
 </p>
 
 ---
-![CI](https://github.com/virtualcell/vcell/workflows/CI/badge.svg)
+![CI](https://github.com/virtualcell/vcell/actions/workflows/ci_cd.yml/badge.svg)
 # Virtual Cell
 > ### VCell - a modeling and simulation framework for computational cell biology
 
