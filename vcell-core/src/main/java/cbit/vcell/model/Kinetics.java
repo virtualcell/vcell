@@ -746,7 +746,7 @@ public UnresolvedParameter addUnresolvedParameter(String parameterName) {
 		throw new RuntimeException("unresolved parameter '"+parameterName+"' already exists");
 	}
 	UnresolvedParameter newParameter = new UnresolvedParameter(parameterName);
-	UnresolvedParameter newUnresolvedParameters[] = (UnresolvedParameter[]) ArrayUtils.addElement(fieldUnresolvedParameters,newParameter);
+	UnresolvedParameter[] newUnresolvedParameters = ArrayUtils.addElement(fieldUnresolvedParameters,newParameter);
 	setUnresolvedParameters(newUnresolvedParameters);
 	
 	return newParameter;
@@ -764,7 +764,7 @@ public KineticsProxyParameter addProxyParameter(SymbolTableEntry symbolTableEntr
 		removeUnresolvedParameter(getUnresolvedParameter(symbolTableEntry.getName()));
 	}
 	KineticsProxyParameter newProxyParameter = new KineticsProxyParameter(symbolTableEntry);
-	KineticsProxyParameter newProxyParameters[] = (KineticsProxyParameter[]) ArrayUtils.addElement(fieldProxyParameters,newProxyParameter);
+	KineticsProxyParameter[] newProxyParameters = ArrayUtils.addElement(fieldProxyParameters,newProxyParameter);
 	setProxyParameters(newProxyParameters);
 	return newProxyParameter;
 }
@@ -786,7 +786,7 @@ public KineticsParameter addUserDefinedKineticsParameter(String parameterName, E
 		removeProxyParameter(getProxyParameter(parameterName));
 	}
 	KineticsParameter newKineticsParameter = new KineticsParameter(parameterName,expression,ROLE_UserDefined, unit);
-	KineticsParameter newKineticsParameters[] = ArrayUtils.addElement(fieldKineticsParameters,newKineticsParameter);
+	KineticsParameter[] newKineticsParameters = ArrayUtils.addElement(fieldKineticsParameters,newKineticsParameter);
 	setKineticsParameters(newKineticsParameters);
 	return newKineticsParameter;
 }
@@ -1893,7 +1893,7 @@ void removeAllUnresolvedParameters() {
 
 
 protected void removeKineticsParameter(KineticsParameter parameter) throws PropertyVetoException {
-	KineticsParameter newKineticsParameters[] = (KineticsParameter[])ArrayUtils.removeFirstInstanceOfElement(fieldKineticsParameters,parameter);
+	KineticsParameter[] newKineticsParameters = ArrayUtils.removeFirstInstanceOfElement(fieldKineticsParameters,parameter);
 	setKineticsParameters(newKineticsParameters);
 }
 
@@ -1926,7 +1926,7 @@ public synchronized void removePropertyChangeListener(java.beans.PropertyChangeL
 protected void removeUnresolvedParameter(UnresolvedParameter parameter) {
 	for (int i = 0; i < fieldUnresolvedParameters.length; i++){
 		if (fieldUnresolvedParameters[i] == parameter){
-			UnresolvedParameter newUnresolvedParameters[] = (UnresolvedParameter[])ArrayUtils.removeFirstInstanceOfElement(fieldUnresolvedParameters,parameter);
+			UnresolvedParameter[] newUnresolvedParameters = ArrayUtils.removeFirstInstanceOfElement(fieldUnresolvedParameters,parameter);
 			setUnresolvedParameters(newUnresolvedParameters);
 			return;
 		}
@@ -1939,7 +1939,7 @@ protected void removeUnresolvedParameter(UnresolvedParameter parameter) {
 protected void removeProxyParameter(KineticsProxyParameter parameter) {
 	for (int i = 0; i < fieldProxyParameters.length; i++){
 		if (fieldProxyParameters[i] == parameter){
-			KineticsProxyParameter newProxyParameters[] = (KineticsProxyParameter[])ArrayUtils.removeFirstInstanceOfElement(fieldProxyParameters,parameter);
+			KineticsProxyParameter[] newProxyParameters = ArrayUtils.removeFirstInstanceOfElement(fieldProxyParameters,parameter);
 			setProxyParameters(newProxyParameters);
 			return;
 		}
@@ -1949,11 +1949,11 @@ protected void removeProxyParameter(KineticsProxyParameter parameter) {
 
 
 void removeUnresolvedParameters(SymbolTable symbolTable) {
-	Kinetics.UnresolvedParameter unresolvedParms[] = (Kinetics.UnresolvedParameter[])fieldUnresolvedParameters.clone();
+	Kinetics.UnresolvedParameter[] unresolvedParms = fieldUnresolvedParameters.clone();
 	for (int i = 0; i < unresolvedParms.length; i++){
 		SymbolTableEntry ste = symbolTable.getEntry(unresolvedParms[i].getName());
 		if (ste != unresolvedParms[i]){
-			unresolvedParms = (Kinetics.UnresolvedParameter[])ArrayUtils.removeFirstInstanceOfElement(unresolvedParms,unresolvedParms[i]);
+			unresolvedParms = ArrayUtils.removeFirstInstanceOfElement(unresolvedParms,unresolvedParms[i]);
 			i--;
 		}
 	}
@@ -2152,14 +2152,14 @@ public void setParameterValue(KineticsParameter parm, Expression exp) throws Exp
 	Expression oldExpression = parm.getExpression();
 	boolean bBound = false;
 	try {
-		KineticsParameter newKineticsParameters[] = (KineticsParameter[])fieldKineticsParameters.clone();
+		KineticsParameter[] newKineticsParameters = (KineticsParameter[])fieldKineticsParameters.clone();
 		//KineticsProxyParameter newProxyParameters[] = (KineticsProxyParameter[])fieldProxyParameters.clone();
 		String symbols[] = exp.getSymbols();
 		ModelUnitSystem modelUnitSystem = getReactionStep().getModel().getUnitSystem();
 		for (int i = 0; symbols!=null && i < symbols.length; i++){
 			SymbolTableEntry ste = reactionStep.getEntry(symbols[i]);
 			if (ste==null){
-				newKineticsParameters = (KineticsParameter[]) ArrayUtils.addElement(newKineticsParameters,new KineticsParameter(symbols[i],new Expression(0.0),ROLE_UserDefined, modelUnitSystem.getInstance_TBD()));
+				newKineticsParameters = ArrayUtils.addElement(newKineticsParameters,new KineticsParameter(symbols[i],new Expression(0.0),ROLE_UserDefined, modelUnitSystem.getInstance_TBD()));
 			}
 		}
 		parm.setExpression(exp);

@@ -682,16 +682,16 @@ public void refreshStructureMappings() throws MappingException, PropertyVetoExce
 			if (structure instanceof Feature){
 				FeatureMapping fm = new FeatureMapping((Feature)structure,fieldSimulationContext, getModel().getUnitSystem());
 				fm.setSimulationContext(this.fieldSimulationContext);
-				newStructureMappings = (StructureMapping[]) ArrayUtils.addElement(newStructureMappings,fm);
+				newStructureMappings = ArrayUtils.addElement(newStructureMappings,fm);
 				if (getGeometry().getDimension()==0){
 					fm.setGeometryClass((CompartmentSubVolume)getGeometry().getGeometrySpec().getSubVolumes()[0]);
 				}
 			}else if (structure instanceof Membrane){
 				MembraneMapping mm = new MembraneMapping((Membrane)structure,fieldSimulationContext, getModel().getUnitSystem());
 				mm.setSimulationContext(fieldSimulationContext);
-				newStructureMappings = (StructureMapping[]) ArrayUtils.addElement(newStructureMappings,mm);
+				newStructureMappings = ArrayUtils.addElement(newStructureMappings,mm);
 				if (getGeometry().getDimension()==0){
-					mm.setGeometryClass((CompartmentSubVolume)getGeometry().getGeometrySpec().getSubVolumes()[0]);
+					mm.setGeometryClass(getGeometry().getGeometrySpec().getSubVolumes()[0]);
 				}
 			}else{
 				throw new MappingException("unsupported Structure Mapping for structure "+structure.getClass().toString());

@@ -11,60 +11,60 @@ import cbit.vcell.model.Structure;
 
 
 public class SBMLHelper {
-	
-	public static final String SBML_NS_1 = "http://www.sbml.org/sbml/level1";
-	public static final String SBML_NS_2 = "http://www.sbml.org/sbml/level2";
-	public static final String SBML_NS_2_2 = "http://www.sbml.org/sbml/level2/version2";
-	public static final String SBML_NS_2_3 = "http://www.sbml.org/sbml/level2/version3";
-	public static final String SBML_NS_2_4 = "http://www.sbml.org/sbml/level2/version4";
-	public static final String SBML_NS_3_1 = "http://www.sbml.org/sbml/level3/version1/core";
-	public static final String SBML_NS_3_2 = "http://www.sbml.org/sbml/level3/version2/core";
 
-	public static String getNamespaceFromLevelAndVersion(long level, long version) {
-		String namespaceStr = SBMLHelper.SBML_NS_2;
-		if ((level == 1) && version == 2) {
-			namespaceStr = SBMLHelper.SBML_NS_1;
-		} 
-		if (level == 2) {
-			if (version == 1) {
-				namespaceStr = SBMLHelper.SBML_NS_2;
-			} else if (version == 2) {
-				namespaceStr = SBMLHelper.SBML_NS_2_2;
-			} else if (version == 3) {
-				namespaceStr = SBMLHelper.SBML_NS_2_3;
-			} else if (version == 4) {
-				namespaceStr = SBMLHelper.SBML_NS_2_4;
-			} 
-		}
-		if (level == 3) {
-			if (version == 1) {
-				namespaceStr = SBMLHelper.SBML_NS_3_1;
-			} else if (version == 2) {
-				namespaceStr = SBMLHelper.SBML_NS_3_2;
-			}
-		}
-		return namespaceStr;
-	}
+    public static final String SBML_NS_1 = "http://www.sbml.org/sbml/level1";
+    public static final String SBML_NS_2 = "http://www.sbml.org/sbml/level2";
+    public static final String SBML_NS_2_2 = "http://www.sbml.org/sbml/level2/version2";
+    public static final String SBML_NS_2_3 = "http://www.sbml.org/sbml/level2/version3";
+    public static final String SBML_NS_2_4 = "http://www.sbml.org/sbml/level2/version4";
+    public static final String SBML_NS_3_1 = "http://www.sbml.org/sbml/level3/version1/core";
+    public static final String SBML_NS_3_2 = "http://www.sbml.org/sbml/level3/version2/core";
 
-	private final static String XHTML_URI="http://www.w3.org/1999/xhtml";
-	public static void addNote(SBase destination, String note) throws XMLStreamException {
+    public static String getNamespaceFromLevelAndVersion(long level, long version){
+        String namespaceStr = SBMLHelper.SBML_NS_2;
+        if((level == 1) && version == 2){
+            namespaceStr = SBMLHelper.SBML_NS_1;
+        }
+        if(level == 2){
+            if(version == 1){
+                namespaceStr = SBMLHelper.SBML_NS_2;
+            } else if(version == 2){
+                namespaceStr = SBMLHelper.SBML_NS_2_2;
+            } else if(version == 3){
+                namespaceStr = SBMLHelper.SBML_NS_2_3;
+            } else if(version == 4){
+                namespaceStr = SBMLHelper.SBML_NS_2_4;
+            }
+        }
+        if(level == 3){
+            if(version == 1){
+                namespaceStr = SBMLHelper.SBML_NS_3_1;
+            } else if(version == 2){
+                namespaceStr = SBMLHelper.SBML_NS_3_2;
+            }
+        }
+        return namespaceStr;
+    }
+
+    private final static String XHTML_URI = "http://www.w3.org/1999/xhtml";
+
+    public static void addNote(SBase destination, String note) throws XMLStreamException{
 //		XMLNamespaces ns = destination.getNamespace();
 //		if (!ns.containsUri(XHTML_URI)) {
 //			ns.add(XHTML_URI,"xhtml");
 //		}
-		String wrapped = "<p xmlns=\"" + XHTML_URI + "\">" + note + "</p>";
-		if (destination.isSetNotes()) {
-			destination.appendNotes(wrapped);
-		}
-		else {
-			destination.setNotes(wrapped);
-		}
+        String wrapped = "<p xmlns=\"" + XHTML_URI + "\">" + note + "</p>";
+        if(destination.isSetNotes()){
+            destination.appendNotes(wrapped);
+        } else {
+            destination.setNotes(wrapped);
+        }
 //		if (rcode != libsbmlConstants.LIBSBML_OPERATION_SUCCESS) {
 //			throw new RuntimeException("Unable to add note " + note + " to " + destination.getName() 
 //					+ ", " + LibSBMLConstantsAdapter.lookup(rcode));
 //		}
-	}
-	
+    }
+
 //	/**
 //	 * map Java types to corresponding SBML constants 
 //	 */
@@ -82,7 +82,7 @@ public class SBMLHelper {
 //		}
 //		
 //	}
-	
+
 //	/**
 //	 * map Java types to corresponding SBML constants 
 //	 */
@@ -96,7 +96,7 @@ public class SBMLHelper {
 //			assert(ordinal( ) == code);
 //		}
 //	}
-	
+
 //	/**
 //	 * map Java types to corresponding SBML constants 
 //	 */
@@ -128,34 +128,36 @@ public class SBMLHelper {
 		}
 	}
 	*/
-	/**
-	 * get a type structure from a model, taking into account name mangling
-	 * @param type not null
-	 * @param source not null Model
-	 * @param name not null
-	 * @return desired structure or null
-	 */
-	public static <T extends Structure> CastingUtils.CastInfo<T> getTypedStructure(Class<T> type, Model source, String name) {
-		VCAssert.assertValid(type);
-		VCAssert.assertValid(source);
-		VCAssert.assertValid(name);
-		Structure strct = source.getStructure(name);
-		if (strct == null) {
-			String sourceMg = SBMLUtils.mangleToSName(name);
-			Structure[] structs = source.getStructures();
-			for (Structure s : structs) {
-				String sn = s.getName();
-				if (sn != null) {
-				 String mg = SBMLUtils.mangleToSName(sn);
-				 if (mg.equals(sourceMg)) {
-					 strct = s;
-					 break;
-				 }
-				}
-			}
-		}
-		return CastingUtils.attemptCast(type, strct);
-	}
+
+    /**
+     * get a type structure from a model, taking into account name mangling
+     *
+     * @param type   not null
+     * @param source not null Model
+     * @param name   not null
+     * @return desired structure or null
+     */
+    public static <T extends Structure> CastingUtils.CastInfo<T> getTypedStructure(Class<T> type, Model source, String name){
+        VCAssert.assertValid(type);
+        VCAssert.assertValid(source);
+        VCAssert.assertValid(name);
+        Structure strct = source.getStructure(name);
+        if(strct == null){
+            String sourceMg = SBMLUtils.mangleToSName(name);
+            Structure[] structs = source.getStructures();
+            for(Structure s : structs){
+                String sn = s.getName();
+                if(sn != null){
+                    String mg = SBMLUtils.mangleToSName(sn);
+                    if(mg.equals(sourceMg)){
+                        strct = s;
+                        break;
+                    }
+                }
+            }
+        }
+        return CastingUtils.attemptCast(type, strct);
+    }
 
 }
 

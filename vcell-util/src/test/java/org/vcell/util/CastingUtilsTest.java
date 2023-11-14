@@ -3,6 +3,7 @@ package org.vcell.util;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.vcell.test.Fast;
+
 import static org.vcell.util.CastingUtils.CastInfo;
 
 import static org.junit.Assert.*;
@@ -11,7 +12,7 @@ import static org.junit.Assert.*;
 public class CastingUtilsTest {
 
     @Test
-    public void downcastTest( ) {
+    public void downcastTest(){
         String str = "VCell";
         Object objStr = str.substring(0, 5); // Ensure second argument is equal to str.length()!
         String backStr = CastingUtils.downcast(String.class, objStr);

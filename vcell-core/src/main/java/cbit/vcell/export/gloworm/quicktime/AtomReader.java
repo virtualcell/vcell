@@ -305,7 +305,7 @@ public class AtomReader {
 			AtomInfo info = readOneAtomSig(offset);
 			din.skipBytes(info.size - 8);
 			offset += info.size;
-			childAtoms = (AtomInfo[]) ArrayUtils.addElement(childAtoms, info);
+			childAtoms = ArrayUtils.addElement(childAtoms, info);
 		}
 		din.close();
 		return childAtoms;
@@ -341,7 +341,7 @@ public class AtomReader {
 			AtomInfo info = readOneAtomSig(offset);
 			din.skipBytes(info.size - 8);
 			offset += info.size;
-			rootAtoms = (AtomInfo[]) ArrayUtils.addElement(rootAtoms, info);
+			rootAtoms = ArrayUtils.addElement(rootAtoms, info);
 		}
 		din.close();
 		return rootAtoms;

@@ -596,17 +596,15 @@ private void refreshSpeciesContextSpecs() throws MappingException {
 	//
 	// update speciesContext mapping list if any speciesContext or structures were added
 	//
-	Structure structures[] = fieldModel.getStructures();
-	for (int i=0;i<structures.length;i++){
-		Structure structure = structures[i];
-		SpeciesContext speciesContexts[] = fieldModel.getSpeciesContexts(structure);
-		for (int j=0;j<speciesContexts.length;j++){
-			SpeciesContext sc = speciesContexts[j];
-			if (getSpeciesContextSpec(sc) == null) {
-				newSpeciesContextSpecs = (SpeciesContextSpec[]) ArrayUtils.addElement(newSpeciesContextSpecs,new SpeciesContextSpec(sc,getSimulationContext()));
-			}
-		}
-	}
+	Structure[] structures = fieldModel.getStructures();
+    for(Structure structure : structures){
+        SpeciesContext[] speciesContexts = fieldModel.getSpeciesContexts(structure);
+        for(SpeciesContext sc : speciesContexts){
+            if(getSpeciesContextSpec(sc) == null){
+                newSpeciesContextSpecs = ArrayUtils.addElement(newSpeciesContextSpecs, new SpeciesContextSpec(sc, getSimulationContext()));
+            }
+        }
+    }
 	if (newSpeciesContextSpecs != fieldSpeciesContextSpecs){
 		try {
 			setSpeciesContextSpecs(newSpeciesContextSpecs);
@@ -757,27 +755,27 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 		ModelParameter[] newModelParams = (ModelParameter[])evt.getNewValue();
 		ModelParameter[] oldModelParams = (ModelParameter[])evt.getOldValue();
 		ModelParameter modelParam = null;
-		for (int i = 0; i < oldModelParams.length; i++) {
-			if (!ArrayUtils.arrayContains(newModelParams, oldModelParams[i])) {
-				modelParam = oldModelParams[i];
-			}
-		}
+        for(ModelParameter oldModelParam : oldModelParams){
+            if(!ArrayUtils.arrayContains(newModelParams, oldModelParam)){
+                modelParam = oldModelParam;
+            }
+        }
 		// use this missing model parameter (to be deleted) to determine if it is used in any speciesContextSpec parameters. 
 		Vector<String> referencedSCSVector = new Vector<String>();
 		if (modelParam != null) {
 			for (int i=0;i<getSpeciesContextSpecs().length;i++){
 				Parameter[] scsParams = getSpeciesContextSpecs(i).getParameters();
-				for (int k = 0; k < scsParams.length; k++) {
-					if (scsParams[k].getExpression() != null && 
-						scsParams[k].getExpression().hasSymbol(modelParam.getName()) && 
-						(getSpeciesContextSpecs(i).getProxyParameter(modelParam.getName()) != null)) {
-						referencedSCSVector.add(getSpeciesContextSpecs(i).getSpeciesContext().getName());
-						break;
-					}
-				}
+                for(Parameter scsParam : scsParams){
+                    if(scsParam.getExpression() != null &&
+                            scsParam.getExpression().hasSymbol(modelParam.getName()) &&
+                            (getSpeciesContextSpecs(i).getProxyParameter(modelParam.getName()) != null)){
+                        referencedSCSVector.add(getSpeciesContextSpecs(i).getSpeciesContext().getName());
+                        break;
+                    }
+                }
 			}
 			// if there are any speciesContextSpecs referencing the global, list them all in error msg.
-			if (referencedSCSVector.size() > 0) {
+			if (!referencedSCSVector.isEmpty()) {
 				String msg = "Model Parameter '" + modelParam.getName() + "' is used in the expression of the following speciesContext(s): ";
 				for (int i = 0; i < referencedSCSVector.size(); i++) {
 					msg = msg + "'" + referencedSCSVector.elementAt(i) + "'";

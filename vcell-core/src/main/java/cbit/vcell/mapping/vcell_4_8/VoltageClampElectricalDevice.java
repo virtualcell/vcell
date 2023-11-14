@@ -64,7 +64,7 @@ VoltageClampElectricalDevice(VoltageClampStimulus argVoltageClampStimulus, MathM
 	for (int i = 0;stimulusParameters!=null && i <stimulusParameters.length; i++){
 		if (stimulusParameters[i].getRole() == ElectricalStimulus.ElectricalStimulusParameterType.UserDefined){
 			ElectricalDeviceParameter newParam = new ElectricalDeviceParameter(stimulusParameters[i].getName(),new Expression(stimulusParameters[i].getExpression()),ROLE_UserDefined,stimulusParameters[i].getUnitDefinition());
-			parameters = (ElectricalDeviceParameter[]) ArrayUtils.addElement(parameters,newParam);
+			parameters = ArrayUtils.addElement(parameters,newParam);
 		}
 	}
 	

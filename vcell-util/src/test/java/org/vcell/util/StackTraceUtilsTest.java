@@ -11,13 +11,19 @@ import static org.junit.Assert.*;
 @Category(Fast.class)
 public class StackTraceUtilsTest {
 
-    private void eenie() {meenie();}
+    private void eenie(){
+        meenie();
+    }
 
-    private void meenie() {miney();}
+    private void meenie(){
+        miney();
+    }
 
-    private void miney() {mo();}
+    private void miney(){
+        mo();
+    }
 
-    private void mo() {
+    private void mo(){
         String stackTraceString = StackTraceUtils.getStackTrace();
         assertTrue(stackTraceString.contains("StackTraceUtilsTest.mo"));
         assertTrue(stackTraceString.contains("StackTraceUtilsTest.miney"));
@@ -26,23 +32,23 @@ public class StackTraceUtilsTest {
         throw new RuntimeException("Hello from Mo!");
     }
 
-    private void layer1() throws IndexOutOfBoundsException {
+    private void layer1() throws IndexOutOfBoundsException{
         try {
             layer2();
-        } catch (Exception e){
+        } catch(Exception e){
             throw new RuntimeException("Dummy exception 1", e);
         }
     }
 
-    private void layer2() throws IOException {
+    private void layer2() throws IOException{
         try {
             layer3();
-        } catch (Exception e){
+        } catch(Exception e){
             throw new IOException("Dummy exception 2", e);
         }
     }
 
-    private void layer3() throws AuthenticationException {
+    private void layer3() throws AuthenticationException{
         throw new ArithmeticException("Dummy exception 3");
     }
 
@@ -50,7 +56,7 @@ public class StackTraceUtilsTest {
     public void getStackTraceTest(){
         try {
             eenie();
-        } catch (RuntimeException e){
+        } catch(RuntimeException e){
             String stackTraceString = StackTraceUtils.getStackTrace(e);
             assertTrue(stackTraceString.contains("RuntimeException"));
             assertTrue(stackTraceString.contains("Hello from Mo!"));
@@ -67,7 +73,7 @@ public class StackTraceUtilsTest {
     public void getCausalChainTest(){
         try {
             layer1();
-        } catch (Exception e){
+        } catch(Exception e){
             String causalChainString = StackTraceUtils.getCausalChain(e);
             assertEquals("Dummy exception 1 caused by Dummy exception 2 caused by Dummy exception 3", causalChainString);
         }

@@ -11,9 +11,9 @@ import static org.junit.Assert.*;
 
 public class GeneralGuiUtilsTest {
 
-    private void aTest(BiFunction<Class<?>, Component, Container> method) {
-        JFrame jf = new JFrame( );
-        JPanel jp = new JPanel( );
+    private void aTest(BiFunction<Class<?>, Component, Container> method){
+        JFrame jf = new JFrame();
+        JPanel jp = new JPanel();
         jf.add(jp);
         JButton btn = new JButton();
         jf.add(btn);
@@ -29,7 +29,7 @@ public class GeneralGuiUtilsTest {
 
     @Ignore
     @Test
-    public void ancestorTest( ) {
+    public void ancestorTest(){
         BiFunction<Class<?>, Component, Container> buMethod =
                 (clzz, cmpt) -> GeneralGuiUtils.findTypeParentOfComponent(cmpt, clzz);
         aTest(buMethod);

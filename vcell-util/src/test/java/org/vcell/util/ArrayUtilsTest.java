@@ -3,6 +3,7 @@ package org.vcell.util;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.vcell.test.Fast;
+
 import static org.junit.Assert.*;
 
 @Category(Fast.class)
@@ -22,7 +23,7 @@ public class ArrayUtilsTest {
     @Test
     public void addElementsTest(){
         Integer[] testArray = new Integer[0];
-        Integer[] staticArray = new Integer[]{1,2,3,4};
+        Integer[] staticArray = new Integer[]{1, 2, 3, 4};
         testArray = ArrayUtils.addElements(testArray, staticArray);
         assertThrows(NullPointerException.class, () -> ArrayUtils.addElements(null, staticArray));
         Integer[] finalizedTestArray = testArray;
@@ -31,7 +32,7 @@ public class ArrayUtilsTest {
 
     @Test
     public void arrayContainsTest(){
-        Integer[] staticArray = new Integer[]{1,2,3,4};
+        Integer[] staticArray = new Integer[]{1, 2, 3, 4};
         assertTrue(ArrayUtils.arrayContains(staticArray, 3));
         assertFalse(ArrayUtils.arrayContains(staticArray, 5));
         assertFalse(ArrayUtils.arrayContains(null, 3));
@@ -40,8 +41,10 @@ public class ArrayUtilsTest {
     @Test
     public void firstIndexOfTest(){
         Integer[] testArray = new Integer[4];
-        testArray[0] = 2; testArray[1] = 4;
-        testArray[2] = 3; testArray[3] = 4;
+        testArray[0] = 2;
+        testArray[1] = 4;
+        testArray[2] = 3;
+        testArray[3] = 4;
         assertSame(ArrayUtils.firstIndexOf(testArray, 4), 1);
         testArray[1] = 1;
         assertSame(ArrayUtils.firstIndexOf(testArray, 4), 3);
@@ -53,8 +56,10 @@ public class ArrayUtilsTest {
     @Test
     public void removeFirstInstanceOfElementTest(){
         Integer[] testArray = new Integer[4];
-        testArray[0] = 2; testArray[1] = 4;
-        testArray[2] = 3; testArray[3] = 4;
+        testArray[0] = 2;
+        testArray[1] = 4;
+        testArray[2] = 3;
+        testArray[3] = 4;
         testArray = ArrayUtils.removeFirstInstanceOfElement(testArray, 4);
         assertSame(testArray.length, 3);
         testArray = ArrayUtils.removeFirstInstanceOfElement(testArray, 4);
