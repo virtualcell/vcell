@@ -109,20 +109,24 @@ public class N5Exporter implements ExportConstants {
 
 		for (int variableIndex=0; variableIndex < numVariables; variableIndex++){
 			//place to add tracking, each variable can be measured in tracking
-			exportServiceImpl.fireExportProgress(jobID, vcDataID, "N5", ((double) variableIndex / numVariables));
+			double varFrac = (double) variableIndex / numVariables;
 			for (int timeIndex=exportSpecs.getTimeSpecs().getBeginTimeIndex(); timeIndex < exportSpecs.getTimeSpecs().getEndTimeIndex(); timeIndex++){
 				//another place to add tracking, each time index can be used to determine how much has been exported
-
 				// data does get returned, but it does not seem to cover the entire region of space, but only returns regions where there is activity
 				double[] data = this.dataSetController.getSimDataBlock(outputContext, this.vcDataID, species.get(variableIndex).getName(), allTimes[timeIndex]).getData();
 				DoubleArrayDataBlock doubleArrayDataBlock = new DoubleArrayDataBlock(blockSize, new long[]{0, 0, variableIndex, 0, timeIndex}, data);
 				n5FSWriter.writeBlock(n5Specs.dataSetName, datasetAttributes, doubleArrayDataBlock);
+				if(timeIndex % 5 == 0){
+					double timeFrac = (double) timeIndex / exportSpecs.getTimeSpecs().getEndTimeIndex();
+					double progress = (varFrac + timeFrac) / (numVariables + exportSpecs.getTimeSpecs().getEndTimeIndex());
+					exportServiceImpl.fireExportProgress(jobID, vcDataID, "N5", progress);
+				}
 			}
 		}
-		File tmpFile = new File(n5FSWriter.getBasePath());
+//		File tmpFile = new File(n5FSWriter.getBasePath());
 		n5FSWriter.close();
 		ExportOutput exportOutput = new ExportOutput(true, ".n5", vcDataID.getID(), getN5FileNameHash(), fileDataContainerManager);
-		fileDataContainerManager.manageExistingTempFile(exportOutput.getFileDataContainerID(), tmpFile);
+//		fileDataContainerManager.manageExistingTempFile(exportOutput.getFileDataContainerID(), tmpFile);
 		return exportOutput;
 	}
 
@@ -137,10 +141,10 @@ public class N5Exporter implements ExportConstants {
 		VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(simKey, user);
 		this.vcDataID = new VCSimulationDataIdentifier(vcSimID, (int)jobIndex);
 
-		// Point a data controller to the directory where the sim data is and use the vcdID to retrieve information regarding the sim
-		Cachetable cachetable = new Cachetable(10 * Cachetable.minute, 1000000L);
+		// Point a data controller to the directory where the sim data is and use the vcdID to retrieve information regarding the sim, need to ask about what size this should be
+		Cachetable cachetable = new Cachetable(50 * Cachetable.minute, 5000000L);
 		File primaryDir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirInternalProperty));
-		File secodaryDir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.secondarySimDataDirExternalProperty));
+		File secodaryDir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.secondarySimDataDirInternalProperty));
 		this.dataSetController = new DataSetControllerImpl(cachetable, primaryDir, secodaryDir);
 
 		// get dataset identifier from the simulation
