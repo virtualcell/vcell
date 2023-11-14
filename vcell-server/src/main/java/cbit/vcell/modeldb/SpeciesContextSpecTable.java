@@ -53,7 +53,7 @@ public class SpeciesContextSpecTable extends cbit.sql.Table {
 
 	private final Field fields[] = {specContextRef,simContextRef,bEnableDif,bForceConst,bForceIndep,initCondExp,diffRateExp,
 											boundaryXmExp,boundaryXpExp,boundaryYmExp,boundaryYpExp,boundaryZmExp,boundaryZpExp,initCondCountExp,
-											velocityXExp, velocityYExp, velocityZExp, bWellMixed, bForceContinuous, siteAttributesSpecs, internalLinks};
+											velocityXExp, velocityYExp, velocityZExp, bWellMixed, bForceContinuous, internalLinks, siteAttributesSpecs};
 	
 	public static final SpeciesContextSpecTable table = new SpeciesContextSpecTable();
 /**
