@@ -312,7 +312,7 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataSer
 					exportOutputs = rrExporter.makeVTKUnstructuredData(outputContext,newExportJob, user, dataServerImpl, exportSpecs,fileDataContainerManager);
 					return makeRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob,fileDataContainerManager);
 				case N5:
-					n5Exporter.initalizeDataControllers(exportSpecs.getVCDataIdentifier().getDataKey().toString() ,user.getName(), user.getID().toString(), newExportJob.getJobID());
+					n5Exporter.initalizeDataControllers(exportSpecs.getVCDataIdentifier().getDataKey().toString() ,user.getName(), user.getID().toString(), ((VCSimulationDataIdentifier) exportSpecs.getVCDataIdentifier()).getJobIndex());
 					ExportOutput exportOutput = n5Exporter.makeN5Data(outputContext, newExportJob, exportSpecs, fileDataContainerManager);
 					return makeRemoteN5File(fileFormat, n5Exporter.getN5FileNameHash(), exportN5Dir, "s3://", exportOutput, exportSpecs, newExportJob, fileDataContainerManager);
 				default:
@@ -475,23 +475,21 @@ private ExportEvent makeRemoteFile_Unzipped(String fileFormat, String exportBase
 
 
 private ExportEvent makeRemoteN5File(String fileFormat, String fileName, String exportBaseDir, String exportBaseURL, ExportOutput exportOutput, ExportSpecs exportSpecs, JobRequest newExportJob,FileDataContainerManager fileDataContainerManager) throws DataFormatException, IOException{
-	boolean exportValid = true;
-	String fileNames = "";
-	if(exportOutput.isValid())
-	{
-		//do the first file of exportOutputs separately (for VFRAP, there is only one export output)
-		String extStr = "." + fileFormat;
-		File file = new File(exportBaseDir + "/" + fileName + extStr);
-		FileOutputStream fileOut = new FileOutputStream(file);
-		BufferedOutputStream out= new BufferedOutputStream(fileOut);
-		exportOutput.writeDataToOutputStream(out,fileDataContainerManager);
-		out.close();
-	}
-	else
-	{
-		exportValid = false;
-	}
-	if (exportValid) {
+//	if(exportOutput.isValid())
+//	{
+//		//do the first file of exportOutputs separately (for VFRAP, there is only one export output)
+//		String extStr = "." + fileFormat;
+//		File file = new File(exportBaseDir + "/" + fileName + extStr);
+//		FileOutputStream fileOut = new FileOutputStream(file);
+//		BufferedOutputStream out= new BufferedOutputStream(fileOut);
+//		exportOutput.writeDataToOutputStream(out,fileDataContainerManager);
+//		out.close();
+//	}
+//	else
+//	{
+//		exportValid = false;
+//	}
+	if (exportOutput.isValid()) {
 		completedExportRequests.put(exportSpecs, newExportJob);
 		if (lg.isTraceEnabled()) lg.trace("ExportServiceImpl.makeRemoteFile(): Successfully exported to file: " + fileName);
 		return fireExportCompleted(newExportJob.getJobID(), exportSpecs.getVCDataIdentifier(), fileFormat, exportBaseURL, exportSpecs);
