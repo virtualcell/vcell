@@ -2,6 +2,8 @@ package org.vcell.util;
 
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.vcell.test.Fast;
 
 import javax.swing.*;
 import java.awt.*;
@@ -9,6 +11,8 @@ import java.util.function.BiFunction;
 
 import static org.junit.Assert.*;
 
+
+@Category(Fast.class)
 public class GeneralGuiUtilsTest {
 
     private void aTest(BiFunction<Class<?>, Component, Container> method){
