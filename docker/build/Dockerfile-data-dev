@@ -89,6 +89,7 @@ ENTRYPOINT java \
 	-Dvcell.python.executable=/usr/local/bin/python \
 	-Dvcell.primarySimdatadir.internal=/simdata \
 	-Dvcell.secondarySimdatadir.internal=/simdata_secondary \
+	-Dvcell.n5DataDir.internal=/n5DataDir \
 	-Dvcell.primarySimdatadir.external="${simdatadir_external}" \
 	-Dvcell.simdataCacheSize="${simdataCacheSize}" \
 	-Dvcell.export.baseDir.internal=/exportdir/ \
