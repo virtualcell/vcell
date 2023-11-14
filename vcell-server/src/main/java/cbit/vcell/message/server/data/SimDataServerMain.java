@@ -48,6 +48,8 @@ public class SimDataServerMain {
     private static final String REQUIRED_SERVICE_PROPERTIES[] = {
             PropertyLoader.primarySimDataDirInternalProperty,
             PropertyLoader.primarySimDataDirExternalProperty,
+            PropertyLoader.n5DataDir,
+            PropertyLoader.secondarySimDataDirInternalProperty,
             PropertyLoader.vcellServerIDProperty,
             PropertyLoader.installationRoot,
             PropertyLoader.mongodbHostInternal,
