@@ -18,12 +18,12 @@ BioSimulators-compliant command-line interface to the [VCell](http://vcell.org/)
 ## Installation
 
 ### To set up the project in IntelliJ IDEA
-
-1. Requirements: Git, Maven, Jetbrains IntelliJ IDEA and Oracle Java JDK 1.8
-2. Clone the repo
-3. Open the project as new project in IntelliJ
-4. Go to `Files` > `Project Structure...` > `Modules` and select all modules and then click apply.
-5. Run `mvn clean install dependency:copy-dependencies`
+* Requirements: Git, Maven, Python 3.10, Poetry, Jetbrains IntelliJ IDEA and Java JDK 17
+1. Clone the repo
+2. Open the project as new project in IntelliJ
+3. Go to `Files` > `Project Structure...` > `Modules` and select all modules and then click apply.
+4. follow instructions in [README.md](./README.md) to build python dependencies
+5. Run `mvn clean install dependency:copy-dependencies` to build the project
 6. For creating Run/Debug Configurations:
 	* Go to `Run/Debug Configurations` > `+` > select `Application`
 	* Name it `VCell-CLI`
@@ -41,11 +41,11 @@ BioSimulators-compliant command-line interface to the [VCell](http://vcell.org/)
 8. Click `apply` and `build`
 
 ### To setup the project in Eclipse
-  * Requirements:  
-        Git, Maven, Eclipse IDE and Java JDK 1.8
+  * Requirements: Git, Maven, Python 3.10, Poetry, Eclipse IDE and Java JDK 17
   1. Open terminal, navigate to the Eclipse workspace folder.
   2. Clone the repo
-  3. ``` mvn clean install dependency:copy-dependencies ```
+  3. follow instructions in [README.md](./README.md) to build python dependencies
+  4. Run `mvn clean install dependency:copy-dependencies` to build the project
   4. Open Eclipse, Import the project using Maven. Depending on the Eclipse version there'll be small differences with the importing steps.
   5. Create a `Debug configuration` as a `Java Application`.
      * the Main Class is `org.vcell.cli.CLIStandalone`

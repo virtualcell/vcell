@@ -21,6 +21,8 @@ import org.vcell.db.KeyFactory;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.IOException;
+import java.io.Writer;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -43,7 +45,7 @@ public class SQLCreateAllTables {
      * @param vcTable       cbit.sql.Table
      * @param vcTable_Field cbit.sql.Field
      */
-    private static void createIndex(Connection con, String indexName, Table vcTable, Field vcTable_Field, DatabaseSyntax dbSyntax) throws SQLException{
+    private static void createIndex(Connection con, String indexName, Table vcTable, Field vcTable_Field, DatabaseSyntax dbSyntax) throws SQLException {
 
         //
         // create indices for faster lookup
@@ -52,21 +54,21 @@ public class SQLCreateAllTables {
         try {
             stmt = con.createStatement();
             try {
-                if(dbSyntax == DatabaseSyntax.ORACLE){
+                if (dbSyntax == DatabaseSyntax.ORACLE) {
                     stmt.executeUpdate("DROP INDEX " + indexName);
-                } else if(dbSyntax == DatabaseSyntax.POSTGRES){
+                } else if (dbSyntax == DatabaseSyntax.POSTGRES) {
                     stmt.executeUpdate("DROP INDEX IF EXISTS " + indexName);
                 } else {
                     throw new RuntimeException("unexpected Database Syntax '" + dbSyntax + "'");
                 }
-            } catch(SQLException e){
-                if(e.getErrorCode() != 1418){
+            } catch (SQLException e) {
+                if (e.getErrorCode() != 1418) {
                     throw e;
                 }
             }
             stmt.executeUpdate("CREATE INDEX " + indexName + " ON " + vcTable.getTableName() + "(" + vcTable_Field.getUnqualifiedColName() + ")");
         } finally {
-            if(stmt != null){
+            if (stmt != null) {
                 stmt.close();
             }
         }
@@ -75,7 +77,7 @@ public class SQLCreateAllTables {
     /**
      * This method was created in VisualAge.
      */
-    private static void createSequence(Connection con, KeyFactory keyFactory) throws SQLException{
+    private static void createSequence(Connection con, KeyFactory keyFactory) throws SQLException {
 
         //
         // create new sequence
@@ -94,14 +96,14 @@ public class SQLCreateAllTables {
     /**
      * This method was created in VisualAge.
      */
-    private static void createTables(Connection con, Table tables[], DatabaseSyntax dbSyntax) throws SQLException{
+    private static void createTables(Connection con, Table tables[], DatabaseSyntax dbSyntax) throws SQLException {
 
         //
         // make tables
         //
         boolean status;
         PreparedStatement pps;
-        for(int i = 0; i < tables.length; i++){
+        for (int i = 0; i < tables.length; i++) {
             String sql = tables[i].getCreateSQL(dbSyntax);
             System.out.println(sql);
             pps = con.prepareStatement(sql);
@@ -110,25 +112,32 @@ public class SQLCreateAllTables {
         }
     }
 
-    private static void createViews(Connection con, DatabaseSyntax dbSyntax) throws SQLException{
-        if(dbSyntax != DatabaseSyntax.POSTGRES){
+    private static void createViews(Connection con, DatabaseSyntax dbSyntax) throws SQLException {
+        if (dbSyntax != DatabaseSyntax.POSTGRES) {
             return;
         }
         //
         // add fake DUAL table for ORACLE compatibility
         //
-        String sql = "CREATE VIEW " + POSTGRES_DUAL_VIEW + " AS SELECT CAST('X' as varchar) AS dummy";
+        String sql = getCreateViewSql(dbSyntax);
         System.out.println(sql);
         PreparedStatement pps = con.prepareStatement(sql);
         boolean status = pps.execute();
         pps.close();
     }
 
+    private static String getCreateViewSql(DatabaseSyntax dbSyntax) {
+        if (dbSyntax != DatabaseSyntax.POSTGRES) {
+            return null;
+        }
+        return "CREATE VIEW " + POSTGRES_DUAL_VIEW + " AS SELECT CAST('X' as varchar) AS dummy";
+    }
+
 
     /**
      * This method was created in VisualAge.
      */
-    private static void destroyAndRecreateTables(ConnectionFactory conFactory, KeyFactory keyFactory, DatabaseSyntax dbSyntax){
+    private static void destroyAndRecreateTables(ConnectionFactory conFactory, KeyFactory keyFactory, DatabaseSyntax dbSyntax) {
         try {
             JPanel panel = new JPanel(new BorderLayout());
             JCheckBox c1 = new JCheckBox("Drop all tables");
@@ -143,26 +152,26 @@ public class SQLCreateAllTables {
                             panel,
                             "Select Action(s)",
                             JOptionPane.OK_CANCEL_OPTION);
-            if(ok == JOptionPane.OK_OPTION && (c1.isSelected() || c2.isSelected())){
+            if (ok == JOptionPane.OK_OPTION && (c1.isSelected() || c2.isSelected())) {
                 Connection con = null;
                 Object lock = new Object();
                 try {
                     con = conFactory.getConnection(lock);
                     System.out.println("connected....");
                     Table tables[] = getVCellTables();
-                    if(c1.isSelected()){
+                    if (c1.isSelected()) {
                         dropViews(con, dbSyntax);
                         dropTables(con, tables, dbSyntax);
                         dropSequence(con, keyFactory);
                     }
-                    if(c2.isSelected()){
+                    if (c2.isSelected()) {
                         createTables(con, tables, dbSyntax);
                         createViews(con, dbSyntax);
                         createSequence(con, keyFactory);
                         //
                         // Add special table entries
                         //
-                        if(c3.isSelected()){
+                        if (c3.isSelected()) {
                             Statement s = con.createStatement();
                             try {
                                 // Add void user
@@ -196,7 +205,7 @@ public class SQLCreateAllTables {
                         createIndex(con, "simcstat_simcref", cbit.vcell.modeldb.SimContextStatTable.table, cbit.vcell.modeldb.SimContextStatTable.table.simContextRef, dbSyntax);
                     }
                     con.commit();
-                } catch(SQLException exc){
+                } catch (SQLException exc) {
                     con.rollback();
                     lg.error(exc);
                 } finally {
@@ -206,7 +215,7 @@ public class SQLCreateAllTables {
                 throw new RuntimeException("Aborted by user");
             }
             System.exit(0);
-        } catch(Throwable exc){
+        } catch (Throwable exc) {
             lg.error(exc);
         }
     }
@@ -214,7 +223,7 @@ public class SQLCreateAllTables {
     /**
      * This method was created in VisualAge.
      */
-    private static void dropSequence(Connection con, KeyFactory keyFactory) throws SQLException{
+    private static void dropSequence(Connection con, KeyFactory keyFactory) throws SQLException {
 
         //
         // drop old sequence
@@ -225,7 +234,7 @@ public class SQLCreateAllTables {
         try {
             stmt = con.createStatement();
             stmt.execute(sql);
-        } catch(SQLException e){
+        } catch (SQLException e) {
             lg.error("Exception Dropping Sequence", e);
         } finally {
             stmt.close();
@@ -233,8 +242,8 @@ public class SQLCreateAllTables {
 
     }
 
-    private static void dropViews(Connection con, DatabaseSyntax dbSyntax) throws SQLException{
-        if(dbSyntax != DatabaseSyntax.POSTGRES){
+    private static void dropViews(Connection con, DatabaseSyntax dbSyntax) throws SQLException {
+        if (dbSyntax != DatabaseSyntax.POSTGRES) {
             return;
         }
         PreparedStatement pps = null;
@@ -243,11 +252,11 @@ public class SQLCreateAllTables {
             System.out.println(sql);
             pps = con.prepareStatement(sql);
             boolean status = pps.execute();
-        } catch(Exception e){
+        } catch (Exception e) {
             //lg.error(e);
             System.out.println(" View " + POSTGRES_DUAL_VIEW + " Not dropped. " + e.getMessage());
         } finally {
-            if(pps != null){
+            if (pps != null) {
                 pps.close();
             }
         }
@@ -257,23 +266,23 @@ public class SQLCreateAllTables {
     /**
      * This method was created in VisualAge.
      */
-    private static void dropTables(Connection con, Table tables[], DatabaseSyntax dbSyntax) throws SQLException{
+    private static void dropTables(Connection con, Table tables[], DatabaseSyntax dbSyntax) throws SQLException {
         boolean status;
         PreparedStatement pps = null;
-        for(int i = tables.length - 1; i >= 0; i--){
+        for (int i = tables.length - 1; i >= 0; i--) {
             try {
                 String sql = "DROP TABLE " + tables[i].getTableName() + " CASCADE CONSTRAINTS";
-                if(dbSyntax == DatabaseSyntax.POSTGRES){
+                if (dbSyntax == DatabaseSyntax.POSTGRES) {
                     sql = "DROP TABLE IF EXISTS " + tables[i].getTableName() + " CASCADE";
                 }
                 System.out.println(sql);
                 pps = con.prepareStatement(sql);
                 status = pps.execute();
-            } catch(Exception e){
+            } catch (Exception e) {
                 //lg.error(e);
                 System.out.println(" Table " + tables[i].getTableName() + " Not dropped. " + e.getMessage());
             } finally {
-                if(pps != null){
+                if (pps != null) {
                     pps.close();
                 }
             }
@@ -285,7 +294,7 @@ public class SQLCreateAllTables {
      *
      * @return cbit.sql.Table[]
      */
-    public static Table[] getVCellTables(){
+    public static Table[] getVCellTables() {
         Table tables[] = {
                 cbit.vcell.modeldb.UserTable.table,
                 cbit.vcell.modeldb.GroupTable.table,
@@ -370,19 +379,36 @@ public class SQLCreateAllTables {
         return tables;
     }
 
+    public static void writeScript(DatabaseSyntax dbSyntax, Writer scriptWriter) throws IOException {
+        Table[] tables = getVCellTables();
+        for (int i = 0; i < tables.length; i++) {
+            String sql = tables[i].getCreateSQL(dbSyntax);
+            scriptWriter.write(sql + "\n");
+        }
+        System.out.println();
+        String createViewSql = getCreateViewSql(dbSyntax);
+        if (createViewSql != null) {
+            scriptWriter.write(createViewSql + "\n");
+        }
+        System.out.println();
+        if (dbSyntax == DatabaseSyntax.ORACLE || dbSyntax == DatabaseSyntax.POSTGRES) {
+            scriptWriter.write("CREATE SEQUENCE " + Table.SEQ + "\n");
+        }
+    }
+
     /**
      * Starts the application.
      *
      * @param args an array of command-line arguments
      */
-    public static void main(java.lang.String[] args){
+    public static void main(java.lang.String[] args) {
         //
         try {
             final String oracle = "oracle";
             final String postgres = "postgres";
             final String usage = "\nUsage: (" + oracle + "|" + postgres + ") connectUrl schemaUser schemaUserPassword\n";
 
-            if(args.length != 4){
+            if (args.length != 4) {
                 System.out.println(usage);
                 System.exit(1);
             }
@@ -403,7 +429,7 @@ public class SQLCreateAllTables {
                             "Confirm",
                             javax.swing.JOptionPane.OK_CANCEL_OPTION,
                             javax.swing.JOptionPane.WARNING_MESSAGE);
-            if(ok != javax.swing.JOptionPane.OK_OPTION){
+            if (ok != javax.swing.JOptionPane.OK_OPTION) {
                 throw new RuntimeException("Aborted by user");
             }
 
