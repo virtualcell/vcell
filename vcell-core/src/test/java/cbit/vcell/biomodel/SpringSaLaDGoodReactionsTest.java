@@ -21,6 +21,7 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.solver.langevin.LangevinLngvWriter;
 import org.vcell.solver.langevin.LangevinSolver;
 import org.vcell.test.Fast;
@@ -36,6 +37,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
@@ -240,8 +242,53 @@ public class SpringSaLaDGoodReactionsTest {
 		Solver solver = SolverFactory.createSolver(localSimDataDir, simTask, false);
 		Assert.assertTrue("expecting instanceof Langevin solver", (solver instanceof LangevinSolver) ? true : false);
 	}
-    
-	// ==========================================================================================================================
+
+	/* -------------------------------------------------------------------------------------------------
+	 * This test will exercise creation and parsing of a species context spec entry in the SQL table
+	 *
+	 */
+	@Test
+	public void test_springsalad_application() throws IOException, XmlParseException, PropertyVetoException, ExpressionException, GeometryException,
+			ImageException, IllegalMappingException, MappingException, SolverException {
+
+		BioModel bioModel = getBioModelFromResource("Spring_application.vcml");
+		SimulationContext simContext = bioModel.addNewSimulationContext("Application", SimulationContext.Application.SPRINGSALAD);
+
+		// WARNING!! Debug configuration for this JUnit test required System property "vcell.installDir"
+		// ex: -Dvcell.installDir=C:\dan\jprojects\git\vcell
+		bioModel.updateAll(false);        // this call generates math
+		MathDescription mathDescription = simContext.getMathDescription();
+		Assert.assertTrue("expecting SpringSaLaD math type", (mathDescription.getMathType() != null && mathDescription.getMathType() == MathType.SpringSaLaD) ? true : false);
+
+		SpeciesContextSpec[] speciesContextSpecs = simContext.getReactionContext().getSpeciesContextSpecs();
+		SpeciesContextSpec scs = speciesContextSpecs[0];		// we test roundtrip for just one SpeciesContextSpec
+		String internalLinkSetSQL = scs.getInternalLinksSQL();
+		String siteAttributesMapSQL = scs.getSiteAttributesSQL();
+		Set<MolecularInternalLinkSpec> internalLinkSet = scs.readInternalLinksSQL(internalLinkSetSQL);
+		Map<MolecularComponentPattern, SiteAttributesSpec> siteAttributesMap = scs.readSiteAttributesSQL(siteAttributesMapSQL);
+
+		// verify roundtrip for internalLinkSet (through sampling)
+		Assert.assertTrue("internalLinkSet size different after roundtrip", internalLinkSet.size() == scs.getInternalLinkSet().size() ? true : false);
+		MolecularInternalLinkSpec milsThis = internalLinkSet.iterator().next();
+		boolean found = false;
+		for(MolecularInternalLinkSpec milsThat : scs.getInternalLinkSet()) {
+			if(milsThis.compareEqual(milsThat)) {
+				found = true;
+				break;
+			}
+		}
+		Assert.assertTrue("MolecularInternalLinkSpec element not found after roundtrip", found ? true : false);
+
+		// verify roundtrip for siteAttributesMap (through sampling)
+		Assert.assertTrue("siteAttributesMap size different after roundtrip", siteAttributesMap.size() == scs.getSiteAttributesMap().size() ? true : false);
+		MolecularComponentPattern mcpThis = siteAttributesMap.keySet().iterator().next();
+		SiteAttributesSpec sasThis = siteAttributesMap.get(mcpThis);
+		SiteAttributesSpec sasThat = scs.getSiteAttributesMap().get(mcpThis);
+		Assert.assertTrue("SiteAttributesSpec element not found in siteAttributesMap after roundtrip", sasThis.compareEqual(sasThat) ? true : false);
+	}
+
+
+		// ==========================================================================================================================
 	
     private static BioModel getBioModelFromResource(String fileName) throws IOException, XmlParseException {
         InputStream inputStream = SpringSaLaDGoodReactionsTest.class.getResourceAsStream(fileName);

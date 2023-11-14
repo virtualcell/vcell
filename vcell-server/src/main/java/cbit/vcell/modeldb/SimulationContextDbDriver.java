@@ -17,11 +17,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.Set;
 
-import cbit.vcell.matrix.MatrixException;
-import cbit.vcell.model.ModelException;
+import cbit.vcell.mapping.*;
 import org.vcell.db.DatabaseSyntax;
-import org.vcell.sbml.vcell.StructureSizeSolver;
+import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.DependencyException;
 import org.vcell.util.ObjectNotFoundException;
@@ -41,19 +42,6 @@ import cbit.sql.RecordChangedException;
 import cbit.sql.Table;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.geometry.GeometryClass;
-import cbit.vcell.mapping.CurrentDensityClampStimulus;
-import cbit.vcell.mapping.ElectricalStimulus;
-import cbit.vcell.mapping.Electrode;
-import cbit.vcell.mapping.FeatureMapping;
-import cbit.vcell.mapping.IllegalMappingException;
-import cbit.vcell.mapping.MappingException;
-import cbit.vcell.mapping.MembraneMapping;
-import cbit.vcell.mapping.ReactionSpec;
-import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.mapping.SpeciesContextSpec;
-import cbit.vcell.mapping.StructureMapping;
-import cbit.vcell.mapping.TotalCurrentClampStimulus;
-import cbit.vcell.mapping.VoltageClampStimulus;
 import cbit.vcell.math.BoundaryConditionType;
 import cbit.vcell.math.MathException;
 import cbit.vcell.model.Feature;
@@ -81,8 +69,6 @@ public class SimulationContextDbDriver extends DbDriver {
 
 /**
  * SimContextDbDriver constructor comment.
- * @param connectionFactory cbit.sql.ConnectionFactory
- * @param sessionLog cbit.vcell.server.SessionLog
  */
 public SimulationContextDbDriver(GeomDbDriver argGeomDB,ModelDbDriver argModelDB,
 		MathDescriptionDbDriver argMathDescDB) {
@@ -261,6 +247,17 @@ private void assignSpeciesContextSpecsSQL(Connection con,KeyValue simContextKey,
 				forceContinuousString = null;
 			}
 
+			String internalLinkSetString = rset.getString(speciesContextSpecTable.internalLinks.toString());
+			if (rset.wasNull()){
+				internalLinkSetString = null;
+			}
+
+			String siteAttributesMapString = rset.getString((speciesContextSpecTable.siteAttributesSpecs.toString()));
+			if (rset.wasNull()){
+				siteAttributesMapString = null;
+			}
+
+
 			//
 			SpeciesContextSpec speciesContextSpecs[] = simContext.getReactionContext().getSpeciesContextSpecs();
 			for (int i=0;i<speciesContextSpecs.length;i++){
@@ -337,6 +334,18 @@ private void assignSpeciesContextSpecsSQL(Connection con,KeyValue simContextKey,
 							}
 							boolean bForceContinuous = (value==1)?true:false;
 							scs.setForceContinuous(bForceContinuous);
+						}
+						if (internalLinkSetString != null) {
+							Set<MolecularInternalLinkSpec> internalLinkSpecSet = scs.readInternalLinksSQL(internalLinkSetString);
+							if(!internalLinkSpecSet.isEmpty()) {	// all scs already created with an empty InternalLinkSpecSet
+								scs.setInternalLinkSet(internalLinkSpecSet);
+							}
+						}
+						if(siteAttributesMapString != null) {
+							Map<MolecularComponentPattern, SiteAttributesSpec> siteAttributesMap = scs.readSiteAttributesSQL(siteAttributesMapString);
+							if(!siteAttributesMap.isEmpty()) {		// all scs already created with an empty SiteAttributesMap
+								scs.setSiteAttributesMap(siteAttributesMap);
+							}
 						}
 					} catch (Exception e) {
 						throw new DataAccessException("Error setting SpeciesContextSpec info for SimulationContext:"+simContext.getVersion().getName()+" id="+simContextKey);
@@ -701,7 +710,6 @@ private void deleteSimContextSQL(Connection con,User user, KeyValue simContextKe
  * This method was created in VisualAge.
  * @param user cbit.vcell.server.User
  * @param vType int
- * @param versionKey cbit.sql.KeyValue
  */
 public void deleteVersionable(Connection con, User user, VersionableType vType, KeyValue vKey) 
 				throws DependencyException, ObjectNotFoundException,
@@ -816,7 +824,6 @@ private SimulationContext getSimulationContextSQL(QueryHashtable dbc, Connection
  * This method was created in VisualAge.
  * @return cbit.sql.Versionable
  * @param user cbit.vcell.server.User
- * @param versionable cbit.sql.Versionable
  */
 public Versionable getVersionable(QueryHashtable dbc, Connection con, User user, VersionableType vType, KeyValue vKey) 
 			throws ObjectNotFoundException, SQLException, DataAccessException {
@@ -1110,9 +1117,6 @@ private void insertStructureMappingsSQL(InsertHashtable hash, Connection con, Ke
 /**
  * This method was created in VisualAge.
  * @return cbit.sql.KeyValue
- * @param versionable cbit.sql.Versionable
- * @param pRef cbit.sql.KeyValue
- * @param bCommit boolean
  */
 public KeyValue insertVersionable(InsertHashtable hash, Connection con, User user, SimulationContext simContext, KeyValue updatedMathDescKey, Model updatedModel, KeyValue updatedGeometryKey, String name, boolean bVersion) 
 					throws DataAccessException, SQLException, RecordChangedException {
@@ -1132,7 +1136,6 @@ public KeyValue insertVersionable(InsertHashtable hash, Connection con, User use
  * This method was created in VisualAge.
  * @return cbit.image.VCImage
  * @param user cbit.vcell.server.User
- * @param image cbit.image.VCImage
  */
 public KeyValue updateVersionable(InsertHashtable hash,Connection con,User user,SimulationContext simContext,KeyValue updatedMathDescKey,Model updatedModel,KeyValue updatedGeometryKey,boolean bVersion)
     throws DataAccessException, SQLException, RecordChangedException {
