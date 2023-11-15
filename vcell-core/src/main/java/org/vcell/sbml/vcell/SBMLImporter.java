@@ -1800,8 +1800,6 @@ public class SBMLImporter {
         } else { // sbmlModel != null
             document = sbmlModel.getSBMLDocument();
         }
-        // get namespace and SBML model level to use in SBMLAnnotationUtil
-        String ns = document.getNamespace();
 
         //
         // validate SBML model before import
@@ -1810,6 +1808,9 @@ public class SBMLImporter {
             validateSBMLDocument(document, vcLogger);
         }
         validateSBMLPackages(document, localIssueList, issueContext);
+
+        // get namespace and SBML model level to use in SBMLAnnotationUtil
+        String ns = document.getNamespace();
 
 
         //

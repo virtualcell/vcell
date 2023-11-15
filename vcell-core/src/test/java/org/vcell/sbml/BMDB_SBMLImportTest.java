@@ -219,11 +219,11 @@ public class BMDB_SBMLImportTest {
 		InputStream testFileInputStream = BMDB_SBML_Files.getBiomodelsDbCuratedModel(biomodelsDbModelNumber);
 		TestVCLogger vcl = new TestVCLogger();
 		boolean bValidateSBML = true;
-		SBMLImporter importer = new SBMLImporter(testFileInputStream, vcl, bValidateSBML);
 		boolean bFailed = false;
 		SBMLTestSuiteTest.FAULT knownFault = knownFaults().get(biomodelsDbModelNumber);
 		Exception exception = null;
 		try {
+			SBMLImporter importer = new SBMLImporter(testFileInputStream, vcl, bValidateSBML);
 			BioModel bioModel = importer.getBioModel();
 			if (vcl.highPriority.size() > 0) {
 				bFailed = true;

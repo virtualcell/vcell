@@ -635,8 +635,8 @@ public class SBMLTestSuiteTest {
 		TLogger vcl = new TLogger();
 		InputStream testFileInputStream = SbmlTestSuiteFiles.getSbmlTestCase(testCase);
 		boolean bValidateSBML = true;
-		SBMLImporter importer = new SBMLImporter(testFileInputStream, vcl, bValidateSBML);
 		try {
+			SBMLImporter importer = new SBMLImporter(testFileInputStream, vcl, bValidateSBML);
 			BioModel bioModel = importer.getBioModel();
 			SBMLSymbolMapping sbmlSymbolMapping = importer.getSymbolMapping();
 			//
