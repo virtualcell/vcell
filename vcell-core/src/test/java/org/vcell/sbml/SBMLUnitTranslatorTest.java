@@ -26,11 +26,6 @@ import ucar.units_vcell.RationalNumber;
 @Category(Fast.class)
 public class SBMLUnitTranslatorTest {
 
-	public static File[] getBiomodelsCuratedSBMLFiles(){
-		File[] sbmlFiles = new File("/Users/schaff/Documents/workspace-maven/BioModels_Database-r30_pub-sbml_files/curated/").listFiles();
-		return sbmlFiles;
-	}
-
 	final String sbml_prefix =
 			"<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
 			"<sbml xmlns=\"http://www.sbml.org/sbml/level3/version1/core\" level=\"3\" version=\"1\">\n" +

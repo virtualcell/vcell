@@ -11,7 +11,9 @@
 package cbit.vcell.geometry;
 
 import org.vcell.util.Compare;
+import org.vcell.util.Extent;
 import org.vcell.util.Matchable;
+import org.vcell.util.Origin;
 import org.vcell.util.document.KeyValue;
 
 import cbit.image.ImageException;
@@ -33,7 +35,18 @@ public class CSGObject extends SubVolume {
 		root = csgObj.root.clone();
 	}
 
-	public boolean compareEqual(Matchable obj) {
+    public static CSGObject createBackgroundObject(Origin vcOrigin, Extent vcExtent, String name, int handle) {
+		CSGPrimitive cube = new CSGPrimitive("background", CSGPrimitive.PrimitiveType.CUBE);
+		CSGScale scale = new CSGScale("scale",new Vect3d(2*vcExtent.getX(),2*vcExtent.getY(), 2*vcExtent.getZ()));
+		CSGTranslation translation = new CSGTranslation("translate", new Vect3d(-vcOrigin.getX(), -vcOrigin.getY(), -vcOrigin.getZ()));
+		scale.setChild(translation);
+		translation.setChild(cube);
+		CSGObject csgObject = new CSGObject(null ,name, handle);
+		csgObject.setRoot(scale);
+		return csgObject;
+    }
+
+    public boolean compareEqual(Matchable obj) {
 		if (!compareEqual0(obj)){
 			return false;
 		}
