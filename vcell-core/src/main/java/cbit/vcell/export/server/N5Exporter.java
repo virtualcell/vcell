@@ -44,6 +44,7 @@ public class N5Exporter implements ExportConstants {
 	private DataSetControllerImpl dataSetController;
 
 	private VCSimulationDataIdentifier vcDataID;
+	public String n5BucketName = "n5Data";
 
 	public static final ArrayList<VariableType> unsupportedTypes = new ArrayList<>(Arrays.asList(
 			VariableType.MEMBRANE,
@@ -203,7 +204,7 @@ public class N5Exporter implements ExportConstants {
 	}
 
 	public String getN5FileAbsolutePath(){
-		File outPutDir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.n5DataDir) + "/" + this.getN5FileNameHash() + ".n5");
+		File outPutDir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.n5DataDir) + "/" + n5BucketName + "/" + this.getN5FileNameHash() + ".n5");
 		return outPutDir.getAbsolutePath();
 	}
 

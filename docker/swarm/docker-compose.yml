@@ -269,6 +269,7 @@ services:
       - mongodb_host_internal=mongodb
       - mongodb_port_internal=27017
       - mongodb_database=test
+      - s3ProxyPortExternal=${VCELL_S3PROXY_PORT_EXTERNAL}
 
       - webDataPort=${VCELL_WEB_DATA_PORT}
 
