@@ -23,7 +23,7 @@ import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.ReactionCanvas;
 import cbit.vcell.model.SimpleReaction;
-import org.vcell.util.GeneralGuiUtils;
+import org.vcell.util.gui.GeneralGuiUtils;
 
 /**
  * Insert the type's description here.

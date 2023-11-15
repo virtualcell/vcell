@@ -10,8 +10,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.beans.PropertyChangeListener;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -35,7 +33,7 @@ import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.RbmModelContainer;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.solvers.ApplicationMessage;
-import org.vcell.util.GeneralGuiUtils;
+import org.vcell.util.gui.GeneralGuiUtils;
 
 // we should use WindowBuilder Plugin (add it to Eclipse IDE) to speed up panel design
 // can choose absolute layout and place everything exactly as we see fit

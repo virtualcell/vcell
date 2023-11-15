@@ -16,7 +16,7 @@ import javax.swing.JFrame;
 import javax.swing.JTabbedPane;
 import javax.swing.UIManager;
 
-import org.vcell.util.GeneralGuiUtils;
+import org.vcell.util.gui.GeneralGuiUtils;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.VCDocumentInfo;

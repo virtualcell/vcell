@@ -27,7 +27,7 @@ import javax.swing.JTextField;
 import javax.swing.border.LineBorder;
 
 import org.vcell.util.BeanUtils;
-import org.vcell.util.GeneralGuiUtils;
+import org.vcell.util.gui.GeneralGuiUtils;
 import org.vcell.util.NumberUtils;
 import org.vcell.util.gui.DialogUtils;
 

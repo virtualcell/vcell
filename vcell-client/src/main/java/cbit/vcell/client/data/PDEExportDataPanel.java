@@ -44,8 +44,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.border.LineBorder;
 
-import org.vcell.util.BeanUtils;
-import org.vcell.util.GeneralGuiUtils;
+import org.vcell.util.gui.GeneralGuiUtils;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.LocalVCDataIdentifier;
 import org.vcell.util.document.User;

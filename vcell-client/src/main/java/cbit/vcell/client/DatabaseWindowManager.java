@@ -44,6 +44,7 @@ import javax.swing.ToolTipManager;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.tree.TreePath;
 
+import org.vcell.util.gui.GeneralGuiUtils;
 import org.vcell.util.*;
 import org.vcell.util.document.BioModelChildSummary;
 import org.vcell.util.document.BioModelInfo;

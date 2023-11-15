@@ -26,7 +26,7 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-import org.vcell.util.GeneralGuiUtils;
+import org.vcell.util.gui.GeneralGuiUtils;
 import org.vcell.util.document.VCellSoftwareVersion;
 
 import cbit.vcell.client.ChildWindowManager.ChildWindow;

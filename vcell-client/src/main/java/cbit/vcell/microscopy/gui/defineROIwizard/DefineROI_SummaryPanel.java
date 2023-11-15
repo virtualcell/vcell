@@ -23,7 +23,7 @@ import javax.swing.JTextField;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 
-import org.vcell.util.GeneralGuiUtils;
+import org.vcell.util.gui.GeneralGuiUtils;
 import org.vcell.util.NumberUtils;
 
 import cbit.vcell.VirtualMicroscopy.ImageDataset;

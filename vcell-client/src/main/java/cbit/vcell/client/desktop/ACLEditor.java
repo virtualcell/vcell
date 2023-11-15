@@ -17,7 +17,7 @@ import java.util.Vector;
 import javax.swing.JLabel;
 
 import org.vcell.util.ArrayUtils;
-import org.vcell.util.GeneralGuiUtils;
+import org.vcell.util.gui.GeneralGuiUtils;
 import org.vcell.util.document.GroupAccess;
 import org.vcell.util.document.GroupAccessAll;
 import org.vcell.util.document.GroupAccessNone;

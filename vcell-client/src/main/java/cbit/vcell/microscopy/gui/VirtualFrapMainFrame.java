@@ -50,7 +50,7 @@ import javax.swing.undo.UndoableEdit;
 
 import org.vcell.client.logicalwindow.LWTopFrame;
 import org.vcell.documentation.VcellHelpViewer;
-import org.vcell.util.GeneralGuiUtils;
+import org.vcell.util.gui.GeneralGuiUtils;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.client.ChildWindowManager;

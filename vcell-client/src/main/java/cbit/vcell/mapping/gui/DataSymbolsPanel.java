@@ -40,6 +40,7 @@ import javax.swing.SwingConstants;
 import javax.swing.filechooser.FileFilter;
 
 import org.jdom.Element;
+import org.vcell.util.gui.GeneralGuiUtils;
 import org.vcell.util.*;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.User;
@@ -486,7 +487,7 @@ private void addVFrapDerivedImages() {		// add special (computed) images from vF
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 
 			Component requesterComponent = DataSymbolsPanel.this;
-			DocumentWindow documentWindow = (DocumentWindow)GeneralGuiUtils.findTypeParentOfComponent(requesterComponent, DocumentWindow.class);
+			DocumentWindow documentWindow = (DocumentWindow) GeneralGuiUtils.findTypeParentOfComponent(requesterComponent, DocumentWindow.class);
 			DocumentManager documentManager = documentWindow.getTopLevelWindowManager().getRequestManager().getDocumentManager();
 			if(documentManager == null){
 				throw new RuntimeException("Not connected to server.");

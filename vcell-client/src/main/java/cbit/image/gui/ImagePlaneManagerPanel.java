@@ -30,6 +30,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.SwingConstants;
 import javax.swing.ToolTipManager;
 
+import org.vcell.util.gui.GeneralGuiUtils;
 import org.vcell.util.Coordinate;
 import org.vcell.util.CoordinateIndex;
 import org.vcell.util.NumberUtils;
@@ -1397,7 +1398,7 @@ private void setToolCursor() {
 			//cursor = Cursor.getPredefinedCursor(Cursor.SE_RESIZE_CURSOR);
 		}
 	}
-	org.vcell.util.GeneralGuiUtils.setCursorThroughout(getImagePaneScroller1(), cursor);
+	GeneralGuiUtils.setCursorThroughout(getImagePaneScroller1(), cursor);
 }
 /**
  * Comment

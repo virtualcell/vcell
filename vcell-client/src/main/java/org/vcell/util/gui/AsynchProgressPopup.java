@@ -20,7 +20,6 @@ import cbit.vcell.client.task.ClientTaskDispatcher;
 import org.vcell.client.logicalwindow.LWContainerHandle;
 import org.vcell.client.logicalwindow.LWNamespace;
 import org.vcell.util.ClientTaskStatusSupport;
-import org.vcell.util.GeneralGuiUtils;
 import org.vcell.util.ProgressDialogListener;
 
 /**

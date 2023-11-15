@@ -31,6 +31,7 @@ import java.util.LinkedHashMap;
 import java.util.Scanner;
 import java.util.Vector;
 
+import org.vcell.util.gui.GeneralGuiUtils;
 import org.vcell.solver.langevin.LangevinSolver;
 import org.vcell.solver.smoldyn.SmoldynFileWriter;
 import org.vcell.solver.smoldyn.SmoldynSolver;

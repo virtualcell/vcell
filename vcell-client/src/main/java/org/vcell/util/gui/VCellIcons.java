@@ -29,8 +29,6 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 
-import org.vcell.util.GeneralGuiUtils;
-
 public abstract class VCellIcons {
     public static HashMap<String, URL> imagePaths = new HashMap<String, URL>();
 

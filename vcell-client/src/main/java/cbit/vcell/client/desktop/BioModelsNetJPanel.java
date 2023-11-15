@@ -40,6 +40,7 @@ import javax.swing.border.TitledBorder;
 
 import org.jdom.Attribute;
 import org.jdom.Element;
+import org.vcell.util.gui.GeneralGuiUtils;
 import org.vcell.util.*;
 import org.vcell.util.gui.AsynchProgressPopup;
 import org.vcell.util.gui.DialogUtils;

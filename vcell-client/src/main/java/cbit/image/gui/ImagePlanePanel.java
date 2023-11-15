@@ -22,7 +22,7 @@ import javax.swing.event.ChangeListener;
 import org.vcell.util.Coordinate;
 
 import cbit.image.ImagePlaneManager;
-import org.vcell.util.GeneralGuiUtils;
+import org.vcell.util.gui.GeneralGuiUtils;
 
 /**
  * Insert the type's description here.

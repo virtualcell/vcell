@@ -18,7 +18,7 @@ import javax.swing.JSeparator;
 import javax.swing.JTree;
 import javax.swing.tree.TreePath;
 
-import org.vcell.util.GeneralGuiUtils;
+import org.vcell.util.gui.GeneralGuiUtils;
 import org.vcell.util.document.User;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionInfo;

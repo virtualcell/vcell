@@ -19,9 +19,8 @@ import java.util.Vector;
 
 import javax.swing.JButton;
 
-import org.vcell.util.ArrayUtils;
 import org.vcell.util.BeanUtils;
-import org.vcell.util.GeneralGuiUtils;
+import org.vcell.util.gui.GeneralGuiUtils;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.gui.MultiPurposeTextPanel;

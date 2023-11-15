@@ -28,7 +28,7 @@ import org.vcell.client.logicalwindow.LWNamespace;
 import org.vcell.client.logicalwindow.LWTitledDialog;
 import org.vcell.client.logicalwindow.LWTraits;
 import org.vcell.client.logicalwindow.LWTraits.InitialPosition;
-import org.vcell.util.GeneralGuiUtils;
+import org.vcell.util.gui.GeneralGuiUtils;
 import org.vcell.util.ProgrammingException;
 import org.vcell.util.gui.GuiUtils;
 

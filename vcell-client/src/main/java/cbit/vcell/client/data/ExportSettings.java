@@ -17,8 +17,7 @@ import javax.swing.JDialog;
 import javax.swing.JPanel;
 
 import org.vcell.client.logicalwindow.transition.LWJDialogDecorator;
-import org.vcell.util.BeanUtils;
-import org.vcell.util.GeneralGuiUtils;
+import org.vcell.util.gui.GeneralGuiUtils;
 import org.vcell.util.VCAssert;
 
 import cbit.vcell.export.gui.ASCIISettingsPanel;

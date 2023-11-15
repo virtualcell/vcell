@@ -1,4 +1,4 @@
-package org.vcell.util;
+package org.vcell.util.gui;
 
 import org.junit.Ignore;
 import org.junit.Test;

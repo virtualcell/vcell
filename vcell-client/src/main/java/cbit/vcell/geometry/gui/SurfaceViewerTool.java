@@ -10,6 +10,8 @@
 
 package cbit.vcell.geometry.gui;
 
+import org.vcell.util.gui.GeneralGuiUtils;
+
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 
@@ -169,19 +171,19 @@ public class SurfaceViewerTool {
     public void fullRepaint() {
 
         if (canvasParentWindow == null) {
-            canvasParentWindow = org.vcell.util.GeneralGuiUtils.findTypeParentOfComponent(getSurfaceCanvas(), java.awt.Window.class);
+            canvasParentWindow = GeneralGuiUtils.findTypeParentOfComponent(getSurfaceCanvas(), java.awt.Window.class);
         }
 
         try {
             if (canvasParentWindow != null) {
-                org.vcell.util.GeneralGuiUtils.setCursorThroughout(canvasParentWindow, java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.WAIT_CURSOR));
+                GeneralGuiUtils.setCursorThroughout(canvasParentWindow, java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.WAIT_CURSOR));
             }
             getSurfaceCanvas().setBQuickRender(false);
             //getSurfaceCanvas().invalidate();
             getSurfaceCanvas().repaint();
         } finally {
             if (canvasParentWindow != null) {
-                org.vcell.util.GeneralGuiUtils.setCursorThroughout(canvasParentWindow, java.awt.Cursor.getDefaultCursor());
+                GeneralGuiUtils.setCursorThroughout(canvasParentWindow, java.awt.Cursor.getDefaultCursor());
             }
         }
 

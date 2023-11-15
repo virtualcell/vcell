@@ -31,7 +31,7 @@ import javax.swing.JOptionPane;
 import javax.swing.border.TitledBorder;
 
 import org.vcell.util.Coordinate;
-import org.vcell.util.GeneralGuiUtils;
+import org.vcell.util.gui.GeneralGuiUtils;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.sorttable.JSortTable;
 

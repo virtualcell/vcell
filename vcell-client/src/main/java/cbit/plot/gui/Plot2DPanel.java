@@ -37,9 +37,8 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 import javax.swing.border.Border;
-import javax.swing.border.EtchedBorder;
-import javax.swing.border.LineBorder;
 
+import org.vcell.util.gui.GeneralGuiUtils;
 import org.vcell.util.*;
 
 import cbit.plot.Plot2D;

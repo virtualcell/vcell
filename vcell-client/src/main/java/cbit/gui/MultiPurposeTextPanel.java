@@ -95,14 +95,13 @@ import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoManager;
 
-import org.vcell.util.BeanUtils;
 import org.vcell.util.Commented;
 import org.vcell.util.CountingLineReader;
 
 import cbit.vcell.math.ReservedMathSymbolEntries;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.parser.ASTFuncNode.FunctionType;
-import org.vcell.util.GeneralGuiUtils;
+import org.vcell.util.gui.GeneralGuiUtils;
 
 @SuppressWarnings("serial")
 public class MultiPurposeTextPanel extends JPanel {

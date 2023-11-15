@@ -1,4 +1,4 @@
-package org.vcell.util;
+package org.vcell.util.gui;
 
 import com.sun.istack.NotNull;
 import org.apache.logging.log4j.LogManager;

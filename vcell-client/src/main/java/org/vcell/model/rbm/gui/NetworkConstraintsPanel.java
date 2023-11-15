@@ -39,7 +39,7 @@ import org.vcell.model.rbm.NetworkConstraints;
 import org.vcell.model.rbm.RbmNetworkGenerator;
 import org.vcell.model.rbm.common.MaxStoichiometryEntity;
 import org.vcell.model.rbm.gui.EditConstraintsPanel.ActionButtons;
-import org.vcell.util.GeneralGuiUtils;
+import org.vcell.util.gui.GeneralGuiUtils;
 import org.vcell.util.ProgressDialogListener;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;

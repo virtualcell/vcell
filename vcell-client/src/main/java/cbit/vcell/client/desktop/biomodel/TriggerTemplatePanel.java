@@ -23,8 +23,6 @@ import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
 import javax.swing.border.LineBorder;
 
-import org.vcell.util.BeanUtils;
-
 import cbit.gui.TextFieldAutoCompletion;
 import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.BioEvent.BioEventParameterType;
@@ -36,7 +34,7 @@ import cbit.vcell.modelopt.ModelOptimizationSpec;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.SymbolTableEntry;
-import org.vcell.util.GeneralGuiUtils;
+import org.vcell.util.gui.GeneralGuiUtils;
 
 public class TriggerTemplatePanel extends JPanel {
 	private TextFieldAutoCompletion textFieldSingleTime;

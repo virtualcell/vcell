@@ -28,6 +28,7 @@ import javax.swing.filechooser.FileFilter;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.vcell.util.gui.GeneralGuiUtils;
 import org.vcell.client.logicalwindow.LWTopFrame;
 import org.vcell.util.*;
 import org.vcell.util.document.BioModelInfo;

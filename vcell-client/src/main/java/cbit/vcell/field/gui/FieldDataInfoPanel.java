@@ -29,6 +29,7 @@ import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 
+import org.vcell.util.gui.GeneralGuiUtils;
 import org.vcell.util.*;
 
 import cbit.vcell.client.PopupGenerator;
