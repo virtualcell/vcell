@@ -49,7 +49,7 @@ public class SimDataServerMain {
             PropertyLoader.primarySimDataDirInternalProperty,
             PropertyLoader.primarySimDataDirExternalProperty,
             PropertyLoader.n5DataDir,
-            PropertyLoader.secondarySimDataDirInternalProperty,
+            PropertyLoader.s3ProxyExternalPort,
             PropertyLoader.vcellServerIDProperty,
             PropertyLoader.installationRoot,
             PropertyLoader.mongodbHostInternal,
