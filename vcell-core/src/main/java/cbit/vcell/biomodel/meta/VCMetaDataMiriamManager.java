@@ -83,16 +83,15 @@ public class VCMetaDataMiriamManager implements MiriamManager, Serializable {
 				"urn:miriam:doi",
 				"The Digital Object Identifier System is for identifying content objects in the digital environment.",
 				"10.1038/nbt1156");
-		public final static DataType DataType_BIOMODELS 	= new VCMetaDataDataType("BioModels Database",
+		public final static DataType DataType_BIOMODELS 	= new VCMetaDataDataType("BIOMODELS",
 				"http://www.ebi.ac.uk/biomodels/",
 				biomodelsDbWebAccessBaseURL,																// ^((BIOMD|MODEL)\d{10})|(BMID\d{12})$
 				"urn:miriam:biomodels.db",
 				"BioModels Database is a data resource that allows biologists to store, search and retrieve published mathematical models of biological interests.",
 				"BIOMD0000000048");
-		public final static DataType DataType_Chebi 		= new VCMetaDataDataType("ChEBI",
+		public final static DataType DataType_Chebi 		= new VCMetaDataDataType("CHEBI",
 				"http://www.ebi.ac.uk/chebi/",
-//				"http://www.ebi.ac.uk/chebi/searchFreeText.do?searchString=",								// old
-				"https://www.ebi.ac.uk/ols/ontologies/chebi/terms?obo_id=",									// ^CHEBI:\d+$
+				"https://www.ebi.ac.uk/ols/ontologies/chebi/terms?iri=http%3A%2F%2Fpurl.obolibrary.org%2Fobo%2FCHEBI_",									// ^CHEBI:\d+$
 				"urn:miriam:chebi",
 				"Chemical Entities of Biological Interest (ChEBI) is a freely available dictionary of molecular entities focused on 'small' chemical compounds.",
 				"CHEBI:36927");																				// CHEBI:36927
@@ -127,10 +126,9 @@ public class VCMetaDataMiriamManager implements MiriamManager, Serializable {
 				"urn:miriam:ensembl",
 				"Ensembl is a joint project between EMBL - EBI and the Sanger Institute to develop a software system which produces and maintains automatic annotation on selected eukaryotic genomes.",
 				"ENSG00000139618");
-		public final static DataType DataType_GO 			= new VCMetaDataDataType("Gene Ontology",
+		public final static DataType DataType_GO 			= new VCMetaDataDataType("GO",
 				"http://www.geneontology.org/",
-				//"http://www.ebi.ac.uk/ego/GTerm?id=",														// old
-				"https://www.ebi.ac.uk/ols/ontologies/go/terms?obo_id=",									// ^GO:\d{7}$
+				"https://www.ebi.ac.uk/ols/ontologies/go/terms?iri=http%3A%2F%2Fpurl.obolibrary.org%2Fobo%2FGO_",									// ^GO:\d{7}$
 				"urn:miriam:obo.go",
 				"The Gene Ontology project provides a controlled vocabulary to describe gene and gene product attributes in any organism.",
 				"GO:0006915");																				// GO:0006915
@@ -222,7 +220,7 @@ public class VCMetaDataMiriamManager implements MiriamManager, Serializable {
 //				"urn:miriam:",
 //				"BindingDB Description",
 //				null);
-		public final static DataType DataType_Mamo 			= new VCMetaDataDataType("Mamo",
+		public final static DataType DataType_Mamo 			= new VCMetaDataDataType("MAMO",
 				"http://bioportal.bioontology.org/ontologies/MAMO/",
 				"http://identifiers.org/mamo/",
 				"urn:miriam:mamo",
@@ -246,7 +244,7 @@ public class VCMetaDataMiriamManager implements MiriamManager, Serializable {
 				"urn:miriam:pubchem.substance",
 				"PubChem is the collection of freely accessible chemical information.",
 				"3324");
-		public final static DataType DataType_Doid			= new VCMetaDataDataType("Doid",
+		public final static DataType DataType_Doid			= new VCMetaDataDataType("DOID",
 				"http://disease-ontology.org/",
 				"http://purl.bioontology.org/ontology/DOID/",		// http://disease-ontology.org/term/
 				"urn:miriam:doid",
@@ -264,9 +262,9 @@ public class VCMetaDataMiriamManager implements MiriamManager, Serializable {
 				"urn:miriam:3dmet",
 				"3DMET is a database collecting three-dimensional structures of natural metabolites.",
 				"B00006");
-		public final static DataType DataType_CL			= new VCMetaDataDataType("Cell Ontology",
+		public final static DataType DataType_CL			= new VCMetaDataDataType("CL",
 				"http://bioportal.bioontology.org/ontologies/CL/",
-				"http://purl.bioontology.org/ontology/CL/",
+				"https://www.ebi.ac.uk/ols/ontologies/cl/terms?iri=http%3A%2F%2Fpurl.obolibrary.org%2Fobo%2FCL_",
 				"urn:miriam:cl",
 				"The Cell Ontology is a structured controlled vocabulary for cell types.",
 				"CL:0000145");
@@ -277,14 +275,14 @@ public class VCMetaDataMiriamManager implements MiriamManager, Serializable {
 				"CAS (Chemical Abstracts Service) is a comprehensive database of chemical information.",
 				"50-78-2");
 		public final static DataType DataType_BTO			= new VCMetaDataDataType("BTO",
-				"http://bioportal.bioontology.org/ontologies/BTO/",
-				"http://purl.bioontology.org/ontology/BTO/",
+				"https://www.ebi.ac.uk/ols/ontologies/bto/terms?iri=http%3A%2F%2Fpurl.obolibrary.org%2Fobo%2FBTO_",
+				"https://www.ebi.ac.uk/ols/ontologies/bto/terms?iri=http%3A%2F%2Fpurl.obolibrary.org%2Fobo%2FBTO_",
 				"urn:miriam:bto",
 				"The Brenda Tissue Ontology is a structured controlled vocabulary used to identify the source of an enzyme cited in the Brenda enzyme database. It comprises terms of tissues, cell lines, cell types and cell cultures.",
 				"BTO:0000028");
-		public final static DataType DataType_Pato			= new VCMetaDataDataType("Pato",
+		public final static DataType DataType_Pato			= new VCMetaDataDataType("PATO",
 				"http://bioportal.bioontology.org/ontologies/PATO/",
-				"http://purl.bioontology.org/ontology/PATO/",
+				"https://www.ebi.ac.uk/ols/ontologies/pato/terms?iri=http%3A%2F%2Fpurl.obolibrary.org%2Fobo%2FPATO_",
 				"urn:miriam:pato",
 				"PATO is an ontology of phenotypic qualities.",
 				"PATO:0002220");
@@ -306,15 +304,15 @@ public class VCMetaDataMiriamManager implements MiriamManager, Serializable {
 				"urn:miriam:fma",
 				"The Foundational Model of Anatomy Ontology (FMA) represents a coherent body of explicit declarative knowledge about human anatomy.",
 				"FMA:74531");
-		public final static DataType DataType_Pr			= new VCMetaDataDataType("Pr",
+		public final static DataType DataType_Pr			= new VCMetaDataDataType("PR",
 				"https://proconsortium.org/",
-				"http://purl.bioontology.org/ontology/PR/",	// or https://proconsortium.org/app/entry/  or  https://www.ebi.ac.uk/ols/ontologies/pr/terms?obo_id=
+				"https://www.ebi.ac.uk/ols/ontologies/pr/terms?iri=http%3A%2F%2Fpurl.obolibrary.org%2Fobo%2FPR_",	// or https://proconsortium.org/app/entry/  or  https://www.ebi.ac.uk/ols/ontologies/pr/terms?obo_id=
 				"urn:miriam:pr",
 				"The PRotein Ontology (PRO) describes the relationships of proteins and protein evolutionary classes, to delineate the multiple protein forms of a gene locus.",
 				"PR:000007300");
-		public final static DataType DataType_Ncit			= new VCMetaDataDataType("Ncit",
+		public final static DataType DataType_Ncit			= new VCMetaDataDataType("NCIT",
 				"http://www.ontobee.org/ontology/NCIT/",
-				"http://purl.obolibrary.org/obo/NCIT_",
+				"https://www.ebi.ac.uk/ols/ontologies/ncit/terms?iri=http%3A%2F%2Fpurl.obolibrary.org%2Fobo%2FNCIT_",
 				"urn:miriam:ncit",
 				"NCIt is a reference terminology that includes broad coverage of the cancer domain, including cancer related diseases, findings and abnormalities.",
 				"C67381");
@@ -489,58 +487,59 @@ public class VCMetaDataMiriamManager implements MiriamManager, Serializable {
 	
 	public static List<DataType> getSpecificDataTypes(Identifiable entity) {
 		List<DataType> list = new ArrayList<>();
-		list.add(VCMetaDataDataType.DataType_PUBMED);
-		list.add(VCMetaDataDataType.DataType_DOI);
+		//temp comment ontologies not supported by search feature
+//		list.add(VCMetaDataDataType.DataType_PUBMED);
+//		list.add(VCMetaDataDataType.DataType_DOI);
 		list.add(VCMetaDataDataType.DataType_Ncit);
 		list.add(VCMetaDataDataType.DataType_GO);
 		list.add(VCMetaDataDataType.DataType_FLYBASE);
 		
 		if(entity instanceof BioModel) {
 			list.add(VCMetaDataDataType.DataType_BIOMODELS);
-			list.add(VCMetaDataDataType.DataType_REACTOME);
-			list.add(VCMetaDataDataType.DataType_NeuronDB);
-			list.add(VCMetaDataDataType.DataType_SenseLab);
+//			list.add(VCMetaDataDataType.DataType_REACTOME);
+//			list.add(VCMetaDataDataType.DataType_NeuronDB);
+//			list.add(VCMetaDataDataType.DataType_SenseLab);
 			list.add(VCMetaDataDataType.DataType_Mamo);
 			list.add(VCMetaDataDataType.DataType_EFO);
 			list.add(VCMetaDataDataType.DataType_Doid);
 
 		} else if(entity instanceof Species || entity instanceof MolecularType || entity instanceof RbmObservable) {
 			list.add(VCMetaDataDataType.DataType_Chebi);
-			list.add(VCMetaDataDataType.DataType_KEGGCOMPOUND);
-			list.add(VCMetaDataDataType.DataType_UNIPROT);
-			list.add(VCMetaDataDataType.DataType_ECCODE);
-			list.add(VCMetaDataDataType.DataType_REACTOME);
+//			list.add(VCMetaDataDataType.DataType_KEGGCOMPOUND);
+//			list.add(VCMetaDataDataType.DataType_UNIPROT);
+//			list.add(VCMetaDataDataType.DataType_ECCODE);
+//			list.add(VCMetaDataDataType.DataType_REACTOME);
 			list.add(VCMetaDataDataType.DataType_CL);
 			list.add(VCMetaDataDataType.DataType_EFO);
 			list.add(VCMetaDataDataType.DataType_BTO);
-			list.add(VCMetaDataDataType.DataType_TAXONOMY);
+//			list.add(VCMetaDataDataType.DataType_TAXONOMY);
 			list.add(VCMetaDataDataType.DataType_Pato);
 			list.add(VCMetaDataDataType.DataType_Pr);
 			
 		} else if(entity instanceof Model.ModelParameter) {
 			list.add(VCMetaDataDataType.DataType_Chebi);
-			list.add(VCMetaDataDataType.DataType_KEGGCOMPOUND);
-			list.add(VCMetaDataDataType.DataType_UNIPROT);
-			list.add(VCMetaDataDataType.DataType_ECCODE);
-			list.add(VCMetaDataDataType.DataType_REACTOME);
+//			list.add(VCMetaDataDataType.DataType_KEGGCOMPOUND);
+//			list.add(VCMetaDataDataType.DataType_UNIPROT);
+//			list.add(VCMetaDataDataType.DataType_ECCODE);
+//			list.add(VCMetaDataDataType.DataType_REACTOME);
 			list.add(VCMetaDataDataType.DataType_CL);
 			list.add(VCMetaDataDataType.DataType_EFO);
 			list.add(VCMetaDataDataType.DataType_BTO);
-			list.add(VCMetaDataDataType.DataType_TAXONOMY);
+//			list.add(VCMetaDataDataType.DataType_TAXONOMY);
 			list.add(VCMetaDataDataType.DataType_Pato);
 			list.add(VCMetaDataDataType.DataType_Pr);
 			list.add(VCMetaDataDataType.DataType_SBO);
 			
 		} else if(entity instanceof ReactionRule || entity instanceof ReactionStep) {
-			list.add(VCMetaDataDataType.DataType_KEGGPATHWAY);
-			list.add(VCMetaDataDataType.DataType_KEGGREACTION);
-			list.add(VCMetaDataDataType.DataType_REACTOME);
-			list.add(VCMetaDataDataType.DataType_Brenda);
-			list.add(VCMetaDataDataType.DataType_IntAct);
+//			list.add(VCMetaDataDataType.DataType_KEGGPATHWAY);
+//			list.add(VCMetaDataDataType.DataType_KEGGREACTION);
+//			list.add(VCMetaDataDataType.DataType_REACTOME);
+//			list.add(VCMetaDataDataType.DataType_Brenda);
+//			list.add(VCMetaDataDataType.DataType_IntAct);
 			list.add(VCMetaDataDataType.DataType_SBO);
 			
 		} else if(entity instanceof Structure) {
-			list.add(VCMetaDataDataType.DataType_Brenda);
+//			list.add(VCMetaDataDataType.DataType_Brenda);
 			list.add(VCMetaDataDataType.DataType_BTO);
 			list.add(VCMetaDataDataType.DataType_EFO);
 			
