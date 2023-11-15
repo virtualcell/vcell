@@ -53,6 +53,7 @@ public class N5ExporterTest {
     private static String previousInstallRoot;
     private static String previousPrimarySimDir;
     private static String previousSecondarySimDir;
+    private static String previousSecondaryInternalSimDir;
 
     private static String previousN5Path;
 
@@ -107,6 +108,9 @@ public class N5ExporterTest {
 
         previousN5Path = PropertyLoader.getProperty(PropertyLoader.n5DataDir, null);
         PropertyLoader.setProperty(PropertyLoader.n5DataDir, n5ExportDir.getAbsolutePath());
+
+        previousSecondarySimDir = PropertyLoader.getProperty(PropertyLoader.secondarySimDataDirInternalProperty, null);
+        PropertyLoader.setProperty(PropertyLoader.secondarySimDataDirInternalProperty, "k");
     }
 
     @After
@@ -126,6 +130,10 @@ public class N5ExporterTest {
 
         if (previousSecondarySimDir != null){
             System.setProperty(PropertyLoader.secondarySimDataDirExternalProperty, previousSecondarySimDir);
+        }
+
+        if (previousSecondaryInternalSimDir != null){
+            System.setProperty(PropertyLoader.secondarySimDataDirInternalProperty, previousSecondaryInternalSimDir);
         }
 
         if (n5Reader != null){
@@ -198,7 +206,7 @@ public class N5ExporterTest {
             //X, Y, T, Z, Channels
             long[] controlDimensions = {controlModel.getMesh().getSizeX(), controlModel.getMesh().getSizeY(), variables.size(), controlModel.getMesh().getSizeZ(), controlModel.getDataTimes().length};
             // tests the metadata, and the metadata may be accurate but the actual raw array of data may be wrong
-            DatasetAttributes datasetAttributes = n5Reader.getDatasetAttributes(model);
+            DatasetAttributes datasetAttributes = n5Reader.getDatasetAttributes(n5Exporter.getN5DataSetTemplatedName(model));
             long[] exportDimensions = datasetAttributes.getDimensions();
             Assert.assertArrayEquals("Testing dimension results for model " + model, controlDimensions, exportDimensions);
 
@@ -226,8 +234,8 @@ public class N5ExporterTest {
 
             for(int i = 0; i < variables.size(); i++){
                 for(int timeSlice = 0; timeSlice < times.length; timeSlice++){
-                    DatasetAttributes datasetAttributes = n5Reader.getDatasetAttributes(model);
-                    DataBlock<?> dataBlock = n5Reader.readBlock(model, datasetAttributes, new long[]{0, 0, i, 0, timeSlice});
+                    DatasetAttributes datasetAttributes = n5Reader.getDatasetAttributes(n5Exporter.getN5DataSetTemplatedName(model));
+                    DataBlock<?> dataBlock = n5Reader.readBlock(n5Exporter.getN5DataSetTemplatedName(model), datasetAttributes, new long[]{0, 0, i, 0, timeSlice});
 
                     double[] exportedRawData = (double[]) dataBlock.getData();
                     Assert.assertArrayEquals("Equal raw data of model " + model + " with species " + variables.get(i).getName() + " with type " + variables.get(i).getVariableType() + " at time " + timeSlice,
@@ -251,15 +259,15 @@ public class N5ExporterTest {
 
         for (N5Specs.CompressionLevel compression: compressions){
                 for(String model: testModels){
-                    this.initalizeModel(model);
+                    initalizeModel(model);
                     double[] times = controlModel.getDataTimes();
                     makeN5Model(compression, 0 , times.length, model);
                     OutputContext outputContext = new OutputContext(new AnnotatedFunction[0]);
-                    DatasetAttributes datasetAttributes = n5Reader.getDatasetAttributes(model);
+                    DatasetAttributes datasetAttributes = n5Reader.getDatasetAttributes(n5Exporter.getN5DataSetTemplatedName(model));
                     for(int j = 0; j< 8; j++){
                         int timeSlice = random.nextInt(times.length);
                         int chosenVariable = random.nextInt(variables.size());
-                        DataBlock<?> dataBlock = n5Reader.readBlock(model, datasetAttributes, new long[]{0, 0, chosenVariable, 0, timeSlice});
+                        DataBlock<?> dataBlock = n5Reader.readBlock(n5Exporter.getN5DataSetTemplatedName(model), datasetAttributes, new long[]{0, 0, chosenVariable, 0, timeSlice});
 
                         double[] exportedData = (double[]) dataBlock.getData();
                         Assert.assertArrayEquals("Equal data with " + compression + " compression",
@@ -271,6 +279,8 @@ public class N5ExporterTest {
         }
 
     }
+
+    // Test annotated functions, and multiple different parameters for data conversion, for multiple scans use different template file name
 
 
 }

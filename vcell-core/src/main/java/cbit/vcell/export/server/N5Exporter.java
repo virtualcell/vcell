@@ -76,8 +76,6 @@ public class N5Exporter implements ExportConstants {
 		// according to Jim what should happen is that the VCdata should automatically derive the data for me since it knows everything
 		// and the only reason why this wouldn't work is due to some misconfiguration, but what is that misconfig
 
-		File tmpDir = new File(System.getProperty("java.io.tmpdir"));
-
 		ArrayList<DataIdentifier> species = new ArrayList<>();
 		for (String specie: exportSpecs.getVariableSpecs().getVariableNames()){
 			species.add(getSpecificDI(specie));
@@ -103,8 +101,10 @@ public class N5Exporter implements ExportConstants {
 		DatasetAttributes datasetAttributes = new DatasetAttributes(dimensions, blockSize, org.janelia.saalfeldlab.n5.DataType.FLOAT64, n5Specs.getCompression());
 		HashMap<String, Object> additionalMetaData = new HashMap<>();
 
-		n5FSWriter.createDataset(n5Specs.dataSetName, datasetAttributes);
-		N5Specs.imageJMetaData(n5FSWriter, n5Specs.dataSetName, vcData, numVariables, additionalMetaData);
+		String dataSetName = getN5DataSetTemplatedName(n5Specs.dataSetName);
+
+		n5FSWriter.createDataset(dataSetName, datasetAttributes);
+		N5Specs.imageJMetaData(n5FSWriter, dataSetName, vcData, numVariables, additionalMetaData);
 
 
 		for (int variableIndex=0; variableIndex < numVariables; variableIndex++){
@@ -115,7 +115,7 @@ public class N5Exporter implements ExportConstants {
 				// data does get returned, but it does not seem to cover the entire region of space, but only returns regions where there is activity
 				double[] data = this.dataSetController.getSimDataBlock(outputContext, this.vcDataID, species.get(variableIndex).getName(), allTimes[timeIndex]).getData();
 				DoubleArrayDataBlock doubleArrayDataBlock = new DoubleArrayDataBlock(blockSize, new long[]{0, 0, variableIndex, 0, timeIndex}, data);
-				n5FSWriter.writeBlock(n5Specs.dataSetName, datasetAttributes, doubleArrayDataBlock);
+				n5FSWriter.writeBlock(dataSetName, datasetAttributes, doubleArrayDataBlock);
 				if(timeIndex % 5 == 0){
 					double timeFrac = (double) timeIndex / exportSpecs.getTimeSpecs().getEndTimeIndex();
 					double progress = (varFrac + timeFrac) / (numVariables + exportSpecs.getTimeSpecs().getEndTimeIndex());
@@ -123,10 +123,8 @@ public class N5Exporter implements ExportConstants {
 				}
 			}
 		}
-//		File tmpFile = new File(n5FSWriter.getBasePath());
 		n5FSWriter.close();
 		ExportOutput exportOutput = new ExportOutput(true, ".n5", vcDataID.getID(), getN5FileNameHash(), fileDataContainerManager);
-//		fileDataContainerManager.manageExistingTempFile(exportOutput.getFileDataContainerID(), tmpFile);
 		return exportOutput;
 	}
 
@@ -142,7 +140,7 @@ public class N5Exporter implements ExportConstants {
 		this.vcDataID = new VCSimulationDataIdentifier(vcSimID, (int)jobIndex);
 
 		// Point a data controller to the directory where the sim data is and use the vcdID to retrieve information regarding the sim, need to ask about what size this should be
-		Cachetable cachetable = new Cachetable(50 * Cachetable.minute, 5000000L);
+		Cachetable cachetable = new Cachetable(10 * Cachetable.minute, Long.parseLong(PropertyLoader.getRequiredProperty(PropertyLoader.simdataCacheSizeProperty)));
 		File primaryDir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirInternalProperty));
 		File secodaryDir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.secondarySimDataDirInternalProperty));
 		this.dataSetController = new DataSetControllerImpl(cachetable, primaryDir, secodaryDir);
@@ -210,7 +208,11 @@ public class N5Exporter implements ExportConstants {
 	}
 
 	public String getN5FileNameHash(){
-		return actualHash(vcDataID.getID(), String.valueOf(vcDataID.getJobIndex()));
+		return actualHash(vcDataID.getDataKey().toString(), String.valueOf(vcDataID.getJobIndex()));
+	}
+
+	public String getN5DataSetTemplatedName(String nonTemplatedName){
+		return nonTemplatedName + "_" + vcDataID.getJobIndex();
 	}
 
 	public static String getN5FileNameHash(String simID, String jobID){
@@ -220,7 +222,7 @@ public class N5Exporter implements ExportConstants {
 	private static String actualHash(String simID, String jobID) {
 		MessageDigest sha256 = DigestUtils.getSha256Digest();
 		sha256.update(simID.getBytes(StandardCharsets.UTF_8));
-		sha256.update(jobID.getBytes(StandardCharsets.UTF_8));
+//		sha256.update(jobID.getBytes(StandardCharsets.UTF_8));
 
 		return Hex.encodeHexString(sha256.digest());
 	}
