@@ -10,6 +10,7 @@ public class SBMLStreamImporter extends AbstractSBMLImporter {
     public SBMLStreamImporter(InputStream inputStream, VCLogger argVCLogger, boolean shouldValidateSBML) throws VCLoggerException {
         super(argVCLogger, shouldValidateSBML);
         SBMLDocument document = this.readSbmlDocument(inputStream);
+        this.sbmlModel = document.getModel();
         //
         // validate SBML model before import
         //

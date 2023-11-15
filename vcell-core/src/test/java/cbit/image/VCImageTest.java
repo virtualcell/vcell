@@ -17,6 +17,7 @@ import org.vcell.sbml.vcell.SBMLImporter;
 import org.vcell.test.Fast;
 import org.vcell.util.Extent;
 
+import java.io.ByteArrayInputStream;
 import java.io.StringBufferInputStream;
 import java.util.Random;
 
@@ -88,7 +89,7 @@ public class VCImageTest {
         String sbmlString = sbmlExporter.getSBMLString();
 //        Files.write(sbmlString, new File("__VCImageTest_sbml.xml"), StandardCharsets.UTF_8);
 
-        SBMLImporter sbmlImporter = new SBMLImporter(new StringBufferInputStream(sbmlString), new SBMLExporter.MemoryVCLogger(), bValidateSBML);
+        SBMLImporter sbmlImporter = new SBMLImporter(new ByteArrayInputStream(sbmlString.getBytes()), new SBMLExporter.MemoryVCLogger(), bValidateSBML);
         BioModel roundTripBioModel = sbmlImporter.getBioModel();
         roundTripBioModel.updateAll(false);
 

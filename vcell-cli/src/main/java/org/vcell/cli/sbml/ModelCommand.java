@@ -6,8 +6,10 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 
+import org.vcell.sbml.vcell.ISBMLImporter;
 import org.vcell.sbml.vcell.SBMLExporter;
 import org.vcell.sbml.vcell.SBMLImporter;
+import org.vcell.sbml.vcell.SBMLImporterFactory;
 import org.vcell.sedml.ModelFormat;
 
 import picocli.CommandLine.Command;
@@ -57,9 +59,9 @@ public class ModelCommand implements Callable<Integer> {
                 File sbmlInputFile = inputFile;
                 MemoryLogger logger = new MemoryLogger();
                 boolean bValidateSBML = true;
-                SBMLImporter importer = new SBMLImporter(sbmlInputFile.getAbsolutePath(), logger, bValidateSBML);
+                ISBMLImporter importer = SBMLImporterFactory.getSBMLImporter(sbmlInputFile, logger, bValidateSBML);
                 BioModel bioModel = importer.getBioModel();
-                Files.write(outputFile.toPath(), XmlHelper.bioModelToXML(bioModel, false).getBytes(StandardCharsets.UTF_8));
+                Files.writeString(outputFile.toPath(), XmlHelper.bioModelToXML(bioModel, false));
             } else {
                 BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(inputFile));
                 if (bioModel.getNumSimulationContexts() > appIndex) {

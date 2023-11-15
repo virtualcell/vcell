@@ -57,19 +57,6 @@ public class AbstractSBMLImporter implements ISBMLImporter {
 
     private final static Logger logger = LogManager.getLogger(SBMLImporter.class);
 
-    public static class SBMLIssueSource implements Issue.IssueSource {
-        public final SBase issueSource;
-
-        public SBMLIssueSource(SBase issueSource){
-            this.issueSource = issueSource;
-        }
-    }
-
-    /**
-     * keywords for VCLogger error message; used to detect specific error
-     */
-    public static final String RESERVED_SPATIAL = "reserved spatial";
-
     /**
      * detect unsupported "delay" element
      */
@@ -1730,32 +1717,7 @@ public class AbstractSBMLImporter implements ISBMLImporter {
     }
 
     public BioModel getBioModel() throws VCLoggerException {
-        if(sbmlFileName == null && sbmlModel == null && sbmlInputStream == null){
-            throw new IllegalStateException("Expected non-null SBML model");
-        }
-
-        final SBMLDocument document;
-        if(sbmlFileName != null){
-            document = readSbmlDocument(new File(sbmlFileName));
-            sbmlModel = document.getModel();
-        } else if(sbmlInputStream != null){
-            document = readSbmlDocument(this.sbmlInputStream);
-            sbmlModel = document.getModel();
-        } else { // sbmlModel != null
-            document = sbmlModel.getSBMLDocument();
-        }
-
-
-        //
-        // validate SBML model before import
-        //
-        if(this.shouldValidateSBML){
-            validateSBMLDocument(document, vcLogger);
-        }
-        validateSBMLPackages(document, localIssueList, issueContext);
-
-        document = sbmlModel.getSBMLDocument();
-
+        final SBMLDocument document = sbmlModel.getSBMLDocument();
 
         // get namespace and SBML model level to use in SBMLAnnotationUtil
         String ns = document.getNamespace();
@@ -1988,7 +1950,7 @@ public class AbstractSBMLImporter implements ISBMLImporter {
                 has = "have";
             }
             msgPackages = "The model includes elements of SBML " + ext + " " + msgPackages + " which " + is + " not required for simulating the model and " + has + " been ignored.";
-            localIssueList.add(new Issue(new SBMLImporter.SBMLIssueSource(document), issueContext, Issue.IssueCategory.SBMLImport_UnsupportedFeature, msgPackages, Issue.Severity.WARNING));
+            localIssueList.add(new Issue(new SBMLIssueSource(document), issueContext, Issue.IssueCategory.SBMLImport_UnsupportedFeature, msgPackages, Issue.Severity.WARNING));
         }
     }
 
@@ -2156,7 +2118,7 @@ public class AbstractSBMLImporter implements ISBMLImporter {
                 } else if(!sbmlUnitDefinition.isEquivalent(modelVolumeUnit)){
                     localIssueList
                             .add(new Issue(
-                                    new SBMLImporter.SBMLIssueSource(sbmlComp),
+                                    new SBMLIssueSource(sbmlComp),
                                     issueContext,
                                     Issue.IssueCategory.Units,
                                     "unit for compartment '"
@@ -2181,7 +2143,7 @@ public class AbstractSBMLImporter implements ISBMLImporter {
                 } else if(!sbmlUnitDefinition.isEquivalent(modelAreaUnit)){
                     localIssueList
                             .add(new Issue(
-                                    new SBMLImporter.SBMLIssueSource(sbmlComp),
+                                    new SBMLIssueSource(sbmlComp),
                                     issueContext,
                                     Issue.IssueCategory.Units,
                                     "unit for compartment '"
@@ -2218,7 +2180,7 @@ public class AbstractSBMLImporter implements ISBMLImporter {
                 modelSubstanceUnit = sbmlUnitDefinition;
             } else if(sbmlUnitDefinition != null && !sbmlUnitDefinition.isEquivalent(modelSubstanceUnit)){
                 localIssueList.add(new Issue(
-                        new SBMLImporter.SBMLIssueSource(sbmlSpecies),
+                        new SBMLIssueSource(sbmlSpecies),
                         issueContext,
                         Issue.IssueCategory.Units,
                         "unit for species '" + sbmlSpecies.getId() + "'" +
@@ -2248,7 +2210,7 @@ public class AbstractSBMLImporter implements ISBMLImporter {
                         modelSubstanceUnit = sbmlUnitDefinition;
                     } else if(sbmlUnitDefinition != null && !sbmlUnitDefinition.isEquivalent(modelSubstanceUnit)){
                         localIssueList.add(new Issue(
-                                new SBMLImporter.SBMLIssueSource(sbmlReaction),
+                                new SBMLIssueSource(sbmlReaction),
                                 issueContext,
                                 Issue.IssueCategory.Units,
                                 "substance unit for reaction '" + sbmlReaction.getId() + "'" +
@@ -2268,7 +2230,7 @@ public class AbstractSBMLImporter implements ISBMLImporter {
                         modelTimeUnit = sbmlUnitDefinition;
                     } else if(!sbmlUnitDefinition.isEquivalent(modelTimeUnit)){
                         localIssueList.add(new Issue(
-                                new SBMLImporter.SBMLIssueSource(sbmlReaction),
+                                new SBMLIssueSource(sbmlReaction),
                                 issueContext,
                                 Issue.IssueCategory.Units,
                                 "time unit for reaction '" + sbmlReaction.getId() + "'" +
@@ -2328,7 +2290,7 @@ public class AbstractSBMLImporter implements ISBMLImporter {
                 modelLengthUnit = dimensionless;
             }
             if(!modelSubstanceUnit.isCompatible(mole) && !modelSubstanceUnit.isCompatible(molecules) && !modelSubstanceUnit.isCompatible(dimensionless)){
-                localIssueList.add(new Issue(new SBMLImporter.SBMLIssueSource(sbmlModel), issueContext, Issue.IssueCategory.SBMLImport_RestrictedFeature,
+                localIssueList.add(new Issue(new SBMLIssueSource(sbmlModel), issueContext, Issue.IssueCategory.SBMLImport_RestrictedFeature,
                         "Model substance unit [" + modelSubstanceUnit + "] is not compatible with mole or molecules", Issue.Severity.WARNING));
             }
             return ModelUnitSystem.createSBMLUnitSystem(modelSubstanceUnit,
@@ -3045,7 +3007,7 @@ public class AbstractSBMLImporter implements ISBMLImporter {
                     + "that have ids/names that are longer than 64 characters. \n\nUser is STRONGLY recommeded to shorten "
                     + "the names to avoid problems with the length of expressions these names might be used in.";
 
-            localIssueList.add(new Issue(new SBMLImporter.SBMLIssueSource(issueSource),
+            localIssueList.add(new Issue(new SBMLIssueSource(issueSource),
                     issueContext,
                     Issue.IssueCategory.SBMLImport_UnsupportedAttributeOrElement,
                     warningMsg, Issue.Severity.WARNING));
@@ -3439,7 +3401,7 @@ public class AbstractSBMLImporter implements ISBMLImporter {
             geometry = mplugin.getGeometry();
         } catch(PropertyUndefinedError e){
             logger.debug("model '" + sbmlModel.getId() + "' doesn't have a spatial geometry");
-            localIssueList.add(new Issue(new SBMLImporter.SBMLIssueSource(sbmlModel),
+            localIssueList.add(new Issue(new SBMLIssueSource(sbmlModel),
                     issueContext,
                     Issue.IssueCategory.SBMLImport_UnsupportedAttributeOrElement,
                     "Geometry not defined in spatial model.",
@@ -3454,7 +3416,7 @@ public class AbstractSBMLImporter implements ISBMLImporter {
             // (2/15/2013) For now, allow model to be imported even without
             // geometry defined. Issue a warning.
             logger.warn("model '" + sbmlModel.getId() + "' doesn't have a spatial geometry");
-            localIssueList.add(new Issue(new SBMLImporter.SBMLIssueSource(sbmlModel),
+            localIssueList.add(new Issue(new SBMLIssueSource(sbmlModel),
                     issueContext,
                     Issue.IssueCategory.SBMLImport_UnsupportedAttributeOrElement,
                     "Geometry not defined in spatial model.",
