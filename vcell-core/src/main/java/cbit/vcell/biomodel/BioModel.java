@@ -270,6 +270,15 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
 		}
 	}
 
+	public final static class SetRandomVersionKeys implements Consumer<Versionable> {
+		@Override
+		public void accept(Versionable versionable) {
+			if (versionable.getVersion()!=null){
+				versionable.getVersion().testFixtureRandomizeKeys();
+			}
+		}
+	}
+
 	public void visitChildVersionables(Consumer<Versionable> operation) {
 		operation.accept(getModel());
 		for (SimulationContext sc : getSimulationContexts()){

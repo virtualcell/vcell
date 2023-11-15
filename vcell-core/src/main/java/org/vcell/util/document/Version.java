@@ -13,10 +13,7 @@ package org.vcell.util.document;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
@@ -57,6 +54,12 @@ public Version(KeyValue versionKeyNew, String versionNameNew, User versionOwnerN
 public Version(String name, User owner) {
     this.versionName = name;
     this.versionOwner = owner;
+}
+
+@Deprecated
+public void testFixtureRandomizeKeys() {
+    versionKey = new KeyValue(Long.toString(new Random().nextLong()));
+    versionBranchID = new BigDecimal(Long.toString(new Random().nextLong()));
 }
 
 public List<Object> compare(Object obj) {

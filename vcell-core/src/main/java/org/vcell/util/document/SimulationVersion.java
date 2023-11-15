@@ -40,6 +40,11 @@ public SimulationVersion(KeyValue versionKeyNew, String versionNameNew, org.vcel
 	this.parentSimulationReference = argParentSimulationReference;
 }
 
+	@Deprecated
+	public void testFixtureRandomizeKeys() {
+		super.testFixtureRandomizeKeys();
+		parentSimulationReference = null;
+	}
 
 /**
  * Insert the method's description here.
