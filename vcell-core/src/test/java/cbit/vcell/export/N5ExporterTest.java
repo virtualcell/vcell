@@ -54,7 +54,7 @@ public class N5ExporterTest {
     private static String previousPrimarySimDir;
     private static String previousSecondarySimDir;
     private static String previousSecondaryInternalSimDir;
-
+    private static String previousSimCacheSize;
     private static String previousN5Path;
 
     public final File temporaryFolder = new File(System.getProperty("java.io.tmpdir"));
@@ -111,6 +111,9 @@ public class N5ExporterTest {
 
         previousSecondarySimDir = PropertyLoader.getProperty(PropertyLoader.secondarySimDataDirInternalProperty, null);
         PropertyLoader.setProperty(PropertyLoader.secondarySimDataDirInternalProperty, "k");
+
+        previousSimCacheSize = PropertyLoader.getProperty(PropertyLoader.simdataCacheSizeProperty, null);
+        PropertyLoader.setProperty(PropertyLoader.simdataCacheSizeProperty, "100000");
     }
 
     @After
@@ -134,6 +137,10 @@ public class N5ExporterTest {
 
         if (previousSecondaryInternalSimDir != null){
             System.setProperty(PropertyLoader.secondarySimDataDirInternalProperty, previousSecondaryInternalSimDir);
+        }
+
+        if (previousSimCacheSize != null){
+            System.setProperty(PropertyLoader.simdataCacheSizeProperty, previousSimCacheSize);
         }
 
         if (n5Reader != null){
