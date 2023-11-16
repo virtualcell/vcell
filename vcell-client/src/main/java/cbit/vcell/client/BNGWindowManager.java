@@ -22,7 +22,6 @@ import java.util.Hashtable;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 
-import org.vcell.sbml.vcell.SBMLImporter;
 import org.vcell.util.ProgressDialogListener;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.DialogUtils;

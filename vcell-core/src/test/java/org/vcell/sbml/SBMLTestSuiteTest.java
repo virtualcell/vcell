@@ -19,9 +19,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import org.vcell.sbml.vcell.SBMLExporter;
-import org.vcell.sbml.vcell.SBMLImporter;
-import org.vcell.sbml.vcell.SBMLSymbolMapping;
+import org.vcell.sbml.vcell.*;
 import org.vcell.test.SBML_IT;
 
 import javax.xml.stream.XMLStreamException;
@@ -629,14 +627,14 @@ public class SBMLTestSuiteTest {
 
 	@Test
 	public void testSbmlTestSuiteImport() throws Exception{
-		HashMap<Integer,FAULT> faults = new HashMap();
+		HashMap<Integer,FAULT> faults = new HashMap<>();
 		faults.put(22, FAULT.NONINTEGER_STOICH);
 
 		TLogger vcl = new TLogger();
 		InputStream testFileInputStream = SbmlTestSuiteFiles.getSbmlTestCase(testCase);
 		boolean bValidateSBML = true;
 		try {
-			SBMLImporter importer = new SBMLImporter(testFileInputStream, vcl, bValidateSBML);
+			SBMLImporter importer = SBMLImporterFactory.getSBMLImporter(testFileInputStream, vcl, bValidateSBML);
 			BioModel bioModel = importer.getBioModel();
 			SBMLSymbolMapping sbmlSymbolMapping = importer.getSymbolMapping();
 			//
@@ -689,7 +687,7 @@ public class SBMLTestSuiteTest {
 		InputStream testFileInputStream = SbmlTestSuiteFiles.getSbmlTestCase(testCase);
 		boolean bValidateSBML = true;
 		TLogger vcl = new TLogger();
-		SBMLImporter importer = new SBMLImporter(testFileInputStream, vcl, bValidateSBML);
+		SBMLImporter importer = SBMLImporterFactory.getSBMLImporter(testFileInputStream, vcl, bValidateSBML);
 		BioModel bioModel = importer.getBioModel();
 		bioModel.updateAll(false);
 //		{

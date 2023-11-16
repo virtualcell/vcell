@@ -17,6 +17,7 @@ import org.junit.runners.Parameterized;
 import org.sbml.jsbml.SBMLDocument;
 import org.sbml.jsbml.SBMLReader;
 import org.vcell.sbml.vcell.SBMLImporter;
+import org.vcell.sbml.vcell.SBMLImporterFactory;
 import org.vcell.test.SBML_IT;
 
 import java.io.*;
@@ -223,9 +224,9 @@ public class BMDB_SBMLImportTest {
 		SBMLTestSuiteTest.FAULT knownFault = knownFaults().get(biomodelsDbModelNumber);
 		Exception exception = null;
 		try {
-			SBMLImporter importer = new SBMLImporter(testFileInputStream, vcl, bValidateSBML);
+			SBMLImporter importer = SBMLImporterFactory.getSBMLImporter(testFileInputStream, vcl, bValidateSBML);
 			BioModel bioModel = importer.getBioModel();
-			if (vcl.highPriority.size() > 0) {
+			if (!vcl.highPriority.isEmpty()) {
 				bFailed = true;
 			}
 		}catch (SBMLHighPriorityIssueException e){
@@ -239,7 +240,7 @@ public class BMDB_SBMLImportTest {
 			String cause = "unknown";
 			if (exception != null){
 				cause = (exception.getMessage()!=null) ? exception.getMessage() : "null";
-			}else if (vcl.highPriority.size()>0){
+			}else if (!vcl.highPriority.isEmpty()){
 				cause = String.join(" | ", vcl.highPriority);
 			}
 			cause = cause.replace("\n"," ");

@@ -10,13 +10,11 @@
 
 package cbit.vcell.xml;
 
-import cbit.image.ImageException;
 import cbit.image.VCImage;
 import cbit.util.xml.VCLogger;
 import cbit.util.xml.VCLoggerException;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.biomodel.BioModelTransforms;
 import cbit.vcell.biomodel.ModelUnitConverter;
 import cbit.vcell.biomodel.meta.IdentifiableProvider;
 import cbit.vcell.biomodel.meta.VCMetaData;
@@ -24,19 +22,11 @@ import cbit.vcell.biomodel.meta.xml.XMLMetaDataReader;
 import cbit.vcell.biomodel.meta.xml.XMLMetaDataWriter;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.geometry.Geometry;
-import cbit.vcell.geometry.GeometryException;
-import cbit.vcell.mapping.MappingException;
-import cbit.vcell.mapping.MathMapping;
-import cbit.vcell.mapping.MathSymbolMapping;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.messaging.server.SimulationTask;
-import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.ModelUnitSystem;
-import cbit.vcell.model.Parameter;
-import cbit.vcell.model.ReactionStep;
-import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.*;
@@ -50,32 +40,16 @@ import org.jlibsedml.*;
 import org.sbml.jsbml.SBMLException;
 import org.vcell.cellml.CellQuanVCTranslator;
 import org.vcell.sbml.SbmlException;
-import org.vcell.sbml.vcell.MathModel_SBMLExporter;
-import org.vcell.sbml.vcell.SBMLAnnotationUtil;
-import org.vcell.sbml.vcell.SBMLExporter;
-import org.vcell.sbml.vcell.SBMLImportException;
-import org.vcell.sbml.vcell.SBMLImporter;
+import org.vcell.sbml.vcell.*;
 import org.vcell.sedml.SEDMLImporter;
 import org.vcell.util.Extent;
 import org.vcell.util.Pair;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCellSoftwareVersion;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
 
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.stream.XMLStreamException;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathFactory;
 
-import java.beans.PropertyVetoException;
 import java.io.*;
 import java.util.*;
 
@@ -377,7 +351,7 @@ public class XmlHelper {
 			}
 		}
 		boolean bValidateSBML = false;
-		SBMLImporter sbmlImporter = new SBMLImporter(sbmlFile.getAbsolutePath(), vcLogger, bValidateSBML);
+		SBMLImporter sbmlImporter = SBMLImporterFactory.getSBMLImporter(sbmlFile, vcLogger, bValidateSBML);
 		BioModel bm  = sbmlImporter.getBioModel();
 
 		bm.refreshDependencies();

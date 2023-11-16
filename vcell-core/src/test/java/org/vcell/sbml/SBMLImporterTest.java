@@ -1,11 +1,7 @@
 package org.vcell.sbml;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.HashMap;
-
-import javax.xml.stream.XMLStreamException;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -14,6 +10,7 @@ import org.vcell.sbml.vcell.SBMLImporter;
 
 import cbit.util.xml.VCLogger;
 import cbit.vcell.biomodel.BioModel;
+import org.vcell.sbml.vcell.SBMLImporterFactory;
 import org.vcell.test.SBML_IT;
 
 @Category(SBML_IT.class)
@@ -128,7 +125,7 @@ public class SBMLImporterTest {
 				continue;
 			}
 			System.out.println("testing "+sbmlFile);
-			SBMLImporter importer = new SBMLImporter(sbmlFile.getAbsolutePath(), vcl, true);
+			SBMLImporter importer = SBMLImporterFactory.getSBMLImporter(sbmlFile, vcl, true);
 			BioModel bioModel = importer.getBioModel();
 		}
 

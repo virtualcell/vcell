@@ -41,10 +41,7 @@ import org.jlibsedml.modelsupport.SBMLSupport;
 import org.jlibsedml.modelsupport.SUPPORTED_LANGUAGE;
 import org.jmathml.ASTNode;
 import org.sbml.jsbml.SBase;
-import org.vcell.sbml.vcell.SBMLImportException;
-import org.vcell.sbml.vcell.SBMLImporter;
-import org.vcell.sbml.vcell.SBMLSymbolMapping;
-import org.vcell.sbml.vcell.SymbolContext;
+import org.vcell.sbml.vcell.*;
 import org.vcell.util.FileUtils;
 import org.vcell.util.ISize;
 import org.vcell.util.RelationVisitor;
@@ -927,7 +924,7 @@ public class SEDMLImporter {
 			} else {				// we assume it's sbml, if it's neither import will fail
 				InputStream sbmlSource = IOUtils.toInputStream(modelXML, Charset.defaultCharset());
 				boolean bValidateSBML = false;
-				SBMLImporter sbmlImporter = new SBMLImporter(sbmlSource, this.transLogger, bValidateSBML);
+				SBMLImporter sbmlImporter = SBMLImporterFactory.getSBMLImporter(sbmlSource, this.transLogger, bValidateSBML);
 				bioModel = sbmlImporter.getBioModel();
 				bioModel.setName(bioModelName);
 				bioModel.getSimulationContext(0).setName(mm.getName() != null? mm.getName() : mm.getId());
@@ -1125,11 +1122,8 @@ public class SEDMLImporter {
 
 	public SBMLSymbolMapping getSBMLSymbolMapping(BioModel bioModel){
 		SBMLImporter sbmlImporter = this.importMap.get(bioModel);
-		if (sbmlImporter != null) {
-			return sbmlImporter.getSymbolMapping();
-		} else {
-			return null;
-		}
+		if (sbmlImporter == null) return null;
+		return sbmlImporter.getSymbolMapping();
 	}
 
 	private enum ADVANCED_MODEL_TYPES {

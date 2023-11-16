@@ -6,8 +6,6 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 
-import org.vcell.sbml.vcell.ISBMLImporter;
-import org.vcell.sbml.vcell.SBMLExporter;
 import org.vcell.sbml.vcell.SBMLImporter;
 import org.vcell.sbml.vcell.SBMLImporterFactory;
 import org.vcell.sedml.ModelFormat;
@@ -19,9 +17,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.File;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.concurrent.Callable;
 
 @Command(name = "model", description = "translate between a BioModel application and an SBML model")
@@ -59,7 +55,7 @@ public class ModelCommand implements Callable<Integer> {
                 File sbmlInputFile = inputFile;
                 MemoryLogger logger = new MemoryLogger();
                 boolean bValidateSBML = true;
-                ISBMLImporter importer = SBMLImporterFactory.getSBMLImporter(sbmlInputFile, logger, bValidateSBML);
+                SBMLImporter importer = SBMLImporterFactory.getSBMLImporter(sbmlInputFile, logger, bValidateSBML);
                 BioModel bioModel = importer.getBioModel();
                 Files.writeString(outputFile.toPath(), XmlHelper.bioModelToXML(bioModel, false));
             } else {

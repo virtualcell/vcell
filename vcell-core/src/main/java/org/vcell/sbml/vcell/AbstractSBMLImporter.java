@@ -52,10 +52,10 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
-public class AbstractSBMLImporter implements ISBMLImporter {
+public class AbstractSBMLImporter implements SBMLImporter {
     private final SBMLSymbolMapping sbmlSymbolMapping = new SBMLSymbolMapping();
 
-    private final static Logger logger = LogManager.getLogger(SBMLImporter.class);
+    private final static Logger logger = LogManager.getLogger(AbstractSBMLImporter.class);
 
     /**
      * detect unsupported "delay" element

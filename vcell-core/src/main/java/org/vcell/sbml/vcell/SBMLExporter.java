@@ -1744,9 +1744,9 @@ private void roundTripValidation() throws SBMLValidationException {
 		// report a validation problem upon an exception or a High Priority VCLogger event.
 		//
 		MemoryVCLogger memoryVCLogger = new MemoryVCLogger();
-		SBMLImporter sbmlImporter = new SBMLImporter(sbmlModel, memoryVCLogger, true);
+		SBMLImporter sbmlImporter = SBMLImporterFactory.getSBMLImporter(sbmlModel, memoryVCLogger, true);
 		reread_BioModel_sbml_units = sbmlImporter.getBioModel();
-		if (memoryVCLogger.highPriority.size() > 0) {
+		if (!memoryVCLogger.highPriority.isEmpty()) {
 			throw new SBMLValidationException(memoryVCLogger.highPriority.toString());
 		}
 		BioModel reread_BioModel_sbml_units_cloned = XmlHelper.cloneBioModel(reread_BioModel_sbml_units);

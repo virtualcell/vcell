@@ -12,13 +12,13 @@ import cbit.vcell.xml.XmlParseException;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.vcell.sbml.vcell.SBMLExporter;
 import org.vcell.sbml.vcell.SBMLImporter;
+import org.vcell.sbml.vcell.SBMLExporter;
+import org.vcell.sbml.vcell.SBMLImporterFactory;
 import org.vcell.test.Fast;
 import org.vcell.util.Extent;
 
 import java.io.ByteArrayInputStream;
-import java.io.StringBufferInputStream;
 import java.util.Random;
 
 @Category(Fast.class)
@@ -89,7 +89,7 @@ public class VCImageTest {
         String sbmlString = sbmlExporter.getSBMLString();
 //        Files.write(sbmlString, new File("__VCImageTest_sbml.xml"), StandardCharsets.UTF_8);
 
-        SBMLImporter sbmlImporter = new SBMLImporter(new ByteArrayInputStream(sbmlString.getBytes()), new SBMLExporter.MemoryVCLogger(), bValidateSBML);
+        SBMLImporter sbmlImporter = SBMLImporterFactory.getSBMLImporter(new ByteArrayInputStream(sbmlString.getBytes()), new SBMLExporter.MemoryVCLogger(), bValidateSBML);
         BioModel roundTripBioModel = sbmlImporter.getBioModel();
         roundTripBioModel.updateAll(false);
 
