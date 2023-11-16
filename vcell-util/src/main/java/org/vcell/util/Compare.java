@@ -11,11 +11,7 @@
 package org.vcell.util;
 
 import java.lang.reflect.Field;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.function.BiPredicate;
 
 /**
@@ -615,7 +611,7 @@ public class Compare {
         return true;
     }
 
-    public static <KeyType extends Matchable, ValueType extends Matchable> boolean isEqual(HashMap<KeyType, ValueType> map1, HashMap<KeyType, ValueType> map2){
+    public static <KeyType extends Matchable, ValueType extends Matchable> boolean isEqual(Map<KeyType, ValueType> map1, Map<KeyType, ValueType> map2){
         //
         // compare entries from map1 to map2
         //

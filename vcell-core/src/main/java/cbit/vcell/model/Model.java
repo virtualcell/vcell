@@ -74,8 +74,8 @@ import cbit.vcell.units.VCUnitException;
 public class Model implements Versionable, Matchable, Relatable, PropertyChangeListener, VetoableChangeListener, Serializable, ScopedSymbolTable, IssueSource {
     private final static Logger lg = LogManager.getLogger(Model.class);
 
-    public static interface Owner {
-        public Model getModel();
+    public interface Owner {
+        Model getModel();
     }
 
     public static final String PROPERTY_NAME_REACTION_STEPS = "reactionSteps";
@@ -86,20 +86,20 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
 
     public static final String PROPERTY_NAME_RATERULEVARIABLES = "rateruleVariables";
 
-    private Version version = null;
+    private Version version;
     protected transient PropertyChangeSupport propertyChange;
-    private java.lang.String fieldName = new String("NoName");
+    private java.lang.String fieldName = "NoName";
     protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
-    private java.lang.String fieldDescription = new String();
-    private Structure[] fieldStructures = new Structure[0];
-    private Species[] fieldSpecies = new Species[0];
-    private SpeciesContext[] fieldSpeciesContexts = new SpeciesContext[0];
+    private java.lang.String fieldDescription = "";
+    private Structure[] structures = new Structure[0];
+    private Species[] species = new Species[0];
+    private SpeciesContext[] speciesContexts = new SpeciesContext[0];
     //	private RateRuleVariable[] fieldRateRuleVariables = new RateRuleVariable[0];
-    private ReactionStep[] fieldReactionSteps = new ReactionStep[0];
-    private Diagram[] fieldDiagrams = new Diagram[0];
+    private ReactionStep[] reactionSteps = new ReactionStep[0];
+    private Diagram[] diagrams = new Diagram[0];
     private ModelNameScope nameScope = new Model.ModelNameScope();
     private Model.ModelFunction[] fieldModelFunctions = new Model.ModelFunction[0];
-    private Model.ModelParameter[] fieldModelParameters = new Model.ModelParameter[0];
+    private Model.ModelParameter[] modelParameters = new Model.ModelParameter[0];
     private Model.ReservedSymbol[] fieldReservedSymbols = new Model.ReservedSymbol[0];
     private final ModelUnitSystem unitSystem;
     private transient VCMetaData vcMetaData = null;
@@ -110,14 +110,14 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
     //private final RbmModelContainer rbmModelContainer = new org.vcell.model.rbm.simple.RbmModelContainerSimple(ModelUnitSystem.createDefaultVCModelUnitSystem());
 
     public interface ElectricalTopologyListener {
-        public void electricalTopologyChanged(ElectricalTopology electricalTopology);
+        void electricalTopologyChanged(ElectricalTopology electricalTopology);
     }
 
     private transient ArrayList<ElectricalTopologyListener> transientElectricalTopologyListeners = null;
 
     private ArrayList<ElectricalTopologyListener> getElectricalTopologyListeners(){
         if(transientElectricalTopologyListeners == null){
-            transientElectricalTopologyListeners = new ArrayList<ElectricalTopologyListener>();
+            transientElectricalTopologyListeners = new ArrayList<>();
         }
         return transientElectricalTopologyListeners;
     }
@@ -140,9 +140,9 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
     }
 
     public class StructureTopology implements Serializable, Matchable {
-        private HashMap<Membrane, Feature> insideFeatures = new HashMap<Membrane, Feature>();
-        private HashMap<Membrane, Feature> outsideFeatures = new HashMap<Membrane, Feature>();
-        private HashMap<Feature, Membrane> enclosingMembrane = new HashMap<Feature, Membrane>();
+        private Map<Membrane, Feature> insideFeatures = new HashMap<>();
+        private Map<Membrane, Feature> outsideFeatures = new HashMap<>();
+        private Map<Feature, Membrane> enclosingMembrane = new HashMap<>();
 
         public StructureTopology(){
         }
@@ -160,11 +160,11 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
 //		}
 
         public Enumeration<Feature> getSubFeatures(Feature feature){
-            Vector<Feature> subFeatures = new Vector<Feature>();
+            Vector<Feature> subFeatures = new Vector<>();
             Structure[] structures = getStructures();
-            for(int i = 0; i < structures.length; i++){
-                if((structures[i] instanceof Feature) && enclosedBy(structures[i], feature)){
-                    subFeatures.addElement((Feature) structures[i]);
+            for (Structure structure : structures) {
+                if ((structure instanceof Feature) && enclosedBy(structure, feature)) {
+                    subFeatures.addElement((Feature) structure);
                 }
             }
             return subFeatures.elements();
@@ -172,13 +172,12 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
 
 
         public Membrane getMembrane(Feature feature1, Feature feature2){
-            for(int i = 0; i < fieldStructures.length; i++){
-                if(fieldStructures[i] instanceof Membrane){
-                    Membrane membrane = (Membrane) fieldStructures[i];
-                    if(insideFeatures.get(membrane) == feature1 && outsideFeatures.get(membrane) == feature2){
+            for (Structure fieldStructure : structures) {
+                if (fieldStructure instanceof Membrane membrane) {
+                    if (insideFeatures.get(membrane) == feature1 && outsideFeatures.get(membrane) == feature2) {
                         return membrane;
                     }
-                    if(insideFeatures.get(membrane) == feature2 && outsideFeatures.get(membrane) == feature1){
+                    if (insideFeatures.get(membrane) == feature2 && outsideFeatures.get(membrane) == feature1) {
                         return membrane;
                     }
                 }
@@ -235,8 +234,7 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
                             outsideFeatures.remove(enclosingMem);
                         }
                     }
-                } else if(struct instanceof Membrane){
-                    Membrane membrane = (Membrane) struct;
+                } else if(struct instanceof Membrane membrane){
                     Feature insideFeature = getInsideFeature(membrane);
                     if(insideFeature != null && !(contains(insideFeature))){
                         insideFeatures.remove(membrane);
@@ -251,8 +249,7 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
         }
 
         public boolean enclosedBy(Structure structure, Structure parentStructure){
-            if(structure instanceof Feature){
-                Feature feature = (Feature) structure;
+            if(structure instanceof Feature feature){
                 if(parentStructure == feature){
                     return true;
                 }
@@ -260,8 +257,7 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
                     return enclosedBy(getMembrane(feature), parentStructure);
                 }
                 return false;
-            } else if(structure instanceof Membrane){
-                Membrane membrane = (Membrane) structure;
+            } else if(structure instanceof Membrane membrane){
                 if(parentStructure == membrane){
                     return true;
                 }
@@ -273,23 +269,11 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
 
         @Override
         public boolean compareEqual(Matchable object){
-            if(object instanceof StructureTopology){
-                StructureTopology structTopology = (StructureTopology) object;
+            return object instanceof StructureTopology structTopology
+                    && Compare.isEqual(insideFeatures, structTopology.insideFeatures)
+                    && Compare.isEqual(outsideFeatures, structTopology.outsideFeatures)
+                    && Compare.isEqual(enclosingMembrane, structTopology.enclosingMembrane);
 
-                if(!Compare.isEqual(insideFeatures, structTopology.insideFeatures)){
-                    return false;
-                }
-
-                if(!Compare.isEqual(outsideFeatures, structTopology.outsideFeatures)){
-                    return false;
-                }
-
-                if(!Compare.isEqual(enclosingMembrane, structTopology.enclosingMembrane)){
-                    return false;
-                }
-                return true;
-            }
-            return false;
         }
 
         public boolean isEmpty(){
@@ -351,8 +335,8 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
 
     public class ElectricalTopology implements Serializable, Matchable {
 
-        private HashMap<Membrane, Feature> positiveFeatures = new HashMap<Membrane, Feature>();
-        private HashMap<Membrane, Feature> negativeFeatures = new HashMap<Membrane, Feature>();
+        private HashMap<Membrane, Feature> positiveFeatures = new HashMap<>();
+        private HashMap<Membrane, Feature> negativeFeatures = new HashMap<>();
 
         public ElectricalTopology(){
         }
@@ -378,9 +362,8 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
         public void gatherIssues(IssueContext issueContext, List<Issue> issueList){
             // check if membranes in model have positive and negative features set.
             for(Structure struct : getStructures()){
-                if(struct instanceof Membrane){
-                    Membrane membrane = (Membrane) struct;
-                    ArrayList<ReactionStep> electricalReactions = new ArrayList<ReactionStep>();
+                if(struct instanceof Membrane membrane){
+                    ArrayList<ReactionStep> electricalReactions = new ArrayList<>();
                     for(ReactionStep reactionStep : getReactionSteps()){
                         if(reactionStep.getStructure() == membrane){
                             if(reactionStep.hasElectrical()){
@@ -392,7 +375,7 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
                     Feature positiveFeature = getPositiveFeature(membrane);
                     Feature negativeFeature = getNegativeFeature(membrane);
 
-                    if(electricalReactions.size() > 0){
+                    if(!electricalReactions.isEmpty()){
 
                         StringBuilder reactionNames = new StringBuilder();
                         for(ReactionStep rs : electricalReactions){
@@ -401,10 +384,10 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
                         reactionNames.deleteCharAt(reactionNames.length() - 1);
 
                         if(positiveFeature == null){
-                            issueList.add(new Issue(membrane, issueContext, IssueCategory.MembraneElectricalPolarityError, "Positive compartment of " + issueMsgPrefix + "is required for electrical reactions (" + reactionNames.toString() + ").", Issue.SEVERITY_ERROR));
+                            issueList.add(new Issue(membrane, issueContext, IssueCategory.MembraneElectricalPolarityError, "Positive compartment of " + issueMsgPrefix + "is required for electrical reactions (" + reactionNames + ").", Issue.SEVERITY_ERROR));
                         }
                         if(negativeFeature == null){
-                            issueList.add(new Issue(membrane, issueContext, IssueCategory.MembraneElectricalPolarityError, "Negative compartment of " + issueMsgPrefix + "is required for electrical reactions (" + reactionNames.toString() + ").", Issue.SEVERITY_ERROR));
+                            issueList.add(new Issue(membrane, issueContext, IssueCategory.MembraneElectricalPolarityError, "Negative compartment of " + issueMsgPrefix + "is required for electrical reactions (" + reactionNames + ").", Issue.SEVERITY_ERROR));
                         }
                     }
                     if(positiveFeature != null && negativeFeature != null && positiveFeature.compareEqual(negativeFeature)){
@@ -420,8 +403,7 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
             boolean bChanged = false;
             Structure[] structures = getStructures();
             for(Structure struct : structures){
-                if(struct instanceof Membrane){
-                    Membrane membrane = (Membrane) struct;
+                if(struct instanceof Membrane membrane){
                     Feature positiveFeatureFromStructTopology = getStructureTopology().getInsideFeature(membrane);
                     Feature positiveFeatureFromElectricalTopology = getPositiveFeature(membrane);
                     if(positiveFeatureFromStructTopology != null){
@@ -501,20 +483,9 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
 
         @Override
         public boolean compareEqual(Matchable object){
-            if(object instanceof ElectricalTopology){
-                ElectricalTopology electricalTopology = (ElectricalTopology) object;
-
-                if(!Compare.isEqual(positiveFeatures, electricalTopology.positiveFeatures)){
-                    return false;
-                }
-
-                if(!Compare.isEqual(negativeFeatures, electricalTopology.negativeFeatures)){
-                    return false;
-                }
-
-                return true;
-            }
-            return false;
+            return object instanceof ElectricalTopology eTopology
+                    && Compare.isEqual(positiveFeatures, eTopology.positiveFeatures)
+                    && Compare.isEqual(negativeFeatures, eTopology.negativeFeatures);
         }
     }
 
@@ -527,13 +498,13 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
             //
             // return list of reactionNameScopes
             //
-            NameScope nameScopes[] = new NameScope[Model.this.fieldReactionSteps.length + Model.this.fieldStructures.length + Model.this.getRbmModelContainer().getReactionRuleList().size()];
+            NameScope[] nameScopes = new NameScope[Model.this.reactionSteps.length + Model.this.structures.length + Model.this.getRbmModelContainer().getReactionRuleList().size()];
             int j = 0;
-            for(int i = 0; i < Model.this.fieldReactionSteps.length; i++){
-                nameScopes[j++] = Model.this.fieldReactionSteps[i].getNameScope();
+            for (ReactionStep fieldReactionStep : Model.this.reactionSteps) {
+                nameScopes[j++] = fieldReactionStep.getNameScope();
             }
-            for(int i = 0; i < Model.this.fieldStructures.length; i++){
-                nameScopes[j++] = Model.this.fieldStructures[i].getNameScope();
+            for (Structure fieldStructure : Model.this.structures) {
+                nameScopes[j++] = fieldStructure.getNameScope();
             }
             if(!Model.this.getRbmModelContainer().isEmpty()){
                 for(int i = 0; i < Model.this.getRbmModelContainer().getReactionRuleList().size(); i++){
@@ -590,8 +561,6 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
         KMOLE
 //		NaN
     }
-
-    ;
 
     public ReservedSymbol getTIME(){
         return getReservedSymbolByRole(ReservedSymbolRole.TIME);
@@ -665,11 +634,11 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
 
 
     public class ReservedSymbol implements EditableSymbolTableEntry, Serializable {
-        private String name = null;
-        private Expression constantValue = null;
-        private String description = null;
-        private VCUnitDefinition unitDefinition = null;
-        private ReservedSymbolRole role = null;
+        private String name;
+        private Expression constantValue;
+        private String description;
+        private VCUnitDefinition unitDefinition;
+        private ReservedSymbolRole role;
 
         private ReservedSymbol(ReservedSymbolRole role, String argName, String argDescription, VCUnitDefinition argUnitDefinition, Expression argConstantValue){
             this.role = role;
@@ -681,14 +650,8 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
 
 
         public boolean equals(Object obj){
-            if(!(obj instanceof ReservedSymbol)){
-                return false;
-            }
-            ReservedSymbol rs = (ReservedSymbol) obj;
-            if(!rs.name.equals(name)){
-                return false;
-            }
-            return true;
+            return obj instanceof ReservedSymbol rs
+                    && rs.name.equals(name);
         }
 
         public double getConstantValue() throws ExpressionException{
@@ -704,22 +667,11 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
         }
 
 
-        /**
-         * This method was created by a SmartGuide.
-         *
-         * @return cbit.vcell.parser.Expression
-         * @throws java.lang.Exception The exception description.
-         */
         public Expression getExpression(){
             return constantValue;
         }
 
 
-        /**
-         * This method was created in VisualAge.
-         *
-         * @return int
-         */
         public int getIndex(){
             return -1;
         }
@@ -857,20 +809,18 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
 
     private static FunctionArgType[] getFunctionArgTypes(int numArgs){
         FunctionArgType[] functionArgTypes = new FunctionArgType[numArgs];
-        for(int i = 0; i < numArgs; i++){
-            functionArgTypes[i] = FunctionArgType.NUMERIC;
-        }
+        Arrays.fill(functionArgTypes, FunctionArgType.NUMERIC);
         return functionArgTypes;
     }
 
     public class ModelParameter extends Parameter implements ExpressionContainer, IssueSource, Displayable, Identifiable, VCellSbmlName {
 
-        private String fieldParameterName = null;
+        private String fieldParameterName;
         private String sbmlId = null;
         private String sbmlName = null;
-        private Expression fieldParameterExpression = null;
-        private int fieldParameterRole = -1;
-        private VCUnitDefinition fieldUnitDefinition = null;
+        private Expression fieldParameterExpression;
+        private int fieldParameterRole;
+        private VCUnitDefinition fieldUnitDefinition;
         private String modelParameterAnnotation;
 
         private static final String MODEL_PARAMETER_DESCRIPTION = "user defined";
@@ -879,7 +829,7 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
             if(argName == null){
                 throw new IllegalArgumentException("parameter name is null");
             }
-            if(argName.length() < 1){
+            if(argName.isEmpty()){
                 throw new IllegalArgumentException("parameter name is zero length");
             }
             this.fieldParameterName = argName;
@@ -904,45 +854,21 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
 
         @Override
         public boolean compareEqual(Matchable obj){
-            if(!(obj instanceof ModelParameter)){
-                return false;
-            }
-            ModelParameter mp = (ModelParameter) obj;
-            if(!super.compareEqual0(mp)){
-                return false;
-            }
-            if(fieldParameterRole != mp.fieldParameterRole){
-                return false;
-            }
-            if(!Compare.isEqualOrNull(getSbmlId(), mp.getSbmlId())){
-                return false;
-            }
-            if(!Compare.isEqualOrNull(getSbmlName(), mp.getSbmlName())){
-                return false;
-            }
-            return true;
+            return obj instanceof ModelParameter mp
+                    && super.compareEqual0(mp)
+                    && fieldParameterRole == mp.fieldParameterRole
+                    && Compare.isEqualOrNull(getSbmlId(), mp.getSbmlId())
+                    && Compare.isEqualOrNull(getSbmlName(), mp.getSbmlName());
         }
 
 
         @Override
         public boolean relate(Relatable obj, RelationVisitor rv){
-            if(!(obj instanceof ModelParameter)){
-                return false;
-            }
-            ModelParameter mp = (ModelParameter) obj;
-            if(!super.relate0(mp, rv)){
-                return false;
-            }
-            if(fieldParameterRole != mp.fieldParameterRole){
-                return false;
-            }
-            if(!rv.relateOrNull(getSbmlId(), mp.getSbmlId())){
-                return false;
-            }
-            if(!rv.relateOrNull(getSbmlName(), mp.getSbmlName())){
-                return false;
-            }
-            return true;
+            return obj instanceof ModelParameter mp
+                    && super.relate0(mp, rv)
+                    && fieldParameterRole == mp.fieldParameterRole
+                    && rv.relateOrNull(getSbmlId(), mp.getSbmlId())
+                    && rv.relateOrNull(getSbmlName(), mp.getSbmlName());
         }
 
         @Override
@@ -1047,34 +973,24 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
     }
 
     public class RbmModelContainer implements Matchable, Serializable, IssueSource {
-        private List<MolecularType> molecularTypeList = new ArrayList<MolecularType>();
-        private List<ReactionRule> reactionRuleList = new ArrayList<ReactionRule>();
-        private List<RbmObservable> observableList = new ArrayList<RbmObservable>();
+        private List<MolecularType> molecularTypeList = new ArrayList<>();
+        private List<ReactionRule> reactionRuleList = new ArrayList<>();
+        private List<RbmObservable> observableList = new ArrayList<>();
         public static final String PROPERTY_NAME_MOLECULAR_TYPE_LIST = "molecularTypeList";
         public static final String PROPERTY_NAME_OBSERVABLE_LIST = "observableList";
         public static final String PROPERTY_NAME_FUNCTION_LIST = "functionList";
         public static final String PROPERTY_NAME_REACTION_RULE_LIST = "reactionRuleList";
 
         public boolean isEmpty(){
-            if(!molecularTypeList.isEmpty()){
-                return false;
-            }
-            if(!reactionRuleList.isEmpty()){
-                return false;
-            }
-            if(!observableList.isEmpty()){
-                return false;
-            }
-            return true;
+            return molecularTypeList.isEmpty()
+                    && reactionRuleList.isEmpty()
+                    && observableList.isEmpty();
         }
 
         // reaction rules are the only entities with "wildcards"
         // as long as we don't have rules we can allow multiple compartments, for example
         public boolean hasRules(){
-            if(reactionRuleList.isEmpty()){
-                return false;
-            }
-            return true;
+            return !reactionRuleList.isEmpty();
         }
 
         public void gatherIssues(IssueContext issueContext, List<Issue> issueList){
@@ -1117,24 +1033,24 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
         public boolean isDeleteAllowed(MolecularType mt, MolecularComponent mc, ComponentStateDefinition cs){
             for(ReactionRule rr : getReactionRuleList()){
                 for(ProductPattern pp : rr.getProductPatterns()){
-                    if(!canDelete(mt, mc, cs, pp.getSpeciesPattern().getMolecularTypePatterns())){
+                    if(cantDelete(mt, mc, cs, pp.getSpeciesPattern().getMolecularTypePatterns())){
                         return false;
                     }
                 }
                 for(ReactantPattern rp : rr.getReactantPatterns()){
-                    if(!canDelete(mt, mc, cs, rp.getSpeciesPattern().getMolecularTypePatterns())){
+                    if(cantDelete(mt, mc, cs, rp.getSpeciesPattern().getMolecularTypePatterns())){
                         return false;
                     }
                 }
             }
             for(SpeciesContext sc : Model.this.getSpeciesContexts()){
-                if(!canDelete(mt, mc, cs, sc.getSpeciesPattern().getMolecularTypePatterns())){
+                if(cantDelete(mt, mc, cs, sc.getSpeciesPattern().getMolecularTypePatterns())){
                     return false;
                 }
             }
             for(RbmObservable o : getObservableList()){
                 for(SpeciesPattern sp : o.getSpeciesPatternList()){
-                    if(!canDelete(mt, mc, cs, sp.getMolecularTypePatterns())){
+                    if(cantDelete(mt, mc, cs, sp.getMolecularTypePatterns())){
                         return false;
                     }
                 }
@@ -1142,29 +1058,44 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
             return true;
         }
 
-        private boolean canDelete(MolecularType mt, MolecularComponent mc, ComponentStateDefinition csd, List<MolecularTypePattern> mtpList){
-            for(MolecularTypePattern mtp : mtpList){
+        private boolean canDelete(MolecularType molecularType, MolecularComponent molecularComponent, ComponentStateDefinition componentStateDefinition, List<MolecularTypePattern> molecularTypePatternList){
+            for(MolecularTypePattern mtp : molecularTypePatternList){
                 MolecularType mt1 = mtp.getMolecularType();
-                if(mt.getName().equals(mt1.getName())){
-                    List<MolecularComponentPattern> componentPatterns = mtp.getComponentPatternList();
-                    for(MolecularComponentPattern mcp : componentPatterns){
-                        if(mcp.isImplied()){
-                            continue;
-                        }
-                        if(mcp.getMolecularComponent().getName().equals(mc.getName())){
-                            //System.out.println(mcp.toString());
-                            if(mcp.getComponentStatePattern() != null){
-                                if(mcp.getComponentStatePattern().getComponentStateDefinition() != null){
-                                    if(mcp.getComponentStatePattern().getComponentStateDefinition().getName().equals(csd.getName())){
-                                        return false;
-                                    }
-                                }
-                            }
-                        }
+                if(!(molecularType.getName().equals(mt1.getName()))) continue;
+                for(MolecularComponentPattern mcp : mtp.getComponentPatternList()){
+                    if(mcp.isImplied()){
+                        continue;
+                    }
+                    if(!(mcp.getMolecularComponent().getName().equals(molecularComponent.getName()))) continue;
+                    //System.out.println(mcp.toString());
+                    if(mcp.getComponentStatePattern() == null) continue;
+                    if(mcp.getComponentStatePattern().getComponentStateDefinition() == null) continue;
+                    if(mcp.getComponentStatePattern().getComponentStateDefinition().getName().equals(componentStateDefinition.getName())){
+                        return false;
                     }
                 }
             }
             return true;
+        }
+
+        private boolean cantDelete(MolecularType molecularType, MolecularComponent molecularComponent,
+                                   ComponentStateDefinition componentStateDefinition, List<MolecularTypePattern> molecularTypePatternList){
+            for(MolecularTypePattern mtp : molecularTypePatternList){
+                MolecularType mt = mtp.getMolecularType();
+                if(!(molecularType.getName().equals(mt.getName()))) continue;
+                for(MolecularComponentPattern mcp : mtp.getComponentPatternList()){
+                    if(mcp.isImplied()) continue;
+                    if(!(mcp.getMolecularComponent().getName().equals(molecularComponent.getName()))) continue;
+                    //System.out.println(mcp.toString());
+                    ComponentStatePattern csp = mcp.getComponentStatePattern();
+                    if(csp == null) continue;
+                    ComponentStateDefinition csd = csp.getComponentStateDefinition();
+                    if(csd == null) continue;
+                    if(csd.getName().equals(componentStateDefinition.getName()))
+                        return true;
+                }
+            }
+            return false;
         }
 
         public void findComponentUsage(MolecularType mt, MolecularComponent mc, Map<String, Pair<Displayable, SpeciesPattern>> usedHere){
@@ -1195,22 +1126,22 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
 
         // deletes the molecular component from everywhere it's being used
         public boolean delete(MolecularType mt, MolecularComponent mc){
-            boolean ret = true;
+            boolean ret;
             for(ReactionRule rr : getReactionRuleList()){
                 ret = rr.deleteComponentFromPatterns(mt, mc);
-                if(ret == false){
+                if(!ret){
                     return false;
                 }
             }
             for(SpeciesContext sc : Model.this.getSpeciesContexts()){
                 ret = sc.deleteComponentFromPatterns(mt, mc);
-                if(ret == false){
+                if(!ret){
                     return false;
                 }
             }
             for(RbmObservable o : getObservableList()){
                 ret = o.deleteComponentFromPatterns(mt, mc);
-                if(ret == false){
+                if(!ret){
                     return false;
                 }
             }
@@ -1219,22 +1150,22 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
 
         // deletes State from everywhere it's being used
         public boolean delete(MolecularType mt, MolecularComponent mc, ComponentStateDefinition csd){
-            boolean ret = true;
+            boolean ret;
             for(ReactionRule rr : getReactionRuleList()){
                 ret = rr.deleteStateFromPatterns(mt, mc, csd);
-                if(ret == false){
+                if(!ret){
                     return false;
                 }
             }
             for(SpeciesContext sc : Model.this.getSpeciesContexts()){
                 ret = sc.deleteStateFromPatterns(mt, mc, csd);
-                if(ret == false){
+                if(!ret){
                     return false;
                 }
             }
             for(RbmObservable o : getObservableList()){
                 ret = o.deleteStateFromPatterns(mt, mc, csd);
-                if(ret == false){
+                if(!ret){
                     return false;
                 }
             }
@@ -1245,12 +1176,12 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
             boolean isAllowed = true;
             for(ReactionRule rrr : getReactionRuleList()){
                 for(ProductPattern ppp : rrr.getProductPatterns()){
-                    if(!canDelete(rrr, mt, ppp.getSpeciesPattern(), usedHere)){
+                    if(cantDelete(rrr, mt, ppp.getSpeciesPattern(), usedHere)){
                         isAllowed = false;
                     }
                 }
                 for(ReactantPattern rpp : rrr.getReactantPatterns()){
-                    if(!canDelete(rrr, mt, rpp.getSpeciesPattern(), usedHere)){
+                    if(cantDelete(rrr, mt, rpp.getSpeciesPattern(), usedHere)){
                         isAllowed = false;
                     }
                 }
@@ -1259,13 +1190,13 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
                 if(!sc.hasSpeciesPattern()){
                     continue;
                 }
-                if(!canDelete(sc, mt, sc.getSpeciesPattern(), usedHere)){
+                if(cantDelete(sc, mt, sc.getSpeciesPattern(), usedHere)){
                     isAllowed = false;
                 }
             }
             for(RbmObservable o : getObservableList()){
                 for(SpeciesPattern sp : o.getSpeciesPatternList()){
-                    if(!canDelete(o, mt, sp, usedHere)){
+                    if(cantDelete(o, mt, sp, usedHere)){
                         isAllowed = false;
                     }
                 }
@@ -1273,26 +1204,23 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
             return isAllowed;
         }
 
-        private boolean canDelete(Displayable o, MolecularType mt, SpeciesPattern sp, Map<String, Pair<Displayable, SpeciesPattern>> usedHere){
-            boolean can = true;
+        private boolean cantDelete(Displayable o, MolecularType mt, SpeciesPattern sp, Map<String, Pair<Displayable, SpeciesPattern>> usedHere){
+            boolean cant = false;
             for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()){
-                if(mt == mtp.getMolecularType()){
-                    String key = sp.getDisplayName();
-                    key = o.getDisplayType() + o.getDisplayName() + key;
-                    usedHere.put(key, new Pair<Displayable, SpeciesPattern>(o, sp));
-
-
-                    can = false;
-                }
+                if(mt != mtp.getMolecularType()) continue;
+                String key = sp.getDisplayName();
+                key = o.getDisplayType() + o.getDisplayName() + key;
+                usedHere.put(key, new Pair<>(o, sp));
+                cant = true;
             }
-            return can;
+            return cant;
         }
 
         public void addMolecularType(MolecularType molecularType, boolean makeObservable) throws ModelException, PropertyVetoException{
             if(getMolecularType(molecularType.getName()) != null){
                 throw new ModelException(molecularType.getDisplayType() + " '" + molecularType.getDisplayName() + "' already exists!");
             }
-            ArrayList<MolecularType> newValue = new ArrayList<MolecularType>(molecularTypeList);
+            ArrayList<MolecularType> newValue = new ArrayList<>(molecularTypeList);
             newValue.add(molecularType);
             setMolecularTypeList(newValue);
 
@@ -1307,7 +1235,7 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
         }
 
         public void addMolecularTypes(List<MolecularType> molecularTypes) throws ModelException, PropertyVetoException{
-            ArrayList<MolecularType> newValue = new ArrayList<MolecularType>(molecularTypeList);
+            ArrayList<MolecularType> newValue = new ArrayList<>(molecularTypeList);
             newValue.addAll(molecularTypes);
             setMolecularTypeList(newValue);
         }
@@ -1316,7 +1244,7 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
             if(!molecularTypeList.contains(molecularType)){
                 return false;
             }
-            ArrayList<MolecularType> newValue = new ArrayList<MolecularType>(molecularTypeList);
+            ArrayList<MolecularType> newValue = new ArrayList<>(molecularTypeList);
             newValue.remove(molecularType);
             setMolecularTypeList(newValue);
             return true;
@@ -1327,7 +1255,7 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
             if(molecularType == null){
                 return;
             }
-            ArrayList<MolecularType> newValue = new ArrayList<MolecularType>(molecularTypeList);
+            ArrayList<MolecularType> newValue = new ArrayList<>(molecularTypeList);
             newValue.remove(molecularType);
             setMolecularTypeList(newValue);
         }
@@ -1336,7 +1264,7 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
             if(!reactionRuleList.contains(reactionRule)){
                 return false;
             }
-            ArrayList<ReactionRule> newValue = new ArrayList<ReactionRule>(reactionRuleList);
+            ArrayList<ReactionRule> newValue = new ArrayList<>(reactionRuleList);
             newValue.remove(reactionRule);
             setReactionRules(newValue);
             return true;
@@ -1352,13 +1280,13 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
         }
 
         public List<RbmObservable> getObservableList(){
-            return new ArrayList<RbmObservable>(observableList);
+            return new ArrayList<>(observableList);
         }
 
         public List<Parameter> getConstantOrFunctionList(boolean bConstant, ModelParameter[] modelParameters){
             Map<String, Boolean> constantMap = getConstantMap(modelParameters);
-            ArrayList<Parameter> selectedParameters = new ArrayList<Parameter>();
-            for(Parameter p : Model.this.fieldModelParameters){
+            ArrayList<Parameter> selectedParameters = new ArrayList<>();
+            for(Parameter p : Model.this.modelParameters){
                 //
                 // check that it is not a constant valued function.
                 //
@@ -1371,16 +1299,16 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
         }
 
         public List<Parameter> getParameterList(){
-            return getConstantOrFunctionList(true, Model.this.fieldModelParameters);
+            return getConstantOrFunctionList(true, Model.this.modelParameters);
         }
 
         public List<Parameter> getFunctionList(){
-            return getConstantOrFunctionList(false, Model.this.fieldModelParameters);
+            return getConstantOrFunctionList(false, Model.this.modelParameters);
         }
 
         private Map<String, Boolean> getConstantMap(ModelParameter[] parameters){
-            ArrayList<ModelParameter> unprocessed = new ArrayList<ModelParameter>(Arrays.asList(parameters));
-            HashMap<String, Boolean> constantMap = new HashMap<String, Boolean>();
+            ArrayList<ModelParameter> unprocessed = new ArrayList<>(Arrays.asList(parameters));
+            HashMap<String, Boolean> constantMap = new HashMap<>();
             Iterator<ModelParameter> unprocessedIter = unprocessed.iterator();
 
             //  assigns the parameters without symbols as constants (the simple case first).
@@ -1417,7 +1345,7 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
                         } else {
                             Boolean bConstant = constantMap.get(ste.getName());
                             if(bConstant != null){
-                                if(bConstant == true){
+                                if(bConstant){
                                     bHasConstant = true;
                                 } else {
                                     bHasVariable = true;
@@ -1493,7 +1421,7 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
 
         public MolecularType createMolecularType(){
             int count = 0;
-            String name = null;
+            String name;
             while (true) {
                 name = "MT" + count;
                 if(getMolecularType(name) == null){
@@ -1533,23 +1461,20 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
                 count++;
             }
 
-            int size = fieldStructures.length;
+            int size = structures.length;
             if(size > 0 && structure == null){
                 structure = getStructure(0);
             }
-            RbmObservable observable = new RbmObservable(Model.this, name, structure, type);
-            return observable;
+            return new RbmObservable(Model.this, name, structure, type);
         }
 
         public Parameter createParameter(){
-            int count = 0;
-            String name = null;
-            while (true) {
+            String name;
+            for (int count = 0; ; count++){
                 name = "param" + count;
                 if(getParameter(name) == null){
                     break;
                 }
-                count++;
             }
             return new ModelParameter(name, null, ROLE_UserDefined, unitSystem.getInstance_DIMENSIONLESS());
         }
@@ -1592,12 +1517,12 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
             if(getObservable(observable.getName()) != null){
                 throw new ModelException("Observable '" + observable.getName() + "' already exists!");
             }
-            List<RbmObservable> newValue = new ArrayList<RbmObservable>(observableList);
+            List<RbmObservable> newValue = new ArrayList<>(observableList);
             newValue.add(observable);
             setObservableList(newValue);
         }
 
-        public Parameter addFunction(String name, Expression expression, VCUnitDefinition unitDefinition) throws ModelException, PropertyVetoException{
+        public Parameter addFunction(String name, Expression expression, VCUnitDefinition unitDefinition) throws PropertyVetoException{
             return Model.this.addModelParameter(new ModelParameter(name, expression, ROLE_UserDefined, unitDefinition));
         }
 
@@ -1633,7 +1558,7 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
             if(!observableList.contains(observable)){
                 return false;
             }
-            ArrayList<RbmObservable> newValue = new ArrayList<RbmObservable>(observableList);
+            ArrayList<RbmObservable> newValue = new ArrayList<>(observableList);
             newValue.remove(observable);
             setObservableList(newValue);
             return true;
@@ -1648,13 +1573,13 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
         }
 
         public void addReactionRule(ReactionRule reactionRule) throws PropertyVetoException{
-            List<ReactionRule> newValue = new ArrayList<ReactionRule>(reactionRuleList);
+            List<ReactionRule> newValue = new ArrayList<>(reactionRuleList);
             newValue.add(reactionRule);
             setReactionRules(newValue);
         }
 
         public void addReactionRules(List<ReactionRule> reactionRules) throws PropertyVetoException{
-            List<ReactionRule> newValue = new ArrayList<ReactionRule>(reactionRuleList);
+            List<ReactionRule> newValue = new ArrayList<>(reactionRuleList);
             newValue.addAll(reactionRules);
             setReactionRules(newValue);
         }
@@ -1668,24 +1593,10 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
         }
 
         public boolean compareEqual(Matchable aThat){
-            if(this == aThat){
-                return true;
-            }
-            if(!(aThat instanceof RbmModelContainer)){
-                return false;
-            }
-            RbmModelContainer that = (RbmModelContainer) aThat;
-
-            if(!Compare.isEqual(molecularTypeList, that.getMolecularTypeList())){
-                return false;
-            }
-            if(!Compare.isEqual(reactionRuleList, that.getReactionRuleList())){
-                return false;
-            }
-            if(!Compare.isEqual(observableList, that.getObservableList())){
-                return false;
-            }
-            return true;
+            return this == aThat || aThat instanceof RbmModelContainer that
+                    && Compare.isEqual(molecularTypeList, that.getMolecularTypeList())
+                    && Compare.isEqual(reactionRuleList, that.getReactionRuleList())
+                    && Compare.isEqual(observableList, that.getObservableList());
         }
 
         public ReactionRule getReactionRule(String name){
@@ -1722,7 +1633,7 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
                     if(mtp.getMolecularType() != mt){
                         continue;
                     }
-                    Boolean found = false;
+                    boolean found = false;
                     for(MolecularComponentPattern mcp : mtp.getComponentPatternList()){
                         // MolecularTypePattern.getComponentPatternList repairs the mtp list of components
                         // by adding or removing mcp, so that they match the components of the mt
@@ -1761,7 +1672,7 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
                         if(mtp.getMolecularType() != mt){
                             continue;
                         }
-                        Boolean found = false;
+                        boolean found = false;
                         for(MolecularComponentPattern mcp : mtp.getComponentPatternList()){
                             if(mcp.getMolecularComponent() == mc){
                                 found = true;
@@ -1906,7 +1817,7 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
                         if(mtp.getMolecularType() != mt){
                             continue;
                         }
-                        Boolean found = false;
+                        boolean found = false;
                         for(MolecularComponentPattern mcp : mtp.getComponentPatternList()){
                             if(mcp.getMolecularComponent() == mc){
                                 found = true;
@@ -1929,7 +1840,7 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
                         if(mtp.getMolecularType() != mt){
                             continue;
                         }
-                        Boolean found = false;
+                        boolean found = false;
                         for(MolecularComponentPattern mcp : mtp.getComponentPatternList()){
                             if(mcp.getMolecularComponent() == mc){
                                 found = true;
@@ -2004,7 +1915,7 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
         }
     }
 
-    private final static Map<ReservedSymbolRole, Double> reservedConstantsMap = new HashMap<ReservedSymbolRole, Double>() {
+    private final static Map<ReservedSymbolRole, Double> reservedConstantsMap = new HashMap<>() {
         {
             put(ReservedSymbolRole.PI_CONSTANT, Math.PI);
             put(ReservedSymbolRole.FARADAY_CONSTANT, 9.64853321e4);            // exactly 96485.3321233100184 C/mol
@@ -2046,7 +1957,7 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
 
     public ModelParameter addModelParameter(Model.ModelParameter modelParameter) throws PropertyVetoException{
 //	if (!contains(modelParameter)){
-        Model.ModelParameter[] newModelParameters = ArrayUtils.addElement(fieldModelParameters, modelParameter);
+        Model.ModelParameter[] newModelParameters = ArrayUtils.addElement(modelParameters, modelParameter);
         setModelParameters(newModelParameters);
 //	}
         return modelParameter;
@@ -2082,7 +1993,7 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
             throw new ModelException("adding feature '" + featureName + "', structure already exists with that name");
         }
         Feature newFeature = new Feature(featureName);
-        Structure[] newStructures = ArrayUtils.addElement(fieldStructures, newFeature);
+        Structure[] newStructures = ArrayUtils.addElement(structures, newFeature);
         setStructures(newStructures);
         return newFeature;
     }
@@ -2093,7 +2004,7 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
             throw new ModelException("adding membrane '" + membraneName + "', structure already exists with that name");
         }
         Membrane newMembrane = new Membrane(membraneName);
-        Structure[] newStructures = ArrayUtils.addElement(fieldStructures, newMembrane);
+        Structure[] newStructures = ArrayUtils.addElement(structures, newMembrane);
         setStructures(newStructures);
         return newMembrane;
     }
@@ -2101,7 +2012,7 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
 
     public ReactionStep addReactionStep(ReactionStep reactionStep) throws PropertyVetoException{
         if(!contains(reactionStep)){
-            setReactionSteps(ArrayUtils.addElement(fieldReactionSteps, reactionStep));
+            setReactionSteps(ArrayUtils.addElement(reactionSteps, reactionStep));
         }
         return reactionStep;
     }
@@ -2109,7 +2020,7 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
 
     public Species addSpecies(Species species) throws PropertyVetoException{
         if(!contains(species)){
-            Species[] newSpecies = ArrayUtils.addElement(fieldSpecies, species);
+            Species[] newSpecies = ArrayUtils.addElement(this.species, species);
             setSpecies(newSpecies);
         }
         return species;
@@ -2148,7 +2059,7 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
             throw new RuntimeException("speciesContext for " + speciesContext.getSpecies().getCommonName() + " within " + speciesContext.getStructure().getName() + " already defined");
         }
         if(!contains(speciesContext)){
-            SpeciesContext[] newArray = ArrayUtils.addElement(fieldSpeciesContexts, speciesContext);
+            SpeciesContext[] newArray = ArrayUtils.addElement(speciesContexts, speciesContext);
             speciesContext.setModel(this);
             setSpeciesContexts(newArray);
         }
@@ -2183,166 +2094,83 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
 
     @Override
     public boolean compareEqual(Matchable object){
-        Model model = null;
-        if(object == null){
-            return false;
-        }
-        if(!(object instanceof Model)){
-            return false;
-        } else {
-            model = (Model) object;
-        }
-
-        if(!Compare.isEqual(getName(), model.getName())){
-            return false;
-        }
-        if(!Compare.isEqual(getDescription(), model.getDescription())){
-            return false;
-        }
-
-        if(!Compare.isEqual(fieldSpeciesContexts, model.fieldSpeciesContexts)){
-            return false;
-        }
-        if(!Compare.isEqual(fieldSpecies, model.fieldSpecies)){
-            return false;
-        }
-        if(!Compare.isEqual(fieldStructures, model.fieldStructures)){
-            return false;
-        }
-        if(!Compare.isEqual(fieldReactionSteps, model.fieldReactionSteps)){
-            return false;
-        }
-        if(!Compare.isEqualStrict(fieldDiagrams, model.fieldDiagrams)){
-            return false;
-        }
-        if(!Compare.isEqual(fieldModelParameters, model.fieldModelParameters)){
-            return false;
-        }
-        if(!Compare.isEqual(unitSystem, model.unitSystem)){
-            return false;
-        }
-        if(!Compare.isEqual(structureTopology, model.structureTopology)){
-            return false;
-        }
-        if(!Compare.isEqual(electricalTopology, model.electricalTopology)){
-            return false;
-        }
-        if(!Compare.isEqual(rbmModelContainer, model.rbmModelContainer)){
-            return false;
-        }
-
-        return true;
+        return object instanceof Model model
+                && Compare.isEqual(getName(), model.getName())
+                && Compare.isEqual(getDescription(), model.getDescription())
+                && Compare.isEqual(speciesContexts, model.speciesContexts)
+                && Compare.isEqual(species, model.species)
+                && Compare.isEqual(structures, model.structures)
+                && Compare.isEqual(reactionSteps, model.reactionSteps)
+                && Compare.isEqualStrict(diagrams, model.diagrams)
+                && Compare.isEqual(modelParameters, model.modelParameters)
+                && Compare.isEqual(unitSystem, model.unitSystem)
+                && Compare.isEqual(structureTopology, model.structureTopology)
+                && Compare.isEqual(electricalTopology, model.electricalTopology)
+                && Compare.isEqual(rbmModelContainer, model.rbmModelContainer);
     }
 
 
     @Override
     public boolean relate(Relatable object, RelationVisitor rv){
-        Model model = null;
-        if(object == null){
-            return false;
-        }
-        if(!(object instanceof Model)){
-            return false;
-        } else {
-            model = (Model) object;
-        }
-
-        if(!rv.relate(getName(), model.getName())){
-            return false;
-        }
-        if(!rv.relate(getDescription(), model.getDescription())){
-            return false;
-        }
-
-        if(!rv.relate(fieldSpeciesContexts, model.fieldSpeciesContexts)){
-            return false;
-        }
-        if(!rv.relate(fieldSpecies, model.fieldSpecies)){
-            return false;
-        }
-        if(!rv.relate(fieldStructures, model.fieldStructures)){
-            return false;
-        }
-        if(!rv.relate(fieldReactionSteps, model.fieldReactionSteps)){
-            return false;
-        }
-        if(!rv.relateStrict(fieldDiagrams, model.fieldDiagrams)){
-            return false;
-        }
-        if(!rv.relate(fieldModelParameters, model.fieldModelParameters)){
-            return false;
-        }
-        if(!rv.relate(unitSystem, model.unitSystem)){
-            return false;
-        }
-        if(!rv.relate(structureTopology, model.structureTopology)){
-            return false;
-        }
-        if(!rv.relate(electricalTopology, model.electricalTopology)){
-            return false;
-        }
-        if(!rv.relate(rbmModelContainer, model.rbmModelContainer)){
-            return false;
-        }
-
-        return true;
+        return object instanceof Model model
+                && rv.relate(getName(), model.getName())
+                && rv.relate(getDescription(), model.getDescription())
+                && rv.relate(speciesContexts, model.speciesContexts)
+                && rv.relate(species, model.species)
+                && rv.relate(structures, model.structures)
+                && rv.relate(reactionSteps, model.reactionSteps)
+                && rv.relateStrict(diagrams, model.diagrams)
+                && rv.relate(modelParameters, model.modelParameters)
+                && rv.relate(unitSystem, model.unitSystem)
+                && rv.relate(structureTopology, model.structureTopology)
+                && rv.relate(electricalTopology, model.electricalTopology)
+                && rv.relate(rbmModelContainer, model.rbmModelContainer);
     }
 
 
     public boolean contains(Diagram diagram){
-        for(int i = 0; i < fieldDiagrams.length; i++){
-            if(fieldDiagrams[i] == diagram){
-                return true;
-            }
+        for (Diagram value : diagrams) {
+            if (value == diagram) return true;
         }
         return false;
     }
 
 
     public boolean contains(ModelParameter modelParameter){
-        for(int i = 0; i < fieldModelParameters.length; i++){
-            if(fieldModelParameters[i] == modelParameter){
-                return true;
-            }
+        for (ModelParameter parameter : modelParameters) {
+            if (parameter == modelParameter) return true;
         }
         return false;
     }
 
     public boolean contains(ReactionStep reactionStep){
-        for(int i = 0; i < fieldReactionSteps.length; i++){
-            if(fieldReactionSteps[i] == reactionStep){
-                return true;
-            }
+        for (ReactionStep step : reactionSteps) {
+            if (step == reactionStep) return true;
         }
         return false;
     }
 
 
     public boolean contains(Species species){
-        for(int i = 0; i < fieldSpecies.length; i++){
-            if(fieldSpecies[i] == species){
-                return true;
-            }
+        for (Species value : this.species) {
+            if (value == species) return true;
         }
         return false;
     }
 
 
     public boolean contains(SpeciesContext speciesContext){
-        for(int i = 0; i < fieldSpeciesContexts.length; i++){
-            if(fieldSpeciesContexts[i] == speciesContext){
-                return true;
-            }
+        for (SpeciesContext context : speciesContexts) {
+            if (context == speciesContext) return true;
         }
         return false;
     }
 
 
     public boolean contains(Structure structure){
-        for(int i = 0; i < fieldStructures.length; i++){
-            if(fieldStructures[i] == structure){
+        for (Structure value : structures) {
+            if (value == structure)
                 return true;
-            }
         }
         return false;
     }
@@ -2363,48 +2191,41 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
         // check for unknown units (TBD) and unit consistency
         //
         try {
-            for(ModelParameter modelParameter : fieldModelParameters){
+            for(ModelParameter modelParameter : modelParameters){
                 Expression exp = modelParameter.getExpression();
-                String symbols[] = exp.getSymbols();
-                if(symbols != null){
-                    String issueMsgPrefix = "Global parameter '" + modelParameter.getName() + "' ";
-                    for(int j = 0; j < symbols.length; j++){
-                        SymbolTableEntry ste = exp.getSymbolBinding(symbols[j]);
-                        if(ste == null){
-                            issueList.add(new Issue(modelParameter, issueContext, IssueCategory.ModelParameterExpressionError, issueMsgPrefix + "references undefined symbol '" + symbols[j] + "'", Issue.SEVERITY_ERROR));
-                        } else if(ste instanceof SpeciesContext){
-                            if(!contains((SpeciesContext) ste)){
-                                issueList.add(new Issue(modelParameter, issueContext, IssueCategory.ModelParameterExpressionError, issueMsgPrefix + "references undefined species '" + symbols[j] + "'", Issue.SEVERITY_ERROR));
-                            }
-                        } else if(ste instanceof ModelParameter){
-                            if(!contains((ModelParameter) ste)){
-                                issueList.add(new Issue(modelParameter, issueContext, IssueCategory.ModelParameterExpressionError, issueMsgPrefix + "references undefined global parameter '" + symbols[j] + "'", Issue.SEVERITY_ERROR));
-                            }
-                        }
+                String[] symbols = exp.getSymbols();
+                if(symbols == null) continue;
+                String issueMsgPrefix = "Global parameter '" + modelParameter.getName() + "' ";
+                for (String symbol : symbols) {
+                    SymbolTableEntry ste = exp.getSymbolBinding(symbol);
+                    if (ste == null) {
+                        issueList.add(new Issue(modelParameter, issueContext, IssueCategory.ModelParameterExpressionError, issueMsgPrefix + "references undefined symbol '" + symbol + "'", Issue.SEVERITY_ERROR));
+                    } else if (ste instanceof SpeciesContext sc && !this.contains(sc)) {
+                        issueList.add(new Issue(modelParameter, issueContext, IssueCategory.ModelParameterExpressionError, issueMsgPrefix + "references undefined species '" + symbol + "'", Issue.SEVERITY_ERROR));
+                    } else if (ste instanceof ModelParameter mp && !this.contains(mp)) {
+                        issueList.add(new Issue(modelParameter, issueContext, IssueCategory.ModelParameterExpressionError, issueMsgPrefix + "references undefined global parameter '" + symbol + "'", Issue.SEVERITY_ERROR));
                     }
                 }
             }
             //
             // determine unit consistency for each expression
             //
-            for(int i = 0; i < fieldModelParameters.length; i++){
+            for (ModelParameter modelParameter : modelParameters) {
                 try {
                     VCUnitEvaluator unitEvaluator = new VCUnitEvaluator(getUnitSystem());
-                    VCUnitDefinition paramUnitDef = fieldModelParameters[i].getUnitDefinition();
-                    VCUnitDefinition expUnitDef = unitEvaluator.getUnitDefinition(fieldModelParameters[i].getExpression());
-                    if(paramUnitDef == null){
-                        issueList.add(new Issue(fieldModelParameters[i], issueContext, IssueCategory.Units, "defined unit is null", Issue.SEVERITY_WARNING));
-                    } else if(expUnitDef == null){
-                        issueList.add(new Issue(fieldModelParameters[i], issueContext, IssueCategory.Units, "computed unit is null", Issue.SEVERITY_WARNING));
-                    } else if(paramUnitDef.isTBD()){
-                        issueList.add(new Issue(fieldModelParameters[i], issueContext, IssueCategory.Units, "unit is undefined (" + unitSystem.getInstance_TBD().getSymbol() + ")", Issue.SEVERITY_WARNING));
-                    } else if(!paramUnitDef.isEquivalent(expUnitDef) && !expUnitDef.isTBD()){
-                        issueList.add(new Issue(fieldModelParameters[i], issueContext, IssueCategory.Units, "unit mismatch, computed = [" + expUnitDef.getSymbol() + "]", Issue.SEVERITY_WARNING));
+                    VCUnitDefinition paramUnitDef = modelParameter.getUnitDefinition();
+                    VCUnitDefinition expUnitDef = unitEvaluator.getUnitDefinition(modelParameter.getExpression());
+                    if (paramUnitDef == null) {
+                        issueList.add(new Issue(modelParameter, issueContext, IssueCategory.Units, "defined unit is null", Issue.SEVERITY_WARNING));
+                    } else if (expUnitDef == null) {
+                        issueList.add(new Issue(modelParameter, issueContext, IssueCategory.Units, "computed unit is null", Issue.SEVERITY_WARNING));
+                    } else if (paramUnitDef.isTBD()) {
+                        issueList.add(new Issue(modelParameter, issueContext, IssueCategory.Units, "unit is undefined (" + unitSystem.getInstance_TBD().getSymbol() + ")", Issue.SEVERITY_WARNING));
+                    } else if (!paramUnitDef.isEquivalent(expUnitDef) && !expUnitDef.isTBD()) {
+                        issueList.add(new Issue(modelParameter, issueContext, IssueCategory.Units, "unit mismatch, computed = [" + expUnitDef.getSymbol() + "]", Issue.SEVERITY_WARNING));
                     }
-                } catch(VCUnitException e){
-                    issueList.add(new Issue(fieldModelParameters[i], issueContext, IssueCategory.Units, "units inconsistent: " + e.getMessage(), Issue.SEVERITY_WARNING));
-                } catch(ExpressionException e){
-                    issueList.add(new Issue(fieldModelParameters[i], issueContext, IssueCategory.Units, "units inconsistent: " + e.getMessage(), Issue.SEVERITY_WARNING));
+                } catch (VCUnitException | ExpressionException e) {
+                    issueList.add(new Issue(modelParameter, issueContext, IssueCategory.Units, "units inconsistent: " + e.getMessage(), Issue.SEVERITY_WARNING));
                 }
             }
         } catch(Throwable e){
@@ -2415,25 +2236,25 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
         //
         // get issues for all Structures
         //
-        for(Structure struct : fieldStructures){
+        for(Structure struct : structures){
             struct.gatherIssues(issueContext, issueList);
         }
 
         //
         // get issues from all ReactionSteps
         //
-        for(int i = 0; i < fieldReactionSteps.length; i++){
-            fieldReactionSteps[i].gatherIssues(issueContext, issueList);
+        for (ReactionStep reactionStep : reactionSteps) {
+            reactionStep.gatherIssues(issueContext, issueList);
         }
         //
         // get issues from species contexts (species patterns)
         //
         int seedSpeciesCount = 0;
-        for(int i = 0; i < fieldSpeciesContexts.length; i++){
-            if(fieldSpeciesContexts[i].hasSpeciesPattern()){
+        for (SpeciesContext speciesContext : speciesContexts) {
+            if (speciesContext.hasSpeciesPattern()) {
                 seedSpeciesCount++;
             }
-            fieldSpeciesContexts[i].gatherIssues(issueContext, issueList);
+            speciesContext.gatherIssues(issueContext, issueList);
         }
         if(seedSpeciesCount == 0 && !rbmModelContainer.getReactionRuleList().isEmpty()){
             String msg = "At least one seed species is required.";
@@ -2443,10 +2264,10 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
         //
         // get issues for symbol name clashes (specifically structures with same voltage names or structure names)
         //
-        HashSet<SymbolTableEntry> steHashSet = new HashSet<SymbolTableEntry>();
+        HashSet<SymbolTableEntry> steHashSet = new HashSet<>();
         gatherLocalEntries(steHashSet);
         Iterator<SymbolTableEntry> iter = steHashSet.iterator();
-        Hashtable<String, SymbolTableEntry> symbolHashtable = new Hashtable<String, SymbolTableEntry>();
+        Hashtable<String, SymbolTableEntry> symbolHashtable = new Hashtable<>();
         while (iter.hasNext()) {
             SymbolTableEntry ste = iter.next();
             SymbolTableEntry existingSTE = symbolHashtable.get(ste.getName());
@@ -2491,9 +2312,9 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
      * @return cbit.vcell.model.Diagram
      */
     public Diagram getDiagram(Structure structure) throws RuntimeException{
-        for(int i = 0; i < fieldDiagrams.length; i++){
-            if(fieldDiagrams[i].getStructure() == structure){
-                return fieldDiagrams[i];
+        for (Diagram diagram : diagrams) {
+            if (diagram.getStructure() == structure) {
+                return diagram;
             }
         }
         if(getStructure(structure.getName()) == null){
@@ -2510,7 +2331,7 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
      * @see #setDiagrams
      */
     public Diagram[] getDiagrams(){
-        return fieldDiagrams;
+        return diagrams;
     }
 
 
@@ -2548,15 +2369,12 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
      * @return java.lang.String
      */
     public Feature createFeature(){
-        int count = 0;
-        String featureName = null;
-        while (true) {
+        String featureName;
+        for (int count = 0;; count++){
             featureName = "c" + count;
-            if(getStructure(featureName) == null){
-                break;
-            }
-            count++;
+            if(getStructure(featureName) == null) break;
         }
+
         try {
             return addFeature(featureName);
         } catch(ModelException | PropertyVetoException e){
@@ -2564,10 +2382,6 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
         }
     }
 
-    /**
-     * @return java.lang.String
-     * @throws PropertyVetoException
-     */
     public SimpleReaction createSimpleReaction(Structure structure){
         String reactionStepName = getReactionName();
         try {
@@ -2580,73 +2394,55 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
     }
 
 
-    public boolean isReactionNameInUse(String candidateName){
-        if((getReactionStep(candidateName) == null) && (getRbmModelContainer().getReactionRule(candidateName) == null)){
-            return false;
-        }
-        return true;
+    public boolean reactionNameNotInUse(String candidateName){
+        return (getReactionStep(candidateName) == null) && (getRbmModelContainer().getReactionRule(candidateName) == null);
     }
 
     public String getReactionName(String prefix, String suffix){
         String candidate = prefix + "_" + suffix;
-        if(!isReactionNameInUse(candidate)){
+        if(reactionNameNotInUse(candidate)){
             return candidate;
         }
-        int count = 0;
-        String reactionName = prefix + "_" + suffix;
-        ;
-        while (true) {
+        String reactionName;
+        for (int count = 0;;count++){
             reactionName = prefix + count + "_" + suffix;
             if((getReactionStep(reactionName) == null) && (getRbmModelContainer().getReactionRule(reactionName) == null)){
                 break;
             }
-            count++;
         }
         return reactionName;
     }
 
     public String getReactionName(String candidate){        // used only in the rulebased transformer
-        if(!isReactionNameInUse(candidate) && getSpeciesContext(candidate) == null){
+        if(reactionNameNotInUse(candidate) && getSpeciesContext(candidate) == null){
             return candidate;
         }
-        int count = 0;
-        String reactionName = candidate;
-        while (true) {
+        String reactionName;
+        for (int count = 0;;count++){
             reactionName = candidate + count;
-            if((getReactionStep(reactionName) == null) && (getRbmModelContainer().getReactionRule(reactionName) == null)){
-                if(getSpeciesContext(reactionName) == null){
-                    break;
-                }
-            }
-            count++;
+            if((getReactionStep(reactionName) != null) || (getRbmModelContainer().getReactionRule(reactionName) != null)) continue;
+            if(getSpeciesContext(reactionName) == null) return reactionName;
         }
-        return reactionName;
     }
 
     public String getReactionName(){
-        int count = 0;
-        String reactionName = null;
-        while (true) {
+        String reactionName;
+        for (int count = 0;; count++){
             reactionName = "r" + count;
             if((getReactionStep(reactionName) == null) && (getRbmModelContainer().getReactionRule(reactionName) == null)){
-                break;
+                return reactionName;
             }
-            count++;
         }
-        return reactionName;
     }
 
     public FluxReaction createFluxReaction(Membrane membrane){
-        int count = 0;
-        String reactionStepName = null;
-        while (true) {
-            reactionStepName = "flux" + count;
-            if(getReactionStep(reactionStepName) == null){
-                break;
-            }
 
-            count++;
+        String reactionStepName;
+        for (int count = 0;; count++){
+            reactionStepName = "flux" + count;
+            if(getReactionStep(reactionStepName) == null) break;
         }
+
         try {
             FluxReaction fluxReaction = new FluxReaction(this, membrane, null, reactionStepName, true);
             addReactionStep(fluxReaction);
@@ -2657,71 +2453,40 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
     }
 
     public static boolean isNameUnused(String name, Model model){
-        if(model.getSpecies(name) != null){
-            return false;
-        }
-        if(model.getSpeciesContext(name) != null){
-            return false;
-        }
-        if(model.getModelParameter(name) != null){
-            return false;
-        }
-        if(model.getReactionStep(name) != null){
-            return false;
-        }
-        if(model.getRbmModelContainer().getObservable(name) != null){
-            return false;
-        }
-        if(model.getRbmModelContainer().getReactionRule(name) != null){
-            return false;
-        }
-        return true;
+        return model.getSpecies(name) == null && model.getSpeciesContext(name) == null && model.getModelParameter(name) == null && model.getReactionStep(name) == null && model.getRbmModelContainer().getObservable(name) == null && model.getRbmModelContainer().getReactionRule(name) == null;
     }
 
-    /**
-     * @return java.lang.String
-     * @throws ModelPropertyVetoException
-     */
     public SpeciesContext createSpeciesContext(Structure structure){
         return createSpeciesContext(structure, null);
     }
 
     public SpeciesContext createSpeciesContext(Structure structure, SpeciesPattern speciesPattern){
-        int count = 0;
-        String speciesName = null;
-        String nameRoot = "s";
 
+        String nameRoot = "s";
+        String speciesName;
         if(speciesPattern != null){    // for seed species we generate a name from the species pattern
             nameRoot = speciesPattern.toString();
             nameRoot = nameRoot.replaceAll("[!?~]+", "");
             nameRoot = TokenMangler.fixTokenStrict(nameRoot);
-            while (true) {
-                if(nameRoot.endsWith("_")){        // clean all the '_' at the end, if any
-                    nameRoot = nameRoot.substring(0, nameRoot.length() - 1);
-                } else {
-                    break;
-                }
+            while (nameRoot.endsWith("_")) { // clean all the '_' at the end, if any
+                nameRoot = nameRoot.substring(0, nameRoot.length() - 1);
             }
             speciesName = nameRoot;
-            if(Model.isNameUnused(speciesName, this)){
-                // the name is good and unused
-            } else {
+            if(!Model.isNameUnused(speciesName, this)){
                 nameRoot += "_";
-                while (true) {
+                for (int count = 0;; count++){
                     speciesName = nameRoot + count;
                     if(Model.isNameUnused(speciesName, this)){
                         break;
                     }
-                    count++;
                 }
             }
         } else {            // for plain species it works as before
-            while (true) {
+            for (int count = 0;; count++){
                 speciesName = nameRoot + count;
                 if(Model.isNameUnused(speciesName, this)){
                     break;
                 }
-                count++;
             }
         }
 //	System.out.println(speciesName);
@@ -2737,14 +2502,12 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
     }
 
     public ModelParameter createModelParameter(){
-        String globalParamName = null;
-        int count = 0;
-        while (true) {
+        String globalParamName;
+        for(int count = 0;; count++){
             globalParamName = "g" + count;
             if(getModelParameter(globalParamName) == null){
                 break;
             }
-            count++;
         }
         try {
             ModelParameter modelParameter = new ModelParameter(globalParamName, new Expression(0), Model.ROLE_UserDefined, unitSystem.getInstance_TBD());
@@ -2764,9 +2527,9 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
 
 
     public Kinetics.KineticsParameter getKineticsParameter(String kineticsParameterName){
-        for(int i = 0; i < fieldReactionSteps.length; i++){
-            Kinetics.KineticsParameter parm = fieldReactionSteps[i].getKinetics().getKineticsParameter(kineticsParameterName);
-            if(parm != null){
+        for (ReactionStep reactionStep : reactionSteps) {
+            KineticsParameter parm = reactionStep.getKinetics().getKineticsParameter(kineticsParameterName);
+            if (parm != null) {
                 return parm;
             }
         }
@@ -2783,26 +2546,26 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
         }
 
         // look through the global/model parameters
-        for(int i = 0; i < fieldModelParameters.length; i++){
-            if(fieldModelParameters[i].getName().equals(identifier)){
-                return fieldModelParameters[i];
+        for (ModelParameter modelParameter : modelParameters) {
+            if (modelParameter.getName().equals(identifier)) {
+                return modelParameter;
             }
         }
 
         // look through the global/model functions
-        for(int i = 0; i < fieldModelFunctions.length; i++){
-            if(fieldModelFunctions[i].getName().equals(identifier)){
-                return fieldModelFunctions[i];
+        for (ModelFunction fieldModelFunction : fieldModelFunctions) {
+            if (fieldModelFunction.getName().equals(identifier)) {
+                return fieldModelFunction;
             }
         }
 
         //
         // get Voltages from structures
         //
-        for(int i = 0; i < fieldStructures.length; i++){
-            if(fieldStructures[i] instanceof Membrane){
-                Membrane.MembraneVoltage membraneVoltage = ((Membrane) fieldStructures[i]).getMembraneVoltage();
-                if(membraneVoltage.getName().equals(identifier)){
+        for (Structure structure : structures) {
+            if (structure instanceof Membrane) {
+                MembraneVoltage membraneVoltage = ((Membrane) structure).getMembraneVoltage();
+                if (membraneVoltage.getName().equals(identifier)) {
                     return membraneVoltage;
                 }
             }
@@ -2811,9 +2574,9 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
         //
         // get Sizes from structures
         //
-        for(int i = 0; i < fieldStructures.length; i++){
-            Structure.StructureSize structureSize = fieldStructures[i].getStructureSize();
-            if(structureSize.getName().equals(identifier)){
+        for (Structure structure : structures) {
+            StructureSize structureSize = structure.getStructureSize();
+            if (structureSize.getName().equals(identifier)) {
                 return structureSize;
             }
         }
@@ -2823,7 +2586,7 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
         //
         RbmObservable observable = rbmModelContainer.getObservable(identifier);
         if(observable != null){
-            return (SymbolTableEntry) observable;
+            return observable;
         }
 
         return getSpeciesContext(identifier);
@@ -2831,24 +2594,18 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
 
     public void gatherLocalEntries(Set<SymbolTableEntry> symbolTableEntries){
 
-        for(int i = 0; i < fieldReservedSymbols.length; i++){
-            symbolTableEntries.add(fieldReservedSymbols[i]);
-        }
+        Collections.addAll(symbolTableEntries, fieldReservedSymbols);
 
-        for(int i = 0; i < fieldModelParameters.length; i++){
-            symbolTableEntries.add(fieldModelParameters[i]);
-        }
+        Collections.addAll(symbolTableEntries, modelParameters);
 
-        for(int i = 0; i < fieldStructures.length; i++){
-            symbolTableEntries.add(fieldStructures[i].getStructureSize());
-            if(fieldStructures[i] instanceof Membrane){
-                symbolTableEntries.add(((Membrane) fieldStructures[i]).getMembraneVoltage());
+        for (Structure structure : structures) {
+            symbolTableEntries.add(structure.getStructureSize());
+            if (structure instanceof Membrane membrane) {
+                symbolTableEntries.add(membrane.getMembraneVoltage());
             }
         }
 
-        for(int i = 0; i < fieldSpeciesContexts.length; i++){
-            symbolTableEntries.add(fieldSpeciesContexts[i]);
-        }
+        Collections.addAll(symbolTableEntries, speciesContexts);
     }
 
 
@@ -2859,7 +2616,7 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
      * @see #setModelParameters
      */
     public Model.ModelParameter[] getModelParameters(){
-        return fieldModelParameters;
+        return modelParameters;
     }
 
 
@@ -2903,7 +2660,7 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
      * @return int
      */
     public int getNumSpecies(){
-        return fieldSpecies.length;
+        return species.length;
     }
 
 
@@ -2913,7 +2670,7 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
      * @return int
      */
     public int getNumSpeciesContexts(){
-        return fieldSpeciesContexts.length;
+        return speciesContexts.length;
     }
 
 
@@ -2923,11 +2680,11 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
      * @return int
      */
     public int getNumStructures(){
-        return fieldStructures.length;
+        return structures.length;
     }
 
     public int getNumReactions(){
-        return fieldReactionSteps.length;
+        return reactionSteps.length;
     }
 
 
@@ -2938,7 +2695,6 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
         if(propertyChange == null){
             propertyChange = new java.beans.PropertyChangeSupport(this);
         }
-        ;
         return propertyChange;
     }
 
@@ -2953,9 +2709,9 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
         if(reactionStepName == null){
             return null;
         }
-        for(int i = 0; i < fieldReactionSteps.length; i++){
-            if(fieldReactionSteps[i].getName().equals(reactionStepName)){
-                return fieldReactionSteps[i];
+        for (ReactionStep reactionStep : reactionSteps) {
+            if (reactionStep.getName().equals(reactionStepName)) {
+                return reactionStep;
             }
         }
         return null;
@@ -2966,8 +2722,8 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
     }
 
     public ModelProcess[] getModelProcesses(){
-        ArrayList<ModelProcess> processes = new ArrayList<ModelProcess>();
-        processes.addAll(Arrays.asList(fieldReactionSteps));
+        ArrayList<ModelProcess> processes = new ArrayList<>();
+        processes.addAll(Arrays.asList(reactionSteps));
         processes.addAll(rbmModelContainer.getReactionRuleList());
         return processes.toArray(new ModelProcess[0]);
     }
@@ -2979,7 +2735,7 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
      * @see #setReactionSteps
      */
     public ReactionStep[] getReactionSteps(){
-        return fieldReactionSteps;
+        return reactionSteps;
     }
 
 
@@ -3002,7 +2758,7 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
      * @see #setSpecies
      */
     public Species[] getSpecies(){
-        return fieldSpecies;
+        return species;
     }
 
 
@@ -3015,7 +2771,7 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
         if(dbSpecies == null) throw new IllegalArgumentException("DBSpecies was null");
 
         Vector<Species> speciesList = new Vector<>();
-        for(Species fieldSpecies : fieldSpecies){
+        for(Species fieldSpecies : species){
             if(fieldSpecies.getDBSpecies() != null && fieldSpecies.getDBSpecies().compareEqual(dbSpecies)){
                 speciesList.add(fieldSpecies);
             }
@@ -3028,7 +2784,7 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
         if(speciesName == null){
             return null;
         }
-        for(Species fieldSpecy : fieldSpecies){
+        for(Species fieldSpecy : species){
             if(speciesName.equals(fieldSpecy.getCommonName())){
                 return fieldSpecy;
             }
@@ -3040,9 +2796,9 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
         if(glParamName == null){
             return null;
         }
-        for(int i = 0; i < fieldModelParameters.length; i++){
-            if(glParamName.equals(fieldModelParameters[i].getName())){
-                return fieldModelParameters[i];
+        for (ModelParameter modelParameter : modelParameters) {
+            if (glParamName.equals(modelParameter.getName())) {
+                return modelParameter;
             }
         }
         return null;
@@ -3063,10 +2819,10 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
             throw new RuntimeException("Structure '" + structure.getName() + "' not found in model; " +
                     "Could not retrieve speciesContext '" + species.getCommonName() + "_" + structure.getName() + "'.");
         }
-        for(int i = 0; i < fieldSpeciesContexts.length; i++){
-            if((fieldSpeciesContexts[i].getSpecies() == species) &&
-                    (fieldSpeciesContexts[i].getStructure() == structure)){
-                return fieldSpeciesContexts[i];
+        for (SpeciesContext speciesContext : speciesContexts) {
+            if ((speciesContext.getSpecies() == species) &&
+                    (speciesContext.getStructure() == structure)) {
+                return speciesContext;
             }
         }
         return null;
@@ -3074,9 +2830,9 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
 
 
     public SpeciesContext getSpeciesContext(String speciesContextName){
-        for(int i = 0; i < fieldSpeciesContexts.length; i++){
-            if(fieldSpeciesContexts[i].getName().equals(speciesContextName)){
-                return fieldSpeciesContexts[i];
+        for (SpeciesContext speciesContext : speciesContexts) {
+            if (speciesContext.getName().equals(speciesContextName)) {
+                return speciesContext;
             }
         }
         return null;
@@ -3084,7 +2840,7 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
 
 
     public SpeciesContext[] getSpeciesContexts(){
-        return fieldSpeciesContexts;
+        return speciesContexts;
     }
 
 
@@ -3094,21 +2850,21 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
 
 
     public SpeciesContext[] getSpeciesContexts(Structure structure){
-        Vector<SpeciesContext> scList = new Vector<SpeciesContext>();
+        Vector<SpeciesContext> scList = new Vector<>();
 
-        for(int i = 0; i < fieldSpeciesContexts.length; i++){
-            if(fieldSpeciesContexts[i].getStructure().equals(structure)){
-                scList.addElement(fieldSpeciesContexts[i]);
+        for (SpeciesContext speciesContext : speciesContexts) {
+            if (speciesContext.getStructure().equals(structure)) {
+                scList.addElement(speciesContext);
             }
         }
 
-        SpeciesContext scArray[] = new SpeciesContext[scList.size()];
+        SpeciesContext[] scArray = new SpeciesContext[scList.size()];
         scList.copyInto(scArray);
         return scArray;
     }
 
     public SpeciesContext getSpeciesContextByPattern(SpeciesPattern sp){
-        for(SpeciesContext sc : fieldSpeciesContexts){
+        for(SpeciesContext sc : speciesContexts){
             if(!sc.hasSpeciesPattern()){
                 continue;
             }
@@ -3120,7 +2876,7 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
     }
 
     public SpeciesContext getSpeciesContextByPattern(String speciesPattern){
-        for(SpeciesContext sc : fieldSpeciesContexts){
+        for(SpeciesContext sc : speciesContexts){
             if(!sc.hasSpeciesPattern()){
                 continue;
             }
@@ -3138,20 +2894,18 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
         // Feature outsideFeature = (Feature)movingMembrane.getParentStructure();
         Feature outsideFeature = (Feature) structureTopology.getParentStructure(movingMembrane);
         SpeciesContext[] outSC = getSpeciesContexts(outsideFeature);
-        Vector<SpeciesContext> neededSC = new Vector<SpeciesContext>();
-        for(int i = 0; i < fieldReactionSteps.length; i += 1){
-            if(fieldReactionSteps[i].getStructure() == movingMembrane){
-                for(int j = 0; j < outSC.length; j += 1){
-                    if(fieldReactionSteps[i].countNumReactionParticipants(outSC[j]) > 0){
-                        if(!neededSC.contains(outSC[j])){
-                            neededSC.add(outSC[j]);
-                        }
-                    }
+        Vector<SpeciesContext> neededSC = new Vector<>();
+        for (ReactionStep reactionStep : reactionSteps) {
+            if (reactionStep.getStructure() != movingMembrane) continue;
+            for (SpeciesContext speciesContext : outSC) {
+                if (reactionStep.countNumReactionParticipants(speciesContext) == 0) continue;
+                if (!neededSC.contains(speciesContext)) {
+                    neededSC.add(speciesContext);
                 }
             }
         }
 
-        if(neededSC.size() > 0){
+        if(!neededSC.isEmpty()){
             SpeciesContext[] scArr = new SpeciesContext[neededSC.size()];
             neededSC.copyInto(scArr);
             return scArr;
@@ -3162,11 +2916,11 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
 
 
     public String[] getSpeciesNames(){
-        Vector<String> nameList = new Vector<String>();
-        for(int i = 0; i < fieldSpecies.length; i++){
-            nameList.add(fieldSpecies[i].getCommonName());
+        Vector<String> nameList = new Vector<>();
+        for (Species value : species) {
+            nameList.add(value.getCommonName());
         }
-        String names[] = new String[nameList.size()];
+        String[] names = new String[nameList.size()];
         nameList.copyInto(names);
         return names;
     }
@@ -3179,9 +2933,9 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
         if(structureName == null){
             return null;
         }
-        for(int i = 0; i < fieldStructures.length; i++){
-            if(structureName.equals(fieldStructures[i].getName())){
-                return fieldStructures[i];
+        for (Structure structure : structures) {
+            if (structureName.equals(structure.getName())) {
+                return structure;
             }
         }
         return null;
@@ -3195,7 +2949,7 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
      * @see #setStructures
      */
     public Structure[] getStructures(){
-        return fieldStructures;
+        return structures;
     }
 
 
@@ -3220,10 +2974,10 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
      * @return non-null list of membranes, may be empty
      */
     public ArrayList<Membrane> getMembranes(){
-        ArrayList<Membrane> membranes = new ArrayList<Membrane>();
-        for(int i = 0; i < fieldStructures.length; i++){
-            if(fieldStructures[i] instanceof Membrane){
-                membranes.add((Membrane) fieldStructures[i]);
+        ArrayList<Membrane> membranes = new ArrayList<>();
+        for (Structure structure : structures) {
+            if (structure instanceof Membrane) {
+                membranes.add((Membrane) structure);
 
             }
         }
@@ -3249,7 +3003,6 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
         if(vetoPropertyChange == null){
             vetoPropertyChange = new java.beans.VetoableChangeSupport(this);
         }
-        ;
         return vetoPropertyChange;
     }
 
@@ -3269,8 +3022,8 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
      * @return boolean
      */
     public boolean isUsed(SpeciesContext speciesContext){
-        for(int i = 0; i < fieldReactionSteps.length; i++){
-            if(fieldReactionSteps[i].countNumReactionParticipants(speciesContext) > 0){
+        for (ReactionStep reactionStep : reactionSteps) {
+            if (reactionStep.countNumReactionParticipants(speciesContext) > 0) {
                 return true;
             }
         }
@@ -3298,20 +3051,20 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
             }
         }
         if(evt.getSource() instanceof SpeciesContext && evt.getPropertyName().equals("name")){
-            for(int i = 0; i < fieldDiagrams.length; i++){
-                fieldDiagrams[i].renameNode((String) evt.getOldValue(), (String) evt.getNewValue());
+            for (Diagram diagram : diagrams) {
+                diagram.renameNode((String) evt.getOldValue(), (String) evt.getNewValue());
             }
         }
         if(evt.getSource() instanceof ReactionStep && evt.getPropertyName().equals("name")){
-            for(int i = 0; i < fieldDiagrams.length; i++){
-                fieldDiagrams[i].renameNode((String) evt.getOldValue(), (String) evt.getNewValue());
+            for (Diagram diagram : diagrams) {
+                diagram.renameNode((String) evt.getOldValue(), (String) evt.getNewValue());
             }
         }
 
         // if we rename a molecular type, we try to find rename the observable which was automatically created with the molecular type
         // if we can't find any candidate or we find too many candidates we wisely (and silently) do nothing
         if(evt.getSource() instanceof MolecularType && evt.getPropertyName().equals("name")){
-            List<RbmObservable> candidates = new ArrayList<RbmObservable>();
+            List<RbmObservable> candidates = new ArrayList<>();
             String oldName = (String) evt.getOldValue();
             String newName = (String) evt.getNewValue();
             for(RbmObservable candidate : getRbmModelContainer().getObservableList()){
@@ -3345,14 +3098,14 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
                 evt.getSource() instanceof MembraneVoltage ||
                 evt.getSource() instanceof StructureSize)
                 && evt.getPropertyName().equals("name")){
-            for(int i = 0; i < fieldModelParameters.length; i++){
+            for (ModelParameter modelParameter : modelParameters) {
                 try {
-                    Expression exp = fieldModelParameters[i].getExpression();
+                    Expression exp = modelParameter.getExpression();
                     Expression renamedExp = exp.renameBoundSymbols(getNameScope());
-                    if(!renamedExp.compareEqual(exp)){
-                        fieldModelParameters[i].setExpression(renamedExp);
+                    if (!renamedExp.compareEqual(exp)) {
+                        modelParameter.setExpression(renamedExp);
                     }
-                } catch(ExpressionBindingException e){
+                } catch (ExpressionBindingException e) {
                     throw new RuntimeException(e.getMessage(), e);
                 }
             }
@@ -3383,66 +3136,66 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
         addVetoableChangeListener(this);
         addPropertyChangeListener(this);
 
-        for(int i = 0; i < fieldStructures.length; i++){
-            fieldStructures[i].removePropertyChangeListener(this);
-            fieldStructures[i].removeVetoableChangeListener(this);
-            fieldStructures[i].addPropertyChangeListener(this);
-            fieldStructures[i].addVetoableChangeListener(this);
-            fieldStructures[i].getStructureSize().removePropertyChangeListener(this);
-            fieldStructures[i].getStructureSize().removeVetoableChangeListener(this);
-            fieldStructures[i].getStructureSize().addPropertyChangeListener(this);
-            fieldStructures[i].getStructureSize().addVetoableChangeListener(this);
-            if(fieldStructures[i] instanceof Membrane){
-                ((Membrane) fieldStructures[i]).getMembraneVoltage().removePropertyChangeListener(this);
-                ((Membrane) fieldStructures[i]).getMembraneVoltage().removeVetoableChangeListener(this);
-                ((Membrane) fieldStructures[i]).getMembraneVoltage().addPropertyChangeListener(this);
-                ((Membrane) fieldStructures[i]).getMembraneVoltage().addVetoableChangeListener(this);
+        for (Structure structure : structures) {
+            structure.removePropertyChangeListener(this);
+            structure.removeVetoableChangeListener(this);
+            structure.addPropertyChangeListener(this);
+            structure.addVetoableChangeListener(this);
+            structure.getStructureSize().removePropertyChangeListener(this);
+            structure.getStructureSize().removeVetoableChangeListener(this);
+            structure.getStructureSize().addPropertyChangeListener(this);
+            structure.getStructureSize().addVetoableChangeListener(this);
+            if (structure instanceof Membrane) {
+                ((Membrane) structure).getMembraneVoltage().removePropertyChangeListener(this);
+                ((Membrane) structure).getMembraneVoltage().removeVetoableChangeListener(this);
+                ((Membrane) structure).getMembraneVoltage().addPropertyChangeListener(this);
+                ((Membrane) structure).getMembraneVoltage().addVetoableChangeListener(this);
             }
-            fieldStructures[i].setModel(this);
+            structure.setModel(this);
         }
 
-        for(int i = 0; i < fieldSpecies.length; i++){
-            fieldSpecies[i].removeVetoableChangeListener(this);
-            fieldSpecies[i].addVetoableChangeListener(this);
-            fieldSpecies[i].refreshDependencies();
+        for (Species value : species) {
+            value.removeVetoableChangeListener(this);
+            value.addVetoableChangeListener(this);
+            value.refreshDependencies();
         }
 
-        for(int i = 0; i < fieldSpeciesContexts.length; i++){
-            fieldSpeciesContexts[i].removePropertyChangeListener(this);
-            fieldSpeciesContexts[i].removeVetoableChangeListener(this);
-            fieldSpeciesContexts[i].addPropertyChangeListener(this);
-            fieldSpeciesContexts[i].addVetoableChangeListener(this);
-            fieldSpeciesContexts[i].setModel(this);
-            fieldSpeciesContexts[i].refreshDependencies();
+        for (SpeciesContext speciesContext : speciesContexts) {
+            speciesContext.removePropertyChangeListener(this);
+            speciesContext.removeVetoableChangeListener(this);
+            speciesContext.addPropertyChangeListener(this);
+            speciesContext.addVetoableChangeListener(this);
+            speciesContext.setModel(this);
+            speciesContext.refreshDependencies();
         }
 
-        for(int i = 0; i < fieldReactionSteps.length; i++){
-            fieldReactionSteps[i].removePropertyChangeListener(this);
-            fieldReactionSteps[i].removeVetoableChangeListener(this);
-            fieldReactionSteps[i].getKinetics().removePropertyChangeListener(this);
-            fieldReactionSteps[i].getKinetics().removeVetoableChangeListener(this);
-            fieldReactionSteps[i].getKinetics().addPropertyChangeListener(this);
-            fieldReactionSteps[i].getKinetics().addVetoableChangeListener(this);
-            fieldReactionSteps[i].addPropertyChangeListener(this);
-            fieldReactionSteps[i].addVetoableChangeListener(this);
-            fieldReactionSteps[i].setModel(this);
+        for (ReactionStep reactionStep : reactionSteps) {
+            reactionStep.removePropertyChangeListener(this);
+            reactionStep.removeVetoableChangeListener(this);
+            reactionStep.getKinetics().removePropertyChangeListener(this);
+            reactionStep.getKinetics().removeVetoableChangeListener(this);
+            reactionStep.getKinetics().addPropertyChangeListener(this);
+            reactionStep.getKinetics().addVetoableChangeListener(this);
+            reactionStep.addPropertyChangeListener(this);
+            reactionStep.addVetoableChangeListener(this);
+            reactionStep.setModel(this);
             try {
-                fieldReactionSteps[i].rebindAllToModel(this);
-            } catch(Exception e){
+                reactionStep.rebindAllToModel(this);
+            } catch (Exception e) {
                 lg.error(e.getMessage(), e);
             }
-            fieldReactionSteps[i].refreshDependencies();
+            reactionStep.refreshDependencies();
         }
 
-        for(int i = 0; i < fieldModelParameters.length; i++){
-            fieldModelParameters[i].removeVetoableChangeListener(this);
-            fieldModelParameters[i].removePropertyChangeListener(this);
-            fieldModelParameters[i].addVetoableChangeListener(Parameter.PROPERTYNAME_NAME, this);
-            fieldModelParameters[i].addPropertyChangeListener(this);
+        for (ModelParameter modelParameter : modelParameters) {
+            modelParameter.removeVetoableChangeListener(this);
+            modelParameter.removePropertyChangeListener(this);
+            modelParameter.addVetoableChangeListener(Parameter.PROPERTYNAME_NAME, this);
+            modelParameter.addPropertyChangeListener(this);
             try {
-                fieldModelParameters[i].getExpression().bindExpression(this);
-            } catch(ExpressionBindingException e){
-                throw new RuntimeException("Error binding global parameter '" + fieldModelParameters[i].getName() + "' to model: " + e.getMessage(), e);
+                modelParameter.getExpression().bindExpression(this);
+            } catch (ExpressionBindingException e) {
+                throw new RuntimeException("Error binding global parameter '" + modelParameter.getName() + "' to model: " + e.getMessage(), e);
             }
         }
 
@@ -3489,8 +3242,8 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
         // removed diagrams for those structures that were removed
         //
         boolean bChangedDiagrams = false;
-        Diagram[] newDiagrams = fieldDiagrams.clone();
-        for(Diagram fieldDiagram : fieldDiagrams){
+        Diagram[] newDiagrams = diagrams.clone();
+        for(Diagram fieldDiagram : diagrams){
             if(!contains(fieldDiagram.getStructure())){
                 newDiagrams =
                         ArrayUtils.removeFirstInstanceOfElement(newDiagrams, fieldDiagram);
@@ -3500,7 +3253,7 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
         //
         // add new diagrams for new structures
         //
-        for(Structure fieldStructure : fieldStructures){
+        for(Structure fieldStructure : structures){
             if(getDiagram(fieldStructure) == null){
                 newDiagrams = ArrayUtils.addElement(newDiagrams, new Diagram(fieldStructure, fieldStructure.getName()));
                 bChangedDiagrams = true;
@@ -3526,60 +3279,48 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
         if(!contains(removedStructure)){
             throw new RuntimeException("structure " + removedStructure.getName() + " not found");
         }
-        if(fieldStructures.length == 1 && canRemoveLast == false){
+        if(structures.length == 1 && !canRemoveLast){
             throw new RuntimeException("Remove model compartment Error. Cannot remove the last compartment.");
         }
 
         //Check that the feature is empty
         String prefix = "Remove model compartment Error\n\nStructure to be removed : '" + removedStructure.getName() + "' : ";
-        String errorMessage = null;
-        for(int i = 0; i < fieldReactionSteps.length; i++){
-            if(fieldReactionSteps[i].getStructure() == removedStructure){
-                errorMessage = "cannot contain Reactions";
-                throw new RuntimeException(prefix + errorMessage + ".");
-            }
+        for (ReactionStep reactionStep : reactionSteps) {
+            if (reactionStep.getStructure() != removedStructure) continue;
+            throw new RuntimeException(prefix + "cannot contain Reactions.");
         }
-        for(int i = 0; i < fieldSpeciesContexts.length; i++){
-            if(fieldSpeciesContexts[i].getStructure() == removedStructure){
-                errorMessage = "cannot contain Species";
-                throw new RuntimeException(prefix + errorMessage + ".");
-            }
+        for (SpeciesContext speciesContext : speciesContexts) {
+            if (speciesContext.getStructure() != removedStructure) continue;
+            throw new RuntimeException(prefix + "cannot contain Reactions.");
         }
         for(ReactionRule rr : getRbmModelContainer().getReactionRuleList()){
             if(rr.getStructure() == removedStructure){
-                errorMessage = "cannot contain Reaction Rules";
-                throw new RuntimeException(prefix + errorMessage + ".");
+                throw new RuntimeException(prefix + "cannot contain Reaction Rules.");
             }
-            boolean found = false;
+
             for(ReactantPattern rp : rr.getReactantPatterns()){
-                if(rp.getStructure() == removedStructure){
-                    errorMessage = "cannot contain Reactant Patterns";
-                    throw new RuntimeException(prefix + errorMessage + ".");
-                }
+                if(rp.getStructure() != removedStructure) continue;
+                throw new RuntimeException(prefix + "cannot contain Reactant Patterns.");
+
             }
             for(ProductPattern pp : rr.getProductPatterns()){
-                if(pp.getStructure() == removedStructure){
-                    errorMessage = "cannot contain Product Patterns";
-                    throw new RuntimeException(prefix + errorMessage + ".");
-                }
+                if(pp.getStructure() != removedStructure) continue;
+                throw new RuntimeException(prefix + "cannot contain Product Patterns.");
             }
         }
         for(RbmObservable o : getRbmModelContainer().getObservableList()){
-            if(o.getStructure() == removedStructure){
-                errorMessage = "cannot contain Observables";
-                throw new RuntimeException(prefix + errorMessage + ".");
-            }
+            if(o.getStructure() != removedStructure) continue;
+            throw new RuntimeException(prefix + "cannot contain Observables.");
+
         }
         for(MolecularType mt : getRbmModelContainer().getMolecularTypeList()){
-            if(mt.getAnchors().contains(removedStructure)){
-                errorMessage = "cannot be Molecule anchor";
-                throw new RuntimeException(prefix + errorMessage + ".");
-            }
+            if(!mt.getAnchors().contains(removedStructure)) continue;
+            throw new RuntimeException(prefix + "cannot be Molecule anchor.");
         }
         //
         // remove this structure
         //
-        Structure[] newStructures = fieldStructures.clone();
+        Structure[] newStructures = structures.clone();
         newStructures = ArrayUtils.removeFirstInstanceOfElement(newStructures, removedStructure);
         setStructures(newStructures);
     }
@@ -3591,7 +3332,7 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
             return;
         }
         if(contains(modelParameter)){
-            Model.ModelParameter[] newModelParameters = ArrayUtils.removeFirstInstanceOfElement(fieldModelParameters, modelParameter);
+            Model.ModelParameter[] newModelParameters = ArrayUtils.removeFirstInstanceOfElement(modelParameters, modelParameter);
             setModelParameters(newModelParameters);
         }
     }
@@ -3619,7 +3360,7 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
      */
     public void removeReactionStep(ReactionStep reactionStep) throws PropertyVetoException{
         if(contains(reactionStep)){
-            setReactionSteps(ArrayUtils.removeFirstInstanceOfElement(fieldReactionSteps, reactionStep));
+            setReactionSteps(ArrayUtils.removeFirstInstanceOfElement(reactionSteps, reactionStep));
         }
     }
 
@@ -3630,7 +3371,7 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
             return;
         }
         if(contains(species)){
-            Species[] newSpeciesArray = ArrayUtils.removeFirstInstanceOfElement(fieldSpecies, species);
+            Species[] newSpeciesArray = ArrayUtils.removeFirstInstanceOfElement(this.species, species);
             setSpecies(newSpeciesArray);
         }
     }
@@ -3638,7 +3379,7 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
 
     public void removeSpeciesContext(SpeciesContext speciesContext) throws PropertyVetoException{
         if(contains(speciesContext)){
-            SpeciesContext[] newSpeciesContexts = ArrayUtils.removeFirstInstanceOfElement(fieldSpeciesContexts, speciesContext);
+            SpeciesContext[] newSpeciesContexts = ArrayUtils.removeFirstInstanceOfElement(speciesContexts, speciesContext);
             setSpeciesContexts(newSpeciesContexts);
         }
     }
@@ -3683,9 +3424,9 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
      * @see #getDiagrams
      */
     public void setDiagrams(Diagram[] diagrams) throws java.beans.PropertyVetoException{
-        Diagram[] oldValue = fieldDiagrams;
+        Diagram[] oldValue = this.diagrams;
         fireVetoableChange("diagrams", oldValue, diagrams);
-        fieldDiagrams = diagrams;
+        this.diagrams = diagrams;
         firePropertyChange("diagrams", oldValue, diagrams);
     }
 
@@ -3698,19 +3439,18 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
      * @see #getDiagrams
      */
     public void setDiagrams(int index, Diagram diagrams){
-        Diagram oldValue = fieldDiagrams[index];
-        fieldDiagrams[index] = diagrams;
+        Diagram oldValue = this.diagrams[index];
+        this.diagrams[index] = diagrams;
         if(oldValue != null && !oldValue.equals(diagrams)){
-            firePropertyChange("diagrams", null, fieldDiagrams);
+            firePropertyChange("diagrams", null, this.diagrams);
         }
-        ;
     }
 
 
     public void setModelParameters(ModelParameter[] modelParameters) throws java.beans.PropertyVetoException{
-        ModelParameter[] oldValue = fieldModelParameters;
+        ModelParameter[] oldValue = this.modelParameters;
         fireVetoableChange(Model.PROPERTY_NAME_MODEL_PARAMETERS, oldValue, modelParameters);
-        fieldModelParameters = modelParameters;
+        this.modelParameters = modelParameters;
         firePropertyChange(Model.PROPERTY_NAME_MODEL_PARAMETERS, oldValue, modelParameters);
 
 //System.out.print("vcModel model parameters [");
@@ -3726,17 +3466,16 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
 //System.out.println("removed model parameters.");
 //}
 
-        ModelParameter newValue[] = modelParameters;
         if(oldValue != null){
-            for(int i = 0; i < oldValue.length; i++){
-                oldValue[i].removePropertyChangeListener(this);
-                oldValue[i].removeVetoableChangeListener(this);
+            for (ModelParameter modelParameter : oldValue) {
+                modelParameter.removePropertyChangeListener(this);
+                modelParameter.removeVetoableChangeListener(this);
             }
         }
-        if(newValue != null){
-            for(int i = 0; i < newValue.length; i++){
-                newValue[i].addPropertyChangeListener(this);
-                newValue[i].addVetoableChangeListener(Parameter.PROPERTYNAME_NAME, this);
+        if(modelParameters != null){
+            for (ModelParameter modelParameter : modelParameters) {
+                modelParameter.addPropertyChangeListener(this);
+                modelParameter.addVetoableChangeListener(Parameter.PROPERTYNAME_NAME, this);
             }
         }
     }
@@ -3776,16 +3515,16 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
     }
 
     public void setReactionSteps(ReactionStep[] reactionSteps) throws java.beans.PropertyVetoException{
-        ReactionStep[] oldValue = fieldReactionSteps;
+        ReactionStep[] oldValue = this.reactionSteps;
         fireVetoableChange(PROPERTY_NAME_REACTION_STEPS, oldValue, reactionSteps);
-        HashSet<ReactionStep> oldReactions = new HashSet<ReactionStep>(Arrays.asList(this.fieldReactionSteps));
-        HashSet<ReactionStep> newReactions = new HashSet<ReactionStep>(Arrays.asList(reactionSteps));
-        HashSet<ReactionStep> reactionsAdded = new HashSet<ReactionStep>(newReactions);
+        HashSet<ReactionStep> oldReactions = new HashSet<>(Arrays.asList(this.reactionSteps));
+        HashSet<ReactionStep> newReactions = new HashSet<>(Arrays.asList(reactionSteps));
+        HashSet<ReactionStep> reactionsAdded = new HashSet<>(newReactions);
         reactionsAdded.removeAll(oldReactions);
-        HashSet<ReactionStep> reactionsRemoved = new HashSet<ReactionStep>(oldReactions);
+        HashSet<ReactionStep> reactionsRemoved = new HashSet<>(oldReactions);
         reactionsRemoved.removeAll(newReactions);
 
-        fieldReactionSteps = reactionSteps;
+        this.reactionSteps = reactionSteps;
 
         for(ReactionStep rs : reactionsRemoved){
             rs.removePropertyChangeListener(this);
@@ -3822,12 +3561,11 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
      * @see #getReactionSteps
      */
     public void setReactionSteps(int index, ReactionStep reactionSteps){
-        ReactionStep oldValue = fieldReactionSteps[index];
-        fieldReactionSteps[index] = reactionSteps;
+        ReactionStep oldValue = this.reactionSteps[index];
+        this.reactionSteps[index] = reactionSteps;
         if(oldValue != null && !oldValue.equals(reactionSteps)){
-            firePropertyChange(PROPERTY_NAME_REACTION_STEPS, null, fieldReactionSteps);
+            firePropertyChange(PROPERTY_NAME_REACTION_STEPS, null, this.reactionSteps);
         }
-        ;
     }
 
 
@@ -3839,19 +3577,18 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
      * @see #getSpecies
      */
     public void setSpecies(Species[] species) throws java.beans.PropertyVetoException{
-        Species[] oldValue = fieldSpecies;
+        Species[] oldValue = this.species;
         fireVetoableChange(PROPERTY_NAME_SPECIES, oldValue, species);
-        fieldSpecies = species;
+        this.species = species;
         firePropertyChange(PROPERTY_NAME_SPECIES, oldValue, species);
 
-        Species newValue[] = species;
-        for(int i = 0; i < oldValue.length; i++){
+        for (Species value : oldValue) {
             //oldValue[i].removePropertyChangeListener(this);
-            oldValue[i].removeVetoableChangeListener(this);
+            value.removeVetoableChangeListener(this);
         }
-        for(int i = 0; i < newValue.length; i++){
+        for (Species value : species) {
             //newValue[i].addPropertyChangeListener(this);
-            newValue[i].addVetoableChangeListener(this);
+            value.addVetoableChangeListener(this);
         }
     }
 
@@ -3864,12 +3601,11 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
      * @see #getSpecies
      */
     public void setSpecies(int index, Species species){
-        Species oldValue = fieldSpecies[index];
-        fieldSpecies[index] = species;
+        Species oldValue = this.species[index];
+        this.species[index] = species;
         if(oldValue != null && !oldValue.equals(species)){
-            firePropertyChange(PROPERTY_NAME_SPECIES, null, fieldSpecies);
+            firePropertyChange(PROPERTY_NAME_SPECIES, null, this.species);
         }
-        ;
     }
 
 
@@ -3881,38 +3617,37 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
      * @see #getSpeciesContexts
      */
     public void setSpeciesContexts(SpeciesContext[] speciesContexts) throws java.beans.PropertyVetoException{
-        SpeciesContext[] oldValue = fieldSpeciesContexts;
+        SpeciesContext[] oldValue = this.speciesContexts;
         fireVetoableChange(PROPERTY_NAME_SPECIES_CONTEXTS, oldValue, speciesContexts);
-        fieldSpeciesContexts = speciesContexts;
-        for(int i = 0; i < speciesContexts.length; i++){
-            speciesContexts[i].setModel(this);
+        this.speciesContexts = speciesContexts;
+        for (SpeciesContext speciesContext : speciesContexts) {
+            speciesContext.setModel(this);
         }
 
         firePropertyChange(PROPERTY_NAME_SPECIES_CONTEXTS, oldValue, speciesContexts);
 
-        SpeciesContext newValue[] = speciesContexts;
-        for(int i = 0; i < oldValue.length; i++){
-            oldValue[i].removePropertyChangeListener(this);
-            oldValue[i].removeVetoableChangeListener(this);
-            oldValue[i].setModel(null);
+        for (SpeciesContext speciesContext : oldValue) {
+            speciesContext.removePropertyChangeListener(this);
+            speciesContext.removeVetoableChangeListener(this);
+            speciesContext.setModel(null);
         }
-        for(int i = 0; i < newValue.length; i++){
-            newValue[i].addPropertyChangeListener(this);
-            newValue[i].addVetoableChangeListener(this);
-            newValue[i].setModel(this);
+        for (SpeciesContext speciesContext : speciesContexts) {
+            speciesContext.addPropertyChangeListener(this);
+            speciesContext.addVetoableChangeListener(this);
+            speciesContext.setModel(this);
         }
         //
         //Remove orphaned Species but only for SpeciesContext that were in old and not in new
         //The API should be changed so that species cannot be added or retrieved independently of SpeciesContexts
         //
 
-        HashSet<Species> oldSpeciesSet = new HashSet<Species>();
-        for(int i = 0; i < oldValue.length; i++){
-            oldSpeciesSet.add(oldValue[i].getSpecies());
+        HashSet<Species> oldSpeciesSet = new HashSet<>();
+        for (SpeciesContext speciesContext : oldValue) {
+            oldSpeciesSet.add(speciesContext.getSpecies());
         }
-        HashSet<Species> newSpeciesSet = new HashSet<Species>();
-        for(int i = 0; i < newValue.length; i++){
-            newSpeciesSet.add(newValue[i].getSpecies());
+        HashSet<Species> newSpeciesSet = new HashSet<>();
+        for (SpeciesContext speciesContext : speciesContexts) {
+            newSpeciesSet.add(speciesContext.getSpecies());
         }
 
         oldSpeciesSet.removeAll(newSpeciesSet);
@@ -3935,13 +3670,12 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
      * @see #getSpeciesContexts
      */
     public void setSpeciesContexts(int index, SpeciesContext speciesContexts){
-        SpeciesContext oldValue = fieldSpeciesContexts[index];
+        SpeciesContext oldValue = this.speciesContexts[index];
         speciesContexts.setModel(this);
-        fieldSpeciesContexts[index] = speciesContexts;
+        this.speciesContexts[index] = speciesContexts;
         if(oldValue != null && !oldValue.equals(speciesContexts)){
-            firePropertyChange(PROPERTY_NAME_SPECIES_CONTEXTS, null, fieldSpeciesContexts);
+            firePropertyChange(PROPERTY_NAME_SPECIES_CONTEXTS, null, this.speciesContexts);
         }
-        ;
     }
 
 
@@ -3953,11 +3687,11 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
      * @see #getStructures
      */
     public void setStructures(Structure[] structures) throws java.beans.PropertyVetoException{
-        Structure[] oldValue = fieldStructures;
+        Structure[] oldValue = this.structures;
         fireVetoableChange(PROPERTY_NAME_STRUCTURES, oldValue, structures);
-        fieldStructures = structures;
-        for(int i = 0; i < structures.length; i++){
-            structures[i].setModel(this);
+        this.structures = structures;
+        for (Structure structure : structures) {
+            structure.setModel(this);
         }
 
         // if structures changed, structureTopology and electrical topology might need to be adjusted
@@ -3968,27 +3702,26 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
         firePropertyChange(PROPERTY_NAME_STRUCTURES, oldValue, structures);
 
 
-        Structure newValue[] = structures;
-        for(int i = 0; i < oldValue.length; i++){
-            oldValue[i].removePropertyChangeListener(this);
-            oldValue[i].removeVetoableChangeListener(this);
-            oldValue[i].setModel(null);
-            oldValue[i].getStructureSize().removePropertyChangeListener(this);
-            oldValue[i].getStructureSize().removeVetoableChangeListener(this);
-            if(oldValue[i] instanceof Membrane){
-                ((Membrane) oldValue[i]).getMembraneVoltage().removePropertyChangeListener(this);
-                ((Membrane) oldValue[i]).getMembraneVoltage().removeVetoableChangeListener(this);
+        for (Structure structure : oldValue) {
+            structure.removePropertyChangeListener(this);
+            structure.removeVetoableChangeListener(this);
+            structure.setModel(null);
+            structure.getStructureSize().removePropertyChangeListener(this);
+            structure.getStructureSize().removeVetoableChangeListener(this);
+            if (structure instanceof Membrane) {
+                ((Membrane) structure).getMembraneVoltage().removePropertyChangeListener(this);
+                ((Membrane) structure).getMembraneVoltage().removeVetoableChangeListener(this);
             }
         }
-        for(int i = 0; i < newValue.length; i++){
-            newValue[i].addPropertyChangeListener(this);
-            newValue[i].addVetoableChangeListener(this);
-            newValue[i].setModel(this);
-            newValue[i].getStructureSize().addPropertyChangeListener(this);
-            newValue[i].getStructureSize().addVetoableChangeListener(this);
-            if(newValue[i] instanceof Membrane){
-                ((Membrane) newValue[i]).getMembraneVoltage().addPropertyChangeListener(this);
-                ((Membrane) newValue[i]).getMembraneVoltage().addVetoableChangeListener(this);
+        for (Structure structure : structures) {
+            structure.addPropertyChangeListener(this);
+            structure.addVetoableChangeListener(this);
+            structure.setModel(this);
+            structure.getStructureSize().addPropertyChangeListener(this);
+            structure.getStructureSize().addVetoableChangeListener(this);
+            if (structure instanceof Membrane) {
+                ((Membrane) structure).getMembraneVoltage().addPropertyChangeListener(this);
+                ((Membrane) structure).getMembraneVoltage().addVetoableChangeListener(this);
             }
         }
 
@@ -4024,12 +3757,6 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
         return null;
     }
 
-    /**
-     * This method was created in VisualAge.
-     *
-     * @param e java.beans.PropertyChangeEvent
-     * @throws java.beans.PropertyVetoException The exception description.
-     */
     public void vetoableChange(PropertyChangeEvent e) throws ModelPropertyVetoException{
         if(e.getSource() instanceof Structure){
             if(e.getPropertyName().equals("name") && !e.getOldValue().equals(e.getNewValue())){
@@ -4165,7 +3892,7 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
         }
 
         if(e.getSource() == this && e.getPropertyName().equals(PROPERTY_NAME_STRUCTURES)){
-            Structure newStructures[] = (Structure[]) e.getNewValue();
+            Structure[] newStructures = (Structure[]) e.getNewValue();
             if(newStructures == null){
                 throw new ModelPropertyVetoException("structures cannot be null", e);
             }
@@ -4173,27 +3900,27 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
             // look for duplicates of structure name, structure size name, membrane voltage name within new "structures" array
             // and look for symbol conflicts for StructureSize name and for MembraneVoltage name in existing "local" symbols.
             //
-            HashSet<String> structNameSet = new HashSet<String>();
-            HashSet<String> structSymbolSet = new HashSet<String>();
-            for(int i = 0; i < newStructures.length; i++){
+            HashSet<String> structNameSet = new HashSet<>();
+            HashSet<String> structSymbolSet = new HashSet<>();
+            for (Structure newStructure : newStructures) {
 
-                String newStructureName = newStructures[i].getName();
-                if(structNameSet.contains(newStructureName)){
+                String newStructureName = newStructure.getName();
+                if (structNameSet.contains(newStructureName)) {
                     throw new ModelPropertyVetoException("multiple structures with name '" + newStructureName + "' defined", e);
                 }
                 structNameSet.add(newStructureName);
 
-                if(newStructures[i] instanceof Membrane){
-                    String newMembraneVoltageName = ((Membrane) newStructures[i]).getMembraneVoltage().getName();
-                    if(structSymbolSet.contains(newMembraneVoltageName)){
+                if (newStructure instanceof Membrane) {
+                    String newMembraneVoltageName = ((Membrane) newStructure).getMembraneVoltage().getName();
+                    if (structSymbolSet.contains(newMembraneVoltageName)) {
                         //throw new ModelPropertyVetoException("membrane '"+newStructureName+"' has Voltage name '"+newMembraneVoltageName+"' that conflicts with another Voltage name or Size name",e);
                     }
                     structSymbolSet.add(newMembraneVoltageName);
                     validateNamingConflicts("MembraneVoltage", MembraneVoltage.class, newMembraneVoltageName, e);
                 }
 
-                String newStructureSizeName = newStructures[i].getStructureSize().getName();
-                if(structSymbolSet.contains(newStructureSizeName)){
+                String newStructureSizeName = newStructure.getStructureSize().getName();
+                if (structSymbolSet.contains(newStructureSizeName)) {
                     throw new ModelPropertyVetoException("structure '" + newStructureName + "' has structure Size name '" + newStructureSizeName + "' that conflicts with another Voltage name or Size name", e);
                 }
                 structSymbolSet.add(newStructureSizeName);
@@ -4202,20 +3929,20 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
         }
 
         if(e.getSource() == this && e.getPropertyName().equals(PROPERTY_NAME_SPECIES)){
-            Species newSpeciesArray[] = (Species[]) e.getNewValue();
+            Species[] newSpeciesArray = (Species[]) e.getNewValue();
             if(newSpeciesArray == null){
                 throw new ModelPropertyVetoException("species cannot be null", e);
             }
             //
             // check that names are not duplicated and that no common names are ReservedSymbols
             //
-            HashSet<String> commonNameSet = new HashSet<String>();
-            for(int i = 0; i < newSpeciesArray.length; i++){
-                String commonName = newSpeciesArray[i].getCommonName();
-                if(commonNameSet.contains(commonName)){
+            HashSet<String> commonNameSet = new HashSet<>();
+            for (Species value : newSpeciesArray) {
+                String commonName = value.getCommonName();
+                if (commonNameSet.contains(commonName)) {
                     throw new ModelPropertyVetoException("multiple species with common name '" + commonName + "' defined", e);
                 }
-                if(getReservedSymbolByName(commonName) != null){
+                if (getReservedSymbolByName(commonName) != null) {
                     throw new ModelPropertyVetoException("cannot use reserved symbol '" + commonName + "' as a Species common name", e,
                             ModelPropertyVetoException.Category.RESERVED_SYMBOL);
                 }
@@ -4224,15 +3951,14 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
             //
             // if species deleted, must not have any SpeciesContexts that need it
             //
-            for(int j = 0; j < fieldSpeciesContexts.length; j++){
-                SpeciesContext sc = fieldSpeciesContexts[j];
+            for (SpeciesContext sc : speciesContexts) {
                 boolean bFound = false;
-                for(int i = 0; i < newSpeciesArray.length; i++){
-                    if(newSpeciesArray[i] == sc.getSpecies()){
+                for (Species value : newSpeciesArray) {
+                    if (value == sc.getSpecies()) {
                         bFound = true;
                     }
                 }
-                if(!bFound){
+                if (!bFound) {
                     throw new ModelPropertyVetoException("species[] missing '" + sc.getSpecies().getCommonName() + "' referenced in SpeciesContext '" + sc.getName() + "'", e);
                 }
             }
@@ -4243,14 +3969,14 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
             //
             // check that names are not duplicated and that no common names are ReservedSymbols
             //
-            HashSet<String> namesSet = new HashSet<String>();
-            for(int i = 0; i < newModelParams.length; i++){
-                if(namesSet.contains(newModelParams[i].getName())){
-                    throw new ModelPropertyVetoException("Multiple model/global parameters with same name '" + newModelParams[i].getName() + "' defined", e);
+            HashSet<String> namesSet = new HashSet<>();
+            for (ModelParameter modelParam : newModelParams) {
+                if (namesSet.contains(modelParam.getName())) {
+                    throw new ModelPropertyVetoException("Multiple model/global parameters with same name '" + modelParam.getName() + "' defined", e);
                 }
-                namesSet.add(newModelParams[i].getName());
+                namesSet.add(modelParam.getName());
 
-                validateNamingConflicts("Model Parameter", ModelParameter.class, newModelParams[i].getName(), e);
+                validateNamingConflicts("Model Parameter", ModelParameter.class, modelParam.getName(), e);
             }
             //
             // make sure that kinetics of reactionSteps do not refer to modelParameter to be deleted
@@ -4267,8 +3993,8 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
                 }
                 // use this missing model parameter (to be deleted) to determine if it is used in any reaction kinetic parameters.
                 if(missingMP != null){
-                    Vector<String> referencingRxnsVector = new Vector<String>();
-                    for(ReactionStep fieldReactionStep : fieldReactionSteps){
+                    Vector<String> referencingRxnsVector = new Vector<>();
+                    for(ReactionStep fieldReactionStep : reactionSteps){
                         KineticsParameter[] kParams = fieldReactionStep.getKinetics().getKineticsParameters();
                         for(KineticsParameter kParam : kParams){
                             if(kParam.getExpression().hasSymbol(missingMP.getName()) && (fieldReactionStep.getKinetics().getProxyParameter(missingMP.getName()) != null)){
@@ -4279,21 +4005,21 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
                     }
                     // if there are any reactionSteps referencing the global, list them all in error msg.
                     if(!referencingRxnsVector.isEmpty()){
-                        String msg = "Model Parameter '" + missingMP.getName() + "' is used in reaction(s): ";
+                        StringBuilder msg = new StringBuilder("Model Parameter '" + missingMP.getName() + "' is used in reaction(s): ");
                         for(int i = 0; i < referencingRxnsVector.size(); i++){
-                            msg = msg + "'" + referencingRxnsVector.elementAt(i) + "'";
+                            msg.append("'").append(referencingRxnsVector.elementAt(i)).append("'");
                             if(i < referencingRxnsVector.size() - 1){
-                                msg = msg + ", ";
+                                msg.append(", ");
                             } else {
-                                msg = msg + ". ";
+                                msg.append(". ");
                             }
                         }
-                        msg = msg + "\n\nCannot delete '" + missingMP.getName() + "'.";
-                        throw new ModelPropertyVetoException(msg, e);
+                        msg.append("\n\nCannot delete '").append(missingMP.getName()).append("'.");
+                        throw new ModelPropertyVetoException(msg.toString(), e);
                     }
                     // At this point, it is not referenced in a reactionStep, find out if the missing model is used in other model parameters
                     // Enough to check in newModelParams array
-                    Vector<String> referencingModelParamsVector = new Vector<String>();
+                    Vector<String> referencingModelParamsVector = new Vector<>();
                     for(ModelParameter newModelParam : newModelParams){
                         if(newModelParam.getExpression().hasSymbol(missingMP.getName())){
                             referencingModelParamsVector.add(newModelParam.getName());
@@ -4301,24 +4027,24 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
                     }
                     // if there are any model parameters referencing the global, list them all in error msg.
                     if(!referencingModelParamsVector.isEmpty()){
-                        String msg = "Model Parameter '" + missingMP.getName() + "' is used in expression of other model parameter(s): ";
+                        StringBuilder msg = new StringBuilder("Model Parameter '" + missingMP.getName() + "' is used in expression of other model parameter(s): ");
                         for(int i = 0; i < referencingModelParamsVector.size(); i++){
-                            msg = msg + "'" + referencingModelParamsVector.elementAt(i) + "'";
+                            msg.append("'").append(referencingModelParamsVector.elementAt(i)).append("'");
                             if(i < referencingModelParamsVector.size() - 1){
-                                msg = msg + ", ";
+                                msg.append(", ");
                             } else {
-                                msg = msg + ". ";
+                                msg.append(". ");
                             }
                         }
-                        msg = msg + "\n\nCannot delete '" + missingMP.getName() + "'.";
-                        throw new ModelPropertyVetoException(msg, e);
+                        msg.append("\n\nCannot delete '").append(missingMP.getName()).append("'.");
+                        throw new ModelPropertyVetoException(msg.toString(), e);
                     }
                 }
             }
         }
 
         if(e.getSource() == this && e.getPropertyName().equals(PROPERTY_NAME_SPECIES_CONTEXTS)){
-            SpeciesContext newSpeciesContextArray[] = (SpeciesContext[]) e.getNewValue();
+            SpeciesContext[] newSpeciesContextArray = (SpeciesContext[]) e.getNewValue();
             if(newSpeciesContextArray == null){
                 throw new ModelPropertyVetoException("speciesContexts cannot be null", e);
             }
@@ -4348,8 +4074,8 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
             //
             // make sure that reactionParticipants point to speciesContext
             //
-            for(ReactionStep fieldReactionStep : fieldReactionSteps){
-                ReactionParticipant rpArray[] = fieldReactionStep.getReactionParticipants();
+            for(ReactionStep fieldReactionStep : reactionSteps){
+                ReactionParticipant[] rpArray = fieldReactionStep.getReactionParticipants();
                 for(ReactionParticipant reactionParticipant : rpArray){
                     boolean bFound = false;
                     for(SpeciesContext speciesContext : newSpeciesContextArray){
@@ -4380,7 +4106,7 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
             // check that names are not duplicated and that no names are ReservedSymbols
             //because math generator complained if reactionsteps had same name
             //
-            HashSet<String> nameSet = new HashSet<String>();
+            HashSet<String> nameSet = new HashSet<>();
             for(ReactionStep reactionStep : newReactionStepArr){
                 String rxnName = reactionStep.getName();
                 if(nameSet.contains(rxnName)){
@@ -4399,10 +4125,10 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
             //because reactionsteps could be added that had speciescontext that model didn't
             //
             for(ReactionStep reactionStep : newReactionStepArr){
-                ReactionParticipant rpArray[] = reactionStep.getReactionParticipants();
+                ReactionParticipant[] rpArray = reactionStep.getReactionParticipants();
                 for(ReactionParticipant reactionParticipant : rpArray){
                     boolean bFound = false;
-                    for(SpeciesContext fieldSpeciesContext : fieldSpeciesContexts){
+                    for(SpeciesContext fieldSpeciesContext : speciesContexts){
                         if(fieldSpeciesContext == reactionParticipant.getSpeciesContext()){
                             bFound = true;
                             break;
@@ -4410,7 +4136,7 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
                     }
                     if(!bFound){
                         String rName = reactionStep.getName();
-                        String sName = "??";
+                        String sName;
                         if(rpArray != null && reactionParticipant != null && reactionParticipant.getSpeciesContext() != null && reactionParticipant.getSpeciesContext().getName() != null){
                             sName = reactionParticipant.getSpeciesContext().getName();
                             throw new ModelPropertyVetoException("Reaction '" + rName + "' requires '" + sName + "'", e);
@@ -4435,7 +4161,7 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
         if(newSymbolName == null){
             throw new ModelPropertyVetoException(symbolDescription + " name is null.", e);
         }
-        if(newSymbolName.length() < 1){
+        if(newSymbolName.isEmpty()){
             throw new ModelPropertyVetoException(symbolDescription + " name is empty (zero length).", e);
         }
         if(!newSymbolName.equals(TokenMangler.fixTokenStrict(newSymbolName))){
@@ -4455,9 +4181,9 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
         // These things are not really in the global namespace, but it would be confusing to allow reuse of names.
         //
         if(!newSymbolClass.equals(ReactionStep.class)){
-            for(int j = 0; j < fieldReactionSteps.length; j++){
-                if(fieldReactionSteps[j].getName().equals(newSymbolName)){
-                    throw new ModelPropertyVetoException("conflict with " + symbolDescription + " '" + newSymbolName + "', name already used for " + fieldReactionSteps[j].getDisplayType() + " '" + fieldReactionSteps[j].getName() + "' in structure '" + fieldReactionSteps[j].getStructure().getName() + "'.", e);
+            for (ReactionStep reactionStep : reactionSteps) {
+                if (reactionStep.getName().equals(newSymbolName)) {
+                    throw new ModelPropertyVetoException("conflict with " + symbolDescription + " '" + newSymbolName + "', name already used for " + reactionStep.getDisplayType() + " '" + reactionStep.getName() + "' in structure '" + reactionStep.getStructure().getName() + "'.", e);
                 }
             }
         }
@@ -4516,10 +4242,10 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
 
 
     public void getLocalEntries(Map<String, SymbolTableEntry> entryMap){
-        for(SymbolTableEntry ste : fieldSpeciesContexts){
+        for(SymbolTableEntry ste : speciesContexts){
             entryMap.put(ste.getName(), ste);
         }
-        for(Structure s : fieldStructures){
+        for(Structure s : structures){
             Structure.StructureSize structureSize = s.getStructureSize();
             entryMap.put(structureSize.getName(), structureSize);
             if(s instanceof Membrane){
@@ -4527,7 +4253,7 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
                 entryMap.put(membraneVoltage.getName(), membraneVoltage);
             }
         }
-        for(SymbolTableEntry ste : fieldModelParameters){
+        for(SymbolTableEntry ste : modelParameters){
             entryMap.put(ste.getName(), ste);
         }
 
@@ -4542,7 +4268,7 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
         }
 
         for(RbmObservable observable : rbmModelContainer.getObservableList()){
-            entryMap.put(observable.getName(), (SymbolTableEntry) observable);
+            entryMap.put(observable.getName(), observable);
         }
 
     }
@@ -4564,57 +4290,54 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
 
     public void populateVCMetadata(boolean bMetadataPopulated){
         // populate free text for identifiables (species, reactionSteps, structures)
-        if(!bMetadataPopulated){
-            for(int i = 0; i < fieldSpecies.length; i++){
-                vcMetaData.setFreeTextAnnotation(fieldSpecies[i], fieldSpecies[i].getAnnotation());
-                if(fieldSpecies[i].getDBSpecies() != null){
-                    DBSpecies dbSpecies = fieldSpecies[i].getDBSpecies();
-                    try {
-                        if(dbSpecies.getFormalSpeciesInfo().getFormalSpeciesType().equals(FormalSpeciesType.compound)){
-                            //urn:miriam:kegg.compound
-                            MiriamResource resource = vcMetaData.getMiriamManager().createMiriamResource(
-                                    "urn:miriam:kegg.compound:" + dbSpecies.getFormalSpeciesInfo().getFormalID());
-                            Set<MiriamResource> miriamResources = new HashSet<MiriamResource>();
-                            miriamResources.add(resource);
-                            vcMetaData.getMiriamManager().addMiriamRefGroup(fieldSpecies[i], MIRIAMQualifier.BIO_isVersionOf,
-                                    miriamResources);
-                        } else if(dbSpecies.getFormalSpeciesInfo().getFormalSpeciesType().equals(FormalSpeciesType.enzyme)){
-                            //urn:miriam:ec-code
-                            MiriamResource resource = vcMetaData.getMiriamManager().createMiriamResource(
-                                    "urn:miriam:ec-code:" + dbSpecies.getFormalSpeciesInfo().getFormalID());
-                            Set<MiriamResource> miriamResources = new HashSet<MiriamResource>();
-                            miriamResources.add(resource);
-                            vcMetaData.getMiriamManager().addMiriamRefGroup(fieldSpecies[i], MIRIAMQualifier.BIO_isVersionOf,
-                                    miriamResources);
+        if(bMetadataPopulated) return;
+        for (Species value : species) {
+            vcMetaData.setFreeTextAnnotation(value, value.getAnnotation());
+            if (value.getDBSpecies() == null) continue;
+            DBSpecies dbSpecies = value.getDBSpecies();
+            try {
+                if (dbSpecies.getFormalSpeciesInfo().getFormalSpeciesType().equals(FormalSpeciesType.compound)) {
+                    //urn:miriam:kegg.compound
+                    MiriamResource resource = vcMetaData.getMiriamManager().createMiriamResource(
+                            "urn:miriam:kegg.compound:" + dbSpecies.getFormalSpeciesInfo().getFormalID());
+                    Set<MiriamResource> miriamResources = new HashSet<MiriamResource>();
+                    miriamResources.add(resource);
+                    vcMetaData.getMiriamManager().addMiriamRefGroup(value, MIRIAMQualifier.BIO_isVersionOf,
+                            miriamResources);
+                } else if (dbSpecies.getFormalSpeciesInfo().getFormalSpeciesType().equals(FormalSpeciesType.enzyme)) {
+                    //urn:miriam:ec-code
+                    MiriamResource resource = vcMetaData.getMiriamManager().createMiriamResource(
+                            "urn:miriam:ec-code:" + dbSpecies.getFormalSpeciesInfo().getFormalID());
+                    Set<MiriamResource> miriamResources = new HashSet<MiriamResource>();
+                    miriamResources.add(resource);
+                    vcMetaData.getMiriamManager().addMiriamRefGroup(value, MIRIAMQualifier.BIO_isVersionOf,
+                            miriamResources);
 
-                        } else if(dbSpecies.getFormalSpeciesInfo().getFormalSpeciesType().equals(FormalSpeciesType.protein)){
-                            MiriamResource resource = vcMetaData.getMiriamManager().createMiriamResource(
-                                    "urn:miriam:uniprot:" + dbSpecies.getFormalSpeciesInfo().getFormalID());
-                            Set<MiriamResource> miriamResources = new HashSet<MiriamResource>();
-                            miriamResources.add(resource);
-                            vcMetaData.getMiriamManager().addMiriamRefGroup(fieldSpecies[i], MIRIAMQualifier.BIO_isVersionOf,
-                                    miriamResources);
-                        }
-                    } catch(Exception e){
-                        lg.error(e.getMessage(), e);
-                    }
+                } else if (dbSpecies.getFormalSpeciesInfo().getFormalSpeciesType().equals(FormalSpeciesType.protein)) {
+                    MiriamResource resource = vcMetaData.getMiriamManager().createMiriamResource(
+                            "urn:miriam:uniprot:" + dbSpecies.getFormalSpeciesInfo().getFormalID());
+                    Set<MiriamResource> miriamResources = new HashSet<MiriamResource>();
+                    miriamResources.add(resource);
+                    vcMetaData.getMiriamManager().addMiriamRefGroup(value, MIRIAMQualifier.BIO_isVersionOf,
+                            miriamResources);
                 }
+            } catch (Exception e) {
+                lg.error(e.getMessage(), e);
             }
-            for(int i = 0; i < fieldReactionSteps.length; i++){
-                vcMetaData.setFreeTextAnnotation(fieldReactionSteps[i], fieldReactionSteps[i].getAnnotation());
-            }
+        }
+        for (ReactionStep reactionStep : reactionSteps) {
+            vcMetaData.setFreeTextAnnotation(reactionStep, reactionStep.getAnnotation());
+        }
 
 //		// No annotation in structures for the moment.
 //		for (int i = 0; i < fieldStructures.length; i++) {
 //			vcMetaData.setFreeTextAnnotation(fieldStructures[i], fieldStructures[i].getAnnotation());
 //		}
-        }
     }
 
     public final RbmModelContainer getRbmModelContainer(){
         return rbmModelContainer;
     }
-
 
     /**
      * This method is modified on Nov 20, 2007. We got to go through the MassActionSolver and FluxSolver here to make sure that everything
@@ -4665,8 +4388,7 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
                                     unTransformableStr = unTransformableStr + " " + reacSteps[i].getName() + ",";
                                 }
                             }
-                        } else // flux described by General density function
-                        {
+                        } else { // flux described by General density function
                             if(reacSteps[i].getKinetics().getKineticsDescription().equals(KineticsDescription.General) ||
                                     reacSteps[i].getKinetics().getKineticsDescription().equals(KineticsDescription.GeneralPermeability)){
                                 Expression rateExp = reacSteps[i].getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).getExpression();
@@ -4683,7 +4405,7 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
             }
         }
 
-        if(unTransformableStr.length() > 0){
+        if(!unTransformableStr.isEmpty()){
             returnStr = returnStr + unTransformableStr.substring(0, (unTransformableStr.length() - 1)) + " are unable to be intepreted to mass action form. \nTherefore," +
                     "they are not suitable for stochastic application.\n\n" +
                     "Reactions described by mass action law(all) or General law(certain forms),\n" +
@@ -4691,7 +4413,7 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
                     "permeability(certain forms) can be interpreted to mass action form.\n\n" +
                     "All rate laws that include electric current are not suitable for stochastic application.";
         }
-        if(exceptionReacStr.length() > 0){
+        if(!exceptionReacStr.isEmpty()){
             returnStr = returnStr + "\n\n detailed error:\n\n" + exceptionReacStr;
         }
         return returnStr;
