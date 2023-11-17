@@ -594,7 +594,7 @@
           <ReactionRuleSpec ReactionRuleRef="decay" ReactionRuleMapping="included" SubType="Decay" />
           <ReactionRuleSpec ReactionRuleRef="transition_none" ReactionRuleMapping="included" SubType="Transition" TransitionCondition="Unbound" />
           <ReactionRuleSpec ReactionRuleRef="transition_bound" ReactionRuleMapping="included" SubType="Transition" TransitionCondition="Bound" />
-          <ReactionRuleSpec ReactionRuleRef="binding" ReactionRuleMapping="included" SubType="Binding" BondLength="1.0" />
+          <ReactionRuleSpec ReactionRuleRef="binding" ReactionRuleMapping="included" SubType="Binding" BondLength="3.0" />
           <ReactionRuleSpec ReactionRuleRef="allosteric" ReactionRuleMapping="included" SubType="Allosteric" />
           <ReactionRuleSpec ReactionRuleRef="transition_free" ReactionRuleMapping="included" SubType="Transition" TransitionCondition="Any" />
           <ReactionRuleSpec ReactionRuleRef="transition_bound_same_0" ReactionRuleMapping="included" SubType="Transition" TransitionCondition="Bound" />
@@ -899,7 +899,7 @@
             <Effect VarName="speciesPattern7" Operation="destroy">1.0</Effect>
             <Effect VarName="speciesPattern8" Operation="create">1.0</Effect>
           </LangevinParticleJumpProcess>
-          <LangevinParticleJumpProcess Name="binding" Subtype="Binding" BondLength="1.0" ProcessSymmetryFactor="1.0">
+          <LangevinParticleJumpProcess Name="binding" Subtype="Binding" BondLength="3.0" ProcessSymmetryFactor="1.0">
             <SelectedParticle Name="speciesPattern9" />
             <SelectedParticle Name="speciesPattern10" />
             <MacroscopicRateConstant>P_binding_probabilityRate</MacroscopicRateConstant>
@@ -907,7 +907,7 @@
             <Effect VarName="speciesPattern10" Operation="destroy">1.0</Effect>
             <Effect VarName="speciesPattern11" Operation="create">1.0</Effect>
           </LangevinParticleJumpProcess>
-          <LangevinParticleJumpProcess Name="binding_reverse" Subtype="Binding" BondLength="1.0" ProcessSymmetryFactor="1.0">
+          <LangevinParticleJumpProcess Name="binding_reverse" Subtype="Binding" BondLength="3.0" ProcessSymmetryFactor="1.0">
             <SelectedParticle Name="speciesPattern11" />
             <MacroscopicRateConstant>P_binding_reverse_probabilityRate</MacroscopicRateConstant>
             <Effect VarName="speciesPattern9" Operation="create">1.0</Effect>
