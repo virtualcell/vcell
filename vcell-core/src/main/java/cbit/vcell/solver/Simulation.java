@@ -846,7 +846,7 @@ public void setDescription(java.lang.String description) throws java.beans.Prope
 public void setIsDirty(boolean isDirty) {
 	boolean oldValue = fieldIsDirty;
 	fieldIsDirty = isDirty;
-	firePropertyChange("isDirty", new Boolean(oldValue), new Boolean(isDirty));
+	firePropertyChange("isDirty", oldValue, isDirty);
 }
 
 
