@@ -139,10 +139,20 @@
 			<version>${log4j-jul.version}</version>
 		</dependency>
 		<dependency>
-		  <groupId>org.apache.logging.log4j</groupId>
-		  <artifactId>log4j-slf4j-impl</artifactId>
-		  <version>${log4j-slf4j-impl.version}</version>
-		  <scope>runtime</scope>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-slf4j-impl</artifactId>
+			<version>${log4j-slf4j-impl.version}</version>
+			<scope>runtime</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-api</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>biz.aQute.bnd</groupId>
+					<artifactId>biz.aQute.bnd.annotation</artifactId>
+				</exclusion>
+		</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
