@@ -1,14 +1,20 @@
 <?xml version="1.0"?>
 <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+  <parent>
+    <groupId>org.vcell</groupId>
+    <artifactId>vcell-pom</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+  </parent>
+
   <modelVersion>4.0.0</modelVersion>
-  <groupId>org.vcell.rest</groupId>
   <artifactId>vcell-rest</artifactId>
   <version>1.0.0-SNAPSHOT</version>
   <properties>
     <compiler-plugin.version>3.11.0</compiler-plugin.version>
     <maven.compiler.release>17</maven.compiler.release>
-    <ojdbc-bom.version>19.20.0.0</ojdbc-bom.version>
+<!--    <ojdbc-bom.version>19.20.0.0</ojdbc-bom.version>-->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
@@ -52,7 +58,7 @@
     </dependency>
     <dependency>
       <groupId>com.oracle.database.jdbc</groupId>
-      <artifactId>ojdbc8</artifactId>
+      <artifactId>ojdbc11</artifactId>
       <version>${ojdbc-bom.version}</version>
     </dependency>
 <!--    <dependency>-->
@@ -72,6 +78,18 @@
       <groupId>io.rest-assured</groupId>
       <artifactId>rest-assured</artifactId>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.vcell</groupId>
+      <artifactId>vcell-core</artifactId>
+      <version>0.0.1-SNAPSHOT</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.vcell</groupId>
+      <artifactId>vcell-server</artifactId>
+      <version>0.0.1-SNAPSHOT</version>
+      <scope>compile</scope>
     </dependency>
   </dependencies>
   <build>
@@ -106,7 +124,7 @@
         <configuration>
           <systemPropertyVariables>
             <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
-            <maven.home>${maven.home}</maven.home>
+<!--            <maven.home>${maven.home}</maven.home>-->
           </systemPropertyVariables>
         </configuration>
       </plugin>
@@ -123,7 +141,7 @@
               <systemPropertyVariables>
                 <native.image.path>${project.build.directory}/${project.build.finalName}-runner</native.image.path>
                 <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
-                <maven.home>${maven.home}</maven.home>
+<!--                <maven.home>${maven.home}</maven.home>-->
               </systemPropertyVariables>
             </configuration>
           </execution>
