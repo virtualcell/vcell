@@ -1,4 +1,4 @@
-package org.vcell.rest;
+package org.vcell.rest.handlers;
 
 import io.agroal.api.AgroalDataSource;
 import io.quarkus.logging.Log;
@@ -13,7 +13,6 @@ import java.sql.SQLException;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Path("/publications")
 @Produces("application/json")

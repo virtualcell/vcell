@@ -43,7 +43,7 @@ OraclePoolingConnectionFactory() throws ClassNotFoundException, IllegalAccessExc
 );
 }
 
-OraclePoolingConnectionFactory(String argDriverName, String argConnectURL, String argUserid, String argPassword) throws ClassNotFoundException, IllegalAccessException, InstantiationException, SQLException, UniversalConnectionPoolException {
+public OraclePoolingConnectionFactory(String argDriverName, String argConnectURL, String argUserid, String argPassword) throws ClassNotFoundException, IllegalAccessException, InstantiationException, SQLException, UniversalConnectionPoolException {
 	connectionCacheName = "UCP_ImplicitPool_" + System.nanoTime();
 
 	poolDataSource = PoolDataSourceFactory.getPoolDataSource();
