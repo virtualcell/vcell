@@ -1,6 +1,5 @@
 package org.vcell.db;
 
-import org.vcell.db.ConnectionFactory;
 
 public interface Database {
 	

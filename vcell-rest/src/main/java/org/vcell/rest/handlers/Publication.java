@@ -1,4 +1,4 @@
-package org.vcell.rest;
+package org.vcell.rest.handlers;
 
 public class Publication {
 
