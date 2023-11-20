@@ -1,6 +1,7 @@
 package org.vcell.rest.db;
 
 import io.agroal.api.AgroalDataSource;
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseSyntax;
@@ -10,12 +11,13 @@ import org.vcell.db.oracle.OracleKeyFactory;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+@ApplicationScoped
 public class OracleAgroalConnectionFactory implements ConnectionFactory {
 
     @Inject
-    AgroalDataSource ds;
+    private AgroalDataSource ds;
 
-    OracleKeyFactory keyFactory = new OracleKeyFactory();
+    private OracleKeyFactory keyFactory = new OracleKeyFactory();
 
     @Override
     public void close() {
