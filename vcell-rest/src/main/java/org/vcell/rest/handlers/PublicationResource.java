@@ -1,62 +1,66 @@
 package org.vcell.rest.handlers;
 
-import io.agroal.api.AgroalDataSource;
+import cbit.vcell.modeldb.DatabaseServerImpl;
+import cbit.vcell.modeldb.PublicationRep;
+import cbit.vcell.parser.ExpressionException;
 import io.quarkus.logging.Log;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.*;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import org.vcell.rest.auth.AuthUtils;
+import org.vcell.rest.db.PublicationService;
+import org.vcell.rest.models.PublicationRepresentation;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.PermissionException;
+import org.vcell.util.document.User;
 
-import java.math.BigDecimal;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Set;
+import java.util.ArrayList;
 
 @Path("/publications")
 @Produces("application/json")
 @Consumes("application/json")
 public class PublicationResource {
 
+    private final PublicationService publicationService;
+
     @Inject
-    AgroalDataSource ds;
-
-    private final Set<Publication> publications = Collections.newSetFromMap(Collections.synchronizedMap(new LinkedHashMap<>()));
-
-    public PublicationResource() {
-        publications.add(new Publication("publication 1", "first publication"));
-        publications.add(new Publication("publication 2", "second publication"));
+    public PublicationResource(PublicationService publicationService) {
+        this.publicationService = publicationService;
     }
 
     @GET
-    public Set<Publication> list() {
-        Set<Publication> db_publications = Collections.newSetFromMap(Collections.synchronizedMap(new LinkedHashMap<>()));
-        try (Connection con = ds.getConnection();
-            PreparedStatement ps = con.prepareStatement("SELECT ID, CITATION FROM VC_PUBLICATION")) {
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    BigDecimal key = rs.getBigDecimal("ID");
-                    String value = rs.getString("CITATION");
-                    db_publications.add(new Publication(key.toString(), value));
-                }
+    public PublicationRepresentation[] list() {
+        // look into using Oso for Authorization (future).
+        User vcellUser = AuthUtils.DUMMY_USER;
+        ArrayList<PublicationRepresentation> publicationRepresentations = new ArrayList<PublicationRepresentation>();
+        try {
+            PublicationRep[] publicationReps = publicationService.getPublicationReps(DatabaseServerImpl.OrderBy.year_desc, vcellUser);
+            for (PublicationRep publicationRep : publicationReps) {
+                PublicationRepresentation publicationRepresentation = new PublicationRepresentation(publicationRep);
+                publicationRepresentations.add(publicationRepresentation);
             }
-        } catch (SQLException e) {
-            Log.error("database call failed", e);
+        } catch (PermissionException ee){
+            Log.error(ee);
+            throw new RuntimeException("not authorized");
+        } catch (DataAccessException | SQLException | ExpressionException e) {
+            Log.error(e);
+            throw new RuntimeException("failed to retrieve biomodels from VCell Database : "+e.getMessage());
         }
-        Log.info("publications = " + db_publications.stream().map(p -> p.description).toList());
-        return publications;
+        return publicationRepresentations.toArray(new PublicationRepresentation[0]);
     }
 
-    @POST
-    public Set<Publication> add(Publication publication) {
-        publications.add(publication);
-        return publications;
-    }
-
-    @DELETE
-    public Set<Publication> delete(Publication publication) {
-        publications.removeIf(existingPublication -> existingPublication.name.contentEquals(publication.name));
-        return publications;
-    }
+//    @POST
+//    public Set<Publication> add(Publication publication) {
+//        publications.add(publication);
+//        return publications;
+//    }
+//
+//    @DELETE
+//    public Set<Publication> delete(Publication publication) {
+//        publications.removeIf(existingPublication -> existingPublication.name.contentEquals(publication.name));
+//        return publications;
+//    }
 }
