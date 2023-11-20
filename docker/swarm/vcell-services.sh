@@ -8,9 +8,10 @@ show_help() {
 	echo "usage: vcell-services [OPTIONS] command site"
 	echo ""
 	echo "  REQUIRED-ARGUMENTS"
-	echo "    command          restart | status"
-	echo "                        restart - restarts all services (takes optional -a | --all option)"
-	echo "                        status  - shows status of all services"
+	echo "    command          restart | status | health"
+	echo "                        restart - restarts all swarm services (takes optional -a | --all option)"
+	echo "                        status  - shows status of all swarm services (e.g. vcellrel_api)"
+	echo "                        health  - prints the login and simulation health checks"
 	echo "    site             vcell site (e.g. rel or alpha)"
 	echo "                        rel - must be run on vcellapi.cam.uchc.edu"
 	echo "                        alpha - must be run on vcellapi-beta.cam.uchc.edu"
@@ -69,8 +70,8 @@ command=$1
 site=$2
 
 # check that command is either 'restart' or 'status'
-if [[ "${command}" != "restart" && "${command}" != "status" ]]; then
-    echo "command must be either 'restart' or 'status'" 1>&2
+if [[ "${command}" != "restart" && "${command}" != "status" && "${command}" != "health" ]]; then
+    echo "command must be either 'restart' or 'status' or 'health'" 1>&2
     exit 1
 fi
 
@@ -83,8 +84,10 @@ fi
 swarm_cluster_name="vcell${site}"
 
 head_node="vcellapi.cam.uchc.edu"
+api_port="443"
 if [[ "${site}" == "alpha" ]]; then
   head_node="vcellapi-beta.cam.uchc.edu"
+  api_port="8080"
 fi
 
 # restarts a service
@@ -134,5 +137,34 @@ if [[ "${command}" == "status" ]]; then
     echo "note: for ${site} site commands, run this script on ${head_node}" 1>&2
     exit 1
   fi
+  exit 0
+fi
+
+# if command is health, then show health of login and sim checks
+if [[ "${command}" == "health" ]]; then
+  echo "-- login check (status should be 'OK') -- "
+  echo "curl https://${head_node}:${api_port}/health?check=login"
+  curl "https://${head_node}:${api_port}/health?check=login"
+  retcode=$?
+  if [[ ${retcode} -ne 0 ]]; then
+    echo "" 1>&2
+    echo "failed to connect to api service at ${head_node}:${api_port}" 1>&2
+    exit 1
+  fi
+  echo ""
+  echo ""
+  echo "-- sim check (status should be 'OK') -- "
+  echo "curl https://${head_node}:${api_port}/health?check=sim"
+  curl "https://${head_node}:${api_port}/health?check=sim"
+  retcode=$?
+  if [[ ${retcode} -ne 0 ]]; then
+    echo "" 1>&2
+    echo "failed to connect to api service at ${head_node}:${api_port}" 1>&2
+    exit 1
+  fi
+  echo ""
+  echo ""
+  echo "-- for all health events, run the following -- "
+  echo "curl https://${head_node}:${api_port}/health?check=all | jq ."
   exit 0
 fi
