@@ -9,18 +9,12 @@
  */
 
 package cbit.vcell.mapping;
-
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.MathContext;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import cbit.vcell.model.*;
 import org.apache.logging.log4j.LogManager;
@@ -62,6 +56,8 @@ import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.parser.SymbolTableFunctionEntry;
 import cbit.vcell.units.VCUnitDefinition;
 import net.sourceforge.interval.ia_math.RealInterval;
+import org.vcell.util.springsalad.Colors;
+import org.vcell.util.springsalad.NamedColor;
 
 @SuppressWarnings("serial")
 public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Serializable, SimulationContextEntity, IssueSource,
@@ -1463,6 +1459,118 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
         return buffer.toString();
     }
 
+    public String getSiteAttributesSQL() {
+        StringBuilder sb = new StringBuilder();
+        for(Map.Entry<MolecularComponentPattern, SiteAttributesSpec> entry : siteAttributesMap.entrySet()) {
+            SiteAttributesSpec sas = entry.getValue();
+            sb.append(sas.getMolecularComponentPattern().getMolecularComponent().getName() + ",");
+            sb.append(sas.getLocation().getName() + ",");
+            sb.append(sas.getRadius() + ",");
+            sb.append(sas.getDiffusionRate() +",");
+            sb.append(sas.getCoordinate().getX() + ",");
+            sb.append(sas.getCoordinate().getY() + ",");
+            sb.append(sas.getCoordinate().getZ() + ",");
+            sb.append(sas.getColor().getName());
+            sb.append(";");
+        }
+        return sb.toString();
+    }
+
+	public Map<MolecularComponentPattern, SiteAttributesSpec> readSiteAttributesSQL(String siteAttributesMapString) {
+		Map<MolecularComponentPattern, SiteAttributesSpec> saMap = new LinkedHashMap<>();
+		if(siteAttributesMapString.isEmpty()) {
+			return saMap;
+		}
+        StringTokenizer sat = new StringTokenizer(siteAttributesMapString, ";");
+		if(sat.countTokens() == 0) {
+			return saMap;
+		}
+
+		SpeciesContext sc = this.getSpeciesContext();
+		SpeciesPattern sp = sc.getSpeciesPattern();
+		List<MolecularTypePattern> mtpList = sp.getMolecularTypePatterns();
+		if(mtpList.size() != 1) {
+			throw new RuntimeException("Exactly one MolecularTypePattern expected");
+		}
+		MolecularTypePattern mtp = mtpList.get(0);
+
+		while(sat.hasMoreTokens()) {
+			String saString = sat.nextToken();
+			StringTokenizer tokenizer = new StringTokenizer(saString, ",");
+			if(tokenizer.countTokens() != 8) {
+				return saMap;
+			}
+			while(tokenizer.hasMoreTokens()) {
+				String attribute = tokenizer.nextToken();
+				MolecularComponentPattern mcp = mtp.getMolecularComponentPattern(attribute);
+				attribute = tokenizer.nextToken();
+				Structure structure = simulationContext.getModel().getStructure(attribute);
+				attribute = tokenizer.nextToken();
+				double radius = Double.parseDouble(attribute);
+				attribute = tokenizer.nextToken();
+				double diffRate = Double.parseDouble(attribute);
+				attribute = tokenizer.nextToken();
+				double x = Double.parseDouble(attribute);
+				attribute = tokenizer.nextToken();
+				double y = Double.parseDouble(attribute);
+				attribute = tokenizer.nextToken();
+				double z = Double.parseDouble(attribute);
+				Coordinate coordinate = new Coordinate(x,y,z);
+				attribute = tokenizer.nextToken();
+				NamedColor color = Colors.getColorByName(attribute);
+				SiteAttributesSpec sas = new SiteAttributesSpec(this, mcp, radius, diffRate, structure, coordinate, color);
+				saMap.put(mcp, sas);
+			}
+		}
+		return saMap;	// may be empty but not null
+	}
+	public String getInternalLinksSQL() {
+		StringBuffer sb = new StringBuffer();
+		for( MolecularInternalLinkSpec mils : internalLinkSet) {
+			SiteAttributesSpec sas1 = mils.getSite1();
+			SiteAttributesSpec sas2 = mils.getSite2();
+			sb.append(sas1.getMolecularComponentPattern().getMolecularComponent().getName() + ",");
+			sb.append(sas2.getMolecularComponentPattern().getMolecularComponent().getName() + ";");
+		}
+		return sb.toString();
+	}
+	public Set<MolecularInternalLinkSpec> readInternalLinksSQL(String internalLinkSetString) {
+		Set<MolecularInternalLinkSpec> ilSet = new LinkedHashSet<>();
+
+		if(internalLinkSetString.isEmpty()) {
+			return ilSet;
+		}
+		StringTokenizer sat = new StringTokenizer(internalLinkSetString, ";");
+		if(sat.countTokens() == 0) {
+			return ilSet;
+		}
+
+		SpeciesContext sc = this.getSpeciesContext();
+		SpeciesPattern sp = sc.getSpeciesPattern();
+		List<MolecularTypePattern> mtpList = sp.getMolecularTypePatterns();
+		if(mtpList.size() != 1) {
+			throw new RuntimeException("Exactly one MolecularTypePattern expected");
+		}
+		MolecularTypePattern mtp = mtpList.get(0);
+
+		while(sat.hasMoreTokens()) {
+			String saString = sat.nextToken();
+			StringTokenizer tokenizer = new StringTokenizer(saString, ",");
+			if (tokenizer.countTokens() != 2) {
+				return ilSet;
+			}
+			while (tokenizer.hasMoreTokens()) {
+				String attribute = tokenizer.nextToken();
+				MolecularComponentPattern mcp1 = mtp.getMolecularComponentPattern(attribute);
+				attribute = tokenizer.nextToken();
+				MolecularComponentPattern mcp2 = mtp.getMolecularComponentPattern(attribute);
+
+				MolecularInternalLinkSpec ils = new MolecularInternalLinkSpec(this, mcp1, mcp2);
+				ilSet.add(ils);
+			}
+		}
+		return ilSet;	// may be empty but never null
+	}
 
     /**
      * Accessor for the vetoPropertyChange field.
@@ -2178,6 +2286,4 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
     public String getDisplayType(){
         return typeName;
     }
-
-
 }

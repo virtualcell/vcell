@@ -9,7 +9,6 @@
  */
 
 package cbit.vcell.modeldb;
-
 import java.beans.PropertyVetoException;
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -18,8 +17,17 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.Set;
 
+import cbit.vcell.mapping.*;
 import org.vcell.db.DatabaseSyntax;
+import org.vcell.model.rbm.MolecularComponentPattern;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.DependencyException;
+import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.PermissionException;
+import org.vcell.util.TokenMangler;
 import org.vcell.util.*;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
@@ -129,8 +137,7 @@ public class SimulationContextDbDriver extends DbDriver {
                 " WHERE " + reactionSpecTable.simContextRef + " = " + simContextKey +
                 " ORDER BY " + reactionSpecTable.id;
 //lg.info("SimulationContextDbDriver.assignReactionSpecsSQL(), sql = "+sql);
-        Statement stmt = con.createStatement();
-        try {
+        try (Statement stmt = con.createStatement()) {
             ResultSet rset = stmt.executeQuery(sql);
             while (rset.next()) {
                 KeyValue reactionStepRef = new KeyValue(rset.getBigDecimal(reactionSpecTable.reactionStepRef.toString()));
@@ -138,19 +145,17 @@ public class SimulationContextDbDriver extends DbDriver {
 
                 //
                 ReactionSpec[] reactionSpecs = simContext.getReactionContext().getReactionSpecs();
-                for(int i = 0; i < reactionSpecs.length; i++){
-                    if(reactionSpecs[i].getReactionStep().getKey().compareEqual(reactionStepRef)){
+                for (ReactionSpec reactionSpec : reactionSpecs) {
+                    if (reactionSpec.getReactionStep().getKey().compareEqual(reactionStepRef)) {
                         try {
-                            reactionSpecs[i].setReactionMapping(mapping);
-                        } catch(Exception e){
+                            reactionSpec.setReactionMapping(mapping);
+                        } catch (Exception e) {
                             throw new DataAccessException("Error setting ReactionSpec 'mapping' for SimulationContext:" + simContext.getVersion().getName() + " id=" + simContextKey);
                         }
                         break;
                     }
                 }
             }
-        } finally {
-            stmt.close();
         }
     }
 
@@ -252,6 +257,16 @@ public class SimulationContextDbDriver extends DbDriver {
                 String forceContinuousString = rset.getString(speciesContextSpecTable.bForceContinuous.toString());
                 if(rset.wasNull()){
                     forceContinuousString = null;
+                }
+
+                String internalLinkSetString = rset.getString(speciesContextSpecTable.internalLinks.toString());
+                if (rset.wasNull()){
+                    internalLinkSetString = null;
+                }
+
+                String siteAttributesMapString = rset.getString((speciesContextSpecTable.siteAttributesSpecs.toString()));
+                if (rset.wasNull()){
+                    siteAttributesMapString = null;
                 }
 
                 //
@@ -1177,6 +1192,4 @@ public class SimulationContextDbDriver extends DbDriver {
             throw new DataAccessException("more than one simContextRep found for SimContextKey=" + simContextKey);
         }
     }
-
-
 }
