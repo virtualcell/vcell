@@ -19,11 +19,13 @@ import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
 import org.vcell.db.DatabaseSyntax;
 import org.vcell.db.KeyFactory;
+import org.vcell.util.document.KeyValue;
 
 import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
 import java.io.Writer;
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -36,7 +38,10 @@ public class SQLCreateAllTables {
 	private final static Logger lg = LogManager.getLogger(SQLCreateAllTables.class);
 
 	public static final String POSTGRES_DUAL_VIEW = "public.dual";
-/**
+	public static final String DEFAULT_APICLIENT_ID = "85133f8d-26f7-4247-8356-d175399fc2e6";
+	public static final String DEFAULT_APICLIENT_NAME = "defaultApiClient";
+
+	/**
  * Insert the method's description here.
  * Creation date: (10/2/2003 12:40:00 PM)
  * @param indexName java.lang.String
@@ -44,7 +49,7 @@ public class SQLCreateAllTables {
  * @param vcTable_Field cbit.sql.Field
  */
 private static void createIndex(Connection con,String indexName, Table vcTable, Field vcTable_Field, DatabaseSyntax dbSyntax) throws SQLException{
-	
+
 	//
 	// create indices for faster lookup
 	//
@@ -71,6 +76,10 @@ private static void createIndex(Connection con,String indexName, Table vcTable, 
 		}
 	}
 }
+	private static String getCreateIndexSQL(String indexName, Table vcTable, Field vcTable_Field) {
+		return "CREATE INDEX "+indexName+" ON "+vcTable.getTableName()+"("+vcTable_Field.getUnqualifiedColName()+")";
+	}
+
 /**
  * This method was created in VisualAge.
  */
@@ -130,9 +139,6 @@ private static void createTables(Connection con, Table tables[], DatabaseSyntax 
 	}
 
 
-	/**
- * This method was created in VisualAge.
- */
 private static void destroyAndRecreateTables(ConnectionFactory conFactory, KeyFactory keyFactory, DatabaseSyntax dbSyntax) {
 	try {
 		JPanel panel = new JPanel(new BorderLayout());
@@ -181,8 +187,6 @@ private static void destroyAndRecreateTables(ConnectionFactory conFactory, KeyFa
 							// Add Initial Available Status
 							s.executeUpdate(cbit.vcell.modeldb.AvailableTable.getCreateInitAvailStatusSQL(keyFactory.getNewKey(con)));
 							// Add Default API Client
-							final String DEFAULT_APICLIENT_NAME = "defaultApiClient";
-							final String DEFAULT_APICLIENT_ID = "85133f8d-26f7-4247-8356-d175399fc2e6";
 							final String DEFAULT_APICLIENTID_PSWD = UUID.randomUUID().toString();
 							ApiClient defaultApiClient = new ApiClient(null,DEFAULT_APICLIENT_NAME, DEFAULT_APICLIENT_ID, DEFAULT_APICLIENTID_PSWD);
 							s.executeUpdate(ApiClientTable.getCreateApiClientSQL(keyFactory.getNewKey(con), defaultApiClient));
@@ -373,20 +377,63 @@ public static Table[] getVCellTables() {
 	return tables;
 }
 
-public static void writeScript(DatabaseSyntax dbSyntax, Writer scriptWriter) throws IOException {
+public static void writeScript(DatabaseSyntax dbSyntax, boolean bootstrapData, Writer scriptWriter) throws IOException {
 	Table[] tables = getVCellTables();
 	for (int i=0;i<tables.length;i++){
 		String sql = tables[i].getCreateSQL(dbSyntax);
-		scriptWriter.write(sql + "\n");
+		scriptWriter.write(sql + ";\n");
 	}
-	System.out.println();
 	String createViewSql = getCreateViewSql(dbSyntax);
 	if (createViewSql != null){
-		scriptWriter.write(createViewSql + "\n");
+		scriptWriter.write("\n");
+		scriptWriter.write(createViewSql + ";\n");
 	}
-	System.out.println();
+	scriptWriter.write("\n");
 	if (dbSyntax == DatabaseSyntax.ORACLE || dbSyntax == DatabaseSyntax.POSTGRES) {
-		scriptWriter.write("CREATE SEQUENCE " + Table.SEQ + "\n");
+		scriptWriter.write("CREATE SEQUENCE " + Table.SEQ + ";\n");
+	}
+	scriptWriter.write("\n");
+	scriptWriter.write(getCreateIndexSQL("grp_grpid", GroupTable.table, GroupTable.table.groupid) + ";\n");
+	scriptWriter.write(getCreateIndexSQL("browse_imgref", BrowseImageDataTable.table, BrowseImageDataTable.table.imageRef) + ";\n");
+	scriptWriter.write(getCreateIndexSQL("geom_extentref", GeometryTable.table, GeometryTable.table.extentRef) + ";\n");
+	scriptWriter.write(getCreateIndexSQL("geom_imageref", GeometryTable.table, GeometryTable.table.imageRef) + ";\n");
+	scriptWriter.write(getCreateIndexSQL("mathdesc_geomref", MathDescTable.table, MathDescTable.table.geometryRef) + ";\n");
+	scriptWriter.write(getCreateIndexSQL("simcstat_simcref", SimContextStatTable.table, SimContextStatTable.table.simContextRef) + ";\n");
+	scriptWriter.write("\n");
+	if (bootstrapData) {
+		KeyFactory bootstrapKeyFactory = new KeyFactory() {
+			int currentKey = -1;
+			@Override public String getCreateSQL() { throw new RuntimeException("not implemented"); }
+			@Override public String getDestroySQL() { throw new RuntimeException("not implemented"); }
+			@Override public String nextSEQ() { currentKey++; return Integer.toString(currentKey); }
+			@Override public String currSEQ() { return Integer.toString(currentKey); }
+			@Override public KeyValue getNewKey(Connection _con) { return new KeyValue(getUniqueBigDecimal(_con)); }
+			@Override public BigDecimal getUniqueBigDecimal(Connection _con) { currentKey++; return new BigDecimal(currentKey); }
+		};
+		final Connection bootstrapConnection = null;
+		// Add void user
+		bootstrapKeyFactory.nextSEQ(); // for void user with key 0
+		scriptWriter.write(UserTable.getCreateVoidUserSQL() + ";\n");
+		// Add admin user
+		bootstrapKeyFactory.nextSEQ();
+		bootstrapKeyFactory.nextSEQ(); // for admin user with key 2
+		scriptWriter.write(UserTable.getCreateAdministratorUserSQL() + ";\n");
+		// Add test user
+		scriptWriter.write(UserTable.getCreateTestUserSQL(bootstrapKeyFactory) + ";\n");
+		try {
+			// Add PRIVATE group
+			scriptWriter.write(GroupTable.getCreateGroupPrivateSQL(bootstrapKeyFactory.getNewKey(bootstrapConnection)) + ";\n");
+			// Add PUBLIC group
+			scriptWriter.write(GroupTable.getCreateGroupPublicSQL(bootstrapKeyFactory.getNewKey(bootstrapConnection)) + ";\n");
+			// Add Initial Available Status
+			scriptWriter.write(AvailableTable.getCreateInitAvailStatusSQL(bootstrapKeyFactory.getNewKey(bootstrapConnection)) + ";\n");
+			// Add Default API Client
+			final String DEFAULT_APICLIENTID_PSWD = UUID.randomUUID().toString();
+			ApiClient defaultApiClient = new ApiClient(null, DEFAULT_APICLIENT_NAME, DEFAULT_APICLIENT_ID, DEFAULT_APICLIENTID_PSWD);
+			scriptWriter.write(ApiClientTable.getCreateApiClientSQL(bootstrapKeyFactory.getNewKey(bootstrapConnection), defaultApiClient) + ";\n");
+		} catch (SQLException e){
+			throw new RuntimeException("impossible SQLException in bootstrap code", e);
+		}
 	}
 }
 
