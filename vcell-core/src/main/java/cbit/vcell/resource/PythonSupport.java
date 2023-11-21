@@ -1,15 +1,14 @@
 package cbit.vcell.resource;
 
+import org.vcell.util.exe.Executable;
+import org.vcell.util.exe.ExecutableException;
+import org.vcell.util.exe.IExecutable;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-
-import org.vcell.util.exe.Executable;
-import org.vcell.util.exe.ExecutableException;
-import org.vcell.util.exe.IExecutable;
 
 public class PythonSupport {
 		
@@ -199,7 +198,6 @@ public class PythonSupport {
 		
 	public static void main(String[] args){
 		try {
-			PropertyLoader.loadProperties();
 			verifyInstallation(PythonPackage.values());
 			try {
 				getPythonExe();

@@ -25,11 +25,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.solver.smoldyn.SmoldynVCellMapper;
 import org.vcell.solver.smoldyn.SmoldynVCellMapper.SmoldynKeyword;
-import org.vcell.util.BeanUtils;
-import org.vcell.util.Coordinate;
-import org.vcell.util.DataAccessException;
-import org.vcell.util.NumberUtils;
-import org.vcell.util.VCAssert;
+import org.vcell.util.*;
 import org.vcell.util.document.TSJobResultsNoStats;
 import org.vcell.util.document.TimeSeriesJobSpec;
 import org.vcell.util.document.User;
@@ -55,15 +51,16 @@ import ncsa.hdf.hdf5lib.H5;
 import ncsa.hdf.hdf5lib.HDF5Constants;
 import ncsa.hdf.hdf5lib.exceptions.HDF5Exception;
 import ncsa.hdf.hdf5lib.exceptions.HDF5LibraryException;
+
 /**
  * Insert the type's description here.
  * Creation date: (4/27/2004 1:38:59 PM)
  * @author: Ion Moraru
  */
 public class ASCIIExporter implements ExportConstants {
-	private final static Logger lg = LogManager.getLogger(ASCIIExporter.class);
+    private final static Logger lg = LogManager.getLogger(ASCIIExporter.class);
 
-	private ExportServiceImpl exportServiceImpl = null;
+    private ExportServiceImpl exportServiceImpl = null;
 
 	/**
 	 * Insert the method's description here.

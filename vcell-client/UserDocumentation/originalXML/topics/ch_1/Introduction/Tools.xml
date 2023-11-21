@@ -14,9 +14,6 @@
  	  <item>
 	     <link target = "LaunchVirtualFRAP">Launch Virtual FRAP</link> - opens VirtualFRAP, a tool to analyze fluorescence photobleaching experiments using VCell spatial modeling technology.  
 	  </item>
-	  <item>
-	  	  <link target = "ImageJService">Start ImageJ Service</link> - VCell's FIJI (ImageJ) service allows scripts running in FIJI to communicate with VCell allowing query, control, and transfer of model/simulation data between VCell and FIJI. 
-	   </item>
  	  <item>
 	     <link target = "TransformToStochCapable">Transform to Stochastic Capable</link> - launches a tool to convert a deterministic model to a stochastic-capable model, where possible.  
 	  </item>

@@ -72,7 +72,7 @@ public class MathVerifier {
      * ResultSetCrawler constructor comment.
      */
     public MathVerifier(ConnectionFactory argConFactory,
-                        AdminDatabaseServer argAdminDbServer) throws DataAccessException {
+                        AdminDatabaseServer argAdminDbServer) throws DataAccessException{
         this.conFactory = argConFactory;
         this.adminDbServer = argAdminDbServer;
         this.dbServerImpl = new DatabaseServerImpl(conFactory, conFactory.getKeyFactory());
@@ -80,11 +80,10 @@ public class MathVerifier {
 
 
     public static MathVerifier createMathVerifier(
-            String dbHostName, String dbName, String dbSchemaUser, String dbPassword) throws Exception {
+            String dbHostName, String dbName, String dbSchemaUser, String dbPassword) throws Exception{
 
         ConnectionFactory conFactory;
         KeyFactory keyFactory;
-        new cbit.vcell.resource.PropertyLoader();
 
         String driverName = "oracle.jdbc.driver.OracleDriver";
         String connectURL = "jdbc:oracle:thin:@" + dbHostName + ":1521:" + dbName;
@@ -106,17 +105,17 @@ public class MathVerifier {
     }
 
 
-    private User[] createUsersFromUserids(String[] scanUserids) throws Exception {
+    private User[] createUsersFromUserids(String[] scanUserids) throws Exception{
         User[] scanUsers;
-        if (scanUserids == null) {
+        if(scanUserids == null){
             UserInfo[] allUserInfos = adminDbServer.getUserInfos();
             scanUsers = new User[allUserInfos.length];
-            for (int i = 0; i < allUserInfos.length; i++) {
+            for(int i = 0; i < allUserInfos.length; i++){
                 scanUsers[i] = new User(allUserInfos[i].userid, allUserInfos[i].id);
             }
         } else {
             scanUsers = new User[scanUserids.length];
-            for (int i = 0; i < scanUserids.length; i++) {
+            for(int i = 0; i < scanUserids.length; i++){
                 scanUsers[i] = adminDbServer.getUser(scanUserids[i]);
             }
         }
@@ -124,11 +123,11 @@ public class MathVerifier {
     }
 
 
-    private void closeAllConnections() {
-        if (this.conFactory != null) {
+    private void closeAllConnections(){
+        if(this.conFactory != null){
             try {
                 this.conFactory.close();
-            } catch (Exception e) {
+            } catch(Exception e){
                 lg.error(e.getMessage(), e);
             }
         }
@@ -136,14 +135,14 @@ public class MathVerifier {
     }
 
 
-    public void runMathTest(String[] scanUserids, KeyValue[] bioModelKeys, String softwareVersion, DatabaseMode databaseMode, Compare.CompareLogger compareLogger) throws Exception {
+    public void runMathTest(String[] scanUserids, KeyValue[] bioModelKeys, String softwareVersion, DatabaseMode databaseMode, Compare.CompareLogger compareLogger) throws Exception{
         Compare.logger = compareLogger;
         this.timeStamp = new Timestamp(System.currentTimeMillis());
         User[] scanUsers = createUsersFromUserids(scanUserids);
         try {
-            if (databaseMode == DatabaseMode.update) {
+            if(databaseMode == DatabaseMode.update){
                 List<KeyValue> keyValues = new ArrayList<>();
-                if (bioModelKeys != null) keyValues.addAll(Arrays.asList(bioModelKeys));
+                if(bioModelKeys != null) keyValues.addAll(Arrays.asList(bioModelKeys));
                 MathVerifier.initLoadModelsStatTable(softwareVersion, (scanUserids == null ? null : scanUsers), keyValues.toArray(new KeyValue[0]), this.timeStamp, this.conFactory);
             }
             this.generateMath(scanUsers, databaseMode, bioModelKeys);
@@ -153,15 +152,15 @@ public class MathVerifier {
     }
 
 
-    public void runLoadTest(String[] scanUserids, KeyValue[] bioModelKeys, KeyValue[] mathModelKeys, String softwareVersion, DatabaseMode databaseMode, Compare.CompareLogger compareLogger) throws Exception {
+    public void runLoadTest(String[] scanUserids, KeyValue[] bioModelKeys, KeyValue[] mathModelKeys, String softwareVersion, DatabaseMode databaseMode, Compare.CompareLogger compareLogger) throws Exception{
         Compare.logger = compareLogger;
         this.timeStamp = new Timestamp(System.currentTimeMillis());
         User[] scanUsers = createUsersFromUserids(scanUserids);
         try {
-            if (databaseMode == DatabaseMode.create) {
+            if(databaseMode == DatabaseMode.create){
                 List<KeyValue> keyValues = new ArrayList<>();
-                if (bioModelKeys != null) keyValues.addAll(Arrays.asList(bioModelKeys));
-                if (mathModelKeys != null) keyValues.addAll(Arrays.asList(mathModelKeys));
+                if(bioModelKeys != null) keyValues.addAll(Arrays.asList(bioModelKeys));
+                if(mathModelKeys != null) keyValues.addAll(Arrays.asList(mathModelKeys));
                 MathVerifier.initLoadModelsStatTable(softwareVersion, (scanUserids == null ? null : scanUsers), keyValues.toArray(new KeyValue[0]), this.timeStamp, this.conFactory);
                 return;
             }
@@ -173,7 +172,7 @@ public class MathVerifier {
     }
 
     private static void initLoadModelsStatTable(String softwareVersion, User[] users, KeyValue[] bioAndMathModelKeys, Timestamp timestamp,
-                                                ConnectionFactory conFactory) throws Exception {
+                                                ConnectionFactory conFactory) throws Exception{
         java.sql.Connection con = null;
         java.sql.Statement stmt = null;
         try {
@@ -188,8 +187,8 @@ public class MathVerifier {
                             " FROM " + LoadModelsStatTable.table.getTableName() +
                             " WHERE " + LoadModelsStatTable.table.timeStamp + " = " + "'" + timestamp.toString() + "'");
             ResultSet resultSet = stmt.executeQuery(sql.toString());
-            if (resultSet.next()) {
-                if (resultSet.getInt(1) != 0) {
+            if(resultSet.next()){
+                if(resultSet.getInt(1) != 0){
                     throw new Exception("Timestamp " + timestamp + " already exists in table '" + LoadModelsStatTable.table.getTableName() + "'");
                 }
             } else {
@@ -200,9 +199,9 @@ public class MathVerifier {
 
             //Scan only users condition
             String onlyUsersClause = null;
-            if (users != null && users.length > 0) {
+            if(users != null && users.length > 0){
                 StringBuilder usersSB = new StringBuilder();
-                for (int i = 0; i < users.length; i++) {
+                for(int i = 0; i < users.length; i++){
                     usersSB.append((i > 0 ? "," : "") + users[i].getID());
                 }
                 onlyUsersClause =
@@ -210,9 +209,9 @@ public class MathVerifier {
             }
             //Scan only model user conditions
             String onlyModelsClause = null;
-            if (bioAndMathModelKeys != null && bioAndMathModelKeys.length > 0) {
+            if(bioAndMathModelKeys != null && bioAndMathModelKeys.length > 0){
                 StringBuffer modelsSB = new StringBuffer();
-                for (int i = 0; i < bioAndMathModelKeys.length; i++) {
+                for(int i = 0; i < bioAndMathModelKeys.length; i++){
                     modelsSB.append((i > 0 ? "," : "") + bioAndMathModelKeys[i].toString());
                 }
                 onlyModelsClause =
@@ -220,11 +219,11 @@ public class MathVerifier {
             }
 
             String allConditions = "";
-            if (onlyModelsClause != null && onlyUsersClause != null) {
+            if(onlyModelsClause != null && onlyUsersClause != null){
                 allConditions = " WHERE " + onlyUsersClause + " AND " + onlyModelsClause;
-            } else if (onlyModelsClause != null) {
+            } else if(onlyModelsClause != null){
                 allConditions = " WHERE " + onlyModelsClause;
-            } else if (onlyUsersClause != null) {
+            } else if(onlyUsersClause != null){
                 allConditions = " WHERE " + onlyUsersClause;
             }
             //Get ALL BioModel keys
@@ -257,10 +256,10 @@ public class MathVerifier {
 
             //Init row for each model
             int totalKeys = bioModelKeyV.size() + mathModelKeyV.size();
-            for (int i = 0; i < totalKeys; i++) {
+            for(int i = 0; i < totalKeys; i++){
                 String bioModelKeyS = "NULL";
                 String mathModelKeyS = "NULL";
-                if (i < bioModelKeyV.size()) {
+                if(i < bioModelKeyV.size()){
                     bioModelKeyS = bioModelKeyV.elementAt(i).toString();
                 } else {
                     mathModelKeyS = mathModelKeyV.elementAt(i - bioModelKeyV.size()).toString();
@@ -280,34 +279,34 @@ public class MathVerifier {
 
             }
             con.commit();
-        } catch (Exception e2) {
-            if (con != null) {
+        } catch(Exception e2){
+            if(con != null){
                 try {
                     con.rollback();
-                } catch (Exception e) {
+                } catch(Exception e){
                     lg.error(e.getMessage(), e);
                 }
             }
             throw e2;
         } finally {
-            if (stmt != null) {
+            if(stmt != null){
                 try {
                     stmt.close();
-                } catch (Exception e) {
+                } catch(Exception e){
                     lg.error(e.getMessage(), e);
                 }
             }
-            if (con != null) {
+            if(con != null){
                 try {
                     con.close();
-                } catch (Exception e) {
+                } catch(Exception e){
                     lg.error(e.getMessage(), e);
                 }
             }
         }
     }
 
-    private void updateLoadModelsStatTable_LoadTest(long loadTimeMilliSec, KeyValue BioOrMathModelKey, Exception exception) {
+    private void updateLoadModelsStatTable_LoadTest(long loadTimeMilliSec, KeyValue BioOrMathModelKey, Exception exception){
         String sql =
                 "UPDATE " + LoadModelsStatTable.table.getTableName() +
                         " SET " +
@@ -333,11 +332,11 @@ public class MathVerifier {
                 DbDriver.updateCleanSQL(con, sql);
                 con.commit();
             } finally {
-                if (con != null) {
+                if(con != null){
                     conFactory.release(con, lock);
                 }
             }
-        } catch (Exception e) {
+        } catch(Exception e){
             lg.error(e.getMessage(), e);
         }
     }
@@ -345,7 +344,7 @@ public class MathVerifier {
     private void updateLoadModelsStatTable_CompareTest(KeyValue BioOrMathModelKey,
                                                        Long loadOriginalXMLTime, Long loadUnresolvedTime,
                                                        Boolean bSameCachedAndNotCachedXML, Boolean bSameCachedAndNotCachedObj, Boolean bSameSelfXMLCachedRoundtrip,
-                                                       Exception bSameCachedAndNotCachedXMLExc, Exception bSameCachedAndNotCachedObjExc, Exception bSameSelfXMLCachedRoundtripExc) {
+                                                       Exception bSameCachedAndNotCachedXMLExc, Exception bSameCachedAndNotCachedObjExc, Exception bSameSelfXMLCachedRoundtripExc){
         String sql =
                 "UPDATE " + LoadModelsStatTable.table.getTableName() +
                         " SET " +
@@ -385,16 +384,16 @@ public class MathVerifier {
                 DbDriver.updateCleanSQL(con, sql);
                 con.commit();
             } finally {
-                if (con != null) {
+                if(con != null){
                     conFactory.release(con, lock);
                 }
             }
-        } catch (Exception e) {
+        } catch(Exception e){
             lg.error(e.getMessage(), e);
         }
     }
 
-    private void checkMathForBioModel(BigString bioModelXMLFromDB, BioModel bioModelFromDB, User user, DatabaseMode databaseMode) throws Exception {
+    private void checkMathForBioModel(BigString bioModelXMLFromDB, BioModel bioModelFromDB, User user, DatabaseMode databaseMode) throws Exception{
         BioModel bioModelNewMath = XmlHelper.XMLToBioModel(new XMLSource(bioModelXMLFromDB.toString()));
         bioModelFromDB.refreshDependencies();
         bioModelNewMath.refreshDependencies();
@@ -410,7 +409,7 @@ public class MathVerifier {
         //
         SimulationContext[] simContextsFromDB = bioModelFromDB.getSimulationContexts();
         SimulationContext[] simContextsNewMath = bioModelNewMath.getSimulationContexts();
-        for (int k = 0; k < simContextsFromDB.length; k++) {
+        for(int k = 0; k < simContextsFromDB.length; k++){
             SimulationContext simContextFromDB = simContextsFromDB[k];
             Simulation[] appSimsFromDB = simContextFromDB.getSimulations();
             SimulationContext simContextNewMath = simContextsNewMath[k];
@@ -423,9 +422,9 @@ public class MathVerifier {
                 // find out if any simulation belonging to this Application has data
                 //
                 boolean bApplicationHasData = false;
-                for (int l = 0; l < modelSimsFromDB.length; l++) {
+                for(int l = 0; l < modelSimsFromDB.length; l++){
                     SimulationStatusPersistent simulationStatus = dbServerImpl.getSimulationStatus(modelSimsFromDB[l].getKey());
-                    if (simulationStatus != null && simulationStatus.getHasData()) {
+                    if(simulationStatus != null && simulationStatus.getHasData()){
                         bApplicationHasData = true;
                     }
                 }
@@ -434,10 +433,10 @@ public class MathVerifier {
                 // make sure geometry is up to date on "simContextNewMath"
                 //
                 try {
-                    if (simContextNewMath.getGeometry().getDimension() > 0 && simContextNewMath.getGeometry().getGeometrySurfaceDescription().getGeometricRegions() == null) {
+                    if(simContextNewMath.getGeometry().getDimension() > 0 && simContextNewMath.getGeometry().getGeometrySurfaceDescription().getGeometricRegions() == null){
                         simContextNewMath.getGeometry().getGeometrySurfaceDescription().updateAll();
                     }
-                } catch (Exception e) {
+                } catch(Exception e){
                     lg.error(e.getMessage(), e);
                 }
 
@@ -448,9 +447,9 @@ public class MathVerifier {
                 MathDescription newMathDesc = mathMapping.getMathDescription();
                 String issueString = null;
                 org.vcell.util.Issue[] issues = mathMapping.getIssues();
-                if (issues != null && issues.length > 0) {
+                if(issues != null && issues.length > 0){
                     StringBuffer buffer = new StringBuffer("Issues(" + issues.length + "):");
-                    for (int l = 0; l < issues.length; l++) {
+                    for(int l = 0; l < issues.length; l++){
                         buffer.append(" <<" + issues[l].toString() + ">>");
                     }
                     issueString = buffer.toString();
@@ -462,7 +461,7 @@ public class MathVerifier {
                 try {
                     mathDesc_4_8 = new MathMapping_4_8(simContextNewMath).getMathDescription();
                     mathCompareResults_4_8 = MathDescription.testEquivalency(SimulationSymbolTable.createMathSymbolTableFactory(), origMathDesc, mathDesc_4_8);
-                } catch (Exception e) {
+                } catch(Exception e){
                     lg.error(e.getMessage(), e);
                     mathCompareResults_4_8 = new MathCompareResults(Decision.MathDifferent_FAILURE_UNKNOWN, e.getMessage());
                 }
@@ -471,7 +470,7 @@ public class MathVerifier {
                 //
                 // update Database Status for SimContext
                 //
-                if (databaseMode == DatabaseMode.update) {
+                if(databaseMode == DatabaseMode.update){
                     java.sql.Connection con = null;
                     java.sql.Statement stmt = null;
                     try {
@@ -486,13 +485,13 @@ public class MathVerifier {
                                 SimContextStat2Table.table.status_4_8.getUnqualifiedColName() + " = '" + org.vcell.util.TokenMangler.getSQLEscapedString(mathCompareResults_4_8.toDatabaseStatus(), 255) + "'" +
                                 // ((issueString!=null)?(", "+SimContextStat2Table.table.comments.getUnqualifiedColName()+" = '"+org.vcell.util.TokenMangler.getSQLEscapedString(issueString,255)+"'"):(""))+
                                 " WHERE " + SimContextStat2Table.table.simContextRef.getUnqualifiedColName() + " = " + simContextFromDB.getKey();
-                        if (lg.isDebugEnabled()) {
+                        if(lg.isDebugEnabled()){
                             lg.debug("executeUpdate() SQL: '" + UPDATESTATUS + "'", new DbDriver.StackTraceGenerationException());
                         }
                         int numRowsChanged = stmt.executeUpdate(UPDATESTATUS); // jcs: added logging
-                        if (numRowsChanged > 1) {
+                        if(numRowsChanged > 1){
                             lg.warn("failed to update status for simcontext: " + simContextFromDB.getKey());
-                        } else if (numRowsChanged == 0) {
+                        } else if(numRowsChanged == 0){
                             /**
                              * KeyValue key,
                              * KeyValue simContextKey,
@@ -517,31 +516,31 @@ public class MathVerifier {
                                     mathCompareResults_4_8.isEquivalent(),
                                     mathCompareResults_4_8.toDatabaseStatus());
                             lg.info(INSERTSTATUS);
-                            if (lg.isDebugEnabled()) {
+                            if(lg.isDebugEnabled()){
                                 lg.debug("executeUpdate() SQL: '" + INSERTSTATUS + "'", new DbDriver.StackTraceGenerationException());
                             }
                             int numRowsInserted = stmt.executeUpdate(INSERTSTATUS); // jcs: added logging
-                            if (numRowsInserted != 1) {
+                            if(numRowsInserted != 1){
                                 lg.warn("failed to insert status for simcontext: " + simContextFromDB.getKey());
                             }
                         }
                         con.commit();
-                        if (lg.isTraceEnabled())
+                        if(lg.isTraceEnabled())
                             lg.trace("-------------- Update=true, saved 'newMath' for Application '" + simContextFromDB.getName() + "'");
-                    } catch (SQLException e) {
+                    } catch(SQLException e){
                         lg.error(e.getMessage(), e);
-                        if (lg.isWarnEnabled())
+                        if(lg.isWarnEnabled())
                             lg.warn("*&*&*&*&*&*&*& Update=true, FAILED TO UPDATE MATH for Application '" + simContextFromDB.getName() + "'");
                     } finally {
-                        if (stmt != null) {
+                        if(stmt != null){
                             stmt.close();
                         }
                         con.close();
                     }
                 }
-            } catch (Throwable e) {
+            } catch(Throwable e){
                 lg.error(e.getMessage(), e); // exception in SimContext
-                if (databaseMode == DatabaseMode.update) {
+                if(databaseMode == DatabaseMode.update){
                     java.sql.Connection con = null;
                     java.sql.Statement stmt = null;
                     try {
@@ -551,22 +550,22 @@ public class MathVerifier {
                         String UPDATESTATUS = "UPDATE " + SimContextStat2Table.table.getTableName() +
                                 " SET " + SimContextStat2Table.table.status.getUnqualifiedColName() + " = 'EXCEPTION: " + org.vcell.util.TokenMangler.getSQLEscapedString(e.toString()) + "'" +
                                 " WHERE " + SimContextStat2Table.table.simContextRef.getUnqualifiedColName() + " = " + simContextFromDB.getKey();
-                        if (lg.isDebugEnabled()) {
+                        if(lg.isDebugEnabled()){
                             lg.debug("executeUpdate() SQL: '" + UPDATESTATUS + "'", new DbDriver.StackTraceGenerationException());
                         }
                         int numRowsChanged = stmt.executeUpdate(UPDATESTATUS); // jcs: added logging
-                        if (numRowsChanged != 1) {
+                        if(numRowsChanged != 1){
                             lg.info("failed to update status with exception");
                         }
                         con.commit();
-                        if (lg.isTraceEnabled())
+                        if(lg.isTraceEnabled())
                             lg.trace("-------------- Update=true, saved exception for Application '" + simContextFromDB.getName() + "'");
-                    } catch (SQLException e2) {
+                    } catch(SQLException e2){
                         lg.error(e2.getMessage(), e2);
-                        if (lg.isWarnEnabled())
+                        if(lg.isWarnEnabled())
                             lg.warn("*&*&*&*&*&*&*& Update=true, FAILED TO save exception status for Application '" + simContextFromDB.getName() + "'");
                     } finally {
-                        if (stmt != null) {
+                        if(stmt != null){
                             stmt.close();
                         }
                         con.close();
@@ -576,17 +575,17 @@ public class MathVerifier {
             //
             // now, verify each associated simulation will apply overrides in an equivalent way
             //
-            for (int l = 0; l < appSimsFromDB.length; l++) {
+            for(int l = 0; l < appSimsFromDB.length; l++){
                 try {
                     boolean bSimEquivalent = Simulation.testEquivalency(appSimsNewMath[l], appSimsFromDB[l], mathCompareResults_latest);
-                    if (lg.isTraceEnabled())
+                    if(lg.isTraceEnabled())
                         lg.trace("Application(" + simContextFromDB.getKey() + ") '" + simContextFromDB.getName() + "', " +
                                 "Simulation(" + modelSimsFromDB[l].getKey() + ") '" + modelSimsFromDB[l].getName() + "':" + modelSimsFromDB[l].getVersion().getDate() +
                                 "mathEquivalency=" + mathCompareResults_latest.isEquivalent() + ", simEquivalency=" + bSimEquivalent);
                     //
                     // update Database Status for Simulation
                     //
-                    if (databaseMode == DatabaseMode.update) {
+                    if(databaseMode == DatabaseMode.update){
                         java.sql.Connection con = null;
                         java.sql.Statement stmt = null;
                         try {
@@ -596,30 +595,30 @@ public class MathVerifier {
                                     " SET " + SimStatTable.table.equiv.getUnqualifiedColName() + " = " + ((bSimEquivalent) ? (1) : (0)) + ", " +
                                     SimStatTable.table.status.getUnqualifiedColName() + " = '" + org.vcell.util.TokenMangler.getSQLEscapedString(mathCompareResults_latest.decision.description) + "'" +
                                     " WHERE " + SimStatTable.table.simRef.getUnqualifiedColName() + " = " + appSimsFromDB[l].getKey();
-                            if (lg.isDebugEnabled()) {
+                            if(lg.isDebugEnabled()){
                                 lg.debug("executeUpdate() SQL: '" + UPDATESTATUS + "'", new DbDriver.StackTraceGenerationException());
                             }
                             int numRowsChanged = stmt.executeUpdate(UPDATESTATUS); // jcs: added logging
-                            if (numRowsChanged != 1) {
+                            if(numRowsChanged != 1){
                                 lg.info("failed to update status");
                             }
                             con.commit();
-                            if (lg.isTraceEnabled())
+                            if(lg.isTraceEnabled())
                                 lg.trace("-------------- Update=true, saved 'simulation status for simulation '" + appSimsFromDB[l].getName() + "'");
-                        } catch (SQLException e) {
+                        } catch(SQLException e){
                             lg.error(e.getMessage(), e);
-                            if (lg.isWarnEnabled())
+                            if(lg.isWarnEnabled())
                                 lg.warn("*&*&*&*&*&*&*& Update=true, FAILED TO UPDATE status for simulation '" + appSimsFromDB[l].getName() + "'");
                         } finally {
-                            if (stmt != null) {
+                            if(stmt != null){
                                 stmt.close();
                             }
                             con.close();
                         }
                     }
-                } catch (Throwable e) {
+                } catch(Throwable e){
                     lg.error(e.getMessage(), e); // exception in SimContext
-                    if (databaseMode == DatabaseMode.update) {
+                    if(databaseMode == DatabaseMode.update){
                         java.sql.Connection con = null;
                         java.sql.Statement stmt = null;
                         try {
@@ -629,22 +628,22 @@ public class MathVerifier {
                             String UPDATESTATUS = "UPDATE " + SimStatTable.table.getTableName() +
                                     " SET " + SimStatTable.table.status.getUnqualifiedColName() + " = 'EXCEPTION: " + org.vcell.util.TokenMangler.getSQLEscapedString(e.toString()) + "'" +
                                     " WHERE " + SimStatTable.table.simRef.getUnqualifiedColName() + " = " + appSimsFromDB[l].getKey();
-                            if (lg.isDebugEnabled()) {
+                            if(lg.isDebugEnabled()){
                                 lg.debug("executeUpdate() SQL: '" + UPDATESTATUS + "'", new DbDriver.StackTraceGenerationException());
                             }
                             int numRowsChanged = stmt.executeUpdate(UPDATESTATUS); // jcs: added logging
-                            if (numRowsChanged != 1) {
+                            if(numRowsChanged != 1){
                                 lg.info("failed to update status with exception");
                             }
                             con.commit();
-                            if (lg.isTraceEnabled())
+                            if(lg.isTraceEnabled())
                                 lg.trace("-------------- Update=true, saved exception for Simulation '" + appSimsFromDB[l].getName() + "'");
-                        } catch (SQLException e2) {
+                        } catch(SQLException e2){
                             lg.error(e2.getMessage(), e2);
-                            if (lg.isWarnEnabled())
+                            if(lg.isWarnEnabled())
                                 lg.warn("*&*&*&*&*&*&*& Update=true, FAILED TO save exception status for simulation '" + appSimsFromDB[l].getName() + "'");
                         } finally {
-                            if (stmt != null) {
+                            if(stmt != null){
                                 stmt.close();
                             }
                             con.close();
@@ -657,7 +656,7 @@ public class MathVerifier {
 
     private Comparator<KeyValue> keyValueCpmparator =
             new Comparator<KeyValue>() {
-                public int compare(KeyValue o1, KeyValue o2) {
+                public int compare(KeyValue o1, KeyValue o2){
                     return Integer.parseInt(o1.toString()) - Integer.parseInt(o2.toString());
                 }
             };
@@ -671,7 +670,7 @@ public class MathVerifier {
         public final MathDescription mathDesc_4_8;
         public final MathCompareResults mathCompareResults_4_8;
 
-        public MathGenerationResults(BioModel bioModelFromDB, SimulationContext simContextFromDB, MathDescription math_orig, MathDescription math_latest, MathCompareResults mathCompareResults_latest, MathDescription math_4_8, MathCompareResults mathCompareResults_4_8) {
+        public MathGenerationResults(BioModel bioModelFromDB, SimulationContext simContextFromDB, MathDescription math_orig, MathDescription math_latest, MathCompareResults mathCompareResults_latest, MathDescription math_4_8, MathCompareResults mathCompareResults_4_8){
             this.bioModelFromDB = bioModelFromDB;
             this.simContextFromDB = simContextFromDB;
             this.mathDesc_original = math_orig;
@@ -682,11 +681,11 @@ public class MathVerifier {
         }
     }
 
-    public MathGenerationResults testMathGeneration(KeyValue simContextKey) throws SQLException, DataAccessException, XmlParseException, MappingException, MathException, MatrixException, ExpressionException, ModelException, PropertyVetoException {
+    public MathGenerationResults testMathGeneration(KeyValue simContextKey) throws SQLException, DataAccessException, XmlParseException, MappingException, MathException, MatrixException, ExpressionException, ModelException, PropertyVetoException{
 
         User adminUser = new User(PropertyLoader.ADMINISTRATOR_ACCOUNT, new org.vcell.util.document.KeyValue(PropertyLoader.ADMINISTRATOR_ID));
 
-        if (lg.isTraceEnabled()) lg.trace("Testing SimContext with key '" + simContextKey + "'");
+        if(lg.isTraceEnabled()) lg.trace("Testing SimContext with key '" + simContextKey + "'");
         // get biomodel refs
         java.sql.Connection con = null;
         java.sql.Statement stmt = null;
@@ -712,14 +711,14 @@ public class MathVerifier {
                 owner = new User(userid, ownerRef);
             }
         } finally {
-            if (stmt != null) {
+            if(stmt != null){
                 stmt.close();
             }
             con.close();
         }
 
         // use the first biomodel...
-        if (bioModelKeys.size() == 0) {
+        if(bioModelKeys.size() == 0){
             throw new RuntimeException("zombie simContext ... no biomodels");
         }
         BioModelInfo bioModelInfo = dbServerImpl.getBioModelInfo(owner, bioModelKeys.get(0));
@@ -746,16 +745,16 @@ public class MathVerifier {
         SimulationContext[] simContextsNewMath = bioModelNewMath.getSimulationContexts();
         SimulationContext simContextFromDB = null;
         SimulationContext simContextNewMath = null;
-        for (int k = 0; k < simContextsFromDB.length; k++) {
+        for(int k = 0; k < simContextsFromDB.length; k++){
             // find it...
-            if (simContextsFromDB[k].getKey().equals(simContextKey)) {
+            if(simContextsFromDB[k].getKey().equals(simContextKey)){
                 simContextFromDB = simContextsFromDB[k];
                 simContextNewMath = simContextsNewMath[k];
                 break;
             }
         }
 
-        if (simContextFromDB == null) {
+        if(simContextFromDB == null){
             throw new RuntimeException("BioModel referred to by this SimContext does not contain this SimContext");
         } else {
             MathDescription origMathDesc = simContextFromDB.getMathDescription();
@@ -766,10 +765,10 @@ public class MathVerifier {
             // make sure geometry is up to date on "simContextNewMath"
             //
             try {
-                if (simContextNewMath.getGeometry().getDimension() > 0 && simContextNewMath.getGeometry().getGeometrySurfaceDescription().getGeometricRegions() == null) {
+                if(simContextNewMath.getGeometry().getDimension() > 0 && simContextNewMath.getGeometry().getGeometrySurfaceDescription().getGeometricRegions() == null){
                     simContextNewMath.getGeometry().getGeometrySurfaceDescription().updateAll();
                 }
-            } catch (Exception e) {
+            } catch(Exception e){
                 lg.error(e.getMessage(), e);
             }
 
@@ -782,9 +781,9 @@ public class MathVerifier {
             MathDescription mathDesc_4_8 = mathMapping_4_8.getMathDescription();
             String issueString = null;
             org.vcell.util.Issue issues[] = mathMapping.getIssues();
-            if (issues != null && issues.length > 0) {
+            if(issues != null && issues.length > 0){
                 StringBuffer buffer = new StringBuffer("Issues(" + issues.length + "):\n");
-                for (int l = 0; l < issues.length; l++) {
+                for(int l = 0; l < issues.length; l++){
                     buffer.append(" <<" + issues[l].toString() + ">>\n");
                 }
                 issueString = buffer.toString();
@@ -795,7 +794,7 @@ public class MathVerifier {
             MathCompareResults mathCompareResults_4_8 = null;
             try {
                 mathCompareResults_4_8 = MathDescription.testEquivalency(SimulationSymbolTable.createMathSymbolTableFactory(), origMathDesc, mathDesc_4_8);
-            } catch (Exception e) {
+            } catch(Exception e){
                 lg.error(e.getMessage(), e);
                 mathCompareResults_4_8 = new MathCompareResults(Decision.MathDifferent_FAILURE_UNKNOWN, e.getMessage());
             }
@@ -803,28 +802,28 @@ public class MathVerifier {
         }
     }
 
-    private void generateMath(User users[], DatabaseMode databaseMode, KeyValue[] bioModelKeys) throws DataAccessException {
+    private void generateMath(User users[], DatabaseMode databaseMode, KeyValue[] bioModelKeys) throws DataAccessException{
 
         KeyValue[] sortedBioModelKeys = null;
-        if (bioModelKeys != null) {
+        if(bioModelKeys != null){
             sortedBioModelKeys = bioModelKeys.clone();
             Arrays.sort(sortedBioModelKeys, keyValueCpmparator);
         }
-        for (User user : users) {
+        for(User user : users){
             BioModelInfo[] bioModelInfos = dbServerImpl.getBioModelInfos(user, false);
-            if (lg.isTraceEnabled()) lg.trace("Testing user '" + user + "'");
+            if(lg.isTraceEnabled()) lg.trace("Testing user '" + user + "'");
 
             //
             // for each bioModel, load BioModelMetaData (to get list of keys for simulations and simContexts
             //
-            for (BioModelInfo bioModelInfo : bioModelInfos) {
+            for(BioModelInfo bioModelInfo : bioModelInfos){
                 //
                 // if certain Bio or Math models are requested, then filter all else out
                 //
                 KeyValue versionKey = bioModelInfo.getVersion().getVersionKey();
-                if (sortedBioModelKeys != null && sortedBioModelKeys.length > 0) {
+                if(sortedBioModelKeys != null && sortedBioModelKeys.length > 0){
                     int srch = Arrays.binarySearch(sortedBioModelKeys, versionKey, keyValueCpmparator);
-                    if (srch < 0) {
+                    if(srch < 0){
                         continue;
                     }
                 }
@@ -841,20 +840,20 @@ public class MathVerifier {
                                 new BigString(dbServerImpl.getServerDocumentManager().getBioModelXML(
                                         new QueryHashtable(), user, versionKey, false));
                         bioModelFromDBCache = XmlHelper.XMLToBioModel(new XMLSource(bioModelXMLFromDBCache.toString()));
-                        if (databaseMode == DatabaseMode.update) {
+                        if(databaseMode == DatabaseMode.update){
                             updateLoadModelsStatTable_LoadTest(System.currentTimeMillis() - startTime,
                                     versionKey, null);
                         }
-                    } catch (Exception e) {
+                    } catch(Exception e){
                         lg.error(e.getMessage(), e);
-                        if (databaseMode == DatabaseMode.update) {
+                        if(databaseMode == DatabaseMode.update){
                             updateLoadModelsStatTable_LoadTest(0, versionKey, e);
                         }
                     }
 
                     checkMathForBioModel(bioModelXMLFromDBCache, bioModelFromDBCache, user, databaseMode);
 
-                } catch (Throwable e) {
+                } catch(Throwable e){
                     lg.error(e.getMessage(), e); // exception in whole BioModel
                     // can't update anything in database, since we don't know what simcontexts are involved
                 }
@@ -862,28 +861,28 @@ public class MathVerifier {
         }
     }
 
-    private void loadBioModels(User[] users, DatabaseMode databaseMode, KeyValue[] bioModelKeys) throws DataAccessException {
+    private void loadBioModels(User[] users, DatabaseMode databaseMode, KeyValue[] bioModelKeys) throws DataAccessException{
 
         KeyValue[] sortedBioModelKeys = null;
-        if (bioModelKeys != null) {
+        if(bioModelKeys != null){
             sortedBioModelKeys = bioModelKeys.clone();
             Arrays.sort(sortedBioModelKeys, keyValueCpmparator);
         }
-        for (User user : users) {
+        for(User user : users){
             BioModelInfo[] bioModelInfos = dbServerImpl.getBioModelInfos(user, false);
-            if (lg.isTraceEnabled()) lg.trace("Testing user '" + user + "'");
+            if(lg.isTraceEnabled()) lg.trace("Testing user '" + user + "'");
 
             //
             // for each bioModel, load BioModelMetaData (to get list of keys for simulations and simContexts
             //
-            for (BioModelInfo bioModelInfo : bioModelInfos) {
+            for(BioModelInfo bioModelInfo : bioModelInfos){
                 //
                 // if certain Bio or Math models are requested, then filter all else out
                 //
                 KeyValue versionKey = bioModelInfo.getVersion().getVersionKey();
-                if (sortedBioModelKeys != null && sortedBioModelKeys.length > 0) {
+                if(sortedBioModelKeys != null && sortedBioModelKeys.length > 0){
                     int srch = Arrays.binarySearch(sortedBioModelKeys, versionKey, keyValueCpmparator);
-                    if (srch < 0) {
+                    if(srch < 0){
                         continue;
                     }
                 }
@@ -900,22 +899,22 @@ public class MathVerifier {
                                 new BigString(dbServerImpl.getServerDocumentManager().getBioModelXML(
                                         new QueryHashtable(), user, versionKey, false));
                         bioModelFromDBCache = XmlHelper.XMLToBioModel(new XMLSource(bioModelXMLFromDBCache.toString()));
-                        if (databaseMode == DatabaseMode.update) {
+                        if(databaseMode == DatabaseMode.update){
                             updateLoadModelsStatTable_LoadTest(System.currentTimeMillis() - startTime,
                                     versionKey, null);
                         }
-                    } catch (Exception e) {
+                    } catch(Exception e){
                         lg.error(e.getMessage(), e);
-                        if (databaseMode == DatabaseMode.update) {
+                        if(databaseMode == DatabaseMode.update){
                             updateLoadModelsStatTable_LoadTest(0, versionKey, e);
                         }
                     }
 
-                    if (bioModelXMLFromDBCache != null) {
+                    if(bioModelXMLFromDBCache != null){
                         testDocumentLoad(databaseMode, user, bioModelInfo, bioModelFromDBCache);
                     }
 
-                } catch (Throwable e) {
+                } catch(Throwable e){
                     lg.error(e.getMessage(), e); // exception in whole BioModel
                     // can't update anything in database, since we don't know what simcontexts are involved
                 }
@@ -923,27 +922,27 @@ public class MathVerifier {
         }
     }
 
-    private void loadMathModels(User[] users, DatabaseMode databaseMode, KeyValue[] mathModelKeys) throws DataAccessException {
+    private void loadMathModels(User[] users, DatabaseMode databaseMode, KeyValue[] mathModelKeys) throws DataAccessException{
 
         KeyValue[] sortedMathModelKeys = null;
-        if (mathModelKeys != null) {
+        if(mathModelKeys != null){
             sortedMathModelKeys = mathModelKeys.clone();
             Arrays.sort(sortedMathModelKeys, keyValueCpmparator);
         }
-        for (User user : users) {
+        for(User user : users){
             MathModelInfo[] mathModelInfos = dbServerImpl.getMathModelInfos(user, false);
-            if (lg.isTraceEnabled()) lg.trace("Testing user '" + user + "'");
+            if(lg.isTraceEnabled()) lg.trace("Testing user '" + user + "'");
 
             //
             // for each bioModel, load BioModelMetaData (to get list of keys for simulations and simContexts
             //
-            for (MathModelInfo mathModelInfo : mathModelInfos) {
+            for(MathModelInfo mathModelInfo : mathModelInfos){
                 //
                 // if certain Bio or Math models are requested, then filter all else out
                 //
                 KeyValue versionKey = mathModelInfo.getVersion().getVersionKey();
-                if (sortedMathModelKeys != null && sortedMathModelKeys.length > 0
-                        && Arrays.binarySearch(sortedMathModelKeys, versionKey, keyValueCpmparator) < 0) {
+                if(sortedMathModelKeys != null && sortedMathModelKeys.length > 0
+                        && Arrays.binarySearch(sortedMathModelKeys, versionKey, keyValueCpmparator) < 0){
                     continue;
                 }
 
@@ -959,13 +958,13 @@ public class MathVerifier {
                                 new BigString(dbServerImpl.getServerDocumentManager().getMathModelXML(
                                         new QueryHashtable(), user, versionKey, false));
                         mathModelFromDBCache = XmlHelper.XMLToMathModel(new XMLSource(mathModelXMLFromDBCache.toString()));
-                        if (databaseMode == DatabaseMode.update) {
+                        if(databaseMode == DatabaseMode.update){
                             updateLoadModelsStatTable_LoadTest(System.currentTimeMillis() - startTime,
                                     versionKey, null);
                         }
-                    } catch (Exception e) {
+                    } catch(Exception e){
                         lg.error(e.getMessage(), e);
-                        if (databaseMode == DatabaseMode.update) {
+                        if(databaseMode == DatabaseMode.update){
                             updateLoadModelsStatTable_LoadTest(0, versionKey, e);
                         }
                     }
@@ -973,11 +972,11 @@ public class MathVerifier {
                     //
                     // OPERATION = LOADTEST (there is no math generation for math models)
                     //
-                    if (mathModelXMLFromDBCache != null) {
+                    if(mathModelXMLFromDBCache != null){
                         testDocumentLoad(databaseMode, user, mathModelInfo, mathModelFromDBCache);
                     }
 
-                } catch (Throwable e) {
+                } catch(Throwable e){
                     lg.error(e.getMessage(), e); // exception in whole BioModel
                     // can't update anything in database, since we don't know what simcontexts are involved
                 }
@@ -985,7 +984,7 @@ public class MathVerifier {
         }
     }
 
-    private void testDocumentLoad(DatabaseMode databaseMode, User user, VCDocumentInfo documentInfo, VCDocument vcDocumentFromDBCache) {
+    private void testDocumentLoad(DatabaseMode databaseMode, User user, VCDocumentInfo documentInfo, VCDocument vcDocumentFromDBCache){
         KeyValue versionKey = documentInfo.getVersion().getVersionKey();
         //	try{
         //		String vcDocumentXMLFromDBCacheRoundtrip = null;
@@ -1004,13 +1003,13 @@ public class MathVerifier {
         // Long loadOriginalXMLTime = null;
         Long loadUnresolvedTime = null;
 
-        if (documentInfo instanceof BioModelInfo) {
+        if(documentInfo instanceof BioModelInfo){
             try {
                 String xmlRndTrip0 = XmlHelper.bioModelToXML((BioModel) vcDocumentFromDBCache);
                 BioModel bioModelRndTrip0 = XmlHelper.XMLToBioModel(new XMLSource(xmlRndTrip0));
                 String xmlRndTrip1 = XmlHelper.bioModelToXML((BioModel) bioModelRndTrip0);
                 BioModel bioModelRndTrip1 = XmlHelper.XMLToBioModel(new XMLSource(xmlRndTrip1));
-                if (Compare.logger != null) {
+                if(Compare.logger != null){
                     Compare.loggingEnabled = true;
                 }
                 bSameSelfCachedRoundtrip = VCMLComparator.compareEquals(xmlRndTrip0, xmlRndTrip1, true);
@@ -1018,7 +1017,7 @@ public class MathVerifier {
                 boolean objectSame = bioModelRndTrip0.compareEqual(bioModelRndTrip1);
                 lg.info("----------Objects same=" + objectSame);
                 bSameSelfCachedRoundtrip = bSameSelfCachedRoundtrip && objectSame;
-            } catch (Exception e) {
+            } catch(Exception e){
                 bSameSelfCachedRoundtrip = null;
                 lg.error(e.getMessage(), e);
                 bSameSelfXMLCachedRoundtripExc = e;
@@ -1035,17 +1034,17 @@ public class MathVerifier {
                 BioModel vcDocumentFromDBNotCached = XmlHelper.XMLToBioModel(new XMLSource(fromDBBioModelUnresolvedXML));
                 loadUnresolvedTime = System.currentTimeMillis() - startTime;
                 bSameCachedAndNotCachedObj = vcDocumentFromDBCache.compareEqual(vcDocumentFromDBNotCached);
-            } catch (Exception e) {
+            } catch(Exception e){
                 lg.error(e.getMessage(), e);
                 bSameCachedAndNotCachedObjExc = e;
             }
 
-            if (fromDBBioModelUnresolvedXML != null) {
+            if(fromDBBioModelUnresolvedXML != null){
                 try {
                     String vcDocumentXMLFromDBCacheRegenerate =
                             XmlHelper.bioModelToXML((BioModel) vcDocumentFromDBCache);
                     bSameCachedAndNotCachedXML = VCMLComparator.compareEquals(vcDocumentXMLFromDBCacheRegenerate, fromDBBioModelUnresolvedXML, true);
-                } catch (Exception e) {
+                } catch(Exception e){
                     lg.error(e.getMessage(), e);
                     bSameCachedAndNotCachedXMLExc = e;
                 }
@@ -1056,12 +1055,12 @@ public class MathVerifier {
                 MathModel mathModelRndTrip0 = XmlHelper.XMLToMathModel(new XMLSource(xmlRndTrip0));
                 String xmlRndTrip1 = XmlHelper.mathModelToXML((MathModel) mathModelRndTrip0);
                 MathModel mathModelRndTrip1 = XmlHelper.XMLToMathModel(new XMLSource(xmlRndTrip1));
-                if (Compare.logger != null) {
+                if(Compare.logger != null){
                     Compare.loggingEnabled = true;
                 }
                 bSameSelfCachedRoundtrip = VCMLComparator.compareEquals(xmlRndTrip0, xmlRndTrip1, true);
                 bSameSelfCachedRoundtrip = bSameSelfCachedRoundtrip && mathModelRndTrip0.compareEqual(mathModelRndTrip1);
-            } catch (Exception e) {
+            } catch(Exception e){
                 bSameSelfCachedRoundtrip = null;
                 lg.error(e.getMessage(), e);
                 bSameSelfXMLCachedRoundtripExc = e;
@@ -1078,24 +1077,24 @@ public class MathVerifier {
                 loadUnresolvedTime = System.currentTimeMillis() - startTime;
                 fromDBMathModelUnresolvedXML = XmlHelper.mathModelToXML(vcDocumentFromDBNotCached);
                 bSameCachedAndNotCachedObj = vcDocumentFromDBCache.compareEqual(vcDocumentFromDBNotCached);
-            } catch (Exception e) {
+            } catch(Exception e){
                 lg.error(e.getMessage(), e);
                 bSameCachedAndNotCachedObjExc = e;
             }
 
-            if (fromDBMathModelUnresolvedXML != null) {
+            if(fromDBMathModelUnresolvedXML != null){
                 try {
                     String vcDocumentXMLFromDBCacheRegenerate =
                             XmlHelper.mathModelToXML((MathModel) vcDocumentFromDBCache);
                     bSameCachedAndNotCachedXML = VCMLComparator.compareEquals(vcDocumentXMLFromDBCacheRegenerate, fromDBMathModelUnresolvedXML, true);
-                } catch (Exception e) {
+                } catch(Exception e){
                     lg.error(e.getMessage(), e);
                     bSameCachedAndNotCachedXMLExc = e;
                 }
             }
         }
 
-        if (databaseMode == DatabaseMode.update) {
+        if(databaseMode == DatabaseMode.update){
             updateLoadModelsStatTable_CompareTest(versionKey,
                     null/*loadOriginalXMLTime*/, loadUnresolvedTime,
                     bSameCachedAndNotCachedXML, bSameCachedAndNotCachedObj, bSameSelfCachedRoundtrip,
@@ -1113,7 +1112,7 @@ public class MathVerifier {
 
 
     @Deprecated
-    private void scanBioModels_not_used(boolean bUpdateDatabase, KeyValue[] bioModelKeys) throws DataAccessException {
+    private void scanBioModels_not_used(boolean bUpdateDatabase, KeyValue[] bioModelKeys) throws DataAccessException{
         java.util.Calendar calendar = java.util.GregorianCalendar.getInstance();
 //	calendar.set(2002,java.util.Calendar.MAY,7+1);
         calendar.set(2002, java.util.Calendar.JULY, 1);
@@ -1124,9 +1123,9 @@ public class MathVerifier {
 
 
         User user = new User(PropertyLoader.ADMINISTRATOR_ACCOUNT, new KeyValue(PropertyLoader.ADMINISTRATOR_ID));
-        for (KeyValue bioModelKey : bioModelKeys) {
+        for(KeyValue bioModelKey : bioModelKeys){
             BioModelInfo bioModelInfo = dbServerImpl.getBioModelInfo(user, bioModelKey);
-            if (lg.isTraceEnabled()) lg.trace("Testing bioModel with key '" + bioModelKey + "'");
+            if(lg.isTraceEnabled()) lg.trace("Testing bioModel with key '" + bioModelKey + "'");
             Connection con;
             java.sql.Statement stmt;
 
@@ -1151,7 +1150,7 @@ public class MathVerifier {
                 //
                 SimulationContext[] simContextsFromDB = bioModelFromDB.getSimulationContexts();
                 SimulationContext[] simContextsNewMath = bioModelNewMath.getSimulationContexts();
-                for (int k = 0; k < simContextsFromDB.length; k++) {
+                for(int k = 0; k < simContextsFromDB.length; k++){
                     SimulationContext simContextFromDB = simContextsFromDB[k];
                     Simulation[] appSimsFromDB = simContextFromDB.getSimulations();
                     SimulationContext simContextNewMath = simContextsNewMath[k];
@@ -1163,9 +1162,9 @@ public class MathVerifier {
                         // find out if any simulation belonging to this Application has data
                         //
                         boolean bApplicationHasData = false;
-                        for (Simulation simulation : modelSimsFromDB) {
+                        for(Simulation simulation : modelSimsFromDB){
                             SimulationStatusPersistent simulationStatus = dbServerImpl.getSimulationStatus(simulation.getKey());
-                            if (simulationStatus != null && simulationStatus.getHasData()) {
+                            if(simulationStatus != null && simulationStatus.getHasData()){
                                 bApplicationHasData = true;
                             }
                         }
@@ -1181,10 +1180,10 @@ public class MathVerifier {
                         // make sure geometry is up to date on "simContextNewMath"
                         //
                         try {
-                            if (simContextNewMath.getGeometry().getDimension() > 0 && simContextNewMath.getGeometry().getGeometrySurfaceDescription().getGeometricRegions() == null) {
+                            if(simContextNewMath.getGeometry().getDimension() > 0 && simContextNewMath.getGeometry().getGeometrySurfaceDescription().getGeometricRegions() == null){
                                 simContextNewMath.getGeometry().getGeometrySurfaceDescription().updateAll();
                             }
-                        } catch (Exception e) {
+                        } catch(Exception e){
                             lg.error(e.getMessage(), e);
                         }
 
@@ -1195,9 +1194,9 @@ public class MathVerifier {
                         MathDescription newMathDesc = mathMapping.getMathDescription();
                         String issueString = null;
                         org.vcell.util.Issue[] issues = mathMapping.getIssues();
-                        if (issues != null && issues.length > 0) {
+                        if(issues != null && issues.length > 0){
                             StringBuffer buffer = new StringBuffer("Issues(" + issues.length + "):");
-                            for (org.vcell.util.Issue issue : issues) {
+                            for(org.vcell.util.Issue issue : issues){
                                 buffer.append(" <<" + issue.toString() + ">>");
                             }
                             issueString = buffer.toString();
@@ -1210,7 +1209,7 @@ public class MathVerifier {
                         //
                         // update Database Status for SimContext
                         //
-                        if (bUpdateDatabase) {
+                        if(bUpdateDatabase){
                             con = null;
                             stmt = null;
                             try {
@@ -1223,56 +1222,56 @@ public class MathVerifier {
                                         SimContextStat2Table.table.status.getUnqualifiedColName() + " = '" + TokenMangler.getSQLEscapedString(mathCompareResults.toDatabaseStatus()) + "'" +
                                         ((issueString != null) ? (", " + SimContextStat2Table.table.comments.getUnqualifiedColName() + " = '" + TokenMangler.getSQLEscapedString(issueString, 255) + "'") : ("")) +
                                         " WHERE " + SimContextStat2Table.table.simContextRef.getUnqualifiedColName() + " = " + simContextFromDB.getKey();
-                                if (lg.isDebugEnabled()) {
+                                if(lg.isDebugEnabled()){
                                     lg.debug("executeUpdate() SQL: '" + UPDATESTATUS + "'", new DbDriver.StackTraceGenerationException());
                                 }
                                 int numRowsChanged = stmt.executeUpdate(UPDATESTATUS); // jcs: added logging
-                                if (numRowsChanged != 1) {
+                                if(numRowsChanged != 1){
                                     lg.info("failed to update status");
                                 }
                                 con.commit();
-                                if (lg.isTraceEnabled())
+                                if(lg.isTraceEnabled())
                                     lg.trace("-------------- Update=true, saved 'newMath' for Application '" + simContextFromDB.getName() + "'");
-                            } catch (SQLException e) {
+                            } catch(SQLException e){
                                 lg.error(e.getMessage(), e);
-                                if (lg.isWarnEnabled())
+                                if(lg.isWarnEnabled())
                                     lg.warn("*&*&*&*&*&*&*& Update=true, FAILED TO UPDATE MATH for Application '" + simContextFromDB.getName() + "'");
                             } finally {
-                                if (stmt != null) {
+                                if(stmt != null){
                                     stmt.close();
                                 }
                                 con.close();
                             }
                         }
-                    } catch (Throwable e) {
+                    } catch(Throwable e){
                         lg.error(e.getMessage(), e); // exception in SimContext
-                        if (bUpdateDatabase) {
+                        if(bUpdateDatabase){
                             con = null;
                             stmt = null;
                             try {
                                 con = conFactory.getConnection(new Object());
                                 stmt = con.createStatement();
                                 String status = "'EXCEPTION: " + TokenMangler.getSQLEscapedString(e.toString()) + "'";
-                                if (status.length() > 255) status = status.substring(0, 254) + "'";
+                                if(status.length() > 255) status = status.substring(0, 254) + "'";
                                 String UPDATESTATUS = "UPDATE " + SimContextStat2Table.table.getTableName() +
                                         " SET " + SimContextStat2Table.table.status.getUnqualifiedColName() + " = " + status +
                                         " WHERE " + SimContextStat2Table.table.simContextRef.getUnqualifiedColName() + " = " + simContextFromDB.getKey();
-                                if (lg.isDebugEnabled()) {
+                                if(lg.isDebugEnabled()){
                                     lg.debug("executeUpdate() SQL: '" + UPDATESTATUS + "'", new DbDriver.StackTraceGenerationException());
                                 }
                                 int numRowsChanged = stmt.executeUpdate(UPDATESTATUS); // jcs: added logging
-                                if (numRowsChanged != 1) {
+                                if(numRowsChanged != 1){
                                     lg.info("failed to update status with exception");
                                 }
                                 con.commit();
-                                if (lg.isTraceEnabled())
+                                if(lg.isTraceEnabled())
                                     lg.trace("-------------- Update=true, saved exception for Application '" + simContextFromDB.getName() + "'");
-                            } catch (SQLException e2) {
+                            } catch(SQLException e2){
                                 lg.error(e2.getMessage(), e2);
-                                if (lg.isWarnEnabled())
+                                if(lg.isWarnEnabled())
                                     lg.warn("*&*&*&*&*&*&*& Update=true, FAILED TO save exception status for Application '" + simContextFromDB.getName() + "'");
                             } finally {
-                                if (stmt != null) {
+                                if(stmt != null){
                                     stmt.close();
                                 }
                                 con.close();
@@ -1282,17 +1281,17 @@ public class MathVerifier {
                     //
                     // now, verify each associated simulation will apply overrides in an equivalent way
                     //
-                    for (int l = 0; l < appSimsFromDB.length; l++) {
+                    for(int l = 0; l < appSimsFromDB.length; l++){
                         try {
                             boolean bSimEquivalent = Simulation.testEquivalency(appSimsNewMath[l], appSimsFromDB[l], mathCompareResults);
-                            if (lg.isTraceEnabled())
+                            if(lg.isTraceEnabled())
                                 lg.trace("Application(" + simContextFromDB.getKey() + ") '" + simContextFromDB.getName() + "', " +
                                         "Simulation(" + modelSimsFromDB[l].getKey() + ") '" + modelSimsFromDB[l].getName() + "':" + modelSimsFromDB[l].getVersion().getDate() +
                                         "mathEquivalency=" + mathCompareResults.isEquivalent() + ", simEquivalency=" + bSimEquivalent);
                             //
                             // update Database Status for Simulation
                             //
-                            if (bUpdateDatabase) {
+                            if(bUpdateDatabase){
                                 con = null;
                                 stmt = null;
                                 try {
@@ -1302,56 +1301,56 @@ public class MathVerifier {
                                             " SET " + SimStatTable.table.equiv.getUnqualifiedColName() + " = " + ((bSimEquivalent) ? (1) : (0)) + ", " +
                                             SimStatTable.table.status.getUnqualifiedColName() + " = '" + TokenMangler.getSQLEscapedString(mathCompareResults.decision.description) + "'" +
                                             " WHERE " + SimStatTable.table.simRef.getUnqualifiedColName() + " = " + appSimsFromDB[l].getKey();
-                                    if (lg.isDebugEnabled()) {
+                                    if(lg.isDebugEnabled()){
                                         lg.debug("executeUpdate() SQL: '" + UPDATESTATUS + "'", new DbDriver.StackTraceGenerationException());
                                     }
                                     int numRowsChanged = stmt.executeUpdate(UPDATESTATUS); // jcs: added logging
-                                    if (numRowsChanged != 1) {
+                                    if(numRowsChanged != 1){
                                         lg.info("failed to update status");
                                     }
                                     con.commit();
-                                    if (lg.isTraceEnabled())
+                                    if(lg.isTraceEnabled())
                                         lg.trace("-------------- Update=true, saved 'simulation status for simulation '" + appSimsFromDB[l].getName() + "'");
-                                } catch (SQLException e) {
+                                } catch(SQLException e){
                                     lg.error(e.getMessage(), e);
-                                    if (lg.isWarnEnabled())
+                                    if(lg.isWarnEnabled())
                                         lg.warn("*&*&*&*&*&*&*& Update=true, FAILED TO UPDATE status for simulation '" + appSimsFromDB[l].getName() + "'");
                                 } finally {
-                                    if (stmt != null) {
+                                    if(stmt != null){
                                         stmt.close();
                                     }
                                     con.close();
                                 }
                             }
-                        } catch (Throwable e) {
+                        } catch(Throwable e){
                             lg.error(e.getMessage(), e); // exception in SimContext
-                            if (bUpdateDatabase) {
+                            if(bUpdateDatabase){
                                 con = null;
                                 stmt = null;
                                 try {
                                     con = conFactory.getConnection(new Object());
                                     stmt = con.createStatement();
                                     String status = "'EXCEPTION: " + TokenMangler.getSQLEscapedString(e.toString()) + "'";
-                                    if (status.length() > 255) status = status.substring(0, 254) + "'";
+                                    if(status.length() > 255) status = status.substring(0, 254) + "'";
                                     String UPDATESTATUS = "UPDATE " + SimStatTable.table.getTableName() +
                                             " SET " + SimStatTable.table.status.getUnqualifiedColName() + " = " + status +
                                             " WHERE " + SimStatTable.table.simRef.getUnqualifiedColName() + " = " + appSimsFromDB[l].getKey();
-                                    if (lg.isDebugEnabled()) {
+                                    if(lg.isDebugEnabled()){
                                         lg.debug("executeUpdate() SQL: '" + UPDATESTATUS + "'", new DbDriver.StackTraceGenerationException());
                                     }
                                     int numRowsChanged = stmt.executeUpdate(UPDATESTATUS); // jcs: added logging
-                                    if (numRowsChanged != 1) {
+                                    if(numRowsChanged != 1){
                                         lg.info("failed to update status with exception");
                                     }
                                     con.commit();
-                                    if (lg.isTraceEnabled())
+                                    if(lg.isTraceEnabled())
                                         lg.trace("-------------- Update=true, saved exception for Simulation '" + appSimsFromDB[l].getName() + "'");
-                                } catch (SQLException e2) {
+                                } catch(SQLException e2){
                                     lg.error(e2.getMessage(), e2);
-                                    if (lg.isWarnEnabled())
+                                    if(lg.isWarnEnabled())
                                         lg.warn("*&*&*&*&*&*&*& Update=true, FAILED TO save exception status for simulation '" + appSimsFromDB[l].getName() + "'");
                                 } finally {
-                                    if (stmt != null) {
+                                    if(stmt != null){
                                         stmt.close();
                                     }
                                     con.close();
@@ -1360,7 +1359,7 @@ public class MathVerifier {
                         }
                     }
                 }
-            } catch (Throwable e) {
+            } catch(Throwable e){
                 lg.error(e.getMessage(), e); // exception in whole BioModel
                 // can't update anything in database, since we don't know what simcontexts are involved
             }
@@ -1369,7 +1368,7 @@ public class MathVerifier {
 
 
     @Deprecated
-    private void scanSimContexts_not_used(boolean bUpdateDatabase, KeyValue[] simContextKeys) throws SQLException {
+    private void scanSimContexts_not_used(boolean bUpdateDatabase, KeyValue[] simContextKeys) throws SQLException{
         java.util.Calendar calendar = java.util.GregorianCalendar.getInstance();
         //	calendar.set(2002,java.util.Calendar.MAY,7+1);
         calendar.set(2002, java.util.Calendar.JULY, 1);
@@ -1379,8 +1378,8 @@ public class MathVerifier {
         final java.util.Date totalVolumeCorrectionFixDate = calendar.getTime();
 
         User user = new User(PropertyLoader.ADMINISTRATOR_ACCOUNT, new KeyValue(PropertyLoader.ADMINISTRATOR_ID));
-        for (KeyValue simContextKey : simContextKeys) {
-            if (lg.isTraceEnabled()) lg.trace("Testing SimContext with key '" + simContextKey + "'");
+        for(KeyValue simContextKey : simContextKeys){
+            if(lg.isTraceEnabled()) lg.trace("Testing SimContext with key '" + simContextKey + "'");
             // get biomodel refs
             Connection con = null;
             java.sql.Statement stmt = null;
@@ -1389,7 +1388,7 @@ public class MathVerifier {
             String sql = "SELECT " + bmscTable.bioModelRef.getQualifiedColName() +
                     " FROM " + bmscTable.getTableName() +
                     " WHERE " + bmscTable.simContextRef.getQualifiedColName() + " = " + simContextKey;
-            Vector keys = new Vector();
+            Vector<KeyValue> keys = new Vector<>();
             stmt = con.createStatement();
             try {
                 ResultSet rset = stmt.executeQuery(sql);
@@ -1398,13 +1397,13 @@ public class MathVerifier {
                     keys.addElement(key);
                 }
             } finally {
-                if (stmt != null) {
+                if(stmt != null){
                     stmt.close();
                 }
                 con.close();
             }
 
-            KeyValue[] bmKeys = (KeyValue[]) org.vcell.util.BeanUtils.getArray(keys, KeyValue.class);
+            KeyValue[] bmKeys = keys.toArray(KeyValue[]::new);
             try {
                 // use the first biomodel...
                 BioModelInfo bioModelInfo = dbServerImpl.getBioModelInfo(user, bmKeys[0]);
@@ -1431,15 +1430,15 @@ public class MathVerifier {
                 SimulationContext[] simContextsNewMath = bioModelNewMath.getSimulationContexts();
                 SimulationContext simContextFromDB = null;
                 SimulationContext simContextNewMath = null;
-                for (int k = 0; k < simContextsFromDB.length; k++) {
+                for(int k = 0; k < simContextsFromDB.length; k++){
                     // find it...
-                    if (simContextsFromDB[k].getKey().equals(simContextKey)) {
+                    if(simContextsFromDB[k].getKey().equals(simContextKey)){
                         simContextFromDB = simContextsFromDB[k];
                         simContextNewMath = simContextsNewMath[k];
                         break;
                     }
                 }
-                if (simContextFromDB == null) {
+                if(simContextFromDB == null){
                     throw new RuntimeException("BioModel referred to by this SimContext does not contain this SimContext");
                 } else {
                     Simulation[] appSimsFromDB = simContextFromDB.getSimulations();
@@ -1451,9 +1450,9 @@ public class MathVerifier {
                         // find out if any simulation belonging to this Application has data
                         //
                         boolean bApplicationHasData = false;
-                        for (int l = 0; l < modelSimsFromDB.length; l++) {
+                        for(int l = 0; l < modelSimsFromDB.length; l++){
                             SimulationStatusPersistent simulationStatus = dbServerImpl.getSimulationStatus(modelSimsFromDB[l].getKey());
-                            if (simulationStatus != null && simulationStatus.getHasData()) {
+                            if(simulationStatus != null && simulationStatus.getHasData()){
                                 bApplicationHasData = true;
                             }
                         }
@@ -1469,10 +1468,10 @@ public class MathVerifier {
                         // make sure geometry is up to date on "simContextNewMath"
                         //
                         try {
-                            if (simContextNewMath.getGeometry().getDimension() > 0 && simContextNewMath.getGeometry().getGeometrySurfaceDescription().getGeometricRegions() == null) {
+                            if(simContextNewMath.getGeometry().getDimension() > 0 && simContextNewMath.getGeometry().getGeometrySurfaceDescription().getGeometricRegions() == null){
                                 simContextNewMath.getGeometry().getGeometrySurfaceDescription().updateAll();
                             }
-                        } catch (Exception e) {
+                        } catch(Exception e){
                             lg.error(e.getMessage(), e);
                         }
 
@@ -1483,9 +1482,9 @@ public class MathVerifier {
                         MathDescription newMathDesc = mathMapping.getMathDescription();
                         String issueString = null;
                         org.vcell.util.Issue[] issues = mathMapping.getIssues();
-                        if (issues != null && issues.length > 0) {
+                        if(issues != null && issues.length > 0){
                             StringBuffer buffer = new StringBuffer("Issues(" + issues.length + "):");
-                            for (int l = 0; l < issues.length; l++) {
+                            for(int l = 0; l < issues.length; l++){
                                 buffer.append(" <<" + issues[l].toString() + ">>");
                             }
                             issueString = buffer.toString();
@@ -1498,7 +1497,7 @@ public class MathVerifier {
                         //
                         // update Database Status for SimContext
                         //
-                        if (bUpdateDatabase) {
+                        if(bUpdateDatabase){
                             con = null;
                             stmt = null;
                             try {
@@ -1511,56 +1510,56 @@ public class MathVerifier {
                                         + SimContextStat2Table.table.status.getUnqualifiedColName() + " = '" + TokenMangler.getSQLEscapedString(mathCompareResults.toDatabaseStatus()) + "'"
                                         + ((issueString != null) ? (", " + SimContextStat2Table.table.comments.getUnqualifiedColName() + " = '" + TokenMangler.getSQLEscapedString(issueString, 255) + "'") : ("")) +
                                         " WHERE " + SimContextStat2Table.table.simContextRef.getUnqualifiedColName() + " = " + simContextFromDB.getKey();
-                                if (lg.isDebugEnabled()) {
+                                if(lg.isDebugEnabled()){
                                     lg.debug("executeUpdate() SQL: '" + UPDATESTATUS + "'", new DbDriver.StackTraceGenerationException());
                                 }
                                 int numRowsChanged = stmt.executeUpdate(UPDATESTATUS); // jcs: added logging
-                                if (numRowsChanged != 1) {
+                                if(numRowsChanged != 1){
                                     lg.info("failed to update status");
                                 }
                                 con.commit();
-                                if (lg.isTraceEnabled())
+                                if(lg.isTraceEnabled())
                                     lg.trace("-------------- Update=true, saved 'newMath' for Application '" + simContextFromDB.getName() + "'");
-                            } catch (SQLException e) {
+                            } catch(SQLException e){
                                 lg.error(e.getMessage(), e);
-                                if (lg.isWarnEnabled())
+                                if(lg.isWarnEnabled())
                                     lg.warn("*&*&*&*&*&*&*& Update=true, FAILED TO UPDATE MATH for Application '" + simContextFromDB.getName() + "'");
                             } finally {
-                                if (stmt != null) {
+                                if(stmt != null){
                                     stmt.close();
                                 }
                                 con.close();
                             }
                         }
-                    } catch (Throwable e) {
+                    } catch(Throwable e){
                         lg.error(e.getMessage(), e); // exception in SimContext
-                        if (bUpdateDatabase) {
+                        if(bUpdateDatabase){
                             con = null;
                             stmt = null;
                             try {
                                 con = conFactory.getConnection(new Object());
                                 stmt = con.createStatement();
                                 String status = "'EXCEPTION: " + TokenMangler.getSQLEscapedString(e.toString()) + "'";
-                                if (status.length() > 255) status = status.substring(0, 254) + "'";
+                                if(status.length() > 255) status = status.substring(0, 254) + "'";
                                 String UPDATESTATUS = "UPDATE " + SimContextStat2Table.table.getTableName() +
                                         " SET " + SimContextStat2Table.table.status.getUnqualifiedColName() + " = " + status +
                                         " WHERE " + SimContextStat2Table.table.simContextRef.getUnqualifiedColName() + " = " + simContextFromDB.getKey();
-                                if (lg.isDebugEnabled()) {
+                                if(lg.isDebugEnabled()){
                                     lg.debug("executeUpdate() SQL: '" + UPDATESTATUS + "'", new DbDriver.StackTraceGenerationException());
                                 }
                                 int numRowsChanged = stmt.executeUpdate(UPDATESTATUS); // jcs: added logging
-                                if (numRowsChanged != 1) {
+                                if(numRowsChanged != 1){
                                     lg.info("failed to update status with exception");
                                 }
                                 con.commit();
-                                if (lg.isTraceEnabled())
+                                if(lg.isTraceEnabled())
                                     lg.trace("-------------- Update=true, saved exception for Application '" + simContextFromDB.getName() + "'");
-                            } catch (SQLException e2) {
+                            } catch(SQLException e2){
                                 lg.error(e2.getMessage(), e2);
-                                if (lg.isWarnEnabled())
+                                if(lg.isWarnEnabled())
                                     lg.warn("*&*&*&*&*&*&*& Update=true, FAILED TO save exception status for Application '" + simContextFromDB.getName() + "'");
                             } finally {
-                                if (stmt != null) {
+                                if(stmt != null){
                                     stmt.close();
                                 }
                                 con.close();
@@ -1570,15 +1569,15 @@ public class MathVerifier {
                     //
                     // now, verify each associated simulation will apply overrides in an equivalent way
                     //
-                    for (int l = 0; l < appSimsFromDB.length; l++) {
+                    for(int l = 0; l < appSimsFromDB.length; l++){
                         try {
                             boolean bSimEquivalent = Simulation.testEquivalency(appSimsNewMath[l], appSimsFromDB[l], mathCompareResults);
-                            if (lg.isTraceEnabled())
+                            if(lg.isTraceEnabled())
                                 lg.trace("Application(" + simContextFromDB.getKey() + ") '" + simContextFromDB.getName() + "', " + "Simulation(" + modelSimsFromDB[l].getKey() + ") '" + modelSimsFromDB[l].getName() + "':" + modelSimsFromDB[l].getVersion().getDate() + "mathEquivalency=" + mathCompareResults.isEquivalent() + ", simEquivalency=" + bSimEquivalent);
                             //
                             // update Database Status for Simulation
                             //
-                            if (bUpdateDatabase) {
+                            if(bUpdateDatabase){
                                 con = null;
                                 stmt = null;
                                 try {
@@ -1587,56 +1586,56 @@ public class MathVerifier {
                                     String UPDATESTATUS = "UPDATE " + SimStatTable.table.getTableName() +
                                             " SET " + SimStatTable.table.equiv.getUnqualifiedColName() + " = " + ((bSimEquivalent) ? (1) : (0)) + ", " + SimStatTable.table.status.getUnqualifiedColName() + " = '" + TokenMangler.getSQLEscapedString(mathCompareResults.toDatabaseStatus()) + "'" +
                                             " WHERE " + SimStatTable.table.simRef.getUnqualifiedColName() + " = " + appSimsFromDB[l].getKey();
-                                    if (lg.isDebugEnabled()) {
+                                    if(lg.isDebugEnabled()){
                                         lg.debug("executeUpdate() SQL: '" + UPDATESTATUS + "'", new DbDriver.StackTraceGenerationException());
                                     }
                                     int numRowsChanged = stmt.executeUpdate(UPDATESTATUS); // jcs: added logging
-                                    if (numRowsChanged != 1) {
+                                    if(numRowsChanged != 1){
                                         lg.info("failed to update status");
                                     }
                                     con.commit();
-                                    if (lg.isTraceEnabled())
+                                    if(lg.isTraceEnabled())
                                         lg.trace("-------------- Update=true, saved 'simulation status for simulation '" + appSimsFromDB[l].getName() + "'");
-                                } catch (SQLException e) {
+                                } catch(SQLException e){
                                     lg.error(e.getMessage(), e);
-                                    if (lg.isWarnEnabled())
+                                    if(lg.isWarnEnabled())
                                         lg.warn("*&*&*&*&*&*&*& Update=true, FAILED TO UPDATE status for simulation '" + appSimsFromDB[l].getName() + "'");
                                 } finally {
-                                    if (stmt != null) {
+                                    if(stmt != null){
                                         stmt.close();
                                     }
                                     con.close();
                                 }
                             }
-                        } catch (Throwable e) {
+                        } catch(Throwable e){
                             lg.error(e.getMessage(), e); // exception in SimContext
-                            if (bUpdateDatabase) {
+                            if(bUpdateDatabase){
                                 con = null;
                                 stmt = null;
                                 try {
                                     con = conFactory.getConnection(new Object());
                                     stmt = con.createStatement();
                                     String status = "'EXCEPTION: " + TokenMangler.getSQLEscapedString(e.toString()) + "'";
-                                    if (status.length() > 255) status = status.substring(0, 254) + "'";
+                                    if(status.length() > 255) status = status.substring(0, 254) + "'";
                                     String UPDATESTATUS = "UPDATE " + SimStatTable.table.getTableName() +
                                             " SET " + SimStatTable.table.status.getUnqualifiedColName() + " = " + status +
                                             " WHERE " + SimStatTable.table.simRef.getUnqualifiedColName() + " = " + appSimsFromDB[l].getKey();
-                                    if (lg.isDebugEnabled()) {
+                                    if(lg.isDebugEnabled()){
                                         lg.debug("executeUpdate() SQL: '" + UPDATESTATUS + "'", new DbDriver.StackTraceGenerationException());
                                     }
                                     int numRowsChanged = stmt.executeUpdate(UPDATESTATUS); // jcs: added logging
-                                    if (numRowsChanged != 1) {
+                                    if(numRowsChanged != 1){
                                         lg.info("failed to update status with exception");
                                     }
                                     con.commit();
-                                    if (lg.isTraceEnabled())
+                                    if(lg.isTraceEnabled())
                                         lg.trace("-------------- Update=true, saved exception for Simulation '" + appSimsFromDB[l].getName() + "'");
-                                } catch (SQLException e2) {
+                                } catch(SQLException e2){
                                     lg.error(e2.getMessage(), e2);
-                                    if (lg.isWarnEnabled())
+                                    if(lg.isWarnEnabled())
                                         lg.warn("*&*&*&*&*&*&*& Update=true, FAILED TO save exception status for simulation '" + appSimsFromDB[l].getName() + "'");
                                 } finally {
-                                    if (stmt != null) {
+                                    if(stmt != null){
                                         stmt.close();
                                     }
                                     con.close();
@@ -1645,10 +1644,10 @@ public class MathVerifier {
                         }
                     }
                 }
-            } catch (Throwable e) {
+            } catch(Throwable e){
                 lg.error(e.getMessage(), e); // exception in whole BioModel
                 // update database, since we know the simcontext...
-                if (bUpdateDatabase) {
+                if(bUpdateDatabase){
                     con = null;
                     stmt = null;
                     try {
@@ -1658,22 +1657,22 @@ public class MathVerifier {
                         String UPDATESTATUS = "UPDATE " + SimContextStat2Table.table.getTableName() +
                                 " SET " + SimContextStat2Table.table.status.getUnqualifiedColName() + " = 'BIOMODEL EXCEPTION: " + TokenMangler.getSQLEscapedString(e.toString()) + "'" +
                                 " WHERE " + SimContextStat2Table.table.simContextRef.getUnqualifiedColName() + " = " + simContextKey;
-                        if (lg.isDebugEnabled()) {
+                        if(lg.isDebugEnabled()){
                             lg.debug("executeUpdate() SQL: '" + UPDATESTATUS + "'", new DbDriver.StackTraceGenerationException());
                         }
                         int numRowsChanged = stmt.executeUpdate(UPDATESTATUS); // jcs: added logging
-                        if (numRowsChanged != 1) {
+                        if(numRowsChanged != 1){
                             lg.info("failed to update status with exception");
                         }
                         con.commit();
-                        if (lg.isTraceEnabled())
+                        if(lg.isTraceEnabled())
                             lg.trace("-------------- Update=true, saved exception for Application with key '" + simContextKey + "'");
-                    } catch (SQLException e2) {
+                    } catch(SQLException e2){
                         lg.error(e2.getMessage(), e2);
-                        if (lg.isWarnEnabled())
+                        if(lg.isWarnEnabled())
                             lg.warn("*&*&*&*&*&*&*& Update=true, FAILED TO save exception status for Application with key '" + simContextKey + "'");
                     } finally {
-                        if (stmt != null) {
+                        if(stmt != null){
                             stmt.close();
                         }
                         con.close();

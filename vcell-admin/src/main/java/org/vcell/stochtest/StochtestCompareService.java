@@ -1,20 +1,5 @@
 package org.vcell.stochtest;
 
-import java.beans.PropertyVetoException;
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.sql.SQLException;
-
-import org.vcell.db.ConnectionFactory;
-import org.vcell.db.DatabaseService;
-import org.vcell.db.KeyFactory;
-import org.vcell.stochtest.StochtestCompare.StochtestCompareStatus;
-import org.vcell.stochtest.StochtestRun.StochtestRunStatus;
-import org.vcell.stochtest.TimeSeriesMultitrialData.SummaryStatistics;
-import org.vcell.util.DataAccessException;
-
 import cbit.image.ImageException;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.geometry.GeometryException;
@@ -24,6 +9,20 @@ import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.xml.XmlParseException;
+import org.vcell.db.ConnectionFactory;
+import org.vcell.db.DatabaseService;
+import org.vcell.db.KeyFactory;
+import org.vcell.stochtest.StochtestCompare.StochtestCompareStatus;
+import org.vcell.stochtest.StochtestRun.StochtestRunStatus;
+import org.vcell.stochtest.TimeSeriesMultitrialData.SummaryStatistics;
+import org.vcell.util.DataAccessException;
+
+import java.beans.PropertyVetoException;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.sql.SQLException;
 
 
 public class StochtestCompareService {
@@ -54,8 +53,6 @@ public class StochtestCompareService {
 		if (!baseDir.exists()){
 			throw new RuntimeException("base directory "+baseDir.getPath()+" not found");
 		}
-		
-		PropertyLoader.loadProperties();
 
 		DatabasePolicySQL.bAllowAdministrativeAccess = true;
 	    String driverName = PropertyLoader.getRequiredProperty(PropertyLoader.dbDriverName);

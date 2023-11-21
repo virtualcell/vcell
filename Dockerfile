@@ -48,7 +48,7 @@ LABEL \
     maintainer="BioSimulators Team <info@biosimulators.org>"
 
 RUN apt-get -y update
-RUN apt-get install -y --no-install-recommends curl dnsutils
+RUN apt-get install -y --no-install-recommends curl dnsutils apt-utils libfreetype6 fontconfig fonts-dejavu
 
 RUN mkdir -p /usr/local/app/vcell/lib && \
     mkdir -p /usr/local/app/vcell/simulation && \

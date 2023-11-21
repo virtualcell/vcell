@@ -9,57 +9,33 @@
  */
 
 package cbit.vcell.export.server;
-import java.awt.Dimension;
-import java.awt.image.BufferedImage;
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.rmi.RemoteException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Comparator;
-import java.util.Enumeration;
-import java.util.GregorianCalendar;
-import java.util.Hashtable;
-import java.util.TreeSet;
-import java.util.Vector;
-import java.util.zip.DataFormatException;
-
-import javax.imageio.ImageIO;
-import javax.swing.ImageIcon;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.vcell.util.ClientTaskStatusSupport;
-import org.vcell.util.Coordinate;
-import org.vcell.util.DataAccessException;
-import org.vcell.util.FileUtils;
-import org.vcell.util.UserCancelException;
-import org.vcell.util.document.User;
-import org.vcell.util.document.VCDataIdentifier;
 
 import GIFUtils.GIFFormatException;
 import GIFUtils.GIFImage;
 import GIFUtils.GIFOutputStream;
 import cbit.image.DisplayPreferences;
 import cbit.vcell.export.gloworm.atoms.UserDataEntry;
-import cbit.vcell.export.gloworm.quicktime.MediaMethods;
-import cbit.vcell.export.gloworm.quicktime.MediaMovie;
-import cbit.vcell.export.gloworm.quicktime.MediaTrack;
-import cbit.vcell.export.gloworm.quicktime.ObjectMediaChunk;
-import cbit.vcell.export.gloworm.quicktime.VRMediaChunk;
-import cbit.vcell.export.gloworm.quicktime.VRMediaMovie;
-import cbit.vcell.export.gloworm.quicktime.VRWorld;
-import cbit.vcell.export.gloworm.quicktime.VideoMediaChunk;
-import cbit.vcell.export.gloworm.quicktime.VideoMediaSample;
+import cbit.vcell.export.gloworm.quicktime.*;
 import cbit.vcell.resource.PropertyLoader;
-import cbit.vcell.simdata.DataServerImpl;
-import cbit.vcell.simdata.OutputContext;
-import cbit.vcell.simdata.SimulationData;
+import cbit.vcell.simdata.*;
+import cbit.vcell.solver.VCSimulationDataIdentifier;
+import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.util.AmplistorUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.vcell.util.*;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+import org.vcell.util.document.VCDataIdentifier;
+
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.*;
+import java.rmi.RemoteException;
+import java.util.*;
+import java.util.zip.DataFormatException;
 /**
  * Insert the type's description here.
  * Creation date: (4/27/2004 1:28:34 PM)
@@ -97,7 +73,6 @@ public class IMGExporter implements ExportConstants {
 				varNames[i-6] = args[i];
 			}
 		}
-		PropertyLoader.loadProperties();
 
 		User user = new User(userName, new KeyValue(userKey));
 		VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(new KeyValue(SimulationKey), user);

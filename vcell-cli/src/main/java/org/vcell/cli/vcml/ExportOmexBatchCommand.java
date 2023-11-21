@@ -1,6 +1,5 @@
 package org.vcell.cli.vcml;
 
-import cbit.vcell.resource.PropertyLoader;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -29,15 +28,6 @@ public class ExportOmexBatchCommand implements Callable<Integer> {
     @Option(names = {"-d", "--debug"}, description = "full application debug mode")
     private boolean bDebug = false;
 
-    @Option(names = "--hasDataOnly")
-    boolean bHasDataOnly;
-
-    @Option(names = "--makeLogsOnly")
-    boolean bMakeLogsOnly;
-
-    @Option(names = "--nonSpatialOnly")
-    boolean bNonSpatialOnly;
-
     @Option(names = "--validate")
     boolean bValidateOmex;
 
@@ -46,12 +36,6 @@ public class ExportOmexBatchCommand implements Callable<Integer> {
 
     @Option(names = { "--skipUnsupportedApps" }, defaultValue = "false", description = "skip unsupported applications (e.g. electrical in SBML)")
     private boolean bSkipUnsupportedApps = false;
-
-    @Option(names = "--keepFlushingLogs")
-    boolean bKeepFlushingLogs;
-
-    @Option(names = "--offline", hidden = true, defaultValue = "true", description = "offline parameter is not used anymore, database access is removed")
-    boolean bOffline=true;
 
     @Option(names = {"-h", "--help"}, description = "show this help message and exit", usageHelp = true)
     private boolean help;
@@ -64,14 +48,9 @@ public class ExportOmexBatchCommand implements Callable<Integer> {
         config.getConfiguration().getLoggerConfig(LogManager.getLogger("cbit").getName()).setLevel(logLevel);
         config.updateLoggers();
 
-        if (!bOffline){
-            throw new RuntimeException("offline parameter is not used anymore, database access has been removed");
-        }
-
         try {
 
             logger.debug("Batch export of omex files requested");
-            PropertyLoader.loadProperties();
             if (inputFilePath == null || !inputFilePath.exists() || !inputFilePath.isDirectory())
                 throw new RuntimeException("inputFilePath '" + (inputFilePath == null ? "" : inputFilePath) + "' is not a 'valid directory'");
 

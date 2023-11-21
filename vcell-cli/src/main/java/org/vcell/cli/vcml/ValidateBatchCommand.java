@@ -1,6 +1,5 @@
 package org.vcell.cli.vcml;
 
-import cbit.vcell.resource.PropertyLoader;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -47,7 +46,6 @@ public class ValidateBatchCommand implements Callable<Integer> {
             boolean bWriteLogFiles = true;
             boolean bKeepFlushingLogs = true;
             cliLogger = new CLIRecorder(outputFilePath, bWriteLogFiles, bKeepFlushingLogs);
-            PropertyLoader.loadProperties();
             if (!inputFilePath.exists()){
                 throw new RuntimeException("inputFilePath '"+inputFilePath+"' should be a directory or single .vcml file");
             }

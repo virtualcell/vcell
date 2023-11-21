@@ -1,15 +1,11 @@
 package org.vcell.cli.vcml;
 
-import cbit.vcell.resource.PropertyLoader;
-import org.vcell.sedml.ModelFormat;
-import org.vcell.util.DataAccessException;
-import picocli.CommandLine.Command;
-import picocli.CommandLine.Option;
-
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
 
 import java.io.File;
 import java.util.concurrent.Callable;
@@ -39,9 +35,7 @@ public class ImportOmexCommand implements Callable<Integer> {
         config.updateLoggers();
 
         try {
-            PropertyLoader.loadProperties();
-
-            if (!inputFilePath.exists() || !inputFilePath.isFile()){
+             if (!inputFilePath.exists() || !inputFilePath.isFile()){
                 throw new RuntimeException("expecting inputFilePath to be an existing file: "+inputFilePath.getAbsolutePath());
             }
             if (!outputFilePath.exists() || !outputFilePath.isDirectory()){

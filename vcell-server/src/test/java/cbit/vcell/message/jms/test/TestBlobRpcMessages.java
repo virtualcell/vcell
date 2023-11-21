@@ -1,20 +1,13 @@
 package cbit.vcell.message.jms.test;
 
-import java.util.ArrayList;
-
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.User;
-
-import cbit.vcell.message.SimpleMessagingDelegate;
-import cbit.vcell.message.VCMessageSession;
-import cbit.vcell.message.VCMessagingInvocationTargetException;
-import cbit.vcell.message.VCMessagingService;
-import cbit.vcell.message.VCQueueConsumer;
-import cbit.vcell.message.VCRpcMessageHandler;
-import cbit.vcell.message.VCRpcRequest;
+import cbit.vcell.message.*;
 import cbit.vcell.message.VCRpcRequest.RpcServiceType;
 import cbit.vcell.message.jms.activeMQ.VCMessagingServiceActiveMQ;
 import cbit.vcell.resource.PropertyLoader;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+
+import java.util.ArrayList;
 
 /**
  * Hello world!
@@ -47,9 +40,8 @@ public class TestBlobRpcMessages {
 
 	public static void main(String[] args) throws Exception {
 		try {
-	    	PropertyLoader.loadProperties();
 	    	//System.getProperties().setProperty(PropertyLoader.jmsURL,"tcp://nrcamdev5.cam.uchc.edu:61616");
-	    	
+
 	    	VCMessagingService messagingService = new VCMessagingServiceActiveMQ();
     		String jmshost = PropertyLoader.getRequiredProperty(PropertyLoader.jmsIntHostInternal);
     		int jmsport = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.jmsIntPortInternal));

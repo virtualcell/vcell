@@ -15,7 +15,7 @@ ENV JAVA_HOME=/opt/java/openjdk
 ENV PATH "${JAVA_HOME}/bin:${PATH}"
 COPY --from=jre-build /javaruntime $JAVA_HOME
 
-RUN apt-get -y update && apt-get install -y bash nano wget
+RUN apt-get -y update && apt-get install -y bash nano wget apt-utils libfreetype6 fontconfig fonts-dejavu
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tzdata
 RUN unlink /etc/localtime || true

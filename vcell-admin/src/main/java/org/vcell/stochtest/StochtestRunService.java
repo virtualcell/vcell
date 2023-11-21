@@ -1,20 +1,5 @@
 package org.vcell.stochtest;
 
-import java.beans.PropertyVetoException;
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.sql.SQLException;
-import java.util.ArrayList;
-
-import org.vcell.db.ConnectionFactory;
-import org.vcell.db.DatabaseService;
-import org.vcell.db.KeyFactory;
-import org.vcell.util.DataAccessException;
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.User;
-
 import cbit.image.ImageException;
 import cbit.sql.QueryHashtable;
 import cbit.util.xml.XmlUtil;
@@ -22,13 +7,11 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.ClientSimManager;
 import cbit.vcell.geometry.GeometryException;
 import cbit.vcell.mapping.MappingException;
-import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.mapping.SpeciesContextSpec;
-import cbit.vcell.math.MathDescription;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.modeldb.DatabasePolicySQL;
 import cbit.vcell.modeldb.DatabaseServerImpl;
@@ -37,17 +20,27 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.simdata.ODEDataBlock;
 import cbit.vcell.simdata.SimulationData;
-import cbit.vcell.solver.OutputTimeSpec;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationJob;
-import cbit.vcell.solver.TempSimulation;
-import cbit.vcell.solver.UniformOutputTimeSpec;
+import cbit.vcell.solver.*;
 import cbit.vcell.solver.ode.ODESimData;
 import cbit.vcell.solver.server.Solver;
 import cbit.vcell.solver.server.SolverStatus;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
+import org.vcell.db.ConnectionFactory;
+import org.vcell.db.DatabaseService;
+import org.vcell.db.KeyFactory;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+
+import java.beans.PropertyVetoException;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.sql.SQLException;
+import java.util.ArrayList;
 
 
 public class StochtestRunService {
@@ -87,8 +80,6 @@ public class StochtestRunService {
 		
 		long bngTimeoutMS = Long.valueOf(args[2]);
 		
-		PropertyLoader.loadProperties();
-
 		DatabasePolicySQL.bAllowAdministrativeAccess = true;
 	    String driverName = PropertyLoader.getRequiredProperty(PropertyLoader.dbDriverName);
 	    String connectURL = PropertyLoader.getRequiredProperty(PropertyLoader.dbConnectURL);

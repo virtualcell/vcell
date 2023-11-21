@@ -1,20 +1,11 @@
 package cbit.vcell.message.jms.test;
 
+import cbit.vcell.message.*;
+import cbit.vcell.message.VCRpcRequest.RpcServiceType;
 import cbit.vcell.message.jms.activeMQ.VCMessagingServiceEmbedded;
+import cbit.vcell.resource.PropertyLoader;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
-
-import cbit.vcell.message.SimpleMessagingDelegate;
-import cbit.vcell.message.VCMessageSession;
-import cbit.vcell.message.VCMessagingException;
-import cbit.vcell.message.VCMessagingInvocationTargetException;
-import cbit.vcell.message.VCMessagingService;
-import cbit.vcell.message.VCPooledQueueConsumer;
-import cbit.vcell.message.VCQueueConsumer;
-import cbit.vcell.message.VCRpcMessageHandler;
-import cbit.vcell.message.VCRpcRequest;
-import cbit.vcell.message.VCRpcRequest.RpcServiceType;
-import cbit.vcell.resource.PropertyLoader;
 
 /**
  * Hello world!
@@ -38,7 +29,6 @@ public class TestRPC {
 	public static void main(String[] args) throws Exception {
 		try {
 			
-			PropertyLoader.loadProperties();
     		VCMessagingService messagingService = new VCMessagingServiceEmbedded();
 			String jmshost = PropertyLoader.getRequiredProperty(PropertyLoader.jmsIntHostInternal);
     		int jmsport = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.jmsIntPortInternal));

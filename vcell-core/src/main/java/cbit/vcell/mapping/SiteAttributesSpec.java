@@ -38,7 +38,7 @@ import org.vcell.util.springsalad.IOHelp;
 import org.vcell.util.springsalad.NamedColor;
 
 @SuppressWarnings("serial")
-public class SiteAttributesSpec implements Serializable, Identifiable, Displayable, IssueSource {
+public class SiteAttributesSpec implements Serializable, Identifiable, Displayable, IssueSource, Matchable {
 	private final SpeciesContextSpec fieldSpeciesContextSpec;
 	private MolecularComponentPattern fieldMolecularComponentPattern = null;
 	private double fieldRadius = 1.0;
@@ -162,9 +162,41 @@ public class SiteAttributesSpec implements Serializable, Identifiable, Displayab
 		sb.append("\n");
 	}
 
-	
-	
-	public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
+	@Override
+	public boolean compareEqual(Matchable obj) {
+		if (obj == this) {
+			return true;
+		}
+		if (!(obj instanceof SiteAttributesSpec)) {
+			return false;
+		}
+		SiteAttributesSpec candidate = (SiteAttributesSpec) obj;
+
+		if(!fieldSpeciesContextSpec.compareEqual(candidate.getSpeciesContextSpec())) {
+			return false;
+		}
+		if(!fieldMolecularComponentPattern.compareEqual(candidate.getMolecularComponentPattern())) {
+			return false;
+		}
+		if(fieldRadius != candidate.getRadius()) {
+			return false;
+		}
+		if(fieldDiffusionRate != candidate.getDiffusionRate()) {
+			return false;
+		}
+		if(!fieldLocation.compareEqual(candidate.getLocation())) {
+			return false;
+		}
+		if(!fieldCoordinate.compareEqual(candidate.getCoordinate())) {
+			return false;
+		}
+		if(fieldColor != candidate.getColor()) {
+			return false;
+		}
+		return true;
+	}
+
+		public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
 		issueContext = issueContext.newChildContext(ContextType.SiteAttributesSpec, this);
 
 		if(fieldLocation instanceof Membrane) {

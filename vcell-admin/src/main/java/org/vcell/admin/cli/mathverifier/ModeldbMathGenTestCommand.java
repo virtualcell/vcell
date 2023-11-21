@@ -1,7 +1,6 @@
 package org.vcell.admin.cli.mathverifier;
 
 import cbit.vcell.modeldb.MathVerifier;
-import cbit.vcell.resource.PropertyLoader;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -45,7 +44,6 @@ public class ModeldbMathGenTestCommand implements Callable<Integer> {
         config.updateLoggers();
 
         try {
-            PropertyLoader.loadProperties();
             try (CLIDatabaseService cliDatabaseService = new CLIDatabaseService()) {
                 MathVerifier mathVerifier = cliDatabaseService.getMathVerifier();
                 Compare.CompareLogger compareLogger = new Compare.CompareLogger() {

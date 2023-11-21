@@ -9,14 +9,9 @@
  */
 
 package cbit.vcell.modeldb;
-import java.math.BigDecimal;
-import java.security.SecureRandom;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.*;
 
+import cbit.vcell.modeldb.ApiAccessToken.AccessTokenStatus;
+import cbit.vcell.resource.PropertyLoader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jose4j.jwt.MalformedClaimException;
@@ -35,8 +30,15 @@ import org.vcell.util.document.User;
 import org.vcell.util.document.UserInfo;
 import org.vcell.util.document.UserLoginInfo;
 
-import cbit.vcell.modeldb.ApiAccessToken.AccessTokenStatus;
-import cbit.vcell.resource.PropertyLoader;
+import java.math.BigDecimal;
+import java.security.SecureRandom;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Random;
 
 /**
  * This type was created in VisualAge.
@@ -74,7 +76,7 @@ public User.SpecialUser getUserFromUserid(Connection con, String userid) throws 
 	ArrayList<User.SPECIAL_CLAIM> specials = new ArrayList<>();
 	try {
 		rset = stmt.executeQuery(sql);
-		if (rset.next()) {
+		while (rset.next()) {
 			BigDecimal bigDecimal = rset.getBigDecimal("userkey");
 			if(userKey == null) {
 				userKey = bigDecimal;
@@ -196,10 +198,9 @@ public void sendLostPassword(Connection con,String userid) throws SQLException, 
 		//Reset User Password
 		updatePasswords(con,userInfo.id,clearTextPassword);
 		//Send new password to user
-		PropertyLoader.loadProperties();
 		BeanUtils.sendSMTP(
 			PropertyLoader.getRequiredProperty(PropertyLoader.vcellSMTPHostName),
-			new Integer(PropertyLoader.getRequiredProperty(PropertyLoader.vcellSMTPPort)).intValue(),
+			Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.vcellSMTPPort)),
 			PropertyLoader.getRequiredProperty(PropertyLoader.vcellSMTPEmailAddress),
 			userInfo.email,
 			"re: VCell Info",

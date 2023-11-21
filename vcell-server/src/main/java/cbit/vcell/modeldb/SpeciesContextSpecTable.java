@@ -10,6 +10,7 @@
 
 package cbit.vcell.modeldb;
 
+import cbit.vcell.mapping.SimulationContext;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 
@@ -47,10 +48,12 @@ public class SpeciesContextSpecTable extends cbit.sql.Table {
 	public final Field velocityZExp		= new Field("velocityZExp",	SQLDataType.varchar_1024,	"");
 	public final Field bWellMixed		= new Field("bWellMixed",	SQLDataType.integer,		"");
 	public final Field bForceContinuous	= new Field("bForceContinuous",	SQLDataType.integer,	"");
-	
+	public final Field internalLinks	= new Field("internalLinks",	SQLDataType.varchar_4000,		"");
+	public final Field siteAttributesSpecs	= new Field("siteAttributesSpecs",SQLDataType.varchar_4000,	"");
+
 	private final Field fields[] = {specContextRef,simContextRef,bEnableDif,bForceConst,bForceIndep,initCondExp,diffRateExp,
 											boundaryXmExp,boundaryXpExp,boundaryYmExp,boundaryYpExp,boundaryZmExp,boundaryZpExp,initCondCountExp,
-											velocityXExp, velocityYExp, velocityZExp, bWellMixed, bForceContinuous};
+											velocityXExp, velocityYExp, velocityZExp, bWellMixed, bForceContinuous, internalLinks, siteAttributesSpecs};
 	
 	public static final SpeciesContextSpecTable table = new SpeciesContextSpecTable();
 /**
@@ -63,8 +66,7 @@ private SpeciesContextSpecTable() {
 /**
  * This method was created in VisualAge.
  * @return java.lang.String
- * @param key KeyValue
- * @param modelName java.lang.String
+ * @param Key KeyValue
  */
 public String getSQLValueList(KeyValue Key, KeyValue simContextKey, SpeciesContextSpec speciesContextSpec, KeyValue scKey) {
 
@@ -152,11 +154,21 @@ public String getSQLValueList(KeyValue Key, KeyValue simContextKey, SpeciesConte
 		buffer.append((speciesContextSpec.isWellMixed() ? 1 : 0) + ",");
 	}
 	if (speciesContextSpec.isForceContinuous() == null){
-		buffer.append(" NULL " + ")");
+		buffer.append(" NULL " + ",");
 	}else{
-		buffer.append((speciesContextSpec.isForceContinuous() ? 1 : 0) + ")");
+		buffer.append((speciesContextSpec.isForceContinuous() ? 1 : 0) + ",");
 	}
-
+	if(speciesContextSpec.getInternalLinkSet() == null || speciesContextSpec.getInternalLinkSet().size() == 0) {
+		buffer.append(" NULL " + ",");
+	} else {
+		buffer.append("'" + speciesContextSpec.getInternalLinksSQL() + "'" + ",");
+	}
+	if(speciesContextSpec.getSiteAttributesMap() == null || speciesContextSpec.getSiteAttributesMap().size() == 0) {
+		buffer.append(" NULL " + ")");
+	} else {
+		buffer.append("'" + speciesContextSpec.getSiteAttributesSQL() + "'" + ")");
+	}
 	return buffer.toString();
 }
+
 }

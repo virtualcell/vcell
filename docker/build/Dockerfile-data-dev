@@ -18,7 +18,7 @@ COPY --from=jre-build /javaruntime $JAVA_HOME
 # now we have Java 17 and Python 3.9
 
 RUN apt-get -y update && \
-	apt-get -y install openssh-client screen && \
+	apt-get -y install openssh-client screen apt-utils libfreetype6 fontconfig fonts-dejavu && \
     mkdir -p /usr/local/app
 
 RUN python3 -m pip install poetry &&  poetry config cache-dir "/poetry/.cache"

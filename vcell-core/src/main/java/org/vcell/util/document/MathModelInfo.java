@@ -170,7 +170,8 @@ public int hashCode() {
  * @return java.lang.String
  */
 public String toString() {
-	return "MathModelInfo(mathKey="+mathKey+",Version="+version+", softwareVersion="+softwareVersion+")";
+	String swVersion = (softwareVersion == null ? "null" : softwareVersion.getSoftwareVersionString());
+	return "MathModelInfo(mathKey="+mathKey+",Version="+version+", softwareVersion="+swVersion+")";
 }
 public VersionableType getVersionType() {	
 	return VersionableType.MathModelMetaData;

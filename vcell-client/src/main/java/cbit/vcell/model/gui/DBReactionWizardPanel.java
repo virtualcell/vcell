@@ -31,10 +31,8 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-import org.vcell.util.BeanUtils;
-import org.vcell.util.DataAccessException;
-import org.vcell.util.UserCancelException;
-import org.vcell.util.UtilCancelException;
+import org.vcell.util.gui.GeneralGuiUtils;
+import org.vcell.util.*;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.LineBorderBean;
@@ -69,180 +67,206 @@ import cbit.vcell.model.Structure;
 /**
  * Insert the type's description here.
  * Creation date: (8/13/2003 11:00:32 AM)
+ *
  * @author: Frank Morgan
  */
 public class DBReactionWizardPanel extends JPanel {
 
-	//
-	//
-	public class MapStringToObject {
-		String mapString;
-		Object toObject;
-		boolean bEnabled;
-		public MapStringToObject(String argMapString,Object argToObject,boolean bEnabled){
-			mapString = argMapString;
-			toObject = argToObject;
-			this.bEnabled = bEnabled;
-		}
-		public Object getToObject(){
-			return toObject;
-		}
-		public String getMappedString(){
-			return mapString;
-		}
-		public boolean isEnabled() {
-			return bEnabled;
-		}
-		public String toString(){
-			return mapString;
-		}
-	}
-	//
+    //
+    //
+    public class MapStringToObject {
+        String mapString;
+        Object toObject;
+        boolean bEnabled;
+
+        public MapStringToObject(String argMapString, Object argToObject, boolean bEnabled) {
+            mapString = argMapString;
+            toObject = argToObject;
+            this.bEnabled = bEnabled;
+        }
+
+        public Object getToObject() {
+            return toObject;
+        }
+
+        public String getMappedString() {
+            return mapString;
+        }
+
+        public boolean isEnabled() {
+            return bEnabled;
+        }
+
+        public String toString() {
+            return mapString;
+        }
+    }
+
+    //
 //	private javax.swing.JComboBox[] speciesAssignmentJCB = null;
 //	private javax.swing.JComboBox[] structureAssignmentJCB = null;
 //	private Species[] speciesOrder = null;
-	private Object[] lastSearchChangeInfo = null;
-	private Object lastReactionSelection = null;
-	private ReactionStep lastReactStepSelection = null;
-	//
-	//
-	private Hashtable<String, Vector<String>> mapRXStringtoRXIDs = new Hashtable<String, Vector<String>>();
-	private Hashtable<KeyValue, KeyValue> mapRXIDtoBMIDs = new Hashtable<KeyValue, KeyValue>();
-	private Hashtable<KeyValue, KeyValue> mapRXIDtoStructRefIDs = new Hashtable<KeyValue, KeyValue>();
-	
-	private ChildWindow childWindow = null;
-	//
-//	private ReactionDescription resolvedReaction = null;
-	private javax.swing.JButton ivjBackJButton = null;
-	private javax.swing.JPanel ivjBFNJPanel = null;
-	private javax.swing.JButton ivjFinishJButton = null;
-	private javax.swing.JButton ivjNextJButton = null;
-	private javax.swing.JLabel ivjJLabel1 = null;
-	private javax.swing.JLabel ivjJLabel2 = null;
-	private javax.swing.JScrollPane ivjJScrollPane3 = null;
-	private javax.swing.JPanel ivjParameterJPanel = null;
-	private javax.swing.JList<MapStringToObject> ivjParameterNamesJList = null;
-	private javax.swing.JScrollPane ivjParameterNamesJScrollPane = null;
-	private javax.swing.JList ivjParameterValuesJList = null;
-	private javax.swing.JScrollPane ivjParameterValuesJScrollPane = null;
-	private javax.swing.JList ivjReactionsJList = null;
-	//private javax.swing.JLabel ivjResolveHighlightJLabel = null;
-//	private javax.swing.JPanel ivjResolverJPanel = null;
-	//private javax.swing.JPanel ivjSearchCriteriaJPanel = null;
-	private javax.swing.JPanel ivjSearchResultsJPanel = null;
-	private DocumentManager fieldDocumentManager = null;
-	IvjEventHandler ivjEventHandler = new IvjEventHandler();
-	private javax.swing.JPanel ivjCardLayoutJPanel = null;
-	private boolean ivjConnPtoP3Aligning = false;
-	private javax.swing.ListSelectionModel ivjReactionSelectionModel = null;
-	private Model fieldModel = null;
-	private Structure fieldStructure = null;
-	private boolean ivjConnPtoP4Aligning = false;
-	private javax.swing.ListSelectionModel ivjParameterNameSelectionModel = null;
-	//private javax.swing.JPanel ivjJPanel1 = null;
-	private javax.swing.JRadioButton ivjSearchDictionaryJRadioButton = null;
-	private javax.swing.JRadioButton ivjSearchUserJRadioButton = null;
-	private javax.swing.ButtonGroup ivjSearchTypeButtonGroup = null;
-	private ReactionStep fieldReactionStep0 = null;
-	private javax.swing.JButton jButtonClose = null;
-	private ReactionDescription fieldReactionDescription = null;
-	private boolean ivjConnPtoP5Aligning = false;
-	private javax.swing.ListSelectionModel ivjRXDescriptionLSM = null;
-	//private javax.swing.JPanel ivjJPanel = null;
-	private javax.swing.ButtonGroup ivjFindRXButtonGroup = null;
-	private javax.swing.JRadioButton ivjFindRXTextRadioButton = null;
-	//private javax.swing.JTextField ivjFindTextJTextField = null;
-	private DBFormalSpecies ivjCurrentDBFormalSpecies = null;
-	//private boolean ivjConnPtoP6Aligning = false;
-	private javax.swing.text.Document ivjdocument2 = null;
-	private javax.swing.JRadioButton ivjKeggMoleculeJRadioButton = null;
-	private javax.swing.JButton ivjKeggSpecifyJButton = null;
-	private javax.swing.JLabel ivjKeggTypeJLabel = null;
-	//private javax.swing.JPanel ivjRXParticipantsJPanel = null;
-	//private ReactionCanvas ivjReactionCanvas1 = null;
-	//private javax.swing.JScrollPane ivjJScrollPane1 = null;
-	//private javax.swing.JScrollPane ivjJScrollPane2 = null;
+    private Object[] lastSearchChangeInfo = null;
+    private Object lastReactionSelection = null;
+    private ReactionStep lastReactStepSelection = null;
+    //
+    //
+    private Hashtable<String, Vector<String>> mapRXStringtoRXIDs = new Hashtable<String, Vector<String>>();
+    private Hashtable<KeyValue, KeyValue> mapRXIDtoBMIDs = new Hashtable<KeyValue, KeyValue>();
+    private Hashtable<KeyValue, KeyValue> mapRXIDtoStructRefIDs = new Hashtable<KeyValue, KeyValue>();
 
-class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener, javax.swing.event.DocumentListener, javax.swing.event.ListSelectionListener {
-		public void actionPerformed(java.awt.event.ActionEvent e) {
-			if (e.getSource() == DBReactionWizardPanel.this.getBackJButton()) 
-				connEtoC12(e);
-			if (e.getSource() == DBReactionWizardPanel.this.getFinishJButton()) 
-				connEtoC13(e);
-			if (e.getSource() == DBReactionWizardPanel.this.getNextJButton()) 
-				connEtoC14(e);
-			if (e.getSource() == DBReactionWizardPanel.this.getJButtonClose()) 
-				connEtoC26(e);
-			if (e.getSource() == DBReactionWizardPanel.this.getFindRXTextRadioButton()) 
-				connEtoC15(e);
-			if (e.getSource() == DBReactionWizardPanel.this.getKeggMoleculeJRadioButton()) 
-				connEtoC28(e);
-			if (e.getSource() == DBReactionWizardPanel.this.getKeggSpecifyJButton()) 
-				connEtoC29(e);
+    private ChildWindow childWindow = null;
+    //
+//	private ReactionDescription resolvedReaction = null;
+    private javax.swing.JButton ivjBackJButton = null;
+    private javax.swing.JPanel ivjBFNJPanel = null;
+    private javax.swing.JButton ivjFinishJButton = null;
+    private javax.swing.JButton ivjNextJButton = null;
+    private javax.swing.JLabel ivjJLabel1 = null;
+    private javax.swing.JLabel ivjJLabel2 = null;
+    private javax.swing.JScrollPane ivjJScrollPane3 = null;
+    private javax.swing.JPanel ivjParameterJPanel = null;
+    private javax.swing.JList<MapStringToObject> ivjParameterNamesJList = null;
+    private javax.swing.JScrollPane ivjParameterNamesJScrollPane = null;
+    private javax.swing.JList ivjParameterValuesJList = null;
+    private javax.swing.JScrollPane ivjParameterValuesJScrollPane = null;
+    private javax.swing.JList ivjReactionsJList = null;
+    //private javax.swing.JLabel ivjResolveHighlightJLabel = null;
+//	private javax.swing.JPanel ivjResolverJPanel = null;
+    //private javax.swing.JPanel ivjSearchCriteriaJPanel = null;
+    private javax.swing.JPanel ivjSearchResultsJPanel = null;
+    private DocumentManager fieldDocumentManager = null;
+    IvjEventHandler ivjEventHandler = new IvjEventHandler();
+    private javax.swing.JPanel ivjCardLayoutJPanel = null;
+    private boolean ivjConnPtoP3Aligning = false;
+    private javax.swing.ListSelectionModel ivjReactionSelectionModel = null;
+    private Model fieldModel = null;
+    private Structure fieldStructure = null;
+    private boolean ivjConnPtoP4Aligning = false;
+    private javax.swing.ListSelectionModel ivjParameterNameSelectionModel = null;
+    //private javax.swing.JPanel ivjJPanel1 = null;
+    private javax.swing.JRadioButton ivjSearchDictionaryJRadioButton = null;
+    private javax.swing.JRadioButton ivjSearchUserJRadioButton = null;
+    private javax.swing.ButtonGroup ivjSearchTypeButtonGroup = null;
+    private ReactionStep fieldReactionStep0 = null;
+    private javax.swing.JButton jButtonClose = null;
+    private ReactionDescription fieldReactionDescription = null;
+    private boolean ivjConnPtoP5Aligning = false;
+    private javax.swing.ListSelectionModel ivjRXDescriptionLSM = null;
+    //private javax.swing.JPanel ivjJPanel = null;
+    private javax.swing.ButtonGroup ivjFindRXButtonGroup = null;
+    private javax.swing.JRadioButton ivjFindRXTextRadioButton = null;
+    //private javax.swing.JTextField ivjFindTextJTextField = null;
+    private DBFormalSpecies ivjCurrentDBFormalSpecies = null;
+    //private boolean ivjConnPtoP6Aligning = false;
+    private javax.swing.text.Document ivjdocument2 = null;
+    private javax.swing.JRadioButton ivjKeggMoleculeJRadioButton = null;
+    private javax.swing.JButton ivjKeggSpecifyJButton = null;
+    private javax.swing.JLabel ivjKeggTypeJLabel = null;
+    //private javax.swing.JPanel ivjRXParticipantsJPanel = null;
+    //private ReactionCanvas ivjReactionCanvas1 = null;
+    //private javax.swing.JScrollPane ivjJScrollPane1 = null;
+    //private javax.swing.JScrollPane ivjJScrollPane2 = null;
+
+    class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener, javax.swing.event.DocumentListener, javax.swing.event.ListSelectionListener {
+        public void actionPerformed(java.awt.event.ActionEvent e) {
+            if (e.getSource() == DBReactionWizardPanel.this.getBackJButton())
+                connEtoC12(e);
+            if (e.getSource() == DBReactionWizardPanel.this.getFinishJButton())
+                connEtoC13(e);
+            if (e.getSource() == DBReactionWizardPanel.this.getNextJButton())
+                connEtoC14(e);
+            if (e.getSource() == DBReactionWizardPanel.this.getJButtonClose())
+                connEtoC26(e);
+            if (e.getSource() == DBReactionWizardPanel.this.getFindRXTextRadioButton())
+                connEtoC15(e);
+            if (e.getSource() == DBReactionWizardPanel.this.getKeggMoleculeJRadioButton())
+                connEtoC28(e);
+            if (e.getSource() == DBReactionWizardPanel.this.getKeggSpecifyJButton())
+                connEtoC29(e);
 //			if (e.getSource() == DBReactionWizardPanel.this.getFindTextJTextField()) 
 //				connEtoM1(e);
-			if (e.getSource() == DBReactionWizardPanel.this.getSearchTextField())
-				searchButton.doClick();
-			
-		};
-		public void changedUpdate(javax.swing.event.DocumentEvent e) {
-			if (e.getDocument() == DBReactionWizardPanel.this.getdocument2()) 
-				connEtoC31(e);
-		};
-		public void insertUpdate(javax.swing.event.DocumentEvent e) {
-			if (e.getDocument() == DBReactionWizardPanel.this.getdocument2()) 
-				connEtoC31(e);
-		};
-		public void propertyChange(java.beans.PropertyChangeEvent evt) {
-			if (evt.getSource() == DBReactionWizardPanel.this.getReactionsJList() && (evt.getPropertyName().equals("selectionModel"))) 
-				connPtoP3SetTarget();
-			if (evt.getSource() == DBReactionWizardPanel.this.getParameterNamesJList() && (evt.getPropertyName().equals("selectionModel"))) 
-				connPtoP4SetTarget();
-			if (evt.getSource() == DBReactionWizardPanel.this && (evt.getPropertyName().equals("reactionDescription"))) 
-				connEtoC22(evt);
-			if (evt.getSource() == DBReactionWizardPanel.this.getParameterValuesJList() && (evt.getPropertyName().equals("selectionModel"))) 
-				connPtoP5SetTarget();
+            if (e.getSource() == DBReactionWizardPanel.this.getSearchTextField())
+                searchButton.doClick();
+
+        }
+
+        ;
+
+        public void changedUpdate(javax.swing.event.DocumentEvent e) {
+            if (e.getDocument() == DBReactionWizardPanel.this.getdocument2())
+                connEtoC31(e);
+        }
+
+        ;
+
+        public void insertUpdate(javax.swing.event.DocumentEvent e) {
+            if (e.getDocument() == DBReactionWizardPanel.this.getdocument2())
+                connEtoC31(e);
+        }
+
+        ;
+
+        public void propertyChange(java.beans.PropertyChangeEvent evt) {
+            if (evt.getSource() == DBReactionWizardPanel.this.getReactionsJList() && (evt.getPropertyName().equals("selectionModel")))
+                connPtoP3SetTarget();
+            if (evt.getSource() == DBReactionWizardPanel.this.getParameterNamesJList() && (evt.getPropertyName().equals("selectionModel")))
+                connPtoP4SetTarget();
+            if (evt.getSource() == DBReactionWizardPanel.this && (evt.getPropertyName().equals("reactionDescription")))
+                connEtoC22(evt);
+            if (evt.getSource() == DBReactionWizardPanel.this.getParameterValuesJList() && (evt.getPropertyName().equals("selectionModel")))
+                connPtoP5SetTarget();
 //			if (evt.getSource() == DBReactionWizardPanel.this.getFindTextJTextField() && (evt.getPropertyName().equals("document"))) 
 //				connPtoP6SetTarget();
 //			if (evt.getSource() == DBReactionWizardPanel.this && (evt.getPropertyName().equals("model"))) 
 //				getRXParticipantResolverPanel().setPasteToModel((Model)evt.getNewValue());
-		};
-		public void removeUpdate(javax.swing.event.DocumentEvent e) {
-			if (e.getDocument() == DBReactionWizardPanel.this.getdocument2()) 
-				connEtoC31(e);
-		};
-		public void valueChanged(javax.swing.event.ListSelectionEvent e) {
-			if(e.getValueIsAdjusting()){
-				return;
-			}
-			if (e.getSource() == DBReactionWizardPanel.this.getParameterNameSelectionModel()) 
-				connEtoC23(e);
-			if (e.getSource() == DBReactionWizardPanel.this.getRXDescriptionLSM()) 
-				connEtoM6();
-			if (e.getSource() == DBReactionWizardPanel.this.getReactionSelectionModel()) 
-				connEtoC27(e);
-		};
-	};
+        }
 
-/**
- * DBReactionWizardPanel constructor comment.
- */
-public DBReactionWizardPanel() {
-	super();
-	initialize();
-}
+        ;
 
-public void setChildWindow(ChildWindow childWindow){
-	this.childWindow = childWindow;
-}
+        public void removeUpdate(javax.swing.event.DocumentEvent e) {
+            if (e.getDocument() == DBReactionWizardPanel.this.getdocument2())
+                connEtoC31(e);
+        }
 
-public ChildWindow getChildWindow(){
-	return this.childWindow;
-}
+        ;
 
-	/**
-	 * Invoked when an action occurs.
-	 */
+        public void valueChanged(javax.swing.event.ListSelectionEvent e) {
+            if (e.getValueIsAdjusting()) {
+                return;
+            }
+            if (e.getSource() == DBReactionWizardPanel.this.getParameterNameSelectionModel())
+                connEtoC23(e);
+            if (e.getSource() == DBReactionWizardPanel.this.getRXDescriptionLSM())
+                connEtoM6();
+            if (e.getSource() == DBReactionWizardPanel.this.getReactionSelectionModel())
+                connEtoC27(e);
+        }
+
+        ;
+    }
+
+    ;
+
+    /**
+     * DBReactionWizardPanel constructor comment.
+     */
+    public DBReactionWizardPanel() {
+        super();
+        initialize();
+    }
+
+    public void setChildWindow(ChildWindow childWindow) {
+        this.childWindow = childWindow;
+    }
+
+    public ChildWindow getChildWindow() {
+        return this.childWindow;
+    }
+
+    /**
+     * Invoked when an action occurs.
+     */
 //public void actionPerformed(java.awt.event.ActionEvent e) {dbfr.get
 //
 //	ReactionDescription resolvedReaction = getResolverJPanel().getREsolvedReaction();
@@ -300,21 +324,21 @@ public ChildWindow getChildWindow(){
 //}
 
 
-/**
- * Comment
- */
-private void bfnActionPerformed(java.awt.event.ActionEvent actionEvent) {
-	try{
-		//
-		DefaultListModel pndlm = (DefaultListModel)getParameterNamesJList().getModel();
-		//
-		if(actionEvent.getSource().equals(getBackJButton())){
-			if(getRXParticipantResolverPanel().isVisible() && pndlm.size() == 0 && getSearchDictionaryJRadioButton().isSelected() == false){
-				//skip Parameters if there are none
-				((java.awt.CardLayout)getCardLayoutJPanel().getLayout()).previous(getCardLayoutJPanel());
-			}
-			((java.awt.CardLayout)getCardLayoutJPanel().getLayout()).previous(getCardLayoutJPanel());
-		}else if(actionEvent.getSource().equals(getNextJButton())){
+    /**
+     * Comment
+     */
+    private void bfnActionPerformed(java.awt.event.ActionEvent actionEvent) {
+        try {
+            //
+            DefaultListModel pndlm = (DefaultListModel) getParameterNamesJList().getModel();
+            //
+            if (actionEvent.getSource().equals(getBackJButton())) {
+                if (getRXParticipantResolverPanel().isVisible() && pndlm.size() == 0 && getSearchDictionaryJRadioButton().isSelected() == false) {
+                    //skip Parameters if there are none
+                    ((java.awt.CardLayout) getCardLayoutJPanel().getLayout()).previous(getCardLayoutJPanel());
+                }
+                ((java.awt.CardLayout) getCardLayoutJPanel().getLayout()).previous(getCardLayoutJPanel());
+            } else if (actionEvent.getSource().equals(getNextJButton())) {
 //			if(getSearchCriteriaJPanel().isVisible()){
 //				if(getSearchDictionaryJRadioButton().isSelected()){
 //					getParameterJPanel().setVisible(false);
@@ -327,19 +351,19 @@ private void bfnActionPerformed(java.awt.event.ActionEvent actionEvent) {
 //					return;
 //				}
 //			}else 
-			if(getParameterJPanel().isVisible()){
-				if(lastReactStepSelection == null || !lastReactStepSelection.equals(getReactionStep0())){
-					lastReactStepSelection = getReactionStep0();
-					
-					KeyValue bmid = mapRXIDtoBMIDs.get(lastReactStepSelection.getKey());
-					KeyValue structRef = mapRXIDtoStructRefIDs.get(lastReactStepSelection.getKey());
-					ReactionDescription dbfr = createReactionDescription(getReactionStep0(),bmid, structRef);
-					getRXParticipantResolverPanel().setupRX(dbfr,getModel(),getStructure());
-				}
-			}
-			//
-			((java.awt.CardLayout)getCardLayoutJPanel().getLayout()).next(getCardLayoutJPanel());
-		}
+                if (getParameterJPanel().isVisible()) {
+                    if (lastReactStepSelection == null || !lastReactStepSelection.equals(getReactionStep0())) {
+                        lastReactStepSelection = getReactionStep0();
+
+                        KeyValue bmid = mapRXIDtoBMIDs.get(lastReactStepSelection.getKey());
+                        KeyValue structRef = mapRXIDtoStructRefIDs.get(lastReactStepSelection.getKey());
+                        ReactionDescription dbfr = createReactionDescription(getReactionStep0(), bmid, structRef);
+                        getRXParticipantResolverPanel().setupRX(dbfr, getModel(), getStructure());
+                    }
+                }
+                //
+                ((java.awt.CardLayout) getCardLayoutJPanel().getLayout()).next(getCardLayoutJPanel());
+            }
 //		else if(actionEvent.getSource().equals(getFinishJButton())){
 //			ReactionDescription myResolvedReaction = getRXParticipantResolverPanel().getResolvedReaction();
 //			Model fromModel = getDocumentManager().getBioModel(myResolvedReaction.getVCellBioModelID()).getModel();
@@ -382,83 +406,83 @@ private void bfnActionPerformed(java.awt.event.ActionEvent actionEvent) {
 //				DBReactionWizardPanel.this.getModel(), DBReactionWizardPanel.this.getStructure(),assignmentHelper);
 //			DBReactionWizardPanel.this.getChildWindow().close();
 //		}
-		//
-		configureBFN();
-	}catch(Exception e){
-		e.printStackTrace();
-		DialogUtils.showErrorDialog(this, "DBReactionWizard failed\n"+e.getMessage(), e);
-	}
-}
+            //
+            configureBFN();
+        } catch (Exception e) {
+            e.printStackTrace();
+            DialogUtils.showErrorDialog(this, "DBReactionWizard failed\n" + e.getMessage(), e);
+        }
+    }
 
-public static ReactionDescription createReactionDescription(ReactionStep rxStep,KeyValue bmid, KeyValue structRef) {
-	ReactionType rxType = null;
-	if(rxStep instanceof FluxReaction){
-		if (rxStep.isReversible()){
-			rxType = ReactionType.REACTTYPE_FLUX_REVERSIBLE;
-		}else{
-			rxType = ReactionType.REACTTYPE_FLUX_IRREVERSIBLE;
-		}
-	}else{
-		if (rxStep.isReversible()){
-			rxType = ReactionType.REACTTYPE_SIMPLE_REVERSIBLE;
-		}else{
-			rxType = ReactionType.REACTTYPE_SIMPLE_IRREVERSIBLE;
-		}
-	}
-	ReactionDescription dbfr = new ReactionDescription(rxStep.getName(),rxType,rxStep.getKey(),bmid,structRef);
-	//
-	ReactionParticipant[] rpArr = rxStep.getReactionParticipants();
-	for(int i=0;i < rpArr.length;i+= 1){
-		DBNonFormalUnboundSpecies dbnfu = new DBNonFormalUnboundSpecies(rpArr[i].getSpecies().getCommonName());
-		char role;
-		if(rpArr[i] instanceof Reactant){
-			role = ReactionDescription.RX_ELEMENT_REACTANT;
-		}else if(rpArr[i] instanceof Product){
-			role = ReactionDescription.RX_ELEMENT_PRODUCT;
-		}else if(rpArr[i] instanceof Catalyst){
-			role = ReactionDescription.RX_ELEMENT_CATALYST;
-		}else{
-			throw new RuntimeException("Unsupported ReationParticiapnt="+rpArr[i].getClass().getName());
-		}
-		dbfr.addReactionElement(dbnfu,rpArr[i].getSpeciesContext().getName(),rpArr[i].getSpeciesContext().getStructure().getName(),rpArr[i].getStoichiometry(),role);
-	}
-	if(dbfr.isFluxReaction()){//make sure flux is in right direction
-		Structure outsideStruct = rxStep.getModel().getStructureTopology().getOutsideFeature((Membrane)rxStep.getStructure());
-		String defaultOutsideSCName = dbfr.getOrigSpeciesContextName(dbfr.getFluxIndexOutside());
-		for(int i=0;i < rpArr.length;i+= 1){
-			if(rpArr[i].getSpeciesContext().getName().equals(defaultOutsideSCName)){
-				if(!rpArr[i].getStructure().equals(outsideStruct)){
-					dbfr.swapFluxSCNames();
-				}
-				break;
-			}
-		}
-	}
-	return dbfr;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (9/18/2003 2:01:32 PM)
- */
-private static void closeParent(ChildWindow closeThis) {
-	if (closeThis!=null){
-		closeThis.close();
-	}
-}
+    public static ReactionDescription createReactionDescription(ReactionStep rxStep, KeyValue bmid, KeyValue structRef) {
+        ReactionType rxType = null;
+        if (rxStep instanceof FluxReaction) {
+            if (rxStep.isReversible()) {
+                rxType = ReactionType.REACTTYPE_FLUX_REVERSIBLE;
+            } else {
+                rxType = ReactionType.REACTTYPE_FLUX_IRREVERSIBLE;
+            }
+        } else {
+            if (rxStep.isReversible()) {
+                rxType = ReactionType.REACTTYPE_SIMPLE_REVERSIBLE;
+            } else {
+                rxType = ReactionType.REACTTYPE_SIMPLE_IRREVERSIBLE;
+            }
+        }
+        ReactionDescription dbfr = new ReactionDescription(rxStep.getName(), rxType, rxStep.getKey(), bmid, structRef);
+        //
+        ReactionParticipant[] rpArr = rxStep.getReactionParticipants();
+        for (int i = 0; i < rpArr.length; i += 1) {
+            DBNonFormalUnboundSpecies dbnfu = new DBNonFormalUnboundSpecies(rpArr[i].getSpecies().getCommonName());
+            char role;
+            if (rpArr[i] instanceof Reactant) {
+                role = ReactionDescription.RX_ELEMENT_REACTANT;
+            } else if (rpArr[i] instanceof Product) {
+                role = ReactionDescription.RX_ELEMENT_PRODUCT;
+            } else if (rpArr[i] instanceof Catalyst) {
+                role = ReactionDescription.RX_ELEMENT_CATALYST;
+            } else {
+                throw new RuntimeException("Unsupported ReationParticiapnt=" + rpArr[i].getClass().getName());
+            }
+            dbfr.addReactionElement(dbnfu, rpArr[i].getSpeciesContext().getName(), rpArr[i].getSpeciesContext().getStructure().getName(), rpArr[i].getStoichiometry(), role);
+        }
+        if (dbfr.isFluxReaction()) {//make sure flux is in right direction
+            Structure outsideStruct = rxStep.getModel().getStructureTopology().getOutsideFeature((Membrane) rxStep.getStructure());
+            String defaultOutsideSCName = dbfr.getOrigSpeciesContextName(dbfr.getFluxIndexOutside());
+            for (int i = 0; i < rpArr.length; i += 1) {
+                if (rpArr[i].getSpeciesContext().getName().equals(defaultOutsideSCName)) {
+                    if (!rpArr[i].getStructure().equals(outsideStruct)) {
+                        dbfr.swapFluxSCNames();
+                    }
+                    break;
+                }
+            }
+        }
+        return dbfr;
+    }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (8/14/2003 2:38:54 PM)
- */
-private void configureBFN() {
-		
-	boolean bBackEnabled = true;
-	boolean bFinishEnabled = false;
-	boolean bNextEnabled = false;
-	
+    /**
+     * Insert the method's description here.
+     * Creation date: (9/18/2003 2:01:32 PM)
+     */
+    private static void closeParent(ChildWindow closeThis) {
+        if (closeThis != null) {
+            closeThis.close();
+        }
+    }
+
+
+    /**
+     * Insert the method's description here.
+     * Creation date: (8/14/2003 2:38:54 PM)
+     */
+    private void configureBFN() {
+
+        boolean bBackEnabled = true;
+        boolean bFinishEnabled = false;
+        boolean bNextEnabled = false;
+
 //	if(getSearchCriteriaJPanel().isShowing()){
 //		String sText = getFindTextJTextField().getText();
 //		sText = (sText != null && sText.length() > 0?sText:null);
@@ -467,119 +491,121 @@ private void configureBFN() {
 //			(!getFindRXTextRadioButton().isSelected()?getCurrentDBFormalSpecies() != null:false);
 //		bBackEnabled = false;
 //	}else 
-	if(getSearchResultsJPanel().isShowing() /*&& getSearchDictionaryJRadioButton().isSelected()*/){
-		bBackEnabled = false;
-		bNextEnabled = !getParameterNamesJList().isSelectionEmpty();
-		if(!bNextEnabled) {
-			((DefaultListModel)getParameterValuesJList().getModel()).removeAllElements();
-		}
-	}else if(getParameterJPanel().isShowing()){
-		bNextEnabled = getReactionStep0() != null;
-	}else if(getRXParticipantResolverPanel().isShowing()){
-		bFinishEnabled = true;
-	}
+        if (getSearchResultsJPanel().isShowing() /*&& getSearchDictionaryJRadioButton().isSelected()*/) {
+            bBackEnabled = false;
+            bNextEnabled = !getParameterNamesJList().isSelectionEmpty();
+            if (!bNextEnabled) {
+                ((DefaultListModel) getParameterValuesJList().getModel()).removeAllElements();
+            }
+        } else if (getParameterJPanel().isShowing()) {
+            bNextEnabled = getReactionStep0() != null;
+        } else if (getRXParticipantResolverPanel().isShowing()) {
+            bFinishEnabled = true;
+        }
 
-	if(getBackJButton().isEnabled() != bBackEnabled){
-		getBackJButton().setEnabled(bBackEnabled);
-	}
-	if(getFinishJButton().isEnabled() != bFinishEnabled){
-		getFinishJButton().setEnabled(bFinishEnabled);
-	}
-	if(getNextJButton().isEnabled() != bNextEnabled){
-		getNextJButton().setEnabled(bNextEnabled);
-	}
-}
+        if (getBackJButton().isEnabled() != bBackEnabled) {
+            getBackJButton().setEnabled(bBackEnabled);
+        }
+        if (getFinishJButton().isEnabled() != bFinishEnabled) {
+            getFinishJButton().setEnabled(bFinishEnabled);
+        }
+        if (getNextJButton().isEnabled() != bNextEnabled) {
+            getNextJButton().setEnabled(bNextEnabled);
+        }
+    }
 
 
-/**
- * Comment
- */
-private void configureRXParameterList(javax.swing.event.ListSelectionEvent listSelectionEvent) {
-	//
-	final DefaultListModel<MapStringToObject> pndlm = (DefaultListModel<MapStringToObject>)getParameterNamesJList().getModel();
-	//
-	if(lastReactionSelection == null || !lastReactionSelection.equals(getReactionsJList().getSelectedValue())){
-		lastReactionSelection = getReactionsJList().getSelectedValue();
-		setReactionStep(null);
-		setReactionDescription(null);
-		//
-		pndlm.removeAllElements();
+    /**
+     * Comment
+     */
+    private void configureRXParameterList(javax.swing.event.ListSelectionEvent listSelectionEvent) {
+        //
+        final DefaultListModel<MapStringToObject> pndlm = (DefaultListModel<MapStringToObject>) getParameterNamesJList().getModel();
+        //
+        if (lastReactionSelection == null || !lastReactionSelection.equals(getReactionsJList().getSelectedValue())) {
+            lastReactionSelection = getReactionsJList().getSelectedValue();
+            setReactionStep(null);
+            setReactionDescription(null);
+            //
+            pndlm.removeAllElements();
 //		DefaultListModel<?> pvdlm = (DefaultListModel)getParameterValuesJList().getModel();
 //		pvdlm.removeAllElements();
-		//
-		if(getReactionsJList().getSelectedValue() instanceof String){//User Reactions
-			Vector<String> rxIDV = mapRXStringtoRXIDs.get(getReactionsJList().getSelectedValue());
-			//String[] rxIDArr = (String[])rxIDV.toArray(new String[rxIDV.size()]);
-			final KeyValue rxKeys[] = new KeyValue[rxIDV.size()];
-			for (int i = 0; i < rxKeys.length; i++){
-				rxKeys[i] = new KeyValue(rxIDV.elementAt(i));
-			}
-			AsynchClientTask task1 = new AsynchClientTask("getting user reaction step infos", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-				public void run(Hashtable<String, Object> hashTable) throws Exception {
-					ReactionStepInfo reactionStepInfos[] = getDocumentManager().getUserReactionStepInfos(rxKeys);
-					hashTable.put("reactionStepInfos", reactionStepInfos);
-				}
-			};
-			AsynchClientTask task2 = new AsynchClientTask("getting user reaction step infos", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-				public void run(Hashtable<String, Object> hashTable) {
-					ReactionStepInfo reactionStepInfos[] = (ReactionStepInfo[])hashTable.get("reactionStepInfos");
-					for (int i = 0;reactionStepInfos!=null && i < reactionStepInfos.length; i++){
-						String structTypeName =
-							(reactionStepInfos[i].getStructType().equals("feature")?Structure.TYPE_NAME_FEATURE:
-							(reactionStepInfos[i].getStructType().equals("membrane")?Structure.TYPE_NAME_MEMBRANE:
-							reactionStepInfos[i].getStructType()/*contour*/));
-						String descriptiveText =
-							structTypeName +" "+
-							reactionStepInfos[i].getOwner().getName()+" - "+
-							"  "+reactionStepInfos[i].getBioModelName()+"  "+
-							"("+reactionStepInfos[i].getReactionName()+")"+" "+
-							reactionStepInfos[i].getBioModelVersionDate();
-							
-						pndlm.addElement(new MapStringToObject(descriptiveText/*reactionStepInfos[i].getDescriptiveText()*/,reactionStepInfos[i],getStructure().getTypeName().equals(structTypeName)));						
-					}
-				}
-			};
-			Hashtable<String, Object> hash = new Hashtable<String, Object>();
-			AsynchClientTask[] taskArray = new AsynchClientTask[]{task1, task2};
-			ClientTaskDispatcher.dispatch(this, hash, taskArray);	
-		}else{//Dictionary ReactionDescription
-			ReactionDescription dbfr  = (ReactionDescription)getReactionsJList().getSelectedValue();
-			getRXParticipantResolverPanel().setupRX(dbfr,getModel(),getStructure());
-		}
-	}
-	//if(pndlm.size() == 0){
-		////Skip parameters if there are none
-		//((java.awt.CardLayout)getCardLayoutJPanel().getLayout()).next(getCardLayoutJPanel());
-	//}
-}
+            //
+            if (getReactionsJList().getSelectedValue() instanceof String) {//User Reactions
+                Vector<String> rxIDV = mapRXStringtoRXIDs.get(getReactionsJList().getSelectedValue());
+                //String[] rxIDArr = (String[])rxIDV.toArray(new String[rxIDV.size()]);
+                final KeyValue rxKeys[] = new KeyValue[rxIDV.size()];
+                for (int i = 0; i < rxKeys.length; i++) {
+                    rxKeys[i] = new KeyValue(rxIDV.elementAt(i));
+                }
+                AsynchClientTask task1 = new AsynchClientTask("getting user reaction step infos", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+                    public void run(Hashtable<String, Object> hashTable) throws Exception {
+                        ReactionStepInfo reactionStepInfos[] = getDocumentManager().getUserReactionStepInfos(rxKeys);
+                        hashTable.put("reactionStepInfos", reactionStepInfos);
+                    }
+                };
+                AsynchClientTask task2 = new AsynchClientTask("getting user reaction step infos", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+                    public void run(Hashtable<String, Object> hashTable) {
+                        ReactionStepInfo reactionStepInfos[] = (ReactionStepInfo[]) hashTable.get("reactionStepInfos");
+                        for (int i = 0; reactionStepInfos != null && i < reactionStepInfos.length; i++) {
+                            String structTypeName =
+                                    (reactionStepInfos[i].getStructType().equals("feature") ? Structure.TYPE_NAME_FEATURE :
+                                            (reactionStepInfos[i].getStructType().equals("membrane") ? Structure.TYPE_NAME_MEMBRANE :
+                                                    reactionStepInfos[i].getStructType()/*contour*/));
+                            String descriptiveText =
+                                    structTypeName + " " +
+                                            reactionStepInfos[i].getOwner().getName() + " - " +
+                                            "  " + reactionStepInfos[i].getBioModelName() + "  " +
+                                            "(" + reactionStepInfos[i].getReactionName() + ")" + " " +
+                                            reactionStepInfos[i].getBioModelVersionDate();
+
+                            pndlm.addElement(new MapStringToObject(descriptiveText/*reactionStepInfos[i].getDescriptiveText()*/, reactionStepInfos[i], getStructure().getTypeName().equals(structTypeName)));
+                        }
+                    }
+                };
+                Hashtable<String, Object> hash = new Hashtable<String, Object>();
+                AsynchClientTask[] taskArray = new AsynchClientTask[]{task1, task2};
+                ClientTaskDispatcher.dispatch(this, hash, taskArray);
+            } else {//Dictionary ReactionDescription
+                ReactionDescription dbfr = (ReactionDescription) getReactionsJList().getSelectedValue();
+                getRXParticipantResolverPanel().setupRX(dbfr, getModel(), getStructure());
+            }
+        }
+        //if(pndlm.size() == 0){
+        ////Skip parameters if there are none
+        //((java.awt.CardLayout)getCardLayoutJPanel().getLayout()).next(getCardLayoutJPanel());
+        //}
+    }
 
 
-/**
- * connEtoC12:  (BackJButton.action.actionPerformed(java.awt.event.ActionEvent) --> DBReactionWizardPanel.bfnActionPerformed(Ljava.awt.event.ActionEvent;)V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC12(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.bfnActionPerformed(arg1);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
+    /**
+     * connEtoC12:  (BackJButton.action.actionPerformed(java.awt.event.ActionEvent) --> DBReactionWizardPanel.bfnActionPerformed(Ljava.awt.event.ActionEvent;)V)
+     *
+     * @param arg1 java.awt.event.ActionEvent
+     */
+    /* WARNING: THIS METHOD WILL BE REGENERATED. */
+    private void connEtoC12(java.awt.event.ActionEvent arg1) {
+        try {
+            // user code begin {1}
+            // user code end
+            this.bfnActionPerformed(arg1);
+            // user code begin {2}
+            // user code end
+        } catch (java.lang.Throwable ivjExc) {
+            // user code begin {3}
+            // user code end
+            handleException(ivjExc);
+        }
+    }
 
 
-/**
- * connEtoC13:  (FinishJButton.action.actionPerformed(java.awt.event.ActionEvent) --> DBReactionWizardPanel.bfnActionPerformed(Ljava.awt.event.ActionEvent;)V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC13(java.awt.event.ActionEvent arg1) {
+    /**
+     * connEtoC13:  (FinishJButton.action.actionPerformed(java.awt.event.ActionEvent) --> DBReactionWizardPanel.bfnActionPerformed(Ljava.awt.event.ActionEvent;)V)
+     *
+     * @param arg1 java.awt.event.ActionEvent
+     */
+    /* WARNING: THIS METHOD WILL BE REGENERATED. */
+    private void connEtoC13(java.awt.event.ActionEvent arg1) {
 //	try {
 //		// user code begin {1}
 //		// user code end
@@ -591,308 +617,323 @@ private void connEtoC13(java.awt.event.ActionEvent arg1) {
 //		// user code end
 //		handleException(ivjExc);
 //	}
-	BioCartoonTool.AssignmentHelper assignmentHelper = new BioCartoonTool.AssignmentHelper() {
-		@Override
-		public JComboBox[] getStructureAssignmentJCB() {
-			return getRXParticipantResolverPanel().getStructureAssignmentJCB();
-		}
-		@Override
-		public JComboBox[] getSpeciesAssignmentJCB() {
-			return getRXParticipantResolverPanel().getSpeciesAssignmentJCB();
-		}
-		@Override
-		public ArrayList<JTextField> getFinalNames() {
-			// TODO Auto-generated method stub
-			return getRXParticipantResolverPanel().getFinalNamesJTF();
-		}
-		@Override
-		public Component getParent() {
-			return DBReactionWizardPanel.this;
-		}
-		@Override
-		public Component getAssignmentInterface() {
-			return null;
-		}
-		@Override
-		public void close() {
-			DBReactionWizardPanel.closeParent(childWindow);
-		}
-	};
-	final String MY_RES_RX = "MY_RES_RX";
-	final String FROM_MODEL = "FROM_MODEL";
-	final String FROM_RXSTEP = "FROM_RXSTEP";
-	AsynchClientTask getRXTask = new AsynchClientTask("Getting reactions...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-		@Override
-		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			ReactionDescription myResolvedReaction = getRXParticipantResolverPanel().getResolvedReaction();
-			Model fromModel = getDocumentManager().getBioModel(myResolvedReaction.getVCellBioModelID()).getModel();
-			ReactionStep[] rxArr = fromModel.getReactionSteps();
-			ReactionStep fromRXStep = null;
-			for (int i = 0; i < rxArr.length; i++) {
-				if(rxArr[i].getKey().equals(myResolvedReaction.getVCellRXID())){
-					fromRXStep = rxArr[i];
-					break;
-				}
-			}
-			hashTable.put(FROM_RXSTEP, fromRXStep);
-			hashTable.put(MY_RES_RX, myResolvedReaction);
-			hashTable.put(FROM_MODEL, fromModel);
-		}
-	};
-	AsynchClientTask applyReactionTask = new AsynchClientTask("",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-		@Override
-		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			BioCartoonTool.pasteReactionSteps(DBReactionWizardPanel.this, rxPasteInterface,
-				(ReactionDescription)hashTable.get(MY_RES_RX), (Model)hashTable.get(FROM_MODEL),DBReactionWizardPanel.this.getStructure(),(ReactionStep)hashTable.get(FROM_RXSTEP),
-				DBReactionWizardPanel.this.getModel(), DBReactionWizardPanel.this.getStructure(),assignmentHelper);
-		}
-	};
-	AsynchClientTask finishTask = new AsynchClientTask("",AsynchClientTask.TASKTYPE_SWING_NONBLOCKING,false,false) {
-		@Override
-		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			DBReactionWizardPanel.this.getChildWindow().close();
-			configureBFN();
-		}
-	};
-			
-	//Must integrate this with BioCartoonTool.pasteReactionSteps to fix the 'VCellThreadChecker.checkRemoteInvocation' warnings
-	Hashtable<String, Object> hashTable = new Hashtable<>();
-	try {
-		getRXTask.run(hashTable);
-		applyReactionTask.run(hashTable);
+        BioCartoonTool.AssignmentHelper assignmentHelper = new BioCartoonTool.AssignmentHelper() {
+            @Override
+            public JComboBox[] getStructureAssignmentJCB() {
+                return getRXParticipantResolverPanel().getStructureAssignmentJCB();
+            }
+
+            @Override
+            public JComboBox[] getSpeciesAssignmentJCB() {
+                return getRXParticipantResolverPanel().getSpeciesAssignmentJCB();
+            }
+
+            @Override
+            public ArrayList<JTextField> getFinalNames() {
+                // TODO Auto-generated method stub
+                return getRXParticipantResolverPanel().getFinalNamesJTF();
+            }
+
+            @Override
+            public Component getParent() {
+                return DBReactionWizardPanel.this;
+            }
+
+            @Override
+            public Component getAssignmentInterface() {
+                return null;
+            }
+
+            @Override
+            public void close() {
+                DBReactionWizardPanel.closeParent(childWindow);
+            }
+        };
+        final String MY_RES_RX = "MY_RES_RX";
+        final String FROM_MODEL = "FROM_MODEL";
+        final String FROM_RXSTEP = "FROM_RXSTEP";
+        AsynchClientTask getRXTask = new AsynchClientTask("Getting reactions...", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+            @Override
+            public void run(Hashtable<String, Object> hashTable) throws Exception {
+                ReactionDescription myResolvedReaction = getRXParticipantResolverPanel().getResolvedReaction();
+                Model fromModel = getDocumentManager().getBioModel(myResolvedReaction.getVCellBioModelID()).getModel();
+                ReactionStep[] rxArr = fromModel.getReactionSteps();
+                ReactionStep fromRXStep = null;
+                for (int i = 0; i < rxArr.length; i++) {
+                    if (rxArr[i].getKey().equals(myResolvedReaction.getVCellRXID())) {
+                        fromRXStep = rxArr[i];
+                        break;
+                    }
+                }
+                hashTable.put(FROM_RXSTEP, fromRXStep);
+                hashTable.put(MY_RES_RX, myResolvedReaction);
+                hashTable.put(FROM_MODEL, fromModel);
+            }
+        };
+        AsynchClientTask applyReactionTask = new AsynchClientTask("", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+            @Override
+            public void run(Hashtable<String, Object> hashTable) throws Exception {
+                BioCartoonTool.pasteReactionSteps(DBReactionWizardPanel.this, rxPasteInterface,
+                        (ReactionDescription) hashTable.get(MY_RES_RX), (Model) hashTable.get(FROM_MODEL), DBReactionWizardPanel.this.getStructure(), (ReactionStep) hashTable.get(FROM_RXSTEP),
+                        DBReactionWizardPanel.this.getModel(), DBReactionWizardPanel.this.getStructure(), assignmentHelper);
+            }
+        };
+        AsynchClientTask finishTask = new AsynchClientTask("", AsynchClientTask.TASKTYPE_SWING_NONBLOCKING, false, false) {
+            @Override
+            public void run(Hashtable<String, Object> hashTable) throws Exception {
+                DBReactionWizardPanel.this.getChildWindow().close();
+                configureBFN();
+            }
+        };
+
+        //Must integrate this with BioCartoonTool.pasteReactionSteps to fix the 'VCellThreadChecker.checkRemoteInvocation' warnings
+        Hashtable<String, Object> hashTable = new Hashtable<>();
+        try {
+            getRXTask.run(hashTable);
+            applyReactionTask.run(hashTable);
 //		finishTask.run(hashTable);
-	} catch (UserCancelException e) {
-		//ignore
-	} catch (UtilCancelException e) {
-		//ignore
-	} catch (Exception e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
-		DialogUtils.showErrorDialog(this, e.getMessage());
-	}
+        } catch (UserCancelException e) {
+            //ignore
+        } catch (UtilCancelException e) {
+            //ignore
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            DialogUtils.showErrorDialog(this, e.getMessage());
+        }
 //	ClientTaskDispatcher.dispatch(this, new Hashtable<>(), new AsynchClientTask[] {getRXTask,applyReactionTask,finishTask});
-}
+    }
 
 
-/**
- * connEtoC14:  (NextJButton.action.actionPerformed(java.awt.event.ActionEvent) --> DBReactionWizardPanel.bfnActionPerformed(Ljava.awt.event.ActionEvent;)V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC14(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.bfnActionPerformed(arg1);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
+    /**
+     * connEtoC14:  (NextJButton.action.actionPerformed(java.awt.event.ActionEvent) --> DBReactionWizardPanel.bfnActionPerformed(Ljava.awt.event.ActionEvent;)V)
+     *
+     * @param arg1 java.awt.event.ActionEvent
+     */
+    /* WARNING: THIS METHOD WILL BE REGENERATED. */
+    private void connEtoC14(java.awt.event.ActionEvent arg1) {
+        try {
+            // user code begin {1}
+            // user code end
+            this.bfnActionPerformed(arg1);
+            // user code begin {2}
+            // user code end
+        } catch (java.lang.Throwable ivjExc) {
+            // user code begin {3}
+            // user code end
+            handleException(ivjExc);
+        }
+    }
 
 
-/**
- * connEtoC15:  (FindRXTextRadioButton.action.actionPerformed(java.awt.event.ActionEvent) --> DBReactionWizardPanel.findCriteriaChanged(Ljava.awt.event.ActionEvent;)V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC15(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.findCriteriaChanged(arg1);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
+    /**
+     * connEtoC15:  (FindRXTextRadioButton.action.actionPerformed(java.awt.event.ActionEvent) --> DBReactionWizardPanel.findCriteriaChanged(Ljava.awt.event.ActionEvent;)V)
+     *
+     * @param arg1 java.awt.event.ActionEvent
+     */
+    /* WARNING: THIS METHOD WILL BE REGENERATED. */
+    private void connEtoC15(java.awt.event.ActionEvent arg1) {
+        try {
+            // user code begin {1}
+            // user code end
+            this.findCriteriaChanged(arg1);
+            // user code begin {2}
+            // user code end
+        } catch (java.lang.Throwable ivjExc) {
+            // user code begin {3}
+            // user code end
+            handleException(ivjExc);
+        }
+    }
 
 
-/**
- * connEtoC22:  (DBReactionWizardPanel.ReactionDescription --> DBReactionWizardPanel.configureBFN()V)
- * @param arg1 java.beans.PropertyChangeEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC22(java.beans.PropertyChangeEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.configureBFN();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
+    /**
+     * connEtoC22:  (DBReactionWizardPanel.ReactionDescription --> DBReactionWizardPanel.configureBFN()V)
+     *
+     * @param arg1 java.beans.PropertyChangeEvent
+     */
+    /* WARNING: THIS METHOD WILL BE REGENERATED. */
+    private void connEtoC22(java.beans.PropertyChangeEvent arg1) {
+        try {
+            // user code begin {1}
+            // user code end
+            this.configureBFN();
+            // user code begin {2}
+            // user code end
+        } catch (java.lang.Throwable ivjExc) {
+            // user code begin {3}
+            // user code end
+            handleException(ivjExc);
+        }
+    }
 
 
-/**
- * connEtoC23:  (ParameterNameSelectionModel.listSelection.valueChanged(javax.swing.event.ListSelectionEvent) --> DBReactionWizardPanel.parameterNameSelectionChanged()V)
- * @param arg1 javax.swing.event.ListSelectionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC23(javax.swing.event.ListSelectionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.parameterNameSelectionChanged();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
+    /**
+     * connEtoC23:  (ParameterNameSelectionModel.listSelection.valueChanged(javax.swing.event.ListSelectionEvent) --> DBReactionWizardPanel.parameterNameSelectionChanged()V)
+     *
+     * @param arg1 javax.swing.event.ListSelectionEvent
+     */
+    /* WARNING: THIS METHOD WILL BE REGENERATED. */
+    private void connEtoC23(javax.swing.event.ListSelectionEvent arg1) {
+        try {
+            // user code begin {1}
+            // user code end
+            this.parameterNameSelectionChanged();
+            // user code begin {2}
+            // user code end
+        } catch (java.lang.Throwable ivjExc) {
+            // user code begin {3}
+            // user code end
+            handleException(ivjExc);
+        }
+    }
 
 
-/**
- * connEtoC26:  (JButton1.action.actionPerformed(java.awt.event.ActionEvent) --> DBReactionWizardPanel.closeParent()V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC26(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		DBReactionWizardPanel.closeParent(childWindow);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
+    /**
+     * connEtoC26:  (JButton1.action.actionPerformed(java.awt.event.ActionEvent) --> DBReactionWizardPanel.closeParent()V)
+     *
+     * @param arg1 java.awt.event.ActionEvent
+     */
+    /* WARNING: THIS METHOD WILL BE REGENERATED. */
+    private void connEtoC26(java.awt.event.ActionEvent arg1) {
+        try {
+            // user code begin {1}
+            // user code end
+            DBReactionWizardPanel.closeParent(childWindow);
+            // user code begin {2}
+            // user code end
+        } catch (java.lang.Throwable ivjExc) {
+            // user code begin {3}
+            // user code end
+            handleException(ivjExc);
+        }
+    }
 
 
-/**
- * connEtoC27:  (ReactionSelectionModel.listSelection.valueChanged(javax.swing.event.ListSelectionEvent) --> DBReactionWizardPanel.configureRXParameterList(Ljavax.swing.event.ListSelectionEvent;)V)
- * @param arg1 javax.swing.event.ListSelectionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC27(javax.swing.event.ListSelectionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.configureRXParameterList(arg1);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
+    /**
+     * connEtoC27:  (ReactionSelectionModel.listSelection.valueChanged(javax.swing.event.ListSelectionEvent) --> DBReactionWizardPanel.configureRXParameterList(Ljavax.swing.event.ListSelectionEvent;)V)
+     *
+     * @param arg1 javax.swing.event.ListSelectionEvent
+     */
+    /* WARNING: THIS METHOD WILL BE REGENERATED. */
+    private void connEtoC27(javax.swing.event.ListSelectionEvent arg1) {
+        try {
+            // user code begin {1}
+            // user code end
+            this.configureRXParameterList(arg1);
+            // user code begin {2}
+            // user code end
+        } catch (java.lang.Throwable ivjExc) {
+            // user code begin {3}
+            // user code end
+            handleException(ivjExc);
+        }
+    }
 
 
-/**
- * connEtoC28:  (FindRXTypeJRadioButton.action.actionPerformed(java.awt.event.ActionEvent) --> DBReactionWizardPanel.findCriteriaChanged(Ljava.awt.event.ActionEvent;)V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC28(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.findCriteriaChanged(arg1);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
+    /**
+     * connEtoC28:  (FindRXTypeJRadioButton.action.actionPerformed(java.awt.event.ActionEvent) --> DBReactionWizardPanel.findCriteriaChanged(Ljava.awt.event.ActionEvent;)V)
+     *
+     * @param arg1 java.awt.event.ActionEvent
+     */
+    /* WARNING: THIS METHOD WILL BE REGENERATED. */
+    private void connEtoC28(java.awt.event.ActionEvent arg1) {
+        try {
+            // user code begin {1}
+            // user code end
+            this.findCriteriaChanged(arg1);
+            // user code begin {2}
+            // user code end
+        } catch (java.lang.Throwable ivjExc) {
+            // user code begin {3}
+            // user code end
+            handleException(ivjExc);
+        }
+    }
 
 
-/**
- * connEtoC29:  (SpecifyTypeJButton.action.actionPerformed(java.awt.event.ActionEvent) --> DBReactionWizardPanel.showSpeciesBrowser()Lcbit.vcell.dictionary.DBFormalSpecies;)
- * @return cbit.vcell.dictionary.DBFormalSpecies
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private DBFormalSpecies connEtoC29(java.awt.event.ActionEvent arg1) {
-	DBFormalSpecies connEtoC29Result = null;
-	try {
-		// user code begin {1}
-		// user code end
-		connEtoC29Result = this.showSpeciesBrowser();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-	return connEtoC29Result;
-}
+    /**
+     * connEtoC29:  (SpecifyTypeJButton.action.actionPerformed(java.awt.event.ActionEvent) --> DBReactionWizardPanel.showSpeciesBrowser()Lcbit.vcell.dictionary.DBFormalSpecies;)
+     *
+     * @param arg1 java.awt.event.ActionEvent
+     * @return cbit.vcell.dictionary.DBFormalSpecies
+     */
+    /* WARNING: THIS METHOD WILL BE REGENERATED. */
+    private DBFormalSpecies connEtoC29(java.awt.event.ActionEvent arg1) {
+        DBFormalSpecies connEtoC29Result = null;
+        try {
+            // user code begin {1}
+            // user code end
+            connEtoC29Result = this.showSpeciesBrowser();
+            // user code begin {2}
+            // user code end
+        } catch (java.lang.Throwable ivjExc) {
+            // user code begin {3}
+            // user code end
+            handleException(ivjExc);
+        }
+        return connEtoC29Result;
+    }
 
-/**
- * connEtoC30:  (CurrentDBFormalSpecies.this --> DBReactionWizardPanel.findCriteriaDetailsChanged()V)
- * @param value cbit.vcell.dictionary.DBFormalSpecies
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC30(DBFormalSpecies value) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.findCriteriaDetailsChanged();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC31:  (document2.document. --> DBReactionWizardPanel.findCriteriaDetailsChanged()V)
- * @param evt javax.swing.event.DocumentEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC31(javax.swing.event.DocumentEvent evt) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.findCriteriaDetailsChanged();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
+    /**
+     * connEtoC30:  (CurrentDBFormalSpecies.this --> DBReactionWizardPanel.findCriteriaDetailsChanged()V)
+     *
+     * @param value cbit.vcell.dictionary.DBFormalSpecies
+     */
+    /* WARNING: THIS METHOD WILL BE REGENERATED. */
+    private void connEtoC30(DBFormalSpecies value) {
+        try {
+            // user code begin {1}
+            // user code end
+            this.findCriteriaDetailsChanged();
+            // user code begin {2}
+            // user code end
+        } catch (java.lang.Throwable ivjExc) {
+            // user code begin {3}
+            // user code end
+            handleException(ivjExc);
+        }
+    }
 
 
-/**
- * connEtoC4:  (DBReactionWizardPanel.initialize() --> DBReactionWizardPanel.dBReactionWizardPanel_Initialize()V)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC4() {
-	try {
-		// user code begin {1}
-		// user code end
-		this.dBReactionWizardPanel_Initialize();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
+    /**
+     * connEtoC31:  (document2.document. --> DBReactionWizardPanel.findCriteriaDetailsChanged()V)
+     *
+     * @param evt javax.swing.event.DocumentEvent
+     */
+    /* WARNING: THIS METHOD WILL BE REGENERATED. */
+    private void connEtoC31(javax.swing.event.DocumentEvent evt) {
+        try {
+            // user code begin {1}
+            // user code end
+            this.findCriteriaDetailsChanged();
+            // user code begin {2}
+            // user code end
+        } catch (java.lang.Throwable ivjExc) {
+            // user code begin {3}
+            // user code end
+            handleException(ivjExc);
+        }
+    }
+
+
+    /**
+     * connEtoC4:  (DBReactionWizardPanel.initialize() --> DBReactionWizardPanel.dBReactionWizardPanel_Initialize()V)
+     */
+    /* WARNING: THIS METHOD WILL BE REGENERATED. */
+    private void connEtoC4() {
+        try {
+            // user code begin {1}
+            // user code end
+            this.dBReactionWizardPanel_Initialize();
+            // user code begin {2}
+            // user code end
+        } catch (java.lang.Throwable ivjExc) {
+            // user code begin {3}
+            // user code end
+            handleException(ivjExc);
+        }
+    }
 
 
 ///**
@@ -915,179 +956,179 @@ private void connEtoC4() {
 //}
 
 
-/**
- * connEtoM6:  (RXDescriptionLSM.listSelection. --> ParameterValuesJList.clearSelection()V)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM6() {
-	try {
-		// user code begin {1}
-		// user code end
-		getParameterValuesJList().clearSelection();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
+    /**
+     * connEtoM6:  (RXDescriptionLSM.listSelection. --> ParameterValuesJList.clearSelection()V)
+     */
+    /* WARNING: THIS METHOD WILL BE REGENERATED. */
+    private void connEtoM6() {
+        try {
+            // user code begin {1}
+            // user code end
+            getParameterValuesJList().clearSelection();
+            // user code begin {2}
+            // user code end
+        } catch (java.lang.Throwable ivjExc) {
+            // user code begin {3}
+            // user code end
+            handleException(ivjExc);
+        }
+    }
 
 
-/**
- * connPtoP3SetSource:  (ReactionsJList.selectionModel <--> selectionModel2.this)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connPtoP3SetSource() {
-	/* Set the source from the target */
-	try {
-		if (ivjConnPtoP3Aligning == false) {
-			// user code begin {1}
-			// user code end
-			ivjConnPtoP3Aligning = true;
-			if ((getReactionSelectionModel() != null)) {
-				getReactionsJList().setSelectionModel(getReactionSelectionModel());
-			}
-			// user code begin {2}
-			// user code end
-			ivjConnPtoP3Aligning = false;
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		ivjConnPtoP3Aligning = false;
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
+    /**
+     * connPtoP3SetSource:  (ReactionsJList.selectionModel <--> selectionModel2.this)
+     */
+    /* WARNING: THIS METHOD WILL BE REGENERATED. */
+    private void connPtoP3SetSource() {
+        /* Set the source from the target */
+        try {
+            if (ivjConnPtoP3Aligning == false) {
+                // user code begin {1}
+                // user code end
+                ivjConnPtoP3Aligning = true;
+                if ((getReactionSelectionModel() != null)) {
+                    getReactionsJList().setSelectionModel(getReactionSelectionModel());
+                }
+                // user code begin {2}
+                // user code end
+                ivjConnPtoP3Aligning = false;
+            }
+        } catch (java.lang.Throwable ivjExc) {
+            ivjConnPtoP3Aligning = false;
+            // user code begin {3}
+            // user code end
+            handleException(ivjExc);
+        }
+    }
 
 
-/**
- * connPtoP3SetTarget:  (ReactionsJList.selectionModel <--> selectionModel2.this)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connPtoP3SetTarget() {
-	/* Set the target from the source */
-	try {
-		if (ivjConnPtoP3Aligning == false) {
-			// user code begin {1}
-			// user code end
-			ivjConnPtoP3Aligning = true;
-			setReactionSelectionModel(getReactionsJList().getSelectionModel());
-			// user code begin {2}
-			// user code end
-			ivjConnPtoP3Aligning = false;
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		ivjConnPtoP3Aligning = false;
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
+    /**
+     * connPtoP3SetTarget:  (ReactionsJList.selectionModel <--> selectionModel2.this)
+     */
+    /* WARNING: THIS METHOD WILL BE REGENERATED. */
+    private void connPtoP3SetTarget() {
+        /* Set the target from the source */
+        try {
+            if (ivjConnPtoP3Aligning == false) {
+                // user code begin {1}
+                // user code end
+                ivjConnPtoP3Aligning = true;
+                setReactionSelectionModel(getReactionsJList().getSelectionModel());
+                // user code begin {2}
+                // user code end
+                ivjConnPtoP3Aligning = false;
+            }
+        } catch (java.lang.Throwable ivjExc) {
+            ivjConnPtoP3Aligning = false;
+            // user code begin {3}
+            // user code end
+            handleException(ivjExc);
+        }
+    }
 
 
-/**
- * connPtoP4SetSource:  (ParameterNamesJList.selectionModel <--> ParameterNameSelectionModel.this)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connPtoP4SetSource() {
-	/* Set the source from the target */
-	try {
-		if (ivjConnPtoP4Aligning == false) {
-			// user code begin {1}
-			// user code end
-			ivjConnPtoP4Aligning = true;
-			if ((getParameterNameSelectionModel() != null)) {
-				getParameterNamesJList().setSelectionModel(getParameterNameSelectionModel());
-			}
-			// user code begin {2}
-			// user code end
-			ivjConnPtoP4Aligning = false;
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		ivjConnPtoP4Aligning = false;
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
+    /**
+     * connPtoP4SetSource:  (ParameterNamesJList.selectionModel <--> ParameterNameSelectionModel.this)
+     */
+    /* WARNING: THIS METHOD WILL BE REGENERATED. */
+    private void connPtoP4SetSource() {
+        /* Set the source from the target */
+        try {
+            if (ivjConnPtoP4Aligning == false) {
+                // user code begin {1}
+                // user code end
+                ivjConnPtoP4Aligning = true;
+                if ((getParameterNameSelectionModel() != null)) {
+                    getParameterNamesJList().setSelectionModel(getParameterNameSelectionModel());
+                }
+                // user code begin {2}
+                // user code end
+                ivjConnPtoP4Aligning = false;
+            }
+        } catch (java.lang.Throwable ivjExc) {
+            ivjConnPtoP4Aligning = false;
+            // user code begin {3}
+            // user code end
+            handleException(ivjExc);
+        }
+    }
 
 
-/**
- * connPtoP4SetTarget:  (ParameterNamesJList.selectionModel <--> ParameterNameSelectionModel.this)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connPtoP4SetTarget() {
-	/* Set the target from the source */
-	try {
-		if (ivjConnPtoP4Aligning == false) {
-			// user code begin {1}
-			// user code end
-			ivjConnPtoP4Aligning = true;
-			setParameterNameSelectionModel(getParameterNamesJList().getSelectionModel());
-			// user code begin {2}
-			// user code end
-			ivjConnPtoP4Aligning = false;
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		ivjConnPtoP4Aligning = false;
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
+    /**
+     * connPtoP4SetTarget:  (ParameterNamesJList.selectionModel <--> ParameterNameSelectionModel.this)
+     */
+    /* WARNING: THIS METHOD WILL BE REGENERATED. */
+    private void connPtoP4SetTarget() {
+        /* Set the target from the source */
+        try {
+            if (ivjConnPtoP4Aligning == false) {
+                // user code begin {1}
+                // user code end
+                ivjConnPtoP4Aligning = true;
+                setParameterNameSelectionModel(getParameterNamesJList().getSelectionModel());
+                // user code begin {2}
+                // user code end
+                ivjConnPtoP4Aligning = false;
+            }
+        } catch (java.lang.Throwable ivjExc) {
+            ivjConnPtoP4Aligning = false;
+            // user code begin {3}
+            // user code end
+            handleException(ivjExc);
+        }
+    }
 
 
-/**
- * connPtoP5SetSource:  (ParameterValuesJList.selectionModel <--> RXDescriptionLSM.this)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connPtoP5SetSource() {
-	/* Set the source from the target */
-	try {
-		if (ivjConnPtoP5Aligning == false) {
-			// user code begin {1}
-			// user code end
-			ivjConnPtoP5Aligning = true;
-			if ((getRXDescriptionLSM() != null)) {
-				getParameterValuesJList().setSelectionModel(getRXDescriptionLSM());
-			}
-			// user code begin {2}
-			// user code end
-			ivjConnPtoP5Aligning = false;
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		ivjConnPtoP5Aligning = false;
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
+    /**
+     * connPtoP5SetSource:  (ParameterValuesJList.selectionModel <--> RXDescriptionLSM.this)
+     */
+    /* WARNING: THIS METHOD WILL BE REGENERATED. */
+    private void connPtoP5SetSource() {
+        /* Set the source from the target */
+        try {
+            if (ivjConnPtoP5Aligning == false) {
+                // user code begin {1}
+                // user code end
+                ivjConnPtoP5Aligning = true;
+                if ((getRXDescriptionLSM() != null)) {
+                    getParameterValuesJList().setSelectionModel(getRXDescriptionLSM());
+                }
+                // user code begin {2}
+                // user code end
+                ivjConnPtoP5Aligning = false;
+            }
+        } catch (java.lang.Throwable ivjExc) {
+            ivjConnPtoP5Aligning = false;
+            // user code begin {3}
+            // user code end
+            handleException(ivjExc);
+        }
+    }
 
 
-/**
- * connPtoP5SetTarget:  (ParameterValuesJList.selectionModel <--> RXDescriptionLSM.this)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connPtoP5SetTarget() {
-	/* Set the target from the source */
-	try {
-		if (ivjConnPtoP5Aligning == false) {
-			// user code begin {1}
-			// user code end
-			ivjConnPtoP5Aligning = true;
-			setRXDescriptionLSM(getParameterValuesJList().getSelectionModel());
-			// user code begin {2}
-			// user code end
-			ivjConnPtoP5Aligning = false;
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		ivjConnPtoP5Aligning = false;
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
+    /**
+     * connPtoP5SetTarget:  (ParameterValuesJList.selectionModel <--> RXDescriptionLSM.this)
+     */
+    /* WARNING: THIS METHOD WILL BE REGENERATED. */
+    private void connPtoP5SetTarget() {
+        /* Set the target from the source */
+        try {
+            if (ivjConnPtoP5Aligning == false) {
+                // user code begin {1}
+                // user code end
+                ivjConnPtoP5Aligning = true;
+                setRXDescriptionLSM(getParameterValuesJList().getSelectionModel());
+                // user code begin {2}
+                // user code end
+                ivjConnPtoP5Aligning = false;
+            }
+        } catch (java.lang.Throwable ivjExc) {
+            ivjConnPtoP5Aligning = false;
+            // user code begin {3}
+            // user code end
+            handleException(ivjExc);
+        }
+    }
 
 
 ///**
@@ -1141,254 +1182,264 @@ private void connPtoP5SetTarget() {
 //	}
 //}
 
-/**
- * Comment
- */
-private void dBReactionWizardPanel_Initialize() {
+    /**
+     * Comment
+     */
+    private void dBReactionWizardPanel_Initialize() {
 
-	getFindRXButtonGroup().add(getFindRXTextRadioButton());
-	getFindRXButtonGroup().add(getKeggMoleculeJRadioButton());
-	
-	getSearchTypeButtonGroup().add(getSearchUserJRadioButton());
-	getSearchTypeButtonGroup().add(getSearchDictionaryJRadioButton());
+        getFindRXButtonGroup().add(getFindRXTextRadioButton());
+        getFindRXButtonGroup().add(getKeggMoleculeJRadioButton());
 
-	getParameterValuesJList().setModel(new javax.swing.DefaultListModel());
-	getParameterNamesJList().setModel(new javax.swing.DefaultListModel());
+        getSearchTypeButtonGroup().add(getSearchUserJRadioButton());
+        getSearchTypeButtonGroup().add(getSearchDictionaryJRadioButton());
 
-	//((javax.swing.table.DefaultTableModel)getScrollPaneTable().getModel()).addColumn("rcp");
-	//((javax.swing.table.DefaultTableModel)getScrollPaneTable().getModel()).addColumn("structure");
-	//((javax.swing.table.DefaultTableModel)getScrollPaneTable().getModel()).addColumn("mapped to");
-	
-}
+        getParameterValuesJList().setModel(new javax.swing.DefaultListModel());
+        getParameterNamesJList().setModel(new javax.swing.DefaultListModel());
 
-/**
- * Comment
- */
-private void findCriteriaChanged(java.awt.event.ActionEvent actionEvent) {
-	
-	if(getFindRXTextRadioButton().isSelected()){
+        //((javax.swing.table.DefaultTableModel)getScrollPaneTable().getModel()).addColumn("rcp");
+        //((javax.swing.table.DefaultTableModel)getScrollPaneTable().getModel()).addColumn("structure");
+        //((javax.swing.table.DefaultTableModel)getScrollPaneTable().getModel()).addColumn("mapped to");
+
+    }
+
+    /**
+     * Comment
+     */
+    private void findCriteriaChanged(java.awt.event.ActionEvent actionEvent) {
+
+        if (getFindRXTextRadioButton().isSelected()) {
 //		getFindTextJTextField().setEnabled(true);
-		getKeggSpecifyJButton().setEnabled(false);
-		getKeggTypeJLabel().setEnabled(false);
-	}else if(getKeggMoleculeJRadioButton().isSelected()){
+            getKeggSpecifyJButton().setEnabled(false);
+            getKeggTypeJLabel().setEnabled(false);
+        } else if (getKeggMoleculeJRadioButton().isSelected()) {
 //		getFindTextJTextField().setEnabled(false);
-		getKeggSpecifyJButton().setEnabled(true);
-		getKeggTypeJLabel().setEnabled(true);
-	}
-	configureBFN();
-}
+            getKeggSpecifyJButton().setEnabled(true);
+            getKeggTypeJLabel().setEnabled(true);
+        }
+        configureBFN();
+    }
 
 
-/**
- * Comment
- */
-private void findCriteriaDetailsChanged() {
-	
-	if(getKeggMoleculeJRadioButton().isSelected()){
-		getKeggTypeJLabel().setText("Current: "+(getCurrentDBFormalSpecies() == null?"None Specified":getCurrentDBFormalSpecies().getFormalSpeciesInfo().toString()));
-	}
-	configureBFN();
-}
+    /**
+     * Comment
+     */
+    private void findCriteriaDetailsChanged() {
+
+        if (getKeggMoleculeJRadioButton().isSelected()) {
+            getKeggTypeJLabel().setText("Current: " + (getCurrentDBFormalSpecies() == null ? "None Specified" : getCurrentDBFormalSpecies().getFormalSpeciesInfo().toString()));
+        }
+        configureBFN();
+    }
 
 
+    /**
+     * Insert the method's description here.
+     * Creation date: (8/4/2003 2:40:51 PM)
+     *
+     * @param origS java.lang.String
+     * @return java.lang.String
+     */
+    private String formatLikeString(String origS) {
+
+        if (origS == null || origS.length() == 0) {
+            return null;
+        }
+
+        StringBuffer sb = new StringBuffer(origS);
+        for (int i = 0; i < sb.length(); i += 1) {
+            if (sb.charAt(i) == '*') {
+                sb.replace(i, i + 1, "%");
+            }
+        }
+
+        origS = sb.toString();
+        if (origS.indexOf("%") == -1 && origS.indexOf("_") == -1) {
+            origS = "%" + origS + "%";
+        }
+        //The character "%" matches any string of zero or more characters except null.
+        //The character "_" matches any single character.
+        //A wildcard character is treated as a literal if preceded by the character designated as the escape character.
+        //Default ESCAPE character for VCell = '/' defined in DictionaryDbDriver.getDatabaseSpecies
+
+        return origS;
+    }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (8/4/2003 2:40:51 PM)
- * @return java.lang.String
- * @param origS java.lang.String
- */
-private String formatLikeString(String origS) {
-	
-	if(origS == null || origS.length() == 0){
-		return null;
-	}
-	
-	StringBuffer sb = new StringBuffer(origS);
-	for(int i=0;i<sb.length();i+= 1){
-		if(sb.charAt(i) == '*'){
-			sb.replace(i,i+1,"%");
-		}
-	}
-
-	origS = sb.toString();
-	if(origS.indexOf("%") == -1 && origS.indexOf("_") == -1){
-		origS = "%"+origS+"%";
-	}
-	//The character "%" matches any string of zero or more characters except null.
-	//The character "_" matches any single character.
-	//A wildcard character is treated as a literal if preceded by the character designated as the escape character.
-	//Default ESCAPE character for VCell = '/' defined in DictionaryDbDriver.getDatabaseSpecies
-
-	return origS;
-}
+    /**
+     * Return the BackJButton property value.
+     *
+     * @return javax.swing.JButton
+     */
+    /* WARNING: THIS METHOD WILL BE REGENERATED. */
+    private javax.swing.JButton getBackJButton() {
+        if (ivjBackJButton == null) {
+            try {
+                ivjBackJButton = new javax.swing.JButton();
+                ivjBackJButton.setName("BackJButton");
+                ivjBackJButton.setText("Back");
+                ivjBackJButton.setEnabled(false);
+                // user code begin {1}
+                // user code end
+            } catch (java.lang.Throwable ivjExc) {
+                // user code begin {2}
+                // user code end
+                handleException(ivjExc);
+            }
+        }
+        return ivjBackJButton;
+    }
 
 
-/**
- * Return the BackJButton property value.
- * @return javax.swing.JButton
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JButton getBackJButton() {
-	if (ivjBackJButton == null) {
-		try {
-			ivjBackJButton = new javax.swing.JButton();
-			ivjBackJButton.setName("BackJButton");
-			ivjBackJButton.setText("Back");
-			ivjBackJButton.setEnabled(false);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjBackJButton;
-}
+    /**
+     * Return the BFNJPanel property value.
+     *
+     * @return javax.swing.JPanel
+     */
+    /* WARNING: THIS METHOD WILL BE REGENERATED. */
+    private javax.swing.JPanel getBFNJPanel() {
+        if (ivjBFNJPanel == null) {
+            try {
+                ivjBFNJPanel = new javax.swing.JPanel();
+                ivjBFNJPanel.setName("BFNJPanel");
+                ivjBFNJPanel.setLayout(new java.awt.GridBagLayout());
+
+                java.awt.GridBagConstraints constraintsBackJButton = new java.awt.GridBagConstraints();
+                constraintsBackJButton.gridx = 0;
+                constraintsBackJButton.gridy = 0;
+                constraintsBackJButton.insets = new java.awt.Insets(4, 4, 4, 4);
+                getBFNJPanel().add(getBackJButton(), constraintsBackJButton);
+
+                java.awt.GridBagConstraints constraintsFinishJButton = new java.awt.GridBagConstraints();
+                constraintsFinishJButton.gridx = 1;
+                constraintsFinishJButton.gridy = 0;
+                constraintsFinishJButton.insets = new java.awt.Insets(4, 4, 4, 4);
+                getBFNJPanel().add(getFinishJButton(), constraintsFinishJButton);
+
+                java.awt.GridBagConstraints constraintsNextJButton = new java.awt.GridBagConstraints();
+                constraintsNextJButton.gridx = 2;
+                constraintsNextJButton.gridy = 0;
+                constraintsNextJButton.insets = new java.awt.Insets(4, 4, 4, 4);
+                getBFNJPanel().add(getNextJButton(), constraintsNextJButton);
+                // user code begin {1}
+                // user code end
+            } catch (java.lang.Throwable ivjExc) {
+                // user code begin {2}
+                // user code end
+                handleException(ivjExc);
+            }
+        }
+        return ivjBFNJPanel;
+    }
 
 
-/**
- * Return the BFNJPanel property value.
- * @return javax.swing.JPanel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JPanel getBFNJPanel() {
-	if (ivjBFNJPanel == null) {
-		try {
-			ivjBFNJPanel = new javax.swing.JPanel();
-			ivjBFNJPanel.setName("BFNJPanel");
-			ivjBFNJPanel.setLayout(new java.awt.GridBagLayout());
-
-			java.awt.GridBagConstraints constraintsBackJButton = new java.awt.GridBagConstraints();
-			constraintsBackJButton.gridx = 0; constraintsBackJButton.gridy = 0;
-			constraintsBackJButton.insets = new java.awt.Insets(4, 4, 4, 4);
-			getBFNJPanel().add(getBackJButton(), constraintsBackJButton);
-
-			java.awt.GridBagConstraints constraintsFinishJButton = new java.awt.GridBagConstraints();
-			constraintsFinishJButton.gridx = 1; constraintsFinishJButton.gridy = 0;
-			constraintsFinishJButton.insets = new java.awt.Insets(4, 4, 4, 4);
-			getBFNJPanel().add(getFinishJButton(), constraintsFinishJButton);
-
-			java.awt.GridBagConstraints constraintsNextJButton = new java.awt.GridBagConstraints();
-			constraintsNextJButton.gridx = 2; constraintsNextJButton.gridy = 0;
-			constraintsNextJButton.insets = new java.awt.Insets(4, 4, 4, 4);
-			getBFNJPanel().add(getNextJButton(), constraintsNextJButton);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjBFNJPanel;
-}
-
-
-/**
- * Return the CardLayouJPanel property value.
- * @return javax.swing.JPanel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JPanel getCardLayoutJPanel() {
-	if (ivjCardLayoutJPanel == null) {
-		try {
-			ivjCardLayoutJPanel = new javax.swing.JPanel();
-			ivjCardLayoutJPanel.setName("CardLayoutJPanel");
-			ivjCardLayoutJPanel.setLayout(new java.awt.CardLayout());
+    /**
+     * Return the CardLayouJPanel property value.
+     *
+     * @return javax.swing.JPanel
+     */
+    /* WARNING: THIS METHOD WILL BE REGENERATED. */
+    private javax.swing.JPanel getCardLayoutJPanel() {
+        if (ivjCardLayoutJPanel == null) {
+            try {
+                ivjCardLayoutJPanel = new javax.swing.JPanel();
+                ivjCardLayoutJPanel.setName("CardLayoutJPanel");
+                ivjCardLayoutJPanel.setLayout(new java.awt.CardLayout());
 //			getCardLayoutJPanel().add(getSearchCriteriaJPanel(), getSearchCriteriaJPanel().getName());
-			getCardLayoutJPanel().add(getSearchResultsJPanel(), getSearchResultsJPanel().getName());
-			getCardLayoutJPanel().add(getRXParticipantResolverPanel(), "RXParticipantResolverPanel");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjCardLayoutJPanel;
-}
+                getCardLayoutJPanel().add(getSearchResultsJPanel(), getSearchResultsJPanel().getName());
+                getCardLayoutJPanel().add(getRXParticipantResolverPanel(), "RXParticipantResolverPanel");
+                // user code begin {1}
+                // user code end
+            } catch (java.lang.Throwable ivjExc) {
+                // user code begin {2}
+                // user code end
+                handleException(ivjExc);
+            }
+        }
+        return ivjCardLayoutJPanel;
+    }
 
-/**
- * Return the CurrentDBFormalSpecies property value.
- * @return cbit.vcell.dictionary.DBFormalSpecies
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private DBFormalSpecies getCurrentDBFormalSpecies() {
-	// user code begin {1}
-	// user code end
-	return ivjCurrentDBFormalSpecies;
-}
-
-
-/**
- * Return the document2 property value.
- * @return javax.swing.text.Document
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.text.Document getdocument2() {
-	// user code begin {1}
-	// user code end
-	return ivjdocument2;
-}
+    /**
+     * Return the CurrentDBFormalSpecies property value.
+     *
+     * @return cbit.vcell.dictionary.DBFormalSpecies
+     */
+    /* WARNING: THIS METHOD WILL BE REGENERATED. */
+    private DBFormalSpecies getCurrentDBFormalSpecies() {
+        // user code begin {1}
+        // user code end
+        return ivjCurrentDBFormalSpecies;
+    }
 
 
-/**
- * Gets the documentManager property (cbit.vcell.clientdb.DocumentManager) value.
- * @return The documentManager property value.
- * @see #setDocumentManager
- */
-public DocumentManager getDocumentManager() {
-	return fieldDocumentManager;
-}
+    /**
+     * Return the document2 property value.
+     *
+     * @return javax.swing.text.Document
+     */
+    /* WARNING: THIS METHOD WILL BE REGENERATED. */
+    private javax.swing.text.Document getdocument2() {
+        // user code begin {1}
+        // user code end
+        return ivjdocument2;
+    }
 
 
-/**
- * Return the FindRXButtonGroup property value.
- * @return javax.swing.ButtonGroup
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.ButtonGroup getFindRXButtonGroup() {
-	if (ivjFindRXButtonGroup == null) {
-		try {
-			ivjFindRXButtonGroup = new javax.swing.ButtonGroup();
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjFindRXButtonGroup;
-}
+    /**
+     * Gets the documentManager property (cbit.vcell.clientdb.DocumentManager) value.
+     *
+     * @return The documentManager property value.
+     * @see #setDocumentManager
+     */
+    public DocumentManager getDocumentManager() {
+        return fieldDocumentManager;
+    }
 
 
-/**
- * Return the SearchUserJRadioButton1 property value.
- * @return javax.swing.JRadioButton
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JRadioButton getFindRXTextRadioButton() {
-	if (ivjFindRXTextRadioButton == null) {
-		try {
-			ivjFindRXTextRadioButton = new javax.swing.JRadioButton();
-			ivjFindRXTextRadioButton.setName("FindRXTextRadioButton");
-			ivjFindRXTextRadioButton.setSelected(true);
-			ivjFindRXTextRadioButton.setText("Species name containing text (* = any string):");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjFindRXTextRadioButton;
-}
+    /**
+     * Return the FindRXButtonGroup property value.
+     *
+     * @return javax.swing.ButtonGroup
+     */
+    /* WARNING: THIS METHOD WILL BE REGENERATED. */
+    private javax.swing.ButtonGroup getFindRXButtonGroup() {
+        if (ivjFindRXButtonGroup == null) {
+            try {
+                ivjFindRXButtonGroup = new javax.swing.ButtonGroup();
+                // user code begin {1}
+                // user code end
+            } catch (java.lang.Throwable ivjExc) {
+                // user code begin {2}
+                // user code end
+                handleException(ivjExc);
+            }
+        }
+        return ivjFindRXButtonGroup;
+    }
+
+
+    /**
+     * Return the SearchUserJRadioButton1 property value.
+     *
+     * @return javax.swing.JRadioButton
+     */
+    /* WARNING: THIS METHOD WILL BE REGENERATED. */
+    private javax.swing.JRadioButton getFindRXTextRadioButton() {
+        if (ivjFindRXTextRadioButton == null) {
+            try {
+                ivjFindRXTextRadioButton = new javax.swing.JRadioButton();
+                ivjFindRXTextRadioButton.setName("FindRXTextRadioButton");
+                ivjFindRXTextRadioButton.setSelected(true);
+                ivjFindRXTextRadioButton.setText("Species name containing text (* = any string):");
+                // user code begin {1}
+                // user code end
+            } catch (java.lang.Throwable ivjExc) {
+                // user code begin {2}
+                // user code end
+                handleException(ivjExc);
+            }
+        }
+        return ivjFindRXTextRadioButton;
+    }
 
 ///**
 // * Return the JTextField1 property value.
@@ -1411,96 +1462,100 @@ private javax.swing.JRadioButton getFindRXTextRadioButton() {
 //	return ivjFindTextJTextField;
 //}
 
-/**
- * Return the FinishJButton property value.
- * @return javax.swing.JButton
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JButton getFinishJButton() {
-	if (ivjFinishJButton == null) {
-		try {
-			ivjFinishJButton = new javax.swing.JButton();
-			ivjFinishJButton.setName("FinishJButton");
-			ivjFinishJButton.setText("Finish");
-			ivjFinishJButton.setEnabled(false);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjFinishJButton;
-}
+    /**
+     * Return the FinishJButton property value.
+     *
+     * @return javax.swing.JButton
+     */
+    /* WARNING: THIS METHOD WILL BE REGENERATED. */
+    private javax.swing.JButton getFinishJButton() {
+        if (ivjFinishJButton == null) {
+            try {
+                ivjFinishJButton = new javax.swing.JButton();
+                ivjFinishJButton.setName("FinishJButton");
+                ivjFinishJButton.setText("Finish");
+                ivjFinishJButton.setEnabled(false);
+                // user code begin {1}
+                // user code end
+            } catch (java.lang.Throwable ivjExc) {
+                // user code begin {2}
+                // user code end
+                handleException(ivjExc);
+            }
+        }
+        return ivjFinishJButton;
+    }
 
 
-/**
- * Return the JButton1 property value.
- * @return javax.swing.JButton
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JButton getJButtonClose() {
-	if (jButtonClose == null) {
-		try {
-			jButtonClose = new javax.swing.JButton();
-			jButtonClose.setName("JButtonClose");
-			jButtonClose.setText("Close");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return jButtonClose;
-}
+    /**
+     * Return the JButton1 property value.
+     *
+     * @return javax.swing.JButton
+     */
+    /* WARNING: THIS METHOD WILL BE REGENERATED. */
+    private javax.swing.JButton getJButtonClose() {
+        if (jButtonClose == null) {
+            try {
+                jButtonClose = new javax.swing.JButton();
+                jButtonClose.setName("JButtonClose");
+                jButtonClose.setText("Close");
+                // user code begin {1}
+                // user code end
+            } catch (java.lang.Throwable ivjExc) {
+                // user code begin {2}
+                // user code end
+                handleException(ivjExc);
+            }
+        }
+        return jButtonClose;
+    }
 
 
-/**
- * Return the JLabel1 property value.
- * @return javax.swing.JLabel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JLabel getJLabel1() {
-	if (ivjJLabel1 == null) {
-		try {
-			ivjJLabel1 = new javax.swing.JLabel();
-			ivjJLabel1.setName("JLabel1");
-			ivjJLabel1.setText("Reaction Details");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJLabel1;
-}
+    /**
+     * Return the JLabel1 property value.
+     *
+     * @return javax.swing.JLabel
+     */
+    /* WARNING: THIS METHOD WILL BE REGENERATED. */
+    private javax.swing.JLabel getJLabel1() {
+        if (ivjJLabel1 == null) {
+            try {
+                ivjJLabel1 = new javax.swing.JLabel();
+                ivjJLabel1.setName("JLabel1");
+                ivjJLabel1.setText("Reaction Details");
+                // user code begin {1}
+                // user code end
+            } catch (java.lang.Throwable ivjExc) {
+                // user code begin {2}
+                // user code end
+                handleException(ivjExc);
+            }
+        }
+        return ivjJLabel1;
+    }
 
-/**
- * Return the JLabel2 property value.
- * @return javax.swing.JLabel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JLabel getJLabel2() {
-	if (ivjJLabel2 == null) {
-		try {
-			ivjJLabel2 = new javax.swing.JLabel();
-			ivjJLabel2.setName("JLabel2");
-			ivjJLabel2.setText("Reaction Version(s)");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJLabel2;
-}
+    /**
+     * Return the JLabel2 property value.
+     *
+     * @return javax.swing.JLabel
+     */
+    /* WARNING: THIS METHOD WILL BE REGENERATED. */
+    private javax.swing.JLabel getJLabel2() {
+        if (ivjJLabel2 == null) {
+            try {
+                ivjJLabel2 = new javax.swing.JLabel();
+                ivjJLabel2.setName("JLabel2");
+                ivjJLabel2.setText("Reaction Version(s)");
+                // user code begin {1}
+                // user code end
+            } catch (java.lang.Throwable ivjExc) {
+                // user code begin {2}
+                // user code end
+                handleException(ivjExc);
+            }
+        }
+        return ivjJLabel2;
+    }
 
 ///**
 // * Return the JPanel property value.
@@ -1645,310 +1700,326 @@ private javax.swing.JLabel getJLabel2() {
 //}
 
 
-/**
- * Return the JScrollPane3 property value.
- * @return javax.swing.JScrollPane
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JScrollPane getJScrollPane3() {
-	if (ivjJScrollPane3 == null) {
-		try {
-			ivjJScrollPane3 = new javax.swing.JScrollPane();
-			ivjJScrollPane3.setName("JScrollPane3");
-			getJScrollPane3().setViewportView(getReactionsJList());
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJScrollPane3;
-}
+    /**
+     * Return the JScrollPane3 property value.
+     *
+     * @return javax.swing.JScrollPane
+     */
+    /* WARNING: THIS METHOD WILL BE REGENERATED. */
+    private javax.swing.JScrollPane getJScrollPane3() {
+        if (ivjJScrollPane3 == null) {
+            try {
+                ivjJScrollPane3 = new javax.swing.JScrollPane();
+                ivjJScrollPane3.setName("JScrollPane3");
+                getJScrollPane3().setViewportView(getReactionsJList());
+                // user code begin {1}
+                // user code end
+            } catch (java.lang.Throwable ivjExc) {
+                // user code begin {2}
+                // user code end
+                handleException(ivjExc);
+            }
+        }
+        return ivjJScrollPane3;
+    }
 
 
-/**
- * Return the SearchDictionaryJRadioButton1 property value.
- * @return javax.swing.JRadioButton
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JRadioButton getKeggMoleculeJRadioButton() {
-	if (ivjKeggMoleculeJRadioButton == null) {
-		try {
-			ivjKeggMoleculeJRadioButton = new javax.swing.JRadioButton();
-			ivjKeggMoleculeJRadioButton.setName("KeggMoleculeJRadioButton");
-			ivjKeggMoleculeJRadioButton.setText("KEGG Molecule / SWISSPROT Protein");
-			ivjKeggMoleculeJRadioButton.setVisible(false);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjKeggMoleculeJRadioButton;
-}
+    /**
+     * Return the SearchDictionaryJRadioButton1 property value.
+     *
+     * @return javax.swing.JRadioButton
+     */
+    /* WARNING: THIS METHOD WILL BE REGENERATED. */
+    private javax.swing.JRadioButton getKeggMoleculeJRadioButton() {
+        if (ivjKeggMoleculeJRadioButton == null) {
+            try {
+                ivjKeggMoleculeJRadioButton = new javax.swing.JRadioButton();
+                ivjKeggMoleculeJRadioButton.setName("KeggMoleculeJRadioButton");
+                ivjKeggMoleculeJRadioButton.setText("KEGG Molecule / SWISSPROT Protein");
+                ivjKeggMoleculeJRadioButton.setVisible(false);
+                // user code begin {1}
+                // user code end
+            } catch (java.lang.Throwable ivjExc) {
+                // user code begin {2}
+                // user code end
+                handleException(ivjExc);
+            }
+        }
+        return ivjKeggMoleculeJRadioButton;
+    }
 
-/**
- * Return the JButton2 property value.
- * @return javax.swing.JButton
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JButton getKeggSpecifyJButton() {
-	if (ivjKeggSpecifyJButton == null) {
-		try {
-			ivjKeggSpecifyJButton = new javax.swing.JButton();
-			ivjKeggSpecifyJButton.setName("KeggSpecifyJButton");
-			ivjKeggSpecifyJButton.setText("Specify...");
-			ivjKeggSpecifyJButton.setEnabled(false);
-			ivjKeggSpecifyJButton.setVisible(false);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjKeggSpecifyJButton;
-}
+    /**
+     * Return the JButton2 property value.
+     *
+     * @return javax.swing.JButton
+     */
+    /* WARNING: THIS METHOD WILL BE REGENERATED. */
+    private javax.swing.JButton getKeggSpecifyJButton() {
+        if (ivjKeggSpecifyJButton == null) {
+            try {
+                ivjKeggSpecifyJButton = new javax.swing.JButton();
+                ivjKeggSpecifyJButton.setName("KeggSpecifyJButton");
+                ivjKeggSpecifyJButton.setText("Specify...");
+                ivjKeggSpecifyJButton.setEnabled(false);
+                ivjKeggSpecifyJButton.setVisible(false);
+                // user code begin {1}
+                // user code end
+            } catch (java.lang.Throwable ivjExc) {
+                // user code begin {2}
+                // user code end
+                handleException(ivjExc);
+            }
+        }
+        return ivjKeggSpecifyJButton;
+    }
 
-/**
- * Return the JLabel6 property value.
- * @return javax.swing.JLabel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JLabel getKeggTypeJLabel() {
-	if (ivjKeggTypeJLabel == null) {
-		try {
-			ivjKeggTypeJLabel = new javax.swing.JLabel();
-			ivjKeggTypeJLabel.setName("KeggTypeJLabel");
-			ivjKeggTypeJLabel.setFont(ivjKeggTypeJLabel.getFont().deriveFont(Font.BOLD));
-			ivjKeggTypeJLabel.setText("Current: None Specified");
-			ivjKeggTypeJLabel.setEnabled(false);
-			ivjKeggTypeJLabel.setVisible(false);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjKeggTypeJLabel;
-}
+    /**
+     * Return the JLabel6 property value.
+     *
+     * @return javax.swing.JLabel
+     */
+    /* WARNING: THIS METHOD WILL BE REGENERATED. */
+    private javax.swing.JLabel getKeggTypeJLabel() {
+        if (ivjKeggTypeJLabel == null) {
+            try {
+                ivjKeggTypeJLabel = new javax.swing.JLabel();
+                ivjKeggTypeJLabel.setName("KeggTypeJLabel");
+                ivjKeggTypeJLabel.setFont(ivjKeggTypeJLabel.getFont().deriveFont(Font.BOLD));
+                ivjKeggTypeJLabel.setText("Current: None Specified");
+                ivjKeggTypeJLabel.setEnabled(false);
+                ivjKeggTypeJLabel.setVisible(false);
+                // user code begin {1}
+                // user code end
+            } catch (java.lang.Throwable ivjExc) {
+                // user code begin {2}
+                // user code end
+                handleException(ivjExc);
+            }
+        }
+        return ivjKeggTypeJLabel;
+    }
 
-/**
- * Gets the model property (cbit.vcell.model.Model) value.
- * @return The model property value.
- * @see #setModel
- */
-public Model getModel() {
-	return fieldModel;
-}
-
-
-/**
- * Return the NextJButton property value.
- * @return javax.swing.JButton
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JButton getNextJButton() {
-	if (ivjNextJButton == null) {
-		try {
-			ivjNextJButton = new javax.swing.JButton();
-			ivjNextJButton.setName("NextJButton");
-			ivjNextJButton.setText("Next");
-			ivjNextJButton.setEnabled(false);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjNextJButton;
-}
+    /**
+     * Gets the model property (cbit.vcell.model.Model) value.
+     *
+     * @return The model property value.
+     * @see #setModel
+     */
+    public Model getModel() {
+        return fieldModel;
+    }
 
 
-/**
- * Return the ParameterJPanel property value.
- * @return javax.swing.JPanel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JPanel getParameterJPanel() {
-	if (ivjParameterJPanel == null) {
-		try {
-			LineBorderBean ivjLocalBorder8 = new LineBorderBean();
-			TitledBorderBean ivjLocalBorder7 = new TitledBorderBean();
-			ivjLocalBorder7.setTitleFont(getFont().deriveFont(Font.BOLD));
-			ivjLocalBorder7.setBorder(ivjLocalBorder8);
-			ivjLocalBorder7.setTitleColor(java.awt.Color.black);
-			ivjLocalBorder7.setTitle("2.  Choose a Version of the Selected Reaction");
-			ivjParameterJPanel = new javax.swing.JPanel();
-			ivjParameterJPanel.setName("ParameterJPanel");
-			ivjParameterJPanel.setBorder(ivjLocalBorder7);
-			ivjParameterJPanel.setLayout(new java.awt.GridBagLayout());
-
-			java.awt.GridBagConstraints constraintsParameterNamesJScrollPane = new java.awt.GridBagConstraints();
-			constraintsParameterNamesJScrollPane.gridx = 0; constraintsParameterNamesJScrollPane.gridy = 1;
-			constraintsParameterNamesJScrollPane.fill = java.awt.GridBagConstraints.BOTH;
-			constraintsParameterNamesJScrollPane.weightx = 1.0;
-			constraintsParameterNamesJScrollPane.weighty = 1.0;
-			constraintsParameterNamesJScrollPane.insets = new java.awt.Insets(4, 4, 4, 4);
-			getParameterJPanel().add(getParameterNamesJScrollPane(), constraintsParameterNamesJScrollPane);
-
-			java.awt.GridBagConstraints constraintsParameterValuesJScrollPane = new java.awt.GridBagConstraints();
-			constraintsParameterValuesJScrollPane.gridx = 1; constraintsParameterValuesJScrollPane.gridy = 1;
-			constraintsParameterValuesJScrollPane.fill = java.awt.GridBagConstraints.BOTH;
-			constraintsParameterValuesJScrollPane.weightx = 1.0;
-			constraintsParameterValuesJScrollPane.weighty = 1.0;
-			constraintsParameterValuesJScrollPane.insets = new java.awt.Insets(4, 4, 4, 4);
-			getParameterJPanel().add(getParameterValuesJScrollPane(), constraintsParameterValuesJScrollPane);
-
-			java.awt.GridBagConstraints constraintsJLabel1 = new java.awt.GridBagConstraints();
-			constraintsJLabel1.gridx = 1; constraintsJLabel1.gridy = 0;
-			constraintsJLabel1.weightx = 1.0;
-			constraintsJLabel1.insets = new java.awt.Insets(4, 4, 4, 4);
-			getParameterJPanel().add(getJLabel1(), constraintsJLabel1);
-
-			java.awt.GridBagConstraints constraintsJLabel2 = new java.awt.GridBagConstraints();
-			constraintsJLabel2.gridx = 0; constraintsJLabel2.gridy = 0;
-			constraintsJLabel2.insets = new java.awt.Insets(4, 4, 4, 4);
-			getParameterJPanel().add(getJLabel2(), constraintsJLabel2);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjParameterJPanel;
-}
-
-/**
- * Return the ParameterNameSelectionModel property value.
- * @return javax.swing.ListSelectionModel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.ListSelectionModel getParameterNameSelectionModel() {
-	// user code begin {1}
-	// user code end
-	return ivjParameterNameSelectionModel;
-}
+    /**
+     * Return the NextJButton property value.
+     *
+     * @return javax.swing.JButton
+     */
+    /* WARNING: THIS METHOD WILL BE REGENERATED. */
+    private javax.swing.JButton getNextJButton() {
+        if (ivjNextJButton == null) {
+            try {
+                ivjNextJButton = new javax.swing.JButton();
+                ivjNextJButton.setName("NextJButton");
+                ivjNextJButton.setText("Next");
+                ivjNextJButton.setEnabled(false);
+                // user code begin {1}
+                // user code end
+            } catch (java.lang.Throwable ivjExc) {
+                // user code begin {2}
+                // user code end
+                handleException(ivjExc);
+            }
+        }
+        return ivjNextJButton;
+    }
 
 
-/**
- * Return the ParameterNamesJList property value.
- * @return javax.swing.JList
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private JList<MapStringToObject> getParameterNamesJList() {
-	if (ivjParameterNamesJList == null) {
-		try {
-			ivjParameterNamesJList = new JList<MapStringToObject>();
-			ivjParameterNamesJList.setName("ParameterNamesJList");
-			ivjParameterNamesJList.setBounds(0, 0, 160, 120);
-			ivjParameterNamesJList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
-			ivjParameterNamesJList.setCellRenderer(new DefaultListCellRenderer() {
-				@Override
-				public Component getListCellRendererComponent(JList<?> list, Object value, int index,
-						boolean isSelected, boolean cellHasFocus) {
-					// TODO Auto-generated method stub
-					Component comp = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-					comp.setEnabled(((MapStringToObject)value).isEnabled());
-					return comp;
-				}
-			});
-			ivjParameterNamesJList.setSelectionModel(new DefaultListSelectionModel() {
-				@Override
-				public void setSelectionInterval(int index0, int index1) {
-					if(ivjParameterNamesJList.getModel().getElementAt(index0).isEnabled())
-						super.setSelectionInterval(index0, index1);
-				}
-			});
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjParameterNamesJList;
-}
+    /**
+     * Return the ParameterJPanel property value.
+     *
+     * @return javax.swing.JPanel
+     */
+    /* WARNING: THIS METHOD WILL BE REGENERATED. */
+    private javax.swing.JPanel getParameterJPanel() {
+        if (ivjParameterJPanel == null) {
+            try {
+                LineBorderBean ivjLocalBorder8 = new LineBorderBean();
+                TitledBorderBean ivjLocalBorder7 = new TitledBorderBean();
+                ivjLocalBorder7.setTitleFont(getFont().deriveFont(Font.BOLD));
+                ivjLocalBorder7.setBorder(ivjLocalBorder8);
+                ivjLocalBorder7.setTitleColor(java.awt.Color.black);
+                ivjLocalBorder7.setTitle("2.  Choose a Version of the Selected Reaction");
+                ivjParameterJPanel = new javax.swing.JPanel();
+                ivjParameterJPanel.setName("ParameterJPanel");
+                ivjParameterJPanel.setBorder(ivjLocalBorder7);
+                ivjParameterJPanel.setLayout(new java.awt.GridBagLayout());
 
-/**
- * Return the ParameterNamesJScrollPane property value.
- * @return javax.swing.JScrollPane
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JScrollPane getParameterNamesJScrollPane() {
-	if (ivjParameterNamesJScrollPane == null) {
-		try {
-			ivjParameterNamesJScrollPane = new javax.swing.JScrollPane();
-			ivjParameterNamesJScrollPane.setName("ParameterNamesJScrollPane");
-			getParameterNamesJScrollPane().setViewportView(getParameterNamesJList());
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjParameterNamesJScrollPane;
-}
+                java.awt.GridBagConstraints constraintsParameterNamesJScrollPane = new java.awt.GridBagConstraints();
+                constraintsParameterNamesJScrollPane.gridx = 0;
+                constraintsParameterNamesJScrollPane.gridy = 1;
+                constraintsParameterNamesJScrollPane.fill = java.awt.GridBagConstraints.BOTH;
+                constraintsParameterNamesJScrollPane.weightx = 1.0;
+                constraintsParameterNamesJScrollPane.weighty = 1.0;
+                constraintsParameterNamesJScrollPane.insets = new java.awt.Insets(4, 4, 4, 4);
+                getParameterJPanel().add(getParameterNamesJScrollPane(), constraintsParameterNamesJScrollPane);
+
+                java.awt.GridBagConstraints constraintsParameterValuesJScrollPane = new java.awt.GridBagConstraints();
+                constraintsParameterValuesJScrollPane.gridx = 1;
+                constraintsParameterValuesJScrollPane.gridy = 1;
+                constraintsParameterValuesJScrollPane.fill = java.awt.GridBagConstraints.BOTH;
+                constraintsParameterValuesJScrollPane.weightx = 1.0;
+                constraintsParameterValuesJScrollPane.weighty = 1.0;
+                constraintsParameterValuesJScrollPane.insets = new java.awt.Insets(4, 4, 4, 4);
+                getParameterJPanel().add(getParameterValuesJScrollPane(), constraintsParameterValuesJScrollPane);
+
+                java.awt.GridBagConstraints constraintsJLabel1 = new java.awt.GridBagConstraints();
+                constraintsJLabel1.gridx = 1;
+                constraintsJLabel1.gridy = 0;
+                constraintsJLabel1.weightx = 1.0;
+                constraintsJLabel1.insets = new java.awt.Insets(4, 4, 4, 4);
+                getParameterJPanel().add(getJLabel1(), constraintsJLabel1);
+
+                java.awt.GridBagConstraints constraintsJLabel2 = new java.awt.GridBagConstraints();
+                constraintsJLabel2.gridx = 0;
+                constraintsJLabel2.gridy = 0;
+                constraintsJLabel2.insets = new java.awt.Insets(4, 4, 4, 4);
+                getParameterJPanel().add(getJLabel2(), constraintsJLabel2);
+                // user code begin {1}
+                // user code end
+            } catch (java.lang.Throwable ivjExc) {
+                // user code begin {2}
+                // user code end
+                handleException(ivjExc);
+            }
+        }
+        return ivjParameterJPanel;
+    }
+
+    /**
+     * Return the ParameterNameSelectionModel property value.
+     *
+     * @return javax.swing.ListSelectionModel
+     */
+    /* WARNING: THIS METHOD WILL BE REGENERATED. */
+    private javax.swing.ListSelectionModel getParameterNameSelectionModel() {
+        // user code begin {1}
+        // user code end
+        return ivjParameterNameSelectionModel;
+    }
 
 
-/**
- * Return the ParameterValuesJList property value.
- * @return javax.swing.JList
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JList getParameterValuesJList() {
-	if (ivjParameterValuesJList == null) {
-		try {
-			ivjParameterValuesJList = new javax.swing.JList();
-			ivjParameterValuesJList.setName("ParameterValuesJList");
-			ivjParameterValuesJList.setBounds(0, 0, 160, 120);
-			ivjParameterValuesJList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjParameterValuesJList;
-}
+    /**
+     * Return the ParameterNamesJList property value.
+     *
+     * @return javax.swing.JList
+     */
+    /* WARNING: THIS METHOD WILL BE REGENERATED. */
+    private JList<MapStringToObject> getParameterNamesJList() {
+        if (ivjParameterNamesJList == null) {
+            try {
+                ivjParameterNamesJList = new JList<MapStringToObject>();
+                ivjParameterNamesJList.setName("ParameterNamesJList");
+                ivjParameterNamesJList.setBounds(0, 0, 160, 120);
+                ivjParameterNamesJList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+                ivjParameterNamesJList.setCellRenderer(new DefaultListCellRenderer() {
+                    @Override
+                    public Component getListCellRendererComponent(JList<?> list, Object value, int index,
+                                                                  boolean isSelected, boolean cellHasFocus) {
+                        // TODO Auto-generated method stub
+                        Component comp = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                        comp.setEnabled(((MapStringToObject) value).isEnabled());
+                        return comp;
+                    }
+                });
+                ivjParameterNamesJList.setSelectionModel(new DefaultListSelectionModel() {
+                    @Override
+                    public void setSelectionInterval(int index0, int index1) {
+                        if (ivjParameterNamesJList.getModel().getElementAt(index0).isEnabled())
+                            super.setSelectionInterval(index0, index1);
+                    }
+                });
+                // user code begin {1}
+                // user code end
+            } catch (java.lang.Throwable ivjExc) {
+                // user code begin {2}
+                // user code end
+                handleException(ivjExc);
+            }
+        }
+        return ivjParameterNamesJList;
+    }
 
-/**
- * Return the ParameterValuesJScrollPane property value.
- * @return javax.swing.JScrollPane
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JScrollPane getParameterValuesJScrollPane() {
-	if (ivjParameterValuesJScrollPane == null) {
-		try {
-			ivjParameterValuesJScrollPane = new javax.swing.JScrollPane();
-			ivjParameterValuesJScrollPane.setName("ParameterValuesJScrollPane");
-			getParameterValuesJScrollPane().setViewportView(getParameterValuesJList());
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjParameterValuesJScrollPane;
-}
+    /**
+     * Return the ParameterNamesJScrollPane property value.
+     *
+     * @return javax.swing.JScrollPane
+     */
+    /* WARNING: THIS METHOD WILL BE REGENERATED. */
+    private javax.swing.JScrollPane getParameterNamesJScrollPane() {
+        if (ivjParameterNamesJScrollPane == null) {
+            try {
+                ivjParameterNamesJScrollPane = new javax.swing.JScrollPane();
+                ivjParameterNamesJScrollPane.setName("ParameterNamesJScrollPane");
+                getParameterNamesJScrollPane().setViewportView(getParameterNamesJList());
+                // user code begin {1}
+                // user code end
+            } catch (java.lang.Throwable ivjExc) {
+                // user code begin {2}
+                // user code end
+                handleException(ivjExc);
+            }
+        }
+        return ivjParameterNamesJScrollPane;
+    }
+
+
+    /**
+     * Return the ParameterValuesJList property value.
+     *
+     * @return javax.swing.JList
+     */
+    /* WARNING: THIS METHOD WILL BE REGENERATED. */
+    private javax.swing.JList getParameterValuesJList() {
+        if (ivjParameterValuesJList == null) {
+            try {
+                ivjParameterValuesJList = new javax.swing.JList();
+                ivjParameterValuesJList.setName("ParameterValuesJList");
+                ivjParameterValuesJList.setBounds(0, 0, 160, 120);
+                ivjParameterValuesJList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+                // user code begin {1}
+                // user code end
+            } catch (java.lang.Throwable ivjExc) {
+                // user code begin {2}
+                // user code end
+                handleException(ivjExc);
+            }
+        }
+        return ivjParameterValuesJList;
+    }
+
+    /**
+     * Return the ParameterValuesJScrollPane property value.
+     *
+     * @return javax.swing.JScrollPane
+     */
+    /* WARNING: THIS METHOD WILL BE REGENERATED. */
+    private javax.swing.JScrollPane getParameterValuesJScrollPane() {
+        if (ivjParameterValuesJScrollPane == null) {
+            try {
+                ivjParameterValuesJScrollPane = new javax.swing.JScrollPane();
+                ivjParameterValuesJScrollPane.setName("ParameterValuesJScrollPane");
+                getParameterValuesJScrollPane().setViewportView(getParameterValuesJList());
+                // user code begin {1}
+                // user code end
+            } catch (java.lang.Throwable ivjExc) {
+                // user code begin {2}
+                // user code end
+                handleException(ivjExc);
+            }
+        }
+        return ivjParameterValuesJScrollPane;
+    }
 
 
 ///**
@@ -1979,59 +2050,63 @@ private javax.swing.JScrollPane getParameterValuesJScrollPane() {
 //	return ivjReactionCanvas1;
 //}
 
-/**
- * Gets the reactionDescription property (cbit.vcell.dictionary.ReactionDescription) value.
- * @return The reactionDescription property value.
- * @see #setReactionDescription
- */
-public ReactionDescription getReactionDescription() {
-	return fieldReactionDescription;
-}
+    /**
+     * Gets the reactionDescription property (cbit.vcell.dictionary.ReactionDescription) value.
+     *
+     * @return The reactionDescription property value.
+     * @see #setReactionDescription
+     */
+    public ReactionDescription getReactionDescription() {
+        return fieldReactionDescription;
+    }
 
 
-/**
- * Return the selectionModel2 property value.
- * @return javax.swing.ListSelectionModel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.ListSelectionModel getReactionSelectionModel() {
-	// user code begin {1}
-	// user code end
-	return ivjReactionSelectionModel;
-}
+    /**
+     * Return the selectionModel2 property value.
+     *
+     * @return javax.swing.ListSelectionModel
+     */
+    /* WARNING: THIS METHOD WILL BE REGENERATED. */
+    private javax.swing.ListSelectionModel getReactionSelectionModel() {
+        // user code begin {1}
+        // user code end
+        return ivjReactionSelectionModel;
+    }
 
 
-/**
- * Return the ReactionsJList property value.
- * @return javax.swing.JList
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JList getReactionsJList() {
-	if (ivjReactionsJList == null) {
-		try {
-			ivjReactionsJList = new javax.swing.JList();
-			ivjReactionsJList.setName("ReactionsJList");
-			ivjReactionsJList.setBounds(0, 0, 160, 120);
-			ivjReactionsJList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjReactionsJList;
-}
+    /**
+     * Return the ReactionsJList property value.
+     *
+     * @return javax.swing.JList
+     */
+    /* WARNING: THIS METHOD WILL BE REGENERATED. */
+    private javax.swing.JList getReactionsJList() {
+        if (ivjReactionsJList == null) {
+            try {
+                ivjReactionsJList = new javax.swing.JList();
+                ivjReactionsJList.setName("ReactionsJList");
+                ivjReactionsJList.setBounds(0, 0, 160, 120);
+                ivjReactionsJList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+                // user code begin {1}
+                // user code end
+            } catch (java.lang.Throwable ivjExc) {
+                // user code begin {2}
+                // user code end
+                handleException(ivjExc);
+            }
+        }
+        return ivjReactionsJList;
+    }
 
-/**
- * Gets the reactionStep property (cbit.vcell.model.ReactionStep) value.
- * @return The reactionStep property value.
- * @see #setReactionStep
- */
-private ReactionStep getReactionStep0() {
-	return fieldReactionStep0;
-}
+    /**
+     * Gets the reactionStep property (cbit.vcell.model.ReactionStep) value.
+     *
+     * @return The reactionStep property value.
+     * @see #setReactionStep
+     */
+    private ReactionStep getReactionStep0() {
+        return fieldReactionStep0;
+    }
 
 
 ///**
@@ -2056,15 +2131,16 @@ private ReactionStep getReactionStep0() {
 //	return ivjResolveHighlightJLabel;
 //}
 
-private RXParticipantResolverPanel rxParticipantResolverPanel;
-private RXParticipantResolverPanel getRXParticipantResolverPanel() {
-	if(rxParticipantResolverPanel == null) {
-		rxParticipantResolverPanel = new RXParticipantResolverPanel();
+    private RXParticipantResolverPanel rxParticipantResolverPanel;
+
+    private RXParticipantResolverPanel getRXParticipantResolverPanel() {
+        if (rxParticipantResolverPanel == null) {
+            rxParticipantResolverPanel = new RXParticipantResolverPanel();
 //		rxParticipantResolverPanel.setPasteToModel(getModel());
 //		rxParticipantResolverPanel.setFromModel(getDocumentManager().getm);
-	}
-	return rxParticipantResolverPanel;
-}
+        }
+        return rxParticipantResolverPanel;
+    }
 ///**
 // * Return the ResolverJPanel property value.
 // * @return javax.swing.JPanel
@@ -2117,16 +2193,17 @@ private RXParticipantResolverPanel getRXParticipantResolverPanel() {
 //	return ivjResolverJPanel;
 //}
 
-/**
- * Return the RXDescriptionLSM property value.
- * @return javax.swing.ListSelectionModel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.ListSelectionModel getRXDescriptionLSM() {
-	// user code begin {1}
-	// user code end
-	return ivjRXDescriptionLSM;
-}
+    /**
+     * Return the RXDescriptionLSM property value.
+     *
+     * @return javax.swing.ListSelectionModel
+     */
+    /* WARNING: THIS METHOD WILL BE REGENERATED. */
+    private javax.swing.ListSelectionModel getRXDescriptionLSM() {
+        // user code begin {1}
+        // user code end
+        return ivjRXDescriptionLSM;
+    }
 
 
 ///**
@@ -2202,219 +2279,231 @@ private javax.swing.ListSelectionModel getRXDescriptionLSM() {
 //	return ivjSearchCriteriaJPanel;
 //}
 
-/**
- * Return the SearchDictionaryJRadioButton property value.
- * @return javax.swing.JRadioButton
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JRadioButton getSearchDictionaryJRadioButton() {
-	if (ivjSearchDictionaryJRadioButton == null) {
-		try {
-			ivjSearchDictionaryJRadioButton = new javax.swing.JRadioButton();
-			ivjSearchDictionaryJRadioButton.setVisible(false);
-			ivjSearchDictionaryJRadioButton.setName("SearchDictionaryJRadioButton");
-			ivjSearchDictionaryJRadioButton.setText("KEGG Enzymatic Reactions");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjSearchDictionaryJRadioButton;
-}
+    /**
+     * Return the SearchDictionaryJRadioButton property value.
+     *
+     * @return javax.swing.JRadioButton
+     */
+    /* WARNING: THIS METHOD WILL BE REGENERATED. */
+    private javax.swing.JRadioButton getSearchDictionaryJRadioButton() {
+        if (ivjSearchDictionaryJRadioButton == null) {
+            try {
+                ivjSearchDictionaryJRadioButton = new javax.swing.JRadioButton();
+                ivjSearchDictionaryJRadioButton.setVisible(false);
+                ivjSearchDictionaryJRadioButton.setName("SearchDictionaryJRadioButton");
+                ivjSearchDictionaryJRadioButton.setText("KEGG Enzymatic Reactions");
+                // user code begin {1}
+                // user code end
+            } catch (java.lang.Throwable ivjExc) {
+                // user code begin {2}
+                // user code end
+                handleException(ivjExc);
+            }
+        }
+        return ivjSearchDictionaryJRadioButton;
+    }
 
-/**
- * Return the SearchResultsJPanel property value.
- * @return javax.swing.JPanel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JPanel getSearchResultsJPanel() {
-	if (ivjSearchResultsJPanel == null) {
-		try {
-			LineBorderBean ivjLocalBorder6 = new LineBorderBean();
-			TitledBorderBean ivjLocalBorder5 = new TitledBorderBean();
-			ivjLocalBorder5.setTitleFont(getFont().deriveFont(Font.BOLD));
-			ivjLocalBorder5.setBorder(ivjLocalBorder6);
-			ivjLocalBorder5.setTitleColor(java.awt.Color.black);
-			ivjLocalBorder5.setTitle("1.  Select Reaction");
-			ivjSearchResultsJPanel = new javax.swing.JPanel();
-			ivjSearchResultsJPanel.setName("SearchResultsJPanel");
-			ivjSearchResultsJPanel.setBorder(ivjLocalBorder5);
-			GridBagLayout gbl_ivjSearchResultsJPanel = new GridBagLayout();
-			gbl_ivjSearchResultsJPanel.rowWeights = new double[]{0.0, 0.0, 0.0};
-			gbl_ivjSearchResultsJPanel.columnWeights = new double[]{1.0};
-			ivjSearchResultsJPanel.setLayout(gbl_ivjSearchResultsJPanel);
-			GridBagConstraints gbc_searchEntryPanel = new GridBagConstraints();
-			gbc_searchEntryPanel.anchor = GridBagConstraints.WEST;
-			gbc_searchEntryPanel.fill = GridBagConstraints.HORIZONTAL;
-			gbc_searchEntryPanel.insets = new Insets(5, 5, 5, 5);
-			gbc_searchEntryPanel.gridx = 0;
-			gbc_searchEntryPanel.gridy = 0;
-			ivjSearchResultsJPanel.add(getSearchEntryPanel(), gbc_searchEntryPanel);
+    /**
+     * Return the SearchResultsJPanel property value.
+     *
+     * @return javax.swing.JPanel
+     */
+    /* WARNING: THIS METHOD WILL BE REGENERATED. */
+    private javax.swing.JPanel getSearchResultsJPanel() {
+        if (ivjSearchResultsJPanel == null) {
+            try {
+                LineBorderBean ivjLocalBorder6 = new LineBorderBean();
+                TitledBorderBean ivjLocalBorder5 = new TitledBorderBean();
+                ivjLocalBorder5.setTitleFont(getFont().deriveFont(Font.BOLD));
+                ivjLocalBorder5.setBorder(ivjLocalBorder6);
+                ivjLocalBorder5.setTitleColor(java.awt.Color.black);
+                ivjLocalBorder5.setTitle("1.  Select Reaction");
+                ivjSearchResultsJPanel = new javax.swing.JPanel();
+                ivjSearchResultsJPanel.setName("SearchResultsJPanel");
+                ivjSearchResultsJPanel.setBorder(ivjLocalBorder5);
+                GridBagLayout gbl_ivjSearchResultsJPanel = new GridBagLayout();
+                gbl_ivjSearchResultsJPanel.rowWeights = new double[]{0.0, 0.0, 0.0};
+                gbl_ivjSearchResultsJPanel.columnWeights = new double[]{1.0};
+                ivjSearchResultsJPanel.setLayout(gbl_ivjSearchResultsJPanel);
+                GridBagConstraints gbc_searchEntryPanel = new GridBagConstraints();
+                gbc_searchEntryPanel.anchor = GridBagConstraints.WEST;
+                gbc_searchEntryPanel.fill = GridBagConstraints.HORIZONTAL;
+                gbc_searchEntryPanel.insets = new Insets(5, 5, 5, 5);
+                gbc_searchEntryPanel.gridx = 0;
+                gbc_searchEntryPanel.gridy = 0;
+                ivjSearchResultsJPanel.add(getSearchEntryPanel(), gbc_searchEntryPanel);
 
-			java.awt.GridBagConstraints constraintsJScrollPane3 = new java.awt.GridBagConstraints();
-			constraintsJScrollPane3.gridx = 0; constraintsJScrollPane3.gridy = 1;
-			constraintsJScrollPane3.fill = java.awt.GridBagConstraints.BOTH;
-			constraintsJScrollPane3.weightx = 1.0;
-			constraintsJScrollPane3.weighty = 1.0;
-			constraintsJScrollPane3.ipadx = 4;
-			constraintsJScrollPane3.ipady = 4;
-			constraintsJScrollPane3.insets = new Insets(4, 4, 5, 4);
-			getSearchResultsJPanel().add(getJScrollPane3(), constraintsJScrollPane3);
+                java.awt.GridBagConstraints constraintsJScrollPane3 = new java.awt.GridBagConstraints();
+                constraintsJScrollPane3.gridx = 0;
+                constraintsJScrollPane3.gridy = 1;
+                constraintsJScrollPane3.fill = java.awt.GridBagConstraints.BOTH;
+                constraintsJScrollPane3.weightx = 1.0;
+                constraintsJScrollPane3.weighty = 1.0;
+                constraintsJScrollPane3.ipadx = 4;
+                constraintsJScrollPane3.ipady = 4;
+                constraintsJScrollPane3.insets = new Insets(4, 4, 5, 4);
+                getSearchResultsJPanel().add(getJScrollPane3(), constraintsJScrollPane3);
 
-			java.awt.GridBagConstraints constraintsParameterJPanel = new java.awt.GridBagConstraints();
-			constraintsParameterJPanel.gridx = 0; constraintsParameterJPanel.gridy = 2;
-			constraintsParameterJPanel.fill = java.awt.GridBagConstraints.BOTH;
-			constraintsParameterJPanel.weightx = 1.0;
-			constraintsParameterJPanel.weighty = 1.0;
-			constraintsParameterJPanel.insets = new java.awt.Insets(4, 4, 4, 4);
-			getSearchResultsJPanel().add(getParameterJPanel(), constraintsParameterJPanel);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjSearchResultsJPanel;
-}
+                java.awt.GridBagConstraints constraintsParameterJPanel = new java.awt.GridBagConstraints();
+                constraintsParameterJPanel.gridx = 0;
+                constraintsParameterJPanel.gridy = 2;
+                constraintsParameterJPanel.fill = java.awt.GridBagConstraints.BOTH;
+                constraintsParameterJPanel.weightx = 1.0;
+                constraintsParameterJPanel.weighty = 1.0;
+                constraintsParameterJPanel.insets = new java.awt.Insets(4, 4, 4, 4);
+                getSearchResultsJPanel().add(getParameterJPanel(), constraintsParameterJPanel);
+                // user code begin {1}
+                // user code end
+            } catch (java.lang.Throwable ivjExc) {
+                // user code begin {2}
+                // user code end
+                handleException(ivjExc);
+            }
+        }
+        return ivjSearchResultsJPanel;
+    }
 
-/**
- * Return the NameTypeButtonGroup property value.
- * @return javax.swing.ButtonGroup
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.ButtonGroup getSearchTypeButtonGroup() {
-	if (ivjSearchTypeButtonGroup == null) {
-		try {
-			ivjSearchTypeButtonGroup = new javax.swing.ButtonGroup();
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjSearchTypeButtonGroup;
-}
-
-
-/**
- * Return the SearchUserJRadioButton property value.
- * @return javax.swing.JRadioButton
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JRadioButton getSearchUserJRadioButton() {
-	if (ivjSearchUserJRadioButton == null) {
-		try {
-			ivjSearchUserJRadioButton = new javax.swing.JRadioButton();
-			ivjSearchUserJRadioButton.setName("SearchUserJRadioButton");
-			ivjSearchUserJRadioButton.setSelected(true);
-			ivjSearchUserJRadioButton.setText("VCell User Reactions");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjSearchUserJRadioButton;
-}
-
-/**
- * Gets the structure property (cbit.vcell.model.Structure) value.
- * @return The structure property value.
- * @see #setStructure
- */
-public Structure getStructure() {
-	return fieldStructure;
-}
+    /**
+     * Return the NameTypeButtonGroup property value.
+     *
+     * @return javax.swing.ButtonGroup
+     */
+    /* WARNING: THIS METHOD WILL BE REGENERATED. */
+    private javax.swing.ButtonGroup getSearchTypeButtonGroup() {
+        if (ivjSearchTypeButtonGroup == null) {
+            try {
+                ivjSearchTypeButtonGroup = new javax.swing.ButtonGroup();
+                // user code begin {1}
+                // user code end
+            } catch (java.lang.Throwable ivjExc) {
+                // user code begin {2}
+                // user code end
+                handleException(ivjExc);
+            }
+        }
+        return ivjSearchTypeButtonGroup;
+    }
 
 
-/**
- * Called whenever the part throws an exception.
- * @param exception java.lang.Throwable
- */
-private void handleException(java.lang.Throwable exception) {
+    /**
+     * Return the SearchUserJRadioButton property value.
+     *
+     * @return javax.swing.JRadioButton
+     */
+    /* WARNING: THIS METHOD WILL BE REGENERATED. */
+    private javax.swing.JRadioButton getSearchUserJRadioButton() {
+        if (ivjSearchUserJRadioButton == null) {
+            try {
+                ivjSearchUserJRadioButton = new javax.swing.JRadioButton();
+                ivjSearchUserJRadioButton.setName("SearchUserJRadioButton");
+                ivjSearchUserJRadioButton.setSelected(true);
+                ivjSearchUserJRadioButton.setText("VCell User Reactions");
+                // user code begin {1}
+                // user code end
+            } catch (java.lang.Throwable ivjExc) {
+                // user code begin {2}
+                // user code end
+                handleException(ivjExc);
+            }
+        }
+        return ivjSearchUserJRadioButton;
+    }
 
-	/* Uncomment the following lines to print uncaught exceptions to stdout */
-	// System.out.println("--------- UNCAUGHT EXCEPTION ---------");
-	// exception.printStackTrace(System.out);
-}
+    /**
+     * Gets the structure property (cbit.vcell.model.Structure) value.
+     *
+     * @return The structure property value.
+     * @see #setStructure
+     */
+    public Structure getStructure() {
+        return fieldStructure;
+    }
 
 
-/**
- * Initializes connections
- * @exception java.lang.Exception The exception description.
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void initConnections() throws java.lang.Exception {
-	// user code begin {1}
-	// user code end
-	getSearchTextField().addActionListener(ivjEventHandler);
-	getBackJButton().addActionListener(ivjEventHandler);
-	getFinishJButton().addActionListener(ivjEventHandler);
-	getNextJButton().addActionListener(ivjEventHandler);
-	getReactionsJList().addPropertyChangeListener(ivjEventHandler);
-	getParameterNamesJList().addPropertyChangeListener(ivjEventHandler);
-	getJButtonClose().addActionListener(ivjEventHandler);
-	this.addPropertyChangeListener(ivjEventHandler);
-	getParameterValuesJList().addPropertyChangeListener(ivjEventHandler);
-	getFindRXTextRadioButton().addActionListener(ivjEventHandler);
-	getKeggMoleculeJRadioButton().addActionListener(ivjEventHandler);
-	getKeggSpecifyJButton().addActionListener(ivjEventHandler);
+    /**
+     * Called whenever the part throws an exception.
+     *
+     * @param exception java.lang.Throwable
+     */
+    private void handleException(java.lang.Throwable exception) {
+
+        /* Uncomment the following lines to print uncaught exceptions to stdout */
+        // System.out.println("--------- UNCAUGHT EXCEPTION ---------");
+        // exception.printStackTrace(System.out);
+    }
+
+
+    /**
+     * Initializes connections
+     *
+     * @throws java.lang.Exception The exception description.
+     */
+    /* WARNING: THIS METHOD WILL BE REGENERATED. */
+    private void initConnections() throws java.lang.Exception {
+        // user code begin {1}
+        // user code end
+        getSearchTextField().addActionListener(ivjEventHandler);
+        getBackJButton().addActionListener(ivjEventHandler);
+        getFinishJButton().addActionListener(ivjEventHandler);
+        getNextJButton().addActionListener(ivjEventHandler);
+        getReactionsJList().addPropertyChangeListener(ivjEventHandler);
+        getParameterNamesJList().addPropertyChangeListener(ivjEventHandler);
+        getJButtonClose().addActionListener(ivjEventHandler);
+        this.addPropertyChangeListener(ivjEventHandler);
+        getParameterValuesJList().addPropertyChangeListener(ivjEventHandler);
+        getFindRXTextRadioButton().addActionListener(ivjEventHandler);
+        getKeggMoleculeJRadioButton().addActionListener(ivjEventHandler);
+        getKeggSpecifyJButton().addActionListener(ivjEventHandler);
 //	getFindTextJTextField().addPropertyChangeListener(ivjEventHandler);
 //	getFindTextJTextField().addActionListener(ivjEventHandler);
-	connPtoP3SetTarget();
-	connPtoP4SetTarget();
-	connPtoP5SetTarget();
+        connPtoP3SetTarget();
+        connPtoP4SetTarget();
+        connPtoP5SetTarget();
 //	connPtoP6SetTarget();
-}
+    }
 
-/**
- * Initialize the class.
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void initialize() {
-	try {
-		// user code begin {1}
-		// user code end
-		setName("DBReactionWizardPanel");
-		setLayout(new java.awt.GridBagLayout());
+    /**
+     * Initialize the class.
+     */
+    /* WARNING: THIS METHOD WILL BE REGENERATED. */
+    private void initialize() {
+        try {
+            // user code begin {1}
+            // user code end
+            setName("DBReactionWizardPanel");
+            setLayout(new java.awt.GridBagLayout());
 
-		java.awt.GridBagConstraints constraintsBFNJPanel = new java.awt.GridBagConstraints();
-		constraintsBFNJPanel.gridx = 0; constraintsBFNJPanel.gridy = 1;
-		constraintsBFNJPanel.gridwidth = 2;
-		constraintsBFNJPanel.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getBFNJPanel(), constraintsBFNJPanel);
+            java.awt.GridBagConstraints constraintsBFNJPanel = new java.awt.GridBagConstraints();
+            constraintsBFNJPanel.gridx = 0;
+            constraintsBFNJPanel.gridy = 1;
+            constraintsBFNJPanel.gridwidth = 2;
+            constraintsBFNJPanel.insets = new java.awt.Insets(4, 4, 4, 4);
+            add(getBFNJPanel(), constraintsBFNJPanel);
 
-		java.awt.GridBagConstraints constraintsCardLayoutJPanel = new java.awt.GridBagConstraints();
-		constraintsCardLayoutJPanel.gridx = 0; constraintsCardLayoutJPanel.gridy = 0;
-		constraintsCardLayoutJPanel.gridwidth = 2;
-		constraintsCardLayoutJPanel.fill = java.awt.GridBagConstraints.BOTH;
-		constraintsCardLayoutJPanel.weightx = 1.0;
-		constraintsCardLayoutJPanel.weighty = 1.0;
-		constraintsCardLayoutJPanel.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getCardLayoutJPanel(), constraintsCardLayoutJPanel);
+            java.awt.GridBagConstraints constraintsCardLayoutJPanel = new java.awt.GridBagConstraints();
+            constraintsCardLayoutJPanel.gridx = 0;
+            constraintsCardLayoutJPanel.gridy = 0;
+            constraintsCardLayoutJPanel.gridwidth = 2;
+            constraintsCardLayoutJPanel.fill = java.awt.GridBagConstraints.BOTH;
+            constraintsCardLayoutJPanel.weightx = 1.0;
+            constraintsCardLayoutJPanel.weighty = 1.0;
+            constraintsCardLayoutJPanel.insets = new java.awt.Insets(4, 4, 4, 4);
+            add(getCardLayoutJPanel(), constraintsCardLayoutJPanel);
 
-		java.awt.GridBagConstraints constraintsJButton1 = new java.awt.GridBagConstraints();
-		constraintsJButton1.gridx = 1; constraintsJButton1.gridy = 1;
-		constraintsJButton1.anchor = java.awt.GridBagConstraints.EAST;
-		constraintsJButton1.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getJButtonClose(), constraintsJButton1);
-		initConnections();
-		connEtoC4();
-	} catch (java.lang.Throwable ivjExc) {
-		handleException(ivjExc);
-	}
-	// user code begin {2}
-	// user code end
-}
+            java.awt.GridBagConstraints constraintsJButton1 = new java.awt.GridBagConstraints();
+            constraintsJButton1.gridx = 1;
+            constraintsJButton1.gridy = 1;
+            constraintsJButton1.anchor = java.awt.GridBagConstraints.EAST;
+            constraintsJButton1.insets = new java.awt.Insets(4, 4, 4, 4);
+            add(getJButtonClose(), constraintsJButton1);
+            initConnections();
+            connEtoC4();
+        } catch (java.lang.Throwable ivjExc) {
+            handleException(ivjExc);
+        }
+        // user code begin {2}
+        // user code end
+    }
 
 ///**
 // * Insert the method's description here.
@@ -2499,84 +2588,87 @@ private void initialize() {
 //}
 
 
-/**
- * main entrypoint - starts the part when it is run as an application
- * @param args java.lang.String[]
- */
-public static void main(java.lang.String[] args) {
-	try {
-		javax.swing.JFrame frame = new javax.swing.JFrame();
-		DBReactionWizardPanel aDBReactionWizardPanel;
-		aDBReactionWizardPanel = new DBReactionWizardPanel();
-		frame.setContentPane(aDBReactionWizardPanel);
-		frame.setSize(aDBReactionWizardPanel.getSize());
-		frame.addWindowListener(new java.awt.event.WindowAdapter() {
-			public void windowClosing(java.awt.event.WindowEvent e) {
-				System.exit(0);
-			};
-		});
-		java.awt.Insets insets = frame.getInsets();
-		frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
-		frame.setVisible(true);
-	} catch (Throwable exception) {
-		System.err.println("Exception occurred in main() of javax.swing.JPanel");
-		exception.printStackTrace(System.out);
-	}
-}
+    /**
+     * main entrypoint - starts the part when it is run as an application
+     *
+     * @param args java.lang.String[]
+     */
+    public static void main(java.lang.String[] args) {
+        try {
+            javax.swing.JFrame frame = new javax.swing.JFrame();
+            DBReactionWizardPanel aDBReactionWizardPanel;
+            aDBReactionWizardPanel = new DBReactionWizardPanel();
+            frame.setContentPane(aDBReactionWizardPanel);
+            frame.setSize(aDBReactionWizardPanel.getSize());
+            frame.addWindowListener(new java.awt.event.WindowAdapter() {
+                public void windowClosing(java.awt.event.WindowEvent e) {
+                    System.exit(0);
+                }
+
+                ;
+            });
+            java.awt.Insets insets = frame.getInsets();
+            frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
+            frame.setVisible(true);
+        } catch (Throwable exception) {
+            System.err.println("Exception occurred in main() of javax.swing.JPanel");
+            exception.printStackTrace(System.out);
+        }
+    }
 
 
-/**
- * Comment
- */
-private void parameterNameSelectionChanged() {
+    /**
+     * Comment
+     */
+    private void parameterNameSelectionChanged() {
 
-	try{
+        try {
 //		javax.swing.DefaultListModel dlm = (javax.swing.DefaultListModel)getParameterValuesJList().getModel();
 //		dlm.removeAllElements();
-		//
-		if(getParameterNamesJList().getSelectedValue() != null){
+            //
+            if (getParameterNamesJList().getSelectedValue() != null) {
 
 //			final cbit.vcell.clientdb.DocumentManager docManager = getDocumentManager();
 //			final javax.swing.JList jlist = getReactionsJList();
-			final MapStringToObject parameNameMSO = (MapStringToObject)getParameterNamesJList().getSelectedValue();
-			final KeyValue reactionStepKey = ((ReactionStepInfo)parameNameMSO.getToObject()).getReactionKey();
-			//
-			final String RXSTEP_HASH_VALUE_KEY = "rxStep";
-			
-			AsynchClientTask searchReactions = new AsynchClientTask("Getting Full Reaction", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-				public void run(Hashtable<String, Object> hash) throws Exception {
-					Model reactionModel = getDocumentManager().getReactionStepAsModel(reactionStepKey);
-					ReactionStep rStep = reactionModel.getReactionStep(((ReactionStepInfo)parameNameMSO.getToObject()).getReactionName());
-					if(rStep != null){
-						rStep.rebindAllToModel(reactionModel);
-						hash.put(RXSTEP_HASH_VALUE_KEY,rStep);
-					}
-				}
-			};
-			//
-			AsynchClientTask updateRXParams = new AsynchClientTask("updateRXParams", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-				public void run(Hashtable<String, Object> hash) throws DataAccessException {
-					ReactionStep rStep = (ReactionStep)hash.get(RXSTEP_HASH_VALUE_KEY);
-					if(rStep != null){
-						Kinetics.KineticsParameter[] kpArr = rStep.getKinetics().getKineticsParameters();
-						ReactionParticipant[] rpArr = rStep.getReactionParticipants();
-						//
-						DefaultListModel<String> pvdlm = (DefaultListModel<String>)getParameterValuesJList().getModel();
-						pvdlm.removeAllElements();
-						for(int i=0;i < kpArr.length;i+= 1){
-							pvdlm.addElement("Parameter - "+kpArr[i].getName().toString()+" = "+kpArr[i].getExpression().infix());
-						}
-						pvdlm.addElement("PhysicsOption="+rStep.getPhysicsOptions());
-						for(int i=0;i < rpArr.length;i+= 1){
-							String role = "Unknown";
-							if(rpArr[i] instanceof Reactant){
-								role = "Reactant";
-							}else if(rpArr[i] instanceof Product){
-								role = "Product";
-							}else if(rpArr[i] instanceof Catalyst){
-								role = "Catalyst";
-							}
-							String fluxFlag = "";
+                final MapStringToObject parameNameMSO = (MapStringToObject) getParameterNamesJList().getSelectedValue();
+                final KeyValue reactionStepKey = ((ReactionStepInfo) parameNameMSO.getToObject()).getReactionKey();
+                //
+                final String RXSTEP_HASH_VALUE_KEY = "rxStep";
+
+                AsynchClientTask searchReactions = new AsynchClientTask("Getting Full Reaction", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+                    public void run(Hashtable<String, Object> hash) throws Exception {
+                        Model reactionModel = getDocumentManager().getReactionStepAsModel(reactionStepKey);
+                        ReactionStep rStep = reactionModel.getReactionStep(((ReactionStepInfo) parameNameMSO.getToObject()).getReactionName());
+                        if (rStep != null) {
+                            rStep.rebindAllToModel(reactionModel);
+                            hash.put(RXSTEP_HASH_VALUE_KEY, rStep);
+                        }
+                    }
+                };
+                //
+                AsynchClientTask updateRXParams = new AsynchClientTask("updateRXParams", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+                    public void run(Hashtable<String, Object> hash) throws DataAccessException {
+                        ReactionStep rStep = (ReactionStep) hash.get(RXSTEP_HASH_VALUE_KEY);
+                        if (rStep != null) {
+                            Kinetics.KineticsParameter[] kpArr = rStep.getKinetics().getKineticsParameters();
+                            ReactionParticipant[] rpArr = rStep.getReactionParticipants();
+                            //
+                            DefaultListModel<String> pvdlm = (DefaultListModel<String>) getParameterValuesJList().getModel();
+                            pvdlm.removeAllElements();
+                            for (int i = 0; i < kpArr.length; i += 1) {
+                                pvdlm.addElement("Parameter - " + kpArr[i].getName().toString() + " = " + kpArr[i].getExpression().infix());
+                            }
+                            pvdlm.addElement("PhysicsOption=" + rStep.getPhysicsOptions());
+                            for (int i = 0; i < rpArr.length; i += 1) {
+                                String role = "Unknown";
+                                if (rpArr[i] instanceof Reactant) {
+                                    role = "Reactant";
+                                } else if (rpArr[i] instanceof Product) {
+                                    role = "Product";
+                                } else if (rpArr[i] instanceof Catalyst) {
+                                    role = "Catalyst";
+                                }
+                                String fluxFlag = "";
 //							if(rStep instanceof FluxReaction){
 //								Membrane rStepStruct = (Membrane)rStep.getStructure();
 //								if(rpArr[i] instanceof Flux){
@@ -2587,26 +2679,26 @@ private void parameterNameSelectionChanged() {
 //									}
 //								}
 //							}
-							pvdlm.addElement("RXParticipant("+role+") "+fluxFlag+" "+(rpArr[i].getSpecies().getDBSpecies() != null?"*":"-")+" "+rpArr[i].getSpeciesContext().getName());
-						}
-					}
-					setReactionStep(rStep);
-					configureBFN();
-				}
-			};
-			//	
-			Hashtable<String, Object> hashTemp = new Hashtable<String, Object>();
-			ClientTaskDispatcher.dispatch(this,hashTemp,new AsynchClientTask[] {searchReactions,updateRXParams},true);
-		}else{
-			setReactionStep(null);
-		}
-	}catch(Exception e){
-		PopupGenerator.showErrorDialog(this,e.getMessage(), e);
-	}
-	//
-	configureBFN();
-	
-}
+                                pvdlm.addElement("RXParticipant(" + role + ") " + fluxFlag + " " + (rpArr[i].getSpecies().getDBSpecies() != null ? "*" : "-") + " " + rpArr[i].getSpeciesContext().getName());
+                            }
+                        }
+                        setReactionStep(rStep);
+                        configureBFN();
+                    }
+                };
+                //
+                Hashtable<String, Object> hashTemp = new Hashtable<String, Object>();
+                ClientTaskDispatcher.dispatch(this, hashTemp, new AsynchClientTask[]{searchReactions, updateRXParams}, true);
+            } else {
+                setReactionStep(null);
+            }
+        } catch (Exception e) {
+            PopupGenerator.showErrorDialog(this, e.getMessage(), e);
+        }
+        //
+        configureBFN();
+
+    }
 
 
 ///**
@@ -2619,13 +2711,14 @@ private void parameterNameSelectionChanged() {
 //	}
 //}
 
-private RXPasteInterface rxPasteInterface;
-private JPanel searchEntryPanel;
-private JLabel searchForLabel;
-private JTextField searchTextField;
-public void setRXPasteInterface(RXPasteInterface rxPasteInterface){
-	this.rxPasteInterface = rxPasteInterface;
-}
+    private RXPasteInterface rxPasteInterface;
+    private JPanel searchEntryPanel;
+    private JLabel searchForLabel;
+    private JTextField searchTextField;
+
+    public void setRXPasteInterface(RXPasteInterface rxPasteInterface) {
+        this.rxPasteInterface = rxPasteInterface;
+    }
 /**
  * Comment
  */
@@ -2719,23 +2812,23 @@ public void setRXPasteInterface(RXPasteInterface rxPasteInterface){
 //}
 
 
-/**
- * Comment
- */
-private void search(){
+    /**
+     * Comment
+     */
+    private void search() {
 
-	if(getDocumentManager() != null){
-		String textSearchS = getSearchTextField().getText();//getFindTextJTextField().getText();
-		if(textSearchS != null && textSearchS.length() == 0){
-			textSearchS = null;
-		}
-		final ReactionQuerySpec reactionQuerySpec =
-			new ReactionQuerySpec(
-				(getFindRXTextRadioButton().isSelected()?formatLikeString(textSearchS):null),
-				(getKeggMoleculeJRadioButton().isSelected()?getCurrentDBFormalSpecies():null));
-			
+        if (getDocumentManager() != null) {
+            String textSearchS = getSearchTextField().getText();//getFindTextJTextField().getText();
+            if (textSearchS != null && textSearchS.length() == 0) {
+                textSearchS = null;
+            }
+            final ReactionQuerySpec reactionQuerySpec =
+                    new ReactionQuerySpec(
+                            (getFindRXTextRadioButton().isSelected() ? formatLikeString(textSearchS) : null),
+                            (getKeggMoleculeJRadioButton().isSelected() ? getCurrentDBFormalSpecies() : null));
+
 //		if(getSearchUserJRadioButton().isSelected()){
-			searchUserReactions(reactionQuerySpec);
+            searchUserReactions(reactionQuerySpec);
 //			return;
 //		}
 //		final DocumentManager docManager = getDocumentManager();
@@ -2765,114 +2858,116 @@ private void search(){
 //		//	
 //		Hashtable<String, Object> hashTemp = new Hashtable<String, Object>();
 //		ClientTaskDispatcher.dispatch(this,hashTemp,new AsynchClientTask[] {searchReactions,updateRXList},false);
-	}
-}
+        }
+    }
 
 
-/**
- * Comment
- */
-public void searchDictionaryJRadioButton_ActionPerformed(java.awt.event.ActionEvent actionEvent) {
-	return;
-}
+    /**
+     * Comment
+     */
+    public void searchDictionaryJRadioButton_ActionPerformed(java.awt.event.ActionEvent actionEvent) {
+        return;
+    }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (7/12/2003 2:45:44 PM)
- */
-private void searchUserReactions(final ReactionQuerySpec reactionQuerySpec){
+    /**
+     * Insert the method's description here.
+     * Creation date: (7/12/2003 2:45:44 PM)
+     */
+    private void searchUserReactions(final ReactionQuerySpec reactionQuerySpec) {
 
-	if(getDocumentManager() != null){
-		final DocumentManager docManager = getDocumentManager();
-		final JList jlist = getReactionsJList();
-		//
-		final String RXSTRING_VALUE_KEY = "rxString";
-		//
-		AsynchClientTask searchReactions = new AsynchClientTask("searching reactions", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-			public void run(Hashtable<String, Object> hash){
-				try{
-					mapRXStringtoRXIDs.clear();
-					//
-					ReactionDescription[] dbrd = docManager.getUserReactionDescriptions(reactionQuerySpec);
-					//
-					if(dbrd != null && !(getStructure() instanceof Membrane)){
-						Vector<ReactionDescription> noflux = new Vector<ReactionDescription>();
-						for(int i=0;i<dbrd.length;i+= 1){
-							if(!dbrd[i].isFluxReaction()){
-								noflux.add(dbrd[i]);
-							}
-						}
-						if(noflux.size() > 0){
-							dbrd = new ReactionDescription[noflux.size()];
-							noflux.copyInto(dbrd);
-						}
-					}
-					//
-					String[] dbrdS = null;
-					if(dbrd != null){
-						//if(mapRXStringtoRXIDs == null){mapRXStringtoRXIDs = new java.util.Hashtable();}
-						for(int i=0;i<dbrd.length;i+= 1){
-							String rxString = dbrd[i].toString();
-							if(!mapRXStringtoRXIDs.containsKey(rxString)){
-								mapRXStringtoRXIDs.put(rxString,new Vector<String>());
-							}
-							mapRXStringtoRXIDs.get(rxString).add(dbrd[i].getVCellRXID().toString());
-							
-							mapRXIDtoBMIDs.put(dbrd[i].getVCellRXID(), dbrd[i].getVCellBioModelID());
-							mapRXIDtoStructRefIDs.put(dbrd[i].getVCellRXID(), dbrd[i].getVCellStructRef());
-						}
-						dbrdS = mapRXStringtoRXIDs.keySet().toArray(new String[0]);
-					}
-					//
-					if(dbrd != null && dbrd.length >0){
-						hash.put(RXSTRING_VALUE_KEY,dbrdS);
-					}
-				}catch(DataAccessException e){
-					PopupGenerator.showErrorDialog(DBReactionWizardPanel.this,e.getMessage());
-				}
-			}
-		};
-		//
-		AsynchClientTask updateRXList = new AsynchClientTask("updateRXList", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-			public void run(Hashtable<String, Object> hash){
-				String[] dbrdS = (String[])hash.get(RXSTRING_VALUE_KEY);
-				if(dbrdS != null){
-					jlist.setListData(dbrdS);
-				}else{
-					jlist.setListData(new String[0]);
-				}
+        if (getDocumentManager() != null) {
+            final DocumentManager docManager = getDocumentManager();
+            final JList jlist = getReactionsJList();
+            //
+            final String RXSTRING_VALUE_KEY = "rxString";
+            //
+            AsynchClientTask searchReactions = new AsynchClientTask("searching reactions", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+                public void run(Hashtable<String, Object> hash) {
+                    try {
+                        mapRXStringtoRXIDs.clear();
+                        //
+                        ReactionDescription[] dbrd = docManager.getUserReactionDescriptions(reactionQuerySpec);
+                        //
+                        if (dbrd != null && !(getStructure() instanceof Membrane)) {
+                            Vector<ReactionDescription> noflux = new Vector<ReactionDescription>();
+                            for (int i = 0; i < dbrd.length; i += 1) {
+                                if (!dbrd[i].isFluxReaction()) {
+                                    noflux.add(dbrd[i]);
+                                }
+                            }
+                            if (noflux.size() > 0) {
+                                dbrd = new ReactionDescription[noflux.size()];
+                                noflux.copyInto(dbrd);
+                            }
+                        }
+                        //
+                        String[] dbrdS = null;
+                        if (dbrd != null) {
+                            //if(mapRXStringtoRXIDs == null){mapRXStringtoRXIDs = new java.util.Hashtable();}
+                            for (int i = 0; i < dbrd.length; i += 1) {
+                                String rxString = dbrd[i].toString();
+                                if (!mapRXStringtoRXIDs.containsKey(rxString)) {
+                                    mapRXStringtoRXIDs.put(rxString, new Vector<String>());
+                                }
+                                mapRXStringtoRXIDs.get(rxString).add(dbrd[i].getVCellRXID().toString());
+
+                                mapRXIDtoBMIDs.put(dbrd[i].getVCellRXID(), dbrd[i].getVCellBioModelID());
+                                mapRXIDtoStructRefIDs.put(dbrd[i].getVCellRXID(), dbrd[i].getVCellStructRef());
+                            }
+                            dbrdS = mapRXStringtoRXIDs.keySet().toArray(new String[0]);
+                        }
+                        //
+                        if (dbrd != null && dbrd.length > 0) {
+                            hash.put(RXSTRING_VALUE_KEY, dbrdS);
+                        }
+                    } catch (DataAccessException e) {
+                        PopupGenerator.showErrorDialog(DBReactionWizardPanel.this, e.getMessage());
+                    }
+                }
+            };
+            //
+            AsynchClientTask updateRXList = new AsynchClientTask("updateRXList", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+                public void run(Hashtable<String, Object> hash) {
+                    String[] dbrdS = (String[]) hash.get(RXSTRING_VALUE_KEY);
+                    if (dbrdS != null) {
+                        jlist.setListData(dbrdS);
+                    } else {
+                        jlist.setListData(new String[0]);
+                    }
 //				afterSearchConfigure();
-			}
-		};
-		//	
-		Hashtable<String, Object> hashTemp = new Hashtable<String, Object>();
-		ClientTaskDispatcher.dispatch(this,hashTemp,new AsynchClientTask[] {searchReactions,updateRXList},false);
-	}	
-}
+                }
+            };
+            //
+            Hashtable<String, Object> hashTemp = new Hashtable<String, Object>();
+            ClientTaskDispatcher.dispatch(this, hashTemp, new AsynchClientTask[]{searchReactions, updateRXList}, false);
+        }
+    }
 
 
-/**
- * Set the CurrentDBFormalSpecies to a new value.
- * @param newValue cbit.vcell.dictionary.DBFormalSpecies
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setCurrentDBFormalSpecies(DBFormalSpecies newValue) {
-	if (ivjCurrentDBFormalSpecies != newValue) {
-		try {
-			ivjCurrentDBFormalSpecies = newValue;
-			connEtoC30(ivjCurrentDBFormalSpecies);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	};
-	// user code begin {3}
-	// user code end
-}
+    /**
+     * Set the CurrentDBFormalSpecies to a new value.
+     *
+     * @param newValue cbit.vcell.dictionary.DBFormalSpecies
+     */
+    /* WARNING: THIS METHOD WILL BE REGENERATED. */
+    private void setCurrentDBFormalSpecies(DBFormalSpecies newValue) {
+        if (ivjCurrentDBFormalSpecies != newValue) {
+            try {
+                ivjCurrentDBFormalSpecies = newValue;
+                connEtoC30(ivjCurrentDBFormalSpecies);
+                // user code begin {1}
+                // user code end
+            } catch (java.lang.Throwable ivjExc) {
+                // user code begin {2}
+                // user code end
+                handleException(ivjExc);
+            }
+        }
+        ;
+        // user code begin {3}
+        // user code end
+    }
 
 ///**
 // * Set the document2 to a new value.
@@ -2906,160 +3001,170 @@ private void setCurrentDBFormalSpecies(DBFormalSpecies newValue) {
 //}
 
 
-/**
- * Sets the documentManager property (cbit.vcell.clientdb.DocumentManager) value.
- * @param documentManager The new value for the property.
- * @see #getDocumentManager
- */
-public void setDocumentManager(DocumentManager documentManager) {
-	DocumentManager oldValue = fieldDocumentManager;
-	fieldDocumentManager = documentManager;
-	firePropertyChange(CommonTask.DOCUMENT_MANAGER.name, oldValue, documentManager);
-}
+    /**
+     * Sets the documentManager property (cbit.vcell.clientdb.DocumentManager) value.
+     *
+     * @param documentManager The new value for the property.
+     * @see #getDocumentManager
+     */
+    public void setDocumentManager(DocumentManager documentManager) {
+        DocumentManager oldValue = fieldDocumentManager;
+        fieldDocumentManager = documentManager;
+        firePropertyChange(CommonTask.DOCUMENT_MANAGER.name, oldValue, documentManager);
+    }
 
 
-/**
- * Sets the model property (cbit.vcell.model.Model) value.
- * @param model The new value for the property.
- * @see #getModel
- */
-public void setModel(Model model) {
-	Model oldValue = fieldModel;
-	fieldModel = model;
-	firePropertyChange("model", oldValue, model);
-}
+    /**
+     * Sets the model property (cbit.vcell.model.Model) value.
+     *
+     * @param model The new value for the property.
+     * @see #getModel
+     */
+    public void setModel(Model model) {
+        Model oldValue = fieldModel;
+        fieldModel = model;
+        firePropertyChange("model", oldValue, model);
+    }
 
 
-/**
- * Set the ParameterNameSelectionModel to a new value.
- * @param newValue javax.swing.ListSelectionModel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setParameterNameSelectionModel(javax.swing.ListSelectionModel newValue) {
-	if (ivjParameterNameSelectionModel != newValue) {
-		try {
-			/* Stop listening for events from the current object */
-			if (ivjParameterNameSelectionModel != null) {
-				ivjParameterNameSelectionModel.removeListSelectionListener(ivjEventHandler);
-			}
-			ivjParameterNameSelectionModel = newValue;
+    /**
+     * Set the ParameterNameSelectionModel to a new value.
+     *
+     * @param newValue javax.swing.ListSelectionModel
+     */
+    /* WARNING: THIS METHOD WILL BE REGENERATED. */
+    private void setParameterNameSelectionModel(javax.swing.ListSelectionModel newValue) {
+        if (ivjParameterNameSelectionModel != newValue) {
+            try {
+                /* Stop listening for events from the current object */
+                if (ivjParameterNameSelectionModel != null) {
+                    ivjParameterNameSelectionModel.removeListSelectionListener(ivjEventHandler);
+                }
+                ivjParameterNameSelectionModel = newValue;
 
-			/* Listen for events from the new object */
-			if (ivjParameterNameSelectionModel != null) {
-				ivjParameterNameSelectionModel.addListSelectionListener(ivjEventHandler);
-			}
-			connPtoP4SetSource();
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	};
-	// user code begin {3}
-	// user code end
-}
-
-
-/**
- * Sets the reactionDescription property (cbit.vcell.dictionary.ReactionDescription) value.
- * @param reactionDescription The new value for the property.
- * @see #getReactionDescription
- */
-private void setReactionDescription(ReactionDescription reactionDescription) {
-	ReactionDescription oldValue = fieldReactionDescription;
-	fieldReactionDescription = reactionDescription;
-	firePropertyChange("reactionDescription", oldValue, reactionDescription);
-}
+                /* Listen for events from the new object */
+                if (ivjParameterNameSelectionModel != null) {
+                    ivjParameterNameSelectionModel.addListSelectionListener(ivjEventHandler);
+                }
+                connPtoP4SetSource();
+                // user code begin {1}
+                // user code end
+            } catch (java.lang.Throwable ivjExc) {
+                // user code begin {2}
+                // user code end
+                handleException(ivjExc);
+            }
+        }
+        ;
+        // user code begin {3}
+        // user code end
+    }
 
 
-/**
- * Set the selectionModel2 to a new value.
- * @param newValue javax.swing.ListSelectionModel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setReactionSelectionModel(javax.swing.ListSelectionModel newValue) {
-	if (ivjReactionSelectionModel != newValue) {
-		try {
-			/* Stop listening for events from the current object */
-			if (ivjReactionSelectionModel != null) {
-				ivjReactionSelectionModel.removeListSelectionListener(ivjEventHandler);
-			}
-			ivjReactionSelectionModel = newValue;
-
-			/* Listen for events from the new object */
-			if (ivjReactionSelectionModel != null) {
-				ivjReactionSelectionModel.addListSelectionListener(ivjEventHandler);
-			}
-			connPtoP3SetSource();
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	};
-	// user code begin {3}
-	// user code end
-}
+    /**
+     * Sets the reactionDescription property (cbit.vcell.dictionary.ReactionDescription) value.
+     *
+     * @param reactionDescription The new value for the property.
+     * @see #getReactionDescription
+     */
+    private void setReactionDescription(ReactionDescription reactionDescription) {
+        ReactionDescription oldValue = fieldReactionDescription;
+        fieldReactionDescription = reactionDescription;
+        firePropertyChange("reactionDescription", oldValue, reactionDescription);
+    }
 
 
-/**
- * Sets the reactionStep property (cbit.vcell.model.ReactionStep) value.
- * @param reactionStep The new value for the property.
- * @see #getReactionStep
- */
-private void setReactionStep(ReactionStep reactionStep) {
-	ReactionStep oldValue = fieldReactionStep0;
-	fieldReactionStep0 = reactionStep;
-	firePropertyChange("reactionStep", oldValue, reactionStep);
-}
+    /**
+     * Set the selectionModel2 to a new value.
+     *
+     * @param newValue javax.swing.ListSelectionModel
+     */
+    /* WARNING: THIS METHOD WILL BE REGENERATED. */
+    private void setReactionSelectionModel(javax.swing.ListSelectionModel newValue) {
+        if (ivjReactionSelectionModel != newValue) {
+            try {
+                /* Stop listening for events from the current object */
+                if (ivjReactionSelectionModel != null) {
+                    ivjReactionSelectionModel.removeListSelectionListener(ivjEventHandler);
+                }
+                ivjReactionSelectionModel = newValue;
+
+                /* Listen for events from the new object */
+                if (ivjReactionSelectionModel != null) {
+                    ivjReactionSelectionModel.addListSelectionListener(ivjEventHandler);
+                }
+                connPtoP3SetSource();
+                // user code begin {1}
+                // user code end
+            } catch (java.lang.Throwable ivjExc) {
+                // user code begin {2}
+                // user code end
+                handleException(ivjExc);
+            }
+        }
+        ;
+        // user code begin {3}
+        // user code end
+    }
 
 
-/**
- * Set the RXDescriptionLSM to a new value.
- * @param newValue javax.swing.ListSelectionModel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setRXDescriptionLSM(javax.swing.ListSelectionModel newValue) {
-	if (ivjRXDescriptionLSM != newValue) {
-		try {
-			/* Stop listening for events from the current object */
-			if (ivjRXDescriptionLSM != null) {
-				ivjRXDescriptionLSM.removeListSelectionListener(ivjEventHandler);
-			}
-			ivjRXDescriptionLSM = newValue;
-
-			/* Listen for events from the new object */
-			if (ivjRXDescriptionLSM != null) {
-				ivjRXDescriptionLSM.addListSelectionListener(ivjEventHandler);
-			}
-			connPtoP5SetSource();
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	};
-	// user code begin {3}
-	// user code end
-}
+    /**
+     * Sets the reactionStep property (cbit.vcell.model.ReactionStep) value.
+     *
+     * @param reactionStep The new value for the property.
+     */
+    private void setReactionStep(ReactionStep reactionStep) {
+        ReactionStep oldValue = fieldReactionStep0;
+        fieldReactionStep0 = reactionStep;
+        firePropertyChange("reactionStep", oldValue, reactionStep);
+    }
 
 
-/**
- * Sets the structure property (cbit.vcell.model.Structure) value.
- * @param structure The new value for the property.
- * @see #getStructure
- */
-public void setStructure(Structure structure) {
-	Structure oldValue = fieldStructure;
-	fieldStructure = structure;
-	firePropertyChange("structure", oldValue, structure);
-}
+    /**
+     * Set the RXDescriptionLSM to a new value.
+     *
+     * @param newValue javax.swing.ListSelectionModel
+     */
+    /* WARNING: THIS METHOD WILL BE REGENERATED. */
+    private void setRXDescriptionLSM(javax.swing.ListSelectionModel newValue) {
+        if (ivjRXDescriptionLSM != newValue) {
+            try {
+                /* Stop listening for events from the current object */
+                if (ivjRXDescriptionLSM != null) {
+                    ivjRXDescriptionLSM.removeListSelectionListener(ivjEventHandler);
+                }
+                ivjRXDescriptionLSM = newValue;
+
+                /* Listen for events from the new object */
+                if (ivjRXDescriptionLSM != null) {
+                    ivjRXDescriptionLSM.addListSelectionListener(ivjEventHandler);
+                }
+                connPtoP5SetSource();
+                // user code begin {1}
+                // user code end
+            } catch (java.lang.Throwable ivjExc) {
+                // user code begin {2}
+                // user code end
+                handleException(ivjExc);
+            }
+        }
+        ;
+        // user code begin {3}
+        // user code end
+    }
+
+
+    /**
+     * Sets the structure property (cbit.vcell.model.Structure) value.
+     *
+     * @param structure The new value for the property.
+     * @see #getStructure
+     */
+    public void setStructure(Structure structure) {
+        Structure oldValue = fieldStructure;
+        fieldStructure = structure;
+        firePropertyChange("structure", oldValue, structure);
+    }
 
 
 ///**
@@ -3215,98 +3320,101 @@ public void setStructure(Structure structure) {
 //}
 
 
-/**
- * Comment
- */
-private DBFormalSpecies showSpeciesBrowser() {
+    /**
+     * Comment
+     */
+    private DBFormalSpecies showSpeciesBrowser() {
 
-	SpeciesQueryDialog sqd = new SpeciesQueryDialog((java.awt.Frame)null,true);
-	sqd.setSearchableTypes(
-		SpeciesQueryPanel.SEARCHABLE_ENZYME | 
-		SpeciesQueryPanel.SEARCHABLE_COMPOUND | 
-		(getSearchUserJRadioButton().isSelected()?SpeciesQueryPanel.SEARCHABLE_PROTEIN:0x00L));
-	//boolean isDictSearch = getJTabbedPane1().getTitleAt(getJTabbedPane1().getSelectedIndex()).equals("Dictionary");
-	//if(getSearchDictionaryJRadioButton().isSelected()){
-		//if(getAnyJRadioButton().isSelected()){
-			//sqd.setSearchableTypes(SpeciesQueryPanel.SEARCHABLE_ENZYME | SpeciesQueryPanel.SEARCHABLE_COMPOUND);
-		//}else{
-			//sqd.setSearchableTypes((getCatalystJRadioButton().isSelected()?SpeciesQueryPanel.SEARCHABLE_ENZYME:SpeciesQueryPanel.SEARCHABLE_COMPOUND));
-		//}
-	//}
-	sqd.setDocumentManager(getDocumentManager());
-	sqd.setSize(550,500);
-	BeanUtils.centerOnScreen(sqd);
-	DialogUtils.showModalJDialogOnTop(sqd,this);
-	//sqd.setVisible(true);
+        SpeciesQueryDialog sqd = new SpeciesQueryDialog((java.awt.Frame) null, true);
+        sqd.setSearchableTypes(
+                SpeciesQueryPanel.SEARCHABLE_ENZYME |
+                        SpeciesQueryPanel.SEARCHABLE_COMPOUND |
+                        (getSearchUserJRadioButton().isSelected() ? SpeciesQueryPanel.SEARCHABLE_PROTEIN : 0x00L));
+        //boolean isDictSearch = getJTabbedPane1().getTitleAt(getJTabbedPane1().getSelectedIndex()).equals("Dictionary");
+        //if(getSearchDictionaryJRadioButton().isSelected()){
+        //if(getAnyJRadioButton().isSelected()){
+        //sqd.setSearchableTypes(SpeciesQueryPanel.SEARCHABLE_ENZYME | SpeciesQueryPanel.SEARCHABLE_COMPOUND);
+        //}else{
+        //sqd.setSearchableTypes((getCatalystJRadioButton().isSelected()?SpeciesQueryPanel.SEARCHABLE_ENZYME:SpeciesQueryPanel.SEARCHABLE_COMPOUND));
+        //}
+        //}
+        sqd.setDocumentManager(getDocumentManager());
+        sqd.setSize(550, 500);
+        GeneralGuiUtils.centerOnScreen(sqd);
+        DialogUtils.showModalJDialogOnTop(sqd, this);
+        //sqd.setVisible(true);
 
-	DBFormalSpecies dbfs = null;
-	DictionaryQueryResults dqr = sqd.getDictionaryQueryResults();
-	if(dqr != null && dqr.getSelection() != null){
-		dbfs = dqr.getDBFormalSpecies()[dqr.getSelection()[0]];
-	}
+        DBFormalSpecies dbfs = null;
+        DictionaryQueryResults dqr = sqd.getDictionaryQueryResults();
+        if (dqr != null && dqr.getSelection() != null) {
+            dbfs = dqr.getDBFormalSpecies()[dqr.getSelection()[0]];
+        }
 
-	if(dbfs != null){
-		setCurrentDBFormalSpecies(dbfs);
-	}
-	//if(dbfs != null){
-		//if(getReactantsJRadioButton().isSelected()){
-			//getSearchDBReactionElementsPanel().reactionAddReactant(dbfs,1);
-		//}else if(getEnzymeJRadioButton().isSelected()){
-			//getSearchDBReactionElementsPanel().reactionAddCatalyst(dbfs);
-		//}else if(getProductsJRadioButton().isSelected()){
-			//getSearchDBReactionElementsPanel().reactionAddProduct(dbfs,1);
-		//}
-	//}
-	
-	return dbfs;
-}
-JButton searchButton = new JButton("Search");
+        if (dbfs != null) {
+            setCurrentDBFormalSpecies(dbfs);
+        }
+        //if(dbfs != null){
+        //if(getReactantsJRadioButton().isSelected()){
+        //getSearchDBReactionElementsPanel().reactionAddReactant(dbfs,1);
+        //}else if(getEnzymeJRadioButton().isSelected()){
+        //getSearchDBReactionElementsPanel().reactionAddCatalyst(dbfs);
+        //}else if(getProductsJRadioButton().isSelected()){
+        //getSearchDBReactionElementsPanel().reactionAddProduct(dbfs,1);
+        //}
+        //}
 
-	private JPanel getSearchEntryPanel() {
-		if (searchEntryPanel == null) {
-			searchEntryPanel = new JPanel();
-			GridBagLayout gbl_searchEntryPanel = new GridBagLayout();
-			gbl_searchEntryPanel.columnWeights = new double[]{0.0, 1.0, 0.0};
-			gbl_searchEntryPanel.rowWeights = new double[]{0.0};
-			searchEntryPanel.setLayout(gbl_searchEntryPanel);
-			GridBagConstraints gbc_searchForLabel = new GridBagConstraints();
-			gbc_searchForLabel.fill = GridBagConstraints.BOTH;
-			gbc_searchForLabel.insets = new Insets(0, 0, 5, 5);
-			gbc_searchForLabel.gridx = 0;
-			gbc_searchForLabel.gridy = 0;
-			searchEntryPanel.add(getSearchForLabel(), gbc_searchForLabel);
-			GridBagConstraints gbc_searchTextField = new GridBagConstraints();
-			gbc_searchTextField.fill = GridBagConstraints.BOTH;
-			gbc_searchTextField.gridx = 1;
-			gbc_searchTextField.gridy = 0;
-			searchEntryPanel.add(getSearchTextField(), gbc_searchTextField);
-			
-			searchButton.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					search();
-				}
-			});
-			GridBagConstraints gbc_searchButton = new GridBagConstraints();
-			gbc_searchButton.insets = new Insets(0, 0, 0, 5);
-			gbc_searchButton.gridx = 2;
-			gbc_searchButton.gridy = 0;
-			searchEntryPanel.add(searchButton, gbc_searchButton);
-		}
-		return searchEntryPanel;
-	}
-	private JLabel getSearchForLabel() {
-		if (searchForLabel == null) {
-			searchForLabel = new JLabel("Search for:");
-		}
-		return searchForLabel;
-	}
-	private JTextField getSearchTextField() {
-		if (searchTextField == null) {
-			searchTextField = new JTextField();
-			searchTextField.setText("");
-			searchTextField.setColumns(10);
-		}
-		return searchTextField;
-	}
+        return dbfs;
+    }
+
+    JButton searchButton = new JButton("Search");
+
+    private JPanel getSearchEntryPanel() {
+        if (searchEntryPanel == null) {
+            searchEntryPanel = new JPanel();
+            GridBagLayout gbl_searchEntryPanel = new GridBagLayout();
+            gbl_searchEntryPanel.columnWeights = new double[]{0.0, 1.0, 0.0};
+            gbl_searchEntryPanel.rowWeights = new double[]{0.0};
+            searchEntryPanel.setLayout(gbl_searchEntryPanel);
+            GridBagConstraints gbc_searchForLabel = new GridBagConstraints();
+            gbc_searchForLabel.fill = GridBagConstraints.BOTH;
+            gbc_searchForLabel.insets = new Insets(0, 0, 5, 5);
+            gbc_searchForLabel.gridx = 0;
+            gbc_searchForLabel.gridy = 0;
+            searchEntryPanel.add(getSearchForLabel(), gbc_searchForLabel);
+            GridBagConstraints gbc_searchTextField = new GridBagConstraints();
+            gbc_searchTextField.fill = GridBagConstraints.BOTH;
+            gbc_searchTextField.gridx = 1;
+            gbc_searchTextField.gridy = 0;
+            searchEntryPanel.add(getSearchTextField(), gbc_searchTextField);
+
+            searchButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    search();
+                }
+            });
+            GridBagConstraints gbc_searchButton = new GridBagConstraints();
+            gbc_searchButton.insets = new Insets(0, 0, 0, 5);
+            gbc_searchButton.gridx = 2;
+            gbc_searchButton.gridy = 0;
+            searchEntryPanel.add(searchButton, gbc_searchButton);
+        }
+        return searchEntryPanel;
+    }
+
+    private JLabel getSearchForLabel() {
+        if (searchForLabel == null) {
+            searchForLabel = new JLabel("Search for:");
+        }
+        return searchForLabel;
+    }
+
+    private JTextField getSearchTextField() {
+        if (searchTextField == null) {
+            searchTextField = new JTextField();
+            searchTextField.setText("");
+            searchTextField.setColumns(10);
+        }
+        return searchTextField;
+    }
 }

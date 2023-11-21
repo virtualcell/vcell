@@ -69,15 +69,8 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 
-import org.vcell.util.BeanUtils;
-import org.vcell.util.ClientTaskStatusSupport;
-import org.vcell.util.Compare;
-import org.vcell.util.Coordinate;
-import org.vcell.util.CoordinateIndex;
-import org.vcell.util.DataAccessException;
-import org.vcell.util.NumberUtils;
-import org.vcell.util.Range;
-import org.vcell.util.UserCancelException;
+import org.vcell.util.gui.GeneralGuiUtils;
+import org.vcell.util.*;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.SimResampleInfoProvider;
@@ -1025,7 +1018,7 @@ void plotSpaceStats (TSJobResultsSpaceStats tsjrss) {
 
 
 private void roiAction(){
-	BeanUtils.setCursorThroughout(this, Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+	GeneralGuiUtils.setCursorThroughout(this, Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 	try{
 		final String[] ROI_COLUMN_NAMES = new String[] {"ROI source","ROI source name","ROI Description"};
 		final Vector<Object> auxInfoV = new Vector<Object>();
@@ -1039,9 +1032,9 @@ private void roiAction(){
 		        return false;
 		    }
 		};
-		for (int i = 0; i < ROI_COLUMN_NAMES.length; i++) {
-			tableModel.addColumn(ROI_COLUMN_NAMES[i]);
-		}
+        for (String roiColumnName : ROI_COLUMN_NAMES) {
+            tableModel.addColumn(roiColumnName);
+        }
 		//Add Snapshot ROI
 		if((isVolume?volumeSnapshotROI:membraneSnapshotROI) != null){
 			tableModel.addRow(new Object[] {(isVolume?"Volume":"Membrane")+" Variables and Functions",
@@ -1197,12 +1190,12 @@ private void roiAction(){
 						PopupGenerator.showErrorDialog(PDEDataViewer.this, "ROI Error.\n"+e1.getMessage(), e1);
 					}
 				}
-				BeanUtils.disposeParentWindow(mainJPanel);
+				GeneralGuiUtils.disposeParentWindow(mainJPanel);
 			}
 		};
 		ActionListener cancelAction = new ActionListener(){
 			public void actionPerformed(ActionEvent e) {
-				BeanUtils.disposeParentWindow(mainJPanel);
+				GeneralGuiUtils.disposeParentWindow(mainJPanel);
 			}
 		};
 	
@@ -1237,7 +1230,7 @@ private void roiAction(){
 		}		
 	
 	} finally {
-		BeanUtils.setCursorThroughout(this, Cursor.getDefaultCursor());
+		GeneralGuiUtils.setCursorThroughout(this, Cursor.getDefaultCursor());
 	}
 
 }
@@ -1263,12 +1256,9 @@ private class MiniTimePanel extends JPanel{
 	public MiniTimePanel(){
 		setLayout(new FlowLayout());
 		double[] timePoints = getPdeDataContext().getTimePoints();
-		Double[] timePointsD = new Double[timePoints.length];
-		for(int i=0;i<timePoints.length;i+= 1){
-			timePointsD[i] = new Double(timePoints[i]);
-		}
-		jcb_time_begin = new JComboBox<Double>(timePointsD);
-		jcb_time_end = new JComboBox<Double>(timePointsD);
+		Double[] timePointsD = Arrays.stream(timePoints).boxed().toArray(Double[]::new);
+		jcb_time_begin = new JComboBox<>(timePointsD);
+		jcb_time_end = new JComboBox<>(timePointsD);
 		jcb_time_end.setSelectedIndex(timePointsD.length-1);
 		add(new JLabel("Begin Time:"));
 		add(jcb_time_begin);
@@ -1278,7 +1268,7 @@ private class MiniTimePanel extends JPanel{
 	}
 }
 /**
- * connEtoC2:  (JButtonSpatial.action.actionPerformed(java.awt.event.ActionEvent) --> PDEDataViewer.refireActionPerformed(Ljava.awt.event.ActionEvent;)V)
+ * connEtoC2:  JButtonSpatial.action.actionPerformed(java.awt.event.ActionEvent) --> PDEDataViewer.refireActionPerformed(Ljava.awt.event.ActionEvent;)V)
  * @param arg1 java.awt.event.ActionEvent
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
@@ -1382,7 +1372,7 @@ private DataValueSurfaceViewer createDataValueSurfaceViewer(ClientTaskStatusSupp
 		//SurfaceAreas
 		final Double[] surfaceAreas = new Double[meshRegionSurfaces.getSurfaceCollection().getSurfaceCount()];
 		for (int i = 0; i < meshRegionSurfaces.getSurfaceCollection().getSurfaceCount(); i++){
-			surfaceAreas[i] = new Double(cartesianMesh.getRegionMembraneSurfaceAreaFromMembraneIndex(meshRegionSurfaces.getMembraneIndexForPolygon(i,0)));
+			surfaceAreas[i] = cartesianMesh.getRegionMembraneSurfaceAreaFromMembraneIndex(meshRegionSurfaces.getMembraneIndexForPolygon(i,0));
 		}
 
 //		DataValueSurfaceViewer fieldDataValueSurfaceViewer0 = new DataValueSurfaceViewer();

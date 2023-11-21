@@ -20,15 +20,10 @@ import java.util.Vector;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.vcell.util.BeanUtils;
-import org.vcell.util.Compare;
-import org.vcell.util.Issue;
+import org.vcell.util.*;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
-import org.vcell.util.IssueContext;
 import org.vcell.util.IssueContext.ContextType;
-import org.vcell.util.Matchable;
-import org.vcell.util.PropertyChangeListenerProxyVCell;
 
 import cbit.vcell.geometry.CompartmentSubVolume;
 import cbit.vcell.geometry.Geometry;
@@ -647,7 +642,7 @@ public void refreshStructureMappings() throws MappingException, PropertyVetoExce
 		// delete this feature mapping if not referenced in both the model and the geometry
 		//
 		if (!(structureFound && geometryClassFound)){
-			newStructureMappings = (StructureMapping[])BeanUtils.removeElement(newStructureMappings,structureMapping);
+			newStructureMappings = ArrayUtils.removeFirstInstanceOfElement(newStructureMappings,structureMapping);
 			j--;
 //			//
 //			// delete accompanied membrane mapping if exists 
@@ -687,16 +682,16 @@ public void refreshStructureMappings() throws MappingException, PropertyVetoExce
 			if (structure instanceof Feature){
 				FeatureMapping fm = new FeatureMapping((Feature)structure,fieldSimulationContext, getModel().getUnitSystem());
 				fm.setSimulationContext(this.fieldSimulationContext);
-				newStructureMappings = (StructureMapping[])BeanUtils.addElement(newStructureMappings,fm);
+				newStructureMappings = ArrayUtils.addElement(newStructureMappings,fm);
 				if (getGeometry().getDimension()==0){
 					fm.setGeometryClass((CompartmentSubVolume)getGeometry().getGeometrySpec().getSubVolumes()[0]);
 				}
 			}else if (structure instanceof Membrane){
 				MembraneMapping mm = new MembraneMapping((Membrane)structure,fieldSimulationContext, getModel().getUnitSystem());
 				mm.setSimulationContext(fieldSimulationContext);
-				newStructureMappings = (StructureMapping[])BeanUtils.addElement(newStructureMappings,mm);
+				newStructureMappings = ArrayUtils.addElement(newStructureMappings,mm);
 				if (getGeometry().getDimension()==0){
-					mm.setGeometryClass((CompartmentSubVolume)getGeometry().getGeometrySpec().getSubVolumes()[0]);
+					mm.setGeometryClass(getGeometry().getGeometrySpec().getSubVolumes()[0]);
 				}
 			}else{
 				throw new MappingException("unsupported Structure Mapping for structure "+structure.getClass().toString());

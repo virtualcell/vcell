@@ -1,18 +1,14 @@
 package org.vcell.cli.run;
 
-import cbit.vcell.resource.PropertyLoader;
-
-import org.vcell.cli.CLIRecorder;
-import org.vcell.cli.CLIPythonManager;
-import org.vcell.util.exe.Executable;
-
-import picocli.CommandLine.Command;
-import picocli.CommandLine.Option;
-
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Level;
+import org.vcell.cli.CLIPythonManager;
+import org.vcell.cli.CLIRecorder;
+import org.vcell.util.exe.Executable;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
 
 import java.io.File;
 import java.util.concurrent.Callable;
@@ -99,7 +95,6 @@ public class ExecuteCommand implements Callable<Integer> {
                 return 1;
             }
 
-            PropertyLoader.loadProperties();
             CLIPythonManager.getInstance().instantiatePythonProcess();
             
 

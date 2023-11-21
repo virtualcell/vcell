@@ -23,12 +23,12 @@ public class ExecuteImplTest {
 
     @Test
     public void test_singleExecOmex() throws Exception {
-        System.setProperty(PropertyLoader.installationRoot, new File("..").getAbsolutePath());
+        PropertyLoader.setProperty(PropertyLoader.installationRoot, new File("..").getAbsolutePath());
         NativeLib.HDF5.load();
         NativeLib.combinej.load();
         VCellUtilityHub.startup(VCellUtilityHub.MODE.CLI);
 
-        System.setProperty(PropertyLoader.cliWorkingDir, new File("../vcell-cli-utils").getAbsolutePath());
+        PropertyLoader.setProperty(PropertyLoader.cliWorkingDir, new File("../vcell-cli-utils").getAbsolutePath());
         VCMongoMessage.enabled = false;
         try {
             CLIPythonManager.getInstance().instantiatePythonProcess();

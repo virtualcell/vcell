@@ -23,8 +23,6 @@ import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
 import javax.swing.border.LineBorder;
 
-import org.vcell.util.BeanUtils;
-
 import cbit.gui.TextFieldAutoCompletion;
 import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.BioEvent.BioEventParameterType;
@@ -36,6 +34,7 @@ import cbit.vcell.modelopt.ModelOptimizationSpec;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.SymbolTableEntry;
+import org.vcell.util.gui.GeneralGuiUtils;
 
 public class TriggerTemplatePanel extends JPanel {
 	private TextFieldAutoCompletion textFieldSingleTime;
@@ -75,26 +74,26 @@ public class TriggerTemplatePanel extends JPanel {
 						return;
 					}
 					textFieldGeneral.setEnabled(false);
-					BeanUtils.enableComponents(varAboveThresholdPanel, false);
-					BeanUtils.enableComponents(varBelowThresholdPanel, false);
+					GeneralGuiUtils.enableComponents(varAboveThresholdPanel, false);
+					GeneralGuiUtils.enableComponents(varBelowThresholdPanel, false);
 					textFieldSingleTime.setEnabled(false);
 					textFieldListTimes.setEnabled(false);
-					BeanUtils.enableComponents(logTimeRangePanel, false);
-					BeanUtils.enableComponents(linearTimeRangePanel, false);
+					GeneralGuiUtils.enableComponents(logTimeRangePanel, false);
+					GeneralGuiUtils.enableComponents(linearTimeRangePanel, false);
 					if(e.getSource() == rdbtnGeneral && rdbtnGeneral.isSelected()){
 						textFieldGeneral.setEnabled(true);
 					}else if(e.getSource() == rdbtnVarAboveThreshold && rdbtnVarAboveThreshold.isSelected()){
-						BeanUtils.enableComponents(varAboveThresholdPanel, true);
+						GeneralGuiUtils.enableComponents(varAboveThresholdPanel, true);
 					}else if(e.getSource() == rdbtnVarBelowThreshold && rdbtnVarBelowThreshold.isSelected()){
-						BeanUtils.enableComponents(varBelowThresholdPanel, true);
+						GeneralGuiUtils.enableComponents(varBelowThresholdPanel, true);
 					}else if(e.getSource() == rdbtnSingleTime && rdbtnSingleTime.isSelected()){
 						textFieldSingleTime.setEnabled(true);
 					}else if(e.getSource() == rdbtnListTimes && rdbtnListTimes.isSelected()){
 						textFieldListTimes.setEnabled(true);
 					}else if(e.getSource() == rdbtnLogTimeRange && rdbtnLogTimeRange.isSelected()){
-						BeanUtils.enableComponents(logTimeRangePanel, true);
+						GeneralGuiUtils.enableComponents(logTimeRangePanel, true);
 					}else if(e.getSource() == rdbtnLinearTimeRange && rdbtnLinearTimeRange.isSelected()){
-						BeanUtils.enableComponents(linearTimeRangePanel, true);
+						GeneralGuiUtils.enableComponents(linearTimeRangePanel, true);
 					}
 				}
 			};

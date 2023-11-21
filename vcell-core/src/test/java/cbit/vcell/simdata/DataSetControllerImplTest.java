@@ -33,7 +33,7 @@ public class DataSetControllerImplTest extends TestCase {
 
 	@Before
 	public void setUp() throws Exception {
-		System.setProperty(PropertyLoader.installationRoot,new File("../").getAbsolutePath());
+		PropertyLoader.setProperty(PropertyLoader.installationRoot, new File("../").getAbsolutePath());
 		String message = "installation directory is "+PropertyLoader.getRequiredProperty(PropertyLoader.installationRoot);
 		NativeLib.HDF5.load();
 

@@ -9,142 +9,150 @@
  */
 
 package org.vcell.util.document;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 import cbit.image.VCImageInfo;
 import cbit.vcell.geometry.GeometryInfo;
+import org.vcell.util.CompressionUtils;
 
 /**
  * Insert the type's description here.
  * Creation date: (9/24/2003 12:30:17 PM)
+ *
  * @author: Frank Morgan
  */
-public class VCInfoContainer implements java.io.Serializable{
+public class VCInfoContainer implements java.io.Serializable {
 
-	transient User user = null;
-	transient VCImageInfo[] vcImageInfos = null;
-	transient GeometryInfo[] geometryInfos = null;
-	transient MathModelInfo[] mathModelInfos = null;
-	transient BioModelInfo[] bioModelInfos = null;
+    transient User user = null;
+    transient VCImageInfo[] vcImageInfos = null;
+    transient GeometryInfo[] geometryInfos = null;
+    transient MathModelInfo[] mathModelInfos = null;
+    transient BioModelInfo[] bioModelInfos = null;
 
-	private byte[] compressedBytes = null;
-	
-/**
- * VCInfoContainer constructor comment.
- */
-public VCInfoContainer(User argUser, VCImageInfo[] newVcImageInfos, GeometryInfo[] newGeometryInfos, MathModelInfo[] newMathModelInfos, BioModelInfo[] newBioModelInfos) {
-		
-	super();
-	
-	user=argUser;
-	vcImageInfos = newVcImageInfos;
-	geometryInfos = newGeometryInfos;
-	mathModelInfos = newMathModelInfos;
-	bioModelInfos = newBioModelInfos;
-}
+    private byte[] compressedBytes = null;
 
+    /**
+     * VCInfoContainer constructor comment.
+     */
+    public VCInfoContainer(User argUser, VCImageInfo[] newVcImageInfos, GeometryInfo[] newGeometryInfos, MathModelInfo[] newMathModelInfos, BioModelInfo[] newBioModelInfos){
 
-/**
- * Insert the method's description here.
- * Creation date: (9/26/2003 12:43:24 PM)
- * @return cbit.vcell.biomodel.BioModelInfo[]
- */
-public org.vcell.util.document.BioModelInfo[] getBioModelInfos() {
-	if (bioModelInfos == null) {
-		inflate();
-	}
-	return bioModelInfos;
-}
+        super();
+
+        user = argUser;
+        vcImageInfos = newVcImageInfos;
+        geometryInfos = newGeometryInfos;
+        mathModelInfos = newMathModelInfos;
+        bioModelInfos = newBioModelInfos;
+    }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (9/26/2003 12:43:24 PM)
- * @return cbit.vcell.geometry.GeometryInfo[]
- */
-public cbit.vcell.geometry.GeometryInfo[] getGeometryInfos() {
-	if (geometryInfos == null) {
-		inflate();
-	}
-	return geometryInfos;
-}
+    /**
+     * Insert the method's description here.
+     * Creation date: (9/26/2003 12:43:24 PM)
+     *
+     * @return cbit.vcell.biomodel.BioModelInfo[]
+     */
+    public org.vcell.util.document.BioModelInfo[] getBioModelInfos(){
+        if(bioModelInfos == null){
+            inflate();
+        }
+        return bioModelInfos;
+    }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (9/26/2003 12:43:24 PM)
- * @return cbit.vcell.mathmodel.MathModelInfo[]
- */
-public org.vcell.util.document.MathModelInfo[] getMathModelInfos() {
-	if (mathModelInfos == null) {
-		inflate();
-	}
-	return mathModelInfos;
-}
+    /**
+     * Insert the method's description here.
+     * Creation date: (9/26/2003 12:43:24 PM)
+     *
+     * @return cbit.vcell.geometry.GeometryInfo[]
+     */
+    public cbit.vcell.geometry.GeometryInfo[] getGeometryInfos(){
+        if(geometryInfos == null){
+            inflate();
+        }
+        return geometryInfos;
+    }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (9/24/2003 12:50:51 PM)
- * @return cbit.vcell.server.User
- */
-public org.vcell.util.document.User getUser() {
-	if (user == null) {
-		inflate();
-	}
-	return user;
-}
+    /**
+     * Insert the method's description here.
+     * Creation date: (9/26/2003 12:43:24 PM)
+     *
+     * @return cbit.vcell.mathmodel.MathModelInfo[]
+     */
+    public org.vcell.util.document.MathModelInfo[] getMathModelInfos(){
+        if(mathModelInfos == null){
+            inflate();
+        }
+        return mathModelInfos;
+    }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (9/26/2003 12:43:24 PM)
- * @return cbit.image.VCImageInfo[]
- */
-public cbit.image.VCImageInfo[] getVCImageInfos() {
-	if (vcImageInfos == null) {
-		inflate();
-	}
-	return vcImageInfos;
-}
+    /**
+     * Insert the method's description here.
+     * Creation date: (9/24/2003 12:50:51 PM)
+     *
+     * @return cbit.vcell.server.User
+     */
+    public org.vcell.util.document.User getUser(){
+        if(user == null){
+            inflate();
+        }
+        return user;
+    }
 
 
-private void inflate() {
-	if (compressedBytes == null) {
-		return;
-	}
+    /**
+     * Insert the method's description here.
+     * Creation date: (9/26/2003 12:43:24 PM)
+     *
+     * @return cbit.image.VCImageInfo[]
+     */
+    public cbit.image.VCImageInfo[] getVCImageInfos(){
+        if(vcImageInfos == null){
+            inflate();
+        }
+        return vcImageInfos;
+    }
 
-	try {
-		//Object objArray[] =  { user, bioModelInfos, mathModelInfos, geometryInfos, vcImageInfos};
-		Object objArray[] = (Object[])org.vcell.util.BeanUtils.fromCompressedSerialized(compressedBytes);
-		user = (User)objArray[0];
-		bioModelInfos = (BioModelInfo[])objArray[1];
-		mathModelInfos = (MathModelInfo[])objArray[2];	
-		geometryInfos = (GeometryInfo[])objArray[3];
-		vcImageInfos = (VCImageInfo[])objArray[4];
 
-		compressedBytes = null;
-		
-	} catch (Exception ex) {
-		throw new RuntimeException(ex.getMessage(), ex);
-	}
-}
+    private void inflate(){
+        if(compressedBytes == null){
+            return;
+        }
 
-private void readObject(ObjectInputStream s) throws IOException, ClassNotFoundException {
-	int compressedSize = s.readInt();
-	compressedBytes = new byte[compressedSize];
-	s.readFully(compressedBytes, 0, compressedSize);
-}
+        try {
+            //Object objArray[] =  { user, bioModelInfos, mathModelInfos, geometryInfos, vcImageInfos};
+            Object[] objArray = (Object[]) CompressionUtils.fromCompressedSerialized(compressedBytes);
+            user = (User) objArray[0];
+            bioModelInfos = (BioModelInfo[]) objArray[1];
+            mathModelInfos = (MathModelInfo[]) objArray[2];
+            geometryInfos = (GeometryInfo[]) objArray[3];
+            vcImageInfos = (VCImageInfo[]) objArray[4];
 
-private void writeObject(ObjectOutputStream s) throws IOException {
-	Object objArray[] =  { user, bioModelInfos, mathModelInfos, geometryInfos, vcImageInfos};
+            compressedBytes = null;
 
-	if (compressedBytes == null) {
-		compressedBytes = org.vcell.util.BeanUtils.toCompressedSerialized(objArray);
-	}
-	s.writeInt(compressedBytes.length);
-	s.write(compressedBytes);
-}
+        } catch(Exception ex){
+            throw new RuntimeException(ex.getMessage(), ex);
+        }
+    }
+
+    private void readObject(ObjectInputStream s) throws IOException, ClassNotFoundException{
+        int compressedSize = s.readInt();
+        compressedBytes = new byte[compressedSize];
+        s.readFully(compressedBytes, 0, compressedSize);
+    }
+
+    private void writeObject(ObjectOutputStream s) throws IOException{
+        Object objArray[] = {user, bioModelInfos, mathModelInfos, geometryInfos, vcImageInfos};
+
+        if(compressedBytes == null){
+            compressedBytes = CompressionUtils.toCompressedSerialized(objArray);
+        }
+        s.writeInt(compressedBytes.length);
+        s.write(compressedBytes);
+    }
 }

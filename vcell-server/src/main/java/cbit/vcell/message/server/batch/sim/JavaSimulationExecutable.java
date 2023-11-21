@@ -10,25 +10,8 @@
 
 package cbit.vcell.message.server.batch.sim;
 
-import java.io.File;
-
-import javax.jms.JMSException;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.vcell.util.FileUtils;
-import org.vcell.util.document.KeyValue;
-
-import cbit.vcell.message.MessagePropertyNotFoundException;
-import cbit.vcell.message.VCMessage;
-import cbit.vcell.message.VCMessageSelector;
-import cbit.vcell.message.VCMessageSession;
-import cbit.vcell.message.VCMessagingConstants;
-import cbit.vcell.message.VCMessagingException;
-import cbit.vcell.message.VCMessagingService;
-import cbit.vcell.message.VCTopicConsumer;
+import cbit.vcell.message.*;
 import cbit.vcell.message.VCTopicConsumer.TopicListener;
-import cbit.vcell.message.VCellTopic;
 import cbit.vcell.message.jms.activeMQ.VCMessagingServiceActiveMQ;
 import cbit.vcell.message.messages.MessageConstants;
 import cbit.vcell.message.messages.WorkerEventMessage;
@@ -38,13 +21,15 @@ import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.solver.SolverException;
-import cbit.vcell.solver.server.SimulationMessage;
-import cbit.vcell.solver.server.Solver;
-import cbit.vcell.solver.server.SolverEvent;
-import cbit.vcell.solver.server.SolverFactory;
-import cbit.vcell.solver.server.SolverListener;
-import cbit.vcell.solver.server.SolverStatus;
+import cbit.vcell.solver.server.*;
 import cbit.vcell.xml.XmlHelper;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.vcell.util.FileUtils;
+import org.vcell.util.document.KeyValue;
+
+import javax.jms.JMSException;
+import java.io.File;
 
 public class JavaSimulationExecutable  {
 	public static final Logger lg = LogManager.getLogger(JavaSimulationExecutable.class);
@@ -209,7 +194,6 @@ public static void main(String[] args) {
 	VCMessagingService vcMessagingService = null;
 	JavaSimulationExecutable worker = null;
 	try {
-		PropertyLoader.loadProperties();
 		VCMongoMessage.enabled = false;
 		
 		vcMessagingService = new VCMessagingServiceActiveMQ();

@@ -1,18 +1,14 @@
 package org.vcell.cli.vcml;
 
-import cbit.vcell.resource.PropertyLoader;
-
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.vcell.sedml.ModelFormat;
-import org.vcell.util.DataAccessException;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.concurrent.Callable;
 
 @Command(name = "export-omex", description = "export a VCML document to a COMBINE archive (.omex)")
@@ -50,8 +46,6 @@ public class ExportOmexCommand implements Callable<Integer> {
         config.updateLoggers();
 
         try {
-            PropertyLoader.loadProperties();
-
             logger.debug("Beginning export");
             VcmlOmexConverter.convertOneFile(
                     inputFilePath, outputFilePath, outputModelFormat, bWriteLogFiles, bValidateOmex, bSkipUnsupportedApps);

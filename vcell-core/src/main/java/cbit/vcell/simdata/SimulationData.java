@@ -300,7 +300,7 @@ public class SimulationData extends VCData {
 		public File getPostProcessFile(){
 			return getFile(SimulationData.createCanonicalPostProcessFileName(getVCDataiDataIdentifier()));
 		}
-		public File getFieldDataFile(SimResampleInfoProvider simResampleInfoProvider,FieldFunctionArguments fieldFunctionArguments){
+		public File getFieldDataFile(SimResampleInfoProvider simResampleInfoProvider,FieldFunctionArguments fieldFunctionArguments) throws ExpressionException {
 			return getFile(SimulationData.createCanonicalResampleFileName(simResampleInfoProvider,fieldFunctionArguments));
 		}
 		public File getFile(String fileName){
@@ -2308,7 +2308,7 @@ public static String createCanonicalSubdomainFileName(KeyValue fieldDataKey,int 
 	SimDataConstants.SUBDOMAINS_FILE_SUFFIX;
 }
 
-public static String createCanonicalResampleFileName(SimResampleInfoProvider simResampleInfoProvider,FieldFunctionArguments fieldFuncArgs){
+public static String createCanonicalResampleFileName(SimResampleInfoProvider simResampleInfoProvider,FieldFunctionArguments fieldFuncArgs) throws ExpressionException {
 	return
 		createSimIDWithJobIndex(
 				simResampleInfoProvider.getSimulationKey(),
@@ -2379,7 +2379,7 @@ public boolean isPostProcessing(OutputContext outputContext,String varName) thro
 public File getDataProcessingOutputSourceFileHDF5(){
 	return amplistorHelper.getPostProcessFile();
 }
-public File getFieldDataFile(SimResampleInfoProvider simResampleInfoProvider,FieldFunctionArguments fieldFunctionArguments){
+public File getFieldDataFile(SimResampleInfoProvider simResampleInfoProvider,FieldFunctionArguments fieldFunctionArguments) throws ExpressionException {
 	return amplistorHelper.getFieldDataFile(simResampleInfoProvider,fieldFunctionArguments);
 }
 public File getMeshFile(boolean bHDF5){
@@ -2591,7 +2591,7 @@ public VCDataIdentifier getVcDataId() {
 	 * Creation date: (9/21/2006 2:51:03 PM)
 	 * @return java.lang.String
 	 */
-	public static String getDefaultFieldDataFileNameForSimulation(FieldFunctionArguments fieldFuncArgs) {
+	public static String getDefaultFieldDataFileNameForSimulation(FieldFunctionArguments fieldFuncArgs) throws ExpressionException {
 		return fieldFuncArgs.getUniqueID() + SimDataConstants.FIELDDATARESAMP_EXTENSION;
 	}
 

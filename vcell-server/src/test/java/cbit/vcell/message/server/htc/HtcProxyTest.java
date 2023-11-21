@@ -20,7 +20,7 @@ public class HtcProxyTest {
 //		CommandServiceLocal cmdService = new CommandServiceLocal();
 //		String htcUser = "vcell";
 //		HtcProxy htcProxy = new SlurmProxy(cmdService,htcUser);
-		System.setProperty(PropertyLoader.vcellServerIDProperty,"ALPHA");
+		PropertyLoader.setProperty(PropertyLoader.vcellServerIDProperty, "ALPHA");
 		Assert.assertEquals(new SimTaskInfo(new KeyValue("115785823"),0,0), HtcProxy.getSimTaskInfoFromSimJobName("V_ALPHA_115785823_0_0"));
 		Assert.assertEquals(new SimTaskInfo(new KeyValue("115785823"),0,0), HtcProxy.getSimTaskInfoFromSimJobName("V_BETA_115785823_0_0"));
 		Assert.assertEquals(new SimTaskInfo(new KeyValue("115785823"),0,0), HtcProxy.getSimTaskInfoFromSimJobName("V_REL_115785823_0_0"));
@@ -48,11 +48,11 @@ public class HtcProxyTest {
 	
 	@Test
 	public void test_isMyJob(){
-		System.setProperty(PropertyLoader.vcellServerIDProperty,"ALPHA");
+		PropertyLoader.setProperty(PropertyLoader.vcellServerIDProperty, "ALPHA");
 		Assert.assertTrue(HtcProxy.isMyJob(new HtcJobInfo(new HtcJobID("1200725", BatchSystemType.SLURM),"V_ALPHA_115785823_0_0")));
 		Assert.assertFalse(HtcProxy.isMyJob(new HtcJobInfo(new HtcJobID("1200725", BatchSystemType.SLURM),"V_BETA_115785823_0_0")));
-		
-		System.setProperty(PropertyLoader.vcellServerIDProperty,"BETA");
+
+		PropertyLoader.setProperty(PropertyLoader.vcellServerIDProperty, "BETA");
 		Assert.assertTrue(HtcProxy.isMyJob(new HtcJobInfo(new HtcJobID("1200725", BatchSystemType.SLURM),"V_BETA_115785823_0_0")));
 	}
 

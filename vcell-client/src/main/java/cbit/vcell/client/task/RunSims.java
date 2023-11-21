@@ -13,10 +13,7 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 
-import org.vcell.util.BeanUtils;
-import org.vcell.util.Compare;
-import org.vcell.util.ISize;
-import org.vcell.util.UserCancelException;
+import org.vcell.util.*;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.gui.DialogUtils;
 
@@ -114,12 +111,7 @@ public class RunSims extends AsynchClientTask {
 		}
 		return true;
 	}	
-/**
- * Insert the method's description here.
- * Creation date: (5/31/2004 6:04:14 PM)
- * @param hashTable java.util.Hashtable
- * @param clientWorker cbit.vcell.desktop.controls.ClientWorker
- */
+
 public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception {
 	DocumentWindowManager documentWindowManager = (DocumentWindowManager)hashTable.get(CommonTask.DOCUMENT_WINDOW_MANAGER.name);
 	ClientSimManager clientSimManager = (ClientSimManager)hashTable.get("clientSimManager");
@@ -137,23 +129,23 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 			} else if (savedDocument instanceof MathModel) {
 				allSims = ((MathModel)savedDocument).getSimulations();
 			}
-			Vector<Simulation> v = new Vector<Simulation>();
+			Vector<Simulation> v = new Vector<>();
 			for (int i = 0; i < simulations.length; i++){
-				for (int j = 0; j < allSims.length; j++){
-					if(allSims[i].getSimulationOwner() instanceof SimulationContext) {
-						if (simulations[i].getName().equals(allSims[j].getName()) && Compare.isEqualOrNull(allSims[j].getSimulationOwner().getName(), (simulations[i].getSimulationOwner()!=null?simulations[i].getSimulationOwner().getName():null))) {
-							v.add(allSims[j]);
-							break;
-						}
-					}else {
-						if (simulations[i].getName().equals(allSims[j].getName())) {
-							v.add(allSims[j]);
-							break;
-						}						
-					}
-				}
+                for (Simulation allSim : allSims) {
+                    if (allSims[i].getSimulationOwner() instanceof SimulationContext) {
+                        if (simulations[i].getName().equals(allSim.getName()) && Compare.isEqualOrNull(allSim.getSimulationOwner().getName(), (simulations[i].getSimulationOwner() != null ? simulations[i].getSimulationOwner().getName() : null))) {
+                            v.add(allSim);
+                            break;
+                        }
+                    } else {
+                        if (simulations[i].getName().equals(allSim.getName())) {
+                            v.add(allSim);
+                            break;
+                        }
+                    }
+                }
 			}
-			simulations = (Simulation[])BeanUtils.getArray(v, Simulation.class);
+			simulations = v.toArray(Simulation[]::new);
 		}
 		for (Simulation sim : simulations){
 			try {

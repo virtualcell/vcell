@@ -29,14 +29,14 @@ public class VCellDataTest {
 
 	@Before
 	public void setUp() {
-		this.previousPythonDir = System.getProperty(PropertyLoader.vtkPythonDir);
-		System.setProperty(PropertyLoader.vtkPythonDir, "../pythonVtk");
+		this.previousPythonDir = PropertyLoader.getProperty(PropertyLoader.vtkPythonDir, null);
+		PropertyLoader.setProperty(PropertyLoader.vtkPythonDir, "../pythonVtk");
 	}
 
 	@After
 	public void tearDown() {
 		if (previousPythonDir!=null) {
-			System.setProperty(PropertyLoader.vtkPythonDir, previousPythonDir);
+			PropertyLoader.setProperty(PropertyLoader.vtkPythonDir, previousPythonDir);
 		}
 	}
 

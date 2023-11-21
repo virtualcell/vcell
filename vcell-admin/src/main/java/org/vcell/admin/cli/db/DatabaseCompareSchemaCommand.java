@@ -1,7 +1,6 @@
 package org.vcell.admin.cli.db;
 
 import cbit.sql.CompareDatabaseSchema;
-import cbit.vcell.resource.PropertyLoader;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -29,7 +28,6 @@ public class DatabaseCompareSchemaCommand implements Callable<Integer> {
         config.updateLoggers();
 
         try {
-            PropertyLoader.loadProperties();
             try (CLIDatabaseService cliDatabaseService = new CLIDatabaseService()) {
                 CompareDatabaseSchema compareDatabaseSchema = cliDatabaseService.getCompareDatabaseSchemas();
                 compareDatabaseSchema.runCompareSchemas();

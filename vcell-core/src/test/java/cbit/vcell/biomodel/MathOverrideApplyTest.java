@@ -2,6 +2,7 @@ package cbit.vcell.biomodel;
 
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.resource.NativeLib;
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
@@ -39,8 +40,8 @@ public class MathOverrideApplyTest {
 
 	@BeforeClass
 	public static void setup() throws IOException {
-		previousInstalldirPropertyValue = System.getProperty("vcell.installDir");
-		System.setProperty("vcell.installDir", "..");
+		previousInstalldirPropertyValue = PropertyLoader.getProperty("vcell.installDir", null);
+		PropertyLoader.setProperty(PropertyLoader.installationRoot, "..");
 		NativeLib.combinej.load();
 		codeKnownProblemFile = Files.createTempFile("OverridesApplyTest","code_KnownProblems").toFile();
 		csvKnownProblemFile = Files.createTempFile("OverridesApplyTest","csv_KnownProblems").toFile();
@@ -51,7 +52,7 @@ public class MathOverrideApplyTest {
 	@AfterClass
 	public static void teardown() {
 		if (previousInstalldirPropertyValue!=null) {
-			System.setProperty("vcell.installDir", previousInstalldirPropertyValue);
+			PropertyLoader.setProperty(PropertyLoader.installationRoot, previousInstalldirPropertyValue);
 		}
 		System.err.println("code known problem file: "+codeKnownProblemFile.getAbsolutePath());
 		System.err.println("csv known problem file: "+csvKnownProblemFile.getAbsolutePath());

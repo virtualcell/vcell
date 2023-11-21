@@ -324,9 +324,9 @@ public static void chooseApplyPaste_NOT_USED(Component requester,
  */
 public static String formatPasteList(String s1, String s2, String s3,String s4) {
 	return 
-		BeanUtils.forceStringSize(s1,25," ",false)+" "+
-		BeanUtils.forceStringSize(s2,25," ",false)+" "+
-		BeanUtils.forceStringSize("'"+s3+"'",25," ",true)+
+		BeanUtils.forceStringLength(s1,25," ",false)+" "+
+		BeanUtils.forceStringLength(s2,25," ",false)+" "+
+		BeanUtils.forceStringLength("'"+s3+"'",25," ",true)+
 		" -> "+
 		"'"+s4+"'";
 }

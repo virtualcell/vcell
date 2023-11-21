@@ -109,14 +109,16 @@ public class LangevinLngvWriter {
 			MathModel mm = (MathModel)so;	// TODO: must make this code compatible to math model too
 			// TODO: how do I get GeometryContext for a math model?
 		}
-		Geometry geometry = so.getGeometry();
+		Geometry geometry = simulation.getMathDescription().getGeometry();
+
+		// TODO: get rid of next block
 		GeometrySpec geometrySpec = geometry.getGeometrySpec();
 		if(!(so instanceof SimulationContext)) {
 			throw new RuntimeException("SimulationOwner must be instance of SimulationContext");
 		}
 		SimulationContext simContext = (SimulationContext)so;
 		geometryContext = simContext.getGeometryContext();
-		
+
 		if(simContext.getApplicationType() != Application.SPRINGSALAD) {
 			throw new RuntimeException("SpringSaLaD application type expected.");
 		}

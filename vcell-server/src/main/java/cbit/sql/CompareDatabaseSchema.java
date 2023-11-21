@@ -10,11 +10,7 @@
 
 package cbit.sql;
 
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
+import cbit.vcell.modeldb.SQLCreateAllTables;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.db.ConnectionFactory;
@@ -22,7 +18,10 @@ import org.vcell.db.DatabaseService;
 import org.vcell.db.DatabaseSyntax;
 import org.vcell.db.KeyFactory;
 
-import cbit.vcell.modeldb.SQLCreateAllTables;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class CompareDatabaseSchema {
 	private final static Logger lg = LogManager.getLogger(CompareDatabaseSchema.class);
@@ -203,7 +202,6 @@ public static void main(java.lang.String[] args) {
 
         ConnectionFactory conFactory = null;
         KeyFactory keyFactory = null;
-        new cbit.vcell.resource.PropertyLoader();
 
         //
         // get appropriate database factory objects

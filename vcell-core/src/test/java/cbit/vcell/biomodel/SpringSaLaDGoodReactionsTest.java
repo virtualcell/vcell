@@ -10,6 +10,7 @@ import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.solver.*;
 import cbit.vcell.solver.server.Solver;
@@ -18,9 +19,9 @@ import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 import org.apache.commons.io.IOUtils;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.experimental.categories.Category;
+import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.solver.langevin.LangevinLngvWriter;
 import org.vcell.solver.langevin.LangevinSolver;
 import org.vcell.test.Fast;
@@ -35,15 +36,25 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.Set;
-import java.util.Vector;
+import java.util.*;
 
 @Category(Fast.class)
 public class SpringSaLaDGoodReactionsTest {
 	
 	private static final String reactionTestString = "'r0' ::     'MT0' : 'Site1' : 'state0' --> 'state1'  Rate 50.0  Condition Free";
+	private static String previousInstallDir = null;
+	@BeforeClass
+	public static void setup() {
+		previousInstallDir = PropertyLoader.getProperty(PropertyLoader.installationRoot, null);
+		PropertyLoader.setProperty(PropertyLoader.installationRoot, "..");
+	}
 
+	@AfterClass
+	public static void tearDown() {
+		if(previousInstallDir != null) {
+			PropertyLoader.setProperty(PropertyLoader.installationRoot, previousInstallDir);
+		}
+	}
 
 	/* ---------------------------------------------------------------------------------------------------------------------------
 	 * This test will check the compatibility with springsalad requirements as follows:
@@ -240,8 +251,74 @@ public class SpringSaLaDGoodReactionsTest {
 		Solver solver = SolverFactory.createSolver(localSimDataDir, simTask, false);
 		Assert.assertTrue("expecting instanceof Langevin solver", (solver instanceof LangevinSolver) ? true : false);
 	}
-    
-	// ==========================================================================================================================
+
+	/* -------------------------------------------------------------------------------------------------
+	 * This test will exercise creation and parsing of a species context spec entry in the SQL table
+	 *
+	 */
+	@Test
+	public void test_springsalad_application() throws IOException, XmlParseException, PropertyVetoException, ExpressionException, GeometryException,
+			ImageException, IllegalMappingException, MappingException, SolverException {
+
+		BioModel bioModel = getBioModelFromResource("Spring_application.vcml");
+		SimulationContext simContext = bioModel.getSimulationContext(0);
+
+		// WARNING!! Debug configuration for this JUnit test required System property "vcell.installDir"
+		// ex: -Dvcell.installDir=C:\dan\jprojects\git\vcell
+		MathDescription mathDescription = simContext.getMathDescription();
+		Assert.assertTrue("expecting SpringSaLaD math type", (mathDescription.getMathType() != null && mathDescription.getMathType() == MathType.SpringSaLaD) ? true : false);
+
+		SpeciesContextSpec[] speciesContextSpecs = simContext.getReactionContext().getSpeciesContextSpecs();
+		SpeciesContextSpec scs = speciesContextSpecs[0];		// we test roundtrip for just one SpeciesContextSpec
+		String internalLinkSetSQL = scs.getInternalLinksSQL();
+		String siteAttributesMapSQL = scs.getSiteAttributesSQL();
+		Set<MolecularInternalLinkSpec> internalLinkSet = scs.readInternalLinksSQL(internalLinkSetSQL);
+		Map<MolecularComponentPattern, SiteAttributesSpec> siteAttributesMap = scs.readSiteAttributesSQL(siteAttributesMapSQL);
+
+		double bondLength = 1;
+		Map<ReactionRuleSpec.Subtype, Integer> subTypeMap = new LinkedHashMap<>();
+		ReactionRuleSpec[] rrSpecs = simContext.getReactionContext().getReactionRuleSpecs();
+		for(ReactionRuleSpec rrs : rrSpecs) {
+			Map<String, Object> analysisResults = new LinkedHashMap<>();
+			rrs.analizeReaction(analysisResults);
+			ReactionRuleSpec.Subtype st = rrs.getSubtype(analysisResults);
+			if(subTypeMap.containsKey(st)) {
+				int count = subTypeMap.get(st);
+				count++;
+				subTypeMap.put(st, count);
+			} else {
+				subTypeMap.put(st, 1);
+			}
+			if(ReactionRuleSpec.Subtype.BINDING == st) {
+				bondLength = rrs.getFieldBondLength();
+			}
+		}
+		Assert.assertTrue("Number of compatible subtypes must be 5", subTypeMap.size() == 5 ? true : false);
+		Assert.assertTrue("No incompatible subtype may exist", subTypeMap.containsKey(ReactionRuleSpec.Subtype.INCOMPATIBLE) ? false : true);
+		Assert.assertTrue("BondLength must be 3", bondLength == 3 ? true : false);
+
+		// verify roundtrip for internalLinkSet (through sampling)
+		Assert.assertTrue("internalLinkSet size different after roundtrip", internalLinkSet.size() == scs.getInternalLinkSet().size() ? true : false);
+		MolecularInternalLinkSpec milsThis = internalLinkSet.iterator().next();
+		boolean found = false;
+		for(MolecularInternalLinkSpec milsThat : scs.getInternalLinkSet()) {
+			if(milsThis.compareEqual(milsThat)) {
+				found = true;
+				break;
+			}
+		}
+		Assert.assertTrue("MolecularInternalLinkSpec element not found after roundtrip", found ? true : false);
+
+		// verify roundtrip for siteAttributesMap (through sampling)
+		Assert.assertTrue("siteAttributesMap size different after roundtrip", siteAttributesMap.size() == scs.getSiteAttributesMap().size() ? true : false);
+		MolecularComponentPattern mcpThis = siteAttributesMap.keySet().iterator().next();
+		SiteAttributesSpec sasThis = siteAttributesMap.get(mcpThis);
+		SiteAttributesSpec sasThat = scs.getSiteAttributesMap().get(mcpThis);
+		Assert.assertTrue("SiteAttributesSpec element not found in siteAttributesMap after roundtrip", sasThis.compareEqual(sasThat) ? true : false);
+	}
+
+
+		// ==========================================================================================================================
 	
     private static BioModel getBioModelFromResource(String fileName) throws IOException, XmlParseException {
         InputStream inputStream = SpringSaLaDGoodReactionsTest.class.getResourceAsStream(fileName);

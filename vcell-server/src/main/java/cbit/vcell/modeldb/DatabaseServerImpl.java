@@ -324,7 +324,12 @@ public VersionableFamily getAllReferences(User user, VersionableType vType, KeyV
  * @exception java.rmi.RemoteException The exception description.
  */
 public BioModelInfo getBioModelInfo(User user, KeyValue key) throws DataAccessException, ObjectNotFoundException {
-	return ((BioModelInfo[])getVersionInfos(user, key, VersionableType.BioModelMetaData, true, true))[0];
+	VersionInfo[] versionInfos = getVersionInfos(user, key, VersionableType.BioModelMetaData, true, true);
+	if (versionInfos.length == 0) {
+		return null;
+	}else{
+		return ((BioModelInfo[]) versionInfos)[0];
+	}
 }
 
 
@@ -564,7 +569,12 @@ public BigString getGeometryXML(User user, KeyValue key) throws DataAccessExcept
  * @exception java.rmi.RemoteException The exception description.
  */
 public MathModelInfo getMathModelInfo(User user, KeyValue key) throws DataAccessException, ObjectNotFoundException {
-	return ((MathModelInfo[])getVersionInfos(user, key, VersionableType.MathModelMetaData, false, true))[0];
+	VersionInfo[] versionInfos = getVersionInfos(user, key, VersionableType.MathModelMetaData, true, true);
+	if (versionInfos.length == 0) {
+		return null;
+	}else {
+		return ((MathModelInfo[]) versionInfos)[0];
+	}
 }
 
 

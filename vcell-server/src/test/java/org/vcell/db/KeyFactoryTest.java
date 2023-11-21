@@ -63,8 +63,6 @@ public static void main(String args[]) {
 			System.exit(1);
 		}
 
-		new cbit.vcell.resource.PropertyLoader();
-		
 		conFactory = DatabaseService.getInstance().createConnectionFactory();
 		KeyFactory keyFactory = conFactory.getKeyFactory();
 		

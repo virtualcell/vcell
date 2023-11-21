@@ -5,6 +5,7 @@ import cbit.vcell.biomodel.BioModelTransforms;
 import cbit.vcell.math.MathCompareResults;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.resource.NativeLib;
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
@@ -40,8 +41,8 @@ public class MathGenCompareTest {
 
 	@BeforeClass
 	public static void setup() throws IOException {
-		previousInstalldirPropertyValue = System.getProperty("vcell.installDir");
-		System.setProperty("vcell.installDir", "..");
+		previousInstalldirPropertyValue = PropertyLoader.getProperty(PropertyLoader.installationRoot, null);
+		PropertyLoader.setProperty(PropertyLoader.installationRoot, "..");
 		NativeLib.combinej.load();
 		codeKnownProblemFile = Files.createTempFile("MathGenCompareTest","code_KnownProblems").toFile();
 		csvKnownProblemFile = Files.createTempFile("MathGenCompareTest","csv_KnownProblems").toFile();
@@ -52,7 +53,7 @@ public class MathGenCompareTest {
 	@AfterClass
 	public static void teardown() {
 		if (previousInstalldirPropertyValue!=null) {
-			System.setProperty("vcell.installDir", previousInstalldirPropertyValue);
+			PropertyLoader.setProperty(PropertyLoader.installationRoot, previousInstalldirPropertyValue);
 		}
 		System.err.println("code known problem file: "+codeKnownProblemFile.getAbsolutePath());
 		System.err.println("csv known problem file: "+csvKnownProblemFile.getAbsolutePath());
