@@ -121,6 +121,10 @@ public class Simulation implements Versionable, Matchable, java.beans.VetoableCh
 	public static class Counters {		// SpringSaLaD post processing counters, structure to be determined, will be moved appropriately
 		
 		public static void writeMoleculeCounters(SimulationContext simContext, StringBuilder sb) {
+			// TODO: must separate the call from the exporter (where we continue to use simContext)
+			//  from the call to prepare data for simulations run (where we need to use the math,
+			//  more exactly the particleMolecularTytpeSet from the LangevinLngvWriter call)
+
 			if(simContext == null) {
 				sb.append("\n");
 				return;

@@ -89,8 +89,6 @@ public class LangevinLngvWriter {
 	private static Map<ParticleProperties, SubDomain> particlePropertiesMap = new LinkedHashMap<> ();			// initial conditions for seed species
 	private static Map<LangevinParticleJumpProcess, SubDomain> particleJumpProcessMap = new LinkedHashMap<> ();	// list of reactions
 	private static Set<LangevinParticleMolecularType> particleMolecularTytpeSet = new LinkedHashSet<> ();		// molecular types
-	
-	private static GeometryContext geometryContext = null;
 	private static MathDescription mathDescription = null;
 	
 //	static ArrayList<MappingOfReactionParticipants> currentMappingOfReactionParticipants = new ArrayList<MappingOfReactionParticipants>();
@@ -105,26 +103,15 @@ public class LangevinLngvWriter {
 		}
 		
 		SimulationOwner so = simulation.getSimulationOwner();
-		if(so instanceof MathModel) {
-			MathModel mm = (MathModel)so;	// TODO: must make this code compatible to math model too
-			// TODO: how do I get GeometryContext for a math model?
-		}
 		Geometry geometry = simulation.getMathDescription().getGeometry();
-
-		// TODO: get rid of next block
 		GeometrySpec geometrySpec = geometry.getGeometrySpec();
-		if(!(so instanceof SimulationContext)) {
-			throw new RuntimeException("SimulationOwner must be instance of SimulationContext");
-		}
-		SimulationContext simContext = (SimulationContext)so;
-		geometryContext = simContext.getGeometryContext();
 
-		if(simContext.getApplicationType() != Application.SPRINGSALAD) {
-			throw new RuntimeException("SpringSaLaD application type expected.");
+		if(!so.getMathDescription().isLangevin()) {
+			throw new RuntimeException("Math description must be langevin");
 		}
-		if(simContext.getMostRecentlyCreatedMathMapping() == null) {
-			throw new RuntimeException("Refresh MathDescription required");
-		}
+
+		// TODO: must use just the math!
+		SimulationContext simContext = (SimulationContext)so;
 
 //		LangevinMathMapping mathMapping = (LangevinMathMapping)simContext.getMostRecentlyCreatedMathMapping();
 //		Structure struct = null;
@@ -170,7 +157,7 @@ public class LangevinLngvWriter {
 		/* ********* WRITE THE SPATIAL INFORMATION **********/
 		sb.append("*** " + SPATIAL_INFORMATION + " ***");
 		sb.append("\n");
-		geometryContext.writeData(sb);
+		geometrySpec.writeData(sb);
 		sb.append("\n");
 
 		/* ******* WRITE THE SPECIES INFORMATION ***********/
@@ -892,13 +879,14 @@ public class LangevinLngvWriter {
 				throw new RuntimeException("Initial concentration must be a number");
 			}
 
-			int dimension = geometryContext.getGeometry().getDimension();
+			// TODO: verify if the molecule is flat or not; for now we assume it is "flat" on YZ axis projection
+			boolean is2D = true;		// the x-coordinate is the same for all the sites
 
 			sb.append("MOLECULE: \"" + lpmt.getName() + "\" " + subDomain.getName() + 
 					" Number " + scount + 
 					// number of site types and number of sites is the same for the vcell implementation of springsalad
 					" Site_Types " + lpmt.getComponentList().size() + " Total"  + "_Sites " + lpmt.getComponentList().size() + 
-					" Total_Links " + lpmt.getInternalLinkSpec().size() + " is2D " + (dimension == 2 ? true : false));	// TODO: is2D must mean if the molecule is "flat" on YZ axis projection
+					" Total_Links " + lpmt.getInternalLinkSpec().size() + " is2D " + is2D);
 			sb.append("\n");
 			sb.append("{");
 			sb.append("\n");
