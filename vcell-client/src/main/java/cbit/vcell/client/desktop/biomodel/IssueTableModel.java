@@ -18,13 +18,10 @@ import org.vcell.model.rbm.ComponentStateDefinition;
 import org.vcell.model.rbm.MolecularComponent;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.SpeciesPattern;
-import org.vcell.util.BeanUtils;
-import org.vcell.util.Issue;
+import org.vcell.util.*;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueOrigin;
 import org.vcell.util.Issue.Severity;
-import org.vcell.util.ObjectNotFoundException;
-import org.vcell.util.VCAssert;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.gui.GuiUtils;
 import org.vcell.util.gui.ScrollTable;
@@ -210,7 +207,7 @@ public class IssueTableModel extends VCellSortTableModel<Issue> implements Issue
 		VCAssert.assertValid(issue);
 		Object source = issue.getSource();
 		{
-			IssueOrigin io = BeanUtils.downcast(IssueOrigin.class, source);
+			IssueOrigin io = CastingUtils.downcast(IssueOrigin.class, source);
 			if (io != null) {
 				return io.getDescription();
 			}
@@ -358,7 +355,7 @@ public class IssueTableModel extends VCellSortTableModel<Issue> implements Issue
 		if (vcDocument instanceof BioModel){
 			Object object = issue.getSource();
 			{
-				DecoratedIssueSource dis = BeanUtils.downcast(DecoratedIssueSource.class, object);
+				DecoratedIssueSource dis = CastingUtils.downcast(DecoratedIssueSource.class, object);
 				if (dis != null) {
 					return dis.getSourcePath();
 				}

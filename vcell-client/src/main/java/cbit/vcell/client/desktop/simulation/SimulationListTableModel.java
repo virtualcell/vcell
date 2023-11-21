@@ -214,12 +214,6 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	}
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (5/10/2004 6:32:09 PM)
- * @param newSimContext cbit.vcell.mapping.SimulationContext
- */
 public void setSimulationWorkspace(SimulationWorkspace newSimulationWorkspace) {
 	SimulationWorkspace oldValue = this.simulationWorkspace;
 	simulationWorkspace = newSimulationWorkspace;
@@ -282,7 +276,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 										suggestedInterval = timeStep;
 										bValid = false;
 									} else {
-										if (!BeanUtils.isIntegerMultiple(outputTime, timeStep)) {
+										if (BeanUtils.isNotAnIntegerMultiple(outputTime, timeStep)) {
 											double n = outputTime/timeStep;
 											int intn = (int)Math.round(n);
 											suggestedInterval = (intn * timeStep);

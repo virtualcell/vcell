@@ -18,7 +18,7 @@ import javax.swing.JSeparator;
 import javax.swing.JTree;
 import javax.swing.tree.TreePath;
 
-import org.vcell.util.BeanUtils;
+import org.vcell.util.gui.GeneralGuiUtils;
 import org.vcell.util.document.User;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionInfo;
@@ -479,7 +479,7 @@ protected void treeSelection() {
 	Object object = bioModelNode.getUserObject();
 
 	try {
-		BeanUtils.setCursorThroughout(this,java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.WAIT_CURSOR));
+		GeneralGuiUtils.setCursorThroughout(this,java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.WAIT_CURSOR));
 		
 		if (object instanceof VersionInfo){
 			setSelectedVersionInfo((VersionInfo)object);
@@ -493,7 +493,7 @@ protected void treeSelection() {
 	} catch (Exception exc) {
 		handleException(exc);
 	} finally {
-		BeanUtils.setCursorThroughout(this,java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.DEFAULT_CURSOR));
+		GeneralGuiUtils.setCursorThroughout(this,java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.DEFAULT_CURSOR));
 	}
 
 }

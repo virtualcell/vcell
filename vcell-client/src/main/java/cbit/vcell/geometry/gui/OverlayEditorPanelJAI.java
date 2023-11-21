@@ -73,13 +73,8 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileFilter;
 
-import org.vcell.util.BeanUtils;
-import org.vcell.util.CoordinateIndex;
-import org.vcell.util.ISize;
-import org.vcell.util.NumberUtils;
-import org.vcell.util.Range;
-import org.vcell.util.UserCancelException;
-import org.vcell.util.UtilCancelException;
+import org.vcell.util.gui.GeneralGuiUtils;
+import org.vcell.util.*;
 import org.vcell.util.gui.ColorIcon;
 import org.vcell.util.gui.DialogUtils;
 
@@ -934,7 +929,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 		smoothslider.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
 				if(!smoothslider.getValueIsAdjusting()){
-					firePropertyChange(FRAP_DATA_UNDERLAY_SMOOTH_PROPERTY, null, new Integer(smoothslider.getValue()));
+					firePropertyChange(FRAP_DATA_UNDERLAY_SMOOTH_PROPERTY, null, smoothslider.getValue());
 				}
 			}
 		});
@@ -959,8 +954,8 @@ public class OverlayEditorPanelJAI extends JPanel{
 		roiDrawButtonGroup.add(translateToolButton);
 		roiDrawButtonGroup.add(scaleToolButton);
 		
-		BeanUtils.enableComponents(getToolButtonPanel(), false);
-		BeanUtils.enableComponents(editROIPanel, false);
+		GeneralGuiUtils.enableComponents(getToolButtonPanel(), false);
+		GeneralGuiUtils.enableComponents(editROIPanel, false);
 		
 		histogramPanel = new HistogramPanel();
 		histogramPanel.addPropertyChangeListener(new PropertyChangeListener() {
@@ -1029,7 +1024,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 		return (ROIMultiPaintManager.ComboboxROIName)roiComboBox.getSelectedItem();
 	}
 	public void setBlendPercent(int blendPercent){
-		Integer newBlendPercent = new Integer(blendPercent);
+		Integer newBlendPercent = blendPercent;
 		if(!newBlendPercent.equals(blendPercentSlider.getValue())){
 			blendPercentSlider.setValue(blendPercent);
 		}
@@ -1044,7 +1039,6 @@ public class OverlayEditorPanelJAI extends JPanel{
 	}
 	/**
 	 * Method setROI.
-	 * @param argHighliteInfo ROI
 	 */
 	public void setHighliteInfo(ROI highliteInfo,String action){
 //		System.out.println(highliteInfo+" "+action+" bHistEmpty="+histogramPanel.isSelectionEmpty()+" bListEmpty="+resolvedList.isSelectionEmpty());
@@ -1246,8 +1240,8 @@ public class OverlayEditorPanelJAI extends JPanel{
 			if(!timeSlider.isEnabled()) //if the component is already enabled, don't do anything
 			{
 				boolean bUndoEnbld = getUndoButton().isEnabled();//undo state controlled elsewhere
-				BeanUtils.enableComponents(toolButtonPanel, true);
-				BeanUtils.enableComponents(editROIPanel, true);
+				GeneralGuiUtils.enableComponents(toolButtonPanel, true);
+				GeneralGuiUtils.enableComponents(editROIPanel, true);
 				getUndoButton().setEnabled(bUndoEnbld);
 				extrudeToolButton.setEnabled(imageDataset.getISize().getZ()==1);
 				discardHighlightsButton.setEnabled(highliteInfo != null);
@@ -1304,8 +1298,8 @@ public class OverlayEditorPanelJAI extends JPanel{
 			zSlider.setMaximum(1);
 			zSlider.setLabelTable(null);
 			zSlider.setEnabled(false);
-			BeanUtils.enableComponents(toolButtonPanel, false);
-			BeanUtils.enableComponents(editROIPanel, false);
+			GeneralGuiUtils.enableComponents(toolButtonPanel, false);
+			GeneralGuiUtils.enableComponents(editROIPanel, false);
 			underlyingImage = null;
 		}
 		
@@ -1794,7 +1788,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 	 * @param x int
 	 * @param y int
 	 * @param radius int
-	 * @param erase boolean
+	 * @param bErase boolean
 	 */
 	private void drawHighlight(int x, int y, int radius, boolean bErase){
 		if(roiComboBox.getSelectedItem() == null){
@@ -1853,7 +1847,8 @@ public class OverlayEditorPanelJAI extends JPanel{
 
 
 	/** Updates cursor probe label. * @param x int
-	 * @param y int
+	 * @param inx int
+	 * @param iny int
 	 */
 	private void updateLabel(int inx, int iny) {
 		if (imageDataset == null) {
@@ -2576,24 +2571,22 @@ public class OverlayEditorPanelJAI extends JPanel{
 	public void setUnderlayState(boolean bIgnoreUnderlay){
 		if(bIgnoreUnderlay){
 			blendPercentSlider.setValue(0);
-			BeanUtils.enableComponents(blendPercentPanel, false);
+			GeneralGuiUtils.enableComponents(blendPercentPanel, false);
 		}else{
 //			blendPercentSlider.setValue(50);
-			BeanUtils.enableComponents(blendPercentPanel, true);
+			GeneralGuiUtils.enableComponents(blendPercentPanel, true);
 		}
 	}
 	public void setResolvedList(final Object[] allRegionInfos){
-		SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-				resolvedList.setListData(allRegionInfos);
-				if(allRegionInfos.length == 1){
-					domainRegionLabel.setText(DOMAIN_LIST_TEXT);
-				}else{
-					domainRegionLabel.setText(allRegionInfos.length+" "+DOMAIN_LIST_TEXT);
-				}
-				resolvedListSelection(false);
-			}
-		});
+		SwingUtilities.invokeLater(() -> {
+            resolvedList.setListData(allRegionInfos);
+            if(allRegionInfos.length == 1){
+                domainRegionLabel.setText(DOMAIN_LIST_TEXT);
+            }else{
+                domainRegionLabel.setText(allRegionInfos.length+" "+DOMAIN_LIST_TEXT);
+            }
+            resolvedListSelection(false);
+        });
 	}
 	public void setUserPreferences(UserPreferences userPreferences){
 		histogramPanel.setUserPreferences(userPreferences);

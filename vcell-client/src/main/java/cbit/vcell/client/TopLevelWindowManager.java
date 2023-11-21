@@ -28,12 +28,9 @@ import javax.swing.filechooser.FileFilter;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.vcell.util.gui.GeneralGuiUtils;
 import org.vcell.client.logicalwindow.LWTopFrame;
-import org.vcell.util.BeanUtils;
-import org.vcell.util.DataAccessException;
-import org.vcell.util.ISize;
-import org.vcell.util.UserCancelException;
-import org.vcell.util.VCAssert;
+import org.vcell.util.*;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.VCDocument;
@@ -476,7 +473,7 @@ void createGeometry(final Geometry currentGeometry,final AsynchClientTask[] afte
 						geometrySelectionInfo.getDocumentCreationInfo())));
 				createGeomTaskV.addAll(Arrays.asList(afterTasks));
 			}
-			hash.put("guiParent", (Component)getComponent());
+			hash.put("guiParent", getComponent());
 			hash.put("requestManager", getRequestManager());
 		}else{//Copy from WorkSpace
 			createGeomTaskV.add(new AsynchClientTask("loading Geometry", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
@@ -484,10 +481,10 @@ void createGeometry(final Geometry currentGeometry,final AsynchClientTask[] afte
 				public void run(Hashtable<String, Object> hashTable) throws Exception {
 					if(selectDialogTitle.equals(BioModelWindowManager.FIELD_DATA_FLAG)) {
 						addWorkspaceGeomSizeSelection(hash,currentGeometry);
-						hash.put(BioModelWindowManager.FIELD_DATA_FLAG, new Boolean(true));
+						hash.put(BioModelWindowManager.FIELD_DATA_FLAG, true);
 					}
-					final Vector<AsynchClientTask> runtimeTasksV = new Vector<AsynchClientTask>();
-					VCDocument.DocumentCreationInfo workspaceDocCreateInfo = null;
+					final Vector<AsynchClientTask> runtimeTasksV = new Vector<>();
+					VCDocument.DocumentCreationInfo workspaceDocCreateInfo;
 					if(currentGeometry.getGeometrySpec().getNumAnalyticOrCSGSubVolumes() > 0 && currentGeometry.getGeometrySpec().getImage() == null){
 						workspaceDocCreateInfo = new VCDocument.DocumentCreationInfo(VCDocumentType.GEOMETRY_DOC,VCDocument.GEOM_OPTION_FROM_WORKSPACE_ANALYTIC);
 					}else if(currentGeometry.getGeometrySpec().getImage() != null && currentGeometry.getGeometrySpec().getNumAnalyticOrCSGSubVolumes() == 0){
@@ -499,29 +496,23 @@ void createGeometry(final Geometry currentGeometry,final AsynchClientTask[] afte
 							workspaceDocCreateInfo,
 							afterTasks,
 							applyGeometryButtonText)));
-					hashTable.put("guiParent", (Component)getComponent());
+					hashTable.put("guiParent", getComponent());
 					hashTable.put("requestManager", getRequestManager());
 					hashTable.put(ClientRequestManager.GEOM_FROM_WORKSPACE, currentGeometry);
 					new Thread(
-						new Runnable() {
-							public void run() {
-								ClientTaskDispatcher.dispatch(getComponent(),hash,runtimeTasksV.toArray(new AsynchClientTask[0]), false,false,null,true);
-							}
-						}
-					).start();
+                            () -> ClientTaskDispatcher.dispatch(getComponent(),hash,runtimeTasksV.toArray(new AsynchClientTask[0]), false,false,null,true)
+                    ).start();
 				}
 
 			});
 		}
 		ClientTaskDispatcher.dispatch(getComponent(), hash, createGeomTaskV.toArray(new AsynchClientTask[0]), false,bCancellable,null,true);
 
-	} catch (UserCancelException e1) {
-		return;
-	} catch (Exception e1) {
+	} catch (UserCancelException ignored) {
+    } catch (Exception e1) {
 		e1.printStackTrace();
 		DialogUtils.showErrorDialog(getComponent(), e1.getMessage(), e1);
 	}
-
 }
 
 private void addWorkspaceGeomSizeSelection(final Hashtable<String, Object> hash,Geometry sourceGeom) throws Exception{
@@ -774,7 +765,7 @@ public static class FDSimBioModelInfo extends OpenModelInfoHolder{
 
 public static OpenModelInfoHolder selectOpenModelsFromDesktop(Container requester,RequestManager requestManager,boolean bIncludeSimulations,String title,boolean bExcludeCompartmental) throws UserCancelException,DataAccessException{
 	try {
-		BeanUtils.setCursorThroughout(requester, Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+		GeneralGuiUtils.setCursorThroughout(requester, Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		OpenModelInfoHolder[] simInfoHolders = requestManager.getOpenDesktopDocumentInfos(bIncludeSimulations);
 		if(simInfoHolders == null || simInfoHolders.length == 0){
 			return null;
@@ -833,7 +824,7 @@ public static OpenModelInfoHolder selectOpenModelsFromDesktop(Container requeste
 		}
 		String[][] rows = new String[rowsV.size()][];
 		rowsV.copyInto(rows);
-		BeanUtils.setCursorThroughout(requester, Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+		GeneralGuiUtils.setCursorThroughout(requester, Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 		int[] selectionIndexArr =  PopupGenerator.showComponentOKCancelTableList(
 				requester, title,
 				colNames, rows, ListSelectionModel.SINGLE_SELECTION);
@@ -842,7 +833,7 @@ public static OpenModelInfoHolder selectOpenModelsFromDesktop(Container requeste
 		}
 		throw UserCancelException.CANCEL_GENERIC;
 	} finally {
-		BeanUtils.setCursorThroughout(requester, Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+		GeneralGuiUtils.setCursorThroughout(requester, Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 	}
 }
 

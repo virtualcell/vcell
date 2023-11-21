@@ -16,7 +16,8 @@ import java.util.Vector;
 
 import javax.swing.JLabel;
 
-import org.vcell.util.BeanUtils;
+import org.vcell.util.ArrayUtils;
+import org.vcell.util.gui.GeneralGuiUtils;
 import org.vcell.util.document.GroupAccess;
 import org.vcell.util.document.GroupAccessAll;
 import org.vcell.util.document.GroupAccessNone;
@@ -127,25 +128,25 @@ public ACLEditor() {
  */
 private void accessAction(java.awt.event.ActionEvent actionEvent) {
 	if(actionEvent.getSource() == getJButtonAddACLUser()){
-		if(getJTextFieldACLUser().getText().length() > 0){
+		if(!getJTextFieldACLUser().getText().isEmpty()){
 			String[] oldAccessList = getACLState().getAccessList();
 			if(oldAccessList != null && oldAccessList.length > 0){
-				if(BeanUtils.arrayContains(oldAccessList,getJTextFieldACLUser().getText())){
+				if(ArrayUtils.arrayContains(oldAccessList,getJTextFieldACLUser().getText())){
 					PopupGenerator.showErrorDialog(this, "User "+getJTextFieldACLUser().getText()+" already in list");
 					return;
 				}
 			}
-			ACLState newState =	new ACLState((String[])BeanUtils.addElement(
-						(getACLState() != null?getACLState().getAccessList():new String[0]),getJTextFieldACLUser().getText()));
+			String[] argList = (getACLState() != null ? getACLState().getAccessList():new String[0]);
+			ACLState newState =	new ACLState(ArrayUtils.addElement(argList, getJTextFieldACLUser().getText()));
 			setACLState(newState);
 		}
-	}else if(actionEvent.getSource() == getJButtonRemoveACLUser() && getACLState() != null){
+	} else if(actionEvent.getSource() == getJButtonRemoveACLUser() && getACLState() != null){
 		String removeUser = (String)getJListACL().getSelectedValue();
-		if(removeUser != null){
-			String[] newUserList = (String[])BeanUtils.removeElement(getACLState().getAccessList(),removeUser);
-			ACLState newState = new ACLState(newUserList);
-			setACLState(newState);
-		}
+		if(removeUser == null) return;
+		String[] newUserList = ArrayUtils.removeFirstInstanceOfElement(getACLState().getAccessList(), removeUser);
+		ACLState newState = new ACLState(newUserList);
+		setACLState(newState);
+
 	}
 }
 /**
@@ -303,7 +304,6 @@ private javax.swing.JRadioButton getACLRadioButton() {
 /**
  * Insert the method's description here.
  * Creation date: (6/23/2004 5:15:41 PM)
- * @param aclState java.lang.Object
  */
 public ACLState getACLState() {
 	return fieldACLState;
@@ -632,14 +632,14 @@ private void updateInterface() {
 			getPrivateRadioButton().setSelected(true);
 		}
 		if(getGrantAccessJPanel().isEnabled()){
-			BeanUtils.enableComponents(getGrantAccessJPanel(),false);
+			GeneralGuiUtils.enableComponents(getGrantAccessJPanel(),false);
 		}
 	}else if(currentState.isAccessPublic()){
 		if(!getPublicRadioButton().isSelected()){
 			getPublicRadioButton().setSelected(true);
 		}
 		if(getGrantAccessJPanel().isEnabled()){
-			BeanUtils.enableComponents(getGrantAccessJPanel(),false);
+			GeneralGuiUtils.enableComponents(getGrantAccessJPanel(),false);
 		}
 	}else if(currentState != null){
 		String[] currentUserList = (currentState != null?currentState.getAccessList():new String[0]);
@@ -659,7 +659,7 @@ private void updateInterface() {
 			getACLRadioButton().setSelected(true);
 		}
 		if(!getJTextFieldACLUser().isEnabled()){
-			BeanUtils.enableComponents(getGrantAccessJPanel(),true);
+			GeneralGuiUtils.enableComponents(getGrantAccessJPanel(),true);
 		}
 	}
 }
