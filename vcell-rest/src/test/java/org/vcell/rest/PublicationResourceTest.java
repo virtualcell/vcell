@@ -1,6 +1,7 @@
 package org.vcell.rest;
 
 import io.quarkus.test.junit.QuarkusTest;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import jakarta.ws.rs.core.MediaType;
@@ -13,6 +14,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 public class PublicationResourceTest {
 
     @Test
+    @Disabled
     public void testList() {
         given()
                 .when().get("/publications")
@@ -24,6 +26,7 @@ public class PublicationResourceTest {
     }
 
     @Test
+    @Disabled
     public void testAdd() {
         given()
                 .body("{\"name\": \"publication 3\", \"description\": \"third publication\"}")

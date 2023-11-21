@@ -6,6 +6,7 @@ import cbit.vcell.modeldb.PublicationRep;
 import cbit.vcell.modeldb.PublicationTable;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import org.vcell.rest.models.Publication;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.document.KeyValue;
@@ -13,6 +14,7 @@ import org.vcell.util.document.User;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 @ApplicationScoped
 public class PublicationService {
@@ -28,11 +30,12 @@ public class PublicationService {
 		databaseServerImpl.publishDirectly(publishTheseBiomodels, publishTheseMathmodels, user);
 	}
 
-	public KeyValue savePublicationRep(PublicationRep publicationRep, User vcellUser) throws SQLException, DataAccessException{
-		return databaseServerImpl.savePublicationRep(publicationRep,vcellUser);
+	public KeyValue savePublication(Publication publication, User vcellUser) throws SQLException, DataAccessException{
+		PublicationRep publicationRep = publication.toPublicationRep();
+		return databaseServerImpl.savePublicationRep(publicationRep, vcellUser);
 	}
 
-	public PublicationRep getPublicationRep(KeyValue pubKey, User vcellUser) throws SQLException, DataAccessException {
+	public Publication getPublication(KeyValue pubKey, User vcellUser) throws SQLException, DataAccessException {
 		if (pubKey == null){
 			throw new RuntimeException("publication key not specified");
 		}
@@ -44,12 +47,13 @@ public class PublicationService {
 		if (publicationReps==null || publicationReps.length!=1){
 			throw new ObjectNotFoundException("failed to get publication");
 		}
-		return publicationReps[0];
+		return Publication.fromPublicationRef(publicationReps[0]);
 	}
 
-	public PublicationRep[] getPublicationReps(OrderBy orderBy, User vcellUser) throws SQLException, DataAccessException {
+	public Publication[] getPublications(OrderBy orderBy, User vcellUser) throws SQLException, DataAccessException {
 		String conditionsString = "";
-        return databaseServerImpl.getPublicationReps(vcellUser, conditionsString, orderBy);
+        PublicationRep[] publicationReps = databaseServerImpl.getPublicationReps(vcellUser, conditionsString, orderBy);
+		return Arrays.stream(publicationReps).map(Publication::fromPublicationRef).toArray(Publication[]::new);
 	}
 
 }
