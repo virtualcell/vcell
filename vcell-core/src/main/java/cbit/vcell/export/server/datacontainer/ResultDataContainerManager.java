@@ -10,96 +10,71 @@ import java.util.List;
 
 public class ResultDataContainerManager {
     private final static Logger lg = LogManager.getLogger(ResultDataContainerManager.class);
-
-    List<ResultDataContainer> resultDataContainers = new ArrayList<>();
     private final AggregateDataSize aggregateDataSize;
+    int containersCreated;
+    List<ResultDataContainer> resultDataContainers;
+    HybridDataContainerCollection dataContainers;
 
     public ResultDataContainerManager() {
+        this.containersCreated = 0;
         this.aggregateDataSize = new AggregateDataSize();
+        this.dataContainers = new HybridDataContainerCollection(this.aggregateDataSize);
     }
 
-    public ResultDataContainerID getNewFileDataContainerID() throws IOException {
-        return getNewFileDataContainerID(null);
+    public ResultDataContainerID containerizeData() throws IOException {
+        ResultDataContainer dataContainer = new InMemoryDataContainer();
+        this.dataContainers.add(dataContainer);
+        return dataContainer.getId();
     }
-    public ResultDataContainerID getNewFileDataContainerID(byte[] initData) throws IOException{
-        if (initData == null){
-            this.resultDataContainers.add(new ResultDataContainer(this.aggregateDataSize));
-        } else {
-            this.resultDataContainers.add(new ResultDataContainer(this.aggregateDataSize, initData));
-        }
-        return new ResultDataContainerID(resultDataContainers.size()-1);
+    public ResultDataContainerID containerizeData(byte[] initData) throws IOException {
+        ResultDataContainer dataContainer = new InMemoryDataContainer(initData);
+        this.dataContainers.add(dataContainer);
+        return dataContainer.getId();
     }
 
     private ResultDataContainer getFileDataContainer(ResultDataContainerID resultDataContainerID){
         return this.resultDataContainers.get(resultDataContainerID.id());
     }
 
-    public void closeAllAndDelete() throws IOException{
-        for(ResultDataContainer resultDataContainer : resultDataContainers){
-//			System.out.println("deleting: "+fileDataContainer.getDataFile().getAbsolutePath());
-            resultDataContainer.deleteTempFile();
-        }
+    public void closeAllAndDeleteFiles() {
+        this.dataContainers.clear();
     }
 
-    public void printBytes(ResultDataContainerID resultDataContainerID, PrintStream ps) throws IOException{
-        long totalSize = 0;
-        if (isDataInFile(resultDataContainerID)){
-            ps.println("Data in the file is:\n");
-            FileInputStream fis = new FileInputStream(getFileDataContainer(resultDataContainerID).getDataFile());
-            int aByte;
-            while ((aByte = fis.read()) != -1) {
-                ps.write(aByte);
-                totalSize++;
-            }
-            ps.flush();
-            ps.println("\nTotal Size = "+Long.toString(totalSize));
-            fis.close();
-        }else{
-            ps.println("Data in memory is:\n");
-            byte[] data = getFileDataContainer(resultDataContainerID).getDataBytes();
-            for (byte aByte : data){
-                ps.write((int)aByte);
-                totalSize++;
-            }
-            ps.flush();
-        }
-        ps.println("\nTotal Size = " + totalSize);
+    public void printBytes(ResultDataContainerID resultDataContainerID, PrintStream ps) throws IOException {
+        String containerTypeString;
+        ResultDataContainer dataContainer = this.getFileDataContainer(resultDataContainerID);
+        if (dataContainer instanceof FileDataContainer) containerTypeString = "the file";
+        else if (dataContainer instanceof InMemoryDataContainer) containerTypeString = "memory";
+        else containerTypeString = "an unknown format";
+
+        ps.printf("Data in %s is:%n%n", containerTypeString);
+        ps.write(dataContainer.getDataBytes());
+        ps.flush();
+        ps.println("\nTotal Size = " + dataContainer.getDataSize());
     }
 
-    public void writeAndFlush(ResultDataContainerID resultDataContainerID, OutputStream outputStream) throws IOException{
-        if (isDataInFile(resultDataContainerID)){
-            try(
-                    FileInputStream fis = new FileInputStream(getFileDataContainer(resultDataContainerID).getDataFile());
-                    BufferedInputStream bis = new BufferedInputStream(fis);
-            ){
-                IOUtils.copy(bis, outputStream); //fis is not buffered inside of IOUtils
-            }
-        } else{
-            /*
-             * Data is in memory
-             */
-            outputStream.write(getFileDataContainer(resultDataContainerID).getDataBytes(), 0, getFileDataContainer(resultDataContainerID).getDataBytes().length);
-            outputStream.flush();
-        }
-
+    public void writeAndFlush(ResultDataContainerID resultDataContainerID, OutputStream outputStream) throws IOException {
+        ResultDataContainer dataContainer = this.getFileDataContainer(resultDataContainerID);
+        outputStream.write(dataContainer.getDataBytes());
+        outputStream.flush();
     }
 
     public void append(ResultDataContainerID appendToThis, ResultDataContainerID appendThis) throws IOException{
-        this.aggregateDataSize.increaseDataAmount(getFileDataContainer(appendThis).getDataSize());
-        getFileDataContainer(appendToThis).append(getFileDataContainer(appendThis));
+        this.aggregateDataSize.increaseDataAmount(this.getFileDataContainer(appendThis).getDataSize());
+        this.getFileDataContainer(appendToThis).append(getFileDataContainer(appendThis));
     }
     public void append(ResultDataContainerID appendToThis, String appendThis) throws IOException{
         this.aggregateDataSize.increaseDataAmount(appendThis.length());
-        getFileDataContainer(appendToThis).append(appendThis);
+        this.getFileDataContainer(appendToThis).append(appendThis);
     }
     public void append(ResultDataContainerID appendToThis, byte[] appendThis) throws IOException{
         this.aggregateDataSize.increaseDataAmount(appendThis.length);
-        getFileDataContainer(appendToThis).append(appendThis);
+        this.getFileDataContainer(appendToThis).append(appendThis);
     }
 
 
     private boolean isDataInFile(ResultDataContainerID resultDataContainerID){
-        return getFileDataContainer(resultDataContainerID).isDataInFile();
+        return this.getFileDataContainer(resultDataContainerID) instanceof FileDataContainer;
     }
 
     public void manageExistingTempFile(ResultDataContainerID resultDataContainerID, File incomingFile) {

@@ -4,6 +4,9 @@ import cbit.vcell.resource.PropertyLoader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+/**
+ * Class that tracks how much memory has been consumed, while observing limits.
+ */
 public class AggregateDataSize {
     private final static Logger lg = LogManager.getLogger(AggregateDataSize.class);
 
@@ -60,7 +63,7 @@ public class AggregateDataSize {
         this.resetTo(0);
     }
 
-    public void resetTo(int value){
+    public void resetTo(long value){
         if (value < 0) throw new IllegalArgumentException("Value can not be negative.");
         this.amountOfData = value;
     }

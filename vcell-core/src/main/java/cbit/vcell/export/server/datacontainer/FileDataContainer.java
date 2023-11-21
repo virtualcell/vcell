@@ -2,18 +2,21 @@ package cbit.vcell.export.server.datacontainer;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 
 public class FileDataContainer implements ResultDataContainer {
+    private final ResultDataContainerID id;
     private int size = 0;
     private final File dataFile;
 
     public FileDataContainer() throws IOException {
-        this.dataFile = Files.createTempFile("vcellFDC", "").toFile();
+        this.dataFile = Files.createTempFile("vcellFDC_", "").toFile();
+        this.id = new ResultDataContainerID(this.hashCode());
+    }
+
+    public boolean deleteFile(){
+        return this.dataFile.delete();
     }
 
     @Override
@@ -28,11 +31,10 @@ public class FileDataContainer implements ResultDataContainer {
 
     @Override
     public void append(byte[] bytesToAppend) throws IOException {
-        this.size += bytesToAppend.length;
-        try (FileWriter writer = new FileWriter(this.dataFile)){
-            writer.append(bytesToAppend);
+        try (FileOutputStream writer = new FileOutputStream(this.dataFile, true)){
+            writer.write(bytesToAppend);
         }
-
+        this.size += bytesToAppend.length; // done after in case of exception
     }
 
     @Override
@@ -43,5 +45,10 @@ public class FileDataContainer implements ResultDataContainer {
     @Override
     public int getDataSize() {
         return this.size;
+    }
+
+    @Override
+    public ResultDataContainerID getId() {
+        return this.id;
     }
 }

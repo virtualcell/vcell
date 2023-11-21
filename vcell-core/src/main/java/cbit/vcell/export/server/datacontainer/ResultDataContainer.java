@@ -13,4 +13,6 @@ public interface ResultDataContainer {
     byte[] getDataBytes();
 
     int getDataSize();
+
+    ResultDataContainerID getId();
 }

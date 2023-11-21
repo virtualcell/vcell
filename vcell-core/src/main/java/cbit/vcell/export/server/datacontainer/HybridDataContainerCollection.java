@@ -1,22 +1,24 @@
 package cbit.vcell.export.server.datacontainer;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import javax.annotation.Nonnull;
+import java.io.IOException;
 import java.util.*;
 
 public class HybridDataContainerCollection implements ResultDataContainerCollection<ResultDataContainer> {
+    private final static Logger lg = LogManager.getLogger(HybridDataContainerCollection.class);
     private final AggregateDataSize usedMemoryTracker;
-    private Map<String, ResultDataContainer> containerMap;
-    private final Queue<String> memoryQueue; // Used to determine which containers to move to disk when maxing memory.
-    private final Set<String> onDiskDataContainers;
+    private Map<ResultDataContainerID, ResultDataContainer> containerMap;
+    private final Queue<ResultDataContainerID> memoryQueue; // Used to determine which containers to move to disk when maxing memory.
+    private final Set<ResultDataContainerID> onDiskDataContainers;
 
     /**
      * Builds a new HybridDataContainerCollection
      */
     public HybridDataContainerCollection(){
-        this.usedMemoryTracker = new AggregateDataSize();
-        this.containerMap = new HashMap<>();
-        this.memoryQueue = new PriorityQueue<>(new HybridDataContainerCollection.DataContainerComparator());
-        this.onDiskDataContainers = new HashSet<>();
+        this(new AggregateDataSize());
     }
 
     /**
@@ -28,6 +30,18 @@ public class HybridDataContainerCollection implements ResultDataContainerCollect
         this.addAll(c);
     }
 
+    public HybridDataContainerCollection(AggregateDataSize existingTracker){
+        this.usedMemoryTracker = existingTracker;
+        this.containerMap = new HashMap<>();
+        this.memoryQueue = new PriorityQueue<>(new HybridDataContainerCollection.DataContainerComparator());
+        this.onDiskDataContainers = new HashSet<>();
+    }
+
+    public HybridDataContainerCollection(Collection<? extends ResultDataContainer> c, AggregateDataSize existingTracker){
+        this(existingTracker);
+        this.addAll(c);
+    }
+
 
     private void prepareMemory(int bytes){
         while (this.usedMemoryTracker.hasNoMoreRoomFor(bytes)){
@@ -36,11 +50,25 @@ public class HybridDataContainerCollection implements ResultDataContainerCollect
     }
 
     private void moveOneContainerToDisk(){
-        String containerKey = this.memoryQueue.remove();
-        ResultDataContainer movedContainer = this.containerMap.remove(containerKey); // TODO: Call the converter
-        this.usedMemoryTracker.decreaseDataAmount(movedContainer.getDataSize());
-        this.onDiskDataContainers.add(containerKey);
-        this.containerMap.put(containerKey, movedContainer);
+        ResultDataContainerID containerKey = this.memoryQueue.remove();
+        ResultDataContainer containerToMove = this.containerMap.remove(containerKey);
+        if (containerToMove == null){
+            throw new RuntimeException("Null container found (possibly because of recursion)");
+        }
+        if (!(containerToMove instanceof InMemoryDataContainer inMemoryContainerToMove)){
+            throw new RuntimeException("Non-in-memory container retrieved!");
+        }
+
+        try {
+            ResultDataContainer movedContainer = DataContainerConverter.convert(inMemoryContainerToMove);
+            this.onDiskDataContainers.add(containerKey);
+            this.containerMap.put(containerKey, movedContainer);
+        } catch (IOException e) {
+            lg.warn("Unable to convert in-memory data to on-disk data; attempting next best option");
+            this.moveOneContainerToDisk(); // Recursive call
+            this.add(inMemoryContainerToMove);
+        }
+        this.usedMemoryTracker.decreaseDataAmount(inMemoryContainerToMove.getDataSize());
     }
 
 
@@ -73,9 +101,9 @@ public class HybridDataContainerCollection implements ResultDataContainerCollect
      */
     @Override
     public boolean contains(Object o) {
-        if (o == null) return false;
-        if (!(o instanceof ResultDataContainer container)) return false;
-        return this.containerMap.containsValue(container); // TODO: Change to key based for better runtime
+        return o instanceof ResultDataContainer container
+                && this.containerMap.containsValue(container);
+        // TODO: Change to key based for better runtime
     }
 
     /**
@@ -120,14 +148,25 @@ public class HybridDataContainerCollection implements ResultDataContainerCollect
      */
     @Override
     public boolean add(ResultDataContainer dataContainer) {
-        String dataKey = ""; // TODO: Determine how to generate keys
+        ResultDataContainerID dataKey = dataContainer.getId();
         if (this.containerMap.containsKey(dataKey)) return false;
-        this.prepareMemory(dataContainer.getDataSize());
-        this.containerMap.put(dataKey, dataContainer);
         // TODO: Replace below with enhanced pattern matching switch in Java21+
-        if (dataContainer instanceof InMemoryDataContainer) return this.memoryQueue.add(dataKey);
-        if (dataContainer instanceof FileDataContainer) return this.onDiskDataContainers.add(dataKey);
+        if (dataContainer instanceof InMemoryDataContainer inMemoryDataContainer)
+            return this.add(dataKey, inMemoryDataContainer);
+        if (dataContainer instanceof FileDataContainer fileDataContainer)
+            return this.add(dataKey, fileDataContainer);
         throw new RuntimeException("Unexpected type of dataContainer was added!");
+    }
+
+    private boolean add(ResultDataContainerID dataId, InMemoryDataContainer dataContainer){
+        this.prepareMemory(dataContainer.getDataSize());
+        this.containerMap.put(dataId, dataContainer);
+        return this.memoryQueue.add(dataId);
+    }
+
+    private boolean add(ResultDataContainerID dataId, FileDataContainer dataContainer){
+        this.containerMap.put(dataId, dataContainer);
+        return this.onDiskDataContainers.add(dataId);
     }
 
     /**
@@ -137,7 +176,12 @@ public class HybridDataContainerCollection implements ResultDataContainerCollect
      */
     @Override
     public boolean remove(Object o) {
-        String dataKey = ""; // TODO: Determine how to generate keys
+        ResultDataContainerID dataKey;
+        if (o instanceof ResultDataContainer dataContainer)
+            dataKey = dataContainer.getId();
+        else if (o instanceof ResultDataContainerID)
+            dataKey = (ResultDataContainerID) o;
+        else return false;
         if (!this.containerMap.containsKey(dataKey)) return false;
         ResultDataContainer container = this.containerMap.get(dataKey);
         this.usedMemoryTracker.decreaseDataAmount(container.getDataSize());
@@ -188,17 +232,14 @@ public class HybridDataContainerCollection implements ResultDataContainerCollect
      */
     @Override
     public boolean retainAll(Collection<?> c) {
-        Map<String, ResultDataContainer> newContainerMap = new HashMap<>();
+        Map<ResultDataContainerID, ResultDataContainer> newContainerMap = new HashMap<>();
         long sizeSum = 0;
         for (Object o : c){
-            if (!this.contains(o)) continue;
-            String dataKey = ""; // TODO: Determine how to generate keys
-            ResultDataContainer container = (ResultDataContainer)o;
-            newContainerMap.put(dataKey, container);
-            sizeSum += container.getDataSize();
+            if (!(o instanceof ResultDataContainer dataContainer) || !this.contains(dataContainer)) continue;
+            newContainerMap.put(dataContainer.getId(), dataContainer);
+            sizeSum += dataContainer.getDataSize();
         }
-        if (newContainerMap.size() == this.containerMap.size())
-            return false;
+        if (newContainerMap.size() == this.containerMap.size()) return false;
         this.usedMemoryTracker.resetTo(sizeSum);
         this.onDiskDataContainers.retainAll(newContainerMap.keySet());
         this.memoryQueue.retainAll(newContainerMap.keySet());
@@ -211,6 +252,8 @@ public class HybridDataContainerCollection implements ResultDataContainerCollect
      */
     @Override
     public void clear() {
+        for (var key : this.onDiskDataContainers)
+            if (this.containerMap.get(key) instanceof FileDataContainer fdc) fdc.deleteFile();
         this.usedMemoryTracker.reset();
         this.containerMap.clear();
         this.memoryQueue.clear();
@@ -220,7 +263,7 @@ public class HybridDataContainerCollection implements ResultDataContainerCollect
     /*  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *\
     * The Comparator defined below this comment is for the purposes of creating a better PriorityQueue<>   *
     \*  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  */
-    private class DataContainerComparator implements Comparator<String>{
+    private class DataContainerComparator implements Comparator<ResultDataContainerID>{
 
         /**
          * Compares its two arguments for order.  Returns a negative integer,
@@ -257,14 +300,16 @@ public class HybridDataContainerCollection implements ResultDataContainerCollect
          * imposes orderings that are inconsistent with equals."
          */
         @Override
-        public int compare(String o1, String o2) {
+        public int compare(ResultDataContainerID o1, ResultDataContainerID o2) {
             // It would take a decent amount of work to modify ResultDataContainers to have time stamps,
             // let alone access frequencies, so rather than an LRU/LFU caching algorithm,
             // we're going with largest-priority. That said, TODO: change to LRU/LFU caching
-            if (containerMap.containsKey(o1)) throw new IllegalArgumentException("`" + o1 + "` is not a valid key.");
-            if (containerMap.containsKey(o2)) throw new IllegalArgumentException("`" + o2 + "` is not a valid key.");
-            ResultDataContainer container1 = containerMap.get(o1);
-            ResultDataContainer container2 = containerMap.get(o2);
+            if (!HybridDataContainerCollection.this.containerMap.containsKey(o1))
+                throw new IllegalArgumentException("`" + o1 + "` is not a valid key.");
+            if (!HybridDataContainerCollection.this.containerMap.containsKey(o2))
+                throw new IllegalArgumentException("`" + o2 + "` is not a valid key.");
+            ResultDataContainer container1 = HybridDataContainerCollection.this.containerMap.get(o1);
+            ResultDataContainer container2 = HybridDataContainerCollection.this.containerMap.get(o2);
             // We want larger sizes to mean higher priority. A PriorityQueue prioritizes "smaller" elements
             return Long.signum(container2.getDataSize() - container1.getDataSize());
         }
