@@ -196,7 +196,8 @@ public class SpringSaLaDExporter {
 			/* ********* WRITE THE SPATIAL INFORMATION **********/
 			sb.append("*** " + SPATIAL_INFORMATION + " ***");
 			sb.append("\n");
-			geometryContext.writeData(sb);	// TODO: need geometry
+
+			geometrySpec.writeData(sb);	// TODO: need geometry
 			sb.append("\n");
 
 			/* ******* WRITE THE SPECIES INFORMATION ***********/
