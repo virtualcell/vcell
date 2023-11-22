@@ -29,7 +29,9 @@ public class OracleAgroalConnectionFactory implements ConnectionFactory {
 
     @Override
     public Connection getConnection(Object lock) throws SQLException {
-        return ds.getConnection();
+        Connection conn = ds.getConnection();
+        conn.setAutoCommit(false);
+        return conn;
     }
 
     @Override
