@@ -1,4 +1,4 @@
-package org.vcell.rest.auth;
+package org.vcell.restq.auth;
 
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;

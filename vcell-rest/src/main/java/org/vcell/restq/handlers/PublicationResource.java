@@ -1,12 +1,12 @@
-package org.vcell.rest.handlers;
+package org.vcell.restq.handlers;
 
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import io.quarkus.logging.Log;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
-import org.vcell.rest.auth.AuthUtils;
-import org.vcell.rest.db.PublicationService;
-import org.vcell.rest.models.Publication;
+import org.vcell.restq.auth.AuthUtils;
+import org.vcell.restq.db.PublicationService;
+import org.vcell.restq.models.Publication;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.PermissionException;

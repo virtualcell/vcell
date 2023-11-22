@@ -1,12 +1,12 @@
-package org.vcell.rest;
+package org.vcell.restq;
 
 import cbit.vcell.resource.PropertyLoader;
 import io.quarkus.runtime.Quarkus;
 import io.quarkus.runtime.QuarkusApplication;
 import io.quarkus.runtime.annotations.QuarkusMain;
 import org.vcell.db.DatabaseService;
-import org.vcell.rest.config.CDIVCellConfigProvider;
-import org.vcell.rest.db.OracleAgroalConnectionFactory;
+import org.vcell.restq.config.CDIVCellConfigProvider;
+import org.vcell.restq.db.OracleAgroalConnectionFactory;
 
 @QuarkusMain
 public class Main {

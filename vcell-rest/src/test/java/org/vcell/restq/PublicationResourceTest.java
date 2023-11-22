@@ -1,4 +1,4 @@
-package org.vcell.rest;
+package org.vcell.restq;
 
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -8,11 +8,11 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.core.MediaType;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.vcell.rest.auth.AuthUtils;
-import org.vcell.rest.db.PublicationService;
-import org.vcell.rest.models.BiomodelRef;
-import org.vcell.rest.models.MathmodelRef;
-import org.vcell.rest.models.Publication;
+import org.vcell.restq.auth.AuthUtils;
+import org.vcell.restq.db.PublicationService;
+import org.vcell.restq.models.BiomodelRef;
+import org.vcell.restq.models.MathmodelRef;
+import org.vcell.restq.models.Publication;
 import org.vcell.util.DataAccessException;
 
 import java.sql.SQLException;
