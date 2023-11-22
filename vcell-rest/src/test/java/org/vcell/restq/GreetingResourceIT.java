@@ -1,4 +1,4 @@
-package org.vcell.rest;
+package org.vcell.restq;
 
 import io.quarkus.test.junit.QuarkusIntegrationTest;
 

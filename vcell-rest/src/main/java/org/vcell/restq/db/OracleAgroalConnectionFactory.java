@@ -1,4 +1,4 @@
-package org.vcell.rest.db;
+package org.vcell.restq.db;
 
 import io.agroal.api.AgroalDataSource;
 import jakarta.enterprise.context.ApplicationScoped;

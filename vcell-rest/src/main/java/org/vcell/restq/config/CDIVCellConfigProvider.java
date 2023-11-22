@@ -1,4 +1,4 @@
-package org.vcell.rest.config;
+package org.vcell.restq.config;
 
 import cbit.vcell.resource.PropertyLoader;
 import org.eclipse.microprofile.config.ConfigProvider;

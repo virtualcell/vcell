@@ -1,4 +1,4 @@
-package org.vcell.rest.models;
+package org.vcell.restq.models;
 
 import cbit.vcell.modeldb.MathModelReferenceRep;
 import org.vcell.util.document.KeyValue;

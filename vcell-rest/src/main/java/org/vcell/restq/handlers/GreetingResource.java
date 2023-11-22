@@ -1,4 +1,4 @@
-package org.vcell.rest.handlers;
+package org.vcell.restq.handlers;
 
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
