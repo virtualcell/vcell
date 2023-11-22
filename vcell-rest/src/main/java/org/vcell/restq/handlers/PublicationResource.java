@@ -2,6 +2,7 @@ package org.vcell.restq.handlers;
 
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import io.quarkus.logging.Log;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import org.vcell.restq.auth.AuthUtils;
@@ -15,7 +16,7 @@ import org.vcell.util.document.User;
 
 import java.sql.SQLException;
 
-@Path("/publications")
+@Path("/api/publications")
 public class PublicationResource {
 
     private final PublicationService publicationService;
@@ -44,6 +45,7 @@ public class PublicationResource {
 
     @Produces("application/json")
     @Consumes("application/json")
+    @RolesAllowed("admin")
     @POST
     public String add(Publication publication) {
         User vcellUser = AuthUtils.PUBLICATION_USER;
@@ -60,6 +62,7 @@ public class PublicationResource {
 
 
     @Consumes("application/json")
+    @RolesAllowed("admin")
     @DELETE
     public void delete(Long publicationID) {
         User vcellUser = AuthUtils.PUBLICATION_USER;

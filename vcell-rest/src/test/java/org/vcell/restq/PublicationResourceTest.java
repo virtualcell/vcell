@@ -4,6 +4,7 @@ import cbit.vcell.modeldb.DatabaseServerImpl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.keycloak.client.KeycloakTestClient;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.MediaType;
 import org.junit.jupiter.api.Assertions;
@@ -27,12 +28,15 @@ public class PublicationResourceTest {
 
     @Inject
     public ObjectMapper objectMapper;
-
     @Inject
     PublicationService publicationService;
 
+    KeycloakTestClient keycloakClient = new KeycloakTestClient();
+
     @Test
     public void testAddListRemove() throws JsonProcessingException, SQLException, DataAccessException {
+        String pubuser = "alice";
+        String nonpubuser = "bob";
         // create a test publication using org.vcell.rest.model.Publication and add it to the list
         Publication publication1 = new Publication(
                 null,
@@ -53,17 +57,35 @@ public class PublicationResourceTest {
 
         // list publications should be empty initially
         given()
-                .when().get("/publications")
+                .when().get("/api/publications")
                 .then()
                 .statusCode(200)
                 .body("$.size()", is(0));
 
-        // insert publication1
+        // insert publication1 as no user
         given()
                 .body(publication1_json)
                 .header("Content-Type", MediaType.APPLICATION_JSON)
                 .when()
-                .post("/publications")
+                .post("/api/publications")
+                .then()
+                .statusCode(401);
+
+        // insert publication1 as nonpubuser (doesn't have proper permission)
+        given().auth().oauth2(keycloakClient.getAccessToken(nonpubuser))
+                .body(publication1_json)
+                .header("Content-Type", MediaType.APPLICATION_JSON)
+                .when()
+                .post("/api/publications")
+                .then()
+                .statusCode(403);
+
+        // insert publication1 as user pubuser (has proper permission)
+        given().auth().oauth2(keycloakClient.getAccessToken(pubuser))
+                .body(publication1_json)
+                .header("Content-Type", MediaType.APPLICATION_JSON)
+                .when()
+                .post("/api/publications")
                 .then()
                 .statusCode(200);
 
@@ -73,7 +95,7 @@ public class PublicationResourceTest {
 
         // list publications, should return list with publication1
         given()
-                .when().get("/publications")
+                .when().get("/api/publications")
                 .then()
                 .statusCode(200)
                 .body("$.size()", is(1))
@@ -87,18 +109,36 @@ public class PublicationResourceTest {
                 .body("[0].url", is("url"))
                 .body("[0].wittid", is(0));
 
-        // remove publication1
+        // remove publication1 as basicuser (doesn't have permission)
+        given().auth().oauth2(keycloakClient.getAccessToken(nonpubuser))
+                .body(pubKey_json)
+                .header("Content-Type", MediaType.APPLICATION_JSON)
+                .when()
+                .delete("/api/publications")
+                .then()
+                .statusCode(403);
+
+        // remove publication1 no user
         given()
                 .body(pubKey_json)
                 .header("Content-Type", MediaType.APPLICATION_JSON)
                 .when()
-                .delete("/publications")
+                .delete("/api/publications")
+                .then()
+                .statusCode(401);
+
+        // remove publication1 as pubuser (does have permission)
+        given().auth().oauth2(keycloakClient.getAccessToken(pubuser))
+                .body(pubKey_json)
+                .header("Content-Type", MediaType.APPLICATION_JSON)
+                .when()
+                .delete("/api/publications")
                 .then()
                 .statusCode(204);
 
         // verify that list publications is empty
         given()
-                .when().get("/publications")
+                .when().get("/api/publications")
                 .then()
                 .statusCode(200)
                 .body("$.size()", is(0));
