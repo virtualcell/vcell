@@ -68,13 +68,12 @@ public class PublicationResource {
             if (numRecordsDeleted != 1) {
                 throw new ObjectNotFoundException("failed to delete publication, record not found");
             }
-            return;
         } catch (PermissionException ee) {
             Log.error(ee);
             throw new RuntimeException("not authorized", ee);
         } catch (DataAccessException | SQLException e) {
             Log.error(e);
-            throw new RuntimeException("failed to delete biomodels from VCell Database : " + e.getMessage(), e);
+            throw new RuntimeException("failed to delete publication from VCell Database : " + e.getMessage(), e);
         }
     }
 }
