@@ -5,28 +5,28 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
 public record MathmodelRef(
-        String mmKey,
+        Long mmKey,
         String name,
         String ownerName,
-        String ownerKey,
-        String versionFlag) {
+        Long ownerKey,
+        Integer versionFlag) {
 
     public static MathmodelRef fromMathModelReferenceRep(MathModelReferenceRep mathModelReferenceRep) {
         return new MathmodelRef(
-                mathModelReferenceRep.getMmKey().toString(),
+                Long.parseLong(mathModelReferenceRep.getMmKey().toString()),
                 mathModelReferenceRep.getName(),
                 mathModelReferenceRep.getOwner().getName(),
-                mathModelReferenceRep.getOwner().getID().toString(),
-                mathModelReferenceRep.getVersionFlag().toString()
+                Long.parseLong(mathModelReferenceRep.getOwner().getID().toString()),
+                mathModelReferenceRep.getVersionFlag().intValue()
         );
     }
 
     public MathModelReferenceRep toMathModelReferenceRep() {
         return new MathModelReferenceRep(
-                new KeyValue(mmKey),
+                mmKey!=null ? new KeyValue(Long.toString(mmKey)) : null,
                 name,
-                new User(ownerName, new KeyValue(ownerKey)),
-                Long.parseLong(versionFlag)
+                new User(ownerName, new KeyValue(Long.toString(ownerKey))),
+                versionFlag!=null ? versionFlag.longValue() : null
         );
     }
 }

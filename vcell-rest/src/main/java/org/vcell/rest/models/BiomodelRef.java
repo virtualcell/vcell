@@ -5,28 +5,28 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
 public record BiomodelRef(
-        String bmKey,
+        Long bmKey,
         String name,
         String ownerName,
-        String ownerKey,
-        Long versionFlag) {
+        Long ownerKey,
+        Integer versionFlag) {
 
     public static BiomodelRef fromBioModelReferenceRep(BioModelReferenceRep bioModelReferenceRep) {
         return new BiomodelRef(
-                bioModelReferenceRep.getBmKey().toString(),
+                Long.parseLong(bioModelReferenceRep.getBmKey().toString()),
                 bioModelReferenceRep.getName(),
                 bioModelReferenceRep.getOwner().getName(),
-                bioModelReferenceRep.getOwner().getID().toString(),
-                bioModelReferenceRep.getVersionFlag()
+                Long.parseLong(bioModelReferenceRep.getOwner().getID().toString()),
+                bioModelReferenceRep.getVersionFlag().intValue()
         );
     }
 
     public BioModelReferenceRep toBioModelReferenceRep() {
         return new BioModelReferenceRep(
-                new KeyValue(bmKey),
+                bmKey!=null ? new KeyValue(Long.toString(bmKey)) : null,
                 name,
-                new User(ownerName, new KeyValue(ownerKey)),
-                versionFlag
+                new User(ownerName, new KeyValue(Long.toString(ownerKey))),
+                versionFlag!=null ? versionFlag.longValue() : null
         );
     }
 }
