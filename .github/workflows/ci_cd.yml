@@ -87,7 +87,7 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        test-group: [Fast, MathGen_IT, SBML_IT, SEDML_SBML_IT, SEDML_VCML_IT, BSTS_IT]
+        test-group: [Fast, MathGen_IT, SBML_IT, SEDML_SBML_IT, SEDML_VCML_IT, BSTS_IT, Quarkus]
       fail-fast: false
     if: ${{ github.event_name == 'push' }}
     name: CI-Test-group-${{ matrix.test-group }}
@@ -143,12 +143,18 @@ jobs:
           java-version: '17'
           cache: 'maven'
 
-      - name: Add Linux dependencies
+      - name: Maven Build and run Test group ${{ matrix.test-group }}
         shell: bash
         run: |
           mvn -version
           java -version
-          mvn --batch-mode clean install dependency:copy-dependencies -Dgroups="${{ matrix.test-group }}"
+          if [ "${{ matrix.test-group }}" == "Quarkus" ]; then
+            mvn --batch-mode clean install dependency:copy-dependencies -DskipTests=true
+            cd vcell-rest
+            mvn test
+          else
+            mvn --batch-mode clean install dependency:copy-dependencies -Dgroups="${{ matrix.test-group }}"
+          fi
 
 #      - name: Setup tmate session
 #        uses: mxschmitt/action-tmate@v3

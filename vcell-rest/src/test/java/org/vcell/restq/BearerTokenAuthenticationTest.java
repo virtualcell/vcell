@@ -3,9 +3,11 @@ package org.vcell.restq;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.keycloak.client.KeycloakTestClient;
 import io.restassured.RestAssured;
+import org.junit.experimental.categories.Category;
 import org.junit.jupiter.api.Test;
 
 @QuarkusTest
+@Category(org.vcell.test.Quarkus.class)
 public class BearerTokenAuthenticationTest {
 
     KeycloakTestClient keycloakClient = new KeycloakTestClient();
