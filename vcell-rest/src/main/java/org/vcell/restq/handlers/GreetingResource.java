@@ -1,5 +1,11 @@
 package org.vcell.restq.handlers;
 
+import io.quarkus.qute.CheckedTemplate;
+import io.quarkus.qute.Location;
+import io.quarkus.qute.Template;
+import io.quarkus.qute.TemplateInstance;
+import io.quarkus.security.identity.SecurityIdentity;
+import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
@@ -8,9 +14,21 @@ import jakarta.ws.rs.core.MediaType;
 @Path("/api/hello")
 public class GreetingResource {
 
+    @CheckedTemplate
+    public static class Templates {
+        public static native TemplateInstance hello(String name);
+    }
+
+    @Inject
+    SecurityIdentity identity;
+
     @GET
     @Produces(MediaType.TEXT_PLAIN)
-    public String hello() {
-        return "Hello from RESTEasy Reactive";
+    public TemplateInstance hello() {
+        String userName = "anonymous";
+        if (!identity.isAnonymous()) {
+            userName = identity.getPrincipal().getName();
+        }
+        return Templates.hello(userName);
     }
 }
