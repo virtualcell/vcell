@@ -7,7 +7,6 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.keycloak.client.KeycloakTestClient;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.MediaType;
-import org.junit.experimental.categories.Category;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.vcell.restq.auth.AuthUtils;
@@ -25,7 +24,6 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 
 @QuarkusTest
-@Category(org.vcell.test.Quarkus.class)
 public class PublicationResourceTest {
 
     @Inject
