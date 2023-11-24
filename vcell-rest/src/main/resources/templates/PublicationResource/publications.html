@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Publications</title>
+</head>
+<body>
+<h1>Publications</h1>
+{!{#for publication in publications}!}
+{!<div>!}
+{!id: {publication.pubKey},!}
+{!title: {publication.title},!}
+{!year: {publication.year},!}
+{!authors: {publication.authors},!}
+{!url: {publication.url}!}
+{!</div>!}
+{!{/for}!}
+<table border='1'>
+    <tr>
+        <th>pub&nbsp;ids</th>
+        <th>pub&nbsp;title</th>
+        <th>pub&nbsp;year</th>
+        <th>citation</th>
+        <th>authors</th>
+        <th>pubmed id</th>
+        <th>endnote id</th>
+        <th>witt id</th>
+        <th>biomodels</th>
+        <th>mathmodels</th>
+    </tr>
+    {#for pub in publications}
+        <tr>
+        <td>
+            {#if pub.pubKey}
+                <a href="/api/publications/{pub.pubKey}" > {pub.pubKey} </a>
+                {!{#else}!}
+            {/if}
+        </td>
+        <td>{pub.title ?: ""}</td>
+        <td>{pub.year ?: ""}</td>
+        <td>{pub.citation ?: ""}</td>
+        <td>{#if pub.authors}{#for author in pub.authors} {author ?: ""}; {/for}{/if}</td>
+        <td>{pub.pubmedid ?: ""}</td>
+        <td>{pub.endnoteid ?: ""}</td>
+        <td>{pub.wittid ?: ""}</td>
+        {!<td>{#if pub.biomodels}{#for biomodel in pub.biomodels}<a href="./biomodel/{biomodel.bmKey}'>{biomodel.name}</a>&nbsp;&nbsp; {/for}{#else}--{/if}</td>!}
+
+
+        <td>
+            {#if pub.biomodelRefs}
+                <table>
+                {#for biomodelRef in pub.biomodelRefs}
+                    <tr>
+                    <td>
+                    &nbsp;<a href='/biomodel/${biomodelRef.bmKey}'>${biomodelRef.name}</a>
+                    </td>
+                    </tr>
+                {/for}
+                </table>
+                <br/>
+
+            {#else}
+                --
+            {/if}
+        </td>
+
+        <td>
+        {#if pub.mathmodelRefs}
+            {#for mathmodelRef in pub.mathmodelRefs}
+                &nbsp;{mathmodelRef.name}
+            {/for}
+            <br/>
+
+        {#else}
+            --
+        {/if}
+        </td>
+
+
+        </tr>
+    {/for}
+</table>
+
+</body>
+</html>
