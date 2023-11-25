@@ -46,8 +46,14 @@ public record Publication(
     }
 
     public PublicationRep toPublicationRep() {
-        BioModelReferenceRep[] bioModelReferenceReps = Arrays.stream(this.biomodelRefs).map(b -> b.toBioModelReferenceRep()).toArray(BioModelReferenceRep[]::new);
-        MathModelReferenceRep[] mathModelReferenceReps = Arrays.stream(this.mathmodelRefs).map(m -> m.toMathModelReferenceRep()).toArray(MathModelReferenceRep[]::new);
+        BioModelReferenceRep[] bioModelReferenceReps = new BioModelReferenceRep[0];
+        if (this.biomodelRefs!=null) {
+            bioModelReferenceReps = Arrays.stream(this.biomodelRefs).map(b -> b.toBioModelReferenceRep()).toArray(BioModelReferenceRep[]::new);
+        }
+        MathModelReferenceRep[] mathModelReferenceReps = new MathModelReferenceRep[0];
+        if (this.mathmodelRefs!=null){
+            mathModelReferenceReps = Arrays.stream(this.mathmodelRefs).map(m -> m.toMathModelReferenceRep()).toArray(MathModelReferenceRep[]::new);
+        }
         return new PublicationRep(
                 pubKey!=null ? new KeyValue(Long.toString(pubKey)) : null,
                 title,
