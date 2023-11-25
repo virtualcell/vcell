@@ -1,0 +1,56 @@
+# configuration for openapi CLI to generate Java client
+# see https://openapi-generator.tech/docs/customization/
+#
+
+globalProperties:
+  # config options specific to the openapi-generator CLI
+  # see https://openapi-generator.tech/docs/customization/
+  debugOpenAPI: false
+  debugModels: false
+  debugOperations: false
+  debugSupportingFiles: false
+  generateAliasAsModel: false
+  org.openapitools.codegen.utils.oncelogger.enabled: false
+
+additionalProperties:
+  # config options specific to the java generator
+  # see https://openapi-generator.tech/docs/generators/java/
+
+  groupId: org.vcell
+  artifactId: vcell-restclient
+  artifactVersion: 1.0.0
+  artifactUrl: https://github.com/virtualcell/vcell-restclient
+
+  parentGroupId: org.vcell
+  parentArtifactId: vcell-pom
+  parentVersion: 0.0.1-SNAPSHOT
+
+  apiPackage: org.vcell.restclient.api
+  invokerPackage: org.vcell.restclient
+  modelPackage: org.vcell.restclient.model
+  snapshotVersion: true # or false to use a release version
+
+  developerEmail: schaff@uchc.edu
+  developerName: Jim Schaff
+  developerOrganization: Center for Cell Analysis and Modeling
+  developerOrganizationUrl: https://vcell.org
+  licenseName: MIT License
+  licenseUrl: https://opensource.org/licenses/MIT
+  scmUrl: https://github.com/virtualcell/vcell.git
+
+#  library: okhttp-gson
+  library: native
+  containerDefaultToNull: false # default
+  dateLibrary: java8 # default
+  disallowAdditionalPropertiesIfNotPresent: true # default, but not compliant with OAS and JSON schema specifications
+  enumUnknownDefaultCase: false # default
+  hideGenerationTimestamp: true
+  legacyDiscriminatorBehavior: false # assuming Java generator has better support for discriminators
+  serializableModel: false # default
+#  serializationLibrary: gson # default for okhttp-gson (other options jsonb and jackson)
+  openApiNullable: false # default
+  useOneOfDiscriminatorLookup: false # default
+  useOneOfInterfaces: false # default
+  withAWSV4Signature: false # default
+  withXml: false # default (whether to include support for application/xml content type and include XML annotations in the model) ... is this needed for VCML, SBML?
+

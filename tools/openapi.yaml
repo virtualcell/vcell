@@ -1,0 +1,197 @@
+---
+openapi: 3.0.3
+info:
+  title: VCell API (development)
+  description: VCell API
+  termsOfService: Your terms of service here
+  contact:
+    name: VCell API Support
+    url: http://exampleurl.com/contact
+    email: vcell_support@uchc.com
+  license:
+    name: MIT
+    url: http://opensource.org/licenses/MIT
+  version: 1.0.1
+servers:
+- url: http://localhost:9000
+  description: Auto generated value
+- url: http://0.0.0.0:9000
+  description: Auto generated value
+paths:
+  /api/admin:
+    get:
+      tags:
+      - Admin Resource
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: string
+        "401":
+          description: Not Authorized
+        "403":
+          description: Not Allowed
+      security:
+      - OpenIDConnect:
+        - admin
+  /api/publications:
+    get:
+      tags:
+      - Publication Resource
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Publication'
+    post:
+      tags:
+      - Publication Resource
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Publication'
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: string
+        "401":
+          description: Not Authorized
+        "403":
+          description: Not Allowed
+      security:
+      - OpenIDConnect:
+        - admin
+    delete:
+      tags:
+      - Publication Resource
+      requestBody:
+        content:
+          application/json:
+            schema:
+              format: int64
+              type: integer
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Not Authorized
+        "403":
+          description: Not Allowed
+      security:
+      - OpenIDConnect:
+        - admin
+  /api/users/me:
+    get:
+      tags:
+      - Users Resource
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        "401":
+          description: Not Authorized
+        "403":
+          description: Not Allowed
+      security:
+      - OpenIDConnect:
+        - user
+components:
+  schemas:
+    BiomodelRef:
+      type: object
+      properties:
+        bmKey:
+          format: int64
+          type: integer
+        name:
+          type: string
+        ownerName:
+          type: string
+        ownerKey:
+          format: int64
+          type: integer
+        versionFlag:
+          format: int32
+          type: integer
+    Date:
+      format: date
+      type: string
+      example: 2022-03-10
+    MathmodelRef:
+      type: object
+      properties:
+        mmKey:
+          format: int64
+          type: integer
+        name:
+          type: string
+        ownerName:
+          type: string
+        ownerKey:
+          format: int64
+          type: integer
+        versionFlag:
+          format: int32
+          type: integer
+    Publication:
+      type: object
+      properties:
+        pubKey:
+          format: int64
+          type: integer
+        title:
+          type: string
+        authors:
+          type: array
+          items:
+            type: string
+        year:
+          format: int32
+          type: integer
+        citation:
+          type: string
+        pubmedid:
+          type: string
+        doi:
+          type: string
+        endnoteid:
+          format: int32
+          type: integer
+        url:
+          type: string
+        wittid:
+          format: int32
+          type: integer
+        biomodelRefs:
+          type: array
+          items:
+            $ref: '#/components/schemas/BiomodelRef'
+        mathmodelRefs:
+          type: array
+          items:
+            $ref: '#/components/schemas/MathmodelRef'
+        date:
+          $ref: '#/components/schemas/Date'
+    User:
+      type: object
+      properties:
+        userName:
+          type: string
+  securitySchemes:
+    OpenIDConnect:
+      type: openIdConnect
+      description: OpenID Connect
+      openIdConnectUrl: http://localhost:55312/auth/realms/quarkus/.well-known/openid-configuration

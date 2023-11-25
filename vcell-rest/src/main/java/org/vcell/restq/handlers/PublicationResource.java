@@ -8,6 +8,7 @@ import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
+import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.vcell.restq.auth.AuthUtils;
 import org.vcell.restq.db.PublicationService;
 import org.vcell.restq.models.Publication;
@@ -37,6 +38,7 @@ public class PublicationResource {
 
     @GET
     @Path("{id}")
+    @Operation(hidden=true)
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance find(@PathParam("id") Long publicationID) throws SQLException, DataAccessException {
        return Templates.publication(publicationService.getPublication(new KeyValue(publicationID.toString()), AuthUtils.PUBLICATION_USER));
@@ -59,6 +61,7 @@ public class PublicationResource {
     }
 
     @GET
+    @Operation(hidden=true)
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance get_list_html() {
         // look into using Oso for Authorization (future).

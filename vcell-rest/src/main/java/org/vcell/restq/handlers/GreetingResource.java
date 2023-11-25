@@ -10,6 +10,7 @@ import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
+import org.eclipse.microprofile.openapi.annotations.Operation;
 
 @Path("/api/hello")
 public class GreetingResource {
@@ -23,6 +24,7 @@ public class GreetingResource {
     SecurityIdentity identity;
 
     @GET
+    @Operation(hidden=true)
     @Produces(MediaType.TEXT_PLAIN)
     public TemplateInstance hello() {
         String userName = "anonymous";
