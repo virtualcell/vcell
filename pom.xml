@@ -66,7 +66,8 @@
 		<module>vcell-cli</module>
 		<module>vcell-web</module>
 		<module>vcell-rest</module>
-	</modules>
+        <module>vcell-restclient</module>
+    </modules>
 
 	<scm>
 		<connection>scm:git:https://github.com/virtualcell/vcell</connection>
@@ -121,9 +122,9 @@
 		<imagej2.version>2.3.0</imagej2.version>
 		<imagej.version>${imagej2.version}</imagej.version>
 		<itext.version>1.4.8</itext.version>
-		<jackson-annotations.version>2.14.1</jackson-annotations.version>
-		<jackson-core.version>2.14.1</jackson-core.version>
-		<jackson-databind.version>2.14.1</jackson-databind.version>
+		<jackson-annotations.version>2.15.2</jackson-annotations.version>
+		<jackson-core.version>2.15.2</jackson-core.version>
+		<jackson-databind.version>2.15.2</jackson-databind.version>
 		<jama.version>1.0.3</jama.version>
 		<jaxb-api.version>2.3.0</jaxb-api.version>
 		<jaxb-core.version>2.3.0</jaxb-core.version>

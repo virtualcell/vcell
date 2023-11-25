@@ -1,0 +1,256 @@
+openapi: 3.0.3
+info:
+  contact:
+    email: vcell_support@uchc.com
+    name: VCell API Support
+    url: http://exampleurl.com/contact
+  description: VCell API
+  license:
+    name: MIT
+    url: http://opensource.org/licenses/MIT
+  termsOfService: Your terms of service here
+  title: VCell API (development)
+  version: 1.0.1
+servers:
+- description: Auto generated value
+  url: http://localhost:9000
+- description: Auto generated value
+  url: http://0.0.0.0:9000
+paths:
+  /api/admin:
+    get:
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: string
+          description: OK
+        "401":
+          description: Not Authorized
+        "403":
+          description: Not Allowed
+      security:
+      - OpenIDConnect:
+        - admin
+      tags:
+      - Admin Resource
+      x-accepts: application/json
+  /api/publications:
+    delete:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              format: int64
+              type: integer
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Not Authorized
+        "403":
+          description: Not Allowed
+      security:
+      - OpenIDConnect:
+        - admin
+      tags:
+      - Publication Resource
+      x-content-type: application/json
+      x-accepts: application/json
+    get:
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Publication'
+                type: array
+          description: OK
+      tags:
+      - Publication Resource
+      x-accepts: application/json
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Publication'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: string
+          description: OK
+        "401":
+          description: Not Authorized
+        "403":
+          description: Not Allowed
+      security:
+      - OpenIDConnect:
+        - admin
+      tags:
+      - Publication Resource
+      x-content-type: application/json
+      x-accepts: application/json
+  /api/users/me:
+    get:
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: OK
+        "401":
+          description: Not Authorized
+        "403":
+          description: Not Allowed
+      security:
+      - OpenIDConnect:
+        - user
+      tags:
+      - Users Resource
+      x-accepts: application/json
+components:
+  schemas:
+    BiomodelRef:
+      example:
+        bmKey: 5
+        ownerName: ownerName
+        name: name
+        versionFlag: 7
+        ownerKey: 2
+      properties:
+        bmKey:
+          format: int64
+          type: integer
+        name:
+          type: string
+        ownerName:
+          type: string
+        ownerKey:
+          format: int64
+          type: integer
+        versionFlag:
+          format: int32
+          type: integer
+      type: object
+    Date:
+      example: 2022-03-10
+      format: date
+      type: string
+    MathmodelRef:
+      example:
+        ownerName: ownerName
+        name: name
+        versionFlag: 2
+        mmKey: 9
+        ownerKey: 3
+      properties:
+        mmKey:
+          format: int64
+          type: integer
+        name:
+          type: string
+        ownerName:
+          type: string
+        ownerKey:
+          format: int64
+          type: integer
+        versionFlag:
+          format: int32
+          type: integer
+      type: object
+    Publication:
+      example:
+        date: 2022-03-10T00:00:00.000+00:00
+        wittid: 5
+        year: 6
+        citation: citation
+        title: title
+        biomodelRefs:
+        - bmKey: 5
+          ownerName: ownerName
+          name: name
+          versionFlag: 7
+          ownerKey: 2
+        - bmKey: 5
+          ownerName: ownerName
+          name: name
+          versionFlag: 7
+          ownerKey: 2
+        pubmedid: pubmedid
+        url: url
+        mathmodelRefs:
+        - ownerName: ownerName
+          name: name
+          versionFlag: 2
+          mmKey: 9
+          ownerKey: 3
+        - ownerName: ownerName
+          name: name
+          versionFlag: 2
+          mmKey: 9
+          ownerKey: 3
+        pubKey: 0
+        authors:
+        - authors
+        - authors
+        doi: doi
+        endnoteid: 1
+      properties:
+        pubKey:
+          format: int64
+          type: integer
+        title:
+          type: string
+        authors:
+          items:
+            type: string
+          type: array
+        year:
+          format: int32
+          type: integer
+        citation:
+          type: string
+        pubmedid:
+          type: string
+        doi:
+          type: string
+        endnoteid:
+          format: int32
+          type: integer
+        url:
+          type: string
+        wittid:
+          format: int32
+          type: integer
+        biomodelRefs:
+          items:
+            $ref: '#/components/schemas/BiomodelRef'
+          type: array
+        mathmodelRefs:
+          items:
+            $ref: '#/components/schemas/MathmodelRef'
+          type: array
+        date:
+          example: 2022-03-10
+          format: date
+          type: string
+      type: object
+    User:
+      example:
+        userName: userName
+      properties:
+        userName:
+          type: string
+      type: object
+  securitySchemes:
+    OpenIDConnect:
+      description: OpenID Connect
+      openIdConnectUrl: http://localhost:55312/auth/realms/quarkus/.well-known/openid-configuration
+      type: openIdConnect
+
