@@ -86,6 +86,7 @@ public class VCellUtilityHub {
 
     private void startVCellCLI(){
         VCellUtilityHub.logManager = CLIRecordManager.getInstance();
+        System.setProperty("java.awt.headless", "true");
     }
 
     private void startVCellStandard(){

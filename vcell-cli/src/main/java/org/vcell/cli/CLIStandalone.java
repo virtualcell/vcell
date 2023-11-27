@@ -66,7 +66,7 @@ public class CLIStandalone {
         public User convert(String userString) {
             // expecting "userid:key" format
             String[] tokens = userString.split(":");
-            if (tokens == null || tokens.length != 2){
+            if (tokens.length != 2){
                 throw new RuntimeException("'"+userString+"' not in 'userid:userkey' format");
             }
             String userid = tokens[0];
