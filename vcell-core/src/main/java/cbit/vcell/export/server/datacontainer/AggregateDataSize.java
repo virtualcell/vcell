@@ -29,7 +29,7 @@ public class AggregateDataSize {
         this.amountOfData = initialSize;
     }
 
-    public boolean hasNoMoreRoomFor(int amount){
+    public boolean hasNoMoreRoomFor(long amount){
         return (this.amountOfData + amount) > MEMORY_LIMIT;
     }
 
@@ -45,11 +45,32 @@ public class AggregateDataSize {
     }
 
     /**
+     * Increases the size of allocation;
+     * @param increase the amount of bytes you're trying to increase by.
+     * @throws RuntimeException if the change would violate the maximum memory limit; use `hasEnoughRoomFor(long)`
+     * prior to calling this method
+     */
+    public void increaseDataAmount(long increase){
+        if (this.hasNoMoreRoomFor(increase)) throw new RuntimeException("Unavailable memory requested");
+        this.amountOfData += increase;
+    }
+
+    /**
      * Reduces the size of allocation;
      * @param decrease the amount of bytes you're trying to decrease by.
      * @throws RuntimeException if the change would violate the minimum memory limit (of '0' bytes).
      */
     public void decreaseDataAmount(int decrease){
+        if (this.hasNoMoreRoomFor(decrease)) throw new RuntimeException("Change would create \"negative\" memory");
+        this.amountOfData += decrease;
+    }
+
+    /**
+     * Reduces the size of allocation;
+     * @param decrease the amount of bytes you're trying to decrease by.
+     * @throws RuntimeException if the change would violate the minimum memory limit (of '0' bytes).
+     */
+    public void decreaseDataAmount(long decrease){
         if (this.hasNoMoreRoomFor(decrease)) throw new RuntimeException("Change would create \"negative\" memory");
         this.amountOfData += decrease;
     }

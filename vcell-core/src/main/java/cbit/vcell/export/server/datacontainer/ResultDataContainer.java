@@ -12,7 +12,7 @@ public interface ResultDataContainer {
 
     byte[] getDataBytes();
 
-    int getDataSize();
+    long getDataSize();
 
     ResultDataContainerID getId();
 }

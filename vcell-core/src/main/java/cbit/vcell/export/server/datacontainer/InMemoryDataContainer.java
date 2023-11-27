@@ -40,7 +40,7 @@ public class InMemoryDataContainer implements ResultDataContainer {
     }
 
     @Override
-    public int getDataSize() {
+    public long getDataSize() {
         return this.bytes.length;
     }
 

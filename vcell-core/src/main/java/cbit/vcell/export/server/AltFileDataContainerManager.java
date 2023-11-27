@@ -27,14 +27,14 @@ public class AltFileDataContainerManager {
 	private long aggregateDataSize = 0;
 	private static long AGGREGATE_DATA_SIZE_IN_MEMORY_LIMIT =
 			PropertyLoader.getLongProperty(PropertyLoader.exportMaxInMemoryLimit, 1024*1024*100);
-	
+
 	public class FileDataContainerID {
 		private final int id;
 		public FileDataContainerID (int id){
 			this.id = id;
 		}
 	}
-	
+
 	private class FileDataContainer {
 		File tempDataFile = null;
 		byte[] dataBytes = null;
@@ -96,12 +96,12 @@ public class AltFileDataContainerManager {
 
 		private void appendArrayContainer(byte[] bytesToAppend) throws  IOException{
 			if (this.bNoAppend){
-				throw new RuntimeException("FileDataContainer can't append externally supplied files"); 
+				throw new RuntimeException("FileDataContainer can't append externally supplied files");
 			}
 			this.transition();
 			if (this.isDataInFile()){
 				try(BufferedOutputStream bos = getBufferedOutputStream()){
-		   				bos.write(bytesToAppend, 0, bytesToAppend.length);                 
+		   				bos.write(bytesToAppend, 0, bytesToAppend.length);
 						bos.flush();
 					}
 			} else {
@@ -112,14 +112,14 @@ public class AltFileDataContainerManager {
 				byte[] newDataBytes = new byte[dataBytes.length+bytesToAppend.length];
 				System.arraycopy(dataBytes,0,newDataBytes,0,dataBytes.length);
 				System.arraycopy(bytesToAppend,0,newDataBytes,dataBytes.length,bytesToAppend.length);
-				dataBytes=newDataBytes;				
+				dataBytes=newDataBytes;
 			}
 		}
 
 
 		private void appendFileContainer(File fileToAppend) throws IOException{
 			if (bNoAppend){
-				throw new RuntimeException("FileDataContainer can't append externally supplied files"); 
+				throw new RuntimeException("FileDataContainer can't append externally supplied files");
 			}
 			this.transition();
 			if (isDataInFile()) {
@@ -145,7 +145,7 @@ public class AltFileDataContainerManager {
 
 		void append(FileDataContainer container) throws IOException {
 			if (bNoAppend){
-				throw new RuntimeException("FileDataContainer can't append externally supplied files"); 
+				throw new RuntimeException("FileDataContainer can't append externally supplied files");
 			}
 			this.transition();
 			if (this.isDataInFile()){
@@ -204,26 +204,26 @@ public class AltFileDataContainerManager {
 		}
 	}
 
-	
-	@SuppressWarnings("static-access")   
+
+	@SuppressWarnings("static-access")
 	/**
-	 * 
+	 *
 	 * @param memLimitOverride
-	 * 
+	 *
 	 * This constructor is meant for testing and has package access only
-	 * 
+	 *
 	 */
-	
+
 	public AltFileDataContainerManager(long memLimitOverride){
 		this.AGGREGATE_DATA_SIZE_IN_MEMORY_LIMIT = memLimitOverride;
 	}
-	
+
 	public AltFileDataContainerManager() {}
 
 	public FileDataContainerID getNewFileDataContainerID() throws IOException {
 		return getNewFileDataContainerID(null);
 	}
-	public FileDataContainerID getNewFileDataContainerID(byte[] initData) throws IOException{
+	public FileDataContainerID getNewFileDataContainerID(byte[] initData) throws IOException {
 		if(initData == null){
 			this.fileDataContainers.add(new FileDataContainer());
 		}else{
@@ -240,7 +240,7 @@ public class AltFileDataContainerManager {
 			fileDataContainer.deleteTempFile();
 		}
 	}
-	
+
 	public void printBytes(FileDataContainerID fileDataContainerID, PrintStream ps) throws FileNotFoundException, IOException{
 		long totalSize = 0;
 		if (isDataInFile(fileDataContainerID)){
@@ -253,7 +253,7 @@ public class AltFileDataContainerManager {
 			}
 			ps.flush();
 			ps.println("\nTotal Size = "+Long.toString(totalSize));
-			fis.close();	
+			fis.close();
 		}else{
 			ps.println("Data in memory is:\n");
 			byte[] data = getFileDataContainer(fileDataContainerID).getDataBytes();
@@ -265,7 +265,7 @@ public class AltFileDataContainerManager {
 		}
 		ps.println("\nTotal Size = "+Long.toString(totalSize));
 	}
-	
+
 	public void writeAndFlush(FileDataContainerID fileDataContainerID, OutputStream outputStream) throws IOException{
 		if (isDataInFile(fileDataContainerID)){
 			try(
@@ -283,7 +283,7 @@ public class AltFileDataContainerManager {
 		}
 
 	}
-	
+
 	public void append(FileDataContainerID appendToThis,FileDataContainerID appendThis) throws IOException{
 		updateAggregate(getFileDataContainer(appendThis).size());
 		getFileDataContainer(appendToThis).append(getFileDataContainer(appendThis));
@@ -296,7 +296,7 @@ public class AltFileDataContainerManager {
 		updateAggregate(appendThis.length);
 		getFileDataContainer(appendToThis).appendArrayContainer(appendThis);
 	}
-	
+
 	private void updateAggregate(long increase){
 //		if((aggregateDataSize > AGGREGATE_DATA_SIZE_IN_MEMORY_LIMIT) != ((aggregateDataSize+increase) > AGGREGATE_DATA_SIZE_IN_MEMORY_LIMIT)){
 //			System.out.println("-----Limit reached");

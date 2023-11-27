@@ -159,7 +159,7 @@ public class HybridDataContainerCollection implements ResultDataContainerCollect
     }
 
     private boolean add(ResultDataContainerID dataId, InMemoryDataContainer dataContainer){
-        this.prepareMemory(dataContainer.getDataSize());
+        this.prepareMemory((int)dataContainer.getDataSize());
         this.containerMap.put(dataId, dataContainer);
         return this.memoryQueue.add(dataId);
     }

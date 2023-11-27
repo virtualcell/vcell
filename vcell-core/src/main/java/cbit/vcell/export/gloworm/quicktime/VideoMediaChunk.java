@@ -102,8 +102,10 @@ public VideoMediaChunk(VideoMediaSample sample, AltFileDataContainerManager file
 	init(sample);
 	File tempMovieFile = File.createTempFile("VideoMediaChunk", "temp");
 	this.dataFile = tempMovieFile;
+
+
 			
-	AltFileDataContainerManager.FileDataContainerID fileDataContainerID =   fileDataContainerManager.getNewFileDataContainerID();
+	AltFileDataContainerManager.FileDataContainerID fileDataContainerID = fileDataContainerManager.getNewFileDataContainerID();
 	fileDataContainerManager.manageExistingTempFile(fileDataContainerID, tempMovieFile);
 	boolean bInitializeFile = true;
 

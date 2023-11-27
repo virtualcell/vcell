@@ -78,6 +78,15 @@ public class ResultDataContainerManager {
     }
 
     public void manageExistingTempFile(ResultDataContainerID resultDataContainerID, File incomingFile) {
+        ResultDataContainer dataContainer = this.getFileDataContainer(resultDataContainerID);
+        if (dataContainer instanceof FileDataContainer fileDataContainer
+                && (fileDataContainer.getDataBytes() != null || fileDataContainer.getDataSize() > 0))
+            throw new RuntimeException("FileDataContainer already has data");
+        if (!incomingFile.exists()){
+            throw new RuntimeException("");
+        }
+
+        /*
         if ((isDataInFile(resultDataContainerID) && getFileDataContainer(resultDataContainerID).tempDataFile.length()>0) ||
                 (!isDataInFile(resultDataContainerID) &&getFileDataContainer(resultDataContainerID).dataBytes!=null)){
             throw new RuntimeException("FileDataContainer already has data");
@@ -86,7 +95,7 @@ public class ResultDataContainerManager {
             throw new RuntimeException("");
         }
         getFileDataContainer(resultDataContainerID).bNoAppend = true;
-        getFileDataContainer(resultDataContainerID).tempDataFile = incomingFile;
+        getFileDataContainer(resultDataContainerID).tempDataFile = incomingFile;*/
     }
 
 //	//

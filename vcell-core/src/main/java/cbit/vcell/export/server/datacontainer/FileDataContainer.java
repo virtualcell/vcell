@@ -5,9 +5,9 @@ import org.jetbrains.annotations.NotNull;
 import java.io.*;
 import java.nio.file.Files;
 
-public class FileDataContainer implements ResultDataContainer {
+public class FileDataContainer implements FileStyleDataContainer {
     private final ResultDataContainerID id;
-    private int size = 0;
+    private long size = 0;
     private final File dataFile;
 
     public FileDataContainer() throws IOException {
@@ -17,6 +17,10 @@ public class FileDataContainer implements ResultDataContainer {
 
     public boolean deleteFile(){
         return this.dataFile.delete();
+    }
+
+    public File getDataFile() {
+        return this.dataFile;
     }
 
     @Override
@@ -39,11 +43,11 @@ public class FileDataContainer implements ResultDataContainer {
 
     @Override
     public byte[] getDataBytes() {
-        return new byte[0];
+        throw new RuntimeException("getDataBytes() not allowed for FileBacked containers");
     }
 
     @Override
-    public int getDataSize() {
+    public long getDataSize() {
         return this.size;
     }
 
