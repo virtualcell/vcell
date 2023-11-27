@@ -1,12 +1,13 @@
 package cbit.vcell.export.server.datacontainer;
 
 import java.io.IOException;
+import java.nio.file.Files;
 
 public class DataContainerConverter {
 
-    public static InMemoryDataContainer convert(FileDataContainer container) throws IOException {
+    public static InMemoryDataContainer convert(FileStyleDataContainer container) throws IOException {
         InMemoryDataContainer convertedContainer = new InMemoryDataContainer();
-        convertedContainer.append(container);
+        convertedContainer.append(Files.readAllBytes(container.getDataFile().toPath()));
         return convertedContainer;
     }
 
