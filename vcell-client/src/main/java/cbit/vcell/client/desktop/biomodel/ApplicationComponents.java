@@ -10,11 +10,8 @@
 
 package cbit.vcell.client.desktop.biomodel;
 import java.awt.Component;
-import java.util.ArrayList;
-import java.util.Hashtable;
-import java.util.Iterator;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Objects;
 
 import org.vcell.util.BeanUtils;
 
@@ -76,12 +73,11 @@ public void cleanSimWindowsHash() {
 			VCSimulationIdentifier vcsid = es.getKey(); 
 			Simulation[] sims = simulationWorkspace.getSimulations();
 			boolean bFound = false;
-			for(int i=0;i<sims.length;i+= 1){
-				if(sims[i].getSimulationInfo() != null && sims[i].getSimulationInfo().getAuthoritativeVCSimulationIdentifier().equals(vcsid)){
-					bFound = true;
-					break;
-				}
-			}
+            for (Simulation sim : sims) {
+				if (sim.getSimulationInfo() == null || !sim.getSimulationInfo().getAuthoritativeVCSimulationIdentifier().equals(vcsid)) continue;
+				bFound = true;
+				break;
+            }
 			if(!bFound){
 				iter.remove();
 			}
@@ -94,16 +90,16 @@ public void cleanSimWindowsHash() {
  * Creation date: (6/3/2004 4:40:40 PM)
  */
 public ChildWindow[] getDataViewerFrames(Component component) {
-	SimulationWindow[] simWindows = (SimulationWindow[])BeanUtils.getArray(simulationWindowsHash.elements(), SimulationWindow.class);
-	ArrayList<ChildWindow> childWindows = new ArrayList<ChildWindow>();
+	SimulationWindow[] simWindows = Collections.list(simulationWindowsHash.elements()).toArray(SimulationWindow[]::new);
+	List<ChildWindow> childWindows = new ArrayList<>();
 	ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(component);
-	for (int i = 0; i < simWindows.length; i++){
-		ChildWindow childWindow = childWindowManager.getChildWindowFromContext(simWindows[i]);
-		if (childWindow!=null){
-			childWindows.add(childWindow);
-		}
-	}
-	return childWindows.toArray(new ChildWindow[childWindows.size()]);
+    for (SimulationWindow simWindow : simWindows) {
+        ChildWindow childWindow = childWindowManager.getChildWindowFromContext(simWindow);
+        if (childWindow != null) {
+            childWindows.add(childWindow);
+        }
+    }
+	return childWindows.toArray(ChildWindow[]::new);
 }
 
 /**
@@ -111,7 +107,7 @@ public ChildWindow[] getDataViewerFrames(Component component) {
  * Creation date: (6/3/2004 4:40:40 PM)
  */
 public SimulationWindow[] getSimulationWindows() {
-	return BeanUtils.getArray(simulationWindowsHash.elements(), SimulationWindow.class);
+	return Collections.list(simulationWindowsHash.elements()).toArray(SimulationWindow[]::new);
 }
 
 /**

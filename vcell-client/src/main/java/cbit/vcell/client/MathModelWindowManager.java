@@ -11,6 +11,7 @@
 package cbit.vcell.client;
 
 import java.awt.BorderLayout;
+import java.util.Collections;
 import java.util.Hashtable;
 
 import javax.swing.JPanel;
@@ -56,12 +57,7 @@ public class MathModelWindowManager extends DocumentWindowManager implements jav
 	//Used to substitute Field Data while saving a MathModel.
 	private VersionableTypeVersion copyFromBioModelAppVersionableTypeVersion = null;
 
-/**
- * MathModelManager constructor comment.
- * @param documentWindow cbit.vcell.client.desktop.DocumentWindow
- * @param vcellClient cbit.vcell.client.VCellClient
- * @param vcDocument cbit.vcell.document.VCDocument
- */
+
 public MathModelWindowManager(JPanel panel, RequestManager aRequestManager, final MathModel aMathModel) {
 	super(panel, aRequestManager, aMathModel);
 	mathModel = aMathModel;
@@ -114,17 +110,12 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 
 	if (source instanceof GeometryViewer && actionCommand.equals(GuiConstants.ACTIONCMD_CHANGE_GEOMETRY)) {
 		Hashtable<String, Object> hashTable = new Hashtable<String, Object>();
-		hashTable.put(SELECT_GEOM_POPUP, new Boolean(true));
+		hashTable.put(SELECT_GEOM_POPUP, true);
 		getRequestManager().changeGeometry(this, null,hashTable);
 	}	
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (6/11/2004 7:32:07 AM)
- * @param newDocument cbit.vcell.document.VCDocument
- */
 public void addResultsFrame(SimulationWindow simWindow) {
 	simulationWindowsHash.put(simWindow.getVcSimulationIdentifier(), simWindow);
 	
@@ -145,27 +136,27 @@ public void addResultsFrame(SimulationWindow simWindow) {
  * Creation date: (7/20/2004 1:13:06 PM)
  */
 private void checkValidSimulationDataViewerFrames() {
-	SimulationWindow[] simWindows = (SimulationWindow[])BeanUtils.getArray(simulationWindowsHash.elements(), SimulationWindow.class);
+	SimulationWindow[] simWindows = Collections.list(simulationWindowsHash.elements()).toArray(SimulationWindow[]::new);
 	Simulation[] sims = getMathModel().getSimulations();
-	Hashtable<VCSimulationIdentifier, Simulation> hash = new Hashtable<VCSimulationIdentifier, Simulation>();
-	for (int i = 0; i < sims.length; i++){
-		SimulationInfo simInfo = sims[i].getSimulationInfo();
-		if (simInfo != null) {
-			VCSimulationIdentifier vcSimulationIdentifier = simInfo.getAuthoritativeVCSimulationIdentifier();
-			hash.put(vcSimulationIdentifier, sims[i]);
-		}
-	}
-	for (int i = 0; i < simWindows.length; i++){
-		if (hash.containsKey(simWindows[i].getVcSimulationIdentifier())) {
-			simWindows[i].resetSimulation((Simulation)hash.get(simWindows[i].getVcSimulationIdentifier()));
-		} else {
-			ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(getJPanel());
-			ChildWindow childWindow = childWindowManager.getChildWindowFromContext(simWindows[i]);
-			if (childWindow != null) {
-				childWindow.close();
-			}
-		}
-	}
+	Hashtable<VCSimulationIdentifier, Simulation> hash = new Hashtable<>();
+    for (Simulation sim : sims) {
+        SimulationInfo simInfo = sim.getSimulationInfo();
+        if (simInfo != null) {
+            VCSimulationIdentifier vcSimulationIdentifier = simInfo.getAuthoritativeVCSimulationIdentifier();
+            hash.put(vcSimulationIdentifier, sim);
+        }
+    }
+    for (SimulationWindow simWindow : simWindows) {
+        if (hash.containsKey(simWindow.getVcSimulationIdentifier())) {
+            simWindow.resetSimulation(hash.get(simWindow.getVcSimulationIdentifier()));
+        } else {
+            ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(getJPanel());
+            ChildWindow childWindow = childWindowManager.getChildWindowFromContext(simWindow);
+            if (childWindow != null) {
+                childWindow.close();
+            }
+        }
+    }
 }
 
 /**
@@ -323,11 +314,6 @@ public void resetDocument(VCDocument newDocument) {
 	getRequestManager().updateStatusNow();
 }
 
-/**
- * Insert the method's description here.
- * Creation date: (5/14/2004 11:08:35 AM)
- * @param newMathModel cbit.vcell.mathmodel.MathModel
- */
 //private void setMathModel(MathModel newMathModel) {	
 //	resetGeometryListeners((getMathModel() != null?(getMathModel().getMathDescription() != null?getMathModel().getMathDescription().getGeometry():null):null),
 //			(newMathModel != null?(newMathModel.getMathDescription() != null?newMathModel.getMathDescription().getGeometry():null):null));
@@ -381,13 +367,6 @@ public void resetDocument(VCDocument newDocument) {
 //}
 	
 
-/**
- * Insert the method's description here.
- * Creation date: (6/9/2004 3:58:21 PM)
- * @param newJobStatus cbit.vcell.messaging.db.SimulationJobStatus
- * @param progress java.lang.Double
- * @param timePoint java.lang.Double
- */
 public void simStatusChanged(SimStatusEvent simStatusEvent) {
 	// ** events are only generated from server side job statuses **
 	KeyValue simKey = simStatusEvent.getVCSimulationIdentifier().getSimulationKey();

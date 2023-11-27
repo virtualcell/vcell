@@ -95,13 +95,13 @@ import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoManager;
 
-import org.vcell.util.BeanUtils;
 import org.vcell.util.Commented;
 import org.vcell.util.CountingLineReader;
 
 import cbit.vcell.math.ReservedMathSymbolEntries;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.parser.ASTFuncNode.FunctionType;
+import org.vcell.util.gui.GeneralGuiUtils;
 
 @SuppressWarnings("serial")
 public class MultiPurposeTextPanel extends JPanel {
@@ -744,13 +744,6 @@ public class MultiPurposeTextPanel extends JPanel {
 		frame.setVisible(true);
 	}
 
-	/**
-	 * Insert the method's description here. Creation date: (10/10/2006 2:19:21
-	 * PM)
-	 * 
-	 * @param line
-	 *            int
-	 */
 	public void setCaretPosition(int position) {
 		textPane.setCaretPosition(position);
 	}
@@ -831,9 +824,6 @@ public class MultiPurposeTextPanel extends JPanel {
 	/**
 	 * Insert the method's description here. Creation date: (10/9/2006 1:53:03
 	 * PM)
-	 * 
-	 * @param text
-	 *            java.lang.String
 	 */
 	private void showTextContent() {
 		if (textPane.getText() != null && textPane.getText().length()>0) {
@@ -1433,7 +1423,7 @@ public class MultiPurposeTextPanel extends JPanel {
 
 	private void updateTextPane() {
 		final Frame parentFrame = JOptionPane.getFrameForComponent(MultiPurposeTextPanel.this);
-		BeanUtils.setCursorThroughout(parentFrame, Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+		GeneralGuiUtils.setCursorThroughout(parentFrame, Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		try {			
 			String text = textPane.getText();
 			boolean bNewText = text == null || text.length() == 0;			
@@ -1444,7 +1434,7 @@ public class MultiPurposeTextPanel extends JPanel {
 		} finally {
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {			
-					BeanUtils.setCursorThroughout(parentFrame, Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+					GeneralGuiUtils.setCursorThroughout(parentFrame, Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 				}
 			});
 		}

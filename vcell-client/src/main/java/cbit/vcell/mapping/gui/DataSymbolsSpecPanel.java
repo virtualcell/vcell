@@ -19,8 +19,6 @@ import java.awt.event.ActionListener;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 
-import org.vcell.util.BeanUtils;
-
 import cbit.image.ImagePaneModel;
 import cbit.image.SourceDataInfo;
 import cbit.image.gui.ImagePaneScrollerTest;
@@ -32,6 +30,7 @@ import cbit.vcell.data.DataSymbol;
 import cbit.vcell.data.DataSymbol.DataSymbolType;
 import cbit.vcell.export.gui.ExportMonitorPanel;
 import cbit.vcell.parser.ExpressionException;
+import org.vcell.util.gui.GeneralGuiUtils;
 
 @SuppressWarnings("serial")
 public class DataSymbolsSpecPanel extends DataViewer {
@@ -59,7 +58,7 @@ public class DataSymbolsSpecPanel extends DataViewer {
 			if (e.getSource() == DataSymbolsSpecPanel.this.getJButtonViewFieldData()) {
 				try {
 					Component requesterComponent = DataSymbolsSpecPanel.this;
-					DocumentWindow documentWindow = (DocumentWindow)BeanUtils.findTypeParentOfComponent(requesterComponent, DocumentWindow.class);
+					DocumentWindow documentWindow = (DocumentWindow) GeneralGuiUtils.findTypeParentOfComponent(requesterComponent, DocumentWindow.class);
 					documentWindow.getTopLevelWindowManager().getRequestManager().showFieldDataWindow(null);
 				} catch (java.lang.Throwable ivjExc) {
 					handleException(ivjExc);

@@ -24,7 +24,7 @@ import javax.swing.JTextField;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 
-import org.vcell.util.BeanUtils;
+import org.vcell.util.gui.GeneralGuiUtils;
 import org.vcell.util.NumberUtils;
 
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
@@ -249,8 +249,8 @@ public class LoadFRAPData_SummaryPanel extends JPanel
 	{
 		if(frapStudy!=null && frapStudy.getFrapData()!=null)
 		{
-			BeanUtils.enableComponents(getTimePanel(), true);
-			BeanUtils.enableComponents(getTimePanel(), true);
+			GeneralGuiUtils.enableComponents(getTimePanel(), true);
+			GeneralGuiUtils.enableComponents(getTimePanel(), true);
 			//title
 			loadInfo.setText(loadSuccessInfo);
 			//time
@@ -289,8 +289,8 @@ public class LoadFRAPData_SummaryPanel extends JPanel
 			numYPixelsValLabel.setText("");
 			imgPixelSizeX.setText("");
 			imgPixelSizeY.setText("");
-			BeanUtils.enableComponents(getSizePanel(), false);
-			BeanUtils.enableComponents(getTimePanel(), false);
+			GeneralGuiUtils.enableComponents(getSizePanel(), false);
+			GeneralGuiUtils.enableComponents(getTimePanel(), false);
 		}
 	}
 	

@@ -37,8 +37,6 @@ import javax.swing.JSeparator;
 import javax.swing.JViewport;
 import javax.swing.MenuSelectionManager;
 
-import org.vcell.util.BeanUtils;
-
 import cbit.gui.graph.GraphLayoutManager;
 import cbit.gui.graph.GraphModel;
 import cbit.gui.graph.GraphView;
@@ -50,6 +48,7 @@ import cbit.gui.graph.actions.CartoonToolPaintingActions;
 import cbit.gui.graph.actions.CartoonToolSaveAsImageActions;
 import cbit.gui.graph.actions.GraphViewAction;
 import cbit.gui.graph.groups.VCGroupManager;
+import org.vcell.util.gui.GeneralGuiUtils;
 
 public abstract class CartoonTool implements GraphView, MouseListener,
 		MouseMotionListener, ActionListener, KeyListener {
@@ -145,7 +144,7 @@ public abstract class CartoonTool implements GraphView, MouseListener,
 			return null;
 		}
 
-		Container dialogOwner = BeanUtils.findTypeParentOfComponent(
+		Container dialogOwner = GeneralGuiUtils.findTypeParentOfComponent(
 				graphPaneSeekingOwner, JFrame.class);
 		if (dialogOwner != null) {
 			return ((JFrame) dialogOwner).getContentPane();

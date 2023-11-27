@@ -19,12 +19,12 @@ import javax.swing.JLabel;
 import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
 
-import org.vcell.util.BeanUtils;
-
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.ReactionCanvas;
 import cbit.vcell.model.SimpleReaction;
+import org.vcell.util.gui.GeneralGuiUtils;
+
 /**
  * Insert the type's description here.
  * Creation date: (7/24/2002 2:30:19 PM)
@@ -512,7 +512,7 @@ private void initialize() {
 		constraintsKineticsTypeTemplatePanel.insets = new java.awt.Insets(5, 10, 5, 10);
 		add(getKineticsTypeTemplatePanel(), constraintsKineticsTypeTemplatePanel);
 		if (bSubset) {
-			BeanUtils.enableComponents(getKineticsTypeTemplatePanel(), false);
+			GeneralGuiUtils.enableComponents(getKineticsTypeTemplatePanel(), false);
 		}
 		gridy ++;
 

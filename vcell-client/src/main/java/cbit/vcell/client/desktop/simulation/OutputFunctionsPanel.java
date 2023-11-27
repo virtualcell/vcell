@@ -23,8 +23,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -43,8 +41,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import org.vcell.util.BeanUtils;
-import org.vcell.util.Issue;
+import org.vcell.util.gui.GeneralGuiUtils;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.VCellIcons;
@@ -918,7 +915,7 @@ public class OutputFunctionsPanel extends DocumentEditorSubPanel {
 			addFunctionDialog.setModal(true);
 			addFunctionDialog.getContentPane().add(getAddFunctionPanel());
 			addFunctionDialog.pack();
-			BeanUtils.centerOnComponent(addFunctionDialog, this);
+			GeneralGuiUtils.centerOnComponent(addFunctionDialog, this);
 		}
 		return addFunctionDialog;
 	}	

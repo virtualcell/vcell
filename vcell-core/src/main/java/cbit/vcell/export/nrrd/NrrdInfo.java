@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import cbit.vcell.export.server.FileDataContainerManager.FileDataContainerID;
+import org.vcell.util.ArrayUtils;
 
 /**
  * Insert the type's description here.
@@ -81,8 +82,8 @@ private NrrdInfo() {
 public static NrrdInfo createBasicNrrdInfo(int dimension, int[] sizes, String type, String encoding,HashMap<NRRDAxisNames, Integer> axisToSizeIndexMap) throws IllegalArgumentException {
 	if (dimension < 1) throw new IllegalArgumentException("NRRD dimension must be greater than 0");
 	if (sizes == null || sizes.length != dimension) throw new IllegalArgumentException("NRRD size array not same length with dimension");
-	if (!org.vcell.util.BeanUtils.arrayContains(types, type)) throw new IllegalArgumentException("Unsupported NRRD type");
-	if (!org.vcell.util.BeanUtils.arrayContains(encodings, encoding)) throw new IllegalArgumentException("Unsupported NRRD encoding");
+	if (!ArrayUtils.arrayContains(types, type)) throw new IllegalArgumentException("Unsupported NRRD type");
+	if (!ArrayUtils.arrayContains(encodings, encoding)) throw new IllegalArgumentException("Unsupported NRRD encoding");
 	NrrdInfo info = new NrrdInfo();
 	info.setDimension(dimension);
 	info.setSizes(sizes);
@@ -397,11 +398,6 @@ public void setContent(java.lang.String newContent) {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (4/26/2004 2:26:08 PM)
- * @param newDatafile java.lang.String
- */
 public void setDataFileID(FileDataContainerID dataFileID) {
 	this.dataFileID = dataFileID;
 }
@@ -437,11 +433,6 @@ public void setHasData(boolean newHasData) {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (4/26/2004 7:42:40 PM)
- * @param newHeaderfile java.lang.String
- */
 public void setHeaderFileID(FileDataContainerID headerFileID) {
 	this.headerFileID = headerFileID;
 }

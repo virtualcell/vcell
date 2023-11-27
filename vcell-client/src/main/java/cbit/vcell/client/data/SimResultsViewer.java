@@ -32,6 +32,7 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionListener;
 
+import org.vcell.util.ArrayUtils;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.UserCancelException;
@@ -75,15 +76,9 @@ public class SimResultsViewer extends DataViewer {
 	private ODEDataViewer odeDataViewer = null;
 	private PDEDataViewer pdeDataViewer = null;
 	private boolean isODEData;
-	private Hashtable<String, JTable> choicesHash = new Hashtable<String, JTable>();
+	private Hashtable<String, JTable> choicesHash = new Hashtable<>();
 	private DataManager dataManager = null;
 
-/**
- * Insert the method's description here.
- * Creation date: (10/17/2005 11:30:45 PM)
- * @param simulation cbit.vcell.solver.Simulation
- * @param vcDataManager cbit.vcell.client.server.VCDataManager
- */
 public SimResultsViewer(Simulation simulation, DataManager arg_dataManager) throws DataAccessException {
 	super();
 	setSimulation(simulation);
@@ -557,7 +552,8 @@ private void updateScanParamChoices(final String message,ListReset listReset){
 					DataIdentifier setDid = (newPDEDC.getDataIdentifier()==null?newPDEDC.getDataIdentifiers()[0]:newPDEDC.getDataIdentifier());
 					if(Arrays.asList(newPDEDC.getDataIdentifiers()).contains(oldPDEDC.getDataIdentifier())){
 						setDid = oldPDEDC.getDataIdentifier();
-						newPDEDC.setVariableAndTime(setDid,newPDEDC.getTimePoints()[BeanUtils.firstIndexOf(oldPDEDC.getTimePoints(), oldPDEDC.getTimePoint())]);
+						int newTimePointIndex = ArrayUtils.firstIndexOf(Arrays.stream(oldPDEDC.getTimePoints()).boxed().toArray(Double[]::new), oldPDEDC.getTimePoint());
+						newPDEDC.setVariableAndTime(setDid,newPDEDC.getTimePoints()[newTimePointIndex]);
 					}
 				}
 			}

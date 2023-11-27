@@ -31,9 +31,6 @@ import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.UserLoginInfo.DigestedPassword;
 
 import cbit.rmi.event.MessageEvent;
-import cbit.vcell.client.VCellClient;
-import cbit.vcell.client.server.ClientServerInfo;
-import cbit.vcell.client.server.ConnectionStatus;
 import cbit.vcell.server.SimulationJobStatus;
 import cbit.vcell.server.SimulationStatusPersistent;
 import cbit.vcell.server.VCellBootstrap;
@@ -189,9 +186,9 @@ public class TestMissingSimData {
 			System.out.println("-----\n-----");
 			for(int i=0;i<rerunArr.length;i++){
 				System.out.println(
-					BeanUtils.forceStringSize(rerunArr[i].getVCSimulationIdentifier().getSimulationKey().toString(), 12, " ", true)+" "+
-					BeanUtils.forceStringSize((rerunArr[i].getSimulation()!=null?"'"+rerunArr[i].getSimulation().getVersion().getOwner().getName()+"'":"null"), 15, " ", false)+" "+
-					BeanUtils.forceStringSize((rerunArr[i].getSimulation()!=null?"scan="+rerunArr[i].getSimulation().getScanCount():"null"), 10, " ", false)+" "+
+					BeanUtils.forceStringLength(rerunArr[i].getVCSimulationIdentifier().getSimulationKey().toString(), 12, " ", true)+" "+
+					BeanUtils.forceStringLength((rerunArr[i].getSimulation()!=null?"'"+rerunArr[i].getSimulation().getVersion().getOwner().getName()+"'":"null"), 15, " ", false)+" "+
+					BeanUtils.forceStringLength((rerunArr[i].getSimulation()!=null?"scan="+rerunArr[i].getSimulation().getScanCount():"null"), 10, " ", false)+" "+
 					rerunArr[i].getLastSimStatus());
 			}
 			System.out.println("-----\n-----");
@@ -806,11 +803,11 @@ public class TestMissingSimData {
 					}
 				}
 				System.out.println(
-					BeanUtils.forceStringSize(
+					BeanUtils.forceStringLength(
 						"user= "+user.getName(), 20, " ", false)+
-						" simref= "+BeanUtils.forceStringSize(simJobSimRef.toString(), 14, " ", false)+
-						" numTimes= "+BeanUtils.forceStringSize(dataTimes.length+"",8, " ", true)+
-						" readDataID= "+BeanUtils.forceStringSize(readDataIdentifier.getName()+"",20, " ", true));
+						" simref= "+BeanUtils.forceStringLength(simJobSimRef.toString(), 14, " ", false)+
+						" numTimes= "+BeanUtils.forceStringLength(dataTimes.length+"",8, " ", true)+
+						" readDataID= "+BeanUtils.forceStringLength(readDataIdentifier.getName()+"",20, " ", true));
 				
 				updatestr = "update missingdata set dataexists='readable' where simjobsimref="+simJobSimRef.toString();
 
@@ -835,9 +832,9 @@ public class TestMissingSimData {
 					String updatestr = "update missingdata set dataexists='error - "+TokenMangler.fixTokenStrict(errString)+"' where simjobsimref="+simJobSimRef.toString();
 //					updateStatement.executeUpdate(updatestr);
 //					con.commit();
-					System.out.println(BeanUtils.forceStringSize("user= "+(user==null?"unavailable":user.getName()), 20, " ", false)+
-							" simref= "+BeanUtils.forceStringSize(simJobSimRef.toString(), 14, " ", false)+
-							" parentsimref= "+BeanUtils.forceStringSize((parentsimref==null?"NULL":parentsimref.toString()), 14, " ", false)+
+					System.out.println(BeanUtils.forceStringLength("user= "+(user==null?"unavailable":user.getName()), 20, " ", false)+
+							" simref= "+BeanUtils.forceStringLength(simJobSimRef.toString(), 14, " ", false)+
+							" parentsimref= "+BeanUtils.forceStringLength((parentsimref==null?"NULL":parentsimref.toString()), 14, " ", false)+
 							" failed= "+e.getMessage());
 //					errorHash.put(simJobSimRef,e);
 				}
@@ -946,10 +943,10 @@ public class TestMissingSimData {
 			
 			notFoundTotalODE+= notFoundODECount;
 			notFoundTotalPDE+= notFoundPDECount;
-			System.out.println(BeanUtils.forceStringSize(userid, 15, " ", false)+
-				BeanUtils.forceStringSize(notFoundODECount+"", 15, " ", true)+" "+BeanUtils.forceStringSize(notFoundPDECount+"", 15, " ", true)+
-				BeanUtils.forceStringSize(notFoundTotalODE+"", 15, " ", true)+" "+BeanUtils.forceStringSize(notFoundTotalPDE+"", 15, " ", true)+
-				BeanUtils.forceStringSize((notFoundTotalODE+notFoundTotalPDE)+"", 15, " ", true));
+			System.out.println(BeanUtils.forceStringLength(userid, 15, " ", false)+
+				BeanUtils.forceStringLength(notFoundODECount+"", 15, " ", true)+" "+BeanUtils.forceStringLength(notFoundPDECount+"", 15, " ", true)+
+				BeanUtils.forceStringLength(notFoundTotalODE+"", 15, " ", true)+" "+BeanUtils.forceStringLength(notFoundTotalPDE+"", 15, " ", true)+
+				BeanUtils.forceStringLength((notFoundTotalODE+notFoundTotalPDE)+"", 15, " ", true));
 		}
 	}
 

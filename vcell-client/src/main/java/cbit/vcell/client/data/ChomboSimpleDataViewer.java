@@ -42,7 +42,7 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 
-import org.vcell.util.BeanUtils;
+import org.vcell.util.gui.GeneralGuiUtils;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
@@ -636,7 +636,7 @@ public class ChomboSimpleDataViewer extends JFrame {
 	
 	private void initialize() {
 		setSize(1000, 500);
-		BeanUtils.centerOnScreen(this);
+		GeneralGuiUtils.centerOnScreen(this);
 		
 		solTable.setModel(solTableModel);
 		solTable.setDefaultRenderer(Number.class, new SolTableCellRenderer());
@@ -1033,11 +1033,10 @@ public class ChomboSimpleDataViewer extends JFrame {
 		};
 		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] {task0, task1, task2}, false);
 	}
-	
-	public static void main(String[] args)
-	{
-		if (args.length > 0 && new Boolean(args[0]))
-		{
+
+	// TODO: Make as a test
+	public static void main(String[] args) {
+		if (args.length > 0 && Boolean.parseBoolean(args[0])){
 			ChomboSimpleDataViewer.debug = true;
 		}
 		VCellLookAndFeel.setVCellLookAndFeel();

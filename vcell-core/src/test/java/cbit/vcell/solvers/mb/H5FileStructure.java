@@ -17,7 +17,6 @@ package cbit.vcell.solvers.mb;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.vcell.test.Fast;
-import org.vcell.util.BeanUtils;
 
 import ncsa.hdf.object.Dataset;
 import ncsa.hdf.object.Datatype;
@@ -25,6 +24,7 @@ import ncsa.hdf.object.FileFormat;
 import ncsa.hdf.object.Group;
 import ncsa.hdf.object.HObject;
 import ncsa.hdf.object.h5.H5File;
+import org.vcell.util.CastingUtils;
 
 /**
  * <p>
@@ -52,46 +52,46 @@ import ncsa.hdf.object.h5.H5File;
  */
 @Category(Fast.class)
 public class H5FileStructure extends H5Client {
-    private static String fname  = FILE;
-    private static long[] dims2D = { 20, 10 };
-    private static long[] dims3D = { 20, 10, 5 };
+    private static String fname = FILE;
+    private static long[] dims2D = {20, 10};
+    private static long[] dims3D = {20, 10, 5};
 
     //public static void main(String args[]) throws Exception {
     @Test
-    public void run()  {
+    public void run(){
 
-    	// create the file and add groups ans dataset into the file
-    	try {
-    		//createFile();
+        // create the file and add groups ans dataset into the file
+        try {
+            //createFile();
 
-    		// retrieve an instance of H5File
-    		FileFormat fileFormat = FileFormat.getFileFormat(FileFormat.FILE_TYPE_HDF5);
+            // retrieve an instance of H5File
+            FileFormat fileFormat = FileFormat.getFileFormat(FileFormat.FILE_TYPE_HDF5);
 
-    		if (fileFormat == null) {
-    			System.err.println("Cannot find HDF5 FileFormat.");
-    			return;
-    		}
+            if(fileFormat == null){
+                System.err.println("Cannot find HDF5 FileFormat.");
+                return;
+            }
 
-    		// open the file with read-only access
-    		FileFormat testFile = fileFormat.createInstance(fname, FileFormat.READ);
+            // open the file with read-only access
+            FileFormat testFile = fileFormat.createInstance(fname, FileFormat.READ);
 
-    		if (testFile == null) {
-    			System.err.println("Failed to open file: " + fname);
-    			return;
-    		}
+            if(testFile == null){
+                System.err.println("Failed to open file: " + fname);
+                return;
+            }
 
-    		// open the file and retrieve the file structure
-    		testFile.open();
-    		Group root = (Group) ((javax.swing.tree.DefaultMutableTreeNode) testFile.getRootNode()).getUserObject();
+            // open the file and retrieve the file structure
+            testFile.open();
+            Group root = (Group) ((javax.swing.tree.DefaultMutableTreeNode) testFile.getRootNode()).getUserObject();
 
-    		printGroup(root, "");
+            printGroup(root, "");
 
-    		// close file resource
-    		testFile.close();
-    	} catch (Exception e) {
-    		// TODO Auto-generated catch block
-    		e.printStackTrace();
-    	}
+            // close file resource
+            testFile.close();
+        } catch(Exception e){
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -99,42 +99,35 @@ public class H5FileStructure extends H5Client {
      *
      * @throws Exception
      */
-    private static void printGroup(Group g, String indent) throws Exception {
-        if (g == null) return;
+    private static void printGroup(Group g, String indent) throws Exception{
+        if(g == null) return;
 
         java.util.List members = g.getMemberList();
 
         int n = members.size();
         indent += "    ";
         HObject obj = null;
-        for (int i = 0; i < n; i++) {
+        for(int i = 0; i < n; i++){
             obj = (HObject) members.get(i);
             System.out.println(indent + obj);
-            if (obj instanceof Group) {
+            if(obj instanceof Group){
                 printGroup((Group) obj, indent);
             }
-            Dataset ds = BeanUtils.downcast(Dataset.class, obj);
-            if (ds != null && ds.getName().equals("elements")) {
+            Dataset ds = CastingUtils.downcast(Dataset.class, obj);
+            if(ds != null && ds.getName().equals("elements")){
 //            if (ds != null && ds.getName().equals("boundaries")) {
-            	VH5Dataset vds = new VH5Dataset(ds);
-            	vds.info();
-            	vds.meta();
+                VH5Dataset vds = new VH5Dataset(ds);
+                vds.info();
+                vds.meta();
             }
         }
     }
 
-    /**
-     * create the file and add groups and dataset into the file, which is the
-     * same as javaExample.H5DatasetCreate
-     *
-     * @see javaExample.HDF5DatasetCreate
-     * @throws Exception
-     */
-    private static void createFile() throws Exception {
+    private static void createFile() throws Exception{
         // retrieve an instance of H5File
         FileFormat fileFormat = FileFormat.getFileFormat(FileFormat.FILE_TYPE_HDF5);
 
-        if (fileFormat == null) {
+        if(fileFormat == null){
             System.err.println("Cannot find HDF5 FileFormat.");
             return;
         }
@@ -142,7 +135,7 @@ public class H5FileStructure extends H5Client {
         // create a new file with a given file name.
         H5File testFile = (H5File) fileFormat.createFile(fname, FileFormat.FILE_CREATE_DELETE);
 
-        if (testFile == null) {
+        if(testFile == null){
             System.err.println("Failed to create file:" + fname);
             return;
         }
