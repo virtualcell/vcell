@@ -36,6 +36,26 @@ paths:
       security:
       - OpenIDConnect:
         - admin
+  /api/auth/code-flow:
+    get:
+      tags:
+      - Auth Resource
+      parameters:
+      - name: code
+        in: query
+        schema:
+          type: string
+      - name: redirectURL
+        in: query
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthCodeResponse'
   /api/publications:
     get:
       tags:
@@ -110,6 +130,15 @@ paths:
         - user
 components:
   schemas:
+    AuthCodeResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+        id_token:
+          type: string
+        refresh_token:
+          type: string
     BiomodelRef:
       type: object
       properties:
