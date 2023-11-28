@@ -1,20 +1,17 @@
 package org.vcell.restq.apiclient;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import io.quarkus.logging.Log;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.keycloak.client.KeycloakTestClient;
-import junit.framework.Assert;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
-import org.vcell.restclient.ApiResponse;
 import org.vcell.restclient.Configuration;
 import org.vcell.restclient.api.PublicationResourceApi;
 import org.vcell.restclient.model.Publication;
-import org.vcell.util.DataAccessException;
 
-import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,18 +29,16 @@ public class PublicationApiTest {
     KeycloakTestClient keycloakClient = new KeycloakTestClient();
 
     @Test
-    public void testAddListRemove() throws JsonProcessingException, SQLException, DataAccessException, ApiException {
+    public void testAddListRemove() throws ApiException {
         String pubuser = "alice";
         String nonpubuser = "bob";
 
-        System.out.println("authServerUrl: " + authServerUrl + " to be used later instead of keycloakClient");
+        Log.debug("authServerUrl: " + authServerUrl + " to be used later instead of keycloakClient");
 
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         String accessToken = keycloakClient.getAccessToken(pubuser);
-        System.err.println("TODO: get access token from OIDC server instead of KeycloakTestClient");
-        defaultClient.setRequestInterceptor(request -> {
-            request.header("Authorization", "Bearer " + accessToken);
-        });
+        Log.warn("TODO: get access token from OIDC server instead of KeycloakTestClient");
+        defaultClient.setRequestInterceptor(request -> request.header("Authorization", "Bearer " + accessToken));
         defaultClient.setHost("localhost");
         defaultClient.setPort(testPort);
         PublicationResourceApi apiInstance = new PublicationResourceApi(defaultClient);
@@ -64,25 +59,25 @@ public class PublicationApiTest {
 
         // test that there are no publications initially
         List<Publication> initialPublications = apiInstance.apiPublicationsGet();
-        Assert.assertEquals(0, initialPublications.size());
+        Assertions.assertEquals(0, initialPublications.size());
 
         // save publication pub
         String newPubKey = apiInstance.apiPublicationsPost(pub);
-        Assert.assertNotNull(newPubKey);
+        Assertions.assertNotNull(newPubKey);
 
         // test that there is one publication now and matches pub
         List<Publication> publications = apiInstance.apiPublicationsGet();
-        Assert.assertEquals(1, publications.size());
+        Assertions.assertEquals(1, publications.size());
         pub.setPubKey(Long.parseLong(newPubKey));
-        System.err.println("TODO: fix discrepency with LocalDates (after round trip, not same)");
+        Log.error("TODO: fix discrepency with LocalDates (after round trip, not same)");
         pub.setDate(publications.get(0).getDate());
-        Assert.assertEquals(pub, publications.get(0));
+        Assertions.assertEquals(pub, publications.get(0));
 
         // test that pubuser can delete publication pub
         apiInstance.apiPublicationsDelete(Long.parseLong(newPubKey));
 
         // test that there are no publications now
         List<Publication> finalPublications = apiInstance.apiPublicationsGet();
-        Assert.assertEquals(0, finalPublications.size());
+        Assertions.assertEquals(0, finalPublications.size());
     }
 }
