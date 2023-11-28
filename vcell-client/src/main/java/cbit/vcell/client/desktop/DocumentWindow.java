@@ -180,112 +180,127 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
 
 class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.ItemListener, java.awt.event.MouseListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
-			if (e.getSource() == DocumentWindow.this.getAbout_BoxMenuItem())
-				connEtoC3(e);
-			if (e.getSource() == DocumentWindow.this.getCloseMenuItem())
-				connEtoC5(e);
-			if (e.getSource() == DocumentWindow.this.getExitMenuItem())
-				connEtoC6(e);
-			if (e.getSource() == DocumentWindow.this.getJMenuItemNewBioModel())
-				connEtoC7(e);
-			if (e.getSource() == DocumentWindow.this.getJMenuItemOpenBioModel())
-				connEtoC10(e);
-			if (e.getSource() == DocumentWindow.this.getJMenuItemOpenLocal())
-				importExternalDocument();
-			if (e.getSource() == DocumentWindow.this.getJMenuItemOpenMathModel())
-				connEtoC11(e);
-			if (e.getSource() == DocumentWindow.this.getSaveMenuItem())
-				connEtoC13(e);
-			if (e.getSource() == DocumentWindow.this.getSave_AsMenuItem())
-				connEtoC14(e);
-			if (e.getSource() == DocumentWindow.this.getSave_AsLocalMenuItem())
-				saveAsLocal();
 			try {
-				if (e.getSource() == DocumentWindow.this.getJMenuItemImport())
-					DocumentWindow.this.importExternalDocument();
-				if (e.getSource() == DocumentWindow.this.menuItemImportPathwayWebLocation)
-					DocumentWindow.this.importPathway(PathwayImportOption.Web_Location);
-				else if (e.getSource() == DocumentWindow.this.menuItemImportPathwayFile)
-					DocumentWindow.this.importPathway(PathwayImportOption.File);
-				else if (e.getSource() == DocumentWindow.this.menuItemImportPathwayExample)
-					DocumentWindow.this.importPathway(PathwayImportOption.Example);
-			} catch (Throwable throwable) {
-				DocumentWindow.this.handleException(throwable);
-			}
-			if (e.getSource() == DocumentWindow.this.getSave_VersionMenuItem())
-				connEtoC16(e);
-			if (e.getSource() == DocumentWindow.this.getChange_UserMenuItem())
-				connEtoC18(e);
-			if (e.getSource() == DocumentWindow.this.getChange_ProxyMenuItem())
-				setProxy();
-			if (e.getSource() == DocumentWindow.this.getReconnectMenuItem())
-				connEtoC19(e);
+				if (e.getSource() == DocumentWindow.this.getAbout_BoxMenuItem())
+					DocumentWindow.this.showAboutBox();
+				if (e.getSource() == DocumentWindow.this.getCloseMenuItem())
+					DocumentWindow.this.closeWindow();
+				if (e.getSource() == DocumentWindow.this.getExitMenuItem())
+					DocumentWindow.this.exitApplication();
+				if (e.getSource() == DocumentWindow.this.getJMenuItemNewBioModel())
+					DocumentWindow.this.newDocument(e);
+				if (e.getSource() == DocumentWindow.this.getJMenuItemOpenBioModel())
+					DocumentWindow.this.openDocument(e);
+				if (e.getSource() == DocumentWindow.this.getJMenuItemOpenLocal())
+					importExternalDocument();
+				if (e.getSource() == DocumentWindow.this.getJMenuItemOpenMathModel())
+					DocumentWindow.this.openDocument(e);
+				if (e.getSource() == DocumentWindow.this.getSaveMenuItem())
+					DocumentWindow.this.saveDocument(true);
+				if (e.getSource() == DocumentWindow.this.getSave_AsMenuItem())
+					DocumentWindow.this.saveDocumentAsNew();
+				if (e.getSource() == DocumentWindow.this.getSave_AsLocalMenuItem())
+					saveAsLocal();
+				try {
+					if (e.getSource() == DocumentWindow.this.getJMenuItemImport())
+						DocumentWindow.this.importExternalDocument();
+					if (e.getSource() == DocumentWindow.this.menuItemImportPathwayWebLocation)
+						DocumentWindow.this.importPathway(PathwayImportOption.Web_Location);
+					else if (e.getSource() == DocumentWindow.this.menuItemImportPathwayFile)
+						DocumentWindow.this.importPathway(PathwayImportOption.File);
+					else if (e.getSource() == DocumentWindow.this.menuItemImportPathwayExample)
+						DocumentWindow.this.importPathway(PathwayImportOption.Example);
+				} catch (Throwable throwable) {
+					DocumentWindow.this.handleException(throwable);
+				}
+				if (e.getSource() == DocumentWindow.this.getSave_VersionMenuItem())
+					DocumentWindow.this.saveDocument(false);
+				if (e.getSource() == DocumentWindow.this.getChange_UserMenuItem())
+					DocumentWindow.this.showLoginDialog();
+				if (e.getSource() == DocumentWindow.this.getChange_ProxyMenuItem())
+					setProxy();
+				if (e.getSource() == DocumentWindow.this.getReconnectMenuItem())
+					DocumentWindow.this.reconnect();
 //			if (e.getSource() == DocumentWindow.this.getImageJServiceMenuItem())
 //				startStopImageJService();
-			if (e.getSource() == DocumentWindow.this.getJMenuItemRevert())
-				connEtoC28(e);
-			if (e.getSource() == DocumentWindow.this.getJMenuItemCompare())
-				connEtoC29(e);
-			if (e.getSource() == DocumentWindow.this.getNonSpatialMenuItem())
-				connEtoC8(e);
-			if (e.getSource() == DocumentWindow.this.getMathFromBioMenuItem())
-				connEtoC31(e);
-			if (e.getSource() == DocumentWindow.this.getSpatialExistingMenuItem())
-				newDocument(e);
-			if (e.getSource() == DocumentWindow.this.getSpatialCreateNewMenuItem())
-				newDocument(e);
-			if (e.getSource() == DocumentWindow.this.getJMenuItemExport())
-				connEtoC17(e);
+				if (e.getSource() == DocumentWindow.this.getJMenuItemRevert())
+					DocumentWindow.this.revertToSaved();
+				if (e.getSource() == DocumentWindow.this.getJMenuItemCompare())
+					DocumentWindow.this.compareWithSaved();
+				if (e.getSource() == DocumentWindow.this.getNonSpatialMenuItem())
+					DocumentWindow.this.newDocument(e);
+				if (e.getSource() == DocumentWindow.this.getMathFromBioMenuItem())
+					DocumentWindow.this.newDocument(e);
+				if (e.getSource() == DocumentWindow.this.getSpatialExistingMenuItem())
+					newDocument(e);
+				if (e.getSource() == DocumentWindow.this.getSpatialCreateNewMenuItem())
+					newDocument(e);
+				if (e.getSource() == DocumentWindow.this.getJMenuItemExport())
+					DocumentWindow.this.exportDocument();
 //			if (e.getSource() == DocumentWindow.this.getEdit_Annotation_JMenuItem())
 //				connEtoC36(e);
-			if (e.getSource() == DocumentWindow.this.getTestingFrameworkMenuItem())
-				connEtoC37(e);
-			if (e.getSource() == DocumentWindow.this.getJMenuItemOnlineHelp())
-				connEtoC25(e);
-			if (e.getSource() == DocumentWindow.this.getJMenuItemOnlineSupport())
-				onlineSupport(e);
-			if (e.getSource() == DocumentWindow.this.getJMenuItemDiscussionGroup())
-				discussionGroup(e);
-			if (e.getSource() == DocumentWindow.this.getJMenuItemManagePermissions())
-				managePermissions(e);
-			if (e.getSource() == DocumentWindow.this.getJMenuItemOnlinePublish())
-				onlinePublish(e);
-			
-			if (e.getSource() == DocumentWindow.this.getJMenuItemEmailSupport())
-				emailSupport(e);
-			if (e.getSource() == DocumentWindow.this.getNewHelpMenuItem())
-				showVCellHelpWindow();
+				if (e.getSource() == DocumentWindow.this.getTestingFrameworkMenuItem())
+					DocumentWindow.this.showTestingFrameworkWindow();
+				if (e.getSource() == DocumentWindow.this.getJMenuItemOnlineHelp())
+					DocumentWindow.this.invokeOnlineHelp();
+				if (e.getSource() == DocumentWindow.this.getJMenuItemOnlineSupport())
+					onlineSupport(e);
+				if (e.getSource() == DocumentWindow.this.getJMenuItemDiscussionGroup())
+					discussionGroup(e);
+				if (e.getSource() == DocumentWindow.this.getJMenuItemManagePermissions())
+					managePermissions(e);
+				if (e.getSource() == DocumentWindow.this.getJMenuItemOnlinePublish())
+					onlinePublish(e);
+
+				if (e.getSource() == DocumentWindow.this.getJMenuItemEmailSupport())
+					emailSupport(e);
+				if (e.getSource() == DocumentWindow.this.getNewHelpMenuItem())
+					showVCellHelpWindow();
 //			if (e.getSource() == DocumentWindow.this.getRunBNGMenuItem())
 //				connEtoC26(e);
-			if (e.getSource() == DocumentWindow.this.getRunVFrapItem())
-				startVirtualFRAP();
-			if (e.getSource() == DocumentWindow.this.getTransMAMenuItem())
-				showTransMADialog();
-			if (e.getSource() == DocumentWindow.this.getViewJobsMenuItem())
-				showViewJobsDialog();
-			if (e.getSource() == DocumentWindow.this.getJMenuItemFieldData())
-				connEtoC38(e);
-			if (e.getSource() == DocumentWindow.this.getUpdate_UserMenuItem()){
-				getWindowManager().getRequestManager().updateUserRegistration(getWindowManager(), false);
-			}
-			if (e.getSource() == DocumentWindow.this.getPermissionsMenuItem()) {
-				getWindowManager().getRequestManager().accessPermissions(DocumentWindow.this, getWindowManager().getVCDocument());
-			}
-			if (e.getSource() == DocumentWindow.this.getGrantPermissionsToVCellSupportMenuItem()) {
-				RequestManager rm = getWindowManager().getRequestManager();
-				if(rm instanceof ClientRequestManager) {
-					ClientRequestManager crm = (ClientRequestManager)rm;
-					crm.accessPermissionsEx(DocumentWindow.this, getWindowManager().getVCDocument(), true);
-				} else {
-					rm.accessPermissions(DocumentWindow.this, getWindowManager().getVCDocument());
+				if (e.getSource() == DocumentWindow.this.getRunVFrapItem())
+					startVirtualFRAP();
+				if (e.getSource() == DocumentWindow.this.getTransMAMenuItem())
+					showTransMADialog();
+				if (e.getSource() == DocumentWindow.this.getViewJobsMenuItem())
+					showViewJobsDialog();
+				if (e.getSource() == DocumentWindow.this.getJMenuItemFieldData())
+					DocumentWindow.this.jMenuItemFieldData_ActionPerformed(e);
+				if (e.getSource() == DocumentWindow.this.getUpdate_UserMenuItem()){
+					getWindowManager().getRequestManager().updateUserRegistration(getWindowManager(), false);
 				}
+				if (e.getSource() == DocumentWindow.this.getPermissionsMenuItem()) {
+					getWindowManager().getRequestManager().accessPermissions(DocumentWindow.this, getWindowManager().getVCDocument());
+				}
+				if (e.getSource() == DocumentWindow.this.getGrantPermissionsToVCellSupportMenuItem()) {
+					RequestManager rm = getWindowManager().getRequestManager();
+					if(rm instanceof ClientRequestManager) {
+						ClientRequestManager crm = (ClientRequestManager)rm;
+						crm.accessPermissionsEx(DocumentWindow.this, getWindowManager().getVCDocument(), true);
+					} else {
+						rm.accessPermissions(DocumentWindow.this, getWindowManager().getVCDocument());
+					}
+				}
+			}
+			catch (Throwable throwable){
+				handleException(throwable);
 			}
 
 		};
 
 		public void itemStateChanged(java.awt.event.ItemEvent e) {
 			if (e.getSource() == DocumentWindow.this.getStatusbarMenuItem())
-				connEtoC2(e);
+				try {
+					// user code begin {1}
+					// user code end
+					DocumentWindow.this.viewStatusBar();
+					// user code begin {2}
+					// user code end
+				} catch (Throwable ivjExc) {
+					// user code begin {3}
+					// user code end
+					handleException(ivjExc);
+				}
 		}
 
 		@Override
@@ -340,140 +355,8 @@ private void compareWithSaved() {
 	getWindowManager().compareWithSaved();
 }
 
-/**
- * connEtoC10:  (JMenuItemOpenBioModel.action.actionPerformed(java.awt.event.ActionEvent) --> DocumentWindow.notYet()V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC10(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.openDocument(arg1);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
 
-/**
- * connEtoC11:  (JMenuItemOpenMathModel.action.actionPerformed(java.awt.event.ActionEvent) --> DocumentWindow.notYet()V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC11(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.openDocument(arg1);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connEtoC13:  (SaveMenuItem.action.actionPerformed(java.awt.event.ActionEvent) --> DocumentWindow.notYet()V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC13(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.saveDocument(true);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connEtoC14:  (Save_AsMenuItem.action.actionPerformed(java.awt.event.ActionEvent) --> DocumentWindow.notYet()V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC14(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.saveDocumentAsNew();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connEtoC16:  (Save_VersionMenuItem.action.actionPerformed(java.awt.event.ActionEvent) --> DocumentWindow.notYet()V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC16(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.saveDocument(false);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connEtoC17:  (JMenuItemExport.action.actionPerformed(java.awt.event.ActionEvent) --> DocumentWindow.notYet()V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC17(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.exportDocument();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connEtoC18:  (Change_UserMenuItem.action.actionPerformed(java.awt.event.ActionEvent) --> DocumentWindow.notYet()V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC18(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.showLoginDialog();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-private void setProxy(){
+	private void setProxy(){
 	try {
 		NetworkProxyPreferences.setProxyPrefs(this, (restartMsg) -> DialogUtils.showInfoDialog(this, restartMsg) );
 		if(getTopLevelWindowManager()==null || getTopLevelWindowManager().getRequestManager()==null ||
@@ -488,27 +371,10 @@ private void setProxy(){
 		return;
 	}
 }
-/**
- * connEtoC19:  (ReconnectMenuItem.action.actionPerformed(java.awt.event.ActionEvent) --> DocumentWindow.notYet()V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC19(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.reconnect();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
 
 
-private void showVCellHelpWindow() {
+
+	private void showVCellHelpWindow() {
 	VcellHelpViewer.showStandaloneViewer();
 	//PENDING Window Manager redesign
 
@@ -542,42 +408,8 @@ private void showHierarchy(String when, VcellHelpViewer vcellHelpViewer ) {
 		}
 	*/
 }
-/**
- * connEtoC2:  (StatusbarMenuItem.item.itemStateChanged(java.awt.event.ItemEvent) --> DocumentWindow.viewStatusBar()V)
- * @param arg1 java.awt.event.ItemEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC2(java.awt.event.ItemEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.viewStatusBar();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
 
-/**
- * connEtoC25:  (JMenuItemOnlineHelp.action.actionPerformed(java.awt.event.ActionEvent) --> DocumentWindow.invokeOnlineHelp()V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC25(java.awt.event.ActionEvent arg1) {
-	try {
-
-		this.invokeOnlineHelp();
-
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-private void onlineSupport(java.awt.event.ActionEvent arg1) {
+	private void onlineSupport(java.awt.event.ActionEvent arg1) {
 	try {
 		this.invokeOnlineSupport();
 	} catch (java.lang.Throwable ivjExc) {
@@ -642,84 +474,8 @@ private void emailSupport(java.awt.event.ActionEvent arg1) {
 //	}
 //}
 
-/**
- * connEtoC28:  (JMenuItemRevert.action.actionPerformed(java.awt.event.ActionEvent) --> DocumentWindow.revertToSaved()V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC28(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.revertToSaved();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
 
-
-/**
- * connEtoC29:  (JMenuItemCompare.action.actionPerformed(java.awt.event.ActionEvent) --> DocumentWindow.notYet()V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC29(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.compareWithSaved();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connEtoC3:  (About_BoxMenuItem.action.actionPerformed(java.awt.event.ActionEvent) --> DocumentWindow.showAboutBox()V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC3(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.showAboutBox();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connEtoC31:  (MathFromBioMenuItem.action.actionPerformed(java.awt.event.ActionEvent) --> DocumentWindow.mathFromBioModel(Ljava.awt.event.ActionEvent;)V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC31(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.newDocument(arg1);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
+	/**
  * connEtoC36:  (Edit_Annotation_JMenuItem.action.actionPerformed(java.awt.event.ActionEvent) --> DocumentWindow.showEditAnnotationWindow()V)
  * @param arg1 java.awt.event.ActionEvent
  */
@@ -739,124 +495,8 @@ private void connEtoC36(java.awt.event.ActionEvent arg1) {
 }
 
 
-/**
- * connEtoC37:  (TestingFrameworkMenuItem.action.actionPerformed(java.awt.event.ActionEvent) --> DocumentWindow.showTestingFrameworkWindow()V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC37(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.showTestingFrameworkWindow();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
 
-
-/**
- * connEtoC38:  (JMenuItemFieldData.action.actionPerformed(java.awt.event.ActionEvent) --> DocumentWindow.jMenuItemFieldData_ActionPerformed(Ljava.awt.event.ActionEvent;)V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC38(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.jMenuItemFieldData_ActionPerformed(arg1);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connEtoC5:  (CloseMenuItem.action.actionPerformed(java.awt.event.ActionEvent) --> DocumentWindow.closeWindow()V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC5(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.closeWindow();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC6:  (ExitMenuItem.action.actionPerformed(java.awt.event.ActionEvent) --> DocumentWindow.exitApplication()V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC6(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.exitApplication();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC7:  (JMenuItemNewBioModel.action.actionPerformed(java.awt.event.ActionEvent) --> DocumentWindow.newBioModel()V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC7(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.newDocument(arg1);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connEtoC8:  (JMenuItemNewMathModel.action.actionPerformed(java.awt.event.ActionEvent) --> DocumentWindow.notYet()V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC8(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.newDocument(arg1);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
+	/**
  * Comment
  */
 private void exitApplication() {
