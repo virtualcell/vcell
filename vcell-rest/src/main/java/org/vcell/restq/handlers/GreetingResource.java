@@ -1,8 +1,6 @@
 package org.vcell.restq.handlers;
 
 import io.quarkus.qute.CheckedTemplate;
-import io.quarkus.qute.Location;
-import io.quarkus.qute.Template;
 import io.quarkus.qute.TemplateInstance;
 import io.quarkus.security.identity.SecurityIdentity;
 import jakarta.inject.Inject;
@@ -26,11 +24,22 @@ public class GreetingResource {
     @GET
     @Operation(hidden=true)
     @Produces(MediaType.TEXT_PLAIN)
-    public TemplateInstance hello() {
+    public TemplateInstance hello_web() {
         String userName = "anonymous";
         if (!identity.isAnonymous()) {
             userName = identity.getPrincipal().getName();
         }
         return Templates.hello(userName);
+    }
+
+    @GET
+    @Operation(hidden=true)
+    @Produces(MediaType.APPLICATION_JSON)
+    public String hello() {
+        String userName = "anonymous";
+        if (!identity.isAnonymous()) {
+            userName = identity.getPrincipal().getName();
+        }
+        return "Hello " + userName + "!";
     }
 }

@@ -36,6 +36,33 @@ paths:
       tags:
       - Admin Resource
       x-accepts: application/json
+  /api/auth/code-flow:
+    get:
+      parameters:
+      - explode: true
+        in: query
+        name: code
+        required: false
+        schema:
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: redirectURL
+        required: false
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthCodeResponse'
+          description: OK
+      tags:
+      - Auth Resource
+      x-accepts: application/json
   /api/publications:
     delete:
       requestBody:
@@ -116,6 +143,19 @@ paths:
       x-accepts: application/json
 components:
   schemas:
+    AuthCodeResponse:
+      example:
+        access_token: access_token
+        refresh_token: refresh_token
+        id_token: id_token
+      properties:
+        access_token:
+          type: string
+        id_token:
+          type: string
+        refresh_token:
+          type: string
+      type: object
     BiomodelRef:
       example:
         bmKey: 5

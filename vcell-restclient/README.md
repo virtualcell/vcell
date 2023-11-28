@@ -107,6 +107,8 @@ Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
 *AdminResourceApi* | [**apiAdminGet**](docs/AdminResourceApi.md#apiAdminGet) | **GET** /api/admin | 
 *AdminResourceApi* | [**apiAdminGetWithHttpInfo**](docs/AdminResourceApi.md#apiAdminGetWithHttpInfo) | **GET** /api/admin | 
+*AuthResourceApi* | [**apiAuthCodeFlowGet**](docs/AuthResourceApi.md#apiAuthCodeFlowGet) | **GET** /api/auth/code-flow | 
+*AuthResourceApi* | [**apiAuthCodeFlowGetWithHttpInfo**](docs/AuthResourceApi.md#apiAuthCodeFlowGetWithHttpInfo) | **GET** /api/auth/code-flow | 
 *PublicationResourceApi* | [**apiPublicationsDelete**](docs/PublicationResourceApi.md#apiPublicationsDelete) | **DELETE** /api/publications | 
 *PublicationResourceApi* | [**apiPublicationsDeleteWithHttpInfo**](docs/PublicationResourceApi.md#apiPublicationsDeleteWithHttpInfo) | **DELETE** /api/publications | 
 *PublicationResourceApi* | [**apiPublicationsGet**](docs/PublicationResourceApi.md#apiPublicationsGet) | **GET** /api/publications | 
@@ -119,6 +121,7 @@ Class | Method | HTTP request | Description
 
 ## Documentation for Models
 
+ - [AuthCodeResponse](docs/AuthCodeResponse.md)
  - [BiomodelRef](docs/BiomodelRef.md)
  - [MathmodelRef](docs/MathmodelRef.md)
  - [Publication](docs/Publication.md)
