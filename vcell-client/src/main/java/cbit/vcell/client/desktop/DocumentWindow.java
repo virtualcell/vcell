@@ -35,23 +35,11 @@ import java.util.Calendar;
 import java.util.Hashtable;
 import java.util.prefs.Preferences;
 
-import javax.swing.Box;
-import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JDialog;
-import javax.swing.JFileChooser;
-import javax.swing.JLabel;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JProgressBar;
-import javax.swing.JSeparator;
-import javax.swing.JTextArea;
-import javax.swing.Timer;
+import javax.swing.*;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 
+import cbit.vcell.client.data.ExportedDataViewer;
 import org.apache.commons.io.FileUtils;
 import org.vcell.util.gui.GeneralGuiUtils;
 import org.vcell.client.logicalwindow.LWTopFrame;
@@ -174,6 +162,8 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
 	private JLabel iconText = null;
 	private JDialog viewSpeciesDialog = null;
 
+	private JMenuItem exportedDataViewer = null;
+
 	private JMenuItem menuItemImportPathwayWebLocation = null;
 	private JMenuItem menuItemImportPathwayFile = null;
 	private JMenuItem menuItemImportPathwayExample = null;
@@ -280,6 +270,9 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.I
 					} else {
 						rm.accessPermissions(DocumentWindow.this, getWindowManager().getVCDocument());
 					}
+				}
+				if (e.getSource() == DocumentWindow.this.getExportedDataViewer()){
+					DocumentWindow.this.showViewExportedDataDialog();
 				}
 			}
 			catch (Throwable throwable){
@@ -719,6 +712,7 @@ private javax.swing.JMenuBar getDocumentWindowJMenuBar() {
 			ivjDocumentWindowJMenuBar.add(createWindowMenu(true));
 			ivjDocumentWindowJMenuBar.add(getToolMenu());
 			ivjDocumentWindowJMenuBar.add(getHelpMenu());
+			ivjDocumentWindowJMenuBar.add(getExportedDataViewer());
 			ivjDocumentWindowJMenuBar.add(Box.createHorizontalGlue());
 			ivjDocumentWindowJMenuBar.add(createWindowMenu(false));
 			// user code begin {1}
@@ -823,6 +817,15 @@ private javax.swing.JMenu getFileMenu() {
 		}
 	}
 	return ivjFileMenu;
+}
+
+private JMenuItem getExportedDataViewer(){
+	if(exportedDataViewer == null){
+		exportedDataViewer = new JMenuItem();
+		exportedDataViewer.setName("Exported Data Viewer");
+		exportedDataViewer.setText("Exported Data Viewer");
+	}
+	return exportedDataViewer;
 }
 
 /**
@@ -2134,6 +2137,7 @@ private void initConnections() throws java.lang.Exception {
 	getPermissionsMenuItem().addActionListener(ivjEventHandler);
 	
 	getIconBar().addMouseListener(ivjEventHandler);
+	getExportedDataViewer().addActionListener(ivjEventHandler);
 }
 
 /**
@@ -2732,6 +2736,22 @@ public void showViewJobsDialog() {
 	
 //	ClientRequestManager.idToNameConversion(getWindowManager().getVCDocument());
 
+}
+
+public void showViewExportedDataDialog() {
+	DocumentWindowManager dwm = getWindowManager();
+	ExportedDataViewer exportedDataViewer = new ExportedDataViewer();
+	exportedDataViewer.setPreferredSize(new Dimension(1000, 600));
+
+	if(viewSpeciesDialog != null) {		// uncomment these 3 lines to allow only one instance of the dialog
+		viewSpeciesDialog.dispose();
+	}
+
+	JOptionPane pane = new JOptionPane(exportedDataViewer, JOptionPane.PLAIN_MESSAGE, 0, null, new Object[] {"Close"});
+	viewSpeciesDialog = pane.createDialog(this, "View Exported Data");
+	viewSpeciesDialog.setModal(false);
+	viewSpeciesDialog.setResizable(true);
+	viewSpeciesDialog.setVisible(true);
 }
 
 	private JMenuItem getMntmLicenseInformation() {
