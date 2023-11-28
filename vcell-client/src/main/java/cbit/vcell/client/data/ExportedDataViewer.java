@@ -11,15 +11,17 @@ import cbit.vcell.solver.VCSimulationIdentifier;
 import org.vcell.util.document.VCDocument;
 
 import javax.swing.*;
+import javax.swing.event.TableColumnModelListener;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
+import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Enumeration;
 
-public class ExportedDataViewer extends DocumentEditorSubPanel implements ActionListener, PropertyChangeListener {
+public class ExportedDataViewer extends DocumentEditorSubPanel implements ActionListener, PropertyChangeListener, FocusListener, MouseListener {
 
     private JScrollPane scrollPane;
     private JTable exportLinksTable;
@@ -29,13 +31,17 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
 
         String[] columns = {"Sim Name", "BioModel Name", "Sim ID", "Date Exported", "Date Sim Modified", "Format", "Link"};
         DefaultTableModel tableModel = new DefaultTableModel(columns, 0);
+
         tableModel.addRow(new Object[]{"Test Sim", "Bio Name", "1720480", "123", "123", "N5", "https://www.google.com"});
         exportLinksTable = new JTable(tableModel);
         exportLinksTable.setDefaultEditor(Object.class, null);
+        exportLinksTable.addMouseListener(this);
         scrollPane = new JScrollPane(exportLinksTable);
         scrollPane.setSize(400, 400);
         scrollPane.setPreferredSize(new Dimension(400, 400));
         scrollPane.setMinimumSize(new Dimension(400, 400));
+
+
 
         this.setLayout(new BorderLayout());
         this.add(scrollPane);
@@ -75,6 +81,45 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
 
     @Override
     protected void onSelectedObjectsChange(Object[] selectedObjects) {
+
+    }
+
+    @Override
+    public void focusGained(FocusEvent e) {
+
+    }
+
+    @Override
+    public void focusLost(FocusEvent e) {
+
+    }
+
+    @Override
+    public void mouseClicked(MouseEvent e) {
+        int row = exportLinksTable.getSelectedRow();
+        int column = exportLinksTable.getSelectedColumn();
+
+        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+        clipboard.setContents(new StringSelection( (String) exportLinksTable.getValueAt(row, column)), null);
+    }
+
+    @Override
+    public void mousePressed(MouseEvent e) {
+
+    }
+
+    @Override
+    public void mouseReleased(MouseEvent e) {
+
+    }
+
+    @Override
+    public void mouseEntered(MouseEvent e) {
+
+    }
+
+    @Override
+    public void mouseExited(MouseEvent e) {
 
     }
 }
