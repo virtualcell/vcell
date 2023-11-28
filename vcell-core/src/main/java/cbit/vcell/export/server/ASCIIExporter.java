@@ -53,20 +53,14 @@ import ncsa.hdf.hdf5lib.exceptions.HDF5Exception;
 import ncsa.hdf.hdf5lib.exceptions.HDF5LibraryException;
 
 /**
- * Insert the type's description here.
  * Creation date: (4/27/2004 1:38:59 PM)
  * @author: Ion Moraru
  */
 public class ASCIIExporter implements ExportConstants {
     private final static Logger lg = LogManager.getLogger(ASCIIExporter.class);
 
-    private ExportServiceImpl exportServiceImpl = null;
+    private final ExportServiceImpl exportServiceImpl;
 
-	/**
-	 * Insert the method's description here.
-	 * Creation date: (4/27/2004 1:18:37 PM)
-	 * @param exportServiceImpl cbit.vcell.export.server.ExportServiceImpl
-	 */
 	public ASCIIExporter(ExportServiceImpl exportServiceImpl) {
 		this.exportServiceImpl = exportServiceImpl;
 	}
@@ -91,7 +85,7 @@ public class ASCIIExporter implements ExportConstants {
 				vcdID, variableSpecs.getVariableNames(), timeSpecs.getBeginTimeIndex(), timeSpecs.getEndTimeIndex(),
 				asciiSpecs.getSwitchRowsColumns(),fileDataContainerManager));
 		dataID += variableSpecs.getModeID() == 0 ? variableSpecs.getVariableNames()[0] : "ManyVars";
-		return Arrays.asList(exportOutput);
+		return List.of(exportOutput);
 	}
 
 	private static final SmoldynKeyword[] SMOLDYN_KEYWORDS_USED = {
@@ -117,11 +111,9 @@ public class ASCIIExporter implements ExportConstants {
 	 * @return StringBuilder array, with empty objects
 	 */
 	private StringBuilder[] stringBuilderArray(int size) {
-		StringBuilder[] rval = new StringBuilder[size];
-		for (int i = 0; i < size; i++) {
-			rval[i] = new StringBuilder();
-		}
-		return rval;
+		StringBuilder[] realValues = new StringBuilder[size];
+		Arrays.fill(realValues, new StringBuilder());
+		return realValues;
 	}
 
 	private List<ExportOutput> exportParticleData(OutputContext outputContext, long jobID, User user,

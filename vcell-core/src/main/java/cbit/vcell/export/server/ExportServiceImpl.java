@@ -26,9 +26,6 @@ import cbit.vcell.export.nrrd.NrrdInfo;
 import cbit.vcell.simdata.DataServerImpl;
 import cbit.vcell.simdata.OutputContext;
 
-/**
- * This type was created in VisualAge.
- */
 public class ExportServiceImpl implements ExportConstants, ExportService {
 	public static final Logger lg = LogManager.getLogger(ExportServiceImpl.class);
 	private final ExportEventCommander eeCommander = new ExportEventCommander();
