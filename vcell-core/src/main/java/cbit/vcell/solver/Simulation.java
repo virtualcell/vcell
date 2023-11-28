@@ -119,12 +119,8 @@ public class Simulation implements Versionable, Matchable, java.beans.VetoableCh
 	private String fieldImportedTaskID;
 
 	public static class Counters {		// SpringSaLaD post processing counters, structure to be determined, will be moved appropriately
-		
-		public static void writeMoleculeCounters(SimulationContext simContext, StringBuilder sb) {
-			// TODO: must separate the call from the exporter (where we continue to use simContext)
-			//  from the call to prepare data for simulations run (where we need to use the math,
-			//  more exactly the particleMolecularTytpeSet from the LangevinLngvWriter call)
 
+		public static void writeMoleculeCounters(SimulationContext simContext, StringBuilder sb) {
 			if(simContext == null) {
 				sb.append("\n");
 				return;
@@ -146,11 +142,11 @@ public class Simulation implements Versionable, Matchable, java.beans.VetoableCh
 				// Each MolecularType can be used for only one SpeciesContext
 				MolecularType mt = sp.getMolecularTypePatterns().get(0).getMolecularType();
 				sb.append("'").append(mt.getName()).append("' : ")
-					.append("Measure Total Free Bound");
+						.append("Measure Total Free Bound");
 				sb.append("\n");
 			}
 		}
-		
+
 		public static void writeStateCounters(SimulationContext simContext, StringBuilder sb) {
 			if(simContext == null) {
 				sb.append("\n");

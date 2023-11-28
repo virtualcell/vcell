@@ -110,14 +110,6 @@ public class LangevinLngvWriter {
 			throw new RuntimeException("Math description must be langevin");
 		}
 
-		// TODO: must use just the math!
-		SimulationContext simContext = (SimulationContext)so;
-
-//		LangevinMathMapping mathMapping = (LangevinMathMapping)simContext.getMostRecentlyCreatedMathMapping();
-//		Structure struct = null;
-//		StructureMapping sm = simContext.getGeometryContext().getStructureMapping(struct);
-//		GeometryClass reactionStepGeometryClass = sm.getGeometryClass();
-		
 		mathDescription = simulation.getMathDescription();
 		particlePropertiesMap.clear();
 		particleJumpProcessMap.clear();
@@ -205,24 +197,14 @@ public class LangevinLngvWriter {
 		sb.append("*** " + MOLECULE_COUNTERS + " ***");
 		sb.append("\n");
 		sb.append("\n");
-//		for(Molecule molecule: molecules) {
-//			molecule.getMoleculeCounter().writeMoleculeCounter(sb);
-//		}
-		Simulation.Counters.writeMoleculeCounters(simContext, sb);	// everything here is initialized with default
+		writeMoleculeCounters(sb);	// everything here is initialized with default
 		sb.append("\n");
 
 		/* ******  WRITE THE STATE COUNTERS *************/
 		sb.append("*** " + STATE_COUNTERS + " ***");
 		sb.append("\n");
 		sb.append("\n");
-//		for(Molecule molecule : molecules) {
-//			for(SiteType type : molecule.getTypeArray()) {
-//				for(State state : type.getStates()) {
-//					state.getStateCounter().writeStateCounter(sb);
-//				}
-//			}
-//		}
-		Simulation.Counters.writeStateCounters(simContext, sb);	// everything here is initialized with default
+		writeStateCounters(sb);	// everything here is initialized with default
 		sb.append("\n");
 
 		// what follows is mainly placeholders for result statistics, obviously there's none before running the simulation
@@ -230,23 +212,14 @@ public class LangevinLngvWriter {
 		sb.append("*** " + BOND_COUNTERS + " ***");
 		sb.append("\n");
 		sb.append("\n");
-//		for(BindingReaction reaction: bindingReactions) {
-//			reaction.getBondCounter().writeBondCounter(sb);
-//		}
-		Simulation.Counters.writeBondCounters(simContext, sb);	// everything here is initialized with default
+		writeBondCounters(sb);	// everything here is initialized with default
 		sb.append("\n");
 
 		/* ********  WRITE THE SITE PROPERTY COUNTERS ************/
 		sb.append("*** " + SITE_PROPERTY_COUNTERS + " ***");
 		sb.append("\n");
 		sb.append("\n");
-//		for(Molecule molecule : molecules) {
-//			ArrayList<Site> sites = molecule.getSiteArray();
-//			for(Site site : sites) {
-//				site.getPropertyCounter().writeSitePropertyCounter(sb);
-//			}
-//		}
-		Simulation.Counters.writeSitePropertyCounters(simContext, sb);	// everything here is initialized with default
+		writeSitePropertyCounters(sb);	// everything here is initialized with default
 		sb.append("\n");
 
 		/* *************** WRITE THE TRACK CLUSTERS BOOLEAN ***********/
@@ -934,7 +907,62 @@ public class LangevinLngvWriter {
 		System.out.println(sb.toString());
 		return;
 	}
-	
+
+	public static void writeMoleculeCounters(StringBuilder sb) {
+		for(ParticleMolecularType pmt : particleMolecularTytpeSet) {
+			if(SpeciesContextSpec.SourceMoleculeString.equals(pmt.getName()) || SpeciesContextSpec.SinkMoleculeString.equals(pmt.getName())) {
+				continue;	// skip the Source and the Sink molecules
+			}
+			sb.append("'").append(pmt.getName()).append("' : ")
+					.append("Measure Total Free Bound");
+			sb.append("\n");
+		}
+	}
+	public static void writeStateCounters(StringBuilder sb) {
+		for(ParticleMolecularType pmt : particleMolecularTytpeSet) {
+			if(SpeciesContextSpec.SourceMoleculeString.equals(pmt.getName()) || SpeciesContextSpec.SinkMoleculeString.equals(pmt.getName())) {
+				continue;
+			}
+			List <ParticleMolecularComponent> pmcList = pmt.getComponentList();
+			for(ParticleMolecularComponent pmc : pmcList)  {
+				List <ParticleComponentStateDefinition> pcsdList = pmc.getComponentStateDefinitions();
+				for(ParticleComponentStateDefinition pcsd : pcsdList) {
+					sb.append("'").append(pmt.getName()).append("' : ")
+							.append("'").append(pmc.getName()).append("' : ")
+							.append("'").append(pcsd.getName()).append("' : ")
+							.append("Measure Total Free Bound");
+					sb.append("\n");
+				}
+			}
+		}
+	}
+	public static void writeBondCounters(StringBuilder sb) {
+		for (Map.Entry<LangevinParticleJumpProcess,SubDomain> entry : particleJumpProcessMap.entrySet()) {
+			LangevinParticleJumpProcess lpjp = entry.getKey();
+			if(lpjp.getSubtype() == ReactionRuleSpec.Subtype.BINDING) {
+				sb.append("'").append(lpjp.getName()).append("' : ")
+						.append("Counted");
+				sb.append("\n");
+			}
+		}
+	}
+	public static void writeSitePropertyCounters(StringBuilder sb) {
+		for(ParticleMolecularType pmt : particleMolecularTytpeSet) {
+			if (SpeciesContextSpec.SourceMoleculeString.equals(pmt.getName()) || SpeciesContextSpec.SinkMoleculeString.equals(pmt.getName())) {
+				continue;
+			}
+			List<ParticleMolecularComponent> pmcList = pmt.getComponentList();
+			for(int i=0; i<pmcList.size(); i++) {
+				ParticleMolecularComponent pmc = pmcList.get(i);
+				sb.append("'").append(pmt.getName()).append("' ")
+						.append("Site " + i).append(" : ")
+						.append("Track Properties true");
+				sb.append("\n");
+			}
+		}
+	}
+
+
 	private static String getFilename() {	// SpringSaLaD specific, external file with molecule information
 		return null;	// not implemented
 	}
