@@ -42,8 +42,8 @@ def find_free_port() -> int:
 def login_interactive(api_base_url: str, client_id: str, authorization_base_url: str) -> AuthCodeResponse:
     hostname = socket.gethostname()
     temp_http_port = find_free_port()
-    display("temp_http_port: " + str(temp_http_port))
-    display("hostname: " + hostname)
+    # display("temp_http_port: " + str(temp_http_port))
+    # display("hostname: " + hostname)
 
     with OAuthHttpServer((hostname, temp_http_port), OAuthHttpHandler) as httpd:
         redirectURI = f'http://{hostname}:{temp_http_port}/oidc_test_callback'
@@ -54,22 +54,22 @@ def login_interactive(api_base_url: str, client_id: str, authorization_base_url:
         authorization_url, state = oauth.authorization_url(authorization_base_url)
         authorization_url += "&response_mode=query" + "&prompt=login" + "&nonce==Ib3bq2ecIpwC8rhuozWCB5Gs5bjxyIli6T-AjqjfY2s"
 
-        display(authorization_url)
+        # display(authorization_url)
 
         webbrowser.open_new(authorization_url)
 
         httpd.handle_request()
 
         path = httpd.path
-        display("path: " + path)
+        # display("path: " + path)
 
         auth_code = httpd.authorization_code
-        display("auth_code: " + auth_code)
+        # display("auth_code: " + auth_code)
 
         unauthorized_api_client = ApiClient(configuration=Configuration(host=api_base_url))
         auth_api = AuthResourceApi(unauthorized_api_client)
         auth_code_response: AuthCodeResponse = auth_api.code_exchange(code=auth_code, redirect_url=redirectURI)
-        display(auth_code_response.access_token)
+        # display(auth_code_response.access_token)
         return auth_code_response
 
 
