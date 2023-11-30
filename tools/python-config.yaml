@@ -1,0 +1,44 @@
+# configuration for openapi CLI to generate Python client
+# see https://openapi-generator.tech/docs/customization/
+#
+
+globalProperties:
+  # config options specific to the openapi-generator CLI
+  # see https://openapi-generator.tech/docs/customization/
+  debugOpenAPI: false
+  debugModels: false
+  debugOperations: false
+  debugSupportingFiles: false
+  generateAliasAsModel: false
+  org.openapitools.codegen.utils.oncelogger.enabled: false
+
+additionalProperties:
+  # config options specific to the java generator
+  # see https://openapi-generator.tech/docs/generators/python/
+
+  # library template (sub-template) to use: asyncio, tornado (deprecated), urllib3 (Default: urllib3)
+  library: urllib3
+  # date format for query parameters (Default: %Y-%m-%d)
+  dateFormat: "%Y-%m-%d"
+  # date-time format for query parameters (Default: %Y-%m-%dT%H:%M:%S%z)
+  dateTimeFormat: "%Y-%m-%dT%H:%M:%S%z"
+  # disallowAdditionalPropertiesIfNotPresent: true # default, but not compliant with OAS and JSON schema specifications
+  disallowAdditionalPropertiesIfNotPresent: true
+  # Specifies that only a library source code is to be generated. (Default: false)
+  generateSourceCodeOnly: false
+  # Hides the generation timestamp when files are generated. (Default: true)
+  hideGenerationTimestamp: true
+  # Map number to Union[StrictFloat, StrictInt], StrictStr or float. (Default: Union[StrictFloat, StrictInt])
+  mapNumberTo: "Union[StrictFloat, StrictInt]"
+  # python package name (convention: snake_case). (Default: openapi_client)
+  packageName: vcell_client
+  # python package url.
+  packageUrl: https://github.com/virtualcell/vcell.git
+  # python package version. (Default: 1.0.0)
+  packageVersion: 1.0.0
+  # python project name in setup.py (e.g. petstore-api).
+  projectName: vcell-api
+  # Set the recursion limit. If not set, use the system default value.
+  # recursionLimit:
+  # Use the discriminator's mapping in oneOf to speed up the model lookup. IMPORTANT: Validation (e.g. one and only one match in oneOf's schemas) will be skipped. (Default: false)
+  useOneOfDiscriminatorLookup: false
