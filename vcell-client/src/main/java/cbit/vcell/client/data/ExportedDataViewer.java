@@ -9,6 +9,8 @@ import cbit.vcell.client.server.ConnectionStatus;
 import cbit.vcell.client.server.SimStatusEvent;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import org.vcell.util.document.VCDocument;
+import org.vcell.util.gui.DefaultScrollTableCellRenderer;
+import org.vcell.util.gui.EditorScrollTable;
 
 import javax.swing.*;
 import javax.swing.event.TableColumnModelListener;
@@ -21,34 +23,40 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Enumeration;
 
-public class ExportedDataViewer extends DocumentEditorSubPanel implements ActionListener, PropertyChangeListener, FocusListener, MouseListener {
+public class ExportedDataViewer extends DocumentEditorSubPanel implements ActionListener, PropertyChangeListener,MouseListener {
 
     private JScrollPane scrollPane;
-    private JTable exportLinksTable;
+
+    public ExportedDataTableModel tableModel;
+    private EditorScrollTable editorScrollTable;
+    private JButton refresh;
 
     public ExportedDataViewer() {
-//        corePanel.setLayout(new GridBagLayout()); // You can set a layout manager for the panel
+        editorScrollTable = new EditorScrollTable();
+        editorScrollTable.setDefaultEditor(Object.class, null);
+        editorScrollTable.addMouseListener(this);
+        tableModel = new ExportedDataTableModel(editorScrollTable);
 
-        String[] columns = {"Sim Name", "BioModel Name", "Sim ID", "Date Exported", "Date Sim Modified", "Format", "Link"};
-        DefaultTableModel tableModel = new DefaultTableModel(columns, 0);
+        tableModel.addRow(new ExportedDataTableModel.ExportMetaData("Sim Name", "BioModel", "123", "10/2/3","123", "N5", "https://google.com"));
+        tableModel.addRow(new ExportedDataTableModel.ExportMetaData("Aim Name", "CioModel", "923", "11/2/3","123", "N5", "https://google.com"));
+        editorScrollTable.setModel(tableModel);
 
-        tableModel.addRow(new Object[]{"Test Sim", "Bio Name", "1720480", "123", "123", "N5", "https://www.google.com"});
-        exportLinksTable = new JTable(tableModel);
-        exportLinksTable.setDefaultEditor(Object.class, null);
-        exportLinksTable.addMouseListener(this);
-        scrollPane = new JScrollPane(exportLinksTable);
+        scrollPane = new JScrollPane(editorScrollTable);
         scrollPane.setSize(400, 400);
         scrollPane.setPreferredSize(new Dimension(400, 400));
         scrollPane.setMinimumSize(new Dimension(400, 400));
 
+        JLabel jLabel = new JLabel("Click on a cell to copy it's contents to your clipboard.");
+        refresh = new JButton("Refresh List");
 
+        JPanel topBar = new JPanel();
+        topBar.setLayout(new FlowLayout());
+        topBar.add(jLabel);
+        topBar.add(refresh);
 
         this.setLayout(new BorderLayout());
+        this.add(topBar, BorderLayout.NORTH);
         this.add(scrollPane);
-
-//        corePanel.setVisible(true);
-//        corePanel.setSize(400, 400);
-
     }
 
     public static void main(String[] args) {
@@ -63,9 +71,6 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
         viewSpeciesDialog.setModal(false);
         viewSpeciesDialog.setResizable(true);
         viewSpeciesDialog.setVisible(true);
-//        JFrame jFrame = new JFrame();
-//        jFrame.add(exportedDataViewer.scrollPane);
-//        jFrame.setSize(400, 400);
         jFrame.setVisible(true);
     }
 
@@ -85,22 +90,12 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
     }
 
     @Override
-    public void focusGained(FocusEvent e) {
-
-    }
-
-    @Override
-    public void focusLost(FocusEvent e) {
-
-    }
-
-    @Override
     public void mouseClicked(MouseEvent e) {
-        int row = exportLinksTable.getSelectedRow();
-        int column = exportLinksTable.getSelectedColumn();
+        int row = editorScrollTable.getSelectedRow();
+        int column = editorScrollTable.getSelectedColumn();
 
         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-        clipboard.setContents(new StringSelection( (String) exportLinksTable.getValueAt(row, column)), null);
+        clipboard.setContents(new StringSelection( (String) editorScrollTable.getValueAt(row, column)), null);
     }
 
     @Override
