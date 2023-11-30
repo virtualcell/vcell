@@ -10,6 +10,9 @@
 
 package cbit.vcell.export.gui;
 
+import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.util.Enumeration;
 
@@ -185,7 +188,6 @@ private ScrollTable getScrollPaneTable() {
 						popupLabel.setText(" Popup Menu");
 						popupMenu.insert(getJMenuItemCopyLocation(), 0);
 					}
-					boolean bSomethingSelected = getScrollPaneTable().getSelectedRows() != null && getScrollPaneTable().getSelectedRows().length > 0;
 					popupMenu.show(ivjScrollPaneTable, ownerTable.getX(), ownerTable.getY());
 				}
 
@@ -319,9 +321,10 @@ private void setExportMonitorTableModel1(ExportMonitorTableModel newValue) {
 	}
 	private void JMenuItemCopyLocation_ActionPerformed(java.awt.event.ActionEvent actionEvent) {
 		int[] rows = getScrollPaneTable().getSelectedRows();
-		System.out.println(rows.length + "");
 		String str = (String)getScrollPaneTable().getModel().getValueAt(rows[0], 4);
-		System.out.println(str);
+		Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+		StringSelection stringSelection = new StringSelection(str);
+		clipboard.setContents(stringSelection, null);
 	}
 
 /**
