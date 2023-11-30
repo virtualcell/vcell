@@ -10,12 +10,16 @@
 
 package cbit.vcell.export.gui;
 
+import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
+import java.awt.event.ActionEvent;
 import java.util.Enumeration;
 
-import javax.swing.JFrame;
-import javax.swing.JPanel;
+import javax.swing.*;
 import javax.swing.table.TableColumn;
 
+import org.vcell.util.gui.DefaultScrollTableActionManager;
 import org.vcell.util.gui.ScrollTable;
 
 import cbit.rmi.event.ExportEvent;
@@ -30,14 +34,23 @@ public class ExportMonitorPanel extends JPanel {
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private ExportMonitorTableModel ivjExportMonitorTableModel1 = null;
 	private boolean fieldHasJobs = false;
+	private javax.swing.JMenuItem ivjJMenuItemCopyLocation = null;
 
-class IvjEventHandler implements java.beans.PropertyChangeListener {
+	class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener {
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (evt.getSource() == ExportMonitorPanel.this.getScrollPaneTable() && (evt.getPropertyName().equals("model"))) 
 				connPtoP1SetTarget();
 			if (evt.getSource() == ExportMonitorPanel.this.getExportMonitorTableModel1() && (evt.getPropertyName().equals("minRowHeight"))) 
 				connPtoP2SetTarget();
 		};
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			if (e.getSource() == ExportMonitorPanel.this.getJMenuItemCopyLocation()) {
+				JMenuItemCopyLocation_ActionPerformed(e);
+			}
+		}
+
 	};
 /**
  * ExportMonitorPanel constructor comment.
@@ -165,8 +178,20 @@ private ScrollTable getScrollPaneTable() {
 			ivjScrollPaneTable.setName("ScrollPaneTable");
 			ivjScrollPaneTable.setModel(new ExportMonitorTableModel());
 			ivjScrollPaneTable.setBounds(0, 0, 200, 200);
-			// user code begin {1}
-			// user code end
+			ivjScrollPaneTable.setScrollTableActionManager(new DefaultScrollTableActionManager(getScrollPaneTable()) {
+				@Override
+				protected void constructPopupMenu() {
+					if(popupMenu == null) {
+						//super.constructPopupMenu();
+						popupMenu = new JPopupMenu();
+						popupLabel = new javax.swing.JLabel();
+						popupLabel.setText(" Popup Menu");
+						popupMenu.insert(getJMenuItemCopyLocation(), 0);
+					}
+					popupMenu.show(ivjScrollPaneTable, ownerTable.getX(), ownerTable.getY());
+				}
+
+			});
 		} catch (java.lang.Throwable ivjExc) {
 			// user code begin {2}
 			// user code end
@@ -194,6 +219,7 @@ private void initConnections() throws java.lang.Exception {
 	// user code begin {1}
 	// user code end
 	getScrollPaneTable().addPropertyChangeListener(ivjEventHandler);
+	getJMenuItemCopyLocation().addActionListener(ivjEventHandler);
 	connPtoP1SetTarget();
 	connPtoP2SetTarget();
 }
@@ -280,6 +306,27 @@ private void setExportMonitorTableModel1(ExportMonitorTableModel newValue) {
 	// user code begin {3}
 	// user code end
 }
+
+	private JMenuItem getJMenuItemCopyLocation() {
+		if (ivjJMenuItemCopyLocation == null) {
+			try {
+				ivjJMenuItemCopyLocation = new javax.swing.JMenuItem();
+				ivjJMenuItemCopyLocation.setName("JMenuItemCopyLocation");
+				ivjJMenuItemCopyLocation.setText("Copy Location");
+			} catch (java.lang.Throwable ivjExc) {
+				handleException(ivjExc);
+			}
+		}
+		return ivjJMenuItemCopyLocation;
+	}
+	private void JMenuItemCopyLocation_ActionPerformed(java.awt.event.ActionEvent actionEvent) {
+		int[] rows = getScrollPaneTable().getSelectedRows();
+		String str = (String)getScrollPaneTable().getModel().getValueAt(rows[0], 4);
+		Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+		StringSelection stringSelection = new StringSelection(str);
+		clipboard.setContents(stringSelection, null);
+	}
+
 /**
  * Sets the hasJobs property (boolean) value.
  * @param hasJobs The new value for the property.
@@ -288,7 +335,7 @@ private void setExportMonitorTableModel1(ExportMonitorTableModel newValue) {
 private void setHasJobs(boolean hasJobs) {
 	boolean oldValue = fieldHasJobs;
 	fieldHasJobs = hasJobs;
-	firePropertyChange("hasJobs", new Boolean(oldValue), new Boolean(hasJobs));
+	firePropertyChange("hasJobs", oldValue, hasJobs);
 }
 /**
  * 
