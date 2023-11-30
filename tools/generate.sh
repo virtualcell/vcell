@@ -22,8 +22,11 @@ docker run --rm -v ${parentDir}:/vcell \
     -o /vcell/vcell-restclient \
     -c /vcell/tools/java-config.yaml
 
-#docker run --rm -v ${parentDir}:/vcell ${generatorCliImage} generate \
-#    -i /vcell/tools/openapi.yaml \
-#    -g python \
-#    -o /vcell/python-restclient
-#
+docker run --rm -v ${parentDir}:/vcell \
+${generatorCliImage} generate \
+    -g python \
+    -i /vcell/tools/openapi.yaml \
+    -o /vcell/python-restclient \
+    -c /vcell/tools/python-config.yaml
+
+
