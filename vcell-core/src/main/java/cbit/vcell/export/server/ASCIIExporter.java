@@ -133,9 +133,9 @@ public class ASCIIExporter implements ExportConstants {
 		double[] allTimes = timeSpecs.getAllTimes();
 		int beginIndex = timeSpecs.getBeginTimeIndex();
 		int endIndex = timeSpecs.getEndTimeIndex();
-		ParticleDataBlock particleDataBlk = dataServerImpl.getParticleDataBlock(user, vcdID,allTimes[beginIndex]);
+		ParticleDataBlock particleDataBlock = dataServerImpl.getParticleDataBlock(user, vcdID, allTimes[beginIndex]);
 		VariableSpecs vs = exportSpecs.getVariableSpecs();
-		VCAssert.assertValid(vs);
+		if (vs == null) throw new NullPointerException("VariableSpecs object is unexpectedly null!");
 		String[] variableNames = vs.getVariableNames();
 		if (variableNames.length == 0) {
 			throw new IllegalArgumentException("No variables selected");
@@ -143,17 +143,16 @@ public class ASCIIExporter implements ExportConstants {
 		//need array for SimulationDescription, later
 		final String[] currentVariableName = new String[1];
 
-		List<ExportOutput> rval = new ArrayList<>(variableNames.length);
-		Set<String> species = particleDataBlk.getSpecies();
+		List<ExportOutput> realValue = new ArrayList<>(variableNames.length);
+		Set<String> species = particleDataBlock.getSpecies();
 		ParticleProgress particleProgress = null;
 
 		for (String vcellVariableName : variableNames) {
-
 			// Get smoldynSpecies
 			String smoldynSpecies = this.getSmoldynSpecies(vcellVariableName, species);
 
 			// Get particle progress
-			List<Coordinate> particles = particleDataBlk.getCoordinates(smoldynSpecies);
+			List<Coordinate> particles = particleDataBlock.getCoordinates(smoldynSpecies);
 			int numberOfParticles = particles.size();
 			int numberOfTimes = endIndex - beginIndex + 1;
 			if (particleProgress != null) {
@@ -197,8 +196,8 @@ public class ASCIIExporter implements ExportConstants {
 			final char COMMA  = ',';
 			int nextTimeIndex = particleProgress.nextTimeIndex(0, false);
 			for (int i = beginIndex; i <= endIndex; i++) {
-				particleDataBlk = dataServerImpl.getParticleDataBlock(user, vcdID,allTimes[i]);
-				particles = particleDataBlk.getCoordinates(smoldynSpecies);
+				particleDataBlock = dataServerImpl.getParticleDataBlock(user, vcdID,allTimes[i]);
+				particles = particleDataBlock.getCoordinates(smoldynSpecies);
 
 				if (i >= nextTimeIndex) {
 					nextTimeIndex = particleProgress.nextTimeIndex(i, true);
@@ -242,7 +241,7 @@ public class ASCIIExporter implements ExportConstants {
 
 			int nextDataIndex = particleProgress.nextDataIndex(0, false);
 
-			StringBuilder all = new StringBuilder( );
+			StringBuilder all = new StringBuilder();
 			for (int i = 0; i < dataLines.length; i++) {
 				final char NEWLINE = '\n';
 				all.append(dataLines[i]);
@@ -254,9 +253,9 @@ public class ASCIIExporter implements ExportConstants {
 				}
 			}
 			fileDataContainerManager.append(exportOutputCSV.getFileDataContainerID(), all.toString());
-			rval.add(exportOutputCSV);
+			realValue.add(exportOutputCSV);
 		}
-		return rval;
+		return realValue;
 	}
 
 	private String getSmoldynSpecies(String vcellName, Set<String> species) throws DataAccessException {
