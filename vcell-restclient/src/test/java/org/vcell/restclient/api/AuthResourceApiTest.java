@@ -47,7 +47,7 @@ public class AuthResourceApiTest {
         String code = null;
         String redirectURL = null;
         AuthCodeResponse response = 
-        api.apiAuthCodeFlowGet(code, redirectURL);
+        api.codeExchange(code, redirectURL);
         
         // TODO: test validations
     }

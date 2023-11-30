@@ -4,16 +4,16 @@ All URIs are relative to *http://localhost:9000*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
-| [**apiAuthCodeFlowGet**](AuthResourceApi.md#apiAuthCodeFlowGet) | **GET** /api/auth/code-flow |  |
-| [**apiAuthCodeFlowGetWithHttpInfo**](AuthResourceApi.md#apiAuthCodeFlowGetWithHttpInfo) | **GET** /api/auth/code-flow |  |
+| [**codeExchange**](AuthResourceApi.md#codeExchange) | **GET** /api/auth/code-flow | Get access token using authorization code flow |
+| [**codeExchangeWithHttpInfo**](AuthResourceApi.md#codeExchangeWithHttpInfo) | **GET** /api/auth/code-flow | Get access token using authorization code flow |
 
 
 
-## apiAuthCodeFlowGet
+## codeExchange
 
-> AuthCodeResponse apiAuthCodeFlowGet(code, redirectURL)
+> AuthCodeResponse codeExchange(code, redirectURL)
 
-
+Get access token using authorization code flow
 
 ### Example
 
@@ -34,10 +34,10 @@ public class Example {
         String code = "code_example"; // String | 
         String redirectURL = "redirectURL_example"; // String | 
         try {
-            AuthCodeResponse result = apiInstance.apiAuthCodeFlowGet(code, redirectURL);
+            AuthCodeResponse result = apiInstance.codeExchange(code, redirectURL);
             System.out.println(result);
         } catch (ApiException e) {
-            System.err.println("Exception when calling AuthResourceApi#apiAuthCodeFlowGet");
+            System.err.println("Exception when calling AuthResourceApi#codeExchange");
             System.err.println("Status code: " + e.getCode());
             System.err.println("Reason: " + e.getResponseBody());
             System.err.println("Response headers: " + e.getResponseHeaders());
@@ -74,11 +74,11 @@ No authorization required
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
 
-## apiAuthCodeFlowGetWithHttpInfo
+## codeExchangeWithHttpInfo
 
-> ApiResponse<AuthCodeResponse> apiAuthCodeFlowGet apiAuthCodeFlowGetWithHttpInfo(code, redirectURL)
+> ApiResponse<AuthCodeResponse> codeExchange codeExchangeWithHttpInfo(code, redirectURL)
 
-
+Get access token using authorization code flow
 
 ### Example
 
@@ -100,12 +100,12 @@ public class Example {
         String code = "code_example"; // String | 
         String redirectURL = "redirectURL_example"; // String | 
         try {
-            ApiResponse<AuthCodeResponse> response = apiInstance.apiAuthCodeFlowGetWithHttpInfo(code, redirectURL);
+            ApiResponse<AuthCodeResponse> response = apiInstance.codeExchangeWithHttpInfo(code, redirectURL);
             System.out.println("Status code: " + response.getStatusCode());
             System.out.println("Response headers: " + response.getHeaders());
             System.out.println("Response body: " + response.getData());
         } catch (ApiException e) {
-            System.err.println("Exception when calling AuthResourceApi#apiAuthCodeFlowGet");
+            System.err.println("Exception when calling AuthResourceApi#codeExchange");
             System.err.println("Status code: " + e.getCode());
             System.err.println("Response headers: " + e.getResponseHeaders());
             System.err.println("Reason: " + e.getResponseBody());

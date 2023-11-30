@@ -82,24 +82,26 @@ public class PublicationResourceApi {
   }
 
   /**
+   * Add publication
    * 
-   * 
-   * @param body  (optional)
+   * @param publication  (optional)
+   * @return Long
    * @throws ApiException if fails to make API call
    */
-  public void apiPublicationsDelete(Long body) throws ApiException {
-    apiPublicationsDeleteWithHttpInfo(body);
+  public Long addPublication(Publication publication) throws ApiException {
+    ApiResponse<Long> localVarResponse = addPublicationWithHttpInfo(publication);
+    return localVarResponse.getData();
   }
 
   /**
+   * Add publication
    * 
-   * 
-   * @param body  (optional)
-   * @return ApiResponse&lt;Void&gt;
+   * @param publication  (optional)
+   * @return ApiResponse&lt;Long&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<Void> apiPublicationsDeleteWithHttpInfo(Long body) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = apiPublicationsDeleteRequestBuilder(body);
+  public ApiResponse<Long> addPublicationWithHttpInfo(Publication publication) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = addPublicationRequestBuilder(publication);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -109,7 +111,78 @@ public class PublicationResourceApi {
       }
       try {
         if (localVarResponse.statusCode()/ 100 != 2) {
-          throw getApiException("apiPublicationsDelete", localVarResponse);
+          throw getApiException("addPublication", localVarResponse);
+        }
+        return new ApiResponse<Long>(
+          localVarResponse.statusCode(),
+          localVarResponse.headers().map(),
+          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<Long>() {}) // closes the InputStream
+        );
+      } finally {
+      }
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
+    catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new ApiException(e);
+    }
+  }
+
+  private HttpRequest.Builder addPublicationRequestBuilder(Publication publication) throws ApiException {
+
+    HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
+
+    String localVarPath = "/api/publications";
+
+    localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
+
+    localVarRequestBuilder.header("Content-Type", "application/json");
+    localVarRequestBuilder.header("Accept", "application/json");
+
+    try {
+      byte[] localVarPostBody = memberVarObjectMapper.writeValueAsBytes(publication);
+      localVarRequestBuilder.method("POST", HttpRequest.BodyPublishers.ofByteArray(localVarPostBody));
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
+    if (memberVarReadTimeout != null) {
+      localVarRequestBuilder.timeout(memberVarReadTimeout);
+    }
+    if (memberVarInterceptor != null) {
+      memberVarInterceptor.accept(localVarRequestBuilder);
+    }
+    return localVarRequestBuilder;
+  }
+  /**
+   * Delete publication
+   * 
+   * @param id  (required)
+   * @throws ApiException if fails to make API call
+   */
+  public void deletePublication(Long id) throws ApiException {
+    deletePublicationWithHttpInfo(id);
+  }
+
+  /**
+   * Delete publication
+   * 
+   * @param id  (required)
+   * @return ApiResponse&lt;Void&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<Void> deletePublicationWithHttpInfo(Long id) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = deletePublicationRequestBuilder(id);
+    try {
+      HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
+          localVarRequestBuilder.build(),
+          HttpResponse.BodyHandlers.ofInputStream());
+      if (memberVarResponseInterceptor != null) {
+        memberVarResponseInterceptor.accept(localVarResponse);
+      }
+      try {
+        if (localVarResponse.statusCode()/ 100 != 2) {
+          throw getApiException("deletePublication", localVarResponse);
         }
         return new ApiResponse<Void>(
           localVarResponse.statusCode(),
@@ -132,23 +205,22 @@ public class PublicationResourceApi {
     }
   }
 
-  private HttpRequest.Builder apiPublicationsDeleteRequestBuilder(Long body) throws ApiException {
+  private HttpRequest.Builder deletePublicationRequestBuilder(Long id) throws ApiException {
+    // verify the required parameter 'id' is set
+    if (id == null) {
+      throw new ApiException(400, "Missing the required parameter 'id' when calling deletePublication");
+    }
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
-    String localVarPath = "/api/publications";
+    String localVarPath = "/api/publications/{id}"
+        .replace("{id}", ApiClient.urlEncode(id.toString()));
 
     localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
 
-    localVarRequestBuilder.header("Content-Type", "application/json");
     localVarRequestBuilder.header("Accept", "application/json");
 
-    try {
-      byte[] localVarPostBody = memberVarObjectMapper.writeValueAsBytes(body);
-      localVarRequestBuilder.method("DELETE", HttpRequest.BodyPublishers.ofByteArray(localVarPostBody));
-    } catch (IOException e) {
-      throw new ApiException(e);
-    }
+    localVarRequestBuilder.method("DELETE", HttpRequest.BodyPublishers.noBody());
     if (memberVarReadTimeout != null) {
       localVarRequestBuilder.timeout(memberVarReadTimeout);
     }
@@ -158,24 +230,26 @@ public class PublicationResourceApi {
     return localVarRequestBuilder;
   }
   /**
+   * Get publication by ID
    * 
-   * 
-   * @return List&lt;Publication&gt;
+   * @param id  (required)
+   * @return Publication
    * @throws ApiException if fails to make API call
    */
-  public List<Publication> apiPublicationsGet() throws ApiException {
-    ApiResponse<List<Publication>> localVarResponse = apiPublicationsGetWithHttpInfo();
+  public Publication getPublication(Long id) throws ApiException {
+    ApiResponse<Publication> localVarResponse = getPublicationWithHttpInfo(id);
     return localVarResponse.getData();
   }
 
   /**
+   * Get publication by ID
    * 
-   * 
-   * @return ApiResponse&lt;List&lt;Publication&gt;&gt;
+   * @param id  (required)
+   * @return ApiResponse&lt;Publication&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<List<Publication>> apiPublicationsGetWithHttpInfo() throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = apiPublicationsGetRequestBuilder();
+  public ApiResponse<Publication> getPublicationWithHttpInfo(Long id) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = getPublicationRequestBuilder(id);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -185,7 +259,77 @@ public class PublicationResourceApi {
       }
       try {
         if (localVarResponse.statusCode()/ 100 != 2) {
-          throw getApiException("apiPublicationsGet", localVarResponse);
+          throw getApiException("getPublication", localVarResponse);
+        }
+        return new ApiResponse<Publication>(
+          localVarResponse.statusCode(),
+          localVarResponse.headers().map(),
+          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<Publication>() {}) // closes the InputStream
+        );
+      } finally {
+      }
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
+    catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new ApiException(e);
+    }
+  }
+
+  private HttpRequest.Builder getPublicationRequestBuilder(Long id) throws ApiException {
+    // verify the required parameter 'id' is set
+    if (id == null) {
+      throw new ApiException(400, "Missing the required parameter 'id' when calling getPublication");
+    }
+
+    HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
+
+    String localVarPath = "/api/publications/{id}"
+        .replace("{id}", ApiClient.urlEncode(id.toString()));
+
+    localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
+
+    localVarRequestBuilder.header("Accept", "application/json");
+
+    localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
+    if (memberVarReadTimeout != null) {
+      localVarRequestBuilder.timeout(memberVarReadTimeout);
+    }
+    if (memberVarInterceptor != null) {
+      memberVarInterceptor.accept(localVarRequestBuilder);
+    }
+    return localVarRequestBuilder;
+  }
+  /**
+   * Get all publications
+   * 
+   * @return List&lt;Publication&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public List<Publication> getPublications() throws ApiException {
+    ApiResponse<List<Publication>> localVarResponse = getPublicationsWithHttpInfo();
+    return localVarResponse.getData();
+  }
+
+  /**
+   * Get all publications
+   * 
+   * @return ApiResponse&lt;List&lt;Publication&gt;&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<List<Publication>> getPublicationsWithHttpInfo() throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = getPublicationsRequestBuilder();
+    try {
+      HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
+          localVarRequestBuilder.build(),
+          HttpResponse.BodyHandlers.ofInputStream());
+      if (memberVarResponseInterceptor != null) {
+        memberVarResponseInterceptor.accept(localVarResponse);
+      }
+      try {
+        if (localVarResponse.statusCode()/ 100 != 2) {
+          throw getApiException("getPublications", localVarResponse);
         }
         return new ApiResponse<List<Publication>>(
           localVarResponse.statusCode(),
@@ -203,7 +347,7 @@ public class PublicationResourceApi {
     }
   }
 
-  private HttpRequest.Builder apiPublicationsGetRequestBuilder() throws ApiException {
+  private HttpRequest.Builder getPublicationsRequestBuilder() throws ApiException {
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
@@ -214,79 +358,6 @@ public class PublicationResourceApi {
     localVarRequestBuilder.header("Accept", "application/json");
 
     localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
-    if (memberVarReadTimeout != null) {
-      localVarRequestBuilder.timeout(memberVarReadTimeout);
-    }
-    if (memberVarInterceptor != null) {
-      memberVarInterceptor.accept(localVarRequestBuilder);
-    }
-    return localVarRequestBuilder;
-  }
-  /**
-   * 
-   * 
-   * @param publication  (optional)
-   * @return String
-   * @throws ApiException if fails to make API call
-   */
-  public String apiPublicationsPost(Publication publication) throws ApiException {
-    ApiResponse<String> localVarResponse = apiPublicationsPostWithHttpInfo(publication);
-    return localVarResponse.getData();
-  }
-
-  /**
-   * 
-   * 
-   * @param publication  (optional)
-   * @return ApiResponse&lt;String&gt;
-   * @throws ApiException if fails to make API call
-   */
-  public ApiResponse<String> apiPublicationsPostWithHttpInfo(Publication publication) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = apiPublicationsPostRequestBuilder(publication);
-    try {
-      HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
-          localVarRequestBuilder.build(),
-          HttpResponse.BodyHandlers.ofInputStream());
-      if (memberVarResponseInterceptor != null) {
-        memberVarResponseInterceptor.accept(localVarResponse);
-      }
-      try {
-        if (localVarResponse.statusCode()/ 100 != 2) {
-          throw getApiException("apiPublicationsPost", localVarResponse);
-        }
-        return new ApiResponse<String>(
-          localVarResponse.statusCode(),
-          localVarResponse.headers().map(),
-          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<String>() {}) // closes the InputStream
-        );
-      } finally {
-      }
-    } catch (IOException e) {
-      throw new ApiException(e);
-    }
-    catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-      throw new ApiException(e);
-    }
-  }
-
-  private HttpRequest.Builder apiPublicationsPostRequestBuilder(Publication publication) throws ApiException {
-
-    HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
-
-    String localVarPath = "/api/publications";
-
-    localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
-
-    localVarRequestBuilder.header("Content-Type", "application/json");
-    localVarRequestBuilder.header("Accept", "application/json");
-
-    try {
-      byte[] localVarPostBody = memberVarObjectMapper.writeValueAsBytes(publication);
-      localVarRequestBuilder.method("POST", HttpRequest.BodyPublishers.ofByteArray(localVarPostBody));
-    } catch (IOException e) {
-      throw new ApiException(e);
-    }
     if (memberVarReadTimeout != null) {
       localVarRequestBuilder.timeout(memberVarReadTimeout);
     }

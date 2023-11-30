@@ -82,28 +82,28 @@ public class AuthResourceApi {
   }
 
   /**
-   * 
+   * Get access token using authorization code flow
    * 
    * @param code  (optional)
    * @param redirectURL  (optional)
    * @return AuthCodeResponse
    * @throws ApiException if fails to make API call
    */
-  public AuthCodeResponse apiAuthCodeFlowGet(String code, String redirectURL) throws ApiException {
-    ApiResponse<AuthCodeResponse> localVarResponse = apiAuthCodeFlowGetWithHttpInfo(code, redirectURL);
+  public AuthCodeResponse codeExchange(String code, String redirectURL) throws ApiException {
+    ApiResponse<AuthCodeResponse> localVarResponse = codeExchangeWithHttpInfo(code, redirectURL);
     return localVarResponse.getData();
   }
 
   /**
-   * 
+   * Get access token using authorization code flow
    * 
    * @param code  (optional)
    * @param redirectURL  (optional)
    * @return ApiResponse&lt;AuthCodeResponse&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<AuthCodeResponse> apiAuthCodeFlowGetWithHttpInfo(String code, String redirectURL) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = apiAuthCodeFlowGetRequestBuilder(code, redirectURL);
+  public ApiResponse<AuthCodeResponse> codeExchangeWithHttpInfo(String code, String redirectURL) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = codeExchangeRequestBuilder(code, redirectURL);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -113,7 +113,7 @@ public class AuthResourceApi {
       }
       try {
         if (localVarResponse.statusCode()/ 100 != 2) {
-          throw getApiException("apiAuthCodeFlowGet", localVarResponse);
+          throw getApiException("codeExchange", localVarResponse);
         }
         return new ApiResponse<AuthCodeResponse>(
           localVarResponse.statusCode(),
@@ -131,7 +131,7 @@ public class AuthResourceApi {
     }
   }
 
-  private HttpRequest.Builder apiAuthCodeFlowGetRequestBuilder(String code, String redirectURL) throws ApiException {
+  private HttpRequest.Builder codeExchangeRequestBuilder(String code, String redirectURL) throws ApiException {
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 

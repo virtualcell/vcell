@@ -58,26 +58,29 @@ public class PublicationApiTest {
         pub.setDate(LocalDate.now());
 
         // test that there are no publications initially
-        List<Publication> initialPublications = apiInstance.apiPublicationsGet();
+        List<Publication> initialPublications = apiInstance.getPublications();
         Assertions.assertEquals(0, initialPublications.size());
 
         // save publication pub
-        String newPubKey = apiInstance.apiPublicationsPost(pub);
+        Long newPubKey = apiInstance.addPublication(pub);
         Assertions.assertNotNull(newPubKey);
 
+        // test that pubuser can get publication pub
+        Publication pub2 = apiInstance.getPublication(newPubKey);
+
         // test that there is one publication now and matches pub
-        List<Publication> publications = apiInstance.apiPublicationsGet();
+        List<Publication> publications = apiInstance.getPublications();
         Assertions.assertEquals(1, publications.size());
-        pub.setPubKey(Long.parseLong(newPubKey));
+        pub.setPubKey(newPubKey);
         Log.error("TODO: fix discrepency with LocalDates (after round trip, not same)");
         pub.setDate(publications.get(0).getDate());
         Assertions.assertEquals(pub, publications.get(0));
 
         // test that pubuser can delete publication pub
-        apiInstance.apiPublicationsDelete(Long.parseLong(newPubKey));
+        apiInstance.deletePublication(newPubKey);
 
         // test that there are no publications now
-        List<Publication> finalPublications = apiInstance.apiPublicationsGet();
+        List<Publication> finalPublications = apiInstance.getPublications();
         Assertions.assertEquals(0, finalPublications.size());
     }
 }

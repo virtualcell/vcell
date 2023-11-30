@@ -34,54 +34,35 @@ public class PublicationResourceApiTest {
     private final PublicationResourceApi api = new PublicationResourceApi();
 
     
-    /**
-     * 
-     *
-     * 
-     *
-     * @throws ApiException
-     *          if the Api call fails
-     */
     @Test
-    public void apiPublicationsDeleteTest() throws ApiException {
-        Long body = null;
-        
-        api.apiPublicationsDelete(body);
+    public void getPublicationByIdTest() throws ApiException {
+        Long key = null;
+        api.getPublication(key);
         
         // TODO: test validations
     }
     
-    /**
-     * 
-     *
-     * 
-     *
-     * @throws ApiException
-     *          if the Api call fails
-     */
     @Test
-    public void apiPublicationsGetTest() throws ApiException {
-        List<Publication> response = 
-        api.apiPublicationsGet();
+    public void getPublicationsTest() throws ApiException {
+        List<Publication> response = api.getPublications();
         
         // TODO: test validations
     }
-    
-    /**
-     * 
-     *
-     * 
-     *
-     * @throws ApiException
-     *          if the Api call fails
-     */
+
     @Test
-    public void apiPublicationsPostTest() throws ApiException {
+    public void addPublicationTest() throws ApiException {
         Publication publication = null;
-        String response = 
-        api.apiPublicationsPost(publication);
-        
+        api.addPublication(publication);
+
         // TODO: test validations
     }
-    
+
+    @Test
+    public void deletePublicationTest() throws ApiException {
+        Long publication_key = null;
+        api.deletePublication(publication_key);
+
+        // TODO: test validations
+    }
+
 }

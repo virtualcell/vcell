@@ -34,12 +34,14 @@ paths:
         "403":
           description: Not Allowed
       security:
-      - OpenIDConnect:
+      - BearerToken:
         - admin
   /api/auth/code-flow:
     get:
       tags:
       - Auth Resource
+      summary: Get access token using authorization code flow
+      operationId: codeExchange
       parameters:
       - name: code
         in: query
@@ -60,6 +62,8 @@ paths:
     get:
       tags:
       - Publication Resource
+      summary: Get all publications
+      operationId: getPublications
       responses:
         "200":
           description: OK
@@ -72,6 +76,8 @@ paths:
     post:
       tags:
       - Publication Resource
+      summary: Add publication
+      operationId: addPublication
       requestBody:
         content:
           application/json:
@@ -83,23 +89,47 @@ paths:
           content:
             application/json:
               schema:
-                type: string
+                format: int64
+                type: integer
         "401":
           description: Not Authorized
         "403":
           description: Not Allowed
       security:
-      - OpenIDConnect:
+      - BearerToken:
         - admin
+  /api/publications/{id}:
+    get:
+      tags:
+      - Publication Resource
+      summary: Get publication by ID
+      operationId: getPublication
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          format: int64
+          type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Publication'
     delete:
       tags:
       - Publication Resource
-      requestBody:
-        content:
-          application/json:
-            schema:
-              format: int64
-              type: integer
+      summary: Delete publication
+      operationId: deletePublication
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          format: int64
+          type: integer
       responses:
         "204":
           description: No Content
@@ -108,7 +138,7 @@ paths:
         "403":
           description: Not Allowed
       security:
-      - OpenIDConnect:
+      - BearerToken:
         - admin
   /api/users/me:
     get:
@@ -126,7 +156,7 @@ paths:
         "403":
           description: Not Allowed
       security:
-      - OpenIDConnect:
+      - BearerToken:
         - user
 components:
   schemas:
@@ -220,7 +250,7 @@ components:
         userName:
           type: string
   securitySchemes:
-    OpenIDConnect:
+    BearerToken:
       type: openIdConnect
-      description: OpenID Connect
-      openIdConnectUrl: http://localhost:55312/auth/realms/quarkus/.well-known/openid-configuration
+      description: Bearer Token Authentication
+      openIdConnectUrl: http://localhost:55742/realms/quarkus/.well-known/openid-configuration

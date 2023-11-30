@@ -15,6 +15,7 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.vcell.restq.models.AuthCodeResponse;
 
 import java.io.IOException;
@@ -35,6 +36,7 @@ public class AuthResource {
 
     @GET
     @Path("code-flow")
+    @Operation(operationId = "codeExchange", summary = "Get access token using authorization code flow")
     @Produces(MediaType.APPLICATION_JSON)
     public AuthCodeResponse getAccessToken(
             @QueryParam("code") String authorization_code,
