@@ -39,7 +39,15 @@ def find_free_port() -> int:
         return int(s.getsockname()[1])
 
 
-def login_interactive(api_base_url: str, client_id: str, authorization_base_url: str) -> AuthCodeResponse:
+def login_interactive_tokens(api_base_url: str, client_id: str, auth_url: str) -> AuthCodeResponse:
+    """
+        This function is used to login interactively to the VCell API.
+        It is used for the ApiClient class to set the access token.
+        :param api_base_url: The base URL of the VCell API.
+        :param client_id: The client ID of the VCell API OIDC auth provider.
+        :param auth_url: The auth URL of the VCell API IODC auth provider.
+        :return: An AuthCodeResponse object with access, id and refresh tokens.
+    """
     hostname = socket.gethostname()
     temp_http_port = find_free_port()
     # display("temp_http_port: " + str(temp_http_port))
@@ -51,7 +59,7 @@ def login_interactive(api_base_url: str, client_id: str, authorization_base_url:
         oauth = OAuth2Session(client_id=client_id, redirect_uri=redirectURI, scope=["microprofile-jwt", "openid"])
 
         # Generate authorization URL
-        authorization_url, state = oauth.authorization_url(authorization_base_url)
+        authorization_url, state = oauth.authorization_url(auth_url)
         authorization_url += "&response_mode=query" + "&prompt=login" + "&nonce==Ib3bq2ecIpwC8rhuozWCB5Gs5bjxyIli6T-AjqjfY2s"
 
         # display(authorization_url)
@@ -73,18 +81,18 @@ def login_interactive(api_base_url: str, client_id: str, authorization_base_url:
         return auth_code_response
 
 
-def dummy():
-    from vcell_client import ApiClient, AuthCodeResponse, Configuration, Publication
-    from vcell_client.api.publication_resource_api import PublicationResourceApi
-    from vcell_client.auth import auth_utils_requests_oathlib as vc_auth
+def login_interactive(api_base_url: str, client_id: str, auth_url: str) -> ApiClient:
+    """
+        This function is used to login interactively to the VCell API.
+        It is used for the ApiClient class to set the access token.
+        :param api_base_url: The base URL of the VCell API.
+        :param client_id: The client ID of the VCell API OIDC auth provider.
+        :param auth_url: The auth URL of the VCell API IODC auth provider.
+        :return: An ApiClient object with the access token set.
+    """
+    auth_code_response: AuthCodeResponse = login_interactive_tokens(api_base_url, client_id, auth_url)
+    access_token = auth_code_response.access_token
+    api_client = ApiClient(configuration=Configuration(host=api_base_url, access_token=access_token))
+    api_client.set_default_header('Authorization', f'Bearer {access_token}')
+    return api_client
 
-    api_url: str = "http://localhost:9000"
-    client_id: str = 'backend-service'
-    authorization_url: str = 'http://localhost:55742/realms/quarkus/protocol/openid-connect/auth'
-
-    auth_code_response: AuthCodeResponse = vc_auth.login_interactive(api_base_url=api_url, client_id=client_id,
-                                                                     authorization_base_url=authorization_url)
-    api_client = ApiClient(configuration=Configuration(host=api_url, access_token=auth_code_response.access_token))
-    publication_api = PublicationResourceApi(api_client)
-    pubs: list[Publication] = publication_api.get_publications()
-    display(pubs)
