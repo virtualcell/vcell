@@ -31,13 +31,14 @@ paths:
         "403":
           description: Not Allowed
       security:
-      - OpenIDConnect:
+      - BearerToken:
         - admin
       tags:
       - Admin Resource
       x-accepts: application/json
   /api/auth/code-flow:
     get:
+      operationId: codeExchange
       parameters:
       - explode: true
         in: query
@@ -60,32 +61,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/AuthCodeResponse'
           description: OK
+      summary: Get access token using authorization code flow
       tags:
       - Auth Resource
       x-accepts: application/json
   /api/publications:
-    delete:
-      requestBody:
-        content:
-          application/json:
-            schema:
-              format: int64
-              type: integer
-      responses:
-        "204":
-          description: No Content
-        "401":
-          description: Not Authorized
-        "403":
-          description: Not Allowed
-      security:
-      - OpenIDConnect:
-        - admin
-      tags:
-      - Publication Resource
-      x-content-type: application/json
-      x-accepts: application/json
     get:
+      operationId: getPublications
       responses:
         "200":
           content:
@@ -95,10 +77,12 @@ paths:
                   $ref: '#/components/schemas/Publication'
                 type: array
           description: OK
+      summary: Get all publications
       tags:
       - Publication Resource
       x-accepts: application/json
     post:
+      operationId: addPublication
       requestBody:
         content:
           application/json:
@@ -109,18 +93,68 @@ paths:
           content:
             application/json:
               schema:
-                type: string
+                format: int64
+                type: integer
           description: OK
         "401":
           description: Not Authorized
         "403":
           description: Not Allowed
       security:
-      - OpenIDConnect:
+      - BearerToken:
         - admin
+      summary: Add publication
       tags:
       - Publication Resource
       x-content-type: application/json
+      x-accepts: application/json
+  /api/publications/{id}:
+    delete:
+      operationId: deletePublication
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          format: int64
+          type: integer
+        style: simple
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Not Authorized
+        "403":
+          description: Not Allowed
+      security:
+      - BearerToken:
+        - admin
+      summary: Delete publication
+      tags:
+      - Publication Resource
+      x-accepts: application/json
+    get:
+      operationId: getPublication
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          format: int64
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Publication'
+          description: OK
+      summary: Get publication by ID
+      tags:
+      - Publication Resource
       x-accepts: application/json
   /api/users/me:
     get:
@@ -136,7 +170,7 @@ paths:
         "403":
           description: Not Allowed
       security:
-      - OpenIDConnect:
+      - BearerToken:
         - user
       tags:
       - Users Resource
@@ -289,8 +323,8 @@ components:
           type: string
       type: object
   securitySchemes:
-    OpenIDConnect:
-      description: OpenID Connect
-      openIdConnectUrl: http://localhost:55312/auth/realms/quarkus/.well-known/openid-configuration
+    BearerToken:
+      description: Bearer Token Authentication
+      openIdConnectUrl: http://localhost:55742/realms/quarkus/.well-known/openid-configuration
       type: openIdConnect
 

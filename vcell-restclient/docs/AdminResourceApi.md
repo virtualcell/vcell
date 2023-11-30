@@ -58,7 +58,7 @@ This endpoint does not need any parameter.
 
 ### Authorization
 
-[OpenIDConnect](../README.md#OpenIDConnect)
+[BearerToken](../README.md#BearerToken)
 
 ### HTTP request headers
 
@@ -124,7 +124,7 @@ ApiResponse<**String**>
 
 ### Authorization
 
-[OpenIDConnect](../README.md#OpenIDConnect)
+[BearerToken](../README.md#BearerToken)
 
 ### HTTP request headers
 

@@ -40,11 +40,20 @@ public class PublicationResource {
     @Path("{id}")
     @Operation(hidden=true)
     @Produces(MediaType.TEXT_HTML)
-    public TemplateInstance find(@PathParam("id") Long publicationID) throws SQLException, DataAccessException {
-       return Templates.publication(publicationService.getPublication(new KeyValue(publicationID.toString()), AuthUtils.PUBLICATION_USER));
+    public TemplateInstance get_by_id_html(@PathParam("id") Long publicationID) throws SQLException, DataAccessException {
+        return Templates.publication(publicationService.getPublication(new KeyValue(publicationID.toString()), AuthUtils.PUBLICATION_USER));
     }
 
     @GET
+    @Path("{id}")
+    @Operation(operationId = "getPublication", summary = "Get publication by ID")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Publication get_by_id(@PathParam("id") Long publicationID) throws SQLException, DataAccessException {
+        return publicationService.getPublication(new KeyValue(publicationID.toString()), AuthUtils.PUBLICATION_USER);
+    }
+
+    @GET
+    @Operation(operationId = "getPublications", summary = "Get all publications")
     @Produces(MediaType.APPLICATION_JSON)
     public Publication[] get_list() {
         // look into using Oso for Authorization (future).
@@ -78,11 +87,13 @@ public class PublicationResource {
     @Produces("application/json")
     @Consumes("application/json")
     @RolesAllowed("admin")
+    @Operation(operationId = "addPublication", summary = "Add publication")
     @POST
-    public String add(Publication publication) {
+    public Long add(Publication publication) {
         User vcellUser = AuthUtils.PUBLICATION_USER;
         try {
-            return publicationService.savePublication(publication, vcellUser).toString();
+            KeyValue key = publicationService.savePublication(publication, vcellUser);
+            return Long.parseLong(key.toString());
         } catch (PermissionException ee) {
             Log.error(ee);
             throw new RuntimeException("not authorized", ee);
@@ -95,8 +106,10 @@ public class PublicationResource {
 
     @Consumes("application/json")
     @RolesAllowed("admin")
+    @Path("{id}")
+    @Operation(operationId = "deletePublication", summary = "Delete publication")
     @DELETE
-    public void delete(Long publicationID) {
+    public void delete(@PathParam("id") Long publicationID) {
         User vcellUser = AuthUtils.PUBLICATION_USER;
         try {
             int numRecordsDeleted = publicationService.deletePublication(new KeyValue(publicationID.toString()), vcellUser);

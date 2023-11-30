@@ -1,10 +1,6 @@
-.github/workflows/maven.yml
 .gitignore
-.travis.yml
 README.md
 api/openapi.yaml
-build.gradle
-build.sbt
 docs/AdminResourceApi.md
 docs/AuthCodeResponse.md
 docs/AuthResourceApi.md
@@ -14,14 +10,6 @@ docs/Publication.md
 docs/PublicationResourceApi.md
 docs/User.md
 docs/UsersResourceApi.md
-git_push.sh
-gradle.properties
-gradle/wrapper/gradle-wrapper.jar
-gradle/wrapper/gradle-wrapper.properties
-gradlew
-gradlew.bat
-pom.xml
-settings.gradle
 src/main/AndroidManifest.xml
 src/main/java/org/vcell/restclient/ApiClient.java
 src/main/java/org/vcell/restclient/ApiException.java
@@ -42,5 +30,3 @@ src/main/java/org/vcell/restclient/model/BiomodelRef.java
 src/main/java/org/vcell/restclient/model/MathmodelRef.java
 src/main/java/org/vcell/restclient/model/Publication.java
 src/main/java/org/vcell/restclient/model/User.java
-src/test/java/org/vcell/restclient/api/AuthResourceApiTest.java
-src/test/java/org/vcell/restclient/model/AuthCodeResponseTest.java

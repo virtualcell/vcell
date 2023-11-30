@@ -91,7 +91,7 @@ public class PublicationResourceTest {
 
         Publication[] publications = publicationService.getPublications(DatabaseServerImpl.OrderBy.year_desc, AuthUtils.PUBLICATION_USER);
         Assertions.assertEquals(1, publications.length);
-        String pubKey_json = objectMapper.writeValueAsString(publications[0].pubKey());
+        Long pubKey = publications[0].pubKey();
 
         // list publications, should return list with publication1
         given()
@@ -109,30 +109,44 @@ public class PublicationResourceTest {
                 .body("[0].url", is("url"))
                 .body("[0].wittid", is(0));
 
+        // get publication1 as no user
+        given()
+                .pathParam("id", pubKey)
+                .when()
+                .get("/api/publications/{id}")
+                .then()
+                .statusCode(200)
+                .body("title", is("publication 1"))
+                .body("authors", containsInAnyOrder("author1", "author2"))
+                .body("year", is(1994))
+                .body("citation", is("citation"))
+                .body("pubmedid", is("pubmedId"))
+                .body("doi", is("doi"))
+                .body("endnoteid", is(0))
+                .body("url", is("url"))
+                .body("wittid", is(0));
+
         // remove publication1 as basicuser (doesn't have permission)
         given().auth().oauth2(keycloakClient.getAccessToken(nonpubuser))
-                .body(pubKey_json)
-                .header("Content-Type", MediaType.APPLICATION_JSON)
+                .pathParam("id", pubKey)
                 .when()
-                .delete("/api/publications")
+                .delete("/api/publications/{id}")
                 .then()
                 .statusCode(403);
 
         // remove publication1 no user
         given()
-                .body(pubKey_json)
-                .header("Content-Type", MediaType.APPLICATION_JSON)
+                .pathParam("id", pubKey)
                 .when()
-                .delete("/api/publications")
+                .delete("/api/publications/{id}")
                 .then()
                 .statusCode(401);
 
         // remove publication1 as pubuser (does have permission)
         given().auth().oauth2(keycloakClient.getAccessToken(pubuser))
-                .body(pubKey_json)
-                .header("Content-Type", MediaType.APPLICATION_JSON)
+                .pathParam("id", pubKey)
                 .when()
-                .delete("/api/publications")
+                .delete("/api/publications/{id}")
                 .then()
                 .statusCode(204);
 
