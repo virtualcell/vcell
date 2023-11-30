@@ -3,6 +3,7 @@ package org.vcell.util;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.vcell.test.Fast;
+import org.vcell.util.matrix.ArrayMatrix;
 
 import static org.junit.Assert.*;
 
