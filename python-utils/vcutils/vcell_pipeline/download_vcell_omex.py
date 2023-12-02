@@ -5,8 +5,8 @@ from pydantic import BaseModel
 from typing import Optional
 
 from citation import getCitation, CitationInfo, getSuggestedProjectName
-from vcell_common.api_utils import download_file
-from vcell_pipeline.vcell_datamodels import Publication
+from vcutils.vcell_common.api_utils import download_file
+from vcutils.vcell_pipeline.vcell_datamodels import Publication
 
 
 class ExportStatus(BaseModel):
@@ -63,8 +63,8 @@ def download_published_omex(api_base_url: str, out_dir: Path) -> None:
 
         except requests.exceptions.HTTPError as e:
             error_msg = str(e)
-            error_response: requests.Response = e.response
-            if error_response.status_code == 500:
+            error_response: requests.Response | None = e.response
+            if error_response is not None and error_response.status_code >= 400:
                 error_msg += " "+error_response.text
             print(error_msg)
             exportStatus.exception = error_msg

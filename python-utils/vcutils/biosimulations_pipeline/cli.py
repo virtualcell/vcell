@@ -10,7 +10,7 @@ from pathlib import Path
 from biosim_api import run_project, check_run_status, publish_project
 from data_manager import DataManager
 from datamodels import Simulator, SimulationRun, SimulatorComparison
-from vcell_common.api_utils import download_file
+from vcutils.vcell_common.api_utils import download_file
 from hdf5_compare import compare_datasets, get_results
 
 

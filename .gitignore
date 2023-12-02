@@ -119,7 +119,7 @@ stdOut.txt
 *.rar
 
 # need this file for testing
-!vcell-cli-utils/tests/fixtures/modeldb-206365-outputs.zip
+!python-utils/tests/fixtures/modeldb-206365-outputs.zip
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*

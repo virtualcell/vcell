@@ -1,7 +1,7 @@
 from typing import Optional
 import requests
 import time
-from vcell_pipeline.vcell_datamodels import Publication
+from vcutils.vcell_pipeline.vcell_datamodels import Publication
 
 
 class CitationInfo:

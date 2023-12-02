@@ -13,7 +13,7 @@ OMEX_OUTPUT_DIR=<<path-to-output-artifacts>>
 ```
 
 ```bash
-poetry run python biosimulations_pipeline/cli.py --help
+poetry run python vcutils/biosimulations_pipeline/cli.py --help
 ```
 
 ```
@@ -39,7 +39,7 @@ poetry run python biosimulations_pipeline/cli.py --help
 ## upload OMEX files
 
 ```bash
-poetry run python biosimulations_pipeline/cli.py upload_omex --help
+poetry run python vcutils/biosimulations_pipeline/cli.py upload_omex --help
 ```
 
 ```
@@ -60,7 +60,7 @@ Options:
 ## download runs
 
 ```bash
-poetry run python biosimulations_pipeline/cli.py download_runs --help
+poetry run python vcutils/biosimulations_pipeline/cli.py download_runs --help
 ```
 
 ```
@@ -80,7 +80,7 @@ Options:
 ## refresh status
 
 ```bash
-poetry run python biosimulations_pipeline/cli.py refresh_status --help
+poetry run python vcutils/biosimulations_pipeline/cli.py refresh_status --help
 ```
 
 ```
@@ -96,7 +96,7 @@ Options:
 ## compare runs
 
 ```bash
-poetry run python biosimulations_pipeline/cli.py compare_runs --help
+poetry run python vcutils/biosimulations_pipeline/cli.py compare_runs --help
 ```
 
 ```
@@ -114,7 +114,7 @@ Options:
 ## publish
 
 ```bash
-poetry run python biosimulations_pipeline/cli.py publish --help
+poetry run python vcutils/biosimulations_pipeline/cli.py publish --help
 ```
 
 ```
