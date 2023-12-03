@@ -1,5 +1,5 @@
 from typing import Optional
-from vcell_pipeline.citation import getCitation, CitationInfo, getSuggestedProjectName
+from vcutils.vcell_pipeline.citation import getCitation, CitationInfo, getSuggestedProjectName
 
 
 def test_citation() -> None:
