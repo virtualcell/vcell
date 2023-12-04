@@ -46,7 +46,7 @@ public class DatabaseService {
 						PropertyLoader.getSecretValue(PropertyLoader.dbPasswordValue,PropertyLoader.dbPasswordFile));
 	}
 	
-	public ConnectionFactory createConnectionFactory(String argDriverName, String argConnectURL, String argUserid, String argPassword) throws SQLException {
+	private ConnectionFactory createConnectionFactory(String argDriverName, String argConnectURL, String argUserid, String argPassword) throws SQLException {
 		switch (argDriverName) {
 			case OraclePoolingConnectionFactoryProvider.ORACLE_DRIVER_NAME: {
 				Database database = new OraclePoolingConnectionFactoryProvider();

@@ -10,6 +10,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 
+import cbit.vcell.resource.PropertyLoader;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
 import org.vcell.db.DatabaseSyntax;
@@ -32,13 +33,23 @@ public class MigrateDbManager {
 			String connectionURL_Oracle = "jdbc:oracle:thin:@vcell-oracle.cam.uchc.edu:1521/ORCLPDB1";
 			String userid_Oracle = "vcell";
 			String password_Oracle = null;
-			conFactory_Oracle = DatabaseService.getInstance().createConnectionFactory(driverName_Oracle,connectionURL_Oracle,userid_Oracle,password_Oracle);
+			PropertyLoader.setProperty(PropertyLoader.dbDriverName, driverName_Oracle);
+			PropertyLoader.setProperty(PropertyLoader.dbConnectURL, connectionURL_Oracle);
+			PropertyLoader.setProperty(PropertyLoader.dbUserid, userid_Oracle);
+			PropertyLoader.setProperty(PropertyLoader.dbPasswordValue, password_Oracle);
+
+			conFactory_Oracle = DatabaseService.getInstance().createConnectionFactory();
 			
 			String driverName_Postgres = "org.postgresql.Driver";
 			String connectionURL_Postgres = "jdbc:postgresql://localhost:5432/schaff";
 			String userid_Postgres = "schaff";
 			String password_Postgres = null;
-			conFactory_Postgres = DatabaseService.getInstance().createConnectionFactory(driverName_Postgres,connectionURL_Postgres,userid_Postgres,password_Postgres);
+			PropertyLoader.setProperty(PropertyLoader.dbDriverName, driverName_Postgres);
+			PropertyLoader.setProperty(PropertyLoader.dbConnectURL, connectionURL_Postgres);
+			PropertyLoader.setProperty(PropertyLoader.dbUserid, userid_Postgres);
+			PropertyLoader.setProperty(PropertyLoader.dbPasswordValue, password_Postgres);
+
+			conFactory_Postgres = DatabaseService.getInstance().createConnectionFactory();
 			
 			int retryCount = 0;
 			boolean done = false;

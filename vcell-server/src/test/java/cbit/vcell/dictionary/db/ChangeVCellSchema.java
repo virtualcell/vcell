@@ -10,6 +10,7 @@
 
 package cbit.vcell.dictionary.db;
 
+import cbit.vcell.resource.PropertyLoader;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
 import org.vcell.db.DatabaseSyntax;
@@ -744,21 +745,16 @@ public static void main(String[] args) {
             throw new RuntimeException("Aborted by user");
         }
 
+		PropertyLoader.setProperty(PropertyLoader.dbConnectURL, connectURL);
+		PropertyLoader.setProperty(PropertyLoader.dbUserid, dbSchemaUser);
+		PropertyLoader.setProperty(PropertyLoader.dbPasswordValue, dbPassword);
         ConnectionFactory conFactory = null;
         if (args[0].equalsIgnoreCase(oracle)) {
-            String driverName = "oracle.jdbc.driver.OracleDriver";
-            conFactory = DatabaseService.getInstance().createConnectionFactory(
-                    driverName,
-                    connectURL,
-                    dbSchemaUser,
-                    dbPassword);
+			PropertyLoader.setProperty(PropertyLoader.dbDriverName, "oracle.jdbc.driver.OracleDriver");
+            conFactory = DatabaseService.getInstance().createConnectionFactory();
         }else if (args[0].equalsIgnoreCase(postgres)){
-        	String driverName = "org.postgresql.Driver";
-            conFactory = DatabaseService.getInstance().createConnectionFactory(
-                    driverName,
-                    connectURL,
-                    dbSchemaUser,
-                    dbPassword);
+			PropertyLoader.setProperty(PropertyLoader.dbDriverName, "org.postgresql.Driver");
+            conFactory = DatabaseService.getInstance().createConnectionFactory();
 		} else {
             System.out.println(usage);
             System.exit(1);

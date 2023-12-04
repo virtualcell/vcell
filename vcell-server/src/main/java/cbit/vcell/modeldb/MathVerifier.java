@@ -91,11 +91,11 @@ public class MathVerifier {
         //
         // get appropriate database factory objects
         //
-        conFactory = DatabaseService.getInstance().createConnectionFactory(
-                driverName,
-                connectURL,
-                dbSchemaUser,
-                dbPassword);
+        PropertyLoader.setProperty(PropertyLoader.dbDriverName, driverName);
+        PropertyLoader.setProperty(PropertyLoader.dbConnectURL, connectURL);
+        PropertyLoader.setProperty(PropertyLoader.dbUserid, dbSchemaUser);
+        PropertyLoader.setProperty(PropertyLoader.dbPasswordValue, dbPassword);
+        conFactory = DatabaseService.getInstance().createConnectionFactory();
         keyFactory = conFactory.getKeyFactory();
 
         AdminDatabaseServer adminDbServer =
