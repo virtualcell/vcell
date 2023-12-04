@@ -2045,7 +2045,33 @@ public KeyValue savePublicationRep(PublicationRep publicationRep, User user, boo
 		conFactory.release(con,lock);
 	}
 }
-	
+
+public int deletePublicationRep(KeyValue pubID, User user, boolean bEnableRetry) throws SQLException, DataAccessException {
+	Object lock = new Object();
+	Connection con = conFactory.getConnection(lock);
+	try {
+		int recordsDeleted = DbDriver.deletePublicationRep(con,pubID,user,conFactory.getDatabaseSyntax());
+		con.commit();
+		return recordsDeleted;
+	}catch (Throwable e) {
+		lg.error(e.getMessage(),e);
+		try {
+			con.rollback();
+		}catch (Throwable rbe){
+			lg.error("exception during rollback, bEnableRetry = "+bEnableRetry, rbe);
+		}
+		if (bEnableRetry && isBadConnection(con)) {
+			conFactory.failed(con,lock);
+			return deletePublicationRep(pubID, user, false);
+		}else{
+			handle_DataAccessException_SQLException(e);
+			return 0;
+		}
+	}finally{
+		conFactory.release(con,lock);
+	}
+}
+
 public PublicationRep[] getPublicationReps(User user, String conditions, OrderBy orderBy, boolean bEnableRetry) throws SQLException, DataAccessException {
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);

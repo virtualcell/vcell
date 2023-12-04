@@ -35,6 +35,10 @@ public class PublicationService {
 		return databaseServerImpl.savePublicationRep(publicationRep, vcellUser);
 	}
 
+	public int deletePublication(KeyValue publicationKey, User vcellUser) throws SQLException, DataAccessException{
+		return databaseServerImpl.deletePublicationRep(publicationKey, vcellUser);
+	}
+
 	public Publication getPublication(KeyValue pubKey, User vcellUser) throws SQLException, DataAccessException {
 		if (pubKey == null){
 			throw new RuntimeException("publication key not specified");
