@@ -81,15 +81,10 @@ public class StochtestRunService {
 		long bngTimeoutMS = Long.valueOf(args[2]);
 		
 		DatabasePolicySQL.bAllowAdministrativeAccess = true;
-	    String driverName = PropertyLoader.getRequiredProperty(PropertyLoader.dbDriverName);
-	    String connectURL = PropertyLoader.getRequiredProperty(PropertyLoader.dbConnectURL);
-	    String dbSchemaUser = PropertyLoader.getRequiredProperty(PropertyLoader.dbUserid);
-	    String dbPassword = PropertyLoader.getSecretValue(PropertyLoader.dbPasswordValue, PropertyLoader.dbPasswordFile);
 	    //
 	    // get appropriate database factory objects
 	    //
-	    ConnectionFactory conFactory = DatabaseService.getInstance().createConnectionFactory(
-	    		driverName,connectURL,dbSchemaUser,dbPassword);
+	    ConnectionFactory conFactory = DatabaseService.getInstance().createConnectionFactory();
 	    KeyFactory keyFactory = conFactory.getKeyFactory();
 	    StochtestRunService stochtestService = new StochtestRunService(baseDir, numTrials, bngTimeoutMS, conFactory, keyFactory);
 	    

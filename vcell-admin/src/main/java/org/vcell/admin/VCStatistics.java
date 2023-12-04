@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Vector;
 
+import cbit.vcell.resource.PropertyLoader;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
 
@@ -52,24 +53,17 @@ public class VCStatistics {
 			return sb.toString();
 		}
 	}
-	private VCStatistics(String dbDriverName, String dbConnectURL,String dbUserid,String dbPassword) throws Exception {
-		connectionFactory = DatabaseService.getInstance().createConnectionFactory(
-				dbDriverName,
-				dbConnectURL,
-				dbUserid,
-				dbPassword);
+	private VCStatistics() throws Exception {
+		connectionFactory = DatabaseService.getInstance().createConnectionFactory();
 	}
 	public static void main(String[] args) {
-		if(args.length != 5){
-			//e.g in your eclipse debug configuration put arguments: dbs6.cam.uchc.edu orcl ID password
-			System.out.println("Usage:VCStatistics dbDriverName connectUrl dbUserID dbPassword simDataDir");
-			System.out.println("Example: VCStatistics oracle.jdbc.driver.OracleDriver \"jdbc:oracle:thin:@host:1521:db\" dbUserid dbPassword simDataDir");
-
+		if(args.length != 1){
+			System.out.println("Usage:VCStatistics simDataDir");
 			System.exit(1);
 		}
 		try {
-			VCStatistics vcstat = new VCStatistics(args[0],args[1],args[2],args[3]);
-			vcstat.startStatistics(args[4]);			
+			VCStatistics vcstat = new VCStatistics();
+			vcstat.startStatistics(args[0]);
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		} finally {

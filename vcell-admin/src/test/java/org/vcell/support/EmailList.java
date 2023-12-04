@@ -25,29 +25,20 @@ public class EmailList {
 	private static final String NOTIFY_QUERY = "Select email from vcell.vc_userinfo where notify='on' "
 			+ "and regexp_like(email,'[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,4}$')";
 	private static final String BOUNCE_QUERY = "Select email from vcell.mailbounce";
-	private static final String DEFAULT_FILE = "emails.csv";
 
-	static final String JDBC_URL = "jdbc:oracle:thin:@vcell-oracle.cam.uchc.edu:1521/ORCLPDB1";
-	static final String USER_ID = "vcell";
-	private final String password;
 	private final String filename;
 
 	public static void main(String[] args) {
 		try {
-		EmailList eml;
-		switch (args.length) {
-		case 0:
-			System.err.println("Usage: [database password] <output filename>");
-			return;
-		case 1:
-			eml = new EmailList(args[0], DEFAULT_FILE);
-			break;
-		default:
-			eml = new EmailList(args[0], args[1]);
-			break;
-		}
+			EmailList eml;
+			if (args.length!=1) {
+				System.err.println("Usage: <output filename>");
+				System.exit(1);
+			}
+			eml = new EmailList(args[0]);
 
-		eml.exportList( );
+			eml.exportList( );
+			System.exit(0);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -55,12 +46,10 @@ public class EmailList {
 
 	/**
 	 *
-	 * @param password database (for {@link #USER_ID}
 	 * @param filename to write to
 	 */
-	EmailList(String password, String filename) {
+	EmailList(String filename) {
 		super();
-		this.password = password;
 		this.filename = filename;
 	}
 
@@ -135,11 +124,7 @@ public class EmailList {
 	 */
 	private Connection getConnection( ) throws SQLException {
 		String dbDriverName = PropertyLoader.getRequiredProperty(PropertyLoader.dbDriverName);
-		ConnectionFactory connectionFactory = DatabaseService.getInstance().createConnectionFactory(
-			dbDriverName,
-			EmailList.JDBC_URL,
-			USER_ID,
-			password);
+		ConnectionFactory connectionFactory = DatabaseService.getInstance().createConnectionFactory();
 		Connection conn = connectionFactory.getConnection(new Object());
 		return conn;
 	}
