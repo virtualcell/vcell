@@ -357,6 +357,10 @@ public KeyValue savePublicationRep(PublicationRep publicationRep,User vcellUser)
 	return dbTop.savePublicationRep(publicationRep,vcellUser,true);
 }
 
+public int deletePublicationRep(KeyValue publicationKey,User vcellUser) throws DataAccessException, SQLException{
+	return dbTop.deletePublicationRep(publicationKey,vcellUser,true);
+}
+
 public PublicationRep[] getPublicationReps(User vcellUser, String conditions, OrderBy orderBy) throws SQLException, DataAccessException {
 	return dbTop.getPublicationReps(vcellUser, conditions, orderBy, true);
 }

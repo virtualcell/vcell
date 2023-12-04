@@ -182,15 +182,25 @@ public abstract class DbDriver {
             updateCleanSQL(con, sql);
         }
     }
+    
+    public static void checkRolePermission(Connection con, User user, User.SPECIAL_CLAIM claim, String permissionText, DatabaseSyntax databaseSyntax) throws SQLException,DataAccessException{
+		if (user instanceof User.SpecialUser specialUser){
+			if (!Arrays.asList(specialUser.getMySpecials()).contains(claim)){
+				throw new DataAccessException("User "+user.getName()+" does not have permission to " + permissionText);
+			}
+		}else {
+			TreeMap<User.SPECIAL_CLAIM, TreeMap<User, String>> specialUsers = getSpecialUsers(user, con, databaseSyntax);
+			TreeMap<User, String> usersAllowedToModifyPublications = specialUsers.get(claim);
+			if (usersAllowedToModifyPublications == null || !usersAllowedToModifyPublications.containsKey(user)) {
+				throw new DataAccessException("User " + user.getName() + " does not have permission to " + permissionText);
+			}
+		}
+    }
 
-    public static KeyValue savePublicationRep(Connection con, PublicationRep publicationRep, User user, KeyFactory keyFactory, DatabaseSyntax databaseSyntax) throws SQLException, DataAccessException{
-
-        KeyValue pubID = null;
-        TreeMap<User.SPECIAL_CLAIM, TreeMap<User, String>> specialUsers = getSpecialUsers(user, con, databaseSyntax);
-        TreeMap<User, String> usersAllowedToModifyPublications = specialUsers.get(User.SPECIAL_CLAIM.publicationEditors);
-        if(usersAllowedToModifyPublications == null || !usersAllowedToModifyPublications.containsKey(user)){
-            throw new DataAccessException("User " + user.getName() + " does not have permission to edit publications");
-        }
+	public static KeyValue savePublicationRep(Connection con,PublicationRep publicationRep,User user,KeyFactory keyFactory,DatabaseSyntax databaseSyntax) throws SQLException, DataAccessException{
+	
+		KeyValue pubID = null;
+		checkRolePermission(con, user, User.SPECIAL_CLAIM.publicationEditors, "edit publications", databaseSyntax);
         final String YMD_FORMAT_STRING = "yyyy-MM-dd";
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(YMD_FORMAT_STRING);
         String sql = null;
@@ -264,6 +274,14 @@ public abstract class DbDriver {
                 }
             }
         }
+    }
+    
+    public static int deletePublicationRep(Connection con, KeyValue pubID, User user, DatabaseSyntax databaseSyntax) throws SQLException, DataAccessException{
+	    checkRolePermission(con, user, User.SPECIAL_CLAIM.publicationEditors, "edit publications", databaseSyntax);
+
+	    String sql = "DELETE FROM "+PublicationTable.table.getTableName()+" WHERE ID='"+pubID+"'";
+	    if (lg.isDebugEnabled()) lg.debug(sql);
+        return updateCleanSQL(con, sql);
     }
 
     private static String parseWittid(String wittid) throws DataAccessException{
