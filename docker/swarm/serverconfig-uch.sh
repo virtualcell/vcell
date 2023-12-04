@@ -60,7 +60,7 @@ case $VCELL_SITE in
 	TEST)
 		_site_port_offset=3
 		# VCELL_API_PORT_EXTERNAL=8081
-		VCELL_API_HOST_EXTERNAL=vcellapi-beta.cam.uchc.edu
+		VCELL_API_HOST_EXTERNAL=vcellapi-test.cam.uchc.edu
 		VCELL_API_PORT_EXTERNAL=443
 		VCELL_DEBUG_PORT_BASE=5030
 		_applicationId="1471-8022-1038-5555"
