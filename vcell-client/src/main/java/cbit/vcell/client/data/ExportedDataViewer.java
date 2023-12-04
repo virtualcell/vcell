@@ -18,6 +18,7 @@ import org.apache.logging.log4j.Logger;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.EditorScrollTable;
+import scala.util.parsing.combinator.testing.Str;
 
 import javax.swing.*;
 import javax.swing.event.TableColumnModelListener;
@@ -50,8 +51,6 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
         editorScrollTable.addMouseListener(this);
         tableModel = new ExportedDataTableModel(editorScrollTable);
 
-        tableModel.addRow(new ExportedDataTableModel.ExportMetaData("32489984", "432789", "10/2/3", "N5","http://google.com"));
-//        tableModel.addRow(new ExportedDataTableModel.ExportMetaData("Aim Name", "CioModel", "923", "11/2/3","123", "N5", "https://google.com"));
         editorScrollTable.setModel(tableModel);
 
         scrollPane = new JScrollPane(editorScrollTable);
@@ -64,39 +63,69 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
 
         JPanel topBar = new JPanel();
         topBar.setLayout(new FlowLayout());
+        refresh.addActionListener(this);
         topBar.add(jLabel);
         topBar.add(refresh);
 
         this.setLayout(new BorderLayout());
         this.add(topBar, BorderLayout.NORTH);
         this.add(scrollPane);
-        updateTableModel();
+        initalizeTableData();
     }
 
     public void updateTableModel(){
         try{
-            File jsonFile = new File(ResourceUtil.getVcellHome(), ClientRequestManager.EXPORT_METADATA_FILENAME);
-            if (jsonFile.exists() && jsonFile.length() != 0){
-                LinkedHashMap<String, HashMap<String, String>> jsonHashMap;
-                Gson gson = new GsonBuilder().setPrettyPrinting().create();
-                Type type = new TypeToken<LinkedHashMap<String, HashMap<String, String>>>() {}.getType();
-                jsonHashMap = gson.fromJson(new FileReader(jsonFile.getAbsolutePath()), type);
-
-                List<String> set = jsonHashMap.keySet().stream().toList();
-                ExportedDataTableModel.ExportMetaData lastElement = tableModel.exportMetaData.get(tableModel.exportMetaData.size() - 1);
+            HashMap <String, Object> jsonData = getJsonData();
+            if (jsonData != null){
+                List<String> set = (ArrayList<String>) jsonData.get("jobIDs");
+                String lastElement = tableModel.getRowCount() == 0 ? null: tableModel.exportMetaData.get(tableModel.exportMetaData.size() - 1).jobID;
                 for(int i = set.size() - 1; i > -1; i--){
-                    if(lastElement.jobID.equals(set.get(i))){
+                    if(lastElement != null && lastElement.equals(set.get(i))){
                         break;
                     }
-                    HashMap<String, String> addedRow = jsonHashMap.get(set.get(i));
-                    ExportedDataTableModel.ExportMetaData newRow = new ExportedDataTableModel.ExportMetaData(addedRow.get("jobID"), addedRow.get("dataID"), addedRow.get("exportDate"), addedRow.get("format"), addedRow.get("uri"));
-                    tableModel.addRow(newRow);
+                    addRowFromJson(jsonData, set.get(i));
                 }
             }
             tableModel.refreshData();
         }
         catch (Exception e){
             lg.error("Failed Update Export Viewer Table Model:", e);
+        }
+    }
+
+    /* Reason for this function is the for loop order, it matters when doing efficient updating by checking end of row. */
+    public void initalizeTableData(){
+        HashMap<String, Object> jsonData = getJsonData();
+        if (jsonData != null){
+            List<String> set = (ArrayList<String>) jsonData.get("jobIDs");
+            for (String s : set) {
+                addRowFromJson(jsonData, s);
+            }
+        }
+        tableModel.refreshData();
+    }
+
+    private void addRowFromJson(HashMap<String, Object> jsonData, String s){
+        Map<String, String> addedRow = (Map<String, String>) jsonData.get(s);
+        ExportedDataTableModel.ExportMetaData newRow = new ExportedDataTableModel.ExportMetaData(addedRow.get("jobID"), addedRow.get("dataID"), addedRow.get("exportDate"), addedRow.get("format"), addedRow.get("uri"));
+        tableModel.addRow(newRow);
+    }
+
+    public HashMap<String, Object> getJsonData(){
+        try{
+            File jsonFile = new File(ResourceUtil.getVcellHome(), ClientRequestManager.EXPORT_METADATA_FILENAME);
+            if (jsonFile.exists() && jsonFile.length() != 0){
+                HashMap<String, Object> jsonHashMap;
+                Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                Type type = new TypeToken<HashMap<String, Object>>() {}.getType();
+                jsonHashMap = gson.fromJson(new FileReader(jsonFile.getAbsolutePath()), type);
+                return jsonHashMap;
+            }
+            return null;
+        }
+        catch (Exception e){
+            lg.error("Failed to read export metadata JSON:", e);
+            return null;
         }
     }
 

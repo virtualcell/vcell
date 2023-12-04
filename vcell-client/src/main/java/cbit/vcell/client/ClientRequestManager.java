@@ -2817,24 +2817,27 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 		try{
 			if(ResourceUtil.getVcellHome() != null){
 				File jsonFile = new File(ResourceUtil.getVcellHome(), EXPORT_METADATA_FILENAME);
-				HashMap<String, Object> jsonHashMap = null;
+				HashMap<String, Object> jsonHashMap = new HashMap<>();
+				jsonHashMap.put("jobIDs", new ArrayList<String>());
 				Gson gson = new GsonBuilder().setPrettyPrinting().create();
 				Type type = new TypeToken<HashMap<String, Object>>() {}.getType();
 				if (jsonFile.exists()){
 
 					jsonHashMap = gson.fromJson(new FileReader(jsonFile.getAbsolutePath()), type);
 				}
-				jsonHashMap = jsonHashMap == null ? new HashMap<>() : jsonHashMap;
-				HashMap<String, Object> exportMetaData = new HashMap<>();
+				HashMap<String, String> exportMetaData = new HashMap<>();
 				DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 				Date date = new Date();
 				exportMetaData.put("format", exportEvent.getFormat());
 				exportMetaData.put("exportDate", dateFormat.format(date));
 				exportMetaData.put("uri", exportEvent.getLocation());
-				exportMetaData.put("jobID", exportEvent.getJobID());
+				exportMetaData.put("jobID", String.valueOf(exportEvent.getJobID()));
 				exportMetaData.put("dataID", exportEvent.getDataIdString());
 
 				jsonHashMap.put(String.valueOf(exportEvent.getJobID()), exportMetaData);
+				ArrayList<String> header = (ArrayList<String>) jsonHashMap.get("jobIDs");
+				header.add(String.valueOf(exportEvent.getJobID()));
+				jsonHashMap.put("jobIDs", header);
 				String json = gson.toJson(jsonHashMap, type);
 				FileWriter jsonFileWriter = new FileWriter(jsonFile);
 				jsonFileWriter.write(json);
@@ -2920,7 +2923,7 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 	public void exportMessage(ExportEvent event) {
 		if (event.getEventTypeID() == ExportEvent.EXPORT_COMPLETE) {
 			// try to download the thing
-			downloadExportedData(getMdiManager().getFocusedWindowManager().getComponent(), getUserPreferences(), event);
+//			downloadExportedData(getMdiManager().getFocusedWindowManager().getComponent(), getUserPreferences(), event);
 
 			// create export metadata
 			updateExportMetaData(event);
