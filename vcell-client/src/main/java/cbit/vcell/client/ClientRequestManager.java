@@ -37,24 +37,12 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
+import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.BitSet;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Enumeration;
-import java.util.Hashtable;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Random;
-import java.util.StringTokenizer;
-import java.util.TreeSet;
-import java.util.Vector;
+import java.util.*;
 import java.util.zip.DataFormatException;
 import java.util.zip.GZIPInputStream;
 
@@ -68,7 +56,11 @@ import javax.swing.ListSelectionModel;
 import javax.swing.Timer;
 import javax.swing.filechooser.FileFilter;
 
+import com.google.gson.stream.JsonWriter;
 import cbit.vcell.export.server.N5Specs;
+import com.google.gson.reflect.TypeToken;
+import com.google.gson.GsonBuilder;
+import com.google.gson.Gson;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpStatus;
@@ -76,6 +68,8 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jdom.Element;
 import org.jdom.Namespace;
 import org.jlibsedml.ArchiveComponents;
@@ -232,6 +226,8 @@ public class ClientRequestManager
 
 	private boolean bOpening = false;
 	private boolean bExiting = false;
+
+	private static final Logger lg = LogManager.getLogger(ClientRequestManager.class);
 
 	public ClientRequestManager(VCellClient vcellClient, UserRegistrationManager userRegistrationManager) {
 		this.userRegistrationManager = userRegistrationManager;
@@ -2815,6 +2811,41 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 		}
 	}
 
+	public static String EXPORT_METADATA_FILENAME = "exportMetaData.json";
+
+	private static void updateExportMetaData(final ExportEvent exportEvent){
+		try{
+			if(ResourceUtil.getVcellHome() != null){
+				File jsonFile = new File(ResourceUtil.getVcellHome(), EXPORT_METADATA_FILENAME);
+				HashMap<String, Object> jsonHashMap = null;
+				Gson gson = new GsonBuilder().setPrettyPrinting().create();
+				Type type = new TypeToken<HashMap<String, Object>>() {}.getType();
+				if (jsonFile.exists()){
+
+					jsonHashMap = gson.fromJson(new FileReader(jsonFile.getAbsolutePath()), type);
+				}
+				jsonHashMap = jsonHashMap == null ? new HashMap<>() : jsonHashMap;
+				HashMap<String, Object> exportMetaData = new HashMap<>();
+				DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+				Date date = new Date();
+				exportMetaData.put("format", exportEvent.getFormat());
+				exportMetaData.put("exportDate", dateFormat.format(date));
+				exportMetaData.put("uri", exportEvent.getLocation());
+				exportMetaData.put("jobID", exportEvent.getJobID());
+				exportMetaData.put("dataID", exportEvent.getDataIdString());
+
+				jsonHashMap.put(String.valueOf(exportEvent.getJobID()), exportMetaData);
+				String json = gson.toJson(jsonHashMap, type);
+				FileWriter jsonFileWriter = new FileWriter(jsonFile);
+				jsonFileWriter.write(json);
+				jsonFileWriter.close();
+			}
+		}
+		catch (Exception e){
+			lg.error("Failed Update Export Metadata", e);
+		}
+	}
+
 	public void exitApplication() {
 		try (VCellThreadChecker.SuppressIntensive si = new VCellThreadChecker.SuppressIntensive()) {
 			if (!bExiting) {
@@ -2890,6 +2921,9 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 		if (event.getEventTypeID() == ExportEvent.EXPORT_COMPLETE) {
 			// try to download the thing
 			downloadExportedData(getMdiManager().getFocusedWindowManager().getComponent(), getUserPreferences(), event);
+
+			// create export metadata
+			updateExportMetaData(event);
 		}
 	}
 
