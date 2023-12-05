@@ -2923,7 +2923,7 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 	public void exportMessage(ExportEvent event) {
 		if (event.getEventTypeID() == ExportEvent.EXPORT_COMPLETE) {
 			// try to download the thing
-//			downloadExportedData(getMdiManager().getFocusedWindowManager().getComponent(), getUserPreferences(), event);
+			downloadExportedData(getMdiManager().getFocusedWindowManager().getComponent(), getUserPreferences(), event);
 
 			// create export metadata
 			updateExportMetaData(event);
