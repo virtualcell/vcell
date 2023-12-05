@@ -201,8 +201,8 @@ public abstract class AbstractCompiledSolver extends AbstractSolver implements j
             File mySolverLinkDir = new File(localSimDir, simTask.getSimKey().toString() + ResourceUtil.LOCAL_SOLVER_LIB_LINK_SUFFIX);
             if (mySolverLinkDir.exists()) {
                 File[] temp = mySolverLinkDir.listFiles();
-                for (int i = 0; i < temp.length; i++) {
-                    temp[i].delete();
+                for (File file : temp) {
+                    file.delete();
                 }
             } else {
                 mySolverLinkDir.mkdir();
@@ -216,9 +216,9 @@ public abstract class AbstractCompiledSolver extends AbstractSolver implements j
 //		System.out.println("-----reading solverdir libs "+solversDir.getAbsolutePath());
             ArrayList<File> tempAL = new ArrayList<File>();
             File[] temp = solversDir.listFiles();
-            for (int i = 0; i < temp.length; i++) {
-                if (temp[i].getName().startsWith("lib") && temp[i].isFile() && temp[i].length() != 0 && !Files.isSymbolicLink(temp[i].toPath())) {
-                    tempAL.add(temp[i]);
+            for (File file : temp) {
+                if (file.getName().startsWith("lib") && file.isFile() && file.length() != 0 && !Files.isSymbolicLink(file.toPath())) {
+                    tempAL.add(file);
 //                    System.out.println(temp[i].getName());
                 }
             }
@@ -227,7 +227,7 @@ public abstract class AbstractCompiledSolver extends AbstractSolver implements j
             pb.redirectErrorStream(true);
             Process p = pb.start();
             int ioByte = -1;
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             while ((ioByte = p.getInputStream().read()) != -1) {
                 sb.append((char) ioByte);
             }
@@ -243,7 +243,7 @@ public abstract class AbstractCompiledSolver extends AbstractSolver implements j
             }
             
             java.io.BufferedReader br = new java.io.BufferedReader(new java.io.StringReader(sb.toString()));
-            String line = null;
+            String line;
 //			System.out.println("-----reading ldd:");
             while ((line = br.readLine()) != null) {
 //				System.out.println(line);
@@ -255,23 +255,23 @@ public abstract class AbstractCompiledSolver extends AbstractSolver implements j
                     String aux = libInfo.nextToken();
                     if (libPath.equals("not") && aux.equals("found")) {
                         boolean bMatch = false;
-                        for (int i = 0; i < libzipSolverFiles.length; i++) {
-                            if (libzipSolverFiles[i].getName().startsWith(libName) && libzipSolverFiles[i].length() != 0) {
+                        for (File libzipSolverFile : libzipSolverFiles) {
+                            if (libzipSolverFile.getName().startsWith(libName) && libzipSolverFile.length() != 0) {
                                 //System.out.println(libName+" "+ptr+" "+libPath+" "+aux+" "+org.apache.commons.lang3.StringUtils.getJaroWinklerDistance("libhdf5.so",libName));
 //								System.out.println(libName+" "+ptr+" "+libPath+" "+aux+" match="+libzipSolverFiles[i]);
-                                createSymbolicLink(mySolverLinkDir, libName, libzipSolverFiles[i]);
+                                createSymbolicLink(mySolverLinkDir, libName, libzipSolverFile);
                                 bMatch = true;
                                 break;
                             }
                         }
                         if (!bMatch) {
-                            for (int i = 0; i < libzipSolverFiles.length; i++) {
+                            for (File libzipSolverFile : libzipSolverFiles) {
                                 int index = libName.indexOf(".so");
                                 if (index != -1) {
                                     String matchName = libName.substring(0, index + 3);
-                                    if (libzipSolverFiles[i].getName().startsWith(matchName) && libzipSolverFiles[i].length() != 0) {
+                                    if (libzipSolverFile.getName().startsWith(matchName) && libzipSolverFile.length() != 0) {
 //										System.out.println("ALTERNATE  "+libName+" "+ptr+" "+libPath+" "+aux+" match="+libzipSolverFiles[i]);
-                                        createSymbolicLink(mySolverLinkDir, libName, libzipSolverFiles[i]);
+                                        createSymbolicLink(mySolverLinkDir, libName, libzipSolverFile);
                                         break;
                                     }
                                 }
