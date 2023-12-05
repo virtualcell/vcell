@@ -95,7 +95,7 @@ public class LangevinLngvWriter {
 //	static HashSet<BondSites> reactionReactantBondSites = new HashSet<BondSites>();
 
 	// main work being done here
-	public static String writeLangevinLngv(Simulation simulation, long randomSeed, LangevinSimulationOptions langevinSimulationOptions) throws SolverException, DivideByZeroException, ExpressionException {
+	public static String writeLangevinLngv(Simulation simulation, long randomSeed) throws SolverException, DivideByZeroException, ExpressionException {
 		try {
 			System.out.println("VCML ORIGINAL .... START\n"+simulation.getMathDescription().getVCML_database()+"\nVCML ORIGINAL .... END\n====================\n");
 		} catch (MathException e1) {

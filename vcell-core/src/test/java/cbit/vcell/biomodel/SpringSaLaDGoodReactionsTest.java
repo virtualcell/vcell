@@ -6,6 +6,7 @@ import cbit.vcell.geometry.GeometryException;
 import cbit.vcell.mapping.*;
 import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.math.*;
+import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.SpeciesContext;
@@ -239,10 +240,9 @@ public class SpringSaLaDGoodReactionsTest {
 		Assert.assertTrue("expecting databese name 'Langevin'", ("Langevin".equals(solverDescription.getDatabaseName())) ? true : false);
 
 		// generate the input file for the solver and validate it
-		LangevinSimulationOptions langevinSimulationOptions = simTask.getSimulation().getSolverTaskDescription().getLangevinSimulationOptions();
 		int randomSeed = 0;
 		String langevinLngvString = null;
-		langevinLngvString = LangevinLngvWriter.writeLangevinLngv(simTask.getSimulation(), randomSeed, langevinSimulationOptions);
+		langevinLngvString = LangevinLngvWriter.writeLangevinLngv(simTask.getSimulation(), randomSeed);
 		Assert.assertTrue("expecting non-null solver input string", (langevinLngvString != null) ? true : false);
 		Assert.assertTrue("expecting properly formatted transition reaction", (langevinLngvString.contains(reactionTestString)) ? true : false);
 		
@@ -317,18 +317,54 @@ public class SpringSaLaDGoodReactionsTest {
 		Assert.assertTrue("SiteAttributesSpec element not found in siteAttributesMap after roundtrip", sasThis.compareEqual(sasThat) ? true : false);
 	}
 
+	/* -------------------------------------------------------------------------------------------------
+	 * This test will exercise loading a springsalad mathmodel
+	 * and producing a langevin input file as string
+	 * and validating its content
+	 *
+	 */
+	@Test
+	public void test_springsalad_mathmodel() throws IOException, XmlParseException, PropertyVetoException, ExpressionException, GeometryException,
+			ImageException, IllegalMappingException, MappingException, SolverException {
+
+		MathModel mathModel = getMathModelFromResource("Spring_simulation_transition.vcml");
+		MathDescription mathDescription = mathModel.getMathDescription();
+		Simulation simulation = mathModel.getSimulations()[0];
+//		LangevinSimulationOptions lso = simulation.getSolverTaskDescription().getLangevinSimulationOptions();
+		int randomSeed = 0;
+		String lngvString = LangevinLngvWriter.writeLangevinLngv(simulation, randomSeed);
+		System.out.println(lngvString);
+
+		// TODO: why TIME INFORMATION is only
+		/*
+			dt_spring: 1.0E-9
+			dt_image: 1.0E-4
+		*/
+		// TODO: continue
+
+	}
 
 		// ==========================================================================================================================
-	
-    private static BioModel getBioModelFromResource(String fileName) throws IOException, XmlParseException {
-        InputStream inputStream = SpringSaLaDGoodReactionsTest.class.getResourceAsStream(fileName);
-        if (inputStream == null) {
-            throw new FileNotFoundException("file not found! " + fileName);
-        } else {
-            String vcml = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
-            return XmlHelper.XMLToBioModel(new XMLSource(vcml));
-        }
-    }
+
+	private static BioModel getBioModelFromResource(String fileName) throws IOException, XmlParseException {
+		InputStream inputStream = SpringSaLaDGoodReactionsTest.class.getResourceAsStream(fileName);
+		if (inputStream == null) {
+			throw new FileNotFoundException("file not found! " + fileName);
+		} else {
+			String vcml = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+			return XmlHelper.XMLToBioModel(new XMLSource(vcml));
+		}
+	}
+	private static MathModel getMathModelFromResource(String fileName) throws IOException, XmlParseException {
+		InputStream inputStream = SpringSaLaDGoodReactionsTest.class.getResourceAsStream(fileName);
+		if (inputStream == null) {
+			throw new FileNotFoundException("file not found! " + fileName);
+		} else {
+			String vcml = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+			return XmlHelper.XMLToMathModel(new XMLSource(vcml));
+		}
+	}
+
 	public static int checkIssuesBySeverity(Vector<Issue> issueList, Issue.Severity severity) {
 		int counter = 0;
 		for (Issue issue : issueList) {
