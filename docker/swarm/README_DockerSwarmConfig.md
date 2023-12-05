@@ -1,32 +1,12 @@
-## Start with standard UCH Centos 7.3 distribution, login (ssh to avoid copy/paste problems on minimal centos7) as administrative (frmadmin,jsadmin) and run update (to Centos 7.4)
+## Start with Ubuntu 22.04
 
-```bash
-sudo yum -y update 
-sudo reboot
-```
-## Install java dev tools, python packages, and utilities
+### Install Docker
+install docker according to https://docs.docker.com/engine/install/ubuntu/
 
-```bash
-sudo yum -y install java-1.8.0-openjdk-devel
-echo "export JAVA_HOME=$(readlink -f /usr/bin/java | sed "s:bin/java::")" | sudo tee -a /etc/profile
-source /etc/profile
-```
+### Configure docker swarm cluster
+configure swarm according to [README_RebuildSwarm.md](README_RebuildSwarm.md)
 
-install maven (using /tmp because of root squashed home directories)
-
-```bash
-cd /tmp
-wget http://www-us.apache.org/dist/maven/maven-3/3.5.3/binaries/apache-maven-3.5.3-bin.tar.gz
-tar -zxvf apache-maven-3.5.3-bin.tar.gz
-sudo mv /tmp/apache-maven-3.5.3 /opt
-sudo chown -R root:root /opt/apache-maven-3.5.3
-sudo ln -s /opt/apache-maven-3.5.3 /opt/apache-maven
-echo 'export PATH=$PATH:/opt/apache-maven/bin' | sudo tee -a /etc/profile
-source /etc/profile
-mvn --version
-rm /tmp/apache-maven-3.5.3-bin.tar.gz
-```
-
+### install 
 install paramiko, requests, and tabulate python packages (used by cli.py)
 
 ```bash
@@ -42,29 +22,12 @@ sudo pip install tabulate
 ```
 
 install jq (utility for json processing)
+install poetry (for building/installing vcell-admin)
 
 ```bash
-sudo yum install -y jq
+sudo apt-get install -y jq
+sudo apt-get install -y python3-poetry
 ```
-
-## Install Docker [more info centos](http://docs.docker.com/install/linux/docker-ce/centos)
-
-set up yum by adding yum repo (docker stable repository) first time only
-
-```bash
-sudo yum install -y yum-utils device-mapper-persistent-data lvm2
-sudo yum-complete-transaction --cleanup-only
-sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
-```
-
-install appropriate version of docker and start docker (should be same across the swarm)
-
-```bash
-sudo yum install -y docker-ce-18.03.0.ce
-sudo systemctl enable docker
-sudo systemctl start docker
-```
-
 
 ## Install singularity [more info linux](https://singularity.lbl.gov/install-linux)
 install to /opt/build local directory to avoid root-squash on shared file systems.
@@ -88,19 +51,6 @@ install squashfs-tools (if not already present)
 ```bash
 sudo yum install -y squashfs-tools-4.3-0.21.gitaae0aff4.el7.x86_64
 ```
-
-### Make vcell sudoer
-give vcell user sudo permission to machine, and passwordless sudo for docker and singularity
-
-```bash
-sudo visudo
-
-# insert following rows
-vcell   ALL=(ALL)       ALL
-vcell   ALL=(ALL)       NOPASSWD:/usr/bin/docker
-vcell   ALL=(ALL)       NOPASSWD:/usr/local/bin/singularity
-```
-
 
 
 ## Must add non-root-squashed share (that ultimately points to same physical place as /share/apps/vcell3) to machines that are non-DMZ (behind firewall)
