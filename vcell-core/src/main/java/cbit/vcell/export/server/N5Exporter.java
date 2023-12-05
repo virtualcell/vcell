@@ -236,7 +236,7 @@ public class N5Exporter implements ExportConstants {
 	public ExportOutput makeN5Data(OutputContext outputContext, JobRequest jobRequest, ExportSpecs exportSpecs, FileDataContainerManager fileDataContainerManager)
 			throws DataAccessException, IOException, MathException {
 		FormatSpecificSpecs formatSpecs = exportSpecs.getFormatSpecificSpecs( );
-		N5Specs n5Specs = BeanUtils.downcast(N5Specs.class, formatSpecs);
+		N5Specs n5Specs = (N5Specs) formatSpecs;
 		if (n5Specs != null) {
 				return exportToN5(
 						outputContext,
@@ -252,7 +252,7 @@ public class N5Exporter implements ExportConstants {
 	public ExportOutput makeN5Data(OutputContext outputContext, long jobID, ExportSpecs exportSpecs, FileDataContainerManager fileDataContainerManager)
 			throws DataAccessException, IOException, MathException {
 		FormatSpecificSpecs formatSpecs = exportSpecs.getFormatSpecificSpecs( );
-		N5Specs n5Specs = BeanUtils.downcast(N5Specs.class, formatSpecs);
+		N5Specs n5Specs = (N5Specs) formatSpecs;
 		if (n5Specs != null) {
 			return exportToN5(
 					outputContext,
