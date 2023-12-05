@@ -17,7 +17,7 @@ COPY --from=jre-build /javaruntime $JAVA_HOME
 
 RUN mkdir -p /usr/local/app && \
 	apt-get -y update && \
-    apt-get -y install screen
+    apt-get -y install screen apt-utils libfreetype6 fontconfig fonts-dejavu
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tzdata
 RUN unlink /etc/localtime || true

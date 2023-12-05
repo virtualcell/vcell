@@ -12,6 +12,7 @@ package cbit.vcell.modelopt.gui;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Vector;
 
@@ -21,7 +22,6 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
 
-import org.vcell.util.BeanUtils;
 import org.vcell.util.ColorUtil;
 import org.vcell.util.Range;
 import org.vcell.util.gui.DefaultListSelectionModelFixed;
@@ -77,7 +77,7 @@ private void createAutoContrastColors(){
 		return;
 	}
 	if(autoContrastColors == null || getmultisourcePlotListModel().getSize() > autoContrastColors.length){
-		autoContrastColors = ColorUtil.generateAutoColor(getmultisourcePlotListModel().getSize(), getBackground(),new Integer(0));
+		autoContrastColors = ColorUtil.generateAutoColor(getmultisourcePlotListModel().getSize(), getBackground(),0);
 	}
 }
 
@@ -92,7 +92,7 @@ public void clearSelection() {
 
 
 /**
- * connEtoC1:  (selectionModel1.listSelection.valueChanged(javax.swing.event.ListSelectionEvent) --> MultisourcePlotPane.selectionModel1_ValueChanged(Ljavax.swing.event.ListSelectionEvent;)V)
+ * connEtoC1:  selectionModel1.listSelection.valueChanged(javax.swing.event.ListSelectionEvent) --> MultisourcePlotPane.selectionModel1_ValueChanged(Ljavax.swing.event.ListSelectionEvent;)V)
  * @param arg1 javax.swing.event.ListSelectionEvent
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
@@ -516,16 +516,14 @@ private void selectionModel1_ValueChanged(javax.swing.event.ListSelectionEvent l
 		}
 	}
 	
-	String[] labels = {"", "t", ""};	
-	String[] names = (String[])BeanUtils.getArray(nameList,String.class);	
-	PlotData[] plotDatas = (PlotData[])BeanUtils.getArray(plotDataList,PlotData.class);
-	boolean visibleFlags[] = new boolean[plotDatas.length];
-	for (int i = 0; i < visibleFlags.length; i++){
-		visibleFlags[i] = true;
-	}
-	int renderHints[] = new int[plotDatas.length];
+	String[] labels = {"", "t", ""};
+	String[] names = nameList.toArray(String[]::new);
+	PlotData[] plotDatas = plotDataList.toArray(PlotData[]::new);
+	boolean[] visibleFlags = new boolean[plotDatas.length];
+    Arrays.fill(visibleFlags, true);
+	int[] renderHints = new int[plotDatas.length];
 	for (int i = 0; i < renderHints.length; i++){
-		renderHints[i] = ((Integer)renderHintList.elementAt(i)).intValue();
+		renderHints[i] = renderHintList.elementAt(i);
 	}
 
 	Plot2D plot2D = new Plot2D(null,null,names,plotDatas,labels,visibleFlags,renderHints);

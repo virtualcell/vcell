@@ -1,12 +1,12 @@
 from pathlib import Path
+from typing import Optional
 
 import requests
 from pydantic import BaseModel
-from typing import Optional
 
-from citation import getCitation, CitationInfo, getSuggestedProjectName
-from vcell_common.api_utils import download_file
-from vcell_pipeline.vcell_datamodels import Publication
+from vcutils.common.api_utils import download_file
+from .citation import getCitation, CitationInfo, getSuggestedProjectName
+from .datamodels import Publication
 
 
 class ExportStatus(BaseModel):
@@ -19,7 +19,7 @@ class ExportStatus(BaseModel):
 
 def write_log(entry: ExportStatus, log_path: Path) -> None:
     with open(log_path, "a") as f:
-        f.write(entry.json()+"\n")
+        f.write(entry.json() + "\n")
         f.flush()
 
 
@@ -63,9 +63,9 @@ def download_published_omex(api_base_url: str, out_dir: Path) -> None:
 
         except requests.exceptions.HTTPError as e:
             error_msg = str(e)
-            error_response: requests.Response = e.response
-            if error_response.status_code == 500:
-                error_msg += " "+error_response.text
+            error_response: requests.Response | None = e.response
+            if error_response is not None and error_response.status_code >= 400:
+                error_msg += " " + error_response.text
             print(error_msg)
             exportStatus.exception = error_msg
 

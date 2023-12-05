@@ -12,6 +12,7 @@ package cbit.vcell.client.bionetgen;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.Vector;
@@ -19,6 +20,7 @@ import java.util.Vector;
 import javax.swing.JButton;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.gui.GeneralGuiUtils;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.gui.MultiPurposeTextPanel;
@@ -756,66 +758,65 @@ private ReactionStep[] getCollapsedReactionSteps(ReactionStep[] reactionSteps) {
 	Vector<ReactionStep> collapsedRxnStepsVector = new Vector<ReactionStep>();
 
 	Vector<ReactionStep> rxnStepsVector = new Vector<ReactionStep>();
-	for (int i = 0; i < reactionSteps.length; i++){
-		rxnStepsVector.addElement(reactionSteps[i]);
-	}
+    for (ReactionStep reactionStep : reactionSteps) {
+        rxnStepsVector.addElement(reactionStep);
+    }
 	
 	for (int i = 0; i < rxnStepsVector.size(); i++){
 		ReactionStep fwdRStep = rxnStepsVector.elementAt(i);
 		// Get the reactionParticipants and the corresponding reactants and products in an array
 		ReactionParticipant[] rps = fwdRStep.getReactionParticipants();
-		Vector<SpeciesContext> fwdReactantsVector = new Vector<SpeciesContext>();
-		Vector<SpeciesContext> fwdProductsVector = new Vector<SpeciesContext>();
-		for (int j = 0; j < rps.length; j++){
-			if (rps[j] instanceof Reactant) {
-				fwdReactantsVector.addElement(rps[j].getSpeciesContext());
-			} else if (rps[j] instanceof Product) {
-				fwdProductsVector.addElement(rps[j].getSpeciesContext());
-			}
-		}
-		SpeciesContext[] fwdReactants = (SpeciesContext[])BeanUtils.getArray(fwdReactantsVector, SpeciesContext.class);
-		SpeciesContext[] fwdProducts = (SpeciesContext[])BeanUtils.getArray(fwdProductsVector, SpeciesContext.class);
+		Vector<SpeciesContext> fwdReactantsVector = new Vector<>();
+		Vector<SpeciesContext> fwdProductsVector = new Vector<>();
+        for (ReactionParticipant rp : rps) {
+            if (rp instanceof Reactant) {
+                fwdReactantsVector.addElement(rp.getSpeciesContext());
+            } else if (rp instanceof Product) {
+                fwdProductsVector.addElement(rp.getSpeciesContext());
+            }
+        }
+		SpeciesContext[] fwdReactants = fwdReactantsVector.toArray(SpeciesContext[]::new);
+		SpeciesContext[] fwdProducts = fwdProductsVector.toArray(SpeciesContext[]::new);
 
 		boolean bReverseReactionFound = false;
 
 		// Loop through all the reactions to find the corresponding reverse reaction
-		for (int ii = 0; ii < reactionSteps.length; ii++){
-			ReactionStep revRStep = reactionSteps[ii];
-			// Get the reactionParticipants and the corresponding reactants and products in an array
-			ReactionParticipant[] revRps = revRStep.getReactionParticipants();
-			Vector<SpeciesContext> revReactantsVector = new Vector<SpeciesContext>();
-			Vector<SpeciesContext> revProductsVector = new Vector<SpeciesContext>();
-			for (int j = 0; j < revRps.length; j++){
-				if (revRps[j] instanceof Reactant) {
-					revReactantsVector.addElement(revRps[j].getSpeciesContext());
-				} else if (revRps[j] instanceof Product) {
-					revProductsVector.addElement(revRps[j].getSpeciesContext());
-				}
-			}
-			SpeciesContext[] revReactants = (SpeciesContext[])BeanUtils.getArray(revReactantsVector, SpeciesContext.class);
-			SpeciesContext[] revProducts = (SpeciesContext[])BeanUtils.getArray(revProductsVector, SpeciesContext.class);
+        for (ReactionStep revRStep : reactionSteps) {
+            // Get the reactionParticipants and the corresponding reactants and products in an array
+            ReactionParticipant[] revRps = revRStep.getReactionParticipants();
+            Vector<SpeciesContext> revReactantsVector = new Vector<>();
+            Vector<SpeciesContext> revProductsVector = new Vector<>();
+            for (ReactionParticipant revRp : revRps) {
+                if (revRp instanceof Reactant) {
+                    revReactantsVector.addElement(revRp.getSpeciesContext());
+                } else if (revRp instanceof Product) {
+                    revProductsVector.addElement(revRp.getSpeciesContext());
+                }
+            }
+			SpeciesContext[] revReactants = revReactantsVector.toArray(SpeciesContext[]::new);
+			SpeciesContext[] revProducts = revProductsVector.toArray(SpeciesContext[]::new);
 
-			// Check if reactants of reaction in outer 'for' loop match products in inner 'for' loop and vice versa.
-			if (BeanUtils.arrayEquals(fwdReactants, revProducts) && BeanUtils.arrayEquals(fwdProducts, revReactants)) {
-				// Set the reverse kinetic rate expression for the reaction in outer loop with the forward rate from reactionStep in inner loop
-				MassActionKinetics revMAKinetics = (MassActionKinetics)revRStep.getKinetics(); // inner 'for' loop
-				MassActionKinetics fwdMAKinetics = (MassActionKinetics)fwdRStep.getKinetics();  // outer 'for' loop
-				try {
-					fwdMAKinetics.setParameterValue(fwdMAKinetics.getReverseRateParameter(), revMAKinetics.getForwardRateParameter().getExpression());
-					Kinetics.KineticsParameter param = revMAKinetics.getKineticsParameter(revMAKinetics.getForwardRateParameter().getExpression().infix());
-					fwdMAKinetics.setParameterValue(param, param.getExpression());
-				} catch (Exception e) {
-					e.printStackTrace(System.out);
-					throw new RuntimeException(e.getMessage());
-				}
+            // Check if reactants of reaction in outer 'for' loop match products in inner 'for' loop and vice versa.
+            if (Arrays.equals(fwdReactants, revProducts) && Arrays.equals(fwdProducts, revReactants)) {
+                // Set the reverse kinetic rate expression for the reaction in outer loop with the forward rate from reactionStep in inner loop
+                MassActionKinetics revMAKinetics = (MassActionKinetics) revRStep.getKinetics(); // inner 'for' loop
+                MassActionKinetics fwdMAKinetics = (MassActionKinetics) fwdRStep.getKinetics();  // outer 'for' loop
+                try {
+                    fwdMAKinetics.setParameterValue(fwdMAKinetics.getReverseRateParameter(), revMAKinetics.getForwardRateParameter().getExpression());
+                    Kinetics.KineticsParameter param = revMAKinetics.getKineticsParameter(revMAKinetics.getForwardRateParameter().getExpression().infix());
+                    fwdMAKinetics.setParameterValue(param, param.getExpression());
+                } catch (Exception e) {
+                    e.printStackTrace(System.out);
+                    throw new RuntimeException(e.getMessage());
+                }
 
-				// Add this to the collapsedRxnStepsVector
-				collapsedRxnStepsVector.addElement(fwdRStep);
-				rxnStepsVector.removeElement(revRStep);
-				bReverseReactionFound = true;	
-				break;	
-			}
-		}
+                // Add this to the collapsedRxnStepsVector
+                collapsedRxnStepsVector.addElement(fwdRStep);
+                rxnStepsVector.removeElement(revRStep);
+                bReverseReactionFound = true;
+                break;
+            }
+        }
 
 		// If 'bReverseReactionFound' is false after checking all reactions for the reverse, the reaction is probably an irreversible reaction
 		// Add it as is to the 'collapsedRxnStepsVector'
@@ -825,8 +826,7 @@ private ReactionStep[] getCollapsedReactionSteps(ReactionStep[] reactionSteps) {
 	}
 
 	// Convert the vector into an array of reactionSteps and return
-	ReactionStep[] collapsedRxnSteps = (ReactionStep[])BeanUtils.getArray(collapsedRxnStepsVector, ReactionStep.class);
-	return collapsedRxnSteps;
+	return collapsedRxnStepsVector.toArray(ReactionStep[]::new);
 }
 
 
@@ -2061,7 +2061,7 @@ private void initialize() {
 		initConnections();
 		connEtoC5();
 		connEtoC14();
-		BeanUtils.addCloseWindowKeyboardAction(this);
+		GeneralGuiUtils.addCloseWindowKeyboardAction(this);
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}

@@ -58,14 +58,15 @@ public class ExecuteCommand implements Callable<Integer> {
 
 
     public Integer call() {
-        CLIRecorder cliLogger = null;
+        CLIRecorder cliLogger;
         try {
-
-            Level logLevel = logger.getLevel();
+            Level logLevel;
             if (!bQuiet && bDebug) {
                 logLevel = Level.DEBUG;
             } else if (bQuiet) {
                 logLevel = Level.OFF;
+            } else {
+                logLevel = logger.getLevel();
             }
 
             // CLILogger will throw an exception if our output dir isn't valid.
@@ -80,9 +81,18 @@ public class ExecuteCommand implements Callable<Integer> {
             logger.debug("Execution mode requested");
 
             String trace_args =  String.format(
-                "Arguments:\nInput\t: \"%s\"\nOutput\t: \"%s\"\nWriteLogs\t: %b\n" +
-                    "KeepTemp\t: %b\nExactMatch\t: %b\nEncapOut\t: %b\nTimeout\t: %dms\n" + 
-                    "Help\t: %b\nDebug\t: %b\nQuiet\t: %b",
+                    """
+                            Arguments:
+                            Input\t: "%s"
+                            Output\t: "%s"
+                            WriteLogs\t: %b
+                            KeepTemp\t: %b
+                            ExactMatch\t: %b
+                            EncapsulateOut\t: %b
+                            Timeout\t: %dms
+                            Help\t: %b
+                            Debug\t: %b
+                            Quiet\t: %b""",
                 inputFilePath.getAbsolutePath(), outputFilePath.getAbsolutePath(), bWriteLogFiles,
                     bKeepTempFiles, bExactMatchOnly, bEncapsulateOutput, 
                     EXECUTABLE_MAX_WALLCLOCK_MILLIS, help, bDebug, bQuiet

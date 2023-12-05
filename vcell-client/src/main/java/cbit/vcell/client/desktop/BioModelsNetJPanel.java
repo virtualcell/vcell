@@ -40,10 +40,8 @@ import javax.swing.border.TitledBorder;
 
 import org.jdom.Attribute;
 import org.jdom.Element;
-import org.vcell.util.BeanUtils;
-import org.vcell.util.ClientTaskStatusSupport;
-import org.vcell.util.TokenMangler;
-import org.vcell.util.UserCancelException;
+import org.vcell.util.gui.GeneralGuiUtils;
+import org.vcell.util.*;
 import org.vcell.util.gui.AsynchProgressPopup;
 import org.vcell.util.gui.DialogUtils;
 
@@ -200,7 +198,7 @@ public class BioModelsNetJPanel extends JPanel {
 
 	private void disposeParentDialog(){
 		Container parent =
-			BeanUtils.findTypeParentOfComponent(BioModelsNetJPanel.this, Dialog.class);
+			GeneralGuiUtils.findTypeParentOfComponent(BioModelsNetJPanel.this, Dialog.class);
 		if(parent instanceof JDialog){
 			((JDialog)parent).dispose();
 		}

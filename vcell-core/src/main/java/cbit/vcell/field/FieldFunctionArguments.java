@@ -91,11 +91,11 @@ public class FieldFunctionArguments implements Serializable {
 	public String getVariableName() {
 		return variableName;
 	}
-	public static String getUniqueID(String fieldname, String varname, Expression timeExp, String varType) {
-		return TokenMangler.fixTokenStrict(fieldname + "_" + varname + "_" + timeExp.infix() + "_" + varType);
+	public static String getUniqueID(String fieldname, String varname, Expression timeExp, String varType) throws ExpressionException {
+		return TokenMangler.fixTokenStrict(fieldname + "_" + varname + "_" + timeExp.flatten().infix() + "_" + varType);
 	}
 
-	public String getUniqueID() {
+	public String getUniqueID() throws ExpressionException {
 		return getUniqueID(fieldName, variableName, time, variableType.getTypeName());
 	}	
 	@Override

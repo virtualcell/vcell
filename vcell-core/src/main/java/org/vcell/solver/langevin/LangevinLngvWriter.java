@@ -89,8 +89,6 @@ public class LangevinLngvWriter {
 	private static Map<ParticleProperties, SubDomain> particlePropertiesMap = new LinkedHashMap<> ();			// initial conditions for seed species
 	private static Map<LangevinParticleJumpProcess, SubDomain> particleJumpProcessMap = new LinkedHashMap<> ();	// list of reactions
 	private static Set<LangevinParticleMolecularType> particleMolecularTytpeSet = new LinkedHashSet<> ();		// molecular types
-	
-	private static GeometryContext geometryContext = null;
 	private static MathDescription mathDescription = null;
 	
 //	static ArrayList<MappingOfReactionParticipants> currentMappingOfReactionParticipants = new ArrayList<MappingOfReactionParticipants>();
@@ -105,30 +103,13 @@ public class LangevinLngvWriter {
 		}
 		
 		SimulationOwner so = simulation.getSimulationOwner();
-		if(so instanceof MathModel) {
-			MathModel mm = (MathModel)so;	// TODO: must make this code compatible to math model too
-			// TODO: how do I get GeometryContext for a math model?
-		}
-		Geometry geometry = so.getGeometry();
+		Geometry geometry = simulation.getMathDescription().getGeometry();
 		GeometrySpec geometrySpec = geometry.getGeometrySpec();
-		if(!(so instanceof SimulationContext)) {
-			throw new RuntimeException("SimulationOwner must be instance of SimulationContext");
-		}
-		SimulationContext simContext = (SimulationContext)so;
-		geometryContext = simContext.getGeometryContext();
-		
-		if(simContext.getApplicationType() != Application.SPRINGSALAD) {
-			throw new RuntimeException("SpringSaLaD application type expected.");
-		}
-		if(simContext.getMostRecentlyCreatedMathMapping() == null) {
-			throw new RuntimeException("Refresh MathDescription required");
+
+		if(!so.getMathDescription().isLangevin()) {
+			throw new RuntimeException("Math description must be langevin");
 		}
 
-//		LangevinMathMapping mathMapping = (LangevinMathMapping)simContext.getMostRecentlyCreatedMathMapping();
-//		Structure struct = null;
-//		StructureMapping sm = simContext.getGeometryContext().getStructureMapping(struct);
-//		GeometryClass reactionStepGeometryClass = sm.getGeometryClass();
-		
 		mathDescription = simulation.getMathDescription();
 		particlePropertiesMap.clear();
 		particleJumpProcessMap.clear();
@@ -168,7 +149,7 @@ public class LangevinLngvWriter {
 		/* ********* WRITE THE SPATIAL INFORMATION **********/
 		sb.append("*** " + SPATIAL_INFORMATION + " ***");
 		sb.append("\n");
-		geometryContext.writeData(sb);
+		geometrySpec.writeData(sb);
 		sb.append("\n");
 
 		/* ******* WRITE THE SPECIES INFORMATION ***********/
@@ -216,24 +197,14 @@ public class LangevinLngvWriter {
 		sb.append("*** " + MOLECULE_COUNTERS + " ***");
 		sb.append("\n");
 		sb.append("\n");
-//		for(Molecule molecule: molecules) {
-//			molecule.getMoleculeCounter().writeMoleculeCounter(sb);
-//		}
-		Simulation.Counters.writeMoleculeCounters(simContext, sb);	// everything here is initialized with default
+		writeMoleculeCounters(sb);	// everything here is initialized with default
 		sb.append("\n");
 
 		/* ******  WRITE THE STATE COUNTERS *************/
 		sb.append("*** " + STATE_COUNTERS + " ***");
 		sb.append("\n");
 		sb.append("\n");
-//		for(Molecule molecule : molecules) {
-//			for(SiteType type : molecule.getTypeArray()) {
-//				for(State state : type.getStates()) {
-//					state.getStateCounter().writeStateCounter(sb);
-//				}
-//			}
-//		}
-		Simulation.Counters.writeStateCounters(simContext, sb);	// everything here is initialized with default
+		writeStateCounters(sb);	// everything here is initialized with default
 		sb.append("\n");
 
 		// what follows is mainly placeholders for result statistics, obviously there's none before running the simulation
@@ -241,23 +212,14 @@ public class LangevinLngvWriter {
 		sb.append("*** " + BOND_COUNTERS + " ***");
 		sb.append("\n");
 		sb.append("\n");
-//		for(BindingReaction reaction: bindingReactions) {
-//			reaction.getBondCounter().writeBondCounter(sb);
-//		}
-		Simulation.Counters.writeBondCounters(simContext, sb);	// everything here is initialized with default
+		writeBondCounters(sb);	// everything here is initialized with default
 		sb.append("\n");
 
 		/* ********  WRITE THE SITE PROPERTY COUNTERS ************/
 		sb.append("*** " + SITE_PROPERTY_COUNTERS + " ***");
 		sb.append("\n");
 		sb.append("\n");
-//		for(Molecule molecule : molecules) {
-//			ArrayList<Site> sites = molecule.getSiteArray();
-//			for(Site site : sites) {
-//				site.getPropertyCounter().writeSitePropertyCounter(sb);
-//			}
-//		}
-		Simulation.Counters.writeSitePropertyCounters(simContext, sb);	// everything here is initialized with default
+		writeSitePropertyCounters(sb);	// everything here is initialized with default
 		sb.append("\n");
 
 		/* *************** WRITE THE TRACK CLUSTERS BOOLEAN ***********/
@@ -890,13 +852,14 @@ public class LangevinLngvWriter {
 				throw new RuntimeException("Initial concentration must be a number");
 			}
 
-			int dimension = geometryContext.getGeometry().getDimension();
+			// TODO: verify if the molecule is flat or not; for now we assume it is "flat" on YZ axis projection
+			boolean is2D = true;		// the x-coordinate is the same for all the sites
 
 			sb.append("MOLECULE: \"" + lpmt.getName() + "\" " + subDomain.getName() + 
 					" Number " + scount + 
 					// number of site types and number of sites is the same for the vcell implementation of springsalad
 					" Site_Types " + lpmt.getComponentList().size() + " Total"  + "_Sites " + lpmt.getComponentList().size() + 
-					" Total_Links " + lpmt.getInternalLinkSpec().size() + " is2D " + (dimension == 2 ? true : false));	// TODO: is2D must mean if the molecule is "flat" on YZ axis projection
+					" Total_Links " + lpmt.getInternalLinkSpec().size() + " is2D " + is2D);
 			sb.append("\n");
 			sb.append("{");
 			sb.append("\n");
@@ -944,7 +907,62 @@ public class LangevinLngvWriter {
 		System.out.println(sb.toString());
 		return;
 	}
-	
+
+	public static void writeMoleculeCounters(StringBuilder sb) {
+		for(ParticleMolecularType pmt : particleMolecularTytpeSet) {
+			if(SpeciesContextSpec.SourceMoleculeString.equals(pmt.getName()) || SpeciesContextSpec.SinkMoleculeString.equals(pmt.getName())) {
+				continue;	// skip the Source and the Sink molecules
+			}
+			sb.append("'").append(pmt.getName()).append("' : ")
+					.append("Measure Total Free Bound");
+			sb.append("\n");
+		}
+	}
+	public static void writeStateCounters(StringBuilder sb) {
+		for(ParticleMolecularType pmt : particleMolecularTytpeSet) {
+			if(SpeciesContextSpec.SourceMoleculeString.equals(pmt.getName()) || SpeciesContextSpec.SinkMoleculeString.equals(pmt.getName())) {
+				continue;
+			}
+			List <ParticleMolecularComponent> pmcList = pmt.getComponentList();
+			for(ParticleMolecularComponent pmc : pmcList)  {
+				List <ParticleComponentStateDefinition> pcsdList = pmc.getComponentStateDefinitions();
+				for(ParticleComponentStateDefinition pcsd : pcsdList) {
+					sb.append("'").append(pmt.getName()).append("' : ")
+							.append("'").append(pmc.getName()).append("' : ")
+							.append("'").append(pcsd.getName()).append("' : ")
+							.append("Measure Total Free Bound");
+					sb.append("\n");
+				}
+			}
+		}
+	}
+	public static void writeBondCounters(StringBuilder sb) {
+		for (Map.Entry<LangevinParticleJumpProcess,SubDomain> entry : particleJumpProcessMap.entrySet()) {
+			LangevinParticleJumpProcess lpjp = entry.getKey();
+			if(lpjp.getSubtype() == ReactionRuleSpec.Subtype.BINDING) {
+				sb.append("'").append(lpjp.getName()).append("' : ")
+						.append("Counted");
+				sb.append("\n");
+			}
+		}
+	}
+	public static void writeSitePropertyCounters(StringBuilder sb) {
+		for(ParticleMolecularType pmt : particleMolecularTytpeSet) {
+			if (SpeciesContextSpec.SourceMoleculeString.equals(pmt.getName()) || SpeciesContextSpec.SinkMoleculeString.equals(pmt.getName())) {
+				continue;
+			}
+			List<ParticleMolecularComponent> pmcList = pmt.getComponentList();
+			for(int i=0; i<pmcList.size(); i++) {
+				ParticleMolecularComponent pmc = pmcList.get(i);
+				sb.append("'").append(pmt.getName()).append("' ")
+						.append("Site " + i).append(" : ")
+						.append("Track Properties true");
+				sb.append("\n");
+			}
+		}
+	}
+
+
 	private static String getFilename() {	// SpringSaLaD specific, external file with molecule information
 		return null;	// not implemented
 	}

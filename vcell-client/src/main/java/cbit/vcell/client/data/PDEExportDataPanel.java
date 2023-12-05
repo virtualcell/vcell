@@ -44,7 +44,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.border.LineBorder;
 
-import org.vcell.util.BeanUtils;
+import org.vcell.util.gui.GeneralGuiUtils;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.LocalVCDataIdentifier;
 import org.vcell.util.document.User;
@@ -368,7 +368,6 @@ private void connEtoC17() {
 
 	/**
  * connEtoM4:  (JButtonAdd.action.actionPerformed(java.awt.event.ActionEvent) --> DefaultListModelCivilizedSelections.addNewElement(Ljava.lang.Object;)V)
- * @param arg1 java.awt.event.ActionEvent
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void updateChoiceROI() {
@@ -1886,7 +1885,7 @@ public void setDisplayAdapterService(DisplayAdapterService displayAdapterService
 public void setNormalAxis(int normalAxis) {
 	int oldValue = fieldNormalAxis;
 	fieldNormalAxis = normalAxis;
-	firePropertyChange("normalAxis", new Integer(oldValue), new Integer(normalAxis));
+	firePropertyChange("normalAxis", oldValue, normalAxis);
 }
 
 
@@ -1929,7 +1928,7 @@ public void setPdeDataContext(PDEDataContext pdeDataContext,ExportSpecs.SimNameS
 public void setSlice(int slice) {
 	int oldValue = fieldSlice;
 	fieldSlice = slice;
-	firePropertyChange("slice", new Integer(oldValue), new Integer(slice));
+	firePropertyChange("slice", oldValue, slice);
 }
 
 
@@ -2281,7 +2280,7 @@ private void updateExportFormat(ExportFormat exportFormat) {
 	switch (exportFormat) {
 		case CSV:
 		case HDF5: {
-			BeanUtils.enableComponents(getJPanelSelections(), true);
+			GeneralGuiUtils.enableComponents(getJPanelSelections(), true);
 			getJRadioButtonFull().setEnabled(exportFormat == ExportFormat.HDF5);
 			getJRadioButtonROI().setSelected(true);
 			break;
@@ -2290,7 +2289,7 @@ private void updateExportFormat(ExportFormat exportFormat) {
 		case GIF:
 		case FORMAT_JPEG:
 		case ANIMATED_GIF: {
-			BeanUtils.enableComponents(getJPanelSelections(), false);
+			GeneralGuiUtils.enableComponents(getJPanelSelections(), false);
 			getJRadioButtonSlice().setSelected(true);
 			getJRadioButtonFull().setEnabled(true);
 			break;
@@ -2298,7 +2297,7 @@ private void updateExportFormat(ExportFormat exportFormat) {
 		case NRRD: 
 //		case IMAGEJ:
 		{
-			BeanUtils.enableComponents(getJPanelSelections(), false);
+			GeneralGuiUtils.enableComponents(getJPanelSelections(), false);
 			getJRadioButtonFull().setSelected(true);
 			getJRadioButtonFull().setEnabled(true);			
 			break;
@@ -2307,7 +2306,7 @@ private void updateExportFormat(ExportFormat exportFormat) {
 		case PLY:
 		case VTK_UNSTRUCT:
 		case VTK_IMAGE: {
-			BeanUtils.enableComponents(getJPanelSelections(), false);
+			GeneralGuiUtils.enableComponents(getJPanelSelections(), false);
 			getJRadioButtonSlice().setSelected(false);
 			getJRadioButtonSlice().setEnabled(false);
 			getJRadioButtonFull().setSelected(true);

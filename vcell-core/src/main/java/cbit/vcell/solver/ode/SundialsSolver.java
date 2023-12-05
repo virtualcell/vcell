@@ -62,8 +62,6 @@ public abstract class SundialsSolver extends SimpleCompiledSolver implements ODE
 
 /**
  * IDASolver constructor comment.
- * @param sessionLog cbit.vcell.server.SessionLog
- * @param simulation cbit.vcell.solver.Simulation
  */
 public SundialsSolver(SimulationTask simTask, File directory, boolean bMessaging) throws SolverException {
 	super(simTask, directory, bMessaging);
@@ -141,12 +139,11 @@ private StateVariable[] createStateVariables() throws MathException, ExpressionE
 					sensVariables, 
 					simSymbolTable));
 	}
-	if (stateVariables.size() == 0) {
+	if (stateVariables.isEmpty()) {
 		throw new MathException("there are no equations defined");
 	}
 
-	StateVariable stateVars[] = (StateVariable[])BeanUtils.getArray(stateVariables,StateVariable.class);
-	return(stateVars);
+    return(stateVariables.toArray(StateVariable[]::new));
 }
 
 
@@ -182,7 +179,6 @@ protected ApplicationMessage getApplicationMessage(String message) {
 /**
  * This method was created in VisualAge.
  * @return double[]
- * @param vectorIndex int
  */
 public ODESolverResultSet getODESolverResultSet()  {
 	//
@@ -286,7 +282,6 @@ public Constant getSensitivityParameter() {
 /**
  * This method was created in VisualAge.
  * @return double[]
- * @param vectorIndex int
  */
 private ODESolverResultSet getStateVariableResultSet() {
 	ODESolverResultSet odeSolverResultSet = new ODESolverResultSet();

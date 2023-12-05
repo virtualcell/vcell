@@ -62,6 +62,12 @@ jobs:
           poetry install
           poetry run python -m pytest
 
+      - name: build vcutils package
+        run: |
+          cd python-utils
+          poetry install
+          poetry run python -m pytest
+
       - name: setup java 17 with maven cache
         uses: actions/setup-java@v3
         with:

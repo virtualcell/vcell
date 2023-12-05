@@ -88,7 +88,7 @@ private static final String REQUIRED_LOCAL_PROPERTIES[] = {
 	PropertyLoader.mongodbDatabase,
 	PropertyLoader.mongodbHostInternal,
 //	PropertyLoader.mongodbLoggingCollection,
-	PropertyLoader.mongodbPortInternal
-	
+	PropertyLoader.mongodbPortInternal,
+	PropertyLoader.maxJobsPerScan
 };
 }

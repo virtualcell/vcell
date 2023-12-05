@@ -1081,6 +1081,9 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList, React
 			SpeciesContextSpec[] speciesContextSpecs = rc.getSpeciesContextSpecs();
 			for(SpeciesContextSpec scs : speciesContextSpecs) {
 				SpeciesContext scCandidate = scs.getSpeciesContext();
+				if(scCandidate == null || scCandidate.getSpeciesPattern() == null) {
+					continue;
+				}
 				SpeciesPattern spCandidate = scCandidate.getSpeciesPattern();
 				MolecularTypePattern mtpCandidate = spCandidate.getMolecularTypePatterns().get(0);
 				MolecularType mtCandidate = mtpCandidate.getMolecularType();
@@ -1204,7 +1207,6 @@ protected java.beans.PropertyChangeSupport getPropertyChange() {
 /**
  * Gets the reactionMapping property (int) value.
  * @return The reactionMapping property value.
- * @see #setReactionMapping
  */
 public ReactionRuleMappingType getReactionRuleMapping() {
 	return fieldReactionRuleMapping;
@@ -1244,9 +1246,7 @@ public synchronized void removePropertyChangeListener(java.beans.PropertyChangeL
 
 /**
  * Sets the reactionMapping property (int) value.
- * @param reactionMapping The new value for the property.
  * @exception java.beans.PropertyVetoException The exception description.
- * @see #getReactionMapping
  */
 public void setReactionRuleMapping(ReactionRuleMappingType reactionRuleMapping) {
 	ReactionRuleMappingType oldValue = fieldReactionRuleMapping;
@@ -1257,7 +1257,6 @@ public void setReactionRuleMapping(ReactionRuleMappingType reactionRuleMapping) 
 /**
  * Insert the method's description here.
  * Creation date: (2/14/2002 5:07:05 PM)
- * @param rs cbit.vcell.model.ReactionStep
  */
 void setReactionRule(ReactionRule rr) {
 	this.reactionRule = rr;	

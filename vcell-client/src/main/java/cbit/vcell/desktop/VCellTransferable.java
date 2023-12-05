@@ -12,7 +12,7 @@ package cbit.vcell.desktop;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
 
-import org.vcell.util.BeanUtils;
+import org.vcell.util.ArrayUtils;
 import org.vcell.util.gui.SimpleTransferable;
 
 import cbit.vcell.model.ReactionSpeciesCopy;
@@ -69,75 +69,54 @@ public class VCellTransferable extends SimpleTransferable {
 		}
 	}
 
-	/**
- * Insert the method's description here.
- * Creation date: (5/8/2003 2:48:54 PM)
- */
-private VCellTransferable(Object obj) {
-	super(obj);
-}
-
-
-	/**
-	 * Returns an array of DataFlavor objects indicating the flavors the data 
-	 * can be provided in.  The array should be ordered according to preference
-	 * for providing the data (from most richly descriptive to least descriptive).
-	 * @return an array of data flavors in which this data can be transferred
-	 */
-public java.awt.datatransfer.DataFlavor[] getTransferDataFlavors() {
-	DataFlavor flavors[] = super.getTransferDataFlavors();
-	
-	// add custom flavors if availlable
-	if(getDataObjectClass().equals(ReactionSpeciesCopy.class)){
-		flavors = (DataFlavor[]) BeanUtils.addElement(flavors,REACTION_SPECIES_ARRAY_FLAVOR);
+	private VCellTransferable(Object obj) {
+		super(obj);
 	}
 
-	if (getDataObjectClass().equals(VCellTransferable.ResolvedValuesSelection.class)){
-		flavors = (DataFlavor[]) BeanUtils.addElement(flavors,RESOLVED_VALUES_FLAVOR);
-	}
-	
 
-	return flavors;
-}
+		/**
+		 * Returns an array of DataFlavor objects indicating the flavors the data
+		 * can be provided in.  The array should be ordered according to preference
+		 * for providing the data (from most richly descriptive to least descriptive).
+		 * @return an array of data flavors in which this data can be transferred
+		 */
+	public java.awt.datatransfer.DataFlavor[] getTransferDataFlavors() {
+		DataFlavor[] flavors = super.getTransferDataFlavors();
+
+		// add custom flavors if available
+		if(getDataObjectClass().equals(ReactionSpeciesCopy.class)){
+			flavors = ArrayUtils.addElement(flavors, REACTION_SPECIES_ARRAY_FLAVOR);
+		}
+
+		if (getDataObjectClass().equals(VCellTransferable.ResolvedValuesSelection.class)){
+			flavors = ArrayUtils.addElement(flavors, RESOLVED_VALUES_FLAVOR);
+		}
 
 
-/**
- * Insert the method's description here.
- * Creation date: (9/9/2004 1:17:52 PM)
- * @return boolean
- * @param dataFlavor java.awt.datatransfer.DataFlavor
- */
-protected boolean isSupportedObjectFlavor(DataFlavor dataFlavor) {
-
-	if (super.isSupportedObjectFlavor(dataFlavor)){
-		return true;
-	}
-	
-	if(dataFlavor.equals(REACTION_SPECIES_ARRAY_FLAVOR)){
-		return true;
+		return flavors;
 	}
 
-	if(dataFlavor.equals(RESOLVED_VALUES_FLAVOR)){
-		return true;		
+
+	protected boolean isSupportedObjectFlavor(DataFlavor dataFlavor) {
+
+		if (super.isSupportedObjectFlavor(dataFlavor)){
+			return true;
+		}
+
+		if(dataFlavor.equals(REACTION_SPECIES_ARRAY_FLAVOR)){
+			return true;
+		}
+
+		return dataFlavor.equals(RESOLVED_VALUES_FLAVOR);
 	}
 
-	return false;
-}
+	public static void sendToClipboard(Object obj) {
 
-
-/**
- * Insert the method's description here.
- * Creation date: (5/9/2003 8:43:19 AM)
- * @param obj java.lang.Object
- * @param flavor java.awt.datatransfer.DataFlavor
- */
-public static void sendToClipboard(Object obj) {
-
-	if(obj == null){
-		return;
+		if(obj == null){
+			return;
+		}
+		VCellTransferable vct = new VCellTransferable(obj);
+		Clipboard clipb = java.awt.Toolkit.getDefaultToolkit().getSystemClipboard();
+		clipb.setContents(vct,vct);
 	}
-	VCellTransferable vct = new VCellTransferable(obj);
-	Clipboard clipb = java.awt.Toolkit.getDefaultToolkit().getSystemClipboard();
-	clipb.setContents(vct,vct);
-}
 }

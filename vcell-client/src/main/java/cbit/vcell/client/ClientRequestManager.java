@@ -68,8 +68,6 @@ import javax.swing.ListSelectionModel;
 import javax.swing.Timer;
 import javax.swing.filechooser.FileFilter;
 
-import cbit.vcell.modelopt.ParameterEstimationTask;
-import cbit.vcell.opt.OptimizationResultSet;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpStatus;
@@ -83,6 +81,7 @@ import org.jlibsedml.ArchiveComponents;
 import org.jlibsedml.Libsedml;
 import org.jlibsedml.SEDMLDocument;
 import org.jlibsedml.SedML;
+import org.vcell.util.gui.GeneralGuiUtils;
 import org.vcell.model.bngl.ASTModel;
 import org.vcell.model.bngl.BngUnitSystem;
 import org.vcell.model.bngl.BngUnitSystem.BngUnitOrigin;
@@ -90,8 +89,6 @@ import org.vcell.model.bngl.gui.BNGLDebuggerPanel;
 import org.vcell.model.bngl.gui.BNGLUnitsPanel;
 import org.vcell.model.rbm.RbmUtils;
 import org.vcell.model.rbm.RbmUtils.BnglObjectConstructionVisitor;
-import org.vcell.optimization.CopasiOptSolverCallbacks;
-import org.vcell.optimization.ParameterEstimationTaskSimulatorIDA;
 import org.vcell.util.*;
 import org.vcell.util.document.*;
 import org.vcell.util.document.UserLoginInfo.DigestedPassword;
@@ -186,16 +183,13 @@ import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.MathDescription;
-import cbit.vcell.math.MathException;
 import cbit.vcell.math.MembraneSubDomain;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.Model.RbmModelContainer;
 import cbit.vcell.model.Model.ReservedSymbol;
-import cbit.vcell.model.ModelException;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionStep;
@@ -204,7 +198,6 @@ import cbit.vcell.model.Structure;
 import cbit.vcell.numericstest.ModelGeometryOP;
 import cbit.vcell.numericstest.ModelGeometryOPResults;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.render.Vect3d;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.server.SimulationStatus;
@@ -3986,7 +3979,7 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 				Thread waiter = new Thread() {
 					public void run() {
 						try {
-							BeanUtils.setCursorThroughout((Container) dataWinManager.getComponent(),
+							GeneralGuiUtils.setCursorThroughout((Container) dataWinManager.getComponent(),
 									Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 							while (bOpening) {
 								try {
@@ -3999,7 +3992,7 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 									.getMdiManager().getWindowManager(ID);
 							dwm.resetDocument(vcDoc);
 						} finally {
-							BeanUtils.setCursorThroughout((Container) dataWinManager.getComponent(),
+							GeneralGuiUtils.setCursorThroughout((Container) dataWinManager.getComponent(),
 									Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 						}
 					}
@@ -4425,7 +4418,7 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 		FieldDataWindowManager fdwm = (FieldDataWindowManager) getMdiManager()
 				.getWindowManager(ClientMDIManager.FIELDDATA_WINDOW_ID);
 		fdwm.getFieldDataGUIPanel().setCreateDataSymbolCallBack(dataSymbolCallBack);
-		Window win = (Window) BeanUtils.findTypeParentOfComponent(fdwm.getFieldDataGUIPanel(), Window.class);
+		Window win = (Window) GeneralGuiUtils.findTypeParentOfComponent(fdwm.getFieldDataGUIPanel(), Window.class);
 		if (win != null) {
 			win.setVisible(false);
 		}
@@ -4619,14 +4612,14 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 				DialogUtils.showErrorDialog(comparePanel,
 						"Please resolve all tagged elements/attributes before proceeding.");
 			} else {
-				BeanUtils.setCursorThroughout((Container) requester.getComponent(),
+				GeneralGuiUtils.setCursorThroughout((Container) requester.getComponent(),
 						Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 				try {
 					processComparisonResult(comparePanel, requester);
 				} catch (RuntimeException e) {
 					throw e;
 				} finally {
-					BeanUtils.setCursorThroughout((Container) requester.getComponent(),
+					GeneralGuiUtils.setCursorThroughout((Container) requester.getComponent(),
 							Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 				}
 			}

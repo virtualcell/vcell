@@ -30,8 +30,8 @@ import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.border.TitledBorder;
 
-import org.vcell.util.BeanUtils;
 import org.vcell.util.Coordinate;
+import org.vcell.util.gui.GeneralGuiUtils;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.sorttable.JSortTable;
 
@@ -1106,7 +1106,7 @@ private void setPanelsVisible() {
 	boolean bHasStimulus = (getElectricalStimulus(getSimulationContext()) != null);
 	getBtnGraphElectricalStimulus().setEnabled(bHasStimulus);
 	getJPanel2().setEnabled(bHasStimulus);
-	BeanUtils.enableComponents(getJPanel2(), bHasStimulus);
+	GeneralGuiUtils.enableComponents(getJPanel2(), bHasStimulus);
 	return;
 }
 
@@ -1229,10 +1229,7 @@ private void setsimulationContext1(SimulationContext newValue) {
 		jdialog.setTitle(title);
 		jdialog.setContentPane(timeFunctionPanel);
     	jdialog.pack();
-    	BeanUtils.centerOnComponent(jdialog, owner);
+    	GeneralGuiUtils.centerOnComponent(jdialog, owner);
     	DialogUtils.showModalJDialogOnTop(jdialog, owner);
-    	
-
 	}
-
 }

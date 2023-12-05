@@ -30,17 +30,14 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTree;
 import javax.swing.ToolTipManager;
-import javax.swing.border.TitledBorder;
 import javax.swing.event.TreeModelListener;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
-import org.vcell.util.BeanUtils;
-import org.vcell.util.DataAccessException;
-import org.vcell.util.ProgressDialogListener;
-import org.vcell.util.UserCancelException;
+import org.vcell.util.gui.GeneralGuiUtils;
+import org.vcell.util.*;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionInfo;
 import org.vcell.util.gui.CollapsiblePanel;
@@ -151,7 +148,7 @@ public void setSpatialGeomMode(boolean bSpatialGeomMode) {
 		bSpatialMode = true;
 		if(getBottomPanel() != null) {
 			ArrayList<Component> comps = new ArrayList<Component>();
-			BeanUtils.findComponent(getBottomPanel(), JLabel.class, comps);
+			GeneralGuiUtils.findComponent(getBottomPanel(), JLabel.class, comps);
 			((JLabel)comps.get(0)).setText((this instanceof BioModelDbTreePanel?"Summary":"Summary")+" (click popup menu to show geom preview)");
 		}
 		setPopupMenuDisabled(true);
@@ -413,7 +410,7 @@ public DocumentManager getDocumentManager() {
 
 /**
  * Sets the documentManager property (cbit.vcell.clientdb.DocumentManager) value.
- * @param documentManager The new value for the property.
+ * @param newValue The new value for the property.
  * @see #getDocumentManager
  */
 public void setDocumentManager(DocumentManager newValue) {
@@ -449,7 +446,7 @@ public void setLatestVersionOnly(boolean arg1) {
 public void setPopupMenuDisabled(boolean popupMenuDisabled) {
 	boolean oldValue = fieldPopupMenuDisabled;
 	fieldPopupMenuDisabled = popupMenuDisabled;
-	firePropertyChange("popupMenuDisabled", new Boolean(oldValue), new Boolean(popupMenuDisabled));
+	firePropertyChange("popupMenuDisabled", oldValue, popupMenuDisabled);
 }
 
 
