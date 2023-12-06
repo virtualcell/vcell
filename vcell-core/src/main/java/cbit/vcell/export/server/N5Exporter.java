@@ -236,24 +236,14 @@ public class N5Exporter implements ExportConstants {
 	public ExportOutput makeN5Data(OutputContext outputContext, JobRequest jobRequest, ExportSpecs exportSpecs, FileDataContainerManager fileDataContainerManager)
 			throws DataAccessException, IOException, MathException {
 		FormatSpecificSpecs formatSpecs = exportSpecs.getFormatSpecificSpecs( );
-		N5Specs n5Specs = (N5Specs) formatSpecs;
-		if (n5Specs != null) {
-				return exportToN5(
-						outputContext,
-						jobRequest.getJobID(),
-						n5Specs,
-						exportSpecs,
-						fileDataContainerManager
-						);
+			return exportToN5(
 		}
-		throw new IllegalArgumentException("Export spec "  + ExecutionTrace.justClassName(formatSpecs) + " not instance of " + ExecutionTrace.justClassName(ASCIISpecs.class) );
 	}
 
 	public ExportOutput makeN5Data(OutputContext outputContext, long jobID, ExportSpecs exportSpecs, FileDataContainerManager fileDataContainerManager)
 			throws DataAccessException, IOException, MathException {
 		FormatSpecificSpecs formatSpecs = exportSpecs.getFormatSpecificSpecs( );
-		N5Specs n5Specs = (N5Specs) formatSpecs;
-		if (n5Specs != null) {
+		if (formatSpecs instanceof N5Specs n5Specs) {
 			return exportToN5(
 					outputContext,
 					jobID,
@@ -261,8 +251,9 @@ public class N5Exporter implements ExportConstants {
 					exportSpecs,
 					fileDataContainerManager
 			);
+		} else {
+			throw new IllegalArgumentException("Export spec " + ExecutionTrace.justClassName(formatSpecs) + " not instance of " + ExecutionTrace.justClassName(N5Specs.class));
 		}
-		throw new IllegalArgumentException("Export spec "  + ExecutionTrace.justClassName(formatSpecs) + " not instance of " + ExecutionTrace.justClassName(ASCIISpecs.class) );
 	}
 
 /**
