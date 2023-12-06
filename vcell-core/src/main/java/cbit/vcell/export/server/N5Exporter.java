@@ -236,7 +236,17 @@ public class N5Exporter implements ExportConstants {
 	public ExportOutput makeN5Data(OutputContext outputContext, JobRequest jobRequest, ExportSpecs exportSpecs, FileDataContainerManager fileDataContainerManager)
 			throws DataAccessException, IOException, MathException {
 		FormatSpecificSpecs formatSpecs = exportSpecs.getFormatSpecificSpecs( );
+		if (formatSpecs instanceof N5Specs n5Specs){
 			return exportToN5(
+					outputContext,
+					jobRequest.getJobID(),
+					n5Specs,
+					exportSpecs,
+					fileDataContainerManager
+			);
+		}
+		else {
+			throw new IllegalArgumentException("Export spec " + ExecutionTrace.justClassName(formatSpecs) + " not instance of " + ExecutionTrace.justClassName(N5Specs.class));
 		}
 	}
 
