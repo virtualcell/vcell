@@ -120,12 +120,12 @@ public class N5Exporter implements ExportConstants {
 				if(timeIndex % 5 == 0){
 					double timeFrac = (double) timeIndex / exportSpecs.getTimeSpecs().getEndTimeIndex();
 					double progress = (varFrac + timeFrac) / (numVariables + exportSpecs.getTimeSpecs().getEndTimeIndex());
-					exportServiceImpl.fireExportProgress(jobID, vcDataID, "N5", progress);
+					exportServiceImpl.fireExportProgress(jobID, vcDataID, N5Specs.n5Suffix.toUpperCase(), progress);
 				}
 			}
 		}
 		n5FSWriter.close();
-		ExportOutput exportOutput = new ExportOutput(true, ".n5", vcDataID.getID(), getN5FileNameHash(), fileDataContainerManager);
+		ExportOutput exportOutput = new ExportOutput(true, "." + N5Specs.n5Suffix, vcDataID.getID(), getN5FileNameHash(), fileDataContainerManager);
 		return exportOutput;
 	}
 
@@ -204,7 +204,7 @@ public class N5Exporter implements ExportConstants {
 	}
 
 	public String getN5FileAbsolutePath(){
-		File outPutDir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.n5DataDir) + "/" + n5BucketName + "/" + this.getN5FileNameHash() + ".n5");
+		File outPutDir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.n5DataDir) + "/" + n5BucketName + "/" + this.getN5FileNameHash() + "." + N5Specs.n5Suffix);
 		return outPutDir.getAbsolutePath();
 	}
 

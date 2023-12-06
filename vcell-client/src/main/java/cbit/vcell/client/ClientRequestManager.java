@@ -68,6 +68,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.Timer;
 import javax.swing.filechooser.FileFilter;
 
+import cbit.vcell.export.server.N5Specs;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpStatus;
@@ -2540,7 +2541,7 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 		if (exportsRecord.contains(evt.getJobID() + "")) {
 			return;
 		}
-		if (evt.getLocation().toLowerCase().endsWith(".n5")){
+		if (evt.getLocation().toLowerCase().endsWith("." + N5Specs.n5Suffix)){
 			return;
 		}
 		AsynchClientTask task1 = new AsynchClientTask("Retrieving data from '" + evt.getLocation() + "'",

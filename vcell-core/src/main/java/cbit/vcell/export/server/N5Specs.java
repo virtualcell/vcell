@@ -31,6 +31,8 @@ public class N5Specs extends FormatSpecificSpecs implements Serializable {
 
 	public final String dataSetName;
 
+	public static String n5Suffix = "n5";
+
 	public static enum CompressionLevel{
 		RAW,
 		BZIP,
