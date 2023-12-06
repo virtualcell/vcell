@@ -160,7 +160,7 @@ public abstract class AbstractCompiledSolver extends AbstractSolver implements j
             initialize();
             setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, SimulationMessage.MESSAGE_SOLVER_RUNNING_START));
             fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING);
-            checkLinuxSharedLibs_old();
+            checkLinuxSharedLibs();
             getMathExecutable().start();
             cleanup();
             //  getMathExecutable().start() may end prematurely (error or user stop), so check status before firing...
@@ -322,19 +322,19 @@ public abstract class AbstractCompiledSolver extends AbstractSolver implements j
         for (File dep : allPotentialDependencies){
             dependencyToFileMapping.put(dep.getName(), dep);
         }
-        Set<String> setOfDepsToLink = this.getDependenciesNeeded(dependency, dependencyToFileMapping);
+        Set<String> setOfDepsToLink = this.getDependenciesNeeded(dependency, dependencyToFileMapping, new HashSet<>());
 
         for (String depName : setOfDepsToLink){
             AbstractCompiledSolver.createSymbolicLink(targetLinkDirectory, depName, dependencyToFileMapping.get(depName));
         }
     }
 
-    private Set<String> getDependenciesNeeded(File startingDependency, Map<String, File> availableDependencies) throws IOException, InterruptedException {
+    private Set<String> getDependenciesNeeded(File startingDependency, Map<String, File> availableDependencies,
+                                              Set<String> alreadyProcessedDependencies) throws IOException, InterruptedException {
         Set<String> dependenciesNeeded = new HashSet<>();
         File dependency;
         if (availableDependencies.containsKey(startingDependency.getName())){
-            String dependencyToAdd = startingDependency.getName();
-            dependency = availableDependencies.get(dependencyToAdd);
+            dependency = availableDependencies.get(startingDependency.getName());
         } else { // Determine alternative options
             int locationOfExtension = startingDependency.getName().indexOf(".so");
             if (locationOfExtension == -1) throw new RuntimeException("Dependency " + startingDependency.getName() + " not found in available dependencies");
@@ -344,6 +344,7 @@ public abstract class AbstractCompiledSolver extends AbstractSolver implements j
             if (dependencyToAdd == null) throw new RuntimeException("No alternatives possible for missing dependency: `" + startingDependency.getName() + "`");
             dependency = availableDependencies.get(dependencyToAdd);
         }
+        if (alreadyProcessedDependencies.contains(dependency.getName())) return new HashSet<>(); // Already done
         dependenciesNeeded.add(dependency.getName());
         String lddRawResults = AbstractCompiledSolver.getLddResult(dependency);
 
@@ -369,9 +370,12 @@ public abstract class AbstractCompiledSolver extends AbstractSolver implements j
                 String aux = libInfo.nextToken();
 
                 if (!libPath.equals("not") || !aux.equals("found")) continue; // We only care about Case 2
-                dependenciesNeeded.addAll(this.getDependenciesNeeded(availableDependencies.get(libName), availableDependencies));
+                dependenciesNeeded.addAll(this.getDependenciesNeeded(
+                        availableDependencies.get(libName), availableDependencies, alreadyProcessedDependencies));
+
             }
         }
+        alreadyProcessedDependencies.add(dependency.getName());
         return dependenciesNeeded;
     }
 
@@ -389,10 +393,11 @@ public abstract class AbstractCompiledSolver extends AbstractSolver implements j
     }
 
     private static boolean isDependency(File potentialDependency){
-        return potentialDependency.getName().startsWith("lib")
-                && potentialDependency.isFile()
-                && potentialDependency.length() != 0
-                && !Files.isSymbolicLink(potentialDependency.toPath());
+        boolean test = potentialDependency.isFile()
+                //&& potentialDependency.length() != 0
+                && !Files.isSymbolicLink(potentialDependency.toPath())
+                && !potentialDependency.getName().startsWith("."); // && potentialDependency.getName().startsWith("lib")
+        return test;
     }
 
     private String getEntryStartingWith(String shortName, Set<String> candidates){
