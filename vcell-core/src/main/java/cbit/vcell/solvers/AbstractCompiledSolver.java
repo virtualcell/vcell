@@ -322,14 +322,14 @@ public abstract class AbstractCompiledSolver extends AbstractSolver implements j
         for (File dep : allPotentialDependencies){
             dependencyToFileMapping.put(dep.getName(), dep);
         }
-        Set<String> setOfDepsToLink = this.getDependenciesNeeded(dependency, dependencyToFileMapping, new HashSet<>());
+        Map<String, String> setOfDepsToLink = this.getDependenciesNeeded(dependency, dependencyToFileMapping, new HashSet<>());
 
-        for (String depName : setOfDepsToLink){
-            AbstractCompiledSolver.createSymbolicLink(targetLinkDirectory, depName, dependencyToFileMapping.get(depName));
+        for (String depName : setOfDepsToLink.keySet()){
+            AbstractCompiledSolver.createSymbolicLink(targetLinkDirectory, depName, dependencyToFileMapping.get(setOfDepsToLink.get(depName)));
         }
     }
 
-    private Set<String> getDependenciesNeeded(String startingDependencyName, Map<String, File> availableDependencies,
+    private Map<String, String> getDependenciesNeeded(String startingDependencyName, Map<String, File> availableDependencies,
                                               Set<String> alreadyProcessedDependencies) throws IOException, InterruptedException {
         if (availableDependencies.containsKey(startingDependencyName)) {
             return this.getDependenciesNeeded(
@@ -339,15 +339,16 @@ public abstract class AbstractCompiledSolver extends AbstractSolver implements j
             for (String alternate : availableDependencies.keySet()){
                 if (!startingDependencyName.startsWith(alternate)) continue;
                 Path stichedPath = Paths.get(availableDependencies.get(alternate).getParent(), startingDependencyName);
+                lg.info("Alternative found; attempting to link stitched dependency.");
                 return this.getDependenciesNeeded(stichedPath.toFile(), availableDependencies, alreadyProcessedDependencies);
             }
             throw new RuntimeException("No alternatives possible for missing dependency: `" + startingDependencyName + "`");
         }
     }
 
-    private Set<String> getDependenciesNeeded(File startingDependency, Map<String, File> availableDependencies,
+    private Map<String, String> getDependenciesNeeded(File startingDependency, Map<String, File> availableDependencies,
                                               Set<String> alreadyProcessedDependencies) throws IOException, InterruptedException {
-        Set<String> dependenciesNeeded = new HashSet<>();
+        Map<String, String> dependenciesNeeded = new HashMap<>();
         File dependency;
         if (availableDependencies.containsKey(startingDependency.getName())){
             dependency = availableDependencies.get(startingDependency.getName());
@@ -358,11 +359,12 @@ public abstract class AbstractCompiledSolver extends AbstractSolver implements j
             String shortName = startingDependency.getName().substring(0, locationOfExtension + 3);
             String dependencyToAdd = this.getEntryStartingWith(shortName, availableDependencies.keySet());
             if (dependencyToAdd == null) throw new RuntimeException("No alternatives possible for missing dependency: `" + startingDependency.getName() + "`");
+            lg.info("Alternative successfully found; preparing to link.");
             dependency = availableDependencies.get(dependencyToAdd);
             alreadyProcessedDependencies.add(startingDependency.getName());
         }
-        if (alreadyProcessedDependencies.contains(dependency.getName())) return new HashSet<>(); // Already done
-        dependenciesNeeded.add(dependency.getName());
+        if (alreadyProcessedDependencies.contains(dependency.getName())) return new HashMap<>(); // Already done
+        dependenciesNeeded.put(startingDependency.getName(), dependency.getName());
         String lddRawResults = AbstractCompiledSolver.getLddResult(dependency);
 
         //Try to save output to file for cli without interfering with further processing
@@ -387,7 +389,7 @@ public abstract class AbstractCompiledSolver extends AbstractSolver implements j
                 String aux = libInfo.nextToken();
 
                 if (!libPath.equals("not") || !aux.equals("found")) continue; // We only care about Case 2
-                dependenciesNeeded.addAll(this.getDependenciesNeeded(
+                dependenciesNeeded.putAll(this.getDependenciesNeeded(
                         libName, availableDependencies, alreadyProcessedDependencies));
 
             }
