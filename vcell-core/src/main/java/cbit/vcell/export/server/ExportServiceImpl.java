@@ -16,6 +16,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Hashtable;
@@ -57,6 +58,8 @@ public class ExportServiceImpl implements ExportConstants, ExportService {
 	private ASCIIExporter asciiExporter = new ASCIIExporter(this);
 	private IMGExporter imgExporter = new IMGExporter(this);
 	private RasterExporter rrExporter = new RasterExporter(this);
+
+	private N5Exporter n5Exporter = new N5Exporter(this);
 
 
 /**
@@ -223,6 +226,9 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataSer
 		case NRRD:
 			fileFormat = "NRRD";
 			break;
+		case N5:
+			fileFormat = N5Specs.n5Suffix.toUpperCase();
+			break;
 //		case IMAGEJ:
 //			fileFormat = "IMAGEJ";
 //			break;
@@ -233,6 +239,7 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataSer
 
 		String exportBaseURL = PropertyLoader.getRequiredProperty(PropertyLoader.exportBaseURLProperty);
 		String exportBaseDir = PropertyLoader.getRequiredProperty(PropertyLoader.exportBaseDirInternalProperty);
+		String exportN5Dir = PropertyLoader.getRequiredProperty(PropertyLoader.n5DataDir);
 
 		
 //		// see if we've done this before, and try to get it
@@ -305,6 +312,13 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataSer
 				case VTK_UNSTRUCT:
 					exportOutputs = rrExporter.makeVTKUnstructuredData(outputContext,newExportJob, user, dataServerImpl, exportSpecs,fileDataContainerManager);
 					return makeRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob,fileDataContainerManager);
+				case N5:
+					long jobID = ((VCSimulationDataIdentifier) exportSpecs.getVCDataIdentifier()).getJobIndex();
+					n5Exporter.initalizeDataControllers(exportSpecs.getVCDataIdentifier().getDataKey().toString() ,user.getName(), user.getID().toString(), jobID);
+					ExportOutput exportOutput = n5Exporter.makeN5Data(outputContext, newExportJob, exportSpecs, fileDataContainerManager);
+					URI uri = new URI(PropertyLoader.getRequiredProperty(PropertyLoader.exportBaseURLProperty));
+					String url = uri.getScheme() + "://" + uri.getHost() + ":" + PropertyLoader.getRequiredProperty(PropertyLoader.s3ProxyExternalPort) + "/" + n5Exporter.n5BucketName + "/";
+					return makeRemoteN5File(fileFormat, n5Exporter.getN5FileNameHash(), url + n5Exporter.getN5FileNameHash() + "." + N5Specs.n5Suffix, exportOutput, exportSpecs, newExportJob);
 				default:
 					throw new DataAccessException("Unknown export format requested");
 			}
@@ -457,6 +471,18 @@ private ExportEvent makeRemoteFile_Unzipped(String fileFormat, String exportBase
 		if (lg.isTraceEnabled()) lg.trace("ExportServiceImpl.makeRemoteFile(): Successfully exported to file: " + fileNames);
 		URL url = new URL(exportBaseURL + fileNames);
 		return fireExportCompleted(newExportJob.getJobID(), exportSpecs.getVCDataIdentifier(), fileFormat, url.toString(),exportSpecs);
+	}
+	else {
+		throw new DataFormatException("Export Server could not produce valid data !");
+	}
+}
+
+
+private ExportEvent makeRemoteN5File(String fileFormat, String fileName, String exportBaseURL, ExportOutput exportOutput, ExportSpecs exportSpecs, JobRequest newExportJob) throws DataFormatException, IOException{
+	if (exportOutput.isValid()) {
+		completedExportRequests.put(exportSpecs, newExportJob);
+		if (lg.isTraceEnabled()) lg.trace("ExportServiceImpl.makeRemoteFile(): Successfully exported to file: " + fileName);
+		return fireExportCompleted(newExportJob.getJobID(), exportSpecs.getVCDataIdentifier(), fileFormat, exportBaseURL, exportSpecs);
 	}
 	else {
 		throw new DataFormatException("Export Server could not produce valid data !");
