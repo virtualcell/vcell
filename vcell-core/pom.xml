@@ -383,8 +383,7 @@
 			<version>${commons-codec.version}</version>
 		</dependency>
 
-
-	</dependencies>
+    </dependencies>
 	
 	<profiles>
 		<profile>
