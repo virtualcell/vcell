@@ -329,6 +329,22 @@ public abstract class AbstractCompiledSolver extends AbstractSolver implements j
         }
     }
 
+    private Set<String> getDependenciesNeeded(String startingDependencyName, Map<String, File> availableDependencies,
+                                              Set<String> alreadyProcessedDependencies) throws IOException, InterruptedException {
+        if (availableDependencies.containsKey(startingDependencyName)) {
+            return this.getDependenciesNeeded(
+                    availableDependencies.get(startingDependencyName), availableDependencies, alreadyProcessedDependencies);
+        } else {
+            lg.warn("Warning: exact dependency not found by name; trying to stitch together an alternative.");
+            for (String alternate : availableDependencies.keySet()){
+                if (!startingDependencyName.startsWith(alternate)) continue;
+                Path stichedPath = Paths.get(availableDependencies.get(alternate).getParent(), startingDependencyName);
+                return this.getDependenciesNeeded(stichedPath.toFile(), availableDependencies, alreadyProcessedDependencies);
+            }
+            throw new RuntimeException("No alternatives possible for missing dependency: `" + startingDependencyName + "`");
+        }
+    }
+
     private Set<String> getDependenciesNeeded(File startingDependency, Map<String, File> availableDependencies,
                                               Set<String> alreadyProcessedDependencies) throws IOException, InterruptedException {
         Set<String> dependenciesNeeded = new HashSet<>();
@@ -343,6 +359,7 @@ public abstract class AbstractCompiledSolver extends AbstractSolver implements j
             String dependencyToAdd = this.getEntryStartingWith(shortName, availableDependencies.keySet());
             if (dependencyToAdd == null) throw new RuntimeException("No alternatives possible for missing dependency: `" + startingDependency.getName() + "`");
             dependency = availableDependencies.get(dependencyToAdd);
+            alreadyProcessedDependencies.add(startingDependency.getName());
         }
         if (alreadyProcessedDependencies.contains(dependency.getName())) return new HashSet<>(); // Already done
         dependenciesNeeded.add(dependency.getName());
@@ -371,7 +388,7 @@ public abstract class AbstractCompiledSolver extends AbstractSolver implements j
 
                 if (!libPath.equals("not") || !aux.equals("found")) continue; // We only care about Case 2
                 dependenciesNeeded.addAll(this.getDependenciesNeeded(
-                        availableDependencies.get(libName), availableDependencies, alreadyProcessedDependencies));
+                        libName, availableDependencies, alreadyProcessedDependencies));
 
             }
         }
@@ -394,7 +411,7 @@ public abstract class AbstractCompiledSolver extends AbstractSolver implements j
 
     private static boolean isDependency(File potentialDependency){
         boolean test = potentialDependency.isFile()
-                //&& potentialDependency.length() != 0
+                && potentialDependency.length() != 0
                 && !Files.isSymbolicLink(potentialDependency.toPath())
                 && !potentialDependency.getName().startsWith("."); // && potentialDependency.getName().startsWith("lib")
         return test;
