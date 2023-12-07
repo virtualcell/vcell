@@ -29,8 +29,6 @@ import java.util.stream.Stream;
 /**
  * Insert the type's description here.
  * Creation date: (6/26/2001 3:18:18 PM)
- *
- * @author: Ion Moraru
  */
 public abstract class AbstractCompiledSolver extends AbstractSolver implements java.beans.PropertyChangeListener {
     /**
@@ -43,14 +41,14 @@ public abstract class AbstractCompiledSolver extends AbstractSolver implements j
     protected final static String DATA_PREFIX = "data:";
     protected final static String PROGRESS_PREFIX = "progress:";
     protected final static String SEPARATOR = ":";
-    protected boolean bMessaging = true;
+    protected boolean bMessaging;
 
     /**
      * AbstractPDESolver constructor comment.
      */
-    public AbstractCompiledSolver(SimulationTask simTask, File directory, boolean bMsging) throws SolverException {
+    public AbstractCompiledSolver(SimulationTask simTask, File directory, boolean bMessaging) throws SolverException {
         super(simTask, directory);
-        bMessaging = bMsging;
+        this.bMessaging = bMessaging;
         setCurrentTime(simTask.getSimulationJob().getSimulation().getSolverTaskDescription().getTimeBounds().getStartingTime());
     }
 
@@ -110,13 +108,12 @@ public abstract class AbstractCompiledSolver extends AbstractSolver implements j
     public void propertyChange(java.beans.PropertyChangeEvent event) {
         if (event.getSource() == getMathExecutable() && event.getPropertyName().equals("applicationMessage")) {
             String messageString = (String) event.getNewValue();
-            if (messageString == null || messageString.length() == 0) {
+            if (messageString == null || messageString.isEmpty()) {
                 return;
             }
             ApplicationMessage appMessage = getApplicationMessage(messageString);
             if (appMessage == null) {
                 if (lg.isWarnEnabled()) lg.warn("AbstractCompiledSolver: Unexpected Message '" + messageString + "'");
-                return;
             } else {
                 switch (appMessage.getMessageType()) {
                     case ApplicationMessage.PROGRESS_MESSAGE: {
@@ -235,7 +232,7 @@ public abstract class AbstractCompiledSolver extends AbstractSolver implements j
         Map<String, String> setOfDepsToLink = this.getDependenciesNeeded(dependency, dependencyToFileMapping, new HashSet<>());
 
         for (String depName : setOfDepsToLink.keySet()){
-            AbstractCompiledSolver.createSymbolicLink(targetLinkDirectory, depName, dependencyToFileMapping.get(setOfDepsToLink.get(depName)));
+            Path ignored = AbstractCompiledSolver.createSymbolicLink(targetLinkDirectory, depName, dependencyToFileMapping.get(setOfDepsToLink.get(depName)));
         }
     }
 
@@ -322,11 +319,10 @@ public abstract class AbstractCompiledSolver extends AbstractSolver implements j
     }
 
     private static boolean isDependency(File potentialDependency){
-        boolean test = potentialDependency.isFile()
+        return potentialDependency.isFile()
                 && potentialDependency.length() != 0
                 && !Files.isSymbolicLink(potentialDependency.toPath())
-                && !potentialDependency.getName().startsWith("."); // && potentialDependency.getName().startsWith("lib")
-        return test;
+                && !potentialDependency.getName().startsWith(".");
     }
 
     private String getEntryStartingWith(String shortName, Set<String> candidates){
@@ -363,11 +359,7 @@ public abstract class AbstractCompiledSolver extends AbstractSolver implements j
     public synchronized final void startSolver() {
         if (!(fieldThread != null && fieldThread.isAlive())) {
             setMathExecutable(null);
-            fieldThread = new Thread() {
-                public void run() {
-                    runSolver();
-                }
-            };
+            fieldThread = new Thread(this::runSolver);
             fieldThread.setName("Compiled Solver (" + getClass().getName() + ")");
             fieldThread.start();
         }
