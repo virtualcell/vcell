@@ -1,28 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--This mathmodel was generated in VCML Version DanDev_Version_7.0_build_99-->
 <vcml xmlns="http://sourceforge.net/projects/vcell/vcml" Version="DanDev_Version_7.0_build_99">
-  <MathModel Name="Spring_simulation_transition">
-    <Geometry Name="spatial2037443037" Dimension="3">
-      <Extent X="1.0" Y="1.0" Z="1.0" />
+  <MathModel Name="Untitled">
+    <Geometry Name="spatial817523876" Dimension="3">
+      <Extent X="0.1" Y="0.1" Z="0.1" />
       <Origin X="0.0" Y="0.0" Z="0.0" />
-      <SubVolume Name="Intracellular" Handle="0" Type="Analytical" KeyValue="263240383">
-        <AnalyticExpression>(z &lt; 0.9)</AnalyticExpression>
+      <SubVolume Name="Intracellular" Handle="0" Type="Analytical" KeyValue="264097645">
+        <AnalyticExpression>(z &lt; 0.09)</AnalyticExpression>
       </SubVolume>
-      <SubVolume Name="Extracellular" Handle="1" Type="Analytical" KeyValue="263240384">
-        <AnalyticExpression>1.0</AnalyticExpression>
+      <SubVolume Name="Extracellular" Handle="1" Type="Analytical" KeyValue="264097646">
+        <AnalyticExpression>0.1</AnalyticExpression>
       </SubVolume>
-      <SurfaceClass Name="Extracellular_Intracellular_membrane" SubVolume1Ref="Extracellular" SubVolume2Ref="Intracellular" KeyValue="263240385" />
+      <SurfaceClass Name="Extracellular_Intracellular_membrane" SubVolume1Ref="Extracellular" SubVolume2Ref="Intracellular" KeyValue="264097647" />
       <SurfaceDescription NumSamplesX="101" NumSamplesY="101" NumSamplesZ="101" CutoffFrequency="0.3">
-        <VolumeRegion Name="Intracellular0" RegionID="0" SubVolume="Intracellular" Size="0.895" Unit="um3" />
-        <VolumeRegion Name="Extracellular1" RegionID="1" SubVolume="Extracellular" Size="0.105" Unit="um3" />
-        <MembraneRegion Name="membrane_Intracellular0_Extracellular1" VolumeRegion1="Extracellular1" VolumeRegion2="Intracellular0" Size="0.9999999999999111" Unit="um2" />
+        <VolumeRegion Name="Intracellular0" RegionID="0" SubVolume="Intracellular" Size="8.949999999999999E-4" Unit="um3" />
+        <VolumeRegion Name="Extracellular1" RegionID="1" SubVolume="Extracellular" Size="1.0499999999999999E-4" Unit="um3" />
+        <MembraneRegion Name="membrane_Intracellular0_Extracellular1" VolumeRegion1="Extracellular1" VolumeRegion2="Intracellular0" Size="0.009999999999999827" Unit="um2" />
       </SurfaceDescription>
-      <Version Name="spatial2037443037" KeyValue="263240379" BranchId="263240380" Archived="0" Date="17-Nov-2023 12:23:22" FromVersionable="false">
+      <Version Name="spatial817523876" KeyValue="264097641" BranchId="264097642" Archived="0" Date="07-Dec-2023 15:16:57" FromVersionable="false">
         <Owner Name="danv" Identifier="26766043" />
         <GroupAccess Type="1" />
       </Version>
     </Geometry>
-    <MathDescription Name="Untitled_457663809">
+    <MathDescription Name="Untitled_1061737752">
       <LangevinParticleMolecularType Name="MT0">
         <Link One="Site0" Two="Site1" />
         <Component Name="Site0" Radius="1.0" DiffusionRate="1.0" Location="Intracellular" SiteCoordX="0.0" SiteCoordY="4.0" SiteCoordZ="4.0" NamedColor="RED">
@@ -41,7 +41,7 @@
       <Constant Name="_T_">300.0</Constant>
       <Constant Name="Kf">100.0</Constant>
       <Constant Name="KMOLE">0.001660538783162726</Constant>
-      <Constant Name="MT0_Count_init_molecules_um_3">4.0E-4</Constant>
+      <Constant Name="MT0_Count_init_molecules_um_3">2.0E-4</Constant>
       <Constant Name="Size_Extracellular">50000.0</Constant>
       <Constant Name="Size_Intracellular">50000.0</Constant>
       <Constant Name="Size_Membrane">6563.0</Constant>
@@ -126,10 +126,6 @@
         <BoundaryType Boundary="Zm" Type="Value" />
         <BoundaryType Boundary="Zp" Type="Value" />
       </MembraneSubDomain>
-      <Version Name="Untitled_457663809" KeyValue="263983405" BranchId="263983406" Archived="0" Date="05-Dec-2023 14:55:04" FromVersionable="false">
-        <Owner Name="danv" Identifier="26766043" />
-        <GroupAccess Type="1" />
-      </Version>
     </MathDescription>
     <Simulation Name="Simulation0">
       <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Langevin">
@@ -148,15 +144,7 @@
       <MeshSpecification>
         <Size X="51" Y="51" Z="51" />
       </MeshSpecification>
-      <Version Name="Simulation0" KeyValue="263983408" BranchId="263983409" Archived="0" Date="05-Dec-2023 14:55:04" FromVersionable="false">
-        <Owner Name="danv" Identifier="26766043" />
-        <GroupAccess Type="1" />
-      </Version>
     </Simulation>
-    <Version Name="Spring_simulation_transition" KeyValue="263983411" BranchId="263983412" Archived="0" Date="05-Dec-2023 14:55:04" FromVersionable="false">
-      <Owner Name="danv" Identifier="26766043" />
-      <GroupAccess Type="1" />
-    </Version>
   </MathModel>
 </vcml>
 
