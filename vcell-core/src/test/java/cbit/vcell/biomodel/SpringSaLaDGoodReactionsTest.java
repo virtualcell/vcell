@@ -10,6 +10,7 @@ import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.SpeciesContext;
+import cbit.vcell.model.Structure;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.ResourceUtil;
@@ -96,6 +97,7 @@ public class SpringSaLaDGoodReactionsTest {
 		
 		c0:		SpringSaLaD requires exactly 3 Structures: one Membrane and two Features (Compartments)
 		c0:		'c0' not legal identifier for SpringSaLaD applications. Try using 'Intracellular' or 'Extracellular'.
+					(Structure.SpringStructureEnum.Intracellular, Structure.SpringStructureEnum.Extracellular)
 		s0:		SpringSaLaD requires the MolecularType to have at least one Site.
 		s1:		Each Site must have at least one State.
 		s2:		Internal Links are possible only when the Molecule has at least 2 sites.
@@ -181,7 +183,7 @@ public class SpringSaLaDGoodReactionsTest {
 		}
 		Assert.assertTrue("expecting 4 LangevinParticleMolecularType entities", count == 4 ? true : false);
 		
-		CompartmentSubDomain compartmentSubDomain = mathDescription.getCompartmentSubDomain("Intracellular");
+		CompartmentSubDomain compartmentSubDomain = mathDescription.getCompartmentSubDomain(String.valueOf(Structure.SpringStructureEnum.Intracellular));
 		List<ParticleJumpProcess> particleJumpProcesses = compartmentSubDomain.getParticleJumpProcesses();
 		List<ReactionRule> reactionRuleList = bioModel.getModel().getRbmModelContainer().getReactionRuleList();
 		Assert.assertTrue("expecting 9 ReactionRule entities", reactionRuleList.size() == 9 ? true : false);

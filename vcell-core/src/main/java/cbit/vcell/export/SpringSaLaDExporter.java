@@ -26,6 +26,7 @@ import javax.swing.JPanel;
 
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.SpeciesPattern;
+import org.vcell.solver.langevin.LangevinLngvWriter;
 import org.vcell.util.Pair;
 
 import cbit.vcell.biomodel.BioModel;
@@ -197,7 +198,7 @@ public class SpringSaLaDExporter {
 			sb.append("*** " + SPATIAL_INFORMATION + " ***");
 			sb.append("\n");
 
-			geometrySpec.writeData(sb);	// TODO: need geometry
+			LangevinLngvWriter.writeSpatialInformation(geometrySpec,sb);
 			sb.append("\n");
 
 			/* ******* WRITE THE SPECIES INFORMATION ***********/

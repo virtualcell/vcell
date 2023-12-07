@@ -8,6 +8,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import cbit.vcell.geometry.AnalyticSubVolume;
+import cbit.vcell.geometry.SubVolume;
+import cbit.vcell.model.Structure;
 import org.vcell.util.Pair;
 
 import cbit.vcell.geometry.Geometry;
@@ -149,7 +152,7 @@ public class LangevinLngvWriter {
 		/* ********* WRITE THE SPATIAL INFORMATION **********/
 		sb.append("*** " + SPATIAL_INFORMATION + " ***");
 		sb.append("\n");
-		geometrySpec.writeData(sb);
+		writeSpatialInformation(geometrySpec, sb);
 		sb.append("\n");
 
 		/* ******* WRITE THE SPECIES INFORMATION ***********/
@@ -905,6 +908,43 @@ public class LangevinLngvWriter {
 			sb.append("\n");
 		}
 		System.out.println(sb.toString());
+		return;
+	}
+
+	public static void writeSpatialInformation(GeometrySpec geometrySpec, StringBuilder sb) {				// SpringSaLaD exporting the time information
+		if(geometrySpec.getDimension() != 3) {
+			throw new RuntimeException("SpringSaLaD requires 3D geometry");
+		}
+		for(SubVolume subVolume : geometrySpec.getSubVolumes()) {
+			if(subVolume instanceof AnalyticSubVolume analyticSubvolume) {
+				if(analyticSubvolume.getName().equals(String.valueOf(Structure.SpringStructureEnum.Intracellular))) {
+					var expression = analyticSubvolume.getExpression();
+					String exp = expression.infix();
+
+				}
+			} else {
+				throw new RuntimeException("SpringSaLaD requires Analytic geometry");
+			}
+
+		}
+
+		// TODO: get the correct numbers from the subvolumes
+
+
+		sb.append("L_x: " + geometrySpec.getExtent().getX());		// 0.1
+		sb.append("\n");
+		sb.append("L_y: " + geometrySpec.getExtent().getY());
+		sb.append("\n");
+		sb.append("L_z_out: 0.01");
+		sb.append("\n");
+		sb.append("L_z_in: 0.09");
+		sb.append("\n");
+		sb.append("Partition Nx: 10");
+		sb.append("\n");
+		sb.append("Partition Ny: 10");
+		sb.append("\n");
+		sb.append("Partition Nz: 10");
+		sb.append("\n");
 		return;
 	}
 
