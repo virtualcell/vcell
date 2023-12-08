@@ -1,12 +1,6 @@
 package org.vcell.solver.langevin;
 
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import cbit.vcell.geometry.AnalyticSubVolume;
 import cbit.vcell.geometry.SubVolume;
@@ -262,8 +256,11 @@ public class LangevinLngvWriter {
 	}
 	
 	private static void writeTimeInformation(StringBuilder sb, Simulation simulation) {
+		if(!simulation.getSimulationOwner().getMathDescription().isLangevin()) {
+			throw new RuntimeException("Langevin Math expected.");
+		}
 		// general stuff is in solver task description
-		simulation.getSolverTaskDescription().writeData(sb);
+		simulation.getSolverTaskDescription().writeTimeInformation(sb);
 		
 		// for fast simulation for a simple transition state model, select the following time simulation options: 
 		// - ending:				0.01	(langevin: total time)
@@ -911,42 +908,69 @@ public class LangevinLngvWriter {
 		return;
 	}
 
-	public static void writeSpatialInformation(GeometrySpec geometrySpec, StringBuilder sb) {				// SpringSaLaD exporting the time information
-		if(geometrySpec.getDimension() != 3) {
-			throw new RuntimeException("SpringSaLaD requires 3D geometry");
-		}
-		for(SubVolume subVolume : geometrySpec.getSubVolumes()) {
-			if(subVolume instanceof AnalyticSubVolume analyticSubvolume) {
-				if(analyticSubvolume.getName().equals(String.valueOf(Structure.SpringStructureEnum.Intracellular))) {
-					var expression = analyticSubvolume.getExpression();
-					String exp = expression.infix();
+	public static void writeSpatialInformation(GeometrySpec geometrySpec, StringBuilder sb) {    // SpringSaLaD exporting the time information
+        if (geometrySpec.getDimension() != 3) {
+            throw new RuntimeException("SpringSaLaD requires 3D geometry");
+        }
+        double Lz_intra = 0.09;
+		double Lz_extra = 0.01;
+        for (SubVolume subVolume : geometrySpec.getSubVolumes()) {
+            if (subVolume instanceof AnalyticSubVolume analyticSubvolume) {
+                if (analyticSubvolume.getName().equals(String.valueOf(Structure.SpringStructureEnum.Intracellular))) {
+                    var expression = analyticSubvolume.getExpression();
+                    String exp = expression.infix();
+                    StringTokenizer st = new StringTokenizer(exp, "() ", false);
+                    while (st.hasMoreTokens()) {
+                        String token = st.nextToken();
+                        if (!"z".contentEquals(token)) {
+                            throw new RuntimeException("Expected 'z' in expression.");
+                        }
+                        token = st.nextToken();
+                        if (!"<".contentEquals(token)) {
+                            throw new RuntimeException("Expected '<' in expression.");
+                        }
+                        token = st.nextToken();
+                        try {
+                            Lz_intra = Double.valueOf(token);
+                        } catch (NumberFormatException e) {
+                            throw new RuntimeException("Expected a 'double' number.");
+                        }
+                    }
 
-				}
-			} else {
-				throw new RuntimeException("SpringSaLaD requires Analytic geometry");
-			}
+                } else if (analyticSubvolume.getName().equals(String.valueOf(Structure.SpringStructureEnum.Extracellular))) {
+                    var expression = analyticSubvolume.getExpression();
+                    if (!expression.isNumeric()) {
+                        throw new RuntimeException("Numeric expression expected.");
+                    }
+                    String exp = expression.infix();
+                    if (!Double.toString(geometrySpec.getExtent().getZ()).contentEquals(exp)) {
+                        throw new RuntimeException("Extent on 'z' must match the analytic subvolume size.");
+                    }
+                } else {
+                    throw new RuntimeException("Unexpected SubVolume encountered.");
+                }
+            } else {
+                throw new RuntimeException("SpringSaLaD requires Analytic geometry");
+            }
+        }
+		Lz_extra = geometrySpec.getExtent().getZ() - Lz_intra;
 
-		}
-
-		// TODO: get the correct numbers from the subvolumes
-
-
-		sb.append("L_x: " + geometrySpec.getExtent().getX());		// 0.1
-		sb.append("\n");
-		sb.append("L_y: " + geometrySpec.getExtent().getY());
-		sb.append("\n");
-		sb.append("L_z_out: 0.01");
-		sb.append("\n");
-		sb.append("L_z_in: 0.09");
-		sb.append("\n");
-		sb.append("Partition Nx: 10");
-		sb.append("\n");
-		sb.append("Partition Ny: 10");
-		sb.append("\n");
-		sb.append("Partition Nz: 10");
-		sb.append("\n");
-		return;
-	}
+		sb.append("L_x: " + geometrySpec.getExtent().getX());        // 0.1
+        sb.append("\n");
+        sb.append("L_y: " + geometrySpec.getExtent().getY());
+        sb.append("\n");
+        sb.append("L_z_out: " + Lz_extra);		// 0.01
+        sb.append("\n");
+        sb.append("L_z_in: " + Lz_intra);		// 0.09
+        sb.append("\n");
+        sb.append("Partition Nx: 10");			// TODO: make number of partitions on each axes part of Langevin Simulations Options
+        sb.append("\n");
+        sb.append("Partition Ny: 10");
+        sb.append("\n");
+        sb.append("Partition Nz: 10");
+        sb.append("\n");
+        return;
+    }
 
 	public static void writeMoleculeCounters(StringBuilder sb) {
 		for(ParticleMolecularType pmt : particleMolecularTytpeSet) {

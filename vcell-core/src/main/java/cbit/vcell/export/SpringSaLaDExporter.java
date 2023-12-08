@@ -353,8 +353,11 @@ public class SpringSaLaDExporter {
 	}
 
 	private static void writeTimeInformation(StringBuilder sb, Simulation simulation) {
+		if(!simulation.getSimulationOwner().getMathDescription().isLangevin()) {
+			throw new RuntimeException("Langevin Math expected.");
+		}
 		// general stuff is in solver task description
-		simulation.getSolverTaskDescription().writeData(sb);	// for exporting we only use default data from a "fake" simulation
+		simulation.getSolverTaskDescription().writeTimeInformation(sb);	// for exporting we only use default data from a "fake" simulation
 		
 		LangevinSimulationOptions lso = simulation.getSolverTaskDescription().getLangevinSimulationOptions();
 		sb.append("dt_spring: " + lso.getIntervalSpring());		// 1.00E-9 default

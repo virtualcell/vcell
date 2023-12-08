@@ -1,8 +1,7 @@
 package cbit.vcell.biomodel;
 
 import cbit.image.ImageException;
-import cbit.vcell.geometry.Geometry;
-import cbit.vcell.geometry.GeometryException;
+import cbit.vcell.geometry.*;
 import cbit.vcell.mapping.*;
 import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.math.*;
@@ -44,6 +43,10 @@ import java.util.*;
 public class SpringSaLaDGoodReactionsTest {
 	
 	private static final String reactionTestString = "'r0' ::     'MT0' : 'Site1' : 'state0' --> 'state1'  Rate 50.0  Condition Free";
+	private static final String L_x = "L_x: 0.1";
+	private static final String molecule = "MOLECULE: \"MT0\" Intracellular Number 10 Site_Types 2 Total_Sites 2 Total_Links 1 is2D true";
+	private static final String analyticExpressionIntra = "(z < 0.09)";
+
 	private static String previousInstallDir = null;
 	@BeforeClass
 	public static void setup() {
@@ -331,19 +334,29 @@ public class SpringSaLaDGoodReactionsTest {
 
 		MathModel mathModel = getMathModelFromResource("Spring_simulation_transition.vcml");
 		MathDescription mathDescription = mathModel.getMathDescription();
+		Assert.assertTrue("MathDescription must be Langevin", mathDescription.isLangevin() ? true : false);
+
+
 		Simulation simulation = mathModel.getSimulations()[0];
-//		LangevinSimulationOptions lso = simulation.getSolverTaskDescription().getLangevinSimulationOptions();
+		Geometry geometry = simulation.getMathDescription().getGeometry();
+		GeometrySpec geometrySpec = geometry.getGeometrySpec();
+		Assert.assertTrue("GeometrySpec must be 3D", geometrySpec.getDimension() == 3 ? true : false);
+
+		//		LangevinSimulationOptions lso = simulation.getSolverTaskDescription().getLangevinSimulationOptions();
 		int randomSeed = 0;
 		String lngvString = LangevinLngvWriter.writeLangevinLngv(simulation, randomSeed);
-		System.out.println(lngvString);
+		Assert.assertTrue("Default Lx must be 100 nm", lngvString.contains(L_x) ? true : false);
+		Assert.assertTrue("Molecule must match the saved string pattern", lngvString.contains(molecule) ? true : false);
 
-		// TODO: why TIME INFORMATION is only
-		/*
-			dt_spring: 1.0E-9
-			dt_image: 1.0E-4
-		*/
-		// TODO: continue
-
+		for(SubVolume subVolume : geometrySpec.getSubVolumes()) {
+			Assert.assertTrue("SpringSaLaD requires Analytic geometry", subVolume instanceof AnalyticSubVolume ? true : false);
+			AnalyticSubVolume analyticSubvolume = (AnalyticSubVolume)subVolume;
+			if (analyticSubvolume.getName().equals(String.valueOf(Structure.SpringStructureEnum.Intracellular))) {
+				var expression = analyticSubvolume.getExpression();
+				String exp = expression.infix();
+				Assert.assertTrue("Analytic geometry expression must match the saved string pattern", analyticExpressionIntra.equals(exp) ? true : false);
+			}
+		}
 	}
 
 		// ==========================================================================================================================
