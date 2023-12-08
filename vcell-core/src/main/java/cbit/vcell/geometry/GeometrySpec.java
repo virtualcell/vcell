@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.TreeSet;
 import java.util.Vector;
 
-import cbit.vcell.mapping.SimulationContext;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -1439,36 +1438,6 @@ public void geometryNameChanged(String oldName, String newName) {
 		firePropertyChange(PROPERTY_NAME_GEOMETRY_NAME, oldName, newName);
 	}
 }
-
-	public void writeData(StringBuilder sb) {				// SpringSaLaD exporting the time information
-		if(dimension != 3) {
-			sb.append("\n");
-			return;
-		}
-		for(SubVolume subVolume : getSubVolumes()) {
-			if(!(subVolume instanceof AnalyticSubVolume)) {
-				sb.append("\n");
-				return;
-			}
-		}
-
-		// TODO: get the correct numbers from the subvolumes
-		sb.append("L_x: 0.1");
-		sb.append("\n");
-		sb.append("L_y: 0.1");
-		sb.append("\n");
-		sb.append("L_z_out: 0.01");
-		sb.append("\n");
-		sb.append("L_z_in: 0.09");
-		sb.append("\n");
-		sb.append("Partition Nx: 10");
-		sb.append("\n");
-		sb.append("Partition Ny: 10");
-		sb.append("\n");
-		sb.append("Partition Nz: 10");
-		sb.append("\n");
-		return;
-	}
 
 }
 

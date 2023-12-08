@@ -1,14 +1,15 @@
 package cbit.vcell.biomodel;
 
 import cbit.image.ImageException;
-import cbit.vcell.geometry.Geometry;
-import cbit.vcell.geometry.GeometryException;
+import cbit.vcell.geometry.*;
 import cbit.vcell.mapping.*;
 import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.math.*;
+import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.SpeciesContext;
+import cbit.vcell.model.Structure;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.ResourceUtil;
@@ -42,6 +43,10 @@ import java.util.*;
 public class SpringSaLaDGoodReactionsTest {
 	
 	private static final String reactionTestString = "'r0' ::     'MT0' : 'Site1' : 'state0' --> 'state1'  Rate 50.0  Condition Free";
+	private static final String L_x = "L_x: 0.1";
+	private static final String molecule = "MOLECULE: \"MT0\" Intracellular Number 10 Site_Types 2 Total_Sites 2 Total_Links 1 is2D true";
+	private static final String analyticExpressionIntra = "(z < 0.09)";
+
 	private static String previousInstallDir = null;
 	@BeforeClass
 	public static void setup() {
@@ -95,6 +100,7 @@ public class SpringSaLaDGoodReactionsTest {
 		
 		c0:		SpringSaLaD requires exactly 3 Structures: one Membrane and two Features (Compartments)
 		c0:		'c0' not legal identifier for SpringSaLaD applications. Try using 'Intracellular' or 'Extracellular'.
+					(Structure.SpringStructureEnum.Intracellular, Structure.SpringStructureEnum.Extracellular)
 		s0:		SpringSaLaD requires the MolecularType to have at least one Site.
 		s1:		Each Site must have at least one State.
 		s2:		Internal Links are possible only when the Molecule has at least 2 sites.
@@ -180,7 +186,7 @@ public class SpringSaLaDGoodReactionsTest {
 		}
 		Assert.assertTrue("expecting 4 LangevinParticleMolecularType entities", count == 4 ? true : false);
 		
-		CompartmentSubDomain compartmentSubDomain = mathDescription.getCompartmentSubDomain("Intracellular");
+		CompartmentSubDomain compartmentSubDomain = mathDescription.getCompartmentSubDomain(String.valueOf(Structure.SpringStructureEnum.Intracellular));
 		List<ParticleJumpProcess> particleJumpProcesses = compartmentSubDomain.getParticleJumpProcesses();
 		List<ReactionRule> reactionRuleList = bioModel.getModel().getRbmModelContainer().getReactionRuleList();
 		Assert.assertTrue("expecting 9 ReactionRule entities", reactionRuleList.size() == 9 ? true : false);
@@ -239,10 +245,9 @@ public class SpringSaLaDGoodReactionsTest {
 		Assert.assertTrue("expecting databese name 'Langevin'", ("Langevin".equals(solverDescription.getDatabaseName())) ? true : false);
 
 		// generate the input file for the solver and validate it
-		LangevinSimulationOptions langevinSimulationOptions = simTask.getSimulation().getSolverTaskDescription().getLangevinSimulationOptions();
 		int randomSeed = 0;
 		String langevinLngvString = null;
-		langevinLngvString = LangevinLngvWriter.writeLangevinLngv(simTask.getSimulation(), randomSeed, langevinSimulationOptions);
+		langevinLngvString = LangevinLngvWriter.writeLangevinLngv(simTask.getSimulation(), randomSeed);
 		Assert.assertTrue("expecting non-null solver input string", (langevinLngvString != null) ? true : false);
 		Assert.assertTrue("expecting properly formatted transition reaction", (langevinLngvString.contains(reactionTestString)) ? true : false);
 		
@@ -317,18 +322,64 @@ public class SpringSaLaDGoodReactionsTest {
 		Assert.assertTrue("SiteAttributesSpec element not found in siteAttributesMap after roundtrip", sasThis.compareEqual(sasThat) ? true : false);
 	}
 
+	/* -------------------------------------------------------------------------------------------------
+	 * This test will exercise loading a springsalad mathmodel
+	 * and producing a langevin input file as string
+	 * and validating its content
+	 *
+	 */
+	@Test
+	public void test_springsalad_mathmodel() throws IOException, XmlParseException, PropertyVetoException, ExpressionException, GeometryException,
+			ImageException, IllegalMappingException, MappingException, SolverException {
+
+		MathModel mathModel = getMathModelFromResource("Spring_simulation_transition.vcml");
+		MathDescription mathDescription = mathModel.getMathDescription();
+		Assert.assertTrue("MathDescription must be Langevin", mathDescription.isLangevin() ? true : false);
+
+
+		Simulation simulation = mathModel.getSimulations()[0];
+		Geometry geometry = simulation.getMathDescription().getGeometry();
+		GeometrySpec geometrySpec = geometry.getGeometrySpec();
+		Assert.assertTrue("GeometrySpec must be 3D", geometrySpec.getDimension() == 3 ? true : false);
+
+		//		LangevinSimulationOptions lso = simulation.getSolverTaskDescription().getLangevinSimulationOptions();
+		int randomSeed = 0;
+		String lngvString = LangevinLngvWriter.writeLangevinLngv(simulation, randomSeed);
+		Assert.assertTrue("Default Lx must be 100 nm", lngvString.contains(L_x) ? true : false);
+		Assert.assertTrue("Molecule must match the saved string pattern", lngvString.contains(molecule) ? true : false);
+
+		for(SubVolume subVolume : geometrySpec.getSubVolumes()) {
+			Assert.assertTrue("SpringSaLaD requires Analytic geometry", subVolume instanceof AnalyticSubVolume ? true : false);
+			AnalyticSubVolume analyticSubvolume = (AnalyticSubVolume)subVolume;
+			if (analyticSubvolume.getName().equals(String.valueOf(Structure.SpringStructureEnum.Intracellular))) {
+				var expression = analyticSubvolume.getExpression();
+				String exp = expression.infix();
+				Assert.assertTrue("Analytic geometry expression must match the saved string pattern", analyticExpressionIntra.equals(exp) ? true : false);
+			}
+		}
+	}
 
 		// ==========================================================================================================================
-	
-    private static BioModel getBioModelFromResource(String fileName) throws IOException, XmlParseException {
-        InputStream inputStream = SpringSaLaDGoodReactionsTest.class.getResourceAsStream(fileName);
-        if (inputStream == null) {
-            throw new FileNotFoundException("file not found! " + fileName);
-        } else {
-            String vcml = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
-            return XmlHelper.XMLToBioModel(new XMLSource(vcml));
-        }
-    }
+
+	private static BioModel getBioModelFromResource(String fileName) throws IOException, XmlParseException {
+		InputStream inputStream = SpringSaLaDGoodReactionsTest.class.getResourceAsStream(fileName);
+		if (inputStream == null) {
+			throw new FileNotFoundException("file not found! " + fileName);
+		} else {
+			String vcml = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+			return XmlHelper.XMLToBioModel(new XMLSource(vcml));
+		}
+	}
+	private static MathModel getMathModelFromResource(String fileName) throws IOException, XmlParseException {
+		InputStream inputStream = SpringSaLaDGoodReactionsTest.class.getResourceAsStream(fileName);
+		if (inputStream == null) {
+			throw new FileNotFoundException("file not found! " + fileName);
+		} else {
+			String vcml = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+			return XmlHelper.XMLToMathModel(new XMLSource(vcml));
+		}
+	}
+
 	public static int checkIssuesBySeverity(Vector<Issue> issueList, Issue.Severity severity) {
 		int counter = 0;
 		for (Issue issue : issueList) {

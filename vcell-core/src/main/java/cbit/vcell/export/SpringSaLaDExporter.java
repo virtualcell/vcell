@@ -26,6 +26,7 @@ import javax.swing.JPanel;
 
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.SpeciesPattern;
+import org.vcell.solver.langevin.LangevinLngvWriter;
 import org.vcell.util.Pair;
 
 import cbit.vcell.biomodel.BioModel;
@@ -197,7 +198,7 @@ public class SpringSaLaDExporter {
 			sb.append("*** " + SPATIAL_INFORMATION + " ***");
 			sb.append("\n");
 
-			geometrySpec.writeData(sb);	// TODO: need geometry
+			LangevinLngvWriter.writeSpatialInformation(geometrySpec,sb);
 			sb.append("\n");
 
 			/* ******* WRITE THE SPECIES INFORMATION ***********/
@@ -352,8 +353,11 @@ public class SpringSaLaDExporter {
 	}
 
 	private static void writeTimeInformation(StringBuilder sb, Simulation simulation) {
+		if(!simulation.getSimulationOwner().getMathDescription().isLangevin()) {
+			throw new RuntimeException("Langevin Math expected.");
+		}
 		// general stuff is in solver task description
-		simulation.getSolverTaskDescription().writeData(sb);	// for exporting we only use default data from a "fake" simulation
+		simulation.getSolverTaskDescription().writeTimeInformation(sb);	// for exporting we only use default data from a "fake" simulation
 		
 		LangevinSimulationOptions lso = simulation.getSolverTaskDescription().getLangevinSimulationOptions();
 		sb.append("dt_spring: " + lso.getIntervalSpring());		// 1.00E-9 default
