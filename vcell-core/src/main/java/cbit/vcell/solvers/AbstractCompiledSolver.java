@@ -297,7 +297,7 @@ public abstract class AbstractCompiledSolver extends AbstractSolver implements j
             boolean ignored = mySolverLinkDir.mkdir();
         }
         File[] temp = mySolverLinkDir.listFiles();
-        if (temp == null) throw new NullPointerException();
+        if (temp == null) throw new NullPointerException(String.format("`%s` is either not a directory, or an IO problem occurred", mySolverLinkDir.getCanonicalPath()));
         for (File file : temp) {
             boolean ignored = file.delete();
         }
@@ -315,7 +315,7 @@ public abstract class AbstractCompiledSolver extends AbstractSolver implements j
 
     private void linkAllDependenciesOf(File dependency, File sourceDirectory, File targetLinkDirectory) throws IOException, InterruptedException {
         File[] directoryContents = sourceDirectory.listFiles();
-        if (directoryContents == null) throw new NullPointerException();
+        if (directoryContents == null) throw new NullPointerException(String.format("`%s` is either not a directory, or an IO problem occurred", sourceDirectory.getCanonicalPath()));
         Set<File> allPotentialDependencies = Stream.of(directoryContents)
                 .filter(AbstractCompiledSolver::isDependency).collect(Collectors.toSet());
         Map<String, File> dependencyToFileMapping = new HashMap<>();
