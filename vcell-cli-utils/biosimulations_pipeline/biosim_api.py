@@ -136,3 +136,17 @@ def get_token() -> str:
     return token
 
 
+def get_projects(*args: str) -> list[dict]:
+    """
+    Fetches the project information from BioSimulations
+
+    args: tuple(str) - the project IDs to search for. If empty, then all will be fetched.
+    """
+    results: list[dict] = []
+    if args is None:
+        response: requests.Response = requests.get("https://api.biosimulations.org/projects/")
+    else:
+        values: list[str] = list(args)
+        for value in values:
+            pass
+
