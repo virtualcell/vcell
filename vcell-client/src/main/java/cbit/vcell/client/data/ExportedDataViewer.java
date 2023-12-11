@@ -35,20 +35,20 @@ import java.lang.reflect.Type;
 import java.util.*;
 import java.util.List;
 
-public class ExportedDataViewer extends DocumentEditorSubPanel implements ActionListener, PropertyChangeListener,MouseListener {
+public class ExportedDataViewer extends DocumentEditorSubPanel implements ActionListener, PropertyChangeListener {
 
     private JScrollPane scrollPane;
 
     public ExportedDataTableModel tableModel;
     private EditorScrollTable editorScrollTable;
     private JButton refresh;
+    private JButton copyButton;
 
     private final static Logger lg = LogManager.getLogger(ExportedDataViewer.class);
 
     public ExportedDataViewer() {
         editorScrollTable = new EditorScrollTable();
         editorScrollTable.setDefaultEditor(Object.class, null);
-        editorScrollTable.addMouseListener(this);
         tableModel = new ExportedDataTableModel(editorScrollTable);
 
         editorScrollTable.setModel(tableModel);
@@ -58,13 +58,16 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
         scrollPane.setPreferredSize(new Dimension(400, 400));
         scrollPane.setMinimumSize(new Dimension(400, 400));
 
-        JLabel jLabel = new JLabel("Click on a cell to copy it's contents to your clipboard.");
+        JLabel jLabel = new JLabel("Most recent exports. This list can be volatile so ensure that important export metadata is saved elsewhere.");
         refresh = new JButton("Refresh List");
+        copyButton = new JButton("Copy");
 
         JPanel topBar = new JPanel();
         topBar.setLayout(new FlowLayout());
         refresh.addActionListener(this);
+        copyButton.addActionListener(this);
         topBar.add(jLabel);
+        topBar.add(copyButton);
         topBar.add(refresh);
 
         this.setLayout(new BorderLayout());
@@ -148,6 +151,12 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
     public void actionPerformed(ActionEvent e) {
         if (e.getSource().equals(refresh)){
             updateTableModel();
+        } else if (e.getSource().equals(copyButton)) {
+            int row = editorScrollTable.getSelectedRow();
+            int column = editorScrollTable.getSelectedColumn();
+
+            Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+            clipboard.setContents(new StringSelection( (String) editorScrollTable.getValueAt(row, column)), null);
         }
     }
 
@@ -158,35 +167,6 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
 
     @Override
     protected void onSelectedObjectsChange(Object[] selectedObjects) {
-
-    }
-
-    @Override
-    public void mouseClicked(MouseEvent e) {
-        int row = editorScrollTable.getSelectedRow();
-        int column = editorScrollTable.getSelectedColumn();
-
-        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-        clipboard.setContents(new StringSelection( (String) editorScrollTable.getValueAt(row, column)), null);
-    }
-
-    @Override
-    public void mousePressed(MouseEvent e) {
-
-    }
-
-    @Override
-    public void mouseReleased(MouseEvent e) {
-
-    }
-
-    @Override
-    public void mouseEntered(MouseEvent e) {
-
-    }
-
-    @Override
-    public void mouseExited(MouseEvent e) {
 
     }
 }
