@@ -62,11 +62,11 @@ public class PublicationApiTest {
         Assertions.assertEquals(0, initialPublications.size());
 
         // save publication pub
-        Long newPubKey = apiInstance.addPublication(pub);
+        Long newPubKey = apiInstance.createPublication(pub);
         Assertions.assertNotNull(newPubKey);
 
         // test that pubuser can get publication pub
-        Publication pub2 = apiInstance.getPublication(newPubKey);
+        Publication pub2 = apiInstance.getPublicationById(newPubKey);
 
         // test that there is one publication now and matches pub
         List<Publication> publications = apiInstance.getPublications();

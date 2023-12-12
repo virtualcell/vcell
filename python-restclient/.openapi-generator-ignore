@@ -6,5 +6,5 @@ requirements.txt
 setup.cfg
 setup.py
 test-requirements.txt
-gitlab-ci.yml
+.gitlab-ci.yml
 .travis.yml

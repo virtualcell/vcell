@@ -4,22 +4,22 @@ All URIs are relative to *http://localhost:9000*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
-| [**addPublication**](PublicationResourceApi.md#addPublication) | **POST** /api/publications | Add publication |
-| [**addPublicationWithHttpInfo**](PublicationResourceApi.md#addPublicationWithHttpInfo) | **POST** /api/publications | Add publication |
+| [**createPublication**](PublicationResourceApi.md#createPublication) | **POST** /api/publications | Create publication |
+| [**createPublicationWithHttpInfo**](PublicationResourceApi.md#createPublicationWithHttpInfo) | **POST** /api/publications | Create publication |
 | [**deletePublication**](PublicationResourceApi.md#deletePublication) | **DELETE** /api/publications/{id} | Delete publication |
 | [**deletePublicationWithHttpInfo**](PublicationResourceApi.md#deletePublicationWithHttpInfo) | **DELETE** /api/publications/{id} | Delete publication |
-| [**getPublication**](PublicationResourceApi.md#getPublication) | **GET** /api/publications/{id} | Get publication by ID |
-| [**getPublicationWithHttpInfo**](PublicationResourceApi.md#getPublicationWithHttpInfo) | **GET** /api/publications/{id} | Get publication by ID |
+| [**getPublicationById**](PublicationResourceApi.md#getPublicationById) | **GET** /api/publications/{id} | Get publication by ID |
+| [**getPublicationByIdWithHttpInfo**](PublicationResourceApi.md#getPublicationByIdWithHttpInfo) | **GET** /api/publications/{id} | Get publication by ID |
 | [**getPublications**](PublicationResourceApi.md#getPublications) | **GET** /api/publications | Get all publications |
 | [**getPublicationsWithHttpInfo**](PublicationResourceApi.md#getPublicationsWithHttpInfo) | **GET** /api/publications | Get all publications |
 
 
 
-## addPublication
+## createPublication
 
-> Long addPublication(publication)
+> Long createPublication(publication)
 
-Add publication
+Create publication
 
 ### Example
 
@@ -41,10 +41,10 @@ public class Example {
         PublicationResourceApi apiInstance = new PublicationResourceApi(defaultClient);
         Publication publication = new Publication(); // Publication | 
         try {
-            Long result = apiInstance.addPublication(publication);
+            Long result = apiInstance.createPublication(publication);
             System.out.println(result);
         } catch (ApiException e) {
-            System.err.println("Exception when calling PublicationResourceApi#addPublication");
+            System.err.println("Exception when calling PublicationResourceApi#createPublication");
             System.err.println("Status code: " + e.getCode());
             System.err.println("Reason: " + e.getResponseBody());
             System.err.println("Response headers: " + e.getResponseHeaders());
@@ -68,7 +68,7 @@ public class Example {
 
 ### Authorization
 
-[BearerToken](../README.md#BearerToken)
+[openId](../README.md#openId)
 
 ### HTTP request headers
 
@@ -79,14 +79,12 @@ public class Example {
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
-| **401** | Not Authorized |  -  |
-| **403** | Not Allowed |  -  |
 
-## addPublicationWithHttpInfo
+## createPublicationWithHttpInfo
 
-> ApiResponse<Long> addPublication addPublicationWithHttpInfo(publication)
+> ApiResponse<Long> createPublication createPublicationWithHttpInfo(publication)
 
-Add publication
+Create publication
 
 ### Example
 
@@ -109,12 +107,12 @@ public class Example {
         PublicationResourceApi apiInstance = new PublicationResourceApi(defaultClient);
         Publication publication = new Publication(); // Publication | 
         try {
-            ApiResponse<Long> response = apiInstance.addPublicationWithHttpInfo(publication);
+            ApiResponse<Long> response = apiInstance.createPublicationWithHttpInfo(publication);
             System.out.println("Status code: " + response.getStatusCode());
             System.out.println("Response headers: " + response.getHeaders());
             System.out.println("Response body: " + response.getData());
         } catch (ApiException e) {
-            System.err.println("Exception when calling PublicationResourceApi#addPublication");
+            System.err.println("Exception when calling PublicationResourceApi#createPublication");
             System.err.println("Status code: " + e.getCode());
             System.err.println("Response headers: " + e.getResponseHeaders());
             System.err.println("Reason: " + e.getResponseBody());
@@ -138,7 +136,7 @@ ApiResponse<**Long**>
 
 ### Authorization
 
-[BearerToken](../README.md#BearerToken)
+[openId](../README.md#openId)
 
 ### HTTP request headers
 
@@ -149,8 +147,6 @@ ApiResponse<**Long**>
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
-| **401** | Not Authorized |  -  |
-| **403** | Not Allowed |  -  |
 
 
 ## deletePublication
@@ -205,7 +201,7 @@ null (empty response body)
 
 ### Authorization
 
-[BearerToken](../README.md#BearerToken)
+[openId](../README.md#openId)
 
 ### HTTP request headers
 
@@ -216,8 +212,6 @@ null (empty response body)
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **204** | No Content |  -  |
-| **401** | Not Authorized |  -  |
-| **403** | Not Allowed |  -  |
 
 ## deletePublicationWithHttpInfo
 
@@ -274,7 +268,7 @@ ApiResponse<Void>
 
 ### Authorization
 
-[BearerToken](../README.md#BearerToken)
+[openId](../README.md#openId)
 
 ### HTTP request headers
 
@@ -285,13 +279,11 @@ ApiResponse<Void>
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **204** | No Content |  -  |
-| **401** | Not Authorized |  -  |
-| **403** | Not Allowed |  -  |
 
 
-## getPublication
+## getPublicationById
 
-> Publication getPublication(id)
+> Publication getPublicationById(id)
 
 Get publication by ID
 
@@ -313,10 +305,10 @@ public class Example {
         PublicationResourceApi apiInstance = new PublicationResourceApi(defaultClient);
         Long id = 56L; // Long | 
         try {
-            Publication result = apiInstance.getPublication(id);
+            Publication result = apiInstance.getPublicationById(id);
             System.out.println(result);
         } catch (ApiException e) {
-            System.err.println("Exception when calling PublicationResourceApi#getPublication");
+            System.err.println("Exception when calling PublicationResourceApi#getPublicationById");
             System.err.println("Status code: " + e.getCode());
             System.err.println("Reason: " + e.getResponseBody());
             System.err.println("Response headers: " + e.getResponseHeaders());
@@ -352,9 +344,9 @@ No authorization required
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
 
-## getPublicationWithHttpInfo
+## getPublicationByIdWithHttpInfo
 
-> ApiResponse<Publication> getPublication getPublicationWithHttpInfo(id)
+> ApiResponse<Publication> getPublicationById getPublicationByIdWithHttpInfo(id)
 
 Get publication by ID
 
@@ -377,12 +369,12 @@ public class Example {
         PublicationResourceApi apiInstance = new PublicationResourceApi(defaultClient);
         Long id = 56L; // Long | 
         try {
-            ApiResponse<Publication> response = apiInstance.getPublicationWithHttpInfo(id);
+            ApiResponse<Publication> response = apiInstance.getPublicationByIdWithHttpInfo(id);
             System.out.println("Status code: " + response.getStatusCode());
             System.out.println("Response headers: " + response.getHeaders());
             System.out.println("Response body: " + response.getData());
         } catch (ApiException e) {
-            System.err.println("Exception when calling PublicationResourceApi#getPublication");
+            System.err.println("Exception when calling PublicationResourceApi#getPublicationById");
             System.err.println("Status code: " + e.getCode());
             System.err.println("Response headers: " + e.getResponseHeaders());
             System.err.println("Reason: " + e.getResponseBody());

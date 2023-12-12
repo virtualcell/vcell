@@ -49,7 +49,7 @@ class PublicationResourceApi:
 
 
     @validate_call
-    def add_publication(
+    def create_publication(
         self,
         publication: Optional[Publication] = None,
         _request_timeout: Union[
@@ -65,7 +65,7 @@ class PublicationResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> int:
-        """Add publication
+        """Create publication
 
 
         :param publication:
@@ -92,7 +92,7 @@ class PublicationResourceApi:
         :return: Returns the result object.
         """ # noqa: E501
 
-        _param = self._add_publication_serialize(
+        _param = self._create_publication_serialize(
             publication=publication,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -101,9 +101,7 @@ class PublicationResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "int",
-            '401': None,
-            '403': None
+            '200': "int"
             
         }
         response_data = self.api_client.call_api(
@@ -118,7 +116,7 @@ class PublicationResourceApi:
 
 
     @validate_call
-    def add_publication_with_http_info(
+    def create_publication_with_http_info(
         self,
         publication: Optional[Publication] = None,
         _request_timeout: Union[
@@ -134,7 +132,7 @@ class PublicationResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> ApiResponse[int]:
-        """Add publication
+        """Create publication
 
 
         :param publication:
@@ -161,7 +159,7 @@ class PublicationResourceApi:
         :return: Returns the result object.
         """ # noqa: E501
 
-        _param = self._add_publication_serialize(
+        _param = self._create_publication_serialize(
             publication=publication,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -170,9 +168,7 @@ class PublicationResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "int",
-            '401': None,
-            '403': None
+            '200': "int"
             
         }
         response_data = self.api_client.call_api(
@@ -187,7 +183,7 @@ class PublicationResourceApi:
 
 
     @validate_call
-    def add_publication_without_preload_content(
+    def create_publication_without_preload_content(
         self,
         publication: Optional[Publication] = None,
         _request_timeout: Union[
@@ -203,7 +199,7 @@ class PublicationResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> RESTResponseType:
-        """Add publication
+        """Create publication
 
 
         :param publication:
@@ -230,7 +226,7 @@ class PublicationResourceApi:
         :return: Returns the result object.
         """ # noqa: E501
 
-        _param = self._add_publication_serialize(
+        _param = self._create_publication_serialize(
             publication=publication,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -239,9 +235,7 @@ class PublicationResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "int",
-            '401': None,
-            '403': None
+            '200': "int"
             
         }
         response_data = self.api_client.call_api(
@@ -251,7 +245,7 @@ class PublicationResourceApi:
         return response_data.response
 
 
-    def _add_publication_serialize(
+    def _create_publication_serialize(
         self,
         publication,
         _request_auth,
@@ -305,7 +299,7 @@ class PublicationResourceApi:
 
         # authentication setting
         _auth_settings: List[str] = [
-            'BearerToken'
+            'openId'
         ]
 
         return self.api_client.param_serialize(
@@ -555,7 +549,7 @@ class PublicationResourceApi:
 
         # authentication setting
         _auth_settings: List[str] = [
-            'BearerToken'
+            'openId'
         ]
 
         return self.api_client.param_serialize(
@@ -577,7 +571,7 @@ class PublicationResourceApi:
 
 
     @validate_call
-    def get_publication(
+    def get_publication_by_id(
         self,
         id: StrictInt,
         _request_timeout: Union[
@@ -620,7 +614,7 @@ class PublicationResourceApi:
         :return: Returns the result object.
         """ # noqa: E501
 
-        _param = self._get_publication_serialize(
+        _param = self._get_publication_by_id_serialize(
             id=id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -644,7 +638,7 @@ class PublicationResourceApi:
 
 
     @validate_call
-    def get_publication_with_http_info(
+    def get_publication_by_id_with_http_info(
         self,
         id: StrictInt,
         _request_timeout: Union[
@@ -687,7 +681,7 @@ class PublicationResourceApi:
         :return: Returns the result object.
         """ # noqa: E501
 
-        _param = self._get_publication_serialize(
+        _param = self._get_publication_by_id_serialize(
             id=id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -711,7 +705,7 @@ class PublicationResourceApi:
 
 
     @validate_call
-    def get_publication_without_preload_content(
+    def get_publication_by_id_without_preload_content(
         self,
         id: StrictInt,
         _request_timeout: Union[
@@ -754,7 +748,7 @@ class PublicationResourceApi:
         :return: Returns the result object.
         """ # noqa: E501
 
-        _param = self._get_publication_serialize(
+        _param = self._get_publication_by_id_serialize(
             id=id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -773,7 +767,7 @@ class PublicationResourceApi:
         return response_data.response
 
 
-    def _get_publication_serialize(
+    def _get_publication_by_id_serialize(
         self,
         id,
         _request_auth,

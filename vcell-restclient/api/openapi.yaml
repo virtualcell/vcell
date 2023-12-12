@@ -12,10 +12,7 @@ info:
   title: VCell API (development)
   version: 1.0.1
 servers:
-- description: Auto generated value
-  url: http://localhost:9000
-- description: Auto generated value
-  url: http://0.0.0.0:9000
+- url: http://localhost:9000
 paths:
   /api/admin:
     get:
@@ -31,7 +28,7 @@ paths:
         "403":
           description: Not Allowed
       security:
-      - BearerToken:
+      - openId:
         - admin
       tags:
       - Admin Resource
@@ -82,7 +79,7 @@ paths:
       - Publication Resource
       x-accepts: application/json
     post:
-      operationId: addPublication
+      operationId: createPublication
       requestBody:
         content:
           application/json:
@@ -96,14 +93,9 @@ paths:
                 format: int64
                 type: integer
           description: OK
-        "401":
-          description: Not Authorized
-        "403":
-          description: Not Allowed
       security:
-      - BearerToken:
-        - admin
-      summary: Add publication
+      - openId: []
+      summary: Create publication
       tags:
       - Publication Resource
       x-content-type: application/json
@@ -123,19 +115,14 @@ paths:
       responses:
         "204":
           description: No Content
-        "401":
-          description: Not Authorized
-        "403":
-          description: Not Allowed
       security:
-      - BearerToken:
-        - admin
+      - openId: []
       summary: Delete publication
       tags:
       - Publication Resource
       x-accepts: application/json
     get:
-      operationId: getPublication
+      operationId: getPublicationById
       parameters:
       - explode: false
         in: path
@@ -170,7 +157,7 @@ paths:
         "403":
           description: Not Allowed
       security:
-      - BearerToken:
+      - openId:
         - user
       tags:
       - Users Resource
@@ -323,8 +310,8 @@ components:
           type: string
       type: object
   securitySchemes:
-    BearerToken:
-      description: Bearer Token Authentication
-      openIdConnectUrl: http://localhost:55742/realms/quarkus/.well-known/openid-configuration
+    openId:
+      description: Authentication
+      openIdConnectUrl: https://localhost:8543/realms/quarkus/.well-known/openid-configuration
       type: openIdConnect
 

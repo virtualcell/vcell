@@ -272,7 +272,7 @@ class AdminResourceApi:
 
         # authentication setting
         _auth_settings: List[str] = [
-            'BearerToken'
+            'openId'
         ]
 
         return self.api_client.param_serialize(

@@ -4,16 +4,16 @@ All URIs are relative to *http://localhost:9000*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**add_publication**](PublicationResourceApi.md#add_publication) | **POST** /api/publications | Add publication
+[**create_publication**](PublicationResourceApi.md#create_publication) | **POST** /api/publications | Create publication
 [**delete_publication**](PublicationResourceApi.md#delete_publication) | **DELETE** /api/publications/{id} | Delete publication
-[**get_publication**](PublicationResourceApi.md#get_publication) | **GET** /api/publications/{id} | Get publication by ID
+[**get_publication_by_id**](PublicationResourceApi.md#get_publication_by_id) | **GET** /api/publications/{id} | Get publication by ID
 [**get_publications**](PublicationResourceApi.md#get_publications) | **GET** /api/publications | Get all publications
 
 
-# **add_publication**
-> int add_publication(publication=publication)
+# **create_publication**
+> int create_publication(publication=publication)
 
-Add publication
+Create publication
 
 ### Example
 
@@ -43,12 +43,12 @@ with vcell_client.ApiClient(configuration) as api_client:
     publication = vcell_client.Publication() # Publication |  (optional)
 
     try:
-        # Add publication
-        api_response = api_instance.add_publication(publication=publication)
-        print("The response of PublicationResourceApi->add_publication:\n")
+        # Create publication
+        api_response = api_instance.create_publication(publication=publication)
+        print("The response of PublicationResourceApi->create_publication:\n")
         pprint(api_response)
     except Exception as e:
-        print("Exception when calling PublicationResourceApi->add_publication: %s\n" % e)
+        print("Exception when calling PublicationResourceApi->create_publication: %s\n" % e)
 ```
 
 
@@ -65,7 +65,7 @@ Name | Type | Description  | Notes
 
 ### Authorization
 
-[BearerToken](../README.md#BearerToken)
+[openId](../README.md#openId)
 
 ### HTTP request headers
 
@@ -76,8 +76,6 @@ Name | Type | Description  | Notes
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK |  -  |
-**401** | Not Authorized |  -  |
-**403** | Not Allowed |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -133,7 +131,7 @@ void (empty response body)
 
 ### Authorization
 
-[BearerToken](../README.md#BearerToken)
+[openId](../README.md#openId)
 
 ### HTTP request headers
 
@@ -144,13 +142,11 @@ void (empty response body)
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **204** | No Content |  -  |
-**401** | Not Authorized |  -  |
-**403** | Not Allowed |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **get_publication**
-> Publication get_publication(id)
+# **get_publication_by_id**
+> Publication get_publication_by_id(id)
 
 Get publication by ID
 
@@ -179,11 +175,11 @@ with vcell_client.ApiClient(configuration) as api_client:
 
     try:
         # Get publication by ID
-        api_response = api_instance.get_publication(id)
-        print("The response of PublicationResourceApi->get_publication:\n")
+        api_response = api_instance.get_publication_by_id(id)
+        print("The response of PublicationResourceApi->get_publication_by_id:\n")
         pprint(api_response)
     except Exception as e:
-        print("Exception when calling PublicationResourceApi->get_publication: %s\n" % e)
+        print("Exception when calling PublicationResourceApi->get_publication_by_id: %s\n" % e)
 ```
 
 

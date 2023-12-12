@@ -82,26 +82,26 @@ public class PublicationResourceApi {
   }
 
   /**
-   * Add publication
+   * Create publication
    * 
    * @param publication  (optional)
    * @return Long
    * @throws ApiException if fails to make API call
    */
-  public Long addPublication(Publication publication) throws ApiException {
-    ApiResponse<Long> localVarResponse = addPublicationWithHttpInfo(publication);
+  public Long createPublication(Publication publication) throws ApiException {
+    ApiResponse<Long> localVarResponse = createPublicationWithHttpInfo(publication);
     return localVarResponse.getData();
   }
 
   /**
-   * Add publication
+   * Create publication
    * 
    * @param publication  (optional)
    * @return ApiResponse&lt;Long&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<Long> addPublicationWithHttpInfo(Publication publication) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = addPublicationRequestBuilder(publication);
+  public ApiResponse<Long> createPublicationWithHttpInfo(Publication publication) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = createPublicationRequestBuilder(publication);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -111,7 +111,7 @@ public class PublicationResourceApi {
       }
       try {
         if (localVarResponse.statusCode()/ 100 != 2) {
-          throw getApiException("addPublication", localVarResponse);
+          throw getApiException("createPublication", localVarResponse);
         }
         return new ApiResponse<Long>(
           localVarResponse.statusCode(),
@@ -129,7 +129,7 @@ public class PublicationResourceApi {
     }
   }
 
-  private HttpRequest.Builder addPublicationRequestBuilder(Publication publication) throws ApiException {
+  private HttpRequest.Builder createPublicationRequestBuilder(Publication publication) throws ApiException {
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
@@ -236,8 +236,8 @@ public class PublicationResourceApi {
    * @return Publication
    * @throws ApiException if fails to make API call
    */
-  public Publication getPublication(Long id) throws ApiException {
-    ApiResponse<Publication> localVarResponse = getPublicationWithHttpInfo(id);
+  public Publication getPublicationById(Long id) throws ApiException {
+    ApiResponse<Publication> localVarResponse = getPublicationByIdWithHttpInfo(id);
     return localVarResponse.getData();
   }
 
@@ -248,8 +248,8 @@ public class PublicationResourceApi {
    * @return ApiResponse&lt;Publication&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<Publication> getPublicationWithHttpInfo(Long id) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = getPublicationRequestBuilder(id);
+  public ApiResponse<Publication> getPublicationByIdWithHttpInfo(Long id) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = getPublicationByIdRequestBuilder(id);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -259,7 +259,7 @@ public class PublicationResourceApi {
       }
       try {
         if (localVarResponse.statusCode()/ 100 != 2) {
-          throw getApiException("getPublication", localVarResponse);
+          throw getApiException("getPublicationById", localVarResponse);
         }
         return new ApiResponse<Publication>(
           localVarResponse.statusCode(),
@@ -277,10 +277,10 @@ public class PublicationResourceApi {
     }
   }
 
-  private HttpRequest.Builder getPublicationRequestBuilder(Long id) throws ApiException {
+  private HttpRequest.Builder getPublicationByIdRequestBuilder(Long id) throws ApiException {
     // verify the required parameter 'id' is set
     if (id == null) {
-      throw new ApiException(400, "Missing the required parameter 'id' when calling getPublication");
+      throw new ApiException(400, "Missing the required parameter 'id' when calling getPublicationById");
     }
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();

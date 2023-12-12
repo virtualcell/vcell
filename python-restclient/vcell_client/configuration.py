@@ -373,11 +373,7 @@ class Configuration:
         return [
             {
                 'url': "http://localhost:9000",
-                'description': "Auto generated value",
-            },
-            {
-                'url': "http://0.0.0.0:9000",
-                'description': "Auto generated value",
+                'description': "No description provided",
             }
         ]
 
