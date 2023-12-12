@@ -56,7 +56,7 @@ def login_interactive_tokens(api_base_url: str, client_id: str, auth_url: str) -
     with OAuthHttpServer((hostname, temp_http_port), OAuthHttpHandler) as httpd:
         redirectURI = f'http://{hostname}:{temp_http_port}/oidc_test_callback'
 
-        oauth = OAuth2Session(client_id=client_id, redirect_uri=redirectURI, scope=["microprofile-jwt", "openid"])
+        oauth = OAuth2Session(client_id=client_id, redirect_uri=redirectURI, scope=["microprofile-jwt", "openid", "roles"])
 
         # Generate authorization URL
         authorization_url, state = oauth.authorization_url(auth_url)
