@@ -221,7 +221,13 @@
             <artifactId>jackson-datatype-jsr310</artifactId>
             <version>${jackson-version}</version>
         </dependency>
-<!--        <dependency>-->
+        <dependency>
+            <groupId>com.nimbusds</groupId>
+            <artifactId>oauth2-oidc-sdk</artifactId>
+            <version>10.7</version>
+        </dependency>
+
+        <!--        <dependency>-->
 <!--            <groupId>org.openapitools</groupId>-->
 <!--            <artifactId>jackson-databind-nullable</artifactId>-->
 <!--            <version>${jackson-databind-nullable-version}</version>-->
