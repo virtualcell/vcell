@@ -1,0 +1,50 @@
+globalProperties:
+  # config options specific to the openapi-generator CLI
+  # see https://openapi-generator.tech/docs/customization/
+  debugOpenAPI: false
+  debugModels: false
+  debugOperations: false
+  debugSupportingFiles: false
+  generateAliasAsModel: false
+  org.openapitools.codegen.utils.oncelogger.enabled: false
+
+additionalProperties:
+  # config options specific to the typescript-angular generator
+  # see https://openapi-generator.tech/docs/generators/typescript-angular/
+
+  # boolean, toggles whether unicode identifiers are allowed in names or not, default is false
+  #allowUnicodeIdentifiers: false
+
+  # The prefix of the generated ApiModule. (default is null)
+  #apiModulePrefix:
+
+  # The prefix of the generated Configuration. (default is null)
+  #configurationPrefix:
+
+  # disallowAdditionalPropertiesIfNotPresent: true # default, but not compliant with OAS and JSON schema specifications
+  #disallowAdditionalPropertiesIfNotPresent: true
+
+  # Whether to ensure parameter names are unique in an operation (rename parameters that are not). (Default: true)
+  #ensureUniqueParams: true
+
+  # Suffix that will be appended to all enum names. (Default: Enum)
+  #enumSuffix: Enum
+
+  # Naming convention for enum properties: 'camelCase', 'PascalCase', 'snake_case', 'UPPERCASE', and 'original', which keeps the original name. (Default: PascalCase)
+  #enumPropertyNaming: PascalCase
+
+  # Naming convention for the output files: 'camelCase', 'kebab-case'. (Default: camelCase)
+  fileNaming: kebab-case
+
+  # Set to false for generators with better support for discriminators. (Python, Java, Go, PowerShell, C# have this enabled by default). (Default: true)
+  # true:  The mapping in the discriminator includes descendent schemas that allOf inherit from self and
+  #        the discriminator mapping schemas in the OAS document.
+  # false: The mapping in the discriminator includes any descendent schemas that allOf inherit from self,
+  #        any oneOf schemas, any anyOf schemas, any x-discriminator-values, and the discriminator mapping schemas
+  #        in the OAS document AND Codegen validates that oneOf and anyOf schemas contain the required discriminator
+  #        and throws an error if the discriminator is missing.
+  #legacyDiscriminatorBehavior: true
+
+  # Setting this property to true will generate interfaces next to the default class implementations. (Default: false)
+  withInterfaces: true
+

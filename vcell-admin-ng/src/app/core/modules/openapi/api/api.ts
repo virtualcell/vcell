@@ -1,0 +1,13 @@
+export * from './admin-resource.service';
+import { AdminResourceService } from './admin-resource.service';
+export * from './admin-resource.serviceInterface';
+export * from './auth-resource.service';
+import { AuthResourceService } from './auth-resource.service';
+export * from './auth-resource.serviceInterface';
+export * from './publication-resource.service';
+import { PublicationResourceService } from './publication-resource.service';
+export * from './publication-resource.serviceInterface';
+export * from './users-resource.service';
+import { UsersResourceService } from './users-resource.service';
+export * from './users-resource.serviceInterface';
+export const APIS = [AdminResourceService, AuthResourceService, PublicationResourceService, UsersResourceService];
