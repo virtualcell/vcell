@@ -1,0 +1,5 @@
+<h1>Publication List</h1>
+<ul>
+  <li *ngFor="let pub of publications$ | async">{{ pub.pubKey+" "+pub.title }}</li>
+</ul>
+<button (click)="onSave()">Save</button>
