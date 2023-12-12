@@ -273,7 +273,7 @@ class UsersResourceApi:
 
         # authentication setting
         _auth_settings: List[str] = [
-            'BearerToken'
+            'openId'
         ]
 
         return self.api_client.param_serialize(

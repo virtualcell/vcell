@@ -56,7 +56,7 @@ This endpoint does not need any parameter.
 
 ### Authorization
 
-[BearerToken](../README.md#BearerToken)
+[openId](../README.md#openId)
 
 ### HTTP request headers
 

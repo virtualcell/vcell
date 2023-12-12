@@ -14,9 +14,6 @@ info:
   version: 1.0.1
 servers:
 - url: http://localhost:9000
-  description: Auto generated value
-- url: http://0.0.0.0:9000
-  description: Auto generated value
 paths:
   /api/admin:
     get:
@@ -34,7 +31,7 @@ paths:
         "403":
           description: Not Allowed
       security:
-      - BearerToken:
+      - openId:
         - admin
   /api/auth/code-flow:
     get:
@@ -76,8 +73,8 @@ paths:
     post:
       tags:
       - Publication Resource
-      summary: Add publication
-      operationId: addPublication
+      summary: Create publication
+      operationId: createPublication
       requestBody:
         content:
           application/json:
@@ -91,19 +88,14 @@ paths:
               schema:
                 format: int64
                 type: integer
-        "401":
-          description: Not Authorized
-        "403":
-          description: Not Allowed
       security:
-      - BearerToken:
-        - admin
+      - openId: []
   /api/publications/{id}:
     get:
       tags:
       - Publication Resource
       summary: Get publication by ID
-      operationId: getPublication
+      operationId: getPublicationById
       parameters:
       - name: id
         in: path
@@ -133,13 +125,8 @@ paths:
       responses:
         "204":
           description: No Content
-        "401":
-          description: Not Authorized
-        "403":
-          description: Not Allowed
       security:
-      - BearerToken:
-        - admin
+      - openId: []
   /api/users/me:
     get:
       tags:
@@ -156,7 +143,7 @@ paths:
         "403":
           description: Not Allowed
       security:
-      - BearerToken:
+      - openId:
         - user
 components:
   schemas:
@@ -250,7 +237,7 @@ components:
         userName:
           type: string
   securitySchemes:
-    BearerToken:
+    openId:
       type: openIdConnect
-      description: Bearer Token Authentication
-      openIdConnectUrl: http://localhost:55742/realms/quarkus/.well-known/openid-configuration
+      description: Authentication
+      openIdConnectUrl: https://localhost:8543/realms/quarkus/.well-known/openid-configuration

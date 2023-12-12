@@ -109,12 +109,12 @@ Class | Method | HTTP request | Description
 *AdminResourceApi* | [**apiAdminGetWithHttpInfo**](docs/AdminResourceApi.md#apiAdminGetWithHttpInfo) | **GET** /api/admin | 
 *AuthResourceApi* | [**codeExchange**](docs/AuthResourceApi.md#codeExchange) | **GET** /api/auth/code-flow | Get access token using authorization code flow
 *AuthResourceApi* | [**codeExchangeWithHttpInfo**](docs/AuthResourceApi.md#codeExchangeWithHttpInfo) | **GET** /api/auth/code-flow | Get access token using authorization code flow
-*PublicationResourceApi* | [**addPublication**](docs/PublicationResourceApi.md#addPublication) | **POST** /api/publications | Add publication
-*PublicationResourceApi* | [**addPublicationWithHttpInfo**](docs/PublicationResourceApi.md#addPublicationWithHttpInfo) | **POST** /api/publications | Add publication
+*PublicationResourceApi* | [**createPublication**](docs/PublicationResourceApi.md#createPublication) | **POST** /api/publications | Create publication
+*PublicationResourceApi* | [**createPublicationWithHttpInfo**](docs/PublicationResourceApi.md#createPublicationWithHttpInfo) | **POST** /api/publications | Create publication
 *PublicationResourceApi* | [**deletePublication**](docs/PublicationResourceApi.md#deletePublication) | **DELETE** /api/publications/{id} | Delete publication
 *PublicationResourceApi* | [**deletePublicationWithHttpInfo**](docs/PublicationResourceApi.md#deletePublicationWithHttpInfo) | **DELETE** /api/publications/{id} | Delete publication
-*PublicationResourceApi* | [**getPublication**](docs/PublicationResourceApi.md#getPublication) | **GET** /api/publications/{id} | Get publication by ID
-*PublicationResourceApi* | [**getPublicationWithHttpInfo**](docs/PublicationResourceApi.md#getPublicationWithHttpInfo) | **GET** /api/publications/{id} | Get publication by ID
+*PublicationResourceApi* | [**getPublicationById**](docs/PublicationResourceApi.md#getPublicationById) | **GET** /api/publications/{id} | Get publication by ID
+*PublicationResourceApi* | [**getPublicationByIdWithHttpInfo**](docs/PublicationResourceApi.md#getPublicationByIdWithHttpInfo) | **GET** /api/publications/{id} | Get publication by ID
 *PublicationResourceApi* | [**getPublications**](docs/PublicationResourceApi.md#getPublications) | **GET** /api/publications | Get all publications
 *PublicationResourceApi* | [**getPublicationsWithHttpInfo**](docs/PublicationResourceApi.md#getPublicationsWithHttpInfo) | **GET** /api/publications | Get all publications
 *UsersResourceApi* | [**apiUsersMeGet**](docs/UsersResourceApi.md#apiUsersMeGet) | **GET** /api/users/me | 
@@ -135,8 +135,8 @@ Class | Method | HTTP request | Description
 
 
 Authentication schemes defined for the API:
-<a id="BearerToken"></a>
-### BearerToken
+<a id="openId"></a>
+### openId
 
 
 

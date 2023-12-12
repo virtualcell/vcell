@@ -90,9 +90,9 @@ Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
 *AdminResourceApi* | [**api_admin_get**](docs/AdminResourceApi.md#api_admin_get) | **GET** /api/admin | 
 *AuthResourceApi* | [**code_exchange**](docs/AuthResourceApi.md#code_exchange) | **GET** /api/auth/code-flow | Get access token using authorization code flow
-*PublicationResourceApi* | [**add_publication**](docs/PublicationResourceApi.md#add_publication) | **POST** /api/publications | Add publication
+*PublicationResourceApi* | [**create_publication**](docs/PublicationResourceApi.md#create_publication) | **POST** /api/publications | Create publication
 *PublicationResourceApi* | [**delete_publication**](docs/PublicationResourceApi.md#delete_publication) | **DELETE** /api/publications/{id} | Delete publication
-*PublicationResourceApi* | [**get_publication**](docs/PublicationResourceApi.md#get_publication) | **GET** /api/publications/{id} | Get publication by ID
+*PublicationResourceApi* | [**get_publication_by_id**](docs/PublicationResourceApi.md#get_publication_by_id) | **GET** /api/publications/{id} | Get publication by ID
 *PublicationResourceApi* | [**get_publications**](docs/PublicationResourceApi.md#get_publications) | **GET** /api/publications | Get all publications
 *UsersResourceApi* | [**api_users_me_get**](docs/UsersResourceApi.md#api_users_me_get) | **GET** /api/users/me | 
 
@@ -111,8 +111,8 @@ Class | Method | HTTP request | Description
 
 
 Authentication schemes defined for the API:
-<a id="BearerToken"></a>
-### BearerToken
+<a id="openId"></a>
+### openId
 
 
 

@@ -37,7 +37,7 @@ public class PublicationResourceApiTest {
     @Test
     public void getPublicationByIdTest() throws ApiException {
         Long key = null;
-        api.getPublication(key);
+        api.getPublicationById(key);
         
         // TODO: test validations
     }
@@ -52,7 +52,7 @@ public class PublicationResourceApiTest {
     @Test
     public void addPublicationTest() throws ApiException {
         Publication publication = null;
-        api.addPublication(publication);
+        api.createPublication(publication);
 
         // TODO: test validations
     }

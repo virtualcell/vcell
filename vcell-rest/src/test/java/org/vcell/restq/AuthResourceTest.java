@@ -27,10 +27,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.net.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -50,7 +47,8 @@ public class AuthResourceTest {
     public void testAdminAccess() throws URISyntaxException, IOException, ParseException, InterruptedException {
         String authServerUrl = keycloakClient.getAuthServerUrl();
 
-        InetSocketAddress addr = new InetSocketAddress(InetAddress.getLocalHost().getHostAddress(), 8080);
+        int tempPort = findFreePort();
+        InetSocketAddress addr = new InetSocketAddress(InetAddress.getLocalHost().getHostAddress(), tempPort);
         String callback_endpoint_path = "/oidc_test_callback";
         String redirectURI = "http://" + addr.getHostName() + ":" + addr.getPort() + callback_endpoint_path;
         Log.debug("redirectURI = " + redirectURI);
@@ -152,5 +150,12 @@ public class AuthResourceTest {
             httpServer.stop(0);
             Log.debug("stopped HttpServer");
         }
+    }
+
+    private static int findFreePort() throws IOException {
+        ServerSocket socket = new ServerSocket(0);
+        int port = socket.getLocalPort();
+        socket.close();
+        return port;
     }
 }
