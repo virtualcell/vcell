@@ -17,7 +17,7 @@ COPY ./vcell-server/target/vcell-server-0.0.1-SNAPSHOT.jar \
      ./lib/
 
 COPY ./nativelibs/linux64 ./nativelibs/linux64
-COPY ./localsolvers/linux64/langevin64 /vcellbin/
+COPY ./localsolvers/linux64/langevin_x64 /vcellbin/
 COPY ./docker/build/batch/JavaPreprocessor64 \
      ./docker/build/batch/JavaPostprocessor64 \
      ./docker/build/batch/JavaSimExe64 \
