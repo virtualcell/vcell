@@ -10,6 +10,8 @@
 /vfrapPaper/
 jsbml.log
 target/
+node_modules/
+.angular
 *.pyc
 *.so
 *.so.*
