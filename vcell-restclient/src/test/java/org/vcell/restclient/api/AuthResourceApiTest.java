@@ -13,22 +13,18 @@
 
 package org.vcell.restclient.api;
 
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.model.AuthCodeResponse;
-import org.junit.Test;
-import org.junit.Ignore;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 
 /**
  * API tests for AuthResourceApi
  */
-@Ignore
+@Disabled
+@Tag("Fast")
 public class AuthResourceApiTest {
 
     private final AuthResourceApi api = new AuthResourceApi();

@@ -13,22 +13,18 @@
 
 package org.vcell.restclient.api;
 
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.model.User;
-import org.junit.Test;
-import org.junit.Ignore;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 
 /**
  * API tests for UsersResourceApi
  */
-@Ignore
+@Disabled
+@Tag("Fast")
 public class UsersResourceApiTest {
 
     private final UsersResourceApi api = new UsersResourceApi();

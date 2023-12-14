@@ -13,24 +13,14 @@
 
 package org.vcell.restclient.model;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonTypeName;
-import com.fasterxml.jackson.annotation.JsonValue;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import org.vcell.restclient.model.BiomodelRef;
-import org.vcell.restclient.model.MathmodelRef;
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+
 
 /**
  * Model tests for Publication
  */
+@Tag("Fast")
 public class PublicationTest {
     private final Publication model = new Publication();
 

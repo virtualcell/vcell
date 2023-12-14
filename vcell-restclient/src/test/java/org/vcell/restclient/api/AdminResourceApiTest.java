@@ -13,21 +13,17 @@
 
 package org.vcell.restclient.api;
 
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 import org.vcell.restclient.ApiException;
-import org.junit.Test;
-import org.junit.Ignore;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 
 /**
  * API tests for AdminResourceApi
  */
-@Ignore
+@Disabled
+@Tag("Fast")
 public class AdminResourceApiTest {
 
     private final AdminResourceApi api = new AdminResourceApi();
