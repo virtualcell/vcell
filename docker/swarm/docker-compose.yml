@@ -273,6 +273,7 @@ services:
       - mongodb_port_internal=27017
       - mongodb_database=test
       - s3ProxyPortExternal=${VCELL_S3PROXY_PORT_EXTERNAL}
+      - s3export_baseURL=${VCELL_S3_EXPORT_BASEURL}
 
       - webDataPort=${VCELL_WEB_DATA_PORT}
 
