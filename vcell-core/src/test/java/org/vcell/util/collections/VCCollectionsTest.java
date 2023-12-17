@@ -1,6 +1,6 @@
 package org.vcell.util.collections;
 
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.vcell.util.collections.VCCollections.Delta;
@@ -19,7 +19,7 @@ public class VCCollectionsTest {
 	private List<Integer> b = new ArrayList<>();
 	private Comparator<Integer> cmp = Comparator.naturalOrder( );
 	
-	@Before
+	@BeforeEach
 	public void setup( ) {
 		int n[] = {3,4,5};
 		for (int i : n) {

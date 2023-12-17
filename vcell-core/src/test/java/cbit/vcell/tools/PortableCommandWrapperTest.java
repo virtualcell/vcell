@@ -2,7 +2,6 @@ package cbit.vcell.tools;
 
 import cbit.vcell.simdata.PortableCommand;
 import cbit.vcell.simdata.PortableCommandWrapper;
-import org.junit.Before;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -51,10 +50,6 @@ public class PortableCommandWrapperTest {
 			PortableCommandWrapper empty = new PortableCommandWrapper();
 			System.err.println(empty.asJson() + ", should not print!");
 		});
-	}
-
-	@Before
-	public void init( ) {
 	}
 
 	@Test
