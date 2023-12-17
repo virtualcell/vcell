@@ -1,16 +1,17 @@
 package cbit.vcell.util;
 
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.vcell.util.CountingLineReader;
+
 import java.io.IOException;
 import java.io.StringReader;
 
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.vcell.test.Fast;
-import org.vcell.util.CountingLineReader;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@Ignore
-@Category(Fast.class)
+@Disabled
+@Tag("Fast")
 public class CountingLineReaderTest {
 	
 	private final static String BLB =
@@ -42,11 +43,13 @@ public class CountingLineReaderTest {
 	 * verify buffer too small exception
 	 * @throws IOException
 	 */
-	@Test(expected = IOException.class)
+	@Test
 	public void toosmall( ) throws IOException {
-		try (CountingLineReader flr = new CountingLineReader(new StringReader(BLB),5)) {
-			System.out.println(flr.readLine());
-		}
+		assertThrows(IOException.class, () -> {
+			try (CountingLineReader flr = new CountingLineReader(new StringReader(BLB),5)) {
+				System.out.println(flr.readLine());
+			}
+		});
 	}
 	
 	private void execute(String s) throws IOException {

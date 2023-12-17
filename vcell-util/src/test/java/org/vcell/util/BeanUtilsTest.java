@@ -1,14 +1,13 @@
 package org.vcell.util;
 
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
+
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.vcell.test.Fast;
-
-@Category(Fast.class)
+@Tag("Fast")
 public class BeanUtilsTest {
 
     public void downloadString(ClientTaskStatusSupport taskSupport) throws MalformedURLException{
@@ -18,19 +17,19 @@ public class BeanUtilsTest {
         System.out.println(out);
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void downloadWatch() throws MalformedURLException{
         downloadString(new TaskSupport());
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void downloadSilent() throws MalformedURLException{
         downloadString(new SilentTaskSupport());
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void downloadNull() throws MalformedURLException{
         downloadString(null);

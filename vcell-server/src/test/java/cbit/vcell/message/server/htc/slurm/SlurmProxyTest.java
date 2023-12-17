@@ -1,6 +1,18 @@
 package cbit.vcell.message.server.htc.slurm;
 
-import static org.junit.Assert.fail;
+import cbit.vcell.message.server.cmd.CommandServiceSshNative;
+import cbit.vcell.message.server.htc.HtcJobStatus;
+import cbit.vcell.message.server.htc.HtcProxy.HtcJobInfo;
+import cbit.vcell.message.server.htc.HtcProxy.PartitionStatistics;
+import cbit.vcell.mongodb.VCMongoMessage;
+import cbit.vcell.resource.PropertyLoader;
+import cbit.vcell.server.HtcJobID;
+import org.apache.commons.io.FileUtils;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.vcell.util.exe.ExecutableException;
 
 import java.io.File;
 import java.io.IOException;
@@ -9,26 +21,10 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.Random;
 
-import org.apache.commons.io.FileUtils;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.vcell.util.exe.ExecutableException;
-
-import cbit.vcell.message.server.cmd.CommandServiceSshNative;
-import cbit.vcell.message.server.htc.HtcJobStatus;
-import cbit.vcell.message.server.htc.HtcProxy.HtcJobInfo;
-import cbit.vcell.message.server.htc.HtcProxy.PartitionStatistics;
-import cbit.vcell.mongodb.VCMongoMessage;
-import cbit.vcell.resource.PropertyLoader;
-import cbit.vcell.server.HtcJobID;
-
-@Ignore
-@Category(Test.class)
+@Disabled
 public class SlurmProxyTest {
 
-    @BeforeClass
+    @BeforeAll
     public static void setLogger() throws MalformedURLException
     {
 //        System.setProperty("log4j.configurationFile","/Users/schaff/Documents/workspace-modular/vcell/docker/trace.log4j2.xml");
@@ -111,7 +107,7 @@ public class SlurmProxyTest {
 			
 		}catch (Exception e) {
 			e.printStackTrace();
-			fail(e.getMessage());
+            Assertions.fail(e.getMessage());
 		}finally {
 			if (cmd != null) {
 				cmd.close();
@@ -148,7 +144,7 @@ public class SlurmProxyTest {
 			}
 		}catch (Exception e) {
 			e.printStackTrace();
-			fail(e.getMessage());
+            Assertions.fail(e.getMessage());
 		}finally {
 			if (cmd != null) {
 				cmd.close();

@@ -1,9 +1,7 @@
 package org.vcell.sedml;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.vcell.test.Fast;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.PublicationInfo;
 import org.vcell.util.document.User;
@@ -13,7 +11,9 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
 
-@Category(Fast.class)
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+@Tag("Fast")
 public class PublicationMetadataTest {
 
     private final static String exampleRIS =
@@ -117,10 +117,10 @@ public class PublicationMetadataTest {
     @Test
     public void test_parseRIS() {
         HashMap<String, String> risMap = PublicationMetadata.extractCitationRIS(exampleRIS.split("\n"));
-        Assert.assertEquals(expectedAbstract, risMap.get("AB"));
-        Assert.assertEquals(expectedAuthor, risMap.get("AU"));
-        Assert.assertEquals(expectedTitle, risMap.get("TI"));
-        Assert.assertEquals(expectedYear, new Integer(risMap.get("PY")));
+        assertEquals(expectedAbstract, risMap.get("AB"));
+        assertEquals(expectedAuthor, risMap.get("AU"));
+        assertEquals(expectedTitle, risMap.get("TI"));
+        assertEquals(expectedYear, new Integer(risMap.get("PY")));
     }
 
     @Test
@@ -140,11 +140,11 @@ public class PublicationMetadataTest {
         );
 
         PublicationMetadata publicationMetadata = PublicationMetadata.fromPublicationInfoAndWeb(publicationInfo1);
-        Assert.assertEquals(expectedAbstract, publicationMetadata.abstractText);
-        Assert.assertEquals(expectedCompactJournalName, publicationMetadata.compactJournalName);
-        Assert.assertEquals(expectedYear, publicationMetadata.year);
-        Assert.assertEquals(expectedFirstAuthorsLastName, publicationMetadata.firstAuthorsLastName);
-        Assert.assertEquals(expectedSuggestedProjectName, publicationMetadata.getSuggestedProjectName(biomodelKey));
+        assertEquals(expectedAbstract, publicationMetadata.abstractText);
+        assertEquals(expectedCompactJournalName, publicationMetadata.compactJournalName);
+        assertEquals(expectedYear, publicationMetadata.year);
+        assertEquals(expectedFirstAuthorsLastName, publicationMetadata.firstAuthorsLastName);
+        assertEquals(expectedSuggestedProjectName, publicationMetadata.getSuggestedProjectName(biomodelKey));
         System.out.println(publicationMetadata);
 
     }

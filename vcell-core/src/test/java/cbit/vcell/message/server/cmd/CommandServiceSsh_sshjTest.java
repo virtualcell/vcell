@@ -1,31 +1,25 @@
 package cbit.vcell.message.server.cmd;
 
-import static org.junit.Assert.fail;
+import cbit.vcell.message.server.cmd.CommandService.CommandOutput;
+import cbit.vcell.mongodb.VCMongoMessage;
+import org.junit.jupiter.api.*;
+import org.vcell.util.exe.ExecutableException;
 
 import java.io.File;
 import java.io.IOException;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.vcell.test.Fast;
-import org.vcell.util.exe.ExecutableException;
+import static org.junit.jupiter.api.Assertions.fail;
 
-import cbit.vcell.message.server.cmd.CommandService.CommandOutput;
-import cbit.vcell.mongodb.VCMongoMessage;
-
-@Ignore
-@Category(Fast.class)
+@Disabled
+@Tag("Fast")
 public class CommandServiceSsh_sshjTest {
 
-	@Before
+	@BeforeEach
 	public void setUp() throws Exception {
 		VCMongoMessage.enabled = false;
 	}
 
-	@After
+	@AfterEach
 	public void tearDown() throws Exception {
 	}
 
@@ -43,7 +37,7 @@ public class CommandServiceSsh_sshjTest {
 			System.out.println("ls output is: "+output.getStandardOutput());
 		}catch (Exception e) {
 			e.printStackTrace();
-			fail("exception thrown: "+e.getMessage());
+            fail("exception thrown: " + e.getMessage());
 		}finally {
 			if (cmd != null) {
 				cmd.close();
@@ -65,7 +59,7 @@ public class CommandServiceSsh_sshjTest {
 			System.out.println("ls output is: "+output.getStandardOutput());
 		}catch (Exception e) {
 			e.printStackTrace();
-			fail("exception thrown: "+e.getMessage());
+            fail("exception thrown: " + e.getMessage());
 		}finally {
 			if (cmd != null) {
 				cmd.close();

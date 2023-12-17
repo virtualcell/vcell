@@ -1,24 +1,21 @@
 package org.vcell.relationship;
 
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertTrue;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.vcell.test.Fast;
-
-@Category(Fast.class)
+@Tag("Fast")
 public class CachedDataBaseReferenceReaderTest {
 	
 	/**
 	 * test soft reference works correctly
 	 */
-	@Ignore
+	@Disabled
 	@Test
 	public void fetchAndConsume( ) {
 		ReferenceQueue<CachedDataBaseReferenceReader> rq = new ReferenceQueue<CachedDataBaseReferenceReader>();
@@ -29,14 +26,14 @@ public class CachedDataBaseReferenceReaderTest {
 		ArrayList<int[]> pig = new ArrayList<int[]>( );
 		for (int size = 10;!outOfMem;size*=10) {
 			try {
-				assertFalse(weakR.isEnqueued());
+                Assertions.assertFalse(weakR.isEnqueued());
 				pig.add(new int[size]);
 				CachedDataBaseReferenceReader w = weakR.get( );
 				//make sure getting same cache as long as not out of memory
-				assertTrue(w == CachedDataBaseReferenceReader.getCachedReader());
+                Assertions.assertSame(w, CachedDataBaseReferenceReader.getCachedReader());
 			} catch(OutOfMemoryError error) {
-				assertTrue(weakR.isEnqueued());
-				assertTrue(weakR.get( ) == null);
+				Assertions.assertTrue(weakR.isEnqueued());
+                Assertions.assertNull(weakR.get());
 				outOfMem = true;
 			}
 		}
@@ -44,14 +41,14 @@ public class CachedDataBaseReferenceReaderTest {
 		
 		//make sure we can get another (new) cache now that memory is avaiable
 		CachedDataBaseReferenceReader dbReader = CachedDataBaseReferenceReader.getCachedReader();
-		assertTrue(dbReader != null);
+        Assertions.assertNotNull(dbReader);
 	}
 	
 	/**
 	 * test GOTerm results is fast after first retrieval
 	 * @throws Exception
 	 */
-	@Ignore
+	@Disabled
 	@Test
 	public void goTest( ) throws Exception {
 		final String key = "0006814";
@@ -61,19 +58,19 @@ public class CachedDataBaseReferenceReaderTest {
 		long start = System.currentTimeMillis();
 		String s2 = dbReader.getGOTerm(key);
 		//we should get exact same String, not equal string
-		assertTrue(s == s2);
+        Assertions.assertSame(s, s2);
 		
 		long end = System.currentTimeMillis();
 		long fetchTime = end - start;
 		//cached retrieval should take less than millisecond
-		assertTrue(fetchTime <= 1);
+		Assertions.assertTrue(fetchTime <= 1);
 	}
 
 	/**
 	 * test molecular id is fast after first retrieval
 	 * @throws Exception
 	 */
-	@Ignore
+	@Disabled
 	@Test
 	public void molIdTest( ) throws Exception {
 		final String key = "p00533";
@@ -83,12 +80,12 @@ public class CachedDataBaseReferenceReaderTest {
 		long start = System.currentTimeMillis();
 		String s2 = dbReader.getMoleculeDataBaseReference(key);
 		//we should get exact same String, not equal string
-		assertTrue(s == s2);
+        Assertions.assertSame(s, s2);
 		
 		long end = System.currentTimeMillis();
 		long fetchTime = end - start;
 		//cached retrieval should take less han millisecond
-		assertTrue(fetchTime <= 5);
+		Assertions.assertTrue(fetchTime <= 5);
 	}
 	
 	@Test
@@ -109,7 +106,7 @@ public class CachedDataBaseReferenceReaderTest {
 		}
 		for (TestThread t: threads) {
 			//make sure all threads got the same reader
-			assertTrue(t.reader == r);
+            Assertions.assertSame(t.reader, r);
 		}
 	}
 	

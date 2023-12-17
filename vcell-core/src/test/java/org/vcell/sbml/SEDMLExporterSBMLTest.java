@@ -1,24 +1,17 @@
 package org.vcell.sbml;
 
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.vcell.sedml.ModelFormat;
-import org.vcell.test.SEDML_SBML_IT;
 
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@RunWith(Parameterized.class)
-@Category({SEDML_SBML_IT.class})
+@Tag("SEDML_SBML_IT")
 public class SEDMLExporterSBMLTest extends SEDMLExporterCommon {
-
-	public SEDMLExporterSBMLTest(TestCase testCase){
-		super(testCase);
-	}
 
 	/**
 	 * 	each file in the slowTestSet takes > 10s on disk and is not included in the unit test (move to integration testing)
@@ -171,7 +164,6 @@ public class SEDMLExporterSBMLTest extends SEDMLExporterCommon {
 		return faults;
 	}
 
-	@Parameterized.Parameters
 	public static Collection<TestCase> testCases() {
 		Predicate<String> skipFilter_SBML = (t) ->
 				!outOfMemorySet().contains(t) &&
@@ -189,8 +181,9 @@ public class SEDMLExporterSBMLTest extends SEDMLExporterCommon {
 //				);
 	}
 
-	@Test
-	public void test_sedml_roundtrip_SBML() throws Exception {
+	@ParameterizedTest
+	@MethodSource("testCases")
+	public void test_sedml_roundtrip_SBML(TestCase testCase) throws Exception {
 		if (knownFaults().containsKey(testCase.filename)) {
 			return; // skip known faults
 		}
@@ -198,7 +191,7 @@ public class SEDMLExporterSBMLTest extends SEDMLExporterCommon {
 //				&& knownSEDMLFaults().get(testCase.filename) != SEDML_FAULT.MATH_OVERRIDE_NAMES_DIFFERENT){
 //			return;
 //		}
-		sedml_roundtrip_common();
+		sedml_roundtrip_common(testCase);
 	}
 
 }

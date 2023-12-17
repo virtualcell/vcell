@@ -3,14 +3,11 @@ package org.vcell.cli.run;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.resource.NativeLib;
 import cbit.vcell.resource.PropertyLoader;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 import org.vcell.cli.CLIPythonManager;
 import org.vcell.cli.CLIRecorder;
-import org.vcell.test.Fast;
 import org.vcell.util.VCellUtilityHub;
-
-import picocli.CommandLine;
 
 import java.io.File;
 import java.io.InputStream;
@@ -18,7 +15,7 @@ import java.nio.file.Files;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
-@Category(Fast.class)
+@Tag("Fast")
 public class ExecuteImplTest {
 
     @Test

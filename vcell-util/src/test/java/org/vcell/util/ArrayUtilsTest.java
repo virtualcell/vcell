@@ -1,12 +1,12 @@
 package org.vcell.util;
 
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.vcell.test.Fast;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.vcell.util.ArrayUtils.*;
 
-@Category(Fast.class)
+@Tag("Fast")
 public class ArrayUtilsTest {
 
     @Test
@@ -17,7 +17,7 @@ public class ArrayUtilsTest {
         Integer[] testArray2 = ArrayUtils.addElement(testArray, 4);
         assertSame(testArray.length, 1);
         assertSame(testArray2.length, 2);
-        assertThrows(NullPointerException.class, () -> ArrayUtils.addElement(null, 2));
+        assertThrows(NullPointerException.class, () -> addElement(null, 2));
     }
 
     @Test
@@ -25,13 +25,13 @@ public class ArrayUtilsTest {
         Integer[] testArray = new Integer[0];
         Integer[] staticArray = new Integer[]{1, 2, 3, 4};
         testArray = ArrayUtils.addElements(testArray, staticArray);
-        assertThrows(NullPointerException.class, () -> ArrayUtils.addElements(null, staticArray));
+        assertThrows(NullPointerException.class, () -> addElements(null, staticArray));
         Integer[] finalizedTestArray = testArray;
-        assertThrows(NullPointerException.class, () -> ArrayUtils.addElements(finalizedTestArray, null));
+        assertThrows(NullPointerException.class, () -> addElements(finalizedTestArray, null));
     }
 
     @Test
-    public void arrayContainsTest(){
+    public void arrayContainsTest() {
         Integer[] staticArray = new Integer[]{1, 2, 3, 4};
         assertTrue(ArrayUtils.arrayContains(staticArray, 3));
         assertFalse(ArrayUtils.arrayContains(staticArray, 5));
@@ -65,7 +65,7 @@ public class ArrayUtilsTest {
         testArray = ArrayUtils.removeFirstInstanceOfElement(testArray, 4);
         assertSame(testArray.length, 2);
         Integer[] finalizedTestArray = testArray;
-        assertThrows(RuntimeException.class, () -> ArrayUtils.removeFirstInstanceOfElement(finalizedTestArray, 4));
+        assertThrows(RuntimeException.class, () -> removeFirstInstanceOfElement(finalizedTestArray, 4));
         assertNull(ArrayUtils.removeFirstInstanceOfElement(null, 4));
     }
 }

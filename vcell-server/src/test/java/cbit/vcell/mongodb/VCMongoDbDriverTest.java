@@ -1,21 +1,16 @@
 package cbit.vcell.mongodb;
 
+import org.bson.types.ObjectId;
+import org.junit.jupiter.api.*;
+
 import static org.junit.Assert.assertArrayEquals;
 
-import org.bson.types.ObjectId;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.vcell.test.Fast;
-
-@Ignore
-@Category(Fast.class)
+@Disabled
+@Tag("Fast")
 public class VCMongoDbDriverTest {
 	VCMongoDbDriver mongoDriver = null;
 
-	@Before
+	@BeforeEach
 	public void setUp() {
 		System.getProperties().put("vcell.mongodb.host","localhost");
 		System.getProperties().put("vcell.mongodb.port","27017");
@@ -24,7 +19,7 @@ public class VCMongoDbDriverTest {
 		mongoDriver = VCMongoDbDriver.getInstance();
 	}
 
-	@After
+	@AfterEach
 	public void tearDown() throws Exception {
 		mongoDriver.shutdown();
 	}

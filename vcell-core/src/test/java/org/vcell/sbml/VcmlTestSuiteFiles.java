@@ -1,10 +1,8 @@
 package org.vcell.sbml;
 
-import cbit.vcell.parser.Expression;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.vcell.test.Fast;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;
@@ -13,7 +11,7 @@ import java.util.List;
 import java.util.function.Predicate;
 
 
-@Category(Fast.class)
+@Tag("Fast")
 public class VcmlTestSuiteFiles {
 
     private final static String[] allTestFiles = new String[]{
@@ -1041,7 +1039,7 @@ public class VcmlTestSuiteFiles {
     @Test
     public void test_read_sbmlFile() {
         InputStream inputStream = getVcmlTestCase(allTestFiles[0]);
-        Assert.assertTrue(inputStream != null);
+        Assertions.assertTrue(inputStream != null);
     }
 
 }

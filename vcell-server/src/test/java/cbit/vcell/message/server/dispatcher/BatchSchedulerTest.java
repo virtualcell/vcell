@@ -1,28 +1,29 @@
 package cbit.vcell.message.server.dispatcher;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-
-import cbit.vcell.server.*;
+import cbit.vcell.message.server.dispatcher.BatchScheduler.ActiveJob;
+import cbit.vcell.message.server.dispatcher.BatchScheduler.SchedulerDecisions;
+import cbit.vcell.message.server.htc.HtcProxy.PartitionStatistics;
+import cbit.vcell.server.HtcJobID;
+import cbit.vcell.server.SimulationExecutionStatus;
+import cbit.vcell.server.SimulationJobStatus;
+import cbit.vcell.server.SimulationJobStatus.SchedulerStatus;
+import cbit.vcell.server.SimulationQueueEntryStatus;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.server.SimulationMessage;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.vcell.test.Fast;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCellServerID;
 
-import cbit.vcell.message.server.dispatcher.BatchScheduler.ActiveJob;
-import cbit.vcell.message.server.dispatcher.BatchScheduler.SchedulerDecisions;
-import cbit.vcell.message.server.htc.HtcProxy.PartitionStatistics;
-import cbit.vcell.server.SimulationJobStatus.SchedulerStatus;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
 
-@Category(Fast.class)
+import static cbit.vcell.message.server.dispatcher.BatchScheduler.SchedulerDecisionType.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+@Tag("Fast")
 public class BatchSchedulerTest {
 
 	VCellServerID relSite = VCellServerID.getServerID("REL");
@@ -45,20 +46,11 @@ public class BatchSchedulerTest {
 	ActiveJob job8 = makeJob(relSite, owner2, 8, SchedulerStatus.WAITING, age3, ode);
 	ActiveJob job9 = makeJob(otherSite, owner2, 9, SchedulerStatus.RUNNING, age2, ode);
 	ActiveJob job10 = makeJob(relSite, owner2, 10, SchedulerStatus.WAITING, age2, pde);
-	
-	@Before
-	public void setUp() throws Exception {
-	}
-
-	@After
-	public void tearDown() throws Exception {
-	}
 
 	@Test
 	public void test() {
-		
-		ArrayList<BatchScheduler.ActiveJob> activeJobs = new ArrayList<BatchScheduler.ActiveJob>();
-		activeJobs.addAll(Arrays.asList(job1,job2,job3,job4,job5,job6,job7,job8,job9,job10));
+
+        ArrayList<ActiveJob> activeJobs = new ArrayList<ActiveJob>(Arrays.asList(job1, job2, job3, job4, job5, job6, job7, job8, job9, job10));
 
 		int numCpusAllocated = 5;
 		int numCpusTotal = 10;
@@ -74,35 +66,35 @@ public class BatchSchedulerTest {
 
 		schedulerDecisions.show(null,null);
 
-		Assert.assertEquals(schedulerDecisions.getDecisionType(job1), BatchScheduler.SchedulerDecisionType.RUNNABLE_THIS_SITE);
-		Assert.assertEquals(schedulerDecisions.getOrdinal(job1), new Integer(1));
+		assertEquals(schedulerDecisions.getDecisionType(job1), RUNNABLE_THIS_SITE);
+		assertEquals(schedulerDecisions.getOrdinal(job1), 1);
 
-		Assert.assertEquals(schedulerDecisions.getDecisionType(job2), BatchScheduler.SchedulerDecisionType.RUNNABLE_OTHER_SITE);
-		Assert.assertEquals(schedulerDecisions.getOrdinal(job2), new Integer(2));
+		assertEquals(schedulerDecisions.getDecisionType(job2), RUNNABLE_OTHER_SITE);
+		assertEquals(schedulerDecisions.getOrdinal(job2), 2);
 
-		Assert.assertEquals(schedulerDecisions.getDecisionType(job3), BatchScheduler.SchedulerDecisionType.ALREADY_RUNNING_OR_QUEUED);
-		Assert.assertEquals(schedulerDecisions.getOrdinal(job3), new Integer(-1));
+		assertEquals(schedulerDecisions.getDecisionType(job3), ALREADY_RUNNING_OR_QUEUED);
+		assertEquals(schedulerDecisions.getOrdinal(job3), -1);
 
-		Assert.assertEquals(schedulerDecisions.getDecisionType(job4), BatchScheduler.SchedulerDecisionType.RUNNABLE_THIS_SITE);
-		Assert.assertEquals(schedulerDecisions.getOrdinal(job4), new Integer(0));
+		assertEquals(schedulerDecisions.getDecisionType(job4), RUNNABLE_THIS_SITE);
+		assertEquals(schedulerDecisions.getOrdinal(job4), 0);
 
-		Assert.assertEquals(schedulerDecisions.getDecisionType(job5), BatchScheduler.SchedulerDecisionType.HELD_USER_QUOTA_PDE);
-		Assert.assertEquals(schedulerDecisions.getOrdinal(job5), new Integer(3));
+		assertEquals(schedulerDecisions.getDecisionType(job5), HELD_USER_QUOTA_PDE);
+		assertEquals(schedulerDecisions.getOrdinal(job5), 3);
 
-		Assert.assertEquals(schedulerDecisions.getDecisionType(job6), BatchScheduler.SchedulerDecisionType.HELD_CLUSTER_RESOURCES);
-		Assert.assertEquals(schedulerDecisions.getOrdinal(job6), new Integer(5));
+		assertEquals(schedulerDecisions.getDecisionType(job6), HELD_CLUSTER_RESOURCES);
+		assertEquals(schedulerDecisions.getOrdinal(job6), 5);
 
-		Assert.assertEquals(schedulerDecisions.getDecisionType(job7), BatchScheduler.SchedulerDecisionType.ALREADY_RUNNING_OR_QUEUED);
-		Assert.assertEquals(schedulerDecisions.getOrdinal(job7), new Integer(-1));
+		assertEquals(schedulerDecisions.getDecisionType(job7), ALREADY_RUNNING_OR_QUEUED);
+		assertEquals(schedulerDecisions.getOrdinal(job7), -1);
 
-		Assert.assertEquals(schedulerDecisions.getDecisionType(job8), BatchScheduler.SchedulerDecisionType.RUNNABLE_THIS_SITE);
-		Assert.assertEquals(schedulerDecisions.getOrdinal(job8), new Integer(4));
+		assertEquals(schedulerDecisions.getDecisionType(job8), RUNNABLE_THIS_SITE);
+		assertEquals(schedulerDecisions.getOrdinal(job8), 4);
 
-		Assert.assertEquals(schedulerDecisions.getDecisionType(job9), BatchScheduler.SchedulerDecisionType.ALREADY_RUNNING_OR_QUEUED);
-		Assert.assertEquals(schedulerDecisions.getOrdinal(job9), new Integer(-1));
+		assertEquals(schedulerDecisions.getDecisionType(job9), ALREADY_RUNNING_OR_QUEUED);
+		assertEquals(schedulerDecisions.getOrdinal(job9), -1);
 
-		Assert.assertEquals(schedulerDecisions.getDecisionType(job10), BatchScheduler.SchedulerDecisionType.HELD_USER_QUOTA_PDE);
-		Assert.assertEquals(schedulerDecisions.getOrdinal(job10), new Integer(6));
+		assertEquals(schedulerDecisions.getDecisionType(job10), HELD_USER_QUOTA_PDE);
+		assertEquals(schedulerDecisions.getOrdinal(job10), 6);
 	}
 
 	private static ActiveJob makeJob(VCellServerID serverID, User owner, int key,

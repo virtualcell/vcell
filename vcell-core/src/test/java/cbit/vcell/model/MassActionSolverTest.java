@@ -1,5 +1,14 @@
 package cbit.vcell.model;
 
+import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.mapping.MappingException;
+import cbit.vcell.xml.XMLSource;
+import cbit.vcell.xml.XmlHelper;
+import cbit.vcell.xml.XmlParseException;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.vcell.sbml.VcmlTestSuiteFiles;
+
 import java.beans.PropertyVetoException;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -7,18 +16,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.stream.Collectors;
 
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.vcell.sbml.VcmlTestSuiteFiles;
-
-import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.mapping.MappingException;
-import cbit.vcell.xml.XMLSource;
-import cbit.vcell.xml.XmlHelper;
-import cbit.vcell.xml.XmlParseException;
-import org.vcell.test.Fast;
-
-@Category(Fast.class)
+@Tag("Fast")
 public class MassActionSolverTest {
 	
 	@Test
