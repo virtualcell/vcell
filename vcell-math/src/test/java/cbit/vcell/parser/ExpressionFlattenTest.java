@@ -2,24 +2,26 @@ package cbit.vcell.parser;
 
 import cbit.vcell.units.VCUnitDefinition;
 import org.junit.jupiter.api.Tag;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.vcell.test.Fast;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.text.DecimalFormat;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Map;
 
-@Category(Fast.class)
-@RunWith(Parameterized.class)
+import static cbit.vcell.parser.ExpressionUtils.functionallyEquivalent;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 @Tag("Fast")
 public class ExpressionFlattenTest {
 
-    private final Expression origExpression;
-    private final Expression expectedSimplifiedExpression;
-    private final Expression expectedFlattenSafeExpression;
-    private final Expression expectedFlattenSubstitutedExpression; // where "KMOLE" is bound to a 'constant' SymbolTableEntry
+    public record TestCase(
+            Expression origExpression,
+            Expression expectedSimplifiedExpression,
+            Expression expectedFlattenSafeExpression,
+            Expression expectedFlattenSubstitutedExpression // where "KMOLE" is bound to a 'constant' SymbolTableEntry
+    ) {}
 
     private final static double KMOLE_VALUE = 1.0/602.214179;
     private final static SymbolTableEntry constantKMOLE = new SymbolTableEntry() {
@@ -53,19 +55,11 @@ public class ExpressionFlattenTest {
         }
     };
 
-    public ExpressionFlattenTest(Expression origExpression, Expression expectedSimplified, Expression expectedFlattenSafe, Expression expectedFlattenSubstituted) {
-        this.origExpression = origExpression;
-        this.expectedSimplifiedExpression = expectedSimplified;
-        this.expectedFlattenSafeExpression = expectedFlattenSafe;
-        this.expectedFlattenSubstitutedExpression = expectedFlattenSubstituted;
-    }
 
 
-
-    @Parameterized.Parameters
-    public static Collection<Expression[]> testCases() throws ExpressionException {
-        return Arrays.asList(new Expression[][]{
-                {new Expression("((kon_m * M) - ((koff_m * m) / (1 - ((1 / 2 * ((3.0 * k_PIP2 * m) " +
+    public static Collection<TestCase> testCases() throws ExpressionException {
+        return Arrays.asList(
+                new TestCase(new Expression("((kon_m * M) - ((koff_m * m) / (1 - ((1 / 2 * ((3.0 * k_PIP2 * m) " +
                         "- (k_PIP2 * ((100.0 * (KMOLE ^ (-1))) * pT)) - sqrt(((9.0 * (k_PIP2 ^ 2) * (m ^ 2)) " +
                         "- (6.0 * (k_PIP2 ^ 2) * m * ((100.0 * (KMOLE ^ (-1))) * pT)) + ((k_PIP2 ^ 2) * (((100.0 * (KMOLE ^ (-1))) * pT) ^ 2)) " +
                         "+ (6.0 * k_PIP2 * m) + (2 * k_PIP2 * ((100.0 * (KMOLE ^ (-1))) * pT)) + 1)) + 1))" +
@@ -113,125 +107,120 @@ public class ExpressionFlattenTest {
                                 "* k_PIP2 * m) + ((1.0 / 2.0) * k_PIP2 * ((100.0 * (0.001660538783162726 ^  - 1.0)) * pT)) + ((1.0 / 2.0) " +
                                 "* sqrt(((9.0 * (k_PIP2 ^ 2.0) * (m ^ 2.0)) - (6.0 * (k_PIP2 ^ 2.0) * m * ((100.0 * (0.001660538783162726 ^  - 1.0)) * pT)) " +
                                 "+ ((k_PIP2 ^ 2.0) * (((100.0 * (0.001660538783162726 ^  - 1.0)) * pT) ^ 2.0)) + (6.0 * k_PIP2 * m) " +
-                                "+ (2.0 * k_PIP2 * ((100.0 * (0.001660538783162726 ^  - 1.0)) * pT)) + 1.0))) + (5.0 / 2.0))))))))"),
-                },
-                {new Expression("KMOLE/KMOLE"),
+                                "+ (2.0 * k_PIP2 * ((100.0 * (0.001660538783162726 ^  - 1.0)) * pT)) + 1.0))) + (5.0 / 2.0))))))))")
+                        ),
+                new TestCase(new Expression("KMOLE/KMOLE"),
                         new Expression("1.0"),
                         new Expression("KMOLE/KMOLE"),
-                        new Expression("1.0"),
-                },
-                {new Expression("KMOLE/KMOLE*KMOLE/KMOLE"),
+                        new Expression("1.0")
+                ),
+                new TestCase(new Expression("KMOLE/KMOLE*KMOLE/KMOLE"),
                         new Expression("1.0"),
                         new Expression("(KMOLE * KMOLE / KMOLE / KMOLE)"),
-                        new Expression("1.0"),
-                },
-                {new Expression("KMOLE/KMOLE*KMOLE/KMOLE2"),
+                        new Expression("1.0")
+                ),
+                new TestCase(new Expression("KMOLE/KMOLE*KMOLE/KMOLE2"),
                         new Expression("KMOLE/KMOLE2"),
                         new Expression("(KMOLE * KMOLE / KMOLE / KMOLE2)"),
-                        new Expression(new DecimalFormat("#.##################").format(KMOLE_VALUE)+"/KMOLE2"),
-                },
-                {new Expression("KMOLE*pow(KMOLE,-1)"),
+                        new Expression(new DecimalFormat("#.##################").format(KMOLE_VALUE)+"/KMOLE2")
+                ),
+                new TestCase(new Expression("KMOLE*pow(KMOLE,-1)"),
                         new Expression("1.0"),
                         new Expression("(KMOLE * (KMOLE ^ -1.0))"),
-                        new Expression("1.0"),
-                },
-                {new Expression("5*KMOLE*pow(KMOLE,-1)"),
+                        new Expression("1.0")
+                ),
+                new TestCase(new Expression("5*KMOLE*pow(KMOLE,-1)"),
                         new Expression("5.0"),
                         new Expression("5*KMOLE*pow(KMOLE,-1)"),
-                        new Expression("5.0"),
-                },
-                {new Expression("5/KMOLE*KMOLE"),
+                        new Expression("5.0")
+                ),
+                new TestCase(new Expression("5/KMOLE*KMOLE"),
                         new Expression("5.0"),
                         new Expression("(5.0 * KMOLE / KMOLE)"),
-                        new Expression("5.0"),
-                },
-                {new Expression("5*KMOLE*pow(KMOLE,-2)"),
+                        new Expression("5.0")
+                ),
+                new TestCase(new Expression("5*KMOLE*pow(KMOLE,-2)"),
                         new Expression("5.0 / KMOLE"),
                         new Expression("5*KMOLE*pow(KMOLE,-2)"),
                         //new Expression(5.0 / KMOLE_VALUE),
-                        new Expression(3011.0708949999994),
-                },
-                {new Expression("-((-x)^2)"),
+                        new Expression(3011.0708949999994)
+                ),
+                new TestCase(new Expression("-((-x)^2)"),
                         new Expression("-(x^2)"),
                         new Expression(" - ( - x ^ 2.0)"),
-                        new Expression(" - ( - x ^ 2.0)"),
-                },
-                {new Expression("((-x)^2)"),
+                        new Expression(" - ( - x ^ 2.0)")
+                        ),
+                new TestCase(new Expression("((-x)^2)"),
                         new Expression("(x^2)"),
                         new Expression("( - x ^ 2.0)"),
-                        new Expression("( - x ^ 2.0)"),
-                },
-                {new Expression("((Kf_dimerization * pow(EGFR_active,2.0)) - (Kr_dimerization * EGFR_dimer))"),
+                        new Expression("( - x ^ 2.0)")
+                ),
+                new TestCase(new Expression("((Kf_dimerization * pow(EGFR_active,2.0)) - (Kr_dimerization * EGFR_dimer))"),
                         new Expression(" - ( - ((EGFR_active ^ 2.0) * Kf_dimerization) + (EGFR_dimer * Kr_dimerization))"),
                         new Expression("((Kf_dimerization * (EGFR_active ^ 2.0)) - (Kr_dimerization * EGFR_dimer))"),
-                        new Expression("((Kf_dimerization * (EGFR_active ^ 2.0)) - (Kr_dimerization * EGFR_dimer))"),
-                }
-        });
+                        new Expression("((Kf_dimerization * (EGFR_active ^ 2.0)) - (Kr_dimerization * EGFR_dimer))")
+                )
+        );
     }
 
-    @Test
-    public void testCorrectnessOfTestCases() throws ExpressionException {
+    @ParameterizedTest
+    @MethodSource("testCases")
+    public void testCorrectnessOfTestCases(TestCase testCase) throws ExpressionException {
         //
         // test correctness of expected expressions for Simplification (without constant substitution)
         //
-        Assert.assertTrue("expected safe simplified expression not equivalent," +
-                        " expected='"+expectedSimplifiedExpression.infix()+"', original='"+origExpression.infix()+"'",
-                ExpressionUtils.functionallyEquivalent(expectedSimplifiedExpression,origExpression,false));
+        assertTrue(functionallyEquivalent(testCase.expectedSimplifiedExpression, testCase.origExpression, false), "expected safe simplified expression not equivalent," +
+                " expected='" + testCase.expectedSimplifiedExpression.infix() + "', original='" + testCase.origExpression.infix() + "'");
 
         //
         // test correctness of expected expression for Flattened (without constant substitution)
         //
-        Assert.assertTrue("expected flattened expression without simplification not equivalent," +
-                        " expected='"+expectedFlattenSafeExpression.infix()+"', substitutedOriginal='"+origExpression.infix()+"'",
-                ExpressionUtils.functionallyEquivalent(expectedFlattenSafeExpression,origExpression,false));
+        assertTrue(functionallyEquivalent(testCase.expectedFlattenSafeExpression, testCase.origExpression, false), "expected flattened expression without simplification not equivalent," +
+                " expected='" + testCase.expectedFlattenSafeExpression.infix() + "', substitutedOriginal='" + testCase.origExpression.infix() + "'");
 
         //
         // test correctness of expected expression for Flattened with Substitution
         //
-        Expression substitutedOrigExpression = new Expression(origExpression);
+        Expression substitutedOrigExpression = new Expression(testCase.origExpression);
         substitutedOrigExpression.substituteInPlace(new Expression(constantKMOLE.getName()),new Expression(KMOLE_VALUE));
-        Assert.assertTrue("expected flattened expression with substitution not equivalent to manually substituted original," +
-                        " expected='"+expectedFlattenSubstitutedExpression.infix()+"', substitutedOriginal='"+substitutedOrigExpression.infix()+"'",
-                ExpressionUtils.functionallyEquivalent(expectedFlattenSubstitutedExpression,substitutedOrigExpression,false));
+        assertTrue(functionallyEquivalent(testCase.expectedFlattenSubstitutedExpression, substitutedOrigExpression, false), "expected flattened expression with substitution not equivalent to manually substituted original," +
+                " expected='" + testCase.expectedFlattenSubstitutedExpression.infix() + "', substitutedOriginal='" + substitutedOrigExpression.infix() + "'");
     }
 
-    @Test
-    public void testSimplifyJSCL() throws ExpressionException {
-        Expression simplifiedUnboundExp = origExpression.simplifyJSCL(20000, false);
-        Assert.assertTrue("didn't compare equal for unbound, expected='"+expectedSimplifiedExpression.infix()+"', actual='"+simplifiedUnboundExp.infix()+"'",
-                expectedSimplifiedExpression.compareEqual(simplifiedUnboundExp));
+    @ParameterizedTest
+    @MethodSource("testCases")
+    public void testSimplifyJSCL(TestCase testCase) throws ExpressionException {
+        Expression simplifiedUnboundExp = testCase.origExpression.simplifyJSCL(20000, false);
+        assertTrue(testCase.expectedSimplifiedExpression.compareEqual(simplifiedUnboundExp), "didn't compare equal for unbound, expected='" + testCase.expectedSimplifiedExpression.infix() + "', actual='" + simplifiedUnboundExp.infix() + "'");
 
         // simplifyJSCL works the same (is safe) for bound or unbound expressions
-        Expression boundOrigExpression = getBoundExpression(origExpression);
+        Expression boundOrigExpression = getBoundExpression(testCase.origExpression);
         Expression simplifiedBoundExp = boundOrigExpression.simplifyJSCL(20000, false);
-        Assert.assertTrue("didn't compare equal for bound, expected='"+expectedSimplifiedExpression.infix()+"', actual='"+simplifiedBoundExp.infix()+"'",
-                expectedSimplifiedExpression.compareEqual(simplifiedBoundExp));
+        assertTrue(testCase.expectedSimplifiedExpression.compareEqual(simplifiedBoundExp), "didn't compare equal for bound, expected='" + testCase.expectedSimplifiedExpression.infix() + "', actual='" + simplifiedBoundExp.infix() + "'");
     }
 
-    @Test
-    public void testFlatten() throws ExpressionException {
-        Expression flattenedUnboundExp = origExpression.flatten();
-        Assert.assertTrue("didn't compare equal for unbound, expected='"+expectedFlattenSafeExpression.infix()+"', actual='"+flattenedUnboundExp.infix()+"'",
-                expectedFlattenSafeExpression.compareEqual(flattenedUnboundExp));
+    @ParameterizedTest
+    @MethodSource("testCases")
+    public void testFlatten(TestCase testCase) throws ExpressionException {
+        Expression flattenedUnboundExp = testCase.origExpression.flatten();
+        assertTrue(testCase.expectedFlattenSafeExpression.compareEqual(flattenedUnboundExp), "didn't compare equal for unbound, expected='" + testCase.expectedFlattenSafeExpression.infix() + "', actual='" + flattenedUnboundExp.infix() + "'");
 
         // flatten should substitute numeric value for KMOLE for bound expressions
-        Expression boundOrigExpression = getBoundExpression(origExpression);
+        Expression boundOrigExpression = getBoundExpression(testCase.origExpression);
         Expression flattenedBoundExp = boundOrigExpression.flatten();
-        Assert.assertTrue("didn't compare equal for bound, expected='"+expectedFlattenSubstitutedExpression.infix()+"', actual='"+flattenedBoundExp.infix()+"'",
-                expectedFlattenSubstitutedExpression.compareEqual(flattenedBoundExp));
+        assertTrue(testCase.expectedFlattenSubstitutedExpression.compareEqual(flattenedBoundExp), "didn't compare equal for bound, expected='" + testCase.expectedFlattenSubstitutedExpression.infix() + "', actual='" + flattenedBoundExp.infix() + "'");
     }
 
-    @Test
-    public void testFlattenSafe() throws ExpressionException {
-        Expression flattenedUnboundExp = origExpression.flattenSafe();
-        Assert.assertTrue("didn't compare equal for unbound, expected='"+expectedFlattenSafeExpression.infix()+"', actual='"+flattenedUnboundExp.infix()+"'",
-                expectedFlattenSafeExpression.compareEqual(flattenedUnboundExp));
+    @ParameterizedTest
+    @MethodSource("testCases")
+    public void testFlattenSafe(TestCase testCase) throws ExpressionException {
+        Expression flattenedUnboundExp = testCase.origExpression.flattenSafe();
+        assertTrue(testCase.expectedFlattenSafeExpression.compareEqual(flattenedUnboundExp), "didn't compare equal for unbound, expected='" + testCase.expectedFlattenSafeExpression.infix() + "', actual='" + flattenedUnboundExp.infix() + "'");
 
         // flattenSafe works the same (is safe) for bound or unbound expressions - no substitution
-        Expression boundOrigExpression = getBoundExpression(origExpression);
+        Expression boundOrigExpression = getBoundExpression(testCase.origExpression);
         Expression flattenedBoundExp = boundOrigExpression.flattenSafe();
-        Assert.assertTrue("didn't compare equal for bound, expected='"+expectedFlattenSafeExpression.infix()+"', actual='"+flattenedBoundExp.infix()+"'",
-                expectedFlattenSafeExpression.compareEqual(flattenedBoundExp));
+        assertTrue(testCase.expectedFlattenSafeExpression.compareEqual(flattenedBoundExp), "didn't compare equal for bound, expected='" + testCase.expectedFlattenSafeExpression.infix() + "', actual='" + flattenedBoundExp.infix() + "'");
     }
 
     private Expression getBoundExpression(Expression exp) throws ExpressionBindingException {

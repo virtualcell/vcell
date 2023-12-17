@@ -7,15 +7,12 @@ import cbit.vcell.solver.Simulation;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
-import org.junit.AfterClass;
-import org.junit.Assert;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.vcell.sbml.VcmlTestSuiteFiles;
-import org.vcell.test.MathGen_IT;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -23,23 +20,16 @@ import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-@Category(MathGen_IT.class)
-@RunWith(Parameterized.class)
+import static org.junit.jupiter.api.Assertions.fail;
+
 @Tag("MathGen_IT")
 public class MathOverrideApplyTest {
-
-	private String filename_colon_appname;
 
 	private static String previousInstalldirPropertyValue;
 	private static File codeKnownProblemFile;
 	private static File csvKnownProblemFile;
 
-	public MathOverrideApplyTest(String filename_colon_appname){
-		this.filename_colon_appname = filename_colon_appname;
-	}
-
-
-	@BeforeClass
+	@BeforeAll
 	public static void setup() throws IOException {
 		previousInstalldirPropertyValue = PropertyLoader.getProperty("vcell.installDir", null);
 		PropertyLoader.setProperty(PropertyLoader.installationRoot, "..");
@@ -50,7 +40,7 @@ public class MathOverrideApplyTest {
 		System.err.println("csv known problem file: "+csvKnownProblemFile.getAbsolutePath());
 	}
 
-	@AfterClass
+	@AfterAll
 	public static void teardown() {
 		if (previousInstalldirPropertyValue!=null) {
 			PropertyLoader.setProperty(PropertyLoader.installationRoot, previousInstalldirPropertyValue);
@@ -59,7 +49,7 @@ public class MathOverrideApplyTest {
 		System.err.println("csv known problem file: "+csvKnownProblemFile.getAbsolutePath());
 	}
 
-	@BeforeClass
+	@BeforeAll
 	public static void printSkippedModels() {
 		for (String filename : outOfMemoryFileSet()){
 			System.err.println("skipping - out of memory: "+filename);
@@ -116,7 +106,6 @@ public class MathOverrideApplyTest {
 	/**
 	 * process all tests that are available - the slow set is parsed only and not processed.
 	 */
-	@Parameterized.Parameters
 	public static Collection<String> testCases() throws XmlParseException, IOException {
 		Predicate<String> skipFilter = (t) -> !outOfMemoryFileSet().contains(t) && !largeFileSet().contains(t) && !slowFileSet().contains(t);
 		List<String> filenames = Arrays.stream(VcmlTestSuiteFiles.getVcmlTestCases()).filter(skipFilter).collect(Collectors.toList());
@@ -153,8 +142,9 @@ public class MathOverrideApplyTest {
 	}
 
 
-	@Test
-	public void test_mathOverrideApply() throws Exception {
+	@ParameterizedTest
+	@MethodSource("testCases")
+	public void test_mathOverrideApply(String filename_colon_appname) throws Exception {
 		String[] tokens = filename_colon_appname.split(":");
 		String filename = tokens[0];
 		String simContextName = filename_colon_appname.substring(filename.length()+1);
@@ -192,7 +182,7 @@ public class MathOverrideApplyTest {
 			}catch (Exception e){
 				if (!knownFaults().contains(filename)){
 					e.printStackTrace();
-					Assert.fail("applying math overrides failed unexpectedly for '"+filename_colon_appname+"', add to known faults: "+e.getMessage());
+					fail("applying math overrides failed unexpectedly for '" + filename_colon_appname + "', add to known faults: " + e.getMessage());
 				}
 			}
 		}

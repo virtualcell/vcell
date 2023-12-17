@@ -4,39 +4,27 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ExpressionUtils;
 import org.junit.jupiter.api.Tag;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.vcell.test.Fast;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.Arrays;
 import java.util.List;
 
-@Category(Fast.class)
-@RunWith(Parameterized.class)
+import static cbit.vcell.matrix.RationalExpMatrix.NoSolutionExistsException;
+import static cbit.vcell.parser.ExpressionUtils.functionallyEquivalent;
+import static cbit.vcell.parser.ExpressionUtils.solveLinear;
+import static org.junit.jupiter.api.Assertions.*;
+
 @Tag("Fast")
 public class RationalExpMatrixTest {
-    static class TestCase {
-        final Expression[] equations;
-        final String[] vars;
-        final Expression[] expectedSolutions;
-        final boolean bSolutionExists;
-        public TestCase(Expression[] equations, String[] vars, Expression[] expectedSolutions, boolean bSolutionExists){
-            this.equations = equations;
-            this.vars = vars;
-            this.expectedSolutions = expectedSolutions;
-            this.bSolutionExists = bSolutionExists;
-        }
-    }
+    public record TestCase(
+        Expression[] equations,
+        String[] vars,
+        Expression[] expectedSolutions,
+        boolean bSolutionExists
+    ) {}
 
-    TestCase testCase;
 
-    public RationalExpMatrixTest(TestCase testCase){
-        this.testCase = testCase;
-    }
-
-    @Parameterized.Parameters
     public static List<TestCase> testCases() throws ExpressionException {
         return Arrays.asList(
                 new TestCase(
@@ -67,27 +55,26 @@ public class RationalExpMatrixTest {
         );
     }
 
-    @Test
-    public void solveSystem() throws MatrixException, ExpressionException, RationalExpMatrix.NoSolutionExistsException {
+    @ParameterizedTest
+    @MethodSource("testCases")
+    public void solveSystem(TestCase testCase) throws MatrixException, ExpressionException, RationalExpMatrix.NoSolutionExistsException {
         String[] vars = testCase.vars;
         Expression[] equations = testCase.equations;
         Expression[] expectedSolutions = testCase.expectedSolutions;
         if (!testCase.bSolutionExists) {
-            Assert.assertThrows(RationalExpMatrix.NoSolutionExistsException.class,
-                    () -> ExpressionUtils.solveLinear(equations, vars));
+            assertThrows(NoSolutionExistsException.class, () -> solveLinear(equations, vars));
         } else {
             Expression[] solutions = ExpressionUtils.solveLinear(equations, vars);
 
             for (int varIndex = 0; varIndex < vars.length; varIndex++) {
                 if (expectedSolutions[varIndex] == null) {
-                    Assert.assertNull("expecting null solution for var " + vars[varIndex], solutions[varIndex]);
+                    assertNull(solutions[varIndex], "expecting null solution for var " + vars[varIndex]);
                 } else {
                     if (solutions[varIndex] == null) {
-                        Assert.fail("solution was null for var " + vars[varIndex] + ", but expecting " + expectedSolutions[varIndex].infix());
+                        fail("solution was null for var " + vars[varIndex] + ", but expecting " + expectedSolutions[varIndex].infix());
                     } else {
-                        Assert.assertTrue("expected solution for " + vars[varIndex] +
-                                        " to be " + expectedSolutions[varIndex].infix() + " but is " + solutions[varIndex].infix(),
-                                ExpressionUtils.functionallyEquivalent(expectedSolutions[varIndex], solutions[varIndex]));
+                        assertTrue(functionallyEquivalent(expectedSolutions[varIndex], solutions[varIndex]), "expected solution for " + vars[varIndex] +
+                                " to be " + expectedSolutions[varIndex].infix() + " but is " + solutions[varIndex].infix());
                     }
                 }
             }
