@@ -1,13 +1,14 @@
 package org.vcell.util.collections;
 
 import static org.junit.Assert.assertTrue;
+import org.junit.jupiter.api.Tag;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.vcell.test.Fast;
 
-@Category(Fast.class)
+@Tag("Fast")
 public class CircularListTest {
 	
 	

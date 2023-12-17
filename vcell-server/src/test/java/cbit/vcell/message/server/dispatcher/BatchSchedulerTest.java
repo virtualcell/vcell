@@ -10,7 +10,7 @@ import cbit.vcell.solver.server.SimulationMessage;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Tag;
 import org.junit.experimental.categories.Category;
 import org.vcell.test.Fast;
 import org.vcell.util.document.KeyValue;
@@ -23,6 +23,7 @@ import cbit.vcell.message.server.htc.HtcProxy.PartitionStatistics;
 import cbit.vcell.server.SimulationJobStatus.SchedulerStatus;
 
 @Category(Fast.class)
+@Tag("Fast")
 public class BatchSchedulerTest {
 
 	VCellServerID relSite = VCellServerID.getServerID("REL");

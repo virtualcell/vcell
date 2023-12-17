@@ -11,13 +11,13 @@
 package cbit.vcell.simdata;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.Tag;
 import org.vcell.test.Fast;
 import org.vcell.util.document.KeyValue;
 
 import cbit.vcell.util.AmplistorUtils;
 
-@Category(Fast.class)
+@Tag("Fast")
 public class SimulationDataTest {
 	@SuppressWarnings("unused")
 	private static int jIndexes[] = {0,2,4,7,16,32,64};

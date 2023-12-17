@@ -2,7 +2,7 @@ package cbit.vcell.util;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.DataInputStream;
+import org.junit.jupiter.api.Tag;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -27,7 +27,7 @@ import org.vcell.util.document.KeyValue;
 import cbit.vcell.util.AmplistorUtils.AmplistorCredential;
 
 @Ignore
-@Category(Fast.class)
+@Tag("Fast")
 public class AmplistorUtilsTest {
 	
 	private static final int NUMFILES = 5;

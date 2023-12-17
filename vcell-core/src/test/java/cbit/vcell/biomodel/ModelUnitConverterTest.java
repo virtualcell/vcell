@@ -22,7 +22,7 @@ import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 import org.apache.commons.io.IOUtils;
-import org.junit.Assert;
+import org.junit.jupiter.api.Tag;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.vcell.test.Fast;
@@ -38,6 +38,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 @Category(Fast.class)
+@Tag("Fast")
 public class ModelUnitConverterTest {
 
     @Test

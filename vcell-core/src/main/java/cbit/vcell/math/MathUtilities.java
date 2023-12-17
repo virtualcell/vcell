@@ -17,7 +17,7 @@ import cbit.vcell.parser.*;
 import cbit.vcell.solver.SimulationSymbolTable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.vcell.test.Fast;
+
 
 /**
  * Insert the type's description here.

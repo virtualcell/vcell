@@ -1,7 +1,7 @@
 package org.vcell.util.gui;
 
 import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Tag;
 import org.junit.experimental.categories.Category;
 import org.vcell.test.Fast;
 
@@ -12,7 +12,7 @@ import java.util.function.BiFunction;
 import static org.junit.Assert.*;
 
 
-@Category(Fast.class)
+@Tag("Fast")
 public class GeneralGuiUtilsTest {
 
     private void aTest(BiFunction<Class<?>, Component, Container> method){

@@ -2,11 +2,11 @@ package org.vcell.util;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.vcell.test.Fast;
+import org.junit.jupiter.api.Tag;
 
 import static org.vcell.util.CastingUtils.CastInfo;
 
-import static org.junit.Assert.*;
+@Tag("Fast")
 
 @Category(Fast.class)
 public class CastingUtilsTest {

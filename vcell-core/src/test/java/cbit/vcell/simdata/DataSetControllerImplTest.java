@@ -23,10 +23,11 @@ import cbit.vcell.simdata.DataOperationResults.DataProcessingOutputInfo;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
-import junit.framework.TestCase;
+import org.junit.jupiter.api.*;
 
 @Category(Fast.class)
 public class DataSetControllerImplTest extends TestCase {
+@Tag("Fast")
 	DataSetControllerImpl dsc = null;
 	VCSimulationDataIdentifier vcDataIdentifier = null;
 	OutputContext outputContext = new OutputContext(new AnnotatedFunction[] {});

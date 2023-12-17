@@ -14,7 +14,7 @@ import cbit.vcell.xml.XmlParseException;
 import com.google.common.io.Files;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.Tag;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.vcell.optimization.jtd.OptProblem;
@@ -33,6 +33,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 @Category(Fast.class)
+@Tag("Fast")
 public class CopasiOptimizationSolverTest {
 
     @BeforeClass

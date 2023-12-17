@@ -1,9 +1,10 @@
 package cbit.vcell.mongodb;
 
+import org.junit.jupiter.api.*;
 import static org.junit.Assert.assertArrayEquals;
 
 import org.bson.types.ObjectId;
-import org.junit.After;
+@Tag("Fast")
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;

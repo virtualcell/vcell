@@ -1,6 +1,7 @@
 package cbit.vcell.util;
 
 import static org.junit.Assert.fail;
+import org.junit.jupiter.api.Tag;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -8,7 +9,7 @@ import org.junit.experimental.categories.Category;
 import org.vcell.test.Fast;
 
 @Ignore
-@Category(Fast.class)
+@Tag("Fast")
 public class EventRateLimiterTest {
 
 	@Test

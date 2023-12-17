@@ -1,11 +1,12 @@
 package cbit.vcell.math;
 
 import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Tag;
 import org.junit.experimental.categories.Category;
 import org.vcell.test.Fast;
 
 @Category(Fast.class)
+@Tag("Fast")
 public class CommentedObjectTest {
 
 	@Test

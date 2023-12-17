@@ -1,5 +1,6 @@
 package org.vcell.util.gui;
 
+import org.junit.jupiter.api.Tag;
 import java.net.URL;
 import java.util.Map.Entry;
 
@@ -8,7 +9,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.vcell.test.Fast;
 
-@Category(Fast.class)
+@Tag("Fast")
 public class VCellIconsTest {
 
 	@Test

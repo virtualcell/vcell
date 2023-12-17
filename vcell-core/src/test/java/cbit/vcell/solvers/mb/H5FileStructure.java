@@ -24,6 +24,7 @@ import ncsa.hdf.object.FileFormat;
 import ncsa.hdf.object.Group;
 import ncsa.hdf.object.HObject;
 import ncsa.hdf.object.h5.H5File;
+import org.junit.jupiter.api.Tag;
 import org.vcell.util.CastingUtils;
 
 /**
@@ -50,7 +51,7 @@ import org.vcell.util.CastingUtils;
  * @author Peter X. Cao
  * @version 2.4
  */
-@Category(Fast.class)
+@Tag("Fast")
 public class H5FileStructure extends H5Client {
     private static String fname = FILE;
     private static long[] dims2D = {20, 10};

@@ -9,7 +9,7 @@ import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.Tag;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 
 @Category(MathGen_IT.class)
 @RunWith(Parameterized.class)
+@Tag("MathGen_IT")
 public class MathOverrideApplyTest {
 
 	private String filename_colon_appname;

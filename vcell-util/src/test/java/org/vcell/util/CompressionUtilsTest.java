@@ -1,5 +1,6 @@
 package org.vcell.util;
 
+import org.junit.jupiter.api.Tag;
 import javax.management.StringValueExp;
 import java.io.IOException;
 import java.io.Serializable;
@@ -9,7 +10,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.vcell.test.Fast;
 
-import static org.junit.Assert.*;
+@Tag("Fast")
 
 @Category(Fast.class)
 public class CompressionUtilsTest {

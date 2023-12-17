@@ -8,7 +8,7 @@ import cbit.vcell.modeldb.BadMathVisitor;
 import cbit.vcell.modeldb.BatchTester;
 import cbit.vcell.modeldb.VCDatabaseScanner;
 import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Tag;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.Description;
 import org.junit.runner.JUnitCore;
@@ -24,7 +24,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 
-@Category(Fast.class)
+@Tag("Fast")
 public class MathVisitor implements BadMathVisitor {
 	final PrintWriter loadErrorWriter;
 	final PrintWriter parseErrorWriter;

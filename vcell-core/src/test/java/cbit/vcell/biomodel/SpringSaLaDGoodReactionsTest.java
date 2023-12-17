@@ -22,6 +22,7 @@ import cbit.vcell.xml.XmlParseException;
 import org.apache.commons.io.IOUtils;
 import org.junit.*;
 import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.Tag;
 import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.solver.langevin.LangevinLngvWriter;
 import org.vcell.solver.langevin.LangevinSolver;
@@ -40,6 +41,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 @Category(Fast.class)
+@Tag("Fast")
 public class SpringSaLaDGoodReactionsTest {
 	
 	private static final String reactionTestString = "'r0' ::     'MT0' : 'Site1' : 'state0' --> 'state1'  Rate 50.0  Condition Free";

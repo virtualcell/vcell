@@ -6,7 +6,7 @@ import cbit.vcell.resource.PropertyLoader;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Tag;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 
 @RunWith(Parameterized.class)
 @Category(Spatial_IT.class)
+@Tag("Spatial_IT")
 public class SpatialExecTest {
     private final String testCaseFilename;
 

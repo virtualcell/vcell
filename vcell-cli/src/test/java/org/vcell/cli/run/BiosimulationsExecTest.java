@@ -6,7 +6,7 @@ import cbit.vcell.resource.PropertyLoader;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Tag;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -32,6 +32,7 @@ import java.util.stream.Collectors;
 
 @RunWith(Parameterized.class)
 @Category(BSTS_IT.class)
+@Tag("BSTS_IT")
 public class BiosimulationsExecTest {
 	private final String testCaseProjectID;
 

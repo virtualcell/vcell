@@ -12,7 +12,7 @@ import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Tag;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -34,6 +34,7 @@ import java.util.function.Predicate;
 
 @Category(Fast.class)
 @RunWith(Parameterized.class)
+@Tag("Fast")
 public class MathOverrideRoundTipTest {
 
     private final String filename;

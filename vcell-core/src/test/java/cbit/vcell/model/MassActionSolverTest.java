@@ -1,5 +1,6 @@
 package cbit.vcell.model;
 
+import org.junit.jupiter.api.Tag;
 import java.beans.PropertyVetoException;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -7,7 +8,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.stream.Collectors;
 
-import org.junit.Test;
+@Tag("Fast")
 import org.junit.experimental.categories.Category;
 import org.vcell.sbml.VcmlTestSuiteFiles;
 

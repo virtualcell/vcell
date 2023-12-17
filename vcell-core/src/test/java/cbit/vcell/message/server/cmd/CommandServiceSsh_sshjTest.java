@@ -1,6 +1,7 @@
 package cbit.vcell.message.server.cmd;
 
 import static org.junit.Assert.fail;
+import org.junit.jupiter.api.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -14,7 +15,7 @@ import org.vcell.test.Fast;
 import org.vcell.util.exe.ExecutableException;
 
 import cbit.vcell.message.server.cmd.CommandService.CommandOutput;
-import cbit.vcell.mongodb.VCMongoMessage;
+@Tag("Fast")
 
 @Ignore
 @Category(Fast.class)

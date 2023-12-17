@@ -1,5 +1,6 @@
 package cbit.vcell.util;
 
+import org.junit.jupiter.api.Tag;
 import java.io.Reader;
 import java.io.StringReader;
 
@@ -9,7 +10,7 @@ import org.junit.experimental.categories.Category;
 import org.vcell.test.Fast;
 import org.vcell.util.SkipCommentLineNumberReader;
 
-@Category(Fast.class)
+@Tag("Fast")
 public class SkipCommentLineReaderTest {
 	private static final String UNCOMMENTED_TEXT = "Mary\nhad\na\nlittle\nlamb\n";
 	private static final String COMMENTED_TEXT_1 = "Mary\nhad\n#did she?\na\nlittle\nlamb\n";

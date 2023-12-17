@@ -13,7 +13,7 @@ import cbit.vcell.xml.XmlParseException;
 import org.junit.*;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.Tag;
 import org.vcell.sbml.VcmlTestSuiteFiles;
 import org.vcell.test.MathGen_IT;
 import org.vcell.util.document.Version;
@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 
 @Category(MathGen_IT.class)
 @RunWith(Parameterized.class)
+@Tag("MathGen_IT")
 public class MathGenCompareTest {
 
 	private String filename_colon_appname;

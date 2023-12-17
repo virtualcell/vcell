@@ -1,11 +1,12 @@
 package cbit.vcell.units.parser;
 
 import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.experimental.categories.Category;
 import org.vcell.test.Fast;
 
 @Category(Fast.class)
+@Tag("Fast")
 public class UnitSymbolTest {
 
 	@Test

@@ -1,7 +1,7 @@
 package org.vcell.util.collections;
 
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import org.junit.jupiter.api.Tag;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -14,7 +14,7 @@ import org.junit.experimental.categories.Category;
 import org.vcell.test.Fast;
 import org.vcell.util.collections.VCCollections.Delta;
 
-@Category(Fast.class)
+@Tag("Fast")
 public class VCCollectionsTest {
 	private List<Integer> a = new ArrayList<>();
 	private List<Integer> b = new ArrayList<>();

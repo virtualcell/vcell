@@ -21,10 +21,10 @@ import cbit.vcell.message.jms.activeMQ.VCMessagingServiceActiveMQ;
 import cbit.vcell.mongodb.VCMongoDbDriver;
 import cbit.vcell.resource.PropertyLoader;
 import org.junit.experimental.categories.Category;
-import org.vcell.test.Fast;
+import org.junit.jupiter.api.*;
 
 @Ignore
-@Category(Fast.class)
+@Tag("Fast")
 public class BlobMessageTest {
 
 	private static final int NUM_PRODUCERS = 2;

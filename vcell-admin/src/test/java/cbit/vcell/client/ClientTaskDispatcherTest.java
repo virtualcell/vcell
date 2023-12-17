@@ -3,6 +3,7 @@ package cbit.vcell.client;
 import static cbit.vcell.client.task.AsynchClientTask.TASKTYPE_NONSWING_BLOCKING;
 import static cbit.vcell.client.task.AsynchClientTask.TASKTYPE_SWING_BLOCKING;
 import static cbit.vcell.client.task.AsynchClientTask.TASKTYPE_SWING_NONBLOCKING;
+import org.junit.jupiter.api.Tag;
 
 import java.awt.Component;
 import java.awt.Label;
@@ -18,7 +19,7 @@ import org.junit.experimental.categories.Category;
 import org.vcell.test.Fast;
 
 @Ignore
-@Category(Fast.class)
+@Tag("Fast")
 public class ClientTaskDispatcherTest {
 	private Hashtable<String,Object> ht  = new Hashtable<>(); 
 	private  Component cmpt = new Label() ;

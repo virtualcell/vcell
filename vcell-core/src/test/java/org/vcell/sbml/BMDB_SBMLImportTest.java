@@ -10,7 +10,7 @@ import org.jdom.output.XMLOutputter;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Tag;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 
 @Category(SBML_IT.class)
 @RunWith(Parameterized.class)
+@Tag("SBML_IT")
 public class BMDB_SBMLImportTest {
 
 	private static class SBMLHighPriorityIssueException extends RuntimeException {

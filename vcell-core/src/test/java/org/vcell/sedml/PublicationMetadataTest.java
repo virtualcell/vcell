@@ -1,6 +1,6 @@
 package org.vcell.sedml;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Tag;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.vcell.test.Fast;
@@ -14,6 +14,7 @@ import java.util.Date;
 import java.util.HashMap;
 
 @Category(Fast.class)
+@Tag("Fast")
 public class PublicationMetadataTest {
 
     private final static String exampleRIS =

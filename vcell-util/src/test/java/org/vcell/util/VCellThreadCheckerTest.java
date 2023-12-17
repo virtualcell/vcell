@@ -1,5 +1,6 @@
 package org.vcell.util;
 
+import org.junit.jupiter.api.Tag;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
@@ -17,7 +18,7 @@ import org.vcell.test.Fast;
  * @author gweatherby
  *
  */
-@Category(Fast.class)
+@Tag("Fast")
 public class VCellThreadCheckerTest {
 	PrintStream oldOut = null;
 	PrintStream oldErr = null;

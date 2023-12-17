@@ -1,6 +1,6 @@
 package cbit.vcell.resource;
 
-import static org.junit.Assert.assertTrue;
+import org.junit.jupiter.api.Tag;
 
 import java.io.File;
 import java.io.IOException;
@@ -9,7 +9,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.vcell.test.Fast;
 
-@Category(Fast.class)
+@Tag("Fast")
 public class PropertyLoaderTest {
 
 

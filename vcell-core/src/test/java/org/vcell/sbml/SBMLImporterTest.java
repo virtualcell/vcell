@@ -1,11 +1,12 @@
 package org.vcell.sbml;
 
+import org.junit.jupiter.api.Tag;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 
-import javax.xml.stream.XMLStreamException;
+@Tag("SBML_IT")
 
 import org.junit.Ignore;
 import org.junit.Test;

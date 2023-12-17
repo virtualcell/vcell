@@ -1,6 +1,7 @@
 package org.vcell.util.collections;
 
 import static org.junit.Assert.assertTrue;
+import org.junit.jupiter.api.Tag;
 
 import java.util.List;
 
@@ -10,7 +11,7 @@ import org.junit.experimental.categories.Category;
 import org.vcell.test.Fast;
 
 
-@Category(Fast.class)
+@Tag("Fast")
 public class HashListMapTest {
 
 	private HashListMap<String,Integer> testList;

@@ -11,7 +11,7 @@ import java.util.List;
 import cbit.vcell.resource.PropertyLoader;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Tag;
 import org.junit.experimental.categories.Category;
 import org.vcell.test.Fast;
 import org.vcell.util.document.KeyValue;
@@ -23,6 +23,7 @@ import org.vcell.vis.vcell.CartesianMesh;
 import org.vcell.vis.vismesh.thrift.*;
 
 @Category(Fast.class)
+@Tag("Fast")
 public class VCellDataTest {
 
 	private String previousPythonDir = null;

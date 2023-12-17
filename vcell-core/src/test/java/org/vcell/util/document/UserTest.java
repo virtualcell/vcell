@@ -1,5 +1,6 @@
 package org.vcell.util.document;
 
+import org.junit.jupiter.api.Tag;
 import java.math.BigDecimal;
 
 import org.junit.Assert;
@@ -7,7 +8,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.vcell.test.Fast;
 
-@Category(Fast.class)
+@Tag("Fast")
 public class UserTest {
 
 	@Test

@@ -3,7 +3,7 @@ package cbit.vcell.matrix;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ExpressionUtils;
-import org.junit.Assert;
+import org.junit.jupiter.api.Tag;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -15,6 +15,7 @@ import java.util.List;
 
 @Category(Fast.class)
 @RunWith(Parameterized.class)
+@Tag("Fast")
 public class RationalExpMatrixTest {
     static class TestCase {
         final Expression[] equations;

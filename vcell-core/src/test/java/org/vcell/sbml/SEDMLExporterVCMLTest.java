@@ -1,6 +1,6 @@
 package org.vcell.sbml;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Tag;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -12,7 +12,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@RunWith(Parameterized.class)
+@Tag("SEDML_VCML_IT")
 @Category({SEDML_VCML_IT.class})
 public class SEDMLExporterVCMLTest extends SEDMLExporterCommon {
 

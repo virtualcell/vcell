@@ -14,7 +14,7 @@ import cbit.vcell.solver.TimeBounds;
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Logger;
 import org.junit.Assert;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.Tag;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -36,6 +36,7 @@ import java.util.stream.Collectors;
 
 @Category(SBML_IT.class)
 @RunWith(Parameterized.class)
+@Tag("SBML_IT")
 public class SBMLTestSuiteTest {
 	private Integer testCase;
 

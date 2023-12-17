@@ -1,7 +1,7 @@
 package org.vcell.core;
 
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import org.junit.jupiter.api.Tag;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -14,7 +14,7 @@ import cbit.vcell.solver.TimeStep;
 /**
  * test {@link Matchable#areEqual(Matchable, Matchable)]
  */
-@Category(Fast.class)
+@Tag("Fast")
 public class MatcheableTest {
 
 	@Test

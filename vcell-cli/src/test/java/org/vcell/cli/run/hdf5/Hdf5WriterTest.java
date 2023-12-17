@@ -4,7 +4,7 @@ import cbit.vcell.resource.PropertyLoader;
 import com.google.common.io.Files;
 import ncsa.hdf.hdf5lib.exceptions.HDF5Exception;
 import org.jlibsedml.DataSet;
-import cbit.vcell.resource.NativeLib;
+import org.junit.jupiter.api.Tag;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.vcell.test.Fast;
@@ -18,7 +18,7 @@ import java.util.Map;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-@Category(Fast.class)
+@Tag("Fast")
 public class Hdf5WriterTest {
 
     public static Hdf5DataContainer createExampleData() {

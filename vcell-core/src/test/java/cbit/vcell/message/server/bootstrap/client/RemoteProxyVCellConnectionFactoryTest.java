@@ -2,7 +2,7 @@ package cbit.vcell.message.server.bootstrap.client;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
-
+import org.junit.jupiter.api.*;
 import java.io.IOException;
 
 import org.junit.After;
@@ -24,6 +24,7 @@ import cbit.vcell.server.VCellConnection;
 
 @Ignore
 @Category(Fast.class)
+@Tag("Fast")
 public class RemoteProxyVCellConnectionFactoryTest {
 	
 	private RemoteProxyVCellConnectionFactory factory = null;

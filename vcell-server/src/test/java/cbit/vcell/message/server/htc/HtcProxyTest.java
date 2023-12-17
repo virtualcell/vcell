@@ -11,8 +11,10 @@ import cbit.vcell.message.server.htc.HtcProxy.SimTaskInfo;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.server.HtcJobID;
 import cbit.vcell.server.HtcJobID.BatchSystemType;
+import org.junit.jupiter.api.Tag;
 
 @Category(Fast.class)
+@Tag("Fast")
 public class HtcProxyTest {
 
 	@Test

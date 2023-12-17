@@ -10,7 +10,7 @@ import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Tag;
 import org.junit.experimental.categories.Category;
 import org.vcell.sbml.vcell.SBMLExporter;
 import org.vcell.sbml.vcell.SBMLImporter;
@@ -20,7 +20,7 @@ import org.vcell.util.Extent;
 import java.io.StringBufferInputStream;
 import java.util.Random;
 
-@Category(Fast.class)
+@Tag("Fast")
 public class VCImageTest {
 
     @Test

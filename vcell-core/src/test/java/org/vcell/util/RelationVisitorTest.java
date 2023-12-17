@@ -6,11 +6,11 @@ import cbit.vcell.model.ModelRelationVisitor;
 import cbit.vcell.model.ModelTest;
 import cbit.vcell.parser.Expression;
 import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Tag;
 import org.junit.experimental.categories.Category;
 import org.vcell.test.Fast;
 
-@Category(Fast.class)
+@Tag("Fast")
 public class RelationVisitorTest {
 
     @Test

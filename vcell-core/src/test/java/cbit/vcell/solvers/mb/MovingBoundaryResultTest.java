@@ -6,7 +6,7 @@ import java.util.Arrays;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Tag;
 
 import cbit.vcell.solvers.mb.MovingBoundaryTypes.Element;
 import cbit.vcell.solvers.mb.MovingBoundaryTypes.MeshInfo;
@@ -17,7 +17,7 @@ import org.junit.experimental.categories.Category;
 import org.vcell.test.Fast;
 
 @Ignore
-@Category(Fast.class)
+@Tag("Fast")
 public class MovingBoundaryResultTest extends H5Client {
     private static String fname  = FILE;
 	MovingBoundaryReader mbr;

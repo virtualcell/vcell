@@ -1,5 +1,6 @@
 package cbit.vcell.tools;
 
+import org.junit.jupiter.api.Tag;
 import java.io.IOException;
 import java.util.Collection;
 
@@ -15,7 +16,7 @@ import org.vcell.test.Fast;
  * test {@link PortableCommandWrapper}
  * @author gweatherby
  */
-@Category(Fast.class)
+@Tag("Fast")
 public class PortableCommandWrapperTest {
 	
 	private static final String FILE = "z:/t.sub";

@@ -1,6 +1,6 @@
 package org.vcell.sbml;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Tag;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.vcell.test.Fast;
@@ -12,6 +12,7 @@ import java.util.function.IntPredicate;
 import java.util.stream.IntStream;
 
 @Category(Fast.class)
+@Tag("Fast")
 public class BMDB_SBML_Files {
 
     public final static int[] allCuratedModels = IntStream.rangeClosed(1, 1064)

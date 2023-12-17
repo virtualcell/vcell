@@ -13,7 +13,7 @@ package cbit.vcell.parser;
 import jscl.text.ParseException;
 import org.jmathml.ASTNode;
 import org.jmathml.MathMLReader;
-import org.junit.Assert;
+import org.junit.jupiter.api.Tag;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -25,6 +25,7 @@ import java.util.*;
 
 @Category(Fast.class)
 @RunWith(Parameterized.class)
+@Tag("Fast")
 public class MathMLTester {
 
 	private Expression expression;

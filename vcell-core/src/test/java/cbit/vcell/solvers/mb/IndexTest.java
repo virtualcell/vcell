@@ -1,6 +1,6 @@
 package cbit.vcell.solvers.mb;
 
-import static org.junit.Assert.assertTrue;
+import org.junit.jupiter.api.Tag;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,7 +14,7 @@ import org.vcell.vis.core.Vect3D;
 /**
  * test {@link PointIndexTreeAndList} implementation
  */
-@Category(Fast.class)
+@Tag("Fast")
 public class IndexTest {
 	private static final double VALUES[] = {
 			0.3954988527,

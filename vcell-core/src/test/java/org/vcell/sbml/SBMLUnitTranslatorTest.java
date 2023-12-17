@@ -21,9 +21,11 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitSystem;
 import org.vcell.test.Fast;
+import org.junit.jupiter.api.Tag;
 import ucar.units_vcell.RationalNumber;
 
 @Category(Fast.class)
+@Tag("Fast")
 public class SBMLUnitTranslatorTest {
 
 	public static File[] getBiomodelsCuratedSBMLFiles(){

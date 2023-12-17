@@ -1,7 +1,7 @@
 package cbit.vcell.resource;
 
 import com.google.gson.Gson;
-import org.junit.Assert;
+import org.junit.jupiter.api.Tag;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -12,6 +12,7 @@ import java.util.ArrayList;
 
 @Category(Fast.class)
 @RunWith(Parameterized.class)
+@Tag("Fast")
 public class ErrorUtilsTest {
 
     private ErrorUtils.ErrorReport errorReport;

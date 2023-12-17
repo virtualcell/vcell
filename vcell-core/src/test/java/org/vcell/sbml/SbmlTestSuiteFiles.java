@@ -1,7 +1,7 @@
 package org.vcell.sbml;
 
 import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Tag;
 import org.junit.experimental.categories.Category;
 import org.vcell.test.Fast;
 
@@ -15,6 +15,7 @@ import java.util.stream.IntStream;
 
 
 @Category(Fast.class)
+@Tag("Fast")
 public class SbmlTestSuiteFiles {
 
     private final static int[] allTestCases = IntStream.rangeClosed(1, 1821).toArray();

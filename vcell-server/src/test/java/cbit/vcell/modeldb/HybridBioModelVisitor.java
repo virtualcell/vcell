@@ -1,12 +1,13 @@
 package cbit.vcell.modeldb;
 
+import org.junit.jupiter.api.Tag;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.junit.Test;
+@Tag("Fast")
 import org.junit.experimental.categories.Category;
 import org.vcell.test.Fast;
 import org.vcell.util.document.User;

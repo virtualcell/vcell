@@ -2,6 +2,7 @@ package cbit.vcell.solver;
 
 
 import static org.junit.Assert.assertTrue;
+import org.junit.jupiter.api.Tag;
 
 import java.io.BufferedReader;
 import java.io.CharArrayReader;
@@ -20,7 +21,7 @@ import java.util.TreeSet;
 
 import org.junit.Test;
 
-import cbit.vcell.math.ProblemRequirements;
+@Tag("Fast")
 import cbit.vcell.solver.SolverDescription.SolverFeature;
 import org.junit.experimental.categories.Category;
 import org.vcell.test.Fast;

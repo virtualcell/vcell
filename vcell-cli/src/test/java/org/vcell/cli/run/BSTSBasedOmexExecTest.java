@@ -3,6 +3,7 @@ package org.vcell.cli.run;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.resource.NativeLib;
 import cbit.vcell.resource.PropertyLoader;
+import org.junit.jupiter.api.Tag;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,7 +32,7 @@ import org.vcell.cli.PythonStreamException;
 import org.vcell.test.BSTS_IT;
 import org.vcell.util.VCellUtilityHub;
 
-@RunWith(Parameterized.class)
+@Tag("BSTS_IT")
 @Category(BSTS_IT.class)
 public class BSTSBasedOmexExecTest {
 	private final String testCaseFilename;

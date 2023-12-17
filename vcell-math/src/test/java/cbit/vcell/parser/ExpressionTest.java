@@ -9,10 +9,11 @@ import cbit.vcell.units.VCUnitSystem;
 import net.sourceforge.interval.ia_math.RealInterval;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.Tag;
 import org.vcell.test.Fast;
 
 @Category(Fast.class)
+@Tag("Fast")
 public class ExpressionTest {
 	public static void main(java.lang.String[] args) {
 		int num = 5000;

@@ -15,9 +15,9 @@ import org.junit.Test;
 
 import cbit.vcell.parser.Expression;
 import org.junit.experimental.categories.Category;
-import org.vcell.test.Fast;
+import org.junit.jupiter.api.Tag;
 
-@Category(Fast.class)
+@Tag("Fast")
 public class RowColumnResultSetTest {
 
 	@Test

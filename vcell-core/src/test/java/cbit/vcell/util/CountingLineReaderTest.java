@@ -1,5 +1,6 @@
 package cbit.vcell.util;
 
+import org.junit.jupiter.api.Tag;
 import java.io.IOException;
 import java.io.StringReader;
 
@@ -10,7 +11,7 @@ import org.vcell.test.Fast;
 import org.vcell.util.CountingLineReader;
 
 @Ignore
-@Category(Fast.class)
+@Tag("Fast")
 public class CountingLineReaderTest {
 	
 	private final static String BLB =

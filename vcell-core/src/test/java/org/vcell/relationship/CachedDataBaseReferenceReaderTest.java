@@ -2,12 +2,13 @@ package org.vcell.relationship;
 
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
+import org.junit.jupiter.api.Tag;
 
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
-import org.junit.Ignore;
+@Tag("Fast")
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.vcell.test.Fast;

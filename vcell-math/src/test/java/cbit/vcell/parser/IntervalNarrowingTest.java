@@ -1,5 +1,6 @@
 package cbit.vcell.parser;
 
+import org.junit.jupiter.api.Tag;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Random;
@@ -12,7 +13,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import net.sourceforge.interval.ia_math.IAException;
-import net.sourceforge.interval.ia_math.RealInterval;
+@Tag("Fast")
 import org.vcell.test.Fast;
 
 @Ignore

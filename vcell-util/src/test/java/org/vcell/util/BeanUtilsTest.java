@@ -1,9 +1,10 @@
 package org.vcell.util;
 
+import org.junit.jupiter.api.Tag;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import org.junit.Ignore;
+@Tag("Fast")
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.vcell.test.Fast;

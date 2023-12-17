@@ -2,7 +2,7 @@ package org.vcell.cli.run;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.Tag;
 import org.vcell.test.Fast;
 
 import java.io.InputStream;
@@ -10,7 +10,7 @@ import java.util.Arrays;
 import java.util.function.Predicate;
 
 
-@Category(Fast.class)
+@Tag("Fast")
 public class BiosimulationsFiles {
 
     private final static String[] allProjectIDs = new String[]{

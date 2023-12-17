@@ -1,12 +1,13 @@
 package org.vcell.util.gui;
 
 import java.awt.Component;
+import org.junit.jupiter.api.Tag;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.prefs.BackingStoreException;
 
 import javax.swing.JFrame;
-
+@Tag("Fast")
 import org.junit.Ignore;
 
 import cbit.vcell.resource.ResourceUtil;

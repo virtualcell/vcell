@@ -4,7 +4,7 @@ import org.jose4j.jwk.RsaJsonWebKey;
 import org.jose4j.jwt.MalformedClaimException;
 import org.jose4j.jwt.NumericDate;
 import org.jose4j.lang.JoseException;
-import org.junit.Assert;
+import org.junit.jupiter.api.Tag;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.vcell.test.Fast;
@@ -12,6 +12,7 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
 @Category(Fast.class)
+@Tag("Fast")
 public class JWTUtilsTest {
 
     @Test

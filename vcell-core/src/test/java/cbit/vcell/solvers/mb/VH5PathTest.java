@@ -24,10 +24,11 @@ import cern.colt.Arrays;
 import ncsa.hdf.object.FileFormat;
 import ncsa.hdf.object.Group;
 import org.junit.experimental.categories.Category;
-import org.vcell.test.Fast;
+import org.junit.jupiter.api.*;
 
 @Ignore
 @Category(Fast.class)
+@Tag("Fast")
 public class VH5PathTest extends H5Client {
     private static String fname  = FILE;
 	private FileFormat testFile = null;

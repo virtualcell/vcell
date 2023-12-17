@@ -3,7 +3,7 @@ package org.vcell.optimization;
 import cbit.vcell.xml.XmlParseException;
 import com.google.common.io.Files;
 import org.apache.commons.io.IOUtils;
-import org.junit.Assert;
+import org.junit.jupiter.api.Tag;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.vcell.optimization.jtd.OptProgressItem;
@@ -17,6 +17,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 @Category(Fast.class)
+@Tag("Fast")
 public class CopasiUtilsTest {
 
     @Test

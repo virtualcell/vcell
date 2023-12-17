@@ -3,7 +3,7 @@ package org.vcell.cli.run;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.resource.NativeLib;
 import cbit.vcell.resource.PropertyLoader;
-import org.junit.Test;
+import org.junit.jupiter.api.Tag;
 import org.junit.experimental.categories.Category;
 import org.vcell.cli.CLIPythonManager;
 import org.vcell.cli.CLIRecorder;
@@ -18,7 +18,7 @@ import java.nio.file.Files;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
-@Category(Fast.class)
+@Tag("Fast")
 public class ExecuteImplTest {
 
     @Test

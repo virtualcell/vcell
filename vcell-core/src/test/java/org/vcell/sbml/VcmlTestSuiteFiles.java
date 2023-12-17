@@ -1,7 +1,7 @@
 package org.vcell.sbml;
 
 import cbit.vcell.parser.Expression;
-import org.junit.Assert;
+import org.junit.jupiter.api.Tag;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.vcell.test.Fast;
@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.function.Predicate;
 
 
-@Category(Fast.class)
+@Tag("Fast")
 public class VcmlTestSuiteFiles {
 
     private final static String[] allTestFiles = new String[]{

@@ -20,7 +20,7 @@ import cbit.vcell.simdata.*;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import org.janelia.saalfeldlab.n5.*;
-import org.junit.After;
+import org.junit.jupiter.api.*;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,6 +35,7 @@ import java.util.Objects;
 import java.util.Random;
 
 @Category(Fast.class)
+@Tag("Fast")
 public class N5ExporterTest {
 
     private N5Reader n5Reader;
